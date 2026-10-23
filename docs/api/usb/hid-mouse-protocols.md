@@ -334,7 +334,7 @@ Aufwand ist **meine Schaetzung** (S ≤ 0,5 Tag, M 1–2, L 3+), nicht gemessen.
 | 1 | **F0 Diagnose-Kern** (§5.1): Deskriptoren behalten, Report-Deskriptor holen, Berichtsring | ohne Daten ist die Wahl des Parsers geraten; die Anwenderfrage „welche Maus spricht was“ ist nur so zu beantworten | M | — |
 | 2 | **F1 Befehlsring mit Link-TRB** (§3.1) | stille, kombinationsabhaengige Grenze (13 von 15 im Pi-Baum), Voraussetzung fuer Hotplug und fuer mehr Geraete | S | — |
 | 3 | **F2 Klassenpruefung** `bInterfaceClass == 3` (und Hub per Interface-Klasse) vor Protokoll 1/2 (Katalog E, Defekt 3 Rest) | verhindert Fehlzuordnung fremder Geraete | S | — |
-| 4 | **F3 Mehrere Interfaces je Geraet** (Interface-Schleife, je HID-Interface eigener Endpoint/Ring/Puffer, Alt-Settings ignorieren) — **Spec-ENTWURF: §9** | Funkempfaenger/Verbundgeraete: sonst haengt es an der Reihenfolge im Deskriptor. Seit Ragnars Lauf (`measurements/measurement-2026-10-23-usb01-ragnar/RUNINFO.TXT`) belegt: alle drei Funkempfaenger bieten die Boot-Maus auf Interface 1 | M–L | F0 hilfreich, F1 |
+| 4 | **F3 Mehrere Interfaces je Geraet** (Interface-Schleife, je HID-Interface eigener Endpoint/Ring/Puffer, Alt-Settings ignorieren) — **Spec: §9 (freigegeben 2026-10-24)** | Funkempfaenger/Verbundgeraete: sonst haengt es an der Reihenfolge im Deskriptor. Seit Ragnars Lauf (`measurements/measurement-2026-10-23-usb01-ragnar/RUNINFO.TXT`) belegt: alle drei Funkempfaenger bieten die Boot-Maus auf Interface 1 | M–L | F0 hilfreich, F1 |
 | 5 | **F4 Report-Protokoll-Parser fuer Maeuse** (Tasten, X, Y, Rad, AC Pan, Report-ID, Bitbreiten; kein `SET_PROTOCOL(boot)` an Nicht-Boot-Interfaces; Zerlegung grosser Deltas in mehrere ±127-Pakete wie FreeMiNT `send_mouse_packets`; Berichte >8 Byte, Puffer >256) | schliesst Katalog C und die Hi-Res-Verluste aus B | L | F0 (Daten), F3 |
 | 6 | **F5 Tasten 3–5 und horizontales Rad** (Bit 2..4 → IKBD-Zusatzscancodes `0x37/0x5e/0x5f`, AC Pan → `0x5c/0x5d`) | Empfaengerseite ist fertig (`hid-mouse.md`); fuer A schon mit Boot-Bericht fuer Taste 3 sofort machbar | S (Taste 3), mit F4 den Rest | — / F4 |
 | 7 | **F6 Hotplug** (Root-Port-PSC-Events, Hub-Status-Change-Endpoint oder FreeMiNT-artiges Polling alle 1 s, Abbau: Disable Slot / Slot-Freigabe, Neuenumeration nur ausserhalb des Timer-IRQ) | „Umstecken ohne Reboot“; heute gar nicht vorhanden | L | F1; xHCI-Spec lokal ablegen |
@@ -376,9 +376,9 @@ Die Defekte 1, 2, 4 brauchen **keine** weitere Reparatur (§2); offen ist ihre
   Iterationen je Befehl/Transfer (`xhci/mod.rs:820`, `:1036`) — siehe
   `TASK/PORT06-KEYS-DIAGNOSIS.MD:165`.
 
-## 9. F3 — Mehrere Interfaces je Geraet (ENTWURF)
+## 9. F3 — Mehrere Interfaces je Geraet
 
-> **STATUS: DRAFT 2026-10-23, nicht freigegeben, nichts gebaut.** Stand der Quellen:
+> **STATUS: APPROVED 2026-10-24 (Anwender), Entscheidungen in §9.11; Bau offen.** Entwurf 2026-10-23. Stand der Quellen:
 > `main` bei `3d6023b4`. Auftrag: `TASK/USB01.md` („Ragnars Lauf: Ursache der Funkmaeuse ist F3“).
 > Dieser Abschnitt ist Spec und Analyse, kein Code. Ersetzt die Zeile F3 in §6 und
 > ueberholt Katalog D (§1.2), soweit dort der Stand von vor F2 beschrieben ist.
@@ -756,3 +756,22 @@ Pfad eingebunden, `tools/xtask/src/main.rs:55-75`).** Bauen, sobald F3 freigegeb
   per Konstruktion keinen Tastaturverkehr zeigen; ein Mess-Fenster ist in §5.3 vorgeschlagen, nie gebaut worden.
 * `config_desc.rs`-Kopfkommentar nennt F3 weiterhin „one interface per device (F3)“ und `SkipReason::OneInterfacePerDevice`;
   beides fliegt mit dem Bau (R6).
+
+### 9.11 Entscheidungen (Anwender 2026-10-24)
+
+Der Anwender hat die Empfehlungen zu §9.9 freigegeben („ok du kannst loslegen“):
+
+| Frage | Entscheidung |
+|---|---|
+| 1 Ragnar | Rueckfragen gehen in GitHub #3; F3 wartet nicht auf die Antwort. |
+| 2 R1–R8 | freigegeben wie §9.3 (einschliesslich R3 und R5). |
+| 3 Report-only beobachten | nein, erst nach P0/P2 erneut entscheiden. |
+| 4 Mehrere Tastaturen | Zustand je Funktion (§9.6 Soll 1); kein Zaehler je Scancode. |
+| 5 `SET_IDLE` | nicht in F3; eigenes Ticket, weil ein STALL EP0 ohne Reset-Pfad haelt. |
+| 6 `Context Entries` | heutiges Verhalten beibehalten (laeuft auf VL805 und QEMU); Widerspruch nur notieren. |
+| 7 QEMU-Mehr-Interface-Geraet | nein; Host-Test H-1 mit den echten Deskriptoren aus Ragnars Logs plus Pi P2/P3. |
+| 8 Snapshot | Option A (ein Ring je Geraet, Interface-Tag im Eintrag), `VERSION = 2`, `USBSNAP.NCP` im selben Schritt angepasst. |
+| 9 Limits | `MAX_FUNC_PER_DEV = 4`, `MAX_FUNC = 12`. |
+| 10 Fallback | bei Bandwidth/Resource Error auf Funktion 0 zurueckfallen, Geraet behalten, Fehler loggen. |
+| P0 | F3 wird ohne vorherige USBSNAP-Messung gebaut; die Messung klaert nur die Tastaturfrage. |
+
