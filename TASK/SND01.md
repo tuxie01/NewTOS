@@ -144,3 +144,33 @@ setzt einen Schritt davor):
 **Lizenz.** circle ist GPLv3, dieses Projekt GPLv2 wie EmuTOS. Lesen und
 nachbauen ist gedeckt und vom Protokoll als Rang 6 vorgesehen; woertliche
 Uebernahme waere ein abgeleitetes Werk. Registerzahlen bleiben Tatsachen.
+
+## Idee 2026-10-23 — Ton als nachladbarer Treiber (Anwender)
+
+Der Anwender schlaegt vor, den Ton wie unter MagiC als **nachladbaren
+Treiber** zu liefern. Vorbild ist MacSound fuer MagiCMac: ein Treiber, der die
+Falcon-XBIOS-Tonfunktionen bereitstellt und auf die Ton-Hardware des Wirts
+abbildet. Programme pruefen dort ueber Cookies, ob Ton da ist, und muessen
+nicht wissen, woher er kommt. Der Name „magxsound“ war im Gespraech nicht
+eindeutig; vor der Analyse klaeren, ob MacSound gemeint ist oder GSXB
+(Milan/Hades).
+
+Was dafuer spricht:
+
+- Klinke (SND01) und HDMI (SND02) waeren zwei austauschbare Treiber hinter
+  derselben XBIOS-Schnittstelle.
+- Der Kern bleibt ohne Tonhardware-Code; ohne Treiber meldet er ehrlich
+  „kein Ton“ ueber die Cookies.
+- Es ist der erste Abnehmer fuer [MOD01](MOD01.md) (nachladbare Module nach
+  FreeMiNT). Dieselbe Schicht brauchen spaeter Netz (NET02) und USB.
+
+Offen, vor jeder Entscheidung zu klaeren:
+
+1. Kann ein EL0-Programm bei uns den XBIOS-Trap uebernehmen, wie es ein
+   AUTO-Treiber auf dem Atari tut? Ungeprueft. Vermutlich nicht; dann waere
+   der Tontreiber ein Kernmodul und setzte MOD01 voraus.
+2. Welche Cookies und Funktionen MacSound oder GSXB anlegen; erst aus der
+   Quelle oder Doku belegen, nicht annehmen.
+3. Was EmuTOS im Falcon-Profil selbst von der Tongruppe hat (Haelfte A oben).
+   Hat EmuTOS dort nichts, ist ein nachladbarer Treiber genau das Muster,
+   das ein EmuTOS-Falcon-Anwender schon kennt.
