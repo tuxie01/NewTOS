@@ -19,6 +19,14 @@ Status: **OFFEN** · Prioritaet: **P3** · Typ: Sammelticket — Nebenbefunde De
    („Property 'qemu-fixed-text-console.device' not found“) — Messhinweis, kein
    NewTOS-Defekt.
 
+8. **Boot-Schirm mit echten Geraetenamen** (Anwender 2026-10-23, perspektivisch):
+   statt `HID device 05ac:1003` den Produktstring des Geraets zeigen, z. B.
+   `Apple Keyboard`, plus Hub-Port statt nur Root-Port (heute alles „Port 1“, weil am
+   Pi 4 alle USB-2-Geraete hinter dem VL805-internen Hub haengen). Voraussetzung: der
+   Stringabruf aus USB01/USBSNAP (K6, `docs/api/usb/usb-snapshot.md`). Zu klaeren:
+   UTF-16LE auf den Zeichensatz des Boot-Fonts abbilden, Laenge kappen, Rueckfall
+   VID:PID, wenn das Geraet keinen String hat. Zusammen mit Punkt 4 umsetzen.
+
 Je Punkt: gegen Circle/FreeMiNT und xHCI 1.2 (`references/xhci/`) pruefen, dann beheben.
 
 [Gemeinsame Regeln](README.md) gelten.
