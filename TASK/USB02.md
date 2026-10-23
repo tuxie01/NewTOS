@@ -26,6 +26,19 @@ Status: **OFFEN** · Prioritaet: **P3** · Typ: Sammelticket — Nebenbefunde De
    Stringabruf aus USB01/USBSNAP (K6, `docs/api/usb/usb-snapshot.md`). Zu klaeren:
    UTF-16LE auf den Zeichensatz des Boot-Fonts abbilden, Laenge kappen, Rueckfall
    VID:PID, wenn das Geraet keinen String hat. Zusammen mit Punkt 4 umsetzen.
+   **Darstellung (Anwender-Vorbild: macOS Systeminformationen, USB-Baum):** Kette
+   als eingerueckter Baum nach Hub-Ebene, nicht als flache Liste; Wurzel je
+   Root-Port/Bus, Hubs als Knoten mit ihren Geraeten darunter, je Zeile nur der Name
+   (Rolle/VID:PID hoechstens knapp dahinter). Fuer die Pi mit Apple-Tastatur + ROCCAT
+   also etwa:
+   ```
+   USB 2.0 Bus
+     VL805 Hub
+       Keyboard Hub
+         Apple Keyboard
+       ROCCAT Kone
+   ```
+   Daten dafuer liegen nach USB01 K4 vor (`parent`, Route je Geraet).
 
 Je Punkt: gegen Circle/FreeMiNT und xHCI 1.2 (`references/xhci/`) pruefen, dann beheben.
 
