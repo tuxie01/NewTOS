@@ -1,6 +1,6 @@
 # SND02 — HDMI-Ton: die Quellenlage ist ungeklaert, nicht guenstig
 
-Status: **OFFEN** · Prioritaet: **P3** (nach dem OFAM-Termin) · Typ: Track-B-Recherche — aus [SND01](SND01.md) Schritt 2
+Status: **OFFEN** · Prioritaet: **P2** (gehoert zu 1.0, Anwender 2026-10-23; vorher P3) · Typ: Track-B-Recherche — aus [SND01](SND01.md) Schritt 2
 
 Abhaengigkeiten: [SND01](SND01.md) (Klinke zuerst; HDMI ist der zweite Ausgang)
 

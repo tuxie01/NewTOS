@@ -1,6 +1,6 @@
 # SND01 — Ton: Falcon-DMA-Sound als API, HDMI als Ausgang
 
-Status: **OFFEN** · Prioritaet: **P3** (nach dem OFAM-Termin) · Typ: Treiber + API-Ebene — Anwenderwunsch 2026-09-28
+Status: **OFFEN** · Prioritaet: **P2** (gehoert zu 1.0, Anwender 2026-10-23; vorher P3) · Typ: Treiber + API-Ebene — Anwenderwunsch 2026-09-28
 
 Abhaengigkeiten: — · Vorbedingung fuer [SDL01](SDL01.md)
 
