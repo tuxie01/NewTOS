@@ -182,7 +182,7 @@ still pins "2022 is not a mode" and moves to 2023 with the implementation.
 
 | Mode | Value | Group | Notes |
 |------|------:|-------|-------|
-| `S_NEWTOS_USBSNAP` | 2022 | input / USB | **DRAFT** (USB01 step 2): snapshot of the enumerated USB devices into a caller buffer — device list with hub/port route, speed, VID/PID, chosen driver role + rejection reason, raw device/configuration/HID-report descriptors, per-device ring of raw interrupt reports, optional timed mute of the input decoder. Versioned little-endian buffer, `Ssystem(2022, buf, len)` with a 32-byte request header at `buf`; `E_OK` / `ERROR` (no USB controller, e.g. `raspi4b`) / `EINVAL`. Full spec: [`../usb/usb-snapshot.md`](../usb/usb-snapshot.md) |
+| `S_NEWTOS_USBSNAP` | 2022 | input / USB | **APPROVED 2026-10-23, not yet built** (USB01 step 2): snapshot of the enumerated USB devices into a caller buffer — device list with hub/port route, speed, VID/PID, chosen driver role + rejection reason, raw device/configuration/HID-report descriptors, per-device ring of raw interrupt reports, optional timed mute of the input decoder. Versioned little-endian buffer, `Ssystem(2022, buf, len)` with a 32-byte request header at `buf`; `E_OK` / `ERROR` (no USB controller, e.g. `raspi4b`) / `EINVAL`. Full spec: [`../usb/usb-snapshot.md`](../usb/usb-snapshot.md) |
 
 **Why the number block is free.** FreeMiNT's `sys/mint/ssystem.h` (@ `f906416`)
 assigns 0–29, 100 and `0x54f8` (21752), and reserves two ranges by comment:

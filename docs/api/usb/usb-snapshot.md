@@ -1,7 +1,7 @@
-# USB-Schnappschuss: `Ssystem`-Modus 2022 und das Konsolenprogramm `USBSNAP` (USB01 Schritt 2, Weg a) — ENTWURF
+# USB-Schnappschuss: `Ssystem`-Modus 2022 und das Konsolenprogramm `USBSNAP` (USB01 Schritt 2, Weg a)
 
-> **STATUS: DRAFT, wartet auf Freigabe durch den Anwender (Regel 5).** Nichts hiervon
-> ist gebaut. Der Modus 2022 antwortet heute `EINVFN`. Dieses Dokument ist **Spec und
+> **STATUS: FREIGEGEBEN 2026-10-23** (Anwender: „ja mach los“, alle Empfehlungen aus §7,
+> Entscheidungen dort). Noch nicht gebaut; bis zur Umsetzung antwortet 2022 `EINVFN`. Dieses Dokument ist **Spec und
 > Analyse, kein Code**. Es ergaenzt [`hid-mouse-protocols.md`](hid-mouse-protocols.md)
 > §5.1 (gemeinsamer Kern) und §5.2 (Weg a); der Anwender hat Weg (a) am 2026-10-23
 > gewaehlt. Ticket: [`TASK/USB01.md`](../../../TASK/USB01.md). Modus-Zeile:
@@ -530,9 +530,10 @@ Zeit des letzten gezaehlt und im Dateikopf vermerkt („first 1024 of N listed�
 
 * **Eine Datei je Nicht-Hub-Geraet** (Rollen 0, 1, 2, 3, 5). Hubs erscheinen nur in der
   `Path`-Zeile der Kinder.
-* **Pfad:** `C:\VVVVPPPP.TXT` (4 Hex-Ziffern VID + 4 PID, Grossbuchstaben; z. B.
-  `C:\046DC077.TXT`) — 8.3-sicher, immer genau 8 Zeichen. Unbekannte IDs (Rolle 5, VID/PID
-  0): `C:\NOID` + Root-Port (2 Ziffern) + Index (2 Ziffern) `.TXT`, z. B. `NOID0103.TXT`.
+* **Pfad:** `C:\USB\VVVVPPPP.TXT` (4 Hex-Ziffern VID + 4 PID, Grossbuchstaben; z. B.
+  `C:\USB\046DC077.TXT`). Fehlt `C:\USB`, legt das Programm den Ordner mit `Dcreate`
+  an; schlaegt das fehl, Fehlercode anzeigen und abbrechen (Frage 4) — 8.3-sicher, immer genau 8 Zeichen. Unbekannte IDs (Rolle 5, VID/PID
+  0): `C:\USB\NOID` + Root-Port (2 Ziffern) + Index (2 Ziffern) `.TXT`, z. B. `NOID0103.TXT`.
 * **Kollisionsregel (nie ueberschreiben):** Existenz mit `Fopen(pfad, 0)` pruefen
   (Erfolg → vorhanden, `Fclose`; `EFILNF` -33 → frei). Existiert `VVVVPPPP.TXT`, der
   Reihe nach `.T01`, `.T02`, … `.T99`. Danach: Fehlermeldung, Datei wird uebersprungen.
@@ -540,8 +541,8 @@ Zeit des letzten gezaehlt und im Dateikopf vermerkt („first 1024 of N listed�
   zusaetzlich `Device index` (`Device 2 of 3`). Anlegen mit `Fcreate(pfad, 0)`
   (`sdk/examples/a112mesg.c:186` als Vorbild); `Fwrite` in Haeppchen; bei negativem
   Rueckgabewert Code + Name (`EACCDN` -36, `EWRITF` -10, …) anzeigen.
-* **Wurzel von `C:`** statt Unterordner `C:\USB` (kein `Dcreate`-Pfad, Anwender muss
-  nichts suchen). Frage 4.
+* **Unterordner `C:\USB`** statt Wurzel (Anwender-Entscheid Frage 4: raeumt sich besser
+  auf, die Wurzel von `C:` traegt schon Kernel und Firmware).
 
 ### 4.4 Dateiinhalt (reiner Text, ASCII, CRLF, <= 78 Spalten)
 
@@ -688,7 +689,15 @@ Hostseitig und QEMU ohne Hardware, Abnahme am Ende an der Pi durch den Anwender.
 Nach T4–T6 sind die Aussagen §3.2 (Beobachtungs-Pfad ohne Seiteneffekt) und §2.6
 (MUTE, Klicks) belegt; bis dahin sind sie **[S]/[?]**.
 
-## 7. Offene Fragen an den Anwender
+## 7. Entscheidungen (Anwender 2026-10-23) und die Fragen dazu
+
+Freigegeben mit „ja mach los“ auf die Empfehlungen: **1** MUTE ein; **2** Hersteller-/
+Produktstring ja, Seriennummer nein; **3** ein Ring je Geraet, mehrere erst mit F3;
+**4** Ausgabe nach `C:\USB\`; **5** der Lead baut Kernel + `USBSNAP.NCP` als Paket, der
+Anwender verschickt es; **6** Bildschirmtexte Englisch; **7** Controller ohne Geraet
+behalten (K5) ja; **8** Beobachtungs-Pfad fuer alle Builds, ohne Schalter; **9** Hubs nur
+als Pfadzeile.
+
 
 1. **MUTE (Op 4) einschalten?** Vorteil: Klicks waehrend der Aufnahme erreichen den
    Desktop nicht (Desktop-Icons unter dem Zeiger!). Nachteil: der Zeiger bewegt sich

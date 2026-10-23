@@ -72,7 +72,8 @@ geschaetzt 7–9 Tage (ohne Hardware-Iterationen).
 Steckpositionen, je 4 Geraete, 13 Befehle, kein Fehler, Eingabe geht; `C:\USBDIAG.LOG`
 wird geschrieben. Defekte 1, 2, 4 damit auf der Pi abgenommen (fuer diese Geraete).
 Offen: >15 Befehle, Report-only-Maeuse. Paket fuer den externen Tester (usb-diag-Kernel
-`86205b81…` + LIESMICH/NOTIZEN) liegt beim Anwender; Diagnosewerkzeug USBSNAP
-wartet auf die Antworten zu `docs/api/usb/usb-snapshot.md` §7.
+`86205b81…` + LIESMICH/NOTIZEN) liegt beim Anwender; Diagnosewerkzeug USBSNAP:
+Spec `docs/api/usb/usb-snapshot.md` am 2026-10-23 freigegeben (alle Empfehlungen §7,
+Ausgabe `C:\USB\`), Umsetzung K1–K12 beauftragt.
 
 [Gemeinsame Regeln](README.md) gelten.
