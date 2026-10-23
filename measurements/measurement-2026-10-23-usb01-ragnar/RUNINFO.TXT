@@ -1,0 +1,42 @@
+USB01 -- external tester ragnar76, his own Raspberry Pi 4 (8 GB), USB test package
+=================================================================================
+
+Date      2026-10-23 (tester run; files received 2026-10-23)
+Who       ragnar76 (GitHub #3, #6), real RPi 4 Model B 8 GB (firmware split 768 MiB ARM / 256 MiB VC)
+Why       USB01: find out why wireless receivers (Logitech Unifying etc.) do not work (GitHub #3).
+Package   GitHub pre-release usbtest-2026-10-23, NEWTOS-USBTEST-2026-10-23.zip (sha256 177ff21f...),
+          kernel = usb-diag release build of 7c1f621d, sha256 86205b81... (same kernel as
+          measurements/measurement-2026-10-23-usb01-con04-pi/RUNINFO.TXT). One C:\USBDIAG.LOG per start,
+          renamed by the tester.
+Files     NOTIZEN.TXT  the tester's table, verbatim
+          serial/*.LOG  C:\USBDIAG.LOG of each start, verbatim (capture ends at 'after initinfo', so they hold
+                        enumeration only, no input traffic)
+Keyboard  Cherry KC 6000 slim, cable, 046a:0113 (boot keyboard iface 0 + report-only iface 1), in every start.
+
+TESTER TABLE (NOTIZEN.TXT)        pointer  left  right  keyboard
+  1/2  Logitech MX Master 2S      ja       nein  nein   nein     "geht gar nichts" (USB 2 and USB 3 jack)
+  3/4  Logitech B100, cable       ja       ja    ja     ja       normal (both jacks)
+  5/6  Rii X8 mini keyboard/mouse ja       nein  nein   nein
+  7/8  Cherry DW 9000 slim        ja       nein  nein   nein     "geht gar nichts"
+  plus Apple keyboard with the B100 on its hub: "funktioniert alles wunderprima"; two gamepads logged.
+
+WHAT THE LOGS SHOW
+  Every wireless receiver offers the boot mouse -- on interface 1, behind a boot keyboard on interface 0:
+    046d:c52b Logitech Unifying  iface 0 boot kbd ep 0x81 | iface 1 boot MOUSE ep 0x82 | iface 2 report-only
+    1997:2433 Rii X8             iface 0 boot kbd ep 0x81 | iface 1 boot MOUSE ep 0x82 | iface 2 boot kbd
+    046a:0115 Cherry DW 9000     iface 0 boot kbd ep 0x81 | iface 1 boot MOUSE ep 0x82 | iface 2 report-only
+  The driver configures iface 0 as a keyboard and skips iface 1 with "second HID boot interface: one
+  interface per device" (F2 rule). The mouse of these receivers is therefore never polled. Cause of the
+  dead mouse = one interface per device (USB01 F3), NOT a missing report parser.
+  All EP0 transfers Success, 9-12 xHCI commands, no limit hit, no stray event, in all 11 logs.
+
+  Open, not explained by these logs:
+  - "Tastatur nein" in starts 1/2/5-8: the cable Cherry keyboard (slot 3) is configured exactly as in the
+    working starts 3/4; the only difference is a second configured keyboard (the receiver's iface 0, slot 2).
+    The logs stop before any input, so they cannot show what happened. Candidate to check, not proven: the
+    boot-keyboard diff state is one global for all keyboards (kernel/src/drivers/usb/hid.rs:47 PREV).
+    A USBSNAP recording with a receiver plugged in would show both keyboards' report streams.
+  - "Zeiger ja" with a mouse interface that is never polled: probably means "pointer visible", to ask.
+  Gamepads: 8BitDo reports as 045e:028e (Xbox 360 / XInput, class 255, no HID) -- not a HID device.
+  basetech_joypad.LOG lists only the keyboard and the B100: the gamepad does not appear at all in it.
+  Apple keyboard hub 05ac:1003 + B100 behind it: mouse + keyboard configured, as in our own MAUS3 run.

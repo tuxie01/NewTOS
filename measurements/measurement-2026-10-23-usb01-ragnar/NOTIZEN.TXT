@@ -1,0 +1,32 @@
+NewTOS USB-Maus-Test 2026-10-23 -- Notizen
+==========================================
+
+Pi 4 RAM-Groesse: 8GB
+Tastatur (Hersteller/Modell): Cherry KC 6000 slim (Kabel)
+
+Je Start eine Zeile. Buchse: blau = USB 3, schwarz = USB 2.
+Zeiger/Tasten/Tastatur: ja / nein / ruckelig / ... in eigenen Worten.
+
+Nr | Maus (Hersteller, Modell)  | Kabel/Funk | Buchse Maus | Buchse Tastatur | Zeiger | links | rechts | Tastatur | Bemerkung
+---+----------------------------+------------+-------------+-----------------+--------+-------+--------+----------+----------
+ 1 | Logitech MX Master 2S      | Funk       | schwarz     | schwarz         | ja     | nein  | nein   | nein     | geht gar nichts
+ 2 | Logitech MX Master 2S      | Funk       | blau        | schwarz         | ja     | nein  | nein   | nein     | geht gar nichts
+ 3 | Logitech B 100             | Kabel      | schwarz     | schwarz         | ja     | ja    | ja     | ja       | ganz "normal"
+ 4 | Logitech B 100             | Kabel      | blau        | schwarz         | ja     | ja    | ja     | ja       | ganz "normal"
+ 5 | Rii X8                     | Funk       | schwarz     | schwarz         | ja     | nein  | nein   | nein     | [1]
+ 6 | Rii X8                     | Funk       | blau        | schwarz         | ja     | nein  | nein   | nein     | [1]
+ 7 | Cherry DW 9000 slim        | Funk       | schwarz     | schwarz         | ja     | nein  | nein   | nein     | geht gar nichts
+ 8 | Cherry DW 9000 slim        | Funk       | blau        | schwarz         | ja     | nein  | nein   | nein     | geht gar nichts
+
+Sonstiges (was ist dir aufgefallen?):
+
+Anmerkungen:
+
+Weitere Logitech Unify Geräte habe ich nicht probiert. Ich denke die verhalten sich wie die Maus oben 
+
+[1] Das ist eine Micro Maus/Tastatur-Kombi https://www.amazon.de/dp/B07CCFSYFX
+
+Zusätzlich habe ich noch folgende Geräte getestet/protokolliert:
+* Basetech Joypad ; Ein 20 Euro USB-Gamepad
+* 8BitDo SNES Joypad
+* Apple Tastatur mit angeschlossener Maus (Die Logi B100) am USB-Hub. Da funktioniert alles wunderprima.

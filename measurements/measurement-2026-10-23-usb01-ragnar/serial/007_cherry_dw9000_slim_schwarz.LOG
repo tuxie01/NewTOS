@@ -1,0 +1,156 @@
+NewTOS booting on rpi4
+Phase 02 reached.
+[mm] DTB at 0x000000002eff1e00
+[mm] firmware: ARM memory bank 0: 0x0000000000000000 + 805306368 bytes (768 MiB)
+[mm] firmware: VC memory: 0x0000000030000000 + 268435456 bytes (256 MiB)
+[mm] device tree: /memory first bank: 0x0000000000000000 + 805306368 bytes (768 MiB)
+[clock] ARM 600 -> 1500 MHz (max 1500, measured 1500, SoC 26.7 C)
+[mm] memory map:
+[mm]   DRAM  : 0x0000000000000000..0x0000000030000000 (805306368 bytes) — source: firmware
+[mm]   kernel: 0x0000000000080000..0x0000000000333000 (2830336 bytes)
+[mm]   ST-RAM: 0x0000000000400000..0x0000000000e00000 (10485760 bytes)
+[mm]   TT-RAM: 0x0000000001000000..0x000000002d800000 (746586112 bytes)
+[mm]   OSrsvd: 0x000000002d800000..0x0000000030000000 (41943040 bytes)
+[mm]     bcach: 0x000000002d800000..0x000000002f800000 (33554432 bytes)
+[mm]     heap: 0x000000002f800000..0x0000000030000000 (8388608 bytes)
+[mm]   MMIO 00: 0x00000000fd500000..0x00000000fd510000
+[mm]   MMIO 01: 0x00000000fe000000..0x00000000ff000000
+[mm]   MMIO 02: 0x00000000ff800000..0x0000000100000000
+[mm] MMU reinstalled (high-half via TTBR1, TTBR0 deferred to Phase 06).
+[mm] frames ST-RAM: total=2560 used=0 free=2560 (10485760 B free)
+[mm] frames TT-RAM: total=182272 used=0 free=182272 (746586112 B free)
+[mm] alloc ST-RAM frame -> 0x0000000000400000
+[mm] alloc TT-RAM frame -> 0x0000000001000000
+[mm] heap after init: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[mm] heap smoke OK
+[mm] heap after smoke: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[fb] VideoCore display geometry detected: 1920x1080
+[fb] alpha mode = 2
+[fb] 1920x1080 pitch 7680 virtual height 2160 -> 2 screen page(s), 16200 KiB
+[fb] VideoCore fb up: 1920x1080 stride 1920px
+[mm] MEM05 per-process block limit: 8192 allocated blocks (default)
+[mm] MEM05 MD supply: 117 MDs static, grows by 117 MDs per 4096-byte page from the kernel heap; page budget 512 pages (2048 KiB) for MDs + block records + snapshot + F_KEEP flags
+[mm] memory protection ON: table arena 0x01000000+2127 tables
+[mm] BDOS pools: ST-RAM 0x00400000+10485760 TT-RAM 0x0184f000+737873920
+[mm] user address space: pools mapped VA = PA (357 shared L3 tables, 4-KiB pages, rights per process)
+[mm] BDOS ST-RAM after init: total=10485760 free=10485760 used=0 largest_free=10485760 (free_mds=1 alloc_mds=0)
+[mm] BDOS TT-RAM after init: total=737873920 free=737873920 used=0 largest_free=737873920 (free_mds=1 alloc_mds=0)
+[mm] MEM05 after init: MDs in_use=2 capacity=117 (+0 pages); pages held=0/512 (md=0 recs=0 snap=0 kept=0) peak=0 refused budget=0 heap=0; records=0 snapshot_cap=0 snapshot_short=0; heap used=0 free=8388608 largest=8388608
+[input] keyboard/mouse pump: AES waits and console reads; pointer motion also from the 200 Hz tick while a program runs (input=aes switches that off)
+[bcache] FS09 block read cache: 32768 KiB at 0x2d800000 (asked 32768 KiB, default), 61680 sectors of 512 B, linear-read share 5 % (default), write-through
+[emmc] SD card on controller @ 0xffff0000fe340000
+[emmc] M1 SLOTISR_VER=0x10020000 (SDHCI spec 0x02) CAPABILITIES=0x45ee6432 (base 100 MHz)
+[emmc] M1 CONTROL0=0x00000f02 CONTROL1=0x000e0207 div=2 -> SDCLK ~25000000 Hz
+[emmc] M1 mailbox clock rate: EMMC(1)=250000000 Hz EMMC2(12)=100000000 Hz
+[emmc] FS08 mode: multi-block (CMD18/CMD25 + Auto CMD12) — bus 4-bit (ACMD6 ok, SCR SD_BUS_WIDTHS=0x5), CONTROL0[1] Data Transfer Width=1
+[emmc] M1 during identification: 0 error(s), 0 timeout(s), 0 recovery(ies)
+[clock] seeded from kernel8.img: 2026-10-23 14:19:14
+[pcie] dma-ranges: pcie=0x400000000 cpu=0x0 size=0xc0000000
+[pcie] .dma block 0xe00000..0x1000000 inside the 0x100000000-byte inbound window
+[pcie] RC revision 0x0304
+[pcie] RC_BAR2 readback: lo=0x11 hi=0x4 misc_ctrl=0x88003000 (wrote lo=0x11 hi=0x4 scb0=17)
+[pcie] link up
+[pcie] VL805 xHCI enabled @ cpu 0x600000000
+[usb] scratchpad buffers needed: 31
+[usb] dma addrs: dcbaap=0x400e47000 crcr=0x400e470c0 erstba=0x400e472c0 dcbaa0=0x400e40000
+[usb] reg readback: ac64=1 csz=0 dcbaap_hw=0xe4700000e47000
+[usb] xHCI up: 16 slots enabled, 5 root ports
+[usb] xECP at dword 0x28 from base
+[usb] xECP id 1 (skipped)
+[usb] proto 'USB ' 2.0 ports 1..1 psic=1
+[usb]   PSI 0: value=3 exp=2 mantissa=480 full=0x01e00023
+[usb] proto 'USB ' 3.0 ports 2..5 psic=1
+[usb]   PSI 0: value=4 exp=3 mantissa=5 full=0x00050134
+[usb] xECP id 10 (skipped)
+[usb] root ports powered (PPC=true)
+[usb] port 1 detail: pls=7 pr=0 csc=0 pec=0 prc=0
+[usb] port 1: ccs=1 ped=0 pp=1 speed=0
+[usb] port 2 detail: pls=5 pr=0 csc=0 pec=0 prc=0
+[usb] port 2: ccs=0 ped=0 pp=1 speed=0
+[usb] port 3 detail: pls=5 pr=0 csc=0 pec=0 prc=0
+[usb] port 3: ccs=0 ped=0 pp=1 speed=0
+[usb] port 4 detail: pls=5 pr=0 csc=0 pec=0 prc=0
+[usb] port 4: ccs=0 ped=0 pp=1 speed=0
+[usb] port 5 detail: pls=5 pr=0 csc=0 pec=0 prc=0
+[usb] port 5: ccs=0 ped=0 pp=1 speed=0
+[usb] device slot 1 (root port 1 route 0x0 speed 3)
+[usb]   di 0 tt_slot 0 tt_port 0 depth 0 (enumeration order)
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb] device descriptor: bLength=18 type=1 bcdUSB=0210 class=9 maxpkt0=64 VID=2109 PID=3431
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb] hub slot 1: 4 downstream ports
+[usb] hub slot 1: bPwrOn2PwrGood → 100 ms power-good delay per port
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb] hub port 1: status=0x0100 connected=false
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb] hub port 2: status=0x0100 connected=false
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb] hub port 3: status=0x0101 connected=true
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb]   hub port 3: t=150 ms status=0x0103 change=0x0010
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb] hub port 3: ENABLED after 150 ms (reset 1 of 5, FreeMiNT hub.c:225 allows 5x150 ms)
+[usb] device slot 2 (root port 1 route 0x3 speed 1)
+[usb]   di 1 tt_slot 1 tt_port 3 depth 1 (enumeration order)
+[usb]   event: slot 2 ep 1 code Ok(Success) len 0
+[usb]   event: slot 2 ep 1 code Ok(Success) len 0
+[usb] device descriptor: bLength=18 type=1 bcdUSB=0200 class=0 maxpkt0=32 VID=046a PID=0115
+[usb]   event: slot 2 ep 1 code Ok(Success) len 0
+[usb]   event: slot 2 ep 1 code Ok(Success) len 0
+[usb] config descriptor, 84 bytes, all descriptors:
+[usb]   descriptor type 2, 9 bytes
+[usb]   iface 0 alt 0 eps 1 class 3 subclass 1 protocol 1
+[usb]   HID descriptor, 9 bytes
+[usb]   endpoint 0x81 attr 0x03 max 10 interval 10
+[usb]   iface 1 alt 0 eps 1 class 3 subclass 1 protocol 2
+[usb]   HID descriptor, 9 bytes
+[usb]   endpoint 0x82 attr 0x03 max 10 interval 2
+[usb]   iface 2 alt 0 eps 1 class 3 subclass 0 protocol 0
+[usb]   HID descriptor, 9 bytes
+[usb]   endpoint 0x83 attr 0x03 max 10 interval 10
+[usb] slot 2 iface 1 alt 0 (class 3 subclass 1 protocol 2) not used: second HID boot interface: one interface per device
+[usb] slot 2 iface 2 alt 0 (class 3 subclass 0 protocol 0) not used: HID without boot subclass: report protocol only, no report parser yet
+[usb] HID iface 0 protocol 1 → int-IN ep 0x81 max 10 interval 10
+[usb]   event: slot 2 ep 1 code Ok(Success) len 0
+[usb]   event: slot 2 ep 1 code Ok(Success) len 0
+[usb] HID configured: slot 2 ep 0x81 dci 3 (keyboard)
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb] hub port 4: status=0x0301 connected=true
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb]   hub port 4: t=150 ms status=0x0303 change=0x0010
+[usb]   event: slot 1 ep 1 code Ok(Success) len 0
+[usb] hub port 4: ENABLED after 150 ms (reset 1 of 5, FreeMiNT hub.c:225 allows 5x150 ms)
+[usb] device slot 3 (root port 1 route 0x4 speed 2)
+[usb]   di 2 tt_slot 1 tt_port 4 depth 1 (enumeration order)
+[usb]   event: slot 3 ep 1 code Ok(Success) len 0
+[usb]   event: slot 3 ep 1 code Ok(Success) len 0
+[usb] device descriptor: bLength=18 type=1 bcdUSB=0200 class=0 maxpkt0=8 VID=046a PID=0113
+[usb]   event: slot 3 ep 1 code Ok(Success) len 0
+[usb]   event: slot 3 ep 1 code Ok(Success) len 0
+[usb] config descriptor, 59 bytes, all descriptors:
+[usb]   descriptor type 2, 9 bytes
+[usb]   iface 0 alt 0 eps 1 class 3 subclass 1 protocol 1
+[usb]   HID descriptor, 9 bytes
+[usb]   endpoint 0x81 attr 0x03 max 8 interval 10
+[usb]   iface 1 alt 0 eps 1 class 3 subclass 0 protocol 0
+[usb]   HID descriptor, 9 bytes
+[usb]   endpoint 0x82 attr 0x03 max 5 interval 10
+[usb] slot 3 iface 1 alt 0 (class 3 subclass 0 protocol 0) not used: HID without boot subclass: report protocol only, no report parser yet
+[usb] HID iface 0 protocol 1 → int-IN ep 0x81 max 8 interval 10
+[usb]   event: slot 3 ep 1 code Ok(Success) len 0
+[usb]   event: slot 3 ep 1 code Ok(Success) len 0
+[usb] HID configured: slot 3 ep 0x81 dci 3 (keyboard)
+[usb] enumeration done: 3 devices (2 keyboard/mouse), 10 commands issued
+
+[diag] end of capture at 'after initinfo', dropped 0 bytes
