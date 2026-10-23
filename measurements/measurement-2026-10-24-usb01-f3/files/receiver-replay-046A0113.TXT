@@ -1,0 +1,83 @@
+=== 0. FILE ===
+Format        : NewTOS USBSNAP text report v2
+Program       : USBSNAP.NCP v2
+Kernel        : NewTOS 0.6.1 2026-10-23 (69248d9e)
+Snapshot API  : Ssystem 2022, layout v2, generation 1
+Recorded      : 30.0 s, pointer muted: yes, ring 256, reports listed <= 1024
+Device        : 2 of 2 (index 2)
+Timestamps    : time of collection by the host, NOT the time the device sent
+                the report (resolution = how often the kernel polls USB).
+
+=== 1. IDENTITY ===
+VID:PID       : 046a:0113
+Manufacturer  : -   (the device names no string)
+Product       : -   (the device names no string)
+bcdUSB 2.00  class 0  subclass 0  protocol 0  EP0 max 8  configurations 1
+
+=== 2. POSITION ===
+Controller    : xHCI, 5 root ports
+Path          : root port 1 -> hub 2109:3431 port 4
+Route string  : 0x00000004  (behind a hub, parent index 0)
+Speed         : low speed (1.5 Mbit/s)  [xHCI PORTSC speed id 2]
+xHCI slot     : 3
+
+=== 3. DRIVER DECISION ===
+Role          : KEYBOARD (HID boot protocol, decoded -> IKBD)
+Role codes    : 0 none / 1 keyboard / 2 mouse / 3 observed-only / 4 hub /
+                5 failed; this device: 1
+Reason        : -
+Flags         : 0x0b = device descriptor ok, configuration ok
+                SET_CONFIGURATION done
+HID interfaces: 2   functions: 1   first: interface 0, endpoint 0x81
+Interfaces:
+  if 0 alt 0  class 3 sub 1 proto 1  int-IN 0x81 max 8 interval 10
+      USED (keyboard, decoded)  [recorded]
+      report descriptor declared 54 bytes, kept 0
+  if 1 alt 0  class 3 sub 0 proto 0  int-IN 0x82 max 5 interval 10
+      not used: HID without boot subclass: report protocol only, no report
+                parser yet
+      report descriptor declared 70 bytes, kept 0
+Interrupt transfer errors: 0
+
+=== 4. RAW DESCRIPTORS (hex, offset: 16 bytes) ===
+Device descriptor, 18 bytes
+0000: 12 01 00 02 00 00 00 08 6a 04 13 01 00 01 00 00  |........j.......|
+0010: 00 01                                            |..|
+Configuration descriptor, 59 bytes (wTotalLength 59)
+0000: 09 02 3b 00 02 01 00 a0 32 09 04 00 00 01 03 01  |..;.....2.......|
+0010: 01 00 09 21 11 01 00 01 22 36 00 07 05 81 03 08  |...!...."6......|
+0020: 00 0a 09 04 01 00 01 03 00 00 00 09 21 11 01 00  |............!...|
+0030: 01 22 46 00 07 05 82 03 05 00 0a                 |."F........|
+HID report descriptor, interface 0, 0 bytes (declared 54) - not read (SKIPPED)
+HID report descriptor, interface 1, 0 bytes (declared 70) - not read (SKIPPED)
+
+=== 5. DECODED DESCRIPTORS ===
+Device: bLength 18 bDescriptorType 1 bcdUSB 0x0200 bDeviceClass 0
+  bDeviceSubClass 0 bDeviceProtocol 0 bMaxPacketSize0 8
+  idVendor 0x046a idProduct 0x0113 bcdDevice 0x0100
+  iManufacturer 0 iProduct 0 iSerialNumber 0 bNumConfigurations 1
+Configuration: wTotalLength 59 bNumInterfaces 2 bConfigurationValue 1
+  iConfiguration 0 MaxPower 50 (100 mA) bmAttributes 0xa0 bus-powered
+      remote-wakeup
+  Interface 0 alt 0: bNumEndpoints 1 iInterface 0
+    class 3 (HID) sub 1 (boot) protocol 1 (keyboard)
+    HID: bcdHID 1.11 bCountryCode 0 bNumDescriptors 1
+      class descriptor type 0x22 (report) length 54
+    Endpoint 0x81: IN, interrupt, wMaxPacketSize 0x0008 (8), bInterval 10
+  Interface 1 alt 0: bNumEndpoints 1 iInterface 0
+    class 3 (HID) sub 0 (none) protocol 0
+    HID: bcdHID 1.11 bCountryCode 0 bNumDescriptors 1
+      class descriptor type 0x22 (report) length 70
+    Endpoint 0x82: IN, interrupt, wMaxPacketSize 0x0005 (5), bInterval 10
+Report descriptor items (interface 0): none - not read (SKIPPED)
+Report descriptor items (interface 1): none - not read (SKIPPED)
+
+=== 6. REPORTS ===
+Total 3 (seq 0..2), listed 3, lost 0, interrupt errors 0
+Flags: M = collected while the pointer was muted, C = report may be cut
+   seq     t(s)  len fl  bytes                   decoded (boot keyboard)
+     0    0.340   8 M-  02 00 05 00 00 00 00 00  mod 02 keys 05
+     1    0.480   8 M-  02 00 05 00 00 00 00 00  mod 02 keys 05
+     2    0.620   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+
+=== END ===

@@ -1,0 +1,83 @@
+USB01 F3 -- several HID interfaces (functions) per device, per-function decoder state, snapshot layout v2
+==========================================================================================================
+
+Date      2026-10-24
+Tested    main @ be506300 (feat(usb): several HID functions per device (USB01 F3)), parent 69248d9e
+Who       Developer agent; no hardware, no SD card, no push. Host tests + QEMU only.
+Spec      docs/api/usb/hid-mouse-protocols.md §9 (approved 2026-10-24, decisions §9.11; build notes §9.12),
+          docs/api/usb/usb-snapshot.md §10 (layout v2, Option A).
+
+RESULT (developer smoke; the authoritative regression is the Tester's)
+  1  host tests         cargo xtask test: 1630 passed / 0 failed / 1 ignored. Baseline 69248d9e = 1611/0/1
+                        (the documented number of measurement-2026-10-23-usb01-snap-program; re-run in a scratch
+                        worktree of 69248d9e: 1606 + the 5 rsc_* tests that need the gitignored references/ which a
+                        worktree lacks). +19 = config_desc H-1 +9 (Unifying, Rii X8, Cherry DW 9000, KC 6000 /
+                        Apple / B100 regression, gamepad 045e:028e, alt setting R1, collision R7, limit R6, cut
+                        receiver), hid_decode H-2 +6, snapshot H-3 +2 (counted twice: xtask and the tos-api test
+                        that compiles snapshot.rs by path). Host-test warnings 127 = baseline 127.
+  2  builds             cargo xtask build: qemu-virt dev + release, rpi4 dev + release, all rc 0 (fresh per board).
+                        rustc warnings kernel 94 -> 93 both boards (the undocumented pub fn protocol is gone),
+                        tos-api 64 = 64. clippy kernel 124 -> 121 both boards, tos-api 76 = 76; drivers/usb/ per
+                        file: no new lint (xhci/mod.rs: the FUNC_DMA accesses written without the deref_addrof
+                        pattern where possible; two remain, replacing two identical DEV lines).
+  3  qemu-virt input    release kernel a1b5c7c1..., method/run-virt.sh + qmp_mouse.py / qmp_key.py / pixdiff.py
+     regression         (copied from measurement-2026-10-23-usb01-snap-kernel/method):
+                          default  mouse 20 x rel(+10,+6): 138 px differ; Ctrl+Z -> EmuCON 1014367 px differ
+                          extra    (= --usb-extra: 2 boot keyboards, 2 boot mice, usb-tablet observed): mouse 138
+                                   px, Ctrl+Z 1014367 px -- the same numbers as before F3
+                          hubtree  8 devices (4 kbd + 3 mice behind a hub), 24 commands, mouse 138 px
+                          mtp      usb-mtp + usb-tablet (observed) + kbd + mouse, mouse 138 px
+                          overfull MAX_HID budget lines as before
+                        The [usb] lines of default / extra / hubtree / mtp are IDENTICAL (diff, DMA addresses
+                        masked) to the pre-F3 logs measurement-2026-10-23-usb01-snap-kernel/serial/virt-*.log and
+                        ...-snap-program/serial/xtask-run-usb-extra.log: every QEMU device has one function, so the
+                        F3 acceptance rule "single-function devices: identical commands and log lines" holds there.
+                        EXC/PANIC/stray/re-arming: 0 in every run (serial/virt-*.log).
+  4  USBSNAP v2,        serial/virt-usbsnap-extra.log, files/virt-extra-*: measurement build method/usbsnap-virt.c
+     real kernel        (the unchanged sdk/examples/usbsnap.c with its test seams) as NEWDESK.NAP of a scratch
+     answers            qemu-virt kernel, --usb-extra topology, method/qmp_usbsnap.py run: LIST version 2, entry byte
+                        31 n_funcs = 1 per input device / 0 for the hub, ring entries tagged iface 0 / ep 0x81
+                        (+12/+13), +14..15 zero; 5 files, CRLF, ASCII, <= 78 columns (extract_files.py OK); MUTE,
+                        restart after the exit key as before.
+  5  USBSNAP v2,        serial/virt-usbsnap-receiver-replay.log, files/receiver-replay-*: no QEMU device has
+     multi-function     several HID interfaces (spec §9.8), so the program's multi-function rendering was driven by
+     rendering          method/usbsnap-replay-v2.c answering from method/replay.h, which method/mkreceiver.rs builds
+     (SYNTHETIC)        with the kernel's REAL encoder (snapshot.rs by path) for a Unifying-like receiver
+                        (046d:c52b, descriptor fields from Ragnar's 001 log; report descriptors and reports
+                        SYNTHETIC). Result: list "046d:c52b  Kbd+Mouse  root port 1 via hub 2109:3431 port 3";
+                        file section 3 "Functions : 2 ...", rows "USED (keyboard, decoded)" / "USED (mouse,
+                        decoded)" / iface 2 "not used: HID without boot subclass"; section 6 with the if column,
+                        3 keyboard + 6 mouse reports interleaved in one seq order, each decoded by its function's
+                        role. The cable keyboard 046a:0113 file keeps the single-function layout.
+  6  raspi4b            release rpi4 kernel8.img edc9c4d1..., -append serial=on, card method/mkcard.sh + #Z
+                        autorun of the product USBSNAP.NCP (method/z-usbsnap.inf): "[pcie] RC not present ...; USB
+                        disabled", program "No USB controller in this system. Nothing to record." (T7 as before),
+                        EXC/PANIC 0, fsck_msdos rc 0 (serial/rpi4-usbsnap-t7*.{log,txt}).
+
+NOT COVERED (real Pi 4 only -- hid-mouse-protocols.md §9.8 P1-P5)
+  * The multi-function path against hardware: one Configure Endpoint with two/three interrupt endpoints on the
+    VL805 behind the hub TT (Bandwidth/Resource Error -> fallback line), SET_PROTOCOL per function, events of
+    several DCIs of one slot, the receiver's mouse moving the pointer and its keyboard typing (P2).
+  * The per-function keyboard state against the real symptom (cable keyboard + receiver, P3); in QEMU the
+    input route cannot be aimed at one of two keyboards (USB02 item 7), the mechanism is proven by H-2 only.
+  * Load with a 1-ms mouse (Rii X8, P4); gamepad regression (P5, host test only).
+  * P1: our Pi set-ups (Apple keyboard 05ac:020c behind its hub + ROCCAT 1e7d:2cee) have no second boot
+    interface (checked in the logs of usb01-con04-pi / -pi-kbdhub / -snap-pi), so their commands and lines are
+    expected unchanged -- to be confirmed on the Pi.
+
+HOW
+  Kernels / programs (not kept in the repo), sha256:
+    qemu-virt release @ be506300 (objcopy)       a1b5c7c1c80e579fd1fcb52ebb6330c0a396817ee9a30fa3b9a7ceb81bf29da4
+    rpi4 release kernel8.img @ be506300          edc9c4d16c4284cf03fdc93fa0e1ffd5bfc46c82979e974bb8a27565bafeeeba  (Pi candidate)
+    USBSNAP.NCP (sdk/build.sh sdk/examples/usbsnap.c) @ be506300
+                                                 522c8e9423ffae243cb422969195db6319282693158baa8862c2162946447a0f  (goes with the Pi candidate)
+    scratch qemu-virt dev kernel, NEWDESK.NAP = USBSNAPV.NAP    28f1a17b302635f34f316ced8fac7acd96dd88cdbd31175db4c3398043cdebe6
+    scratch qemu-virt dev kernel, NEWDESK.NAP = USBSNAPR.NAP    622e8b86f3d4d75d4c5d13472fabe9be5ebaa22da5987685fab43d998dcf60e7
+    USBSNAPV.NAP (method/usbsnap-virt.c)         7750d3a7cad60e8dbffdca769019a008ac9dfab15b39d12114d3a1f7ca2b9675
+    USBSNAPR.NAP (method/usbsnap-replay-v2.c)    e72205bdc53df558c058de55cd906eec8cf3be54bb490bde41cd14162e728ae9
+  Scratch kernels: a git worktree of 69248d9e in the session scratchpad with the F3 files copied in, its own
+    target/programs (APFS clone of the shared one) with NEWDESK.NAP replaced, own CARGO_TARGET_DIR; the shared
+    tree's target/ was not touched. Baseline numbers from a second scratch worktree of 69248d9e.
+  Cards: 64 MiB FAT16 per run (method/mkcard.sh), run on an APFS clone (method/run.sh), deleted after.
+  The rpi4 and qemu-virt release images were rebuilt after the last source edit (a deref_addrof rewrite) and came
+    out byte-identical to the images the runs above used.

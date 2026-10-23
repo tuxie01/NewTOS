@@ -1,0 +1,113 @@
+=== 0. FILE ===
+Format        : NewTOS USBSNAP text report v2
+Program       : USBSNAP.NCP v2
+Kernel        : NewTOS 0.6.1 2026-10-23 (69248d9e)
+Snapshot API  : Ssystem 2022, layout v2, generation 1
+Recorded      : 30.0 s, pointer muted: yes, ring 256, reports listed <= 1024
+Device        : 5 of 5 (index 5)
+Timestamps    : time of collection by the host, NOT the time the device sent
+                the report (resolution = how often the kernel polls USB).
+
+=== 1. IDENTITY ===
+VID:PID       : 0627:0001
+Manufacturer  : "QEMU"
+Product       : "QEMU USB Keyboard"
+bcdUSB 2.00  class 0  subclass 0  protocol 0  EP0 max 8  configurations 1
+
+=== 2. POSITION ===
+Controller    : xHCI, 8 root ports
+Path          : root port 8 -> hub 0409:55aa port 2
+Route string  : 0x00000002  (behind a hub, parent index 3)
+Speed         : full speed (12 Mbit/s)  [xHCI PORTSC speed id 1]
+xHCI slot     : 6
+
+=== 3. DRIVER DECISION ===
+Role          : KEYBOARD (HID boot protocol, decoded -> IKBD)
+Role codes    : 0 none / 1 keyboard / 2 mouse / 3 observed-only / 4 hub /
+                5 failed; this device: 1
+Reason        : -
+Flags         : 0x0b = device descriptor ok, configuration ok
+                SET_CONFIGURATION done
+HID interfaces: 1   functions: 1   first: interface 0, endpoint 0x81
+Interfaces:
+  if 0 alt 0  class 3 sub 1 proto 1  int-IN 0x81 max 8 interval 10
+      USED (keyboard, decoded)  [recorded]
+      report descriptor declared 63 bytes, kept 63
+Interrupt transfer errors: 0
+
+=== 4. RAW DESCRIPTORS (hex, offset: 16 bytes) ===
+Device descriptor, 18 bytes
+0000: 12 01 00 02 00 00 00 08 27 06 01 00 00 00 01 04  |........'.......|
+0010: 0b 01                                            |..|
+Configuration descriptor, 34 bytes (wTotalLength 34)
+0000: 09 02 22 00 01 01 08 a0 32 09 04 00 00 01 03 01  |..".....2.......|
+0010: 01 00 09 21 11 01 00 01 22 3f 00 07 05 81 03 08  |...!...."?......|
+0020: 00 0a                                            |..|
+HID report descriptor, interface 0, 63 bytes (declared 63)
+0000: 05 01 09 06 a1 01 75 01 95 08 05 07 19 e0 29 e7  |......u.......).|
+0010: 15 00 25 01 81 02 95 01 75 08 81 01 95 05 75 01  |..%.....u.....u.|
+0020: 05 08 19 01 29 05 91 02 95 01 75 03 91 01 95 06  |....).....u.....|
+0030: 75 08 15 00 25 ff 05 07 19 00 29 ff 81 00 c0     |u...%.....)....|
+
+=== 5. DECODED DESCRIPTORS ===
+Device: bLength 18 bDescriptorType 1 bcdUSB 0x0200 bDeviceClass 0
+  bDeviceSubClass 0 bDeviceProtocol 0 bMaxPacketSize0 8
+  idVendor 0x0627 idProduct 0x0001 bcdDevice 0x0000
+  iManufacturer 1 iProduct 4 iSerialNumber 11 bNumConfigurations 1
+Configuration: wTotalLength 34 bNumInterfaces 1 bConfigurationValue 1
+  iConfiguration 8 MaxPower 50 (100 mA) bmAttributes 0xa0 bus-powered
+      remote-wakeup
+  Interface 0 alt 0: bNumEndpoints 1 iInterface 0
+    class 3 (HID) sub 1 (boot) protocol 1 (keyboard)
+    HID: bcdHID 1.11 bCountryCode 0 bNumDescriptors 1
+      class descriptor type 0x22 (report) length 63
+    Endpoint 0x81: IN, interrupt, wMaxPacketSize 0x0008 (8), bInterval 10
+Report descriptor items (interface 0):
+  05 01           Usage Page (Generic Desktop)
+  09 06           Usage (Keyboard)
+  a1 01           Collection (Application)
+  75 01             Report Size (1)
+  95 08             Report Count (8)
+  05 07             Usage Page (Keyboard/Keypad)
+  19 e0             Usage Minimum (0xe0)
+  29 e7             Usage Maximum (0xe7)
+  15 00             Logical Minimum (0)
+  25 01             Logical Maximum (1)
+  81 02             Input (Data,Var,Abs)
+  95 01             Report Count (1)
+  75 08             Report Size (8)
+  81 01             Input (Const,Array,Abs)
+  95 05             Report Count (5)
+  75 01             Report Size (1)
+  05 08             Usage Page (LEDs)
+  19 01             Usage Minimum (0x01)
+  29 05             Usage Maximum (0x05)
+  91 02             Output (Data,Var,Abs)
+  95 01             Report Count (1)
+  75 03             Report Size (3)
+  91 01             Output (Const,Array,Abs)
+  95 06             Report Count (6)
+  75 08             Report Size (8)
+  15 00             Logical Minimum (0)
+  25 ff             Logical Maximum (-1, raw 0xff)
+  05 07             Usage Page (Keyboard/Keypad)
+  19 00             Usage Minimum (0x00)
+  29 ff             Usage Maximum (0xff)
+  81 00             Input (Data,Array,Abs)
+  c0              End Collection
+  Items 32: Input 3, Output 2, Feature 0, Collections 1
+  Report ID: none (reports carry no ID byte)
+
+=== 6. REPORTS ===
+Total 7 (seq 1..7), listed 7, lost 0, interrupt errors 0
+Flags: M = collected while the pointer was muted, C = report may be cut
+   seq     t(s)  len fl  bytes                   decoded (boot keyboard)
+     1    0.080   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+     2    3.990   8 M-  00 00 04 00 00 00 00 00  mod 00 keys 04
+     3    4.075   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+     4    4.235   8 M-  02 00 00 00 00 00 00 00  mod 02 keys
+     5    4.295   8 M-  02 00 05 00 00 00 00 00  mod 02 keys 05
+     6    4.380   8 M-  02 00 00 00 00 00 00 00  mod 02 keys
+     7    4.540   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+
+=== END ===

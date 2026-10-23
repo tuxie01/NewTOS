@@ -122,3 +122,15 @@ Fragen in §9.9). Richtigstellung zum Lauf `measurement-2026-10-23-usb01-ragnar`
 `serial/` enthaelt **10** Logs, nicht 11 wie RUNINFO und Commit `cc0e76aa`
 sagen; der Log zu Start 8 (Cherry DW 9000, blaue Buchse) fehlt in Ragnars
 Sendung.
+
+## Stand 2026-10-24 — F3 gebaut
+
+Spec `docs/api/usb/hid-mouse-protocols.md` §9 freigegeben (Entscheidungen §9.11) und umgesetzt
+(`be506300`): jedes HID-Boot-Interface (Alt 0) eines Geraets ist eine Funktion mit eigenem
+Interrupt-Endpoint — die Maus eines Funkempfaengers wird jetzt konfiguriert und gepollt;
+Tastatur-/Maustastenzustand je Funktion; `Ssystem(2022)` Layout v2 und `USBSNAP.NCP` v2
+(`docs/api/usb/usb-snapshot.md` §10). Hosttests 1630/0/1, QEMU-Regression unveraendert, der
+Mehr-Interface-Pfad ist in QEMU nicht nachbildbar (Host-Tests + Wiedergabe):
+`measurements/measurement-2026-10-24-usb01-f3/RUNINFO.TXT`. **Offen:** Tester-Abnahme; echte Pi
+P1–P5 (§9.8): Pi-Kandidat rpi4-`kernel8.img` `edc9c4d1…` + `USBSNAP.NCP` `522c8e94…` (beide aus
+`be506300`), danach Paket fuer Ragnar (Rueckfragen GitHub #3).
