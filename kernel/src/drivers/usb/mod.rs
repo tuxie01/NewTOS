@@ -187,6 +187,14 @@ pub fn poll() {
         let Some(c) = (unsafe { (*core::ptr::addr_of_mut!(XHCI)).as_mut() }) else {
             return;
         };
+        // MUTE start (usb-snapshot.md §2.6, §9.1): release what the decoder
+        // still holds, once, before nothing is decoded any more — the break of
+        // a key pressed before the mute would otherwise be swallowed by it and
+        // the key auto-repeat for the whole mute. Outside the store borrow:
+        // the decoder may run an EL0 `kbdvec` hook (§2.8).
+        if with_store(|s| s.mute_state(tos_api::bios::tick::hz_200())).1 {
+            hid::release_all();
+        }
         if let Some((di, report, len, cc)) = c.poll_interrupt() {
             // Record first, decode second (usb-snapshot.md §2.8, §3.3): the
             // decoder may run an EL0 `kbdvec` hook, which may read the ring

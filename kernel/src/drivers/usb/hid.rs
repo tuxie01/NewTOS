@@ -5,7 +5,7 @@
 //! them through [`crate::ikbd::feed`], reusing the whole existing decoder
 //! (scancode→ASCII→console, relative-mouse→VDI cursor).
 
-use core::sync::atomic::{AtomicU64, Ordering};
+use core::sync::atomic::{AtomicU64, AtomicU8, Ordering};
 
 use crate::ikbd;
 
@@ -45,6 +45,23 @@ fn translate_key(usb: u8) -> u8 {
 /// Previous keyboard report (byte 0 = modifiers, bytes 2..8 = 6 keycodes),
 /// packed into a u64 so the diff is allocation-free.
 static PREV: AtomicU64 = AtomicU64::new(0);
+
+/// USB buttons (bit 0 left, bit 1 right) of the last boot mouse report.
+static MOUSE_BUTTONS: AtomicU8 = AtomicU8::new(0);
+
+/// Release every key and mouse button the decoder last saw held: an empty
+/// keyboard report (breaks for every key and modifier of [`PREV`], which
+/// also stops a running key repeat) and, if a button is down, a mouse report
+/// with no button and no motion. Called once when the USB snapshot's MUTE
+/// starts (`usb::poll`, `docs/api/usb/usb-snapshot.md` §9.1).
+pub fn release_all() {
+    if PREV.load(Ordering::Relaxed) != 0 {
+        keyboard_report(&[0u8; 8]);
+    }
+    if MOUSE_BUTTONS.load(Ordering::Relaxed) != 0 {
+        mouse_report(&[0u8; 8], 3);
+    }
+}
 
 /// Emit make/break scancodes for the changed modifier bits (`off` = 0 make,
 /// 0x80 break). USB byte-0 bits: 0 LCtrl 1 LShift 2 LAlt … 4 RCtrl 5 RShift
@@ -109,6 +126,7 @@ pub fn keyboard_report(r: &[u8; 8]) {
 /// exists only in a longer report, see [`wheel`].
 pub fn mouse_report(r: &[u8; 8], len: usize) {
     let usb = r[0];
+    MOUSE_BUTTONS.store(usb & 0x03, Ordering::Relaxed);
     let wire = ((usb & 0x01) << 1) | ((usb & 0x02) >> 1);
     ikbd::feed(0xF8 | (wire & 0x03));
     ikbd::feed(r[1]); // dx

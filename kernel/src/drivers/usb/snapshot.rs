@@ -135,10 +135,15 @@ pub const REC_CAPPED: u8 = 1 << 0;
 pub const REC_MUTED: u8 = 1 << 1;
 
 /// What became of one descriptor fetch.
+///
+/// `repr(u8)` with `NotTried = 0`: an all-zero [`Device`] (the unclaimed
+/// slots of [`Store::new`]) must be all-zero bytes so the kernel's store
+/// lands in `.bss`, not in the image.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[repr(u8)]
 pub enum Fetch {
     /// Not tried (§2.5 `SKIPPED`).
-    NotTried,
+    NotTried = 0,
     /// Read completely.
     Ok,
     /// Read, but longer than what is kept (§2.5 `TRUNCATED`).
@@ -361,6 +366,13 @@ impl Device {
         last_cc: 0,
     };
 
+    /// A slot no device has claimed yet: every byte zero (the `0xFF`
+    /// "none" markers of [`Device::EMPTY`] are set by [`Store::claim`]).
+    /// Only `devices[..n_devices]` is ever read, and `claim` resets a slot
+    /// to [`Device::EMPTY`] before it counts, so an unclaimed slot is never
+    /// observed. Being all-zero keeps the 240-KiB store in `.bss`.
+    const UNCLAIMED: Device = Device { parent: 0, ring_iface: 0, ..Device::EMPTY };
+
     fn oldest_seq(&self) -> u32 {
         self.next_seq.wrapping_sub(self.filled as u32)
     }
@@ -479,6 +491,9 @@ pub struct Store {
     pub devices: [Device; MAX_DEVICES],
     mute_active: bool,
     mute_until: u32,
+    /// The decoder has seen the current mute and released the held input
+    /// ([`Store::mute_state`]).
+    mute_seen: bool,
 }
 
 /// One `Ssystem(2022)` request after the header checks of §2.3 #1–#4.
@@ -563,9 +578,10 @@ impl Store {
             generation: 0,
             enum_skipped: 0,
             n_devices: 0,
-            devices: [Device::EMPTY; MAX_DEVICES],
+            devices: [Device::UNCLAIMED; MAX_DEVICES],
             mute_active: false,
             mute_until: 0,
+            mute_seen: false,
         }
     }
 
@@ -627,6 +643,20 @@ impl Store {
             self.mute_active = false;
         }
         self.mute_active
+    }
+
+    /// The decoder's view of the mute at `now`: `(muted, entered)`, where
+    /// `entered` is true exactly once per mute — on the first call that sees
+    /// it. `usb::poll` then releases every key and button the decoder still
+    /// holds (`hid::release_all`): a key pressed before the mute (the RETURN
+    /// that starts USBSNAP's recording) would otherwise lose its break to the
+    /// mute and auto-repeat for the whole mute and after it (usb-snapshot.md
+    /// §9.1, found by T6). Extending a running mute is not a new mute.
+    pub fn mute_state(&mut self, now: u32) -> (bool, bool) {
+        let muted = self.muted(now);
+        let entered = muted && !self.mute_seen;
+        self.mute_seen = muted;
+        (muted, entered)
     }
 
     /// Mute for `ticks` from `now` (0 = off). Returns the deadline, 0 = off.
@@ -1090,6 +1120,26 @@ mod tests {
         assert_eq!(out, [0; 8]);
         assert!(!s.muted(61));
         assert_eq!(s.set_mute(u32::MAX, 1), 1, "a deadline of 0 moves one tick");
+    }
+
+    /// The decoder sees each mute's start once (`mute_state`), also across a
+    /// prolonged mute, and again for the next mute after one ended.
+    #[test]
+    fn mute_start_is_seen_once() {
+        let mut s = store();
+        assert_eq!(s.mute_state(10), (false, false));
+        s.set_mute(10, 100);
+        assert_eq!(s.mute_state(11), (true, true));
+        assert_eq!(s.mute_state(12), (true, false));
+        s.set_mute(50, 100);
+        assert_eq!(s.mute_state(60), (true, false), "a prolonged mute is not a new one");
+        assert_eq!(s.mute_state(150), (false, false), "expired");
+        s.set_mute(200, 5);
+        assert_eq!(s.mute_state(201), (true, true));
+        s.set_mute(202, 0);
+        assert_eq!(s.mute_state(203), (false, false));
+        s.set_mute(204, 5);
+        assert_eq!(s.mute_state(205), (true, true), "off then on again is a new mute");
     }
 
     #[test]
