@@ -1,0 +1,6 @@
+marker found at 3.5s
+run tablet done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/head-tablet.log
+head tablet abs moves: size (1920, 1080)  differing pixels 0  bbox None
+marker found at 3.3s
+run tablet done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/base-tablet.log
+base tablet abs moves: size (1920, 1080)  differing pixels 0  bbox None

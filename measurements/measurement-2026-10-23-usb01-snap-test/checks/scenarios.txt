@@ -1,0 +1,74 @@
+marker found at 3.3s
+run default done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/head-default.log
+head default mouse: size (1920, 1080)  differing pixels 138  bbox (959, 539, 1169, 675)
+marker found at 4.7s
+run hubtree done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/head-hubtree.log
+head hubtree mouse: size (1920, 1080)  differing pixels 138  bbox (959, 539, 1169, 675)
+marker found at 4.7s
+run overfull done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/head-overfull.log
+head overfull mouse: size (1920, 1080)  differing pixels 138  bbox (959, 539, 1169, 675)
+marker found at 3.3s
+run mtp done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/head-mtp.log
+head mtp mouse: size (1920, 1080)  differing pixels 138  bbox (959, 539, 1169, 675)
+marker found at 3.3s
+run storage done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/head-storage.log
+head storage mouse: size (1920, 1080)  differing pixels 138  bbox (959, 539, 1169, 675)
+typing Ctrl+Z via device -
+run default done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/head-key-default.log
+head default Ctrl+Z: size (1920, 1080)  differing pixels 1014367  bbox (0, 2, 1920, 1072)
+head default typed help: size (1920, 1080)  differing pixels 198  bbox (40, 32, 71, 48)
+typing Ctrl+Z via device -
+run hubkbd done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/head-key-hubkbd.log
+head hubkbd Ctrl+Z: size (1920, 1080)  differing pixels 1014367  bbox (0, 2, 1920, 1072)
+head hubkbd typed help: size (1920, 1080)  differing pixels 198  bbox (40, 32, 71, 48)
+typing Ctrl+Z via device -
+run latekbd done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/head-key-latekbd.log
+head latekbd Ctrl+Z: size (1920, 1080)  differing pixels 1014367  bbox (0, 2, 1920, 1072)
+head latekbd typed help: size (1920, 1080)  differing pixels 198  bbox (40, 32, 71, 48)
+marker found at 3.3s
+run default done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/base-default.log
+base default mouse: size (1920, 1080)  differing pixels 138  bbox (959, 539, 1169, 675)
+marker found at 4.7s
+run hubtree done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/base-hubtree.log
+base hubtree mouse: size (1920, 1080)  differing pixels 138  bbox (959, 539, 1169, 675)
+marker found at 4.7s
+run overfull done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/base-overfull.log
+base overfull mouse: size (1920, 1080)  differing pixels 138  bbox (959, 539, 1169, 675)
+marker found at 3.5s
+run mtp done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/base-mtp.log
+base mtp mouse: size (1920, 1080)  differing pixels 138  bbox (959, 539, 1169, 675)
+marker found at 3.3s
+run storage done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/base-storage.log
+base storage mouse: size (1920, 1080)  differing pixels 138  bbox (959, 539, 1169, 675)
+typing Ctrl+Z via device -
+run default done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/base-key-default.log
+base default Ctrl+Z: size (1920, 1080)  differing pixels 1014367  bbox (0, 2, 1920, 1072)
+base default typed help: size (1920, 1080)  differing pixels 198  bbox (40, 32, 71, 48)
+typing Ctrl+Z via device -
+run hubkbd done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/base-key-hubkbd.log
+base hubkbd Ctrl+Z: size (1920, 1080)  differing pixels 1014367  bbox (0, 2, 1920, 1072)
+base hubkbd typed help: size (1920, 1080)  differing pixels 198  bbox (40, 32, 71, 48)
+typing Ctrl+Z via device -
+run latekbd done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/base-key-latekbd.log
+base latekbd Ctrl+Z: size (1920, 1080)  differing pixels 1014367  bbox (0, 2, 1920, 1072)
+base latekbd typed help: size (1920, 1080)  differing pixels 198  bbox (40, 32, 71, 48)
+/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/651de586-7dd7-487b-9e92-c8525c58f508/scratchpad/usb01-snt/run/./qmp_tablet.py': [Errno 2] No such file or directory
+qmp script rc=2
+run tablet done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/head-tablet.log
+Traceback (most recent call last):
+  File "/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/method/pixdiff.py", line 6, in <module>
+    a = Image.open(sys.argv[1]).convert("RGB")
+        ~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.14/site-packages/PIL/Image.py", line 3639, in open
+    fp = builtins.open(filename, "rb")
+FileNotFoundError: [Errno 2] No such file or directory: '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/651de586-7dd7-487b-9e92-c8525c58f508/scratchpad/usb01-snt/shots/head-tablet-0-before.png'
+/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/651de586-7dd7-487b-9e92-c8525c58f508/scratchpad/usb01-snt/run/./qmp_tablet.py': [Errno 2] No such file or directory
+qmp script rc=2
+run tablet done: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/serial/base-tablet.log
+Traceback (most recent call last):
+  File "/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-23-usb01-snap-test/method/pixdiff.py", line 6, in <module>
+    a = Image.open(sys.argv[1]).convert("RGB")
+        ~~~~~~~~~~^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.14/site-packages/PIL/Image.py", line 3639, in open
+    fp = builtins.open(filename, "rb")
+FileNotFoundError: [Errno 2] No such file or directory: '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/651de586-7dd7-487b-9e92-c8525c58f508/scratchpad/usb01-snt/shots/base-tablet-0-before.png'

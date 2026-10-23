@@ -1,0 +1,11 @@
+head xtask-test rc=1
+base xtask-test rc=1
+base diag rc=0
+head qemu-virt rc=0 warning: `tos-api` (lib) generated 76 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 6 suggestions) warning: `kernel` (lib) generated 124 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 29 suggestions) 
+      43
+head rpi4 rc=0 warning: `tos-api` (lib) generated 76 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 6 suggestions) warning: `kernel` (lib) generated 124 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 29 suggestions) 
+      43
+base qemu-virt rc=0 warning: `tos-api` (lib) generated 76 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 6 suggestions) warning: `kernel` (lib) generated 125 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 30 suggestions) 
+      44
+base rpi4 rc=0 warning: `tos-api` (lib) generated 76 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 6 suggestions) warning: `kernel` (lib) generated 125 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 30 suggestions) 
+      44

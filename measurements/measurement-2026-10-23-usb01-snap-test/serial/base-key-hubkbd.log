@@ -1,0 +1,103 @@
+RB1
+NewTOS booting on qemu-virt
+Phase 02 reached.
+[mm] DTB at 0x0000000048000000
+[mm] firmware: no VideoCore mailbox on this board — device tree decides
+[mm] device tree: /memory first bank: 0x0000000040000000 + 285212672 bytes (272 MiB)
+[mm] memory map:
+[mm]   DRAM  : 0x0000000040000000..0x0000000051000000 (285212672 bytes) — source: device tree
+[mm]   kernel: 0x0000000040080000..0x0000000040322000 (2760704 bytes)
+[mm]   ST-RAM: 0x0000000040400000..0x0000000040e00000 (10485760 bytes)
+[mm]   TT-RAM: 0x0000000041000000..0x0000000050017000 (251752448 bytes)
+[mm]   OSrsvd: 0x0000000050017000..0x0000000051000000 (16683008 bytes)
+[mm]     heap: 0x0000000050017000..0x0000000050817000 (8388608 bytes)
+[mm]     fb  : 0x0000000050817000..0x0000000051000000 (8294400 bytes)
+[mm]   MMIO 00: 0x0000000008000000..0x0000000008010000
+[mm]   MMIO 01: 0x0000000008010000..0x0000000008020000
+[mm]   MMIO 02: 0x0000000009000000..0x0000000009001000
+[mm]   MMIO 03: 0x0000000010000000..0x000000003eff0000
+[mm] MMU reinstalled (high-half via TTBR1, TTBR0 deferred to Phase 06).
+[mm] frames ST-RAM: total=2560 used=0 free=2560 (10485760 B free)
+[mm] frames TT-RAM: total=61463 used=0 free=61463 (251752448 B free)
+[mm] alloc ST-RAM frame -> 0x0000000040400000
+[mm] alloc TT-RAM frame -> 0x0000000041000000
+[mm] heap after init: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[mm] heap smoke OK
+[mm] heap after smoke: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[fb] ramfb up: 1920x1080
+[mm] MEM05 per-process block limit: 8192 allocated blocks (default)
+[mm] MEM05 MD supply: 117 MDs static, grows by 117 MDs per 4096-byte page from the kernel heap; page budget 512 pages (2048 KiB) for MDs + block records + snapshot + F_KEEP flags
+[mm] memory protection ON: table arena 0x41000000+1422 tables
+[mm] BDOS pools: ST-RAM 0x40400000+10485760 TT-RAM 0x4158e000+245927936
+[mm] user address space: pools mapped VA = PA (124 shared L3 tables, 4-KiB pages, rights per process)
+[mm] BDOS ST-RAM after init: total=10485760 free=10485760 used=0 largest_free=10485760 (free_mds=1 alloc_mds=0)
+[mm] BDOS TT-RAM after init: total=245927936 free=245927936 used=0 largest_free=245927936 (free_mds=1 alloc_mds=0)
+[mm] MEM05 after init: MDs in_use=2 capacity=117 (+0 pages); pages held=0/512 (md=0 recs=0 snap=0 kept=0) peak=0 refused budget=0 heap=0; records=0 snapshot_cap=0 snapshot_short=0; heap used=0 free=8388608 largest=8388608
+[input] keyboard/mouse pump: AES waits and console reads; pointer motion also from the 200 Hz tick while a program runs (input=aes switches that off)
+[bcache] FS09 block read cache: none (no block device on this board)
+[usb] PCIe ECAM at 0x4010000000 (size 0x10000000)
+[usb] xHCI at PCI 00:02.0 → BAR0 0x10000000 (size 0x4000)
+[usb] scratchpad buffers needed: 0
+[usb] dma addrs: dcbaap=0x40e47000 crcr=0x40e470c0 erstba=0x40e472c0 dcbaa0=0x0
+[usb] reg readback: ac64=1 csz=0 dcbaap_hw=0x40e47000
+[usb] xHCI up: 16 slots enabled, 8 root ports
+[usb] root ports powered (PPC=false)
+[usb] port 1: ccs=0 ped=0 pp=1 speed=0
+[usb] port 2: ccs=0 ped=0 pp=1 speed=0
+[usb] port 3: ccs=0 ped=0 pp=1 speed=0
+[usb] port 4: ccs=0 ped=0 pp=1 speed=0
+[usb] port 5: ccs=1 ped=0 pp=1 speed=1
+[usb] port 6: ccs=0 ped=0 pp=1 speed=0
+[usb] port 7: ccs=0 ped=0 pp=1 speed=0
+[usb] port 8: ccs=0 ped=0 pp=1 speed=0
+[usb] device slot 1 (root port 5 route 0x0 speed 1)
+[usb] device descriptor: bLength=18 type=1 bcdUSB=0110 class=9 maxpkt0=8 VID=0409 PID=55aa
+[usb] hub slot 1: 8 downstream ports
+[usb] hub port 1: status=0x0101 connected=true
+[usb] device slot 2 (root port 5 route 0x1 speed 1)
+[usb] device descriptor: bLength=18 type=1 bcdUSB=0200 class=0 maxpkt0=8 VID=0627 PID=0001
+[usb] HID iface 0 protocol 1 → int-IN ep 0x81 max 8 interval 10
+[usb] HID configured: slot 2 ep 0x81 dci 3 (keyboard)
+[usb] hub port 2: status=0x0101 connected=true
+[usb] device slot 3 (root port 5 route 0x2 speed 1)
+[usb] device descriptor: bLength=18 type=1 bcdUSB=0200 class=0 maxpkt0=8 VID=0627 PID=0001
+[usb] HID iface 0 protocol 1 → int-IN ep 0x81 max 8 interval 10
+[usb] HID configured: slot 3 ep 0x81 dci 3 (keyboard)
+[usb] hub port 3: status=0x0101 connected=true
+[usb] device slot 4 (root port 5 route 0x3 speed 1)
+[usb] device descriptor: bLength=18 type=1 bcdUSB=0200 class=0 maxpkt0=8 VID=0627 PID=0001
+[usb] HID iface 0 protocol 1 → int-IN ep 0x81 max 8 interval 10
+[usb] HID configured: slot 4 ep 0x81 dci 3 (keyboard)
+[usb] hub port 4: status=0x0101 connected=true
+[usb] device slot 5 (root port 5 route 0x4 speed 1)
+[usb] device descriptor: bLength=18 type=1 bcdUSB=0200 class=0 maxpkt0=8 VID=0627 PID=0001
+[usb] HID iface 0 protocol 1 → int-IN ep 0x81 max 8 interval 10
+[usb] HID configured: slot 5 ep 0x81 dci 3 (keyboard)
+[usb] hub port 5: status=0x0101 connected=true
+[usb] device slot 6 (root port 5 route 0x5 speed 1)
+[usb] device descriptor: bLength=18 type=1 bcdUSB=0200 class=0 maxpkt0=8 VID=0627 PID=0001
+[usb] HID iface 0 protocol 2 → int-IN ep 0x81 max 4 interval 10
+[usb] HID configured: slot 6 ep 0x81 dci 3 (mouse)
+[usb] hub port 6: status=0x0101 connected=true
+[usb] device slot 7 (root port 5 route 0x6 speed 1)
+[usb] device descriptor: bLength=18 type=1 bcdUSB=0200 class=0 maxpkt0=8 VID=0627 PID=0001
+[usb] HID iface 0 protocol 2 → int-IN ep 0x81 max 4 interval 10
+[usb] HID configured: slot 7 ep 0x81 dci 3 (mouse)
+[usb] hub port 7: status=0x0101 connected=true
+[usb] device slot 8 (root port 5 route 0x7 speed 1)
+[usb] device descriptor: bLength=18 type=1 bcdUSB=0200 class=0 maxpkt0=8 VID=0627 PID=0001
+[usb] HID iface 0 protocol 2 → int-IN ep 0x81 max 4 interval 10
+[usb] HID configured: slot 8 ep 0x81 dci 3 (mouse)
+[usb] hub slot 1: ports 8..8 not scanned — all 8 device entries (MAX_HID, hubs included) in use
+[usb] enumeration done: 8 devices (7 keyboard/mouse), 24 commands issued
+[proc] stand-in PDs: initial_basepage 0x401d9000, AES PD 0x401d9100, accdesk 0x401d9300, EmuCON 0x401d9400 (read-only to all)
+[aes] gsx_malloc: screen buffer pa=0x4158e000 len=4147200 (kernel-owned, WF_SCREEN)
+[shell] sh_ldapp: starting desktop NEWDESK (D.s_cmd NEWDESK), sh_nextapp=3, sh_isgem=1
+[launch] EL0: slot 0 entry 0x41986000
+[desk] desktop up (0 drives)
+[launch] returned (program Pterm'd)
+[shell] sh_ldapp: desktop NEWDESK (D.s_cmd NEWDESK) exited with rc=0
+[shell] sh_ldapp: starting EMUCON, sh_nextapp=1, sh_isgem=0
+NewTOS console (EmuCON) - 'help' for commands, 'exit' to return.
+
+C:\> help

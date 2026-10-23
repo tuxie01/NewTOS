@@ -1,0 +1,7 @@
+base virt-dev rc=0
+base virt-rel rc=0
+base rpi4-rel rc=0
+base rpi4-diag rc=0
+daed6befcdab16cdb09226c4de365a3d3f88b00e6081f17ebd0456d8246121ea  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/651de586-7dd7-487b-9e92-c8525c58f508/scratchpad/usb01-snt/bin/kernel8-base-rpi4-usbdiag.img
+4bb716c32b7925a9183b8ceb421b19c2a53b8187dadb561b553bf7c077288388  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/651de586-7dd7-487b-9e92-c8525c58f508/scratchpad/usb01-snt/bin/kernel8-base-rpi4.img
+a4d7ad26dc37c923b96c159040630ef58ab120d22d434d5d3f6722c109336d59  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/651de586-7dd7-487b-9e92-c8525c58f508/scratchpad/usb01-snt/bin/virt-dev-base.img

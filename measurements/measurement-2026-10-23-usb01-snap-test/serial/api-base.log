@@ -1,0 +1,336 @@
+RB2
+NewTOS booting on rpi4
+[serial] output on: boot arguments contain `serial=on`
+Phase 02 reached.
+[mm] DTB at 0x0000000000000100
+[mm] firmware: ARM memory bank 0: 0x0000000000000000 + 1006632960 bytes (960 MiB)
+[mm] firmware: VC memory: 0x000000003c000000 + 67108864 bytes (64 MiB)
+[mm] device tree: no usable /memory node (blob invalid or absent)
+[clock] ARM 700 -> 700 MHz (max 700, measured ?, SoC 25.0 C)
+[mm] memory map:
+[mm]   DRAM  : 0x0000000000000000..0x000000003c000000 (1006632960 bytes) — source: firmware
+[mm]   kernel: 0x0000000000080000..0x0000000000301000 (2625536 bytes)
+[mm]   ST-RAM: 0x0000000000400000..0x0000000000e00000 (10485760 bytes)
+[mm]   TT-RAM: 0x0000000001000000..0x0000000039800000 (947912704 bytes)
+[mm]   OSrsvd: 0x0000000039800000..0x000000003c000000 (41943040 bytes)
+[mm]     bcach: 0x0000000039800000..0x000000003b800000 (33554432 bytes)
+[mm]     heap: 0x000000003b800000..0x000000003c000000 (8388608 bytes)
+[mm]   MMIO 00: 0x00000000fd500000..0x00000000fd510000
+[mm]   MMIO 01: 0x00000000fe000000..0x00000000ff000000
+[mm]   MMIO 02: 0x00000000ff800000..0x0000000100000000
+[mm] MMU reinstalled (high-half via TTBR1, TTBR0 deferred to Phase 06).
+[mm] frames ST-RAM: total=2560 used=0 free=2560 (10485760 B free)
+[mm] frames TT-RAM: total=231424 used=0 free=231424 (947912704 B free)
+[mm] alloc ST-RAM frame -> 0x0000000000400000
+[mm] alloc TT-RAM frame -> 0x0000000001000000
+[mm] heap after init: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[mm] heap smoke OK
+[mm] heap after smoke: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[fb] VideoCore display geometry detected: 640x480
+[fb] alpha mode = 2
+[fb] 640x480 pitch 2560 virtual height 960 -> 2 screen page(s), 2400 KiB
+[fb] VideoCore fb up: 640x480 stride 640px
+[mm] MEM05 per-process block limit: 8192 allocated blocks (default)
+[mm] MEM05 MD supply: 117 MDs static, grows by 117 MDs per 4096-byte page from the kernel heap; page budget 512 pages (2048 KiB) for MDs + block records + snapshot + F_KEEP flags
+[mm] memory protection ON: table arena 0x01000000+2415 tables
+[mm] BDOS pools: ST-RAM 0x00400000+10485760 TT-RAM 0x0196f000+938020864
+[mm] user address space: pools mapped VA = PA (453 shared L3 tables, 4-KiB pages, rights per process)
+[mm] BDOS ST-RAM after init: total=10485760 free=10485760 used=0 largest_free=10485760 (free_mds=1 alloc_mds=0)
+[mm] BDOS TT-RAM after init: total=938020864 free=938020864 used=0 largest_free=938020864 (free_mds=1 alloc_mds=0)
+[mm] MEM05 after init: MDs in_use=2 capacity=117 (+0 pages); pages held=0/512 (md=0 recs=0 snap=0 kept=0) peak=0 refused budget=0 heap=0; records=0 snapshot_cap=0 snapshot_short=0; heap used=0 free=8388608 largest=8388608
+[input] keyboard/mouse pump: AES waits and console reads; pointer motion also from the 200 Hz tick while a program runs (input=aes switches that off)
+[bcache] FS09 block read cache: 32768 KiB at 0x39800000 (asked 32768 KiB, default), 61680 sectors of 512 B, linear-read share 5 % (default), write-through
+[emmc] SD card on controller @ 0xffff0000fe300000
+[emmc] M1 SLOTISR_VER=0x24020000 (SDHCI spec 0x02) CAPABILITIES=0x052134b4 (base 52 MHz)
+[emmc] M1 CONTROL0=0x00000f02 CONTROL1=0x000e0207 div=2 -> SDCLK ~13000000 Hz
+[emmc] M1 mailbox clock rate: EMMC(1)=50000000 Hz EMMC2(12)=700000000 Hz
+[emmc] FS08 mode: multi-block (CMD18/CMD25 + Auto CMD12) — bus 4-bit (ACMD6 ok, SCR SD_BUS_WIDTHS=0x5), CONTROL0[1] Data Transfer Width=1
+[emmc] M1 during identification: 2 error(s), 0 timeout(s), 2 recovery(ies) CTO=2
+[clock] no kernel8.img FAT date on C: — clock stays at 1980-01-01
+[pcie] RC not present (no response at RC_BASE); USB disabled
+[proc] stand-in PDs: initial_basepage 0x001c8000, AES PD 0x001c8100, accdesk 0x001c8300, EmuCON 0x001c8400 (read-only to all)
+[aes] gsx_malloc: screen buffer pa=0x0196f000 len=614400 (kernel-owned, WF_SCREEN)
+[shell] sh_ldapp: starting C:\APITEST.NCP, sh_nextapp=2, sh_isgem=1
+[launch] EL0: slot 0 entry 0x1a08000
+
+=== APITEST START (pre-log) ===
+=== APITEST v1 START ===
+NewTOS EL0 console API diagnostic (C:\AUTO\APITEST.NCP)
+trace -> HDMI fbcon (Cconws) + C:\APITEST.LOG (commit-per-line)
+T01   C:\APITEST.LOG created; commit-per-line ACTIVE
+T01b  C:\APITEST.CFG -> mode = INTERACTIVE (pauses on Cconin)
+T02 Sversion() (GEMDOS 0x30) ...
+T02   Sversion = 0x3000  [expect 0x3000]
+T03 read _sysbase @0x4F2 (8-byte) ...
+T03   _sysbase = 0x000005C0  [expect 0x000005C0, NOT 0]
+T04 read OSHEADER.os_version @_sysbase+2 ...
+T04   os_version = 0x0404  [expect 0x0404]
+T05 read _p_cookies @0x5A0 (8-byte) ...
+T05   _p_cookies = 0x39800000000005F0  [expect 0x000005F0]
+T06 read memvalid @0x420 (4-byte) ...
+T06   memvalid = 0x752019F3  [expect 0x752019F3]
+T07 read drvbits @0x4C2 (4-byte) ...
+T07   drvbits = 0x00000004  [nonzero: C:=bit2=0x4, ...]
+T08 read BasePage at _base (p_lowtpa/p_hitpa/p_tbase/p_env) ...
+T08   p_lowtpa=0x01A07000 p_hitpa=0x39800000
+T08   p_tbase=0x01A08000 [expect p_lowtpa+0x1000]  p_env=0x01A06000 [0=none]
+T09 Dgetdrv() (GEMDOS 0x19) ...
+T09   current drive = 2  (C:)
+T10 Drvmap() (BIOS 0x0A) ...
+T10   Drvmap = 0x00000004  (should match drvbits sysvar T07)
+T11 Dgetpath(buf,0) (GEMDOS 0x47) ...
+T11   rc=0  path=""
+T12 Dfree(&buf,0) (GEMDOS 0x36) ...
+T12   rc=0 free_cl=32578 tot_cl=32672 bps=512 spc=4
+T13 Fsetdta+Fsfirst("*.*",0x17)+Fsnext loop (GEMDOS 0x1A/0x4E/0x4F) ...
+T13   Fsfirst rc=0
+T14   [0] name="APITEST.LOG" attr=0x00 size=1380
+T14   [1] name="SPOTLI~1" attr=0x12 size=0
+T14   [2] name="APITEST.NCP" attr=0x20 size=160488
+T14   [3] name="PTERMCH.NCP" attr=0x20 size=6328
+T14   [4] name="DTACHILD.NCP" attr=0x20 size=6104
+T14   [5] name="NEWDESK.INF" attr=0x20 size=23
+T14   enumerated 6 entries, last Fsnext rc=-49
+T15 Fcreate C:\APITST.TMP + Fwrite payload ...
+T15   handle=6 Fwrite=36 (want 36) + Fclose
+T16 Fopen C:\APITST.TMP + Fread + compare ...
+T16   handle=6 Fread=36  compare=MATCH
+T16 file round-trip payload matches  [OK]
+T17 Fdelete C:\APITST.TMP ...
+T17   Fdelete rc=0
+T18 Malloc(1024) (GEMDOS 0x48) ...
+T18   Malloc = 0x01A3E000  [expect a mapped EL0 VA > 0x1000]
+T19 write+read a byte at the Malloc VA ...
+T19   wrote 0x5A, read 0x5A  MATCH
+T20 Mfree the block (GEMDOS 0x49) ...
+T20   Mfree rc=0
+T21 Tgettime() (GEMDOS 0x2C) ...
+T21   Tgettime raw = 0x0007  (packed hhhhh mmmmmm sssss)
+T22 Tgetdate() (GEMDOS 0x2A) ...
+T22   Tgetdate raw = 0x0021  (packed yyyyyyy mmmm ddddd, y+1980)
+T23 Fopen("C:\qed.rsc",0) -- absolute rsrc_load path ...
+T23   Fopen rc/handle=-33  [FAIL rc=-33]
+T24 Fopen("qed.rsc",0) -- bare name from CWD (root) ...
+T24   Fopen rc/handle=-33  [FAIL rc=-33]
+T25 chdir C:\APPS\QED + relative Fopen (qed.rsc, QED.NAP) ...
+T25.1 Dgetpath(save,0) rc=0 cwd=""  [OK]
+T25.2 Dsetpath("C:\APPS\QED") rc=-34  [FAIL rc=-34]
+T25.3 Dgetpath(now,0) rc=0 cwd=""  [OK]
+T25.4 Fopen("qed.rsc",0) rel rc/handle=-33  [FAIL rc=-33]
+T25.5 Fopen("QED.NAP",0) rel rc/handle=-33  [FAIL rc=-33]
+T26 Fopen C:\qed.rsc + Fread 16 bytes (RSC header) ...
+T26   Fopen rc=-33  [FAIL rc=-33]
+T27 restore CWD via Dsetpath(saved) ...
+T27   Dsetpath("\") rc=0  [OK]
+T28 appl_init() -> ap_private (AES opcode 10) ...
+T28   ap_id = 0  ap_private = 0x1143  [expect 0x1143 without #Q, 0x11xx with]  [OK]
+T28 appl_init ap_private high 24 bits == 0x1100  [OK]
+T29 Fsetdta(buf); Pexec(C:\DTACHILD.NCP); Fgetdta()==buf ...
+T29.1 Fsetdta/Fgetdta round-trip: set=0x1A29CA0 got=0x1A29CA0  [OK]
+T29.1 Fsetdta/Fgetdta round-trip  [OK]
+[exec] preparing program (slot 1)
+[exec] launching
+DTACHILD: Fsetdta(0x2000)
+DTACHILD: own Fgetdta round-trip OK
+T29.2 Pexec(0,C:\DTACHILD.NCP) rc=0
+T29.3 parent Fgetdta after child = 0x1A29CA0  [OK: child did not disturb the parent DTA]
+T29.3 Pexec child cannot move the parent DTA  [OK]
+T30 k = Keytbl(-1,-1,-1); read k->shft[0x1E] from EL0 ...
+T30.1 Keytbl returned 0x0768
+T30.2 dereference k->shft / k->norm ...
+T30.2 norm[0x1E]='a' shft[0x1E]='A' (0x41) features=0  [OK]
+T30.2 Keytbl shft[0x1E] == 'A'  [OK]
+T31 menu_bar(NULL,0) then menu_bar(tree,1) ...
+T31.1 menu_bar(NULL,0) returned 1  [OK: survived, reports 1]
+T31.1 menu_bar(NULL,0) returns 1  [OK]
+T31.2 menu_bar(tree,1) returned 1  (look for the black rule at y=18)  [OK]
+T31.2 menu_bar(tree,1) returns 1  [OK]
+T32 BasePage p_tbase/p_tlen/p_dbase/p_dlen/p_bbase/p_blen vs _end ...
+T32   p_tbase=0x01A08000 p_tlen=0x00020DF0 p_dbase=0x01A28DF0 p_dlen=0x000009F0
+T32   p_bbase=0x01A297E0 p_blen=0x000021F0 _end=0x01A2B9D0 _base=0x01A07000
+T32.1 p_tbase < p_dbase  [OK]
+T32.2 p_dbase <= p_bbase  [OK]
+T32.3 p_bbase + p_blen == _end  got=0x1A2B9D0 want=0x1A2B9D0  [OK]
+T32.4 p_dbase == p_tbase + p_tlen (kpgmld.c:132)  got=0x1A28DF0 want=0x1A28DF0  [OK]
+T32.5 p_bbase == p_dbase + p_dlen (kpgmld.c:131)  got=0x1A297E0 want=0x1A297E0  [OK]
+T32.6 p_tlen, p_dlen, p_blen all nonzero  [OK]
+T32.7 _base == p_lowtpa (mintlib BASEPAGE *)  got=0x1A07000 want=0x1A07000  [OK]
+T33 Pexec(0,C:\PTERMCH.NCP,m|h|z): child exit code zero-extended ...
+[exec] preparing program (slot 1)
+[exec] launching
+PTERMCH: Pterm(-1)
+T33.1 child Pterm(-1) -> Pexec == 65535  got=65535 want=65535  [OK]
+[exec] preparing program (slot 1)
+[exec] launching
+PTERMCH: Pterm(0x8000)
+T33.2 child Pterm(0x8000) -> Pexec == 32768  got=32768 want=32768  [OK]
+[exec] preparing program (slot 1)
+[exec] launching
+PTERMCH: Pterm0()
+T33.3 child Pterm0() -> Pexec == 0  got=0 want=0  [OK]
+SX Super/Supexec (GEMDOS 0x20 / XBIOS 0x26) ...
+SX01 Super(1L) inquiry reports user mode (0)  got=0 want=0  [OK]
+SX    Super(0L) token = 0x01A3B8B0
+SX02 Super(0L) returns a token, not an error  [OK]
+SX03 Super(1L) inside the bracket still says 0  got=0 want=0  [OK]
+SX    _sysbase=0x000005C0 os_version=0x0404
+SX04 gettos.c shape: os_version via Super bracket  got=0x404 want=0x404  [OK]
+SX    Supexec(sx_probe) = 0x5EC0FFEE  calls=1
+SX05 Supexec returns the callee's LONG  got=0x5EC0FFEE want=0x5EC0FFEE  [OK]
+SX06 Supexec really ran the callee  got=1 want=1  [OK]
+SX    Supexec(get_cookie_adr) = 0x000005F0  [$5A0 holds 0x000005F0]
+SX07 Supexec(get_cookie_adr) == _p_cookies  got=0x5F0 want=0x5F0  [OK]
+SX08 jar via Supexec carries NTOS=0x100  got=0x100 want=0x100  [OK]
+SX    NTOS: $5A0 mirror=0x00000100  Ssystem rc=0 val=0x00000100
+SX09 Ssystem(S_GETCOOKIE,NTOS) succeeds  got=0 want=0  [OK]
+SX10 $5A0 mirror agrees with the kernel jar  got=0x100 want=0x100  [OK]
+SX    Setcookie('APIT') rc=0  mirror carries 0x13572468
+SX11 Ssystem(S_SETCOOKIE,'APIT') succeeds  got=0 want=0  [OK]
+SX12 $5A0 mirror sees a cookie set after load  [OK]
+SX13 that mirrored cookie carries the right value  got=0x13572468 want=0x13572468  [OK]
+SX14 Ssystem(S_DELCOOKIE) removes it from the mirror  [OK]
+SX15 mirror still ends in the {0,capacity} terminator  got=0x10 want=0x10  [OK]
+SX    slot pitch: wire=8  sizeof(ported COOKIE)=16  jar[0] as 8 bytes=0x000001004E544F53
+SX    ported-stride scan: steps=4  stopped at 0x0x00000630  found=0
+SX16 jar slot pitch is 8 bytes (slot 1 tag == _MCH)  got=0x5F4D4348 want=0x5F4D4348  [OK]
+SX17 LP64 struct-stride scan misses the jar (ABI note, not a defect)  [OK]
+B1 BIOS character I/O (Bconstat/Bconin/Bconout/Bcostat) ...
+BC01 Bconstat(2) CON drained ->0  got=0 want=0  [OK]
+BC02 Bconstat(0) PRT ->0  got=0 want=0  [OK]
+BC03 Bconstat(1) AUX ->0  got=0 want=0  [OK]
+BC04 Bconstat(3) MIDI ->0  got=0 want=0  [OK]
+BC05 Bconstat(4) dummy ->0  got=0 want=0  [OK]
+BC06 Bconstat(9) invalid ->0  got=0 want=0  [OK]
+BC07 Bconin(0) PRT ->0  got=0 want=0  [OK]
+BC08 Bconin(3) MIDI ->0  got=0 want=0  [OK]
+BC09 Bconin(4) dummy ->0  got=0 want=0  [OK]
+BC10 Bconin(9) invalid ->0  got=0 want=0  [OK]
+B1    Bconout(0..7) write here -> C
+BC11 Bconout(2,'C') CON ->1  got=1 want=1  [OK]
+BC12 Bconout(5,'R') raw ->1  got=1 want=1  [OK]
+BC13 Bconout(0,'*') PRT ->0  got=0 want=0  [OK]
+BC14 Bconout(1,'*') AUX ->1  got=1 want=1  [OK]
+BC15 Bconout(3,'*') MIDI ->0  got=0 want=0  [OK]
+BC16 Bconout(4,'*') IKBD ->0  got=0 want=0  [OK]
+BC17 Bconout(6,'*') dummy ->0  got=0 want=0  [OK]
+BC18 Bconout(7,'*') dummy ->0  got=0 want=0  [OK]
+BC19 Bcostat(2) CON ->-1  got=-1 want=-1  [OK]
+BC20 Bcostat(5) dummy ->0  got=0 want=0  [OK]
+BC21 Bcostat(0) PRT ->0  got=0 want=0  [OK]
+BC22 Bcostat(1) AUX ->-1  got=-1 want=-1  [OK]
+BC23 Bcostat(3) IKBD-TX ->0  got=0 want=0  [OK]
+BC24 Bcostat(4) MIDI-TX ->0  got=0 want=0  [OK]
+BC25 Bcostat(9) invalid ->0  got=0 want=0  [OK]
+B1    tap one key within 10 s to test Bconin(2) (or wait) ...
+BC26 Bconstat(2) ready, non-destructive  [SKIP: no key pressed]
+BC27 Bconin(2) bits 8-15 zero  [SKIP: no key pressed]
+BC28 Bconin(2) bits 24-31 zero  [SKIP: no key pressed]
+BC29 Bconin(2) ascii or scancode set  [SKIP: no key pressed]
+BC30 Bconstat(2)==0 after Bconin  [SKIP: no key pressed]
+B2 BIOS block devices (Drvmap/Mediach/Rwabs/Getbpb) ...
+B2    Drvmap=0x00000004 first mounted drive=2
+BB01 Drvmap() has at least one drive  [OK]
+BB02 Drvmap() bits 16-31 zero  got=0x00 want=0x00  [OK]
+BB03 Drvmap() == drvbits $4C2  got=0x04 want=0x04  [OK]
+BB04 Mediach(mounted)==0 for all  [OK]
+BB05 Mediach(absent)==EUNDEV for all  [OK]
+BB06 Mediach latched (2 calls equal)  [OK]
+BB07 Rwabs read logical sector 0  got=0 want=0  [OK]
+BB08 logical sector 0 has 0x55AA  [OK]
+BB09 Rwabs numb=0 -> E_OK  got=0 want=0  [OK]
+BB10 Rwabs numb=0 transferred nothing  [OK]
+BB11 Rwabs absent drive -> EUNDEV  got=-15 want=-15  [OK]
+BB12 Rwabs sector past partition -> ESECNF  got=-8 want=-8  [OK]
+BB13 Rwabs physical sector 0 -> E_OK  got=0 want=0  [OK]
+BB14 physical sector 0 is the MBR (0x55AA)  [OK]
+BB15 Rwabs physical past device -> ESECNF  got=-8 want=-8  [OK]
+BB16 physical(part start) == logical sector 0  [OK]
+B2    Getbpb(2) = 0x0021D024
+BB17 Getbpb(mounted) != NULL  [OK]
+BB18 Getbpb pointer is EL0-readable  [OK]
+BB19 BPB recsiz == 512  got=512 want=512  [OK]
+BB20 BPB recsiz == bootsec[0x0B]  got=512 want=512  [OK]
+BB21 BPB clsiz == bootsec[0x0D]  got=4 want=4  [OK]
+BB22 BPB clsizb == recsiz*clsiz  got=2048 want=2048  [OK]
+BB23 BPB fsiz == bootsec[0x16]  got=128 want=128  [OK]
+BB24 BPB rdlen == ceil(rootent*32/recsiz)  got=32 want=32  [OK]
+BB25 BPB fatrec == res+(nfat>1?fsiz:0)  got=129 want=129  [OK]
+BB26 BPB datrec == fatrec+fsiz+rdlen  got=289 want=289  [OK]
+BB27 BPB B_16 set iff numcl > 4084  [OK]
+BB28 BPB B_1FAT set iff one FAT  [OK]
+BB29 Getbpb(absent) == NULL  [OK]
+B3 BIOS system calls (Tickcal/Getmpb/Setexc/Kbshift) ...
+BS01 Tickcal() == 20  got=20 want=20  [OK]
+BS02 _hz_200 $4BA advances  [OK]
+B3    Getmpb: mp_mfl=0x0021E000 mp_mal=0x00
+BS03 Getmpb leaves mp_rover untouched  [OK]
+BS04 Getmpb mp_mal == NULL  [OK]
+BS05 Getmpb mp_mfl != NULL  [OK]
+BS06 Getmpb mp_mfl is EL0-readable  [OK]
+BS07 MD m_link == NULL  [OK]
+BS08 MD m_own == NULL  [OK]
+BS09 MD m_start == membot $432  got=0x400000 want=0x400000  [OK]
+BS10 MD m_length == memtop-membot  got=0xA00000 want=0xA00000  [OK]
+B3    Setexc(etv_term,-1) = 0x4E75000000000000
+BS11 Setexc(etv_term,-1) != 0  [OK]
+BS12 Setexc query does not change it  [OK]
+BS13 Setexc(set) returns the previous value  [OK]
+BS14 Setexc(query) reads the new value  got=0x12345678 want=0x12345678  [OK]
+BS15 Setexc restored the old value  [OK]
+BS16 Setexc($5A0/4,-1) == *(long*)$5A0  got=0x5F0 want=0x5F0  [OK]
+BS17 Kbshift(-1) query is stable  [OK]
+BS18 Kbshift(-1) bits 8-31 zero  got=0x00 want=0x00  [OK]
+BS19 Kbshift(set) returns the previous value  [OK]
+BS20 Kbshift stores only the low byte  got=0x04 want=0x04  [OK]
+BS21 Kbshift restored the old state  [OK]
+
+=== APITEST DONE ===
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=== APITEST SUMMARY ===
+GROUP      PASS  FAIL  SKIP
+GEMDOS     13    0     0     
+BIOS-CHR   25    0     5     
+BIOS-BLK   29    0     0     
+BIOS-SYS   21    0     0     
+AES        4     0     0     
+SUPER      17    0     0     
+TOTAL      109   0     5     
+-- FAILED --
+  (none)
+-- SKIPPED --
+  BC26 Bconstat(2) ready, non-destructive : no key pressed
+  BC27 Bconin(2) bits 8-15 zero : no key pressed
+  BC28 Bconin(2) bits 24-31 zero : no key pressed
+  BC29 Bconin(2) ascii or scancode set : no key pressed
+  BC30 Bconstat(2)==0 after Bconin : no key pressed
+
+Press any key to continue (then the desktop starts)...

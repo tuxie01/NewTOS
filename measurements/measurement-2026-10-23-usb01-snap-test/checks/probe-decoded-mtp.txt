@@ -1,0 +1,44 @@
+LIST: generation 1 n_devices 4 entry_len 32 root_ports 8 controller_state 1 enum_skipped 0
+  ok   list header generation 1, entry_len 32, controller_state 1
+  [0] slot 1 root_port 5 parent 0xff route 0x0 vid 46f4 pid 0004 class 0 speed 3 role 0 reason 16 flags 0x03 n_hid_ifaces 0 ring_iface 0xff ring_ep 0x00 oldest 0 next 0 int_errors 0 last_cc 0
+  [1] slot 2 root_port 6 parent 0xff route 0x0 vid 0627 pid 0001 class 0 speed 3 role 3 reason 2 flags 0x0b n_hid_ifaces 1 ring_iface 0x00 ring_ep 0x81 oldest 0 next 0 int_errors 0 last_cc 0
+  [2] slot 3 root_port 7 parent 0xff route 0x0 vid 0627 pid 0001 class 0 speed 3 role 1 reason 0 flags 0x0b n_hid_ifaces 1 ring_iface 0x00 ring_ep 0x81 oldest 0 next 0 int_errors 0 last_cc 0
+  [3] slot 4 root_port 8 parent 0xff route 0x0 vid 0627 pid 0001 class 0 speed 3 role 2 reason 0 flags 0x0b n_hid_ifaces 1 ring_iface 0x00 ring_ep 0x81 oldest 0 next 0 int_errors 0 last_cc 0
+  ok   kernel [usb] device descriptor lines: 4, report descriptor lines: 3
+DEVICE 0: sections [(1, 0, 0, 18), (2, 0, 0, 39), (4, 0, 0, 16), (5, 0, 4, 0), (6, 0, 4, 0)]
+  ok   device descriptor class=0 maxpkt0=64 VID=46f4 PID=0004 appears in the kernel [usb] device descriptor lines
+  string manufacturer: ''
+  string product: ''
+  ok   config descriptor wTotalLength == section len (39)
+DEVICE 1: sections [(1, 0, 0, 18), (2, 0, 0, 34), (4, 0, 0, 16), (3, 0, 0, 74), (5, 0, 0, 4), (6, 0, 0, 15)]
+  ok   device descriptor class=0 maxpkt0=64 VID=0627 PID=0001 appears in the kernel [usb] device descriptor lines
+  ok   report descriptor 74 bytes = a kernel '[usb] ... report descriptor N bytes' line
+  string manufacturer: 'QEMU'
+  string product: 'QEMU USB Tablet'
+  ok   config descriptor wTotalLength == section len (34)
+DEVICE 2: sections [(1, 0, 0, 18), (2, 0, 0, 34), (4, 0, 0, 16), (3, 0, 0, 63), (5, 0, 0, 4), (6, 0, 0, 17)]
+  ok   device descriptor class=0 maxpkt0=64 VID=0627 PID=0001 appears in the kernel [usb] device descriptor lines
+  ok   report descriptor 63 bytes = a kernel '[usb] ... report descriptor N bytes' line
+  string manufacturer: 'QEMU'
+  string product: 'QEMU USB Keyboard'
+  ok   config descriptor wTotalLength == section len (34)
+DEVICE 3: sections [(1, 0, 0, 18), (2, 0, 0, 34), (4, 0, 0, 16), (3, 0, 0, 52), (5, 0, 0, 4), (6, 0, 0, 14)]
+  ok   device descriptor class=0 maxpkt0=64 VID=0627 PID=0001 appears in the kernel [usb] device descriptor lines
+  ok   report descriptor 52 bytes = a kernel '[usb] ... report descriptor N bytes' line
+  string manufacturer: 'QEMU'
+  string product: 'QEMU USB Mouse'
+  ok   config descriptor wTotalLength == section len (34)
+REPORTS dev 0: hdr flags 0 total 48  oldest 0 next 0 lost 0 count 0 rec_len 80
+REPORTS dev 1: hdr flags 0 total 48  oldest 0 next 0 lost 0 count 0 rec_len 80
+REPORTS dev 2: hdr flags 0 total 48  oldest 0 next 0 lost 0 count 0 rec_len 80
+REPORTS dev 3: hdr flags 2 total 288  oldest 0 next 20 lost 0 count 3 rec_len 80
+    seq 0 ts 786 len 4 flags 0x0 cc 13 data 00 0a 06 00
+    seq 1 ts 797 len 4 flags 0x0 cc 13 data 00 0a 06 00
+    seq 2 ts 808 len 4 flags 0x0 cc 13 data 00 0a 06 00
+REPORTS muted dev (from seq 20) 0: hdr flags 0 total 48  oldest 0 next 0 lost 0 count 0 rec_len 80
+REPORTS muted dev (from seq 20) 1: hdr flags 0 total 48  oldest 0 next 0 lost 0 count 0 rec_len 80
+REPORTS muted dev (from seq 20) 2: hdr flags 0 total 48  oldest 0 next 0 lost 0 count 0 rec_len 80
+REPORTS muted dev (from seq 20) 3: hdr flags 2 total 288  oldest 0 next 30 lost 0 count 3 rec_len 80
+    seq 20 ts 1593 len 4 flags 0x2 cc 13 data 00 0a 06 00
+    seq 21 ts 1602 len 4 flags 0x2 cc 13 data 00 0a 06 00
+    seq 22 ts 1613 len 4 flags 0x2 cc 13 data 00 0a 06 00

@@ -1,0 +1,181 @@
+RB1
+NewTOS booting on qemu-virt
+Phase 02 reached.
+[mm] DTB at 0x0000000048000000
+[mm] firmware: no VideoCore mailbox on this board — device tree decides
+[mm] device tree: /memory first bank: 0x0000000040000000 + 285212672 bytes (272 MiB)
+[mm] memory map:
+[mm]   DRAM  : 0x0000000040000000..0x0000000051000000 (285212672 bytes) — source: device tree
+[mm]   kernel: 0x0000000040080000..0x0000000040312000 (2695168 bytes)
+[mm]   ST-RAM: 0x0000000040400000..0x0000000040e00000 (10485760 bytes)
+[mm]   TT-RAM: 0x0000000041000000..0x0000000050017000 (251752448 bytes)
+[mm]   OSrsvd: 0x0000000050017000..0x0000000051000000 (16683008 bytes)
+[mm]     heap: 0x0000000050017000..0x0000000050817000 (8388608 bytes)
+[mm]     fb  : 0x0000000050817000..0x0000000051000000 (8294400 bytes)
+[mm]   MMIO 00: 0x0000000008000000..0x0000000008010000
+[mm]   MMIO 01: 0x0000000008010000..0x0000000008020000
+[mm]   MMIO 02: 0x0000000009000000..0x0000000009001000
+[mm]   MMIO 03: 0x0000000010000000..0x000000003eff0000
+[mm] MMU reinstalled (high-half via TTBR1, TTBR0 deferred to Phase 06).
+[mm] frames ST-RAM: total=2560 used=0 free=2560 (10485760 B free)
+[mm] frames TT-RAM: total=61463 used=0 free=61463 (251752448 B free)
+[mm] alloc ST-RAM frame -> 0x0000000040400000
+[mm] alloc TT-RAM frame -> 0x0000000041000000
+[mm] heap after init: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[mm] heap smoke OK
+[mm] heap after smoke: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[fb] ramfb up: 1920x1080
+[mm] MEM05 per-process block limit: 8192 allocated blocks (default)
+[mm] MEM05 MD supply: 117 MDs static, grows by 117 MDs per 4096-byte page from the kernel heap; page budget 512 pages (2048 KiB) for MDs + block records + snapshot + F_KEEP flags
+[mm] memory protection ON: table arena 0x41000000+1422 tables
+[mm] BDOS pools: ST-RAM 0x40400000+10485760 TT-RAM 0x4158e000+245927936
+[mm] user address space: pools mapped VA = PA (124 shared L3 tables, 4-KiB pages, rights per process)
+[mm] BDOS ST-RAM after init: total=10485760 free=10485760 used=0 largest_free=10485760 (free_mds=1 alloc_mds=0)
+[mm] BDOS TT-RAM after init: total=245927936 free=245927936 used=0 largest_free=245927936 (free_mds=1 alloc_mds=0)
+[mm] MEM05 after init: MDs in_use=2 capacity=117 (+0 pages); pages held=0/512 (md=0 recs=0 snap=0 kept=0) peak=0 refused budget=0 heap=0; records=0 snapshot_cap=0 snapshot_short=0; heap used=0 free=8388608 largest=8388608
+[input] keyboard/mouse pump: AES waits and console reads; pointer motion also from the 200 Hz tick while a program runs (input=aes switches that off)
+[bcache] FS09 block read cache: none (no block device on this board)
+[usb] PCIe ECAM at 0x4010000000 (size 0x10000000)
+[usb] xHCI at PCI 00:02.0 → BAR0 0x10000000 (size 0x4000)
+[usb] scratchpad buffers needed: 0
+[usb] dma addrs: dcbaap=0x40e47000 crcr=0x40e470c0 erstba=0x40e472c0 dcbaa0=0x0
+[usb] reg readback: ac64=1 csz=0 dcbaap_hw=0x40e47000
+[usb] xHCI up: 16 slots enabled, 8 root ports
+[usb] root ports powered (PPC=false)
+[usb] port 1: ccs=0 ped=0 pp=1 speed=0
+[usb] port 2: ccs=0 ped=0 pp=1 speed=0
+[usb] port 3: ccs=0 ped=0 pp=1 speed=0
+[usb] port 4: ccs=0 ped=0 pp=1 speed=0
+[usb] port 5: ccs=1 ped=0 pp=1 speed=3
+[usb] port 6: ccs=1 ped=0 pp=1 speed=3
+[usb] port 7: ccs=0 ped=0 pp=1 speed=0
+[usb] port 8: ccs=0 ped=0 pp=1 speed=0
+[usb] device slot 1 (root port 5 route 0x0 speed 3)
+[usb] device descriptor: bLength=18 type=1 bcdUSB=0200 class=0 maxpkt0=64 VID=0627 PID=0001
+[usb] HID iface 0 protocol 1 → int-IN ep 0x81 max 8 interval 7
+[usb] HID configured: slot 1 ep 0x81 dci 3 (keyboard)
+[usb] slot 1 iface 0: report descriptor 63 bytes (declared 63)
+[usb] device slot 2 (root port 6 route 0x0 speed 3)
+[usb] device descriptor: bLength=18 type=1 bcdUSB=0200 class=0 maxpkt0=64 VID=0627 PID=0001
+[usb] HID iface 0 protocol 2 → int-IN ep 0x81 max 4 interval 7
+[usb] HID configured: slot 2 ep 0x81 dci 3 (mouse)
+[usb] slot 2 iface 0: report descriptor 52 bytes (declared 52)
+[usb] enumeration done: 2 devices (2 keyboard/mouse, 0 observed only), 6 commands issued
+[proc] stand-in PDs: initial_basepage 0x401c9000, AES PD 0x401c9100, accdesk 0x401c9300, EmuCON 0x401c9400 (read-only to all)
+[aes] gsx_malloc: screen buffer pa=0x4158e000 len=4147200 (kernel-owned, WF_SCREEN)
+[shell] sh_ldapp: starting desktop NEWDESK (D.s_cmd NEWDESK), sh_nextapp=3, sh_isgem=1
+[launch] EL0: slot 0 entry 0x41986000
+USBPROBE: start
+USBPROBE: LIST short-len len 16 -> rc -25 | ver 1 hdr 0 op 1 flags 0 total 0 used 0 now 0
+USBPROBE: LIST bad-magic len 64 -> rc -25 | ver 1 hdr 0 op 1 flags 0 total 0 used 0 now 0
+USBPROBE: LIST version2 len 64 -> rc -25 | ver 1 hdr 32 op 1 flags 0 total 32 used 32 now 647
+USBPROBE: op9 len 64 -> rc -25 | ver 1 hdr 32 op 9 flags 0 total 32 used 32 now 647
+USBPROBE: LIST small len 40 -> rc 0 | ver 1 hdr 32 op 1 flags 1 total 112 used 32 now 648
+USBPROBE: LIST full len 112 -> rc 0 | ver 1 hdr 32 op 1 flags 0 total 112 used 112 now 648
+USBPROBE:   0000: 01 00 00 00 02 00 20 00 08 01 00 00 00 00 00 00
+USBPROBE:   0010: 00 01 05 ff 00 00 00 00 27 06 01 00 00 03 01 00
+USBPROBE:   0020: 0b 01 00 81 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0030: 01 02 06 ff 00 00 00 00 27 06 01 00 00 03 02 00
+USBPROBE:   0040: 0b 01 00 81 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE: DEVICE 0 len 16384 -> rc 0 | ver 1 hdr 32 op 2 flags 0 total 276 used 276 now 648
+USBPROBE:   0000: 00 01 05 ff 00 00 00 00 27 06 01 00 00 03 01 00
+USBPROBE:   0010: 0b 01 00 81 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0020: 06 00 00 00 01 00 00 00 12 00 00 00 12 01 00 02
+USBPROBE:   0030: 00 00 00 40 27 06 01 00 00 00 01 04 0b 01 00 00
+USBPROBE:   0040: 02 00 00 00 22 00 00 00 09 02 22 00 01 01 08 a0
+USBPROBE:   0050: 32 09 04 00 00 01 03 01 01 00 09 21 11 01 00 01
+USBPROBE:   0060: 22 3f 00 07 05 81 03 08 00 07 00 00 04 00 00 00
+USBPROBE:   0070: 10 00 00 00 00 00 03 01 01 00 81 07 08 00 3f 00
+USBPROBE:   0080: 3f 00 01 00 03 00 00 00 3f 00 00 00 05 01 09 06
+USBPROBE:   0090: a1 01 75 01 95 08 05 07 19 e0 29 e7 15 00 25 01
+USBPROBE:   00a0: 81 02 95 01 75 08 81 01 95 05 75 01 05 08 19 01
+USBPROBE:   00b0: 29 05 91 02 95 01 75 03 91 01 95 06 75 08 15 00
+USBPROBE:   00c0: 25 ff 05 07 19 00 29 ff 81 00 c0 00 05 00 00 00
+USBPROBE:   00d0: 04 00 00 00 51 45 4d 55 06 00 00 00 11 00 00 00
+USBPROBE:   00e0: 51 45 4d 55 20 55 53 42 20 4b 65 79 62 6f 61 72
+USBPROBE:   00f0: 64 00 00 00
+USBPROBE: DEVICE 1 len 16384 -> rc 0 | ver 1 hdr 32 op 2 flags 0 total 260 used 260 now 650
+USBPROBE:   0000: 01 02 06 ff 00 00 00 00 27 06 01 00 00 03 02 00
+USBPROBE:   0010: 0b 01 00 81 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0020: 06 00 00 00 01 00 00 00 12 00 00 00 12 01 00 02
+USBPROBE:   0030: 00 00 00 40 27 06 01 00 00 00 01 02 09 01 00 00
+USBPROBE:   0040: 02 00 00 00 22 00 00 00 09 02 22 00 01 01 06 a0
+USBPROBE:   0050: 32 09 04 00 00 01 03 01 02 00 09 21 01 00 00 01
+USBPROBE:   0060: 22 34 00 07 05 81 03 04 00 07 00 00 04 00 00 00
+USBPROBE:   0070: 10 00 00 00 00 00 03 01 02 00 81 07 04 00 34 00
+USBPROBE:   0080: 34 00 01 00 03 00 00 00 34 00 00 00 05 01 09 02
+USBPROBE:   0090: a1 01 09 01 a1 00 05 09 19 01 29 05 15 00 25 01
+USBPROBE:   00a0: 95 05 75 01 81 02 95 01 75 03 81 01 05 01 09 30
+USBPROBE:   00b0: 09 31 09 38 15 81 25 7f 75 08 95 03 81 06 c0 c0
+USBPROBE:   00c0: 05 00 00 00 04 00 00 00 51 45 4d 55 06 00 00 00
+USBPROBE:   00d0: 0e 00 00 00 51 45 4d 55 20 55 53 42 20 4d 6f 75
+USBPROBE:   00e0: 73 65 00 00
+USBPROBE: DEVICE index=n len 16384 -> rc -25 | ver 1 hdr 32 op 2 flags 0 total 32 used 32 now 651
+USBPROBE: MUTE 12001 len 64 -> rc -25 | ver 1 hdr 32 op 4 flags 0 total 32 used 32 now 651
+USBPROBE: move now
+USBPROBE: REPORTS dev 0 len 288 -> rc 0 | ver 1 hdr 32 op 3 flags 0 total 48 used 48 now 1251
+USBPROBE:   0000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 50 00
+USBPROBE: REPORTS dev 1 len 288 -> rc 0 | ver 1 hdr 32 op 3 flags 2 total 1648 used 288 now 1251
+USBPROBE:   0000: 00 00 00 00 14 00 00 00 00 00 00 00 03 00 50 00
+USBPROBE:   0000: 00 00 00 00 8f 02 00 00 04 00 00 0d 00 00 00 00
+USBPROBE:   0010: 00 0a 06 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0050: 01 00 00 00 9a 02 00 00 04 00 00 0d 00 00 00 00
+USBPROBE:   0060: 00 0a 06 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   00a0: 02 00 00 00 a5 02 00 00 04 00 00 0d 00 00 00 00
+USBPROBE:   00b0: 00 0a 06 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   00c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   00d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   00e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE: MUTE 400 len 64 -> rc 0 | ver 1 hdr 32 op 4 flags 0 total 40 used 40 now 1261
+USBPROBE:   0000: 7d 06 00 00 00 00 00 00
+USBPROBE: muted
+USBPROBE: REPORTS muted dev (from seq 20) 0 len 288 -> rc 0 | ver 1 hdr 32 op 3 flags 0 total 48 used 48 now 1585
+USBPROBE:   0000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 50 00
+USBPROBE: REPORTS muted dev (from seq 20) 1 len 288 -> rc 0 | ver 1 hdr 32 op 3 flags 2 total 848 used 288 now 1601
+USBPROBE:   0000: 00 00 00 00 1e 00 00 00 00 00 00 00 03 00 50 00
+USBPROBE:   0000: 14 00 00 00 0b 05 00 00 04 00 02 0d 00 00 00 00
+USBPROBE:   0010: 00 0a 06 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0050: 15 00 00 00 16 05 00 00 04 00 02 0d 00 00 00 00
+USBPROBE:   0060: 00 0a 06 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   0090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   00a0: 16 00 00 00 20 05 00 00 04 00 02 0d 00 00 00 00
+USBPROBE:   00b0: 00 0a 06 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   00c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   00d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE:   00e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+USBPROBE: MUTE 0 len 64 -> rc 0 | ver 1 hdr 32 op 4 flags 0 total 40 used 40 now 1739
+USBPROBE:   0000: 00 00 00 00 00 00 00 00
+USBPROBE: bad pointer next (must not survive)
+[crash] slot 0 Bus Error esr=0x96000006 pc=0xffff00004012beac far=Some(3735879680)
+fv
+
+Panic: Bus Error
+esr=96000006
+addr=00000000dead0000 sr=200003c5 pc=ffff00004012beac
+Memory violation: hardware memory, read (translation fault, level 2)
+
+X0-3:   ffff000040311aa0 00000000dead0000 0000000000000020 0000000000000030
+X4-7:   0000000000000027 0000000000000000 ffff0000500180b0 0000000000000001
+X8-11:  0000000000000000 0000000000000154 0000000000000154 0000000080000000
+X12-15: 000000004199b450 000000004199b3d9 0000000041987540 000000004198740b
+X16-19: 0000000000003a30 0000000000000020 0000000000000028 ffff000040311ba0
+X20-23: 0000000000000020 00000000dead0000 0000000000000001 00000000000007e6
+X24-27: 0000000000000000 000000004199b478 000000004199b487 cccccccccccccccd
+X28-30: 000000000000000a ffff000040311b20 ffff0000400fee98
+ USP:   000000004199b450
+
+basepage=41985000
+text=41986000 data=41987440 bss=41987510
+
+*** Press any key to continue ***

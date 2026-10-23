@@ -1,0 +1,133 @@
+USB01 step 2 -- USB snapshot, kernel part (K1-K9): Tester acceptance / regression
+==================================================================================
+
+Date      2026-10-23
+Tested    main @ 66fc4995 (code = cf396382 feat(usb): Ssystem 2022 USB snapshot; 5b0eef1e developer run; 66fc4995 docs)
+Baseline  f9abfd6b (= parent of cf396382; kernel/tos-api/tools code identical to 34f73b01, last tester PASS of the USB stack;
+          03ae70c8 is older, only docs differ in between). Head and base built in scratch git worktrees (own target dirs,
+          removed afterwards), SOURCE_DATE_EPOCH=1792152000.
+Who       Tester agent; no hardware, no SD card, no push. Product code untouched (git status: only this directory is new).
+
+RESULT
+  1  fresh builds + lint      PASS  qemu-virt dev+release, rpi4 dev+release, rpi4 release --features usb-diag: all rc=0, head and base.
+                                    rustc warnings kernel 94 / tos-api 64 on EVERY build, head = base (usb-diag 96 = 96, the two known
+                                    bootlog.rs warnings). clippy (kernel, both boards): kernel 124 (head) vs 125 (base) = -1, tos-api 76 = 76;
+                                    usb-file clippy lines 43 vs 44 = -1. No new warning.            checks/logs/, checks/sha256.txt
+  2  host tests               PASS  cargo xtask test on head: 158 suites, 1607 passed / 0 failed / 1 ignored (= developer 1607/0/1; base 1571/0/1,
+                                    +36). gemdos_ssystem_usbsnap.rs 9 + 12 encoder tests ran and passed; gemdos_ssystem_sysinfo / _cpuinfo
+                                    (the "not a mode" assertions, now on 2023) pass.                checks/cargo-test-xtask-head.log / -base.log
+                                    CAVEAT (flake, see below): the FIRST head run failed once in an unrelated VDI test.
+  3a qemu-virt default input  PASS  qemu-xhci + usb-kbd + usb-mouse, dev kernels head vs base, identical: mouse 20 x rel(+10,+6) moves the pointer
+                                    (138 px differ, bbox 959,539-1169,675 on both); Ctrl+Z opens EmuCON (1014367 px), typing "help" echoes
+                                    (198 px) on both. Also release head: 138 px / 1014367 px / 198 px. 0 EXC/PANIC in every run.
+                                                                                serial/{head,base}-default.log, -key-*.log, head-rel-*.log
+  3b qemu-virt hub tree       PASS  hubtree (7 devices behind a hub), overfull, hubkbd, latekbd (4 keyboards enumerated late, commands > 15):
+                                    8 devices, 24 commands, mouse moves (138 px) and Ctrl+Z/"help" work on head AND base; storage and mtp
+                                    topologies: moves 138 px head = base. Serial: head "N devices (K keyboard/mouse, O observed only)".
+  3c qemu-virt usb-tablet     PASS  (observation path) tablet topology (usb-tablet + usb-kbd) and mtp topology (tablet + MTP + kbd + mouse):
+                                    tablet gets role 3 "report-protocol HID interface observed", 1 more command (11 vs 10), configured,
+                                    report descriptor 74 bytes. QMP absolute moves on the tablet-only topology: 0 differing pixels on head AND
+                                    base = no pointer effect. The ring fills (20 reports, len 6, cc 13 short packet at TRB length 8).
+                                    ALL 5 topologies of the previous run still reproduce (see table).
+  4  EL0 end-to-end (qemu)    PASS  three probes as EL0 process (scratch kernel, NEWDESK.NAP replaced in a scratch worktree only):
+                                    (a) the developer's usbprobe.c, read first, re-run by me on default / hubtree / mtp / tablet;
+                                    (b) my usbprobe2.c with 42 CHK assertions incl. sentinel-fill checks (all 42 OK);
+                                    (c) usbprobe.c + qmp_probe_survive.py: after the bad pointer a USB key press restarts the probe.
+                                    - §2.3 #1-#4,#6,#7: -25, buf NULL, len 31/0/-1, bad magic (buffer untouched), version 0/2, op 0/5/9,
+                                      DEVICE/REPORTS index too big, MUTE index 1 / 12001 / 0xFFFFFFFF; version/op/index errors write the
+                                      32-byte header only (used 32, rest of the 0xA5-filled buffer untouched).
+                                    - TRUNCATED: LIST/DEVICE/REPORTS with len = total-1, 32, 47, 100: rc 0, flags TRUNCATED, header only, total
+                                      right; len = total: full, flags 0. REPORTS len 127 -> count 0 + MORE, len 128 -> exactly 1 entry + MORE.
+                                    - LIST/DEVICE bytes against the kernel's own [usb] lines (tools: method/decode_probe.py, asserts exit 0):
+                                      device descriptor class/maxpkt0/VID/PID of every device, report descriptor lengths 63 / 52 / 74 = the
+                                      "[usb] slot N iface 0: report descriptor N bytes (declared N)" lines, config wTotalLength = section len,
+                                      strings "QEMU", "QEMU USB Keyboard|Mouse|Tablet". LIST fields: roles 1/2/3/4/0, reason 0/2/16, root port 5/6,
+                                      speed 3 (hub children behind the full-speed QEMU hub: 1), route 0x1..0x7 + parent 0x00 behind the hub,
+                                      parent 0xFF on root ports, enum_skipped 1 on the 8-entry hub tree ("ports 8..8 not scanned").
+                                    - REPORTS ring: seq from 0, entry data 00 0a 06 00 = the injected (+10,+6) moves, cc 13, next_seq 20 / 30;
+                                      MORE with total = 48 + 20*80 = 1648; ring overflow with 300 moves: oldest 44, next 300, lost(arg 0) 44,
+                                      arg oldest-5 -> lost 5, arg == next -> count 0 no MORE, 8192-byte request -> 101 entries + MORE with
+                                      total 48 + 256*80; LIST ring_oldest/next = REPORTS header.
+                                    - MUTE: 400 -> muted_until = now+400 exactly; entries recorded while muted carry flag 0x02; 12000 accepted,
+                                      0 clears; len 32 -> header only + TRUNCATED + total 40.
+                                    - Invalid pointer 0xDEAD0000: "[crash] ... Bus Error ... far=0xdead0000", TOS crash dialog, the probe is NOT
+                                      resumed ("survived" absent); after a key press the shell restarts the program (2nd "USBPROBE: start"),
+                                      0 kernel EXC/PANIC (the word Panic in the dialog is the TOS crash screen text).
+  5  raspi4b release          PASS  head vs base, release kernels, -append serial=on: APITEST TOTAL 109 / 0 / 5 on both; NEWDESK desktop up
+                                    (1 drives) on both, screendump 0 differing pixels head vs base, "[pcie] RC not present ...; USB disabled";
+                                    serial logs differ only by addresses that follow the larger kernel (see observation 2). My probe usbprobe3.c
+                                    (EL0 .NCP via #Z) on head: well-formed LIST/DEVICE/REPORTS/MUTE (also DEVICE index 3, LIST len 32) -> -1 (ERROR)
+                                    with the 512-byte buffer byte-for-byte untouched; len 31 / bad magic -> -25 untouched; version 2 -> -25 with
+                                    header v1 written; op 9 -> -25; mode 2023 -> -32 (EINVFN). 11/11 OK. Base: -32 on every 2022 call (expected).
+                                    0 EXC/PANIC.                                 serial/api-*.log, nd-*.log, p3-*.log, screendumps/rpi4-desktop-*.png
+  6  real-Pi risk list        see section below (analysis + code reading, NOT a pass)
+
+OVERALL: PASS for everything reachable in QEMU. No regression against f9abfd6b found. Real-Pi items are OPEN (below).
+
+TABLE (qemu-virt dev kernels; "moved" = 138 differing px after 20 x rel(+10,+6))
+  topology   base f9abfd6b                                   head 66fc4995
+  default    2 dev (2 kbd/mouse), 6 cmds, moved                2 dev (2 kbd/mouse, 0 observed), 6 cmds, moved
+  hubtree    8 dev (7 kbd/mouse), 24 cmds, moved               same + "0 observed only", moved
+  overfull   8 dev, 24 cmds, moved                             same, "ports 8..8 not scanned" + "device not enumerated" lines, moved
+  mtp        4 dev (2 kbd/mouse), 10 cmds, moved               4 dev (2 kbd/mouse, 1 observed only), 11 cmds, moved
+  storage    3 dev (2 kbd/mouse), 8 cmds, moved                same, moved
+  tablet     tablet not configured; abs moves 0 px             tablet observed (role 3), 6 cmds; abs moves 0 px (no pointer effect)
+  keyboard   default / hubkbd / latekbd: Ctrl+Z -> EmuCON 1014367 px, "help" 198 px on all three, base and head
+  EXC/PANIC  0 in every run
+
+OBSERVATIONS / FINDINGS (none blocks the PASS; for the developer / lead)
+  1. FLAKE, not reproduced: in the first `cargo xtask test` on head, tos-api vdi_reference case_0167_op005_sub15_vq_curaddress failed once
+     (intout[1] NewTOS 10 vs reference 13); a complete second head run passed 1607/0/1; 60 + 5 reruns of the vdi_reference suite on head and 60
+     on base: 0 failures. VDI code is not touched by the commits; probably a shared-state race between parallel tests. Log of the failing run:
+     checks/cargo-test-xtask-head-run1-flake.log. Treat as open until it shows again.
+  2. Image growth: rpi4 kernel8.img 1351376 -> 1617616 bytes (+266240), qemu-virt dev 1470232 -> 1744664; llvm-size release: .data 245456 -> 470736
+     (+225 KB), .bss unchanged 3567232. The snapshot store lands in .data (initialised statics), not .bss, so it is stored in the image. Harmless
+     functionally (kernel end moves 0x301000 -> 0x342000, all later addresses in serial logs shift); an uninitialised/zero store would not
+     enlarge the file. Dev decision.
+  3. A hub's DEVICE answer (role 4) has only sections 1, 5, 6 (strings SKIPPED, no config descriptor, no interface table), entry flags 0x09 (config
+     bit 1 not set) although the hub is configured. §2.5 allows missing sections; if USBSNAP should show hub details, this is where they are missing.
+  4. In the first qemu probe run after the crash the shell waits for a key ("*** Press any key to continue ***") -- as with any EL0 fault.
+  5. MUTE's effect on the pointer / click delivery was NOT observed (T6 needs the K10 program USBSNAP on the desktop; the probes own the screen).
+
+REAL-PI TEST (analysis only, nothing here was run on silicon) -- for the user's later test
+  a) TRB length = max packet: ROCCAT 1e7d:2cee boot mouse is ep 0x81 max 64 interval 1 (con04-pi start1-MAUS1.LOG): head arms a 64-byte TRB (base 8).
+     The boot report is short (4..8 bytes) so each transfer ends as a Short Packet with IOC, the same mechanism as every mouse on silicon today
+     (4-byte report in an 8-byte TRB). QEMU shows cc 13 and correct lengths (tablet len 6, mouse len 4). On silicon open: that the VL805 reports
+     the short packet the same way for 64, and that the 8..64 clamp does not break the Apple keyboard (ep 0x81 max 8, ep 0x82 max 4).
+     Watch in USBDIAG.LOG / serial: "transfer ... code" lines, mouse still moving, keyboard typing.
+  b) EP0 ring: each device ring is 16 TRBs (CMD_RING_LEN). Head adds up to four control TDs of 3 TRBs after SET_CONFIGURATION (report descriptor,
+     language list, manufacturer, product), so the EP0 ring now wraps through its Link TRB (Toggle Cycle) on every configured device [S: from code,
+     counts not instrumented]. QEMU follows Link TRBs; the VL805 following the Link TRB was already an open item in the previous tester run (command
+     ring). If a real device shows "transfer timeout: slot N ep 1" after the report descriptor lines, this is the first suspect.
+  c) Report descriptor / strings on real devices: Apple keyboard 05ac:020c (full speed, maxpkt0 8, behind the Apple hub 05ac:1003, bcdUSB 0110 =
+     transaction-translator path) and the ROCCAT. fetch_extras runs LAST and ends at the first failed EP0 transfer (STALL halts EP0, no Reset
+     Endpoint); the interrupt endpoints are already armed, so a refusing device loses only its snapshot sections (SKIPPED/FAILED), not input. A
+     device that never answers costs one 50M-iteration poll loop (seconds) per device at boot. Expected in the snapshot: FAILED/SKIPPED sections
+     are legitimate; keyboard/mouse must still work. Compare the new boot lines "[usb] slot N iface I: report descriptor N bytes (declared M)" and
+     the summary "N devices (K keyboard/mouse, O observed only), C commands issued" with the base run's "13 commands issued" on the same cabling.
+  d) Observation path on silicon: ROCCAT's second interface (ep 0x82, max 64) and any report-only device are now configured instead of skipped
+     (more Configure Endpoint commands than the 13 of start1/start2). Check the command count and that the mouse still moves with both plugged.
+  e) Not testable in QEMU at all: cache coherence of the new DMA buffers (dcache_inval on intbuf and the report/string page), HDMI, hotplug.
+
+NOT VERIFIED
+  Real VL805 (items a-e), MUTE effect on the desktop pointer/clicks (T6), USBSNAP program (K10) and the QEMU option (K11), T5 "tablet as seen by a
+  report-protocol parser" (only the ring contents were read), usb-diag instrumentation on this head (builds only; no C: on qemu-virt, no run of
+  the usb-diag kernel on the raspi4b card this time), sdk/run-host-tests.sh (not touched by the commits, not run).
+
+HOW
+  method/env.sh, build-all.sh (fresh worktree builds, own target dirs), lint.sh (clippy kernel per board), scenarios.sh (qemu-virt matrix, head vs
+  base) with run-virt.sh (+ new topology "tablet"), qmp_mouse.py / qmp_key.py / pixdiff.py (previous run), qmp_tablet.py (new, abs events);
+  probes: usbprobe.c + qmp_probe.py (developer's, read first), qmp_probe_abs.py (abs events), qmp_probe_survive.py, usbprobe2.c + qmp_probe2.py
+  (new, 300 moves for the ring overflow), usbprobe3.c (new, raspi4b, no clock wait), decode_probe.py (new, hex dump decoder with asserts);
+  raspi4b: run.sh, api-card.sh, mkcard.sh (+ nd.inf, z-p3.inf), APFS clone per run, cards deleted after. Worktrees removed after the run.
+  Probe kernel: in the scratch worktree target/programs/qemu-virt/NEWDESK.NAP temporarily replaced by USBPROBE[2].NAP, cargo build --package
+  kernel (board-qemu-virt), original NEWDESK.NAP copied back (sha256 d5791be5... checked); nothing in the shared tree was touched.
+  Note: a 9-character program name (USBPROBE3.NCP) gets an LFN on the macOS-written card and is not found by the loader (rc -33); the card
+  probe uses USBPRB3.NCP.
+  sha256 (kernels not kept in the repo): see checks/sha256.txt. Key ones:
+    qemu-virt dev   head 633bc3d6...d26d   base a4d7ad26...d59       rpi4 release  head 1f8ec504...06bb   base 4bb716c3...8388
+    rpi4 release usb-diag head 67129d96...c472   qemu-virt release head 02044807...2c7d
+    probe kernels  virt-probe-head 4327a575...a09, virt-probe2-head 6cf7dccae...654c
+    programs  USBPROBE.NAP b418ff35 (= developer's), USBPROBE2.NAP bf78c232, USBPRB3.NCP f6cf14f4, APITEST.NCP 96ae4de5, PTERMCH.NCP 30fa331e,
+              DTACHILD.NCP eaf92b08 (= previous run)
+  (hashes differ from the developer's kernels because the scratch worktree paths are part of the build)
