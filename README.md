@@ -49,7 +49,11 @@ what we need. A photo of the crash report helps a lot.
 - SD card as the hard disk: every FAT16 partition (primary or logical, up to
   2 GB each) becomes a drive, `C:` upward to `P:`; programs see the 8.3
   names; ~10 MB/s with a 32 MB read cache
-- USB keyboard and mouse (incl. wheel) through the VL805 xHCI controller
+- USB keyboard and mouse (incl. wheel) through the VL805 xHCI controller.
+  Known limit: only devices that offer the USB HID boot protocol work, one
+  interface per device. Wireless receivers such as Logitech Unifying (e.g. MX
+  Master 2S, MX Ergo) and other report-protocol-only mice do not work yet
+  ([#3](https://github.com/tuxie01/NewTOS/issues/3), TASK/USB01)
 - US and German keyboard layouts built in, or any `C:\KEYBOARD.KBD`
 - Per-program memory protection after the FreeMiNT model: a crashing program
   ends, the system keeps running
