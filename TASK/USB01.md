@@ -76,4 +76,16 @@ Offen: >15 Befehle, Report-only-Maeuse. Paket fuer den externen Tester (usb-diag
 Spec `docs/api/usb/usb-snapshot.md` am 2026-10-23 freigegeben (alle Empfehlungen §7,
 Ausgabe `C:\USB\`), Umsetzung K1–K12 beauftragt.
 
+## Stand 2026-10-23 (Schritt 2, Kernelteil gebaut)
+
+K1–K9 der Spec `docs/api/usb/usb-snapshot.md` §5 umgesetzt (`cf396382`): `Ssystem(2022)`
+liefert Geraeteliste, Rohdeskriptoren, Report-Deskriptoren, Hersteller-/Produktstring und
+den Berichtsring je Geraet; MUTE bis 60 s. Report-only-Maeuse werden jetzt beobachtet
+(konfiguriert und aufgezeichnet, nicht dekodiert); Interrupt-TRB-Laenge = Max-Packet.
+QEMU-Belege `measurements/measurement-2026-10-23-usb01-snap-kernel/RUNINFO.TXT`
+(Eingabe wie vorher, EL0-Probe, raspi4b `ERROR`, APITEST 109/0/5). Umsetzungsnotizen fuer
+das Programm: Spec §9. **Offen:** Programm `USBSNAP.NCP` (K10), QEMU-Option (K11),
+Tester-Abnahme, Pi-Test mit Apple-Tastatur + ROCCAT (Report-/String-Abruf auf dem VL805,
+TRB-Laenge 64 der ROCCAT).
+
 [Gemeinsame Regeln](README.md) gelten.

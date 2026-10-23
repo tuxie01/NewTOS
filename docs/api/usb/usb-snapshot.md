@@ -1,7 +1,8 @@
 # USB-Schnappschuss: `Ssystem`-Modus 2022 und das Konsolenprogramm `USBSNAP` (USB01 Schritt 2, Weg a)
 
 > **STATUS: FREIGEGEBEN 2026-10-23** (Anwender: „ja mach los“, alle Empfehlungen aus §7,
-> Entscheidungen dort). Noch nicht gebaut; bis zur Umsetzung antwortet 2022 `EINVFN`. Dieses Dokument ist **Spec und
+> Entscheidungen dort). **Kernelteil K1–K9 gebaut 2026-10-23** (Umsetzungsnotizen §9);
+> das Programm `USBSNAP` (K10) und die QEMU-Option (K11) stehen aus. Dieses Dokument ist **Spec und
 > Analyse, kein Code**. Es ergaenzt [`hid-mouse-protocols.md`](hid-mouse-protocols.md)
 > §5.1 (gemeinsamer Kern) und §5.2 (Weg a); der Anwender hat Weg (a) am 2026-10-23
 > gewaehlt. Ticket: [`TASK/USB01.md`](../../../TASK/USB01.md). Modus-Zeile:
@@ -740,3 +741,39 @@ als Pfadzeile.
   bei Freigabe eine Zeile ergaenzen.
 * `docs/COMPATIBILITY.md` fuehrt die NewTOS-eigenen `Ssystem`-Modi nicht; die Spec liegt
   allein in `154-ssystem.md`.
+
+## 9. Umsetzung Kernelteil (K1–K9, 2026-10-23)
+
+Gebaut in `kernel/src/drivers/usb/snapshot.rs` (Speicher, Ring, Encoder; Hosttests ueber
+`tools/xtask`), `config_desc.rs` (Interface-Tabelle, `wDescriptorLength`, Beobachtungs-Kandidat),
+`xhci/mod.rs` (K2–K6), `usb/mod.rs` (K5, K7), `kernel/src/host_env.rs` + `tos-api/src/host.rs`
+(K8, `Host::usb_snapshot`), `tos-api/src/gemdos/ssystem.rs` (K9). Wo §2/§3 eine Einzelheit
+offen liessen, gilt (alles **[E]**, beim Bau festgelegt, vom Programm K10 so zu lesen):
+
+* **Rolle/Reason:** Gruende 16–20 (keine nutzbare Schnittstelle, Konfiguration/Configure
+  Endpoint/`SET_CONFIGURATION`/`SET_PROTOCOL` gescheitert) → Rolle 0; 21/22 → Rolle 5. Rolle 3
+  traegt als Geraete-`reason` den Code des beobachteten Interfaces (2 oder 3). Ein Hub bleibt
+  Rolle 4; scheitert seine Konfiguration, steht 17/18/19 im `reason`.
+* **Beobachtungs-Kandidat (ii)** nur in Alternate Setting 0 (das nach `SET_CONFIGURATION`
+  aktive); Interfaces mit Alt ≠ 0 stehen nur in der Tabelle.
+* **Eintrag-`flags` Bit 3:** `SET_CONFIGURATION` gesendet **und** bestaetigt.
+* **Abschnitt 1** steht immer da (`FAILED`, wenn der Geraetedeskriptor nicht lesbar war).
+  Abschnitte 5/6 fehlen, wenn der Geraetedeskriptor keinen String nennt (Index 0); `FAILED`
+  bei gescheitertem Abruf, `SKIPPED`, wenn nicht versucht (Geraet nicht konfiguriert).
+  Abschnitt 3 ist `SKIPPED` ohne HID-Deskriptor (`wDescriptorLength` 0) und ab dem fuenften
+  HID-Interface.
+* **Schritt 7** endet beim ersten gescheiterten EP0-Abruf (ein STALL haelt EP0 an, §3.1);
+  alles danach bleibt `SKIPPED` bzw. die Strings `FAILED`. Strings: zuerst String 0 mit 4 Byte
+  (erste LANGID), dann je String 64 Byte (Kopf + 31 Codeeinheiten) mit dieser LANGID.
+* **Kopf bei Fall 3/4/6/7 (§2.3):** `total_len = used_len = 32`, `flags = 0`, die Anfrage
+  (`op`, `index`, `arg`) zurueckgespiegelt.
+* **MUTE** wirkt auch, wenn die 8-Byte-Antwort nicht in den Puffer passte (nur Kopf,
+  `TRUNCATED`); eine Frist, die genau auf 0 umliefe, wird um einen Tick auf 1 verschoben.
+* **`enum_skipped`** zaehlt auch Address-Device-Fehler (Liste §2.4), obwohl der Slot dann als
+  Rolle 5 in der Liste steht. Ein Hub, dessen restliche Ports das `MAX_HID`-Budget nicht mehr
+  zulaesst, zaehlt einmal.
+* Neue Bootlog-Zeilen (alle Builds): je HID-Interface `report descriptor N bytes (declared M)`,
+  beim Beobachtungs-Pfad `report-protocol HID interface observed … not decoded`,
+  Zusammenfassung `N devices (K keyboard/mouse, O observed only)`.
+
+Belege: `measurements/measurement-2026-10-23-usb01-snap-kernel/RUNINFO.TXT`.

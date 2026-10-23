@@ -23,7 +23,7 @@
 > that knows them is kernel-only (2000/2001), the kernel entry of the
 > default `kbdvec` stub (2002, KEYS02), and the effective system settings a
 > system-information tool shows (2003–2020, SYSINFO01 / KEYOWNER), and the
-kernel entry of the OSHEADER reset stub (2021, RST01). These are *not* FreeMiNT modes and are
+kernel entry of the OSHEADER reset stub (2021, RST01), and the USB snapshot (2022, USB01). These are *not* FreeMiNT modes and are
 > marked as ours wherever they appear; 2000+ is a range FreeMiNT leaves free.
 
 > **Contract vs. reference** — see [`docs/COMPATIBILITY.md`](../../COMPATIBILITY.md).
@@ -174,15 +174,16 @@ NewTOS identity, but that is a separate decision.
 | `S_NEWTOS_INPUTMODE` | 2020 | input | where the keyboard/mouse pump runs (timer pump / `input=aes`) — KEYOWNER |
 | `S_NEWTOS_RESET` | 2021 | kernel | restart the machine — the kernel entry of the OSHEADER reset stub (RST01), see below |
 
-### NewTOS-own modes — **DRAFT, not implemented** (pending user approval)
+### NewTOS-own mode 2022 — the USB snapshot (USB01 step 2)
 
-Until implemented these numbers answer `EINVFN` like any unknown mode
-(`tos-api/src/gemdos/ssystem.rs:124`); `tos-api/tests/gemdos_ssystem_sysinfo.rs`
-still pins "2022 is not a mode" and moves to 2023 with the implementation.
+Approved 2026-10-23, **built 2026-10-23** (kernel part, `S_NEWTOS_USBSNAP` in
+`tos-api/src/gemdos/ssystem.rs`, store and encoder in
+`kernel/src/drivers/usb/snapshot.rs`). The first free number is now **2023**;
+`tos-api/tests/gemdos_ssystem_sysinfo.rs` and `gemdos_ssystem_cpuinfo.rs` pin it.
 
 | Mode | Value | Group | Notes |
 |------|------:|-------|-------|
-| `S_NEWTOS_USBSNAP` | 2022 | input / USB | **APPROVED 2026-10-23, not yet built** (USB01 step 2): snapshot of the enumerated USB devices into a caller buffer — device list with hub/port route, speed, VID/PID, chosen driver role + rejection reason, raw device/configuration/HID-report descriptors, per-device ring of raw interrupt reports, optional timed mute of the input decoder. Versioned little-endian buffer, `Ssystem(2022, buf, len)` with a 32-byte request header at `buf`; `E_OK` / `ERROR` (no USB controller, e.g. `raspi4b`) / `EINVAL`. Full spec: [`../usb/usb-snapshot.md`](../usb/usb-snapshot.md) |
+| `S_NEWTOS_USBSNAP` | 2022 | input / USB | (USB01 step 2): snapshot of the enumerated USB devices into a caller buffer — device list with hub/port route, speed, VID/PID, chosen driver role + rejection reason, raw device/configuration/HID-report descriptors, per-device ring of raw interrupt reports, optional timed mute of the input decoder. Versioned little-endian buffer, `Ssystem(2022, buf, len)` with a 32-byte request header at `buf`; `E_OK` / `ERROR` (no USB controller, e.g. `raspi4b`) / `EINVAL`. Full spec: [`../usb/usb-snapshot.md`](../usb/usb-snapshot.md) |
 
 **Why the number block is free.** FreeMiNT's `sys/mint/ssystem.h` (@ `f906416`)
 assigns 0–29, 100 and `0x54f8` (21752), and reserves two ranges by comment:
@@ -401,9 +402,13 @@ Where a fact is not known on a board, the answer is `ERROR` — the same rule as
 | 2019 | string | string | `ERROR` |
 | 2020 | 0 / 1 | 0 / 1 | `ERROR` |
 
-Tests: `tos-api/tests/gemdos_ssystem_sysinfo.rs` (2022 answers `EINVFN` until the
-DRAFT USB snapshot mode above is implemented; 2021 is `S_NEWTOS_RESET`, so 2022 was
-the next free number — corrected 2026-10-23, the old text called 2021 free).
+Tests: `tos-api/tests/gemdos_ssystem_sysinfo.rs` (2023 answers `EINVFN`; 2021 is
+`S_NEWTOS_RESET`, 2022 the USB snapshot — on a host without a USB stack a
+well-formed 2022 request is `ERROR`); the snapshot itself:
+`tos-api/tests/gemdos_ssystem_usbsnap.rs` (return values of
+[`../usb/usb-snapshot.md`](../usb/usb-snapshot.md) §2.3 against the kernel's
+encoder) and the encoder's byte tests in `kernel/src/drivers/usb/snapshot.rs`
+(run by `cargo xtask test`).
 
 ---
 
