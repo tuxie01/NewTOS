@@ -1,0 +1,29 @@
+USB01 K1-K9 (Ssystem 2022 snapshot, kernel part) -- real Raspberry Pi 4 regression run (user)
+=============================================================================================
+
+Date      2026-10-23
+Who       user, real RPi 4 Model B, 1920x1080
+Kernel    rpi4 release --features usb-diag built by the lead from 981a64d4 (code = cf396382; tester PASS in QEMU,
+          measurements/measurement-2026-10-23-usb01-snap-test/RUNINFO.TXT)
+          sha256 01c570be4212794babb138eb165ecb9c5057a9d076261eccc671779de132b4ce, 1625808 bytes
+          previous card kernel (86205b81..., usb-diag of 7c1f621d) kept as KERN1023.IMG
+Devices   Apple keyboard 05ac:020c behind its hub 05ac:1003, ROCCAT 1e7d:2cee
+
+Why       the risks the tester could only name from the code: TRB length = max packet (ROCCAT boot ep 0x81 max 64),
+          up to four extra EP0 transfers per device at boot (report descriptor, language list, manufacturer, product)
+          wrapping the 16-TRB EP0 ring through its Link TRB on the real VL805, and boot time.
+
+RESULT (user: "laeuft alles wie bisher" -- pointer, buttons, keyboard as before, no boot delay noticed)
+  serial/snap1-mouse-at-keyboard-hub.LOG  mouse at keyboard-hub port 2 (route 0x21), keyboard port 3 (route 0x31)
+  serial/snap2-mouse-at-pi.LOG            keyboard route 0x31, mouse at VL805-hub port 4 (route 0x4)
+  Both  4 devices (2 keyboard/mouse, 0 observed only), 13 commands, every event code Success, no timeout.
+        Report descriptors fetched and complete for all four HID interfaces:
+          ROCCAT iface 0 232 bytes, iface 1 63 bytes; Apple keyboard iface 0 65 bytes, iface 1 76 bytes
+          (each "declared" = received). The three EP0 transfers after them per device (language list,
+          manufacturer, product strings) completed with Success; the strings themselves are not logged, they are
+          read through Ssystem(2022) (USBSNAP, K10, not built yet).
+        ROCCAT boot endpoint now armed with 64 bytes: mouse works as before.
+  Observation path: none taken here -- both devices have a boot interface; their second, report-only
+        interfaces stay "not used" (one ring per device, spec section 7 decision 3).
+
+NOT COVERED  report-only mouse on the observation path; USBSNAP program; MUTE effect on the desktop.
