@@ -115,3 +115,10 @@ naechste Schritt, nicht F4.** Offen: mit Empfaenger geht die Kabeltastatur
 nicht (Verdacht, unbewiesen: gemeinsamer Tastaturzustand `hid.rs:47`);
 USBSNAP-Aufnahme mit Empfaenger erbeten. Spec-Abschnitt F3 in
 `docs/api/usb/hid-mouse-protocols.md` folgt vor dem Code.
+
+**Nachtrag 2026-10-23:** Spec-Entwurf F3 steht in
+`docs/api/usb/hid-mouse-protocols.md` §9 (ENTWURF, Freigabe offen, zehn
+Fragen in §9.9). Richtigstellung zum Lauf `measurement-2026-10-23-usb01-ragnar`:
+`serial/` enthaelt **10** Logs, nicht 11 wie RUNINFO und Commit `cc0e76aa`
+sagen; der Log zu Start 8 (Cherry DW 9000, blaue Buchse) fehlt in Ragnars
+Sendung.

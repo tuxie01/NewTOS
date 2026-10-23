@@ -334,7 +334,7 @@ Aufwand ist **meine Schaetzung** (S ≤ 0,5 Tag, M 1–2, L 3+), nicht gemessen.
 | 1 | **F0 Diagnose-Kern** (§5.1): Deskriptoren behalten, Report-Deskriptor holen, Berichtsring | ohne Daten ist die Wahl des Parsers geraten; die Anwenderfrage „welche Maus spricht was“ ist nur so zu beantworten | M | — |
 | 2 | **F1 Befehlsring mit Link-TRB** (§3.1) | stille, kombinationsabhaengige Grenze (13 von 15 im Pi-Baum), Voraussetzung fuer Hotplug und fuer mehr Geraete | S | — |
 | 3 | **F2 Klassenpruefung** `bInterfaceClass == 3` (und Hub per Interface-Klasse) vor Protokoll 1/2 (Katalog E, Defekt 3 Rest) | verhindert Fehlzuordnung fremder Geraete | S | — |
-| 4 | **F3 Mehrere Interfaces je Geraet** (Interface-Schleife, je HID-Interface eigener Endpoint/Ring/Puffer, Alt-Settings ignorieren) | Funkempfaenger/Verbundgeraete: sonst haengt es an der Reihenfolge im Deskriptor | M–L | F0 hilfreich, F1 |
+| 4 | **F3 Mehrere Interfaces je Geraet** (Interface-Schleife, je HID-Interface eigener Endpoint/Ring/Puffer, Alt-Settings ignorieren) — **Spec-ENTWURF: §9** | Funkempfaenger/Verbundgeraete: sonst haengt es an der Reihenfolge im Deskriptor. Seit Ragnars Lauf (`measurements/measurement-2026-10-23-usb01-ragnar/RUNINFO.TXT`) belegt: alle drei Funkempfaenger bieten die Boot-Maus auf Interface 1 | M–L | F0 hilfreich, F1 |
 | 5 | **F4 Report-Protokoll-Parser fuer Maeuse** (Tasten, X, Y, Rad, AC Pan, Report-ID, Bitbreiten; kein `SET_PROTOCOL(boot)` an Nicht-Boot-Interfaces; Zerlegung grosser Deltas in mehrere ±127-Pakete wie FreeMiNT `send_mouse_packets`; Berichte >8 Byte, Puffer >256) | schliesst Katalog C und die Hi-Res-Verluste aus B | L | F0 (Daten), F3 |
 | 6 | **F5 Tasten 3–5 und horizontales Rad** (Bit 2..4 → IKBD-Zusatzscancodes `0x37/0x5e/0x5f`, AC Pan → `0x5c/0x5d`) | Empfaengerseite ist fertig (`hid-mouse.md`); fuer A schon mit Boot-Bericht fuer Taste 3 sofort machbar | S (Taste 3), mit F4 den Rest | — / F4 |
 | 7 | **F6 Hotplug** (Root-Port-PSC-Events, Hub-Status-Change-Endpoint oder FreeMiNT-artiges Polling alle 1 s, Abbau: Disable Slot / Slot-Freigabe, Neuenumeration nur ausserhalb des Timer-IRQ) | „Umstecken ohne Reboot“; heute gar nicht vorhanden | L | F1; xHCI-Spec lokal ablegen |
@@ -375,3 +375,384 @@ Die Defekte 1, 2, 4 brauchen **keine** weitere Reparatur (§2); offen ist ihre
 * Blockierende Timeouts bei stummen Geraeten: 200 Mio. bzw. 50 Mio. Spin-
   Iterationen je Befehl/Transfer (`xhci/mod.rs:820`, `:1036`) — siehe
   `TASK/PORT06-KEYS-DIAGNOSIS.MD:165`.
+
+## 9. F3 — Mehrere Interfaces je Geraet (ENTWURF)
+
+> **STATUS: DRAFT 2026-10-23, nicht freigegeben, nichts gebaut.** Stand der Quellen:
+> `main` bei `3d6023b4`. Auftrag: `TASK/USB01.md` („Ragnars Lauf: Ursache der Funkmaeuse ist F3“).
+> Dieser Abschnitt ist Spec und Analyse, kein Code. Ersetzt die Zeile F3 in §6 und
+> ueberholt Katalog D (§1.2), soweit dort der Stand von vor F2 beschrieben ist.
+
+**Scope in einem Satz:** Wie wird aus *einem* USB-Geraet mit mehreren HID-Interfaces
+(Funkempfaenger: Tastatur + Maus + Hersteller) ein Satz von *mehreren* gepollten
+Eingabe-Endpoints, welche Interfaces werden genommen, was ist je Endpoint an
+Ring/Puffer/Zustand noetig, wo liegen die Grenzen, was aendert sich am Snapshot, und
+wie verhalten sich *mehrere Tastaturen gleichzeitig* (der von Ragnar gesehene, nicht
+erklaerte Ausfall der Kabeltastatur).
+
+### 9.0 Kennzeichnung der Aussagen
+
+* **[G]** gelesen, mit `Datei:Zeile` (Stand `3d6023b4`). **[S]** Schluss aus dem Gelesenen, nicht
+  beobachtet. **[H]** Hypothese, nicht belegt. **[?]** aus den lokalen Quellen nicht entscheidbar.
+  **[E]** Entwurfsentscheidung dieses Dokuments (Vorschlag, der Anwender darf sie kippen).
+* **Lokale Quellen:** `references/usb/hid1_11.pdf` (HID 1.11; zitiert als `hid1_11.pdf §x`, dazu die
+  Zeile im `pdftotext -layout`-Auszug, der nur im Scratchpad liegt), `references/xhci/xhci-1.2.txt`
+  (zitiert `xhci-1.2.txt:Zeile`), `references/freemint/sys/usb/src.km/`, `references/circle/`.
+  **USB 2.0 liegt nicht in `references/`** (`ls references/usb` = nur `hid1_11.pdf`); Aussagen, die
+  das USB-2.0-Kernprotokoll bräuchten (z. B. „Endpoint-Adressen sind je Konfiguration eindeutig“),
+  sind [S]/[?].
+* **Vertrag vs. intern** (`docs/COMPATIBILITY.md`): Vertrag ist nur, was ein TOS-Programm sieht —
+  Scancodes und Mauspakete aus dem IKBD-Strom. Alles in §9.2–§9.5 (Funktionstabelle, Ringe, Limits) ist
+  **intern** und frei. Vertrag im weiteren Sinn ist die `Ssystem(2022)`-Schnittstelle (§9.7), weil
+  `USBSNAP.NCP` sie liest.
+
+### 9.1 Evidenz und Ausgangslage
+
+**Die Geraete (alle [G], `measurements/measurement-2026-10-23-usb01-ragnar/`)**
+
+| Geraet (VID:PID) | Interfaces der Konfiguration (alt 0) | Endpoints (Adresse, max, bInterval) | Log |
+|---|---|---|---|
+| Logitech Unifying `046d:c52b` (MX Master 2S), Full-Speed, 84 Byte | 0 = (3,1,1) Tastatur · 1 = (3,1,2) **Maus** · 2 = (3,0,0) report-only | 0x81 8 / 8 · 0x82 8 / 2 · 0x83 32 / 2 | `serial/001_…LOG:109-121` |
+| Rii X8 `1997:2433`, Full-Speed (bcdUSB 1.10), 84 Byte | 0 = (3,1,1) Tastatur · 1 = (3,1,2) **Maus** · 2 = (3,1,1) **zweite Tastatur** | 0x81 64 / 10 · 0x82 64 / **1** · 0x83 64 / 10 | `serial/005_…LOG:109-121` |
+| Cherry DW 9000 `046a:0115`, Full-Speed, 84 Byte | 0 = (3,1,1) Tastatur · 1 = (3,1,2) **Maus** · 2 = (3,0,0) report-only | 0x81 10 / 10 · 0x82 10 / 2 · 0x83 10 / 10 | `serial/007_…LOG:109-121` |
+| Cherry KC 6000 `046a:0113` (Kabeltastatur, in **jedem** Start), Low-Speed, 59 Byte | 0 = (3,1,1) Tastatur · 1 = (3,0,0) report-only | 0x81 8 / 10 · 0x82 5 / 10 | z. B. `serial/001_…LOG:141-149` |
+
+Alle vier haengen hinter dem VL805-internen Hub `2109:3431` (Root-Port 1, High-Speed), der Empfaenger in den
+„schwarz“-Starts an Hub-Port 3 (Route `0x3`), in den „blau“-Starts an Hub-Port 1 (Route `0x1`,
+`002_…LOG:98`, `004:98`, `006:98`), die Kabeltastatur immer an Port 4 (Route `0x4`). Das Ergebnis ist von
+der Buchse unabhaengig (Tester-Tabelle), also kein Hub-Port-Effekt. Die Konfigurationslaenge folgt
+aus dem Aufbau: 9 + 3 × (9 Interface + 9 HID + 7 Endpoint) = 84 [S, passt zu allen drei Logs].
+
+**Was der Treiber heute daraus macht [G]:** `config_desc::scan` nimmt das *erste* Boot-Interface mit
+Interrupt-IN (`kernel/src/drivers/usb/config_desc.rs:290-293`: `None if out.hid.is_some() =>
+Some(SkipReason::OneInterfacePerDevice)`), alle weiteren Boot-Interfaces fliegen mit der Logzeile
+„second HID boot interface: one interface per device“ heraus (`config_desc.rs:396`; im Log
+`serial/001_…LOG:120`, `005_…LOG:120-121`, `007_…LOG:120`). Bei allen drei Empfaengern ist das
+Interface 0 eine **Tastatur**; die Maus (Interface 1) wird nie konfiguriert, nie gepollt. Die
+Zeile „HID configured: slot 2 … (keyboard)“ steht in allen drei Logs (`:125`), eine Zeile „(mouse)“
+fehlt. Folge: Zeiger und Tasten des Funkmaus-Sets sind **in Code und Log erklaert** ([G]; nicht
+nur ein Verdacht).
+
+**Gegenprobe (Log-Diff [G]):** `003_logi_b100_schwarz.LOG` (laeuft) und `001_…LOG` (laeuft nicht)
+unterscheiden sich ab Zeile 102 nur im Geraet an Slot 2 (B100: Interface (3,1,2), Low-Speed, 34 Byte; Empfaenger:
+siehe Tabelle). Slot 3 (Kabeltastatur, Route `0x4`) ist in beiden Logs Zeile fuer Zeile gleich konfiguriert
+(`003:126-145`, `001:134-153`). Alle EP0-Transfers Success, 9 bzw. 10 Befehle (der zehnte ist **vermutlich** das
+Evaluate Context fuer EP0 des Full-Speed-Empfaengers [S, aus der Differenz zu 9 Befehlen im B100-Lauf]), kein Limit, kein „stray transfer event“ im
+Aufzeichnungsfenster (die Captures enden bei „after initinfo“: **kein Eingabeverkehr im Log**).
+
+### 9.2 Begriffe und Sollverhalten
+
+* **Geraet** = ein xHCI-Slot = ein Eintrag `hid[di]` / `DEV[di]` (`xhci/mod.rs:229-307`, `:107-126`).
+  Unveraendert; `MAX_HID = 8` (`:98`) bleibt das Geraetebudget (Hubs und Nicht-HID eingerechnet, USB02 #5).
+* **Funktion** (neu, [E]) = ein vom Treiber uebernommenes HID-Interface mit *seinem* Interrupt-IN-Endpoint. Der
+  Name folgt Circle (`CUSBFunction`, `usbdevice.cpp:410`; Obergrenze `USBDEV_MAX_FUNCTIONS = 10`,
+  `usbdevice.h:31`). FreeMiNT sagt „Interface“ und bindet je Interface einen Treiber (`usb.c:1031-1034`,
+  `usb_find_interface_driver` `:1062-1091`).
+
+**Soll (Zielverhalten):**
+
+1. Fuer **jedes** Interface, das die Auswahlregeln (§9.3) bestehen, entsteht eine Funktion. Ein Geraet kann 0…`MAX_FUNC_PER_DEV`
+   Funktionen haben. Eine Maus-Funktion und eine Tastatur-Funktion desselben Geraets laufen gleichzeitig.
+2. **Ein** Configure-Endpoint-Befehl je Geraet legt *alle* Funktions-Endpoints an (§9.4); danach **ein**
+   `SET_CONFIGURATION`; danach je Boot-Funktion `SET_PROTOCOL(boot)` mit `wIndex` = deren Interfacenummer.
+3. Alle Funktionen werden erst nach dem Durchlauf des ganzen Baums scharf gemacht (heute
+   `arm_hid_endpoints`, `xhci/mod.rs:1853`, Begruendung `:1838-1852`) — jede Funktion bekommt ihr eigenes TRB.
+4. Jeder fertige Transfer wird einer Funktion zugeordnet (Slot **und** DCI, wie heute fuer das Geraet,
+   `xhci/mod.rs:749-751`) und mit dem Zustand *dieser* Funktion dekodiert (§9.6).
+5. Die Berichts-Zuordnung zum IKBD-Strom bleibt: Tastaturfunktion → `hid::keyboard_report`, Mausfunktion →
+   `hid::mouse_report`; ein Geraet mit beiden speist beide Pfade.
+
+### 9.3 Auswahlregeln fuer Interfaces
+
+| # | Regel | Beleg |
+|---|---|---|
+| R1 | Nur **Alternate Setting 0** wird beachtet. Spaetere Alt-Settings derselben `bInterfaceNumber` sind Alternativen, keine weiteren Funktionen. | Circle ueberspringt sie: `usbdevice.cpp:395-406` („Alternate setting … ignored“). FreeMiNT zaehlt dieselbe Nummer als `num_altsetting++`: `usb.c:364-377`. **Abweichung heute [G]:** `classify`/Auswahl in `config_desc.rs:211-221,287-293` pruefen `alt` nicht — ein Boot-Interface mit `alt != 0` koennte genommen werden, obwohl `SET_CONFIGURATION` Alt 0 aktiviert. F3 muss `alt == 0` verlangen [E, Korrektur eines latenten Fehlers]. |
+| R2 | **Boot-Funktion:** Klasse 3, Subklasse 1, Protokoll 1 (Tastatur) oder 2 (Maus), mit Interrupt-IN-Endpoint (Auswahl wie F2). Dekodiert. | HID 1.11 §4.1–§4.3 (`config_desc.rs:1-27`); `config_desc::is_boot_hid` `:200-205`. |
+| R3 | Als Endpoint der Funktion zaehlt der **erste Interrupt-IN-Endpoint des Interface** (wie heute `IfaceRow.ep_addr`, `config_desc.rs` Endpoint-Zweig). Interrupt-OUT und weitere IN-Endpoints werden ignoriert. FreeMiNT verlangt zusaetzlich `bNumEndpoints == 1` (`usb_keyboard.c` `kbd_probe`, „`bNumEndpoints != 1`“); das uebernehmen wir **nicht**, weil F2 es nicht verlangt und kein Log ein Gegenbeispiel zeigt [E]. | `config_desc.rs` Endpoint-Zweig; FreeMiNT `usb_keyboard.c:526-575`. |
+| R4 | **Mehrere Funktionen gleicher Art sind erlaubt** (Rii X8: Tastatur auf Interface 0 *und* 2). Jede bekommt eigenen Zustand (§9.6). | `005_…LOG:109-121`. |
+| R5 | **Report-only-Interfaces** (Subklasse 0): wie heute nur der Beobachtungs-Pfad (Rolle 3, `usb-snapshot.md` §3.2), und **nur wenn das Geraet keine Boot-Funktion hat**. Das Hersteller-Interface eines Empfaengers (Unifying Interface 2, Endpoint 0x83, max 32) wird in F3 also **nicht** gepollt. Begruendung: der Empfaenger waere sonst mit einem dritten Endpoint belastet, dessen Verkehr (HID++) nichts bewirkt; Ausweitung der Beobachtung auf alle Interfaces ist Frage 3 in §9.9. | `config_desc.rs` `Scan.observe` („Only when `hid` is `None`“); `usb-snapshot.md` §3.2, §7 Entscheidung 3. |
+| R6 | **Grenzen:** hoechstens `MAX_FUNC_PER_DEV` Funktionen je Geraet und `MAX_FUNC` insgesamt (§9.5). Das naechste Interface bekommt einen neuen `SkipReason::FunctionLimit` (`config_desc.rs:96-100` Familie; Snapshot-Reason 6, noch frei: `snapshot.rs` Reason-Codes 1–5, 16–22) und die Logzeile „not used: function limit“. `OneInterfacePerDevice` entfaellt (Reason 5 bleibt als „reserviert, nicht mehr vergeben“ [E]). | F8-Regel („kein stilles Auslassen“). |
+| R7 | **Endpoint-Kollision:** bildet ein zweites Interface denselben DCI (gleiche Endpoint-Nummer und Richtung) wie eine bereits gewaehlte Funktion, wird es uebersprungen und geloggt. Weil jeder DCI genau einen Endpoint-Context hat (`xhci-1.2.txt:4682-4686`), waere sonst der Kontext doppelt belegt. Dass ein gueltiger Konfigurationsdeskriptor das nicht erzeugt, ist **USB-2.0-Stoff** und hier [?]; die Regel ist reine Absicherung [E]. | xHCI: `DCI = Endpoint Number × 2 + Direction` (`xhci-1.2.txt:4682-4686`). |
+| R8 | **Reihenfolge:** Funktionen in Deskriptor-Reihenfolge; Funktion 0 ist die „primaere“ (setzt Geraete-`role`/`reason`, bestimmt das Verhalten bei Fehlern, §9.4). | [E]. |
+
+**Verhalten gegenueber heute:** fuer Geraete mit genau einer Boot-Funktion aendert sich nichts
+(identische Kommandos, identische Logzeilen — Abnahme: die Logs aus `usb01-con04-pi`/`usb01-pi-kbdhub`/`usb01-snap-pi`
+muessen bis auf neue Funktionszeilen gleich bleiben).
+
+### 9.4 Endpoint, Ring und Puffer je Funktion
+
+**Heute (Ist) [G]:** je *Geraet* `DevDma { device, input, ep0_ring, int_ring, buf, intbuf[64] }`
+(`xhci/mod.rs:107-126`) — also genau ein Interrupt-Ring (16 TRBs) und ein Berichtspuffer; `HidDev` fuehrt
+`dci`, `protocol`, `trb_len`, `int_enq`, `int_cycle`, `role`, `reason` (`:229-262`); `configure_endpoint`
+baut *einen* Endpoint-Context (`:1645-1713`), `queue_interrupt(di)` stellt ein TRB und klingelt `(slot, dci)`
+(`:658-689`).
+
+**Soll [E, aus xHCI und Ist abgeleitet]:**
+
+* **Aufteilung.** Ein Geraet behaelt Device-/Input-Context, EP0-Ring und `buf` (Slot-Teil). Neu eine
+  Tabelle **`FUNC[MAX_FUNC]`**, je Eintrag: `{ dev: u8 (Index hid[]), iface: u8, ep_addr: u8, dci: u8,
+  protocol: u8 (1/2/0), trb_len: u16, int_enq, int_cycle, role, reason }` im Treiberzustand und
+  `FuncDma { int_ring: Ring (16 TRBs, 64-Byte-ausgerichtet), intbuf: [u8; 64] }` im `.dma`-Block (`Ring` ist
+  `align(64)`, `xhci/mod.rs:66-70`). Rechnung ([S], aus den Strukturgroessen): `DevDma` heute
+  1024 + 1056 + 256 + 256 + 256 + 64 = 2912 Byte (auf 64 aufgerundet 2944); ohne `int_ring`/`intbuf`
+  2592 (2624). Eine Funktion kostet 256 + 64 = 320 Byte `.dma`.
+* **Configure Endpoint.** Ein einziger Befehl je Geraet. Im Input-Context: Add-Context-Flag **A0** (Slot) und
+  **A_dci** fuer jede Funktion; `Context Entries` des Slot-Context = **groesster DCI** aller Funktionen (heute
+  `set_context_entries(dci)` fuer genau einen, `xhci/mod.rs:1673`). Grundlage: ein Add-Flag mit DCI >
+  `Context Entries` macht den Context ungueltig (`xhci-1.2.txt:6070`); Definition des Feldes „Index des
+  letzten gueltigen Endpoint-Context“ (`xhci-1.2.txt:22321-22326`). **Hinweis [?]:** `xhci-1.2.txt:4720`
+  schreibt fuer den Configure-Endpoint-Befehl „Context Entries = Maximum DCI+1 of configured Endpoint
+  Contexts“ — das widerspricht `:22321` dem Wortlaut nach; der heutige Code (= groesster DCI) laeuft auf
+  VL805 und QEMU, der Widerspruch ist unaufgeloest und gehoert vor dem Bau geklaert (Frage 6).
+  Je Endpoint-Context: Typ Interrupt-IN, Max Packet Size, eigener `TR Dequeue Pointer` = *dessen* `FuncDma.int_ring`,
+  DCS 1, CErr 3, Average TRB Length und Max ESIT Payload = Max Packet, Interval nach der heutigen Formel
+  (`xhci/mod.rs:1696-1708`; Rii-Maus `bInterval 1` Full-Speed ⇒ Interval 3 = 1 ms). Beispiele: `0x81 → DCI 3`,
+  `0x82 → DCI 5`, `0x83 → DCI 7` (`DCI = EpNr·2 + 1`, `xhci/mod.rs:1662`).
+* **Befehlsbudget.** F3 braucht **keinen** zusaetzlichen xHCI-Befehl (ein Configure Endpoint je Geraet bleibt),
+  nur ein Steuerrequest `SET_PROTOCOL(boot)` mehr je weitere Boot-Funktion. F1 hat die 15er-Grenze
+  entfernt; die Zahl 13/15 aus §3.1 gilt nicht mehr.
+* **Bandbreite/Ressourcen.** Mehr periodische Endpoints koennen Configure Endpoint mit *Bandwidth Error* oder
+  *Resource Error* scheitern lassen; der xHC laesst dabei die Zuteilungen unveraendert
+  (`xhci-1.2.txt:5733-5740`, `:5840-5845`). Ob der **VL805** drei Interrupt-Endpoints eines Full-Speed-Geraets
+  hinter dem Hub-TT annimmt, ist **[?]** (keine Messung; Test-Pi-Schritt P2 in §9.8).
+  **Fallback [E]:** schlaegt der kombinierte Befehl fehl, einmal wiederholen mit *nur Funktion 0* (= F2-Verhalten),
+  beide Versuche loggen; die uebrigen Funktionen bekommen Reason `CONFIGURE_ENDPOINT` (18). Der Wiederholungsbefehl
+  ist zulaessig, weil ein gescheiterter Befehl nichts veraendert (`xhci-1.2.txt:5738-5740`).
+* **Reihenfolge der Steuerrequests [G aus Ist, E fuer Neues].** Configure Endpoint **vor** `SET_CONFIGURATION`
+  (`xhci/mod.rs:1743-1754`, xHCI-Reihenfolge `xhci-1.2.txt:4346-4364`), dann `SET_PROTOCOL(boot)` je Boot-Funktion
+  in Funktionsreihenfolge (HID 1.11 §7.2.6: gilt je Interface, `wIndex` = Interface; Geraete stehen nach dem
+  Einschalten im Report-Protokoll, der Host soll es setzen, `hid1_11.pdf` §7.2.6). **Alles davor** liegt in
+  `configure_hid`, **vor** `fetch_extras` (Report-Deskriptoren, Strings; `xhci/mod.rs:1967-1977`), damit ein
+  STALL der riskanten Abrufe kein `SET_PROTOCOL` mehr trifft (`usb-snapshot.md` §3.1).
+* **Fehlerverhalten bei Funktion k > 0 [E].** Scheitert `SET_PROTOCOL` fuer die primaere Funktion 0 → wie heute
+  Geraet verworfen (`xhci/mod.rs:1757-1761`). Scheitert es fuer Funktion k > 0 → *nur diese* Funktion wird
+  nicht scharf gemacht (Reason 20), das Geraet bleibt; weitere Steuerrequests an dasselbe Geraet unterbleiben
+  (ein STALL setzt EP0 auf Halted, einen Reset-Endpoint-Pfad gibt es nicht — `usb-snapshot.md` §3.1, Zitat xHCI
+  §4.8.3 dort) — das beendet auch `fetch_extras` fuer dieses Geraet.
+* **Zuordnung von Events.** Das Transfer-Event traegt `Slot ID` und `Endpoint ID` = DCI (`xhci-1.2.txt:1571`).
+  `poll_interrupt` sucht heute den Besitzer in `hid[0..n_hid]` mit `(slot, dci)` (`xhci/mod.rs:749-751`) und
+  liefert den Geraeteindex; es sucht kuenftig in `FUNC[..n_func]` und liefert den **Funktionsindex**. `queue_interrupt`
+  nimmt Funktionsindex; `note_error` zaehlt je Geraet *und* Funktion (§9.7). Ein Event ohne Besitzer bleibt „stray“.
+* **Steady State.** Je Funktion hoechstens **ein** ausstehendes TRB (wie heute je Geraet). Also bis zu `n_func + 1`
+  ausstehende Events (Funktionen + ein Steuerevent). Das ist die Grenze aus dem Kommentar `xhci/mod.rs:377-385`
+  („at most `MAX_HID + 1`“), die dort auf den Event-Ring (16 Eintraege, `EVT_RING_LEN`, `:57`) abgestimmt ist →
+  **`MAX_FUNC + 1 ≤ EVT_RING_LEN`**, sonst droht ein voller Event-Ring [S, aus dem Kommentar; xHCI-Ereignisringregel
+  nicht nachgelesen → [?]].
+
+### 9.5 Limits
+
+| Grenze | Wert / Vorschlag | Beleg / Begruendung |
+|---|---|---|
+| Geraete `MAX_HID` | **8, unveraendert** | `xhci/mod.rs:98`. Funktionen verbrauchen keinen `hid[]`-Eintrag. Die Pi-Baeume aus den Logs brauchen 3–4. |
+| `MAX_FUNC_PER_DEV` | **4** [E] | Passt zu `snapshot::REPORT_DESC_IFACES = 4` (`snapshot.rs:25`); beobachtetes Maximum 3 Interfaces je Geraet (alle Logs). Circle erlaubt 10 (`usbdevice.h:31`), FreeMiNT 8 Interfaces/Konfiguration (`usb.h:40`). |
+| `MAX_FUNC` | **12** [E], harte Obergrenze **15** | 15 = `EVT_RING_LEN − 1` (§9.4 „Steady State“). 12 deckt 8 Geraete × 1 + 4 Zusatzfunktionen; bei Bedarf anheben, dann aber Event-Ring und `PENDING_EVENTS` (`:385`) mitvergroessern. |
+| `.dma` je Funktion | 320 Byte → 12 × 320 = 3,75 KiB | §9.4; der `.dma`-Block hat 2 MiB (`[pcie] .dma block 0xe00000..0x1000000` in den Logs). |
+| Pollrate | **ein** Bericht je `poll()`-Aufruf | `usb/mod.rs:198` (`if let Some(..) = c.poll_interrupt()`), `snapshot` §2.6 „Abholrate“. Mit 3 Endpoints je Empfaenger konkurrieren mehr Quellen um denselben Durchsatz (Rii-Maus: `bInterval 1`, also bis zu 1000 Berichte/s) [S]; nicht neu, aber F3 verschaerft es. Ob das sichtbar traegt, ist Messfrage (P4). |
+| Konfigurationspuffer | 1024 Byte (bereits seit K2) | `snapshot::CONFIG_MAX`; alle bekannten Empfaenger 84 Byte. |
+| Interface-Tabelle | 16 Zeilen (bereits) | `config_desc.rs` `MAX_IFACE_ROWS`; Gamepad `045e:028e` zeigt 4 Interfaces, 153 Byte (`8Bit_Do_Joypad.LOG`). |
+
+### 9.6 Mehrere Tastaturen (und Mäuse) gleichzeitig
+
+**Befund A — was der Treiber heute tut [G].**
+
+* Jedes Geraet mit Boot-Tastatur-Interface wird `protocol 1`, jedes wird scharf gemacht
+  (`xhci/mod.rs:1967-1969`, `:1853-1859`); `usb::poll` dekodiert jeden Bericht mit `hid::keyboard_report`
+  (`usb/mod.rs:221`).
+* `hid::keyboard_report` vergleicht den neuen Bericht mit **einem einzigen globalen** Vorzustand
+  `static PREV: AtomicU64` (`hid.rs:47`, Lesen/Schreiben `:86-117`): Break fuer jede Taste im alten, aber
+  nicht im neuen Bericht, Make fuer jede im neuen, aber nicht im alten (`hid.rs:94-111`); Modifier genauso
+  (`:91-92`). `release_all` beim MUTE-Beginn laeuft ueber denselben einen `PREV` (`hid.rs:57-65`). Der Zustand
+  gehoert also **nicht** zum Geraet.
+* Sind zwei Tastaturen aktiv, ueberschreibt jeder Bericht den Zustand des anderen: der Diff vergleicht
+  Tastatur B mit dem *Zustand von Tastatur A*. **Ableitung [S] (reine Rechnung am Code, nicht beobachtet):**
+  Kabeltastatur haelt „a“ (Bericht `[a]`), Empfaenger-Tastatur meldet leer (`[]`):
+  `[a]` → Make a · `[]` → **Break a** · naechster `[a]` der Kabeltastatur → **Make a** … Taste und Modifier
+  „flackern“ so oft, wie Berichte der beiden Geraete einander abwechseln. Halten beide je eine Taste, kippen
+  bei jedem Bericht beide (`[a]`→`[b]`: Break a, Make b; dann `[a]`: Break b, Make a …).
+* Die Wirkung haengt an der **Berichtskadenz beider Geraete**. HID 1.11: Boot-Tastaturen *sollen* Berichte
+  auch ohne Aenderung senden (`hid1_11.pdf` Anh. F.3, Textauszug Z. 3358-3360), der empfohlene
+  Standard-Idle-Wert fuer Tastaturen ist **500 ms** (§7.2.4, Auszug Z. 2433). **Unser Treiber sendet nie
+  `SET_IDLE`** [G: einziger Klassenrequest ist `SET_PROTOCOL` `xhci/mod.rs:1639-1641`; Suche nach 0x0A:
+  kein Treffer]; FreeMiNT sendet `SET_IDLE(0,0)` („report infinite“) vor `SET_PROTOCOL` fuer Tastatur und
+  Maus (`usb_keyboard.c:599-602`, `mouse-boot/usb_mouse.c:425`, `mouse/usb_mouse.c:731`). Eine
+  Empfaenger-Tastatur ohne Funk-Tastatur im Set kann also — je nach Firmware — alle 500 ms (oder bei jedem
+  Poll, 8–10 ms) einen leeren Bericht liefern. Welches davon die Empfaenger tun, ist **[?]**: die Logs
+  enden vor dem Eingabeverkehr.
+* **`mouse_report` ist zustandslos pro Bericht** (`hid.rs:127-136`): Delta + Tastenbyte. Zwei Maeuse addieren sich
+  im IKBD-Strom korrekt (relative Deltas); das **Tastenbyte** des letzten Berichts gewinnt aber
+  (`hid.rs:128-131`: `0xF8 | wire` je Bericht, `MOUSE_BUTTONS` nur fuer `release_all` `:50`). Haelt Maus A links
+  und bewegt sich Maus B ohne Tasten, kommt ein Paket „keine Taste“ = Loslassen [S].
+
+**Befund B — was die Referenzen sagen.**
+
+| Quelle | Aussage | Beleg |
+|---|---|---|
+| FreeMiNT | **Eine** Tastatur zur Zeit: `kbd_probe` weist jede weitere mit `-1` ab (Kommentar „Only one keyboard at time“); ebenso eine Maus (`mouse-boot`, `mouse`). Der Zustand `olddata/newdata` ist ein einziges `static kbd_data`. **Erste gewinnt:** haette ein Empfaenger-Tastatur-Interface vor der Kabeltastatur enumeriert, wuerde in FreeMiNT die *Kabeltastatur* abgewiesen. Damit ist FreeMiNT hier **kein Vorbild fuer „beide leben“**, sondern nur fuer die Bindung je Interface (`usb.c:1031-1034`). | `usb_keyboard.c:533-538`, `:126-141`; `mouse-boot/usb_mouse.c:359-364`; `mouse/usb_mouse.c:628-633`. |
+| FreeMiNT | Zustandsbehandlung beim Lesen: Laenge < 3 oder > 8 → verwerfen, Bytes hinter `actlen` auf 0. | `usb_keyboard.c:364-373`. |
+| Circle | Jede Tastatur ist ein **eigenes Objekt** mit **eigenem** `m_LastReport` und eigener Gerätenummer (Namenspraefix `ukbd`, `usbkeyboard.cpp:32`, Nummernpool `:29,80-82`). | `usbkeyboard.h:79`, `usbkeyboard.cpp:29,32,80-82,216-249`. |
+| Circle | „setting the LED status forces some keyboard adapters to work“ — Tastatur-Adapter, die ohne LED-Output-Report schweigen. | `usbkeyboard.cpp:77-78`. Beleg fuer die *Existenz* solcher Adapter, **kein** Beleg fuer die Empfaenger hier. |
+| HID 1.11 | Jedes Interface ist ein eigenes HID-Geraet mit eigenem Protokoll-/Idle-Zustand (`wIndex` = Interface in `Set_Protocol`/`Set_Idle`); mehrere Interface-Deskriptoren teilen Endpoint 0 (§4.4); das Beispielgeraet im Anh. E „Tastatur mit integriertem Zeigegeraet“ ist **absichtlich als zwei Interfaces** gebaut, damit es das Boot-Protokoll kann (Auszug Z. 2994-2999, Maus-Interface Z. 3195-3203). Die **Zusammenfuehrung mehrerer Tastaturen beim Host** legt HID nicht fest. | `hid1_11.pdf` §4.4, §7.2.4, §7.2.6, Anh. E. |
+
+**Soll (Entwurf) [E]:**
+
+1. **Zustand je Funktion, nicht global.** `PREV` wird ein Feld der Funktion (`prev: u64` je `FUNC[i]`); `keyboard_report`
+   bekommt den Funktionsindex. Das beseitigt den Diff gegen fremden Zustand. `release_all` laeuft ueber alle
+   Funktionen. Minimalfix, aendert bei einer Tastatur nichts.
+2. **Alle Tastaturen speisen denselben IKBD-Strom** (ein Atari hat eine Tastatur; `ikbd.rs` fuehrt einen
+   Modifier-/Wiederholzustand, `ikbd.rs:39-43,93,321`). Bekannte Grenze: haelt Tastatur A „a“ und
+   Tastatur B laesst „a“ los, entsteht ein Break trotz gehaltener Taste auf A. **Option** (kostet 128 Byte):
+   Zaehler je Scancode, Make nur bei 0→1, Break nur bei 1→0. Empfehlung: erst Punkt 1, den Zaehler nur wenn eine
+   Messung (P3) Bedarf zeigt — Frage 4.
+3. **Maus-Tasten OR-verknuepfen:** Zustand `buttons` je Mausfunktion; das gesendete Tastenbyte ist das OR aller
+   Mausfunktionen (Bits 0/1). Gleiche Argumentation wie Punkt 1. [E]
+4. **`SET_IDLE` ist nicht Teil von F3.** Es erklaert moeglicherweise die Berichtskadenz (§9.6 oben) und FreeMiNT
+   sendet es, aber: ein `SET_IDLE`, das ein Geraet mit STALL beantwortet, setzt EP0 auf Halted ohne Reset-Pfad
+   (`usb-snapshot.md` §3.1). Boot-Tastaturen *muessen* es koennen (`hid1_11.pdf` Anh. F.3, Z. 3358); fuer Funk-Interfaces
+   unbekannt [?]. Entscheidung dem Anwender (Frage 5); falls ja: nach allen `SET_PROTOCOL`, vor `fetch_extras`.
+
+**Befund C — der Ausfall der Kabeltastatur mit Empfaenger (Ragnar, Starts 1, 2, 5–8) [Hypothesen].**
+
+* Beobachtung [G]: Starts 1/2/5–8 „Tastatur nein“; Start 3/4 (B100 statt Empfaenger) „ja“
+  (`NOTIZEN.TXT`). Kabeltastatur in allen Logs gleich konfiguriert (§9.1, Gegenprobe). **Einziger Unterschied
+  der beiden Gruppen im Log:** ein zweites Geraet mit `protocol 1` (Empfaenger-Interface 0, Slot 2) [G].
+* **H1 (Mechanismus belegt, Wirkung nicht): gemeinsamer `PREV`.** Der Code erzeugt bei zwei aktiven Tastaturen
+  Scancode-Flackern (siehe Befund A). **Was H1 vorhersagt:** falsche/ doppelte Zeichen, Modifier (Shift, Ctrl)
+  fallen weg, Wiederholung bricht ab, bei hoher Kadenz beider Geraete (8–10 ms, ohne Idle) ein
+  Zeichenhagel — **nicht** zwingend voelliges Schweigen. Ob „nein“ des Testers „gar nichts“ oder „unbrauchbar“
+  heisst, ist offen (Frage 1). H1 erklaert damit „nicht tippbar“, aber nicht automatisch „keine Reaktion“ [S].
+* **H2 [H]: Fehler-/Neuarmierungsschleife.** Liefert ein Endpoint (z. B. der des Empfaengers) dauernd einen
+  Nicht-Erfolgs-Code, protokolliert `poll_interrupt` jeden und armiert sofort neu (`xhci/mod.rs:781-796`) —
+  im selben Aufruf, bis zu `PENDING_EVENTS + EVT_RING_LEN` Durchlaeufe, je mit `kprintln`. Das koennte den Pump
+  ausbremsen. **Kein Hinweis darauf im Material** (die Logs enden vor dem Verkehr). Pruefbar am Zaehler
+  `int_errors`/`last_cc` je Geraet (`snapshot.rs` Entry-Bytes 28-30), den eine `USBSNAP`-Aufnahme liefert.
+* **H3 [H]: Begriff.** Der Tester testet in 5–8 evtl. die Funktastatur des Sets statt der Kabeltastatur (die
+  Spalte heisst „Tastatur“, die Kopfzeile nennt die Cherry KC 6000). Bei Start 1/2 (reine Maus) ist das
+  ausgeschlossen. Frage 1.
+* **H4 [H]: Hub-TT/Bandbreite.** Ein Full-Speed- und ein Low-Speed-Interrupt-Endpoint hinter *demselben* High-Speed-Hub.
+  In den Arbeitslaeufen waren es zwei Low-Speed-Geraete (B100, Cherry KC 6000), im Apple-Lauf eines je
+  (`apple_tastatur.LOG`: Full-Speed-Tastatur + Low-Speed-Maus, beides geht). Kein Hinweis auf ein Problem.
+  Nur der Vollstaendigkeit halber.
+* **Nicht erklaerbar aus dem Material:** wie H1 allein ein *vollstaendiges* Versagen ergaebe. Entscheidende
+  Messung: **eine `USBSNAP`-Aufnahme mit Empfaenger + Kabeltastatur** (der Ring je Geraet zeigt Berichte und
+  Zeitstempel *beider* Tastaturen getrennt, `usb/mod.rs:203-208` zeichnet vor dem Dekodieren auf; Kernel mit
+  Modus 2022 ist `main`). Sie braucht kein F3.
+
+**Befund D — „Zeiger ja“ bei nie gepollter Maus.** [G] In den Logs 001, 002, 005, 006, 007 existiert **kein** Geraet mit
+`protocol 2`: die einzigen Zeilen „HID configured“ lauten zweimal `(keyboard)` (`grep` ueber `serial/*.LOG`: 0 × „(mouse)“,
+2 × „(keyboard)“). **Der Log zu Start 8 (Cherry DW 9000, blau) liegt nicht im Ordner** — `serial/` hat 10 Dateien,
+`RUNINFO.TXT` nennt 11 [G]. `mouse_report` (`hid.rs:127`) ist nur fuer
+`protocol 2` erreichbar (`usb/mod.rs:225`). Also kann **kein** Mauspaket aus dem Empfaenger stammen [S, aus dem Code].
+Moegliche Lesarten [H]: (a) „Zeiger“ = der Mauszeiger ist **sichtbar** (nicht „bewegt sich“); ob der Zeiger
+ohne Maus gezeichnet wird, ist hier nicht geprueft [?]; (b) der Zeiger bewegte sich ueber eine andere Quelle
+(z. B. die Alt+Pfeil-Mausemulation der EmuTOS-BIOS, `references/emutos/bios/ikbd.c:286-322`, die mit funktionierender Tastatur
+ginge — widerspricht „Tastatur nein“). Frage 1 klaert es in einem Satz.
+
+### 9.7 Auswirkung auf den Snapshot-Speicher (`usb-snapshot.md`)
+
+Der Snapshot ist heute **ein Eintrag je Geraet** (`Device`, `snapshot.rs:276-330`, `MAX_DEVICES = 8`) mit **einem** Ring
+(`ring_iface`/`ring_ep`, `snapshot.rs:302-304`; Eintraege 18/19 des Listeneintrags `usb-snapshot.md` §2.4;
+Ring 256 × 80 Byte `snapshot.rs:29,44`). Entscheidung 3 in `usb-snapshot.md` §7 nannte das ausdruecklich als Grenze
+(„mehrere Ringe erst mit F3“). Folgen von F3:
+
+| Stelle | Heute | Mit F3 [E, Optionen] |
+|---|---|---|
+| Ring | 1 je Geraet, nur das gewaehlte Interface | **Option A (empfohlen):** weiter *ein* Ring je Geraet (Speicher bleibt 240 KiB), aber jeder Eintrag bekommt die Funktion: die 4 reservierten Bytes bei +12 des 80-Byte-Eintrags (`usb-snapshot.md` §2.6, „reserviert, 0“) tragen `iface` und `ep_addr`. Berichte der drei Endpoints eines Empfaengers laufen in einer `seq`-Folge (Reihenfolge des Eintreffens — genau das, was H1 braucht). **Option B:** ein Ring je Funktion = `MAX_FUNC` × 20 KiB = 240 KiB zusaetzlich `.bss` (bei 12), dafuer eigene `seq` je Funktion. Kosten-Nutzen: A billiger und zeigt die Interleaving-Reihenfolge, B einfacher zu lesen. |
+| `ring_iface` / `ring_ep` (Eintrag 18/19) | das ueberwachte Interface | = Funktion 0 (primaer, R8); `0xFF` bleibt „kein Ring“. Gilt nur noch als „erste Funktion“. |
+| `role` (Eintrag 14) | eine Rolle je Geraet (1 Tastatur / 2 Maus / 3 beobachtet …) | = Rolle der primaeren Funktion (Empfaenger: 1). **Reicht nicht**, um „Tastatur + Maus“ zu zeigen: `USBSNAP.NCP` deutet die Berichte nach `role` (`sdk/examples/usbsnap.c:1113-1160`, Zeilen 1129-1153) und wuerde die Mausberichte als Tastaturberichte lesen. Noetig: **Rolle je Interface-Zeile** (Zeilenbyte 15 ist reserviert, `usb-snapshot.md` §2.5) und `n_funcs` in Eintragsbyte 31 (reserviert). |
+| Interface-Tabelle `monitored` (Zeilenbyte 14) | genau ein Interface 1 | bereits ein Flag je Zeile (`snapshot.rs:168-190`) — traegt mehrere Funktionen ohne Aenderung. |
+| Reason-Codes | 5 = `OneInterfacePerDevice` | 5 entfaellt (reserviert), 6 = `FunctionLimit` (neu). `config_desc::SkipReason` und `snapshot::reason` gleichziehen (`xhci/mod.rs:186` `skip_code`). |
+| `int_errors`/`last_cc` (Eintrag 28-30) | je Geraet | bleibt je Geraet (Summe der Funktionen); je Funktion nur mit Option B. |
+| `Ssystem(2022)`-Version | 1 | Option A/B aendern die **Bedeutung** reservierter Felder → empfohlen **`VERSION = 2`** (`snapshot.rs:38`; Regel §2.3 Nr. 3: unbekannte Version → `EINVAL` mit Kopf) und `USBSNAP.NCP` im selben Schritt anpassen (Kernel und Programm gehen ohnehin zusammen raus, `usb-snapshot.md` §4.1). Alternative: Version 1 beibehalten, v1-Programme zeigen dann gemischte Berichte falsch beschriftet (kein Absturz). |
+| Erste Boot-Anzeige (`device_info`, `xhci/mod.rs:1315`) | ein Eintrag je Geraet, `protocol` = Rolle | zeigt „Keyboard“ fuer den Empfaenger; „Keyboard + Mouse“ ist USB02 #4/#8-Gebiet, **nicht** F3. |
+
+### 9.8 Testplan
+
+**Host (ohne Hardware, `cargo test` in `tools/xtask`; `config_desc.rs`, `snapshot.rs`, `ring.rs` werden dort per
+Pfad eingebunden, `tools/xtask/src/main.rs:55-75`).** Bauen, sobald F3 freigegeben ist:
+
+* **H-1 Auswahl.** Synthetische Konfigurationen mit dem Aufbau aus §9.1 (Interface-/HID-/Endpoint-Deskriptoren;
+  `wDescriptorLength` der Empfaenger steht **nicht** in den Logs [?] — Fixture setzt einen Platzhalter und prueft
+  nur Aufbau und Auswahl): Unifying (Tastatur, Maus, report-only → 2 Funktionen, Interface 2 `NotBootSubclass`),
+  Rii X8 (3 Boot-Funktionen: Tastatur, Maus, Tastatur), Cherry DW 9000, Apple-Tastatur + B100 (Regression: je 1 Funktion), Gamepad
+  `045e:028e` (0 Funktionen, 4× `NotHid`), Alt-Setting-Fall (R1), Kollisions-Fall (R7), mehr als `MAX_FUNC_PER_DEV`
+  (R6), abgeschnittene Konfiguration (`stopped_at`).
+* **H-2 Zustand je Funktion.** Den Tasten-Diff als reine Funktion herausziehen (heute in `hid.rs:86-123` mit `ikbd::feed`
+  verdrahtet) und mit zwei verschachtelten Berichtsfolgen testen: (i) Kabeltastatur haelt `a`, Empfaenger sendet
+  dauernd `[]` → **kein** Break fuer `a` mit Zustand je Funktion; (ii) zwei Tastaturen halten `a` und `b`;
+  (iii) Modifier; (iv) `release_all` ueber alle Funktionen. Diese Tests zeigen *mit dem heutigen globalen `PREV` das
+  Flackern* (Rot) und mit dem Fix das Gegenteil (Gruen) — damit ist H1 als Mechanismus pruefbar.
+* **H-3 Snapshot.** Ring-Eintrag mit `iface`/`ep`-Feld, Zeilenrolle, `n_funcs`, `FunctionLimit`-Reason in der Op-2-Antwort.
+
+**QEMU (`cargo xtask run --board qemu-virt [--usb-extra] [--usb-dev <spec>]`; raspi4b hat keinen USB-Controller,
+`tools/xtask/src/main.rs:719-720`).**
+
+* *Was `--usb-extra`/`--usb-dev` emulieren kann* [G aus `tools/xtask/src/main.rs:613-635,172-187`]: Standard `usb-kbd` +
+  `usb-mouse`; `--usb-extra` zusaetzlich `usb-tablet` (Root-Port 3) und `usb-hub` (Root-Port 4) mit `usb-mouse` (4.1) und
+  `usb-kbd` (4.2); `--usb-dev` haengt **jede** QEMU-`-device`-Spezifikation an. `qemu-system-aarch64 -device help`
+  (11.0.2, lokal ausgefuehrt, nur gelesen) kennt an HID-artigen Geraeten `usb-kbd`, `usb-mouse`, `usb-tablet`, `usb-wacom-tablet`,
+  `usb-braille` und `usb-host` (Durchreichen eines Host-Geraets).
+* *Was damit NICHT geht* [S, QEMU-Quelle ist nicht lokal → die Deskriptoren der Geraete sind [?]]: **kein QEMU-Geraet bildet
+  einen Funkempfaenger nach** (mehrere HID-Interfaces in einer Konfiguration); `usb-kbd`/`usb-mouse`/`usb-tablet` sind nach
+  bisherigen Logs Ein-Interface-Geraete. Der Mehr-Interface-Pfad von F3 ist in QEMU **nicht durchlaufbar**. `usb-host`
+  koennte ein echtes Funkgeraet vom Mac durchreichen; ob das auf macOS geht, ist nicht geprueft [?] und waere ein
+  Eingriff in die Entwicklungsmaschine — nicht vorgeschlagen.
+* *Was geht:* (1) **Regression** Ein-Funktions-Geraete (Standard, `--usb-extra`) — Eingabe wie vorher
+  (`measurements/measurement-2026-10-23-usb01-snap-kernel`-Verfahren). (2) **Zwei Boot-Tastaturen gleichzeitig:**
+  `--usb-extra` hat sie bereits (Wurzel-`usb-kbd` + `usb-kbd` am Hub); weitere per `--usb-dev usb-kbd`. Der Tastaturverkehr
+  laesst sich aber **nicht gezielt auf eine** Tastatur lenken: QMP `input-send-event` mit `device=<usb-id>` bricht ab
+  (QEMU 11.0.2; `measurements/measurement-2026-10-23-usb01-test/RUNINFO.TXT:46`, USB02 #7), Tasten gehen ueber die
+  Standardroute. Welche der Tastaturen QEMU damit bedient, ist **[?]**. Das Flackern (H1) ist darum in QEMU nur mit Glueck
+  nachweisbar — der Nachweis laeuft ueber H-2. (3) **Budget:** viele `--usb-dev` (Hubs, Mäuse) bis `MAX_HID = 8`
+  und darueber → Logzeile „not enumerated — all 8 device entries in use“ (`xhci/mod.rs:1805-1812`).
+* *Moeglich, aber ausserhalb dieses Auftrags:* ein kleines eigenes QEMU-Geraet bzw. ein `usb-host`-Aequivalent mit
+  zwei HID-Interfaces — **Code ausserhalb des Repos**, Entscheidung beim Anwender (Frage 7).
+
+**Echte Pi (Eigener Lauf + Ragnar).**
+
+* **P0 (vor dem Bau, kein F3 noetig).** Ragnar (oder der Anwender mit eigenem Funkset): `USBSNAP.NCP` mit Empfaenger +
+  Kabeltastatur, 30 s tippen und Maus bewegen. Auswerten: Berichte/Zeitstempel/`int_errors` der Slots 2 und 3 getrennt
+  (entscheidet H1 gegen H2). Kernel: `main` mit Modus 2022 (nicht der `7c1f621d`-Lauf).
+* **P1 Regression** der bekannten Aufbauten (Apple-Tastatur + ROCCAT in den beiden Steckpositionen,
+  `usb01-con04-pi`/`usb01-pi-kbdhub`/`usb01-snap-pi`): gleiche Befehlszahl (13), gleiche Logzeilen bis auf neue Funktionszeilen.
+* **P2 Empfaenger einzeln** (Unifying/MX Master, Rii X8, Cherry DW 9000), **ohne** Kabeltastatur: Log zeigt je Empfaenger
+  zwei bzw. drei „function“-Zeilen, `Configure Endpoint → Success` (sonst Fallback-Zeile); **Zeiger bewegt sich,
+  links/rechts gehen** (die Soll-Wirkung von F3), Funktastatur tippt. Befehlszahl = bisher (10) — F3 fuegt keine hinzu.
+* **P3 Empfaenger + Kabeltastatur** (Ragnars Aufbau): Kabeltastatur tippt fehlerfrei, auch mit gehaltenen Tasten und Shift;
+  gleichzeitig Funktastatur tippen (nur Rii/Cherry DW) — kein Flackern.
+* **P4 Last:** Rii-Maus (1 ms) bewegen *und* tippen; Zeiger ruckelt nicht erkennbar mehr als mit der B100.
+* **P5 Gamepad** `045e:028e` bleibt „no HID boot keyboard/mouse interface“ (Regression von F2).
+* Abnahmekriterium je Lauf: kein „stray transfer event“, kein „cmd timeout“, kein „re-arming“ im Eingabefenster
+  (`usb-diag`-Kernel; die Logs muessen das Eingabefenster mitschneiden — der Capture endet heute bei „after initinfo“,
+  `bootlog`, deshalb P0/`USBSNAP` fuer Verkehr).
+
+### 9.9 Offene Fragen an den Anwender
+
+1. **Ragnar, bitte konkretisieren:** (a) „Tastatur nein“ in Start 1/2/5–8 — *gar keine* Zeichen, falsche/doppelte Zeichen
+   oder nur Sondertasten? Welche Tastatur (Kabel-Cherry oder die Funktastatur des Sets)? (b) „Zeiger ja“ — *bewegte* sich der Zeiger
+   mit der Funkmaus, oder war er nur sichtbar? (c) Ging die Kabeltastatur **allein** (ohne Empfaenger) im selben Kernel?
+   (d) Moegliche P0-Aufnahme mit dem neuen Kernel + `USBSNAP`.
+2. **Freigabe der Auswahlregeln R1–R8** (insb. R5: Report-only-Interfaces eines Geraets mit Boot-Funktion bleiben ungepollt;
+   R3: kein `bNumEndpoints == 1`).
+3. **Beobachtung ausweiten?** Sollen die report-only-Interfaces eines Empfaengers (Unifying Interface 2) kuenftig *zusaetzlich* beobachtet
+   (gepollt, aufgezeichnet) werden? Nutzen: Daten fuer F4/F5; Kosten: ein Endpoint mehr, HID++-Verkehr im Ring, mehr Chancen fuer H2.
+   Empfehlung: **nein bis P0/P2 gelaufen sind**.
+4. **Mehrere Tastaturen:** reicht „Zustand je Funktion“ (Empfehlung), oder gleich der Zaehler je Scancode (§9.6 Soll 2)?
+5. **`SET_IDLE`** (FreeMiNT sendet es, wir nie): einfuehren? Ja/nein, wenn ja nur an Tastatur-Funktionen und nach allen
+   `SET_PROTOCOL`, Fehler nicht fatal. Es koennte die Kadenzfrage aus H1 *entschaerfen*, ist aber kein Fix fuer den gemeinsamen `PREV`.
+6. **xHCI-Spec-Widerspruch** `Context Entries` (`xhci-1.2.txt:4720` vs `:22321`) vor dem Bau klaeren lassen (Rechercheur
+   kann das in einem Folgeauftrag gegen die Tabellen 6-x pruefen) — betrifft nur die mehrfache Belegung.
+7. **QEMU-Mehr-Interface-Geraet** (eigenes Geraet oder `usb-host`): lohnt der Aufwand, oder genuegt Host-Test (H-1) + Pi (P2/P3)?
+8. **Snapshot:** Option A (ein Ring, Eintrags-Tag) oder B (Ring je Funktion); `VERSION = 2` mit gleichzeitiger Programmanpassung ja/nein.
+9. **Limits** `MAX_FUNC_PER_DEV = 4`, `MAX_FUNC = 12` (Obergrenze 15): einverstanden?
+10. **Fallback bei Bandwidth/Resource Error** (§9.4): auf Funktion 0 zurueckfallen — oder das Geraet ganz verwerfen (lauter Fehler)?
+
+### 9.10 Ausserhalb des Scopes beobachtet
+
+* `hid::keyboard_report` ignoriert die Berichtslaenge `len` (`usb/mod.rs:210`, `hid.rs:86`): ein Bericht < 8 Byte
+  laesst alte Pufferbytes im Diff stehen; FreeMiNT verwirft < 3/> 8 Byte und nullt den Rest (`usb_keyboard.c:364-373`).
+* `hid::modifiers` bildet LCtrl und RCtrl auf **einen** Scancode `0x1d` ab (`bits & 0x11`, `hid.rs:70-72`): Loslassen
+  der einen Ctrl-Taste bei gehaltener anderen erzeugt einen Break (gilt schon fuer *eine* Tastatur; Alt gleich).
+* Das Log fuer das Eingabefenster fehlt in der Diagnoseausgabe (Capture endet bei „after initinfo“): Ragnars Logs koennen
+  per Konstruktion keinen Tastaturverkehr zeigen; ein Mess-Fenster ist in §5.3 vorgeschlagen, nie gebaut worden.
+* `config_desc.rs`-Kopfkommentar nennt F3 weiterhin „one interface per device (F3)“ und `SkipReason::OneInterfacePerDevice`;
+  beides fliegt mit dem Bau (R6).
