@@ -194,3 +194,36 @@ Offen, vor jeder Entscheidung zu klaeren:
 - **Lizenz:** MagicMac steht unter GPL-3, NewTOS unter GPL-2+. Lesen als
   Quervergleich ist unproblematisch; Code daraus uebernehmen machte das
   Ergebnis GPL-3. Vor jeder Uebernahme klaeren.
+
+### Befund 2026-10-23 — ZMAGXSND 0.96 (Didier Mequignon, 2002), Quelle beim Anwender
+
+Quelle: `~/Downloads/MAGXSND.097/` (`SOURCES/ZMAGXSND.L`, 68k-Assembler,
+5165 Zeilen; `DOC/ZMAGXSND.TXT`; CPX `SOURCES/MAGXSND.CPX/MAGXSND.C`). Nicht
+im Repo. Lizenz laut `README.TXT` nur „This program and sources are free“ —
+keine benannte Lizenz, also Vorlage zum Lesen, kein Code uebernehmen.
+
+Das ist genau der Treiber, den der Anwender meinte („magxsound“):
+
+- **Funktionsumfang:** die Falcon-Tonfunktionen **XBIOS 128–141** (`Locksnd`
+  bis `Buffptr`; `Dsptristate` 137 nicht umgesetzt, `Gpio` 138 nur fuer die
+  Taktwahl). Richtigstellung zum Befund oben: 96–127 sind die DSP-Funktionen,
+  der Ton liegt bei 128–141. 8/16 Bit mono/stereo, Aufnahme 16 Bit stereo,
+  Spuren 1–4, Pegel und Verstaerkung je Kanal; GSXB/MilanBlaster-Erweiterungen
+  (freie Abtastrate), keine 24/32 Bit, kein Mixer, nur Motorola-Byteordnung.
+- **Einhaengen:** AUTO-Programm, das sich per `Setexc` mit XBRA in Trap #13
+  und Trap #14 haengt (`ZMAGXSND.L` Zeilen 1817/1821 der CR-gewandelten
+  Fassung, Marke `DET_BIOS`/`DET_XBIOS`).
+- **Cookies:** `McSn` (Zeiger auf `struct McSnCookie`: Version, Groesse,
+  Wiedergabe-/Aufnahmefaehigkeit, DSP; Kommentar Zeile 475ff.), `GSXB`, und
+  `_SND` mit gesetzten Bits 1, 2, 5 (8-Bit-DMA, 16-Bit-DMA, erweitert); PSG-
+  und DSP-Bit eines vorhandenen `_SND` bleiben erhalten (Zeile 1075ff.).
+- **Drei austauschbare Ausgaenge in einem Treiber:** MacOS-Sound unter
+  MagiCMac, YAMAHA bzw. MV16/PSOUND auf dem Hades (Timer A des MFP2), SDL
+  unter ARAnyM (Aufnahme dort nicht). Genau das Muster fuer Klinke/HDMI auf
+  der Pi.
+
+**Folge fuer NewTOS:** Schnittstelle nach aussen = XBIOS 128–141 plus die
+Cookies `_SND`/`McSn`/`GSXB`, wie ZMAGXSND sie setzt. Der Einhaengweg ueber
+`Setexc` auf Trap #14 aus einem AUTO-Programm passt nicht ohne Weiteres zu
+einem EL0-Programm (offene Frage 1 oben); naheliegend bleibt ein Kernmodul
+(MOD01) mit Ausgangs-Backends.
