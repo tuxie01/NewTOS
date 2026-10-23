@@ -5,9 +5,10 @@
 //! and the order of the checks). Pinned here:
 //!
 //! 1. `buf == 0`, `len < 32`, a wrong magic → `EINVAL`, nothing written;
-//! 2. a wrong version or an unknown op → `EINVAL` with a header that says
-//!    `version = 1`, `used_len = 32`, even without a controller (the header
-//!    checks come first);
+//! 2. a wrong version (v1 included: layout v2 since USB01 F3, §10) or an
+//!    unknown op → `EINVAL` with a header that says `version = 2`,
+//!    `used_len = 32`, even without a controller (the header checks come
+//!    first); the trap's version is the encoder's `snapshot::VERSION`;
 //! 3. no controller (the hostless default and a host whose store has none)
 //!    → `ERROR`, nothing written;
 //! 4. an index out of range, a MUTE longer than 60 s or with `index != 0` →
@@ -37,6 +38,9 @@ const S_NEWTOS_USBSNAP: u64 = 2022;
 const E_OK: i32 = 0;
 const ERROR: i32 = -1;
 const EINVAL: i32 = -25;
+
+/// The layout version the trap speaks — the kernel encoder's.
+const V: u16 = snapshot::VERSION;
 
 const TRUNCATED: u16 = 1;
 const MORE: u16 = 2;
@@ -112,7 +116,8 @@ fn two_devices() -> Box<snapshot::Store> {
         d.role = snapshot::role::HUB;
     }
     for i in 0..5u8 {
-        s.record(0, &[0, 0, 4 + i, 0, 0, 0, 0, 0], 1, 100 + i as u32, false);
+        let src = snapshot::Source { iface: 0, ep: 0x81, capped: false };
+        s.record(0, src, &[0, 0, 4 + i, 0, 0, 0, 0, 0], 1, 100 + i as u32, false);
     }
     s
 }
@@ -181,13 +186,13 @@ fn guard_intact(b: &[u8], len: usize) {
 fn null_buffer_short_buffer_and_bad_magic_write_nothing() {
     let _g = rig(Some(two_devices()));
     assert_eq!(call(0, 4096), EINVAL, "buf == 0");
-    let mut b = request(31, 1, 1, 0, 0);
+    let mut b = request(31, V, 1, 0, 0);
     let before = b.clone();
     assert_eq!(ssys(&mut b, 31), EINVAL, "len < 32");
     assert_eq!(b, before);
     assert_eq!(call(b.as_mut_ptr() as u64, -1), EINVAL, "negative len");
 
-    let mut b = request(64, 1, 1, 0, 0);
+    let mut b = request(64, V, 1, 0, 0);
     b[3] = b'X';
     let before = b.clone();
     assert_eq!(ssys(&mut b, 64), EINVAL, "magic");
@@ -198,11 +203,11 @@ fn null_buffer_short_buffer_and_bad_magic_write_nothing() {
 fn wrong_version_and_unknown_op_are_einval_with_header_even_without_controller() {
     for store in [Some(two_devices()), None] {
         let _g = rig(store);
-        for (version, op) in [(2u16, 1u16), (0, 1), (1, 0), (1, 5)] {
+        for (version, op) in [(1u16, 1u16), (3, 1), (0, 1), (2, 0), (2, 5)] {
             let mut b = request(256, version, op, 7, 9);
             assert_eq!(ssys(&mut b, 256), EINVAL, "version {version} op {op}");
             let h = hdr(&b);
-            assert_eq!((h.version, h.hdr_len, h.op, h.index, h.arg), (1, 32, op, 7, 9));
+            assert_eq!((h.version, h.hdr_len, h.op, h.index, h.arg), (V, 32, op, 7, 9));
             assert_eq!((h.used, h.total, h.flags), (32, 32, 0));
             assert!(b[32..256].iter().all(|&x| x == 0xEE), "only the header");
         }
@@ -213,7 +218,7 @@ fn wrong_version_and_unknown_op_are_einval_with_header_even_without_controller()
 fn no_controller_is_error_and_writes_nothing() {
     // A host without a USB stack (the trait default answers NoController).
     let _g = rig(None);
-    let mut b = request(256, 1, 1, 0, 0);
+    let mut b = request(256, V, 1, 0, 0);
     let before = b.clone();
     assert_eq!(ssys(&mut b, 256), ERROR);
     assert_eq!(b, before);
@@ -222,7 +227,7 @@ fn no_controller_is_error_and_writes_nothing() {
     // A host whose controller was not found (raspi4b).
     let _g = rig(Some(Box::new(snapshot::Store::new())));
     for op in 1..=4u16 {
-        let mut b = request(256, 1, op, 0, 0);
+        let mut b = request(256, V, op, 0, 0);
         let before = b.clone();
         assert_eq!(ssys(&mut b, 256), ERROR, "op {op}");
         assert_eq!(b, before);
@@ -233,10 +238,10 @@ fn no_controller_is_error_and_writes_nothing() {
 fn bad_index_and_mute_argument_are_einval_with_header() {
     let _g = rig(Some(two_devices()));
     for (op, index, arg) in [(2u16, 2u32, 0u32), (3, 9, 0), (4, 0, 12_001), (4, 1, 100)] {
-        let mut b = request(512, 1, op, index, arg);
+        let mut b = request(512, V, op, index, arg);
         assert_eq!(ssys(&mut b, 512), EINVAL, "op {op} index {index} arg {arg}");
         let h = hdr(&b);
-        assert_eq!((h.version, h.used, h.op, h.index, h.arg), (1, 32, op, index, arg));
+        assert_eq!((h.version, h.used, h.op, h.index, h.arg), (V, 32, op, index, arg));
         assert!(b[32..512].iter().all(|&x| x == 0xEE));
     }
 }
@@ -249,17 +254,17 @@ fn list_full_answer_and_too_small_buffer() {
     assert_ne!(now, 0);
 
     // 32 + 16 + 2 × 32 = 112 bytes needed; offer 100.
-    let mut b = request(100, 1, 1, 0, 0);
+    let mut b = request(100, V, 1, 0, 0);
     assert_eq!(ssys(&mut b, 100), E_OK);
     let h = hdr(&b);
     assert_eq!((h.flags, h.total, h.used, h.now), (TRUNCATED, 112, 32, now));
     assert!(b[32..100].iter().all(|&x| x == 0xEE), "header only");
     guard_intact(&b, 100);
 
-    let mut b = request(h.total as usize, 1, 1, 0, 0);
+    let mut b = request(h.total as usize, V, 1, 0, 0);
     assert_eq!(ssys(&mut b, 112), E_OK);
     let h = hdr(&b);
-    assert_eq!((h.version, h.hdr_len, h.op, h.flags, h.total, h.used), (1, 32, 1, 0, 112, 112));
+    assert_eq!((h.version, h.hdr_len, h.op, h.flags, h.total, h.used), (V, 32, 1, 0, 112, 112));
     let body = &b[32..112];
     assert_eq!(&body[..16], &[1, 0, 0, 0, 2, 0, 32, 0, 4, 1, 0, 0, 0, 0, 0, 0]);
     assert_eq!(&body[16 + 8..16 + 12], &[0x27, 0x06, 1, 0], "entry 0 VID/PID");
@@ -270,7 +275,7 @@ fn list_full_answer_and_too_small_buffer() {
 #[test]
 fn device_answer_matches_the_encoder() {
     let _g = rig(Some(two_devices()));
-    let mut b = request(1024, 1, 2, 0, 0);
+    let mut b = request(1024, V, 2, 0, 0);
     assert_eq!(ssys(&mut b, 1024), E_OK);
     let h = hdr(&b);
     // Entry 32 + n_sections 4 + device descriptor section 8 + 18 + 2 pad.
@@ -285,7 +290,7 @@ fn reports_more_and_mute() {
     let _g = rig(Some(two_devices()));
     // Room for the body head and two of the five entries.
     let len = 32 + 16 + 2 * 80 + 40;
-    let mut b = request(len, 1, 3, 0, 1);
+    let mut b = request(len, V, 3, 0, 1);
     assert_eq!(ssys(&mut b, len), E_OK);
     let h = hdr(&b);
     assert_eq!((h.flags, h.total, h.used, h.arg), (MORE, 32 + 16 + 4 * 80, 32 + 16 + 160, 1));
@@ -294,14 +299,14 @@ fn reports_more_and_mute() {
     assert_eq!((u32le(48), u32le(128)), (1, 2), "entries from seq 1");
     guard_intact(&b, len);
 
-    let mut b = request(40, 1, 4, 0, 6000);
+    let mut b = request(40, V, 4, 0, 6000);
     assert_eq!(ssys(&mut b, 40), E_OK);
     let h = hdr(&b);
     assert_eq!((h.flags, h.used), (0, 40));
     let until = u32::from_le_bytes([b[32], b[33], b[34], b[35]]);
     assert_eq!(until, h.now.wrapping_add(6000));
     assert!(STORE.lock().unwrap().as_mut().unwrap().muted(h.now));
-    let mut b = request(40, 1, 4, 0, 0);
+    let mut b = request(40, V, 4, 0, 0);
     assert_eq!(ssys(&mut b, 40), E_OK);
     assert_eq!(&b[32..40], &[0; 8], "mute off");
 }

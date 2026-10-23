@@ -4,7 +4,8 @@
 > Entscheidungen dort). **Kernelteil K1–K9 gebaut 2026-10-23** (Umsetzungsnotizen §9);
 > **Programm `USBSNAP` (K10) und QEMU-Option (K11) gebaut 2026-10-23** (§9.1), dazu eine
 > Kernel-Nachbesserung am MUTE-Beginn (§9.1); offen: Tester-Abnahme, Test an der echten Pi
-> (T8). Dieses Dokument ist **Spec und
+> (T8). **Layout v2 seit USB01 F3 (2026-10-24, §10):** mehrere Funktionen je Geraet
+> (`hid-mouse-protocols.md` §9.7, Option A). Dieses Dokument ist **Spec und
 > Analyse, kein Code**. Es ergaenzt [`hid-mouse-protocols.md`](hid-mouse-protocols.md)
 > §5.1 (gemeinsamer Kern) und §5.2 (Weg a); der Anwender hat Weg (a) am 2026-10-23
 > gewaehlt. Ticket: [`TASK/USB01.md`](../../../TASK/USB01.md). Modus-Zeile:
@@ -117,7 +118,7 @@ unnoetig verbogen. [E]
 | Off | Gr. | Feld | Anfrage | Antwort |
 |---:|---|---|---|---|
 | 0 | 4 | `magic` | ASCII `"USBS"` (`55 53 42 53`) | gleich |
-| 4 | u16 | `version` | gewuenschte Layout-Version, v1: **1** | benutzte Version (1) |
+| 4 | u16 | `version` | gewuenschte Layout-Version, seit F3 **2** (v1: 1; §10) | benutzte Version (2) |
 | 6 | u16 | `hdr_len` | ignoriert | **32** (Offset des Rumpfs) |
 | 8 | u16 | `op` | 1 LIST, 2 DEVICE, 3 REPORTS, 4 MUTE | gleich |
 | 10 | u16 | `flags` | ignoriert | Bit 0 `TRUNCATED`, Bit 1 `MORE` |
@@ -140,7 +141,7 @@ Rueckgabewerte mit den Konstanten aus `tos-types/src/error.rs` (`ERROR` `:21`, `
 |---|---|---|---|
 | 1 | `buf == 0` oder `len < 32` | `EINVAL` (-25) | nichts geschrieben |
 | 2 | `magic` falsch | `EINVAL` | nichts geschrieben |
-| 3 | `version != 1` | `EINVAL` | Kopf mit `version = 1`, `used_len = 32` geschrieben (Programm erfaehrt die unterstuetzte Version) — die Regel von `newtos_scalar` („ein spaeteres Programm erfaehrt, dass es mit einem aelteren Kernel spricht“, `ssystem.rs:301-304`) |
+| 3 | `version != 2` (v1: `!= 1`; §10) | `EINVAL` | Kopf mit `version = 2`, `used_len = 32` geschrieben (Programm erfaehrt die unterstuetzte Version) — die Regel von `newtos_scalar` („ein spaeteres Programm erfaehrt, dass es mit einem aelteren Kernel spricht“, `ssystem.rs:301-304`) |
 | 4 | `op` unbekannt | `EINVAL` | wie 3 |
 | 5 | kein nutzbarer USB-Controller (Host ohne USB, Board ohne xHCI, Controller nicht gefunden, hostlos im Test) | `ERROR` (-1) | nichts geschrieben; **die Regel der Modi 2000–2020** („Board kann es nicht messen → `ERROR`“, `154-ssystem.md` §Interface) |
 | 6 | `index >= n_devices` (Op 2, 3) | `EINVAL` | wie 3 (Kopf mit `used_len = 32`) |
@@ -193,13 +194,13 @@ fehlgeschlagene Enumerationen (Rolle 5); das Programm filtert fuer die Anzeige.
 | 15 | u8 | `reason` — siehe unten | **neu** |
 | 16 | u8 | `flags`: Bit 0 Geraetedeskriptor gueltig, 1 Konfiguration gueltig, 2 Konfiguration gekappt, 3 `SET_CONFIGURATION` gesendet | **neu** |
 | 17 | u8 | `n_hid_ifaces` (Interfaces der Klasse 3, alt 0) | aus `scan`, K2 |
-| 18 | u8 | `ring_iface` — Interfacenummer, deren Interrupt-Endpoint den Berichtsring fuellt; `0xFF` = kein Ring | K3 |
+| 18 | u8 | `ring_iface` — Interfacenummer, deren Interrupt-Endpoint den Berichtsring fuellt; `0xFF` = kein Ring. **v2:** die der *primaeren* Funktion (Funktion 0); alle Funktionen fuellen denselben Ring (§10) | K3 |
 | 19 | u8 | `ring_ep` — Endpoint-Adresse (Bit 7 = IN), 0 = keiner | `HidInfo.ep_addr` `config_desc.rs:49` |
 | 20 | u32 | `ring_oldest_seq` | K1 |
 | 24 | u32 | `ring_next_seq` | K1 |
 | 28 | u16 | `int_errors` — Zahl der Interrupt-Transfers mit Completion-Code ≠ Success/ShortPacket | K1, Fehlerzweig `:700-712` |
 | 30 | u8 | `last_cc` — letzter solcher xHCI-Completion-Code (Zahl, xHCI 1.2 §6.4.5 Tabelle 6-90, z. B. 3 Babble, 6 Stall; 0 = keiner) | K1 |
-| 31 | u8 | reserviert, 0 |
+| 31 | u8 | v1: reserviert, 0. **v2:** `n_funcs` — Zahl der Funktionen (Interfaces, deren Endpoint den Ring fuellt; Interface-Zeilen mit Byte 14 = 1), §10 |
 
 **`role`:** 0 = keine (enumeriert, aber kein Eingabegeraet / nicht konfiguriert);
 1 = Tastatur (Boot, wird dekodiert → `hid::keyboard_report`); 2 = Maus (Boot, wird
@@ -219,7 +220,10 @@ F2/F8-Logzeilen** (`config_desc.rs:66-80`, Texte `:207-217`):
 | 2 | `NotBootSubclass` — HID, Subklasse ≠ 1 (nur Report-Protokoll). Bei Rolle 3: „beobachtet, nicht dekodiert“ | „HID without boot subclass: report protocol only, no report parser yet“ |
 | 3 | `UnknownBootProtocol` — Boot-Subklasse, Protokoll weder 1 noch 2 | „HID boot subclass, protocol neither keyboard nor mouse“ |
 | 4 | `NoInterruptIn` | „HID boot interface without an interrupt-IN endpoint“ |
-| 5 | `OneInterfacePerDevice` | „second HID boot interface: one interface per device“ |
+| 5 | v1: `OneInterfacePerDevice`. **v2: reserviert, nicht mehr vergeben** (§10) | v1: „second HID boot interface: one interface per device“ |
+| 6 | v2: `FunctionLimit` — Boot-Interface ueber der Funktionsgrenze (je Geraet 4, insgesamt 12; `hid-mouse-protocols.md` §9.3 R6) | „function limit“ |
+| 7 | v2: `AlternateSetting` — Boot-Interface in Alternate Setting ≠ 0 (§9.3 R1) | „HID boot interface in an alternate setting (only alternate setting 0 is used)“ |
+| 8 | v2: `EndpointCollision` — Boot-Interface auf dem Endpoint (DCI) einer frueheren Funktion (§9.3 R7) | „HID boot interface on an endpoint an earlier function already uses“ |
 | 16 | Geraet hat **kein** Interface der Klasse 3 (`xhci/mod.rs:1329-1333`) | „no HID boot keyboard/mouse interface — not an input device“ |
 | 17 | Konfigurationsdeskriptor nicht lesbar (`:1234-1236`, `:1253-1259`) | „configuration … read failed“ |
 | 18 | Configure Endpoint fehlgeschlagen (`:1447-1449`) | „configure_endpoint → …“ |
@@ -268,8 +272,8 @@ Seriennummer wird **bewusst nicht** erfasst (Datenschutz: die Dateien gehen an D
 | 8 | u16 | dessen `wMaxPacketSize` (roh, inkl. Bits 12:11) |
 | 10 | u16 | `wDescriptorLength` des Report-Deskriptors laut HID-Deskriptor (HID 1.11 §6.2.1, Offset 7/2), 0 = kein HID-Deskriptor gefunden |
 | 12 | u16 | davon abgelegte Bytes (Abschnitt 3) |
-| 14 | u8 | 1 = dieses Interface ist das ueberwachte (`ring_iface`) |
-| 15 | u8 | reserviert, 0 |
+| 14 | u8 | 1 = dieses Interface ist das ueberwachte (`ring_iface`). **v2:** 1 = dieses Interface ist eine Funktion, sein Endpoint fuellt den Ring (mehrere Zeilen moeglich) |
+| 15 | u8 | v1: reserviert, 0. **v2:** Rolle der Funktion dieses Interfaces (1 Tastatur, 2 Maus, 3 nur beobachtet; 0 = keine Funktion), §10 |
 
 **Zu kleiner Puffer (alle Ops):** Passt die **vollstaendige** Antwort nicht in `len`,
 schreibt der Kernel nur den 32-Byte-Kopf (`used_len = 32`, `total_len` = benoetigte
@@ -307,7 +311,7 @@ Danach `count` Eintraege ab `max(arg, oldest_seq)` in aufsteigender `seq`:
 | 8 | u16 | `len` — gueltige Bytes in `data`, 0–64 |
 | 10 | u8 | `flags`: Bit 0 gekappt (Geraet sendete mehr als 64 Byte), Bit 1 waehrend MUTE abgeholt |
 | 11 | u8 | `cc` — xHCI-Completion-Code des Transfers (1 Success, 13 Short Packet; xHCI 1.2 §6.4.5 Tabelle 6-90) |
-| 12 | u32 | reserviert, 0 |
+| 12 | u32 | v1: reserviert, 0. **v2:** +12 u8 `iface` (Interfacenummer der Funktion, von der der Bericht stammt), +13 u8 `ep` (deren Endpoint-Adresse), +14 u16 reserviert, 0 (§10) |
 | 16 | u8[64] | `data`; Bytes ab `len` sind 0 |
 
 * `arg >= next_seq` → `count = 0`, kein Fehler (der Standard-Wartezustand).
@@ -837,3 +841,62 @@ oder beim Testen nicht trug (alle **[E]**):
   eine AES-Probe (`graf_mkstate`) Zeiger und Knopf.
 
 Belege: `measurements/measurement-2026-10-23-usb01-snap-program/RUNINFO.TXT`.
+
+## 10. Layout v2: mehrere Funktionen je Geraet (USB01 F3, 2026-10-24)
+
+Grundlage: `hid-mouse-protocols.md` §9.7, Entscheidung 8 in §9.11 (**Option A**: ein Ring je
+Geraet, Interface-Tag im Eintrag, `VERSION = 2`, `USBSNAP.NCP` im selben Schritt). Seit F3 kann ein
+Geraet mehrere *Funktionen* haben (HID-Interfaces mit eigenem Interrupt-IN-Endpoint, §9.2 dort),
+z. B. ein Funkempfaenger Tastatur + Maus. v2 gibt reservierten v1-Feldern eine Bedeutung; ein
+v1-Programm wuerde Mausberichte als Tastaturberichte lesen. Darum ist die Layout-Version 2 und
+der Kernel lehnt `version = 1` nach §2.3 Nr. 3 ab (`EINVAL`, Kopf mit `version = 2`).
+
+| Stelle | v2 |
+|---|---|
+| Kopf `version` (§2.2) | **2** |
+| Listeneintrag Byte 14 `role` / 15 `reason` (§2.4) | die der **primaeren** Funktion (Funktion 0, Deskriptor-Reihenfolge, §9.3 R8 dort) |
+| Listeneintrag Byte 18/19 `ring_iface`/`ring_ep` | Funktion 0; `0xFF` bleibt „kein Ring“ |
+| Listeneintrag Byte 28–30 `int_errors`/`last_cc` | weiter je Geraet: Summe ueber alle Funktionen |
+| Listeneintrag Byte 31 | `n_funcs`: Funktionen, deren Endpoint den Ring fuellt |
+| Interface-Zeile Byte 14 (§2.5) | 1 = Funktion (mehrere Zeilen moeglich) |
+| Interface-Zeile Byte 15 | Rolle der Funktion: 1 Tastatur, 2 Maus, 3 beobachtet; 0 keine |
+| Ring-Eintrag +12/+13 (§2.6) | `iface`, `ep` der Funktion; +14 u16 reserviert 0. Berichte aller Funktionen eines Geraets stehen in **einer** `seq`-Folge in der Reihenfolge des Abholens |
+| Ring-Eintrag `flags` Bit 0 | „gekappt“ je Funktion: deren `wMaxPacketSize & 0x7FF > 64` |
+| Reason 5 | reserviert, nicht mehr vergeben |
+| Reason 6/7/8 | `FunctionLimit` / `AlternateSetting` / `EndpointCollision` (§2.4) |
+
+Unveraendert: Ringlaenge 256 × 80 Byte je Geraet, alle anderen Felder, Op-Codes, Rueckgabewerte.
+
+**Beim Bau festgelegt [E]** (Einzelheiten, die `hid-mouse-protocols.md` §9 offen liess):
+
+* **Reason 7 und 8** sind neu. §9.3 R1 (Alternate Setting) und R7 (Endpoint-Kollision) verlangen
+  „ueberspringen und loggen“, nannten aber keinen Code; ein Interface, das als Funktion in Frage
+  kaeme, braucht in der Interface-Zeile einen Grund ≠ 0. Andere Interfaces in Alt ≠ 0 behalten
+  ihren Klassengrund (1–3) wie in v1.
+* **Fallback** (§9.4, Entscheidung 10): jeder Nicht-Erfolgs-Completion-Code des gemeinsamen
+  Configure-Endpoint-Befehls fuehrt zur Wiederholung mit Funktion 0 allein (nicht nur Bandwidth /
+  Resource Error); ein Timeout nicht (der Befehlsring antwortet dann nicht). Die uebrigen Zeilen
+  bekommen Reason 18.
+* **`SET_PROTOCOL` scheitert fuer Funktion k > 0:** k und alle spaeteren Funktionen bleiben
+  unscharf (Reason 20) — die spaeteren, weil nach dem Fehler kein Steuerrequest mehr an EP0 geht
+  (§9.4 „weitere Steuerrequests unterbleiben“) und eine Boot-Funktion ohne `SET_PROTOCOL(boot)`
+  im Report-Protokoll stuende. Auch `fetch_extras` entfaellt dann.
+* **Funktionsbudget insgesamt** (`MAX_FUNC` 12): reicht es nicht, bekommen die ueberzaehligen
+  Funktionen Reason 6 und die Logzeile „not used: function limit“; bekommt schon Funktion 0
+  keinen Platz, hat das Geraet Rolle 0 und Reason 6.
+* **Konnten Endpoints angelegt werden**, gehoeren die Funktionen dem Geraet auch dann, wenn
+  danach `SET_CONFIGURATION` oder `SET_PROTOCOL` scheitert (der Controller haelt Endpoint-Contexts
+  auf ihre Ringe); sie werden nicht scharf gemacht und verbrauchen ihr Budget.
+* Logzeilen: je weitere Funktion eine Zeile `HID iface N protocol P → int-IN ep … (function k)`
+  und eine `HID configured: slot … (keyboard|mouse)`; nach der Zusammenfassung
+  `N functions armed (MAX_FUNC 12)`, nur wenn ein Geraet mehrere Funktionen hat. Fuer Geraete mit
+  einer Funktion bleiben alle Zeilen wie vorher.
+
+`USBSNAP.NCP` v2 (`sdk/examples/usbsnap.c`): fragt Layout 2 an, lehnt andere ab („this program
+reads v2“); Liste und Zaehler zeigen ein Geraet mit Tastatur- und Mausfunktion als `Kbd+Mouse`
+(dafuer holt das Programm die DEVICE-Antworten jetzt **vor** der Geraeteliste); Datei-Format v2:
+Abschnitt 3 nennt `n_funcs`, „USED“ je Interface nach dessen Zeilenrolle; Abschnitt 6 hat bei
+mehreren Funktionen eine Spalte `if` und dekodiert jeden Bericht nach der Rolle seiner Funktion,
+dazu je Funktion die Zahl der gelisteten Berichte.
+
+Belege: `measurements/measurement-2026-10-24-usb01-f3/RUNINFO.TXT`.

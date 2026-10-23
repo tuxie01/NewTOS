@@ -378,7 +378,8 @@ Die Defekte 1, 2, 4 brauchen **keine** weitere Reparatur (§2); offen ist ihre
 
 ## 9. F3 — Mehrere Interfaces je Geraet
 
-> **STATUS: APPROVED 2026-10-24 (Anwender), Entscheidungen in §9.11; Bau offen.** Entwurf 2026-10-23. Stand der Quellen:
+> **STATUS: APPROVED 2026-10-24 (Anwender), Entscheidungen in §9.11; gebaut 2026-10-24** (§9.12;
+> Snapshot-Layout v2: `usb-snapshot.md` §10). Pi-Abnahme (P1–P5) offen. Entwurf 2026-10-23. Stand der Quellen:
 > `main` bei `3d6023b4`. Auftrag: `TASK/USB01.md` („Ragnars Lauf: Ursache der Funkmaeuse ist F3“).
 > Dieser Abschnitt ist Spec und Analyse, kein Code. Ersetzt die Zeile F3 in §6 und
 > ueberholt Katalog D (§1.2), soweit dort der Stand von vor F2 beschrieben ist.
@@ -775,3 +776,18 @@ Der Anwender hat die Empfehlungen zu §9.9 freigegeben („ok du kannst loslegen
 | 10 Fallback | bei Bandwidth/Resource Error auf Funktion 0 zurueckfallen, Geraet behalten, Fehler loggen. |
 | P0 | F3 wird ohne vorherige USBSNAP-Messung gebaut; die Messung klaert nur die Tastaturfrage. |
 
+### 9.12 Umsetzung (2026-10-24)
+
+Gebaut nach §9.2–§9.7 mit den Entscheidungen §9.11: `config_desc::scan` waehlt alle Boot-Funktionen
+(R1–R8, `MAX_FUNC_PER_DEV = 4`), `xhci` fuehrt eine Funktionstabelle (`MAX_FUNC = 12`, je Funktion
+Ring + Puffer in `.dma`), ein Configure Endpoint je Geraet mit allen Endpoints (Context Entries =
+groesster DCI, Entscheidung 6), Rueckfall auf Funktion 0, `SET_PROTOCOL` je Boot-Funktion,
+Event-Zuordnung ueber Slot **und** DCI auf die Funktion; Decoder-Zustand je Funktion
+(`hid_decode.rs`, Maustasten ODER-verknuepft, §9.6 Soll 1/3); Snapshot-Layout v2 (Option A).
+Einzelheiten, die §9 offen liess (Reason-Codes 7/8 fuer R1/R7, Rueckfall bei jedem
+Completion-Code-Fehler, Verhalten der Funktionen nach einem gescheiterten `SET_PROTOCOL` k > 0,
+Gesamtbudget), stehen als **[E]** in `usb-snapshot.md` §10. Belege
+`measurements/measurement-2026-10-24-usb01-f3/RUNINFO.TXT`. QEMU kann den Mehr-Interface-Pfad
+nicht durchlaufen (§9.8); er ist durch Host-Tests H-1 mit Ragnars Deskriptoren und eine
+Wiedergabe von `USBSNAP.NCP` mit synthetischen Kernel-Antworten abgedeckt, die Wirkung (Zeiger und
+Tastatur eines Funkempfaengers) nur an der echten Pi (P2/P3).

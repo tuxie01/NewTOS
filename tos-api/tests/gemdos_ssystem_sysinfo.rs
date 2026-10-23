@@ -310,7 +310,7 @@ fn the_block_ends_at_2020_and_2023_is_the_first_free_number() {
     assert_eq!(gemdos(2023, 0, 0), EINVFN);
     let mut req = [0u8; 64];
     req[0..4].copy_from_slice(b"USBS");
-    req[4] = 1; // version 1
+    req[4] = 2; // layout version 2 (usb-snapshot.md §10)
     req[8] = 1; // op LIST
     let before = req;
     assert_eq!(gemdos(2022, req.as_mut_ptr() as u64, 64), ERROR);

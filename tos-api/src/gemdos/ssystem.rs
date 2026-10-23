@@ -221,9 +221,12 @@ fn s_newtos_kversion(args: &TrapArgs) -> Long {
 /// Checks in the order of §2.3, the first that applies wins:
 /// 1. `buf == 0` or `len < 32` → `EINVAL`, nothing written;
 /// 2. magic not `"USBS"` → `EINVAL`, nothing written;
-/// 3. `version != 1`, 4. `op` not 1–4 → `EINVAL` with a header that says
-///    `version = 1`, `used_len = 32` (a later program learns it is talking
-///    to an older kernel, the rule of [`newtos_scalar`]);
+/// 3. `version != 2`, 4. `op` not 1–4 → `EINVAL` with a header that says
+///    `version = 2`, `used_len = 32` (a later program learns it is talking
+///    to an older kernel, an older one that it is talking to a newer kernel —
+///    the rule of [`newtos_scalar`]). Layout v2 since USB01 F3 (§10 of the
+///    spec: several functions per device); v1 requests are refused because
+///    v2 gives reserved v1 fields a meaning;
 /// 5. no USB controller → `ERROR`, nothing written;
 /// 6. index out of range, 7. a MUTE argument refused → `EINVAL`, header;
 /// 8. the answer does not fit → `E_OK`, header only, `TRUNCATED`;
@@ -235,7 +238,9 @@ fn s_newtos_kversion(args: &TrapArgs) -> Long {
 /// ([`crate::uaccess::FAULTED`]), as for `S_GETCOOKIE` and 2019.
 fn s_newtos_usbsnap(args: &TrapArgs) -> Long {
     const HDR: usize = 32;
-    const VERSION: u16 = 1;
+    /// The layout version (`usb-snapshot.md` §2.2, §10) — the kernel
+    /// encoder's `snapshot::VERSION`, which this crate cannot name.
+    const VERSION: u16 = 2;
     const FLAG_TRUNCATED: u16 = 1 << 0;
     const FLAG_MORE: u16 = 1 << 1;
 

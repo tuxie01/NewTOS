@@ -2,7 +2,11 @@
 //! the encoder behind `Ssystem(S_NEWTOS_USBSNAP)` (2022) — USB01 step 2, K1.
 //!
 //! Spec: `docs/api/usb/usb-snapshot.md` §2 (the wire format: list entry,
-//! device sections, report ring, mute), §2.8 (concurrency), §3.3 (the ring).
+//! device sections, report ring, mute), §2.8 (concurrency), §3.3 (the ring);
+//! layout v2 (§10): several functions per device (USB01 F3,
+//! `docs/api/usb/hid-mouse-protocols.md` §9.7, Option A) — one ring per
+//! device, each entry tagged with the interface and endpoint it came from, a
+//! role per interface-table row and the number of functions in the entry.
 //!
 //! Pure data and byte encoding with no register, DMA or kernel dependency, so
 //! the host test suite (`tools/xtask`, which includes this file by path) runs
@@ -34,8 +38,10 @@ pub const STRING_MAX: usize = 31;
 /// The longest mute a caller may ask for, in `_hz_200` ticks (60 s, §2.3 #7).
 pub const MUTE_MAX_TICKS: u32 = 12_000;
 
-/// Layout version v1 (§2.2).
-pub const VERSION: u16 = 1;
+/// Layout version (§2.2): v2 since F3 (§10) — reserved v1 fields now carry
+/// the ring-entry interface tag, the row role and `n_funcs`, so a v1 reader
+/// would mislabel them; it gets `EINVAL` and learns the version (§2.3 #3).
+pub const VERSION: u16 = 2;
 /// Request/response header size (§2.2).
 pub const HEADER_LEN: usize = 32;
 /// Size of one list entry (§2.4).
@@ -72,7 +78,9 @@ pub mod role {
     pub const FAILED: u8 = 5;
 }
 
-/// Reason codes (§2.4 `reason`). 1–5 are `config_desc::SkipReason` + 1.
+/// Reason codes (§2.4 `reason`, §10). 1–4 and 6–8 are the
+/// `config_desc::SkipReason`s; 5 (v1 "one interface per device") is reserved
+/// and no longer assigned since F3.
 pub mod reason {
     /// Used (roles 1/2/4), or: this interface feeds the driver/ring.
     pub const USED: u8 = 0;
@@ -84,8 +92,14 @@ pub mod reason {
     pub const UNKNOWN_BOOT_PROTOCOL: u8 = 3;
     /// HID boot interface without an interrupt-IN endpoint.
     pub const NO_INTERRUPT_IN: u8 = 4;
-    /// Second HID boot interface: one interface per device.
-    pub const ONE_INTERFACE_PER_DEVICE: u8 = 5;
+    /// HID boot interface beyond the function limit (per device or in
+    /// total; `hid-mouse-protocols.md` §9.3 R6).
+    pub const FUNCTION_LIMIT: u8 = 6;
+    /// HID boot interface in an alternate setting other than 0 (§9.3 R1).
+    pub const ALTERNATE_SETTING: u8 = 7;
+    /// HID boot interface on the endpoint (DCI) of an earlier function
+    /// (§9.3 R7).
+    pub const ENDPOINT_COLLISION: u8 = 8;
     /// The device has no interface the driver can take.
     pub const NO_HID_INTERFACE: u8 = 16;
     /// The configuration descriptor could not be read.
@@ -186,8 +200,11 @@ pub struct IfaceRow {
     pub max_packet: u16,
     /// `wDescriptorLength` of the report descriptor (HID descriptor), 0 = none.
     pub report_len: u16,
-    /// This interface fills the ring.
+    /// This interface is a function: its endpoint fills the device's ring.
     pub monitored: bool,
+    /// The function's [`role`] (1 keyboard, 2 mouse, 3 observed), 0 = this
+    /// interface is no function (§10, row byte 15).
+    pub role: u8,
 }
 
 impl IfaceRow {
@@ -204,6 +221,7 @@ impl IfaceRow {
         max_packet: 0,
         report_len: 0,
         monitored: false,
+        role: 0,
     };
 
     fn is_hid_alt0(&self) -> bool {
@@ -258,18 +276,32 @@ impl Text {
     }
 }
 
-/// One recorded interrupt report (§2.6).
+/// One recorded interrupt report (§2.6), with the function it came from
+/// (§10: interface number and endpoint address).
 #[derive(Clone, Copy)]
 struct Record {
     ts: u32,
     len: u8,
     flags: u8,
     cc: u8,
+    iface: u8,
+    ep: u8,
     data: [u8; REPORT_MAX],
 }
 
 impl Record {
-    const EMPTY: Record = Record { ts: 0, len: 0, flags: 0, cc: 0, data: [0; REPORT_MAX] };
+    const EMPTY: Record = Record { ts: 0, len: 0, flags: 0, cc: 0, iface: 0, ep: 0, data: [0; REPORT_MAX] };
+}
+
+/// The function a recorded report came from (`Store::record`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Source {
+    /// `bInterfaceNumber` of the function.
+    pub iface: u8,
+    /// Its interrupt-IN endpoint address.
+    pub ep: u8,
+    /// Its max packet size exceeds [`REPORT_MAX`]: the report may be cut.
+    pub capped: bool,
 }
 
 /// Everything kept about one device slot (`hid[di]` of the driver).
@@ -298,12 +330,13 @@ pub struct Device {
     pub flags: u8,
     /// HID interfaces (class 3, alternate setting 0).
     pub n_hid_ifaces: u8,
-    /// Interface whose endpoint fills the ring, `0xFF` = no ring.
+    /// The primary function's interface (the first whose endpoint fills the
+    /// ring), `0xFF` = no ring.
     pub ring_iface: u8,
     /// That endpoint's address, 0 = none.
     pub ring_ep: u8,
-    /// That endpoint's max packet size exceeds [`REPORT_MAX`].
-    pub ring_capped: bool,
+    /// Functions whose endpoints fill the ring (§10, entry byte 31).
+    pub n_funcs: u8,
     /// Outcome of the device-descriptor read.
     pub device_desc_state: Fetch,
     /// The raw device descriptor.
@@ -348,7 +381,7 @@ impl Device {
         n_hid_ifaces: 0,
         ring_iface: 0xFF,
         ring_ep: 0,
-        ring_capped: false,
+        n_funcs: 0,
         device_desc_state: Fetch::NotTried,
         device_desc: [0; 18],
         config_len: 0,
@@ -410,6 +443,7 @@ impl Device {
         e[24..28].copy_from_slice(&next.to_le_bytes());
         e[28..30].copy_from_slice(&self.int_errors.to_le_bytes());
         e[30] = self.last_cc;
+        e[31] = self.n_funcs;
         e
     }
 
@@ -443,6 +477,7 @@ impl Device {
                 let stored = self.hid_row_slot(r).map_or(0, |k| self.reports[k].len);
                 o[12..14].copy_from_slice(&stored.to_le_bytes());
                 o[14] = row.monitored as u8;
+                o[15] = row.role;
             }
             let tflags = if self.ifaces_cut { SECF_TRUNCATED } else { 0 };
             f(SEC_IFACES, 0, tflags, &table[..n * ROW_LEN]);
@@ -602,11 +637,13 @@ impl Store {
         }
     }
 
-    /// Append one received report to `di`'s ring (§2.6, §3.3). `data` beyond
-    /// [`REPORT_MAX`] bytes is cut; `cc` = the transfer's completion code.
-    /// The entry is complete before `next_seq` moves (§2.8: a reader that
-    /// runs in an upcall from the decoder sees whole entries only).
-    pub fn record(&mut self, di: usize, data: &[u8], cc: u8, now: u32, muted: bool) {
+    /// Append one received report of function `src` to `di`'s ring (§2.6,
+    /// §3.3, §10: one ring per device, in order of arrival, each entry tagged
+    /// with its function). `data` beyond [`REPORT_MAX`] bytes is cut; `cc` =
+    /// the transfer's completion code. The entry is complete before
+    /// `next_seq` moves (§2.8: a reader that runs in an upcall from the
+    /// decoder sees whole entries only).
+    pub fn record(&mut self, di: usize, src: Source, data: &[u8], cc: u8, now: u32, muted: bool) {
         let Some(d) = self.device_mut(di) else { return };
         if !d.has_ring() {
             return;
@@ -616,7 +653,9 @@ impl Store {
         slot.ts = now;
         slot.len = n as u8;
         slot.cc = cc;
-        slot.flags = (if d.ring_capped || data.len() > REPORT_MAX { REC_CAPPED } else { 0 })
+        slot.iface = src.iface;
+        slot.ep = src.ep;
+        slot.flags = (if src.capped || data.len() > REPORT_MAX { REC_CAPPED } else { 0 })
             | (if muted { REC_MUTED } else { 0 });
         slot.data = [0; REPORT_MAX];
         slot.data[..n].copy_from_slice(&data[..n]);
@@ -788,6 +827,8 @@ impl Store {
             w[8..10].copy_from_slice(&(r.len as u16).to_le_bytes());
             w[10] = r.flags;
             w[11] = r.cc;
+            w[12] = r.iface;
+            w[13] = r.ep;
             w[16..16 + REPORT_MAX].copy_from_slice(&r.data);
             f.put(&w);
         }
@@ -810,6 +851,10 @@ mod tests {
         });
         (a, out)
     }
+
+    /// The keyboard's function (device 0) and the observed one (device 2).
+    const KBD: Source = Source { iface: 0, ep: 0x81, capped: false };
+    const OBS: Source = Source { iface: 1, ep: 0x82, capped: true };
 
     fn u16le(b: &[u8], o: usize) -> u16 {
         u16::from_le_bytes([b[o], b[o + 1]])
@@ -838,6 +883,7 @@ mod tests {
             d.n_hid_ifaces = 1;
             d.ring_iface = 0;
             d.ring_ep = 0x81;
+            d.n_funcs = 1;
             d.device_desc_state = Fetch::Ok;
             d.device_desc = [18, 1, 0, 2, 0, 0, 0, 64, 0x27, 0x06, 1, 0, 0, 0, 1, 2, 0, 1];
             let cfg = [9u8, 2, 34, 0, 1, 1, 0, 0xa0, 50, 9, 4, 0, 0, 1, 3, 1, 1, 0];
@@ -853,6 +899,7 @@ mod tests {
                 max_packet: 8,
                 report_len: 63,
                 monitored: true,
+                role: role::KEYBOARD,
                 ..IfaceRow::EMPTY
             };
             d.n_ifaces = 1;
@@ -883,7 +930,7 @@ mod tests {
             d.reason = reason::NOT_BOOT_SUBCLASS;
             d.ring_iface = 1;
             d.ring_ep = 0x82;
-            d.ring_capped = true;
+            d.n_funcs = 1;
         }
         s
     }
@@ -912,14 +959,14 @@ mod tests {
     #[test]
     fn list_golden() {
         let mut s = store();
-        s.record(0, &[1, 2, 3], 13, 100, false);
+        s.record(0, KBD, &[1, 2, 3], 13, 100, false);
         s.note_error(2, 3);
         let (a, out) = ask(&mut s, OP_LIST, 0, 0, 0, 4096);
         assert_eq!(a, Answer::Done { total: 16 + 96, written: 112, truncated: false, more: false });
         assert_eq!(&out[..16], &[1, 0, 0, 0, 3, 0, 32, 0, 4, 1, 1, 0, 0, 0, 0, 0]);
         #[rustfmt::skip]
         let e0 = [0u8, 1, 1, 0xFF, 0, 0, 0, 0, 0x27, 0x06, 1, 0, 0, 3, 1, 0,
-                  0x0B, 1, 0, 0x81, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
+                  0x0B, 1, 0, 0x81, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1];
         assert_eq!(&out[16..48], &e0);
         #[rustfmt::skip]
         let e1 = [1u8, 2, 2, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 4, 0,
@@ -927,7 +974,7 @@ mod tests {
         assert_eq!(&out[48..80], &e1);
         #[rustfmt::skip]
         let e2 = [2u8, 3, 2, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2,
-                  0, 0, 1, 0x82, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 0];
+                  0, 0, 1, 0x82, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 1];
         assert_eq!(&out[80..112], &e2);
     }
 
@@ -954,7 +1001,7 @@ mod tests {
                 2 => assert_eq!(payload[..2], [9, 2]),
                 4 => {
                     #[rustfmt::skip]
-                    let row = [0u8, 0, 3, 1, 1, 0, 0x81, 7, 8, 0, 63, 0, 5, 0, 1, 0];
+                    let row = [0u8, 0, 3, 1, 1, 0, 0x81, 7, 8, 0, 63, 0, 5, 0, 1, 1];
                     assert_eq!(payload, &row);
                 }
                 3 => assert_eq!(payload, &[0x05, 0x01, 0x09, 0x06, 0xa1]),
@@ -1043,13 +1090,13 @@ mod tests {
         assert_eq!(a, Answer::Done { total: 16, written: 16, truncated: false, more: false });
         assert_eq!(out, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 80, 0]);
 
-        s.record(0, &[0xAA, 0xBB], 13, 500, false);
-        s.record(0, &[1; 70], 1, 501, true);
+        s.record(0, KBD, &[0xAA, 0xBB], 13, 500, false);
+        s.record(0, KBD, &[1; 70], 1, 501, true);
         let (_, out) = ask(&mut s, OP_REPORTS, 0, 0, 0, 4096);
         assert_eq!(out.len(), 16 + 160);
         assert_eq!((u32le(&out, 0), u32le(&out, 4), u32le(&out, 8), u16le(&out, 12)), (0, 2, 0, 2));
         #[rustfmt::skip]
-        let r0 = [0u8, 0, 0, 0, 0xF4, 1, 0, 0, 2, 0, 0, 13, 0, 0, 0, 0, 0xAA, 0xBB];
+        let r0 = [0u8, 0, 0, 0, 0xF4, 1, 0, 0, 2, 0, 0, 13, 0, 0x81, 0, 0, 0xAA, 0xBB];
         assert_eq!(&out[16..34], &r0);
         assert!(out[34..96].iter().all(|&b| b == 0));
         assert_eq!(u32le(&out, 96), 1);
@@ -1062,7 +1109,7 @@ mod tests {
 
         // Overflow: 300 more → oldest = 302 - 256 = 46; asking from 10 loses 36.
         for i in 0..300u32 {
-            s.record(0, &[i as u8], 13, 1000 + i, false);
+            s.record(0, KBD, &[i as u8], 13, 1000 + i, false);
         }
         let (a, out) = ask(&mut s, OP_REPORTS, 0, 10, 0, 16 + 3 * 80 + 79);
         assert_eq!(a, Answer::Done { total: 16 + 256 * 80, written: 16 + 3 * 80, truncated: false, more: true });
@@ -1078,7 +1125,7 @@ mod tests {
         // A device without a ring: zeros.
         let (_, out) = ask(&mut s, OP_REPORTS, 1, 0, 0, 4096);
         assert_eq!(out, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 80, 0]);
-        s.record(1, &[1], 1, 0, false);
+        s.record(1, KBD, &[1], 1, 0, false);
         assert_eq!(ask(&mut s, OP_REPORTS, 1, 0, 0, 4096).1.len(), 16, "no ring, nothing recorded");
     }
 
@@ -1088,7 +1135,7 @@ mod tests {
         let mut s = store();
         s.devices[0].next_seq = u32::MAX - 1;
         for i in 0..4u8 {
-            s.record(0, &[i], 13, 0, false);
+            s.record(0, KBD, &[i], 13, 0, false);
         }
         let (a, out) = ask(&mut s, OP_REPORTS, 0, u32::MAX - 1, 0, 4096);
         assert_eq!(a, Answer::Done { total: 16 + 4 * 80, written: 16 + 4 * 80, truncated: false, more: false });
@@ -1140,6 +1187,75 @@ mod tests {
         assert_eq!(s.mute_state(203), (false, false));
         s.set_mute(204, 5);
         assert_eq!(s.mute_state(205), (true, true), "off then on again is a new mute");
+    }
+
+    /// H-3 (`hid-mouse-protocols.md` §9.8, layout v2 §10): a receiver with a
+    /// keyboard and a mouse function and a report-only interface the limit or
+    /// R5 left out. Both functions' reports land in the one ring in order of
+    /// arrival, each tagged with interface and endpoint; the entry counts the
+    /// functions; the rows carry their role; a skipped row its reason.
+    #[test]
+    fn several_functions_share_one_tagged_ring() {
+        let mut s = store();
+        let d = s.device_mut(0).unwrap();
+        d.role = role::KEYBOARD;
+        d.n_hid_ifaces = 3;
+        d.n_funcs = 2;
+        let rows = [
+            (0u8, 1u8, 0x81u8, true, role::KEYBOARD, reason::USED),
+            (1, 2, 0x82, true, role::MOUSE, reason::USED),
+            (2, 1, 0x83, false, role::NONE, reason::FUNCTION_LIMIT),
+        ];
+        for (k, &(n, proto, ep, mon, r, why)) in rows.iter().enumerate() {
+            d.ifaces[k] = IfaceRow {
+                number: n,
+                class: 3,
+                subclass: 1,
+                protocol: proto,
+                ep_addr: ep,
+                interval: 10,
+                max_packet: 8,
+                monitored: mon,
+                role: r,
+                reason: why,
+                ..IfaceRow::EMPTY
+            };
+        }
+        d.n_ifaces = 3;
+        let mouse = Source { iface: 1, ep: 0x82, capped: false };
+        s.record(0, KBD, &[0, 0, 4, 0, 0, 0, 0, 0], 1, 10, false);
+        s.record(0, mouse, &[1, 5, 0xFB], 13, 11, false);
+        s.record(0, KBD, &[0; 8], 1, 12, false);
+
+        let (_, list) = ask(&mut s, OP_LIST, 0, 0, 0, 4096);
+        let e0 = &list[16..48];
+        assert_eq!((e0[14], e0[15], e0[17], e0[18], e0[19], e0[31]), (1, 0, 3, 0, 0x81, 2));
+        assert_eq!((u32le(e0, 20), u32le(e0, 24)), (0, 3));
+
+        let (_, rep) = ask(&mut s, OP_REPORTS, 0, 0, 0, 4096);
+        let tags: Vec<(u32, u8, u8, u16)> =
+            (0..3).map(|k| 16 + 80 * k).map(|o| (u32le(&rep, o), rep[o + 12], rep[o + 13], u16le(&rep, o + 8))).collect();
+        assert_eq!(tags, [(0, 0, 0x81, 8), (1, 1, 0x82, 3), (2, 0, 0x81, 8)]);
+        assert!((0..3).all(|k| rep[16 + 80 * k + 14..16 + 80 * k + 16] == [0, 0]), "+14..16 reserved");
+
+        let (_, dev) = ask(&mut s, OP_DEVICE, 0, 0, 0, 8192);
+        let mut o = 36;
+        let mut table = None;
+        while o < dev.len() {
+            let len = u32le(&dev, o + 4) as usize;
+            if u16le(&dev, o) == SEC_IFACES {
+                table = Some(dev[o + 8..o + 8 + len].to_vec());
+            }
+            o += 8 + len.div_ceil(4) * 4;
+        }
+        let table = table.expect("interface table");
+        let cols: Vec<(u8, u8, u8)> = table.chunks(16).map(|w| (w[5], w[14], w[15])).collect();
+        assert_eq!(cols, [(0, 1, 1), (0, 1, 2), (reason::FUNCTION_LIMIT, 0, 0)]);
+    }
+
+    #[test]
+    fn layout_version_is_2() {
+        assert_eq!(VERSION, 2);
     }
 
     #[test]

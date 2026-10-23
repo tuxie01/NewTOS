@@ -32,6 +32,7 @@ mod pcie;
 mod pcie_rpi4;
 pub mod config_desc;
 pub mod hid;
+pub mod hid_decode;
 pub mod snapshot;
 pub mod xhci;
 
@@ -176,9 +177,11 @@ pub fn tree(buf: &mut [DeviceInfo]) -> (u8, usize) {
     (0, 0)
 }
 
-/// Pump USB HID input: drain a completed interrupt transfer (a HID report),
-/// translate it into the IKBD byte stream (`ikbd::feed`), and re-queue the
-/// next transfer for that device. Called from `host_env`'s input pump
+/// Pump USB HID input: drain a completed interrupt transfer (a HID report of
+/// one function — F3: a device may have several, `docs/api/usb/
+/// hid-mouse-protocols.md` §9.2), translate it into the IKBD byte stream
+/// (`ikbd::feed`) with that function's decoder state, and re-queue the next
+/// transfer for that function. Called from `host_env`'s input pump
 /// (`pump_devices`). A no-op until a HID device is enumerated.
 pub fn poll() {
     #[cfg(any(feature = "board-qemu-virt", feature = "board-rpi4"))]
@@ -195,15 +198,17 @@ pub fn poll() {
         if with_store(|s| s.mute_state(tos_api::bios::tick::hz_200())).1 {
             hid::release_all();
         }
-        if let Some((di, report, len, cc)) = c.poll_interrupt() {
+        if let Some((fi, report, len, cc)) = c.poll_interrupt() {
+            let f = c.func(fi);
             // Record first, decode second (usb-snapshot.md §2.8, §3.3): the
             // decoder may run an EL0 `kbdvec` hook, which may read the ring
             // through `Ssystem(2022)` while this call is suspended under it —
             // it must find the report complete, and the store not borrowed.
+            // One ring per device, each entry tagged with its function (§10).
             let now = tos_api::bios::tick::hz_200();
             let muted = with_store(|s| {
                 let muted = s.muted(now);
-                s.record(di, &report[..len], cc, now, muted);
+                s.record(f.dev, f.source, &report[..len], cc, now, muted);
                 muted
             });
             let mut boot = [0u8; 8];
@@ -215,19 +220,20 @@ pub fn poll() {
             // a report-protocol interface) is 0 — and used to be handed to
             // `mouse_report`, which turned whatever bytes were in the buffer
             // into cursor movement and button presses in the IKBD stream.
-            // While the snapshot's MUTE runs nothing is decoded (§2.6).
-            match c.protocol(di) {
+            // While the snapshot's MUTE runs nothing is decoded (§2.6). The
+            // decoder state is the function's own (§9.6 Soll 1).
+            match f.protocol {
                 _ if muted => {}
-                1 => hid::keyboard_report(&boot),
+                1 => hid::keyboard_report(fi, &boot),
                 // `len` — how many bytes the device really sent — matters only
                 // for the mouse: the boot report's fourth byte (the wheel) is
                 // optional, and a three-byte mouse never writes it.
-                2 => hid::mouse_report(&boot, len),
+                2 => hid::mouse_report(fi, &boot, len),
                 _ => {}
             }
             // Re-arm regardless: the completed transfer left the endpoint with
             // nothing outstanding, and only this call queues the next one.
-            c.queue_interrupt(di);
+            c.queue_interrupt(fi);
         }
     }
 }

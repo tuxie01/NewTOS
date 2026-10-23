@@ -1,5 +1,7 @@
-//! Configuration-descriptor scan: pick the HID **boot** interface the driver
-//! can decode, and name every interface it does not use.
+//! Configuration-descriptor scan: pick the HID **boot** interfaces the driver
+//! decodes — every one of them, each a *function* with its own interrupt-IN
+//! endpoint (USB01 F3, `docs/api/usb/hid-mouse-protocols.md` §9.2–§9.3) — and
+//! name every interface it does not use.
 //!
 //! Pure byte parsing with no register access and no kernel dependency, so the
 //! host test suite (`tools/xtask`, which includes this file by path) runs its
@@ -28,6 +30,17 @@
 //! not an input device here. A non-HID interface (mass storage, hub, audio,
 //! vendor …) never is, whatever its `bInterfaceProtocol` says.
 //!
+//! F3 selection rules (`hid-mouse-protocols.md` §9.3, approved 2026-10-24,
+//! §9.11): only alternate setting 0 counts (R1); a function is a boot
+//! keyboard/mouse interface with its **first** interrupt-IN endpoint (R2,
+//! R3); several of the same kind are allowed (R4); at most
+//! [`MAX_FUNC_PER_DEV`] per device, the next is skipped as
+//! [`SkipReason::FunctionLimit`] (R6); an interface whose endpoint maps to the
+//! same Device Context Index as an earlier function is skipped (R7, xHCI 1.2:
+//! `DCI = endpoint number × 2 + direction`); functions are in descriptor
+//! order, function 0 is the primary (R8). Report-only interfaces are observed
+//! only when the device has no boot function (R5).
+//!
 //! USB snapshot (USB01 step 2, `docs/api/usb/usb-snapshot.md` §3.1 step 4/5,
 //! §2.5): the same walk also yields the **interface table** (one
 //! [`IfaceRow`] per interface descriptor, alt settings included), the
@@ -35,7 +48,7 @@
 //! (HID 1.11 §6.2.1: `bNumDescriptors` at offset 5, then `bDescriptorType` /
 //! `wDescriptorLength` pairs from offset 6; §7.1: the HID descriptor follows
 //! its interface descriptor, before the endpoints) and the **observation
-//! candidate**: when no boot interface qualifies, the first HID interface
+//! candidate**: when no boot function qualifies, the first HID interface
 //! (alternate setting 0) with an interrupt-IN endpoint, which the driver
 //! configures and records but does not decode (role 3, §3.2).
 
@@ -81,6 +94,23 @@ pub struct HidInfo {
     pub interval: u8,
 }
 
+impl HidInfo {
+    /// All fields 0 (a placeholder, never a function).
+    pub const EMPTY: HidInfo =
+        HidInfo { config_value: 0, iface: 0, protocol: 0, ep_addr: 0, ep_max: 0, interval: 0 };
+
+    /// The endpoint's Device Context Index: `endpoint number × 2 +
+    /// direction` (1 = IN) — xHCI 1.2 §4.5.1 (`xhci-1.2.txt:4682-4686`).
+    pub fn dci(&self) -> u8 {
+        (self.ep_addr & 0x0F) * 2 + u8::from(self.ep_addr & 0x80 != 0)
+    }
+}
+
+/// Functions (decoded HID boot interfaces) one device may have
+/// (`hid-mouse-protocols.md` §9.5, decision 9: 4 — the snapshot keeps the
+/// report descriptors of four HID interfaces per device, too).
+pub const MAX_FUNC_PER_DEV: usize = 4;
+
 /// Why an interface descriptor was not taken as the device's input interface.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SkipReason {
@@ -94,9 +124,18 @@ pub enum SkipReason {
     UnknownBootProtocol,
     /// A usable HID boot interface without an interrupt-IN endpoint.
     NoInterruptIn,
-    /// A usable HID boot interface after the one already chosen: the driver
-    /// configures one interface per device (`hid-mouse-protocols.md` F3).
-    OneInterfacePerDevice,
+    /// A usable HID boot interface beyond the function limit (per device
+    /// [`MAX_FUNC_PER_DEV`] here; the driver's total `MAX_FUNC` in `xhci`) —
+    /// `hid-mouse-protocols.md` §9.3 R6.
+    FunctionLimit,
+    /// A HID boot interface in an alternate setting other than 0: an
+    /// alternative to the interface `SET_CONFIGURATION` activates, not a
+    /// further function (§9.3 R1).
+    AlternateSetting,
+    /// A HID boot interface whose interrupt-IN endpoint has the Device Context
+    /// Index of an earlier function: each DCI has one endpoint context
+    /// (§9.3 R7).
+    EndpointCollision,
 }
 
 /// An interface descriptor the scan did not use, with the fields a log line
@@ -179,9 +218,13 @@ pub struct Observe {
 /// Outcome of [`scan`].
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Scan {
-    /// The first HID boot interface with an interrupt-IN endpoint.
-    pub hid: Option<HidInfo>,
-    /// Only when `hid` is `None`: the first HID interface in alternate
+    /// The functions, `funcs[..n_funcs]`, in descriptor order: every HID
+    /// boot interface (alternate setting 0) with an interrupt-IN endpoint,
+    /// up to [`MAX_FUNC_PER_DEV`]. `funcs[0]` is the primary (§9.3 R8).
+    pub funcs: [HidInfo; MAX_FUNC_PER_DEV],
+    /// Functions found.
+    pub n_funcs: usize,
+    /// Only when there is no function: the first HID interface in alternate
     /// setting 0 with an interrupt-IN endpoint (`usb-snapshot.md` §3.1 step
     /// 5 (ii)).
     pub observe: Option<Observe>,
@@ -220,17 +263,26 @@ fn classify(class: u8, subclass: u8, protocol: u8) -> Option<SkipReason> {
     }
 }
 
+impl Scan {
+    /// The functions found, in descriptor order.
+    pub fn funcs(&self) -> &[HidInfo] {
+        &self.funcs[..self.n_funcs]
+    }
+}
+
 /// Walk a configuration descriptor (`cfg` = the bytes read, starting with the
-/// 9-byte configuration header) and choose the first HID boot interface that
-/// has an interrupt-IN endpoint. `skipped` is called once for every other
-/// interface descriptor, in descriptor order.
+/// 9-byte configuration header) and choose every HID boot interface in
+/// alternate setting 0 that has an interrupt-IN endpoint, up to
+/// [`MAX_FUNC_PER_DEV`] (the rules of §9.3). `skipped` is called once for
+/// every other interface descriptor, in descriptor order.
 ///
 /// The same walk fills the interface table ([`Scan::rows`]) and, when no boot
-/// interface qualifies, names the observation candidate ([`Scan::observe`]).
+/// function qualifies, names the observation candidate ([`Scan::observe`]).
 pub fn scan(cfg: &[u8], mut skipped: impl FnMut(SkippedInterface)) -> Scan {
     let config_value = cfg.get(5).copied().unwrap_or(0);
     let mut out = Scan {
-        hid: None,
+        funcs: [HidInfo::EMPTY; MAX_FUNC_PER_DEV],
+        n_funcs: 0,
         observe: None,
         stopped_at: None,
         rows: [IfaceRow::EMPTY; MAX_IFACE_ROWS],
@@ -287,9 +339,12 @@ pub fn scan(cfg: &[u8], mut skipped: impl FnMut(SkippedInterface)) -> Scan {
                 if d.class == CLASS_HID && d.alt == 0 {
                     out.n_hid_ifaces = out.n_hid_ifaces.saturating_add(1);
                 }
+                // R1: a boot interface counts in alternate setting 0 only.
+                // The function limit (R6) and the endpoint collision (R7)
+                // are decided at its interrupt-IN endpoint, below.
                 let skip = match classify(d.class, d.subclass, d.protocol) {
                     Some(reason) => Some(reason),
-                    None if out.hid.is_some() => Some(SkipReason::OneInterfacePerDevice),
+                    None if d.alt != 0 => Some(SkipReason::AlternateSetting),
                     None => None,
                 };
                 match skip {
@@ -343,16 +398,37 @@ pub fn scan(cfg: &[u8], mut skipped: impl FnMut(SkippedInterface)) -> Scan {
                         }
                     }
                     if cur_open {
+                        // R3: the interface's first interrupt-IN endpoint is
+                        // the function's, whatever happens to it here.
+                        cur_open = false;
                         let c = cur.expect("cur_open implies an interface");
-                        out.hid = Some(HidInfo {
+                        let f = HidInfo {
                             config_value,
                             iface: c.number,
                             protocol: c.protocol,
                             ep_addr: addr,
                             ep_max: max,
                             interval: cfg[i + 6],
-                        });
-                        cur_open = false;
+                        };
+                        let skip = if out.funcs().iter().any(|g| g.dci() == f.dci()) {
+                            Some(SkipReason::EndpointCollision)
+                        } else if out.n_funcs == MAX_FUNC_PER_DEV {
+                            Some(SkipReason::FunctionLimit)
+                        } else {
+                            None
+                        };
+                        match skip {
+                            None => {
+                                out.funcs[out.n_funcs] = f;
+                                out.n_funcs += 1;
+                            }
+                            Some(reason) => {
+                                if let Some(r) = cur_row {
+                                    out.rows[r].skip = Some(reason);
+                                }
+                                skipped(SkippedInterface { reason, ..c });
+                            }
+                        }
                     }
                 }
             }
@@ -361,11 +437,12 @@ pub fn scan(cfg: &[u8], mut skipped: impl FnMut(SkippedInterface)) -> Scan {
         i += dlen;
     }
     close(cur, cur_open, cur_row.map(|r| &mut out.rows[r]), &mut skipped);
-    if out.hid.is_none() {
+    if out.n_funcs == 0 {
         // §3.1 step 5 (ii): the first HID interface in its default alternate
         // setting (the one SET_CONFIGURATION leaves active) that has an
-        // interrupt-IN endpoint. Without a boot interface every such row is
-        // one the selection skipped as NotBootSubclass or UnknownBootProtocol.
+        // interrupt-IN endpoint. Without a boot function every such row is
+        // one the selection skipped as NotBootSubclass or UnknownBootProtocol
+        // (a collision or the limit needs an earlier function).
         out.observe = out.rows[..out.n_rows]
             .iter()
             .find(|r| r.is_hid_alt0() && r.ep_addr != 0)
@@ -393,7 +470,9 @@ pub fn reason_text(r: SkipReason) -> &'static str {
         }
         SkipReason::UnknownBootProtocol => "HID boot subclass, protocol neither keyboard nor mouse",
         SkipReason::NoInterruptIn => "HID boot interface without an interrupt-IN endpoint",
-        SkipReason::OneInterfacePerDevice => "second HID boot interface: one interface per device",
+        SkipReason::FunctionLimit => "function limit",
+        SkipReason::AlternateSetting => "HID boot interface in an alternate setting (only alternate setting 0 is used)",
+        SkipReason::EndpointCollision => "HID boot interface on an endpoint an earlier function already uses",
     }
 }
 
@@ -419,6 +498,11 @@ mod tests {
         vec![7, 5, addr, attr, m[0], m[1], interval]
     }
 
+    /// The primary function (what the driver took before F3).
+    fn hid(r: &Scan) -> Option<HidInfo> {
+        r.funcs().first().copied()
+    }
+
     fn run(cfg: &[u8]) -> (Scan, Vec<SkippedInterface>) {
         let mut s = Vec::new();
         let r = scan(cfg, |x| s.push(x));
@@ -431,7 +515,7 @@ mod tests {
         let cfg = config(&[&iface(0, 3, 1, 2), &HID_DESC, &ep(0x81, 3, 4, 10)]);
         let (r, s) = run(&cfg);
         assert_eq!(
-            r.hid,
+            hid(&r),
             Some(HidInfo {
                 config_value: 7,
                 iface: 0,
@@ -452,13 +536,13 @@ mod tests {
     fn non_hid_interfaces_are_never_input_devices() {
         let storage = config(&[&iface(0, 8, 6, 0x50), &ep(0x81, 2, 512, 0), &ep(0x02, 2, 512, 0)]);
         let (r, s) = run(&storage);
-        assert_eq!(r.hid, None);
+        assert_eq!(hid(&r), None);
         assert_eq!(s.len(), 1);
         assert_eq!((s[0].class, s[0].reason), (8, SkipReason::NotHid));
 
         let vendor = config(&[&iface(0, 0xff, 1, 1), &ep(0x81, 3, 8, 10)]);
         let (r, s) = run(&vendor);
-        assert_eq!(r.hid, None, "protocol 1 of a non-HID class is not a keyboard");
+        assert_eq!(hid(&r), None, "protocol 1 of a non-HID class is not a keyboard");
         assert_eq!(s[0].reason, SkipReason::NotHid);
     }
 
@@ -474,7 +558,7 @@ mod tests {
             &ep(0x81, 3, 8, 10),
         ]);
         let (r, s) = run(&cfg);
-        let h = r.hid.unwrap();
+        let h = hid(&r).unwrap();
         assert_eq!((h.iface, h.protocol, h.ep_addr), (1, 1, 0x81));
         assert_eq!(s.len(), 1);
         assert_eq!((s[0].number, s[0].reason), (0, SkipReason::NotHid));
@@ -486,18 +570,18 @@ mod tests {
     fn report_only_and_reserved_protocol_are_skipped() {
         let tablet = config(&[&iface(0, 3, 0, 0), &HID_DESC, &ep(0x81, 3, 8, 4)]);
         let (r, s) = run(&tablet);
-        assert_eq!(r.hid, None);
+        assert_eq!(hid(&r), None);
         assert_eq!(s[0].reason, SkipReason::NotBootSubclass);
 
         let reserved = config(&[&iface(0, 3, 1, 3), &ep(0x81, 3, 8, 4)]);
         let (r, s) = run(&reserved);
-        assert_eq!(r.hid, None);
+        assert_eq!(hid(&r), None);
         assert_eq!(s[0].reason, SkipReason::UnknownBootProtocol);
     }
 
-    /// Roccat-style composite (3,1,2)+(3,0,1) and a keyboard+mouse receiver
-    /// (3,1,1)+(3,1,2): the first boot interface is used, every later one is
-    /// reported, not silently dropped.
+    /// Roccat-style composite (3,1,2)+(3,0,1): the boot interface is used,
+    /// the report-only one reported, not silently dropped. A keyboard+mouse
+    /// receiver (3,1,1)+(3,1,2) since F3: both are functions, nothing skipped.
     #[test]
     fn later_interfaces_are_reported() {
         let roccat = config(&[
@@ -509,7 +593,7 @@ mod tests {
             &ep(0x82, 3, 16, 1),
         ]);
         let (r, s) = run(&roccat);
-        assert_eq!(r.hid.map(|h| (h.iface, h.protocol)), Some((0, 2)));
+        assert_eq!(hid(&r).map(|h| (h.iface, h.protocol)), Some((0, 2)));
         assert_eq!(s.len(), 1);
         assert_eq!((s[0].number, s[0].reason), (1, SkipReason::NotBootSubclass));
 
@@ -520,8 +604,9 @@ mod tests {
             &ep(0x82, 3, 8, 10),
         ]);
         let (r, s) = run(&receiver);
-        assert_eq!(r.hid.map(|h| h.iface), Some(0));
-        assert_eq!((s[0].number, s[0].reason), (1, SkipReason::OneInterfacePerDevice));
+        let f: Vec<(u8, u8, u8)> = r.funcs().iter().map(|h| (h.iface, h.protocol, h.ep_addr)).collect();
+        assert_eq!(f, [(0, 1, 0x81), (1, 2, 0x82)]);
+        assert!(s.is_empty());
     }
 
     /// A boot interface whose only endpoint is interrupt OUT (or bulk) has no
@@ -535,12 +620,12 @@ mod tests {
             &ep(0x82, 3, 4, 10),
         ]);
         let (r, s) = run(&cfg);
-        assert_eq!(r.hid.map(|h| h.iface), Some(1));
+        assert_eq!(hid(&r).map(|h| h.iface), Some(1));
         assert_eq!((s[0].number, s[0].reason), (0, SkipReason::NoInterruptIn));
 
         let last = config(&[&iface(0, 3, 1, 2), &ep(0x81, 2, 64, 0)]);
         let (r, s) = run(&last);
-        assert_eq!(r.hid, None);
+        assert_eq!(hid(&r), None);
         assert_eq!(s[0].reason, SkipReason::NoInterruptIn);
     }
 
@@ -552,7 +637,7 @@ mod tests {
         let cut = cfg.len() - 4;
         cfg.truncate(cut);
         let (r, s) = run(&cfg);
-        assert_eq!(r.hid.map(|h| h.iface), Some(0));
+        assert_eq!(hid(&r).map(|h| h.iface), Some(0));
         assert!(s.is_empty());
         assert_eq!(r.stopped_at, Some(9 + 9 + 7));
 
@@ -568,7 +653,9 @@ mod tests {
             SkipReason::NotBootSubclass,
             SkipReason::UnknownBootProtocol,
             SkipReason::NoInterruptIn,
-            SkipReason::OneInterfacePerDevice,
+            SkipReason::FunctionLimit,
+            SkipReason::AlternateSetting,
+            SkipReason::EndpointCollision,
         ];
         for (i, a) in all.iter().enumerate() {
             assert!(!reason_text(*a).is_empty());
@@ -601,7 +688,7 @@ mod tests {
         ]);
         assert_eq!(cfg.len(), 59);
         let (r, _) = run(&cfg);
-        assert_eq!(r.hid.map(|h| (h.iface, h.ep_addr, h.ep_max)), Some((0, 0x81, 64)));
+        assert_eq!(hid(&r).map(|h| (h.iface, h.ep_addr, h.ep_max)), Some((0, 0x81, 64)));
         assert_eq!(r.observe, None, "a boot interface was chosen: no observation");
         assert_eq!(r.n_rows, 2);
         assert_eq!(r.n_hid_ifaces, 2);
@@ -620,7 +707,7 @@ mod tests {
     fn report_only_interface_is_observed() {
         let tablet = config(&[&iface(0, 3, 0, 0), &hid_desc(74), &ep(0x81, 3, 8, 4)]);
         let (r, _) = run(&tablet);
-        assert_eq!(r.hid, None);
+        assert_eq!(hid(&r), None);
         let o = r.observe.expect("observed");
         assert_eq!((o.info.iface, o.info.ep_addr, o.info.ep_max, o.info.interval), (0, 0x81, 8, 4));
         assert_eq!(o.reason, SkipReason::NotBootSubclass);
@@ -637,7 +724,7 @@ mod tests {
     fn nothing_observed_without_a_hid_interrupt_in_in_alt_0() {
         let storage = config(&[&iface(0, 8, 6, 0x50), &ep(0x81, 2, 512, 0)]);
         let r = run(&storage).0;
-        assert_eq!((r.hid, r.observe, r.n_hid_ifaces), (None, None, 0));
+        assert_eq!((hid(&r), r.observe, r.n_hid_ifaces), (None, None, 0));
 
         let out_only = config(&[&iface(0, 3, 0, 0), &ep(0x01, 3, 8, 4)]);
         assert_eq!(run(&out_only).0.observe, None);
@@ -691,6 +778,220 @@ mod tests {
         assert!(r.n_hid_ifaces as usize > MAX_IFACE_ROWS);
         assert_eq!(s.len(), r.n_hid_ifaces as usize, "every interface still logged");
         assert_eq!(r.observe.map(|o| o.info.iface), Some(0));
+    }
+
+    // ── F3 (H-1, `hid-mouse-protocols.md` §9.8): the configurations of
+    // Ragnar's run, `measurements/measurement-2026-10-23-usb01-ragnar/serial/`
+    // (the `usb-diag` "config descriptor, N bytes, all descriptors" listings).
+    // The logs show interface/endpoint fields and the HID descriptors'
+    // lengths, not their contents: the report lengths here are placeholders.
+
+    /// An interface descriptor with `eps` endpoints and alternate setting `alt`.
+    fn iface_n(n: u8, alt: u8, eps: u8, class: u8, sub: u8, proto: u8) -> Vec<u8> {
+        vec![9, 4, n, alt, eps, class, sub, proto, 0]
+    }
+
+    /// The three-interface receivers: 9 + 3 × (9 + 9 + 7) = 84 bytes.
+    fn receiver(ifaces: [(u8, u8, u8, u16, u8); 3]) -> Vec<u8> {
+        let mut parts: Vec<Vec<u8>> = Vec::new();
+        for (n, (sub, proto, ep_addr, max, interval)) in ifaces.iter().enumerate() {
+            parts.push(iface(n as u8, 3, *sub, *proto));
+            parts.push(hid_desc(60 + n as u16));
+            parts.push(ep(*ep_addr, 3, *max, *interval));
+        }
+        let refs: Vec<&[u8]> = parts.iter().map(|v| v.as_slice()).collect();
+        config(&refs)
+    }
+
+    fn func_list(r: &Scan) -> Vec<(u8, u8, u8, u16, u8, u8)> {
+        r.funcs().iter().map(|h| (h.iface, h.protocol, h.ep_addr, h.ep_max, h.interval, h.dci())).collect()
+    }
+
+    /// Logitech Unifying 046d:c52b (MX Master 2S), `001_logi_mx_master_2s_schwarz.LOG:109-121`:
+    /// keyboard + mouse are functions, the report-only HID++ interface is
+    /// not polled (R5) and not observed (there is a boot function).
+    #[test]
+    fn unifying_receiver_keyboard_and_mouse() {
+        let cfg = receiver([(1, 1, 0x81, 8, 8), (1, 2, 0x82, 8, 2), (0, 0, 0x83, 32, 2)]);
+        assert_eq!(cfg.len(), 84);
+        let (r, s) = run(&cfg);
+        assert_eq!(func_list(&r), [(0, 1, 0x81, 8, 8, 3), (1, 2, 0x82, 8, 2, 5)]);
+        assert_eq!(s.len(), 1);
+        assert_eq!((s[0].number, s[0].reason), (2, SkipReason::NotBootSubclass));
+        assert_eq!(r.observe, None);
+        assert_eq!((r.n_rows, r.n_hid_ifaces, r.stopped_at), (3, 3, None));
+        assert_eq!(
+            r.rows[..3].iter().map(|w| w.skip).collect::<Vec<_>>(),
+            [None, None, Some(SkipReason::NotBootSubclass)]
+        );
+        assert!(r.funcs().iter().all(|f| f.config_value == 7));
+    }
+
+    /// Rii X8 1997:2433, `005_rii_x8_schwarz.LOG:109-121`: three boot
+    /// functions — keyboard, mouse (bInterval 1), a second keyboard (R4).
+    #[test]
+    fn rii_x8_three_functions_two_keyboards() {
+        let cfg = receiver([(1, 1, 0x81, 64, 10), (1, 2, 0x82, 64, 1), (1, 1, 0x83, 64, 10)]);
+        assert_eq!(cfg.len(), 84);
+        let (r, s) = run(&cfg);
+        assert_eq!(
+            func_list(&r),
+            [(0, 1, 0x81, 64, 10, 3), (1, 2, 0x82, 64, 1, 5), (2, 1, 0x83, 64, 10, 7)]
+        );
+        assert!(s.is_empty());
+        assert!(r.rows[..3].iter().all(|w| w.skip.is_none()));
+    }
+
+    /// Cherry DW 9000 046a:0115, `007_cherry_dw9000_slim_schwarz.LOG:109-121`.
+    #[test]
+    fn cherry_dw9000_keyboard_and_mouse() {
+        let cfg = receiver([(1, 1, 0x81, 10, 10), (1, 2, 0x82, 10, 2), (0, 0, 0x83, 10, 10)]);
+        let (r, s) = run(&cfg);
+        assert_eq!(func_list(&r), [(0, 1, 0x81, 10, 10, 3), (1, 2, 0x82, 10, 2, 5)]);
+        assert_eq!((s.len(), s[0].number, s[0].reason), (1, 2, SkipReason::NotBootSubclass));
+    }
+
+    /// Regression (one function each, as before F3): the Cherry KC 6000
+    /// cable keyboard 046a:0113 (`001…LOG:141-149`, 59 bytes), the Apple
+    /// keyboard 05ac:020c (`apple_tastatur.LOG:156-163`, 59 bytes) and the
+    /// Logitech B100 mouse 046d:c077 (`003_logi_b100_schwarz.LOG:109-113`,
+    /// 34 bytes).
+    #[test]
+    fn single_function_devices_are_unchanged() {
+        let kc6000 = config(&[
+            &iface(0, 3, 1, 1),
+            &hid_desc(65),
+            &ep(0x81, 3, 8, 10),
+            &iface(1, 3, 0, 0),
+            &hid_desc(50),
+            &ep(0x82, 3, 5, 10),
+        ]);
+        let apple = config(&[
+            &iface(0, 3, 1, 1),
+            &hid_desc(65),
+            &ep(0x81, 3, 8, 10),
+            &iface(1, 3, 0, 0),
+            &hid_desc(50),
+            &ep(0x82, 3, 4, 10),
+        ]);
+        let b100 = config(&[&iface(0, 3, 1, 2), &hid_desc(52), &ep(0x81, 3, 4, 10)]);
+        assert_eq!((kc6000.len(), apple.len(), b100.len()), (59, 59, 34));
+        for (cfg, want, n_skipped) in [(kc6000, (0, 1, 0x81, 8, 10, 3), 1), (apple, (0, 1, 0x81, 8, 10, 3), 1), (b100, (0, 2, 0x81, 4, 10, 3), 0)] {
+            let (r, s) = run(&cfg);
+            assert_eq!(func_list(&r), [want]);
+            assert_eq!(s.len(), n_skipped);
+            assert!(s.iter().all(|x| x.reason == SkipReason::NotBootSubclass));
+            assert_eq!(r.observe, None);
+        }
+    }
+
+    /// Xbox-360-style pad 045e:028e (8BitDo), `8Bit_Do_Joypad.LOG:105-121`,
+    /// 153 bytes: four vendor-class interfaces (with class descriptors of
+    /// type 0x21 that are not HID descriptors) — no function, nothing
+    /// observed, four NotHid lines.
+    #[test]
+    fn gamepad_vendor_interfaces_are_no_functions() {
+        let cfg = config(&[
+            &iface_n(0, 0, 2, 255, 93, 1),
+            &[&[17u8, 0x21][..], &[0u8; 15][..]].concat(),
+            &ep(0x81, 3, 32, 4),
+            &ep(0x01, 3, 32, 8),
+            &iface_n(1, 0, 4, 255, 93, 3),
+            &[&[27u8, 0x21][..], &[0u8; 25][..]].concat(),
+            &ep(0x82, 3, 32, 2),
+            &ep(0x02, 3, 32, 4),
+            &ep(0x83, 3, 32, 64),
+            &ep(0x03, 3, 32, 16),
+            &iface_n(2, 0, 1, 255, 93, 2),
+            &[&[9u8, 0x21][..], &[0u8; 7][..]].concat(),
+            &ep(0x84, 3, 32, 16),
+            &iface_n(3, 0, 0, 255, 253, 19),
+            &[6u8, 0x41, 0, 0, 0, 0],
+        ]);
+        assert_eq!(cfg.len(), 153);
+        let (r, s) = run(&cfg);
+        assert_eq!((r.n_funcs, r.observe, r.n_hid_ifaces, r.n_rows), (0, None, 0, 4));
+        assert_eq!(s.iter().map(|x| (x.number, x.reason)).collect::<Vec<_>>(), [
+            (0, SkipReason::NotHid),
+            (1, SkipReason::NotHid),
+            (2, SkipReason::NotHid),
+            (3, SkipReason::NotHid),
+        ]);
+    }
+
+    /// R1: a boot interface in alternate setting 1 is an alternative, not a
+    /// function — even when alternate setting 0 of the same number is one.
+    #[test]
+    fn alternate_settings_are_not_functions() {
+        let cfg = config(&[
+            &iface_n(0, 0, 1, 3, 1, 1),
+            &ep(0x81, 3, 8, 10),
+            &iface_n(0, 1, 1, 3, 1, 1),
+            &ep(0x82, 3, 8, 10),
+            &iface_n(1, 1, 1, 3, 1, 2),
+            &ep(0x83, 3, 4, 10),
+        ]);
+        let (r, s) = run(&cfg);
+        assert_eq!(func_list(&r), [(0, 1, 0x81, 8, 10, 3)]);
+        assert_eq!(s.iter().map(|x| (x.number, x.alt, x.reason)).collect::<Vec<_>>(), [
+            (0, 1, SkipReason::AlternateSetting),
+            (1, 1, SkipReason::AlternateSetting),
+        ]);
+        assert_eq!(r.rows[2].skip, Some(SkipReason::AlternateSetting));
+        assert_eq!((r.rows[2].ep_addr, r.rows[2].alt), (0x83, 1), "the row still lists its endpoint");
+
+        // A device whose only boot interface is in alternate setting 1 has no
+        // function, and nothing to observe (§9 of usb-snapshot.md: alt 0 only).
+        let only_alt = config(&[&iface_n(0, 1, 1, 3, 1, 2), &ep(0x81, 3, 4, 10)]);
+        let (r, _) = run(&only_alt);
+        assert_eq!((r.n_funcs, r.observe), (0, None));
+    }
+
+    /// R7: a second boot interface on the same endpoint (= the same DCI) is
+    /// skipped; the first keeps it.
+    #[test]
+    fn endpoint_collision_is_skipped() {
+        let cfg = config(&[
+            &iface(0, 3, 1, 1),
+            &ep(0x81, 3, 8, 10),
+            &iface(1, 3, 1, 2),
+            &ep(0x81, 3, 4, 10),
+            &iface(2, 3, 1, 2),
+            &ep(0x82, 3, 4, 10),
+        ]);
+        let (r, s) = run(&cfg);
+        assert_eq!(func_list(&r), [(0, 1, 0x81, 8, 10, 3), (2, 2, 0x82, 4, 10, 5)]);
+        assert_eq!(s.iter().map(|x| (x.number, x.reason)).collect::<Vec<_>>(), [(1, SkipReason::EndpointCollision)]);
+        assert_eq!(r.rows[1].skip, Some(SkipReason::EndpointCollision));
+    }
+
+    /// R6: the fifth boot interface of a device is beyond MAX_FUNC_PER_DEV.
+    #[test]
+    fn function_limit_per_device() {
+        let mut parts: Vec<Vec<u8>> = Vec::new();
+        for n in 0..6u8 {
+            parts.push(iface(n, 3, 1, 1 + n % 2));
+            parts.push(ep(0x81 + n, 3, 8, 10));
+        }
+        let refs: Vec<&[u8]> = parts.iter().map(|v| v.as_slice()).collect();
+        let (r, s) = run(&config(&refs));
+        assert_eq!(r.n_funcs, MAX_FUNC_PER_DEV);
+        assert_eq!(r.funcs().iter().map(|h| h.iface).collect::<Vec<_>>(), [0, 1, 2, 3]);
+        assert_eq!(s.iter().map(|x| (x.number, x.reason)).collect::<Vec<_>>(), [
+            (4, SkipReason::FunctionLimit),
+            (5, SkipReason::FunctionLimit),
+        ]);
+        assert_eq!(reason_text(SkipReason::FunctionLimit), "function limit", "§9.3 R6 log text");
+    }
+
+    /// A receiver configuration cut inside the second interface keeps the
+    /// first function and says where it stopped.
+    #[test]
+    fn cut_receiver_keeps_the_functions_before_the_cut() {
+        let cfg = receiver([(1, 1, 0x81, 8, 8), (1, 2, 0x82, 8, 2), (0, 0, 0x83, 32, 2)]);
+        let (r, _) = run(&cfg[..9 + 25 + 12]);
+        assert_eq!(func_list(&r), [(0, 1, 0x81, 8, 8, 3)]);
+        assert_eq!(r.stopped_at, Some(9 + 25 + 9));
     }
 
     #[test]

@@ -97,6 +97,18 @@ static mut DMA: XhciDma = XhciDma {
 // in the path plus each HID endpoint.
 pub const MAX_HID: usize = 8;
 
+/// Functions the driver polls in total: HID interfaces with their own
+/// interrupt-IN endpoint, several per device possible (USB01 F3,
+/// `docs/api/usb/hid-mouse-protocols.md` §9.2, §9.5 — decision 9: 12, hard
+/// ceiling 15). Functions spend no `hid[]` entry; per device at most
+/// `config_desc::MAX_FUNC_PER_DEV`.
+pub const MAX_FUNC: usize = 12;
+
+// Steady state: one armed TRB per function plus one control transfer, so at
+// most `MAX_FUNC + 1` transfer events are outstanding — they must fit the
+// event ring and the parked-event queue (§9.4 "Steady State", §9.5).
+const _: () = assert!(MAX_FUNC < EVT_RING_LEN, "MAX_FUNC + 1 transfers must fit the event ring");
+
 // Per-device DMA. The Input and Device contexts are 32-byte contexts (CSZ=0;
 // checked in `open`): the Input is control + slot + 31 endpoint contexts
 // (33 × 8 u32), the Device is slot + 31 endpoints (32 × 8 u32). Laid out as
@@ -118,11 +130,7 @@ struct DevDma {
     // Input Context Pointer). At offset 0x400 after `device` that holds.
     input: [u32; 33 * 8],
     ep0_ring: Ring,
-    int_ring: Ring,
     buf: [u8; 256],
-    /// The interrupt-IN report buffer. 64 bytes = the largest TRB Transfer
-    /// Length `queue_interrupt` asks for (`INT_TRB_MAX`).
-    intbuf: [u8; INT_TRB_MAX],
 }
 
 // Enforce the alignment contract at compile time so a future field reorder or
@@ -140,13 +148,28 @@ const DEV_INIT: DevDma = DevDma {
     device: [0; 32 * 8],
     input: [0; 33 * 8],
     ep0_ring: Ring([Trb([0; 4]); CMD_RING_LEN]),
-    int_ring: Ring([Trb([0; 4]); CMD_RING_LEN]),
     buf: [0; 256],
-    intbuf: [0; INT_TRB_MAX],
 };
 
 #[link_section = ".dma"]
 static mut DEV: [DevDma; MAX_HID] = [DEV_INIT; MAX_HID];
+
+/// Per-function DMA (F3, `hid-mouse-protocols.md` §9.4): the interrupt-IN
+/// transfer ring (16 TRBs, 64-byte aligned like every ring) and the report
+/// buffer. 64 bytes = the largest TRB Transfer Length `queue_interrupt` asks
+/// for (`INT_TRB_MAX`); 64-byte aligned, so it never crosses a 64-KiB
+/// boundary (xHCI 1.2 §6.4.1 note).
+#[repr(C, align(64))]
+struct FuncDma {
+    int_ring: Ring,
+    intbuf: [u8; INT_TRB_MAX],
+}
+
+const FUNC_DMA_INIT: FuncDma =
+    FuncDma { int_ring: Ring([Trb([0; 4]); CMD_RING_LEN]), intbuf: [0; INT_TRB_MAX] };
+
+#[link_section = ".dma"]
+static mut FUNC_DMA: [FuncDma; MAX_FUNC] = [FUNC_DMA_INIT; MAX_FUNC];
 
 /// Smallest and largest TRB Transfer Length of an interrupt-IN transfer
 /// (`docs/api/usb/usb-snapshot.md` §3.3): the endpoint's max packet size,
@@ -190,8 +213,24 @@ fn skip_code(r: config_desc::SkipReason) -> u8 {
         S::NotBootSubclass => reason::NOT_BOOT_SUBCLASS,
         S::UnknownBootProtocol => reason::UNKNOWN_BOOT_PROTOCOL,
         S::NoInterruptIn => reason::NO_INTERRUPT_IN,
-        S::OneInterfacePerDevice => reason::ONE_INTERFACE_PER_DEVICE,
+        S::FunctionLimit => reason::FUNCTION_LIMIT,
+        S::AlternateSetting => reason::ALTERNATE_SETTING,
+        S::EndpointCollision => reason::ENDPOINT_COLLISION,
     }
+}
+
+/// Set the snapshot row of `iface` (alternate setting 0) of device `di`:
+/// its reason, whether it is a function feeding the ring, and the function's
+/// role (0 = no function).
+fn snap_row(di: usize, iface: u8, why: u8, role: u8) {
+    snap(di, |d| {
+        let n = d.n_ifaces as usize;
+        if let Some(r) = d.ifaces[..n].iter_mut().find(|r| r.number == iface && r.alt == 0) {
+            r.reason = why;
+            r.monitored = role != 0;
+            r.role = role;
+        }
+    });
 }
 
 /// Run `f` on device `di`'s snapshot entry (if it has one).
@@ -224,12 +263,13 @@ static mut SCRATCH_ARRAY: ScratchArray = ScratchArray([0; MAX_SCRATCH]);
 #[link_section = ".dma"]
 static mut SCRATCH_BUFS: ScratchBufs = ScratchBufs([[0; SCRATCH_PAGE]; MAX_SCRATCH]);
 
-/// Per-device runtime state (slot, the interrupt endpoint, ring producers).
+/// Per-device runtime state (slot, addressing, the EP0 ring producer). The
+/// interrupt endpoints are the device's functions ([`Func`]).
 #[derive(Clone, Copy)]
 struct HidDev {
     slot: u8,
-    dci: u8,
-    /// 1 = keyboard, 2 = mouse, 9 = hub (not polled), 0 = unused.
+    /// The primary function's decoded protocol: 1 = keyboard, 2 = mouse;
+    /// 9 = hub (not polled), 0 = none / observed only.
     protocol: u8,
     /// Root-hub port (1-based) the device's path starts at + descriptor IDs.
     port: u8,
@@ -248,22 +288,18 @@ struct HidDev {
     tt_port: u8,
     ep0_enq: usize,
     ep0_cycle: bool,
-    int_enq: usize,
-    int_cycle: bool,
     /// Index of the hub this device hangs off, `0xFF` = a root port.
     parent: u8,
-    /// Snapshot role and reason (`snapshot::role`, `snapshot::reason`).
+    /// Snapshot role and reason (`snapshot::role`, `snapshot::reason`) —
+    /// those of the primary function once one is configured.
     role: u8,
     reason: u8,
-    /// TRB Transfer Length of the interrupt-IN transfer (8…64, §3.3).
-    trb_len: u16,
 }
 
 impl HidDev {
     const fn new() -> Self {
         Self {
             slot: 0,
-            dci: 0,
             protocol: 0,
             port: 0,
             vid: 0,
@@ -275,21 +311,74 @@ impl HidDev {
             tt_port: 0,
             ep0_enq: 0,
             ep0_cycle: true,
-            int_enq: 0,
-            int_cycle: true,
             parent: 0xFF,
             role: role::NONE,
             reason: reason::USED,
-            trb_len: INT_TRB_MIN,
         }
     }
+}
+
+/// One function: a HID interface of a device with its own interrupt-IN
+/// endpoint, transfer ring (`FUNC_DMA[i]`) and producer state
+/// (`hid-mouse-protocols.md` §9.2, §9.4).
+#[derive(Clone, Copy)]
+struct Func {
+    /// Index of the device in `hid[]`.
+    dev: u8,
+    /// `bInterfaceNumber`.
+    iface: u8,
+    /// Interrupt-IN endpoint address and its Device Context Index.
+    ep_addr: u8,
+    dci: u8,
+    /// 1 = boot keyboard, 2 = boot mouse (decoded); 0 = observed only.
+    protocol: u8,
+    /// TRB Transfer Length of the interrupt-IN transfer (8…64,
+    /// usb-snapshot.md §3.3).
+    trb_len: u16,
+    /// The endpoint's max packet size exceeds what a ring entry keeps.
+    capped: bool,
+    int_enq: usize,
+    int_cycle: bool,
+    /// Configured completely: armed by `arm_hid_endpoints`, owner of its
+    /// transfer events. A function whose endpoint exists but whose
+    /// `SET_CONFIGURATION` / `SET_PROTOCOL` failed is not live.
+    live: bool,
+}
+
+impl Func {
+    const fn new() -> Self {
+        Self {
+            dev: 0,
+            iface: 0,
+            ep_addr: 0,
+            dci: 0,
+            protocol: 0,
+            trb_len: INT_TRB_MIN,
+            capped: false,
+            int_enq: 0,
+            int_cycle: true,
+            live: false,
+        }
+    }
+}
+
+/// A delivered function's identity, for `usb::poll`: which device's ring it
+/// records into, how it is decoded, and its snapshot tag.
+#[derive(Clone, Copy)]
+pub struct FuncInfo {
+    /// Device index (the snapshot entry).
+    pub dev: usize,
+    /// 1 = keyboard, 2 = mouse, 0 = observed only.
+    pub protocol: u8,
+    /// The ring-entry tag (usb-snapshot.md §10).
+    pub source: snapshot::Source,
 }
 
 /// A discovered USB device, for display (the init-screen USB tree).
 #[derive(Clone, Copy, Default)]
 pub struct DeviceInfo {
     pub port: u8,
-    /// 1 = keyboard, 2 = mouse.
+    /// The primary function: 1 = keyboard, 2 = mouse.
     pub protocol: u8,
     pub vid: u16,
     pub pid: u16,
@@ -376,12 +465,12 @@ const _: () = assert!(core::mem::size_of::<context::Input32Byte>() == 33 * 8 * 4
 /// How many Transfer Events can be parked while the endpoint that owns them
 /// has not collected them yet (see [`Xhci::defer_transfer_event`]).
 ///
-/// The bound is structural, not a guess: every device slot has at most **one**
-/// transfer outstanding at a time — a control transfer is issued and waited
-/// for synchronously, and an interrupt endpoint carries a single armed TRB that
-/// only the delivery of its own completion re-arms. So at most `MAX_HID + 1`
-/// acknowledgements can be in flight. Sized to the event ring, comfortably
-/// above that.
+/// The bound is structural, not a guess: a control transfer is issued and
+/// waited for synchronously, and every function's interrupt endpoint carries a
+/// single armed TRB that only the delivery of its own completion re-arms. So
+/// at most `MAX_FUNC + 1` acknowledgements can be in flight (F3: one per
+/// function, no longer one per device). Sized to the event ring, above that
+/// (asserted at `MAX_FUNC`).
 const PENDING_EVENTS: usize = EVT_RING_LEN;
 
 pub struct Xhci {
@@ -399,15 +488,28 @@ pub struct Xhci {
     /// MMIO VA of the ERDP register's high 32 bits, re-written explicitly each
     /// event because the BCM2711 PCIe mangles the crate's 64-bit ERDP store.
     erdp_hi: u64,
-    /// Per-device state (EP0/interrupt ring producers, slot, endpoint).
+    /// Per-device state (EP0 ring producer, slot, addressing).
     hid: [HidDev; MAX_HID],
-    /// Number of configured HID devices.
+    /// Number of claimed device slots (hubs included).
     n_hid: usize,
+    /// The functions (interrupt-IN endpoints), `funcs[..n_func]`, in
+    /// enumeration order; `FUNC_DMA[i]` belongs to `funcs[i]`.
+    funcs: [Func; MAX_FUNC],
+    n_func: usize,
     /// Transfer Events consumed while waiting for a *different* transfer's
     /// acknowledgement, held for the endpoint that owns them. FIFO in
     /// `pending[..n_pending]`.
     pending: [event::TransferEvent; PENDING_EVENTS],
     n_pending: usize,
+}
+
+/// What `read_config` chose: the device's functions in descriptor order,
+/// `funcs[..n]` (the primary first), and — for the one observed
+/// report-protocol interface — its reason code (`None` = boot functions).
+struct Chosen {
+    funcs: [HidInfo; config_desc::MAX_FUNC_PER_DEV],
+    n: usize,
+    observed: Option<u8>,
 }
 
 impl Xhci {
@@ -545,6 +647,10 @@ impl Xhci {
             core::ptr::addr_of!(DEV) as u64,
             core::mem::size_of::<[DevDma; MAX_HID]>(),
         );
+        dcache_clean(
+            core::ptr::addr_of!(FUNC_DMA) as u64,
+            core::mem::size_of::<[FuncDma; MAX_FUNC]>(),
+        );
         regs.operational.usbcmd.update_volatile(|c| {
             c.set_run_stop();
         });
@@ -646,53 +752,63 @@ impl Xhci {
             erdp_hi,
             hid: [HidDev::new(); MAX_HID],
             n_hid: 0,
+            funcs: [Func::new(); MAX_FUNC],
+            n_func: 0,
             pending: [event::TransferEvent::new(); PENDING_EVENTS],
             n_pending: 0,
         }
     }
 
     /// Queue an interrupt-IN transfer (one report, up to the endpoint's max
-    /// packet size clamped to 8…64 bytes) on the device's interrupt endpoint
-    /// and ring its doorbell. The completion arrives later
-    /// as a Transfer Event (drained by [`Self::poll_interrupt`]).
-    pub fn queue_interrupt(&mut self, di: usize) {
-        let slot = self.hid[di].slot;
-        let dci = self.hid[di].dci;
-        if dci == 0 {
-            // No interrupt endpoint was ever configured for this device — a
-            // hub, or a HID whose Configure Endpoint failed. Doorbell target 0
-            // is the Command doorbell of slot 0 and is reserved on a device
-            // slot (xHCI §5.6), so ringing it would be a malformed doorbell
-            // write, not a queued transfer.
+    /// packet size clamped to 8…64 bytes) on function `fi`'s interrupt
+    /// endpoint and ring its doorbell `(slot, dci)`. The completion arrives
+    /// later as a Transfer Event (drained by [`Self::poll_interrupt`]).
+    pub fn queue_interrupt(&mut self, fi: usize) {
+        let Some(f) = self.funcs[..self.n_func].get(fi).copied() else { return };
+        let slot = self.hid[f.dev as usize].slot;
+        if !f.live || f.dci == 0 {
+            // Not configured completely (its SET_CONFIGURATION/SET_PROTOCOL
+            // failed). A DCI of 0 would be doorbell target 0, the Command
+            // doorbell, reserved on a device slot (xHCI §5.6) — a malformed
+            // doorbell write, not a queued transfer.
             kprintln!(
-                "[usb] queue_interrupt: device {} (slot {}) has no interrupt endpoint",
-                di,
-                slot
+                "[usb] queue_interrupt: function {} (slot {} iface {}) is not configured",
+                fi,
+                slot,
+                f.iface
             );
             return;
         }
-        // SAFETY: single-CPU; DEV is ours.
-        let buf_pa = unsafe { dma_addr((&raw const (*(&raw const DEV))[di].intbuf) as u64) };
+        // SAFETY: single-CPU; FUNC_DMA is ours.
+        let buf_pa = unsafe { dma_addr((&raw const FUNC_DMA[fi].intbuf) as u64) };
         let mut n = transfer::Normal::new();
         n.set_data_buffer_pointer(buf_pa)
-            .set_trb_transfer_length(self.hid[di].trb_len as u32)
+            .set_trb_transfer_length(f.trb_len as u32)
             .set_interrupt_on_completion();
         let data = transfer::Allowed::Normal(n).into_raw();
-        // SAFETY: single-CPU; DEV is ours.
-        let ring = unsafe { &mut (*(&raw mut DEV))[di].int_ring.0 };
-        ring_push(ring, &mut self.hid[di].int_enq, &mut self.hid[di].int_cycle, data);
+        // SAFETY: single-CPU; FUNC_DMA is ours.
+        let ring = unsafe { &mut (*(&raw mut FUNC_DMA[fi])).int_ring.0 };
+        let fs = &mut self.funcs[fi];
+        ring_push(ring, &mut fs.int_enq, &mut fs.int_cycle, data);
         self.dma_clean();
         self.regs.doorbell.update_volatile_at(slot as usize, |db| {
-            db.set_doorbell_target(dci);
+            db.set_doorbell_target(f.dci);
         });
     }
 
-    /// Number of configured HID devices, and a device's protocol.
+    /// Number of claimed device slots (hubs included).
     pub fn n_hid(&self) -> usize {
         self.n_hid
     }
-    pub fn protocol(&self, di: usize) -> u8 {
-        self.hid[di].protocol
+
+    /// Function `fi`'s device, decoding and snapshot tag.
+    pub fn func(&self, fi: usize) -> FuncInfo {
+        let f = &self.funcs[fi];
+        FuncInfo {
+            dev: f.dev as usize,
+            protocol: f.protocol,
+            source: snapshot::Source { iface: f.iface, ep: f.ep_addr, capped: f.capped },
+        }
     }
 
     /// Write back the whole DMA region (rings, DCBAA, contexts, buffers) so a
@@ -705,16 +821,20 @@ impl Xhci {
             core::ptr::addr_of!(DEV) as u64,
             core::mem::size_of::<[DevDma; MAX_HID]>(),
         );
+        dcache_clean(
+            core::ptr::addr_of!(FUNC_DMA) as u64,
+            core::mem::size_of::<[FuncDma; MAX_FUNC]>(),
+        );
     }
 
-    /// Deliver one completed HID interrupt transfer: the device index, a copy
+    /// Deliver one completed HID interrupt transfer: the function index, a copy
     /// of its report buffer, **how many of those bytes the device actually
     /// sent**, and the completion code (1 Success, 13 Short Packet — xHCI 1.2
     /// Table 6-90). `None` when nothing is waiting.
     ///
     /// The length comes from the Transfer Event's *TRB Transfer Length* field,
     /// which for an IN endpoint holds the **residual** — the number of bytes
-    /// of the TRB's length (8…64, `HidDev::trb_len`) that were *not*
+    /// of the TRB's length (8…64, `Func::trb_len`) that were *not*
     /// transferred (xHCI 1.2 §4.11.5.1 / Table 6-39, "the residual number of
     /// bytes not transferred"). With an 8-byte TRB a 3-byte
     /// boot mouse therefore reports `ShortPacket` with residual 5 → length 3,
@@ -723,11 +843,11 @@ impl Xhci {
     /// (the buffer is not cleared between transfers), which is exactly the
     /// distinction the wheel byte needs.
     ///
-    /// An event is handed to a device only when it names that device's slot
-    /// **and** the interrupt-endpoint DCI the device was configured with.
-    /// `dci == 0` means no interrupt endpoint was ever configured (a hub, or a
-    /// device whose `configure_hid` failed) — such a device can never own a
-    /// Transfer Event. Matching on the slot id alone attributed a control
+    /// An event is handed to a function only when it names its device's slot
+    /// **and** the interrupt-endpoint DCI the function was configured with
+    /// (F3: several functions share a slot, the DCI tells them apart). Only a
+    /// live function can own a Transfer Event — a hub or a device whose
+    /// `configure_hid` failed has none. Matching on the slot id alone attributed a control
     /// transfer's completion on a hub's EP0 to the hub, whose report buffer was
     /// then fed to the IKBD stream and whose (non-existent) endpoint was then
     /// "re-armed" with doorbell target 0.
@@ -746,10 +866,11 @@ impl Xhci {
                 },
             };
             let (slot, ep) = (te.slot_id(), te.endpoint_id());
-            let owner = (0..self.n_hid).find(|&i| {
-                self.hid[i].dci != 0 && self.hid[i].slot == slot && self.hid[i].dci == ep
+            let owner = (0..self.n_func).find(|&i| {
+                let f = &self.funcs[i];
+                f.live && f.dci == ep && self.hid[f.dev as usize].slot == slot
             });
-            let Some(di) = owner else {
+            let Some(fi) = owner else {
                 kprintln!(
                     "[usb] stray transfer event: slot {} ep {} code {:?}",
                     slot,
@@ -763,16 +884,17 @@ impl Xhci {
                 // as ShortPacket — the normal case for a 3-byte mouse report,
                 // not an error.
                 Ok(code @ (event::CompletionCode::Success | event::CompletionCode::ShortPacket)) => {
-                    let trb_len = self.hid[di].trb_len as usize;
-                    // SAFETY: single-CPU; DEV is ours.
-                    let p = unsafe { (&raw const (*(&raw const DEV))[di].intbuf) as u64 };
+                    let trb_len = self.funcs[fi].trb_len as usize;
+                    // SAFETY: single-CPU; FUNC_DMA is ours.
+                    let p = unsafe { (&raw const FUNC_DMA[fi].intbuf) as u64 };
                     dcache_inval(p, trb_len); // the controller DMA'd the HID report
                     // `trb_len` = the TRB Transfer Length `queue_interrupt`
                     // asked for; the event reports what is left over. A
                     // controller that reports more residual than requested
                     // would underflow, so saturate.
                     let len = trb_len.saturating_sub(te.trb_transfer_length() as usize);
-                    return Some((di, unsafe { (*(&raw const DEV))[di].intbuf }, len, code as u8));
+                    // SAFETY: single-CPU; FUNC_DMA is ours.
+                    return Some((fi, unsafe { *(&raw const FUNC_DMA[fi].intbuf) }, len, code as u8));
                 }
                 code => {
                     // Counted for the snapshot (`int_errors`, `last_cc`, §3.3);
@@ -782,6 +904,8 @@ impl Xhci {
                         Ok(c) => c as u8,
                         Err(raw) => raw,
                     };
+                    // Per device (the sum of its functions, §9.7 Option A).
+                    let di = self.funcs[fi].dev as usize;
                     super::with_store(|s| s.note_error(di, cc));
                     // The transfer is finished either way, so the endpoint has
                     // nothing armed any more — and only a *delivered* report
@@ -793,7 +917,7 @@ impl Xhci {
                         ep,
                         code
                     );
-                    self.queue_interrupt(di);
+                    self.queue_interrupt(fi);
                 }
             }
         }
@@ -1327,19 +1451,20 @@ impl Xhci {
         self.ports
     }
 
-    /// Read the configuration descriptor and choose the interface the driver
-    /// takes: the first HID boot keyboard/mouse interface (class 3, subclass
-    /// 1, protocol 1/2) with an interrupt-IN endpoint → `(info, None)`; else
-    /// the first HID interface in alternate setting 0 with an interrupt-IN
-    /// endpoint, to record but not decode (`usb-snapshot.md` §3.1 step 5 (ii))
-    /// → `(info, Some(reason code))`. `None` if the device has neither — it is
-    /// then not an input device; each `None` path logs why and sets the
-    /// device's snapshot reason.
+    /// Read the configuration descriptor and choose the interfaces the driver
+    /// takes: every HID boot keyboard/mouse interface (class 3, subclass 1,
+    /// protocol 1/2, alternate setting 0) with an interrupt-IN endpoint, up to
+    /// `config_desc::MAX_FUNC_PER_DEV` — the device's functions (F3,
+    /// `hid-mouse-protocols.md` §9.3); else the first HID interface in
+    /// alternate setting 0 with an interrupt-IN endpoint, to record but not
+    /// decode (`usb-snapshot.md` §3.1 step 5 (ii)) — one observed function.
+    /// `None` if the device has neither — it is then not an input device;
+    /// each `None` path logs why and sets the device's snapshot reason.
     ///
     /// The configuration is read whole up to `snapshot::CONFIG_MAX` bytes into
     /// the enumeration buffer and kept in the snapshot with its interface
     /// table (K2).
-    pub fn read_config(&mut self, di: usize) -> Option<(HidInfo, Option<u8>)> {
+    fn read_config(&mut self, di: usize) -> Option<Chosen> {
         // Read the 9-byte config header first for wTotalLength.
         if !self.get_descriptor(di, 2, 0, 9) {
             kprintln!("[usb] slot {}: configuration header read failed", self.hid[di].slot);
@@ -1452,28 +1577,42 @@ impl Xhci {
                     max_packet: r.max_packet,
                     report_len: r.report_len,
                     monitored: false,
+                    role: role::NONE,
                 };
             }
             d.n_ifaces = n as u8;
         });
-        match (scan.hid, scan.observe) {
-            (Some(h), _) => {
-                kprintln!(
-                    "[usb] HID iface {} protocol {} → int-IN ep {:#04x} max {} interval {}",
-                    h.iface, h.protocol, h.ep_addr, h.ep_max, h.interval
-                );
-                Some((h, None))
+        match (scan.n_funcs, scan.observe) {
+            (1.., _) => {
+                // One line per function; function 0 keeps the pre-F3 text.
+                for (k, h) in scan.funcs().iter().enumerate() {
+                    if k == 0 {
+                        kprintln!(
+                            "[usb] HID iface {} protocol {} → int-IN ep {:#04x} max {} interval {}",
+                            h.iface, h.protocol, h.ep_addr, h.ep_max, h.interval
+                        );
+                    } else {
+                        kprintln!(
+                            "[usb] HID iface {} protocol {} → int-IN ep {:#04x} max {} interval {} \
+                             (function {})",
+                            h.iface, h.protocol, h.ep_addr, h.ep_max, h.interval, k
+                        );
+                    }
+                }
+                Some(Chosen { funcs: scan.funcs, n: scan.n_funcs, observed: None })
             }
-            (None, Some(o)) => {
+            (0, Some(o)) => {
                 let h = o.info;
                 kprintln!(
                     "[usb] slot {} iface {}: report-protocol HID interface observed \
                      (reports recorded, not decoded) → int-IN ep {:#04x} max {} interval {}",
                     slot, h.iface, h.ep_addr, h.ep_max, h.interval
                 );
-                Some((h, Some(skip_code(o.reason))))
+                let mut funcs = scan.funcs;
+                funcs[0] = h;
+                Some(Chosen { funcs, n: 1, observed: Some(skip_code(o.reason)) })
             }
-            (None, None) => {
+            (0, None) => {
                 kprintln!(
                     "[usb] slot {}: no HID boot keyboard/mouse interface — not an input device",
                     slot
@@ -1640,9 +1779,14 @@ impl Xhci {
         self.control(di, [0x21, 0x0B, 0, 0, iface, 0, 0, 0], 0, 0, false)
     }
 
-    /// Configure Endpoint: add the HID interrupt-IN endpoint to the device.
-    /// Returns its DCI (Device Context Index) on success, 0 on failure.
-    fn configure_endpoint(&mut self, di: usize, _port: u8, speed: u8, hid: &HidInfo) -> u8 {
+    /// Configure Endpoint: add the interrupt-IN endpoints of the functions
+    /// `fs` (`(info, index into funcs/FUNC_DMA)`) to the device in **one**
+    /// command (`hid-mouse-protocols.md` §9.4): A0 (slot) plus `A_dci` for
+    /// every function; the slot's Context Entries = the largest DCI among
+    /// them (decision 6: the behaviour that runs on VL805 and QEMU, kept; the
+    /// `xhci-1.2.txt:4720` vs `:22321` wording conflict is only noted). Each
+    /// endpoint context points at its own function's ring. True on Success.
+    fn configure_endpoint(&mut self, di: usize, speed: u8, fs: &[(HidInfo, usize)]) -> bool {
         let slot = self.hid[di].slot;
         // SAFETY: single-CPU; DEV is ours.
         let dev = unsafe { &mut (*(&raw mut DEV))[di] };
@@ -1658,21 +1802,19 @@ impl Xhci {
         for k in 0..n {
             dev.input[8 + k] = dev.device[k];
         }
-        let ep_num = hid.ep_addr & 0x0F;
-        let dci = ep_num * 2 + if hid.ep_addr & 0x80 != 0 { 1 } else { 0 };
-        let int_pa = dma_addr((&raw const dev.int_ring) as u64);
-
         // SAFETY: `Input32Byte` is `#[repr(C)]` over the same u32s as `input`.
         let input: &mut context::Input32Byte =
             unsafe { &mut *(dev.input.as_mut_ptr().cast()) };
         input.control_mut().set_add_context_flag(0); // A0: slot (kept from copy)
-        input.control_mut().set_add_context_flag(dci as usize); // A_dci: new EP
-        {
-            // Only extend Context Entries to cover the new endpoint; the rest of
-            // the slot context stays as the controller wrote it.
-            input.device_mut().slot_mut().set_context_entries(dci);
-        }
-        {
+        let max_dci = fs.iter().map(|(h, _)| h.dci()).max().unwrap_or(1);
+        // Only extend Context Entries to cover the new endpoints; the rest of
+        // the slot context stays as the controller wrote it.
+        input.device_mut().slot_mut().set_context_entries(max_dci);
+        for &(hid, fi) in fs {
+            let dci = hid.dci();
+            // SAFETY: single-CPU; FUNC_DMA is ours.
+            let int_pa = unsafe { dma_addr((&raw const FUNC_DMA[fi].int_ring) as u64) };
+            input.control_mut().set_add_context_flag(dci as usize); // A_dci: new EP
             let e = input.device_mut().endpoint_mut(dci as usize);
             e.set_endpoint_type(context::EndpointType::InterruptIn);
             e.set_max_packet_size(hid.ep_max);
@@ -1707,86 +1849,185 @@ impl Xhci {
         cmd.set_slot_id(slot);
         let data = command::Allowed::ConfigureEndpoint(cmd).into_raw();
         match self.command(data) {
-            Some(cc) if matches!(cc.completion_code(), Ok(event::CompletionCode::Success)) => dci,
+            Some(cc) if matches!(cc.completion_code(), Ok(event::CompletionCode::Success)) => true,
             Some(cc) => {
                 kprintln!("[usb] configure_endpoint → {:?}", cc.completion_code());
-                0
+                false
             }
-            None => 0,
+            None => false,
         }
     }
 
-    /// Bring a HID device online: read its config, add its interrupt
-    /// endpoint, SET_CONFIGURATION, and — for a boot interface only —
-    /// SET_PROTOCOL(boot). Returns `(dci, protocol)` ready for interrupt
-    /// polling; `protocol` is 1/2 for a boot keyboard/mouse (decoded) and 0
-    /// for an observed report-protocol interface (recorded only,
-    /// `usb-snapshot.md` §3.2). Sets the device's snapshot role/reason.
-    pub fn configure_hid(&mut self, di: usize, port: u8, speed: u8) -> Option<(u8, u8)> {
-        let (hid, observed) = self.read_config(di)?;
-        let boot = observed.is_none();
-        // The chosen row of the interface table: its reason becomes the
-        // device's failure reason while configuring is not done, 0 after.
-        let set_row_reason = |code: u8| {
-            snap(di, |d| {
-                let n = d.n_ifaces as usize;
-                if let Some(r) = d.ifaces[..n].iter_mut().find(|r| r.number == hid.iface && r.alt == 0) {
-                    r.reason = code;
-                    r.monitored = code == reason::USED;
-                }
-            })
+    /// Log a function that is not used (the F8 line of `read_config`'s scan,
+    /// for the reasons decided here: the total function limit, F3 §9.3 R6).
+    fn log_not_used(&self, di: usize, h: &HidInfo, text: &str) {
+        kprintln!(
+            "[usb] slot {} iface {} alt 0 (class 3 subclass 1 protocol {}) not used: {}",
+            self.hid[di].slot,
+            h.iface,
+            h.protocol,
+            text
+        );
+    }
+
+    /// Bring a HID device online: read its config, add the interrupt
+    /// endpoints of its functions (one Configure Endpoint), SET_CONFIGURATION,
+    /// and — for boot functions only — SET_PROTOCOL(boot) to each function's
+    /// interface (`hid-mouse-protocols.md` §9.2 Soll 2, §9.4). The live
+    /// functions are left in `funcs[]` for arming; `false` = the device has
+    /// none. Sets the device's and the rows' snapshot role/reason; `false` in
+    /// `ep0_ok` (second value) = a request on EP0 failed after
+    /// SET_CONFIGURATION, so no further control request may go to it.
+    fn configure_hid(&mut self, di: usize, speed: u8) -> (bool, bool) {
+        let Some(chosen) = self.read_config(di) else { return (false, true) };
+        let boot = chosen.observed.is_none();
+        let wanted = &chosen.funcs[..chosen.n];
+        // The device fails: its (remaining) functions' rows and the device
+        // take the reason.
+        let fail_all = |this: &mut Self, why: u8, fs: &[(HidInfo, usize)]| {
+            for (h, _) in fs {
+                snap_row(di, h.iface, why, role::NONE);
+            }
+            this.hid[di].reason = why;
         };
+
+        // The total function budget (R6): what does not fit is skipped and
+        // logged like a scan skip. Function 0 not fitting = no function.
+        let room = MAX_FUNC - self.n_func;
+        let take = wanted.len().min(room);
+        for h in &wanted[take..] {
+            self.log_not_used(di, h, config_desc::reason_text(config_desc::SkipReason::FunctionLimit));
+            snap_row(di, h.iface, reason::FUNCTION_LIMIT, role::NONE);
+        }
+        if take == 0 {
+            self.hid[di].reason = reason::FUNCTION_LIMIT;
+            return (false, true);
+        }
+        let mut fs = [(HidInfo::EMPTY, 0usize); config_desc::MAX_FUNC_PER_DEV];
+        for (k, h) in wanted[..take].iter().enumerate() {
+            fs[k] = (*h, self.n_func + k);
+        }
+        let mut n = take;
+
         // xHCI enumeration order (spec 4.3.5): the Configure Endpoint *command*
         // (controller side) precedes the SET_CONFIGURATION *request* (device
         // side). QEMU tolerates the reverse; the real VL805 returns Context
         // State Error if SET_CONFIGURATION ran first.
-        let dci = self.configure_endpoint(di, port, speed, &hid);
-        if dci == 0 {
-            self.hid[di].reason = reason::CONFIGURE_ENDPOINT;
-            set_row_reason(reason::CONFIGURE_ENDPOINT);
-            return None;
+        let mut ok = self.configure_endpoint(di, speed, &fs[..n]);
+        if !ok && n > 1 {
+            // §9.4 fallback (decision 10): a failed command changes nothing
+            // (xHCI 1.2 §4.6.6, `xhci-1.2.txt:5738-5740`) — retry once with
+            // the primary function alone (the F2 behaviour), keep the device.
+            kprintln!(
+                "[usb] slot {}: Configure Endpoint with {} functions failed; retrying with \
+                 function 0 only",
+                self.hid[di].slot,
+                n
+            );
+            for &(h, _) in &fs[1..n] {
+                self.log_not_used(di, &h, "Configure Endpoint failed (fallback to function 0)");
+                snap_row(di, h.iface, reason::CONFIGURE_ENDPOINT, role::NONE);
+            }
+            n = 1;
+            ok = self.configure_endpoint(di, speed, &fs[..1]);
         }
-        if !self.set_configuration(di, hid.config_value) {
+        if !ok {
+            fail_all(self, reason::CONFIGURE_ENDPOINT, &fs[..n]);
+            return (false, true);
+        }
+        // The controller now owns these endpoint contexts and their rings:
+        // the functions are the device's from here on, live or not.
+        for &(h, fi) in &fs[..n] {
+            let max = h.ep_max & 0x7FF;
+            self.funcs[fi] = Func {
+                dev: di as u8,
+                iface: h.iface,
+                ep_addr: h.ep_addr,
+                dci: h.dci(),
+                protocol: if boot { h.protocol } else { 0 },
+                trb_len: max.clamp(INT_TRB_MIN, INT_TRB_MAX as u16),
+                capped: max as usize > snapshot::REPORT_MAX,
+                ..Func::new()
+            };
+        }
+        self.n_func += n;
+
+        if !self.set_configuration(di, wanted[0].config_value) {
             kprintln!("[usb] set_configuration failed");
-            self.hid[di].reason = reason::SET_CONFIGURATION;
-            set_row_reason(reason::SET_CONFIGURATION);
-            return None;
+            fail_all(self, reason::SET_CONFIGURATION, &fs[..n]);
+            return (false, false);
         }
         snap(di, |d| d.flags |= dev_flag::SET_CONFIGURATION);
-        // HID 1.11 §7.2.6: only boot-subclass devices support SET_PROTOCOL.
-        if boot && !self.set_protocol_boot(di, hid.iface) {
-            kprintln!("[usb] set_protocol(boot) failed");
-            self.hid[di].reason = reason::SET_PROTOCOL;
-            set_row_reason(reason::SET_PROTOCOL);
-            return None;
-        }
-        kprintln!(
-            "[usb] HID configured: slot {} ep {:#04x} dci {} ({})",
-            self.hid[di].slot,
-            hid.ep_addr,
-            dci,
-            match (boot, hid.protocol) {
-                (true, 1) => "keyboard",
-                (true, _) => "mouse",
-                (false, _) => "observed only, not decoded",
+        // HID 1.11 §7.2.6: only boot-subclass devices support SET_PROTOCOL;
+        // it addresses one interface (wIndex), so every boot function gets
+        // its own, in function order.
+        let mut live = n;
+        let mut ep0_ok = true;
+        if boot {
+            for k in 0..n {
+                let (h, _) = fs[k];
+                if self.set_protocol_boot(di, h.iface) {
+                    continue;
+                }
+                kprintln!("[usb] set_protocol(boot) failed");
+                ep0_ok = false;
+                if k == 0 {
+                    // The primary function: the device is dropped, as before F3.
+                    fail_all(self, reason::SET_PROTOCOL, &fs[..n]);
+                    return (false, false);
+                }
+                // Function k > 0: only this one (and those after it, which a
+                // halted EP0 cannot reach any more) stays unarmed; the device
+                // keeps its earlier functions (§9.4 "Fehlerverhalten").
+                for &(h, _) in &fs[k + 1..n] {
+                    self.log_not_used(di, &h, "SET_PROTOCOL(boot) not sent: an earlier request on EP0 failed");
+                }
+                for &(h, _) in &fs[k..n] {
+                    snap_row(di, h.iface, reason::SET_PROTOCOL, role::NONE);
+                }
+                live = k;
+                break;
             }
-        );
-        let max = hid.ep_max & 0x7FF;
-        self.hid[di].trb_len = max.clamp(INT_TRB_MIN, INT_TRB_MAX as u16);
-        let (role, why) = match observed {
-            None if hid.protocol == 1 => (role::KEYBOARD, reason::USED),
+        }
+        let mut n_live = 0u8;
+        for &(h, fi) in &fs[..live] {
+            let f = &mut self.funcs[fi];
+            f.live = true;
+            n_live += 1;
+            let r = match (boot, h.protocol) {
+                (true, 1) => role::KEYBOARD,
+                (true, _) => role::MOUSE,
+                (false, _) => role::OBSERVED,
+            };
+            snap_row(di, h.iface, reason::USED, r);
+            kprintln!(
+                "[usb] HID configured: slot {} ep {:#04x} dci {} ({})",
+                self.hid[di].slot,
+                h.ep_addr,
+                h.dci(),
+                match r {
+                    role::KEYBOARD => "keyboard",
+                    role::MOUSE => "mouse",
+                    _ => "observed only, not decoded",
+                }
+            );
+        }
+        // The device takes the primary function's role (§9.7 table, R8).
+        let primary = fs[0].0;
+        let (r, why) = match chosen.observed {
+            None if primary.protocol == 1 => (role::KEYBOARD, reason::USED),
             None => (role::MOUSE, reason::USED),
             Some(code) => (role::OBSERVED, code),
         };
-        self.hid[di].role = role;
+        self.hid[di].role = r;
         self.hid[di].reason = why;
-        set_row_reason(reason::USED);
+        self.hid[di].protocol = if boot { primary.protocol } else { 0 };
         snap(di, |d| {
-            d.ring_iface = hid.iface;
-            d.ring_ep = hid.ep_addr;
-            d.ring_capped = max as usize > snapshot::REPORT_MAX;
+            d.ring_iface = primary.iface;
+            d.ring_ep = primary.ep_addr;
+            d.n_funcs = n_live;
         });
-        Some((dci, if boot { hid.protocol } else { 0 }))
+        (true, ep0_ok)
     }
 
     /// Enumerate every connected root port, recursing through any hubs, and
@@ -1823,9 +2064,13 @@ impl Xhci {
         }
         // Only now that the whole tree has been walked.
         self.arm_hid_endpoints();
-        let armed = |i: &usize| self.hid[*i].dci != 0;
-        let n_input = (0..self.n_hid).filter(armed).filter(|&i| self.hid[i].protocol != 0).count();
-        let n_observed = (0..self.n_hid).filter(armed).filter(|&i| self.hid[i].protocol == 0).count();
+        // Devices by their primary function, as before F3.
+        let live = &self.funcs[..self.n_func];
+        let has = |di: usize, decoded: bool| {
+            live.iter().any(|f| f.live && f.dev as usize == di && (f.protocol != 0) == decoded)
+        };
+        let n_input = (0..self.n_hid).filter(|&i| has(i, true)).count();
+        let n_observed = (0..self.n_hid).filter(|&i| !has(i, true) && has(i, false)).count();
         kprintln!(
             "[usb] enumeration done: {} devices ({} keyboard/mouse, {} observed only), {} \
              commands issued",
@@ -1834,6 +2079,11 @@ impl Xhci {
             n_observed,
             self.cmd_count
         );
+        let n_live = live.iter().filter(|f| f.live).count();
+        if n_live > n_input + n_observed {
+            // F3: a device with several functions (a receiver).
+            kprintln!("[usb] {} functions armed (MAX_FUNC {})", n_live, MAX_FUNC);
+        }
         self.n_hid
     }
 
@@ -1851,9 +2101,9 @@ impl Xhci {
     /// that thread is scheduled, i.e. after `usb_new_device` has returned and
     /// the tree is built.
     fn arm_hid_endpoints(&mut self) {
-        for di in 0..self.n_hid {
-            if self.hid[di].dci != 0 {
-                self.queue_interrupt(di);
+        for fi in 0..self.n_func {
+            if self.funcs[fi].live {
+                self.queue_interrupt(fi);
             }
         }
     }
@@ -1964,17 +2214,20 @@ impl Xhci {
             // the aligned output device context now reads a valid Addressed slot
             // context, configure_hub should succeed. See docs/STATUS.md.
             self.enumerate_hub(di, root_port, speed, depth);
-        } else if let Some((dci, protocol)) = self.configure_hid(di, root_port, speed) {
-            self.hid[di].dci = dci;
-            self.hid[di].protocol = protocol;
-            // The endpoint is configured but NOT armed here: `enumerate_all`
-            // arms every HID once the whole tree is walked
+        } else {
+            let (configured, ep0_ok) = self.configure_hid(di, speed);
+            // The endpoints are configured but NOT armed here: `enumerate_all`
+            // arms every function once the whole tree is walked
             // (`arm_hid_endpoints`), so that no device can report while another
             // device's control transfers are still on the ring.
             //
             // The risky requests come last (§3.1 step 7): a STALL here halts
-            // EP0, which nothing after this point uses.
-            self.fetch_extras(di);
+            // EP0, which nothing after this point uses. A function's failed
+            // SET_PROTOCOL may have halted it already (F3 §9.4): then nothing
+            // more is asked.
+            if configured && ep0_ok {
+                self.fetch_extras(di);
+            }
         }
         if !described && self.hid[di].role == role::NONE {
             // Without a device descriptor nothing could be configured: the

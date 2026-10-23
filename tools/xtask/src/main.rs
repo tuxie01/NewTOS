@@ -73,6 +73,13 @@ mod kernel_usb_config_desc;
 #[path = "../../../kernel/src/drivers/usb/snapshot.rs"]
 #[allow(dead_code)]
 mod kernel_usb_snapshot;
+/// USB01 F3 — the HID boot decoder over per-function state (keyboard diff,
+/// mouse buttons OR-ed over the mouse functions;
+/// `docs/api/usb/hid-mouse-protocols.md` §9.6, §9.8 H-2). Pure, compiled here
+/// by path like `kernel_bootargs`.
+#[cfg(test)]
+#[path = "../../../kernel/src/drivers/usb/hid_decode.rs"]
+mod kernel_usb_hid_decode;
 
 /// DESK43 U5a (guard G3) — the desktop's integer constants against a
 /// checked-in snapshot of EmuTOS' `#define`s.

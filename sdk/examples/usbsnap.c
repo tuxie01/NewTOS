@@ -12,6 +12,9 @@
  *   §4   this program: dialog (§4.2), file names (§4.3), file content (§4.4)
  *   §7   user decisions (MUTE on, strings, C:\USB\, English, hubs = path only)
  *   §9   kernel implementation notes the parser below relies on
+ *   §10  layout v2 (USB01 F3): several functions per device -- ring entries
+ *        tagged with interface + endpoint (+12/+13), a role per interface
+ *        row (byte 15), the function count in the list entry (byte 31)
  *
  * Calls (all GEMDOS, svc #1):
  *   Ssystem  0x154  docs/api/gemdos/154-ssystem.md   modes 2019, 2022
@@ -70,7 +73,7 @@
 #define T_FOLDER    "Cannot use the folder C:\\USB\\ : "
 #define T_ISFILE    "C:\\USB exists but is a file, not a folder. Rename it and retry."
 
-#define PROGRAM_VERSION "USBSNAP.NCP v1"
+#define PROGRAM_VERSION "USBSNAP.NCP v2"
 
 /* ------------------------------------------------------------------------ */
 /* GEMDOS                                                                   */
@@ -135,6 +138,7 @@ void *memcpy(void *d, const void *s, unsigned long n)
 /* ------------------------------------------------------------------------ */
 
 #define HDR_LEN        32
+#define LAYOUT         2        /* §2.2 / §10: the layout this program reads */
 #define OP_LIST        1
 #define OP_DEVICE      2
 #define OP_REPORTS     3
@@ -169,7 +173,7 @@ void *memcpy(void *d, const void *s, unsigned long n)
 #define MUTE_TICKS     7000     /* 30 s + 5 s, §4.2 step 4 */
 #define START_TICKS    3000     /* 15 s */
 #define POLL_TICKS     10       /* 50 ms */
-#define RING_V1        256      /* §2.7, layout v1 */
+#define RING_LEN       256      /* §2.7 (unchanged in layout v2) */
 
 static unsigned rd16(const unsigned char *p) { return (unsigned)p[0] | ((unsigned)p[1] << 8); }
 static unsigned rd32(const unsigned char *p) { return rd16(p) | (rd16(p + 2) << 16); }
@@ -193,7 +197,7 @@ static void request(unsigned char *buf, unsigned op, unsigned index, unsigned ar
     for (k = 0; k < HDR_LEN; k++)
         buf[k] = 0;
     buf[0] = 'U'; buf[1] = 'S'; buf[2] = 'B'; buf[3] = 'S';
-    wr16(buf + 4, 1);
+    wr16(buf + 4, LAYOUT);
     wr16(buf + 8, op);
     wr32(buf + 12, index);
     wr32(buf + 16, arg);
@@ -381,7 +385,10 @@ static const char *reason_text(unsigned r)
     case 2:  return "HID without boot subclass: report protocol only, no report parser yet";
     case 3:  return "HID boot subclass, protocol neither keyboard nor mouse";
     case 4:  return "HID boot interface without an interrupt-IN endpoint";
-    case 5:  return "second HID boot interface: one interface per device";
+    case 5:  return "reserved (layout v1: second HID boot interface)";
+    case 6:  return "function limit";
+    case 7:  return "HID boot interface in an alternate setting (only alternate setting 0 is used)";
+    case 8:  return "HID boot interface on an endpoint an earlier function already uses";
     case 16: return "no HID interface - not an input device";
     case 17: return "configuration descriptor read failed";
     case 18: return "Configure Endpoint failed";
@@ -550,6 +557,41 @@ static int find_section(unsigned i, unsigned type, unsigned iface, struct sec *s
     return 0;
 }
 
+/* Functions of device i (list entry byte 31, §10). */
+static unsigned n_funcs(unsigned i) { return entry(i)[31]; }
+
+/* Role of the function on interface `iface` (row byte 15, §10): 1 keyboard,
+ * 2 mouse, 3 observed; 0 = no function; 0xFF = no interface table. */
+static unsigned iface_role(unsigned i, unsigned iface)
+{
+    struct sec t;
+    unsigned r;
+    if (!find_section(i, SEC_IFACES, 0, &t))
+        return 0xFF;
+    for (r = 0; r < t.len / 16; r++)
+        if (t.p[16 * r] == iface && t.p[16 * r + 1] == 0)
+            return t.p[16 * r + 15];
+    return 0;
+}
+
+/* Short kind of device i for the screen lists: the role, or for a device
+ * with several functions what they are ("Kbd+Mouse"). */
+static const char *kind_short(unsigned i)
+{
+    struct sec t;
+    unsigned r, kb = 0, ms = 0;
+    if (n_funcs(i) > 1 && find_section(i, SEC_IFACES, 0, &t)) {
+        for (r = 0; r < t.len / 16; r++) {
+            if (t.p[16 * r + 15] == ROLE_KEYBOARD) kb++;
+            if (t.p[16 * r + 15] == ROLE_MOUSE) ms++;
+        }
+        if (kb && ms) return "Kbd+Mouse";
+        if (kb > 1) return "Keyboards";
+        if (ms > 1) return "Mice";
+    }
+    return role_short(entry(i)[14]);
+}
+
 /* ------------------------------------------------------------------------ */
 /* Output file (buffered Fwrite)                                            */
 /* ------------------------------------------------------------------------ */
@@ -715,12 +757,12 @@ static void file_head(unsigned i)
     struct sec s;
 
     FS("=== 0. FILE ===");
-    FS("Format        : NewTOS USBSNAP text report v1");
+    FS("Format        : NewTOS USBSNAP text report v2");
     FS("Program       : " PROGRAM_VERSION);
     ln = 0; S("Kernel        : "); S(kversion); F();
-    ln = 0; S("Snapshot API  : Ssystem 2022, layout v1, generation "); U(generation); F();
+    ln = 0; S("Snapshot API  : Ssystem 2022, layout v"); U(LAYOUT); S(", generation "); U(generation); F();
     ln = 0; S("Recorded      : "); U((t_end - t_start) / 200); C('.'); U((t_end - t_start) / 20 % 10);
-    S(" s, pointer muted: "); S(muted_ok ? "yes" : "NO"); S(", ring "); U(RING_V1);
+    S(" s, pointer muted: "); S(muted_ok ? "yes" : "NO"); S(", ring "); U(RING_LEN);
     S(", reports listed <= "); U(REC_KEEP); F();
     ln = 0; S("Device        : "); U((unsigned)list_no[i]); S(" of "); U((unsigned)n_listed);
     S(" (index "); U(i); C(')'); F();
@@ -770,6 +812,12 @@ static void file_decision(unsigned i)
     unsigned r, n, role = e[14], fl = e[16];
 
     FS("=== 3. DRIVER DECISION ===");
+    if (n_funcs(i) > 1) {
+        ln = 0; S("Functions     : "); U(n_funcs(i));
+        S(" interfaces of this device are used, each on its own (see");
+        F();
+        FS("                Interfaces); Role and Reason are those of the first one.");
+    }
     ln = 0; S("Role          : ");
     switch (role) {
     case ROLE_KEYBOARD: S("KEYBOARD (HID boot protocol, decoded -> IKBD)"); break;
@@ -794,9 +842,9 @@ static void file_decision(unsigned i)
     ln = 0; S("                "); S(fl & 8 ? "SET_CONFIGURATION done" : "not configured (no SET_CONFIGURATION)");
     F();
     ln = 0; S("HID interfaces: "); U(e[17]);
-    S("   recorded interface: ");
-    if (e[18] == 0xFF) S("none");
-    else { U(e[18]); S(", endpoint 0x"); X(e[19], 2); }
+    S("   functions: "); U(n_funcs(i));
+    if (e[18] == 0xFF) S("   nothing recorded");
+    else { S("   first: interface "); U(e[18]); S(", endpoint 0x"); X(e[19], 2); }
     F();
     FS("Interfaces:");
     if (!find_section(i, SEC_IFACES, 0, &t)) {
@@ -817,7 +865,8 @@ static void file_decision(unsigned i)
             F();
             ln = 0; S("      ");
             if (w[5] == 0) {
-                if (role == ROLE_KEYBOARD || role == ROLE_MOUSE) {
+                /* The row's own role (§10): a device may have several. */
+                if (w[15] == ROLE_KEYBOARD || w[15] == ROLE_MOUSE) {
                     S("USED ("); S(pn ? pn : "boot"); S(", decoded)");
                 } else {
                     S("USED (recorded, not decoded)");
@@ -1110,7 +1159,7 @@ static void file_reports(unsigned i)
 {
     const unsigned char *e = entry(i);
     struct stat *t = &st[i];
-    unsigned role = e[14], k, b;
+    unsigned role = e[14], k, b, multi = n_funcs(i) > 1;
     FS("=== 6. REPORTS ===");
     if (e[18] == 0xFF) {
         FS("not recorded (not an input device / not configured)");
@@ -1128,30 +1177,49 @@ static void file_reports(unsigned i)
     }
     if (role == ROLE_OBSERVED)
         FS("report-protocol device, not decoded by NewTOS yet (bytes only)");
+    if (multi) {
+        unsigned kk, m;
+        FS("Reports of all functions in order of arrival; column if = the interface");
+        FS("(function) a report came from, decoded with that function's role.");
+        /* Listed reports per function interface (§10 ring tag +12). */
+        for (m = 0; m < 16; m++) {
+            unsigned cnt = 0;
+            for (kk = 0; kk < t->kept; kk++)
+                if (recs[i][kk][12] == m) cnt++;
+            if (cnt || (iface_role(i, m) != 0 && iface_role(i, m) != 0xFF)) {
+                ln = 0; S("  interface "); U(m); S(" ("); S(role_short(iface_role(i, m)));
+                S("): "); U(cnt); S(" listed"); F();
+            }
+        }
+    }
     FS("Flags: M = collected while the pointer was muted, C = report may be cut");
-    ln = 0; S("   seq"); PAD(11); S("t(s)  len fl  bytes");
-    if (role == ROLE_MOUSE) { PAD(49); S("decoded (boot mouse)"); }
-    if (role == ROLE_KEYBOARD) { PAD(49); S("decoded (boot keyboard)"); }
+    ln = 0; S("   seq"); PAD(11); S("t(s)  len fl  "); if (multi) S("if "); S("bytes");
+    if (multi) { PAD(52); S("decoded (boot reports)"); }
+    else if (role == ROLE_MOUSE) { PAD(49); S("decoded (boot mouse)"); }
+    else if (role == ROLE_KEYBOARD) { PAD(49); S("decoded (boot keyboard)"); }
     F();
     for (k = 0; k < t->kept; k++) {
         const unsigned char *r = recs[i][k];
         unsigned len = rd16(r + 8), fl = r[10], cc = r[11];
         const unsigned char *d = r + 16;
+        unsigned rrole = role, dcol = 49;
         if (len > 64) len = 64;
+        if (multi) { rrole = iface_role(i, r[12]); dcol = 52; }
         ln = 0;
         UR(rd32(r), 6); C(' ');
         SECSR((long)(int)(rd32(r + 4) - t_start), 8);
         C(' '); UR(len, 3); C(' ');
         C(fl & REC_MUTED ? 'M' : '-'); C(fl & REC_CAPPED ? 'C' : '-'); S("  ");
+        if (multi) { UR(r[12], 2); C(' '); }
         for (b = 0; b < len && b < 8; b++) { X(d[b], 2); C(' '); }
         if (len == 0) S("(empty)");
-        if (role == ROLE_MOUSE && len >= 3) {
-            PAD(49);
+        if (rrole == ROLE_MOUSE && len >= 3) {
+            PAD(dcol);
             C(d[0] & 1 ? 'L' : '-'); C(d[0] & 2 ? 'R' : '-'); C(d[0] & 4 ? 'M' : '-');
             S(" dx"); DR((signed char)d[1], 5); S(" dy"); DR((signed char)d[2], 5);
             if (len > 3) { S(" wh"); DR((signed char)d[3], 4); }
-        } else if (role == ROLE_KEYBOARD && len >= 3) {
-            PAD(49);
+        } else if (rrole == ROLE_KEYBOARD && len >= 3) {
+            PAD(dcol);
             S("mod "); X(d[0], 2); S(" keys");
             for (b = 2; b < len && b < 8; b++) if (d[b]) { C(' '); X(d[b], 2); }
         }
@@ -1159,7 +1227,7 @@ static void file_reports(unsigned i)
         F();
         for (b = 8; b < len; b += 16) {
             unsigned m;
-            ln = 0; PAD(24);
+            ln = 0; PAD(multi ? 27 : 24);
             for (m = b; m < len && m < b + 16; m++) { X(d[m], 2); C(' '); }
             F();
         }
@@ -1231,7 +1299,7 @@ static void device_label(unsigned i)   /* "  1  046d:c077  Mouse       " */
 {
     const unsigned char *e = entry(i);
     S("  "); U((unsigned)list_no[i]); PAD(5);
-    X(rd16(e + 8), 4); C(':'); X(rd16(e + 10), 4); S("  "); S(role_short(e[14]));
+    X(rd16(e + 8), 4); C(':'); X(rd16(e + 10), 4); S("  "); S(kind_short(i));
     PAD(29);
 }
 
@@ -1414,9 +1482,9 @@ int main(void)
         fail(T_TOO_OLD, 0);
     if (rc == ERROR)
         fail(T_NO_CTRL, 0);
-    if (rc == EINVAL && lbuf[0] == 'U' && rd16(lbuf + 4) != 1) {
+    if (rc == EINVAL && lbuf[0] == 'U' && rd16(lbuf + 4) != LAYOUT) {
         ln = 0; S("The kernel speaks USB snapshot layout v"); U(rd16(lbuf + 4));
-        S("; this program reads v1."); con_line();
+        S("; this program reads v"); U(LAYOUT); C('.'); con_line();
         fail("Please use the USBSNAP.NCP that came with this kernel.", 0);
     }
     if (rc != E_OK || (rd16(lbuf + 10) & HF_TRUNCATED)) {
@@ -1436,16 +1504,8 @@ int main(void)
     if (n_listed == 0)
         fail(T_NO_DEV1, n_dev ? T_NO_DEV2 "\r\n" T_ONLY_HUBS : T_NO_DEV2);
 
-    ln = 0; S("Found "); U((unsigned)n_listed); S(n_listed == 1 ? " USB device:" : " USB devices:");
-    con_line();
-    for (i = 0; i < n_dev; i++) {
-        if (!list_no[i]) continue;
-        ln = 0; device_label(i); path_text(i, " via "); con_line();
-    }
-    for (i = 0; i < n_dev; i++)
-        if (e_role(i) == ROLE_HUB) { con(T_HUBNOTE); break; }
-
-    /* DEVICE answers now (they carry the strings shown below). */
+    /* DEVICE answers first: they carry the strings and the interface table
+     * the list below shows (a device with several functions, §10). */
     for (i = 0; i < n_dev; i++) {
         if (!list_no[i]) continue;
         dans[i] = dbuf[i];
@@ -1463,6 +1523,15 @@ int main(void)
                 drc[i] = ERROR;   /* still too big: file says "not available" */
         }
     }
+    ln = 0; S("Found "); U((unsigned)n_listed); S(n_listed == 1 ? " USB device:" : " USB devices:");
+    con_line();
+    for (i = 0; i < n_dev; i++) {
+        if (!list_no[i]) continue;
+        ln = 0; device_label(i); path_text(i, " via "); con_line();
+    }
+    for (i = 0; i < n_dev; i++)
+        if (e_role(i) == ROLE_HUB) { con(T_HUBNOTE); break; }
+
     con("");
     for (i = 0; i < n_dev; i++) {
         struct sec m, p;
