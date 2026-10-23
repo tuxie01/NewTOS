@@ -1,0 +1,87 @@
+USB01 step 2 -- USB snapshot, kernel part (K1-K9 of docs/api/usb/usb-snapshot.md §5)
+====================================================================================
+
+Date      2026-10-23
+Tested    main @ cf396382 (feat(usb): Ssystem 2022 USB snapshot, kernel part)
+Who       Developer agent; no hardware, no SD card, no push. QEMU only.
+Scope     Ssystem(S_NEWTOS_USBSNAP = 2022), snapshot store + encoder, observation path (role 3),
+          interrupt TRB length = max packet (8..64), report descriptor + strings as the last
+          enumeration step, controller kept without devices, record-before-decode + MUTE in
+          usb::poll. NOT in scope: the console program USBSNAP (K10), the QEMU option (K11).
+
+RESULT (developer smoke; the authoritative regression is the Tester's)
+  1  host tests         cargo xtask test: 1607 passed / 0 failed / 1 ignored (baseline 34f73b01: 1571/0/1;
+                        +36 = config_desc +5, snapshot encoder +12 (xtask), gemdos_ssystem_usbsnap 7 + the
+                        same 12 encoder tests compiled there by path). Host-test warnings 127 = baseline.
+  2  builds             cargo xtask build: qemu-virt dev + release, rpi4 dev + release, rpi4 release
+                        --features usb-diag: all rc 0. rustc warnings kernel 94 / tos-api 64 (usb-diag 96:
+                        the two known bootlog.rs warnings, USB02 item 6). clippy kernel 125 -> 124 both
+                        boards (one `&(*(&raw const DEV))` line rewritten), tos-api 76 = 76; the touched
+                        files add no lint (usb/mod.rs 12 = 12, xhci 32 -> 31, snapshot/config_desc/
+                        host_env/ssystem/host 0).
+  3  qemu-virt input    serial/virt-default.log, virt-default-kbd.log, virt-mtp.log, virt-hubtree.log
+     (dev kernel)       default (usb-kbd + usb-mouse): 2 devices (2 keyboard/mouse), 6 commands; mouse
+                        20 x rel(+10,+6) moves the cursor, 138 px differ (= Tester 34f73b01 "moved");
+                        Ctrl+Z opens EmuCON (1014367 px differ), "help" echoes (198 px) -- same numbers
+                        as measurement-2026-10-23-usb01-test.
+                        mtp: usb-tablet (HID 3/0/0) now "report-protocol HID interface observed",
+                        configured (dci 3), report descriptor 74 bytes; mouse still moves 138 px, the
+                        tablet adds no pointer effect. hubtree: 8 devices, 24 commands, moved 138 px.
+                        EXC/PANIC 0 in every run.
+  4  EL0 probe          serial/virt-probe.log, screendumps/probe-end.png: method/usbprobe.c as an EL0
+     (qemu-virt)        process (scratch kernel, see HOW). Ssystem(2022):
+                          len 16 / bad magic       -> -25, nothing written
+                          version 2 / op 9         -> -25, header ver 1 hdr 32 used 32 total 32
+                          LIST len 40              -> 0, flags TRUNCATED, total 112, used 32
+                          LIST len 112             -> 0, 2 devices, entries role 1 / role 2, flags 0x0b,
+                                                     root ports 5/6, speed 3, ring iface 0 ep 0x81
+                          DEVICE 0 / 1             -> 0, 276 / 260 bytes: device descriptor
+                                                     12 01 00 02 00 00 00 40 27 06 01 00 ... = the
+                                                     "[usb] device descriptor: ... maxpkt0=64 VID=0627
+                                                     PID=0001" line; config 34 bytes; interface row
+                                                     wDescriptorLength 63 / 52 = the "[usb] slot N iface
+                                                     0: report descriptor 63/52 bytes (declared 63/52)"
+                                                     lines; report descriptors 63 / 52 bytes; strings
+                                                     "QEMU", "QEMU USB Keyboard" / "QEMU USB Mouse"
+                          DEVICE index 2, MUTE 12001 -> -25 with header
+                          REPORTS mouse (20 moves) -> next_seq 20, entries len 4 cc 13 data 00 0a 06 00,
+                                                     buffer for 3 entries -> flags MORE, total 1648
+                          MUTE 400                 -> muted_until = now + 400 (0x67b at now 1259)
+                          REPORTS from seq 20      -> 10 more reports (next_seq 30), entry flags 0x02
+                                                     (collected while muted)
+                          MUTE 0                   -> muted_until 0
+                          buf = 0xDEAD0000         -> "[crash] slot 0 Bus Error ... far=0xdead0000",
+                                                     "Panic: Bus Error / Memory violation ... read";
+                                                     "survived" NOT printed: the bad pointer ends the
+                                                     caller (§2.1).
+  5  raspi4b            release rpi4 kernel, -append serial=on:
+                        serial/rpi4-api.log: APITEST TOTAL 109 / 0 / 5 (= Tester 34f73b01).
+                        serial/rpi4-desk.log: "[pcie] RC not present ...; USB disabled", "[desk] desktop
+                        up (1 drives)"; log identical to measurement-2026-10-23-usb01-test/serial/
+                        nd-head.log apart from hashes.
+                        serial/rpi4-probe.log: USBPROBE.NCP by #Z: header checks -25 as on qemu-virt,
+                        then LIST / DEVICE / MUTE -> -1 (ERROR), header left as written by the program
+                        (§2.3 #5). The probe then waits forever (its clock is the LIST answer's now_hz200,
+                        which ERROR does not write) -- a probe property, the run ends on the time limit.
+
+HOW
+  Kernels (not kept in the repo), sha256:
+    qemu-virt dev  @ cf396382                          c3e12136fc1c31446e7c8426bfc40710af29eca0ae8643854967b8b8cb34cda4
+    qemu-virt dev  scratch probe kernel (cf396382 code, NEWDESK.NAP replaced by USBPROBE.NAP)
+                                                       c0942618717b5ce331968b24c08085838ccb57bcb1efefcc4b9db31457caa2e2
+    rpi4 release   @ cf396382                          ad27e76278deedbf1a725bac7f26ce5ca78e813f054060eeb42a149c1bb8a46b
+  Programs: USBPROBE.NAP/.NCP (sdk/build.sh method/usbprobe.c) b418ff3572604906406aff44cb2f5e059f956536c2dd5119d03b11e33e0f33f6;
+    APITEST.NCP 96ae4de5, PTERMCH.NCP 30fa331e, DTACHILD.NCP eaf92b08 (method/api-build.sh; = usb01-test hashes).
+  Probe kernel: qemu-virt has no card, so the probe ran as the program the shell starts at boot:
+    target/programs/qemu-virt/NEWDESK.NAP copied aside, USBPROBE.NAP copied in, kernel built with
+    CARGO_TARGET_DIR in the scratchpad, the original NEWDESK.NAP copied back (sha256 checked OK).
+  qemu-virt: method/run-virt.sh + qmp_mouse.py / qmp_key.py / pixdiff.py (copied from
+    measurement-2026-10-23-usb01-test/method), method/qmp_probe.py (new) for the probe run.
+  raspi4b: method/run.sh, cards by method/api-card.sh and method/mkcard.sh (64 MiB FAT16, per-run APFS
+    clone, deleted after); env.sh points at this session's scratchpad.
+
+NOT VERIFIED (real Pi 4 only, or later steps)
+  Real VL805: report-descriptor/string requests on the Apple keyboard 05ac:020c and the ROCCAT
+  1e7d:2cee (both kept their boot path here only in QEMU), interrupt TRB length 64 for the ROCCAT's
+  max-packet-64 boot endpoint, a report-only mouse in the observation path (T7/T8). MUTE's effect on
+  the pointer was not checked visually (the probe owns the screen). USBSNAP itself (K10), T5/T6.
