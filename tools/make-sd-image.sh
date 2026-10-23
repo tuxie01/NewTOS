@@ -276,6 +276,17 @@ else
   echo "note: sdk/build.sh unavailable (no clang/lld?); C:\\SYSINFO.NCP skipped"
 fi
 
+# USBSNAP.NCP is the USB device recorder (USB01 step 2, docs/api/usb/
+# usb-snapshot.md §4): it lists the USB devices the kernel enumerated, records
+# 30 s of their reports and writes one text file per device to C:\USB\.
+# Double-clickable in the root; NOT in \AUTO\ (it needs the user). On QEMU
+# raspi4b (no USB controller) it says so and writes nothing.
+if "$SCRIPT_DIR/../sdk/build.sh" "$SCRIPT_DIR/../sdk/examples/usbsnap.c" "$V/USBSNAP.NCP" >/dev/null 2>&1; then
+  echo "built + installed C:\\USBSNAP.NCP (Ssystem 2022 USB snapshot recorder)"
+else
+  echo "note: sdk/build.sh unavailable (no clang/lld?); C:\\USBSNAP.NCP skipped"
+fi
+
 # ACC05 / ACC02: the desk accessories. SYSACC.NAC is the accessory half of the
 # ACC06 pair (SYSINFO.NCP above is the console half): it registers " System
 # Info" under *Desk* and answers AC_OPEN with the SYSINFO01 dialog (clock,

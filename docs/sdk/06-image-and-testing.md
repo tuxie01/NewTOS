@@ -32,6 +32,7 @@ freestanding examples):
 | `C:\HELLO.NCP` | `tools/mk-hello-ncp.py` (hand-crafted ELF) | the script | `:71-83` |
 | `C:\HELLO2.NCP`, `BIG.NCP`, `PHYSBASE.NCP`, `SCRFLIP.NCP`, `DTACHILD.NCP` | `sdk/examples/*.c` | `sdk/build.sh`, run **by the script** | `:78-136` |
 | `C:\PTERMCH.NCP`, `C:\CTRLCPAR.NCP` (PROC06: the `Pexec` exit-code child for APITEST T33, and the Ctrl-C'd-child proof, which waits for a key) | `sdk/examples/{ptermch,ctrlcpar}.c` | `sdk/build.sh`, run **by the script** | DTACHILD block |
+| `C:\USBSNAP.NCP` (USB01: the USB device recorder, writes one text file per device to `C:\USB\`; spec `docs/api/usb/usb-snapshot.md` §4) | `sdk/examples/usbsnap.c` | `sdk/build.sh`, run **by the script** | USBSNAP block |
 | `C:\LIBTEST.NCP`, `C:\CLOCKTST.NCP` | `sdk/libc/build/{libtest,clocktest}.NCP` | you: `sdk/libc/build-libc.sh [sdk/libc/tests/clocktest.c]` | `:143-166` |
 | `C:\SETJMPT.NCP`, `C:\MATHTST.NCP` (T07) | `sdk/libc/build/setjmptst.NCP`, `sdk/libm/build/mathtst.NCP` | you: `sdk/libc/build-libc.sh sdk/examples/setjmptst.c sdk/libc/build/setjmptst.NCP`, `sdk/libm/build-libm.sh` | `:169-200` |
 | `C:\COREMARK\{CORE,COREVAL}.NCP` | `sdk/apps/coremark/build/` | you: `sdk/apps/build-coremark.sh` | `:189-201` |
@@ -232,6 +233,30 @@ ELF (symptom: empty serial log / hang). `cargo clean -p kernel` does not
 reliably help. Build fresh for the board you are about to boot and check the
 ELF's mtime (memory note *cargo-xtask-board-target-footgun*; `cargo xtask run`
 always rebuilds).
+
+## Running in QEMU (`virt`) with more USB devices
+
+`raspi4b` has the card but no USB; `virt` has the xHCI controller but **no
+drive**. `cargo xtask run` (board `qemu-virt`, the default) attaches a
+`usb-kbd` and a `usb-mouse`; two options add more (USB01 K11,
+`qemu_usb_args` in `tools/xtask/src/main.rs`):
+
+```
+cargo xtask run --usb-extra                   # + usb-tablet (root port 3, report protocol only)
+                                              #   + usb-hub (root port 4) with usb-mouse 4.1, usb-kbd 4.2
+cargo xtask run --usb-dev usb-tablet          # one more QEMU -device spec (repeatable)
+cargo xtask run --usb-dev usb-hub,bus=usb.0,port=4 --usb-dev usb-mouse,bus=usb.0,port=4.1
+```
+
+With either option the controller gets `id=usb`, so a spec can name its
+bus and port (`bus=usb.0,port=<root>[.<hub port>]`); without them the
+command line is unchanged. Both are refused with `--board rpi4`. The boot
+log line `[usb] enumeration done: N devices (K keyboard/mouse, O observed
+only)` shows what the kernel made of them. To see what a program like
+`USBSNAP` reads on this board, a measurement build has to replace the
+embedded desktop program in a scratch copy of the workspace (no drive, so no
+program can be started from `C:`):
+`measurements/measurement-2026-10-23-usb01-snap-program/method/run-all.sh`.
 
 ## Real Raspberry Pi 4
 
