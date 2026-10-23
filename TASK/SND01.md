@@ -166,9 +166,14 @@ Was dafuer spricht:
 
 Offen, vor jeder Entscheidung zu klaeren:
 
-1. Kann ein EL0-Programm bei uns den XBIOS-Trap uebernehmen, wie es ein
-   AUTO-Treiber auf dem Atari tut? Ungeprueft. Vermutlich nicht; dann waere
-   der Tontreiber ein Kernmodul und setzte MOD01 voraus.
+1. ~~Kann ein EL0-Programm bei uns den XBIOS-Trap uebernehmen?~~
+   **Geklaert 2026-10-23: nein.** Programme laufen in EL0 (Anwender).
+   `Setexc(46, …)` schreibt nur in den Vektorschatten, der fuer die
+   CPU-Vektoren `0..0x3F` nicht verteilt wird
+   (`tos-api/src/bios/vectors.rs:1-13,98-107`). Ein Treiber nach ZMAGXSND-Art
+   aus `C:\AUTO` haette keine Wirkung; dazu kaemen fehlender MMIO-Zugang und
+   keine Interrupts in EL0. Der Tontreiber laeuft also im Kern, als Modul
+   nach MOD01 oder fest eingebaut mit austauschbaren Ausgaengen.
 2. Welche Cookies und Funktionen MacSound oder GSXB anlegen; erst aus der
    Quelle oder Doku belegen, nicht annehmen.
 3. Was EmuTOS im Falcon-Profil selbst von der Tongruppe hat (Haelfte A oben).
