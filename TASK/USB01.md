@@ -68,4 +68,11 @@ Report-only-Geraete gar nicht mehr konfiguriert — der Kern braucht einen Beoba
 sonst zeigt das Werkzeug genau die Maeuse nicht, derentwegen es gebaut wird. Aufwand
 geschaetzt 7–9 Tage (ohne Hardware-Iterationen).
 
+**Echte Pi 2026-10-23** (`measurements/measurement-2026-10-23-usb01-con04-pi/RUNINFO.TXT`): Apple-Tastatur + ROCCAT-Maus in zwei
+Steckpositionen, je 4 Geraete, 13 Befehle, kein Fehler, Eingabe geht; `C:\USBDIAG.LOG`
+wird geschrieben. Defekte 1, 2, 4 damit auf der Pi abgenommen (fuer diese Geraete).
+Offen: >15 Befehle, Report-only-Maeuse. Paket fuer den externen Tester (usb-diag-Kernel
+`86205b81…` + LIESMICH/NOTIZEN) liegt beim Anwender; Diagnosewerkzeug USBSNAP
+wartet auf die Antworten zu `docs/api/usb/usb-snapshot.md` §7.
+
 [Gemeinsame Regeln](README.md) gelten.

@@ -1,13 +1,14 @@
 # CON04 — Quittung
 
 **Status: IMPLEMENTIERT · QEMU raspi4b und Hatari-Falcon belegt · Tester-Abnahme
-PASS (`5ca5fa30`, `measurements/measurement-2026-10-22-con04-test/RUNINFO.TXT`) · echte Pi offen** · 2026-10-22 · Basis `main` @ `1dec9058` · Commits
+PASS (`5ca5fa30`, `measurements/measurement-2026-10-22-con04-test/RUNINFO.TXT`) · echte Pi abgenommen 2026-10-23 (`measurements/measurement-2026-10-23-usb01-con04-pi/RUNINFO.TXT`)** · 2026-10-22 · Basis `main` @ `1dec9058` · Commits
 `9409f35a` (Code), `deb6e253` (Hosttests), `b31a0a76` (Doku), `373ff2a9`
 (Sonde + Beleg) · Beleg
 [measurements/measurement-2026-10-22-con04/](../measurements/measurement-2026-10-22-con04/RUNINFO.TXT)
 
-UNFINISHED heisst hier: die Abnahme durch den Tester und die echte Pi fehlen,
-nicht die Umsetzung.
+Echte Pi 2026-10-23 (VT52PI.NAP, 240x67): T1–T5 und Ruecklesen stimmen, T6 blinkt,
+Taste fuehrt sofort zum Desktop zurueck. Offen bleiben nur die Folgetickets CON05
+und der kleine 8-Pixel-Streifen unten.
 
 ## Was getan ist
 

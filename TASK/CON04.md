@@ -1,6 +1,6 @@
 # CON04 — `Bconout(2)` wertet keine VT52-Folgen aus
 
-Status: **IMPLEMENTIERT** 2026-10-22 (QEMU raspi4b + Hatari-Falcon-Gegenprobe; Tester-Abnahme PASS `5ca5fa30`; echte Pi offen, [Quittung](CON04-STATUS-UNFINISHED.MD)) · Prioritaet: **P2** · Typ: Abweichung von der Spec / TOS-API-Luecke — Befund CON03-Spec (2026-10-22)
+Status: **ERLEDIGT** 2026-10-23 (implementiert 2026-10-22, QEMU raspi4b + Hatari-Falcon-Gegenprobe; Tester-Abnahme PASS `5ca5fa30`; echte Pi abgenommen 2026-10-23, `measurements/measurement-2026-10-23-usb01-con04-pi/RUNINFO.TXT`, [Quittung](CON04-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Abweichung von der Spec / TOS-API-Luecke — Befund CON03-Spec (2026-10-22)
 
 ## Befund
 

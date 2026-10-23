@@ -1,0 +1,44 @@
+USB01 F1/F2/F8 + CON04 -- real Raspberry Pi 4 acceptance (user run)
+=====================================================================
+
+Date      2026-10-23
+Who       user, real RPi 4 Model B (768 MiB ARM / 256 MiB VC split per firmware), 1920x1080 HDMI (Telefunken TV)
+Why       USB01: hardware acceptance of F1/F2/F8 (7e7fbafa, 190281c6, 0a1b80f4) in two plug positions, and a check
+          that the usb-diag kernel writes C:\USBDIAG.LOG on the real card before the package goes to the external
+          tester. CON04: real-Pi acceptance with VT52PI.NAP at the native column count (240 x 67).
+
+CARD (written by the lead on the user's say, Pi card mounted as "BOOT 1"; nothing else changed)
+  kernel8.img  usb-diag release build of 7c1f621d (no code change up to 44bcffa1)
+               sha256 86205b81130a925da3daeb77411541f82170a0c66f3bfeba6873bbb64cda72eb
+               = the kernel of measurements/measurement-2026-10-23-usb01-test/RUNINFO.TXT
+  VT52PI.NAP   sha256 d7861cfa087eb349f014db80c7f5a3e26a227cf4ca1072d4e41d6d5de5348a44
+               (measurements/measurement-2026-10-22-con04-pi/RUNINFO.TXT)
+  previous kernel8.img (0.6.1, eaba7c5e...) kept as KERN1022.IMG
+
+DEVICES   Apple keyboard 05ac:020c behind its built-in hub 05ac:1003; ROCCAT mouse 1e7d:2cee.
+          On the Pi 4 every USB 1.x/2.0 device reaches the VL805 through its internal hub 2109:3431 on root port 1
+          (root ports 2..5 are the USB 3 protocol ports), so "blue vs black jack" for these devices means a
+          different downstream port of that hub.
+
+RESULT
+  Start 1  serial/start1-MAUS1.LOG (C:\USBDIAG.LOG, renamed on the desktop via the file info dialog)
+           keyboard hub at VL805-hub port 1 (keyboard route 0x31), mouse at port 2 (route 0x2).
+  Start 2  serial/start2-MAUS2.LOG, plugs swapped: keyboard hub at port 1, mouse at port 4 (route 0x4).
+           The two logs differ only in the SoC temperature line and the mouse port.
+  Both     4 devices, keyboard + mouse configured (boot interfaces, ep 0x81), 13 commands issued, no error,
+           no limit hit. Second HID interfaces (keyboard iface 1 consumer keys, mouse iface 1 report-only)
+           logged "not used: HID without boot subclass" (F2, as designed; F3/F4 territory).
+           Pointer, buttons and typing worked in both starts (user; both renames typed on the desktop).
+  Boot     photos/boot-screen-a.jpg, photos/boot-screen-b.jpg: all four devices listed as "Port 1"; the two hubs
+           are labelled "HID device" (known, TASK/USB02.md). The boot-screen time is the kernel8.img file date
+           (no RTC), so it cannot tell the two starts apart.
+  VT52PI   photos/vt52pi-1920x1080.jpg: cols=240 rows=67; T1 abcdZ at the right edge with an all-'-' row below;
+           T2 abcde + WXYZ--- wrap; T3 Y under '#' at col 223; T4 V under '#' at 230, L in the last column;
+           T5 K at row end and C in the bottom-right corner; read-back "V=15,231 L=15,240 K=17,240 C=67,240"
+           equals the expected line. T6: cursor blinked correctly (user). Any key: desktop came straight back
+           (user). The first character of each row is cut by the TV's overscan (left edge), not by NewTOS --
+           the read-back values place every cell correctly. Bottom 8-pixel strip in desktop colour = known note.
+
+NOT COVERED
+  > 15 xHCI commands on the VL805 (only 13 issued; user has no further devices).
+  Report-protocol-only mice (none available here) -- that is what the external tester package is for.
