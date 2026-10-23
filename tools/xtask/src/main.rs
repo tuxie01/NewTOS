@@ -169,13 +169,22 @@ Commands:
                                    <value> (0x... or decimal) in place;
                                    the role of Atari's PRGFLAGS.PRG
   run [--board {{rpi4|qemu-virt}}] [--release] [--window] [--debug]
-      [--sd <img>] [--features a,b]
+      [--sd <img>] [--features a,b] [--usb-extra] [--usb-dev <spec>]...
                                    — boot in QEMU (virt by default, or
                                      raspi4b with --board rpi4); --window
                                      shows the framebuffer, --debug halts
                                      at reset with a gdbstub on :1234;
                                      --features adds optional kernel
-                                     features (e.g. aes-trace)
+                                     features (e.g. aes-trace);
+                                     qemu-virt only (USB01 K11): besides the
+                                     default usb-kbd + usb-mouse,
+                                     --usb-extra adds a usb-tablet (root
+                                     port 3) and a usb-hub (root port 4)
+                                     with a usb-mouse + usb-kbd behind it,
+                                     --usb-dev adds one QEMU -device spec
+                                     on the xHCI bus `usb.0` (repeatable,
+                                     e.g. usb-tablet or
+                                     usb-mouse,bus=usb.0,port=4.3)
   test                           — run every host-runnable test in the
                                    workspace (tos-api, tos-types, xtask);
                                    the kernel is not host-linkable
@@ -599,9 +608,82 @@ fn host_triple() -> Result<String, String> {
     Err("could not parse host triple from rustc -vV".into())
 }
 
+/// The QEMU USB devices of a `qemu-virt` run (USB01 K11,
+/// `docs/api/usb/usb-snapshot.md` §5): the xHCI controller with the default
+/// `usb-kbd` + `usb-mouse` — the default line is unchanged; only when devices
+/// are added does the controller get `id=usb` (bus `usb.0`, so specs can name
+/// ports) and the default pair takes root ports 1 and 2 —, then with `extra` the T5 topology (a report-protocol
+/// `usb-tablet` on root port 3; a `usb-hub` on root port 4 with a `usb-mouse`
+/// on its port 1 and a `usb-kbd` on its port 2), then every `devs` entry as
+/// one more `-device`.
+fn qemu_usb_args(extra: bool, devs: &[String]) -> Vec<String> {
+    let mut v: Vec<String> = Vec::new();
+    let mut dev = |spec: &str| {
+        v.push("-device".into());
+        v.push(spec.into());
+    };
+    dev(if extra || !devs.is_empty() { "qemu-xhci,id=usb" } else { "qemu-xhci" });
+    dev("usb-kbd");
+    dev("usb-mouse");
+    if extra {
+        dev("usb-tablet,bus=usb.0,port=3");
+        dev("usb-hub,bus=usb.0,port=4");
+        dev("usb-mouse,bus=usb.0,port=4.1");
+        dev("usb-kbd,bus=usb.0,port=4.2");
+    }
+    for d in devs {
+        dev(d);
+    }
+    v
+}
+
+#[cfg(test)]
+mod qemu_usb_args_tests {
+    use super::qemu_usb_args;
+
+    #[test]
+    fn default_is_keyboard_and_mouse() {
+        assert_eq!(
+            qemu_usb_args(false, &[]),
+            ["-device", "qemu-xhci", "-device", "usb-kbd", "-device", "usb-mouse"]
+        );
+    }
+
+    #[test]
+    fn extra_adds_tablet_and_hub_tree_after_the_default_pair() {
+        let v = qemu_usb_args(true, &["usb-tablet".to_string()]);
+        let devs: Vec<&str> = v.iter().skip(1).step_by(2).map(|s| s.as_str()).collect();
+        assert_eq!(
+            devs,
+            [
+                "qemu-xhci,id=usb",
+                "usb-kbd",
+                "usb-mouse",
+                "usb-tablet,bus=usb.0,port=3",
+                "usb-hub,bus=usb.0,port=4",
+                "usb-mouse,bus=usb.0,port=4.1",
+                "usb-kbd,bus=usb.0,port=4.2",
+                "usb-tablet",
+            ]
+        );
+        assert!(v.iter().step_by(2).all(|s| s == "-device"));
+    }
+}
+
 fn cmd_run(args: &[String]) -> Result<(), String> {
     let window = args.iter().any(|a| a == "--window");
     let debug = args.iter().any(|a| a == "--debug");
+    // USB01 K11: extra USB devices on qemu-virt (`qemu_usb_args`).
+    let usb_extra = args.iter().any(|a| a == "--usb-extra");
+    let mut usb_devs: Vec<String> = Vec::new();
+    {
+        let mut it = args.iter();
+        while let Some(a) = it.next() {
+            if a == "--usb-dev" {
+                usb_devs.push(it.next().ok_or("--usb-dev requires a QEMU -device spec")?.clone());
+            }
+        }
+    }
     // `--sd <path>` attaches a raw SD-card image (the kernel's C: drive).
     // Defaults to /tmp/sd.img if present, so the desktop sees its drives.
     let sd = args
@@ -620,10 +702,10 @@ fn cmd_run(args: &[String]) -> Result<(), String> {
                 skip = false;
                 continue;
             }
-            if a == "--window" || a == "--debug" {
+            if a == "--window" || a == "--debug" || a == "--usb-extra" {
                 continue;
             }
-            if a == "--sd" {
+            if a == "--sd" || a == "--usb-dev" {
                 skip = true;
                 continue;
             }
@@ -634,6 +716,9 @@ fn cmd_run(args: &[String]) -> Result<(), String> {
     let opts = parse_board_and_profile(&filtered)?;
     let release = opts.release;
     if opts.board == Some(Board::Rpi4) {
+        if usb_extra || !usb_devs.is_empty() {
+            return Err("--usb-extra / --usb-dev: qemu-virt only (raspi4b has no USB controller)".into());
+        }
         return cmd_run_rpi4(release, window, debug, sd.as_deref(), &opts.features);
     }
     build_kernel(Board::QemuVirt, release, &opts.features)?;
@@ -677,12 +762,11 @@ fn cmd_run(args: &[String]) -> Result<(), String> {
         // captured with a QMP `screendump`; pass `-display cocoa`
         // (macOS) to watch it live.
         "-device", "ramfb",
-        // USB host stack (PHASE-16): an xHCI controller on the PCIe bus with
-        // a keyboard + mouse, so the desktop is interactive in the emulator.
-        "-device", "qemu-xhci",
-        "-device", "usb-kbd",
-        "-device", "usb-mouse",
     ]);
+    // USB host stack (PHASE-16): an xHCI controller on the PCIe bus with a
+    // keyboard + mouse, so the desktop is interactive in the emulator; more
+    // devices on request (USB01 K11).
+    c.args(qemu_usb_args(usb_extra, &usb_devs));
     if window {
         // Native macOS window so the framebuffer is visible. Serial
         // still goes to this terminal.
