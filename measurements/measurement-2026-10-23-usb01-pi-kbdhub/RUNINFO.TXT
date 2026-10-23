@@ -1,0 +1,29 @@
+USB01 -- mouse behind the keyboard's hub, plus X-Shot (external accessory) on the real Pi 4 (user run)
+=====================================================================================================
+
+Date      2026-10-23
+Who       user, real RPi 4 Model B, 1920x1080 HDMI
+Kernel    usb-diag release build of 7c1f621d, sha256 86205b81130a925da3daeb77411541f82170a0c66f3bfeba6873bbb64cda72eb
+          (same card state as measurements/measurement-2026-10-23-usb01-con04-pi/RUNINFO.TXT, that run stays untouched)
+Added     C:\ACC\XSHOT.NAC = xshot.nac from github.com/ragnar76/X-Shot release/xshot-1.0-newtos.zip (GPL-3.0),
+          unmodified, sha256 6c70dcb958f7f75af7ee6e6ff279942cdf5a4f92477882db6b7bde7eb2982a70 (GitHub issue #6)
+
+USB, ROCCAT 1e7d:2cee plugged into the Apple keyboard's hub 05ac:1003
+  serial/start3-MAUS3.LOG  mouse at keyboard-hub port 2 (route 0x21, depth 2, tt_slot 1 tt_port 1), keyboard at
+                           port 3 (route 0x31); both configured on their boot interfaces, 4 devices, 13 commands,
+                           no error. photos/boot-screen-kbdhub.jpg: Mouse listed before Keyboard (port order).
+  serial/start4-xshot-USBDIAG.LOG  the following boot (X-Shot session), same plug state: identical to start 3
+                           except the SoC temperature line. The area capture below was dragged with this mouse,
+                           so pointer and left button work two hub levels deep.
+
+X-SHOT
+  photos/xshot-window-empty-title.jpg  window opens from the Desk menu, four buttons render (umlaut in "Uber" ok),
+                           the title bar is EMPTY (only the pattern next to the closer). Expected from the source:
+                           xshot.c:1168 splits the title pointer into two shorts (m68k word order); the LP64 AES reads
+                           the packed pointer little-endian (tos-api/src/aes/mod.rs intin_ptr), halves swapped.
+                           Program bug, not NewTOS; fix wind_set_str (docs/sdk/05-abi-pitfalls.md B10), sent in #6.
+  screenshots/AREA0001.PNG  "Bereich auswaehlen": 648x465, 8-bit RGB, all chunk CRCs ok, IDAT inflates to exactly
+                           465 x (648*3+1) = 904425 bytes; content is a TeraDesk folder window C:\APPS\TERADESK\ on the
+                           green desktop, colours correct. Only an area capture was saved in this session.
+  Reported by the user, separately: after opening and closing an accessory inside a running app, the app
+                           sometimes cannot be quit -> GitHub issue #14 (unreproduced).
