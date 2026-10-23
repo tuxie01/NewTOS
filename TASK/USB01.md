@@ -104,3 +104,14 @@ Dateien in einem Lauf). Kosmetik nach USB02 Punkt 9. Pi-Test wartet auf den Anwe
 Kernel `56e4e78b…` + `USBSNAP.NCP` `e46feb9d…` (aus `fe30bfc1`), danach Paket fuer Ragnar.
 
 [Gemeinsame Regeln](README.md) gelten.
+
+## Stand 2026-10-23 — Ragnars Lauf: Ursache der Funkmaeuse ist F3
+
+`measurements/measurement-2026-10-23-usb01-ragnar/RUNINFO.TXT`: Unifying
+(`046d:c52b`), Rii X8 (`1997:2433`) und Cherry DW 9000 (`046a:0115`) bieten die
+Boot-Maus auf Interface 1 hinter einer Boot-Tastatur auf Interface 0; die
+F2-Regel „ein Interface je Geraet“ ueberspringt sie. **F3 ist damit der
+naechste Schritt, nicht F4.** Offen: mit Empfaenger geht die Kabeltastatur
+nicht (Verdacht, unbewiesen: gemeinsamer Tastaturzustand `hid.rs:47`);
+USBSNAP-Aufnahme mit Empfaenger erbeten. Spec-Abschnitt F3 in
+`docs/api/usb/hid-mouse-protocols.md` folgt vor dem Code.
