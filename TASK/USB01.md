@@ -98,4 +98,9 @@ Umsetzung: Spec §9.1. QEMU-Belege `measurements/measurement-2026-10-23-usb01-sn
 (T5, T6 geteilt auf qemu-virt + raspi4b-Wiedergabe, T7, Regression). **Offen:** Tester-Abnahme; echte Pi (T8):
 Doppelklick-Start, Klick auf den Desktop waehrend der Aufnahme, Dateien von ROCCAT und Apple-Tastatur.
 
+**USBSNAP (K10/K11) Tester PASS 2026-10-23** (`99c2c33d`): alles QEMU-Erreichbare
+gruen, keine Regression; Restluecke nur T8 auf der echten Pi (echte Aufnahme + echte
+Dateien in einem Lauf). Kosmetik nach USB02 Punkt 9. Pi-Test wartet auf den Anwender:
+Kernel `56e4e78b…` + `USBSNAP.NCP` `e46feb9d…` (aus `fe30bfc1`), danach Paket fuer Ragnar.
+
 [Gemeinsame Regeln](README.md) gelten.

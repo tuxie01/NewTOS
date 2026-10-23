@@ -40,6 +40,13 @@ Status: **OFFEN** · Prioritaet: **P3** · Typ: Sammelticket — Nebenbefunde De
    ```
    Daten dafuer liegen nach USB01 K4 vor (`parent`, Route je Geraet).
 
+9. **USBSNAP-Kleinigkeiten** (Tester 2026-10-23, `measurements/measurement-2026-10-23-usb01-snap-program-test/RUNINFO.TXT`):
+   (a) `Store::mute_state`: `mute_seen` wird nur von einem Poll zurueckgesetzt, der
+   „nicht gemutet“ sieht — MUTE aus und sofort wieder an innerhalb eines Poll-Abstands
+   loest keinen zweiten Release aus (nur gelesen, USBSNAP selbst tut das nie);
+   (b) wenn alle Dateien uebersprungen werden, druckt das Programm „Done. Wrote:“ vor
+   den Skip-Zeilen und nennt nur den zuletzt probierten Namen (`.T99`) — kosmetisch.
+
 Je Punkt: gegen Circle/FreeMiNT und xHCI 1.2 (`references/xhci/`) pruefen, dann beheben.
 
 [Gemeinsame Regeln](README.md) gelten.
