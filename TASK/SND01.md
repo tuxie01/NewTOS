@@ -174,3 +174,23 @@ Offen, vor jeder Entscheidung zu klaeren:
 3. Was EmuTOS im Falcon-Profil selbst von der Tongruppe hat (Haelfte A oben).
    Hat EmuTOS dort nichts, ist ein nachladbarer Treiber genau das Muster,
    das ein EmuTOS-Falcon-Anwender schon kennt.
+
+### Befund 2026-10-23 — MagiC-Quellen (th-otto/MagicMac, lokal `/Volumes/Daten/Development/MagicMac`, GPL-3)
+
+- **MagiCMac hat selbst keinen Ton.** Die XBIOS-Tabelle endet bei Funktion
+  95 (`kernel/bios/magicmac/mac_bios.s:1032-1033`, `DC.W 95`), der Kern legt
+  `_SND = 0` an („kein Sound“, `mac_bios.s:2865-2868`; ebenso
+  `magcmacx/macxbios.s:3179-3182`). Die Falcon-Funktionen 96–141 kommen also
+  erst mit einem nachgeladenen Treiber wie MacSound. Dessen Quelle liegt
+  **nicht** im Baum; wie er sich einhaengt und welche Cookies er setzt, ist
+  damit weiter offen.
+- **MagiC fuer den Atari** bringt die Falcon-Ton- und DSP-Funktionen 96–141
+  im Kern mit (`atari/magibios.s:1627-1671`, Umsetzung
+  `atari/modules/dsp.s`, direkt auf die Falcon-Register).
+- **Klingel und Tastenklick unter AtariX/MagicMac X:** `Dosound`, Klingel und
+  Klick gehen ueber einen Wirtsaufruf (`MacSysX_Dosound`), wenn der Emulator
+  ihn anbietet, sonst ueber das alte YM-Skript
+  (`magiclin/hostbios.s:2383-2415,2553-2555`).
+- **Lizenz:** MagicMac steht unter GPL-3, NewTOS unter GPL-2+. Lesen als
+  Quervergleich ist unproblematisch; Code daraus uebernehmen machte das
+  Ergebnis GPL-3. Vor jeder Uebernahme klaeren.
