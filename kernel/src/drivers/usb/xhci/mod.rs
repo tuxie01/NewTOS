@@ -120,7 +120,9 @@ struct DevDma {
     ep0_ring: Ring,
     int_ring: Ring,
     buf: [u8; 256],
-    intbuf: [u8; 8],
+    /// The interrupt-IN report buffer. 64 bytes = the largest TRB Transfer
+    /// Length `queue_interrupt` asks for (`INT_TRB_MAX`).
+    intbuf: [u8; INT_TRB_MAX],
 }
 
 // Enforce the alignment contract at compile time so a future field reorder or
@@ -140,11 +142,71 @@ const DEV_INIT: DevDma = DevDma {
     ep0_ring: Ring([Trb([0; 4]); CMD_RING_LEN]),
     int_ring: Ring([Trb([0; 4]); CMD_RING_LEN]),
     buf: [0; 256],
-    intbuf: [0; 8],
+    intbuf: [0; INT_TRB_MAX],
 };
 
 #[link_section = ".dma"]
 static mut DEV: [DevDma; MAX_HID] = [DEV_INIT; MAX_HID];
+
+/// Smallest and largest TRB Transfer Length of an interrupt-IN transfer
+/// (`docs/api/usb/usb-snapshot.md` §3.3): the endpoint's max packet size,
+/// clamped to 8…64. A packet larger than what is left of the TD is Babble and
+/// halts the endpoint (xHCI 1.2 §4.10.2.4); a TRB of at least one max packet
+/// can never be overrun by one packet. 8 keeps the old length for every
+/// endpoint whose max packet is ≤ 8 (QEMU's mouse: 4, the boot keyboard: 8).
+const INT_TRB_MIN: u16 = 8;
+const INT_TRB_MAX: usize = 64;
+
+/// The enumeration buffer: the configuration descriptor (up to
+/// `snapshot::CONFIG_MAX`) and the HID report descriptors (up to
+/// `snapshot::REPORT_DESC_MAX`) are read here, then copied into the snapshot.
+/// One page, page-aligned, so a data stage never crosses a 64-KiB boundary
+/// (xHCI 1.2 §6.4.1 note). Shared by all devices: enumeration is sequential.
+#[repr(C, align(4096))]
+struct EnumBuf([u8; 4096]);
+#[link_section = ".dma"]
+static mut ENUM_BUF: EnumBuf = EnumBuf([0; 4096]);
+/// The enumeration buffer as the last transfer left it (read side). Single
+/// CPU, enumeration is sequential; the reference must be dropped before the
+/// next `control_in_enum`.
+fn enum_buf() -> &'static [u8; 4096] {
+    // SAFETY: single-CPU boot path; no `&mut` to ENUM_BUF is alive while a
+    // caller reads (`control_in_enum` holds its own only during the transfer).
+    unsafe { &(*core::ptr::addr_of!(ENUM_BUF)).0 }
+}
+const _: () = assert!(
+    super::snapshot::CONFIG_MAX <= 4096 && super::snapshot::REPORT_DESC_MAX <= 4096,
+    "a kept descriptor must fit the enumeration buffer"
+);
+
+use super::snapshot::{self, dev_flag, reason, role, Fetch};
+
+/// `config_desc::SkipReason` → the snapshot's reason code (§2.4: 1–5 =
+/// `SkipReason` + 1, the same reasons as the log lines).
+fn skip_code(r: config_desc::SkipReason) -> u8 {
+    use config_desc::SkipReason as S;
+    match r {
+        S::NotHid => reason::NOT_HID,
+        S::NotBootSubclass => reason::NOT_BOOT_SUBCLASS,
+        S::UnknownBootProtocol => reason::UNKNOWN_BOOT_PROTOCOL,
+        S::NoInterruptIn => reason::NO_INTERRUPT_IN,
+        S::OneInterfacePerDevice => reason::ONE_INTERFACE_PER_DEVICE,
+    }
+}
+
+/// Run `f` on device `di`'s snapshot entry (if it has one).
+fn snap(di: usize, f: impl FnOnce(&mut snapshot::Device)) {
+    super::with_store(|s| {
+        if let Some(d) = s.device_mut(di) {
+            f(d);
+        }
+    });
+}
+
+/// Count one device that was not enumerated (an F8 event, §2.4 `enum_skipped`).
+fn snap_skipped() {
+    super::with_store(|s| s.enum_skipped = s.enum_skipped.saturating_add(1));
+}
 
 // Scratchpad buffers: many controllers (the real Pi-4 VL805 does; QEMU does
 // not) require software to provide N page-sized scratch buffers, advertised in
@@ -188,6 +250,13 @@ struct HidDev {
     ep0_cycle: bool,
     int_enq: usize,
     int_cycle: bool,
+    /// Index of the hub this device hangs off, `0xFF` = a root port.
+    parent: u8,
+    /// Snapshot role and reason (`snapshot::role`, `snapshot::reason`).
+    role: u8,
+    reason: u8,
+    /// TRB Transfer Length of the interrupt-IN transfer (8…64, §3.3).
+    trb_len: u16,
 }
 
 impl HidDev {
@@ -208,6 +277,10 @@ impl HidDev {
             ep0_cycle: true,
             int_enq: 0,
             int_cycle: true,
+            parent: 0xFF,
+            role: role::NONE,
+            reason: reason::USED,
+            trb_len: INT_TRB_MIN,
         }
     }
 }
@@ -578,8 +651,9 @@ impl Xhci {
         }
     }
 
-    /// Queue an interrupt-IN transfer (8-byte HID boot report) on the device's
-    /// interrupt endpoint and ring its doorbell. The completion arrives later
+    /// Queue an interrupt-IN transfer (one report, up to the endpoint's max
+    /// packet size clamped to 8…64 bytes) on the device's interrupt endpoint
+    /// and ring its doorbell. The completion arrives later
     /// as a Transfer Event (drained by [`Self::poll_interrupt`]).
     pub fn queue_interrupt(&mut self, di: usize) {
         let slot = self.hid[di].slot;
@@ -601,7 +675,7 @@ impl Xhci {
         let buf_pa = unsafe { dma_addr((&raw const (*(&raw const DEV))[di].intbuf) as u64) };
         let mut n = transfer::Normal::new();
         n.set_data_buffer_pointer(buf_pa)
-            .set_trb_transfer_length(8)
+            .set_trb_transfer_length(self.hid[di].trb_len as u32)
             .set_interrupt_on_completion();
         let data = transfer::Allowed::Normal(n).into_raw();
         // SAFETY: single-CPU; DEV is ours.
@@ -634,13 +708,15 @@ impl Xhci {
     }
 
     /// Deliver one completed HID interrupt transfer: the device index, a copy
-    /// of its 8-byte report buffer, and **how many of those bytes the device
-    /// actually sent**. `None` when nothing is waiting.
+    /// of its report buffer, **how many of those bytes the device actually
+    /// sent**, and the completion code (1 Success, 13 Short Packet — xHCI 1.2
+    /// Table 6-90). `None` when nothing is waiting.
     ///
     /// The length comes from the Transfer Event's *TRB Transfer Length* field,
     /// which for an IN endpoint holds the **residual** — the number of bytes
-    /// of the TRB's 8 that were *not* transferred (xHCI 1.2 §4.11.5.1 /
-    /// Table 6-39, "the residual number of bytes not transferred"). A 3-byte
+    /// of the TRB's length (8…64, `HidDev::trb_len`) that were *not*
+    /// transferred (xHCI 1.2 §4.11.5.1 / Table 6-39, "the residual number of
+    /// bytes not transferred"). With an 8-byte TRB a 3-byte
     /// boot mouse therefore reports `ShortPacket` with residual 5 → length 3,
     /// and a wheel mouse residual 4 → length 4. Without it the report buffer
     /// gives no way to tell a byte the device sent from one it never wrote
@@ -655,7 +731,7 @@ impl Xhci {
     /// transfer's completion on a hub's EP0 to the hub, whose report buffer was
     /// then fed to the IKBD stream and whose (non-existent) endpoint was then
     /// "re-armed" with doorbell target 0.
-    pub fn poll_interrupt(&mut self) -> Option<(usize, [u8; 8], usize)> {
+    pub fn poll_interrupt(&mut self) -> Option<(usize, [u8; INT_TRB_MAX], usize, u8)> {
         // Bounded: `poll` runs from the cooperative input pump, so drain at
         // most the parked events plus one pass over the ring per call.
         for _ in 0..(PENDING_EVENTS + EVT_RING_LEN) {
@@ -683,21 +759,30 @@ impl Xhci {
                 continue;
             };
             match te.completion_code() {
-                // A boot report shorter than the 8 bytes we ask for completes
+                // A report shorter than the TRB length we ask for completes
                 // as ShortPacket — the normal case for a 3-byte mouse report,
                 // not an error.
-                Ok(event::CompletionCode::Success) | Ok(event::CompletionCode::ShortPacket) => {
+                Ok(code @ (event::CompletionCode::Success | event::CompletionCode::ShortPacket)) => {
+                    let trb_len = self.hid[di].trb_len as usize;
                     // SAFETY: single-CPU; DEV is ours.
                     let p = unsafe { (&raw const (*(&raw const DEV))[di].intbuf) as u64 };
-                    dcache_inval(p, 8); // the controller DMA'd the HID report
-                    // 8 = the TRB Transfer Length `queue_interrupt` asked for;
-                    // the event reports what is left over. A controller that
-                    // reports more residual than requested would underflow, so
-                    // saturate.
-                    let len = 8usize.saturating_sub(te.trb_transfer_length() as usize);
-                    return Some((di, unsafe { (*(&raw const DEV))[di].intbuf }, len));
+                    dcache_inval(p, trb_len); // the controller DMA'd the HID report
+                    // `trb_len` = the TRB Transfer Length `queue_interrupt`
+                    // asked for; the event reports what is left over. A
+                    // controller that reports more residual than requested
+                    // would underflow, so saturate.
+                    let len = trb_len.saturating_sub(te.trb_transfer_length() as usize);
+                    return Some((di, unsafe { (*(&raw const DEV))[di].intbuf }, len, code as u8));
                 }
                 code => {
+                    // Counted for the snapshot (`int_errors`, `last_cc`, §3.3);
+                    // no ring entry. A Halted endpoint is not reset here
+                    // (usb-snapshot.md §8): the counter makes it visible.
+                    let cc = match code {
+                        Ok(c) => c as u8,
+                        Err(raw) => raw,
+                    };
+                    super::with_store(|s| s.note_error(di, cc));
                     // The transfer is finished either way, so the endpoint has
                     // nothing armed any more — and only a *delivered* report
                     // takes `poll` back to `queue_interrupt`. Re-arm here, or
@@ -1143,6 +1228,7 @@ impl Xhci {
         // packet for any EP0 >= 8, so this read always succeeds.
         if !self.get_descriptor(di, 1, 0, 8) {
             kprintln!("[usb] get device descriptor (first 8) failed");
+            snap(di, |d| d.device_desc_state = Fetch::Failed);
             return false;
         }
         // SAFETY: single-CPU; DEV is ours. [7] = bMaxPacketSize0.
@@ -1152,12 +1238,14 @@ impl Xhci {
             // lists EP0 Max Packet Size as an Evaluate Context field) so the
             // full read below does not babble.
             if !self.update_ep0_max_packet(di, bmax0) {
+                snap(di, |d| d.device_desc_state = Fetch::Failed);
                 return false;
             }
         }
         // Phase 2: read the full 18-byte descriptor with the corrected EP0.
         if !self.get_descriptor(di, 1, 0, 18) {
             kprintln!("[usb] get device descriptor failed");
+            snap(di, |d| d.device_desc_state = Fetch::Failed);
             return false;
         }
         // SAFETY: single-CPU; DEV is ours.
@@ -1169,6 +1257,20 @@ impl Xhci {
         self.hid[di].class = b[4];
         self.hid[di].vid = u16::from_le_bytes([b[8], b[9]]);
         self.hid[di].pid = u16::from_le_bytes([b[10], b[11]]);
+        // The snapshot keeps the raw bytes (usb-snapshot.md §3.1 step 2, K2):
+        // `buf` is overwritten by the next transfer.
+        let mut raw = [0u8; 18];
+        raw.copy_from_slice(&b[..18]);
+        snap(di, |d| {
+            d.device_desc = raw;
+            d.device_desc_state = Fetch::Ok;
+            d.flags |= dev_flag::DEVICE_DESC;
+            d.dev_class = raw[4];
+            d.vid = u16::from_le_bytes([raw[8], raw[9]]);
+            d.pid = u16::from_le_bytes([raw[10], raw[11]]);
+            d.manufacturer.present = raw[14] != 0;
+            d.product.present = raw[15] != 0;
+        });
         true
     }
 
@@ -1225,21 +1327,30 @@ impl Xhci {
         self.ports
     }
 
-    /// Read the configuration descriptor and find the first HID boot
-    /// keyboard/mouse interface (class 3, subclass 1, protocol 1/2) with an
-    /// interrupt-IN endpoint. `None` if the device has none — it is then not
-    /// an input device; each `None` path logs why.
-    pub fn read_config(&mut self, di: usize) -> Option<HidInfo> {
+    /// Read the configuration descriptor and choose the interface the driver
+    /// takes: the first HID boot keyboard/mouse interface (class 3, subclass
+    /// 1, protocol 1/2) with an interrupt-IN endpoint → `(info, None)`; else
+    /// the first HID interface in alternate setting 0 with an interrupt-IN
+    /// endpoint, to record but not decode (`usb-snapshot.md` §3.1 step 5 (ii))
+    /// → `(info, Some(reason code))`. `None` if the device has neither — it is
+    /// then not an input device; each `None` path logs why and sets the
+    /// device's snapshot reason.
+    ///
+    /// The configuration is read whole up to `snapshot::CONFIG_MAX` bytes into
+    /// the enumeration buffer and kept in the snapshot with its interface
+    /// table (K2).
+    pub fn read_config(&mut self, di: usize) -> Option<(HidInfo, Option<u8>)> {
         // Read the 9-byte config header first for wTotalLength.
         if !self.get_descriptor(di, 2, 0, 9) {
             kprintln!("[usb] slot {}: configuration header read failed", self.hid[di].slot);
+            self.hid[di].reason = reason::CONFIG_READ;
             return None;
         }
         // SAFETY: single-CPU; DEV is ours.
         let (total, w_total) = {
             let b = unsafe { &(*(&raw const DEV))[di].buf };
             let w_total = u16::from_le_bytes([b[2], b[3]]);
-            (w_total.min(255), w_total)
+            (w_total.min(snapshot::CONFIG_MAX as u16), w_total)
         };
         if w_total > total {
             kprintln!(
@@ -1250,17 +1361,17 @@ impl Xhci {
                 total
             );
         }
-        if !self.get_descriptor(di, 2, 0, total) {
+        if !self.control_in_enum(di, [0x80, 6, 0, 2, 0, 0, total as u8, (total >> 8) as u8], total)
+        {
             kprintln!(
                 "[usb] slot {}: configuration descriptor read ({} bytes) failed",
                 self.hid[di].slot,
                 total
             );
+            self.hid[di].reason = reason::CONFIG_READ;
             return None;
         }
-        // SAFETY: single-CPU; DEV is ours. Take the field ref, then slice.
-        let buf = unsafe { &(*(&raw const DEV))[di].buf };
-        let b = &buf[..total as usize];
+        let b = &enum_buf()[..total as usize];
         // Diagnostic build only: the whole configuration, before we pick from
         // it — every descriptor, so a composite device's other interfaces and
         // class-specific descriptors are visible too.
@@ -1317,21 +1428,192 @@ impl Xhci {
                 total
             );
         }
-        match scan.hid {
-            Some(h) => {
+        // Keep the raw configuration and its interface table (§2.5 types 2/4).
+        snap(di, |d| {
+            d.config[..b.len()].copy_from_slice(b);
+            d.config_len = total;
+            d.flags |= dev_flag::CONFIG;
+            if w_total > total {
+                d.flags |= dev_flag::CONFIG_CAPPED;
+            }
+            d.n_hid_ifaces = scan.n_hid_ifaces;
+            d.ifaces_cut = scan.rows_cut || scan.n_rows > snapshot::IFACE_ROWS;
+            let n = scan.n_rows.min(snapshot::IFACE_ROWS);
+            for (o, r) in d.ifaces.iter_mut().zip(&scan.rows[..n]) {
+                *o = snapshot::IfaceRow {
+                    number: r.number,
+                    alt: r.alt,
+                    class: r.class,
+                    subclass: r.subclass,
+                    protocol: r.protocol,
+                    reason: r.skip.map_or(reason::USED, skip_code),
+                    ep_addr: r.ep_addr,
+                    interval: r.interval,
+                    max_packet: r.max_packet,
+                    report_len: r.report_len,
+                    monitored: false,
+                };
+            }
+            d.n_ifaces = n as u8;
+        });
+        match (scan.hid, scan.observe) {
+            (Some(h), _) => {
                 kprintln!(
                     "[usb] HID iface {} protocol {} → int-IN ep {:#04x} max {} interval {}",
                     h.iface, h.protocol, h.ep_addr, h.ep_max, h.interval
                 );
-                Some(h)
+                Some((h, None))
             }
-            None => {
+            (None, Some(o)) => {
+                let h = o.info;
+                kprintln!(
+                    "[usb] slot {} iface {}: report-protocol HID interface observed \
+                     (reports recorded, not decoded) → int-IN ep {:#04x} max {} interval {}",
+                    slot, h.iface, h.ep_addr, h.ep_max, h.interval
+                );
+                Some((h, Some(skip_code(o.reason))))
+            }
+            (None, None) => {
                 kprintln!(
                     "[usb] slot {}: no HID boot keyboard/mouse interface — not an input device",
                     slot
                 );
+                self.hid[di].reason = reason::NO_HID_INTERFACE;
                 None
             }
+        }
+    }
+
+    /// A control IN transfer whose data stage lands in the enumeration buffer
+    /// ([`ENUM_BUF`], zeroed first). True on Success.
+    fn control_in_enum(&mut self, di: usize, setup: [u8; 8], len: u16) -> bool {
+        // SAFETY: single-CPU; ENUM_BUF is ours, no other reference is alive.
+        let buf = unsafe { &mut (*core::ptr::addr_of_mut!(ENUM_BUF)).0 };
+        let len = len.min(buf.len() as u16);
+        buf[..len as usize].iter_mut().for_each(|b| *b = 0);
+        let va = buf.as_ptr() as u64;
+        let ok = self.control(di, setup, dma_addr(va), len, true);
+        dcache_inval(va, len as usize);
+        ok
+    }
+
+    /// The last step of `enumerate_device` for a configured device
+    /// (`usb-snapshot.md` §3.1 step 7, K6): fetch the HID report descriptors
+    /// (first four HID interfaces in alternate setting 0) and the manufacturer
+    /// and product strings into the snapshot. No serial number (§2.5).
+    ///
+    /// Last on purpose: a STALL halts EP0 (xHCI 1.2 §4.8.3) and there is no
+    /// Reset Endpoint path, so a later transfer on this EP0 would only time
+    /// out. EP0 is not used again after this in v1; within this step, the
+    /// first failure ends it — everything after it is left `SKIPPED`.
+    fn fetch_extras(&mut self, di: usize) {
+        let slot = self.hid[di].slot;
+        // (interface number, declared length) of the HID alt-0 rows that get a
+        // report descriptor slot.
+        let mut wanted = [(0u8, 0u16); snapshot::REPORT_DESC_IFACES];
+        let mut n_wanted = 0;
+        let mut strings = (0u8, 0u8);
+        super::with_store(|s| {
+            if let Some(d) = s.device_mut(di) {
+                for r in d.ifaces[..d.n_ifaces as usize].iter().filter(|r| r.class == 3 && r.alt == 0) {
+                    if n_wanted == wanted.len() {
+                        break;
+                    }
+                    wanted[n_wanted] = (r.number, r.report_len);
+                    n_wanted += 1;
+                }
+                if d.device_desc_state == Fetch::Ok {
+                    strings = (d.device_desc[14], d.device_desc[15]);
+                }
+            }
+        });
+
+        // a. Report descriptors: GET_DESCRIPTOR(Report) to the interface
+        //    (HID 1.11 §7.1.1: bmRequestType 0x81, wValue 0x2200, wIndex =
+        //    interface number, wLength = the HID descriptor's length).
+        for (k, &(iface, declared)) in wanted[..n_wanted].iter().enumerate() {
+            if declared == 0 {
+                continue; // no HID descriptor: nothing to ask for (SKIPPED)
+            }
+            let want = declared.min(snapshot::REPORT_DESC_MAX as u16);
+            let setup = [0x81, 6, 0, 0x22, iface, 0, want as u8, (want >> 8) as u8];
+            if !self.control_in_enum(di, setup, want) {
+                kprintln!(
+                    "[usb] slot {} iface {}: report descriptor ({} bytes) read failed; \
+                     no further descriptor requests to this device",
+                    slot,
+                    iface,
+                    want
+                );
+                snap(di, |d| d.reports[k].state = Fetch::Failed);
+                return;
+            }
+            let bytes = &enum_buf()[..want as usize];
+            snap(di, |d| {
+                let rd = &mut d.reports[k];
+                rd.bytes[..bytes.len()].copy_from_slice(bytes);
+                rd.len = want;
+                rd.state = if declared > want { Fetch::Truncated } else { Fetch::Ok };
+            });
+            kprintln!(
+                "[usb] slot {} iface {}: report descriptor {} bytes (declared {})",
+                slot,
+                iface,
+                want,
+                declared
+            );
+        }
+
+        // b. Manufacturer / product strings, best effort: the first LANGID of
+        //    string descriptor 0, then each string in that language
+        //    (GET_DESCRIPTOR(String), wIndex = LANGID). 64 bytes = header +
+        //    31 UTF-16 code units, everything the snapshot keeps.
+        let (i_mfr, i_prod) = strings;
+        if i_mfr == 0 && i_prod == 0 {
+            return;
+        }
+        let fail_strings = |which: &str| {
+            kprintln!(
+                "[usb] slot {}: string descriptor ({}) read failed; strings not kept",
+                slot,
+                which
+            );
+            snap(di, |d| {
+                for t in [&mut d.manufacturer, &mut d.product] {
+                    if t.present && t.state == Fetch::NotTried {
+                        t.state = Fetch::Failed;
+                    }
+                }
+            });
+        };
+        if !self.control_in_enum(di, [0x80, 6, 0, 3, 0, 0, 4, 0], 4) {
+            fail_strings("language list");
+            return;
+        }
+        let l = enum_buf();
+        if l[0] < 4 || l[1] != 3 {
+            fail_strings("no language id");
+            return;
+        }
+        let lang = [l[2], l[3]];
+        for (index, is_mfr) in [(i_mfr, true), (i_prod, false)] {
+            if index == 0 {
+                continue;
+            }
+            let setup = [0x80, 6, index, 3, lang[0], lang[1], 64, 0];
+            if !self.control_in_enum(di, setup, 64) {
+                fail_strings(if is_mfr { "manufacturer" } else { "product" });
+                return;
+            }
+            let raw = &enum_buf()[..64];
+            snap(di, |d| {
+                let t = if is_mfr { &mut d.manufacturer } else { &mut d.product };
+                if raw[1] == 3 {
+                    t.set_from_descriptor(raw);
+                } else {
+                    t.state = Fetch::Failed;
+                }
+            });
         }
     }
 
@@ -1434,25 +1716,48 @@ impl Xhci {
         }
     }
 
-    /// Bring a HID boot device fully online: read its config, SET_CONFIGURATION,
-    /// add its interrupt endpoint, SET_PROTOCOL(boot). Returns `(dci, protocol)`
-    /// ready for interrupt polling.
+    /// Bring a HID device online: read its config, add its interrupt
+    /// endpoint, SET_CONFIGURATION, and — for a boot interface only —
+    /// SET_PROTOCOL(boot). Returns `(dci, protocol)` ready for interrupt
+    /// polling; `protocol` is 1/2 for a boot keyboard/mouse (decoded) and 0
+    /// for an observed report-protocol interface (recorded only,
+    /// `usb-snapshot.md` §3.2). Sets the device's snapshot role/reason.
     pub fn configure_hid(&mut self, di: usize, port: u8, speed: u8) -> Option<(u8, u8)> {
-        let hid = self.read_config(di)?;
+        let (hid, observed) = self.read_config(di)?;
+        let boot = observed.is_none();
+        // The chosen row of the interface table: its reason becomes the
+        // device's failure reason while configuring is not done, 0 after.
+        let set_row_reason = |code: u8| {
+            snap(di, |d| {
+                let n = d.n_ifaces as usize;
+                if let Some(r) = d.ifaces[..n].iter_mut().find(|r| r.number == hid.iface && r.alt == 0) {
+                    r.reason = code;
+                    r.monitored = code == reason::USED;
+                }
+            })
+        };
         // xHCI enumeration order (spec 4.3.5): the Configure Endpoint *command*
         // (controller side) precedes the SET_CONFIGURATION *request* (device
         // side). QEMU tolerates the reverse; the real VL805 returns Context
         // State Error if SET_CONFIGURATION ran first.
         let dci = self.configure_endpoint(di, port, speed, &hid);
         if dci == 0 {
+            self.hid[di].reason = reason::CONFIGURE_ENDPOINT;
+            set_row_reason(reason::CONFIGURE_ENDPOINT);
             return None;
         }
         if !self.set_configuration(di, hid.config_value) {
             kprintln!("[usb] set_configuration failed");
+            self.hid[di].reason = reason::SET_CONFIGURATION;
+            set_row_reason(reason::SET_CONFIGURATION);
             return None;
         }
-        if !self.set_protocol_boot(di, hid.iface) {
+        snap(di, |d| d.flags |= dev_flag::SET_CONFIGURATION);
+        // HID 1.11 §7.2.6: only boot-subclass devices support SET_PROTOCOL.
+        if boot && !self.set_protocol_boot(di, hid.iface) {
             kprintln!("[usb] set_protocol(boot) failed");
+            self.hid[di].reason = reason::SET_PROTOCOL;
+            set_row_reason(reason::SET_PROTOCOL);
             return None;
         }
         kprintln!(
@@ -1460,9 +1765,28 @@ impl Xhci {
             self.hid[di].slot,
             hid.ep_addr,
             dci,
-            if hid.protocol == 1 { "keyboard" } else { "mouse" }
+            match (boot, hid.protocol) {
+                (true, 1) => "keyboard",
+                (true, _) => "mouse",
+                (false, _) => "observed only, not decoded",
+            }
         );
-        Some((dci, hid.protocol))
+        let max = hid.ep_max & 0x7FF;
+        self.hid[di].trb_len = max.clamp(INT_TRB_MIN, INT_TRB_MAX as u16);
+        let (role, why) = match observed {
+            None if hid.protocol == 1 => (role::KEYBOARD, reason::USED),
+            None => (role::MOUSE, reason::USED),
+            Some(code) => (role::OBSERVED, code),
+        };
+        self.hid[di].role = role;
+        self.hid[di].reason = why;
+        set_row_reason(reason::USED);
+        snap(di, |d| {
+            d.ring_iface = hid.iface;
+            d.ring_ep = hid.ep_addr;
+            d.ring_capped = max as usize > snapshot::REPORT_MAX;
+        });
+        Some((dci, if boot { hid.protocol } else { 0 }))
     }
 
     /// Enumerate every connected root port, recursing through any hubs, and
@@ -1485,23 +1809,29 @@ impl Xhci {
                     port,
                     MAX_HID
                 );
+                snap_skipped();
                 continue;
             }
             if !self.port_reset(port) {
                 kprintln!("[usb] port {}: reset failed", port);
+                snap_skipped();
                 continue;
             }
             let speed = self.port_speed(port);
-            // A device on a root port: route string 0, no parent TT.
-            self.enumerate_device(port, 0, speed, 0, 0, 0);
+            // A device on a root port: route string 0, no parent TT, no hub.
+            self.enumerate_device(port, 0, speed, 0, 0, 0, 0xFF);
         }
         // Only now that the whole tree has been walked.
         self.arm_hid_endpoints();
-        let n_input = (0..self.n_hid).filter(|&i| self.hid[i].dci != 0).count();
+        let armed = |i: &usize| self.hid[*i].dci != 0;
+        let n_input = (0..self.n_hid).filter(armed).filter(|&i| self.hid[i].protocol != 0).count();
+        let n_observed = (0..self.n_hid).filter(armed).filter(|&i| self.hid[i].protocol == 0).count();
         kprintln!(
-            "[usb] enumeration done: {} devices ({} keyboard/mouse), {} commands issued",
+            "[usb] enumeration done: {} devices ({} keyboard/mouse, {} observed only), {} \
+             commands issued",
             self.n_hid,
             n_input,
+            n_observed,
             self.cmd_count
         );
         self.n_hid
@@ -1533,7 +1863,12 @@ impl Xhci {
     /// hub (class 9), recurse into its downstream ports. `root_port` is the
     /// root-hub port the path starts at; `route` is the xHCI route string;
     /// `tt_slot`/`tt_port` name the Transaction-Translator hub (0 = direct);
-    /// `depth` is the device's hub tier (0 = on a root port).
+    /// `depth` is the device's hub tier (0 = on a root port); `parent` is the
+    /// `hid[]` index of the hub it hangs off (`0xFF` = a root port).
+    ///
+    /// Every claimed slot gets a snapshot entry (`usb-snapshot.md` §2.4),
+    /// published with its role and reason when this call is done.
+    #[allow(clippy::too_many_arguments)]
     fn enumerate_device(
         &mut self,
         root_port: u8,
@@ -1542,6 +1877,7 @@ impl Xhci {
         tt_slot: u8,
         tt_port: u8,
         depth: u8,
+        parent: u8,
     ) {
         if self.n_hid >= MAX_HID {
             kprintln!(
@@ -1551,10 +1887,12 @@ impl Xhci {
                 route,
                 MAX_HID
             );
+            snap_skipped();
             return;
         }
         let Some(slot) = self.enable_slot() else {
             kprintln!("[usb] enable slot failed (port {} route {:#x})", root_port, route);
+            snap_skipped();
             return;
         };
         // Claim the slot now (the device — a hub especially — persists past this
@@ -1567,7 +1905,33 @@ impl Xhci {
         self.hid[di].speed = speed;
         self.hid[di].tt_hub_slot = tt_slot;
         self.hid[di].tt_port = tt_port;
+        self.hid[di].parent = parent;
         self.n_hid += 1;
+        super::with_store(|s| {
+            if let Some(d) = s.claim(di) {
+                d.slot = slot;
+                d.root_port = root_port;
+                d.parent = parent;
+                d.route = route;
+                d.speed = speed;
+            }
+        });
+        self.enumerate_claimed(di, root_port, speed, depth);
+        let (r, why) = (self.hid[di].role, self.hid[di].reason);
+        snap(di, |d| {
+            d.role = r;
+            d.reason = why;
+        });
+    }
+
+    /// The part of [`Self::enumerate_device`] after the slot is claimed:
+    /// address, describe, then configure (HID) or descend (hub). Sets
+    /// `hid[di].role` / `.reason` for the snapshot.
+    fn enumerate_claimed(&mut self, di: usize, root_port: u8, speed: u8, depth: u8) {
+        let slot = self.hid[di].slot;
+        let route = self.hid[di].route;
+        #[cfg(feature = "usb-diag")]
+        let (tt_slot, tt_port) = (self.hid[di].tt_hub_slot, self.hid[di].tt_port);
         kprintln!(
             "[usb] device slot {} (root port {} route {:#x} speed {})",
             slot, root_port, route, speed
@@ -1585,11 +1949,17 @@ impl Xhci {
             di, tt_slot, tt_port, depth
         );
         if !self.address_device(di, root_port, speed) {
+            // F8: counted as "not enumerated"; the slot stays claimed (§3.1
+            // step 1: role 5).
+            snap_skipped();
+            self.hid[di].role = role::FAILED;
+            self.hid[di].reason = reason::ADDRESS_DEVICE;
             return;
         }
-        self.get_device_descriptor(di);
+        let described = self.get_device_descriptor(di);
         if self.hid[di].class == 9 {
             self.hid[di].protocol = 9; // hub: tracked, never polled as HID
+            self.hid[di].role = role::HUB;
             // DIAGNOSTIC re-enable (device-context 64-byte alignment test): if
             // the aligned output device context now reads a valid Addressed slot
             // context, configure_hub should succeed. See docs/STATUS.md.
@@ -1601,6 +1971,16 @@ impl Xhci {
             // arms every HID once the whole tree is walked
             // (`arm_hid_endpoints`), so that no device can report while another
             // device's control transfers are still on the ring.
+            //
+            // The risky requests come last (§3.1 step 7): a STALL here halts
+            // EP0, which nothing after this point uses.
+            self.fetch_extras(di);
+        }
+        if !described && self.hid[di].role == role::NONE {
+            // Without a device descriptor nothing could be configured: the
+            // device is unusable (§2.4 role 5, reason 22).
+            self.hid[di].role = role::FAILED;
+            self.hid[di].reason = reason::DEVICE_DESCRIPTOR;
         }
     }
 
@@ -1609,6 +1989,7 @@ impl Xhci {
     fn enumerate_hub(&mut self, di: usize, root_port: u8, speed: u8, depth: u8) {
         let Some(config_value) = self.read_config_value(di) else {
             kprintln!("[usb] hub: read config failed");
+            self.hid[di].reason = reason::CONFIG_READ;
             return;
         };
         let Some(desc) = self.hub_get_descriptor(di) else {
@@ -1618,12 +1999,15 @@ impl Xhci {
         let nbr = desc.nbr_ports;
         // Configure Endpoint (mark slot as a hub) before SET_CONFIGURATION.
         if !self.configure_hub(di, speed, nbr) {
+            self.hid[di].reason = reason::CONFIGURE_ENDPOINT;
             return;
         }
         if !self.set_configuration(di, config_value) {
             kprintln!("[usb] hub: set_configuration failed");
+            self.hid[di].reason = reason::SET_CONFIGURATION;
             return;
         }
+        snap(di, |d| d.flags |= dev_flag::SET_CONFIGURATION);
         kprintln!("[usb] hub slot {}: {} downstream ports", self.hid[di].slot, nbr);
         self.hub_power_on(di, nbr, desc.power_on_to_power_good_ms());
         let hub_slot = self.hid[di].slot;
@@ -1640,6 +2024,7 @@ impl Xhci {
                     nbr,
                     MAX_HID
                 );
+                snap_skipped();
                 break;
             }
             // A failed status read is not "nothing connected": FreeMiNT
@@ -1684,7 +2069,7 @@ impl Xhci {
             } else {
                 (parent_tt_slot, parent_tt_port)
             };
-            self.enumerate_device(root_port, route, dev_speed, tt_slot, tt_port, depth + 1);
+            self.enumerate_device(root_port, route, dev_speed, tt_slot, tt_port, depth + 1, di as u8);
         }
     }
 

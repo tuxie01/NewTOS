@@ -32,7 +32,50 @@ mod pcie;
 mod pcie_rpi4;
 pub mod config_desc;
 pub mod hid;
+pub mod snapshot;
 pub mod xhci;
+
+const _: () = assert!(
+    snapshot::MAX_DEVICES == xhci::MAX_HID,
+    "the snapshot keeps one entry per driver device slot (usb-snapshot.md §2.7)"
+);
+
+/// The USB snapshot (`Ssystem(S_NEWTOS_USBSNAP)`, `docs/api/usb/usb-snapshot.md`):
+/// filled once by the boot enumeration, the report rings by [`poll`]. Its own
+/// static, apart from [`XHCI`], so the system call never touches the
+/// controller object (§2.8: `poll` may be suspended under an EL0 upcall when
+/// a `kbdvec` hook issues the call).
+static mut SNAPSHOT: snapshot::Store = snapshot::Store::new();
+
+/// The snapshot store.
+///
+/// # Safety
+///
+/// Single CPU. Callers must not hold the reference across anything that can
+/// re-enter USB code (in `poll`: across the decoder, `ikbd::feed`, which may
+/// call an EL0 `kbdvec` hook); the system call and `poll` never run at the
+/// same time otherwise (§2.8).
+unsafe fn store() -> &'static mut snapshot::Store {
+    // SAFETY: caller contract — no overlapping reference is alive.
+    unsafe { &mut *core::ptr::addr_of_mut!(SNAPSHOT) }
+}
+
+/// Run `f` on the snapshot store (the enumeration fills it, `xhci` counts
+/// failed transfers). Single CPU; `f` must not re-enter USB code.
+pub(crate) fn with_store<R>(f: impl FnOnce(&mut snapshot::Store) -> R) -> R {
+    // SAFETY: the reference lives only for `f`, which does not re-enter.
+    f(unsafe { store() })
+}
+
+/// Answer one `Ssystem(S_NEWTOS_USBSNAP)` request from the snapshot
+/// (`host_env`'s `Host::usb_snapshot`). Runs in the synchronous SVC with IRQs
+/// masked; never touches the controller.
+pub fn snapshot_answer(
+    req: snapshot::Request,
+    sink: &mut dyn FnMut(&[u8]) -> bool,
+) -> snapshot::Answer {
+    with_store(|s| s.answer(req, sink))
+}
 
 // The live controller, kept for `poll`. It holds all per-device state
 // (slots, endpoints, ring producers). Single CPU, cooperative scheduling —
@@ -62,10 +105,18 @@ pub fn init(dtb_phys: usize) {
         map_dma_coherent();
         let mut controller = unsafe { xhci::Xhci::open(base) };
         controller.scan_ports();
-        if controller.enumerate_all() > 0 {
-            // SAFETY: single-CPU boot; stored once.
-            unsafe { XHCI = Some(controller) };
-        }
+        controller.enumerate_all();
+        // Kept even with no device attached (usb-snapshot.md §5 K5): the
+        // snapshot can then tell "no controller" (`ERROR`) from "no device"
+        // (`n_devices = 0`). `poll` then checks an empty event ring per pump.
+        let root_ports = controller.root_ports();
+        with_store(|s| {
+            s.present = true;
+            s.root_ports = root_ports;
+            s.generation = 1;
+        });
+        // SAFETY: single-CPU boot; stored once.
+        unsafe { XHCI = Some(controller) };
     }
     #[cfg(not(any(feature = "board-qemu-virt", feature = "board-rpi4")))]
     let _ = dtb_phys;
@@ -136,19 +187,34 @@ pub fn poll() {
         let Some(c) = (unsafe { (*core::ptr::addr_of_mut!(XHCI)).as_mut() }) else {
             return;
         };
-        if let Some((di, report, len)) = c.poll_interrupt() {
+        if let Some((di, report, len, cc)) = c.poll_interrupt() {
+            // Record first, decode second (usb-snapshot.md §2.8, §3.3): the
+            // decoder may run an EL0 `kbdvec` hook, which may read the ring
+            // through `Ssystem(2022)` while this call is suspended under it —
+            // it must find the report complete, and the store not borrowed.
+            let now = tos_api::bios::tick::hz_200();
+            let muted = with_store(|s| {
+                let muted = s.muted(now);
+                s.record(di, &report[..len], cc, now, muted);
+                muted
+            });
+            let mut boot = [0u8; 8];
+            boot.copy_from_slice(&report[..8]);
             // `bInterfaceProtocol` of the HID boot interface: 1 = keyboard,
             // 2 = mouse (USB HID 1.11 §4.3). Anything else has no boot report
             // layout we could decode — a hub is 9, a device whose HID
-            // configuration never completed is 0 — and used to be handed to
+            // configuration never completed or that is only observed (role 3,
+            // a report-protocol interface) is 0 — and used to be handed to
             // `mouse_report`, which turned whatever bytes were in the buffer
             // into cursor movement and button presses in the IKBD stream.
+            // While the snapshot's MUTE runs nothing is decoded (§2.6).
             match c.protocol(di) {
-                1 => hid::keyboard_report(&report),
+                _ if muted => {}
+                1 => hid::keyboard_report(&boot),
                 // `len` — how many bytes the device really sent — matters only
                 // for the mouse: the boot report's fourth byte (the wheel) is
                 // optional, and a three-byte mouse never writes it.
-                2 => hid::mouse_report(&report, len),
+                2 => hid::mouse_report(&boot, len),
                 _ => {}
             }
             // Re-arm regardless: the completed transfer left the endpoint with

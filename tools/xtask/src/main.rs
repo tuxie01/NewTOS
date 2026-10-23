@@ -66,6 +66,13 @@ mod kernel_xhci_ring;
 #[cfg(test)]
 #[path = "../../../kernel/src/drivers/usb/config_desc.rs"]
 mod kernel_usb_config_desc;
+/// USB01 step 2 (K1) — the USB snapshot store and the `Ssystem(2022)`
+/// encoder (`docs/api/usb/usb-snapshot.md` §2). Pure, compiled here by path
+/// like `kernel_bootargs`.
+#[cfg(test)]
+#[path = "../../../kernel/src/drivers/usb/snapshot.rs"]
+#[allow(dead_code)]
+mod kernel_usb_snapshot;
 
 /// DESK43 U5a (guard G3) — the desktop's integer constants against a
 /// checked-in snapshot of EmuTOS' `#define`s.

@@ -14,7 +14,9 @@
 //! 2003–2020 ([`S_NEWTOS_CPUMEAS`] … [`S_NEWTOS_KVERSION`], SYSINFO01, and
 //! [`S_NEWTOS_INPUTMODE`], KEYOWNER): the effective settings the kernel runs
 //! with — and [`S_NEWTOS_RESET`] (2021), the kernel entry of the OSHEADER
-//! reset stub (RST01, `docs/api/bios/_reset-warm-cold.md`). 2000 is free: FreeMiNT's own header
+//! reset stub (RST01, `docs/api/bios/_reset-warm-cold.md`) — and
+//! [`S_NEWTOS_USBSNAP`] (2022), the USB snapshot (USB01 step 2,
+//! `docs/api/usb/usb-snapshot.md`). 2000 is free: FreeMiNT's own header
 //! reserves 0–29, 100, `0x54f8`, 900–999 and 1000–**1999**
 //! (`references/freemint/sys/mint/ssystem.h`, the two `reserved` comments),
 //! and the highest number its dispatcher answers is the build-gated test mode
@@ -92,6 +94,9 @@ pub const S_NEWTOS_KVERSION: u16 = 2019;
 /// Where the keyboard/mouse pump runs: 0 also from the timer interrupt (the
 /// pointer moves while a program is busy), 1 `input=aes` (KEYOWNER).
 pub const S_NEWTOS_INPUTMODE: u16 = 2020;
+/// The USB snapshot: device list, descriptors, report ring, input mute
+/// (`docs/api/usb/usb-snapshot.md`).
+pub const S_NEWTOS_USBSNAP: u16 = 2022;
 
 /// `Ssystem(WORD mode, LONG arg1, LONG arg2)`: `mode` in `x0`, `arg1` in
 /// `x1`, `arg2` in `x2`.
@@ -118,6 +123,7 @@ pub fn ssystem(args: &TrapArgs) -> Long {
         S_NEWTOS_KBDVEC => s_newtos_kbdvec(args),
         S_NEWTOS_RESET => crate::bios::reset::s_newtos_reset(args),
         S_NEWTOS_KVERSION => s_newtos_kversion(args),
+        S_NEWTOS_USBSNAP => s_newtos_usbsnap(args),
         mode @ (S_NEWTOS_CPUMEAS..=S_NEWTOS_SERIAL | S_NEWTOS_INPUTMODE) => {
             newtos_scalar(args, || sysinfo_value(mode))
         }
@@ -206,6 +212,121 @@ fn s_newtos_kversion(args: &TrapArgs) -> Long {
         return crate::uaccess::FAULTED;
     }
     E_OK
+}
+
+/// `S_NEWTOS_USBSNAP` (2022): `arg1` = the caller's buffer, `arg2` = its
+/// size in bytes (signed). The buffer starts with a 32-byte request header;
+/// the answer is written over it (`docs/api/usb/usb-snapshot.md` §2.1–§2.3).
+///
+/// Checks in the order of §2.3, the first that applies wins:
+/// 1. `buf == 0` or `len < 32` → `EINVAL`, nothing written;
+/// 2. magic not `"USBS"` → `EINVAL`, nothing written;
+/// 3. `version != 1`, 4. `op` not 1–4 → `EINVAL` with a header that says
+///    `version = 1`, `used_len = 32` (a later program learns it is talking
+///    to an older kernel, the rule of [`newtos_scalar`]);
+/// 5. no USB controller → `ERROR`, nothing written;
+/// 6. index out of range, 7. a MUTE argument refused → `EINVAL`, header;
+/// 8. the answer does not fit → `E_OK`, header only, `TRUNCATED`;
+/// 9. otherwise `E_OK`, header and body.
+///
+/// 5–9 are the host's ([`host::Host::usb_snapshot`]); the body arrives in
+/// chunks and goes straight into the caller's buffer behind the header,
+/// which is written last. A bad pointer ends the calling program
+/// ([`crate::uaccess::FAULTED`]), as for `S_GETCOOKIE` and 2019.
+fn s_newtos_usbsnap(args: &TrapArgs) -> Long {
+    const HDR: usize = 32;
+    const VERSION: u16 = 1;
+    const FLAG_TRUNCATED: u16 = 1 << 0;
+    const FLAG_MORE: u16 = 1 << 1;
+
+    let buf = args.arg_u64(1);
+    let len = args.arg_i32(2);
+    if buf == 0 || len < HDR as i32 {
+        return EINVAL;
+    }
+    let mut req = [0u8; HDR];
+    if args.space.copy_from(&mut req, buf).is_err() {
+        return crate::uaccess::FAULTED;
+    }
+    if &req[0..4] != b"USBS" {
+        return EINVAL;
+    }
+    let le16 = |o: usize| u16::from_le_bytes([req[o], req[o + 1]]);
+    let le32 = |o: usize| u32::from_le_bytes([req[o], req[o + 1], req[o + 2], req[o + 3]]);
+    let (version, op, index, arg) = (le16(4), le16(8), le32(12), le32(16));
+    let now = crate::bios::tick::hz_200();
+
+    // The answer header: the request echoed, with what the kernel used.
+    let header = |flags: u16, total: u32, used: u32| {
+        let mut h = [0u8; HDR];
+        h[0..4].copy_from_slice(b"USBS");
+        h[4..6].copy_from_slice(&VERSION.to_le_bytes());
+        h[6..8].copy_from_slice(&(HDR as u16).to_le_bytes());
+        h[8..10].copy_from_slice(&op.to_le_bytes());
+        h[10..12].copy_from_slice(&flags.to_le_bytes());
+        h[12..16].copy_from_slice(&index.to_le_bytes());
+        h[16..20].copy_from_slice(&arg.to_le_bytes());
+        h[20..24].copy_from_slice(&total.to_le_bytes());
+        h[24..28].copy_from_slice(&used.to_le_bytes());
+        h[28..32].copy_from_slice(&now.to_le_bytes());
+        h
+    };
+    let put_header = |h: [u8; HDR]| -> Result<(), ()> {
+        args.space.copy_to(buf, &h).map_err(|_| ())
+    };
+    let refuse = |rc: Long| -> Long {
+        match put_header(header(0, HDR as u32, HDR as u32)) {
+            Ok(()) => rc,
+            Err(()) => crate::uaccess::FAULTED,
+        }
+    };
+
+    if version != VERSION || !(1..=4).contains(&op) {
+        return refuse(EINVAL);
+    }
+    let Some(h) = host::host() else {
+        return ERROR;
+    };
+    let room = len as u32 - HDR as u32;
+    let request = host::UsbSnapRequest { op, index, arg, now_hz200: now, room };
+    let mut off: u32 = 0;
+    let mut faulted = false;
+    let mut overrun = false;
+    let answer = h.usb_snapshot(&request, &mut |chunk: &[u8]| {
+        // A host never writes past the caller's buffer, whatever it says.
+        if chunk.len() as u64 > u64::from(room - off) {
+            overrun = true;
+            return false;
+        }
+        if args.space.copy_to(buf + HDR as u64 + u64::from(off), chunk).is_err() {
+            faulted = true;
+            return false;
+        }
+        off += chunk.len() as u32;
+        true
+    });
+    if faulted {
+        return crate::uaccess::FAULTED;
+    }
+    if overrun {
+        return ERROR;
+    }
+    match answer {
+        host::UsbSnapAnswer::NoController => ERROR,
+        host::UsbSnapAnswer::Invalid => refuse(EINVAL),
+        host::UsbSnapAnswer::Faulted => crate::uaccess::FAULTED,
+        host::UsbSnapAnswer::Done { total, written, truncated, more } => {
+            if written != off {
+                return ERROR;
+            }
+            let flags = if truncated { FLAG_TRUNCATED } else { 0 } | if more { FLAG_MORE } else { 0 };
+            let total_len = (HDR as u32).saturating_add(total);
+            match put_header(header(flags, total_len, HDR as u32 + written)) {
+                Ok(()) => E_OK,
+                Err(()) => crate::uaccess::FAULTED,
+            }
+        }
+    }
 }
 
 /// `S_GETCOOKIE` (8). `arg1` = tag, `arg2` = pointer to a LONG (or 0).

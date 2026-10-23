@@ -16,7 +16,9 @@
 //! 5. 2019 copies with FreeMiNT's `strncpy_f` rule (`len - 1` characters, NUL
 //!    always, `len <= 0` writes nothing);
 //! 6. 2020 reports the input pump (0 timer pump, 1 `input=aes`);
-//! 7. 2022 is not a mode (`EINVFN`); 2021 is the RST01 reset entry (`bios_reset.rs`).
+//! 7. 2023 is not a mode (`EINVFN`); 2021 is the RST01 reset entry (`bios_reset.rs`),
+//!    2022 the USB snapshot (`gemdos_ssystem_usbsnap.rs`) — on this host, which
+//!    keeps the `Host::usb_snapshot` default, it answers `ERROR` (no controller).
 
 use std::sync::atomic::{AtomicBool, AtomicI64, AtomicU8, Ordering};
 use std::sync::{Mutex, MutexGuard, Once};
@@ -297,10 +299,20 @@ fn input_mode_reports_the_pump_in_effect() {
 }
 
 /// The system-information block ends at 2020; 2021 is the RST01 reset entry
-/// (`S_NEWTOS_RESET`, tested in `bios_reset.rs`), so 2022 is the first free
-/// number.
+/// (`S_NEWTOS_RESET`, tested in `bios_reset.rs`), 2022 the USB snapshot
+/// (`docs/api/usb/usb-snapshot.md`, tested in `gemdos_ssystem_usbsnap.rs`), so
+/// 2023 is the first free number. A host that keeps the `usb_snapshot`
+/// default — this one — has no USB controller: a well-formed 2022 request is
+/// `ERROR` and leaves the buffer as it was.
 #[test]
-fn the_block_ends_at_2020_and_2021_is_the_reset_entry() {
+fn the_block_ends_at_2020_and_2023_is_the_first_free_number() {
     let _g = rig(true);
-    assert_eq!(gemdos(2022, 0, 0), EINVFN);
+    assert_eq!(gemdos(2023, 0, 0), EINVFN);
+    let mut req = [0u8; 64];
+    req[0..4].copy_from_slice(b"USBS");
+    req[4] = 1; // version 1
+    req[8] = 1; // op LIST
+    let before = req;
+    assert_eq!(gemdos(2022, req.as_mut_ptr() as u64, 64), ERROR);
+    assert_eq!(req, before);
 }

@@ -181,13 +181,14 @@ fn the_neighbouring_mode_numbers_are_still_unimplemented() {
     rig(PI4_CLOCK_HZ, WARM_MDEG);
 
     // 1999 is the last number FreeMiNT reserves for its debug block
-    // (`sys/mint/ssystem.h`, "reserved 1000 - 1999"); 2022 is the next free
+    // (`sys/mint/ssystem.h`, "reserved 1000 - 1999"); 2023 is the next free
     // NewTOS number (2002 is `S_NEWTOS_KBDVEC` since KEYS02, tested in
     // `xbios_kbdvecs.rs`; 2003-2019 are the SYSINFO01 modes and 2020 the
     // KEYOWNER input mode, tested in `gemdos_ssystem_sysinfo.rs`; 2021 is the
-    // RST01 reset entry, tested in `bios_reset.rs`). Neither may answer with
-    // a machine reading.
-    for mode in [1999_u64, 2022, 2999] {
+    // RST01 reset entry, tested in `bios_reset.rs`; 2022 is the USB snapshot,
+    // tested in `gemdos_ssystem_usbsnap.rs`). Neither may answer with a
+    // machine reading.
+    for mode in [1999_u64, 2023, 2999] {
         assert_eq!(
             gemdos(SSYSTEM, mode, 0, 0),
             EINVFN,

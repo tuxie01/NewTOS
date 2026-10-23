@@ -27,6 +27,17 @@
 //! descriptor parser exists (`docs/api/usb/hid-mouse-protocols.md` F4) it is
 //! not an input device here. A non-HID interface (mass storage, hub, audio,
 //! vendor …) never is, whatever its `bInterfaceProtocol` says.
+//!
+//! USB snapshot (USB01 step 2, `docs/api/usb/usb-snapshot.md` §3.1 step 4/5,
+//! §2.5): the same walk also yields the **interface table** (one
+//! [`IfaceRow`] per interface descriptor, alt settings included), the
+//! report-descriptor length each HID interface declares in its HID descriptor
+//! (HID 1.11 §6.2.1: `bNumDescriptors` at offset 5, then `bDescriptorType` /
+//! `wDescriptorLength` pairs from offset 6; §7.1: the HID descriptor follows
+//! its interface descriptor, before the endpoints) and the **observation
+//! candidate**: when no boot interface qualifies, the first HID interface
+//! (alternate setting 0) with an interrupt-IN endpoint, which the driver
+//! configures and records but does not decode (role 3, §3.2).
 
 /// HID class code (HID 1.11 §4.1).
 pub const CLASS_HID: u8 = 3;
@@ -39,6 +50,15 @@ pub const PROTOCOL_MOUSE: u8 = 2;
 
 const DESC_INTERFACE: u8 = 4;
 const DESC_ENDPOINT: u8 = 5;
+/// HID class descriptor (HID 1.11 §7.1, class descriptor types table).
+const DESC_HID: u8 = 0x21;
+/// HID report descriptor type, as listed inside the HID descriptor.
+const DESC_REPORT: u8 = 0x22;
+/// Bytes of a HID descriptor up to the first `wDescriptorLength` (HID 1.11
+/// §6.2.1: offset 7, size 2).
+const HID_DESC_MIN: usize = 9;
+/// Rows the interface table keeps (`usb-snapshot.md` §2.5: ≤ 16 rows).
+pub const MAX_IFACE_ROWS: usize = 16;
 /// `bLength` of an interface descriptor (FreeMiNT `usb.h:116-127`).
 const INTERFACE_LEN: usize = 9;
 /// Bytes of an endpoint descriptor up to `bInterval` (FreeMiNT `usb.h:103-113`).
@@ -97,15 +117,87 @@ pub struct SkippedInterface {
     pub reason: SkipReason,
 }
 
+/// One interface descriptor of the configuration, as the snapshot's
+/// interface table shows it (`usb-snapshot.md` §2.5, "Interface-Tabelle").
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct IfaceRow {
+    /// `bInterfaceNumber`.
+    pub number: u8,
+    /// `bAlternateSetting`.
+    pub alt: u8,
+    /// `bInterfaceClass`.
+    pub class: u8,
+    /// `bInterfaceSubClass`.
+    pub subclass: u8,
+    /// `bInterfaceProtocol`.
+    pub protocol: u8,
+    /// Why the boot-interface selection did not take it; `None` for the
+    /// interface it took.
+    pub skip: Option<SkipReason>,
+    /// Address of the interface's first interrupt-IN endpoint, 0 = none.
+    pub ep_addr: u8,
+    /// That endpoint's `bInterval`.
+    pub interval: u8,
+    /// That endpoint's `wMaxPacketSize`, raw (bits 12:11 included).
+    pub max_packet: u16,
+    /// `wDescriptorLength` of the first report descriptor listed in the
+    /// interface's HID descriptor; 0 = no HID descriptor found.
+    pub report_len: u16,
+}
+
+impl IfaceRow {
+    const EMPTY: IfaceRow = IfaceRow {
+        number: 0,
+        alt: 0,
+        class: 0,
+        subclass: 0,
+        protocol: 0,
+        skip: None,
+        ep_addr: 0,
+        interval: 0,
+        max_packet: 0,
+        report_len: 0,
+    };
+
+    /// A HID interface in its default alternate setting — the ones whose
+    /// report descriptor the driver fetches (`usb-snapshot.md` §2.5 type 3).
+    pub fn is_hid_alt0(&self) -> bool {
+        self.class == CLASS_HID && self.alt == 0
+    }
+}
+
+/// An interface the driver configures for recording only (role 3).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Observe {
+    /// The interface and its interrupt-IN endpoint (`protocol` is the
+    /// interface's `bInterfaceProtocol`, never decoded).
+    pub info: HidInfo,
+    /// Why it is not a boot interface the driver decodes.
+    pub reason: SkipReason,
+}
+
 /// Outcome of [`scan`].
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Scan {
     /// The first HID boot interface with an interrupt-IN endpoint.
     pub hid: Option<HidInfo>,
+    /// Only when `hid` is `None`: the first HID interface in alternate
+    /// setting 0 with an interrupt-IN endpoint (`usb-snapshot.md` §3.1 step
+    /// 5 (ii)).
+    pub observe: Option<Observe>,
     /// Byte offset of a descriptor whose `bLength` is 0 or runs past the end
     /// of `cfg` (a truncated or malformed configuration); the scan stopped
     /// there. `None` = every descriptor was walked.
     pub stopped_at: Option<usize>,
+    /// The interface table, `rows[..n_rows]`, in descriptor order.
+    pub rows: [IfaceRow; MAX_IFACE_ROWS],
+    /// Rows filled.
+    pub n_rows: usize,
+    /// More interface descriptors than [`MAX_IFACE_ROWS`] were seen.
+    pub rows_cut: bool,
+    /// HID interfaces (class 3) in alternate setting 0, all of them — not
+    /// capped by [`MAX_IFACE_ROWS`].
+    pub n_hid_ifaces: u8,
 }
 
 /// Whether an interface's class triple is a boot keyboard or boot mouse the
@@ -132,18 +224,40 @@ fn classify(class: u8, subclass: u8, protocol: u8) -> Option<SkipReason> {
 /// 9-byte configuration header) and choose the first HID boot interface that
 /// has an interrupt-IN endpoint. `skipped` is called once for every other
 /// interface descriptor, in descriptor order.
+///
+/// The same walk fills the interface table ([`Scan::rows`]) and, when no boot
+/// interface qualifies, names the observation candidate ([`Scan::observe`]).
 pub fn scan(cfg: &[u8], mut skipped: impl FnMut(SkippedInterface)) -> Scan {
     let config_value = cfg.get(5).copied().unwrap_or(0);
-    let mut hid: Option<HidInfo> = None;
+    let mut out = Scan {
+        hid: None,
+        observe: None,
+        stopped_at: None,
+        rows: [IfaceRow::EMPTY; MAX_IFACE_ROWS],
+        n_rows: 0,
+        rows_cut: false,
+        n_hid_ifaces: 0,
+    };
     // The interface descriptor whose endpoints follow, and whether it is the
     // candidate still looking for its interrupt-IN endpoint.
     let mut cur: Option<SkippedInterface> = None;
     let mut cur_open = false;
-    let mut stopped_at = None;
+    // Its row in the table (`None` once the table is full), and whether its
+    // HID descriptor has been read already (only the first one counts).
+    let mut cur_row: Option<usize> = None;
+    let mut cur_hid_desc_seen = false;
 
     // An interface that qualified but whose endpoints held no interrupt IN.
-    fn close(cur: Option<SkippedInterface>, open: bool, out: &mut impl FnMut(SkippedInterface)) {
+    fn close(
+        cur: Option<SkippedInterface>,
+        open: bool,
+        row: Option<&mut IfaceRow>,
+        out: &mut impl FnMut(SkippedInterface),
+    ) {
         if let (Some(c), true) = (cur, open) {
+            if let Some(r) = row {
+                r.skip = Some(SkipReason::NoInterruptIn);
+            }
             out(SkippedInterface { reason: SkipReason::NoInterruptIn, ..c });
         }
     }
@@ -153,12 +267,12 @@ pub fn scan(cfg: &[u8], mut skipped: impl FnMut(SkippedInterface)) -> Scan {
         let dlen = cfg[i] as usize;
         let dtype = cfg[i + 1];
         if dlen == 0 || i + dlen > cfg.len() {
-            stopped_at = Some(i);
+            out.stopped_at = Some(i);
             break;
         }
         match dtype {
             DESC_INTERFACE if dlen >= INTERFACE_LEN => {
-                close(cur, cur_open, &mut skipped);
+                close(cur, cur_open, cur_row.map(|r| &mut out.rows[r]), &mut skipped);
                 let d = SkippedInterface {
                     number: cfg[i + 2],
                     alt: cfg[i + 3],
@@ -169,38 +283,105 @@ pub fn scan(cfg: &[u8], mut skipped: impl FnMut(SkippedInterface)) -> Scan {
                 };
                 cur = Some(d);
                 cur_open = false;
-                match classify(d.class, d.subclass, d.protocol) {
+                cur_hid_desc_seen = false;
+                if d.class == CLASS_HID && d.alt == 0 {
+                    out.n_hid_ifaces = out.n_hid_ifaces.saturating_add(1);
+                }
+                let skip = match classify(d.class, d.subclass, d.protocol) {
+                    Some(reason) => Some(reason),
+                    None if out.hid.is_some() => Some(SkipReason::OneInterfacePerDevice),
+                    None => None,
+                };
+                match skip {
                     Some(reason) => skipped(SkippedInterface { reason, ..d }),
-                    None if hid.is_some() => skipped(SkippedInterface {
-                        reason: SkipReason::OneInterfacePerDevice,
-                        ..d
-                    }),
                     None => cur_open = true,
                 }
+                cur_row = if out.n_rows < MAX_IFACE_ROWS {
+                    out.rows[out.n_rows] = IfaceRow {
+                        number: d.number,
+                        alt: d.alt,
+                        class: d.class,
+                        subclass: d.subclass,
+                        protocol: d.protocol,
+                        skip,
+                        ..IfaceRow::EMPTY
+                    };
+                    out.n_rows += 1;
+                    Some(out.n_rows - 1)
+                } else {
+                    out.rows_cut = true;
+                    None
+                };
             }
-            DESC_ENDPOINT if dlen >= ENDPOINT_LEN && cur_open => {
+            DESC_HID if dlen >= HID_DESC_MIN && cur.is_some() && !cur_hid_desc_seen => {
+                cur_hid_desc_seen = true;
+                // bNumDescriptors at 5, then (bDescriptorType, wDescriptorLength)
+                // triples from offset 6 (HID 1.11 §6.2.1, "up to offset
+                // (3*n)+6 and (3*n)+7"). The first report descriptor counts.
+                let n = cfg[i + 5] as usize;
+                let len = (0..n)
+                    .map(|k| i + 6 + 3 * k)
+                    .take_while(|&at| at + 3 <= i + dlen)
+                    .find(|&at| cfg[at] == DESC_REPORT)
+                    .map(|at| u16::from_le_bytes([cfg[at + 1], cfg[at + 2]]));
+                if let (Some(r), Some(len)) = (cur_row, len) {
+                    out.rows[r].report_len = len;
+                }
+            }
+            DESC_ENDPOINT if dlen >= ENDPOINT_LEN && cur.is_some() => {
                 let addr = cfg[i + 2];
                 let attr = cfg[i + 3];
+                let max = u16::from_le_bytes([cfg[i + 4], cfg[i + 5]]);
                 // Interrupt (bmAttributes 1:0 = 3) and IN (address bit 7).
                 if attr & 0x3 == 3 && addr & 0x80 != 0 {
-                    let c = cur.expect("cur_open implies an interface");
-                    hid = Some(HidInfo {
-                        config_value,
-                        iface: c.number,
-                        protocol: c.protocol,
-                        ep_addr: addr,
-                        ep_max: u16::from_le_bytes([cfg[i + 4], cfg[i + 5]]),
-                        interval: cfg[i + 6],
-                    });
-                    cur_open = false;
+                    if let Some(r) = cur_row {
+                        let row = &mut out.rows[r];
+                        if row.ep_addr == 0 {
+                            row.ep_addr = addr;
+                            row.interval = cfg[i + 6];
+                            row.max_packet = max;
+                        }
+                    }
+                    if cur_open {
+                        let c = cur.expect("cur_open implies an interface");
+                        out.hid = Some(HidInfo {
+                            config_value,
+                            iface: c.number,
+                            protocol: c.protocol,
+                            ep_addr: addr,
+                            ep_max: max,
+                            interval: cfg[i + 6],
+                        });
+                        cur_open = false;
+                    }
                 }
             }
             _ => {}
         }
         i += dlen;
     }
-    close(cur, cur_open, &mut skipped);
-    Scan { hid, stopped_at }
+    close(cur, cur_open, cur_row.map(|r| &mut out.rows[r]), &mut skipped);
+    if out.hid.is_none() {
+        // §3.1 step 5 (ii): the first HID interface in its default alternate
+        // setting (the one SET_CONFIGURATION leaves active) that has an
+        // interrupt-IN endpoint. Without a boot interface every such row is
+        // one the selection skipped as NotBootSubclass or UnknownBootProtocol.
+        out.observe = out.rows[..out.n_rows]
+            .iter()
+            .find(|r| r.is_hid_alt0() && r.ep_addr != 0)
+            .map(|r| Observe {
+                info: HidInfo {
+                    config_value,
+                    iface: r.number,
+                    protocol: r.protocol,
+                    ep_addr: r.ep_addr,
+                    ep_max: r.max_packet,
+                    interval: r.interval,
+                },
+                reason: r.skip.unwrap_or(SkipReason::NotBootSubclass),
+            });
+    }
+    out
 }
 
 /// Short human-readable text for a [`SkipReason`] (the log line).
@@ -395,6 +576,121 @@ mod tests {
                 assert_ne!(reason_text(*a), reason_text(*b));
             }
         }
+    }
+
+    /// HID descriptor with one report descriptor of `len` bytes.
+    fn hid_desc(len: u16) -> Vec<u8> {
+        let l = len.to_le_bytes();
+        vec![9, 0x21, 0x11, 0x01, 0, 1, 0x22, l[0], l[1]]
+    }
+
+    /// T2 (`usb-snapshot.md` §6): the ROCCAT mouse 1e7d:2cee as the real Pi
+    /// logged it (`docs/analysis/usb-port-investigation/run3-fixed-both-in-usb3.log:90-97`,
+    /// 59 bytes: config, iface 0 (3,1,2) + HID + ep 0x81 max 64 interval 1,
+    /// iface 1 (3,0,1) + HID + ep 0x82 max 64 interval 1). The log does not
+    /// show the HID descriptors' report lengths; 77 / 159 are test values.
+    #[test]
+    fn roccat_composite_table_and_report_lengths() {
+        let cfg = config(&[
+            &iface(0, 3, 1, 2),
+            &hid_desc(77),
+            &ep(0x81, 3, 64, 1),
+            &iface(1, 3, 0, 1),
+            &hid_desc(159),
+            &ep(0x82, 3, 64, 1),
+        ]);
+        assert_eq!(cfg.len(), 59);
+        let (r, _) = run(&cfg);
+        assert_eq!(r.hid.map(|h| (h.iface, h.ep_addr, h.ep_max)), Some((0, 0x81, 64)));
+        assert_eq!(r.observe, None, "a boot interface was chosen: no observation");
+        assert_eq!(r.n_rows, 2);
+        assert_eq!(r.n_hid_ifaces, 2);
+        assert!(!r.rows_cut);
+        let (a, b) = (r.rows[0], r.rows[1]);
+        assert_eq!((a.number, a.class, a.subclass, a.protocol, a.skip), (0, 3, 1, 2, None));
+        assert_eq!((a.ep_addr, a.interval, a.max_packet, a.report_len), (0x81, 1, 64, 77));
+        assert_eq!((b.number, b.skip), (1, Some(SkipReason::NotBootSubclass)));
+        assert_eq!((b.ep_addr, b.interval, b.max_packet, b.report_len), (0x82, 1, 64, 159));
+    }
+
+    /// §3.1 step 5 (ii): no boot interface, a report-only HID interface with
+    /// interrupt IN is the observation candidate; a reserved boot protocol
+    /// likewise, with its own reason.
+    #[test]
+    fn report_only_interface_is_observed() {
+        let tablet = config(&[&iface(0, 3, 0, 0), &hid_desc(74), &ep(0x81, 3, 8, 4)]);
+        let (r, _) = run(&tablet);
+        assert_eq!(r.hid, None);
+        let o = r.observe.expect("observed");
+        assert_eq!((o.info.iface, o.info.ep_addr, o.info.ep_max, o.info.interval), (0, 0x81, 8, 4));
+        assert_eq!(o.reason, SkipReason::NotBootSubclass);
+        assert_eq!(r.rows[0].report_len, 74);
+
+        let reserved = config(&[&iface(2, 3, 1, 3), &ep(0x83, 3, 16, 4)]);
+        let o = run(&reserved).0.observe.expect("observed");
+        assert_eq!((o.info.iface, o.reason), (2, SkipReason::UnknownBootProtocol));
+    }
+
+    /// §3.1 step 5 (iii): nothing to observe — no HID interface, a HID
+    /// interface without interrupt IN, or one only in an alternate setting.
+    #[test]
+    fn nothing_observed_without_a_hid_interrupt_in_in_alt_0() {
+        let storage = config(&[&iface(0, 8, 6, 0x50), &ep(0x81, 2, 512, 0)]);
+        let r = run(&storage).0;
+        assert_eq!((r.hid, r.observe, r.n_hid_ifaces), (None, None, 0));
+
+        let out_only = config(&[&iface(0, 3, 0, 0), &ep(0x01, 3, 8, 4)]);
+        assert_eq!(run(&out_only).0.observe, None);
+
+        let mut alt1 = iface(0, 3, 0, 0);
+        alt1[3] = 1;
+        let cfg = config(&[&iface(0, 0xff, 0, 0), &alt1, &ep(0x81, 3, 8, 4)]);
+        let r = run(&cfg).0;
+        assert_eq!(r.observe, None);
+        assert_eq!(r.n_rows, 2);
+        assert_eq!((r.rows[1].alt, r.rows[1].ep_addr), (1, 0x81), "alt rows are listed");
+        assert_eq!(r.n_hid_ifaces, 0, "only alternate setting 0 counts");
+    }
+
+    /// A HID interface without a HID descriptor declares no report length;
+    /// a HID descriptor listing a physical descriptor first still yields the
+    /// report descriptor's length (HID 1.11 §6.2.1 optional triples).
+    #[test]
+    fn report_length_from_the_first_report_entry() {
+        let cfg = config(&[&iface(0, 3, 1, 2), &ep(0x81, 3, 4, 10)]);
+        assert_eq!(run(&cfg).0.rows[0].report_len, 0);
+
+        let two = [12u8, 0x21, 0x11, 0x01, 0, 2, 0x23, 9, 0, 0x22, 0x34, 0x01];
+        let cfg = config(&[&iface(0, 3, 1, 2), &two, &ep(0x81, 3, 4, 10)]);
+        assert_eq!(run(&cfg).0.rows[0].report_len, 0x134);
+
+        // bNumDescriptors claims more triples than bLength holds: stop at bLength.
+        let short = [9u8, 0x21, 0x11, 0x01, 0, 3, 0x23, 9, 0];
+        let cfg = config(&[&iface(0, 3, 1, 2), &short, &ep(0x81, 3, 4, 10)]);
+        assert_eq!(run(&cfg).0.rows[0].report_len, 0);
+    }
+
+    /// A configuration longer than the 1024 bytes the driver reads: the scan
+    /// sees the cut, keeps what came before; more than 16 interfaces cap the
+    /// table and say so.
+    #[test]
+    fn long_configuration_is_cut_and_table_capped() {
+        let mut body: Vec<Vec<u8>> = Vec::new();
+        for n in 0..45u8 {
+            body.push(iface(n, 3, 0, 0));
+            body.push(hid_desc(50));
+            body.push(ep(0x81, 3, 8, 4));
+        }
+        let parts: Vec<&[u8]> = body.iter().map(|v| v.as_slice()).collect();
+        let full = config(&parts);
+        assert!(full.len() > 1024);
+        let (r, s) = run(&full[..1024]);
+        assert!(r.stopped_at.is_some(), "cut inside a descriptor");
+        assert_eq!(r.n_rows, MAX_IFACE_ROWS);
+        assert!(r.rows_cut);
+        assert!(r.n_hid_ifaces as usize > MAX_IFACE_ROWS);
+        assert_eq!(s.len(), r.n_hid_ifaces as usize, "every interface still logged");
+        assert_eq!(r.observe.map(|o| o.info.iface), Some(0));
     }
 
     #[test]

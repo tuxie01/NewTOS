@@ -337,6 +337,64 @@ pub trait Host: Sync {
     fn os_version(&self) -> Option<&'static str> {
         None
     }
+
+    /// Answer one USB snapshot request — `Ssystem(S_NEWTOS_USBSNAP)` (2022,
+    /// `docs/api/usb/usb-snapshot.md` §2). The trap has checked the header
+    /// (§2.3 #1–#4); the host decides #5–#9 and hands the answer **body**
+    /// (everything after the 32-byte header) to `sink` in order, in chunks —
+    /// the trap copies each into the caller's buffer, so no large
+    /// intermediate buffer exists. `sink` returns `false` when the copy
+    /// faulted; the host then stops and answers [`UsbSnapAnswer::Faulted`].
+    ///
+    /// Default: [`UsbSnapAnswer::NoController`] — a host without a USB stack
+    /// (a hostless test, a board whose controller was not found) answers the
+    /// same as a board without USB, which the trap turns into `ERROR`.
+    fn usb_snapshot(
+        &self,
+        _req: &UsbSnapRequest,
+        _sink: &mut dyn FnMut(&[u8]) -> bool,
+    ) -> UsbSnapAnswer {
+        UsbSnapAnswer::NoController
+    }
+}
+
+/// One `Ssystem(S_NEWTOS_USBSNAP)` request as the trap passes it to
+/// [`Host::usb_snapshot`] (`docs/api/usb/usb-snapshot.md` §2.2).
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct UsbSnapRequest {
+    /// `op`: 1 LIST, 2 DEVICE, 3 REPORTS, 4 MUTE (already range-checked).
+    pub op: u16,
+    /// `index`: device index (ops 2, 3); 0 otherwise.
+    pub index: u32,
+    /// `arg`: op 3 first wanted sequence number, op 4 ticks; 0 otherwise.
+    pub arg: u32,
+    /// `_hz_200` at the call (the header's `now_hz200`).
+    pub now_hz200: u32,
+    /// Bytes the caller's buffer holds behind the 32-byte header.
+    pub room: u32,
+}
+
+/// How [`Host::usb_snapshot`] answered (`docs/api/usb/usb-snapshot.md` §2.3).
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum UsbSnapAnswer {
+    /// No usable USB controller (§2.3 #5): `ERROR`, nothing written.
+    NoController,
+    /// `index` out of range or a MUTE argument refused (§2.3 #6/#7):
+    /// `EINVAL`, the header is written.
+    Invalid,
+    /// Answered (§2.3 #8/#9): `E_OK`.
+    Done {
+        /// Size of the complete body (`total_len` − 32).
+        total: u32,
+        /// Body bytes handed to the sink (`used_len` − 32).
+        written: u32,
+        /// Only the header was written: the answer did not fit.
+        truncated: bool,
+        /// Op 3 returned fewer entries than are available.
+        more: bool,
+    },
+    /// The sink reported a fault in the caller's buffer.
+    Faulted,
 }
 
 /// What the boot code did with the ARM core clock (`cpuclk=`, FS08 part 3) —

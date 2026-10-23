@@ -413,6 +413,35 @@ impl Host for KernelHost {
     fn os_version(&self) -> Option<&'static str> {
         Some(crate::initinfo::VERSION_STRING)
     }
+
+    /// `Ssystem(S_NEWTOS_USBSNAP)`: the USB snapshot the boot enumeration and
+    /// the input pump keep (`drivers::usb::snapshot`,
+    /// `docs/api/usb/usb-snapshot.md`). A board whose controller was not found
+    /// (raspi4b in QEMU, qemu-virt without `qemu-xhci`) answers
+    /// `NoController`.
+    fn usb_snapshot(
+        &self,
+        req: &tos_api::host::UsbSnapRequest,
+        sink: &mut dyn FnMut(&[u8]) -> bool,
+    ) -> tos_api::host::UsbSnapAnswer {
+        use crate::drivers::usb::snapshot::{Answer, Request};
+        use tos_api::host::UsbSnapAnswer;
+        let r = Request {
+            op: req.op,
+            index: req.index,
+            arg: req.arg,
+            now: req.now_hz200,
+            room: req.room,
+        };
+        match crate::drivers::usb::snapshot_answer(r, sink) {
+            Answer::NoController => UsbSnapAnswer::NoController,
+            Answer::Invalid => UsbSnapAnswer::Invalid,
+            Answer::Faulted => UsbSnapAnswer::Faulted,
+            Answer::Done { total, written, truncated, more } => {
+                UsbSnapAnswer::Done { total, written, truncated, more }
+            }
+        }
+    }
 }
 
 /// `raise_arm_clock`'s outcome as `CpuClockPolicy as u8`; `u8::MAX` = not
