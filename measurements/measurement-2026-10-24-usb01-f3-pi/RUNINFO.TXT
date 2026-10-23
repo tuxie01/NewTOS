@@ -1,0 +1,35 @@
+USB01 F3 -- real Raspberry Pi 4, user run (regression + first real USBSNAP v2 recording)
+=====================================================================================
+
+Date      2026-10-24
+Who       user, real RPi 4 Model B, Telefunken TV 1920x1080
+Why       F3 (several HID functions per device, be506300) on the real VL805 with the user's devices, and USBSNAP
+          v2 test T8 (real recording + real files in one run). The user's devices have no second boot
+          interface, so the multi-function path itself (P2/P3) is NOT exercised here -- that needs a wireless
+          receiver (ragnar76).
+CARD      written by the lead on the user's say (Pi card "BOOT 1"):
+            kernel8.img  rpi4 release --features usb-diag, built from be506300 in a scratch worktree,
+                         sha256 fe967851f17c537970fc1ca38ea2c49f1e36c0b54000288827fc3ba973cff40a
+                         (the plain release build of the same commit is edc9c4d1..., developer)
+            USBSNAP.NCP  v2, sha256 522c8e9423ffae243cb422969195db6319282693158baa8862c2162946447a0f
+            previous kernel8.img (usb-diag of 981a64d4, 01c570be...) kept as KERN1024.IMG
+Files     serial/USBDIAG.LOG   C:\USBDIAG.LOG of this boot
+          usb/05AC020C.TXT     USBSNAP report, Apple keyboard
+          usb/1E7D2CEE.TXT     USBSNAP report, ROCCAT Kova
+
+RESULT
+  Enumeration  The [usb] lines (transfer events excluded) are byte-identical to SNAP2.LOG of the pre-F3 kernel
+               (measurements/measurement-2026-10-23-usb01-snap-pi/): 4 devices, keyboard + mouse, 13 commands.
+               P1 regression: no change, as expected for single-function devices.
+  USBSNAP v2   Layout v2, generation 1, 30.0 s, pointer muted: yes. One file per HID device, names
+               VVVVPPPP.TXT. Interfaces listed with role/function ("functions: 1"), report descriptors kept
+               (ROCCAT 232/63, Apple 65/76, same as the kernel log). Interrupt errors 0, lost 0.
+               Keyboard: 118 reports (mostly empty idle reports every ~0.51 s -- the device's default idle,
+               the driver sends no SET_IDLE), typed keys visible from 16.2 s. Mouse: 13074 reports, 4 bytes,
+               first 1024 listed (program limit).
+  User         (observations to be added in the ticket)
+
+FINDING (not F3)
+  Apple keyboard seq 117: "00 00 01 01 01 01 01 01" = HID ErrorRollOver while three keys were held. The decoder
+  diffs it like a normal report: the held keys 37 36 10 get a break, 0x01 has no scancode, and report 118
+  makes 36 again -- a spurious break/make pair (lost repeat or doubled character). See TASK/USB02.md.

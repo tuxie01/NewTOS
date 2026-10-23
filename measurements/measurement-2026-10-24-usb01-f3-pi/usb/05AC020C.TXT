@@ -1,0 +1,284 @@
+=== 0. FILE ===
+Format        : NewTOS USBSNAP text report v2
+Program       : USBSNAP.NCP v2
+Kernel        : NewTOS 0.6.1 2026-10-23 (be506300)
+Snapshot API  : Ssystem 2022, layout v2, generation 1
+Recorded      : 30.0 s, pointer muted: yes, ring 256, reports listed <= 1024
+Device        : 1 of 2 (index 2)
+Timestamps    : time of collection by the host, NOT the time the device sent
+                the report (resolution = how often the kernel polls USB).
+
+=== 1. IDENTITY ===
+VID:PID       : 05ac:020c
+Manufacturer  : "Mitsumi Electric"
+Product       : "Apple Extended USB Keyboard"
+bcdUSB 1.10  class 0  subclass 0  protocol 0  EP0 max 8  configurations 1
+
+=== 2. POSITION ===
+Controller    : xHCI, 5 root ports
+Path          : root port 1 -> hub 2109:3431 port 1 -> hub 05ac:1003 port 3
+Route string  : 0x00000031  (behind a hub, parent index 1)
+Speed         : full speed (12 Mbit/s)  [xHCI PORTSC speed id 1]
+xHCI slot     : 3
+
+=== 3. DRIVER DECISION ===
+Role          : KEYBOARD (HID boot protocol, decoded -> IKBD)
+Role codes    : 0 none / 1 keyboard / 2 mouse / 3 observed-only / 4 hub /
+                5 failed; this device: 1
+Reason        : -
+Flags         : 0x0b = device descriptor ok, configuration ok
+                SET_CONFIGURATION done
+HID interfaces: 2   functions: 1   first: interface 0, endpoint 0x81
+Interfaces:
+  if 0 alt 0  class 3 sub 1 proto 1  int-IN 0x81 max 8 interval 10
+      USED (keyboard, decoded)  [recorded]
+      report descriptor declared 65 bytes, kept 65
+  if 1 alt 0  class 3 sub 0 proto 0  int-IN 0x82 max 4 interval 10
+      not used: HID without boot subclass: report protocol only, no report
+                parser yet
+      report descriptor declared 76 bytes, kept 76
+Interrupt transfer errors: 0
+
+=== 4. RAW DESCRIPTORS (hex, offset: 16 bytes) ===
+Device descriptor, 18 bytes
+0000: 12 01 10 01 00 00 00 08 ac 05 0c 02 10 04 01 03  |................|
+0010: 00 01                                            |..|
+Configuration descriptor, 59 bytes (wTotalLength 59)
+0000: 09 02 3b 00 02 01 00 a0 19 09 04 00 00 01 03 01  |..;.............|
+0010: 01 00 09 21 10 01 0d 01 22 41 00 07 05 81 03 08  |...!...."A......|
+0020: 00 0a 09 04 01 00 01 03 00 00 00 09 21 10 01 00  |............!...|
+0030: 01 22 4c 00 07 05 82 03 04 00 0a                 |."L........|
+HID report descriptor, interface 0, 65 bytes (declared 65)
+0000: 05 01 09 06 a1 01 05 07 19 e0 29 e7 15 00 25 01  |..........)...%.|
+0010: 75 01 95 08 81 02 95 01 75 08 81 01 95 05 75 01  |u.......u.....u.|
+0020: 05 08 19 01 29 05 91 02 95 01 75 03 91 01 95 06  |....).....u.....|
+0030: 75 08 15 00 26 ff 00 05 07 19 00 2a ff 00 81 00  |u...&......*....|
+0040: c0                                               |.|
+HID report descriptor, interface 1, 76 bytes (declared 76)
+0000: 05 01 09 80 a1 01 85 02 75 01 95 01 15 00 25 01  |........u.....%.|
+0010: 09 82 81 06 09 82 81 06 09 83 81 06 75 05 81 01  |............u...|
+0020: c0 05 0c 09 01 a1 01 85 03 95 01 75 02 81 01 75  |...........u...u|
+0030: 01 09 b8 81 06 09 e9 81 02 75 02 81 01 75 01 09  |.........u...u..|
+0040: ea 81 02 09 e2 81 06 75 10 81 01 c0              |.......u....|
+
+=== 5. DECODED DESCRIPTORS ===
+Device: bLength 18 bDescriptorType 1 bcdUSB 0x0110 bDeviceClass 0
+  bDeviceSubClass 0 bDeviceProtocol 0 bMaxPacketSize0 8
+  idVendor 0x05ac idProduct 0x020c bcdDevice 0x0410
+  iManufacturer 1 iProduct 3 iSerialNumber 0 bNumConfigurations 1
+Configuration: wTotalLength 59 bNumInterfaces 2 bConfigurationValue 1
+  iConfiguration 0 MaxPower 25 (50 mA) bmAttributes 0xa0 bus-powered
+      remote-wakeup
+  Interface 0 alt 0: bNumEndpoints 1 iInterface 0
+    class 3 (HID) sub 1 (boot) protocol 1 (keyboard)
+    HID: bcdHID 1.10 bCountryCode 13 bNumDescriptors 1
+      class descriptor type 0x22 (report) length 65
+    Endpoint 0x81: IN, interrupt, wMaxPacketSize 0x0008 (8), bInterval 10
+  Interface 1 alt 0: bNumEndpoints 1 iInterface 0
+    class 3 (HID) sub 0 (none) protocol 0
+    HID: bcdHID 1.10 bCountryCode 0 bNumDescriptors 1
+      class descriptor type 0x22 (report) length 76
+    Endpoint 0x82: IN, interrupt, wMaxPacketSize 0x0004 (4), bInterval 10
+Report descriptor items (interface 0):
+  05 01           Usage Page (Generic Desktop)
+  09 06           Usage (Keyboard)
+  a1 01           Collection (Application)
+  05 07             Usage Page (Keyboard/Keypad)
+  19 e0             Usage Minimum (0xe0)
+  29 e7             Usage Maximum (0xe7)
+  15 00             Logical Minimum (0)
+  25 01             Logical Maximum (1)
+  75 01             Report Size (1)
+  95 08             Report Count (8)
+  81 02             Input (Data,Var,Abs)
+  95 01             Report Count (1)
+  75 08             Report Size (8)
+  81 01             Input (Const,Array,Abs)
+  95 05             Report Count (5)
+  75 01             Report Size (1)
+  05 08             Usage Page (LEDs)
+  19 01             Usage Minimum (0x01)
+  29 05             Usage Maximum (0x05)
+  91 02             Output (Data,Var,Abs)
+  95 01             Report Count (1)
+  75 03             Report Size (3)
+  91 01             Output (Const,Array,Abs)
+  95 06             Report Count (6)
+  75 08             Report Size (8)
+  15 00             Logical Minimum (0)
+  26 ff 00          Logical Maximum (255)
+  05 07             Usage Page (Keyboard/Keypad)
+  19 00             Usage Minimum (0x00)
+  2a ff 00          Usage Maximum (0xff)
+  81 00             Input (Data,Array,Abs)
+  c0              End Collection
+  Items 32: Input 3, Output 2, Feature 0, Collections 1
+  Report ID: none (reports carry no ID byte)
+Report descriptor items (interface 1):
+  05 01           Usage Page (Generic Desktop)
+  09 80           Usage (0x80)
+  a1 01           Collection (Application)
+  85 02             Report ID (2)
+  75 01             Report Size (1)
+  95 01             Report Count (1)
+  15 00             Logical Minimum (0)
+  25 01             Logical Maximum (1)
+  09 82             Usage (0x82)
+  81 06             Input (Data,Var,Rel)
+  09 82             Usage (0x82)
+  81 06             Input (Data,Var,Rel)
+  09 83             Usage (0x83)
+  81 06             Input (Data,Var,Rel)
+  75 05             Report Size (5)
+  81 01             Input (Const,Array,Abs)
+  c0              End Collection
+  05 0c           Usage Page (Consumer)
+  09 01           Usage (0x01)
+  a1 01           Collection (Application)
+  85 03             Report ID (3)
+  95 01             Report Count (1)
+  75 02             Report Size (2)
+  81 01             Input (Const,Array,Abs)
+  75 01             Report Size (1)
+  09 b8             Usage (0xb8)
+  81 06             Input (Data,Var,Rel)
+  09 e9             Usage (0xe9)
+  81 02             Input (Data,Var,Abs)
+  75 02             Report Size (2)
+  81 01             Input (Const,Array,Abs)
+  75 01             Report Size (1)
+  09 ea             Usage (0xea)
+  81 02             Input (Data,Var,Abs)
+  09 e2             Usage (0xe2)
+  81 06             Input (Data,Var,Rel)
+  75 10             Report Size (16)
+  81 01             Input (Const,Array,Abs)
+  c0              End Collection
+  Items 39: Input 11, Output 0, Feature 0, Collections 2
+  Report ID: used, IDs 2 3
+  -> every report starts with a 1-byte report ID (HID 1.11 6.2.2.7)
+
+=== 6. REPORTS ===
+Total 118 (seq 76..193), listed 118, lost 0, interrupt errors 0
+Flags: M = collected while the pointer was muted, C = report may be cut
+   seq     t(s)  len fl  bytes                   decoded (boot keyboard)
+    76    0.400   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    77    0.915   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    78    1.425   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    79    1.940   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    80    2.450   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    81    2.960   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    82    3.475   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    83    3.985   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    84    4.500   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    85    5.010   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    86    5.520   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    87    6.035   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    88    6.545   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    89    7.060   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    90    7.570   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    91    8.085   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    92    8.595   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    93    9.105   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    94    9.620   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    95   10.130   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    96   10.645   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    97   11.155   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    98   11.665   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+    99   12.180   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   100   12.690   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   101   13.205   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   102   13.715   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   103   14.230   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   104   14.740   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   105   15.250   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   106   15.765   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   107   16.195   8 M-  20 00 00 00 00 00 00 00  mod 20 keys
+   108   16.260   8 M-  20 00 38 00 00 00 00 00  mod 20 keys 38
+   109   16.435   8 M-  00 00 38 00 00 00 00 00  mod 00 keys 38
+   110   16.475   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   111   16.710   8 M-  00 00 0e 00 00 00 00 00  mod 00 keys 0e
+   112   16.910   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   113   16.930   8 M-  00 00 37 00 00 00 00 00  mod 00 keys 37
+   114   17.030   8 M-  00 00 37 36 00 00 00 00  mod 00 keys 37 36
+   115   17.090   8 M-  00 00 37 36 10 00 00 00  mod 00 keys 37 36 10
+   116   17.110   8 M-  00 00 36 10 00 00 00 00  mod 00 keys 36 10
+   117   17.150   8 M-  00 00 01 01 01 01 01 01  mod 00 keys 01 01 01 01 01 01
+   118   17.210   8 M-  00 00 36 0d 00 00 00 00  mod 00 keys 36 0d
+   119   17.245   8 M-  00 00 0d 00 00 00 00 00  mod 00 keys 0d
+   120   17.310   8 M-  00 00 0d 36 00 00 00 00  mod 00 keys 0d 36
+   121   17.315   8 M-  00 00 0d 36 37 00 00 00  mod 00 keys 0d 36 37
+   122   17.365   8 M-  00 00 36 37 00 00 00 00  mod 00 keys 36 37
+   123   17.570   8 M-  00 00 36 00 00 00 00 00  mod 00 keys 36
+   124   17.710   8 M-  00 00 36 0e 00 00 00 00  mod 00 keys 36 0e
+   125   17.795   8 M-  00 00 0e 00 00 00 00 00  mod 00 keys 0e
+   126   18.005   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   127   18.075   8 M-  40 00 00 00 00 00 00 00  mod 40 keys
+   128   18.085   8 M-  c0 00 00 00 00 00 00 00  mod c0 keys
+   129   18.090   8 M-  c0 00 2c 00 00 00 00 00  mod c0 keys 2c
+   130   18.155   8 M-  80 00 2c 00 00 00 00 00  mod 80 keys 2c
+   131   18.270   8 M-  80 00 00 00 00 00 00 00  mod 80 keys
+   132   18.290   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   133   18.540   8 M-  20 00 00 00 00 00 00 00  mod 20 keys
+   134   18.550   8 M-  60 00 00 00 00 00 00 00  mod 60 keys
+   135   18.565   8 M-  70 00 00 00 00 00 00 00  mod 70 keys
+   136   18.590   8 M-  30 00 00 00 00 00 00 00  mod 30 keys
+   137   18.630   8 M-  20 00 00 00 00 00 00 00  mod 20 keys
+   138   18.810   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   139   18.830   8 M-  00 00 34 00 00 00 00 00  mod 00 keys 34
+   140   18.835   8 M-  00 00 34 2f 00 00 00 00  mod 00 keys 34 2f
+   141   18.900   8 M-  00 00 34 00 00 00 00 00  mod 00 keys 34
+   142   18.925   8 M-  20 00 34 00 00 00 00 00  mod 20 keys 34
+   143   19.085   8 M-  20 00 00 00 00 00 00 00  mod 20 keys
+   144   19.110   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   145   19.430   8 M-  00 00 17 00 00 00 00 00  mod 00 keys 17
+   146   19.635   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   147   19.870   8 M-  00 00 08 00 00 00 00 00  mod 00 keys 08
+   148   20.010   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   149   20.300   8 M-  00 00 14 00 00 00 00 00  mod 00 keys 14
+   150   20.565   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   151   20.915   8 M-  00 00 09 00 00 00 00 00  mod 00 keys 09
+   152   21.100   8 M-  00 00 09 17 00 00 00 00  mod 00 keys 09 17
+   153   21.115   8 M-  00 00 09 17 22 00 00 00  mod 00 keys 09 17 22
+   154   21.125   8 M-  00 00 17 22 00 00 00 00  mod 00 keys 17 22
+   155   21.195   8 M-  00 00 22 00 00 00 00 00  mod 00 keys 22
+   156   21.220   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   157   21.405   8 M-  00 00 0d 00 00 00 00 00  mod 00 keys 0d
+   158   21.435   8 M-  00 00 0d 0e 00 00 00 00  mod 00 keys 0d 0e
+   159   21.555   8 M-  00 00 01 01 01 01 01 01  mod 00 keys 01 01 01 01 01 01
+   160   21.590   8 M-  00 00 0e 18 00 00 00 00  mod 00 keys 0e 18
+   161   21.615   8 M-  00 00 18 00 00 00 00 00  mod 00 keys 18
+   162   21.955   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   163   21.995   8 M-  00 00 0f 00 00 00 00 00  mod 00 keys 0f
+   164   22.085   8 M-  00 00 0f 12 00 00 00 00  mod 00 keys 0f 12
+   165   22.260   8 M-  00 00 01 01 01 01 01 01  mod 00 keys 01 01 01 01 01 01
+   166   22.285   8 M-  00 00 0f 00 00 00 00 00  mod 00 keys 0f
+   167   22.295   8 M-  00 00 0c 00 00 00 00 00  mod 00 keys 0c
+   168   22.455   8 M-  00 00 0c 0f 00 00 00 00  mod 00 keys 0c 0f
+   169   22.700   8 M-  00 00 0c 00 00 00 00 00  mod 00 keys 0c
+   170   22.735   8 M-  00 00 0c 1c 00 00 00 00  mod 00 keys 0c 1c
+   171   22.740   8 M-  00 00 1c 00 00 00 00 00  mod 00 keys 1c
+   172   22.895   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   173   22.990   8 M-  00 00 0a 00 00 00 00 00  mod 00 keys 0a
+   174   23.190   8 M-  00 00 0a 08 00 00 00 00  mod 00 keys 0a 08
+   175   23.245   8 M-  00 00 08 00 00 00 00 00  mod 00 keys 08
+   176   23.380   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   177   23.615   8 M-  00 00 1a 00 00 00 00 00  mod 00 keys 1a
+   178   23.955   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   179   24.470   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   180   24.980   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   181   25.495   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   182   26.005   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   183   26.515   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   184   27.030   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   185   27.540   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   186   27.550   8 M-  00 00 33 00 00 00 00 00  mod 00 keys 33
+   187   27.560   8 M-  00 00 33 27 00 00 00 00  mod 00 keys 33 27
+   188   27.700   8 M-  00 00 27 00 00 00 00 00  mod 00 keys 27
+   189   27.760   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   190   28.270   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   191   28.780   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   192   29.295   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+   193   29.805   8 M-  00 00 00 00 00 00 00 00  mod 00 keys
+
+=== END ===

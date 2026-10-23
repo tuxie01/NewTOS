@@ -50,3 +50,16 @@ Status: **OFFEN** · Prioritaet: **P3** · Typ: Sammelticket — Nebenbefunde De
 Je Punkt: gegen Circle/FreeMiNT und xHCI 1.2 (`references/xhci/`) pruefen, dann beheben.
 
 [Gemeinsame Regeln](README.md) gelten.
+
+## 10. ErrorRollOver-Bericht wird wie ein normaler Bericht ausgewertet (2026-10-24)
+
+Beleg: `measurements/measurement-2026-10-24-usb01-f3-pi/usb/05AC020C.TXT`
+seq 117 — die Apple-Tastatur meldet bei drei gehaltenen Tasten
+`00 00 01 01 01 01 01 01` (HID-Fehlercode ErrorRollOver, Usage 0x01).
+`hid_decode::keyboard_diff` (`kernel/src/drivers/usb/hid_decode.rs:74`)
+vergleicht ihn wie jeden Bericht: die gehaltenen Tasten bekommen einen Break,
+0x01 hat keinen Scancode, der naechste Bericht macht sie wieder. Folge: ein
+falsches Break/Make-Paar (Wiederholung bricht ab oder Zeichen doppelt). Soll
+laut HID-Spec und den Referenzen erst belegen (HID 1.11 Usage Tables
+„ErrorRollOver“, FreeMiNT `usb_keyboard.c`, Circle), vermutlich: Bericht
+verwerfen, Zustand behalten. Klein, betrifft jede Boot-Tastatur.
