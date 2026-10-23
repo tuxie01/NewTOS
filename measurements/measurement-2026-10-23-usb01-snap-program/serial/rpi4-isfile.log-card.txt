@@ -1,0 +1,24 @@
+== C:/
+init :: non DOS media
+Cannot initialize '::'
+ Volume in drive : is USBSNAPT   
+ Volume Serial Number is 298C-1C17
+Directory for ::/
+
+USBSNAPR NCP     80864 2026-10-23  12:00 
+USB                 14 2026-10-23  12:00 
+NEWDESK  INF        31 2026-10-23  12:00 
+        3 files              80 909 bytes
+                         66 813 952 bytes free
+
+== C:/USB
+init :: non DOS media
+Cannot initialize '::'
+ Volume in drive : is USBSNAPT   
+ Volume Serial Number is 298C-1C17
+Directory for ::/
+
+USB                 14 2026-10-23  12:00 
+        1 file                   14 bytes
+                         66 813 952 bytes free
+

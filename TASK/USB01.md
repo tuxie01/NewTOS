@@ -88,4 +88,14 @@ das Programm: Spec §9. **Offen:** Programm `USBSNAP.NCP` (K10), QEMU-Option (K1
 Tester-Abnahme, Pi-Test mit Apple-Tastatur + ROCCAT (Report-/String-Abruf auf dem VL805,
 TRB-Laenge 64 der ROCCAT).
 
+## Stand 2026-10-23 (Schritt 2, Programmteil gebaut)
+
+K10/K11 der Spec umgesetzt: `sdk/examples/usbsnap.c` → `USBSNAP.NCP` (`46d37272`, Image-Eintrag in
+`tools/make-sd-image.sh`), `cargo xtask run --usb-extra`/`--usb-dev` (`46a027e2`). Kernel-Nachbesserungen
+(`53cb16c3`): Schnappschuss-Speicher in `.bss` (Image −225 KB) und — Befund aus T6 — Loslassen gehaltener
+Tasten/Knoepfe am MUTE-Beginn (sonst wiederholte sich die Start-RETURN-Taste 30 s lang). Entscheidungen der
+Umsetzung: Spec §9.1. QEMU-Belege `measurements/measurement-2026-10-23-usb01-snap-program/RUNINFO.TXT`
+(T5, T6 geteilt auf qemu-virt + raspi4b-Wiedergabe, T7, Regression). **Offen:** Tester-Abnahme; echte Pi (T8):
+Doppelklick-Start, Klick auf den Desktop waehrend der Aufnahme, Dateien von ROCCAT und Apple-Tastatur.
+
 [Gemeinsame Regeln](README.md) gelten.

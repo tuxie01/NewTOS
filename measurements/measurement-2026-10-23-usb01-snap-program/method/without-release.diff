@@ -1,0 +1,6 @@
+195,197c195
+<         if with_store(|s| s.mute_state(tos_api::bios::tick::hz_200())).1 {
+<             hid::release_all();
+<         }
+---
+>         // MEASUREMENT (scratch worktree only): the release at the mute start removed.

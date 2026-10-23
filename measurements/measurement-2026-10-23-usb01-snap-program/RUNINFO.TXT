@@ -1,0 +1,111 @@
+USB01 step 2 -- USB snapshot, program half: USBSNAP.NCP (K10), QEMU option (K11), kernel follow-ups
+=====================================================================================================
+
+Date      2026-10-23
+Code      53cb16c3 fix(usb): snapshot store in .bss, release held input at MUTE start
+          46a027e2 feat(xtask): extra USB devices for qemu-virt runs (--usb-extra, --usb-dev)
+          46d37272 feat(sdk): USBSNAP.NCP, the USB device recorder (USB01 K10)
+          (parent b5c8da80; the runs below used the same code uncommitted on top of b5c8da80, so the kernels'
+          version stamp reads "(b5c8da80)"; the commits changed comments only afterwards -- USBSNAP.NCP rebuilt
+          from 46d37272 has the same sha256 as the tested one)
+Spec      docs/api/usb/usb-snapshot.md §4, §6 T5-T7, §7, §9 (kernel notes), §9.1 (this part's decisions)
+Who       Developer agent. No hardware, no card writes, no push. Scratch: session scratchpad; per-test APFS clones of
+          freshly made 64 MiB cards, deleted after the run; qemu-virt measurement kernels built in a scratch git
+          worktree of b5c8da80 (changed files copied in), never in the shared tree's target/.
+
+WHY THE TEST IS SPLIT
+  No QEMU board has USB and a drive: qemu-virt has the xHCI controller but no block device (no C:), raspi4b has the
+  SD card but no USB ("[pcie] RC not present"). So:
+    - qemu-virt: the measurement build method/usbsnap-virt.c (= sdk/examples/usbsnap.c unchanged + the two test seams
+      of §9.1) runs as the embedded NEWDESK.NAP; real kernel answers; each file is printed to the console between
+      FILE BEGIN/END markers (extract_files.py cuts them out) and every raw Ssystem(2022) answer is dumped as hex.
+    - raspi4b: the product build USBSNAP.NCP for T7; for the file half the replay build method/usbsnap-replay.c,
+      whose snap_call() answers with the raw kernel answers recorded on qemu-virt (serial/virt-capture.log ->
+      mkreplay.py -> method/replay.h); it writes to a real FAT card, which fsck_msdos then checks.
+    - MUTE as the AES sees it: probe method/mutechk.c (graf_mkstate + console queue) on qemu-virt.
+  NOT reachable in QEMU: a click on the DESKTOP during the recording (the qemu-virt program replaces the desktop),
+  double-click start from C:, the VL805 -- real-Pi test T8.
+
+RESULT
+  K   kernel image      .bss fix                  rpi4 release kernel8.img 1617616 (HEAD b5c8da80) -> 1392336 bytes
+                                                  (base f9abfd6b before the kernel part: 1351376); llvm-size release ELF:
+                                                  .data 470736 -> 245456, .bss 1187456 -> 1408640 (SNAPSHOT is a 'b'
+                                                  symbol, 224080 bytes). qemu-virt dev image 1744664 -> 1519384.
+  K   MUTE start        DEFECT FOUND + FIXED      T6 run with the kernel part as committed: the RETURN that starts the
+                                                  recording is decoded (make), its break arrives muted -> key repeat runs
+                                                  30 s; after the recording "Press any key to exit" returned at once and
+                                                  the restarted program's 15-s start wait was satisfied too.
+                                                  A/B, same program, same QMP script: serial/virt-norelease.log (scratch
+                                                  kernel without the release, method/without-release.diff): "title lines
+                                                  before the exit key: 2", 2nd LIST now=11338 -> MUTE now=11343 (5 ticks);
+                                                  serial/virt-extra.log (fix): "title lines before the exit key: 1", the
+                                                  program waits until the key.
+  1   builds            PASS  qemu-virt dev, qemu-virt release, rpi4 release, fresh per board (ELF removed before each):
+                              rc 0; rustc warnings kernel 94 / tos-api 64 on every build (= tester baseline of the kernel
+                              part). clippy -p kernel both boards: kernel 124 / tos-api 76 (= 124 / 76), usb-file lines 43
+                              (= 43). clippy -p xtask: 1 warning, pre-existing (main.rs:348, not touched). checks/
+  2   host tests        PASS  cargo xtask test: 158 suites, 1611 passed / 0 failed / 1 ignored (kernel part: 1607/0/1;
+                              +2 mute_start_is_seen_once [kernel lib + xtask copy], +2 qemu_usb_args). checks/
+  3   T5 qemu-virt      PASS  --usb-extra topology (method/run-virt.sh "extra" = the xtask line): 5 devices listed (hub
+      (--usb-extra)           0409:55aa not listed, "(hubs are not listed as devices)"), tablet = "HID (report)" role 3,
+                              recorded 3 abs reports len 6 (00 e8 03 e8 03 00 ...), "report-protocol device, not decoded";
+                              hub children: "Path : root port 8 -> hub 0409:55aa port 1", route 0x00000001, parent index 3,
+                              full speed. Tablet without pointer effect: regress tablet topology 0 differing px.
+                              cargo xtask run --usb-extra itself: QEMU line "qemu-xhci,id=usb usb-kbd usb-mouse
+                              usb-tablet,bus=usb.0,port=3 usb-hub,bus=usb.0,port=4 usb-mouse,bus=usb.0,port=4.1
+                              usb-kbd,bus=usb.0,port=4.2", boot "[usb] enumeration done: 6 devices (4 keyboard/mouse,
+                              1 observed only), 18 commands issued" (serial/xtask-run-usb-extra.log).
+  4   T6 program        PASS  serial/virt-extra.log + files/virt-extra-*: list, strings ("QEMU" "QEMU USB Mouse" ...),
+      (qemu-virt)             RETURN starts, live counter per second (screendumps/virt-extra-recording.png), 30 s
+                              (MUTE now 1002 -> off 7009), MUTE on (all reports flag M). Five files, all sections 0-6 +
+                              END in order, CRLF, ASCII, widest line 78 (extract_files.py); five equal VID:PID 0627:0001 ->
+                              .TXT, .T01 .. .T04 (collision rule inside one run). Reports decoded for the boot mouse
+                              (dx +10 dy +6, L/R/M clicks, wheel +1/-1) and keyboard (mod 02, keys 04/05).
+                              Start timeout without RETURN: LIST now 650 -> MUTE now 3652 (15.0 s) (serial/virt-wait.log).
+                              Controller without devices: "No USB device was detected at boot ... RESTART" (virt-none).
+  5   T6 MUTE (AES)     PASS  method/mutechk.c, serial/virt-mutechk.log, 7/7 PASS: unmuted moves move (959,539 ->
+                              1059,599); held left button seen (1); at the mute start the button reads 0 although QMP still
+                              holds it; muted moves/clicks leave position 1059,599; no key queued during the mute (key 'x'
+                              held across the mute start); after the 1400-tick deadline moves move again (1159,659), no
+                              ghost key. KILL: MUTE 7000 then a bad pointer -> kernel ends the probe ("[crash] ... Bus Error",
+                              "Press any key to continue"); RETURN at +5.1 s and every 2 s from +25 s ignored; the first
+                              RETURN at +35.2 s restarts it (deadline 7000 ticks = 35 s). (The FAIL A/B lines after the
+                              restart are the second, undriven start of the probe.)
+  6   T6 files          PASS  replay on raspi4b release kernel, ONE card clone booted twice (serial/rpi4-replay1/2.log):
+      (raspi4b, replay)       run 1 creates C:\USB (Fattrib EFILNF -> Dcreate) and 06270001.TXT, .T01-.T04; run 2 finds
+                              them and writes .T05-.T09, never overwriting; run 2 .T05..T09 byte-identical to run 1
+                              .TXT..T04 (same replayed input); all 10 files pass check_files.py; fsck_msdos -n rc 0 after
+                              both runs; mdir lists the folder (serial/rpi4-replay2.log-card.txt). C:\USB as a FILE:
+                              "C:\USB exists but is a file, not a folder. Rename it and retry.", nothing written, fsck 0.
+  7   T7 raspi4b        PASS  product USBSNAP.NCP via #Z: "No USB controller in this system. Nothing to record.", "Press
+                              any key to exit.", no C:\USB, fsck rc 0, 0 EXC/PANIC (serial/rpi4-t7.log,
+                              screendumps/rpi4-t7.png). The intro line fits 80 columns (640x480).
+  8   regression        PASS  qemu-virt dev (real NEWDESK): mouse 20 x rel(+10,+6) 138 px (bbox 959,539-1169,675),
+                              Ctrl+Z -> EmuCON 1014367 px, "help" 198 px, tablet 0 px -- identical to the kernel-part
+                              tester run. raspi4b release: APITEST TOTAL 109 / 0 / 5. 0 EXC/PANIC in every run.
+
+NOT VERIFIED (real Pi 4, T8)
+  Double-click start from the desktop; a click on desktop icons during the recording doing nothing; the release at the
+  mute start with the real keyboard; files from the ROCCAT/Apple devices; make-sd-image.sh was only syntax-checked
+  (bash -n): running it mounts /Volumes/NEWTOS while the user's NEWTOS1-3 card volumes were mounted -- left to the
+  lead/tester.
+
+HOW
+  method/run-all.sh (the whole program half in order), run-virt.sh (qemu-virt topologies default/extra/tablet/none),
+  qmp_usbsnap.py (modes run/wait/nodev), qmp_mutechk.py, run-rpi.sh (raspi4b on a given card + fsck + mdir), mkcard.sh,
+  extract_files.py, check_files.py, mkreplay.py, usbsnap-virt.c, usbsnap-replay.c, replay.h, mutechk.c,
+  without-release.diff; method/regress/ = copies of the kernel-part tester scripts (env.sh/run.sh paths adapted).
+  Program builds: sdk/build.sh (clang 21 + rust-lld), no warnings.
+
+SHA256 (binaries not kept)
+  USBSNAP.NCP (product)      e46feb9d3bd63c1bbf1ff424991cee82b8eb1ccfe68d33b873a0b06da934d7fc  (= rebuild at 46d37272)
+  USBSNAPV.NAP (virt build)  92e58267e3ab4330d2be8a4678d1a32c722e67e614f6edb2af3c53d3c110b4cb
+  USBSNAPR.NCP (replay)      37e9edccfe7f474298a8e63e9eabeaa468874a74cbb33de17a41b708f6496455
+  MUTECHK.NAP                5e39e0faf517ca0b91df8ab3173ee52fdb406c94744a00e4c6cbc3eac8b4df10
+  rpi4 release kernel8.img   a8ba138920078626ae56df4575186ac42bf34f720386d78e19554eef4099f233
+  qemu-virt dev image        2a20b96e61931cebcf17c065ff18f47cf07ea3680212701a3a85334cff83a16d
+  qemu-virt release image    ad8451afbe61a4303f3eff9714f53e50bb5d24d03faa2c5fc86c42f13456d4ac
+  virt + USBSNAPV            c19ba387696edc4ef09566ad91d1649385c86c608da302d9c823c15f4b52ebfc
+  virt + USBSNAPV, no release b5b537907ad630e4f3a15f806764afd003ded36b198e27c7febc7a54be49d992
+  virt + MUTECHK             ee7521c9db2f987e93858668dc2c51bee3fb70c11524ba07991eb2e5060a77f8
+  APITEST.NCP 96ae4de5..., PTERMCH.NCP 30fa331e..., DTACHILD.NCP eaf92b08... (= kernel-part tester run)

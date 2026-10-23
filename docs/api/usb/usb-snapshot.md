@@ -2,7 +2,9 @@
 
 > **STATUS: FREIGEGEBEN 2026-10-23** (Anwender: „ja mach los“, alle Empfehlungen aus §7,
 > Entscheidungen dort). **Kernelteil K1–K9 gebaut 2026-10-23** (Umsetzungsnotizen §9);
-> das Programm `USBSNAP` (K10) und die QEMU-Option (K11) stehen aus. Dieses Dokument ist **Spec und
+> **Programm `USBSNAP` (K10) und QEMU-Option (K11) gebaut 2026-10-23** (§9.1), dazu eine
+> Kernel-Nachbesserung am MUTE-Beginn (§9.1); offen: Tester-Abnahme, Test an der echten Pi
+> (T8). Dieses Dokument ist **Spec und
 > Analyse, kein Code**. Es ergaenzt [`hid-mouse-protocols.md`](hid-mouse-protocols.md)
 > §5.1 (gemeinsamer Kern) und §5.2 (Weg a); der Anwender hat Weg (a) am 2026-10-23
 > gewaehlt. Ticket: [`TASK/USB01.md`](../../../TASK/USB01.md). Modus-Zeile:
@@ -325,9 +327,13 @@ Danach `count` Eintraege ab `max(arg, oldest_seq)` in aufsteigender `seq`:
 
 **Op 4 `MUTE`** (empfohlen, **kippbar**, §7 Frage 1): `arg` = Dauer in Ticks (1…12000,
 also ≤ 60 s), 0 = aus. Solange gemuted: `poll()` zeichnet auf und re-armiert wie
-gewohnt, **dekodiert aber nicht** (`ikbd::feed` entfaellt). Zweck: waehrend der
+gewohnt, **dekodiert aber nicht** (`ikbd::feed` entfaellt). Beim **Beginn** eines Mute laesst
+der Dekodierer einmal alle noch gehaltenen Tasten und Maustasten los (§9.1: sonst verliert
+eine vor dem Mute gedrueckte Taste ihr Loslassen an den Mute und wiederholt sich durch).
+Zweck: waehrend der
 Aufnahme sollen Mausklicks nicht den Desktop erreichen. Ob liegengebliebene Klicks
-nach Programmende am Desktop wirken, ist **[?]** (nicht untersucht; deshalb Test T6).
+nach Programmende am Desktop wirken, ist **[?]** (nicht untersucht; deshalb Test T6;
+QEMU-Ergebnis §9.1).
 Der Kernel hebt das Muten nach Ablauf der Dauer **selbst** auf (Frist als `_hz_200`-Wert,
 wrap-sicher verglichen): ein abgestuerztes Programm kann die Eingabe nicht dauerhaft
 sperren. Antwort-Rumpf: `u32 muted_until` (0 = aus), `u32 reserved`.
@@ -471,7 +477,7 @@ exotisches Geraet, dessen Configure Endpoint fehlschlaegt, verbraucht Befehlsrin
 
 ```
 USBSNAP - USB device recorder              NewTOS 0.6.1 2026-10-23 (abcdef0)
-Writes one text file per USB device to C:\ . Send the files to the developer.
+Writes one text file per USB device to C:\USB\ - send them to the developer.
 
 Found 3 USB devices:
   1  046d:c077  Mouse        root port 1
@@ -497,9 +503,9 @@ Danach ein Zaehler pro Sekunde, je Geraet eine Zeile (VT52-Cursoradressierung `E
 Ende:
 ```
 Done. Wrote:
-  C:\046DC077.TXT   (3.1 KB)
-  C:\04D90169.TXT   (1.2 KB)
-  C:\1E7D2CEE.TXT   (2.7 KB)
+  C:\USB\046DC077.TXT   (3.1 KB)
+  C:\USB\04D90169.TXT   (1.2 KB)
+  C:\USB\1E7D2CEE.TXT   (2.7 KB)
 Copy these files from the SD card and send them. Press any key to exit.
 ```
 
@@ -683,7 +689,7 @@ Hostseitig und QEMU ohne Hardware, Abnahme am Ende an der Pi durch den Anwender.
 | T3 | Ssystem-Randfaelle mit Mock-Host: `len < 32`, `buf 0`, falsche Magic/Version/Op, Index zu gross, kein Controller (`ERROR`), zu kleiner Puffer (`E_OK` + `TRUNCATED`, nur Kopf), Op 4 `arg > 12000`; ungueltiger Zeiger beendet den Prozess (Muster `uacc3a.c`) | `tos-api/tests/` | Rueckgabewerte nach §2.3 |
 | T4 | **qemu-virt** mit `qemu-xhci` + `usb-kbd` + `usb-mouse` (heutiges Verhalten, `tools/xtask/src/main.rs:674-677`): LIST zeigt 2 Geraete, Rolle 1/2, `reason 0`; DEVICE: Geraetedeskriptor 18 Byte stimmt mit `[usb] device descriptor`-Logzeile (`xhci/mod.rs:1165`) ueberein, Konfiguration und Report-Deskriptor-Laenge = `wDescriptorLength`; Regression: Tastatur tippt, Cursor bewegt sich wie vorher | QEMU | wie links |
 | T5 | **qemu-virt** mit zusaetzlich `usb-tablet` (Report-only, Subklasse 0, Protokoll 0 — nach QEMU `dev-hid.c`, extern/nicht lokal [S]) und `usb-hub` mit Maus dahinter | QEMU (Option K11) | Tablet: Rolle 3, Ring fuellt sich, **kein** Cursor-Effekt; Hub: Kind hat `parent` und `route`; Reihenfolge/Eintraege stimmen |
-| T6 | Programm Ende-zu-Ende in QEMU: Dateien `C:\VVVVPPPP.TXT` entstehen, zweiter Lauf → `.T01`; Format nach §4.4 (alle Abschnitte); **MUTE**: Cursor friert waehrend der Aufnahme ein und laeuft danach; Klick waehrend der Aufnahme loest am Desktop **nichts** aus; Programm per Kill waehrend der Aufnahme → Eingabe kehrt nach spaetestens 35 s zurueck. Berichte erzeugen: QMP `input-send-event` — **Vorsicht:** mit `device=<usb-id>` bricht QEMU 11.0.2 ab (USB02 Punkt 7); ohne `device` ist der Weg zum richtigen Geraet **ungeprueft** [?]; Rueckfall: nur ein USB-Eingabegeraet je Lauf | QEMU | Dateien wie spezifiziert |
+| T6 | Programm Ende-zu-Ende in QEMU: Dateien `C:\USB\VVVVPPPP.TXT` entstehen (Durchfuehrung §9.1: kein QEMU-Board hat USB **und** Laufwerk), zweiter Lauf → `.T01`; Format nach §4.4 (alle Abschnitte); **MUTE**: Cursor friert waehrend der Aufnahme ein und laeuft danach; Klick waehrend der Aufnahme loest am Desktop **nichts** aus; Programm per Kill waehrend der Aufnahme → Eingabe kehrt nach spaetestens 35 s zurueck. Berichte erzeugen: QMP `input-send-event` — **Vorsicht:** mit `device=<usb-id>` bricht QEMU 11.0.2 ab (USB02 Punkt 7); ohne `device` ist der Weg zum richtigen Geraet **ungeprueft** [?]; Rueckfall: nur ein USB-Eingabegeraet je Lauf | QEMU | Dateien wie spezifiziert |
 | T7 | **raspi4b** (kein USB): `Ssystem(2022)` → `ERROR`; Programm druckt „No USB controller…“, beendet ohne Datei, `Ssystem` ohne Abstuerze | `-M raspi4b` | Beleg `pcie_rpi4.rs:465-468` + Lauf |
 | T8 | **Echte Pi 4, Anwender:** 1 Maus + 1 Tastatur; Programm laufen lassen; Dateien lesen: stimmen VID/PID/Pfad/Speed mit `lsusb`-Wissen ueberein, Maus-Berichte erscheinen bei Bewegung/Klick, Report-Deskriptor vorhanden; Regression: Desktop/Maus/Tastatur wie vor der Aenderung (Beobachtungs-Pfad aendert nichts am Boot); Datei an den Entwickler zur Sichtung, **dann erst** an Ragnar. Optional: Abgleich mit `C:\USBDIAG.LOG` eines `usb-diag`-Builds | Pi | Abnahme durch den Anwender |
 
@@ -777,3 +783,57 @@ offen liessen, gilt (alles **[E]**, beim Bau festgelegt, vom Programm K10 so zu 
   Zusammenfassung `N devices (K keyboard/mouse, O observed only)`.
 
 Belege: `measurements/measurement-2026-10-23-usb01-snap-kernel/RUNINFO.TXT`.
+
+### 9.1 Umsetzung Programm und QEMU-Option (K10, K11, 2026-10-23)
+
+Gebaut: `sdk/examples/usbsnap.c` (→ `USBSNAP.NCP`, Image-Eintrag `tools/make-sd-image.sh`),
+`cargo xtask run --usb-extra` / `--usb-dev <spec>` (`tools/xtask/src/main.rs`
+`qemu_usb_args`, Doku `docs/sdk/06-image-and-testing.md`). Entscheidungen, wo §4 offen war
+oder beim Testen nicht trug (alle **[E]**):
+
+* **Reihenfolge:** DEVICE (Op 2) je Geraet schon **vor** der Startfrage (§4.2 Schritt 4 nannte
+  „danach“), damit Hersteller-/Produktstring in der Geraeteliste stehen. Der Ordner `C:\USB\`
+  wird ebenfalls **vor** der Aufnahme geprueft/angelegt (`Fattrib` → bei `EFILNF` `Dcreate`):
+  scheitert das, steht die Meldung da, bevor der Anwender 30 s Maus bewegt. Existiert
+  `C:\USB` als **Datei**, eigene Meldung, kein Schreiben.
+* **`NOIDrrii`:** `rr` = Root-Port dezimal, `ii` = API-Index (0-basiert) dezimal; die Datei
+  nennt den Index in `Device : n of N (index i)`. Gilt fuer Rolle 5 **oder** VID = PID = 0.
+* **Kollision:** `Fopen(…, 0)` ≥ 0 → belegt, `EFILNF` → frei, jeder andere Fehler → Meldung,
+  Datei uebersprungen; `.TXT`, dann `.T01` … `.T99`.
+* **Startwartezeit / Uhr:** `now_hz200` aus einem LIST-Aufruf mit `len = 32` (nur Kopf); der
+  Aufnahmebeginn ist `now` der MUTE-Antwort, gelesen wird ab `ring_next_seq` der LIST kurz davor.
+  Waehrend der Aufnahme je Schleife `Cconis`, alle 10 Ticks Op 3 je Geraet mit Ring, jede Sekunde
+  die Zaehlerzeilen per `ESC Y`; dazu eine feste Hinweiszeile („Move the mouse …“).
+* **Dateiformat:** Zeilen > 78 Spalten bricht der Schreiber am letzten Leerzeichen um
+  (Fortsetzung unter dem Wert bzw. 4 Spalten eingerueckt). `ring 256` in Abschnitt 0 ist die
+  v1-Grenze aus §2.7 (das Programm akzeptiert nur Layout v1). Tastatur-Berichte (Rolle 1):
+  Modifier und Usage-Codes **hex**, nur die von 0 verschiedenen. Logical/Physical Min/Max und
+  Unit Exponent werden **vorzeichenbehaftet** gelesen (HID 1.11 Beispiel `15 81` = -127); ist
+  der Wert negativ, steht der Rohwert dabei (`25 ff` → „-1, raw 0xff“: manche Geraete meinen
+  ihn vorzeichenlos). Namen: Deskriptorfelder nach HID 1.11 Anhang E, Items nach §6.2.2,
+  Usage Pages/Usages nach FreeMiNT `hid-common/hid.h` (lokal), xHCI-Codes Tabelle 6-90,
+  Speed-IDs Tabelle 7-13; alles andere als Zahl.
+* **Kernel-Nachbesserung MUTE-Beginn (T6-Befund):** In QEMU wurde die RETURN-Taste, mit der die
+  Aufnahme startet, gedrueckt dekodiert, ihr Loslassen aber vom Mute verschluckt; die
+  Tastenwiederholung lief 30 s weiter, die Wiederholungen erfuellten nach der Aufnahme sofort
+  „Press any key to exit“ und starteten das Programm erneut, dessen Startfrage ebenfalls sofort
+  erfuellt war (A/B im Beleg unten: `serial/virt-norelease.log` ohne, `serial/virt-extra.log`
+  mit der Abhilfe). Abhilfe in `usb::poll`:
+  `Store::mute_state` meldet den Beginn eines Mute genau einmal, dann `hid::release_all()` —
+  leerer Tastaturbericht (Break fuer jede gehaltene Taste und jeden Modifier, beendet die
+  Wiederholung) und, falls ein Knopf gedrueckt war, ein Mausbericht ohne Knopf und ohne
+  Bewegung. Ausserhalb der Store-Ausleihe (§2.8). Verlaengern eines laufenden Mute ist kein
+  neuer Beginn.
+* **Speicher:** der Schnappschuss-Speicher liegt in `.bss` (vorher `.data`, +225 KB im Image):
+  `Fetch` ist `repr(u8)` mit `NotTried = 0`, unbelegte Slots sind `Device::UNCLAIMED` (alle Bytes
+  0); `Store::claim` setzt weiterhin `Device::EMPTY`, gelesen wird nur `devices[..n_devices]`.
+* **Test-Naehte:** `usbsnap.c` hat zwei `#ifdef`-Stellen fuer Messbauten (`USBSNAP_TEST_SNAPCALL`:
+  `snap_call` kommt vom Wrapper; `USBSNAP_TEST_SINK`: die `out_*`-Dateifunktionen kommen vom
+  Wrapper). `sdk/build.sh` setzt keine; die Wrapper liegen im Messordner.
+* **Warum Wiedergabe:** `qemu-virt` hat xHCI, aber kein Laufwerk; `raspi4b` hat die Karte, aber
+  kein USB. T6 wurde deshalb geteilt: echte Kernel-Antworten auf `qemu-virt` (Dateien auf die
+  Konsole), Dateischreiben auf `raspi4b` mit den dort aufgezeichneten Antworten. Der Klick auf
+  den **Desktop** waehrend der Aufnahme ist nur an der echten Pi pruefbar (T8); in QEMU belegt
+  eine AES-Probe (`graf_mkstate`) Zeiger und Knopf.
+
+Belege: `measurements/measurement-2026-10-23-usb01-snap-program/RUNINFO.TXT`.
