@@ -1,0 +1,30 @@
+== C:/
+init :: non DOS media
+Cannot initialize '::'
+ Volume in drive : is USBSNAPT   
+ Volume Serial Number is 853E-1CF4
+Directory for ::/
+
+USB          <DIR>     1980-01-01   0:00 
+USBSNAPN NCP     80872 2026-10-23  12:00 
+NEWDESK  INF        31 2026-10-23  12:00 
+        3 files              80 903 bytes
+                         66 781 184 bytes free
+
+== C:/USB
+init :: non DOS media
+Cannot initialize '::'
+ Volume in drive : is USBSNAPT   
+ Volume Serial Number is 853E-1CF4
+Directory for ::/USB
+
+.            <DIR>     1980-01-01   0:00 
+..           <DIR>     1980-01-01   0:00 
+NOID0500 TXT      4741 1980-01-01   0:00 
+06270001 TXT      6843 1980-01-01   0:00 
+NOID0702 TXT      5242 1980-01-01   0:00 
+06270001 T01      4556 1980-01-01   0:00 
+06270001 T02      5229 1980-01-01   0:00 
+        7 files              26 611 bytes
+                         66 781 184 bytes free
+

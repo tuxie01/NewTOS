@@ -1,0 +1,64 @@
+=== 0. FILE ===
+Format        : NewTOS USBSNAP text report v1
+Program       : USBSNAP.NCP v1
+Kernel        : NewTOS 0.6.1 2026-10-23 (fe30bfc1)
+Snapshot API  : Ssystem 2022, layout v1, generation 1
+Recorded      : 30.0 s, pointer muted: yes, ring 256, reports listed <= 1024
+Device        : 1 of 3 (index 0)
+Timestamps    : time of collection by the host, NOT the time the device sent
+                the report (resolution = how often the kernel polls USB).
+
+=== 1. IDENTITY ===
+VID:PID       : 46f4:0001
+Manufacturer  : -   - not read (SKIPPED)
+Product       : -   - not read (SKIPPED)
+bcdUSB 3.00  class 0  subclass 0  protocol 0  EP0 max 9  configurations 1
+
+=== 2. POSITION ===
+Controller    : xHCI, 8 root ports
+Path          : root port 3
+Route string  : 0x00000000  (on a root port)
+Speed         : SuperSpeed (5 Gbit/s)  [xHCI PORTSC speed id 4]
+xHCI slot     : 1
+
+=== 3. DRIVER DECISION ===
+Role          : NONE (not an input device / not configured)
+Role codes    : 0 none / 1 keyboard / 2 mouse / 3 observed-only / 4 hub /
+                5 failed; this device: 0
+Reason        : 16 = no HID interface - not an input device
+Flags         : 0x03 = device descriptor ok, configuration ok
+                not configured (no SET_CONFIGURATION)
+HID interfaces: 0   recorded interface: none
+Interfaces:
+  if 0 alt 0  class 8 sub 6 proto 80  no int-IN endpoint
+      not used: not a HID interface (class != 3)
+Interrupt transfer errors: 0
+
+=== 4. RAW DESCRIPTORS (hex, offset: 16 bytes) ===
+Device descriptor, 18 bytes
+0000: 12 01 00 03 00 00 00 09 f4 46 01 00 00 00 01 02  |.........F......|
+0010: 03 01                                            |..|
+Configuration descriptor, 44 bytes (wTotalLength 44)
+0000: 09 02 2c 00 01 01 06 c0 00 09 04 00 00 02 08 06  |..,.............|
+0010: 50 00 07 05 81 02 00 04 00 06 30 0f 00 00 00 07  |P.........0.....|
+0020: 05 02 02 00 04 00 06 30 0f 00 00 00              |.......0....|
+
+=== 5. DECODED DESCRIPTORS ===
+Device: bLength 18 bDescriptorType 1 bcdUSB 0x0300 bDeviceClass 0
+  bDeviceSubClass 0 bDeviceProtocol 0 bMaxPacketSize0 9
+  idVendor 0x46f4 idProduct 0x0001 bcdDevice 0x0000
+  iManufacturer 1 iProduct 2 iSerialNumber 3 bNumConfigurations 1
+Configuration: wTotalLength 44 bNumInterfaces 1 bConfigurationValue 1
+  iConfiguration 6 MaxPower 0 (0 mA) bmAttributes 0xc0 bus-powered
+      self-powered
+  Interface 0 alt 0: bNumEndpoints 2 iInterface 0
+    class 8 sub 6 protocol 80
+    Endpoint 0x81: IN, bulk, wMaxPacketSize 0x0400 (1024), bInterval 0
+  descriptor type 0x30, 6 bytes (not decoded)
+    Endpoint 0x02: OUT, bulk, wMaxPacketSize 0x0400 (1024), bInterval 0
+  descriptor type 0x30, 6 bytes (not decoded)
+
+=== 6. REPORTS ===
+not recorded (not an input device / not configured)
+
+=== END ===

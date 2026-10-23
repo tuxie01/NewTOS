@@ -1,0 +1,16 @@
+== C:/
+init :: non DOS media
+Cannot initialize '::'
+ Volume in drive : is USBSNAPT   
+ Volume Serial Number is 459C-1CF3
+Directory for ::/
+
+USBSNAP  NCP     74584 2026-10-23  12:00 
+NEWDESK  INF        30 2026-10-23  12:00 
+        2 files              74 614 bytes
+                         66 822 144 bytes free
+
+== C:/USB
+init :: non DOS media
+Cannot initialize '::'
+mdir: File "::/USB" not found

@@ -1,0 +1,12 @@
+head virt-dev rc=0
+head virt-rel rc=0
+head rpi4-rel rc=0
+head rpi4-diag rc=0
+61ececcab04c8553ed0d0d4ef0121985dfbb2c2f7142529debf17cf608029145  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/651de586-7dd7-487b-9e92-c8525c58f508/scratchpad/usbsnap-t/bin/kernel8-head-rpi4-usbdiag.img
+158bd5942ae1576b636886c7d25262467caf2fe4a2745bc250f15ce834be7d38  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/651de586-7dd7-487b-9e92-c8525c58f508/scratchpad/usbsnap-t/bin/kernel8-head-rpi4.img
+4be54ceec6d586038bf9ca370c6a4100ad76382cd40062fe314327a8add946d0  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/651de586-7dd7-487b-9e92-c8525c58f508/scratchpad/usbsnap-t/bin/virt-dev-head.img
+base virt-dev rc=0
+base virt-rel rc=0
+base rpi4-rel rc=0
+e591fe50a565162e83c85c32fb196c07ab4ec609364a5912a4375d3bba5ea942  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/651de586-7dd7-487b-9e92-c8525c58f508/scratchpad/usbsnap-t/bin/kernel8-base-rpi4.img
+585f808a21442b881f49e89bdfc0164e83229d968a096b7e9b8dabc946ad3fd1  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/651de586-7dd7-487b-9e92-c8525c58f508/scratchpad/usbsnap-t/bin/virt-dev-base.img

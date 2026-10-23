@@ -1,0 +1,123 @@
+USB01 step 2 -- USB snapshot, program half (USBSNAP.NCP, --usb-extra, MUTE-start release): Tester acceptance / regression
+=========================================================================================================================
+
+Date      2026-10-23
+Tested    main @ fe30bfc1 (code = 53cb16c3 kernel follow-ups, 46a027e2 xtask K11, 46d37272 USBSNAP.NCP; fe30bfc1 = developer evidence run + docs)
+Baseline  b5c8da80 (kernel part, accepted by the previous tester run measurements/measurement-2026-10-23-usb01-snap-test/).
+          Head and base built in scratch git worktrees (own target dirs, removed afterwards).
+Who       Tester agent; no hardware, no card, no push. Product code untouched (git status before commit: only this directory new).
+          QEMU cards = fresh 64 MiB images with private mount points under the scratchpad (label USBSNAPT), per-run APFS clones,
+          deleted after. The user's card volumes (NEWTOS1-3, BOOT, BOOT 1, TOOLS, SYSTEM, GAMES) were not touched.
+
+RESULT (PASS / FAIL per check of the order)
+  1 builds + lint + size   PASS  fresh per board, head and base: qemu-virt dev + release, rpi4 dev + release, rpi4 release --features
+                                 usb-diag (head): all rc 0. rustc warnings kernel 94 / tos-api 64 on EVERY build (usb-diag 96 / 64),
+                                 head = base. clippy -p kernel both boards: kernel 124 / tos-api 76 on head AND base (delta 0), usb-file lines 43 = 43;
+                                 clippy -p xtask 1 warning (pre-existing). rpi4 release kernel8.img 1392336 bytes (base 1617616, -225280);
+                                 llvm-size release ELF: .data 470736 -> 245456, .bss 1187456 -> 1408640 (SNAPSHOT 224080 B is a 'b' symbol).
+                                 Host tests: cargo xtask test 158 suites, 1611 passed / 0 failed / 1 ignored (= developer); mute_start_is_seen_once
+                                 (kernel lib + xtask copy) and the two qemu_usb_args tests ran and passed.
+                                 NOTE: 5 xtask tests (rsc_obfix / rsc_cicon) failed in the scratch worktree only because gitignored references/
+                                 and sdk/apps/teradesk were not in it; after symlinking both into the scratch worktree: all green (logs: the green run).
+                                                                                     checks/
+  2 regression             PASS  qemu-virt dev kernels head vs base, real NEWDESK, default devices: mouse 20 x rel(+10,+6) 138 px (bbox 959,539-1169,675)
+                                 on both; Ctrl+Z -> EmuCON 1014367 px, "help" 198 px on both; tablet-only topology abs moves 0 px on both (no pointer
+                                 effect, as before). raspi4b release head vs base: APITEST TOTAL 109 / 0 / 5 on both; desktop up (1 drives) on both,
+                                 640x480 screendump 0 differing pixels head vs base. 0 EXC/PANIC in every run.
+                                                      serial/regress-*, rpi4-api-*, rpi4-nd-*, screendumps/rpi4-desktop-*.png
+  3 MUTE-start release     PASS  (a) method/keyrep.c, same binary on base and head kernel (serial/keyrep-{base,head}.log): idle 4 s: 0 events on both;
+                                 hold 'a' 1 s: 20 (base) / 19 (head) repeats, delay and interval identical (first repeat +60 ticks, then 8 ticks) =
+                                 key repeat unchanged; tap 'b', Shift+'c', left hold, right click: identical (2 keys, 4 button changes);
+                                 MUTE 300 ticks with NOTHING held: 0 keys, 0 button changes at the mute start and end (no spurious event).
+                                 'z' + left button held across the mute start and released DURING the mute: HEAD: BTN 0 at t=0 (released by the kernel),
+                                 no key repeat, 1 key ('y', typed after the mute) -> input back; BASE (same probe, same QMP): 'z' auto-repeats 57 x for the whole
+                                 mute and the left button stays "held" = the defect the commit fixes, reproduced and fixed. Typing after the mutes: 21 / 20 keys.
+                                 (b) the developer's mutechk (re-run): 7/7 PASS (button released at the mute start, no key queued, moves ignored while
+                                 muted, moves work again after the deadline, no ghost key).
+                                 (c) USBSNAP itself: after "Press any key to exit" the program waits (1 title line before the exit key in every run; the
+                                 RETURN that started the recording does not auto-repeat).
+  4 K11 xtask options      PASS  cargo xtask run (default): QEMU "-device qemu-xhci -device usb-kbd -device usb-mouse" = base line, 2 devices;
+                                 --usb-extra: "qemu-xhci,id=usb usb-kbd usb-mouse usb-tablet,bus=usb.0,port=3 usb-hub,bus=usb.0,port=4 usb-mouse 4.1 usb-kbd 4.2",
+                                 "[usb] enumeration done: 6 devices (4 keyboard/mouse, 1 observed only), 18 commands issued";
+                                 --usb-dev usb-tablet --usb-dev usb-hub,bus=usb.0,port=4 --usb-dev usb-mouse,bus=usb.0,port=4.1: 5 devices (3 k/m, 1 observed);
+                                 --board rpi4 --usb-extra: refused ("qemu-virt only"). (A spec with a port that does not exist, e.g. 4.3 without a hub,
+                                 or port 5, is QEMU's error "usb port ... not found" -- user error, not an xtask defect.)
+                                                                                     serial/xtask-*.log, xtask-*.qemu-cmdline.txt
+  5 USBSNAP end to end     PASS  qemu-virt --usb-extra topology, measurement build usbsnap-virt.c (serial/virt-extra.log, files/virt-extra-*):
+                                 list with 5 devices + hub-parent path ("root port 8 via hub 0409:55aa port 1"), "(hubs are not listed as devices)",
+                                 strings ("QEMU" "QEMU USB Mouse" ...), RETURN starts, counter once per second 30 s -> 0 s (MUTE 7000 ticks set at
+                                 now 1004, cleared at 7004 = 6000 ticks = 30 s), tablet = "HID (report)" with 3 abs reports (00 e8 03 e8 03 00 = x=1000
+                                 y=1000, 20000/15000, 32000/30000 as injected), mouse 30 reports (20 moves +10/+6, L/R/M, wheel +1/-1), keyboard 7 reports
+                                 (a, Shift+b; the break of the starting RETURN as first, muted, entry); no start key -> recording starts after the 15 s
+                                 timeout (serial/virt-wait.log: LIST now 650 -> MUTE now 3653); controller without devices -> "No USB device was detected at
+                                 boot ... RESTART" (virt-none); KILL: mutechk sets MUTE 7000 then crashes: RETURN at +5 s ignored, the first RETURN at +35.3 s
+                                 restarts it (35 s = 30 s + 5 s). Role-0 device (usb-storage): listed as "Not input", file 46F40001.TXT with section 6
+                                 "not recorded (not an input device / not configured)" (virt-storage). Files and naming/collision on raspi4b, replay of MY
+                                 virt capture (mkreplay.py on serial/virt-extra.log) through the real out_* code onto a real FAT card:
+                                 run 1 creates C:\USB (Fattrib EFILNF -> Dcreate) + 06270001.TXT, .T01..T04; run 2 on the same card finds them and writes
+                                 .T05..T09 (never overwrites; byte-identical to run 1); all 10 files pass check_files.py; fsck_msdos -n rc 0 after both runs;
+                                 C:\USB as a FILE: "C:\USB exists but is a file, not a folder. Rename it and retry.", nothing written, fsck rc 0;
+                                 NOID names (my patched replay.h: entry 0 VID/PID 0, entry 2 role 5): NOID0500.TXT (root port 05, index 00) and NOID0702.TXT
+                                 (07, 02), the other three 06270001.TXT/.T01/.T02, fsck 0; whole range: card pre-filled with 06270001.TXT + .T01..T99
+                                 (100 files with marker content): all 5 devices "06270001.T99 exists already - file skipped", "No file was written.",
+                                 0 of the 100 files changed, fsck 0 (107 files).
+                                 "No USB controller" path, product binary on raspi4b via #Z: "No USB controller in this system. Nothing to record." /
+                                 "Press any key to exit.", no C:\USB created (mdir: "::/USB" not found), fsck rc 0, intro lines fit 80 columns (screendump read).
+                                 Inspected files against §4.4 myself: virt-extra-06270001.TXT (keyboard, 106 lines) and .T01 (mouse): all 7 sections +
+                                 END in order, CRLF only, ASCII, widest line 78; device descriptor hex vs decoded fields (bcdUSB 0200, EP0 0x40, VID 0627,
+                                 PID 0001, iMfr 1, iProd 4, iSer 11), config wTotalLength 34 / bmAttributes 0xa0 / 0x32 = 100 mA, HID 0x22 length 63,
+                                 endpoint 0x81 max 8 interval 7 all agree; mouse report decode (buttons L/R/M, dx +10 dy +6, wheel +1/-1) agrees with bytes;
+                                 timestamps relative to the recording start.
+  6 make-sd-image.sh       NOT RUN (by design) -- /Volumes/NEWTOS1-3 (user cards) are mounted; the script mounts /Volumes/NEWTOS. Only bash -n (ok), the
+                                 USBSNAP block read (sdk/build.sh sdk/examples/usbsnap.c "$V/USBSNAP.NCP", set -e safe in an if), and the same command run
+                                 by me into scratch: sha256 e46feb9d...d7fc = the developer's product binary.
+  7 real-Pi list           see below (not a pass).
+
+SPLIT SOUNDNESS (question of the lead)
+  The split is sound for what it claims, with one residual gap. Seam 1 (USBSNAP_TEST_SNAPCALL) swaps only the 3-line snap_call (gemdos3 -> Ssystem 2022);
+  seam 2 (USBSNAP_TEST_SINK) swaps only the six out_* file primitives. Everything else (list, strings, recording loop, counters, MUTE handling, file
+  naming, collision rule, all of §4.4 content, section writers, line wrapping) is the SAME source in all three builds. qemu-virt therefore tests the
+  real kernel answers with the real program logic; raspi4b tests the real out_* code (Fattrib/Dcreate/Fopen/Fcreate/Fwrite) against a real FAT driver
+  and fsck. The two halves are joined by the raw kernel bytes (mkreplay.py). Residual gap: no single build ran real snap_call + real out_* + a recording.
+  I closed part of it: the UNMODIFIED product binary (NAP bytes == NCP bytes, sha256 e46feb9d...) booted on qemu-virt as NEWDESK.NAP (serial/
+  virt-product-unmodified.log, screendumps/virt-product.png): real Ssystem(2022) LIST + DEVICE with strings, device list, then the real folder check
+  fails (no C:) -> "Cannot use the folder C:\USB\ : -34 (EPTHNF)", "No file was written." -- and the product binary on raspi4b (No USB controller path).
+  What no QEMU run can do: the product binary through a real recording + real Fcreate/Fwrite in one run -> real Pi (T8). Replay answers are rebuilt headers
+  (clock = one tick per call), so timing fidelity of the replay is not evidence for the kernel's timing; the kernel timing is the qemu-virt half.
+
+FINDINGS / OBSERVATIONS (none changes a verdict)
+  1. Race window in Store::mute_state (code reading, NOT reproduced): mute_seen is reset only by a poll that sees "not muted". MUTE off immediately followed by
+     MUTE on within one 5-ms poll gap would not count as a new mute start (no release). USBSNAP's own sequence cannot do that (seconds apart); only a
+     different client could. Informational.
+  2. The all-skipped case prints "Done. Wrote:" followed by five "exists already - file skipped" lines and then "No file was written." (also names only the
+     last tried candidate .T99). Cosmetic wording; behaviour correct.
+  3. QEMU 'usb-tablet' shows as role 3 "HID (report)" and gets file + reports, no pointer effect: as specified (T5).
+  4. 5 xtask tests need gitignored inputs (references/emutos/aes/gem.rsc, sdk/apps/teradesk/cicons.rsc): they fail in a clean git worktree; unrelated to USB01.
+  5. A role-5 file produced by my patched replay still carries reports because the patch left ring_iface set; the "not recorded" text for ring 0xFF was
+     therefore verified on a real role-0 device (usb-storage) instead. A genuine role-5 device cannot be produced in QEMU.
+
+NOT VERIFIED (real Pi 4 only) -- for the user's docs/api/desktop/_hw-test-checklist.md / T8
+  a) Double-click start of C:\USBSNAP.NCP from the desktop; a click on the DESKTOP (icons) during the recording doing nothing (qemu-virt has no desktop under
+     the program; only graf_mkstate was probed); the desktop pointer coming back after the recording and after a kill (<= 35 s).
+  b) The mute-start release with the REAL keyboard and mouse: hold a key / a button, start the recording by RETURN, check there is no auto-repeat and no
+     stuck button afterwards; Shift/Ctrl/Alt held at the start.
+  c) Real devices: ROCCAT 1e7d:2cee (two HID interfaces: only the first is recorded, §7 decision 3), Apple keyboard 05ac:020c behind the Apple hub 05ac:1003,
+     low-speed timing, strings of real devices (SKIPPED/FAILED sections are legitimate), the Path/route lines behind the real hubs, speed ids.
+  d) VL805 specifics from the kernel-part list (TRB length 64 vs short packets, EP0 ring wrap, cache coherence of the new DMA buffers) -- the program
+     doubles as the probe; compare the file's "Interrupt transfer errors" and cc values.
+  e) Files on the real FAT16/FAT32 card: C:\USB creation, 8.3 names, real timestamps (QEMU raspi4b has no RTC: 1980-01-01), a card nearly full / write-protected.
+  f) 640x480 text legibility on HDMI (the screen is 80 columns wide; the QEMU screendump fits), the 1 Hz counter redraw (VT52 ESC Y) on the real console.
+  g) Kernel + USBSNAP.NCP delivered as a pair (spec §7 decision 5); the running kernel must be this build (an older kernel prints "too old").
+
+HOW
+  method/run-prog-virt.sh (T5/T6 on qemu-virt: virt-extra / virt-wait / virt-none / mutechk), run-virt.sh (+ topology "storage"), qmp_usbsnap.py,
+  qmp_mutechk.py, extract_files.py, check_files.py (developer's scripts, read first, paths adapted); NEW: keyrep.c + qmp_keyrep.py (head-vs-base key/button
+  probe), qmp_prod.py (unmodified product binary on qemu-virt), usbsnap-replay-noid.c + replay-noid.h (NOID patch), regress.sh (mouse/Ctrl+Z/typing/tablet),
+  rpi-all.sh (T7, replay x2, file-as-folder, NOID, 100-file collision), rpi-regress.sh (APITEST + desktop, head vs base), mkcard.sh, run-rpi.sh.
+  Build: scratch worktrees head/base + build-all.sh equivalent; programs with sdk/build.sh; kernels with a measurement NEWDESK.NAP only in the scratch
+  worktree (original NEWDESK.NAP sha256 d5791be5... restored and checked); scratch worktrees removed afterwards.
+  sha256 of binaries (not kept): checks/sha256.txt. Key ones:
+    USBSNAP.NCP (product) e46feb9d3bd63c1bbf1ff424991cee82b8eb1ccfe68d33b873a0b06da934d7fc (= developer's)
+    USBSNAPV.NAP 92e58267..., MUTECHK.NAP 5e39e0fa... (= developer's); USBSNAPR.NCP (my replay.h) 7f8ea5ec...; USBSNAPN.NCP 48c668a1...; KEYREP.NAP a1be8924...
+    rpi4 release kernel8.img head 158bd594...(1392336 B)  base e591fe50...(1617616 B)   qemu-virt dev head 4be54cee... base 585f808a...
+    (hashes differ from the developer's kernels: scratch worktree paths and version stamp are part of the build)

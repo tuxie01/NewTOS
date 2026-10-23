@@ -1,0 +1,15 @@
+== C:/
+init :: non DOS media
+Cannot initialize '::'
+ Volume in drive : is USBSNAPT   
+ Volume Serial Number is 69C6-1CF7
+Directory for ::/
+
+NEWDESK  INF         7 2026-10-23  12:00 
+        1 file                    7 bytes
+                         66 897 920 bytes free
+
+== C:/USB
+init :: non DOS media
+Cannot initialize '::'
+mdir: File "::/USB" not found

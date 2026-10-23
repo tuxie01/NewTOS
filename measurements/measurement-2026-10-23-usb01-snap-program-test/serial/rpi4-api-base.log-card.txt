@@ -1,0 +1,19 @@
+== C:/
+init :: non DOS media
+Cannot initialize '::'
+ Volume in drive : is USBSNAPT   
+ Volume Serial Number is 26B4-1CF7
+Directory for ::/
+
+APITEST  LOG     11846 1980-01-01   0:00 
+APITEST  NCP    160488 2026-10-23  12:00 
+PTERMCH  NCP      6328 2026-10-23  12:00 
+DTACHILD NCP      6104 2026-10-23  12:00 
+NEWDESK  INF        23 2026-10-23  12:00 
+        5 files             184 789 bytes
+                         66 709 504 bytes free
+
+== C:/USB
+init :: non DOS media
+Cannot initialize '::'
+mdir: File "::/USB" not found
