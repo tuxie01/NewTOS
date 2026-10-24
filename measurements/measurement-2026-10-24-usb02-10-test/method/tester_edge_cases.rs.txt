@@ -1,0 +1,21 @@
+// Temporary test, appended to hid_decode::tests in a SCRATCH worktree of 795066d9 only (removed by hand afterwards,
+// never in the shared tree). Result: 12 passed (11 + this one).
+    #[test]
+    fn tester_edge_cases() {
+        // 0x01 first report after reset: no key event, modifier still diffed
+        let (s, out) = feed(0, &[[0x02, 0, 1, 1, 1, 1, 1, 1]]);            assert_eq!(out, [0x2a]);
+        let (s, out) = feed(s, &[[0x02, 0, 0x04, 0, 0, 0, 0, 0]]);          assert_eq!(out, [SC_A]);
+        // 0x01 in ONE slot together with real keys: key bytes not evaluated
+        let (s, out) = feed(s, &[[0x02, 0, 0x04, 0x05, 0x01, 0, 0, 0]]);    assert_eq!(out, []);
+        let (s, out) = feed(s, &[[0x02, 0, 0x04, 0, 0, 0, 0, 0]]);          assert_eq!(out, []);
+        let (_s, out) = feed(s, &[[0x02, 0, 0, 0, 0, 0, 0, 0]]);            assert_eq!(out, [SC_A | 0x80]);
+        // 0x01 in byte 7 only keeps the set
+        let (s, _) = feed(0, &[[0, 0, 0x04, 0, 0, 0, 0, 0]]);
+        let (_s, out) = feed(s, &[[0, 0, 0, 0, 0, 0, 0, 0x01]]);            assert_eq!(out, []);
+        // 0x01 in byte 1 (reserved, outside 2..8) is not the rule: report evaluated, a released
+        let (s, _) = feed(0, &[[0, 0, 0x04, 0, 0, 0, 0, 0]]);
+        let (_s, out) = feed(s, &[[0, 0x01, 0, 0, 0, 0, 0, 0]]);            assert_eq!(out, [SC_A | 0x80]);
+        // empty report after a phantom breaks both held keys (release_all path)
+        let (s, _) = feed(0, &[[0, 0, 0x04, 0x05, 0, 0, 0, 0], [0,0,1,1,1,1,1,1]]);
+        let (_s, out) = feed(s, &[[0u8; 8]]);                               assert_eq!(out.len(), 2);
+    }

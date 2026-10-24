@@ -1,0 +1,78 @@
+USB02 item 10 -- independent Tester run of 795066d9 (fix(usb): keep the key set on an ErrorRollOver boot report)
+================================================================================================================
+
+Date   2026-10-24
+Who    Tester agent. Host + QEMU only; no hardware, no SD card, no push, no GitHub.
+Base   2019888e. Everything below ran in scratch git worktrees (base / new = 795066d9 / mut) in the job scratch,
+       removed afterwards. The worktrees lack the gitignored inputs; references/, Applications/ and sdk/apps/teradesk
+       were symlinked to the main tree (without them 5 rsc_* host tests fail with "No such file" -- first base run
+       1626/5, an artefact of the worktree, not of the commit). Shared tree untouched (git status clean).
+
+VERDICT  PASS on all four checks (details below). Not covered: real Pi / Apple keyboard (HW).
+
+1. CODE vs SPEC (read + driven)                                                                       PASS
+   Spec rule (docs/api/usb/hid-keyboard.md "Status codes 0x01-0x03"): 1) 0x01 anywhere in bytes 2..7 -> key bytes not
+   evaluated, previous set kept; 2) modifier byte still diffed; 3) 0x02/0x03 never make/break, rest normal; state per
+   function. Code: newkeys = if r[2..8].contains(&0x01) { oldkeys } else { &r[2..8] }; state returned = modn + newkeys
+   (so the kept set is stored back, modifier from the report); is_key(u) = u > 0x03 in both loops. Matches 1-3.
+   hid.rs unchanged: PREV[func] per function; keyboard_report is called with a fixed 8-byte boot buffer (len is not
+   used for keyboards, unchanged by the commit).
+   Reports of the unit tests checked against the capture 05AC020C.TXT: seq 116/117/118 = `36 10` / `01 x6` / `36 0d`,
+   158-160 = `0d 0e` / phantom / `0e 18`, 164-166 = `0f 12` / phantom / `0f` -- identical to the test inputs.
+   Edge cases the developer's tests do not have, run as a temporary test in a scratch copy (method/tester_edge_cases.rs.txt),
+   12 passed: 0x01 as first report after reset (no key event, modifier diffed; following report makes a normally);
+   0x01 in one slot together with real keys (nothing; set stays {a}; later empty report breaks a);
+   0x01 only in byte 7; 0x01 in byte 1 (outside 2..8: not the rule, a released); empty report after a phantom breaks
+   both held keys (release_all path). Per-function (F3) is covered by the developer's test, re-run green.
+   Remark (no defect): post_fail_and_error_undefined_are_not_keys is green on the OLD code too (translate_key gives 0 for
+   usages 1..3), so it documents but does not discriminate; also see mutation below.
+
+2. HOST TESTS                                                                                         PASS
+   cargo xtask test (summary.txt): base 1631 passed / 0 failed / 1 ignored, 158 binaries, warning lines 127
+                                   new  1636 passed / 0 failed / 1 ignored, 158 binaries, warning lines 127   (+5)
+   hid_decode tests (the xtask bin runs the kernel file by path): base 6, new 11; xtask bin 148 -> 153 passed.
+   Mutation (scratch worktree 795066d9; keyboard_diff reverted to the old `newkeys = &r[2..8]` and `k != 0`):
+   4 of 11 red: error_rollover_keeps_the_key_set_capture_116_118, error_rollover_capture_158_160_and_164_166,
+   error_rollover_still_evaluates_modifiers, error_rollover_is_per_function. post_fail_... stays green (see above).
+   Matches the developer's claim exactly.
+   (A first cargo xtask test in the main tree was started and killed after ~100/158 binaries -- very slow there, no
+   failure seen; the numbers above come from the clean scratch worktrees.)
+
+3. BUILDS / WARNINGS                                                                                  PASS
+   cargo xtask build --board {qemu-virt,rpi4} [--release], fresh (kernel ELF removed before each): 8/8 rc 0
+   (base and new, dev + release, both boards). rustc warnings kernel 93 = 93, tos-api 64 = 64 in all 8.
+   cargo clippy --package kernel --no-default-features --features board-{qemu-virt,rpi4}: rc 0; tos-api 76 = 76,
+   kernel 121 = 121 base vs new on both boards; lines in kernel/src/drivers/usb/ 40 = 40; hid_decode.rs 0.
+   Base release qemu-virt image sha256 1d5d3092... = the developer's base hash (reproducible). New image
+   1f2335de460c8142bde7eddc773eb2f5dad7e70eff8de383cd9a7793b9e4201e differs from the developer's d108d5f2... only by
+   the build stamp (he built before committing: stamp 2019888e; mine 795066d9).
+   kernel8.img of the rpi4 builds stayed in the scratch worktrees; none in the repo root.
+
+4. QEMU qemu-virt (release kernels; developer's method scripts unchanged, copied from measurement-...-usb02-10/method) PASS
+   Per topology default and extra (--usb-extra: 2 boot keyboards + 2 boot mice): mouse move, Ctrl+Z -> EmuCON,
+   key repeat (hold x 3 s, then tap y); plus qmp_roll.py.
+   - [usb]/[pcie] serial lines (hex masked) base vs new identical in all 7 runs (26 default, 53 extra);
+     "exception|panic" 0 in all 14 logs; "[desk] desktop up" in all.
+   - Screendumps base vs new, all 14 mouse/key/hold pairs: 0 differing pixels (this time also extra hold; the
+     developer's one-x jitter did not recur). Mouse cursor really moved: before/after bbox (959,539)-(1169,675) in both
+     topologies. Looked at: new-default-mouse-1-after.png (desktop, cursor, menu bar), new-extra-hold-1-tap.png
+     (row of x then one y).
+   - ErrorRollOver (qmp_roll.py: hold a s d f g h, 7th key j, release j, release the six):
+       base default  "asdfghasdfgh"  (defect reproduced)           screendumps/base-default-roll-0-roll.png
+       new  default  "asdfgh"        3 of 3 runs, pixel-identical   screendumps/new-default-roll-0-roll.png, -r2, -r3
+       base extra    "asdfghasdfgh" (seen)                                 screendumps/base-extra-roll-0-roll.png
+       new  extra    "asdfgh"        (two keyboards present)         screendumps/new-extra-roll-0-roll.png
+     pixdiff base vs new default roll: 256 px, bbox (89,34)-(135,48) = the second "asdfgh" (developer measured 302 px,
+     timing); extra: same bbox. j is never made (only existed inside the phantom state) -- as the spec rule says.
+   QEMU's usb-kbd does emit the phantom state for 7 keys (base output proves it).
+
+DROVE vs NOT COVERED
+   Drove: items above. Not covered / real HW only: Apple Extended keyboard on a real Pi; a modifier change inside a real
+   phantom report (host-tested + edge test only, not via QEMU); no device sending 0x02/0x03. Cache/HDMI/USB-HID on silicon
+   -> docs/api/desktop/_hw-test-checklist.md.
+
+OUT OF SCOPE
+   The developer's pixdiff.py was not used (not run); an own PIL diff (venv Pillow) produced the pixel numbers here.
+
+FILES  serial/summary.txt (all numbers above), serial/*roll*.log, screendumps/*.png, method/build.sh,
+       method/tester_edge_cases.rs.txt. Scratch (images, worktrees) deleted after the run.

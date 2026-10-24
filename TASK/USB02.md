@@ -157,6 +157,18 @@ Nicht abgedeckt: echte Pi mit der Apple-Tastatur; Modifier-Wechsel im Phantomber
 nur im Hosttest; kein Geraet, das 0x02/0x03 sendet. Beleg
 `measurements/measurement-2026-10-24-usb02-10/RUNINFO.TXT`.
 
+**Tester 2026-10-24: PASS (`795066d9`, Basis `2019888e`).** Code gegen Spec-Regel 1-3
+gelesen und mit Zusatz-Randfaellen im Scratch gefahren (0x01 als erster Bericht, 0x01 in
+einem Slot neben echten Tasten, nur Byte 7, Byte 1 ausserhalb des Arrays, Leerbericht nach
+Phantom): alle gruen. `cargo xtask test` 1631 -> 1636 (0 failed, 1 ignored, 158 Binaries,
+Warnungszeilen 127 = 127). Mutation (alter `keyboard_diff`): 4 der 5 neuen Tests rot,
+`post_fail_...` bleibt gruen (kein Unterscheidungswert, nur Dokumentation). Builds dev+release
+beide Boards rc 0, rustc 93/64 und clippy 121/76 unveraendert. QEMU qemu-virt, beide
+Topologien: Maus, Ctrl+Z, Tastenwiederholung ohne Regression (0 Pixel Differenz, [usb]-Zeilen
+identisch, 0 Exceptions); sieben Tasten: Basis `asdfghasdfgh`, neu `asdfgh` (3 von 3 Laeufen,
+auch mit `--usb-extra`). Offen: echte Pi mit Apple-Tastatur (HW). Beleg
+`measurements/measurement-2026-10-24-usb02-10-test/RUNINFO.TXT`.
+
 ## 11. F3-Rueckfall auch nach Command-Timeout (2026-10-24, Tester)
 
 `measurements/measurement-2026-10-24-usb01-f3-test/RUNINFO.TXT` Check 7:

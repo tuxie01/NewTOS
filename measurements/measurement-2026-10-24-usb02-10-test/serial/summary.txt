@@ -1,0 +1,52 @@
+== cargo xtask test summaries (scratch worktrees at 2019888e / 795066d9, gitignored inputs symlinked) ==
+-- base: 1631 passed 0 failed 1 ignored, 158 binaries, warning lines 127
+-- new: 1636 passed 0 failed 1 ignored, 158 binaries, warning lines 127
+-- new hid_decode tests:
+test kernel_usb_hid_decode::tests::error_rollover_is_per_function ... ok
+test kernel_usb_hid_decode::tests::error_rollover_capture_158_160_and_164_166 ... ok
+test kernel_usb_hid_decode::tests::error_rollover_keeps_the_key_set_capture_116_118 ... ok
+test kernel_usb_hid_decode::tests::error_rollover_still_evaluates_modifiers ... ok
+test kernel_usb_hid_decode::tests::held_key_survives_the_other_keyboards_empty_reports ... ok
+test kernel_usb_hid_decode::tests::modifier_held_on_one_keyboard ... ok
+test kernel_usb_hid_decode::tests::mouse_buttons_are_or_ed_and_wheel_needs_length ... ok
+test kernel_usb_hid_decode::tests::post_fail_and_error_undefined_are_not_keys ... ok
+test kernel_usb_hid_decode::tests::release_all_walks_every_function ... ok
+test kernel_usb_hid_decode::tests::single_keyboard_unchanged ... ok
+test kernel_usb_hid_decode::tests::two_keyboards_holding_different_keys ... ok
+-- base hid_decode tests:
+test kernel_usb_hid_decode::tests::held_key_survives_the_other_keyboards_empty_reports ... ok
+test kernel_usb_hid_decode::tests::modifier_held_on_one_keyboard ... ok
+test kernel_usb_hid_decode::tests::mouse_buttons_are_or_ed_and_wheel_needs_length ... ok
+test kernel_usb_hid_decode::tests::release_all_walks_every_function ... ok
+test kernel_usb_hid_decode::tests::single_keyboard_unchanged ... ok
+test kernel_usb_hid_decode::tests::two_keyboards_holding_different_keys ... ok
+== mutation (scratch worktree 795066d9, keyboard_diff newkeys=&r[2..8], is_key->k!=0) ==
+test kernel_usb_hid_decode::tests::error_rollover_still_evaluates_modifiers ... FAILED
+test kernel_usb_hid_decode::tests::error_rollover_keeps_the_key_set_capture_116_118 ... FAILED
+test kernel_usb_hid_decode::tests::error_rollover_is_per_function ... FAILED
+test kernel_usb_hid_decode::tests::error_rollover_capture_158_160_and_164_166 ... FAILED
+test result: FAILED. 7 passed; 4 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.00s
+== builds ==
+base dev qemu-virt rc=0
+base release qemu-virt rc=0
+base dev rpi4 rc=0
+base release rpi4 rc=0
+new dev qemu-virt rc=0
+new release qemu-virt rc=0
+new dev rpi4 rc=0
+new release rpi4 rc=0
+base-dev-qemu-virt.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+base-dev-rpi4.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+base-release-qemu-virt.log: warning: `kernel` (lib) generated 93 warnings warning: `tos-api` (lib) generated 64 warnings 
+base-release-rpi4.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+new-dev-qemu-virt.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+new-dev-rpi4.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+new-release-qemu-virt.log: warning: `kernel` (lib) generated 93 warnings warning: `tos-api` (lib) generated 64 warnings 
+new-release-rpi4.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+== clippy ==
+base qemu-virt: warning: `tos-api` (lib) generated 76 warnings  warning: `kernel` (lib) generated 121 warnings   usb-loc=40 hid_decode=0
+base rpi4: warning: `tos-api` (lib) generated 76 warnings  warning: `kernel` (lib) generated 121 warnings   usb-loc=40 hid_decode=0
+new qemu-virt: warning: `tos-api` (lib) generated 76 warnings  warning: `kernel` (lib) generated 121 warnings   usb-loc=40 hid_decode=0
+new rpi4: warning: `tos-api` (lib) generated 76 warnings  warning: `kernel` (lib) generated 121 warnings   usb-loc=40 hid_decode=0
+1d5d3092659d3abbf0e63adb3537711821ea8922d560108dc22c362eef519bd8  base-release-qemu-virt.img
+1f2335de460c8142bde7eddc773eb2f5dad7e70eff8de383cd9a7793b9e4201e  new-release-qemu-virt.img
