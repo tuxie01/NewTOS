@@ -134,3 +134,13 @@ Mehr-Interface-Pfad ist in QEMU nicht nachbildbar (Host-Tests + Wiedergabe):
 `measurements/measurement-2026-10-24-usb01-f3/RUNINFO.TXT`. **Offen:** Tester-Abnahme; echte Pi
 P1–P5 (§9.8): Pi-Kandidat rpi4-`kernel8.img` `edc9c4d1…` + `USBSNAP.NCP` `522c8e94…` (beide aus
 `be506300`), danach Paket fuer Ragnar (Rueckfragen GitHub #3).
+
+## Stand 2026-10-24 — Pi-Lauf F3 + USBSNAP T8 (Anwender)
+
+`measurements/measurement-2026-10-24-usb01-f3-pi/RUNINFO.TXT`: Enumeration
+byte-gleich zum Kern vor F3 (P1 ohne Aenderung), USBSNAP v2 zeichnet beide
+Geraete mit 0 Fehlern auf und schreibt `C:\USB\05AC020C.TXT` und
+`1E7D2CEE.TXT`. **T8 damit erledigt.** Anwender: „nach der Rueckkehr sah alles
+wieder normal aus“ (Zeiger da, Desktop reagiert normal). Offen: P2/P3 mit
+Funkempfaenger (ragnar76), Tester-Bericht zu F3, USB02 Punkt 10
+(ErrorRollOver).
