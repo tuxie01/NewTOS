@@ -69,7 +69,61 @@ Keep the previous report; each poll diff old vs new:
    through `translate_key`, emit `scancode` (make) or `scancode|0x80` (break).
 3. Save `new` as `old`.
 
-Roll-over and the all-zero "no keys" report fall out naturally.
+Ordinary roll-over (up to six keys) and the all-zero "no keys" report fall
+out naturally. The keyboard status codes 0x01–0x03 do not (next section).
+
+### Status codes 0x01–0x03 in the key array (ErrorRollOver, POSTFail, ErrorUndefined)
+
+**Normative (USB-IF), what the codes are:**
+
+- HID Usage Tables 1.5 (`references/usb/hut1_5.pdf`), ch. 10 Keyboard/Keypad
+  Page (0x07), printed p. 89: `01 Keyboard ErrorRollOver`, `02 Keyboard
+  POSTFail`, `03 Keyboard ErrorUndefined`, all footnote 1, printed p. 95:
+  *"Reserved for typical keyboard status or keyboard errors. Sent as a member
+  of the keyboard array. Not a physical key."*
+- HID 1.11 (`references/usb/hid1_11.pdf`) Appendix C, printed p. 62, and F.3,
+  printed p. 74: the (boot) keyboard reports ErrorRollOver **in all array
+  fields** when more non-modifier keys are pressed than the report holds (six
+  in the boot report) or the combination cannot be determined (ghosting).
+  Appendix C table, printed p. 63, row "Q down": array `01 01 01`, comment
+  *"Phantom state. … Modifiers still reported."*
+
+Neither document states what the host does with such a report. The host rule
+below is a **user decision of 2026-10-24** (`TASK/USB02.md` item 10), chosen
+from the implementation practice:
+
+- Linux `drivers/hid/hid-core.c` `hid_input_fetch_field` /
+  `hid_input_array_field`: an array field holding `HID_UP_KEYBOARD + 1`
+  (ErrorRollOver) is ignored and keeps its old value; the modifier field
+  (a variable field) is processed as usual.
+- FreeBSD `sys/dev/usb/input/ukbd.c` `ukbd_intr_callback`, `sys/dev/hid/hkbd.c`,
+  NetBSD `sys/dev/hid/hidkbd.c` `hidkbd_input`: the whole report is dropped,
+  old state kept (modifiers included).
+- Linux `usbhid/usbkbd.c` and U-Boot `common/usb_kbd.c` skip codes `<= 3` in
+  the diff but do not keep the state (a rollover report releases held keys).
+- FreeMiNT `usb_keyboard.c` `kbd_int` (the source of this page) does not check
+  the codes at all.
+
+(Pins and line numbers: `TASK/USB02.md` item 10, "Quellen zum Host-Verhalten".)
+
+**Host rule (NewTOS):**
+
+1. **0x01 ErrorRollOver anywhere in bytes 2..7:** the key bytes of this report
+   are **not evaluated**. The previous key set of this function is kept
+   unchanged: no break and no make for any key. (The device sends the phantom
+   state instead of the real key list; diffing it would release every held
+   key and press it again with the next report — a spurious break/make pair
+   that stops or restarts key repeat.)
+2. **The modifier byte (byte 0) of that report is still evaluated** as in
+   every report (step 1 above) — HID 1.11 Appendix C p. 63 "Modifiers still
+   reported", like Linux `hid-core`.
+3. **Only 0x01 discards the key bytes.** 0x02 POSTFail and 0x03
+   ErrorUndefined never produce a make or a break ("not a physical key");
+   the rest of such a report is evaluated normally.
+
+The state is per function (one previous report per polled HID interface,
+`hid-mouse-protocols.md` §9.6): a rollover report of one keyboard keeps only
+that keyboard's key set.
 
 ## NewTOS integration (our own — cleaner than FreeMiNT's vector inject)
 

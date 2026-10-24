@@ -66,11 +66,28 @@ fn modifiers(bits: u8, off: u8, emit: &mut impl FnMut(u8)) {
     }
 }
 
+/// Usage 0x01 Keyboard ErrorRollOver: the device's "phantom state", sent in
+/// the key array instead of the real key list (HID 1.11 Appendix C p. 62).
+const ERROR_ROLL_OVER: u8 = 0x01;
+
+/// A key array entry that is a physical key: not empty (0x00) and not one of
+/// the keyboard status codes 0x01 ErrorRollOver, 0x02 POSTFail, 0x03
+/// ErrorUndefined (HID Usage Tables 1.5 p. 89, footnote 1 p. 95: "Not a
+/// physical key").
+fn is_key(usage: u8) -> bool {
+    usage > 0x03
+}
+
 /// One 8-byte boot keyboard report against the **same function's** previous
 /// report `prev` (byte 0 = modifiers, bytes 2..8 = the six key codes, packed
 /// little-endian into a `u64`): emit a break for every modifier/key that was
 /// held and no longer is, then a make for every one that is new. Returns the
 /// state to keep for this function.
+///
+/// Status codes in the key array (`docs/api/usb/hid-keyboard.md`, "Status
+/// codes 0x01–0x03"): a report holding 0x01 ErrorRollOver keeps the previous
+/// key set unchanged (no key break/make) while its modifier byte is still
+/// diffed; 0x02/0x03 never make or break, the rest of their report counts.
 pub fn keyboard_diff(prev: u64, r: &[u8; 8], emit: &mut impl FnMut(u8)) -> u64 {
     let modn = r[0];
     let prev = prev.to_le_bytes();
@@ -80,9 +97,9 @@ pub fn keyboard_diff(prev: u64, r: &[u8; 8], emit: &mut impl FnMut(u8)) -> u64 {
     modifiers(modn & !oldmod, 0x00, emit); // pressed modifiers
 
     let oldkeys = &prev[2..8];
-    let newkeys = &r[2..8];
+    let newkeys = if r[2..8].contains(&ERROR_ROLL_OVER) { oldkeys } else { &r[2..8] };
     for &k in oldkeys {
-        if k != 0 && !newkeys.contains(&k) {
+        if is_key(k) && !newkeys.contains(&k) {
             let s = translate_key(k);
             if s != 0 {
                 emit(s | 0x80); // break
@@ -90,7 +107,7 @@ pub fn keyboard_diff(prev: u64, r: &[u8; 8], emit: &mut impl FnMut(u8)) -> u64 {
         }
     }
     for &k in newkeys {
-        if k != 0 && !oldkeys.contains(&k) {
+        if is_key(k) && !oldkeys.contains(&k) {
             let s = translate_key(k);
             if s != 0 {
                 emit(s); // make
@@ -276,6 +293,87 @@ mod tests {
         let seq = [(0, kb(0, &[A])), (0, kb(0, &[A, B])), (0, kb(0, &[B])), (0, kb(0, &[]))];
         assert_eq!(run(&seq, false), run(&seq, true));
         assert_eq!(run(&seq, false), [SC_A, SC_B, SC_A | 0x80, SC_B | 0x80]);
+    }
+
+    /// The phantom report of the capture: ErrorRollOver in all six slots.
+    const ROLLOVER: [u8; 8] = [0x00, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01];
+
+    /// Feed reports of one function from `state`, collecting the bytes.
+    fn feed(mut state: u64, seq: &[[u8; 8]]) -> (u64, Vec<u8>) {
+        let mut out = Vec::new();
+        for r in seq {
+            state = keyboard_diff(state, r, &mut |b| out.push(b));
+        }
+        (state, out)
+    }
+
+    /// Real capture `measurements/measurement-2026-10-24-usb01-f3-pi/usb/05AC020C.TXT`
+    /// seq 116-118 (Apple Extended USB Keyboard): `,` (usage 0x36, scancode
+    /// 0x33) and `m` (0x10 → 0x32) held, the phantom report, then `,` and `j`
+    /// (0x0d → 0x24). Against the state of seq 116 the only events are break
+    /// `m` and make `j`; `,` is neither released nor pressed again
+    /// (`docs/api/usb/hid-keyboard.md`, status codes, rule 1).
+    #[test]
+    fn error_rollover_keeps_the_key_set_capture_116_118() {
+        let (s, _) = feed(0, &[[0, 0, 0x36, 0x10, 0, 0, 0, 0]]); // seq 116
+        let (_, out) = feed(s, &[ROLLOVER, [0, 0, 0x36, 0x0d, 0, 0, 0, 0]]); // seq 117, 118
+        assert_eq!(out, [0x32 | 0x80, 0x24], "break m (usage 0x10), make j (usage 0x0d), nothing for ,");
+    }
+
+    /// The same capture, seq 158-160 (`j k` → phantom → `k u`: break j, make
+    /// u, k held) and seq 164-166 (`l o` → phantom → `l`: break o, l held).
+    /// The phantom report alone emits nothing.
+    #[test]
+    fn error_rollover_capture_158_160_and_164_166() {
+        let (s, _) = feed(0, &[[0, 0, 0x0d, 0x0e, 0, 0, 0, 0]]); // 158
+        let (s, out) = feed(s, &[ROLLOVER]); // 159
+        assert_eq!(out, [], "phantom report: no event");
+        let (_, out) = feed(s, &[[0, 0, 0x0e, 0x18, 0, 0, 0, 0]]); // 160
+        assert_eq!(out, [0x24 | 0x80, 0x16], "break j, make u");
+
+        let (s, _) = feed(0, &[[0, 0, 0x0f, 0x12, 0, 0, 0, 0]]); // 164
+        let (_, out) = feed(s, &[ROLLOVER, [0, 0, 0x0f, 0, 0, 0, 0, 0]]); // 165, 166
+        assert_eq!(out, [0x18 | 0x80], "break o only");
+    }
+
+    /// Rule 2: the modifier byte of a phantom report is still evaluated
+    /// (HID 1.11 Appendix C p. 63 "Modifiers still reported"); the key set
+    /// stays.
+    #[test]
+    fn error_rollover_still_evaluates_modifiers() {
+        const LSHIFT: u8 = 0x02;
+        const RALT: u8 = 0x40;
+        let mut out = Vec::new();
+        let mut s = keyboard_diff(0, &kb(LSHIFT, &[A, B]), &mut |_| {});
+        let mut phantom = ROLLOVER;
+        phantom[0] = RALT; // LShift released, RAlt pressed, inside the phantom report
+        s = keyboard_diff(s, &phantom, &mut |b| out.push(b));
+        assert_eq!(out, [0x2a | 0x80, 0x38], "modifier break + make, no key event");
+        out.clear();
+        keyboard_diff(s, &kb(RALT, &[A, B]), &mut |b| out.push(b));
+        assert_eq!(out, [], "keys a, b were held all along; RAlt unchanged");
+    }
+
+    /// Rule 1 holds per function (F3): one keyboard's phantom report does not
+    /// touch the other keyboard's held key.
+    #[test]
+    fn error_rollover_is_per_function() {
+        let seq = [(0, kb(0, &[A])), (1, kb(0, &[B])), (1, ROLLOVER), (0, kb(0, &[])), (1, kb(0, &[B]))];
+        assert_eq!(run(&seq, false), [SC_A, SC_B, SC_A | 0x80]);
+    }
+
+    /// Rule 3: 0x02 POSTFail / 0x03 ErrorUndefined in a slot neither make nor
+    /// break, and do not stop the rest of the report from being evaluated.
+    #[test]
+    fn post_fail_and_error_undefined_are_not_keys() {
+        let seq = [
+            (0, kb(0, &[A])),
+            (0, kb(0, &[A, 0x02, B])),  // make b; 0x02 is nothing
+            (0, kb(0, &[0x03, B])),     // break a; 0x02 gone, 0x03 new: nothing
+            (0, kb(0x02, &[0x03])),     // break b, make LShift; 0x03 is nothing
+            (0, kb(0x02, &[])),         // 0x03 gone: nothing
+        ];
+        assert_eq!(run(&seq, false), [SC_A, SC_B, SC_A | 0x80, 0x2a, SC_B | 0x80]);
     }
 
     /// §9.6 Soll 3: the buttons sent are the OR over the mouse functions; the
