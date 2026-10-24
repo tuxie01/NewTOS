@@ -144,3 +144,13 @@ Geraete mit 0 Fehlern auf und schreibt `C:\USB\05AC020C.TXT` und
 wieder normal aus“ (Zeiger da, Desktop reagiert normal). Offen: P2/P3 mit
 Funkempfaenger (ragnar76), Tester-Bericht zu F3, USB02 Punkt 10
 (ErrorRollOver).
+
+**Tester F3 (2026-10-24): PASS** — `measurements/measurement-2026-10-24-usb01-f3-test/RUNINFO.TXT`
+(`a0dec932`). Host 1630/0/1 (+19), keine neuen Warnungen, QEMU ohne Regression
+(10 Topologie-Paare pixelgleich), USBSNAP v2 gegen den echten Kern, Ragnars
+Deskriptoren per Mutationstest belegt, Zustand je Funktion per temporaerem
+In-Kernel-Selbsttest belegt. Eine Abweichung Code gegen Spec (Rueckfall nach
+Timeout) als USB02 Punkt 11. **Richtigstellung:** der vom Developer genannte
+rpi4-Release-Hash `edc9c4d1…` ist nicht reproduzierbar (der Kern stempelt Git-Rev
+und Datum ein; der Developer-Baum hatte einen anderen Stand). Massgeblich fuer
+den Pi-Lauf ist `fe967851…` (usb-diag, gebaut vom Lead aus `be506300`).

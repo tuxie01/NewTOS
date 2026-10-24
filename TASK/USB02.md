@@ -63,3 +63,13 @@ falsches Break/Make-Paar (Wiederholung bricht ab oder Zeichen doppelt). Soll
 laut HID-Spec und den Referenzen erst belegen (HID 1.11 Usage Tables
 „ErrorRollOver“, FreeMiNT `usb_keyboard.c`, Circle), vermutlich: Bericht
 verwerfen, Zustand behalten. Klein, betrifft jede Boot-Tastatur.
+
+## 11. F3-Rueckfall auch nach Command-Timeout (2026-10-24, Tester)
+
+`measurements/measurement-2026-10-24-usb01-f3-test/RUNINFO.TXT` Check 7:
+`configure_endpoint()` liefert `false` fuer einen Fehler-Completion-Code
+**und** fuer einen Command-Timeout; `configure_hid` wiederholt in beiden
+Faellen mit Funktion 0. Spec `docs/api/usb/usb-snapshot.md` §10 („Fallback“):
+nach einem Timeout **kein** Rueckfall, weil der Befehlsring dann nicht
+antwortet. Wirkung: hoechstens ein zweiter Timeout. Code an die Spec
+angleichen.
