@@ -1,0 +1,70 @@
+USB02 item 10 -- ErrorRollOver in the boot keyboard report -- Developer run
+==========================================================================
+
+Date      2026-10-24
+Who       Developer agent. QEMU + host only; no hardware, no SD card, no push, no GitHub.
+Base      2019888e (scratch git worktree in the job scratch for the base builds/kernels; removed after).
+New       795066d9 fix(usb): keep the key set on an ErrorRollOver boot report. Kernels built from the working tree
+          with exactly the committed content (the commit was made after the builds; the build stamp carries 2019888e).
+
+SPEC      docs/api/usb/hid-keyboard.md, "Status codes 0x01-0x03 in the key array" (written in 795066d9).
+          Normative for "not a key": HUT 1.5 ch. 10 printed p. 89 + footnote 1 printed p. 95 ("Not a physical key");
+          HID 1.11 App. C printed p. 62/63, F.3 printed p. 74 (device duty; "Modifiers still reported").
+          Host behaviour = user decision 2026-10-24 (TASK/USB02.md item 10, section D): 0x01 in bytes 2..7 -> key bytes
+          not evaluated, previous key set kept, no key break/make; modifier byte still diffed; 0x02/0x03 never make or
+          break, rest of the report evaluated.
+
+CHANGE    kernel/src/drivers/usb/hid_decode.rs keyboard_diff: if r[2..8] contains 0x01, newkeys = oldkeys (state
+          keeps the old key set, modifier byte from the report); is_key(u) = u > 0x03 excludes 0x00..0x03 from
+          break/make. hid.rs unchanged: state stays per function (PREV[func]).
+
+HOST TESTS (serial/hosttests-summary.txt)
+  New tests in hid_decode::tests:
+    error_rollover_keeps_the_key_set_capture_116_118   capture 05AC020C.TXT seq 116-118: `00 00 36 10` -> phantom
+                                                       -> `00 00 36 0d`: exactly [0xB2 break m(0x10), 0x24 make j(0x0d)];
+                                                       held `,` (0x36) neither broken nor made
+    error_rollover_capture_158_160_and_164_166         seq 159/165 alone emit nothing; 160: break j, make u;
+                                                       166: break o only
+    error_rollover_still_evaluates_modifiers           LShift->RAlt inside a 01 report: [0xAA, 0x38], keys untouched
+    error_rollover_is_per_function                     phantom of function 1 does not touch function 0 (F3)
+    post_fail_and_error_undefined_are_not_keys         0x02/0x03 in a slot: no make/break, rest evaluated
+  RED against the old keyboard_diff: 4 of the 5 FAILED (old 116-118 output: [0xB3, 0xB2, 0x33, 0x24] = spurious break
+  and make of the held `,`). post_fail_... was already green before: the old code also gave no scancode for 1..3
+  (translate_key -> 0), so rule 3 is the old observable behaviour made explicit (is_key), not a fix.
+  cargo xtask test: base 1631/0/1 -> new 1636/0/1 (+5), 158 binaries both, warning lines 127 = 127.
+  cargo test -p xtask: base 148 -> new 153, warning lines 3 = 3.
+
+BUILDS (rc 0 all; serial/warning-counts.txt)
+  dev + release, qemu-virt + rpi4, base and new; clippy both boards base and new.
+  rustc kernel 93 = 93, tos-api 64 = 64 (all four builds); clippy kernel 121 = 121, tos-api 76 = 76 both boards;
+  clippy lines in kernel/src/drivers/usb/: 40 = 40; hits in hid_decode.rs: 0.
+  The rpi4 builds (dev and release) dropped kernel8.img into the repo root; moved to the job scratch each time.
+
+QEMU qemu-virt (release kernels, method/regress.sh; run-virt.sh, qmp_mouse/key/hold.py, pixdiff.py copied unchanged
+from measurements/measurement-2026-10-24-usb02-10-11/method; qmp_roll.py new)
+  No regression: topologies default and extra (--usb-extra: two boot keyboards, two boot mice), per topology mouse,
+  Ctrl+Z (keyboard -> EmuCON), key repeat (hold x 3 s, then tap y).
+    [usb]/[pcie] serial lines (addresses masked) base vs new identical in all 7 pairs (26 default, 53 extra);
+    EXC/PANIC 0; "[desk] desktop up" in every run.
+    Screendumps base vs new: 0 differing pixels in all mouse/key pairs and in default hold.
+    extra hold: new has one x more in the repeat row (70 vs 69 chars). Timing jitter, not the change: a second
+    pair (serial/*-extra-hold-r2.log, screendumps/base-extra-hold-r2-1-tap.png) gives base 70 and new 70; a single
+    held key never contains 0x01. Both: a row of repeated x followed by exactly one y.
+    Mouse move: 138 px before->after in base and new, both topologies.
+  ErrorRollOver live (qmp_roll.py, default topology): at EmuCON press a s d f g h, then j as the 7th key, release j,
+  release the six. QEMU's usb-kbd evidently reports the 7-key state as ErrorRollOver (base output shows it):
+    base  screendumps/base-default-roll-0-roll.png: "asdfghasdfgh" -- the phantom report broke the six keys, the
+          next 6-key report made them again (the defect of the capture, reproduced).
+    new   screendumps/new-default-roll-0-roll.png: "asdfgh" -- key set kept; j never made (it only existed inside
+          the phantom state).
+    pixdiff base vs new: 302 px, bbox (88,32)-(135,48) = the second "asdfgh".
+
+NOT COVERED
+  Real Pi / the Apple keyboard of the capture (hardware is the lead's/user's). A modifier change inside a real phantom
+  report is host-tested only (QEMU path not driven with a modifier). No device that sends 0x02/0x03 is available.
+
+SHA256 (images in the job scratch, not kept)
+  base-rel-qemu-virt.img   1d5d3092659d3abbf0e63adb3537711821ea8922d560108dc22c362eef519bd8
+  new-rel-qemu-virt.img    d108d5f2b085b5ba11114750ec3e5aad40d5c574aa61f4cd8de94ecaa55bcc74
+  base-rel-rpi4.img        539236c7a60c478a3611459b709751da254dcab5aadb8dd91a81333d3b127a29
+  new-rel-rpi4.img         d026894fde47b391ffb59fde8504e7c4159cbba4de3e2c771705de5dfe48a149

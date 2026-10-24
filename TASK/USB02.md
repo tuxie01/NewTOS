@@ -113,9 +113,9 @@ den Fehlerbericht und behalten den alten Zustand; die Boot-only-Treiber (Linux
 gehen Linux (verarbeiten) und BSD (mit verwerfen) auseinander — **hier gibt es
 keine normative Entscheidung.**
 
-#### C. DRAFT fuer `docs/api/usb/hid-keyboard.md` — NICHT freigegeben
+#### C. Entwurf fuer `docs/api/usb/hid-keyboard.md` (Recherche-Stand; freigegeben in geaenderter Form, siehe D)
 
-> **DRAFT — not approved. Implementation practice, not normative.** Stuetzt sich auf
+> Stuetzt sich auf
 > HUT 1.5 Kap. 10, Fussnote 1 (0x01–0x03 sind Statuscodes, keine Tasten) und auf
 > Linux `hid-core.c` `hid_input_fetch_field`/`hid_input_array_field`, FreeBSD `ukbd.c`
 > `ukbd_intr_callback`, NetBSD `hidkbd.c` `hidkbd_input`. Enthaelt ein Array-Feld des
@@ -129,6 +129,33 @@ keine normative Entscheidung.**
 
 Offen fuer den Anwender: Modifier-Byte-Variante waehlen; die Boot-Capture
 (seq 116-118, 158-160, 164-166) zeigt `00` im Modifier-Byte, entscheidet also nichts.
+
+#### D. Anwenderentscheidung 2026-10-24 (= Freigabe der Spec-Regel)
+
+1. Enthaelt das Tasten-Array (Byte 2..7) 0x01 ErrorRollOver: Tasten-Bytes nicht
+   auswerten, vorige Tastenmenge behalten, weder Break noch Make fuer Tasten.
+2. Das Modifier-Byte dieses Berichts wird normal ausgewertet (wie Linux; HID 1.11
+   Anh. C S. 63 „Modifiers still reported“).
+3. Nur 0x01 loest das Verwerfen aus. 0x02 POSTFail und 0x03 ErrorUndefined erzeugen
+   nie Make oder Break (HUT: „Not a physical key“); der Rest des Berichts wird normal
+   ausgewertet.
+
+Regel steht in `docs/api/usb/hid-keyboard.md`, Abschnitt „Status codes 0x01–0x03
+in the key array“.
+
+**ERLEDIGT 2026-10-24 (`795066d9`):** `hid_decode::keyboard_diff` nimmt bei 0x01 im
+Array die alte Tastenmenge als neue (Modifier weiter gediffed); `is_key` (> 0x03)
+schliesst 0x01-0x03 aus Make/Break aus. Zustand weiter pro Funktion (`hid::PREV`,
+Test `error_rollover_is_per_function`). Host-Tests: Capture seq 116-118 (Break m
+0x10, Make j 0x0d, `,` 0x36 unberuehrt), seq 158-160 und 164-166, Modifier-Wechsel
+im 01-Bericht, 0x02/0x03 im Slot. Rot gegen alten Code: 4 der 5 neuen Tests; der
+0x02/0x03-Test war schon vorher gruen (alter Code liefert fuer 1..3 keinen
+Scancode, beobachtbar gleich). QEMU qemu-virt: sieben Tasten an EmuCON — Basis tippt
+`asdfghasdfgh` (Fehlerbild reproduziert), neu `asdfgh`; Tastatur, Wiederholung, Maus
+ohne Regression (beide Topologien). Hostsuite 1631 -> 1636, Warnungen unveraendert.
+Nicht abgedeckt: echte Pi mit der Apple-Tastatur; Modifier-Wechsel im Phantombericht
+nur im Hosttest; kein Geraet, das 0x02/0x03 sendet. Beleg
+`measurements/measurement-2026-10-24-usb02-10/RUNINFO.TXT`.
 
 ## 11. F3-Rueckfall auch nach Command-Timeout (2026-10-24, Tester)
 

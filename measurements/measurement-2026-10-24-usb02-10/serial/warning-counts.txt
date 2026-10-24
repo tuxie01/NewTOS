@@ -1,0 +1,18 @@
+rustc / clippy warning summary lines (kernel lib / tos-api lib); base = 2019888e (scratch worktree), new = working tree = 795066d9
+base-build-qemu-virt-rel: `kernel` (lib) generated 93 `tos-api` (lib) generated 64 
+base-build-qemu-virt: `tos-api` (lib) generated 64 `kernel` (lib) generated 93 
+base-build-rpi4-rel: `kernel` (lib) generated 93 `tos-api` (lib) generated 64 
+base-build-rpi4: `tos-api` (lib) generated 64 `kernel` (lib) generated 93 
+base-clippy-qemu-virt: `tos-api` (lib) generated 76 `kernel` (lib) generated 121 
+base-clippy-rpi4: `tos-api` (lib) generated 76 `kernel` (lib) generated 121 
+new-build-qemu-virt-rel: `kernel` (lib) generated 93 `tos-api` (lib) generated 64 
+new-build-qemu-virt: `tos-api` (lib) generated 64 `kernel` (lib) generated 93 
+new-build-rpi4-rel: `kernel` (lib) generated 93 `tos-api` (lib) generated 64 
+new-build-rpi4: `tos-api` (lib) generated 64 `kernel` (lib) generated 93 
+new-clippy-qemu-virt: `tos-api` (lib) generated 76 `kernel` (lib) generated 121 
+new-clippy-rpi4: `tos-api` (lib) generated 76 `kernel` (lib) generated 121 
+clippy base qemu-virt: warnings located in kernel/src/drivers/usb/: 40
+clippy base rpi4: warnings located in kernel/src/drivers/usb/: 40
+clippy new qemu-virt: warnings located in kernel/src/drivers/usb/: 40
+clippy new rpi4: warnings located in kernel/src/drivers/usb/: 40
+clippy new, hits in hid_decode.rs: 0

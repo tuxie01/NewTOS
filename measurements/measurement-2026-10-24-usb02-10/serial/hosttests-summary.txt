@@ -1,0 +1,36 @@
+Host tests 2026-10-24
+cargo xtask test (full suite, shared tree, new = 795066d9 content):
+  new: passed 1636 failed 0 ignored 1 in 158 test binaries
+  warning lines: 127
+  base: 1631/0/1 in 158 binaries, 127 warning lines, recorded at 8c112965 in
+        measurements/measurement-2026-10-24-usb02-10-11/serial/hosttests-summary.txt; 8c112965..2019888e touches no
+        file under kernel/ tos-api/ tos-types/ tools/ (git diff --stat empty), so that is the base.
+cargo test -p xtask (the binary that includes hid_decode.rs by path), shared tree:
+  base (HEAD 2019888e file content written in, then restored): test result: ok. 148 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+  new: test result: ok. 153 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+  warning lines base/new: 3/3
+RED: new tests against the old keyboard_diff (old function body, new tests): cargo test -p xtask kernel_usb_hid_decode
+  test kernel_usb_hid_decode::tests::post_fail_and_error_undefined_are_not_keys ... ok
+  test kernel_usb_hid_decode::tests::error_rollover_still_evaluates_modifiers ... FAILED
+  test kernel_usb_hid_decode::tests::error_rollover_capture_158_160_and_164_166 ... FAILED
+  test kernel_usb_hid_decode::tests::error_rollover_keeps_the_key_set_capture_116_118 ... FAILED
+  test kernel_usb_hid_decode::tests::error_rollover_is_per_function ... FAILED
+  thread 'kernel_usb_hid_decode::tests::error_rollover_still_evaluates_modifiers' (13070693) panicked at tools/xtask/src/../../../kernel/src/drivers/usb/hid_decode.rs:334:9:
+  assertion `left == right` failed: modifier break + make, no key event
+    left: [170, 56, 158, 176]
+   right: [170, 56]
+  thread 'kernel_usb_hid_decode::tests::error_rollover_capture_158_160_and_164_166' (13070690) panicked at tools/xtask/src/../../../kernel/src/drivers/usb/hid_decode.rs:313:9:
+  assertion `left == right` failed: phantom report: no event
+    left: [164, 165]
+   right: []
+  thread 'kernel_usb_hid_decode::tests::error_rollover_keeps_the_key_set_capture_116_118' (13070692) panicked at tools/xtask/src/../../../kernel/src/drivers/usb/hid_decode.rs:303:9:
+  assertion `left == right` failed: break m (usage 0x10), make j (usage 0x0d), nothing for ,
+    left: [179, 178, 51, 36]
+   right: [178, 36]
+  thread 'kernel_usb_hid_decode::tests::error_rollover_is_per_function' (13070691) panicked at tools/xtask/src/../../../kernel/src/drivers/usb/hid_decode.rs:345:9:
+  assertion `left == right` failed
+    left: [30, 48, 176, 158, 48]
+   right: [30, 48, 158]
+  test result: FAILED. 7 passed; 4 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.00s
+GREEN: same command after the change:
+  test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 142 filtered out; finished in 0.00s
