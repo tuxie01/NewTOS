@@ -111,6 +111,29 @@ impl HidInfo {
 /// report descriptors of four HID interfaces per device, too).
 pub const MAX_FUNC_PER_DEV: usize = 4;
 
+/// What the shared Configure Endpoint command of a device's functions came
+/// back with (`xhci::configure_endpoint`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CommandOutcome {
+    /// Command Completion Event with completion code Success.
+    Success,
+    /// Command Completion Event with any other completion code.
+    Failed,
+    /// No Command Completion Event before the command wait gave up.
+    Timeout,
+}
+
+/// The F3 fallback (`hid-mouse-protocols.md` §9.4, decision 10;
+/// `usb-snapshot.md` §10 "Fallback"): after the Configure Endpoint command
+/// for `n_funcs` functions, retry once with function 0 alone? Only when the
+/// controller **answered** with a non-Success completion code (a failed
+/// command changes nothing, xHCI 1.2 §4.6.6) and there was more than one
+/// function. Not after a timeout: the command ring is not answering, so a
+/// retry can only time out again.
+pub fn retry_with_function0(outcome: CommandOutcome, n_funcs: usize) -> bool {
+    outcome == CommandOutcome::Failed && n_funcs > 1
+}
+
 /// Why an interface descriptor was not taken as the device's input interface.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SkipReason {
@@ -1002,5 +1025,22 @@ mod tests {
         assert!(!is_boot_hid(3, 1, 0));
         assert!(!is_boot_hid(9, 1, 1));
         assert!(!is_boot_hid(0, 1, 2));
+    }
+
+    /// USB02 item 11 / `usb-snapshot.md` §10 "Fallback": an error completion
+    /// code with several functions retries with function 0; a timeout never
+    /// does (the command ring is not answering); one function has nothing to
+    /// fall back to; Success needs no retry.
+    #[test]
+    fn configure_endpoint_fallback_only_after_an_answer() {
+        use CommandOutcome::*;
+        assert!(retry_with_function0(Failed, 2));
+        assert!(retry_with_function0(Failed, MAX_FUNC_PER_DEV));
+        assert!(!retry_with_function0(Timeout, 2), "no retry after a command timeout");
+        assert!(!retry_with_function0(Timeout, MAX_FUNC_PER_DEV));
+        assert!(!retry_with_function0(Failed, 1), "function 0 alone already failed");
+        assert!(!retry_with_function0(Timeout, 1));
+        assert!(!retry_with_function0(Success, 2));
+        assert!(!retry_with_function0(Success, 1));
     }
 }

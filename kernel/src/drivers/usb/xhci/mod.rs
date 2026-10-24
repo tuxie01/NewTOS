@@ -1785,8 +1785,15 @@ impl Xhci {
     /// every function; the slot's Context Entries = the largest DCI among
     /// them (decision 6: the behaviour that runs on VL805 and QEMU, kept; the
     /// `xhci-1.2.txt:4720` vs `:22321` wording conflict is only noted). Each
-    /// endpoint context points at its own function's ring. True on Success.
-    fn configure_endpoint(&mut self, di: usize, speed: u8, fs: &[(HidInfo, usize)]) -> bool {
+    /// endpoint context points at its own function's ring. The outcome tells
+    /// an error completion code (the controller answered) from a command
+    /// timeout (it did not) — the F3 fallback differs (`usb-snapshot.md` §10).
+    fn configure_endpoint(
+        &mut self,
+        di: usize,
+        speed: u8,
+        fs: &[(HidInfo, usize)],
+    ) -> config_desc::CommandOutcome {
         let slot = self.hid[di].slot;
         // SAFETY: single-CPU; DEV is ours.
         let dev = unsafe { &mut (*(&raw mut DEV))[di] };
@@ -1849,12 +1856,14 @@ impl Xhci {
         cmd.set_slot_id(slot);
         let data = command::Allowed::ConfigureEndpoint(cmd).into_raw();
         match self.command(data) {
-            Some(cc) if matches!(cc.completion_code(), Ok(event::CompletionCode::Success)) => true,
+            Some(cc) if matches!(cc.completion_code(), Ok(event::CompletionCode::Success)) => {
+                config_desc::CommandOutcome::Success
+            }
             Some(cc) => {
                 kprintln!("[usb] configure_endpoint → {:?}", cc.completion_code());
-                false
+                config_desc::CommandOutcome::Failed
             }
-            None => false,
+            None => config_desc::CommandOutcome::Timeout,
         }
     }
 
@@ -1913,11 +1922,13 @@ impl Xhci {
         // (controller side) precedes the SET_CONFIGURATION *request* (device
         // side). QEMU tolerates the reverse; the real VL805 returns Context
         // State Error if SET_CONFIGURATION ran first.
-        let mut ok = self.configure_endpoint(di, speed, &fs[..n]);
-        if !ok && n > 1 {
+        let mut outcome = self.configure_endpoint(di, speed, &fs[..n]);
+        if config_desc::retry_with_function0(outcome, n) {
             // §9.4 fallback (decision 10): a failed command changes nothing
             // (xHCI 1.2 §4.6.6, `xhci-1.2.txt:5738-5740`) — retry once with
             // the primary function alone (the F2 behaviour), keep the device.
+            // Not after a timeout (`usb-snapshot.md` §10): the command ring
+            // is not answering, so the device fails as a whole below.
             kprintln!(
                 "[usb] slot {}: Configure Endpoint with {} functions failed; retrying with \
                  function 0 only",
@@ -1929,9 +1940,9 @@ impl Xhci {
                 snap_row(di, h.iface, reason::CONFIGURE_ENDPOINT, role::NONE);
             }
             n = 1;
-            ok = self.configure_endpoint(di, speed, &fs[..1]);
+            outcome = self.configure_endpoint(di, speed, &fs[..1]);
         }
-        if !ok {
+        if outcome != config_desc::CommandOutcome::Success {
             fail_all(self, reason::CONFIGURE_ENDPOINT, &fs[..n]);
             return (false, true);
         }
