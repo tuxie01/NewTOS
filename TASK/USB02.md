@@ -74,6 +74,62 @@ HID Usage Tables liegen nicht unter `references/`. FreeMiNT `usb_keyboard.c`
 `hid-keyboard.md` unveraendert; braucht eine Quelle (z. B. HUT) oder eine
 Anwenderentscheidung. Beleg `measurements/measurement-2026-10-24-usb02-10-11/RUNINFO.TXT`.
 
+### Quellen zum Host-Verhalten (Recherche 2026-10-24)
+
+Frage: Bericht mit allen Array-Feldern = 0x01 (`00 00 01 01 01 01 01 01`) verwerfen
+und Zustand behalten, oder wie normal auswerten; und das Modifier-Byte?
+**Ergebnis vorab: Keine normative (USB-IF-)Quelle schreibt das Host-Verhalten vor.**
+Mehrere Implementierungen verwerfen den Bericht; die Quellen sind sich beim
+Modifier-Byte nicht einig. Trennung unten: Normativ vs. Implementierungspraxis.
+
+#### A. Normativ (USB-IF)
+
+| Quelle | Befund |
+|---|---|
+| HID 1.11, Anh. C S. 62/63, F.3 S. 74 (`references/usb/hid1_11.pdf`) | nur Geraetepflicht (bereits oben) — **schweigt** zum Host |
+| **HID Usage Tables 1.5** (`references/usb/hut1_5.pdf`, `https://usb.org/sites/default/files/hut1_5.pdf`, abgerufen 2026-10-24, sha256 `f4ead217…c07db3`), Kap. 10 Keyboard/Keypad Page (0x07), gedr. S. 89 (PDF-S. 90), Tabelle: `01 Keyboard ErrorRollOver¹`, `02 Keyboard POSTFail¹`, `03 Keyboard ErrorUndefined¹`, Typ Sel, Boot-Spalte „4/101/104“. Fussnote 1, gedr. S. 95: „Reserved for typical keyboard status or keyboard errors. Sent as a member of the keyboard array. Not a physical key.“ | **sagt:** 0x01–0x03 sind keine physischen Tasten, sondern Status/Fehler als Array-Mitglied. **schweigt:** was der Host mit dem Bericht tut, und zum Modifier-Byte. (HUT 1.12 nicht erreichbar: `hut1_12v2.pdf` -> HTTP 404; 1.5 ist die abrufbare, nicht aeltere Fassung.) |
+
+Folgerung (**Schluss, nicht gelesen**): HUT 1.5 belegt nur „0x01 ist kein Tastencode“.
+Dass der Host den Bericht verwerfen *muss*, steht nirgends.
+
+#### B. Implementierungspraxis (keine Autoritaet; Dateien am 2026-10-24 von `master`/`main`/`trunk` geholt; Pin = letzter Commit, der die Datei beruehrt)
+
+| Quelle (Datei, Funktion, Pin) | Verhalten bei 0x01 | Modifier-Byte |
+|---|---|---|
+| **Linux** `drivers/hid/hid-core.c`, `hid_input_fetch_field` `:1631-1637`, `hid_input_array_field` `:1679-1681`, Pin `c5fd5e67c781` — `/* Ignore report if ErrorRollOver */ … field->ignored = true;` bei Array-Feld, dessen Usage `HID_UP_KEYBOARD + 1` ist; in `hid_input_array_field`: `if (field->ignored) return;` (alter Array-Zustand `field->value` bleibt) | **Array-Feld verwerfen, Zustand behalten** | **wird normal verarbeitet**: `ignored` gilt nur fuer das Array-Feld; das Modifier-Feld ist ein Variable-Feld und laeuft in `hid_input_var_field` (`:1649-1664`) wie immer (**gelesen**: `hid_process_report` ruft alle Felder; Variable-Zweig ohne `ignored`-Test) |
+| **Linux** `drivers/hid/usbhid/usbkbd.c`, `usb_kbd_irq` `:101-146`, Pin `34b228b739f5` (alter Boot-only-Treiber) | prueft 0x01 nicht; Tasten mit Code `> 3` werden gediffed (`:123`, `:132`). Eine Fehlerrolle-Meldung loest also fuer gehaltene Tasten ein Release aus, der Folgebericht ein Press = **heutiges NewTOS-Verhalten** | Modifier-Bits werden immer gemeldet (`:118-119`) |
+| **FreeBSD** `sys/dev/usb/input/ukbd.c`, `ukbd_intr_callback` `:863-866`, Pin `8809ea46f105` — `if (key == KEY_ERROR) { … sc->sc_ndata = sc->sc_odata; goto tr_setup; /* ignore */ }` | **ganzen Bericht verwerfen, Zustand behalten** | **mit verworfen**: Modifier sind im selben `sc_ndata`-Bitmap (Usage 0xE0–0xE7, Schleife nach dem Array) und ndata wird auf odata zurueckgesetzt, `ukbd_interrupt` wird uebersprungen |
+| **FreeBSD** `sys/dev/hid/hkbd.c` `:786-792`, Pin `c0e26f7b29dd` — `memcpy(sc_ndata…, sc_odata…); return; /* ignore */` | wie ukbd.c | wie ukbd.c (ndata/ndata0 beide zurueckgesetzt) |
+| **NetBSD** `sys/dev/hid/hidkbd.c`, `hidkbd_input` `:510-513`, Pin `1122aef3944e` — `if (ud->keycode[0] == KEY_ERROR) { … return; /* ignore */ }` | **verwerfen**, nur `keycode[0]` geprueft; `sc_odata = *ud` (`:552`) wird nicht erreicht = Zustand bleibt | **mit verworfen**: Rueckkehr steht vor der Modifier-Schleife (`:517`) |
+| **U-Boot** `common/usb_kbd.c`, `usb_kbd_service_key` `:305-327` (`old[i] > 3`), `usb_kbd_irq_worker` `:330`, Pin `b075fd4e2d85` | prueft 0x01 nicht; Codes `<= 3` werden uebersprungen, uebrige gediffed (= wie usbkbd.c) | keine Sonderbehandlung |
+| **TinyUSB** Beispiel `examples/host/cdc_msc_hid/src/hid_app.c`, `process_kbd_report` `:128-`, Pin `bda7efb1b3d4` | **schweigt** (nur Beispielcode, behandelt jeden Code != 0 als Taste) | — |
+| FreeMiNT `usb_keyboard.c` `kbd_int`, Circle `usbkeyboard.cpp` `ReportHandler` | schweigen (siehe Stand oben) | — |
+| OpenBSD `sys/dev/usb/ukbd.c` (Pin nicht erhoben) | Datei geholt, kein Treffer fuer ErrorRollOver/0x01; Treiber nutzt den generischen HID-Pfad — **nicht weiter verfolgt** | — |
+| Zephyr, Haiku | **nicht geprueft** (nicht abgerufen) | — |
+
+Lesart: Linux-Kern (`hid-core`), FreeBSD (ukbd, hkbd) und NetBSD (hidkbd) verwerfen
+den Fehlerbericht und behalten den alten Zustand; die Boot-only-Treiber (Linux
+`usbkbd`, U-Boot) und TinyUSB-Beispiel/FreeMiNT/Circle diffen ihn. Beim Modifier-Byte
+gehen Linux (verarbeiten) und BSD (mit verwerfen) auseinander — **hier gibt es
+keine normative Entscheidung.**
+
+#### C. DRAFT fuer `docs/api/usb/hid-keyboard.md` — NICHT freigegeben
+
+> **DRAFT — not approved. Implementation practice, not normative.** Stuetzt sich auf
+> HUT 1.5 Kap. 10, Fussnote 1 (0x01–0x03 sind Statuscodes, keine Tasten) und auf
+> Linux `hid-core.c` `hid_input_fetch_field`/`hid_input_array_field`, FreeBSD `ukbd.c`
+> `ukbd_intr_callback`, NetBSD `hidkbd.c` `hidkbd_input`. Enthaelt ein Array-Feld des
+> Boot-Berichts (Byte 2..7) den Code 0x01 (ErrorRollOver), wertet der Host die
+> Tasten-Bytes dieses Berichts nicht aus und behaelt die vorige Tastenmenge; es
+> entstehen weder Break noch Make. **Offene Entscheidung (keine Quelle einig):**
+> Modifier-Byte (Byte 0) dieses Berichts entweder wie bei Linux weiter diffen
+> oder wie bei FreeBSD/NetBSD zusammen mit dem Bericht verwerfen. Ob 0x02/0x03 gleich
+> behandelt werden, ist nur bei FreeBSD/NetBSD/Linux fuer 0x01 belegt; fuer 0x02/0x03
+> liegt keine Quelle vor, die sie wie 0x01 behandelt (Linux: nur `HID_UP_KEYBOARD + 1`).
+
+Offen fuer den Anwender: Modifier-Byte-Variante waehlen; die Boot-Capture
+(seq 116-118, 158-160, 164-166) zeigt `00` im Modifier-Byte, entscheidet also nichts.
+
 ## 11. F3-Rueckfall auch nach Command-Timeout (2026-10-24, Tester)
 
 `measurements/measurement-2026-10-24-usb01-f3-test/RUNINFO.TXT` Check 7:

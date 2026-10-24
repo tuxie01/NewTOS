@@ -21,6 +21,7 @@ references/
 ├── sd-spec/                  # SD Simplified Specifications (PDF, see below)
 │   └── archive/              #   superseded editions kept for old citations
 ├── circle/                   # rsta2/circle — tertiary RPi4 cross-reference
+├── usb/                      # USB-IF PDFs: hid1_11.pdf (HID 1.11), hut1_5.pdf (HID Usage Tables 1.5)
 ├── compendium/               # Atari Compendium PDF (acquire separately)
 ├── profibuch/                # Atari Profibuch ST/STE (acquire separately)
 ├── tos-release-notes/        # Original Atari TOS release notes per version
@@ -393,3 +394,13 @@ No license text in the sources; see the analysis file.
 Since TASK/LDG-M3-B2 the same tgz (identical sha256) is pinned in the SDK as
 `sdk/libshare/libshare-0.1.1.tgz` and built by `sdk/libshare/build-libshare.sh`;
 the copy here stays the reference.
+
+---
+
+## USB-IF documents (`references/usb/`)
+
+- `hid1_11.pdf` — Device Class Definition for HID 1.11 (usb.org).
+- `hut1_5.pdf` — HID Usage Tables 1.5 (usb.org, `https://usb.org/sites/default/files/hut1_5.pdf`,
+  fetched 2026-10-24, sha256 `f4ead217b01134f89199155ed616d4eeae9ad40a5f73dad9544002b592c07db3`).
+  Keyboard/Keypad page (0x07): printed p. 89 (table), p. 95 (footnotes). Role: normative
+  usage names; it states nothing about host behaviour (see `TASK/USB02.md` item 10).
