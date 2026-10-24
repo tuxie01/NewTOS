@@ -1,0 +1,6 @@
+cargo xtask test, 2026-10-24
+base: passed 1630 failed 0 ignored 1 in 158 test binaries
+  warning lines: 127
+new: passed 1631 failed 0 ignored 1 in 158 test binaries
+  warning lines: 127
+base = 25248195, new = 8c112965 (working tree before the commit, same content)

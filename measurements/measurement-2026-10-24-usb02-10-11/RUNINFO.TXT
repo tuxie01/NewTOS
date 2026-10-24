@@ -1,0 +1,57 @@
+USB02 items 10 and 11 -- Developer run
+=====================================
+
+Date      2026-10-24
+Who       Developer agent. QEMU + host only; no hardware, no SD card, no push, no GitHub.
+Base      25248195 (scratch git worktree in the job scratch for the base builds; shared tree for the host suite).
+New       8c112965 (fix(usb): no function-0 fallback after a Configure Endpoint timeout). Kernels were built from the
+          working tree right before that commit (same code; the tos-api build stamp carries rev 25248195).
+
+ITEM 11 -- F3 fallback after a command timeout: FIXED (8c112965)
+  Spec      docs/api/usb/usb-snapshot.md §10 "Fallback": retry with function 0 after any non-Success completion code,
+            NOT after a timeout. Deviation: measurements/measurement-2026-10-24-usb01-f3-test/RUNINFO.TXT "DEVIATION FOUND".
+  Change    xhci::configure_endpoint returns config_desc::CommandOutcome {Success, Failed, Timeout} instead of bool;
+            configure_hid retries only when config_desc::retry_with_function0(outcome, n) (= Failed && n > 1).
+            A timeout fails the device as before the retry existed (all rows reason 18 CONFIGURE_ENDPOINT).
+  Host test config_desc::tests::configure_endpoint_fallback_only_after_an_answer.
+            RED: with the old rule substituted (`outcome != Success && n_funcs > 1`, edited by hand in the shared tree
+            and copied back from a saved copy) `cargo test -p xtask configure_endpoint_fallback` -> FAILED
+            ("no retry after a command timeout"); GREEN with the new rule -> ok.
+  Not covered: the timeout path itself in xhci (no QEMU device makes Configure Endpoint time out; the multi-function
+            path has no QEMU device at all, see the F3 test run). Real Pi only.
+
+ITEM 10 -- ErrorRollOver report: NOT IMPLEMENTED, STOPPED (no source states the host behaviour)
+  Evidence  measurements/measurement-2026-10-24-usb01-f3-pi/usb/05AC020C.TXT seq 116-118 (also 158-160, 164-166):
+            `00 00 36 10 ..` -> `00 00 01 01 01 01 01 01` -> `00 00 36 0d ..`.
+  Checked   docs/api/usb/hid-keyboard.md: no entry ("Roll-over ... fall[s] out naturally", the naive diff).
+            HID 1.11 (references/usb/hid1_11.pdf, pdftotext -layout): Appendix C p.62 and F.3 p.74 state the DEVICE's
+            duty (report ErrorRollOver in all array fields when > 6 keys / ghosting), the C table p.63 shows a phantom
+            row "Modifiers still reported"; no sentence states what the host does with that report.
+            HID Usage Tables: not in references/.
+            FreeMiNT usb_keyboard.c kbd_int (:324-): no ErrorRollOver check, diffs every report (= current behaviour).
+            Circle lib/usb/usbkeyboard.cpp ReportHandler (:184-249): no check either.
+  -> per the brief, no behaviour chosen; reported to the lead.
+
+BUILDS (rc 0 all; serial/warning-counts.txt)
+  dev qemu-virt, dev rpi4 (fresh per board), release qemu-virt, release rpi4.
+  rustc kernel 93 = 93, tos-api 64 = 64 both boards; clippy kernel 121 = 121, tos-api 76 = 76 both boards;
+  clippy warnings located in kernel/src/drivers/usb/: 40 = 40.
+
+HOST SUITE (serial/hosttests-summary.txt)
+  cargo xtask test: base 1630/0/1 -> new 1631/0/1 (+1), 158 binaries both; warning lines 127 = 127.
+
+QEMU qemu-virt REGRESSION (release kernels, method/regress.sh; scripts copied unchanged from
+measurements/measurement-2026-10-24-usb01-f3-test/method)
+  topologies default (= cargo xtask run) and extra (= cargo xtask run --usb-extra); per topology mouse (20 x rel(+10,+6)),
+  Ctrl+Z (keyboard -> EmuCON), key repeat (hold x 3 s, then tap y).
+  [usb]/[pcie] serial lines (addresses masked) base vs new: identical in all 6 pairs (26 lines default, 53 extra);
+  EXC/PANIC 0; "[desk] desktop up" in every run.
+  Screendumps base vs new: 0 differing pixels in all compared pairs (mouse before/after, key after/typed, hold held/tap).
+  Mouse move: 138 px before->after in base and new, both topologies.
+  Key repeat: a row of repeated x followed by exactly one y (screendumps/new-*-hold-1-tap.png), identical to base.
+
+SHA256 (images in the job scratch, not kept)
+  base qemu-virt release flat image  9803b7a894612d4966354dca82b9dda96958680a6d7613041d0fcef2a6ca2ffe
+  new  qemu-virt release flat image  591ba52c7ace6801a49df314d755f19181a182d46e148dabe0b85928054f1452
+  new  rpi4 release kernel8.img      0d0178ed6935854d8a77bead995c8db55826cda4391f04d9b08a425a23fc17f8
+       (moved out of the repo root after the build)

@@ -64,6 +64,16 @@ laut HID-Spec und den Referenzen erst belegen (HID 1.11 Usage Tables
 „ErrorRollOver“, FreeMiNT `usb_keyboard.c`, Circle), vermutlich: Bericht
 verwerfen, Zustand behalten. Klein, betrifft jede Boot-Tastatur.
 
+**Stand 2026-10-24: GESTOPPT, keine Quelle nennt das Host-Verhalten.** HID 1.11
+(`references/usb/hid1_11.pdf`) Anh. C S. 62 und F.3 S. 74 schreiben nur die Pflicht
+des *Geraets* vor (ErrorRollOver in allen Array-Feldern bei > 6 Tasten oder Ghosting;
+Tabelle Anh. C S. 63: „Modifiers still reported“), nicht, was der Host damit tut.
+HID Usage Tables liegen nicht unter `references/`. FreeMiNT `usb_keyboard.c`
+`kbd_int` (`:324`) und Circle `usbkeyboard.cpp` `ReportHandler` (`:184-249`) pruefen
+0x01 nicht und diffen jeden Bericht (= heutiges Verhalten). Nichts implementiert,
+`hid-keyboard.md` unveraendert; braucht eine Quelle (z. B. HUT) oder eine
+Anwenderentscheidung. Beleg `measurements/measurement-2026-10-24-usb02-10-11/RUNINFO.TXT`.
+
 ## 11. F3-Rueckfall auch nach Command-Timeout (2026-10-24, Tester)
 
 `measurements/measurement-2026-10-24-usb01-f3-test/RUNINFO.TXT` Check 7:
@@ -73,3 +83,9 @@ Faellen mit Funktion 0. Spec `docs/api/usb/usb-snapshot.md` §10 („Fallback“
 nach einem Timeout **kein** Rueckfall, weil der Befehlsring dann nicht
 antwortet. Wirkung: hoechstens ein zweiter Timeout. Code an die Spec
 angleichen.
+
+**ERLEDIGT 2026-10-24 (`8c112965`):** `configure_endpoint` liefert
+`config_desc::CommandOutcome` (Success/Failed/Timeout); Rueckfall nur bei Failed und
+mehr als einer Funktion (`config_desc::retry_with_function0`, Hosttest
+`configure_endpoint_fallback_only_after_an_answer`, rot mit der alten Regel). Beleg
+`measurements/measurement-2026-10-24-usb02-10-11/RUNINFO.TXT`.
