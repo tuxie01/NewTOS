@@ -154,3 +154,16 @@ Timeout) als USB02 Punkt 11. **Richtigstellung:** der vom Developer genannte
 rpi4-Release-Hash `edc9c4d1…` ist nicht reproduzierbar (der Kern stempelt Git-Rev
 und Datum ein; der Developer-Baum hatte einen anderen Stand). Massgeblich fuer
 den Pi-Lauf ist `fe967851…` (usb-diag, gebaut vom Lead aus `be506300`).
+
+## Stand 2026-10-24 — Ragnars Antworten in #3 (2026-10-24 00:09)
+
+Richtigstellung: Die Kabeltastatur (Cherry KC 6000) hat laut Ragnar **die ganze
+Zeit funktioniert**, auch mit Empfaenger. Die Spalte „Tastatur: nein“ in
+`measurements/measurement-2026-10-23-usb01-ragnar/NOTIZEN.TXT` war vom Lead als
+„Kabeltastatur tot“ gelesen; der Verdacht „gemeinsamer Tastaturzustand“ (oben,
+Stand 2026-10-23) hatte also kein beobachtetes Fehlbild. Was die Spalte meint, ist
+offen (Rueckfrage mit dem naechsten Paket). Weiter von Ragnar: „Zeiger: ja“ heisst
+Zeiger sichtbar in der Bildmitte, nicht beweglich (passt zu F3); die Rii X8 geht als
+Tastatur, nur das Touchpad nicht; die Tastatur der DW 9000 ist ungetestet; das
+Basetech-Pad meldet sich unter Linux ebenfalls als `045e:028e` (Xbox 360). Nach dem
+Umstecken hat er per Ctrl-Alt-Del neu gestartet (kein Hotplug, F6).
