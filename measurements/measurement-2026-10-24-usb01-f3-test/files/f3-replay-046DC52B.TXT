@@ -1,0 +1,126 @@
+=== 0. FILE ===
+Format        : NewTOS USBSNAP text report v2
+Program       : USBSNAP.NCP v2
+Kernel        : NewTOS 0.6.1 2026-10-24 (be506300)
+Snapshot API  : Ssystem 2022, layout v2, generation 1
+Recorded      : 30.0 s, pointer muted: yes, ring 256, reports listed <= 1024
+Device        : 1 of 2 (index 1)
+Timestamps    : time of collection by the host, NOT the time the device sent
+                the report (resolution = how often the kernel polls USB).
+
+=== 1. IDENTITY ===
+VID:PID       : 046d:c52b
+Manufacturer  : "Logitech"
+Product       : "USB Receiver"
+bcdUSB 2.00  class 0  subclass 0  protocol 0  EP0 max 32  configurations 1
+
+=== 2. POSITION ===
+Controller    : xHCI, 5 root ports
+Path          : root port 1 -> hub 2109:3431 port 3
+Route string  : 0x00000003  (behind a hub, parent index 0)
+Speed         : full speed (12 Mbit/s)  [xHCI PORTSC speed id 1]
+xHCI slot     : 2
+
+=== 3. DRIVER DECISION ===
+Functions     : 2 interfaces of this device are used, each on its own (see
+                Interfaces); Role and Reason are those of the first one.
+Role          : KEYBOARD (HID boot protocol, decoded -> IKBD)
+Role codes    : 0 none / 1 keyboard / 2 mouse / 3 observed-only / 4 hub /
+                5 failed; this device: 1
+Reason        : -
+Flags         : 0x0b = device descriptor ok, configuration ok
+                SET_CONFIGURATION done
+HID interfaces: 3   functions: 2   first: interface 0, endpoint 0x81
+Interfaces:
+  if 0 alt 0  class 3 sub 1 proto 1  int-IN 0x81 max 8 interval 8
+      USED (keyboard, decoded)  [recorded]
+      report descriptor declared 59 bytes, kept 6
+  if 1 alt 0  class 3 sub 1 proto 2  int-IN 0x82 max 8 interval 2
+      USED (mouse, decoded)  [recorded]
+      report descriptor declared 148 bytes, kept 6
+  if 2 alt 0  class 3 sub 0 proto 0  int-IN 0x83 max 32 interval 2
+      not used: HID without boot subclass: report protocol only, no report
+                parser yet
+      report descriptor declared 98 bytes, kept 5
+Interrupt transfer errors: 0
+
+=== 4. RAW DESCRIPTORS (hex, offset: 16 bytes) ===
+Device descriptor, 18 bytes
+0000: 12 01 00 02 00 00 00 20 6d 04 2b c5 10 12 01 02  |....... m.+.....|
+0010: 00 01                                            |..|
+Configuration descriptor, 84 bytes (wTotalLength 84)
+0000: 09 02 54 00 03 01 00 a0 31 09 04 00 00 01 03 01  |..T.....1.......|
+0010: 01 00 09 21 11 01 00 01 22 3b 00 07 05 81 03 08  |...!....";......|
+0020: 00 08 09 04 01 00 01 03 01 02 00 09 21 11 01 00  |............!...|
+0030: 01 22 94 00 07 05 82 03 08 00 02 09 04 02 00 01  |."..............|
+0040: 03 00 00 00 09 21 11 01 00 01 22 62 00 07 05 83  |.....!...."b....|
+0050: 03 20 00 02                                      |. ..|
+HID report descriptor, interface 0, 6 bytes (declared 59)
+0000: 05 01 09 06 a1 01                                |......|
+HID report descriptor, interface 1, 6 bytes (declared 148)
+0000: 05 01 09 02 a1 01                                |......|
+HID report descriptor, interface 2, 5 bytes (declared 98)
+0000: 06 00 ff 09 01                                   |.....|
+
+=== 5. DECODED DESCRIPTORS ===
+Device: bLength 18 bDescriptorType 1 bcdUSB 0x0200 bDeviceClass 0
+  bDeviceSubClass 0 bDeviceProtocol 0 bMaxPacketSize0 32
+  idVendor 0x046d idProduct 0xc52b bcdDevice 0x1210
+  iManufacturer 1 iProduct 2 iSerialNumber 0 bNumConfigurations 1
+Configuration: wTotalLength 84 bNumInterfaces 3 bConfigurationValue 1
+  iConfiguration 0 MaxPower 49 (98 mA) bmAttributes 0xa0 bus-powered
+      remote-wakeup
+  Interface 0 alt 0: bNumEndpoints 1 iInterface 0
+    class 3 (HID) sub 1 (boot) protocol 1 (keyboard)
+    HID: bcdHID 1.11 bCountryCode 0 bNumDescriptors 1
+      class descriptor type 0x22 (report) length 59
+    Endpoint 0x81: IN, interrupt, wMaxPacketSize 0x0008 (8), bInterval 8
+  Interface 1 alt 0: bNumEndpoints 1 iInterface 0
+    class 3 (HID) sub 1 (boot) protocol 2 (mouse)
+    HID: bcdHID 1.11 bCountryCode 0 bNumDescriptors 1
+      class descriptor type 0x22 (report) length 148
+    Endpoint 0x82: IN, interrupt, wMaxPacketSize 0x0008 (8), bInterval 2
+  Interface 2 alt 0: bNumEndpoints 1 iInterface 0
+    class 3 (HID) sub 0 (none) protocol 0
+    HID: bcdHID 1.11 bCountryCode 0 bNumDescriptors 1
+      class descriptor type 0x22 (report) length 98
+    Endpoint 0x83: IN, interrupt, wMaxPacketSize 0x0020 (32), bInterval 2
+Report descriptor items (interface 0):
+  05 01           Usage Page (Generic Desktop)
+  09 06           Usage (Keyboard)
+  a1 01           Collection (Application)
+  Items 3: Input 0, Output 0, Feature 0, Collections 1 (collections NOT
+      balanced)
+  Report ID: none (reports carry no ID byte)
+Report descriptor items (interface 1):
+  05 01           Usage Page (Generic Desktop)
+  09 02           Usage (Mouse)
+  a1 01           Collection (Application)
+  Items 3: Input 0, Output 0, Feature 0, Collections 1 (collections NOT
+      balanced)
+  Report ID: none (reports carry no ID byte)
+Report descriptor items (interface 2):
+  06 00 ff        Usage Page (Vendor-defined)
+  09 01           Usage (0x01)
+  Items 2: Input 0, Output 0, Feature 0, Collections 0
+  Report ID: none (reports carry no ID byte)
+
+=== 6. REPORTS ===
+Total 9 (seq 0..8), listed 9, lost 0, interrupt errors 0
+Reports of all functions in order of arrival; column if = the interface
+(function) a report came from, decoded with that function's role.
+  interface 0 (Keyboard): 3 listed
+  interface 1 (Mouse): 6 listed
+Flags: M = collected while the pointer was muted, C = report may be cut
+   seq     t(s)  len fl  if bytes                   decoded (boot reports)
+     0    0.235   8 M-   1 00 05 fd 00 00 00 00 00  --- dx   +5 dy   -3 wh  +0
+     1    0.270   8 M-   0 00 00 04 00 00 00 00 00  mod 00 keys 04
+     2    0.305   8 M-   1 01 00 00 00 00 00 00 00  L-- dx   +0 dy   +0 wh  +0
+     3    0.375   8 M-   1 00 05 fd 00 00 00 00 00  --- dx   +5 dy   -3 wh  +0
+     4    0.410   8 M-   0 00 00 04 00 00 00 00 00  mod 00 keys 04
+     5    0.445   8 M-   1 01 00 00 00 00 00 00 00  L-- dx   +0 dy   +0 wh  +0
+     6    0.515   8 M-   1 00 05 fd 00 00 00 00 00  --- dx   +5 dy   -3 wh  +0
+     7    0.550   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+     8    0.585   8 M-   1 00 00 00 00 00 00 00 00  --- dx   +0 dy   +0 wh  +0
+
+=== END ===

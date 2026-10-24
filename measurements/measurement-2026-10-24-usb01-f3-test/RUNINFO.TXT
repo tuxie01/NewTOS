@@ -1,0 +1,63 @@
+USB01 F3 -- independent Tester verification of be506300 (several HID functions per device, layout v2)
+====================================================================================================
+
+Date      2026-10-24
+Tested    main @ be506300 (code) / 273ff8be (docs); tree HEAD during the run b5e90365 (docs only after be506300:
+          `git diff --stat be506300 HEAD -- kernel tos-api sdk tools programs` is empty)
+Who       Tester agent. No hardware, no SD card, no push, no GitHub. QEMU + host only.
+Base      69248d9e (pre-F3), scratch worktree (no references/), own target/.
+Builds    clean scratch worktree of be506300 (f3), shared tree only for `cargo xtask test` and one rpi4 release build.
+
+RESULT (details: the Tester report; every line below ties to files in this directory)
+  1 host tests        cargo xtask test: 1630 passed / 0 failed / 1 ignored, 158 test binaries (serial/hosttests-summary.txt).
+                      Base 69248d9e: touched binaries re-run in the scratch worktree: xtask 125+5 (rsc_* need references/)
+                      -> 147 (+17), gemdos_ssystem_usbsnap 20 -> 22 (+2), all others identical: +19, 1611 -> 1630.
+                      Warning lines of the test build 127 = 127 (base: cargo test -p tos-api -p tos-types -p xtask --no-run).
+  2 builds            qemu-virt dev+release and rpi4 dev+release from the clean be506300 worktree, all rc 0.
+                      rustc kernel 94 -> 93 both boards, tos-api 64 = 64; clippy kernel 124 -> 121 both boards,
+                      tos-api 76 = 76 (serial/warning-counts.txt). drivers/usb/xhci/mod.rs clippy lines 31 -> 28,
+                      usb/mod.rs 12 = 12: no new lint in drivers/usb/.
+  3 qemu-virt input   base vs F3 release kernels, topologies default / extra / hubtree / mtp / overfull, mouse (20 x
+                      rel(+10,+6)) and Ctrl+Z: [usb]/[pcie] lines identical (DMA addresses masked) in all 10 pairs;
+                      pixels identical: mouse 138 px, Ctrl+Z 1014367 px in every run; EXC/PANIC/stray 0.
+                      Added by the Tester: left click (Desk > About dialog opens, 155365 px, identical base vs F3, default
+                      and extra), right button, key repeat (hold x 3 s -> repeated x, then one y; identical base vs F3,
+                      default and extra). Dev builds (virt dev, rpi4 dev) boot as well. `cargo xtask run --usb-extra`
+                      itself (serial/f3-xtask-run-usb-extra.log): 6 devices, desktop up, 53 [usb] lines = base.
+  4 USBSNAP v2 real   method/usbprobe-v2.c as NEWDESK.NAP of a scratch qemu-virt kernel (--usb-extra): v1 request ->
+                      -25 with header version 2; v0 and v3 -25; v2 LIST ok, entry byte 31 n_funcs 1 (hub 0); ring
+                      entries iface 0 / ep 0x81, +14..15 zero (serial/f3-probe-extra.log). Program (usbsnap-virt.c,
+                      unchanged usbsnap.c): files identical to the developer's except Kernel line and timestamps
+                      (files/f3-extra-*). Base kernel + v2 program on raspi4b: "The kernel speaks USB snapshot layout v1;
+                      this program reads v2." (serial/rpi4-base-usbsnap-t7.log).
+  5 multi-function    replay.h regenerated with the kernel's real encoder (mkreceiver.rs): byte-identical to the developer's;
+     rendering        replay program rebuilt (sha e72205bd identical), files identical (files/f3-replay-*). SYNTHETIC.
+  6 per-function      temporary in-kernel selftest in a scratch worktree (method/tester-temp-selftest.txt, serial/
+     state, wiring    f3-tempselftest.log): hid::keyboard_report(0/1) interleaved -> PREV[0]=0x40000, PREV[1]=0x50002;
+                      two mouse functions -> held 1/0, combined 1; release_all -> all 0. The host tests alone do not cover
+                      hid.rs / usb::poll wiring (their state array lives in the test).
+  7 raspi4b           F3 vs base release kernel8.img, -append serial=on: APITEST 109/0/5 both (= earlier baseline), desk boot
+                      "[pcie] RC not present...; USB disabled", "[desk] desktop up (1 drives)", USBSNAP.NCP T7 "No USB
+                      controller", EXC/PANIC 0, fsck_msdos rc 0. Logs differ only in kernel size/addresses.
+  8 mutation          scratch worktree, config_desc.rs: removing R1 / R7 / off-by-one R6 turns exactly one test red each
+                      (alternate_settings_are_not_functions / endpoint_collision_is_skipped / function_limit_per_device).
+
+DEVIATION FOUND
+  configure_endpoint() returns false both for a non-Success completion code and for a command TIMEOUT; configure_hid retries
+  with function 0 in both cases. usb-snapshot.md §10 says "ein Timeout nicht" (no retry on timeout). Harmless (the retry
+  times out as well, +1 command timeout), but code != spec.
+
+SHA256 (not kept in the repo)
+  rpi4 release kernel8.img, clean worktree be506300       6c90a1be3135c7813bf7f3c965e08d52b19d7f0146e08519655dbbb47188bd05
+  rpi4 release kernel8.img, shared tree HEAD b5e90365     c763b83e6f0d8df10e90bbbaaab908a760388c424f59ac8c04abc4a78bad7efd
+    (the two differ in 12 bytes: the 8-hex git rev stamped by tos-api/build.rs, twice; same date stamp)
+  developer's edc9c4d1... NOT reproduced: not from either, and not after re-stamping date (10-15..10-25) x rev
+    (300 commits) -- the developer's tree had a different state.
+  USBSNAP.NCP (sdk/build.sh sdk/examples/usbsnap.c)       522c8e9423ffae243cb422969195db6319282693158baa8862c2162946447a0f  (= developer)
+  USBSNAPV.NAP 7750d3a7cad60e8dbffdca769019a008ac9dfab15b39d12114d3a1f7ca2b9675  (= developer)
+  USBSNAPR.NAP e72205bdc53df558c058de55cd906eec8cf3be54bb490bde41cd14162e728ae9  (= developer)
+  qemu-virt release flat image F3 890c8c73eb0ee92e0b4a6427370238d7b26a7f93ab650ecc87b7feb250780254, base a9aee35ceb51d0c70295428f6d8f03dd4b43d39f037e1bd8d2ab36801d5c5d1d
+
+NOT COVERED: multi-function path in xhci (one Configure Endpoint with several endpoints, SET_PROTOCOL per function, events of
+several DCIs of one slot, fallback, k>0 SET_PROTOCOL failure, function budget) -- no QEMU device, no host test; real Pi 4
+only (hid-mouse-protocols.md §9.8 P1-P5). Per-device keyboard routing in QEMU (device= aborts, USB02 item 7).

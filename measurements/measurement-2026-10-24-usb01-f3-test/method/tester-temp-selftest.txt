@@ -1,0 +1,12 @@
+TEMPORARY scaffolding used ONLY in a scratch git worktree of be506300 (never in the shared tree), removed by hand afterwards
+(files copied back from backups; `git status` of that worktree clean). Result: serial/f3-tempselftest.log.
+
+kernel/src/drivers/usb/hid.rs, appended:
+  pub fn tester_f3_selftest() {
+      keyboard_report(0,[a]); keyboard_report(1,[]); keyboard_report(0,[a]); keyboard_report(1,[shift,b]);
+      print PREV[0], PREV[1]            // real per-function state: want 0x40000 / 0x50002
+      mouse_report(0,[left,0,0],3); mouse_report(1,[0,1,1],3);
+      print MOUSE_BUTTONS[0], [1], combined_buttons(..)   // want 1 / 0 / 1
+      release_all(); print PREV[0], PREV[1], MOUSE_BUTTONS  // want 0 / 0 / 0 / 0
+  }
+kernel/src/drivers/usb/mod.rs, in poll() after XHCI is found: call it once (static AtomicBool).

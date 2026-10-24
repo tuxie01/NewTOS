@@ -1,0 +1,11 @@
+rustc / clippy warning counts (kernel lib / tos-api lib), generated lines of the build logs
+base-build-virt: tos-api=64 kernel=94 
+base-build-rpi4: tos-api=64 kernel=94 
+f3-build-virt-dev: tos-api=64 kernel=93 
+f3-build-rpi4-dev: tos-api=64 kernel=93 
+f3-build-virt-rel: tos-api=64 kernel=93 
+f3wt-build-rpi4-rel: tos-api=64 kernel=93 
+clippy base-clippy-virt: tos-api=76 kernel=124 
+clippy base-clippy-rpi4: tos-api=76 kernel=124 
+clippy f3-clippy-qemu-virt: tos-api=76 kernel=121 
+clippy f3-clippy-rpi4: tos-api=76 kernel=121 

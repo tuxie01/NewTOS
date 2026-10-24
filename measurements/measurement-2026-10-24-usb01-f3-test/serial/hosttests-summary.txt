@@ -1,0 +1,7 @@
+cargo xtask test (main tree, HEAD b5e90365 = be506300 + docs only for code), 2026-10-24:
+  passed 1630 failed 0 ignored 1 in 158 test binaries
+  warning lines (xtask test output): 127
+base 69248d9e (scratch worktree, no references/): cargo test -p tos-api -p tos-types -p xtask --no-run: warning lines 127
+base touched binaries: tos-api lib 109, gemdos_ssystem_sysinfo 9, gemdos_ssystem_usbsnap 20, xtask 125 passed + 5 failed (rsc_* need references/)
+F3 same binaries:      tos-api lib 109, gemdos_ssystem_sysinfo 9, gemdos_ssystem_usbsnap 22, xtask 147
+delta = +17 xtask +2 usbsnap = +19  (1611 -> 1630)
