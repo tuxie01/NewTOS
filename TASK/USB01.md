@@ -167,3 +167,11 @@ Zeiger sichtbar in der Bildmitte, nicht beweglich (passt zu F3); die Rii X8 geht
 Tastatur, nur das Touchpad nicht; die Tastatur der DW 9000 ist ungetestet; das
 Basetech-Pad meldet sich unter Linux ebenfalls als `045e:028e` (Xbox 360). Nach dem
 Umstecken hat er per Ctrl-Alt-Del neu gestartet (kein Hotplug, F6).
+
+**Paket 2 an Ragnar (2026-10-24):** Pre-Release `usbtest-2026-10-24`
+(`NEWTOS-USBTEST-2026-10-24.zip`, sha256 `a01cc025…a308e7`), usb-diag-rpi4-Release aus
+`19ff79f6` (F3 + USB02 Punkte 10/11), `kernel8.img` sha256
+`1c55804af1af8d1571b699b616b6778b4822835c6d7c0559448374364d4209c5`, `USBSNAP.NCP`
+`522c8e94…` (unveraendert seit `be506300`). Punkte 10/11 nicht auf echter Pi gelaufen
+(Host + QEMU). Bitte in #3: je Empfaenger ein Start + USBSNAP-Aufnahme, Funktastaturen
+der Sets, Bedeutung der Spalte „Tastatur“. Offen: Ragnars Rueckmeldung (P2/P3).
