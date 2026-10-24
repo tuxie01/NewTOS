@@ -715,6 +715,14 @@ als Pfadzeile.
    waehrend der 30 s nicht — ein Tester koennte „Maus tot“ denken; deshalb der
    Zaehler „reports: N“ auf dem Bildschirm. Ohne MUTE: einfacher, aber nicht untersuchtes
    Risiko stoerender Klicks. Empfehlung: **ein**, bis T6 das Gegenteil zeigt.
+   *Richtigstellung 2026-10-24 (Anwender):* `USBSNAP.NCP` ist ein Konsolenprogramm und
+   laeuft bildschirmfuellend; waehrend der Aufnahme ist **kein Desktop sichtbar**, es
+   liegen keine Icons unter dem Zeiger. Was MUTE tatsaechlich verhindert, ist, dass
+   Klicks und Bewegungen der Aufnahme als Ereignisse auflaufen und nach der Rueckkehr
+   den Desktop treffen. Die Pruefschritte „Klick auf Desktop-Icons waehrend der
+   Aufnahme loest nichts aus“ in den Laeufen vom 2026-10-23 und in den Anleitungen
+   des Leads waren deshalb falsch formuliert; richtig ist: nach der Rueckkehr loest
+   der Desktop keine Aktion aus, die nicht nach der Rueckkehr geklickt wurde.
 2. **Hersteller-/Produktstring** erfassen (+0,3 d, zusaetzliche Control-Transfers je Geraet
    beim Booten, Fehler werden ignoriert, Seriennummer **nicht**)? Empfehlung: ja — der
    Produktname ist fuer Ragnars Dateien der wertvollste menschenlesbare Hinweis.
