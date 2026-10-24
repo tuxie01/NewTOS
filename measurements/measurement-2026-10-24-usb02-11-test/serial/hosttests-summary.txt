@@ -1,0 +1,8 @@
+base worktree: passed 1625 failed 5 binaries 156
+test rsc_obfix_tests::mkrsc_convert_ilp32_keeps_the_char_grid_coordinates ... FAILED
+test rsc_obfix_tests::mkrsc_convert_lp64_keeps_the_char_grid_coordinates ... FAILED
+test rsc_obfix_tests::the_committed_gem_fsel_blob_carries_char_grid_coordinates ... FAILED
+test rsc_cicon_tests::an_old_format_file_declares_no_colour_icons ... FAILED
+test rsc_cicon_tests::teradesk_cicons_rsc_converts_and_fits_rsc_cap ... FAILED
+test result: FAILED. 142 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+new shared tree: passed 1631 failed 0 ignored 1 binaries 158

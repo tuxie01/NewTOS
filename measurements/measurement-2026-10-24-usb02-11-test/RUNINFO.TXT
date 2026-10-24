@@ -1,0 +1,67 @@
+USB02 item 11 -- independent Tester run of 8c112965
+===================================================
+
+Date    2026-10-24
+Who     Tester agent. QEMU + host only; no hardware, no SD card, no push, no GitHub.
+Scope   8c112965 (no function-0 fallback after a Configure Endpoint timeout) against base 25248195.
+        Builds from scratch git worktrees (base 25248195, new 8c112965; removed afterwards); host suite of the new
+        code in the shared tree (kernel/tos-api identical to 8c112965 at HEAD c63808cc). The developer's RUNINFO
+        (measurement-2026-10-24-usb02-10-11) was read, every number below is my own run.
+
+1 CODE vs SPEC  usb-snapshot.md §10 "Fallback": retry with function 0 after any non-Success completion code, not after a
+  timeout; remaining rows get reason 18.   -> PASS (read + fault injection, see 5)
+  success  : CommandOutcome::Success -> retry_with_function0 false, no fail_all, funcs[] registered, n_func += n.
+  error cc : Some(cc != Success) -> Failed (kprintln of the code kept) -> retry iff n>1: log line, rows 1..n get
+             reason 18 + "not used" line, n = 1, second configure_endpoint; second result != Success -> fail_all(18)
+             on function 0 (rows 1.. already 18). Unchanged vs base apart from the n>1 gate.
+  timeout  : None -> Timeout -> no retry; outcome != Success -> fail_all(CONFIGURE_ENDPOINT, fs[..n]): every row
+             reason 18 / role NONE, device reason 18, return (false,true); funcs[] / n_func not touched (nothing
+             registered, no function budget used), no SET_CONFIGURATION, no SET_PROTOCOL.
+
+2 HOST SUITE   cargo xtask test
+  new (shared tree)  1631 passed / 0 failed / 1 ignored, 158 result lines  (serial/hosttests-summary.txt)
+  base (worktree)    1625 passed / 5 failed, 156 result lines, aborted in the xtask binary. The 5 failures are
+                     rsc_obfix_tests/rsc_cicon_tests needing the gitignored references/emutos/aes/gem.rsc, which a
+                     fresh worktree does not have ("references/emutos/aes/gem.rsc must exist"). Not a code defect.
+                     1625 + 5 = 1630 = developer's base count; new has +1 (xtask: 148 tests vs 147). PASS, with the
+                     caveat that the base count is reconstructed (pass+env-failed), not a clean 0-fail run.
+  Mutation (scratch worktree of 8c112965): config_desc.rs `outcome == CommandOutcome::Failed && n_funcs > 1` ->
+                     `outcome != CommandOutcome::Success && n_funcs > 1` (the old rule):
+                     `cargo test -p xtask configure_endpoint_fallback` -> FAILED, panic "no retry after a command
+                     timeout" at config_desc.rs:1039. Unmutated: ok. PASS.
+
+3 BUILDS  cargo xtask build [--release] --board {qemu-virt,rpi4}, fresh per board, base and new  (serial/build-rc.txt)
+  8 builds, all rc=0. rustc warnings: kernel 93 = 93, tos-api 64 = 64 (8 of 8 logs each).
+  cargo clippy --package kernel --no-default-features --features board-<b>: both boards base = new:
+  kernel 121, tos-api 76; warnings located in kernel/src/drivers/usb/: 40 = 40.   PASS
+
+4 QEMU NO-REGRESSION  (release qemu-virt flat images; method/ = developer's unchanged scripts, own runs)
+  base image sha256 9803b7a8...2ca2ffe (identical to the developer's base hash -> same build reproduced)
+  new  image sha256 be8d6da2c7fc37c0acb5a71fc6b2bbab97b881e1fc69e332df3c3941948deaa9 (rev stamp 8c112965; the
+       developer's 591ba52c... was built from the pre-commit tree, hash difference = build stamp)
+  rpi4 release kernel8.img  base 92c90770..., new 815c186a... (built; boot not run, see 5)
+  topologies default and extra, each: mouse (20 x rel +10,+6), Ctrl+Z keyboard, key hold 3 s + tap.
+  [usb]/[pcie] lines, addresses masked: identical base vs new in all 6 pairs (26 default, 53 extra);
+  EXC/PANIC 0 in all 12 logs; "[desk] desktop up" in all 12.
+  Pixels base vs new: 0 differing in all pairs, except extra-hold: 34 / 84 px = one 'x' glyph more in base.
+  Repeated 3x per side (shots2): rightmost glyph column base 606/598/598, new 606/598/598 -> hold timing jitter in
+  both, not caused by the change. Exactly one trailing 'y' in all.
+  Mouse: 138 differing px (move seen) before->after in both topologies, base and new. Keyboard: Ctrl+Z switches to
+  EmuCON (1.01 M px differ) in both. PASS. Visually checked screendumps/new-extra-hold-1-tap.png (EmuCON, row of x
+  ending in one y).
+
+5 NOT-COVERED CLAIM  "timeout path / multi-function path cannot be reached in QEMU"
+  Natural trigger: confirmed not reachable (no QEMU fault injection for xHCI commands; no QEMU HID device has two
+  functions). But the real branch logic can be driven: fault injection in a scratch worktree (method/inject.txt),
+  default topology, two release kernels, serial/inj-*.log:
+    injected Failed  : "Configure Endpoint with 2 functions failed; retrying with function 0 only", "not used:
+                       Configure Endpoint failed (fallback to function 0)", "HID configured: ... (keyboard)" and
+                       "(mouse)"; mouse moves 138 px (screendumps/inj-Failed-1-after.png vs before).
+    injected Timeout : no "retrying" line, no "HID configured", "enumeration done: 2 devices (0 keyboard/mouse...)";
+                       mouse 0 px moved (device failed as a whole). 
+  => the decision wiring in configure_hid behaves per spec in the real kernel. Still real-Pi-only: an actual
+  command timeout on VL805 and a real multi-function device (HW checklist).   Item PASS, residual HW-only.
+
+VERDICT  PASS (items 1-5). Open: real VL805 timeout + real composite device on the Pi.
+Cleanup  worktrees removed, scratch run dirs removed, no kernel8.img in repo root, no product file touched
+         (git status clean before this commit).

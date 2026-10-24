@@ -1,0 +1,7 @@
+Fault injection (scratch worktree of 8c112965, removed after the run; product tree untouched).
+In configure_hid, line `let mut outcome = self.configure_endpoint(di, speed, &fs[..n]);` replaced by:
+    if n == 1 { n = 2; }                                   // pretend two functions
+    let mut outcome = self.configure_endpoint(di, speed, &fs[..1]);   // real command (QEMU: Success)
+    if outcome == Success { outcome = INJ_OUTCOME; kprintln!("[usb] TESTER-TEMP injected {:?} n={}", outcome, n); }
+with `const INJ_OUTCOME: CommandOutcome = CommandOutcome::Failed;` resp. `::Timeout;` -> two release qemu-virt kernels.
+Everything after (retry_with_function0, the retry line, fail_all, row writes) is the real code.

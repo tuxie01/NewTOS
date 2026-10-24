@@ -1,0 +1,4 @@
+clippy base qemu-virt: warning: `tos-api` (lib) generated 76 warnings warning: `kernel` (lib) generated 121 warnings  usb-located=40
+clippy base rpi4: warning: `tos-api` (lib) generated 76 warnings warning: `kernel` (lib) generated 121 warnings  usb-located=40
+clippy new qemu-virt: warning: `tos-api` (lib) generated 76 warnings warning: `kernel` (lib) generated 121 warnings  usb-located=40
+clippy new rpi4: warning: `tos-api` (lib) generated 76 warnings warning: `kernel` (lib) generated 121 warnings  usb-located=40

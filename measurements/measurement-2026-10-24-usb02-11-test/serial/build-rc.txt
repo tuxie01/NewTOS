@@ -1,0 +1,10 @@
+base-qemu-virt-dev rc=0
+base-rpi4-dev rc=0
+base-qemu-virt-rel rc=0
+base-rpi4-rel rc=0
+done
+new-qemu-virt-dev rc=0
+new-rpi4-dev rc=0
+new-qemu-virt-rel rc=0
+new-rpi4-rel rc=0
+done

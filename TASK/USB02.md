@@ -89,3 +89,11 @@ angleichen.
 mehr als einer Funktion (`config_desc::retry_with_function0`, Hosttest
 `configure_endpoint_fallback_only_after_an_answer`, rot mit der alten Regel). Beleg
 `measurements/measurement-2026-10-24-usb02-10-11/RUNINFO.TXT`.
+
+**Tester 2026-10-24: PASS.** Code nach Spec §10 auf allen drei Pfaden (Success / Fehler-CC / Timeout);
+Hosttest 1631/0/1 (Basis 1630 rekonstruiert, 5 Worktree-Fehlschlaege = fehlendes `references/`), Mutation mit der
+alten Regel rot ("no retry after a command timeout"); 8 Builds rc 0, Warnungen und Clippy unveraendert
+(93/64, 121/76); QEMU default und `--usb-extra` Basis = neu ([usb]/[pcie]-Zeilen, Maus, Tastatur, Key-Repeat).
+Timeout-/Mehrfunktionspfad per Fehlerinjektion im Scratch-Worktree gefahren (Failed: Retry, Geraet laeuft;
+Timeout: kein Retry, Geraet faellt aus). Offen nur: echter VL805-Timeout / echtes Verbundgeraet (Pi).
+Beleg `measurements/measurement-2026-10-24-usb02-11-test/RUNINFO.TXT`.
