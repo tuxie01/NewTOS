@@ -70,8 +70,8 @@ fn make_running(slot: usize) {
 /// CPU and **not** in the run-set, both accessories awake with their
 /// `AC_CLOSE` pending.
 fn fixture() {
-    for p in PROCESS_TABLE.iter() {
-        p.runnable.store(false, Ordering::Release);
+    for (i, p) in PROCESS_TABLE.iter().enumerate() {
+        sched::unready(i);
         p.has_ctx.store(false, Ordering::Release);
         p.wait_cond.store(0, Ordering::Release);
         p.parent_slot.store(NO_PARENT, Ordering::Release);
@@ -99,18 +99,28 @@ fn dsptch_admits_a_caller_that_never_blocked() {
         "fixture: the demo reaches the barrier outside the run-set"
     );
 
-    // `wait_for_accs` → `all_run()` → `dsptch()`: the first accessory runs.
-    let sw = match sched::dsptch() {
-        sched::Dispatch::Yield(sw) => sw,
-        sched::Dispatch::Idle => panic!("a runnable peer exists — must dispatch"),
-    };
-    assert_eq!(sw.slot, ACC, "the barrier dispatches to the first accessory");
+    // `wait_for_accs` → `all_run()` → `dsptch()`. A115: the two accessories
+    // were made ready before this dispatch, so they are on `drl` and join
+    // `rlr` *behind* the caller, which `disp_act` appended first
+    // (`gemdisp.c:231-243`) — the first pass keeps the CPU …
+    assert!(
+        matches!(sched::dsptch(), sched::Dispatch::Idle),
+        "the accessories join the ready list behind the caller"
+    );
 
     // `disp_act(p)` = `insert_process(p, &rlr)`, and that is an insert.
     assert!(
         PROCESS_TABLE[APP].runnable.load(Ordering::Acquire),
         "dsptch must PUT the caller on the ready list, not presuppose it"
     );
+
+    // … and `all_run`'s next `dsptch()` runs the head: the later-made-ready
+    // accessory, `drl` being a push-front stack (`gemasync.c:56-57`).
+    let sw = match sched::dsptch() {
+        sched::Dispatch::Yield(sw) => sw,
+        sched::Dispatch::Idle => panic!("a runnable peer exists — must dispatch"),
+    };
+    assert_eq!(sw.slot, ACC2, "the barrier dispatches to the head of the ready list");
     assert_eq!(
         PROCESS_TABLE[APP].wait_cond.load(Ordering::Acquire),
         0,
@@ -119,9 +129,9 @@ fn dsptch_admits_a_caller_that_never_blocked() {
 
     // Therefore the CPU comes back when the accessories block again. This is
     // the step that was missing: with the caller outside the run-set,
-    // `pick_next` found nothing and `appl_exit` never returned.
+    // the scheduler found nothing and `appl_exit` never returned.
     for acc in [ACC, ACC2] {
-        PROCESS_TABLE[acc].runnable.store(false, Ordering::Release);
+        sched::unready(acc);
         PROCESS_TABLE[acc]
             .wait_cond
             .store(sched::wait_mesg(acc), Ordering::Release);
@@ -137,7 +147,7 @@ fn dsptch_admits_a_caller_that_never_blocked() {
     // alone on just the same.
     fixture();
     for acc in [ACC, ACC2] {
-        PROCESS_TABLE[acc].runnable.store(false, Ordering::Release);
+        sched::unready(acc);
     }
     assert!(
         matches!(sched::dsptch(), sched::Dispatch::Idle),
@@ -156,7 +166,7 @@ fn dsptch_admits_a_caller_that_never_blocked() {
     fixture();
     const PARENT: usize = APP;
     const CHILD: usize = 3;
-    PROCESS_TABLE[PARENT].runnable.store(true, Ordering::Release);
+    sched::ready(PARENT);
     PROCESS_TABLE[CHILD].set_state(State::Running);
     PROCESS_TABLE[CHILD]
         .parent_slot
@@ -168,11 +178,13 @@ fn dsptch_admits_a_caller_that_never_blocked() {
         "fixture: the parent is withdrawn for as long as the child lives"
     );
 
+    // First pass: the woken accessories join behind the child (A115).
+    assert!(matches!(sched::dsptch(), sched::Dispatch::Idle));
     let sw = match sched::dsptch() {
         sched::Dispatch::Yield(sw) => sw,
         sched::Dispatch::Idle => panic!("the accessories are runnable"),
     };
-    assert_eq!(sw.slot, ACC, "the child's barrier dispatches to an accessory");
+    assert_eq!(sw.slot, ACC2, "the child's barrier dispatches to an accessory");
     assert!(
         PROCESS_TABLE[CHILD].runnable.load(Ordering::Acquire),
         "the child — the running slot — is the one that gets admitted"

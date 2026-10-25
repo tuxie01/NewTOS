@@ -357,6 +357,23 @@ fork ring (`forker`) and runs `schedule()`, which polls the keyboard and appends
   *next* `dsptch()`. (Inferred from the list handling above: `drl` is a push-front
   stack — `signal`, `gemasync.c:56-57`; `iprocess`, `gempd.c:125-128` — so several
   processes woken in one pass join `rlr` in reverse wake order.)
+* **NewTOS binding (A115, 2026-10-25).** The order above is reproduced as
+  contract, not left to the scheduler: a ready list with `rlr`/`drl`
+  semantics (`tos-api/src/bdos/process/sched.rs`, "The ready list"). Every
+  place that makes a process ready goes through it — `pstart` = `admit` (push
+  onto `drl`, `gempd.c:125-128`), `signal` = `wake`/`wake_timers` (push onto
+  `drl`, `gemasync.c:56-57`), `disp_act` = `ready` (end of `rlr`),
+  `mwait_act` = `unready` (`nrl`). Consequences: an `appl_write` reader
+  joins `rlr` behind the writer; timer completions of one pass are pushed in
+  `dlr` order — deadline ascending, a later-armed delay before an equal
+  earlier one (`adelay`, `geminput.c:520-540`) — and so run in reverse; desk
+  accessories, `pstart`ed in load order (`geminit.c:309-315`), are first
+  run in **reverse** load order. NewTOS's EL1 kernel client (the boot path's
+  accessory barrier, EmuTOS pid 0) is one entry of `rlr` while its frame is
+  parked; its waits are polls, so it is appended like a `dsptch()` caller,
+  never put on `nrl`. NewTOS-only broadcast wakes (one key waking every
+  matching waiter, e.g. the window-tree lock hand-over or input) push in slot
+  order; only the waiter whose predicate holds proceeds.
 * **A process that never calls the AES never dispatches.** There is no
   preemption: the fork ring and the tick work (`tchange`, mouse/key forks) only
   run inside `disp()` or at the head of `ev_multi`. A program that polls with

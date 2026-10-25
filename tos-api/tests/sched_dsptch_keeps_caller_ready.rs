@@ -26,7 +26,7 @@
 //! picture, in `measurements/measurement-2026-09-25-port05`).
 //!
 //! What is asserted is the one property that distinguishes the two primitives:
-//! after a [`sched::dsptch`] the caller is still a `pick_next` candidate, after
+//! after a [`sched::dsptch`] the caller is still on the ready list, after
 //! a [`sched::sleep`] it is not. The process table is global and `cargo test`
 //! runs a file's tests in parallel threads, so the test serialises on the
 //! binary's `LOCK` — the convention of the `aes_*` files that share
@@ -70,8 +70,8 @@ fn make_running(slot: usize) {
 /// barrier: the waiter running, one accessory awake with its `AC_CLOSE`
 /// pending, everybody else out of the picture.
 fn fixture() {
-    for p in PROCESS_TABLE.iter() {
-        p.runnable.store(false, Ordering::Release);
+    for (i, p) in PROCESS_TABLE.iter().enumerate() {
+        sched::unready(i);
         p.has_ctx.store(false, Ordering::Release);
         p.wait_cond.store(0, Ordering::Release);
         p.set_state(State::Free);
@@ -81,7 +81,7 @@ fn fixture() {
     sched::set_kernel_parked(false);
     // The waiter came out of an `evnt_*` wait, which leaves the slot READY
     // (`sleep`'s idle exit re-arms `runnable`), and is now on the CPU.
-    PROCESS_TABLE[WAITER].runnable.store(true, Ordering::Release);
+    sched::ready(WAITER);
     make_running(WAITER);
     // The accessory: woken by `pd::post_msg`, not yet scheduled.
     PROCESS_TABLE[ACC].set_state(State::Running);
@@ -93,7 +93,12 @@ fn dsptch_yields_to_the_peer_without_leaving_the_run_set() {
     let _g = lock();
     fixture();
 
-    // `all_run()`'s `dsptch()`: the accessory gets the CPU.
+    // `all_run()`'s first `dsptch()`: the woken accessory is on `drl` and
+    // joins the ready list behind the caller (A115, `gemdisp.c:231-243`), so
+    // the caller keeps the CPU — and stays on the list …
+    assert!(matches!(sched::dsptch(), sched::Dispatch::Idle), "the accessory joins behind the caller");
+    assert!(PROCESS_TABLE[WAITER].runnable.load(Ordering::Acquire));
+    // … and the next `dsptch()` gives the accessory the CPU.
     let sw = match sched::dsptch() {
         sched::Dispatch::Yield(sw) => sw,
         sched::Dispatch::Idle => panic!("a runnable peer exists — must dispatch"),
@@ -114,9 +119,9 @@ fn dsptch_yields_to_the_peer_without_leaving_the_run_set() {
 
     // Therefore the round-robin finds the waiter again the moment the
     // accessory blocks. This is the step that used to be missing: with the
-    // waiter out of the run-set, `pick_next` skipped it and the CPU went to
+    // waiter out of the run-set, the scheduler skipped it and the CPU went to
     // the idle pass forever.
-    PROCESS_TABLE[ACC].runnable.store(false, Ordering::Release);
+    sched::unready(ACC);
     PROCESS_TABLE[ACC]
         .wait_cond
         .store(sched::wait_mesg(ACC), Ordering::Release);
@@ -143,7 +148,7 @@ fn dsptch_yields_to_the_peer_without_leaving_the_run_set() {
     // With no peer at all, `dsptch` is the idle pass and the caller carries
     // on — EmuTOS's process put straight back on a ready list it is alone on.
     fixture();
-    PROCESS_TABLE[ACC].runnable.store(false, Ordering::Release);
+    sched::unready(ACC);
     assert!(
         matches!(sched::dsptch(), sched::Dispatch::Idle),
         "nothing runnable: the pass is the idle pass, not a switch"

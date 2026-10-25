@@ -510,7 +510,7 @@ impl Proc {
     /// Put this slot on the ready list as a process that has run before.
     fn ready(&self) {
         PROCESS_TABLE[self.slot].has_ctx.store(true, Ordering::Release);
-        PROCESS_TABLE[self.slot].runnable.store(true, Ordering::Release);
+        sched::ready(self.slot);
     }
 
     fn is_ready(&self) -> bool {
@@ -524,7 +524,7 @@ impl Drop for Proc {
             process::set_current(std::ptr::null_mut());
         }
         sched::set_running(MAX_PROCESSES);
-        PROCESS_TABLE[self.slot].runnable.store(false, Ordering::Release);
+        sched::unready(self.slot);
         PROCESS_TABLE[self.slot].wait_cond.store(0, Ordering::Release);
         if self.acc {
             tos_api::aes::acc::forget_process(self.slot);
@@ -736,7 +736,13 @@ fn beg_update_of_another_process_parks_until_the_holder_ends() {
     assert_eq!(e.ret, Some(1));
     assert_eq!(test_update_lock(), (1, Some(b.slot)), "unsync hands the lock to the waiter, count 1");
     assert!(b.is_ready(), "…and wakes it (azombie)");
-    assert_eq!(e.switch_to, Some(b.slot), "…and the closing dsptch gives it the CPU");
+    // A115: the woken waiter is on `drl` and joins `rlr` behind the holder
+    // (`disp_act` before `schedule()`, `gemdisp.c:231-243`); the holder,
+    // otherwise alone on `rlr`, keeps the CPU for this call.
+    assert_eq!(e.switch_to, None, "…and joins the ready list behind the holder");
+    pa.intin.fill(0);
+    let next = pa.call(GRAF_MKSTATE, 0, 5, 0);
+    assert_eq!(next.switch_to, Some(b.slot), "the holder's next AES call gives it the CPU");
 
     b.run();
     let r = pbb.trap(); // the re-executed svc

@@ -38,9 +38,9 @@ fn lock() -> MutexGuard<'static, ()> {
     LOCK.lock().unwrap_or_else(|e| e.into_inner())
 }
 
-/// Slot layout of the fixture. `PARENT` sits at a *lower* index than `CHILD`
-/// so that `pick_next(CHILD)` has to wrap around the table to find it — the
-/// arrangement the measured run had (accessories 0/1, parent 2, child 3).
+/// Slot layout of the fixture — the arrangement the measured run had
+/// (accessories 0/1, parent 2, child 3). Since A115 the pick follows the
+/// ready list's order, not the slot index.
 const ACC: usize = 1;
 const PARENT: usize = 2;
 const CHILD: usize = 3;
@@ -50,8 +50,8 @@ const CHILD: usize = 3;
 /// own `evnt_multi` (WAITING, i.e. `runnable == false && wait_cond != 0`), the
 /// parent left `runnable` by its last `evnt_*` wait, the child running.
 fn fixture() {
-    for p in PROCESS_TABLE.iter() {
-        p.runnable.store(false, Ordering::Release);
+    for (i, p) in PROCESS_TABLE.iter().enumerate() {
+        sched::unready(i);
         p.has_ctx.store(false, Ordering::Release);
         p.wait_cond.store(0, Ordering::Release);
         p.parent_slot
@@ -59,15 +59,15 @@ fn fixture() {
         p.parent_runnable.store(false, Ordering::Release);
     }
     // A desk accessory, admitted by the loader and then blocked in its message
-    // wait: WAITING, so `pick_next` skips it (§3.2).
+    // wait: WAITING, so it is not on the ready list (§3.2).
     sched::admit(ACC);
-    PROCESS_TABLE[ACC].runnable.store(false, Ordering::Release);
+    sched::unready(ACC);
     PROCESS_TABLE[ACC]
         .wait_cond
         .store(sched::wait_input(), Ordering::Release);
     // The parent: it came out of a blocking AES wait, which leaves the slot
     // READY (`sleep`'s Ausgang (a) re-arms `runnable`).
-    PROCESS_TABLE[PARENT].runnable.store(true, Ordering::Release);
+    sched::ready(PARENT);
     // `handle_pexec`'s parent linkage (EmuTOS `proc_go`, `p->p_parent = run`).
     PROCESS_TABLE[CHILD]
         .parent_slot
@@ -115,7 +115,7 @@ fn an_awake_accessory_still_gets_the_cpu_while_the_child_blocks() {
     // The other half of the rule: withdrawing the parent must not withdraw
     // anybody else. A woken accessory is still a peer for the blocked child.
     PROCESS_TABLE[ACC].wait_cond.store(0, Ordering::Release);
-    PROCESS_TABLE[ACC].runnable.store(true, Ordering::Release);
+    sched::ready(ACC);
 
     sched::suspend_parent_for_child(CHILD);
 
@@ -131,8 +131,8 @@ fn a_stale_wake_key_cannot_re_arm_the_suspended_parent() {
     let _g = lock();
     fixture();
     // Belt and braces: `wake` re-arms every slot whose `wait_cond` matches, so
-    // a suspended parent that still carried a wake key would be put back into
-    // `pick_next` behind the scheduler's back.
+    // a suspended parent that still carried a wake key would be put back on
+    // the ready list behind the scheduler's back.
     PROCESS_TABLE[PARENT]
         .wait_cond
         .store(sched::wait_input(), Ordering::Release);
@@ -168,7 +168,7 @@ fn a_parent_that_was_never_a_peer_does_not_become_one() {
     // The kernel launcher's programs start outside the run-set (`launch.rs`
     // does not `admit`), and a program that has not yet blocked in an `evnt_*`
     // wait is still outside it. Launching a child must not change that.
-    PROCESS_TABLE[PARENT].runnable.store(false, Ordering::Release);
+    sched::unready(PARENT);
 
     sched::suspend_parent_for_child(CHILD);
     sched::resume_parent_of_child(CHILD);

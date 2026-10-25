@@ -2,15 +2,22 @@
 //!
 //! The **run-set** is the set of processes marked [`Process::runnable`]
 //! (peers in a voluntary round-robin). A peer gives up the CPU with
-//! `Pwait` (GEMDOS 0x4D) or by blocking on input; [`on_yield`] then
-//! picks the next runnable peer. On termination, [`on_exit`] drops the
-//! peer and picks the next one (or returns `None`, i.e. resume the
-//! parent / boot via the existing `Pterm` path).
+//! `Pwait` (GEMDOS 0x4D), with every AES call, or by blocking in an AES
+//! wait; [`on_yield`] then picks the next runnable peer. On termination,
+//! [`on_exit`] drops the peer and picks the next one (or returns `None`,
+//! i.e. resume the parent / boot via the existing `Pterm` path).
+//!
+//! **Which** peer runs next is EmuTOS's ready list (A115, see "The ready
+//! list" below): the run-set is ordered like `rlr`, and processes made ready
+//! between two dispatches wait on a `drl` stack that every dispatch appends
+//! behind the caller. `runnable` is set and cleared **only** through this
+//! module ([`ready`], [`unready`], [`admit`], [`wake`], …), never by storing
+//! the bit, or the order would not know about it.
 //!
 //! ## Extensible toward preemptive multitasking
 //!
 //! Everything scheduling-specific lives here: the run-set membership and
-//! the `pick_next` policy. The SVC handler only ever sees a [`Switch`]
+//! the ready-list policy. The SVC handler only ever sees a [`Switch`]
 //! (which process to run and how to enter it). Growing this into a
 //! richer scheduler — priorities, time-slices via a timer-driven yield,
 //! blocked/sleeping states for `evnt_*` waits — means changing this
@@ -288,11 +295,12 @@ pub fn running_slot() -> usize {
 ///
 /// EmuTOS has no equivalent flag because it has no privilege boundary: its
 /// desktop is an ordinary AESPD and `dsptch()` switches to it like to any
-/// other. NewTOS's EL1 kernel context owns no process slot and therefore
-/// cannot be a [`pick_next`] candidate (the desktop, for which this was built,
-/// is an EL0 process with a slot since DESK43 U9/U10); instead the trap
-/// handler snapshots its frame ("the kernel park") before switching to an accessory, and [`sleep`]
-/// consults this flag to know that such a context is waiting to be resumed.
+/// other. NewTOS's EL1 kernel context owns no process slot (the desktop, for
+/// which this was built, is an EL0 process with a slot since DESK43 U9/U10);
+/// instead the trap handler snapshots its frame ("the kernel park") before
+/// switching to an accessory, and this flag says that such a context is
+/// waiting to be resumed — it is then one entry of the ready list, at the
+/// position its last dispatch appended it to (A115, [`pick_peer_for_kernel`]).
 static KERNEL_PARKED: AtomicBool = AtomicBool::new(false);
 
 /// Record whether an EL1 kernel client's frame is parked and resumable — set
@@ -348,20 +356,28 @@ pub fn switch_restart_for_upcall() -> Switch {
     }
 }
 
-/// The next runnable EL0 peer for a context that owns no slot (the EL1 kernel
-/// client). `None` when nothing is runnable, i.e. the kernel client has no
-/// accessory to give the CPU to and must fall back to the idle pass.
+/// The dispatch of the EL1 kernel client (a context that owns no slot): the
+/// next entry of the ready list to give the CPU to, or `None` when the kernel
+/// client itself is the head and simply carries on.
 ///
-/// Scans from slot **0** rather than wrapping like [`pick_next`], so a kernel
-/// client that dispatches several fresh peers runs them in slot order — which
-/// for desk accessories is discovery order, the order EmuTOS starts them in
-/// (`geminit.c:309-315` loads `acc[0..n]` in turn and `pstart` gives them
-/// ascending pids) and therefore the order their `menu_register` calls fall in
-/// under *Desk*.
+/// The kernel client is EmuTOS's pid 0 — the AESPD the boot path's
+/// accessory barrier runs in (`geminit.c:736-737`, `dsptch(); wait_for_accs`)
+/// — and its dispatch is `disp()` like anyone's (A115): it is appended to
+/// the **end** of `rlr` (`disp_act`, `gemdisp.c:74-79`), `drl` is drained
+/// behind it, and the head is resumed. Desk accessories reach `rlr` through
+/// `pstart`'s push onto `drl` ([`admit`], `gempd.c:125-128`), so they start in
+/// **reverse** load order, and the kernel client's first dispatch after
+/// loading them keeps the CPU (it was appended before the drain) — EmuTOS's
+/// `dsptch(); /* off we go */` ahead of `wait_for_accs`, whose `all_run`
+/// then hands over.
+///
+/// The kernel client is on the list while its frame is parked
+/// ([`kernel_parked`]); the position it was appended at is
+/// `KERNEL_RL_KEY`. Its waits (`sleep` from EL1) are polls — it re-checks
+/// on every resume — so it is appended in either case, never put on `nrl`.
 pub fn pick_peer_for_kernel() -> Option<Switch> {
-    (0..MAX_PROCESSES)
-        .find(|i| PROCESS_TABLE[*i].runnable.load(Ordering::Acquire))
-        .map(switch_to)
+    KERNEL_RL_KEY.store(next_rl_key(), Ordering::Release);
+    pick_head(NONE)
 }
 
 /// Record `slot` as the running process.
@@ -412,11 +428,13 @@ pub fn suspend_parent_for_child(child_slot: usize) {
     PROCESS_TABLE[child_slot]
         .parent_runnable
         .store(p.runnable.load(Ordering::Acquire), Ordering::Release);
-    p.runnable.store(false, Ordering::Release);
+    // Off every list: EmuTOS has no entry to take off (parent and child share
+    // the one AESPD), the parent is simply not a candidate until it returns.
+    unready(parent as usize);
     // A process that reached `Pexec` is RUNNING, so by the WAITING/READY rule
     // (§3.2) its `wait_cond` is already `0`. Store it anyway: a stale wake key
     // would let [`wake`] re-arm `runnable` behind our back and put the
-    // suspended parent back into `pick_next` while its child is still alive —
+    // suspended parent back on the ready list while its child is still alive —
     // the exact hole this function closes.
     p.wait_cond.store(0, Ordering::Release);
 }
@@ -440,19 +458,39 @@ pub fn resume_parent_of_child(child_slot: usize) {
     let was = PROCESS_TABLE[child_slot]
         .parent_runnable
         .load(Ordering::Acquire);
-    PROCESS_TABLE[parent as usize]
-        .runnable
-        .store(was, Ordering::Release);
+    let parent = parent as usize;
+    if !was {
+        unready(parent);
+        return;
+    }
+    // The parent takes the child's place on `rlr`: in EmuTOS the two are one
+    // AESPD, so the entry the child ran as *is* the parent's. A child that
+    // is not on `rlr` (it never dispatched, or is waiting) leaves no place to
+    // take; the parent then joins at the end. Either way it is the process
+    // the `Pterm` resumes, and its next dispatch re-queues it.
+    let child_on_rlr = PROCESS_TABLE[child_slot].runnable.load(Ordering::Acquire)
+        && DRL_KEY[child_slot].load(Ordering::Acquire) == 0;
+    if child_on_rlr {
+        DRL_KEY[parent].store(0, Ordering::Release);
+        RL_KEY[parent].store(RL_KEY[child_slot].load(Ordering::Acquire), Ordering::Release);
+        PROCESS_TABLE[parent].runnable.store(true, Ordering::Release);
+    } else {
+        ready(parent);
+    }
 }
 
-/// Add `slot` to the cooperative run-set as a fresh (never-entered) peer.
+/// Add `slot` to the cooperative run-set as a fresh (never-entered) peer —
+/// EmuTOS `pstart` (`aes/gempd.c:110-131`), which links the new process **on
+/// top of `drl`** (`:125-128`). The next dispatch appends it to `rlr`, behind
+/// the dispatching process and in reverse order of admission (A115).
 pub fn admit(slot: usize) {
     if slot < MAX_PROCESSES {
         PROCESS_TABLE[slot].has_ctx.store(false, Ordering::Release);
-        PROCESS_TABLE[slot].runnable.store(true, Ordering::Release);
         // A fresh peer has no saved frame; clear any stale restart-kind left by
         // a previous tenant of this slot so a later resume can't misread it.
         RESUME_RESTARTABLE[slot].store(false, Ordering::Release);
+        unready(slot);
+        push_drl(slot);
     }
 }
 
@@ -477,18 +515,164 @@ pub fn mark_yielded(slot: usize) {
     }
 }
 
-/// Round-robin policy: the next runnable slot strictly after `after`
-/// (wrapping), or [`NONE`] if none is runnable. Returns `after` itself
-/// when it is the only runnable slot.
-fn pick_next(after: usize) -> usize {
-    let start = if after >= MAX_PROCESSES { 0 } else { after };
-    for k in 1..=MAX_PROCESSES {
-        let i = (start + k) % MAX_PROCESSES;
+// ─── The ready list (A115) ──────────────────────────────────────────────────
+//
+// EmuTOS keeps three lists of AESPDs (`aes/geminit.c:131`): `rlr`, the ready
+// list, whose head is the running process; `nrl`, the processes waiting for an
+// event; and `drl`, the processes made ready since the last dispatch. `disp()`
+// (`aes/gemdisp.c:221-253`) takes the running process off the head of `rlr`,
+// appends it to the **end** (`disp_act` → `insert_process`, `:74-79`,
+// `aes/gempd.c:133-145`) or parks it on `nrl` (`mwait_act`, `:82-93`), runs the
+// fork ring (`forker`: timer and input completions → `signal`), and
+// `schedule()` drains `drl` from its head onto the end of `rlr` (`:181-205`);
+// then the **head** of `rlr` runs. `drl` is a push-front stack — `signal`
+// (`aes/gemasync.c:56-57`) and `pstart` (`aes/gempd.c:125-128`) link at its
+// head — so what became ready in one pass joins `rlr` in reverse order, and
+// always behind the dispatching process.
+//
+// Membership stays the `runnable` bit ("field, not list", design §3.2):
+// READY = on `rlr` or `drl`, WAITING (`nrl`) = `runnable == false` with a wake
+// key. The **order** is two per-slot keys: [`RL_KEY`], the slot's position on
+// `rlr` (a smaller key is nearer the head; appending takes the next value of a
+// counter), and [`DRL_KEY`], non-zero while the slot is on `drl` (a larger key
+// was pushed later, i.e. is nearer the head of the stack). The EL1 kernel
+// client (EmuTOS pid 0, no slot) is the one entry without a slot: it is on
+// `rlr` while its frame is parked ([`kernel_parked`]), at [`KERNEL_RL_KEY`].
+
+/// Position of each slot on `rlr` — valid while the slot is `runnable` and not
+/// on `drl` ([`DRL_KEY`] `== 0`). Smaller = nearer the head.
+static RL_KEY: [AtomicU64; MAX_PROCESSES] = [const { AtomicU64::new(0) }; MAX_PROCESSES];
+
+/// Non-zero while the slot is on `drl`: the push stamp (larger = pushed later
+/// = nearer the head of the push-front stack).
+static DRL_KEY: [AtomicU64; MAX_PROCESSES] = [const { AtomicU64::new(0) }; MAX_PROCESSES];
+
+/// The kernel client's position on `rlr` while it is parked.
+static KERNEL_RL_KEY: AtomicU64 = AtomicU64::new(0);
+
+/// Counter behind [`RL_KEY`] / [`KERNEL_RL_KEY`]: each append takes the next.
+static RL_SEQ: AtomicU64 = AtomicU64::new(1);
+
+/// Counter behind [`DRL_KEY`]: each push takes the next.
+static DRL_SEQ: AtomicU64 = AtomicU64::new(1);
+
+/// Per-slot arm stamp of the timer deadline ([`arm_or_get_deadline`]), the
+/// tie-break of [`wake_timers`]: `adelay` inserts a new delay **before** an
+/// equal one (`if (c <= p->e_parm) break;`, `aes/geminput.c:525-530`), so of
+/// two equal deadlines the later-armed one completes first.
+static TIMER_ARM_SEQ: [AtomicU64; MAX_PROCESSES] = [const { AtomicU64::new(0) }; MAX_PROCESSES];
+
+/// Counter behind [`TIMER_ARM_SEQ`].
+static TIMER_SEQ: AtomicU64 = AtomicU64::new(1);
+
+#[inline]
+fn next_rl_key() -> u64 {
+    RL_SEQ.fetch_add(1, Ordering::AcqRel)
+}
+
+/// `disp_act(p)` (`aes/gemdisp.c:74-79`): put `slot` on the **end** of `rlr`
+/// — it is READY. Taken off `drl` if it was there. The wake key is left alone
+/// (a READY slot has none, design §3.2; [`sleep`]'s idle exit clears its own).
+///
+/// The one way to make a slot runnable other than a wake ([`wake`],
+/// [`wake_timers`]) and [`admit`]; tests and fixtures use it too, so the order
+/// always knows every member.
+pub fn ready(slot: usize) {
+    if slot < MAX_PROCESSES {
+        DRL_KEY[slot].store(0, Ordering::Release);
+        RL_KEY[slot].store(next_rl_key(), Ordering::Release);
+        PROCESS_TABLE[slot].runnable.store(true, Ordering::Release);
+    }
+}
+
+/// Take `slot` off every ready list (`rlr` and `drl`) — it waits (`nrl`), is
+/// suspended in a `Pexec`, or is gone. The wake key is the caller's business.
+pub fn unready(slot: usize) {
+    if slot < MAX_PROCESSES {
+        PROCESS_TABLE[slot].runnable.store(false, Ordering::Release);
+        DRL_KEY[slot].store(0, Ordering::Release);
+    }
+}
+
+/// `signal`'s `p1->p_link = drl; drl = p1;` (`aes/gemasync.c:56-57`): push a
+/// slot that has become ready onto the head of `drl`. A slot that is already
+/// ready keeps its place — `signal` moves a process only off `nrl`
+/// (`:42-59`).
+fn push_drl(slot: usize) {
+    if slot >= MAX_PROCESSES || PROCESS_TABLE[slot].runnable.load(Ordering::Acquire) {
+        return;
+    }
+    DRL_KEY[slot].store(DRL_SEQ.fetch_add(1, Ordering::AcqRel), Ordering::Release);
+    PROCESS_TABLE[slot].runnable.store(true, Ordering::Release);
+}
+
+/// `schedule()`'s `while (drl) { drl = (p = drl)->p_link; disp_act(p); }`
+/// (`aes/gemdisp.c:193-197`): move `drl` onto the end of `rlr`, head of the
+/// stack (the latest push) first.
+fn drain_drl() {
+    loop {
+        let mut top: Option<(u64, usize)> = None;
+        for (i, k) in DRL_KEY.iter().enumerate() {
+            let k = k.load(Ordering::Acquire);
+            if k != 0 && top.is_none_or(|(t, _)| k > t) {
+                top = Some((k, i));
+            }
+        }
+        let Some((_, i)) = top else {
+            return;
+        };
+        DRL_KEY[i].store(0, Ordering::Release);
         if PROCESS_TABLE[i].runnable.load(Ordering::Acquire) {
-            return i;
+            RL_KEY[i].store(next_rl_key(), Ordering::Release);
         }
     }
-    NONE
+}
+
+/// An entry of `rlr`.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Entry {
+    Slot(usize),
+    /// The parked EL1 kernel client.
+    Kernel,
+}
+
+/// The head of `rlr`: the ready entry with the smallest key. `kernel_listed`
+/// says whether the kernel client is on the list.
+fn rlr_head(kernel_listed: bool) -> Option<Entry> {
+    let mut best: Option<(u64, Entry)> = None;
+    for (i, p) in PROCESS_TABLE.iter().enumerate() {
+        if !p.runnable.load(Ordering::Acquire) || DRL_KEY[i].load(Ordering::Acquire) != 0 {
+            continue;
+        }
+        let k = RL_KEY[i].load(Ordering::Acquire);
+        if best.is_none_or(|(b, _)| k < b) {
+            best = Some((k, Entry::Slot(i)));
+        }
+    }
+    if kernel_listed {
+        let k = KERNEL_RL_KEY.load(Ordering::Acquire);
+        if best.is_none_or(|(b, _)| k < b) {
+            best = Some((k, Entry::Kernel));
+        }
+    }
+    best.map(|(_, e)| e)
+}
+
+/// The end of every dispatch: drain `drl` behind what is already on `rlr`
+/// and resume the head (`schedule()` + `switchto(rlr->p_uda)`,
+/// `aes/gemdisp.c:240-252`). `cur` is the dispatching context — a slot, or
+/// [`NONE`] for the kernel client — whose own disposition (end of `rlr`, or
+/// `nrl`) the caller has already made. `None` = the head is `cur` itself (or
+/// nothing is ready): no switch.
+fn pick_head(cur: usize) -> Option<Switch> {
+    drain_drl();
+    let kernel_listed = cur >= MAX_PROCESSES || kernel_parked();
+    match rlr_head(kernel_listed)? {
+        Entry::Slot(s) if s == cur => None,
+        Entry::Slot(s) => Some(switch_to(s)),
+        Entry::Kernel if cur >= MAX_PROCESSES => None,
+        Entry::Kernel => Some(switch_to_kernel()),
+    }
 }
 
 fn switch_to(slot: usize) -> Switch {
@@ -510,31 +694,34 @@ fn switch_to(slot: usize) -> Switch {
     }
 }
 
-/// A peer yielded (`Pwait`). Pick the next runnable peer; `None` means
-/// "stay on the current process" (it is the only runnable one).
+/// A peer yielded (`Pwait`, or a dispatch whose caller has already made its
+/// own disposition). A `cur` that is READY on `rlr` goes to its end
+/// (`disp_act`); one that is not runnable stays off (`nrl`); one on `drl`
+/// keeps its place there. Then `drl` is drained and the head of `rlr` is
+/// picked — a slot, or the parked kernel client ([`switch_to_kernel`]).
+/// `None` means "stay on the current process" (it is the head).
 pub fn on_yield(cur: usize) -> Option<Switch> {
-    let next = pick_next(cur);
-    if next == NONE || next == cur {
-        None
-    } else {
-        Some(switch_to(next))
+    if cur >= MAX_PROCESSES {
+        return pick_peer_for_kernel();
     }
+    if PROCESS_TABLE[cur].runnable.load(Ordering::Acquire)
+        && DRL_KEY[cur].load(Ordering::Acquire) == 0
+    {
+        ready(cur);
+    }
+    pick_head(cur)
 }
 
 /// The current peer is terminating: drop it from the run-set and pick the
-/// next runnable peer. `None` means no peers remain — the handler should
+/// head of the ready list. `None` means nothing is ready — the handler should
 /// fall back to the ordinary `Pterm` parent/boot resume.
 pub fn on_exit(cur: usize) -> Option<Switch> {
-    if cur < MAX_PROCESSES {
-        PROCESS_TABLE[cur].runnable.store(false, Ordering::Release);
-    }
-    let next = pick_next(cur);
-    if next == NONE || next == cur {
+    unready(cur);
+    let next = pick_head(cur);
+    if next.is_none() {
         CURRENT.store(NONE, Ordering::Release);
-        None
-    } else {
-        Some(switch_to(next))
     }
+    next
 }
 
 // ─── sleep / wake (sleep/wake substrate, steps 3a + 3b) ─────────────
@@ -586,9 +773,10 @@ pub enum SleepOutcome {
 ///
 /// **The EL1 kernel client (ACC03).** A caller that owns no slot — the boot
 /// path; until DESK43 U10 also the built-in desktop, which reached `evnt_*`
-/// from EL1 — is
-/// not a [`pick_next`] candidate and has nothing to mark WAITING. It still has
-/// the two exits, mirrored:
+/// from EL1 — has
+/// no slot to mark WAITING; its wait is a poll, appended to the ready list
+/// like a yield ([`pick_peer_for_kernel`]). It still has the two exits,
+/// mirrored:
 ///
 ///   * **Ausgang (b)** — a runnable EL0 peer exists (a desk accessory that was
 ///     woken by [`crate::aes::pd::post_msg`]): yield to it. The handler parks
@@ -619,29 +807,27 @@ pub fn sleep(cond: u64) -> SleepOutcome {
     }
     if cur < MAX_PROCESSES {
         // RUNNING → WAITING(cond): record the wake key and drop out of the
-        // round-robin run-set (§3.1). Done before `on_yield` so `pick_next`
-        // skips this slot — a returned `Switch` is therefore always a real peer.
+        // round-robin run-set (§3.1). Done before the pick so the head of the
+        // ready list is never this slot — a returned `Switch` is a real peer.
         PROCESS_TABLE[cur].wait_cond.store(cond, Ordering::Release);
-        PROCESS_TABLE[cur].runnable.store(false, Ordering::Release);
+        // `mwait_act`: off `rlr`, onto `nrl` (`aes/gemdisp.c:82-93`).
+        unready(cur);
 
         // `disp()` drains the fork ring on **every** dispatch (`forker()`,
         // `aes/gemdisp.c:239-244`), and `tchange` there completes every
         // expired timer wait whoever is running (A112, `docs/api/aes/
-        // event.md` "Wake conditions and dispatch" points 2 and 4). Before
-        // the pick, so a peer whose deadline has passed is a candidate now.
+        // event.md` "Wake conditions and dispatch" points 2 and 4). After the
+        // caller's own disposition and before `schedule()`'s drain, so a peer
+        // whose deadline has passed is on `drl` when it is drained.
         wake_timers();
 
-        // Ausgang (b) — a runnable peer exists (§4.4): yield to it. The handler
-        // performs the S2 frame-save (ELR rewound to the svc) + switch; we do
-        // NOT touch the trap frame here — `sleep` is deep in a non-leaf syscall
-        // and does not own it.
-        if let Some(sw) = on_yield(cur) {
+        // Ausgang (b) — a ready entry exists (§4.4): yield to the head of
+        // `rlr` — an EL0 peer, or the parked EL1 kernel client (ACC03), one
+        // more entry of the list. The handler performs the S2 frame-save (ELR
+        // rewound to the svc) + switch; we do NOT touch the trap frame here —
+        // `sleep` is deep in a non-leaf syscall and does not own it.
+        if let Some(sw) = pick_head(cur) {
             return SleepOutcome::Yield(sw);
-        }
-        // No EL0 peer — but an EL1 kernel client may be parked waiting for
-        // exactly this moment (ACC03). Give it the CPU back rather than spin.
-        if kernel_parked() {
-            return SleepOutcome::Yield(switch_to_kernel());
         }
     } else {
         wake_timers();
@@ -660,9 +846,12 @@ pub fn sleep(cond: u64) -> SleepOutcome {
     idle_wake_pass();
 
     if cur < MAX_PROCESSES {
-        // WAITING → READY: the caller now re-evaluates its full predicate.
+        // WAITING → READY: the caller now re-evaluates its full predicate. It
+        // is the head of `rlr` (nothing else was ready), so it goes back on
+        // it; anything the idle pass woke is on `drl` and joins behind it at
+        // the next dispatch.
         PROCESS_TABLE[cur].wait_cond.store(0, Ordering::Release);
-        PROCESS_TABLE[cur].runnable.store(true, Ordering::Release);
+        ready(cur);
         // KEYS02 (O1): the pump above may have queued hook bytes for this
         // process — deliver them now rather than after the wait.
         if crate::xbios::kbdvecs::pending(cur) != 0 {
@@ -673,7 +862,10 @@ pub fn sleep(cond: u64) -> SleepOutcome {
 }
 
 /// Wake every context WAITING on exactly `cond` (WAITING → READY, design §4.2):
-/// clear its [`super::Process::wait_cond`] and re-arm its `runnable` bit. The
+/// clear its [`super::Process::wait_cond`] and push it onto `drl` (EmuTOS
+/// `signal`, `aes/gemasync.c:46-59`; A115) — the next dispatch appends it to
+/// the ready list behind the dispatching process. Several waiters woken by one
+/// key are pushed in slot order and so join the list in reverse slot order. The
 /// FreeMiNT `do_wake` analogue (`references/freemint/sys/proc.c:665-701`) — it
 /// does **not** switch immediately; a woken peer runs only when the current
 /// context next [`sleep`]s or exits (design §4.2).
@@ -693,11 +885,12 @@ pub fn wake(cond: u64) {
     if cond == 0 {
         return; // 0 is "not waiting", never a valid wake key.
     }
-    for p in PROCESS_TABLE.iter() {
+    for (i, p) in PROCESS_TABLE.iter().enumerate() {
         let c = p.wait_cond.load(Ordering::Acquire);
         if c == cond || multi_covers(c, cond) {
             p.wait_cond.store(0, Ordering::Release);
-            p.runnable.store(true, Ordering::Release);
+            // `signal`: off `nrl`, onto the head of `drl` (A115).
+            push_drl(i);
         }
     }
 }
@@ -738,20 +931,34 @@ pub fn wake_timers() {
         return;
     };
     let now = h.monotonic_millis();
-    for p in PROCESS_TABLE.iter() {
+    // The expired waits, completed in `dlr` order (A115): `tchange` takes the
+    // delay list from its head (`gemflag.c:40-52`) and `adelay` keeps it
+    // sorted by deadline, a new delay before an equal one
+    // (`geminput.c:520-540`). Each completion pushes onto `drl`, so the order
+    // here decides the order on `rlr`.
+    let mut expired: [(u64, u64, usize); MAX_PROCESSES] = [(0, 0, 0); MAX_PROCESSES];
+    let mut n = 0;
+    for (i, p) in PROCESS_TABLE.iter().enumerate() {
         let c = p.wait_cond.load(Ordering::Acquire);
-        let expired = match wait_class(c) {
-            CLASS_TIMER => wait_arg(c) <= now,
+        let deadline = match wait_class(c) {
+            CLASS_TIMER if wait_arg(c) <= now => Some(wait_arg(c)),
             CLASS_MULTI if wait_arg(c) & WAKE_TIMER != 0 => {
                 let d = p.syscall_deadline.load(Ordering::Acquire);
-                d != 0 && d <= now
+                (d != 0 && d <= now).then_some(d)
             }
-            _ => false,
+            _ => None,
         };
-        if expired {
-            p.wait_cond.store(0, Ordering::Release);
-            p.runnable.store(true, Ordering::Release);
+        if let Some(d) = deadline {
+            // Sort key: deadline ascending, then the later arm first.
+            expired[n] = (d, u64::MAX - TIMER_ARM_SEQ[i].load(Ordering::Acquire), i);
+            n += 1;
         }
+    }
+    let expired = &mut expired[..n];
+    expired.sort_unstable();
+    for &(_, _, i) in expired.iter() {
+        PROCESS_TABLE[i].wait_cond.store(0, Ordering::Release);
+        push_drl(i);
     }
 }
 
@@ -798,7 +1005,7 @@ pub enum Dispatch {
 /// EmuTOS one is not needed, because `sh_ldapp` runs the program under the
 /// *shell's own* AESPD (`aes/gemshlib.c:604-605,634-636`: it renames `rlr`
 /// and `dos_exec`s), and `rlr` is by definition the ready list — so the only
-/// thing that ever made a NewTOS program a `pick_next` candidate was the
+/// thing that ever made a NewTOS program a ready-list member was the
 /// `runnable.store(true)` in [`sleep`]'s idle exit. A program that never
 /// blocks in an AES wait therefore reached `wait_for_accs` outside the
 /// run-set and hung in `appl_exit`. This function establishes the membership
@@ -828,7 +1035,7 @@ pub fn dsptch() -> Dispatch {
         // [`sleep`]'s idle exit, i.e. only once it has blocked in some AES
         // wait. A full-screen program with no event loop never blocks, so it
         // reached this line with `runnable == false`, handed the CPU to the
-        // accessories, and `pick_next` then had no candidate to hand it back
+        // accessories, and the scheduler then had no candidate to hand it back
         // to: measured, the ball demo never returned from `appl_exit` with an
         // accessory loaded (SCHED01, `measurements/measurement-2026-09-29-port08`). Set
         // before the pick, so the peer we switch to already sees the caller on
@@ -841,18 +1048,20 @@ pub fn dsptch() -> Dispatch {
         // the `else` branch — the one this function is — the caller is RUNNING
         // and its key is `0` by the WAITING/READY rule (§3.2), so the clear is
         // the no-op it is in EmuTOS.
-        PROCESS_TABLE[cur].runnable.store(true, Ordering::Release);
-        if let Some(sw) = pick_after_call(cur) {
-            // `forker()` after the pick (`aes/gemdisp.c:231-244`): a process
-            // whose timer expired joins the ready list *behind* the ones
-            // already on it (A112).
-            wake_timers();
+        ready(cur);
+        // `forker()` after `disp_act` (`aes/gemdisp.c:231-244`): a process
+        // whose timer expired goes onto `drl` and so joins `rlr` *behind* the
+        // caller and the ones already on it (A112, A115).
+        wake_timers();
+        if let Some(sw) = pick_head(cur) {
             return Dispatch::Yield(sw);
         }
-    } else if let Some(sw) = pick_peer_for_kernel() {
-        // The EL1 kernel client dispatches: an accessory is runnable.
+    } else {
+        // The EL1 kernel client dispatches: appended, timers, drain, head.
         wake_timers();
-        return Dispatch::Yield(sw);
+        if let Some(sw) = pick_peer_for_kernel() {
+            return Dispatch::Yield(sw);
+        }
     }
 
     // Nothing to switch to. `disp`'s `schedule()` still runs (`gemdisp.c:240`),
@@ -863,19 +1072,6 @@ pub fn dsptch() -> Dispatch {
     }
     idle_wake_pass();
     Dispatch::Idle
-}
-
-/// The next ready context for a caller in slot `cur` that stays on the ready
-/// list: the next runnable EL0 peer, else the parked EL1 kernel client (ACC03
-/// — one more entry on EmuTOS's ready list), else `None`.
-fn pick_after_call(cur: usize) -> Option<Switch> {
-    if let Some(sw) = on_yield(cur) {
-        return Some(sw);
-    }
-    if kernel_parked() {
-        return Some(switch_to_kernel());
-    }
-    None
 }
 
 /// The `dsptch()` a **completed** AES call ends with (A112,
@@ -893,11 +1089,13 @@ fn pick_after_call(cur: usize) -> Option<Switch> {
 /// the call and then yields as a leaf (the caller resumes after its `svc`) —
 /// or `None` when the caller is alone on the ready list and simply goes on.
 ///
-/// Order: the pick is made from the contexts already ready, then the timer
-/// pass runs ([`wake_timers`]) — EmuTOS's `forker()` follows `disp_act`, and
-/// `schedule()` appends what it woke behind the caller (`gemdisp.c:231-244`),
-/// so a process whose timer expired in this pass runs at the caller's *next*
-/// dispatch when the caller is otherwise alone.
+/// Order (A115): the caller is appended to the end of the ready list
+/// ([`ready`], `disp_act`), the timer pass runs ([`wake_timers`], `forker()`),
+/// and `drl` — the timer completions and everything made ready during the call
+/// itself, e.g. the reader an `appl_write` serviced — is appended **behind the
+/// caller** in reverse wake order (`schedule()`, `gemdisp.c:231-244`). A
+/// caller that is otherwise alone is therefore resumed at once, and what it
+/// woke runs at its *next* dispatch.
 ///
 /// Only an EL0 caller with a slot dispatches here: the EL1 kernel client owns
 /// no slot to save a leaf frame into and makes no AES calls since DESK43 U10.
@@ -908,10 +1106,9 @@ pub fn dispatch_after_call() -> Option<Switch> {
     }
     // `disp_act(p)`: the caller is put (back) on the ready list — see
     // [`dsptch`] for why the membership has to be established, not assumed.
-    PROCESS_TABLE[cur].runnable.store(true, Ordering::Release);
-    let pick = pick_after_call(cur);
+    ready(cur);
     wake_timers();
-    pick.map(|mut sw| {
+    pick_head(cur).map(|mut sw| {
         sw.completed = true;
         sw
     })
@@ -964,6 +1161,7 @@ pub fn arm_or_get_deadline(now: u64, ms: u64) -> u64 {
         }
         let deadline = now.saturating_add(ms);
         field.store(deadline, Ordering::Release);
+        TIMER_ARM_SEQ[cur].store(TIMER_SEQ.fetch_add(1, Ordering::AcqRel), Ordering::Release);
         deadline
     } else {
         now.saturating_add(ms)

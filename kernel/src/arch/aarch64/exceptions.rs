@@ -1035,10 +1035,11 @@ fn save_yield_frame(cur: usize, frame: &ExceptionFrame, rewind: bool) {
 //
 // NewTOS's boot path is an AES client that runs at EL1 and owns no process
 // slot (as the built-in desktop did until DESK43 U10; the desktop is now the
-// EL0 process `NEWDESK` with a slot of its own), so it can never be a
-// `pick_next` candidate the way EmuTOS's desktop AESPD is
-// (`aes/geminit.c:851-877` gives it slot 0 in the same round-robin as the
-// accessories). To let an accessory run *beside* such an EL1 client,
+// EL0 process `NEWDESK` with a slot of its own), so it has no slot on the
+// ready list the way EmuTOS's pid-0 AESPD has (`aes/geminit.c:851-877` gives
+// it slot 0 in the same round-robin as the accessories); the scheduler keeps
+// it as one extra entry of that list while it is parked (A115,
+// `sched::pick_peer_for_kernel`). To let an accessory run *beside* such an EL1 client,
 // the EL1 client's trap frame is snapshotted here — the "kernel park" — the
 // accessory is switched to, and the park is restored the moment the accessory
 // blocks again. One slot is enough: exactly one EL1 context can be inside a
@@ -1161,15 +1162,17 @@ fn restore_kernel_park(frame: &mut ExceptionFrame) {
 }
 
 /// `Pwait` (GEMDOS 0x4D) — cooperative yield. Snapshot the running peer's
-/// full EL0 context into its slot, then round-robin to the next runnable
-/// peer (a context switch like `Pexec`/`Pterm`, but peer→peer). With no
-/// other runnable peer it is a no-op that returns 0.
+/// full EL0 context into its slot, put it at the end of the ready list and
+/// resume the list's head (a context switch like `Pexec`/`Pterm`, but
+/// peer→peer; the head may be the parked EL1 kernel client, A115). When the
+/// caller is the head again at once it is a no-op that returns 0.
 ///
 /// **From an EL1 kernel context** (`RUN` names no slot) this is EmuTOS's
 /// `all_run(); dsptch();` — the accessory-start half of `wait_for_accs`
-/// (`aes/geminit.c:610,736`): the EL1 frame is parked and the runnable
-/// accessory gets the CPU; the call returns when it blocks again. With no
-/// runnable peer it stays the harmless no-op it was.
+/// (`aes/geminit.c:610,736`): the kernel client goes to the end of the ready
+/// list, the EL1 frame is parked and the head gets the CPU; the call returns
+/// when the round robin comes back to it. When it is the head itself (its
+/// first dispatch after `pstart`, or nothing else ready) it is a no-op.
 fn handle_pwait(frame: &mut ExceptionFrame) {
     use tos_api::bdos::process::{sched, MAX_PROCESSES};
 
@@ -1182,7 +1185,7 @@ fn handle_pwait(frame: &mut ExceptionFrame) {
                 adopt_kernel_park_as_parent(sw.slot);
                 apply_switch(frame, &sw);
             }
-            None => frame.gpr[0] = 0, // nothing runnable → no-op, as before
+            None => frame.gpr[0] = 0, // the kernel client is the head → no-op
         }
         return;
     }
@@ -1194,7 +1197,7 @@ fn handle_pwait(frame: &mut ExceptionFrame) {
 
     match sched::on_yield(cur) {
         Some(sw) => apply_switch(frame, &sw),
-        None => frame.gpr[0] = 0, // only runnable peer → continue
+        None => frame.gpr[0] = 0, // the caller is the head → continue
     }
 }
 
@@ -2218,8 +2221,8 @@ fn handle_pexec(frame: &mut ExceptionFrame) {
     // the child lives (PORT05). `Pexec` is synchronous — EmuTOS's `proc_go`
     // enters the child through `gouser()` and the parent's registers stay
     // frozen in its PD until the child's `xterm` (`bdos/proc.c:536-577`,
-    // `:601-618`) — so a parent suspended here must not be a `pick_next`
-    // candidate. It would otherwise be one: every EL0 program that has been
+    // `:601-618`) — so a parent suspended here must not be on the ready
+    // list. It would otherwise be one: every EL0 program that has been
     // through a blocking `evnt_*` wait is left `runnable` by `sleep`'s idle
     // exit, and the child's first block would switch straight back into its
     // own parent (`fresh`, i.e. re-entered at its entry point) instead of to an

@@ -141,8 +141,8 @@ fn page0() -> &'static mut [u8; 4096] {
 /// Make `page` the running process in `SLOT` (the identity `slot_for` uses is
 /// `basepage_kva`; the kernel reads the vector table from the slot's page 0).
 fn run(page: &Page0) {
-    for p in PROCESS_TABLE.iter() {
-        p.runnable.store(false, Ordering::Release);
+    for (i, p) in PROCESS_TABLE.iter().enumerate() {
+        sched::unready(i);
         p.wait_cond.store(0, Ordering::Release);
         p.set_state(State::Free);
         p.basepage_kva.store(core::ptr::null_mut(), Ordering::Release);

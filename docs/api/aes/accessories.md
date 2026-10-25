@@ -103,6 +103,16 @@ Six distinct phases, in the order EmuTOS actually runs them:
    (long-lived) **accdesk PD** — `run` at that point (`aes/geminit.c:585-587`,
    [`_run-ownership-curdir.md`](../gemdos/process/_run-ownership-curdir.md) §1.2) — rather than by whatever program launches
    next.
+   **Order of the first run (A115, inferred from the list handling):** each
+   `pstart` links the new AESPD on top of `drl` (`gempd.c:125-128`) and
+   `schedule()` drains `drl` from its head onto the end of `rlr`
+   (`gemdisp.c:193-197`), so the accessories are first run in **reverse**
+   load order, behind pid 0 — whose own `dsptch()` at `:736` keeps the CPU
+   (it was appended before the drain); `all_run`'s next `dsptch()` hands
+   over. Accessories that make the same calls before `menu_register` reach
+   it in that order, and `mn_register` gives each the first free Desk slot
+   (`gemmnlib.c:797-808`). NewTOS reproduces this (`event.md` "Wake
+   conditions and dispatch", A115 binding).
 5. **Steady state** (`sh_main`'s loop, documented in
    [`shell-loop.md`](./shell-loop.md) §7-8) — accessories run cooperatively
    alongside the desktop and every launched application via `dsptch()`. Each

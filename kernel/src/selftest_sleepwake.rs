@@ -29,7 +29,7 @@ use crate::kprintln;
 /// [`sched::sleep`] does for a slot caller before the idle pass.
 fn set_waiting(idx: usize, cond: u64) {
     PROCESS_TABLE[idx].wait_cond.store(cond, Ordering::Release);
-    PROCESS_TABLE[idx].runnable.store(false, Ordering::Release);
+    sched::unready(idx);
 }
 
 /// `true` when slot `idx` is WAITING (`runnable == false && wait_cond != 0`).

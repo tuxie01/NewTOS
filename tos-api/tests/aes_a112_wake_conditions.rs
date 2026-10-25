@@ -375,7 +375,7 @@ impl Proc {
     /// peer waiting for the CPU, not a fresh entry).
     fn ready(&self) {
         PROCESS_TABLE[self.slot].has_ctx.store(true, Ordering::Release);
-        PROCESS_TABLE[self.slot].runnable.store(true, Ordering::Release);
+        sched::ready(self.slot);
     }
 
     fn is_ready(&self) -> bool {
@@ -389,7 +389,7 @@ impl Drop for Proc {
             process::set_current(std::ptr::null_mut());
         }
         sched::set_running(MAX_PROCESSES);
-        PROCESS_TABLE[self.slot].runnable.store(false, Ordering::Release);
+        sched::unready(self.slot);
         // SAFETY: single-threaded under `LOCK`; no frame snapshot is consumed
         // on the host.
         unsafe { process::pterm::release_slot(self.slot) };

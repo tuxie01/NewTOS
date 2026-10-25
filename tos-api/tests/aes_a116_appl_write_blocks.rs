@@ -397,7 +397,7 @@ impl Proc {
     /// Put this slot on the ready list as a process that has run before.
     fn ready(&self) {
         PROCESS_TABLE[self.slot].has_ctx.store(true, Ordering::Release);
-        PROCESS_TABLE[self.slot].runnable.store(true, Ordering::Release);
+        sched::ready(self.slot);
     }
 
     fn is_ready(&self) -> bool {
@@ -411,7 +411,7 @@ impl Proc {
             process::set_current(std::ptr::null_mut());
         }
         sched::set_running(MAX_PROCESSES);
-        PROCESS_TABLE[self.slot].runnable.store(false, Ordering::Release);
+        sched::unready(self.slot);
         PROCESS_TABLE[self.slot].wait_cond.store(0, Ordering::Release);
         // SAFETY: single-threaded under `LOCK`; no frame snapshot is consumed
         // on the host.

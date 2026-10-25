@@ -408,7 +408,7 @@ pub fn run() {
             disposition: Disposition::Resume,
         },
     );
-    PROCESS_TABLE[B_SLOT].runnable.store(false, Ordering::Release);
+    sched::unready(B_SLOT);
 
     // 7. Phase 2: enter R; its Pwait yields to the now-runnable A, driving the
     //    restartable resume (x0 = 200 preserved) + deliver-on-resume. A then
@@ -492,7 +492,7 @@ fn cleanup() {
     // `evnt_multi`) does not read a stale, now-freed slot index as `current()`.
     sched::set_running(tos_api::bdos::process::MAX_PROCESSES);
     for slot in [A_SLOT, B_SLOT, R_SLOT] {
-        PROCESS_TABLE[slot].runnable.store(false, Ordering::Release);
+        sched::unready(slot);
         let bp = tos_api::bdos::process::pd_of(slot);
         if !bp.is_null() {
             // SAFETY: single-CPU pre-test; `bp` owns the slot's TPA block.

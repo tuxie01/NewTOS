@@ -431,6 +431,15 @@ pub struct Process {
 
     /// In the scheduler's run-set (a peer in the cooperative
     /// round-robin). Cleared when the process terminates.
+    ///
+    /// **Written only by [`sched`]** ([`sched::ready`], [`sched::unready`],
+    /// [`sched::admit`], the wakes): the bit is membership, and the ready
+    /// list's order (EmuTOS `rlr`/`drl`, A115) is kept beside it — a bare store
+    /// would add a member the order does not know.
+    ///
+    /// [`sched::ready`]: sched::ready
+    /// [`sched::unready`]: sched::unready
+    /// [`sched::admit`]: sched::admit
     pub runnable: AtomicBool,
 
     /// `saved_frame` holds a valid context (the process has run and
@@ -1282,9 +1291,9 @@ pub fn free_slot(idx: usize) {
     p.parent_frame_full.store(false, Ordering::Release);
     p.parent_frame_pexec.store(false, Ordering::Release);
     // Drop the slot out of the cooperative run-set: an accessory slot is
-    // admitted by the loader and would otherwise stay a `pick_next` candidate
-    // after the process behind it is gone (ACC02/ACC03).
-    p.runnable.store(false, Ordering::Release);
+    // admitted by the loader and would otherwise stay on the ready list after
+    // the process behind it is gone (ACC02/ACC03, A115).
+    sched::unready(idx);
     p.has_ctx.store(false, Ordering::Release);
     p.syscall_deadline.store(0, Ordering::Release);
     // Clear any stale WAITING key so a reused slot does not get spuriously

@@ -94,7 +94,9 @@ unsafe fn table() -> &'static mut [usize; NUM_ACCS] {
 /// **fresh** peer: like EmuTOS's `pstart(gotopgm, …)` (`geminit.c:255`) this
 /// only makes the process schedulable — it does not run until something
 /// dispatches, which for us is the first [`wait_for_accs`] / blocking
-/// `evnt_*` (EmuTOS's `dsptch()`, `geminit.c:736`).
+/// `evnt_*` (EmuTOS's `dsptch()`, `geminit.c:736`). `pstart` links it on top
+/// of `drl` (`gempd.c:125-128`), so accessories registered in load order join
+/// the ready list — and are first run — in **reverse** load order (A115).
 pub fn register_process(idx: usize) {
     // SAFETY: single AES/boot path.
     let t = unsafe { table() };

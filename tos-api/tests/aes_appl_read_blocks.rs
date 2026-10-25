@@ -381,7 +381,7 @@ impl Drop for Proc {
         // Leave the scheduler with no running slot and this slot out of the
         // run-set, so a later test's sleep finds no stale peer.
         sched::set_running(MAX_PROCESSES);
-        PROCESS_TABLE[self.slot].runnable.store(false, Ordering::Release);
+        sched::unready(self.slot);
         // SAFETY: single-threaded under `LOCK`; no frame snapshot is consumed
         // on the host.
         unsafe { process::pterm::release_slot(self.slot) };

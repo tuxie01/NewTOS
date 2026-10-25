@@ -296,10 +296,11 @@ pub fn load_accs(skip: bool) -> usize {
 /// accessories; the barrier is the `AP_MESAG` flag each sets on entering
 /// `evnt_mesag`/`evnt_multi` (`gemsuper.c:137,148`). Here the dispatch is a
 /// **`Pwait` from the kernel context**: the trap handler parks this EL1 frame,
-/// runs the accessory, and returns here the moment the accessory blocks
-/// (ACC03). With nothing runnable `Pwait` is the no-op it always was, so the
-/// loop then degenerates to EmuTOS's bounded spin and gives up after
-/// `WAIT_TIMEOUT` passes exactly as EmuTOS does.
+/// runs the head of the ready list, and returns here when the round robin
+/// comes back to the kernel client (ACC03, A115 — it is one entry of that list,
+/// EmuTOS's pid 0). With nothing else ready `Pwait` is the no-op it always
+/// was, so the loop then degenerates to EmuTOS's bounded spin and gives up
+/// after `WAIT_TIMEOUT` passes exactly as EmuTOS does.
 ///
 /// Why an accessory's *first* execution is here and not at load time: this is
 /// where EmuTOS puts it, and the reason is stated in `wait_for_accs`'s own
@@ -322,8 +323,8 @@ pub fn wait_for_accs_mesag() {
 
 /// `Pwait` (GEMDOS 0x4D) from the kernel context — EmuTOS's `all_run();
 /// dsptch();` for a caller that is not a process. The trap handler parks this
-/// frame and gives the CPU to a runnable accessory; it returns when none is
-/// runnable any more.
+/// frame and gives the CPU to the head of the ready list; it returns when the
+/// kernel client's turn comes round again.
 fn pwait() {
     // SAFETY: the GEMDOS trap; the handler restores every register except
     // `x0`, which it sets to 0 on the resumed path.
