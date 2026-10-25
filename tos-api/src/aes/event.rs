@@ -133,8 +133,11 @@ fn timer_span(now: u64, ms: u64) -> u64 {
 /// message (AUD-P2-002). Returns `false` when there is no menu, the cursor is
 /// not over the bar, or the drop-down was cancelled (no message).
 ///
-/// `idx` is the current AES identity — the menu owner (`gl_mnppd`) at
-/// single-app — used as the FIFO target. The `ap_sendmsg` sender pid
+/// The target is the **bar owner**, `gl_mnppd` (`gemctrl.c:353`,
+/// [`menu::mn_selected_target`](super::menu::mn_selected_target)), never the
+/// waiter whose `evnt_multi` the inline Control Manager happens to run in — a
+/// desk accessory idling in `evnt_multi(MU_MESAG)` runs it as well as the
+/// application does (A117). The `ap_sendmsg` sender pid
 /// `msg[1] = rlr->p_pid` (`gemwmlib.c:855`) is the **Screen Manager's**,
 /// `appl::SCRENMGR_PID` = 1: `ct_msgup` runs inside `ctlmgr()`, `rlr ==
 /// ctl_pd` (`gemctrl.c:353-367`; spec § "AES process identity and pid",
@@ -155,7 +158,7 @@ fn timer_span(now: u64, ms: u64) -> u64 {
 /// button to come up (`aes/gemctrl.c:100-101`): the message is posted at once,
 /// and [`input::ct_msgup_hold`](super::input::ct_msgup_hold) keeps the
 /// interception and `w_setactive` out of the way until the release.
-fn menu_intercept(idx: usize) -> bool {
+fn menu_intercept() -> bool {
     let tree = super::menu::active();
     if tree.is_null() {
         return false;
@@ -205,14 +208,23 @@ fn menu_intercept(idx: usize) -> bool {
                     // asymmetry `AC_CLOSE` mirrors (`docs/api/aes/
                     // accessories.md` §3). `treehi = treelo = parent = 0`
                     // (`gemctrl.c:348`).
-                    (owner, AC_OPEN, title, menu_id, [0; 3])
+                    (Some(owner), AC_OPEN, title, menu_id, [0; 3])
                 }
                 // `owner = gl_mnppd; mesag = MN_SELECTED;` plus the
                 // CONF_WITH_MENU_EXTENSION payload `treehi = HIWORD(tree);
                 // treelo = LOWORD(tree); parent = get_par(tree, item);`
                 // (`gemctrl.c:353-358,365`) — WinDom routes a pick by `msg[5..6]`
                 // (TASK/ZVIEW04).
-                None => (idx, MN_SELECTED, title, item, super::menu::mn_selected_ext(tree, item)),
+                //
+                // The owner is the bar's, not this waiter's (A117): the inline
+                // Control Manager also runs in a desk accessory's wait.
+                None => (
+                    super::menu::mn_selected_target(),
+                    MN_SELECTED,
+                    title,
+                    item,
+                    super::menu::mn_selected_ext(tree, item),
+                ),
             };
             msg[0] = msg0;
             msg[3] = w3;
@@ -220,10 +232,14 @@ fn menu_intercept(idx: usize) -> bool {
             msg[5] = ext[0];
             msg[6] = ext[1];
             msg[7] = ext[2];
-            // SAFETY: single trap path; `post_msg` hands the message to the
-            // live slot (EmuTOS `aqueue`/`doq`, `gemqueue.c:85-125`).
-            unsafe {
-                pd::post_msg(target, msg);
+            // No target only for a bar whose descriptor has no live member —
+            // a dead client's bar is dropped with it (A107, `release_bar_of`).
+            if let Some(target) = target {
+                // SAFETY: single trap path; `post_msg` hands the message to
+                // the live slot (EmuTOS `aqueue`/`doq`, `gemqueue.c:85-125`).
+                unsafe {
+                    pd::post_msg(target, msg);
+                }
             }
             // `ct_msgup`: "send message and wait for the mouse button to come
             // up" (`gemctrl.c:81-104`) — still inside `ctlmgr`'s screen lock,
@@ -624,7 +640,7 @@ pub fn evnt_multi(pb: &Aespb) -> Option<sched::Switch> {
                 // solely for MU_MESAG (`gemsuper.c:147`); an app waiting on
                 // MU_BUTTON alone is not woken by a frame click and must not
                 // receive a spurious MU_MESAG (AUD-P2-003).
-                if flags & MU_MESAG != 0 && !menu_intercept(idx) {
+                if flags & MU_MESAG != 0 && !menu_intercept() {
                     super::window::intercept();
                 }
                 // The Control Manager's loop head, `w_setactive()`

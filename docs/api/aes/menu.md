@@ -689,6 +689,29 @@ message to the owning application's pipe. Built by `ct_msgup` →
 > window's empty binding table — zView's *File > Quit* did nothing while its
 > browser window was open (TASK/ZVIEW04).
 
+> **NewTOS binding — the recipient is the bar owner, wherever the Control
+> Manager runs (A117, 2026-10-25).** `hctl_rect` sends an application-menu pick
+> to `owner = gl_mnppd` (`gemctrl.c:353,365`), the descriptor that called
+> `menu_bar(tree, 1)` (`gemmnlib.c:707,712`). In EmuTOS the Control Manager is a
+> process of its own (`ctl_pd`), so which application happens to be waiting
+> never enters into it. NewTOS runs the Control Manager **inline** in the
+> `evnt_multi(MU_MESAG)` of whichever client is waiting
+> ([`event.md`](./event.md), A91) — a desk accessory idling in
+> `evnt_multi(MU_MESAG)` runs the track as readily as the application does —
+> and the message still goes to `gl_mnppd`, **never to the waiter**. Because
+> `gl_mnppd` is a descriptor and the application chain is one descriptor
+> (`D.g_int[0]`, `aes/geminit.c:851-877`), the recorded owner is resolved the
+> way `appl_write` resolves its pid ([`application.md`](./application.md)
+> contract (b)): a waiting chain member is the chain itself; an accessory's
+> wait reaches the chain's innermost started member (the program a `Pexec`
+> parent is suspended for); an accessory that owns the bar is reached through
+> its own descriptor. Before A117 NewTOS posted the pick to the waiter: with an
+> accessory waiting in `evnt_multi(MU_MESAG)` a desktop *Desk → Desktop info…*
+> landed in the accessory's pipe and the desktop never saw it
+> (`measurements/measurement-2026-10-25-a117/RUNINFO.TXT`). `AC_OPEN` was
+> always routed to the accessory owner (`mn_getownid`, `gemctrl.c:337-340`).
+> Test: `tos-api/tests/aes_a117_mn_selected_owner.rs`.
+
 When the item picked is a **desk-accessory** entry (`title == THEDESK` and the
 item is at/after `gl_dafirst`), the control manager instead sends **`AC_OPEN`**
 (40) to the accessory owner, with the DA's menu id in `msg[4]` and `msg[5..7]=0`

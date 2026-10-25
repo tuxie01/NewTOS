@@ -60,16 +60,39 @@ static MNTREE: AtomicUsize = AtomicUsize::new(0);
 /// code), `usize::MAX` when no bar is installed.
 ///
 /// EmuTOS uses it as the message target for a menu selection
-/// (`ct_msgup(MN_SELECTED, gl_mnppd, …)`, `aes/gemctrl.c:353-367`); NewTOS
-/// delivers to the current identity at single-app
-/// ([`event::menu_intercept`](super::event)) and keeps this for the one thing
-/// that identity cannot answer: **whose** tree the pointer in `gl_mntree` is
-/// ([`release_bar_of`]).
+/// (`owner = gl_mnppd; … ct_msgup(mesag, owner, …)`, `aes/gemctrl.c:353,365`):
+/// [`mn_selected_target`] (A117). It also answers **whose** tree the pointer
+/// in `gl_mntree` is ([`release_bar_of`], [`mntree_accessor`]).
 static MNPPD: AtomicUsize = AtomicUsize::new(usize::MAX);
 
 /// The currently installed menu tree, or null if none.
 pub fn active() -> *mut Object {
     MNTREE.load(Ordering::Relaxed) as *mut Object
+}
+
+/// The AES identity an application-menu pick is posted to — EmuTOS `owner =
+/// gl_mnppd` (`aes/gemctrl.c:353`), the descriptor that called `menu_bar(tree,
+/// 1)` (`gemmnlib.c:707,712`), whatever process the Control Manager runs in.
+///
+/// EmuTOS's Control Manager is a process of its own (`ctl_pd`); NewTOS runs it
+/// inline in the `evnt_multi(MU_MESAG)` of whichever client is waiting — a
+/// desk accessory included — so the waiter must never be the target (A117,
+/// `docs/api/aes/menu.md` "`MN_SELECTED` message", NewTOS binding).
+///
+/// `gl_mnppd` is a *descriptor*, not a process: the application chain is one
+/// (`D.g_int[0]`, `aes/geminit.c:851-877`), each accessory another. The
+/// recorded identity is therefore mapped to the descriptor's pid and back to
+/// the member that runs on it, exactly as `appl_write` addresses that pid
+/// ([`appl::identity_of`](super::appl::identity_of)): a chain member waiting is
+/// the chain itself, an accessory waiting reaches the chain's innermost started
+/// member (the program a `Pexec` parent is suspended for). `None` when no bar
+/// is installed or the descriptor has no live member.
+pub(super) fn mn_selected_target() -> Option<usize> {
+    let owner = MNPPD.load(Ordering::Relaxed);
+    if owner >= super::pd::NUM_PDS {
+        return None;
+    }
+    super::appl::identity_of(super::appl::reported_pid(owner))
 }
 
 /// EmuTOS `gl_ctwait.m_gr` (`aes/gemctrl.c:48`, `MOBLK gl_ctwait`) — the

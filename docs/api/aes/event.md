@@ -567,6 +567,14 @@ re-enters or a button transition cancels (`gemmnlib.c:415-443,559-585`) — so
 "while it runs" can be arbitrarily long: a drop-down left open holds the
 application for as long as the user leaves the pointer there.
 
+"The application's own trap" is whichever client is waiting with `MU_MESAG`
+when the pointer reaches the bar or a frame is pressed — with accessories that
+is as often a desk accessory idling in `evnt_multi(MU_MESAG)` as the
+application. The waiter is never the recipient: a menu pick goes to the bar
+owner `gl_mnppd` (`gemctrl.c:353`, [`menu.md`](./menu.md) "`MN_SELECTED`
+message", A117), a frame message to the window owner `w_owner`
+(`gemctrl.c:314`), an `AC_OPEN` to the accessory (`gemctrl.c:337-340`).
+
 This is a property of the inline model, not of A73; A73 only made the window
 long enough to notice. Nothing else is affected: the messages, their word
 contents and the order they arrive in are unchanged, and no application that
