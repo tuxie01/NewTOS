@@ -1,0 +1,39 @@
+# caretcol.py: rows y0..y1 = 3 above the text cell .. 3 below (EmuTOS curfld extent), scan row = top row of that span
+# EmuTOS (Hatari Falcon TC 1.4.0+ pinned), 'NEW FOLDER' Name field, text cell y=237..252: scan 234, rows 231..258
+emutos-nf1-open.png: face bdbabd; x=296 [bdbabd*3 424542*15 ffffff*2 424542*5 bdbabd*3]
+emutos-nf2-A.png: face bdbabd; x=304 [bdbabd*3 424542*15 ffffff*2 424542*5 bdbabd*3]
+emutos-nf3-AB.png: face bdbabd; x=312 [bdbabd*3 424542*15 ffffff*2 424542*5 bdbabd*3]
+emutos-nf4-left.png: face bdbabd; x=304 [bdbabd*3 424542*22 bdbabd*3]
+emutos-nf5-left.png: face bdbabd; x=296 [bdbabd*3 424542*22 bdbabd*3]
+emutos-nf6-right.png: face bdbabd; x=304 [bdbabd*3 424542*22 bdbabd*3]
+emutos-nf7-bksp.png: face bdbabd; x=296 [bdbabd*3 424542*22 bdbabd*3]
+# NewTOS base 8da6e860, 'Name of new folder' field (box 199..398 x 220..243), text cell y=224..239: scan 221 and 224, rows 218..245
+base1-s1-open.png scan221: face bdbdbd; no caret in scan row
+base1-s1-open.png scan224: face bdbdbd; no caret in scan row
+base1-s2-A.png scan221: face bdbdbd; no caret in scan row
+base1-s2-A.png scan224: face bdbdbd; x=207 [bdbdbd*2 000000*1 bdbdbd*3 000000*16 bdbdbd*3 000000*1 bdbdbd*2]
+base1-s3-AB.png scan221: face bdbdbd; no caret in scan row
+base1-s3-AB.png scan224: face bdbdbd; x=215 [bdbdbd*2 000000*1 bdbdbd*3 000000*16 bdbdbd*3 000000*1 bdbdbd*2]
+base1-s4-left.png scan221: face bdbdbd; no caret in scan row
+base1-s4-left.png scan224: face bdbdbd; x=207 [bdbdbd*2 000000*1 bdbdbd*3 000000*16 bdbdbd*3 000000*1 bdbdbd*2]
+base1-s5-left.png scan221: face bdbdbd; no caret in scan row
+base1-s5-left.png scan224: face bdbdbd; no caret in scan row
+base1-s6-right.png scan221: face bdbdbd; no caret in scan row
+base1-s6-right.png scan224: face bdbdbd; x=207 [bdbdbd*2 000000*1 bdbdbd*3 000000*16 bdbdbd*3 000000*1 bdbdbd*2]
+base1-s7-bksp.png scan221: face bdbdbd; no caret in scan row
+base1-s7-bksp.png scan224: face bdbdbd; no caret in scan row
+# NewTOS new (8da6e860 + A111), same field
+new1-s1-open.png scan221: face bdbdbd; no caret in scan row
+new1-s2-A.png scan221: face bdbdbd; x=207 [bdbdbd*2 000000*1 424242*22 000000*1 bdbdbd*2]
+new1-s3-AB.png scan221: face bdbdbd; x=215 [bdbdbd*2 000000*1 424242*22 000000*1 bdbdbd*2]
+new1-s4-left.png scan221: face bdbdbd; x=207 [bdbdbd*2 000000*1 424242*22 000000*1 bdbdbd*2]
+new1-s5-left.png scan221: face bdbdbd; no caret in scan row
+new1-s6-right.png scan221: face bdbdbd; x=207 [bdbdbd*2 000000*1 424242*22 000000*1 bdbdbd*2]
+new1-s7-bksp.png scan221: face bdbdbd; no caret in scan row
+# index 0 = x=199, the field's left border column (black): its profile rows 218..245, base vs new
+base1-s1-open.png x=199 [bdbdbd*2 000000*24 bdbdbd*2]
+new1-s1-open.png x=199 [bdbdbd*2 000000*1 ffffff*22 000000*1 bdbdbd*2]
+base1-s5-left.png x=199 [bdbdbd*2 000000*24 bdbdbd*2]
+new1-s5-left.png x=199 [bdbdbd*2 000000*1 ffffff*22 000000*1 bdbdbd*2]
+base1-s7-bksp.png x=199 [bdbdbd*2 000000*24 bdbdbd*2]
+new1-s7-bksp.png x=199 [bdbdbd*2 000000*1 ffffff*22 000000*1 bdbdbd*2]

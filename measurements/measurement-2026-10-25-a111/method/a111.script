@@ -1,0 +1,15 @@
+# a111.script -- objc_edit caret on the desktop's "New folder" dialog (an editable FTEXT field under form_do).
+# 200 Hz ticks after "[desk] desktop up". Pointer parked bottom-right first (clear of the dialog).
+# Alt+C opens C:, Ctrl+N opens "New folder"; then A, B, Left, Left, Right, Backspace -- the same
+# key sequence as method/hatari-newfolder.sh on Hatari Falcon EmuTOS. Steps are 600 ticks (3 s) apart;
+# run.py takes each screendump 1.5 s after the step's feed line, i.e. mid-way between two steps.
+200 0xF8 0x7F 0x7F 0xF8 0x7F 0x7F 0xF8 0x7F 0x7F 0xF8 0x7F 0x7F
+300 0x38 0x2E 0xAE 0xB8
+900 0x1D 0x31 0xB1 0x9D
+1500 0x1E 0x9E
+2100 0x30 0xB0
+2700 0x4B 0xCB
+3300 0x4B 0xCB
+3900 0x4D 0xCD
+4500 0x0E 0x8E
+5100 0xF8 0x00 0x00

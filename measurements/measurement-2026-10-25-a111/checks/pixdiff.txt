@@ -1,0 +1,28 @@
+# coldiff.py base vs new, every screendump of the three regression scenarios (whole 640x480 frame)
+newfolder s1-open: 22 px differ x199:y221..242(22)
+newfolder s2-A: 22 px differ x207:y221..242(22)
+newfolder s3-AB: 22 px differ x215:y221..242(22)
+newfolder s4-left: 22 px differ x207:y221..242(22)
+newfolder s5-left: 22 px differ x199:y221..242(22)
+newfolder s6-right: 22 px differ x207:y221..242(22)
+newfolder s7-bksp: 22 px differ x199:y221..242(22)
+fsel f1: 22 px differ x256:y148..169(22)
+fsel f2: 22 px differ x264:y148..169(22)
+fsel f3: 22 px differ x352:y148..169(22)
+fsel f4: 22 px differ x352:y148..169(22)
+fsel f5: 22 px differ x288:y120..141(22)
+fsel f6: 22 px differ x352:y148..169(22)
+fsel f7: 22 px differ x344:y148..169(22)
+info/rename r1-open: 22 px differ x336:y166..187(22)
+info/rename r2-left: 22 px differ x328:y166..187(22)
+info/rename r3-bksp: 22 px differ x320:y166..187(22)
+info/rename r4-X: 22 px differ x328:y166..187(22)
+info/rename r5-esc: 22 px differ x240:y166..187(22)
+# newf = final tree (after the unused-import removal), New folder scenario, vs new1
+newf vs new1 s1-open: 0 px differ 
+newf vs new1 s2-A: 0 px differ 
+newf vs new1 s3-AB: 0 px differ 
+newf vs new1 s4-left: 0 px differ 
+newf vs new1 s5-left: 0 px differ 
+newf vs new1 s6-right: 0 px differ 
+newf vs new1 s7-bksp: 0 px differ 

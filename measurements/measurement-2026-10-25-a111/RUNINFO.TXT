@@ -1,0 +1,107 @@
+measurement-2026-10-25-a111 -- Developer: A111 point 2, the objc_edit text cursor (caret) is EmuTOS curfld's XOR line
+Base: HEAD 8da6e860. Fix: 033da16f. No hardware, no card, no push.
+
+RESULT IN ONE LINE: effect shown (QEMU raspi4b vs Hatari Falcon EmuTOS): NewTOS drew a gl_hchar-high (16 px) black bar in
+REPLACE mode, EmuTOS draws a gl_hchar+6 (22 px) XOR line from 3 rows above the text cell; fixed 1:1 after
+aes/gemobed.c curfld/ob_edit (XOR on/off protocol, span redraw); every regression screendump differs from base only in the
+22-pixel caret column, the caret erases cleanly when moved/typed.
+
+EFFECT (before the fix)
+  EmuTOS reference: Hatari 2.6.1 --machine falcon --monitor vga, the pinned ROM references/emutos/etos512us.img
+  (1.4.0+, sha256 be9b3c16...), EMUDESK.INF #E 1A E0 00 1C 60 (truecolor), GEMDOS drive C = a scratch dir with HELLO.TXT
+  and SUB. method/hatari-newfolder.sh: Alt+C opens C:, Ctrl+N "NEW FOLDER" (an FTEXT field under form_do), then A, B,
+  Left, Left, Right, Backspace, one Hatari screenshot after each step: screendumps/emutos-nf1-open .. nf7-bksp.
+  NewTOS: QEMU -M raspi4b, the embedded desktop, the same key sequence through the IKBD injector (method/a111.script,
+  card method/a111.inf + HELLO.TXT): screendumps/base1-s1-open .. s7-bksp (kernel = HEAD 8da6e860).
+  checks/caret-columns.txt (method/caretcol.py, the vertical colour runs of the caret column):
+    EmuTOS   x=296+8*col, rows 234..255 = 22 rows = text cell (237..252) - 3 .. + 3; colour (66,69,66) = complement of the
+             dialog face (189,186,189), white where it crosses the black template underscores -> XOR.
+    NewTOS   x=199+8*col, rows 224..239 = 16 rows = the text cell only; solid black (REPLACE). At index 0 the bar falls on
+             the field's black left border (x=199) and is invisible (base1-s1/s5/s7: column x=199 is 24 x black).
+  The NewTOS desktop's "New folder" dialog is its own (programs/desktop dlg.rs edit_name, a bordered box, lower case
+  accepted), not EmuTOS's ADMKDBOX -- out of scope here; the caret is drawn by the AES in both, so the comparison is the
+  caret relative to its text cell.
+
+EMUTOS (references/emutos)
+  aes/gemobed.c:180-190 pxl_rect (origin, unchanged), :194-218 curfld:
+    dist == 0: gsx_attr(FALSE, MD_XOR, BLACK); t.g_y -= 3; t.g_h += 6; clip = t; gsx_cline(x, y, x, y+h-1)
+    dist != 0: t.g_w += (dist-1)*gl_wchar; clip = t; ob_draw(tree, obj, 0)
+  aes/gemgraf.c:186-192 gsx_cline (one v_pline, mouse off/on), :420-422 line type 7 / width 1 / udsty 0xffff.
+  aes/gemobed.c:335-463 ob_edit: EDINIT index to the end (:363-365); EDCHAR caret OFF at ob_stfn start (:374-377), edit,
+  if the text changed redraw min(start,nstart) over max(finish,nfinish)-start columns (:445-455), start moves back with
+  the index on a full-field over-type (:407-413); the closing curfld(…, 0) runs for EVERY kind but EDSTART (:459-461),
+  so EDINIT = caret ON (no field draw), EDEND = caret OFF. aes/gemfmlib.c:308/:344 fm_do pairs EDINIT/EDEND.
+NEWTOS (before)
+  tos-api/src/aes/object.rs edit_field_t: every kind redrew the whole field, then (unless EDEND)
+  fill_rect(x, y, 1, CELL_H, BLACK). Spec docs/api/aes/object-form.md objc_edit said "EDEND -- no-op body" (wrong) and
+  listed extent/XOR as not reproduced.
+SPEC (fixed first)
+  docs/api/aes/object-form.md objc_edit: EDINIT draws only the caret, EDEND is not a no-op (closing curfld), new section
+  "The caret protocol" (start/finish/dist, EDINIT/EDEND pairing, gemfmlib.c:308/:344), caret extent/colour/clip.
+
+FIX
+  tos-api/src/aes/object.rs: new curfld() (both branches, own clip, XOR draw_line solid 0xFFFF); edit_field_t follows
+  ob_edit's on/off protocol under one A65 mouse bracket; edit_char returns EmuTOS's no_redraw and moves `start` on the
+  over-type branch.
+  tos-api/src/aes/fsel.rs (NewTOS's own fsel loop, not fm_do, relied on EDINIT redrawing the field): click into the focused
+  field now ends the edit before restarting it; a file click ends the edit, changes the selection text, redraws FSSELECT,
+  restarts the edit. Without this the XOR caret would double/vanish there.
+  Host test tos-api/tests/aes_a111_caret.rs (2 cases): EDINIT changes exactly the 22-pixel complemented column (and no
+  field pixel); a whole EDINIT, insert, Left, Left, Right, Backspace, Delete, Escape, insert, EDEND sequence leaves after
+  every call the clean dialog plus exactly one XOR caret, after EDEND the clean dialog. RED on 8da6e860 (both cases,
+  checks/red-on-base.txt: 14 pixels turned black in rows 100..115 -- the two underscore rows were black already --
+  instead of 22 complemented at 97..118), GREEN with the fix.
+  tos-api/tests/aes_ev_rets_state_at_event.rs objc_edit_caret_follows_te_just (LDG-M3 O1) adapted: it primed with ED_END
+  as "field only, no caret", which under EmuTOS semantics switches a caret ON; it now takes the pixels ED_INIT changes on
+  the bare ground, origin expected at pxl_rect.y - 3. Its pxl_rect x expectation is unchanged.
+
+AFTER (8da6e860 + fix, same scripts, same card)
+  screendumps/new1-s1-open .. s7-bksp; checks/caret-columns.txt: x=199+8*col, rows 221..242 = 22 rows = text cell
+  224..239 -3..+3, colour (66,66,66) = complement of the face (189,189,189), white over the black border at index 0 --
+  the EmuTOS shape. After Left the previous column is restored (s3 -> s4), no stale caret anywhere.
+
+REGRESSION (base vs new, method/coldiff.py over the whole 640x480 frame, checks/pixdiff.txt)
+  New folder dialog (desktop, form_do)           7 shots: each 22 px differ, all in the one caret column
+  Info/Rename dialog (desktop Ctrl+I on HELLO.TXT, method/rn.script: Left, Backspace, X, Escape)
+                                                 5 shots: each 22 px differ, all in the one caret column
+  AES file selector (QED Datei > Oeffnen..., fsel.rs loop, method/fsel.script + qed.inf, armed on up:QED):
+    A typed, file QED.NAP clicked (selection text changes), click into the focused field, Tab to Directory, click back,
+    Left                                         7 shots: each 22 px differ, all in the one caret column
+  i.e. no pixel outside the caret changed, and in the new run every shot shows exactly one caret.
+  0 [EXC]/PANIC/panicked in all serial logs (serial/).
+
+HOW
+  Host macOS, QEMU -M raspi4b -append serial=on, headless, release rpi4 kernels (SOURCE_DATE_EPOCH=1792368000) built by
+  method/build-kernel.sh in scratch trees (git archive 8da6e860 / WORKTREE) with tools/inject-arm.py arming the injector
+  on "desktop" (New folder, Info/Rename) or "up:QED" (file selector); one QEMU at a time; method/run.py on a per-run APFS
+  clone of the base card, clone deleted after. Cards by method/mkcard.sh (64 MiB FAT16, never a real card): base.img =
+  a111.inf + HELLO.TXT (sha256 d5e0b1c2...), qed.img = qed.inf + C:\Apps\QED\QED.NAP/qed.rsc (sdk/apps/qed/build,
+  4c447767... / 30ac6bf2...) + HELLO.TXT + README.TXT (d212c73c...). Screendump marks fire a fixed delay after the
+  injector's "(+tick)" line. Geometry for the file selector: method/qgeo-menu.script and qgeo.script, screendumps
+  qgeo-menu.png / qgeo-fsel.png.
+  Kernels (sha256): base 5ba594a3..., new 9b36ced2..., rn-base f26fbf83..., rn-new af8d219d..., fsel-base b2ce1cdb...,
+  fsel-new 794c970d..., qgeo 2c4c3ad2...; all in checks/binaries.sha256. The "new"/"rn-new"/"fsel-new" kernels were
+  built before the final edit (object.rs: unused `ED_END` import removed, one comment line); the final tree's kernel
+  (new-final 77d1af62..., serial/newf.log) gives the New folder run pixel-identical to new1 (checks/pixdiff.txt, 0 px
+  in all 7 shots). After the lint/measure runs only a line reference in one comment of object.rs was
+  corrected (gemobed.c:455-456) before the commit; no code change.
+
+BUILD / LINT / HOST TESTS (method/lint.sh; base = scratch git worktree at 8da6e860, new = scratch copy of the final tree;
+  gitignored inputs references/emutos and sdk/apps/* linked in both; both removed after)
+                                      base 8da6e860          new (final tree)
+  cargo xtask build qemu-virt dev       exit 0, 159 warn lines exit 0, 159
+  cargo xtask build qemu-virt release   exit 0, 159            exit 0, 159
+  cargo xtask build rpi4 dev            exit 0, 159            exit 0, 159
+  cargo xtask build rpi4 release        exit 0, 159            exit 0, 159
+  clippy kernel (qemu-virt / rpi4)      tos-api 76, kernel 121 tos-api 74, kernel 121 (both boards)
+  clippy tos-api host                   76                     74
+    the -2 are two pre-existing `collapsible_match` hits in object.rs edit_char (the arrow arms, now `return true`)
+    that disappear with the rewrite; not a deliberate cleanup. No new warning kind or site (per-site diff).
+  clippy tos-api --tests                same per-target set; 0 warnings in aes_a111_caret.rs
+  cargo xtask test                      159 bin, 1639/0/1      160 bin, 1641/0/1 (+1 binary, +2 tests = aes_a111_caret)
+  A first new-tree run showed 160 build warning lines: `unused import ED_END` (object.rs) -- removed, rerun as above.
+  checks/lint-base/summary.txt, checks/lint-new/summary.txt.
+
+NOT COVERED
+  Real Pi 4 (no hardware actions). TeraDesk (none of its paths was driven; it uses the same objc_edit). The EmuTOS
+  reference is EmuTOS's own NEW FOLDER dialog, NewTOS's desktop draws a different one (see EFFECT).

@@ -1,0 +1,9 @@
+test ed_init_draws_only_the_xor_caret ... FAILED
+test edit_sequence_leaves_exactly_one_caret ... FAILED
+thread 'ed_init_draws_only_the_xor_caret' (14622410) panicked at tos-api/tests/aes_a111_caret.rs:546:5:
+  left: [(116, 100), (116, 101), (116, 102), (116, 103), (116, 104), (116, 105), (116, 106), (116, 107), (116, 108), (116, 109), (116, 110), (116, 111), (116, 114), (116, 115)]
+ right: [(116, 97), (116, 98), (116, 99), (116, 100), (116, 101), (116, 102), (116, 103), (116, 104), (116, 105), (116, 106), (116, 107), (116, 108), (116, 109), (116, 110), (116, 111), (116, 112), (116, 113), (116, 114), (116, 115), (116, 116), (116
+thread 'edit_sequence_leaves_exactly_one_caret' (14622411) panicked at tos-api/tests/aes_a111_caret.rs:569:5:
+  left: [(116, 97), (116, 98), (116, 99), (116, 100), (116, 101), (116, 102), (116, 103), (116, 104), (116, 105), (116, 106), (116, 107), (116, 108), (116, 109), (116, 110), (116, 111), (116, 112), (116, 113), (116, 114), (116, 115), (116, 116), (116
+ right: []
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
