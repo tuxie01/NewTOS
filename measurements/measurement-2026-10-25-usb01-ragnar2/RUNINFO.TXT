@@ -1,0 +1,40 @@
+USB01 -- external tester ragnar76, his own Raspberry Pi 4, USB test package 2
+=============================================================================
+
+Date      2026-10-25 (files received by mail; same content attached to GitHub #3 as usb_tests.txt)
+Who       ragnar76 (GitHub #3), real RPi 4 Model B
+Why       USB01 F3: do wireless receivers work now that every HID boot interface of a device is used?
+Package   GitHub pre-release usbtest-2026-10-24, NEWTOS-USBTEST-2026-10-24.zip (sha256 a01cc025...a308e7),
+          kernel = usb-diag rpi4 release build of 19ff79f6, sha256
+          1c55804af1af8d1571b699b616b6778b4822835c6d7c0559448374364d4209c5; USBSNAP.NCP 522c8e94...
+          Every snapshot header reads "Kernel: NewTOS 0.6.1 2026-10-24 (19ff79f6)".
+Files     NOTIZEN.TXT                  the tester's table, verbatim
+          snapshots/<RECEIVER>/<JACK>/<VIDPID>.TXT  USBSNAP v2 reports, verbatim, one per receiver and jack
+                                       (2.0/SCHWARZ = black USB 2 jack, 3.0/BLAU = blue USB 3 jack).
+                                       MA_MAST = MX Master 2S, MX_ERGO = MX Ergo, both on Unifying 046d:c52b.
+          Not received: FUNK*.LOG (C:\USBDIAG.LOG per start).
+
+TESTER TABLE (NOTIZEN.TXT, both jacks)  pointer  left  right  wheel  keyboard
+  1  Logitech MX Master 2S              ja       ja    ja     ja     cable ja, MX Keys (wireless) "läuft"
+  2  Rii X8                             ja       ja    ja     ja     own wireless keyboard ja
+  3  Cherry DW 9000 slim                ja       ja    ja     ja     Cherry Stream Desktop ja
+  4  Logitech MX Ergo trackball         ja       ja    ja     ja     ja
+  "Grundsätzlich haben alle Tastaturen ohne Probleme funktioniert."
+  Earlier "Tastatur: nein" (2026-10-23): he had not tested the wireless keyboards at all.
+  Remarks: (a) wheel of the cable Logitech B100 does not work (= GitHub #8);
+           (b) "Menüzeile von EmuTOS verhält sich seltsam, ähnlich wie das Problem bei Zview nur viel heftiger"
+               -- no further detail; asked in #3.
+
+WHAT THE SNAPSHOTS SHOW
+  All 10 snapshots: lost 0, interrupt transfer errors 0. The Unifying/Rii/Cherry receivers have 2 functions
+  used (keyboard iface 0, mouse iface 1), recorded per interface. F3 confirmed on real hardware.
+  Mouse report length per device (boot protocol):
+    Unifying (MX Master, MX Ergo)  4 bytes, byte 3 = wheel; MX Ergo 31/3, Rii 53/30 listed non-zero wheel reports
+    Rii X8                          4 bytes with wheel
+    Cherry DW 9000                  3 bytes only (1023 of 1023 listed mouse reports) -- no wheel byte in boot
+                                    protocol, yet the table says "Rad: ja"; open question to the tester
+    Logitech B100 046d:c077 (cable) 3 bytes only, low speed; its report descriptor (46 bytes) declares
+                                    X, Y, Wheel (Usage 0x38) as 3 x 8 bit -> the wheel exists only in report
+                                    protocol. Cause of #8 = boot protocol, see TASK/USB03.md.
+  Only the first 1024 reports of each recording are listed, so a zero wheel count in a listing (MX Master)
+  does not mean the wheel was not sent.

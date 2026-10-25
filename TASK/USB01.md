@@ -175,3 +175,16 @@ Umstecken hat er per Ctrl-Alt-Del neu gestartet (kein Hotplug, F6).
 `522c8e94…` (unveraendert seit `be506300`). Punkte 10/11 nicht auf echter Pi gelaufen
 (Host + QEMU). Bitte in #3: je Empfaenger ein Start + USBSNAP-Aufnahme, Funktastaturen
 der Sets, Bedeutung der Spalte „Tastatur“. Offen: Ragnars Rueckmeldung (P2/P3).
+
+## Stand 2026-10-25 — Ragnars Ergebnis mit Paket 2
+
+`measurements/measurement-2026-10-25-usb01-ragnar2/RUNINFO.TXT`: Alle vier
+Funkempfaenger (MX Master 2S, Rii X8, Cherry DW 9000, MX Ergo) laufen an
+schwarzer und blauer Buchse: Zeiger, links, rechts, Rad, Kabel- und
+Funktastaturen. 10 USBSNAP-Aufnahmen, 0 verloren, 0 Interrupt-Fehler; je
+Empfaenger Tastatur- und Maus-Funktion genutzt. **F3 auf echter Hardware
+bestaetigt; der Kern von #3 ist geloest.** Die alte Spalte „Tastatur: nein“
+hiess: Funktastaturen nicht getestet.
+Offen daraus: Rad der Kabelmaus B100 -> [USB03](USB03.md) (#8); die Maus der
+DW 9000 schickt nur 3 Bytes, „Rad: ja“ ist damit nicht belegt (Rueckfrage);
+„Menueleiste verhaelt sich seltsam“ ohne Einzelheiten (Rueckfrage in #3).

@@ -1,0 +1,29 @@
+NewTOS USB-Test 2, 2026-10-24 -- Notizen
+========================================
+
+Je Start eine Zeile. Buchse: blau = USB 3, schwarz = USB 2.
+Zeiger/Tasten/Rad: ja / nein / ruckelig / ... in eigenen Worten.
+Tastatur: bitte dazuschreiben, welche (Kabel / Funk).
+
+Nr | Empfaenger (Hersteller, Modell) | Buchse Empf.   | Zeiger  | links   | rechts  | Rad | Kabeltastatur  | Funktastatur | USBSNAP gelaufen? | Bemerkung
+---+---------------------------------+----------------+---------+---------+---------+-----+----------------+--------------+-------------------+----------
+ 1 | Logitech MX Master 2S           | schwarz / blau | ja / ja | ja / ja | ja / ja | ja / ja |  ja        |  ang. läuft  | ja / ja           |
+ 2 | Rii X8                          | schwarz / blau | ja / ja | ja / ja | ja / ja | ja / ja | nicht ang. |  ja / ja     | ja / ja           |
+ 3 | Cherry DW 9000 slim             | schwarz / blau | ja / ja | ja / ja | ja / ja | ja / ja | nicht ang. |  ja / ja [1] | ja / ja           |
+ 4 | Logitext MX Ergo Trackball      | schwarz / blau | ja / ja | ja / ja | ja / ja | ja / ja | nicht ang. |  ja / ja [2] | ja / ja           |
+
+Kabeltastatur (Hersteller/Modell): Cherry KC 6000 slim
+Funktastatur [1]: Cherry Stream Desktop
+Funktastatur [1]: Logitech MX Keys
+
+Grundsätzlich haben alle Tastaturen ohne Probleme funktioniert
+
+
+Letztes Mal stand in der Spalte "Tastatur" bei den Funkgeraeten "nein",
+obwohl die Kabeltastatur lief. Welche Tastatur war damit gemeint?
+
+Ich hatte nur die kabelgebundene Tastatur angeschlossen und die Funktastaturen nicht getestet
+
+Sonstiges (was ist dir aufgefallen?):
+* Während bei den Funkmäusen das Mausrad funktioniert, funktiert das Mausrad nicht bei meiner kabelgebundenen Logitech B100.
+* ich weiss dass das ein Testbuild für USB ist aber irgendwie verhält sich die Menüzeile von Emutos seltsam. Ähnlich wie das Problem bei Zview nur viel heftiger

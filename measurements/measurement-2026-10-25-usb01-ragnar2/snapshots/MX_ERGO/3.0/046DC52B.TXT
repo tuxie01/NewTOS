@@ -1,0 +1,1298 @@
+=== 0. FILE ===
+Format        : NewTOS USBSNAP text report v2
+Program       : USBSNAP.NCP v2
+Kernel        : NewTOS 0.6.1 2026-10-24 (19ff79f6)
+Snapshot API  : Ssystem 2022, layout v2, generation 1
+Recorded      : 30.0 s, pointer muted: yes, ring 256, reports listed <= 1024
+Device        : 1 of 1 (index 1)
+Timestamps    : time of collection by the host, NOT the time the device sent
+                the report (resolution = how often the kernel polls USB).
+
+=== 1. IDENTITY ===
+VID:PID       : 046d:c52b
+Manufacturer  : "Logitech"
+Product       : "USB Receiver"
+bcdUSB 2.00  class 0  subclass 0  protocol 0  EP0 max 8  configurations 1
+
+=== 2. POSITION ===
+Controller    : xHCI, 5 root ports
+Path          : root port 1 -> hub 2109:3431 port 1
+Route string  : 0x00000001  (behind a hub, parent index 0)
+Speed         : full speed (12 Mbit/s)  [xHCI PORTSC speed id 1]
+xHCI slot     : 2
+
+=== 3. DRIVER DECISION ===
+Functions     : 2 interfaces of this device are used, each on its own (see
+                Interfaces); Role and Reason are those of the first one.
+Role          : KEYBOARD (HID boot protocol, decoded -> IKBD)
+Role codes    : 0 none / 1 keyboard / 2 mouse / 3 observed-only / 4 hub /
+                5 failed; this device: 1
+Reason        : -
+Flags         : 0x0b = device descriptor ok, configuration ok
+                SET_CONFIGURATION done
+HID interfaces: 3   functions: 2   first: interface 0, endpoint 0x81
+Interfaces:
+  if 0 alt 0  class 3 sub 1 proto 1  int-IN 0x81 max 8 interval 8
+      USED (keyboard, decoded)  [recorded]
+      report descriptor declared 59 bytes, kept 59
+  if 1 alt 0  class 3 sub 1 proto 2  int-IN 0x82 max 8 interval 2
+      USED (mouse, decoded)  [recorded]
+      report descriptor declared 148 bytes, kept 148
+  if 2 alt 0  class 3 sub 0 proto 0  int-IN 0x83 max 32 interval 2
+      not used: HID without boot subclass: report protocol only, no report
+                parser yet
+      report descriptor declared 93 bytes, kept 93
+Interrupt transfer errors: 0
+
+=== 4. RAW DESCRIPTORS (hex, offset: 16 bytes) ===
+Device descriptor, 18 bytes
+0000: 12 01 00 02 00 00 00 08 6d 04 2b c5 11 12 01 02  |........m.+.....|
+0010: 00 01                                            |..|
+Configuration descriptor, 84 bytes (wTotalLength 84)
+0000: 09 02 54 00 03 01 04 a0 31 09 04 00 00 01 03 01  |..T.....1.......|
+0010: 01 00 09 21 11 01 00 01 22 3b 00 07 05 81 03 08  |...!....";......|
+0020: 00 08 09 04 01 00 01 03 01 02 00 09 21 11 01 00  |............!...|
+0030: 01 22 94 00 07 05 82 03 08 00 02 09 04 02 00 01  |."..............|
+0040: 03 00 00 00 09 21 11 01 00 01 22 5d 00 07 05 83  |.....!...."]....|
+0050: 03 20 00 02                                      |. ..|
+HID report descriptor, interface 0, 59 bytes (declared 59)
+0000: 05 01 09 06 a1 01 95 08 75 01 15 00 25 01 05 07  |........u...%...|
+0010: 19 e0 29 e7 81 02 81 03 95 05 05 08 19 01 29 05  |..)...........).|
+0020: 91 02 95 01 75 03 91 01 95 06 75 08 15 00 26 ff  |....u.....u...&.|
+0030: 00 05 07 19 00 2a ff 00 81 00 c0                 |.....*.....|
+HID report descriptor, interface 1, 148 bytes (declared 148)
+0000: 05 01 09 02 a1 01 85 02 09 01 a1 00 95 10 75 01  |..............u.|
+0010: 15 00 25 01 05 09 19 01 29 10 81 02 95 02 75 0c  |..%.....).....u.|
+0020: 16 01 f8 26 ff 07 05 01 09 30 09 31 81 06 95 01  |...&.....0.1....|
+0030: 75 08 15 81 25 7f 09 38 81 06 95 01 05 0c 0a 38  |u...%..8.......8|
+0040: 02 81 06 c0 c0 05 0c 09 01 a1 01 85 03 95 02 75  |...............u|
+0050: 10 15 01 26 ff 02 19 01 2a ff 02 81 00 c0 05 01  |...&....*.......|
+0060: 09 80 a1 01 85 04 95 01 75 02 15 01 25 03 09 82  |........u...%...|
+0070: 09 81 09 83 81 00 75 06 81 03 c0 06 bc ff 09 88  |......u.........|
+0080: a1 01 85 08 95 01 75 08 15 01 26 ff 00 19 01 29  |......u...&....)|
+0090: ff 81 00 c0                                      |....|
+HID report descriptor, interface 2, 93 bytes (declared 93)
+0000: 06 00 ff 09 01 a1 01 85 10 95 06 75 08 15 00 26  |...........u...&|
+0010: ff 00 09 01 81 00 09 01 91 00 c0 06 00 ff 09 02  |................|
+0020: a1 01 85 11 95 13 75 08 15 00 26 ff 00 09 02 81  |......u...&.....|
+0030: 00 09 02 91 00 c0 06 00 ff 09 04 a1 01 85 20 95  |.............. .|
+0040: 0e 75 08 15 00 26 ff 00 09 41 81 00 09 41 91 00  |.u...&...A...A..|
+0050: 85 21 95 1f 09 42 81 00 09 42 91 00 c0           |.!...B...B...|
+
+=== 5. DECODED DESCRIPTORS ===
+Device: bLength 18 bDescriptorType 1 bcdUSB 0x0200 bDeviceClass 0
+  bDeviceSubClass 0 bDeviceProtocol 0 bMaxPacketSize0 8
+  idVendor 0x046d idProduct 0xc52b bcdDevice 0x1211
+  iManufacturer 1 iProduct 2 iSerialNumber 0 bNumConfigurations 1
+Configuration: wTotalLength 84 bNumInterfaces 3 bConfigurationValue 1
+  iConfiguration 4 MaxPower 49 (98 mA) bmAttributes 0xa0 bus-powered
+      remote-wakeup
+  Interface 0 alt 0: bNumEndpoints 1 iInterface 0
+    class 3 (HID) sub 1 (boot) protocol 1 (keyboard)
+    HID: bcdHID 1.11 bCountryCode 0 bNumDescriptors 1
+      class descriptor type 0x22 (report) length 59
+    Endpoint 0x81: IN, interrupt, wMaxPacketSize 0x0008 (8), bInterval 8
+  Interface 1 alt 0: bNumEndpoints 1 iInterface 0
+    class 3 (HID) sub 1 (boot) protocol 2 (mouse)
+    HID: bcdHID 1.11 bCountryCode 0 bNumDescriptors 1
+      class descriptor type 0x22 (report) length 148
+    Endpoint 0x82: IN, interrupt, wMaxPacketSize 0x0008 (8), bInterval 2
+  Interface 2 alt 0: bNumEndpoints 1 iInterface 0
+    class 3 (HID) sub 0 (none) protocol 0
+    HID: bcdHID 1.11 bCountryCode 0 bNumDescriptors 1
+      class descriptor type 0x22 (report) length 93
+    Endpoint 0x83: IN, interrupt, wMaxPacketSize 0x0020 (32), bInterval 2
+Report descriptor items (interface 0):
+  05 01           Usage Page (Generic Desktop)
+  09 06           Usage (Keyboard)
+  a1 01           Collection (Application)
+  95 08             Report Count (8)
+  75 01             Report Size (1)
+  15 00             Logical Minimum (0)
+  25 01             Logical Maximum (1)
+  05 07             Usage Page (Keyboard/Keypad)
+  19 e0             Usage Minimum (0xe0)
+  29 e7             Usage Maximum (0xe7)
+  81 02             Input (Data,Var,Abs)
+  81 03             Input (Const,Var,Abs)
+  95 05             Report Count (5)
+  05 08             Usage Page (LEDs)
+  19 01             Usage Minimum (0x01)
+  29 05             Usage Maximum (0x05)
+  91 02             Output (Data,Var,Abs)
+  95 01             Report Count (1)
+  75 03             Report Size (3)
+  91 01             Output (Const,Array,Abs)
+  95 06             Report Count (6)
+  75 08             Report Size (8)
+  15 00             Logical Minimum (0)
+  26 ff 00          Logical Maximum (255)
+  05 07             Usage Page (Keyboard/Keypad)
+  19 00             Usage Minimum (0x00)
+  2a ff 00          Usage Maximum (0xff)
+  81 00             Input (Data,Array,Abs)
+  c0              End Collection
+  Items 29: Input 3, Output 2, Feature 0, Collections 1
+  Report ID: none (reports carry no ID byte)
+Report descriptor items (interface 1):
+  05 01           Usage Page (Generic Desktop)
+  09 02           Usage (Mouse)
+  a1 01           Collection (Application)
+  85 02             Report ID (2)
+  09 01             Usage (Pointer)
+  a1 00             Collection (Physical)
+  95 10               Report Count (16)
+  75 01               Report Size (1)
+  15 00               Logical Minimum (0)
+  25 01               Logical Maximum (1)
+  05 09               Usage Page (Button)
+  19 01               Usage Minimum (Button 1)
+  29 10               Usage Maximum (Button 16)
+  81 02               Input (Data,Var,Abs)
+  95 02               Report Count (2)
+  75 0c               Report Size (12)
+  16 01 f8            Logical Minimum (-2047, raw 0xf801)
+  26 ff 07            Logical Maximum (2047)
+  05 01               Usage Page (Generic Desktop)
+  09 30               Usage (X)
+  09 31               Usage (Y)
+  81 06               Input (Data,Var,Rel)
+  95 01               Report Count (1)
+  75 08               Report Size (8)
+  15 81               Logical Minimum (-127, raw 0x81)
+  25 7f               Logical Maximum (127)
+  09 38               Usage (Wheel)
+  81 06               Input (Data,Var,Rel)
+  95 01               Report Count (1)
+  05 0c               Usage Page (Consumer)
+  0a 38 02            Usage (AC Pan)
+  81 06               Input (Data,Var,Rel)
+  c0                End Collection
+  c0              End Collection
+  05 0c           Usage Page (Consumer)
+  09 01           Usage (0x01)
+  a1 01           Collection (Application)
+  85 03             Report ID (3)
+  95 02             Report Count (2)
+  75 10             Report Size (16)
+  15 01             Logical Minimum (1)
+  26 ff 02          Logical Maximum (767)
+  19 01             Usage Minimum (0x01)
+  2a ff 02          Usage Maximum (0x02ff)
+  81 00             Input (Data,Array,Abs)
+  c0              End Collection
+  05 01           Usage Page (Generic Desktop)
+  09 80           Usage (0x80)
+  a1 01           Collection (Application)
+  85 04             Report ID (4)
+  95 01             Report Count (1)
+  75 02             Report Size (2)
+  15 01             Logical Minimum (1)
+  25 03             Logical Maximum (3)
+  09 82             Usage (0x82)
+  09 81             Usage (0x81)
+  09 83             Usage (0x83)
+  81 00             Input (Data,Array,Abs)
+  75 06             Report Size (6)
+  81 03             Input (Const,Var,Abs)
+  c0              End Collection
+  06 bc ff        Usage Page (Vendor-defined)
+  09 88           Usage (0x88)
+  a1 01           Collection (Application)
+  85 08             Report ID (8)
+  95 01             Report Count (1)
+  75 08             Report Size (8)
+  15 01             Logical Minimum (1)
+  26 ff 00          Logical Maximum (255)
+  19 01             Usage Minimum (0x01)
+  29 ff             Usage Maximum (0xff)
+  81 00             Input (Data,Array,Abs)
+  c0              End Collection
+  Items 73: Input 8, Output 0, Feature 0, Collections 5
+  Report ID: used, IDs 2 3 4 8
+  -> every report starts with a 1-byte report ID (HID 1.11 6.2.2.7)
+Report descriptor items (interface 2):
+  06 00 ff        Usage Page (Vendor-defined)
+  09 01           Usage (0x01)
+  a1 01           Collection (Application)
+  85 10             Report ID (16)
+  95 06             Report Count (6)
+  75 08             Report Size (8)
+  15 00             Logical Minimum (0)
+  26 ff 00          Logical Maximum (255)
+  09 01             Usage (0x01)
+  81 00             Input (Data,Array,Abs)
+  09 01             Usage (0x01)
+  91 00             Output (Data,Array,Abs)
+  c0              End Collection
+  06 00 ff        Usage Page (Vendor-defined)
+  09 02           Usage (0x02)
+  a1 01           Collection (Application)
+  85 11             Report ID (17)
+  95 13             Report Count (19)
+  75 08             Report Size (8)
+  15 00             Logical Minimum (0)
+  26 ff 00          Logical Maximum (255)
+  09 02             Usage (0x02)
+  81 00             Input (Data,Array,Abs)
+  09 02             Usage (0x02)
+  91 00             Output (Data,Array,Abs)
+  c0              End Collection
+  06 00 ff        Usage Page (Vendor-defined)
+  09 04           Usage (0x04)
+  a1 01           Collection (Application)
+  85 20             Report ID (32)
+  95 0e             Report Count (14)
+  75 08             Report Size (8)
+  15 00             Logical Minimum (0)
+  26 ff 00          Logical Maximum (255)
+  09 41             Usage (0x41)
+  81 00             Input (Data,Array,Abs)
+  09 41             Usage (0x41)
+  91 00             Output (Data,Array,Abs)
+  85 21             Report ID (33)
+  95 1f             Report Count (31)
+  09 42             Usage (0x42)
+  81 00             Input (Data,Array,Abs)
+  09 42             Usage (0x42)
+  91 00             Output (Data,Array,Abs)
+  c0              End Collection
+  Items 45: Input 4, Output 4, Feature 0, Collections 3
+  Report ID: used, IDs 16 17 32 33
+  -> every report starts with a 1-byte report ID (HID 1.11 6.2.2.7)
+
+=== 6. REPORTS ===
+Total 1547 (seq 250..1796), listed 1024, lost 0, interrupt errors 0
+First 1024 of 1547 listed; all: length 4..8, last at 29.990 s
+Reports of all functions in order of arrival; column if = the interface
+(function) a report came from, decoded with that function's role.
+  interface 0 (Keyboard): 81 listed
+  interface 1 (Mouse): 943 listed
+Flags: M = collected while the pointer was muted, C = report may be cut
+   seq     t(s)  len fl  if bytes                   decoded (boot reports)
+   250    0.120   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   251    0.615   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   252    0.865   8 M-   0 00 00 11 00 00 00 00 00  mod 00 keys 11
+   253    0.890   8 M-   0 00 00 11 05 00 00 00 00  mod 00 keys 11 05
+   254    0.970   8 M-   0 00 00 11 00 00 00 00 00  mod 00 keys 11
+   255    1.010   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   256    1.035   8 M-   0 00 00 0e 00 00 00 00 00  mod 00 keys 0e
+   257    1.050   8 M-   0 00 00 0e 0d 00 00 00 00  mod 00 keys 0e 0d
+   258    1.130   8 M-   0 00 00 0e 0d 11 00 00 00  mod 00 keys 0e 0d 11
+   259    1.155   8 M-   0 00 00 0d 11 00 00 00 00  mod 00 keys 0d 11
+   260    1.195   8 M-   0 00 00 11 00 00 00 00 00  mod 00 keys 11
+   261    1.275   8 M-   0 00 00 11 33 00 00 00 00  mod 00 keys 11 33
+   262    1.290   8 M-   0 00 00 11 33 0d 00 00 00  mod 00 keys 11 33 0d
+   263    1.315   8 M-   0 00 00 33 0d 00 00 00 00  mod 00 keys 33 0d
+   264    1.370   8 M-   0 00 00 0d 00 00 00 00 00  mod 00 keys 0d
+   265    1.410   8 M-   0 00 00 0d 11 00 00 00 00  mod 00 keys 0d 11
+   266    1.455   8 M-   0 00 00 11 00 00 00 00 00  mod 00 keys 11
+   267    1.530   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   268    1.555   8 M-   0 00 00 0e 00 00 00 00 00  mod 00 keys 0e
+   269    1.575   8 M-   0 00 00 0e 0d 00 00 00 00  mod 00 keys 0e 0d
+   270    1.675   8 M-   0 00 00 0d 00 00 00 00 00  mod 00 keys 0d
+   271    1.700   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   272    1.715   8 M-   0 00 00 0b 00 00 00 00 00  mod 00 keys 0b
+   273    1.820   8 M-   0 00 00 0b 0c 00 00 00 00  mod 00 keys 0b 0c
+   274    1.835   8 M-   0 00 00 0c 00 00 00 00 00  mod 00 keys 0c
+   275    1.860   8 M-   0 00 00 0c 18 00 00 00 00  mod 00 keys 0c 18
+   276    1.915   8 M-   0 00 00 0c 00 00 00 00 00  mod 00 keys 0c
+   277    1.940   8 M-   0 00 00 0c 0b 00 00 00 00  mod 00 keys 0c 0b
+   278    1.955   8 M-   0 00 00 0b 00 00 00 00 00  mod 00 keys 0b
+   279    2.075   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   280    2.100   8 M-   0 00 00 33 00 00 00 00 00  mod 00 keys 33
+   281    2.200   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   282    2.500   8 M-   0 00 00 0b 00 00 00 00 00  mod 00 keys 0b
+   283    2.640   8 M-   0 00 00 0b 18 00 00 00 00  mod 00 keys 0b 18
+   284    2.660   8 M-   0 00 00 18 00 00 00 00 00  mod 00 keys 18
+   285    2.680   8 M-   0 00 00 18 33 00 00 00 00  mod 00 keys 18 33
+   286    2.720   8 M-   0 00 00 18 00 00 00 00 00  mod 00 keys 18
+   287    2.785   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   288    3.210   4 M-   1 00 0f 00 00              --- dx  +15 dy   +0 wh  +0
+   289    3.220   4 M-   1 00 19 01 00              --- dx  +25 dy   +1 wh  +0
+   290    3.225   4 M-   1 00 18 00 00              --- dx  +24 dy   +0 wh  +0
+   291    3.235   4 M-   1 00 19 ff 00              --- dx  +25 dy   -1 wh  +0
+   292    3.240   4 M-   1 00 19 ff 00              --- dx  +25 dy   -1 wh  +0
+   293    3.250   4 M-   1 00 16 fe 00              --- dx  +22 dy   -2 wh  +0
+   294    3.260   4 M-   1 00 13 00 00              --- dx  +19 dy   +0 wh  +0
+   295    3.265   4 M-   1 00 0f ff 00              --- dx  +15 dy   -1 wh  +0
+   296    3.275   4 M-   1 00 0b 00 00              --- dx  +11 dy   +0 wh  +0
+   297    3.280   4 M-   1 00 08 00 00              --- dx   +8 dy   +0 wh  +0
+   298    3.280   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   299    3.290   4 M-   1 00 03 01 00              --- dx   +3 dy   +1 wh  +0
+   300    3.300   4 M-   1 00 03 01 00              --- dx   +3 dy   +1 wh  +0
+   301    3.305   4 M-   1 00 00 02 00              --- dx   +0 dy   +2 wh  +0
+   302    3.315   4 M-   1 00 ff 05 00              --- dx   -1 dy   +5 wh  +0
+   303    3.320   4 M-   1 00 00 06 00              --- dx   +0 dy   +6 wh  +0
+   304    3.330   4 M-   1 00 00 06 00              --- dx   +0 dy   +6 wh  +0
+   305    3.340   4 M-   1 00 01 09 00              --- dx   +1 dy   +9 wh  +0
+   306    3.345   4 M-   1 00 01 09 00              --- dx   +1 dy   +9 wh  +0
+   307    3.355   4 M-   1 00 00 0a 00              --- dx   +0 dy  +10 wh  +0
+   308    3.360   4 M-   1 00 00 0b 00              --- dx   +0 dy  +11 wh  +0
+   309    3.370   4 M-   1 00 ff 0b 00              --- dx   -1 dy  +11 wh  +0
+   310    3.380   4 M-   1 00 ff 0c 00              --- dx   -1 dy  +12 wh  +0
+   311    3.385   4 M-   1 00 fd 0b 00              --- dx   -3 dy  +11 wh  +0
+   312    3.395   4 M-   1 00 fa 0b 00              --- dx   -6 dy  +11 wh  +0
+   313    3.405   4 M-   1 00 f9 09 00              --- dx   -7 dy   +9 wh  +0
+   314    3.410   4 M-   1 00 f7 08 00              --- dx   -9 dy   +8 wh  +0
+   315    3.420   4 M-   1 00 f8 04 00              --- dx   -8 dy   +4 wh  +0
+   316    3.430   4 M-   1 00 fa 03 00              --- dx   -6 dy   +3 wh  +0
+   317    3.435   4 M-   1 00 f9 03 00              --- dx   -7 dy   +3 wh  +0
+   318    3.445   4 M-   1 00 f9 01 00              --- dx   -7 dy   +1 wh  +0
+   319    3.450   4 M-   1 00 f9 ff 00              --- dx   -7 dy   -1 wh  +0
+   320    3.460   4 M-   1 00 f9 fe 00              --- dx   -7 dy   -2 wh  +0
+   321    3.470   4 M-   1 00 f7 ff 00              --- dx   -9 dy   -1 wh  +0
+   322    3.475   4 M-   1 00 f9 00 00              --- dx   -7 dy   +0 wh  +0
+   323    3.485   4 M-   1 00 fc 00 00              --- dx   -4 dy   +0 wh  +0
+   324    3.490   4 M-   1 00 fd 01 00              --- dx   -3 dy   +1 wh  +0
+   325    3.500   4 M-   1 00 fe 02 00              --- dx   -2 dy   +2 wh  +0
+   326    3.510   4 M-   1 00 fe 03 00              --- dx   -2 dy   +3 wh  +0
+   327    3.515   4 M-   1 00 00 02 00              --- dx   +0 dy   +2 wh  +0
+   328    3.525   4 M-   1 00 00 02 00              --- dx   +0 dy   +2 wh  +0
+   329    3.530   4 M-   1 00 00 03 00              --- dx   +0 dy   +3 wh  +0
+   330    3.540   4 M-   1 00 00 03 00              --- dx   +0 dy   +3 wh  +0
+   331    3.550   4 M-   1 00 00 03 00              --- dx   +0 dy   +3 wh  +0
+   332    3.555   4 M-   1 01 01 04 00              L-- dx   +1 dy   +4 wh  +0
+   333    3.565   4 M-   1 01 03 03 00              L-- dx   +3 dy   +3 wh  +0
+   334    3.570   4 M-   1 01 06 03 00              L-- dx   +6 dy   +3 wh  +0
+   335    3.580   4 M-   1 01 06 03 00              L-- dx   +6 dy   +3 wh  +0
+   336    3.590   4 M-   1 01 08 03 00              L-- dx   +8 dy   +3 wh  +0
+   337    3.595   4 M-   1 01 0a 03 00              L-- dx  +10 dy   +3 wh  +0
+   338    3.605   4 M-   1 01 0b 02 00              L-- dx  +11 dy   +2 wh  +0
+   339    3.610   4 M-   1 01 0d 02 00              L-- dx  +13 dy   +2 wh  +0
+   340    3.620   4 M-   1 01 0d 03 00              L-- dx  +13 dy   +3 wh  +0
+   341    3.630   4 M-   1 01 0f 03 00              L-- dx  +15 dy   +3 wh  +0
+   342    3.635   4 M-   1 01 11 03 00              L-- dx  +17 dy   +3 wh  +0
+   343    3.645   4 M-   1 01 10 03 00              L-- dx  +16 dy   +3 wh  +0
+   344    3.650   4 M-   1 01 11 05 00              L-- dx  +17 dy   +5 wh  +0
+   345    3.660   4 M-   1 01 0f 03 00              L-- dx  +15 dy   +3 wh  +0
+   346    3.670   4 M-   1 01 0e 05 00              L-- dx  +14 dy   +5 wh  +0
+   347    3.680   4 M-   1 01 0c 03 00              L-- dx  +12 dy   +3 wh  +0
+   348    3.685   4 M-   1 01 0a 03 00              L-- dx  +10 dy   +3 wh  +0
+   349    3.695   4 M-   1 01 06 03 00              L-- dx   +6 dy   +3 wh  +0
+   350    3.700   4 M-   1 01 05 03 00              L-- dx   +5 dy   +3 wh  +0
+   351    3.710   4 M-   1 01 03 02 00              L-- dx   +3 dy   +2 wh  +0
+   352    3.720   4 M-   1 01 02 00 00              L-- dx   +2 dy   +0 wh  +0
+   353    3.725   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   354    3.780   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   355    3.840   4 M-   1 01 00 00 00              L-- dx   +0 dy   +0 wh  +0
+   356    3.870   4 M-   1 01 00 01 00              L-- dx   +0 dy   +1 wh  +0
+   357    3.880   4 M-   1 01 fe 01 00              L-- dx   -2 dy   +1 wh  +0
+   358    3.885   4 M-   1 01 fa 03 00              L-- dx   -6 dy   +3 wh  +0
+   359    3.895   4 M-   1 01 fa 02 00              L-- dx   -6 dy   +2 wh  +0
+   360    3.900   4 M-   1 01 fd 01 00              L-- dx   -3 dy   +1 wh  +0
+   361    3.910   4 M-   1 01 ff 01 00              L-- dx   -1 dy   +1 wh  +0
+   362    3.920   4 M-   1 01 00 fe 00              L-- dx   +0 dy   -2 wh  +0
+   363    3.925   4 M-   1 01 02 fc 00              L-- dx   +2 dy   -4 wh  +0
+   364    3.935   4 M-   1 01 05 f9 00              L-- dx   +5 dy   -7 wh  +0
+   365    3.940   4 M-   1 01 06 f7 00              L-- dx   +6 dy   -9 wh  +0
+   366    3.950   4 M-   1 01 08 f6 00              L-- dx   +8 dy  -10 wh  +0
+   367    3.960   4 M-   1 01 08 f4 00              L-- dx   +8 dy  -12 wh  +0
+   368    3.970   4 M-   1 01 07 f2 00              L-- dx   +7 dy  -14 wh  +0
+   369    3.975   4 M-   1 01 05 f1 00              L-- dx   +5 dy  -15 wh  +0
+   370    3.985   4 M-   1 01 02 ef 00              L-- dx   +2 dy  -17 wh  +0
+   371    3.990   4 M-   1 00 01 f3 00              --- dx   +1 dy  -13 wh  +0
+   372    4.000   4 M-   1 00 00 f6 00              --- dx   +0 dy  -10 wh  +0
+   373    4.010   4 M-   1 00 ff f7 00              --- dx   -1 dy   -9 wh  +0
+   374    4.015   4 M-   1 00 00 f8 00              --- dx   +0 dy   -8 wh  +0
+   375    4.025   4 M-   1 00 ff f9 00              --- dx   -1 dy   -7 wh  +0
+   376    4.030   4 M-   1 00 00 fc 00              --- dx   +0 dy   -4 wh  +0
+   377    4.040   4 M-   1 00 00 fb 00              --- dx   +0 dy   -5 wh  +0
+   378    4.050   4 M-   1 00 00 fd 00              --- dx   +0 dy   -3 wh  +0
+   379    4.055   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+   380    4.240   4 M-   1 00 00 01 00              --- dx   +0 dy   +1 wh  +0
+   381    4.260   4 M-   1 00 ff 01 00              --- dx   -1 dy   +1 wh  +0
+   382    4.265   4 M-   1 00 fd 03 00              --- dx   -3 dy   +3 wh  +0
+   383    4.275   4 M-   1 00 fc 02 00              --- dx   -4 dy   +2 wh  +0
+   384    4.280   4 M-   1 00 fc 00 00              --- dx   -4 dy   +0 wh  +0
+   385    4.280   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   386    4.290   4 M-   1 00 f8 00 00              --- dx   -8 dy   +0 wh  +0
+   387    4.300   4 M-   1 00 f4 00 00              --- dx  -12 dy   +0 wh  +0
+   388    4.305   4 M-   1 00 f1 02 00              --- dx  -15 dy   +2 wh  +0
+   389    4.315   4 M-   1 00 ee 01 00              --- dx  -18 dy   +1 wh  +0
+   390    4.320   4 M-   1 00 ee 02 00              --- dx  -18 dy   +2 wh  +0
+   391    4.330   4 M-   1 00 ed 02 00              --- dx  -19 dy   +2 wh  +0
+   392    4.340   4 M-   1 00 ed 04 00              --- dx  -19 dy   +4 wh  +0
+   393    4.345   4 M-   1 00 ee 04 00              --- dx  -18 dy   +4 wh  +0
+   394    4.355   4 M-   1 00 ee 05 00              --- dx  -18 dy   +5 wh  +0
+   395    4.360   4 M-   1 00 ee 06 00              --- dx  -18 dy   +6 wh  +0
+   396    4.370   4 M-   1 00 ed 06 00              --- dx  -19 dy   +6 wh  +0
+   397    4.380   4 M-   1 00 ee 06 00              --- dx  -18 dy   +6 wh  +0
+   398    4.385   4 M-   1 00 ee 05 00              --- dx  -18 dy   +5 wh  +0
+   399    4.395   4 M-   1 00 ef 06 00              --- dx  -17 dy   +6 wh  +0
+   400    4.400   4 M-   1 00 f0 06 00              --- dx  -16 dy   +6 wh  +0
+   401    4.410   4 M-   1 00 f1 06 00              --- dx  -15 dy   +6 wh  +0
+   402    4.420   4 M-   1 00 f4 06 00              --- dx  -12 dy   +6 wh  +0
+   403    4.425   4 M-   1 00 f3 08 00              --- dx  -13 dy   +8 wh  +0
+   404    4.435   4 M-   1 00 f6 07 00              --- dx  -10 dy   +7 wh  +0
+   405    4.440   4 M-   1 00 f8 08 00              --- dx   -8 dy   +8 wh  +0
+   406    4.450   4 M-   1 00 fb 09 00              --- dx   -5 dy   +9 wh  +0
+   407    4.460   4 M-   1 00 ff 09 00              --- dx   -1 dy   +9 wh  +0
+   408    4.465   4 M-   1 00 00 08 00              --- dx   +0 dy   +8 wh  +0
+   409    4.475   4 M-   1 00 01 0b 00              --- dx   +1 dy  +11 wh  +0
+   410    4.480   4 M-   1 00 06 0b 00              --- dx   +6 dy  +11 wh  +0
+   411    4.490   4 M-   1 00 07 0a 00              --- dx   +7 dy  +10 wh  +0
+   412    4.500   4 M-   1 00 0b 0c 00              --- dx  +11 dy  +12 wh  +0
+   413    4.505   4 M-   1 00 0b 0b 00              --- dx  +11 dy  +11 wh  +0
+   414    4.515   4 M-   1 00 0d 0d 00              --- dx  +13 dy  +13 wh  +0
+   415    4.520   4 M-   1 00 0c 0b 00              --- dx  +12 dy  +11 wh  +0
+   416    4.530   4 M-   1 00 0e 0c 00              --- dx  +14 dy  +12 wh  +0
+   417    4.540   4 M-   1 00 0e 0c 00              --- dx  +14 dy  +12 wh  +0
+   418    4.545   4 M-   1 00 0e 0b 00              --- dx  +14 dy  +11 wh  +0
+   419    4.555   4 M-   1 00 10 0b 00              --- dx  +16 dy  +11 wh  +0
+   420    4.565   4 M-   1 00 11 0b 00              --- dx  +17 dy  +11 wh  +0
+   421    4.570   4 M-   1 00 10 0b 00              --- dx  +16 dy  +11 wh  +0
+   422    4.580   4 M-   1 00 11 09 00              --- dx  +17 dy   +9 wh  +0
+   423    4.590   4 M-   1 00 0e 06 00              --- dx  +14 dy   +6 wh  +0
+   424    4.595   4 M-   1 00 0d 05 00              --- dx  +13 dy   +5 wh  +0
+   425    4.605   4 M-   1 00 0c 06 00              --- dx  +12 dy   +6 wh  +0
+   426    4.610   4 M-   1 00 09 04 00              --- dx   +9 dy   +4 wh  +0
+   427    4.620   4 M-   1 00 07 04 00              --- dx   +7 dy   +4 wh  +0
+   428    4.630   4 M-   1 00 06 04 00              --- dx   +6 dy   +4 wh  +0
+   429    4.635   4 M-   1 00 04 03 00              --- dx   +4 dy   +3 wh  +0
+   430    4.645   4 M-   1 00 02 02 00              --- dx   +2 dy   +2 wh  +0
+   431    4.650   4 M-   1 00 02 02 00              --- dx   +2 dy   +2 wh  +0
+   432    4.660   4 M-   1 01 02 03 00              L-- dx   +2 dy   +3 wh  +0
+   433    4.670   4 M-   1 01 00 02 00              L-- dx   +0 dy   +2 wh  +0
+   434    4.675   4 M-   1 01 00 01 00              L-- dx   +0 dy   +1 wh  +0
+   435    4.685   4 M-   1 01 00 01 00              L-- dx   +0 dy   +1 wh  +0
+   436    4.690   4 M-   1 01 00 01 00              L-- dx   +0 dy   +1 wh  +0
+   437    4.700   4 M-   1 01 ff 00 00              L-- dx   -1 dy   +0 wh  +0
+   438    4.715   4 M-   1 01 fc fe 00              L-- dx   -4 dy   -2 wh  +0
+   439    4.725   4 M-   1 01 f7 fe 00              L-- dx   -9 dy   -2 wh  +0
+   440    4.730   4 M-   1 01 f4 fd 00              L-- dx  -12 dy   -3 wh  +0
+   441    4.740   4 M-   1 01 f4 fc 00              L-- dx  -12 dy   -4 wh  +0
+   442    4.750   4 M-   1 01 f3 fc 00              L-- dx  -13 dy   -4 wh  +0
+   443    4.755   4 M-   1 01 f2 fb 00              L-- dx  -14 dy   -5 wh  +0
+   444    4.765   4 M-   1 01 f2 fa 00              L-- dx  -14 dy   -6 wh  +0
+   445    4.770   4 M-   1 01 ef fa 00              L-- dx  -17 dy   -6 wh  +0
+   446    4.780   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   447    4.780   4 M-   1 01 ed fa 00              L-- dx  -19 dy   -6 wh  +0
+   448    4.790   4 M-   1 01 ec fa 00              L-- dx  -20 dy   -6 wh  +0
+   449    4.795   4 M-   1 01 eb f9 00              L-- dx  -21 dy   -7 wh  +0
+   450    4.805   4 M-   1 01 ec f8 00              L-- dx  -20 dy   -8 wh  +0
+   451    4.810   4 M-   1 01 ed f6 00              L-- dx  -19 dy  -10 wh  +0
+   452    4.820   4 M-   1 01 ee f5 00              L-- dx  -18 dy  -11 wh  +0
+   453    4.830   4 M-   1 01 f0 f4 00              L-- dx  -16 dy  -12 wh  +0
+   454    4.840   4 M-   1 01 f1 f3 00              L-- dx  -15 dy  -13 wh  +0
+   455    4.845   4 M-   1 00 f1 f3 00              --- dx  -15 dy  -13 wh  +0
+   456    4.855   4 M-   1 00 f2 f3 00              --- dx  -14 dy  -13 wh  +0
+   457    4.860   4 M-   1 00 f4 f3 00              --- dx  -12 dy  -13 wh  +0
+   458    4.870   4 M-   1 00 f5 f6 00              --- dx  -11 dy  -10 wh  +0
+   459    4.880   4 M-   1 00 f5 f4 00              --- dx  -11 dy  -12 wh  +0
+   460    4.885   4 M-   1 00 f7 f6 00              --- dx   -9 dy  -10 wh  +0
+   461    4.895   4 M-   1 00 fa f7 00              --- dx   -6 dy   -9 wh  +0
+   462    4.900   4 M-   1 00 fa f8 00              --- dx   -6 dy   -8 wh  +0
+   463    4.910   4 M-   1 00 fc fa 00              --- dx   -4 dy   -6 wh  +0
+   464    4.920   4 M-   1 00 fd fa 00              --- dx   -3 dy   -6 wh  +0
+   465    4.925   4 M-   1 00 ff fd 00              --- dx   -1 dy   -3 wh  +0
+   466    4.935   4 M-   1 00 00 fd 00              --- dx   +0 dy   -3 wh  +0
+   467    4.940   4 M-   1 00 00 fd 00              --- dx   +0 dy   -3 wh  +0
+   468    4.950   4 M-   1 00 00 fe 00              --- dx   +0 dy   -2 wh  +0
+   469    4.960   4 M-   1 00 01 fd 00              --- dx   +1 dy   -3 wh  +0
+   470    4.965   4 M-   1 00 01 fd 00              --- dx   +1 dy   -3 wh  +0
+   471    4.975   4 M-   1 00 02 fc 00              --- dx   +2 dy   -4 wh  +0
+   472    4.980   4 M-   1 00 02 fd 00              --- dx   +2 dy   -3 wh  +0
+   473    4.990   4 M-   1 00 04 fb 00              --- dx   +4 dy   -5 wh  +0
+   474    5.000   4 M-   1 00 05 fc 00              --- dx   +5 dy   -4 wh  +0
+   475    5.005   4 M-   1 00 06 fb 00              --- dx   +6 dy   -5 wh  +0
+   476    5.015   4 M-   1 00 08 f9 00              --- dx   +8 dy   -7 wh  +0
+   477    5.020   4 M-   1 00 08 fa 00              --- dx   +8 dy   -6 wh  +0
+   478    5.030   4 M-   1 00 0a fa 00              --- dx  +10 dy   -6 wh  +0
+   479    5.040   4 M-   1 00 09 fa 00              --- dx   +9 dy   -6 wh  +0
+   480    5.045   4 M-   1 01 0b f9 00              L-- dx  +11 dy   -7 wh  +0
+   481    5.055   4 M-   1 01 0c fb 00              L-- dx  +12 dy   -5 wh  +0
+   482    5.060   4 M-   1 01 0d fa 00              L-- dx  +13 dy   -6 wh  +0
+   483    5.070   4 M-   1 01 0d fb 00              L-- dx  +13 dy   -5 wh  +0
+   484    5.080   4 M-   1 01 0e fb 00              L-- dx  +14 dy   -5 wh  +0
+   485    5.085   4 M-   1 01 12 fb 00              L-- dx  +18 dy   -5 wh  +0
+   486    5.095   4 M-   1 01 11 fd 00              L-- dx  +17 dy   -3 wh  +0
+   487    5.100   4 M-   1 01 10 fe 00              L-- dx  +16 dy   -2 wh  +0
+   488    5.110   4 M-   1 01 0e fd 00              L-- dx  +14 dy   -3 wh  +0
+   489    5.120   4 M-   1 01 0c fe 00              L-- dx  +12 dy   -2 wh  +0
+   490    5.130   4 M-   1 01 0b fd 00              L-- dx  +11 dy   -3 wh  +0
+   491    5.135   4 M-   1 01 08 fe 00              L-- dx   +8 dy   -2 wh  +0
+   492    5.145   4 M-   1 01 06 ff 00              L-- dx   +6 dy   -1 wh  +0
+   493    5.150   4 M-   1 00 05 fe 00              --- dx   +5 dy   -2 wh  +0
+   494    5.160   4 M-   1 00 01 ff 00              --- dx   +1 dy   -1 wh  +0
+   495    5.170   4 M-   1 00 01 00 00              --- dx   +1 dy   +0 wh  +0
+   496    5.255   4 M-   1 01 00 00 00              L-- dx   +0 dy   +0 wh  +0
+   497    5.280   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   498    5.350   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   499    5.460   4 M-   1 01 00 00 00              L-- dx   +0 dy   +0 wh  +0
+   500    5.585   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   501    5.780   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   502    6.160   4 M-   1 08 00 00 00              --- dx   +0 dy   +0 wh  +0
+   503    6.245   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   504    6.280   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   505    6.295   4 M-   1 08 00 00 00              --- dx   +0 dy   +0 wh  +0
+   506    6.410   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   507    6.455   4 M-   1 08 00 00 00              --- dx   +0 dy   +0 wh  +0
+   508    6.560   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   509    6.665   4 M-   1 08 00 00 00              --- dx   +0 dy   +0 wh  +0
+   510    6.755   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   511    6.780   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   512    6.835   4 M-   1 08 00 00 00              --- dx   +0 dy   +0 wh  +0
+   513    6.940   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   514    7.280   4 M-   1 10 00 00 00              --- dx   +0 dy   +0 wh  +0
+   515    7.280   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   516    7.335   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   517    7.445   4 M-   1 10 00 00 00              --- dx   +0 dy   +0 wh  +0
+   518    7.495   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   519    7.590   4 M-   1 10 00 00 00              --- dx   +0 dy   +0 wh  +0
+   520    7.655   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   521    7.780   4 M-   1 00 06 02 00              --- dx   +6 dy   +2 wh  +0
+   522    7.780   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   523    7.785   4 M-   1 00 09 02 00              --- dx   +9 dy   +2 wh  +0
+   524    7.795   4 M-   1 00 07 02 00              --- dx   +7 dy   +2 wh  +0
+   525    7.800   4 M-   1 00 06 02 00              --- dx   +6 dy   +2 wh  +0
+   526    7.810   4 M-   1 00 05 00 00              --- dx   +5 dy   +0 wh  +0
+   527    7.820   4 M-   1 00 03 00 00              --- dx   +3 dy   +0 wh  +0
+   528    7.825   4 M-   1 00 06 ff 00              --- dx   +6 dy   -1 wh  +0
+   529    7.835   4 M-   1 00 05 fe 00              --- dx   +5 dy   -2 wh  +0
+   530    7.840   4 M-   1 00 06 fe 00              --- dx   +6 dy   -2 wh  +0
+   531    7.850   4 M-   1 00 09 fd 00              --- dx   +9 dy   -3 wh  +0
+   532    7.860   4 M-   1 00 07 fe 00              --- dx   +7 dy   -2 wh  +0
+   533    7.865   4 M-   1 00 08 ff 00              --- dx   +8 dy   -1 wh  +0
+   534    7.875   4 M-   1 00 07 fe 00              --- dx   +7 dy   -2 wh  +0
+   535    7.880   4 M-   1 00 06 fe 00              --- dx   +6 dy   -2 wh  +0
+   536    7.890   4 M-   1 00 03 ff 00              --- dx   +3 dy   -1 wh  +0
+   537    7.900   4 M-   1 00 02 fe 00              --- dx   +2 dy   -2 wh  +0
+   538    7.940   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+   539    7.955   4 M-   1 00 00 fe 00              --- dx   +0 dy   -2 wh  +0
+   540    7.960   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+   541    7.970   4 M-   1 00 00 fe 00              --- dx   +0 dy   -2 wh  +0
+   542    7.980   4 M-   1 00 00 fe 00              --- dx   +0 dy   -2 wh  +0
+   543    7.985   4 M-   1 04 00 ff 00              --M dx   +0 dy   -1 wh  +0
+   544    7.995   4 M-   1 04 00 fe 00              --M dx   +0 dy   -2 wh  +0
+   545    8.000   4 M-   1 04 00 fe 00              --M dx   +0 dy   -2 wh  +0
+   546    8.010   4 M-   1 04 00 fe 00              --M dx   +0 dy   -2 wh  +0
+   547    8.020   4 M-   1 04 ff ff 00              --M dx   -1 dy   -1 wh  +0
+   548    8.030   4 M-   1 04 ff fe 00              --M dx   -1 dy   -2 wh  +0
+   549    8.035   4 M-   1 04 fe 00 00              --M dx   -2 dy   +0 wh  +0
+   550    8.045   4 M-   1 04 ff ff 00              --M dx   -1 dy   -1 wh  +0
+   551    8.050   4 M-   1 04 00 ff 00              --M dx   +0 dy   -1 wh  +0
+   552    8.070   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   553    8.165   4 M-   1 04 00 00 00              --M dx   +0 dy   +0 wh  +0
+   554    8.230   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   555    8.280   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   556    8.325   4 M-   1 04 00 00 01              --M dx   +0 dy   +0 wh  +1
+   557    8.380   4 M-   1 04 00 00 ff              --M dx   +0 dy   +0 wh  -1
+   558    8.405   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   559    8.480   4 M-   1 00 00 00 01              --- dx   +0 dy   +0 wh  +1
+   560    8.630   4 M-   1 02 00 00 00              -R- dx   +0 dy   +0 wh  +0
+   561    8.735   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   562    8.780   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   563    8.830   4 M-   1 02 00 00 00              -R- dx   +0 dy   +0 wh  +0
+   564    8.905   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   565    8.995   4 M-   1 02 00 00 00              -R- dx   +0 dy   +0 wh  +0
+   566    9.120   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   567    9.195   4 M-   1 00 00 01 00              --- dx   +0 dy   +1 wh  +0
+   568    9.205   4 M-   1 00 00 02 00              --- dx   +0 dy   +2 wh  +0
+   569    9.210   4 M-   1 00 00 02 00              --- dx   +0 dy   +2 wh  +0
+   570    9.220   4 M-   1 00 00 01 00              --- dx   +0 dy   +1 wh  +0
+   571    9.230   4 M-   1 00 01 01 00              --- dx   +1 dy   +1 wh  +0
+   572    9.235   4 M-   1 00 01 02 00              --- dx   +1 dy   +2 wh  +0
+   573    9.245   4 M-   1 00 03 01 00              --- dx   +3 dy   +1 wh  +0
+   574    9.250   4 M-   1 00 03 01 00              --- dx   +3 dy   +1 wh  +0
+   575    9.260   4 M-   1 00 03 00 00              --- dx   +3 dy   +0 wh  +0
+   576    9.270   4 M-   1 00 03 01 00              --- dx   +3 dy   +1 wh  +0
+   577    9.275   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   578    9.275   4 M-   1 00 01 00 00              --- dx   +1 dy   +0 wh  +0
+   579    9.285   4 M-   1 00 01 01 00              --- dx   +1 dy   +1 wh  +0
+   580    9.300   4 M-   1 00 01 00 00              --- dx   +1 dy   +0 wh  +0
+   581    9.780   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   582    9.815   4 M-   1 04 00 00 00              --M dx   +0 dy   +0 wh  +0
+   583    9.915   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   584   10.275   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   585   10.475   4 M-   1 01 00 00 00              L-- dx   +0 dy   +0 wh  +0
+   586   10.550   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   587   10.615   4 M-   1 01 00 00 00              L-- dx   +0 dy   +0 wh  +0
+   588   10.720   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   589   10.780   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   590   11.015   4 M-   1 02 00 00 00              -R- dx   +0 dy   +0 wh  +0
+   591   11.115   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   592   11.275   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   593   11.340   4 M-   1 02 00 00 00              -R- dx   +0 dy   +0 wh  +0
+   594   11.450   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   595   11.780   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   596   11.960   4 M-   1 01 00 00 00              L-- dx   +0 dy   +0 wh  +0
+   597   12.040   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   598   12.090   4 M-   1 01 00 00 00              L-- dx   +0 dy   +0 wh  +0
+   599   12.195   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   600   12.275   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   601   12.485   4 M-   1 02 00 00 00              -R- dx   +0 dy   +0 wh  +0
+   602   12.545   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   603   12.610   4 M-   1 02 00 00 00              -R- dx   +0 dy   +0 wh  +0
+   604   12.695   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   605   12.780   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   606   13.275   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   607   13.335   4 M-   1 04 00 00 00              --M dx   +0 dy   +0 wh  +0
+   608   13.435   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   609   13.505   4 M-   1 04 00 00 00              --M dx   +0 dy   +0 wh  +0
+   610   13.580   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   611   13.780   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   612   13.875   4 M-   1 00 01 01 00              --- dx   +1 dy   +1 wh  +0
+   613   13.885   4 M-   1 00 00 02 00              --- dx   +0 dy   +2 wh  +0
+   614   13.895   4 M-   1 00 00 01 00              --- dx   +0 dy   +1 wh  +0
+   615   13.910   4 M-   1 00 ff 00 00              --- dx   -1 dy   +0 wh  +0
+   616   13.915   4 M-   1 00 fe ff 00              --- dx   -2 dy   -1 wh  +0
+   617   13.925   4 M-   1 00 fd fe 00              --- dx   -3 dy   -2 wh  +0
+   618   13.935   4 M-   1 00 fc fe 00              --- dx   -4 dy   -2 wh  +0
+   619   13.940   4 M-   1 00 fb fc 00              --- dx   -5 dy   -4 wh  +0
+   620   13.950   4 M-   1 00 fd fd 00              --- dx   -3 dy   -3 wh  +0
+   621   13.955   4 M-   1 00 ff fe 00              --- dx   -1 dy   -2 wh  +0
+   622   13.965   4 M-   1 00 00 fd 00              --- dx   +0 dy   -3 wh  +0
+   623   13.975   4 M-   1 00 00 fd 00              --- dx   +0 dy   -3 wh  +0
+   624   13.980   4 M-   1 00 00 fd 00              --- dx   +0 dy   -3 wh  +0
+   625   13.990   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+   626   13.995   4 M-   1 00 ff fe 00              --- dx   -1 dy   -2 wh  +0
+   627   14.005   4 M-   1 00 ff ff 00              --- dx   -1 dy   -1 wh  +0
+   628   14.015   4 M-   1 00 fe ff 00              --- dx   -2 dy   -1 wh  +0
+   629   14.020   4 M-   1 00 ff 00 00              --- dx   -1 dy   +0 wh  +0
+   630   14.030   4 M-   1 00 fd ff 00              --- dx   -3 dy   -1 wh  +0
+   631   14.035   4 M-   1 00 fe 00 00              --- dx   -2 dy   +0 wh  +0
+   632   14.045   4 M-   1 00 ff ff 00              --- dx   -1 dy   -1 wh  +0
+   633   14.055   4 M-   1 00 ff 00 00              --- dx   -1 dy   +0 wh  +0
+   634   14.070   4 M-   1 00 ff 00 00              --- dx   -1 dy   +0 wh  +0
+   635   14.075   4 M-   1 00 00 01 00              --- dx   +0 dy   +1 wh  +0
+   636   14.085   4 M-   1 00 ff 02 00              --- dx   -1 dy   +2 wh  +0
+   637   14.095   4 M-   1 00 ff 04 00              --- dx   -1 dy   +4 wh  +0
+   638   14.105   4 M-   1 00 ff 03 00              --- dx   -1 dy   +3 wh  +0
+   639   14.110   4 M-   1 00 00 04 00              --- dx   +0 dy   +4 wh  +0
+   640   14.120   4 M-   1 00 00 04 00              --- dx   +0 dy   +4 wh  +0
+   641   14.125   4 M-   1 00 03 05 00              --- dx   +3 dy   +5 wh  +0
+   642   14.135   4 M-   1 00 06 04 00              --- dx   +6 dy   +4 wh  +0
+   643   14.145   4 M-   1 00 0c 06 00              --- dx  +12 dy   +6 wh  +0
+   644   14.150   4 M-   1 00 0e 08 00              --- dx  +14 dy   +8 wh  +0
+   645   14.160   4 M-   1 00 13 07 00              --- dx  +19 dy   +7 wh  +0
+   646   14.165   4 M-   1 00 17 07 00              --- dx  +23 dy   +7 wh  +0
+   647   14.175   4 M-   1 00 19 08 00              --- dx  +25 dy   +8 wh  +0
+   648   14.185   4 M-   1 00 19 05 00              --- dx  +25 dy   +5 wh  +0
+   649   14.190   4 M-   1 00 1b 06 00              --- dx  +27 dy   +6 wh  +0
+   650   14.200   4 M-   1 00 1c 07 00              --- dx  +28 dy   +7 wh  +0
+   651   14.205   4 M-   1 00 1b 05 00              --- dx  +27 dy   +5 wh  +0
+   652   14.215   4 M-   1 00 16 04 00              --- dx  +22 dy   +4 wh  +0
+   653   14.225   4 M-   1 00 0c 03 00              --- dx  +12 dy   +3 wh  +0
+   654   14.230   4 M-   1 00 05 02 00              --- dx   +5 dy   +2 wh  +0
+   655   14.240   4 M-   1 00 01 01 00              --- dx   +1 dy   +1 wh  +0
+   656   14.245   4 M-   1 00 01 02 00              --- dx   +1 dy   +2 wh  +0
+   657   14.255   4 M-   1 00 00 03 00              --- dx   +0 dy   +3 wh  +0
+   658   14.265   4 M-   1 00 00 03 00              --- dx   +0 dy   +3 wh  +0
+   659   14.270   4 M-   1 00 00 02 00              --- dx   +0 dy   +2 wh  +0
+   660   14.275   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   661   14.280   4 M-   1 00 ff 02 00              --- dx   -1 dy   +2 wh  +0
+   662   14.285   4 M-   1 00 fd 02 00              --- dx   -3 dy   +2 wh  +0
+   663   14.295   4 M-   1 00 fc 01 00              --- dx   -4 dy   +1 wh  +0
+   664   14.305   4 M-   1 00 fd 02 00              --- dx   -3 dy   +2 wh  +0
+   665   14.310   4 M-   1 00 f8 02 00              --- dx   -8 dy   +2 wh  +0
+   666   14.320   4 M-   1 00 f5 01 00              --- dx  -11 dy   +1 wh  +0
+   667   14.325   4 M-   1 00 f2 02 00              --- dx  -14 dy   +2 wh  +0
+   668   14.335   4 M-   1 00 ef 02 00              --- dx  -17 dy   +2 wh  +0
+   669   14.345   4 M-   1 00 ec 03 00              --- dx  -20 dy   +3 wh  +0
+   670   14.350   4 M-   1 00 ec 02 00              --- dx  -20 dy   +2 wh  +0
+   671   14.360   4 M-   1 00 eb 03 00              --- dx  -21 dy   +3 wh  +0
+   672   14.365   4 M-   1 00 ec 04 00              --- dx  -20 dy   +4 wh  +0
+   673   14.375   4 M-   1 00 ee 04 00              --- dx  -18 dy   +4 wh  +0
+   674   14.385   4 M-   1 01 f1 03 00              L-- dx  -15 dy   +3 wh  +0
+   675   14.390   4 M-   1 01 f5 03 00              L-- dx  -11 dy   +3 wh  +0
+   676   14.400   4 M-   1 01 f7 03 00              L-- dx   -9 dy   +3 wh  +0
+   677   14.410   4 M-   1 01 fa 01 00              L-- dx   -6 dy   +1 wh  +0
+   678   14.415   4 M-   1 01 fd 01 00              L-- dx   -3 dy   +1 wh  +0
+   679   14.425   4 M-   1 01 ff 00 00              L-- dx   -1 dy   +0 wh  +0
+   680   14.435   4 M-   1 01 ff 00 00              L-- dx   -1 dy   +0 wh  +0
+   681   14.450   4 M-   1 01 00 ff 00              L-- dx   +0 dy   -1 wh  +0
+   682   14.455   4 M-   1 01 00 ff 00              L-- dx   +0 dy   -1 wh  +0
+   683   14.490   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   684   14.555   4 M-   1 01 00 00 00              L-- dx   +0 dy   +0 wh  +0
+   685   14.645   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   686   14.725   4 M-   1 01 00 00 00              L-- dx   +0 dy   +0 wh  +0
+   687   14.745   4 M-   1 01 00 02 00              L-- dx   +0 dy   +2 wh  +0
+   688   14.755   4 M-   1 01 04 04 00              L-- dx   +4 dy   +4 wh  +0
+   689   14.765   4 M-   1 01 06 06 00              L-- dx   +6 dy   +6 wh  +0
+   690   14.770   4 M-   1 01 06 04 00              L-- dx   +6 dy   +4 wh  +0
+   691   14.780   4 M-   1 01 06 05 00              L-- dx   +6 dy   +5 wh  +0
+   692   14.780   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   693   14.785   4 M-   1 01 06 04 00              L-- dx   +6 dy   +4 wh  +0
+   694   14.795   4 M-   1 01 06 06 00              L-- dx   +6 dy   +6 wh  +0
+   695   14.805   4 M-   1 01 06 04 00              L-- dx   +6 dy   +4 wh  +0
+   696   14.810   4 M-   1 00 05 05 00              --- dx   +5 dy   +5 wh  +0
+   697   14.820   4 M-   1 00 07 05 00              --- dx   +7 dy   +5 wh  +0
+   698   14.825   4 M-   1 00 06 05 00              --- dx   +6 dy   +5 wh  +0
+   699   14.835   4 M-   1 00 06 03 00              --- dx   +6 dy   +3 wh  +0
+   700   14.845   4 M-   1 00 06 04 00              --- dx   +6 dy   +4 wh  +0
+   701   14.850   4 M-   1 00 06 03 00              --- dx   +6 dy   +3 wh  +0
+   702   14.860   4 M-   1 00 05 02 00              --- dx   +5 dy   +2 wh  +0
+   703   14.865   4 M-   1 00 07 02 00              --- dx   +7 dy   +2 wh  +0
+   704   14.875   4 M-   1 00 09 03 00              --- dx   +9 dy   +3 wh  +0
+   705   14.885   4 M-   1 00 09 02 00              --- dx   +9 dy   +2 wh  +0
+   706   14.890   4 M-   1 00 08 02 00              --- dx   +8 dy   +2 wh  +0
+   707   14.900   4 M-   1 00 08 01 00              --- dx   +8 dy   +1 wh  +0
+   708   14.905   4 M-   1 00 07 00 00              --- dx   +7 dy   +0 wh  +0
+   709   14.915   4 M-   1 00 06 01 00              --- dx   +6 dy   +1 wh  +0
+   710   14.925   4 M-   1 00 06 01 00              --- dx   +6 dy   +1 wh  +0
+   711   14.930   4 M-   1 00 05 01 00              --- dx   +5 dy   +1 wh  +0
+   712   14.940   4 M-   1 00 03 00 00              --- dx   +3 dy   +0 wh  +0
+   713   14.945   4 M-   1 00 02 01 00              --- dx   +2 dy   +1 wh  +0
+   714   14.955   4 M-   1 00 02 00 00              --- dx   +2 dy   +0 wh  +0
+   715   14.965   4 M-   1 00 01 00 00              --- dx   +1 dy   +0 wh  +0
+   716   14.975   4 M-   1 00 01 ff 00              --- dx   +1 dy   -1 wh  +0
+   717   14.980   4 M-   1 01 01 00 00              L-- dx   +1 dy   +0 wh  +0
+   718   14.990   4 M-   1 01 01 ff 00              L-- dx   +1 dy   -1 wh  +0
+   719   14.995   4 M-   1 01 01 ff 00              L-- dx   +1 dy   -1 wh  +0
+   720   15.005   4 M-   1 01 02 fd 00              L-- dx   +2 dy   -3 wh  +0
+   721   15.015   4 M-   1 01 02 fe 00              L-- dx   +2 dy   -2 wh  +0
+   722   15.020   4 M-   1 01 02 ff 00              L-- dx   +2 dy   -1 wh  +0
+   723   15.030   4 M-   1 01 02 fe 00              L-- dx   +2 dy   -2 wh  +0
+   724   15.035   4 M-   1 01 02 fe 00              L-- dx   +2 dy   -2 wh  +0
+   725   15.045   4 M-   1 01 01 ff 00              L-- dx   +1 dy   -1 wh  +0
+   726   15.055   4 M-   1 01 01 fd 00              L-- dx   +1 dy   -3 wh  +0
+   727   15.060   4 M-   1 01 00 ff 00              L-- dx   +0 dy   -1 wh  +0
+   728   15.070   4 M-   1 01 ff fe 00              L-- dx   -1 dy   -2 wh  +0
+   729   15.075   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   730   15.275   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   731   15.780   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   732   16.275   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   733   16.310   4 M-   1 08 00 00 00              --- dx   +0 dy   +0 wh  +0
+   734   16.570   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   735   16.670   4 M-   1 08 00 00 00              --- dx   +0 dy   +0 wh  +0
+   736   16.745   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   737   16.780   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   738   16.795   4 M-   1 08 00 00 00              --- dx   +0 dy   +0 wh  +0
+   739   16.945   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   740   17.155   4 M-   1 10 00 00 00              --- dx   +0 dy   +0 wh  +0
+   741   17.245   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   742   17.275   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   743   17.520   4 M-   1 10 00 00 00              --- dx   +0 dy   +0 wh  +0
+   744   17.625   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   745   17.770   4 M-   1 00 00 01 00              --- dx   +0 dy   +1 wh  +0
+   746   17.780   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   747   17.785   4 M-   1 00 00 01 00              --- dx   +0 dy   +1 wh  +0
+   748   18.275   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   749   18.465   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+   750   18.475   4 M-   1 00 01 ff 00              --- dx   +1 dy   -1 wh  +0
+   751   18.480   4 M-   1 00 02 00 00              --- dx   +2 dy   +0 wh  +0
+   752   18.490   4 M-   1 00 03 01 00              --- dx   +3 dy   +1 wh  +0
+   753   18.500   4 M-   1 00 04 00 00              --- dx   +4 dy   +0 wh  +0
+   754   18.505   4 M-   1 00 03 00 00              --- dx   +3 dy   +0 wh  +0
+   755   18.515   4 M-   1 00 03 01 00              --- dx   +3 dy   +1 wh  +0
+   756   18.520   4 M-   1 00 03 01 00              --- dx   +3 dy   +1 wh  +0
+   757   18.530   4 M-   1 00 03 01 00              --- dx   +3 dy   +1 wh  +0
+   758   18.540   4 M-   1 00 04 01 00              --- dx   +4 dy   +1 wh  +0
+   759   18.545   4 M-   1 00 04 01 00              --- dx   +4 dy   +1 wh  +0
+   760   18.555   4 M-   1 00 06 01 00              --- dx   +6 dy   +1 wh  +0
+   761   18.560   4 M-   1 00 06 02 00              --- dx   +6 dy   +2 wh  +0
+   762   18.570   4 M-   1 00 06 01 00              --- dx   +6 dy   +1 wh  +0
+   763   18.580   4 M-   1 00 06 00 00              --- dx   +6 dy   +0 wh  +0
+   764   18.585   4 M-   1 00 07 01 00              --- dx   +7 dy   +1 wh  +0
+   765   18.595   4 M-   1 00 05 00 00              --- dx   +5 dy   +0 wh  +0
+   766   18.600   4 M-   1 00 05 00 00              --- dx   +5 dy   +0 wh  +0
+   767   18.610   4 M-   1 00 04 00 00              --- dx   +4 dy   +0 wh  +0
+   768   18.620   4 M-   1 00 04 00 00              --- dx   +4 dy   +0 wh  +0
+   769   18.625   4 M-   1 00 02 00 00              --- dx   +2 dy   +0 wh  +0
+   770   18.635   4 M-   1 00 02 ff 00              --- dx   +2 dy   -1 wh  +0
+   771   18.640   4 M-   1 00 01 ff 00              --- dx   +1 dy   -1 wh  +0
+   772   18.650   4 M-   1 00 01 ff 00              --- dx   +1 dy   -1 wh  +0
+   773   18.660   4 M-   1 00 01 ff 00              --- dx   +1 dy   -1 wh  +0
+   774   18.665   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+   775   18.675   4 M-   1 00 01 ff 00              --- dx   +1 dy   -1 wh  +0
+   776   18.680   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+   777   18.690   4 M-   1 00 ff ff 00              --- dx   -1 dy   -1 wh  +0
+   778   18.700   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+   779   18.705   4 M-   1 00 ff 00 00              --- dx   -1 dy   +0 wh  +0
+   780   18.715   4 M-   1 00 fe ff 00              --- dx   -2 dy   -1 wh  +0
+   781   18.725   4 M-   1 00 fe ff 00              --- dx   -2 dy   -1 wh  +0
+   782   18.730   4 M-   1 00 fd ff 00              --- dx   -3 dy   -1 wh  +0
+   783   18.740   4 M-   1 00 fb 00 00              --- dx   -5 dy   +0 wh  +0
+   784   18.750   4 M-   1 00 fa ff 00              --- dx   -6 dy   -1 wh  +0
+   785   18.755   4 M-   1 00 f7 ff 00              --- dx   -9 dy   -1 wh  +0
+   786   18.765   4 M-   1 00 f6 00 00              --- dx  -10 dy   +0 wh  +0
+   787   18.770   4 M-   1 00 f5 ff 00              --- dx  -11 dy   -1 wh  +0
+   788   18.780   4 M-   1 00 f4 01 00              --- dx  -12 dy   +1 wh  +0
+   789   18.780   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   790   18.790   4 M-   1 00 f4 00 00              --- dx  -12 dy   +0 wh  +0
+   791   18.795   4 M-   1 00 f4 01 00              --- dx  -12 dy   +1 wh  +0
+   792   18.805   4 M-   1 00 f5 01 00              --- dx  -11 dy   +1 wh  +0
+   793   18.810   4 M-   1 00 f7 01 00              --- dx   -9 dy   +1 wh  +0
+   794   18.820   4 M-   1 00 f9 02 00              --- dx   -7 dy   +2 wh  +0
+   795   18.830   4 M-   1 00 fb 01 00              --- dx   -5 dy   +1 wh  +0
+   796   18.835   4 M-   1 00 fe 02 00              --- dx   -2 dy   +2 wh  +0
+   797   18.845   4 M-   1 00 01 01 00              --- dx   +1 dy   +1 wh  +0
+   798   18.850   4 M-   1 00 03 02 00              --- dx   +3 dy   +2 wh  +0
+   799   18.860   4 M-   1 00 05 03 00              --- dx   +5 dy   +3 wh  +0
+   800   18.870   4 M-   1 00 06 03 00              --- dx   +6 dy   +3 wh  +0
+   801   18.875   4 M-   1 00 06 03 00              --- dx   +6 dy   +3 wh  +0
+   802   18.885   4 M-   1 00 07 03 00              --- dx   +7 dy   +3 wh  +0
+   803   18.890   4 M-   1 00 05 04 00              --- dx   +5 dy   +4 wh  +0
+   804   18.900   4 M-   1 00 05 03 00              --- dx   +5 dy   +3 wh  +0
+   805   18.910   4 M-   1 00 03 03 00              --- dx   +3 dy   +3 wh  +0
+   806   18.915   4 M-   1 00 03 02 00              --- dx   +3 dy   +2 wh  +0
+   807   18.925   4 M-   1 00 03 03 00              --- dx   +3 dy   +3 wh  +0
+   808   18.930   4 M-   1 00 01 02 00              --- dx   +1 dy   +2 wh  +0
+   809   18.940   4 M-   1 00 02 03 00              --- dx   +2 dy   +3 wh  +0
+   810   18.950   4 M-   1 00 02 03 00              --- dx   +2 dy   +3 wh  +0
+   811   18.955   4 M-   1 00 01 04 00              --- dx   +1 dy   +4 wh  +0
+   812   18.965   4 M-   1 00 03 03 00              --- dx   +3 dy   +3 wh  +0
+   813   18.970   4 M-   1 00 02 04 00              --- dx   +2 dy   +4 wh  +0
+   814   18.980   4 M-   1 00 04 04 00              --- dx   +4 dy   +4 wh  +0
+   815   18.990   4 M-   1 00 05 04 00              --- dx   +5 dy   +4 wh  +0
+   816   19.000   4 M-   1 00 04 03 00              --- dx   +4 dy   +3 wh  +0
+   817   19.005   4 M-   1 00 05 04 00              --- dx   +5 dy   +4 wh  +0
+   818   19.010   4 M-   1 00 04 03 00              --- dx   +4 dy   +3 wh  +0
+   819   19.020   4 M-   1 00 03 03 00              --- dx   +3 dy   +3 wh  +0
+   820   19.030   4 M-   1 00 02 03 00              --- dx   +2 dy   +3 wh  +0
+   821   19.040   4 M-   1 00 01 02 00              --- dx   +1 dy   +2 wh  +0
+   822   19.045   4 M-   1 00 01 03 00              --- dx   +1 dy   +3 wh  +0
+   823   19.055   4 M-   1 00 00 04 00              --- dx   +0 dy   +4 wh  +0
+   824   19.060   4 M-   1 00 ff 02 00              --- dx   -1 dy   +2 wh  +0
+   825   19.070   4 M-   1 00 ff 03 00              --- dx   -1 dy   +3 wh  +0
+   826   19.080   4 M-   1 00 ff 02 00              --- dx   -1 dy   +2 wh  +0
+   827   19.085   4 M-   1 00 fe 02 00              --- dx   -2 dy   +2 wh  +0
+   828   19.095   4 M-   1 00 ff 02 00              --- dx   -1 dy   +2 wh  +0
+   829   19.100   4 M-   1 00 fe 02 00              --- dx   -2 dy   +2 wh  +0
+   830   19.110   4 M-   1 00 fd 01 00              --- dx   -3 dy   +1 wh  +0
+   831   19.120   4 M-   1 00 fe 01 00              --- dx   -2 dy   +1 wh  +0
+   832   19.125   4 M-   1 00 fd 01 00              --- dx   -3 dy   +1 wh  +0
+   833   19.135   4 M-   1 00 fc ff 00              --- dx   -4 dy   -1 wh  +0
+   834   19.140   4 M-   1 00 fa fe 00              --- dx   -6 dy   -2 wh  +0
+   835   19.150   4 M-   1 00 fa fd 00              --- dx   -6 dy   -3 wh  +0
+   836   19.160   4 M-   1 00 f9 fe 00              --- dx   -7 dy   -2 wh  +0
+   837   19.165   4 M-   1 00 fa fc 00              --- dx   -6 dy   -4 wh  +0
+   838   19.175   4 M-   1 00 f9 fc 00              --- dx   -7 dy   -4 wh  +0
+   839   19.180   4 M-   1 00 f9 fc 00              --- dx   -7 dy   -4 wh  +0
+   840   19.190   4 M-   1 00 fa fc 00              --- dx   -6 dy   -4 wh  +0
+   841   19.200   4 M-   1 00 f9 fd 00              --- dx   -7 dy   -3 wh  +0
+   842   19.205   4 M-   1 00 fb fd 00              --- dx   -5 dy   -3 wh  +0
+   843   19.215   4 M-   1 00 fa fd 00              --- dx   -6 dy   -3 wh  +0
+   844   19.220   4 M-   1 00 fd fe 00              --- dx   -3 dy   -2 wh  +0
+   845   19.230   4 M-   1 00 fe fd 00              --- dx   -2 dy   -3 wh  +0
+   846   19.240   4 M-   1 00 ff fe 00              --- dx   -1 dy   -2 wh  +0
+   847   19.245   4 M-   1 00 00 fd 00              --- dx   +0 dy   -3 wh  +0
+   848   19.255   4 M-   1 00 01 fe 00              --- dx   +1 dy   -2 wh  +0
+   849   19.260   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+   850   19.270   4 M-   1 00 00 fe 00              --- dx   +0 dy   -2 wh  +0
+   851   19.275   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   852   19.280   4 M-   1 00 00 fe 00              --- dx   +0 dy   -2 wh  +0
+   853   19.285   4 M-   1 00 ff fe 00              --- dx   -1 dy   -2 wh  +0
+   854   19.295   4 M-   1 00 00 fe 00              --- dx   +0 dy   -2 wh  +0
+   855   19.305   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+   856   19.310   4 M-   1 00 00 fe 00              --- dx   +0 dy   -2 wh  +0
+   857   19.320   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+   858   19.330   4 M-   1 00 01 ff 00              --- dx   +1 dy   -1 wh  +0
+   859   19.335   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+   860   19.770   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   861   19.900   4 M-   1 00 00 fd 00              --- dx   +0 dy   -3 wh  +0
+   862   19.910   4 M-   1 00 03 f8 00              --- dx   +3 dy   -8 wh  +0
+   863   19.915   4 M-   1 00 06 fb 00              --- dx   +6 dy   -5 wh  +0
+   864   19.925   4 M-   1 00 06 fc 00              --- dx   +6 dy   -4 wh  +0
+   865   19.930   4 M-   1 00 0f f9 00              --- dx  +15 dy   -7 wh  +0
+   866   19.940   4 M-   1 00 15 f7 00              --- dx  +21 dy   -9 wh  +0
+   867   19.950   4 M-   1 00 17 f6 00              --- dx  +23 dy  -10 wh  +0
+   868   19.955   4 M-   1 00 17 f5 00              --- dx  +23 dy  -11 wh  +0
+   869   19.965   4 M-   1 00 12 f6 00              --- dx  +18 dy  -10 wh  +0
+   870   19.970   4 M-   1 00 0d f7 00              --- dx  +13 dy   -9 wh  +0
+   871   19.980   4 M-   1 00 07 f7 00              --- dx   +7 dy   -9 wh  +0
+   872   19.990   4 M-   1 00 01 f7 00              --- dx   +1 dy   -9 wh  +0
+   873   19.995   4 M-   1 00 fe f6 00              --- dx   -2 dy  -10 wh  +0
+   874   20.005   4 M-   1 00 fa f6 00              --- dx   -6 dy  -10 wh  +0
+   875   20.010   4 M-   1 00 f7 f6 00              --- dx   -9 dy  -10 wh  +0
+   876   20.020   4 M-   1 00 f5 f5 00              --- dx  -11 dy  -11 wh  +0
+   877   20.030   4 M-   1 00 f4 f5 00              --- dx  -12 dy  -11 wh  +0
+   878   20.035   4 M-   1 00 f3 f7 00              --- dx  -13 dy   -9 wh  +0
+   879   20.045   4 M-   1 00 f4 f7 00              --- dx  -12 dy   -9 wh  +0
+   880   20.050   4 M-   1 00 f4 f9 00              --- dx  -12 dy   -7 wh  +0
+   881   20.060   4 M-   1 00 f7 fc 00              --- dx   -9 dy   -4 wh  +0
+   882   20.070   4 M-   1 00 f7 fb 00              --- dx   -9 dy   -5 wh  +0
+   883   20.075   4 M-   1 00 fa fc 00              --- dx   -6 dy   -4 wh  +0
+   884   20.085   4 M-   1 00 f8 fd 00              --- dx   -8 dy   -3 wh  +0
+   885   20.090   4 M-   1 00 f9 fd 00              --- dx   -7 dy   -3 wh  +0
+   886   20.100   4 M-   1 00 f4 ff 00              --- dx  -12 dy   -1 wh  +0
+   887   20.110   4 M-   1 00 ef 00 00              --- dx  -17 dy   +0 wh  +0
+   888   20.115   4 M-   1 00 ea 00 00              --- dx  -22 dy   +0 wh  +0
+   889   20.125   4 M-   1 00 e5 01 00              --- dx  -27 dy   +1 wh  +0
+   890   20.130   4 M-   1 00 e1 03 00              --- dx  -31 dy   +3 wh  +0
+   891   20.140   4 M-   1 00 de 05 00              --- dx  -34 dy   +5 wh  +0
+   892   20.150   4 M-   1 00 dc 07 00              --- dx  -36 dy   +7 wh  +0
+   893   20.155   4 M-   1 00 dd 09 00              --- dx  -35 dy   +9 wh  +0
+   894   20.165   4 M-   1 00 e0 0a 00              --- dx  -32 dy  +10 wh  +0
+   895   20.175   4 M-   1 00 e5 0b 00              --- dx  -27 dy  +11 wh  +0
+   896   20.180   4 M-   1 00 e8 0b 00              --- dx  -24 dy  +11 wh  +0
+   897   20.190   4 M-   1 00 ed 09 00              --- dx  -19 dy   +9 wh  +0
+   898   20.200   4 M-   1 00 f1 07 00              --- dx  -15 dy   +7 wh  +0
+   899   20.205   4 M-   1 00 f6 08 00              --- dx  -10 dy   +8 wh  +0
+   900   20.215   4 M-   1 00 fa 08 00              --- dx   -6 dy   +8 wh  +0
+   901   20.220   4 M-   1 00 fe 0a 00              --- dx   -2 dy  +10 wh  +0
+   902   20.230   4 M-   1 00 00 0a 00              --- dx   +0 dy  +10 wh  +0
+   903   20.240   4 M-   1 00 03 0d 00              --- dx   +3 dy  +13 wh  +0
+   904   20.245   4 M-   1 00 06 0f 00              --- dx   +6 dy  +15 wh  +0
+   905   20.255   4 M-   1 00 07 0e 00              --- dx   +7 dy  +14 wh  +0
+   906   20.260   4 M-   1 00 0b 10 00              --- dx  +11 dy  +16 wh  +0
+   907   20.270   4 M-   1 00 0c 0f 00              --- dx  +12 dy  +15 wh  +0
+   908   20.275   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   909   20.280   4 M-   1 00 0e 10 00              --- dx  +14 dy  +16 wh  +0
+   910   20.285   4 M-   1 00 11 10 00              --- dx  +17 dy  +16 wh  +0
+   911   20.295   4 M-   1 00 13 0f 00              --- dx  +19 dy  +15 wh  +0
+   912   20.300   4 M-   1 00 17 0e 00              --- dx  +23 dy  +14 wh  +0
+   913   20.310   4 M-   1 00 15 0d 00              --- dx  +21 dy  +13 wh  +0
+   914   20.320   4 M-   1 00 17 0c 00              --- dx  +23 dy  +12 wh  +0
+   915   20.325   4 M-   1 00 15 0c 00              --- dx  +21 dy  +12 wh  +0
+   916   20.335   4 M-   1 00 13 0a 00              --- dx  +19 dy  +10 wh  +0
+   917   20.340   4 M-   1 00 13 0b 00              --- dx  +19 dy  +11 wh  +0
+   918   20.350   4 M-   1 00 14 0a 00              --- dx  +20 dy  +10 wh  +0
+   919   20.360   4 M-   1 00 14 08 00              --- dx  +20 dy   +8 wh  +0
+   920   20.365   4 M-   1 00 14 07 00              --- dx  +20 dy   +7 wh  +0
+   921   20.375   4 M-   1 00 13 07 00              --- dx  +19 dy   +7 wh  +0
+   922   20.380   4 M-   1 00 11 08 00              --- dx  +17 dy   +8 wh  +0
+   923   20.390   4 M-   1 00 10 07 00              --- dx  +16 dy   +7 wh  +0
+   924   20.400   4 M-   1 00 0b 07 00              --- dx  +11 dy   +7 wh  +0
+   925   20.405   4 M-   1 00 07 07 00              --- dx   +7 dy   +7 wh  +0
+   926   20.415   4 M-   1 00 02 06 00              --- dx   +2 dy   +6 wh  +0
+   927   20.420   4 M-   1 00 00 06 00              --- dx   +0 dy   +6 wh  +0
+   928   20.430   4 M-   1 00 00 07 00              --- dx   +0 dy   +7 wh  +0
+   929   20.440   4 M-   1 00 00 04 00              --- dx   +0 dy   +4 wh  +0
+   930   20.445   4 M-   1 00 ff 02 00              --- dx   -1 dy   +2 wh  +0
+   931   20.455   4 M-   1 00 ff 02 00              --- dx   -1 dy   +2 wh  +0
+   932   20.465   4 M-   1 00 fe 00 00              --- dx   -2 dy   +0 wh  +0
+   933   20.470   4 M-   1 00 fc fd 00              --- dx   -4 dy   -3 wh  +0
+   934   20.480   4 M-   1 00 f7 fa 00              --- dx   -9 dy   -6 wh  +0
+   935   20.490   4 M-   1 00 f3 f6 00              --- dx  -13 dy  -10 wh  +0
+   936   20.495   4 M-   1 00 f2 f7 00              --- dx  -14 dy   -9 wh  +0
+   937   20.505   4 M-   1 00 ef f6 00              --- dx  -17 dy  -10 wh  +0
+   938   20.510   4 M-   1 00 ef fb 00              --- dx  -17 dy   -5 wh  +0
+   939   20.520   4 M-   1 00 f0 fd 00              --- dx  -16 dy   -3 wh  +0
+   940   20.530   4 M-   1 00 f0 00 00              --- dx  -16 dy   +0 wh  +0
+   941   20.535   4 M-   1 00 f0 ff 00              --- dx  -16 dy   -1 wh  +0
+   942   20.545   4 M-   1 00 f1 00 00              --- dx  -15 dy   +0 wh  +0
+   943   20.550   4 M-   1 00 f2 ff 00              --- dx  -14 dy   -1 wh  +0
+   944   20.560   4 M-   1 00 f2 fe 00              --- dx  -14 dy   -2 wh  +0
+   945   20.570   4 M-   1 00 f4 fd 00              --- dx  -12 dy   -3 wh  +0
+   946   20.575   4 M-   1 00 f3 fb 00              --- dx  -13 dy   -5 wh  +0
+   947   20.585   4 M-   1 00 f4 fa 00              --- dx  -12 dy   -6 wh  +0
+   948   20.590   4 M-   1 00 f5 f7 00              --- dx  -11 dy   -9 wh  +0
+   949   20.600   4 M-   1 00 f4 f6 00              --- dx  -12 dy  -10 wh  +0
+   950   20.610   4 M-   1 00 f5 f5 00              --- dx  -11 dy  -11 wh  +0
+   951   20.615   4 M-   1 00 f6 f4 00              --- dx  -10 dy  -12 wh  +0
+   952   20.625   4 M-   1 00 f7 f4 00              --- dx   -9 dy  -12 wh  +0
+   953   20.630   4 M-   1 00 f7 f7 00              --- dx   -9 dy   -9 wh  +0
+   954   20.640   4 M-   1 00 fa fa 00              --- dx   -6 dy   -6 wh  +0
+   955   20.650   4 M-   1 00 fb fc 00              --- dx   -5 dy   -4 wh  +0
+   956   20.655   4 M-   1 00 ff fe 00              --- dx   -1 dy   -2 wh  +0
+   957   20.665   4 M-   1 01 01 fd 00              L-- dx   +1 dy   -3 wh  +0
+   958   20.670   4 M-   1 01 01 fe 00              L-- dx   +1 dy   -2 wh  +0
+   959   20.680   4 M-   1 01 01 fe 00              L-- dx   +1 dy   -2 wh  +0
+   960   20.690   4 M-   1 01 02 fe 00              L-- dx   +2 dy   -2 wh  +0
+   961   20.695   4 M-   1 01 01 fd 00              L-- dx   +1 dy   -3 wh  +0
+   962   20.705   4 M-   1 01 01 fc 00              L-- dx   +1 dy   -4 wh  +0
+   963   20.710   4 M-   1 01 01 fd 00              L-- dx   +1 dy   -3 wh  +0
+   964   20.720   4 M-   1 01 00 fd 00              L-- dx   +0 dy   -3 wh  +0
+   965   20.730   4 M-   1 01 00 fe 00              L-- dx   +0 dy   -2 wh  +0
+   966   20.740   4 M-   1 01 00 ff 00              L-- dx   +0 dy   -1 wh  +0
+   967   20.770   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   968   20.820   4 M-   1 01 03 01 00              L-- dx   +3 dy   +1 wh  +0
+   969   20.825   4 M-   1 01 03 00 00              L-- dx   +3 dy   +0 wh  +0
+   970   20.835   4 M-   1 01 05 00 00              L-- dx   +5 dy   +0 wh  +0
+   971   20.840   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+   972   20.850   4 M-   1 00 07 fe 00              --- dx   +7 dy   -2 wh  +0
+   973   20.860   4 M-   1 00 0a fe 00              --- dx  +10 dy   -2 wh  +0
+   974   20.865   4 M-   1 00 0b fd 00              --- dx  +11 dy   -3 wh  +0
+   975   20.875   4 M-   1 00 0c fb 00              --- dx  +12 dy   -5 wh  +0
+   976   20.880   4 M-   1 00 0d fa 00              --- dx  +13 dy   -6 wh  +0
+   977   20.890   4 M-   1 00 0d f7 00              --- dx  +13 dy   -9 wh  +0
+   978   20.900   4 M-   1 00 10 f5 00              --- dx  +16 dy  -11 wh  +0
+   979   20.905   4 M-   1 00 10 f3 00              --- dx  +16 dy  -13 wh  +0
+   980   20.915   4 M-   1 00 11 f3 00              --- dx  +17 dy  -13 wh  +0
+   981   20.920   4 M-   1 00 0f f3 00              --- dx  +15 dy  -13 wh  +0
+   982   20.930   4 M-   1 00 10 f3 00              --- dx  +16 dy  -13 wh  +0
+   983   20.940   4 M-   1 00 10 f5 00              --- dx  +16 dy  -11 wh  +0
+   984   20.945   4 M-   1 00 10 f5 00              --- dx  +16 dy  -11 wh  +0
+   985   20.955   4 M-   1 00 11 f6 00              --- dx  +17 dy  -10 wh  +0
+   986   20.960   4 M-   1 00 11 f5 00              --- dx  +17 dy  -11 wh  +0
+   987   20.970   4 M-   1 00 11 f5 00              --- dx  +17 dy  -11 wh  +0
+   988   20.980   4 M-   1 00 10 f6 00              --- dx  +16 dy  -10 wh  +0
+   989   20.985   4 M-   1 00 0e f7 00              --- dx  +14 dy   -9 wh  +0
+   990   20.995   4 M-   1 00 0c f6 00              --- dx  +12 dy  -10 wh  +0
+   991   21.000   4 M-   1 00 09 f9 00              --- dx   +9 dy   -7 wh  +0
+   992   21.010   4 M-   1 00 04 f9 00              --- dx   +4 dy   -7 wh  +0
+   993   21.020   4 M-   1 00 02 f9 00              --- dx   +2 dy   -7 wh  +0
+   994   21.025   4 M-   1 00 00 fb 00              --- dx   +0 dy   -5 wh  +0
+   995   21.035   4 M-   1 00 00 fc 00              --- dx   +0 dy   -4 wh  +0
+   996   21.045   4 M-   1 00 00 fc 00              --- dx   +0 dy   -4 wh  +0
+   997   21.050   4 M-   1 00 00 fd 00              --- dx   +0 dy   -3 wh  +0
+   998   21.060   4 M-   1 00 00 fe 00              --- dx   +0 dy   -2 wh  +0
+   999   21.070   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+  1000   21.075   4 M-   1 00 ff 00 00              --- dx   -1 dy   +0 wh  +0
+  1001   21.085   4 M-   1 00 fe 00 00              --- dx   -2 dy   +0 wh  +0
+  1002   21.090   4 M-   1 00 fe 00 00              --- dx   -2 dy   +0 wh  +0
+  1003   21.100   4 M-   1 00 fc 00 00              --- dx   -4 dy   +0 wh  +0
+  1004   21.110   4 M-   1 00 fc 00 00              --- dx   -4 dy   +0 wh  +0
+  1005   21.115   4 M-   1 00 fc 00 00              --- dx   -4 dy   +0 wh  +0
+  1006   21.125   4 M-   1 00 fa 01 00              --- dx   -6 dy   +1 wh  +0
+  1007   21.130   4 M-   1 00 f9 01 00              --- dx   -7 dy   +1 wh  +0
+  1008   21.140   4 M-   1 00 f8 02 00              --- dx   -8 dy   +2 wh  +0
+  1009   21.150   4 M-   1 00 f8 03 00              --- dx   -8 dy   +3 wh  +0
+  1010   21.155   4 M-   1 00 f6 04 00              --- dx  -10 dy   +4 wh  +0
+  1011   21.165   4 M-   1 00 f6 04 00              --- dx  -10 dy   +4 wh  +0
+  1012   21.170   4 M-   1 00 f4 04 00              --- dx  -12 dy   +4 wh  +0
+  1013   21.180   4 M-   1 00 f4 04 00              --- dx  -12 dy   +4 wh  +0
+  1014   21.190   4 M-   1 01 00 00 00              L-- dx   +0 dy   +0 wh  +0
+  1015   21.195   4 M-   1 01 f3 04 00              L-- dx  -13 dy   +4 wh  +0
+  1016   21.205   4 M-   1 01 f4 04 00              L-- dx  -12 dy   +4 wh  +0
+  1017   21.210   4 M-   1 01 f4 03 00              L-- dx  -12 dy   +3 wh  +0
+  1018   21.220   4 M-   1 01 f4 03 00              L-- dx  -12 dy   +3 wh  +0
+  1019   21.230   4 M-   1 01 f8 02 00              L-- dx   -8 dy   +2 wh  +0
+  1020   21.235   4 M-   1 01 f9 03 00              L-- dx   -7 dy   +3 wh  +0
+  1021   21.245   4 M-   1 01 fa 02 00              L-- dx   -6 dy   +2 wh  +0
+  1022   21.250   4 M-   1 01 fc 01 00              L-- dx   -4 dy   +1 wh  +0
+  1023   21.260   4 M-   1 01 fe 01 00              L-- dx   -2 dy   +1 wh  +0
+  1024   21.270   4 M-   1 01 ff 01 00              L-- dx   -1 dy   +1 wh  +0
+  1025   21.275   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+  1026   21.300   4 M-   1 01 ff 00 00              L-- dx   -1 dy   +0 wh  +0
+  1027   21.310   4 M-   1 01 ff 01 00              L-- dx   -1 dy   +1 wh  +0
+  1028   21.315   4 M-   1 01 fe 01 00              L-- dx   -2 dy   +1 wh  +0
+  1029   21.325   4 M-   1 01 fd 02 00              L-- dx   -3 dy   +2 wh  +0
+  1030   21.335   4 M-   1 01 fc 03 00              L-- dx   -4 dy   +3 wh  +0
+  1031   21.340   4 M-   1 01 fc 03 00              L-- dx   -4 dy   +3 wh  +0
+  1032   21.350   4 M-   1 01 fd 04 00              L-- dx   -3 dy   +4 wh  +0
+  1033   21.360   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+  1034   21.365   4 M-   1 00 fd 04 00              --- dx   -3 dy   +4 wh  +0
+  1035   21.375   4 M-   1 00 fe 06 00              --- dx   -2 dy   +6 wh  +0
+  1036   21.380   4 M-   1 00 00 08 00              --- dx   +0 dy   +8 wh  +0
+  1037   21.390   4 M-   1 00 01 0a 00              --- dx   +1 dy  +10 wh  +0
+  1038   21.400   4 M-   1 00 05 0c 00              --- dx   +5 dy  +12 wh  +0
+  1039   21.405   4 M-   1 00 0a 0d 00              --- dx  +10 dy  +13 wh  +0
+  1040   21.415   4 M-   1 00 0b 0b 00              --- dx  +11 dy  +11 wh  +0
+  1041   21.420   4 M-   1 00 0e 0d 00              --- dx  +14 dy  +13 wh  +0
+  1042   21.430   4 M-   1 00 0f 0e 00              --- dx  +15 dy  +14 wh  +0
+  1043   21.440   4 M-   1 00 10 0e 00              --- dx  +16 dy  +14 wh  +0
+  1044   21.445   4 M-   1 00 11 0f 00              --- dx  +17 dy  +15 wh  +0
+  1045   21.455   4 M-   1 00 12 0f 00              --- dx  +18 dy  +15 wh  +0
+  1046   21.460   4 M-   1 00 12 0e 00              --- dx  +18 dy  +14 wh  +0
+  1047   21.470   4 M-   1 00 12 0e 00              --- dx  +18 dy  +14 wh  +0
+  1048   21.480   4 M-   1 00 10 0c 00              --- dx  +16 dy  +12 wh  +0
+  1049   21.485   4 M-   1 00 10 0d 00              --- dx  +16 dy  +13 wh  +0
+  1050   21.495   4 M-   1 00 0e 0a 00              --- dx  +14 dy  +10 wh  +0
+  1051   21.500   4 M-   1 00 0c 0b 00              --- dx  +12 dy  +11 wh  +0
+  1052   21.510   4 M-   1 00 0b 09 00              --- dx  +11 dy   +9 wh  +0
+  1053   21.520   4 M-   1 00 0b 08 00              --- dx  +11 dy   +8 wh  +0
+  1054   21.525   4 M-   1 00 07 07 00              --- dx   +7 dy   +7 wh  +0
+  1055   21.535   4 M-   1 00 06 05 00              --- dx   +6 dy   +5 wh  +0
+  1056   21.540   4 M-   1 00 05 04 00              --- dx   +5 dy   +4 wh  +0
+  1057   21.550   4 M-   1 00 03 03 00              --- dx   +3 dy   +3 wh  +0
+  1058   21.560   4 M-   1 00 01 02 00              --- dx   +1 dy   +2 wh  +0
+  1059   21.565   4 M-   1 00 01 01 00              --- dx   +1 dy   +1 wh  +0
+  1060   21.770   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+  1061   22.170   4 M-   1 00 ff ff 00              --- dx   -1 dy   -1 wh  +0
+  1062   22.180   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+  1063   22.190   4 M-   1 00 01 00 00              --- dx   +1 dy   +0 wh  +0
+  1064   22.195   4 M-   1 00 02 01 00              --- dx   +2 dy   +1 wh  +0
+  1065   22.205   4 M-   1 00 03 01 00              --- dx   +3 dy   +1 wh  +0
+  1066   22.210   4 M-   1 00 05 02 00              --- dx   +5 dy   +2 wh  +0
+  1067   22.220   4 M-   1 00 05 02 00              --- dx   +5 dy   +2 wh  +0
+  1068   22.230   4 M-   1 00 06 02 00              --- dx   +6 dy   +2 wh  +0
+  1069   22.235   4 M-   1 00 06 03 00              --- dx   +6 dy   +3 wh  +0
+  1070   22.245   4 M-   1 00 07 04 00              --- dx   +7 dy   +4 wh  +0
+  1071   22.250   4 M-   1 00 06 04 00              --- dx   +6 dy   +4 wh  +0
+  1072   22.260   4 M-   1 00 04 04 00              --- dx   +4 dy   +4 wh  +0
+  1073   22.270   4 M-   1 00 04 03 00              --- dx   +4 dy   +3 wh  +0
+  1074   22.275   4 M-   1 00 02 04 00              --- dx   +2 dy   +4 wh  +0
+  1075   22.275   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+  1076   22.285   4 M-   1 00 01 03 00              --- dx   +1 dy   +3 wh  +0
+  1077   22.290   4 M-   1 00 01 03 00              --- dx   +1 dy   +3 wh  +0
+  1078   22.300   4 M-   1 00 00 03 00              --- dx   +0 dy   +3 wh  +0
+  1079   22.310   4 M-   1 00 00 02 00              --- dx   +0 dy   +2 wh  +0
+  1080   22.315   4 M-   1 00 00 03 00              --- dx   +0 dy   +3 wh  +0
+  1081   22.325   4 M-   1 00 ff 01 00              --- dx   -1 dy   +1 wh  +0
+  1082   22.330   4 M-   1 00 ff 02 00              --- dx   -1 dy   +2 wh  +0
+  1083   22.340   4 M-   1 00 ff 01 00              --- dx   -1 dy   +1 wh  +0
+  1084   22.350   4 M-   1 00 ff 00 00              --- dx   -1 dy   +0 wh  +0
+  1085   22.355   4 M-   1 00 fe 01 00              --- dx   -2 dy   +1 wh  +0
+  1086   22.365   4 M-   1 00 ff 01 00              --- dx   -1 dy   +1 wh  +0
+  1087   22.370   4 M-   1 00 fe 00 00              --- dx   -2 dy   +0 wh  +0
+  1088   22.380   4 M-   1 00 fe 00 00              --- dx   -2 dy   +0 wh  +0
+  1089   22.390   4 M-   1 00 fe 00 00              --- dx   -2 dy   +0 wh  +0
+  1090   22.395   4 M-   1 00 fe 00 00              --- dx   -2 dy   +0 wh  +0
+  1091   22.405   4 M-   1 00 fd 00 00              --- dx   -3 dy   +0 wh  +0
+  1092   22.410   4 M-   1 00 fe 00 00              --- dx   -2 dy   +0 wh  +0
+  1093   22.420   4 M-   1 00 fd 00 00              --- dx   -3 dy   +0 wh  +0
+  1094   22.430   4 M-   1 00 fb 00 00              --- dx   -5 dy   +0 wh  +0
+  1095   22.435   4 M-   1 00 fc 00 00              --- dx   -4 dy   +0 wh  +0
+  1096   22.445   4 M-   1 00 fa 00 00              --- dx   -6 dy   +0 wh  +0
+  1097   22.450   4 M-   1 00 fb 00 00              --- dx   -5 dy   +0 wh  +0
+  1098   22.460   4 M-   1 00 fa 00 00              --- dx   -6 dy   +0 wh  +0
+  1099   22.470   4 M-   1 00 fa ff 00              --- dx   -6 dy   -1 wh  +0
+  1100   22.480   4 M-   1 00 fb ff 00              --- dx   -5 dy   -1 wh  +0
+  1101   22.485   4 M-   1 00 fa ff 00              --- dx   -6 dy   -1 wh  +0
+  1102   22.495   4 M-   1 00 fb ff 00              --- dx   -5 dy   -1 wh  +0
+  1103   22.500   4 M-   1 00 fb fe 00              --- dx   -5 dy   -2 wh  +0
+  1104   22.510   4 M-   1 00 fb ff 00              --- dx   -5 dy   -1 wh  +0
+  1105   22.520   4 M-   1 00 fb fe 00              --- dx   -5 dy   -2 wh  +0
+  1106   22.525   4 M-   1 00 fb fe 00              --- dx   -5 dy   -2 wh  +0
+  1107   22.535   4 M-   1 00 fb fe 00              --- dx   -5 dy   -2 wh  +0
+  1108   22.540   4 M-   1 00 fb ff 00              --- dx   -5 dy   -1 wh  +0
+  1109   22.550   4 M-   1 00 fc 00 00              --- dx   -4 dy   +0 wh  +0
+  1110   22.560   4 M-   1 00 fd 00 00              --- dx   -3 dy   +0 wh  +0
+  1111   22.565   4 M-   1 00 fd 00 00              --- dx   -3 dy   +0 wh  +0
+  1112   22.575   4 M-   1 00 fd 00 00              --- dx   -3 dy   +0 wh  +0
+  1113   22.580   4 M-   1 00 ff 00 00              --- dx   -1 dy   +0 wh  +0
+  1114   22.590   4 M-   1 00 ff 00 00              --- dx   -1 dy   +0 wh  +0
+  1115   22.600   4 M-   1 00 ff 00 00              --- dx   -1 dy   +0 wh  +0
+  1116   22.615   4 M-   1 00 00 01 00              --- dx   +0 dy   +1 wh  +0
+  1117   22.630   4 M-   1 00 00 01 00              --- dx   +0 dy   +1 wh  +0
+  1118   22.640   4 M-   1 00 01 01 00              --- dx   +1 dy   +1 wh  +0
+  1119   22.645   4 M-   1 00 02 02 00              --- dx   +2 dy   +2 wh  +0
+  1120   22.655   4 M-   1 00 03 02 00              --- dx   +3 dy   +2 wh  +0
+  1121   22.660   4 M-   1 00 05 03 00              --- dx   +5 dy   +3 wh  +0
+  1122   22.670   4 M-   1 00 06 04 00              --- dx   +6 dy   +4 wh  +0
+  1123   22.680   4 M-   1 00 07 03 00              --- dx   +7 dy   +3 wh  +0
+  1124   22.685   4 M-   1 00 08 04 00              --- dx   +8 dy   +4 wh  +0
+  1125   22.695   4 M-   1 00 08 03 00              --- dx   +8 dy   +3 wh  +0
+  1126   22.700   4 M-   1 00 07 04 00              --- dx   +7 dy   +4 wh  +0
+  1127   22.710   4 M-   1 00 06 03 00              --- dx   +6 dy   +3 wh  +0
+  1128   22.720   4 M-   1 00 06 03 00              --- dx   +6 dy   +3 wh  +0
+  1129   22.725   4 M-   1 00 06 03 00              --- dx   +6 dy   +3 wh  +0
+  1130   22.735   4 M-   1 00 05 03 00              --- dx   +5 dy   +3 wh  +0
+  1131   22.740   4 M-   1 00 05 02 00              --- dx   +5 dy   +2 wh  +0
+  1132   22.750   4 M-   1 00 05 03 00              --- dx   +5 dy   +3 wh  +0
+  1133   22.760   4 M-   1 00 05 02 00              --- dx   +5 dy   +2 wh  +0
+  1134   22.765   4 M-   1 00 04 02 00              --- dx   +4 dy   +2 wh  +0
+  1135   22.775   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+  1136   22.775   4 M-   1 00 03 01 00              --- dx   +3 dy   +1 wh  +0
+  1137   22.785   4 M-   1 00 03 02 00              --- dx   +3 dy   +2 wh  +0
+  1138   22.790   4 M-   1 00 02 02 00              --- dx   +2 dy   +2 wh  +0
+  1139   22.800   4 M-   1 00 01 01 00              --- dx   +1 dy   +1 wh  +0
+  1140   22.810   4 M-   1 00 00 02 00              --- dx   +0 dy   +2 wh  +0
+  1141   22.815   4 M-   1 00 00 01 00              --- dx   +0 dy   +1 wh  +0
+  1142   22.825   4 M-   1 00 00 02 00              --- dx   +0 dy   +2 wh  +0
+  1143   22.830   4 M-   1 00 ff 01 00              --- dx   -1 dy   +1 wh  +0
+  1144   22.840   4 M-   1 00 00 01 00              --- dx   +0 dy   +1 wh  +0
+  1145   22.850   4 M-   1 00 ff 01 00              --- dx   -1 dy   +1 wh  +0
+  1146   22.855   4 M-   1 00 ff 01 00              --- dx   -1 dy   +1 wh  +0
+  1147   22.865   4 M-   1 00 fe ff 00              --- dx   -2 dy   -1 wh  +0
+  1148   22.870   4 M-   1 00 fd fe 00              --- dx   -3 dy   -2 wh  +0
+  1149   22.880   4 M-   1 00 fd fd 00              --- dx   -3 dy   -3 wh  +0
+  1150   22.890   4 M-   1 00 fc fc 00              --- dx   -4 dy   -4 wh  +0
+  1151   22.895   4 M-   1 00 fb fb 00              --- dx   -5 dy   -5 wh  +0
+  1152   22.905   4 M-   1 00 f9 fc 00              --- dx   -7 dy   -4 wh  +0
+  1153   22.910   4 M-   1 00 fa fb 00              --- dx   -6 dy   -5 wh  +0
+  1154   22.920   4 M-   1 00 fa fd 00              --- dx   -6 dy   -3 wh  +0
+  1155   22.930   4 M-   1 00 fa fd 00              --- dx   -6 dy   -3 wh  +0
+  1156   22.935   4 M-   1 00 fb fd 00              --- dx   -5 dy   -3 wh  +0
+  1157   22.945   4 M-   1 00 fb fe 00              --- dx   -5 dy   -2 wh  +0
+  1158   22.950   4 M-   1 00 fb fe 00              --- dx   -5 dy   -2 wh  +0
+  1159   22.960   4 M-   1 00 fd fd 00              --- dx   -3 dy   -3 wh  +0
+  1160   22.970   4 M-   1 00 fd fd 00              --- dx   -3 dy   -3 wh  +0
+  1161   22.975   4 M-   1 00 fd fd 00              --- dx   -3 dy   -3 wh  +0
+  1162   22.985   4 M-   1 00 fe fc 00              --- dx   -2 dy   -4 wh  +0
+  1163   22.990   4 M-   1 00 ff fd 00              --- dx   -1 dy   -3 wh  +0
+  1164   23.000   4 M-   1 00 ff fc 00              --- dx   -1 dy   -4 wh  +0
+  1165   23.010   4 M-   1 00 00 fc 00              --- dx   +0 dy   -4 wh  +0
+  1166   23.015   4 M-   1 00 ff fc 00              --- dx   -1 dy   -4 wh  +0
+  1167   23.025   4 M-   1 00 00 fc 00              --- dx   +0 dy   -4 wh  +0
+  1168   23.035   4 M-   1 00 ff fc 00              --- dx   -1 dy   -4 wh  +0
+  1169   23.040   4 M-   1 00 ff fd 00              --- dx   -1 dy   -3 wh  +0
+  1170   23.050   4 M-   1 00 ff fc 00              --- dx   -1 dy   -4 wh  +0
+  1171   23.055   4 M-   1 00 ff fd 00              --- dx   -1 dy   -3 wh  +0
+  1172   23.065   4 M-   1 00 ff fd 00              --- dx   -1 dy   -3 wh  +0
+  1173   23.075   4 M-   1 00 ff fe 00              --- dx   -1 dy   -2 wh  +0
+  1174   23.085   4 M-   1 00 ff fe 00              --- dx   -1 dy   -2 wh  +0
+  1175   23.090   4 M-   1 00 00 fe 00              --- dx   +0 dy   -2 wh  +0
+  1176   23.100   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+  1177   23.115   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+  1178   23.275   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+  1179   23.290   4 M-   1 00 00 01 00              --- dx   +0 dy   +1 wh  +0
+  1180   23.300   4 M-   1 00 01 01 00              --- dx   +1 dy   +1 wh  +0
+  1181   23.305   4 M-   1 00 00 02 00              --- dx   +0 dy   +2 wh  +0
+  1182   23.315   4 M-   1 00 01 00 00              --- dx   +1 dy   +0 wh  +0
+  1183   23.325   4 M-   1 00 00 01 00              --- dx   +0 dy   +1 wh  +0
+  1184   23.340   4 M-   1 00 01 00 00              --- dx   +1 dy   +0 wh  +0
+  1185   23.435   4 M-   1 00 03 00 00              --- dx   +3 dy   +0 wh  +0
+  1186   23.450   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+  1187   23.455   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+  1188   23.465   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+  1189   23.475   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+  1190   23.480   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+  1191   23.490   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+  1192   23.495   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+  1193   23.505   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+  1194   23.515   4 M-   1 00 00 ff 00              --- dx   +0 dy   -1 wh  +0
+  1195   23.545   4 M-   1 00 ff ff 00              --- dx   -1 dy   -1 wh  +0
+  1196   23.555   4 M-   1 00 00 fe 00              --- dx   +0 dy   -2 wh  +0
+  1197   23.560   4 M-   1 00 ff ff 00              --- dx   -1 dy   -1 wh  +0
+  1198   23.685   4 M-   1 00 fd fe 00              --- dx   -3 dy   -2 wh  +0
+  1199   23.690   4 M-   1 00 f9 fd 00              --- dx   -7 dy   -3 wh  +0
+  1200   23.700   4 M-   1 00 fc 01 00              --- dx   -4 dy   +1 wh  +0
+  1201   23.705   4 M-   1 00 fe 00 00              --- dx   -2 dy   +0 wh  +0
+  1202   23.715   4 M-   1 00 ff 00 00              --- dx   -1 dy   +0 wh  +0
+  1203   23.725   4 M-   1 00 ff 01 00              --- dx   -1 dy   +1 wh  +0
+  1204   23.730   4 M-   1 00 ff 03 00              --- dx   -1 dy   +3 wh  +0
+  1205   23.740   4 M-   1 00 fe 05 00              --- dx   -2 dy   +5 wh  +0
+  1206   23.745   4 M-   1 00 fd 08 00              --- dx   -3 dy   +8 wh  +0
+  1207   23.755   4 M-   1 00 fe 09 00              --- dx   -2 dy   +9 wh  +0
+  1208   23.765   4 M-   1 00 fe 0b 00              --- dx   -2 dy  +11 wh  +0
+  1209   23.770   4 M-   1 00 ff 0a 00              --- dx   -1 dy  +10 wh  +0
+  1210   23.775   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+  1211   23.780   4 M-   1 00 00 0b 00              --- dx   +0 dy  +11 wh  +0
+  1212   23.785   4 M-   1 00 ff 0b 00              --- dx   -1 dy  +11 wh  +0
+  1213   23.795   4 M-   1 00 00 0b 00              --- dx   +0 dy  +11 wh  +0
+  1214   23.805   4 M-   1 00 00 0e 00              --- dx   +0 dy  +14 wh  +0
+  1215   23.810   4 M-   1 00 01 0d 00              --- dx   +1 dy  +13 wh  +0
+  1216   23.820   4 M-   1 00 01 11 00              --- dx   +1 dy  +17 wh  +0
+  1217   23.825   4 M-   1 00 04 12 00              --- dx   +4 dy  +18 wh  +0
+  1218   23.835   4 M-   1 00 08 16 00              --- dx   +8 dy  +22 wh  +0
+  1219   23.845   4 M-   1 00 0d 18 00              --- dx  +13 dy  +24 wh  +0
+  1220   23.850   4 M-   1 00 12 19 00              --- dx  +18 dy  +25 wh  +0
+  1221   23.860   4 M-   1 00 19 19 00              --- dx  +25 dy  +25 wh  +0
+  1222   23.865   4 M-   1 00 1a 16 00              --- dx  +26 dy  +22 wh  +0
+  1223   23.875   4 M-   1 00 1f 13 00              --- dx  +31 dy  +19 wh  +0
+  1224   23.885   4 M-   1 00 21 0e 00              --- dx  +33 dy  +14 wh  +0
+  1225   23.890   4 M-   1 00 21 0a 00              --- dx  +33 dy  +10 wh  +0
+  1226   23.900   4 M-   1 00 1f 06 00              --- dx  +31 dy   +6 wh  +0
+  1227   23.905   4 M-   1 00 1c 03 00              --- dx  +28 dy   +3 wh  +0
+  1228   23.915   4 M-   1 00 19 02 00              --- dx  +25 dy   +2 wh  +0
+  1229   23.925   4 M-   1 00 16 ff 00              --- dx  +22 dy   -1 wh  +0
+  1230   23.930   4 M-   1 00 10 ff 00              --- dx  +16 dy   -1 wh  +0
+  1231   23.940   4 M-   1 00 0b fd 00              --- dx  +11 dy   -3 wh  +0
+  1232   23.950   4 M-   1 00 05 fd 00              --- dx   +5 dy   -3 wh  +0
+  1233   23.955   4 M-   1 00 02 fd 00              --- dx   +2 dy   -3 wh  +0
+  1234   23.965   4 M-   1 00 01 fd 00              --- dx   +1 dy   -3 wh  +0
+  1235   23.975   4 M-   1 00 00 fe 00              --- dx   +0 dy   -2 wh  +0
+  1236   23.980   4 M-   1 00 00 fe 00              --- dx   +0 dy   -2 wh  +0
+  1237   24.045   4 M-   1 00 fe ff 00              --- dx   -2 dy   -1 wh  +0
+  1238   24.055   4 M-   1 00 f8 fd 00              --- dx   -8 dy   -3 wh  +0
+  1239   24.060   4 M-   1 00 ef fa 00              --- dx  -17 dy   -6 wh  +0
+  1240   24.070   4 M-   1 00 e9 fb 00              --- dx  -23 dy   -5 wh  +0
+  1241   24.075   4 M-   1 00 e6 fd 00              --- dx  -26 dy   -3 wh  +0
+  1242   24.085   4 M-   1 00 e4 fc 00              --- dx  -28 dy   -4 wh  +0
+  1243   24.095   4 M-   1 00 e1 fd 00              --- dx  -31 dy   -3 wh  +0
+  1244   24.100   4 M-   1 00 df fc 00              --- dx  -33 dy   -4 wh  +0
+  1245   24.110   4 M-   1 00 da fc 00              --- dx  -38 dy   -4 wh  +0
+  1246   24.115   4 M-   1 00 db fe 00              --- dx  -37 dy   -2 wh  +0
+  1247   24.125   4 M-   1 00 da fd 00              --- dx  -38 dy   -3 wh  +0
+  1248   24.135   4 M-   1 00 df fc 00              --- dx  -33 dy   -4 wh  +0
+  1249   24.140   4 M-   1 00 e7 fc 00              --- dx  -25 dy   -4 wh  +0
+  1250   24.150   4 M-   1 00 ed fc 00              --- dx  -19 dy   -4 wh  +0
+  1251   24.155   4 M-   1 00 f2 fb 00              --- dx  -14 dy   -5 wh  +0
+  1252   24.165   4 M-   1 00 f7 fb 00              --- dx   -9 dy   -5 wh  +0
+  1253   24.175   4 M-   1 00 f9 fc 00              --- dx   -7 dy   -4 wh  +0
+  1254   24.180   4 M-   1 00 fb fb 00              --- dx   -5 dy   -5 wh  +0
+  1255   24.190   4 M-   1 00 fc fc 00              --- dx   -4 dy   -4 wh  +0
+  1256   24.195   4 M-   1 00 fc fc 00              --- dx   -4 dy   -4 wh  +0
+  1257   24.205   4 M-   1 00 ff fe 00              --- dx   -1 dy   -2 wh  +0
+  1258   24.215   4 M-   1 00 fe 00 00              --- dx   -2 dy   +0 wh  +0
+  1259   24.225   4 M-   1 00 ff ff 00              --- dx   -1 dy   -1 wh  +0
+  1260   24.260   4 M-   1 01 00 00 00              L-- dx   +0 dy   +0 wh  +0
+  1261   24.275   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+  1262   24.425   4 M-   1 00 00 00 00              --- dx   +0 dy   +0 wh  +0
+  1263   24.485   4 M-   1 00 00 01 00              --- dx   +0 dy   +1 wh  +0
+  1264   24.490   4 M-   1 00 fc 06 00              --- dx   -4 dy   +6 wh  +0
+  1265   24.500   4 M-   1 00 fb 08 00              --- dx   -5 dy   +8 wh  +0
+  1266   24.505   4 M-   1 00 fc 0a 00              --- dx   -4 dy  +10 wh  +0
+  1267   24.515   4 M-   1 00 ff 0a 00              --- dx   -1 dy  +10 wh  +0
+  1268   24.525   4 M-   1 00 01 0c 00              --- dx   +1 dy  +12 wh  +0
+  1269   24.530   4 M-   1 00 03 0e 00              --- dx   +3 dy  +14 wh  +0
+  1270   24.540   4 M-   1 00 07 10 00              --- dx   +7 dy  +16 wh  +0
+  1271   24.550   4 M-   1 00 0a 12 00              --- dx  +10 dy  +18 wh  +0
+  1272   24.555   4 M-   1 00 0c 16 00              --- dx  +12 dy  +22 wh  +0
+  1273   24.565   4 M-   1 00 0f 19 00              --- dx  +15 dy  +25 wh  +0
+
+=== END ===

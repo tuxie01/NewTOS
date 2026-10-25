@@ -1,0 +1,1281 @@
+=== 0. FILE ===
+Format        : NewTOS USBSNAP text report v2
+Program       : USBSNAP.NCP v2
+Kernel        : NewTOS 0.6.1 2026-10-24 (19ff79f6)
+Snapshot API  : Ssystem 2022, layout v2, generation 1
+Recorded      : 30.0 s, pointer muted: yes, ring 256, reports listed <= 1024
+Device        : 1 of 1 (index 1)
+Timestamps    : time of collection by the host, NOT the time the device sent
+                the report (resolution = how often the kernel polls USB).
+
+=== 1. IDENTITY ===
+VID:PID       : 046a:0115
+Manufacturer  : "Cherry GmbH"
+Product       : "CHERRY Wireless Device"
+bcdUSB 2.00  class 0  subclass 0  protocol 0  EP0 max 32  configurations 1
+
+=== 2. POSITION ===
+Controller    : xHCI, 5 root ports
+Path          : root port 1 -> hub 2109:3431 port 1
+Route string  : 0x00000001  (behind a hub, parent index 0)
+Speed         : full speed (12 Mbit/s)  [xHCI PORTSC speed id 1]
+xHCI slot     : 2
+
+=== 3. DRIVER DECISION ===
+Functions     : 2 interfaces of this device are used, each on its own (see
+                Interfaces); Role and Reason are those of the first one.
+Role          : KEYBOARD (HID boot protocol, decoded -> IKBD)
+Role codes    : 0 none / 1 keyboard / 2 mouse / 3 observed-only / 4 hub /
+                5 failed; this device: 1
+Reason        : -
+Flags         : 0x0b = device descriptor ok, configuration ok
+                SET_CONFIGURATION done
+HID interfaces: 3   functions: 2   first: interface 0, endpoint 0x81
+Interfaces:
+  if 0 alt 0  class 3 sub 1 proto 1  int-IN 0x81 max 10 interval 10
+      USED (keyboard, decoded)  [recorded]
+      report descriptor declared 65 bytes, kept 65
+  if 1 alt 0  class 3 sub 1 proto 2  int-IN 0x82 max 10 interval 2
+      USED (mouse, decoded)  [recorded]
+      report descriptor declared 115 bytes, kept 115
+  if 2 alt 0  class 3 sub 0 proto 0  int-IN 0x83 max 10 interval 10
+      not used: HID without boot subclass: report protocol only, no report
+                parser yet
+      report descriptor declared 85 bytes, kept 85
+Interrupt transfer errors: 0
+
+=== 4. RAW DESCRIPTORS (hex, offset: 16 bytes) ===
+Device descriptor, 18 bytes
+0000: 12 01 00 02 00 00 00 20 6a 04 15 01 06 00 01 02  |....... j.......|
+0010: 00 01                                            |..|
+Configuration descriptor, 84 bytes (wTotalLength 84)
+0000: 09 02 54 00 03 01 00 a0 32 09 04 00 00 01 03 01  |..T.....2.......|
+0010: 01 00 09 21 11 01 00 01 22 41 00 07 05 81 03 0a  |...!...."A......|
+0020: 00 0a 09 04 01 00 01 03 01 02 00 09 21 11 01 00  |............!...|
+0030: 01 22 73 00 07 05 82 03 0a 00 02 09 04 02 00 01  |."s.............|
+0040: 03 00 00 00 09 21 11 01 00 01 22 55 00 07 05 83  |.....!...."U....|
+0050: 03 0a 00 0a                                      |....|
+HID report descriptor, interface 0, 65 bytes (declared 65)
+0000: 05 01 09 06 a1 01 05 07 19 e0 29 e7 15 00 25 01  |..........)...%.|
+0010: 75 01 95 08 81 02 95 01 75 08 81 01 95 05 75 01  |u.......u.....u.|
+0020: 05 08 19 01 29 05 91 02 95 01 75 03 91 01 95 06  |....).....u.....|
+0030: 75 08 15 00 26 ff 00 05 07 19 00 2a ff 00 81 00  |u...&......*....|
+0040: c0                                               |.|
+HID report descriptor, interface 1, 115 bytes (declared 115)
+0000: 05 01 09 02 a1 01 85 01 09 01 a1 00 95 05 75 01  |..............u.|
+0010: 05 09 19 01 29 05 15 00 25 01 81 02 95 01 75 03  |....)...%.....u.|
+0020: 81 01 75 08 95 01 05 01 09 38 15 81 25 7f 81 06  |..u......8..%...|
+0030: 05 0c 0a 38 02 95 01 81 06 c0 85 02 09 01 a1 00  |...8............|
+0040: 75 0c 95 02 05 01 09 30 09 31 16 01 f8 26 ff 07  |u......0.1...&..|
+0050: 81 06 c0 c0 06 a0 ff 09 01 a1 01 85 09 09 01 15  |................|
+0060: 00 26 ff 00 75 08 95 07 91 82 09 02 75 08 95 07  |.&..u.......u...|
+0070: 81 82 c0                                         |...|
+HID report descriptor, interface 2, 85 bytes (declared 85)
+0000: 05 0c 09 01 a1 01 85 01 05 0c 09 01 a1 01 75 10  |..............u.|
+0010: 95 01 15 01 26 9c 02 19 01 2a 9c 02 81 00 c0 05  |....&....*......|
+0020: 01 09 80 a1 01 09 82 09 82 09 83 15 00 25 01 75  |.............%.u|
+0030: 01 95 03 81 02 75 01 95 05 81 01 c0 06 bc ff 09  |.....u..........|
+0040: 88 a1 01 75 08 95 02 15 01 26 ff 00 19 01 2a ff  |...u.....&....*.|
+0050: 00 81 00 c0 c0                                   |.....|
+
+=== 5. DECODED DESCRIPTORS ===
+Device: bLength 18 bDescriptorType 1 bcdUSB 0x0200 bDeviceClass 0
+  bDeviceSubClass 0 bDeviceProtocol 0 bMaxPacketSize0 32
+  idVendor 0x046a idProduct 0x0115 bcdDevice 0x0006
+  iManufacturer 1 iProduct 2 iSerialNumber 0 bNumConfigurations 1
+Configuration: wTotalLength 84 bNumInterfaces 3 bConfigurationValue 1
+  iConfiguration 0 MaxPower 50 (100 mA) bmAttributes 0xa0 bus-powered
+      remote-wakeup
+  Interface 0 alt 0: bNumEndpoints 1 iInterface 0
+    class 3 (HID) sub 1 (boot) protocol 1 (keyboard)
+    HID: bcdHID 1.11 bCountryCode 0 bNumDescriptors 1
+      class descriptor type 0x22 (report) length 65
+    Endpoint 0x81: IN, interrupt, wMaxPacketSize 0x000a (10), bInterval 10
+  Interface 1 alt 0: bNumEndpoints 1 iInterface 0
+    class 3 (HID) sub 1 (boot) protocol 2 (mouse)
+    HID: bcdHID 1.11 bCountryCode 0 bNumDescriptors 1
+      class descriptor type 0x22 (report) length 115
+    Endpoint 0x82: IN, interrupt, wMaxPacketSize 0x000a (10), bInterval 2
+  Interface 2 alt 0: bNumEndpoints 1 iInterface 0
+    class 3 (HID) sub 0 (none) protocol 0
+    HID: bcdHID 1.11 bCountryCode 0 bNumDescriptors 1
+      class descriptor type 0x22 (report) length 85
+    Endpoint 0x83: IN, interrupt, wMaxPacketSize 0x000a (10), bInterval 10
+Report descriptor items (interface 0):
+  05 01           Usage Page (Generic Desktop)
+  09 06           Usage (Keyboard)
+  a1 01           Collection (Application)
+  05 07             Usage Page (Keyboard/Keypad)
+  19 e0             Usage Minimum (0xe0)
+  29 e7             Usage Maximum (0xe7)
+  15 00             Logical Minimum (0)
+  25 01             Logical Maximum (1)
+  75 01             Report Size (1)
+  95 08             Report Count (8)
+  81 02             Input (Data,Var,Abs)
+  95 01             Report Count (1)
+  75 08             Report Size (8)
+  81 01             Input (Const,Array,Abs)
+  95 05             Report Count (5)
+  75 01             Report Size (1)
+  05 08             Usage Page (LEDs)
+  19 01             Usage Minimum (0x01)
+  29 05             Usage Maximum (0x05)
+  91 02             Output (Data,Var,Abs)
+  95 01             Report Count (1)
+  75 03             Report Size (3)
+  91 01             Output (Const,Array,Abs)
+  95 06             Report Count (6)
+  75 08             Report Size (8)
+  15 00             Logical Minimum (0)
+  26 ff 00          Logical Maximum (255)
+  05 07             Usage Page (Keyboard/Keypad)
+  19 00             Usage Minimum (0x00)
+  2a ff 00          Usage Maximum (0xff)
+  81 00             Input (Data,Array,Abs)
+  c0              End Collection
+  Items 32: Input 3, Output 2, Feature 0, Collections 1
+  Report ID: none (reports carry no ID byte)
+Report descriptor items (interface 1):
+  05 01           Usage Page (Generic Desktop)
+  09 02           Usage (Mouse)
+  a1 01           Collection (Application)
+  85 01             Report ID (1)
+  09 01             Usage (Pointer)
+  a1 00             Collection (Physical)
+  95 05               Report Count (5)
+  75 01               Report Size (1)
+  05 09               Usage Page (Button)
+  19 01               Usage Minimum (Button 1)
+  29 05               Usage Maximum (Button 5)
+  15 00               Logical Minimum (0)
+  25 01               Logical Maximum (1)
+  81 02               Input (Data,Var,Abs)
+  95 01               Report Count (1)
+  75 03               Report Size (3)
+  81 01               Input (Const,Array,Abs)
+  75 08               Report Size (8)
+  95 01               Report Count (1)
+  05 01               Usage Page (Generic Desktop)
+  09 38               Usage (Wheel)
+  15 81               Logical Minimum (-127, raw 0x81)
+  25 7f               Logical Maximum (127)
+  81 06               Input (Data,Var,Rel)
+  05 0c               Usage Page (Consumer)
+  0a 38 02            Usage (AC Pan)
+  95 01               Report Count (1)
+  81 06               Input (Data,Var,Rel)
+  c0                End Collection
+  85 02             Report ID (2)
+  09 01             Usage (0x01)
+  a1 00             Collection (Physical)
+  75 0c               Report Size (12)
+  95 02               Report Count (2)
+  05 01               Usage Page (Generic Desktop)
+  09 30               Usage (X)
+  09 31               Usage (Y)
+  16 01 f8            Logical Minimum (-2047, raw 0xf801)
+  26 ff 07            Logical Maximum (2047)
+  81 06               Input (Data,Var,Rel)
+  c0                End Collection
+  c0              End Collection
+  06 a0 ff        Usage Page (Vendor-defined)
+  09 01           Usage (0x01)
+  a1 01           Collection (Application)
+  85 09             Report ID (9)
+  09 01             Usage (0x01)
+  15 00             Logical Minimum (0)
+  26 ff 00          Logical Maximum (255)
+  75 08             Report Size (8)
+  95 07             Report Count (7)
+  91 82             Output (Data,Var,Abs,Volatile)
+  09 02             Usage (0x02)
+  75 08             Report Size (8)
+  95 07             Report Count (7)
+  81 82             Input (Data,Var,Abs)
+  c0              End Collection
+  Items 57: Input 6, Output 1, Feature 0, Collections 4
+  Report ID: used, IDs 1 2 9
+  -> every report starts with a 1-byte report ID (HID 1.11 6.2.2.7)
+Report descriptor items (interface 2):
+  05 0c           Usage Page (Consumer)
+  09 01           Usage (0x01)
+  a1 01           Collection (Application)
+  85 01             Report ID (1)
+  05 0c             Usage Page (Consumer)
+  09 01             Usage (0x01)
+  a1 01             Collection (Application)
+  75 10               Report Size (16)
+  95 01               Report Count (1)
+  15 01               Logical Minimum (1)
+  26 9c 02            Logical Maximum (668)
+  19 01               Usage Minimum (0x01)
+  2a 9c 02            Usage Maximum (0x029c)
+  81 00               Input (Data,Array,Abs)
+  c0                End Collection
+  05 01             Usage Page (Generic Desktop)
+  09 80             Usage (0x80)
+  a1 01             Collection (Application)
+  09 82               Usage (0x82)
+  09 82               Usage (0x82)
+  09 83               Usage (0x83)
+  15 00               Logical Minimum (0)
+  25 01               Logical Maximum (1)
+  75 01               Report Size (1)
+  95 03               Report Count (3)
+  81 02               Input (Data,Var,Abs)
+  75 01               Report Size (1)
+  95 05               Report Count (5)
+  81 01               Input (Const,Array,Abs)
+  c0                End Collection
+  06 bc ff          Usage Page (Vendor-defined)
+  09 88             Usage (0x88)
+  a1 01             Collection (Application)
+  75 08               Report Size (8)
+  95 02               Report Count (2)
+  15 01               Logical Minimum (1)
+  26 ff 00            Logical Maximum (255)
+  19 01               Usage Minimum (0x01)
+  2a ff 00            Usage Maximum (0xff)
+  81 00               Input (Data,Array,Abs)
+  c0                End Collection
+  c0              End Collection
+  Items 42: Input 4, Output 0, Feature 0, Collections 4
+  Report ID: used, IDs 1
+  -> every report starts with a 1-byte report ID (HID 1.11 6.2.2.7)
+
+=== 6. REPORTS ===
+Total 3016 (seq 336..3351), listed 1024, lost 0, interrupt errors 0
+First 1024 of 3016 listed; all: length 3..8, last at 29.990 s
+Reports of all functions in order of arrival; column if = the interface
+(function) a report came from, decoded with that function's role.
+  interface 0 (Keyboard): 1 listed
+  interface 1 (Mouse): 1023 listed
+Flags: M = collected while the pointer was muted, C = report may be cut
+   seq     t(s)  len fl  if bytes                   decoded (boot reports)
+   336    0.070   8 M-   0 00 00 00 00 00 00 00 00  mod 00 keys
+   337    0.600   3 M-   1 00 f8 fc                 --- dx   -8 dy   -4
+   338    0.610   3 M-   1 00 f5 fd                 --- dx  -11 dy   -3
+   339    0.615   3 M-   1 00 f6 fe                 --- dx  -10 dy   -2
+   340    0.625   3 M-   1 00 fe fe                 --- dx   -2 dy   -2
+   341    0.630   3 M-   1 00 ff ff                 --- dx   -1 dy   -1
+   342    0.700   3 M-   1 00 07 00                 --- dx   +7 dy   +0
+   343    0.705   3 M-   1 00 09 00                 --- dx   +9 dy   +0
+   344    0.715   3 M-   1 00 14 01                 --- dx  +20 dy   +1
+   345    0.725   3 M-   1 00 1c 05                 --- dx  +28 dy   +5
+   346    0.730   3 M-   1 00 23 07                 --- dx  +35 dy   +7
+   347    0.740   3 M-   1 00 29 0c                 --- dx  +41 dy  +12
+   348    0.745   3 M-   1 00 2e 0e                 --- dx  +46 dy  +14
+   349    0.755   3 M-   1 00 31 0d                 --- dx  +49 dy  +13
+   350    0.760   3 M-   1 00 2f 0b                 --- dx  +47 dy  +11
+   351    0.770   3 M-   1 00 2d 0c                 --- dx  +45 dy  +12
+   352    0.780   3 M-   1 00 2a 09                 --- dx  +42 dy   +9
+   353    0.785   3 M-   1 00 25 06                 --- dx  +37 dy   +6
+   354    0.795   3 M-   1 00 1c 03                 --- dx  +28 dy   +3
+   355    0.800   3 M-   1 00 19 00                 --- dx  +25 dy   +0
+   356    0.810   3 M-   1 00 1b 00                 --- dx  +27 dy   +0
+   357    0.815   3 M-   1 00 20 ff                 --- dx  +32 dy   -1
+   358    0.825   3 M-   1 00 20 fc                 --- dx  +32 dy   -4
+   359    0.835   3 M-   1 00 2a fa                 --- dx  +42 dy   -6
+   360    0.840   3 M-   1 00 32 f8                 --- dx  +50 dy   -8
+   361    0.850   3 M-   1 00 37 f7                 --- dx  +55 dy   -9
+   362    0.855   3 M-   1 00 36 f3                 --- dx  +54 dy  -13
+   363    0.865   3 M-   1 00 33 ef                 --- dx  +51 dy  -17
+   364    0.870   3 M-   1 00 2e f0                 --- dx  +46 dy  -16
+   365    0.880   3 M-   1 00 27 ea                 --- dx  +39 dy  -22
+   366    0.890   3 M-   1 00 22 e6                 --- dx  +34 dy  -26
+   367    0.900   3 M-   1 00 18 e7                 --- dx  +24 dy  -25
+   368    0.910   3 M-   1 00 10 e7                 --- dx  +16 dy  -25
+   369    0.910   3 M-   1 00 08 ea                 --- dx   +8 dy  -22
+   370    0.920   3 M-   1 00 01 e9                 --- dx   +1 dy  -23
+   371    0.930   3 M-   1 00 f9 ed                 --- dx   -7 dy  -19
+   372    0.940   3 M-   1 00 f2 e6                 --- dx  -14 dy  -26
+   373    0.950   3 M-   1 00 ed e4                 --- dx  -19 dy  -28
+   374    0.950   3 M-   1 00 e9 e5                 --- dx  -23 dy  -27
+   375    0.960   3 M-   1 00 e1 e4                 --- dx  -31 dy  -28
+   376    0.970   3 M-   1 00 dc ea                 --- dx  -36 dy  -22
+   377    0.980   3 M-   1 00 d5 ec                 --- dx  -43 dy  -20
+   378    0.980   3 M-   1 00 cd f3                 --- dx  -51 dy  -13
+   379    0.990   3 M-   1 00 c5 fa                 --- dx  -59 dy   -6
+   380    1.000   3 M-   1 00 c6 fe                 --- dx  -58 dy   -2
+   381    1.010   3 M-   1 00 c1 00                 --- dx  -63 dy   +0
+   382    1.020   3 M-   1 00 be 00                 --- dx  -66 dy   +0
+   383    1.025   3 M-   1 00 bb 00                 --- dx  -69 dy   +0
+   384    1.035   3 M-   1 00 bc 03                 --- dx  -68 dy   +3
+   385    1.040   3 M-   1 00 c0 05                 --- dx  -64 dy   +5
+   386    1.050   3 M-   1 00 bd 07                 --- dx  -67 dy   +7
+   387    1.060   3 M-   1 00 ca 08                 --- dx  -54 dy   +8
+   388    1.065   3 M-   1 00 ce 08                 --- dx  -50 dy   +8
+   389    1.075   3 M-   1 00 d7 08                 --- dx  -41 dy   +8
+   390    1.080   3 M-   1 00 e0 08                 --- dx  -32 dy   +8
+   391    1.090   3 M-   1 00 e7 09                 --- dx  -25 dy   +9
+   392    1.100   3 M-   1 00 ea 0a                 --- dx  -22 dy  +10
+   393    1.105   3 M-   1 00 f7 08                 --- dx   -9 dy   +8
+   394    1.115   3 M-   1 00 fa 07                 --- dx   -6 dy   +7
+   395    1.120   3 M-   1 00 fe 09                 --- dx   -2 dy   +9
+   396    1.130   3 M-   1 00 fe 09                 --- dx   -2 dy   +9
+   397    1.135   3 M-   1 00 fe 0b                 --- dx   -2 dy  +11
+   398    1.145   3 M-   1 00 00 0a                 --- dx   +0 dy  +10
+   399    1.155   3 M-   1 00 00 0f                 --- dx   +0 dy  +15
+   400    1.160   3 M-   1 00 ff 13                 --- dx   -1 dy  +19
+   401    1.170   3 M-   1 00 ff 13                 --- dx   -1 dy  +19
+   402    1.175   3 M-   1 00 fe 16                 --- dx   -2 dy  +22
+   403    1.185   3 M-   1 00 00 16                 --- dx   +0 dy  +22
+   404    1.190   3 M-   1 00 ff 17                 --- dx   -1 dy  +23
+   405    1.200   3 M-   1 00 ff 20                 --- dx   -1 dy  +32
+   406    1.205   3 M-   1 00 00 17                 --- dx   +0 dy  +23
+   407    1.215   3 M-   1 00 03 1a                 --- dx   +3 dy  +26
+   408    1.225   3 M-   1 00 04 18                 --- dx   +4 dy  +24
+   409    1.230   3 M-   1 00 07 24                 --- dx   +7 dy  +36
+   410    1.240   3 M-   1 00 09 1e                 --- dx   +9 dy  +30
+   411    1.245   3 M-   1 00 07 15                 --- dx   +7 dy  +21
+   412    1.255   3 M-   1 00 0c 20                 --- dx  +12 dy  +32
+   413    1.260   3 M-   1 00 0e 1b                 --- dx  +14 dy  +27
+   414    1.270   3 M-   1 00 0e 1a                 --- dx  +14 dy  +26
+   415    1.280   3 M-   1 00 0e 1b                 --- dx  +14 dy  +27
+   416    1.285   3 M-   1 00 0d 1a                 --- dx  +13 dy  +26
+   417    1.290   3 M-   1 01 00 00                 L-- dx   +0 dy   +0
+   418    1.295   3 M-   1 01 0a 18                 L-- dx  +10 dy  +24
+   419    1.300   3 M-   1 01 08 11                 L-- dx   +8 dy  +17
+   420    1.310   3 M-   1 01 09 11                 L-- dx   +9 dy  +17
+   421    1.315   3 M-   1 01 09 11                 L-- dx   +9 dy  +17
+   422    1.325   3 M-   1 01 0d 18                 L-- dx  +13 dy  +24
+   423    1.335   3 M-   1 01 09 14                 L-- dx   +9 dy  +20
+   424    1.340   3 M-   1 01 0b 13                 L-- dx  +11 dy  +19
+   425    1.350   3 M-   1 01 0a 13                 L-- dx  +10 dy  +19
+   426    1.355   3 M-   1 01 09 15                 L-- dx   +9 dy  +21
+   427    1.365   3 M-   1 01 0b 15                 L-- dx  +11 dy  +21
+   428    1.375   3 M-   1 01 0a 15                 L-- dx  +10 dy  +21
+   429    1.380   3 M-   1 01 0a 17                 L-- dx  +10 dy  +23
+   430    1.390   3 M-   1 01 0d 1c                 L-- dx  +13 dy  +28
+   431    1.395   3 M-   1 01 08 15                 L-- dx   +8 dy  +21
+   432    1.405   3 M-   1 01 08 15                 L-- dx   +8 dy  +21
+   433    1.410   3 M-   1 01 08 16                 L-- dx   +8 dy  +22
+   434    1.420   3 M-   1 01 08 15                 L-- dx   +8 dy  +21
+   435    1.430   3 M-   1 01 08 16                 L-- dx   +8 dy  +22
+   436    1.435   3 M-   1 01 07 15                 L-- dx   +7 dy  +21
+   437    1.445   3 M-   1 01 09 1a                 L-- dx   +9 dy  +26
+   438    1.450   3 M-   1 01 06 13                 L-- dx   +6 dy  +19
+   439    1.460   3 M-   1 01 07 15                 L-- dx   +7 dy  +21
+   440    1.470   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   441    1.470   3 M-   1 00 05 14                 --- dx   +5 dy  +20
+   442    1.480   3 M-   1 00 06 15                 --- dx   +6 dy  +21
+   443    1.490   3 M-   1 00 06 17                 --- dx   +6 dy  +23
+   444    1.490   3 M-   1 00 05 15                 --- dx   +5 dy  +21
+   445    1.500   3 M-   1 00 04 17                 --- dx   +4 dy  +23
+   446    1.510   3 M-   1 00 04 1f                 --- dx   +4 dy  +31
+   447    1.520   3 M-   1 00 01 18                 --- dx   +1 dy  +24
+   448    1.520   3 M-   1 00 00 19                 --- dx   +0 dy  +25
+   449    1.530   3 M-   1 00 00 1a                 --- dx   +0 dy  +26
+   450    1.540   3 M-   1 00 fe 1c                 --- dx   -2 dy  +28
+   451    1.550   3 M-   1 00 fd 1d                 --- dx   -3 dy  +29
+   452    1.560   3 M-   1 00 fe 1d                 --- dx   -2 dy  +29
+   453    1.560   3 M-   1 00 fb 1d                 --- dx   -5 dy  +29
+   454    1.570   3 M-   1 00 fa 26                 --- dx   -6 dy  +38
+   455    1.580   3 M-   1 00 fc 19                 --- dx   -4 dy  +25
+   456    1.590   3 M-   1 00 fb 17                 --- dx   -5 dy  +23
+   457    1.600   3 M-   1 00 fc 13                 --- dx   -4 dy  +19
+   458    1.605   3 M-   1 00 fd 0d                 --- dx   -3 dy  +13
+   459    1.615   3 M-   1 00 fc 09                 --- dx   -4 dy   +9
+   460    1.620   3 M-   1 00 ff 03                 --- dx   -1 dy   +3
+   461    1.650   3 M-   1 08 00 00                 --- dx   +0 dy   +0
+   462    1.660   3 M-   1 08 00 f6                 --- dx   +0 dy  -10
+   463    1.670   3 M-   1 08 03 f0                 --- dx   +3 dy  -16
+   464    1.675   3 M-   1 08 04 ec                 --- dx   +4 dy  -20
+   465    1.685   3 M-   1 08 05 ed                 --- dx   +5 dy  -19
+   466    1.690   3 M-   1 08 03 ee                 --- dx   +3 dy  -18
+   467    1.700   3 M-   1 08 02 f0                 --- dx   +2 dy  -16
+   468    1.710   3 M-   1 08 00 f7                 --- dx   +0 dy   -9
+   469    1.715   3 M-   1 08 00 fe                 --- dx   +0 dy   -2
+   470    1.725   3 M-   1 08 00 f7                 --- dx   +0 dy   -9
+   471    1.730   3 M-   1 08 00 f5                 --- dx   +0 dy  -11
+   472    1.740   3 M-   1 08 01 f5                 --- dx   +1 dy  -11
+   473    1.745   3 M-   1 08 00 fc                 --- dx   +0 dy   -4
+   474    1.755   3 M-   1 08 00 ff                 --- dx   +0 dy   -1
+   475    1.770   3 M-   1 08 03 fe                 --- dx   +3 dy   -2
+   476    1.780   3 M-   1 08 03 fe                 --- dx   +3 dy   -2
+   477    1.785   3 M-   1 08 03 fe                 --- dx   +3 dy   -2
+   478    1.795   3 M-   1 08 07 fb                 --- dx   +7 dy   -5
+   479    1.805   3 M-   1 08 07 fa                 --- dx   +7 dy   -6
+   480    1.810   3 M-   1 08 0f f4                 --- dx  +15 dy  -12
+   481    1.820   3 M-   1 08 0c f7                 --- dx  +12 dy   -9
+   482    1.825   3 M-   1 08 09 f4                 --- dx   +9 dy  -12
+   483    1.835   3 M-   1 08 0b f4                 --- dx  +11 dy  -12
+   484    1.840   3 M-   1 08 07 f2                 --- dx   +7 dy  -14
+   485    1.855   3 M-   1 08 07 f2                 --- dx   +7 dy  -14
+   486    1.860   3 M-   1 08 01 fb                 --- dx   +1 dy   -5
+   487    1.865   3 M-   1 08 03 fa                 --- dx   +3 dy   -6
+   488    1.875   3 M-   1 08 00 f9                 --- dx   +0 dy   -7
+   489    1.880   3 M-   1 08 fa fa                 --- dx   -6 dy   -6
+   490    1.890   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   491    1.895   3 M-   1 00 fc fc                 --- dx   -4 dy   -4
+   492    1.900   3 M-   1 00 fb fd                 --- dx   -5 dy   -3
+   493    1.905   3 M-   1 00 fd fe                 --- dx   -3 dy   -2
+   494    1.915   3 M-   1 00 fe 00                 --- dx   -2 dy   +0
+   495    1.955   3 M-   1 00 00 fd                 --- dx   +0 dy   -3
+   496    1.960   3 M-   1 08 00 00                 --- dx   +0 dy   +0
+   497    1.965   3 M-   1 08 09 f4                 --- dx   +9 dy  -12
+   498    1.970   3 M-   1 08 0d f1                 --- dx  +13 dy  -15
+   499    1.980   3 M-   1 08 11 f4                 --- dx  +17 dy  -12
+   500    1.985   3 M-   1 08 14 f5                 --- dx  +20 dy  -11
+   501    1.995   3 M-   1 08 12 f9                 --- dx  +18 dy   -7
+   502    2.000   3 M-   1 08 09 fc                 --- dx   +9 dy   -4
+   503    2.010   3 M-   1 08 03 ff                 --- dx   +3 dy   -1
+   504    2.015   3 M-   1 08 02 00                 --- dx   +2 dy   +0
+   505    2.025   3 M-   1 08 02 00                 --- dx   +2 dy   +0
+   506    2.035   3 M-   1 08 01 ff                 --- dx   +1 dy   -1
+   507    2.060   3 M-   1 08 03 01                 --- dx   +3 dy   +1
+   508    2.060   3 M-   1 08 00 02                 --- dx   +0 dy   +2
+   509    2.070   3 M-   1 08 fe 02                 --- dx   -2 dy   +2
+   510    2.080   3 M-   1 08 fa 04                 --- dx   -6 dy   +4
+   511    2.090   3 M-   1 08 fa 04                 --- dx   -6 dy   +4
+   512    2.100   3 M-   1 08 f8 05                 --- dx   -8 dy   +5
+   513    2.100   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   514    2.110   3 M-   1 00 f9 04                 --- dx   -7 dy   +4
+   515    2.115   3 M-   1 00 fb 03                 --- dx   -5 dy   +3
+   516    2.120   3 M-   1 00 fe 00                 --- dx   -2 dy   +0
+   517    2.130   3 M-   1 00 00 01                 --- dx   +0 dy   +1
+   518    2.155   3 M-   1 00 ff 01                 --- dx   -1 dy   +1
+   519    2.175   3 M-   1 00 04 f7                 --- dx   +4 dy   -9
+   520    2.180   3 M-   1 00 05 f9                 --- dx   +5 dy   -7
+   521    2.190   3 M-   1 00 07 fa                 --- dx   +7 dy   -6
+   522    2.200   3 M-   1 00 08 fb                 --- dx   +8 dy   -5
+   523    2.205   3 M-   1 00 0b fe                 --- dx  +11 dy   -2
+   524    2.215   3 M-   1 00 06 ff                 --- dx   +6 dy   -1
+   525    2.220   3 M-   1 00 07 ff                 --- dx   +7 dy   -1
+   526    2.230   3 M-   1 00 03 00                 --- dx   +3 dy   +0
+   527    2.240   3 M-   1 00 02 ff                 --- dx   +2 dy   -1
+   528    2.245   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+   529    2.500   3 M-   1 00 09 f5                 --- dx   +9 dy  -11
+   530    2.505   3 M-   1 00 08 f8                 --- dx   +8 dy   -8
+   531    2.515   3 M-   1 00 07 fb                 --- dx   +7 dy   -5
+   532    2.520   3 M-   1 00 08 fb                 --- dx   +8 dy   -5
+   533    2.530   3 M-   1 00 0a fe                 --- dx  +10 dy   -2
+   534    2.540   3 M-   1 00 0f 00                 --- dx  +15 dy   +0
+   535    2.545   3 M-   1 00 12 00                 --- dx  +18 dy   +0
+   536    2.555   3 M-   1 00 1b fe                 --- dx  +27 dy   -2
+   537    2.560   3 M-   1 00 10 fc                 --- dx  +16 dy   -4
+   538    2.565   3 M-   1 10 00 00                 --- dx   +0 dy   +0
+   539    2.570   3 M-   1 10 08 f7                 --- dx   +8 dy   -9
+   540    2.575   3 M-   1 10 07 f9                 --- dx   +7 dy   -7
+   541    2.585   3 M-   1 10 05 f9                 --- dx   +5 dy   -7
+   542    2.595   3 M-   1 10 03 f8                 --- dx   +3 dy   -8
+   543    2.600   3 M-   1 10 04 f9                 --- dx   +4 dy   -7
+   544    2.610   3 M-   1 10 03 f8                 --- dx   +3 dy   -8
+   545    2.615   3 M-   1 10 02 fb                 --- dx   +2 dy   -5
+   546    2.625   3 M-   1 10 02 fc                 --- dx   +2 dy   -4
+   547    2.630   3 M-   1 10 02 fb                 --- dx   +2 dy   -5
+   548    2.640   3 M-   1 10 02 fc                 --- dx   +2 dy   -4
+   549    2.670   3 M-   1 10 ed 00                 --- dx  -19 dy   +0
+   550    2.680   3 M-   1 10 eb 00                 --- dx  -21 dy   +0
+   551    2.690   3 M-   1 10 e8 fa                 --- dx  -24 dy   -6
+   552    2.700   3 M-   1 10 e6 f7                 --- dx  -26 dy   -9
+   553    2.700   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   554    2.710   3 M-   1 00 e9 f0                 --- dx  -23 dy  -16
+   555    2.710   3 M-   1 00 ec ec                 --- dx  -20 dy  -20
+   556    2.720   3 M-   1 00 e7 e5                 --- dx  -25 dy  -27
+   557    2.730   3 M-   1 00 f1 ec                 --- dx  -15 dy  -20
+   558    2.730   3 M-   1 00 f5 ee                 --- dx  -11 dy  -18
+   559    2.740   3 M-   1 00 fc f2                 --- dx   -4 dy  -14
+   560    2.750   3 M-   1 00 ff f9                 --- dx   -1 dy   -7
+   561    2.760   3 M-   1 00 00 fd                 --- dx   +0 dy   -3
+   562    2.770   3 M-   1 00 05 01                 --- dx   +5 dy   +1
+   563    2.775   3 M-   1 00 07 04                 --- dx   +7 dy   +4
+   564    2.785   3 M-   1 00 10 0a                 --- dx  +16 dy  +10
+   565    2.790   3 M-   1 10 00 00                 --- dx   +0 dy   +0
+   566    2.795   3 M-   1 10 09 01                 --- dx   +9 dy   +1
+   567    2.800   3 M-   1 10 0b ff                 --- dx  +11 dy   -1
+   568    2.810   3 M-   1 10 0d fc                 --- dx  +13 dy   -4
+   569    2.815   3 M-   1 10 0c fd                 --- dx  +12 dy   -3
+   570    2.825   3 M-   1 10 0d ff                 --- dx  +13 dy   -1
+   571    2.830   3 M-   1 10 0f ff                 --- dx  +15 dy   -1
+   572    2.840   3 M-   1 10 0e 01                 --- dx  +14 dy   +1
+   573    2.850   3 M-   1 10 0b 04                 --- dx  +11 dy   +4
+   574    2.855   3 M-   1 10 0a 0a                 --- dx  +10 dy  +10
+   575    2.865   3 M-   1 10 04 08                 --- dx   +4 dy   +8
+   576    2.870   3 M-   1 10 01 05                 --- dx   +1 dy   +5
+   577    2.880   3 M-   1 10 ff 00                 --- dx   -1 dy   +0
+   578    2.885   3 M-   1 10 fe 00                 --- dx   -2 dy   +0
+   579    2.895   3 M-   1 10 fc fc                 --- dx   -4 dy   -4
+   580    2.905   3 M-   1 10 f3 ec                 --- dx  -13 dy  -20
+   581    2.910   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   582    2.915   3 M-   1 00 f0 ea                 --- dx  -16 dy  -22
+   583    2.920   3 M-   1 00 ee e8                 --- dx  -18 dy  -24
+   584    2.925   3 M-   1 00 ec eb                 --- dx  -20 dy  -21
+   585    2.935   3 M-   1 00 e2 e8                 --- dx  -30 dy  -24
+   586    2.940   3 M-   1 00 ee f5                 --- dx  -18 dy  -11
+   587    2.950   3 M-   1 00 f6 00                 --- dx  -10 dy   +0
+   588    2.955   3 M-   1 00 f9 09                 --- dx   -7 dy   +9
+   589    2.965   3 M-   1 00 f5 13                 --- dx  -11 dy  +19
+   590    2.975   3 M-   1 00 f0 12                 --- dx  -16 dy  +18
+   591    2.980   3 M-   1 00 ef 0c                 --- dx  -17 dy  +12
+   592    2.990   3 M-   1 00 ef 06                 --- dx  -17 dy   +6
+   593    2.995   3 M-   1 00 f6 05                 --- dx  -10 dy   +5
+   594    3.005   3 M-   1 00 fa 01                 --- dx   -6 dy   +1
+   595    3.010   3 M-   1 00 ff 00                 --- dx   -1 dy   +0
+   596    3.085   3 M-   1 00 0d 0b                 --- dx  +13 dy  +11
+   597    3.090   3 M-   1 00 0e 10                 --- dx  +14 dy  +16
+   598    3.100   3 M-   1 00 10 14                 --- dx  +16 dy  +20
+   599    3.110   3 M-   1 00 12 15                 --- dx  +18 dy  +21
+   600    3.115   3 M-   1 00 10 10                 --- dx  +16 dy  +16
+   601    3.125   3 M-   1 00 0e 09                 --- dx  +14 dy   +9
+   602    3.130   3 M-   1 08 00 00                 --- dx   +0 dy   +0
+   603    3.140   3 M-   1 08 0d 01                 --- dx  +13 dy   +1
+   604    3.140   3 M-   1 08 05 fe                 --- dx   +5 dy   -2
+   605    3.150   3 M-   1 08 01 00                 --- dx   +1 dy   +0
+   606    3.170   3 M-   1 08 03 ff                 --- dx   +3 dy   -1
+   607    3.180   3 M-   1 08 06 fc                 --- dx   +6 dy   -4
+   608    3.180   3 M-   1 08 09 fa                 --- dx   +9 dy   -6
+   609    3.190   3 M-   1 08 0c f6                 --- dx  +12 dy  -10
+   610    3.200   3 M-   1 08 0c f8                 --- dx  +12 dy   -8
+   611    3.210   3 M-   1 08 09 f7                 --- dx   +9 dy   -9
+   612    3.220   3 M-   1 08 08 fa                 --- dx   +8 dy   -6
+   613    3.225   3 M-   1 08 01 f6                 --- dx   +1 dy  -10
+   614    3.235   3 M-   1 08 fb f8                 --- dx   -5 dy   -8
+   615    3.240   3 M-   1 08 f4 f6                 --- dx  -12 dy  -10
+   616    3.250   3 M-   1 08 ef f6                 --- dx  -17 dy  -10
+   617    3.260   3 M-   1 08 e8 fa                 --- dx  -24 dy   -6
+   618    3.265   3 M-   1 08 ec ff                 --- dx  -20 dy   -1
+   619    3.275   3 M-   1 08 ea 06                 --- dx  -22 dy   +6
+   620    3.280   3 M-   1 08 eb 0b                 --- dx  -21 dy  +11
+   621    3.290   3 M-   1 08 e8 0d                 --- dx  -24 dy  +13
+   622    3.295   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   623    3.300   3 M-   1 00 e6 0f                 --- dx  -26 dy  +15
+   624    3.305   3 M-   1 00 e3 10                 --- dx  -29 dy  +16
+   625    3.315   3 M-   1 00 e3 12                 --- dx  -29 dy  +18
+   626    3.320   3 M-   1 00 e1 17                 --- dx  -31 dy  +23
+   627    3.330   3 M-   1 00 f1 0f                 --- dx  -15 dy  +15
+   628    3.335   3 M-   1 00 f9 10                 --- dx   -7 dy  +16
+   629    3.345   3 M-   1 00 01 14                 --- dx   +1 dy  +20
+   630    3.350   3 M-   1 08 00 00                 --- dx   +0 dy   +0
+   631    3.355   3 M-   1 08 09 19                 --- dx   +9 dy  +25
+   632    3.360   3 M-   1 08 0b 1f                 --- dx  +11 dy  +31
+   633    3.370   3 M-   1 08 0b 19                 --- dx  +11 dy  +25
+   634    3.375   3 M-   1 08 0b 1c                 --- dx  +11 dy  +28
+   635    3.385   3 M-   1 08 0b 1d                 --- dx  +11 dy  +29
+   636    3.390   3 M-   1 08 0a 1c                 --- dx  +10 dy  +28
+   637    3.400   3 M-   1 08 09 1d                 --- dx   +9 dy  +29
+   638    3.405   3 M-   1 08 08 1c                 --- dx   +8 dy  +28
+   639    3.415   3 M-   1 08 0a 1a                 --- dx  +10 dy  +26
+   640    3.425   3 M-   1 08 0a 1a                 --- dx  +10 dy  +26
+   641    3.430   3 M-   1 08 03 11                 --- dx   +3 dy  +17
+   642    3.440   3 M-   1 08 01 15                 --- dx   +1 dy  +21
+   643    3.445   3 M-   1 08 fa 0e                 --- dx   -6 dy  +14
+   644    3.455   3 M-   1 08 f9 0c                 --- dx   -7 dy  +12
+   645    3.460   3 M-   1 08 f7 0a                 --- dx   -9 dy  +10
+   646    3.470   3 M-   1 08 f7 06                 --- dx   -9 dy   +6
+   647    3.475   3 M-   1 08 f7 03                 --- dx   -9 dy   +3
+   648    3.485   3 M-   1 08 f4 00                 --- dx  -12 dy   +0
+   649    3.495   3 M-   1 08 f1 00                 --- dx  -15 dy   +0
+   650    3.500   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   651    3.505   3 M-   1 00 f5 02                 --- dx  -11 dy   +2
+   652    3.510   3 M-   1 00 f8 02                 --- dx   -8 dy   +2
+   653    3.515   3 M-   1 00 f7 03                 --- dx   -9 dy   +3
+   654    3.525   3 M-   1 00 f9 01                 --- dx   -7 dy   +1
+   655    3.535   3 M-   1 00 fd 01                 --- dx   -3 dy   +1
+   656    3.540   3 M-   1 00 ff 00                 --- dx   -1 dy   +0
+   657    3.580   3 M-   1 00 fd f1                 --- dx   -3 dy  -15
+   658    3.590   3 M-   1 00 fb f0                 --- dx   -5 dy  -16
+   659    3.600   3 M-   1 00 fb ed                 --- dx   -5 dy  -19
+   660    3.600   3 M-   1 00 f9 eb                 --- dx   -7 dy  -21
+   661    3.610   3 M-   1 00 f7 ee                 --- dx   -9 dy  -18
+   662    3.620   3 M-   1 00 f9 ed                 --- dx   -7 dy  -19
+   663    3.630   3 M-   1 00 f9 f3                 --- dx   -7 dy  -13
+   664    3.640   3 M-   1 00 ff ff                 --- dx   -1 dy   -1
+   665    3.700   3 M-   1 00 0e fe                 --- dx  +14 dy   -2
+   666    3.705   3 M-   1 00 18 00                 --- dx  +24 dy   +0
+   667    3.715   3 M-   1 00 28 0d                 --- dx  +40 dy  +13
+   668    3.725   3 M-   1 00 39 16                 --- dx  +57 dy  +22
+   669    3.730   3 M-   1 00 47 1d                 --- dx  +71 dy  +29
+   670    3.740   3 M-   1 00 52 23                 --- dx  +82 dy  +35
+   671    3.745   3 M-   1 00 4b 25                 --- dx  +75 dy  +37
+   672    3.755   3 M-   1 00 3e 19                 --- dx  +62 dy  +25
+   673    3.760   3 M-   1 00 30 0c                 --- dx  +48 dy  +12
+   674    3.770   3 M-   1 00 1c 01                 --- dx  +28 dy   +1
+   675    3.780   3 M-   1 00 13 f9                 --- dx  +19 dy   -7
+   676    3.785   3 M-   1 00 0b f5                 --- dx  +11 dy  -11
+   677    3.795   3 M-   1 00 03 f3                 --- dx   +3 dy  -13
+   678    3.800   3 M-   1 10 00 00                 --- dx   +0 dy   +0
+   679    3.805   3 M-   1 10 ff f5                 --- dx   -1 dy  -11
+   680    3.810   3 M-   1 10 fe fd                 --- dx   -2 dy   -3
+   681    3.845   3 M-   1 10 00 ff                 --- dx   +0 dy   -1
+   682    3.850   3 M-   1 10 00 f8                 --- dx   +0 dy   -8
+   683    3.860   3 M-   1 10 fd f3                 --- dx   -3 dy  -13
+   684    3.865   3 M-   1 10 fe f3                 --- dx   -2 dy  -13
+   685    3.875   3 M-   1 10 fc f6                 --- dx   -4 dy  -10
+   686    3.880   3 M-   1 10 fc f9                 --- dx   -4 dy   -7
+   687    3.890   3 M-   1 10 fd fb                 --- dx   -3 dy   -5
+   688    3.900   3 M-   1 10 fd f9                 --- dx   -3 dy   -7
+   689    3.905   3 M-   1 10 ff f9                 --- dx   -1 dy   -7
+   690    3.915   3 M-   1 10 fd f7                 --- dx   -3 dy   -9
+   691    3.920   3 M-   1 10 ff f5                 --- dx   -1 dy  -11
+   692    3.930   3 M-   1 10 fe f3                 --- dx   -2 dy  -13
+   693    3.935   3 M-   1 10 fc f0                 --- dx   -4 dy  -16
+   694    3.945   3 M-   1 10 fb ef                 --- dx   -5 dy  -17
+   695    3.955   3 M-   1 10 f8 ef                 --- dx   -8 dy  -17
+   696    3.960   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   697    3.965   3 M-   1 00 f4 e6                 --- dx  -12 dy  -26
+   698    3.970   3 M-   1 00 f5 ed                 --- dx  -11 dy  -19
+   699    3.975   3 M-   1 00 f4 ec                 --- dx  -12 dy  -20
+   700    3.985   3 M-   1 00 f5 ee                 --- dx  -11 dy  -18
+   701    3.990   3 M-   1 00 f5 ee                 --- dx  -11 dy  -18
+   702    4.000   3 M-   1 00 f3 f0                 --- dx  -13 dy  -16
+   703    4.010   3 M-   1 00 f1 f4                 --- dx  -15 dy  -12
+   704    4.015   3 M-   1 00 f0 fa                 --- dx  -16 dy   -6
+   705    4.025   3 M-   1 00 e7 fe                 --- dx  -25 dy   -2
+   706    4.030   3 M-   1 00 ec 00                 --- dx  -20 dy   +0
+   707    4.040   3 M-   1 00 ef 00                 --- dx  -17 dy   +0
+   708    4.045   3 M-   1 00 f4 00                 --- dx  -12 dy   +0
+   709    4.055   3 M-   1 00 f9 00                 --- dx   -7 dy   +0
+   710    4.065   3 M-   1 00 fc 00                 --- dx   -4 dy   +0
+   711    4.070   3 M-   1 00 fc fd                 --- dx   -4 dy   -3
+   712    4.080   3 M-   1 00 fe ff                 --- dx   -2 dy   -1
+   713    4.085   3 M-   1 00 fb fc                 --- dx   -5 dy   -4
+   714    4.095   3 M-   1 00 fb fc                 --- dx   -5 dy   -4
+   715    4.100   3 M-   1 01 00 00                 L-- dx   +0 dy   +0
+   716    4.105   3 M-   1 01 fd fd                 L-- dx   -3 dy   -3
+   717    4.110   3 M-   1 01 00 fe                 L-- dx   +0 dy   -2
+   718    4.120   3 M-   1 01 ff 00                 L-- dx   -1 dy   +0
+   719    4.160   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   720    4.200   3 M-   1 00 00 f8                 --- dx   +0 dy   -8
+   721    4.210   3 M-   1 00 00 fc                 --- dx   +0 dy   -4
+   722    4.220   3 M-   1 00 00 fe                 --- dx   +0 dy   -2
+   723    4.230   3 M-   1 00 00 fe                 --- dx   +0 dy   -2
+   724    4.240   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+   725    4.240   3 M-   1 01 00 00                 L-- dx   +0 dy   +0
+   726    4.300   3 M-   1 01 00 ff                 L-- dx   +0 dy   -1
+   727    4.305   3 M-   1 01 00 fe                 L-- dx   +0 dy   -2
+   728    4.315   3 M-   1 01 00 ff                 L-- dx   +0 dy   -1
+   729    4.320   3 M-   1 01 ff fe                 L-- dx   -1 dy   -2
+   730    4.330   3 M-   1 01 00 ff                 L-- dx   +0 dy   -1
+   731    4.340   3 M-   1 01 f7 f4                 L-- dx   -9 dy  -12
+   732    4.345   3 M-   1 01 f7 f7                 L-- dx   -9 dy   -9
+   733    4.350   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   734    4.355   3 M-   1 00 f4 f4                 --- dx  -12 dy  -12
+   735    4.360   3 M-   1 00 f4 f4                 --- dx  -12 dy  -12
+   736    4.370   3 M-   1 00 f4 f4                 --- dx  -12 dy  -12
+   737    4.375   3 M-   1 00 f6 f5                 --- dx  -10 dy  -11
+   738    4.385   3 M-   1 00 f5 f5                 --- dx  -11 dy  -11
+   739    4.395   3 M-   1 00 f4 f2                 --- dx  -12 dy  -14
+   740    4.400   3 M-   1 00 f8 f4                 --- dx   -8 dy  -12
+   741    4.410   3 M-   1 00 f9 f4                 --- dx   -7 dy  -12
+   742    4.415   3 M-   1 00 fa f5                 --- dx   -6 dy  -11
+   743    4.425   3 M-   1 00 fa f4                 --- dx   -6 dy  -12
+   744    4.430   3 M-   1 00 fc f7                 --- dx   -4 dy   -9
+   745    4.440   3 M-   1 00 fd f7                 --- dx   -3 dy   -9
+   746    4.450   3 M-   1 00 fc f8                 --- dx   -4 dy   -8
+   747    4.455   3 M-   1 00 fc f9                 --- dx   -4 dy   -7
+   748    4.465   3 M-   1 00 fd fa                 --- dx   -3 dy   -6
+   749    4.470   3 M-   1 00 fe fd                 --- dx   -2 dy   -3
+   750    4.480   3 M-   1 00 fe fe                 --- dx   -2 dy   -2
+   751    4.485   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+   752    4.495   3 M-   1 00 ff 00                 --- dx   -1 dy   +0
+   753    4.505   3 M-   1 01 00 00                 L-- dx   +0 dy   +0
+   754    4.550   3 M-   1 01 f7 0a                 L-- dx   -9 dy  +10
+   755    4.560   3 M-   1 01 fa 09                 L-- dx   -6 dy   +9
+   756    4.565   3 M-   1 01 fa 08                 L-- dx   -6 dy   +8
+   757    4.575   3 M-   1 01 fa 06                 L-- dx   -6 dy   +6
+   758    4.580   3 M-   1 01 fa 06                 L-- dx   -6 dy   +6
+   759    4.590   3 M-   1 01 fc 04                 L-- dx   -4 dy   +4
+   760    4.600   3 M-   1 01 fa 06                 L-- dx   -6 dy   +6
+   761    4.605   3 M-   1 01 fb 04                 L-- dx   -5 dy   +4
+   762    4.610   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   763    4.615   3 M-   1 00 fc 04                 --- dx   -4 dy   +4
+   764    4.620   3 M-   1 00 fc 04                 --- dx   -4 dy   +4
+   765    4.630   3 M-   1 00 ff 02                 --- dx   -1 dy   +2
+   766    4.635   3 M-   1 00 fe 02                 --- dx   -2 dy   +2
+   767    4.740   3 M-   1 00 0a 04                 --- dx  +10 dy   +4
+   768    4.750   3 M-   1 00 06 03                 --- dx   +6 dy   +3
+   769    4.760   3 M-   1 00 07 02                 --- dx   +7 dy   +2
+   770    4.770   3 M-   1 00 05 00                 --- dx   +5 dy   +0
+   771    4.770   3 M-   1 00 03 00                 --- dx   +3 dy   +0
+   772    4.790   3 M-   1 00 01 00                 --- dx   +1 dy   +0
+   773    4.840   3 M-   1 00 02 01                 --- dx   +2 dy   +1
+   774    4.855   3 M-   1 00 03 02                 --- dx   +3 dy   +2
+   775    4.865   3 M-   1 00 02 02                 --- dx   +2 dy   +2
+   776    4.870   3 M-   1 04 00 00                 --M dx   +0 dy   +0
+   777    4.875   3 M-   1 04 01 02                 --M dx   +1 dy   +2
+   778    4.880   3 M-   1 04 02 02                 --M dx   +2 dy   +2
+   779    4.885   3 M-   1 04 02 03                 --M dx   +2 dy   +3
+   780    4.895   3 M-   1 04 02 04                 --M dx   +2 dy   +4
+   781    4.900   3 M-   1 04 01 04                 --M dx   +1 dy   +4
+   782    4.910   3 M-   1 04 01 03                 --M dx   +1 dy   +3
+   783    4.920   3 M-   1 04 01 03                 --M dx   +1 dy   +3
+   784    4.925   3 M-   1 04 01 03                 --M dx   +1 dy   +3
+   785    4.935   3 M-   1 04 00 02                 --M dx   +0 dy   +2
+   786    4.940   3 M-   1 04 01 01                 --M dx   +1 dy   +1
+   787    4.960   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   788    4.965   3 M-   1 00 00 01                 --- dx   +0 dy   +1
+   789    5.000   3 M-   1 00 01 00                 --- dx   +1 dy   +0
+   790    5.005   3 M-   1 00 02 00                 --- dx   +2 dy   +0
+   791    5.015   3 M-   1 00 02 00                 --- dx   +2 dy   +0
+   792    5.025   3 M-   1 00 02 00                 --- dx   +2 dy   +0
+   793    5.030   3 M-   1 00 03 00                 --- dx   +3 dy   +0
+   794    5.040   3 M-   1 00 01 00                 --- dx   +1 dy   +0
+   795    5.045   3 M-   1 00 01 00                 --- dx   +1 dy   +0
+   796    5.080   3 M-   1 04 00 00                 --M dx   +0 dy   +0
+   797    5.100   3 M-   1 04 01 00                 --M dx   +1 dy   +0
+   798    5.170   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   799    5.175   3 M-   1 00 02 07                 --- dx   +2 dy   +7
+   800    5.185   3 M-   1 00 02 04                 --- dx   +2 dy   +4
+   801    5.190   3 M-   1 00 03 04                 --- dx   +3 dy   +4
+   802    5.200   3 M-   1 00 02 04                 --- dx   +2 dy   +4
+   803    5.205   3 M-   1 00 01 02                 --- dx   +1 dy   +2
+   804    5.215   3 M-   1 00 01 02                 --- dx   +1 dy   +2
+   805    5.225   3 M-   1 00 01 02                 --- dx   +1 dy   +2
+   806    5.235   3 M-   1 00 00 01                 --- dx   +0 dy   +1
+   807    5.255   3 M-   1 00 00 01                 --- dx   +0 dy   +1
+   808    5.275   3 M-   1 04 00 00                 --M dx   +0 dy   +0
+   809    5.325   3 M-   1 04 00 01                 --M dx   +0 dy   +1
+   810    5.335   3 M-   1 04 fe 09                 --M dx   -2 dy   +9
+   811    5.345   3 M-   1 04 00 08                 --M dx   +0 dy   +8
+   812    5.350   3 M-   1 04 00 0a                 --M dx   +0 dy  +10
+   813    5.360   3 M-   1 04 00 08                 --M dx   +0 dy   +8
+   814    5.365   3 M-   1 04 00 0a                 --M dx   +0 dy  +10
+   815    5.375   3 M-   1 04 00 07                 --M dx   +0 dy   +7
+   816    5.380   3 M-   1 04 00 07                 --M dx   +0 dy   +7
+   817    5.390   3 M-   1 04 00 08                 --M dx   +0 dy   +8
+   818    5.400   3 M-   1 04 00 07                 --M dx   +0 dy   +7
+   819    5.405   3 M-   1 04 00 08                 --M dx   +0 dy   +8
+   820    5.415   3 M-   1 04 01 06                 --M dx   +1 dy   +6
+   821    5.420   3 M-   1 04 01 04                 --M dx   +1 dy   +4
+   822    5.425   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   823    5.430   3 M-   1 00 00 01                 --- dx   +0 dy   +1
+   824    5.455   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   825    5.485   3 M-   1 00 00 02                 --- dx   +0 dy   +2
+   826    5.505   3 M-   1 00 03 ff                 --- dx   +3 dy   -1
+   827    5.510   3 M-   1 00 fe 0c                 --- dx   -2 dy  +12
+   828    5.520   3 M-   1 00 fa 12                 --- dx   -6 dy  +18
+   829    5.525   3 M-   1 00 fc 0c                 --- dx   -4 dy  +12
+   830    5.535   3 M-   1 00 fc 0c                 --- dx   -4 dy  +12
+   831    5.540   3 M-   1 00 fe 06                 --- dx   -2 dy   +6
+   832    5.545   3 M-   1 02 00 00                 -R- dx   +0 dy   +0
+   833    5.550   3 M-   1 02 ff 05                 -R- dx   -1 dy   +5
+   834    5.560   3 M-   1 02 ff 05                 -R- dx   -1 dy   +5
+   835    5.565   3 M-   1 02 ff 04                 -R- dx   -1 dy   +4
+   836    5.575   3 M-   1 02 00 04                 -R- dx   +0 dy   +4
+   837    5.580   3 M-   1 02 00 01                 -R- dx   +0 dy   +1
+   838    5.590   3 M-   1 02 00 01                 -R- dx   +0 dy   +1
+   839    5.605   3 M-   1 02 02 02                 -R- dx   +2 dy   +2
+   840    5.615   3 M-   1 02 03 02                 -R- dx   +3 dy   +2
+   841    5.620   3 M-   1 02 01 00                 -R- dx   +1 dy   +0
+   842    5.630   3 M-   1 02 01 01                 -R- dx   +1 dy   +1
+   843    5.660   3 M-   1 02 01 00                 -R- dx   +1 dy   +0
+   844    5.665   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   845    5.670   3 M-   1 00 06 f8                 --- dx   +6 dy   -8
+   846    5.675   3 M-   1 00 06 fb                 --- dx   +6 dy   -5
+   847    5.680   3 M-   1 00 08 fa                 --- dx   +8 dy   -6
+   848    5.690   3 M-   1 00 09 fc                 --- dx   +9 dy   -4
+   849    5.695   3 M-   1 00 09 fc                 --- dx   +9 dy   -4
+   850    5.705   3 M-   1 00 05 fe                 --- dx   +5 dy   -2
+   851    5.715   3 M-   1 00 06 fd                 --- dx   +6 dy   -3
+   852    5.720   3 M-   1 00 05 fe                 --- dx   +5 dy   -2
+   853    5.730   3 M-   1 00 02 fe                 --- dx   +2 dy   -2
+   854    5.735   3 M-   1 00 01 ff                 --- dx   +1 dy   -1
+   855    5.745   3 M-   1 00 01 00                 --- dx   +1 dy   +0
+   856    5.750   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+   857    5.770   3 M-   1 02 00 00                 -R- dx   +0 dy   +0
+   858    5.865   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   859    5.915   3 M-   1 00 05 fe                 --- dx   +5 dy   -2
+   860    5.925   3 M-   1 00 01 00                 --- dx   +1 dy   +0
+   861    5.935   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+   862    5.940   3 M-   1 00 01 fd                 --- dx   +1 dy   -3
+   863    5.950   3 M-   1 00 00 fb                 --- dx   +0 dy   -5
+   864    5.955   3 M-   1 00 00 fc                 --- dx   +0 dy   -4
+   865    5.965   3 M-   1 00 00 fb                 --- dx   +0 dy   -5
+   866    5.970   3 M-   1 00 00 fc                 --- dx   +0 dy   -4
+   867    5.980   3 M-   1 00 00 fc                 --- dx   +0 dy   -4
+   868    5.990   3 M-   1 00 00 fc                 --- dx   +0 dy   -4
+   869    5.995   3 M-   1 00 01 f8                 --- dx   +1 dy   -8
+   870    6.005   3 M-   1 00 01 f8                 --- dx   +1 dy   -8
+   871    6.010   3 M-   1 00 00 f9                 --- dx   +0 dy   -7
+   872    6.020   3 M-   1 00 01 f9                 --- dx   +1 dy   -7
+   873    6.025   3 M-   1 00 00 fa                 --- dx   +0 dy   -6
+   874    6.035   3 M-   1 00 00 f8                 --- dx   +0 dy   -8
+   875    6.045   3 M-   1 00 00 fd                 --- dx   +0 dy   -3
+   876    6.050   3 M-   1 00 ff f9                 --- dx   -1 dy   -7
+   877    6.060   3 M-   1 00 ff fb                 --- dx   -1 dy   -5
+   878    6.065   3 M-   1 00 ff f9                 --- dx   -1 dy   -7
+   879    6.075   3 M-   1 00 fe fa                 --- dx   -2 dy   -6
+   880    6.080   3 M-   1 00 fe fa                 --- dx   -2 dy   -6
+   881    6.090   3 M-   1 00 f7 f4                 --- dx   -9 dy  -12
+   882    6.100   3 M-   1 00 f9 fc                 --- dx   -7 dy   -4
+   883    6.105   3 M-   1 00 f5 fc                 --- dx  -11 dy   -4
+   884    6.115   3 M-   1 00 f5 fd                 --- dx  -11 dy   -3
+   885    6.120   3 M-   1 00 f4 fe                 --- dx  -12 dy   -2
+   886    6.130   3 M-   1 00 f3 ff                 --- dx  -13 dy   -1
+   887    6.135   3 M-   1 00 f4 ff                 --- dx  -12 dy   -1
+   888    6.145   3 M-   1 00 f4 00                 --- dx  -12 dy   +0
+   889    6.155   3 M-   1 00 f7 00                 --- dx   -9 dy   +0
+   890    6.160   3 M-   1 00 f8 03                 --- dx   -8 dy   +3
+   891    6.165   3 M-   1 01 00 00                 L-- dx   +0 dy   +0
+   892    6.170   3 M-   1 01 fb 02                 L-- dx   -5 dy   +2
+   893    6.175   3 M-   1 01 fc 02                 L-- dx   -4 dy   +2
+   894    6.185   3 M-   1 01 fe 02                 L-- dx   -2 dy   +2
+   895    6.195   3 M-   1 01 ff 02                 L-- dx   -1 dy   +2
+   896    6.200   3 M-   1 01 ff 00                 L-- dx   -1 dy   +0
+   897    6.255   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   898    6.260   3 M-   1 00 fd 05                 --- dx   -3 dy   +5
+   899    6.265   3 M-   1 00 fd 05                 --- dx   -3 dy   +5
+   900    6.275   3 M-   1 00 ff 03                 --- dx   -1 dy   +3
+   901    6.280   3 M-   1 00 fd 06                 --- dx   -3 dy   +6
+   902    6.290   3 M-   1 00 ff 03                 --- dx   -1 dy   +3
+   903    6.295   3 M-   1 00 ff 06                 --- dx   -1 dy   +6
+   904    6.305   3 M-   1 00 fe 11                 --- dx   -2 dy  +17
+   905    6.310   3 M-   1 00 fe 0a                 --- dx   -2 dy  +10
+   906    6.320   3 M-   1 00 fb 0c                 --- dx   -5 dy  +12
+   907    6.325   3 M-   1 01 00 00                 L-- dx   +0 dy   +0
+   908    6.330   3 M-   1 01 fe 0b                 L-- dx   -2 dy  +11
+   909    6.335   3 M-   1 01 fd 0a                 L-- dx   -3 dy  +10
+   910    6.345   3 M-   1 01 fe 07                 L-- dx   -2 dy   +7
+   911    6.350   3 M-   1 01 fd 0a                 L-- dx   -3 dy  +10
+   912    6.360   3 M-   1 01 fd 0b                 L-- dx   -3 dy  +11
+   913    6.365   3 M-   1 01 ff 0b                 L-- dx   -1 dy  +11
+   914    6.375   3 M-   1 01 fe 0e                 L-- dx   -2 dy  +14
+   915    6.385   3 M-   1 01 00 0e                 L-- dx   +0 dy  +14
+   916    6.395   3 M-   1 01 fe 10                 L-- dx   -2 dy  +16
+   917    6.405   3 M-   1 01 ff 0f                 L-- dx   -1 dy  +15
+   918    6.405   3 M-   1 01 fe 11                 L-- dx   -2 dy  +17
+   919    6.415   3 M-   1 01 ff 10                 L-- dx   -1 dy  +16
+   920    6.425   3 M-   1 01 fd 11                 L-- dx   -3 dy  +17
+   921    6.435   3 M-   1 01 fd 0f                 L-- dx   -3 dy  +15
+   922    6.445   3 M-   1 01 fd 0f                 L-- dx   -3 dy  +15
+   923    6.445   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   924    6.455   3 M-   1 00 fe 0f                 --- dx   -2 dy  +15
+   925    6.460   3 M-   1 00 fe 0e                 --- dx   -2 dy  +14
+   926    6.465   3 M-   1 00 00 0d                 --- dx   +0 dy  +13
+   927    6.475   3 M-   1 00 00 0c                 --- dx   +0 dy  +12
+   928    6.480   3 M-   1 00 00 0b                 --- dx   +0 dy  +11
+   929    6.490   3 M-   1 00 01 0c                 --- dx   +1 dy  +12
+   930    6.500   3 M-   1 00 02 08                 --- dx   +2 dy   +8
+   931    6.505   3 M-   1 00 01 09                 --- dx   +1 dy   +9
+   932    6.515   3 M-   1 01 00 00                 L-- dx   +0 dy   +0
+   933    6.520   3 M-   1 01 01 08                 L-- dx   +1 dy   +8
+   934    6.525   3 M-   1 01 01 07                 L-- dx   +1 dy   +7
+   935    6.530   3 M-   1 01 00 06                 L-- dx   +0 dy   +6
+   936    6.535   3 M-   1 01 00 06                 L-- dx   +0 dy   +6
+   937    6.545   3 M-   1 01 01 06                 L-- dx   +1 dy   +6
+   938    6.555   3 M-   1 01 01 05                 L-- dx   +1 dy   +5
+   939    6.560   3 M-   1 01 01 07                 L-- dx   +1 dy   +7
+   940    6.570   3 M-   1 01 01 08                 L-- dx   +1 dy   +8
+   941    6.575   3 M-   1 01 02 09                 L-- dx   +2 dy   +9
+   942    6.585   3 M-   1 01 02 09                 L-- dx   +2 dy   +9
+   943    6.590   3 M-   1 01 05 0a                 L-- dx   +5 dy  +10
+   944    6.600   3 M-   1 01 05 08                 L-- dx   +5 dy   +8
+   945    6.605   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   946    6.610   3 M-   1 00 06 07                 --- dx   +6 dy   +7
+   947    6.615   3 M-   1 00 06 05                 --- dx   +6 dy   +5
+   948    6.625   3 M-   1 00 04 03                 --- dx   +4 dy   +3
+   949    6.630   3 M-   1 00 03 02                 --- dx   +3 dy   +2
+   950    6.640   3 M-   1 00 02 01                 --- dx   +2 dy   +1
+   951    6.645   3 M-   1 00 01 02                 --- dx   +1 dy   +2
+   952    6.655   3 M-   1 00 01 01                 --- dx   +1 dy   +1
+   953    6.665   3 M-   1 00 01 01                 --- dx   +1 dy   +1
+   954    6.680   3 M-   1 00 00 03                 --- dx   +0 dy   +3
+   955    6.690   3 M-   1 00 00 06                 --- dx   +0 dy   +6
+   956    6.700   3 M-   1 00 00 07                 --- dx   +0 dy   +7
+   957    6.705   3 M-   1 00 00 0a                 --- dx   +0 dy  +10
+   958    6.710   3 M-   1 01 00 00                 L-- dx   +0 dy   +0
+   959    6.715   3 M-   1 01 00 0a                 L-- dx   +0 dy  +10
+   960    6.720   3 M-   1 01 00 0b                 L-- dx   +0 dy  +11
+   961    6.730   3 M-   1 01 00 0c                 L-- dx   +0 dy  +12
+   962    6.735   3 M-   1 01 02 0e                 L-- dx   +2 dy  +14
+   963    6.745   3 M-   1 01 03 10                 L-- dx   +3 dy  +16
+   964    6.755   3 M-   1 01 04 0f                 L-- dx   +4 dy  +15
+   965    6.760   3 M-   1 01 02 0e                 L-- dx   +2 dy  +14
+   966    6.770   3 M-   1 01 01 0c                 L-- dx   +1 dy  +12
+   967    6.775   3 M-   1 01 00 09                 L-- dx   +0 dy   +9
+   968    6.785   3 M-   1 01 01 07                 L-- dx   +1 dy   +7
+   969    6.790   3 M-   1 01 00 04                 L-- dx   +0 dy   +4
+   970    6.800   3 M-   1 00 00 00                 --- dx   +0 dy   +0
+   971    6.805   3 M-   1 00 00 03                 --- dx   +0 dy   +3
+   972    6.810   3 M-   1 00 00 01                 --- dx   +0 dy   +1
+   973    6.870   3 M-   1 00 fb ff                 --- dx   -5 dy   -1
+   974    6.875   3 M-   1 00 fd ff                 --- dx   -3 dy   -1
+   975    6.885   3 M-   1 00 f5 fc                 --- dx  -11 dy   -4
+   976    6.895   3 M-   1 00 f8 ff                 --- dx   -8 dy   -1
+   977    6.900   3 M-   1 00 f5 fd                 --- dx  -11 dy   -3
+   978    6.910   3 M-   1 00 f9 fe                 --- dx   -7 dy   -2
+   979    6.915   3 M-   1 00 f8 ff                 --- dx   -8 dy   -1
+   980    6.925   3 M-   1 00 fa fe                 --- dx   -6 dy   -2
+   981    6.935   3 M-   1 00 fc ff                 --- dx   -4 dy   -1
+   982    6.945   3 M-   1 00 fe 00                 --- dx   -2 dy   +0
+   983    6.955   3 M-   1 00 fe 00                 --- dx   -2 dy   +0
+   984    6.955   3 M-   1 00 fe 00                 --- dx   -2 dy   +0
+   985    6.965   3 M-   1 00 fe 00                 --- dx   -2 dy   +0
+   986    6.975   3 M-   1 00 fe 00                 --- dx   -2 dy   +0
+   987    6.985   3 M-   1 00 fe 00                 --- dx   -2 dy   +0
+   988    6.985   3 M-   1 00 fe 00                 --- dx   -2 dy   +0
+   989    6.995   3 M-   1 00 fd 00                 --- dx   -3 dy   +0
+   990    7.005   3 M-   1 00 fe 01                 --- dx   -2 dy   +1
+   991    7.015   3 M-   1 00 fe 01                 --- dx   -2 dy   +1
+   992    7.025   3 M-   1 00 fe 01                 --- dx   -2 dy   +1
+   993    7.025   3 M-   1 00 fd 01                 --- dx   -3 dy   +1
+   994    7.035   3 M-   1 00 fc 02                 --- dx   -4 dy   +2
+   995    7.045   3 M-   1 00 fc 01                 --- dx   -4 dy   +1
+   996    7.055   3 M-   1 00 fc 02                 --- dx   -4 dy   +2
+   997    7.065   3 M-   1 00 fd 02                 --- dx   -3 dy   +2
+   998    7.070   3 M-   1 00 fd 01                 --- dx   -3 dy   +1
+   999    7.080   3 M-   1 00 fc 01                 --- dx   -4 dy   +1
+  1000    7.085   3 M-   1 00 fd 00                 --- dx   -3 dy   +0
+  1001    7.095   3 M-   1 00 fc 01                 --- dx   -4 dy   +1
+  1002    7.100   3 M-   1 00 fc 01                 --- dx   -4 dy   +1
+  1003    7.110   3 M-   1 00 fb 01                 --- dx   -5 dy   +1
+  1004    7.120   3 M-   1 00 fb 00                 --- dx   -5 dy   +0
+  1005    7.125   3 M-   1 00 fa 00                 --- dx   -6 dy   +0
+  1006    7.135   3 M-   1 00 f9 fe                 --- dx   -7 dy   -2
+  1007    7.140   3 M-   1 00 f8 fd                 --- dx   -8 dy   -3
+  1008    7.150   3 M-   1 00 f9 fc                 --- dx   -7 dy   -4
+  1009    7.155   3 M-   1 00 fb fe                 --- dx   -5 dy   -2
+  1010    7.165   3 M-   1 00 f7 fd                 --- dx   -9 dy   -3
+  1011    7.175   3 M-   1 00 f8 fb                 --- dx   -8 dy   -5
+  1012    7.180   3 M-   1 00 f9 fc                 --- dx   -7 dy   -4
+  1013    7.190   3 M-   1 00 fb fc                 --- dx   -5 dy   -4
+  1014    7.195   3 M-   1 00 fc fd                 --- dx   -4 dy   -3
+  1015    7.205   3 M-   1 00 fd fd                 --- dx   -3 dy   -3
+  1016    7.210   3 M-   1 00 fe ff                 --- dx   -2 dy   -1
+  1017    7.220   3 M-   1 00 ff ff                 --- dx   -1 dy   -1
+  1018    7.230   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+  1019    7.235   3 M-   1 00 ff fe                 --- dx   -1 dy   -2
+  1020    7.245   3 M-   1 00 ff fe                 --- dx   -1 dy   -2
+  1021    7.250   3 M-   1 00 ff fc                 --- dx   -1 dy   -4
+  1022    7.260   3 M-   1 00 ff fd                 --- dx   -1 dy   -3
+  1023    7.270   3 M-   1 00 fe fd                 --- dx   -2 dy   -3
+  1024    7.275   3 M-   1 00 ff fc                 --- dx   -1 dy   -4
+  1025    7.285   3 M-   1 00 fd fa                 --- dx   -3 dy   -6
+  1026    7.290   3 M-   1 00 ff fd                 --- dx   -1 dy   -3
+  1027    7.300   3 M-   1 00 fd fb                 --- dx   -3 dy   -5
+  1028    7.305   3 M-   1 00 fe fa                 --- dx   -2 dy   -6
+  1029    7.315   3 M-   1 00 fe fc                 --- dx   -2 dy   -4
+  1030    7.325   3 M-   1 00 fe fb                 --- dx   -2 dy   -5
+  1031    7.330   3 M-   1 00 ff fc                 --- dx   -1 dy   -4
+  1032    7.340   3 M-   1 00 fd fc                 --- dx   -3 dy   -4
+  1033    7.345   3 M-   1 00 ff fd                 --- dx   -1 dy   -3
+  1034    7.355   3 M-   1 00 00 fe                 --- dx   +0 dy   -2
+  1035    7.360   3 M-   1 00 fe fd                 --- dx   -2 dy   -3
+  1036    7.370   3 M-   1 00 ff ff                 --- dx   -1 dy   -1
+  1037    7.380   3 M-   1 00 ff fe                 --- dx   -1 dy   -2
+  1038    7.395   3 M-   1 00 00 fe                 --- dx   +0 dy   -2
+  1039    7.405   3 M-   1 00 ff ff                 --- dx   -1 dy   -1
+  1040    7.410   3 M-   1 00 00 fe                 --- dx   +0 dy   -2
+  1041    7.420   3 M-   1 00 00 fe                 --- dx   +0 dy   -2
+  1042    7.425   3 M-   1 00 00 fe                 --- dx   +0 dy   -2
+  1043    7.435   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+  1044    7.445   3 M-   1 00 00 fe                 --- dx   +0 dy   -2
+  1045    7.450   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+  1046    7.460   3 M-   1 00 ff fd                 --- dx   -1 dy   -3
+  1047    7.465   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+  1048    7.475   3 M-   1 00 00 fe                 --- dx   +0 dy   -2
+  1049    7.480   3 M-   1 00 00 fd                 --- dx   +0 dy   -3
+  1050    7.490   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+  1051    7.500   3 M-   1 00 00 fe                 --- dx   +0 dy   -2
+  1052    7.505   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+  1053    7.515   3 M-   1 00 00 fe                 --- dx   +0 dy   -2
+  1054    7.525   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+  1055    7.545   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+  1056    7.575   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+  1057    7.585   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+  1058    7.585   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+  1059    7.605   3 M-   1 00 00 ff                 --- dx   +0 dy   -1
+  1060    7.965   3 M-   1 00 06 08                 --- dx   +6 dy   +8
+  1061    7.970   3 M-   1 00 06 08                 --- dx   +6 dy   +8
+  1062    7.980   3 M-   1 00 0a 0a                 --- dx  +10 dy  +10
+  1063    7.990   3 M-   1 00 0b 0a                 --- dx  +11 dy  +10
+  1064    7.995   3 M-   1 00 0d 0d                 --- dx  +13 dy  +13
+  1065    8.005   3 M-   1 00 10 0d                 --- dx  +16 dy  +13
+  1066    8.010   3 M-   1 00 11 0e                 --- dx  +17 dy  +14
+  1067    8.020   3 M-   1 00 1e 15                 --- dx  +30 dy  +21
+  1068    8.025   3 M-   1 00 18 12                 --- dx  +24 dy  +18
+  1069    8.035   3 M-   1 00 1b 12                 --- dx  +27 dy  +18
+  1070    8.045   3 M-   1 00 1d 12                 --- dx  +29 dy  +18
+  1071    8.050   3 M-   1 00 1f 11                 --- dx  +31 dy  +17
+  1072    8.060   3 M-   1 00 19 0d                 --- dx  +25 dy  +13
+  1073    8.065   3 M-   1 00 1f 10                 --- dx  +31 dy  +16
+  1074    8.075   3 M-   1 00 24 10                 --- dx  +36 dy  +16
+  1075    8.080   3 M-   1 00 20 0d                 --- dx  +32 dy  +13
+  1076    8.090   3 M-   1 00 26 0b                 --- dx  +38 dy  +11
+  1077    8.100   3 M-   1 00 23 08                 --- dx  +35 dy   +8
+  1078    8.105   3 M-   1 00 24 06                 --- dx  +36 dy   +6
+  1079    8.115   3 M-   1 00 23 01                 --- dx  +35 dy   +1
+  1080    8.125   3 M-   1 00 24 00                 --- dx  +36 dy   +0
+  1081    8.135   3 M-   1 00 20 fc                 --- dx  +32 dy   -4
+  1082    8.135   3 M-   1 00 1a f8                 --- dx  +26 dy   -8
+  1083    8.145   3 M-   1 00 1d f6                 --- dx  +29 dy  -10
+  1084    8.155   3 M-   1 00 10 f8                 --- dx  +16 dy   -8
+  1085    8.165   3 M-   1 00 13 f0                 --- dx  +19 dy  -16
+  1086    8.175   3 M-   1 00 0c ed                 --- dx  +12 dy  -19
+  1087    8.175   3 M-   1 00 08 e9                 --- dx   +8 dy  -23
+  1088    8.185   3 M-   1 00 04 e9                 --- dx   +4 dy  -23
+  1089    8.195   3 M-   1 00 01 e8                 --- dx   +1 dy  -24
+  1090    8.205   3 M-   1 00 fc e7                 --- dx   -4 dy  -25
+  1091    8.215   3 M-   1 00 f3 dc                 --- dx  -13 dy  -36
+  1092    8.215   3 M-   1 00 ee e3                 --- dx  -18 dy  -29
+  1093    8.225   3 M-   1 00 eb e2                 --- dx  -21 dy  -30
+  1094    8.235   3 M-   1 00 ed e8                 --- dx  -19 dy  -24
+  1095    8.245   3 M-   1 00 e5 e5                 --- dx  -27 dy  -27
+  1096    8.250   3 M-   1 00 db df                 --- dx  -37 dy  -33
+  1097    8.260   3 M-   1 00 d5 e3                 --- dx  -43 dy  -29
+  1098    8.270   3 M-   1 00 c9 e7                 --- dx  -55 dy  -25
+  1099    8.275   3 M-   1 00 ca ee                 --- dx  -54 dy  -18
+  1100    8.285   3 M-   1 00 ce f1                 --- dx  -50 dy  -15
+  1101    8.290   3 M-   1 00 cd f4                 --- dx  -51 dy  -12
+  1102    8.300   3 M-   1 00 ca f8                 --- dx  -54 dy   -8
+  1103    8.305   3 M-   1 00 cf fa                 --- dx  -49 dy   -6
+  1104    8.315   3 M-   1 00 d1 fc                 --- dx  -47 dy   -4
+  1105    8.325   3 M-   1 00 ce 00                 --- dx  -50 dy   +0
+  1106    8.330   3 M-   1 00 d6 01                 --- dx  -42 dy   +1
+  1107    8.340   3 M-   1 00 dc 08                 --- dx  -36 dy   +8
+  1108    8.345   3 M-   1 00 e4 0a                 --- dx  -28 dy  +10
+  1109    8.355   3 M-   1 00 eb 0d                 --- dx  -21 dy  +13
+  1110    8.360   3 M-   1 00 ed 15                 --- dx  -19 dy  +21
+  1111    8.370   3 M-   1 00 fa 17                 --- dx   -6 dy  +23
+  1112    8.380   3 M-   1 00 ff 1b                 --- dx   -1 dy  +27
+  1113    8.385   3 M-   1 00 01 1d                 --- dx   +1 dy  +29
+  1114    8.395   3 M-   1 00 06 1a                 --- dx   +6 dy  +26
+  1115    8.400   3 M-   1 00 08 1e                 --- dx   +8 dy  +30
+  1116    8.410   3 M-   1 00 0b 23                 --- dx  +11 dy  +35
+  1117    8.415   3 M-   1 00 11 24                 --- dx  +17 dy  +36
+  1118    8.425   3 M-   1 00 15 24                 --- dx  +21 dy  +36
+  1119    8.435   3 M-   1 00 1b 23                 --- dx  +27 dy  +35
+  1120    8.440   3 M-   1 00 1a 24                 --- dx  +26 dy  +36
+  1121    8.450   3 M-   1 00 1e 27                 --- dx  +30 dy  +39
+  1122    8.455   3 M-   1 00 1c 24                 --- dx  +28 dy  +36
+  1123    8.465   3 M-   1 00 1d 23                 --- dx  +29 dy  +35
+  1124    8.470   3 M-   1 00 1b 22                 --- dx  +27 dy  +34
+  1125    8.480   3 M-   1 00 18 1e                 --- dx  +24 dy  +30
+  1126    8.490   3 M-   1 00 15 1b                 --- dx  +21 dy  +27
+  1127    8.495   3 M-   1 00 13 19                 --- dx  +19 dy  +25
+  1128    8.505   3 M-   1 00 12 19                 --- dx  +18 dy  +25
+  1129    8.510   3 M-   1 00 0b 16                 --- dx  +11 dy  +22
+  1130    8.520   3 M-   1 00 07 15                 --- dx   +7 dy  +21
+  1131    8.530   3 M-   1 00 05 17                 --- dx   +5 dy  +23
+  1132    8.535   3 M-   1 00 03 1a                 --- dx   +3 dy  +26
+  1133    8.545   3 M-   1 00 01 19                 --- dx   +1 dy  +25
+  1134    8.550   3 M-   1 00 00 1a                 --- dx   +0 dy  +26
+  1135    8.560   3 M-   1 00 ff 1b                 --- dx   -1 dy  +27
+  1136    8.565   3 M-   1 00 fb 19                 --- dx   -5 dy  +25
+  1137    8.575   3 M-   1 00 f8 18                 --- dx   -8 dy  +24
+  1138    8.585   3 M-   1 00 f5 18                 --- dx  -11 dy  +24
+  1139    8.590   3 M-   1 00 f5 12                 --- dx  -11 dy  +18
+  1140    8.600   3 M-   1 00 f1 0f                 --- dx  -15 dy  +15
+  1141    8.605   3 M-   1 00 ee 0c                 --- dx  -18 dy  +12
+  1142    8.615   3 M-   1 00 e9 0c                 --- dx  -23 dy  +12
+  1143    8.620   3 M-   1 00 e4 08                 --- dx  -28 dy   +8
+  1144    8.630   3 M-   1 00 dc 05                 --- dx  -36 dy   +5
+  1145    8.640   3 M-   1 00 d7 02                 --- dx  -41 dy   +2
+  1146    8.645   3 M-   1 00 d2 01                 --- dx  -46 dy   +1
+  1147    8.655   3 M-   1 00 ca 00                 --- dx  -54 dy   +0
+  1148    8.660   3 M-   1 00 c5 00                 --- dx  -59 dy   +0
+  1149    8.675   3 M-   1 00 c1 ff                 --- dx  -63 dy   -1
+  1150    8.675   3 M-   1 00 bd fd                 --- dx  -67 dy   -3
+  1151    8.685   3 M-   1 00 bc fd                 --- dx  -68 dy   -3
+  1152    8.695   3 M-   1 00 ba fc                 --- dx  -70 dy   -4
+  1153    8.705   3 M-   1 00 b8 fa                 --- dx  -72 dy   -6
+  1154    8.715   3 M-   1 00 b1 fa                 --- dx  -79 dy   -6
+  1155    8.715   3 M-   1 00 bc f9                 --- dx  -68 dy   -7
+  1156    8.725   3 M-   1 00 c0 f8                 --- dx  -64 dy   -8
+  1157    8.735   3 M-   1 00 c6 f7                 --- dx  -58 dy   -9
+  1158    8.745   3 M-   1 00 cc f7                 --- dx  -52 dy   -9
+  1159    8.745   3 M-   1 00 d6 f8                 --- dx  -42 dy   -8
+  1160    8.755   3 M-   1 00 d8 fa                 --- dx  -40 dy   -6
+  1161    8.765   3 M-   1 00 e8 fa                 --- dx  -24 dy   -6
+  1162    8.775   3 M-   1 00 ea fb                 --- dx  -22 dy   -5
+  1163    8.785   3 M-   1 00 f3 fd                 --- dx  -13 dy   -3
+  1164    8.785   3 M-   1 00 f4 fc                 --- dx  -12 dy   -4
+  1165    8.795   3 M-   1 00 fa fd                 --- dx   -6 dy   -3
+  1166    8.805   3 M-   1 00 fd fc                 --- dx   -3 dy   -4
+  1167    8.815   3 M-   1 00 fc fc                 --- dx   -4 dy   -4
+  1168    8.825   3 M-   1 00 ff fa                 --- dx   -1 dy   -6
+  1169    8.830   3 M-   1 00 ff f9                 --- dx   -1 dy   -7
+  1170    8.840   3 M-   1 00 00 f0                 --- dx   +0 dy  -16
+  1171    8.845   3 M-   1 00 00 ed                 --- dx   +0 dy  -19
+  1172    8.855   3 M-   1 00 00 e8                 --- dx   +0 dy  -24
+  1173    8.865   3 M-   1 00 00 d9                 --- dx   +0 dy  -39
+  1174    8.870   3 M-   1 00 02 e2                 --- dx   +2 dy  -30
+  1175    8.880   3 M-   1 00 04 e9                 --- dx   +4 dy  -23
+  1176    8.885   3 M-   1 00 05 e0                 --- dx   +5 dy  -32
+  1177    8.895   3 M-   1 00 09 dd                 --- dx   +9 dy  -35
+  1178    8.900   3 M-   1 00 0e db                 --- dx  +14 dy  -37
+  1179    8.910   3 M-   1 00 13 d3                 --- dx  +19 dy  -45
+  1180    8.920   3 M-   1 00 11 d7                 --- dx  +17 dy  -41
+  1181    8.925   3 M-   1 00 10 d8                 --- dx  +16 dy  -40
+  1182    8.935   3 M-   1 00 10 da                 --- dx  +16 dy  -38
+  1183    8.940   3 M-   1 00 0f dc                 --- dx  +15 dy  -36
+  1184    8.950   3 M-   1 00 09 dc                 --- dx   +9 dy  -36
+  1185    8.955   3 M-   1 00 08 dd                 --- dx   +8 dy  -35
+  1186    8.965   3 M-   1 00 07 dc                 --- dx   +7 dy  -36
+  1187    8.975   3 M-   1 00 04 da                 --- dx   +4 dy  -38
+  1188    8.980   3 M-   1 00 01 df                 --- dx   +1 dy  -33
+  1189    8.990   3 M-   1 00 01 e3                 --- dx   +1 dy  -29
+  1190    8.995   3 M-   1 00 00 e4                 --- dx   +0 dy  -28
+  1191    9.005   3 M-   1 00 fb e6                 --- dx   -5 dy  -26
+  1192    9.010   3 M-   1 00 f6 e5                 --- dx  -10 dy  -27
+  1193    9.020   3 M-   1 00 f4 e5                 --- dx  -12 dy  -27
+  1194    9.030   3 M-   1 00 f3 ec                 --- dx  -13 dy  -20
+  1195    9.035   3 M-   1 00 ec e6                 --- dx  -20 dy  -26
+  1196    9.045   3 M-   1 00 eb ec                 --- dx  -21 dy  -20
+  1197    9.050   3 M-   1 00 e6 ef                 --- dx  -26 dy  -17
+  1198    9.060   3 M-   1 00 e5 ee                 --- dx  -27 dy  -18
+  1199    9.065   3 M-   1 00 e5 f3                 --- dx  -27 dy  -13
+  1200    9.075   3 M-   1 00 e4 f5                 --- dx  -28 dy  -11
+  1201    9.085   3 M-   1 00 df f8                 --- dx  -33 dy   -8
+  1202    9.090   3 M-   1 00 dd fa                 --- dx  -35 dy   -6
+  1203    9.100   3 M-   1 00 df fd                 --- dx  -33 dy   -3
+  1204    9.105   3 M-   1 00 dc fe                 --- dx  -36 dy   -2
+  1205    9.115   3 M-   1 00 e2 03                 --- dx  -30 dy   +3
+  1206    9.120   3 M-   1 00 e5 09                 --- dx  -27 dy   +9
+  1207    9.130   3 M-   1 00 e3 0a                 --- dx  -29 dy  +10
+  1208    9.140   3 M-   1 00 e4 0f                 --- dx  -28 dy  +15
+  1209    9.145   3 M-   1 00 e6 11                 --- dx  -26 dy  +17
+  1210    9.155   3 M-   1 00 ec 17                 --- dx  -20 dy  +23
+  1211    9.160   3 M-   1 00 f3 19                 --- dx  -13 dy  +25
+  1212    9.170   3 M-   1 00 f7 1e                 --- dx   -9 dy  +30
+  1213    9.180   3 M-   1 00 fb 1d                 --- dx   -5 dy  +29
+  1214    9.185   3 M-   1 00 fc 1e                 --- dx   -4 dy  +30
+  1215    9.195   3 M-   1 00 ff 1e                 --- dx   -1 dy  +30
+  1216    9.200   3 M-   1 00 00 1e                 --- dx   +0 dy  +30
+  1217    9.210   3 M-   1 00 04 1e                 --- dx   +4 dy  +30
+  1218    9.215   3 M-   1 00 09 1f                 --- dx   +9 dy  +31
+  1219    9.225   3 M-   1 00 08 19                 --- dx   +8 dy  +25
+  1220    9.230   3 M-   1 00 09 1d                 --- dx   +9 dy  +29
+  1221    9.240   3 M-   1 00 0e 21                 --- dx  +14 dy  +33
+  1222    9.250   3 M-   1 00 11 1e                 --- dx  +17 dy  +30
+  1223    9.255   3 M-   1 00 19 21                 --- dx  +25 dy  +33
+  1224    9.265   3 M-   1 00 20 23                 --- dx  +32 dy  +35
+  1225    9.275   3 M-   1 00 26 28                 --- dx  +38 dy  +40
+  1226    9.285   3 M-   1 00 2e 33                 --- dx  +46 dy  +51
+  1227    9.285   3 M-   1 00 35 37                 --- dx  +53 dy  +55
+  1228    9.295   3 M-   1 00 3a 39                 --- dx  +58 dy  +57
+  1229    9.305   3 M-   1 00 42 3d                 --- dx  +66 dy  +61
+  1230    9.315   3 M-   1 00 3b 37                 --- dx  +59 dy  +55
+  1231    9.325   3 M-   1 00 34 2f                 --- dx  +52 dy  +47
+  1232    9.325   3 M-   1 00 35 2b                 --- dx  +53 dy  +43
+  1233    9.335   3 M-   1 00 35 28                 --- dx  +53 dy  +40
+  1234    9.345   3 M-   1 00 2f 23                 --- dx  +47 dy  +35
+  1235    9.355   3 M-   1 00 2e 22                 --- dx  +46 dy  +34
+  1236    9.365   3 M-   1 00 2c 1e                 --- dx  +44 dy  +30
+  1237    9.365   3 M-   1 00 30 20                 --- dx  +48 dy  +32
+  1238    9.375   3 M-   1 00 27 1b                 --- dx  +39 dy  +27
+  1239    9.385   3 M-   1 00 24 1a                 --- dx  +36 dy  +26
+  1240    9.395   3 M-   1 00 20 18                 --- dx  +32 dy  +24
+  1241    9.400   3 M-   1 00 1c 18                 --- dx  +28 dy  +24
+  1242    9.410   3 M-   1 00 1a 19                 --- dx  +26 dy  +25
+  1243    9.420   3 M-   1 00 17 1a                 --- dx  +23 dy  +26
+  1244    9.425   3 M-   1 00 10 16                 --- dx  +16 dy  +22
+  1245    9.435   3 M-   1 00 12 1d                 --- dx  +18 dy  +29
+  1246    9.440   3 M-   1 00 0e 1b                 --- dx  +14 dy  +27
+  1247    9.450   3 M-   1 00 0e 1b                 --- dx  +14 dy  +27
+  1248    9.460   3 M-   1 00 10 1f                 --- dx  +16 dy  +31
+  1249    9.465   3 M-   1 00 10 1f                 --- dx  +16 dy  +31
+  1250    9.475   3 M-   1 00 11 22                 --- dx  +17 dy  +34
+  1251    9.480   3 M-   1 00 0f 23                 --- dx  +15 dy  +35
+  1252    9.490   3 M-   1 00 0e 24                 --- dx  +14 dy  +36
+  1253    9.495   3 M-   1 00 0c 23                 --- dx  +12 dy  +35
+  1254    9.505   3 M-   1 00 0a 27                 --- dx  +10 dy  +39
+  1255    9.515   3 M-   1 00 08 24                 --- dx   +8 dy  +36
+  1256    9.520   3 M-   1 00 03 23                 --- dx   +3 dy  +35
+  1257    9.530   3 M-   1 00 00 1f                 --- dx   +0 dy  +31
+  1258    9.535   3 M-   1 00 fd 1b                 --- dx   -3 dy  +27
+  1259    9.545   3 M-   1 00 f8 1b                 --- dx   -8 dy  +27
+  1260    9.550   3 M-   1 00 ef 16                 --- dx  -17 dy  +22
+  1261    9.560   3 M-   1 00 ea 12                 --- dx  -22 dy  +18
+  1262    9.570   3 M-   1 00 dd 0f                 --- dx  -35 dy  +15
+  1263    9.575   3 M-   1 00 d7 0b                 --- dx  -41 dy  +11
+  1264    9.585   3 M-   1 00 cf 08                 --- dx  -49 dy   +8
+  1265    9.590   3 M-   1 00 c7 03                 --- dx  -57 dy   +3
+  1266    9.600   3 M-   1 00 c3 00                 --- dx  -61 dy   +0
+  1267    9.605   3 M-   1 00 bd fc                 --- dx  -67 dy   -4
+  1268    9.615   3 M-   1 00 b1 fa                 --- dx  -79 dy   -6
+  1269    9.625   3 M-   1 00 c0 f8                 --- dx  -64 dy   -8
+  1270    9.630   3 M-   1 00 b1 f5                 --- dx  -79 dy  -11
+  1271    9.640   3 M-   1 00 b9 f4                 --- dx  -71 dy  -12
+  1272    9.645   3 M-   1 00 c1 f2                 --- dx  -63 dy  -14
+  1273    9.655   3 M-   1 00 be eb                 --- dx  -66 dy  -21
+  1274    9.660   3 M-   1 00 c5 ea                 --- dx  -59 dy  -22
+  1275    9.670   3 M-   1 00 cd e9                 --- dx  -51 dy  -23
+  1276    9.680   3 M-   1 00 d4 e6                 --- dx  -44 dy  -26
+  1277    9.685   3 M-   1 00 df e5                 --- dx  -33 dy  -27
+  1278    9.695   3 M-   1 00 e3 df                 --- dx  -29 dy  -33
+  1279    9.700   3 M-   1 00 ec df                 --- dx  -20 dy  -33
+  1280    9.710   3 M-   1 00 f6 dd                 --- dx  -10 dy  -35
+  1281    9.715   3 M-   1 00 fd dc                 --- dx   -3 dy  -36
+  1282    9.725   3 M-   1 00 01 db                 --- dx   +1 dy  -37
+  1283    9.735   3 M-   1 00 07 d9                 --- dx   +7 dy  -39
+  1284    9.740   3 M-   1 00 0b d8                 --- dx  +11 dy  -40
+  1285    9.750   3 M-   1 00 11 d8                 --- dx  +17 dy  -40
+  1286    9.755   3 M-   1 00 10 d9                 --- dx  +16 dy  -39
+  1287    9.765   3 M-   1 00 14 d6                 --- dx  +20 dy  -42
+  1288    9.770   3 M-   1 00 13 db                 --- dx  +19 dy  -37
+  1289    9.780   3 M-   1 00 16 df                 --- dx  +22 dy  -33
+  1290    9.790   3 M-   1 00 1a e4                 --- dx  +26 dy  -28
+  1291    9.795   3 M-   1 00 1d e7                 --- dx  +29 dy  -25
+  1292    9.805   3 M-   1 00 1c e6                 --- dx  +28 dy  -26
+  1293    9.810   3 M-   1 00 27 e3                 --- dx  +39 dy  -29
+  1294    9.820   3 M-   1 00 20 ec                 --- dx  +32 dy  -20
+  1295    9.825   3 M-   1 00 2c e8                 --- dx  +44 dy  -24
+  1296    9.835   3 M-   1 00 2b e8                 --- dx  +43 dy  -24
+  1297    9.845   3 M-   1 00 31 e7                 --- dx  +49 dy  -25
+  1298    9.855   3 M-   1 00 35 e9                 --- dx  +53 dy  -23
+  1299    9.865   3 M-   1 00 3a ed                 --- dx  +58 dy  -19
+  1300    9.865   3 M-   1 00 3d ec                 --- dx  +61 dy  -20
+  1301    9.875   3 M-   1 00 3d ec                 --- dx  +61 dy  -20
+  1302    9.885   3 M-   1 00 3b ea                 --- dx  +59 dy  -22
+  1303    9.895   3 M-   1 00 3c ea                 --- dx  +60 dy  -22
+  1304    9.905   3 M-   1 00 46 e2                 --- dx  +70 dy  -30
+  1305    9.905   3 M-   1 00 3d e3                 --- dx  +61 dy  -29
+  1306    9.915   3 M-   1 00 36 e1                 --- dx  +54 dy  -31
+  1307    9.925   3 M-   1 00 32 df                 --- dx  +50 dy  -33
+  1308    9.935   3 M-   1 00 2d de                 --- dx  +45 dy  -34
+  1309    9.935   3 M-   1 00 25 dc                 --- dx  +37 dy  -36
+  1310    9.945   3 M-   1 00 1d db                 --- dx  +29 dy  -37
+  1311    9.955   3 M-   1 00 18 d9                 --- dx  +24 dy  -39
+  1312    9.965   3 M-   1 00 14 d5                 --- dx  +20 dy  -43
+  1313    9.975   3 M-   1 00 08 dd                 --- dx   +8 dy  -35
+  1314    9.975   3 M-   1 00 ff dd                 --- dx   -1 dy  -35
+  1315    9.990   3 M-   1 00 f9 db                 --- dx   -7 dy  -37
+  1316    9.995   3 M-   1 00 f0 db                 --- dx  -16 dy  -37
+  1317   10.005   3 M-   1 00 eb d7                 --- dx  -21 dy  -41
+  1318   10.015   3 M-   1 00 e2 d5                 --- dx  -30 dy  -43
+  1319   10.020   3 M-   1 00 e4 db                 --- dx  -28 dy  -37
+  1320   10.030   3 M-   1 00 d7 d1                 --- dx  -41 dy  -47
+  1321   10.035   3 M-   1 00 d7 db                 --- dx  -41 dy  -37
+  1322   10.045   3 M-   1 00 d4 dd                 --- dx  -44 dy  -35
+  1323   10.055   3 M-   1 00 d2 e4                 --- dx  -46 dy  -28
+  1324   10.060   3 M-   1 00 d1 e7                 --- dx  -47 dy  -25
+  1325   10.070   3 M-   1 00 d3 e9                 --- dx  -45 dy  -23
+  1326   10.075   3 M-   1 00 d6 ed                 --- dx  -42 dy  -19
+  1327   10.085   3 M-   1 00 d6 ee                 --- dx  -42 dy  -18
+  1328   10.090   3 M-   1 00 d6 f1                 --- dx  -42 dy  -15
+  1329   10.100   3 M-   1 00 dc f5                 --- dx  -36 dy  -11
+  1330   10.110   3 M-   1 00 dc f7                 --- dx  -36 dy   -9
+  1331   10.115   3 M-   1 00 e0 fc                 --- dx  -32 dy   -4
+  1332   10.125   3 M-   1 00 e1 ff                 --- dx  -31 dy   -1
+  1333   10.130   3 M-   1 00 e4 02                 --- dx  -28 dy   +2
+  1334   10.140   3 M-   1 00 e6 09                 --- dx  -26 dy   +9
+  1335   10.145   3 M-   1 00 e7 0e                 --- dx  -25 dy  +14
+  1336   10.155   3 M-   1 00 e7 12                 --- dx  -25 dy  +18
+  1337   10.165   3 M-   1 00 e4 18                 --- dx  -28 dy  +24
+  1338   10.170   3 M-   1 00 e9 1b                 --- dx  -23 dy  +27
+  1339   10.180   3 M-   1 00 ea 1b                 --- dx  -22 dy  +27
+  1340   10.185   3 M-   1 00 ed 1f                 --- dx  -19 dy  +31
+  1341   10.195   3 M-   1 00 ea 21                 --- dx  -22 dy  +33
+  1342   10.200   3 M-   1 00 e9 24                 --- dx  -23 dy  +36
+  1343   10.210   3 M-   1 00 eb 2c                 --- dx  -21 dy  +44
+  1344   10.220   3 M-   1 00 f3 26                 --- dx  -13 dy  +38
+  1345   10.225   3 M-   1 00 f4 34                 --- dx  -12 dy  +52
+  1346   10.235   3 M-   1 00 fc 37                 --- dx   -4 dy  +55
+  1347   10.240   3 M-   1 00 04 3d                 --- dx   +4 dy  +61
+  1348   10.250   3 M-   1 00 14 43                 --- dx  +20 dy  +67
+  1349   10.255   3 M-   1 00 1d 45                 --- dx  +29 dy  +69
+  1350   10.265   3 M-   1 00 25 45                 --- dx  +37 dy  +69
+  1351   10.275   3 M-   1 00 2c 47                 --- dx  +44 dy  +71
+  1352   10.280   3 M-   1 00 31 4c                 --- dx  +49 dy  +76
+  1353   10.290   3 M-   1 00 36 4d                 --- dx  +54 dy  +77
+  1354   10.295   3 M-   1 00 41 55                 --- dx  +65 dy  +85
+  1355   10.305   3 M-   1 00 3e 4e                 --- dx  +62 dy  +78
+  1356   10.310   3 M-   1 00 3f 4c                 --- dx  +63 dy  +76
+  1357   10.320   3 M-   1 00 43 4e                 --- dx  +67 dy  +78
+  1358   10.330   3 M-   1 00 46 4a                 --- dx  +70 dy  +74
+  1359   10.335   3 M-   1 00 48 46                 --- dx  +72 dy  +70
+
+=== END ===
