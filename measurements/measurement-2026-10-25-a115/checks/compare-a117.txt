@@ -1,0 +1,10 @@
+a117 accopen: 0 px differ
+a117 pick1: 0 px differ
+a117 ret1: 0 px differ
+a117 pick2: 0 px differ
+a117 ret2: 0 px differ
+a117td accopen: 0 px differ
+a117td quit: 0 px differ
+tdq quitdlg: 0 px differ
+tdq onquit: 0 px differ
+tdq after: 0 px differ

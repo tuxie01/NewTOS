@@ -1,0 +1,536 @@
+   0.00 RB2
+   0.00 NewTOS booting on rpi4
+   0.00 [serial] output on: boot arguments contain `serial=on`
+   0.00 Phase 02 reached.
+   0.00 [mm] DTB at 0x0000000000000100
+   0.00 [mm] firmware: ARM memory bank 0: 0x0000000000000000 + 1006632960 bytes (960 MiB)
+   0.00 [mm] firmware: VC memory: 0x000000003c000000 + 67108864 bytes (64 MiB)
+   0.00 [mm] device tree: no usable /memory node (blob invalid or absent)
+   0.00 [clock] ARM 700 -> 700 MHz (max 700, measured ?, SoC 25.0 C)
+   0.00 [mm] memory map:
+   0.01 [mm]   DRAM  : 0x0000000000000000..0x000000003c000000 (1006632960 bytes) — source: firmware
+   0.01 [mm]   kernel: 0x0000000000080000..0x0000000000347000 (2912256 bytes)
+   0.01 [mm]   ST-RAM: 0x0000000000400000..0x0000000000e00000 (10485760 bytes)
+   0.01 [mm]   TT-RAM: 0x0000000001000000..0x0000000039800000 (947912704 bytes)
+   0.01 [mm]   OSrsvd: 0x0000000039800000..0x000000003c000000 (41943040 bytes)
+   0.01 [mm]     bcach: 0x0000000039800000..0x000000003b800000 (33554432 bytes)
+   0.01 [mm]     heap: 0x000000003b800000..0x000000003c000000 (8388608 bytes)
+   0.01 [mm]   MMIO 00: 0x00000000fd500000..0x00000000fd510000
+   0.01 [mm]   MMIO 01: 0x00000000fe000000..0x00000000ff000000
+   0.01 [mm]   MMIO 02: 0x00000000ff800000..0x0000000100000000
+   0.01 [mm] MMU reinstalled (high-half via TTBR1, TTBR0 deferred to Phase 06).
+   0.01 [mm] frames ST-RAM: total=2560 used=0 free=2560 (10485760 B free)
+   0.01 [mm] frames TT-RAM: total=231424 used=0 free=231424 (947912704 B free)
+   0.01 [mm] alloc ST-RAM frame -> 0x0000000000400000
+   0.01 [mm] alloc TT-RAM frame -> 0x0000000001000000
+   0.01 [mm] heap after init: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+   0.01 [mm] heap smoke OK
+   0.01 [mm] heap after smoke: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+   0.01 [fb] VideoCore display geometry detected: 640x480
+   0.01 [fb] alpha mode = 2
+   0.01 [fb] 640x480 pitch 2560 virtual height 960 -> 2 screen page(s), 2400 KiB
+   0.01 [fb] VideoCore fb up: 640x480 stride 640px
+   0.01 [mm] MEM05 per-process block limit: 8192 allocated blocks (default)
+   0.01 [mm] MEM05 MD supply: 117 MDs static, grows by 117 MDs per 4096-byte page from the kernel heap; page budget 512 pages (2048 KiB) for MDs + block records + snapshot + F_KEEP flags
+   0.01 [mm] memory protection ON: table arena 0x01000000+2415 tables
+   0.02 [mm] BDOS pools: ST-RAM 0x00400000+10485760 TT-RAM 0x0196f000+938020864
+   0.02 [mm] user address space: pools mapped VA = PA (453 shared L3 tables, 4-KiB pages, rights per process)
+   0.02 [mm] BDOS ST-RAM after init: total=10485760 free=10485760 used=0 largest_free=10485760 (free_mds=1 alloc_mds=0)
+   0.02 [mm] BDOS TT-RAM after init: total=938020864 free=938020864 used=0 largest_free=938020864 (free_mds=1 alloc_mds=0)
+   0.02 [mm] MEM05 after init: MDs in_use=2 capacity=117 (+0 pages); pages held=0/512 (md=0 recs=0 snap=0 kept=0) peak=0 refused budget=0 heap=0; records=0 snapshot_cap=0 snapshot_short=0; heap used=0 free=8388608 largest=8388608
+   0.02 [input] keyboard/mouse pump: AES waits and console reads; pointer motion also from the 200 Hz tick while a program runs (input=aes switches that off)
+   0.02 [bcache] FS09 block read cache: 32768 KiB at 0x39800000 (asked 32768 KiB, default), 61680 sectors of 512 B, linear-read share 5 % (default), write-through
+   0.02 [emmc] SD card on controller @ 0xffff0000fe300000
+   0.02 [emmc] M1 SLOTISR_VER=0x24020000 (SDHCI spec 0x02) CAPABILITIES=0x052134b4 (base 52 MHz)
+   0.02 [emmc] M1 CONTROL0=0x00000f02 CONTROL1=0x000e0207 div=2 -> SDCLK ~13000000 Hz
+   0.02 [emmc] M1 mailbox clock rate: EMMC(1)=50000000 Hz EMMC2(12)=700000000 Hz
+   0.02 [emmc] FS08 mode: multi-block (CMD18/CMD25 + Auto CMD12) — bus 4-bit (ACMD6 ok, SCR SD_BUS_WIDTHS=0x5), CONTROL0[1] Data Transfer Width=1
+   0.02 [emmc] M1 during identification: 2 error(s), 0 timeout(s), 2 recovery(ies) CTO=2
+   0.03 [clock] no kernel8.img FAT date on C: — clock stays at 1980-01-01
+   0.03 [pcie] RC not present (no response at RC_BASE); USB disabled
+  15.04 [proc] stand-in PDs: initial_basepage 0x001d6000, AES PD 0x001d6100, accdesk 0x001d6300, EmuCON 0x001d6400 (read-only to all)
+  15.09 [acc] loaded C:\ACCD.NAC into slot 0 (entry 0x1971000)
+  15.09 [acc] 1 file(s) found, 1 process(es) started
+  15.09 [aes] gsx_malloc: screen buffer pa=0x01972000 len=614400 (kernel-owned, WF_SCREEN)
+  15.09 [sched] switch -> slot 0
+  15.09 [sched] running
+  15.09 [sched] switch -> kernel client
+  15.09 [sched] switch -> slot 0
+  15.09 [sched] running
+  15.09 [sched] switch -> kernel client
+  15.09 [sched] switch -> slot 0
+  15.09 [sched] running
+  15.09 [sched] switch -> kernel client
+  15.09 [acc] wait_for_accs(AP_MESAG): timed out
+  15.09 [shell] sh_ldapp: starting C:\MAIN.NAP, sh_nextapp=2, sh_isgem=1
+  15.12 [launch] EL0: slot 1 entry 0x1a1b000
+  15.13 [POLL] apid=0000
+  16.09 [sched] switch -> slot 0
+  16.09 [sched] running
+  16.09 [ACCD] evnt_timer(1000) returned k=0001
+  17.09 [ACCD] evnt_timer(1000) returned k=0002
+  17.63 [sched] switch -> slot 1
+  17.63 [sched] running
+  17.63 [POLL] start evnt_multi(MU_TIMER,0) loop
+  18.08 [POLL] evnt_multi(T,0) iter/100000 0001
+  18.09 [sched] switch -> slot 0
+  18.09 [sched] running
+  18.09 [sched] switch -> slot 1
+  18.09 [sched] running
+  18.09 [sched] switch -> slot 0
+  18.09 [sched] running
+  18.09 [ACCD] evnt_timer(1000) returned k=0003
+  18.09 [sched] switch -> slot 1
+  18.09 [sched] running
+  18.54 [POLL] evnt_multi(T,0) iter/100000 0002
+  18.98 [POLL] evnt_multi(T,0) iter/100000 0003
+  19.09 [sched] switch -> slot 0
+  19.09 [sched] running
+  19.09 [sched] switch -> slot 1
+  19.09 [sched] running
+  19.09 [sched] switch -> slot 0
+  19.09 [sched] running
+  19.09 [ACCD] evnt_timer(1000) returned k=0004
+  19.09 [sched] switch -> slot 1
+  19.09 [sched] running
+  19.44 [POLL] evnt_multi(T,0) iter/100000 0004
+  19.88 [POLL] evnt_multi(T,0) iter/100000 0005
+  20.09 [sched] switch -> slot 0
+  20.09 [sched] running
+  20.09 [sched] switch -> slot 1
+  20.09 [sched] running
+  20.09 [sched] switch -> slot 0
+  20.09 [sched] running
+  20.09 [ACCD] evnt_timer(1000) returned k=0005
+  20.09 [sched] switch -> slot 1
+  20.09 [sched] running
+  20.33 [POLL] evnt_multi(T,0) iter/100000 0006
+  20.33 [POLL] start appl_yield loop
+  20.71 [POLL] appl_yield iter/100000 0001
+  21.08 [POLL] appl_yield iter/100000 0002
+  21.09 [sched] switch -> slot 0
+  21.09 [sched] running
+  21.09 [sched] switch -> slot 1
+  21.09 [sched] running
+  21.09 [sched] switch -> slot 0
+  21.09 [sched] running
+  21.09 [ACCD] evnt_timer(1000) returned k=0006
+  21.09 [sched] switch -> slot 1
+  21.09 [sched] running
+  21.45 [POLL] appl_yield iter/100000 0003
+  21.82 [POLL] appl_yield iter/100000 0004
+  22.09 [sched] switch -> slot 0
+  22.09 [sched] running
+  22.09 [sched] switch -> slot 1
+  22.09 [sched] running
+  22.09 [sched] switch -> slot 0
+  22.09 [sched] running
+  22.09 [ACCD] evnt_timer(1000) returned k=0007
+  22.09 [sched] switch -> slot 1
+  22.09 [sched] running
+  22.20 [POLL] appl_yield iter/100000 0005
+  22.58 [POLL] appl_yield iter/100000 0006
+  22.58 [POLL] start evnt_timer(0) loop
+  23.09 [sched] switch -> slot 0
+  23.09 [sched] running
+  23.09 [ACCD] evnt_timer(1000) returned k=0008
+  23.10 [sched] switch -> slot 1
+  23.10 [sched] running
+  23.56 [POLL] evnt_timer(0) iter 0032
+  24.09 [sched] switch -> slot 0
+  24.09 [sched] running
+  24.09 [ACCD] evnt_timer(1000) returned k=0009
+  24.10 [sched] switch -> slot 1
+  24.10 [sched] running
+  24.56 [POLL] evnt_timer(0) iter 0064
+  25.09 [sched] switch -> slot 0
+  25.09 [sched] running
+  25.09 [ACCD] evnt_timer(1000) returned k=000A
+  25.10 [sched] switch -> slot 1
+  25.10 [sched] running
+  25.56 [POLL] evnt_timer(0) iter 0096
+  26.09 [sched] switch -> slot 0
+  26.09 [sched] running
+  26.09 [ACCD] evnt_timer(1000) returned k=000B
+  26.10 [sched] switch -> slot 1
+  26.10 [sched] running
+  26.56 [POLL] evnt_timer(0) iter 00C8
+  27.10 [sched] switch -> slot 0
+  27.10 [sched] running
+  27.10 [ACCD] evnt_timer(1000) returned k=000C
+  27.10 [sched] switch -> slot 1
+  27.10 [sched] running
+  27.56 [POLL] evnt_timer(0) iter 00FA
+  27.57 [POLL] done, heartbeat via evnt_timer(1000)
+  28.10 [sched] switch -> slot 0
+  28.10 [sched] running
+  28.10 [ACCD] evnt_timer(1000) returned k=000D
+  28.57 [sched] switch -> slot 1
+  28.57 [sched] running
+  28.57 [POLL] heartbeat 0001
+  29.11 [sched] switch -> slot 0
+  29.11 [sched] running
+  29.11 [ACCD] evnt_timer(1000) returned k=000E
+  29.58 [sched] switch -> slot 1
+  29.58 [sched] running
+  29.58 [POLL] heartbeat 0002
+  30.11 [sched] switch -> slot 0
+  30.11 [sched] running
+  30.11 [ACCD] evnt_timer(1000) returned k=000F
+  30.58 [sched] switch -> slot 1
+  30.58 [sched] running
+  30.58 [POLL] heartbeat 0003
+  31.12 [sched] switch -> slot 0
+  31.12 [sched] running
+  31.12 [ACCD] evnt_timer(1000) returned k=0010
+  31.59 [sched] switch -> slot 1
+  31.59 [sched] running
+  31.59 [POLL] heartbeat 0004
+  32.12 [sched] switch -> slot 0
+  32.12 [sched] running
+  32.12 [ACCD] evnt_timer(1000) returned k=0011
+  32.59 [sched] switch -> slot 1
+  32.59 [sched] running
+  32.59 [POLL] heartbeat 0005
+  33.13 [sched] switch -> slot 0
+  33.13 [sched] running
+  33.13 [ACCD] evnt_timer(1000) returned k=0012
+  33.59 [sched] switch -> slot 1
+  33.59 [sched] running
+  33.59 [POLL] heartbeat 0006
+  34.13 [sched] switch -> slot 0
+  34.13 [sched] running
+  34.13 [ACCD] evnt_timer(1000) returned k=0013
+  34.60 [sched] switch -> slot 1
+  34.60 [sched] running
+  34.60 [POLL] heartbeat 0007
+  35.14 [sched] switch -> slot 0
+  35.14 [sched] running
+  35.14 [ACCD] evnt_timer(1000) returned k=0014
+  35.60 [sched] switch -> slot 1
+  35.60 [sched] running
+  35.60 [POLL] heartbeat 0008
+  36.14 [sched] switch -> slot 0
+  36.14 [sched] running
+  36.14 [ACCD] evnt_timer(1000) returned k=0015
+  36.61 [sched] switch -> slot 1
+  36.61 [sched] running
+  36.61 [POLL] heartbeat 0009
+  37.15 [sched] switch -> slot 0
+  37.15 [sched] running
+  37.15 [ACCD] evnt_timer(1000) returned k=0016
+  37.61 [sched] switch -> slot 1
+  37.61 [sched] running
+  37.61 [POLL] heartbeat 000A
+  38.15 [sched] switch -> slot 0
+  38.15 [sched] running
+  38.15 [ACCD] evnt_timer(1000) returned k=0017
+  38.62 [sched] switch -> slot 1
+  38.62 [sched] running
+  38.62 [POLL] heartbeat 000B
+  39.16 [sched] switch -> slot 0
+  39.16 [sched] running
+  39.16 [ACCD] evnt_timer(1000) returned k=0018
+  39.62 [sched] switch -> slot 1
+  39.62 [sched] running
+  39.62 [POLL] heartbeat 000C
+  40.16 [sched] switch -> slot 0
+  40.16 [sched] running
+  40.16 [ACCD] evnt_timer(1000) returned k=0019
+  40.63 [sched] switch -> slot 1
+  40.63 [sched] running
+  40.63 [POLL] heartbeat 000D
+  41.17 [sched] switch -> slot 0
+  41.17 [sched] running
+  41.17 [ACCD] evnt_timer(1000) returned k=001A
+  41.63 [sched] switch -> slot 1
+  41.63 [sched] running
+  41.63 [POLL] heartbeat 000E
+  42.17 [sched] switch -> slot 0
+  42.17 [sched] running
+  42.17 [ACCD] evnt_timer(1000) returned k=001B
+  42.64 [sched] switch -> slot 1
+  42.64 [sched] running
+  42.64 [POLL] heartbeat 000F
+  43.18 [sched] switch -> slot 0
+  43.18 [sched] running
+  43.18 [ACCD] evnt_timer(1000) returned k=001C
+  43.64 [sched] switch -> slot 1
+  43.64 [sched] running
+  43.64 [POLL] heartbeat 0010
+  44.18 [sched] switch -> slot 0
+  44.18 [sched] running
+  44.18 [ACCD] evnt_timer(1000) returned k=001D
+  44.65 [sched] switch -> slot 1
+  44.65 [sched] running
+  44.65 [POLL] heartbeat 0011
+  45.19 [sched] switch -> slot 0
+  45.19 [sched] running
+  45.19 [ACCD] evnt_timer(1000) returned k=001E
+  45.65 [sched] switch -> slot 1
+  45.65 [sched] running
+  45.65 [POLL] heartbeat 0012
+  46.19 [sched] switch -> slot 0
+  46.19 [sched] running
+  46.19 [ACCD] evnt_timer(1000) returned k=001F
+  46.66 [sched] switch -> slot 1
+  46.66 [sched] running
+  46.66 [POLL] heartbeat 0013
+  47.20 [sched] switch -> slot 0
+  47.20 [sched] running
+  47.20 [ACCD] evnt_timer(1000) returned k=0020
+  47.66 [sched] switch -> slot 1
+  47.66 [sched] running
+  47.66 [POLL] heartbeat 0014
+  48.20 [sched] switch -> slot 0
+  48.20 [sched] running
+  48.20 [ACCD] evnt_timer(1000) returned k=0021
+  48.67 [sched] switch -> slot 1
+  48.67 [sched] running
+  48.67 [POLL] heartbeat 0015
+  49.21 [sched] switch -> slot 0
+  49.21 [sched] running
+  49.21 [ACCD] evnt_timer(1000) returned k=0022
+  49.67 [sched] switch -> slot 1
+  49.67 [sched] running
+  49.67 [POLL] heartbeat 0016
+  50.22 [sched] switch -> slot 0
+  50.22 [sched] running
+  50.22 [ACCD] evnt_timer(1000) returned k=0023
+  50.68 [sched] switch -> slot 1
+  50.68 [sched] running
+  50.68 [POLL] heartbeat 0017
+  51.22 [sched] switch -> slot 0
+  51.22 [sched] running
+  51.22 [ACCD] evnt_timer(1000) returned k=0024
+  51.68 [sched] switch -> slot 1
+  51.68 [sched] running
+  51.68 [POLL] heartbeat 0018
+  52.22 [sched] switch -> slot 0
+  52.22 [sched] running
+  52.22 [ACCD] evnt_timer(1000) returned k=0025
+  52.69 [sched] switch -> slot 1
+  52.69 [sched] running
+  52.69 [POLL] heartbeat 0019
+  53.23 [sched] switch -> slot 0
+  53.23 [sched] running
+  53.23 [ACCD] evnt_timer(1000) returned k=0026
+  53.69 [sched] switch -> slot 1
+  53.69 [sched] running
+  53.69 [POLL] heartbeat 001A
+  54.23 [sched] switch -> slot 0
+  54.23 [sched] running
+  54.23 [ACCD] evnt_timer(1000) returned k=0027
+  54.69 [sched] switch -> slot 1
+  54.69 [sched] running
+  54.69 [POLL] heartbeat 001B
+  55.24 [sched] switch -> slot 0
+  55.24 [sched] running
+  55.24 [ACCD] evnt_timer(1000) returned k=0028
+  55.70 [sched] switch -> slot 1
+  55.70 [sched] running
+  55.70 [POLL] heartbeat 001C
+  56.24 [sched] switch -> slot 0
+  56.24 [sched] running
+  56.24 [ACCD] evnt_timer(1000) returned k=0029
+  56.70 [sched] switch -> slot 1
+  56.70 [sched] running
+  56.70 [POLL] heartbeat 001D
+  57.25 [sched] switch -> slot 0
+  57.25 [sched] running
+  57.25 [ACCD] evnt_timer(1000) returned k=002A
+  57.71 [sched] switch -> slot 1
+  57.71 [sched] running
+  57.71 [POLL] heartbeat 001E
+  58.25 [sched] switch -> slot 0
+  58.25 [sched] running
+  58.25 [ACCD] evnt_timer(1000) returned k=002B
+  58.71 [sched] switch -> slot 1
+  58.71 [sched] running
+  58.71 [POLL] heartbeat 001F
+  59.26 [sched] switch -> slot 0
+  59.26 [sched] running
+  59.26 [ACCD] evnt_timer(1000) returned k=002C
+  59.71 [sched] switch -> slot 1
+  59.71 [sched] running
+  59.71 [POLL] heartbeat 0020
+  60.26 [sched] switch -> slot 0
+  60.26 [sched] running
+  60.26 [ACCD] evnt_timer(1000) returned k=002D
+  60.72 [sched] switch -> slot 1
+  60.72 [sched] running
+  60.72 [POLL] heartbeat 0021
+  61.27 [sched] switch -> slot 0
+  61.27 [sched] running
+  61.27 [ACCD] evnt_timer(1000) returned k=002E
+  61.72 [sched] switch -> slot 1
+  61.72 [sched] running
+  61.72 [POLL] heartbeat 0022
+  62.27 [sched] switch -> slot 0
+  62.27 [sched] running
+  62.27 [ACCD] evnt_timer(1000) returned k=002F
+  62.73 [sched] switch -> slot 1
+  62.73 [sched] running
+  62.73 [POLL] heartbeat 0023
+  63.28 [sched] switch -> slot 0
+  63.28 [sched] running
+  63.28 [ACCD] evnt_timer(1000) returned k=0030
+  63.73 [sched] switch -> slot 1
+  63.73 [sched] running
+  63.73 [POLL] heartbeat 0024
+  64.28 [sched] switch -> slot 0
+  64.28 [sched] running
+  64.28 [ACCD] evnt_timer(1000) returned k=0031
+  64.74 [sched] switch -> slot 1
+  64.74 [sched] running
+  64.74 [POLL] heartbeat 0025
+  65.29 [sched] switch -> slot 0
+  65.29 [sched] running
+  65.29 [ACCD] evnt_timer(1000) returned k=0032
+  65.74 [sched] switch -> slot 1
+  65.74 [sched] running
+  65.74 [POLL] heartbeat 0026
+  66.29 [sched] switch -> slot 0
+  66.29 [sched] running
+  66.29 [ACCD] evnt_timer(1000) returned k=0033
+  66.74 [sched] switch -> slot 1
+  66.74 [sched] running
+  66.74 [POLL] heartbeat 0027
+  67.30 [sched] switch -> slot 0
+  67.30 [sched] running
+  67.30 [ACCD] evnt_timer(1000) returned k=0034
+  67.75 [sched] switch -> slot 1
+  67.75 [sched] running
+  67.75 [POLL] heartbeat 0028
+  68.30 [sched] switch -> slot 0
+  68.30 [sched] running
+  68.30 [ACCD] evnt_timer(1000) returned k=0035
+  68.75 [sched] switch -> slot 1
+  68.75 [sched] running
+  68.75 [POLL] heartbeat 0029
+  69.31 [sched] switch -> slot 0
+  69.31 [sched] running
+  69.31 [ACCD] evnt_timer(1000) returned k=0036
+  69.76 [sched] switch -> slot 1
+  69.76 [sched] running
+  69.76 [POLL] heartbeat 002A
+  70.31 [sched] switch -> slot 0
+  70.31 [sched] running
+  70.31 [ACCD] evnt_timer(1000) returned k=0037
+  70.76 [sched] switch -> slot 1
+  70.76 [sched] running
+  70.76 [POLL] heartbeat 002B
+  71.32 [sched] switch -> slot 0
+  71.32 [sched] running
+  71.32 [ACCD] evnt_timer(1000) returned k=0038
+  71.77 [sched] switch -> slot 1
+  71.77 [sched] running
+  71.77 [POLL] heartbeat 002C
+  72.32 [sched] switch -> slot 0
+  72.32 [sched] running
+  72.32 [ACCD] evnt_timer(1000) returned k=0039
+  72.77 [sched] switch -> slot 1
+  72.77 [sched] running
+  72.77 [POLL] heartbeat 002D
+  73.32 [sched] switch -> slot 0
+  73.32 [sched] running
+  73.32 [ACCD] evnt_timer(1000) returned k=003A
+  73.78 [sched] switch -> slot 1
+  73.78 [sched] running
+  73.78 [POLL] heartbeat 002E
+  74.33 [sched] switch -> slot 0
+  74.33 [sched] running
+  74.33 [ACCD] evnt_timer(1000) returned k=003B
+  74.78 [sched] switch -> slot 1
+  74.78 [sched] running
+  74.78 [POLL] heartbeat 002F
+  75.33 [sched] switch -> slot 0
+  75.33 [sched] running
+  75.33 [ACCD] evnt_timer(1000) returned k=003C
+  75.79 [sched] switch -> slot 1
+  75.79 [sched] running
+  75.79 [POLL] heartbeat 0030
+  76.34 [sched] switch -> slot 0
+  76.34 [sched] running
+  76.34 [ACCD] evnt_timer(1000) returned k=003D
+  76.79 [sched] switch -> slot 1
+  76.79 [sched] running
+  76.79 [POLL] heartbeat 0031
+  77.34 [sched] switch -> slot 0
+  77.34 [sched] running
+  77.34 [ACCD] evnt_timer(1000) returned k=003E
+  77.80 [sched] switch -> slot 1
+  77.80 [sched] running
+  77.80 [POLL] heartbeat 0032
+  78.35 [sched] switch -> slot 0
+  78.35 [sched] running
+  78.35 [ACCD] evnt_timer(1000) returned k=003F
+  78.80 [sched] switch -> slot 1
+  78.80 [sched] running
+  78.80 [POLL] heartbeat 0033
+  79.35 [sched] switch -> slot 0
+  79.35 [sched] running
+  79.35 [ACCD] evnt_timer(1000) returned k=0040
+  79.81 [sched] switch -> slot 1
+  79.81 [sched] running
+  79.81 [POLL] heartbeat 0034
+  80.36 [sched] switch -> slot 0
+  80.36 [sched] running
+  80.36 [ACCD] evnt_timer(1000) returned k=0041
+  80.81 [sched] switch -> slot 1
+  80.81 [sched] running
+  80.81 [POLL] heartbeat 0035
+  81.36 [sched] switch -> slot 0
+  81.36 [sched] running
+  81.36 [ACCD] evnt_timer(1000) returned k=0042
+  81.82 [sched] switch -> slot 1
+  81.82 [sched] running
+  81.82 [POLL] heartbeat 0036
+  82.37 [sched] switch -> slot 0
+  82.37 [sched] running
+  82.37 [ACCD] evnt_timer(1000) returned k=0043
+  82.82 [sched] switch -> slot 1
+  82.82 [sched] running
+  82.82 [POLL] heartbeat 0037
+  83.37 [sched] switch -> slot 0
+  83.37 [sched] running
+  83.37 [ACCD] evnt_timer(1000) returned k=0044
+  83.82 [sched] switch -> slot 1
+  83.82 [sched] running
+  83.82 [POLL] heartbeat 0038
+  84.38 [sched] switch -> slot 0
+  84.38 [sched] running
+  84.38 [ACCD] evnt_timer(1000) returned k=0045
+  84.83 [sched] switch -> slot 1
+  84.83 [sched] running
+  84.83 [POLL] heartbeat 0039
+  85.38 [sched] switch -> slot 0
+  85.38 [sched] running
+  85.38 [ACCD] evnt_timer(1000) returned k=0046
+  85.83 [sched] switch -> slot 1
+  85.83 [sched] running
+  85.83 [POLL] heartbeat 003A
+  86.38 [sched] switch -> slot 0
+  86.38 [sched] running
+  86.38 [ACCD] evnt_timer(1000) returned k=0047
+  86.84 [sched] switch -> slot 1
+  86.84 [sched] running
+  86.84 [POLL] heartbeat 003B
+  87.39 [sched] switch -> slot 0
+  87.39 [sched] running
+  87.39 [ACCD] evnt_timer(1000) returned k=0048
+  87.84 [sched] switch -> slot 1
+  87.84 [sched] running
+  87.84 [POLL] heartbeat 003C
+  88.39 [sched] switch -> slot 0
+  88.39 [sched] running
+  88.39 [ACCD] evnt_timer(1000) returned k=0049
+  88.85 [sched] switch -> slot 1
+  88.85 [sched] running
+  88.85 [POLL] heartbeat 003D
+  89.40 [sched] switch -> slot 0
+  89.40 [sched] running
+  89.40 [ACCD] evnt_timer(1000) returned k=004A
+  89.85 [sched] switch -> slot 1
+  89.85 [sched] running
+  89.85 [POLL] heartbeat 003E

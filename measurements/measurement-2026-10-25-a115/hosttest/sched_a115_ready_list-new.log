@@ -1,0 +1,9 @@
+     Running tests/sched_a115_ready_list.rs (target/debug/deps/sched_a115_ready_list-9e910e1d363cece4)
+
+running 3 tests
+test a_process_woken_by_appl_write_runs_behind_the_writer ... ok
+test two_processes_woken_in_one_pass_run_in_reverse_wake_order ... ok
+test accessories_run_in_reverse_start_order_and_the_kernel_client_takes_its_turn ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

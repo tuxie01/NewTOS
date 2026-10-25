@@ -1,0 +1,62 @@
+== C:/
+ Volume in drive : is NEWTOS     
+ Volume Serial Number is 6988-1A16
+Directory for ::/
+
+README   TXT        64 2026-10-25  18:44 
+HELLO    TXT        32 2026-10-25  18:44 
+CONFIG   TXT        20 2026-10-25  18:44 
+NEWDESK  INF        21 2026-10-25  18:44 
+KEYBOARD KBD        28 2026-10-25  18:44 
+KERNEL8  IMG      4096 2026-10-25  18:44 
+LYNXBOOT IMG       512 2026-10-25  18:44 
+DATA     BIN      4096 2026-10-25  18:44 
+ACC          <DIR>     2026-10-25  18:44 
+GEMSYS       <DIR>     2026-10-25  18:44 
+SUB          <DIR>     2026-10-25  18:44 
+PROOF    TXT        19 2026-10-25  18:44 
+AUTO         <DIR>     2026-10-25  18:44 
+HELLO    NCP      4388 2026-10-25  18:44 
+PHYSBASE NCP      6616 2026-10-25  18:44 
+BIG      NCP     16336 2026-10-25  18:44 
+HELLO2   NCP      5968 2026-10-25  18:44 
+CMDLINE  NTP      6752 2026-10-25  18:44 
+CMDLINE  NCP      6752 2026-10-25  18:44 
+SCRFLIP  NCP      7224 2026-10-25  18:44 
+ARGVTEST NAP     48688 2026-10-25  18:44 
+CTRLCPAR NCP      6584 2026-10-25  18:44 
+DTACHILD NCP      6104 2026-10-25  18:44 
+PTERMCH  NCP      6328 2026-10-25  18:44 
+USBSNAP  NCP     79400 2026-10-25  18:44 
+SYSINFO  NCP     10240 2026-10-25  18:44 
+FPPEXEC  NCP     10128 2026-10-25  18:44 
+SYSACC2  NAC     38688 2026-10-25  18:44 
+LIBTEST  NCP    145232 2026-10-25  18:44 
+CLOCKTST NCP    102080 2026-10-25  18:44 
+SETJMPT  NCP     53208 2026-10-25  18:44 
+MATHTST  NCP    110488 2026-10-25  18:44 
+LDG          <DIR>     2026-10-25  18:44 
+LDGTEST  NCP    164208 2026-10-25  18:44 
+ZVIEW        <DIR>     2026-10-25  18:44 
+COREMARK     <DIR>     2026-10-25  18:44 
+DUMPVDI  NAP    156048 2026-10-25  18:44 
+VDI      TSV      6636 2026-10-25  18:44 
+VDIDRAW  NAP    164792 2026-10-25  18:44 
+APPS         <DIR>     2026-10-25  18:44  Apps
+TERADESK INF      3058 2026-10-25  18:44 
+       41 files           1 174 834 bytes
+                         61 147 136 bytes free
+
+== C:/SUB
+ Volume in drive : is NEWTOS     
+ Volume Serial Number is 6988-1A16
+Directory for ::/SUB
+
+INSIDE   TXT        20 2026-10-25  18:44 
+PROOF    TXT        15 2026-10-25  18:44 
+CURDIR   NCP      6920 2026-10-25  18:44 
+        3 files               6 955 bytes
+                         61 147 136 bytes free
+
+== C:/TMP
+mdir: File "::/TMP" not found

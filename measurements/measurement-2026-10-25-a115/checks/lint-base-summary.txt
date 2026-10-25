@@ -1,0 +1,34 @@
+build qemu-virt dev exit 0  warning-lines 159
+build qemu-virt release exit 0  warning-lines 159
+clippy kernel qemu-virt exit 0
+warning: `tos-api` (lib) generated 74 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions)
+warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions)
+build rpi4 dev exit 0  warning-lines 159
+build rpi4 release exit 0  warning-lines 159
+clippy kernel rpi4 exit 0
+warning: `tos-api` (lib) generated 74 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions)
+warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions)
+clippy tos-api host exit 0
+warning: `tos-api` (lib) generated 74 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions)
+clippy tos-api --tests exit 0
+warning: `tos-api` (lib) generated 74 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions)
+warning: `tos-api` (test "arch03_shared_space") generated 1 warning
+warning: `tos-api` (test "vdi_raster_reference") generated 2 warnings
+warning: `tos-api` (test "xbios_kbdvecs") generated 1 warning (run `cargo clippy --fix --test "xbios_kbdvecs" -p tos-api -- ` to apply 1 suggestion)
+warning: `tos-api` (test "mem05_owner_limit") generated 1 warning (run `cargo clippy --fix --test "mem05_owner_limit" -p tos-api -- ` to apply 1 suggestion)
+warning: `tos-api` (test "vdi_eddi_scrninfo") generated 2 warnings
+warning: `tos-api` (lib test) generated 79 warnings (74 duplicates)
+warning: `tos-api` (test "aes_desk_prefs_radio") generated 1 warning
+warning: `tos-api` (test "vdi_reference") generated 3 warnings (2 duplicates) (run `cargo clippy --fix --test "vdi_reference" -p tos-api -- ` to apply 1 suggestion)
+warning: `tos-api` (test "gemdos_fs_bcache") generated 1 warning
+warning: `tos-api` (test "aes_desk_dialog_exit_buttons") generated 1 warning
+warning: `tos-api` (test "vdi_reference_raster_screen") generated 2 warnings (2 duplicates)
+warning: `tos-api` (test "arch03_4_asid_alloc") generated 1 warning
+warning: `tos-api` (test "vdi_vex_wheelv") generated 2 warnings (2 duplicates)
+warning: `tos-api` (test "con01_console_typeahead") generated 2 warnings (run `cargo clippy --fix --test "con01_console_typeahead" -p tos-api -- ` to apply 2 suggestions)
+warning: `tos-api` (test "loader_pie_reloc") generated 1 warning (run `cargo clippy --fix --test "loader_pie_reloc" -p tos-api -- ` to apply 1 suggestion)
+warning: `tos-api` (test "vdi_mouse_park") generated 2 warnings (2 duplicates)
+clippy tos-api --tests warnings in sched_a115_ready_list.rs: 0
+cargo xtask test exit 1
+xtask test: binaries 158 passed 1636 failed 5 ignored 0
+DONE

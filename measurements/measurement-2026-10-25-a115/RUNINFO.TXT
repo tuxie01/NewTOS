@@ -1,0 +1,114 @@
+measurement-2026-10-25-a115 -- Developer: A115, the scheduler runs EmuTOS's ready list (rlr/drl) instead of slot order.
+Base: HEAD 587e0f68 (clean tree). No hardware, no card, no push. Host macOS, QEMU raspi4b (-append serial=on) + qemu-virt.
+Scratch = session scratchpad .../scratchpad/a115 (base git worktree, scratch trees, kernels, cards; removed after the run).
+
+RESULT IN ONE LINE: effect shown on the host (3 tests red on 587e0f68) and in QEMU (f2 print order); EmuTOS rlr/drl rebuilt
+1:1 over the existing runnable bit (order keys + a drl push stack); same tests green; host tests, builds, warnings, APITEST,
+desktop/TeraDesk/QED/accessory/A117 regression unchanged (pixel-identical, one QED caret-blink phase explained below).
+
+1. EFFECT BEFORE THE FIX
+ a) Host: tos-api/tests/sched_a115_ready_list.rs (3 cases). On 587e0f68 (git worktree, the same file with the two fixture
+    lines `sched::ready/unready` written as direct `runnable` stores -- hosttest/sched_a115_ready_list.base-variant.rs):
+    0 passed / 3 failed (hosttest/sched_a115_ready_list-base.log):
+      - sender/receiver: an accessory parked in evnt_mesag, the program writes it a message: appl_write's closing
+        dispatch switched to the reader at once (Some(0)); EmuTOS: reader on drl, appended behind the writer, the writer
+        continues (None) and hands over at its next AES call.
+      - two woken in one pass: accessories A (100 ms) and C (200 ms) in evnt_timer, both deadlines passed, the program
+        blocks: NewTOS picked A (slot order, Some(0)); EmuTOS: tchange completes A then C, drl push-front -> C first.
+      - pstart order + kernel client: two accessories admitted X then Y, the EL1 kernel client dispatches: NewTOS ran X
+        first; EmuTOS: pstart pushes onto drl -> Y first, and the kernel client (pid 0) is appended before the drain,
+        so its first dispatch keeps the CPU.
+ b) QEMU, the A112 probe f2 (method/a112-probes = copy of measurement-2026-10-17-a112-fix/method; plain release kernels):
+    MAIN opens and closes a full-screen window over the windows of ACCB (evnt_multi(MU_MESAG)) and ACCC (evnt_mesag).
+      base (serial/f2-base.log, 24.18-24.19 s): [ACCB] WM_REDRAW, [ACCC] WM_REDRAW, then "[MAIN] cover window closed+deleted"
+      new  (serial/f2-new.log,  24.16 s):       "[MAIN] cover window closed+deleted", then [ACCC] WM_REDRAW, [ACCB] WM_REDRAW
+    EmuTOS derivation (no measurement on EmuTOS itself): wind_close signals both readers onto drl, its closing dispatch
+    appends them behind MAIN ([MAIN, later, earlier]); MAIN's wind_delete dispatch runs them, each completes its read and
+    dispatches again before returning to its program; MAIN returns from wind_delete, prints, blocks in evnt_timer; the
+    readers then print in reverse post order. The new log has exactly that order; the base log has slot order.
+    The ticket's sentence "accessories report WM_REDRAW before MAIN's closed+deleted" was the base order; confirmed.
+
+2. EMUTOS PLACES (references/emutos, pinned)
+  aes/gemdisp.c:74-79 disp_act (insert_process(p, &rlr)), :82-93 mwait_act (nrl), :101-155 forker (rlr = -1 while the fork
+  ring runs), :181-205 schedule (drain drl head-first onto rlr's end), :221-253 disp (head off, disposition, forker,
+  schedule, switchto(rlr)). aes/gempd.c:110-131 pstart (:125-128 push onto drl), :133-145 insert_process (append at end).
+  aes/gemasync.c:35-61 signal (off nrl, :56-57 push onto drl; not when p == rlr), :117-127 mwait.
+  aes/gemflag.c:32-68 tchange (delay list from the head), aes/geminput.c:496-542 adelay (sorted, new before equal).
+  aes/geminit.c:131 the lists, :846-877 init (rlr = pid 0), :255/:309-315 accessories pstart'ed in load order,
+  :554-566 all_run, :736-737 dsptch(); wait_for_accs. Every place that moves a process between rlr/drl/nrl is one of these.
+
+3. SPEC
+  docs/api/aes/event.md "Wake conditions and dispatch" point 3 already described the order (rlr round robin, drl behind the
+  caller, reverse wake order). Added: NewTOS binding (A115) -- the order is reproduced; which NewTOS function is which EmuTOS
+  list operation; timer completions in dlr order; accessories first run in reverse load order; the kernel client is an rlr
+  entry while parked; NewTOS-only broadcast wakes push in slot order. docs/api/aes/accessories.md phase 4: the order of the
+  accessories' first run (inferred from the list handling, marked so).
+
+4. FIX (tos-api/src/bdos/process/sched.rs, "The ready list")
+  Membership stays Process::runnable; order = per-slot RL_KEY (position on rlr, appended = next counter value) and DRL_KEY
+  (non-zero while on drl, push stamp), KERNEL_RL_KEY for the parked EL1 kernel client.
+    ready(slot)   = disp_act (end of rlr)            unready(slot) = off rlr/drl (nrl, Pexec-suspended, gone)
+    push_drl      = signal's push (only off nrl)     drain_drl     = schedule()'s drain, latest push first
+    pick_head(cur)= drain + head of rlr (slot or kernel client); None when the head is the caller
+    admit         = pstart (push onto drl)           wake/wake_timers push onto drl; wake_timers in dlr order
+                                                     (deadline ascending, later arm first: TIMER_ARM_SEQ)
+    sleep: unready (mwait_act), timers, pick_head; dsptch/dispatch_after_call: ready (disp_act), timers, pick_head;
+    on_yield (Pwait): a ready caller goes to the end; pick_peer_for_kernel: kernel client appended, pick_head.
+    suspend/resume_parent_of_child: unready / the parent takes the child's rlr place (one AESPD in EmuTOS).
+  pick_next (slot order) and pick_after_call removed. Every writer of `runnable` goes through sched: process.rs free_slot
+  (sched::unready), the 9 host-test fixtures and both unwired kernel selftests (selftest_sleepwake, _switch).
+  Comment-only: kernel/src/arch/aarch64/exceptions.rs (Pwait, kernel park), kernel/src/accs.rs, tos-api/src/aes/acc.rs.
+  Tests whose assertion encoded slot order, changed to the EmuTOS order with the reason in place:
+    aes_gh1_update_mutex.rs  END_UPDATE hands the lock over: the waiter joins behind the holder; the holder's next AES
+                             call gives it the CPU (was: the closing dispatch of END_UPDATE itself).
+    sched_dsptch_admits_the_caller.rs / sched_dsptch_keeps_caller_ready.rs  accessories woken before the caller's dsptch
+                             are on drl: the first dsptch keeps the caller (still admitted -- the property these test),
+                             the second runs the head.
+
+5. NUMBERS, BASE 587e0f68 vs NEW (method/lint.sh = A117's lint.sh; checks/lint-*-summary.txt)
+  cargo xtask build qemu-virt dev/release, rpi4 dev/release   exit 0, 159 warning lines each   = new, all four
+  clippy kernel (both boards)                                  tos-api 74, kernel 121           = 74, 121
+  clippy tos-api host                                          74                               = 74
+  clippy tos-api --tests                                       same per-target set, 0 in sched_a115_ready_list.rs
+  cargo xtask test                                             160 bin, 1641/0/1                161 bin, 1644/0/1 (+3 = A115)
+    (the base run needs references/ and sdk/apps/* in the worktree: symlinked, as in measurement-2026-10-21-gh1-reg)
+  Host test file: hosttest/sched_a115_ready_list-base.log (0/3), -new.log (3/3).
+  Note: test binaries hung for minutes in _dyld_start on this host (syspolicyd at ~37 % CPU scanning new binaries);
+  `sample` showed the process in dyld, not in test code; repeated runs of the affected binaries pass (40/40 both sides).
+
+6. QEMU REGRESSION (one QEMU at a time, per-run APFS clones deleted after each run, fsck_msdos -n rc 0 on every clone)
+  Kernels: checks/kernels.sha256 (release rpi4, SOURCE_DATE_EPOCH fixed, scratch trees; method/build-all.sh).
+  Cards: checks/cards-and-programs.sha256 (method/mkcards.sh, 64 MiB MBR+FAT16, never a real card).
+  a) gh1-reg series (method/reg = copy of measurement-2026-10-21-gh1-reg/method; head = 587e0f68, wt = new), memprot on:
+     nd  NEWDESK + SYSACC: icons/text view, Desk -> Desktop info, window closer/drag/size/full/close, double-click,
+         Desk -> System Info (SYSACC) open + close, popups                    26 shots
+     td  TeraDesk #Z + SYSACC: drive window, title drag, Desk menu, Desk -> System Info, popup, Esc, Cancel   7 shots
+     qed QED #Z: Ctrl-N, type, menu, click away, Ctrl-Q alert, cancel, Ctrl-Q, discard -> back to NEWDESK   8 shots
+     std make-sd-image card (2 accessories SYSACC + SYSACC2), nd script                                     26 shots
+     checks/compare-reg.txt: 40/41 + 26/26 + 8/8 + 8/8 identical. The one difference, on-qed-q-cancelled (54 px,
+     x48..50 y61..78), is QED's text caret blink phase: head-on had the caret off; head-onR2/R3 and all wt runs have it
+     on (all four reruns identical to each other). 0 EXC/PANIC in every serial log.
+  b) A117 method (method/a117 = copy of measurement-2026-10-25-a117/method; A117ACC.NAC waits in evnt_multi(MU_MESAG)):
+     NEWDESK Desk -> A117 probe, Desk -> Desktop info x2; TeraDesk Desk -> A117 probe, File -> Quit/Shutdown.
+     Both sides: the accessory receives only AC_OPEN; About dialog / Quit dialog appear; 0 px difference (checks/
+     compare-a117.txt). Added tdquit.script (= td.script + click "Quit"): TeraDesk ends (rc=0), NEWDESK comes back
+     ("[desk] desktop up"), base = new 0 px on all three shots.
+  c) A112 probes f1 f1b f2 f3 (plain kernels): f1 ACCA 235/236 ticks, MAIN 30 loops at 1 Hz; f1b MAIN 30 loops, ACCD 14;
+     f3 ACCD 74 ticks while POLL polls, 250x evnt_timer(0) ~5 s; f2 see 1b. Same on both sides apart from the f2 order.
+  d) APITEST (#Z, method/api = copies of measurement-2026-10-17-a112-fix api-*.sh), memprot on/off/strict:
+     base 109/0/5, new 109/0/5 in every mode, 124 result lines each, 0 differing, 0 EXC/PANIC (checks/api-base-vs-new.txt).
+  e) Boot order (serial/*-onR1-std-serial.log): base runs the accessories slot 0, 1, 0, 1, ... and the kernel client only
+     when both block; new runs slot 1 (SYSACC2, loaded last) first, then slot 0, then the kernel client, round robin --
+     the EmuTOS pstart order. Both accessories register " System Info", so the Desk menu looks the same either way.
+  f) Unwired kernel selftests (method/selftest: wired only in scratch trees, qemu-virt release, both sides):
+     selftest_sleepwake PASS = PASS, selftest_timer_restart PASS = PASS; selftest_sleepwake_switch fails on BOTH sides
+     before scheduling anything ("load R: NoTpaMemory", pre-existing rot) -- not evidence either way. Desktop up, 0 EXC.
+
+7. NOT COVERED / OPEN
+  Real Pi 4. HypView scenario (hv) and memprot off/strict/verify desktop series not repeated (APITEST covers the modes).
+  The Desk menu order with two accessories of DIFFERENT titles (now reverse load order) is not pictured: the cards carry
+  two copies of SYSACC with the same title. EmuTOS itself was not run for the order; the order is derived from the source.
+  The kernel client is still polled (appended like a dsptch caller, never on nrl): EmuTOS pid 0 has no such wait.
+
+FILES: method/ (lint.sh, build-all.sh, mkcards.sh, reg/, a117/, a112-probes/, api/, selftest/), hosttest/, checks/, serial/,
+screendumps/. Kernels, cards and trees are scratch (sha256 in checks/).
