@@ -1,0 +1,14 @@
+test a_refused_wind_close_does_not_wait ... ok
+test graf_rubberbox_and_graf_dragbox_wait_for_another_processs_hold ... FAILED
+test fsel_input_of_an_accessory_takes_the_mouse_from_the_desktop ... FAILED
+test a_refused_wind_open_does_not_wait ... ok
+test fsel_input_waits_for_another_processs_hold ... FAILED
+test appl_exit_waits_for_another_processs_hold_before_ac_close ... FAILED
+test appl_exit_holds_the_lock_while_the_accessories_see_ac_close ... FAILED
+test the_button_quick_check_is_the_mouse_owners_only ... FAILED
+test wind_close_waits_for_another_processs_hold ... FAILED
+test wind_delete_of_an_open_window_waits_for_another_processs_hold ... FAILED
+test wind_open_nests_inside_the_callers_own_hold ... ok
+test wind_open_waits_for_another_processs_hold ... FAILED
+test wind_set_waits_for_another_processs_hold ... FAILED
+test result: FAILED. 3 passed; 10 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s

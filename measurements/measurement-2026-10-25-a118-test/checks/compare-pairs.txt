@@ -1,0 +1,50 @@
+base-a117-1-accopen.png                       0 px
+base-a117-1-pick1.png                         0 px
+base-a117-1-pick2.png                         0 px
+base-a117-1-ret1.png                          0 px
+base-a117-1-ret2.png                          0 px
+base-a117td-1-accopen.png                     0 px
+base-a117td-1-quit.png                        0 px
+base-a118-1-after.png                      4418 px  bbox x0..271 y19..58
+base-a118-1-sel.png                           0 px
+base-fmpark-1-t02.png                       259 px  bbox x425..486 y190..201
+base-fmpark-1-t04.png                       259 px  bbox x425..486 y190..201
+base-fmpark-1-t06.png                       259 px  bbox x425..486 y190..201
+base-fmpark-1-t08.png                       259 px  bbox x425..486 y190..201
+base-fmpark-1-t10.png                       259 px  bbox x425..486 y190..201
+base-fmpark-1-t14.png                       259 px  bbox x425..486 y190..201
+base-fmpark-1-t20.png                         0 px
+base-fmpark-1-t30.png                         0 px
+base-tdq-1-after.png                          0 px
+base-tdq-1-onquit.png                         0 px
+base-tdq-1-quitdlg.png                        0 px
+head-onR1-std-d-after.png                     0 px
+head-onR1-std-d-dbl.png                       0 px
+head-onR1-std-d-open.png                      0 px
+head-onR1-std-k-closed.png                    0 px
+head-onR1-std-k-open.png                      0 px
+head-onR1-std-k-picked.png                    0 px
+head-onR1-std-k-picked2.png                   0 px
+head-onR1-std-k-popup.png                     0 px
+head-onR1-std-k-popup2.png                    0 px
+head-onR1-std-p-closed.png                    0 px
+head-onR1-std-p-esc.png                       0 px
+head-onR1-std-p-open.png                      0 px
+head-onR1-std-p-popup.png                     0 px
+head-onR1-std-r1-icons.png                    0 px
+head-onR1-std-r2-deskinfo.png                 0 px
+head-onR1-std-r2b-deskinfo-closed.png         0 px
+head-onR1-std-r3-closer.png                   0 px
+head-onR1-std-r4-dbl.png                      0 px
+head-onR1-std-r5-accopen.png                  0 px
+head-onR1-std-r5b-acc-closed.png              0 px
+head-onR1-std-r6-text.png                     0 px
+head-onR1-std-w-closed.png                    0 px
+head-onR1-std-w-full.png                      0 px
+head-onR1-std-w-moved.png                     0 px
+head-onR1-std-w-restored.png                  0 px
+head-onR1-std-w-sized.png                     0 px
+api-base-off.png                              0 px
+api-base-on.png                               0 px
+api-base-strict.png                           0 px
+fmerr-base.png                           MISSING fmerr-new.png

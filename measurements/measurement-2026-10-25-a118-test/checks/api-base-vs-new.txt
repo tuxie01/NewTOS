@@ -1,0 +1,4 @@
+mode on: base TOTAL 109 0 5 
+mode on: new  TOTAL 109 0 5 
+mode on: result lines base 124 new 124, differing: 0
+mode on: EXC/PANIC base 0 new 0

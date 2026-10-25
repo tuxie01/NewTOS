@@ -1,0 +1,71 @@
+measurement-2026-10-25-a118-test -- Tester: independent acceptance run of A118 (remaining takers of the wind_update lock per EmuTOS).
+Base 17cab8b6, fix ded51d9e (+ docs 810fb347). No hardware, no card, no push. Host macOS, QEMU raspi4b (-append serial=on).
+Scratch (trees, kernels, cards, logs) = session scratchpad .../scratchpad/a118-test (git worktrees new/base/mut, removed after the run).
+The developer's method scripts were copied unchanged into method/ (only env.sh paths: scratch -> a118-test/s); own additions in method/tester/.
+
+RESULT IN ONE LINE: every number of the developer reproduces (host 1644/0/1 -> 1657/0/1, 10 of 13 red on base, warning/clippy counts equal,
+41/41 + 26/26 + 7/7 + 3/3 + APITEST 109/0/5 x3 modes identical, effect probe 4418 px with the C: icon selected on base only, release kernels
+bit-identical to the developer's headA/wtA). ONE REPRODUCED DEFECT: the dispatcher gate for opcodes 101/102/103/105 evaluates a
+state-dependent predicate twice (before the park and again on the re-executed call) -> a lock handed over while parked is leaked when the
+predicate has turned false (host: lock stays (1, Some(B)) after a refused call). Plus 4 mutation survivors (test gaps).
+
+1. HOST
+ cargo xtask test, scratch worktrees of 810fb347 / 17cab8b6:  new 162 bin 1657 passed 0 failed 1 ignored ; base 161 bin 1644/0/1 (checks/xtest-*.txt).
+ cargo test -p tos-api --test aes_a118_lock_takers: base (test file copied in) 3 passed / 10 failed ; new 13 / 0 (checks/host-a118-*.txt).
+ Mutations (method/tester/mut.py, one at a time in a scratch copy of the new tree, checks/mutations.txt): 26 mutations,
+  RED (22): gate 101, gate 102, gate 103, gate 105, gate WF_DCOLOR-only, gate 70, gate 71, gate 19, gate 90/91, fsel fm_own(true),
+            fsel fm_own(false), evnt_multi quick-check owns_mouse->own_mouse, wind_open beg/end, close_window end, wind_set beg/end,
+            rubberbox beg/end, dragbox end, appl_exit beg/end.
+  GREEN = SURVIVED (4):  (a) close_window: update_beg removed (its update_end stays)           -> no test sees the unmatched END_UPDATE
+                         (b) graf_dragbox: update_beg removed (end stays)
+                         (c) evnt_multi parked-rectangle owner gate (let own_m = owns_mouse(idx) -> own_mouse())
+                         (d) evnt_mouse parked-rectangle owner gate
+  Not host-testable: shell_loop.rs fm_error via svc #2 (kernel code) -- covered only by the QEMU run below (alert pixel-identical).
+ Own host tests (method/tester/aes_tester_extra-appended-tests.rs.txt, appended to a copy of the developer's test file in a scratch tree):
+  t_wind_set_parked_then_window_deleted_does_not_leak_lock, t_wind_open_parked_then_..._opened_by_other_..., t_wind_close_parked_then_..._closed_by_other_...
+  all three RED on 810fb347: B parks behind A's hold, A deletes/opens/closes the window and ends its hold, the lock is handed to B,
+  B's re-executed call refuses (ret 0) and takes no lock -> "B re-exec ret=Some(0) lock=(1, Some(1))" (expected (0, None)).
+  Cause: window::opcode_takes_lock (mod.rs gate) is state-dependent (win(h) exists / open); update_block's hand-over (UPDATE_GRANTED) is only
+  consumed by tak_flag in update_beg, which the refused body never calls. EmuTOS has no such case: the validity checks are before the
+  wm_update and the blocked process continues as the holder. Effect: the lock stays held by B until B's next taker call (tak_flag
+  consumes the grant) -- other processes' wind_update/fm_own/... park meanwhile. Needs another process to change the window between park
+  and hand-over; not seen in any real app. Not present on base (base never parked these opcodes).
+
+2. EMUTOS COMPARISON (references/emutos): gemwmlib.c:1422/1429, 1450/1456, 1473-1474, 1632-1638/1757, 1778-1797 (wm_update), 1879-1883 (wm_new);
+   gemgrlib.c:205/219/250/267; gemaplib.c:253-259; gemfslib.c:718; gemfmlib.c:93,287,349; gemshlib.c:668-677,717,722-723; gemfmalt.c:361.
+   The takers, their positions (after the refusals, bracket around the body, ap_exit held across mn_cleanup + wait_for_accs, END after the
+   drain) match; the two named deviations (fsel waits before drawing; wm_new_for_slot counts on top) are as stated and harmless:
+   the fsel modal loop and the alert loop give the CPU to no one, so no lock is held across a park.
+   Deadlock review: no lock is held across a park except ap_exit's (as in EmuTOS; wait_for_accs is bounded by WAIT_TIMEOUT); an accessory
+   answering AC_CLOSE with BEG_UPDATE parks until ap_exit's END and then gets the hand-over (shown in QEMU, section 4d). Re-entrancy of a
+   DA inside fsel cannot occur (modal loop never yields). The one design flaw is the double evaluation of section 1.
+
+3. BUILDS (cargo xtask build --board qemu-virt|rpi4, dev and release, fresh per board; clippy; checks/lint-*-summary.txt)
+   base and new: all four builds exit 0, 159 warning lines each; clippy kernel (both boards) tos-api 74 / kernel 121; clippy tos-api host 74. No delta.
+   (clippy --tests not repeated by the Tester.)
+
+4. QEMU raspi4b, one at a time, per-run APFS clones deleted after (checks/kernels.sha256, checks/cards.sha256)
+ a) GH1 regression series (reg/series.sh head|wt on nd td qed, memprot on): compare.py 41 compared, 41 identical (checks/compare-reg.txt).
+    std card (make-sd-image) nd script: 26/26 identical; A117 methods 7/7; TeraDesk launch+quit 3/3; APITEST #Z on/off/strict: base and
+    new 109/0/5 in all modes, 124 result lines, 0 differing, screendumps identical (checks/compare-pairs.txt, checks/api-base-vs-new.txt).
+    fsck_msdos -n rc 0 on all reg/std clones; EXC/PANIC in all 46 serial logs: 0. The release kernels headA/wtA are bit-identical to
+    the developer's (sha256 28cd1861... / 73e38de9...).
+ b) Effect probe (a118/run-a118.sh): selector shot 0 px; after Return: base C: icon SELECTED (black), new NOT selected, 4418 px, bbox x0..271 y19..58.
+    Looked at the pixels: base-a118-1-after.png shows the black icon, new-a118-1-after.png the plain icon (+ the accessory's console line).
+ c) fm_error park (own, method/tester/run-fmpark.sh, A118DL.NAC holds BEG_UPDATE for 6 s at startup; NEWDESK.INF "#Z C:\NOPE.NAP"):
+    could NOT provoke the park. With a debug kernel (temp prints in a scratch tree, not committed) the trace shows
+    "drain_update_lock lock,owner 1 0" at the start of sh_ldapp (shell's wm_new drain, EmuTOS gemwmlib.c:1879-1883, gemshlib.c:676-677) and
+    lock (0,none) at the fm_error's update_block: the holder is wiped before the alert, as in EmuTOS. Additionally no accessory runs
+    during the alert (modal loop). So the fm_error-via-trap park path is practically unreachable; the alert drawn through the new EL1
+    svc path is pixel-identical to base (t20/t30 shots, 0 px; t02..t14 differ only in the boot screen's build id, x425..486 y190..201).
+ d) ap_exit with an accessory answering AC_CLOSE through wind_update(BEG_UPDATE) (A118DL, TeraDesk + tdquit.script; card dltd without and
+    dltdh with the 6 s startup hold; base vs new): no hang, no EXC/PANIC, "desktop up" in all four. Difference as EmuTOS predicts:
+    base "AC_CLOSE answered, END_UPDATE" before "desktop up"; new after it (the accessory's BEG_UPDATE waits behind ap_exit's hold until
+    its END). Dialog shots 0 px; the after shots differ only by the accessory's console line (x0..311, y48/y80..95) which base's desktop
+    repaint covered (looked at both).
+ Not done: HypView series (hv), memprot off/strict/verify desktop series (APITEST covers the modes), fsel contention in QEMU.
+
+5. NOT COVERED / HW: real Pi 4 (cache/HDMI/real input), the fm_error park and all contention-only effects need two processes racing:
+   host-proven only. Accessory file selector on real HW -> docs/api/desktop/_hw-test-checklist.md.
+
+FILES: method/ (developer's scripts + tester/), checks/, serial/, screendumps/.

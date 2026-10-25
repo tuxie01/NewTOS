@@ -1,0 +1,26 @@
+gate wm_open 101 | test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s | wind_open_waits_for_another_processs_hold
+gate wm_close 102 | test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s | wind_close_waits_for_another_processs_hold
+gate wm_delete 103 | test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | wind_delete_of_an_open_window_waits_for_another_processs_hold
+gate wind_set 105 | test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | wind_set_waits_for_another_processs_hold
+gate WF_DCOLOR only | test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | wind_set_waits_for_another_processs_hold
+gate graf 70 | test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | graf_rubberbox_and_graf_dragbox_wait_for_another_processs_hold
+gate graf 71 | test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | graf_rubberbox_and_graf_dragbox_wait_for_another_processs_hold
+gate ap_exit 19 | test result: FAILED. 11 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | appl_exit_waits_for_another_processs_hold_before_ac_close,appl_exit_holds_the_lock_while_the_accessories_see_ac_close
+gate fsel 90/91 | test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | fsel_input_waits_for_another_processs_hold
+fsel fm_own(true) | test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | fsel_input_of_an_accessory_takes_the_mouse_from_the_desktop
+fsel fm_own(false) | test result: FAILED. 11 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | fsel_input_of_an_accessory_takes_the_mouse_from_the_desktop,fsel_input_waits_for_another_processs_hold
+quick-check evnt_multi | test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s | the_button_quick_check_is_the_mouse_owners_only
+rect wait evnt_multi | test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | 
+rect wait evnt_mouse | test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | 
+wind_open beg | test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | wind_open_nests_inside_the_callers_own_hold
+wind_open end | test result: FAILED. 8 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s | a_refused_wind_open_does_not_wait,wind_close_waits_for_another_processs_hold,wind_delete_of_an_open_window_waits_for_another_processs_hold,wind_open_nests_inside_the_callers_own_hold,wind_open_waits_for_another_processs_hold
+close_window beg | test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | 
+close_window end | test result: FAILED. 11 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | wind_delete_of_an_open_window_waits_for_another_processs_hold,wind_close_waits_for_another_processs_hold
+wind_set beg | test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | wind_set_waits_for_another_processs_hold
+wind_set end | test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s | wind_set_waits_for_another_processs_hold
+rubberbox beg | test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s | graf_rubberbox_and_graf_dragbox_wait_for_another_processs_hold
+rubberbox end | test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | graf_rubberbox_and_graf_dragbox_wait_for_another_processs_hold
+dragbox beg | test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s | 
+dragbox end | test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | graf_rubberbox_and_graf_dragbox_wait_for_another_processs_hold
+appl_exit beg | test result: FAILED. 11 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s | appl_exit_holds_the_lock_while_the_accessories_see_ac_close,appl_exit_waits_for_another_processs_hold_before_ac_close
+appl_exit end | test result: FAILED. 11 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s | appl_exit_holds_the_lock_while_the_accessories_see_ac_close,appl_exit_waits_for_another_processs_hold_before_ac_close

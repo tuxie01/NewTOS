@@ -1,0 +1,13 @@
+build qemu-virt dev exit 0  warning-lines 159
+build qemu-virt release exit 0  warning-lines 159
+clippy kernel qemu-virt exit 0
+warning: `tos-api` (lib) generated 74 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions)
+warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions)
+build rpi4 dev exit 0  warning-lines 159
+build rpi4 release exit 0  warning-lines 159
+clippy kernel rpi4 exit 0
+warning: `tos-api` (lib) generated 74 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions)
+warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions)
+clippy tos-api host exit 0
+warning: `tos-api` (lib) generated 74 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions)
+DONE
