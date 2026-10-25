@@ -1,0 +1,96 @@
+measurement-2026-10-25-a118 -- Developer: A118, the remaining takers of the wind_update lock per EmuTOS, and the owner gate of
+ev_multi's quick check. Base: HEAD 17cab8b6 (clean tree). Fix: ded51d9e. No hardware, no card, no push.
+Host macOS, QEMU raspi4b (-append serial=on). Scratch = session scratchpad .../scratchpad/a118 (trees, kernels, cards; not kept).
+
+RESULT IN ONE LINE: every listed taker but w_redraw_desktop confirmed in EmuTOS and now taken; effect shown on the host (10 of
+13 cases red on 17cab8b6) and in QEMU (a desk accessory's file selector: base hands the click to NEWDESK, new does not);
+builds, warnings, host tests, GH1 series, A117, TeraDesk/QED launch+quit, APITEST on/off/strict unchanged (pixel-identical).
+
+1. THE TICKET'S LIST, CHECKED (references/emutos, pinned)
+  wm_open      aes/gemwmlib.c:1422,1429  BEG/END_UPDATE after the refusals (:1415-1419)            holds; was not taken
+  wm_close     :1450,1456 (and wm_delete of an open window, :1473-1474)                          holds; was not taken
+  wm_set       :1638,1757, whole body, all exits; WF_DCOLOR without a valid handle (:1632-1636) holds; was not taken
+  w_redraw_desktop :1902-1941 (3D)  takes the lock -- but NewTOS has no such function at all: it is ctl_pd's answer to a
+               WM_REDRAW in its own queue (hctl_msg, aes/gemctrl.c:380-384), which NewTOS does not have. DROPPED from A118
+               (a missing function, not a missing taker); named in docs/api/aes/window-graphics.md.
+  gr_rubwind / gr_dragbox behind graf_rubberbox / graf_dragbox  aes/gemgrlib.c:205,219 / 250,267  holds; the opcodes
+               (graf.rs) took nothing (the Control Manager's own drags in window.rs did, nested)
+  ap_exit      aes/gemaplib.c:253,258 (held across mn_cleanup + wait_for_accs(AP_ACCLOSE))      holds; was not taken
+  fsel         fs_input -> fm_do (aes/gemfslib.c:718) -> fm_own(TRUE)/(FALSE) (aes/gemfmlib.c:287,349): lock AND mouse
+               owner (ct_chgown(rlr, &gl_rscreen), :93)                                          holds; neither was taken
+  fm_error from the shell loop  aes/gemshlib.c:722-723 -> fm_alert's wm_update(BEG_UPDATE) (aes/gemfmalt.c:361)
+               holds: the direct call from kernel/src/shell_loop.rs could not park (counted on top of the owner's hold)
+  ev_multi quick check  if (rlr == gl_mowner), aes/gemevlib.c:185; parked rectangle waits only via post_mouse(gl_mowner),
+               aes/geminput.c:390,446-456                                                       holds; asked own_mouse()
+
+2. EFFECT BEFORE THE FIX
+ a) Host: tos-api/tests/aes_a118_lock_takers.rs (13 cases: 10 effect cases + 3 controls -- refused wind_open/wind_close do not
+    wait, wind_open nests in the caller's own hold). On 17cab8b6 (scratch tree, the file copied in unchanged):
+    3 passed / 10 failed (hosttest/aes_a118_lock_takers-base.log):
+      wind_open / wind_close / wind_delete(open) / wind_set(WF_NAME) / wind_set(-1, WF_DCOLOR) / graf_rubberbox /
+      graf_dragbox / fsel_input of a second process returned while an accessory held the lock (EmuTOS: parked);
+      appl_exit did not hold the lock across wait_for_accs (lock (0,None), the accessory's BEG_UPDATE went through);
+      appl_exit while another process held the lock went on and posted AC_CLOSE;
+      a press in an accessory's fsel_input completed the desktop's parked MU_BUTTON (ret MU_BUTTON instead of MU_TIMER);
+      an accessory's evnt_multi(MU_BUTTON|MU_TIMER, 0 ms) with the desktop owning the mouse and the button down returned
+      MU_BUTTON|MU_TIMER (34) instead of MU_TIMER (32).
+    New: 13/13 (hosttest/aes_a118_lock_takers-new.log).
+ b) QEMU, real accessory + NEWDESK (method/a118: A118ACC.NAC = a118acc.c, calls fsel_input on AC_OPEN; a118.script):
+    Desk -> "A118 probe", selector up, double-click on the C: icon OUTSIDE the selector, Return.
+      base: after the selector closes the C: icon is SELECTED (screendumps/base-a118-1-after.png) -- NEWDESK got the
+            clicks made during the accessory's selector (it owned the mouse);
+      new:  C: icon not selected (new-a118-1-after.png); 4418 px differ, bbox x0..271 y19..58 (icon + the accessory's
+            console line, which base's desktop repaint covered). Selector shot identical (0 px). Serial: same calls.
+ c) No real-app effect found for the other items in the regression set (NEWDESK, SYSACC, TeraDesk, QED, APITEST): they
+    need two processes contending at the moment of the call. They are host-proven and LATENT for these apps; matched
+    anyway (goal 1:1).
+
+3. FIX (ded51d9e)
+  tos-api/src/aes/mod.rs crysbind gate: update_block before opcodes 19, 70, 71, 90/91 (path != NULL) and
+    window::opcode_takes_lock for 101/102/103/105 (exactly when EmuTOS reaches BEG_UPDATE).
+  window.rs: wind_open and close_window bracket with update_beg/update_end after their refusals; wind_set = bracket around
+    the body (wm_set) for a valid handle or WF_DCOLOR; update_beg/update_end pub(super).
+  graf.rs: graf_rubberbox / graf_dragbox bracket their tracks.  fsel.rs: fm_own(TRUE/FALSE) around the modal loop.
+  appl.rs: BEG_UPDATE once per AC_CLOSE round before mn_cleanup, END_UPDATE after wait_for_accs + the drain (pd::close).
+  input.rs: owns_mouse(idx) (= rlr == gl_mowner); event.rs: quick check + parked rectangle tests use it (evnt_multi,
+    evnt_mouse). kernel/src/shell_loop.rs: fm_error via svc #2 (AES form_error, LP64 block) from EL1 -> parks like any
+    client (ACC03 kernel park).
+  Named deviations (spec): fsel waits at the opcode entry, before drawing (EmuTOS draws, then waits in fm_do), because a
+    parked call is re-executed from its svc; the Pexec-child sweep (wm_new_for_slot) still counts on top when another
+    process holds the lock (no EmuTOS counterpart).
+
+4. NUMBERS, BASE 17cab8b6 vs NEW (method/lint-both.sh -> checks/lint-*-summary.txt; method/xtest-both.sh -> checks/xtest-*.txt)
+  cargo xtask build qemu-virt dev/release, rpi4 dev/release   exit 0, 159 warning lines each   = new, all four
+  clippy kernel (both boards)                                  tos-api 74, kernel 121           = 74, 121
+  clippy tos-api host                                          74                               = 74
+  clippy tos-api --tests                                       same set; 0 in aes_a118_lock_takers.rs
+  cargo xtask test                                             161 bin, 1644/0/1                162 bin, 1657/0/1 (+13 = A118)
+  Note: lint-both.sh's first xtask test run failed 5 xtask rsc tests on BOTH sides (gitignored references/emutos and
+  cicons.rsc linked wrongly into the scratch trees); xtest-both.sh re-ran with correct links (the numbers above).
+
+5. QEMU REGRESSION (one QEMU at a time, per-run APFS clones deleted after each run; method/qemu-all.sh)
+  Kernels: checks/kernels.sha256 (release rpi4, SOURCE_DATE_EPOCH fixed, scratch trees). Cards: checks/cards-and-programs.sha256.
+  a) GH1 regression series (method/reg, head = 17cab8b6, wt = new), memprot on: nd (NEWDESK + SYSACC: views, Desktop info,
+     window closer/drag/size/full/close, double-click, SYSACC open/close, popups), td (TeraDesk #Z + SYSACC), qed (QED #Z:
+     Ctrl-N, type, menu, click away, Ctrl-Q alert, cancel, quit -> NEWDESK back): checks/compare-reg.txt 41/41 identical.
+     std card (tools/make-sd-image.sh, 2 accessories) with the nd script: 26/26 identical (checks/compare-pairs.txt).
+     fsck_msdos -n rc 0 on all 8 reg clones; 0 EXC/PANIC in every serial log.
+  b) A117 method (a117: NEWDESK + A117ACC, a117td: TeraDesk + A117ACC): 7/7 identical; the accessory gets AC_OPEN only.
+  c) TeraDesk launch + quit (a117/tdq.sh, tdquit.script): quit dialog, Quit, NEWDESK back ("desktop up", rc=0): 3/3 identical.
+  d) A118 probe (2b): sel 0 px, after 4418 px = the effect.
+  e) APITEST #Z, memprot on/off/strict: base 109/0/5, new 109/0/5 in every mode, 124 result lines, 0 differing, 0 EXC/PANIC
+     (checks/api-base-vs-new.txt); screendumps identical.
+  f) fm_error through the GEM trap (method/fmerr: #Z C:\NOPE.NAP, sh_ldapp rc=-33 -> fm_error(2) alert): the alert
+     "cannot find the folder or file" is drawn by the new EL1-trap path, 0 px against base (screendumps/fmerr-*.png),
+     0 EXC/PANIC. Method note: the END regex "sh_find: .* not found" never matched (the serial line is "exited with
+     rc=-33"); the dump was taken after the 120 s + 60 s waits ran out -- the alert was already up. No lock holder in
+     this run, so the PARK path of the trap call is not exercised in QEMU (host-less; covered only by the dispatcher gate).
+
+6. NOT COVERED / OPEN
+  Real Pi 4. memprot off/strict/verify desktop series (APITEST covers the modes). HypView (hv) not repeated.
+  The fm_error park itself (an accessory holding the lock while the shell loop alerts) is not provoked anywhere.
+  Real-app effect for wind_open/close/set, graf_*box, appl_exit: none found (latent, host-proven).
+
+FILES: method/ (lint-both.sh, lint.sh, xtest-both.sh, build-all.sh, mkcards.sh, qemu-all.sh, compare-pairs.py, reg/, a117/
+(+ tdq.sh), a118/ (probe accessory, script, run-a118.sh), api/, fmerr/), hosttest/, checks/, serial/, screendumps/.
+Kernels, cards and trees are scratch (sha256 in checks/).
