@@ -1,0 +1,59 @@
+measurement-2026-10-25-a115-test -- independent Tester run of A115 (scheduler runs EmuTOS's ready list rlr/drl instead of slot order).
+Change under test: e7754b16 (fix) + 945479cd (docs), base 587e0f68. No hardware, no flashing, no push. Host macOS, QEMU raspi4b (-append serial=on).
+Scratch = session scratchpad .../scratchpad/a115-test (scratch trees, kernels, cards; trees removed afterwards). Product code untouched
+(git status: only this directory is new). Method = copy of measurements/measurement-2026-10-25-a115/method + Tester additions
+(method/two, build-two.sh, build-plain.sh, lint-both.sh, lint-nt.sh, mkcards.sh tail, a117/tdquit use).
+
+RESULT: PASS (QEMU/host). Pi 4 open. One test-coverage gap found (wake_timers tie/slot order, see 2), no product defect.
+
+1. HOST (checks/, hosttest/)
+   cargo xtask test, new (working tree 945479cd):  161 binaries, 1644 passed / 0 failed / 1 ignored (hosttest/xtask-test-new.log)
+   cargo xtask test, base 587e0f68 (git archive, ignored inputs symlinked): 160 binaries, 1641 / 0 / 1 (hosttest/xtask-test-base.log)
+   sched_a115_ready_list.rs on base (the developer's base-variant: only the two fixture lines sched::ready/unready as direct runnable
+   stores, checked by diff): 0 passed / 3 failed (hosttest/sched_a115_ready_list-base.log); new: 3/3.
+   Numbers equal the developer's.
+
+2. MUTATIONS (scratch copy of the new tree, sched.rs edited there only; hosttest/mut-*.diff/.log; tests: all 10 test files that
+   reference sched:: plus sched_a115_ready_list)
+   M1  drain_drl FIFO instead of latest-push-first        RED (sched_a115: 2 failed; sched_dsptch_admits_the_caller red too)
+   M3  admit: ready() (append) instead of push_drl        RED (accessories_run_in_reverse_start_order..., sched_dsptch_*)
+   M4  wake: ready() (append) instead of push_drl         RED (a_process_woken_by_appl_write_runs_behind_the_writer, 2 more)
+   M5  dispatch_after_call without ready(cur)             RED (appl_write test, two_processes_woken..., more)
+   M2c wake_timers sorted in reverse deadline order       RED (two_processes_woken_in_one_pass...)
+   M2  wake_timers tie-break: earlier-armed first         GREEN = SURVIVES (no test pins the equal-deadline rule)
+   M2b wake_timers in slot order instead of dlr order     GREEN = SURVIVES (A<C slot order coincides with deadline order in the test)
+   Tester test method/two/sched_a115_tester_dl.rs (scratch copy only, not added to the repo): A (lower slot) 200 ms, C (higher slot)
+   100 ms; EmuTOS dlr = C, A -> drl [A, C] -> A first. Unmutated new code: GREEN; M2b: RED (M2b2 log). So the implementation is
+   right for the case the shipped test cannot tell apart; the test has a blind spot (ticket candidate).
+
+3. BUILD / CLIPPY (scratch trees, checks/lint-{base,new}-summary.txt)
+   cargo xtask build qemu-virt/rpi4 x dev/release: exit 0, 159 warning lines each side (8 builds).
+   clippy kernel (both boards): tos-api 74, kernel 121 each side; clippy tos-api host 74; --tests: 0 hits in sched_a115_ready_list.rs.
+   Delta: none.
+
+4. QEMU (one QEMU at a time, per-run APFS clones deleted, fsck_msdos -n rc 0 on every reg run)
+   Kernels checks/kernels.sha256, cards checks/cards.sha256. Six injector kernels (headA, wtA, base/new-a117, base/new-a117td)
+   are bit-identical to the developer's (sha256 equal) -> the tested binary is the developer's.
+   a) gh1-reg series memprot on, head vs wt: nd 26 + td 7 + qed 8 = 41 shots 41/41 pixel-identical; std card (2 accessories) 26/26 (compare-reg.txt).
+      0 EXC/PANIC in all serial logs.
+   b) Boot order standard card: base slot 0,1,0,1,...; new slot 1, slot 0, kernel client, round robin
+      (serial/head-onR1-std-serial.log vs wt-onR1-std-serial.log, lines 56-67).
+   c) A117 method (accessory in evnt_multi(MU_MESAG)): NEWDESK 5 shots + TeraDesk 2 shots, base vs new 0 px differ; the accessory receives
+      only AC_OPEN (msg 40) on both; About dialog and Quit dialog seen in the pixels (Read).
+   d) TeraDesk quit (a117/tdquit.script, own kernels): Quit dialog -> Quit -> "sh_ldapp ... rc=0", "[desk] desktop up", NEWDESK menu bar and
+      Hard disk icon visible; base vs new 0 px differ on all 4 shots (compare-tdq.txt).
+   e) OWN SCENARIO: two accessories with different titles ("Alpha acc" = ACCAL.NAC, "Beta acc" = ACCBE.NAC, both load slot 0 / 1 in directory
+      order), Desk menu opened by hover (two/dm.script), screendumps base-two-deskmenu.png / new-two-deskmenu.png:
+      base: Desktop info..., Alpha acc, Beta acc (load order, menu_id Alpha 0, Beta 1)
+      new : Desktop info..., Beta acc, Alpha acc (reverse load order, menu_id Beta 0, Alpha 1)
+      EmuTOS derivation from source: load_accs -> pstart pushes each onto drl (gempd.c:125-128) -> after pid 0's dsptch rlr = [pid0, B, A]
+      (gemdisp.c:193-197 drain head first); B runs first and its menu_register takes the first free g_acctitle slot (gemmnlib.c:794-811) ->
+      Beta first. New = EmuTOS-derived order. (EmuTOS itself not run.)
+   f) APITEST (#Z) base vs new, memprot on/off/strict: 109 / 0 / 5 in all six runs, 124 result lines each, 0 differing, 0 EXC/PANIC (checks/api-base-vs-new.txt).
+   g) A112 probes f1 f1b f2 f3, plain kernels: f1 237 accessory lines/31 MAIN loops both; f1b 15/31 both; f3 75 accessory lines both;
+      f2 base: ACCB, ACCC, then "[MAIN] cover window closed+deleted"; new: "closed+deleted", then ACCC, ACCB (serial/f2-*.log). 0 EXC/PANIC.
+
+5. NOT COVERED
+   Real Pi 4. memprot off/strict/verify desktop series and the HypView scenario not repeated (APITEST covers the modes; developer likewise).
+   EmuTOS itself not run for the order (derived from source). Accessory open/close via the Desk menu of the two-accessory card not clicked
+   (open/close covered by SYSACC in nd/std and A117ACC in c).

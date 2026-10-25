@@ -1,0 +1,4 @@
+1109c1109
+<     ready(cur);
+---
+>     //ready(cur);

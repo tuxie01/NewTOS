@@ -1,0 +1,4 @@
+958c958
+<     expired.sort_unstable();
+---
+>     expired.sort_unstable_by(|a, b| b.cmp(a));

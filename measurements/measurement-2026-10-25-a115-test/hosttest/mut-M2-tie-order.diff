@@ -1,0 +1,4 @@
+953c953
+<             expired[n] = (d, u64::MAX - TIMER_ARM_SEQ[i].load(Ordering::Acquire), i);
+---
+>             expired[n] = (d, TIMER_ARM_SEQ[i].load(Ordering::Acquire), i);

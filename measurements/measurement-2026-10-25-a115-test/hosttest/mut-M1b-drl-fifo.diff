@@ -1,0 +1,4 @@
+617c617
+<             if k != 0 && top.is_none_or(|(t, _)| k > t) {
+---
+>             if k != 0 && top.is_none_or(|(t, _)| k < t) {

@@ -1,0 +1,4 @@
+accopen: 0 px differ
+quitdlg: 0 px differ
+onquit: 0 px differ
+after: 0 px differ
