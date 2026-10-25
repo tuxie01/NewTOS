@@ -1,0 +1,41 @@
+measurement-2026-10-25-a111-test -- independent Tester run of A111 point 2 (033da16f, docs 4b6234b0), base 8da6e860
+RESULT: PASS on all 5 checks. No product code changed in the repo; no hardware, card, push, GitHub.
+
+1 CODE vs EMUTOS (read + host test + QEMU): ob_edit/curfld in tos-api/src/aes/object.rs follow aes/gemobed.c:194-218,335-463
+  (EDINIT index to end + caret on, no field draw; EDCHAR caret off at ob_stfn start, edit, span redraw min(start,nstart)..
+  max(finish,nfinish) only if text changed, closing curfld; EDEND closing curfld = caret off; EDSTART/obj<=0 early return).
+  form.rs fm_do pairs EDINIT/EDEND like gemfmlib.c:308/:344 (unchanged). fsel.rs own loop: every edit_field_t(ED_INIT) is
+  preceded by an ED_END on the previous focus (Tab, click incl. same field, file click, drive click, apply_path); the file click
+  ends the edit before the selection text changes and redraws FSSELECT before ED_INIT. Exits (OK/Cancel/Return/double click)
+  leave the caret on, the dialog is torn down right after (screendump fsel: no residue is reachable). Screendumps fsel-new-f1..f7:
+  exactly one caret per frame (typing, file click, click into active field, Tab to Directory, click back, Left).
+  Adjusted test objc_edit_caret_follows_te_just: justified -- EDINIT alone now draws only the XOR line starting 3 rows above the
+  cell (gemobed.c:203), ED_END primer would switch a caret ON; it still asserts x for TE_LEFT/RIGHT/CNTR, y = pxl_rect.y-3.
+  Not weakened (mutation 1 below turns it red).
+2 cargo xtask test: base 8da6e860 = 159 binaries 1639/0/1 ; new 4b6234b0 = 160 binaries 1641/0/1 (+aes_a111_caret 2 tests). exit 0 both.
+  Mutations in a scratch worktree of the new tree (restored byte-identical, diff verified):
+   M1 old caret (1x16 black REPLACE fill)            -> RED: ed_init_draws_only_the_xor_caret, edit_sequence_leaves_exactly_one_caret,
+                                                         objc_edit_caret_follows_te_just (3 tests, 2 binaries)
+   M2 closing curfld skipped for EDEND                -> RED: edit_sequence_leaves_exactly_one_caret
+   M3 caret-off before the EDCHAR edit removed        -> RED: edit_sequence_leaves_exactly_one_caret
+   (checks/mutation*.txt)
+3 Build/lint (developer's method/lint.sh, scratch worktrees base/new, gitignored inputs symlinked):
+   cargo xtask build qemu-virt/rpi4 dev/release: exit 0 in all 8, warning lines 159 = 159.
+   clippy kernel qemu-virt/rpi4: tos-api 76 -> 74, kernel 121 = 121; tos-api host 76 -> 74; per-site diff: only
+   "collapsible_match" 4 -> 2; --tests: identical per-test warnings, 0 in aes_a111_caret.rs. (checks/lint-*-summary.txt)
+4 QEMU raspi4b release kernels (serial=on), kernels rebuilt from git archive (base-B = f26fbf83.. = developer's rn-base, reproducible).
+   Series (run.py, per-run APFS clone, deleted): nf (desktop New folder), rn (Info/Rename), fsel (QED File>Open), td (TeraDesk), nav.
+   Pixel diff base vs new over 640x480 (checks/pixdiff.txt): nf 7/7 shots, rn 5/5, fsel 7/7 = exactly 22 px, one column each.
+   caretcol on new nf: 22 rows 0x424242 (complement of face 0xbdbdbd) between the field borders, black borders intact; index 0 white
+   over the border (s1/s5/s7). Visual (sheet-*.png contact sheets, viewed): one thin XOR line per frame, previous position restored
+   after Left/Backspace, Esc clears field with caret at col 0, fsel: A typed -> file click -> caret at end of QED   .NAP, Tab ->
+   Directory caret only, click back -> Selection only, Left -> between P and end.
+   Hatari 2.6.1 Falcon EmuTOS (pinned ROM, method/hatari-newfolder.sh of the developer, run again here: hatari/grab0001..7): thin
+   XOR caret reaching above and below the text cell, moves with AB/Left; same shape as NewTOS new (22 rows, XOR).
+   TeraDesk (File > Open..., "Open Item" dialog Name field, own kernel C): base vs new 0 px in 7/7 shots. TeraDesk draws its own
+   black caret in xdialog (sdk/apps/teradesk has no objc_edit call), so it does NOT exercise the changed code; unaffected.
+5 Regression: nav series (Desk > Desktop info [no edit field], Return, Alt+C, Ctrl+N, A, B, Return): d1 info 0 px, d2 closed 0 px,
+   d3/d4 22 px caret column only, d5 (Return: dialog closed, folder AB created, no residue) 0 px, d6 0 px.
+   APITEST (AUTO\APITEST.NCP, lint release kernels, 150 s): base TOTAL 105/0/9 and new 105/0/9, serial logs byte-identical
+   (the 9 skips = PTERMCH.NCP missing on this card, no key pressed; not a delta). 0 EXC/PANIC in all 20 serial logs.
+NOT COVERED: real Pi 4; qemu-virt boot; interactive mouse paths.

@@ -1,0 +1,32 @@
+nf-base-s1-open.png: 22 px differ x199:y221..242(22)
+nf-base-s2-A.png: 22 px differ x207:y221..242(22)
+nf-base-s3-AB.png: 22 px differ x215:y221..242(22)
+nf-base-s4-left.png: 22 px differ x207:y221..242(22)
+nf-base-s5-left.png: 22 px differ x199:y221..242(22)
+nf-base-s6-right.png: 22 px differ x207:y221..242(22)
+nf-base-s7-bksp.png: 22 px differ x199:y221..242(22)
+rn-base-r1-open.png: 22 px differ x336:y166..187(22)
+rn-base-r2-left.png: 22 px differ x328:y166..187(22)
+rn-base-r3-bksp.png: 22 px differ x320:y166..187(22)
+rn-base-r4-X.png: 22 px differ x328:y166..187(22)
+rn-base-r5-esc.png: 22 px differ x240:y166..187(22)
+fsel-base-f1.png: 22 px differ x264:y148..169(22)
+fsel-base-f2.png: 22 px differ x352:y148..169(22)
+fsel-base-f3.png: 22 px differ x352:y148..169(22)
+fsel-base-f4.png: 22 px differ x352:y148..169(22)
+fsel-base-f5.png: 22 px differ x288:y120..141(22)
+fsel-base-f6.png: 22 px differ x352:y148..169(22)
+fsel-base-f7.png: 22 px differ x344:y148..169(22)
+td-base-t1-open.png: 0 px differ 
+td-base-t2-a.png: 0 px differ 
+td-base-t3-ab.png: 0 px differ 
+td-base-t4-left.png: 0 px differ 
+td-base-t5-left.png: 0 px differ 
+td-base-t6-right.png: 0 px differ 
+td-base-t7-bksp.png: 0 px differ 
+nav-base-d1-info.png: 0 px differ 
+nav-base-d2-closed.png: 0 px differ 
+nav-base-d3-nf.png: 22 px differ x199:y221..242(22)
+nav-base-d4-ab.png: 22 px differ x215:y221..242(22)
+nav-base-d5-ret.png: 0 px differ 
+nav-base-d6-end.png: 0 px differ 
