@@ -1,0 +1,21 @@
+base1 vs base2 pick1: 0 px differ
+base1 vs base3 pick1: 0 px differ
+base1 vs new1 pick1: 158289 px differ bbox x0..510 y32..449
+base1 vs new2 pick1: 158289 px differ bbox x0..510 y32..449
+base1 vs new3 pick1: 158289 px differ bbox x0..510 y32..449
+base1 vs base2 pick2: 0 px differ
+base1 vs base3 pick2: 0 px differ
+base1 vs new1 pick2: 4760 px differ bbox x0..327 y32..47
+base1 vs new2 pick2: 4760 px differ bbox x0..327 y32..47
+base1 vs new3 pick2: 4760 px differ bbox x0..327 y32..47
+new1 vs new2 pick1: 0 px differ
+new1 vs new2 pick2: 0 px differ
+new1 vs new3 pick1: 0 px differ
+new1 vs new3 pick2: 0 px differ
+new1 pick1 vs pick2: 0 px differ
+basetd1 vs basetd2 quit: 0 px differ
+newtd1 vs newtd2 quit: 0 px differ
+basetd1 vs basetd3 quit: 0 px differ
+newtd1 vs newtd3 quit: 0 px differ
+basetd1 vs newtd1 quit: 61989 px differ bbox x0..434 y32..371
+basetd1 vs newtd1 acopen: 0 px differ

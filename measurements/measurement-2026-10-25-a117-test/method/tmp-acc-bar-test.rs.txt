@@ -1,0 +1,21 @@
+(temp host test appended to a scratch copy of tos-api/tests/aes_a117_mn_selected_owner.rs in a scratch worktree; passed on eaf32b04)
+#[test]
+fn tmp_accessory_bar_pick_tracked_in_chain_wait_goes_to_accessory() {
+    let (_g, host) = lock();
+    let a = Proc::new(true);
+    let mut pa = Aespb::new();
+    a.run();
+    appl_init(&mut pa);
+    install_menu(&mut pa);
+    kernel_context();
+    let mut pk = Aespb::new();
+    move_to(host, &mut pk, ON_FILE.0, ON_FILE.1, 0);
+    queue_pick_open(host, 6, 4);
+    let (o, msg) = evnt_multi_desk(&mut pk, true);
+    assert_ne!(o.ret.map(|w| w & MU_MESAG), Some(MU_MESAG), "chain waiter must not get an accessory's pick: {msg:?}");
+    a.run();
+    move_to(host, &mut pa, 320, 300, 0);
+    let (o, msg) = evnt_multi_acc(&mut pa);
+    assert_pick(&o, &msg, "accessory bar owner");
+    remove_menu(&mut pa);
+}

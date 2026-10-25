@@ -1,0 +1,78 @@
+measurement-2026-10-25-a117-test -- Tester: independent verification of eaf32b04 (A117, MN_SELECTED to the menu-bar owner)
+Base c4e8d1be, new eaf32b04 (docs-only c5e170aa on top). No product code changed, no hardware, no card, no push, no GitHub write.
+All builds/runs in scratch git worktrees (removed after) and per-run APFS clones of scratch cards (deleted after);
+rpi4 kernel8.img never in the repo root. Developer's measurement-2026-10-25-a117 read, every claim re-run.
+
+RESULT IN ONE LINE: PASS on all five checks. Effect reproduced base 6/6, gone new 0/6 (NEWDESK 3 vs 3, TeraDesk 3 vs 3);
+regression identical (SYSACC 0 px, no-accessory 0 px, APITEST 109/0/5 both, selftest-desk/-emmc logs byte-identical, qemu-virt boot identical).
+
+1. CODE vs EMUTOS / SPEC  PASS (read + 1 temp host test)
+  EmuTOS references/emutos aes/gemctrl.c:353 owner = gl_mnppd; :365 ct_msgup(mesag, owner,...) -> :83-84 ap_sendmsg; AC_OPEN to
+  mn_getownid owner (:337-350); aes/gemmnlib.c:707 p = fpdnm(NULL, rlr->p_pid), :712 gl_mnppd = p. Control Manager = ctl_pd (own process).
+  New: menu::mn_selected_target() = appl::identity_of(appl::reported_pid(MNPPD)), None if MNPPD >= NUM_PDS. event.rs menu_intercept()
+  posts there; AC_OPEN branch unchanged; evnt_multi no longer passes idx.
+  Case table (reported_pid/identity_of/chain_member/innermost_from read in tos-api/src/aes/appl.rs):
+   - waiter = member of the bar's chain (desktop, program, Pexec child): pid 0 -> identity_of(0) = current identity = the waiter.
+     Same as the old target, and EmuTOS-faithful (one descriptor D.g_int[0]). Host test case 3 (green on old + new).
+   - waiter = accessory, bar owned by the chain: identity_of(0) -> chain_member() = innermost started chain process, kernel context
+     when none alive. Host test case 1 (kernel-context desktop) and 2 (program in Pexec: the child). Both red on old code.
+   - bar owned by an accessory (waiter chain member or other accessory): pid 2+n -> acc::at(n) -> innermost_from(acc) (acc itself
+     unless in Pexec); waiter = that accessory -> itself. NOT covered by the developer's tests: temp host test
+     (method/tmp-acc-bar-test.rs.txt, scratch worktree only, removed with it) GREEN on eaf32b04: chain waiter tracks the pick, does
+     not receive it, accessory then receives MN_SELECTED with msg[1] = SCRENMGR pid 1.
+   - bar owner exited: release_bar_of(slot) clears MNPPD to usize::MAX (A107) -> None -> message dropped, hold/ct_msgup wait stays.
+     A root chain program that ends without release leaves a stale MNPPD whose pid is 0 -> resolves to a live chain member or the
+     kernel context, never a dead slot. An ended accessory: acc::at(n) None -> None (documented refusal). No dead/wrong target found.
+   - Pexec child of the owner: pid 0, waiter child -> child; accessory waiter -> innermost child. (case 2/3)
+   Not run (no case possible without real EL0 accessory-with-own-bar): accessory owning the bar in QEMU; owner-exited path as a test.
+2. cargo xtask test  PASS
+  base c4e8d1be: 158 bin, 1636 passed / 0 failed / 1 ignored. new: 159 bin, 1639 / 0 / 1 (+1 binary, +3 tests = aes_a117_mn_selected_owner).
+  Mutation A (reverse-apply the src hunks of eaf32b04 on event.rs+menu.rs = old menu_intercept target, new test kept): cargo test
+   --no-fail-fast tos-api+tos-types+xtask: 159 bin, 1637 passed / 2 FAILED: a_pick_tracked_in_an_accessorys_wait_goes_to_the_bar_owner
+   and ..._reaches_the_chains_running_member ("left: Some(48) right: Some(32)"). Nothing else in the suite goes red (no existing test
+   covers the target); case 3 green as the developer said. (checks/mutation-old-target-cargo-test.log; plain `cargo xtask test`
+   stops at the first failing binary, hence --no-fail-fast.)
+  Mutation B (mn_selected_target returns Some(MNPPD) raw, no identity mapping): cases 2 AND 3 red (left None / Some(0) vs Some(16)),
+   case 1 green. So the mapping is pinned by the tests.
+3. BUILD / LINT  PASS (checks/lint-base-summary.txt, lint-new-summary.txt; method/lint.sh)
+  cargo xtask build qemu-virt dev/release, rpi4 dev/release: rc 0 in all 4, warning lines 159 each, base = new.
+  clippy kernel qemu-virt / rpi4: tos-api 76, kernel 121, base = new. clippy tos-api host 76, --tests: same per-target set (only
+  order and "(N duplicates)" annotations differ, parallel build), 0 warnings in aes_a117_mn_selected_owner.rs.
+4. QEMU raspi4b (-append serial=on, release rpi4 kernels, injector as the developer's; screendumps looked at)
+  Reproducible builds: kernel sha256 base 32553bb7...(NEWDESK) / 2bbb4cdc...(TeraDesk), new 6610440d... / bf4729ab... = the developer's
+  kernel8-base/-fix/-base-td/-fix-td; A117ACC.NAC f916f84f... identical.
+  A) NEWDESK + A117ACC (Desk -> "A117 probe" = AC_OPEN, then Desk -> Desktop info twice; serial/base1..3.log, new1..3.log):
+     base 3/3: one MN_SELECTED "ev 16 msg 10 1 0 3 9 420 -2840 8" AT THE ACCESSORY; screendump base*-pick1: no dialog, "Desk" inverted;
+     pick2: About dialog. new 0/3 MN_SELECTED, only AC_OPEN ("msg 40 1 0 3 0 0 0 0"); new*-pick1 and -pick2: "NewTOS 0.6.1" About dialog
+     both times (pick1 = pick2, 0 px). base1=base2=base3 and new1=new2=new3 pixel-identical (0 px) per shot.
+  B) TeraDesk (#Z, bar owner DESKTOP) + A117ACC (Desk -> A117 probe, File -> Quit/Shutdown; serial/basetd1..3, newtd1..3):
+     base 3/3: "ev 16 msg 10 1 0 4 32 423 12624 18" at the accessory; screendump: no dialog, "File" inverted.
+     new 0/3 MN_SELECTED; screendump: "Quit / Shutdown Options" dialog (Shutdown/Reboot/Quit/Cancel). The acopen shots base=new 0 px.
+  0 [EXC]/PANIC in all 17 serial logs of this series.
+  Regression (same kernels, same scripts):
+   - SYSACC.NAC opened via Desk menu (AC_OPEN) then two Desktop-info picks (serial/sys-base, sys-new): acopen/pick1/pick2 base vs
+     new 0 px each; SYSACC "NewTOS System Information" dialog opens (acopen shot), identical in both. (Its picks show no About dialog
+     in either run: SYSACC's dialog is up; identical base/new, so no delta.)
+   - no accessory, Desk -> Desktop info x2 (noacc-base/-new): 0 px base vs new each; About dialog shown.
+   - APITEST via #Z, rpi4 release kernels of the lint trees (api-base/api-new): TOTAL 109 PASS / 0 FAIL / 5 SKIP both
+     (GEMDOS 13, BIOS-CHR 25/5 skip, BIOS-BLK 29, BIOS-SYS 21, AES 4, SUPER 17); summary blocks and all T-lines identical; 0 EXC/PANIC.
+   - selftest-desk,selftest-emmc rpi4 release (st-base/st-new): logs byte-identical (118 lines, 36 PASS, 1 FAIL "ins_devices on a
+     complete desktop reports no change" in BOTH = pre-existing; both stop after "[desk-dir] PASS Rename A.TXT -> R.TXT" within the
+     80 s window, "[desk-selftest] done" not reached in either -> not a delta, but not a completed selftest either).
+   - qemu-virt dev boot via cargo xtask run (serial/virt-base.log, virt-new.log, 70..80 s): identical except worktree paths and
+     menu.rs line numbers in warnings; ends "[desk] desktop up (0 drives)"; 0 EXC/PANIC. qemu-virt has no kernel-side PASS markers
+     without feature builds, so "selftest counts" there = the above feature builds on raspi4b.
+5. GITHUB #14 / X-SHOT  see TASK/A117.md note. Source downloaded read-only (github.com/ragnar76/X-Shot master zip, own scratch dir,
+   never built/run): src/xshot.c main() ends in `for (;;) { ev = evnt_multi(EV_MESAG | EV_BUTTON | EV_KEYBD, 1,1,1, 0...0, msg, 0UL, ...)`
+   (line 1476, no timer) after appl_init + menu_register. EV_MESAG = 0x0010 = MU_MESAG. So X-Shot idles in evnt_multi with MU_MESAG
+   whether its window is open or closed (win < 0 only skips the redraw, the same wait). Other waits in the file: delay_ms() uses
+   EV_TIMER only (line 145, no MU_MESAG, no intercept), handle_click evnt_button (1455), form_do in do_about. => the A117 path
+   (inline Control Manager runs in the accessory's evnt_multi(MU_MESAG), pick lands in its queue) applies to X-Shot; #14 with X-Shot
+   is covered by A117 as far as the symptom "program cannot be quit after opening an accessory, sometimes" goes. Not proven: on the real Pi.
+   (dist/newtos/xshot.nac exists in the repo; same source.)
+
+DROVE: raspi4b QEMU only (release kernels), host tests, both-board dev+release builds, one qemu-virt dev boot.
+NOT DRIVEN / OPEN: real Pi 4 (interactive, cache-sensitive, #14 final gate); accessory owning its own bar in QEMU (host test only);
+owner-exited drop path as a test; selftest-desk completion (stops identically in base and new).
+HOW: method/ (series.sh, series2.sh, virt.sh, lint.sh, build-kernel.sh from the developer's method with S/WS adapted, run.py as
+the developer's, mkwt.sh scratch worktree + links of gitignored inputs). Binary sha256 in checks/binaries.sha256.
