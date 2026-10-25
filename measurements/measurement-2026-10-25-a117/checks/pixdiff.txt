@@ -1,0 +1,10 @@
+fix-td3-quit vs fix-td4-quit: 0 px differ
+fix-td3-quit vs fix-td5-quit: 0 px differ
+base-td3-quit vs base-td4-quit: 0 px differ
+base-td3-quit vs base-td5-quit: 0 px differ
+base1-pick1 vs base2-pick1: 0 px differ
+fix1-pick1 vs fix2-pick1: 0 px differ
+base1-pick2 vs base2-pick2: 0 px differ
+fix1-pick2 vs fix2-pick2: 0 px differ
+base-td3-quit vs fix-td3-quit: 61439 px differ bbox x0..434 y32..371
+base1-pick1 vs fix1-pick1: 158289 px differ bbox x0..510 y32..449

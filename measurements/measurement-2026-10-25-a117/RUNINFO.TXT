@@ -1,0 +1,87 @@
+measurement-2026-10-25-a117 -- Developer: A117, MN_SELECTED goes to the menu-bar owner (gl_mnppd), not to the waiter
+whose evnt_multi(MU_MESAG) the inline Control Manager ran in. Base: HEAD c4e8d1be. No hardware, no card, no push.
+
+RESULT IN ONE LINE: effect shown in QEMU raspi4b (desktop and TeraDesk menu picks land in a desk accessory's queue,
+deterministic 5/5 runs); EmuTOS sends to gl_mnppd (aes/gemctrl.c:353,365); fixed; 0/5 after the fix, the desktop's
+"Desktop info" and TeraDesk's "Quit/Shutdown Options" dialog appear.
+
+EFFECT (before the fix, HEAD c4e8d1be)
+  Probe accessory method/a117acc.c (A117ACC.NAC in C:\ACC\): appl_init, menu_register("  A117 probe"), then forever
+  evnt_multi(MU_MESAG) and one serial line per message "A117ACC: ev <ret> msg <w0..w7>". It owns no menu bar.
+  A) Embedded desktop NEWDESK (bar owner), card method/a117.inf (no window), script method/a117.script:
+     Desk -> "A117 probe" (AC_OPEN to the accessory), then Desk -> "Desktop info..." twice.
+     serial/base1.log, base2.log:
+       A117ACC: ev 16 msg 40 1 0 3 0 0 0 0          <- AC_OPEN (correct, the accessory's own entry)
+       A117ACC: ev 16 msg 10 1 0 3 9 420 -2840 8    <- MN_SELECTED title 3 (Desk) item 9 (Desktop info) AT THE ACCESSORY
+     screendumps/base1-pick1.png: no dialog, the "Desk" title stays inverted (the desktop never got the pick, so no
+     menu_tnormal). The second identical pick reaches the desktop (base1-pick2.png: About dialog) -- "sometimes".
+  B) TeraDesk (#Z autorun, bar owner DESKTOP), card method/td.inf, script method/td.script (each gesture parks at the
+     bottom-left corner and goes straight up to its title): Desk -> "A117 probe", then File -> "Quit/Shutdown".
+     serial/base-td3.log, base-td4.log, base-td5.log (3/3):
+       A117ACC: ev 16 msg 10 1 0 4 32 423 12624 18  <- TeraDesk's File(4) -> Quit/Shutdown(32) AT THE ACCESSORY
+     screendumps/base-td3-quit.png (= base-td4/td5-quit, 0 px, checks/pixdiff.txt): no Quit dialog, "File" stays
+     inverted -- the program "cannot be quit", quitting does not react.
+  base-td1/td2 and fix-td1 are a first TeraDesk script whose hover point (60,9) was the right edge of the "Desk" title:
+  the Desk drop-down reopened and the press outside cancelled it (base-td2-hover.png); no pick, no message, in base
+  and fix alike. Kept for completeness, not evidence.
+
+EMUTOS (references/emutos 1a7484ab)
+  aes/gemctrl.c:318-370 hctl_rect: a pick that is not a desk-accessory entry -> `owner = gl_mnppd; mesag = MN_SELECTED;`
+    (:353-354) -> ct_msgup(mesag, owner, title, item, treehi, treelo, parent) (:365) -> ap_sendmsg(appl_msg, message,
+    owner, ...) (:81-84). Accessory entries -> mn_getownid owner, AC_OPEN (:337-350).
+  aes/gemmnlib.c:63 `GLOBAL AESPD *gl_mnppd;`, :707 `p = fpdnm(NULL, rlr->p_pid);`, :712 `gl_mnppd = p;` (menu_bar show).
+  The Control Manager is its own process (ctl_pd, aes/geminit.c:888), so which process waits never decides the target.
+NEWTOS (before)
+  tos-api/src/aes/event.rs menu_intercept(idx): `None => (idx, MN_SELECTED, ...)` -- idx = current_identity() of the
+  evnt_multi caller (comment: "the menu owner (gl_mnppd) at single-app"); called from the evnt_multi loop head for every
+  client with MU_MESAG, accessories included. menu.rs already recorded MNPPD (install_bar_state) but did not use it
+  as target ("NewTOS delivers to the current identity at single-app").
+SPEC
+  docs/api/aes/menu.md "MN_SELECTED message", _state.md gl_mnppd: correct (owner = gl_mnppd), but silent on the inline
+  Control Manager running in another client's wait. Added: menu.md NewTOS binding (A117); event.md A91 section: the
+  waiter is never the recipient.
+
+FIX
+  tos-api/src/aes/menu.rs mn_selected_target(): MNPPD mapped to its descriptor's pid and back to the live member, as
+  appl_write addresses a pid (appl::identity_of(appl::reported_pid(MNPPD))): chain bar + chain waiter -> the waiter
+  (one chain descriptor, D.g_int[0]); chain bar + accessory waiter -> the chain's innermost started member; accessory
+  bar -> that accessory. event.rs menu_intercept() posts MN_SELECTED there; AC_OPEN unchanged.
+  Host test tos-api/tests/aes_a117_mn_selected_owner.rs (3 cases): on the old code cases 1 and 2 FAIL
+  ("left: Some(48) right: Some(32)": the accessory's evnt_multi returned MU_MESAG|MU_TIMER with msg [10,1,0,4,12,...]),
+  case 3 (chain child of the bar owner keeps receiving) passes on both; all 3 pass with the fix.
+
+AFTER (WORKTREE = HEAD + fix)
+  A) serial/fix1.log, fix2.log: only the AC_OPEN line at the accessory; fix1-pick1.png = fix1-pick2.png: About dialog
+     on both picks.
+  B) serial/fix-td3/td4/td5.log: only AC_OPEN at the accessory; screendumps/fix-td3-quit.png (= td4/td5, 0 px):
+     TeraDesk "Quit / Shutdown Options" dialog.
+  0 [EXC]/PANIC/panicked in all serial logs.
+
+HOW
+  Host macOS, QEMU -M raspi4b -append serial=on, headless, release rpi4 kernels (SOURCE_DATE_EPOCH=1792368000) built by
+  method/build-kernel.sh in scratch trees (git archive HEAD / WORKTREE files) with tools/inject-arm.py arming the IKBD
+  injector on "desktop" (A) or "up:DESKTOP" (B); one QEMU at a time; method/run.py (= measurement-2026-10-21-gh1-fix2
+  gh1run.py) on a per-run APFS clone (cp -c) of the base card, clone deleted after each run. Cards by method/mkcard.sh
+  (64 MiB FAT16, never a real card). TeraDesk files = sdk/apps/teradesk/build/dist (sha256 in checks/binaries.sha256 is
+  of the card; DESKTOP.NAP 447d488b...). Screendump marks fire when the injector line appears in the polled serial log,
+  so the names are approximate in time; the [inj] lines in serial/ carry the exact ticks.
+  checks/binaries.sha256 (kernels, accessory, base cards), checks/acc-lines.txt, checks/pixdiff.txt.
+
+BUILD / LINT / HOST TESTS (method/lint.sh; base = scratch git worktree at c4e8d1be, removed after)
+                                      base c4e8d1be          new (HEAD + fix)
+  cargo xtask build qemu-virt dev       exit 0, 159 warn lines exit 0, 159
+  cargo xtask build qemu-virt release   exit 0, 159            exit 0, 159
+  cargo xtask build rpi4 dev            exit 0, 159            exit 0, 159
+  cargo xtask build rpi4 release        exit 0, 159            exit 0, 159
+  clippy kernel (qemu-virt / rpi4)      tos-api 76, kernel 121 tos-api 76, kernel 121 (both boards)
+  clippy tos-api host                   76                     76
+  clippy tos-api --tests                same per-target set (only the order of the lines and "(2 duplicates)" annotations
+                                        differ, parallel build); 0 warnings in aes_a117_mn_selected_owner.rs
+  cargo xtask test                      158 bin, 1636/0/1      159 bin, 1639/0/1 (+1 binary, +3 tests = the A117 test)
+  Base: the first base test run had 5 xtask failures only because gitignored inputs were missing in the worktree
+  (references/emutos/aes/gem.rsc, sdk/apps/teradesk/cicons.rsc); rerun with those linked: 0 failures (as above).
+  checks/lint-base/summary.txt, checks/lint-new/summary.txt. rpi4 kernel8.img of the new-tree builds moved to scratch.
+
+NOT COVERED
+  Real Pi 4 (no hardware actions). Accessory owning its own menu bar (host-test path only by construction, no case).
+  GitHub issue #14: see TASK/A117-STATUS-DONE.MD.
