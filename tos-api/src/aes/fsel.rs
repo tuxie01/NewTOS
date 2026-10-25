@@ -1106,10 +1106,10 @@ fn modal(tree: *mut Object, backend: &dyn RasterBackend) -> i16 {
                 }
             } else if hit == FSDIRECT || hit == FSSELECT {
                 // Click into an editable field → focus it (caret to its end).
-                if hit != focus {
-                    object::edit_field_t(t, focus, 0, idx, ED_END);
-                    focus = hit;
-                }
+                // The caret is an XOR line (`curfld`, A111): take it off
+                // before it is put on again, also for the same field.
+                object::edit_field_t(t, focus, 0, idx, ED_END);
+                focus = hit;
                 idx = object::edit_field_t(t, focus, 0, 0, ED_INIT);
             } else if (F1NAME..F1NAME + NM_NAMES as i16).contains(&hit) {
                 let slot = (hit - F1NAME) as usize;
@@ -1132,12 +1132,18 @@ fn modal(tree: *mut Object, backend: &dyn RasterBackend) -> i16 {
                         }
                         object::set_state_bit_t(t, hit, SELECTED, true);
                         cur_sel = hit;
+                        // The caret (an XOR line, `curfld`, A111) comes off
+                        // before the selection text changes under it.
+                        object::edit_field_t(t, focus, 0, idx, ED_END);
                         // "strcpy(ad_fname, selname + 1)" (gemfslib.c:827):
                         // the clicked slot's raw string minus its indicator
                         // byte — i.e. `fmt_str` of the listed name.
                         // SAFETY: single-CPU AES.
                         unsafe { fmt_str(&name, &mut *SYS.sel.get()) };
-                        // Re-arm editing on the selection field (caret at end).
+                        // Show the new name — `EDINIT` draws the caret only
+                        // (`gemobed.c:363-365`) — then re-arm editing on the
+                        // selection field (caret at end).
+                        object::draw_obj_t(t, FSSELECT, 0, backend);
                         focus = FSSELECT;
                         idx = object::edit_field_t(t, focus, 0, 0, ED_INIT);
                         if hit == last_hit && now.saturating_sub(last_t) < DCLICK_MS {

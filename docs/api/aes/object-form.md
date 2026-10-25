@@ -673,15 +673,36 @@ after position `new_pos`. Cannot reorder `ROOT` → `FALSE`.
 - **`EDSTART`** — returns `TRUE` immediately (no-op; also returned early if
   `obj <= 0`, `gemobed.c:342-343`).
 - **`EDINIT`** — set the cursor index to the end of the current text and draw
-  the cursor.
+  the cursor (`curfld(…, 0)`, `:459-461`). The field itself is **not** redrawn.
 - **`EDCHAR`** — process one keystroke: `BACKSPACE`/`DELETE` remove a char,
   `ESCAPE` clears the field, `ARROW_LEFT`/`RIGHT` move the cursor, otherwise
   validate the char against `te_pvalid[slot]` via `check()`, insert it, and
   advance. On a validation miss it may *skip ahead* to the next slot that
   matches a typed template character (`scan_to_end`). Redraws only the
   changed span (`curfld`).
-- **`EDEND`** — no-op body; the caller uses it to finalise a field
-  (`fm_do` calls it when focus leaves a field).
+- **`EDEND`** — no edit, but **not** a no-op: the closing `curfld(…, 0)`
+  (`:459-461`) runs for every kind except `EDSTART`, so `EDEND` takes the
+  caret off (it is an XOR line, see below). The caller uses it to finalise a
+  field (`fm_do` calls it when focus leaves a field).
+
+**The caret protocol** (`gemobed.c:361-461`, A111). `curfld(tree, obj, pos, 0)`
+complements the caret, so `ob_edit` uses the same call to switch it on and
+off, and every caller must keep `EDINIT`/`EDEND` paired around the editing of
+one field (as `fm_do` does — `EDINIT` when a field gains focus, `gemfmlib.c:308`,
+`EDEND` when it loses it or the form ends, `:344`):
+- `EDINIT`: index to the end, caret ON.
+- `EDCHAR`: `ob_stfn(idx)` gives `start` (template column of the index) and
+  `finish` (of the text end); caret OFF at `start` (`gemobed.c:374-377`); the key is
+  applied; when the text changed (`no_redraw == FALSE`) `start = min(start,
+  nstart)`, `dist = max(finish, nfinish) - start` and, if `dist != 0`,
+  `curfld(start, dist)` redraws the field clipped to those `dist` columns
+  (`gemobed.c:445-455`) — arrows and rejected keys redraw nothing; caret ON at
+  `find_pos(te_ptmplt, idx)`. In the full-field over-type branch `start` moves
+  back one column with the index (`gemobed.c:407-413`).
+- `EDEND`: caret OFF.
+A field redrawn by its owner while the caret is on loses only the caret part
+inside the field; the caller must end the edit (`EDEND`) before such a redraw
+and restart it (`EDINIT`) after.
 
 Cursor→template mapping is via `find_pos` (raw-string index → template
 index, landing before an `_`). Text is capped at `te_txtlen-2` data chars.
@@ -696,11 +717,19 @@ origin moves down by `(slack_h + 1) / 2` and, per `te_just`, right by
 slack is positive — exactly the placement of the field's text. The caret cell
 is then at `x = o.x + ch_pos * gl_wchar` (always the normal font's width),
 `y = o.y`, with `ch_pos = find_pos(te_ptmplt, idx)`. `curfld` draws it as an
-XOR vertical line from `y - 3` over `gl_hchar + 6` rows (`:198-216`).
-NewTOS (`tos-api/src/aes/object.rs` `pxl_rect`) takes the origin exactly so;
-the bar it draws there is still the `gl_hchar`-high black one — the
-`-3/+6` extent and the XOR mode are not reproduced (open, see the receipt of
-LDG-M3-B1).
+XOR vertical line from `y - 3` over `gl_hchar + 6` rows (`:198-216`):
+`gsx_attr(FALSE, MD_XOR, BLACK)`, clip = that widened cell, `gsx_cline(x, y-3,
+x, y-3+gl_hchar+5)` — a solid one-pixel line (`gemgraf.c:420-422` set line
+type 7, `udsty` 0xffff, width 1 once). On a truecolor screen XOR complements
+the stored pixel, so the caret is the complement of whatever lies under it
+(grey 189 → 66 on the dialog face, white on a black border), reaching three
+rows above and below the text cell, into the parent object when the field is
+only one text row high. With `dist != 0` the same cell, widened to
+`dist * gl_wchar` (height `gl_hchar`), is the clip of the span redraw.
+NewTOS (`tos-api/src/aes/object.rs` `pxl_rect`, `curfld`, `edit_field_t`)
+reproduces origin, extent, XOR mode and the on/off protocol (A111; host test
+`tos-api/tests/aes_a111_caret.rs`; measured against Hatari Falcon EmuTOS in
+`measurements/measurement-2026-10-25-a111/RUNINFO.TXT`).
 
 ### `objc_change` (47)
 

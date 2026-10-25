@@ -24,7 +24,7 @@ use crate::host::host;
 use crate::vdi::backend::{ClipRect, MonoBits, MonoSrc, PatternFill, Pel, RasterBackend, Rect, WriteMode};
 use tos_types::aes::{
     ACTBUTCOL, AD3DVALUE, ADJ3DOUT, ADJ3DSTD, BACKGRCOL, CHECKED, CROSSED, DEFAULT, DISABLED,
-    ED_CHAR, ED_END, ED_INIT, ED_START, EXIT, FL3DACT, FL3DBAK, FL3DIND, FL3DMASK, FL3DOBJ, G_BOX,
+    ED_CHAR, ED_INIT, ED_START, EXIT, FL3DACT, FL3DBAK, FL3DIND, FL3DMASK, FL3DOBJ, G_BOX,
     G_BOXCHAR, G_BOXTEXT, G_BUTTON, G_CICON, G_FBOXTEXT, G_FTEXT, G_IBOX, G_ICON, G_IMAGE,
     G_STRING, G_TEXT, G_TITLE, G_USERDEF, HIDETREE, INDBUTCOL, INDIRECT, IP_HOLLOW, IP_SOLID,
     LASTOB, LK3DACT, LK3DIND, NIL, OUTLINED, SELECTED, SHADOWED, TE_CNTR, TE_LEFT, TE_RIGHT,
@@ -1809,7 +1809,9 @@ pub fn objc_edit(pb: &Aespb) {
 /// Edit the EDITABLE `TEDINFO` field `obj` in place and return the new
 /// cursor index. Shared by `objc_edit` (the trap) and the Form Manager's
 /// modal loop. `kind` = EDINIT (cursor to end) / EDCHAR (insert/delete at
-/// the cursor) / EDEND (finish, no caret). Redraws the field + caret.
+/// the cursor) / EDEND (finish, no caret). Draws as EmuTOS `ob_edit` does:
+/// the caret is an XOR line switched on by EDINIT, moved by EDCHAR (with a
+/// redraw of the changed columns only) and switched off by EDEND.
 ///
 /// Faithful to EmuTOS `ob_edit` (`gemobed.c`): the cursor index `idx` is a
 /// **raw-string** index into `te_ptext` (data only, no template literals);
@@ -1848,37 +1850,100 @@ pub(crate) fn edit_field_t(t: ObjTree, obj: i16, in_char: i16, mut idx: i16, kin
     let text = text as *mut u8;
     let tmpl = read_cstr(t, ted.te_ptmplt);
 
-    match kind {
-        ED_INIT => idx = cstr_len_p(text) as i16,
-        ED_CHAR => edit_char(t, ted, tmpl, text, txtlen, &mut idx, in_char),
-        _ => {} // EDSTART / EDEND
+    // The caret is EmuTOS `curfld`'s XOR line (`aes/gemobed.c:194-218`), so
+    // `ob_edit` switches it off and on with the same call
+    // (`gemobed.c:361-461`): `EDINIT` only puts it on (no field draw),
+    // `EDCHAR` takes it off at the old place, redraws the changed columns if
+    // the text changed and puts it on at the new place, `EDEND` only takes it
+    // off. The caller keeps the calls paired, as `fm_do` does.
+    //
+    // A65: all draws of one call go under one cursor bracket. EmuTOS reaches
+    // them through two primitives that each bracket for themselves — the
+    // field via `ob_draw` (`gemobed.c:214`, hence `gemoblib.c:974/:976`) and
+    // the caret via `gsx_cline` (`:216`), "draw a clipped polyline, hiding the
+    // mouse as you do it" (`aes/gemgraf.c:186-192`). One bracket over the
+    // call is the same guarantee without flickering the sprite between them.
+    // See `hide_cursor_for_draw`.
+    let backend = host().and_then(|h| h.raster());
+    if let Some(b) = backend {
+        hide_cursor_for_draw(b);
     }
-
-    // Redraw the field, then the caret (unless we are ending the edit).
-    if let Some(backend) = host().and_then(|h| h.raster()) {
-        let clip = ClipRect::full(backend.width(), backend.height());
-        let (ox, oy) = abs_offset(t, obj);
-        // A65: both draws below go under one cursor bracket. EmuTOS reaches them
-        // from `curfld` (`aes/gemobed.c:204-218`) through two primitives that each
-        // bracket for themselves — the field via `ob_draw` (`:214`, hence
-        // `gemoblib.c:974/:976`) and the caret via `gsx_cline` (`:216`), which is
-        // "draw a clipped polyline, hiding the mouse as you do it"
-        // (`aes/gemgraf.c:186-192`). The two are exclusive branches there and
-        // sequential here, so one bracket over both is the same guarantee without
-        // flickering the sprite between field and caret. See `hide_cursor_for_draw`.
-        hide_cursor_for_draw(backend);
-        // depth 0 redraws only this field.
-        draw_tree(t, obj, 0, ox - t.x(obj), oy - t.y(obj), clip, backend);
-        if kind != ED_END {
-            // Caret at the template-relative column (EmuTOS `find_pos`): a
-            // 1-px black bar the height of the text, at `pxl_rect`'s origin.
-            let col = find_pos(tmpl, idx);
-            let (cx, cy) = pxl_rect(ted, tmpl, ox, oy, t.width(obj), t.height(obj), col);
-            backend.fill_rect(cx, cy, 1, crate::vdi::font::CELL_H, BLACK, clip);
+    match kind {
+        // `*idx = strlen(D.g_rawstr)` (`gemobed.c:363-365`).
+        ED_INIT => idx = cstr_len_p(text) as i16,
+        ED_CHAR => {
+            // "find cursor & turn it off" (`gemobed.c:374-377`): `ob_stfn`
+            // gives the template columns of the index and of the text end.
+            let mut start = find_pos(tmpl, idx);
+            let finish = find_pos(tmpl, cstr_len_p(text) as i16);
+            if let Some(b) = backend {
+                curfld(t, obj, ted, tmpl, start, 0, b);
+            }
+            let no_redraw = edit_char(t, ted, tmpl, text, txtlen, &mut idx, in_char, &mut start);
+            // Redraw the changed span only (`gemobed.c:445-455`).
+            if !no_redraw {
+                let nstart = find_pos(tmpl, idx);
+                let nfinish = find_pos(tmpl, cstr_len_p(text) as i16);
+                let start = start.min(nstart);
+                let dist = finish.max(nfinish) - start;
+                if dist != 0 {
+                    if let Some(b) = backend {
+                        curfld(t, obj, ted, tmpl, start, dist, b);
+                    }
+                }
+            }
         }
-        show_cursor_after_draw(backend);
+        // EDEND: no edit (`gemobed.c:455-456`), only the closing `curfld` below.
+        _ => {}
+    }
+    // "draw/erase the cursor" (`gemobed.c:459-461`).
+    if let Some(b) = backend {
+        curfld(t, obj, ted, tmpl, find_pos(tmpl, idx), 0, b);
+        show_cursor_after_draw(b);
     }
     idx
+}
+
+/// EmuTOS `curfld` (`aes/gemobed.c:194-218`) — with `dist != 0` redraw the
+/// field `obj` clipped to the `dist` template columns from `new_pos`, else
+/// complement the caret at template column `new_pos`:
+///
+/// ```c
+/// pxl_rect(tree, obj, new_pos, &t);
+/// if (dist)
+///     t.g_w += (dist - 1) * gl_wchar;
+/// else {
+///     gsx_attr(FALSE, MD_XOR, BLACK);
+///     t.g_y -= 3;
+///     t.g_h += 6;
+/// }
+/// gsx_gclip(&oc); gsx_sclip(&t);
+/// if (dist) ob_draw(tree, obj, 0);
+/// else      gsx_cline(t.g_x, t.g_y, t.g_x, t.g_y+t.g_h-1);
+/// gsx_sclip(&oc);
+/// ```
+///
+/// The caret is one vertical line `gl_hchar + 6` pixels long from three rows
+/// above the text cell, drawn as the AES draws every line — solid, one pixel
+/// wide (`gemgraf.c:420-422`) — in XOR mode, so a second call at the same
+/// place restores the pixels under it, the three rows above and below the
+/// field's text included. The clip is the widened cell; the caller's clip is
+/// untouched (each draw here takes its own).
+fn curfld(t: ObjTree, obj: i16, ted: &TedInfo, tmpl: &[u8], new_pos: i16, dist: i16, backend: &dyn RasterBackend) {
+    use crate::vdi::font::{CELL_H, CELL_W};
+    let (ox, oy) = abs_offset(t, obj);
+    let (x, y) = pxl_rect(ted, tmpl, ox, oy, t.width(obj), t.height(obj), new_pos);
+    if dist != 0 {
+        // `t.g_w = gl_wchar + (dist - 1) * gl_wchar`, `t.g_h = gl_hchar`.
+        let w = CELL_W + (dist - 1) * CELL_W;
+        let clip = ClipRect { xmn: x, ymn: y, xmx: x + w - 1, ymx: y + CELL_H - 1 };
+        // depth 0 redraws only this field.
+        draw_tree(t, obj, 0, ox - t.x(obj), oy - t.y(obj), clip, backend);
+    } else {
+        let (y0, h) = (y - 3, CELL_H + 6);
+        let clip = ClipRect { xmn: x, ymn: y0, xmx: x + CELL_W - 1, ymx: y0 + h - 1 };
+        backend.draw_line(x, y0, x, y0 + h - 1, BLACK, WriteMode::Xor, clip, 0xFFFF);
+    }
 }
 
 /// EmuTOS `pxl_rect` (`aes/gemobed.c:180-190`) — the screen origin of the
@@ -1930,7 +1995,23 @@ const SC_RIGHT: u8 = 0x4D;
 /// Apply one keystroke to the raw text buffer at the cursor (EmuTOS
 /// `ob_edit` EDCHAR). Handles backspace / delete / escape / left-right
 /// arrows and validated printable insertion.
-fn edit_char(t: ObjTree, ted: &TedInfo, tmpl: &[u8], text: *mut u8, txtlen: i16, idx: &mut i16, ch: i16) {
+///
+/// Returns EmuTOS's `no_redraw` (`gemobed.c:373-443`): `true` when the text
+/// did not change (arrows, a rejected character, nothing to delete), so no
+/// span is redrawn. `start` is `ob_edit`'s `start` — the caret's template
+/// column on entry, moved back one with the index when a full field is
+/// over-typed (`gemobed.c:407-413`), the left end of the redrawn span.
+#[allow(clippy::too_many_arguments)]
+fn edit_char(
+    t: ObjTree,
+    ted: &TedInfo,
+    tmpl: &[u8],
+    text: *mut u8,
+    txtlen: i16,
+    idx: &mut i16,
+    ch: i16,
+    start: &mut i16,
+) -> bool {
     let pvalid = read_cstr(t, ted.te_pvalid);
     let c = (ch & 0xff) as u8;
     let scan = ((ch >> 8) & 0xff) as u8;
@@ -1942,13 +2023,13 @@ fn edit_char(t: ObjTree, ted: &TedInfo, tmpl: &[u8], text: *mut u8, txtlen: i16,
             if *idx > 0 {
                 *idx -= 1;
             }
-            return;
+            return true;
         }
         SC_RIGHT => {
             if *idx < len {
                 *idx += 1;
             }
-            return;
+            return true;
         }
         _ => {}
     }
@@ -1958,20 +2039,29 @@ fn edit_char(t: ObjTree, ted: &TedInfo, tmpl: &[u8], text: *mut u8, txtlen: i16,
             // BACKSPACE: delete the char before the cursor.
             if *idx > 0 {
                 *idx -= 1;
-                delete_at(text, *idx, len);
+                // `ob_delit` (`gemobed.c:324-332`): FALSE (= redraw) when a
+                // character was there to delete.
+                if *idx < len {
+                    delete_at(text, *idx, len);
+                    return false;
+                }
             }
+            true
         }
         0x7F => {
             // DELETE: delete the char at the cursor.
             if *idx < len {
                 delete_at(text, *idx, len);
+                return false;
             }
+            true
         }
         0x1B => {
             // ESCAPE: clear the whole field.
             *idx = 0;
             // SAFETY: `text` is a valid buffer of at least one byte.
             unsafe { *text = 0 };
+            false
         }
         0x20..=0xFF => {
             // EmuTOS `ob_edit` EDCHAR `default` branch (gemobed.c:405-441):
@@ -1988,6 +2078,7 @@ fn edit_char(t: ObjTree, ted: &TedInfo, tmpl: &[u8], text: *mut u8, txtlen: i16,
             // (gemobed.c:407-413, AUD-P3-009).
             if *idx > txtlen - 2 {
                 cur_pos -= 1;
+                *start = cur_pos;
                 tmp_back = true;
                 *idx -= 1;
             }
@@ -1997,6 +2088,7 @@ fn edit_char(t: ObjTree, ted: &TedInfo, tmpl: &[u8], text: *mut u8, txtlen: i16,
                 // full field drops its tail instead of overflowing.
                 ins_char(text, *idx, ic, txtlen);
                 *idx += 1;
+                false
             } else {
                 // Validation failed: try to skip ahead to the next template
                 // data slot whose separator is the typed char, blanking the
@@ -2011,10 +2103,12 @@ fn edit_char(t: ObjTree, ted: &TedInfo, tmpl: &[u8], text: *mut u8, txtlen: i16,
                 if pos < txtlen - 2 {
                     fill_blanks(text, *idx, pos);
                     *idx = pos;
+                    return false;
                 }
+                true
             }
         }
-        _ => {}
+        _ => true,
     }
 }
 

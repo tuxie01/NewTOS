@@ -858,7 +858,10 @@ const FIELD: (i16, i16, i16, i16) = (100, 100, 200, 21);
 
 /// The caret's top-left pixel after `objc_edit(ED_INIT)` on a `G_FTEXT` field
 /// with text "AB" and template "________" (8 cells = 64 px), found as the
-/// pixels `ED_INIT` changes over an `ED_END` redraw of the same field.
+/// pixels `ED_INIT` changes. Since A111 `ED_INIT` draws the caret alone — EmuTOS
+/// `curfld`'s XOR line, no field redraw (`aes/gemobed.c:363-365,459-461`) —
+/// so the changed pixels are the caret column; `ED_END` would switch it off
+/// again and is not used as a "field only" primer any more.
 fn caret_origin(just: i16) -> (i16, i16) {
     let host = rig();
     host.clear();
@@ -908,9 +911,8 @@ fn caret_origin(just: i16) -> (i16, i16) {
     };
     // A sentinel ground, so a transparent field still shows the caret.
     host.raster.px.lock().unwrap().fill(0x00AB_CDEF);
-    edit(&mut pb, 3, 2); // ED_END: field only, no caret
     let before = host.raster.px.lock().unwrap().clone();
-    let idx = edit(&mut pb, 1, 0); // ED_INIT: field + caret at the end of "AB"
+    let idx = edit(&mut pb, 1, 0); // ED_INIT: the caret at the end of "AB"
     assert_eq!(idx, 2, "ED_INIT puts the index at the end of the text");
     let after = host.raster.px.lock().unwrap().clone();
     let mut min = (i16::MAX, i16::MAX);
@@ -927,7 +929,8 @@ fn caret_origin(just: i16) -> (i16, i16) {
 /// `pxl_rect` (`aes/gemobed.c:180-190`): `gr_just(te_just, te_font,
 /// te_ptmplt, w, h)` then `+ ch_pos * gl_wchar`. Template width 64 in a
 /// 200-wide field leaves 136 px of slack; the 21-px height leaves 5, centred
-/// rounding up: `(5 + 1) / 2 = 3` (`aes/gemgraf.c:571-584`).
+/// rounding up: `(5 + 1) / 2 = 3` (`aes/gemgraf.c:571-584`). `curfld` starts
+/// the caret line 3 rows above that cell (`t.g_y -= 3`, `aes/gemobed.c:203`).
 #[test]
 fn objc_edit_caret_follows_te_just() {
     let _g = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
@@ -936,6 +939,6 @@ fn objc_edit_caret_follows_te_just() {
     for (just, name, dx) in [(0, "TE_LEFT", 0), (1, "TE_RIGHT", 136), (2, "TE_CNTR", 68)] {
         let got = caret_origin(just);
         eprintln!("{name}: caret at {got:?}");
-        assert_eq!(got, (fx + dx + ch_pos, fy + 3), "{name}: caret origin");
+        assert_eq!(got, (fx + dx + ch_pos, fy + 3 - 3), "{name}: caret origin");
     }
 }
