@@ -863,9 +863,19 @@ fn crysbind(pb: &Aespb) -> Option<crate::bdos::process::sched::Switch> {
     // while another process holds the window-tree lock (`ev_block(MU_MUTEX,
     // …)`, `aes/gemwmlib.c:1785-1786`). The wait comes before the opcode has
     // committed anything, so a yield re-executes the whole call (GH1).
+    //
+    // The same wait for the AES's other takers (A118): `ap_exit`'s own
+    // `wm_update(BEG_UPDATE)` (`aes/gemaplib.c:253`); `gr_rubwind`/
+    // `gr_dragbox` behind `graf_rubberbox`/`graf_dragbox`
+    // (`aes/gemgrlib.c:205,250`); `fs_input`'s `fm_do` (`aes/gemfslib.c:718`,
+    // after the NULL-path refusal, `:630-631`); and `wm_open`/`wm_close`/
+    // `wm_delete`/`wm_set` for a call they do not refuse first
+    // ([`window::opcode_takes_lock`]).
     let takes_screen = match opcode {
-        36 | 50 | 52 => true,
+        19 | 36 | 50 | 52 | 70 | 71 => true,
         53 => pb.intin(0) <= 63,
+        90 | 91 => pb.addrin(0) != 0,
+        101 | 102 | 103 | 105 => window::opcode_takes_lock(opcode, pb),
         _ => false,
     };
     if takes_screen {

@@ -179,6 +179,16 @@ pub(super) fn same_pd(a: usize, b: usize) -> bool {
 /// moving it into a per-process queue when it arrives (the ring is also the
 /// GEMDOS console's; spec, "Where NewTOS differs").
 pub(super) fn owns_keys(idx: usize) -> bool {
+    owns_mouse(idx)
+}
+
+/// EmuTOS `rlr == gl_mowner` for the AES identity `idx` — does `idx`'s own
+/// `AESPD` own the mouse ([`same_pd`]), not `ctl_pd` and not another process?
+/// The gate of `ev_multi`'s button and rectangle quick checks (`if (rlr ==
+/// gl_mowner)`, `aes/gemevlib.c:185`) and of the parked rectangle waits, which
+/// only `post_mouse(gl_mowner, …)` walks (`aes/geminput.c:390,446-456`) —
+/// A118: they asked [`own_mouse`] ("an application owns it") before.
+pub(super) fn owns_mouse(idx: usize) -> bool {
     GL_MOWNER_APP.load(Ordering::Relaxed) && same_pd(GL_MOWNER_PD.load(Ordering::Relaxed), idx)
 }
 
@@ -621,8 +631,10 @@ pub(crate) fn mchange(rx: i16, ry: i16) {
 
 // ── what the Event Manager consults ────────────────────────────────────────
 
-/// EmuTOS `rlr == gl_mowner` (`aes/gemevlib.c:185`) — may this application run
-/// `ev_multi`'s quick checks?
+/// "An application owns the mouse" — `gl_mowner != ctl_pd`, the test the
+/// Control Manager makes for itself (`rlr == gl_mowner` with `rlr = ctl_pd`,
+/// `aes/gemevlib.c:185`, inverted). Whether a *given* application owns it is
+/// [`owns_mouse`].
 pub(super) fn own_mouse() -> bool {
     GL_MOWNER_APP.load(Ordering::Relaxed)
 }
@@ -682,7 +694,7 @@ pub(super) fn ct_chgown(owner: Mown) {
 /// state" (`:216-217`); with a button held nothing changes. The
 /// `post_button` completes a parked button wait of the new owner that the
 /// (up) state satisfies ([`post_button`]); the `post_mouse` half is covered by
-/// the Event Manager re-testing its rectangles against `own_mouse()` on every
+/// the Event Manager re-testing its rectangles against `owns_mouse(idx)` on every
 /// pass. `gl_cowner = gl_mowner = mp` (`:225`): for an application both
 /// identity halves move ([`GL_MOWNER_PD`], [`GL_COWNER_PD`]); for `ctl_pd`
 /// only the flag does.

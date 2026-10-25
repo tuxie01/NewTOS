@@ -3437,6 +3437,9 @@ pub fn wind_open(pb: &Aespb) {
             pb.set_ret(0);
             return;
         }
+        // `wm_update(BEG_UPDATE)` (`:1422`), after both refusals: the opcode
+        // waited for the lock before it came here ([`opcode_takes_lock`]).
+        update_beg();
         // `draw_change` first shifts the old current rect down into PREV and
         // installs `pt` as the new current one (`gemwmlib.c:1069-1077`) — then
         // `wm_open` overwrites PREV with `pt` as well (`:1427`), so an opened
@@ -3528,6 +3531,7 @@ pub fn wind_open(pb: &Aespb) {
         let d = plus_shadow(r);
         redraw_clip(d.x, d.y, d.w, d.h);
         send_redraw(handle, w.work);
+        update_end(); // `wm_update(END_UPDATE)` (`:1429`)
         pb.set_ret(1);
     } else {
         pb.set_ret(0);
@@ -3593,22 +3597,25 @@ fn close_window(handle: i16) -> bool {
     // hypothetical — the desktop window is `VF_INUSE` but never `VF_ISOPEN`
     // (measured: `aes-r2-wind.tsv` case 194), and zeroing *its* `WS_CURR` would
     // take the whole screen out of [`find_handle`] and every other hit test.
-    let Some(r) = win(handle).filter(|w| w.open).map(|w| {
-        let c = w.curr;
-        w.prev = c; // WS_PREV = old WS_CURR      (`:1069-1070`)
-        set_curr(w, Grect::default()); // WS_CURR = gl_rzero, WS_WORK recalculated (`:1073-1077`)
-        // EmuTOS takes the window out of `gl_wtree` with `ob_delete` *before*
-        // `draw_change` (`:1452`) and clears `VF_ISOPEN` after it (`:1454`).
-        // Our single `open` flag carries both roles — every tree walk
-        // ([`get_top`], [`border_pieces`], [`w_update`],
-        // [`find_handle`]) keys off it — so it goes down here: after the three
-        // rectangle writes, as in `wm_close`, and before the damage below is
-        // worked out, as after `ob_delete`.
-        w.open = false;
-        c
-    }) else {
+    let Some(w) = win(handle).filter(|w| w.open) else {
         return false; // no such window, or it was not open
     };
+    // `wm_update(BEG_UPDATE)` (`:1450`) — after the two refusals, before
+    // anything changes. The opcodes that lead here waited for the lock first
+    // ([`opcode_takes_lock`], the dispatcher's gate); the AES's own callers
+    // ([`wm_new`], [`wm_new_for_slot`]) nest on a drained or their own hold.
+    update_beg();
+    let r = w.curr;
+    w.prev = r; // WS_PREV = old WS_CURR      (`:1069-1070`)
+    set_curr(w, Grect::default()); // WS_CURR = gl_rzero, WS_WORK recalculated (`:1073-1077`)
+    // EmuTOS takes the window out of `gl_wtree` with `ob_delete` *before*
+    // `draw_change` (`:1452`) and clears `VF_ISOPEN` after it (`:1454`).
+    // Our single `open` flag carries both roles — every tree walk
+    // ([`get_top`], [`border_pieces`], [`w_update`],
+    // [`find_handle`]) keys off it — so it goes down here: after the three
+    // rectangle writes, as in `wm_close`, and before the damage below is
+    // worked out, as after `ob_delete`.
+    w.open = false;
     // Damage region `c`: the vacated rect, plus the new top window's rect
     // when the closed window was the top one (activates the new top frame).
     let new_top = get_top();
@@ -3636,6 +3643,7 @@ fn close_window(handle: i16) -> bool {
     // then fans WM_REDRAW out to every window whose visible region grew —
     // `w_update(DESKWH, &c, DESKWH, FALSE)`: all of them, top to bottom.
     w_update(DESKWH, damage, DESKWH, false);
+    update_end(); // `wm_update(END_UPDATE)` (`:1456`)
     true
 }
 
@@ -3959,7 +3967,27 @@ pub fn wind_get(pb: &Aespb) {
 }
 
 /// `wind_set` (105) — set a `WF_*` field of window `int_in[0]`.
+///
+/// EmuTOS `wm_set` grabs the window sync around its whole body, after the one
+/// refusal — an unknown handle for any field but `WF_DCOLOR` — and gives it
+/// up on every path out, the unknown-field `FALSE` included: `wm_update(
+/// BEG_UPDATE); /* grab the window sync */` … `wm_update(END_UPDATE); /* give
+/// up the sync */` (`aes/gemwmlib.c:1632-1638,1757`). The opcode waited for
+/// the lock before it came here ([`opcode_takes_lock`]).
 pub fn wind_set(pb: &Aespb) {
+    let takes = pb.intin(1) == WF_DCOLOR || win(pb.intin(0)).is_some();
+    if takes {
+        update_beg();
+    }
+    wm_set(pb);
+    if takes {
+        update_end();
+    }
+}
+
+/// The body of [`wind_set`] — EmuTOS `wm_set` (`aes/gemwmlib.c:1624-1760`)
+/// between its `wm_update` pair.
+fn wm_set(pb: &Aespb) {
     let handle = pb.intin(0);
     let field = pb.intin(1);
     // WF_DCOLOR (19) writes the *global* default gadget colour words and needs
@@ -4178,6 +4206,32 @@ fn redraw_open(handle: i16) {
 /// screen) — see [`find_handle`].
 pub fn wind_find(pb: &Aespb) {
     pb.set_ret(find_handle(pb.intin(0), pb.intin(1)));
+}
+
+/// Does window opcode `opcode` reach a `wm_update(BEG_UPDATE)` — and so wait
+/// while another process holds the lock (`tak_flag` → `ev_block(MU_MUTEX, …)`,
+/// `aes/gemwmlib.c:1785-1786`)? Each takes it after its own refusals and not
+/// for a call it refuses:
+///
+/// * `wind_open` (101) — `wm_open`, for a window that exists and is not open
+///   (`:1415-1422`);
+/// * `wind_close` (102) — `wm_close`, for a window that is open
+///   (`:1443-1450`);
+/// * `wind_delete` (103) — `wm_delete` of an open window closes it through
+///   `wm_close` (`:1473-1474`); a closed one is freed without the lock;
+/// * `wind_set` (105) — `wm_set`, for a window that exists, or for
+///   `WF_DCOLOR`, which needs none (`:1632-1638`).
+///
+/// The dispatcher waits ([`update_block`]) before the opcode commits anything
+/// (A118), as it does for the `fm_own(TRUE)` opcodes (GH1).
+pub(super) fn opcode_takes_lock(opcode: i16, pb: &Aespb) -> bool {
+    let handle = pb.intin(0);
+    match opcode {
+        101 => win(handle).is_some_and(|w| !w.open),
+        102 | 103 => win(handle).is_some_and(|w| w.open),
+        105 => pb.intin(1) == WF_DCOLOR || win(handle).is_some(),
+        _ => false,
+    }
 }
 
 /// `wind_update` (107) — window-tree screen lock (BEG/END_UPDATE) and mouse-
@@ -4410,15 +4464,19 @@ pub(super) fn update_block() -> Option<crate::bdos::process::sched::Switch> {
 
 /// `wm_update(BEG_UPDATE)` — take the lock for the caller ([`tak_flag`]).
 ///
-/// Reached after [`update_block`] (an opcode) or from inside the AES with the
-/// lock already the caller's (an `fm_own(TRUE)` nested in a dialog, the
-/// Control Manager's own drags), so the take succeeds. The one exception is an
-/// in-kernel taker that cannot give the CPU away — the shell loop's
-/// `fm_error` alert (`kernel/src/shell_loop.rs`), a host-less unit test —
-/// finding the lock held by another process: it cannot park, and its hold is
-/// counted on top of the owner's instead (the owner keeps the lock; the
-/// matching `END_UPDATE` takes the count back off).
-fn update_beg() {
+/// Reached after [`update_block`] (an opcode — `wind_update`, the
+/// `fm_own(TRUE)` opcodes, and the AES's own takers behind opcodes 19, 70,
+/// 71, 90, 91 and [`opcode_takes_lock`]'s four, A118) or from inside the AES
+/// with the lock already the caller's (an `fm_own(TRUE)` nested in a dialog,
+/// the Control Manager's own drags), so the take succeeds. The exceptions are
+/// takers that cannot give the CPU away — a host-less unit test, and the
+/// `Pexec`-child sweep's `wm_close`s ([`wm_new_for_slot`], run at the next AES
+/// dispatch in the living caller's name) — finding the lock held by another
+/// process: they cannot park, and their hold is counted on top of the owner's
+/// instead (the owner keeps the lock; the matching `END_UPDATE` takes the
+/// count back off). The shell loop's `fm_error` alert parks like any client
+/// since A118: it is issued through the GEM trap (`kernel/src/shell_loop.rs`).
+pub(super) fn update_beg() {
     let me = rlr();
     if !tak_flag(me) {
         UPDATE_LOCK.fetch_add(1, Ordering::Relaxed);
@@ -4440,7 +4498,7 @@ pub(super) fn update_wait_line() -> Option<crate::bdos::process::sched::Switch> 
 }
 
 /// `wm_update(END_UPDATE)` — [`unsync`] in the caller's name.
-fn update_end() {
+pub(super) fn update_end() {
     unsync(rlr());
 }
 

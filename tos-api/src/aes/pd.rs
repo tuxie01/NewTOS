@@ -751,8 +751,8 @@ pub unsafe fn find_by_name(name: &[u8; 8]) -> Option<usize> {
 /// are the desk-accessory half and live one level up, in
 /// [`super::appl::appl_exit`]: they have to run **before** this drain and the
 /// wait can yield to an accessory, which this function (a leaf) cannot do.
-/// `wm_update`/`all_run` bracket the drain against the AES's own
-/// multitasking, which a synchronous drain on the single trap path cannot race.
+/// The `wm_update` pair around it is `appl_exit`'s too (A118); `all_run`
+/// after it is not reproduced.
 ///
 /// # Safety
 /// Single trap path.

@@ -414,6 +414,14 @@ iteration should pop a `fm_error` alert (BIOS-level errors, e.g. from a
 failed drive access during the *next* app's `sh_chdef`, are suppressed
 here; GEMDOS-level errors like `EFILNF` from a failed `sh_find` are shown).
 
+The alert is an ordinary taker of the window-tree lock: `fm_error` →
+`fm_show` → `fm_alert`'s `wm_update(BEG_UPDATE)` (`aes/gemfmalt.c:361`)
+waits while a desk accessory holds it. NewTOS (A118, 2026-10-25): the shell
+loop issues the alert as the AES call `form_error` through the GEM trap from
+its EL1 context (`kernel/src/shell_loop.rs` `fm_error`), so the dispatcher's
+gate parks it like any other caller (the EL1 kernel park, the `svc`
+re-executed when the lock is free); a direct call could not wait.
+
 `wait_for_accs(AP_MESAG)` (`geminit.c:737`, called once, **before**
 `sh_main`, not inside its loop) is separate and out of `sh_main`'s scope —
 it blocks until all desk accessories have done their first `appl_init`.

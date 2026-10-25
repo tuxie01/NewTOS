@@ -452,7 +452,12 @@ pub fn appl_exit(pb: &Aespb) -> Option<crate::bdos::process::sched::Switch> {
     // restartable block), and a second round of messages would be observable
     // as duplicate `AC_CLOSE`s. The round flag is NewTOS mechanism — EmuTOS
     // needs none because its `ap_exit` never leaves and re-enters.
+    //
+    // `wm_update(BEG_UPDATE);` (`:253`) opens the round and is held across the
+    // wait below; the dispatcher waited for the lock before this call came
+    // here (A118). Taken once per round, for the reason the round flag exists.
     if !ACCLOSE_ROUND.swap(true, Ordering::AcqRel) {
+        super::window::update_beg();
         super::menu::mn_cleanup();
     }
     // `wait_for_accs(AP_ACCLOSE);` (`:255`) — "block until all DAs have seen
@@ -464,6 +469,12 @@ pub fn appl_exit(pb: &Aespb) -> Option<crate::bdos::process::sched::Switch> {
     ACCLOSE_ROUND.store(false, Ordering::Release);
     // SAFETY: single trap path.
     unsafe { pd::close(current_identity()) };
+    // `wm_update(END_UPDATE);` (`:258`), after the drain `pd::close` performs
+    // (`:256-257`) — the lock goes to the head of its wait line (an accessory
+    // that answered `AC_CLOSE` with a `BEG_UPDATE`). `pd::close` also clears
+    // `AP_OPEN`, which EmuTOS does after `all_run()` (`:259-260`); nothing
+    // runs in between here, so the order is not observable.
+    super::window::update_end();
     pb.set_ret(1);
     None
 }

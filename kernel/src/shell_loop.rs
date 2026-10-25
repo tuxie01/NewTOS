@@ -76,6 +76,8 @@ static DESKTOP_UP_ARMED: AtomicBool = AtomicBool::new(false);
 
 /// AES opcode `APPL_INIT` (`include/aesdefs.h:17`).
 const AES_APPL_INIT: u16 = 10;
+/// AES opcode `FORM_ERROR` (`include/aesdefs.h:62`).
+const AES_FORM_ERROR: i16 = 53;
 /// AES opcode `EVNT_MULTI` (`include/aesdefs.h:32`).
 const AES_EVNT_MULTI: u16 = 25;
 /// GEM-trap selector of the AES (`x0` = 200, `docs/ARCHITECTURE.md`).
@@ -158,6 +160,55 @@ static DESKTOP_LOAD_ERROR: AtomicI32 = AtomicI32::new(0);
 /// the size of `D.s_cmd`.
 const MAXPATHLEN: usize = 128;
 
+/// `fm_error(n)` for the shell loop (`gemshlib.c:722-723`), issued as the AES
+/// call `form_error` through the GEM trap (`svc #2`, selector 200) from this
+/// EL1 context.
+///
+/// `fm_error` reaches `fm_show` → `fm_alert`, whose `wm_update(BEG_UPDATE)`
+/// (`aes/gemfmalt.c:361`) waits while another process — a desk accessory —
+/// holds the window-tree lock (`tak_flag` → `ev_block(MU_MUTEX, …)`,
+/// `aes/gemwmlib.c:1785-1786`). A direct call from here could not wait: the
+/// shell loop is no process the scheduler can switch away from. Through the
+/// trap it is the EL1 kernel client every wait already knows (ACC03): the
+/// dispatcher's gate parks it (`window::update_block`), the trap handler
+/// parks this frame with the `svc` rewound, the holder runs, and the call is
+/// re-executed once the lock is free or handed over (A118). The return value
+/// is `sh_main`'s to ignore, as there (`:723`).
+fn fm_error(n: i16) {
+    let mut control = [0i16; 5];
+    control[0] = AES_FORM_ERROR;
+    control[1] = 1; // IN_LEN
+    control[2] = 1; // OUT_LEN
+    let mut global = [0i16; 16];
+    let mut intin = [0i16; 16];
+    intin[0] = n;
+    let mut intout = [0i16; 16];
+    let mut addrin = [0u64; 4];
+    let mut addrout = [0u64; 4];
+    // The LP64 parameter block — the layout the trap handler reads for a
+    // caller without a process (`current_abi()`; the program `sh_ldapp` ran
+    // has ended, so there is none).
+    let block: [u64; 6] = [
+        control.as_mut_ptr() as u64,
+        global.as_mut_ptr() as u64,
+        intin.as_mut_ptr() as u64,
+        intout.as_mut_ptr() as u64,
+        addrin.as_mut_ptr() as u64,
+        addrout.as_mut_ptr() as u64,
+    ];
+    debug_assert_eq!(current_abi(), Abi::Lp64, "the shell loop runs with no process");
+    // SAFETY: the GEM trap from EL1 with selector 200 and an LP64 AES
+    // parameter block whose six arrays live on this stack frame until the
+    // call has returned; the handler restores every register except `x0`.
+    unsafe {
+        core::arch::asm!(
+            "svc #2",
+            inlateout("x0") GEM_SEL_AES => _,
+            in("x1") block.as_ptr() as u64,
+        );
+    }
+}
+
 /// `sh_main(isauto, isgem)` (`gemshlib.c:692-731`) — the AES shell loop.
 ///
 /// ```c
@@ -213,7 +264,7 @@ pub fn sh_main(isauto: bool, isgem: bool) -> ShExit {
         // codes (`rc <= EINVFN`) become a positive DOS error number for
         // `fm_error`; BIOS-level codes are suppressed.
         if let Some(n) = shell::sh_main_alert(rc) {
-            tos_api::aes::form::fm_error(n);
+            fm_error(n);
         }
 
         rc = sh_ldapp(); // :725

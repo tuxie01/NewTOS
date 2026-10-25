@@ -546,9 +546,15 @@ through the scheduler's input class. *(Corrected 2026-10-21, GH1: until then
 it walked the waits of every application identity while any application
 owned the mouse, so a press in a desk accessory's dialog also completed the
 desktop's parked `MU_BUTTON`, `TASK/GH1.md`.)* `ev_multi`'s quick check
-(`if (rlr == gl_mowner)`, `aes/gemevlib.c:185`) is still answered as "an
-application owns the mouse" (`input::own_mouse`), not "the caller does" —
-open, not part of GH1. The Control Manager runs inline
+(`if (rlr == gl_mowner)`, `aes/gemevlib.c:185`) asks whether **the caller's**
+`AESPD` owns the mouse (`input::owns_mouse`, the same fold as `post_button`'s).
+*(Corrected 2026-10-25, A118: until then it asked "an application owns the
+mouse" (`input::own_mouse`), so a desk accessory's quick check fired on the
+desktop's press — e.g. `evnt_multi(MU_BUTTON | MU_TIMER, 0 ms)` returned
+`MU_BUTTON | MU_TIMER` instead of `MU_TIMER` — and a parked rectangle wait of
+a process that does not own the mouse was completed against the live
+position, where only `post_mouse(gl_mowner, …)` may complete it,
+`aes/geminput.c:390,446-456`; `tos-api/tests/aes_a118_lock_takers.rs`.)* The Control Manager runs inline
 (below); its loop wait (`ctlmgr`'s `ev_multi(…, 0x0001ff01L, …)`,
 `aes/gemctrl.c:456-462`) is a latch that `post_button` sets when it completes
 a left press for `ctl_pd` outside a menu track, so a short click on a frame

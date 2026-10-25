@@ -414,7 +414,7 @@ pub fn evnt_mouse(pb: &Aespb) -> Option<sched::Switch> {
                 super::input::w_setactive();
             }
             let fired = (pass == 0 && rect_event_at(&m, arm_pos))
-                || (super::input::own_mouse() && rect_event(&m));
+                || (super::input::owns_mouse(idx) && rect_event(&m));
             if fired {
                 break;
             }
@@ -577,7 +577,7 @@ pub fn evnt_multi(pb: &Aespb) -> Option<sched::Switch> {
         // The window countdown is brought to the call's entry first, as the
         // timer interrupt would have run it (`b_delay`, see `input`).
         super::input::b_delay_poll();
-        let arm_own = super::input::own_mouse();
+        let arm_own = super::input::owns_mouse(idx);
         let arm_mb = super::input::button();
         // `mclick` — the count `prets[5]` reports when the live level satisfies
         // the quick check (`aes/gemevlib.c:196-198`).
@@ -734,13 +734,13 @@ pub fn evnt_multi(pb: &Aespb) -> Option<sched::Switch> {
             // before the application runs (`w_setactive` → `set_mown(app)` →
             // `post_mouse(app, xrat, yrat)`, `aes/gemctrl.c:441-442`; a
             // selection on *release*), the parked wait is completed against
-            // the live position — `own_mouse()` is true again, and the live
+            // the live position — `owns_mouse(idx)` is true again, and the live
             // test is that `post_mouse`. Every later pass is the parked state:
             // live position, owner only. An unsatisfied arm that another event
             // (the track's `MN_SELECTED`) wakes the caller from is simply
             // dropped, `acancel` (`aes/gemevlib.c:264`) — nothing re-tests it
             // (A73, point 1; `docs/api/aes/event.md` "tested once, at arm time").
-            let own_m = super::input::own_mouse();
+            let own_m = super::input::owns_mouse(idx);
             let rect_fires = |m: &MoBlk| {
                 (pass == 0 && rect_event_at(m, arm_pos)) || (own_m && rect_event(m))
             };

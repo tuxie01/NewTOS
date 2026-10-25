@@ -831,6 +831,16 @@ falls to the `default` arm and returns `-1` (see [`_dispatcher.md`](./_dispatche
 6. `all_run()` — re-schedule the other processes (`geminit.c:554`).
 7. `rlr->p_flags &= ~AP_OPEN` — mark `appl_exit` done.
 
+> **NewTOS (A118, 2026-10-25).** Steps 1 and 5 are reproduced: the lock is
+> taken before `mn_cleanup` — the call waits there while another process
+> holds it — and held across the `wait_for_accs` barrier, so an accessory
+> that answers `AC_CLOSE` with a `BEG_UPDATE` (or a window call, a dialog)
+> runs on only after the barrier, when step 5 hands the lock to it. The
+> call is re-executed while it yields to the accessories (the S2 restartable
+> block); the lock is taken once per `AC_CLOSE` round. Step 6 (`all_run()`
+> after the unlock) is **not** reproduced — open, outside A118. Receipts:
+> `tos-api/tests/aes_a118_lock_takers.rs` (`appl_exit_*`).
+
 > `appl_exit` always returns `1`. The DA-close handshake (steps 2-3) presumes
 > concurrent AES processes; with no `.NAC` loaded `wait_for_accs` returns
 > immediately, which is what NewTOS's single-app bring-up saw until ACC02-ACC05

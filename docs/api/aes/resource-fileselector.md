@@ -664,6 +664,19 @@ wildcard match), `select_drive`, `inf_what` (decode the exit button),
 | `int_out[1]` (`FS_BUTTON`) | **1 = OK, 0 = Cancel** (`inf_what` result; see below) |
 | `int_out[0]` | `1` if the dialog ran, **`0`** if `path` was NULL or the work-area alloc failed |
 
+> **The modal loop owns the screen and the mouse (A118, 2026-10-25).**
+> `fm_do` opens with `fm_own(TRUE)` and closes with `fm_own(FALSE)`
+> (`aes/gemfmlib.c:287,349`; `fs_input` calls it at `gemfslib.c:718`, and
+> brackets the slider drag with its own pair, `:790-792`): the window-tree
+> lock — a second process's selector waits while another holds it — and,
+> on the outermost edge, the mouse and keyboard for the caller (`ct_chgown(
+> rlr, &gl_rscreen)`, `:93`) and the menu bar parked. A press in a desk
+> accessory's selector therefore completes no other process's parked
+> `MU_BUTTON`. NewTOS brackets its loop once with `fm_own` and waits at the
+> opcode's entry, before the dialog is drawn (named in
+> [`window-graphics.md`](./window-graphics.md) "The AES's own takers (A118)").
+> Receipts: `tos-api/tests/aes_a118_lock_takers.rs` (`fsel_input_*`).
+
 **The path/name split (contract).** On entry `pipath` holds a full spec
 `drive:\dir\mask`. `fs_input` splits it: `set_mask`/`fs_pspec`/`fs_back` walk
 back to the last `\` (or the `:` drive separator) to separate the **directory

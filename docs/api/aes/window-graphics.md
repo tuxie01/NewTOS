@@ -1188,7 +1188,8 @@ way (`desk/deskmain.c:2094,2121`).
 
 1. A `BEG_UPDATE` — the mode itself, or the one `fm_own(TRUE)` takes
    (`BEG_MCTRL`, `form_do`, `form_alert`, `form_error` for a code with an
-   alert, `menu_popup`) — by a process while **another** process holds the
+   alert, `menu_popup`, the file selector), or the AES's own (see "The AES's
+   own takers (A118)" below) — by a process while **another** process holds the
    lock does not return until the lock has been handed to it. Waiters are
    served in arrival order; the holder's last `END_UPDATE` hands the lock to
    the head of the line with the count at 1.
@@ -1224,7 +1225,7 @@ way (`desk/deskmain.c:2094,2121`).
 the EmuTOS functions over `UPDATE_LOCK`/`UPDATE_OWNER`, the wait line is
 `UPDATE_WAIT`. A refused caller is parked by `update_block` — called by the
 opcode **before** it commits anything (`wind_update`, and the dispatcher's
-gate for opcodes 36/50/52/53) — on the scheduler's `WAIT_MUTEX` wake class;
+gate for opcodes 36/50/52/53 and, since A118, 19/70/71/90/91/101/102/103/105) — on the scheduler's `WAIT_MUTEX` wake class;
 the hand-over sets `UPDATE_GRANTED` for the waiter and wakes it, and its
 re-executed call (the S2 restartable block) collects the hand-over in
 `tak_flag` without counting it twice. The inline Control Manager takes the lock
@@ -1241,19 +1242,80 @@ handing the lock on to the next waiter. Receipts:
 `tos-api/tests/aes_gh1_update_mutex.rs`, the GH1 run
 `measurements/measurement-2026-10-21-gh1/`.
 
-**Not reproduced (named, open):**
+### The AES's own takers (A118, 2026-10-25)
 
-* An in-kernel taker that cannot give the CPU away — the shell loop's
-  `fm_error` alert (`kernel/src/shell_loop.rs`) — finding the lock held by
-  another process cannot park; its hold is counted on top of the owner's.
-* EmuTOS also takes the lock inside `wm_open`/`wm_close`/`wm_set`
-  (`gemwmlib.c:1422-1429,1450-1456,1638,1757`) and `w_redraw_desktop`
-  (`:1924-1941`), in `gr_rubwind`/`gr_dragbox` behind the
-  `graf_rubberbox`/`graf_dragbox` opcodes (`gemgrlib.c:205,219,250,267`), in
-  `ap_exit` (`gemaplib.c:253,258`) and through `fs_input`'s `fm_do`
-  (`gemfslib.c:718`): those NewTOS paths do not take it, so they neither wait
-  for a holder nor make others wait. (The Control Manager's own window drags
-  do take it, nested under its hold.)
+*Correction.* Until 2026-10-25 this section listed, as "not reproduced", that
+`wm_open`/`wm_close`/`wm_set`, `w_redraw_desktop`, `graf_rubberbox`/
+`graf_dragbox`, `ap_exit` and the file selector did not take the lock, and
+that the shell loop's `fm_error` could not wait for it. Checked one by one
+against EmuTOS (`TASK/A118.md`); every one of them but `w_redraw_desktop` is
+now a taker like `wind_update` itself:
+
+| Taker (EmuTOS) | Taken | Not taken for |
+|---|---|---|
+| `wm_open` (`aes/gemwmlib.c:1422,1429`) | around the open | an unknown handle, an open window (`:1415-1419`) |
+| `wm_close` (`:1450,1456`) | around the close | an unknown handle, a window that is not open (`:1443-1447`) |
+| `wm_delete` (`:1473-1474`) | through `wm_close`, for an open window | a closed window, an unknown handle |
+| `wm_set` (`:1638,1757`) | around the whole body, every exit (the unknown-field `FALSE` too) | an unknown handle — except for `WF_DCOLOR`, which needs none (`:1632-1636`) |
+| `gr_rubwind` behind `graf_rubberbox` (`aes/gemgrlib.c:205,219`) | around the track | — |
+| `gr_dragbox` behind `graf_dragbox` (`:250,267`) | around the drag | — |
+| `ap_exit` (`aes/gemaplib.c:253,258`) | from before `mn_cleanup` to after `wait_for_accs(AP_ACCLOSE)` | — |
+| `fs_input` → `fm_do` → `fm_own(TRUE)` (`aes/gemfslib.c:718`, `aes/gemfmlib.c:287,349`) | around the dialog, with the mouse for the caller | a `NULL` path (`gemfslib.c:630-631`) |
+| `sh_main` → `fm_error` → `fm_alert` (`aes/gemshlib.c:722-723`, `aes/gemfmalt.c:361`) | around the alert | a code without an alert (`n > 63`) |
+
+Consequences a program sees:
+
+1. A second process's `wind_open`, `wind_close`, `wind_delete` of an open
+   window, `wind_set`, `graf_rubberbox`, `graf_dragbox`, `appl_exit` or
+   `fsel_input`/`fsel_exinput` does not return while another process holds
+   the lock (point 1 above). A call the function refuses first returns its
+   `FALSE` at once.
+2. A desk accessory that answers the `AC_CLOSE` of an exiting program with a
+   `BEG_UPDATE` — or a `wind_close`, `wind_set`, a dialog — runs on only after
+   the exiting program's `wait_for_accs` has seen every accessory's
+   `AC_CLOSE`; the program's `END_UPDATE` hands the lock to it.
+3. A file selector opened by a desk accessory owns the mouse and the
+   keyboard for its duration (`fm_own(TRUE)` → `ct_chgown(rlr, …)`,
+   `aes/gemfmlib.c:93`): a press in it completes no other process's parked
+   `MU_BUTTON` (the GH1 symptom, for the file selector).
+
+**NewTOS mapping.** Each opcode waits in the dispatcher before it commits
+anything (`aes::crysbind`'s gate, `window::opcode_takes_lock` for the four
+window opcodes, `update_block`), and then brackets its body with the
+`wm_update` pair it has in EmuTOS (`window::update_beg`/`update_end`;
+`fm_own` for the file selector). `appl_exit` takes the lock once per
+`AC_CLOSE` round — the call is re-executed while it waits for the
+accessories (the S2 restartable block) — and gives it back after the wait.
+The shell loop issues its alert as the AES call `form_error` through the GEM
+trap from its EL1 context (`kernel/src/shell_loop.rs` `fm_error`), so the
+dispatcher's gate can park it like any client (ACC03 kernel park, the `svc`
+re-executed). Receipts: `tos-api/tests/aes_a118_lock_takers.rs`.
+
+Two places where NewTOS's shape differs from EmuTOS's, named:
+
+* **The file selector waits before it draws.** `fs_input` draws the dialog
+  (`fm_dial(FMD_START)`, `ob_draw`, `gemfslib.c:707-709`) and then waits in
+  `fm_do`'s `fm_own(TRUE)`; NewTOS waits at the opcode's entry, because a
+  call that has to give the CPU away is re-executed from its `svc` and must
+  not have drawn yet. Observable only while another process holds the lock
+  when the selector is called: the dialog appears when the holder lets go,
+  not before. EmuTOS also takes and releases the lock around each `fm_do`
+  round of the selector's loop (and around the slider drag,
+  `gemfslib.c:790-792`); NewTOS's loop gives the CPU to nobody between its
+  rounds, so one bracket around the loop is the same.
+* **Non-waiting takers that remain.** A host-less unit test, and the
+  `Pexec`-child sweep (`wm_new_for_slot`, a NewTOS rule with no EmuTOS
+  counterpart, `wind_new (109)` below), which closes a dead child's windows
+  in the living caller's name at the next AES dispatch: finding the lock
+  held by another process, they count their bracket on top of the owner's
+  hold and take it back off (`update_beg`); the owner keeps the lock.
+
+`w_redraw_desktop` (`aes/gemwmlib.c:1902-1941`, 3D build) is **not** a missing
+taker but a missing function: it is the Screen Manager's answer to a
+`WM_REDRAW` in its own queue (`hctl_msg`, `aes/gemctrl.c:380-384`), and NewTOS
+has no such queue — `appl_write` to pid 1 succeeds and the message goes
+nowhere (`appl.rs`, "`hctl_msg` … not reproduced"). Open as a function of its
+own, not under A118.
 
 ---
 

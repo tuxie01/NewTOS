@@ -172,7 +172,12 @@ fn draw_span(origin: i16, ext: i16) -> (i16, i16) {
 /// `minw = minh = SHRT_MIN`, exactly as the desktop's rubber-band select does
 /// (EmuTOS `deskact.c:631`). The live outline follows the same signed extent
 /// (top-left/length via [`draw_span`], like EmuTOS `gr_rubwind`). `int_out[0]`=1.
+///
+/// `gr_rubbox` → `gr_rubwind` brackets the whole track with
+/// `wm_update(BEG_UPDATE)`/`(END_UPDATE)` (`aes/gemgrlib.c:205,219`); the
+/// dispatcher waited for the lock before it came here (A118).
 pub fn graf_rubberbox(pb: &Aespb) {
+    super::window::update_beg();
     let ax = pb.intin(0);
     let ay = pb.intin(1);
     let minw = pb.intin(2);
@@ -214,6 +219,7 @@ pub fn graf_rubberbox(pb: &Aespb) {
         outline(bx, by, bw, bh, WHITE, backend, clip);
         crate::vdi::cursor_show(backend);
     }
+    super::window::update_end();
     pb.set_intout(1, w);
     pb.set_intout(2, h);
     pb.set_ret(1);
@@ -222,7 +228,12 @@ pub fn graf_rubberbox(pb: &Aespb) {
 /// `graf_dragbox` (71) — drag a fixed-size `w×h` box (starting at
 /// `sx,sy`) with the mouse, clamped to the bound rect `int_in[4..7]`.
 /// Returns the final `x,y` in `int_out[1..2]`.
+///
+/// `gr_dragbox` brackets the whole drag with `wm_update(BEG_UPDATE)`/
+/// `(END_UPDATE)` (`aes/gemgrlib.c:250,267`); the dispatcher waited for the
+/// lock before it came here (A118).
 pub fn graf_dragbox(pb: &Aespb) {
+    super::window::update_beg();
     let w = pb.intin(0);
     let h = pb.intin(1);
     let sx = pb.intin(2);
@@ -257,6 +268,7 @@ pub fn graf_dragbox(pb: &Aespb) {
         outline(lx, ly, w, h, WHITE, backend, clip);
         crate::vdi::cursor_show(backend);
     }
+    super::window::update_end();
     pb.set_intout(1, lx);
     pb.set_intout(2, ly);
     pb.set_ret(1);

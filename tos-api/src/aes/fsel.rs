@@ -610,7 +610,17 @@ fn run(pb: &Aespb, label: u64) {
     // the accessor's ABI here rather than reading `current_abi()`.
     object::draw_root(ObjTree::lp64(tree as *const Object), MAX_DEPTH, backend);
 
+    // `fm_do(tree, FSSELECT)` (`aes/gemfslib.c:718`) runs the dialog between
+    // `fm_own(TRUE)` and `fm_own(FALSE)` (`aes/gemfmlib.c:287,349`): the
+    // screen lock, and the mouse — and keyboard — for the caller, so a press
+    // in the selector goes to its owner and not to another process's parked
+    // `MU_BUTTON` (A118). EmuTOS takes them around each `fm_do` round; this
+    // loop gives the CPU to no one between its rounds, so one bracket around
+    // it is the same. The dispatcher waited for the lock before the dialog
+    // was drawn ([`super::window::update_block`]).
+    super::window::fm_own(true);
     let button = modal(tree, backend);
+    super::window::fm_own(false);
 
     // Write the (possibly updated) path + selection back to the caller.
     // SAFETY: single-CPU AES.
