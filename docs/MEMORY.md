@@ -51,7 +51,7 @@ ADRs are numbered globally, prefix `ADR-NNN`. They follow the
 template is at the end of this section.
 
 **Numbering.** The first ADR written is ADR-010 (initial commit
-`265a43c1`, 2026-06-16). **ADR-001 to ADR-009 were never written.** Two
+`265a43c1`, 2026-06-16). **Numbers 001 to 009 were never written.** Two
 reservation lists for low numbers existed and disagreed: this file's
 "Anticipated further ADRs" (001 license, 002 EmuTOS configuration
 variant, 003 EmuTOS pin, 004 native PRG format, 005 `Mxalloc` modes,

@@ -154,7 +154,7 @@ both worlds.
 
 ADRs live in [`docs/MEMORY.md`](MEMORY.md), with their numbering rules in
 its section *How to use this file* → *ADRs (Architectural Decision Records)*,
-paragraph **Numbering**: ADR-001 to ADR-009 were never written, the earlier
+paragraph **Numbering**: numbers 001 to 009 were never written, the earlier
 "planned" list that stood here is no reservation, and a new ADR takes the
 next free number. The ADRs that exist (titles as in their headings, status
 in each entry):
