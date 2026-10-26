@@ -52,7 +52,8 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
 
 **Offen (Stand 2026-10-26, aus der Statuszeile der Tickets ohne DONE-Quittung):**
 
-- **P1:** [USB01](../TASK/USB01.md) — F1/F2/F3/F8 auf echter Hardware
+- **P1:** [MEM12](../TASK/MEM12.md) — EL0 darf Seite 0 beschreiben (`UserRwExec`); Leser und Stubs klaeren, dann schreibgeschuetzt oder ausgeblendet.
+  [USB01](../TASK/USB01.md) — F1/F2/F3/F8 auf echter Hardware
   bestaetigt (Pi 2026-10-23, zwei Steckpositionen; Ragnars Lauf 2026-10-25,
   vier Funkempfaenger an beiden Buchsen); offen: mehr als 15 Befehle am VL805,
   Report-only-Maeuse, Rueckfragen zum Rad der DW 9000 und zur Menueleiste.
