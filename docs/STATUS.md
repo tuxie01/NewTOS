@@ -81,10 +81,10 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
 - **Umfang 1.0 (Anwender 2026-10-23):** FAT16 bleibt das einzige Dateisystem
   (FAT32/exFAT nach 1.0); **Ton gehoert dazu** — SND01 (Falcon-DMA-Sound),
   SND02 (HDMI), H04 (Klingel, Tastenklick, `Dosound`), alle P2.
-- **P3 / P4:** 55 Tickets P3 und 4 Tickets P4 mit Status OFFEN, dazu 80 P3 und
+- **P3 / P4:** 56 Tickets P3 und 4 Tickets P4 mit Status OFFEN, dazu 80 P3 und
   1 P4 im BACKLOG, 3 TEILWEISE, 3 IDEE. Darunter: ARCH03 Stufe 2b, SDL01,
   RTC01, REF03, REF05 (GIC-Quellen), REF06 (fehlende Track-B-Quellen), T15,
-  DESK49, DESK51–DESK55, DESK61, DESK63, DESK65, DESK66, DESK67, FS12
+  DESK49, DESK51–DESK55, DESK61, DESK63, DESK65, DESK66, DESK67, DESK69, FS12
   (26 Laufwerke), FS15, FS16, FS17, LIBC-IOCTL, A119–A125, RST02, INPUT02,
   CON03, ARCH04, USB02, MEM08, MEM10, [KEYS03](../TASK/KEYS03.md),
   [T18](../TASK/T18.md); zurueckgestellt COOK01; Ideen MEM06,
@@ -157,7 +157,6 @@ weder Karte noch Pi an und committen nur, wenn der Lead es verlangt.
 | ID            | Topic                                   | Offen fuer |
 |---------------|-----------------------------------------|-----------|
 | ADR-BDOS-Lock | BDOS-Serialisierungsmodell auf SMP; kein ADR in `docs/MEMORY.md` | Mehrkern-Ausbau |
-| ADR-Line-A-01 | C-ABI eines Line-A-Exports. Entwurf: ADR-030 „No Line-A emulation“ (**Proposed**, `docs/MEMORY.md`); ob der Export ganz entfaellt, ist dort Frage Q2 | Anwenderentscheidung |
 
 ## Blocked
 
