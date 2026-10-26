@@ -85,6 +85,10 @@ mod kernel_usb_hid_decode;
 /// checked-in snapshot of EmuTOS' `#define`s.
 mod emutos_consts;
 
+/// Every path and `file:line` cite in the living docs (`CLAUDE.md`,
+/// `docs/STATUS.md`, `docs/MEMORY.md`) must resolve.
+mod doc_check;
+
 /// DESK43 U6b (decision D3) — the kernel image's embedded programs: the list,
 /// the per-board program directory and the generated table, shared with
 /// `kernel/build.rs` and compiled here by path. `build-programs` writes into
@@ -124,6 +128,7 @@ fn main() -> ExitCode {
     let result = match cmd.as_str() {
         "build" => cmd_build(&rest),
         "build-programs" => cmd_build_programs(&rest),
+        "doc-check" => doc_check::cmd(&workspace_root(), &rest),
         "emutos-consts" => emutos_consts::cmd(&workspace_root(), &rest),
         "gen-font" => cmd_gen_font(),
         "gen-fsel-rsc" => cmd_gen_fsel_rsc(),
@@ -160,6 +165,11 @@ Commands:
                                    (programs/build.sh), built with the
                                    board feature, into
                                    target/programs/<board>/ (DESK43 U6b)
+  doc-check [<file>...]          — every path and file:line cite in the
+                                   living docs (default CLAUDE.md,
+                                   docs/STATUS.md, docs/MEMORY.md) must
+                                   resolve; exit 1 lists the ones that
+                                   do not
   emutos-consts [--update] [-v]  — compare the desktop's integer constants
                                    with EmuTOS' #defines of the same name
                                    (snapshot tools/xtask/emutos-defines.snapshot;
