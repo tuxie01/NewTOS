@@ -27,6 +27,8 @@ Pfadkürzel: `FM` = `references/freemint/sys`, `XA` = `references/freemint/xaaes
 
 ## ADR-025: Ein gemeinsamer Anwenderadressraum (VA = PA) mit Schutzrechten je Adressraum — FreeMiNTs Modell auf AArch64
 
+> **Übernommen als ADR-028** in `docs/MEMORY.md` (2026-10-26). Die Nummer 025 ging an die MD-Versorgung (MEM05); der Entwurf unten bleibt als Stand vom 2026-10-04 stehen.
+
 **Date:** 2026-10-04
 **Status:** Proposed
 **Phase:** cross-cutting (Prozessmodell, Lader, BDOS-Speicher, MMU, AES)

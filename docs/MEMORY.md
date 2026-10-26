@@ -443,6 +443,34 @@ with those selectors reporting the honest "not found". Emitted by
 `relocate_blob_core_ilp32`; registered/served in `relocate_and_register_core` /
 `rsrc_gaddr` (`tos-api/src/aes/resource.rs`).
 
+### Addendum 2026-10-26: system resources are compiled into the kernel image
+
+Moved from the STATUS log (decision of 2026-06-20, "Ressourcen-Speichermodell")
+and checked against the code of 2026-10-26.
+
+**Decision (2026-06-20):** the system's own resources — the AES and desktop
+dialog trees and system strings — are **compiled into the kernel image**, as
+EmuTOS links them into its ROM; the GUI then boots without depending on the
+file system. **Application `.RSC` files** are loaded from the card through
+`rsrc_load` in the native format above. A file override for system resources
+(theming, language) was left as a later option.
+
+**State of the code today:**
+
+- AES file selector: EmuTOS' `aes/gem.rsc`, converted to NRSC and embedded with
+  `include_bytes!` (`GEM_FSEL_RSC`, `tos-api/src/aes/fsel.rs:85-98`). The
+  override exists: a valid `C:\GEMSYS\RSC\GEM.RSC` is used first, the embedded
+  blob is the fallback (`load_fselectr`, `tos-api/src/aes/fsel.rs:172-205`).
+- AES alert trees and the AES's built-in `DESKTOP` tree are built in code
+  (`tos-api/src/aes/form.rs`, `tos-api/src/aes/init.rs`), not loaded.
+- Desktop: since ADR-026 the desktop is the EL0 program `NEWDESK`; its dialog
+  and menu trees are built in its code (`programs/desktop/src/`), and the
+  program itself is embedded in the kernel image (`kernel/src/embedded.rs`,
+  `kernel/embed.rs`) — so the desktop's resources are still in the image,
+  one level further out.
+- Application resources: `rsrc_load` reads the file through
+  `bdos::fs::read_file` (`tos-api/src/aes/resource.rs:2192-2233`).
+
 ---
 
 > Anticipated further ADRs:
@@ -2421,6 +2449,211 @@ would do the work twice.
 
 - `TASK/ARCH03.md`, ADR-023, ADR-025; `TASK/PROC03.md` (B5);
   `docs/api/gemdos/process/_run-ownership-curdir.md` (D-6..D-9).
+
+---
+
+## ADR-028: One shared user address space (VA = PA) with rights per address space — FreeMiNT's model on AArch64
+
+**Date:** 2026-10-04 (user decision); written here 2026-10-26 from the draft
+"ADR-025 Proposed" in `docs/analysis/arch03-implementation-plan.md` §1
+(`646c3f46`). The number 025 went to the MD supply (ADR-025 above).
+**Status:** **Accepted and implemented** (ARCH03). Pi acceptance 2026-10-05 on
+`f2af53ea` (all programs rebuilt, `TASK/ARCH03.md` "Pi-Abnahme 2026-10-05");
+tester acceptance on `main` 2026-10-13 on `0b52faf6`, memprot on/off/strict and
+`asid=on` (`measurements/measurement-2026-10-13-arch03-acceptance/RUNINFO.TXT`).
+Open: stage 2b (FreeMiNT `Pexec` modes 100+), `asid=on` on the real Pi.
+**Phase:** cross-cutting (process model, loader, BDOS memory, MMU, AES).
+**Supersedes:** ADR-010 (its decision VA = PA is kept; its path — one
+`TTBR0`, installed once and never switched, no protection — is replaced) and
+ADR-021 (the per-process window; its EmuTOS-faithful pool allocator stays).
+**Extends:** ADR-023 (the `PROT_*` vocabulary takes effect). Refined by
+ADR-027.
+
+### Context
+
+Until ARCH03 every process had its own EL0 address space: basepage at VA 0,
+the image fixed at `0x1000`, `Malloc` blocks mapped into a per-process window
+with VA ≠ PA (ADR-021). A pointer was valid only in the process that got it.
+`Pexec` 3/4/5/6/7 could only be built as a handle crutch or not at all, LDG
+could not work (the module writes into its caller's memory through
+`OFFSETLDG`), resident programs lost their mapping, and `p_env` was an unmapped
+PA (MEM03). The zView/LDG analysis (`docs/analysis/zview-ldg-2026-10-04.md`)
+made this visible. EmuTOS has one address space without protection
+(`bdos/proc.c:179-361`); FreeMiNT has one address space with per-process page
+tables that differ only in rights (`sys/arch/mprot030.c:18,76-80`), and its
+protection can be switched off without changing regions, ownership or `Pexec`.
+User, 2026-10-04: *"es so wie bei FreeMiNT bauen"* (`TASK/ARCH03.md` "Anlass").
+Analysis `docs/analysis/arch03-freemint-memory-model.md`, plan
+`docs/analysis/arch03-implementation-plan.md`, ARM ARM check
+`docs/analysis/arch03-stage0a-armarm-verification.md`, QEMU/Pi spike
+`docs/analysis/arch03-stage0b-spike.md`.
+
+### Decision
+
+1. **One shared user address space, VA = PA,** for everything a process owns
+   or is handed: both BDOS pools, the screen memory, published kernel
+   structures (ADR-023). **Only exception:** page 0, `[0, 0x1000)`, stays
+   private per process (system variables, OSHEADER, `$5A0`, trampolines,
+   `Keytbl` area, the KEYS02 vector table) — `tos-api/src/bdos/process/mmu.rs`
+   module note; contract side in `docs/COMPATIBILITY.md`, "One shared user
+   address space, page 0 per process".
+2. **One `TTBR0` root per address space.** Without protection all roots share
+   every table below them except the ones leading to page 0 (FreeMiNT
+   `no_mem_prot`); with protection a root gets private leaf tables only where
+   its rights differ (copy-on-differ), with FreeMiNT's `PROT_P/G/S/PR/I`
+   (`sys/mint/mem.h:120-136`). Boot argument `memprot=off|strict`
+   (`kernel/src/lib.rs`). ASIDs are an optional switch-cost optimisation behind
+   `asid=on`, default off (stage 4, `930aa81d`).
+3. **Programs are position-independent** (`ET_DYN`, only
+   `R_AARCH64_RELATIVE`); the kernel loads them into a pool block and relocates
+   them there, as GEMDOS does with `.PRG`. `ET_EXEC` is refused with `EPLFMT`
+   (`tos-api/src/bdos/process/elf.rs`, `ParseError::NotPositionIndependent`).
+4. **Ownership after FreeMiNT** (several owners per block; only an owner
+   frees), the free tag stays EmuTOS' `m_own` = PD pointer.
+5. **Kernel access to user memory** with the caller's rights (unprivileged
+   loads/stores with fault fixup, `tos-api/src/uaccess.rs`) for syscall
+   arguments, and through the kernel alias `va + VA_OFFSET` after a check in
+   the region table for kernel-initiated access to another process (AES).
+   User code runs only with its owner's rights; a foreign `G_USERDEF` runs in
+   the current process like EmuTOS with temporary rights
+   (`memprot::grant_temp`/`revoke_temp`, FreeMiNT `prot_temp`).
+6. **A protection fault ends the program with EmuTOS' crash report**
+   (`Pterm(-1)`), not the machine (stage 0c, `9b7a7708`).
+
+### Rationale
+
+- A pointer must mean the same in every process — the common premise of
+  `Pexec` 3/4/5/6/7, LDG, SLB, TSR, accessories, AES messages with pointers and
+  global `Mxalloc`. A window per process cannot provide that; a shared space
+  provides it trivially.
+- VA = PA rather than a fixed offset: `Malloc` returns `m_start` again
+  (EmuTOS), `Getmpb` MDs hold usable addresses, and every user address stays a
+  positive 32-bit `LONG` (`TOS_MD_MAX_END = 0x7FFF_F000`).
+- Space first, rights second, as FreeMiNT separates them: each stage could
+  ship on its own.
+- One root per process instead of ADR-010's single never-switched `TTBR0`:
+  page 0 must be private, and the way to per-process rights is already laid.
+  ADR-010's "wall 3" (QEMU hang on kernel/user aliases with different rights)
+  is not an architecture rule (ARM ARM B2.11) and did not reproduce on QEMU
+  11.0.2 or the Pi (stage 0a/0b documents above).
+
+### Consequences
+
+- Real PD pointers (`p_parent`, `Pexec(3)` result), `Pexec` 5/6/7, `Ptermres`,
+  `vfork` and mintlib's `system()`, F_KEEP; MEM03, MEM04 and PROC01 closed
+  (status lines of `TASK/MEM03.md`, `TASK/MEM04.md`, `TASK/PROC01.md`).
+- Every native program had to be rebuilt as PIE; external `ET_EXEC` binaries
+  (then `BALL.NAP`) are refused with error 35.
+- Since E9 the TPA is EmuTOS' largest free block (`98199e35`), not a fixed
+  4 MiB.
+- Observable differences are named in `docs/COMPATIBILITY.md` (page 0,
+  `p_tbase = p_lowtpa + 0x1000`, page-grain protection, F_KEEP).
+
+### Alternatives considered
+
+- **ADR-010 literally (one `TTBR0`, never switched, no protection):** page 0
+  could not be private and rights would need a second rebuild. Rejected.
+- **Keep ADR-021's window and translate pointers on hand-over:** impossible for
+  pointers the kernel never sees (LDG's `OFFSETLDG` in the environment,
+  structures with embedded pointers in messages).
+- **Map the same blocks at different VAs per process:** visibility without
+  pointer equality. Rejected.
+- **A userspace LDG loader:** covers LDG only. Rejected.
+- **Rights at once, without the unprotected stage:** two error sources in one
+  step. Rejected.
+- **Fixed load address per program:** needs global image placement and breaks
+  two instances of one program. Rejected.
+
+### References
+
+- `TASK/ARCH03.md` and its stage receipts `TASK/ARCH03-*-STATUS-*.MD`;
+  plan `docs/analysis/arch03-implementation-plan.md` (§1 draft, "Stufe 3 wie
+  gebaut", "Stufe 4 wie gebaut").
+- Commits: 0c `9b7a7708`, 0d `7fb554ec`, stage 1 `c6280342`, stage 2
+  `32c6171c`, 3a `d2c68ec8`, 3b `48ba717c`, 3c `f2af53ea`, E9 `98199e35`,
+  stage 4 `930aa81d`; runs `measurements/measurement-2026-10-05-arch03-*/`,
+  `measurements/measurement-2026-10-06-arch03-4/`,
+  `measurements/measurement-2026-10-13-arch03-acceptance/`.
+- FreeMiNT `sys/arch/mprot030.c`, `sys/memory.c`, `sys/mint/mem.h`; EmuTOS
+  `bdos/proc.c`, `bdos/umem.c`, `bios/kprint.c`.
+- ADR-010, ADR-021, ADR-023, ADR-025, ADR-027, QUIRK-001.
+
+---
+
+## ADR-029: The cooperative kernel — EmuTOS' cooperative policy on FreeMiNT-shaped primitives
+
+**Date:** 2026-07-24
+**Status:** **Accepted** (Lead + user decision 2026-07-24,
+`docs/analysis/coop-kernel/10-upcall-signal-design.md:3-7`; written here
+2026-10-26, moved from the STATUS log entry of 2026-07-25). Implemented:
+steps 1–3b (below); step 4 grew into the accessory and scheduler work since
+(`96f17854` accessories, `e7754b16` EmuTOS ready list).
+**Phase:** cross-cutting (process model, AES, scheduler).
+
+### Context
+
+The user asked for an effort estimate: build multitasking FreeMiNT-like right
+away, or like EmuTOS (`docs/analysis/coop-kernel/00-effort-comparison.md`,
+from `emutos-cooperative-model.md` and `freemint-multitasking-model.md`). The
+user's intent was *"kooperativ implementieren, aber so, dass man es ohne
+Wegwerf auf FreeMiNT-Niveau hochziehen kann"* (ibid., "Warum EmuTOS-Stil ≠
+EmuTOS-treu"). NewTOS' hard primitives were already FreeMiNT-shaped: EL0/EL1
+with an MMU, a `TTBR0` per process, a context = `ExceptionFrame`. EmuTOS'
+`switchto` is a flat supervisor SP/register swap without an address-space
+switch and has no clean place on that base.
+
+### Decision
+
+The question splits into two levels, decided separately:
+
+1. **Mechanism / primitives: FreeMiNT-shaped.** Protected per-process
+   contexts, a ready queue with `sleep()`/`wake()`, and an EL0 upcall/signal
+   path modelled 1:1 on FreeMiNT `sendsig`/`Psigreturn`.
+2. **Policy / behaviour: EmuTOS-cooperative, first.** Yield only when
+   blocking, no preemption, the AES event/message model, desktop +
+   accessories + one main application that owns the screen.
+3. **Preemption, priorities, several applications, SMP: deferred and
+   additive** — FreeMiNT's `preempt()` sits on `sleep()`/`wake()`, no rewrite.
+
+### Rationale
+
+- The upcall is unavoidable either way (it delivers to a blocked EL0 AES
+  client) and was already due for `etv_term`, `vex`, `G_USERDEF` and `eralert`;
+  FreeMiNT's `sendsig` is a complete reference for it.
+- "Full FreeMiNT now" (an XaAES-like client/server AES plus preemption) is
+  more work now and builds extensions before the faithful base runs cleanly on
+  the Pi.
+- "Pure EmuTOS style" would either bypass the EL0/EL1 protection or build the
+  upcall anyway.
+
+### Consequences
+
+- Step 1 generic EL0 upcall + trampoline + GEMDOS `Psigreturn` (0x11A)
+  (`55a2a346`, design `coop-kernel/10-upcall-signal-design.md`); step 2
+  `etv_term` via upcall on `Pterm` (`ad3e8eff`); step 3a sleep/wake substrate
+  (`1844e09a`, design `coop-kernel/20-sleepwake-substrate-design.md`); step 3b
+  restartable context switch + deliver-on-resume (`aac71446`); prep cleanups
+  `366d3b25`. Live today: `deliver_upcall`/`handle_psigreturn` in
+  `kernel/src/arch/aarch64/exceptions.rs`, `tos-api/src/bdos/process/sched.rs`.
+- Accessories run cooperatively (`96f17854`,
+  `measurements/measurement-2026-09-25-acc02-acc04/`), and the scheduler picks
+  by EmuTOS' `rlr`/`drl` ready list (A115, `e7754b16`,
+  `measurements/measurement-2026-10-25-a115/RUNINFO.TXT`).
+- The memory side of the same primitives became FreeMiNT's model with ADR-028;
+  ADR-027 keeps kernel memory on FreeMiNT, AES/VDI on EmuTOS.
+
+### Alternatives considered
+
+- **FreeMiNT preemptive multitasking now:** rejected — more effort now,
+  extension before the faithful base.
+- **EmuTOS' flat `switchto` 1:1:** rejected — no place for it on EL0/EL1 + MMU.
+
+### References
+
+- `docs/analysis/coop-kernel/` (00, 10, 20, 30, `emutos-cooperative-model.md`,
+  `freemint-multitasking-model.md`); FreeMiNT `sys/arch/sig_mach.c`,
+  `sys/arch/user_things.S`; EmuTOS `aes/gemdisp.c`, `aes/gemasm.S`.
+- ADR-022, ADR-026, ADR-027, ADR-028.
 
 ---
 
