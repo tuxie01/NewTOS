@@ -47,6 +47,10 @@ int main(int argc, char **argv)
 	h.record_count = 1;
 	memcpy(h.build_id, "beef", 4);
 	h.case_crc     = 0x89ABCDEFuL;
+	/* stated, not measured: the two configurations are built on the same
+	 * host, and what is under test is that both WRITE the same bytes */
+	h.ptr_width    = 4;
+	h.word_order   = TD_WORD_ORDER_MSW_FIRST;
 	td_header_write(hdr, &h);
 
 	td_poison_vdi(&v);

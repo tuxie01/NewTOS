@@ -131,9 +131,13 @@ fi
 # contrl[7..14] hold the two MFDB pointers, at the target's own pointer width
 # and pointing at the dumper's own buffers.  They cannot be equal across the
 # two machines, so a difference there would measure the linker; the field
-# descriptor marks them compare = 0.  Prove it end to end: poke one word of a
-# compared field and one word of a not-compared field into the same record,
-# and only the first may be reported.
+# descriptor puts them in field class address, which is never compared by
+# value.  Prove it end to end: poke one word of a compared field and one word
+# of an address field into the same record, and only the first may be
+# reported as a value difference.  (The stub's pointers are HOST addresses,
+# above 4 GiB on this machine, so the address check reports them -- as
+# address verdicts, "contrl_mfdb[7..10]", never as a value line
+# "contrl_mfdb[7] ...".)
 RASTBIN="$BUILD/stub-raster.bin"
 RASTTSV="$BUILD/stub-raster.tsv"
 if [ -f "$RASTBIN" ] && [ -f "$RASTTSV" ]; then
@@ -148,9 +152,9 @@ if [ -f "$RASTBIN" ] && [ -f "$RASTTSV" ]; then
 	"$TOSDIFF" "$RASTTSV" "$TMP/r_a.bin" "$TMP/r_b.bin" >"$TMP/rast.out" 2>&1
 	check "the raster dumps differ" 1 $?
 	grep_out "the compared buffer word is reported" "$TMP/rast.out" "buf_a\\[0\\]"
-	if grep -q "contrl_mfdb" "$TMP/rast.out"; then
-		echo "  FAIL the MFDB pointer slots were compared; they are"
-		echo "       recorded evidence, not a comparable field"
+	if grep -q "contrl_mfdb\[[0-9]*\] " "$TMP/rast.out"; then
+		echo "  FAIL the MFDB pointer slots were compared by value; they"
+		echo "       are field class address"
 		fails=$((fails + 1))
 	fi
 
@@ -159,6 +163,92 @@ if [ -f "$RASTBIN" ] && [ -f "$RASTTSV" ]; then
 	grep_out "validate names the raster area" "$TMP/rastval.out" "VDI-RASTER"
 else
 	echo "  FAIL stub raster dump missing: $RASTBIN / $RASTTSV"
+	fails=$((fails + 1))
+fi
+
+# --- format 3: the address check (docs/TOS-REFERENCE-DUMPER.md section 3) --
+#
+# The stub AES dump was written by td_dump_write on this host, so it is
+# format 3 and states the host's pointer width and word order.  ap_3resv,
+# global[11..12], is record offset 14 + 22 = 36, file offset 68.  On this
+# host (little-endian) the LEAST significant WORD comes first, so the LONG
+# 0x80000000 is the WORDs 0x0000 0x8000 and 0x7FFFFFFF is 0xFFFF 0x7FFF.
+# Asserted first, so a big-endian host fails loudly instead of testing the
+# wrong bytes.
+if [ -f "$AESBIN" ] && [ -f "$AESTSV" ]; then
+	"$TOSDIFF" --validate "$AESBIN" >"$TMP/v3val.out" 2>&1
+	check "validate accepts a format 3 dump" 0 $?
+	grep_out "validate states the format"      "$TMP/v3val.out" "format 3"
+	grep_out "validate states the word order"  "$TMP/v3val.out" "least significant word first"
+
+	cp "$AESBIN" "$TMP/aes-max.bin"
+	printf '\377\377\177\377' | dd of="$TMP/aes-max.bin" bs=1 seek=68 \
+	    conv=notrunc status=none
+	cp "$AESBIN" "$TMP/aes-lim.bin"
+	printf '\000\000\200\000' | dd of="$TMP/aes-lim.bin" bs=1 seek=68 \
+	    conv=notrunc status=none
+
+	# 0x7FFFFFFF is the largest address there is: passes on both sides,
+	# and an address cell is not compared by value, so this is clean
+	"$TOSDIFF" "$AESTSV" "$AESBIN" "$TMP/aes-max.bin" >"$TMP/amax.out" 2>&1
+	check "an address cell at 0x7FFFFFFF passes" 0 $?
+	grep_out "the max case says what it checked" "$TMP/amax.out" \
+	    "aes-max.bin: format 3, pointer [48] bytes, least significant word first; 3 address cells checked, 0 not < 0x80000000"
+	grep_out "the max case has no value difference" "$TMP/amax.out" "0 of 3"
+
+	# 0x80000000 reads as an error code: its own verdict, not a mismatch
+	"$TOSDIFF" "$AESTSV" "$AESBIN" "$TMP/aes-lim.bin" >"$TMP/alim.out" 2>&1
+	check "an address cell at 0x80000000 is flagged" 1 $?
+	grep_out "the violation names the cell" "$TMP/alim.out" "global\[11..12\]"
+	grep_out "the violation shows the value" "$TMP/alim.out" "0x80000000"
+	grep_out "the violation is an address verdict" "$TMP/alim.out" \
+	    "ADDRESS aes-lim.bin *= 0x80000000, not < 0x80000000"
+	grep_out "the violation is not a value difference" "$TMP/alim.out" "0 of 3"
+	grep_out "the violation is counted per side" "$TMP/alim.out" \
+	    "aes-lim.bin: format 3, .* 3 address cells checked, 1 not < 0x80000000"
+	if grep -q "global\[11\] " "$TMP/alim.out"; then
+		echo "  FAIL ap_3resv was compared by value"
+		fails=$((fails + 1))
+	fi
+
+	# --- format 2 stays readable, and says it cannot check ----------------
+	# Forge format 2 copies: version WORD 2, and the four bytes format 3
+	# uses for pointer width and word order back to zero (reserved in 2).
+	for n in a lim; do
+		case $n in a) src="$AESBIN" ;; lim) src="$TMP/aes-lim.bin" ;; esac
+		cp "$src" "$TMP/aes-v2$n.bin"
+		printf '\000\002' | dd of="$TMP/aes-v2$n.bin" bs=1 seek=4 \
+		    conv=notrunc status=none
+		printf '\000\000\000\000' | dd of="$TMP/aes-v2$n.bin" bs=1 seek=20 \
+		    conv=notrunc status=none
+	done
+	"$TOSDIFF" --validate "$TMP/aes-v2a.bin" "$AESTSV" >"$TMP/v2val.out" 2>&1
+	check "validate accepts a format 2 dump" 0 $?
+	grep_out "validate states format 2" "$TMP/v2val.out" "format 2"
+
+	"$TOSDIFF" "$AESTSV" "$TMP/aes-v2a.bin" "$TMP/aes-v2lim.bin" >"$TMP/v2v2.out" 2>&1
+	check "two format 2 dumps still compare" 0 $?
+	grep_out "format 2: the address check is not checkable" "$TMP/v2v2.out" \
+	    "aes-v2lim.bin: not checkable"
+	grep_out "format 2: both sides say so" "$TMP/v2v2.out" \
+	    "aes-v2a.bin: not checkable"
+	if grep -q "ADDRESS" "$TMP/v2v2.out"; then
+		echo "  FAIL a format 2 address cell was read: width and word order"
+		echo "       are not stated, so any reading is a guess"
+		fails=$((fails + 1))
+	fi
+
+	# --- format 3 against format 2 is refused, either way round ------------
+	"$TOSDIFF" "$AESTSV" "$AESBIN" "$TMP/aes-v2a.bin" >"$TMP/v3v2.out" 2>&1
+	check "format 3 against format 2 is refused" 2 $?
+	grep_out "the refusal names both formats" "$TMP/v3v2.out" \
+	    "refusing: stub-aes.bin is format 3, aes-v2a.bin is format 2"
+	"$TOSDIFF" "$AESTSV" "$TMP/aes-v2a.bin" "$AESBIN" >"$TMP/v2v3.out" 2>&1
+	check "format 2 against format 3 is refused" 2 $?
+	grep_out "the refusal names both formats, reversed" "$TMP/v2v3.out" \
+	    "refusing: aes-v2a.bin is format 2, stub-aes.bin is format 3"
+else
+	echo "  FAIL stub AES dump missing: $AESBIN / $AESTSV"
 	fails=$((fails + 1))
 fi
 

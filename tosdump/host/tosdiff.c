@@ -10,7 +10,9 @@
  * usage: tosdiff --validate DUMP.BIN [CASES.TSV]
  *        tosdiff CASES.TSV A.BIN B.BIN
  *
- * exit: 0 = accepted / no differences, 1 = differences found, 2 = refused.
+ * exit: 0 = accepted / no differences, 1 = differences found (a value
+ *       difference, or an address cell that is not < 0x80000000),
+ *       2 = refused.
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,12 +38,23 @@ static const char *header_error(int rc)
 {
 	switch (rc) {
 	case TD_ERR_MAGIC:    return "not a TDMP dump (bad magic)";
-	case TD_ERR_VERSION:  return "unsupported format version";
+	case TD_ERR_VERSION:  return "unsupported format version (2 and 3 are read)";
+	case TD_ERR_PTRINFO:  return "format 3 header states no valid pointer width "
+	                             "(4 or 8) or word order (1 or 2)";
 	case TD_ERR_RESERVED: return "reserved header bytes are not zero";
 	case TD_ERR_RECSIZE:  return "record size does not match the area";
 	case TD_ERR_AREA:     return "unknown area code";
 	case TD_ERR_SIZE:     return "file is shorter than the header";
 	default:              return "malformed header";
+	}
+}
+
+static const char *word_order_name(uint16_t order)
+{
+	switch (order) {
+	case TD_WORD_ORDER_MSW_FIRST: return "most significant word first";
+	case TD_WORD_ORDER_LSW_FIRST: return "least significant word first";
+	default:                      return "word order not stated";
 	}
 }
 
@@ -152,6 +165,12 @@ static int cmd_validate(const char *dump_path, const char *cases_path)
 	printf("%s: area %s, %u records of %u bytes, build %s, case CRC %08X\n",
 	       d.label, td_area_name(d.h.area), d.h.record_count,
 	       d.h.record_size, d.h.build_id, d.h.case_crc);
+	if (td_header_states_ptr(&d.h))
+		printf("%s: format %u, pointer %u bytes, %s\n", d.label,
+		       d.h.version, d.h.ptr_width, word_order_name(d.h.word_order));
+	else
+		printf("%s: format %u, pointer width and word order not stated\n",
+		       d.label, d.h.version);
 
 	/* case ids must be unique and ascending: they are line numbers */
 	for (i = 1; i < d.h.record_count; i++) {
@@ -245,6 +264,78 @@ static void print_value(const struct td_field *f, uint32_t v)
 	}
 }
 
+static void print_case_header(const struct td_casefile *cf, uint16_t case_id,
+                              uint16_t opcode, int *printed)
+{
+	const char *c;
+
+	if (*printed)
+		return;
+	c = td_casefile_comment(cf, case_id);
+	printf("\ncase %u  opcode %u%s%s\n", case_id, opcode, *c ? "  " : "", c);
+	*printed = 1;
+}
+
+/*
+ * The address check, per dump: every cell of every address-class field
+ * must be below TD_ADDR_LIMIT (record.h; TASK/MEM11.md).  Its own verdict,
+ * reported per side and per cell, never folded into "cases differ".  A dump
+ * whose header does not state pointer width and word order (format 2) is
+ * not read at all -- reading it would mean guessing both -- and its summary
+ * says "not checkable".
+ */
+struct addr_check {
+	unsigned long checked;
+	unsigned long violations;
+	unsigned long fields;      /* address fields met, for format 2 */
+};
+
+static void addr_check_side(const struct td_dump *d, const uint8_t *rec,
+                            const struct td_field *f, struct addr_check *ac,
+                            int label_w, const struct td_casefile *cf,
+                            uint16_t case_id, uint16_t opcode, int *printed)
+{
+	uint16_t n, cells, words;
+
+	ac->fields++;
+	cells = td_addr_cell_count(f, &d->h);
+	words = td_addr_cell_words(f, &d->h);
+	for (n = 0; n < cells; n++) {
+		uint64_t v = td_addr_cell_value(rec, f, &d->h, n);
+		unsigned w0 = (unsigned)(f->first + n * words);
+		char name[48];
+
+		ac->checked++;
+		if (td_addr_ok(v))
+			continue;
+		ac->violations++;
+		print_case_header(cf, case_id, opcode, printed);
+		snprintf(name, sizeof name, "%s[%u..%u]", f->name, w0,
+		         w0 + words - 1u);
+		printf("    %-24s ADDRESS %-*s = 0x%0*llX, not < 0x%08lX\n", name,
+		       label_w, d->label, (int)(words * 4u),
+		       (unsigned long long)v, (unsigned long)TD_ADDR_LIMIT);
+	}
+}
+
+static void addr_check_summary(const struct td_dump *d,
+                               const struct addr_check *ac)
+{
+	if (ac->fields == 0)
+		return;   /* the area has no address field */
+	if (!td_header_states_ptr(&d->h)) {
+		printf("address check, %s: not checkable -- format %u states no "
+		       "pointer width or word order (%lu address fields unread)\n",
+		       d->label, d->h.version, ac->fields);
+		return;
+	}
+	printf("address check, %s: format %u, pointer %u bytes, %s; "
+	       "%lu address cells checked, %lu not < 0x%08lX\n",
+	       d->label, d->h.version, d->h.ptr_width,
+	       word_order_name(d->h.word_order), ac->checked, ac->violations,
+	       (unsigned long)TD_ADDR_LIMIT);
+}
+
 static int cmd_compare(const char *cases_path, const char *a_path,
                        const char *b_path)
 {
@@ -252,8 +343,12 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 	struct td_dump a, b;
 	const struct td_field *fields;
 	const char *why = NULL;
+	struct addr_check acheck_a, acheck_b;
 	uint16_t rec, differing = 0;
 	int label_w;
+
+	memset(&acheck_a, 0, sizeof acheck_a);
+	memset(&acheck_b, 0, sizeof acheck_b);
 
 	/* The dumps come first: the case table's comment column is per area
 	 * (casefile.h), and the area is the dump's to state, not the caller's
@@ -287,8 +382,15 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 		goto refuse;
 	}
 	if (a.h.version != b.h.version) {
-		fprintf(stderr, "tosdiff: refusing: format version %u vs %u\n",
-		        a.h.version, b.h.version);
+		/* Format 3 states pointer width and word order, format 2 does
+		 * not: the address check would run on one side and not the
+		 * other, and a format 2 side cannot be made to say.  Re-record
+		 * it instead (docs/TOS-REFERENCE-DUMPER.md section 3). */
+		fprintf(stderr,
+		        "tosdiff: refusing: %s is format %u, %s is format %u -- "
+		        "dumps of different formats are not compared; re-record "
+		        "the older one\n",
+		        a.label, a.h.version, b.label, b.h.version);
 		goto refuse;
 	}
 	if (a.h.case_crc != b.h.case_crc) {
@@ -339,7 +441,7 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 		const uint8_t *ra = record_at(&a, rec);
 		const uint8_t *rb = record_at(&b, rec);
 		uint16_t case_id = record_case_id(&a, rec);
-		int printed_header = 0;
+		int printed_header = 0, value_differs = 0;
 		int fi;
 
 		if (record_case_id(&b, rec) != case_id) {
@@ -354,12 +456,20 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 			const struct td_field *f = &fields[fi];
 			uint16_t idx;
 
-			/* Recorded but not comparable: field class address, whose
-			 * two values cannot be equal by construction, so a
-			 * difference there would measure the linker rather than
-			 * the API.  See record.h. */
-			if (f->compare == TD_FIELD_ADDRESS)
+			/* Field class address: never compared by value -- the two
+			 * values cannot be equal by construction, so a difference
+			 * would measure the linker rather than the API.  Each
+			 * side's cells are checked against the relational
+			 * property instead (record.h). */
+			if (f->compare == TD_FIELD_ADDRESS) {
+				addr_check_side(&a, ra, f, &acheck_a, label_w, &cf,
+				                case_id, record_opcode(&a, rec),
+				                &printed_header);
+				addr_check_side(&b, rb, f, &acheck_b, label_w, &cf,
+				                case_id, record_opcode(&a, rec),
+				                &printed_header);
 				continue;
+			}
 
 			for (idx = 0; idx < f->count; idx++) {
 				uint32_t va = field_get(ra, f, idx);
@@ -368,13 +478,9 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 				if (va == vb)
 					continue;
 
-				if (!printed_header) {
-					const char *c = td_casefile_comment(&cf, case_id);
-					printf("\ncase %u  opcode %u%s%s\n", case_id,
-					       record_opcode(&a, rec), *c ? "  " : "", c);
-					printed_header = 1;
-					differing++;
-				}
+				print_case_header(&cf, case_id, record_opcode(&a, rec),
+				                  &printed_header);
+				value_differs = 1;
 				printf("    %s[%u]", f->name, f->first + idx);
 				printf("%*s", (int)(20 - strlen(f->name)) > 0
 				              ? (int)(20 - strlen(f->name)) : 1, "");
@@ -385,12 +491,16 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 				printf("\n");
 			}
 		}
+		if (value_differs)
+			differing++;
 	}
 
 	printf("\n%u of %u cases differ\n", differing, a.h.record_count);
+	addr_check_summary(&a, &acheck_a);
+	addr_check_summary(&b, &acheck_b);
 	dump_free(&a);
 	dump_free(&b);
-	return differing ? 1 : 0;
+	return (differing || acheck_a.violations || acheck_b.violations) ? 1 : 0;
 
 refuse:
 	dump_free(&a);

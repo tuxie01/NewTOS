@@ -68,6 +68,8 @@ int main(int argc, char **argv)
 	h.record_count = cf.count;
 	memcpy(h.build_id, "test", 4);
 	h.case_crc     = have_crc_override ? crc_override : cf.crc;
+	h.ptr_width    = td_native_ptr_width();
+	h.word_order   = td_native_word_order();
 	td_header_write(hdr, &h);
 
 	f = fopen(argv[1], "wb");

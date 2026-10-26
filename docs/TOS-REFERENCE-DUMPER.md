@@ -68,7 +68,7 @@ produce differences that look like real bugs:
 **Endianness.** m68k is big-endian; AArch64 normally runs little-endian. The
 record format is big-endian. The AArch64 build must therefore byte-swap on write
 and the m68k build must not. This is the **only** permitted asymmetry between the
-two builds. Implement it as a single `store_be16` / `store_be32` pair in `core/`,
+two builds. Implement it as a single `store_be16` / `store_be32` pair in `tosdump/core/`,
 selected at compile time, and route every field through it — including reserved
 fields and the header. A swap bug here silently fabricates differences or hides
 them, and it will be mistaken for an API bug.
@@ -97,23 +97,99 @@ line of logic there is a bug you cannot chase.
 | Offset | Size | Field |
 |---|---|---|
 | 0 | 4 | magic `TDMP` |
-| 4 | 2 | format version (currently 1) |
+| 4 | 2 | format version (currently 3; 2 is still read, see below) |
 | 6 | 2 | area: 1=BIOS, 2=XBIOS, 3=GEMDOS, 4=VDI, 5=AES |
 | 8 | 2 | record size in bytes |
 | 10 | 2 | record count |
 | 12 | 4 | build id (git short hash as ASCII, zero padded) |
 | 16 | 4 | case table CRC32 |
-| 20 | 12 | reserved, must be zero |
+| 20 | 2 | pointer width of the writing machine in bytes: 4 or 8 (format 3) |
+| 22 | 2 | word order of the writing machine: 1 = most significant WORD first (m68k), 2 = least significant WORD first (AArch64) (format 3) |
+| 24 | 8 | reserved, must be zero |
 
 The comparator **must refuse** to compare two files whose area, record size,
 format version or case table CRC differ. Comparing dumps produced from different
 case tables silently produces nonsense.
 
+#### Format versions
+
+| Version | Change | Read today |
+|---|---|---|
+| 1 | first layout | no — refused |
+| 2 | the trap's own return value (`d0`) in the reserved LONG after the opcode (`tosdump/core/tosdump.h`) | yes, without the address check |
+| 3 | pointer width and word order in header bytes 20–23; **nothing else** — every record is byte for byte what format 2 wrote | yes |
+
+Format 3 exists for the **address** field class (next section). An address the
+target laid into a WORD array sits there in the target's own memory order and
+at its own pointer width: EmuTOS on the m68k records `ap_3resv` as
+`0x0000 0xBD60` (most significant WORD first), NewTOS on AArch64 as
+`0x80B0 0x0011` = `0x001180B0` (least significant WORD first); an AArch64 MFDB
+pointer in the raster CONTRL is four WORDs, an m68k one two. Without both facts
+the WORDs cannot be put back together, so format 2 cannot say what an address
+cell holds. Both values are **measured by the dumper on the machine** —
+`sizeof(void *)` and a `memcpy` of a LONG into two WORDs
+(`td_native_ptr_width`, `td_native_word_order`, `tosdump/core/record.c`) — with the
+same lines on both targets, so the backends stay symmetric (section 8, rule 5).
+`tosdiff` refuses a header whose pointer width is not 4 or 8 or whose word
+order is not 1 or 2.
+
+- **Format 2 stays readable.** `tosdiff --validate` accepts it, and two
+  format 2 dumps still compare by value as before. The address check is not
+  run on them — reading their address cells would mean guessing width and
+  order — and the report says so explicitly per dump:
+  `address check, <dump>: not checkable -- format 2 states no pointer width
+  or word order`.
+- **Format 3 against format 2 is refused** (exit 2,
+  `refusing: <a> is format 3, <b> is format 2 -- ... re-record the older
+  one`), either way round. The address check would run on one side only, and
+  the format 2 side cannot be made to state what it lacks.
+
+The twelve pinned EmuTOS VDI and AES references
+`tosdump/reference/EMUTOS-1a7484ab-{VDI,AES}*` are format 3 since 2026-10-26,
+re-recorded on the oracle; each payload is byte-identical to its format 2
+recording (`measurements/measurement-2026-10-26-ref07-v3/RUNINFO.TXT`). The two
+raster references `EMUTOS-1a7484ab-RASTER*` are still format 2: their format 3
+recording differs in the MFDB pointer cells (address class, the dumper's own
+buffer addresses, moved by the dumper's code size), so the byte-identity check
+failed there and their replacement is open. The frozen `EMUTOS14-*`,
+`TOS306-*` and the existing `NEWTOS-*` dumps stay format 2.
+
+#### Field classes: value and address
+
+Every field descriptor (`td_*_fields`, `tosdump/core/record.c`) carries a class.
+
+- **value** — compared element by element between the two dumps.
+- **address** — an address the target chose itself, which cannot be equal
+  across two machines or two builds by construction: `ap_3resv`
+  (`global[11..12]`, EmuTOS `pglobal->ap_3resv = (LONG)&D`,
+  `aes/gemsuper.c:98`) and the two MFDB pointers packed into the raster CONTRL
+  (`contrl[7..14]`, the dumper's own buffers). **Never compared by value.**
+  Instead each **cell** is checked on each side for a relational property:
+
+  **every address cell must be `< 0x80000000`.** A TOS address is a signed
+  32-bit `LONG`; one at or above `0x80000000` reads as a negative error code to
+  a caller that tests `< 0` (`TASK/MEM11.md`). A violation is its own verdict,
+  printed under the case as `global[11..12]  ADDRESS <dump> = 0x80000000, not
+  < 0x80000000` and counted in a per-dump summary line
+  (`address check, <dump>: format 3, pointer N bytes, ...; K address cells
+  checked, V not < 0x80000000`); it is **not** a value difference and does not
+  count towards "N of M cases differ". `tosdiff` exits 1 when there is a value
+  difference or an address violation, 0 only when there is neither.
+
+  What a cell is comes from the descriptor (`addr_cell`) and the header: a
+  **LONG** cell is two WORDs on every target (`ap_3resv` — the AESGLOBAL keeps
+  its 15 WORDs for an LP64 caller, `tos-api/src/aes/appl.rs`); a **pointer**
+  cell is the header's pointer width, packed from the field's start as gemlib
+  packs it (pointer *n* at word *n* · width / 2). The pointer field is sized
+  for eight-byte pointers; on a four-byte target the WORDs after the last cell
+  (`contrl[11..14]` on the m68k, which keep the poison) are no address and are
+  not checked.
+
 ### VDI record — 1592 bytes
 
 | Offset | Size | Field |
 |---|---|---|
-| 0 | 2 | case id (line number in `cases/vdi.tsv`) |
+| 0 | 2 | case id (line number in tosdump/cases/vdi.tsv) |
 | 2 | 2 | opcode |
 | 4 | 4 | reserved, zero |
 | 8 | 24 | `contrl[12]` after the call |
@@ -176,7 +252,7 @@ at minimum `v_clrwk` plus re-applying the default attributes.
 
 Without this, a result depends on the preceding cases and the whole dump becomes
 invalid the moment somebody inserts a case in the middle. The reset sequence
-lives in `core/` and is identical on both targets.
+lives in `tosdump/core/` and is identical on both targets.
 
 **Workstation handling for VDI:** open with `v_opnvwk` on the handle returned by
 `graf_handle`. This is what real applications do, and matching application
@@ -192,7 +268,7 @@ the same directory as the executable. **Never compiled in** — the case table m
 be provably identical for both runs, and recompiling between runs makes that
 unprovable.
 
-### `cases/vdi.tsv` and `cases/aes.tsv`
+### tosdump/cases/vdi.tsv and tosdump/cases/aes.tsv
 
 ```
 opcode <TAB> sub <TAB> intin values (comma separated) <TAB> ptsin values <TAB> comment
@@ -202,17 +278,17 @@ Comparison is exact for every byte of these two areas. No exception mechanism �
 if you find yourself wanting one, the case is wrong, not the comparator.
 
 The AES form has grown two columns since (the four control counts stated
-explicitly) and one optional one; `core/cases.h` is the authority for it. The
+explicitly) and one optional one; `tosdump/core/cases.h` is the authority for it. The
 optional one is the point of the section after next.
 
 ### Line kinds: comments, directives, preludes, cases
 
-Added 2026-10-26 from `core/cases.h`, where the rules have lived since
+Added 2026-10-26 from `tosdump/core/cases.h`, where the rules have lived since
 2026-08-30 (preludes) and 2026-09-06 (`!reset`); nothing here is new, it was
 only missing from this spec.
 
 Every line consumes a line number, because **a case id is the physical
-1-based line number** and nothing may renumber the cases (`core/cases.h`
+1-based line number** and nothing may renumber the cases (`tosdump/core/cases.h`
 header). Four kinds of line:
 
 - **Comment** — first non-blank character `#`, or an empty line.
@@ -225,23 +301,23 @@ header). Four kinds of line:
   ```
 
   Each must stand before the first case or prelude, at most once, and an
-  unknown value is refused, never defaulted (`core/cases.h`, "The
+  unknown value is refused, never defaulted (`tosdump/core/cases.h`, "The
   directives"). `!columns 8` adds the `addr_in` column (next section).
   `!reset` names **which** reset the runner issues; the sequence itself is in
-  `core/` (`td_reset_aes`, `core/runner_aes.c`), so both targets run the
+  `tosdump/core/` (`td_reset_aes`, `tosdump/core/runner_aes.c`), so both targets run the
   identical one. `wind_new` is opcode 109 with all control counts 0, as gemlib
-  lays it (`a_wind_new.c:25`; `OUT_LEN 0`, because `xif` copies `OUT_LEN`
+  lays it (`sdk/gemlib/gemlib-0.44.0/a_wind_new.c:25`; `OUT_LEN 0`, because `xif` copies `OUT_LEN`
   words out of an uninitialised stack buffer, `gemsuper.c:430-432,444-445`).
   It is the AES' own reset: `wm_new` closes and deletes every window with
   handle ≥ 1 and drains the `wind_update` locks (`gemwmlib.c:1875-1893`), and
   EmuTOS issues it itself after every graphics program the shell runs
   (`gemshlib.c:676-677`). The runner issues the declared reset before every
-  case and once after the last (`core/runner_aes.c`, both `td_reset_aes`
+  case and once after the last (`tosdump/core/runner_aes.c`, both `td_reset_aes`
   calls). **The table declares it, not the program,** because the dumper is
   double-clicked on the TT without arguments and always reads `AES.TSV`: the
   file, whose CRC the dump header carries, is the only thing that tells two
   rounds apart. **Absent means `none`,** so the frozen round-1 table
-  (`cases/aes-r1.tsv`, CRC `33C13C8F`) still measures exactly what its dumps
+  (`tosdump/cases/aes-r1.tsv`, CRC `33C13C8F`) still measures exactly what its dumps
   recorded. What `wind_new` does not reach (`gl_newdesk`, `gl_aname`/
   `gl_ainfo`, `gl_wtcolor`/`gl_wbcolor`, `D.w_win[0]`, only reset by
   `wm_init`/`wm_start`) stays out of the tables through the guards below.
@@ -256,7 +332,7 @@ header). Four kinds of line:
   case after it is an error (`TD_CASE_ERR_DANGLING`). The refusal and
   parameter guards apply to preludes as to cases. The raster table
   (`vdi-raster.tsv`) refuses `+` lines; the screen table allows a fixed
-  whitelist of preludes (`core/cases.h`, raster and screen sections).
+  whitelist of preludes (`tosdump/core/cases.h`, raster and screen sections).
 - **Case** — everything else: one measured, recorded call.
 
 A malformed line of any kind is an error, never a skipped case: a table that
@@ -271,7 +347,7 @@ stated here, because a case table is **one file carried to two machines** and an
 address is different on each. Until 2026-09-12 the runner simply poisoned the
 address array and the tables stayed away from those opcodes.
 
-The way out is the one `cases/vdi-raster.tsv` already uses for its two pixel
+The way out is the one `tosdump/cases/vdi-raster.tsv` already uses for its two pixel
 buffers: **the table names a buffer by NUMBER and the dumper fills in its own
 address.** An AES table opts in with a directive, so that every table written
 before it keeps its meaning byte for byte:
@@ -290,7 +366,7 @@ The `addr_in` column is `-`, or a comma separated list of `<where>=<buffer>`:
   local buffer (`gemsuper.c:439`) and a plant past it never reaches the handler.
 - `iN=B` — buffer `B` as a pointer packed into the `int_in` WORDs at word `N`,
   at the **target's own pointer width**. That is the classic GEM binding
-  (gemlib `a_wind_set_str.c:25`) and the only place EmuTOS' `wm_set` looks for a
+  (gemlib `sdk/gemlib/gemlib-0.44.0-m68k/a_wind_set_str.c:25`) and the only place EmuTOS' `wm_set` looks for a
   `WF_NAME` string (`gemwmlib.c:1661`). **Preludes only**: a packed pointer
   occupies two WORDs on the m68k and four on AArch64, and `int_in` is recorded,
   so on a measured case the record would differ by the target's pointer width
@@ -322,7 +398,7 @@ A case table is data, and a typo in it must not hang the machine it is carried
 to. So the AES loader refuses a whole table -- named reason, offending line --
 when it names an opcode that would block on the operator, end the application,
 or reach the dispatcher's default arm (`fm_show(ALNOFUNC)`, a modal alert with
-nobody to click it: `gemsuper.c:406-417`). `core/cases.c` holds the per-opcode
+nobody to click it: `gemsuper.c:406-417`). `tosdump/core/cases.c` holds the per-opcode
 citations.
 
 Five opcodes do not belong there, and that is the point of this section.
@@ -378,7 +454,7 @@ buffer or a write through `0xDEADDEAD`, depending on one WORD of `int_in` or on
 whether the `addr_in` column named a buffer. An opcode-level verdict on those is
 wrong in both directions at once — it refuses the harmless arm and it waves the
 dangerous one through — so a second question, *"with THESE values?"*, is
-answered per line in `aes_line_parameter_refusal` (`core/cases.c`), for preludes
+answered per line in `aes_line_parameter_refusal` (`tosdump/core/cases.c`), for preludes
 exactly as for cases:
 
 | opcode | what the values have to say |
@@ -413,7 +489,7 @@ refuses the UNION of what either machine would find fatal, never the
 intersection — which is also why `form_keybd`'s character test covers both
 EmuTOS' whole-WORD compare and NewTOS' byte-wise one.
 
-### `cases/bios.tsv` and `cases/gemdos.tsv`
+### tosdump/cases/bios.tsv and tosdump/cases/gemdos.tsv
 
 ```
 opcode <TAB> args <TAB> retclass <TAB> capture <TAB> comment
@@ -441,7 +517,7 @@ why they get the strict treatment.
 
 ## 7. Programs to build
 
-One program per area, sharing `core/` and one `abi/` backend:
+One program per area, sharing `tosdump/core/` and one `tosdump/abi/` backend:
 
 | Program | Area | Notes |
 |---|---|---|
@@ -500,7 +576,7 @@ poisoned field differs and `tosdiff` names that field, and a test asserting the
 big-endian and little-endian host configurations emit byte-identical records.
 
 **T2 — core runner and m68k backend, VDI only**
-Case table loader, poison, reset, runner, record writer, `abi/m68k_trap.c`.
+Case table loader, poison, reset, runner, record writer, `tosdump/abi/m68k_trap.c`.
 Cross-compile `DUMPVDI.TOS`.
 *Done:* builds without warnings, and a host-side test drives the runner against a
 stub backend and produces a well-formed dump file.
@@ -511,7 +587,7 @@ Run `DUMPVDI.TOS` on the TT, retrieve `VDI.BIN` via CF.
 matches the case table.
 
 **T4 — AArch64 backend**
-`abi/newtos_svc.c`, same core, same case table.
+`tosdump/abi/newtos_svc.c`, same core, same case table.
 *Done:* `DUMPVDI` runs under NewTOS and produces a well-formed `VDI.BIN`.
 
 **T5 — first comparison**
@@ -537,5 +613,5 @@ and it is where the current bugs are.
 Obtain the list by logging the trap dispatcher under NewTOS, since the dispatcher
 is yours there. Nothing needs to be modified on the TT to get this list.
 
-That log is the input to `cases/vdi.tsv`. Expand from there once the first
+That log is the input to tosdump/cases/vdi.tsv. Expand from there once the first
 comparison is clean.

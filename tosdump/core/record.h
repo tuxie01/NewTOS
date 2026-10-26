@@ -32,9 +32,32 @@ struct td_header {
 	uint16_t record_count;
 	char     build_id[TD_HDR_BUILDID_LEN + 1];  /* NUL-terminated copy */
 	uint32_t case_crc;
+	/* Format 3 only (tosdump.h).  Parsing a format 2 header leaves both
+	 * at 0 / TD_WORD_ORDER_UNKNOWN: not stated, never guessed. */
+	uint16_t ptr_width;    /* bytes: 4 or 8                          */
+	uint16_t word_order;   /* TD_WORD_ORDER_*                        */
 };
 
+/*
+ * Writes `h->version`'s layout: from format 3 on with the pointer width and
+ * word order at 20 / 22; a format 2 header (only tests forge one) without
+ * them, the twelve bytes from 20 on all zero.
+ */
 void td_header_write(uint8_t *hdr, const struct td_header *h);
+
+/* Does this header state the pointer width and the word order?  0 for a
+ * format 2 dump, whose address cells are therefore not checkable. */
+int td_header_states_ptr(const struct td_header *h);
+
+/*
+ * The two facts format 3 records, measured on the machine that runs the
+ * code: sizeof(void *), and where the high WORD of a LONG lands in memory
+ * (memcpy of a LONG into two WORDs -- the same path set_mfdb_ptr and the
+ * AES's own stores take).  The dumper writes these into every header
+ * (dump.c).
+ */
+uint16_t td_native_ptr_width(void);
+uint16_t td_native_word_order(void);
 
 /* Returns 0 on success, negative on a malformed header. */
 #define TD_ERR_MAGIC    (-1)
@@ -43,6 +66,8 @@ void td_header_write(uint8_t *hdr, const struct td_header *h);
 #define TD_ERR_RECSIZE  (-4)
 #define TD_ERR_AREA     (-5)
 #define TD_ERR_SIZE     (-6)
+#define TD_ERR_PTRINFO  (-7)   /* format 3: pointer width not 4 or 8, or
+                                  word order not MSW_FIRST / LSW_FIRST    */
 int td_header_parse(const uint8_t *hdr, size_t len, struct td_header *out);
 
 /* Record size mandated for an area, or 0 if the area code is unknown. */
@@ -146,22 +171,52 @@ void td_raster_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
  * Field classes, the `compare` member of a descriptor.
  *
  * TD_FIELD_VALUE    compared by value.
- * TD_FIELD_ADDRESS  an address the target chose itself: recorded, never
- *                   compared.  Reserved for a field that CANNOT be equal
- *                   across two machines or two builds by construction, so
- *                   its inequality measures the linker, not the API.  Today:
- *                   the MFDB pointer slots inside a raster CONTRL (the
- *                   dumper's own buffers) and the AES's ap_3resv
- *                   (global[11..12], EmuTOS `&D`, aes/gemsuper.c:98).
+ * TD_FIELD_ADDRESS  an address the target chose itself.  Never compared by
+ *                   value: it CANNOT be equal across two machines or two
+ *                   builds by construction, so its inequality measures the
+ *                   linker, not the API.  Today: the MFDB pointer slots
+ *                   inside a raster CONTRL (the dumper's own buffers) and
+ *                   the AES's ap_3resv (global[11..12], EmuTOS `&D`,
+ *                   aes/gemsuper.c:98).
+ *
+ * Instead, every address CELL is checked against a relational property on
+ * each side separately: below TD_ADDR_LIMIT.  A TOS address is a signed
+ * 32-bit LONG, and one at or above 0x80000000 reads as a negative error
+ * code to a caller testing `< 0` (TASK/MEM11.md).  A violation is its own
+ * verdict in a report, never a value difference.  The check needs the
+ * dump's pointer width and word order, which only a format 3 header states;
+ * on a format 2 dump it is reported as not checkable.
  *
  * This is NOT a per-case exception mechanism (spec section 6 forbids one):
  * it is a property of the field, the same for every case, and the data
- * still lands in the dump.  Phase 1 replaces "never compared" with a
- * relational check (null/non-null, alignment) -- never by value, never
- * ignored; tos-api's aes_reference harness already checks ap_3resv that way.
+ * still lands in the dump.
  */
 #define TD_FIELD_ADDRESS  0
 #define TD_FIELD_VALUE    1
+
+/*
+ * What one address cell of a TD_FIELD_ADDRESS field is, the `addr_cell`
+ * member.  TD_ADDR_CELL_NONE for every value field.
+ *
+ * TD_ADDR_CELL_LONG  a LONG by the structure's own layout: two WORDs on
+ *                    every target.  ap_3resv -- the AESGLOBAL is 15 WORDs
+ *                    for an LP64 caller too, and NewTOS writes four bytes
+ *                    (tos-api/src/aes/appl.rs, AesGlobal::write).
+ * TD_ADDR_CELL_PTR   a pointer at the TARGET's own width, packed WORD by
+ *                    WORD from the field's start: pointer n at word
+ *                    n * width / 2 (gemlib gem_vdiP.h:177,204, the raster
+ *                    runner's set_mfdb_ptr).  The field is sized for the
+ *                    widest pointer, TD_ADDR_PTR_WORDS_MAX WORDs per cell;
+ *                    on a target with four-byte pointers the WORDs behind
+ *                    the last cell are no address and are not checked
+ *                    (contrl[11..14] keep the poison on the m68k).
+ */
+#define TD_ADDR_CELL_NONE  0
+#define TD_ADDR_CELL_LONG  1
+#define TD_ADDR_CELL_PTR   2
+#define TD_ADDR_PTR_WORDS_MAX  4
+
+#define TD_ADDR_LIMIT  0x80000000uL
 
 struct td_field {
 	const char *name;
@@ -170,11 +225,31 @@ struct td_field {
 	uint8_t     width;  /* element width in bytes: 2 or 4         */
 	uint8_t     is_signed;
 	uint8_t     compare;  /* field class, TD_FIELD_* above          */
+	uint8_t     addr_cell; /* TD_ADDR_CELL_*, address class only    */
 	/* Index of the first element in the array the field is part of, for
 	 * a field that is one slice of a longer array (global[11..12]): a
 	 * report then says global[11], not global[0]. */
 	uint16_t    first;
 };
+
+/*
+ * The address cells of field `f` in a dump with header `h`.
+ *
+ * td_addr_cell_count  how many cells; 0 for a value field, and 0 when the
+ *                     header does not state pointer width and word order
+ *                     (format 2) -- the caller reports that as not
+ *                     checkable, it never reads a cell it cannot decode.
+ * td_addr_cell_words  WORDs per cell: 2 for a LONG, ptr_width / 2 for a
+ *                     pointer.
+ * td_addr_cell_value  cell n of the record `rec`, put together from its
+ *                     WORDs in the header's word order.
+ * td_addr_ok          the relational property: below TD_ADDR_LIMIT.
+ */
+uint16_t td_addr_cell_count(const struct td_field *f, const struct td_header *h);
+uint16_t td_addr_cell_words(const struct td_field *f, const struct td_header *h);
+uint64_t td_addr_cell_value(const uint8_t *rec, const struct td_field *f,
+                            const struct td_header *h, uint16_t n);
+int      td_addr_ok(uint64_t v);
 
 /* NULL-name-terminated tables. */
 extern const struct td_field td_vdi_fields[];

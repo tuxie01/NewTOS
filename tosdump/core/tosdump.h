@@ -21,7 +21,8 @@
 
 #define TD_MAGIC            "TDMP"
 #define TD_MAGIC_LEN        4
-#define TD_FORMAT_VERSION   2
+#define TD_FORMAT_VERSION   3   /* what the dumpers write                */
+#define TD_FORMAT_VERSION_2 2   /* still read: no pointer information    */
 #define TD_HEADER_SIZE      32
 
 #define TD_HDR_OFF_MAGIC        0   /* 4  bytes, "TDMP"                   */
@@ -31,9 +32,40 @@
 #define TD_HDR_OFF_RECCOUNT    10   /* u16, record count                  */
 #define TD_HDR_OFF_BUILDID     12   /* 4  bytes, git short hash ASCII     */
 #define TD_HDR_OFF_CASECRC     16   /* u32, CRC32 of the case table       */
-#define TD_HDR_OFF_RESERVED    20   /* 12 bytes, must be zero             */
+#define TD_HDR_OFF_PTRWIDTH    20   /* u16, format 3: sizeof(void *)      */
+#define TD_HDR_OFF_WORDORDER   22   /* u16, format 3: TD_WORD_ORDER_*     */
+#define TD_HDR_OFF_RESERVED    24   /* 8  bytes, must be zero             */
 #define TD_HDR_BUILDID_LEN      4
-#define TD_HDR_RESERVED_LEN    12
+#define TD_HDR_RESERVED_LEN     8
+/* Format 2 had no pointer information: all twelve bytes from 20 on were
+ * reserved, and a format 2 header is still checked that way. */
+#define TD_HDR_V2_OFF_RESERVED 20
+#define TD_HDR_V2_RESERVED_LEN 12
+
+/*
+ * Format 3 -- the pointer width and the word order of the machine that
+ * wrote the dump.  The ONLY change against format 2; every record is byte
+ * for byte what format 2 wrote.
+ *
+ * Why the comparator needs them: a few recorded WORDs are an address the
+ * target laid into a WORD array in its own memory order -- ap_3resv in the
+ * AESGLOBAL (global[11..12]), the MFDB pointers packed into a raster
+ * CONTRL (contrl[7..14]).  The m68k stores the most significant WORD first
+ * (EmuTOS' &D reads 0x0000 0xBD60), AArch64 the least significant first
+ * (NewTOS' ap_3resv reads 0x80B0 0x0011 = 0x001180B0), and an AArch64
+ * pointer is four WORDs, an m68k one two.  Without both facts the WORDs
+ * cannot be put back together into the address they are, so a format 2
+ * dump's address cells are "not checkable" (host/tosdiff.c).
+ *
+ * Both are measured on the machine by the dumper itself
+ * (td_native_ptr_width / td_native_word_order, record.c), not configured:
+ * the same expression on both targets, so the backends stay symmetric
+ * (spec section 8, rule 5).
+ */
+#define TD_WORD_ORDER_UNKNOWN    0   /* format 2: not stated              */
+#define TD_WORD_ORDER_MSW_FIRST  1   /* most significant WORD first, m68k */
+#define TD_WORD_ORDER_LSW_FIRST  2   /* least significant WORD first,
+                                        AArch64 little-endian             */
 
 /* area codes */
 #define TD_AREA_BIOS        1
@@ -68,7 +100,8 @@
  * docs/api/vdi/_working-list.md D-080 records that vsm_height, vst_height,
  * vst_point and vst_font set it as a side effect.  That is an observable
  * output of a call, so it is measured like every other output, in the space
- * the layout already reserved.  Format version 2.
+ * the layout already reserved.  Format version 2; format 3 (pointer width
+ * and word order in the header, above) left every record as it was.
  */
 
 /* ------------------------------------------------------------------ */
@@ -263,9 +296,12 @@
 #define TD_RAST_RESERVED_LEN       12
 
 /* The two pointer slots inside CONTRL: contrl[7..14].  Recorded, never
- * compared -- they hold the address of one of the two buffers, at the
- * target's own pointer width, so they cannot be equal across the two
- * machines and a difference there measures the linker, not the VDI. */
+ * compared by value -- they hold the address of one of the two buffers, at
+ * the target's own pointer width, so they cannot be equal across the two
+ * machines and a difference there measures the linker, not the VDI.  Field
+ * class address (record.h): each pointer is checked against
+ * TD_ADDR_LIMIT on its own side, read with the header's pointer width and
+ * word order (format 3). */
 #define TD_RAST_CONTRL_PTR_FIRST    7
 #define TD_RAST_CONTRL_PTR_N        8
 

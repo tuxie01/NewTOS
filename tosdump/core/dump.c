@@ -27,6 +27,10 @@ int td_dump_write(const char *path, uint16_t area, uint16_t count,
 	strncpy(h.build_id, build_id ? build_id : "", TD_HDR_BUILDID_LEN);
 	h.build_id[TD_HDR_BUILDID_LEN] = '\0';
 	h.case_crc     = case_crc;
+	/* Format 3: the machine's own pointer width and word order, measured
+	 * here rather than configured, so both targets run the same lines. */
+	h.ptr_width    = td_native_ptr_width();
+	h.word_order   = td_native_word_order();
 	td_header_write(hdr, &h);
 
 	f = fopen(path, "wb");

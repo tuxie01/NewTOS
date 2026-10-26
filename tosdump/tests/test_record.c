@@ -47,7 +47,7 @@ static void test_header(void)
 	struct td_header h, out;
 	int rc;
 
-	printf("file header\n");
+	printf("file header (format 3)\n");
 
 	memset(&h, 0, sizeof h);
 	h.version      = TD_FORMAT_VERSION;
@@ -57,13 +57,15 @@ static void test_header(void)
 	memcpy(h.build_id, "19f7", 4);
 	h.build_id[4]  = '\0';
 	h.case_crc     = 0xCAFEBABEuL;
+	h.ptr_width    = 4;
+	h.word_order   = TD_WORD_ORDER_MSW_FIRST;
 
 	memset(hdr, 0xFF, sizeof hdr);
 	td_header_write(hdr, &h);
 
 	TD_CHECK_MEM(hdr + TD_HDR_OFF_MAGIC, "TDMP", 4);
 	TD_CHECK_EQ(hdr[TD_HDR_OFF_VERSION], 0x00);
-	TD_CHECK_EQ(hdr[TD_HDR_OFF_VERSION + 1], 0x02);
+	TD_CHECK_EQ(hdr[TD_HDR_OFF_VERSION + 1], 0x03);
 	TD_CHECK_EQ(hdr[TD_HDR_OFF_AREA], 0x00);
 	TD_CHECK_EQ(hdr[TD_HDR_OFF_AREA + 1], TD_AREA_VDI);
 	/* 1592 == 0x0638 */
@@ -76,10 +78,32 @@ static void test_header(void)
 	TD_CHECK_EQ(hdr[TD_HDR_OFF_CASECRC + 1], 0xFE);
 	TD_CHECK_EQ(hdr[TD_HDR_OFF_CASECRC + 2], 0xBA);
 	TD_CHECK_EQ(hdr[TD_HDR_OFF_CASECRC + 3], 0xBE);
+	/* format 3: the pointer width and the word order, big-endian WORDs at
+	 * 20 and 22, where format 2 had the first four reserved bytes */
+	TD_CHECK_EQ(TD_HDR_OFF_PTRWIDTH, 20);
+	TD_CHECK_EQ(TD_HDR_OFF_WORDORDER, 22);
+	TD_CHECK_MEM(hdr + 20, "\x00\x04", 2);
+	TD_CHECK_MEM(hdr + 22, "\x00\x01", 2);
+	TD_CHECK_EQ(TD_HDR_OFF_RESERVED, 24);
+	TD_CHECK_EQ(TD_HDR_RESERVED_LEN, 8);
+	TD_CHECK_EQ(TD_HDR_OFF_RESERVED + TD_HDR_RESERVED_LEN, TD_HEADER_SIZE);
 	{
 		uint8_t zero[TD_HDR_RESERVED_LEN];
 		memset(zero, 0, sizeof zero);
 		TD_CHECK_MEM(hdr + TD_HDR_OFF_RESERVED, zero, TD_HDR_RESERVED_LEN);
+	}
+
+	/* the other two values: an AArch64 dumper */
+	{
+		struct td_header s = h;
+		uint8_t shdr[TD_HEADER_SIZE];
+		s.ptr_width  = 8;
+		s.word_order = TD_WORD_ORDER_LSW_FIRST;
+		td_header_write(shdr, &s);
+		TD_CHECK_MEM(shdr + 20, "\x00\x08\x00\x02", 4);
+		TD_CHECK_EQ(td_header_parse(shdr, sizeof shdr, &out), 0);
+		TD_CHECK_EQ(out.ptr_width, 8);
+		TD_CHECK_EQ(out.word_order, TD_WORD_ORDER_LSW_FIRST);
 	}
 
 	/* a short build id is zero padded, not left uninitialised */
@@ -97,11 +121,14 @@ static void test_header(void)
 	rc = td_header_parse(hdr, sizeof hdr, &out);
 	TD_CHECK_EQ(rc, 0);
 	TD_CHECK_EQ(out.version, TD_FORMAT_VERSION);
+	TD_CHECK_EQ(out.version, 3);
 	TD_CHECK_EQ(out.area, TD_AREA_VDI);
 	TD_CHECK_EQ(out.record_size, TD_VDI_RECORD_SIZE);
 	TD_CHECK_EQ(out.record_count, 7);
 	TD_CHECK_EQ(out.case_crc, 0xCAFEBABEuL);
 	TD_CHECK(strcmp(out.build_id, "19f7") == 0);
+	TD_CHECK_EQ(out.ptr_width, 4);
+	TD_CHECK_EQ(out.word_order, TD_WORD_ORDER_MSW_FIRST);
 
 	/* rejections */
 	{
@@ -116,8 +143,29 @@ static void test_header(void)
 		TD_CHECK_EQ(td_header_parse(bad, sizeof bad, &out), TD_ERR_VERSION);
 
 		memcpy(bad, hdr, sizeof bad);
+		bad[TD_HDR_OFF_VERSION + 1] = 4;   /* a format nobody wrote yet */
+		TD_CHECK_EQ(td_header_parse(bad, sizeof bad, &out), TD_ERR_VERSION);
+
+		memcpy(bad, hdr, sizeof bad);
 		bad[TD_HDR_OFF_RESERVED + 5] = 1;
 		TD_CHECK_EQ(td_header_parse(bad, sizeof bad, &out), TD_ERR_RESERVED);
+
+		/* a pointer is four or eight bytes wide; anything else, and a
+		 * zero in particular, is a header that does not say */
+		memcpy(bad, hdr, sizeof bad);
+		bad[TD_HDR_OFF_PTRWIDTH + 1] = 0;
+		TD_CHECK_EQ(td_header_parse(bad, sizeof bad, &out), TD_ERR_PTRINFO);
+		bad[TD_HDR_OFF_PTRWIDTH + 1] = 6;
+		TD_CHECK_EQ(td_header_parse(bad, sizeof bad, &out), TD_ERR_PTRINFO);
+		bad[TD_HDR_OFF_PTRWIDTH]     = 1;
+		bad[TD_HDR_OFF_PTRWIDTH + 1] = 4;
+		TD_CHECK_EQ(td_header_parse(bad, sizeof bad, &out), TD_ERR_PTRINFO);
+
+		memcpy(bad, hdr, sizeof bad);
+		bad[TD_HDR_OFF_WORDORDER + 1] = 0;
+		TD_CHECK_EQ(td_header_parse(bad, sizeof bad, &out), TD_ERR_PTRINFO);
+		bad[TD_HDR_OFF_WORDORDER + 1] = 3;
+		TD_CHECK_EQ(td_header_parse(bad, sizeof bad, &out), TD_ERR_PTRINFO);
 
 		memcpy(bad, hdr, sizeof bad);
 		bad[TD_HDR_OFF_AREA + 1] = 9;
@@ -139,6 +187,236 @@ static void test_header(void)
 	TD_CHECK_EQ(td_area_record_size(TD_AREA_RASTER), TD_RAST_RECORD_SIZE);
 	TD_CHECK_EQ(td_area_record_size(0), 0);
 	TD_CHECK_EQ(td_area_record_size(7), 0);
+}
+
+/*
+ * A format 2 header stays readable.  Written out byte for byte -- the header
+ * of tosdump/reference/EMUTOS-1a7484ab-AES.BIN as it was recorded -- so the
+ * test cannot agree with a writer that no longer produces format 2.
+ */
+static void test_header_v2(void)
+{
+	static const uint8_t v2[TD_HEADER_SIZE] = {
+		'T', 'D', 'M', 'P', 0x00, 0x02, 0x00, 0x05,
+		0x00, 0x78, 0x00, 0x5F, 'b', '5', '9', 'e',
+		0x33, 0xC1, 0x3C, 0x8F, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0
+	};
+	uint8_t bad[TD_HEADER_SIZE];
+	struct td_header out;
+
+	printf("file header (format 2 stays readable)\n");
+
+	memset(&out, 0xFF, sizeof out);
+	TD_CHECK_EQ(td_header_parse(v2, sizeof v2, &out), 0);
+	TD_CHECK_EQ(out.version, 2);
+	TD_CHECK_EQ(out.area, TD_AREA_AES);
+	TD_CHECK_EQ(out.record_size, TD_AES_RECORD_SIZE);
+	TD_CHECK_EQ(out.record_count, 95);
+	TD_CHECK(strcmp(out.build_id, "b59e") == 0);
+	TD_CHECK_EQ(out.case_crc, 0x33C13C8FuL);
+	/* format 2 does not say: zero, never a guess */
+	TD_CHECK_EQ(out.ptr_width, 0);
+	TD_CHECK_EQ(out.word_order, TD_WORD_ORDER_UNKNOWN);
+	TD_CHECK_EQ(td_header_states_ptr(&out), 0);
+
+	/* in format 2 all twelve bytes from 20 on are reserved, so a v2
+	 * header that carries a pointer width is malformed, not a v3 */
+	memcpy(bad, v2, sizeof bad);
+	bad[TD_HDR_OFF_PTRWIDTH + 1] = 4;
+	TD_CHECK_EQ(td_header_parse(bad, sizeof bad, &out), TD_ERR_RESERVED);
+
+	/* the writer still produces format 2 when asked to (tests forge
+	 * one), and then writes no pointer information */
+	{
+		struct td_header h;
+		uint8_t hdr[TD_HEADER_SIZE];
+
+		memset(&h, 0, sizeof h);
+		h.version      = 2;
+		h.area         = TD_AREA_AES;
+		h.record_size  = TD_AES_RECORD_SIZE;
+		h.record_count = 95;
+		memcpy(h.build_id, "b59e", 4);
+		h.case_crc     = 0x33C13C8FuL;
+		h.ptr_width    = 8;
+		h.word_order   = TD_WORD_ORDER_LSW_FIRST;
+		memset(hdr, 0xFF, sizeof hdr);
+		td_header_write(hdr, &h);
+		TD_CHECK_MEM(hdr, v2, TD_HEADER_SIZE);
+	}
+
+	{
+		struct td_header h3;
+		memset(&h3, 0, sizeof h3);
+		h3.version    = 3;
+		h3.ptr_width  = 4;
+		h3.word_order = TD_WORD_ORDER_MSW_FIRST;
+		TD_CHECK_EQ(td_header_states_ptr(&h3), 1);
+	}
+}
+
+/*
+ * What the dumper puts into the header is measured on the machine that runs
+ * it, not configured: the pointer width is sizeof(void *) and the word order
+ * is where the high WORD of a LONG lands in memory.  Checked here against the
+ * compiler's own predefined byte order, an independent statement of the same
+ * fact.
+ */
+static void test_native_ptr_info(void)
+{
+	printf("native pointer width and word order\n");
+
+	TD_CHECK_EQ(td_native_ptr_width(), sizeof(void *));
+#if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && \
+    (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+	TD_CHECK_EQ(td_native_word_order(), TD_WORD_ORDER_LSW_FIRST);
+#elif defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && \
+    (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+	TD_CHECK_EQ(td_native_word_order(), TD_WORD_ORDER_MSW_FIRST);
+#else
+	TD_CHECK(!"host byte order unknown to the compiler");
+#endif
+}
+
+/* Lay `n` WORDs into a record at a field's offset, big-endian as the record
+ * format stores every WORD. */
+static void put_words(uint8_t *rec, const struct td_field *f, uint16_t at,
+                      const uint16_t *w, int n)
+{
+	int i;
+	for (i = 0; i < n; i++)
+		td_store_be16(rec + f->off + (at + i) * 2, w[i]);
+}
+
+static struct td_header hdr_of(uint16_t version, uint16_t ptr_width,
+                               uint16_t word_order)
+{
+	struct td_header h;
+	memset(&h, 0, sizeof h);
+	h.version    = version;
+	h.ptr_width  = ptr_width;
+	h.word_order = word_order;
+	return h;
+}
+
+/*
+ * The address field class: cells, their value, and the relational property
+ * every cell must hold -- a TOS address is a signed 32-bit LONG, so one at or
+ * above 0x80000000 reads as an error code (TASK/MEM11.md).
+ */
+static void test_addr_cells(void)
+{
+	const struct td_field *ap3 = &td_aes_fields[3];      /* global[11..12] */
+	const struct td_field *mfdb = &td_raster_fields[2];  /* contrl[7..14]  */
+	struct td_header m68k = hdr_of(3, 4, TD_WORD_ORDER_MSW_FIRST);
+	struct td_header a64  = hdr_of(3, 8, TD_WORD_ORDER_LSW_FIRST);
+	struct td_header v2   = hdr_of(2, 0, TD_WORD_ORDER_UNKNOWN);
+	uint8_t arec[TD_AES_RECORD_SIZE];
+	uint8_t rrec[TD_RAST_RECORD_SIZE];
+
+	printf("address field class: cells and the < 0x80000000 property\n");
+
+	TD_CHECK_EQ(TD_ADDR_LIMIT, 0x80000000uL);
+	TD_CHECK(td_addr_ok(0));
+	TD_CHECK(td_addr_ok(0x7FFFFFFFuL));
+	TD_CHECK(!td_addr_ok(0x80000000uL));
+	TD_CHECK(!td_addr_ok(0xDEADDEADuL));
+	TD_CHECK(!td_addr_ok((uint64_t)1 << 32));
+
+	/* ap_3resv: a LONG by the AESGLOBAL layout, one cell of two WORDs on
+	 * every target -- also on AArch64, where NewTOS writes four bytes */
+	TD_CHECK(strcmp(ap3->name, "global") == 0 && ap3->first == 11);
+	TD_CHECK_EQ(ap3->addr_cell, TD_ADDR_CELL_LONG);
+	TD_CHECK_EQ(td_addr_cell_count(ap3, &m68k), 1);
+	TD_CHECK_EQ(td_addr_cell_words(ap3, &m68k), 2);
+	TD_CHECK_EQ(td_addr_cell_count(ap3, &a64), 1);
+	TD_CHECK_EQ(td_addr_cell_words(ap3, &a64), 2);
+	/* format 2: not checkable, no cell is read */
+	TD_CHECK_EQ(td_addr_cell_count(ap3, &v2), 0);
+
+	memset(arec, 0, sizeof arec);
+	{
+		/* most significant WORD first (m68k): EmuTOS' &D as recorded
+		 * in tosdump/reference/EMUTOS-1a7484ab-AES.BIN */
+		static const uint16_t emutos[2] = { 0x0000, 0xBD60 };
+		static const uint16_t max_m[2]  = { 0x7FFF, 0xFFFF };
+		static const uint16_t lim_m[2]  = { 0x8000, 0x0000 };
+		/* least significant WORD first (AArch64): NewTOS' truncated
+		 * pointer as recorded in tosdump/reference/NEWTOS-AES.BIN */
+		static const uint16_t newtos[2] = { 0x80B0, 0x0011 };
+		static const uint16_t max_l[2]  = { 0xFFFF, 0x7FFF };
+		static const uint16_t lim_l[2]  = { 0x0000, 0x8000 };
+
+		put_words(arec, ap3, 0, emutos, 2);
+		TD_CHECK_EQ(td_addr_cell_value(arec, ap3, &m68k, 0), 0x0000BD60uL);
+		TD_CHECK(td_addr_ok(td_addr_cell_value(arec, ap3, &m68k, 0)));
+		put_words(arec, ap3, 0, max_m, 2);
+		TD_CHECK_EQ(td_addr_cell_value(arec, ap3, &m68k, 0), 0x7FFFFFFFuL);
+		TD_CHECK(td_addr_ok(td_addr_cell_value(arec, ap3, &m68k, 0)));
+		put_words(arec, ap3, 0, lim_m, 2);
+		TD_CHECK_EQ(td_addr_cell_value(arec, ap3, &m68k, 0), 0x80000000uL);
+		TD_CHECK(!td_addr_ok(td_addr_cell_value(arec, ap3, &m68k, 0)));
+
+		put_words(arec, ap3, 0, newtos, 2);
+		TD_CHECK_EQ(td_addr_cell_value(arec, ap3, &a64, 0), 0x001180B0uL);
+		TD_CHECK(td_addr_ok(td_addr_cell_value(arec, ap3, &a64, 0)));
+		put_words(arec, ap3, 0, max_l, 2);
+		TD_CHECK_EQ(td_addr_cell_value(arec, ap3, &a64, 0), 0x7FFFFFFFuL);
+		TD_CHECK(td_addr_ok(td_addr_cell_value(arec, ap3, &a64, 0)));
+		put_words(arec, ap3, 0, lim_l, 2);
+		TD_CHECK_EQ(td_addr_cell_value(arec, ap3, &a64, 0), 0x80000000uL);
+		TD_CHECK(!td_addr_ok(td_addr_cell_value(arec, ap3, &a64, 0)));
+	}
+
+	/* the MFDB pointer slots: two cells of the TARGET's pointer width,
+	 * packed from contrl[7] as gemlib packs them (gem_vdiP.h:177,204);
+	 * the field is sized for the widest pointer, eight bytes */
+	TD_CHECK_EQ(mfdb->addr_cell, TD_ADDR_CELL_PTR);
+	TD_CHECK_EQ(mfdb->count, 2 * TD_ADDR_PTR_WORDS_MAX);
+	TD_CHECK_EQ(td_addr_cell_count(mfdb, &m68k), 2);
+	TD_CHECK_EQ(td_addr_cell_words(mfdb, &m68k), 2);
+	TD_CHECK_EQ(td_addr_cell_count(mfdb, &a64), 2);
+	TD_CHECK_EQ(td_addr_cell_words(mfdb, &a64), 4);
+	TD_CHECK_EQ(td_addr_cell_count(mfdb, &v2), 0);
+	TD_CHECK_EQ(td_addr_cell_count(&td_raster_fields[4], &a64), 2);
+
+	memset(rrec, 0, sizeof rrec);
+	{
+		/* m68k: contrl[7..8] and [9..10]; [11..14] keep the poison and
+		 * are no cell at this width (EMUTOS-1a7484ab-RASTER.BIN) */
+		static const uint16_t m[8] = { 0x0103, 0x6690, 0x0103, 0x667C,
+		                               0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD };
+		/* AArch64: contrl[7..10] and [11..14] (NEWTOS-RASTER.BIN), the
+		 * second one moved above 4 GiB */
+		static const uint16_t a[8] = { 0xA6B0, 0x0006, 0x0000, 0x0000,
+		                               0x0000, 0x0000, 0x0001, 0x0000 };
+		static const uint16_t a_max[4] = { 0xFFFF, 0x7FFF, 0x0000, 0x0000 };
+		static const uint16_t a_lim[4] = { 0x0000, 0x8000, 0x0000, 0x0000 };
+
+		put_words(rrec, mfdb, 0, m, 8);
+		TD_CHECK_EQ(td_addr_cell_value(rrec, mfdb, &m68k, 0), 0x01036690uL);
+		TD_CHECK_EQ(td_addr_cell_value(rrec, mfdb, &m68k, 1), 0x0103667CuL);
+		TD_CHECK(td_addr_ok(td_addr_cell_value(rrec, mfdb, &m68k, 1)));
+
+		put_words(rrec, mfdb, 0, a, 8);
+		TD_CHECK_EQ(td_addr_cell_value(rrec, mfdb, &a64, 0), 0x0006A6B0uL);
+		TD_CHECK(td_addr_ok(td_addr_cell_value(rrec, mfdb, &a64, 0)));
+		TD_CHECK(td_addr_cell_value(rrec, mfdb, &a64, 1) ==
+		         ((uint64_t)1 << 32));
+		TD_CHECK(!td_addr_ok(td_addr_cell_value(rrec, mfdb, &a64, 1)));
+
+		put_words(rrec, mfdb, 0, a_max, 4);
+		TD_CHECK_EQ(td_addr_cell_value(rrec, mfdb, &a64, 0), 0x7FFFFFFFuL);
+		TD_CHECK(td_addr_ok(td_addr_cell_value(rrec, mfdb, &a64, 0)));
+		put_words(rrec, mfdb, 0, a_lim, 4);
+		TD_CHECK_EQ(td_addr_cell_value(rrec, mfdb, &a64, 0), 0x80000000uL);
+		TD_CHECK(!td_addr_ok(td_addr_cell_value(rrec, mfdb, &a64, 0)));
+	}
+
+	/* a value field has no address cell, whatever the header says */
+	TD_CHECK_EQ(td_addr_cell_count(&td_aes_fields[2], &m68k), 0);
+	TD_CHECK_EQ(td_addr_cell_count(&td_raster_fields[1], &a64), 0);
 }
 
 static void test_poison(void)
@@ -361,6 +639,7 @@ static void test_field_tables(void)
 	TD_CHECK(f && f[3].off == TD_AES_OFF_GLOBAL + 22);
 	TD_CHECK(f && f[3].count == 2 && f[3].first == 11);
 	TD_CHECK(f && f[3].compare == TD_FIELD_ADDRESS);
+	TD_CHECK(f && f[3].addr_cell == TD_ADDR_CELL_LONG);
 	TD_CHECK(f && strcmp(f[4].name, "global") == 0);
 	TD_CHECK(f && f[4].off == TD_AES_OFF_GLOBAL + 26);
 	TD_CHECK(f && f[4].count == 2 && f[4].first == 13);
@@ -388,6 +667,8 @@ static void test_field_tables(void)
 		             strncmp(f[n].name, "contrl", 6) == 0;
 		TD_CHECK_EQ(f[n].compare,
 		            is_ptr ? TD_FIELD_ADDRESS : TD_FIELD_VALUE);
+		TD_CHECK_EQ(f[n].addr_cell,
+		            is_ptr ? TD_ADDR_CELL_PTR : TD_ADDR_CELL_NONE);
 	}
 	TD_CHECK_EQ(n, 13);
 	TD_CHECK(f && strcmp(f[0].name, "d0") == 0);
@@ -397,13 +678,20 @@ static void test_field_tables(void)
 
 	/* every other field is compared by value; the AES has exactly one
 	 * address field (ap_3resv, above) */
-	for (n = 0; td_vdi_fields[n].name; n++)
+	for (n = 0; td_vdi_fields[n].name; n++) {
 		TD_CHECK_EQ(td_vdi_fields[n].compare, TD_FIELD_VALUE);
-	for (n = 0; td_aes_fields[n].name; n++)
+		TD_CHECK_EQ(td_vdi_fields[n].addr_cell, TD_ADDR_CELL_NONE);
+	}
+	for (n = 0; td_aes_fields[n].name; n++) {
 		TD_CHECK_EQ(td_aes_fields[n].compare,
 		            n == 3 ? TD_FIELD_ADDRESS : TD_FIELD_VALUE);
-	for (n = 0; td_call_fields[n].name; n++)
+		TD_CHECK_EQ(td_aes_fields[n].addr_cell,
+		            n == 3 ? TD_ADDR_CELL_LONG : TD_ADDR_CELL_NONE);
+	}
+	for (n = 0; td_call_fields[n].name; n++) {
 		TD_CHECK_EQ(td_call_fields[n].compare, TD_FIELD_VALUE);
+		TD_CHECK_EQ(td_call_fields[n].addr_cell, TD_ADDR_CELL_NONE);
+	}
 }
 
 /*
@@ -489,6 +777,8 @@ int main(void)
 {
 	test_store_load();
 	test_header();
+	test_header_v2();
+	test_native_ptr_info();
 	test_poison();
 	test_vdi_record();
 	test_aes_record();
@@ -496,5 +786,6 @@ int main(void)
 	test_crc32();
 	test_raster_record();
 	test_field_tables();
+	test_addr_cells();
 	return TD_TEST_RESULT();
 }
