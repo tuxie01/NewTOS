@@ -165,11 +165,12 @@ Commands:
                                    (programs/build.sh), built with the
                                    board feature, into
                                    target/programs/<board>/ (DESK43 U6b)
-  doc-check [<file>...]          — every path and file:line cite in the
-                                   living docs (default CLAUDE.md,
-                                   docs/STATUS.md, docs/MEMORY.md) must
-                                   resolve; exit 1 lists the ones that
-                                   do not
+  doc-check [<file>...]          — every path and file:line cite and every
+                                   ADR-NNN id (a docs/MEMORY.md heading)
+                                   in the living docs (default CLAUDE.md
+                                   and docs/**/*.md without docs/archive/)
+                                   must resolve; exit 1 lists the ones
+                                   that do not
   emutos-consts [--update] [-v]  — compare the desktop's integer constants
                                    with EmuTOS' #defines of the same name
                                    (snapshot tools/xtask/emutos-defines.snapshot;

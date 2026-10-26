@@ -1,5 +1,6 @@
-//! `xtask doc-check` — every path and `file:line` cite in the living docs
-//! (`CLAUDE.md`, `docs/STATUS.md`, `docs/MEMORY.md`) must resolve.
+//! `xtask doc-check` — every path and `file:line` cite and every ADR id in
+//! the living docs (`CLAUDE.md` and every Markdown file under `docs/` except
+//! `docs/archive/`) must resolve.
 //!
 //! # Why
 //!
@@ -41,14 +42,34 @@
 //! as skipped, not failed: a cite under `references/emutos/…` itself, or a
 //! path whose first component is no top-level entry of the workspace
 //! (`aes/gemaplib.c`), or a bare name.
+//!
+//! # ADR ids
+//!
+//! Outside fenced code blocks (inline code included), `ADR-` followed by
+//! exactly three digits (`ADR-028`, `ADR-022s`, `ADR-023-Amendment`) cites
+//! ADR 028, 022, 023. Placeholders (`ADR-NNN`, `ADR-0xx`) and named ADRs
+//! (`ADR-Supexec`, `ADR-Line-A-01`) are no cites. A cite resolves if
+//! [`MEMORY_FILE`] has a heading `## ADR-028:` outside a fenced block.
+//!
+//! # Default set
+//!
+//! `CLAUDE.md` plus every `*.md` under `docs/`, recursively, except
+//! [`ARCHIVE_DIR`]: the archive is history, never evidence.
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fs;
 use std::path::{Component, Path, PathBuf};
 use std::process::Command;
 
-/// The files checked when none are given, relative to the workspace root.
-pub const DEFAULT_FILES: &[&str] = &["CLAUDE.md", "docs/STATUS.md", "docs/MEMORY.md"];
+/// Single files checked when none are given, besides the Markdown files
+/// under [`DOCS_DIR`]; relative to the workspace root.
+pub const DEFAULT_FILES: &[&str] = &["CLAUDE.md"];
+/// Walked recursively for `*.md` when no files are given.
+pub const DOCS_DIR: &str = "docs";
+/// Excluded from the walk: history, never evidence.
+pub const ARCHIVE_DIR: &str = "docs/archive";
+/// The file whose `## ADR-NNN:` headings define which ADRs exist.
+pub const MEMORY_FILE: &str = "docs/MEMORY.md";
 /// The gitignored reference trees, relative to the workspace root.
 pub const REFERENCE_ROOTS: &[&str] = &["references/emutos", "references/freemint"];
 /// Where a backtick span is looked up after the citing file's directory and
@@ -285,6 +306,87 @@ pub fn scan(text: &str) -> Vec<Cite> {
     out
 }
 
+/// `ADR-` followed by exactly three digits at byte `i` of `b`, preceded by no
+/// ASCII alphanumeric: the number, else `None`.
+fn adr_id_at(b: &[u8], i: usize) -> Option<u16> {
+    if !b[i..].starts_with(b"ADR-") || (i > 0 && b[i - 1].is_ascii_alphanumeric()) {
+        return None;
+    }
+    let d = &b[i + 4..];
+    if d.len() < 3 || !d[..3].iter().all(u8::is_ascii_digit) || d.get(3).is_some_and(u8::is_ascii_digit) {
+        return None;
+    }
+    Some(d[..3].iter().fold(0u16, |n, &c| n * 10 + u16::from(c - b'0')))
+}
+
+/// Every ADR id cited outside fenced code blocks: (1-based line, number).
+pub fn scan_adr_ids(text: &str) -> Vec<(usize, u16)> {
+    let mut out = Vec::new();
+    let mut in_fence = false;
+    for (idx, line) in text.lines().enumerate() {
+        if line.trim_start().starts_with("```") {
+            in_fence = !in_fence;
+            continue;
+        }
+        if in_fence {
+            continue;
+        }
+        let b = line.as_bytes();
+        let mut from = 0;
+        while let Some(off) = line[from..].find("ADR-") {
+            let i = from + off;
+            if let Some(n) = adr_id_at(b, i) {
+                out.push((idx + 1, n));
+            }
+            from = i + 4;
+        }
+    }
+    out
+}
+
+/// The ADRs a memory file defines: its `## ADR-NNN:` headings outside fenced
+/// code blocks.
+pub fn adr_headings(text: &str) -> BTreeSet<u16> {
+    let mut out = BTreeSet::new();
+    let mut in_fence = false;
+    for line in text.lines() {
+        if line.trim_start().starts_with("```") {
+            in_fence = !in_fence;
+            continue;
+        }
+        if in_fence {
+            continue;
+        }
+        if let Some(rest) = line.strip_prefix("## ") {
+            let b = rest.as_bytes();
+            if let Some(n) = adr_id_at(b, 0) {
+                if b.get(7) == Some(&b':') {
+                    out.insert(n);
+                }
+            }
+        }
+    }
+    out
+}
+
+/// A workspace-relative path belongs to the default set's docs walk: a `.md`
+/// file under [`DOCS_DIR`], not under [`ARCHIVE_DIR`].
+pub fn is_default_doc(rel: &Path) -> bool {
+    rel.starts_with(DOCS_DIR)
+        && !rel.starts_with(ARCHIVE_DIR)
+        && rel.extension().is_some_and(|e| e == "md")
+}
+
+/// The files checked when none are given: [`DEFAULT_FILES`], then the
+/// Markdown files under [`DOCS_DIR`] (sorted), archive excluded.
+pub fn default_files(root: &Path) -> Vec<PathBuf> {
+    let mut docs = Vec::new();
+    walk(root, Path::new(DOCS_DIR), &mut docs);
+    docs.retain(|p| is_default_doc(p));
+    docs.sort();
+    DEFAULT_FILES.iter().map(PathBuf::from).chain(docs).collect()
+}
+
 /// Outcome of resolving one cite.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Outcome {
@@ -492,7 +594,7 @@ fn line_count(p: &Path) -> std::io::Result<usize> {
 pub fn cmd(root: &Path, args: &[String]) -> Result<(), String> {
     let cwd = std::env::current_dir().map_err(|e| format!("doc-check: {e}"))?;
     let files: Vec<PathBuf> = if args.is_empty() {
-        DEFAULT_FILES.iter().map(PathBuf::from).collect()
+        default_files(root)
     } else {
         let mut v = Vec::new();
         for a in args {
@@ -511,10 +613,19 @@ pub fn cmd(root: &Path, args: &[String]) -> Result<(), String> {
         v
     };
 
+    let memory = fs::read_to_string(root.join(MEMORY_FILE)).map_err(|e| format!("doc-check: {MEMORY_FILE}: {e}"))?;
+    let adrs = adr_headings(&memory);
     let mut resolver = Resolver::new(root);
-    let (mut checked, mut failed, mut skipped) = (0usize, 0usize, 0usize);
+    let (mut checked, mut failed, mut skipped, mut adr_checked) = (0usize, 0usize, 0usize, 0usize);
     for f in &files {
         let text = fs::read_to_string(root.join(f)).map_err(|e| format!("doc-check: {}: {e}", f.display()))?;
+        for (line, n) in scan_adr_ids(&text) {
+            adr_checked += 1;
+            if !adrs.contains(&n) {
+                failed += 1;
+                println!("{}:{line}: ADR-{n:03}: no such ADR in {MEMORY_FILE}", f.display());
+            }
+        }
         for cite in scan(&text) {
             checked += 1;
             match resolver.resolve(f, &cite)? {
@@ -527,7 +638,11 @@ pub fn cmd(root: &Path, args: &[String]) -> Result<(), String> {
             }
         }
     }
-    println!("doc-check: {checked} cites checked, {failed} failures, {skipped} skipped (reference tree missing)");
+    println!(
+        "doc-check: {} files, {checked} path cites and {adr_checked} ADR cites checked, {failed} failures, \
+         {skipped} skipped (reference tree missing)",
+        files.len()
+    );
     if failed == 0 {
         Ok(())
     } else {
@@ -662,5 +777,61 @@ x `a/b.rs:3` y ``c/d.rs`` z `unclosed/e.rs
         // Bare name: unique and ambiguous (over the tracked files).
         assert_eq!(r.resolve(doc, &one("`emutos_consts.rs:1`")).unwrap(), Outcome::Ok);
         assert!(matches!(r.resolve(doc, &one("`Cargo.toml:1`")).unwrap(), Outcome::Fail(m) if m.starts_with("ambiguous")));
+    }
+
+    #[test]
+    fn adr_id_scanner() {
+        let ids = |t: &str| scan_adr_ids(t).into_iter().map(|(_, n)| n).collect::<Vec<_>>();
+        // Digits, also inside inline code and with a suffix that is no digit.
+        assert_eq!(ids("ADR-028, `ADR-010` (ADR-022s; ADR-023-Amendment)."), vec![28, 10, 22, 23]);
+        // Placeholders and named ADRs are no cites.
+        for t in ["ADR-NNN", "ADR-MMM", "ADR-xxx", "ADR-0xx", "ADR-Supexec", "ADR-Line-A-01", "ADR-21s"] {
+            assert!(ids(t).is_empty(), "{t:?}");
+        }
+        // Exactly three digits; `ADR-` must start a word.
+        assert!(ids("ADR-0280 XADR-010 ADR-01").is_empty());
+        assert_eq!(ids("ADR-001…ADR-009"), vec![1, 9]);
+        // Fenced blocks are skipped; line numbers are 1-based.
+        let t = "a ADR-010\n```\nADR-011\n```\nb ADR-012\n";
+        assert_eq!(scan_adr_ids(t), vec![(1, 10), (5, 12)]);
+    }
+
+    #[test]
+    fn adr_heading_detection() {
+        let t = "\
+## ADR-010: One
+### ADR-011: level three
+## ADR-012 no colon
+ ## ADR-013: indented
+## ADR-NNN: Title
+## ADR-0140: four digits
+## ADR-015:
+```markdown
+## ADR-016: in a fence
+```
+";
+        assert_eq!(adr_headings(t), BTreeSet::from([10, 15]));
+        // The real file defines ADR-010 and has no ADR-001 heading.
+        let real = adr_headings(&fs::read_to_string(root().join(MEMORY_FILE)).unwrap());
+        assert!(real.contains(&10) && !real.contains(&1));
+    }
+
+    #[test]
+    fn docs_walk_excludes_the_archive() {
+        assert!(is_default_doc(Path::new("docs/STATUS.md")));
+        assert!(is_default_doc(Path::new("docs/api/bios/_cookie-jar.md")));
+        assert!(!is_default_doc(Path::new("docs/archive/memory-2026-10-26.md")));
+        assert!(!is_default_doc(Path::new("docs/archive/sub/x.md")));
+        assert!(!is_default_doc(Path::new("docs/commit-map.txt")));
+        assert!(!is_default_doc(Path::new("docs-old/x.md")));
+        assert!(!is_default_doc(Path::new("TASK/A1.md")));
+        assert!(is_default_doc(Path::new("docs/archived.md")));
+        let files = default_files(&root());
+        assert_eq!(files[0], PathBuf::from("CLAUDE.md"));
+        for want in ["docs/STATUS.md", "docs/MEMORY.md", "docs/api/bios/_cookie-jar.md"] {
+            assert!(files.contains(&PathBuf::from(want)), "{want}");
+        }
+        assert!(files.iter().all(|f| !f.starts_with(ARCHIVE_DIR)));
+        assert!(files[1..].iter().all(|f| is_default_doc(f)));
     }
 }
