@@ -1,0 +1,14 @@
+EMUTOS14-AES-m05 vs-release BIN-DIFF
+EMUTOS14-AES-m06 vs-release BIN-DIFF
+EMUTOS14-AES-m07 vs-release BIN-DIFF
+EMUTOS14-AES-r2brlist vs-release BIN-DIFF
+EMUTOS14-AES-r2wind vs-release BIN-DIFF
+EMUTOS14-AES-r3 vs-release BIN-DIFF
+EMUTOS14-AES vs-release BIN-DIFF
+EMUTOS14-RASTER-screen-falcontc vs-release BIN-same
+EMUTOS14-RASTER vs-release BIN-same
+EMUTOS14-VDI-all-falcontc vs-release BIN-same
+EMUTOS14-VDI-all vs-release BIN-same
+EMUTOS14-VDI-r2 vs-release BIN-same
+EMUTOS14-VDI-r3 vs-release BIN-same
+EMUTOS14-VDI vs-release BIN-same

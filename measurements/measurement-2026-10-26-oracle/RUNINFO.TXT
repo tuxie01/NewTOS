@@ -1,0 +1,178 @@
+NewTOS -- Phase 0 oracle base: pin, calibration, canary -- 2026-10-26
+=====================================================================
+MEASUREMENT ONLY. Interpretation and the resulting rules:
+docs/analysis/ORACLE.md.
+
+WHAT / WHY
+  The EMUTOS14-* references in tosdump/reference/ were measured with the
+  EmuTOS 1.4 RELEASE ROM; the spec source is references/emutos @ 1a7484ab,
+  71 commits later. User decision (2026-10-26): pin the oracle on 1a7484ab,
+  calibrate first, one variable at a time:
+    1  own build of tag VERSION_1_4  vs references   = toolchain effect
+    2  own build of 1a7484ab         vs own 1.4 build = EmuTOS source effect
+  plus a control run of the release ROM itself (dumper/Hatari/config effect).
+
+Git HEAD at start : f2fae9f089e1e993dfc1869fa298c47d68c876e3 (main)
+EmuTOS checkout   : references/emutos @ 1a7484aba1bfba23e2c0899e243b6d8177fe41df
+                    (read only; builds happen in clones, references/emutos-oracle/)
+Toolchain         : /opt/cross-mint/bin/m68k-atari-mint-gcc
+                    "m68k-atari-mint-gcc (MiNT 20230908) 7.5.0"; not on PATH
+Hatari            : /Volumes/Daten/hatari-2.6.1_macos/Hatari.app/Contents/MacOS/Hatari
+                    v2.6.1, compiled Aug 15 2025; binary sha256
+                    953f4e78eea55a8ca12ed6c83de1f045545b8da42a49e00112eaa235dffcd6f6
+Hatari config     : runs/release-1.4, own-1.4, pin-1a7484ab, canary/:
+                      verbatim copy of ~/Library/Application Support/Hatari/hatari.cfg,
+                      sha256 dfc52b8d00f833854203077fe6f5f6195332baa94387e2c14ce6915451cd0ead
+                      (mtime 2026-07-21, the config every earlier Hatari reference ran with)
+                    runs/release-1.4-cleancfg, canary-cleancfg/:
+                      tools/oracle/hatari.cfg as committed -- only result-relevant
+                      settings, no paths; sha256
+                      c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46
+NVRAM             : none -- runs use an empty HOME, Hatari starts with a fresh NVRAM.
+                    The user's (mutable) NVRAM at this date is kept for the record:
+                    method/user-hatari.nvram-2026-10-26 (sha256 ea23b6e3...b3)
+
+------------------------------------------------------------------------------
+ROMS
+------------------------------------------------------------------------------
+  release  EmuTOS 1.4 release etos512de.img (references/emutos-oracle/release-1.4/,
+           copied from the release package; OS header date 2025-06-07)
+           sha256 5805c0a4834f8935c427454785d32c59e796b11ad6802101052b84fb1eb7a745
+  own-1.4  tools/oracle/build-emutos.sh 978e37569bff95841e42675d11fcc6799aad8483 2025-06-07 references/emutos-oracle/v1.4
+           sha256 67bc59a6e182e3399eaff479184d17017e34789cda4c814e08530874dbec34cf
+           log build-logs/v1.4-make-512-de.log
+  pin      tools/oracle/build-emutos.sh 1a7484aba1bfba23e2c0899e243b6d8177fe41df 2026-04-14 references/emutos-oracle/1a7484ab
+           sha256 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+           log build-logs/1a7484ab-make-512-de.log (last rebuild: "matches
+           ORACLE_ROM_SHA256" against the committed tools/oracle/etos512de-1a7484ab.img)
+  Both builds: make 512 COUNTRY=de, TOOLCHAIN_PREFIX absolute, host tools
+  -arch x86_64, `date +FORMAT` pinned to the given day. Each rebuilt a second
+  time in a different directory (scratchpad): same sha256.
+
+  Build problems met and how they were resolved (both are in build-emutos.sh):
+  * tools/bug.c `translate` allocates len+3 for "<name>.tr.c", needs len+4
+    (bug.c:2538-2540 @ VERSION_1_4; unchanged @ 1a7484ab). arm64 macOS aborts
+    (rc 134) on bios/kprint.c. Tried: -D_FORTIFY_SOURCE=0 (still aborts),
+    MallocNanoZone=0 (still aborts). ASan (arm64, recover) names the one
+    overflow. x86_64 host build: no abort; its bios/kprint.tr.c == the ASan
+    build's (sha256 3bffd867cf760ea32bca88c4f8a61a598e7a8bbf2f4a3a252a5da89947995630).
+  * Build date: mkheader.awk (OS header) and, in the snapshot tree only,
+    version.mk:40 `VERSION = $(shell date +%Y%m%d)`. The first pin build
+    (sha256 7fce7ac6...3106) still carried "20261026" as its version string
+    -- found by the canary's boot banner; shim widened to every `date +FMT`,
+    both ROMs rebuilt (own-1.4 sha256 unchanged, pin -> 323c87bb...), all
+    pin runs below are from 323c87bb. No __DATE__/__TIME__ in the tree.
+
+------------------------------------------------------------------------------
+DUMPERS
+------------------------------------------------------------------------------
+  HEAD source (f2fae9f0) built per reference with that reference's own build
+  id, so the dump header matches and a BIN can be compared byte for byte:
+    make -C tosdump BUILD=<dir>/dumpers/<id> BUILD_ID=<id> dump{vdi,aes,rast}-m68k
+  Used binaries (sha256):
+    1cd6/DUMPVDI.PRG  216da20b05c1c7fe88654cbcbaa750de42c46645b23f38fe8d22b54848c8288b
+    8be9/DUMPVDI.PRG  b208887ab4763a7451f8e55ba417757f6dde987fd2685d95ceaa98dead74d7f3
+    19b7/DUMPVDI.PRG  9362659f94c4944df1fa644c82e4d39d60cdb219172ee4e0c995d66abd0596d3
+    b59e/DUMPAES.PRG  7dfe3efbffbc46e0063210748fc0209a3e2ddade3274b9681eb43ca4aba0aeda
+    c911/DUMPAES.PRG  782f1778af2d6c7bf228b2956e30bcca1381bd191dc1e5bf8812cdb36ffb698e
+    70ca/DUMPAES.PRG  8ac4788ce4cf4c4d9cdbee15da0de60406d7757c576b3cfedd67efb23d09c0bc
+    fdf8/DUMPRAST.PRG 699bca0002ffa14f38fd056a36573d99c27ff8797d6ddf0d553ba4bdde6d3da8
+    c1f4/DUMPRAST.PRG 689dbaaf25e581ff5408d4c9dd35aedf4f465e42c73b6e31b6767221be30cac6
+  The same eight binaries for all three ROMs.
+
+------------------------------------------------------------------------------
+METHOD
+------------------------------------------------------------------------------
+  method/run-set.sh <rom> <tag>   14 Hatari sessions, one per EMUTOS14-* table,
+                                  via tools/hatari-oracle.sh (profile, table and
+                                  build id per reference are listed in the script)
+  method/compare-set.sh <tag> <against>
+                                  cmp BIN, cmp LOG, tosdiff per reference;
+                                  writes runs/<tag>/COMPARE-vs-<against>.txt
+  The sessions run one after another. Each ends when the dumper's final LOG is
+  on the drive (Hatari SIGKILLed). runs/*/<ref>/hd/ (dumper + table copies) was
+  deleted after the runs; tables are tosdump/cases/*.tsv at f2fae9f0.
+
+  Comparisons use tosdiff with field class "address" for ap_3resv
+  (global[11..12]) -- introduced in this work unit after step 1, approved by
+  the user 2026-10-26; it changes the comparator only, not a recorded byte.
+
+------------------------------------------------------------------------------
+RESULTS
+------------------------------------------------------------------------------
+  runs/release-1.4/COMPARE-vs-reference.txt    (control)
+    13/14 BIN+LOG identical. EMUTOS14-RASTER: 0 of 59 cases, bytes differ in
+    contrl_mfdb/contrl_before_mfdb only (dumper buffer addresses; HEAD dumper
+    vs. original fdf8 binary).
+
+  runs/own-1.4/COMPARE-vs-release-1.4.txt      (step 1: toolchain)
+  runs/own-1.4/COMPARE-vs-reference.txt
+    0 cases differ in all 14 tables (938 cases).
+    Bytes: AES -- record offset 38-39 (global[12], low word of ap_3resv)
+    in every case of all 7 AES tables, 0xBE04 -> 0xBD5C; LOG line
+    "global after appl_init" accordingly. VDI/raster: identical to release.
+    Before the address class: 271/271 AES cases differed, all on global[12]
+    only -- the result that was reported and led to the decision
+    (runs-own-1.4.out, the run's own summary with the old comparator;
+    runs-release.out / runs-pin.out likewise, already with the new one).
+
+  runs/pin-1a7484ab/COMPARE-vs-own-1.4.txt     (step 2: source)
+  runs/pin-1a7484ab/COMPARE-vs-reference.txt
+    EMUTOS14-AES        1/95  case 167 wind_get 0 WF_OWNER: int_out[0] 0 -> 1
+    EMUTOS14-AES-r2wind 2/78  case 244, 247 WF_OWNER: int_out[0..4]
+    all other tables    0
+    Bytes besides those: ap_3resv 0xBD5C -> 0xBD60 (address class).
+    Mapping: all three cases -> EmuTOS acb7f3b4 "Add partial implementation
+    of WF_OWNER to wind_get" (aes/gemwmlib.c wm_get: poutwds[0..3] = p_pid,
+    VF_ISOPEN, gl_wtop, W_TREE[ROOT].ob_head; wind_get returns TRUE).
+    Unmappable differences: none.
+    emutos-commits-1.4..1a7484ab.txt lists all 71 commits.
+
+  canary/RESULT.txt                            (Phase 0 step 5)
+    tools/hatari-oracle.sh with its default ROM (pin, sha256 checked):
+    vdi-all.tsv tt       vs EMUTOS14-VDI-all           BIN+LOG BIT-IDENTICAL
+    vdi-all.tsv falcontc vs EMUTOS14-VDI-all-falcontc  BIN+LOG BIT-IDENTICAL
+    Boot banner "EmuTOS Version: 20260414".
+
+  runs/release-1.4-cleancfg/COMPARE-vs-release-1.4.txt   (cleaned hatari.cfg)
+  runs/release-1.4-cleancfg/COMPARE-vs-reference.txt
+    14/14 BIN+LOG byte-identical to the control run with the verbatim
+    config (so also 13/14 identical to the references, RASTER as above).
+    Effective configuration (Hatari --saveconfig on scratch copies of both
+    files, empty HOME): differs only in paths -- all replaced on the command
+    line or unused -- and Joystick2.kButtonStar.
+  canary-cleancfg/RESULT.txt
+    both canaries BIN+LOG BIT-IDENTICAL again.
+
+  Translations (x86_64 host `bug`):
+    python3 -I method/check-translations.py references/emutos-oracle/v1.4 \
+        references/emutos-oracle/v1.4/etos512de.img references/emutos-oracle/release-1.4/etos512de.img
+    "11 files, 604 distinct literals (len >= 2): 502 in both, 0 only in A,
+    0 only in B, 102 in neither" -- the 102 are KDEBUG output compiled out
+    and fragments of joined literals; every translated string the release
+    carries, the own build carries, and vice versa. (A raw `strings` diff is
+    useless here: code bytes glue onto strings, e.g. 0x4E75 "Nu" = rts.)
+
+  New reference files: tosdump/reference/EMUTOS-1a7484ab-<suffix>.{BIN,LOG}
+  = copies of runs/pin-1a7484ab/EMUTOS14-<suffix>/*.{BIN,LOG}.
+
+------------------------------------------------------------------------------
+NOTES
+------------------------------------------------------------------------------
+  * *.BIN here is ignored by the root .gitignore (core.ignorecase); the pin
+    set and the canary dumps are committed with `git add -f`, the release
+    and own-1.4 dumps are not (sha256 in manifest.sha256 covers all).
+  * The first control run was killed and redone: hatari-oracle.sh then
+    stopped Hatari with SIGTERM (quit dialog on the user's screen) and took a
+    LOG ending in "running N cases" (written before the first case) as done
+    (EMUTOS14-AES-r3 had no dump). Both fixed before the runs listed above.
+  * No Hatari process left behind (pgrep after each set: empty).
+  * Hatari --saveconfig writes into the --configfile path: it overwrote
+    tools/oracle/hatari.cfg once during the config comparison; the file was
+    rewritten and all comparisons were then made on scratch copies.
+  * tools/emutos-config.sh (separate commit): CONF table byte-identical
+    before/after switching it to oracle.env. Found on the way, not fixed:
+    its row order depends on the locale (env -i / C locale moves
+    CONF_WITH_TTRAM and CONF_WITH_ST_MMU); the committed table was made
+    under de_DE.UTF-8.
+  * Nothing flashed, no card touched.

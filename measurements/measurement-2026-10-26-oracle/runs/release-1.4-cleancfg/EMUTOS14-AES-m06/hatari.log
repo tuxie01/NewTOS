@@ -1,0 +1,60 @@
+INFO : Hatari v2.6.1, compiled on:  Aug 15 2025, 14:15:19
+INFO : IPF : capsimage library version release=5 revision=1
+INFO : GEMDOS HDD emulation, C: <-> /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-26-oracle/runs/release-1.4-cleancfg/EMUTOS14-AES-m06/hd.
+INFO : NVRAM not found at '/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-26-oracle/runs/release-1.4-cleancfg/EMUTOS14-AES-m06/home/hatari.nvram'
+WARN : Bus Error writing at address $41fffe, PC=$e00232 addr_e3=e00232 op_e3=3305
+WARN : Bus Error writing at address $ffd000e0, PC=$e0025a addr_e3=e0025a op_e3=33fc
+WARN : Bus Error reading at address $20fffff, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fffffc21, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $ffffa200, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6c4710, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $5d1234, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6d3148, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fe9003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fedc03c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $febf03c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $d003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+INFO : OS clock ticks / second: 100
+
+
+
+
+
+                                                         
+                                                         
+                                                         
+                                                         
+                                                         
+                    ________________________________________
+
+                    EmuTOS Version:     1.4 
+                    CPU-Typ:            M68030 
+                    Rechner:            Atari TT 
+                    ST-RAM:             4 MB 
+                    Alt-RAM:            16 MB 
+                    GEMDOS-Laufwerke:   ABC 
+                    Boot-Zeit:          2026/10/26 09:05:02 
+                    ________________________________________
+
+                    Halte <Strg> = ohne AUTO/ACC
+                    Halte <Alt> = keine Harddisk
+                    DrUcke 'X' um von Laufwerk X: zu booten
+                    DrUcke <Esc> fUr die Textkonsole
+
+                       FUr Pause <Shift> gedrUckt halten    
+WARN : No GEMDOS dir '/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-26-oracle/runs/release-1.4-cleancfg/EMUTOS14-AES-m06/hd/AUTO'
+
+
+WARN : No GEMDOS dir '/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-26-oracle/runs/release-1.4-cleancfg/EMUTOS14-AES-m06/hd/etc'
+DUMPAES build 70ca, record format 2
+AES.TSV: 19 cases, CRC 458748F2
+appl_init id 0, graf_handle 1, v_opnvwk handle 2
+global after appl_init 832,1,0,0,4419,0,0,0,0,0,4,0,-16892,0,0
+ap_version 0340, ap_count 1, ap_id 0, ap_planes 4
+AES.TSV needs 3D objects (CONF_WITH_3D_OBJECTS, AES 0x0340)
+running 19 cases
+all 19 cases ran
+AES.BIN: 19 records, 2312 bytes
+AES.LOG: 356 bytes

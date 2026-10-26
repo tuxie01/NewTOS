@@ -1,0 +1,2 @@
+vdi-all-tt vs EMUTOS14-VDI-all: BIT-IDENTICAL (BIN+LOG)
+vdi-all-falcontc vs EMUTOS14-VDI-all-falcontc: BIT-IDENTICAL (BIN+LOG)

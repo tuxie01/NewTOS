@@ -1,0 +1,71 @@
+81e2cd81 2025-06-07 Reset version string
+187f767e 2025-06-11 Amiga: Update unsupported features
+6dc45f11 2025-06-15 Define default button in 'Formatting error' dialog
+0f16d9a1 2025-06-15 Floppy versions: Display message while loading EmuTOS
+18a4e8b1 2025-07-09 Disable static inlines
+2e287f30 2025-07-09 Revert "Disable static inlines"
+0260b594 2025-07-09 Add missing RESTRICT keyword
+fef726e0 2025-07-09 Don't use strcpy() return value
+9df31a18 2025-07-09 Always inline strcpy()
+3d868195 2025-07-09 Implement strcpy() with inline assembly
+e37c82c8 2025-07-09 Implement strcat() with inline assembly
+401c3561 2025-07-11 Make calc_vram_size static
+49ec9233 2025-07-11 Falcon: Increase VRAM allocation at boot if necessary
+83865635 2025-08-02 Rework Crazydots graphics card detection
+a9545f27 2025-08-02 Make sure ColdFire RS232 interrupt is disabled at boot
+4b0d9518 2025-08-20 Refine 'nicelines' check
+49381e9e 2025-08-20 Fix SCSIDRV InquireSCSI function
+acb7f3b4 2025-08-23 Add partial implementation of WF_OWNER to wind_get
+9809e7a7 2025-08-24 Fix some file system limits returned by XHDOSLimits
+5cdbeb7f 2025-08-24 Ignore attempt to set new XHDOSLimits
+a0e09f39 2025-08-24 Fix ACSI issues in STEs with C025913-38 DMA
+d76f9293 2025-09-01 Fix bug in EmuCON output redirection
+619e08aa 2025-09-03 Update comments
+90480d65 2025-09-04 Fix obscure bug in Rwabs() retry handling
+af14bfc1 2025-09-06 Fix bug in ACSI I/O error handling
+11dffade 2025-09-08 Refactor I/O sense buffer decoding
+508f9468 2025-09-10 Improve ACSI error handling
+30a91f6f 2025-09-10 Refactor GEMDOS trap code
+e452070a 2025-09-10 Clarify GEMDOS trap code
+36bacb9c 2025-09-11 Update source code comments
+92d890c5 2025-09-27 SCSIDRV: Report correct maximum transfer size for Falcon SCSI
+581b1faa 2025-10-05 Support GUID partition table (GPT)
+64eb50e5 2025-10-12 IDE: Add explanatory comment
+185679ee 2025-11-15 Fix header guard name
+cf7b4432 2025-12-15 Add support for ATI Mach64 graphics card in Nova adapter
+29c9e38a 2025-12-16 Mach64: Add support for CH8398 DAC
+f29e2394 2025-12-18 Nova: Update comments
+28639d30 2025-12-18 Mach64: Refactor DAC access
+feb5145e 2025-12-19 Mach: Refactor register initialization
+eb8c7316 2025-12-19 Nova: Remove dead code
+8fc0919c 2025-12-19 Nova: Use BOOL type internally where appropriate
+24dff9af 2025-12-25 EmuDesk: Don't call shel_wdef when it is not supported
+3a3cdfb9 2025-12-30 Return generic error code
+24cac835 2026-01-03 Build 'fat' binaries (ARM64 & x64) for macOS
+2e227606 2026-01-05 Make 'bug' more robust
+de1d3a24 2026-01-07 Rework lookup of language strings for CONF_WITH_NLS
+e9f088bf 2026-01-08 More rework on NLS lookups
+ed3fd016 2026-01-07 Add interface to query EmuTOS disks
+d87cab79 2026-01-07 Fix calls to other XHDI handler
+1784c0a3 2026-01-12 Update copyright year
+44dd912a 2026-01-12 Save more ROM space in multi-language ROMs
+888a5ffc 2026-01-12 Improve string handling in 'bug'
+8f827a89 2026-01-12 Handle 'bug make' failure in Makefile
+0d7b5cb3 2026-01-12 Fix known limitation in 'bug' when parsing C files
+2f48d795 2026-01-15 Improve readability of 'bug' code
+7cdf2ffc 2026-01-31 Don't fail when programs have bogus symbol table length
+65a71f38 2026-02-02 Add Neurobotix to incompatible.txt
+04bac280 2026-03-12 Remove unused defines
+93e10987 2026-03-22 TT RAM sizing: Stop when mirrored memory region is detected
+dd32dad5 2026-01-08 Support for booting 3rd party hard disk driver
+6245942c 2026-01-24 Accept disks that only return a root sector
+0817d25d 2026-01-24 Ignore 'EFI hidden' GPT partitions
+327adfba 2026-03-11 Fix ACSI2STM GEMDRIVE booting
+590636a4 2026-03-29 Run cartridge applications before harddisk boot
+d5bc81e9 2026-03-29 Remove obsolete disabled code
+32ddba41 2026-03-29 Update copyright years
+e095c950 2026-03-29 Fix 'dmaboot' for ColdFire architecture
+cebdff89 2026-03-29 Hatari test: Allow more time to reach Desktop
+67e4a4cd 2026-03-29 Speed up hard disk check again
+f96a524c 2026-03-31 Harden GEMDOS media change error handling
+1a7484ab 2026-04-14 Update GitHub Actions to use Node 24

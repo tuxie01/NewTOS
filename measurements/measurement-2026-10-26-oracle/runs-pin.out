@@ -1,0 +1,14 @@
+EMUTOS14-VDI  BIN-same  LOG-same  0 of 24 cases differ
+EMUTOS14-VDI-r2  BIN-same  LOG-same  0 of 120 cases differ
+EMUTOS14-VDI-r3  BIN-same  LOG-same  0 of 38 cases differ
+EMUTOS14-VDI-all  BIN-same  LOG-same  0 of 182 cases differ
+EMUTOS14-VDI-all-falcontc  BIN-same  LOG-same  0 of 182 cases differ
+EMUTOS14-AES  BIN-DIFF  LOG-DIFF  1 of 95 cases differ
+EMUTOS14-AES-r2wind  BIN-DIFF  LOG-DIFF  2 of 78 cases differ
+EMUTOS14-AES-r2brlist  BIN-DIFF  LOG-DIFF  0 of 15 cases differ
+EMUTOS14-AES-r3  BIN-DIFF  LOG-DIFF  0 of 39 cases differ
+EMUTOS14-AES-m05  BIN-DIFF  LOG-DIFF  0 of 5 cases differ
+EMUTOS14-AES-m06  BIN-DIFF  LOG-DIFF  0 of 19 cases differ
+EMUTOS14-AES-m07  BIN-DIFF  LOG-DIFF  0 of 20 cases differ
+EMUTOS14-RASTER  BIN-DIFF  LOG-same  0 of 59 cases differ
+EMUTOS14-RASTER-screen-falcontc  BIN-same  LOG-same  0 of 62 cases differ

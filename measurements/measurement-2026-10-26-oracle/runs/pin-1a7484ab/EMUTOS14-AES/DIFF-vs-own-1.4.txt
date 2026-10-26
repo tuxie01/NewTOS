@@ -1,0 +1,6 @@
+AES.BIN vs AES.BIN -- area AES, 95 cases from aes-r1.tsv
+
+case 167  opcode 104  wind_get 0 WF_OWNER: AES 3.30 and later only
+    int_out[0]             AES.BIN = 0x0000 (0)   AES.BIN = 0x0001 (1)
+
+1 of 95 cases differ

@@ -1,0 +1,60 @@
+INFO : Hatari v2.6.1, compiled on:  Aug 15 2025, 14:15:19
+INFO : IPF : capsimage library version release=5 revision=1
+INFO : GEMDOS HDD emulation, C: <-> /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-26-oracle/runs/own-1.4/EMUTOS14-VDI/hd.
+INFO : NVRAM not found at '/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-26-oracle/runs/own-1.4/EMUTOS14-VDI/home/hatari.nvram'
+WARN : Bus Error writing at address $41fffe, PC=$e00232 addr_e3=e00232 op_e3=3305
+WARN : Bus Error writing at address $ffd000e0, PC=$e0025a addr_e3=e0025a op_e3=33fc
+WARN : Bus Error reading at address $20fffff, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fffffc21, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $ffffa200, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6c4710, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $5d1234, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6d3148, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fe9003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fedc03c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $febf03c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $d003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+INFO : OS clock ticks / second: 100
+
+
+
+
+
+                                                         
+                                                         
+                                                         
+                                                         
+                                                         
+                    ________________________________________
+
+                    EmuTOS Version:     1.4 
+                    CPU-Typ:            M68030 
+                    Rechner:            Atari TT 
+                    ST-RAM:             4 MB 
+                    Alt-RAM:            16 MB 
+                    GEMDOS-Laufwerke:   ABC 
+                    Boot-Zeit:          2026/10/26 08:36:26 
+                    ________________________________________
+
+                    Halte <Strg> = ohne AUTO/ACC
+                    Halte <Alt> = keine Harddisk
+                    DrUcke 'X' um von Laufwerk X: zu booten
+                    DrUcke <Esc> fUr die Textkonsole
+
+                       FUr Pause <Shift> gedrUckt halten    
+WARN : No GEMDOS dir '/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-26-oracle/runs/own-1.4/EMUTOS14-VDI/hd/AUTO'
+
+
+WARN : No GEMDOS dir '/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-26-oracle/runs/own-1.4/EMUTOS14-VDI/hd/etc'
+DUMPVDI build 1cd6, record format 2
+VDI.TSV: 24 cases, CRC FFF2281E
+appl_init id 0, graf_handle 1, v_opnvwk handle 2
+work_in 1,1,1,1,1,1,1,1,1,1,2
+DEV_TAB 639,479,0,278,278,3,7,0,6,8,1,24,12,16,10,1,2,3,4,5,6,7,8,9,10,3,0,3,3,3,0,3,0,3,2,1,1,1,0,4096,2,1,1,1,2
+SIZ_TAB 5,4,7,13,1,0,40,0,15,11,120,88
+running 24 cases
+all 24 cases ran
+VDI.BIN: 24 records, 38240 bytes
+VDI.LOG: 367 bytes

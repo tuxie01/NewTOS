@@ -1,0 +1,3 @@
+RASTER.BIN vs RASTER.BIN -- area VDI-RASTER, 62 cases from vdi-raster-screen.tsv
+
+0 of 62 cases differ

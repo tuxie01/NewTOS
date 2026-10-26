@@ -1,0 +1,3 @@
+EMUTOS14-VDI-all-falcontc.BIN vs VDI.BIN -- area VDI, 182 cases from vdi-all.tsv
+
+0 of 182 cases differ

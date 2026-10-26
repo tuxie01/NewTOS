@@ -1,0 +1,16 @@
+EMUTOS14-AES-r2wind.BIN vs AES.BIN -- area AES, 78 cases from aes-r2-wind.tsv
+
+case 244  opcode 104  WF_OWNER of a created window: pid, is-open, gl_wtop, bottom-mos
+    int_out[0]             EMUTOS14-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                 = 0x0001 (1)
+    int_out[1]             EMUTOS14-AES-r2wind.BIN = 0xFFFF (-1)   AES.BIN                 = 0x0000 (0)
+    int_out[3]             EMUTOS14-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                 = 0xFFFF (-1)
+    int_out[4]             EMUTOS14-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                 = 0xFFFF (-1)
+
+case 247  opcode 104  WF_OWNER of an open window: the is-open word changes
+    int_out[0]             EMUTOS14-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                 = 0x0001 (1)
+    int_out[1]             EMUTOS14-AES-r2wind.BIN = 0xFFFF (-1)   AES.BIN                 = 0x0000 (0)
+    int_out[2]             EMUTOS14-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                 = 0x0001 (1)
+    int_out[3]             EMUTOS14-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                 = 0x0001 (1)
+    int_out[4]             EMUTOS14-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                 = 0x0001 (1)
+
+2 of 78 cases differ

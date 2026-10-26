@@ -1,0 +1,9 @@
+DUMPAES build 70ca, record format 2
+AES.TSV: 19 cases, CRC 458748F2
+appl_init id 0, graf_handle 1, v_opnvwk handle 2
+global after appl_init 832,1,0,0,4419,0,0,0,0,0,4,0,-16892,0,0
+ap_version 0340, ap_count 1, ap_id 0, ap_planes 4
+AES.TSV needs 3D objects (CONF_WITH_3D_OBJECTS, AES 0x0340)
+running 19 cases
+all 19 cases ran
+AES.BIN: 19 records, 2312 bytes
