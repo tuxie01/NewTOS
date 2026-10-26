@@ -220,7 +220,7 @@ CONFIRMED bugs ÷ functions measured.
 Write the report to `docs/audits/<YYYY-MM-DD>-<scope-slug>.md` (create the
 directory if needed; never overwrite — add `-2`, `-3`). Evidence (records,
 traces, tosdiff output, images) goes into a run folder under `measurements/`
-with a RUNINFO.TXT; the report links to it. Do not commit. German prose,
+with a RUNINFO.TXT; the report links to it. Measurement runs follow the CLAUDE.md rule: copy `<image>.manifest`, quote `optional_missing` verbatim in RUNINFO. Do not commit. German prose,
 English identifiers. Sections:
 
 1. **Kopf** — scope, date, NewTOS commit + dirty flag, EmuTOS commit, ROM hash,

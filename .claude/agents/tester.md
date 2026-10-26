@@ -91,6 +91,7 @@ change:
    partition type 0x06) with representative names — use **representative 12-char
    8.3 names**, not just short ones (short-name fixtures have masked real
    icon/label bugs before).
+   Measurement runs follow the CLAUDE.md rule: copy `<image>.manifest`, quote `optional_missing` verbatim in RUNINFO.
 
 ### Two-board / two-machine constraint (critical, don't get it wrong)
 
