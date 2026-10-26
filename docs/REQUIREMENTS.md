@@ -63,7 +63,7 @@ do not exist.
 ### NFR-4: Documented Decisions
 
 All architectural decisions where the spec is silent or implementation-
-defined shall be recorded as ADRs in `docs/STATUS.md`.
+defined shall be recorded as ADRs in `docs/MEMORY.md`.
 
 ### NFR-5: Hardware Targets
 
@@ -74,8 +74,10 @@ defined shall be recorded as ADRs in `docs/STATUS.md`.
 
 ### NFR-6: License
 
-NewTOS is released under MIT or Apache-2.0 (decision pending; see ADR-001
-when written). EmuTOS source is read for reference but not copied.
+NewTOS is released under the GNU General Public License, version 2 or (at
+your option) any later version (`LICENSE`, `NOTICE`; commit `aec5b730`).
+EmuTOS source is read for reference; beyond that, a few data tables and
+bitmaps are taken from it verbatim and attributed in `NOTICE`.
 RuSTari is integrated under its own license (MIT, per RuSTari project).
 
 ## Constraints

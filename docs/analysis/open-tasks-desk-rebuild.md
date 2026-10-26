@@ -6,7 +6,7 @@
 
 Leitprinzip: **1:1 EmuTOS.** Bei jeder Abweichung ist der Default „match it"
 (EmuTOS `file:line` zitieren + reproduzieren), nicht „benign, lassen".
-Siehe Memory `no-rationalizing-emutos-deviations`, `desktop-1to1-emutos-rebuild` (ADR-022).
+Siehe Memory `no-rationalizing-emutos-deviations`, ADR-022 in `docs/MEMORY.md`.
 
 Workflow pro Problem: Developer implementiert → **unabhängiger** Tester verifiziert
 (nicht dem Dev-Selbstreport trauen) → Lead committet bei PASS → nächstes. Seriell.

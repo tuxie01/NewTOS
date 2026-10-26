@@ -150,14 +150,33 @@ both worlds.
 - Per-process file handle table with TOS-standard handles 0–5 mapped to
   CON, AUX, PRN, etc.
 
-## Key ADRs (planned)
+## Key ADRs
 
-- ADR-001: Native ARM PRG executable format
-- ADR-002: License choice (MIT / Apache-2.0)
-- ADR-003: Mxalloc mode flag handling on uniform RAM
-- ADR-004: VT52 emulation scope (full vs subset)
-- ADR-005: m68k JIT — when, if ever
-- ADR-006: USB HID input vs UART input ordering
-- ADR-007: Long File Name support — yes / no / partial
+ADRs live in [`docs/MEMORY.md`](MEMORY.md), with their numbering rules in
+its section *How to use this file* → *ADRs (Architectural Decision Records)*,
+paragraph **Numbering**: ADR-001 to ADR-009 were never written, the earlier
+"planned" list that stood here is no reservation, and a new ADR takes the
+next free number. The ADRs that exist (titles as in their headings, status
+in each entry):
 
-ADRs land in `docs/STATUS.md` as they are written.
+- ADR-010: Single shared user address space (identity-mapped DRAM pools)
+- ADR-011: Per-device VDI physical workstation (multi-screen-ready)
+- ADR-012: Cookie-jar access mechanism on NewTOS
+- ADR-013: Native `.RSC` resource format (not classic Atari)
+- ADR-014: All MMIO through the high-half; TTBR0 holds no low-half identity
+- ADR-015: USB-HID input — xHCI host on Pi4, upper stack clean-room from FreeMiNT
+- ADR-016: Ground-up desktop rebuild — EmuTOS-faithful, in kernel/src/desk/ (path before DESK43 U8b)
+- ADR-017: NewTOS resolution policy — native, geometry-independent, resolution from `config.txt` (Revision 2; first version: 1920×1080 switchable to 1280×800)
+- ADR-018: Native executable extension family — `.NAP` / `.NCP` / `.NTP` / `.NAC`
+- ADR-019: Native C toolchain — port real Atari C libraries, don't reimplement
+- ADR-020: App ABI is ILP32 (32-bit pointers) for Atari-compat programs; LP64 native deferred
+- ADR-021: EL0 apps get GEMDOS memory via a per-process mapped window; the pool allocator stays EmuTOS-faithful
+- ADR-022: Desktop is a 1:1 EmuTOS-faithful rebuild that goes *through* the AES trap (refines ADR-016)
+- ADR-023: What the kernel hands out, the caller must be able to reach — publish kernel structures into the process under FreeMiNT's `PROT_*` modes
+- ADR-024: VDI truecolor workstation — Falcon 16-bit RGB565 device pixel over a 32-bpp XRGB8888 physical framebuffer
+- ADR-025: The MD supply grows page by page within a page budget; a per-process block limit replaces the fixed pool
+- ADR-026: The desktop is an EL0 program (NEWDESK); the kernel carries no desktop (fulfils ADR-022's endgame)
+- ADR-027: Kernel memory management takes FreeMiNT as its reference, even where that is visible
+- ADR-028: One shared user address space (VA = PA) with rights per address space — FreeMiNT's model on AArch64
+- ADR-029: The cooperative kernel — EmuTOS' cooperative policy on FreeMiNT-shaped primitives
+- ADR-030: No Line-A emulation (Proposed)

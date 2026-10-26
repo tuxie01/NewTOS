@@ -1,7 +1,7 @@
 # EmuTOS `desk/` — Rendering Core Overview
 
 > Phase-00 extraction, Track A, per `docs/SOURCE-ANALYSIS-PROTOCOL.md`.
-> Source: EmuTOS @ `1a7484ab` (pinned, see `docs/MEMORY.md` ADR-003),
+> Source: EmuTOS @ `1a7484ab` (pinned, see `docs/analysis/ORACLE.md` §1 "The pin"),
 > directory `desk/`. This directory (`docs/api/desktop/`) extracts the
 > **rendering core**: the data model, the icon/text grid metrics, view
 > building (turning a file list into an on-screen `OBJECT` tree), and the
