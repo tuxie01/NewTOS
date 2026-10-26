@@ -137,7 +137,7 @@ Ticket vor EmuCON**. `ESC b/c` sind nur im Aufloesungswechselpfad noetig
 ### D4 — Zeilen-/Spaltenzahl im EL0-Programm
 
 EmuCON liest `v_cel_mx/my` per Line-A (`cmdasm.S:51-60`); Line-A gibt es auf
-AArch64 nicht (`docs/api/_line-a.md:65-70`); in `sdk/crt0.S`, `sdk/libc/newtos-arch`, `programs/newtos-gem` und `tos-api`
+AArch64 nicht (`docs/api/_line-a.md:86-90`, ADR-030); in `sdk/crt0.S`, `sdk/libc/newtos-arch`, `programs/newtos-gem` und `tos-api`
 fand die Suche nach `linea`/`chcells` keine Line-A-Bindung; vorhanden ist nur
 `vq_chcells` in `tos-api/src/vdi/escape.rs`/`docs/api/vdi/_escape.md:124-127`, das
 eine VDI-Workstation voraussetzt (**Schluss**: `v_escape` braucht ein Handle). Optionen:
@@ -147,8 +147,8 @@ eine VDI-Workstation voraussetzt (**Schluss**: `v_escape` braucht ein Handle). O
   `cmdmain.c:227-228` („not a GEM app").
 * (b) Neue Abfrage (XBIOS-/`Ssystem`-Unterfunktion oder Cookie) fuer die
   Textzellen der Alphaschicht — Erweiterung der Schnittstelle, ADR noetig.
-* (c) Ein Linea-aehnlicher Block im Prozess (`tos-linea.h`-Strategie aus
-  `_line-a.md:65-70`) — braucht dieselbe Kernelquelle wie (b).
+* ~~(c) Ein Linea-aehnlicher Block im Prozess~~ — entfaellt: ADR-030
+  (`docs/MEMORY.md`, Accepted 2026-10-26) exportiert keinen LINEA-Block.
 
 Betrifft: Zeilenbreite (`linesize`), `ls`-Spalten (`screen_cols/13`), `more`
 (`screen_rows-1`), `help`-Pause. Im Messlauf bei 1920×1080/8×16 sind das

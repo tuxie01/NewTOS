@@ -1096,6 +1096,41 @@ automaton.
   difference:** no bell, and a program cannot hook the bell through
   `bell_hook` ($5AC).
 
+**No Line-A: no opcode trap, no LINEA variable block** — user decision
+2026-10-26, ADR-030 (`docs/MEMORY.md`). On TOS the m68k opcodes
+`$A000`–`$A00F` trap through vector `$28` into 16 graphics routines, and op 0
+hands out the LINEA variable block (`references/emutos/bios/bios.c:176`,
+`references/emutos/bios/linea.S:156-163`, `:230-249`; spec
+`docs/api/_line-a.md`). NewTOS has neither:
+
+* **No opcode trap.** Native AArch64 programs have no `$Axxx` instruction,
+  and NewTOS adds no substitute; `Setexc(10, …)` only stores into the vector
+  shadow, which nothing dispatches (`tos-api/src/bios/vectors.rs:98-109`).
+  m68k binaries, and with them the Line-A trap, belong to the later m68k
+  emulator (FR-4).
+* **No LINEA variable block.** Screen geometry, mouse position and buttons
+  come from the documented calls: `vq_extnd`/`v_opnvwk` `work_out`,
+  `vq_mouse`, `v_show_c`/`v_hide_c`, `vq_chcells`, `graf_mkstate`,
+  `graf_handle`.
+* **`__aline`, `__fonts`, `__funcs` are null by design**
+  (`sdk/libc/mintlib/mintlib/alglobal.c:7`, `:11`, `:16`), so a reader fails
+  loud: the named variables of `<mint/linea.h>` (`V_REZ_HZ`, `MOUSE_BT`,
+  `V_CEL_MX`, …) lie at negative offsets from `__aline`
+  (`sdk/libc/mintlib/include/mint/linea.h:154-315`) and end the program with
+  an EL0 data abort (`kernel/src/arch/aarch64/exceptions.rs:303-309`). Not
+  so the `__LINEA` struct fields (`__aline->_VPLANES`, the MWC macros,
+  `sdk/libc/mintlib/include/mint/linea.h:485`ff.): null plus their positive
+  offset lies in page 0, which is mapped user read/write in every process
+  (`tos-api/src/bdos/process/mmu.rs:643`), so such an access does not fault.
+* **mintlib's `linea.c` is excluded from the SDK build by ADR-030**; there is
+  no `linea0()` … `lineaf()`, and a port that calls them does not link.
+
+**Observable difference:** a Line-A opcode, a Line-A binding or a LINEA
+variable read has no NewTOS counterpart; a port uses the VDI/AES calls above
+instead. No ported program is affected
+(`docs/analysis/line-a-readers-2026-10-26.md`). EmuDESK's two readers are
+rebuilt in NEWDESK through VDI values ([DESK69](../TASK/DESK69.md)).
+
 ## EmuTOS is the reference, not the template
 
 CLAUDE.md Rule 1 says EmuTOS source *is* the spec. Through this charter that

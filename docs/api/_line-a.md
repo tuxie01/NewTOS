@@ -1,18 +1,24 @@
 # Line-A Overview
 
-> Phase 00 deliverable D10. Captures *what Line-A is*, *which calls
-> exist*, and *which calls AES/VDI actually need*. Implementation is
-> deferred to PHASE-08+ (display) and PHASE-12 (AES/VDI). Source:
-> EmuTOS @ `1a7484ab` — `bios/lineavars.S`, `bios/lineainit.c`,
-> `bios/linea.S`.
+> Phase 00 deliverable D10. Captures *what Line-A is* and *which calls
+> exist* on TOS. Source: EmuTOS @ `1a7484ab` — `bios/lineavars.S`,
+> `bios/lineainit.c`, `bios/linea.S`.
+>
+> **NewTOS provides no Line-A** — ADR-030 (`docs/MEMORY.md`, Accepted
+> 2026-10-26, user decision); see [NewTOS](#newtos-adr-030). The
+> implementation strategy of the original D10 (a C-callable function group
+> behind a header, a LINEA export) is dropped; the AES/desktop dependency it
+> assumed does not exist at the pin (corrected 2026-10-26).
 
 ## What Line-A is
 
-On the Atari ST, the m68k opcode `0xA000..0xAFFF` is illegal and
-traps to vector 0x28 ("Line-1010 emulator"). TOS installs a handler
-that reads the low 4 bits of the opcode and dispatches to one of
-16 graphics primitives — a private side channel into the VDI's
-fastest pixel/glyph routines, used by AES and the Desktop.
+On the Atari ST, the m68k opcodes `0xA000..0xAFFF` are unimplemented
+instructions that trap to vector `0x28` ("Line-1010 emulator"). EmuTOS
+installs `int_linea` there (`references/emutos/bios/bios.c:176`, handler
+`references/emutos/bios/linea.S:51`), which reads the low bits of the opcode
+and dispatches to one of 16 graphics routines from a table
+(`references/emutos/bios/linea.S:230-249`) — a side channel into the VDI's
+pixel, blit and mouse routines, used by third-party programs.
 
 ```
  op=0xA000   →   init / get LINEA vars pointer
@@ -21,7 +27,7 @@ fastest pixel/glyph routines, used by AES and the Desktop.
  op=0xA003   →   line
  op=0xA004   →   horizontal line
  op=0xA005   →   filled rectangle
- op=0xA006   →   filled polygon
+ op=0xA006   →   filled polygon (one scan line per call)
  op=0xA007   →   bit-blit
  op=0xA008   →   text-blit (8-pixel monospaced glyph)
  op=0xA009   →   show mouse
@@ -33,94 +39,97 @@ fastest pixel/glyph routines, used by AES and the Desktop.
  op=0xA00F   →   seedfill / contourfill
 ```
 
-The handler reads register parameters (D0..D7 / A0..A2) and the
-shared "LINEA variables" block (`v_planes`, `v_lin_wr`, `v_cel_wr`,
-mouse pointer, fonts list, …). Every Line-A call returns through
-the trap, restoring registers per m68k convention.
+The routines take register parameters (D0..D7 / A0..A2) and the shared
+"LINEA variables" block (`v_planes`, `v_lin_wr`, `v_cel_wr`, mouse state,
+fonts list, …). Op 0 returns the block's base in `a0`, the system font
+headers in `a1` and the routine table in `a2`
+(`references/emutos/bios/linea.S:156-163`). The block holds its fields at
+fixed offsets around that base, e.g. `MOUSE_BT` at −596 and `V_REZ_HZ` at
+−12, base at `line_a_vars` (`references/emutos/bios/lineavars.S:126`,
+`:192`, `:266`).
 
-## Why it exists / why it matters
+## Why it exists / who uses it
 
-1. **Speed.** Line-A primitives are hand-written m68k assembly that
-   bypasses the VDI parameter-block setup, the device-driver vector
-   indirection, and the trap-1 round-trip. On a 7 MHz 68000 this
-   matters: the AES desktop calls put_pixel hundreds of times per
-   redraw.
-2. **AES/Desktop dependency.** The desktop window manager, alert
-   boxes, and menu rendering call Line-A directly (mostly mouse
-   show/hide and text-blit) for performance.
-3. **Third-party programs.** Many ST games and tools call Line-A
-   instead of VDI. They will not run without it.
+1. **Speed.** The routines skip the VDI parameter-block setup and the
+   trap-2 round trip; on a 7 MHz 68000 that matters.
+2. **Third-party programs.** EmuTOS' own note: "Neochrome Master and old
+   GFA programs use all of the lineA routines, and many (even new) freeware
+   games still use bitblt" (`references/emutos/bios/linea.S:222-223`).
+
+**Not** the EmuTOS AES or desktop. At the pin no file under `aes/` or
+`desk/` issues a Line-A opcode; the AES hides and shows the mouse through
+VDI opcodes (`gsx_moff`/`gsx_mon`, `references/emutos/aes/gemgsxif.c:440-455`).
+The only reader of the variable block among them is EmuDESK, which includes
+`lineavars.h` (`references/emutos/desk/desksupp.c:56`) and reads two fields:
+`V_REZ_HZ` in `do_xyfix` (`references/emutos/desk/desksupp.c:267`) and
+`MOUSE_BT` in `get_key` (`references/emutos/desk/desksupp.c:515-517`).
+EmuCON reads `v_cel_mx`/`v_cel_my` through `$A000`
+(`docs/analysis/line-a-readers-2026-10-26.md`, table 3). *(Corrected
+2026-10-26: this section claimed the AES and desktop call show/hide mouse,
+bit-blit and text-blit as Line-A.)*
 
 ## Source layout in EmuTOS
 
 | File                       | Purpose                                  |
 |----------------------------|------------------------------------------|
 | `bios/lineavars.S`         | LINEA variables block (16-bit fields)    |
-| `bios/lineainit.c`         | `linea_init()` populates pointers/fonts  |
+| `bios/lineainit.c`         | `linea_init()` populates pointers/fonts (`:50`) |
 | `bios/linea.S`             | The 0xA000..0xA00F dispatch entry        |
-| `vdi/vdi_blit.S`           | `bit_blt`
-, shared with Line-A           |
-| `vdi/vdi_main.c`           | `init_wk()` — LINEA fields seeded here   |
-| `bios/bios.c:430`          | `linea_init()` called when LINEA enabled |
+| `vdi/vdi_blit.S`           | `bit_blt` (`:828`), shared with Line-A   |
+| `vdi/vdi_control.c`        | `init_wk()` (`:269`), `update_rez_dependent()` (`:193`) — LINEA fields seeded here |
+| `bios/bios.c:331`          | `linea_init()` called at boot            |
 
-## NewTOS implementation strategy
+## NewTOS (ADR-030)
 
-NewTOS is AArch64; opcode 0xA000..0xAFFF cannot trap on ARM.
-Line-A is therefore re-exposed as a **C-callable function group**
-behind macros, so source-level ports of TOS programs link against
-the NewTOS Line-A library and hit the same primitives.
+ADR-030 "No Line-A emulation" (`docs/MEMORY.md`, Accepted 2026-10-26):
 
-- m68k user-emulator (PHASE-10) intercepts `0xA000..0xAFFF` opcodes
-  in software, marshals registers into the C ABI, calls the same
-  primitives. Binary compat preserved.
-- Native (Rust/C) ports use a header `tos-linea.h` that maps
-  `linea_put_pixel(...)` → `pub extern "C" fn linea_put_pixel(...)`.
+- **No opcode trap.** AArch64 has no `$Axxx` trap, and NewTOS adds no
+  substitute (no `svc` class, no undefined-instruction hook). `Setexc(10, …)`
+  (vector `$28`) only stores into the software vector shadow, which nothing
+  dispatches (`tos-api/src/bios/vectors.rs:98-109`). The m68k Line-A trap
+  belongs to an m68k emulator, if one is ever built (FR-4).
+- **No LINEA variable block** is exported to programs. The state the block
+  would carry stays inside the VDI; programs reach it through the documented
+  calls: `v_opnvwk`/`vq_extnd` `work_out` for the geometry (`DEV_TAB[0]` =
+  `V_REZ_HZ − 1`, `references/emutos/vdi/vdi_control.c:203-204`), `vq_mouse`
+  for buttons and position (`tos-api/src/vdi/mouse.rs:897-904`),
+  `v_show_c`/`v_hide_c`, `vq_chcells`; the AES (`graf_mkstate`,
+  `graf_handle`); the XBIOS.
+- **No C function group, no `tos-linea.h`.** The SDK offers no Line-A
+  bindings: mintlib's `linea.c` (`linea0()` … `lineaf()`) is excluded by
+  ADR-030. A port that calls them does not link.
+- **`__aline`, `__fonts`, `__funcs` stay null by design**
+  (`sdk/libc/mintlib/mintlib/alglobal.c:7`, `:11`, `:16`). A reader of the
+  named variables of `<mint/linea.h>` (`V_REZ_HZ`, `MOUSE_BT`, `V_CEL_MX`, …,
+  negative offsets from `__aline`, `sdk/libc/mintlib/include/mint/linea.h:154-315`)
+  addresses just below 2^64 and ends with an EL0 data abort
+  (`kernel/src/arch/aarch64/exceptions.rs:303-309`). **Exception:** a reader of
+  the `__LINEA` struct fields (`__aline->_VPLANES` and the MWC macros,
+  `sdk/libc/mintlib/include/mint/linea.h:485`ff.) addresses null plus a small
+  positive offset, i.e. page 0, which is mapped user read/write in every
+  process (`tos-api/src/bdos/process/mmu.rs:643`); that access does not fault.
+  No built program reads either form
+  (`docs/analysis/line-a-readers-2026-10-26.md`).
+- **The mouse cursor state is the VDI's** (`tos-api/src/vdi/mouse.rs:24-26`),
+  reached only through VDI calls — ADR-030, Decision 3. This closes
+  ADR-Line-A-02 below.
+- **EmuDESK's two readers** are rebuilt in NEWDESK through VDI values
+  ([DESK69](../../TASK/DESK69.md)).
 
-## Required for AES/VDI (Phase 12)
+The user-visible contract is in `docs/COMPATIBILITY.md` ("No Line-A").
 
-The AES/Desktop calls only a small subset:
+## Closed questions
 
-| Op       | Routine             | Used for                         |
-|----------|---------------------|----------------------------------|
-| 0xA000   | init / vars block    | initial setup, font loading      |
-| 0xA009   | show_mouse           | every mouse-position update      |
-| 0xA00A   | hide_mouse           | before any redraw under cursor   |
-| 0xA007   | bit_blit             | window content drawing           |
-| 0xA008   | text_blit            | text rendering everywhere        |
-
-The remaining 11 ops are exercised by VDI, which AES calls into via
-the standard VDI parameter block. They must exist for VDI to work,
-but AES does not depend on them as Line-A.
-
-## Required for VDI (Phase 12)
-
-VDI internally calls into shared C primitives that Line-A also
-exposes (`bit_blt`, `arb_corner`, `seedfill`, `cur_ms_stat`).
-Implementing VDI implies implementing all Line-A primitives — the
-two groups share ~90% of their code. The Line-A trap dispatch is a
-thin shim around the same C functions.
-
-## Required for Phase 09 source ports
-
-The first source-port target (a TOS-native CLI utility, e.g.
-`zoo` or `gzip`) does **not** use Line-A — it is a purely
-character-mode program against GEMDOS. Line-A is **not on the
-critical path** until Phase 12.
-
-## Open questions / pending ADRs
-
-- **ADR-Line-A-01:** C-ABI shape for the function-group export.
-  Decision: pass an explicit `LINEA_VARS *` pointer rather than
-  relying on a global. Rationale: SMP-friendly, easier to mock for
-  tests.
-- **ADR-Line-A-02:** Mouse cursor state ownership. Either Line-A
-  owns it (`v_mwk` etc.) or the framebuffer compositor does. Defer
-  to PHASE-08.
+- **ADR-Line-A-01** (C ABI of the function-group export): moot — the export
+  is dropped (ADR-030, Q2).
+- **ADR-Line-A-02** (who owns the mouse cursor state): the VDI, behind its
+  calls (ADR-030, Decision 3; `tos-api/src/vdi/mouse.rs`). ADR-011, named for
+  it in `docs/archive/status-log-2026-10-26.md:1022`, does not mention the
+  cursor.
 
 ## Cross-references
 
-- `docs/api/_dependency-graph.md` — Line-A nodes appear as
-  inbound edges from AES.
-- `docs/api/structures/` — pending: `LINEA_VARS` struct extraction
-  (Phase 12 deliverable).
-- `docs/STATUS.md` — Phase 12 entry.
+- ADR-030, ADR-011 (`docs/MEMORY.md`).
+- `docs/analysis/line-a-readers-2026-10-26.md` — every Line-A reader in the
+  ports, the NewTOS components and the reference.
+- `docs/COMPATIBILITY.md` — "No Line-A".

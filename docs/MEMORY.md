@@ -2799,9 +2799,11 @@ The question splits into two levels, decided separately:
 ## ADR-030: No Line-A emulation
 
 **Date:** 2026-10-26
-**Status:** **Proposed** — not accepted until the user confirms. It writes
-down the line Phase 12 already followed (closed without a Line-A export,
-`docs/STATUS.md` *Open ADRs*, row ADR-Line-A-01) and names what is still open.
+**Status:** **Accepted** (2026-10-26, user decision). Written the same day
+as **Proposed** (`075bdddd`) with three open questions; the user answered Q3
+first, then Q1 and Q2 (answers in place below). It writes down the line
+Phase 12 already followed (closed without a Line-A export) and settles the
+variable block.
 **Phase:** cross-cutting (VDI, desktop, SDK; an m68k emulator, if one is ever
 built).
 
@@ -2823,7 +2825,9 @@ things therefore go by the name "Line-A" and are kept apart here:
 
 Evidence, checked 2026-10-26:
 
-- **Phase 00 D10** (`docs/api/_line-a.md`) planned a C-callable Line-A
+- **Phase 00 D10** (`docs/api/_line-a.md`; line numbers in this bullet and
+  the next are those of commit `075bdddd` — the file was rewritten when this
+  ADR was accepted) planned a C-callable Line-A
   function group for native ports behind a header `tos-linea.h`
   (`docs/api/_line-a.md:65-76`) and opcode interception in an m68k emulator
   (`:72-74`). It left two ADRs open: ADR-Line-A-01, the C ABI of that export
@@ -2838,7 +2842,9 @@ Evidence, checked 2026-10-26:
   not exist — the files are `references/emutos/bios/lineavars.S`,
   `references/emutos/bios/lineainit.c` and `references/emutos/bios/linea.S`;
   and its statement that the AES and the desktop call Line-A
-  (`docs/api/_line-a.md:78-92`) does not hold. No file under `aes/` or `desk/`
+  (`docs/api/_line-a.md:78-92`) does not hold (both corrected 2026-10-26:
+  the paths in `cbac4e82`, the AES claim when this ADR was accepted). No file
+  under `aes/` or `desk/`
   issues a Line-A opcode; the only one that includes `lineavars.h` is
   `references/emutos/desk/desksupp.c:56`; the AES hides and shows the mouse
   through VDI opcodes (`gsx_moff`/`gsx_mon`,
@@ -2863,7 +2869,7 @@ Evidence, checked 2026-10-26:
   a process — B1's page-0 publication covers the sysvars, OSHEADER and the
   cookie jar (`docs/COMPATIBILITY.md`, "System variables — compatible how").
 - **SDK:** mintlib's `linea.c` (the `linea0()`… bindings) is a recorded build
-  failure, m68k register asm (`sdk/libc/expected-failures.txt:21`,
+  failure (as of this writing; excluded by this ADR since acceptance), m68k register asm (`sdk/libc/expected-failures.txt:21`,
   `docs/sdk/07-mintlib-limits.md:47`); a port that calls a Line-A binding does
   not link. mintlib's alglobal.c is compiled, so `__aline` exists and stays a
   null pointer. `__LINEA` and `__FONT` change layout under LP64 and no port
@@ -2878,9 +2884,9 @@ Evidence, checked 2026-10-26:
   work names `v_lin_wr` as one of two possible answers to "how large is a
   screen page" (`docs/archive/status-log-2026-10-26.md:317`).
 - `docs/COMPATIBILITY.md` has no Line-A entry (`/usr/bin/grep -i -E
-  "line-a|linea"`, 2026-10-26).
+  "line-a|linea"`, 2026-10-26; entry "No Line-A" added on acceptance).
 
-### Decision (proposed)
+### Decision
 
 1. **(a) No Line-A opcode trap in the native system.** AArch64 has no
    `$Axxx` trap, and NewTOS does not invent a substitute (no `svc` class, no
@@ -2895,11 +2901,30 @@ Evidence, checked 2026-10-26:
    and position, `tos-api/src/vdi/mouse.rs:897-904`; `v_show_c`/`v_hide_c`;
    `vq_chcells`), the AES (`graf_mkstate`, `graf_handle`) and the XBIOS.
    The Line-A state stays kernel-internal behind those calls — the state of
-   the code today.
+   the code today. This also settles ADR-Line-A-02: the mouse cursor state
+   is the VDI's (`tos-api/src/vdi/mouse.rs:24-26`); ADR-011, which the
+   archived status log names for it, does not mention the cursor.
+4. **(b) No LINEA variable block is exported** (Q1). `__aline`, `__fonts`
+   and `__funcs` stay null by design
+   (`sdk/libc/mintlib/mintlib/alglobal.c:7`, `:11`, `:16`), so a reader
+   fails loud instead of reading wrong values: the named variables of
+   `<mint/linea.h>` are negative offsets from `__aline`
+   (`sdk/libc/mintlib/include/mint/linea.h:154-315`), which address just
+   below 2^64, and the EL0 data abort ends the program
+   (`kernel/src/arch/aarch64/exceptions.rs:303-309`). **Limit, found when
+   the ADR was accepted:** the `__LINEA` struct fields (`__aline->_VPLANES`
+   and the MWC macros, `sdk/libc/mintlib/include/mint/linea.h:485`ff.) are
+   positive offsets; null plus such an offset lies in page 0
+   (`sizeof(__LINEA)` < 0x1000 with `sdk/bin/newtos-cc`, checked
+   2026-10-26), which is mapped user read/write in every process
+   (`tos-api/src/bdos/process/mmu.rs:643`). Such a read does not fault, a
+   write lands in the process's page 0. No built program does either
+   (`docs/analysis/line-a-readers-2026-10-26.md`).
+5. **No C-callable function group, no `tos-linea.h`** (Q2). mintlib's
+   `linea.c` (`linea0()` … `lineaf()`) is **excluded** from the SDK build by
+   this ADR, not a build failure to be repaired.
 
-**(b) The variable block is not decided here** — see the open questions.
-
-### Open questions (the user's decision)
+### Open questions (the user's decision) — answered
 
 - **Q1 — Export a read-only LINEA variable block to programs?** The evidence
   shows readers in the reference (EmuDESK: two fields; EmuCON: two fields)
@@ -2911,14 +2936,21 @@ Evidence, checked 2026-10-26:
   `GCURX`/`GCURY`) or a snapshot; and how one global block maps onto
   ADR-011's per-device workstation. If no, EmuCON D4 needs one of its other
   options, and `__aline` stays null.
+  **Answer 2026-10-26 (user): no.** No native reader exists
+  (`docs/analysis/line-a-readers-2026-10-26.md`). `__aline` stays null by
+  design and a reader fails loud (Decision 4, with its limit). EmuCON D4
+  loses option (c).
 - **Q2 — The C-callable function group of D10 (`tos-linea.h`):** drop it, or
   keep it as a later option? Dropped, ADR-Line-A-01 (its C ABI) is moot and
   closes with this ADR; kept, ADR-Line-A-01 stays open.
+  **Answer 2026-10-26 (user): dropped.** ADR-Line-A-01 closes with this
+  ADR; `tos-linea.h` is removed from the documents (dated snapshots and
+  `docs/archive/` keep it as history).
 - **Q3 — The two EmuDESK readers — answered 2026-10-26 (user):** NEWDESK
   uses the VDI values. Under ADR-022 (1:1) it restores the `do_xyfix` nudge
   and, if `show_file` is ever built, the mouse-button page wait, reading the
   horizontal resolution and the button state through the VDI (above), not
-  through a LINEA block. Independent of Q1.
+  through a LINEA block. Independent of Q1. Ticket DESK69.
 
 ### Rationale
 
@@ -2928,41 +2960,52 @@ Evidence, checked 2026-10-26:
   (mintlib's) are m68k asm and do not build.
 - The EmuTOS AES and desktop do not use the trap either (above); the VDI
   already provides the primitives and the state.
-- The variable block is different: ported programs could read it, and the
-  reference desktop does. Without a port that needs it, the evidence
-  supports neither an export nor a rejection, so it stays open.
+- The variable block: ported programs could read it, and the reference
+  desktop does. While it stayed open (Proposed), the evidence supported
+  neither an export nor a rejection. The user decided against an export
+  because no native reader exists
+  (`docs/analysis/line-a-readers-2026-10-26.md`), and chose a null `__aline`
+  so that a future reader fails loud rather than silently.
 
 ### Consequences
 
-- Positive: no new trap or `svc` class; the Line-A state can stay internal
+- Positive: no new trap or `svc` class; the Line-A state stays internal
   and per device (ADR-011).
 - Negative: a source port that calls `linea0()` and friends fails at link
-  time; one that reads `__aline` without calling `linea0()` gets null. The
-  failure is recorded (`sdk/libc/expected-failures.txt:21`), not hidden.
-- NEWDESK's two EmuDESK deviations get closed through VDI values (Q3); this
-  needs a desktop ticket.
-- To do once accepted: correct `docs/api/_line-a.md` (source paths, the AES
-  claim, the implementation strategy); add an entry to `docs/COMPATIBILITY.md`
-  (absent Line-A trap; the block per Q1); close or keep the STATUS row
-  ADR-Line-A-01 per Q2.
+  time; one that reads `__aline` gets null and ends with a data abort on the
+  named variables — except the `__LINEA` struct fields, which reach page 0
+  silently (Decision 4). A port that needs Line-A values has to be changed to
+  the VDI calls of Decision 3.
+- NEWDESK's two EmuDESK deviations get closed through VDI values (Q3):
+  `TASK/DESK69.md`.
+- The SDK build change (mintlib `linea.c` excluded instead of recorded as an
+  expected failure) is a separate Developer task; the documents already say
+  "excluded by ADR-030".
+- Done on acceptance (2026-10-26): `docs/api/_line-a.md` corrected (AES
+  claim, implementation strategy replaced by this ADR; the source paths in
+  `cbac4e82`); `docs/COMPATIBILITY.md` entry "No Line-A"; STATUS row
+  ADR-Line-A-01 closed; `tos-linea.h` removed from
+  `docs/api/emucon/06-mapping-and-decisions.md`.
 - Neutral: m68k binaries are unaffected — there is no emulator.
 
 ### Alternatives considered
 
 - **A Line-A substitute trap for native code** (own `svc` immediate or an
   undefined-instruction hook): ports would still need source changes, since
-  their bindings are m68k asm; it adds an interface without a caller. Not
-  chosen in this draft.
-- **The C-callable function group of D10:** not rejected here — Q2.
+  their bindings are m68k asm; it adds an interface without a caller.
+  Rejected.
+- **The C-callable function group of D10:** rejected (Q2).
 - **A full live LINEA block at a fixed address in every process** (like the
-  B1 sysvars): not rejected here — Q1.
+  B1 sysvars): rejected (Q1).
 - **EmuTOS' global Line-A state as the VDI's own state:** rejected by
   ADR-011.
 
 ### References
 
 - `docs/api/_line-a.md` (Phase 00 D10); `docs/STATUS.md` *Open ADRs*;
-  `docs/archive/status-log-2026-10-26.md:1021-1022`.
+  `docs/archive/status-log-2026-10-26.md:1021-1022`;
+  `docs/analysis/line-a-readers-2026-10-26.md` (the reader sweep behind Q1/Q2);
+  `docs/COMPATIBILITY.md` ("No Line-A"); `TASK/DESK69.md`.
 - EmuTOS @ `1a7484ab`: `references/emutos/bios/linea.S`,
   `references/emutos/bios/lineavars.S`, `references/emutos/include/lineavars.h`,
   `references/emutos/bios/bios.c:176`, `references/emutos/desk/desksupp.c:56`,

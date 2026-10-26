@@ -146,7 +146,7 @@ replacing the `EXCLUDE`d `mintlib/nf_ops.c`); `do_fstat.c` also provides
 not compile and compares it with `expected-failures.txt`; an unrecorded
 failure **stops the build before the archive is written**, and a recorded file
 that started compiling is announced (`sdk/lib-stale.sh:229-283`,
-`build-libc.sh:171-181`). libc records five failures with reasons (2026-10-20: `mintlib/linea.c`, `mintlib/crtinit.c`, `mintlib/syscall.c`, `gmp/support.c`, `tz/dumpstate.c`)
+`build-libc.sh:171-181`). libc records five failures with reasons (2026-10-20: `mintlib/linea.c` — excluded by ADR-030, not a failure to repair —, `mintlib/crtinit.c`, `mintlib/syscall.c`, `gmp/support.c`, `tz/dumpstate.c`)
 (`sdk/libc/expected-failures.txt`); gemlib's and cflib's lists are empty, so
 any failure there stops the build (`sdk/gemlib/expected-failures.txt:3-5`).
 

@@ -44,7 +44,7 @@ on any failure not in it (`sdk/lib-stale.sh:229-283`). What each costs:
 
 | File | Reason (from the record) | What a program loses |
 |------|--------------------------|----------------------|
-| `mintlib/linea.c` | m68k inline asm — ST Line-A | Line-A (NewTOS has none) |
+| `mintlib/linea.c` | m68k inline asm — ST Line-A. **Excluded by ADR-030** (no Line-A on NewTOS), not a failure to repair; listed in `expected-failures.txt` until the build excludes it | the Line-A bindings `linea0()` … `lineaf()`; use the VDI calls instead (`docs/COMPATIBILITY.md`, "No Line-A") |
 | ~~`mintlib/nf_ops.c`~~ | m68k inline asm — ARAnyM NatFeats; excluded and replaced by `newtos-arch/nf_ops.c` since TASK/SDK01 A (§2) | — |
 | `mintlib/crtinit.c` | m68k asm + two LP64 basepage casts | nothing any more: `newtos-arch/cmdargs.c` is `parseargs()` with AArch64 pointer widths — `argc`/`argv` (PORT01), `environ`, the `ARGV=` extension and `program_invocation_name` (PORT09) — and `newtos-arch/heap_init.c` is `_crtinit`/`_acc_main` (`_base`, `_stksize`, Mshrink; T05, E9) — see §5 |
 | ~~`mintlib/spawnve.c`, `spawnvp.c`~~ | compile since TASK/PORT10 (`sdk/libc/overlay/mintlib/`, `va_arg` instead of `va_list` arithmetic) | — the `spawn*` family works (synchronous `Pexec(0)`, QEMU-verified); `system()` is mintlib's own since TASK/PROC01 — §8 |
