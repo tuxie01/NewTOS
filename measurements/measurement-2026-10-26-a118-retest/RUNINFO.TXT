@@ -1,0 +1,79 @@
+measurement-2026-10-26-a118-retest -- Tester: independent re-test of the A118 rework (3cb21e31 fix + 582a31ff docs), base f42f3719.
+No hardware, no card, no push, no product code change. Host macOS, QEMU raspi4b (-append serial=on), one QEMU at a time, per-run APFS clones deleted.
+Scratch = session scratchpad .../scratchpad/a118-retest (s/ = trees, kernels, cards; mut/ = mutation tree); trees and target removed after the run.
+method/ = the developer's measurement-2026-10-26-a118-fix/method unchanged (env.sh paths: scratch -> a118-retest/s, HEADREV f42f3719),
+method/tester/ = previous Tester scripts + new: mut2.py, aes_retest_extra-tests.rs.txt, aes_retest_extra2.rs.txt.
+
+RESULT IN ONE LINE: PASS. Every developer number reproduces (1657/0/1 -> 1664/0/1, 159 warning lines, clippy 74/121, QEMU pixel-identical apart from two
+timing artefacts), the previous Tester's 3 extra tests and all 5 previously required mutations are red/green as demanded, no defect found in
+end_unused_grant. OPEN ITEM (test gaps, not product): 9 of my 14 own mutations survived the developer's suite; 6 are killed by 5 extra host
+tests I wrote (proposal for the suite), 3 are observably equivalent.
+
+1. HOST
+ cargo xtask test (lint-both.sh + xtest-both.sh, scratch trees of f42f3719 / working tree): base 162 bin 1657 passed 0 failed 1 ignored,
+  new 162 bin 1664 / 0 / 1 (checks/xtest-base.txt, xtest-new.txt; lint-*-summary.txt).
+ Previous Tester extras (method/tester/aes_tester_extra-appended-tests.rs.txt, appended to a copy of the developer's test file, fn t_ -> t2_
+  because the developer already carries the same three as t_*): 23/23 green on new (checks/mutations.txt, line UNMUTATED).
+ Mutations, scratch copy of the new tree (method/tester/mut2.py, checks/mutations.txt; one at a time, source restored from memory):
+  previous survivors a close_window without update_beg, b graf_dragbox without update_beg, c evnt_multi parked rect own_mouse,
+  d evnt_mouse parked rect own_mouse            -> all four RED (every_taker_nests_inside_the_callers_own_hold x2, evnt_multi_/evnt_mouse_parked_rectangle_..).
+  e end_unused_grant call removed               -> RED, 7 of 23 fail (the six leak cases + a_refused_re_execution_hands_the_lock_to_the_next_waiter).
+  Own mutations on end_unused_grant (f..s), against developer's suite + the previous extras (23 tests):
+   RED   f unsync -> drain_update_lock (hand-over to all waiters), m/n/o opcode 105/101/102 dropped from the matches!, q unsync twice.
+   SURVIVED (9): g grant flag not cleared (swap -> load = "missing counter reset"); h applied BEFORE the gate (also when the gate takes the lock);
+     i applied after update_block (also when the gate takes the lock); j same_holder check dropped; k lock>0 check dropped;
+     l applied to every opcode (matches! dropped); p opcode 103 dropped; r unsync(CTL_PD) instead of unsync(me); s flag cleared only on release.
+  Triage: I wrote 5 host tests (method/tester/aes_retest_extra-tests.rs.txt, aes_retest_extra2.rs.txt), all GREEN on the unmutated new tree
+  (28/28 incl. the previous extras; checks/mutations-with-retest-extras.txt):
+   r_wind_delete_parked_then_window_closed_by_other_does_not_leak_lock          kills p (103 was the only taker without a leak test)
+   r_valid_re_execution_keeps_the_wait_line_order                               kills h
+   r_grant_flag_is_reset_by_the_refused_re_execution                            kills g (stale grant: B's own BEG_UPDATE would be uncounted)
+   r_drain_grant_does_not_touch_a_lock_taken_later_by_another (wm_new drain)    kills g, j, s (releasing/consuming C's lock after the drain)
+   r_wind_update_re_execution_keeps_the_wait_line_order                         kills l
+  Still surviving after that: i, k, r -- i: the grant is released, the lock goes to C, B's body then nests on C's lock (count +1/-1): same end state,
+  differs only by mutual exclusion during the body, not observable by test_update_lock(); k: unsync(me) with count 0 is a no-op, equivalent;
+  r: same lock count, only the per-identity share differs, same with a single holder, equivalent in every reachable state I could build.
+  Note: these gaps are in the TEST suite, the product code passes all 5 new tests unmutated (no product defect). The 5 tests are NOT committed
+  to tos-api/tests (no product/test changes by the Tester); they are here for the developer to take over.
+
+2. READ end_unused_grant (tos-api/src/aes/window.rs:4237-4258, crysbind mod.rs:885-889) against EmuTOS (aes/gemflag.c:105-130, gemwmlib.c:1415-1422,
+   1443-1450, 1632-1638, 1879-1883 wm_new):
+  - Release of a lock the caller legitimately holds (nested BEG_UPDATE by itself)? No: the function does nothing unless UPDATE_GRANTED[me] is set
+    (swap -> false). The flag is only set by unsync's hand-over (lock becomes (1, me)) and by wm_new's drain (lock 0, no count). A caller that
+    holds the lock itself and makes a refused window call has no flag -> returns at the first line (every_taker_nests_.. and
+    r_grant_flag_is_reset_.. exercise refused calls inside the caller's own hold: lock unchanged).
+  - Double release? The swap clears the flag before the unsync; a parked call is re-executed once per hand-over; the second call finds no flag.
+    (mutations g/q show the tests see a flag that is not cleared / a second unsync.)
+  - wm_new drain: the drain grants without a count and leaves the lock 0/NO_OWNER, so the guard UPDATE_LOCK>0 && same_holder is false -> the grant is only collected.
+    If C takes the lock in between, same_holder(C, B) is false -> C's lock untouched (r_drain_.. proves it; j shows the test needed it).
+    Residual theoretical case, no test, not seen: drain grant to B, then ANOTHER IDENTITY OF B'S OWN application chain (same_pd fold) takes the lock, then
+    B's call refuses -> same_holder true -> that identity's lock is released. Requires two identities of one chain racing in the window between the
+    drain and B's re-execution.
+  - Gate/else structure: end_unused_grant sits in the `else if matches!(101|102|103|105)` of the gate, i.e. only when opcode_takes_lock is false
+    for this call; with gate true the grant is collected by tak_flag in update_beg as before (mutations h/i differ only in order/exclusion, see above).
+  - EmuTOS difference (named in the spec "A refusal after the wait"): EmuTOS would continue with the body on the window it validated BEFORE the wait; here the
+    re-executed call returns the refusal the table gives now. Lock outcome identical. I agree with the spec.
+
+3. BUILDS (lint.sh: cargo xtask build --board qemu-virt|rpi4 dev + release, fresh per board in scratch trees; clippy)
+   base f42f3719 and new: all 4 builds exit 0, 159 warning lines each; clippy kernel (both boards) tos-api 74 / kernel 121; clippy tos-api host 74;
+   clippy tos-api --tests exit 0, 0 warnings in aes_a118_lock_takers.rs. Delta 0. (checks/lint-*-summary.txt)
+   The 12 release kernels (rpi4) are bit-identical to the developer's (checks/kernels.sha256 vs measurement-2026-10-26-a118-fix/checks/kernels.sha256).
+
+4. QEMU raspi4b (checks/compare-*.txt, checks/api-base-vs-new.txt; one QEMU at a time)
+ a) GH1 series (nd/td/qed, memprot on) head=f42f3719 vs wt: 41 compared; 40 identical, 1 differs: on-qed-q-cancelled.png 54 px, bbox x48..50 y61..78 =
+    QED's 3x18 px text caret. Rerun of the qed scenario twice per side: phase flips between runs on BOTH sides (run 1: base off / new on; rerun:
+    base on / new off; screendumps/run1-qed-cancelled/) -> caret blink phase, not a regression (looked at the zoomed pixels).
+ b) std card nd script 26 + A117 methods (a117 5 + a117td 2) + TeraDesk launch+quit 3 + a118 fsel probe 2 + APITEST shots 3 = 41 pairs, all 0 px.
+    (Note: base f42f3719 already carries the A118 original fix, so the probe is expected identical: new-a118-1-after.png shows the plain C: icon, not selected.)
+ c) APITEST #Z memprot on/off/strict: base 109/0/5 = new 109/0/5 in all three modes, 124 result lines, 0 differing.
+ d) Tester scenarios (method/tester/run-fmpark.sh): A118DL.NAC ap_exit with TeraDesk quit, accessory answers AC_CLOSE through BEG_UPDATE,
+    cards dltd (no startup hold) and dltdh (6 s hold), base vs new: no hang, no EXC/PANIC, "desktop up" in all four; serial order identical base/new
+    ("AC_CLOSE seen, BEG_UPDATE" -> "desktop up" -> "AC_CLOSE answered, END_UPDATE", as in the previous run's "new"). Screendumps quitdlg/after/after12 0 px.
+    dltdh-onquit: 4992 px bbox x0..311 y80..95 = the accessory's console line "A118DL: AC_CLOSE answered, END_UPDATE 0" drawn in the new shot, not yet in
+    the base shot (looked at both): timing of the shot against the console line (the serial log order is identical, after/after12 shots equal).
+    fm_error park (fmpark card, #Z C:\NOPE.NAP + 6 s hold): serial 73 lines identical, EXC/PANIC 0, all 8 shots t02..t30 0 px; the alert
+    "This application cannot find the folder or file you just tried to access." is displayed in both (looked at new t30).
+ e) fsck_msdos -n rc 0 on all 8 regression clones; EXC/PANIC in all 38 serial logs of the run: 0 (checks/serial.sha256, screendumps.sha256).
+
+5. NOT COVERED: real Pi 4 (cache/HDMI/real input); the defect itself needs two processes changing one window during a park -> host-proven only, no app does
+   this; HypView series, memprot off/strict desktop series (APITEST covers the modes); the in-body theoretical same-chain residual of section 2.

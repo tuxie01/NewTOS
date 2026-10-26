@@ -1,0 +1,2 @@
+cargo xtask test (new) exit 0
+binaries 162 passed 1664 failed 0 ignored 1

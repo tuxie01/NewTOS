@@ -1,0 +1,16 @@
+dltd-tdq-1-after.png 0 px 
+dltd-tdq-1-after12.png 0 px 
+dltd-tdq-1-onquit.png 0 px 
+dltd-tdq-1-quitdlg.png 0 px 
+dltdh-tdq-1-after.png 0 px 
+dltdh-tdq-1-after12.png 0 px 
+dltdh-tdq-1-onquit.png 4992 px bbox x0..311 y80..95
+dltdh-tdq-1-quitdlg.png 0 px 
+fmpark-1-t02.png 0 px 
+fmpark-1-t04.png 0 px 
+fmpark-1-t06.png 0 px 
+fmpark-1-t08.png 0 px 
+fmpark-1-t10.png 0 px 
+fmpark-1-t14.png 0 px 
+fmpark-1-t20.png 0 px 
+fmpark-1-t30.png 0 px 

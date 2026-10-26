@@ -1,0 +1,99 @@
+
+// ── RETEST (Tester 2026-10-26): gaps the mutations g/h/i/j/p/s found in the developer's suite ──
+
+/// wind_delete (103, open window) parks, the holder closes the window (and ends its hold): the re-executed delete takes no lock.
+#[test]
+fn r_wind_delete_parked_then_window_closed_by_other_does_not_leak_lock() {
+    let (_g, _host) = lock();
+    let mut p = pair();
+    p.b.run();
+    let h = wind_create(&mut p.pbb);
+    assert_eq!(wind_open(&mut p.pbb, h).ret, Some(1));
+    p.a_holds();
+    let o = wind_delete(&mut p.pbb, h);
+    p.assert_parked(&o, "wind_delete");
+    p.a.run();
+    assert_eq!(wind_close(&mut p.pa, h).ret, Some(1));
+    assert_eq!(wind_update(&mut p.pa, END_UPDATE).ret, Some(1));
+    p.b.run();
+    let r = p.pbb.trap();
+    eprintln!("B re-exec ret={:?} lock={:?}", r.ret, test_update_lock());
+    assert_eq!(test_update_lock(), (0, None), "lock leaked to B after the delete's re-execution");
+}
+
+/// A successful (gate-true) re-execution keeps the hand-over order: B (valid window) finishes first, then C gets the lock.
+#[test]
+fn r_valid_re_execution_keeps_the_wait_line_order() {
+    let (_g, _host) = lock();
+    let mut p = pair();
+    let c = Proc::new(true);
+    let mut pc = Aespb::new();
+    c.run();
+    appl_init(&mut pc);
+    sched::unready(c.slot);
+    p.b.run();
+    let h = wind_create(&mut p.pbb);
+    p.a_holds();
+    let o = wind_set(&mut p.pbb, h, WF_NAME);
+    p.assert_parked(&o, "wind_set");
+    c.run();
+    assert_eq!(wind_update(&mut pc, BEG_UPDATE).ret, None, "C waits behind A and B");
+    p.a.run();
+    assert_eq!(wind_update(&mut p.pa, END_UPDATE).ret, Some(1));
+    p.b.run();
+    assert_eq!(p.pbb.trap().ret, Some(1), "B's wind_set on the valid window completes (not parked again)");
+    assert_eq!(test_update_lock(), (1, Some(c.slot)), "then C gets the lock");
+}
+
+/// After a refused re-execution consumed the hand-over, B's later BEG_UPDATE counts normally (the grant flag was reset).
+#[test]
+fn r_grant_flag_is_reset_by_the_refused_re_execution() {
+    let (_g, _host) = lock();
+    let mut p = pair();
+    p.b.run();
+    let h = wind_create(&mut p.pbb);
+    p.a_holds();
+    let o = wind_set(&mut p.pbb, h, WF_NAME);
+    p.assert_parked(&o, "wind_set");
+    p.a.run();
+    assert_eq!(wind_delete(&mut p.pa, h).ret, Some(1));
+    assert_eq!(wind_update(&mut p.pa, END_UPDATE).ret, Some(1));
+    p.b.run();
+    assert_eq!(p.pbb.trap().ret, Some(0));
+    assert_eq!(test_update_lock(), (0, None));
+    assert_eq!(wind_update(&mut p.pbb, BEG_UPDATE).ret, Some(1));
+    assert_eq!(test_update_lock(), (1, Some(p.b.slot)), "B's own BEG_UPDATE must count (no stale grant)");
+    // a second refused window call inside B's own hold must not release it
+    assert_eq!(wind_set(&mut p.pbb, h, WF_NAME).ret, Some(0));
+    assert_eq!(test_update_lock(), (1, Some(p.b.slot)), "refused call inside B's own hold leaves it alone");
+    assert_eq!(wind_update(&mut p.pbb, END_UPDATE).ret, Some(1));
+    assert_eq!(test_update_lock(), (0, None));
+}
+
+/// wm_new's drain grants B without a count; C then takes the lock; B's refused re-execution must neither release C's lock
+/// nor keep a grant that would let B take the lock uncounted later.
+#[test]
+fn r_drain_grant_does_not_touch_a_lock_taken_later_by_another() {
+    let (_g, _host) = lock();
+    let mut p = pair();
+    let c = Proc::new(true);
+    let mut pc = Aespb::new();
+    c.run();
+    appl_init(&mut pc);
+    sched::unready(c.slot);
+    p.b.run();
+    let h = wind_create(&mut p.pbb);
+    p.a_holds();
+    let o = wind_set(&mut p.pbb, h, WF_NAME);
+    p.assert_parked(&o, "wind_set");
+    tos_api::aes::window::wm_new(); // sweep: lock drained, B granted without count, windows gone
+    assert_eq!(test_update_lock(), (0, None), "drained");
+    c.run();
+    assert_eq!(wind_update(&mut pc, BEG_UPDATE).ret, Some(1), "C takes the free lock");
+    assert_eq!(test_update_lock(), (1, Some(c.slot)));
+    p.b.run();
+    let r = p.pbb.trap();
+    eprintln!("B re-exec ret={:?} lock={:?}", r.ret, test_update_lock());
+    assert_eq!(test_update_lock(), (1, Some(c.slot)), "B's refused re-execution leaves C's lock alone");
+    assert_eq!(wind_update(&mut p.pbb, BEG_UPDATE).ret, None, "B's BEG_UPDATE parks behind C (no stale grant)");
+}
