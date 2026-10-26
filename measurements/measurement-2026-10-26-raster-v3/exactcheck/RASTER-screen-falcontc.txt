@@ -1,0 +1,15 @@
+old EMUTOS-v2-RASTER-screen-falcontc.BIN: format 2, area VDI-RASTER, 62 records of 3696 bytes, build c1f4, case CRC 9780EC39
+new EMUTOS-v3-RASTER-screen-falcontc.BIN: format 3, pointer 4 bytes, word order 1, build c1f4
+header byte  5: 02 -> 03 (excluded)
+header byte 21: 00 -> 04 (excluded)
+header byte 23: 00 -> 01 (excluded)
+excluded cell: contrl_mfdb[0..1], record bytes 22..25
+excluded cell: contrl_mfdb[2..3], record bytes 26..29
+excluded cell: contrl_before_mfdb[0..1], record bytes 52..55
+excluded cell: contrl_before_mfdb[2..3], record bytes 56..59
+excluded per record: 4 cells, 16 bytes; total: 248 cells, 992 bytes of 229152 payload bytes
+header bytes differing: 3 (excluded)
+payload bytes differing inside excluded cells: 496
+payload bytes differing outside excluded cells: 0
+RESULT: PASS -- every other byte is equal
+exit 0

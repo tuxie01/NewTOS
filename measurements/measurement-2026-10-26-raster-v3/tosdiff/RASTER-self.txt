@@ -1,0 +1,8 @@
+EMUTOS-v3-RASTER.BIN vs EMUTOS-v3-RASTER.BIN -- area VDI-RASTER, 59 cases from vdi-raster.tsv
+
+0 of 59 cases differ
+address check, EMUTOS-v3-RASTER.BIN: format 3, pointer 4 bytes, most significant word first; 236 address cells checked, 0 not < 0x80000000
+address check, EMUTOS-v3-RASTER.BIN: format 3, pointer 4 bytes, most significant word first; 236 address cells checked, 0 not < 0x80000000
+kept check, EMUTOS-v3-RASTER.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 118 cells checked, 0 changed by the call
+kept check, EMUTOS-v3-RASTER.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 118 cells checked, 0 changed by the call
+exit 0

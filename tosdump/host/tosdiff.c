@@ -11,8 +11,8 @@
  *        tosdiff CASES.TSV A.BIN B.BIN
  *
  * exit: 0 = accepted / no differences, 1 = differences found (a value
- *       difference, or an address cell that is not < 0x80000000),
- *       2 = refused.
+ *       difference, an address cell that is not < 0x80000000, or an MFDB
+ *       pointer cell the call changed -- the kept check), 2 = refused.
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -336,6 +336,143 @@ static void addr_check_summary(const struct td_dump *d,
 	       (unsigned long)TD_ADDR_LIMIT);
 }
 
+/*
+ * The kept check, per dump: a relational property within ONE side, like the
+ * address check.  The raster frame records the MFDB pointer slots twice,
+ * after the call (contrl_mfdb) and as they stood going in
+ * (contrl_before_mfdb).  The VDI reads the two MFDB pointers and must not
+ * write them: every address cell after the call must equal its twin before
+ * the call.  The two values come from the same run of the same dumper, so
+ * -- unlike a comparison across two machines -- their equality measures the
+ * API, not the linker.
+ *
+ * The table names the pair; the cells come from the descriptors
+ * (td_addr_cell_count / td_addr_cell_value), so the check follows the
+ * dump's own pointer width and word order: contrl[7..8] and [9..10] on a
+ * four-byte m68k, contrl[7..10] and [11..14] on an eight-byte AArch64.  Like
+ * the address check it needs a format 3 header, and a format 2 dump is
+ * reported as not checkable.  A violation is its own verdict, never folded
+ * into "cases differ".
+ */
+struct kept_pair {
+	uint16_t    area;
+	const char *after;    /* address field, recorded after the call   */
+	const char *before;   /* its twin, recorded before the call       */
+};
+
+static const struct kept_pair kept_pairs[] = {
+	{ TD_AREA_RASTER, "contrl_mfdb", "contrl_before_mfdb" },
+	{ 0, NULL, NULL }
+};
+
+/* At most this many pairs per area; kept_resolve refuses more. */
+#define KEPT_MAX 4
+
+struct kept_field {
+	const struct td_field *after;
+	const struct td_field *before;
+};
+
+static const struct td_field *field_by_name(const struct td_field *fields,
+                                            const char *name)
+{
+	for (; fields->name; fields++)
+		if (strcmp(fields->name, name) == 0)
+			return fields;
+	return NULL;
+}
+
+/*
+ * The pairs of `area`, resolved against its descriptors.  Returns the number
+ * of pairs, or -1 when a pair does not resolve to two address fields of the
+ * same shape -- a renamed or reshaped descriptor must stop the comparison,
+ * not switch the check off without a word.
+ */
+static int kept_resolve(uint16_t area, const struct td_field *fields,
+                        struct kept_field *out)
+{
+	const struct kept_pair *p;
+	int n = 0;
+
+	for (p = kept_pairs; p->after; p++) {
+		const struct td_field *fa, *fb;
+
+		if (p->area != area)
+			continue;
+		fa = field_by_name(fields, p->after);
+		fb = field_by_name(fields, p->before);
+		if (!fa || !fb || n >= KEPT_MAX ||
+		    fa->compare != TD_FIELD_ADDRESS ||
+		    fb->compare != TD_FIELD_ADDRESS ||
+		    fa->addr_cell != fb->addr_cell || fa->count != fb->count ||
+		    fa->width != fb->width) {
+			fprintf(stderr,
+			        "tosdiff: refusing: kept check %s / %s does not "
+			        "resolve to two address fields of one shape in area %s\n",
+			        p->after, p->before, td_area_name(area));
+			return -1;
+		}
+		out[n].after  = fa;
+		out[n].before = fb;
+		n++;
+	}
+	return n;
+}
+
+struct kept_check {
+	unsigned long checked;
+	unsigned long changed;
+};
+
+static void kept_check_side(const struct td_dump *d, const uint8_t *rec,
+                            const struct kept_field *k, struct kept_check *kc,
+                            int label_w, const struct td_casefile *cf,
+                            uint16_t case_id, uint16_t opcode, int *printed)
+{
+	uint16_t n, cells, words;
+
+	cells = td_addr_cell_count(k->after, &d->h);   /* 0 on format 2 */
+	words = td_addr_cell_words(k->after, &d->h);
+	for (n = 0; n < cells; n++) {
+		uint64_t va = td_addr_cell_value(rec, k->after, &d->h, n);
+		uint64_t vb = td_addr_cell_value(rec, k->before, &d->h, n);
+		unsigned w0 = (unsigned)(k->after->first + n * words);
+		char name[48];
+
+		kc->checked++;
+		if (va == vb)
+			continue;
+		kc->changed++;
+		print_case_header(cf, case_id, opcode, printed);
+		snprintf(name, sizeof name, "%s[%u..%u]", k->after->name, w0,
+		         w0 + words - 1u);
+		printf("    %-24s KEPT %-*s = 0x%0*llX, before the call 0x%0*llX\n",
+		       name, label_w, d->label, (int)(words * 4u),
+		       (unsigned long long)va, (int)(words * 4u),
+		       (unsigned long long)vb);
+	}
+}
+
+static void kept_check_summary(const struct td_dump *d,
+                               const struct kept_field *k, int nkept,
+                               const struct kept_check *kc)
+{
+	int i;
+
+	for (i = 0; i < nkept; i++) {
+		if (!td_header_states_ptr(&d->h))
+			printf("kept check, %s: not checkable -- format %u states no "
+			       "pointer width or word order (%s against %s unread)\n",
+			       d->label, d->h.version, k[i].after->name,
+			       k[i].before->name);
+		else
+			printf("kept check, %s: format %u; %s against %s, %lu cells "
+			       "checked, %lu changed by the call\n",
+			       d->label, d->h.version, k[i].after->name,
+			       k[i].before->name, kc[i].checked, kc[i].changed);
+	}
+}
+
 static int cmd_compare(const char *cases_path, const char *a_path,
                        const char *b_path)
 {
@@ -344,11 +481,16 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 	const struct td_field *fields;
 	const char *why = NULL;
 	struct addr_check acheck_a, acheck_b;
+	struct kept_field kept[KEPT_MAX];
+	struct kept_check kcheck_a[KEPT_MAX], kcheck_b[KEPT_MAX];
+	unsigned long kept_changed = 0;
 	uint16_t rec, differing = 0;
-	int label_w;
+	int label_w, nkept, ki;
 
 	memset(&acheck_a, 0, sizeof acheck_a);
 	memset(&acheck_b, 0, sizeof acheck_b);
+	memset(kcheck_a, 0, sizeof kcheck_a);
+	memset(kcheck_b, 0, sizeof kcheck_b);
 
 	/* The dumps come first: the case table's comment column is per area
 	 * (casefile.h), and the area is the dump's to state, not the caller's
@@ -428,6 +570,9 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 		        td_area_name(a.h.area));
 		goto refuse;
 	}
+	nkept = kept_resolve(a.h.area, fields, kept);
+	if (nkept < 0)
+		goto refuse;
 
 	label_w = (int)strlen(a.label);
 	if ((int)strlen(b.label) > label_w)
@@ -491,6 +636,12 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 				printf("\n");
 			}
 		}
+		for (ki = 0; ki < nkept; ki++) {
+			kept_check_side(&a, ra, &kept[ki], &kcheck_a[ki], label_w, &cf,
+			                case_id, record_opcode(&a, rec), &printed_header);
+			kept_check_side(&b, rb, &kept[ki], &kcheck_b[ki], label_w, &cf,
+			                case_id, record_opcode(&a, rec), &printed_header);
+		}
 		if (value_differs)
 			differing++;
 	}
@@ -498,9 +649,14 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 	printf("\n%u of %u cases differ\n", differing, a.h.record_count);
 	addr_check_summary(&a, &acheck_a);
 	addr_check_summary(&b, &acheck_b);
+	kept_check_summary(&a, kept, nkept, kcheck_a);
+	kept_check_summary(&b, kept, nkept, kcheck_b);
+	for (ki = 0; ki < nkept; ki++)
+		kept_changed += kcheck_a[ki].changed + kcheck_b[ki].changed;
 	dump_free(&a);
 	dump_free(&b);
-	return (differing || acheck_a.violations || acheck_b.violations) ? 1 : 0;
+	return (differing || acheck_a.violations || acheck_b.violations ||
+	        kept_changed) ? 1 : 0;
 
 refuse:
 	dump_free(&a);

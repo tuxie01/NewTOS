@@ -1,0 +1,174 @@
+NewTOS -- tosdump record format 3: replace the two pinned EmuTOS RASTER references -- 2026-10-26
+=========================================================================================
+MEASUREMENT + tosdiff change. Format 3: docs/TOS-REFERENCE-DUMPER.md section 3
+("Format versions", "Field classes: value and address"); oracle rules:
+docs/analysis/ORACLE.md section 7. Predecessor run:
+measurements/measurement-2026-10-26-ref07-v3/RUNINFO.TXT (12 of 14 references
+replaced there; the two RASTER references stayed format 2 because their MFDB
+pointer cells move with the dumper's text segment).
+
+WHAT / WHY
+  User decision 2026-10-26: "RASTER condition = payload byte-identical except
+  header and address cells. Run exactly that check, then replace.
+  Additionally, per side: contrl[8]/[10] after == _before (VDI must not modify
+  the MFDB pointers). That is real behaviour, checkable within one side."
+  Earlier: "re-record in v3 with the pinned ROM ... Then replace; v2 stays in
+  git history."
+  This run (1) re-records EMUTOS-1a7484ab-RASTER and -RASTER-screen-falcontc
+  in format 3 on the pinned oracle with the HEAD dumper, (2) runs exactly
+  that condition against the format 2 references, (3) adds the per-side check
+  to tosdiff as the "kept check", (4) installs the two format 3 files, (5)
+  compares the NewTOS format 3 raster recording
+  (measurements/measurement-2026-10-26-newtos-v3/runs/RASTER/RASTER.BIN)
+  against the new EmuTOS reference. No ticket carries this work; the run
+  name was given by the lead.
+
+Git HEAD          : 6ce7b877ddfa1b9f159977421dd9c5eebb4ad027 (main), tree clean at
+                    start. Dumper source = HEAD; tosdump/core, tosdump/abi and
+                    tosdump/Makefile are unchanged since d42675e5 (format 3).
+                    The tosdiff change of this run is host-only (tosdiff.c, not
+                    compiled into any dumper).
+Oracle            : tools/hatari-oracle.sh sha256
+                    562a3add2ac1e54b826d1133e56bb73ca0c48cf5bd67ec5e2ad09c2d1be92198,
+                    default ROM tools/oracle/etos512de-1a7484ab.img sha256
+                    323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+                    (checked by the script)
+Hatari            : 2.6.1, binary sha256 953f4e78eea55a8ca12ed6c83de1f045545b8da42a49e00112eaa235dffcd6f6
+Hatari config     : tools/oracle/hatari.cfg sha256
+                    c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46
+                    (unchanged after the runs; no --saveconfig used)
+Toolchain         : /opt/cross-mint/bin/m68k-atari-mint-gcc (MiNT 20230908) 7.5.0
+
+------------------------------------------------------------------------------
+DUMPERS
+------------------------------------------------------------------------------
+  make -C tosdump BUILD=<run>/dumpers/<id> BUILD_ID=<id> dumprast-m68k, with
+  the build id each reference already carries (as the two predecessor runs):
+    dumpers/fdf8/DUMPRAST.PRG 089f5772aaa1b6ec0a36909b7e6945790af11230e4f7ff6648f91f826ead4d3f
+    dumpers/c1f4/DUMPRAST.PRG f68fd33713bddc3d2cc869c6ff996e563ec7ef40eb1acc513707892d83f5599f
+  text 140900, data 1588, bss 363916 -- the same sizes as the ref07-v3 dumpers.
+  The PRG sha256 differs from those (random temporary object names in the
+  symbol table, see the ref07-v3 RUNINFO NOTES); the recorded dumps do not:
+  both BIN files of this run are byte-identical to ref07-v3's runs/RASTER*/RASTER.BIN.
+
+------------------------------------------------------------------------------
+METHOD
+------------------------------------------------------------------------------
+  method/run-raster-v3.sh <abs runs dir>
+      copy of the ref07-v3 run-v3.sh, reduced to the two RASTER rows; one
+      Hatari session per table via tools/hatari-oracle.sh:
+        RASTER                  tt        vdi-raster.tsv          fdf8
+        RASTER-screen-falcontc  falcontc  vdi-raster-screen.tsv   c1f4
+      runs/<table>/ keeps RASTER.BIN, RASTER.LOG, hatari.log; the hd/
+      staging directories were moved to the scratch area.
+  method/exactcheck.c
+      the replacement condition, compiled against tosdump/core/record.c.
+      Header (32 bytes) excluded and reported. The address exclusion set is
+      derived from the descriptors, not listed by hand: every field of
+      td_area_fields(area) with compare == TD_FIELD_ADDRESS, and in it only
+      its address CELLS (td_addr_cell_count / td_addr_cell_words), with the
+      cell geometry from the format 3 header (pointer 4 bytes, MSW first),
+      applied to both files (the format 2 LOG states the same: "pointer 4
+      bytes, MFDB pointer slots at contrl[7] and [9]"). WORDs of an address
+      field that are no cell (contrl[11..14] and contrl_before[11..14] at four
+      bytes per pointer) stay COMPARED. Exit 0 only if no other byte differs.
+  method/compare-raster-v3.sh <v2-dir>
+      builds exactcheck, runs it per table (-> exactcheck/<table>.txt), runs
+      tosdiff on each EmuTOS v3 recording against itself (-> tosdiff/<table>-self.txt),
+      on the NewTOS v3 recording against itself (-> tosdiff/newtos-self.txt) and
+      EmuTOS v3 RASTER vs NewTOS v3 (-> tosdiff/newtos-vs-emutos.txt). Files are
+      copied to distinct names first so tosdiff's labels tell the sides apart.
+  <v2-dir> = copies of tosdump/reference/EMUTOS-1a7484ab-RASTER*.{BIN,LOG}
+  from the clean tree at 6ce7b877, taken before the replacement:
+    EMUTOS-1a7484ab-RASTER.BIN                 cd68310a4022b0e391481dc0d86fd41e97d816461f800af9473d96a8f7d9beee
+    EMUTOS-1a7484ab-RASTER.LOG                 18c4759a7941c7c25747af146e48f58acf65f5c60fc5d491da9a65255fb46596
+    EMUTOS-1a7484ab-RASTER-screen-falcontc.BIN 70fbf432678d65e0d7a1c4ed01d41c43d9788c4ec2243bccba0dfc60ec0be406
+    EMUTOS-1a7484ab-RASTER-screen-falcontc.LOG 8cee62413278d132dcdd4a4c1796cd25025d93471bf9cc0d030d45cd093ecea3
+  (they stay in git history; not copied into this run).
+
+------------------------------------------------------------------------------
+RESULTS
+------------------------------------------------------------------------------
+  Recording: both sessions exit 0, "all 59 cases ran" / "all 62 cases ran".
+  Header vs the format 2 reference: bytes 5 (02 -> 03), 21 (00 -> 04), 23
+  (00 -> 01) -- format 3, pointer 4 bytes, MSW first; magic, area, record
+  size and count, build id, case CRC unchanged. LOG: only line 1 differs,
+  "record format 2" -> "record format 3". hatari.log equal to ref07-v3's
+  except paths and the boot time.
+
+  1. The exact check (exactcheck/<table>.txt)
+
+  table                   excluded cells (per record / total)  excluded bytes  differing inside  differing outside  result
+  RASTER                  4 / 236                              944 of 218064   472               0                  PASS
+  RASTER-screen-falcontc  4 / 248                              992 of 229152   496               0                  PASS
+
+  The four excluded cells per record, from the descriptors:
+  contrl_mfdb cells 0 and 1 = contrl[7..8], [9..10] (record bytes 22..29),
+  contrl_before_mfdb cells 0 and 1 = contrl_before[7..8], [9..10] (52..59).
+  Every other payload byte is equal. The differing bytes inside the cells
+  are the low WORDs only (2 bytes x 4 cells x records), the shift of the
+  dumper's BSS, as the ref07-v3 run already described.
+
+  2. The kept check, per side (tosdiff/*.txt): every MFDB pointer cell after
+     the call equals its twin before the call
+
+  side                                       pointer  cells checked  changed  result
+  EmuTOS v3 RASTER (tt)                      4, MSW   118            0        PASS
+  EmuTOS v3 RASTER-screen-falcontc           4, MSW   124            0        PASS
+  NewTOS v3 RASTER (newtos-v3 run, QEMU)     8, LSW   118            0        PASS
+  (address check on the same files: 236 / 248 / 236 cells, 0 not < 0x80000000)
+  With four-byte pointers the cells are contrl[7..8] and [9..10] -- the
+  user's contrl[8]/[10] plus their high WORDs; with eight-byte pointers
+  contrl[7..10] and [11..14].
+
+  3. tosdiff change (tosdump/host/tosdiff.c; docs/TOS-REFERENCE-DUMPER.md
+     section 3, "The kept check")
+     kept_pairs names the pair (VDI-RASTER: contrl_mfdb / contrl_before_mfdb),
+     resolved against the descriptors -- a pair that does not resolve to two
+     address fields of one shape makes tosdiff refuse (exit 2). Cells and
+     their values come from td_addr_cell_count / td_addr_cell_value, so the
+     check follows each dump's own pointer width and word order. Own verdict
+     line per dump ("kept check, <dump>: format 3; contrl_mfdb against
+     contrl_before_mfdb, K cells checked, C changed by the call"), violations
+     printed under the case as "... KEPT <dump> = 0x..., before the call
+     0x...", not counted as a value difference; exit 1 on a violation;
+     format 2 -> "not checkable". Tests: tosdump/tests/test_tosdiff.sh (clean
+     pass, a changed after-cell, the same change on both sides, a changed
+     before-twin, format 2 not checkable); a mutation that disables the
+     comparison makes 7 of them fail.
+
+  4. Installed: runs/RASTER/RASTER.{BIN,LOG} -> tosdump/reference/EMUTOS-1a7484ab-RASTER.{BIN,LOG},
+     runs/RASTER-screen-falcontc/RASTER.{BIN,LOG} -> tosdump/reference/EMUTOS-1a7484ab-RASTER-screen-falcontc.{BIN,LOG}
+       EMUTOS-1a7484ab-RASTER.BIN                 7b1a4b8091c8c17092f8ee4a007e380e2bb46473616bb29d1b6810ab77d942dc
+       EMUTOS-1a7484ab-RASTER.LOG                 274aefb16849b8768f1cab91330cf33eb6e535a8060e998c6022c16b37b7db40
+       EMUTOS-1a7484ab-RASTER-screen-falcontc.BIN 6ddac7ce7dfe6f847cef5c51b9e8ce6025699944ab5545ac092f9006417aa2e3
+       EMUTOS-1a7484ab-RASTER-screen-falcontc.LOG cbcfe08a774119b25d47090771cfff303974305819cacf0e02aa874f411d53f9
+     Generated Rust tests: tosdump/host/build/mkrusttests regenerates
+     tos-api/tests/vdi_raster_reference/cases_r1.rs and cases_screen.rs from
+     the installed files byte for byte as committed, except the output-path
+     comment line (written to a scratch path for the check).
+     `make -C tosdump host-test`: exit 0, all groups ok.
+     `cargo xtask test` with the installed files: exit 0, 163 test binaries,
+     1691 passed, 0 failed, 1 ignored; vdi_raster_reference 60 passed,
+     vdi_reference_raster_screen 63 passed.
+
+  5. NewTOS v3 vdi-raster vs EmuTOS v3 RASTER (tosdiff/newtos-vs-emutos.txt),
+     exit 1: 1 of 59 cases differ -- case 157 (opcode 109, "PTSIN[6..7] too
+     big: the extent is the source's"), 128 WORDs of buf_b. Address check
+     0 of 236 violations on both sides; kept check 0 of 118 changed on both
+     sides. Case 157 is the known, deferred raster deviation (TASK/R01.md,
+     user decision of 2026-09-06 kept); not chased here. Note for triage:
+     tos-api's host replay of the same case against this reference
+     (cases_r1::case_0157_op109_...) passes, so the difference appears only
+     in the on-target (QEMU raspi4b) recording.
+
+------------------------------------------------------------------------------
+NOTES
+------------------------------------------------------------------------------
+  * *.BIN here is ignored by the root .gitignore (case-insensitive `*.bin`);
+    the two runs/*/RASTER.BIN need `git add -f` (as in the ref07-v3 run).
+    The reference files in tosdump/reference are tracked already.
+  * No Hatari process left behind (pgrep after the runs: empty).
+  * Nothing flashed, no card touched, no NewTOS dump recorded (the NewTOS
+    side is the newtos-v3 run's file, read only).
+  * manifest.sha256 covers every file of this run except itself.

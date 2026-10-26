@@ -1,4 +1,4 @@
-DUMPRAST build fdf8, record format 2
+DUMPRAST build fdf8, record format 3
 RASTER.TSV: 59 cases, CRC 702EEA7D
 pointer 4 bytes, MFDB pointer slots at contrl[7] and [9]
 appl_init id 0, graf_handle 1, v_opnvwk handle 2

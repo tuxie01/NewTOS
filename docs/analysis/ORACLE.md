@@ -166,17 +166,22 @@ with the user's full configuration and again with the cleaned `hatari.cfg`.
   `measurements/measurement-2026-10-26-oracle/method/compare-set.sh` of the run) and map every new difference to a commit.
 - A change of Hatari, its config, or the toolchain = rerun the control and
   calibration runs first.
-- The twelve VDI and AES `EMUTOS-1a7484ab-*` references are record
-  **format 3** (pointer width and word order in the header,
+- All fourteen `EMUTOS-1a7484ab-*` references are record **format 3**
+  (pointer width and word order in the header,
   `docs/TOS-REFERENCE-DUMPER.md` section 3), re-recorded on this pin on
-  2026-10-26 with each reference's own build id; every payload is
-  byte-identical to the format 2 recording
+  2026-10-26 with each reference's own build id. The twelve VDI and AES
+  payloads are byte-identical to the format 2 recording
   (`measurements/measurement-2026-10-26-ref07-v3/RUNINFO.TXT`). The two
-  `EMUTOS-1a7484ab-RASTER*` references stay format 2 for now: a rebuilt
-  dumper puts its MFDB buffers elsewhere, so their pointer cells (address
-  class) differ and the byte-identity check fails by construction (same
-  effect as the control run in §4). `tosdiff` refuses to compare a format 3
-  dump with a format 2 one, so a NewTOS dump compared against a format 3
+  `EMUTOS-1a7484ab-RASTER*` payloads cannot be: a rebuilt dumper puts its
+  MFDB buffers elsewhere, so their pointer cells (address class) move with
+  the dumper's text segment (same effect as the control run in §4). They
+  were replaced under the user's condition "payload byte-identical except
+  header and address cells", checked with the exclusion set derived from the
+  field descriptors: 4 address cells per record (236 resp. 248 cells), every
+  other payload byte equal
+  (`measurements/measurement-2026-10-26-raster-v3/RUNINFO.TXT`). The format 2
+  files stay in git history. `tosdiff` refuses to compare a format 3 dump
+  with a format 2 one, so a NewTOS dump compared against a format 3
   reference has to be format 3 as well. `EMUTOS14-*` stay format 2.
 
 ## 8. Open for Phase 1
@@ -188,7 +193,10 @@ the class has its first relational property: every address cell, on each side
 separately, must be `< 0x80000000` (a TOS address is a signed `LONG`,
 `TASK/MEM11.md`); `tosdiff` reports a violation as its own verdict and a
 format 2 dump as "not checkable" (`docs/TOS-REFERENCE-DUMPER.md` section 3,
-field classes). Still open: null/non-null and alignment, and the GEMDOS/BIOS
+field classes). A second relational property within one side is the raster
+**kept check**: every MFDB pointer cell after the call equals the one before
+it (the VDI must not modify the pointers), again its own verdict and "not
+checkable" on format 2 (same section). Still open: null/non-null and alignment, and the GEMDOS/BIOS
 area itself (task T7 of the dumper spec). tos-api's `aes_reference` harness
 checks `ap_3resv` relationally on its own (non-zero iff the reference's is,
 `tos-api/tests/aes_reference/harness.rs`).

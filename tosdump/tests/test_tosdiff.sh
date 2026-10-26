@@ -161,6 +161,89 @@ if [ -f "$RASTBIN" ] && [ -f "$RASTTSV" ]; then
 	"$TOSDIFF" --validate "$RASTBIN" >"$TMP/rastval.out" 2>&1
 	check "validate accepts the raster dump" 0 $?
 	grep_out "validate names the raster area" "$TMP/rastval.out" "VDI-RASTER"
+
+	# --- the kept check: the VDI must not change the MFDB pointers ---------
+	#
+	# Within one side: every address cell of contrl_mfdb (after the call)
+	# must equal its twin in contrl_before_mfdb (before the call).  The stub
+	# dump is format 3, eight-byte pointers, least significant word first
+	# (asserted below): cell 0 = contrl[7..10] at record offset 22, cell 1 =
+	# contrl[11..14] at 30; the before twins at 52 and 60.  The stub's own
+	# pointers are host addresses that fail the address check, so every cell
+	# is first set to 0x1000 (bytes 10 00 00 .. in this word order): the
+	# kept check then decides the exit status alone.
+	grep_out "the stub raster dump has eight-byte pointers, LSW first" \
+	    "$TMP/rastval.out" "pointer 8 bytes, least significant word first"
+	# record count, header WORD at offset 10 (od's column layout differs
+	# between BSD and GNU, so let the shell split the two bytes)
+	set -- $(od -An -tu1 -j10 -N2 "$RASTBIN")
+	nrec=$(($1 * 256 + $2))
+	cp "$RASTBIN" "$TMP/r_lo.bin"
+	r=0
+	while [ "$r" -lt "$nrec" ]; do
+		for o in 22 30 52 60; do
+			printf '\020\000\000\000\000\000\000\000' | dd of="$TMP/r_lo.bin" \
+			    bs=1 seek=$((32 + r * 3696 + o)) conv=notrunc status=none
+		done
+		r=$((r + 1))
+	done
+	"$TOSDIFF" "$RASTTSV" "$TMP/r_lo.bin" "$TMP/r_lo.bin" >"$TMP/kept0.out" 2>&1
+	check "pointers the call left alone pass the kept check" 0 $?
+	grep_out "the kept check states what it compared" "$TMP/kept0.out" \
+	    "kept check, r_lo.bin: format 3; contrl_mfdb against contrl_before_mfdb, $((nrec * 2)) cells checked, 0 changed by the call"
+
+	# record 0, cell 1 after the call: 0x1000 -> 0x2000.  B only.
+	cp "$TMP/r_lo.bin" "$TMP/r_chg.bin"
+	printf '\040\000' | dd of="$TMP/r_chg.bin" bs=1 seek=$((32 + 30)) \
+	    conv=notrunc status=none
+	"$TOSDIFF" "$RASTTSV" "$TMP/r_lo.bin" "$TMP/r_chg.bin" >"$TMP/kept1.out" 2>&1
+	check "a pointer the call changed is flagged" 1 $?
+	grep_out "the kept violation names the cell and both values" \
+	    "$TMP/kept1.out" \
+	    "contrl_mfdb\[4..7\] *KEPT r_chg.bin *= 0x0000000000002000, before the call 0x0000000000001000"
+	grep_out "the kept violation is counted on its side" "$TMP/kept1.out" \
+	    "kept check, r_chg.bin: format 3; .* 1 changed by the call"
+	grep_out "the other side stays clean" "$TMP/kept1.out" \
+	    "kept check, r_lo.bin: format 3; .* 0 changed by the call"
+	grep_out "a kept violation is not a value difference" "$TMP/kept1.out" \
+	    "0 of $nrec cases differ"
+	grep_out "nor an address violation" "$TMP/kept1.out" \
+	    "r_chg.bin: format 3, .* 0 not < 0x80000000"
+
+	# the same change on both sides: no value difference between the two
+	# dumps, and still a violation on each -- the check is within one side
+	"$TOSDIFF" "$RASTTSV" "$TMP/r_chg.bin" "$TMP/r_chg.bin" >"$TMP/kept2.out" 2>&1
+	check "an identical change on both sides is still flagged" 1 $?
+	if [ "$(grep -c "1 changed by the call" "$TMP/kept2.out")" != 2 ]; then
+		echo "  FAIL the kept check must flag each side on its own"
+		fails=$((fails + 1))
+	fi
+
+	# a changed BEFORE twin breaks the relation as well
+	cp "$TMP/r_lo.bin" "$TMP/r_bef.bin"
+	printf '\040\000' | dd of="$TMP/r_bef.bin" bs=1 seek=$((32 + 52)) \
+	    conv=notrunc status=none
+	"$TOSDIFF" "$RASTTSV" "$TMP/r_lo.bin" "$TMP/r_bef.bin" >"$TMP/kept3.out" 2>&1
+	check "a differing before twin is flagged" 1 $?
+	grep_out "the before twin's cell is named" "$TMP/kept3.out" \
+	    "contrl_mfdb\[0..3\] *KEPT r_bef.bin"
+
+	# format 2: pointer width and word order unknown, so not checkable
+	for n in lo chg; do
+		cp "$TMP/r_$n.bin" "$TMP/r_v2$n.bin"
+		printf '\000\002' | dd of="$TMP/r_v2$n.bin" bs=1 seek=4 \
+		    conv=notrunc status=none
+		printf '\000\000\000\000' | dd of="$TMP/r_v2$n.bin" bs=1 seek=20 \
+		    conv=notrunc status=none
+	done
+	"$TOSDIFF" "$RASTTSV" "$TMP/r_v2lo.bin" "$TMP/r_v2chg.bin" >"$TMP/kept4.out" 2>&1
+	check "format 2: the kept check does not decide the exit status" 0 $?
+	grep_out "format 2: the kept check is not checkable" "$TMP/kept4.out" \
+	    "kept check, r_v2chg.bin: not checkable"
+	if grep -q "KEPT" "$TMP/kept4.out"; then
+		echo "  FAIL a format 2 pointer cell was read for the kept check"
+		fails=$((fails + 1))
+	fi
 else
 	echo "  FAIL stub raster dump missing: $RASTBIN / $RASTTSV"
 	fails=$((fails + 1))

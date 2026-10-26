@@ -98,7 +98,7 @@ line of logic there is a bug you cannot chase.
 |---|---|---|
 | 0 | 4 | magic `TDMP` |
 | 4 | 2 | format version (currently 3; 2 is still read, see below) |
-| 6 | 2 | area: 1=BIOS, 2=XBIOS, 3=GEMDOS, 4=VDI, 5=AES |
+| 6 | 2 | area: 1=BIOS, 2=XBIOS, 3=GEMDOS, 4=VDI, 5=AES, 6=VDI-RASTER (the raster record, 3696 bytes, layout `TD_RAST_OFF_*` in `tosdump/core/tosdump.h`) |
 | 8 | 2 | record size in bytes |
 | 10 | 2 | record count |
 | 12 | 4 | build id (git short hash as ASCII, zero padded) |
@@ -144,15 +144,17 @@ order is not 1 or 2.
   one`), either way round. The address check would run on one side only, and
   the format 2 side cannot be made to state what it lacks.
 
-The twelve pinned EmuTOS VDI and AES references
-`tosdump/reference/EMUTOS-1a7484ab-{VDI,AES}*` are format 3 since 2026-10-26,
-re-recorded on the oracle; each payload is byte-identical to its format 2
-recording (`measurements/measurement-2026-10-26-ref07-v3/RUNINFO.TXT`). The two
-raster references `EMUTOS-1a7484ab-RASTER*` are still format 2: their format 3
-recording differs in the MFDB pointer cells (address class, the dumper's own
-buffer addresses, moved by the dumper's code size), so the byte-identity check
-failed there and their replacement is open. The frozen `EMUTOS14-*`,
-`TOS306-*` and the existing `NEWTOS-*` dumps stay format 2.
+All fourteen pinned EmuTOS references `tosdump/reference/EMUTOS-1a7484ab-*`
+are format 3 since 2026-10-26, re-recorded on the oracle. The twelve VDI and
+AES payloads are byte-identical to their format 2 recording
+(`measurements/measurement-2026-10-26-ref07-v3/RUNINFO.TXT`). The two raster
+references `EMUTOS-1a7484ab-RASTER*` cannot be: their MFDB pointer cells
+(address class, the dumper's own buffer addresses) move with the dumper's code
+size. They were replaced under the condition "payload byte-identical except the
+header and the address cells", the exclusion set derived from the field
+descriptors (4 cells per record), every other byte equal
+(`measurements/measurement-2026-10-26-raster-v3/RUNINFO.TXT`). The frozen
+`EMUTOS14-*`, `TOS306-*` and the existing `NEWTOS-*` dumps stay format 2.
 
 #### Field classes: value and address
 
@@ -174,7 +176,8 @@ Every field descriptor (`td_*_fields`, `tosdump/core/record.c`) carries a class.
   (`address check, <dump>: format 3, pointer N bytes, ...; K address cells
   checked, V not < 0x80000000`); it is **not** a value difference and does not
   count towards "N of M cases differ". `tosdiff` exits 1 when there is a value
-  difference or an address violation, 0 only when there is neither.
+  difference, an address violation or a kept violation (below), 0 only when
+  there is none of them.
 
   What a cell is comes from the descriptor (`addr_cell`) and the header: a
   **LONG** cell is two WORDs on every target (`ap_3resv` — the AESGLOBAL keeps
@@ -184,6 +187,24 @@ Every field descriptor (`td_*_fields`, `tosdump/core/record.c`) carries a class.
   for eight-byte pointers; on a four-byte target the WORDs after the last cell
   (`contrl[11..14]` on the m68k, which keep the poison) are no address and are
   not checked.
+
+  **The kept check** — a second relational property, again within one side.
+  The raster record holds the MFDB pointer slots twice: `contrl_mfdb` after
+  the call and `contrl_before_mfdb` as they went in. The VDI reads the two
+  MFDB pointers and must not write them, so every address cell of
+  `contrl_mfdb` must equal its twin in `contrl_before_mfdb` (cells as above:
+  `contrl[7..8]`, `[9..10]` on the m68k, `contrl[7..10]`, `[11..14]` on
+  AArch64). Both values come from one run of one dumper, so their equality
+  measures the API, not the linker. The pair is named in `tosdiff`
+  (`kept_pairs`, `tosdump/host/tosdiff.c`) and resolved against the
+  descriptors; a name that does not resolve to two address fields of one
+  shape makes `tosdiff` refuse (exit 2) instead of silently skipping the
+  check. A violation is printed under the case as
+  `contrl_mfdb[0..3]  KEPT <dump> = 0x..., before the call 0x...` and counted
+  in a per-dump summary line (`kept check, <dump>: format 3; contrl_mfdb
+  against contrl_before_mfdb, K cells checked, C changed by the call`); it is
+  not a value difference, and `tosdiff` exits 1 on it. A format 2 dump is
+  reported as `kept check, <dump>: not checkable`, like the address check.
 
 ### VDI record — 1592 bytes
 
