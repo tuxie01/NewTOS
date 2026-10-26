@@ -322,8 +322,12 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   the log in `docs/archive/` in the same commit. A foreign uncommitted change already in
   `STATUS.md` is **not** an excuse to skip it: `git stash push -- docs/STATUS.md`,
   add your entry on the clean base, commit, then `git stash pop`.
-- After editing `CLAUDE.md`, `docs/STATUS.md` or `docs/MEMORY.md`, run
-  `cargo xtask doc-check`: every path and `file:line` cite must resolve.
+- After editing docs, run `cargo xtask doc-check <files you edited>`: every
+  path, `file:line` and `ADR-NNN` cite in them must resolve.
+  `CLAUDE.md`, `docs/STATUS.md` and `docs/MEMORY.md` are always clean.
+  Plain `cargo xtask doc-check` checks all of `docs/` except `docs/archive/`
+  and still reports the old backlog (2026-10-26: 3308 failures, mostly
+  `docs/analysis/`).
 
 ---
 
