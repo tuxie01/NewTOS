@@ -25,6 +25,23 @@
 # `note:` and build the card without it -- which is how a boot test once ran
 # without MXPROBE.NCP and never reached the TASK/MEM11 debug assertions. The
 # build order of the prerequisites is in docs/sdk/06-image-and-testing.md.
+# TeraDesk's colour icons cicons.rsc are on that list too: they change how the
+# desktop renders, and every image this script builds boots a desktop that may
+# be measured (user decision 2026-10-26).
+#
+# A part may stay OPTIONAL only when its own build treats it as optional (today
+# only the zView sample pictures, C:\ZVIEW\SAMPLES\). A missing optional part
+# is never silent: it prints an `optional missing: ...` line, which is
+# repeated in the summary at the end, and it is recorded in the manifest.
+#
+# Manifest: next to the image the script writes `<image-path>.manifest`, a
+# plain-text record of what went onto the card -- one `file <sha256> <bytes>
+# <TOS path>` line per file, the `optional_missing` lines, the SD_* switches
+# in effect and the image's own sha256. A measurement run that uses the image
+# copies the manifest into its run directory and RUNINFO.TXT cites it
+# (docs/sdk/06-image-and-testing.md). The manifest is deleted together with
+# the image when a build fails, so a manifest always belongs to the image
+# beside it.
 #
 set -euo pipefail
 
@@ -59,6 +76,7 @@ REQUIRED=(
   "sdk/apps/teradesk/build/dist/DESKTOP.NAP|sdk/apps/build-teradesk.sh"
   "sdk/apps/teradesk/build/dist/desktop.rsc|sdk/apps/build-teradesk.sh"
   "sdk/apps/teradesk/build/dist/icons.rsc|sdk/apps/build-teradesk.sh"
+  "sdk/apps/teradesk/build/dist/cicons.rsc|sdk/apps/build-teradesk.sh"
   "sdk/apps/present/build/PRESENT.NAP|sdk/apps/present/build-present.sh"
   "sdk/apps/present/build/TEST.PNG|sdk/apps/present/build-present.sh"
   "sdk/apps/present/sample/SLIDES.TXT|(tracked file -- restore it from git)"
@@ -87,8 +105,46 @@ build_example() {
   fi
 }
 
+# The manifest (see the header) is assembled at the very end from the parts
+# collected on the way: MANIFEST_FILES gets one `file` line per file on the
+# card (written by list_card_files just before each partition is unmounted),
+# OPTIONAL_MISSING one entry per optional part that is not on the card.
+MANIFEST="${IMG}.manifest"
+MANIFEST_FILES="${IMG}.manifest.part"
+OPTIONAL_MISSING=()
+
+# Record an optional part that is not on the card: print it now and keep it
+# for the summary and the manifest. $1 = what is missing (TOS path), $2 = why
+# and how to get it.
+optional_missing() {
+  OPTIONAL_MISSING+=("$1 -- $2")
+  echo "optional missing: $1 -- $2"
+}
+
+# Append one `file <sha256> <bytes> <drive>:\<path>` line per file under the
+# mounted partition $1 (drive letter $2) to MANIFEST_FILES, sorted by path.
+# The macOS volume metadata directories the script tries to remove can come
+# back and are not readable; they are not TOS content and are not hashed, but
+# one that is still on the card gets a `metadata <path>` line, so the manifest
+# does not pretend the card is cleaner than it is.
+list_card_files() {
+  local mnt="$1" drive="$2" rel sha size meta
+  for meta in .Spotlight-V100 .fseventsd .Trashes .TemporaryItems; do
+    if [ -e "$mnt/$meta" ]; then
+      printf 'metadata %s:\\%s (macOS volume metadata, not hashed)\n' "$drive" "$meta" >> "$MANIFEST_FILES"
+    fi
+  done
+  ( cd "$mnt" && find . \( -name .Spotlight-V100 -o -name .fseventsd -o -name .Trashes \
+      -o -name .TemporaryItems \) -prune -o -type f -print | LC_ALL=C sort ) | while IFS= read -r rel; do
+    rel="${rel#./}"
+    sha=$(shasum -a 256 "$mnt/$rel" | awk '{print $1}')
+    size=$(stat -f %z "$mnt/$rel")
+    printf 'file %s %s %s:\\%s\n' "$sha" "$size" "$drive" "$(printf '%s' "$rel" | tr '/' '\\')"
+  done >> "$MANIFEST_FILES"
+}
+
 echo "Creating ${IMG} (${SIZE_MB} MiB, MBR + FAT16, volume ${VOL})…"
-rm -f "$IMG"
+rm -f "$IMG" "$MANIFEST" "$MANIFEST_FILES"
 dd if=/dev/zero of="$IMG" bs=1m count="$SIZE_MB" status=none 2>/dev/null \
   || dd if=/dev/zero of="$IMG" bs=1m count="$SIZE_MB"
 
@@ -99,7 +155,8 @@ echo "attached ${DEV}"
 cleanup() { hdiutil detach "$DEV" >/dev/null 2>&1 || true; }
 # On any failure from here on, also delete the half-written image, so that
 # nothing (e.g. `cargo xtask run`, which defaults to /tmp/sd.img) boots it.
-trap 'rc=$?; cleanup; [ "$rc" -eq 0 ] || rm -f "$IMG"' EXIT
+# The partial manifest goes with it.
+trap 'rc=$?; cleanup; [ "$rc" -eq 0 ] || rm -f "$IMG" "$MANIFEST_FILES"' EXIT
 
 # One MBR FAT16 partition spanning the whole disk, mounted at /Volumes/$VOL.
 #
@@ -124,6 +181,7 @@ if [ -n "${SD_FSBENCH_D:-}" ]; then
   rm -rf "$VD/.Spotlight-V100" "$VD/.fseventsd" "$VD/.Trashes" "$VD/.TemporaryItems" 2>/dev/null || true
   dot_clean -m "$VD" 2>/dev/null || true
   sync
+  list_card_files "$VD" D
   diskutil unmount "${DEV}s2" >/dev/null
 fi
 
@@ -431,7 +489,8 @@ fi
 # (sdk/zview/samples/gen-samples.py). Start ZVIEW.NAP by double-click (opens
 # with its menu bar; File > Open), or with a file argument (main.c:164-165).
 # The sample images stay optional: build-zview.sh itself treats a failing
-# gen-samples.py (no Pillow) as a note, not an error.
+# gen-samples.py (no Pillow) as a note, not an error. Their absence is reported
+# as `optional missing` and recorded in the manifest.
 ZV_DIST="$ROOT/sdk/zview/build/dist/ZVIEW"
 mkdir -p "$V/ZVIEW"
 cp -R "$ZV_DIST/" "$V/ZVIEW/"
@@ -440,7 +499,9 @@ if [ -d "$ROOT/sdk/zview/build/samples/IMAGES" ]; then
   cp "$ROOT/sdk/zview/build/samples/IMAGES/"* "$V/ZVIEW/SAMPLES/"
   echo "installed C:\\ZVIEW\\ (zView: ZVIEW.NAP, ZVIEW.RSC, ICONS\\, CODECS\\*.NLD, SAMPLES\\)"
 else
-  echo "installed C:\\ZVIEW\\ (zView: ZVIEW.NAP, ZVIEW.RSC, ICONS\\, CODECS\\*.NLD; no SAMPLES\\ -- gen-samples.py did not run)"
+  echo "installed C:\\ZVIEW\\ (zView: ZVIEW.NAP, ZVIEW.RSC, ICONS\\, CODECS\\*.NLD)"
+  optional_missing 'C:\ZVIEW\SAMPLES\' \
+    "sdk/zview/build/samples/IMAGES absent (gen-samples.py did not run; needs Python with Pillow) -- build it with: sdk/zview/build-zview.sh"
 fi
 
 # CoreMark 1.0 (EEMBC) — the CPU benchmark, built UNMODIFIED apart from its own
@@ -550,21 +611,18 @@ echo "installed C:\\Apps\\QED\\QED.NAP + qed.rsc (ported GEM editor, LP64)"
 # icons, NRSC v13/LP64 for the kernel rsrc_load — an image that begins with a
 # native RSHDR, which TeraDesk's load_icons parses on its own after the AES
 # loaded it, TASK/A41; TeraDesk tries it first and falls back to the mono
-# icons.rsc when it is absent). cicons.rsc is copied only when present in
-# dist/ (a dist/ staged before A41 part 2 has none), so an older staging still
-# yields a mono desktop rather than a broken one.
+# icons.rsc when it is absent). cicons.rsc is MANDATORY (REQUIRED list, user
+# decision 2026-10-26): with or without it TeraDesk renders a different
+# desktop, so an image without it is not the measured configuration. A dist/
+# staged before A41 part 2 has none -- rerun sdk/apps/build-teradesk.sh.
 # Launched by double-clicking DESKTOP.NAP — NEVER from \AUTO\ (ADR-018).
 TERA_DIR="$ROOT/sdk/apps/teradesk/build/dist"
 mkdir -p "$V/Apps/TERADESK"
 cp "$TERA_DIR/DESKTOP.NAP" "$V/Apps/TERADESK/DESKTOP.NAP"
 cp "$TERA_DIR/desktop.rsc" "$V/Apps/TERADESK/desktop.rsc"
 cp "$TERA_DIR/icons.rsc"   "$V/Apps/TERADESK/icons.rsc"
-if [ -f "$TERA_DIR/cicons.rsc" ]; then
-  cp "$TERA_DIR/cicons.rsc" "$V/Apps/TERADESK/cicons.rsc"
-  echo "installed C:\\Apps\\TERADESK\\{DESKTOP.NAP,desktop.rsc,icons.rsc,cicons.rsc} (ported GEM desktop, LP64, colour icons)"
-else
-  echo "installed C:\\Apps\\TERADESK\\{DESKTOP.NAP,desktop.rsc,icons.rsc} (ported GEM desktop, LP64; no cicons.rsc staged -> mono icons)"
-fi
+cp "$TERA_DIR/cicons.rsc"  "$V/Apps/TERADESK/cicons.rsc"
+echo "installed C:\\Apps\\TERADESK\\{DESKTOP.NAP,desktop.rsc,icons.rsc,cicons.rsc} (ported GEM desktop, LP64, colour icons)"
 
 # PRESENT.NAP (TASK/PRESENT01) — our own full-screen slide show
 # (sdk/apps/present/, docs/sdk/14-present.md). C:\Apps\PRESENT\ gets the
@@ -981,9 +1039,12 @@ rm -rf "$V/.Spotlight-V100" "$V/.fseventsd" "$V/.Trashes" "$V/.TemporaryItems" 2
 dot_clean -m "$V" 2>/dev/null || true
 sync
 
+list_card_files "$V" C
 diskutil unmount "${DEV}s1" >/dev/null
 cleanup
-trap - EXIT
+# The device is detached; from here a failure only has to take the partial
+# manifest with it (the image itself stays, as before, for inspection).
+trap 'rc=$?; [ "$rc" -eq 0 ] || rm -f "$MANIFEST_FILES"' EXIT
 
 # Sanity-check the MBR: partition 0 must be type 0x06 (FAT16), 0x55AA present.
 python3 - "$IMG" ${SD_FSBENCH_D:+fsbench} <<'PY'
@@ -1003,5 +1064,33 @@ if len(sys.argv) > 2:
     print(f"OK: MBR FAT16 partition 2 (D:) type=0x{typ2:02x} start_lba={start2} sectors={count2}")
 PY
 
+# Assemble the manifest (format: header comment of this script). Every line
+# starts with its key, so `grep '^optional_missing' <image>.manifest` is the
+# whole check a run script needs.
+{
+  echo "# NewTOS SD image manifest v1 -- written by tools/make-sd-image.sh"
+  echo "image ${IMG}"
+  echo "image_sha256 $(shasum -a 256 "$IMG" | awk '{print $1}')"
+  echo "size_mib ${SIZE_MB}"
+  echo "created $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  # Every SD_* switch set in the environment (they change what is on the card).
+  env | LC_ALL=C sort | sed -n 's/^\(SD_[A-Za-z0-9_]*=\)/switch \1/p'
+  if [ "${#OPTIONAL_MISSING[@]}" -eq 0 ]; then
+    echo "optional_missing none"
+  else
+    for m in "${OPTIONAL_MISSING[@]}"; do echo "optional_missing $m"; done
+  fi
+  echo "# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)"
+  cat "$MANIFEST_FILES"
+} > "$MANIFEST"
+rm -f "$MANIFEST_FILES"
+trap - EXIT
+
 echo "done: ${IMG}"
+if [ "${#OPTIONAL_MISSING[@]}" -eq 0 ]; then
+  echo "optional missing: none"
+else
+  for m in "${OPTIONAL_MISSING[@]}"; do echo "optional missing: $m"; done
+fi
+echo "manifest: ${MANIFEST} ($(sed -n '/^file /p' "$MANIFEST" | wc -l | tr -d ' ') files; copy it into the measurement run, RUNINFO.TXT cites it)"
 echo "run:  cargo xtask run --sd ${IMG} --board rpi4 --window   # raspi4b emulates the SD controller"
