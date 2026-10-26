@@ -1,0 +1,5 @@
+a close_window without update_beg -> RED test result: FAILED. 19 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s ['every_taker_nests_inside_the_callers_own_hold']
+b graf_dragbox without update_beg -> RED test result: FAILED. 19 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s ['every_taker_nests_inside_the_callers_own_hold']
+c evnt_multi parked rect own_mouse -> RED test result: FAILED. 19 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s ['evnt_multi_parked_rectangle_is_the_mouse_owners_only']
+d evnt_mouse parked rect own_mouse -> RED test result: FAILED. 19 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s ['evnt_mouse_parked_rectangle_is_the_mouse_owners_only']
+e no end_unused_grant -> RED test result: FAILED. 16 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s ['a_refused_re_execution_hands_the_lock_to_the_next_waiter', 't_wind_close_parked_then_window_closed_by_other_does_not_leak_lock', 't_wind_open_parked_then_window_opened_by_other_does_not_leak_lock', 't_wind_set_parked_then_window_deleted_does_not_leak_lock']

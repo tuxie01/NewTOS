@@ -1,0 +1,48 @@
+measurement-2026-10-26-a118-fix -- Developer: A118 rework after the independent Tester run
+(measurements/measurement-2026-10-25-a118-test/RUNINFO.TXT, f42f3719): one defect (lock leaked to a window call refused on
+re-execution) and four mutation survivors (test gaps). Base: HEAD f42f3719. Fix: 3cb21e31. No hardware, no card, no push.
+Host macOS, QEMU raspi4b (-append serial=on). Scratch = session scratchpad .../scratchpad/a118/fix (+ .../a118/mut); not kept.
+
+RESULT IN ONE LINE: defect fixed (the Tester's 3 cases + 1 hand-over case red on f42f3719, green now), the 4 survivors are now
+killed by new tests, builds/warnings unchanged, host tests 1657/0/1 -> 1664/0/1, QEMU regression subset pixel-identical.
+
+1. DEFECT
+  window::opcode_takes_lock (gate of 101/102/103/105) depends on the window table and is evaluated before the park and again
+  when the parked call is re-executed. Holder A deletes/opens/closes the window and ends its hold -> the lock is handed to B
+  (UPDATE_GRANTED) -> B's re-executed call refuses and never reached update_beg -> lock stays (1, B).
+  EmuTOS: the checks come before wm_update(BEG_UPDATE) (aes/gemwmlib.c:1415-1422, 1443-1450, 1632-1638); the woken process is the
+  holder (unsync, aes/gemflag.c:121-122) and its body ends with END_UPDATE.
+  Fix (3cb21e31): crysbind -- for 101/102/103/105 with the gate false, window::end_unused_grant(): collect a pending hand-over and,
+  if it made the caller the recorded holder, unsync it (the lock goes to the next waiter, as after the caller's own END_UPDATE).
+  A grant from wm_new's drain (no count) is only collected. Named difference (spec window-graphics.md "A refusal after the wait"):
+  EmuTOS would run the body on the window it validated before the wait; NewTOS returns the refusal the table now gives. Same lock
+  outcome.
+
+2. HOST (tos-api/tests/aes_a118_lock_takers.rs, 13 -> 20 cases)
+  New: t_wind_set_/t_wind_open_/t_wind_close_..._does_not_leak_lock (the Tester's, return value FALSE added),
+       a_refused_re_execution_hands_the_lock_to_the_next_waiter, every_taker_nests_inside_the_callers_own_hold,
+       evnt_multi_parked_rectangle_is_the_mouse_owners_only, evnt_mouse_parked_rectangle_is_the_mouse_owners_only.
+  f42f3719 (file copied in): 16 passed / 4 failed (the four leak cases) -- hosttest/aes_a118_lock_takers-base.log; new 20/20.
+  Mutations (method/mutations.py, applied to the working tree one at a time, file restored after each, byte-checked;
+  checks/mutations.txt): (a) close_window without update_beg, (b) graf_dragbox without update_beg, (c) evnt_multi parked rectangle
+  own_mouse, (d) evnt_mouse parked rectangle own_mouse, (e) end_unused_grant removed -> all RED.
+
+3. NUMBERS, BASE f42f3719 vs NEW (method/lint-both.sh, method/xtest-both.sh; checks/lint-*-summary.txt, checks/xtest-*.txt)
+  cargo xtask build qemu-virt/rpi4, dev/release    exit 0, 159 warning lines each       = new
+  clippy kernel (both boards)                      tos-api 74, kernel 121               = 74, 121
+  clippy tos-api host / --tests                    74; 0 in aes_a118_lock_takers.rs     = same
+  cargo xtask test                                 162 bin, 1657/0/1                    162 bin, 1664/0/1 (+7)
+
+4. QEMU raspi4b (method/all.sh -> qemu-all.sh; one QEMU at a time, per-run APFS clones deleted after; checks/kernels.sha256,
+   checks/cards-and-programs.sha256)
+  GH1 regression series nd/td/qed, memprot on: 41/41 identical (checks/compare-reg.txt); fsck_msdos -n rc 0 on all 8 clones.
+  checks/compare-pairs.txt, 41/41 identical: std card (2 accessories) nd script 26, A117 (a117 5 + a117td 2), TeraDesk launch +
+  quit back to NEWDESK 3, A118 fsel probe 2 (base already carries the A118 fix: icon not selected on both sides), APITEST shots 3.
+  APITEST #Z memprot on/off/strict: 109/0/5 = 109/0/5, 124 result lines, 0 differing (checks/api-base-vs-new.txt).
+  0 EXC/PANIC in every serial log; "desktop up" after QED quit, TeraDesk quit, std, a118.
+  The defect itself needs two processes changing the same window during a park; no app in the set does that -> host-proven only.
+
+5. NOT COVERED: real Pi 4; fm_error park (unchanged by this rework); memprot off/strict/verify desktop series.
+
+FILES: method/ (copy of measurement-2026-10-25-a118/method, base/scratch adapted; all.sh, mutations.py added; fmerr/ dropped),
+hosttest/, checks/, serial/, screendumps/.

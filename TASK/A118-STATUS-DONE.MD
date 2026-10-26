@@ -1,4 +1,4 @@
-# A118 — STATUS: DONE (2026-10-25, QEMU) — restliche Nehmer der `wind_update`-Sperre
+# A118 — STATUS: DONE (2026-10-25, Nacharbeit 2026-10-26, QEMU) — restliche Nehmer der `wind_update`-Sperre
 
 **Auftrag:** die in GH1 benannten Restabweichungen je Stelle gegen EmuTOS
 belegen, Wirkung zeigen, nach EmuTOS angleichen.
@@ -42,6 +42,19 @@ kernel 121 = unveraendert; `cargo xtask test` 161 bin 1644/0/1 → 162 bin
 APITEST on/off/strict 109/0/5 = 109/0/5, `fm_error`-Alert ueber den Trap
 pixelgleich; 0 EXC/PANIC, fsck rc 0. Belege
 `measurements/measurement-2026-10-25-a118/RUNINFO.TXT`.
+
+## Nacharbeit nach dem Tester (2026-10-26, `3cb21e31`)
+
+Defekt: ein geparkter Fensteraufruf (101/102/103/105), der beim
+Wiederausfuehren ablehnt, liess die ihm uebergebene Sperre stehen (Lock
+`(1, B)` statt `(0, None)`; Tester-Fall auf `f42f3719` rot). Fix
+`window::end_unused_grant`: Uebergabe abnehmen und weitergeben wie das
+`END_UPDATE` des Geweckten in EmuTOS. Neue Tests toeten die vier
+Mutations-Ueberlebenden; Mutationsprobe 5/5 rot. Zahlen: Warnzeilen 159 = 159,
+Clippy 74/121 unveraendert, `cargo xtask test` 1657/0/1 → 1664/0/1; QEMU
+GH1-Serie 41/41, std/A117/TeraDesk-Ende/a118-Probe/APITEST-Bilder 41/41
+pixelgleich, APITEST on/off/strict 109/0/5 = 109/0/5. Belege
+`measurements/measurement-2026-10-26-a118-fix/RUNINFO.TXT`.
 
 ## Offen
 
