@@ -1,6 +1,15 @@
 [toolchain]
-# Pinned nightly required for naked_functions and AArch64 inline asm features.
-# See docs/STATUS.md for rationale and update policy.
+# Nightly is required for one reason: kernel/Cargo.toml uses the unstable cargo
+# feature `per-package-target` (`cargo-features = ["per-package-target"]`,
+# `forced-target = "aarch64-unknown-none-softfloat"`), enabled in
+# .cargo/config.toml `[unstable]`, so the kernel always builds for the target
+# while xtask and host tests build for the host. Naked functions and the inline
+# asm in use are stable (docs/MEMORY.md LESSON-003); no `#![feature]` gate is
+# used anywhere.
+# Update policy: the date is pinned (since 2026-05-02) so every build uses the
+# same compiler. Move it only on purpose, in a commit of its own, after a fresh
+# build of both boards and the host tests; drop nightly once
+# `per-package-target` is stable.
 channel = "nightly-2026-04-15"
 components = ["rust-src", "rustfmt", "clippy", "llvm-tools-preview"]
 targets = ["aarch64-unknown-none-softfloat"]
