@@ -69,6 +69,14 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   (teilweise), [W01](../TASK/W01.md); geparkt: [H04](../TASK/H04.md),
   [H01](../TASK/H01.md) (wartet auf Hardware); zurueckgestellt:
   [HW05](../TASK/HW05.md), [T13](../TASK/T13.md).
+- **„ERLEDIGT“ ohne DONE-Quittung — gelten als offen, bis gemessen
+  (Phase-5-Triage; Anwender 2026-10-26):** A06, A08, A09, A26, A116, ACC07,
+  CON01, CON02, DESK39, DESK45, DESK47, FS02, FS07, FS14, FS18, GH1,
+  LIBC-BUF, MEM01, MEM03, MEM04, MEM07, PROC01, REF04, SPEC01, V01, V02,
+  V04–V10, V13–V15 (36); dazu sieben mit nur Teil- oder Sammelquittung:
+  DESK43 (Quittungen bis U9-3-5), FS08 (je Teilschritt), MEM05 (A und B),
+  R02–R05 (`R02-R05-STATUS-DONE.MD`). Liste per Skript aus der Statuszeile
+  und den Quittungsdateien in `TASK/`, Stand 2026-10-26.
 - **Umfang 1.0 (Anwender 2026-10-23):** FAT16 bleibt das einzige Dateisystem
   (FAT32/exFAT nach 1.0); **Ton gehoert dazu** — SND01 (Falcon-DMA-Sound),
   SND02 (HDMI), H04 (Klingel, Tastenklick, `Dosound`), alle P2.
