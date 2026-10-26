@@ -1,11 +1,12 @@
 //! Harness for the AES reference-conformance tests.
 //!
 //! These tests replay measured TOS behaviour against `tos_api::aes`. The
-//! reference is a dump taken by `tosdump/` on real hardware — **EmuTOS 1.4 on
-//! an Atari TT**, produced by `DUMPAES`: round 1,
-//! `tosdump/reference/EMUTOS14-AES.BIN` from `tosdump/cases/aes-r1.tsv` (95
+//! reference is a dump taken by `tosdump/` on the oracle — **EmuTOS 1a7484ab
+//! on Hatari's Atari TT** (`docs/analysis/ORACLE.md`; the same tables on a
+//! real TT under EmuTOS 1.4 are `EMUTOS14-*`), produced by `DUMPAES`: round 1,
+//! `tosdump/reference/EMUTOS-1a7484ab-AES.BIN` from `tosdump/cases/aes-r1.tsv` (95
 //! cases, CRC `33C13C8F`), and round 2, the window manager,
-//! `tosdump/reference/EMUTOS14-AES-r2wind.BIN` from
+//! `tosdump/reference/EMUTOS-1a7484ab-AES-r2wind.BIN` from
 //! `tosdump/cases/aes-r2-wind.tsv` (78 cases, CRC `AFB11C9F`) — and
 //! `docs/api/aes/` was extracted from that same EmuTOS source, so a difference
 //! here normally has exactly one reading: NewTOS is wrong. The three exceptions
@@ -1350,9 +1351,10 @@ impl Expected {
     }
 }
 
-/// One field of one case where **EmuTOS 1.4 — the build the dump was taken
-/// from — is older than the EmuTOS source this project implements against**
-/// (`references/emutos`, pinned at `1a7484ab`, 2026-04-14). The field is still
+/// One field of one case where **the build the dump was taken from is older
+/// than the EmuTOS source this project implements against** (`references/emutos`,
+/// pinned at `1a7484ab`, 2026-04-14) -- as EmuTOS 1.4 was for the `EMUTOS14-*`
+/// dumps. The field is still
 /// compared; only the value it is compared *against* changes, and the entry
 /// has to say exactly why. Nothing is skipped:
 ///
@@ -1370,189 +1372,29 @@ pub struct Delta {
     pub case: u16,
     pub field: &'static str,
     pub index: usize,
-    /// What the TT running EmuTOS 1.4 actually wrote.
+    /// What the machine the dump was taken on actually wrote.
     pub recorded: i64,
     /// What the pinned EmuTOS source mandates, i.e. what NewTOS must produce.
     pub expected: Expected,
     pub why: &'static str,
 }
 
-/// The whole list, and it has exactly one subject: `WF_OWNER`.
+/// Empty since the reference is the pinned source itself (2026-10-26).
 ///
-/// `WF_OWNER` (20) **did not exist** in EmuTOS 1.4. It is absent from
-/// `include/aesdefs.h` (which ends at `WF_DCOLOR` 19 — checked against the
-/// `VERSION_1_4` tag, A05) and `wm_get` has no arm
-/// for it, so field 20 reaches `default: return FALSE` and the AES answers
-/// `RET_CODE = 0` — which is what the TT recorded. It was added on 2025-08-23
-/// (`acb7f3b4`, "Add partial implementation of WF_OWNER to wind_get"), after
-/// the `VERSION_1_4` tag of 2025-06-07, and the pinned source now has it at
-/// `aes/gemwmlib.c:1578-1589` under `#if AES_VERSION >= 0x330`:
+/// The list had one subject, `WF_OWNER` (20): round 1 case 167 and round 2
+/// cases 244/247. EmuTOS 1.4 had no `WF_OWNER` arm, answered `RET_CODE = 0`
+/// and left `xif`'s uninitialised `int_out` behind it; the source this project
+/// implements against gained the arm in `acb7f3b4` ("Add partial implementation
+/// of WF_OWNER to wind_get", 2025-08-23, `aes/gemwmlib.c:1578-1589`). Since
+/// the dumps are measured on the oracle built from that source
+/// (`tosdump/reference/EMUTOS-1a7484ab-*`, `docs/analysis/ORACLE.md`) they
+/// record exactly what the entries used to substitute -- 167: `1`; 244:
+/// `1, 0, 0, -1, -1`; 247: `1, 0, 1, 1, 1` -- so the cases are compared
+/// against the dump as they stand.
 ///
-/// ```text
-/// poutwds[0] = pwin->w_owner->p_pid;                  int_out[1]
-/// poutwds[1] = (pwin->w_flags & VF_ISOPEN) != 0;      int_out[2]
-/// poutwds[2] = gl_wtop;                               int_out[3]
-/// poutwds[3] = W_TREE[ROOT].ob_head;                  int_out[4]
-/// ```
-///
-/// (`poutwds` is `&int_out[1]`: `wm_get(WM_HANDLE, WM_WFIELD, &WM_OX, &WM_IX)`
-/// with `WM_OX = int_out[1]`, and `RET_CODE = int_out[0]`,
-/// `aes/gemsuper.c:343,441`.) Both machines report `ap_version 0x0340`, so 1.4
-/// was answering FALSE for a field its own advertised AES version has; NewTOS
-/// implements the pinned source (`tos-api/src/aes/window.rs`, the `WF_OWNER`
-/// arm) and returns TRUE.
-///
-/// **Round 1, case 167** — `wind_get(0, WF_OWNER)`, `OUT_LEN 1`. Only
-/// `int_out[0]` is affected: the case declares one output word, so the four
-/// words the handler writes into the dispatcher's local `int_out` are never
-/// copied back and stay poisoned on both machines.
-///
-/// **Round 2, cases 244 and 247** — `wind_get(1, WF_OWNER)`, `OUT_LEN 5`, on a
-/// window that really exists: 244 created but never opened, 247 created and
-/// opened. Here all five words come back, and on the TT the four behind the
-/// return code are whatever `xif`'s **uninitialised** local `int_out` held
-/// (`aes/gemsuper.c:429,444-445`) — both cases recorded the identical
-/// `0, -1, 0, 0, 0`, which is stack, not an answer. So the reference cannot
-/// arbitrate any of the five, and every one of them is stated here rather than
-/// letting three of them pass against garbage that happens to agree.
-///
-/// The expectations are read off the pinned source above, for the two states
-/// the cases establish:
-///
-/// * the **owner** is the process that ran `wind_create` (`wm_create` calls
-///   `w_setup(rlr, …)`, `aes/gemwmlib.c:1377`, which stores `w_owner = ppd`,
-///   `:212`), and `wm_open` does not change it; `wm_get` answers `w_owner->p_pid` (`:1580`), and `rlr` is the one
-///   application-chain descriptor, pid **0** (`aes/geminit.c:850-877`), so
-///   both cases expect the literal 0 (since A56; the number *is* contract,
-///   `docs/api/aes/application.md` § "AES process identity and pid" (b));
-/// * `VF_ISOPEN` is 0 for 244 and 1 for 247;
-/// * `gl_wtop` is the **raw** variable, `NIL` (−1) while nothing is open
-///   (`wm_init`, `:1297`; `draw_change`, `:1093`) — not `w_top()`'s `DESKWH`
-///   fold (`:315-318`) — so −1 for 244 and the only open handle, 1, for 247;
-/// * `W_TREE[ROOT].ob_head` is `NIL` on a root with no children and the
-///   bottom-most open window otherwise: −1 for 244, 1 for 247.
-pub const DELTAS: &[Delta] = &[
-    Delta {
-        table: "tosdump/cases/aes-r1.tsv",
-        case: 167,
-        field: "int_out",
-        index: 0,
-        recorded: 0,
-        expected: Expected::Value(1),
-        why: "WF_OWNER did not exist in EmuTOS 1.4 (added 2025-08-23, acb7f3b4); \
-              the pinned source implements it at aes/gemwmlib.c:1578-1589",
-    },
-    // Round 2, case 244: `wind_create` only. RET_CODE, then the four poutwds.
-    Delta {
-        table: "tosdump/cases/aes-r2-wind.tsv",
-        case: 244,
-        field: "int_out",
-        index: 0,
-        recorded: 0,
-        expected: Expected::Value(1),
-        why: "RET_CODE: wm_get's default arm answered FALSE in EmuTOS 1.4; the \
-              pinned source has a WF_OWNER arm and returns TRUE \
-              (aes/gemwmlib.c:1578-1589)",
-    },
-    Delta {
-        table: "tosdump/cases/aes-r2-wind.tsv",
-        case: 244,
-        field: "int_out",
-        index: 1,
-        recorded: -1,
-        expected: Expected::Value(0),
-        why: "poutwds[0] = pwin->w_owner->p_pid (aes/gemwmlib.c:1580), the \
-              process that CREATED the window (w_setup(rlr, ..), :1377, :212) \
-              -- the one \
-              application-chain descriptor, pid 0 (aes/geminit.c:850-877; \
-              docs/api/aes/application.md, AES process identity and pid, (b)); \
-              EmuTOS 1.4 left xif's uninitialised stack here",
-    },
-    Delta {
-        table: "tosdump/cases/aes-r2-wind.tsv",
-        case: 244,
-        field: "int_out",
-        index: 2,
-        recorded: 0,
-        expected: Expected::Value(0),
-        why: "poutwds[1] = (w_flags & VF_ISOPEN) != 0; the window was created \
-              and never opened. EmuTOS 1.4 left stack here that happens to \
-              agree, which is not the reference deciding it",
-    },
-    Delta {
-        table: "tosdump/cases/aes-r2-wind.tsv",
-        case: 244,
-        field: "int_out",
-        index: 3,
-        recorded: 0,
-        expected: Expected::Value(-1),
-        why: "poutwds[2] = gl_wtop, the raw variable: NIL while nothing is open \
-              (wm_init aes/gemwmlib.c:1297, draw_change :1093), not w_top()'s \
-              DESKWH fold (:315-318)",
-    },
-    Delta {
-        table: "tosdump/cases/aes-r2-wind.tsv",
-        case: 244,
-        field: "int_out",
-        index: 4,
-        recorded: 0,
-        expected: Expected::Value(-1),
-        why: "poutwds[3] = W_TREE[ROOT].ob_head; nothing is open, so the window \
-              tree root has no children",
-    },
-    // Round 2, case 247: the same window after `wind_open`.
-    Delta {
-        table: "tosdump/cases/aes-r2-wind.tsv",
-        case: 247,
-        field: "int_out",
-        index: 0,
-        recorded: 0,
-        expected: Expected::Value(1),
-        why: "RET_CODE: wm_get's default arm answered FALSE in EmuTOS 1.4; the \
-              pinned source has a WF_OWNER arm and returns TRUE \
-              (aes/gemwmlib.c:1578-1589)",
-    },
-    Delta {
-        table: "tosdump/cases/aes-r2-wind.tsv",
-        case: 247,
-        field: "int_out",
-        index: 1,
-        recorded: -1,
-        expected: Expected::Value(0),
-        why: "poutwds[0] = pwin->w_owner->p_pid (aes/gemwmlib.c:1580) = 0, the \
-              application chain's; wm_open does not change the owner w_setup \
-              established (:1377, :212)",
-    },
-    Delta {
-        table: "tosdump/cases/aes-r2-wind.tsv",
-        case: 247,
-        field: "int_out",
-        index: 2,
-        recorded: 0,
-        expected: Expected::Value(1),
-        why: "poutwds[1] = (w_flags & VF_ISOPEN) != 0; the prelude opened it",
-    },
-    Delta {
-        table: "tosdump/cases/aes-r2-wind.tsv",
-        case: 247,
-        field: "int_out",
-        index: 3,
-        recorded: 0,
-        expected: Expected::Value(1),
-        why: "poutwds[2] = gl_wtop; handle 1 is the only open window, so it is \
-              the top one",
-    },
-    Delta {
-        table: "tosdump/cases/aes-r2-wind.tsv",
-        case: 247,
-        field: "int_out",
-        index: 4,
-        recorded: 0,
-        expected: Expected::Value(1),
-        why: "poutwds[3] = W_TREE[ROOT].ob_head; handle 1 is the only open \
-              window, so it is the bottom one too",
-    },
-];
+/// A new entry belongs here only if the oracle's pin moves behind the source
+/// again; the mechanism ([`Oracle::want`], [`Oracle::finish`]) stays for that.
+pub const DELTAS: &[Delta] = &[];
 
 /// One field of one case where **NewTOS deliberately answers something else
 /// than EmuTOS**, because a human decided so and wrote it down in
@@ -1584,7 +1426,7 @@ pub struct Sanctioned {
     pub case: u16,
     pub field: &'static str,
     pub index: usize,
-    /// What the TT running EmuTOS 1.4 actually wrote.
+    /// What the machine the dump was taken on actually wrote.
     pub recorded: i64,
     /// What NewTOS answers instead, per the `docs/COMPATIBILITY.md` entry.
     pub answer: i64,

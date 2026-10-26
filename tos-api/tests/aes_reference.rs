@@ -42,11 +42,12 @@ mod cases_m07_parameter;
 // ── round 2: the window manager, measured with a real reset ──────────────
 
 /// The round-2 window dump, `tosdump/cases/aes-r2-wind.tsv` (78 cases, CRC
-/// `AFB11C9F`) as an Atari TT running EmuTOS 1.4 answered it. Every case in
+/// `AFB11C9F`) as the oracle answered it: EmuTOS 1a7484ab on Hatari's TT
+/// (`docs/analysis/ORACLE.md`). Every case in
 /// that table is preceded by the AES's own `wind_new` reset
 /// (`aes/gemwmlib.c:1875-1893`), which is what makes handle allocation and
 /// window geometry reproducible from case to case.
-static DUMP_R2W: &[u8] = include_bytes!("../../tosdump/reference/EMUTOS14-AES-r2wind.BIN");
+static DUMP_R2W: &[u8] = include_bytes!("../../tosdump/reference/EMUTOS-1a7484ab-AES-r2wind.BIN");
 
 /// `int_out[0..7]` of the record whose case id is `id`, big-endian out of the
 /// AES record form: 32-byte header, 120-byte records, case id at offset 0 and
@@ -64,7 +65,7 @@ fn r2w_intout(id: u16) -> [i16; harness::INTOUT_N] {
             return out;
         }
     }
-    panic!("case {id} is not in EMUTOS14-AES-r2wind.BIN");
+    panic!("case {id} is not in EMUTOS-1a7484ab-AES-r2wind.BIN");
 }
 
 /// One AES call, laid exactly as `tosdump/core/runner_aes.c` lays a prelude or
@@ -298,26 +299,23 @@ fn window_rectangles_after_a_close_are_the_ones_draw_change_leaves() {
     pb.call(109, 0, 0, 0, 0);
 }
 
-/// `wind_get(WF_OWNER)` — the one round-2 field the reference cannot arbitrate.
+/// `wind_get(WF_OWNER)` against the pinned source's measurement.
 ///
-/// `WF_OWNER` (20) **did not exist** in EmuTOS 1.4, the build the reference TT
-/// runs: it was added on 2025-08-23 (`acb7f3b4`, "Add partial implementation
-/// of WF_OWNER to wind_get"), after the `VERSION_1_4` tag of 2025-06-07. On
-/// that machine field 20 reaches `wm_get`'s `default: return FALSE`, so the
-/// record carries `int_out[0] = 0` and — because `xif` copies `OUT_LEN` words
-/// out of an **uninitialised local** `int_out` (`aes/gemsuper.c:429,444-445`)
-/// — four words of stack garbage behind it, identical in both cases (244 and
-/// 247 both recorded `0, -1, 0, 0, 0`). The same version delta is already
-/// recorded for round 1's case 167 (`harness::DELTAS`).
-///
-/// So the oracle here is the pinned source (`references/emutos`, `1a7484ab`),
-/// `aes/gemwmlib.c:1578-1589` under `#if AES_VERSION >= 0x330`:
+/// `WF_OWNER` (20) came into EmuTOS with `acb7f3b4` ("Add partial
+/// implementation of WF_OWNER to wind_get", 2025-08-23), after the
+/// `VERSION_1_4` tag: the `EMUTOS14-*` dumps recorded 1.4's `default: return
+/// FALSE` plus four words of `xif`'s uninitialised `int_out`
+/// (`aes/gemsuper.c:429,444-445`), `0, -1, 0, 0, 0` in both cases. The
+/// reference is now the oracle built from the pinned source
+/// (`EMUTOS-1a7484ab-AES-r2wind.BIN`, `docs/analysis/ORACLE.md`), which has
+/// the arm at `aes/gemwmlib.c:1578-1589` under `#if AES_VERSION >= 0x330`:
 /// `poutwds[0] = pwin->w_owner->p_pid` — the process that **created** the
 /// window (`w_setup`, `:210`), which `wm_open` does not change —
 /// `poutwds[1] = (w_flags & VF_ISOPEN) != 0`, `poutwds[2] = gl_wtop` (the raw
 /// variable: `NIL` when nothing is open, `wm_init` `:1297`, `draw_change`
 /// `:1093`) and `poutwds[3] = W_TREE[ROOT].ob_head`, the bottom-most open
-/// window.
+/// window. The test asserts that the dump holds exactly those values, then
+/// that NewTOS answers what the dump holds.
 #[test]
 fn wf_owner_answers_what_the_pinned_emutos_source_mandates() {
     let _guard = harness::AES_LOCK.lock().unwrap_or_else(|e| e.into_inner());
@@ -330,23 +328,21 @@ fn wf_owner_answers_what_the_pinned_emutos_source_mandates() {
         R2Call { opcode: 101, in_len: 5, out_len: 1, intin: &[1, 30, 40, 320, 240] };
     const OWNER: R2Call = R2Call { opcode: 104, in_len: 2, out_len: 5, intin: &[1, 20] };
 
-    // EmuTOS 1.4 answered FALSE plus garbage; both cases recorded the same.
-    assert_eq!(r2w_intout(244)[0], 0, "EmuTOS 1.4 refuses WF_OWNER");
-    assert_eq!(r2w_intout(247)[0], 0, "EmuTOS 1.4 refuses WF_OWNER");
-
     // Case 244: created, never opened. Nothing is open, so gl_wtop is NIL and
-    // the window tree root has no children.
+    // the window tree root has no children. The owner is the creating
+    // process, the application chain's pid 0 (`aes/geminit.c:850-877`).
+    let want = r2w_intout(244);
+    assert_eq!(&want[..5], &[1, 0, 0, -1, -1], "case 244 as the pinned source answers it");
     let got = r2w_replay(&mut pb, &[CREATE], &OWNER);
-    assert_eq!(
-        &got[..5],
-        &[1, ctx.ap_id, 0, -1, -1],
-        "WF_OWNER of a created, unopened window"
-    );
+    assert_eq!(&got[..5], &want[..5], "WF_OWNER of a created, unopened window");
+    assert_eq!(got[1], ctx.ap_id, "the owner is this application");
 
     // Case 247: the same window, opened. It is the only window, so it is both
     // the top and the bottom of the tree.
+    let want = r2w_intout(247);
+    assert_eq!(&want[..5], &[1, 0, 1, 1, 1], "case 247 as the pinned source answers it");
     let got = r2w_replay(&mut pb, &[CREATE, OPEN], &OWNER);
-    assert_eq!(&got[..5], &[1, ctx.ap_id, 1, 1, 1], "WF_OWNER of an open window");
+    assert_eq!(&got[..5], &want[..5], "WF_OWNER of an open window");
 
     pb.poison();
     pb.call(109, 0, 0, 0, 0);
@@ -365,8 +361,9 @@ fn wf_owner_answers_what_the_pinned_emutos_source_mandates() {
 /// That is what the reference TT reported, and this test compares against the
 /// measurement rather than against a literal: it decodes `vqin_mode`'s
 /// `INTOUT[0]` out of the two VDI dumps taken on that machine —
-/// `EMUTOS14-VDI-r2.BIN` record 16 (case 51) and `EMUTOS14-VDI-all.BIN`
-/// record 40 (case 77), the same query in two independent runs.
+/// `EMUTOS-1a7484ab-VDI-r2.BIN` record 16 (case 51) and
+/// `EMUTOS-1a7484ab-VDI-all.BIN` record 40 (case 77), the same query in two
+/// independent runs (the `EMUTOS14-*` dumps of the real TT say the same).
 ///
 /// It has to live in the **AES** binary: `tests/vdi_reference` deliberately
 /// runs no AES and opens the physical workstation itself, and `v_opnwk` puts
@@ -387,8 +384,8 @@ fn aes_dispatch_leaves_the_string_device_in_sample_mode() {
         be16(800)
     }
 
-    static DUMP_R2: &[u8] = include_bytes!("../../tosdump/reference/EMUTOS14-VDI-r2.BIN");
-    static DUMP_ALL: &[u8] = include_bytes!("../../tosdump/reference/EMUTOS14-VDI-all.BIN");
+    static DUMP_R2: &[u8] = include_bytes!("../../tosdump/reference/EMUTOS-1a7484ab-VDI-r2.BIN");
+    static DUMP_ALL: &[u8] = include_bytes!("../../tosdump/reference/EMUTOS-1a7484ab-VDI-all.BIN");
 
     let _guard = harness::AES_LOCK.lock().unwrap_or_else(|e| e.into_inner());
 

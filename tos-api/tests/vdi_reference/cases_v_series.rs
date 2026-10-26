@@ -7,10 +7,10 @@
 //! rest of `vdi-all.tsv` is already covered by `cases_r2.rs`/`cases_r3.rs`
 //! against the TT dump. This module only pins the cells the V tickets name.
 //!
-//! **The reference.** `tosdump/reference/EMUTOS14-VDI-all-falcontc.BIN`:
-//! EmuTOS 1.4 (Hatari's release ROM `etos512de.img`, the same image the TT
-//! reference was taken with; the pinned source build `etos512us.img` gives a
-//! bit-identical dump, 0 of 182 cases differ) on Hatari 2.6.1 `--machine
+//! **The reference.** `tosdump/reference/EMUTOS-1a7484ab-VDI-all-falcontc.BIN`:
+//! the oracle, EmuTOS 1a7484ab (`docs/analysis/ORACLE.md`), byte-identical
+//! to `EMUTOS14-VDI-all-falcontc.BIN`, which EmuTOS 1.4 (the release ROM
+//! `etos512de.img`) produced the same way, on Hatari 2.6.1 `--machine
 //! falcon --monitor vga`, video mode `0x001C` = `VIDEL_VGA | VIDEL_80COL |
 //! VIDEL_TRUECOLOR` set through `EMUDESK.INF` `#E`, `$FF8266 = 0x0100`
 //! (`SPS_HICOLOR`), `DEV_TAB 639,479,…,256,…,0,…`. Same dumper binary
@@ -59,7 +59,7 @@
 
 use crate::harness::{check, reset_vdi, workstation, Call, Case, Pb, VDI_LOCK};
 
-static FALCON_TC: &[u8] = include_bytes!("../../../tosdump/reference/EMUTOS14-VDI-all-falcontc.BIN");
+static FALCON_TC: &[u8] = include_bytes!("../../../tosdump/reference/EMUTOS-1a7484ab-VDI-all-falcontc.BIN");
 
 // ── V01 / V02 / V03: vq_extnd(0) — DEV_TAB ────────────────────────────────
 

@@ -2,8 +2,10 @@
 //!
 //! These tests replay measured TOS behaviour against `tos_api::vdi`'s three
 //! raster opcodes — 109 `vro_cpyfm`, 110 `vr_trnfm`, 121 `vrt_cpyfm`. The
-//! reference is a dump taken by `tosdump/` on real hardware — **EmuTOS 1.4 on
-//! an Atari TT**, `tosdump/reference/EMUTOS14-RASTER.BIN`, produced by
+//! reference is a dump taken by `tosdump/` on the oracle — **EmuTOS 1a7484ab
+//! on Hatari's Atari TT** (`docs/analysis/ORACLE.md`; the real TT under
+//! EmuTOS 1.4 is `EMUTOS14-RASTER.BIN`),
+//! `tosdump/reference/EMUTOS-1a7484ab-RASTER.BIN`, produced by
 //! `DUMPRAST` from `tosdump/cases/vdi-raster.tsv` (CRC `702EEA7D`, 59 cases) —
 //! and `docs/api/vdi/raster/_raster.md` was extracted from that same EmuTOS
 //! source, so a difference here normally has exactly one reading: NewTOS is
@@ -31,8 +33,8 @@
 //! **The screen as an operand (2026-09-21).** `tosdump/cases/vdi-raster.tsv`
 //! never names the screen, so for it the backend's geometry is not
 //! load-bearing. `tosdump/cases/vdi-raster-screen.tsv` does — its reference
-//! is EmuTOS 1.4 on a Falcon030 in VIDEL truecolor (Hatari, 640×480, 16
-//! planes, `tosdump/reference/EMUTOS14-RASTER-screen-falcontc.BIN`), the
+//! is EmuTOS 1a7484ab on a Falcon030 in VIDEL truecolor (Hatari, 640×480, 16
+//! planes, `tosdump/reference/EMUTOS-1a7484ab-RASTER-screen-falcontc.BIN`), the
 //! device model the `vdi_reference` backend double reproduces: 640×480, 16
 //! planes, the Falcon 16-bit word with `OVERLAY_BIT` round-tripping through
 //! the store. A form with `buffer == 2` is the screen (an MFDB whose
