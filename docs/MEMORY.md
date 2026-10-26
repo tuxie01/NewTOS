@@ -2796,6 +2796,179 @@ The question splits into two levels, decided separately:
 
 ---
 
+## ADR-030: No Line-A emulation
+
+**Date:** 2026-10-26
+**Status:** **Proposed** — not accepted until the user confirms. It writes
+down the line Phase 12 already followed (closed without a Line-A export,
+`docs/STATUS.md` *Open ADRs*, row ADR-Line-A-01) and names what is still open.
+**Phase:** cross-cutting (VDI, desktop, SDK; an m68k emulator, if one is ever
+built).
+
+### Context
+
+On the ST, the m68k opcodes `$A000`–`$A00F` are unimplemented instructions
+that trap through exception vector `$28`; EmuTOS installs `int_linea` there
+(`references/emutos/bios/bios.c:176`) and dispatches 16 graphics routines
+from a table (`references/emutos/bios/linea.S:230-249`). Op 0 returns the
+base of the **LINEA variable block** in `a0`
+(`references/emutos/bios/linea.S:156-157`). The block holds screen, font and
+mouse state at fixed offsets around that base — for example `MOUSE_BT` at
+−596 and `V_REZ_HZ` at −12, base at `line_a_vars`
+(`references/emutos/bios/lineavars.S:126`, `:192`, `:266`). Two different
+things therefore go by the name "Line-A" and are kept apart here:
+
+- **(a) the opcode trap** — a mechanism of the m68k instruction set;
+- **(b) the variable block** — data a program reads once it has the pointer.
+
+Evidence, checked 2026-10-26:
+
+- **Phase 00 D10** (`docs/api/_line-a.md`) planned a C-callable Line-A
+  function group for native ports behind a header `tos-linea.h`
+  (`docs/api/_line-a.md:65-76`) and opcode interception in an m68k emulator
+  (`:72-74`). It left two ADRs open: ADR-Line-A-01, the C ABI of that export
+  (`:111-114`), and ADR-Line-A-02, who owns the mouse cursor (`:115-117`).
+  The archived status log records ADR-Line-A-02 as settled in fact by ADR-011,
+  with the cursor in `tos-api/src/vdi/mouse.rs`, and ADR-Line-A-01 as still
+  open (`docs/archive/status-log-2026-10-26.md:1021-1022`). `docs/STATUS.md`
+  *Open ADRs* carries ADR-Line-A-01 as a user decision: Phase 12 closed
+  without a Line-A export, and "no Line-A emulation" stood in no ADR.
+- **D10 is wrong in two places** (checked at the pin `1a7484ab`): its source
+  table names vdi/lineavars.S, vdi/lineainit.c and vdi/lineaasm.S, which do
+  not exist — the files are `references/emutos/bios/lineavars.S`,
+  `references/emutos/bios/lineainit.c` and `references/emutos/bios/linea.S`;
+  and its statement that the AES and the desktop call Line-A
+  (`docs/api/_line-a.md:78-92`) does not hold. No file under `aes/` or `desk/`
+  issues a Line-A opcode; the only one that includes `lineavars.h` is
+  `references/emutos/desk/desksupp.c:56`; the AES hides and shows the mouse
+  through VDI opcodes (`gsx_moff`/`gsx_mon`,
+  `references/emutos/aes/gemgsxif.c:440-455`).
+- **EmuDESK reads two variables of the block** directly: `V_REZ_HZ` in
+  `do_xyfix` (`references/emutos/desk/desksupp.c:267`, under
+  `CONF_WITH_3D_OBJECTS`) and `MOUSE_BT` in `get_key`, the page wait of
+  `show_file` (`references/emutos/desk/desksupp.c:515-517`). NEWDESK leaves out
+  the `do_xyfix` nudge (`programs/desktop/src/main.rs:2814-2819`) and has no
+  `show_file`/`get_key` (no hit in `programs/desktop/src/`).
+- **ADR-011** (Accepted, not implemented) replaces EmuTOS' global Line-A
+  screen state by a per-device physical workstation — it already assumes the
+  block is not where the VDI keeps its state.
+- **Code:** `kernel/` and `tos-api/` contain no Line-A trap, vector or
+  dispatcher; `linea` occurs only in comments (`/usr/bin/grep`, 2026-10-26).
+  `Setexc(10, …)` (vector `$28`) stores into the software vector shadow,
+  which nothing dispatches (`tos-api/src/bios/vectors.rs:98-109`). The values
+  the block would carry live inside the kernel: `GCURX`/`GCURY`/`MOUSE_BT`
+  (`tos-api/src/vdi/mouse.rs:24-26`), the device-global `REQ_COL`
+  (`tos-api/src/vdi/req_col.rs:8-13`); `CUR_WORK` is not modelled
+  (`tos-api/src/vdi/workstation.rs:372-373`). No LINEA block is published to
+  a process — B1's page-0 publication covers the sysvars, OSHEADER and the
+  cookie jar (`docs/COMPATIBILITY.md`, "System variables — compatible how").
+- **SDK:** mintlib's `linea.c` (the `linea0()`… bindings) is a recorded build
+  failure, m68k register asm (`sdk/libc/expected-failures.txt:21`,
+  `docs/sdk/07-mintlib-limits.md:47`); a port that calls a Line-A binding does
+  not link. mintlib's alglobal.c is compiled, so `__aline` exists and stays a
+  null pointer. `__LINEA` and `__FONT` change layout under LP64 and no port
+  reads them today (`docs/sdk/05-abi-pitfalls.md:152-154`).
+- **m68k binaries:** the m68k user-mode emulator is out of scope
+  (`phases/README.md:34-38`); the requirements keep it as optional FR-4
+  (`docs/REQUIREMENTS.md:23-27`); ADR-018 reserves the classic suffixes for it.
+- **Open uses of the block in NewTOS documents:** EmuCON reads
+  `v_cel_mx`/`v_cel_my` through Line-A; its decision D4 is open, and option
+  (c) there is a LINEA-like block in the process
+  (`docs/api/emucon/06-mapping-and-decisions.md:137-152`). The `Setscreen`
+  work names `v_lin_wr` as one of two possible answers to "how large is a
+  screen page" (`docs/archive/status-log-2026-10-26.md:317`).
+- `docs/COMPATIBILITY.md` has no Line-A entry (`/usr/bin/grep -i -E
+  "line-a|linea"`, 2026-10-26).
+
+### Decision (proposed)
+
+1. **(a) No Line-A opcode trap in the native system.** AArch64 has no
+   `$Axxx` trap, and NewTOS does not invent a substitute (no `svc` class, no
+   undefined-instruction hook) for native programs.
+2. **(a) The m68k Line-A trap belongs to an m68k emulator**, if one is ever
+   built (FR-4). How that emulator serves `$A000`–`$A00F` is its decision;
+   this ADR does not design it.
+3. **(c) Native programs reach the primitives and the screen/mouse state
+   through the documented calls only:** the VDI (`v_opnvwk`/`vq_extnd`
+   `work_out` for the geometry — `DEV_TAB[0]` = `V_REZ_HZ − 1`,
+   `references/emutos/vdi/vdi_control.c:203-204`; `vq_mouse` for buttons
+   and position, `tos-api/src/vdi/mouse.rs:897-904`; `v_show_c`/`v_hide_c`;
+   `vq_chcells`), the AES (`graf_mkstate`, `graf_handle`) and the XBIOS.
+   The Line-A state stays kernel-internal behind those calls — the state of
+   the code today.
+
+**(b) The variable block is not decided here** — see the open questions.
+
+### Open questions (the user's decision)
+
+- **Q1 — Export a read-only LINEA variable block to programs?** The evidence
+  shows readers in the reference (EmuDESK: two fields; EmuCON: two fields)
+  but no ported program that reads one. If yes, five things need a spec
+  first (Rule 5): which fields; how a native program obtains the base pointer
+  without `$A000` (a cookie, an `Ssystem` sub-function or a fixed page-0
+  location — each one an interface extension); the layout under LP64 (the
+  pointer fields, as with `__LINEA`/`__FONT`); live values (`MOUSE_BT`,
+  `GCURX`/`GCURY`) or a snapshot; and how one global block maps onto
+  ADR-011's per-device workstation. If no, EmuCON D4 needs one of its other
+  options, and `__aline` stays null.
+- **Q2 — The C-callable function group of D10 (`tos-linea.h`):** drop it, or
+  keep it as a later option? Dropped, ADR-Line-A-01 (its C ABI) is moot and
+  closes with this ADR; kept, ADR-Line-A-01 stays open.
+- **Q3 — The two EmuDESK readers:** under ADR-022 (1:1) NEWDESK should
+  restore the `do_xyfix` nudge and, if `show_file` is ever built, the
+  mouse-button page wait. Through the VDI values above, or through the block
+  of Q1? (Follows from Q1.)
+
+### Rationale
+
+- The opcode trap is a property of the m68k instruction set. On AArch64
+  there is nothing to emulate; a replacement would be a new trap, an
+  interface extension no program calls — the only native bindings
+  (mintlib's) are m68k asm and do not build.
+- The EmuTOS AES and desktop do not use the trap either (above); the VDI
+  already provides the primitives and the state.
+- The variable block is different: ported programs could read it, and the
+  reference desktop does. Without a port that needs it, the evidence
+  supports neither an export nor a rejection, so it stays open.
+
+### Consequences
+
+- Positive: no new trap or `svc` class; the Line-A state can stay internal
+  and per device (ADR-011).
+- Negative: a source port that calls `linea0()` and friends fails at link
+  time; one that reads `__aline` without calling `linea0()` gets null. The
+  failure is recorded (`sdk/libc/expected-failures.txt:21`), not hidden.
+- Negative: NEWDESK's two EmuDESK deviations stay until Q3 is answered.
+- To do once accepted: correct `docs/api/_line-a.md` (source paths, the AES
+  claim, the implementation strategy); add an entry to `docs/COMPATIBILITY.md`
+  (absent Line-A trap; the block per Q1); close or keep the STATUS row
+  ADR-Line-A-01 per Q2.
+- Neutral: m68k binaries are unaffected — there is no emulator.
+
+### Alternatives considered
+
+- **A Line-A substitute trap for native code** (own `svc` immediate or an
+  undefined-instruction hook): ports would still need source changes, since
+  their bindings are m68k asm; it adds an interface without a caller. Not
+  chosen in this draft.
+- **The C-callable function group of D10:** not rejected here — Q2.
+- **A full live LINEA block at a fixed address in every process** (like the
+  B1 sysvars): not rejected here — Q1.
+- **EmuTOS' global Line-A state as the VDI's own state:** rejected by
+  ADR-011.
+
+### References
+
+- `docs/api/_line-a.md` (Phase 00 D10); `docs/STATUS.md` *Open ADRs*;
+  `docs/archive/status-log-2026-10-26.md:1021-1022`.
+- EmuTOS @ `1a7484ab`: `references/emutos/bios/linea.S`,
+  `references/emutos/bios/lineavars.S`, `references/emutos/include/lineavars.h`,
+  `references/emutos/bios/bios.c:176`, `references/emutos/desk/desksupp.c:56`,
+  `references/emutos/aes/gemgsxif.c:440-455`.
+- ADR-011, ADR-018, ADR-022.
+
+---
+
 ## Template for new ADRs
 
 ```markdown
