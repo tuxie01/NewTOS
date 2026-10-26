@@ -10,16 +10,23 @@
 > be lost between sessions or human contributors months apart.
 >
 > **Read this file at the start of every working session.**
-> Append-only by convention. Do not rewrite history; document corrections
-> by writing a superseding entry that references the old one.
+> Entries are not rewritten. A correction or a later decision is appended
+> inside the entry as a dated amendment or addendum, and the entry's
+> status line is kept current. A decision that replaces another one gets
+> a new entry; the old entry stays, with its status line pointing to the
+> new one. Text that is only history moves to `docs/archive/`.
 
 ---
 
 ## How to use this file
 
 - **ADRs**: Architectural Decision Records. Numbered, dated, with full
-  rationale. Once an ADR is written it is not modified — superseded
-  decisions get a new ADR that references the old one.
+  rationale. An ADR's original text stays as written. What changes later
+  is appended inside it as a dated amendment or addendum, and its
+  **Status** line always says what holds today — "Accepted", "Accepted,
+  amended YYYY-MM-DD", "Superseded by ADR-NNN", … A decision that
+  replaces an ADR gets a new ADR that references the old one; the old ADR
+  stays here with the status "Superseded by ADR-NNN".
 - **Quirks**: Bugs, hardware oddities, surprising spec interpretations
   that bit us during development. One per entry, with reproduction info
   and resolution.
@@ -27,28 +34,51 @@
   hard way that …".
 - **Rejected**: Alternatives we considered and rejected, with the reason.
   Prevents re-litigating the same decisions.
+- **Commit hashes**: history was rewritten on 2026-10-19
+  (`git filter-repo`). A hash in an entry written before that date is an
+  old hash; translate it with `tools/oldhash.sh <prefix>` (map:
+  `docs/commit-map.txt`). New text cites current hashes.
+- **Archive**: `docs/archive/memory-2026-10-26.md` holds text moved out of
+  this file (never-written ADR plans, unobserved example quirks, replaced
+  status lines). It is history, not evidence.
 
 ---
 
 ## ADRs (Architectural Decision Records)
 
 ADRs are numbered globally, prefix `ADR-NNN`. They follow the
-"context / decision / consequences / alternatives" structure.
+"context / decision / consequences / alternatives" structure; the
+template is at the end of this section.
+
+**Numbering.** The first ADR written is ADR-010 (initial commit
+`265a43c1`, 2026-06-16). **ADR-001 to ADR-009 were never written.** Two
+reservation lists for low numbers existed and disagreed: this file's
+"Anticipated further ADRs" (001 license, 002 EmuTOS configuration
+variant, 003 EmuTOS pin, 004 native PRG format, 005 `Mxalloc` modes,
+006 VT52 scope; now in `docs/archive/memory-2026-10-26.md`) and
+`docs/ARCHITECTURE.md` "Key ADRs (planned)" (001 PRG format, 002
+license, 003 `Mxalloc`, 004 VT52, 005 m68k JIT, 006 USB-HID vs UART,
+007 long file names). Neither list is a reservation any more; a new ADR
+takes the next free number above the highest one here. Where those
+topics ended up: license — GPLv2+ (`LICENSE`, `aec5b730`), no ADR;
+EmuTOS pin — `docs/analysis/ORACLE.md` §1; EmuTOS configuration — the
+Falcon030/TOS4 profile (`docs/api/_emutos-config.md`,
+`docs/analysis/aes-audit/emutos-config-profile.md`); native executable
+format — ADR-018 and ADR-028 (position-independent ELF); `Mxalloc`
+modes — ADR-021, ADR-023, ADR-027, ADR-028; input — ADR-015; m68k JIT —
+REJECTED-003; VT52 scope and long file names — no ADR. An "ADR-Supexec"
+is announced (ADR-012, `docs/api/xbios/26-supexec.md`) but has not been
+written. **ADR-025** is the MD supply (below); the ARCH03 draft that
+also called itself "ADR-025 Proposed"
+(`docs/analysis/arch03-implementation-plan.md` §1) is ADR-028.
 
 ## ADR-010: Single shared user address space (identity-mapped DRAM pools)
 
 **Date:** 2026-06-16
-**Status:** Accepted as the **real-hardware target — NOT YET IMPLEMENTED.**
-Stage 1 is blocked on the QEMU cortex-a72 TCG (see Implementation note /
-Conclusion below). The **live implementation is option (b)**: per-process
-`TTBR0_EL1` + opaque PD handle + the QUIRK-001 Device-write barrier — the
-model this ADR's Decision rejects "for fidelity", kept as the only
-QEMU-workable interim. Consequently the per-process-TTBR0 decision in
-STATUS Recent-Decisions 2026-05-03/04 is **still in force, not
-superseded**; `USER_VA_BASE = 0` and the per-slot `l0_pa` /
-`install_ttbr0` / `restore_boot_ttbr0` machinery are all still live
-(verified 2026-06-20). Flip this to plain "Accepted" only once the shared
-user TTBR0 is actually installed (on real RPi4 hardware).
+**Status:** **Superseded by ADR-028** (2026-10-04, implemented with ARCH03;
+the VA = PA decision lives on there; this ADR's path — one `TTBR0`,
+installed once and never switched, no protection — is replaced by one
+`TTBR0` root per address space with per-process rights).
 **Phase:** PHASE-06 (process model).
 
 ### Context
@@ -187,7 +217,10 @@ Stage-0 heap improvement is kept regardless.
 ## ADR-011: Per-device VDI physical workstation (multi-screen-ready)
 
 **Date:** 2026-06-16
-**Status:** Accepted
+**Status:** Accepted, **not implemented** (checked 2026-10-26): there is no
+screen-device registry — `Host::raster()` returns the one raster backend
+(`tos-api/src/host.rs:173`), and the palette is device-global
+(`kernel/src/vdi_backend.rs:144-153`).
 **Phase:** PHASE-00b (VDI spec) / PHASE-12 (VDI impl) — design intent
 locked during spec extraction, before any VDI code exists.
 
@@ -252,7 +285,9 @@ primitives draw into *that device's* framebuffer rather than a global
 
 - `docs/api/vdi/_dispatcher.md`, `docs/api/vdi/workstation/100-v_opnvwk.md`
 - EmuTOS `vdi/vdi_control.c` (`phys_work`, `vwk_ptr[]`, `CUR_WORK`),
-  `vdi/lineavars.S` (`v_bas_ad`, `DEV_TAB`)
+  `bios/lineavars.S` (`DEV_TAB`), `tosvars.ld` (`v_bas_ad`, sysvar
+  `0x44e`) *(corrected 2026-10-26: was "vdi/lineavars.S", which does
+  not exist)*
 - `kernel/src/hal/framebuffer.rs` (per-instance framebuffer)
 
 ---
@@ -260,7 +295,8 @@ primitives draw into *that device's* framebuffer rather than a global
 ## ADR-012: Cookie-jar access mechanism on NewTOS
 
 **Date:** 2026-06-20
-**Status:** **Accepted** (2026-06-20). Unblocks PHASE-08 D5 (spec next).
+**Status:** **Accepted** (2026-06-20); amended 2026-07-24 (B1, below) and
+2026-10-26 (Consequences checked against the code, see the note there).
 **Phase:** PHASE-08 (cookie jar).
 **Amended 2026-07-24 (B1):** the "native apps never touch low memory" premise
 in Context §1 below is **superseded**. Native EL0 apps now get a **per-process
@@ -354,6 +390,14 @@ bit-compatibility), which a one-line shim covers.
 - `Getcookie`/`Setcookie` are NewTOS extensions; the chosen function id(s)
   must be documented as reserved.
 
+*Amendment 2026-10-26 (checked against the code).* Two of the
+consequences above did not come true as written. The seeded set is
+`NTOS` (identity + version), `_MCH`, `_IDT`, `_AKP` and `EdDI`
+(`tos-api/src/cookie.rs:221-227`): `_FLK` is **not** set, `EdDI` is.
+And no NewTOS-own `Getcookie`/`Setcookie` function ids were reserved:
+the Syscall placement decision above uses FreeMiNT's `Ssystem` modes
+`S_GETCOOKIE`/`S_SETCOOKIE`/`S_DELCOOKIE`, which replaces that bullet.
+
 ### Alternatives considered
 
 - **Map a `$5A0` (or any fixed) sysvar page so apps read+scan it**
@@ -378,7 +422,11 @@ bit-compatibility), which a one-line shim covers.
 ## ADR-013: Native `.RSC` resource format (not classic Atari)
 
 **Date:** 2026-06-21
-**Status:** **Accepted** (2026-06-21, user decision).
+**Status:** **Accepted** (2026-06-21, user decision); the native format
+stands. Addenda 2026-07-20 (free-string/free-image tables) and 2026-10-26
+(system resources in the kernel image; coordinates and the later format
+versions — the "coordinates already in pixels" part of the Decision no
+longer holds since NRSC v9).
 **Phase:** PHASE-13 D7 (Resource Manager).
 
 ### Context
@@ -471,18 +519,30 @@ file system. **Application `.RSC` files** are loaded from the card through
 - Application resources: `rsrc_load` reads the file through
   `bdos::fs::read_file` (`tos-api/src/aes/resource.rs:2192-2233`).
 
----
+### Addendum 2026-10-26 (b): coordinates are converted at load; format versions after v4
 
-> Anticipated further ADRs:
->
-> - ADR-001: License (MIT vs Apache-2.0)
-> - ADR-002: EmuTOS configuration variant to track (CONF_WITH_TT vs
->   default ST)
-> - ADR-003: EmuTOS pinned commit (currently `1a7484ab`, recorded in
->   `docs/STATUS.md`; promote to formal ADR when Phase 00 starts)
-> - ADR-004: Native ARM PRG executable format
-> - ADR-005: Mxalloc mode-flag handling on uniform RAM
-> - ADR-006: VT52 emulation scope
+Checked against the code of 2026-10-26.
+
+- **Coordinates.** The Decision's "coordinates already in pixels" and
+  "`rsrc_obfix` is an identity" held up to NRSC v8 only. Since **NRSC v9**
+  (v9 LP64 / v10 ILP32) an OBJECT carries the classic file's packed
+  char-grid words, and the loader turns them into pixels at load with the
+  live `gl_wchar`/`gl_hchar`/`gl_width`, as EmuTOS `rs_fixit` →
+  `fix_objects` → `rs_obfix` does; `rsrc_obfix` (114) is that same
+  `rs_obfix` (`tos-api/src/aes/resource.rs:9-13`, `NRSC_VER_CHARGRID`
+  at `:345`). The reason: the converter had baked the pixels of a 640-wide
+  8×16 screen into every resource. A v1–v8 blob still loads unconverted.
+- **Versions.** The version list in the 2026-07-20 addendum ends at 4; the
+  loader knows v1–v14 — sub-structure arrays (v5/v6), a relocatable tree
+  index (v7/v8), char-grid coordinates (v9/v10), colour icons (v11/v12)
+  and, from **v13** (LP64) / v14 (ILP32), a native `RSHDR` at the head of
+  the image, so `ap_rscmem` points at what an EmuTOS application expects
+  (`NRSC_VER_RSHDR`, `:380`). The authoritative list is the module
+  documentation `tos-api/src/aes/resource.rs:16-79`. The format stays
+  native (64-bit OBJECT, little-endian, byte offsets); this addendum
+  changes nothing about the Decision's choice of format.
+
+---
 
 ## ADR-014: All MMIO through the high-half; TTBR0 holds no low-half identity
 
@@ -541,13 +601,18 @@ TLBI on the eret path. The pre-MMU boot heartbeat UART stays physical.
 
 ### References
 
-- QUIRK-001 (this file); commits `7231e9d` (high-half MMIO + empty TTBR0),
-  `c91c9e5` (framebuffer mapping), `3f93fde` (cache/barrier maintenance).
+- QUIRK-001 (this file); commits `e8fa10b2` (high-half MMIO + empty TTBR0),
+  `af37a4dc` (framebuffer mapping), `e82cf6d3` (cache/barrier maintenance),
+  all 2026-06-25. *(Corrected 2026-10-26: the hashes first written here,
+  7231e9d / c91c9e5 / 3f93fde, never existed; the commits' old hashes were
+  2fb1af4 / b1d5f7b / a858961.)*
 
 ## ADR-015: USB-HID input — xHCI host on Pi4, upper stack clean-room from FreeMiNT
 
 **Date:** 2026-06-25
-**Status:** Accepted
+**Status:** Accepted; amended 2026-10-26 — the "fixed MMIO, no PCIe
+enumeration" consequence was wrong, and the UART2 IKBD fallback no longer
+exists (see the amendment at the end).
 **Phase:** PHASE-16 (USB-HID input)
 
 ### Context
@@ -561,9 +626,11 @@ Two reference bodies make it tractable:
 - **FreeMiNT's USB stack** (`references/freemint/sys/usb`, a sanctioned
   source) is a **TOS-native, modular** USB stack: a host-controller layer
   (`struct ucdif` + `ucd_register`), a hardware-independent core + hub +
-  enumeration (`usb.c`/`hub.c`), class drivers (`udd/`), and — crucially —
+  enumeration (`usb.c`/`hub.c`), class drivers
+  (`references/freemint/sys/usb/src.km/udd/`), and — crucially —
   HID keyboard/mouse drivers that **translate USB HID → Atari scancodes and
-  inject them into the IKBD vector** (`udd/hid/keyboard/usb_keyboard.c`:
+  inject them into the IKBD vector**
+  (`references/freemint/sys/usb/src.km/udd/hid/keyboard/usb_keyboard.c`:
   `Setexc(0x114/4, …)`, `SEND_SCAN`). Only the `ucdif` host-controller layer
   is hardware-specific.
 - **Circle** (C++, `rsta2/circle`) + the no_std **`rust-osdev/xhci`** crate
@@ -601,26 +668,47 @@ cursor), so the desktop is source-agnostic.
   driver maps HID→Atari-scancode, then the existing path takes over.
 - Real-HW bring-up needs VL805 firmware bootstrap via mailbox (have the
   driver) + xHCI at `0xFE9C0000` (a fixed MMIO the firmware maps; no full
-  PCIe enumeration required).
+  PCIe enumeration required). *(Wrong — see the amendment below.)*
 - The IKBD/UART2 plan is shelved (kept only as a fallback note).
+  *(The fallback is gone — see the amendment below.)*
 
 ### References
 
 - `references/freemint/sys/usb` (sanctioned source); `rsta2/circle`;
   `rust-osdev/xhci`; xHCI spec; RPi firmware VL805 mailbox interface.
   See ADR-014 (high-half MMIO — the mailbox/MMIO groundwork this builds on)
-  and [[keyboard-via-atari-ikbd]] (the shelved IKBD path).
+  and the shelved IKBD path (removed, see the amendment below).
 
-## ADR-016: Ground-up desktop rebuild — EmuTOS-faithful, in `kernel/src/desk/`
+### Amendment 2026-10-26 — PCIe enumeration, and no UART2 fallback
+
+Checked against the code of 2026-10-26. The stack runs on the real Pi 4
+(USB-HID keyboard and mouse are the only input there), but two statements
+above did not hold:
+
+- The VL805 is a **PCIe endpoint**, not a fixed MMIO block. The kernel
+  brings up the BCM2711 PCIe root complex, trains the link, enumerates the
+  VL805 (bus 1, slot 0), assigns its xHCI BAR into the outbound window at
+  CPU `0x6_0000_0000` and loads its firmware
+  (`kernel/src/drivers/usb/pcie_rpi4.rs:1-21`, clean-room from Circle's
+  `references/circle/lib/bcmpciehostbridge.cpp`; spec `docs/api/usb/pcie-rpi4.md`). The
+  `0xFE9C0000` premise in Decision and Consequences is wrong.
+- The UART2 IKBD driver (`ikbd_uart`) was removed (`1ace07a4`); there is no
+  IKBD fallback. The IKBD *decoder* (`kernel/src/ikbd.rs`) stays as the
+  sink the HID drivers feed.
+
+## ADR-016: Ground-up desktop rebuild — EmuTOS-faithful, in kernel/src/desk/ (path before DESK43 U8b)
 
 **Date:** 2026-07-04
-**Status:** **Accepted** (user decision 2026-07-04).
+**Status:** **Superseded by ADR-022** (2026-07-22: the desktop is a 1:1
+rebuild that goes through the AES trap) **and ADR-026** (2026-10-16: the
+desktop is the EL0 program NEWDESK in `programs/desktop/`; the kernel
+carries no desktop). Accepted by user decision 2026-07-04.
 **Phase:** PHASE-14 (Desktop).
 
 ### Context
 
-The hand-rolled desktop (`kernel/src/desktop.rs` ~2329 lines +
-`kernel/src/desktop_icons.rs` ~442 lines) keeps producing rendering defects:
+The hand-rolled desktop (kernel/src/desktop.rs ~2329 lines +
+kernel/src/desktop_icons.rs ~442 lines, both since deleted) keeps producing rendering defects:
 icon-view 8.3 label overlap on real Pi-4 (`CONFIG.TXFIXUP4.DARERNEL8.IME…`),
 view-switch (text↔icon) residue, and a redraw path that repaints by handle
 order with a full-screen clip instead of honoring the window's damage-rectangle
@@ -635,7 +723,8 @@ user judged the desktop untrustworthy and chose a full ground-up rebuild.
 ### Decision
 
 Rebuild the entire desktop **application** from scratch as an EmuTOS-faithful
-reimplementation in a **new module `kernel/src/desk/`**, mirroring EmuTOS
+reimplementation in a **new module kernel/src/desk/** (path before DESK43
+U8b), mirroring EmuTOS
 `desk/` (`deskmain`/`deskapp`/`deskwin`/`desksupp`/`deskdir`/`deskfun`/
 `deskact`/`deskins`/`deskinf`/`deskrez`). `desk::run()` replaces
 `desktop::run()` at boot. Keep only the OS layer below it — AES/VDI/GEMDOS in
@@ -690,7 +779,8 @@ defined in `.claude/agents/`:
 - **Researcher** (Sonnet) — extracts `references/emutos/desk/` → `docs/api/desktop/`
   per SOURCE-ANALYSIS-PROTOCOL + defect catalog of the current desktop; **no
   product code**.
-- **Developer** (Opus) — writes **all** Rust/AArch64 code in `kernel/src/desk/`;
+- **Developer** (Opus) — writes **all** Rust/AArch64 code in kernel/src/desk/
+  (path before DESK43 U8b);
   **no stubs**.
 - **Auditor** (Opus) — reviews Developer code against spec + COMPATIBILITY,
   adversarially verifies (representative data), reports findings; **no code**.
@@ -707,12 +797,17 @@ Model rule: simple tasks on Sonnet, **code exclusively on Opus**.
 - STATUS Recent-Decisions 2026-07-03 (icon-overlap partial fix — now subsumed)
 - `.claude/agents/{researcher,developer,auditor}.md`
 
-## ADR-017: NewTOS resolution policy — native, geometry-independent, default 1920×1080, switchable to 1280×800
+## ADR-017: NewTOS resolution policy — native, geometry-independent, resolution from `config.txt` (Revision 2; first version: 1920×1080 switchable to 1280×800)
 
 **Date:** 2026-07-09 (revises a same-day, never-committed draft of this ADR —
 see "Superseded draft" below).
-**Status:** **Accepted** (user course-correction 2026-07-09, confirmed via
-team lead).
+**Status:** **Accepted as revised by Revision 2 (2026-07-16):** the display
+geometry comes from `config.txt` and is detected at boot (fallback
+1920×1080); there is no runtime resolution switch. The 2026-07-09 text
+below (two switchable resolutions, Decision points 1, 5 and 7) is history.
+Its colour point 2 (16-colour palette kept) is superseded by ADR-024.
+Geometry independence (point 3) stands as a rule. (Originally accepted by
+user course-correction 2026-07-09, confirmed via team lead.)
 **Phase:** cross-cutting (framebuffer driver, VDI workstation, AES globals,
 desktop `deskapp`/`deskwin`/`deskrez`, XBIOS screen group).
 
@@ -746,6 +841,8 @@ not native. So:
   future feature: a `NEWDESK.INF` path + an image loader + the desktop background
   painter (`paint_desktop_bg`). It is sensibly done **after** the truecolor VDI
   step — a photo wallpaper in the current 16-colour palette would dither badly.
+  *(2026-10-26: the truecolor step is done (ADR-024); no wallpaper has been
+  built, and `paint_desktop_bg` no longer exists.)*
 
 Everything below about *geometry-independence*, the *arena/cache blockers*, and
 the native-vs-16-colour split still holds; only the "runtime switchable via menu"
@@ -877,8 +974,9 @@ the situation EmuTOS itself has no honest classic code for.
    resolution change re-runs the same cold-start sequence boot already
    uses, rather than hot-patching live state: re-issue the mailbox request
    with the new geometry → invalidate the desktop's one-time-computed state
-   (`kernel/src/desk/global.rs`'s idempotent `DESK` static,
-   `kernel/src/desk/menu.rs`'s idempotent `MENU.built` cache — both
+   (kernel/src/desk/global.rs's idempotent `DESK` static,
+   kernel/src/desk/menu.rs's idempotent `MENU.built` cache, paths before
+   DESK43 U8b — both
    currently "compute once at boot, never again") → re-run the equivalent
    of `DeskState::new`/`app_start`/`win_start`/`build_menu` → full redraw.
    NewTOS has no separate AES *process* to restart (the desktop is a kernel
@@ -951,18 +1049,19 @@ the situation EmuTOS itself has no honest classic code for.
 - Negative (correctness blocker, must close before 1080p goes live): the
   desktop's fixed-size object arena
   (`MAX_WIN_ITEMS = 48`, `INITIAL_ITEM_SLOTS = (NUM_WNODES+1)*MAX_WIN_ITEMS`,
-  `kernel/src/desk/global.rs:43-62`) is explicitly sized "at 640×480" in its
+  kernel/src/desk/global.rs:43-62, path before DESK43 U8b) is explicitly sized "at 640×480" in its
   own doc comment; a maximized window/desktop at 1920×1080 fits roughly
   17×20 = 340 icon cells with the current fixed cell pitch (`g_wicon=100`,
-  `g_hicon=50`, `min_wint=8` — `kernel/src/desk/app.rs:44-61`), not 48. The
+  `g_hicon=50`, `min_wint=8` — kernel/src/desk/app.rs:44-61), not 48. The
   arena cannot grow after `obj_init` (raw `ob_spec`/`ib_ptext` pointers baked
   into the tree would dangle on a `Vec` regrow, per the existing doc
   comment), so this constant must be recomputed for the worst-case
   resolution *before* 1080p is enabled, not patched reactively.
 - Negative: two desktop caching spots need an explicit invalidate/rebuild
-  path that does not exist today — `kernel/src/desk/global.rs:471-487`'s
+  path that does not exist today — kernel/src/desk/global.rs:471-487's
   `DESK` static (`init()` is a no-op on a second call) and
-  `kernel/src/desk/menu.rs:372-378,483`'s `MENU.built` flag (the menu-bar
+  kernel/src/desk/menu.rs:372-378,483's `MENU.built` flag (paths before
+  DESK43 U8b) (the menu-bar
   object tree, sized to screen width/height, is built exactly once).
 - Negative/Open: `docs/api/desktop/deskrez.md` re-enters scope (was
   "out of scope" under the superseded draft) and needs its own EmuTOS
@@ -1009,9 +1108,9 @@ the situation EmuTOS itself has no honest classic code for.
 - `kernel/src/vdi_backend.rs:130-136`, `kernel/src/host_env.rs:262-273`,
   `tos-api/src/vdi/workstation.rs:100-117,143-160`,
   `tos-api/src/aes/window.rs:1007-1013` (already-dynamic geometry reads)
-- `kernel/src/desk/global.rs:43-62,471-487`, `kernel/src/desk/menu.rs:372-
-  378,483`, `kernel/src/desk/app.rs:44-61` (the desktop-side gaps: arena
-  sizing, the two one-time caches)
+- kernel/src/desk/global.rs:43-62,471-487, kernel/src/desk/menu.rs:372-378,483,
+  kernel/src/desk/app.rs:44-61 (paths before DESK43 U8b; the desktop-side
+  gaps: arena sizing, the two one-time caches)
 - EmuTOS `1a7484ab`: `aes/gemshlib.c:157-196` (`SHW_RESCHNG`),
   `aes/geminit.c:334-392,753,775-806` (`process_inf1`, `gem_main` cold
   `Setscreen`), `desk/deskmain.c:900-917` (`RESITEM`), `desk/deskrez.c`
@@ -1029,13 +1128,16 @@ the situation EmuTOS itself has no honest classic code for.
 - [[qemu-window-view-command]] (how to visually verify framebuffer output
   in QEMU at a non-default resolution)
 - ADR-016 (desktop rebuild — the geometry work is cross-cutting and must be
-  sequenced against the in-flight `kernel/src/desk/` task list)
+  sequenced against the in-flight kernel/src/desk/ task list)
 
 ## ADR-018: Native executable extension family — `.NAP` / `.NCP` / `.NTP` / `.NAC`
 
 **Date:** 2026-07-16
-**Status:** **Accepted** (user decision 2026-07-16, confirmed via team lead)
-**Phase:** cross-cutting (desktop launcher `kernel/src/desk/`, `kernel/src/launch.rs`,
+**Status:** **Accepted** (user decision 2026-07-16, confirmed via team lead);
+amended 2026-09-24 (`.NAC`), 2026-10-06 (`.NLD`) and 2026-10-26 (launch path
+as built — the Routing, Change surface and Staged plan sections are history).
+**Phase:** cross-cutting (desktop launcher, then kernel/src/desk/ — path
+before DESK43 U8b, now `programs/desktop/`; `kernel/src/launch.rs`,
 program-build tooling, NEWDESK.INF associations)
 
 ### Context
@@ -1045,7 +1147,7 @@ file, parses the ELF, loads it into a process slot, and `kernel::launch::
 run_program` drops to EL0, runs it, and resumes when it `Pterm`s. They are
 **not** m68k Atari `.PRG`/`.APP`/`.TOS`/`.TTP` binaries. The desktop must be
 able to launch a program by double-click; today `open_item`
-(`kernel/src/desk/main.rs`) returns `OpenTarget::None` for a plain file (an
+(kernel/src/desk/main.rs, path before DESK43 U8b) returns `OpenTarget::None` for a plain file (an
 explicit no-op).
 
 Reusing the classic Atari suffixes for native ELF apps would conflate two
@@ -1124,14 +1226,17 @@ User decision 2026-10-06 (LDG design `docs/analysis/ldg-after-arch03-2026-10-06.
    user starts**: a client loads it through libldg's `ldg_open` → `Pexec`
    5/3/4, the module's `main()` only hands its descriptor back via
    `OFFSETLDG`, and the client then calls its functions directly. Started
-   without a client, an LDG module just says so (`ex_lib.c:66-69`:
-   `form_alert` "This program is a LDG library").
+   without a client, an LDG module just says so
+   (`sdk/ldg/ldg-r133/demo/libs/ex_lib.c:66-69`, unpacked from
+   `sdk/ldg/ldg-svn-r133.tar.xz`: `form_alert` "This program is a LDG
+   library").
 2. **The m68k counterpart `.LDG` is reserved for the later emulator**, by the
    same reasoning as `.PRG`/`.ACC`: a classic `.LDG` is m68k code that `Pexec`
    cannot run natively, and the emulator must be able to claim the suffix.
 3. **The desktop keeps the default `Doc` class for `.NLD`** — no new
-   `FileType`/`Flavor`. `kernel/src/desk/ftype.rs::classify` already maps any
-   unknown suffix to `FileType::Doc` (`_ => FileType::Doc`), so a double-click
+   `FileType`/`Flavor`. `classify` (then kernel/src/desk/ftype.rs, now
+   `programs/desktop/src/ftype.rs:80`) already maps any
+   unknown suffix to `FileType::Doc` (`_ => FileType::Doc`, `:96`), so a double-click
    starts nothing. The kernel does not look at suffixes when loading
    (`Pexec` has no extension check), so nothing kernel-side is needed either.
 4. The `N_P` pattern ("middle letter = role") does not fit `.NLD` (`N` + `LD`
@@ -1161,16 +1266,20 @@ User decision 2026-10-06 (LDG design `docs/analysis/ldg-after-arch03-2026-10-06.
 
 ### Change surface
 
-- `kernel/src/desk/main.rs` — `open_item`: native-ext detection +
+*(Plan of 2026-07-16; the kernel/src/desk/ and kernel/src/desktop.rs paths are
+from before DESK43 U8b and no longer exist — see the amendment of 2026-10-26
+below.)*
+
+- kernel/src/desk/main.rs — `open_item`: native-ext detection +
   `OpenTarget::App{path, flavor}` + path construction + route to `run_program`
   + return `full_redraw` + m68k/error alerts.
-- `kernel/src/desk/` — an extension-classification helper
-  (`NAP`/`NCP`/`NTP`/m68k/document). The dead `kernel/src/desktop.rs`
+- kernel/src/desk/ — an extension-classification helper
+  (`NAP`/`NCP`/`NTP`/m68k/document). The dead kernel/src/desktop.rs
   `name_is_program` is a **reference only** (do not resurrect it).
 - `kernel/src/launch.rs` — `run_program` extended for a command tail (`.NTP`)
   and console mode (`.NCP`: `fbcon::activate` + restore); `run_auto_folder`
   filter to include native extensions.
-- `kernel/src/desk/inf.rs` — NEWDESK.INF file-type/icon associations gain the
+- kernel/src/desk/inf.rs — NEWDESK.INF file-type/icon associations gain the
   native family alongside the m68k ones (`inf.rs:566-570`).
 - **Program-build tooling — PREREQUISITE.** The old `programs/lineecho` crate +
   generated ELF are **gone**; native programs currently exist only as
@@ -1201,10 +1310,31 @@ ADR-016 (the desk rebuild `open_item` lives in), and the AES shell manager
 (`shel_write`/`pending_launch`, `tos-api/src/aes/shell.rs` — the AES-faithful
 launch path that the kernel-driven `run_program` deliberately bypasses).
 
+### Amendment 2026-10-26 — the launch path as built
+
+Checked against the code of 2026-10-26. The extension family and its roles
+(Decision table, both amendments) hold. The **Routing**, **Change surface**
+and **Staged plan (Task #72)** sections above describe the plan of
+2026-07-16 and are history:
+
+- Since ADR-026 the desktop is the EL0 program NEWDESK and starts a program
+  **only** through `shel_write(SHW_EXEC, …)` (`pro_run`,
+  `programs/desktop/src/pro.rs`; `programs/desktop/src/main.rs:1068-1073`);
+  the start itself is the AES shell loop's (`sh_ldapp`). The desktop no
+  longer calls `run_program`, and the bypass named under Related is gone.
+- Classification by extension is `classify`
+  (`programs/desktop/src/ftype.rs:80-96`), with `.NAC` → accessory and the
+  m68k suffixes → `FileType::M68k`.
+- The AUTO folder runs `.NCP` only (`kernel/src/launch.rs:369-397`).
+- `HELLO.NCP` is placed on C: by `tools/make-sd-image.sh:105`; `\AUTO\` is
+  empty by default.
+
 ## ADR-019: Native C toolchain — port real Atari C libraries, don't reimplement
 
 **Date:** 2026-07-18
-**Status:** **Accepted** (user decision 2026-07-18)
+**Status:** **Accepted** (user decision 2026-07-18); amended 2026-10-20
+(SDK01: app patches in `sdk/overlays/<program>/` replace the "app is
+sacrosanct" rule).
 **Phase:** cross-cutting (SDK — `sdk/`, separate from the clean-room OS)
 
 ### Context
@@ -1230,7 +1360,8 @@ The port surface, proven small for mintlib (Task #90):
   stack-`trap` to NewTOS register-`svc` (args left-to-right x0..x7, fn in x8,
   result x0). One change → all ~200 GEMDOS/BIOS/XBIOS bindings work unchanged.
   gemlib's `crys_if` (AES/VDI) retargets the same way to `svc #2`.
-- **crt0** (`sdk/libc/newtos-arch/crt0.S`, sets SP from the BasePage `p_hitpa`,
+- **crt0** (`sdk/libc/crt0.S`; corrected 2026-10-26, the path first written
+  here, sdk/libc/newtos-arch/crt0.S, never existed — sets SP from the BasePage `p_hitpa`,
   inits the malloc arena over the free TPA), **setjmp** (aarch64, when pulled).
 - **A few honest LP64/endian fixes** to vendored files: aarch64 `byteswap.h`
   (`__builtin_bswap*`), an `is_longlong` assign-to-constant fix in `vfprintf.c`,
@@ -1248,6 +1379,7 @@ The port surface, proven small for mintlib (Task #90):
 The 99% (printf/vfprintf, malloc, stdio buffering, string, qsort, strtol)
 compiles **as-is** on top of the retargeted trap layer.
 
+*(Superseded by the amendment of 2026-10-20 directly below.)*
 **The ported app is sacrosanct.** QED (and zView) source is **not modified** —
 every build failure is fixed in the toolchain (libc/gemlib/cflib/flags/headers),
 never in the app. The one exception: genuine **m68k assembly** (inline `asm`/
@@ -1272,7 +1404,8 @@ unmodified.
 a `fopen`/`fwrite`/`fread`/`fclose` file round-trip on `C:` — runs on QEMU
 raspi4b (`\AUTO\LIBTEST.NCP`): `-42 305419896` / `heap: heap string` /
 `roundtrip OK (37 bytes)`, clean `Pterm`, then the desktop. No libc code was
-hand-written.
+hand-written. *(No measurement run directory was recorded for this; the
+evidence is the test source above.)*
 
 ### Related
 
@@ -1284,10 +1417,14 @@ structs today).
 ## ADR-020: App ABI is ILP32 (32-bit pointers) for Atari-compat programs; LP64 native deferred
 
 **Date:** 2026-07-19
-**Status:** **Superseded** by the LP64 app-ABI pivot of 2026-07-21 (STATUS
-2026-07-21 ★★ APP-ABI-PIVOT). The ILP32 **build path** was retired on
-2026-09-04 — see the addendum at the end of this ADR. The **runtime** ABI
-switch deliberately stays.
+**Status:** **Superseded** by the LP64 app-ABI pivot of 2026-07-21 (no ADR of
+its own; STATUS log 2026-07-21 ★★ APP-ABI-PIVOT, now in
+`docs/archive/status-log-2026-10-26.md`). The ILP32 **build path** was retired
+on 2026-09-04 — see the addendum at the end of this ADR. The **runtime** ABI
+switch stays, but nothing sets it any more: the loader refuses ELFCLASS32
+images (`LoadError::Ilp32Unsupported`,
+`tos-api/src/bdos/process/loader.rs:409-426`, since `4cbd7485`), so the
+addendum's "set from the ELF class at load time" no longer holds.
 **Phase:** cross-cutting (SDK toolchain + kernel loader/AES/VDI ABI boundary)
 
 ### Context
@@ -1322,9 +1459,9 @@ ELF64 = LP64-native apps + the embedded selftests. The two coexist.
 
 ### Change surface (staged)
 
-1. **Foundation (done, commit `14a1f32`):** `tos-api/.../process/elf.rs` gains an
+1. **Foundation (done, commit `14a1f32`):** `tos-api/src/bdos/process/elf.rs` gains an
    ELF32 AArch64 parse path (class-dispatched `ClassLayout`; ELF64 byte-identical);
-   `sdk/build-ilp32.sh`. A minimal ELF32 program loads + runs in QEMU alongside
+   sdk/build-ilp32.sh (deleted 2026-09-04). A minimal ELF32 program loads + runs in QEMU alongside
    ELF64.
 2. **mintlib ILP32** — rebuild with the GNU ILP32 toolchain; drop the now-moot
    LP64 overlays (vfprintf is_longlong, labs, basepage/DTA); libtest as ELF32.
@@ -1348,16 +1485,16 @@ läuft". This retires the ILP32 **toolchain**, not the kernel's ABI plumbing.
 as native 64-bit; ILP32 was the *cause* of the QED menu corruption, not the
 cure). Since then nothing in the tree consumed an ILP32 artifact, but every SDK
 change still had to be carried in **two** parallel build scripts — the 200 Hz
-tick work of 2026-09-04 had to add `newtos-arch/getsysvar.c` to
+tick work of 2026-09-04 had to add `sdk/libc/newtos-arch/getsysvar.c` to
 `build-libc.sh` *and* `build-libc-ilp32.sh`. Double maintenance for a path with
 no consumer.
 
-**Removed (tracked, 7 files):** `sdk/build-ilp32.sh`,
-`sdk/libc/build-libc-ilp32.sh`, `sdk/libc/crt0-ilp32.S`,
-`sdk/gemlib/build-gemlib-ilp32.sh`, `sdk/cflib/build-cflib-ilp32.sh`,
-`sdk/apps/build-qed-ilp32.sh`, `sdk/apps/build-teradesk-ilp32.sh`. The matching
+**Removed (tracked, 7 files):** sdk/build-ilp32.sh,
+sdk/libc/build-libc-ilp32.sh, sdk/libc/crt0-ilp32.S,
+sdk/gemlib/build-gemlib-ilp32.sh, sdk/cflib/build-cflib-ilp32.sh,
+sdk/apps/build-qed-ilp32.sh, sdk/apps/build-teradesk-ilp32.sh. The matching
 `sdk/.gitignore` entries went with them; the extracted `*-ilp32/` source trees,
-`build-ilp32/` object dirs and `*-ilp32.a` archives were never tracked (local
+build-ilp32/ object dirs and `*-ilp32.a` archives were never tracked (local
 build output) and were deleted from the working tree. There is now no way to
 produce an ELFCLASS32 `.NCP`/`.NAP` from this repository.
 
@@ -1390,53 +1527,14 @@ test source `sdk/gemlib/tests/gemtest_verify.c`, whose only builder was
 `build-gemlib-ilp32.sh`. Both were left in place on 2026-09-04 as out of scope
 for a build-path retirement.
 
-### Template for new ADRs
-
-```markdown
-## ADR-NNN: Title
-
-**Date:** YYYY-MM-DD
-**Status:** Proposed | Accepted | Superseded by ADR-MMM | Deprecated
-**Phase:** PHASE-XX (or "cross-cutting")
-
-### Context
-
-What is the situation that requires a decision? What constraints apply?
-What sources were consulted (per SOURCE-ANALYSIS-PROTOCOL.md)?
-
-### Decision
-
-The chosen course of action, stated in one or two sentences.
-
-### Rationale
-
-Why this decision, not the alternatives? What did the source analysis
-reveal? What does this optimize for, and what does it trade off?
-
-### Consequences
-
-- Positive: …
-- Negative: …
-- Neutral: …
-
-### Alternatives considered
-
-For each alternative, why it was rejected. **Do not omit alternatives
-that seem obviously wrong** — future readers may not see why obvious.
-
-### References
-
-- Spec sections, datasheet pages, EmuTOS source paths (with SHA)
-- Related ADRs
-- Discussion thread / commit hash if any
-```
-
 ---
 
 ## ADR-021: EL0 apps get GEMDOS memory via a per-process mapped window; the pool allocator stays EmuTOS-faithful
 
 **Date:** 2026-07-20
-**Status:** Accepted
+**Status:** **Superseded by ADR-028** (2026-10-04, ARCH03): the per-process
+window is gone (one shared address space, VA = PA); the EmuTOS-faithful pool
+allocator this ADR kept stays.
 **Phase:** cross-cutting (BDOS mem + process MMU)
 
 ### Context
@@ -1445,7 +1543,8 @@ Classic TOS is flat/unprotected: a program dereferences any physical address
 `Malloc`/`Mxalloc` returns. NewTOS runs apps at **EL0** behind `TTBR0_EL1`; the
 ported EmuTOS pool returns physical addresses mapped only in the kernel high
 half, so an EL0 app faults touching them (QED `Mxalloc` → `0x0160a000` write
-fault; note [[el0-app-memory-must-be-mapped]]). TT-RAM-aware apps *all* request
+fault; the requirement "what an app is handed must be mapped" is carried on by
+ADR-028). TT-RAM-aware apps *all* request
 TT-RAM, so this hits every non-trivial app, not just QED. The TPA image loads at
 a fixed low VA (non-relocating loader), and `Mshrink(basepage@VA 0)` already
 fails `EIMBA` for the same address-mismatch reason.
@@ -1541,19 +1640,23 @@ places images at fixed VAs — FreeMiNT shows *why* that is a loader property
   `sys/arch/mprot030.c`, `sys/mint/mem.h`; NewTOS `bdos/mem/{pool,traps}.rs`).
 - ADR-020 (ILP32 pointers bound the window), ADR-010 / QUIRK-001 (no TLBI before
   `eret` → fresh-VA cursor), ADR-013 (`.RSC` — the #99 window this subsumes).
-- Notes [[el0-app-memory-must-be-mapped]], [[freemint-extension-direction]],
+- ADR-028 (the requirement EL0 memory must be mapped, now met by VA = PA);
+  notes [[freemint-extension-direction]],
   [[native-64bit-abi-future]] (#91 LP64/identity-map v2).
 - Tasks #99 (RSC window — subsumed), #102 (this research — closed).
 
 ## ADR-022: Desktop is a 1:1 EmuTOS-faithful rebuild that goes *through* the AES trap (refines ADR-016)
 
 **Date:** 2026-07-22
-**Status:** **Accepted** (user decision 2026-07-22).
+**Status:** **Accepted** (user decision 2026-07-22). Its endgame — the
+desktop as a replaceable EL0 AES application — is fulfilled by ADR-026
+(2026-10-16); the 1:1 principle stands, and the code now lives in
+`programs/desktop/`.
 **Phase:** PHASE-14 (Desktop).
 
 ### Context
 
-ADR-016 chartered the `kernel/src/desk/` rebuild but its principle was
+ADR-016 chartered the kernel/src/desk/ rebuild (path before DESK43 U8b) but its principle was
 "reimplement the *behaviour* … do **not** port the C line-by-line … internals
 free to redesign; the measuring stick is user-observable behaviour". Under that
 latitude the desktop **drifted away from the AES app path**: it grew its own
@@ -1568,11 +1671,12 @@ borders) while the **desktop's own** menu looks clean, because the desktop's
 boxes fit `abs_rect` **and** it full-redraws after every pick. A pristine
 in-kernel desktop therefore gives **false confidence** — it masks app-path bugs,
 cannot be replaced by the user, and offers no reference to debug against. See
-[[desktop-bypasses-app-abi-path]] and `docs/analysis/qed-redraw-rootcause.md`.
+`docs/analysis/qed-redraw-rootcause.md`; the bypass itself is gone since
+ADR-026.
 
 ### Decision
 
-Rebuild `kernel/src/desk/` as a **1:1 EmuTOS-faithful reimplementation** in Rust:
+Rebuild kernel/src/desk/ (since DESK43 U8b `programs/desktop/`) as a **1:1 EmuTOS-faithful reimplementation** in Rust:
 every EmuTOS `desk/` function maps to a **same-named Rust function that makes the
 same `tos-api` (AES/VDI/GEMDOS) calls in the same order and sequence**, and the
 desktop goes **fully through the AES trap** (opcode 200) like EmuDesk over
@@ -1648,14 +1752,17 @@ app** (an EL0 GEM client), enabling an AUTO-folder / alternate desktop. In-kerne
   call-surface), `deskpro.md` (new), the 4 validation passes 2026-07-22.
 - `docs/analysis/qed-redraw-rootcause.md`; ADR-016 (refined), ADR-017 (resolution).
 - Tasks #115 (AES=core), #123 (QED redraw), #124 (this rebuild).
-- Notes [[desktop-bypasses-app-abi-path]], [[verify-actual-call-path-before-diagnosing]].
+- ADR-026 (the desktop moved to EL0; the bypass this ADR describes is gone);
+  note [[verify-actual-call-path-before-diagnosing]].
 
 ---
 
 ## ADR-023: What the kernel hands out, the caller must be able to reach — publish kernel structures into the process under FreeMiNT's `PROT_*` modes
 
 **Date:** 2026-09-05
-**Status:** Accepted
+**Status:** Accepted; amended 2026-09-05 (twice, below) and 2026-10-26: the
+principle and the `PROT_*` vocabulary stand, the mechanism (a per-process
+window, `Kind::Shared`) was replaced by ADR-028 — see Amendment 3.
 **Phase:** cross-cutting (BIOS/XBIOS pointer returns + process MMU)
 
 ### Context
@@ -1687,7 +1794,7 @@ per-process EL0 window and return the user VA. Here the kernel hands an app
 one of *its own* structures. The mechanism should be the same one, not a
 second one.
 
-Sources consulted: EmuTOS (`bios/blkdev.c:589-756` `blkdev_getbpb`,
+Sources consulted: EmuTOS (`bios/blkdev.c:569-777` `blkdev_getbpb`,
 `bios/biosmem.c:134-144` `getmpb`/`themd`, `bios/ikbd.c:122-134` `keytbl`) for
 what the contract is; **FreeMiNT** (`references/freemint/`, the project's
 sanctioned MiNT-extension source) for the protection model; NewTOS current
@@ -1790,7 +1897,8 @@ it now has our vocabulary already aligned to build on.
 - FreeMiNT `references/freemint/sys/mint/mem.h:120-136` (the constants, taken
   verbatim); `sys/memory.c`, `sys/arch/mprot030.c` (the model this prepares
   for).
-- EmuTOS `bios/blkdev.c:589-756`, `bios/biosmem.c:134-144`, `bios/ikbd.c:122-134`.
+- EmuTOS `bios/blkdev.c:569-777` (corrected 2026-10-26 from 589-756; the
+  function starts at 569), `bios/biosmem.c:134-144`, `bios/ikbd.c:122-134`.
 - Specs `docs/api/bios/07-getbpb.md`, `docs/api/bios/00-getmpb.md` (both had
   the gap recorded as "open, a design decision, not taken here" — now closed).
 - Code: `tos-types/src/memory.rs` (`ProtMode`, `F_PROT_*`, `PROT_*`),
@@ -1800,7 +1908,8 @@ it now has our vocabulary already aligned to build on.
 - Measurement: `sdk/apps/apitest/apitest.c` checks BB17..BB28, BS03..BS10.
 - ADR-021 (the window this extends; deferred `F_PROTMODE` — partially lifted
   here for the publish direction only), ADR-010, QUIRK-001.
-- Notes [[el0-app-memory-must-be-mapped]], [[freemint-extension-direction]],
+- ADR-028 (EL0 memory must be mapped — met by VA = PA); notes
+  [[freemint-extension-direction]],
   [[framebuffer-outside-st-tt-ram]] (why `Physbase` is the hard remainder).
 
 ### Amendment, 2026-09-05 — `Physbase`/`Logbase`, and the cacheability half of a published mapping
@@ -1876,10 +1985,12 @@ That is now closed too, and the shadows are gone with it.
 
 **Both bases live where EmuTOS keeps them, not in a shadow.** The logical
 base *is* the display's draw pointer — the one the VDI raster backend
-renders through, which is what `v_bas_ad` is (`bios/screen.c:1071`) — and
+renders through, which is what `v_bas_ad` is (`bios/screen.c:1071-1073`,
+`logbase`) — and
 the physical base is read back **from the hardware**, the way EmuTOS'
 `physbase()` reconstructs it from the video-base registers
-(`bios/screen.c:1030`, `atari_physbase`). Deleting the two shadows removed a
+(`bios/screen.c:1042-1049`, which calls `atari_physbase` at `:917`;
+corrected 2026-10-26 from `:1030`). Deleting the two shadows removed a
 second source of truth: a program that asks after a `Setscreen` is now told
 what the machine is doing, not what it requested.
 
@@ -1888,8 +1999,9 @@ virtual height** (`0x0004_8004` with `h × 2`), so its screen memory holds two
 whole screens, and the physical base moves with the **set-virtual-offset**
 property tag `0x0004_8009` (`u32 offset_x, u32 offset_y`). Tag id and value
 layout are taken from `references/circle`
-(`include/circle/bcmpropertytags.h:65,282`, `lib/bcmframebuffer.cpp:33,386`,
-corroborated by `addon/linux/raspberrypi-firmware.h:103`) and written up in
+(`references/circle/include/circle/bcmpropertytags.h:65,282`,
+`references/circle/lib/bcmframebuffer.cpp:33,386`, corroborated by
+`references/circle/addon/linux/raspberrypi-firmware.h:103`) and written up in
 `docs/hardware/mailbox-framebuffer.md` §3b — CLAUDE.md Rule 6, nothing from
 memory. The driver believes the virtual height the firmware **echoes** and
 the byte size the allocate tag **granted**, not the numbers it asked for,
@@ -1956,6 +2068,29 @@ Code: `kernel/src/hal/framebuffer.rs` (`mem_base`/`pages`/`set_draw_base`/
 (`resolve_kva`), `tos-api/src/bdos/process/mmu.rs` (`USER_L3_COUNT`),
 `sdk/examples/scrflip.c`, `docs/hardware/mailbox-framebuffer.md` §3b.
 
+### Amendment 3, 2026-10-26 — the mechanism after ARCH03 (ADR-028)
+
+Checked against the code of 2026-10-26. The Decision's principle ("what the
+kernel hands out, the caller must be able to reach"), the FreeMiNT `PROT_*`
+vocabulary, the page-owning statics, NULL on failure, `MemAttr` and the
+uncached publication all stand. The **mechanism** described above and in
+the two amendments is gone with ADR-021's window:
+
+- There is no per-process window, no bump cursor, no block table and no
+  `Kind::Shared`. Since ADR-028 every user address is its physical address.
+  `expose` (`tos-api/src/bdos/process/usermem.rs:180`) enters the page(s)
+  into the **shared** user tables at VA = PA under the `PROT_*` mode and
+  returns the **physical address**; a publication is the same for every
+  process (module note, `usermem.rs:14-24`).
+- So the measured `Physbase() = Logbase() = 0x00400000` of Amendment 1 was
+  the window base of the day; today the call returns the framebuffer's
+  physical address.
+- `USER_L3_COUNT` (Amendment 2, consequence 2) no longer exists; there is no
+  window to size.
+- `MemAttr` (`usermem.rs:70`), the `PROT_G` + Non-Cacheable mapping
+  (`usermem.rs:225`, `PageFlags::UserRwNxUncached`), `uncached_shared_active`
+  and `resolve_kva` (`usermem.rs:308`) remain as described.
+
 ---
 
 ## ADR-024: VDI truecolor workstation — Falcon 16-bit RGB565 device pixel over a 32-bpp XRGB8888 physical framebuffer
@@ -1971,8 +2106,8 @@ code and the design doc that preceded it.
 ### Context
 
 NewTOS's committed EmuTOS reference build profile is **Falcon030/TOS4**
-(`make 512`, the full `CONF_WITH_*` set — `docs/MEMORY.md`
-[[emutos-target-profile-falcon-tos4]]), confirmed statically in
+(`make 512`, the full `CONF_WITH_*` set — the lead's note
+[[emutos-target-profile-falcon-tos4]], which is not in this file), confirmed statically in
 `docs/analysis/aes-audit/emutos-config-profile.md`: `CONF_WITH_VDI_16BIT`
 defaults to `1` in that profile (config.h:1628-1630) and **requires**
 `CONF_WITH_VIDEL=1` — EmuTOS hard-errors the build otherwise
@@ -1999,10 +2134,10 @@ path in EmuTOS at all** — the truecolor branch is everywhere bound to
 2026-07-22 — the design doc this ADR retroactively records the decision
 for).
 
-Trigger: a user decision, recorded in session memory as
-[[vdi-truecolor-workstation]] — "convert VDI from 16-color palette to
-Falcon truecolor (EmuTOS `CONF_WITH_VDI_16BIT` = 16-bit RGB565; backend
-maps to 32-bpp)".
+Trigger: a user decision, first recorded in the lead's session memory
+(vdi-truecolor-workstation; this ADR is now its record) — "convert VDI
+from 16-color palette to Falcon truecolor (EmuTOS `CONF_WITH_VDI_16BIT` =
+16-bit RGB565; backend maps to 32-bpp)".
 
 ### Decision
 
@@ -2013,8 +2148,8 @@ NewTOS's VDI presents a **Falcon truecolor workstation**, matching EmuTOS's
    memory-MFDB, `v_get_pixel`, and the pen model address) is EmuTOS's 16-bit
    RGB565-like word, `RRRRRGGGGG0BBBBB` (green LSB is `OVERLAY_BIT`,
    `vdi/vdi_defs.h:153-158`), reached through **256 logical pens**
-   (`NUM_COLORS = 256`, `kernel/src/vdi_backend.rs:33`) and **16 planes**
-   (`PLANES = 16` = `v_planes`, `:40`) — both figures satisfy EmuTOS's own
+   (`NUM_COLORS = 256`, `kernel/src/vdi_backend.rs:36`) and **16 planes**
+   (`PLANES = 16` = `v_planes`, `:43`) — both figures satisfy EmuTOS's own
    formula simultaneously (`DEV_TAB[13] = (v_planes<8)?(1<<v_planes):256`,
    `vdi_control.c:206`; `INQ_TAB[4] = v_planes`, `:210`).
 2. **Pens 0..15 keep the classic GEM-16 palette values**
@@ -2029,7 +2164,11 @@ NewTOS's VDI presents a **Falcon truecolor workstation**, matching EmuTOS's
    directly. Two conversion points bridge the two: `pal555_to_xrgb`
    (draw → screen) and `device_to_rgb565`/`rgb565_to_device` (screen →
    16-bit domain — lossless, because the screen is itself 5-bit-quantised)
-   (`kernel/src/vdi_backend.rs:174-182,397-424`).
+   (`kernel/src/vdi_backend.rs:174-182,397-424` at the time). *(2026-10-26:
+   `pal555_to_xrgb` no longer exists; the pair is now `word_to_device` /
+   `device_to_word` (`kernel/src/vdi_backend.rs:199-218`, which also carry
+   the overlay bit) behind `device_to_rgb565` / `rgb565_to_device`
+   (`:479-498`).)*
 4. **The app-visible memory-MFDB wire format** (`fd_stand=0`,
    `fd_nplanes=16`) is real packed **16 bits/pixel**, not the prior 32-bpp
    chunky model — this is **contract**, not internal: a Falcon-truecolor
@@ -2047,7 +2186,7 @@ NewTOS's VDI presents a **Falcon truecolor workstation**, matching EmuTOS's
   palette.** `CONF_WITH_VIDEL` + `CONF_WITH_VDI_16BIT` = 1/1 in NewTOS's
   Falcon030/TOS4 reference build (`emutos-config-profile.md:150,314`);
   EmuTOS itself refuses to build `VDI_16BIT` without `VIDEL`
-  (`config.h:2199-2200`), so this is one package, not two independent
+  (`include/config.h:2199-2200`), so this is one package, not two independent
   choices.
 - **EmuTOS has exactly one truecolor VDI shape** (16-bit, `v_planes > 8`);
   there is no design freedom in the device-pixel format once "truecolor" is
@@ -2151,8 +2290,8 @@ NewTOS's VDI presents a **Falcon truecolor workstation**, matching EmuTOS's
   decision; its "Colour truecolor is deliberately not bundled with this
   change" / "Deferred: real truecolor VDI remains a documented future step"
   is what this ADR fulfils).
-- Notes: [[vdi-truecolor-workstation]] (the triggering user decision),
-  [[vdi-draw-asm-optimization-later]] (a later, unaffected step).
+- Notes: [[vdi-draw-asm-optimization-later]] (a later, unaffected step).
+  The triggering user decision is recorded in this ADR (Context).
 
 ---
 
@@ -2301,7 +2440,7 @@ bypasses "had to keep working" (ADR-016 and ADR-022 Context, `343b3c5`).
    `aes_run_rom_program` (`aes/gemshlib.c:570-580,606`). It has no
    privilege QED does not have.
 3. **The kernel neither links nor calls the desktop** (DESK43 U10,
-   `0a3b9be9`). `kernel/src/desk/`, the `desk=kernel` boot switch and the
+   `0a3b9be9`). kernel/src/desk/, the `desk=kernel` boot switch and the
    handoff API are gone. The xtask test
    `programs_tests::the_kernel_does_not_link_the_desktop` guards it, and
    `tools/desk-drift-probe.sh` reads 0.
@@ -2324,7 +2463,7 @@ U10.
   ([[no-rationalizing-emutos-deviations]]).
 - **One world:** the desktop now exercises exactly the trap path every
   application uses, so a desktop that works validates that path
-  ([[desktop-bypasses-app-abi-path]] no longer applies).
+  (the bypass ADR-022 describes no longer applies).
 - **Replaceability:** the desktop is one registry entry; a `#Z` program
   (TeraDesk) uses the same mechanism.
 - **Security is explicitly not the reason.** NewTOS is single-user and has no
@@ -2386,14 +2525,14 @@ U10.
 
 **Date:** 2026-10-18
 **Status:** **Accepted** (user decision 2026-10-18).
-**Phase:** cross-cutting (GEMDOS memory, process memory, protection); refines ARCH03 and ADR-025.
+**Phase:** cross-cutting (GEMDOS memory, process memory, protection); refines ARCH03 (ADR-028) and ADR-025.
 
 ### Context
 
-Since ARCH03 the kernel's memory internals already follow FreeMiNT: one
+Since ARCH03 (ADR-028) the kernel's memory internals already follow FreeMiNT: one
 shared, identity-mapped address space with rights per process, several
 owners per block, `Mfree`/`Mshrink` only by an owner (`EIMBA` otherwise, E15),
-protection modes `PROT_P/G/S/PR/I` (ADR-023, [[adopt-freemint-protection-model]]).
+protection modes `PROT_P/G/S/PR/I` (ADR-023, ADR-028).
 The open memory tickets (MEM06, MEM07, MEM08, MEM10, ARCH03 stage 2b) are
 optimisations of exactly that model. The 2026-10-18 rule "everything
 EmuTOS-faithful" (PROC03) raised the question which reference those tickets
@@ -2629,9 +2768,9 @@ The question splits into two levels, decided separately:
 ### Consequences
 
 - Step 1 generic EL0 upcall + trampoline + GEMDOS `Psigreturn` (0x11A)
-  (`55a2a346`, design `coop-kernel/10-upcall-signal-design.md`); step 2
+  (`55a2a346`, design `docs/analysis/coop-kernel/10-upcall-signal-design.md`); step 2
   `etv_term` via upcall on `Pterm` (`ad3e8eff`); step 3a sleep/wake substrate
-  (`1844e09a`, design `coop-kernel/20-sleepwake-substrate-design.md`); step 3b
+  (`1844e09a`, design `docs/analysis/coop-kernel/20-sleepwake-substrate-design.md`); step 3b
   restartable context switch + deliver-on-resume (`aac71446`); prep cleanups
   `366d3b25`. Live today: `deliver_upcall`/`handle_psigreturn` in
   `kernel/src/arch/aarch64/exceptions.rs`, `tos-api/src/bdos/process/sched.rs`.
@@ -2657,6 +2796,49 @@ The question splits into two levels, decided separately:
 
 ---
 
+## Template for new ADRs
+
+```markdown
+## ADR-NNN: Title
+
+**Date:** YYYY-MM-DD
+**Status:** Proposed | Accepted | Superseded by ADR-MMM | Deprecated
+**Phase:** PHASE-XX (or "cross-cutting")
+
+### Context
+
+What is the situation that requires a decision? What constraints apply?
+What sources were consulted (per SOURCE-ANALYSIS-PROTOCOL.md)?
+
+### Decision
+
+The chosen course of action, stated in one or two sentences.
+
+### Rationale
+
+Why this decision, not the alternatives? What did the source analysis
+reveal? What does this optimize for, and what does it trade off?
+
+### Consequences
+
+- Positive: …
+- Negative: …
+- Neutral: …
+
+### Alternatives considered
+
+For each alternative, why it was rejected. **Do not omit alternatives
+that seem obviously wrong** — future readers may not see why obvious.
+
+### References
+
+- Spec sections, datasheet pages, EmuTOS source paths (with SHA)
+- Related ADRs
+- Discussion thread / commit hash if any
+```
+
+---
+
 ## Quirks Discovered
 
 Format: `QUIRK-NNN`, dated, with severity (low / medium / high / critical).
@@ -2666,7 +2848,12 @@ Format: `QUIRK-NNN`, dated, with severity (low / medium / high / critical).
 **Date discovered:** 2026-06-16
 **Severity:** High (blocks `Pexec`/`Pterm` round-trip under QEMU)
 **Phase / context:** PHASE-06 D3/D6 — `Pexec(PE_LOADGO)` parent/child round-trip
-**Status:** Worked around (interim); permanent fix = per-process ASIDs — built 2026-10-06 behind `asid=on` (default off until the Pi run), see the update below
+**Status:** Worked around; the UART barrier is still in the code
+(`kernel/src/arch/aarch64/exceptions.rs`, the QUIRK-001 brackets). The
+same-VA cause no longer arises since ARCH03 (ADR-028: programs are
+position-independent and run at their own physical address). Per-process
+ASIDs are built behind `asid=on` (default off until the Pi run). See the
+updates below; "do not re-attempt ASIDs" is superseded.
 
 ### Symptom
 
@@ -2724,6 +2911,8 @@ be validated on real RPi4 / a newer QEMU, not against this model.
 
 So: **do not re-attempt ASIDs to "fix" QUIRK-001** — that is solved by
 the barrier. Keep the barrier; it is correct on both targets.
+*(Superseded by the update of 2026-10-06 below: the ASID wedge is gone on
+QEMU 11.0.2, and ASIDs are built behind `asid=on`.)*
 
 **Update 2026-10-06 (ARCH03 stage 4):** the ASID wedge is gone on QEMU
 11.0.2 and does not exist on the real Pi 4 (ARCH03 0b, S0b §4 + Pi result).
@@ -2742,6 +2931,15 @@ probe on QEMU, only the same-ASID case (MPROT `f`) catches it. Retention
 across ASIDs is therefore verifiable only on the Pi.
 Evidence: `measurements/measurement-2026-10-06-arch03-4/RUNINFO.TXT`.
 
+**Update 2026-10-26 (checked against the code):** the Cause above — parent
+and child loaded at the **same** user VA — no longer occurs. Since ARCH03
+0d (`7fb554ec`) programs are position-independent and the kernel relocates
+each one into its own pool block, and since ARCH03 stage 1 (`c6280342`)
+every user address is its physical address (ADR-028), so two processes
+never share a VA for different physical code. The barrier is still in
+place (`kernel/src/arch/aarch64/exceptions.rs`, the "QUIRK-001 bracket"
+comments).
+
 ### Why this is hard to rediscover
 
 The failure is a silent hang with no exception, and it *disappears the
@@ -2757,18 +2955,38 @@ a `kprintln` between TLBI and install did). ASID mechanics per ARM ARM
 D8 (TTBR/TCR ASID fields). Cross-checked against `handle_pexec`, which
 exhibits and silently works around the same quirk.
 
-### Other quirks worth recording when hit
+## QUIRK-002: `GICD_IGROUPR` reads zero from Non-secure state — the diagnosis "PL011 RX IRQ not delivered on real RPi4" was refuted
 
-> - "BCM2711 PL011 RX FIFO trigger level must be set before enabling
->   UART, not after, or the first byte is lost."
-> - "EmuTOS's `Fopen` returns `EFILNF` (-33) for empty filenames, but
->   Compendium says 'undefined' — we follow EmuTOS."
-> - "QEMU `aarch64-virt` PL011 base address differs from RPi4
->   (0x0900_0000 vs 0xFE20_1000) — must be compile-time selected."
-> - "BCM2711 GPIO pull-up/down uses `GPIO_PUP_PDN_CNTRL_REGn` at
->   `0xFE20_00E4`, **not** the older BCM2837 `GPPUD` sequence."
+**Status:** **Refuted** (2026-09-04). INTID 153 (PL011 UART0 RX) **is**
+delivered to the Non-secure kernel on real Pi 4. Evidence: the boot-screen
+measurement of 2026-09-04 on real hardware found the IKBD ring filled
+before any input call had run — only `console::pl011_rx_drain`, the
+INTID-153 handler, could have done that — and the PL011 FIFO drained
+(`FR = 0x0091`, `RIS = 0x0020`); see "Correction 2026-09-04" below and the
+STATUS log row of 2026-09-04 ("Eine Phantomtaste lag seit jeher …", now in
+`docs/archive/status-log-2026-10-26.md`). The kernel was changed on that
+basis: `pl011_rx_drain` runs from the GIC IRQ handler and
+`serial_rx_byte` drops the byte on rpi4 (`kernel/src/console.rs:217-275`,
+`44361630`). A second diagnostic boot the same day (`initinfo-diag` build,
+`5583602c`) counted one `0x00` byte in the UART init flush — that result is
+recorded only in the lead's notes, not in a measurement run. **What
+remains true** is the trap: `GICD_IGROUPR` is RAZ from Non-secure state, so
+reading it proves nothing about the interrupt's group.
+**Date discovered:** 2026-06-20 (the original diagnosis); refuted 2026-09-04
+**Severity:** Low (a diagnostic trap; the original "blocks every peripheral
+IRQ" was wrong)
+**Phase / context:** real Pi 4 serial console; GIC-400 diagnosis
 
-## QUIRK-002: GIC-400 SPIs reset to Group 0 (secure) — peripheral IRQs not delivered to the NS kernel on real RPi4
+The sections below are the original entry of 2026-06-20 and its correction,
+kept as history. Also stale in them: `console::pl011_rx_poll` (deleted in
+`b776ffaa`, old hash `c6e4bfb`) and the UART2 IKBD input (removed in
+`1ace07a4`); input on real Pi 4 is USB-HID alone (ADR-015). Still useful:
+copying the project's `config.txt` template over the card must keep
+`gpu_mem=256` (Resolution, "Correction"), and the GICD (`0xFF841000`) /
+PL011 (`0xFE201000`) addresses for a register dump.
+
+Original title (2026-06-20): *GIC-400 SPIs reset to Group 0 (secure) —
+peripheral IRQs not delivered to the NS kernel on real RPi4.*
 
 ### Symptom
 
@@ -2860,21 +3078,23 @@ Also stale above: `console::pl011_rx_poll` no longer exists (deleted in
 ### Source
 
 BCM2711 ARM Peripherals §6 (GIC-400); ARM IHI 0048B §1.4 (GICv2 security,
-Group 0/1 → FIQ/IRQ); raspberrypi/tools `armstubs/armstub8.S` `setup_gic`.
+Group 0/1 → FIQ/IRQ); raspberrypi/tools armstubs/armstub8.S `setup_gic`
+(not in `references/`).
 
-## QUIRK-003: EL0-Eintritt — eine IRQ zwischen `msr elr_el1` und `eret` verwirft das Sprungziel
+## QUIRK-003: EL0 entry — an IRQ between `msr elr_el1` and `eret` discards the jump target
 
-**Date discovered:** 2026-09-23 (belegt und behoben 2026-09-24, Ticket ARCH01)
-**Severity:** High (jeder Programmstart; rund jeder siebte Versuch)
+**Date discovered:** 2026-09-23 (proven and fixed 2026-09-24, ticket ARCH01)
+**Severity:** High (every program start; roughly one attempt in seven)
 **Phase / context:** `kernel/src/arch/aarch64/user_entry.rs`,
-`enter_el0_with_resume_capture` — der einzige Kernelpfad, der ohne
-Ausnahmerahmen nach EL0 springt (Doppelklickstart, `\AUTO\`, `#Z`-Autostart,
-neun Selbsttests)
-**Status:** Fixed
+`enter_el0_with_resume_capture` — the only kernel path that enters EL0
+without an exception frame (double-click start, `\AUTO\`, `#Z` autostart,
+nine self-tests)
+**Status:** Fixed (measured on QEMU only; English since 2026-10-26, the
+original German wording is in `docs/archive/memory-2026-10-26.md`)
 
 ### Symptom
 
-Nach `[launch] EL0: slot 0 entry 0x1000` bricht der Start gelegentlich ab:
+After `[launch] EL0: slot 0 entry 0x1000` the start occasionally aborts:
 
 ```
 [EXC] synchronous (non-SVC) exception (Instruction Abort (lower EL)):
@@ -2882,74 +3102,79 @@ Nach `[launch] EL0: slot 0 entry 0x1000` bricht der Start gelegentlich ab:
 [EXC] FAR=0xffff0000000c6988
 ```
 
-`ELR` = `FAR` = eine **Kernadresse** (high half), symbolisiert in
-`enter_el0_with_resume_capture`; `SPSR` = `0`, also der von uns geschriebene
-Wert; ESR-IFSC `0x0e` = Permission Fault Level 2 — EL0, das eine Kernseite
-ausführt. Häufigkeit: **einmal in sieben** Läufen desselben Startskripts auf
-identischer Kartenkopie (`measurements/measurement-2026-09-23-desk19-desk20/`, RUNINFO §7).
+`ELR` = `FAR` = a **kernel address** (high half), symbolised in
+`enter_el0_with_resume_capture`; `SPSR` = `0`, i.e. the value we wrote;
+ESR IFSC `0x0e` = permission fault, level 2 — EL0 executing a kernel page.
+Frequency: **once in seven** runs of the same start script on an identical
+card copy (`measurements/measurement-2026-09-23-desk19-desk20/`, RUNINFO §7).
 
 ### Cause
 
-Die Befehlsfolge stellte Sprungziel und Zielzustand **mit offenen Interrupts**
-ein:
+The instruction sequence set up the jump target and the target state **with
+interrupts unmasked**:
 
 ```
 msr sp_el0, {sp} ; msr elr_el1, {entry} ; mov {tmp},#0 ; msr spsr_el1,{tmp} ; eret
 ```
 
-Ein Ausnahmeeintritt schreibt `SPSR_ELx` aus `PSTATE` **und die bevorzugte
-Rücksprungadresse nach `ELR_ELx`** (ARM ARM DDI 0487M.c, D1.4.2 „Exception
-entry", Regel R_DQXFW). Trifft die 200-Hz-Systemuhr (oder die PL011-IRQ) in
-dieses Fenster, steht danach der unterbrochene **Kern-PC** in `ELR_EL1`; der
-Behandler kehrt mitten in den Block zurück, die restlichen Befehle setzen
-`SPSR_EL1 = 0` (EL0t) — und der `eret` springt nach EL0 auf diese Kernadresse.
-Das Fenster ist rund vier Befehle breit, die Uhr tickt alle 5 ms: daher
-selten, aber unvermeidlich.
+Exception entry writes `SPSR_ELx` from `PSTATE` **and the preferred return
+address to `ELR_ELx`** (ARM ARM DDI 0487M.c, D1.4.2 "Exception entry", rule
+R_DQXFW). If the 200 Hz system tick (or the PL011 IRQ) lands in this window,
+`ELR_EL1` afterwards holds the interrupted **kernel PC**; the handler returns
+into the middle of the block, the remaining instructions set
+`SPSR_EL1 = 0` (EL0t) — and the `eret` jumps to EL0 at that kernel address.
+The window is about four instructions wide and the tick comes every 5 ms:
+hence rare, but unavoidable.
 
 ### Resolution
 
-`msr daifset, #0xf` vor der ersten dieser Schreiboperationen
+`msr daifset, #0xf` before the first of these writes
 (`kernel/src/arch/aarch64/user_entry.rs`, `enter_el0_with_resume_capture`).
-`MSR (immediate)` verodert das Immediate in `PSTATE.{D,A,I,F}` (C6.2.288);
-asynchrone Ausnahmen sind die einzigen, die in dieses Fenster gelangen können
-— die Befehle darin greifen auf keinen Speicher zu und können nicht
-synchron abbrechen. Die Maske **überlebt den `eret` nicht**: ein
-Ausnahmerücksprung setzt `PSTATE` aus `SPSR_EL1` (D1.4.4, Regel R_BWCFK;
-C6.2.157 `ERET`), und das geschriebene `SPSR_EL1` ist `0` — EL0 läuft also
-weiter mit offenen Interrupts und nimmt die angestaute IRQ sofort entgegen.
+`MSR (immediate)` ORs the immediate into `PSTATE.{D,A,I,F}` (C6.2.288);
+asynchronous exceptions are the only ones that can reach this window — the
+instructions in it access no memory and cannot abort synchronously. The
+mask **does not survive the `eret`**: an exception return sets `PSTATE` from
+`SPSR_EL1` (D1.4.4, rule R_BWCFK; C6.2.157 `ERET`), and the `SPSR_EL1`
+written is `0` — so EL0 continues with interrupts unmasked and takes the
+pending IRQ at once.
 
-Nicht betroffen und nicht angefasst: der **Trap-Pfad**. Ein `Pexec` aus EL0
-heraus schreibt nur den Ausnahmerahmen um und kehrt über `EXC_BODY` zurück
-(`kernel/src/arch/aarch64/exception_vectors.s`); dort ist `DAIF` seit dem
-Ausnahmeeintritt maskiert (D1.4.2, Regel R_WTXBY setzt `{D,A,I,F}` auf 1) und
-kein Behandler gibt die Interrupts vorher frei — `gic::enable_irqs` wird
-genau einmal beim Booten gerufen.
+Not affected and not touched: the **trap path**. A `Pexec` from EL0 only
+rewrites the exception frame and returns through `EXC_BODY`
+(`kernel/src/arch/aarch64/exception_vectors.s`); there `DAIF` has been
+masked since exception entry (D1.4.2, rule R_WTXBY sets `{D,A,I,F}` to 1),
+and no handler unmasks interrupts before — `gic::enable_irqs` is called
+exactly once, at boot.
 
 ### Why this is hard to rediscover
 
-Der Fehler ist nicht reproduzierbar-auf-Knopfdruck und sieht aus wie ein
-falsches Sprungziel oder ein MMU-Fehler: `entry 0x1000` steht eine Zeile
-darüber korrekt im Protokoll. Die einzige eindeutige Signatur ist die
-**Kombination** `ELR == FAR == Kernadresse` **und** `SPSR == 0`: der
-SPSR-Wert beweist, dass unsere Zuweisung durchkam, die Kernadresse, dass die
-danebenstehende `ELR`-Zuweisung überschrieben wurde. Wer nur auf `FAR`
-schaut, sucht im Lader.
+The fault is not reproducible on demand and looks like a wrong jump target
+or an MMU fault: `entry 0x1000` is logged correctly one line above. The only
+unambiguous signature is the **combination** `ELR == FAR == kernel address`
+**and** `SPSR == 0`: the SPSR value proves that our write went through, the
+kernel address that the `ELR` write next to it was overwritten. Whoever
+looks only at `FAR` searches the loader.
 
-Der Beleg ging so: in einer **Kopie** des Baums eine Warteschleife zwischen
-`msr elr_el1` und `eret` gesetzt (`method/force_race_patch.py`, ~16,7 Mio.
-Durchläufe ≫ 5 ms). Damit fällt der Fehler bei **jedem** Start, mit genau der
-gemeldeten Signatur; `ELR`/`FAR` zeigen auf das `subs` der Schleife. Dieselbe
-Kopie mit `daifset` davor startet sauber durch. Ohne diesen Schritt wäre der
-Fix eine Vermutung geblieben.
+The proof went like this: in a **copy** of the tree a busy loop was put
+between `msr elr_el1` and `eret`
+(`measurements/measurement-2026-09-24-arch01/method/force_race_patch.py`,
+~16.7 million iterations ≫ 5 ms). With it the fault hits **every** start,
+with exactly the reported signature; `ELR`/`FAR` point at the loop's
+`subs`. The same copy with `daifset` in front starts cleanly. Without this
+step the fix would have stayed a guess.
 
 ### Source
 
 ARM ARM DDI 0487M.c (Arm Architecture Reference Manual for A-profile, EAC,
-über Arms Dokumentendienst, nicht in `references/`): D1.4.2 „Exception entry"
-(R_DQXFW, R_WTXBY), D1.4.4 „Exception return" (R_BWCFK), C6.2.157 `ERET`,
-C6.2.288 `MSR (immediate)`, C5.2.3 `DAIF`. Messung:
-`measurements/measurement-2026-09-24-arch01/` (erzwungener Fall vorher/nachher, zwanzig
-saubere Startläufe), Fundstelle `measurements/measurement-2026-09-23-desk19-desk20/`
+from Arm's documentation service; not in `references/` at the time):
+D1.4.2 "Exception entry" (R_DQXFW, R_WTXBY), D1.4.4 "Exception return"
+(R_BWCFK), C6.2.157 `ERET`, C6.2.288 `MSR (immediate)`, C5.2.3 `DAIF`.
+*Since 2026-10-04 issue M.d is pinned
+(`references/arm-arm/DDI0487M_d_a-profile_architecture_reference_manual.pdf`,
+`references/README.md`); checked 2026-10-26: R_DQXFW and R_WTXBY are under
+D1.4.2 "Exception entry" and R_BWCFK under D1.4.4 "Exception return" there
+too; the C-chapter numbers were not re-checked.* Measurement:
+`measurements/measurement-2026-09-24-arch01/` (forced case before/after,
+twenty clean start runs), finding `measurements/measurement-2026-09-23-desk19-desk20/`
 RUNINFO §7.
 
 ### Template for new quirks
@@ -3059,9 +3284,11 @@ would exceed convenience benefit.
 
 ---
 
-### REJECTED-003: m68k JIT in Phase 10
+### REJECTED-003: m68k JIT in the m68k-emulator phase
 
-**Considered:** During Phase 10 design
+**Considered:** During Phase 10 design — "Phase 10" was the m68k-emulator
+phase of the original plan (`phases/_archive/PHASE-10-m68k-emulator.md:94,109`);
+today's PHASE-10 is the BIOS screen phase (corrected 2026-10-26).
 **Status:** Deferred to a possible later phase
 
 **Why rejected:** Interpreter throughput on modern ARM should easily
