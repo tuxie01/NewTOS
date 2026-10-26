@@ -2869,11 +2869,11 @@ Evidence, checked 2026-10-26:
   a process — B1's page-0 publication covers the sysvars, OSHEADER and the
   cookie jar (`docs/COMPATIBILITY.md`, "System variables — compatible how").
 - **SDK:** mintlib's `linea.c` (the `linea0()`… bindings) is a recorded build
-  failure (as of this writing; excluded by this ADR since acceptance), m68k register asm (`sdk/libc/expected-failures.txt:21`,
+  failure (as of this writing; excluded by this ADR since acceptance), m68k register asm (`sdk/libc/expected-failures.txt:21-22`,
   `docs/sdk/07-mintlib-limits.md:47`); a port that calls a Line-A binding does
   not link. mintlib's alglobal.c is compiled, so `__aline` exists and stays a
   null pointer. `__LINEA` and `__FONT` change layout under LP64 and no port
-  reads them today (`docs/sdk/05-abi-pitfalls.md:152-154`).
+  reads them today (`docs/sdk/05-abi-pitfalls.md:152-156`).
 - **m68k binaries:** the m68k user-mode emulator is out of scope
   (`phases/README.md:34-38`); the requirements keep it as optional FR-4
   (`docs/REQUIREMENTS.md:23-27`); ADR-018 reserves the classic suffixes for it.

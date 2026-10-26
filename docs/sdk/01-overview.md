@@ -56,7 +56,7 @@ The file extension decides how the desktop launches the program (ADR-018,
 |-----------|------|---------------|---------------------------------------------------------|
 | `.NAP` | native GEM **A**pplication | `.PRG` / `.APP` | desktop relinquishes the screen (`desktop_relinquish`), runs the program, rebuilds itself on `Pterm` (`run_gem_app`, `:524-529`) |
 | `.NCP` | native **C**onsole **P**rogram | `.TOS` | `fbcon::clear_and_home()`, run, wait for a key, redraw the desktop |
-| `.NTP` | native, **T**akes **P**arameters | `.TTP` (**not** `.GTP` — decided 2026-09-26, DESK44) | a **console** program with a command tail: `isgraf = FALSE`, so `sh_chgrf` takes the screen to alpha before it runs (`main.rs:1068`, `gemshlib.c:513-523`). A double-click puts EmuTOS's `ADOPENAP` box up first and passes what was typed there as the tail (`opn_appl`, `deskinf.c:1250-1271`, NewTOS `programs/desktop/src/inf.rs`); *Cancel* starts nothing |
+| `.NTP` | native, **T**akes **P**arameters | `.TTP` (**not** `.GTP` — decided 2026-09-26, DESK44) | a **console** program with a command tail: `isgraf = FALSE`, so `sh_chgrf` takes the screen to alpha before it runs (`programs/desktop/src/main.rs:1129-1141`, `gemshlib.c:513-523`). A double-click puts EmuTOS's `ADOPENAP` box up first and passes what was typed there as the tail (`opn_appl`, `deskinf.c:1250-1271`, NewTOS `programs/desktop/src/inf.rs`); *Cancel* starts nothing |
 
 The extension is a desktop/shell convention, **not** part of the TOS syscall
 ABI (`ftype.rs:16-17`). The classic suffixes `.PRG/.APP/.TOS/.TTP/.GTP` are
@@ -89,14 +89,15 @@ for TOS data structures that are 32-bit on the wire are the subject of
   targets no Linux/POSIX compatibility (`CLAUDE.md`, "Non-goals"). What mintlib
   provides is what compiled: on 2026-10-20 `sdk/libc/build/compiled.txt` of
   the last local build lists 627 files and `failed.txt` 5 (these counts move
-  with every change to `DIRS`); the five that do not compile are listed with
-  reasons in `sdk/libc/expected-failures.txt`, see
+  with every change to `DIRS`; since ADR-030 `sdk/libc/mintlib/mintlib/linea.c` is a deliberate
+  exclusion, not a failure, so 4 remain); the four that do not compile are
+  listed with reasons in `sdk/libc/expected-failures.txt`, see
   [07-mintlib-limits.md](07-mintlib-limits.md).
 * **Command-line arguments via `argv`: yes, since 2026-09-25 (TASK/PORT01);
   environment and `ARGV=` since 2026-10-06 (TASK/PORT09).** The libc `crt0`
   calls `__libc_parseargs()` (`sdk/libc/newtos-arch/cmdargs.c`), mintlib's
   `crtinit.c` `parseargs()` reimplemented for AArch64 (mintlib's own file
-  still does not build, `sdk/libc/expected-failures.txt:25`): `environ` comes
+  still does not build, `sdk/libc/expected-failures.txt:27`): `environ` comes
   from the environment block `p_env` that every launch path hands down as
   EmuTOS does (AUTO `{0, 0}`; desktop, `#Z` and accessories a copy of the
   AES's `"PATH=\0X:\\\0"`, which mintlib's rule joins to `"PATH=X:\\"`;

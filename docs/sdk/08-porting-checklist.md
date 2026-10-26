@@ -49,7 +49,7 @@ Tick each line; every line points at the section that explains it.
       struct size, big-endian tricks) → a per-program patch file in
       `sdk/overlays/<app>/` whose header says why. Never edit inside the
       upstream tree → [04 §rule](04-porting-anatomy.md#the-rule-upstream-stays-unchanged-fixes-go-where-they-belong)
-- [ ] Every undefined symbol traced with `build/why.txt`; classified against
+- [ ] Every undefined symbol traced with the linker's `--why-extract` output (`why.txt` in the app's build directory); classified against
       the dangling-reference list → [07 §6](07-mintlib-limits.md#6-references-libca-leaves-unresolved-measured)
 - [ ] `undefined symbols in the final image (goal 0): 0`
 

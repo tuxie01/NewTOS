@@ -192,7 +192,7 @@ Building them one by one is equivalent: `sdk/libc/build-libc.sh` (33 s),
 link, for example:
 
 ```
-failures match libc/expected-failures.txt: 5 today, 5 recorded, 0 new
+failures match libc/expected-failures.txt: 4 today, 4 recorded, 0 new
 LINK OK -> …/sdk/libc/build/libtest.NCP (103656 bytes)
 ```
 
@@ -490,7 +490,7 @@ Two details that are easy to miss (TASK/SDK01 H, HypView):
 * Many FreeMiNT-style trees list their sources in `SRCFILES`/`Makefile.objs`
   (`COBJS = …`), one per subdirectory. Use that manifest instead of a glob
   (it leaves out test programs and Pure C assembler modules such as
-  HypView's `hyp/gfx.s`); `make` can print it:
+  HypView's hyp/gfx.s); `make` can print it:
   `printf 'include SRCFILES\nall: ; @echo $(COBJS)\n' | make -s -f - -C <dir>`.
 
 `sdk/apps/build-hypview.sh` is a complete `newtos-cc` port script of this
@@ -543,7 +543,7 @@ as an array of 32-bit `long` pairs reads garbage on LP64 and crashes. Use
 (or `'llvm-ar'`, `'llvm-nm'`, …), followed by the install lines.
 Neither LLVM's `lld`/`llvm` packages nor the Rust fallback were found
 (§1.2). Install the packages the message names; if your LLVM lives
-somewhere else, point `NEWTOS_LLVM_BIN` at its `bin/` directory.
+somewhere else, point `NEWTOS_LLVM_BIN` at its bin directory.
 `sdk/bin/newtos-cc --toolchain` shows what each tool resolves to.
 
 **Also common:** the card does not boot — it must be MBR + FAT16 ≤ 2 GB

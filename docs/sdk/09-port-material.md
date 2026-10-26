@@ -27,9 +27,9 @@ versioniert (siehe [04](04-porting-anatomy.md)).
 | **mintlib** 0.60.1 | `sdk/libc/` | libc-Unterbau. Bekannte Luecken in [07](07-mintlib-limits.md); `crt0.S` baut `argv` seit PORT01 aus `p_cmdlin`, `environ` und `ARGV=` seit PORT09 |
 | **gemlib** 0.44.0 | `sdk/gemlib/` | AES/VDI-Bindungen |
 | **cflib** | `sdk/cflib/` | auf Commit `ce57817` (2026-07-14) gepinnt, seit PORT03 — siehe §3 |
-| **libm** = OpenLibm 0.8.8 | `sdk/libm/` | seit T07; die `long double`-Funktionen (`ld128/`) seit TASK/SDK01 J ([07](07-mintlib-limits.md) §4, §6) |
+| **libm** = OpenLibm 0.8.8 | `sdk/libm/` | seit T07; die `long double`-Funktionen (`sdk/libm/openlibm-0.8.8/ld128/`) seit TASK/SDK01 J ([07](07-mintlib-limits.md) §4, §6) |
 | **compiler-rt 21.1.8** (LLVM, nur `lib/builtins`) | `sdk/compiler-rt/` | seit TASK/SDK01 E: Laufzeit des Compilers (`libclang_rt.builtins.a`: binary128-`long double`, komplexes `*`/`/`), von `newtos-cc` immer gelinkt. Quelle: unveraenderter Release-Tarball `compiler-rt-21.1.8.src.tar.xz` von `github.com/llvm/llvm-project/releases/tag/llvmorg-21.1.8`, SHA-256 und gepruefte Signatur in `compiler-rt-sources.sha256`. **Lizenz: Apache-2.0 WITH LLVM-exception** (`LICENSE.TXT` im Tarball, SPDX-Kopf jeder Quelle); die LLVM-Ausnahme befreit Programme, in die die Bausteine eingebunden werden, von den Hinweispflichten der Apache-Lizenz (Abschnitte 4(a), 4(b), 4(d)); ihr zweiter Absatz regelt die Verbindung mit GPLv2-Software (Doom) (`LICENSE.TXT` Z. 208-222) |
-| **LDG** (SVN r133, `devel/`-Bibliothek) | `sdk/ldg/` | `libldg.a`, [10](10-ldg-modules.md); Quelle `Applications/ldg-src` wurde nur zum Einlagern des Tarballs benutzt |
+| **LDG** (SVN r133, `sdk/ldg/ldg-r133/src/devel/`-Bibliothek) | `sdk/ldg/` | `libldg.a`, [10](10-ldg-modules.md); Quelle `Applications/ldg-src` wurde nur zum Einlagern des Tarballs benutzt |
 | **libshare** 0.1.1 | `sdk/libshare/` | Allokator jeder `.NLD`-Bibliothek, [10](10-ldg-modules.md) §6 |
 | **zlib, libpng, libjpeg, giflib, libexif** | `sdk/{zlib,libpng,libjpeg,giflib,libexif}/` | Codec-Bibliotheken, [11](11-codec-libraries.md) |
 | **WinDom 1.21.3** (+ zViews Patch) | `sdk/windom/` | `libwindom1.a`, [12](12-windom.md) |
@@ -122,14 +122,14 @@ Stand gehalten worden.
 ## 4. Das Materialarchiv
 
 `/Volumes/Daten/tho-otto-backu` — 42 GB Spiegel von `tho-otto.de`,
-Paketablage unter `www.tho-otto.de/download/`. Enthaelt unter anderem:
+Paketablage unter www.tho-otto.de/download/. Enthaelt unter anderem:
 
 * `pml-2.03.tar.xz` — Quelltext, die von zView geforderte Fassung
 * `windom-2.0.1.tar.xz` — **neuer** als die geforderte 1.21.3
 * `cflib-21-2024*.tar.xz` — datierte Schnappschuesse. **Achtung (PORT03):**
-  nur `download/mint/cflib-21.tar.xz` (2024-04-30) ist **Quelltext**; die
+  nur download/mint/cflib-21.tar.xz (2024-04-30) ist **Quelltext**; die
   `*-dev.tar.xz` und die neueren `snapshots/cflib/*.tar.bz2` sind
-  m68k-**Binaer**pakete (`usr/lib/**/libcflib.a`, `usr/include/`, `stguide/`),
+  m68k-**Binaer**pakete (`usr/lib/**/libcflib.a`, usr/include/, stguide/),
   fuer eine Portierung also wertlos. Der Spiegel hatte keinen Quelltarball,
   der den PORT03-Fix enthielt — deshalb der Commit-Pin
 * dazu Dutzende weiterer portierter Bibliotheken

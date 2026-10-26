@@ -10,7 +10,7 @@ Nothing here needs a Raspberry Pi; step 6 is an optional extra on the Pi.
 
 What the test runs: one script, `sdk/host-report.sh`. It installs nothing,
 clones nothing, needs no `sudo`, writes only inside the checkout (into
-`target/host-report/`, which git ignores) and collects every result into one
+target/host-report/, which git ignores) and collects every result into one
 file you attach to the GitHub issue.
 
 ## 1. Packages
@@ -136,14 +136,14 @@ clang version.
 
 If you have a NewTOS 0.6.1 card: copy `sdk/apps/qed/build/QED.NAP` and
 `sdk/apps/qed/build/qed.rsc` over the ones in `C:\Apps\QED\` (keep the
-originals somewhere), and `target/host-report/programs/HELLO.NCP` to `C:\`.
+originals somewhere), and target/host-report/programs/HELLO.NCP to `C:\`.
 Boot, start both from the desktop. HELLO prints `Hello from NewTOS, GEMDOS
 …` and waits for a key; QED opens its window and you can type. Tell us
 whether both did.
 
 ## 7. What to send back
 
-Attach `target/host-report.tar.gz` to the GitHub issue
+Attach target/host-report.tar.gz to the GitHub issue
 (<https://github.com/tuxie01/NewTOS/issues/4>) and add three lines:
 
 1. distribution and version, CPU (`x86_64` or `aarch64`);

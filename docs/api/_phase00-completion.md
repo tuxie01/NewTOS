@@ -57,8 +57,8 @@ OSHEADER, IOREC.
 
 - D1 source layout map — `docs/emutos-map.md`.
 - D2 trap dispatchers — 3 files.
-- D10 Line-A overview — `docs/api/_line-a.md` (implementation
-  deferred to PHASE-12).
+- D10 Line-A overview — `docs/api/_line-a.md` (no implementation:
+  ADR-030, no Line-A emulation).
 - D11 discrepancy log — `docs/api/_discrepancies.md` (D-001..D-008).
 - D12 dependency graph — `docs/api/_dependency-graph.md`.
 - Working list — `docs/api/_working-list.md`.
@@ -68,7 +68,8 @@ OSHEADER, IOREC.
 - D8 AES specs (lib/aes/* in EmuTOS, ~80 functions). Out of scope
   for the present round; AES implementation is Phase 12.
 - D9 VDI specs (vdi/* in EmuTOS, ~30 functions). Same reasoning.
-- LINEA_VARS structure detailed extraction (Phase 12 lead-in).
+- LINEA_VARS structure detailed extraction — dropped: no LINEA block is
+  exported, `__aline` stays NULL by design (ADR-030).
 
 ## Key learnings (folded into specs)
 
@@ -112,8 +113,8 @@ PHASE-03 (Memory Management) is unblocked entirely; spec is in
 |---------------|-----------------------------------------|----------|
 | ADR-Supexec   | AArch64 substitute for `Supexec`         | PHASE-06 |
 | ADR-BDOS-Lock | BDOS serialisation model on SMP          | PHASE-05 |
-| ADR-Line-A-01 | C-ABI shape for Line-A export            | PHASE-12 |
-| ADR-Line-A-02 | Mouse-cursor state ownership             | PHASE-08 |
+| ADR-Line-A-01 | C-ABI shape for Line-A export            | closed: moot, no export (ADR-030) |
+| ADR-Line-A-02 | Mouse-cursor state ownership             | closed: the VDI's (ADR-030) |
 
 ## Sign-off
 

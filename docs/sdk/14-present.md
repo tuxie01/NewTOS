@@ -24,7 +24,7 @@ the slide file unless the name is absolute (`C:\...`).
 
 `tools/make-sd-image.sh` installs the program with the **sample** slide file
 `sdk/apps/present/sample/SLIDES.TXT` and its test picture `TEST.PNG`
-(`sample/gen-sample.py`) into `C:\Apps\PRESENT\` of the QEMU image. A real card
+(`sdk/apps/present/sample/gen-sample.py`) into `C:\Apps\PRESENT\` of the QEMU image. A real card
 gets its slides by hand.
 
 ## 2. Slide file format

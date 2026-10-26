@@ -32,7 +32,7 @@ since TASK/PORT10 the overlay `sdk/libc/overlay/include/stdint.h` makes
 `intptr_t`/`uintptr_t` `long` on LP64 (with `INTPTR_*`/`UINTPTR_MAX` and the
 `PRI*PTR`/`SCN*PTR` macros in `inttypes.h`). Since TASK/SDK01 A
 (2026-10-20) `PTRDIFF_MIN/MAX` and `SIZE_MAX` in the same header and
-`SSIZE_MAX` (overlay `include/bits/posix1_lim.h`) are the 64-bit values too
+`SSIZE_MAX` (overlay `sdk/libc/overlay/include/bits/posix1_lim.h`) are the 64-bit values too
 (`sdk/libc/tests/lp64-limits.sh`). See
 [05-abi-pitfalls.md](05-abi-pitfalls.md#b7-mintlibs-stdinth-gives-a-32-bit-uintptr_t-on-our-lp64-build).
 
@@ -58,7 +58,7 @@ newtos_lld -T "$SDK/newtos.ld" -pie …      # "$LLD" (+ -flavor gnu for rust-ll
 | # | Where | Notes |
 |---|---|---|
 | 1 | `NEWTOS_LLD`, `NEWTOS_AR`, `NEWTOS_NM`, `NEWTOS_READOBJ`, `NEWTOS_OBJDUMP`, `NEWTOS_SIZE` (`llvm-<x>` → `NEWTOS_<X>`) | an explicit file; the scripts' older `LLD=` / `AR=` overrides still come before it |
-| 2 | `$NEWTOS_LLVM_BIN/<name>` | any LLVM `bin/` directory |
+| 2 | `$NEWTOS_LLVM_BIN/<name>` | any LLVM bin directory |
 | 3 | `PATH` | Debian/Ubuntu/Fedora packages `lld` + `llvm` |
 | 4 | the directory `${CLANG:-clang}` really lives in (symlinks followed) | e.g. Debian's `/usr/lib/llvm-<N>/bin`, or a keg-only Homebrew clang given as `CLANG=…` |
 | 5 | `<prefix>/opt/llvm/bin`, `<prefix>/opt/lld/bin` for `$HOMEBREW_PREFIX`, `/opt/homebrew`, `/usr/local`, `/home/linuxbrew/.linuxbrew` | Homebrew's `llvm` is keg-only, not on `PATH` |
@@ -75,7 +75,7 @@ prints what every tool resolves to.
 **`-flavor gnu`.** `rust-lld` is lld's generic driver and needs
 `-flavor gnu`; `ld.lld` is the GNU flavour by its name. `newtos_lld` (and
 `newtos-cc`) add the flag only for `rust-lld`/`lld`. Measured with the Rust
-nightly's `gcc-ld/ld.lld` wrapper: `ld.lld -flavor gnu --version` →
+nightly's gcc-ld/ld.lld wrapper: `ld.lld -flavor gnu --version` →
 `rust-lld: error: unknown argument '-flavor'`.
 
 The Rust fallback is the pinned nightly of `rust-toolchain.toml`:

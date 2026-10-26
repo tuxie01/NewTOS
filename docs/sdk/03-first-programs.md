@@ -21,7 +21,7 @@ tried.
 
 Throughout, `$SDK` is the absolute path of `sdk/`, `$RES` is
 `$(clang -print-resource-dir)/include`, `$BIN` is the Rust sysroot's
-LLVM `bin/` directory and `$MINT` is `$SDK/libc/mintlib/include` — exactly the
+LLVM bin directory and `$MINT` is `$SDK/libc/mintlib/include` — exactly the
 variables the build scripts defined when these transcripts were recorded
 (`sdk/apps/gemtest/build-gemtest.sh:25-54`). *Since TASK/SDK01 K* the scripts
 take `ld.lld` and `llvm-*` from the LLVM packages first and the Rust sysroot
@@ -144,7 +144,7 @@ mintlib's `_crtinit`/`_acc_main`), which sets mintlib's `_base`, builds
 or else the basepage command tail (`__libc_parseargs()`,
 `sdk/libc/newtos-arch/cmdargs.c`), applies the `_stksize` policy and shrinks
 the TPA (an accessory gets a `Malloc`'ed stack instead), and returns the new
-stack. Then it calls mintlib's own `_main` (`mintlib/main.c`), which sets up
+stack. Then it calls mintlib's own `_main` (`sdk/libc/mintlib/mintlib/main.c`), which sets up
 the standard streams (stdout line-buffered, text mode on the console, stderr
 unbuffered and, with an empty `argv[0]`, forced to the console) and ends in
 `exit(main(argc, argv, environ))` — atexit handlers and the stdio flush run
@@ -269,10 +269,10 @@ Two gemlib details that matter on LP64:
   `wind_set(wh, WF_NAME, ptr_hi, ptr_lo, 0, 0)`. gemlib's plain `wind_set`
   takes four `short`s (`sdk/gemlib/gemlib-0.44.0/mt_gem.h:2456`); the string
   variant packs the 8-byte pointer at `int_in[2..5]`
-  (`a_wind_set_str.c:11-14`), which is where the kernel reads it for an LP64
-  caller (`tos-api/src/aes/mod.rs:310-330`, `window.rs:2249-2272`).
+  (`sdk/gemlib/overlay/a_wind_set_str.c:11-14`), which is where the kernel reads it for an LP64
+  caller (`tos-api/src/aes/mod.rs:310-330`, `tos-api/src/aes/window.rs:3329-3348`).
 * The `evnt_multi` prototype has 22 parameters
-  (`mt_gem.h:2315-2319`); `Interval` is an `unsigned long`, so pass `0L`.
+  (`sdk/gemlib/gemlib-0.44.0/mt_gem.h:2315-2319`); `Interval` is an `unsigned long`, so pass `0L`.
 
 Built with the **same flags as `sdk/apps/gemtest/build-gemtest.sh:65-70`**
 (and therefore as `build-teradesk.sh`), run by hand:

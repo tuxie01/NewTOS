@@ -66,7 +66,7 @@ The whole pool is mapped user-read/write/execute; the image span (BSS
 included) is zeroed before the image is copied, the rest of the TPA only
 without `PF_FASTLOAD` (EmuTOS `kpgmld`). Every user address is below 2 GiB (plan
 invariant I2) — which is why the 32-bit fields of the classic TOS structures
-can hold a NewTOS pointer (`sdk/gemlib/overlay/gem.h:62-64`, `basepage.h:19`).
+can hold a NewTOS pointer (`sdk/gemlib/overlay/gem.h:62-64`, `sdk/libc/overlay/include/mint/basepage.h:16-17`).
 
 The basepage the loader writes is the classic 256-byte layout with 4-byte
 fields (`loader.rs` `populate_basepage`; kernel struct
@@ -94,8 +94,8 @@ verbatim (length byte first).
 
 | Resource | How | Limit |
 |----------|-----|-------|
-| stack | crt0 / `__libc_crtinit` keep `_stksize` bytes (mintlib default MINKEEP = 64 KiB) above the image and `Mshrink` the TPA to image + stack (`sdk/crt0.S`, `sdk/libc/newtos-arch/heap_init.c`, mintlib `crtinit.c:154-247`); an accessory gets a `Malloc`'ed stack (`_acc_main`) | `_stksize` (mintlib's rules: `-1` keep all, `0` MINKEEP, `1/2/3` quarters, `n` bytes, `-n` bytes + own heap; env `STACKSIZE`) |
-| libc `malloc` | mintlib `__sbrk` → GEMDOS `Malloc` in hunks of 8–32 KiB (larger requests one block each) with the default `_stksize` (`_split_mem`, `sbrk.c:54-73`, `malloc.c:64-95`); with `_stksize < -1`/`-1` the own heap above the image | the pool (`PF_TTRAMMEM` → TT-RAM preferred); every hunk is one BDOS block: at most 8192 blocks per process (`mdlimit=`), no fixed system-wide MD count (MEM05, `docs/COMPATIBILITY.md`) |
+| stack | crt0 / `__libc_crtinit` keep `_stksize` bytes (mintlib default MINKEEP = 64 KiB) above the image and `Mshrink` the TPA to image + stack (`sdk/crt0.S`, `sdk/libc/newtos-arch/heap_init.c`, mintlib `sdk/libc/mintlib/mintlib/crtinit.c:154-247`); an accessory gets a `Malloc`'ed stack (`_acc_main`) | `_stksize` (mintlib's rules: `-1` keep all, `0` MINKEEP, `1/2/3` quarters, `n` bytes, `-n` bytes + own heap; env `STACKSIZE`) |
+| libc `malloc` | mintlib `__sbrk` → GEMDOS `Malloc` in hunks of 8–32 KiB (larger requests one block each) with the default `_stksize` (`_split_mem`, `sbrk.c:54-73`, `sdk/libc/overlay/mintlib/malloc.c:64-95`); with `_stksize < -1`/`-1` the own heap above the image | the pool (`PF_TTRAMMEM` → TT-RAM preferred); every hunk is one BDOS block: at most 8192 blocks per process (`mdlimit=`), no fixed system-wide MD count (MEM05, `docs/COMPATIBILITY.md`) |
 | GEMDOS `Malloc`/`Mxalloc` | the pool block's own address, valid in every process (ARCH03 stage 1, VA = PA; `tos-api/src/gemdos/memory.rs`) | the pool itself — no per-process window or block-table limit any more |
 | kernel structures returned by pointer | published read-only into the window (ADR-023): `Getbpb`, `Getmpb`; screen memory published read/write, uncached: `Physbase`, `Logbase` | see B3 for what is still not published |
 | system variables, OSHEADER, cookie jar | materialised in page 0 of the TPA at the classic addresses (`loader.rs:861` `populate_sysvars`) | read-only in substance: the cookie mirror is rewritten from the kernel jar on every change (`loader.rs:1057-1100`); writes to the mirror do not reach the kernel |
@@ -150,8 +150,10 @@ Three of them are read by a built application today
 | `_KEYTAB` | 28 → 56 | TeraDesk `xdevent.c`, QED via cflib `nkcc` | correct: `Keytbl` writes each pointer field at the caller's width into the process's own KEYTBL area (`tos-api/src/xbios/keytbl.rs`) |
 
 `_MD`/`_MPB` (behind `Getmpb`), `_KBDVECS`, `_IOREC`, `_MAPTAB`, `_BCONMAP`,
-`_PBDEF`, `_DSPBLOCK`, `META_INFO_*`, `HDINFO`, `BBPB`, `SDDB`, `__LINEA`,
+`_PBDEF`, `_DSPBLOCK`, `META_INFO_*`, `HDINFO`, `BBPB`, `SDDB`,
 `__FONT`, `MCF_COOKIE`, `_CCONLINE` diverge and are read by nobody today.
+`__LINEA` is not a divergence to watch: NewTOS exports no LINEA block and
+`__aline` stays NULL by design (ADR-030).
 **If your port reads one of them, it is the next `_DISKINFO`.** Note that
 `_MD` is special: the kernel's own `MD` is `{ptr 8, long 4, long 4, ptr 8}` =
 24 bytes (`tos-types/src/memory.rs`, ADR-023), neither the m68k 16 nor the
@@ -218,7 +220,7 @@ and the page size for double buffering has to be probed with
 
 ### B4. `Super`, `Supexec`, `SuperToUser`
 
-**Symptom** (before 2026-09-14): `mintlib/setsysvar.c` and `unix/sysinfo.c`
+**Symptom** (before 2026-09-14): `sdk/libc/mintlib/mintlib/setsysvar.c` and `sdk/libc/mintlib/unix/sysinfo.c`
 did not compile ("unknown register name 'a0'"); a program bracketing a
 low-memory read with `Super(0)`/`Super(ssp)` got `EINVFN`.
 
@@ -235,7 +237,7 @@ XBIOS 0x26 answers `38` (`TASK/X01.md`).
 
 **Do**: nothing for the classic bracket idiom — it works. Be aware that a
 real `Supexec` makes code paths live that used to fail silently: TeraDesk's
-shutdown (`main.c:2118`, `Supexec(rv)` with an endless-loop `lobo()`) is now
+shutdown (`sdk/apps/teradesk/main.c:2118`, `Supexec(rv)` with an endless-loop `lobo()`) is now
 executed for real (`osbind.h:804-812`). And do not expect privilege: an
 `Supexec`'d function that pokes MMIO faults.
 A statement `Supexec(f);` compiles with clang's `-Wunused-value` warning
@@ -274,7 +276,7 @@ document it was started with.
 **Cause (until 2026-09-25)**: the libc crt0 passed a hardcoded `argc = 1`,
 `argv = {"", NULL}`, because mintlib's `crtinit.c` — which parses `p_cmdlin`
 in `parseargs()` — is m68k assembly in its other half and excluded
-(`sdk/libc/expected-failures.txt:25`). Every libc-linked program therefore saw
+(`sdk/libc/expected-failures.txt:27`). Every libc-linked program therefore saw
 no arguments whatever the launcher handed it; a file dropped on QED opened an
 empty editor (TASK/PORT01, `measurements/measurement-2026-09-25-port01/`).
 
@@ -314,12 +316,12 @@ half; CoreMark's `check_data_types()` would report a size error.
 **Fixed (TASK/PORT10, 2026-10-02)**: the overlay
 `sdk/libc/overlay/include/stdint.h` makes `intptr_t`/`uintptr_t` `long`/
 `unsigned long` on LP64 — the type mintlib's own `<unistd.h>` already used for
-`intptr_t` (`bits/types.h` `__intptr_t`), so the two headers no longer
+`intptr_t` (`sdk/libc/mintlib/include/bits/types.h` `__intptr_t`), so the two headers no longer
 disagree by include order — and sets `INTPTR_MIN/MAX`, `UINTPTR_MAX`;
 `inttypes.h`'s `PRI*PTR`/`SCN*PTR` follow. QED and TeraDesk rebuilt: 0
 undefined, two TeraDesk `environm.c` truncation warnings gone, none new.
 `PTRDIFF_MIN/MAX` and `SIZE_MAX` (same header) and `SSIZE_MAX` (overlay
-`include/bits/posix1_lim.h`) stayed 32-bit until TASK/SDK01 A (2026-10-20)
+`sdk/libc/overlay/include/bits/posix1_lim.h`) stayed 32-bit until TASK/SDK01 A (2026-10-20)
 and are the LP64 values since (`sdk/libc/tests/lp64-limits.sh`, all
 `_Static_assert`). Code that already spells `__UINTPTR_TYPE__` (CoreMark's
 `core_portme.h`) stays correct.
@@ -353,7 +355,7 @@ since A41) — `--rshdr` refuses it.
 application faults with a wild pointer built from the bytes `"NRSC"`.
 **Cause**: the application parses the image behind `ap_rscmem`
 (`aes_global[7]`) as a classic `RSHDR` — TeraDesk's `xrsrc_gaddr`
-(`rsc_load.c:496-541`) does that on the AES-loaded `cicons.rsc` — because
+(`sdk/apps/teradesk/rsc_load.c:496-541`) does that on the AES-loaded `cicons.rsc` — because
 that is what EmuTOS leaves there (`rs_readit`, `gemrslib.c:787`: the loaded
 file, `RSHDR` at its head). A blob converted before A41 part 2 (NRSC v1–v12)
 has the NRSC header at its first byte instead. **Do**: reconvert with the
@@ -416,7 +418,7 @@ overlapping inside a 30-byte array whose fields are 4 bytes
 
 **Do**: use gemlib's macros — the overlay narrows them to 4-byte reads and
 turns the two pointer fields into explicit setters
-(`_AESrscfile_set`/`_AESrscmem_set` in `gem.h:79-125`, `mt_AESrscfile_set` in `mt_gem.h.in:2524-2575`). Never
+(`_AESrscfile_set`/`_AESrscmem_set` in `sdk/gemlib/overlay/gem.h:79-125`, `mt_AESrscfile_set` in `mt_gem.h.in:2524-2575`). Never
 declare your own `long` view of `global[]`. Related: the AES reports version
 `0x0340`, so gemlib/cflib never issue `appl_getinfo` (they gate on
 `>= 0x0400`); do not rely on AES-4 queries (`docs/analysis/qed-launch-findings-log.md`, F1).
@@ -426,12 +428,12 @@ declare your own `long` view of `global[]`. Related: the AES reports version
 **Symptom**: a window title of garbage, or a compile error passing a `char *`
 as `short`.
 
-**Cause**: gemlib's `wind_set` takes four `short`s (`mt_gem.h:2456`); the
+**Cause**: gemlib's `wind_set` takes four `short`s (`sdk/gemlib/gemlib-0.44.0/mt_gem.h:2456`); the
 m68k idiom of splitting a 32-bit pointer across two WORDs does not carry an
 8-byte pointer.
 
 **Do**: use the pointer-typed variants `wind_set_str` / `wind_set_ptr` /
-`wind_set_ptr_int` / `wind_set_grect` (`mt_gem.h:2468,2470,2474-2475`).
+`wind_set_ptr_int` / `wind_set_grect` (`sdk/gemlib/gemlib-0.44.0/mt_gem.h:2468,2470,2474-2475`).
 Under A81 these bindings pass the pointer through `addr_in[0]` — the
 *native* NewTOS convention, the same slot every other AES pointer-class
 argument uses (`docs/api/aes/window-graphics.md`, "Pointers in
@@ -499,7 +501,7 @@ links it last, always. A hand-written link line adds that archive after the
 libraries. Since TASK/SDK01 J `long double` is binary128 end to end:
 arithmetic (soft-float, so slow), `printf`/`scanf` with `%Lf %Le %Lg %La`,
 `strtold`, `qecvt`/`qfcvt`/`qgcvt`, and the libm's `…l` functions (OpenLibm's
-`ld128/` set: `expl`, `logl`, `powl`, `sinl`, `sqrtl`, … and `scalbln`/
+`sdk/libm/openlibm-0.8.8/ld128/` set: `expl`, `logl`, `powl`, `sinl`, `sqrtl`, … and `scalbln`/
 `scalblnf`/`scalblnl`) — [07 §4, §11](07-mintlib-limits.md#11-functions-that-do-not-link-measured-per-symbol-tasksdk01-a).
 Until then libc was built with `-D__NO_LONG_DOUBLE_MATH` and `printf("%Lf")`
 read a `double` where a binary128 had been passed. Plain `printf` needs no
@@ -518,7 +520,7 @@ maxima 0.5–1.7). `__extenddftf2` still comes from
 
 **Symptom**: undefined `labs` although mintlib "defines" it.
 
-**Cause**: `stdlib/labs.c` was `strong_alias(abs, labs)` with `abs` in another
+**Cause**: `sdk/libc/mintlib/mintlib/labs.c` was `strong_alias(abs, labs)` with `abs` in another
 file; clang silently drops an alias to a symbol not defined in the same TU
 (`sdk/libc/overlay/stdlib/labs.c:1-19`).
 
@@ -570,7 +572,7 @@ address: `((unsigned short *)&interval)[0]` is the high word on m68k and the
 `int_in[0]` as the low word exactly like EmuTOS (`tos-api/src/aes/event.rs:673`,
 `references/emutos/aes/gemsuper.c:142`), so `150` becomes `150 << 16` ms.
 Bindings that use arithmetic (`interval`, `interval >> 16`,
-`a_evnt_multi.c:91-92`) are correct on every width and byte order.
+`sdk/gemlib/gemlib-0.44.0/a_evnt_multi.c:91-92`) are correct on every width and byte order.
 
 **Do**: fix the binding in `sdk/gemlib/overlay/` with the arithmetic form
 (`sdk/gemlib/overlay/a_evnt_timer.c` is the model) and guard it with a host

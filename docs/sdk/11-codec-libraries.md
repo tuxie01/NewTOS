@@ -9,7 +9,7 @@ All five are **upstream release tarballs, unmodified**, pinned by SHA-256,
 built into static AArch64 archives for NewTOS programs and `.NLD` modules
 (PIE: compiled `-fPIE`, so they link into a `-pie -z text` image with
 `R_AARCH64_RELATIVE` relocations only). What a target needs that `configure`
-would normally write is a config header in the library's `overlay/`, each
+would normally write is a config header in the library's overlay directory, each
 answer commented; nothing else is changed.
 
 ## 1. The libraries
@@ -17,14 +17,14 @@ answer commented; nothing else is changed.
 | Library | Version | Pinned tarball (origin, hashes, licence in `<lib>-sources.sha256`) | Archive | Build script | Config |
 |---|---|---|---|---|---|
 | zlib | 1.3.2 | `sdk/zlib/zlib-1.3.2.tar.xz` (+ `.asc`, signature checked) | `sdk/zlib/libz.a` | `sdk/zlib/build-zlib.sh` | `zconf.h` generated from `zconf.h.in` with configure's two seds (unistd/stdarg) |
-| libpng | 1.6.59 | `sdk/libpng/libpng-1.6.59.tar.xz` | `sdk/libpng/libpng.a` | `sdk/libpng/build-libpng.sh` | upstream `scripts/pnglibconf.h.prebuilt`; AArch64 NEON filters on (upstream default) |
+| libpng | 1.6.59 | `sdk/libpng/libpng-1.6.59.tar.xz` | `sdk/libpng/libpng.a` | `sdk/libpng/build-libpng.sh` | upstream `sdk/libpng/libpng-1.6.59/scripts/pnglibconf.h.prebuilt`; AArch64 NEON filters on (upstream default) |
 | libjpeg (IJG) | 9f | `sdk/libjpeg/jpegsrc.v9f.tar.gz` | `sdk/libjpeg/libjpeg.a` | `sdk/libjpeg/build-libjpeg.sh` | `sdk/libjpeg/overlay/jconfig.h`; memory manager `jmemnobs` |
 | giflib | 6.1.3 | `sdk/giflib/giflib-6.1.3.tar.gz` | `sdk/giflib/libgif.a` | `sdk/giflib/build-giflib.sh` | none (bundled `openbsd-reallocarray.c`) |
 | libexif | 0.6.26 | `sdk/libexif/libexif-0.6.26.tar.xz` (+ `.asc`, signature checked) | `sdk/libexif/libexif.a` | `sdk/libexif/build-libexif.sh` | `sdk/libexif/overlay/config.h` (no NLS, `localtime_r`) |
 
 Version choice: the current upstream release of each, checked against what
 the codecs call. `prerequisites.txt` names only zlib 1.2.8; giflib must be
-≥ 5.1 (two-argument `DGifOpenFileName`/`DGifCloseFile`, `gifldg.c:104,345`) —
+≥ 5.1 (two-argument `DGifOpenFileName`/`DGifCloseFile`, `sdk/zview/z-tools-04805b7/zview/plugins/gif/gifldg.c:104,345`) —
 6.x changed only `EGifSpew()`, which no codec calls; libpng 1.6, IJG and
 libexif are used through their long-stable classic APIs.
 
