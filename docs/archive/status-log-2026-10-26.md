@@ -5,7 +5,7 @@ dort nicht mehr hingehoert: das Aenderungsprotokoll *Recent Decisions* bis auf
 die zehn neuesten Zeilen, den abgeloesten Kopf (Stand 2026-10-16), den
 „Historischen Text“, die Langfassung der Phasentabelle und die Open-ADR- und
 Blocked-Punkte vor der Bereinigung. Ausgelagert am 2026-10-26 nach der
-freigegebenen Triage `docs/analysis/cleanup-triage.md`; STATUS.md fuehrt
+freigegebenen Triage `docs/analysis/cleanup-triage-2026-10-26.md`; STATUS.md fuehrt
 seitdem nur den aktuellen Stand und hoechstens zehn Recent Decisions.
 
 Die Zeilen sind unveraendert uebernommen; nur relative Markdown-Links sind auf
