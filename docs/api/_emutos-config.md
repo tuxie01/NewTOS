@@ -534,7 +534,8 @@ Out of scope by `docs/COMPATIBILITY.md`'s contract (`:35-47`): a
 physical Atari chip, bus, CPU feature, or an entirely different machine
 target (Amiga/Lisa/ARAnyM/FireBee/ColdFire). This includes the
 floppy/FDC/`CONF_WITH_FORMAT` side — hardware, and additionally a
-recorded project decision (`docs/STATUS.md:240`).
+recorded project decision (`docs/STATUS.md:146`).
+
 
 | Macro | Value | Label |
 |---|---|---|

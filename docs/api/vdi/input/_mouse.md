@@ -422,7 +422,7 @@ by `tick_int`, which also chains the old system timer vector
   independently settable (not a 16-entry CLUT); the default mask/data pens
   (white/pen 0, black/pen 1) map to RGB through the per-workstation
   pseudo-palette in `kernel/src/vdi_backend.rs:129-142,232-239` — see
-  [`raster/_raster.md`'s "Palette" section](../raster/_raster.md#palette--vs_colorvq_color-on-256-truecolor-pens).
+  [`docs/api/vdi/raster/_raster.md`'s "Palette" section](../raster/_raster.md#palette--vs_colorvq_color-on-256-truecolor-pens).
 - **MFORM install (`vsc_form`, 111).** `vsc_form` reads the 37-WORD `INTIN`
   (hotspot, reserved plane word, mask/data colours, 16 mask + 16 data rows)
   into the sprite state (`tos-api/src/vdi/mouse.rs:248-266`); the hotspot is

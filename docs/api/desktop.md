@@ -57,7 +57,7 @@ functions). Texts where read from `desktop.rsc`:
   (Delete), `FORMITEM` (Format), `CLIITEM`, `QUITITEM` (Quit).
   - **`EJCTITEM` (Eject) is excluded:** `deskmain.c:744` gates it behind
     `#if CONF_WITH_EJECT`, whose general/Atari default is `0`
-    (`config.h:2041`); it calls `flop_eject` → `lisa_flop_eject`
+    (`include/config.h:2041`); it calls `flop_eject` → `lisa_flop_eject`
     (`bios/floppy.c:647`, `bios/lisa.c:554`) — i.e. it exists only for the
     **Apple Lisa** EmuTOS port (auto-eject drives), not Atari hardware. The
     Phase-00 draft listed it by mistake; the NewTOS File menu omits it.
@@ -104,7 +104,7 @@ functions). Texts where read from `desktop.rsc`:
    (`[0]` hard disk, `[1]` floppy disk, then folder/trash/printer/…), each
    a `data` + `mask` pair; the drive letter sits at the `(ib_xchar,
    ib_ychar)` cell. NewTOS extracts the hard-disk and floppy bitmaps into
-   [`programs/desktop/srctop_icons.rs`](../../programs/desktop/srctop_icons.rs) and
+   [`programs/desktop/src/icons.rs`](../../programs/desktop/src/icons.rs) and
    blits them (mask = opaque silhouette → body white / data black;
    transparent elsewhere). **Done in Batch 2b.**
 
@@ -121,7 +121,7 @@ The drives themselves are generated in the built-in INF `#M` loop
 
 ## Reconciliation with the Batch-1 draft
 
-The initial `programs/desktop/srctop.rs` Batch-1 was guessed; the extraction
+The initial kernel/src/desktop.rs (legacy, removed in ee84dd42) Batch-1 was guessed; the extraction
 shows these **errors** to fix:
 
 1. **Drive icons belong TOP-LEFT in a grid** (`deskapp.c:719`), not on the

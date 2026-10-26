@@ -149,13 +149,13 @@ step 6.
   `BOOTFLAG_SKIP_HDD_BOOT = 0x02` from `MODE_ALT`).
 - **Which key:** `biosmain()` samples `shiftbits` (from `kbshift(-1)`, or
   from the welcome screen if `show_initinfo` is true) and sets the flag if
-  `shiftbits & MODE_CTRL` (`bios.c:819-820`) — **holding Control** at boot.
+  `shiftbits & MODE_CTRL` (`bios/bios.c:819-820`) — **holding Control** at boot.
   `MODE_CTRL = 0x04` (`include/biosdefs.h:92`).
 - **What it skips**, despite the name only naming "AUTO_ACC":
   1. **Floppy bootsector execution.** `blkdev_boot()` returns immediately
      without running the bootsector code (`blkdev.c:236-239`).
   2. **`\AUTO\*.PRG` execution.** `autoexec()` returns immediately
-     (`bios.c:702-703`), skipping both `bootstrap()` (native-features OS
+     (`bios/bios.c:702-704`), skipping both `bootstrap()` (native-features OS
      chainload, `DETECT_NATIVE_FEATURES` builds only) and the `\AUTO\` scan.
   3. **Desk accessory discovery.** `count_accs()` returns `0` without
      touching the filesystem at all (`geminit.c:269-270`) — no `.ACC` files
@@ -278,7 +278,7 @@ wm_update(END_UPDATE);                  /* :565 */
 
 **`dsptch()` does not remove the caller from the ready list.** `dsptch`
 (`gemasm.S:129-167`) saves the machine state and jumps to `disp`
-(`gemdisp.c:220-254`), which takes the running process off the head of `rlr`
+(`aes/gemdisp.c:221-253`), which takes the running process off the head of `rlr`
 and then decides what to do with it *from its own `p_stat`*:
 
 ```c
@@ -453,7 +453,7 @@ independent source derivation. No correction needed to the file.
 **Profile:** Falcon030/TOS4, `make 512` → `-DTARGET_512`, `REF_OS=TOS404`
 (`references/emutos/Makefile:558-565`).
 
-**`TARGET_192` check (explicitly asked for).** `config.h:210` is the start
+**`TARGET_192` check (explicitly asked for).** `include/config.h:210` is the start
 of the `#ifdef TARGET_192` block (`"This target is only useful on ST
 hardware... strip out all the advanced features"`), running to `:401`
 (immediately before `#ifdef TARGET_256` at `:402`). **`TARGET_512` never
@@ -463,7 +463,7 @@ defined(TARGET_*)` line in the file — the only blocks are `192`, `256`,
 `CART`, `FLOPPY`, `AMIGA_ROM`, `AMIGA_FLOPPY`, `LISA_FLOPPY`, none of which
 `TARGET_512` triggers). So `TARGET_512` falls through to every feature's
 **generic, full-featured default**, defined later in the file
-(`config.h:1250-1330` "Software Section - AES", `:1744-1750`) — the same
+(`include/config.h:1250-1330` "Software Section - AES", `:1744-1750`) — the same
 defaults TOS4/Falcon ships with.
 
 None of the accessory *lifecycle* functions themselves
@@ -480,11 +480,11 @@ init sequence, or affecting message content) and their TARGET_512 state:
 
 | Flag | Default (generic fallback) | Relevance | On for TARGET_512? |
 |---|---|---|---|
-| `CONF_WITH_MENU_EXTENSION` | `1` (`config.h:1304-1306`) | `mnext_init()` runs in `run_accs_and_desktop` (`:678`); gates whether `MN_SELECTED`/`AC_OPEN`'s `msg[5..7]` carry the tree pointer (`gemctrl.c:347-349,355-358`) — `AC_OPEN`'s `msg[3]`/`msg[4]` are unaffected either way | **Yes** |
-| `CONF_WITH_3D_OBJECTS` | `1` (`config.h:1258-1260`, "as in Atari TOS 4") | `init_3d()` runs in `run_accs_and_desktop` (`:682`) | **Yes** |
-| `CONF_WITH_BACKGROUNDS` | `1` (`config.h:1747-1749`) | `set_aes_background()` (`:635-641`), called from `run_accs_and_desktop` right after accessory load, if `#Q` was found in `EMUDESK.INF` | **Yes** |
-| `CONF_WITH_LOADABLE_CURSORS` | `1` (`config.h:1290-1292`) | `setup_mouse_cursors()` runs before accessory load (`:664`) — incidental to `run_accs_and_desktop`, not to the accessory concept | **Yes** |
-| `CONF_WITH_PCGEM` | `1` (`config.h:1319-1321`) | Not directly touched by the accessory lifecycle; gates `appl_yield` (17), which cooperating accessories may call | **Yes** |
+| `CONF_WITH_MENU_EXTENSION` | `1` (`include/config.h:1304-1306`) | `mnext_init()` runs in `run_accs_and_desktop` (`:678`); gates whether `MN_SELECTED`/`AC_OPEN`'s `msg[5..7]` carry the tree pointer (`gemctrl.c:347-349,355-358`) — `AC_OPEN`'s `msg[3]`/`msg[4]` are unaffected either way | **Yes** |
+| `CONF_WITH_3D_OBJECTS` | `1` (`include/config.h:1258-1260`, "as in Atari TOS 4") | `init_3d()` runs in `run_accs_and_desktop` (`:682`) | **Yes** |
+| `CONF_WITH_BACKGROUNDS` | `1` (`include/config.h:1747-1749`) | `set_aes_background()` (`:635-641`), called from `run_accs_and_desktop` right after accessory load, if `#Q` was found in `EMUDESK.INF` | **Yes** |
+| `CONF_WITH_LOADABLE_CURSORS` | `1` (`include/config.h:1290-1292`) | `setup_mouse_cursors()` runs before accessory load (`:664`) — incidental to `run_accs_and_desktop`, not to the accessory concept | **Yes** |
+| `CONF_WITH_PCGEM` | `1` (`include/config.h:1319-1321`) | Not directly touched by the accessory lifecycle; gates `appl_yield` (17), which cooperating accessories may call | **Yes** |
 
 **Plain answer: every part of the `.ACC` lifecycle is on in our reference
 build.** There is no `CONF_WITH_*` flag that gates accessory support itself,
@@ -507,7 +507,7 @@ this is EmuTOS source, not ours, and is never modified (NewTOS is a
 clean-room reimplementation; no EmuTOS C is linked in). **There is currently
 no NewTOS equivalent to change**: an exhaustive search of `kernel/src/` and
 `tos-api/src/` for `count_accs`/`load_accs`/`NUM_ACCS`/any `.ACC` literal
-found only the already-known `menu.rs:1093` `NUM_ACCS` constant (the
+found only the already-known `tos-api/src/aes/menu.rs:1150` `NUM_ACCS` constant (the
 registration-slot table, §7.3) — no scan, no loader, nothing that touches a
 directory wildcard at all. So ACC02 is **writing** a `count_accs`-equivalent
 from scratch, modelled on but not copied from `geminit.c:264-284`, and per
@@ -562,7 +562,7 @@ via the loop bound alone). **The two-place scan must inherit this
 shared-total, silent-truncation behaviour rather than invent a second
 budget**: a combined counter across both `\ACC\` and the root, stopping
 (without diagnostic) at 6 total, is what "the same NewTOS's own array size"
-(the fixed `[NUM_ACCS]` tables `menu.rs:1093-1103` already declares) requires
+(the fixed `[NUM_ACCS]` tables `tos-api/src/aes/menu.rs:1152-1170` already declares) requires
 structurally, exactly as `geminit.c:109`'s fixed array required it for
 EmuTOS's single location. The `\ACC\`-first ordering (lead's decision, this
 section) determines *which* 6 win when more than 6 exist in total, not
@@ -716,7 +716,8 @@ by direct search this session (not inferred from the ticket's framing):
    successfully today and then blocks forever in `evnt_mesag` (its own
    header, `:29-31`, confirmed accurate by this review, §5) — it is the
    integration target for ACC02-ACC04, and its extension is still `.TBD`
-   pending `.NAC` wiring (`sysacc.c:33-43` — now resolved by the lead's
+   pending `.NAC` wiring (`sdk/examples/sysacc.c:28-34` — now resolved
+ by the lead's
    decision, §7). → **ACC05** (build + install it as `SYSACC.NAC` once
    ACC02-ACC04 land, replacing the `.TBD` placeholder build step in
    `sysacc.c`'s own header comment).

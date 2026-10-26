@@ -347,7 +347,7 @@ process (`bdos/proc.c:136`, `free_all_owned`).
 >    that rewrites `ap_rscmem` is followed — TeraDesk does exactly that:
 >    `load_icons` saves the `desktop.rsc` words, may `rsrc_load("cicons.rsc")`
 >    through the AES, loads `icons.rsc` with its own `xrsrc_load` (which
->    stores its own base into `aes_global[5]`/`[7]`, `rsc_load.c:414-431`),
+>    stores its own base into `aes_global[5]`/`[7]`, `sdk/apps/teradesk/rsc_load.c:414-431`),
 >    and then **restores** the `desktop.rsc` words so later
 >    `rsrc_gaddr(R_STRING, …)` resolve there again (`sdk/apps/teradesk/icon.c:
 >    2707-2708, 2742-2743, 2762-2763`; its comment: *"alert_abort will call
@@ -405,7 +405,7 @@ process (`bdos/proc.c:136`, `free_all_owned`).
 >    target contract:** `Mfree` on the mapped `app_va` of a `Kind::Rsc` block
 >    must return `E_OK` and release its pool block exactly as for a
 >    `Malloc`ed block, not `EIMBA` — the current refusal (`usermem::free`
->    skips `Kind::Rsc`, `tos-api/src/bdos/process/usermem.rs:605-624`) is a
+>    skips `Kind::Rsc`, cite stale 2026-10-26: tos-api/src/bdos/process/usermem.rs:605-624) is a
 >    **defect** (`TASK/A76.md`, measured `Mfree(0x427000) -> -40` on
 >    TeraDesk's `free_icons`), not a sanctioned deviation. Once fixed, the
 >    resource entry for that blob must learn the block is gone (so a later
@@ -444,7 +444,7 @@ process (`bdos/proc.c:136`, `free_all_owned`).
 > load is unnamed. Tests: `resource.rs` `mod selector_tests` (restore →
 > earlier blob; foreign/hybrid/zero selector → nothing, nothing freed;
 > another pid's blob → nothing; `rsrc_free` frees the named blob only; null
-> `global`; the unnamed case) and `tests/aes_rsrc_per_process.rs` (the
+> `global`; the unnamed case) and `tos-api/tests/aes_rsrc_per_process.rs` (the
 > per-process half).
 >
 > **There is no EL1 caller of `rsrc_load`** (measured 2026-09-13, re-checked
@@ -1056,7 +1056,7 @@ static void transform_all_cicons(LONG num_cicons, CICONBLK **ciconblkptr)
    gl_nplanes` (down-sampling) does not exist**, only expansion.
 4. **`transform_cicon`** (§5.7's Vertragsfrage) converts the (possibly
    expanded) standard-form data to device form via `vrn_trnfm` →
-   `vr_trnfm` (VDI opcode 110, [`raster/_raster.md`](../vdi/raster/_raster.md)).
+   `vr_trnfm` (VDI opcode 110, [`docs/api/vdi/raster/_raster.md`](../vdi/raster/_raster.md)).
 5. `sel_data` is transformed the same way into the **second half** of the
    same `colbuf` allocation (`selbuf = colbuf + data_size/sizeof(WORD)`) —
    one allocation serves both images, which is why `rs_free`/
@@ -1207,7 +1207,7 @@ call, or with process end (§1's `rsrc_free`/process-death text).
 >   proposed below: TeraDesk copies a CICONBLK **by value** (`sdk/apps/
 >   teradesk/icon.c:1640,1675` `h = malloc(sizeof(CICONBLK)); *h =
 >   *icons[n].ob_spec.ciconblk`, again `:2231`) and reads `monoblk` through
->   `ob_spec.ciconblk` (`dir.c:2090-2102`, `icon.c:803,1073,1227,1522`), so
+>   `ob_spec.ciconblk` (`sdk/apps/teradesk/dir.c:2090-2102`, `icon.c:803,1073,1227,1522`), so
 >   the bytes behind a `G_CICON`'s `ob_spec` must *be* that struct, and the
 >   drawer follows `mainlist` through the app's copy. The pointer fields
 >   hold blob offsets (0 = absent / end of chain); `mainlist`/`next_res`
@@ -1244,7 +1244,7 @@ call, or with process end (§1's `rsrc_free`/process-death text).
 > * **The acceptance's blocker (§5.10 item 3's QEMU run, §5.11 item 5) —
 >   found and resolved 2026-09-19:** `rsrc_load("cicons.rsc")` = 1 and
 >   `rsrc_gaddr(R_TREE, 0)` = 1 on QEMU raspi4b, but TeraDesk then resolved
->   the icon tree with its **own** `xrsrc_gaddr` (`rsc_load.c:496-541`,
+>   the icon tree with its **own** `xrsrc_gaddr` (`sdk/apps/teradesk/rsc_load.c:496-541`,
 >   `icon.c:2750`), which reads `aes_global[7]` (`ap_rscmem`) and parses the
 >   memory there as a classic `RSHDR` (`rsh_trindex` at byte 18) — what
 >   EmuTOS leaves there is the file image with the RSHDR at its head
@@ -1384,7 +1384,7 @@ here.
      best-lower, none) are each exercised by varying a mock device plane
      count; verify the resolved `CICON`/mono-fallback per case.
    - *Host test*: an artificially truncated CICON variant/table (mirroring
-     the A38 short-blob pattern, `tests/aes_rsrc_short_blob.rs`) is
+     the A38 short-blob pattern, `tos-api/tests/aes_rsrc_short_blob.rs`) is
      **rejected**, not partially relocated.
 3. **Drawer (`tos-api/src/aes/object.rs`, the `G_ICON | G_CICON` arm +
    `draw_icon`/a new `draw_cicon`)**: read the resolved `CICON` (post-load
@@ -1461,7 +1461,8 @@ here.
    *Decided 2026-09-19 by the user: **(a)**, implemented as NRSC v13/v14
    (`tools/mkrsc.py convert`, `resource.rs` `NRSC_VER_RSHDR`/`RSHDR_PAD`/
    `rshdr_is_consistent`; the `rsrc_load` callout of §1 has the contract).
-   `cicons.rsc` is staged into `dist/` by `sdk/apps/build-teradesk.sh` and
+   `cicons.rsc` is staged into `sdk/apps/teradesk/build/dist/` by `sdk/apps/build-teradesk.sh` and
+
    copied by `tools/make-sd-image.sh`; TeraDesk shows the colour icons on
    QEMU raspi4b (`TASK/A41-STATUS-DONE.MD`).*
 
@@ -1697,7 +1698,7 @@ as success — an empty list, not an error (`gemfslib.c:330-336,733-754`).
 
 ## Configuration / version notes
 
-- **`CONF_WITH_COLOUR_ICONS`** (default **1**, `config.h:1267`): enables the
+- **`CONF_WITH_COLOUR_ICONS`** (default **1**, `include/config.h:1267`): enables the
   `G_CICON`/CICONBLK fix-up + expansion + device-transform in `rsrc_load`
   (`fix_cicons`/`transform_all_cicons`) and the new-format (`NEW_FORMAT_RSC`)
   true-length read. With it off, only classic-format resources are handled and

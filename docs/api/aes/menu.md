@@ -396,7 +396,8 @@ full, return **`-1`** (`gemmnlib.c:815`).
 The returned slot id is the accessory's *menu id*: when the user later picks the
 DA entry, the control manager maps the display slot back to this id via
 `acc_display[]`/`mn_getownid` and sends the owner an **`AC_OPEN`** message with
-that id in `msg[4]` (`gemctrl.c:337-346`, `gemmnlib.c:838-849`).
+that id in `msg[4]` (`gemctrl.c:337-346`, `aes/gemmnlib.c:838-848`)
+.
 
 > The string pointer is stored, not duplicated (`gemmnlib.c:806`) — the caller
 > must keep the title string alive for the life of the registration.

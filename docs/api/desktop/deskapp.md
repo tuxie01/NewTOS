@@ -539,12 +539,12 @@ choice.
 
 (Empty during Phase 00 / this extraction task, except for one staleness
 correction found while cross-checking: this note previously referenced
-`programs/desktop/srctop.rs`'s `ICON_LABEL_W`/`ICON_GAP_W`/`ICON_STEP_W`
+kernel/src/desktop.rs's `ICON_LABEL_W`/`ICON_GAP_W`/`ICON_STEP_W`
 constants, commit `af426a0`, as "NewTOS's current" grid-metric code. As of
-this validation pass, `programs/desktop/srctop.rs` no longer exists — it has been
+this validation pass, kernel/src/desktop.rs no longer exists — it has been
 superseded by `programs/desktop/src/` (`app.rs`, per `_rebuild-plan.md`'s module
 table), a substantially-progressed rebuild already wired into
-`kernel/src/lib.rs`. Whether `desk/app.rs` reproduces the `g_wicon`/`g_hicon`/
+`kernel/src/lib.rs`. Whether `programs/desktop/src/app.rs` reproduces the `g_wicon`/`g_hicon`/
 `g_icw`/`g_ich` formulas above exactly, and whether it adopts the resolved
 `ib_xtext=0` precedent or the desktop-vs-window pitch distinction, was **not
 checked** this pass — out of scope for a docs-only validation task; flagged
@@ -658,7 +658,8 @@ serial line goes from `curr_icon=0 of 6` to `of 7` (the floppy is filtered out
 on a machine with no floppy drive — a separate, still-live NewTOS rule
 documented in `deskins.md`), four clicks on the stepper's DOWN arrow land on the
 new picture, `Save desktop` writes `#M 00 00 05 FF C DISK C@ @`, and a cold
-start reads it back. `method/pixcheck.py` compares every mask-set pixel of the
+start reads it back. `measurements/measurement-2026-09-23-desk16-desk17-desk21/method/pixcheck.py` compares
+ every mask-set pixel of the
 preview and of the desktop icon against `icons.c`: 654 and 618 pixels, zero
 mismatching.
 

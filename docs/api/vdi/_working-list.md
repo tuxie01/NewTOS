@@ -1,7 +1,8 @@
 # VDI spec extraction — working list (Phase 00b)
 
 > Tracks the per-function VDI spec extraction from EmuTOS @ `1a7484ab`.
-> Convention mirrors `docs/api/gemdos/_working-list.md`. The trap /
+> Convention mirrors `docs/api/_working-list.md`. The trap
+ /
 > calling convention + full opcode map is done — see
 > [`_dispatcher.md`](_dispatcher.md). Per-function specs go in
 > `docs/api/vdi/<group>/<op>-<name>.md`.

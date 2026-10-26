@@ -90,8 +90,8 @@ The two TEDINFO colour words (in the non-`CONF_WITH_WINDOW_COLOURS` build) are:
 > **Gap found while extracting A79 (2026-09-20): the two rows above are the
 > `!CONF_WITH_WINDOW_COLOURS` compile-time constants (`gemwmlib.c:538-539,
 > 779-780`, gated `#if !CONF_WITH_WINDOW_COLOURS`), which never execute on our
-> profile — `CONF_WITH_WINDOW_COLOURS` defaults to **1** (`config.h:1324-1330`),
-> required for `AES_VERSION 0x0340` (`config.h:1346`).** With it on (the actual
+> profile — `CONF_WITH_WINDOW_COLOURS` defaults to **1** (`include/config.h:1324-1330`),
+> required for `AES_VERSION 0x0340` (`include/config.h:1346`).** With it on (the actual
 > build), `W_NAME`'s topped/untopped words instead come from `gl_wtcolor`/
 > `gl_wbcolor[W_NAME]`, copied into every window at `w_setup`
 > (`gemwmlib.c:220-227`) and written by `w_setcolor` (`:382-396`). The
@@ -121,7 +121,7 @@ The two TEDINFO colour words (in the non-`CONF_WITH_WINDOW_COLOURS` build) are:
 | `HOTCLOSE` | 0x1000 | close-on-single-click *(PC-GEM, `CONF_WITH_PCGEM`)* — see below | | | |
 
 > **`HOTCLOSE` (0x1000)** (`aesdefs.h:531`, "PC-GEM feature"; `CONF_WITH_PCGEM`
-> is **1** in the 512 profile, `config.h:1319-1321` — only `TARGET_192` turns
+> is **1** in the 512 profile, `include/config.h:1319-1321` — only `TARGET_192` turns
 > it off, `:352-354`). The bit draws nothing and needs `CLOSER` for a closer
 > to exist (`w_bldactive` adds `W_CLOSER` only for `CLOSER`); it changes what
 > the Control Manager does with a press on that closer (`hctl_window`,
@@ -527,7 +527,7 @@ invalid. Any unlisted field → `default: return FALSE`.
 > *the length* is one screen in device pixels (`bb_save_words(W, H) * 4`:
 > 614 400 at 640×480, 4 147 200 at 1920×1080), larger than EmuTOS'
 > formula gives, never smaller — a program that takes it as an upper bound
-> for its own saves (TeraDesk `resource.c:307-320`) gets more room; and
+> for its own saves (TeraDesk `sdk/apps/teradesk/resource.c:307-320`) gets more room; and
 > *the address* depends on who asks: an **EL0 process** receives the block
 > published into its own address space, read-write (FreeMiNT `PROT_G`,
 > ADR-023), lazily on its first `WF_SCREEN` and the same user VA on every
@@ -1615,7 +1615,7 @@ two `vst_height` calls (`ws_chminh`, then back to the current height,
 - every VDI call on the `graf_handle` handle is answered — `vq_extnd(h, 0)`
   returns `DEV_TAB` (`[13]` colours, `[0]/[1]` the screen size) and
   `vq_extnd(h, 1)` `INQ_TAB` (`[4]` the plane count). WinDom's `ApplInit`
-  (`appl_init.c:42-46`) takes `app.nplanes`/`app.color` from exactly these
+  (`sdk/windom/windom-1.21.3/src/appl_init.c:42-46`) takes `app.nplanes`/`app.color` from exactly these
   two calls on the `graf_handle` handle;
 - the first `v_opnvwk` of a program gets handle **2** (the free-slot scan
   starts at `VDI_PHYS_HANDLE + 1`, `vdi_control.c:420`) — the desktop draws
@@ -1926,8 +1926,8 @@ byte of any buffer the caller passed (TASK/A42).
    `W_HSLIDE`/`W_VSLIDE` subtree (slider + elevator), not the arrow gadgets —
    see "Redraw scope" under `wind_set` (105) above. NewTOS reproduces the
    change-guard (A84, `TASK/A84.md`, 2026-09-20) and the subtree scope
-   (A98, `TASK/A98.md`, 2026-09-21; pinned by `tests/aes_window_slider_guard.rs`
-   and `tests/aes_window_slider_subtree.rs`).
+   (A98, `TASK/A98.md`, 2026-09-21; pinned by `tos-api/tests/aes_window_slider_guard.rs`
+   and `tos-api/tests/aes_window_slider_subtree.rs`).
 6. **`WM_NEWTOP` (29) and `WM_ONTOP` (31) are declared but never emitted** by
    EmuTOS's window/desktop code — TOS4 messages this build does not generate.
 7. **`WM_ARROWED` repeats while the button is held** (`handle_arrow_msg`); the
@@ -2091,20 +2091,20 @@ byte of any buffer the caller passed (TASK/A42).
 
 ## Configuration / version notes
 
-- **`CONF_WITH_3D_OBJECTS`** (default **1**, `config.h:1259`) changes the frame
+- **`CONF_WITH_3D_OBJECTS`** (default **1**, `include/config.h:1259`) changes the frame
   builder (`w_bldactive`) and the `wind_calc` border thicknesses (adds
   `2·ADJ3DSTD` per gadget band via `adj_wbox`/`adj_hbox`), and makes scroll
   sliders always visible (so `wind_set(WF_*SLIDE)` redraws regardless of topped
   state). With it off, the classic TOS1-3 thin borders apply and inactive
   windows omit their gadgets.
-- **`CONF_WITH_WINDOW_COLOURS`** (default **1**, `config.h:1329`) enables
+- **`CONF_WITH_WINDOW_COLOURS`** (default **1**, `include/config.h:1329`) enables
   `WF_COLOR`/`WF_DCOLOR` (18/19) and the per-window `w_tcolor`/`w_bcolor`
   arrays; with it off those fields fall to `default: return FALSE`, and the
   topped/untopped title colour comes from the fixed `TOPPED_COLOR`/
   `UNTOPPED_COLOR`.
-- **`CONF_WITH_GRAF_MOUSE_EXTENSION`** (default **1**, `config.h:1283`) enables
+- **`CONF_WITH_GRAF_MOUSE_EXTENSION`** (default **1**, `include/config.h:1283`) enables
   `graf_mouse` forms `M_SAVE`/`M_RESTORE`/`M_PREVIOUS` (258–260, AES 3.20+).
-- **`CONF_WITH_PCGEM`** (default **1**, `config.h:1320`) enables the `HOTCLOSE`
+- **`CONF_WITH_PCGEM`** (default **1**, `include/config.h:1320`) enables the `HOTCLOSE`
   (0x1000) kind bit (close on single click).
 - **`NUM_WIN`** is **16** when `AES_VERSION > 0x0320` (the default full build is
   `AES_VERSION = 0x0340`), else **8** (`sysconf.h:31-36`). `WF_OWNER` (20)
@@ -2162,7 +2162,7 @@ byte of any buffer the caller passed (TASK/A42).
   tracks, the bevel on every `FL3DACT` gadget. The evidence is EmuTOS itself
   on an emulated Falcon030 (Hatari, the pinned source's own `etos512us.img`,
   truecolor **and** 256 colours):
-  `measurements/measurement-2026-09-20-a79/hatari-falcon-reference/` (README + `shots/`);
+  `measurements/measurement-2026-09-20-a79/hatari-falcon-reference/` (README + `measurements/measurement-2026-09-20-a79/hatari-falcon-reference/shots/`);
   NewTOS's rendering next to it: `measurements/measurement-2026-09-20-a79/screendumps/
   final-compare-ref-vs-newtos.png`, remaining pixel differences (bevel width,
   name-box bevel, glyph centring, one-row/one-column bar geometry, the
@@ -2203,7 +2203,7 @@ byte of any buffer the caller passed (TASK/A42).
     paints the VDI dither of that index in `ic` on white (`FIS_PATTERN`;
     `IP_2PATT` = `[0x0000,0x5555,0x0000,0x5555]` — ink on odd rows at odd
     columns, `IP_1PATT` = `[0x0000,0x4444,0x0000,0x1111]`, both confirmed
-    against the Hatari reference, `tests/aes_window_color_words.rs`). The
+    against the Hatari reference, `tos-api/tests/aes_window_color_words.rs`). The
     fill is issued with a **hardcoded** `MD_REPLACE` (`gr_rect`,
     `gemgraf.c:557-558`) regardless of `md` — `md` never affects the fill's
     opacity, only the later text draw.
@@ -2214,7 +2214,7 @@ byte of any buffer the caller passed (TASK/A42).
     `G_BOX`/`G_BOXCHAR`; `:582-600`, always `backgrcol`, for text types).
     `init_3d` sets all three to `LWHITE` (index 8) once the palette has more
     than 8 colours (`gemoblib.c:1336-1343`) — on our (truecolor) profile,
-    exactly `GRAY_LT` (`window.rs:189`). **But none of the 19 gadgets' compiled default colour
+    exactly `GRAY_LT` (`tos-api/src/aes/window.rs:165`). **But none of the 19 gadgets' compiled default colour
     words have `ic==WHITE`** (table below — every default is
     `0x1101`/`0x1111`/`0x11a1`, `ic` always 1); the substitution only fires if
     a colour word with `ic=0,ip=0` is explicitly written via
@@ -2235,7 +2235,7 @@ byte of any buffer the caller passed (TASK/A42).
     between glyph strokes; `md=MD_REPLACE` makes the VDI paint each glyph
     cell's background white — needed for the *topped* `W_NAME` default
     (`0x11a1`, `md`=1), and is why `draw_frame` already paints a small white
-    rectangle behind the name before the label (`window.rs:2403-2409` — an
+    rectangle behind the name before the label (cite stale 2026-10-26: tos-api/src/aes/window.rs:2403-2409 — an
     approximation of per-glyph opaque-mode background with one rectangle; not
     documented today as tracking `md`). **For a colour word with `md=0` (e.g.
     this ticket's T7 word `0x1172`) that white-box step must not run** —
@@ -2376,11 +2376,11 @@ byte of any buffer the caller passed (TASK/A42).
     check, so **no window is redrawn** (`gemwmlib.c:1727-1734`, comment "do
     not call `w_cpwalk()` in this case"); it changes what `w_setup` copies
     into a window created **afterwards** (`:220-227`) — existing windows are
-    unchanged. NewTOS's `wind_set(WF_DCOLOR)` (`window.rs:3327-3338`) already
+    unchanged. NewTOS's `wind_set(WF_DCOLOR)` (`tos-api/src/aes/window.rs:3999-4010`) already
     matches this exactly — it writes `gl_wtcolor()`/`gl_wbcolor()` and never
     calls `redraw_open`. **No change needed here beyond `draw_frame`
     consuming the per-window `tcolor`/`bcolor` a window already inherits at
-    `wind_create` (`window.rs:2840-2841`).**
+    `wind_create` (`tos-api/src/aes/window.rs:3413-3414`).**
 
   **(4) Worked examples.** Window `(30,40,320,240)`, kind `0x0FEF`, open and
   **topped** (both colour words are equal in the T7 call, so topped/untopped
@@ -2403,7 +2403,7 @@ byte of any buffer the caller passed (TASK/A42).
     (`W_VSLIDE`). `gr_crack(0x1171)` = `bc=1,tc=1,md=TRANS` (bit 7 of `0x71`
     is 0), `ip=7=IP_SOLID,ic=1=BLACK`. Expected pixels in the vertical
     slider's **track** rectangle (`draw_vslider`'s `track`,
-    `window.rs:2621-2624`): **100 % `BLACK` fill**, border also `BLACK`
+    cite stale 2026-10-26: tos-api/src/aes/window.rs:2621-2624): **100 % `BLACK` fill**, border also `BLACK`
     (indistinguishable from the fill). Before the fix: today's hardcoded
     `GRAY_LT` fill (`:2623`) is unchanged; after: the track renders solid
     black.
@@ -2562,4 +2562,5 @@ only two of the four pixels showed up in the diff — at `(592,43)` and
 control run of five window opens, toppings and full frame repaints with no
 screen clear in between leaves all four on the desktop pattern from beginning
 to end (`measurements/measurement-2026-09-24-desk22-desk23-desk28-desk29/`, §4, table from
-`method/pixels.py`). No change was made.
+`measurements/measurement-2026-09-24-desk22-desk23-desk28-desk29/method/pixels.py`).
+ No change was made.

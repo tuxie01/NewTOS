@@ -78,7 +78,7 @@ it inert in NewTOS.
 **Affected:** all 0x01–0x0B + 0x10–0x13 console functions.
 
 **EmuTOS:** All console functions consult the per-process
-`run->p_uft[]` table (`bdos/bdosdefs.h:84`, `NUMSTD = 6`) **before**
+`run->p_uft[]` table (`include/bdosdefs.h:84`, `NUMSTD = 6`) **before**
 falling through to the BIOS device. If `p_uft[stdh]` has been
 redirected to a file handle (i.e., `> 0`), the BDOS dispatcher
 (`osif()` in `bdos/bdosmain.c:498`) intercepts the call and routes I/O
@@ -772,7 +772,7 @@ device. Corrected in `01-cconin.md` and `0a-cconrs.md`.
 
 ---
 
-## D-030: GEMDOS allocator lives in `bdos/iumem.c`, not `bdos/mem.c`; there is no `mdalloc` (spec-vs-source)
+## D-030: GEMDOS allocator lives in `bdos/iumem.c`, not bdos/mem.c; there is no `mdalloc` (spec-vs-source)
 
 **Date:** 2026-07-03
 **Phase 00 specs:** `docs/api/structures/md.md`, `docs/api/gemdos/memory/*.md`
@@ -781,12 +781,12 @@ device. Corrected in `01-cconin.md` and `0a-cconrs.md`.
 `xmxalloc`/`xmaddalt`/`srealloc`, `find_mpb`, `umem_init`, `set_owner`) are in
 `bdos/umem.c`; the internal allocator (`ffit`/`freeit`/`shrinkit`) is in
 `bdos/iumem.c`; the MD/OS-memory meta-allocator (`xmgetmd`/`xmfremd`/`xmgetblk`/
-`xmfreblk`) is in `bdos/osmem.c`. There is **no** `bdos/mem.c` (only the header
+`xmfreblk`) is in `bdos/osmem.c`. There is **no** bdos/mem.c (only the header
 `bdos/mem.h`) and **no** function named `mdalloc`.
 
 **Prior NewTOS doc (wrong):** `md.md` repeatedly cited `bdos/mem.c:xmalloc`,
 `bdos/mem.c:xmfree`, and `bdos/mem.c:mdalloc`; the memory specs said
-`ffit`/`freeit` live in `bdos/mem.c`.
+`ffit`/`freeit` live in bdos/mem.c.
 
 **Not a Compendium discrepancy** — internal spec / citation error.
 
@@ -872,7 +872,7 @@ the per-selected-pool(s) scope for `Mxalloc(-1, mode)`. Corrected in both specs.
 
 ---
 
-## D-034: `Ptermres`/`Pterm` process specs cited a nonexistent `bdos/mem.c` and `NUMCURDIR = 16` (spec-vs-source)
+## D-034: `Ptermres`/`Pterm` process specs cited a nonexistent bdos/mem.c and `NUMCURDIR = 16` (spec-vs-source)
 
 **Date:** 2026-07-03
 **Phase 00 specs:** `docs/api/gemdos/process/31-ptermres.md`,
@@ -881,14 +881,14 @@ the per-selected-pool(s) scope for `Mxalloc(-1, mode)`. Corrected in both specs.
 **EmuTOS:**
 - `Ptermres`'s TPA shrink is `xsetblk(0, run, blkln)` defined in **`bdos/umem.c`**
   (`bdos/umem.c:170`) — the same helper `Mshrink`/0x4A uses. There is **no**
-  `bdos/mem.c` in the tree (only the header `bdos/mem.h`), consistent with D-030.
+  bdos/mem.c in the tree (only the header `bdos/mem.h`), consistent with D-030.
   `xsetblk` returns `EIMBA` (block not in a pool) / `EGSBF` (`blkln` >
   current block) / `E_OK`; `xtermres` **discards** this result (already D-006).
 - `Pterm`'s current-directory teardown loops `NUMCURDIR = BLKDEVNUM = 26`
   (`include/bdosdefs.h:62`, `include/sysconf.h:43`), not 16.
 
 **Prior NewTOS docs (wrong):** `31-ptermres.md` located `xsetblk` in
-`bdos/mem.c`; `4c-pterm.md`'s configuration note said `NUMCURDIR = 16`. Both
+bdos/mem.c; `4c-pterm.md`'s configuration note said `NUMCURDIR = 16`. Both
 contradict the source (the `NUMCURDIR = 16` figure is the same original-TOS
 lore corrected for the drive group in D-025).
 
@@ -982,7 +982,7 @@ structures doc is outside this process-group pass.
   from `Gettime()` = **XBIOS 23 (0x17)** (`time_init`, `bdos/time.c:160-165`).
 - `Sversion`/`xgetver` (`bdos/bdosmain.c:298`) returns the compile-time
   constant `GEMDOS_VERSION` (`include/config.h:1590`, default `0x2000`), byte
-  order **minor in the high byte, major in the low byte** (`config.h:1577-1578`).
+  order **minor in the high byte, major in the low byte** (`include/config.h:1577-1578`).
   It does **not** read the OS header. The `config.h` enumeration of version
   values starts at `0x1300` (TOS 1.00/1.02); there is **no** `0x0F00` entry.
 
@@ -1040,7 +1040,7 @@ only), gave the not-found error vaguely as "the not-found error" (it is
 on set/delete, the `ENOMEM`-when-full path, and the `del_cookie` `EINVAL`.
 
 **Not a Compendium discrepancy** — no Compendium/MiNT PDF is in `references/`
-(the in-tree `sys/doc/.../ssystem.html` matches the source). This is a
+(the in-tree `references/freemint/doc/programmer/newcall.html/ssystem.html` matches the source). This is a
 spec-vs-FreeMiNT-source precision fix.
 
 **Decision:** follow the FreeMiNT source. Corrected `154-ssystem.md`: by-index
@@ -1506,7 +1506,7 @@ desktop-rendering / dialog behaviour):
   is the **1-based** pressed-button number (`gemfmalt.c:163,258-270,395`,
   `fm_strbrk`).
 - **`objc_sysvar` (48) is present in the default build** (`CONF_WITH_3D_OBJECTS
-  = 1`, `config.h:1259`), returning the 3D indicator/activator/colour globals
+  = 1`, `include/config.h:1259`), returning the 3D indicator/activator/colour globals
   with defaults from `init_3d` (`gemoblib.c:1327-1344`); `AD3DVALUE` is
   get-only = `ADJ3DSTD` (2).
 - **`form_dial` rects** occupy `int_in[1..4]` (small) and `int_in[5..8]`
@@ -1656,7 +1656,7 @@ outlines) were verified against the source. Substantive corrections:
   `int_in` words are **`isgem`** (GEM vs char mode) and **`isover`** (shutdown
   level / rez family), not `isgr`/`iscr`/"launch mode" (`gemshlib.c:127-196`).
   Always returns `1`. **`SHW_SHUTDOWN` is `#if CONF_WITH_SHUTDOWN` = default 0**
-  → compiled out on the generic build (`config.h:2028-2034`).
+  → compiled out on the generic build (`include/config.h:2028-2034`).
 - **`shel_envrn`'s output pointer is `addr_in[0]` (a `char **`) and its search
   string is `addr_in[1]`** — the reverse of the old spec (`aesdefs.h:611-612`,
   `gemsuper.c:396`). Returns a pointer *into* `ad_envrn`, or NULL.
@@ -1877,7 +1877,7 @@ would not compile `setprt()` at all.
 
 **Prior NewTOS doc (wrong/missing):** `_dispatcher.md` and `_triage.md`
 grouped 0x21/Setprt with the MFP/NVRAM "printer/NVRAM" `xbios_unimpl`
-entries (`_dispatcher.md:171` pre-fix, `_triage.md:59` pre-fix), i.e.
+entries (`xbios/_dispatcher.md:171` pre-fix, `_triage.md:59` pre-fix), i.e.
 treated it as absent hardware in the same category as the floppy/PSG stub
 groups. No per-function spec existed.
 
@@ -2911,8 +2911,8 @@ for the inquiry-spec owner).
 `flip_y` at all, even though `_dispatcher.md` already treats `d0 =
 flip_y` as part of the documented native-trap **contract**.
 
-**Decision:** documented in `attributes/_line-marker.md` (`vsm_height`)
-and `attributes/_text.md` (`vst_height`/`vst_point`/`vst_font`) as an
+**Decision:** documented in `vdi/attributes/_line-marker.md` (`vsm_height`)
+and `vdi/attributes/_text.md` (`vst_height`/`vst_point`/`vst_font`) as an
 explicit "sets `flip_y = 1`, so the trap's `d0` return is `1` for this
 call" note. **Open question for the lead:** does NewTOS's native ABI
 (selector-based `svc #2`, no m68k `d0` register) need an equivalent
@@ -2978,13 +2978,13 @@ by a legal, undocumented setter call sequence), analogous in kind to
 D-070 (`Frename`'s incomplete cycle check) rather than a documentation
 misreading.
 
-**Prior NewTOS doc:** `attributes/_fill.md` documented `st_fl_ptr()`
+**Prior NewTOS doc:** `vdi/attributes/_fill.md` documented `st_fl_ptr()`
 only as "recomputes the active `patptr`/`patmsk` from `fill_style`/
 `fill_index`" without noting that `fill_index` is never reset or
 re-validated on a bare style change, or that this can walk off the end
 of a pattern table.
 
-**Decision:** documented as a new edge case in `attributes/_fill.md`
+**Decision:** documented as a new edge case in `vdi/attributes/_fill.md`
 with the exact unsafe sequence and the safe/unsafe `fill_index` ranges
 per style. **Open question for the lead / Developer:** NewTOS's own
 fill-pattern-table implementation must decide whether to reproduce this
@@ -3080,7 +3080,7 @@ analogous in kind to D-081 rather than a documentation misreading.
 `vrt_cpyfm` can pattern-fill a copy. That capability does not exist in
 EmuTOS as shipped.
 
-**Decision:** corrected `raster/_raster.md` to document `PAT_FLAG` as a
+**Decision:** corrected `vdi/raster/_raster.md` to document `PAT_FLAG` as a
 stripped-but-inert bit (contract: identical output with or without it)
 and added an explicit "do not implement pattern-fill for `PAT_FLAG`"
 note for the Phase-12 `RasterBackend`. **Open question for the lead:**

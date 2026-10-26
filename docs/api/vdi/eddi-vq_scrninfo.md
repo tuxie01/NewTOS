@@ -48,14 +48,14 @@ darf `vq_scrninfo` **nur** aufrufen, wenn der Cookie `EdDI` da ist.
 |---|---|---|
 | TH-VQ | https://raw.githubusercontent.com/freemint/tos.hyp/master/gem/vdi/inquire/vq_scrninfo.ui (Quelltext der tos.hyp-Seite `vq_scrninfo`, EN-Teil) | [D] Hauptquelle |
 | TH-CK | https://raw.githubusercontent.com/freemint/tos.hyp/master/bios/cookie/description/EdDI.ui (Cookie `EdDI`, "by Sven&Wilfried Behne, BELA") | [D] |
-| TH-OB | https://raw.githubusercontent.com/freemint/tos.hyp/master/gem/vdi/control/v_opnbm.ui, `.../v_clsbm.ui`, `.../v_open_bm.ui`, `.../v_resize_bm.ui` | [D] |
+| TH-OB | https://raw.githubusercontent.com/freemint/tos.hyp/master/gem/vdi/control/v_opnbm.ui, .../v_clsbm.ui, .../v_open_bm.ui, .../v_resize_bm.ui | [D] |
 | TH-TAB | https://freemint.github.io/tos.hyp/en/vdi_functions.html (Opcode-Tabelle, "As of EdDI 1.00 / 1.20") | [D] |
-| TH-NV | https://raw.githubusercontent.com/freemint/tos.hyp/master/gem/vdi/inquire/vq_ext_devinfo.ui, `.../vqt_xfntinfo.ui` ("As of NVDI 3.00 / 3.02") | [D] |
+| TH-NV | https://raw.githubusercontent.com/freemint/tos.hyp/master/gem/vdi/inquire/vq_ext_devinfo.ui, .../vqt_xfntinfo.ui ("As of NVDI 3.00 / 3.02") | [D] |
 | NV250 | `Applications/z-tools/zview/_dist/goodies/Enhancer/Docs/German/Neue_Fkt.txt` (NVDI-2.50-Anleitung "Neue Funktionen", Latin-1): Abschnitte 1 (Bitmaps), 2 (`vq_scrninfo`), 3 (Erkennung) | [D] Primaerquelle in-tree, Stand EdDI 1.00 |
 | ENH | `Applications/z-tools/zview/_dist/goodies/Enhancer/Docs/English/Enhancer.txt` | [D] |
-| GEMLIB | `sdk/gemlib/gemlib-0.44.0-m68k/n_vq_scrninfo.c` (identisch zu `gemlib-0.44.0/n_vq_scrninfo.c`, diff geprueft), `gem_vdiP.h:42,86,110,124-133`, `vdi_dummy.c:4`, `mt_gemx.h:1293-1309` | [C] Binding |
-| fVDI | https://github.com/freemint/fvdi (master): `fvdi/engine/fvdi.s:484-494` (`_eddi_dispatch`), `engine/startup.c:370-373`, `engine/workstn.c:575-585` (`lib_vq_extnd`), `include/fvdi.h` (`typedef struct dev_`), `drivers/common/init.c:102-175` (`setup_scrninfo`), `drivers/aranym/spec.c:10-86` (Modus-Tabelle) | [C] Dritt-Implementierung (nicht NVDI/Nova) |
-| Verbraucher | `Applications/z-tools/zview/zvdi/vdi.c:28-58,62-157`; `sdk/apps/highwire/src/romvdi.c:317-355`, `src/raster.c:1711-1780`; `sdk/apps/doom/doomgeneric_gem.c:43` | [C] wie reale Programme `work_out` lesen |
+| GEMLIB | `sdk/gemlib/gemlib-0.44.0-m68k/n_vq_scrninfo.c` (identisch zu `sdk/gemlib/gemlib-0.44.0/n_vq_scrninfo.c`, diff geprueft), `gem_vdiP.h:42,86,110,124-133`, `sdk/gemlib/gemlib-0.44.0-m68k/vdi_dummy.c:4`, `sdk/gemlib/gemlib-0.44.0-m68k/mt_gemx.h:1293-1309` | [C] Binding |
+| fVDI | https://github.com/freemint/fvdi (master): fvdi/engine/fvdi.s:484-494 (`_eddi_dispatch`), engine/startup.c:370-373, engine/workstn.c:575-585 (`lib_vq_extnd`), include/fvdi.h (`typedef struct dev_`), drivers/common/init.c:102-175 (`setup_scrninfo`), drivers/aranym/spec.c:10-86 (Modus-Tabelle) | [C] Dritt-Implementierung (nicht NVDI/Nova) |
+| Verbraucher | `Applications/z-tools/zview/zvdi/vdi.c:28-58,62-157`; `sdk/apps/highwire/src/romvdi.c:317-355`, `sdk/apps/highwire/src/raster.c:1711-1780`; `sdk/apps/doom/doomgeneric_gem.c:43` | [C] wie reale Programme `work_out` lesen |
 | FreeMiNT | `references/freemint/doc/freemint.stg:6775` (Beispiel-Jar `0x45644449 (EdDI): 0x0005EEE6`); `sdk/libc/mintlib/include/mint/cookie.h:125` (`C_EdDI 0x45644449L`) | [D]/[C] |
 
 **Nicht gefunden:** das NVDI-Handbuch jenseits 2.50, die Nova-Treiber-
@@ -66,7 +66,7 @@ Layout ueberein (Abgleich unten in §3.4).
 
 ## 2. Der Cookie `EdDI`
 
-* **Tag:** `'EdDI'` = `0x45644449` ([C] `cookie.h:125`; [D] TH-CK, Beispiel
+* **Tag:** `'EdDI'` = `0x45644449` ([C] `sdk/libc/mintlib/include/mint/cookie.h:125`; [D] TH-CK, Beispiel
   `freemint.stg:6775`).
 * **Wert:** "die Adresse eines Funktionsdispatchers" ([D] TH-CK; NV250 §3).
   Aufruf **nach Pure-C-Konvention**: Opcode in Register `d0`, `d1-d2/a0-a1`
@@ -75,12 +75,12 @@ Layout ueberein (Abgleich unten in §3.4).
   Abbildung (Entscheidung E2).
 * **Erkennung:** Cookie-Jar nach `'EdDI'` durchsuchen; fehlt er, ist `vq_scrninfo`
   nicht verfuegbar ([D] NV250 §3: "Wie erkennt man, ob die neuen Funktionen
-  vorhanden sind?"; [C] Verbraucher: `zview/zvdi/vdi.c:28` ruft
-  `vq_scrninfo` nur bei gefundenem `C_EdDI`; HighWire `romvdi.c:70,329`).
+  vorhanden sind?"; [C] Verbraucher: `Applications/z-tools/zview/zvdi/vdi.c:28` ruft
+  `vq_scrninfo` nur bei gefundenem `C_EdDI`; HighWire `sdk/apps/highwire/src/romvdi.c:70,329`).
 * **Dispatcher-Opcodes:** bisher **nur Opcode 0**; Rueckgabe = Versionsnummer
   ([D] TH-CK "Till now only opcode 0 is implemented"; NV250 §3). Es gibt
   **kein** Opcode-Fehlerverhalten in der Doku. fVDI: Opcode `!= 0` liefert
-  `-1`, Opcode 0 liefert `$0100` ([C] `fvdi/engine/fvdi.s:484-494`).
+  `-1`, Opcode 0 liefert `$0100` ([C] fvdi/engine/fvdi.s:484-494).
 * **Versionssemantik** ([D] TH-CK):
   * `$100` (1.00): `v_opnbm`, `v_clsbm`, `vq_scrninfo`.
   * 1.10: `v_opnbm` und `vq_scrninfo` haben **zusaetzliche Parameter**
@@ -92,10 +92,10 @@ Layout ueberein (Abgleich unten in §3.4).
     1.00 ist belegt ("return value is $100"). `$110`/`$120` ist **[I]**.
 * Wer installiert ihn: NVDI und der Atari-VDI-**Enhancer** ([D] TH-CK, ENH;
   der Enhancer "simuliert" den Aufruf ohne NVDI), fVDI ([C]
-  `fvdi/engine/startup.c:370-373` setzt `EdDI` auf `eddi_dispatch`).
-* **fVDI-Beobachtung [C]:** fVDI meldet Version `$0100` (`fvdi.s:489`),
+  fvdi/engine/startup.c:370-373 setzt `EdDI` auf `eddi_dispatch`).
+* **fVDI-Beobachtung [C]:** fVDI meldet Version `$0100` (fvdi.s:489),
   befuellt aber `work_out[5..7]`/`[14]` (`setup_scrninfo`,
-  `drivers/common/init.c:121`, `16_bit/16b_spec.c:368-374`). Ein Verbraucher,
+  drivers/common/init.c:121, 16_bit/16b_spec.c:368-374). Ein Verbraucher,
   der der Doku folgt ("Version pruefen"), liest dort `[14]` nicht.
   → **Bit-Ordnung ist bei `$100` nicht zuverlaessig lieferbar** (Konsequenz
   fuer E3).
@@ -116,7 +116,7 @@ Layout ueberein (Abgleich unten in §3.4).
 |---|---|---|
 | `CONTRL[0]` | 102 | Opcode |
 | `CONTRL[1]` | 0 | `ptsin` |
-| `CONTRL[2]` | 0 | `ptsout` (vom Treiber nicht zu beschreiben; **Achtung**: EmuTOS' `vq_extnd` schriebe 12 Woerter in `ptsout`, deshalb gibt gemlib `vdi_dummy[1024]` als `ptsout` mit, [C] `n_vq_scrninfo.c`, `vdi_dummy.c:4`) |
+| `CONTRL[2]` | 0 | `ptsout` (vom Treiber nicht zu beschreiben; **Achtung**: EmuTOS' `vq_extnd` schriebe 12 Woerter in `ptsout`, deshalb gibt gemlib `vdi_dummy[1024]` als `ptsout` mit, [C] `n_vq_scrninfo.c`, `sdk/gemlib/gemlib-0.44.0-m68k/vdi_dummy.c:4`) |
 | `CONTRL[3]` | 1 | `intin` |
 | `CONTRL[4]` | 272 (Doku) | Ausgabezaehler; **gemlib setzt ihn nicht** (nur `[0],[1],[3],[5],[6]`, `VDI_TRAP_ESC(...,102,1,0,1)`, `gem_vdiP.h:110-116`) — der Treiber traegt ihn ein |
 | `CONTRL[5]` | **1** | Sub-Opcode |
@@ -126,13 +126,13 @@ Layout ueberein (Abgleich unten in §3.4).
 
 Verhalten bei `INTIN[0] != 2`: **UNKNOWN** (Doku schweigt). fVDI unterscheidet
 `flag == 2 && subfunction == 1` von `flag != 0` (= `vq_extnd` Modus 1)
-([C] `fvdi/engine/workstn.c:577-583`); dass `flag` = `INTIN[0]` ist, ist **[I]**.
+([C] fvdi/engine/workstn.c:577-583); dass `flag` = `INTIN[0]` ist, ist **[I]**.
 Verhalten bei einem Bitmap-Handle (`v_opnbm`): **UNKNOWN**.
 
 ### 3.2 `work_out`-Felder
 
 [D] TH-VQ, bestaetigt durch NV250 (Layout bis 13 + Tabellen) und GEMLIB;
-Typ-Spiegel [C] fVDI `typedef struct dev_` (`include/fvdi.h`:
+Typ-Spiegel [C] fVDI `typedef struct dev_` (include/fvdi.h:
 `format, clut, bit_depth, dummy1, colours, byte_width, address, bits{red,
 green, blue, alpha, genlock, unused, organization}, dummy2, scrmap`).
 
@@ -141,7 +141,7 @@ green, blue, alpha, genlock, unused, organization}, dummy2, scrmap`).
 | 0 | **Format:** `0` interleaved Planes, wortweise (Atari); `1` Standardformat (ganze Planes); `2` Packed Pixels; `-1` unbekannt, nicht direkt beschreibbar |
 | 1 | **CLUT:** `0` keine CLUT (z. B. TTM 194); `1` Hardware-CLUT; `2` Software-CLUT (HiColor/TrueColor, "pseudo CLUT") |
 | 2 | Planes (Bits) pro Pixel |
-| 3/4 | Farbanzahl als **LONG** oder `0L` ("mehr als 2*10^31 Farben" — so steht es im Doku-Text, offenkundig `2^31` gemeint, **[I]**). Wortreihenfolge nicht ausdruecklich dokumentiert; fVDI setzt `[3]` = `(1L<<bits)>>16` (Hi), `[4]` = `& 0xffff` (Lo) [C] `init.c:140-141,158-159`; zview/HighWire erkennen 15-Bit-Modi an `(uint16)out[4] == 0x8000` [C] `zview/zvdi/vdi.c:53`, `raster.c:1716` → Hi-Wort zuerst **[I aus C]** |
+| 3/4 | Farbanzahl als **LONG** oder `0L` ("mehr als 2*10^31 Farben" — so steht es im Doku-Text, offenkundig `2^31` gemeint, **[I]**). Wortreihenfolge nicht ausdruecklich dokumentiert; fVDI setzt `[3]` = `(1L<<bits)>>16` (Hi), `[4]` = `& 0xffff` (Lo) [C] init.c:140-141,158-159; zview/HighWire erkennen 15-Bit-Modi an `(uint16)out[4] == 0x8000` [C] `Applications/z-tools/zview/zvdi/vdi.c:39`, `sdk/apps/highwire/src/raster.c:1713` → Hi-Wort zuerst **[I aus C]** |
 | 5 | Zeilenbreite in Bytes (**ab EdDI 1.1**) |
 | 6/7 | Adresse der Bitmap, LONG (**ab EdDI 1.1**) |
 | 8 / 9 / 10 | Bits fuer Rot / Gruen / Blau (bei CLUT: Bits der CLUT-Einträge, z. B. 6/6/6 beim Falcon-256) |
@@ -182,7 +182,7 @@ Beispielen, nicht ausdruecklich formuliert.
   `129` = `0x81` (Crazy Dots) ein; Bit 0/1 sind also **Auswahl**-Werte, Bit 7
   ein **Zusatz-Flag** (`0x80`). Zwei Flags gleichzeitig (`0x82`) sind in der
   Doku nicht ausdruecklich vorgesehen — fVDI/ARAnyM verwendet `0x81` fuer
-  "fb layout" [C] `aranym/spec.c:60-63,83-86`, d. h. Kombination
+  "fb layout" [C] aranym/spec.c:60-63,83-86, d. h. Kombination
   "Basis + 0x80" ist ueblich **[I]**.
 
 ### 3.4 Abgleich Doku ↔ gemlib ↔ Verbraucher; Doku-Fehler
@@ -199,7 +199,7 @@ Beispielen, nicht ausdruecklich formuliert.
   ein ungenutztes Bit und `80..95 = -1` "kein Genlock". Gemeint ist offenbar
   `[12] = 0`, `[13] = 1` **[I]** — die Felder sind vertauscht. Nicht auf die
   Beispielwerte, sondern auf die Tabellen 80..127 verlassen.
-* HighWire (`raster.c:1721-1722`) und zview (`vdi.c:54-55`) werten aus:
+* HighWire (`sdk/apps/highwire/src/raster.c:1715-1716`) und zview (`Applications/z-tools/zview/zvdi/vdi.c:40-41`) werten aus:
   `reverse = (out[16] < out[48])` (Rot-LSB-Bitnummer kleiner als Blau-LSB →
   "Intel-Ordnung"), `z_trail = (out[48] > 0)`. **Beide Programme rechnen
   also mit den Bitnummern-Tabellen, nicht mit `[14]`** [C]. Eine korrekte
@@ -207,7 +207,7 @@ Beispielen, nicht ausdruecklich formuliert.
 
 ### 3.5 Verhalten Palette- vs. Truecolor-Geraet
 
-[D] TH-VQ; [C] fVDI `setup_scrninfo` (`drivers/common/init.c:102-175`).
+[D] TH-VQ; [C] fVDI `setup_scrninfo` (drivers/common/init.c:102-175).
 
 * **Palettengeraet** (`work_out[1] == 1`, Format 0 oder 2, 1..8 Bit):
   `[16..271]` = Pixelwert pro VDI-Farbindex; die Bitnummern-Tabellen sind
@@ -227,7 +227,7 @@ beschreibbar") als Fehlerfall. Ein Rueckgabewert/Fehlercode des Aufrufs existier
 nicht (`void`). Was bei unbekanntem Handle geschieht: **UNKNOWN**. Verbraucher
 fangen unplausible Antworten selbst ab: HighWire verwirft eine Antwort mit
 `out[0]` ausserhalb 0..2 oder `out[2]` ausserhalb 1..32 und raet selbst
-[C] `romvdi.c:329-335`.
+[C] `sdk/apps/highwire/src/romvdi.c:329-335`.
 
 ## 4. Weitere EdDI-Funktionen und Doom-Bedarf
 
@@ -269,7 +269,7 @@ das sein, was `vro_cpyfm` aus einer Geraete-MFDB liest.** Das ist pruefbar
   NVDI-Quelle noch Nova-Treiber-Quelle liegt vor; ich habe keine geschaetzt.
 * Ersatzweise belegt ist, was **fVDI** (freie Implementierung, nutzt dieselbe
   Struktur und ist fuer Nova-/ARAnyM-/PCI-Karten gedacht) einträgt
-  [C] `drivers/aranym/spec.c:11-86`, `drivers/common/init.c:102-175`:
+  [C] drivers/aranym/spec.c:11-86, drivers/common/init.c:102-175:
   * 16 Bit, "Falcon-/usual"-Modus: Bits R 11..15, G 5..10 (6 Bit), B 0..4
     (`r_16f/g_16f/b_16f`), Format 2, CLUT 2, Org `1`.
   * 16 Bit, "fb layout": R 3..7, G 13,14,15,0,1,2 (6 Bit), B 8..12
@@ -417,7 +417,7 @@ Der Test gehoert zum spaeteren Ticket, nicht zu dieser Spec.
   Hatari-Quellbaum** (`/Volumes/Daten/Development/RuSTari/hatari`, `4491dc0c1`):
   Hatari emuliert **keine** Nova/ET4000; seine Grafikerweiterung ist der
   VDI-Modus `--vdi`/`--vdi-planes` mit 1/2/4/8 Planes im Quellbaum
-  (`src/options.c:333-339`, `src/vdi.c:128-143`) — die **installierte**
+  (src/options.c:333-339, src/vdi.c:128-143 im Hatari-Quellbaum) — die **installierte**
   Hatari 2.6.1 (`/Volumes/Daten/hatari-2.6.1_macos`) bietet laut `--help` nur 1/2/4 — hoehere Aufloesung mit Palette, kein Truecolor, kein
   EdDI. Taugt fuer Dooms `vr_trnfm`-Weg bei 8 Planes; den EdDI-Weg auf einer
   Nova prueft nur der echte TT; **echte EdDI-Daten im Emulator** liefert der

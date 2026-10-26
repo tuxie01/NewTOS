@@ -118,7 +118,7 @@ Legend: ✅ done · ⏳ in progress · 🔒 blocked · ⏸ deferred · ☐ not s
 
 ---
 
-## D4 — BIOS function specs (`bdos/bios.c`, `bios_vecs[]`)
+## D4 — BIOS function specs (`bios/bios.c`, `bios_vecs[]`)
 
 | ID    | Name        | EmuTOS func   | Status | Spec file                  |
 |------:|-------------|---------------|:------:|----------------------------|
@@ -209,7 +209,7 @@ documented collectively in `docs/api/xbios/_triage.md`.
 
 ## D10 — Line-A
 
-- [☐] `docs/api/linea/_overview.md`
+- [☐] `docs/api/_line-a.md`
 
 ## D11 — Discrepancy log
 
@@ -221,4 +221,5 @@ documented collectively in `docs/api/xbios/_triage.md`.
 
 ## D13 — Completion report
 
-- [☐] `docs/api/_completion-report.md` (final, end of phase)
+- [☐] `docs/api/_phase00-completion.md` (final, end of phase)
+

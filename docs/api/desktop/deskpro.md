@@ -264,8 +264,9 @@ original Atari TOS `Pexec`/`Shel_write` behaviour).
 [`programs/desktop/src/pro.rs`](../../../programs/desktop/src/pro.rs) — `pro_exec`,
 `pro_run`, plus `desk_busy_on`/`desk_busy_off` (`desksupp.c:1840-1852`),
 which had no home in the tree before and whose first caller is `pro_exec`.
-The one AES call is a real trap: `desk/mod.rs`'s new `shel_write` aesbind
-wrapper (`svc #2`, opcode 121, `AES_CTRL_CODE(SHEL_WRITE, 3, 1, 2)` —
+The one AES call is a real trap: the new `shel_write` aesbind
+wrapper (since DESK43 U6b in `programs/newtos-gem/src/aes.rs`; `svc #2`, opcode 121,
+ `AES_CTRL_CODE(SHEL_WRITE, 3, 1, 2)` —
 `desk/gembind.c:907-915`), like every other AES call the desktop makes.
 The board run's AES trace shows it as
 `[aes] pid=0 op 121 in=(1,0,1,0,0,0) out=(1,…)` =
@@ -317,7 +318,8 @@ return rc;
 ```
 
 Both calls are real GEMDOS traps through
-[`desk::dosbind`](../../../kernel/src/desk/dosbind.rs): `dos_sdrv` was already
+`desk::dosbind` (since DESK43 U6b [`programs/newtos-gem/src/gemdos.rs`](../../../programs/newtos-gem/src/gemdos.rs)): `dos_sdrv`
+ was already
 there (the desktop reads the drive map with it, `deskapp.c:714`), `dos_chdir`
 = `Dsetpath` (0x3B, `gemdos.h:95-98`) is new. `path[0]-'A'` is EmuTOS's own
 drive derivation, taken verbatim — which is why the argument must carry its

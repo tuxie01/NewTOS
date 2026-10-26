@@ -210,7 +210,8 @@ were already exact (the load-bearing `do_wredraw` doc verified byte-for-byte).
 
 **AES call-surface (gembind.md).** **No AES-server-side gap** — every opcode the
 desktop calls already exists in `tos-api`. The rebuild adds the missing
-**client-side trap wrappers** our `desk/mod.rs` lacks: `menu_icheck`/`menu_ienable`,
+**client-side trap wrappers** our kernel/src/desk/mod.rs lacks:
+ `menu_icheck`/`menu_ienable`,
 `objc_add`/`objc_offset`/`objc_order`, `form_dial`/`form_center`/`form_error`,
 `graf_growbox`/`graf_shrinkbox`/`graf_handle`, `fsel_exinput`, `rsrc_*`, `shel_*`,
 `appl_init`/`appl_exit`. Two non-trap EmuTOS shortcuts → public calls:

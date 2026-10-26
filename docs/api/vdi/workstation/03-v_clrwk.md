@@ -136,6 +136,7 @@ No inputs, no outputs, no return value, no error path — always succeeds.
   PoC after writing (`vdi_backend.rs:118-125`, `:201`) so the VideoCore
   display DMA sees the cleared pixels on real hardware (the framebuffer is
   mapped Non-Cacheable on rpi4, making this a no-op there;
-  `framebuffer.rs:183-187`).
+  cite stale 2026-10-26: kernel/src/drivers/bcm2711/framebuffer.rs:183-187).
+
 - **1080p later.** Clears whatever geometry the `RasterBackend` reports;
   no dependency on the fixed 640×480 mode.

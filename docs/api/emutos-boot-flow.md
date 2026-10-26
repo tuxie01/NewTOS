@@ -20,9 +20,9 @@
 EmuTOS is a **ROM operating system**: the CPU resets into ROM
 (`startup.S`) and the OS code runs in place. So "booting" is not loading an
 OS off a disk — the OS is already there. Reset → `startup.S` (hardware/
-memory/exception init) → `jmp _biosmain` (`startup.S:535`).
+memory/exception init) → `jmp _biosmain` (`bios/startup.S:535`).
 
-## 2. `biosmain()` — the boot sequence (`bios.c:781`)
+## 2. `biosmain()` — the boot sequence (`bios/bios.c:781`)
 
 In order:
 
@@ -52,11 +52,11 @@ In order:
     - if `cmdload` → `Pexec(PE_LOADGO, "COMMAND.PRG", …)` — a user shell on
       the boot drive (like Atari TOS), or
     - else `exec_os` → start the **default ROM shell**. `exec_os` is the OS
-      header's `gm_init` (`bios.c:534`) which is `ui_start` (`gemstart.S:46`)
+      header's `gm_init` (`bios/bios.c:534`) which is `ui_start` (`gemstart.S:46`)
       → **`gem_main`** (`geminit.c:753`) — i.e. the **AES + desktop**.
 11. **`shutdown()`** (`:870`) if the shell ever returns.
 
-## 3. The AUTO folder (`autoexec`, `bios.c:697`)
+## 3. The AUTO folder (`autoexec`, `bios/bios.c:697`)
 
 - Skipped entirely if **CTRL** was held (`SKIP_AUTO_ACC`, `:703`).
 - `Fsfirst("\\AUTO\\*.PRG", 7)` then `Fsnext` (`:714,731`) — every `*.PRG`
@@ -68,21 +68,21 @@ In order:
   are typically TSRs (drivers, RAM disks) that stay resident.
 - `bootstrap()` (`:707`, `DETECT_NATIVE_FEATURES`) tries an
   emulator-provided "native" TOS kernel first (ARAnyM/Hatari `nf_bootstrap`,
-  `bios.c:584`) — irrelevant on real hardware / NewTOS.
+  `bios/bios.c:584`) — irrelevant on real hardware / NewTOS.
 
 ### The working directory an AUTO program starts in (DESK28, 2026-09-24)
 
 **[CONTRACT]** — it is the **root of the boot drive**, and `autoexec` does
 nothing to make it so.
 
-`run_auto_program` (`bios.c:685-695`) builds the *full* path
+`run_auto_program` (`bios/bios.c:685-695`) builds the *full* path
 `"\AUTO\<name>"` and hands it to `Pexec(PE_LOADGO, path, "", NULL)`; there is
 no `Dsetdrv` and no `Dsetpath` anywhere in `autoexec` (`:697-733`). The
 child's directory is therefore purely inherited: `Pexec` copies the current
 drive and the whole per-drive current-directory table out of the calling
 process's basepage into the child's (`init_pd_files`, `bdos/proc.c:400-410`),
 and the caller is the BIOS, whose state is `Dsetdrv(bootdev)`
-(`bios.c:827`) plus — for every drive it never `Dsetpath`ed — the **root**
+(`bios/bios.c:827`) plus — for every drive it never `Dsetpath`ed — the **root**
 DND that `ckdrv` installs on first use (`bdos/fsdrive.c:119-131`). An AUTO
 program that opens `FOO.TXT` by a bare name reads `<bootdrive>:\FOO.TXT`, not
 `\AUTO\FOO.TXT`.

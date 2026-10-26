@@ -85,13 +85,13 @@ choice** of new mode is).
 **Build configuration affecting this function:**
 - `CONF_WITH_TT_SHIFTER` — gates the TT resolution dialog entirely
   (`change_tt_rez`, the `ttrez_from_button[]` table); default **on** in
-  the general/Atari build (`config.h:1086`, forced off on non-TT
+  the general/Atari build (`include/config.h:1086`, forced off on non-TT
   hardware profiles per the various `#if`-guarded `0` defines throughout
   `config.h`'s per-machine sections — this is a hardware-capability
   gate, not a `TARGET_192`-style space-saving gate)
 - `CONF_WITH_VIDEL` — gates the Falcon resolution dialog
   (`change_falcon_rez`, `falconmode_from_button[]`); default **on**
-  (`config.h:1093`)
+  (`include/config.h:1093`)
 - `CONF_WITH_VDI_16BIT` — within `change_falcon_rez`, hides/disables
   "Truecolor" (16-bit) mode buttons if the VDI wasn't built with 16-bit
   support (not traced further — VDI-layer gate, `docs/api/vdi/` if

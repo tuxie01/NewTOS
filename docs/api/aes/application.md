@@ -358,7 +358,7 @@ Byte offsets are the m68k layout (`WORD` = 2 bytes; `LONG`/pointer = 4 bytes,
 > width).
 >
 > The consequence is carried by the **toolchain**, not by the structure:
-> pristine gemlib's accessors have no `__LP64__` arm (`gem.h:41,49,57`), so for
+> pristine gemlib's accessors have no `__LP64__` arm (`sdk/gemlib/gemlib-0.44.0-m68k/gem.h:41,49,57`), so for
 > a 64-bit caller `_AESappglobal`, `_AESrscfile` and `_AESrscmem` read eight
 > bytes each — bytes 6..13, 10..17 and 14..21, three pointers inside fourteen
 > bytes. `_AESrscmem` in particular reaches `ap_planes`, so on a zeroed array
@@ -668,11 +668,11 @@ for reading messages that are long and/or of variable length"
 | `sdk/cflib/cflib-21/sendspec.c:47` | `appl_find("SCRENMGR")`'s result | MagiC extension message to the Screen Manager |
 | `sdk/cflib/cflib-21/sendstrt.c:46` | `id` | generic message send |
 
-Two things worth naming: `event.c:619` is the one surveyed **self-write** —
+Two things worth naming: `sdk/apps/qed/src/event.c:619` is the one surveyed **self-write** —
 QED sends `AP_TERM` to its own `gl_apid` while shutting down; its queue at
 that point is not plausibly at depth 8, so this does not exercise the
 self-deadlock case above, but it does confirm self-targeted `appl_write` is a
-real, if rare, usage pattern, not a theoretical one. `sendspec.c:47` targets
+real, if rare, usage pattern, not a theoretical one. `sdk/cflib/cflib-21/sendspec.c:47` targets
 the Screen Manager directly by name — the one write target that is not an
 application (see "AES process identity and pid" above, `SCRENMGR_PID`).
 None of the surveyed call sites
@@ -685,10 +685,10 @@ that EmuTOS's `appl_write` has no error return to check for in the common
 > and `pd.rs` (`MsgQueue::enqueue` `:168-201`, the full-queue `false` return
 > documented in place at `:160-167`) predates the cooperative sleep/wake
 > substrate that now exists and is already wired for the sibling functions on
-> the *same* message pipe: `evnt_mesag` (`event.rs:729-769`) and
-> `evnt_multi`'s `MU_MESAG` arm (`event.rs:638-658`, inside the wait loop
-> `event.rs:500-681`) both pop-if-present, else
-> `sched::sleep(sched::wait_mesg(idx))` (`event.rs:765`, wake key
+> the *same* message pipe: `evnt_mesag` (`tos-api/src/aes/event.rs:929-995`) and
+> `evnt_multi`'s `MU_MESAG` arm (`tos-api/src/aes/event.rs:753-801`, inside the wait loop
+> `tos-api/src/aes/event.rs:598-864`) both pop-if-present, else
+> `sched::sleep(sched::wait_mesg(idx))` (`tos-api/src/aes/event.rs:991`, wake key
 > `sched.rs:61-69`), and propagate the resulting `Option<sched::Switch>` so
 > the trap dispatcher can switch to a peer; the poster side already wakes
 > that key (`pd::post_msg`/`post_words` → `wake_mesg_waiter`,
@@ -1149,7 +1149,9 @@ returns are pid / 0 / 1 / -1 only.
   this line previously equated the *reported* `ap_id` with the GEMDOS
   process id (i.e. "Slot + 1"), which is not what EmuTOS reports — EmuTOS's
   `ap_id` is **0** for the whole application chain (Fall 644,
-  `measurements/measurement-2026-09-12-aes-r4/aes-r4-subfunctions.tsv`, CRC `227422B2`).
+  `tosdump/cases/aes-r4-subfunctions.tsv`, CRC `227422B2`, run
+  `measurements/measurement-2026-09-12-aes-r4/`).
+
   What *is* true, and what this line was reaching for, is only that the AES
   application's *life* brackets a GEMDOS process's life
   (`appl_init`/`appl_exit` inside `Pexec`/`Pterm`) — not that its reported

@@ -83,25 +83,25 @@ behandelt `CR`, `LF`, `BS`, `TAB` und druckbare Zeichen `0x20..=0xFF`,
 „`ESC` sequences in the byte stream are not parsed"). Ein `ESC E` aus EmuCON
 wuerde also `ESC` verschlucken und den Buchstaben `E` als Zeichen ausgeben.
 Die Kernel-Konsole umgeht das, indem sie `fbcon::clear_and_home()` direkt
-aufruft (`shell.rs:124`) statt `ESC E` zu senden. Die BIOS-Spezifikation
+aufruft (`kernel/src/shell.rs:124`) statt `ESC E` zu senden. Die BIOS-Spezifikation
 beschreibt den Parser (`docs/api/bios/03-bconout.md:30,230`,
 `CONF_WITH_VT52`), er ist aber nicht gebaut. **Das ist eine Voraussetzung**
 fuer EmuCON als EL0-Programm (und fuer jedes TOS-Textprogramm) —
 Entscheidung [06 D3](06-mapping-and-decisions.md). Zusaetzlich: der
 Textcursor ist in NewTOS „nur logisch", es wird kein sichtbarer Block
 gezeichnet (`tos-api/src/vdi/escape.rs:21-24`), `Cursconf` fuehrt nur
-Zustand (`tos-api/src/xbios/screen.rs:380-411`).
+Zustand (cite stale 2026-10-26: tos-api/src/xbios/screen.rs:380-411).
 
 ## 4. Hardwareabhaengige Aufrufe und was NewTOS dafuer hat
 
 | EmuCON-Aufruf | Zweck | Beleg | NewTOS-Stand (gelesen) |
 |---|---|---|---|
-| `getcookie(_IDT)` / `getcookie(_VDO)` ueber `Supexec(getjar)` (Lesen von `*(LONG*)0x5a0`, Schleife bis Tag 0) | Datumsformat; Videohardware | `cmdutil.c:315-340`, `cmdmain.c:70-74` | `Supexec` ist offene ADR (`programs/newtos-gem/src/gemdos.rs:434-452`); Ersatz: `dos_getcookie` (`Ssystem(S_GETCOOKIE)`, `gemdos.rs:453-456`, `Option<u32>`; Kommentar `:447-451`: bei Wert 0 vs. Fehler uneindeutig, nicht fuer Zeigerwerte). `_IDT` ist gesetzt (`0x112F`, `tos-api/src/cookie.rs:224`), **`_VDO` fehlt absichtlich** (`cookie.rs:217-220`) |
+| `getcookie(_IDT)` / `getcookie(_VDO)` ueber `Supexec(getjar)` (Lesen von `*(LONG*)0x5a0`, Schleife bis Tag 0) | Datumsformat; Videohardware | `cmdutil.c:315-340`, `cmdmain.c:70-74` | `Supexec` ist offene ADR (`programs/newtos-gem/src/gemdos.rs:434-452`); Ersatz: `dos_getcookie` (`Ssystem(S_GETCOOKIE)`, `programs/newtos-gem/src/gemdos.rs:453-456`, `Option<u32>`; Kommentar `:447-451`: bei Wert 0 vs. Fehler uneindeutig, nicht fuer Zeigerwerte). `_IDT` ist gesetzt (`0x112F`, `tos-api/src/cookie.rs:224`), **`_VDO` fehlt absichtlich** (`cookie.rs:217-220`) |
 | `Getrez()` | Startaufloesung | `cmdmain.c:76,78` | liefert immer `TT_MEDIUM` = 4 (`tos-api/src/xbios/screen.rs:160-168`, ADR-017 rev 2) |
 | `Setscreen(-1,-1,res,0)`, `Setcolor(3,…)` | Aufloesung/Farbe wechseln | `cmdmain.c:263-274` | `rez` wird angenommen und ignoriert (`screen.rs:190-191`, `docs/api/xbios/05-setscreen.md:192`) |
 | `getwh()` (Line-A-Init, liest `v_cel_mx/my` bei `-44(a0)`) | Spalten/Zeilen | `cmdasm.S:51-60`, `cmdedit.c:134-136`; `include/lineavars.h:50-52` | **kein Line-A auf AArch64** (`docs/api/_line-a.md:65-70`); ersatzlos **OFFEN** (D4). `getht()` (`cmdasm.S:62-72`) ist deklariert, **nirgends benutzt** (Suche ueber `cli/`) |
 | `Supexec(get_nflops)` (liest `0x4a6`) | Diskettenzahl | `cmdmain.c:83,333-336` | **im ROM-Bau ungenutzt** (Wert wird nur von der `STANDALONE`-Programmpfad-Umschreibung gelesen, `cmdparse.c:40-54`) → entfaellt |
-| `Cursconf(0|1,0)` | Cursor aus/an um Programmstarts | `cmdexec.c:51,53` | vorhanden (`xbios/screen.rs:386-411`), Zustand ohne sichtbaren Cursor |
+| `Cursconf(0|1,0)` | Cursor aus/an um Programmstarts | `cmdexec.c:51,53` | vorhanden (cite stale 2026-10-26: tos-api/src/xbios/screen.rs:386-411), Zustand ohne sichtbaren Cursor |
 | `Kbrate(-1,-1)` / `Kbrate(d,r)` | Tastenwiederholung | `cmdint.c:431,454` | XBIOS `Kbrate` ist spezifiziert (`docs/api/xbios/23-kbrate.md`) |
 | `Sversion()` | `version` | `cmdint.c:611` | `0x3000` (`tos-api/src/gemdos/version.rs:14`) |
 | `Bconin/Bconstat/Bconout(2,…)` | gesamte Ein-/Ausgabe | `cmd.h:83-85,194-196` | BIOS-Traps vorhanden; `newtos-gem` hat **keine** BIOS-Bindung (nur `Cconout/Cconws/Crawcin/Cconis`) |

@@ -525,7 +525,8 @@ in the same state either way.
 release the drag ended on, was also missing and is now taken.
 
 **Measured** (`measurements/measurement-2026-09-24-desk37-desk36-desk30/`, one gesture,
-`method/d36.actions`): a plain file dragged over four targets in turn.
+`measurements/measurement-2026-09-24-desk37-desk36-desk30/method/d36.actions`): a plain
+ file dragged over four targets in turn.
 
 | picture | target | highlight |
 |---|---|---|

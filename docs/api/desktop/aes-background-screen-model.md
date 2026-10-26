@@ -337,13 +337,13 @@ hardware work).
 
 Our AES (`tos-api/src/aes/window.rs`) implements **none** of this. Instead:
 
-- **`DESK_PAINTER`** (`window.rs:246`) — a raw `AtomicUsize` holding a
+- **`DESK_PAINTER`** (cite stale 2026-10-26: tos-api/src/aes/window.rs:246) — a raw `AtomicUsize` holding a
   `fn(&dyn RasterBackend, ClipRect)` pointer. `set_desktop_painter()`
   (`:249-251`) / `clear_desktop_painter()` (`:263-265`) let *any* caller
   (in practice, only `programs/desktop/src/`) install/remove it — a side channel
   that bypasses the AES trap dispatcher entirely; there is no `wind_set`
   opcode involved.
-- **`paint_bg_clip()`** (`window.rs:312-324`) — called from `compose()`
+- **`paint_bg_clip()`** (cite stale 2026-10-26: tos-api/src/aes/window.rs:312-324) — called from `compose()`
   (`:346-370`, the single redraw compositor backing both `redraw_all` and
   `redraw_clip`) — checks `DESK_PAINTER`: if set, calls it directly (a raw
   pixel-push callback, **not** an object-tree draw); if unset, does a plain
@@ -351,14 +351,15 @@ Our AES (`tos-api/src/aes/window.rs`) implements **none** of this. Instead:
   `CLEAR_SCREEN`, but achieved by literally special-casing "no painter" in
   Rust control flow, not by drawing an `OBJECT` whose `ob_spec` happens to be
   0.
-- **`programs/desktop/src/lib.rs:509-517`** (`paint_desktop_bg`) — the registered
+- **`paint_desktop_bg`** (cite stale 2026-10-26: kernel/src/desk/mod.rs:509-517) — the registered
   painter. It fills the desktop pattern via a hand-built `PatternFill` (an
-  `IP_PATTERNS` dither table reimplementing `gr_crack`'s bit layout, `mod.rs:485-496`)
+  `IP_PATTERNS` dither table reimplementing `gr_crack`'s bit layout, cite stale 2026-10-26: kernel/src/desk/mod.rs:485-496)
   straight through `RasterBackend`, then calls `global::render_desktop_icons`
   — **not** `objc_draw`/a shared drawing engine on a real `OBJECT` tree with
   `ROOT`/`DROOT` semantics. The desktop's icons are pushed to the backend by
   bespoke code, never through the `tos-api` object-manager's `draw_tree`.
-- **`programs/desktop/src/main.rs:519-544`** (`desktop_relinquish`/`desktop_resume`)
+- **`desktop_relinquish`/`desktop_resume`** (cite stale 2026-10-26: kernel/src/desk/main.rs:519-544)
+
   — the app-launch/exit toggle. `desktop_relinquish()` calls
   `save_windows()` + `clear_desktop_painter()` + `redraw()`, i.e. **the exact
   functional intent** of `wm_init()`'s `gl_newdesk = NULL` reset +
@@ -380,7 +381,7 @@ Our AES (`tos-api/src/aes/window.rs`) implements **none** of this. Instead:
 in its "Used by" section: *"**The desktop** (`desk/`) owns the desktop window
 (handle 0) and the background tree (`WF_NEWDESK`) — this is the NewTOS
 desktop."* This describes the **intended/EmuTOS-faithful** design, but the
-actual `tos-api` code (`window.rs:1190-1197`, checked in the same tree) states
+actual `tos-api` code (cite stale 2026-10-26: tos-api/src/aes/window.rs:1190-1197, checked in the same tree) states
 plainly that `WF_NEWDESK` is **not implemented**. This is not a case of a
 spec misreading EmuTOS (EmuTOS-side citations in that doc are accurate); it's
 the implementation having silently diverged from an already-correctly-stated
@@ -427,9 +428,9 @@ new rasterizer, only wiring the desktop through it.
      naturally reproduces `CLEAR_SCREEN` (a fallback root whose fill is
      white/`IP_HOLLOW` computes to the same all-zero `ob_spec` EmuTOS uses).
    - This one change removes the hand-rolled `IP_PATTERNS`/`PatternFill`
-     dither logic in `programs/desktop/src/lib.rs:485-517` from the desktop crate
+     dither logic in kernel/src/desk/mod.rs:485-517 (cite stale 2026-10-26) from the desktop crate
      entirely — pattern/colour decoding becomes the object manager's
-     `gr_crack`-equivalent job (`object.rs:1589-1609` already does this for
+     `gr_crack`-equivalent job (cite stale 2026-10-26: tos-api/src/aes/object.rs:1589-1609, already does this for
      other box types), used generically instead of duplicated per-caller.
 
 3. **`programs/desktop/src/` — build a real `OBJECT` tree for `ROOT`/`DROOT` +
@@ -440,12 +441,12 @@ new rasterizer, only wiring the desktop through it.
      area, `ob_spec` carrying the pattern/colour byte from
      `global::patcol_desktop()` — this is the direct analogue of
      `G.g_screen[DROOT].ob_spec`), and the drive/trash/printer icons
-     currently drawn by `global::render_desktop_icons` (`mod.rs:516`)
+     currently drawn by `global::render_desktop_icons` (cite stale 2026-10-26: kernel/src/desk/mod.rs:516)
      re-expressed as `G_ICON` children of `DROOT`, each with a real
      `ob_spec`-pointed `ICONBLK` (the `object.rs` engine already supports
-     `G_ICON` drawing, `object.rs:1776-1779`).
+     `G_ICON` drawing, cite stale 2026-10-26: tos-api/src/aes/object.rs:1776-1779).
    - Replace the direct pixel-pushing in `paint_desktop_bg`
-     (`programs/desktop/src/lib.rs:509-517`) with: build/refresh this tree once
+     (cite stale 2026-10-26: kernel/src/desk/mod.rs:509-517) with: build/refresh this tree once
      (on background-pattern change, icon add/remove/move — i.e. exactly when
      `inf_backgrounds`/`app_blddesk` would run in EmuTOS), then call the same
      `objc_draw`-equivalent used by point 2's fallback path. The existing
@@ -477,7 +478,7 @@ new rasterizer, only wiring the desktop through it.
    - `programs/desktop/src/main.rs::desktop_resume()` (`:536-544`): replace
      `set_desktop_painter(super::paint_desktop_bg)` with the
      `WF_NEWDESK(&desktop_tree, 1, ROOT)` re-registration.
-   - `save_windows()`/`restore_windows()` (`window.rs:279-308`) are a
+   - `save_windows()`/`restore_windows()` (cite stale 2026-10-26: tos-api/src/aes/window.rs:279-308) are a
      **separate, legitimate** mechanism (hiding the desktop's *window list*)
      with no direct EmuTOS analogue documented here — out of this task's
      scope; leave as-is unless a follow-up task extracts `wm_new()`'s role in
@@ -486,7 +487,7 @@ new rasterizer, only wiring the desktop through it.
      fixing** — see Out-of-scope observations below.
 
 5. **Persisted background byte.** `global::patcol_desktop()` (already
-   existing, `programs/desktop/src/lib.rs:512`) is the NewTOS analogue of
+   existing, cite stale 2026-10-26: kernel/src/desk/mod.rs:512) is the NewTOS analogue of
    `G.g_patcol[index].desktop`/`set_aes_background`'s `patcol` byte — keep it
    as the single source of truth feeding `DROOT`'s `ob_spec` (point 3) and
    the AES-internal fallback root's `ob_spec` (point 1); this mirrors

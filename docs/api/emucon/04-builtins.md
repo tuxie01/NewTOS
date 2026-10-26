@@ -381,7 +381,7 @@ Position 1 besteht (`cmdint.c:174-176`). `is_valid_drive(argv[0][0])` sonst
 Ohne Argument `drive = Dgetdrv()`, sonst Kleinbuchstabe von `argv[1][0]` minus
 `'a'` (**keine Gueltigkeitspruefung des Zeichens**). `Dfree(info, drive+1)`
 (vier 32-Bit-LONGs: `[0]` freie Cluster, `[1]` Cluster gesamt, `[2]` Bytes/Sektor,
-`[3]` Sektoren/Cluster — `bdos/fsfat.c:337-368`); Fehler → `EDRIVE`.
+`[3]` Sektoren/Cluster — `bdos/fsfat.c:337-367`); Fehler → `EDRIVE`.
 `bpc = info[2]*info[3]`. Ausgabe (`outputnl`, `show_line` =
 `"%s%10lu"`, `:1178-1184`):
 

@@ -193,7 +193,7 @@ font's id when the request was unavailable).
 ## Configuration / version notes
 
 - **`vst_load_fonts` / `vst_unload_fonts` are gated by `CONF_WITH_GDOS`
-  (default 1)** (`config.h:1620-1622`; `vdi_text.c:1294,1355`). Even compiled
+  (default 1)** (`include/config.h:1620-1622`; `vdi_text.c:1294,1355`). Even compiled
   in, they only *link/unlink* fonts that GDOS (absent in a bare EmuTOS) would
   have supplied; without GDOS-supplied font data `vst_load_fonts` typically
   reports 0 new faces. If not compiled in, both are hard no-ops returning

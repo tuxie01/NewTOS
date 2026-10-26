@@ -456,14 +456,14 @@ No `INTOUT`/`PTSOUT`.
 
 First-ever measured run of this group: `tosdump/cases/vdi-raster.tsv`
 (59 cases, CRC `702EEA7D`) against a real Atari TT running EmuTOS 1.4
-(`reference/EMUTOS14-RASTER.BIN`) and a real Raspberry Pi 4 running
-NewTOS (`reference/NEWTOS-RASTER.BIN`).
+(`tosdump/reference/EMUTOS14-RASTER.BIN`) and a real Raspberry Pi 4 running
+NewTOS (`tosdump/reference/NEWTOS-RASTER.BIN`).
 
 - **D-VDI-23** — `PAT_FLAG` on the truecolor path aborts the copy
   (case 144). Spec corrected, NewTOS `vro_cpyfm` fixed. The `vrt_cpyfm`
   half was closed by the screen-raster measurement (R05, 2026-09-21,
   `vdi-raster-screen.tsv` case 215 on Hatari Falcon030 truecolor,
-  `reference/EMUTOS14-RASTER-screen-falcontc.BIN`): same rule, NewTOS
+  `tosdump/reference/EMUTOS14-RASTER-screen-falcontc.BIN`): same rule, NewTOS
   `vrt_cpyfm` fixed.
 - **D-VDI-24** — `arb_corner` does **not** write the sorted rectangle back
   into the caller's `PTSIN`; the trap glue works on a local copy
@@ -548,8 +548,8 @@ NewTOS (`reference/NEWTOS-RASTER.BIN`).
 > constants (geometry is an `AtomicU32` pair, negotiated at boot); both
 > boards default to 1920×1080 (`kernel/src/drivers/mod.rs:31-33`
 > `BOOT_WIDTH`/`BOOT_HEIGHT`; RPi4 falls back to it if the mailbox query
-> comes up empty, `bcm2711/framebuffer.rs:29-33`; QEMU uses it unconditionally,
-> `qemu_virt/ramfb.rs:80-81`). The table below reflects both corrections.
+> comes up empty, `kernel/src/drivers/bcm2711/framebuffer.rs:29-33`; QEMU uses it unconditionally,
+> `kernel/src/drivers/qemu_virt/ramfb.rs:80-81`). The table below reflects both corrections.
 > The rewrite below could **not**, at the time of this correction, find a
 > dedicated `docs/MEMORY.md` ADR for the truecolor VDI pivot to cite — the
 > code itself only pointed at a placeholder, `[ADR-0xx truecolor VDI]`
@@ -571,7 +571,7 @@ screen-MFDB values:
 | MFDB field | Atari screen var | NewTOS value | Source |
 |-----------|------------------|--------------|--------|
 | `fd_addr` (screen) | `v_bas_ad` | the VideoCore fb base (CPU-visible VA) | `vdi_backend.rs:868-871` (`base_addr`) |
-| `fd_w` | `V_REZ_HZ` | **1920** (negotiated; QEMU fixed, RPi4 mailbox-negotiated with this fallback) | `kernel/src/drivers/mod.rs:31-33` (`BOOT_WIDTH`), `bcm2711/framebuffer.rs:29-33`, `qemu_virt/ramfb.rs:80-81` |
+| `fd_w` | `V_REZ_HZ` | **1920** (negotiated; QEMU fixed, RPi4 mailbox-negotiated with this fallback) | `kernel/src/drivers/mod.rs:31-33` (`BOOT_WIDTH`), `kernel/src/drivers/bcm2711/framebuffer.rs:29-33`, `kernel/src/drivers/qemu_virt/ramfb.rs:80-81` |
 | `fd_h` | `V_REZ_VT` | **1080** (same) | `kernel/src/drivers/mod.rs:31-33` (`BOOT_HEIGHT`) |
 | `fd_wdwidth` | — | **120** = `(1920+15)/16` | words/row for the negotiated raster width |
 | `fd_nplanes` | `v_planes` | **16** (Falcon truecolor pixel depth) | `vdi_backend.rs:35-40` (`PLANES`); matches EmuTOS `INQ_TAB[4] = v_planes` (`vdi_control.c:210`) |

@@ -370,7 +370,7 @@ state is summarised in [`_state.md`](_state.md).
 `FIRST_VDI_HANDLE = 1` (the physical workstation) through
 `LAST_VDI_HANDLE = NUM_VDI_HANDLES` (`vdi_control.c:25-27`).
 `NUM_VDI_HANDLES` is a **build-config** value: **64** on the small/STe
-target, **128** by default (`config.h:391-393,1660-1662`) — **not 16**.
+target, **128** by default (`include/config.h:391-393,1660-1662`) — **not 16**.
 (An earlier revision of the workstation docs said "16" — corrected here
 and in `_discrepancies.md` D-VDI-3.)
 

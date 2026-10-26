@@ -116,7 +116,7 @@ application's job.
 
 **Source:** `gemsuper.c:316-317` → `aes/gemsclib.c:74-107` (`sc_clear`).
 **PC-GEM extension**, gated by `CONF_WITH_PCGEM` (default **1**,
-`config.h:1319-1321`); with it off the opcode falls to the dispatcher `default`
+`include/config.h:1319-1321`); with it off the opcode falls to the dispatcher `default`
 → `-1` ([`_dispatcher.md`](./_dispatcher.md) §unsupported-opcode).
 
 | Slot | Meaning |
@@ -165,7 +165,8 @@ has itself called `shel_write(SHW_EXEC, cmd, tail)`, a `shel_read` returns
 until the shell overwrites it again. TeraDesk's Single-TOS chain protocol
 depends on exactly this: `shel_write(SHW_EXEC, child)` → `Pexec(child)` →
 `shel_read` → `strcmp(cmd, own name)` decides whether a chain was requested
-(`startprg.c:344-355`). An implementation that answers `shel_read` from a
+(`sdk/apps/teradesk/startprg.c:344-355`). An implementation
+ that answers `shel_read` from a
 separate "launch command" buffer breaks the round trip
 (`TASK/H05-STATUS-DONE.MD`).
 
@@ -196,7 +197,7 @@ selector (`gemshlib.c:127-196`):
 | 5 | `SHW_RESCHNG` | **change screen resolution** — sets `gl_changerez`/`gl_nextrez`, clears `s_cmd`/tail | Setscreen video-mode value — **with a family-dependent offset, see below** | `0` = ST/TT rez family (→ `gl_changerez = 1`), `1` = Falcon rez family (→ `gl_changerez = 2`) |
 
 † `SHW_SHUTDOWN` (4) is `#if CONF_WITH_SHUTDOWN` — **default 0** for the standard
-RPi/AArch64-style build (`config.h:2028-2034`), so the `case SHW_SHUTDOWN` arm is
+RPi/AArch64-style build (`include/config.h:2028-2034`), so the `case SHW_SHUTDOWN` arm is
 **compiled out by default**; the opcode still returns `1` but does nothing (the
 `switch` has no matching `case` → falls through). `SHW_NOEXEC`/`SHW_EXEC`/
 `SHW_RESCHNG` are unconditional. **The `CONSOLE_APP` launch path (the internal
@@ -485,7 +486,7 @@ returned to the `shel_write` caller — `shel_write` returned `1` when it merely
    words are `isgem` (GEM vs char mode) and `isover` (shutdown level / rez
    family), not a generic "launch mode".
 3. **`SHW_SHUTDOWN` is compiled out by default.** `#if CONF_WITH_SHUTDOWN`
-   defaults to **0** for the generic build (`config.h:2028-2034`); the mode-4
+   defaults to **0** for the generic build (`include/config.h:2028-2034`); the mode-4
    arm is absent, so `shel_write(4, …)` returns `1` but does nothing on a
    standard NewTOS-style target. A NewTOS build must decide whether to implement
    power-off (open question).
@@ -654,13 +655,13 @@ launched app's `appl_init()` observably returns `ap_id == 0` and
 
 ## Configuration / version notes
 
-- **`CONF_WITH_PCGEM`** (default **1**, `config.h:1319-1321`) gates the PC-GEM
+- **`CONF_WITH_PCGEM`** (default **1**, `include/config.h:1319-1321`) gates the PC-GEM
   functions `scrp_clear` (82), `shel_rdef` (126), `shel_wdef` (127). With it off,
   those three opcodes return `-1`. `scrp_read`/`scrp_write` and
   `shel_read`/`shel_write`/`shel_get`/`shel_put`/`shel_find`/`shel_envrn` are
   unconditional.
 - **`CONF_WITH_SHUTDOWN`** (default **0** for the generic build,
-  `config.h:2028-2034`) gates the `SHW_SHUTDOWN` (4) arm of `shel_write`. Off →
+  `include/config.h:2028-2034`) gates the `SHW_SHUTDOWN` (4) arm of `shel_write`. Off →
   the mode is a silent no-op (returns `1`). On (native-feature/Amiga/Lisa builds)
   → it powers off via `can_shutdown()`/`shutdown()`.
 - `scrp_read`/`scrp_write`, `shel_read`/`shel_write`/`shel_get`/`shel_put`/

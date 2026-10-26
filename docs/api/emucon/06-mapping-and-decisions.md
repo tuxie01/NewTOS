@@ -8,12 +8,12 @@ Legende: [README](README.md). Dies ist die Vorlage fuer die Freigabe (Regel 5).
 
 Vorschlag nach dem ADR-022-/ADR-026-Muster („gleichnamige Funktionen, gleiche
 Aufrufreihenfolge", `docs/MEMORY.md` ADR-022/026): ein Modul je EmuTOS-Datei
-unter `programs/emucon/src/`. Ob Bibliothek + schmaler Binaer-Crate (wie
+unter programs/emucon/src/. Ob Bibliothek + schmaler Binaer-Crate (wie
 `programs/desktop/` + `programs/newdesk/`) oder ein einziger Crate: **D8**.
 
 | EmuTOS | Geplant (NewTOS) | Anmerkung |
 |---|---|---|
-| `cmdasm.S: _coma_start` (`:25-49`) | `sdk/crt0.S` + `main(BASEPAGE*)` (`programs/newtos-gem/src/lib.rs:1-12`); `main` gibt 0 zurueck, crt0 beendet mit `Pterm` | `Mshrink`/eigener Stack entfallen (crt0: Mshrink auf Image + 64 KiB Stack). Umgebung: `basepage->p_env` bei Offset `0x2C` (`structures/basepage.md:36`). Intern |
+| `cmdasm.S: _coma_start` (`:25-49`) | `sdk/crt0.S` + `main(BASEPAGE*)` (`programs/newtos-gem/src/lib.rs:1-12`); `main` gibt 0 zurueck, crt0 beendet mit `Pterm` | `Mshrink`/eigener Stack entfallen (crt0: Mshrink auf Image + 64 KiB Stack). Umgebung: `basepage->p_env` bei Offset `0x2C` (`docs/api/structures/basepage.md:36`). Intern |
 | `cmdasm.S: _getwh/_getht` (`:51-72`) | **offen, D4** | `getht` ungenutzt |
 | `cmdasm.S: _jmp_gemdos/_bios/_xbios` (`:77-105`) | Bindungen in `programs/newtos-gem/src/{gemdos,xbios}.rs` + **neu** `bios.rs` | Luecken: `gemdos.rs` hat kein `Pexec`, `Fdup`, `Fforce`, `Dgetpath`, `Fgetdta`, `Sversion`, rohes `Dfree` (nur `dos_space`, `:318`), `dos_trap` kennt 3 Argumente (`:112`), `Pexec` braucht 4; `xbios.rs` nur `keytbl` (`:79`); BIOS-Bindung fehlt |
 | `cmdmain.c: cmdmain` (`:63-142`) | `cmdmain.rs: cmdmain` | `Supexec(get_nflops)` entfaellt (ungenutzt, 05 §4) |
@@ -24,7 +24,7 @@ unter `programs/emucon/src/`. Ob Bibliothek + schmaler Binaer-Crate (wie
 | `cmdedit.c: *` (`:41-480`) | `cmdedit.rs` | `init_screen` haengt an **D4**; Escape-Ausgaben an **D3** |
 | `cmdexec.c: exec_program` & Hilfen (`:29-234`) | `cmdexec.rs` | Endungsmenge **D6**; `Pexec(0, path, tail, NULL)` |
 | `cmdint.c: cmdtable, lookup_builtin, run_*, copy_move, output*, help*, …` (`:140-1301`) | `cmdint.rs` | 21 Befehle + `X:`, siehe 04 |
-| `cmdutil.c: escape/message/messagenl/errmsg/strlower/strupper/getword/decode_date_time/get_path_component/has_wildcard/program_extension/strequal/getcookie` (`:26-340`) | `cmdutil.rs` | `getcookie` → `dos_getcookie` (`gemdos.rs:453`); `strequal`, `strlower/upper` nur ASCII (`:117-140,294-313`) |
+| `cmdutil.c: escape/message/messagenl/errmsg/strlower/strupper/getword/decode_date_time/get_path_component/has_wildcard/program_extension/strequal/getcookie` (`:26-340`) | `cmdutil.rs` | `getcookie` → `dos_getcookie` (`programs/newtos-gem/src/gemdos.rs:453`); `strequal`, `strlower/upper` nur ASCII (`:117-140,294-313`) |
 | `cmdutil.c` `#ifdef STANDALONE_CONSOLE` libc (`:342-455`) | entfaellt | Rust `core`/`alloc` |
 | `clistub.h: coma_start` (`:13`) | Registry-Name `EMUCON` (`tos-api/src/aes/shell.rs:67-71`) | Start wie NEWDESK (01 §6) |
 
@@ -39,12 +39,12 @@ eingebettetes Programm (Vorbild `launch.rs:131-148`).
 
 | Aspekt | EmuCON2 (Beleg) | `shell.rs` (Beleg) |
 |---|---|---|
-| Laufzeit | EL0-aehnlich: eigener Prozess/PD | EL1, Kernelcode; Stellvertreter-PD (`shell.rs:26-31`) |
-| Banner | `ESC E`, `ESC e`, `Welcome to EmuCON2 version <v>` / `Type HELP for builtin commands` / leer (`cmdmain.c:91-95`) | `NewTOS console (EmuCON) - 'help' for commands, 'exit' to return.` + leer (`shell.rs:14`); im Rueckfall zusaetzlich `No desktop: NEWDESK could not be loaded (GEMDOS error N).` (`:40-55`) |
-| Prompt | `<L>:<pfad>>` ohne Leerzeichen (`cmdedit.c:52-54`, `cmdint.c:928-944`) | `<L>:\<pfad>> ` mit Leerzeichen (`shell.rs:296-309`) |
-| Eingabe | `Bconin(2)`, Scancodes, Verlauf 10, Tab, Cursor/Wort-Bewegung, Einfuegen/Loeschen (02) | `Cnecin`; nur Backspace und druckbare Zeichen, 127 Zeichen (`shell.rs:11,78-100`) |
-| Parser | Anfuehrungszeichen, `>`, Argumentliste, Fremdprogramme (03) | erstes Wort / Rest der Zeile (`shell.rs:105-120`); keine Umlenkung, keine Quotes |
-| Befehle | 21 + `X:` (04) | `exit/quit`, `help`, `ver`, `cls`, `pwd`, `cd`, `dir/ls`, `type/cat`, `run`, `bench`, `init`, `X:` (`shell.rs:121-131,141-155`) |
+| Laufzeit | EL0-aehnlich: eigener Prozess/PD | EL1, Kernelcode; Stellvertreter-PD (`kernel/src/shell.rs:26-31`) |
+| Banner | `ESC E`, `ESC e`, `Welcome to EmuCON2 version <v>` / `Type HELP for builtin commands` / leer (`cmdmain.c:91-95`) | `NewTOS console (EmuCON) - 'help' for commands, 'exit' to return.` + leer (`kernel/src/shell.rs:14`); im Rueckfall zusaetzlich `No desktop: NEWDESK could not be loaded (GEMDOS error N).` (`:40-55`) |
+| Prompt | `<L>:<pfad>>` ohne Leerzeichen (`cmdedit.c:52-54`, `cmdint.c:928-944`) | `<L>:\<pfad>> ` mit Leerzeichen (`kernel/src/shell.rs:296-309`) |
+| Eingabe | `Bconin(2)`, Scancodes, Verlauf 10, Tab, Cursor/Wort-Bewegung, Einfuegen/Loeschen (02) | `Cnecin`; nur Backspace und druckbare Zeichen, 127 Zeichen (`kernel/src/shell.rs:11,78-100`) |
+| Parser | Anfuehrungszeichen, `>`, Argumentliste, Fremdprogramme (03) | erstes Wort / Rest der Zeile (`kernel/src/shell.rs:105-120`); keine Umlenkung, keine Quotes |
+| Befehle | 21 + `X:` (04) | `exit/quit`, `help`, `ver`, `cls`, `pwd`, `cd`, `dir/ls`, `type/cat`, `run`, `bench`, `init`, `X:` (`kernel/src/shell.rs:121-131,141-155`) |
 | `cd` | `Dsetdrv`-Umweg, Laufwerksangabe, `cd x:` zeigt Pfad (4.2) | `Dsetpath`; Fehler `No such directory.` (`:211-221`) |
 | `ls/dir` | Muster-Normalisierung, `-l`, 13er-Spalten (4.9) | `Fsfirst(.., 0x10)` + 14-Spalten-Zeile `<DIR>`/Groesse + `N item(s).` (`:223-262`) |
 | `cat/type` | mehrere Dateien, Joker, `\n→\r\n`, Abbruch/Pause (4.1) | eine Datei, 512-Byte-Puffer, schliesst mit `\r\n`, `Cannot open file.` (`:265-293`) |
@@ -72,9 +72,9 @@ laeuft EmuCON nicht sinnvoll), die uebrigen betreffen Umfang und Treue.
   ROM-Einsprung nicht scheitern kann (`gemshlib.c:614-620`). Der Anwender
   sagte: nicht in der Kernelkonsole nachruesten — das entscheidet (a)/(b)
   nicht.
-* **Frage 1b — die Rueckfall-Meldung:** `shell.rs:40-55` schreibt
+* **Frage 1b — die Rueckfall-Meldung:** `kernel/src/shell.rs:40-55` schreibt
   „No desktop: NEWDESK could not be loaded (GEMDOS error N)." in den Schirm
-  unter das Banner; Doku `shell.rs:36-39`: „a machine without a serial cable
+  unter das Banner; Doku `kernel/src/shell.rs:36-39`: „a machine without a serial cable
   still tells its user". EmuCON macht als erstes **`ESC E`** (`cmdmain.c:91`) und
   loescht jede vorherige Kernelausgabe; ein Argument/Tail liest es nicht
   (01 §3). Optionen: (i) Meldung geht nur noch auf Seriell; (ii) EMUCON zeigt
@@ -91,28 +91,28 @@ laeuft EmuCON nicht sinnvoll), die uebrigen betreffen Umfang und Treue.
 
 Befund, keine Entscheidung:
 
-* **`run <datei>`** (`shell.rs:158-175`) = `Pexec(0, pfad)` mit exaktem Namen.
+* **`run <datei>`** (`kernel/src/shell.rs:158-175`) = `Pexec(0, pfad)` mit exaktem Namen.
   EmuCON startet jedes Wort, das kein Befehl ist (03 §6) — mit
   Endungsergaenzung und PATH. Unterschied: `run` nimmt den Dateinamen so,
   wie er ist (jede Endung), EmuCON nur Namen mit Programmendung (D6).
   Frage: weglassen, als Erweiterung behalten (dann gegen `[program exited]`
   und `Cannot run program (error N).`-Texte abwaegen) oder per Alias?
-* **`init`** (`shell.rs:177-194`) = drei `Dcreate`: `C:\ACC`, `C:\AUTO`,
+* **`init`** (`kernel/src/shell.rs:177-194`) = drei `Dcreate`: `C:\ACC`, `C:\AUTO`,
   `C:\GEMSYS`, Meldung je Verzeichnis (`created` / `already exists` /
   `FAILED`). Ist mit `mkdir` dreimal erreichbar. Frage: weglassen / behalten
   (neuer Befehl, nicht in 1:1) / in ein Setup-Programm?
 * **`bench`** (`kernel/src/bench.rs`) benutzt Kerneninterna: TT-RAM-Pool
   (Pufferbeschaffung ausserhalb von `.bss`) und `CNTPCT_EL0`/`CNTFRQ_EL0`
   (`bench.rs:1-30`). Aus EL0 braucht es einen Zeitgeber und `Mxalloc(TT)`
-  (`MXALLOC` ist in `newtos-gem` gebunden, `gemdos.rs:55`); ob EL0
+  (`MXALLOC` ist in `newtos-gem` gebunden, `programs/newtos-gem/src/gemdos.rs:56`); ob EL0
   `CNTPCT_EL0` lesen darf, ist **nicht geprueft**. Frage: weglassen /
   eigenes `.NCP`-Programm (`BENCH.NCP`, Kernel-unabhaengig, kein EmuCON-Befehl) /
   im Kernel lassen und ueber einen anderen Weg erreichbar machen?
-* **`ver`** (`shell.rs:123`, „NewTOS 0.6.1 - clean-room TOS for AArch64") hat
+* **`ver`** (`kernel/src/shell.rs:123`, „NewTOS 0.6.1 - clean-room TOS for AArch64") hat
   in EmuCON **kein** Gegenstueck; `version` zeigt `0.30` (GEMDOS, 4.19).
   Frage: `ver` als zusaetzlicher Befehl? Was zeigt das Banner als
   `<version>` (**D9**)?
-* **`quit`** (`shell.rs:121`): gibt es in EmuCON nicht; `quit` waere ein
+* **`quit`** (`kernel/src/shell.rs:121`): gibt es in EmuCON nicht; `quit` waere ein
   externer Programmname → `file not found`.
 
 ### D3 — VT52-Parser in `Bconout(2)` (Voraussetzung)
@@ -213,16 +213,16 @@ deshalb Frage an den Anwender statt stiller Entscheidung.
 
 (a) Bibliothek `programs/<x>/` + schmaler Binaer-Crate (Muster NEWDESK; erlaubt
 Hosttests der reinen Logik: Tokenizer, Editor-Zustandsmaschine, `fixup_filespec`,
-`decode_date_time`), (b) ein Crate `programs/emucon/`. Die Bindungen
+`decode_date_time`), (b) ein Crate programs/emucon/. Die Bindungen
 (`Pexec`, `Fdup/Fforce`, `Dgetpath`, `Fgetdta`, `Sversion`, BIOS,
-XBIOS-Teile) gehoeren in `newtos-gem` („die einzige Kopie", `lib.rs:7-14`); das
+XBIOS-Teile) gehoeren in `newtos-gem` („die einzige Kopie", `programs/newtos-gem/src/lib.rs:13-16`); das
 ist Entwicklerarbeit und Teil des Tickets, kein Entscheid. Research-Sicht: (a).
 
 ### D9 — Banner-Version
 
 EmuCON zeigt `version[]` (EmuTOS-Versionstext, `cmdmain.c:93`,
 `version.mk:25-40`; `version.mk:40` setzt `VERSION` aus dem Datum). Frage: was
-steht bei NewTOS dort — NewTOS-Version (heute `shell.rs:123` hartkodiert
+steht bei NewTOS dort — NewTOS-Version (heute `kernel/src/shell.rs:123` hartkodiert
 „0.6.1"), der EmuCON2-Name? Der Satzbau `Welcome to EmuCON2 version <v>`
 bleibt, wenn der Name EmuCON2 bleibt.
 

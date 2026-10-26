@@ -282,7 +282,7 @@ and return with no `Vwk` allocated:
    (`:281,289,311`). This matters for the inquiry round-trip (see
    `_discrepancies.md` D-VDI-1 for the marker asymmetry).
 3. **Handle count is `NUM_VDI_HANDLES`** (64 or 128), not 16
-   (`vdi_control.c:25-27`; `config.h:391-393,1660-1662`). Handle 1 is the
+   (`vdi_control.c:25-27`; `include/config.h:391-393,1660-1662`). Handle 1 is the
    physical workstation, so virtual handles run `2..NUM_VDI_HANDLES`.
 4. **`CUR_WORK` is set to `&phys_work` on entry** so it stays valid even
    if the open fails early (`vdi_control.c:417`).
@@ -307,7 +307,7 @@ and return with no `Vwk` allocated:
 
 ## Related data structures
 
-- [`../structures/vwk.md`](../../structures/vwk.md) — the `Vwk` attribute area.
+- [`docs/api/structures/vwk.md`](../../structures/vwk.md) — the `Vwk` attribute area.
 - [`_state.md`](../_state.md) — the `vwk_ptr[]`/`CUR_WORK`/chain model,
   `DEV_TAB`/`SIZ_TAB`/`INQ_TAB` ownership.
 
@@ -376,7 +376,7 @@ and return with no `Vwk` allocated:
 >
 > **Correction (A86, 2026-09-21):** this blockquote and the section below it
 > previously quoted "640×480×16-colour" as "today's staged bring-up
-> geometry", citing a since-removed `framebuffer.rs:23-25` constant pair and
+> geometry", citing a since-removed framebuffer.rs:23-25 constant pair and
 > a `NUM_COLORS=16` that predates the truecolor VDI backend. Both are stale:
 > the live backend defaults to **1920×1080** (`kernel/src/drivers/mod.rs:
 > 31-33`) and reports **256 colours / 16 planes** (`vdi_backend.rs:33,40`),
@@ -485,7 +485,8 @@ logical pens, each an independently settable RGB555-in-565 word
 (`tos-api/src/vdi/attributes.rs:388-418`, `inquiry.rs:93-145`). Index 0 =
 white / 1 = black by seeded convention (`vdi_backend.rs:52-53`), not a
 hard-coded palette — see
-[`raster/_raster.md`'s "Palette" section](../raster/_raster.md#palette--vs_colorvq_color-on-256-truecolor-pens)
+[`docs/api/vdi/raster/_raster.md`'s "Palette" section](../raster/_raster.md#palette--vs_colorvq_color-on-256-truecolor-pens)
+
 for the full citation trail (including the AES `init_3d` dependency on
 `gl_ws.ws_ncolors`).
 
@@ -495,6 +496,6 @@ for the full citation trail (including the AES `init_3d` dependency on
 a larger or smaller negotiated mode flows through automatically once the
 framebuffer reports it. **Correction (A86, 2026-09-21):** this note
 previously said "the fixed 640×480 is only in the driver
-(`framebuffer.rs:23-25`)" — that constant pair no longer exists; the
+(framebuffer.rs:23-25)" — that constant pair no longer exists; the
 geometry is negotiated at boot (`AtomicU32` pair) and defaults to
 **1920×1080** on both boards (`kernel/src/drivers/mod.rs:31-33`).

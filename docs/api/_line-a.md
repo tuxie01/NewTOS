@@ -3,8 +3,8 @@
 > Phase 00 deliverable D10. Captures *what Line-A is*, *which calls
 > exist*, and *which calls AES/VDI actually need*. Implementation is
 > deferred to PHASE-08+ (display) and PHASE-12 (AES/VDI). Source:
-> EmuTOS @ `1a7484ab` — `vdi/lineavars.S`, `vdi/lineainit.c`,
-> `vdi/lineaasm.S`.
+> EmuTOS @ `1a7484ab` — `bios/lineavars.S`, `bios/lineainit.c`,
+> `bios/linea.S`.
 
 ## What Line-A is
 
@@ -55,10 +55,11 @@ the trap, restoring registers per m68k convention.
 
 | File                       | Purpose                                  |
 |----------------------------|------------------------------------------|
-| `vdi/lineavars.S`          | LINEA variables block (16-bit fields)    |
-| `vdi/lineainit.c`          | `linea_init()` populates pointers/fonts  |
-| `vdi/lineaasm.S`           | The 0xA000..0xA00F dispatch entry        |
-| `vdi/vdi_blit.c`           | `bit_blt`, shared with Line-A           |
+| `bios/lineavars.S`         | LINEA variables block (16-bit fields)    |
+| `bios/lineainit.c`         | `linea_init()` populates pointers/fonts  |
+| `bios/linea.S`             | The 0xA000..0xA00F dispatch entry        |
+| `vdi/vdi_blit.S`           | `bit_blt`
+, shared with Line-A           |
 | `vdi/vdi_main.c`           | `init_wk()` — LINEA fields seeded here   |
 | `bios/bios.c:430`          | `linea_init()` called when LINEA enabled |
 

@@ -520,7 +520,8 @@ The *values* are contract (which call returns `MU_BUTTON`, its `EV_BRET` and
      alone, with `EV_MB = 0` (the press is not published yet), and a later
      call gets the gesture. (zView polls with a 20-ms timer and opens a folder
      only on `nb_click == 2 && evnt.mbut == 1`,
-     `catalog/catalog_mouse.c:132`.)
+     `Applications/z-tools/zview/catalog/catalog_mouse.c:132`.)
+
   2. `EV_MB` of that return is `pr_button` = down when the second release fell
      inside the window (two transitions), the live state — down — when the
      second press is held past it (one transition).

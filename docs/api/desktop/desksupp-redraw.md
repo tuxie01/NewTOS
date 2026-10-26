@@ -26,7 +26,8 @@ an indirect vector. It is, however, the terminal step of the AES
   around the draw (avoids the cursor XOR image corrupting the blit)
 - AES: `wind_get_grect(w_handle, WF_FIRSTXYWH/WF_NEXTXYWH, &t)` — the
   **rectangle-list walk**, see below
-- `aes/gemrect.c` (not traced here; already extracted) —
+- `util/rectfunc.c` (not traced here
+; already extracted) —
   `rc_intersect(&clip_r, &t)` — clips the AES-owned rectangle `t` to the
   caller's dirty rectangle `clip_r`, returns whether the result is
   non-empty

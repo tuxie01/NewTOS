@@ -337,7 +337,7 @@ Vorgabewerte am Dateiende:
 
 | Schalter | Wert | Beleg | AES-Folge |
 |---|---|---|---|
-| `CONF_WITH_3D_OBJECTS` | 1 | `config.h:1258-1260` | `objc_sysvar` (48) existiert |
+| `CONF_WITH_3D_OBJECTS` | 1 | `include/config.h:1258-1260` | `objc_sysvar` (48) existiert |
 | `CONF_WITH_MENU_EXTENSION` | 1 | `:1304-1306` | 36–39 existieren; `evnt_multi` maskiert auf `MU_TOSVALID` |
 | `CONF_WITH_WINDOW_COLOURS` | 1 | `:1328-1330` | `WF_COLOR`/`WF_DCOLOR` |
 | `CONF_WITH_GRAF_MOUSE_EXTENSION` | 1 | `:1282-1284` | `M_SAVE`/`M_RESTORE`/`M_PREVIOUS` |

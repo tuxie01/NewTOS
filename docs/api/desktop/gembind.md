@@ -130,7 +130,7 @@ menu `OBJECT` tree, **not a trap**. This is a deliberate optimisation (the
 desktop owns the menu tree outright, so there's no reason to round-trip
 through the AES to change one `LONG` field) and is the **same category of
 finding** as `programs/desktop/src/menu.rs`'s own documented decision to bypass
-`menu_icheck`/`menu_ienable` (`menu.rs:12-23`) — except EmuTOS itself only
+`menu_icheck`/`menu_ienable` (cite stale 2026-10-26: programs/desktop/src/menu.rs:12-23) — except EmuTOS itself only
 applies this shortcut to `menu_text`, and (per the table above) **does** use
 the real `menu_icheck`/`menu_ienable` traps 15+13 times from `men_update()`.
 **Cross-check for the lead:** `programs/desktop/src/menu.rs`'s bypass of
@@ -206,7 +206,7 @@ in `x0`, AESPB in `x1` — the same mechanical pattern as `gembind.c`'s
 `graf_rubberbox`, `graf_dragbox`, `graf_mouse`, `graf_mkstate`,
 `wind_create/open/close/delete/get/set/find/calc`. Per the table above, this
 **does not yet cover**: `appl_init`/`appl_exit`, `menu_icheck`/`menu_ienable`
-(deliberately bypassed per `menu.rs:12-23`, see above), `objc_add`/
+(deliberately bypassed per cite stale 2026-10-26: programs/desktop/src/menu.rs:12-23, see above), `objc_add`/
 `objc_offset`/`objc_order`, `form_dial`/`form_center`/`form_error`,
 `graf_growbox`/`graf_shrinkbox`/`graf_handle`, `fsel_exinput`, `wind_new`/
 `wind_update`, `rsrc_load`/`rsrc_free`/`rsrc_obfix`, `shel_write`/`shel_get`/
@@ -241,8 +241,8 @@ checked**") is now closed for the **GEMDOS/BIOS half** of the call surface.
 
 | Layer | NewTOS file | Mechanism | EmuTOS counterpart |
 |---|---|---|---|
-| aesbind | `programs/newtos-gem/src/aes.rs` (until DESK43 U6b `programs/desktop/src/lib.rs`) | `svc #2`, selector 200 in `x0`, AESPB in `x1` | `desk/gembind.c` (`trap #2`, `d0 = 200`) |
-| dosbind | `programs/newtos-gem/src/gemdos.rs` (until U6b `kernel/src/desk/dosbind.rs`) | `svc #1` (GEMDOS), function id in `x8`, arguments in `x0..x7` in TOS order | `include/gemdos.h` → `include/bdosbind.h` `trap1()` |
+| aesbind | `programs/newtos-gem/src/aes.rs` (until DESK43 U6b kernel/src/desk/mod.rs) | `svc #2`, selector 200 in `x0`, AESPB in `x1` | `desk/gembind.c` (`trap #2`, `d0 = 200`) |
+| dosbind | `programs/newtos-gem/src/gemdos.rs` (until U6b kernel/src/desk/dosbind.rs) | `svc #1` (GEMDOS), function id in `x8`, arguments in `x0..x7` in TOS order | `include/gemdos.h` → `include/bdosbind.h` `trap1()` |
 
 **DESK43 U6b (2026-10-14):** the bindings moved, unchanged in what they put
 into the trap, into the runtime crate `programs/newtos-gem` that native Rust
@@ -297,7 +297,8 @@ EmuTOS's desktop takes **three** things from `xbiosbind.h`, not one:
 
 | EmuTOS call | Site | NewTOS |
 |---|---|---|
-| `Keytbl(-1,-1,-1)` | `deskmain.c:1144`, the Alt-letter drive shortcut | **built** — `newtos_gem::xbios::keytbl` (until U6b `kernel/src/desk/xbiosbind.rs`), `svc #14`, function id 16 |
+| `Keytbl(-1,-1,-1)` | `deskmain.c:1144`, the Alt-letter drive shortcut | **built** — `newtos_gem::xbios::keytbl` (until U6b kernel/src/desk/xbiosbind.rs)
+, `svc #14`, function id 16 |
 | `Supexec(get_idt_cookie)` | `desksupp.c:219`, the `_IDT` cookie | replaced by `dos_getcookie` (`svc #1`), next section |
 | resolution change | `deskrez.c` | not present — the screen mode is fixed by the firmware |
 

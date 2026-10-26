@@ -28,7 +28,7 @@ Reihenfolge:
    `.ds.l 1024` `:117-118`).
 3. `Mshrink(0, basepage, tlen+dlen+blen+256)` (`:28-37`, GEMDOS 74): bei
    ROM-Start sind `tlen/dlen/blen` null (`bdos/proc.c:370`, `bzero` in
-   `init_pd_fields`; im Weg B zusaetzlich explizit `bios.c:841`), also bleibt
+   `init_pd_fields`; im Weg B zusaetzlich explizit `bios/bios.c:841`), also bleibt
    nur die Basepage (256 Byte, **Schluss**: `sizeof(PD)`) — der Rest des TPA
    wird frei und dient spaeter `Malloc` (Verlauf, Datei-Puffer).
 4. `environment = basepage->p_env` (`:39-44`, Offset **44**; `p_env` ist an
@@ -65,7 +65,7 @@ um jeden Trap, weil „jemand den Trap abfangen und sie zerstoeren" koennte
   = Kopie der **eigenen** Umgebung von EmuCON (`cmdexec.c:52`, `bdos/proc.c:413-432`).
 * Standard-Handles: 0/1/2 aus dem Elternprozess geerbt
   (`bdos/proc.c:387-409` `init_pd_files`). Aktuelles Laufwerk/Verzeichnis:
-  ebenfalls vom Eltern-`run` kopiert (`proc.c:399-409`); beim Desktop-Weg A
+  ebenfalls vom Eltern-`run` kopiert (`bdos/proc.c:399-409`); beim Desktop-Weg A
   hat der Desktop es zuvor per `shel_wdef("", <Pfad des obersten Fensters>)`
   gesetzt (`desk/deskmain.c:756-768`, nur `CONF_WITH_PCGEM`) und `sh_chdef`
   macht daraus `set_drvdir(psh->sh_cdir)` (`aes/gemshlib.c:545-549`).
@@ -119,19 +119,19 @@ unter dem Namen des Vorgaengers (so auch dokumentiert in
 
 Weg B (Frueh-Konsole): nach `Pterm0` laeuft `autoexec()` weiter
 (`bios/bios.c:846`). Weg C: kein Desktop, `exec_os`-Rueckkehr →
-`shutdown()`/„System halted!" (`bios.c:868-876`).
+`shutdown()`/„System halted!" (`bios/bios.c:868-876`).
 
 ## 6. Der NewTOS-Ist-Zustand (gelesen)
 
 | Aspekt | NewTOS heute | Beleg |
 |---|---|---|
-| Wo | **EL1, im Kernel**, kein Prozess; `repl()` in `kernel/src/shell.rs` | `shell.rs:26-31,57-66` |
-| PD | Stellvertreter-PD `standin::enter_emucon()`/`leave_emucon()` (PROC03 Stufe 1): waehrend der Konsole ist er `run`; ein von `run` gestartetes Programm hat ihn als `p_parent` | `shell.rs:19-30`, `tos-api/src/bdos/process/standin.rs:445-465` (`enter_emucon` `:452`), `kernel/src/lib.rs:488-503` |
+| Wo | **EL1, im Kernel**, kein Prozess; `repl()` in `kernel/src/shell.rs` | `kernel/src/shell.rs:26-31,57-66` |
+| PD | Stellvertreter-PD `standin::enter_emucon()`/`leave_emucon()` (PROC03 Stufe 1): waehrend der Konsole ist er `run`; ein von `run` gestartetes Programm hat ihn als `p_parent` | `kernel/src/shell.rs:19-30`, `tos-api/src/bdos/process/standin.rs:445-465` (`enter_emucon` `:452`), `kernel/src/lib.rs:488-503` |
 | Start | `run_console_arm()` im CONSOLE-Arm von `sh_ldapp` (`crate::shell::run_console()` + `set_default_desktop()`) — **ohne** `Pexec` | `kernel/src/shell_loop.rs:465-466,579-583` |
-| Rueckfall | NEWDESK nicht ladbar → `run_console_instead_of_desktop(rc)`: `sh_isgem=false`, `sh_chgrf()`, `run_console_without_desktop` (Banner + „No desktop: NEWDESK could not be loaded (GEMDOS error N)."), dann `set_default_desktop()`; ein Neuversuch findet nicht statt (D6-c) | `shell_loop.rs:399-411,439-446,565-571`, `shell.rs:40-55`, ADR-026 Pkt. 4 |
-| Kein Bildschirm | DESKTOP-Arm faellt in die Konsole | `shell_loop.rs:393-399` |
+| Rueckfall | NEWDESK nicht ladbar → `run_console_instead_of_desktop(rc)`: `sh_isgem=false`, `sh_chgrf()`, `run_console_without_desktop` (Banner + „No desktop: NEWDESK could not be loaded (GEMDOS error N)."), dann `set_default_desktop()`; ein Neuversuch findet nicht statt (D6-c) | `kernel/src/shell_loop.rs:453-465,493-500,619-625`, `kernel/src/shell.rs:40-55`, ADR-026 Pkt. 4 |
+| Kein Bildschirm | DESKTOP-Arm faellt in die Konsole | `kernel/src/shell_loop.rs:447-453` |
 | Frueh-Konsole (Esc) | nicht verdrahtet: kein Verbraucher fuer `BOOTFLAG_EARLY_CLI` | `kernel/src/initinfo.rs:535-538` |
-| Eingabe/Ausgabe | `Cnecin`/`Cconout` per `svc #1` im Kernel | `shell.rs:333-342` |
+| Eingabe/Ausgabe | `Cnecin`/`Cconout` per `svc #1` im Kernel | `kernel/src/shell.rs:333-342` |
 
 **EL0-Muster (ADR-026, NEWDESK), das EmuCON uebernehmen soll — gelesen:**
 
@@ -160,7 +160,7 @@ Weg B (Frueh-Konsole): nach `Pterm0` laeuft `autoexec()` weiter
 * Der Registry-Name des Desktops ist `DEF_DESKTOP`; der der Konsole steht
   schon da: `DEF_CONSOLE = b"EMUCON"` (`tos-api/src/aes/shell.rs:67-71`), und
   der Desktop schickt ihn bereits (`programs/desktop/src/pro.rs:21-24`,
-  `main.rs:1612-1660`). `sh_write` setzt `CONSOLE_APP` bei diesem Namen
+  `programs/desktop/src/main.rs:1612-1660`). `sh_write` setzt `CONSOLE_APP` bei diesem Namen
   (`tos-api/src/aes/shell.rs:521-524`).
 
 Folgerungen (**Schluss**, im Bau zu bestaetigen): Als echter EL0-Prozess hat

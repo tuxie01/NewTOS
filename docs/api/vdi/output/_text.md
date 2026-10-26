@@ -60,7 +60,7 @@ distinction from GDP sub-op 10).
 parameters.
 
 **Build configuration:**
-- `CONF_WITH_VDI_TEXT_SPEEDUP` (default **1**, `config.h:1636-1638`) enables
+- `CONF_WITH_VDI_TEXT_SPEEDUP` (default **1**, `include/config.h:1636-1638`) enables
   a direct-blit fast path (`ok_for_direct_blit`, `vdi_text.c:227`) taken
   only when there are no effects, no rotation, and left alignment. A pure
   raster optimisation — **reference**, no observable effect on the output.

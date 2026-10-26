@@ -213,11 +213,12 @@ nothing feeds `set_state` yet. Full `vq_mouse` contract:
   controller. Its report `[buttons, dx, dy, wheel]` (byte 0 buttons: bit0
   left, bit1 right, bit2 middle; bytes 1/2 signed dx/dy) is polled by
   `kernel/src/drivers/usb/mod.rs::poll` (`:136-143`) and converted by
-  `kernel/src/drivers/usb/hid.rs::mouse_report` (`:106-112`) into the exact
+  `kernel/src/drivers/usb/hid.rs::mouse_report` (`kernel/src/drivers/usb/hid.rs:66-71`, `kernel/src/drivers/usb/hid_decode.rs:139-145`) into the exact
   IKBD relative-mouse packet `[0xF8|wire, dx, dy]`, which it pushes byte by
   byte through `kernel/src/ikbd.rs::feed`.
 - **The double button swap (verify the chain).** USB byte-0 is `bit0 = left,
-  bit1 = right`. `hid.rs:108` swaps it into **IKBD wire order** `bit0 =
+  bit1 = right`. `kernel/src/drivers/usb/hid_decode.rs:140` swaps it
+ into **IKBD wire order** `bit0 =
   right, bit1 = left` (`wire = ((usb&1)<<1) | ((usb&2)>>1)`). Then
   `ikbd.rs:98-104` swaps wire→VDI (`gem = ((wire>>1)&1) | ((wire&1)<<1)`) so
   `MOUSE_BT` ends `bit0 = left, bit1 = right`. The two swaps compose to
@@ -233,7 +234,8 @@ nothing feeds `set_state` yet. Full `vq_mouse` contract:
   height-1]` from the live `RasterBackend` — the `scrn_clip` equivalent, with
   screen bounds from the framebuffer, not a hard-coded resolution.
 - **Y direction.** USB `+dy = down` is passed through unchanged
-  (`hid.rs:111`) and added directly to `GCURY`, so `+dy` moves the cursor
+  (`kernel/src/drivers/usb/hid_decode.rs:143`) and added
+ directly to `GCURY`, so `+dy` moves the cursor
   down — the EmuTOS relative-mode / `IN_YBOT` behaviour. No inversion is
   applied.
 - **Correction to the doc's premise.** The preamble/notes above say the IKBD

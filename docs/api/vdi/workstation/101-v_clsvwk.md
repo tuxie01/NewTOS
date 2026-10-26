@@ -99,7 +99,7 @@ mode). Inputs/outputs: 0/0/0/0.
 
 ## Related data structures
 
-- [`../structures/vwk.md`](../../structures/vwk.md) — the `Vwk` being freed.
+- [`docs/api/structures/vwk.md`](../../structures/vwk.md) — the `Vwk` being freed.
 - [`_state.md`](../_state.md) — the `vwk_ptr[]`/`CUR_WORK`/chain model.
 
 ## NewTOS implementation notes (Phase 12)

@@ -124,14 +124,14 @@ called out per-entry below; both default **on** in the general/Atari
 build (the one NewTOS should follow — not the ROM-constrained
 `TARGET_192` build):
 
-- **`CONF_WITH_SIZE_TO_FIT`** (`config.h:1850-1852`, default `1`; forced to
-  `0` only under `TARGET_192`, `config.h:334-336`, a 192 KB-ROM ST-only
+- **`CONF_WITH_SIZE_TO_FIT`** (`include/config.h:1850-1852`, default `1`; forced to
+  `0` only under `TARGET_192`, `include/config.h:334-336`, a 192 KB-ROM ST-only
   build that strips advanced features for space). Changes `win_ocalc`'s
   virtual-column calculation, `win_bldview`'s horizontal-fit/skip logic,
   and adds the horizontal slider math. NewTOS should extract the
   `CONF_WITH_SIZE_TO_FIT=1` variant (full behaviour).
-- **`CONF_WITH_BACKGROUNDS`** (`config.h:1747-1749`, default `1`; forced to
-  `0` under `TARGET_192`, `config.h:328-330`). Changes `set_background()`'s
+- **`CONF_WITH_BACKGROUNDS`** (`include/config.h:1747-1749`, default `1`; forced to
+  `0` under `TARGET_192`, `include/config.h:328-330`). Changes `set_background()`'s
   `ob_spec` value and `INITIAL_ICON_STATE` (`deskwin.c:57-61`: `0` vs
   `WHITEBAK`, i.e. whether icon backgrounds are hard-coded white or
   configurable — this `INITIAL_ICON_STATE` detail is new in this

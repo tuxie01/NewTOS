@@ -3,8 +3,8 @@
 > Evidence base for **ADR-016** (`docs/MEMORY.md`) — the ground-up desktop
 > rebuild decision. Produced by the Researcher role per the team-lead's
 > Task #2, Part B. Method: read the **entire** current implementation —
-> `programs/desktop/srctop.rs` (2330 lines) and `programs/desktop/srctop_icons.rs`
-> (442 lines) — line by line, then compared each mechanism against the
+> kernel/src/desktop.rs (2330 lines) and kernel/src/desktop_icons.rs
+> (442 lines; both removed in ee84dd42) — line by line, then compared each mechanism against the
 > matching EmuTOS `desk/` source (primarily `deskmain.c`, `desksupp.c`,
 > `deskwin.c`, `deskapp.c`, `deskfpd.c`) and, where relevant, the AES layer
 > the desktop sits on (`tos-api/src/aes/window.rs`, which **already**
@@ -25,8 +25,8 @@
 > **STOP-flag on "residue":** for the specific symptom "view switch
 > (text↔icon) leaves a residuum," I could not identify a single-window,
 > non-overlapping-window code path that leaves stale pixels — the
-> erase-then-redraw sequence (`draw_dir_listing`, `programs/desktop/srctop.rs:
-> 2060-2105`) unconditionally whites out the **entire current work rect**
+> erase-then-redraw sequence (`draw_dir_listing`,
+> cite stale 2026-10-26: kernel/src/desktop.rs:2060-2105) unconditionally whites out the **entire current work rect**
 > before redrawing, for both view modes. My best-evidenced explanation is
 > that the symptom is an **instance of D2** (no occlusion-aware clipping —
 > see below): the residue appears whenever the switched window overlaps
@@ -45,7 +45,7 @@
 ### D1 — CRITICAL — Icon-view label box: shrink-to-fit + wrong font metric (the 8.3 label-overlap bug)
 
 **What NewTOS does:**
-- `label_box(chars, cell_w)` (`programs/desktop/srctop.rs:505-509`) computes the
+- `label_box(chars, cell_w)` (cite stale 2026-10-26: kernel/src/desktop.rs:505-509) computes the
   label's pixel width as `tw = (chars*cw + 4).clamp(cw, cell_w)` — **it
   shrinks the label box to the actual name length** and centres it, rather
   than always using the full cell width. The function's own doc comment
@@ -53,17 +53,17 @@
   background fills `ib_wtext`, so sizing it to the text (rather than the
   whole cell) keeps the white box tight under short names... EmuTOS uses a
   fixed `MAX_ICONTEXT_WIDTH` box, which reads as an over-long white bar on
-  NewTOS' coloured background"* (`programs/desktop/srctop.rs:499-504`).
+  NewTOS' coloured background"* (cite stale 2026-10-26: kernel/src/desktop.rs:499-504).
 - For the **longest** 8.3 names (12 characters — exactly the test data the
   team added in commit `4c47566`, "populate with representative 12-char
   8.3 filenames"), `chars=12, cw=8` ⇒ `12*8+4 = 100`, which the `.clamp(cw,
   cell_w)` **clamps down to `cell_w`** (96, `ICON_LABEL_W = 12 *
-  tos_api::vdi::font::CELL_W`, `programs/desktop/srctop.rs:2198`). The "+4 px
+  tos_api::vdi::font::CELL_W`, (cite stale 2026-10-26: kernel/src/desktop.rs:2198)). The "+4 px
   margin" the comment promises is **silently discarded exactly for the
   longest names** — the one case that most needs it — leaving `ib_xtext =
   (96-96)/2 = 0`: **zero margin** between the label box and its own
   96-px-wide cell edge. The only remaining breathing room is
-  `ICON_GAP_W = 8` (`programs/desktop/srctop.rs:2199`) between *cells*, not
+  `ICON_GAP_W = 8` (cite stale 2026-10-26: kernel/src/desktop.rs:2199) between *cells*, not
   within one.
 - The width unit itself (`tos_api::vdi::font::CELL_W = 8`,
   `tos-api/src/vdi/font.rs:11`) is a single, hardcoded, resolution- and
@@ -110,7 +110,7 @@ would need to fix two independent things to match EmuTOS, not one.
 ### D2 — CRITICAL — Redraw has no occlusion-aware damage-rect list; "handle order, full-screen clip" only works for exactly 2 windows
 
 **What NewTOS does:**
-- `redraw_win(handle)` (`programs/desktop/srctop.rs:1255-1269`) →
+- `redraw_win(handle)` (cite stale 2026-10-26: kernel/src/desktop.rs:1255-1269) →
   `draw_dir_listing(...)` (`:2060-2105`) erases and repaints using **the
   window's own tracked rect**, clipped only against
   `ClipRect::full(backend.width(), backend.height())` (`:2064`) — i.e. **no
@@ -121,15 +121,15 @@ would need to fix two independent things to match EmuTOS, not one.
   `DESK_TOP` handle **last**. The function's own comment admits the limit:
   *"Full z-ordered, rectangle-list clipping per window is a follow-up;
   handle order suffices until windows deeply overlap"*
-  (`programs/desktop/srctop.rs:1884-1886`).
+  (cite stale 2026-10-26: kernel/src/desktop.rs:1884-1886).
 - There is exactly **one** tracked "top" handle (`DESK_TOP`,
-  `programs/desktop/srctop.rs:1356`) — no ordered list of the other N-1 windows'
+  (cite stale 2026-10-26: kernel/src/desktop.rs:1356)) — no ordered list of the other N-1 windows'
   relative stacking. Two non-top windows that overlap each other are
   therefore drawn in **handle-number order**, which has no necessary
   relationship to which one a user last interacted with.
 - `WM_REDRAW`'s own message payload — the AES-supplied damage rectangle at
   `msg[4..8]` — is **read only for the handle** (`msg[3]`,
-  `programs/desktop/srctop.rs:839`, `WM_REDRAW => redraw_win(msg[3])`); the
+  (cite stale 2026-10-26: kernel/src/desktop.rs:839), `WM_REDRAW => redraw_win(msg[3])`); the
   rectangle itself is **never consulted**.
 
 **What EmuTOS does:**
@@ -180,20 +180,20 @@ limitation in the current code's own comments.
 ### D3 — CRITICAL — No per-click window resolution; all interaction hardwired to the single tracked "top" window
 
 **What NewTOS does:**
-- The button-event path in `step()` (`programs/desktop/srctop.rs:849-877`) and
+- The button-event path in `step()` (cite stale 2026-10-26: kernel/src/desktop.rs:849-877) and
   every selection/action helper (`select_at`, `:1943-1962`;
   `resolve_selection`, `:1437-1453`; `delete_selected`, `open_selected`,
   `info_rename`, `size_to_fit`, `new_folder`, `close_top_window`) resolve
   the target window exclusively through the tracked `DESK_TOP` global
   (`:1356`) — **never** through the click's screen coordinates.
 - `grep -n "wind_find\|desk_verify\|g_cwin\|g_croot\|desk_clear"
-  programs/desktop/srctop.rs` returns **zero matches** — none of EmuTOS's
+  kernel/src/desktop.rs` returns **zero matches** — none of EmuTOS's
   current-window state machine exists in the current code at all.
 - `select_at(mx, my)` (`:1943-1962`) reads `DESK_TOP`'s rect and returns
   `false` (click not consumed) if `(mx,my)` falls outside it — so a click
   inside a **different, visible-but-not-topped** window's work area is
   simply **ignored** (falls through to `wait_release()`,
-  `programs/desktop/srctop.rs:872-874`): no selection, no top change, no
+  (cite stale 2026-10-26: kernel/src/desktop.rs:872-874)): no selection, no top change, no
   action.
 
 **What EmuTOS does:**
@@ -228,13 +228,13 @@ concerns.
 ### D4 — CRITICAL — Keyboard input is dead: `MU_KEYBD` requested, never dispatched
 
 **What NewTOS does:**
-- `step()` (`programs/desktop/srctop.rs:796-877`) requests `MU_KEYBD |
+- `step()` (cite stale 2026-10-26: kernel/src/desktop.rs:796-877) requests `MU_KEYBD |
   MU_BUTTON | MU_MESAG` from `evnt_multi` (`:801`), but the function body
   only branches on `fired & MU_MESAG` (`:809`) and `fired & MU_BUTTON`
   (`:849`) — **there is no `if fired & MU_KEYBD` branch anywhere in the
   file** (confirmed by grep: `MU_KEYBD`, `kret`, `hndl_kbd`,
   `check_arrow_key`, `check_function_key` do not otherwise appear in
-  `programs/desktop/srctop.rs`). The AES-returned keyboard character/scancode
+  kernel/src/desktop.rs). The AES-returned keyboard character/scancode
   (what EmuTOS calls `kret`) is computed by the AES call but never read
   out of `a.intout[...]`.
 
@@ -265,16 +265,16 @@ verified by grep, not a subtle divergence.
 ### D5 — HIGH — View switch (icon↔text) silently reinterprets the scroll offset in different units
 
 **What NewTOS does:**
-- The per-window scroll offset (`WinInfo.scroll`, `programs/desktop/srctop.rs:
-  1757-1759`) is a single `i16`, shared verbatim between both view modes.
+- The per-window scroll offset (`WinInfo.scroll`,
+  cite stale 2026-10-26: kernel/src/desktop.rs:1757-1759) is a single `i16`, shared verbatim between both view modes.
 - In **text** mode, one scroll unit = one **file**:
   `let start = scroll as usize;` (`build_dir_text`,
-  `programs/desktop/srctop.rs:2134`).
+  (cite stale 2026-10-26: kernel/src/desktop.rs:2134)).
 - In **icon** mode, one scroll unit = one **row of `cols` files**:
   `let start = scroll as usize * cols as usize;` (`build_dir_icons`,
-  `programs/desktop/srctop.rs:2273`; `find_entry_at` uses the identical `* cols`
+  (cite stale 2026-10-26: kernel/src/desktop.rs:2273); `find_entry_at` uses the identical `* cols`
   reinterpretation at `:2047-2048`).
-- `set_view(mode)` (`programs/desktop/srctop.rs:1970-1974`) flips
+- `set_view(mode)` (cite stale 2026-10-26: kernel/src/desktop.rs:1970-1974) flips
   `VIEW_MODE` and calls `redraw_all_windows()` — **it does not touch or
   convert any window's stored `scroll` value.** A window scrolled to, say,
   `scroll=8` in text mode (skip 8 files) is silently reinterpreted as
@@ -282,7 +282,7 @@ verified by grep, not a subtle divergence.
   instant the user switches to icon view — an entirely different, and for
   most directories out-of-range, position (silently clamped by
   `draw_dir_listing`'s `scroll.max(0).min((total_rows-vis_rows).max(0))`,
-  `programs/desktop/srctop.rs:2075`/`2032`, to *some* valid value, but not the
+  (cite stale 2026-10-26: kernel/src/desktop.rs:2075,2032), to *some* valid value, but not the
   visually-corresponding one).
 
 **What EmuTOS does:**
@@ -304,9 +304,9 @@ view-switch "residue" symptom (see the file-level STOP-flag above).
 ### D6 — HIGH — No `men_update` equivalent: menu items are never enabled/disabled/checked by desktop state
 
 **What NewTOS does:**
-- `DISABLED` (`programs/desktop/srctop.rs:33`) is applied **exactly once**, at
+- `DISABLED` (cite stale 2026-10-26: kernel/src/desktop.rs:33) is applied **exactly once**, at
   static menu-tree build time, to separator strings only
-  (`programs/desktop/srctop.rs:730`, inside `build_menu()`). Grepping the whole
+  (cite stale 2026-10-26: kernel/src/desktop.rs:730, inside `build_menu()`). Grepping the whole
   file for `DISABLED`/`ob_state` confirms **no other location ever
   toggles it** — there is no runtime graying logic at all. "Close top
   window" is clickable with zero windows open; "Delete" is clickable with
@@ -341,15 +341,15 @@ reimplementation" per ADR-016's own charter.
 **What NewTOS does:** the drive-icon/trash grid geometry (`icw=80,
 ich=64, xcnt = (sw-20)/icw`, cell centring math) is written out
 **independently, three times**:
-1. `draw_desktop_icons` (`programs/desktop/srctop.rs:557-618`, the renderer),
-2. `drive_at` (`programs/desktop/srctop.rs:1662-1682`, the drive-icon hit-test),
-3. `trash_at` (`programs/desktop/srctop.rs:1708-1715`, the trash hit-test).
+1. `draw_desktop_icons` (cite stale 2026-10-26: kernel/src/desktop.rs:557-618, the renderer),
+2. `drive_at` (cite stale 2026-10-26: kernel/src/desktop.rs:1662-1682, the drive-icon hit-test),
+3. `trash_at` (cite stale 2026-10-26: kernel/src/desktop.rs:1708-1715, the trash hit-test).
 
 Nothing enforces these three formulas stay in sync; the exact bug class
 the recent `af426a0` grid-metric fix had to touch (rendering metrics) is
 only *half* of the geometry — the hit-test copies were a separate edit
 surface. (By contrast, the **directory-window** content hit-test,
-`find_entry_at`, `programs/desktop/srctop.rs:2021-2054`, correctly rebuilds the
+`find_entry_at`, (cite stale 2026-10-26: kernel/src/desktop.rs:2021-2054), correctly rebuilds the
 **same** object tree the renderer draws and hit-tests it via `objc_find`
 — no drift risk there; this defect is scoped to the desktop-surface
 fixtures only.)
@@ -371,7 +371,7 @@ clickable where they visually appear.
 ### D8 — MEDIUM — `WM_REDRAW`'s AES-supplied rectangle is parsed but discarded
 
 **What NewTOS does:** `WM_REDRAW => redraw_win(msg[3])`
-(`programs/desktop/srctop.rs:839`) — only `msg[3]` (the handle) is used;
+(cite stale 2026-10-26: kernel/src/desktop.rs:839) — only `msg[3]` (the handle) is used;
 `msg[4..8]` (x, y, w, h — the exact damage rectangle the AES computed) is
 never read.
 
@@ -390,10 +390,10 @@ architecture question.
 ### D9 — MEDIUM — Fixed 64-entry directory-listing buffers silently truncate large directories
 
 **What NewTOS does:** every directory scan (`list_sorted`,
-`programs/desktop/srctop.rs:1979-1985`; `resolve_selection`, `set_win_info`,
+(cite stale 2026-10-26: kernel/src/desktop.rs:1979-1985); `resolve_selection`, `set_win_info`,
 `find_entry_at`, `draw_dir_listing`) uses a **fixed-size stack array**
 (`[tos_api::bdos::fs::find::DirInfo::default(); 64]`, `DIR_MAX: usize =
-64`, `programs/desktop/srctop.rs:2207`) — a directory with more than 64 entries
+64`, (cite stale 2026-10-26: kernel/src/desktop.rs:2207)) — a directory with more than 64 entries
 has its remainder **silently dropped** from every listing, sort, count,
 and selection; there is no error, warning, or scroll-beyond-the-cap
 behaviour.
@@ -413,7 +413,7 @@ image but not on the small `SD-image` test fixtures currently in use.
 ### D10 — LOW — Menu drop-down geometry is an ad hoc guess, not EmuTOS's measure-and-shrink-to-fit algorithm
 
 **What NewTOS does:** drop-down box width is `iw = maxlen * 8 + 2 * 8 + 6`
-(`programs/desktop/srctop.rs:715-719`) — a fixed padding constant with no
+(cite stale 2026-10-26: kernel/src/desktop.rs:715-719) — a fixed padding constant with no
 overflow handling if the computed width would exceed the screen.
 
 **What EmuTOS does:** `adjust_menu()` (`deskmain.c:1511-1641`) measures
@@ -435,12 +435,12 @@ handling) at lower present impact.
 
 ### D11 — LOW — No busy-cursor (`desk_busy_on`/`desk_busy_off`) equivalent
 
-**What NewTOS does:** grepping `programs/desktop/srctop.rs` for `busy`/
+**What NewTOS does:** grepping kernel/src/desktop.rs for `busy`/
 `HGLASS`/`graf_mouse` returns no matches — no operation (delete, save,
 directory rebuild) shows a busy/hourglass cursor.
 
 **What EmuTOS does:** `desk_busy_on()`/`desk_busy_off()`
-(`desksupp.c:1840-1857`, `graf_mouse(HGLASS/ARROW, NULL)`) bracket every
+(`desk/desksupp.c:1840-1852`, `graf_mouse(HGLASS/ARROW, NULL)`) bracket every
 slow operation (`deskmain.c:440`/`446` in `desk_all`; `file_exists`,
 `desksupp.c:360-370`; the startup sequence, `deskmain.c:1963-1964`,
 `2074`).

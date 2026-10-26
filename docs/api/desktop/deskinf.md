@@ -159,7 +159,7 @@ assigned here).
   `g_ctimeform`/`g_cdateform` — by `inf_pref` on OK
 - `G.g_appdir`/`g_fullpath` (`CONF_WITH_DESKTOP_CONFIG`) — by `inf_conf`
   on OK
-- `G.g_screen[DROOT/DROOT+1].ob_spec`, `G.g_patcol[index]` — by
+- `G.g_screen[DROOT].ob_spec`/`G.g_screen[DROOT+1].ob_spec`, `G.g_patcol[index]` — by
   `inf_backgrounds` on OK (`CONF_WITH_BACKGROUNDS`)
 - `menu_shortcuts[]` (`deskmain.h`, not `G`) — by `save_shortcut`/
   `inf_conf` (`CONF_WITH_DESKTOP_CONFIG`)
@@ -1252,7 +1252,7 @@ The same colour word is the one every `desk_rs_tedinfo` entry uses
 the template is what shows the field's extent on the flat grey panel. NewTOS's
 fields are plain `G_BOXTEXT` with an empty template, so `te_thickness = 1` is
 kept: without it the field would be grey-on-grey and invisible. Measured:
-`screendumps/mask-C-mask.png` / `zoom-field.png` — a 1-px black frame around the
+`measurements/measurement-2026-09-24-desk01b/screendumps/mask-C-mask.png` / `zoom-field.png` — a 1-px black frame around the
 `backgrcol` interior with the text and caret inside.
 
 ### 3. Geometry the 3D grow required
@@ -1551,12 +1551,12 @@ icons and associations; NewTOS splits those two, so the walk is over
 
 Measured 2026-09-23 (`measurements/measurement-2026-09-23-desk19-desk20/`): after installing
 `C:\CMDLINE.NCP` with key 7, the panel reads `F7  C:\CMDLINE.NCP______`
-(`screendumps/d20-funkey-d-conf.png`).
+(`measurements/measurement-2026-09-23-desk19-desk20/screendumps/d20-funkey-d-conf.png`).
 
 ### Free RAM
 
 `dos_avail_stram()` / `dos_avail_altram()` = `Mxalloc(-1, MX_STRAM|MX_TTRAM)`
-(`util/gemdos.c:100-113`), new bindings in `kernel/src/desk/dosbind.rs`. EmuTOS
+(`util/gemdos.c:100-113`), new bindings in `programs/newtos-gem/src/gemdos.rs` (until DESK43 U6b kernel/src/desk/dosbind.rs). EmuTOS
 gates the second term on `has_alt_ram`; NewTOS gates it on a non-zero return,
 which is the same condition one step later (`pmdalt` null ⇒ 0).
 
@@ -1802,7 +1802,8 @@ anything reads them again.
 ### Measured (DESK42)
 
 `measurements/measurement-2026-09-25-desk42/`. Both trees dumped object by object at run
-time (`serial/dlg-dumps.txt`) and screendumped: `ADDISKIN` on the C: drive,
+time (`measurements/measurement-2026-09-25-desk42/serial/dlg-dumps.txt`) and
+ screendumped: `ADDISKIN` on the C: drive,
 `ADFFINFO` for `C:\README.TXT` (FILE INFORMATION) and for `C:\SUB` (FOLDER
 INFORMATION, 3 files / 0 folders / 6059 bytes), the Read-Only switch read back
 off the card (`attr` 0x20 → 0x21), and the `STRENAME` *Retry* bringing the same

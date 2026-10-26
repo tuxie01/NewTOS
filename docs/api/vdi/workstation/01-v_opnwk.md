@@ -162,7 +162,7 @@ allocation and no free-handle scan; the physical handle is fixed).
 
 ## Related data structures
 
-- [`../structures/vwk.md`](../../structures/vwk.md) — `phys_work` layout.
+- [`docs/api/structures/vwk.md`](../../structures/vwk.md) — `phys_work` layout.
 - [`_state.md`](../_state.md) — `DEV_TAB`/`INQ_TAB`/`SIZ_TAB` ownership,
   the physical-workstation handle.
 

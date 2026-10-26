@@ -178,6 +178,6 @@ nicht stillschweigend „berichtigt":
   **OFFEN** — `kernel/src/keymap.rs` wurde nicht auf diese Codes geprueft.
 * Blockiert `Bconin(2)` aus EL0 so, dass die Eingabe (USB/IKBD) weiter
   gepollt wird? **OFFEN** (heutige Konsole nutzt `Cnecin` im Kernel,
-  `shell.rs:333-338`; `docs/api/bios/02-bconin.md` nicht auf dieses Detail
+  `kernel/src/shell.rs:333-338`; `docs/api/bios/02-bconin.md` nicht auf dieses Detail
   geprueft).
 * Die Zeilenbreite haengt an `screen_cols` (siehe 05 §4).

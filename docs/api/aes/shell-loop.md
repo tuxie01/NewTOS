@@ -12,7 +12,8 @@
 > file documents what happens on the far side of `shel_write`, not the
 > opcode ABI itself, which is unchanged).
 >
-> **Contract vs. reference** — see [`docs/COMPATIBILITY.md`](../COMPATIBILITY.md).
+> **Contract vs. reference** — see [`docs/COMPATIBILITY.md`](../../COMPATIBILITY.md)
+.
 > Each section below is marked. Short version: the *numbers and values* an
 > application can read back (`ap_id`, `ap_private`, the effect of
 > `shel_write`/`shel_find`, the window/alpha-graphic state a launched program

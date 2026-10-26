@@ -317,8 +317,8 @@ Kartenlatenz passte nicht mehr hinein.
      ist **endgueltig verloren**.
    * `cache::write()` gibt **immer** `true` zurueck (`:118`).
 5. Alle **neun** Aufrufstellen von `cache::flush()` verwerfen den
-   Rueckgabewert (`fs/file.rs:273,446,556,679,782,865,914`,
-   `fs/dirops.rs:102,152`) — maschinell geprueft.
+   Rueckgabewert (cite stale 2026-10-26: tos-api/src/bdos/fs/file.rs:273,446,556,679,782,865,914,
+   tos-api/src/bdos/fs/dirops.rs:102,152) — maschinell geprueft.
 6. `EWRITF`/`EREADF` kommen in ganz `tos-api/src` **nur** in
    `bios/mod.rs:200,202` vor, also ausschliesslich im `Rwabs`-Pfad. Der
    GEMDOS-Dateipfad hat keinen Weg, einen Geraetefehler zu melden.
@@ -327,7 +327,7 @@ Kartenlatenz passte nicht mehr hinein.
 > auch wenn kein einziger Sektor angekommen ist.
 
 **Und es ist in Block 2 passiert, nachweisbar.** Die Sonde umschliesst
-jede Warteschleife einzeln (`method/fs04-gesture-r2.diff`), `add()` zaehlt
+jede Warteschleife einzeln (`measurements/measurement-2026-09-25-fs04/method/fs04-gesture-r2.diff`), `add()` zaehlt
 bedingungslos hoch, der Gesamtzaehler `dev.write_one` wird aber erst **nach**
 der letzten Warteschleife gesetzt. Auszaehlung aller 14 Bloecke:
 
@@ -581,7 +581,7 @@ Note empfiehlt dem Host **ueber 500 ms** Timeout.
 * **Unser Code:** `kernel/src/host_env.rs:401-404` (`BlockError` → `bool`);
   `cache.rs:104-119` (`write()` gibt **immer** `true` zurueck);
   alle **neun** Aufrufstellen von `cache::flush()` verwerfen das Ergebnis
-  (`fs/file.rs:273,446,556,679,782,865,914`, `fs/dirops.rs:102,152`).
+  (cite stale 2026-10-26: tos-api/src/bdos/fs/file.rs:273,446,556,679,782,865,914, tos-api/src/bdos/fs/dirops.rs:102,152).
   `EWRITF`/`EREADF` kommen in `tos-api/src` ausschliesslich in
   `bios/mod.rs:200,202` vor.
 * **Fehlerfall:** `Fwrite` liefert die volle Byte-Zahl zurueck, `Fclose`
@@ -689,7 +689,8 @@ Note empfiehlt dem Host **ueber 500 ms** Timeout.
 * **Kein DMA, keine IRQ:** kostet CPU-Zeit waehrend des Wartens, aendert an
   der Kartenlatenz nichts. Fuer FS04 ohne Wirkung.
 * **Neuinitialisierung je Zugriff:** findet **nicht** statt (`emmc::init`
-  idempotent `:372-374`, `bios::mount()` nur im Bootpfad `lib.rs:308`).
+  idempotent `:372-374`, `bios::mount()` nur im Bootpfad `kernel/src/lib.rs:397`)
+.
   Damit ist ein Verdacht aus dem Ticket ausgeraeumt.
 * **`CONTROL0 = 0x0F00`:** fuer Standard-SDHCI (EMMC2) korrekt (Power +
   3,3 V). BCM2835 fuehrt CONTROL0[15:6] als reserviert — das betrifft den

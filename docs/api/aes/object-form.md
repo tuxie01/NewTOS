@@ -362,7 +362,7 @@ c. **`G_BUTTON`'s interior colour is independent of (b) and is set entirely
 
 > **"nicelines" — a DISABLED all-dashes `G_STRING` is a drawn line (TASK/A46,
 > 2026-09-19).** Inside the string block, under `CONF_WITH_NICELINES` (default
-> **1**, `config.h:1312-1314`), `just_draw` tests `(obtype == G_STRING) &&
+> **1**, `include/config.h:1312-1314`), `just_draw` tests `(obtype == G_STRING) &&
 > (state & DISABLED) && (len > 3) && is_dashes(spec, len)` (`gemoblib.c:838`)
 > and, when true, draws `gsx_cline(t.g_x, t.g_y+t.g_h/2, t.g_x+t.g_w-1,
 > t.g_y+t.g_h/2)` **instead of** `gsx_tblt` (`:838-844`). `is_dashes`
@@ -785,7 +785,7 @@ pre-draw pixels. See A65.
 
 **Source:** `gemsuper.c:232-236` (guarded `#if CONF_WITH_3D_OBJECTS`) →
 `ob_sysvar` (`gemoblib.c:1350-1423`). **Present in the default build**
-(`CONF_WITH_3D_OBJECTS = 1`, `config.h:1259`). With 3D off, opcode 48 has no
+(`CONF_WITH_3D_OBJECTS = 1`, `include/config.h:1259`). With 3D off, opcode 48 has no
 arm and falls to the dispatcher `default` → `-1`.
 
 | Slot | Meaning |
@@ -1362,19 +1362,19 @@ codes:
 
 ## Configuration / version notes
 
-- **`CONF_WITH_3D_OBJECTS`** (default **1**, `config.h:1259`): enables the
+- **`CONF_WITH_3D_OBJECTS`** (default **1**, `include/config.h:1259`): enables the
   FL3D\* bevel/activator/indicator rendering, `objc_sysvar` (opcode 48), the
   3D size adjustments (`ADJ3D*`), and the coloured-background handling in
   `just_draw`/`fm_alert`. With it off, opcode 48 → `-1`, FL3D flags are inert,
   and objects draw flat.
-- **`CONF_WITH_COLOUR_ICONS`** (default **1**, `config.h:1267`): enables
+- **`CONF_WITH_COLOUR_ICONS`** (default **1**, `include/config.h:1267`): enables
   `G_CICON` colour-icon drawing; off → only the mono `ICONBLK` head is drawn.
   Full draw-arm extraction: the callout after item 6 above; full load-path
   extraction: [`resource-fileselector.md`](./resource-fileselector.md) §5
   (TASK/A41).
 - **`CONF_WITH_EXTENDED_OBJECTS`** (default **1**): the `G_STRING` underline
   path (`(state & WHITEBAK) && (state&0xFF00)==0xFF00`, `gemoblib.c:851`).
-- **`CONF_WITH_NICELINES`** (default **1**, `config.h:1312-1314`): a
+- **`CONF_WITH_NICELINES`** (default **1**, `include/config.h:1312-1314`): a
   `DISABLED` `G_STRING` of **more than three** dashes (a menu separator) is
   drawn as a line instead of dashes (`gemoblib.c:838-841`); the `DISABLED`
   dither still goes over it. Full extraction and the EmuTOS-1.4 version delta

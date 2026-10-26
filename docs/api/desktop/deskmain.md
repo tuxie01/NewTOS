@@ -1141,7 +1141,7 @@ one is already on record** (`docs/api/desktop.md`,
 | `CONF_WITH_EJECT` | `EJCTITEM` | **Excluded** — Apple-Lisa-only auto-eject, no Atari/AArch64 equivalent (`docs/api/desktop.md` reconciliation) |
 | `WITH_CLI` | `CLIITEM` (File→Execute EmuCON) | **On** — NewTOS ships a shell (`crate::shell::run_console`); wired to the menu 2026-09-23, DESK06 (see the notes below) |
 | `CONF_WITH_SHUTDOWN` | `QUITITEM` | **On (halt-only)** — `docs/HARDWARE-PROFILE.md:406` |
-| `CONF_WITH_SIZE_TO_FIT` | `FITITEM`, `g_ifit`/`g_icols`, horizontal slider messages | **Open question** — current `programs/desktop/srctop.rs` has a `size_to_fit()` (vertical only, `:1619-1637`); full EmuTOS semantics (horizontal too) not confirmed decided |
+| `CONF_WITH_SIZE_TO_FIT` | `FITITEM`, `g_ifit`/`g_icols`, horizontal slider messages | **Open question** — current kernel/src/desktop.rs has a `size_to_fit()` (vertical only, cite stale 2026-10-26: kernel/src/desktop.rs:1619-1637); full EmuTOS semantics (horizontal too) not confirmed decided |
 | `CONF_WITH_BACKGROUNDS` | `BACKGRND` item, `g_patcol` | **On** — `docs/api/desktop.md:71-72`; NewTOS's `desktop.rs` `G_PATCOL`/`set_background` already implements this |
 | `CONF_WITH_DESKTOP_CONFIG` | `CONFITEM` | **On** — `docs/api/desktop.md:69` |
 | `CONF_WITH_READ_INF` | `READITEM`, desktop-restart path | **On, minus the restart** — the `app_read_inf()` worker (selector, `#R`/`#E` signature, `STFILENF`/`STINVINF`) is implemented (DESK14, 2026-09-23); the `restart_desktop` half is deferred to the desktop's move into user scope (`TASK/DESK14.md`) and replaced by an in-place re-apply |
@@ -1464,7 +1464,7 @@ when the console ends. The memory rule "a launched TOS app owns the whole
 screen over the desktop" applies to the console **more** strongly than to an
 application: EmuCON does not draw over the desktop, the desktop *process*
 ends and EmuCON has the machine. Both halves are visible in the run
-(`screendumps/cli-C-console.png`: whole screen, no desktop, no pointer).
+(`measurements/measurement-2026-09-23-desk06/screendumps/cli-C-console.png`: whole screen, no desktop, no pointer).
 
 ### The one named deviation: where the console is actually run
 
@@ -1496,7 +1496,7 @@ after the nested call.
 `measurements/measurement-2026-09-23-desk06/`, QEMU raspi4b, 640×480, scripted IKBD:
 
 - `Execute EmuCON` is the **only** black entry of the File drop-down on a
-  bare desktop (`screendumps/cli-B-filemenu.png`); the serial dump of the
+  bare desktop (`measurements/measurement-2026-09-23-desk06/screendumps/cli-B-filemenu.png`); the serial dump of the
   object states confirms `state=0x8` on every other entry and `0x0` on
   entry 13.
 - The console takes the whole screen, `ver` and `dir` were typed into it and
@@ -1678,7 +1678,8 @@ folder open reuses the window's own `WNODE`.
 
 `rc_copy((GRECT *)&G.g_screen[pw->w_root].ob_x, &t)` at `:1148` copies the *new*
 node's rectangle **into** `t` (EmuTOS's `rc_copy` is src → dst,
-`aes/gemrect.c`), so the new window opens at its own slot's default geometry;
+`util/rectfunc.c`), so the new window
+ opens at its own slot's default geometry;
 the `wind_get(WF_WXYWH)` at `:1095` only survives into the `!new_win` arm, where
 it is the damage rectangle of the redraw.
 

@@ -157,7 +157,7 @@ dispatcher before `vq_extnd` runs.)
 ## Related data structures
 
 - [`_state.md`](../_state.md) — `DEV_TAB`/`SIZ_TAB`/`INQ_TAB` ownership.
-- [`../structures/vwk.md`](../../structures/vwk.md) — the clip fields.
+- [`docs/api/structures/vwk.md`](../../structures/vwk.md) — the clip fields.
 
 ## Cross-references
 

@@ -131,14 +131,14 @@ if it doesn't already cite this).
   the earlier draft claimed default `0` in the general/Atari build; this is
   **wrong**. Resolving the `needs deeper analysis` flag by reading
   `include/config.h` directly: the flag is forced to `0` only inside three
-  specific guarded blocks — `TARGET_192` (`config.h:310-312`, space-
+  specific guarded blocks — `TARGET_192` (`include/config.h:310-312`, space-
   constrained ROM), `TARGET_256` (`:436-438`, likewise), and
   `#if !CONF_ATARI_HARDWARE` (`:800-802`, comment "Like ST, not Falcon" —
   this is EmuTOS's **non**-Atari-hardware ports, e.g. Apple Lisa, per
   `CLAUDE.md`'s own note "EmuTOS targets non-Atari machines"). The
   **unconditional fallback** actually used by the standard Atari-hardware
   build (ST/TT/Falcon/Firebee/ARAnyM — the profile NewTOS's extraction
-  treats as "general/Atari") is `config.h:1258-1259`: `#ifndef
+  treats as "general/Atari") is `include/config.h:1258-1259`: `#ifndef
   CONF_WITH_3D_OBJECTS` → `#define CONF_WITH_3D_OBJECTS 1` — **on by
   default**, like every other gate in this file. This matches
   `docs/MEMORY.md`'s existing ADR ("AES dialogs: use the 3D look" — the
@@ -1084,7 +1084,8 @@ touches the file list, so the two walks see the same entries.
 
 `measurements/measurement-2026-09-23-desk15/`. QEMU raspi4b at 640x480 with the scratch-copy
 IKBD injector: the reader (a `.NCP`/`.NAP` shows the application icon, a `.TXT`
-the document one — pixel-compared, `screendumps/icons-cmp.png`), select
+the document one — pixel-compared, `measurements/measurement-2026-09-23-desk15/screendumps/icons-cmp.png`)
+, select
 `README.TXT` → *Install icon* → `ADINSWIN` → three steps up to the trash
 picture → *Install* → that file alone changes in the window, *Save desktop*
 writes `#N FF 03 @ README.TXT@`, and a cold boot brings the trash icon back.

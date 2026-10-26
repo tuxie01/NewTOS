@@ -175,7 +175,7 @@ dispatch, see [`deskfun.md`](deskfun.md)) and from `deskwin.c`'s
   (`deskdir.c:1061-1065`)
 
 **Build configuration affecting this function:**
-- `CONF_PREFER_STRAM_DISK_BUFFERS` (`config.h:1724-1732`, default =
+- `CONF_PREFER_STRAM_DISK_BUFFERS` (`include/config.h:1724-1732`, default =
   `CONF_ATARI_HARDWARE` — `1` on real Atari hardware for DMA-capable
   ST-RAM, `0` otherwise) — `dir_op`'s `OP_COPY`/`OP_MOVE` case
   (`deskdir.c:932-936`) allocates the shared copy buffer via
@@ -623,8 +623,9 @@ Fehler in die Zusammenfassung gehoert.
   in den Spalten 2, 14 und 26 eines 38 Zeichen breiten Kastens
   (`desk_rsc.c:1263-1279`). Der erste Wurf hatte die 90 px des
   Zwei-Knopf-Kastens uebernommen und den mittleren zentriert — die drei
-  ueberlappten sich um 23 px (im Messlauf gesehen, `screendumps/` von
-  `measurements/measurement-2026-09-23-desk13`). Die Kastenbreite kommt jetzt aus der
+  ueberlappten sich um 23 px (im Messlauf gesehen,
+  `measurements/measurement-2026-09-23-desk13/screendumps/`).
+ Die Kastenbreite kommt jetzt aus der
   Knopfreihe, nicht aus den Feldern.
 * **Die Maschine ist nicht mehr dialogfrei.** Der Modulkopf behauptete, die
   Maschine (`d_doop`/`dir_op`) stelle keine Dialoge und sei darum direkt
