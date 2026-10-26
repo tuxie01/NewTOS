@@ -1,7 +1,7 @@
 # Audit-Liste: angefangene, nicht fertige Tickets (2026-10-26)
 
 Alle Tickets unter `TASK/`, an denen schon gearbeitet wurde, die aber nicht
-abgeschlossen sind (Stand `d6619f6f`). Ersetzt fuer den Audit die Listen
+abgeschlossen sind (Stand `67f00f02`). Ersetzt fuer den Audit die Listen
 `audit-50-tickets`, `audit-50-started-tickets` und `audit-50-worked-tickets`
 vom selben Tag.
 
@@ -51,6 +51,18 @@ Auswahlregel:
 | PORT11 | 2026-10-21 | 0 | Plain-crt0-Absatz in `docs/sdk/03` | SDK-Doku auf den Stand nach E9 bringen (`malloc` ueber `Malloc`, crt0) |
 | T08 | 2026-10-21 | 0 | Test fuer den Vektortausch | VDI `vex_*`: Vektortausch in `CONTRL[7..]`/`[9..]` fest 8 Byte an festem Index |
 | T10 | 2026-10-21 | 0 | Abnahme alter a78-Lauf | Die duale Injektor-Bewaffnung waehlt seit den Accessories immer das leere Skript |
+| ACC06 | 2026-10-01 | 1 | Teil 1 erledigt, Teil 2 nur als Quelltext | Ein kleines Accessory als Pruefling fuer ACC02/ACC03 |
+| SDK01 | 2026-10-22 | 1 | Punkt K umgesetzt, Abnahme Linux/Homebrew offen | SDK fuer Fremde benutzbar machen: libc-Luecken und Portierungs-Doku |
 | T13 | 2026-10-01 | 0 | `newtos_pause()` fertig; SDK-Beispiele zurueckgestellt | Die Testprogramme sollen ihr Ergebnis stehenlassen |
 
-Summe: 16 umgesetzt mit offener Abnahme, 10 teilweise umgesetzt.
+## C. Nach Arbeit blockiert
+
+| Ticket | Zuletzt | Messl. | Was fehlt | Thema |
+|---|---|---|---|---|
+| A45 | 2026-09-13 | 0 | abgeschlossen als BLOCKED (wartet auf fehlende Voraussetzung) | appl_tplay und appl_trecord sind Stubs |
+
+Summe: 16 umgesetzt mit offener Abnahme, 12 teilweise umgesetzt, 1 blockiert = 29.
+
+Mehr angefangene, nicht fertige Tickets gibt es nach dieser Regel nicht: die
+uebrigen offenen Tickets (rund 65 OFFEN, 81 BACKLOG G-*, Ideen/Zukunft/
+zurueckgestellt) haben weder Quittung noch Messlauf noch erledigte Teilpunkte.
