@@ -1,0 +1,202 @@
+######## VDI-all  (table vdi-all.tsv)
+-- header new: 54444d5000030004063800b630626332d135adaf000800020000000000000000
+VDI.BIN: area VDI, 182 records of 1592 bytes, build 0bc2, case CRC D135ADAF
+VDI.BIN: format 3, pointer 8 bytes, least significant word first
+VDI.BIN: matches vdi-all.tsv (182 cases)
+VDI.BIN: accepted
+-- payload vs NEWTOS-VDI-all (v2): old sha 2a175eddbdbb3783 new sha 722ab74852b51eaf
+   CHANGED, differing bytes: 70 of 289744
+   LOG diff:
+     1c1
+     < DUMPVDI build 19b7, record format 2
+     ---
+     > DUMPVDI build 0bc2, record format 3
+     3c3
+     < appl_init id 1, graf_handle 1, v_opnvwk handle 2
+     ---
+     > appl_init id 0, graf_handle 1, v_opnvwk handle 2
+     5c5
+     < DEV_TAB 1919,1079,0,278,278,3,7,0,6,8,1,24,12,256,10,1,2,3,4,5,6,7,8,9,10,3,0,3,3,3,0,3,0,3,2,1,1,1,0,0,2,1,1,1,2
+     ---
+     > DEV_TAB 639,479,0,278,278,3,7,0,6,8,1,24,12,256,10,1,2,3,4,5,6,7,8,9,10,3,0,3,3,3,0,3,0,3,2,1,1,1,0,0,2,1,1,1,2
+-- payload vs NEWTOS-VDI-all-0906 (v2): old sha d83d0f4f6439b194 new sha 722ab74852b51eaf
+   CHANGED, differing bytes: 382 of 289744
+   LOG diff:
+     1c1
+     < DUMPVDI build 3c2a, record format 2
+     ---
+     > DUMPVDI build 0bc2, record format 3
+     3c3
+     < appl_init id 2, graf_handle 1, v_opnvwk handle 3
+     ---
+     > appl_init id 0, graf_handle 1, v_opnvwk handle 2
+     5c5
+     < DEV_TAB 1919,1079,0,278,278,3,7,0,6,8,1,24,12,256,10,1,2,3,4,5,6,7,8,9,10,3,0,3,3,3,0,3,0,3,2,1,1,1,0,0,2,1,1,1,2
+     ---
+     > DEV_TAB 639,479,0,278,278,3,7,0,6,8,1,24,12,256,10,1,2,3,4,5,6,7,8,9,10,3,0,3,3,3,0,3,0,3,2,1,1,1,0,0,2,1,1,1,2
+-- tosdiff vs EMUTOS-1a7484ab-VDI-all
+exit 1
+EMUTOS-1a7484ab-VDI-all.BIN vs VDI.BIN -- area VDI, 182 cases from vdi-all.tsv
+
+case 33  opcode 102  vq_extnd 0 SIZ_TAB and DEV_TAB
+    intout[0]              EMUTOS-1a7484ab-VDI-all.BIN = 0x000F (15)   VDI.BIN                     = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0001 (1)   VDI.BIN                     = 0x0000 (0)
+
+case 274  opcode 100  v_opnvwk opens an additional workstation
+    intout[13]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0010 (16)   VDI.BIN                     = 0x0100 (256)
+    intout[39]              EMUTOS-1a7484ab-VDI-all.BIN = 0x1000 (4096)   VDI.BIN                     = 0x0000 (0)
+
+13 of 182 cases differ
+######## VDI-r2  (table vdi-r2.tsv)
+-- header new: 54444d50000300040638007830626332a0706a6d000800020000000000000000
+VDI.BIN: area VDI, 120 records of 1592 bytes, build 0bc2, case CRC A0706A6D
+VDI.BIN: format 3, pointer 8 bytes, least significant word first
+VDI.BIN: matches vdi-r2.tsv (120 cases)
+VDI.BIN: accepted
+-- payload vs NEWTOS-VDI-r2 (v2): old sha 7086424e321b0040 new sha 16bf5e649cd269ac
+   CHANGED, differing bytes: 31 of 191040
+   LOG diff:
+     1c1
+     < DUMPVDI build 3fed, record format 2
+     ---
+     > DUMPVDI build 0bc2, record format 3
+     3c3
+     < appl_init id 1, graf_handle 1, v_opnvwk handle 2
+     ---
+     > appl_init id 0, graf_handle 1, v_opnvwk handle 2
+     5c5
+     < DEV_TAB 1919,1079,0,278,278,3,7,0,6,8,1,24,12,256,10,1,2,3,4,5,6,7,8,9,10,3,0,3,3,3,0,3,0,3,2,1,1,1,0,0,2,1,1,1,2
+     ---
+     > DEV_TAB 639,479,0,278,278,3,7,0,6,8,1,24,12,256,10,1,2,3,4,5,6,7,8,9,10,3,0,3,3,3,0,3,0,3,2,1,1,1,0,0,2,1,1,1,2
+-- tosdiff vs EMUTOS-1a7484ab-VDI-r2
+exit 1
+EMUTOS-1a7484ab-VDI-r2.BIN vs VDI.BIN -- area VDI, 120 cases from vdi-r2.tsv
+
+case 46  opcode 26  vq_color pen 255 requested
+
+case 140  opcode 105  v_get_pixel top left corner
+    intout[1]              EMUTOS-1a7484ab-VDI-r2.BIN = 0x0000 (0)   VDI.BIN                    = 0xFFFF (-1)
+
+case 141  opcode 105  v_get_pixel bottom right corner
+    intout[1]              EMUTOS-1a7484ab-VDI-r2.BIN = 0x0000 (0)   VDI.BIN                    = 0xFFFF (-1)
+
+4 of 120 cases differ
+######## AES  (table aes-r1.tsv)
+-- header new: 54444d50000300050078005f3062633233c13c8f000800020000000000000000
+AES.BIN: area AES, 95 records of 120 bytes, build 0bc2, case CRC 33C13C8F
+AES.BIN: format 3, pointer 8 bytes, least significant word first
+AES.BIN: matches aes-r1.tsv (95 cases)
+AES.BIN: accepted
+-- payload vs NEWTOS-AES (v2): old sha 7054743685b5b581 new sha a35935ed43c8c687
+   CHANGED, differing bytes: 776 of 11400
+   LOG diff:
+     1c1
+     < DUMPAES build b59e, record format 2
+     ---
+     > DUMPAES build 0bc2, record format 3
+     3,5c3,5
+     < appl_init id 1, graf_handle 1, v_opnvwk handle 2
+     < global after appl_init 832,1,1,112,0,0,0,0,0,0,16,-32592,17,0,0
+     < ap_version 0340, ap_count 1, ap_id 1, ap_planes 16
+     ---
+     > appl_init id 0, graf_handle 1, v_opnvwk handle 2
+     > global after appl_init 832,1,0,4419,0,0,0,0,0,0,16,-10128,26,0,0
+     > ap_version 0340, ap_count 1, ap_id 0, ap_planes 16
+-- payload vs NEWTOS-AES-r2 (v2): old sha 402bb17900bea575 new sha a35935ed43c8c687
+   CHANGED, differing bytes: 582 of 11400
+   LOG diff:
+     1c1
+     < DUMPAES build b59e, record format 2
+     ---
+     > DUMPAES build 0bc2, record format 3
+     3,5c3,5
+     < appl_init id 1, graf_handle 1, v_opnvwk handle 2
+     < global after appl_init 832,1,1,112,0,0,0,0,0,0,16,-32552,17,0,0
+     < ap_version 0340, ap_count 1, ap_id 1, ap_planes 16
+     ---
+     > appl_init id 0, graf_handle 1, v_opnvwk handle 2
+     > global after appl_init 832,1,0,4419,0,0,0,0,0,0,16,-10128,26,0,0
+     > ap_version 0340, ap_count 1, ap_id 0, ap_planes 16
+-- tosdiff vs EMUTOS-1a7484ab-AES
+exit 1
+EMUTOS-1a7484ab-AES.BIN vs AES.BIN -- area AES, 95 cases from aes-r1.tsv
+
+case 67  opcode 108  wind_calc WC_WORK kind 0, no gadgets: 1px all round
+case 242  opcode 0  opcode 0 with inputs: they are marshalled in and ignored
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+95 of 95 cases differ
+address check, EMUTOS-1a7484ab-AES.BIN: format 3, pointer 4 bytes, most significant word first; 95 address cells checked, 0 not < 0x80000000
+address check, AES.BIN: format 3, pointer 8 bytes, least significant word first; 95 address cells checked, 0 not < 0x80000000
+######## AES-r2wind  (table aes-r2-wind.tsv)
+-- header new: 54444d50000300050078004e30626332afb11c9f000800020000000000000000
+AES.BIN: area AES, 78 records of 120 bytes, build 0bc2, case CRC AFB11C9F
+AES.BIN: format 3, pointer 8 bytes, least significant word first
+AES.BIN: matches aes-r2-wind.tsv (78 cases)
+AES.BIN: accepted
+-- payload vs NEWTOS-AES-r2wind (v2): old sha ab1349ffa0f3207e new sha d64e6077ac58e853
+   CHANGED, differing bytes: 404 of 9360
+   LOG diff:
+     1c1
+     < DUMPAES build c911, record format 2
+     ---
+     > DUMPAES build 0bc2, record format 3
+     3,5c3,5
+     < appl_init id 2, graf_handle 1, v_opnvwk handle 3
+     < global after appl_init 832,1,2,4475,0,0,0,0,0,0,16,12872,18,0,0
+     < ap_version 0340, ap_count 1, ap_id 2, ap_planes 16
+     ---
+     > appl_init id 0, graf_handle 1, v_opnvwk handle 2
+     > global after appl_init 832,1,0,4419,0,0,0,0,0,0,16,-10128,26,0,0
+     > ap_version 0340, ap_count 1, ap_id 0, ap_planes 16
+-- tosdiff vs EMUTOS-1a7484ab-AES-r2wind
+exit 1
+EMUTOS-1a7484ab-AES-r2wind.BIN vs AES.BIN -- area AES, 78 cases from aes-r2-wind.tsv
+
+case 131  opcode 100  wind_create: the first free handle after the reset
+case 406  opcode 104  wind_new after a BEG_MCTRL: the run carries on
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+78 of 78 cases differ
+address check, EMUTOS-1a7484ab-AES-r2wind.BIN: format 3, pointer 4 bytes, most significant word first; 78 address cells checked, 0 not < 0x80000000
+address check, AES.BIN: format 3, pointer 8 bytes, least significant word first; 78 address cells checked, 0 not < 0x80000000
+######## RASTER  (table vdi-raster.tsv)
+-- header new: 54444d50000300060e70003b30626332702eea7d000800020000000000000000
+RASTER.BIN: area VDI-RASTER, 59 records of 3696 bytes, build 0bc2, case CRC 702EEA7D
+RASTER.BIN: format 3, pointer 8 bytes, least significant word first
+RASTER.BIN: matches vdi-raster.tsv (59 cases)
+RASTER.BIN: accepted
+-- payload vs NEWTOS-RASTER (v2): old sha 782cd0c6ba460edd new sha 74b8dfe9b27804f3
+   CHANGED, differing bytes: 1190 of 218064
+   LOG diff:
+     1c1
+     < DUMPRAST build fdf8, record format 2
+     ---
+     > DUMPRAST build 0bc2, record format 3
+     4,5c4,5
+     < appl_init id 2, graf_handle 1, v_opnvwk handle 3
+     < DEV_TAB 1919,1079,0,278,278,3,7,0,6,8,1,24,12,256,10,1,2,3,4,5,6,7,8,9,10,3,0,3,3,3,0,3,0,3,2,1,1,1,0,0,2,1,1,1,2
+     ---
+     > appl_init id 0, graf_handle 1, v_opnvwk handle 2
+     > DEV_TAB 639,479,0,278,278,3,7,0,6,8,1,24,12,256,10,1,2,3,4,5,6,7,8,9,10,3,0,3,3,3,0,3,0,3,2,1,1,1,0,0,2,1,1,1,2
+-- payload vs NEWTOS-RASTER-fixed (v2): old sha 9d3b40dec3c7e4f2 new sha 74b8dfe9b27804f3
+   CHANGED, differing bytes: 1062 of 218064
+   LOG diff:
+     1c1
+     < DUMPRAST build fdf8, record format 2
+     ---
+     > DUMPRAST build 0bc2, record format 3
+     4,5c4,5
+     < appl_init id 3, graf_handle 1, v_opnvwk handle 4
+     < DEV_TAB 1919,1079,0,278,278,3,7,0,6,8,1,24,12,256,10,1,2,3,4,5,6,7,8,9,10,3,0,3,3,3,0,3,0,3,2,1,1,1,0,0,2,1,1,1,2
+     ---
+     > appl_init id 0, graf_handle 1, v_opnvwk handle 2
+     > DEV_TAB 639,479,0,278,278,3,7,0,6,8,1,24,12,256,10,1,2,3,4,5,6,7,8,9,10,3,0,3,3,3,0,3,0,3,2,1,1,1,0,0,2,1,1,1,2
+-- tosdiff vs EMUTOS-1a7484ab-RASTER
+exit 2
+tosdiff: refusing: EMUTOS-1a7484ab-RASTER.BIN is format 2, RASTER.BIN is format 3 -- dumps of different formats are not compared; re-record the older one
+tosdiff: refusing: EMUTOS-1a7484ab-RASTER.BIN is format 2, RASTER.BIN is format 3 -- dumps of different formats are not compared; re-record the older one

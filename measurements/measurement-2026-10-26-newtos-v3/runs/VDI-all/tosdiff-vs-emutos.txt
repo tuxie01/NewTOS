@@ -1,0 +1,49 @@
+EMUTOS-1a7484ab-VDI-all.BIN vs VDI.BIN -- area VDI, 182 cases from vdi-all.tsv
+
+case 33  opcode 102  vq_extnd 0 SIZ_TAB and DEV_TAB
+    intout[13]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0010 (16)   VDI.BIN                     = 0x0100 (256)
+    intout[39]              EMUTOS-1a7484ab-VDI-all.BIN = 0x1000 (4096)   VDI.BIN                     = 0x0000 (0)
+
+case 34  opcode 102  vq_extnd 1 clipping and extended info
+    intout[4]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0004 (4)   VDI.BIN                     = 0x0010 (16)
+    intout[5]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0001 (1)   VDI.BIN                     = 0x0000 (0)
+
+case 42  opcode 17  vsl_color out of range
+    intout[0]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0001 (1)   VDI.BIN                     = 0x0063 (99)
+
+case 54  opcode 105  v_get_pixel background pixel after v_clrwk
+    intout[1]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0000 (0)   VDI.BIN                     = 0xFFFF (-1)
+
+case 72  opcode 26  vq_color pen 255 requested
+    intout[0]              EMUTOS-1a7484ab-VDI-all.BIN = 0xFFFF (-1)   VDI.BIN                     = 0x00FF (255)
+
+case 113  opcode 20  vsm_color out of range
+    intout[0]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0001 (1)   VDI.BIN                     = 0x0063 (99)
+
+case 160  opcode 105  v_get_pixel top left corner
+    intout[1]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0000 (0)   VDI.BIN                     = 0xFFFF (-1)
+
+case 161  opcode 105  v_get_pixel bottom right corner
+    intout[1]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0000 (0)   VDI.BIN                     = 0xFFFF (-1)
+
+case 250  opcode 102  vq_extnd 1 after vs_clip on
+    intout[4]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0004 (4)   VDI.BIN                     = 0x0010 (16)
+    intout[5]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0001 (1)   VDI.BIN                     = 0x0000 (0)
+
+case 252  opcode 102  vq_extnd 1 after vs_clip off
+    intout[4]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0004 (4)   VDI.BIN                     = 0x0010 (16)
+    intout[5]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0001 (1)   VDI.BIN                     = 0x0000 (0)
+
+case 270  opcode 105  v_get_pixel inside the drawn box
+    intout[0]              EMUTOS-1a7484ab-VDI-all.BIN = 0x000F (15)   VDI.BIN                     = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0001 (1)   VDI.BIN                     = 0x0000 (0)
+
+case 272  opcode 105  v_get_pixel on the drawn line
+    intout[0]              EMUTOS-1a7484ab-VDI-all.BIN = 0x000F (15)   VDI.BIN                     = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0001 (1)   VDI.BIN                     = 0x0000 (0)
+
+case 274  opcode 100  v_opnvwk opens an additional workstation
+    intout[13]              EMUTOS-1a7484ab-VDI-all.BIN = 0x0010 (16)   VDI.BIN                     = 0x0100 (256)
+    intout[39]              EMUTOS-1a7484ab-VDI-all.BIN = 0x1000 (4096)   VDI.BIN                     = 0x0000 (0)
+
+13 of 182 cases differ

@@ -1,0 +1,75 @@
+NewTOS -- re-record of every NEWTOS-* tosdump reference in record format 3 -- 2026-10-26
+=====================================================================================
+MEASUREMENT ONLY. No product code changed, nothing committed, nothing flashed, no card.
+
+WHAT / WHY
+  User decision 2026-10-26: re-record all NewTOS dumps in v3 on the current commit
+  (QEMU, post-ARCH03) as a new measurement run; diffs are findings for triage.
+  tosdump/reference/NEWTOS-* are NOT touched; the new files live only here.
+
+  IMPORTANT PARAMETER DIFFERENCE: all eight NEWTOS-* references were recorded on a REAL
+  Raspberry Pi 4 (1920x1080, 256 colours; commit messages fd0277e3, 0c2005c3, 524f04e6,
+  09617918, 6d55de4e, ba4e56c5, daec9223, 07ea3fd0). QEMU raspi4b reports 640x480
+  (DEV_TAB 639,479). So every payload comparison against the old files includes the
+  geometry change; "payload changed" below is therefore NOT a regression signal by itself.
+  The case tables are the originals: every old NEWTOS-*.BIN validates against the current
+  tosdump/cases table (CRC equal, tosdiff --validate "accepted"). Dumper source = HEAD 0bc2d4fb
+  (build id 0bc2), format 3, pointer 8 bytes, least significant word first.
+
+MAPPING old reference -> table -> new recording (5 tables cover the 8 old files)
+  NEWTOS-VDI-all, NEWTOS-VDI-all-0906  -> vdi-all.tsv (182, D135ADAF)    -> runs/VDI-all   vs EMUTOS-1a7484ab-VDI-all
+  NEWTOS-VDI-r2                        -> vdi-r2.tsv (120, A0706A6D)     -> runs/VDI-r2    vs EMUTOS-1a7484ab-VDI-r2
+  NEWTOS-AES, NEWTOS-AES-r2            -> aes-r1.tsv (95, 33C13C8F)      -> runs/AES       vs EMUTOS-1a7484ab-AES
+  NEWTOS-AES-r2wind                    -> aes-r2-wind.tsv (78, AFB11C9F) -> runs/AES-r2wind vs EMUTOS-1a7484ab-AES-r2wind
+  NEWTOS-RASTER, NEWTOS-RASTER-fixed   -> vdi-raster.tsv (59, 702EEA7D)  -> runs/RASTER    vs EMUTOS-1a7484ab-RASTER (v2!)
+  (The two files per table differ only by the NewTOS code state of their day / run; the same
+  table recorded once now is compared to both.)
+
+HOW
+  Kernel : cargo run -p xtask -- build --board rpi4 --release (after touch kernel/src/lib.rs
+           tos-api/src/lib.rs), HEAD 0bc2d4fb, tree clean.
+           kernel8.img sha256 c7345a0202d3899622e64024c96c30850f08a034da8aab8c648f35409fa949c5
+           ELF sha256         47f859787d9ab8b35cc4d9309b87c4646b7c32118e86348a017be1215b592fe7
+  Dumpers: tosdump/build-dump{vdi,aes,rast}-newtos.sh <scratch>/dumpers/DUMP*.NAP (build 0bc2)
+           DUMPVDI.NAP  829cc67d59d797af435a1123dec9f2a2901a6349e0d414c7ebe6c93b90aab4f6
+           DUMPAES.NAP  96d5b10a1c893a18f9037241120d0a11185213683fb969f42e3a7d51ab6f577f
+           DUMPRAST.NAP 1347548920fb6bd3e8cb467325721c7eb2c5b747599d13fb89f69a39243195db
+           (the scripts keep their objects in the gitignored tosdump/build/, which this
+           overwrote.)
+  Image  : base.img = tools/make-sd-image.sh <scratch>/base.img 64, sha256
+           5ef585b4dc993838532d30b308c261c10116c24cc8b749e333386f906bee43bd; one APFS clone
+           (cp -c) per table, NAP + <table>.tsv as C:\VDI.TSV / AES.TSV / RASTER.TSV and
+           NEWDESK.INF "#Z 01 C:\DUMPxxx.NAP@" written with mcopy (partition offset 63*512);
+           clones deleted after each run.
+  Run    : method/run-newtos-v3.sh <scratch> <abs runs dir>  (MTOOLS_SKIP_CHECK=1)
+           qemu-system-aarch64 -M raspi4b -no-reboot -display none -serial file:... -append serial=on
+           -kernel kernel8.img -drive file=<clone>,if=sd,format=raw ; stop at "[desk] desktop up".
+  Compare: method/compare-newtos-v3.sh <abs runs dir> -> COMPARE.txt (validate, payload
+           byte-compare after the 32-byte header, LOG diff, tosdiff vs EmuTOS);
+           runs/<table>/tosdiff-vs-emutos.txt = full tosdiff output.
+  manifest.sha256 over runs/*/*.
+
+RESULT (every dump: "all N cases ran", dumper rc=0, "[desk] desktop up", no PANIC/EXC; tosdiff
+--validate accepted; header format 3, pointer 8, LSW first; no QEMU process left)
+  table        produced  payload vs v2 (new bytes)                          tosdiff vs EmuTOS v3      address check
+  VDI-all      yes       CHANGED vs VDI-all 70, vs VDI-all-0906 382 (of 289744)  13 of 182 differ     n/a (no address field)
+  VDI-r2       yes       CHANGED vs VDI-r2 31 (of 191040)                    4 of 120 differ           n/a
+  AES          yes       CHANGED vs AES 776, vs AES-r2 582 (of 11400)        95 of 95 differ           95 cells, 0 violations (both)
+  AES-r2wind   yes       CHANGED vs AES-r2wind 404 (of 9360)                 78 of 78 differ           78 cells, 0 violations (both)
+  RASTER       yes       CHANGED vs RASTER 1190, vs RASTER-fixed 1062 (of 218064)  REFUSED (EmuTOS ref is format 2), exit 2  not run
+
+  AES 95/95 and 78/78: the EmuTOS and NewTOS records differ in global[3], global[4], global[10]
+  of every case (appl_init words: EmuTOS 0,0x1143 / NewTOS 0x1143,0 -- ap_3resv word order --
+  and global[10]); in addition to those, the first listed differing cases (AES 67, 242 ...)
+  are in the tosdiff output. appl_init id is 0 now (v2 files: 1, 2). Triage items, not chased.
+  VDI-all 13 cases and VDI-r2 4 cases (46, 140, 141, ...) are in the tosdiff files; the colour
+  count / v_get_pixel items include the 256-colour-vs-16 geometry/profile effect.
+  The payload-changed counts mix: geometry (640x480 vs 1920x1080), appl_init ids / handle
+  (0 / 2 instead of 1-3), dumper-static pointer cells, and NewTOS code changes since Aug/Sep.
+  They were not separated per byte.
+
+NOT REPRODUCED WITH ORIGINAL PARAMETERS
+  Real-Pi-4 geometry (1920x1080): QEMU raspi4b gives 640x480 only; the kernel takes the size
+  from the VideoCore query (framebuffer.rs), no QEMU knob used. The 1920x1080 recordings stay
+  real-HW-only.
+  RASTER-vs-EmuTOS tosdiff is impossible until EMUTOS-1a7484ab-RASTER is re-recorded in v3.

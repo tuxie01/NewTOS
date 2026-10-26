@@ -1,0 +1,15 @@
+EMUTOS-1a7484ab-VDI-r2.BIN vs VDI.BIN -- area VDI, 120 cases from vdi-r2.tsv
+
+case 46  opcode 26  vq_color pen 255 requested
+    intout[0]              EMUTOS-1a7484ab-VDI-r2.BIN = 0xFFFF (-1)   VDI.BIN                    = 0x00FF (255)
+
+case 89  opcode 20  vsm_color out of range
+    intout[0]              EMUTOS-1a7484ab-VDI-r2.BIN = 0x0001 (1)   VDI.BIN                    = 0x0063 (99)
+
+case 140  opcode 105  v_get_pixel top left corner
+    intout[1]              EMUTOS-1a7484ab-VDI-r2.BIN = 0x0000 (0)   VDI.BIN                    = 0xFFFF (-1)
+
+case 141  opcode 105  v_get_pixel bottom right corner
+    intout[1]              EMUTOS-1a7484ab-VDI-r2.BIN = 0x0000 (0)   VDI.BIN                    = 0xFFFF (-1)
+
+4 of 120 cases differ

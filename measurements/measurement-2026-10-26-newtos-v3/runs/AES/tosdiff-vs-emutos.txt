@@ -1,0 +1,480 @@
+EMUTOS-1a7484ab-AES.BIN vs AES.BIN -- area AES, 95 cases from aes-r1.tsv
+
+case 67  opcode 108  wind_calc WC_WORK kind 0, no gadgets: 1px all round
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 68  opcode 108  wind_calc WC_WORK NAME: title band
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 69  opcode 108  wind_calc WC_WORK CLOSER
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 70  opcode 108  wind_calc WC_WORK FULLER
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 71  opcode 108  wind_calc WC_WORK MOVER alone: D-097, TGADGETS vs non-3D
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 72  opcode 108  wind_calc WC_WORK INFO: the second title band
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 73  opcode 108  wind_calc WC_WORK SIZER alone: stripped, vertical forced back
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 74  opcode 108  wind_calc WC_WORK UPARROW
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 75  opcode 108  wind_calc WC_WORK DNARROW
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 76  opcode 108  wind_calc WC_WORK VSLIDE
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 77  opcode 108  wind_calc WC_WORK LFARROW
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 78  opcode 108  wind_calc WC_WORK RTARROW
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 79  opcode 108  wind_calc WC_WORK HSLIDE
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 80  opcode 108  wind_calc WC_WORK HOTCLOSE: PC-GEM bit, no border test reads it
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 82  opcode 108  wind_calc WC_BORDER kind 0
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 83  opcode 108  wind_calc WC_BORDER NAME
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 84  opcode 108  wind_calc WC_BORDER CLOSER
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 85  opcode 108  wind_calc WC_BORDER FULLER
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 86  opcode 108  wind_calc WC_BORDER MOVER alone: D-097, the other way
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 87  opcode 108  wind_calc WC_BORDER INFO
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 88  opcode 108  wind_calc WC_BORDER SIZER alone
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 89  opcode 108  wind_calc WC_BORDER UPARROW
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 90  opcode 108  wind_calc WC_BORDER DNARROW
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 91  opcode 108  wind_calc WC_BORDER VSLIDE
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 92  opcode 108  wind_calc WC_BORDER LFARROW
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 93  opcode 108  wind_calc WC_BORDER RTARROW
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 94  opcode 108  wind_calc WC_BORDER HSLIDE
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 95  opcode 108  wind_calc WC_BORDER HOTCLOSE
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 97  opcode 108  wind_calc NAME|CLOSER|FULLER: one title band, not three
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 98  opcode 108  wind_calc TGADGETS = NAME|CLOSER|FULLER|MOVER
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 99  opcode 108  wind_calc NAME|INFO: both title bands stack
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 100  opcode 108  wind_calc VGADGETS = UPARROW|DNARROW|VSLIDE
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 101  opcode 108  wind_calc HGADGETS = LFARROW|RTARROW|HSLIDE
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 102  opcode 108  wind_calc VGADGETS|SIZER: SIZER stripped from both bars
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 103  opcode 108  wind_calc HGADGETS|SIZER: mirror of the above
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 104  opcode 108  wind_calc VGADGETS|HGADGETS|SIZER: both bars on merit
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 105  opcode 108  wind_calc 0x0FEF, the classic full window without INFO
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 106  opcode 108  wind_calc every defined gadget bit including INFO
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 107  opcode 108  wind_calc all sixteen bits: do the undefined ones do anything
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 108  opcode 108  wind_calc WC_BORDER 0x0FEF, the round trip partner
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 109  opcode 108  wind_calc WC_BORDER NAME|INFO
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 110  opcode 108  wind_calc WC_BORDER VGADGETS|HGADGETS|SIZER
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 112  opcode 108  wind_calc WC_WORK degenerate rect: work area of nothing
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 113  opcode 108  wind_calc WC_BORDER degenerate rect
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 114  opcode 108  wind_calc WC_WORK a full ST-high screen
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 115  opcode 108  wind_calc WC_BORDER a full ST-high screen
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 116  opcode 108  wind_calc WC_WORK 1x1: the work area goes negative
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 117  opcode 108  wind_calc WC_WORK negative origin
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 118  opcode 108  wind_calc WC_BORDER a rect that grows but stays inside a WORD
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 120  opcode 108  wind_calc type 2: only WC_BORDER negates, so this is WC_WORK
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 121  opcode 108  wind_calc type -1: same question, from the other side
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 129  opcode 108  OUT_LEN 0: nothing copied back, not even the return code
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 130  opcode 108  OUT_LEN 1: the return code only, a void handler's ret = TRUE
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 131  opcode 108  OUT_LEN 3: x and y arrive, w and h stay poisoned
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 132  opcode 108  IN_LEN 8 with six values: two surplus poison words copied in
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 133  opcode 108  IN_LEN at I_SIZE with six values
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 134  opcode 108  IN_LEN past I_SIZE: min(IN_LEN,I_SIZE) has to clamp it
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 135  opcode 108  AIN_LEN 3, no pointer: wm_calc never reads addr_in
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 136  opcode 108  control[4] set: there is no AOUT_LEN macro in this build
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 137  opcode 108  IN_LEN 6, four values: w and h reach wm_calc as 0xDEAD
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 155  opcode 104  wind_get 0 WF_WXYWH: the desktop work area apps start from
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 156  opcode 104  wind_get 0 WF_CXYWH: whole screen, menu bar included
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 157  opcode 104  wind_get 0 WF_PXYWH: previous rect
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 158  opcode 104  wind_get 0 WF_FXYWH: full rect
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 159  opcode 104  wind_get 0 WF_HSLIDE: one word, w_setup left it at 0
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 160  opcode 104  wind_get 0 WF_VSLIDE: one word
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 161  opcode 104  wind_get 0 WF_HSLSIZ: the -1 "use default size" marker
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 162  opcode 104  wind_get 0 WF_VSLSIZ: one word
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 163  opcode 104  wind_get 0 WF_TOP: no valid handle needed
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 164  opcode 104  wind_get 0 WF_KIND: return code only, is it answered at all
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 165  opcode 104  wind_get 0 WF_NEWDESK: return code only
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 166  opcode 104  wind_get 0 WF_SCREEN: return code only, the address cannot be c
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 167  opcode 104  wind_get 0 WF_OWNER: AES 3.30 and later only
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 168  opcode 104  wind_get 0 field 0: no handler, FALSE
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 169  opcode 104  wind_get 0 field 13: a gap in the WF_ numbering
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 170  opcode 104  wind_get 0 field 21: past the last defined field
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 172  opcode 104  wind_get 0 WF_WXYWH, OUT_LEN 1: the rect is thrown away
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 173  opcode 104  wind_get 0 WF_WXYWH, OUT_LEN 3: w and h stay poisoned
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 175  opcode 104  wind_get handle 1 WF_WXYWH: a window that was never created
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 176  opcode 104  wind_get handle -1 WF_WXYWH: negative handle
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 177  opcode 104  wind_get handle 99 WF_WXYWH: past NUM_WIN
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 178  opcode 104  wind_get handle 32767 WF_WXYWH: the largest WORD
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 193  opcode 106  wind_find at the top left corner: the desktop, whatever is open
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 194  opcode 106  wind_find off the top left: nobody
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 195  opcode 106  wind_find one row above the screen
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 196  opcode 106  wind_find one column left of the screen
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 197  opcode 106  wind_find far off the bottom right: nobody
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 216  opcode 77  graf_handle: the handle and the four box metrics wm_calc uses
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 217  opcode 77  graf_handle OUT_LEN 1: the metrics stay poisoned
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 218  opcode 79  graf_mkstate return code only: a void handler has to leave TRUE
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 228  opcode 24  evnt_timer 0 ms: adelay makes that one tick
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 229  opcode 24  evnt_timer 1 ms: still under one tick
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 240  opcode 0  opcode 0: the unsupported sentinel -1, and no alert box
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 241  opcode 0  opcode 0 with OUT_LEN 0: the -1 is computed and never delivered
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+case 242  opcode 0  opcode 0 with inputs: they are marshalled in and ignored
+    global[3]              EMUTOS-1a7484ab-AES.BIN = 0x0000 (0)   AES.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES.BIN = 0x1143 (4419)   AES.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES.BIN = 0x0004 (4)   AES.BIN                 = 0x0010 (16)
+
+95 of 95 cases differ
+address check, EMUTOS-1a7484ab-AES.BIN: format 3, pointer 4 bytes, most significant word first; 95 address cells checked, 0 not < 0x80000000
+address check, AES.BIN: format 3, pointer 8 bytes, least significant word first; 95 address cells checked, 0 not < 0x80000000

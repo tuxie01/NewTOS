@@ -1,0 +1,395 @@
+EMUTOS-1a7484ab-AES-r2wind.BIN vs AES.BIN -- area AES, 78 cases from aes-r2-wind.tsv
+
+case 131  opcode 100  wind_create: the first free handle after the reset
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 133  opcode 100  wind_create twice: the second handle
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 136  opcode 100  wind_create three times: the third handle
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 137  opcode 100  wind_create OUT_LEN 0: the handle is computed, never delivered
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 138  opcode 100  wind_create kind NONE: no gadget at all
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 139  opcode 100  wind_create kind 0xFFFF: every bit, defined or not
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 140  opcode 100  wind_create IN_LEN 1: wm_create only stores the rect, it draws 
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 154  opcode 100  wind_create, the ninth: NUM_WIN edge
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 170  opcode 100  wind_create, the sixteenth: NUM_WIN edge
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 182  opcode 101  wind_open a handle that was never created
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 184  opcode 101  wind_open a created window
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 187  opcode 101  wind_open a window that is already open
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 188  opcode 102  wind_close a handle that was never created
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 190  opcode 102  wind_close a created window that was never opened
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 193  opcode 102  wind_close an open window
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 194  opcode 102  wind_close 0: the desktop window is INUSE but never ISOPEN
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 195  opcode 103  wind_delete a handle that was never created
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 197  opcode 103  wind_delete a created window
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 200  opcode 103  wind_delete an open window: wm_close runs first
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 201  opcode 103  wind_delete 99: past NUM_WIN on either machine
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 202  opcode 103  wind_delete -1: a negative handle
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 206  opcode 101  wind_open again after a close: the handle is still INUSE
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 209  opcode 101  wind_open after a delete: the handle is gone
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 212  opcode 100  wind_create after a delete: the freed handle comes back
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 228  opcode 104  WF_FXYWH of a created window: the rect wind_create was given
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 230  opcode 104  WF_CXYWH of a created, unopened window: wm_create set it to gl_
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 232  opcode 104  WF_PXYWH of a created, unopened window
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 234  opcode 104  WF_HSLIDE of a fresh window: w_setup leaves the slider at the l
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 236  opcode 104  WF_VSLIDE of a fresh window
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 238  opcode 104  WF_HSLSIZ of a fresh window: the -1 use-default marker
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 240  opcode 104  WF_VSLSIZ of a fresh window
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 242  opcode 104  WF_KIND on a real window: wm_get has no arm for it
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 244  opcode 104  WF_OWNER of a created window: pid, is-open, gl_wtop, bottom-mos
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 247  opcode 104  WF_OWNER of an open window: the is-open word changes
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 250  opcode 104  WF_CXYWH after wind_open: the rect the open was given, verbatim
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 253  opcode 104  WF_PXYWH after wind_open: wm_open sets PREV to the same rect
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 256  opcode 104  WF_WXYWH after wind_open: wm_calc(WC_WORK) on the box metrics
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 259  opcode 104  WF_FXYWH after wind_open: unchanged by the open
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 262  opcode 104  WF_WXYWH of a NONE window: work area is the border area less on
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 263  opcode 104  WF_TOP with nothing open: the reset proves itself
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 266  opcode 104  WF_TOP with one window open
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 281  opcode 104  WF_HSLIDE read back after a set of 500
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 284  opcode 104  WF_HSLIDE after a set of 0: clamped up to 1
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 287  opcode 104  WF_HSLIDE after a set of 2000: clamped down to 1000
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 290  opcode 104  WF_VSLIDE after a set of 1000: exactly on the ceiling
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 293  opcode 104  WF_HSLSIZ after a set of -1: the use-default escape is let thro
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 296  opcode 104  WF_HSLSIZ after a set of 0: clamped up to 1
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 299  opcode 104  WF_VSLSIZ after a set of 1001: clamped down to 1000
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 301  opcode 105  wind_set WF_HSLIDE: the setter's own return code
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 302  opcode 105  wind_set on a handle that was never created
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 304  opcode 105  wind_set field 21: past the last defined field
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 306  opcode 105  wind_set WF_KIND: readable in some AESes, settable in none
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 308  opcode 105  wind_set on a negative handle
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 310  opcode 105  wind_set past NUM_WIN on either machine
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 313  opcode 105  wind_set WF_CXYWH: the setter's return code
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 317  opcode 104  WF_CXYWH after a WF_CXYWH set: the new rect
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 321  opcode 104  WF_PXYWH after a WF_CXYWH set: draw_change kept the rect before
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 324  opcode 105  wind_set WF_TOP on the only open window: already topped
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 329  opcode 104  WF_TOP with two windows open: the later open is on top
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 335  opcode 104  WF_TOP after a WF_CXYWH-free re-top of the lower window
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 348  opcode 107  wind_update BEG_UPDATE: the reset drains the lock afterwards
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 349  opcode 107  wind_update END_UPDATE with no lock held: unsync returns early
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 351  opcode 107  wind_update END_UPDATE after a BEG: the balanced pair
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 354  opcode 107  wind_update END_UPDATE after two BEGs: the count, not the flag
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 355  opcode 107  wind_update BEG_MCTRL: the reset drains ml_ocnt afterwards
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 357  opcode 107  wind_update END_MCTRL after a BEG_MCTRL: the balanced pair
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 358  opcode 107  wind_update BEG_UPDATE, OUT_LEN 0: the ret is computed, never d
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 369  opcode 106  wind_find with nothing open: the desktop
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 372  opcode 106  wind_find on a point inside the open window
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 375  opcode 106  wind_find on a point outside it but on the desktop
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 378  opcode 106  wind_find exactly on the window's top left corner
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 381  opcode 106  wind_find one past the bottom right corner
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 390  opcode 109  wind_new: a void handler leaves ret = TRUE
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 391  opcode 109  wind_new OUT_LEN 0, as gemlib issues it: nothing delivered
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 395  opcode 104  after wind_new the handle is no longer in use
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 399  opcode 104  after wind_new nothing is topped
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 403  opcode 100  wind_create after wind_new: handle allocation starts at 1 again
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+case 406  opcode 104  wind_new after a BEG_MCTRL: the run carries on
+    global[3]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0000 (0)   AES.BIN                        = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x1143 (4419)   AES.BIN                        = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r2wind.BIN = 0x0004 (4)   AES.BIN                        = 0x0010 (16)
+
+78 of 78 cases differ
+address check, EMUTOS-1a7484ab-AES-r2wind.BIN: format 3, pointer 4 bytes, most significant word first; 78 address cells checked, 0 not < 0x80000000
+address check, AES.BIN: format 3, pointer 8 bytes, least significant word first; 78 address cells checked, 0 not < 0x80000000
