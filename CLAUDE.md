@@ -17,7 +17,9 @@ Goals:
 
 Non-goals:
 - Hardware-level Atari emulation (no Shifter, MFP, YM2149 in the kernel).
-- Linux compatibility, POSIX compliance, or any non-TOS API.
+- Linux compatibility, POSIX compliance in the kernel, or any non-TOS API
+  other than FreeMiNT-compatible extensions (e.g. `Ssystem`,
+  `tos-api/src/gemdos/ssystem.rs`; ADR-027).
 - x86 or x86_64 support — AArch64 only.
 
 **Primary specification source:** EmuTOS source code, analyzed and extracted
@@ -25,8 +27,16 @@ into our own spec format during Phase 00. EmuTOS is the most accurate,
 testable, complete reference for what TOS actually does. The extracted spec
 lives in `docs/api/` and is what later phases implement against.
 
+**Measured reference:** whether NewTOS behaves like EmuTOS is decided by
+measurement against the pinned EmuTOS oracle — tosdump cases run in Hatari
+and on NewTOS, compared with tosdiff (`docs/analysis/ORACLE.md`).
+
+**FreeMiNT** (`references/freemint/`) is the sanctioned source for
+FreeMiNT-compatible extensions and for kernel memory management (ADR-027).
+
 **Secondary references** (used to cross-check the EmuTOS extraction):
 Atari Compendium, Atari Profibuch, TOS Release Notes, Atari ST Internals.
+None of them is in `references/` (see `references/README.md`).
 
 Companion documents (read in this order at session start):
 - `docs/SOURCE-ANALYSIS-PROTOCOL.md` — **mandatory protocol** for extracting
@@ -39,9 +49,11 @@ Companion documents (read in this order at session start):
   is free to implement better. The measuring stick for "port vs. reimplement"
 - `docs/ARCHITECTURE.md` — layer diagram, module boundaries, ABI rules
 - `docs/STATUS.md` — current implementation state, open issues
+- `docs/analysis/ORACLE.md` — the pinned EmuTOS oracle (commit, ROM, Hatari)
 - `docs/api/` — **the extracted TOS API specification** (produced in Phase 00)
-- `phases/` — phase-by-phase implementation guidelines (PHASE-00 first,
-  then PHASE-01 … PHASE-12)
+- `TASK/` — tickets, the unit of work: `<ID>.md` plus its receipt
+- `phases/` — phase-by-phase implementation guidelines (PHASE-00 …
+  PHASE-16; finished phases are history)
 
 ---
 
@@ -55,11 +67,12 @@ in `docs/api/` and is the authoritative reference for every later phase.
 
 For any TOS API work:
 
-- During **Phase 00**: read EmuTOS source, produce spec entries per
-  `docs/SOURCE-ANALYSIS-PROTOCOL.md`. No implementation code.
-- During **later phases**: implement against the extracted spec in
-  `docs/api/`. Do not re-read EmuTOS unless the spec entry is incomplete
-  or incorrect — and if it is, fix the spec first, then implement.
+- Implement against the extracted spec in `docs/api/`. If the spec entry is
+  missing, incomplete or incorrect, fix the spec first from the EmuTOS
+  source per `docs/SOURCE-ANALYSIS-PROTOCOL.md` (cite `file:line`), then
+  implement.
+- Reading source gives hypotheses; equality with EmuTOS is established only
+  by measurement against the oracle (`docs/analysis/ORACLE.md`).
 
 Compendium and Profibuch are **cross-references**, not primary sources.
 EmuTOS code is what TOS actually does; documentation is approximate.
@@ -118,7 +131,8 @@ unrelated code. Do not delete failing tests.
 
 ### 5. Spec before code.
 
-For any TOS API function, the specification in `docs/api/<group>.md` must exist
+For any TOS API function, the specification in `docs/api/` (per-function
+files such as `docs/api/gemdos/console/01-cconin.md`, or a group file) must exist
 **before** implementation begins. The spec is produced via the source analysis
 protocol (Rule 1), not from memory.
 
@@ -146,27 +160,41 @@ Linux source code is a cross-reference, not an authority.
 
 - Respond in **German** for design discussions, explanations, and decisions.
 - Code, identifiers, comments, commit messages, doc-comments: **English**.
-- File names and paths: **English**, lowercase, hyphenated.
+- File names and paths: **English**, lowercase, hyphenated. Exceptions: the
+  upper-case top-level docs (`docs/STATUS.md`, `docs/analysis/ORACLE.md`, …),
+  ticket files and receipts (`TASK/<ID>.md`, `<ID>-STATUS-DONE.MD`),
+  `RUNINFO.TXT`, and TOS-side names (`NEWDESK.INF`, `*.NAP`).
 - Be direct. No filler. No "great question!". No re-explaining what was just said.
 
 ---
 
 ## Tech Stack (non-negotiable)
 
-- **Rust nightly** — required for `#![no_std]` + AArch64 inline asm + `naked_function`.
-  Pinned in `rust-toolchain.toml`. Do not suggest stable until naked functions stabilize.
+- **Rust nightly** — required for the unstable cargo feature
+  `per-package-target` (`kernel/Cargo.toml`). Pinned in `rust-toolchain.toml`,
+  which also states the update policy. Naked functions and the inline asm in
+  use are stable. Do not suggest stable until `per-package-target` stabilizes.
 - **`#![no_std]`** — kernel and userland runtime. No `std`.
 - **`alloc`** — yes, but only after the kernel allocator is up.
-- **Cargo workspace** — one workspace, sub-crates per architectural layer.
-- **`cortex-a` crate** — AArch64 register/instruction abstractions.
-- **`tock-registers`** — MMIO register definitions.
+- **Cargo workspaces** — the kernel workspace (kernel, tos-api, tos-types,
+  tools/xtask) with sub-crates per architectural layer, and `programs/` as a
+  separate workspace for native EL0 programs (excluded from the root one).
+- **MMIO** — register addresses as constants behind `mmio_va()` in
+  `kernel::drivers` (the planned `cortex-a` / `tock-registers` crates were
+  never adopted).
 - **`spin`** or hand-rolled — no `parking_lot`, no `std::sync` primitives.
-- **QEMU `aarch64-virt`** as primary test target. Real RPi4 as secondary.
+- **QEMU `raspi4b`** (`--board rpi4`) as primary test target; `aarch64-virt`
+  where USB input is needed. Real RPi4 is the acceptance gate.
 - **GDB** for debugging via QEMU's gdbstub.
 
-Do **not** suggest:
+Do **not** suggest, for the kernel and tos-api:
 - C, C++, or any language that is not Rust or AArch64 assembly
 - Linux kernel APIs, POSIX, libc
+
+(The SDK is different: it ports real Atari C libraries — mintlib, gemlib,
+cflib — for applications; ADR-019.)
+
+Do **not** suggest anywhere:
 - `std`, `tokio`, `async-std`, or any heap-using crate before allocator is up
 - Bootloaders other than the RPi firmware's `kernel8.img` mechanism (stage 1)
 - `crossbeam`, `parking_lot`, `lazy_static` — use `OnceCell` or `spin`
@@ -182,23 +210,28 @@ PiRusTOS/
 ├── CLAUDE.md                    # this file
 ├── Cargo.toml                   # workspace: kernel, tos-api, tos-types, tools/xtask
 ├── kernel/                      # crate: bare-metal kernel (arch/aarch64, drivers/bcm2711,
-│                                #   hal, bios, desk/ = EmuDESK rebuild, selftest_*.rs)
+│                                #   hal, bios, selftest_*.rs)
 ├── tos-api/                     # crate: TOS syscall layer (gemdos, bdos, bios, xbios,
 │   ├── src/                     #   aes, vdi, trap.rs = trap dispatcher)
 │   └── tests/                   # host-side integration tests
-├── tos-types/                   # crate: shared on-wire types (DTA, BPB, MD, error codes)
+├── tos-types/                   # crate: shared types (MD, BASEPAGE, AES/GEMDOS structs,
+│                                #   error codes)
+├── programs/                    # separate workspace: native EL0 programs — desktop/
+│                                #   (EmuDESK rebuild, ADR-026), newdesk/, newtos-gem/, hello-gem/
 ├── tools/                       # host tools: xtask, make-sd-image.sh, trace/probe scripts
 ├── sdk/                         # app toolchain: libc, gemlib, cflib, crt0, overlays/, apps/
 ├── tosdump/                     # TOS reference dumper (cases/, reference/, deploy-*)
-├── boot/rpi4/                   # RPi firmware files for the boot partition
+├── boot/rpi4/                   # config.txt for the boot partition
 ├── keyboards/                   # keyboard layout sources (.kbd)
 ├── docs/
 │   ├── STATUS.md, MEMORY.md, REQUIREMENTS.md, ARCHITECTURE.md, COMPATIBILITY.md, …
 │   ├── api/                     # extracted TOS API spec, one dir/file per group
 │   ├── analysis/                # dated analyses and design notes (<topic>-YYYY-MM-DD.md)
 │   ├── hardware/, sdk/, benchmarks/, presentation/ (slide decks + images)
+│   ├── archive/                 # history moved out of STATUS.md etc. — never evidence
 ├── phases/                      # PHASE-XX-*.md implementation guidelines
 ├── TASK/                        # tickets: <ID>.md + <ID>-STATUS-DONE.MD / -STATUS-UNFINISHED.MD
+│                                #   (also -STATUS-BLOCKED.MD, -PLAN-STATUS-DONE.MD, …)
 ├── measurements/                # evidence runs, one dir per run (see below)
 └── references/                  # gitignored external sources (EmuTOS checkout, …);
                                  #   only references/README.md is tracked
@@ -214,13 +247,17 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
 - **Measurement / evidence runs** go to
   `measurements/measurement-YYYY-MM-DD-<ticket-ids>/` (lowercase ticket IDs,
   joined by `-`). Typical content: `RUNINFO.TXT` (what, why, how, result),
-  `method/` (scripts, patches, action files), `serial/`, `screendumps/`.
+  `<run>/method/` (scripts, patches, action files), `<run>/serial/`,
+  `<run>/screendumps/`.
   Per-run SD images and kernel binaries are gitignored; record their sha256.
 - **Runs are immutable once committed.** Never edit files inside an existing
   run directory — several carry sha256 manifests over their own files. A
   correction is a new run or a note in the ticket.
 - Cite runs from tickets/docs/code repo-relative:
   `measurements/measurement-…/RUNINFO.TXT`.
+- **`docs/archive/` is history, never evidence.** Archived text records what
+  was believed or done at the time; cite code, measurement runs, the oracle
+  or a live doc instead.
 - **Scratch** (temporary images, scratch kernels, probes) goes to
   `$CLAUDE_JOB_DIR/tmp` or the session scratchpad, never the repo or shared `/tmp`.
 - Built `kernel8.img` for the card is not kept in the root; build with
@@ -235,8 +272,9 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
 - **TOS error codes**: `pub const E_OK: i32 = 0; pub const EFILNF: i32 = -33;` etc.
   Defined in `tos-types::error`. Match Compendium values exactly.
 - **Hardware registers**: `BCM2711_<PERIPHERAL>_<REGISTER>` in `kernel::drivers::bcm2711`.
-- **Trap numbers**: named constants, not magic numbers.
-  `TRAP_GEMDOS = 1; TRAP_BIOS = 13; TRAP_XBIOS = 14;`
+- **Trap numbers**: named, not magic numbers — the dispatcher decodes them into
+  `TrapClass` (`Gemdos` = 1, `Gem` = 2, `Bios` = 13, `Xbios` = 14) in
+  `tos-api/src/trap.rs`.
 
 ---
 
@@ -244,13 +282,13 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
 
 1. **Have you completed the source analysis per `SOURCE-ANALYSIS-PROTOCOL.md`?**
    No → STOP and do that first. Yes → continue.
-2. Read the **current phase document** in `phases/PHASE-XX-*.md`. Out-of-phase
-   work requires explicit user approval.
+2. Read the **ticket** in `TASK/` you are working on. Work outside the ticket
+   list requires explicit user approval.
 3. Read the **TOS API spec** for the function in `docs/api/`. If missing → see Rule 5.
 4. Check `docs/MEMORY.md` for related ADRs and learned-the-hard-way knowledge.
 5. Check `docs/STATUS.md` for related work in progress and open issues.
-6. Reference any spec section, ADR, or phase deliverable ID in commit messages
-   (e.g., `feat(gemdos): implement Cconin per docs/api/gemdos.md#0x01`).
+6. Reference the ticket ID, and any spec section or ADR, in commit messages
+   (e.g., `fix(desk): … (DESK43 U8b)`).
 
 ---
 
@@ -260,25 +298,33 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
 - Scope is the crate or subsystem: `feat(gemdos): ...`, `fix(mmu): ...`.
 - Subject line ≤ 72 chars, imperative mood, English.
 - Body explains **why**, not **what**. The diff shows the what.
-- Reference phase deliverable IDs: `Closes PHASE-02-D3`.
+- Reference ticket IDs: `(A118)`, `(DESK43 U8b)`.
 - Never commit broken builds. Never commit failing tests without `#[ignore]` + reason.
 - History was rewritten on 2026-10-19 (`git filter-repo`). A commit hash quoted
   in TASK/, docs/ or measurements/ before that date is an **old** hash:
   translate it with `tools/oldhash.sh <prefix>` (map: `docs/commit-map.txt`)
   and cite the current hash in new text.
 - **Keep `docs/STATUS.md` in lockstep — required, after every feature, not only
-  at phase ends.** For each landed extension: bump the affected phase row **and**
-  append a dated entry to *Recent Decisions* (what + why + the commit hashes), in
-  the **same** work unit — not "later". A foreign uncommitted change already in
+  at phase ends.** For each landed extension: update the current-state section
+  if it changed **and** add a dated entry at the top of *Recent Decisions*
+  (newest first; what + why + the commit hashes), in the **same** work unit —
+  not "later". *Recent Decisions* holds at most 10 entries: move the oldest to
+  the log in `docs/archive/` in the same commit. A foreign uncommitted change already in
   `STATUS.md` is **not** an excuse to skip it: `git stash push -- docs/STATUS.md`,
   add your entry on the clean base, commit, then `git stash pop`.
+- After editing `CLAUDE.md`, `docs/STATUS.md` or `docs/MEMORY.md`, run
+  `cargo xtask doc-check`: every path and `file:line` cite must resolve.
 
 ---
 
 ## Testing
 
 - Unit tests in-crate, `#[cfg(test)]`, runnable on host where logic permits.
-- Integration tests in QEMU `aarch64-virt`, scripted via `cargo xtask qemu-test`.
+- Host tests: `cargo xtask test` (tos-api, tos-types, xtask).
+- Integration runs in QEMU via `cargo xtask run --board rpi4|qemu-virt`, driven
+  by the scripts in the run's `measurements/*/method/`.
+- Conformance with EmuTOS: tosdump cases against the oracle
+  (`docs/analysis/ORACLE.md`).
 - Hardware tests on RPi4 are manual, documented in `docs/HW-TEST-LOG.md`.
 - Every TOS API function gets at least one test that verifies the documented
   return value for documented input, and one that verifies the documented
@@ -291,7 +337,7 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
 In order:
 
 1. Re-read `docs/SOURCE-ANALYSIS-PROTOCOL.md`. Did you follow it?
-2. Read the phase document.
+2. Read the ticket, and the phase document if the ticket names one.
 3. Read the relevant `docs/api/*.md` entry.
 4. Consult the primary sources per Track A or Track B.
 5. Consult the secondary sources.
