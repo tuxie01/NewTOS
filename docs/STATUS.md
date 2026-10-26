@@ -82,13 +82,13 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
 - **Umfang 1.0 (Anwender 2026-10-23):** FAT16 bleibt das einzige Dateisystem
   (FAT32/exFAT nach 1.0); **Ton gehoert dazu** — SND01 (Falcon-DMA-Sound),
   SND02 (HDMI), H04 (Klingel, Tastenklick, `Dosound`), alle P2.
-- **P3 / P4:** 56 Tickets P3 und 4 Tickets P4 mit Status OFFEN, dazu 80 P3 und
+- **P3 / P4:** 57 Tickets P3 und 4 Tickets P4 mit Status OFFEN, dazu 80 P3 und
   1 P4 im BACKLOG, 3 TEILWEISE, 3 IDEE. Darunter: ARCH03 Stufe 2b, SDL01,
   RTC01, REF03, REF05 (GIC-Quellen), REF06 (fehlende Track-B-Quellen), T15,
   DESK49, DESK51–DESK55, DESK61, DESK63, DESK65, DESK66, DESK67, DESK69, FS12
   (26 Laufwerke), FS15, FS16, FS17, LIBC-IOCTL, A119–A125, RST02, INPUT02,
   CON03, ARCH04, USB02, MEM08, MEM10, [KEYS03](../TASK/KEYS03.md),
-  [T18](../TASK/T18.md); zurueckgestellt COOK01; Ideen MEM06,
+  [T18](../TASK/T18.md), [FS19](../TASK/FS19.md) (`Fsfirst`-Reihenfolge, erst messen); zurueckgestellt COOK01; Ideen MEM06,
   IO01.
 - **Luecke ohne Ticket — `shel_find` Stufe 4 (`PATH=`):** von EmuTOS'
   vierstufiger `findfile`-Ordnung (`gemshlib.c:406-472`) sind Stufe 1
