@@ -6,9 +6,9 @@
 > link, enumerate the VL805, map its xHCI BAR, and load its firmware — then point
 > the existing `drivers::usb::xhci` driver at it.
 >
-> **Authority / source:** `references/circle` — `lib/bcmpciehostbridge.cpp`
+> **Authority / source:** `references/circle/lib/bcmpciehostbridge.cpp`
 > (`pcie_probe`/`pcie_setup`/`enable_bridge`/`enable_device` + the RDB register
-> field names) and `lib/usb/xhcidevice.cpp` (orchestration + VL805 firmware
+> field names) and `references/circle/lib/usb/xhcidevice.cpp` (orchestration + VL805 firmware
 > mailbox). The official BCM2711 datasheet does **not** document the PCIe RC, so
 > circle (which mirrors the Linux `pcie-brcmstb` driver) is the Track-B reference
 > per the phase doc. The internal-xHCI alternative (`0xFE9C0000`, USB-C only,

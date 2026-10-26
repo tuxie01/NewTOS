@@ -65,5 +65,5 @@ implement it and, once bound, poll their interrupt-IN endpoint and feed
 
 Both HID drivers request the **boot protocol** (`SET_PROTOCOL` = 0), whose
 report layout is fixed (see the HID specs). So the full HID **report-descriptor
-parser** (`hid-common/hidparse.c`) is **not needed for D4/D5** and is deferred
+parser** (`FM/usb/src.km/udd/hid/hid-common/hidparse.c`) is **not needed for D4/D5** and is deferred
 (needed only for non-boot devices / gamepads later).

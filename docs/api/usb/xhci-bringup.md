@@ -4,14 +4,14 @@
 > how to find the controller, what `rust-osdev/xhci` gives us, and the
 > xHCI-spec init sequence `HostController::open` runs. **Authority:** the
 > *eXtensible Host Controller Interface (xHCI) spec* (Intel) + the QEMU
-> `hw/arm/virt.c` memory map + the Raspberry Pi firmware VL805 interface;
+> hw/arm/virt.c memory map + the Raspberry Pi firmware VL805 interface;
 > Circle (`rsta2/circle`) is the cross-check. PHASE-16 D1.
 
 ## 1. Finding the controller (the only QEMU-vs-Pi-4 divergence)
 
 ### QEMU `virt` — PCIe ECAM
 `qemu-system-aarch64 -device qemu-xhci` puts an xHCI on the virt PCIe bus.
-From `hw/arm/virt.c` `base_memmap`:
+From QEMU hw/arm/virt.c `base_memmap`:
 
 | Window | Base | Size |
 |---|---|---|
@@ -105,5 +105,5 @@ A small bump/page allocator for these (from the existing frame allocator) is
 the first thing D1 builds.
 
 **Sources:** xHCI spec (Intel) ch. 4–6; QEMU
-[`hw/arm/virt.c`](https://github.com/qemu/qemu/blob/master/hw/arm/virt.c)
+[hw/arm/virt.c](https://github.com/qemu/qemu/blob/master/hw/arm/virt.c)
 `base_memmap`; `rust-osdev/xhci`; `rsta2/circle` (xHCI + VL805 reference).

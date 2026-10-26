@@ -25,12 +25,14 @@ selbstbeschreibende Dateien, **kein Sonderbuild** des Kernels (kein Feature `usb
 
 ## 0. Kennzeichnung der Aussagen
 
-* **[G]** gelesen, mit `Datei:Zeile` belegt (diese Sitzung, `main` bei `03ae70c8`).
+* **[G]** gelesen, mit `Datei:Zeile` belegt (diese Sitzung, `main` bei `03ae70c8`; die Zitate auf
+  `kernel/src/drivers/usb/` sind am 2026-10-26 auf den damaligen Stand nachgefuehrt, inzwischen
+  ersetzte Stellen tragen „cite stale“).
   **[S]** Schluss aus dem Gelesenen, nicht beobachtet. **[?]** aus den lokalen Quellen
   nicht entscheidbar. **[E]** Entwurfsentscheidung dieses Dokuments (kein Fakt ueber
   fremden Code, sondern ein Vorschlag, den der Anwender kippen darf).
-* **Lokal vorhanden** (`references/`, gitignored): `usb/hid1_11.pdf` (HID 1.11),
-  `xhci/xhci-1.2.pdf`. **USB 2.0 ist nicht lokal**; Aussagen dazu sind [S]/[?].
+* **Lokal vorhanden** (`references/`, gitignored): `references/usb/hid1_11.pdf` (HID 1.11),
+  `references/xhci/xhci-1.2.pdf`. **USB 2.0 ist nicht lokal**; Aussagen dazu sind [S]/[?].
   FreeMiNT (`references/freemint/sys/usb/`) dient nur als **Datenmodell**
   (`usb.h:84-100` `struct usb_device_descriptor`, `:187-229` `struct usb_device`
   mit `speed`, `mf`/`prod`/`serial`, `portnr`, `parent`; `usb_api.h:127-186`
@@ -46,18 +48,18 @@ selbstbeschreibende Dateien, **kein Sonderbuild** des Kernels (kein Feature `usb
 
 | Datum | Heute | Beleg |
 |---|---|---|
-| Geraetedeskriptor (18 Byte) | gelesen in `DEV[di].buf`, **ueberschrieben** beim naechsten Transfer; behalten nur `class`, `vid`, `pid` | `xhci/mod.rs:1138-1173` (`:1169-1171`), `buf` `:122` |
-| Konfigurationsdeskriptor | 9 Byte, dann `wTotalLength` **gekappt auf 255**, nur gedruckt (`usb-diag`) und von `config_desc::scan` ausgewertet, danach ueberschrieben | `:1232-1263`, Kappung `:1242`, `buf: [u8;256]` `:122` |
-| HID-Report-Deskriptor | **nie abgerufen** (`get_descriptor` kennt nur Typ 1 und 2) | `:1117-1134`; `hid-mouse-protocols.md` §1.3 |
+| Geraetedeskriptor (18 Byte) | gelesen in `DEV[di].buf`, **ueberschrieben** beim naechsten Transfer; behalten nur `class`, `vid`, `pid` | `kernel/src/drivers/usb/xhci/mod.rs:1347-1399` (`:1381-1383`), `buf` `:133` |
+| Konfigurationsdeskriptor | 9 Byte, dann `wTotalLength` **gekappt auf 255**, nur gedruckt (`usb-diag`) und von `config_desc::scan` ausgewertet, danach ueberschrieben | (cite stale 2026-10-26: xhci/mod.rs:1232-1263), Kappung (cite stale 2026-10-26: xhci/mod.rs:1242), `buf: [u8;256]` `:133` |
+| HID-Report-Deskriptor | **nie abgerufen** (`get_descriptor` kennt nur Typ 1 und 2) | `:1326-1343`; `hid-mouse-protocols.md` §1.3 |
 | HID-Deskriptor (0x21, `wDescriptorLength`) | im Konfigurationsstrom vorhanden, von `scan` **uebersprungen** (`_ => {}`) | `config_desc.rs:135-203` |
-| Interface-Auswahl | `scan` waehlt **nur** das erste HID-Boot-Interface (Klasse 3, Subklasse 1, Protokoll 1/2) mit Interrupt-IN; jedes andere Interface liefert eine Logzeile mit `SkipReason` (F2/F8) | `config_desc.rs:66-80,119-129,135`; Log `xhci/mod.rs:1299-1319`; Text `config_desc.rs:207-217` |
-| Geraet **ohne** gewaehltes Boot-Interface | `read_config` gibt `None` → `configure_hid` bricht mit `?` ab: **weder Configure Endpoint noch `SET_CONFIGURATION`, kein Endpoint scharf** | `xhci/mod.rs:1328-1334`, `:1441` |
-| Rohe Interrupt-Berichte | `poll_interrupt` liefert `[u8;8]` + Laenge, `poll` dekodiert Protokoll 1/2 und wirft sie weg; Protokoll ≠ 1/2 → `_ => {}` | `xhci/mod.rs:658-716`; `mod.rs:139-157` |
-| Berichtspuffer / TRB-Laenge | `intbuf: [u8;8]`, TRB-Laenge fest 8, Laenge = `8 - Rest` | `xhci/mod.rs:123`, `:604`, `:697-698` |
-| Pfad, Geschwindigkeit, Slot, Rolle | in `HidDev` vorhanden: `slot`, `dci`, `protocol`, `port`, `vid`, `pid`, `class`, `route`, `speed` (PORTSC-Speed-ID 1 voll, 2 niedrig, 3 hoch, 4 super) | `xhci/mod.rs:167-191`; Zuweisung `:1563-1569`; Hub-Kinder `:1671-1679` |
-| Eltern-Hub | **nicht gespeichert** (nur Route-String und TT-Slot) | `xhci/mod.rs:1679-1687` |
-| Controller ohne Geraet | `XHCI` wird nur gesetzt, wenn `enumerate_all() > 0`; sonst Controller-Objekt verworfen | `mod.rs:65-68` |
-| Kein Controller auf `raspi4b` | `find_xhci` → `None` („RC not present“), `usb::init` kehrt zurueck | `pcie_rpi4.rs:457-468`; `mod.rs:58` |
+| Interface-Auswahl | `scan` waehlt **nur** das erste HID-Boot-Interface (Klasse 3, Subklasse 1, Protokoll 1/2) mit Interrupt-IN; jedes andere Interface liefert eine Logzeile mit `SkipReason` (F2/F8) | `config_desc.rs:66-80,119-129,135`; Log `kernel/src/drivers/usb/xhci/mod.rs:1535-1555`; Text `config_desc.rs:207-217` |
+| Geraet **ohne** gewaehltes Boot-Interface | `read_config` gibt `None` → `configure_hid` bricht mit `?` ab: **weder Configure Endpoint noch `SET_CONFIGURATION`, kein Endpoint scharf** | `kernel/src/drivers/usb/xhci/mod.rs:1615-1622`, `:1891` |
+| Rohe Interrupt-Berichte | `poll_interrupt` liefert `[u8;8]` + Laenge, `poll` dekodiert Protokoll 1/2 und wirft sie weg; Protokoll ≠ 1/2 → `_ => {}` | (cite stale 2026-10-26: xhci/mod.rs:658-716); (cite stale 2026-10-26: mod.rs:139-157) |
+| Berichtspuffer / TRB-Laenge | `intbuf: [u8;8]`, TRB-Laenge fest 8, Laenge = `8 - Rest` | (cite stale 2026-10-26: xhci/mod.rs:123), (cite stale 2026-10-26: xhci/mod.rs:604), (cite stale 2026-10-26: xhci/mod.rs:697-698) |
+| Pfad, Geschwindigkeit, Slot, Rolle | in `HidDev` vorhanden: `slot`, `dci`, `protocol`, `port`, `vid`, `pid`, `class`, `route`, `speed` (PORTSC-Speed-ID 1 voll, 2 niedrig, 3 hoch, 4 super) | `kernel/src/drivers/usb/xhci/mod.rs:269-297`; Zuweisung `:2162-2168`; Hub-Kinder `:2320-2328` |
+| Eltern-Hub | **nicht gespeichert** (nur Route-String und TT-Slot) | (cite stale 2026-10-26: xhci/mod.rs:1679-1687) |
+| Controller ohne Geraet | `XHCI` wird nur gesetzt, wenn `enumerate_all() > 0`; sonst Controller-Objekt verworfen | (cite stale 2026-10-26: mod.rs:65-68) |
+| Kein Controller auf `raspi4b` | `find_xhci` → `None` („RC not present“), `usb::init` kehrt zurueck | `pcie_rpi4.rs:457-468`; `kernel/src/drivers/usb/mod.rs:102` |
 
 **Befund, der den Entwurf bestimmt [G/S]:** Seit F2 wird ein **Report-only-Geraet**
 (HID-Klasse, Subklasse 0, z. B. QEMU `usb-tablet`, Funkempfaenger-Interfaces, jede Maus,
@@ -69,12 +71,12 @@ bestehenden Pfad abgreift, sieht genau die Maeuse **nicht**, wegen derer es geba
 Der Kern braucht deshalb einen **Beobachtungs-Pfad** (§3.2): Interface konfigurieren und
 Berichte aufzeichnen, aber nicht dekodieren.
 
-**Zweiter Befund [G + xHCI 1.2]:** Die TRB-Laenge ist fest 8 Byte (`:604`). Sendet ein
+**Zweiter Befund [G + xHCI 1.2]:** Die TRB-Laenge ist fest 8 Byte (cite stale 2026-10-26: xhci/mod.rs:604). Sendet ein
 Geraet ein Paket, das groesser ist als die restliche TD-Laenge, meldet der xHC
 *Babble Detected Error* und setzt den Endpoint auf **Halted** (xHCI 1.2 §4.10.2.4,
 Tabelle bei „DPP exceeds Max Packet Size or remaining TD Transfer Size Error“;
 §4.8.3: „A Reset Endpoint Command shall be used to clear the Halt condition“). Der
-Fehlerzweig in `poll_interrupt` armiert nur neu (`xhci/mod.rs:700-712`), ohne Reset
+Fehlerzweig in `poll_interrupt` armiert nur neu (`kernel/src/drivers/usb/xhci/mod.rs:899-921`), ohne Reset
 Endpoint. Eine Report-Protokoll-Maus mit Berichten > 8 Byte und Max-Packet-Size > 8 ist
 damit **vermutlich** dauerhaft stumm [S] — und das Werkzeug wuerde ohne Gegenmassnahme
 nur „0 Berichte“ zeigen. Gegenmassnahme in §3.3 (TRB-Laenge = Max-Packet-Size, Zaehler
@@ -153,7 +155,7 @@ Rueckgabewerte mit den Konstanten aus `tos-types/src/error.rs` (`ERROR` `:21`, `
   `pcie_rpi4.rs:465-468`) und jeder Boot ohne gefundenen Controller → `ERROR`.
   Controller gefunden, aber **kein** Geraet gesteckt → `E_OK` mit `n_devices = 0`. Das
   verlangt eine Kernel-Aenderung (§5, K5): heute wird das Controller-Objekt in diesem
-  Fall verworfen (`mod.rs:65-68`), beides waere nicht unterscheidbar.
+  Fall verworfen (cite stale 2026-10-26: mod.rs:65-68), beides waere nicht unterscheidbar.
 * **Zu alter Kernel:** `EINVFN` (-32) — Folge des Dispatchers, nicht dieses Modus.
 * Wahl `E_OK` statt eines „Puffer zu klein“-Codes (§2.5): Praezedenz 2019 (Abschneiden
   ist `E_OK`, `ssystem.rs:182-209`) und kein neuer, in TOS schwach belegter Fehlercode
@@ -162,7 +164,7 @@ Rueckgabewerte mit den Konstanten aus `tos-types/src/error.rs` (`ERROR` `:21`, `
 ### 2.4 Op 1 `LIST` — Geraeteliste
 
 Rumpf = Listenkopf (16 Byte) + `n_devices` × `entry_len` Byte. Die Liste enthaelt **jeden
-belegten Geraeteslot** (`hid[0..n_hid]`, `xhci/mod.rs:332`), auch Hubs (Rolle 4) und
+belegten Geraeteslot** (`hid[0..n_hid]`, `kernel/src/drivers/usb/xhci/mod.rs:494`), auch Hubs (Rolle 4) und
 fehlgeschlagene Enumerationen (Rolle 5); das Programm filtert fuer die Anzeige.
 
 **Listenkopf**
@@ -172,9 +174,9 @@ fehlgeschlagene Enumerationen (Rolle 5); das Programm filtert fuer die Anzeige.
 | 0 | u32 | `generation` — v1: 1, nach der Enumeration konstant; **reserviert fuer Hotplug (F6)**, damit Clients Neuenumeration erkennen |
 | 4 | u16 | `n_devices` |
 | 6 | u16 | `entry_len` (v1: **32**; Clients muessen mit `entry_len` weiterschalten, nicht mit 32) |
-| 8 | u8 | `root_ports` (`Xhci::root_ports`, `xhci/mod.rs:1224`) |
+| 8 | u8 | `root_ports` (`Xhci::root_ports`, `kernel/src/drivers/usb/xhci/mod.rs:1450`) |
 | 9 | u8 | `controller_state` (v1: 1 = xHCI laeuft) |
-| 10 | u16 | `enum_skipped` — Zahl der F8-Ereignisse „Geraet nicht enumeriert“ (Budget `MAX_HID` an den drei Stellen `xhci/mod.rs:1481`, `:1546`, `:1634`; `enable_slot` `:1556`; Root-Port-Reset `:1490`; Address Device `:1587`) |
+| 10 | u16 | `enum_skipped` — Zahl der F8-Ereignisse „Geraet nicht enumeriert“ (Budget `MAX_HID` an den drei Stellen `kernel/src/drivers/usb/xhci/mod.rs:2057`, `:2143`, `:2282`; `enable_slot` `:2154`; Root-Port-Reset `:2067`; Address Device `:2212`) |
 | 12 | u32 | reserviert, 0 |
 
 **Eintrag (32 Byte)** — auch der Kopf von Op 2
@@ -182,14 +184,14 @@ fehlgeschlagene Enumerationen (Rolle 5); das Programm filtert fuer die Anzeige.
 | Off | Gr. | Feld | Quelle |
 |---:|---|---|---|
 | 0 | u8 | `index` (0-basiert = Position in `hid[]`; Schluessel fuer Op 2/3) | `HidDev`-Index `di` |
-| 1 | u8 | `slot` (xHCI-Slot-ID) | `hid[di].slot` `:1564` |
-| 2 | u8 | `root_port` (1-basiert) | `:1565` |
+| 1 | u8 | `slot` (xHCI-Slot-ID) | `hid[di].slot` `:2163` |
+| 2 | u8 | `root_port` (1-basiert) | `:2164` |
 | 3 | u8 | `parent` — Index des Hub-Eintrags, `0xFF` = am Root-Port | **neu**, K4 |
-| 4 | u32 | `route` — xHCI-Route-String, 4 Bit je Hub-Stufe, Stufe 0 = unterstes Nibble | `:1566`, Aufbau `:1679` |
-| 8 | u16 | `vid` | `:1170` |
-| 10 | u16 | `pid` | `:1171` |
-| 12 | u8 | `dev_class` (`bDeviceClass`) | `:1169` |
-| 13 | u8 | `speed`: PORTSC-Speed-ID **1 voll, 2 niedrig, 3 hoch, 4 super** (nicht die Zaehlung von `RootHubStatus`, `mod.rs:240`) | `:1567`; `ep0_max_packet` `:248` |
+| 4 | u32 | `route` — xHCI-Route-String, 4 Bit je Hub-Stufe, Stufe 0 = unterstes Nibble | `:2165`, Aufbau `:2328` |
+| 8 | u16 | `vid` | `:1382` |
+| 10 | u16 | `pid` | `:1383` |
+| 12 | u8 | `dev_class` (`bDeviceClass`) | `:1381` |
+| 13 | u8 | `speed`: PORTSC-Speed-ID **1 voll, 2 niedrig, 3 hoch, 4 super** (nicht die Zaehlung von `RootHubStatus`, `kernel/src/drivers/usb/mod.rs:320`) | `kernel/src/drivers/usb/xhci/mod.rs:2166`; `ep0_max_packet` `:410` |
 | 14 | u8 | `role` — siehe unten | **neu** |
 | 15 | u8 | `reason` — siehe unten | **neu** |
 | 16 | u8 | `flags`: Bit 0 Geraetedeskriptor gueltig, 1 Konfiguration gueltig, 2 Konfiguration gekappt, 3 `SET_CONFIGURATION` gesendet | **neu** |
@@ -198,7 +200,7 @@ fehlgeschlagene Enumerationen (Rolle 5); das Programm filtert fuer die Anzeige.
 | 19 | u8 | `ring_ep` — Endpoint-Adresse (Bit 7 = IN), 0 = keiner | `HidInfo.ep_addr` `config_desc.rs:49` |
 | 20 | u32 | `ring_oldest_seq` | K1 |
 | 24 | u32 | `ring_next_seq` | K1 |
-| 28 | u16 | `int_errors` — Zahl der Interrupt-Transfers mit Completion-Code ≠ Success/ShortPacket | K1, Fehlerzweig `:700-712` |
+| 28 | u16 | `int_errors` — Zahl der Interrupt-Transfers mit Completion-Code ≠ Success/ShortPacket | K1, Fehlerzweig `kernel/src/drivers/usb/xhci/mod.rs:899-921` |
 | 30 | u8 | `last_cc` — letzter solcher xHCI-Completion-Code (Zahl, xHCI 1.2 §6.4.5 Tabelle 6-90, z. B. 3 Babble, 6 Stall; 0 = keiner) | K1 |
 | 31 | u8 | v1: reserviert, 0. **v2:** `n_funcs` — Zahl der Funktionen (Interfaces, deren Endpoint den Ring fuellt; Interface-Zeilen mit Byte 14 = 1), §10 |
 
@@ -207,7 +209,7 @@ fehlgeschlagene Enumerationen (Rolle 5); das Programm filtert fuer die Anzeige.
 dekodiert → `hid::mouse_report`); 3 = **nur beobachtet** (HID-Interface konfiguriert,
 Berichte aufgezeichnet, **nicht dekodiert** — §3.2); 4 = Hub; 5 = Enumeration
 fehlgeschlagen (Slot belegt, Geraet unbrauchbar).
-Die Rollen 1/2/4 entsprechen `HidDev.protocol` 1/2/9 (`xhci/mod.rs:171`, `:1592`).
+Die Rollen 1/2/4 entsprechen `HidDev.protocol` 1/2/9 (`kernel/src/drivers/usb/xhci/mod.rs:273`, `:2222`).
 
 **`reason`** (0 = „benutzt“; sonst warum **kein** Treiber das Geraet nimmt, oder warum
 nur beobachtet). Codes 1–5 = `config_desc::SkipReason` + 1, **dieselben Gruende wie die
@@ -224,13 +226,13 @@ F2/F8-Logzeilen** (`config_desc.rs:66-80`, Texte `:207-217`):
 | 6 | v2: `FunctionLimit` — Boot-Interface ueber der Funktionsgrenze (je Geraet 4, insgesamt 12; `hid-mouse-protocols.md` §9.3 R6) | „function limit“ |
 | 7 | v2: `AlternateSetting` — Boot-Interface in Alternate Setting ≠ 0 (§9.3 R1) | „HID boot interface in an alternate setting (only alternate setting 0 is used)“ |
 | 8 | v2: `EndpointCollision` — Boot-Interface auf dem Endpoint (DCI) einer frueheren Funktion (§9.3 R7) | „HID boot interface on an endpoint an earlier function already uses“ |
-| 16 | Geraet hat **kein** Interface der Klasse 3 (`xhci/mod.rs:1329-1333`) | „no HID boot keyboard/mouse interface — not an input device“ |
-| 17 | Konfigurationsdeskriptor nicht lesbar (`:1234-1236`, `:1253-1259`) | „configuration … read failed“ |
-| 18 | Configure Endpoint fehlgeschlagen (`:1447-1449`) | „configure_endpoint → …“ |
-| 19 | `SET_CONFIGURATION` fehlgeschlagen (`:1450-1453`) | „set_configuration failed“ |
-| 20 | `SET_PROTOCOL(boot)` fehlgeschlagen (`:1454-1457`) | „set_protocol(boot) failed“ |
-| 21 | Address Device fehlgeschlagen (`:1587-1589`) | „address_device slot … →“ |
-| 22 | Geraetedeskriptor nicht lesbar (`:1144-1162`) | „get device descriptor … failed“ |
+| 16 | Geraet hat **kein** Interface der Klasse 3 (`kernel/src/drivers/usb/xhci/mod.rs:1616-1621`) | „no HID boot keyboard/mouse interface — not an input device“ |
+| 17 | Konfigurationsdeskriptor nicht lesbar (`:1469-1472`, `:1489-1497`) | „configuration … read failed“ |
+| 18 | Configure Endpoint fehlgeschlagen (`:1945-1948`) | „configure_endpoint → …“ |
+| 19 | `SET_CONFIGURATION` fehlgeschlagen (`:1966-1970`) | „set_configuration failed“ |
+| 20 | `SET_PROTOCOL(boot)` fehlgeschlagen (`:1980-1988`) | „set_protocol(boot) failed“ |
+| 21 | Address Device fehlgeschlagen (`:2212-2219`) | „address_device slot … →“ |
+| 22 | Geraetedeskriptor nicht lesbar (`:1353-1374`) | „get device descriptor … failed“ |
 
 Das Geraet-`reason` ist der **erste** Grund in Deskriptor-Reihenfolge, der verhinderte,
 dass das Geraet Rolle 1/2 bekam; die vollstaendige Aufschluesselung je Interface steht
@@ -323,7 +325,7 @@ Danach `count` Eintraege ab `max(arg, oldest_seq)` in aufsteigender `seq`:
   Event-Ring holt, **nicht** der Moment, in dem das Geraet ihn sendete. Der Takt der
   `poll()`-Aufrufe (Timer-IRQ-Pump 200 Hz plus Trap-seitige Pumps, `host_env.rs:20-60`,
   `:460-540`) bestimmt die Aufloesung. Die Datei sagt das (§4.4).
-* **Abholrate:** `poll_interrupt` liefert **einen** Bericht je Aufruf (`mod.rs:139`).
+* **Abholrate:** `poll_interrupt` liefert **einen** Bericht je Aufruf (`kernel/src/drivers/usb/mod.rs:201`).
   Ein 1-kHz-Mausmodell (z. B. die Roccat: `bInterval 1`, Log `run3…:94`) wird also nur so
   schnell aufgezeichnet, wie `poll()` laeuft. Das Programm treibt `poll()` mit einer
   `Cconis`-Schleife (§4.2); fehlende Berichte erscheinen als Luecke in der Zeitspalte.
@@ -346,8 +348,8 @@ sperren. Antwort-Rumpf: `u32 muted_until` (0 = aus), `u32 reserved`.
 
 | Grenze | Wert | Warum |
 |---|---:|---|
-| Geraete | `MAX_HID` = 8 | `xhci/mod.rs:98` |
-| Konfigurationsdeskriptor | 1024 Byte | heute 255 (`:1242`); Hub-Empfaenger und Verbundgeraete sind groesser; Roccat 59 Byte (`run3…:90`) |
+| Geraete | `MAX_HID` = 8 | `kernel/src/drivers/usb/xhci/mod.rs:98` |
+| Konfigurationsdeskriptor | 1024 Byte | heute 255 (cite stale 2026-10-26: xhci/mod.rs:1242); Hub-Empfaenger und Verbundgeraete sind groesser; Roccat 59 Byte (`run3…:90`) |
 | Report-Deskriptor | 2048 Byte × max. 4 Interfaces | `wDescriptorLength` ist u16 (HID 1.11 §6.2.1), reale Maus-Deskriptoren sind hundert bis wenige hundert Byte [S] |
 | Bericht je Eintrag | 64 Byte | volle Low/Full-Speed-Interrupt-Paketgroesse; HS-Endpoints bis 1024 sind fuer HID selten [S] |
 | Ring je Geraet | 256 Eintraege × 80 Byte = 20 KiB | bei 8 Geraeten 160 KiB `.bss` (Praezedenz: `bootlog` 192 KiB, `bootlog.rs:27`) |
@@ -372,21 +374,21 @@ sperren. Antwort-Rumpf: `u32 muted_until` (0 = aus), `u32 reserved`.
   (Daten, dann `next_seq` zuletzt erhoehen), *dann* dekodieren. [E, verlangt von K1]
 * **Der Schnappschuss-Speicher ist ein eigenes `static`**, getrennt von `XHCI`. Der
   Handler fasst `XHCI` nie an (kein zweiter `&mut` auf das gerade suspendierte Objekt,
-  `mod.rs:41`, `:136`); alles, was LIST/DEVICE brauchen, wird bei der Enumeration dorthin
+  `kernel/src/drivers/usb/mod.rs:85`, `:190`); alles, was LIST/DEVICE brauchen, wird bei der Enumeration dorthin
   kopiert (`root_ports`, `generation`, `enum_skipped`, Geraete).
 * Enumeration selbst (Deskriptoren, Report-Deskriptor, Strings) laeuft **einmalig im
-  Bootpfad** (`lib.rs:430`) vor dem ersten EL0-Programm — keine Wiedereintrittsfrage.
+  Bootpfad** (`kernel/src/lib.rs:430`) vor dem ersten EL0-Programm — keine Wiedereintrittsfrage.
 
 ## 3. Wann die Daten entstehen (Kern, `hid-mouse-protocols.md` §5.1)
 
-### 3.1 Ablauf je Geraet in `enumerate_device` (`xhci/mod.rs:1537-1605`)
+### 3.1 Ablauf je Geraet in `enumerate_device` (`kernel/src/drivers/usb/xhci/mod.rs:2133-2249`)
 
 1. `enable_slot`, `address_device` — unveraendert. Schlaegt etwas fehl: Eintrag mit
-   Rolle 5 und `reason` 21/22 (heute bleibt `hid[di]` belegt, `:1562-1570`, aber leer).
-2. `get_device_descriptor` (`:1138-1173`): nach dem 18-Byte-Lesen (`:1159`) die Rohbytes
+   Rolle 5 und `reason` 21/22 (heute bleibt `hid[di]` belegt, `:2161-2170`, aber leer).
+2. `get_device_descriptor` (`:1347-1399`): nach dem 18-Byte-Lesen (`:1370`) die Rohbytes
    in den Schnappschuss kopieren (K2).
-3. **Hub** (`class == 9`, `:1591`): Rolle 4; Konfiguration wird wie heute nur auf
-   `bConfigurationValue` gelesen (`read_config_value` `:1342`) — **kein** Konfigurations-
+3. **Hub** (`class == 9`, `:2221`): Rolle 4; Konfiguration wird wie heute nur auf
+   `bConfigurationValue` gelesen (`read_config_value` `:1763`) — **kein** Konfigurations-
    Abschnitt. `enumerate_hub` setzt `parent` der Kinder (K4).
 4. **Nicht-Hub:** `read_config` liest die Konfiguration mit Limit **1024** (heute 255) in
    einen gemeinsamen Enumerationspuffer (§5, K2) und kopiert sie in den Schnappschuss.
@@ -400,15 +402,15 @@ sperren. Antwort-Rumpf: `u32 muted_until` (0 = aus), `u32 reserved`.
 6. `configure_hid` fuer (i)/(ii): Configure Endpoint → `SET_CONFIGURATION` →
    `SET_PROTOCOL(boot)` **nur bei (i)** (HID 1.11 §7.2.6: nur Geraete der
    Boot-Subklasse unterstuetzen es; `hid-mouse-protocols.md` §1.3). Reihenfolge Configure
-   Endpoint vor `SET_CONFIGURATION` bleibt (`:1442-1445`).
+   Endpoint vor `SET_CONFIGURATION` bleibt (`:1921-1924`).
 7. **Nach erfolgreichem Schritt 6, als letzter Schritt von `enumerate_device`:**
    a. Je HID-Interface (alt 0, höchstens 4) den **Report-Deskriptor** holen:
       `bmRequestType 0x81`, `bRequest 6`, `wValue 0x2200`, `wIndex` = Interfacenummer,
       `wLength = min(wDescriptorLength, 2048)` (HID 1.11 §7.1.1; die Anfrage ist eine
       Interface-Anfrage und braucht den Zustand *Configured* — daher **nach**
       `SET_CONFIGURATION` [S, USB 2.0 nicht lokal]). Im Gegensatz zu `get_descriptor`
-      (`:1117`) geht das ueber den gemeinsamen Puffer (`control` nimmt eine beliebige
-      Pufferadresse, `:1063`).
+      (`:1326`) geht das ueber den gemeinsamen Puffer (`control` nimmt eine beliebige
+      Pufferadresse, `:1272`).
    b. Optional (Frage 2): `GET_DESCRIPTOR(String, 0)` fuer die erste LANGID, dann
       Hersteller- und Produktstring (`iManufacturer`/`iProduct` aus Byte 14/15 des
       Geraetedeskriptors). **Best effort**: Fehler ignorieren, Abschnitt faellt weg.
@@ -421,37 +423,37 @@ Control Endpoint request shall transition the Endpoint Context to the Halted sta
 Letztes, kann ein STALL keinen folgenden `SET_PROTOCOL` oder Hub-Zugriff mehr treffen;
 EP0 des Slots wird danach in v1 nicht mehr benutzt. **Randbedingung fuer F6 (Hotplug):**
 dort braucht EP0 einen Reset-Endpoint-Pfad. (`wait_transfer` meldet beim STALL `false`
-sobald das Event kommt, `:1014-1058`; bei stummem Geraet bleibt es beim 50-Mio-
-Spin-Timeout `:1028`.)
+sobald das Event kommt, `:1223-1267`; bei stummem Geraet bleibt es beim 50-Mio-
+Spin-Timeout `:1237`.)
 
 ### 3.2 Der Beobachtungs-Pfad (Rolle 3)
 
 Ein Interface, das heute abgelehnt wird (`NotBootSubclass`, `UnknownBootProtocol`),
 bekommt Configure Endpoint, `SET_CONFIGURATION` und einen armierten Interrupt-IN-Endpoint,
 aber **keinen** `SET_PROTOCOL` und **keine Dekodierung**: `poll()` hat fuer
-`protocol ∉ {1,2}` bereits den Zweig `_ => {}` (`mod.rs:152`) und re-armiert danach
-(`:156`). `HidDev.protocol` bleibt 0. Damit entsteht ein Ring ohne jede Wirkung auf
+`protocol ∉ {1,2}` bereits den Zweig `_ => {}` (`kernel/src/drivers/usb/mod.rs:232`) und re-armiert danach
+(`:236`). `HidDev.protocol` bleibt 0. Damit entsteht ein Ring ohne jede Wirkung auf
 IKBD/Cursor. **Verhaltensaenderung fuer alle Builds** (auch ohne Diagnose): bisher
 unbeachtete Report-only-Geraete werden konfiguriert und liefern Events. Risiko: ein
 exotisches Geraet, dessen Configure Endpoint fehlschlaegt, verbraucht Befehlsring-Budget
 (F1 loest die 15er-Grenze) und einen `MAX_HID`-Eintrag (verbraucht ihn heute ohnehin,
-`:1562-1570`). Fehlschlag bleibt wie heute nicht-fatal (`configure_hid` → `None`).
+`kernel/src/drivers/usb/xhci/mod.rs:2161-2170`). Fehlschlag bleibt wie heute nicht-fatal (`configure_hid` → `None`).
 [S — fuer echte VL805-Hardware nicht erprobt; Abnahme T7.]
 
 ### 3.3 Ring, Zaehler, Berichtspuffer in `poll`
 
-* **Puffer:** `intbuf` 8 → **64 Byte** (`:123`), TRB-Laenge = `clamp(wMaxPacketSize & 0x7FF,
-  8, 64)` statt fester 8 (`:604`). Begruendung: ein Paket, das die TD-Restlaenge
+* **Puffer:** `intbuf` 8 → **64 Byte** (`:165`), TRB-Laenge = `clamp(wMaxPacketSize & 0x7FF,
+  8, 64)` statt fester 8 (`:786`). Begruendung: ein Paket, das die TD-Restlaenge
   uebersteigt, ist *Babble* und halt den Endpoint (xHCI 1.2 §4.10.2.4); mit TRB-Laenge
   ≥ Max-Packet-Size kann ein Paket nie groesser sein als die TD. Fuer Max-Packet ≤ 8
   (QEMU-Maus: 4, `config_desc.rs` Test) aendert sich nichts (8 bleibt). Die Laenge ist
-  `trb_len - Rest` (`:697` bisher mit literal 8). Ist `wMaxPacketSize & 0x7FF > 64`,
+  `trb_len - Rest` (`:895` bisher mit literal 8). Ist `wMaxPacketSize & 0x7FF > 64`,
   setzt der Eintrag `flags.Bit0` (Bericht evtl. gekappt).
-* **`poll_interrupt`** (`:658`) gibt die Berichte als Slice (≤ 64 Byte) + Laenge + `cc`
+* **`poll_interrupt`** (`:854`) gibt die Berichte als Slice (≤ 64 Byte) + Laenge + `cc`
   zurueck; `hid::keyboard_report`/`mouse_report` bekommen weiter die ersten 8 Byte
-  (`hid.rs:69`, `:110`).
-* **`poll` (`mod.rs:132`)**: `record(di, bytes, cc, now)` *vor* dem `match` (§2.8);
-  `if muted() { skip decode }`; `queue_interrupt`. Im Fehlerzweig (`xhci/mod.rs:700-712`)
+  (`kernel/src/drivers/usb/hid.rs:53`, `:66`).
+* **`poll` (`kernel/src/drivers/usb/mod.rs:186`)**: `record(di, bytes, cc, now)` *vor* dem `match` (§2.8);
+  `if muted() { skip decode }`; `queue_interrupt`. Im Fehlerzweig (`kernel/src/drivers/usb/xhci/mod.rs:899-921`)
   `int_errors += 1; last_cc = code` — **ohne** Ring-Eintrag.
 * **Reset Endpoint** nach Halt (z. B. Babble) ist **nicht** Teil dieser Spec; das
   Werkzeug *zeigt* `int_errors`/`last_cc`, damit der Defekt in der Datei sichtbar wird
@@ -640,7 +642,7 @@ Regeln fuer den Programmteil:
   Report-ID-Item vorkommt (dann tragen alle Berichte ein fuehrendes ID-Byte, HID 1.11
   §6.2.2.7/§8.1).
 * **Decodierung der Berichte** nur bei Rolle 2 (Boot-Maus, HID 1.11 Anh. B.2: Byte 0 Tasten
-  Bit 0–2, Byte 1 X, Byte 2 Y, Byte 3 Rad nur bei `len > 3`, `hid.rs:163-181`) und
+  Bit 0–2, Byte 1 X, Byte 2 Y, Byte 3 Rad nur bei `len > 3`, `kernel/src/drivers/usb/hid_decode.rs:191-209`) und
   Rolle 1 (Boot-Tastatur, Anh. B.1: Byte 0 Modifier, Byte 1 reserviert, Byte 2–7 Usage-Codes
   als Zahlen). Rolle 3: nur Hex — ausdruecklich vermerkt: „report-protocol device, not
   decoded by NewTOS yet“.
@@ -649,17 +651,17 @@ Regeln fuer den Programmteil:
 
 ## 5. Kernel-seitige Aenderungen (der Kern aus §5.1) und Aufwand
 
-Zeilen gelten fuer `03ae70c8`.
+Zeilen galten fuer `03ae70c8`; am 2026-10-26 auf die Stellen nachgefuehrt, an denen K1–K9 gelandet sind.
 
 | # | Aenderung | Anker | Aufwand |
 |---|---|---|---|
-| K1 | Neues Modul `kernel/src/drivers/usb/snapshot.rs`: statischer Speicher (je Geraet Deskriptoren, Interface-Tabelle, Strings, Ring 256×80, Zaehler), `record`, `note_error`, `muted`, `set_mute`; reiner Encoder (Zwei-Pass: Groesse, dann Ausgabe) fuer Op 1–4; per Pfad in `tools/xtask` fuer Host-Tests eingebunden wie `ring.rs`/`config_desc.rs` (`tools/xtask/src/main.rs:61-68`) | neu; `mod.rs:33-35` | 1,25 d |
-| K2 | Enumeration behaelt Daten: Rohbytes des Geraetedeskriptors kopieren; `read_config` mit Limit 1024 in gemeinsamen `.dma`-Puffer (4-KiB-ausgerichtet, damit ein Puffer nie eine 64-KiB-Grenze kreuzt, xHCI 1.2 §6.4.1-Hinweis „Data buffers … shall not span 64KB boundaries“); `config_desc::scan` erweitert um Interface-Tabelle, Klasse-3-Liste, `wDescriptorLength` | `xhci/mod.rs:1159-1171`, `:1232-1263`, `:122`; `config_desc.rs:49`, `:135-203` | 1 d |
-| K3 | Beobachtungs-Pfad: Wahl (i)/(ii)/(iii), `SET_PROTOCOL` nur bei Boot, `intbuf` 64, TRB-Laenge = Max-Packet (8…64), Laenge `trb_len - Rest`, Rueckgabe als Slice | `xhci/mod.rs:123`, `:584-614`, `:658-716`, `:1440-1466`; `mod.rs:139-157`; `hid.rs:69,110` | 1 d |
-| K4 | `HidDev` um `parent`, Rolle/Reason, Fehlerzaehler erweitern; `enumerate_hub` reicht `di` des Hubs an `enumerate_device` (`:1687`); `enum_skipped` an allen F8-Stellen zaehlen | `xhci/mod.rs:167-211`, `:1481`, `:1546`, `:1556`, `:1587`, `:1634`, `:1687` | 0,5 d |
-| K5 | `usb::init`: Controller auch **ohne Geraet** behalten (`XHCI = Some(...)` unabhaengig von `enumerate_all() > 0`), damit „kein Controller“ (`ERROR`) und „keine Geraete“ (`n_devices 0`) unterscheidbar sind. Verhaltensaenderung: `poll()` laeuft dann auch bei leerem Controller (`mod.rs:135-137`) — ein Event-Ring-Check je Pump | `mod.rs:63-68` | 0,25 d |
-| K6 | Report-Deskriptor- und String-Abruf als letzter Schritt von `enumerate_device`, STALL-Behandlung wie §3.1 | `xhci/mod.rs:1597-1604`, neu `fetch_extras` | 0,75 d |
-| K7 | `usb::poll`: `record` vor Dekodierung, MUTE-Pruefung, Fehlerzaehler | `mod.rs:132-159` | 0,25 d |
+| K1 | Neues Modul `kernel/src/drivers/usb/snapshot.rs`: statischer Speicher (je Geraet Deskriptoren, Interface-Tabelle, Strings, Ring 256×80, Zaehler), `record`, `note_error`, `muted`, `set_mute`; reiner Encoder (Zwei-Pass: Groesse, dann Ausgabe) fuer Op 1–4; per Pfad in `tools/xtask` fuer Host-Tests eingebunden wie `ring.rs`/`config_desc.rs` (`tools/xtask/src/main.rs:61-68`) | neu; `kernel/src/drivers/usb/mod.rs:33-37` | 1,25 d |
+| K2 | Enumeration behaelt Daten: Rohbytes des Geraetedeskriptors kopieren; `read_config` mit Limit 1024 in gemeinsamen `.dma`-Puffer (4-KiB-ausgerichtet, damit ein Puffer nie eine 64-KiB-Grenze kreuzt, xHCI 1.2 §6.4.1-Hinweis „Data buffers … shall not span 64KB boundaries“); `config_desc::scan` erweitert um Interface-Tabelle, Klasse-3-Liste, `wDescriptorLength` | `kernel/src/drivers/usb/xhci/mod.rs:1370-1383`, `:1467-1497`, `:133`; `config_desc.rs:49`, `:135-203` | 1 d |
+| K3 | Beobachtungs-Pfad: Wahl (i)/(ii)/(iii), `SET_PROTOCOL` nur bei Boot, `intbuf` 64, TRB-Laenge = Max-Packet (8…64), Laenge `trb_len - Rest`, Rueckgabe als Slice | `kernel/src/drivers/usb/xhci/mod.rs:165`, `:766-797`, `:854-925`, `:1890-2042`; `kernel/src/drivers/usb/mod.rs:201-237`; `kernel/src/drivers/usb/hid.rs:53,66` | 1 d |
+| K4 | `HidDev` um `parent`, Rolle/Reason, Fehlerzaehler erweitern; `enumerate_hub` reicht `di` des Hubs an `enumerate_device` (`kernel/src/drivers/usb/xhci/mod.rs:2336`); `enum_skipped` an allen F8-Stellen zaehlen | `kernel/src/drivers/usb/xhci/mod.rs:269-319`, `:2057`, `:2143`, `:2154`, `:2212`, `:2282`, `:2336` | 0,5 d |
+| K5 | `usb::init`: Controller auch **ohne Geraet** behalten (`XHCI = Some(...)` unabhaengig von `enumerate_all() > 0`), damit „kein Controller“ (`ERROR`) und „keine Geraete“ (`n_devices 0`) unterscheidbar sind. Verhaltensaenderung: `poll()` laeuft dann auch bei leerem Controller (`kernel/src/drivers/usb/mod.rs:189-191`) — ein Event-Ring-Check je Pump | `kernel/src/drivers/usb/mod.rs:107-120` | 0,25 d |
+| K6 | Report-Deskriptor- und String-Abruf als letzter Schritt von `enumerate_device`, STALL-Behandlung wie §3.1 | `kernel/src/drivers/usb/xhci/mod.rs:2229-2241`, neu `fetch_extras` | 0,75 d |
+| K7 | `usb::poll`: `record` vor Dekodierung, MUTE-Pruefung, Fehlerzaehler | `kernel/src/drivers/usb/mod.rs:186-239` | 0,25 d |
 | K8 | `Host`-Trait: `usb_snapshot(req, sink)` mit Chunk-Sink (der Ssystem-Handler kopiert per `Space::copy_to`, kein grosser Zwischenpuffer); Kernel-Impl in `host_env.rs`; Hostlos-Default liefert „kein Controller“ | `tos-api/src/host.rs:337`; `kernel/src/host_env.rs:413` | 0,5 d |
 | K9 | Ssystem: Konstante `S_NEWTOS_USBSNAP = 2022`, Dispatch, Kopf-Validierung nach §2.3, Abbildung auf `E_OK`/`ERROR`/`EINVAL`; Test `tos-api/tests/gemdos_ssystem_usbsnap.rs` mit Mock-Host; Test `gemdos_ssystem_sysinfo.rs` („2022 ist kein Modus“) auf 2023 verschieben | `tos-api/src/gemdos/ssystem.rs:94`, `:121-124` | 0,75 d |
 | K10 | Programm `sdk/examples/usbsnap.c` + Image-Eintrag in `tools/make-sd-image.sh` (QEMU-Abbild) | neu; Vorbild `sysinfo.c`, `make-sd-image.sh:269` | 1,75 d |
@@ -691,7 +693,7 @@ Hostseitig und QEMU ohne Hardware, Abnahme am Ende an der Pi durch den Anwender.
 | T1 | Encoder-Goldvektoren: LIST/DEVICE/REPORTS/MUTE Byte fuer Byte; Ring Ueberlauf (`lost`), `MORE`, leere Abfrage `arg >= next_seq`; Kopf-Validierung; Wrap von `seq` | Host (`cargo xtask test`-Pfad wie `ring.rs`) | exakte Bytes |
 | T2 | `config_desc::scan` mit Verbundgeraeten: Roccat (3,1,2)+(3,0,1) aus `run3…log:90-97` (59 Byte), Report-only-Interface, Konfiguration > 1024, HID-Deskriptor fehlt, `bLength 0` | Host | Interface-Tabelle, `wDescriptorLength`, Wahl (i)/(ii)/(iii) |
 | T3 | Ssystem-Randfaelle mit Mock-Host: `len < 32`, `buf 0`, falsche Magic/Version/Op, Index zu gross, kein Controller (`ERROR`), zu kleiner Puffer (`E_OK` + `TRUNCATED`, nur Kopf), Op 4 `arg > 12000`; ungueltiger Zeiger beendet den Prozess (Muster `uacc3a.c`) | `tos-api/tests/` | Rueckgabewerte nach §2.3 |
-| T4 | **qemu-virt** mit `qemu-xhci` + `usb-kbd` + `usb-mouse` (heutiges Verhalten, `tools/xtask/src/main.rs:674-677`): LIST zeigt 2 Geraete, Rolle 1/2, `reason 0`; DEVICE: Geraetedeskriptor 18 Byte stimmt mit `[usb] device descriptor`-Logzeile (`xhci/mod.rs:1165`) ueberein, Konfiguration und Report-Deskriptor-Laenge = `wDescriptorLength`; Regression: Tastatur tippt, Cursor bewegt sich wie vorher | QEMU | wie links |
+| T4 | **qemu-virt** mit `qemu-xhci` + `usb-kbd` + `usb-mouse` (heutiges Verhalten, `tools/xtask/src/main.rs:674-677`): LIST zeigt 2 Geraete, Rolle 1/2, `reason 0`; DEVICE: Geraetedeskriptor 18 Byte stimmt mit `[usb] device descriptor`-Logzeile (`kernel/src/drivers/usb/xhci/mod.rs:1377`) ueberein, Konfiguration und Report-Deskriptor-Laenge = `wDescriptorLength`; Regression: Tastatur tippt, Cursor bewegt sich wie vorher | QEMU | wie links |
 | T5 | **qemu-virt** mit zusaetzlich `usb-tablet` (Report-only, Subklasse 0, Protokoll 0 — nach QEMU `dev-hid.c`, extern/nicht lokal [S]) und `usb-hub` mit Maus dahinter | QEMU (Option K11) | Tablet: Rolle 3, Ring fuellt sich, **kein** Cursor-Effekt; Hub: Kind hat `parent` und `route`; Reihenfolge/Eintraege stimmen |
 | T6 | Programm Ende-zu-Ende in QEMU: Dateien `C:\USB\VVVVPPPP.TXT` entstehen (Durchfuehrung §9.1: kein QEMU-Board hat USB **und** Laufwerk), zweiter Lauf → `.T01`; Format nach §4.4 (alle Abschnitte); **MUTE**: Cursor friert waehrend der Aufnahme ein und laeuft danach; Klick waehrend der Aufnahme loest am Desktop **nichts** aus; Programm per Kill waehrend der Aufnahme → Eingabe kehrt nach spaetestens 35 s zurueck. Berichte erzeugen: QMP `input-send-event` — **Vorsicht:** mit `device=<usb-id>` bricht QEMU 11.0.2 ab (USB02 Punkt 7); ohne `device` ist der Weg zum richtigen Geraet **ungeprueft** [?]; Rueckfall: nur ein USB-Eingabegeraet je Lauf | QEMU | Dateien wie spezifiziert |
 | T7 | **raspi4b** (kein USB): `Ssystem(2022)` → `ERROR`; Programm druckt „No USB controller…“, beendet ohne Datei, `Ssystem` ohne Abstuerze | `-M raspi4b` | Beleg `pcie_rpi4.rs:465-468` + Lauf |
@@ -748,10 +750,10 @@ als Pfadzeile.
 ## 8. Ausserhalb des Scopes beobachtet (nicht bearbeitet)
 
 * `154-ssystem.md` nannte „2021 is the next free number“ — falsch (2021 ist RST01,
-  `reset.rs:100`); mit der DRAFT-Zeile dort korrigiert, weil die Nummernvergabe davon
+  `tos-api/src/bios/reset.rs:100`); mit der DRAFT-Zeile dort korrigiert, weil die Nummernvergabe davon
   abhaengt.
 * **Halted-Endpoint ohne Reset Endpoint:** der Fehlerzweig re-armiert nur
-  (`xhci/mod.rs:700-712`); nach Babble/Transaktionsfehler ist der Endpoint *Halted*
+  (`kernel/src/drivers/usb/xhci/mod.rs:899-921`); nach Babble/Transaktionsfehler ist der Endpoint *Halted*
   (xHCI 1.2 §4.8.3) und bleibt stumm. Gehoert in USB02 oder F4/F6.
 * Feste TRB-Laenge 8 gegen Report-Protokoll-Berichte > 8 Byte: wird durch K3 fuer die
   Aufnahme entschaerft; der **Dekodierpfad** (`[u8;8]`, `hid.rs`) bleibt F4.
@@ -764,7 +766,7 @@ als Pfadzeile.
 
 Gebaut in `kernel/src/drivers/usb/snapshot.rs` (Speicher, Ring, Encoder; Hosttests ueber
 `tools/xtask`), `config_desc.rs` (Interface-Tabelle, `wDescriptorLength`, Beobachtungs-Kandidat),
-`xhci/mod.rs` (K2–K6), `usb/mod.rs` (K5, K7), `kernel/src/host_env.rs` + `tos-api/src/host.rs`
+`kernel/src/drivers/usb/xhci/mod.rs` (K2–K6), `kernel/src/drivers/usb/mod.rs` (K5, K7), `kernel/src/host_env.rs` + `tos-api/src/host.rs`
 (K8, `Host::usb_snapshot`), `tos-api/src/gemdos/ssystem.rs` (K9). Wo §2/§3 eine Einzelheit
 offen liessen, gilt (alles **[E]**, beim Bau festgelegt, vom Programm K10 so zu lesen):
 
@@ -823,13 +825,13 @@ oder beim Testen nicht trug (alle **[E]**):
   Unit Exponent werden **vorzeichenbehaftet** gelesen (HID 1.11 Beispiel `15 81` = -127); ist
   der Wert negativ, steht der Rohwert dabei (`25 ff` → „-1, raw 0xff“: manche Geraete meinen
   ihn vorzeichenlos). Namen: Deskriptorfelder nach HID 1.11 Anhang E, Items nach §6.2.2,
-  Usage Pages/Usages nach FreeMiNT `hid-common/hid.h` (lokal), xHCI-Codes Tabelle 6-90,
+  Usage Pages/Usages nach FreeMiNT `FM/usb/src.km/udd/hid/hid-common/hid.h` (lokal), xHCI-Codes Tabelle 6-90,
   Speed-IDs Tabelle 7-13; alles andere als Zahl.
 * **Kernel-Nachbesserung MUTE-Beginn (T6-Befund):** In QEMU wurde die RETURN-Taste, mit der die
   Aufnahme startet, gedrueckt dekodiert, ihr Loslassen aber vom Mute verschluckt; die
   Tastenwiederholung lief 30 s weiter, die Wiederholungen erfuellten nach der Aufnahme sofort
   „Press any key to exit“ und starteten das Programm erneut, dessen Startfrage ebenfalls sofort
-  erfuellt war (A/B im Beleg unten: `serial/virt-norelease.log` ohne, `serial/virt-extra.log`
+  erfuellt war (A/B im Beleg unten: `measurements/measurement-2026-10-23-usb01-snap-program/serial/virt-norelease.log` ohne, `measurements/measurement-2026-10-23-usb01-snap-program/serial/virt-extra.log`
   mit der Abhilfe). Abhilfe in `usb::poll`:
   `Store::mute_state` meldet den Beginn eines Mute genau einmal, dann `hid::release_all()` —
   leerer Tastaturbericht (Break fuer jede gehaltene Taste und jeden Modifier, beendet die

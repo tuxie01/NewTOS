@@ -92,14 +92,14 @@ Neither document states what the host does with such a report. The host rule
 below is a **user decision of 2026-10-24** (`TASK/USB02.md` item 10), chosen
 from the implementation practice:
 
-- Linux `drivers/hid/hid-core.c` `hid_input_fetch_field` /
+- Linux drivers/hid/hid-core.c `hid_input_fetch_field` /
   `hid_input_array_field`: an array field holding `HID_UP_KEYBOARD + 1`
   (ErrorRollOver) is ignored and keeps its old value; the modifier field
   (a variable field) is processed as usual.
-- FreeBSD `sys/dev/usb/input/ukbd.c` `ukbd_intr_callback`, `sys/dev/hid/hkbd.c`,
-  NetBSD `sys/dev/hid/hidkbd.c` `hidkbd_input`: the whole report is dropped,
+- FreeBSD sys/dev/usb/input/ukbd.c `ukbd_intr_callback`, sys/dev/hid/hkbd.c,
+  NetBSD sys/dev/hid/hidkbd.c `hidkbd_input`: the whole report is dropped,
   old state kept (modifiers included).
-- Linux `usbhid/usbkbd.c` and U-Boot `common/usb_kbd.c` skip codes `<= 3` in
+- Linux usbhid/usbkbd.c and U-Boot common/usb_kbd.c skip codes `<= 3` in
   the diff but do not keep the state (a rollover report releases held keys).
 - FreeMiNT `usb_keyboard.c` `kbd_int` (the source of this page) does not check
   the codes at all.
