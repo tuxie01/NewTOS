@@ -1395,6 +1395,34 @@ gl_hchar+3`, `gl_wbox = max(gl_wchar+4, gl_hbox·aspect)` (`gemgraf.c:412-415`).
 > matching TOS4. This is exactly the layout `w_bldactive` builds
 > (`gemwmlib.c:590-592`).
 
+> **Correction — two places where `w_bldactive`'s work area does NOT match
+> `wm_calc` (EmuTOS-internal inconsistency; found 2026-08-31 with `557614fb`,
+> moved here 2026-10-26 from the STATUS log, lines re-read at the pin
+> `1a7484ab`).** The sentence above holds for the **bars** `w_bldactive`
+> draws (`gemwmlib.c:573-592`), not for the `W_WORK` object it lays out:
+>
+> 1. **SIZER.** `wm_calc` strips `SIZER` from both bar tests when both are
+>    set and forces only the vertical one back (`gemwmlib.c:1825-1834`), with
+>    the comment *"the same as we do in w_bldactive()"* (`:1829`). But
+>    `w_bldactive` shrinks the work area with the **raw** tests,
+>    `if (havevbar || (kind & SIZER))` / `if (havehbar || (kind & SIZER))`
+>    (`:598-601`). For any `SIZER` window that lacks one bar's gadgets —
+>    `SIZER` alone, or `SIZER` with only vertical or only horizontal gadgets —
+>    the drawn `W_WORK` is `adj_wbox-1` narrower or `adj_hbox-1` shorter than
+>    the work rect `wm_calc` reports. The comment at `:1829` is not true.
+> 2. **Title band.** With `TGADGETS`, `w_bldactive` puts `W_DATA` at
+>    `adj_hbox` (`:556`) and `W_WORK` one pixel inside it (`:595`, `:603`), so the
+>    drawn work area starts at `adj_hbox + 1`; `wm_calc` reports `tb = 1 +
+>    (adj_hbox - 1) = adj_hbox` (`:1818-1819`) — one pixel higher. The non-3D
+>    branch has no such offset.
+>
+> **Why it has no effect in EmuTOS:** `W_DATA` and `W_WORK` are `G_IBOX` with
+> border thickness 0 (`gl_watype`/`gl_waspec`, `gemwmlib.c:69-70`, `:92-93`)
+> and draw nothing; everything that uses the work area reads the **stored**
+> `WS_WORK`, which comes from `wm_calc`. **NewTOS** follows `wm_calc` and
+> paints the frame bands exactly complementary to the reported work rectangle
+> (`557614fb`, commit message).
+
 `wind_calc` never touches the window list — it is a pure function of
 `kind`, `gl_wbox`/`gl_hbox`, and the config. `draw_change` itself calls
 `wm_calc(WC_WORK, …)` to derive each window's work rect from its border rect

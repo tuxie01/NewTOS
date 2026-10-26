@@ -220,6 +220,17 @@ rts` -> `void kbd_int(UBYTE scancode)` (`bios/ikbd.c:725`). Das Byte ist ein
   Quelltext sagt ausdruecklich "3.06 hat `kbdvec`". Belegt ist nur, dass der
   EmuTOS-Autor das Verhalten des `joyvec`-d0-Details "bis mindestens TOS 3.06"
   kennt (`aciavecs.S:508`) — das betrifft `joyvec`, nicht `kbdvec`.
+  **Gemessen 2026-10-04 (KEYS02; eingetragen 2026-10-26, schliesst O3): ja.**
+  Im ROM `tos306de.rom` liefert XBIOS `$22` (`$E03A96`)
+  `move.l #$0000106A,d0 / rts`, und `ikbdraw`
+  (`$E032DA`) springt mit `move.l $1066.w,-(sp) / rts` ueber `kbdvec` =
+  `Kbdvbase()-4` — derselbe `rts`-Trick wie EmuTOS `aciavecs.S:407-414`. Zur
+  Laufzeit (Hatari 2.6.1 TT, Debugger) steht in `$1066` `$00E033EA`, TOS 3.06s
+  `kbd_int` (Shift-Zustand). Belege
+  `measurements/measurement-2026-10-04-keys02-doom/RUNINFO.TXT:75-92`,
+  `.../hatari/o3-tos306-debugger.log:20,30,34`; Doom meldet dort
+  `Kbdvbase 0000106a, kbdvec was 00e033ea`
+  (`measurements/measurement-2026-10-04-keys02-tt/RUNINFO.TXT:20`).
 * Ausnahme-Hinweis: FireTOS und CT60-TOS-2.xx rufen `kbdvec` **nicht** aus ihrem
   `ikbdsys` auf (`init_intr.c:104-111`) — dort ist ein `kbdvec`-Haken wirkungslos.
   Auf diesen ROMs ist `ikbdsys` der verlaessliche Weg.
@@ -661,6 +672,8 @@ Hosttests `tos-api/tests/xbios_kbdvecs.rs` (10), `kernel/src/key_repeat.rs`
 * **O3.** TT TOS 3.06 hat `kbdvec`: nur abgeleitet (A7). Eine Messung am
   Hatari-TT (`hatari-produces-tt-references`) koennte es bestaetigen — hier nicht
   ausgefuehrt.
+  **Geklaert 2026-10-04 (KEYS02):** gemessen, ja — ROM und Hatari-TT-Debugger,
+  Belege in A7.
 * **O4.** Ob `ikbdstate` ueberhaupt je beobachtbar mitten im Paket ist: der
   HID-Uebersetzer fuettert pro Report atomar (gefolgert, nicht geprueft) —
   daher Vorschlag `drvstat == 0` konstant.
