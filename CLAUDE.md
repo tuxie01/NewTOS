@@ -330,8 +330,8 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   path, `file:line` and `ADR-NNN` cite in them must resolve.
   `CLAUDE.md`, `docs/STATUS.md` and `docs/MEMORY.md` are always clean.
   Plain `cargo xtask doc-check` checks all of `docs/` except `docs/archive/`
-  and still reports the old backlog (2026-10-26: 3308 failures, mostly
-  `docs/analysis/`).
+  and dated snapshots, and still reports the old backlog (2026-10-26: 1851
+  failures in `docs/api/`, undated `docs/analysis/`, `docs/sdk/`).
 
 ---
 
