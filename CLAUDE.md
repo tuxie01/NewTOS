@@ -262,6 +262,10 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
 - Body explains **why**, not **what**. The diff shows the what.
 - Reference phase deliverable IDs: `Closes PHASE-02-D3`.
 - Never commit broken builds. Never commit failing tests without `#[ignore]` + reason.
+- History was rewritten on 2026-10-19 (`git filter-repo`). A commit hash quoted
+  in TASK/, docs/ or measurements/ before that date is an **old** hash:
+  translate it with `tools/oldhash.sh <prefix>` (map: `docs/commit-map.txt`)
+  and cite the current hash in new text.
 - **Keep `docs/STATUS.md` in lockstep — required, after every feature, not only
   at phase ends.** For each landed extension: bump the affected phase row **and**
   append a dated entry to *Recent Decisions* (what + why + the commit hashes), in
