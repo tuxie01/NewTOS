@@ -49,6 +49,30 @@ use super::MAX_PROCESSES;
 /// User-page size (one 4-KiB physical frame).
 pub const PAGE_SIZE: u64 = mmu::PAGE_SIZE;
 
+/// First address a user pointer must stay below: a TOS address travels as a
+/// signed 32-bit `LONG`, and the GEMDOS return path sign-extends it into `x0`
+/// (`kernel/src/arch/aarch64/exceptions.rs`), so an address at or above
+/// `0x8000_0000` reads as a negative error code (ARCH03 plan invariant I2,
+/// `docs/COMPATIBILITY.md` — ADR-028, TASK/MEM11).
+pub const USER_PTR_END: u64 = 0x8000_0000;
+
+/// Debug-build check that `addr`, about to leave the kernel as the pointer
+/// result of the GEMDOS function `func`, is below [`USER_PTR_END`]
+/// (TASK/MEM11). `0` (the failure answer) passes.
+///
+/// Only a check, not the enforcement: pool placement keeps every handed-out
+/// address low today; this makes a violation loud in a debug build instead of
+/// a program misreading its block as an error code. Release builds compile it
+/// away.
+#[track_caller]
+#[inline]
+pub fn debug_assert_user_ptr(func: &str, addr: u64) {
+    debug_assert!(
+        addr < USER_PTR_END,
+        "{func}: user pointer {addr:#x} >= 0x8000_0000 would read as a negative LONG (MEM11)"
+    );
+}
+
 /// Maximum number of distinct kernel publications. Each is one structure's
 /// page span: the BPB table, the `Getmpb` descriptor, the screen memory.
 const MAX_PUBLICATIONS: usize = 16;

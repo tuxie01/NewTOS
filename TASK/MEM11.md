@@ -1,6 +1,6 @@
 # MEM11 — Anwenderadressen < 2 GiB nur zufaellig: die Abbildungsgrenze erlaubt 4 GiB
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Kernfehler (Vertragsgrenze nicht erzwungen) — Anwenderbefund 2026-10-26
+Status: **OFFEN** (Debug-Pruefung erledigt 2026-10-26, Erzwingung offen) · Prioritaet: **P2** · Typ: Kernfehler (Vertragsgrenze nicht erzwungen) — Anwenderbefund 2026-10-26
 
 Prioritaet P2 wie die uebrigen Defekte der Reihe (MEM01–MEM05): der Vertrag
 ist verletzbar, aber heute fuehrt kein gefundener Weg tatsaechlich eine
@@ -74,6 +74,28 @@ Kappung weiter oben so bleiben. Eine kuenftige Aenderung (groessere
 `POOL_MAX_BYTES`, ein zweiter RAM-Bereich der Firmware, eine Veroeffentlichung
 eines Objekts ausserhalb von `dram`, ein anderes Framebuffer-Verfahren)
 liefert dann still Adressen, die Programme als Fehler lesen.
+
+## Teilschritt erledigt: Debug-Pruefung am Rueckgabeweg (2026-10-26)
+
+Nur die Pruefung, nicht die Erzwingung — die bleibt offen (Arbeit 1-3):
+
+- [x] `debug_assert` auf Zeigerergebnisse, die als `LONG` herausgehen:
+  Helfer `debug_assert_user_ptr(func, addr)` und Grenze `USER_PTR_END =
+  0x8000_0000` in `tos-api/src/bdos/process/usermem.rs:57-74`; angewandt in
+  `tos-api/src/gemdos/memory.rs` (`pointer_result`, `:116-121`, gerufen aus
+  `mxalloc` `:74` und `malloc` `:94`, `:106`) und in
+  `tos-api/src/bdos/fs/find.rs:148-153` (`fgetdta`, nur `Space::User` — die
+  DTA des Kern-Aufrufers ist eine Kern-VA). Ausgenommen: die `-1`-Abfrage von
+  `Malloc`/`Mxalloc` (Groesse, kein Zeiger); `0` (Fehlschlag) besteht.
+  Release-Bauten uebersetzen die Pruefung weg.
+- [x] Hosttests: `tos-api/tests/mem11_user_ptr_assert.rs` (Grenzfall
+  `0x7FFF_FFFF` besteht, `0x8000_0000` loest im Debug-Bau aus; `-1`-Abfragen
+  und echte Bloecke ueber die Trap-Eintraege; `Fgetdta` mit `p_xdta` unter /
+  auf 2 GiB) und `tos-api/src/gemdos/memory.rs` `mod tests` (die
+  `-1`-Ausnahme mit einem Groessenwert >= 2 GiB).
+- Hinweis: `Fsetdta` nimmt die DTA des Programms ungeprueft an; ein Programm,
+  das eine DTA >= `0x8000_0000` setzt, loest die Pruefung beim naechsten
+  `Fgetdta` im Debug-Bau aus (Kernpanik nur im Debug-Bau).
 
 ## Arbeit
 

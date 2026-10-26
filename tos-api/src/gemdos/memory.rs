@@ -71,7 +71,7 @@ pub fn mxalloc(args: &TrapArgs) -> Long {
     let mode = args.arg_i16(1);
     // SAFETY: NewTOS is single-CPU and SVC handlers run with IRQs masked, so
     // the BDOS layer is exclusively held for the duration of the dispatch.
-    unsafe { traps::mxalloc(amount, mode) }
+    pointer_result("Mxalloc", amount, unsafe { traps::mxalloc(amount, mode) })
 }
 
 /// `Malloc(amount)` — GEMDOS 0x48.
@@ -91,7 +91,7 @@ pub fn malloc(args: &TrapArgs) -> Long {
     let run = process::current_kva();
     if run.is_null() {
         // SAFETY: see `mxalloc`.
-        return unsafe { traps::malloc(amount) };
+        return pointer_result("Malloc", amount, unsafe { traps::malloc(amount) });
     }
     // EmuTOS `xmalloc`: `PF_TTRAMMEM ? MX_PREFTTRAM : MX_STRAM`, read from the
     // running process's own basepage.
@@ -103,7 +103,21 @@ pub fn malloc(args: &TrapArgs) -> Long {
         MX_STRAM
     };
     // SAFETY: see `mxalloc`.
-    unsafe { traps::mxalloc(amount, mode) }
+    pointer_result("Malloc", amount, unsafe { traps::mxalloc(amount, mode) })
+}
+
+/// The `Malloc`/`Mxalloc` result `ret` of a call with `amount`, checked on its
+/// way out (TASK/MEM11): unless `amount == -1` — the largest-free-block probe,
+/// whose answer is a size — `ret` is a block address or `0`, and must be a
+/// user pointer below `0x8000_0000`
+/// ([`crate::bdos::process::usermem::debug_assert_user_ptr`]). Neither
+/// function returns a negative error code (`traps::mxalloc`: `0` on failure),
+/// so a negative `ret` here is an address that would be misread as one.
+fn pointer_result(func: &str, amount: Long, ret: Long) -> Long {
+    if amount != -1 {
+        process::usermem::debug_assert_user_ptr(func, ret as u32 as u64);
+    }
+    ret
 }
 
 /// Which identity of the caller owns the block at `addr`: its own PD (or the
@@ -222,5 +236,30 @@ pub fn mshrink(args: &TrapArgs) -> Long {
             return release_as_caller(blk);
         }
         traps::mshrink(n, blk, len)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::pointer_result;
+
+    #[test]
+    fn a_size_probe_is_not_checked_as_a_pointer() {
+        // `Malloc(-1)` answers a size; even one that is not a valid pointer
+        // passes through unchecked.
+        assert_eq!(pointer_result("Malloc", -1, 0x8000_0000_u32 as i32), i32::MIN);
+        assert_eq!(pointer_result("Mxalloc", -1, -1), -1);
+    }
+
+    #[test]
+    fn a_failed_allocation_and_the_last_low_address_pass() {
+        assert_eq!(pointer_result("Malloc", 16, 0), 0);
+        assert_eq!(pointer_result("Mxalloc", 16, 0x7FFF_F000), 0x7FFF_F000);
+    }
+
+    #[test]
+    #[cfg_attr(debug_assertions, should_panic(expected = "Malloc: user pointer 0x80000000"))]
+    fn a_block_at_2_gib_is_caught_in_a_debug_build() {
+        pointer_result("Malloc", 16, 0x8000_0000_u32 as i32);
     }
 }

@@ -139,8 +139,17 @@ pub fn fsetdta(args: &TrapArgs) -> Long {
 /// the same 32-bit `p_xdta` field. A DTA set by the process-less EL1 caller is
 /// a high-half kernel VA that a `Long` return cannot carry — that caller keeps
 /// its own pointer and never reads it back (see [`KERNEL_DTA`]).
+///
+/// A program's DTA leaves as a user pointer and is checked to be below
+/// `0x8000_0000` in a debug build (TASK/MEM11,
+/// [`crate::bdos::process::usermem::debug_assert_user_ptr`]); the kernel
+/// caller's is a kernel VA and is not.
 pub fn fgetdta(args: &TrapArgs) -> Long {
-    cur_dta_in(args.space).0 as Long
+    let (dta, space) = cur_dta_in(args.space);
+    if space == Space::User {
+        crate::bdos::process::usermem::debug_assert_user_ptr("Fgetdta", dta);
+    }
+    dta as Long
 }
 
 /// Expand a `name.ext` pattern (with `*`/`?`) into the 11-byte FAT
