@@ -28,12 +28,26 @@
 //! # Resolution
 //!
 //! A link resolves relative to the citing file only — that is where a
-//! Markdown renderer looks. A backtick span tries, first hit wins: the citing
+//! Markdown renderer looks. A backtick span whose first component is a
+//! source-root prefix of [`PREFIXES`] (`ET/bdos/proc.c:541`) resolves under
+//! that prefix's root only. Any other span tries, first hit wins: the citing
 //! file's directory, the workspace root, then [`SEARCH_ROOTS`]. A bare
-//! `name.ext:N` resolves by basename over `git ls-files` plus the files under
-//! [`REFERENCE_ROOTS`]: one match resolves, several are "ambiguous". A hit must
-//! match the on-disk name's case (macOS would accept `status.md`, Linux and
-//! GitHub would not). The highest cited line must not exceed the line count.
+//! `name.ext:N` resolves by basename over `git ls-files`, the EmuTOS tree at
+//! the pin and the files under `references/freemint`: one match resolves,
+//! several are "ambiguous". A hit must match the name's case (macOS would
+//! accept `status.md`, Linux and GitHub would not). The highest cited line
+//! must not exceed the line count.
+//!
+//! # EmuTOS at the pin
+//!
+//! Everything under [`EMUTOS_ROOT`] resolves against the pinned commit named
+//! by [`EMUTOS_PIN_VAR`] in [`ORACLE_ENV`] (`docs/analysis/ORACLE.md` §1),
+//! not against the checkout's working tree: existence via `git ls-tree` and
+//! line counts via `git show <pin>:<path>`. The checkout may sit on another
+//! commit; the cites describe the pin. A path the pin lacks may be a product
+//! of the pinned build (`desk/desk_rsc.c`): it resolves in
+//! [`EMUTOS_BUILD_ROOT`]`/<pin[..8]>/` on disk, and a bare name may match
+//! such a product. Without that build tree such a cite is skipped.
 //!
 //! # `references/` may be absent
 //!
@@ -41,7 +55,10 @@
 //! resolve and could have resolved under a missing reference tree is counted
 //! as skipped, not failed: a cite under `references/emutos/…` itself, or a
 //! path whose first component is no top-level entry of the workspace
-//! (`aes/gemaplib.c`), or a bare name.
+//! (`aes/gemaplib.c`), or a bare name. The EmuTOS tree counts as missing when
+//! the checkout is absent or does not hold the pinned commit. A prefixed cite
+//! whose root is a gitignored local tree ([`Prefix::local`]) that is absent is
+//! skipped too.
 //!
 //! # ADR ids
 //!
@@ -54,7 +71,9 @@
 //! # Default set
 //!
 //! `CLAUDE.md` plus every `*.md` under `docs/`, recursively, except
-//! [`ARCHIVE_DIR`]: the archive is history, never evidence.
+//! [`ARCHIVE_DIR`] and dated snapshots (`*-YYYY-MM-DD.md`,
+//! [`is_dated_snapshot`]): both are history, never evidence. A file named on
+//! the command line is always checked, dated or archived.
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fs;
@@ -76,6 +95,162 @@ pub const REFERENCE_ROOTS: &[&str] = &["references/emutos", "references/freemint
 /// the workspace root, in order, relative to the workspace root.
 pub const SEARCH_ROOTS: &[&str] =
     &["docs", "references/emutos", "references/freemint", "tos-api/src", "kernel/src"];
+/// The EmuTOS checkout, resolved at the pin, relative to the workspace root.
+pub const EMUTOS_ROOT: &str = "references/emutos";
+/// Where the pinned EmuTOS build lives: `<this>/<first 8 digits of the pin>`
+/// (`docs/analysis/ORACLE.md` §3, `tools/oracle/build-emutos.sh`), a clone at
+/// the pin plus the build's products (`desk/desk_rsc.c`, `include/i18nconf.h`).
+pub const EMUTOS_BUILD_ROOT: &str = "references/emutos-oracle";
+/// The file that names the oracle's pinned inputs.
+pub const ORACLE_ENV: &str = "tools/oracle/oracle.env";
+/// The [`ORACLE_ENV`] variable holding the pinned EmuTOS commit.
+pub const EMUTOS_PIN_VAR: &str = "ORACLE_EMUTOS_COMMIT";
+
+/// A short source-root prefix the docs use in cites (`ET/bdos/proc.c:541`).
+#[derive(Debug, Clone, Copy)]
+pub struct Prefix {
+    /// The first path component as written, without `/`.
+    pub name: &'static str,
+    /// The root it stands for, workspace-relative, without trailing `/`.
+    pub root: &'static str,
+    /// The root is a gitignored local tree that may be absent.
+    pub local: bool,
+    /// Where the docs define it: `file:line` of each legend, and the
+    /// expansion as that legend writes it. Read only by the unit test that
+    /// checks each legend still says so.
+    #[cfg_attr(not(test), allow(dead_code))]
+    pub legends: &'static [(&'static str, &'static str)],
+}
+
+/// The source-root prefixes, each with the legends in `docs/` that define it.
+pub const PREFIXES: &[Prefix] = &[
+    // EmuTOS.
+    Prefix {
+        name: "ET",
+        root: "references/emutos",
+        local: true,
+        legends: &[
+            ("docs/analysis/arch03-implementation-plan.md:9", "references/emutos"),
+            ("docs/analysis/arch03-freemint-memory-model.md:9", "references/emutos"),
+            ("docs/analysis/ldg-after-arch03-2026-10-06.md:10", "references/emutos"),
+            ("docs/analysis/ldg-module-malloc-2026-10-06.md:7", "references/emutos/"),
+            ("docs/analysis/vfork-malloc-ownership-2026-10-06.md:5", "references/emutos"),
+        ],
+    },
+    // FreeMiNT kernel. The dated snapshot
+    // `docs/analysis/ldg-module-malloc-2026-10-06.md:7` writes `FM/` =
+    // `references/freemint/` (its cites read `FM/sys/k_exec.c`); it is
+    // history and does not decide the mapping, so an explicit check of that
+    // file reports its `FM/` cites as missing.
+    Prefix {
+        name: "FM",
+        root: "references/freemint/sys",
+        local: true,
+        legends: &[
+            ("docs/analysis/arch03-implementation-plan.md:9", "references/freemint/sys"),
+            ("docs/analysis/arch03-freemint-memory-model.md:9", "references/freemint/sys"),
+            ("docs/analysis/ldg-after-arch03-2026-10-06.md:10", "references/freemint/sys"),
+            ("docs/analysis/vfork-malloc-ownership-2026-10-06.md:5", "references/freemint/sys"),
+        ],
+    },
+    // NewTOS process layer.
+    Prefix {
+        name: "NT",
+        root: "tos-api/src/bdos/process",
+        local: false,
+        legends: &[
+            ("docs/analysis/arch03-implementation-plan.md:9", "tos-api/src/bdos/process"),
+            ("docs/analysis/arch03-freemint-memory-model.md:9", "tos-api/src/bdos/process"),
+            ("docs/analysis/ldg-after-arch03-2026-10-06.md:10", "tos-api/src/bdos/process"),
+            ("docs/analysis/zview-ldg-2026-10-04.md:7", "tos-api/src/bdos/process"),
+        ],
+    },
+    // NewTOS kernel, AArch64 part.
+    Prefix {
+        name: "KA",
+        root: "kernel/src/arch/aarch64",
+        local: false,
+        legends: &[
+            ("docs/analysis/arch03-implementation-plan.md:9", "kernel/src/arch/aarch64"),
+            ("docs/analysis/arch03-freemint-memory-model.md:9", "kernel/src/arch/aarch64"),
+        ],
+    },
+    // FreeMiNT XaAES kernel module.
+    Prefix {
+        name: "XA",
+        root: "references/freemint/xaaes/src.km",
+        local: true,
+        legends: &[("docs/analysis/arch03-implementation-plan.md:9", "references/freemint/xaaes/src.km")],
+    },
+    // LDG sources (gitignored, `/Applications/`).
+    Prefix {
+        name: "LDG",
+        root: "Applications/ldg-src/ldg",
+        local: true,
+        legends: &[
+            ("docs/analysis/ldg-after-arch03-2026-10-06.md:10", "Applications/ldg-src/ldg"),
+            ("docs/analysis/ldg-module-malloc-2026-10-06.md:7", "Applications/ldg-src/ldg/"),
+            ("docs/analysis/zview-ldg-2026-10-04.md:7", "Applications/ldg-src/ldg"),
+        ],
+    },
+    // LDG developer kit; the legend writes it as `LDG/src/devel`.
+    Prefix {
+        name: "DEV",
+        root: "Applications/ldg-src/ldg/src/devel",
+        local: true,
+        legends: &[("docs/analysis/ldg-after-arch03-2026-10-06.md:10", "LDG/src/devel")],
+    },
+    // zView sources (gitignored, `/Applications/`).
+    Prefix {
+        name: "ZV",
+        root: "Applications/z-tools/zview",
+        local: true,
+        legends: &[
+            ("docs/analysis/ldg-after-arch03-2026-10-06.md:10", "Applications/z-tools/zview"),
+            ("docs/analysis/zview-ldg-2026-10-04.md:7", "Applications/z-tools/zview"),
+        ],
+    },
+    // mintlib sources (gitignored, `sdk/.gitignore`).
+    Prefix {
+        name: "ML",
+        root: "sdk/libc/mintlib",
+        local: true,
+        legends: &[("docs/analysis/ldg-module-malloc-2026-10-06.md:7", "sdk/libc/mintlib/")],
+    },
+    // libshare sources.
+    Prefix {
+        name: "LS",
+        root: "references/libshare/orig-0.1.1/libshare-0.1.1",
+        local: true,
+        legends: &[(
+            "docs/analysis/ldg-module-malloc-2026-10-06.md:7",
+            "references/libshare/orig-0.1.1/libshare-0.1.1/",
+        )],
+    },
+    // One measurement run.
+    Prefix {
+        name: "RUN",
+        root: "measurements/measurement-2026-10-06-ldg-b2",
+        local: false,
+        legends: &[(
+            "docs/analysis/ldg-module-malloc-2026-10-06.md:7",
+            "measurements/measurement-2026-10-06-ldg-b2/",
+        )],
+    },
+];
+
+/// The prefix entry for a path's first component, if it is one.
+pub fn prefix_of(path: &str) -> Option<&'static Prefix> {
+    let (first, _) = path.split_once('/')?;
+    PREFIXES.iter().find(|p| p.name == first)
+}
+
+/// `path` with its prefix replaced by the prefix's root, if it has one.
+pub fn expand_prefix(path: &str) -> Option<String> {
+    let p = prefix_of(path)?;
+    let rest = &path[p.name.len() + 1..];
+    Some(if rest.is_empty() { p.root.to_string() } else { format!("{}/{rest}", p.root) })
+}
 
 /// The two forms a cite takes in Markdown.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -369,16 +544,38 @@ pub fn adr_headings(text: &str) -> BTreeSet<u16> {
     out
 }
 
+/// A dated snapshot: the file name ends in `-YYYY-MM-DD.md` with a non-empty
+/// stem before it, a month 01–12 and a day 01–31. Only the file name counts;
+/// a dated directory (`fsel-reference-2026-09-17/README.md`) does not.
+pub fn is_dated_snapshot(rel: &Path) -> bool {
+    let Some(name) = rel.file_name().and_then(|n| n.to_str()) else { return false };
+    let Some(stem) = name.strip_suffix(".md") else { return false };
+    if stem.len() < 12 || !stem.is_char_boundary(stem.len() - 11) {
+        return false;
+    }
+    let (head, date) = stem.split_at(stem.len() - 11);
+    let d = date.as_bytes();
+    let digits = |r: std::ops::Range<usize>| d[r].iter().all(u8::is_ascii_digit);
+    if d[0] != b'-' || d[5] != b'-' || d[8] != b'-' || !digits(1..5) || !digits(6..8) || !digits(9..11) {
+        return false;
+    }
+    let month: u8 = date[6..8].parse().unwrap_or(0);
+    let day: u8 = date[9..11].parse().unwrap_or(0);
+    !head.is_empty() && (1..=12).contains(&month) && (1..=31).contains(&day)
+}
+
 /// A workspace-relative path belongs to the default set's docs walk: a `.md`
-/// file under [`DOCS_DIR`], not under [`ARCHIVE_DIR`].
+/// file under [`DOCS_DIR`], not under [`ARCHIVE_DIR`], not a dated snapshot.
 pub fn is_default_doc(rel: &Path) -> bool {
     rel.starts_with(DOCS_DIR)
         && !rel.starts_with(ARCHIVE_DIR)
         && rel.extension().is_some_and(|e| e == "md")
+        && !is_dated_snapshot(rel)
 }
 
 /// The files checked when none are given: [`DEFAULT_FILES`], then the
-/// Markdown files under [`DOCS_DIR`] (sorted), archive excluded.
+/// Markdown files under [`DOCS_DIR`] (sorted), archive and dated snapshots
+/// excluded.
 pub fn default_files(root: &Path) -> Vec<PathBuf> {
     let mut docs = Vec::new();
     walk(root, Path::new(DOCS_DIR), &mut docs);
@@ -413,17 +610,155 @@ fn normalize(p: &Path) -> Option<PathBuf> {
     Some(out)
 }
 
+/// The value of `NAME=value` in a file of plain `NAME=value` lines with `#`
+/// comments ([`ORACLE_ENV`]); `None` if absent or empty.
+pub fn env_value(text: &str, var: &str) -> Option<String> {
+    text.lines()
+        .map(str::trim)
+        .filter(|l| !l.starts_with('#'))
+        .find_map(|l| l.strip_prefix(var)?.strip_prefix('='))
+        .map(|v| v.trim().to_string())
+        .filter(|v| !v.is_empty())
+}
+
+/// A git checkout's tree at one commit: its files and directories (relative
+/// to the checkout) and a per-file line-count cache.
+struct PinTree {
+    repo: PathBuf,
+    commit: String,
+    files: BTreeSet<String>,
+    dirs: BTreeSet<String>,
+    lines: HashMap<String, usize>,
+}
+
+impl PinTree {
+    /// `None` if `repo` is no git checkout of its own or lacks `commit`.
+    fn load(repo: &Path, commit: &str) -> Option<PinTree> {
+        if !repo.join(".git").exists() {
+            return None;
+        }
+        let out = Command::new("git")
+            .arg("-C")
+            .arg(repo)
+            .args(["ls-tree", "-r", "-z", "--name-only", commit])
+            .output()
+            .ok()?;
+        if !out.status.success() {
+            return None;
+        }
+        let files: BTreeSet<String> = out
+            .stdout
+            .split(|&b| b == 0)
+            .filter(|s| !s.is_empty())
+            .map(|s| String::from_utf8_lossy(s).into_owned())
+            .collect();
+        let mut dirs = BTreeSet::new();
+        for f in &files {
+            let mut cur = f.as_str();
+            while let Some(i) = cur.rfind('/') {
+                cur = &cur[..i];
+                if !dirs.insert(cur.to_string()) {
+                    break;
+                }
+            }
+        }
+        Some(PinTree { repo: repo.to_path_buf(), commit: commit.to_string(), files, dirs, lines: HashMap::new() })
+    }
+
+    /// `Some(is_dir)` if `rel` exists with exactly this case; `""` is the root.
+    fn kind(&self, rel: &str) -> Option<bool> {
+        if rel.is_empty() || self.dirs.contains(rel) {
+            Some(true)
+        } else if self.files.contains(rel) {
+            Some(false)
+        } else {
+            None
+        }
+    }
+
+    fn has_case_variant(&self, rel: &str) -> bool {
+        self.files.iter().chain(&self.dirs).any(|f| f.eq_ignore_ascii_case(rel))
+    }
+
+    fn line_count(&mut self, rel: &str) -> Result<usize, String> {
+        if let Some(&n) = self.lines.get(rel) {
+            return Ok(n);
+        }
+        let out = Command::new("git")
+            .arg("-C")
+            .arg(&self.repo)
+            .arg("show")
+            .arg(format!("{}:{rel}", self.commit))
+            .output()
+            .map_err(|e| format!("doc-check: git show {}:{rel}: {e}", self.commit))?;
+        if !out.status.success() {
+            return Err(format!("doc-check: git show {}:{rel} failed", self.commit));
+        }
+        let n = count_lines(&out.stdout);
+        self.lines.insert(rel.to_string(), n);
+        Ok(n)
+    }
+}
+
+/// `rel` relative to [`EMUTOS_ROOT`], if it lies under it.
+fn under_emutos(rel: &Path) -> Option<String> {
+    rel.strip_prefix(EMUTOS_ROOT).ok().map(|p| p.to_string_lossy().into_owned())
+}
+
 /// Resolves cites against one workspace. Caches directory listings (for the
-/// exact-case test) and the basename index (built on first bare cite).
+/// exact-case test), the basename index (built on first bare cite) and the
+/// EmuTOS tree at the pin (loaded on first resolve).
 pub struct Resolver {
     root: PathBuf,
     dir_cache: HashMap<PathBuf, Option<Vec<String>>>,
     basenames: Option<BTreeMap<String, Vec<PathBuf>>>,
+    /// The EmuTOS commit; `None` = read it from [`ORACLE_ENV`].
+    emutos_commit: Option<String>,
+    /// `None` = not loaded yet; `Some(None)` = checkout or commit absent.
+    emutos: Option<Option<PinTree>>,
+    /// The pinned build tree, workspace-relative ([`EMUTOS_BUILD_ROOT`]);
+    /// set by [`Self::load_emutos`].
+    emutos_build: PathBuf,
 }
 
 impl Resolver {
     pub fn new(root: &Path) -> Self {
-        Resolver { root: root.to_path_buf(), dir_cache: HashMap::new(), basenames: None }
+        Resolver {
+            root: root.to_path_buf(),
+            dir_cache: HashMap::new(),
+            basenames: None,
+            emutos_commit: None,
+            emutos: None,
+            emutos_build: PathBuf::new(),
+        }
+    }
+
+    /// Resolves EmuTOS cites at `commit` instead of the [`ORACLE_ENV`] pin.
+    #[cfg(test)]
+    pub fn with_emutos_commit(root: &Path, commit: &str) -> Self {
+        Resolver { emutos_commit: Some(commit.to_string()), ..Resolver::new(root) }
+    }
+
+    fn load_emutos(&mut self) -> Result<(), String> {
+        if self.emutos.is_some() {
+            return Ok(());
+        }
+        let commit = match &self.emutos_commit {
+            Some(c) => c.clone(),
+            None => {
+                let env = fs::read_to_string(self.root.join(ORACLE_ENV))
+                    .map_err(|e| format!("doc-check: {ORACLE_ENV}: {e}"))?;
+                env_value(&env, EMUTOS_PIN_VAR).ok_or_else(|| format!("doc-check: {ORACLE_ENV}: no {EMUTOS_PIN_VAR}"))?
+            }
+        };
+        self.emutos = Some(PinTree::load(&self.root.join(EMUTOS_ROOT), &commit));
+        self.emutos_build = Path::new(EMUTOS_BUILD_ROOT).join(commit.get(..8).unwrap_or(&commit));
+        Ok(())
+    }
+
+    /// The EmuTOS tree at the pin; call [`Self::load_emutos`] first.
+    fn pin_tree(&self) -> Option<&PinTree> {
+        self.emutos.as_ref().and_then(Option::as_ref)
     }
 
     fn listing(&mut self, dir: &Path) -> Option<&Vec<String>> {
@@ -451,17 +786,74 @@ impl Resolver {
         true
     }
 
+    /// The pinned build tree is absent on disk.
+    fn build_missing(&self) -> bool {
+        !self.root.join(&self.emutos_build).is_dir()
+    }
+
+    /// Where workspace-relative `rel` exists with exactly this case (and is a
+    /// directory if `want_dir`). Under [`EMUTOS_ROOT`]: at the pin, else the
+    /// same path in the pinned build tree (a build product); elsewhere on
+    /// disk. The result is workspace-relative.
+    fn locate(&mut self, rel: &Path, want_dir: bool) -> Option<PathBuf> {
+        let root = self.root.clone();
+        let rel = match under_emutos(rel) {
+            Some(sub) => {
+                if self.pin_tree().and_then(|t| t.kind(&sub)).is_some_and(|d| d || !want_dir) {
+                    return Some(rel.to_path_buf());
+                }
+                self.emutos_build.join(sub)
+            }
+            None => rel.to_path_buf(),
+        };
+        (self.exists_exact(&root, &rel) && (!want_dir || root.join(&rel).is_dir())).then_some(rel)
+    }
+
+    fn is_dir(&self, rel: &Path) -> bool {
+        match under_emutos(rel) {
+            Some(sub) => self.pin_tree().and_then(|t| t.kind(&sub)) == Some(true),
+            None => self.root.join(rel).is_dir(),
+        }
+    }
+
+    fn lines(&mut self, rel: &Path) -> Result<usize, String> {
+        match under_emutos(rel) {
+            Some(sub) => match self.emutos.as_mut().and_then(Option::as_mut) {
+                Some(t) => t.line_count(&sub),
+                None => Err(format!("doc-check: {}: EmuTOS pin not loaded", rel.display())),
+            },
+            None => {
+                let full = self.root.join(rel);
+                line_count(&full).map_err(|e| format!("doc-check: {}: {e}", full.display()))
+            }
+        }
+    }
+
+    /// The reference tree `r` (one of [`REFERENCE_ROOTS`]) is unavailable:
+    /// EmuTOS without the pinned commit, others absent on disk.
+    fn tree_missing(&self, r: &str) -> bool {
+        if r == EMUTOS_ROOT {
+            self.pin_tree().is_none()
+        } else {
+            !self.root.join(r).is_dir()
+        }
+    }
+
     fn reference_missing(&self, rel: &str) -> bool {
-        REFERENCE_ROOTS.iter().any(|r| rel.starts_with(&format!("{r}/")) && !self.root.join(r).is_dir())
+        REFERENCE_ROOTS.iter().any(|r| rel.starts_with(&format!("{r}/")) && self.tree_missing(r))
     }
 
     fn any_reference_missing(&self) -> bool {
-        REFERENCE_ROOTS.iter().any(|r| !self.root.join(r).is_dir())
+        REFERENCE_ROOTS.iter().any(|r| self.tree_missing(r))
     }
 
     /// Workspace-relative candidates for `path` cited from `doc_dir`
-    /// (workspace-relative), in lookup order.
-    fn candidates(&self, doc_dir: &Path, path: &str, kind: CiteKind) -> Vec<PathBuf> {
+    /// (workspace-relative), in lookup order. A prefix-expanded path has
+    /// exactly one candidate.
+    fn candidates(&self, doc_dir: &Path, path: &str, kind: CiteKind, expanded: bool) -> Vec<PathBuf> {
+        if expanded {
+            return normalize(Path::new(path)).into_iter().collect();
+        }
         let mut v = Vec::new();
         if let Some(p) = normalize(&doc_dir.join(path)) {
             v.push(p);
@@ -478,6 +870,8 @@ impl Resolver {
         v
     }
 
+    /// Basename → paths over `git ls-files`, the EmuTOS tree at the pin and
+    /// the other [`REFERENCE_ROOTS`] on disk. Call [`Self::load_emutos`] first.
     fn basename_index(&mut self) -> Result<&BTreeMap<String, Vec<PathBuf>>, String> {
         if self.basenames.is_none() {
             let out = Command::new("git")
@@ -490,7 +884,18 @@ impl Resolver {
             }
             let mut files: Vec<PathBuf> =
                 String::from_utf8_lossy(&out.stdout).lines().map(PathBuf::from).collect();
-            for r in REFERENCE_ROOTS {
+            if let Some(t) = self.pin_tree() {
+                files.extend(t.files.iter().map(|f| Path::new(EMUTOS_ROOT).join(f)));
+            }
+            // The build's products: files of the build tree the pin lacks.
+            let mut built = Vec::new();
+            walk(&self.root, &self.emutos_build, &mut built);
+            let in_pin = |f: &Path| {
+                let sub = f.strip_prefix(&self.emutos_build).unwrap_or(f).to_string_lossy().into_owned();
+                self.pin_tree().is_some_and(|t| t.files.contains(&sub))
+            };
+            files.extend(built.into_iter().filter(|f| !in_pin(f)));
+            for r in REFERENCE_ROOTS.iter().filter(|&&r| r != EMUTOS_ROOT) {
                 walk(&self.root, Path::new(r), &mut files);
             }
             let mut idx: BTreeMap<String, Vec<PathBuf>> = BTreeMap::new();
@@ -506,38 +911,35 @@ impl Resolver {
 
     /// Resolves `cite` found in `doc` (workspace-relative).
     pub fn resolve(&mut self, doc: &Path, cite: &Cite) -> Result<Outcome, String> {
-        let root = self.root.clone();
+        self.load_emutos()?;
         let want_dir = cite.path.ends_with('/');
-        let path = cite.path.trim_end_matches('/');
+        let prefix = if cite.kind == CiteKind::Span { prefix_of(&cite.path) } else { None };
+        let full_path = match prefix {
+            Some(_) => expand_prefix(&cite.path).unwrap_or_else(|| cite.path.clone()),
+            None => cite.path.clone(),
+        };
+        let path = full_path.trim_end_matches('/');
         let hit = if cite.kind == CiteKind::Span && !cite.path.contains('/') {
             let matches = self.basename_index()?.get(path).cloned().unwrap_or_default();
             match matches.len() {
-                0 if self.any_reference_missing() => return Ok(Outcome::Skipped),
+                0 if self.any_reference_missing() || self.build_missing() => return Ok(Outcome::Skipped),
                 0 => return Ok(Outcome::Fail("missing".into())),
                 1 => matches[0].clone(),
                 n => return Ok(Outcome::Fail(format!("ambiguous ({n} matches)"))),
             }
         } else {
             let doc_dir = doc.parent().unwrap_or(Path::new(""));
-            let cands = self.candidates(doc_dir, path, cite.kind);
-            let mut found = None;
-            for c in &cands {
-                if self.exists_exact(&root, c) && (!want_dir || root.join(c).is_dir()) {
-                    found = Some(c.clone());
-                    break;
-                }
-            }
-            match found {
+            let cands = self.candidates(doc_dir, path, cite.kind, prefix.is_some());
+            match cands.iter().find_map(|c| self.locate(c, want_dir)) {
                 Some(f) => f,
-                None => return Ok(self.unresolved(&cands, path, cite.kind)),
+                None => return Ok(self.unresolved(&cands, path, cite.kind, prefix)),
             }
         };
-        let full = root.join(&hit);
         if let Some(max) = cite.max_line {
-            if full.is_dir() {
+            if self.is_dir(&hit) {
                 return Ok(Outcome::Fail("is a directory, has a line suffix".into()));
             }
-            let n = line_count(&full).map_err(|e| format!("doc-check: {}: {e}", full.display()))?;
+            let n = self.lines(&hit)?;
             if max as usize > n || max == 0 {
                 return Ok(Outcome::Fail(format!("line {max} beyond end ({n} lines) of {}", hit.display())));
             }
@@ -545,21 +947,28 @@ impl Resolver {
         Ok(Outcome::Ok)
     }
 
-    /// Why nothing matched: skipped (a reference tree it may live in is
-    /// absent), a case mismatch, or missing.
-    fn unresolved(&self, cands: &[PathBuf], path: &str, kind: CiteKind) -> Outcome {
+    /// Why nothing matched: skipped (a reference or local tree it may live
+    /// in is absent), a case mismatch, or missing.
+    fn unresolved(&self, cands: &[PathBuf], path: &str, kind: CiteKind, prefix: Option<&Prefix>) -> Outcome {
         let under_missing_ref =
             cands.iter().any(|c| self.reference_missing(&c.to_string_lossy()));
+        let local_absent = prefix.is_some_and(|p| p.local && !self.root.join(p.root).is_dir());
+        // An EmuTOS cite that may name a build product, without the build.
+        let emutos_unbuilt = under_emutos(Path::new(path)).is_some() && self.build_missing();
         let first = path.split('/').next().unwrap_or("");
         let foreign_top = kind == CiteKind::Span
             && first != "."
             && first != ".."
             && !self.root.join(first).exists()
-            && self.any_reference_missing();
-        if under_missing_ref || foreign_top {
+            && (self.any_reference_missing() || self.build_missing());
+        if under_missing_ref || local_absent || emutos_unbuilt || foreign_top {
             return Outcome::Skipped;
         }
-        if cands.iter().any(|c| self.root.join(c).exists()) {
+        let case_variant = |c: &PathBuf| match under_emutos(c) {
+            Some(sub) => self.pin_tree().is_some_and(|t| t.has_case_variant(&sub)),
+            None => self.root.join(c).exists(),
+        };
+        if cands.iter().any(case_variant) {
             return Outcome::Fail("missing (only a case-different name exists)".into());
         }
         Outcome::Fail("missing".into())
@@ -585,9 +994,13 @@ fn walk(root: &Path, rel: &Path, out: &mut Vec<PathBuf>) {
 
 /// Lines of a file: newlines, plus one for a last line without one.
 fn line_count(p: &Path) -> std::io::Result<usize> {
-    let b = fs::read(p)?;
+    Ok(count_lines(&fs::read(p)?))
+}
+
+/// Lines of a byte string: newlines, plus one for a last line without one.
+fn count_lines(b: &[u8]) -> usize {
     let nl = b.iter().filter(|&&c| c == b'\n').count();
-    Ok(nl + usize::from(!b.is_empty() && *b.last().unwrap() != b'\n'))
+    nl + usize::from(!b.is_empty() && *b.last().unwrap() != b'\n')
 }
 
 /// `cargo xtask doc-check [<file>...]`.
@@ -833,5 +1246,169 @@ x `a/b.rs:3` y ``c/d.rs`` z `unclosed/e.rs
         }
         assert!(files.iter().all(|f| !f.starts_with(ARCHIVE_DIR)));
         assert!(files[1..].iter().all(|f| is_default_doc(f)));
+    }
+
+    #[test]
+    fn dated_snapshots_are_left_out() {
+        for dated in [
+            "docs/analysis/handover-2026-10-21.md",
+            "docs/api/desktop/_hw-test-2026-09-17.md",
+            "docs/analysis/a-2026-01-31.md",
+            "docs/analysis/x-1999-12-01.md",
+        ] {
+            assert!(is_dated_snapshot(Path::new(dated)), "{dated}");
+            assert!(!is_default_doc(Path::new(dated)), "{dated}");
+        }
+        for undated in [
+            "docs/analysis/ORACLE.md",
+            "docs/analysis/aes-audit/p4-form.md",
+            // A dated directory, an undated file.
+            "docs/analysis/fsel-reference-2026-09-17/README.md",
+            // No stem, date not last, not a date, not Markdown.
+            "docs/analysis/2026-10-21.md",
+            "docs/analysis/-2026-10-21.md",
+            "docs/analysis/x-2026-10-21-notes.md",
+            "docs/analysis/x-2026-13-01.md",
+            "docs/analysis/x-2026-00-01.md",
+            "docs/analysis/x-2026-10-32.md",
+            "docs/analysis/x-2026-10-00.md",
+            "docs/analysis/x-26-10-21.md",
+            "docs/analysis/x-2026-1-021.md",
+            "docs/analysis/x-2026_10_21.md",
+            "docs/analysis/x-2026-10-21.txt",
+            "docs/analysis/ü-2026-10-2ü.md",
+        ] {
+            assert!(!is_dated_snapshot(Path::new(undated)), "{undated}");
+        }
+        assert!(is_default_doc(Path::new("docs/analysis/ORACLE.md")));
+        assert!(is_default_doc(Path::new("docs/analysis/fsel-reference-2026-09-17/README.md")));
+        let files = default_files(&root());
+        assert!(files.contains(&PathBuf::from("docs/analysis/ORACLE.md")));
+        assert!(files.iter().all(|f| !is_dated_snapshot(f)));
+    }
+
+    #[test]
+    fn prefixes_expand_and_resolve() {
+        assert_eq!(expand_prefix("ET/bdos/proc.c"), Some("references/emutos/bdos/proc.c".into()));
+        assert_eq!(expand_prefix("NT/loader.rs"), Some("tos-api/src/bdos/process/loader.rs".into()));
+        assert_eq!(expand_prefix("KA/"), Some("kernel/src/arch/aarch64".into()));
+        assert_eq!(expand_prefix("DEV/gcc.mak"), Some("Applications/ldg-src/ldg/src/devel/gcc.mak".into()));
+        assert_eq!(expand_prefix("FM/k_exec.c"), Some("references/freemint/sys/k_exec.c".into()));
+        // Exact case, first component only, known prefixes only.
+        for p in ["et/bdos/proc.c", "x/ET/proc.c", "ET", "ESR/a.c", "ETX/a.c"] {
+            assert_eq!(expand_prefix(p), None, "{p:?}");
+        }
+        // One entry per prefix; each legend still says so.
+        let names: BTreeSet<&str> = PREFIXES.iter().map(|p| p.name).collect();
+        assert_eq!(names.len(), PREFIXES.len());
+        for p in PREFIXES {
+            assert!(!p.legends.is_empty(), "{}", p.name);
+            for (cite, written) in p.legends {
+                let (file, line) = cite.rsplit_once(':').unwrap();
+                let text = fs::read_to_string(root().join(file)).unwrap();
+                let l = text.lines().nth(line.parse::<usize>().unwrap() - 1).unwrap();
+                assert!(
+                    l.contains(&format!("`{}`", p.name)) || l.contains(&format!("`{}/`", p.name)),
+                    "{cite}: no `{}`",
+                    p.name
+                );
+                assert!(l.contains(&format!("`{written}`")), "{cite}: no `{written}`");
+            }
+        }
+        let mut r = Resolver::new(&root());
+        let doc = Path::new("docs/analysis/x.md");
+        let one = |text: &str| scan(text).into_iter().next().unwrap();
+        assert_eq!(r.resolve(doc, &one("`NT/loader.rs:1`")).unwrap(), Outcome::Ok);
+        assert_eq!(r.resolve(doc, &one("`KA/exceptions.rs:1`")).unwrap(), Outcome::Ok);
+        assert_eq!(r.resolve(doc, &one("`KA/`")).unwrap(), Outcome::Ok);
+        assert!(matches!(
+            r.resolve(doc, &one("`NT/loader.rs:999999`")).unwrap(),
+            Outcome::Fail(m) if m.ends_with("of tos-api/src/bdos/process/loader.rs")
+        ));
+        // A prefixed path resolves under its root only, not in the search
+        // roots (`kernel/src/arch/aarch64/mod.rs` exists, `NT/mod.rs` no).
+        assert!(matches!(r.resolve(doc, &one("`NT/no_such_x.rs`")).unwrap(), Outcome::Fail(m) if m == "missing"));
+        // FreeMiNT: resolved, or skipped without `references/freemint`.
+        let fm = r.resolve(doc, &one("`FM/k_exec.c:1`")).unwrap();
+        assert!(fm == Outcome::Ok || (fm == Outcome::Skipped && !root().join("references/freemint").is_dir()));
+        // An unmapped prefix stays a plain path.
+        assert!(matches!(r.resolve(doc, &one("`ESR/x.c:1`")).unwrap(), Outcome::Fail(_) | Outcome::Skipped));
+    }
+
+    #[test]
+    fn bare_names_resolve_when_unique() {
+        let mut r = Resolver::new(&root());
+        let doc = Path::new("docs/STATUS.md");
+        let one = |text: &str| scan(text).into_iter().next().unwrap();
+        // Unique over `git ls-files`.
+        assert_eq!(r.resolve(doc, &one("`doc_check.rs:1`")).unwrap(), Outcome::Ok);
+        assert!(matches!(
+            r.resolve(doc, &one("`doc_check.rs:999999`")).unwrap(),
+            Outcome::Fail(m) if m.ends_with("of tools/xtask/src/doc_check.rs")
+        ));
+        // Ambiguous and missing fail (missing is skipped without references/).
+        assert!(matches!(r.resolve(doc, &one("`Cargo.toml:1`")).unwrap(), Outcome::Fail(m) if m.starts_with("ambiguous")));
+        let gone = r.resolve(doc, &one("`no_such_file_x.c:1`")).unwrap();
+        assert!(matches!(gone, Outcome::Fail(ref m) if m == "missing") || gone == Outcome::Skipped);
+        // Without a line suffix a bare name is no cite.
+        assert!(scan("`doc_check.rs`").is_empty());
+    }
+
+    /// Needs `references/emutos` with the pin and the 1.4 calibration commit
+    /// (`tools/oracle/oracle.env`); skipped otherwise.
+    #[test]
+    fn emutos_resolves_at_the_pin() {
+        let env = fs::read_to_string(root().join(ORACLE_ENV)).unwrap();
+        let pin = env_value(&env, EMUTOS_PIN_VAR).expect("pin in oracle.env");
+        let cal = env_value(&env, "ORACLE_CAL_EMUTOS_COMMIT").expect("calibration commit in oracle.env");
+        assert_eq!(env_value("# X=1\nX=abc\n", "X"), Some("abc".into()));
+        assert_eq!(env_value("XY=1\n", "X"), None);
+        let repo = root().join(EMUTOS_ROOT);
+        if PinTree::load(&repo, &pin).is_none() || PinTree::load(&repo, &cal).is_none() {
+            eprintln!("emutos_resolves_at_the_pin: references/emutos or a commit absent, skipped");
+            return;
+        }
+        let doc = Path::new("docs/STATUS.md");
+        let one = |text: &str| scan(text).into_iter().next().unwrap();
+        // `util/nlsasm.S` (225 lines) exists in 1.4 and is gone at the pin;
+        // `include/string.h` has 73 lines in 1.4 and 103 at the pin.
+        let mut at_pin = Resolver::new(&root());
+        let mut at_cal = Resolver::with_emutos_commit(&root(), &cal);
+        let nls = one("`references/emutos/util/nlsasm.S:1`");
+        assert_eq!(at_cal.resolve(doc, &nls).unwrap(), Outcome::Ok);
+        assert!(matches!(at_pin.resolve(doc, &nls).unwrap(), Outcome::Fail(m) if m == "missing"));
+        let s = one("`ET/include/string.h:103`");
+        assert_eq!(at_pin.resolve(doc, &s).unwrap(), Outcome::Ok);
+        assert!(matches!(at_cal.resolve(doc, &s).unwrap(), Outcome::Fail(m) if m.contains("(73 lines)")));
+        assert!(matches!(at_pin.resolve(doc, &one("`ET/include/string.h:104`")).unwrap(), Outcome::Fail(_)));
+        // Search roots, directories, bare names and case at the pin.
+        assert_eq!(at_pin.resolve(doc, &one("`bdos/proc.c:1`")).unwrap(), Outcome::Ok);
+        assert_eq!(at_pin.resolve(doc, &one("`ET/bdos/`")).unwrap(), Outcome::Ok);
+        assert_eq!(at_pin.resolve(doc, &one("`gemaplib.c:1`")).unwrap(), Outcome::Ok);
+        assert!(matches!(at_cal.resolve(doc, &one("`nlsasm.S:1`")).unwrap(), Outcome::Ok));
+        assert!(matches!(at_pin.resolve(doc, &one("`nlsasm.S:1`")).unwrap(), Outcome::Fail(m) if m == "missing"));
+        assert!(matches!(
+            at_pin.resolve(doc, &one("`ET/BDOS/proc.c`")).unwrap(),
+            Outcome::Fail(m) if m.contains("case-different")
+        ));
+        // A build product the pin lacks resolves in the pinned build tree;
+        // without that tree it is skipped.
+        let product = one("`references/emutos/desk/desk_rsc.c:1`");
+        if root().join(EMUTOS_BUILD_ROOT).join(&pin[..8]).join("desk/desk_rsc.c").is_file() {
+            assert_eq!(at_pin.resolve(doc, &product).unwrap(), Outcome::Ok);
+            assert_eq!(at_pin.resolve(doc, &one("`ET/aes/gem_rsc.c:1`")).unwrap(), Outcome::Ok);
+            assert_eq!(at_pin.resolve(doc, &one("`desk_rsc.c:1`")).unwrap(), Outcome::Ok);
+            assert!(matches!(
+                at_pin.resolve(doc, &one("`ET/desk/no_such_product_x.c:1`")).unwrap(),
+                Outcome::Fail(m) if m == "missing"
+            ));
+        }
+        // The calibration commit has no build tree here (`<cal[..8]>/`).
+        if !root().join(EMUTOS_BUILD_ROOT).join(&cal[..8]).is_dir() {
+            assert_eq!(at_cal.resolve(doc, &product).unwrap(), Outcome::Skipped);
+        }
+        // A commit the checkout lacks counts as an absent tree: skipped.
+        let mut absent = Resolver::with_emutos_commit(&root(), "0000000000000000000000000000000000000000");
+        assert_eq!(absent.resolve(doc, &one("`ET/bdos/proc.c:1`")).unwrap(), Outcome::Skipped);
     }
 }
