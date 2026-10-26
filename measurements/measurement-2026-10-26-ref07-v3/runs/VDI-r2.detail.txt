@@ -1,0 +1,21 @@
+== VDI-r2
+v2 header 54444d50000200040638007831636436a0706a6d000000000000000000000000
+v3 header 54444d50000300040638007831636436a0706a6d000400010000000000000000
+-- LOG diff (v2 reference vs v3)
+1c1
+< DUMPVDI build 1cd6, record format 2
+---
+> DUMPVDI build 1cd6, record format 3
+-- tosdiff v3 vs v3 (address check)
+VDI.BIN vs VDI.BIN -- area VDI, 120 cases from vdi-r2.tsv
+
+0 of 120 cases differ
+exit 0
+-- tosdiff v2 vs v3 (must refuse)
+tosdiff: refusing: EMUTOS-1a7484ab-VDI-r2.BIN is format 2, VDI.BIN is format 3 -- dumps of different formats are not compared; re-record the older one
+exit 2
+-- tosdiff v2 vs v2 (address check not checkable)
+EMUTOS-1a7484ab-VDI-r2.BIN vs EMUTOS-1a7484ab-VDI-r2.BIN -- area VDI, 120 cases from vdi-r2.tsv
+
+0 of 120 cases differ
+exit 0

@@ -1,0 +1,167 @@
+NewTOS -- tosdump record format 3: re-record the pinned EmuTOS references -- 2026-10-26
+=====================================================================================
+MEASUREMENT ONLY. The format itself: docs/TOS-REFERENCE-DUMPER.md section 3
+("Format versions", "Field classes: value and address"); oracle rules:
+docs/analysis/ORACLE.md section 7.
+
+WHAT / WHY
+  User decision 2026-10-26 ("option b, no CLI flag"): tosdump record format 3.
+  The dumper writes its pointer width and word order into the header (bytes
+  20..23, formerly reserved); nothing else in the record changes. tosdiff
+  uses them for the field class "address": every address cell must be
+  < 0x80000000 (a TOS address is a signed LONG, TASK/MEM11.md), reported as
+  its own verdict; a format 2 dump reports the check as "not checkable";
+  format 3 against format 2 is refused.
+  This run re-records the pinned references tosdump/reference/EMUTOS-1a7484ab-*
+  in format 3 on the pinned oracle and checks, per table, that the PAYLOAD
+  (everything after the 32-byte header) is byte-identical to the format 2
+  recording. No ticket carries this work; the run name was given by the lead.
+  NewTOS-side dumps were NOT re-recorded (open user decision).
+
+Git HEAD at start : b63a58029d2e2503ba57dc7ed3d4824b6078c0de (main), plus the
+                    uncommitted format 3 change. The dumper source the
+                    binaries below were built from = HEAD + method/dumper-source-v3.diff
+                    (git diff -- tosdump/core tosdump/abi tosdump/Makefile),
+                    sha256 ac7ff0bd7c12df5d65be0bdcbbf1ba696966c3270b100a49262bed6de797efeb
+Oracle            : tools/hatari-oracle.sh (sha256 562a3add...2198), default ROM
+                    tools/oracle/etos512de-1a7484ab.img sha256
+                    323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+                    (checked by the script; boot banner "EmuTOS Version: 20260414")
+Hatari            : 2.6.1, binary sha256 953f4e78eea55a8ca12ed6c83de1f045545b8da42a49e00112eaa235dffcd6f6
+Hatari config     : tools/oracle/hatari.cfg sha256
+                    c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46
+                    (unchanged after the runs; no --saveconfig used)
+Toolchain         : /opt/cross-mint/bin/m68k-atari-mint-gcc (MiNT 20230908) 7.5.0
+
+------------------------------------------------------------------------------
+DUMPERS
+------------------------------------------------------------------------------
+  Format 3 source, built per reference with the build id that reference
+  already carries -- as the oracle run did
+  (measurements/measurement-2026-10-26-oracle/RUNINFO.TXT, DUMPERS), so the
+  generated tos-api reference tests, which quote the build id, stay valid:
+    make -C tosdump BUILD=<dir>/<id> BUILD_ID=<id> dump{vdi,aes,rast}-m68k
+  dumpers/ (text size: VDI 138560, AES 138812, RAST 140900):
+    1cd6/DUMPVDI.PRG  59272b66e36bfbc95877c99755dd396058225d310c077d787ad6db03151a210b
+    8be9/DUMPVDI.PRG  8f6039c35c3c159bd3cce65b396fa09a1bc8b342be7cff4e42c7b28ceb1d3f56
+    19b7/DUMPVDI.PRG  ad4a1273cab2394e47a82df7fb3e7600bbe0c9fe8b84d96fd9adec2cc6f065e4
+    b59e/DUMPAES.PRG  cbde894b6ac4c10e2cf9ee8030b8044c97c674751c4e9c6181e5863d91774365
+    c911/DUMPAES.PRG  e1e73b48089e3224144b611c0bc80bca9206774e7b21acced2020ac0fe1699c5
+    70ca/DUMPAES.PRG  e9fab6e9d8e6f9bd7cadfce805da5231dc99b4c7c732419d81bf34170261572d
+    fdf8/DUMPRAST.PRG 48425256d41ce097b9c6105ee2b2a6c0acbfab7eaa70216b050c090120aa47ca
+    c1f4/DUMPRAST.PRG 27c302c6c315cc718ce993b3ab654740007c665bfa80d040574a985a4eea05f5
+  dumpers-control-v2head/ -- the CONTROL: HEAD b63a5802 without the format 3
+  change (format 2), DUMPRAST only (text 140160):
+    fdf8/DUMPRAST.PRG 07260e732e57a0e594054a05b6d0593e94a423d1aa944a602374a19425a8ede4
+    c1f4/DUMPRAST.PRG c7e0e9eacc2545ec5cbf279b5392cc97d3db16659fb2073667b5c8546cda7ee9
+  For reference, the oracle run's DUMPRAST (f2fae9f0, format 2): text 140064.
+
+------------------------------------------------------------------------------
+METHOD
+------------------------------------------------------------------------------
+  method/run-v3.sh <out-root>       14 Hatari sessions, one per table, one after
+                                    another, via tools/hatari-oracle.sh (profile,
+                                    table, build id per reference in the script)
+  method/compare-v3.sh <out-root> <v2-dir>
+                                    per table: sha256 of the payload of the
+                                    format 2 reference and of the format 3 dump,
+                                    equal yes/no (-> COMPARE.txt); both headers
+                                    in hex, the LOG diff, and three tosdiff runs
+                                    on the real data: v3 vs v3 (address check),
+                                    v2 vs v3 (must refuse), v2 vs v2 (must say
+                                    not checkable) (-> runs/<table>.detail.txt)
+  <v2-dir> = copies of tosdump/reference/EMUTOS-1a7484ab-* taken from the clean
+  tree at b63a5802 before anything was replaced.
+  Control: tools/hatari-oracle.sh tt|falcontc dumpers-control-v2head/<id>/DUMPRAST.PRG
+  on vdi-raster.tsv / vdi-raster-screen.tsv -> control-v2head/.
+  runs/*/ keep <AREA>.BIN, <AREA>.LOG and hatari.log; the hd/ and home/
+  directories were left in the scratch area.
+
+------------------------------------------------------------------------------
+RESULTS
+------------------------------------------------------------------------------
+  COMPARE.txt -- payload sha256, format 2 reference vs format 3 recording:
+
+  table                    v2 payload sha256                                                 v3 payload sha256                                                 equal
+  VDI                      0099b5297d1ecc3d4a73b223224fd2d5aa12a30a4c76b9d2adcffdbafca73804  0099b5297d1ecc3d4a73b223224fd2d5aa12a30a4c76b9d2adcffdbafca73804  yes
+  VDI-r2                   121dc23cb435c50cc5a4cac7cd13b007534326ac46301b5dd46c70e57c1dfc30  121dc23cb435c50cc5a4cac7cd13b007534326ac46301b5dd46c70e57c1dfc30  yes
+  VDI-r3                   6794afe2cc82b4c68f64fe41c8005818baf8872aaba60a605fa8ae677a96e084  6794afe2cc82b4c68f64fe41c8005818baf8872aaba60a605fa8ae677a96e084  yes
+  VDI-all                  6092f1e76c9d8c5c5ecde7f5fc003026ad2e0effa513e2adc1fa3cdf0c4b196a  6092f1e76c9d8c5c5ecde7f5fc003026ad2e0effa513e2adc1fa3cdf0c4b196a  yes
+  VDI-all-falcontc         722ab74852b51eafa28dc51f767a517fc3b8246cd91ba0a41c6ec0b81339d3db  722ab74852b51eafa28dc51f767a517fc3b8246cd91ba0a41c6ec0b81339d3db  yes
+  AES                      31ad40460c45289bb9a406160ab60071989290eec6d80af03d9058be69604c19  31ad40460c45289bb9a406160ab60071989290eec6d80af03d9058be69604c19  yes
+  AES-r2wind               f7ac8fcef3ae619b79a0663c9897ae9d3628bfb5548072653112f66f1d1a07e5  f7ac8fcef3ae619b79a0663c9897ae9d3628bfb5548072653112f66f1d1a07e5  yes
+  AES-r2brlist             e4da5bb5beb770f990bab84e9e8b7149dad0013fe038c73acad6d61b9337c0e0  e4da5bb5beb770f990bab84e9e8b7149dad0013fe038c73acad6d61b9337c0e0  yes
+  AES-r3                   03f4fa88d6d46467d6fca3bd538ed88177aa08c25797bc20486ce76cb6b8ceb2  03f4fa88d6d46467d6fca3bd538ed88177aa08c25797bc20486ce76cb6b8ceb2  yes
+  AES-m05                  5408bc8e4acde0e03994ede858784fcf5026a79a85d297180ded489ef1402546  5408bc8e4acde0e03994ede858784fcf5026a79a85d297180ded489ef1402546  yes
+  AES-m06                  2b9bf49aaf5e926573fd6b22179df657a8b60e7785251df69c04ca84d0cefb50  2b9bf49aaf5e926573fd6b22179df657a8b60e7785251df69c04ca84d0cefb50  yes
+  AES-m07                  43143d768f81664af249145110c59b7e2a8021ae966bcc087b68c73d76e155c7  43143d768f81664af249145110c59b7e2a8021ae966bcc087b68c73d76e155c7  yes
+  RASTER                   03040b1122d7cfa5276178e78115e18417590eec8ccc4138323c7e5091ea3103  0abbc458c0401a4720234c39e6655d1d2fb51e53659f23d4fbe88364e09f4d66  NO
+  RASTER-screen-falcontc   8331c819acbd1baf7e78977c8e02f1393acd7a1a08831ebc11026558ea6065ce  ee37423dc781e46d88636bd1f30ec4e24012f487e2ddcfb1d0de70f43b14d106  NO
+
+  Header, every table: bytes 4..5 0x0002 -> 0x0003 (format), bytes 20..23
+  0x00000000 -> 0x0004 0x0001 (pointer 4 bytes, most significant word first);
+  magic, area, record size and count, build id, case CRC unchanged.
+  LOG, every table: exactly one line differs, line 1
+  "DUMP* build <id>, record format 2" -> "... record format 3".
+
+  RASTER, both tables -- the only payload bytes that differ are record
+  offsets 24-25, 28-29, 54-55, 58-59 in every record (59 resp. 62), i.e.
+  contrl[8], contrl[10], contrl_before[8], contrl_before[10]: the LOW WORDs of
+  the two MFDB pointer cells, field class address (the dumper's own static
+  MFDBs, recorded, never compared by value):
+                      contrl[7..10] (both pointers)
+    v2 reference      0x01036690 0x0103667C   (screen: 0x01054690 0x0105467C)
+    control (v2 HEAD) 0x010366F0 0x010366DC   (screen: 0x010546F0 0x010546DC)
+    v3                0x010369D4 0x010369C0   (screen: 0x010549D4 0x010549C0)
+  The shifts equal the growth of DUMPRAST's text segment, which precedes its
+  BSS: 140064 -> 140160 (+0x60, commit 9b67b6e4, the `first` member of every
+  field descriptor) -> 140900 (+0x2E4, the format 3 code). The control run's
+  header and LOG are byte-identical to the reference's, its payload differs
+  in contrl[8]/[10] and contrl_before[8]/[10] only (record offsets 25, 29, 55,
+  59). So no dumper built from HEAD reproduces the RASTER payload byte for
+  byte, format 2 or 3 -- the same effect the oracle run's control saw
+  against the original fdf8 binary (its RUNINFO, RESULTS, control).
+  Every other byte of both RASTER payloads is identical.
+
+  tosdiff on the real data (runs/<table>.detail.txt):
+    v3 vs v3   14/14 exit 0, "0 of N cases differ"; address check on every
+               cell: AES 95+78+15+39+5+19+20 = 271 cells (ap_3resv =
+               0x0000BD60 everywhere), RASTER 236 + 248 cells -- 0 not
+               < 0x80000000; VDI has no address field.
+    v2 vs v3   14/14 refused, exit 2 ("is format 2, ... is format 3").
+    v2 vs v2   14/14 exit 0; AES and RASTER report "not checkable".
+
+  Installed into tosdump/reference/ (BIN + LOG copied from runs/<table>/):
+    the 12 tables with equal payload -- EMUTOS-1a7484ab-VDI, -VDI-r2, -VDI-r3,
+    -VDI-all, -VDI-all-falcontc, -AES, -AES-r2wind, -AES-r2brlist, -AES-r3,
+    -AES-m05, -AES-m06, -AES-m07.
+  NOT installed: EMUTOS-1a7484ab-RASTER and -RASTER-screen-falcontc stay the
+  format 2 files, because the byte-identity check failed (see above). Their
+  format 3 recordings are runs/RASTER/ and runs/RASTER-screen-falcontc/;
+  replacing them is the lead's/user's decision.
+
+  tos-api's generated reference tests (tosdump/host/mkrusttests): all seven
+  generators that read an EMUTOS-1a7484ab dump regenerate, from the
+  installed format 3 files, byte for byte what is committed except the
+  output-path comment line (written to a scratch path for the check).
+  `cargo xtask test` with the 12 installed files: exit 0, 163 test binaries,
+  1685 passed, 0 failed, 1 ignored (the conformance harnesses index records
+  from byte 32 and never read the header).
+  tosdump host suite (`make -C tosdump host-test`): exit 0, all eleven groups
+  ok, including the new format 3 / format 2 / refusal / < 0x80000000 tests.
+
+------------------------------------------------------------------------------
+NOTES
+------------------------------------------------------------------------------
+  * *.BIN here and in tosdump/reference is ignored by the root .gitignore;
+    the reference files are tracked already, files of this run need
+    `git add -f`.
+  * No Hatari process left behind (pgrep after each set: empty).
+  * Rebuilding a dumper does not give the same PRG sha256: gcc compiles the
+    nine sources through temporary objects whose random names
+    (".../T//ccYWg2Na.o") land in the PRG's symbol table. Checked for
+    fdf8/DUMPRAST.PRG: a rebuild from the same tree differs in 54 bytes, all
+    at file offsets 163214..169646, behind the end of text+data (142744) --
+    the loaded program is identical. The binaries used are the ones kept in
+    dumpers/.
+  * Nothing flashed, no card touched, no NewTOS dump recorded.

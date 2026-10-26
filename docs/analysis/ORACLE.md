@@ -91,7 +91,7 @@ are pinned, each because it otherwise makes two builds of one commit differ:
    (`*.tr.c`) is either in both the own 1.4 build and the release ROM as a
    NUL-terminated byte string (502) or in neither (102 — debug output that
    is compiled out, or fragments of joined literals); none is in only one
-   (`method/check-translations.py` of the run). The translations of the
+   (`measurements/measurement-2026-10-26-oracle/method/check-translations.py` of the run). The translations of the
    x86_64-tool build equal the release's.
 
 Reproducible: a second build in a different directory gives the same sha256
@@ -162,17 +162,33 @@ with the user's full configuration and again with the cleaned `hatari.cfg`.
   `EMUTOS14-*` stay untouched as the 1.4 evidence. The pin run of all 14
   tables is `tosdump/reference/EMUTOS-1a7484ab-*` (same suffixes as the
   `EMUTOS14-*` they re-measure).
-- Moving the pin = rerun this calibration (`method/run-set.sh` +
-  `method/compare-set.sh` of the run) and map every new difference to a commit.
+- Moving the pin = rerun this calibration (`measurements/measurement-2026-10-26-oracle/method/run-set.sh` +
+  `measurements/measurement-2026-10-26-oracle/method/compare-set.sh` of the run) and map every new difference to a commit.
 - A change of Hatari, its config, or the toolchain = rerun the control and
   calibration runs first.
+- The twelve VDI and AES `EMUTOS-1a7484ab-*` references are record
+  **format 3** (pointer width and word order in the header,
+  `docs/TOS-REFERENCE-DUMPER.md` section 3), re-recorded on this pin on
+  2026-10-26 with each reference's own build id; every payload is
+  byte-identical to the format 2 recording
+  (`measurements/measurement-2026-10-26-ref07-v3/RUNINFO.TXT`). The two
+  `EMUTOS-1a7484ab-RASTER*` references stay format 2 for now: a rebuilt
+  dumper puts its MFDB buffers elsewhere, so their pointer cells (address
+  class) differ and the byte-identity check fails by construction (same
+  effect as the control run in §4). `tosdiff` refuses to compare a format 3
+  dump with a format 2 one, so a NewTOS dump compared against a format 3
+  reference has to be format 3 as well. `EMUTOS14-*` stay format 2.
 
 ## 8. Open for Phase 1
 
 GEMDOS/BIOS/XBIOS return many addresses (`Malloc`, `Fgetdta`, `Logbase`,
-`Getbpb`, `Iorec`, …). They need the **address** class to become
-**relational** — null/non-null, alignment — compared that way, **never by
-value and never ignored**. Today `TD_FIELD_ADDRESS` means "recorded, not
-compared" (tosdiff); tos-api's `aes_reference` harness already checks
-`ap_3resv` relationally (non-zero iff the reference's is,
+`Getbpb`, `Iorec`, …). They need the **address** class to be **relational**,
+compared that way, **never by value and never ignored**. Since record format 3
+the class has its first relational property: every address cell, on each side
+separately, must be `< 0x80000000` (a TOS address is a signed `LONG`,
+`TASK/MEM11.md`); `tosdiff` reports a violation as its own verdict and a
+format 2 dump as "not checkable" (`docs/TOS-REFERENCE-DUMPER.md` section 3,
+field classes). Still open: null/non-null and alignment, and the GEMDOS/BIOS
+area itself (task T7 of the dumper spec). tos-api's `aes_reference` harness
+checks `ap_3resv` relationally on its own (non-zero iff the reference's is,
 `tos-api/tests/aes_reference/harness.rs`).

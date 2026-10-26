@@ -1,0 +1,21 @@
+== VDI-all-falcontc
+v2 header 54444d5000020004063800b631396237d135adaf000000000000000000000000
+v3 header 54444d5000030004063800b631396237d135adaf000400010000000000000000
+-- LOG diff (v2 reference vs v3)
+1c1
+< DUMPVDI build 19b7, record format 2
+---
+> DUMPVDI build 19b7, record format 3
+-- tosdiff v3 vs v3 (address check)
+VDI.BIN vs VDI.BIN -- area VDI, 182 cases from vdi-all.tsv
+
+0 of 182 cases differ
+exit 0
+-- tosdiff v2 vs v3 (must refuse)
+tosdiff: refusing: EMUTOS-1a7484ab-VDI-all-falcontc.BIN is format 2, VDI.BIN is format 3 -- dumps of different formats are not compared; re-record the older one
+exit 2
+-- tosdiff v2 vs v2 (address check not checkable)
+EMUTOS-1a7484ab-VDI-all-falcontc.BIN vs EMUTOS-1a7484ab-VDI-all-falcontc.BIN -- area VDI, 182 cases from vdi-all.tsv
+
+0 of 182 cases differ
+exit 0

@@ -1,0 +1,507 @@
+diff --git a/tosdump/core/dump.c b/tosdump/core/dump.c
+index dabed1ac..4baa3250 100644
+--- a/tosdump/core/dump.c
++++ b/tosdump/core/dump.c
+@@ -27,6 +27,10 @@ int td_dump_write(const char *path, uint16_t area, uint16_t count,
+ 	strncpy(h.build_id, build_id ? build_id : "", TD_HDR_BUILDID_LEN);
+ 	h.build_id[TD_HDR_BUILDID_LEN] = '\0';
+ 	h.case_crc     = case_crc;
++	/* Format 3: the machine's own pointer width and word order, measured
++	 * here rather than configured, so both targets run the same lines. */
++	h.ptr_width    = td_native_ptr_width();
++	h.word_order   = td_native_word_order();
+ 	td_header_write(hdr, &h);
+ 
+ 	f = fopen(path, "wb");
+diff --git a/tosdump/core/record.c b/tosdump/core/record.c
+index d61aacf6..f3838830 100644
+--- a/tosdump/core/record.c
++++ b/tosdump/core/record.c
+@@ -152,27 +152,56 @@ void td_header_write(uint8_t *hdr, const struct td_header *h)
+ 	}
+ 
+ 	td_store_be32(hdr + TD_HDR_OFF_CASECRC, h->case_crc);
++
++	/* Format 3 states the pointer width and the word order; in format 2
++	 * the same bytes are reserved and stay zero. */
++	if (h->version >= TD_FORMAT_VERSION) {
++		td_store_be16(hdr + TD_HDR_OFF_PTRWIDTH,  h->ptr_width);
++		td_store_be16(hdr + TD_HDR_OFF_WORDORDER, h->word_order);
++	}
+ 	/* reserved stays zero from the memset above */
+ }
+ 
+ int td_header_parse(const uint8_t *hdr, size_t len, struct td_header *out)
+ {
+ 	uint16_t mandated;
+-	int i;
++	int i, res_off, res_len;
+ 
+ 	if (len < TD_HEADER_SIZE)
+ 		return TD_ERR_SIZE;
+ 	if (memcmp(hdr + TD_HDR_OFF_MAGIC, TD_MAGIC, TD_MAGIC_LEN) != 0)
+ 		return TD_ERR_MAGIC;
+ 
++	/* Format 2 stays readable: its records are byte for byte format 3's,
++	 * only the header says less. */
+ 	out->version = td_load_be16(hdr + TD_HDR_OFF_VERSION);
+-	if (out->version != TD_FORMAT_VERSION)
++	if (out->version == TD_FORMAT_VERSION) {
++		res_off = TD_HDR_OFF_RESERVED;
++		res_len = TD_HDR_RESERVED_LEN;
++	} else if (out->version == TD_FORMAT_VERSION_2) {
++		res_off = TD_HDR_V2_OFF_RESERVED;
++		res_len = TD_HDR_V2_RESERVED_LEN;
++	} else {
+ 		return TD_ERR_VERSION;
++	}
+ 
+-	for (i = 0; i < TD_HDR_RESERVED_LEN; i++)
+-		if (hdr[TD_HDR_OFF_RESERVED + i] != 0)
++	for (i = 0; i < res_len; i++)
++		if (hdr[res_off + i] != 0)
+ 			return TD_ERR_RESERVED;
+ 
++	if (out->version == TD_FORMAT_VERSION) {
++		out->ptr_width  = td_load_be16(hdr + TD_HDR_OFF_PTRWIDTH);
++		out->word_order = td_load_be16(hdr + TD_HDR_OFF_WORDORDER);
++		if (out->ptr_width != 4 && out->ptr_width != 8)
++			return TD_ERR_PTRINFO;
++		if (out->word_order != TD_WORD_ORDER_MSW_FIRST &&
++		    out->word_order != TD_WORD_ORDER_LSW_FIRST)
++			return TD_ERR_PTRINFO;
++	} else {
++		out->ptr_width  = 0;
++		out->word_order = TD_WORD_ORDER_UNKNOWN;
++	}
++
+ 	out->area = td_load_be16(hdr + TD_HDR_OFF_AREA);
+ 	mandated = td_area_record_size(out->area);
+ 	if (mandated == 0)
+@@ -189,6 +218,38 @@ int td_header_parse(const uint8_t *hdr, size_t len, struct td_header *out)
+ 	return 0;
+ }
+ 
++int td_header_states_ptr(const struct td_header *h)
++{
++	return h->version >= TD_FORMAT_VERSION &&
++	       (h->ptr_width == 4 || h->ptr_width == 8) &&
++	       (h->word_order == TD_WORD_ORDER_MSW_FIRST ||
++	        h->word_order == TD_WORD_ORDER_LSW_FIRST);
++}
++
++uint16_t td_native_ptr_width(void)
++{
++	return (uint16_t)sizeof(void *);
++}
++
++/*
++ * Copy a LONG whose two halves differ into two WORDs, the way a target
++ * lays an address into a WORD array, and look where the high half went.
++ * Fixed-width types only (spec section 2.1); memcpy, not a cast, so the
++ * answer is the machine's memory order and not a compiler's guess at it.
++ */
++uint16_t td_native_word_order(void)
++{
++	const uint32_t probe = 0x00010002uL;
++	uint16_t w[2];
++
++	memcpy(w, &probe, sizeof w);
++	if (w[0] == 0x0001u && w[1] == 0x0002u)
++		return TD_WORD_ORDER_MSW_FIRST;
++	if (w[0] == 0x0002u && w[1] == 0x0001u)
++		return TD_WORD_ORDER_LSW_FIRST;
++	return TD_WORD_ORDER_UNKNOWN;
++}
++
+ /* ------------------------------------------------------------------ */
+ /* Poison (spec section 4)                                             */
+ /* ------------------------------------------------------------------ */
+@@ -402,14 +463,14 @@ const struct td_field td_vdi_fields[] = {
+ 	 * every case differ on a register leftover that is not part of the
+ 	 * contract.  The long stays in the record as evidence; the compared
+ 	 * field is the half the contract defines. */
+-	{ "d0",            TD_VDI_OFF_RET + 2,       1,               2, 1, TD_FIELD_VALUE, 0 },
+-	{ "contrl",        TD_VDI_OFF_CONTRL,        TD_VDI_CONTRL_N, 2, 1, TD_FIELD_VALUE, 0 },
+-	{ "intin",         TD_VDI_OFF_INTIN,         TD_VDI_INTIN_N,  2, 1, TD_FIELD_VALUE, 0 },
+-	{ "ptsin",         TD_VDI_OFF_PTSIN,         TD_VDI_PTSIN_N,  2, 1, TD_FIELD_VALUE, 0 },
+-	{ "intout",        TD_VDI_OFF_INTOUT,        TD_VDI_INTOUT_N, 2, 1, TD_FIELD_VALUE, 0 },
+-	{ "ptsout",        TD_VDI_OFF_PTSOUT,        TD_VDI_PTSOUT_N, 2, 1, TD_FIELD_VALUE, 0 },
+-	{ "contrl_before", TD_VDI_OFF_CONTRL_BEFORE, TD_VDI_CONTRL_N, 2, 1, TD_FIELD_VALUE, 0 },
+-	{ NULL, 0, 0, 0, 0, 0, 0 }
++	{ "d0",            TD_VDI_OFF_RET + 2,       1,               2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "contrl",        TD_VDI_OFF_CONTRL,        TD_VDI_CONTRL_N, 2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "intin",         TD_VDI_OFF_INTIN,         TD_VDI_INTIN_N,  2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "ptsin",         TD_VDI_OFF_PTSIN,         TD_VDI_PTSIN_N,  2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "intout",        TD_VDI_OFF_INTOUT,        TD_VDI_INTOUT_N, 2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "ptsout",        TD_VDI_OFF_PTSOUT,        TD_VDI_PTSOUT_N, 2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "contrl_before", TD_VDI_OFF_CONTRL_BEFORE, TD_VDI_CONTRL_N, 2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ NULL, 0, 0, 0, 0, 0, 0, 0 }
+ };
+ 
+ /*
+@@ -419,54 +480,57 @@ const struct td_field td_vdi_fields[] = {
+  * aes/gemrslib.h:25).  Field class address.  Measured: the same EmuTOS 1.4
+  * source built by two toolchains puts it at 0xBE04 and 0xBD5C, every other
+  * word of every AES case identical
+- * (measurements/measurement-2026-10-26-oracle/RUNINFO.TXT).
++ * (measurements/measurement-2026-10-26-oracle/RUNINFO.TXT).  One cell, a
++ * LONG on every target: the AESGLOBAL keeps its 15 WORDs for an LP64
++ * caller (tos-api/src/aes/appl.rs, AesGlobal::write).
+  */
+ const struct td_field td_aes_fields[] = {
+-	{ "d0",       TD_AES_OFF_RET + 2,     1,                2, 1, TD_FIELD_VALUE,    0 },
+-	{ "contrl",   TD_AES_OFF_CONTRL,      TD_AES_CONTRL_N,  2, 1, TD_FIELD_VALUE,    0 },
+-	{ "global",   TD_AES_OFF_GLOBAL,      11,               2, 1, TD_FIELD_VALUE,    0 },
+-	{ "global",   TD_AES_OFF_GLOBAL + 22, 2,                2, 1, TD_FIELD_ADDRESS, 11 },
+-	{ "global",   TD_AES_OFF_GLOBAL + 26, 2,                2, 1, TD_FIELD_VALUE,   13 },
+-	{ "int_in",   TD_AES_OFF_INTIN,       TD_AES_INTIN_N,   2, 1, TD_FIELD_VALUE,    0 },
+-	{ "int_out",  TD_AES_OFF_INTOUT,      TD_AES_INTOUT_N,  2, 1, TD_FIELD_VALUE,    0 },
+-	{ "addr_in",  TD_AES_OFF_ADDRIN,      TD_AES_ADDRIN_N,  4, 0, TD_FIELD_VALUE,    0 },
+-	{ "addr_out", TD_AES_OFF_ADDROUT,     TD_AES_ADDROUT_N, 4, 0, TD_FIELD_VALUE,    0 },
+-	{ NULL, 0, 0, 0, 0, 0, 0 }
++	{ "d0",       TD_AES_OFF_RET + 2,     1,                2, 1, TD_FIELD_VALUE,    TD_ADDR_CELL_NONE, 0 },
++	{ "contrl",   TD_AES_OFF_CONTRL,      TD_AES_CONTRL_N,  2, 1, TD_FIELD_VALUE,    TD_ADDR_CELL_NONE, 0 },
++	{ "global",   TD_AES_OFF_GLOBAL,      11,               2, 1, TD_FIELD_VALUE,    TD_ADDR_CELL_NONE, 0 },
++	{ "global",   TD_AES_OFF_GLOBAL + 22, 2,                2, 1, TD_FIELD_ADDRESS,  TD_ADDR_CELL_LONG, 11 },
++	{ "global",   TD_AES_OFF_GLOBAL + 26, 2,                2, 1, TD_FIELD_VALUE,    TD_ADDR_CELL_NONE, 13 },
++	{ "int_in",   TD_AES_OFF_INTIN,       TD_AES_INTIN_N,   2, 1, TD_FIELD_VALUE,    TD_ADDR_CELL_NONE, 0 },
++	{ "int_out",  TD_AES_OFF_INTOUT,      TD_AES_INTOUT_N,  2, 1, TD_FIELD_VALUE,    TD_ADDR_CELL_NONE, 0 },
++	{ "addr_in",  TD_AES_OFF_ADDRIN,      TD_AES_ADDRIN_N,  4, 0, TD_FIELD_VALUE,    TD_ADDR_CELL_NONE, 0 },
++	{ "addr_out", TD_AES_OFF_ADDROUT,     TD_AES_ADDROUT_N, 4, 0, TD_FIELD_VALUE,    TD_ADDR_CELL_NONE, 0 },
++	{ NULL, 0, 0, 0, 0, 0, 0, 0 }
+ };
+ 
+ const struct td_field td_call_fields[] = {
+-	{ "args",    TD_CALL_OFF_ARGS,    TD_CALL_ARGS_N,      4, 0, TD_FIELD_VALUE, 0 },
+-	{ "ret",     TD_CALL_OFF_RET,     1,                   4, 1, TD_FIELD_VALUE, 0 },
+-	{ "capture", TD_CALL_OFF_CAPTURE, TD_CALL_CAPTURE_LEN, 1, 0, TD_FIELD_VALUE, 0 },
+-	{ NULL, 0, 0, 0, 0, 0, 0 }
++	{ "args",    TD_CALL_OFF_ARGS,    TD_CALL_ARGS_N,      4, 0, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "ret",     TD_CALL_OFF_RET,     1,                   4, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "capture", TD_CALL_OFF_CAPTURE, TD_CALL_CAPTURE_LEN, 1, 0, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ NULL, 0, 0, 0, 0, 0, 0, 0 }
+ };
+ 
+ /*
+  * The raster area.  CONTRL is split in three because its middle is not
+  * comparable: contrl[7..14] hold the two MFDB pointers, at the target's own
+  * pointer width and pointing at the dumper's own buffers, so they are
+- * recorded (field class address) and never diffed.  Everything on either
+- * side of them is ordinary VDI CONTRL and is compared as usual.
++ * recorded (field class address, two pointer cells) and never diffed by
++ * value.  Everything on either side of them is ordinary VDI CONTRL and is
++ * compared as usual.
+  */
+ const struct td_field td_raster_fields[] = {
+-	{ "d0",            TD_RAST_OFF_RET + 2,      1,                 2, 1, TD_FIELD_VALUE, 0 },
+-	{ "contrl",        TD_RAST_OFF_CONTRL,       7,                 2, 1, TD_FIELD_VALUE, 0 },
++	{ "d0",            TD_RAST_OFF_RET + 2,      1,                 2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "contrl",        TD_RAST_OFF_CONTRL,       7,                 2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+ 	{ "contrl_mfdb",   TD_RAST_OFF_CONTRL + 14,  TD_RAST_CONTRL_PTR_N,
+-	                                                                2, 0, TD_FIELD_ADDRESS, 0 },
+-	{ "contrl_before", TD_RAST_OFF_CONTRL_BEFORE, 7,                2, 1, TD_FIELD_VALUE, 0 },
++	                                                                2, 0, TD_FIELD_ADDRESS, TD_ADDR_CELL_PTR, 0 },
++	{ "contrl_before", TD_RAST_OFF_CONTRL_BEFORE, 7,                2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+ 	{ "contrl_before_mfdb",
+ 	                   TD_RAST_OFF_CONTRL_BEFORE + 14,
+ 	                                             TD_RAST_CONTRL_PTR_N,
+-	                                                                2, 0, TD_FIELD_ADDRESS, 0 },
+-	{ "intin",         TD_RAST_OFF_INTIN,        TD_RAST_INTIN_N,   2, 1, TD_FIELD_VALUE, 0 },
+-	{ "ptsin",         TD_RAST_OFF_PTSIN,        TD_RAST_PTSIN_N,   2, 1, TD_FIELD_VALUE, 0 },
+-	{ "intout",        TD_RAST_OFF_INTOUT,       TD_RAST_INTOUT_N,  2, 1, TD_FIELD_VALUE, 0 },
+-	{ "ptsout",        TD_RAST_OFF_PTSOUT,       TD_RAST_PTSOUT_N,  2, 1, TD_FIELD_VALUE, 0 },
+-	{ "src_mfdb",      TD_RAST_OFF_SRC_MFDB,     TD_RAST_MFDB_N,    2, 1, TD_FIELD_VALUE, 0 },
+-	{ "dst_mfdb",      TD_RAST_OFF_DST_MFDB,     TD_RAST_MFDB_N,    2, 1, TD_FIELD_VALUE, 0 },
+-	{ "buf_a",         TD_RAST_OFF_BUF_A,        TD_RAST_BUF_WORDS, 2, 0, TD_FIELD_VALUE, 0 },
+-	{ "buf_b",         TD_RAST_OFF_BUF_B,        TD_RAST_BUF_WORDS, 2, 0, TD_FIELD_VALUE, 0 },
+-	{ NULL, 0, 0, 0, 0, 0, 0 }
++	                                                                2, 0, TD_FIELD_ADDRESS, TD_ADDR_CELL_PTR, 0 },
++	{ "intin",         TD_RAST_OFF_INTIN,        TD_RAST_INTIN_N,   2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "ptsin",         TD_RAST_OFF_PTSIN,        TD_RAST_PTSIN_N,   2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "intout",        TD_RAST_OFF_INTOUT,       TD_RAST_INTOUT_N,  2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "ptsout",        TD_RAST_OFF_PTSOUT,       TD_RAST_PTSOUT_N,  2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "src_mfdb",      TD_RAST_OFF_SRC_MFDB,     TD_RAST_MFDB_N,    2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "dst_mfdb",      TD_RAST_OFF_DST_MFDB,     TD_RAST_MFDB_N,    2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "buf_a",         TD_RAST_OFF_BUF_A,        TD_RAST_BUF_WORDS, 2, 0, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "buf_b",         TD_RAST_OFF_BUF_B,        TD_RAST_BUF_WORDS, 2, 0, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ NULL, 0, 0, 0, 0, 0, 0, 0 }
+ };
+ 
+ const struct td_field *td_area_fields(uint16_t area)
+@@ -481,3 +545,48 @@ const struct td_field *td_area_fields(uint16_t area)
+ 	default:             return NULL;
+ 	}
+ }
++
++/* ------------------------------------------------------------------ */
++/* Address cells (field class address, record.h)                       */
++/* ------------------------------------------------------------------ */
++
++uint16_t td_addr_cell_words(const struct td_field *f, const struct td_header *h)
++{
++	switch (f->addr_cell) {
++	case TD_ADDR_CELL_LONG: return 2;
++	case TD_ADDR_CELL_PTR:  return (uint16_t)(h->ptr_width / 2);
++	default:                return 0;
++	}
++}
++
++uint16_t td_addr_cell_count(const struct td_field *f, const struct td_header *h)
++{
++	if (f->compare != TD_FIELD_ADDRESS || !td_header_states_ptr(h))
++		return 0;
++	switch (f->addr_cell) {
++	case TD_ADDR_CELL_LONG: return (uint16_t)(f->count / 2);
++	case TD_ADDR_CELL_PTR:  return (uint16_t)(f->count / TD_ADDR_PTR_WORDS_MAX);
++	default:                return 0;
++	}
++}
++
++uint64_t td_addr_cell_value(const uint8_t *rec, const struct td_field *f,
++                            const struct td_header *h, uint16_t n)
++{
++	uint16_t words = td_addr_cell_words(f, h);
++	const uint8_t *p = rec + f->off + (size_t)n * words * 2;
++	uint64_t v = 0;
++	uint16_t i;
++
++	for (i = 0; i < words; i++) {
++		uint16_t at = (h->word_order == TD_WORD_ORDER_MSW_FIRST)
++		              ? i : (uint16_t)(words - 1 - i);
++		v = (v << 16) | (uint64_t)td_load_be16(p + at * 2);
++	}
++	return v;
++}
++
++int td_addr_ok(uint64_t v)
++{
++	return v < (uint64_t)TD_ADDR_LIMIT;
++}
+diff --git a/tosdump/core/record.h b/tosdump/core/record.h
+index 831432d6..aec041e5 100644
+--- a/tosdump/core/record.h
++++ b/tosdump/core/record.h
+@@ -32,10 +32,33 @@ struct td_header {
+ 	uint16_t record_count;
+ 	char     build_id[TD_HDR_BUILDID_LEN + 1];  /* NUL-terminated copy */
+ 	uint32_t case_crc;
++	/* Format 3 only (tosdump.h).  Parsing a format 2 header leaves both
++	 * at 0 / TD_WORD_ORDER_UNKNOWN: not stated, never guessed. */
++	uint16_t ptr_width;    /* bytes: 4 or 8                          */
++	uint16_t word_order;   /* TD_WORD_ORDER_*                        */
+ };
+ 
++/*
++ * Writes `h->version`'s layout: from format 3 on with the pointer width and
++ * word order at 20 / 22; a format 2 header (only tests forge one) without
++ * them, the twelve bytes from 20 on all zero.
++ */
+ void td_header_write(uint8_t *hdr, const struct td_header *h);
+ 
++/* Does this header state the pointer width and the word order?  0 for a
++ * format 2 dump, whose address cells are therefore not checkable. */
++int td_header_states_ptr(const struct td_header *h);
++
++/*
++ * The two facts format 3 records, measured on the machine that runs the
++ * code: sizeof(void *), and where the high WORD of a LONG lands in memory
++ * (memcpy of a LONG into two WORDs -- the same path set_mfdb_ptr and the
++ * AES's own stores take).  The dumper writes these into every header
++ * (dump.c).
++ */
++uint16_t td_native_ptr_width(void);
++uint16_t td_native_word_order(void);
++
+ /* Returns 0 on success, negative on a malformed header. */
+ #define TD_ERR_MAGIC    (-1)
+ #define TD_ERR_VERSION  (-2)
+@@ -43,6 +66,8 @@ void td_header_write(uint8_t *hdr, const struct td_header *h);
+ #define TD_ERR_RECSIZE  (-4)
+ #define TD_ERR_AREA     (-5)
+ #define TD_ERR_SIZE     (-6)
++#define TD_ERR_PTRINFO  (-7)   /* format 3: pointer width not 4 or 8, or
++                                  word order not MSW_FIRST / LSW_FIRST    */
+ int td_header_parse(const uint8_t *hdr, size_t len, struct td_header *out);
+ 
+ /* Record size mandated for an area, or 0 if the area code is unknown. */
+@@ -146,23 +171,53 @@ void td_raster_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
+  * Field classes, the `compare` member of a descriptor.
+  *
+  * TD_FIELD_VALUE    compared by value.
+- * TD_FIELD_ADDRESS  an address the target chose itself: recorded, never
+- *                   compared.  Reserved for a field that CANNOT be equal
+- *                   across two machines or two builds by construction, so
+- *                   its inequality measures the linker, not the API.  Today:
+- *                   the MFDB pointer slots inside a raster CONTRL (the
+- *                   dumper's own buffers) and the AES's ap_3resv
+- *                   (global[11..12], EmuTOS `&D`, aes/gemsuper.c:98).
++ * TD_FIELD_ADDRESS  an address the target chose itself.  Never compared by
++ *                   value: it CANNOT be equal across two machines or two
++ *                   builds by construction, so its inequality measures the
++ *                   linker, not the API.  Today: the MFDB pointer slots
++ *                   inside a raster CONTRL (the dumper's own buffers) and
++ *                   the AES's ap_3resv (global[11..12], EmuTOS `&D`,
++ *                   aes/gemsuper.c:98).
++ *
++ * Instead, every address CELL is checked against a relational property on
++ * each side separately: below TD_ADDR_LIMIT.  A TOS address is a signed
++ * 32-bit LONG, and one at or above 0x80000000 reads as a negative error
++ * code to a caller testing `< 0` (TASK/MEM11.md).  A violation is its own
++ * verdict in a report, never a value difference.  The check needs the
++ * dump's pointer width and word order, which only a format 3 header states;
++ * on a format 2 dump it is reported as not checkable.
+  *
+  * This is NOT a per-case exception mechanism (spec section 6 forbids one):
+  * it is a property of the field, the same for every case, and the data
+- * still lands in the dump.  Phase 1 replaces "never compared" with a
+- * relational check (null/non-null, alignment) -- never by value, never
+- * ignored; tos-api's aes_reference harness already checks ap_3resv that way.
++ * still lands in the dump.
+  */
+ #define TD_FIELD_ADDRESS  0
+ #define TD_FIELD_VALUE    1
+ 
++/*
++ * What one address cell of a TD_FIELD_ADDRESS field is, the `addr_cell`
++ * member.  TD_ADDR_CELL_NONE for every value field.
++ *
++ * TD_ADDR_CELL_LONG  a LONG by the structure's own layout: two WORDs on
++ *                    every target.  ap_3resv -- the AESGLOBAL is 15 WORDs
++ *                    for an LP64 caller too, and NewTOS writes four bytes
++ *                    (tos-api/src/aes/appl.rs, AesGlobal::write).
++ * TD_ADDR_CELL_PTR   a pointer at the TARGET's own width, packed WORD by
++ *                    WORD from the field's start: pointer n at word
++ *                    n * width / 2 (gemlib gem_vdiP.h:177,204, the raster
++ *                    runner's set_mfdb_ptr).  The field is sized for the
++ *                    widest pointer, TD_ADDR_PTR_WORDS_MAX WORDs per cell;
++ *                    on a target with four-byte pointers the WORDs behind
++ *                    the last cell are no address and are not checked
++ *                    (contrl[11..14] keep the poison on the m68k).
++ */
++#define TD_ADDR_CELL_NONE  0
++#define TD_ADDR_CELL_LONG  1
++#define TD_ADDR_CELL_PTR   2
++#define TD_ADDR_PTR_WORDS_MAX  4
++
++#define TD_ADDR_LIMIT  0x80000000uL
++
+ struct td_field {
+ 	const char *name;
+ 	uint16_t    off;    /* byte offset inside the record          */
+@@ -170,12 +225,32 @@ struct td_field {
+ 	uint8_t     width;  /* element width in bytes: 2 or 4         */
+ 	uint8_t     is_signed;
+ 	uint8_t     compare;  /* field class, TD_FIELD_* above          */
++	uint8_t     addr_cell; /* TD_ADDR_CELL_*, address class only    */
+ 	/* Index of the first element in the array the field is part of, for
+ 	 * a field that is one slice of a longer array (global[11..12]): a
+ 	 * report then says global[11], not global[0]. */
+ 	uint16_t    first;
+ };
+ 
++/*
++ * The address cells of field `f` in a dump with header `h`.
++ *
++ * td_addr_cell_count  how many cells; 0 for a value field, and 0 when the
++ *                     header does not state pointer width and word order
++ *                     (format 2) -- the caller reports that as not
++ *                     checkable, it never reads a cell it cannot decode.
++ * td_addr_cell_words  WORDs per cell: 2 for a LONG, ptr_width / 2 for a
++ *                     pointer.
++ * td_addr_cell_value  cell n of the record `rec`, put together from its
++ *                     WORDs in the header's word order.
++ * td_addr_ok          the relational property: below TD_ADDR_LIMIT.
++ */
++uint16_t td_addr_cell_count(const struct td_field *f, const struct td_header *h);
++uint16_t td_addr_cell_words(const struct td_field *f, const struct td_header *h);
++uint64_t td_addr_cell_value(const uint8_t *rec, const struct td_field *f,
++                            const struct td_header *h, uint16_t n);
++int      td_addr_ok(uint64_t v);
++
+ /* NULL-name-terminated tables. */
+ extern const struct td_field td_vdi_fields[];
+ extern const struct td_field td_aes_fields[];
+diff --git a/tosdump/core/tosdump.h b/tosdump/core/tosdump.h
+index 1869c4c0..321cd418 100644
+--- a/tosdump/core/tosdump.h
++++ b/tosdump/core/tosdump.h
+@@ -21,7 +21,8 @@
+ 
+ #define TD_MAGIC            "TDMP"
+ #define TD_MAGIC_LEN        4
+-#define TD_FORMAT_VERSION   2
++#define TD_FORMAT_VERSION   3   /* what the dumpers write                */
++#define TD_FORMAT_VERSION_2 2   /* still read: no pointer information    */
+ #define TD_HEADER_SIZE      32
+ 
+ #define TD_HDR_OFF_MAGIC        0   /* 4  bytes, "TDMP"                   */
+@@ -31,9 +32,40 @@
+ #define TD_HDR_OFF_RECCOUNT    10   /* u16, record count                  */
+ #define TD_HDR_OFF_BUILDID     12   /* 4  bytes, git short hash ASCII     */
+ #define TD_HDR_OFF_CASECRC     16   /* u32, CRC32 of the case table       */
+-#define TD_HDR_OFF_RESERVED    20   /* 12 bytes, must be zero             */
++#define TD_HDR_OFF_PTRWIDTH    20   /* u16, format 3: sizeof(void *)      */
++#define TD_HDR_OFF_WORDORDER   22   /* u16, format 3: TD_WORD_ORDER_*     */
++#define TD_HDR_OFF_RESERVED    24   /* 8  bytes, must be zero             */
+ #define TD_HDR_BUILDID_LEN      4
+-#define TD_HDR_RESERVED_LEN    12
++#define TD_HDR_RESERVED_LEN     8
++/* Format 2 had no pointer information: all twelve bytes from 20 on were
++ * reserved, and a format 2 header is still checked that way. */
++#define TD_HDR_V2_OFF_RESERVED 20
++#define TD_HDR_V2_RESERVED_LEN 12
++
++/*
++ * Format 3 -- the pointer width and the word order of the machine that
++ * wrote the dump.  The ONLY change against format 2; every record is byte
++ * for byte what format 2 wrote.
++ *
++ * Why the comparator needs them: a few recorded WORDs are an address the
++ * target laid into a WORD array in its own memory order -- ap_3resv in the
++ * AESGLOBAL (global[11..12]), the MFDB pointers packed into a raster
++ * CONTRL (contrl[7..14]).  The m68k stores the most significant WORD first
++ * (EmuTOS' &D reads 0x0000 0xBD60), AArch64 the least significant first
++ * (NewTOS' ap_3resv reads 0x80B0 0x0011 = 0x001180B0), and an AArch64
++ * pointer is four WORDs, an m68k one two.  Without both facts the WORDs
++ * cannot be put back together into the address they are, so a format 2
++ * dump's address cells are "not checkable" (host/tosdiff.c).
++ *
++ * Both are measured on the machine by the dumper itself
++ * (td_native_ptr_width / td_native_word_order, record.c), not configured:
++ * the same expression on both targets, so the backends stay symmetric
++ * (spec section 8, rule 5).
++ */
++#define TD_WORD_ORDER_UNKNOWN    0   /* format 2: not stated              */
++#define TD_WORD_ORDER_MSW_FIRST  1   /* most significant WORD first, m68k */
++#define TD_WORD_ORDER_LSW_FIRST  2   /* least significant WORD first,
++                                        AArch64 little-endian             */
+ 
+ /* area codes */
+ #define TD_AREA_BIOS        1
+@@ -68,7 +100,8 @@
+  * docs/api/vdi/_working-list.md D-080 records that vsm_height, vst_height,
+  * vst_point and vst_font set it as a side effect.  That is an observable
+  * output of a call, so it is measured like every other output, in the space
+- * the layout already reserved.  Format version 2.
++ * the layout already reserved.  Format version 2; format 3 (pointer width
++ * and word order in the header, above) left every record as it was.
+  */
+ 
+ /* ------------------------------------------------------------------ */
+@@ -263,9 +296,12 @@
+ #define TD_RAST_RESERVED_LEN       12
+ 
+ /* The two pointer slots inside CONTRL: contrl[7..14].  Recorded, never
+- * compared -- they hold the address of one of the two buffers, at the
+- * target's own pointer width, so they cannot be equal across the two
+- * machines and a difference there measures the linker, not the VDI. */
++ * compared by value -- they hold the address of one of the two buffers, at
++ * the target's own pointer width, so they cannot be equal across the two
++ * machines and a difference there measures the linker, not the VDI.  Field
++ * class address (record.h): each pointer is checked against
++ * TD_ADDR_LIMIT on its own side, read with the header's pointer width and
++ * word order (format 3). */
+ #define TD_RAST_CONTRL_PTR_FIRST    7
+ #define TD_RAST_CONTRL_PTR_N        8
+ 

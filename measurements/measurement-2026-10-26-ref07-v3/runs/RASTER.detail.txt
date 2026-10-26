@@ -1,0 +1,23 @@
+== RASTER
+v2 header 54444d50000200060e70003b66646638702eea7d000000000000000000000000
+v3 header 54444d50000300060e70003b66646638702eea7d000400010000000000000000
+-- LOG diff (v2 reference vs v3)
+1c1
+< DUMPRAST build fdf8, record format 2
+---
+> DUMPRAST build fdf8, record format 3
+-- tosdiff v3 vs v3 (address check)
+RASTER.BIN vs RASTER.BIN -- area VDI-RASTER, 59 cases from vdi-raster.tsv
+
+0 of 59 cases differ
+address check, RASTER.BIN: format 3, pointer 4 bytes, most significant word first; 236 address cells checked, 0 not < 0x80000000
+address check, RASTER.BIN: format 3, pointer 4 bytes, most significant word first; 236 address cells checked, 0 not < 0x80000000
+exit 0
+-- tosdiff v2 vs v3 (must refuse)
+tosdiff: refusing: EMUTOS-1a7484ab-RASTER.BIN is format 2, RASTER.BIN is format 3 -- dumps of different formats are not compared; re-record the older one
+exit 2
+-- tosdiff v2 vs v2 (address check not checkable)
+0 of 59 cases differ
+address check, EMUTOS-1a7484ab-RASTER.BIN: not checkable -- format 2 states no pointer width or word order (118 address fields unread)
+address check, EMUTOS-1a7484ab-RASTER.BIN: not checkable -- format 2 states no pointer width or word order (118 address fields unread)
+exit 0

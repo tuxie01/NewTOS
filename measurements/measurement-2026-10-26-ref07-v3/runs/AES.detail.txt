@@ -1,0 +1,23 @@
+== AES
+v2 header 54444d50000200050078005f6235396533c13c8f000000000000000000000000
+v3 header 54444d50000300050078005f6235396533c13c8f000400010000000000000000
+-- LOG diff (v2 reference vs v3)
+1c1
+< DUMPAES build b59e, record format 2
+---
+> DUMPAES build b59e, record format 3
+-- tosdiff v3 vs v3 (address check)
+AES.BIN vs AES.BIN -- area AES, 95 cases from aes-r1.tsv
+
+0 of 95 cases differ
+address check, AES.BIN: format 3, pointer 4 bytes, most significant word first; 95 address cells checked, 0 not < 0x80000000
+address check, AES.BIN: format 3, pointer 4 bytes, most significant word first; 95 address cells checked, 0 not < 0x80000000
+exit 0
+-- tosdiff v2 vs v3 (must refuse)
+tosdiff: refusing: EMUTOS-1a7484ab-AES.BIN is format 2, AES.BIN is format 3 -- dumps of different formats are not compared; re-record the older one
+exit 2
+-- tosdiff v2 vs v2 (address check not checkable)
+0 of 95 cases differ
+address check, EMUTOS-1a7484ab-AES.BIN: not checkable -- format 2 states no pointer width or word order (95 address fields unread)
+address check, EMUTOS-1a7484ab-AES.BIN: not checkable -- format 2 states no pointer width or word order (95 address fields unread)
+exit 0
