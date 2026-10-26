@@ -638,6 +638,34 @@ EmuTOS'. Spec: `docs/api/xbios/_state.md` §"Key-repeat handler",
 `kernel/src/key_repeat.rs` (run via `tools/xtask`) and
 `tos-api/tests/xbios_kbrate_repeat_source.rs`.
 
+**The boot keyboard layout comes from `C:\KEYBOARD.KBD` or a `#K` line in
+`C:\NEWDESK.INF` — a NewTOS extension** — user request 2026-07-02 (*"beides"*,
+both mechanisms), `23ba4c38`; recorded here 2026-10-26, moved from the STATUS
+log. EmuTOS picks the layout from its ROM's default country, overridden by the
+NVRAM keyboard byte (`detect_akp`, `references/emutos/bios/country.c:133-163`,
+the low byte of `_AKP` selects the table, `:95-106`); it has no layout file
+(`KEYTBL.TBL` is listed as not supported, `bios/ikbd.c:20-23`). NewTOS has no
+NVRAM. At boot, after the card is mounted, `keymap::init_from_disk`
+(`kernel/src/keymap.rs:329-349`, called from `kernel/src/lib.rs:400`) loads
+`C:\KEYBOARD.KBD` if it is a valid native layout file (magic `KBD1`, three
+128-byte tables `norm`/`shft`/`caps` plus three AltGr pair groups, `load_kbd`,
+`:381-441`; built from any EmuTOS `keyb_*.h` by `tools/mkkbd.py`); otherwise a
+`#K us` or `#K de` line in `C:\NEWDESK.INF` picks one of the two built-in
+tables, which are EmuTOS' `bios/keyb_us.h`/`keyb_de.h` verbatim; otherwise US.
+Translation itself follows EmuTOS' `struct keytbl` and `ascii_cnv`, and XBIOS
+`Keytbl` works as on EmuTOS. **Observable differences:** (1) the two files
+above are read; (2) `_AKP` stays `0` (US) whichever layout is active
+(`tos-api/src/cookie.rs:225`), where on EmuTOS its low byte names the active
+keyboard. **Open conflict, reported 2026-10-26, not sanctioned:** EmuDESK's own
+`NEWDESK.INF` already has a `#K` line — the 33 menu-shortcut bytes
+(`references/emutos/desk/deskapp.c:967-974`) — and NewTOS' desktop reads and
+writes it the same way since DESK05 (`09c940b2`;
+`programs/desktop/src/inf.rs:472-476`, `:625-633`). `find_k_line`
+(`keymap.rs:351-377`) takes the first `#K` line's first token: a desktop-saved
+file yields a hex byte there and no layout, the desktop parses a hand-written
+`#K de` as shortcut bytes, and *Save Desktop* writes only its own `#K` line.
+`C:\KEYBOARD.KBD` is not affected.
+
 **The IKBD vector table is per process, and a `kbdvec` hook ends with its
 process** — user decision 2026-10-04 (D1/D8 of `docs/api/xbios/22-kbdvbase.md`),
 landed as KEYS02. EmuTOS has **one** global `kbdvecs` table in BIOS BSS
@@ -915,6 +943,31 @@ same-directory rename, are unchanged. Spec
 notes"; tests `tos-api/tests/fs18_frename.rs`
 (`cross_dir_rename_of_open_file_follows_the_entry`).
 
+**A sector whose write-back fails stays in the cache, dirty** — TASK/HW03,
+2026-09-27 (`f3a468fb`), from the ticket's acceptance rule *"Kein Sektor darf
+bei fehlgeschlagenem Rueckschreiben aus dem Cache verschwinden"*
+(`TASK/HW03.md`, "Abnahme"); recorded here 2026-10-26, moved from the STATUS
+log. EmuTOS' `flush` sets `b_bufdrv = -1` before the write ("invalidate in case
+of error", `references/emutos/bdos/fsbuf.c:93`), and when the failed write
+`longjmp`s back into `osif`, the error branch invalidates every buffer of the
+drive (`mark_bcbs_invalid(errdrv)`, `bdos/bdosmain.c:490`). The buffer cannot
+travel with the jump, so the only up-to-date copy of the sector is dropped — a
+consequence of the jump, not an integrity choice. NewTOS does not jump:
+`write_back` keeps the slot's data, `valid` and `dirty` flags on failure, and
+eviction does not hand such a slot out (`tos-api/src/bdos/fs/cache.rs:225-243`).
+The error still reaches the caller as on EmuTOS (`Fwrite` → `EWRITF`, `Fread` →
+`EREADF`, `Rwabs` → the driver's code). Automatic retries are bounded:
+`WRITEBACK_ATTEMPTS = 3` per slot, a policy value, not a specification one
+(`cache.rs:90-102`; EmuTOS retries once, `RWABS_RETRIES = 1`,
+`bios/blkdev.h:34`); after that the slot stays dirty and every later `flush`
+reports the stored error without touching the device, until the sector is
+written again. **Observable difference**, only after a device write error: a
+later `cache::flush()` (the file and directory calls that write, e.g.
+`tos-api/src/bdos/fs/file.rs`, `dirops.rs`) can still land the sector, where
+EmuTOS would read the old one back from the card, and the clean buffers of that
+drive survive. Tests `tos-api/tests/gemdos_fs_device_error.rs`;
+run `measurements/measurement-2026-09-27-hw03/`.
+
 **A desk accessory's GEMDOS calls act on the accessory; only `*os_run` and
 the `p_parent` of its children follow `run`** — user decision, 2026-10-18
 (TASK/PROC03 B5, option 2, "Anwenderentscheidung B5"; kernel memory follows
@@ -962,6 +1015,28 @@ child's end). Spec `docs/api/gemdos/process/_run-ownership-curdir.md` §6.6,
 `_parent-and-environment.md` §4.4; test
 `tos-api/tests/proc03_b5_accessory_run.rs`; QEMU probe
 `measurements/measurement-2026-10-19-proc03-b5/`.
+
+**Without a screen, or without a loadable desktop, the shell's desktop arm
+runs the console** — the one named deviation of the AES shell loop (`sh_main`/
+`sh_ldapp`, `47b29a96`, 2026-09-03), extended by DESK43 D6-c/D6-d (user
+decision 2026-10-14, `TASK/DESK43.md` "U9-Vorbereitung entschieden"); recorded
+here 2026-10-26, moved from the STATUS log. EmuTOS decides at **build** time
+which user interface a machine has: `exec_os` is the AES entry `#if WITH_AES`,
+EmuCON `#elif WITH_CLI`, otherwise `#error You must provide a main UI`
+(`references/emutos/bios/endrom.c:28-35`), because every Atari has a screen.
+On NewTOS a board may come up without a raster backend, so the same choice is
+made at **run** time, in one place: `sh_ldapp`'s `DESKTOP_APP` arm
+(`kernel/src/shell_loop.rs:427-454`, module note `:23-31`). `have_graphics()`
+(`:321-325`) is EmuTOS' `WITH_AES` as a runtime fact; `go_graphic` and
+`sh_chgrf` clamp the graphics switch to it (`:300-319`, `:400-414`), and with
+no screen the arm reports it on the serial line and runs the console arm
+(EmuCON, `endrom.c:33` `coma_start`). D6-c/D6-d: a desktop program (`NEWDESK`)
+that fails to **load** is not retried this boot and the console runs instead
+(`:455-466`, `:487-501`) — a ROM desktop cannot fail to load, so EmuTOS has no
+counterpart. **Observable difference:** none on a machine with a screen and a
+loadable desktop; there every arm follows `gemshlib.c:592-689`, and a missing
+`#Z` program or an `.INF` without `#Z` leads to the built-in desktop as on
+EmuTOS. Spec `docs/api/aes/shell-loop.md`.
 
 **Double-clicking a file no application claims shows nothing; there is no
 built-in file viewer** — user decision, 2026-09-24, confirmed 2026-10-18
@@ -1071,6 +1146,25 @@ layouts:
 
 Both expose the **same fields with the same meaning**. The width difference
 is an ABI detail the header set hides from source.
+
+**The named exception: `AESGLOBAL` stays m68k-narrow on every ABI** — decision
+of 2026-09-13 (`d8471c90`), recorded here 2026-10-26, moved from the STATUS log.
+It keeps the layout of `references/emutos/aes/gemrslib.h:15-27`: 30 bytes /
+15 WORDs, every `LONG` and pointer field **4 bytes**, also for an LP64 caller.
+The reason is that this one structure is addressed two ways at once — by byte
+offset *and* by WORD index (`AP_VERSION`..`AP_4RESV`,
+`include/aesdefs.h:147-157`; every GEM program declares `short aes_global[]`).
+Eight-byte pointers would move `ap_rsclen` off `global[9]` and `ap_planes` off
+`global[10]`, keeping one half of the contract by breaking the other. `appl_init`
+therefore writes `ap_private` as 4 bytes at byte 6 and leaves `ap_ptree`
+(bytes 10..13) alone (`tos-api/src/aes/appl.rs`, module note "ABI note" and
+`write`), and the SDK's gemlib overlay reads `_AESappglobal`/`_AESrscfile`/
+`_AESrscmem` as 4-byte fields at offsets 6/10/14, with `_AESrscfile_set`/
+`_AESrscmem_set` instead of assignable lvalues (`sdk/gemlib/overlay/gem.h`).
+A 4-byte pointer suffices because every user address is below 2 GiB (VA = PA,
+`docs/MEMORY.md` ADR-028). `OBJECT` has no index contract and keeps following
+the caller's width. Test `tos-api/tests/aes_global_layout.rs` checks every byte
+after `appl_init`; run `measurements/measurement-2026-09-13-aesglobal/`.
 
 ## The audit rubric — how to cross-check a spec or plan
 
