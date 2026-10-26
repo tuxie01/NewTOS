@@ -12,7 +12,10 @@
 #
 # Same core sources for both; only abi/ differs (spec section 2).
 
-CROSS_MINT ?= /opt/cross-mint/bin/m68k-atari-mint-
+# Toolchain paths come from the oracle's one shared configuration
+# (docs/analysis/ORACLE.md); nothing is taken from $PATH.
+include $(dir $(lastword $(MAKEFILE_LIST)))../tools/oracle/oracle.env
+CROSS_MINT ?= $(ORACLE_CROSS_MINT)
 M68K_CC    := $(CROSS_MINT)gcc
 
 # 4 bytes of the git hash, ASCII, as the record header carries it.

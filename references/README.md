@@ -69,6 +69,18 @@ so that future readers can
 `git -C references/emutos show <sha>:bdos/conout.c` and see exactly
 what was being referenced.
 
+### EmuTOS oracle builds (`references/emutos-oracle/`)
+
+Separate clones of `references/emutos`, one per pinned commit, built by
+`tools/oracle/build-emutos.sh` (the checkout above stays read-only and is
+never built in). What they are and why: `docs/analysis/ORACLE.md`.
+
+| Dir | Commit | ROM | sha256 |
+|---|---|---|---|
+| `1a7484ab/` | `1a7484ab` (pin) | `etos512de.img` | `323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c` |
+| `v1.4/` | `978e3756` (tag `VERSION_1_4`, calibration) | `etos512de.img` | `67bc59a6e182e3399eaff479184d17017e34789cda4c814e08530874dbec34cf` |
+| `release-1.4/` | — (EmuTOS 1.4 release image, copied from the release package) | `etos512de.img` | `5805c0a4834f8935c427454785d32c59e796b11ad6802101052b84fb1eb7a745` |
+
 ---
 
 ## FreeMiNT source
