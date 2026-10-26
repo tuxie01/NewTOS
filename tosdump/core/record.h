@@ -142,23 +142,38 @@ void td_raster_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
 
 /* ---- field descriptors (used by the comparator to name a difference) --- */
 
+/*
+ * Field classes, the `compare` member of a descriptor.
+ *
+ * TD_FIELD_VALUE    compared by value.
+ * TD_FIELD_ADDRESS  an address the target chose itself: recorded, never
+ *                   compared.  Reserved for a field that CANNOT be equal
+ *                   across two machines or two builds by construction, so
+ *                   its inequality measures the linker, not the API.  Today:
+ *                   the MFDB pointer slots inside a raster CONTRL (the
+ *                   dumper's own buffers) and the AES's ap_3resv
+ *                   (global[11..12], EmuTOS `&D`, aes/gemsuper.c:98).
+ *
+ * This is NOT a per-case exception mechanism (spec section 6 forbids one):
+ * it is a property of the field, the same for every case, and the data
+ * still lands in the dump.  Phase 1 replaces "never compared" with a
+ * relational check (null/non-null, alignment) -- never by value, never
+ * ignored; tos-api's aes_reference harness already checks ap_3resv that way.
+ */
+#define TD_FIELD_ADDRESS  0
+#define TD_FIELD_VALUE    1
+
 struct td_field {
 	const char *name;
 	uint16_t    off;    /* byte offset inside the record          */
 	uint16_t    count;  /* element count                          */
 	uint8_t     width;  /* element width in bytes: 2 or 4         */
 	uint8_t     is_signed;
-	/*
-	 * 0 = recorded but never compared.  Reserved for a field that CANNOT
-	 * be equal across the two machines by construction and whose
-	 * inequality therefore measures nothing -- today only the MFDB
-	 * pointer slots inside a raster CONTRL, which hold the address of one
-	 * of the dumper's own buffers at the target's own pointer width.
-	 * This is NOT a per-case exception mechanism (spec section 6 forbids
-	 * one): it is a property of the field, the same for every case, and
-	 * the data still lands in the dump.
-	 */
-	uint8_t     compare;
+	uint8_t     compare;  /* field class, TD_FIELD_* above          */
+	/* Index of the first element in the array the field is part of, for
+	 * a field that is one slice of a longer array (global[11..12]): a
+	 * report then says global[11], not global[0]. */
+	uint16_t    first;
 };
 
 /* NULL-name-terminated tables. */

@@ -354,12 +354,11 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 			const struct td_field *f = &fields[fi];
 			uint16_t idx;
 
-			/* Recorded but not comparable: a field whose two values
-			 * cannot be equal by construction, so a difference there
-			 * would measure the linker rather than the API.  Today
-			 * only the MFDB pointer slots inside a raster contrl;
-			 * see record.h. */
-			if (!f->compare)
+			/* Recorded but not comparable: field class address, whose
+			 * two values cannot be equal by construction, so a
+			 * difference there would measure the linker rather than
+			 * the API.  See record.h. */
+			if (f->compare == TD_FIELD_ADDRESS)
 				continue;
 
 			for (idx = 0; idx < f->count; idx++) {
@@ -376,7 +375,7 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 					printed_header = 1;
 					differing++;
 				}
-				printf("    %s[%u]", f->name, idx);
+				printf("    %s[%u]", f->name, f->first + idx);
 				printf("%*s", (int)(20 - strlen(f->name)) > 0
 				              ? (int)(20 - strlen(f->name)) : 1, "");
 				printf("%-*s = ", label_w, a.label);

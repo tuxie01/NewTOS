@@ -402,60 +402,71 @@ const struct td_field td_vdi_fields[] = {
 	 * every case differ on a register leftover that is not part of the
 	 * contract.  The long stays in the record as evidence; the compared
 	 * field is the half the contract defines. */
-	{ "d0",            TD_VDI_OFF_RET + 2,       1,               2, 1, 1 },
-	{ "contrl",        TD_VDI_OFF_CONTRL,        TD_VDI_CONTRL_N, 2, 1, 1 },
-	{ "intin",         TD_VDI_OFF_INTIN,         TD_VDI_INTIN_N,  2, 1, 1 },
-	{ "ptsin",         TD_VDI_OFF_PTSIN,         TD_VDI_PTSIN_N,  2, 1, 1 },
-	{ "intout",        TD_VDI_OFF_INTOUT,        TD_VDI_INTOUT_N, 2, 1, 1 },
-	{ "ptsout",        TD_VDI_OFF_PTSOUT,        TD_VDI_PTSOUT_N, 2, 1, 1 },
-	{ "contrl_before", TD_VDI_OFF_CONTRL_BEFORE, TD_VDI_CONTRL_N, 2, 1, 1 },
-	{ NULL, 0, 0, 0, 0, 0 }
+	{ "d0",            TD_VDI_OFF_RET + 2,       1,               2, 1, TD_FIELD_VALUE, 0 },
+	{ "contrl",        TD_VDI_OFF_CONTRL,        TD_VDI_CONTRL_N, 2, 1, TD_FIELD_VALUE, 0 },
+	{ "intin",         TD_VDI_OFF_INTIN,         TD_VDI_INTIN_N,  2, 1, TD_FIELD_VALUE, 0 },
+	{ "ptsin",         TD_VDI_OFF_PTSIN,         TD_VDI_PTSIN_N,  2, 1, TD_FIELD_VALUE, 0 },
+	{ "intout",        TD_VDI_OFF_INTOUT,        TD_VDI_INTOUT_N, 2, 1, TD_FIELD_VALUE, 0 },
+	{ "ptsout",        TD_VDI_OFF_PTSOUT,        TD_VDI_PTSOUT_N, 2, 1, TD_FIELD_VALUE, 0 },
+	{ "contrl_before", TD_VDI_OFF_CONTRL_BEFORE, TD_VDI_CONTRL_N, 2, 1, TD_FIELD_VALUE, 0 },
+	{ NULL, 0, 0, 0, 0, 0, 0 }
 };
 
+/*
+ * global is split in three because two of its words are an address:
+ * global[11..12] is ap_3resv, which EmuTOS sets to the address of its own
+ * AES global area, `pglobal->ap_3resv = (LONG)&D` (aes/gemsuper.c:98,
+ * aes/gemrslib.h:25).  Field class address.  Measured: the same EmuTOS 1.4
+ * source built by two toolchains puts it at 0xBE04 and 0xBD5C, every other
+ * word of every AES case identical
+ * (measurements/measurement-2026-10-26-oracle/RUNINFO.TXT).
+ */
 const struct td_field td_aes_fields[] = {
-	{ "d0",       TD_AES_OFF_RET + 2, 1,                2, 1, 1 },
-	{ "contrl",   TD_AES_OFF_CONTRL,  TD_AES_CONTRL_N,  2, 1, 1 },
-	{ "global",   TD_AES_OFF_GLOBAL,  TD_AES_GLOBAL_N,  2, 1, 1 },
-	{ "int_in",   TD_AES_OFF_INTIN,   TD_AES_INTIN_N,   2, 1, 1 },
-	{ "int_out",  TD_AES_OFF_INTOUT,  TD_AES_INTOUT_N,  2, 1, 1 },
-	{ "addr_in",  TD_AES_OFF_ADDRIN,  TD_AES_ADDRIN_N,  4, 0, 1 },
-	{ "addr_out", TD_AES_OFF_ADDROUT, TD_AES_ADDROUT_N, 4, 0, 1 },
-	{ NULL, 0, 0, 0, 0, 0 }
+	{ "d0",       TD_AES_OFF_RET + 2,     1,                2, 1, TD_FIELD_VALUE,    0 },
+	{ "contrl",   TD_AES_OFF_CONTRL,      TD_AES_CONTRL_N,  2, 1, TD_FIELD_VALUE,    0 },
+	{ "global",   TD_AES_OFF_GLOBAL,      11,               2, 1, TD_FIELD_VALUE,    0 },
+	{ "global",   TD_AES_OFF_GLOBAL + 22, 2,                2, 1, TD_FIELD_ADDRESS, 11 },
+	{ "global",   TD_AES_OFF_GLOBAL + 26, 2,                2, 1, TD_FIELD_VALUE,   13 },
+	{ "int_in",   TD_AES_OFF_INTIN,       TD_AES_INTIN_N,   2, 1, TD_FIELD_VALUE,    0 },
+	{ "int_out",  TD_AES_OFF_INTOUT,      TD_AES_INTOUT_N,  2, 1, TD_FIELD_VALUE,    0 },
+	{ "addr_in",  TD_AES_OFF_ADDRIN,      TD_AES_ADDRIN_N,  4, 0, TD_FIELD_VALUE,    0 },
+	{ "addr_out", TD_AES_OFF_ADDROUT,     TD_AES_ADDROUT_N, 4, 0, TD_FIELD_VALUE,    0 },
+	{ NULL, 0, 0, 0, 0, 0, 0 }
 };
 
 const struct td_field td_call_fields[] = {
-	{ "args",    TD_CALL_OFF_ARGS,    TD_CALL_ARGS_N,      4, 0, 1 },
-	{ "ret",     TD_CALL_OFF_RET,     1,                   4, 1, 1 },
-	{ "capture", TD_CALL_OFF_CAPTURE, TD_CALL_CAPTURE_LEN, 1, 0, 1 },
-	{ NULL, 0, 0, 0, 0, 0 }
+	{ "args",    TD_CALL_OFF_ARGS,    TD_CALL_ARGS_N,      4, 0, TD_FIELD_VALUE, 0 },
+	{ "ret",     TD_CALL_OFF_RET,     1,                   4, 1, TD_FIELD_VALUE, 0 },
+	{ "capture", TD_CALL_OFF_CAPTURE, TD_CALL_CAPTURE_LEN, 1, 0, TD_FIELD_VALUE, 0 },
+	{ NULL, 0, 0, 0, 0, 0, 0 }
 };
 
 /*
  * The raster area.  CONTRL is split in three because its middle is not
  * comparable: contrl[7..14] hold the two MFDB pointers, at the target's own
  * pointer width and pointing at the dumper's own buffers, so they are
- * recorded (compare = 0) and never diffed.  Everything on either side of
- * them is ordinary VDI CONTRL and is compared as usual.
+ * recorded (field class address) and never diffed.  Everything on either
+ * side of them is ordinary VDI CONTRL and is compared as usual.
  */
 const struct td_field td_raster_fields[] = {
-	{ "d0",            TD_RAST_OFF_RET + 2,      1,                 2, 1, 1 },
-	{ "contrl",        TD_RAST_OFF_CONTRL,       7,                 2, 1, 1 },
+	{ "d0",            TD_RAST_OFF_RET + 2,      1,                 2, 1, TD_FIELD_VALUE, 0 },
+	{ "contrl",        TD_RAST_OFF_CONTRL,       7,                 2, 1, TD_FIELD_VALUE, 0 },
 	{ "contrl_mfdb",   TD_RAST_OFF_CONTRL + 14,  TD_RAST_CONTRL_PTR_N,
-	                                                                2, 0, 0 },
-	{ "contrl_before", TD_RAST_OFF_CONTRL_BEFORE, 7,                2, 1, 1 },
+	                                                                2, 0, TD_FIELD_ADDRESS, 0 },
+	{ "contrl_before", TD_RAST_OFF_CONTRL_BEFORE, 7,                2, 1, TD_FIELD_VALUE, 0 },
 	{ "contrl_before_mfdb",
 	                   TD_RAST_OFF_CONTRL_BEFORE + 14,
 	                                             TD_RAST_CONTRL_PTR_N,
-	                                                                2, 0, 0 },
-	{ "intin",         TD_RAST_OFF_INTIN,        TD_RAST_INTIN_N,   2, 1, 1 },
-	{ "ptsin",         TD_RAST_OFF_PTSIN,        TD_RAST_PTSIN_N,   2, 1, 1 },
-	{ "intout",        TD_RAST_OFF_INTOUT,       TD_RAST_INTOUT_N,  2, 1, 1 },
-	{ "ptsout",        TD_RAST_OFF_PTSOUT,       TD_RAST_PTSOUT_N,  2, 1, 1 },
-	{ "src_mfdb",      TD_RAST_OFF_SRC_MFDB,     TD_RAST_MFDB_N,    2, 1, 1 },
-	{ "dst_mfdb",      TD_RAST_OFF_DST_MFDB,     TD_RAST_MFDB_N,    2, 1, 1 },
-	{ "buf_a",         TD_RAST_OFF_BUF_A,        TD_RAST_BUF_WORDS, 2, 0, 1 },
-	{ "buf_b",         TD_RAST_OFF_BUF_B,        TD_RAST_BUF_WORDS, 2, 0, 1 },
-	{ NULL, 0, 0, 0, 0, 0 }
+	                                                                2, 0, TD_FIELD_ADDRESS, 0 },
+	{ "intin",         TD_RAST_OFF_INTIN,        TD_RAST_INTIN_N,   2, 1, TD_FIELD_VALUE, 0 },
+	{ "ptsin",         TD_RAST_OFF_PTSIN,        TD_RAST_PTSIN_N,   2, 1, TD_FIELD_VALUE, 0 },
+	{ "intout",        TD_RAST_OFF_INTOUT,       TD_RAST_INTOUT_N,  2, 1, TD_FIELD_VALUE, 0 },
+	{ "ptsout",        TD_RAST_OFF_PTSOUT,       TD_RAST_PTSOUT_N,  2, 1, TD_FIELD_VALUE, 0 },
+	{ "src_mfdb",      TD_RAST_OFF_SRC_MFDB,     TD_RAST_MFDB_N,    2, 1, TD_FIELD_VALUE, 0 },
+	{ "dst_mfdb",      TD_RAST_OFF_DST_MFDB,     TD_RAST_MFDB_N,    2, 1, TD_FIELD_VALUE, 0 },
+	{ "buf_a",         TD_RAST_OFF_BUF_A,        TD_RAST_BUF_WORDS, 2, 0, TD_FIELD_VALUE, 0 },
+	{ "buf_b",         TD_RAST_OFF_BUF_B,        TD_RAST_BUF_WORDS, 2, 0, TD_FIELD_VALUE, 0 },
+	{ NULL, 0, 0, 0, 0, 0, 0 }
 };
 
 const struct td_field *td_area_fields(uint16_t area)

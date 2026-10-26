@@ -339,10 +339,34 @@ static void test_field_tables(void)
 	TD_CHECK(f != NULL);
 	for (n = 0; f && f[n].name; n++)
 		;
-	TD_CHECK_EQ(n, 7);
+	/* d0, contrl, global[0..10], global[11..12], global[13..14], int_in,
+	 * int_out, addr_in, addr_out.
+	 *
+	 * global[11..12] is ap_3resv, which EmuTOS fills with the address of
+	 * its own AES global area (aes/gemsuper.c:98): field class address.
+	 * Two builds of the same EmuTOS source with different toolchains put
+	 * it at 0xBE04 and 0xBD5C
+	 * (measurements/measurement-2026-10-26-oracle/RUNINFO.TXT). It is
+	 * split off so the rest of global keeps being compared, and keeps its
+	 * own index in a report. */
+	TD_CHECK_EQ(n, 9);
 	TD_CHECK(f && strcmp(f[0].name, "d0") == 0);
 	TD_CHECK(f && f[0].off == TD_AES_OFF_RET + 2);
 	TD_CHECK(f && f[0].width == 2);
+	TD_CHECK(f && strcmp(f[2].name, "global") == 0);
+	TD_CHECK(f && f[2].off == TD_AES_OFF_GLOBAL);
+	TD_CHECK(f && f[2].count == 11 && f[2].first == 0);
+	TD_CHECK(f && f[2].compare == TD_FIELD_VALUE);
+	TD_CHECK(f && strcmp(f[3].name, "global") == 0);
+	TD_CHECK(f && f[3].off == TD_AES_OFF_GLOBAL + 22);
+	TD_CHECK(f && f[3].count == 2 && f[3].first == 11);
+	TD_CHECK(f && f[3].compare == TD_FIELD_ADDRESS);
+	TD_CHECK(f && strcmp(f[4].name, "global") == 0);
+	TD_CHECK(f && f[4].off == TD_AES_OFF_GLOBAL + 26);
+	TD_CHECK(f && f[4].count == 2 && f[4].first == 13);
+	TD_CHECK(f && f[4].compare == TD_FIELD_VALUE);
+	/* the three pieces cover global[0..14] exactly */
+	TD_CHECK(f && f[2].count + f[3].count + f[4].count == TD_AES_GLOBAL_N);
 
 	f = td_area_fields(TD_AREA_GEMDOS);
 	TD_CHECK(f != NULL);
@@ -362,7 +386,8 @@ static void test_field_tables(void)
 	for (n = 0; f && f[n].name; n++) {
 		int is_ptr = strstr(f[n].name, "mfdb") != NULL &&
 		             strncmp(f[n].name, "contrl", 6) == 0;
-		TD_CHECK_EQ(f[n].compare, is_ptr ? 0 : 1);
+		TD_CHECK_EQ(f[n].compare,
+		            is_ptr ? TD_FIELD_ADDRESS : TD_FIELD_VALUE);
 	}
 	TD_CHECK_EQ(n, 13);
 	TD_CHECK(f && strcmp(f[0].name, "d0") == 0);
@@ -370,13 +395,15 @@ static void test_field_tables(void)
 	TD_CHECK(f && f[2].off == TD_RAST_OFF_CONTRL + 14);
 	TD_CHECK(f && f[2].count == TD_RAST_CONTRL_PTR_N);
 
-	/* every existing area still compares every field it records */
+	/* every other field is compared by value; the AES has exactly one
+	 * address field (ap_3resv, above) */
 	for (n = 0; td_vdi_fields[n].name; n++)
-		TD_CHECK_EQ(td_vdi_fields[n].compare, 1);
+		TD_CHECK_EQ(td_vdi_fields[n].compare, TD_FIELD_VALUE);
 	for (n = 0; td_aes_fields[n].name; n++)
-		TD_CHECK_EQ(td_aes_fields[n].compare, 1);
+		TD_CHECK_EQ(td_aes_fields[n].compare,
+		            n == 3 ? TD_FIELD_ADDRESS : TD_FIELD_VALUE);
 	for (n = 0; td_call_fields[n].name; n++)
-		TD_CHECK_EQ(td_call_fields[n].compare, 1);
+		TD_CHECK_EQ(td_call_fields[n].compare, TD_FIELD_VALUE);
 }
 
 /*
