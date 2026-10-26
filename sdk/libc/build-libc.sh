@@ -219,7 +219,12 @@ DIRS="stdio stdlib string mintlib unix syscall time misc multibyte signal termio
 #   nf_init was undefined and no libc nf_* function linked. The replacement
 #   reports "NatFeats not available" -- there is no emulator host on
 #   AArch64 -- through the API's documented absent-path; TASK/SDK01 A.)
-EXCLUDE="mintlib/do_fstat.c mintlib/do_stat.c unix/access.c unix/ioctl.c mintlib/nf_ops.c"
+# mintlib/linea.c -- excluded by ADR-030 (no Line-A on NewTOS), with no
+#   replacement: the Line-A bindings linea0() ... lineaf() are not offered
+#   (use the VDI). Until ADR-030 it was recorded in expected-failures.txt as a
+#   compile failure (m68k inline asm). The __aline/__fonts/__funcs globals
+#   live in mintlib/alglobal.c, which stays in the archive (they stay NULL).
+EXCLUDE="mintlib/do_fstat.c mintlib/do_stat.c unix/access.c unix/ioctl.c mintlib/nf_ops.c mintlib/linea.c"
 is_excluded() { case " $EXCLUDE " in *" $1 "*) return 0;; esac; return 1; }
 
 echo "clang : $($CLANG --version | head -1)"

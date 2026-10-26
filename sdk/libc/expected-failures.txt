@@ -18,7 +18,8 @@
 # Diagnostics below verified against sdk/libc/build/obj/*.err, 2026-09-16.
 
 # --- m68k inline asm for hardware NewTOS does not have -----------------------
-mintlib/linea.c      unknown register name 'a0'/'a1'/'a2' in asm -- ST Line-A
+# mintlib/linea.c (ST Line-A, m68k asm): excluded by ADR-030 (no Line-A on
+# NewTOS), build-libc.sh EXCLUDE; no replacement.
 # mintlib/nf_ops.c (ARAnyM NatFeats, m68k asm): excluded and replaced by
 # newtos-arch/nf_ops.c since TASK/SDK01 A (build-libc.sh EXCLUDE).
 
