@@ -158,7 +158,7 @@ The 3D selector is the 2-bit field `FL3DMASK = 0x600` with values
 `FL3DNONE=0x000`, `FL3DIND=0x200`, `FL3DBAK=0x400`, `FL3DACT=0x600`
 (`obdefs.h:92-98`). The FL3D bits are only acted on when
 `CONF_WITH_3D_OBJECTS` is set (default 1 in EmuTOS `1a7484ab`,
-`config.h:1259`); otherwise they are inert flag bits.
+`include/config.h:1259`); otherwise they are inert flag bits.
 
 ## `ob_state` — state bits (`obdefs.h:100-107`)
 

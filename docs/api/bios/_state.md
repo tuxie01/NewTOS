@@ -93,7 +93,7 @@ The GEM/AES exception hooks live at the very start of the sysvar area
 
 ---
 
-## 2. `boot_status` flags (`bios/bios.h:80-95`) — internal
+## 2. `boot_status` flags (`bios/bios.h:84-89`) — internal
 
 ```c
 #define DEVICES_INITIALIZED 0x01

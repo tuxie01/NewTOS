@@ -119,7 +119,7 @@ the flag is set at `aes/gemsuper.c:137,148`; timeout 500 loops,
 `wait_for_accs(AP_ACCLOSE)` blocks until every accessory has *received*
 `AC_CLOSE` "before the application exits, freeing its memory which includes any
 memory allocated by the DAs during the life of the application"
-(`aes/gemaplib.c:249-262`, `:255`; comment `aes/geminit.c:588-598`).
+(`aes/gemaplib.c:249-261`, `:255`; comment `aes/geminit.c:588-598`).
 "The AES" in that comment is the **accdesk PD** (`run` during that window,
 §1.2): (read) `run` = accdesk from `aes/geminit.c:894` through `:739`.
 
@@ -151,7 +151,7 @@ that is the call that is pending.
 |---|---|---|
 | `p_parent` unchanged | normal | read |
 | An accessory (or the AES code under a program) calls `Pexec` | child's `p_parent` = `run` (the front program/accdesk), **not** the accessory (`bdos/proc.c:541`). The accessory's trap saved *its* context into `run`'s PD (`rwa.S:188-206`), so the child's end resumes the **accessory** — the return works because `run` is the PD that holds the save area | read (`:541`, `rwa.S`), inferred (the conclusion) |
-| `p_parent` of a started process overwritten by the process itself (or by anyone with write access to the PD) to a PD `Q` that is currently suspended inside a GEMDOS call | `Pterm` sets `run = Q`, stores `rc` in `Q->p_dreg[0]`, resumes `Q`'s saved context as if *Q's* pending call returned `rc`. Everything between (the real caller `R`, its blocks, files) is **not** cleaned up; `R` is never resumed | inferred from `proc.c:609,616` + `rwa.S:262-267`; **no EmuTOS code or doc was found that does this on purpose** |
+| `p_parent` of a started process overwritten by the process itself (or by anyone with write access to the PD) to a PD `Q` that is currently suspended inside a GEMDOS call | `Pterm` sets `run = Q`, stores `rc` in `Q->p_dreg[0]`, resumes `Q`'s saved context as if *Q's* pending call returned `rc`. Everything between (the real caller `R`, its blocks, files) is **not** cleaned up; `R` is never resumed | inferred from `bdos/proc.c:609,616` + `rwa.S:262-267`; **no EmuTOS code or doc was found that does this on purpose** |
 | `p_parent == 0` (`Pterm` while `run` is `initial_basepage`, or a PD whose field was zeroed; an accessory's own PD is never `run`, §1.3) | `run = NULL`; `ixterm(p)` runs; `run->p_dreg[0] = rc` writes through NULL, `termuser` reads `0x7C`; unguarded → crash/undefined | read (`:609,616`); documented in `4c-pterm.md` |
 | `p_parent` names something that is not a resumable PD | undefined (jumps through whatever `P_A7SAVE` holds) | inferred |
 | A loader sets `p_parent` of a `PE_BASEPAGE`/`PE_LOAD` PD before `PE_GO` | **overwritten**: `proc_go` always writes `p->p_parent = run` (`:541`) | read |
@@ -209,7 +209,7 @@ whoever calls `Mfree`. (`Pexec` 6 is what `aes_run_rom_program` uses,
 |---|---|---|
 | `Malloc`/`Mxalloc` block | `run` at the call | `Mfree`/`Mshrink(0)`, or the `Pterm` of that owner, or never after `Ptermres` |
 | AUTO program's TPA+env | the program | its `Pterm` (or reserved by `Ptermres`) |
-| AES PD block (`bios.c:861`) | `initial_basepage` (`PE_BASEPAGEFLAGS` with `run` = initial, `PE_GO` keeps it) | never in practice (`initial_basepage` does not terminate) |
+| AES PD block (`bios/bios.c:861`) | `initial_basepage` (`PE_BASEPAGEFLAGS` with `run` = initial, `PE_GO` keeps it) | never in practice (`initial_basepage` does not terminate) |
 | accdesk PD block + its env | the accdesk PD itself (`PE_GOTHENFREE`) | `Pterm0` of accdesk = shutdown/rez change |
 | ROM desktop PD, EmuCON PD, + their envs | themselves (`PE_GOTHENFREE`) | their own `Pterm0` |
 | program started by the desktop/`#Z` (TPA+env) | the program (`PE_LOADGO`) | its `Pterm` |
@@ -326,7 +326,7 @@ started later by process B inherited A's drive/dirs, not B's.)
   DND) for `run` whenever drive `d` is first used by that PD.
 
 All of this is in the existing per-function specs
-(`directory/3b-dsetpath.md`, `47-dgetpath.md`, `drive/0e-dsetdrv.md`,
+(`../directory/3b-dsetpath.md`, `47-dgetpath.md`, `../drive/0e-dsetdrv.md`,
 `19-dgetdrv.md`) — those are correct for EmuTOS; what they lack is who `run`
 is (§1) and the NewTOS state (§6).
 
@@ -413,7 +413,7 @@ from accdesk at `PE_LOAD` time and are never used afterwards.
 | `os_run` cell = per-process page-0 cell (`0x5B8`) naming that process | so an accessory sees its own PD | `tos-api/src/bdos/process/loader.rs:950-957` |
 | accessory loaded `EnvSpec::Inherit` with `p_parent` 0; stand-in env | | `kernel/src/accs.rs:201-216` |
 | kernel launches: `p_parent` = `standin::kernel_run()` (initial / AES) | | `tos-api/src/bdos/process/pexec.rs:498-519`; `kernel/src/launch.rs:252` |
-| `Mfree`/`Mshrink` by a non-owner → `EIMBA` (FreeMiNT rule E15) | **contradicts EmuTOS** | `memory/49-mfree.md` §"several owners" |
+| `Mfree`/`Mshrink` by a non-owner → `EIMBA` (FreeMiNT rule E15) | **contradicts EmuTOS** | `../memory/49-mfree.md` §"several owners" |
 | `p_curdrv`/`p_curdir` **global**, PD+0x37 reads 0 | | `TASK/PROC03.md` §3 B3, `loader.rs`/`path.rs` as cited there |
 
 ### 6.2 What "as EmuTOS" requires (analysis, not a design)
@@ -539,9 +539,9 @@ state, still read-only to programs).
 |---|---|
 | `Dgetdrv`/`Dsetdrv` on `run->p_curdrv` (`fsmain.c:420-441`) | the byte at PD+0x37 of `run_pd()`; a program that writes its own byte changes its `Dgetdrv` [C] |
 | `p_curdir[d]` = `dirtbl[]` index, `NCURDIR = 40`, slot 0 unused, use counts | same bytes, same 40-slot table with use counts; a slot holds drive + canonical path (`\A\B`, no DND cache in NewTOS) [R] |
-| `init_pd_files` copies `p_curdir[]` (+1 use each) and `p_curdrv` from `run` (`proc.c:401-409`) | `loader::init_pd_files` → `curdir::inherit_from_run`, for every PD the loader creates (modes 0/3/5/7, accessories, kernel launches); the stand-ins inherit the same way when they start (`rom_pd`) |
+| `init_pd_files` copies `p_curdir[]` (+1 use each) and `p_curdrv` from `run` (`bdos/proc.c:401-409`) | `loader::init_pd_files` → `curdir::inherit_from_run`, for every PD the loader creates (modes 0/3/5/7, accessories, kernel launches); the stand-ins inherit the same way when they start (`rom_pd`) |
 | `Dsetpath`: incr new, store, decr old; full → `EINTRN` → `EPTHNF` (`fsdir.c:1140-1151`) | same order (`curdir::set_curdir`); full table → `EPTHNF` |
-| `ixterm` decrements every `p_curdir[i]` (`proc.c:126-132`) | `pterm::terminate_inner` → `curdir::release_pd` after the files, before the memory; accdesk's/EmuCON's end (`leave_accdesk`/`leave_emucon`) releases theirs |
+| `ixterm` decrements every `p_curdir[i]` (`bdos/proc.c:126-132`) | `pterm::terminate_inner` → `curdir::release_pd` after the files, before the memory; accdesk's/EmuCON's end (`leave_accdesk`/`leave_emucon`) releases theirs |
 | root DND gets a slot lazily in `ckdrv` | the root is `p_curdir[d] == 0`, no slot (same directory, one slot saved) [R] |
 | accessory PD's uses leak (D-10) | released in `free_accs` (and on an accessory's failed `Mshrink`) — not reproduced |
 | a byte naming any index is followed | a byte that names no live slot of its drive reads as the root, is copied as 0 and never decremented; on a full table the uses are recounted from every live PD (process slots + stand-ins) before `Dsetpath` gives up, so PDs gone without `ixterm` (unstarted `PE_LOAD` children freed by `Mfree`, scribbled bytes) cannot exhaust it [R] |

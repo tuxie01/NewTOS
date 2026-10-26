@@ -238,26 +238,26 @@ UCR/RSR/TSR bytes; the `-2` query returns the current baud index.
 > the packed `(ucr<<24)|(rsr<<16)|(tsr<<8)` return) is **unchanged**; only the
 > silicon it programs changes. See `docs/HARDWARE-PROFILE.md` §2, §3.2.
 
-**Peripheral / driver.** AUX / serial = **PL011 UART0** (`bcm2711/pl011.rs`;
-`virt:` `qemu_virt/pl011.rs`) via the `hal/uart.rs::Uart` trait. This UART is a
+**Peripheral / driver.** AUX / serial = **PL011 UART0** (`kernel/src/drivers/bcm2711/pl011.rs`;
+`virt:` `kernel/src/drivers/qemu_virt/pl011.rs`) via the `hal/uart.rs::Uart` trait. This UART is a
 **debug channel only** (`kprintln!` + bring-up shell); the TOS console (CON,
 handle 2) does **not** use it (`HARDWARE-PROFILE.md` §3.2). Datasheet: BCM2711
 ARM Peripherals **§11 "UART"** (the PL011), p.144; **§11.5 "Register View"**,
 p.146. UART0 physical base `0x7E20_1000` (mapped `0xFE20_1000`,
-`pl011.rs:29`).
+`kernel/src/drivers/bcm2711/pl011.rs:29`).
 
 ### Concrete Pi values (as configured today)
 
 | Item | Value | Source |
 |------|-------|--------|
-| UART reference clock `FUARTCLK` | **48 MHz** (firmware `init_uart_clock=48000000`) | `pl011.rs:14-18` |
-| Default baud | **115200** | `pl011.rs:14`, `hal/uart.rs:11` |
-| `IBRD` (0x24) | **26** = `trunc(48e6 / (16·115200))` | `pl011.rs:128`; DS §11.5 IBRD p.150 |
-| `FBRD` (0x28) | **3** = `round((48e6/(16·115200) − 26)·64)` | `pl011.rs:129`; DS §11.5 FBRD p.150 |
-| Line setting | **8N1** (LCRH `WLEN_8` + `FEN`; no `PEN`, no `STP2`) | `pl011.rs:132`; DS §11.5 LCRH p.150-151 |
-| FIFO | 32×8 TX / 32×12 RX, `FEN=1` | DS §11.1 p.144; `pl011.rs:56,132` |
-| Flow control | **none** — `CR = UARTEN\|TXE\|RXE`; `CTSEN`/`RTSEN` **not set** | `pl011.rs:135`; DS §11.5 CR p.151-152 |
-| `virt:` baud | same 115200, but `FUARTCLK=24 MHz` → IBRD=13, FBRD=1 | `qemu_virt/pl011.rs:11-12,67-68` |
+| UART reference clock `FUARTCLK` | **48 MHz** (firmware `init_uart_clock=48000000`) | `kernel/src/drivers/bcm2711/pl011.rs:14-18` |
+| Default baud | **115200** | `kernel/src/drivers/bcm2711/pl011.rs:14`, `hal/uart.rs:11` |
+| `IBRD` (0x24) | **26** = `trunc(48e6 / (16·115200))` | `kernel/src/drivers/bcm2711/pl011.rs:136`; DS §11.5 IBRD p.150 |
+| `FBRD` (0x28) | **3** = `round((48e6/(16·115200) − 26)·64)` | `kernel/src/drivers/bcm2711/pl011.rs:137`; DS §11.5 FBRD p.150 |
+| Line setting | **8N1** (LCRH `WLEN_8` + `FEN`; no `PEN`, no `STP2`) | `kernel/src/drivers/bcm2711/pl011.rs:140`; DS §11.5 LCRH p.150-151 |
+| FIFO | 32×8 TX / 32×12 RX, `FEN=1` | DS §11.1 p.144; `kernel/src/drivers/bcm2711/pl011.rs:56,140` |
+| Flow control | **none** — `CR = UARTEN\|TXE\|RXE`; `CTSEN`/`RTSEN` **not set** | `kernel/src/drivers/bcm2711/pl011.rs:143`; DS §11.5 CR p.151-152 |
+| `virt:` baud | same 115200, but `FUARTCLK=24 MHz` → IBRD=13, FBRD=1 | `kernel/src/drivers/qemu_virt/pl011.rs:11-12,71-72` |
 
 **Baud formula (datasheet §11.5, p.150):**
 `BAUDDIV = FUARTCLK / (16 · baud)`; the 6-bit `FBRD` is
@@ -280,7 +280,7 @@ policy — see decision D-SER-1.
 |------------------|---------------------|------------------|--------------|
 | `speed` (baud idx 0..15) | MFP timer-D divisor | `IBRD`/`FBRD` (DS §11.5 p.150) | **not wired** (dispatcher gap R1); designed to program IBRD/FBRD |
 | `speed == -2` (query) | read `rs232iorec.baudrate` | return the driver's stored baud index | **synthesized** — PL011 has no "baud index" register; the code must keep a shadow (no HW read-back) |
-| `ctrl` (flow 0..3) | XON/XOFF sw + MFP GPIP RTS/CTS | sw XON/XOFF in the driver; `CR.RTSEN`/`CR.CTSEN` bits 14/15 (DS §11.5 p.151-152) for RTS/CTS | RTS/CTS pins (GPIO16/17 ALT3, DS §11.3 p.145) are **not muxed** today (only TX/RX GPIO14/15 ALT0, `pl011.rs:98-103`) → HARD flow cannot actually assert; **map only NONE/SOFT truthfully** until pins are wired |
+| `ctrl` (flow 0..3) | XON/XOFF sw + MFP GPIP RTS/CTS | sw XON/XOFF in the driver; `CR.RTSEN`/`CR.CTSEN` bits 14/15 (DS §11.5 p.151-152) for RTS/CTS | RTS/CTS pins (GPIO16/17 ALT3, DS §11.3 p.145) are **not muxed** today (only TX/RX GPIO14/15 ALT0, `kernel/src/drivers/bcm2711/pl011.rs:98-103`) → HARD flow cannot actually assert; **map only NONE/SOFT truthfully** until pins are wired |
 | `ucr` (USART control: word len, parity, stop, clock ÷16) | MFP UCR | `LCRH.WLEN`/`PEN`/`EPS`/`STP2`/`FEN` (DS §11.5 p.150-151) | **ignored on input**; the framing bits *could* map to LCRH but the MFP UCR bit layout ≠ LCRH, so a translation table is needed — not done |
 | `rsr` (receiver status) | MFP RSR | no single PL011 equivalent (status is in `FR`/`RSRECR`) | **ignored on input; synthesized in the return** |
 | `tsr` (transmitter status) | MFP TSR | no single PL011 equivalent (`FR.TXFE`/`FR.BUSY`) | **ignored on input; synthesized in the return** |

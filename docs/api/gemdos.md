@@ -87,7 +87,7 @@ svc     #1
 
 - Atari Compendium, "Cconin"
 - Profibuch, "GEMDOS-Funktion 1"
-- EmuTOS source: `bdos/conout.c`, `bios/iorec.c`
+- EmuTOS source: `bdos/console.c`, (cite stale 2026-10-26: bios/iorec.c, no such file in EmuTOS)
 
 ---
 

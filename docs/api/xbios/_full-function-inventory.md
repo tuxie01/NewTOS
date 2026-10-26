@@ -94,67 +94,67 @@ NewTOS-Verteiler: `tos-api/src/xbios/mod.rs::dispatch` (`:64-138`).
 
 | Nr | Name | EmuTOS Tabelle | Gatter | N | NewTOS |
 |---|---|---|---|---|---|
-| 0x00 | `Initmous` | `xbios.c:1286` | — | **Nummer** | `mod.rs:136` |
-| 0x02 | `Physbase` | `:1288` | — | ja | `mod.rs:66` |
-| 0x03 | `Logbase` | `:1289` | — | ja | `:67` |
-| 0x04 | `Getrez` | `:1290` | — | ja | `:68` |
-| 0x05 | `Setscreen` | `:1291` | — | ja | `:69` |
-| 0x06 | `Setpalette` | `:1292` | — | ja | `:70` |
-| 0x07 | `Setcolor` | `:1293` | — | ja | `:71` |
-| 0x08 | `Floprd` | `:1294` | — | HW-Adapter `EUNDEV` | `:79` |
-| 0x09 | `Flopwr` | `:1295` | — | HW-Adapter `EUNDEV` | `:79` |
-| 0x0A | `Flopfmt` | `:1296` | — | HW-Adapter `EUNDEV` | `:79` |
-| 0x0C | `Midiws` | `:1298` | — | HW-Adapter (No-op) | `:87` |
-| 0x0D | `Mfpint` | `:1300` | `CONF_WITH_MFP` | **Nummer** | `:136` |
-| 0x0E | `Iorec` | `:1304` | — | **Nummer** | `:136` |
-| 0x0F | `Rsconf` | `:1305` | — | ja (PL011-Adapter) | `:91` |
-| 0x10 | `Keytbl` | `:1306` | — | ja | `:97` |
-| 0x11 | `Random` | `:1307` | — | ja | `:98` |
-| 0x12 | `Protobt` | `:1308` | — | ja | `:80` |
-| 0x13 | `Flopver` | `:1309` | — | HW-Adapter `EUNDEV` | `:79` |
-| 0x14 | `Scrdmp` | `:1310` | — | HW-Adapter (No-op) | `:86` |
-| 0x15 | `Cursconf` | `:1311` | — | ja | `:72` |
-| 0x16 | `Settime` | `:1312` | — | ja | `:102` |
-| 0x17 | `Gettime` | `:1313` | — | ja | `:106` |
-| 0x18 | `Bioskeys` | `:1314` | — | **Nummer** | `:136` |
-| 0x19 | `Ikbdws` | `:1315` | — | HW-Adapter (No-op) | `:109` |
-| 0x1A | `Jdisint` | `:1317` | `CONF_WITH_MFP` | **Nummer** | `:136` |
-| 0x1B | `Jenabint` | `:1318` | `CONF_WITH_MFP` | **Nummer** | `:136` |
-| 0x1C | `Giaccess` | `:1323` | — | HW-Adapter `0` | `:112` |
-| 0x1D | `Offgibit` | `:1324` | — | HW-Adapter (No-op) | `:113` |
-| 0x1E | `Ongibit` | `:1325` | — | HW-Adapter (No-op) | `:114` |
-| 0x1F | `Xbtimer` | `:1327` | `CONF_WITH_MFP` | **Nummer** | `:136` |
-| 0x20 | `Dosound` | `:1331` | — | HW-Adapter `0` | `:115` |
-| 0x21 | `Setprt` | `:1333` | `CONF_WITH_PRINTER_PORT` | ja (reine Software) | `:119` |
-| 0x22 | `Kbdvbase` | `:1337` | — | ja (Tabelle mit Nullvektoren) | `:120` |
-| 0x23 | `Kbrate` | `:1338` | — | ja (Softwareschatten) | `:122` |
-| 0x25 | `Vsync` | `:1340` | — | ja | `:123` |
-| 0x26 | `Supexec` | `:1341` | — | **Nummer** | `:136` |
-| 0x29 | `Floprate` | `:1344` | — | HW-Adapter `EUNDEV` | `:79` |
-| 0x2A | `DMAread` | `:1345` | — | HW-Adapter `EUNDEV` | `:79` |
-| 0x2B | `DMAwrite` | `:1346` | — | HW-Adapter `EUNDEV` | `:79` |
-| 0x2C | `Bconmap` | `:1347` | — | HW-Adapter (`0x2c` = „nicht vorhanden") | `:88` |
-| 0x2E | `NVMaccess` | `:1350` | `CONF_WITH_NVRAM` | **Nummer** | `:136` |
-| 0x40 | `Blitmode` | `:1371` | — | HW-Adapter `0x0000` | `:126` |
-| 0x50 | `EsetShift` | `:1392` | `CONF_WITH_TT_SHIFTER` | **Nummer** | `:136` |
-| 0x51 | `EgetShift` | `:1393` | dito | **Nummer** | `:136` |
-| 0x52 | `EsetBank` | `:1394` | dito | **Nummer** | `:136` |
-| 0x53 | `EsetColor` | `:1395` | dito | **Nummer** | `:136` |
-| 0x54 | `EsetPalette` | `:1396` | dito | **Nummer** | `:136` |
-| 0x55 | `EgetPalette` | `:1397` | dito | **Nummer** | `:136` |
-| 0x56 | `EsetGray` | `:1398` | dito | **Nummer** | `:136` |
-| 0x57 | `EsetSmear` | `:1399` | dito | **Nummer** | `:136` |
-| 0x58 | `VsetMode` | `:1412` | `CONF_WITH_VIDEL` | **Nummer** | `:136` |
-| 0x59 | `VgetMonitor` (`vmontype`) | `:1413` | dito | **Nummer** | `:136` |
-| 0x5A | `VsetSync` | `:1414` | dito | **Nummer** | `:136` |
-| 0x5B | `VgetSize` | `:1415` | dito | **Nummer** | `:136` |
-| 0x5D | `VsetRGB` | `:1417` | dito | **Nummer** | `:136` |
-| 0x5E | `VgetRGB` | `:1418` | dito | **Nummer** | `:136` |
-| 0x5F | `Vfixmode` | `:1419` | dito | **Nummer** | `:136` |
-| 0x60–0x7F | 32 × `Dsp_*` | `:1432-1463` | `CONF_WITH_DSP` | **Nummer** (alle 32) | `:136` |
-| 0x80–0x8D | 14 × DMA-Sound (`Locksnd`…`Buffptr`) | `:1500-1513` | `CONF_WITH_DMASOUND` | **Nummer** (alle 14) | `:136` |
+| 0x00 | `Initmous` | `bios/xbios.c:1286` | — | **Nummer** | `tos-api/src/xbios/mod.rs:138` |
+| 0x02 | `Physbase` | `:1288` | — | ja | `tos-api/src/xbios/mod.rs:67` |
+| 0x03 | `Logbase` | `:1289` | — | ja | `:68` |
+| 0x04 | `Getrez` | `:1290` | — | ja | `:69` |
+| 0x05 | `Setscreen` | `:1291` | — | ja | `:70` |
+| 0x06 | `Setpalette` | `:1292` | — | ja | `:71` |
+| 0x07 | `Setcolor` | `:1293` | — | ja | `:72` |
+| 0x08 | `Floprd` | `:1294` | — | HW-Adapter `EUNDEV` | `:80` |
+| 0x09 | `Flopwr` | `:1295` | — | HW-Adapter `EUNDEV` | `:80` |
+| 0x0A | `Flopfmt` | `:1296` | — | HW-Adapter `EUNDEV` | `:80` |
+| 0x0C | `Midiws` | `:1298` | — | HW-Adapter (No-op) | `:89` |
+| 0x0D | `Mfpint` | `:1300` | `CONF_WITH_MFP` | **Nummer** | `:138` |
+| 0x0E | `Iorec` | `:1304` | — | **Nummer** | `:138` |
+| 0x0F | `Rsconf` | `:1305` | — | ja (PL011-Adapter) | `:93` |
+| 0x10 | `Keytbl` | `:1306` | — | ja | `:99` |
+| 0x11 | `Random` | `:1307` | — | ja | `:100` |
+| 0x12 | `Protobt` | `:1308` | — | ja | `:81` |
+| 0x13 | `Flopver` | `:1309` | — | HW-Adapter `EUNDEV` | `:80` |
+| 0x14 | `Scrdmp` | `:1310` | — | HW-Adapter (No-op) | `:88` |
+| 0x15 | `Cursconf` | `:1311` | — | ja | `:73` |
+| 0x16 | `Settime` | `:1312` | — | ja | `:104` |
+| 0x17 | `Gettime` | `:1313` | — | ja | `:108` |
+| 0x18 | `Bioskeys` | `:1314` | — | **Nummer** | `:138` |
+| 0x19 | `Ikbdws` | `:1315` | — | HW-Adapter (No-op) | `:111` |
+| 0x1A | `Jdisint` | `:1317` | `CONF_WITH_MFP` | **Nummer** | `:138` |
+| 0x1B | `Jenabint` | `:1318` | `CONF_WITH_MFP` | **Nummer** | `:138` |
+| 0x1C | `Giaccess` | `:1323` | — | HW-Adapter `0` | `:114` |
+| 0x1D | `Offgibit` | `:1324` | — | HW-Adapter (No-op) | `:115` |
+| 0x1E | `Ongibit` | `:1325` | — | HW-Adapter (No-op) | `:116` |
+| 0x1F | `Xbtimer` | `:1327` | `CONF_WITH_MFP` | **Nummer** | `:138` |
+| 0x20 | `Dosound` | `:1331` | — | HW-Adapter `0` | `:117` |
+| 0x21 | `Setprt` | `:1333` | `CONF_WITH_PRINTER_PORT` | ja (reine Software) | `:121` |
+| 0x22 | `Kbdvbase` | `:1337` | — | ja (Tabelle mit Nullvektoren) | `:109` |
+| 0x23 | `Kbrate` | `:1338` | — | ja (Softwareschatten) | `:124` |
+| 0x25 | `Vsync` | `:1340` | — | ja | `:125` |
+| 0x26 | `Supexec` | `:1341` | — | **Nummer** | `:138` |
+| 0x29 | `Floprate` | `:1344` | — | HW-Adapter `EUNDEV` | `:80` |
+| 0x2A | `DMAread` | `:1345` | — | HW-Adapter `EUNDEV` | `:80` |
+| 0x2B | `DMAwrite` | `:1346` | — | HW-Adapter `EUNDEV` | `:80` |
+| 0x2C | `Bconmap` | `:1347` | — | HW-Adapter (`0x2c` = „nicht vorhanden") | `:90` |
+| 0x2E | `NVMaccess` | `:1350` | `CONF_WITH_NVRAM` | **Nummer** | `:138` |
+| 0x40 | `Blitmode` | `:1371` | — | HW-Adapter `0x0000` | `:128` |
+| 0x50 | `EsetShift` | `:1392` | `CONF_WITH_TT_SHIFTER` | **Nummer** | `:138` |
+| 0x51 | `EgetShift` | `:1393` | dito | **Nummer** | `:138` |
+| 0x52 | `EsetBank` | `:1394` | dito | **Nummer** | `:138` |
+| 0x53 | `EsetColor` | `:1395` | dito | **Nummer** | `:138` |
+| 0x54 | `EsetPalette` | `:1396` | dito | **Nummer** | `:138` |
+| 0x55 | `EgetPalette` | `:1397` | dito | **Nummer** | `:138` |
+| 0x56 | `EsetGray` | `:1398` | dito | **Nummer** | `:138` |
+| 0x57 | `EsetSmear` | `:1399` | dito | **Nummer** | `:138` |
+| 0x58 | `VsetMode` | `:1412` | `CONF_WITH_VIDEL` | **Nummer** | `:138` |
+| 0x59 | `VgetMonitor` (`vmontype`) | `:1413` | dito | **Nummer** | `:138` |
+| 0x5A | `VsetSync` | `:1414` | dito | **Nummer** | `:138` |
+| 0x5B | `VgetSize` | `:1415` | dito | **Nummer** | `:138` |
+| 0x5D | `VsetRGB` | `:1417` | dito | **Nummer** | `:138` |
+| 0x5E | `VgetRGB` | `:1418` | dito | **Nummer** | `:138` |
+| 0x5F | `Vfixmode` | `:1419` | dito | **Nummer** | `:138` |
+| 0x60–0x7F | 32 × `Dsp_*` | `:1432-1463` | `CONF_WITH_DSP` | **Nummer** (alle 32) | `:138` |
+| 0x80–0x8D | 14 × DMA-Sound (`Locksnd`…`Buffptr`) | `:1500-1513` | `CONF_WITH_DMASOUND` | **Nummer** (alle 14) | `:138` |
 
-Die DSP-Namen im Einzelnen (`xbios.c:1432-1463`): `Dsp_DoBlock` 0x60,
+Die DSP-Namen im Einzelnen (`bios/xbios.c:1432-1463`): `Dsp_DoBlock` 0x60,
 `Dsp_BlkHandShake` 0x61, `Dsp_BlkUnpacked` 0x62, `Dsp_InStream` 0x63,
 `Dsp_OutStream` 0x64, `Dsp_IOStream` 0x65, `Dsp_RemoveInterrupts` 0x66,
 `Dsp_GetWordSize` 0x67, `Dsp_Lock` 0x68, `Dsp_Unlock` 0x69,
@@ -167,7 +167,7 @@ Die DSP-Namen im Einzelnen (`xbios.c:1432-1463`): `Dsp_DoBlock` 0x60,
 `Dsp_Hf3` 0x7A, `Dsp_BlkWords` 0x7B, `Dsp_BlkBytes` 0x7C, `Dsp_HStat` 0x7D,
 `Dsp_SetVectors` 0x7E, `Dsp_MultBlocks` 0x7F.
 
-Die DMA-Sound-Namen (`xbios.c:1500-1513`): `Locksnd` 0x80, `Unlocksnd` 0x81,
+Die DMA-Sound-Namen (`bios/xbios.c:1500-1513`): `Locksnd` 0x80, `Unlocksnd` 0x81,
 `Soundcmd` 0x82, `Setbuffer` 0x83, `Setsndmode` 0x84, `Settracks` 0x85,
 `Setmontracks` 0x86, `Setinterrupt` 0x87, `Buffoper` 0x88, `Dsptristate` 0x89,
 `Gpio` 0x8A, `Devconnect` 0x8B, `Sndstatus` 0x8C, `Buffptr` 0x8D.
@@ -176,7 +176,7 @@ Die DMA-Sound-Namen (`xbios.c:1500-1513`): `Locksnd` 0x80, `Unlocksnd` 0x81,
 
 | Nr | Kommentar in der Tabelle | Zeile |
 |---|---|---|
-| 0x01 | `ssbrk` | `xbios.c:1287` |
+| 0x01 | `ssbrk` | `bios/xbios.c:1287` |
 | 0x0B | `used_by_bios` | `:1297` |
 | 0x24 | `prtblk` | `:1339` |
 | 0x27 | `puntaes` | `:1342` |
@@ -187,7 +187,7 @@ Die DMA-Sound-Namen (`xbios.c:1500-1513`): `Locksnd` 0x80, `Unlocksnd` 0x81,
 | 0x5C | — | `:1416` |
 
 **Alle 39 geben die Funktionsnummer zurück** (`xbios_do_unimpl`,
-`xbios.c:1251-1257`). NewTOS ebenso, über denselben Auffangarm (`mod.rs:136`).
+`bios/xbios.c:1251-1257`). NewTOS ebenso, über denselben Auffangarm (`tos-api/src/xbios/mod.rs:138`).
 
 > **Anmerkung.** `Ssbrk` (0x01) und `Puntaes` (0x27) sind in echtem TOS belegt.
 > Im gepinnten EmuTOS sind sie **nicht** implementiert — die Tabelle sagt
@@ -282,7 +282,7 @@ Palettenregister.
 
 ### 2.4 `Keytbl` (0x10) — die drei `-1`-Zeiger
 
-`keytbl`, `bios/keyb.c:122-134`: jeder der drei Zeiger wird **einzeln** gegen
+`keytbl`, `bios/ikbd.c:122-134`: jeder der drei Zeiger wird **einzeln** gegen
 `(UBYTE*)-1` geprüft (`:124,127,130`); nur ein Zeiger ≠ `-1` überschreibt.
 Rückgabe ist **immer** `&current_keytbl`.
 
@@ -427,7 +427,7 @@ alle Videl- und TT-Shifter-Opcodes (Auflösungswechsel).
   `include/biosdefs.h:124-133`
 * `Cursconf`: `bios/vt52.c:893-915`
 * `Setcolor`: `bios/screen.c:1192-1202`
-* `Keytbl`: `bios/keyb.c:122-134`
+* `Keytbl`: `bios/ikbd.c:122-134`
 * `Iorec`: `bios/xbios.c:336-348`
 * `Bconmap`: `bios/serport.c:1082-...`; `BCONMAP_START_HANDLE`
   `bios/serport.h:121`

@@ -205,15 +205,15 @@ distinction.
 
 - **What the underlying rings are on the Pi.**
   - **`devno == 1` (IKBD):** the NewTOS console RX ring is `RX_RING` in
-    `kernel/src/console.rs:86` — a 128-entry SPSC ring of **key words**
-    (`scancode << 8 | ascii`, `console.rs:113`), filled by the USB-HID
+    `kernel/src/console.rs:215` — a 128-entry SPSC ring of **key words**
+    (`scancode << 8 | ascii`, `kernel/src/console.rs:276`), filled by the USB-HID
     keyboard decoder (`ikbd.rs::decode_key` → `console::push_rx`,
     `ikbd.rs:139`). This is **not** laid out as a 14-byte Atari `IOREC`; a
     synthetic `IOREC` view over it would have to be built to satisfy the
     contract.
   - **`devno == 0` (RS-232 / AUX):** the PL011 UART0 debug channel
     (`kernel/src/drivers/bcm2711/pl011.rs`), which also feeds `RX_RING`
-    today (`console.rs:91-107`, see the UART-console Step-2 finding). No
+    today ((cite stale 2026-10-26: console.rs:91-107, UART0 RX feeding RX_RING), see the UART-console Step-2 finding). No
     `EXT_IOREC` is exposed.
   - **`devno == 2` (MIDI):** no MIDI hardware (`HARDWARE-PROFILE.md` §3.9) —
     an empty record if exposed.

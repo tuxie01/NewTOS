@@ -96,7 +96,7 @@ except that a call made by an accessory has `run` = the PD in front
 ([`_run-ownership-curdir.md`](../gemdos/process/_run-ownership-curdir.md) §1.3). `initial_basepage` itself has
 `p_parent == 0`. (**Corrected 2026-10-18, TASK/PROC03:** earlier text named
 the AES PD as the parent of the desktop and its programs.) mintlib tells an
-accessory by `p_parent == 0` (`startup/crt0.S:52-56`). On
+accessory by `p_parent == 0` (`sdk/libc/mintlib/startup/crt0.S:52-56`). On
 `Pterm`/`Pterm0`/`Ptermres`, control returns to `p_parent`'s context.
 
 NewTOS: the PDs the kernel has no process for (`initial_basepage`, the AES PD
@@ -233,7 +233,7 @@ emulator (Phase 10+).
 
 - **Compendium:** "Basepage" — agrees on layout.
 - **Profibuch:** "Die Basepage" — agrees.
-- **`docs/api/structures/md-mpb.md`** — MD points back to PD via `m_own`.
+- **`docs/api/structures/md.md`** — MD points back to PD via `m_own`.
 - **`docs/api/gemdos/_dispatcher.md`** — `p_uft[]` redirection.
 - **`docs/api/structures/dta.md`** — `p_xdta`.
 - **EmuTOS source:** `bdos/proc.c:340-410` (basepage init in `bxexec`),

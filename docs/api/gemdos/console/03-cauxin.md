@@ -199,6 +199,6 @@ driver (`TASK/IO01.md`) replaces only the entry.
 typeahead buffer is "never used by any GEMDOS path". EmuTOS' `conbrk(h)`
 (`bdos/console.c:206-243`, reached from `conout(1, …)`, e.g. the echo of
 `Fread(-2, …)`) *does* append to `buffer[1]`, and `getch`/`constat` read it
-(`console.c:143-152,351-366`). `Cauxin` bypasses it, `Cauxis` does not. With a
+(`bdos/console.c:143-152,351-366`). `Cauxin` bypasses it, `Cauxis` does not. With a
 real AUX device that is an EmuTOS quirk; in NewTOS it is unobservable (no BDOS
 typeahead buffer; absent device has no status).

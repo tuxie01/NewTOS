@@ -85,7 +85,7 @@ BCD-packed: high byte = major, low byte = minor. Examples:
 
 **Corrected (this pass):** the value is the build-time constant
 `TOS_VERSION` (`bios/startup.S:80-81`, `.dc.w TOS_VERSION`). EmuTOS'
-**default** in the standard-profile build (`config.h:1367-1372`) is
+**default** in the standard-profile build (`include/config.h:1367-1372`) is
 **`0x206`** ("we pretend to be TOS 2.06"), *not* 0x0306 as a prior draft
 of this doc claimed. Neither `TARGET_512`, `TARGET_1024` nor `TARGET_PRG`
 (NewTOS' reference build family) override it — verified in
@@ -140,12 +140,12 @@ Reserved in the typedef (`biosdefs.h`; "was UI entry"). **CORRECTED
 2026-10-17 (TASK/RST01, X04): the previous text here said "EmuTOS sets
 `os_rsvl = 0`". That is wrong.** The assembly definition stores
 `os_res1: .dc.l _main` (`bios/startup.S:92-93`), and `reseth` (+0x04) is
-`_main` as well (`startup.S:82-83`). `_main` is `bra.w _realmain`
-(`startup.S:115-116`), i.e. the full restart path. A program that jumps
+`_main` as well (`bios/startup.S:82-83`). `_main` is `bra.w _realmain`
+(`bios/startup.S:115-116`), i.e. the full restart path. A program that jumps
 to `os_beg+0x10` (TeraDesk's `*((long *) os_start + 4)` on m68k, where
 `long` = 4 bytes: `sdk/apps/teradesk/main.c:2096`) therefore **restarts
 the machine** on EmuTOS; the AES entry is reached via `os_magic → gm_init`,
-not through this field. The startup comment (`startup.S:84-87`, "os_end and
+not through this field. The startup comment (`bios/startup.S:84-87`, "os_end and
 os_res1 below are never used") only says EmuTOS does not read the field
 itself. Full restart semantics: `docs/api/bios/_reset-warm-cold.md` §3.
 The same three entry points (`os_entry`, `reseth`, `os_res1`) all end in
@@ -282,7 +282,7 @@ That assumption does not hold. Per
 `docs/analysis/sysvar-osheader-lowmem-gap.md` and
 `docs/analysis/bios-audit/00-PLAN.md` (BB1): real, 1:1-compiled TOS
 source ports (ADR-019) read `_sysbase`/OSHEADER directly, exactly like
-an m68k binary would — TeraDesk's `main.c:56`
+an m68k binary would — TeraDesk's `sdk/apps/teradesk/main.c:56`
 (`#define os_start (*(long*)0x4F2L)`) is a concrete, reproduced
 boot-crash example (Data Abort dereferencing an unpopulated `_sysbase`).
 So a real, kernel-populated OSHEADER instance (with the fields/values

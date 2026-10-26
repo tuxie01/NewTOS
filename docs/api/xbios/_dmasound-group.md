@@ -144,20 +144,20 @@ selbst definiert für diese Gruppe **keine** Bindemakros
 
 | ID | TOS-Name | EmuTOS-Funktion | Signatur (`bios/dmasound.h`) | Bytes auf dem Stapel | FreeMiNT-Bindung |
 |---:|---|---|---|:--:|---|
-| 0x80 | `Locksnd` | `locksnd` | `LONG (void)` | 2 | `falcon.h:356` |
-| 0x81 | `Unlocksnd` | `unlocksnd` | `LONG (void)` | 2 | `falcon.h:358` |
-| 0x82 | `Soundcmd` | `soundcmd` | `LONG (WORD mode, WORD data)` | 6 | `falcon.h:362` |
-| 0x83 | `Setbuffer` | `setbuffer` | `LONG (UWORD mode, ULONG start, ULONG end)` | 12 | `falcon.h:360` |
-| 0x84 | `Setmode` | `setsndmode` | `LONG (UWORD mode)` | 4 | `falcon.h:364` |
-| 0x85 | `Settracks` | `settracks` | `LONG (UWORD play, UWORD rec)` | 6 | `falcon.h:366` |
-| 0x86 | `Setmontracks` | `setmontracks` | `LONG (UWORD track)` | 4 | `falcon.h:368` |
-| 0x87 | `Setinterrupt` | `setinterrupt` | `LONG (UWORD mode, WORD cause)` | 6 | `falcon.h:370` |
-| 0x88 | `Buffoper` | `buffoper` | `LONG (WORD mode)` | 4 | `falcon.h:373` |
-| 0x89 | `Dsptristate` | `dsptristate` | `LONG (WORD dspxmit, WORD dsprec)` | 6 | `falcon.h:375` |
-| 0x8A | `Gpio` | `gpio` | `LONG (UWORD mode, UWORD data)` | 6 | `falcon.h:378` |
-| 0x8B | `Devconnect` | `devconnect` | `LONG (WORD src, WORD dst, WORD clk, WORD prescale, WORD protocol)` | 12 | `falcon.h:380` |
-| 0x8C | `Sndstatus` | `sndstatus` | `LONG (WORD reset)` | 4 | `falcon.h:383` |
-| 0x8D | `Buffptr` | `buffptr` | `LONG (LONG ptr)` | 6 | `falcon.h:385` |
+| 0x80 | `Locksnd` | `locksnd` | `LONG (void)` | 2 | `sys/mint/falcon.h:356` |
+| 0x81 | `Unlocksnd` | `unlocksnd` | `LONG (void)` | 2 | `sys/mint/falcon.h:358` |
+| 0x82 | `Soundcmd` | `soundcmd` | `LONG (WORD mode, WORD data)` | 6 | `sys/mint/falcon.h:362` |
+| 0x83 | `Setbuffer` | `setbuffer` | `LONG (UWORD mode, ULONG start, ULONG end)` | 12 | `sys/mint/falcon.h:360` |
+| 0x84 | `Setmode` | `setsndmode` | `LONG (UWORD mode)` | 4 | `sys/mint/falcon.h:364` |
+| 0x85 | `Settracks` | `settracks` | `LONG (UWORD play, UWORD rec)` | 6 | `sys/mint/falcon.h:366` |
+| 0x86 | `Setmontracks` | `setmontracks` | `LONG (UWORD track)` | 4 | `sys/mint/falcon.h:368` |
+| 0x87 | `Setinterrupt` | `setinterrupt` | `LONG (UWORD mode, WORD cause)` | 6 | `sys/mint/falcon.h:370` |
+| 0x88 | `Buffoper` | `buffoper` | `LONG (WORD mode)` | 4 | `sys/mint/falcon.h:373` |
+| 0x89 | `Dsptristate` | `dsptristate` | `LONG (WORD dspxmit, WORD dsprec)` | 6 | `sys/mint/falcon.h:375` |
+| 0x8A | `Gpio` | `gpio` | `LONG (UWORD mode, UWORD data)` | 6 | `sys/mint/falcon.h:378` |
+| 0x8B | `Devconnect` | `devconnect` | `LONG (WORD src, WORD dst, WORD clk, WORD prescale, WORD protocol)` | 12 | `sys/mint/falcon.h:380` |
+| 0x8C | `Sndstatus` | `sndstatus` | `LONG (WORD reset)` | 4 | `sys/mint/falcon.h:383` |
+| 0x8D | `Buffptr` | `buffptr` | `LONG (LONG ptr)` | 6 | `sys/mint/falcon.h:385` |
 
 **Korrektur zum Ticket:** `TASK/SND01.md:25` nennt `Buffoper` mit 0x89.
 Richtig ist **0x88** (`bios/xbios.c:1508`); 0x89 ist `Dsptristate`
@@ -207,7 +207,7 @@ behandelt und gilt auf beiden (`:347-356`): schreibt `data` (0…3) in
 
 Falcon-Zweig (`sndcmd_falcon`, `:246-303`):
 
-| mode | Name (FreeMiNT `falcon.h:231-241`) | Register | Lage des Wertes |
+| mode | Name (FreeMiNT `sys/mint/falcon.h:231-241`) | Register | Lage des Wertes |
 |---:|---|---|---|
 | 0 | `LTATTEN` | `channel_attenuation` `$FFFF893A` | API-Bits 4-7 ↔ Registerbits 8-11 (`:256-260`) |
 | 1 | `RTATTEN` | dito | API-Bits 4-7 ↔ Registerbits 4-7 (`:263-269`) |
@@ -387,7 +387,7 @@ die Zählerbytes lesen → `play` (`:797-800`). Rückgabe `0`.
 > „Ende-Signal" ist deshalb aus EmuTOS allein **nicht** belegbar. Was
 > folgt, ist zweiquellig: EmuTOS für das Registerbild und die
 > API-Wirkung, FreeMiNTs Falcon-Audiotreiber
-> (`references/freemint/sys/xdd/audio/falcon.c`, `.../dmasnd.h`) für den
+> (`references/freemint/sys/xdd/audio/falcon.c`, `references/freemint/sys/xdd/audio/dmasnd.h`) für den
 > tatsächlichen Abspielablauf. Jede Zeile unten sagt, aus welcher.
 
 ### 4.1 Das Registerbild (EmuTOS `bios/dmasound.c:25-72`)

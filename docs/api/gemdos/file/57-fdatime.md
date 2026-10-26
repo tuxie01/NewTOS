@@ -186,7 +186,7 @@ keep the fix.
 ## Related data structures
 
 - `docs/api/structures/ofd.md` — DFD `o_td`, `O_DIRTY`.
-- `docs/api/gemdos/time/2c-tgetdate.md` — the system-clock analogue.
+- `docs/api/gemdos/time/2a-tgetdate.md` — the system-clock analogue.
 
 ---
 

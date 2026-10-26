@@ -210,15 +210,15 @@ Notes (cited = read in source; *inferred* = reasoning from it):
 - Only `p_uft[x] > 0` triggers block A. A **negative** `p_uft` (BIOS handle,
   default or `Fforce(std, -n)`) is **not** touched here — the function body in
   `bdos/console.c` then uses `HXFORM(run->p_uft[x])` = `3 + p_uft[x]` as the
-  BIOS device (`console.c:161,170,179,188,197,281,333,342,377,401,419,434,
+  BIOS device (`bdos/console.c:161,170,179,188,197,281,333,342,377,401,419,434,
   447,451,461,535`; `console.h:36`). Both mechanisms are needed for a faithful
   redirect.
 - `Crawio` (fn 6, `stdio_typ 0`) is never answered by block A. With
   `p_uft[0]`/`p_uft[1]` forced to a *file* handle `h > 0`, `xrawio`
-  (`console.c:441-453`) still runs and calls `getch`/`Bconout` with BIOS
+  (`bdos/console.c:441-453`) still runs and calls `getch`/`Bconout` with BIOS
   device `3 + h` — no file I/O. (*inferred*: result is BIOS-table dependent
   for `3+h >= 6`, `bios/bios.c:991-1011` Bconmap branch; `constat` returns 0
-  for `h` outside 1..2, `console.c:142-143`.)
+  for `h` outside 1..2, `bdos/console.c:147-148`.)
 - EOF/error on a redirected read returns `EOF_INDICATOR` (`0x0000ff1a`), the
   comment says "same way as MiNT" (`:514-516`). A successful read returns the
   byte **sign-extended** (`char ctmp`, `:433,519`; the EmuTOS `Makefile` has

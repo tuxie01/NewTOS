@@ -185,7 +185,7 @@ attribute is at FCB offset 11, so `32 - 11 = 21`.
 - **Folder GET, trailing-separator spelling (NewTOS/FreeMiNT):**
   `Fattrib("C:\\SUBDIR\\", 0, 0)` returns the **same** value as the spelling
   without the separator. This is the spelling cflib passes
-  (`fsnorm.c:85-92`); measured on QEMU `raspi4b`, `16` for a plain folder.
+  (`sdk/cflib/cflib-21/fsnorm.c:85-92`); measured on QEMU `raspi4b`, `16` for a plain folder.
 - **Trailing separator elsewhere is unchanged:**
   `Fattrib("C:\\F.TXT\\", 0, 0)` = `EPTHNF` (-34),
   `Fattrib("C:\\NOSUCH\\", 0, 0)` = `EPTHNF` (-34),
@@ -207,7 +207,7 @@ attribute is at FCB offset 11, so `32 - 11 = 21`.
    still rejects folders/labels with `EACCDN`.
 
    The GET extension covers the **trailing-separator** spelling as well — that
-   is the only one cflib ever produces (`fsnorm.c:85-92`) — and nothing else: an
+   is the only one cflib ever produces (`sdk/cflib/cflib-21/fsnorm.c:85-92`) — and nothing else: an
    empty final component still answers the way EmuTOS answers it for every other
    caller (`Fsfirst`/`Fopen` → `EFILNF` through `scan(builds(""))`,
    `bdos/fsdir.c:737-795`; `Dcreate` → `EPTHNF` through `ixcreat`'s own guard,
@@ -316,7 +316,7 @@ cflib appends a separator to *every* path before it probes
 (`sdk/cflib/cflib-21/fsnorm.c:85-92`), the one caller the 2026-07-21 extension
 was made for never benefited from it: QED's clipboard init still fell through to
 `Dcreate` → `EACCDN` → NOSCRAP alert on every run after the first, and cflib's
-`app_init` (`appinit.c:104-107`) discarded `gl_appdir` and fell back to the
+`app_init` (`sdk/cflib/cflib-21/appinit.c:104-107`) discarded `gl_appdir` and fell back to the
 current directory. Fix in `tos-api/src/bdos/fs/file.rs`: the GET branch first
 probes the separator-stripped spelling (`without_trailing_seps` +
 `subdir_attrib`) and accepts it **only if it names a directory**; everything

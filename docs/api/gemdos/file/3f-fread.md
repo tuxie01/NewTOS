@@ -63,8 +63,8 @@ entry's `f_ofd`, else the value itself); `h < 0` → `h` itself; result `0` →
 `HXFORM(h) = 3+h` (`bdos/console.h:36`): CON (-1) → BIOS 2, AUX (-2) → BIOS 1,
 PRN (-3) → BIOS 0.
 
-Default standard handles (`console.c:60-67`, set by `stdhdl_init`,
-`console.c:107-112`): 0 → CON, 1 → CON, 2 → AUX, 3 → PRN, 4 → CON, 5 → CON.
+Default standard handles (`bdos/console.c:60-67`, set by `stdhdl_init`,
+`bdos/console.c:107-112`): 0 → CON, 1 → CON, 2 → AUX, 3 → PRN, 4 → CON, 5 → CON.
 `Fread` does **not** check direction: `Fread(1,…)` (stdout) reads the keyboard
 and `Fread(3,…)` reads from PRN. A `Fdup` of a standard handle that maps to a
 device stores the negative BIOS handle in the new sft entry (`bdos/fshand.c:115-118`),
@@ -82,39 +82,39 @@ For `numl` in `-1..-3`, with `dev = HXFORM(numl)` (`:615`, `:619`):
    nothing is echoed. Because only the high word is tested, this also catches
    every **negative** `len`.
 2. **`pw[3] == 1`** (`:613-617`) → `*buf = conin(dev)`; return **1**
-   (`conin` = `console.c:384-390`: `getch(dev)` then **echo** via
+   (`conin` = `bdos/console.c:384-390`: `getch(dev)` then **echo** via
    `conout(dev, (unsigned char)ch)`). The stored byte is the low byte of the
    `Bconin` long (char assignment, `:615`); scan code is dropped. The key is
    stored whatever it is: CR is stored as 0x0D (no line editing), Ctrl-C (0x03)
    is **not** treated as terminate here (`conin` has no such check; contrast
-   `xconin`, `console.c:396-408`), and the call returns 1 immediately — no
+   `xconin`, `bdos/console.c:396-408`), and the call returns 1 immediately — no
    waiting for Return.
-3. otherwise → `return cgets(dev, pw[3], buf)` (`:619`; `console.c:540-581`).
+3. otherwise → `return cgets(dev, pw[3], buf)` (`:619`; `bdos/console.c:540-581`).
    `maxlen` is `pw[3]` sign-extended to `int`. Consequences (read from code,
-   `console.c:546`: the loop is `for (retlen = 0; retlen < maxlen;)`):
+   `bdos/console.c:546`: the loop is `for (retlen = 0; retlen < maxlen;)`):
    - `len == 0` → `maxlen == 0` → loop never entered → returns **0**, no echo.
    - `len` in `32768 .. 65535` (high word 0) → `pw[3]` negative → `maxlen < 0`
      → returns **0**, no echo. (So a device read can never exceed 32767 bytes,
      and larger requests silently yield 0.)
    - `len` in `2 .. 32767` → line read, below.
 
-### `cgets` line editor (`console.c:540-581`)
+### `cgets` line editor (`bdos/console.c:540-581`)
 
 Let `stcol = glbcolumn[dev]` (`:545`) = the console column the BDOS output
 tracker last left on that device (see column tracking below). Loop, one
 `getch(dev)` per iteration (`:548`; `getch` = BDOS typeahead buffer first for
-dev 1 and 2 only, else `Bconin(dev)`, `console.c:351-366`); the key's **low
+dev 1 and 2 only, else `Bconin(dev)`, `bdos/console.c:351-366`); the key's **low
 byte** is `ch` (`char ch`, `:542`):
 
 | Key (`ch`) | Cite | Effect |
 |---|---|---|
 | CR 0x0D **or** LF 0x0A | `:550-553` | `conout(dev, CR)` (echo **CR only, no LF**), `return retlen`. The terminator is **not stored**, no NUL is appended. |
-| BS 0x08 **or** DEL 0x7F | `:554-557` | `backsp`: drop last char if any, then erase it visually (`BS,' ',BS` per column, `console.c:494-524`, column recomputed over the buffer with tab → next multiple of 8, other control chars = 2 columns). On an empty buffer nothing is erased (never below `stcol`). |
-| Ctrl-C 0x03 | `:558-559` | `terminate()` = `xterm(-32)` (`console.c:101`): process terminated with exit code -32; **`Fread` does not return** (inference: `xterm` does not return; no `break` follows in the source). |
+| BS 0x08 **or** DEL 0x7F | `:554-557` | `backsp`: drop last char if any, then erase it visually (`BS,' ',BS` per column, `bdos/console.c:494-524`, column recomputed over the buffer with tab → next multiple of 8, other control chars = 2 columns). On an empty buffer nothing is erased (never below `stcol`). |
+| Ctrl-C 0x03 | `:558-559` | `terminate()` = `xterm(-32)` (`bdos/console.c:101`): process terminated with exit code -32; **`Fread` does not return** (inference: `xterm` does not return; no `break` follows in the source). |
 | Ctrl-X 0x18 | `:560-565` | erase the whole line visually (`backsp` until `retlen == 0`); nothing echoed besides the erase. |
-| Ctrl-U 0x15 | `:566-570` | echo `#`, `newline(dev, stcol)` (CR, LF, then `stcol` spaces, `console.c:480-491`), `retlen = 0` (buffer discarded). |
+| Ctrl-U 0x15 | `:566-570` | echo `#`, `newline(dev, stcol)` (CR, LF, then `stcol` spaces, `bdos/console.c:480-491`), `retlen = 0` (buffer discarded). |
 | Ctrl-R 0x12 | `:571-576` | echo `#`, `newline`, then redisplay the buffer with `cookdout`; `retlen` unchanged. |
-| anything else (incl. Ctrl-S/Ctrl-Q arriving through `getch`, ESC, TAB, bytes >= 0x80, NUL) | `:577-579` | stored as `buf[retlen++] = ch`, echoed with `cookdout` (`console.c:312-325`): TAB → `tabout` (spaces to the next multiple of 8), other `< 0x20` → `^` + (ch\|0x40), everything else raw. |
+| anything else (incl. Ctrl-S/Ctrl-Q arriving through `getch`, ESC, TAB, bytes >= 0x80, NUL) | `:577-579` | stored as `buf[retlen++] = ch`, echoed with `cookdout` (`bdos/console.c:312-325`): TAB → `tabout` (spaces to the next multiple of 8), other `< 0x20` → `^` + (ch\|0x40), everything else raw. |
 
 - **Termination by length:** when `retlen` reaches `maxlen` the loop ends at the
   top (`:546`) and `retlen` (= `maxlen`) is returned **without** waiting for or
@@ -126,7 +126,7 @@ byte** is `ch` (`char ch`, `:542`):
 - **CR+LF pair:** only one terminator is consumed (`:550-553`); an LF following
   a CR is left in the input.
 - **Typeahead / break handling during echo:** every echo goes through
-  `conout` (`console.c:263-274`) which first runs `conbrk(dev)` (`console.c:206-243`):
+  `conout` (`bdos/console.c:263-274`) which first runs `conbrk(dev)` (`bdos/console.c:206-243`):
   if `Bconstat(dev)` is non-zero it drains `Bconin(dev)`: Ctrl-C → flush
   typeahead + `terminate()`; Ctrl-S → pause (loops reading until Ctrl-Q);
   Ctrl-Q → resume; Ctrl-X → flush typeahead (and also queued); anything else is
@@ -135,7 +135,7 @@ byte** is `ch` (`char ch`, `:542`):
   character is being echoed* are swallowed, but arriving at the blocking
   `getch` they are stored like any other char (timing-dependent; read from the
   code, not a design guarantee).
-- **Column tracking** (`conout`, `console.c:266-272`): `>= 0x20` → column+1;
+- **Column tracking** (`conout`, `bdos/console.c:266-272`): `>= 0x20` → column+1;
   CR → 0; BS → column-1 (not clamped); other controls unchanged. Only output
   through `conout`/`tabout` (Cconout, Cconws, Fwrite to CON, echo) updates it;
   raw `Bconout`/`Crawio`/`Cauxout`/`Cprnout` do not.
@@ -145,7 +145,7 @@ byte** is `ch` (`char ch`, `:542`):
 | Handle → BIOS dev | `Fread(h, 1, buf)` | `Fread(h, n>=2, buf)` |
 |---|---|---|
 | CON (-1) → 2 (also std 0,1,4,5 default) | blocking `Bconin(2)` (or typeahead), echoes the raw key to the console, stores low byte, returns 1 | `cgets` on CON as above (blocking, editing, echo, ends at CR/LF or `n`) |
-| AUX (-2) → 1 (std 2 default) | blocking `Bconin(1)` (serial iorec, `bios/serport.c:260-263`), **echoes the byte back out the AUX port**, stores, returns 1 | `cgets` on AUX: same editing/echo logic, echo goes to AUX; typeahead buffer `[1]` (`console.c:44,116`); CR/LF from the line terminates |
+| AUX (-2) → 1 (std 2 default) | blocking `Bconin(1)` (serial iorec, `bios/serport.c:260-263`), **echoes the byte back out the AUX port**, stores, returns 1 | `cgets` on AUX: same editing/echo logic, echo goes to AUX; typeahead buffer `[1]` (`bdos/console.c:44,116`); CR/LF from the line terminates |
 | PRN (-3) → 0 (std 3 default) | `Bconin(0)` = `bconin0` returns 0 immediately ("not implemented", `bios/parport.c:123-127`): stores **0x00**, then echo `Bconout(0,0)` sends a NUL to the printer (`conbrk(0)`: `Bconstat(0)` = `char_dummy` = 0, `bios/chardev.c:30-31,54-58`, so `buffer[0] == NULL` is never dereferenced); returns 1 | `cgets` on PRN (inference by tracing the code, not run): every `getch` returns 0 → default branch stores 0x00 and `cookdout` sends `^`,`@` to the printer per byte → returns **n** NUL bytes, never blocks on input, sends 2n echo bytes to the printer (each `Bconout` may block until the 30 s printer timeout when `CONF_WITH_PRINTER_PORT` and no printer, `bios/parport.c:40-41,150-168`; ignored return) |
 
 BIOS-level gating: `bconin`/`bconout` return 0 if `CHARDEV_AVAILABLE` is not yet
@@ -162,7 +162,7 @@ so BIOS 0..2 always use `bconin_vec[]` (`bios/chardev.c:34-36`).
 | handle `<= -4` (and any `numl < -3`) | `:600-602` | `EIHNDL` (-37) |
 | `h >= NUMHANDLES` | `:578-579` reads `sft[]` out of bounds in EmuTOS; contract per `42-fseek.md` | `EIHNDL` |
 | device handle, HUGE (`pw[2] != 0`, incl. negative `len`) | `:610-611` | `0` |
-| device handle, `len` 0 or 32768..65535 | `console.c:546` | `0` |
+| device handle, `len` 0 or 32768..65535 | `bdos/console.c:546` | `0` |
 | any device read | — | never a negative code other than `EIHNDL`; no EOF/short-count signalling |
 
 ### Cross-checks (device path)
@@ -183,7 +183,7 @@ so BIOS 0..2 always use `bconin_vec[]` (`bios/chardev.c:34-36`).
 > table "NewTOS host tests" at the end of this section; where the two
 > differ, the NewTOS table is the one the Developer implements.
 
-Setup: default process (std handles per `console.c:60-67`); keyboard queue and
+Setup: default process (std handles per `bdos/console.c:60-67`); keyboard queue and
 AUX queue injectable; per-device output captured. `Q(c…)` = bytes queued.
 
 | # | Setup | Call | Expected |
@@ -249,7 +249,7 @@ R9-R12 were "buffer/return only" / raw-echo rows because `edit_line` had no
 | R17 | **(≠)** AUX default entry (no cable; `Bconin`=0 non-blocking): `Fread(-2,80,b)` and `Fread(2,80,b)` | **80**, `b` = 80 × `0x00`; does not block; no byte read from CON; echo to AUX is accepted (`Bconout(1)`=1) and discarded, so nothing observable on any device |
 | R18 | **(≠)** `Fread(-2,1,b)` | 1, `b[0]=0x00` (`conin` stores low byte of `Bconin(1)`=0) |
 | R19 | **(≠)** `Fread(-3,1,b)` / `Fread(3,1,b)` | 1, `b[0]=0x00`; nothing sent anywhere |
-| R20 | **(≠)** `Fread(-3,4,b)` | 4, `b` = `00 00 00 00` (derived by tracing `cgets` over a `Bconin`=0 device, `console.c:548,577-579`; mark inferred in the test) |
+| R20 | **(≠)** `Fread(-3,4,b)` | 4, `b` = `00 00 00 00` (derived by tracing `cgets` over a `Bconin`=0 device, `bdos/console.c:548,577-579`; mark inferred in the test) |
 | R21 | **(=)** `Fread(-4,1,b)`, `Fread(-32768,1,b)` | `EIHNDL` |
 | R22 | **(=)** free sft slot `6+k` | `EIHNDL` |
 | R23 | **(=)** `d=Fdup(0)`; `Q('q')`; `Fread(d,1,b)`; `Fclose(d)`; `Fread(d,1,b)` | 1 `'q'`; then `EIHNDL` |
@@ -509,7 +509,7 @@ No-handshake argument (*cited*): `bconout1` waits only on `bcostat1` (`serport.c
   `len==0`, `len` 32768..65535, HUGE → **0** (unchanged guards).
   Consequence worth knowing: a program that loops `Fread(2,…)` until a short count
   never gets one on AUX/PRN — it receives an endless stream of NULs (same on EmuTOS
-  PRN, `console.c:548,577-579`).
+  PRN, `bdos/console.c:548,577-579`).
 - `Fread` never returns an error for an absent device; there is no "device absent"
   status.
 

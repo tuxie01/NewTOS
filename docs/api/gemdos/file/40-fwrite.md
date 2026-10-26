@@ -85,10 +85,10 @@ return count;                                                   // :639
 for CON (barring Ctrl-C termination). Per byte:
 
 1. TAB (0x09): `do conout(2,' ') while (glbcolumn[2] & 7)` — at least one
-   space, then spaces up to the next multiple of 8 columns (`console.c:294-299`).
+   space, then spaces up to the next multiple of 8 columns (`bdos/console.c:294-299`).
 2. any other byte: `conout(2, ch)`.
 
-`conout` (`console.c:263-274`): first `conbrk(2)` (`console.c:206-243`), then
+`conout` (`bdos/console.c:263-274`): first `conbrk(2)` (`bdos/console.c:206-243`), then
 `Bconout(2, ch)` (return value ignored), then column update: `ch >= 0x20`
 (including 0x7F and 0x80-0xFF) → `glbcolumn[2]++`; CR → 0; BS → `--` (not
 clamped; may go negative); everything else (LF, BEL, ESC, NUL, …) unchanged.
@@ -98,14 +98,14 @@ sent raw (the `^X` expansion is `cookdout`, used only by `cgets`).
 `conbrk` runs **before every byte**: if `Bconstat(2)` is non-zero it drains
 `Bconin(2)`:
 - Ctrl-C (0x03) → flush the BDOS typeahead buffer and `terminate()` =
-  `xterm(-32)` (`console.c:101,220-225`): **the process is terminated, the
+  `xterm(-32)` (`bdos/console.c:101,220-225`): **the process is terminated, the
   `Fwrite` does not return** (inference: `xterm` does not return).
 - Ctrl-S (0x13) → output pauses; `Bconin` loop continues until Ctrl-Q (0x11)
-  (`console.c:226-231,242`).
+  (`bdos/console.c:226-231,242`).
 - Ctrl-X (0x18) → flush typeahead; the key itself is then queued.
 - any other key → appended to the 64-entry BDOS typeahead buffer
   (`bdos/fs.h:46`); if full, BEL `Bconout(2,7)` and the key is dropped
-  (`console.c:235-240`). Type-ahead keys swallowed here are later delivered by
+  (`bdos/console.c:235-240`). Type-ahead keys swallowed here are later delivered by
   `getch` (typeahead first) to `Fread`/`Cconin`.
 Column state `glbcolumn[2]` is shared with `Cconout`/`Cconws`/`Cconrs`.
 

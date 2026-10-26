@@ -59,8 +59,8 @@ Konfigurationsabhaengigkeit: `mousexvec` nur mit `CONF_WITH_EXTENDED_MOUSE`
 (`include/config.h:1496-1497`: Standard 1; laut `docs/api/_emutos-config.md:183,255`
 in manchen Maschinenprofilen 0). `midisys` wird nur bei `CONF_WITH_MIDI_ACIA`
 gesetzt (`aciavecs.S:180-187`), `ikbdsys` nur bei `CONF_WITH_IKBD_ACIA`
-(`:188-195`, Standard 1: `config.h:1001-1002`), `clockvec` nur bei
-`CONF_WITH_IKBD_CLOCK` (`:169-178`, Standard 1: `config.h:1008-1009`); sonst
+(`:188-195`, Standard 1: `include/config.h:1001-1002`), `clockvec` nur bei
+`CONF_WITH_IKBD_CLOCK` (`:169-178`, Standard 1: `include/config.h:1008-1009`); sonst
 bleibt der Slot `just_rts` bzw. (midisys/ikbdsys) unbelegt = 0 (BSS). Das
 Falcon-Profil (Zielbild, `_emutos-config.md`) hat ACIA, IKBD-Uhr und
 erweiterte Maus an.
@@ -228,7 +228,7 @@ rts` -> `void kbd_int(UBYTE scancode)` (`bios/ikbd.c:725`). Das Byte ist ein
   Laufzeit (Hatari 2.6.1 TT, Debugger) steht in `$1066` `$00E033EA`, TOS 3.06s
   `kbd_int` (Shift-Zustand). Belege
   `measurements/measurement-2026-10-04-keys02-doom/RUNINFO.TXT:75-92`,
-  `.../hatari/o3-tos306-debugger.log:20,30,34`; Doom meldet dort
+  `measurements/measurement-2026-10-04-keys02-doom/hatari/o3-tos306-debugger.log:20,30,34`; Doom meldet dort
   `Kbdvbase 0000106a, kbdvec was 00e033ea`
   (`measurements/measurement-2026-10-04-keys02-tt/RUNINFO.TXT:20`).
 * Ausnahme-Hinweis: FireTOS und CT60-TOS-2.xx rufen `kbdvec` **nicht** aus ihrem
@@ -241,7 +241,7 @@ rts` -> `void kbd_int(UBYTE scancode)` (`bios/ikbd.c:725`). Das Byte ist ein
 
 * **EmuTOS:** Nichts. `xterm` ruft `etv_term` (`bdos/proc.c:606-607`), setzt
   `run` zurueck und `ixterm` schliesst Dateien, gibt Verzeichnisse frei und
-  `free_all_owned` (`proc.c:110-140`) — keine Stelle fasst `kbdvecs` an. Eine
+  `free_all_owned` (`bdos/proc.c:110-140`) — keine Stelle fasst `kbdvecs` an. Eine
   Suche ueber `*.c/*.h/*.S` im ganzen Baum findet `kbdvecs`/`mousevec`/
   `statvec`/`joyvec`/`ikbdsys` nur in `bios/aciavecs.S`, `bios/ikbd.c`,
   `bios/mouse.c:117,120`, `bios/xbios.c:718`, `bios/clock.c`, `vdi/vdi_mouse.c`,
@@ -251,8 +251,8 @@ rts` -> `void kbd_int(UBYTE scancode)` (`bios/ikbd.c:725`). Das Byte ist ein
   Tastendruck springt dorthin. Der Programmierer muss selbst zuruecksetzen
   (daher A6.4).
 * **FreeMiNT:** Der Kernel verfolgt Haken einzelner Programme **nicht**; es gibt
-  keine Zeile in `sys/` ausser `keyboard.c`, `arch/init_intr.c`, `arch/acia.S`,
-  `arch/intr.S`, `dev-mouse.c` und den USB-Treibern, die `kbdvecs` anfasst
+  keine Zeile in `sys/` ausser `keyboard.c`, `sys/arch/init_intr.c`, `sys/arch/acia.S`,
+  `sys/arch/intr.S`, `dev-mouse.c` und den USB-Treibern, die `kbdvecs` anfasst
   (Suche `kbdvec|ikbdsys|kbdvbase` in `references/freemint/sys`). Was MiNT tut:
   * Es haengt **seinen** `kbdvec_handler` ein, mit XBRA-Kopf davor
     (`sys/arch/intr.S:629-639`; `install_vector`, `init_intr.c:48-57`;
@@ -272,7 +272,7 @@ rts` -> `void kbd_int(UBYTE scancode)` (`bios/ikbd.c:725`). Das Byte ist ein
     Schliessen wieder her (`sys/dev-mouse.c:190-231`) — das ist eine
     Geraete-Schliessen-Aktion, kein Prozessende-Hook fuer fremde Programme.
   * Die USB-Treiber (`udd/hid/mouse*/usb_mouse.c:507-522`,
-    `udd/hid/tablet/usb_tablet.c:1010-1026`) senden Tasten/Maus selbst ueber die
+    `sys/usb/src.km/udd/hid/tablet/usb_tablet.c:1010-1026`) senden Tasten/Maus selbst ueber die
     `KBDVEC`-Struktur, wenn GEMDOS >= 0x19: das ist der FreeMiNT-Praezedenzfall,
     dass ein **nicht-ACIA-Treiber** die Vektoren aufruft (wie es NewTOS' HID-
     Uebersetzer tun wuerde). FreeMiNT-Struktur: `struct kbdvbase` mit `drvstat`
@@ -480,7 +480,7 @@ Kind (EmuTOS: globale Tabelle, wirkt).
   Abweichung Wiederholung stoppen (`ikbd.c:453-471`). Aufwand klein
   (`kernel/src/key_repeat.rs` + Lesen des Slots). D4 entscheidet: nachbauen
   (EmuTOS-treu, Standardregel "match it") oder weglassen (KEYS01 hat es bereits
-  als "nicht nachgebildet" vermerkt, `_state.md:164`).
+  als "nicht nachgebildet" vermerkt, (cite stale 2026-10-26: _state.md:164, the KEYS01 "not modelled" note in docs/api/xbios/_state.md)).
 * BIOS-Schlange: laeuft nur ueber den Standard-`kbdvec` (A4.4/A5). Verkettet das
   Spiel, fuellt der Standard die Schlange (`push_rx`) wie bisher und startet die
   Wiederholung; wer nicht verkettet, bekommt (und liefert) EmuTOS-gemaess nichts

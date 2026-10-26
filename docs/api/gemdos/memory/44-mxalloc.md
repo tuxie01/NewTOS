@@ -374,7 +374,7 @@ contract** kept so source-ported TOS programs still get the pool they ask for
 > **Address-width gate.** `MD::m_start`/`m_length` are `Long` (`i32`), so on
 > real Pi-4 with ≥ 2 GiB DRAM the pool would overflow the Atari ABI; the seed
 > path returns `AddressOutOfRange` until the Phase-05 address-window translation
-> lands (`init.rs:14-21,195-205`). Today the managed region is capped to fit
+> lands (`tos-api/src/bdos/mem/init.rs:14-21,226-236`). Today the managed region is capped to fit
 > `i32`.
 
 ### `Mxalloc` mode → pool on the Pi

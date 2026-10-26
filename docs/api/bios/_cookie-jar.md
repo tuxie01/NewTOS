@@ -42,7 +42,7 @@ slot down. So the jar grows in place; the capacity word is preserved.
 
 ## How it is built (`fill_cookie_jar`, `bios/machine.c:665`)
 
-Called once at boot (`bios.c:280`) **after** `cookie_init`. It runs
+Called once at boot (`bios/bios.c:279`) **after** `cookie_init`. It runs
 hardware detection and `cookie_add`s the results. Tags (`cookie.h`):
 
 | Tag (ASCII) | Hex | Meaning | NewTOS relevance |
@@ -192,7 +192,7 @@ value — a pointer would be useless to EL0 since the jar is EL1-only memory.
 decision is now contested by evidence, not just noted as a limitation.**
 `docs/analysis/sysvar-osheader-lowmem-gap.md` (Prüfauftrag Punkt 4) and
 `docs/analysis/bios-audit/00-PLAN.md` (BB1) point out that TeraDesk's own
-`library/utility/cookie.c:28,56` implements exactly the classic
+`sdk/apps/teradesk/library/utility/cookie.c:28,56` implements exactly the classic
 `Setexc(0x5A0/4, -1)` + `$5A0` + linear-scan pattern this doc describes
 above — i.e. a real, 1:1-ported TOS application (ADR-019) depends on the
 access path ADR-012 explicitly closed off. This is the same class of
@@ -227,7 +227,7 @@ applications rather than by argument.
   process's TPA now carries the classic `$400` low-memory area, including
   `_p_cookies`@`$5A0` pointing at a per-process **mirror** of the kernel jar
   at VA `0x5F0` (`tos-api/src/bdos/process/loader.rs`, `write_cookie_jar`).
-  TeraDesk's `library/utility/cookie.c:56` idiom therefore resolves.
+  TeraDesk's `sdk/apps/teradesk/library/utility/cookie.c:56` idiom therefore resolves.
 * **The classic path is read-only, and that is now a decision, not an
   accident.** See the two subsections below.
 
@@ -258,7 +258,7 @@ Evidence: host test `loader::cookie_mirror_tests`, kernel self-test
 ### Still open: the counter-direction (application → kernel)
 
 An application that writes into the mirror (TeraDesk's `install_cookie`,
-`library/utility/cookie.c:107-179`, today inside the `#if 0` block at :74)
+`sdk/apps/teradesk/library/utility/cookie.c:107-179`, today inside the `#if 0` block at :74)
 does **not** reach the kernel jar — and, since 2026-09-14, its mirror write is
 now also **overwritten** by the next kernel-side `set`/`del`. Whether to close
 this, and how without exposing the kernel jar to an application write, is an
@@ -281,7 +281,7 @@ is unaffected. (Also noted at the write site,
 **2. A `struct { long name; long value; }` element has the wrong stride.** A
 TOS cookie slot is a pair of **32-bit** LONGs — 8 bytes — and that is what the
 mirror carries. The same declaration is 8 bytes on m68k but **16** on LP64
-(TeraDesk `library/xdialog/library.h:201-205`), so a verbatim `cookie++` walk
+(TeraDesk `sdk/apps/teradesk/library/xdialog/library.h:201-205`), so a verbatim `cookie++` walk
 
   * reads every **second** slot, with a tag and the previous slot's value
     fused into one 8-byte word (`jar[0]` reads as `0x000001004E544F53` —
@@ -297,8 +297,8 @@ without finding `NTOS`.
 Consequence today: TeraDesk's `find_cookie` (compiled with `-D_TOS_ONLY`, so
 `_MINT_ == 0` and the `Ssystem` branch is not compiled in —
 `sdk/apps/build-teradesk.sh:99`) **never finds a cookie**. It is driven on
-every start (`main.c:1792-1795`, `:1837`) plus `xfilesys.c:1865` and
-`video.c:158`. That is invisible today only because every tag it asks for
+every start (`sdk/apps/teradesk/main.c:1792-1795`, `:1837`) plus `sdk/apps/teradesk/xfilesys.c:1865` and
+`sdk/apps/teradesk/video.c:158`. That is invisible today only because every tag it asks for
 (`MiNT`/`Gnva`/`nAES`/`MagX`/`CT60`/`_FLK`/`_VDO`) is genuinely absent, so
 "not found" is the right answer by accident. **Not fixed here** — the fix is
 an ABI decision (declare the ported element as a pair of 32-bit LONGs in the

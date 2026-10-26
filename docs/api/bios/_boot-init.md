@@ -161,7 +161,7 @@ vblqueue = vbl_list;                        /* $456 */
 ```
 
 Das ist der Moment, an dem `_sysbase` (`$4f2`) erstmals einen gültigen
-Zeiger auf die OSHEADER-Struktur erhält (`bios.c:358`) — **davor** ist
+Zeiger auf die OSHEADER-Struktur erhält (`bios/bios.c:358`) — **davor** ist
 `sysbase` auf Cold-Boot `0` (aus dem `bzero` in §2), auf Warm-Boot der
 alte Wert. `etv_critic` bekommt hier seinen **Default-Handler**
 (`default_etv_critic`, `bios/vectors.S:823-826`) — nicht `NULL` — noch
@@ -183,23 +183,23 @@ bereits beim Compile/Link fertig vor:
 
 | Feld (Offset) | Wert bei EmuTOS (Ziel-Profil `make 512`) | Quelle |
 |---|---|---|
-| `os_entry` (0x00) | `bra.s _main` | `startup.S:78-79` |
-| `os_version` (0x02) | `TOS_VERSION` = **`0x206`** im EmuTOS-Standardprofil (`config.h:1367-1372` — **kein** `TARGET_192`/`256`/`MACHINE_*`-Block setzt es um; `make 512`/`1024`/`prg` fallen alle auf diesen Default durch, siehe `docs/analysis/aes-audit/emutos-config-profile.md` Teil 1l/2). **Für NewTOS ist der Zielwert `0x0404` NICHT verifiziert**, s. Abschnitt „OFFEN" unten. | `startup.S:80-81`, `config.h:1367-1372` |
-| `reseth` (0x04) | `.dc.l _main` | `startup.S:82-83` |
-| `os_beg` (0x08) | `.dc.l _os_header` (Selbstzeiger) | `startup.S:88-89` |
-| `os_end` (0x0C) | `.dc.l __endvdibss` | `startup.S:90-91` |
-| `os_rsvl` (0x10) | `.dc.l _main` (per Kommentar "reserved") | `startup.S:92-93` |
-| `os_magic` (0x14) | `.dc.l _ui_mupb` (Zeiger auf AES' `GEM_MUPB`) | `startup.S:94-95` |
-| `os_date` (0x18) | `OS_DATE` (Build-Timestamp, BCD) | `startup.S:96-97` |
-| `os_conf` (0x1C) | `OS_CONF_MULTILANG` oder `(OS_COUNTRY<<1)+OS_PAL`, je `CONF_MULTILANG` | `startup.S:98-103` |
-| `os_dosdate` (0x1E) | `OS_DOSDATE` | `startup.S:104-105` |
-| `os_root` (0x20) | `.dc.l _root` (BDOS-Pool) | `startup.S:106-107` |
-| `os_kbshift` (0x24) | `.dc.l _shifty` | `startup.S:108-109` |
-| `os_run` (0x28) | `.dc.l _run` (Zeiger **auf** die GEMDOS-Variable `run`) | `startup.S:110-111` |
-| `os_dummy` (0x2C) | `.ascii "ETOS"` = `0x45544F53` | `startup.S:112-113` |
+| `os_entry` (0x00) | `bra.s _main` | `bios/startup.S:78-79` |
+| `os_version` (0x02) | `TOS_VERSION` = **`0x206`** im EmuTOS-Standardprofil (`include/config.h:1367-1372` — **kein** `TARGET_192`/`256`/`MACHINE_*`-Block setzt es um; `make 512`/`1024`/`prg` fallen alle auf diesen Default durch, siehe `docs/analysis/aes-audit/emutos-config-profile.md` Teil 1l/2). **Für NewTOS ist der Zielwert `0x0404` NICHT verifiziert**, s. Abschnitt „OFFEN" unten. | `bios/startup.S:80-81`, `include/config.h:1367-1372` |
+| `reseth` (0x04) | `.dc.l _main` | `bios/startup.S:82-83` |
+| `os_beg` (0x08) | `.dc.l _os_header` (Selbstzeiger) | `bios/startup.S:88-89` |
+| `os_end` (0x0C) | `.dc.l __endvdibss` | `bios/startup.S:90-91` |
+| `os_rsvl` (0x10) | `.dc.l _main` (per Kommentar "reserved") | `bios/startup.S:92-93` |
+| `os_magic` (0x14) | `.dc.l _ui_mupb` (Zeiger auf AES' `GEM_MUPB`) | `bios/startup.S:94-95` |
+| `os_date` (0x18) | `OS_DATE` (Build-Timestamp, BCD) | `bios/startup.S:96-97` |
+| `os_conf` (0x1C) | `OS_CONF_MULTILANG` oder `(OS_COUNTRY<<1)+OS_PAL`, je `CONF_MULTILANG` | `bios/startup.S:98-103` |
+| `os_dosdate` (0x1E) | `OS_DOSDATE` | `bios/startup.S:104-105` |
+| `os_root` (0x20) | `.dc.l _root` (BDOS-Pool) | `bios/startup.S:106-107` |
+| `os_kbshift` (0x24) | `.dc.l _shifty` | `bios/startup.S:108-109` |
+| `os_run` (0x28) | `.dc.l _run` (Zeiger **auf** die GEMDOS-Variable `run`) | `bios/startup.S:110-111` |
+| `os_dummy` (0x2C) | `.ascii "ETOS"` = `0x45544F53` | `bios/startup.S:112-113` |
 
 **Die einzige zur Laufzeit geschriebene "Instanz"-Verbindung** ist
-`sysbase = &os_header;` (`bios.c:358`, s. §3) — die Struktur selbst ändert
+`sysbase = &os_header;` (`bios/bios.c:358`, s. §3) — die Struktur selbst ändert
 sich nach dem Link nie; nur der `_run`-Inhalt (über `os_run`-Doppel-
 Indirektion) und `exec_os`/`swv_vec` (separate Sysvars, nicht Teil der
 OSHEADER) ändern sich zur Laufzeit.
@@ -255,7 +255,7 @@ gelesen. Quellbefund, was diese vier tatsächlich tun:
   Reset wiederverwendet würde (Warmboot-Fast-Path) oder ob der nächste
   Boot neu konfiguriert (`memconf`, inkl. **Sysvar-Bereich-Clear**).
 - **`resvalid`/`resvector`** (`$426`/`$42a`): der **Warm-Reset-Sprung**-
-  Mechanismus. `startup.S:502-519` (`resetvec:`) prüft **vor jeder
+  Mechanismus. `bios/startup.S:502-519` (`resetvec:`) prüft **vor jeder
   anderen Boot-Initialisierung** (noch vor `memchk`!), ob
   `resvalid == 0x31415926`; wenn ja, springt die CPU auf die Adresse in
   `resvector`, **ohne** die normale Boot-Sequenz zu durchlaufen. Das ist
@@ -278,7 +278,7 @@ gelesen. Quellbefund, was diese vier tatsächlich tun:
     eigene "Maschine neu starten"-Funktion anbietet, poked typischerweise
     genau dieses Paar (`resvector`+`resvalid`), um nach dem Reset direkt
     wieder eigenen Code (oder EmuTOS selbst über `swv_vec`/`os_header.
-    reseth`, s. `bios.c:552`) anzuspringen — daher der Zugriff "bei
+    reseth`, s. `bios/bios.c:552`) anzuspringen — daher der Zugriff "bei
     Shutdown/Reset" statt beim Start.
 
 **Kein direkter Bezug zum aktuellen Boot-Crash** (der hängt an
@@ -306,7 +306,7 @@ kernel-owned ohne `$5A0`-Adresse, mit `Ssystem`-Zugriff statt
 Prüfauftrag Punkt 4) stellt genau diese Entscheidung infrage: "Braucht
 der direkte `$5A0`-Pfad + `Setexc(0x5A0/4,…)` trotzdem eine
 Low-Memory-Sichtbarkeit für geportete Apps?" — TeraDesk selbst nutzt
-exakt diesen Pfad (`cookie.c:28,56`, per `_cookie-jar.md` bereits
+exakt diesen Pfad (`sdk/apps/teradesk/library/utility/cookie.c:28,56`, per `_cookie-jar.md` bereits
 zitiert). Diese Researcher-Pass **entscheidet das nicht** (das ist
 Kern-Scope des BB1-Audits); siehe die entsprechende Korrekturnotiz in
 `docs/api/bios/_cookie-jar.md`.
@@ -343,9 +343,9 @@ BIOS-Trap-13-Scopes (Crash-/Panic-Pfad, nicht dieser Auftrag).
 
 | Adresse | Symbol | `Setexc`-Nummer | Boot-Default | Quelle |
 |---|---|---|---|---|
-| `0x400` | `etv_timer` | `0x100` | `just_rts` (No-Op) | `bios.c:360` |
-| `0x404` | `etv_critic` | `0x101` | `default_etv_critic` (gibt Fehlercode unverändert zurück) | `bios.c:361`, `vectors.S:823-826` |
-| `0x408` | `etv_term` | `0x102` | `just_rts` | `bios.c:362` |
+| `0x400` | `etv_timer` | `0x100` | `just_rts` (No-Op) | `bios/bios.c:360` |
+| `0x404` | `etv_critic` | `0x101` | `default_etv_critic` (gibt Fehlercode unverändert zurück) | `bios/bios.c:361`, `bios/vectors.S:823-826` |
+| `0x408` | `etv_term` | `0x102` | `just_rts` | `bios/bios.c:362` |
 | `0x40c` | `etv_xtra` | `0x103` | — (nie geschrieben, reine Reservierung) | `tosvars.ld:36` |
 
 ### 7c. `$420`–`$5B4` (Kernbereich dieser Anfrage)
@@ -354,8 +354,8 @@ BIOS-Trap-13-Scopes (Crash-/Panic-Pfad, nicht dieser Auftrag).
 |---|---|---|---|---|---|---|
 | `0x420` | `memvalid` | LONG | ja | RAM-Konfig valide, wenn `0x752019f3` | §2 (Cold: gesetzt am Ende von `memconf`; Warm: unverändert geprüft) | `memchk` (memory.S:126,135) |
 | `0x424` | `memctrl` | BYTE | nur ASM | Kopie von `0xffff8001` (ST-MMU-Bank-Reg.) | §2 | `memchk`/`memconf` (memory.S:146,170,572) |
-| `0x426` | `resvalid` | LONG | nein (nur ASM) | validiert `resvector`, wenn `0x31415926` | **nie von EmuTOS gesetzt**; nur `panicasm.S:115` löscht es | `startup.S:504-508` (§5) |
-| `0x42a` | `resvector` | LONG | nein (nur ASM) | Reset-Vektor (App-Konvention) | nie von EmuTOS gesetzt | `startup.S:510-519` (§5) |
+| `0x426` | `resvalid` | LONG | nein (nur ASM) | validiert `resvector`, wenn `0x31415926` | **nie von EmuTOS gesetzt**; nur `panicasm.S:115` löscht es | `bios/startup.S:504-508` (§5) |
+| `0x42a` | `resvector` | LONG | nein (nur ASM) | Reset-Vektor (App-Konvention) | nie von EmuTOS gesetzt | `bios/startup.S:510-519` (§5) |
 | `0x42e` | `phystop` | LONG(Ptr) | ja | physisches Top des ST-RAM | §2 | `bmem_init` (`memtop=phystop`, biosmem.c:72) |
 | `0x432` | `membot` | LONG(Ptr) | ja | Start der TPA | `bmem_init`: `membot=end_os` (biosmem.c:67) | `Getmpb` (`00-getmpb.md`) |
 | `0x436` | `memtop` | LONG(Ptr) | ja | Ende der TPA | `bmem_init` (biosmem.c:72), dann laufend durch `balloc_stram` | `Getmpb` |
@@ -395,10 +395,10 @@ BIOS-Trap-13-Scopes (Crash-/Panic-Pfad, nicht dieser Auftrag).
 | `0x4ae` | `sav_context` | LONG(Ptr) | **keins gefunden** | Zeiger auf Sicherungsbereich für Exception-Verarbeitung | reine Reservierung, kein Treffer | — |
 | `0x4b2` | `bufl` | LONG[2] | ja | Zeiger auf GEMDOS-Puffer-Kontrollblöcke (FAT/Dir) | GEMDOS-Init (`bdos/fsbuf.c:67,71`) | GEMDOS-FAT-Cache (BDOS, außerhalb BIOS-Scope) |
 | `0x4ba` | `hz_200` | LONG (volatile) | ja | 200-Hz-Systemuhr-Zähler | `init_system_timer` | `Tickcal`-Umfeld (`06-tickcal.md`) |
-| `0x4be` | `the_env` | LONG(Ptr) | **keins gefunden** | Zeiger auf Standard-Environment-String | reine Reservierung, kein Treffer (EmuTOS nutzt stattdessen `default_env`, eine lokale Static in `bios.c:80`, **nicht** diese Sysvar) | — |
+| `0x4be` | `the_env` | LONG(Ptr) | **keins gefunden** | Zeiger auf Standard-Environment-String | reine Reservierung, kein Treffer (EmuTOS nutzt stattdessen `default_env`, eine lokale Static in `bios/bios.c:80`, **nicht** diese Sysvar) | — |
 | `0x4c2` | `drvbits` | LONG | ja | Bit-Zuordnung physischer Laufwerke | Boot-Partitions-Scan (`blkdev_init`) | `Drvmap` (`0a-drvmap.md`) |
 | `0x4c6` | `dskbufp` | LONG(Ptr) | ja | Zeiger auf Disk-Puffer | `blkdev_init`: `=dskbuf` (blkdev.c:91) | `Getbpb`, `Rwabs`-Interna |
-| `0x4ca` | `autopath` | LONG(Ptr) | **keins gefunden** | Zeiger auf AUTO-Ausführungspfad | reine Reservierung, kein Treffer (`autoexec()` in `bios.c:846` iteriert das AUTO-Verzeichnis direkt, nicht über diese Sysvar) | — |
+| `0x4ca` | `autopath` | LONG(Ptr) | **keins gefunden** | Zeiger auf AUTO-Ausführungspfad | reine Reservierung, kein Treffer (`autoexec()` in `bios/bios.c:846` iteriert das AUTO-Verzeichnis direkt, nicht über diese Sysvar) | — |
 | `0x4ce` | `vbl_list` (8×LONG) | LONG[8] | ja (als `vbl_list[]`) | 8 VBL-Routinen-Zeiger | `bios_init`: alle `NULL` (bios.c:368-373, §3) | VBL-Dispatcher |
 | `0x4ee` | `dumpflg` | WORD | ja | Screen-Dump-Flag | `bios_init`: `=-1` (bios.c:357, §3) | `Scrdmp` (XBIOS, außerhalb Scope) |
 | `0x4f0` | `prtabt` | WORD | **keins gefunden** | Drucker-Abbruch-Flag | reine Reservierung, kein Treffer über `tosvars.h`/`.ld` hinaus | — |
@@ -450,7 +450,7 @@ der korrekte Cold-Boot-Wert nachzubilden).
    kernel-befüllte OSHEADER-Instanz (Felder exakt wie §4) + eine
    `sysbase`-Sysvar, die ein natives EL0-Programm dereferenzieren kann,
    crasht jedes 1:1-portierte TOS-Programm, das den klassischen
-   Versions-Check macht (TeraDesk `main.c:56`, vermutlich auch QED).
+   Versions-Check macht (TeraDesk `sdk/apps/teradesk/main.c:56`, vermutlich auch QED).
 3. **`os_version`/`GEMDOS_VERSION`-Zielwert ist offen** (§4) — vor dem
    Festlegen gegen Compendium/Profibuch/reales TOS4 verifizieren, nicht
    den `00-PLAN.md`-Wert `0x0404` ungeprüft übernehmen.

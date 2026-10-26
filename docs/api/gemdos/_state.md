@@ -218,7 +218,7 @@ there); the EmuTOS behaviour is the target:**
    186-201`). Host test `tos-api/tests/proc04_open_file_table.rs`. Before:
    `OPEN_FILES = 16` → `NUMHANDLES` 22. EmuTOS `OPNFILES = 75` → 81
    (`bdos/fs.h:43-45`, unconditional — no
-   `CONF_WITH_*`/`TARGET_*` gate; the comment `fs.h:34-41` lists TOS
+   `CONF_WITH_*`/`TARGET_*` gate; the comment `bdos/fs.h:34-41` lists TOS
    1.04/2.06/3.06 = 75, TOS 4.04 = 19 "[likely a per-process number]", i.e.
    the Falcon/TOS4 *profile* does not change EmuTOS's own value). The table
    is **system-wide**; there is no per-process handle limit (a process owns
@@ -656,7 +656,7 @@ only — AArch64 has no hardware DMA-zone distinction. NewTOS may cleanly clear
 
 ---
 
-## 9. OS Header `os_header` (`bdos/fsmain.c`, `bios/tosvars.S`)
+## 9. OS Header `os_header` (`bdos/fsmain.c`, `bios/startup.S:77-113`)
 
 The TOS OS header at low memory address `0x4F2` (`_sysbase`)
 contains `os_version`, `os_beg`, `os_end`, `os_magic`, `os_date`,
@@ -745,7 +745,7 @@ the tick mechanism, the RTC driver. **Contract:** the packed values the four
 **Version constant:** `GEMDOS_VERSION` (`include/config.h:1590`, default
 `0x2000`) is a compile-time constant returned verbatim by `Sversion` (0x30,
 `xgetver`, `bdos/bdosmain.c:298`). Byte order is **minor in the high byte,
-major in the low byte** (`config.h:1577-1578`), so `0x2000` = GEMDOS 0.32. It
+major in the low byte** (`include/config.h:1577-1578`), so `0x2000` = GEMDOS 0.32. It
 is **contract** (programs branch on it) but **not** an OS-header field (§9) and
 **not** a reliable feature bitmap. NewTOS reports `0x2000`. See
 `docs/api/gemdos/version/30-sversion.md`.

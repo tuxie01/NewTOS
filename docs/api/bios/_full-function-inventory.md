@@ -20,7 +20,7 @@ Maßgeblich sind zwei Stellen:
   und der gemeinsame Verteiler `biosxbios` (`:1282-1333`).
 
 `bios_vecs` hat **keine** Lücken: alle 12 Nummern 0x00…0x0B sind belegt, keine
-davon steht unter einem `#if`. Der Schalter `DBGBIOS` (`bios.c:1245-1249`)
+davon steht unter einem `#if`. Der Schalter `DBGBIOS` (`bios/bios.c:1246-1250`)
 wählt nur zwischen der Protokoll-Hülle `bios_N` und der nackten Funktion — er
 ändert nichts an der Belegung.
 
@@ -61,18 +61,18 @@ Auffangarm).
 
 | Nr | Name | EmuTOS Tabelle | EmuTOS Rumpf | N | NewTOS |
 |---|---|---|---|---|---|
-| 0x00 | `Getmpb` | `bios.c:1253` | `bios/biosmem.c` (`getmpb`) | ja | `bios/mod.rs:74` → `getmpb.rs` |
-| 0x01 | `Bconstat` | `:1254` | `bios.c:914-934` | ja | `:75` → `chardev.rs:47-53` |
-| 0x02 | `Bconin` | `:1255` | `bios.c:958-978` | ja | `:76` |
-| 0x03 | `Bconout` | `:1256` | `bios.c:991-1011` | ja | `:77` |
-| 0x04 | `Rwabs` | `:1257` | `bios.c:1045-1048` (`lrwabs`) | ja | `:79` → `mod.rs:140-205` |
-| 0x05 | `Setexc` | `:1258` | `bios.c:1070-1080` | ja (Schattenkopie) | `:80` → `vectors.rs` |
-| 0x06 | `Tickcal` | `:1259` | `bios.c:1096-1099` — `return 20L;` | ja (derselbe feste Wert) | `:81`, `mod.rs:66` |
-| 0x07 | `Getbpb` | `:1260` | `bios.c:1120-1123` | ja | `:82` → `bpb.rs` |
-| 0x08 | `Bcostat` | `:1261` | `bios.c:1143-1163` | ja | `:78` |
-| 0x09 | `Mediach` | `:1262` | `bios.c:1184-1187` | HW-Adapter (SD nicht wechselbar → 0) | `:83`, `mod.rs:213-219` |
-| 0x0A | `Drvmap` | `:1263` | `bios.c:1206-1209` | ja | `:84`, `mod.rs:224-226` |
-| 0x0B | `Kbshift` | `:1264` | `bios/ikbd.c:145-153` | ja | `:85`, `mod.rs:105-116` |
+| 0x00 | `Getmpb` | `bios/bios.c:1253` | `bios/biosmem.c` (`getmpb`) | ja | `bios/mod.rs:84` → `getmpb.rs` |
+| 0x01 | `Bconstat` | `:1254` | `bios/bios.c:914-934` | ja | `:85` → `chardev.rs:293-295` |
+| 0x02 | `Bconin` | `:1255` | `bios/bios.c:958-978` | ja | `:86` |
+| 0x03 | `Bconout` | `:1256` | `bios/bios.c:991-1011` | ja | `:87` |
+| 0x04 | `Rwabs` | `:1257` | `bios/bios.c:1045-1048` (`lrwabs`) | ja | `:89` → `tos-api/src/bios/mod.rs:148-228` |
+| 0x05 | `Setexc` | `:1258` | `bios/bios.c:1070-1080` | ja (Schattenkopie) | `:90` → `vectors.rs` |
+| 0x06 | `Tickcal` | `:1259` | `bios/bios.c:1096-1099` — `return 20L;` | ja (derselbe feste Wert) | `:91`, `tos-api/src/bios/mod.rs:76` |
+| 0x07 | `Getbpb` | `:1260` | `bios/bios.c:1120-1123` | ja | `:92` → `bpb.rs` |
+| 0x08 | `Bcostat` | `:1261` | `bios/bios.c:1143-1163` | ja | `:88` |
+| 0x09 | `Mediach` | `:1262` | `bios/bios.c:1184-1187` | HW-Adapter (SD nicht wechselbar → 0) | `:93`, `tos-api/src/bios/mod.rs:237-243` |
+| 0x0A | `Drvmap` | `:1263` | `bios/bios.c:1206-1209` | ja | `:94`, `tos-api/src/bios/mod.rs:247-249` |
+| 0x0B | `Kbshift` | `:1264` | `bios/ikbd.c:145-153` | ja | `:95`, `tos-api/src/bios/mod.rs:116-127` |
 
 ### 1.1 Summenzeile
 
@@ -117,16 +117,16 @@ sind die vier Vektortabellen `bcon*_vec[8]` (`NUM_CHAR_VECS = 8`,
 > Ein Prüfprogramm, das `Bcostat(3)` und `Bcostat(4)` misst, misst also **nicht**
 > MIDI und IKBD in dieser Reihenfolge.
 
-Bereichs- und Vorprüfungen (alle vier Funktionen gleich, `bios.c:914-1011`,
+Bereichs- und Vorprüfungen (alle vier Funktionen gleich, `bios/bios.c:914-1011`,
 `:1143-1163`):
 
 | Klasse | Wirkung | Beleg |
 |---|---|---|
-| `boot_status & CHARDEV_AVAILABLE` nicht gesetzt | **0**, noch vor jeder Handle-Prüfung | `bios.c:920-921` |
-| `handle - BCONMAP_START_HANDLE ≥ maptabsize` | **0** | `bios.c:925-926` |
-| `handle ≥ BCONMAP_START_HANDLE` (= 6) | **Umleitung in die `bconmap`-Tabelle**, nicht in `bcon*_vec` | `bios.c:924,927-928` |
-| `0 ≤ handle ≤ 7` | `bcon*_vec[handle]` | `bios.c:931-932` |
-| `handle < 0` | **0** | `bios.c:933` |
+| `boot_status & CHARDEV_AVAILABLE` nicht gesetzt | **0**, noch vor jeder Handle-Prüfung | `bios/bios.c:920-921` |
+| `handle - BCONMAP_START_HANDLE ≥ maptabsize` | **0** | `bios/bios.c:925-926` |
+| `handle ≥ BCONMAP_START_HANDLE` (= 6) | **Umleitung in die `bconmap`-Tabelle**, nicht in `bcon*_vec` | `bios/bios.c:924,927-928` |
+| `0 ≤ handle ≤ 7` | `bcon*_vec[handle]` | `bios/bios.c:931-932` |
+| `handle < 0` | **0** | `bios/bios.c:933` |
 
 **Wichtig für die Falltabelle:** die Handles 6 und 7 sind in `bcon*_vec`
 zwar belegt, werden aber wegen `BCONMAP_AVAILABLE` **nie** darüber erreicht —
@@ -169,7 +169,7 @@ Medium, keine Wiederholungen).
 
 ### 2.4 `Setexc` (5) — Vektornummer
 
-`setexc(num, vector)`, `bios.c:1070-1080`:
+`setexc(num, vector)`, `bios/bios.c:1070-1080`:
 
 | Klasse | Wirkung |
 |---|---|
@@ -216,9 +216,9 @@ ein Datenwert, kein Modus — aber die **Klassen** gehören in eine Falltabelle:
 vorhandenes Laufwerk · nicht vorhandenes Laufwerk · Nummer außerhalb 0…31 ·
 negative Nummer. `Drvmap` hat keine Argumente.
 
-`Mediach`-Rückgaben (`bios.c:1175-1181`): 0 = sicher nicht gewechselt,
+`Mediach`-Rückgaben (`bios/bios.c:1175-1181`): 0 = sicher nicht gewechselt,
 1 = vielleicht, 2 = sicher gewechselt. NewTOS liefert **immer 0** für ein
-gültiges Laufwerk und `EUNDEV` sonst (`mod.rs:213-219`) — die Karte ist nicht
+gültiges Laufwerk und `EUNDEV` sonst (`tos-api/src/bios/mod.rs:237-243`) — die Karte ist nicht
 wechselbar.
 
 ### 2.7 Funktionen **ohne** Unterfunktion

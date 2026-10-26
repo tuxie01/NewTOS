@@ -195,7 +195,7 @@ preserved so palette-animation programs stay tear-free.
 > `docs/HARDWARE-PROFILE.md` §2/§3.1.
 
 - **No hardware CLUT — the framebuffer is truecolor.** The BCM2711
-  framebuffer is 32 bpp XRGB8888 (`framebuffer.rs:23-25`); there are no
+  framebuffer is 32 bpp XRGB8888 (`kernel/src/drivers/bcm2711/framebuffer.rs:34-36`); there are no
   16 palette registers to load. NewTOS emulates a **16-entry CLUT**: PEL
   indices 0..15 map to packed RGB, which the VDI expands per pixel
   (`kernel/src/vdi_backend.rs:26-59`).

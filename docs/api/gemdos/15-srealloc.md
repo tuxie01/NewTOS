@@ -3,7 +3,7 @@
 > Phase 00 spec (full-contract template). Source: EmuTOS @ `1a7484ab`.
 > Verified against `bdos/umem.c:358` (`srealloc`, inside `#if CONF_WITH_VIDEL`).
 
-> **Contract vs. reference** — see [`docs/COMPATIBILITY.md`](../COMPATIBILITY.md).
+> **Contract vs. reference** — see [`docs/COMPATIBILITY.md`](../../COMPATIBILITY.md).
 > Contract: trap ID/ABI, the `< 0` query vs `>= 0` allocate split, the pointer /
 > size / `NULL` / `EINVFN` result shapes, the "no VIDEL ⇒ `EINVFN`" rule.
 > Reference: the `pmd.mp_mfl` last-free-block reuse, `EXTRA_VRAM_SIZE`, the
@@ -272,7 +272,7 @@ VideoCore framebuffer.
 ### No VIDEL, no RAM-backed screen → `EINVFN` is correct — but not wired yet
 
 The BCM2711 framebuffer is a **mailbox-allocated VideoCore buffer**
-(`bcm2711/framebuffer.rs`), not memory carved from the ST-RAM pool, so the
+(`kernel/src/drivers/bcm2711/framebuffer.rs`), not memory carved from the ST-RAM pool, so the
 Falcon `Srealloc` mechanism has nothing to resize. The contract answer is
 `EINVFN` (-32), exactly the Falcon-without-VIDEL behaviour.
 

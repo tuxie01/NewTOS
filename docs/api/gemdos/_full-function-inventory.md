@@ -59,68 +59,68 @@ Der **behandelnde Zweig** zählt, nicht der Name. Spalte **N**:
 
 ## 1. Opcode-Ebene: 88 Tabellenplätze, 53 belegt
 
-NewTOS-Verteiler: `tos-api/src/gemdos/mod.rs::build_table` (`:43-110`, 48 Arme)
+NewTOS-Verteiler: `tos-api/src/gemdos/mod.rs::build_table` (`:45-112`, 48 Arme)
 plus die **rahmenverändernden** Funktionen, die der Kernel vor der Tabelle
-abfängt: `kernel/src/arch/aarch64/exceptions.rs:301` (0x4C/0x00/0x31), `:305`
-(0x4B), `:309` (0x4D), `:318` (0x11A).
+abfängt: `kernel/src/arch/aarch64/exceptions.rs:400` (0x4C/0x00/0x31), `:404`
+(0x4B), `:408` (0x4D), `:417` (0x11A).
 
 ### 1.1 Belegte Plätze (53)
 
 | Nr | Name | EmuTOS Tabelle | EmuTOS Rumpf | N | NewTOS |
 |---|---|---|---|---|---|
-| 0x00 | `Pterm0` | `bdosmain.c:147` | `proc.c:588` | ja | `exceptions.rs:301` → `handle_pterm` |
-| 0x01 | `Cconin` | `:156` | `console.c:396` | ja | `gemdos/mod.rs:45` |
-| 0x02 | `Cconout` | `:157` | `console.c:279` | ja | `:46` |
-| 0x03 | `Cauxin` | `:158` | `console.c:432` | HW-Adapter | `:47` → `bios::chardev::bconin_handle(1)` |
-| 0x04 | `Cauxout` | `:159` | `console.c:331` | HW-Adapter | `:48` |
-| 0x05 | `Cprnout` | `:160` | `console.c:340` | Konstante `0` | `:49`, `console.rs:144-146` |
-| 0x06 | `Crawio` | `:161` | `console.c:441` | ja | `:50` |
-| 0x07 | `Crawcin` | `:162` | `console.c:375` | ja | `:51` |
-| 0x08 | `Cnecin` | `:163` | `console.c:414` | ja | `:52` |
-| 0x09 | `Cconws` | `:164` | `console.c:459` | ja | `:53` |
-| 0x0A | `Cconrs` | `:165` | `console.c:533` | ja | `:54` |
-| 0x0B | `Cconis` | `:166` | `console.c:159` | ja | `:55` |
-| 0x0E | `Dsetdrv` | `:179` | `fsmain.c:420` | ja | `:100` |
-| 0x10 | `Cconos` | `:189` | `console.c:168` | Konstante `-1` | `:56`, `console.rs:574-576` |
-| 0x11 | `Cprnos` | `:190` | `console.c:177` | Konstante `0` | `:57`, `console.rs:583-585` |
-| 0x12 | `Cauxis` | `:191` | `console.c:186` | Konstante `0` | `:58`, `console.rs:592-594` |
-| 0x13 | `Cauxos` | `:192` | `console.c:195` | Konstante `0` | `:59`, `console.rs:601-603` |
-| 0x14 | `Maddalt` | `:195` (`CONF_WITH_ALT_RAM`) | `umem.c:455` | ja | `:64` |
+| 0x00 | `Pterm0` | `bdosmain.c:147` | `bdos/proc.c:588` | ja | `exceptions.rs:400` → `handle_pterm` |
+| 0x01 | `Cconin` | `:156` | `bdos/console.c:396` | ja | `gemdos/mod.rs:47` |
+| 0x02 | `Cconout` | `:157` | `bdos/console.c:279` | ja | `:48` |
+| 0x03 | `Cauxin` | `:158` | `bdos/console.c:432` | HW-Adapter | `:49` → `bios::chardev::bconin_handle(1)` |
+| 0x04 | `Cauxout` | `:159` | `bdos/console.c:331` | HW-Adapter | `:50` |
+| 0x05 | `Cprnout` | `:160` | `bdos/console.c:340` | Konstante `0` | `:51`, (cite stale 2026-10-26: console.rs:144-146, a constant-returning stub) |
+| 0x06 | `Crawio` | `:161` | `bdos/console.c:441` | ja | `:52` |
+| 0x07 | `Crawcin` | `:162` | `bdos/console.c:375` | ja | `:53` |
+| 0x08 | `Cnecin` | `:163` | `bdos/console.c:414` | ja | `:54` |
+| 0x09 | `Cconws` | `:164` | `bdos/console.c:459` | ja | `:55` |
+| 0x0A | `Cconrs` | `:165` | `bdos/console.c:533` | ja | `:56` |
+| 0x0B | `Cconis` | `:166` | `bdos/console.c:159` | ja | `:57` |
+| 0x0E | `Dsetdrv` | `:179` | `fsmain.c:420` | ja | `:102` |
+| 0x10 | `Cconos` | `:189` | `bdos/console.c:168` | Konstante `-1` | `:58`, (cite stale 2026-10-26: console.rs:574-576, a constant-returning stub) |
+| 0x11 | `Cprnos` | `:190` | `bdos/console.c:177` | Konstante `0` | `:59`, (cite stale 2026-10-26: console.rs:583-585, a constant-returning stub) |
+| 0x12 | `Cauxis` | `:191` | `bdos/console.c:186` | Konstante `0` | `:60`, (cite stale 2026-10-26: console.rs:592-594, a constant-returning stub) |
+| 0x13 | `Cauxos` | `:192` | `bdos/console.c:195` | Konstante `0` | `:61`, (cite stale 2026-10-26: console.rs:601-603, a constant-returning stub) |
+| 0x14 | `Maddalt` | `:195` (`CONF_WITH_ALT_RAM`) | `umem.c:455` | ja | `:66` |
 | 0x15 | `Srealloc` | `:201` (`CONF_WITH_VIDEL`) | `umem.c:358` | **nein** | — |
-| 0x19 | `Dgetdrv` | `:210` | `fsmain.c:438` | ja | `:101` |
-| 0x1A | `Fsetdta` | `:211` | `fsmain.c:403` | ja | `:94` |
-| 0x2A | `Tgetdate` | `:232` | `time.c:99` | ja | `:71` |
-| 0x2B | `Tsetdate` | `:233` | `time.c:108` | ja | `:72` |
-| 0x2C | `Tgettime` | `:234` | `time.c:132` | ja | `:73` |
-| 0x2D | `Tsettime` | `:235` | `time.c:142` | ja | `:74` |
-| 0x2F | `Fgetdta` | `:239` | `fsmain.c:394` | ja | `:95` |
-| 0x30 | `Sversion` | `:240` | `bdosmain.c:298` | ja (anderer Wert) | `:75`, `version.rs:14-19` |
-| 0x31 | `Ptermres` | `:241` | `proc.c:624` | ja | `exceptions.rs:301` |
-| 0x36 | `Dfree` | `:248` | `fsfat.c:337` | ja | `:102` |
-| 0x39 | `Dcreate` | `:253` | `fsdir.c:201` | ja | `:105` |
-| 0x3A | `Ddelete` | `:254` | `fsdir.c:297` | ja | `:106` |
-| 0x3B | `Dsetpath` | `:255` | `fsdir.c:1113` | ja | `:107` |
-| 0x3C | `Fcreate` | `:256` | `fsopnclo.c:81` | ja | `:86` |
-| 0x3D | `Fopen` | `:257` | `fsopnclo.c:221` | ja | `:78` |
-| 0x3E | `Fclose` | `:258` | `fsopnclo.c:426` | ja | `:79` |
-| 0x3F | `Fread` | `:259` | `fsio.c:440` | ja | `:80` |
-| 0x40 | `Fwrite` | `:260` | `fsio.c:528` | ja | `:87` |
-| 0x41 | `Fdelete` | `:261` | `fsopnclo.c:623` | ja | `:88` |
-| 0x42 | `Fseek` | `:262` | `fsio.c:321` | ja | `:81` |
-| 0x43 | `Fattrib` | `:263` | `fsdir.c:402` | ja | `:89` |
-| 0x44 | `Mxalloc` | `:264` | `umem.c:234` | ja | `:65` |
-| 0x45 | `Fdup` | `:265` | `fshand.c:93` | ja | `:82` |
-| 0x46 | `Fforce` | `:266` | `fshand.c:32` | ja | `:83` |
-| 0x47 | `Dgetpath` | `:267` | `fsdir.c:1229` | ja | `:108` |
-| 0x48 | `Malloc` | `:268` | `umem.c:116` | ja | `:66` |
-| 0x49 | `Mfree` | `:269` | `umem.c:135` | ja | `:67` |
-| 0x4A | `Mshrink` | `:270` | `umem.c:170` | ja | `:68` |
-| 0x4B | `Pexec` | `:271` | `proc.c:179` | teilweise (s. §2.6) | `exceptions.rs:305` |
-| 0x4C | `Pterm` | `:272` | `proc.c:601` | ja | `exceptions.rs:301` |
-| 0x4E | `Fsfirst` | `:276` | `fsdir.c:523` | ja | `:96` |
-| 0x4F | `Fsnext` | `:277` | `fsdir.c:654` | ja | `:97` |
-| 0x56 | `Frename` | `:286` | `fsdir.c:895` | ja | `:90` |
-| 0x57 | `Fdatime` | `:287` | `fsdir.c:684` | ja | `:91` |
+| 0x19 | `Dgetdrv` | `:210` | `fsmain.c:438` | ja | `:103` |
+| 0x1A | `Fsetdta` | `:211` | `fsmain.c:403` | ja | `:96` |
+| 0x2A | `Tgetdate` | `:232` | `bdos/time.c:99` | ja | `:73` |
+| 0x2B | `Tsetdate` | `:233` | `bdos/time.c:108` | ja | `:74` |
+| 0x2C | `Tgettime` | `:234` | `bdos/time.c:132` | ja | `:75` |
+| 0x2D | `Tsettime` | `:235` | `bdos/time.c:142` | ja | `:76` |
+| 0x2F | `Fgetdta` | `:239` | `fsmain.c:394` | ja | `:97` |
+| 0x30 | `Sversion` | `:240` | `bdosmain.c:298` | ja (anderer Wert) | `:77`, `version.rs:14-19` |
+| 0x31 | `Ptermres` | `:241` | `bdos/proc.c:624` | ja | `exceptions.rs:400` |
+| 0x36 | `Dfree` | `:248` | `fsfat.c:337` | ja | `:104` |
+| 0x39 | `Dcreate` | `:253` | `fsdir.c:201` | ja | `:107` |
+| 0x3A | `Ddelete` | `:254` | `fsdir.c:297` | ja | `:108` |
+| 0x3B | `Dsetpath` | `:255` | `fsdir.c:1113` | ja | `:109` |
+| 0x3C | `Fcreate` | `:256` | `fsopnclo.c:81` | ja | `:88` |
+| 0x3D | `Fopen` | `:257` | `fsopnclo.c:221` | ja | `:80` |
+| 0x3E | `Fclose` | `:258` | `fsopnclo.c:426` | ja | `:81` |
+| 0x3F | `Fread` | `:259` | `fsio.c:440` | ja | `:82` |
+| 0x40 | `Fwrite` | `:260` | `fsio.c:528` | ja | `:89` |
+| 0x41 | `Fdelete` | `:261` | `fsopnclo.c:623` | ja | `:90` |
+| 0x42 | `Fseek` | `:262` | `fsio.c:321` | ja | `:83` |
+| 0x43 | `Fattrib` | `:263` | `fsdir.c:402` | ja | `:91` |
+| 0x44 | `Mxalloc` | `:264` | `umem.c:234` | ja | `:67` |
+| 0x45 | `Fdup` | `:265` | `fshand.c:93` | ja | `:84` |
+| 0x46 | `Fforce` | `:266` | `fshand.c:32` | ja | `:85` |
+| 0x47 | `Dgetpath` | `:267` | `fsdir.c:1229` | ja | `:110` |
+| 0x48 | `Malloc` | `:268` | `umem.c:116` | ja | `:68` |
+| 0x49 | `Mfree` | `:269` | `umem.c:135` | ja | `:69` |
+| 0x4A | `Mshrink` | `:270` | `umem.c:170` | ja | `:70` |
+| 0x4B | `Pexec` | `:271` | `bdos/proc.c:179` | teilweise (s. §2.6) | `exceptions.rs:404` |
+| 0x4C | `Pterm` | `:272` | `bdos/proc.c:601` | ja | `exceptions.rs:400` |
+| 0x4E | `Fsfirst` | `:276` | `fsdir.c:523` | ja | `:98` |
+| 0x4F | `Fsnext` | `:277` | `fsdir.c:654` | ja | `:99` |
+| 0x56 | `Frename` | `:286` | `fsdir.c:895` | ja | `:92` |
+| 0x57 | `Fdatime` | `:287` | `fsdir.c:684` | ja | `:93` |
 
 ### 1.2 Die 35 `NI`-Plätze (Fehlerweg `EINVFN`)
 
@@ -185,12 +185,12 @@ tatsächlich behandelnden Zweig.
 
 | Wert | Name | Beleg |
 |---|---|---|
-| 0 | `RO_MODE` | `fs.h:170` |
-| 1 | `WO_MODE` | `fs.h:171` |
-| 2 | `RW_MODE` | `fs.h:172` |
+| 0 | `RO_MODE` | `bdos/fs.h:170` |
+| 1 | `WO_MODE` | `bdos/fs.h:171` |
+| 2 | `RW_MODE` | `bdos/fs.h:172` |
 | 3–7 | nicht benannt, **werden trotzdem gespeichert** (`makopn`: `p->o_mod = mod`, `fsopnclo.c:282`) | |
-| Bits 4–6 (`MODE_FSM`) | file sharing — **weggeworfen** durch die Maske | `fs.h:168` |
-| Bit 7 (`INH_MODE`) | inheritance — **weggeworfen** | `fs.h:167` |
+| Bits 4–6 (`MODE_FSM`) | file sharing — **weggeworfen** durch die Maske | `bdos/fs.h:168` |
+| Bit 7 (`INH_MODE`) | inheritance — **weggeworfen** | `bdos/fs.h:167` |
 
 Eigener Zweig: `if ((fcb->f_attrib & FA_RO) && (mod != 0)) return EACCDN;`
 (`fsopnclo.c:260-261`) — **jeder** Modus ≠ 0 auf einer schreibgeschützten Datei.
@@ -231,7 +231,7 @@ Attributbits `mod` (`include/bdosdefs.h:36-41`):
 | 0x10 | `FA_SUBDIR` | **nein** |
 | 0x20 | `FA_ARCHIVE` | ja |
 
-`FA_NORM = FA_ARCHIVE|FA_SYSTEM|FA_HIDDEN|FA_RO = 0x27` (`fs.h:195`).
+`FA_NORM = FA_ARCHIVE|FA_SYSTEM|FA_HIDDEN|FA_RO = 0x27` (`bdos/fs.h:195`).
 Beim Setzen: `if (wrt && (mod & ~FA_NORM)) return EACCDN;` (`:421-422`).
 
 > **Anmerkung zur Version, nicht zur Bewertung.** Der Quellkommentar
@@ -273,7 +273,7 @@ NewTOS: gleiche Maske und dieselben vier Zweige
 
 ### 2.6 `Pexec` (0x4B) — `flag`
 
-`xexec`, `proc.c:179-254`. **Zwei Schalter**: der erste (`:192-254`) für alles,
+`xexec`, `bdos/proc.c:179-254`. **Zwei Schalter**: der erste (`:192-254`) für alles,
 was keine Datei lädt.
 
 | Wert | Name (`include/bdosdefs.h:25-32`) | EmuTOS | NewTOS |

@@ -22,7 +22,7 @@ function number itself — **not** a GEMDOS error (see *D-008* / *D-039*).
 
 ## Status legend
 
-- **✅ spec** — full per-function spec written (`docs/api/xbios/NN-name.md`
+- **✅ spec** — full per-function spec written (`docs/api/xbios/<NN>-<name>.md`
   or a group file)
 - **🟢 implement** — NewTOS will implement (PHASE-04/07/08)
 - **🟡 stub** — return `EUNDEV`/`0`/default; ABI surface only
@@ -45,13 +45,13 @@ function number itself — **not** a GEMDOS error (see *D-008* / *D-039*).
 | 0x0B  | (used_by_bios) | `xbios_unimpl`            | ⛔ unimpl | (dispatcher) | reserved |
 | 0x0C  | Midiws     | `midiws` (`midi.c:104`)       | 🟡 stub | ✅ | no MIDI ACIA (PHASE-07?) |
 | 0x0D  | Mfpint     | `mfpint`                      | ⛔ unimpl | (dispatcher) | `CONF_WITH_MFP` off |
-| 0x0E  | Iorec      | `iorec` (`xbios.c:336`)       | 🟢 PHASE-07 | ✅ | input ring descriptor |
-| 0x0F  | Rsconf     | `rsconf` (`xbios.c:376`)      | 🟡 stub / PL011 | ✅ | RS-232 config |
+| 0x0E  | Iorec      | `iorec` (`bios/xbios.c:336`)       | 🟢 PHASE-07 | ✅ | input ring descriptor |
+| 0x0F  | Rsconf     | `rsconf` (`bios/xbios.c:376`)      | 🟡 stub / PL011 | ✅ | RS-232 config |
 | 0x10  | Keytbl     | `keytbl` (`ikbd.c:122`)       | 🟢 PHASE-07 | ✅ | keyboard-table swap |
-| 0x11  | Random     | `random` (`xbios.c:421`)      | 🟢 PHASE-07 | ✅ | LCG, seeds from `hz_200` |
+| 0x11  | Random     | `random` (`bios/xbios.c:421`)      | 🟢 PHASE-07 | ✅ | LCG, seeds from `hz_200` |
 | 0x12  | Protobt    | `protobt`                     | 🟢 PHASE-04 | ✅ (`_floppy-stubs.md`) | boot-sector image builder (software) |
 | 0x13  | Flopver    | `flopver`                     | 🟡 stub → `EUNDEV` | ✅ (`_floppy-stubs.md`) | no floppy |
-| 0x14  | Scrdmp     | `scrdmp` (`xbios.c:490`)      | 🟡 stub / PNG | ✅ | screen dump; `dump_vec` default no-op |
+| 0x14  | Scrdmp     | `scrdmp` (`bios/xbios.c:490`)      | 🟡 stub / PNG | ✅ | screen dump; `dump_vec` default no-op |
 | 0x15  | Cursconf   | `cursconf` (`vt52.c:893`)     | 🟢 PHASE-08 | ✅ | VT52 cursor config |
 | 0x16  | Settime    | `settime` (`clock.c:1218`)    | 🟢 PHASE-07 | ✅ | RTC + GEMDOS time globals |
 | 0x17  | Gettime    | `gettime` (`clock.c:1266`)    | 🟢 PHASE-07 | ✅ | RTC read |
@@ -65,11 +65,11 @@ function number itself — **not** a GEMDOS error (see *D-008* / *D-039*).
 | 0x1F  | Xbtimer    | `xbtimer`                     | ⛔ unimpl | (dispatcher) | `CONF_WITH_MFP` off |
 | 0x20  | Dosound    | `dosound` (`sound.c`)         | 🟡 stub → 0 | ✅ (`_psg-group.md`) | no YM2149 |
 | 0x21  | Setprt     | `setprt` (`parport.c:49-57`)  | 🟢 implement | ✅ (`21-setprt.md`) | pure software config word (D-060); `CONF_WITH_PRINTER_PORT` off does **not** apply — no HW touch |
-| 0x22  | Kbdvbase   | `kbdvbase` (`xbios.c:716`)    | 🟢 PHASE-07 | ✅ | returns `&kbdvecs` |
+| 0x22  | Kbdvbase   | `kbdvbase` (`bios/xbios.c:716`)    | 🟢 PHASE-07 | ✅ | returns `&kbdvecs` |
 | 0x23  | Kbrate     | `kbrate` (`ikbd.c:439`)       | 🟢 PHASE-07 | ✅ | repeat-rate config |
 | 0x24  | Prtblk     | `xbios_unimpl`                | ⛔ unimpl | (dispatcher) | no printer |
 | 0x25  | Vsync      | `vsync` (`screen.c:1205`)     | 🟢 PHASE-08 | ✅ | wait for VBL |
-| 0x26  | Supexec    | `supexec` (`vectors.S:1376`)  | 🟢 PHASE-06 (ADR) | ✅ | run callback in supervisor mode |
+| 0x26  | Supexec    | `supexec` (`bios/vectors.S:1376`)  | 🟢 PHASE-06 (ADR) | ✅ | run callback in supervisor mode |
 | 0x27  | Puntaes    | `xbios_unimpl`                | ⛔ unimpl | (dispatcher) | drop AES (boot path) |
 | 0x28  | (reserved) | `xbios_unimpl`                | ⛔ unimpl | (dispatcher) | |
 | 0x29  | Floprate   | `floprate`                    | 🟡 stub → `EUNDEV` | ✅ (`_floppy-stubs.md`) | no floppy |
@@ -79,7 +79,7 @@ function number itself — **not** a GEMDOS error (see *D-008* / *D-039*).
 | 0x2D  | (reserved) | `xbios_unimpl`                | ⛔ unimpl | (dispatcher) | |
 | 0x2E  | NVMaccess  | `nvmaccess`                   | ⛔ unimpl | (dispatcher) | `CONF_WITH_NVRAM` off |
 | 0x2F..0x3F | (reserved) | `xbios_unimpl`            | ⛔ unimpl | (dispatcher) | 17 entries |
-| 0x40  | Blitmode   | `blitmode` (`xbios.c:886`)    | 🟡 stub → 0 | ✅ | no Atari blitter |
+| 0x40  | Blitmode   | `blitmode` (`bios/xbios.c:886`)    | 🟡 stub → 0 | ✅ | no Atari blitter |
 | 0x41..0x4F | (reserved) | `xbios_unimpl`            | ⛔ unimpl | (dispatcher) | 15 filler entries |
 | 0x50..0x57 | Eset*/Eget* | `esetshift`…`esetsmear`  | 🟢 PHASE-08 | ✅ (`_tt-shifter.md`) | TT shifter — ABI-only on framebuffer |
 

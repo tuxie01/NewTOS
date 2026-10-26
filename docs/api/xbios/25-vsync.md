@@ -211,7 +211,7 @@ masked interrupts.
   property interface has a **wait-for-vsync** tag, `0x0004_800E`, with an
   empty value buffer (`docs/hardware/mailbox-framebuffer.md` §3b, from
   `references/circle/include/circle/bcmpropertytags.h:67` +
-  `lib/bcmframebuffer.cpp:405-410`). Circle waits on it immediately before
+  `references/circle/lib/bcmframebuffer.cpp:405-410`). Circle waits on it immediately before
   a set-virtual-offset page flip. Binding NewTOS' `Vsync` to it would make
   `Setscreen` page flips exactly tear-free instead of approximately so;
   deliberately **not** done in the page-flip work item, because it turns a

@@ -43,7 +43,7 @@ counters. Empty: `head == tail`. Full: `(tail + 1) % size == head`
 `idx = (idx + 1) % size`.
 
 `size` should be a power of 2; the IKBD driver uses `size = 128`
-(`KBBUFSZ = 64 WORD` = 128 bytes — comment in `fs.h:46`).
+(`KBBUFSZ = 64 WORD` = 128 bytes — comment in `bdos/fs.h:46`).
 
 ### `low` / `high` — flow control
 
@@ -61,7 +61,7 @@ extern IOREC ikbdiorec;     /* IKBD keyboard typeahead    */
 extern IOREC midiiorec;     /* MIDI in queue              */
 ```
 
-Definitions in `bios/kbd.c` and `bios/midi.c`. RS-232 IORECs (when
+Definitions in `bios/aciavecs.S:107,114`. RS-232 IORECs (when
 present) live in the per-port `bconmap_root.maptab[]` entries.
 
 `Iorec(devno)` returns `IOREC *` for the requested device:
@@ -118,7 +118,7 @@ r->head = r->tail = 0;
 - **`docs/api/xbios/_dispatcher.md`** — XBIOS function `0x0E Iorec`.
 - **`docs/api/bios/02-bconin.md`** — IKBD driver dequeues from
   `ikbdiorec`.
-- **EmuTOS source:** `bios/iorec.h` (struct), `bios/kbd.c`
+- **EmuTOS source:** `bios/iorec.h` (struct), `bios/aciavecs.S`
   (`ikbdiorec` definition + producer ISR), `bios/midi.c`,
   `bios/xbios.c:iorec` (table mapping devno → IOREC *).
 

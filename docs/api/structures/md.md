@@ -7,7 +7,7 @@
 > `bdos/iumem.c` (internal allocator: `ffit`, `freeit`, `shrinkit`),
 > `bdos/osmem.c` (MD meta-allocator: `xmgetmd`, `xmfremd`, `xmgetblk`).
 >
-> **Note (corrected):** there is **no `bdos/mem.c`** in this tree — only
+> **Note (corrected):** there is **no bdos/mem.c** in this tree — only
 > `bdos/mem.h`. The allocator body is `bdos/iumem.c`; the trap-level wrappers
 > are `bdos/umem.c`. There is no function named `mdalloc`. Earlier revisions
 > of this doc cited `bdos/mem.c:xmalloc`/`xmfree`/`mdalloc`; all were wrong.

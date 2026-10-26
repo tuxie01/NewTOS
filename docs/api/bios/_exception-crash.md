@@ -14,7 +14,7 @@
 
 **Installed handler / vector:** `bios/vectors.S:103` `_init_exc_vec` (called
 from `bios/bios.c:143`) points the 62 CPU vectors 2–63 at
-`deflt_vec_table` (`vectors.S:151`), one `bsr.s any_vec` per vector; the
+`deflt_vec_table` (`bios/vectors.S:151`), one `bsr.s any_vec` per vector; the
 `bsr` return address lets `any_vec` recompute the vector number.
 
 **Helpers called:**

@@ -8,7 +8,7 @@
 >
 > **Contract vs. reference** — the field layout and the mask/data/char/text
 > geometry are **contract**. Colour-icon planes (`CICON`) are gated behind
-> `CONF_WITH_COLOUR_ICONS` (default 1 in EmuTOS `1a7484ab`, `config.h:1267`).
+> `CONF_WITH_COLOUR_ICONS` (default 1 in EmuTOS `1a7484ab`, `include/config.h:1267`).
 
 ## Purpose
 

@@ -197,22 +197,22 @@ variable (no `0x4c2` physical address for native ports).
 
 ### `drvbits` is built from the SD MBR partitions
 
-`Drvmap` (`tos-api/src/bios/mod.rs:126-128`) returns `drive::drvbits()`
-(`tos-api/src/bios/drive.rs:145-155`), which OR's in bit `n` for every mounted
+`Drvmap` (`tos-api/src/bios/mod.rs:247-249`) returns `drive::drvbits()`
+(`tos-api/src/bios/drive.rs:143-153`), which OR's in bit `n` for every mounted
 partition slot. The table is filled once at boot by `drive::mount()`
-(`drive.rs:57-133`), which:
+(`tos-api/src/bios/drive.rs:55-131`), which:
 
 1. reads **sector 0** (the MBR) from the EMMC SD via `BlockDev::read_blocks`
-   (`drive.rs:62-65`);
+   (`tos-api/src/bios/drive.rs:60-63`);
 2. checks the `0x55AA` signature at offset 510;
 3. walks the 4 primary partition entries at `0x1BE` (16 bytes each,
-   `drive.rs:44-50,78-90`), assigning each non-empty, non-extended filesystem
+   `tos-api/src/bios/drive.rs:42-48,76-88`), assigning each non-empty, non-extended filesystem
    partition to the next drive letter from **C:** upward
-   (`FIRST_HD = 2`, `drive.rs:14-15,71`);
+   (`FIRST_HD = 2`, `tos-api/src/bios/drive.rs:12-13,69`);
 4. walks any extended partition's EBR chain, appending each logical volume
-   (`drive.rs:95-122`);
+   (`tos-api/src/bios/drive.rs:93-120`);
 5. if there is no valid MBR / no partitions, mounts the whole device as a single
-   **C:** volume (super-floppy fallback, `drive.rs:129-132`).
+   **C:** volume (super-floppy fallback, `tos-api/src/bios/drive.rs:127-130`).
 
 ### Concrete drive-letter mapping
 
@@ -224,7 +224,7 @@ partition slot. The table is filled once at boot by `drive::mount()`
 - **A:/B: (bits 0,1) are never set** — there is no floppy on the Pi, so the
   Atari A:+B: single-floppy convention does not apply. Hard-disk drives start at
   C: (bit 2), matching the Atari hard-disk convention.
-- MBR partition type is recorded (`Partition.kind`, `drive.rs:19-26,44-50`) but
+- MBR partition type is recorded (`Partition.kind`, `tos-api/src/bios/drive.rs:17-24,42-48`) but
   a slot is mounted regardless of FAT16 vs FAT32 type; whether it is *usable* is
   decided later by `Getbpb` (FAT32/exFAT ⇒ NULL, see `07-getbpb.md`). So a bit
   can be set for a partition that `Getbpb` will reject.
@@ -240,7 +240,7 @@ partition slot. The table is filled once at boot by `drive::mount()`
   above).
 - **`drvbits` is kernel-owned** — no `0x4c2` low-memory address; native callers
   reach it only through `Drvmap`.
-- **Bits 16..31 always 0** — `MAX_DRIVES = 16` (`drive.rs:13`).
+- **Bits 16..31 always 0** — `MAX_DRIVES = 16` (`tos-api/src/bios/drive.rs:11`).
 
 ### Gaps vs. the contract (Step-2 candidates)
 

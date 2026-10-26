@@ -120,7 +120,7 @@ slice of that information.
 - **Compendium:** "BPB" — agrees on layout and semantics.
 - **Profibuch:** "BIOS Parameter Block" — agrees.
 - **`docs/api/bios/07-getbpb.md`** (TBD) — returns `BPB *`.
-- **`docs/api/structures/dnd-dmd.md`** — DMD subsumes BPB and adds
+- **`docs/api/structures/dnd.md`** — DMD subsumes BPB and adds
   precomputed log/mask fields.
 - **EmuTOS source:** `bios/blkdev.c` (BPB construction from boot
   sector), `bdos/fsbuf.c` (cache parameterisation).

@@ -241,7 +241,7 @@ still reset `mousevec` to a no-op.
 - **What the mouse actually is.** A USB boot-protocol mouse enumerated on
   the xHCI controller. Its 3-byte report `[buttons, dx, dy]` is turned into
   an IKBD **relative-mouse packet** `[0xF8|wire, dx, dy]` by
-  `kernel/src/drivers/usb/hid.rs:106-112` and fed to
+  `kernel/src/drivers/usb/hid_decode.rs:139-145` and fed to
   `kernel/src/ikbd.rs::feed`, which swaps the buttons wire→VDI and calls
   `tos_api::vdi::feed_relative` (`ikbd.rs:98-104,116-122`). So the
   *relative* mode (`type == 1`) that EmuTOS arms with `Initmous(1, …)` is
@@ -263,7 +263,7 @@ still reset `mousevec` to a no-op.
   implemented. The mouse *works* (cursor moves) via the direct path; the
   `Initmous` *API contract* does not. Recorded as K-series below.
 - **Y direction.** The USB `+dy = down` convention is passed straight
-  through (`hid.rs:111`); `ikbd.rs`/`feed_relative` add the signed delta so
+  through (`kernel/src/drivers/usb/hid_decode.rs:143`); `ikbd.rs`/`feed_relative` add the signed delta so
   `+dy` increases `GCURY` (downward), matching the EmuTOS relative mode with
   `IN_YBOT`. See `docs/api/vdi/input/_mouse-packet.md` and `hid-mouse.md`.
 - **Datasheet.** No peripheral register; transport is the VL805 xHCI

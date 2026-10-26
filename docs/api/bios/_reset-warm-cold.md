@@ -68,20 +68,20 @@ Reihenfolge:
 
 ### 1.3 Was ein Warmstart uebersteht, was ein Kaltstart loescht
 
-Alles unter `_realmain` (`startup.S:335`) laeuft in beiden Faellen:
+Alles unter `_realmain` (`bios/startup.S:335`) laeuft in beiden Faellen:
 
-1. `startup.S:335-345` `move #0x2700,sr`; (nur TT-MMU) ACSI-DMA-Toggle `:347-348`.
+1. `bios/startup.S:335-345` `move #0x2700,sr`; (nur TT-MMU) ACSI-DMA-Toggle `:347-348`.
 2. VBR-Reset `:403-407`; `reset`-Befehl (Hardware-Reset) `:408-432`, die Befehle selbst `:424`/`:431`, nur
    `#if CONF_WITH_RESET && !MACHINE_AMIGA`. Default `CONF_WITH_RESET` = 1 fuer
    ROM, 0 bei `EMUTOS_LIVES_IN_RAM` oder ColdFire (`include/config.h:1195-1208`).
-3. Cartridge-Pruefung (`#if CONF_WITH_CARTRIDGE`, `startup.S:442-462`).
+3. Cartridge-Pruefung (`#if CONF_WITH_CARTRIDGE`, `bios/startup.S:442-462`).
 4. Caches aus (`:465-472`), MMU aus (`:475-495`).
-5. **Reset-Vektor-Pruefung** `resetvec:` (`startup.S:502-520`):
+5. **Reset-Vektor-Pruefung** `resetvec:` (`bios/startup.S:502-520`):
    `resvalid == 0x31415926` **und** `resvector != 0` **und** gerade
    (`btst #0`), dann `a6 = resetvec`, `jmp (resvector)`. Rueckkehr nach `a6`
    fuehrt wieder zur Pruefung — der Handler muss `resvalid` selbst loeschen,
    sonst Endlosschleife (Kommentar `:516-518`). Sonst `noreset:`.
-6. `jmp meminit` (`startup.S:527`) → `memchk` (`bios/memory.S:117`):
+6. `jmp meminit` (`bios/startup.S:527`) → `memchk` (`bios/memory.S:117`):
    * `#if !EMUTOS_LIVES_IN_RAM` (ROM-Bau): `memvalid == 0x752019f3` **und**
      `memval2 == 0x237698aa` **und** `memval3 == 0x5555aaaa`
      (`memory.S:125-140`); eine Abweichung → `memconf` (RAM neu vermessen,
@@ -94,7 +94,7 @@ Alles unter `_realmain` (`startup.S:335`) laeuft in beiden Faellen:
    * `#if CONF_DETECT_FIRST_BOOT_WITHOUT_MEMCONF` (`:174-184`): erster Boot
      auch ohne `memconf`, wenn `_warm_magic != 0x5741524D` („WARM_MAGIC").
      Default 0 fuer ROM, 1 fuer `EMUTOS_LIVES_IN_RAM`
-     (`config.h:1408-1420`).
+     (`include/config.h:1408-1420`).
 7. `stram_detected:` (`memory.S:553`):
    * **Erster Boot** (`MEMINIT_BIT_FIRST_BOOT`, `:559`): `bzero` des
      gesamten Sysvar-Bereichs `sysvars_start..sysvars_end` (`:567-569`),
@@ -104,7 +104,7 @@ Alles unter `_realmain` (`startup.S:335`) laeuft in beiden Faellen:
    * **Alle Boots** (`any_boot:` `memory.S:605`): BSS (`__bss..__ebss`) und
      `.low_stram`-Variablen werden geloescht (`:606-616`),
      `meminit_flags` ins BSS gerettet (`:619`).
-8. `jmp _biosmain` (`startup.S:535`).
+8. `jmp _biosmain` (`bios/startup.S:535`).
 
 Daraus [gelesen, aus 5-7]:
 
@@ -115,8 +115,8 @@ Daraus [gelesen, aus 5-7]:
 | `memvalid/2/3` | bleiben | neu gesetzt (`:577-586`) |
 | BSS / `.low_stram` | geloescht (`:606-616`) | geloescht |
 | Crash-Dump `$380..$3FF` | bleibt (liegt ausserhalb des bzero; `_boot-init.md` §2) | bleibt ebenfalls |
-| Reset-Vektor `resvalid==0x31415926` | **wird angesprungen**, falls gesetzt (`startup.S:502-519`) | nie (von `cold_reset` geloescht, `panicasm.S:115-116`) |
-| Benutzervektoren | nur die ersten 64 neu (`vectors.S:120-137`, „avoid overwriting crash dumps") | alle 192 (`init_user_vec(FIRST_BOOT)`, `bios.c:144`) |
+| Reset-Vektor `resvalid==0x31415926` | **wird angesprungen**, falls gesetzt (`bios/startup.S:502-519`) | nie (von `cold_reset` geloescht, `panicasm.S:115-116`) |
+| Benutzervektoren | nur die ersten 64 neu (`bios/vectors.S:120-137`, „avoid overwriting crash dumps") | alle 192 (`init_user_vec(FIRST_BOOT)`, `bios/bios.c:144`) |
 | `FIRST_BOOT`-Zweige in `bios.c` | uebersprungen: Speichertest (`:482`, `CONF_WITH_MEMORY_TEST`), Boot-Delay (`:492`), `bootdev` bleibt (`:798-799`), Willkommensbild/`initinfo` nur wenn `FIRST_BOOT` (`:806`) | ausgefuehrt |
 
 Der Reset-Vektor-Pfad (5) ist ein **Vertrag fuer residente Programme**
@@ -188,20 +188,20 @@ nicht aus dem EmuTOS-Quelltext; bei USB ist zudem offen, wann der Zustand
 
 ## 3. OSHEADER-Reset-Einsprung (`bios/startup.S:73-116`)
 
-Der Kopf (`_os_header`, `startup.S:77`) [gelesen]:
+Der Kopf (`_os_header`, `bios/startup.S:77`) [gelesen]:
 
 | Off | Label | Wert | Zeile |
 |---|---|---|---|
-| 0x00 | `os_entry` | `bra.s _main` | `startup.S:78-79` |
+| 0x00 | `os_entry` | `bra.s _main` | `bios/startup.S:78-79` |
 | 0x02 | `os_version` | `.dc.w TOS_VERSION` | `:80-81` |
 | 0x04 | `reseth` | `.dc.l _main` | `:82-83` |
 | 0x08 | `os_beg` | `.dc.l _os_header` | `:88-89` |
 | 0x0C | `os_end` | `.dc.l __endvdibss` | `:90-91` |
 | **0x10** | **`os_res1`** (typedef-Name `os_rsvl`, `biosdefs.h`) | **`.dc.l _main`** („reserved") | **`:92-93`** |
 | 0x14 | `os_magic` | `.dc.l _ui_mupb` | `:94-95` |
-| 0x18.. | `os_date` … `os_dummy` | s. `structures/osheader.md` | `:96-113` |
+| 0x18.. | `os_date` … `os_dummy` | s. `docs/api/structures/osheader.md` | `:96-113` |
 
-* `_main:` (`startup.S:115-116`) ist `bra.w _realmain`, „MUST be 4 bytes
+* `_main:` (`bios/startup.S:115-116`) ist `bra.w _realmain`, „MUST be 4 bytes
   long“ — Kommentar `:116` (Erweiterungskopf `OSXH` liegt
   dazwischen, s. Text vor `:_realmain`).
 * **Wer an `os_entry` (+0x00), `reseth` (+0x04) oder `os_res1` (+0x10)
@@ -212,16 +212,16 @@ Der Kopf (`_os_header`, `startup.S:77`) [gelesen]:
   `memvalid`/`memval2` (und `resvalid`/`resvector`) nullt, erzwingt den
   Kaltstart mit Sysvar-Loeschung (`memory.S:125-139` → `memconf`). Genau das
   tut TeraDesk (`sdk/apps/teradesk/main.c:2097-2100`) vor dem Sprung.
-* Die Kommentar-Aussage `startup.S:85-87` („os_end and os_res1 below are never
+* Die Kommentar-Aussage `bios/startup.S:85-87` („os_end and os_res1 below are never
   used“) betrifft nur den Fall, dass `os_magic` ungueltig ist; sie sagt
   nicht, dass der Wert 0 waere.
-* `swv_vec = os_header.reseth` (`bios.c:552`) nutzt denselben Einsprung fuer
+* `swv_vec = os_header.reseth` (`bios/bios.c:552`) nutzt denselben Einsprung fuer
   den Monitorwechsel (`screen.c:1329`): ein Aufruf von `(*swv_vec)()` ist ein
   Neustart [gelesen].
 
 **Berichtigung (Auftrag RST01/X04):** `docs/api/structures/osheader.md`
 §`os_rsvl` behauptete „EmuTOS sets `os_rsvl = 0`“. Das ist **falsch**:
-`startup.S:92-93` legt `_main` ab. Korrigiert; siehe dort.
+`bios/startup.S:92-93` legt `_main` ab. Korrigiert; siehe dort.
 `docs/api/bios/_boot-init.md:191` hatte die Zeile schon richtig.
 
 ## 4. CONF-Gating fuer das Falcon/TOS4-Profil (`make 512`, `TARGET_512`)
@@ -232,12 +232,12 @@ Definition im Quelltext [gelesen]:
 
 | Schalter | `TARGET_512` | Wirkung hier | Beleg |
 |---|---|---|---|
-| `EMUTOS_LIVES_IN_RAM` | 0 (nur `TARGET_PRG/FLOPPY/..` setzen 1) | ROM-Bau: `memchk` prueft die Magics wirklich (`memory.S:119-140`) | `config.h:36-40` |
-| `CONF_WITH_RESET` | 1 | `reset`-Befehl in `_realmain` | `config.h:1195-1208`; `_emutos-config.md:586` |
-| `CONF_DETECT_FIRST_BOOT_WITHOUT_MEMCONF` | 0 | `_warm_magic` wird **nicht** ausgewertet/geloescht; warm/kalt allein ueber `memvalid*` | `config.h:1408-1420`; `_emutos-config.md:621` |
-| `CONF_WITH_CARTRIDGE` | 1 | Modulport-Pruefung vor dem Reset-Vektor (`startup.S:442-462`) | `config.h:1013-1023`; `_emutos-config.md:561` |
+| `EMUTOS_LIVES_IN_RAM` | 0 (nur `TARGET_PRG/FLOPPY/..` setzen 1) | ROM-Bau: `memchk` prueft die Magics wirklich (`memory.S:119-140`) | `include/config.h:36-40` |
+| `CONF_WITH_RESET` | 1 | `reset`-Befehl in `_realmain` | `include/config.h:1195-1208`; `_emutos-config.md:586` |
+| `CONF_DETECT_FIRST_BOOT_WITHOUT_MEMCONF` | 0 | `_warm_magic` wird **nicht** ausgewertet/geloescht; warm/kalt allein ueber `memvalid*` | `include/config.h:1408-1420`; `_emutos-config.md:621` |
+| `CONF_WITH_CARTRIDGE` | 1 | Modulport-Pruefung vor dem Reset-Vektor (`bios/startup.S:442-462`) | `include/config.h:1013-1023`; `_emutos-config.md:561` |
 | `CONF_ATARI_HARDWARE` | (Atari) | waehlt den `cold_reset`-Zweig `panicasm.S:131-135` (Sprung ueber `0x004`) | `panicasm.S:131` |
-| `CONF_WITH_MEMORY_TEST` | siehe Tabelle | Speichertest nur bei `FIRST_BOOT` (`bios.c:478-487`) | `bios.c:478` |
+| `CONF_WITH_MEMORY_TEST` | siehe Tabelle | Speichertest nur bei `FIRST_BOOT` (`bios/bios.c:478-487`) | `bios/bios.c:478` |
 | `CONF_WITH_IKBD_ACIA` | 1 | 6850-ACIA; fuer NewTOS UART-IKBD, kein ACIA (`_emutos-config.md:575`) | `ikbd.c:1064-1070` |
 
 [Schluss] Fuer NewTOS entfallen `reset`-Befehl, Cartridge, ACIA, `memconf`
@@ -256,7 +256,7 @@ OSHEADER-Einsprung (3), `memvalid*`/`resvalid`/`resvector`-Konvention (1.3).
   Seite-0-Kopie schreibt (TeraDesk: `resvalid = 0` …), erreicht den Kern
   nicht; der Kern muss einen Neustart ueber **eigene** Zustaende fuehren.
 * TeraDesk-Zugriffe `memval`, `memval2`, `resvector`, `resvalid`
-  (`main.c:57-60`) sind als `long`/Zeiger-Schreibzugriffe auf LP64 **8 Byte**
+  (`sdk/apps/teradesk/main.c:57-60`) sind als `long`/Zeiger-Schreibzugriffe auf LP64 **8 Byte**
   breit [gelesen: Makros; Breite Schluss aus LP64-`long`]: `memval`@0x420
   ueberdeckt 0x424..0x427, `resvector`@0x42A ueberdeckt 0x42E..0x431
   (= `phystop` der Prozesskopie), `memval2`@0x43A ueberdeckt 0x43E..0x441.

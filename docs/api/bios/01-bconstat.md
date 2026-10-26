@@ -19,7 +19,7 @@
 **Headers / type definitions used:**
 - `include/tosvars.h` — `bconstat_vec[8]`, `bconin_vec` etc.
 - `bios/bios.h` — `boot_status`, `CHARDEV_AVAILABLE` (`0x10`)
-- `bios/bconmap.h` — `bconmap_root`, `BCONMAP_START_HANDLE` (when
+- `bios/serport.h` — `bconmap_root`, `BCONMAP_START_HANDLE` (when
   `BCONMAP_AVAILABLE`)
 
 **System variables / globals read:**
@@ -293,7 +293,7 @@ decided, documented profile until `TASK/IO01.md`.
   reads the console RX ring, which is fed by the USB-HID keyboard decoder
   (`ikbd.rs:139` → `console::push_rx`). Per `HARDWARE-PROFILE.md` §3.2 the
   console must not depend on the PL011 UART — but today the **same ring is
-  also filled from UART0** (`console.rs:91-107`), so `Bconstat(2)` currently
+  also filled from UART0** (cite stale 2026-10-26: console.rs:91-107, UART0 RX feeding the console ring), so `Bconstat(2)` currently
   reports ready for UART bytes too. Recorded as K1 (Step-2).
 - **AUX (handle 1).** In this spec's table handle 1 is `bconstat1`
   (RS-232). NewTOS `chardev.rs` treats handle 1 as an **absent/dummy** input

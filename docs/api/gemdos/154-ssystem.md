@@ -240,7 +240,7 @@ and `os_res1` (+0x10) hold. EmuTOS stores `_main` — the full restart — in bo
 fields (`bios/startup.S:82-83,92-93`); a program that jumps there restarts the
 machine (`docs/api/bios/_reset-warm-cold.md` §3). An EL0 program cannot do that
 itself, so the stub asks the kernel. A program reaches it by jumping through
-the OSHEADER field (TeraDesk's "Reboot", `main.c:2096,2118`), not by number.
+the OSHEADER field (TeraDesk's "Reboot", `sdk/apps/teradesk/main.c:2096,2118`), not by number.
 
 Warm or cold follows EmuTOS `memchk` (`bios/memory.S:125-140`): warm while
 `memvalid`/`memval2`/`memval3` in the caller's page 0 still hold their magics,

@@ -232,7 +232,7 @@ plan — see D-045.
 > `0x2c` unavailable return) is **unchanged**. See `HARDWARE-PROFILE.md` §3.2.
 
 **Peripheral / driver.** The Pi has exactly **one** TOS-visible serial port —
-**PL011 UART0** (`bcm2711/pl011.rs`), used as the AUX/debug channel. There is
+**PL011 UART0** (`kernel/src/drivers/bcm2711/pl011.rs`), used as the AUX/debug channel. There is
 **no** SCC and **no** second MFP, so `BCONMAP_AVAILABLE = (CONF_WITH_SCC ||
 CONF_WITH_TT_MFP)` is **false** on the NewTOS-Pi profile
 (`HARDWARE-PROFILE.md` §4 — both off).

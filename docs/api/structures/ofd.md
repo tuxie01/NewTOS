@@ -177,9 +177,9 @@ the cluster-walk cost across multiple small reads.
   system internals chapter.
 - **Profibuch:** "FCB" / "OFD" — agrees, including the 64-byte
   budget.
-- **`docs/api/structures/dnd-dmd.md`** — DND/DMD link in via
+- **`docs/api/structures/dnd.md`** — DND/DMD link in via
   `o_dnode`/`o_dmd`.
-- **`docs/api/gemdos/file/Fopen.md`** (TBD) — allocates an OFD.
+- **`docs/api/gemdos/file/3d-fopen.md`** — allocates an OFD.
 - **EmuTOS source:** `bdos/fsmain.c:fopen, fclose`,
   `bdos/fsio.c:rwfd`, `bdos/fsfat.c:nextcl`.
 

@@ -189,7 +189,7 @@ typically 54 MHz, but the code never assumes it).
 
 | Rate | Value | How NewTOS models it |
 |------|------:|----------------------|
-| `Tickcal` (GEMDOS/AES tick period) | **20 ms** (50 Hz) | constant (`mod.rs:41`) |
+| `Tickcal` (GEMDOS/AES tick period) | **20 ms** (50 Hz) | constant (`tos-api/src/bios/mod.rs:77`) |
 | `_hz_200` (200 Hz free-running counter) | 5 ms/tick | **materialised** — a real 200 Hz interrupt (ARM generic timer, EL1 physical timer, PPI INTID 30) increments the counter and mirrors it into the running process's `$4BA` (`kernel/src/drivers/timer.rs`, `tos-api/src/bios/tick.rs`) |
 | Frame clock (`Vsync`, ~60 Hz) | `CNTPCT*60/CNTFRQ` | `host_env.rs:191-206` |
 | Millisecond clock (AES `evnt_timer`) | `CNTPCT*1000/CNTFRQ` | `host_env.rs:168-189` |

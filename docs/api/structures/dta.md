@@ -121,8 +121,8 @@ buffers and manual `Fsetdta` calls).
 - **Compendium:** "DTA" — agrees on visible layout.
 - **Profibuch:** "Die DTA" — agrees, same caveat about reserved bytes.
 - **`docs/api/structures/basepage.md`** — `p_xdta` field at 0x20.
-- **`docs/api/gemdos/file/Fsetdta.md`** (TBD) — sets the pointer.
-- **`docs/api/gemdos/file/Fsfirst.md`** (TBD) — initialises the DTA.
+- **`docs/api/gemdos/dta/1a-fsetdta.md`** — sets the pointer.
+- **`docs/api/gemdos/file/4e-fsfirst.md`** — initialises the DTA.
 - **EmuTOS source:** `bdos/fsdir.c` — search state encoding in
   `d_reserved`.
 

@@ -429,7 +429,7 @@ failed). Return values and error codes are unchanged; `RW_NORETRIES` /
 `part.start_lba + sector` and range-checks `sector + numb <= part.count`
 (`bios/mod.rs:75-95`). `part.start_lba`/`part.count` come from the MBR parse in
 `bios/drive.rs` (see `0a-drvmap.md`). Drives are numbered A:=0, B:=1, C:=2, …;
-the SD partitions are assigned from **C:** upward (`drive.rs:14-15,71`).
+the SD partitions are assigned from **C:** upward (`tos-api/src/bios/drive.rs:12-13,69`).
 
 ### Flag-bit effects on the Pi
 

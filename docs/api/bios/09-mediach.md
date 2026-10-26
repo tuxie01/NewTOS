@@ -269,7 +269,7 @@ it is a **divergence from the contract** — flagged below.
 - ~~**Invalid-drive `EUNDEV` not returned.**~~ **[Resolved (finding S1) —
   `mediach` validates `drv` via `drive::resolve` and returns `EUNDEV` (-15) for
   an out-of-range / unmounted drive, `0` only for a valid one
-  (`mod.rs:159-173`, matching `blkdev.c:789-790`). This was the one observable
+  (`tos-api/src/bios/mod.rs:237-243`, matching `blkdev.c:789-790`). This was the one observable
   deviation; it no longer diverges.]**
 - **No `forcechange` after a sector-0 write** (see above; ties to `04-rwabs.md`
   and `07-getbpb.md`'s missing media-state reset).

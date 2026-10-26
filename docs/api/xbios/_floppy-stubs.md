@@ -145,7 +145,7 @@ returns it immediately, so detection is honest.
 
 Per-function spec required at PHASE-04 implementation time. Will
 be promoted out of this group spec into its own
-`docs/api/xbios/12-protobt.md` once PHASE-04 starts.
+docs/api/xbios/12-protobt.md once PHASE-04 starts.
 
 ## Dependencies
 

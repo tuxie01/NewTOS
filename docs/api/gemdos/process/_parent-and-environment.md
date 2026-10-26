@@ -17,8 +17,8 @@
 > started, i.e. the *whole chain* a program can walk (depth and the
 > readable content of each PD on it); the content of the block `p_env`
 > (0x2C) names; that the PD `p_parent` names is a readable basepage.
-> mintlib tells a desk accessory by `p_parent == 0` (`startup/crt0.S:52-56`),
-> `getppid` falls back to `p_parent>>8` (`unix/getppid.c:22`).
+> mintlib tells a desk accessory by `p_parent == 0` (`sdk/libc/mintlib/startup/crt0.S:52-56`),
+> `getppid` falls back to `p_parent>>8` (`sdk/libc/mintlib/unix/getppid.c:22`).
 > **Reference:** where the stand-in PDs live, how they are published, the
 > saved-register area (`p_dreg`/`p_areg`), the `p_curdir[]` index bytes.
 > Labels: **(read)** = stated by the cited code; **(inferred)** = reasoned
@@ -261,7 +261,7 @@ running process copies the `kernel_run()` stand-in's environment.
   (12 bytes each, own blocks readable by EL0).
 * `shel_envrn` still searches the **AES PD's** `p_env` (`ad_envrn`,
   `aes/gemstart.S:78-97`, `aes/gemshlib.c:338-347`), gemlib's `mt_shel_envrn`
-  steps over the NUL after `PATH=` (`a_shel_envrn.c:40-50`).
+  steps over the NUL after `PATH=` (`sdk/gemlib/gemlib-0.44.0/a_shel_envrn.c:40-50`).
 
 ### 4.3 What a program sees (observable)
 
@@ -350,7 +350,7 @@ of kernel-context allocations are unchanged.
    as this file said; the child's `p_parent` is that PD
    (`bdos/proc.c:541`, `_run-ownership-curdir.md` §2.2). NewTOS writes `run`
    too since TASK/PROC03 B5 (§4.4; until then the accessory's own PD).
-5. mintlib's accessory test (`startup/crt0.S:46-62`): `a0->p_parent == 0`;
+5. mintlib's accessory test (`sdk/libc/mintlib/startup/crt0.S:46-62`): `a0->p_parent == 0`;
    `sdk/libc/newtos-arch/heap_init.c` and `sdk/crt0.S` use that test.
 
 ## Related
