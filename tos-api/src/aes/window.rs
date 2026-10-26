@@ -4234,6 +4234,29 @@ pub(super) fn opcode_takes_lock(opcode: i16, pb: &Aespb) -> bool {
     }
 }
 
+/// A window opcode ([`opcode_takes_lock`]) that parked for the lock and is now
+/// re-executed **refuses** — another process deleted, opened or closed the
+/// window while it waited — yet the lock was handed to it on the way out of
+/// the wait (`unsync`'s `sy_owner = p->e_pd; sy_tas = 1;`,
+/// `aes/gemflag.c:121-122`). In EmuTOS the woken process has made its checks
+/// before the wait (`aes/gemwmlib.c:1415-1422,1443-1450,1632-1638`), is the
+/// holder, and its body ends with its own `wm_update(END_UPDATE)`. The
+/// re-executed call here collects the hand-over and ends it the same way, so
+/// the lock goes on to the next waiter instead of staying with the caller
+/// (A118 rework, Tester `measurements/measurement-2026-10-25-a118-test`).
+///
+/// Only a hand-over that made the caller the recorded holder is ended: one
+/// [`drain_update_lock`] granted without a count is merely collected.
+pub(super) fn end_unused_grant() {
+    let me = rlr();
+    if !UPDATE_GRANTED.get(me).is_some_and(|g| g.swap(false, Ordering::Relaxed)) {
+        return;
+    }
+    if UPDATE_LOCK.load(Ordering::Relaxed) > 0 && same_holder(UPDATE_OWNER.load(Ordering::Relaxed), me) {
+        unsync(me);
+    }
+}
+
 /// `wind_update` (107) — window-tree screen lock (BEG/END_UPDATE) and mouse-
 /// control-ownership transfer (BEG/END_MCTRL).
 ///

@@ -882,6 +882,11 @@ fn crysbind(pb: &Aespb) -> Option<crate::bdos::process::sched::Switch> {
         if let Some(sw) = window::update_block() {
             return Some(sw);
         }
+    } else if matches!(opcode, 101 | 102 | 103 | 105) {
+        // The window opcodes' predicate depends on the window table: a call
+        // that parked for the lock may be refused when it is re-executed,
+        // with the lock already handed to it (A118 rework).
+        window::end_unused_grant();
     }
 
     match opcode {

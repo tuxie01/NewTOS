@@ -1291,6 +1291,22 @@ trap from its EL1 context (`kernel/src/shell_loop.rs` `fm_error`), so the
 dispatcher's gate can park it like any client (ACC03 kernel park, the `svc`
 re-executed). Receipts: `tos-api/tests/aes_a118_lock_takers.rs`.
 
+**A refusal after the wait (A118 rework, 2026-10-26).** EmuTOS makes the
+window checks of `wm_open`/`wm_close`/`wm_set` *before* `wm_update(
+BEG_UPDATE)`; a process woken from that wait is the holder (`unsync`,
+`aes/gemflag.c:121-122`) and ends its hold with its own `END_UPDATE`. NewTOS
+re-executes the parked call from its `svc`, so the checks run again — and
+when the holder has meanwhile deleted, opened or closed the window, the
+re-executed call refuses (`FALSE`). It then still collects the lock it was
+handed and ends it (`window::end_unused_grant`), so the lock goes on to the
+next waiter exactly as after the caller's own `END_UPDATE`; it does not stay
+with the caller (found by the Tester,
+`measurements/measurement-2026-10-25-a118-test/RUNINFO.TXT`). Named
+difference: EmuTOS would run the body on the window as it found it before the
+wait (e.g. `wm_open` on a slot another process has since freed); NewTOS
+answers with the refusal the current table gives. The lock outcome is the
+same.
+
 Two places where NewTOS's shape differs from EmuTOS's, named:
 
 * **The file selector waits before it draws.** `fs_input` draws the dialog

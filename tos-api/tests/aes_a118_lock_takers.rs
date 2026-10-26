@@ -1110,3 +1110,203 @@ fn the_button_quick_check_is_the_mouse_owners_only() {
     host.push(Packet { dx: 0, dy: 0, buttons: 0 });
     graf_mkstate(&mut pk);
 }
+
+// ── 8. a hand-over to a call that is refused on re-execution (Tester, A118 rework) ──
+//
+// The three cases are the Tester's (`measurements/measurement-2026-10-25-a118-test/method/tester/
+// aes_tester_extra-appended-tests.rs.txt`): B parks on a window call, the holder changes the window
+// so that B's re-executed call is refused, and ends its hold. EmuTOS has made its checks before the
+// wait (`aes/gemwmlib.c:1415-1422,1443-1450,1632-1638`); the woken process is the holder
+// (`unsync`, `aes/gemflag.c:117-124`) and ends its hold with its own `END_UPDATE`. The lock must
+// not stay with B.
+
+#[test]
+fn t_wind_set_parked_then_window_deleted_does_not_leak_lock() {
+    let (_g, _host) = lock();
+    let mut p = pair();
+    p.b.run();
+    let h = wind_create(&mut p.pbb);
+    p.a_holds();
+    let o = wind_set(&mut p.pbb, h, WF_NAME);
+    p.assert_parked(&o, "wind_set");
+    p.a.run();
+    assert_eq!(wind_delete(&mut p.pa, h).ret, Some(1));
+    assert_eq!(wind_update(&mut p.pa, END_UPDATE).ret, Some(1));
+    p.b.run();
+    let r = p.pbb.trap();
+    assert_eq!(r.ret, Some(0), "the deleted window: FALSE");
+    assert_eq!(test_update_lock(), (0, None), "lock leaked to B after refusal on re-execution");
+}
+
+#[test]
+fn t_wind_open_parked_then_window_opened_by_other_does_not_leak_lock() {
+    let (_g, _host) = lock();
+    let mut p = pair();
+    p.b.run();
+    let h = wind_create(&mut p.pbb);
+    p.a_holds();
+    let o = wind_open(&mut p.pbb, h);
+    p.assert_parked(&o, "wind_open");
+    p.a.run();
+    assert_eq!(wind_open(&mut p.pa, h).ret, Some(1)); // A's own hold nests
+    assert_eq!(wind_update(&mut p.pa, END_UPDATE).ret, Some(1));
+    p.b.run();
+    let r = p.pbb.trap();
+    assert_eq!(r.ret, Some(0), "already open: FALSE");
+    assert_eq!(test_update_lock(), (0, None), "lock leaked to B after refusal on re-execution");
+    assert_eq!(wind_delete(&mut p.pbb, h).ret, Some(1));
+}
+
+#[test]
+fn t_wind_close_parked_then_window_closed_by_other_does_not_leak_lock() {
+    let (_g, _host) = lock();
+    let mut p = pair();
+    p.b.run();
+    let h = wind_create(&mut p.pbb);
+    assert_eq!(wind_open(&mut p.pbb, h).ret, Some(1));
+    p.a_holds();
+    let o = wind_close(&mut p.pbb, h);
+    p.assert_parked(&o, "wind_close");
+    p.a.run();
+    assert_eq!(wind_close(&mut p.pa, h).ret, Some(1));
+    assert_eq!(wind_update(&mut p.pa, END_UPDATE).ret, Some(1));
+    p.b.run();
+    let r = p.pbb.trap();
+    assert_eq!(r.ret, Some(0), "not open any more: FALSE");
+    assert_eq!(test_update_lock(), (0, None), "lock leaked to B after refusal on re-execution");
+    assert_eq!(wind_delete(&mut p.pbb, h).ret, Some(1));
+}
+
+/// The refused re-execution hands the lock on to the next waiter, as B's own `END_UPDATE` would.
+#[test]
+fn a_refused_re_execution_hands_the_lock_to_the_next_waiter() {
+    let (_g, _host) = lock();
+    let mut p = pair();
+    let c = Proc::new(true); // a second accessory, waiting behind B
+    let mut pc = Aespb::new();
+    c.run();
+    appl_init(&mut pc);
+    sched::unready(c.slot); // not runnable until it asks for the lock below
+    p.b.run();
+    let h = wind_create(&mut p.pbb);
+    p.a_holds();
+    let o = wind_set(&mut p.pbb, h, WF_NAME);
+    p.assert_parked(&o, "wind_set");
+    c.run();
+    assert_eq!(wind_update(&mut pc, BEG_UPDATE).ret, None, "C waits behind A and B");
+    p.a.run();
+    assert_eq!(wind_delete(&mut p.pa, h).ret, Some(1));
+    assert_eq!(wind_update(&mut p.pa, END_UPDATE).ret, Some(1));
+    p.b.run();
+    assert_eq!(p.pbb.trap().ret, Some(0));
+    assert_eq!(test_update_lock(), (1, Some(c.slot)), "B's refused call passes the lock on to C");
+    c.run();
+    assert_eq!(pc.trap().ret, Some(1));
+    assert_eq!(wind_update(&mut pc, END_UPDATE).ret, Some(1));
+    assert_eq!(test_update_lock(), (0, None));
+}
+
+// ── 9. the brackets nest in the caller's own hold (each taker takes, not only releases) ──
+
+/// Inside its own `BEG_UPDATE` every taker's `wm_update` pair nests (`tak_flag`, `sy_owner ==
+/// rlr`) and leaves the count where it was: a body that only ended the lock would drop it to 0.
+#[test]
+fn every_taker_nests_inside_the_callers_own_hold() {
+    let (_g, _host) = lock();
+    let mut p = pair();
+    p.b.run();
+    let h = wind_create(&mut p.pbb);
+    assert_eq!(wind_update(&mut p.pbb, BEG_UPDATE).ret, Some(1));
+    let held = (1, Some(p.b.slot));
+    assert_eq!(wind_open(&mut p.pbb, h).ret, Some(1));
+    assert_eq!(test_update_lock(), held, "wind_open");
+    assert_eq!(wind_set(&mut p.pbb, h, WF_NAME).ret, Some(1));
+    assert_eq!(test_update_lock(), held, "wind_set");
+    assert_eq!(wind_close(&mut p.pbb, h).ret, Some(1));
+    assert_eq!(test_update_lock(), held, "wind_close");
+    assert_eq!(wind_open(&mut p.pbb, h).ret, Some(1));
+    assert_eq!(wind_delete(&mut p.pbb, h).ret, Some(1));
+    assert_eq!(test_update_lock(), held, "wind_delete of an open window");
+    p.pbb.intin.fill(0);
+    p.pbb.intin[0] = 300;
+    p.pbb.intin[1] = 280;
+    p.pbb.intin[2] = 10;
+    p.pbb.intin[3] = 10;
+    assert_eq!(p.pbb.call(GRAF_RUBBOX, 4, 3, 0).ret, Some(1));
+    assert_eq!(test_update_lock(), held, "graf_rubberbox");
+    p.pbb.intin.fill(0);
+    p.pbb.intin[0] = 40;
+    p.pbb.intin[1] = 30;
+    p.pbb.intin[2] = 300;
+    p.pbb.intin[3] = 280;
+    p.pbb.intin[6] = SCREEN_W as i16;
+    p.pbb.intin[7] = SCREEN_H as i16;
+    assert_eq!(p.pbb.call(GRAF_DRAGBOX, 8, 3, 0).ret, Some(1));
+    assert_eq!(test_update_lock(), held, "graf_dragbox");
+    assert_eq!(wind_update(&mut p.pbb, END_UPDATE).ret, Some(1));
+    assert_eq!(test_update_lock(), (0, None));
+}
+
+// ── 10. a parked rectangle wait is completed only for the mouse owner ──────
+
+const EVNT_MOUSE: i16 = 22;
+const MU_M1: i16 = 0x0004;
+/// A rectangle right of the parked pointer (320, 300).
+const RECT: (i16, i16, i16, i16) = (380, 290, 20, 20);
+
+/// The accessory parks a rectangle wait (pointer outside), the desktop owns the mouse and moves it
+/// into the rectangle, the accessory's wait is re-executed: only `post_mouse(gl_mowner, …)`
+/// completes a parked wait (`aes/geminput.c:390,446-456`), so it must stay parked.
+fn parked_rect_wait_of_a_non_owner(call: impl Fn(&mut Aespb) -> Outcome) {
+    let (_g, host) = lock();
+    let a = Proc::new(true);
+    let b = Proc::new(false);
+    let (mut pa, mut pbb) = (Aespb::new(), Aespb::new());
+    a.run();
+    appl_init(&mut pa);
+    b.run();
+    appl_init(&mut pbb);
+    b.ready();
+    a.run();
+    let o = call(&mut pa);
+    assert_eq!(o.ret, None, "pointer outside: the wait parks");
+    assert_eq!(o.switch_to, Some(b.slot));
+
+    b.run();
+    move_to(host, &mut pbb, RECT.0 + 5, RECT.1 + 5, 0);
+    b.ready();
+    a.run();
+    let r = pa.trap();
+    assert_eq!(
+        r.ret, None,
+        "the accessory does not own the mouse: its parked rectangle wait is not completed (rlr == gl_mowner)"
+    );
+    assert_eq!(r.switch_to, Some(b.slot));
+    drop(a);
+    drop(b);
+    kernel_context();
+    let mut pk = Aespb::new();
+    move_to(host, &mut pk, 320, 300, 0);
+}
+
+#[test]
+fn evnt_multi_parked_rectangle_is_the_mouse_owners_only() {
+    parked_rect_wait_of_a_non_owner(|pa| {
+        pa.intin.fill(0);
+        pa.intin[0] = MU_M1;
+        pa.intin[4] = 0; // enter
+        (pa.intin[5], pa.intin[6], pa.intin[7], pa.intin[8]) = RECT;
+        pa.addrin.fill(0);
+        pa.call(EVNT_MULTI, 16, 7, 1)
+    });
+}
+
+#[test]
+fn evnt_mouse_parked_rectangle_is_the_mouse_owners_only() {
+    parked_rect_wait_of_a_non_owner(|pa| {
+        pa.intin.fill(0);
+        pa.intin[0] = 0; // enter
+        (pa.intin[1], pa.intin[2], pa.intin[3], pa.intin[4]) = RECT;
+        pa.call(EVNT_MOUSE, 5, 5, 0)
+    });
+}
