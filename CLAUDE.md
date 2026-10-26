@@ -58,7 +58,7 @@ Companion documents (read in this order at session start):
 **Precedence when these disagree:** ADR (`docs/MEMORY.md`) > `CLAUDE.md` >
 `docs/STATUS.md` > memory (the auto-memory and session notes). A memory that
 contradicts an ADR is wrong and gets fixed; an ADR changes only by a new or
-amended ADR. `docs/archive/` ranks nowhere — it is history.
+amended ADR. `docs/archive/` and dated snapshots rank nowhere — they are history.
 
 ---
 
@@ -263,6 +263,10 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
 - **`docs/archive/` is history, never evidence.** Archived text records what
   was believed or done at the time; cite code, measurement runs, the oracle
   or a live doc instead.
+- **Dated snapshots (`docs/**/<topic>-YYYY-MM-DD.md`) are the same:
+  historical, not authoritative.** They record an analysis as of its date.
+  Undated docs (`docs/analysis/ORACLE.md`, `docs/api/`, …) are live and must
+  stay correct.
 - **Scratch** (temporary images, scratch kernels, probes) goes to
   `$CLAUDE_JOB_DIR/tmp` or the session scratchpad, never the repo or shared `/tmp`.
 - Built `kernel8.img` for the card is not kept in the root; build with
