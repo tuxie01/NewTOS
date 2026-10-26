@@ -140,16 +140,49 @@ pub fn fsetdta(args: &TrapArgs) -> Long {
 /// a high-half kernel VA that a `Long` return cannot carry — that caller keeps
 /// its own pointer and never reads it back (see [`KERNEL_DTA`]).
 ///
-/// A program's DTA leaves as a user pointer and is checked to be below
-/// `0x8000_0000` in a debug build (TASK/MEM11,
-/// [`crate::bdos::process::usermem::debug_assert_user_ptr`]); the kernel
-/// caller's is a kernel VA and is not.
+/// A program's DTA is checked in a debug build only while it is still the
+/// one the kernel gave it ([`debug_assert_fgetdta`], TASK/MEM11); the kernel
+/// caller's is a kernel VA and is not checked at all.
 pub fn fgetdta(args: &TrapArgs) -> Long {
     let (dta, space) = cur_dta_in(args.space);
     if space == Space::User {
-        crate::bdos::process::usermem::debug_assert_user_ptr("Fgetdta", dta);
+        let pd = crate::bdos::process::current() as u64;
+        if pd != 0 {
+            debug_assert_fgetdta(pd, dta);
+        }
     }
     dta as Long
+}
+
+/// The DTA a process starts with, as its 32-bit `p_xdta` holds it: the
+/// address of its own `p_cmdlin` (EmuTOS `bdos/proc.c:375`, NewTOS
+/// `loader` and `standin`), for the PD pointer `pd` (the basepage's user
+/// address, [`crate::bdos::process::pd_of`]).
+pub fn default_dta(pd: u64) -> u64 {
+    let cmdlin = core::mem::offset_of!(tos_types::BasePage, p_cmdlin) as u64;
+    pd.wrapping_add(cmdlin) as u32 as u64
+}
+
+/// Debug-build check on the `Fgetdta` result `dta` of the process whose PD
+/// pointer is `pd` (TASK/MEM11): a debug assertion checks a **kernel**
+/// invariant, never user input.
+///
+/// * `dta` is the kernel-provided default ([`default_dta`]): the basepage
+///   lies in memory the kernel handed out, so `&p_cmdlin` must be a user
+///   pointer below `0x8000_0000`
+///   ([`crate::bdos::process::usermem::debug_assert_user_ptr`]). Checked on
+///   the full `pd + 0x80`, not on the 32 bits `p_xdta` keeps of it.
+/// * any other `dta` was set by the program with `Fsetdta`, which takes any
+///   address (EmuTOS `xsetdta`, `bdos/fsmain.c:403-405`). It is returned as
+///   is, also at or above `0x8000_0000`; a DTA the program cannot write ends
+///   it at the next `Fsfirst`/`Fsnext` (a user-access fault,
+///   [`crate::uaccess`]), as the bus error does on EmuTOS.
+#[track_caller]
+pub fn debug_assert_fgetdta(pd: u64, dta: u64) {
+    if dta == default_dta(pd) {
+        let cmdlin = core::mem::offset_of!(tos_types::BasePage, p_cmdlin) as u64;
+        crate::bdos::process::usermem::debug_assert_user_ptr("Fgetdta", pd.wrapping_add(cmdlin));
+    }
 }
 
 /// Expand a `name.ext` pattern (with `*`/`?`) into the 11-byte FAT

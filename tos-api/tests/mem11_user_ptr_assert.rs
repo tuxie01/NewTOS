@@ -9,10 +9,17 @@
 //! (EmuTOS `xmxalloc`, `references/emutos/bdos/umem.c:247-276`) and the `0`
 //! failure answer are not pointers to it. The `should_panic` cases are
 //! `debug_assertions`-only: a release build compiles the check away.
+//!
+//! A debug assertion checks a kernel invariant, never user input (user
+//! decision 2026-10-26): `Fgetdta` checks only the DTA the kernel gave the
+//! process (`&p_cmdlin`, EmuTOS `bdos/proc.c:375`), never one the program
+//! set with `Fsetdta`, which takes any address (EmuTOS `xsetdta`,
+//! `bdos/fsmain.c:403-405`).
 
 use std::sync::{Mutex, MutexGuard, Once};
 
 use tos_api::bdos::mem::stats::{pool_stats, PoolKind};
+use tos_api::bdos::fs::find::{debug_assert_fgetdta, default_dta};
 use tos_api::bdos::process::usermem::{debug_assert_user_ptr, USER_PTR_END};
 use tos_api::bdos::process::{self, PROCESS_TABLE};
 use tos_api::trap::TrapArgs;
@@ -134,10 +141,78 @@ fn a_program_dta_below_2_gib_passes() {
     assert_eq!(fgetdta(Space::User), 0x0040_0080);
 }
 
+/// A program may `Fsetdta` any address: one at or above 2 GiB comes back
+/// from `Fgetdta` as the same 32 bits (a negative `LONG`, as EmuTOS's
+/// `return run->p_xdta`), without the debug check firing.
+#[test]
+fn a_program_set_dta_at_or_above_2_gib_round_trips() {
+    let _g = lock();
+    let p = Proc::new(0, 0);
+    let pd = process::pd_of(p.slot) as u64;
+    for want in [0x8000_0000u32, 0xDEAD_0000, 0xFFFF_FFF0] {
+        assert_ne!(default_dta(pd), want as u64, "test address collides with the default DTA");
+        tos_api::bdos::fs::find::fsetdta(&args(0x1A, [want as u64, 0], Space::User));
+        assert_eq!(fgetdta(Space::User), want as Long, "{want:#x}");
+    }
+}
+
+/// The default DTA is `&p_cmdlin` of the PD, as the 32-bit `p_xdta` holds it.
+#[test]
+fn the_default_dta_is_p_cmdlin() {
+    assert_eq!(default_dta(0x0040_0000), 0x0040_0080);
+    assert_eq!(default_dta(0x7FFF_FF80), 0x8000_0000);
+    assert_eq!(default_dta(0x1_0040_0000), 0x0040_0080, "the 32 bits p_xdta keeps");
+}
+
+#[test]
+fn a_kernel_given_dta_below_2_gib_passes() {
+    debug_assert_fgetdta(0x0040_0000, 0x0040_0080);
+    debug_assert_fgetdta(0x7FFF_FE00, 0x7FFF_FE80);
+}
+
+/// The kernel gave the process a basepage whose `p_cmdlin` sits at 2 GiB:
+/// a broken kernel invariant, which the debug build reports.
 #[test]
 #[cfg_attr(debug_assertions, should_panic(expected = "Fgetdta: user pointer 0x80000000"))]
-fn a_program_dta_at_2_gib_fires() {
+fn a_kernel_given_dta_at_2_gib_fires() {
+    debug_assert_fgetdta(0x7FFF_FF80, 0x8000_0000);
+}
+
+/// The check is on the full `pd + 0x80`, not on the 32 bits `p_xdta` keeps:
+/// a basepage above 4 GiB whose truncated `&p_cmdlin` looks low still fires.
+#[test]
+#[cfg_attr(debug_assertions, should_panic(expected = "Fgetdta: user pointer 0x100400080"))]
+fn a_kernel_given_dta_above_4_gib_fires_on_the_full_address() {
+    debug_assert_fgetdta(0x1_0040_0000, 0x0040_0080);
+}
+
+/// A program-set DTA is user input: at or above 2 GiB it passes, also next
+/// to a basepage whose default would fire.
+#[test]
+fn a_program_set_dta_never_fires() {
+    debug_assert_fgetdta(0x0040_0000, 0x8000_0000);
+    debug_assert_fgetdta(0x0040_0000, 0xDEAD_0000);
+    debug_assert_fgetdta(0x7FFF_FF80, 0xDEAD_0000);
+}
+
+/// Through the trap entry: the default DTA of a running process is checked.
+/// On the host the test basepage is heap memory; whether its `&p_cmdlin`
+/// is below 2 GiB decides the expected outcome.
+#[test]
+fn the_trap_entry_checks_the_default_dta() {
     let _g = lock();
-    let _p = Proc::new(0, 0x8000_0000);
-    fgetdta(Space::User);
+    let p = Proc::new(0, 0);
+    let pd = process::pd_of(p.slot) as u64;
+    let dflt = default_dta(pd);
+    // SAFETY: `p.bp` is the test's own 256-byte basepage box.
+    unsafe { (*p.bp).p_xdta = dflt as u32 as Long };
+    let r = std::panic::catch_unwind(|| fgetdta(Space::User));
+    let fires = cfg!(debug_assertions) && pd + 0x80 >= USER_PTR_END;
+    match r {
+        Ok(v) => {
+            assert!(!fires, "expected the debug check to fire for pd {pd:#x}");
+            assert_eq!(v, dflt as u32 as Long);
+        }
+        Err(_) => assert!(fires, "unexpected panic for pd {pd:#x}"),
+    }
 }

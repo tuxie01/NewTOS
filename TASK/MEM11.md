@@ -1,6 +1,6 @@
 # MEM11 — Anwenderadressen < 2 GiB nur zufaellig: die Abbildungsgrenze erlaubt 4 GiB
 
-Status: **OFFEN** (Debug-Pruefung erledigt 2026-10-26, Erzwingung offen) · Prioritaet: **P2** · Typ: Kernfehler (Vertragsgrenze nicht erzwungen) — Anwenderbefund 2026-10-26
+Status: **OFFEN** (Debug-Pruefung erledigt 2026-10-26, auf Kerninvarianten eingegrenzt 2026-10-26, Erzwingung offen) · Prioritaet: **P2** · Typ: Kernfehler (Vertragsgrenze nicht erzwungen) — Anwenderbefund 2026-10-26
 
 Prioritaet P2 wie die uebrigen Defekte der Reihe (MEM01–MEM05): der Vertrag
 ist verletzbar, aber heute fuehrt kein gefundener Weg tatsaechlich eine
@@ -84,8 +84,8 @@ Nur die Pruefung, nicht die Erzwingung — die bleibt offen (Arbeit 1-3):
   0x8000_0000` in `tos-api/src/bdos/process/usermem.rs:57-74`; angewandt in
   `tos-api/src/gemdos/memory.rs` (`pointer_result`, `:116-121`, gerufen aus
   `mxalloc` `:74` und `malloc` `:94`, `:106`) und in
-  `tos-api/src/bdos/fs/find.rs:148-153` (`fgetdta`, nur `Space::User` — die
-  DTA des Kern-Aufrufers ist eine Kern-VA). Ausgenommen: die `-1`-Abfrage von
+  `tos-api/src/bdos/fs/find.rs` (`fgetdta`, eingegrenzt, siehe den
+  naechsten Abschnitt). Ausgenommen: die `-1`-Abfrage von
   `Malloc`/`Mxalloc` (Groesse, kein Zeiger); `0` (Fehlschlag) besteht.
   Release-Bauten uebersetzen die Pruefung weg.
 - [x] Hosttests: `tos-api/tests/mem11_user_ptr_assert.rs` (Grenzfall
@@ -93,9 +93,78 @@ Nur die Pruefung, nicht die Erzwingung — die bleibt offen (Arbeit 1-3):
   und echte Bloecke ueber die Trap-Eintraege; `Fgetdta` mit `p_xdta` unter /
   auf 2 GiB) und `tos-api/src/gemdos/memory.rs` `mod tests` (die
   `-1`-Ausnahme mit einem Groessenwert >= 2 GiB).
-- Hinweis: `Fsetdta` nimmt die DTA des Programms ungeprueft an; ein Programm,
-  das eine DTA >= `0x8000_0000` setzt, loest die Pruefung beim naechsten
-  `Fgetdta` im Debug-Bau aus (Kernpanik nur im Debug-Bau).
+
+## Debug-Pruefungen nur fuer Kerninvarianten (2026-10-26)
+
+Anwenderentscheidung 2026-10-26: *"Debug asserts check kernel invariants,
+never user input."* Die erste Fassung pruefte jedes `Fgetdta`-Ergebnis eines
+Programms. `Fsetdta` nimmt aber jede Adresse an (EmuTOS `xsetdta`,
+`bdos/fsmain.c:403-405`: `run->p_xdta = addr`, keine Pruefung), also konnte
+ein Programm mit `Fsetdta(0xDEAD0000)` + `Fgetdta` einen Debug-Kern anhalten.
+Gemessen (Debug-Kern von `844a9872`, raspi4b):
+`[PANIC] Fgetdta: user pointer 0xdead0000 >= 0x8000_0000 would read as a
+negative LONG (MEM11) at tos-api/src/bdos/fs/find.rs:150:9`.
+
+Was jetzt geprueft wird:
+
+| Ergebnis | Herkunft | Debug-Pruefung |
+|---|---|---|
+| `Malloc`/`Mxalloc`-Block | Kern (Pool) | ja, unveraendert (`tos-api/src/gemdos/memory.rs`, `pointer_result`) |
+| `Fgetdta` = Vorgabe-DTA `&p_cmdlin` | Kern (Lader/`standin` setzen `p_xdta`, EmuTOS `bdos/proc.c:375`) | ja, auf der vollen Adresse `pd + 0x80` |
+| `Fgetdta` = per `Fsetdta` gesetzte DTA | Programm | nein — Rueckgabe derselben 32 Bit wie EmuTOS `xgetdta` (`bdos/fsmain.c:394-397`) |
+
+Unterscheidung ohne neuen Zustand: `p_xdta` ist genau dann die Vorgabe, wenn
+es gleich `(pd + 0x80)` in 32 Bit ist, `pd` = `process::current()` (die
+Anwenderadresse der Basepage). `default_dta(pd)` und
+`debug_assert_fgetdta(pd, dta)` in `tos-api/src/bdos/fs/find.rs`. Setzt ein
+Programm seine DTA selbst auf `&p_cmdlin`, wird diese Kernadresse geprueft —
+richtig, sie stammt vom Kern.
+
+## Fall: `Fsetdta(unabgebildet)` + `Fsfirst` — Programm endet, Kern lebt
+
+EmuTOS (Stand `1a7484ab`): `xsfirst` schreibt als Erstes in die DTA
+(`bdos/fsdir.c:528-531`, `dt->dt_offset_drive = -1L`), im Supervisor-Modus.
+Auf unabgebildetem Speicher ist das ein Busfehler im Trap: `any_vec`
+(`bios/vectors.S:152-153`) → `dopanic` (`bios/kprint.c:302`, Bericht, Taste)
+→ `kill_program` = `Pterm(-1)` des Aufrufers (`bios/kprint.c:587-594`,
+`bios/panicasm.S:96-99`). Das Programm bekommt keinen Fehlercode, es wird
+beendet; der Elternprozess sieht `0xFFFF`.
+
+NewTOS (unveraendert, schon so seit ARCH03 3a): `fsfirst` schreibt die DTA
+ueber `uaccess` (`sttr`, `put_state`/`makbuf` in
+`tos-api/src/bdos/fs/find.rs`); der Fehlzugriff wird ueber die Fixup-Tabelle
+abgefangen (`tos-api/src/uaccess.rs`), der Syscall-Schluss beendet den
+Aufrufer mit Absturzbericht und `Pterm(-1)`
+(`kernel/src/arch/aarch64/exceptions.rs`, `complete_call_tail` →
+`uaccess_fault_tail`). Keine Kernpanik, auch im Debug-Bau.
+
+Testfall: `sdk/examples/uakid.c` Fall `D` (neu, neben dem bisherigen `d`):
+`Fsetdta(0xDEAD0000)`, `Fgetdta` muss dieselben 32 Bit liefern (sonst
+Ende mit 4), dann `Fsfirst("C:\*.*")`; im Standardfallsatz von
+`sdk/examples/uacc3a.c` (Plattenfall). Hosttests:
+`tos-api/tests/mem11_user_ptr_assert.rs` (Programm-DTA >= 2 GiB kommt
+unveraendert zurueck ohne Ausloesen; Vorgabe-DTA auf 2 GiB und Basepage ueber
+4 GiB loesen aus). Der Fehlzugriff selbst ist nicht hosttestbar (auf dem Host
+gibt es keine Fixup-Behandlung, `tos-api/src/uaccess.rs` Modulnotiz).
+
+Lauf 2026-10-26, Debug-Kerne (`cargo xtask build --board rpi4`, Dev-Profil,
+`debug_assertions` an) mit IKBD-Injektor (`tools/inject-arm.py`
+`launch:UACC3A`, Leertaste beantwortet den Absturzbericht), QEMU raspi4b
+`-append serial=on`, privates 64-MiB-Abbild mit `#Z 01 C:\UACC3A.NAP@`,
+Faelle `dD.`:
+
+- vorher (`844a9872`): `d` → `0xFFFF` OK; `D` → Kernpanik in `Fgetdta`
+  (siehe oben), Maschine steht.
+- nachher: `d` → `0xFFFF` OK; `D`: "UAKID: Fgetdta returned the DTA set",
+  Busfehler `far=0xdead0000` im `Fsfirst`, Taste, `Pterm(-1)` →
+  `0xFFFF` OK; `.` → 0; "UACC3A: PASS"; danach `[desk] desktop up`.
+
+Offen aus dieser Durchsicht (nicht geaendert, Entscheidung beim Lead): NewTOS
+schreibt die DTA in `Fsfirst` erst **nach** der Pfadaufloesung, EmuTOS davor
+(`bdos/fsdir.c:531`). Mit einer schlechten DTA und einem Pfad, dessen
+Laufwerk/Verzeichnis nicht existiert, beendet EmuTOS das Programm, NewTOS
+liefert `EPTHNF`. Ebenso antwortet NewTOS auf eine DTA `0` mit `EFILNF`
+ohne Schreibversuch, EmuTOS hat diese Abfrage nicht.
 
 ## Arbeit
 

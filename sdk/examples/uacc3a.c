@@ -16,9 +16,9 @@
 #include <newtos.h>
 
 #ifndef UACC3A_CASES
-#define UACC3A_CASES "congwrWdftksmbPTKAIGFVCMEX."
+#define UACC3A_CASES "congwrWdDftksmbPTKAIGFVCMEX."
 #endif
-static const char disk_cases[] = "rWdftb";
+static const char disk_cases[] = "rWdDftb";
 
 static NLONG Pexec(short mode, const char *path, const char *tail, const char *env)
 {

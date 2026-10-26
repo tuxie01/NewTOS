@@ -18,6 +18,7 @@
  *   r  Fread(file, 16, BAD)            [disk]    T  Protobt(BAD, 0x01000000, 2, 0)
  *   W  Fwrite(new file, 16, BAD)       [disk]    K  Keytbl(BAD, -1, -1)
  *   d  Fsetdta(BAD) + Fsfirst("C:\*.*") [disk]   b  Rwabs(0, BAD, 1, 0, C:, 0) [disk]
+ *   D  Fsetdta(BAD) + Fgetdta + Fsfirst("C:\*.*") [disk] (TASK/MEM11)
  *   f  Dfree(BAD, 0)                   [disk]
  *   t  Fdatime(BAD, file, 0)           [disk]
  *
@@ -144,6 +145,20 @@ int main(void)
         break;
     case 'd':
         G(0x1A, BAD, 0, 0);
+        G(0x4E, "C:\\*.*", 0x37, 0);
+        break;
+    case 'D':
+        /* TASK/MEM11: BAD is >= 0x80000000. Fgetdta must hand the program's
+         * own DTA back -- the same 32 bits, as EmuTOS `return run->p_xdta`
+         * (bdos/fsmain.c:396) -- and a debug kernel must not trip its
+         * pointer check on it (user input, not a kernel invariant). Only
+         * Fsfirst's write to the DTA ends the program (bus error). */
+        G(0x1A, BAD, 0, 0);
+        if ((unsigned int)G(0x2F, 0, 0, 0) != (unsigned int)BAD) {
+            Cconws("UAKID: Fgetdta did not return the DTA set -- FAIL\r\n");
+            return 4;
+        }
+        Cconws("UAKID: Fgetdta returned the DTA set\r\n");
         G(0x4E, "C:\\*.*", 0x37, 0);
         break;
     case 'f': G(0x36, BAD, 0, 0); break;
