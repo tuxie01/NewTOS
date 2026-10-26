@@ -55,6 +55,11 @@ Companion documents (read in this order at session start):
 - `phases/` — phase-by-phase implementation guidelines (PHASE-00 …
   PHASE-16; finished phases are history)
 
+**Precedence when these disagree:** ADR (`docs/MEMORY.md`) > `CLAUDE.md` >
+`docs/STATUS.md` > memory (the auto-memory and session notes). A memory that
+contradicts an ADR is wrong and gets fixed; an ADR changes only by a new or
+amended ADR. `docs/archive/` ranks nowhere — it is history.
+
 ---
 
 ## CRITICAL RULES — read before every task
@@ -271,7 +276,12 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   `Fopen` → `pub fn fopen(...)`. Trap dispatch table maps function-IDs to these.
 - **TOS error codes**: `pub const E_OK: i32 = 0; pub const EFILNF: i32 = -33;` etc.
   Defined in `tos-types::error`. Match Compendium values exactly.
-- **Hardware registers**: `BCM2711_<PERIPHERAL>_<REGISTER>` in `kernel::drivers::bcm2711`.
+- **Hardware registers**: one module per peripheral in `kernel::drivers::bcm2711`;
+  inside it the base address is `<PERIPHERAL>_BASE` (`UART0_BASE`,
+  `EMMC2_BASE`, `MBOX_BASE`), registers carry their datasheet name without
+  prefix (`CMDTM`, `GPFSEL1`, `MBOX0_READ`), bit fields are `<REG>_<FIELD>`
+  (`FR_TXFF`, `CR_UARTEN`). `pm.rs` predates this and keeps its
+  `BCM2711_PM_*` names; no renames.
 - **Trap numbers**: named, not magic numbers — the dispatcher decodes them into
   `TrapClass` (`Gemdos` = 1, `Gem` = 2, `Bios` = 13, `Xbios` = 14) in
   `tos-api/src/trap.rs`.
