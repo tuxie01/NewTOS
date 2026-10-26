@@ -97,6 +97,12 @@ fi
 
 set -euo pipefail
 
+# The table's row order comes from sort/comm/join, whose collation follows the
+# locale: under de_DE.UTF-8 `_` sorts differently from the C locale, which
+# moved CONF_WITH_TTRAM and CONF_WITH_ST_MMU. Pinned, so the table is the same
+# on every machine and shell.
+export LC_ALL=C
+
 die() { echo "emutos-config.sh: $*" >&2; exit 1; }
 warn() { echo "emutos-config.sh: WARNING: $*" >&2; }
 
