@@ -23,8 +23,8 @@ Evidence for everything below: `measurements/measurement-2026-10-26-oracle/RUNIN
 | Hatari config | `tools/oracle/hatari.cfg`, sha256 `c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46`: only result-relevant settings, no paths (§2) |
 
 All of these live in **one** file, `tools/oracle/oracle.env`, read by
-`tools/oracle/build-emutos.sh`, `tools/hatari-oracle.sh`, `tools/hatari-qed.sh`
-and `tosdump/Makefile`. Nothing is taken from `$PATH`; `/opt/cross-mint` is
+`tools/oracle/build-emutos.sh`, `tools/hatari-oracle.sh`, `tools/hatari-qed.sh`,
+`tools/emutos-config.sh` and `tosdump/Makefile`. Nothing is taken from `$PATH`; `/opt/cross-mint` is
 not on it.
 
 ## 2. Machine profiles (`tools/hatari-oracle.sh`)

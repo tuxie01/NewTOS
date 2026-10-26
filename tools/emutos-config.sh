@@ -58,7 +58,8 @@
 #   Defaults to docs/api/_emutos-config.md relative to the repo root.
 #
 # Requires: a working m68k-atari-mint-gcc (default
-# /opt/cross-mint/bin/m68k-atari-mint-gcc, override with EMUTOS_CC).
+# ${ORACLE_CROSS_MINT}gcc from tools/oracle/oracle.env, the oracle's one
+# shared configuration; override with EMUTOS_CC).
 
 
 # --------------------------------------------------------------------
@@ -102,7 +103,9 @@ warn() { echo "emutos-config.sh: WARNING: $*" >&2; }
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 EMUTOS_DIR="$REPO_ROOT/references/emutos"
-EMUTOS_CC="${EMUTOS_CC:-/opt/cross-mint/bin/m68k-atari-mint-gcc}"
+# shellcheck source=oracle/oracle.env
+. "$SCRIPT_DIR/oracle/oracle.env"
+EMUTOS_CC="${EMUTOS_CC:-${ORACLE_CROSS_MINT}gcc}"
 OUT_FILE="${1:-$REPO_ROOT/docs/api/_emutos-config.md}"
 GEN_DATE="${EMUTOS_CONFIG_GEN_DATE:-2026-09-24}"
 
@@ -113,6 +116,8 @@ command -v "$EMUTOS_CC" >/dev/null 2>&1 || die "preprocessor not found: $EMUTOS_
 
 EMUTOS_COMMIT="$(git -C "$EMUTOS_DIR" rev-parse HEAD)" || die "could not read the pinned tree's commit hash"
 EMUTOS_COMMIT_SHORT="${EMUTOS_COMMIT:0:8}"
+[ "$EMUTOS_COMMIT" = "$ORACLE_EMUTOS_COMMIT" ] ||
+    warn "references/emutos is at $EMUTOS_COMMIT_SHORT, the oracle is pinned to ${ORACLE_EMUTOS_COMMIT:0:8} (tools/oracle/oracle.env)"
 
 # Non-fatal: tell the reader if the pinned tree has local changes beyond
 # the harmless .DS_Store, since that would mean the table reflects
