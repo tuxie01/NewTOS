@@ -29,7 +29,7 @@ Pfadkürzel: `LDG` = `Applications/ldg-src/ldg` (SVN r133, gitignoriert, per `cu
 |---|---|---|
 | §3 (Mechanismus, Original) | Ablauf `ldg_open` → `ldg_load` → `Pexec 5/3/4` | **gilt**, unten in Abschnitt 2 neu mit `file:line` belegt (inkl. Korrekturen) |
 | §3.4/3.5 (TSR optional, `NOT_SHARED`) | | gilt (Abschnitt 6) |
-| §4.1 Zeile „Pexec(3) lädt nicht in den Aufrufer“ | per-Prozess-Adressraum, PD opak | **obsolet**: ADR-025, VA = PA, PD ist die echte Basepage-Adresse (`NT/pexec.rs:80-85`, `LoadedChild.handle`) |
+| §4.1 Zeile „Pexec(3) lädt nicht in den Aufrufer“ | per-Prozess-Adressraum, PD opak | **obsolet**: ADR-025 (now ADR-028), VA = PA, PD ist die echte Basepage-Adresse (`NT/pexec.rs:80-85`, `LoadedChild.handle`) |
 | §4.1 „Pexec(5)/(6)/(7) nicht implementiert“ | `EINVFN` | **obsolet**: implementiert (`NT/pexec.rs:171-195`) |
 | §4.1 „ELF64 `ET_EXEC` fest gelinkt, keine Relokation“ | | **obsolet**: nur `ET_DYN`, `ET_EXEC` wird abgelehnt (`NT/elf.rs:455-456`), Relokation im Kernel (`NT/loader.rs:579-587`, `NT/reloc.rs`) |
 | §4.1 „Fenster-Adressen werden nie wiederverwendet“ (L5) | 28-MiB-Lebenszeitbudget | **obsolet**: es gibt kein Fenster mehr (PLAN Z. 62 „keine Fenstererschöpfung mehr“) |
