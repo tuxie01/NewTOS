@@ -2914,10 +2914,11 @@ Evidence, checked 2026-10-26:
 - **Q2 — The C-callable function group of D10 (`tos-linea.h`):** drop it, or
   keep it as a later option? Dropped, ADR-Line-A-01 (its C ABI) is moot and
   closes with this ADR; kept, ADR-Line-A-01 stays open.
-- **Q3 — The two EmuDESK readers:** under ADR-022 (1:1) NEWDESK should
-  restore the `do_xyfix` nudge and, if `show_file` is ever built, the
-  mouse-button page wait. Through the VDI values above, or through the block
-  of Q1? (Follows from Q1.)
+- **Q3 — The two EmuDESK readers — answered 2026-10-26 (user):** NEWDESK
+  uses the VDI values. Under ADR-022 (1:1) it restores the `do_xyfix` nudge
+  and, if `show_file` is ever built, the mouse-button page wait, reading the
+  horizontal resolution and the button state through the VDI (above), not
+  through a LINEA block. Independent of Q1.
 
 ### Rationale
 
@@ -2938,7 +2939,8 @@ Evidence, checked 2026-10-26:
 - Negative: a source port that calls `linea0()` and friends fails at link
   time; one that reads `__aline` without calling `linea0()` gets null. The
   failure is recorded (`sdk/libc/expected-failures.txt:21`), not hidden.
-- Negative: NEWDESK's two EmuDESK deviations stay until Q3 is answered.
+- NEWDESK's two EmuDESK deviations get closed through VDI values (Q3); this
+  needs a desktop ticket.
 - To do once accepted: correct `docs/api/_line-a.md` (source paths, the AES
   claim, the implementation strategy); add an entry to `docs/COMPATIBILITY.md`
   (absent Line-A trap; the block per Q1); close or keep the STATUS row
