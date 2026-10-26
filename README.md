@@ -30,14 +30,14 @@ down to the pixel.
 ## Try it / report a bug
 
 1. Download the latest release ZIP from the
-   [Releases](../../releases) page and read its `LIESMICH.TXT`.
+   [Releases](https://github.com/tuxie01/NewTOS/releases) page and read its `LIESMICH.TXT`.
 2. The SD card needs an **MBR** partition table and a first partition with
    **FAT16, at most 2 GB** (FAT32 and exFAT are not supported yet). Further
    FAT16 partitions (primary or logical) become drives `D:` … `P:`.
 3. Copy the contents of the ZIP's `KARTE` folder onto that partition and boot.
 
 Found something that behaves differently from a real Atari, a crash, or a
-hang? **[Open an issue](../../issues/new/choose)** — the bug form asks for
+hang? **[Open an issue](https://github.com/tuxie01/NewTOS/issues/new/choose)** — the bug form asks for
 what we need. A photo of the crash report helps a lot.
 
 ## What runs
@@ -118,7 +118,9 @@ cargo xtask run --board rpi4 --release --window
 ```
 
 [`tools/make-sd-image.sh`](tools/make-sd-image.sh) builds a test SD image for
-QEMU with the desktop, the ported applications and test programs.
+QEMU with the desktop, the ported applications and test programs; every one
+of them has to be built first, otherwise the script stops and names the build
+command (order: [`docs/sdk/06-image-and-testing.md`](docs/sdk/06-image-and-testing.md)).
 
 On a real Pi 4: put `kernel8.img`, the Raspberry Pi firmware (`start4.elf`,
 `fixup4.dat`, `bcm2711-rpi-4-b.dtb`) and [`boot/rpi4/config.txt`](boot/rpi4/config.txt)

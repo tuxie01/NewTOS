@@ -90,7 +90,8 @@ sdk/apps/build-teradesk.sh                         # DESKTOP.NAP + dist/
 sdk/apps/build-coremark.sh                         # CORE.NCP, COREVAL.NCP
 sdk/apps/build-hypview.sh                          # HYP_VIEW.NAP + hyp_view.rsc (newtos-cc, SDK01 H)
 
-# put everything on an SD image and boot it in QEMU
+# put everything on an SD image and boot it in QEMU; the script stops with an
+# error if a program it installs is not built (order: 06-image-and-testing.md)
 tools/make-sd-image.sh /tmp/sd.img 64
 cargo xtask run --board rpi4 --sd /tmp/sd.img       # add --window to see the screen
 ```
@@ -100,7 +101,7 @@ The rule that governs every port: **upstream sources are kept unchanged**
 edited inside them. A problem that every 64-bit (LP64) port would meet is
 fixed **once in the SDK** — the libc overlays `sdk/libc/overlay/`, the
 AArch64 files `sdk/libc/newtos-arch/`, headers, `crt0`, and the library
-overlays `sdk/{gemlib,cflib,ldg,libshare,libjpeg,libexif,windom}/overlay/` (OpenLibm needs none: `sdk/libm/include/` holds header adapters, `build-libm.sh` supports an `overlay/` directory that does not exist).
+overlays `sdk/{gemlib,cflib,ldg,libshare,libjpeg,libexif,windom}/overlay/` (OpenLibm needs none: `sdk/libm/include/` holds header adapters, `build-libm.sh` supports an overlay/ directory that does not exist).
 What **only one program** needs is a **per-program patch file** in
 `sdk/overlays/<program>/` (zView: `sdk/zview/overlay/`), layered over the
 upstream tree at build time and carrying a header that says why. Such patches

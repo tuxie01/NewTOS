@@ -7,8 +7,7 @@
 # `tos-api/src/bios/drive.rs` (`entry()` reads the 16-byte records at 0x1BE;
 # type 0x06 = FAT16). The partition is populated with a handful of sample
 # files and folders so the desktop shows a `C:` drive with content — including
-# the ported GEM editor QED under `C:\Apps\QED\` (double-click to launch), if
-# its LP64 build is present.
+# the ported GEM editor QED under `C:\Apps\QED\` (double-click to launch).
 #
 # macOS only (uses hdiutil / diskutil / newfs_msdos). Runs without sudo — the
 # raw disk image is attached as a user-owned device.
@@ -20,12 +19,73 @@
 #
 # Re-run this after a reboot / power outage wiped /tmp.
 #
+# Every program listed below is MANDATORY (user decision 2026-10-26): a
+# missing one ends the script with a non-zero status, naming the file and the
+# command that builds it, before the image is touched. It used to print a
+# `note:` and build the card without it -- which is how a boot test once ran
+# without MXPROBE.NCP and never reached the TASK/MEM11 debug assertions. The
+# build order of the prerequisites is in docs/sdk/06-image-and-testing.md.
+#
 set -euo pipefail
 
 IMG="${1:-/tmp/sd.img}"
 SIZE_MB="${2:-64}"
 VOL="NEWTOS"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# The prebuilt programs (and their data files) the image carries, each with
+# the command that produces it, run from the repository root. Checked all at
+# once, so one run lists everything that is missing. The freestanding
+# sdk/examples/*.c programs are not in this list: the script builds them
+# itself (`build_example` below) and stops if that fails.
+REQUIRED=(
+  "sdk/libc/build/argvtest.NAP|sdk/libc/build-libc.sh sdk/examples/argvtest.c sdk/libc/build/argvtest.NAP"
+  "sdk/libc/build/libtest.NCP|sdk/libc/build-libc.sh"
+  "sdk/libc/build/clocktest.NCP|sdk/libc/build-libc.sh sdk/libc/tests/clocktest.c"
+  "sdk/libc/build/setjmptst.NCP|sdk/libc/build-libc.sh sdk/examples/setjmptst.c sdk/libc/build/setjmptst.NCP"
+  "sdk/libc/build/MXPROBE.NCP|sdk/libc/build-libc.sh sdk/libc/tests/mxprobe.c sdk/libc/build/MXPROBE.NCP"
+  "sdk/libm/build/mathtst.NCP|sdk/libm/build-libm.sh"
+  "sdk/ldg/build/EX_LIB.NLD|sdk/ldg/build-ldg-demo.sh"
+  "sdk/ldg/build/LDGTEST.NCP|sdk/ldg/build-ldg-demo.sh"
+  "sdk/zview/build/dist/ZVIEW/ZVIEW.NAP|sdk/zview/build-zview.sh"
+  "sdk/apps/coremark/build/CORE.NCP|sdk/apps/build-coremark.sh"
+  "sdk/apps/coremark/build/COREVAL.NCP|sdk/apps/build-coremark.sh"
+  "tosdump/build/DUMPVDI.NAP|make -C tosdump dumpvdi-newtos"
+  "tosdump/cases/vdi-r2.tsv|(tracked file -- restore it from git)"
+  "tosdump/build/VDIDRAW.NAP|tosdump/build-vdidraw-newtos.sh"
+  "sdk/apps/qed/build/QED.NAP|sdk/apps/build-qed.sh"
+  "sdk/apps/qed/build/qed.rsc|sdk/apps/build-qed.sh"
+  "sdk/apps/teradesk/build/dist/DESKTOP.NAP|sdk/apps/build-teradesk.sh"
+  "sdk/apps/teradesk/build/dist/desktop.rsc|sdk/apps/build-teradesk.sh"
+  "sdk/apps/teradesk/build/dist/icons.rsc|sdk/apps/build-teradesk.sh"
+  "sdk/apps/present/build/PRESENT.NAP|sdk/apps/present/build-present.sh"
+  "sdk/apps/present/build/TEST.PNG|sdk/apps/present/build-present.sh"
+  "sdk/apps/present/sample/SLIDES.TXT|(tracked file -- restore it from git)"
+)
+missing=0
+for entry in "${REQUIRED[@]}"; do
+  file="${entry%%|*}"
+  if [ ! -f "$ROOT/$file" ]; then
+    echo "error: $file is missing -- build it with: ${entry#*|}" >&2
+    missing=$((missing + 1))
+  fi
+done
+if [ "$missing" -ne 0 ]; then
+  echo "error: $missing required file(s) missing; no image written (build order: docs/sdk/06-image-and-testing.md)" >&2
+  exit 1
+fi
+
+# Build one freestanding example sdk/examples/<src> with sdk/build.sh into
+# <out>. A failure prints the compiler output and ends the script.
+build_example() {
+  local src="$1" out="$2" log
+  if ! log=$("$ROOT/sdk/build.sh" "$ROOT/sdk/examples/$src" "$out" 2>&1); then
+    printf '%s\n' "$log" | sed 's/^/    /' >&2
+    echo "error: sdk/build.sh sdk/examples/$src failed (clang/lld missing?); no image written" >&2
+    exit 1
+  fi
+}
 
 echo "Creating ${IMG} (${SIZE_MB} MiB, MBR + FAT16, volume ${VOL})…"
 rm -f "$IMG"
@@ -37,7 +97,9 @@ DEV=$(hdiutil attach -imagekey diskimage-class=CRawDiskImage -nomount "$IMG" \
         | head -1 | awk '{print $1}')
 echo "attached ${DEV}"
 cleanup() { hdiutil detach "$DEV" >/dev/null 2>&1 || true; }
-trap cleanup EXIT
+# On any failure from here on, also delete the half-written image, so that
+# nothing (e.g. `cargo xtask run`, which defaults to /tmp/sd.img) boots it.
+trap 'rc=$?; cleanup; [ "$rc" -eq 0 ] || rm -f "$IMG"' EXIT
 
 # One MBR FAT16 partition spanning the whole disk, mounted at /Volumes/$VOL.
 #
@@ -99,32 +161,27 @@ mkdir -p "$V/AUTO"; printf 'AUTO runs native console (.NCP) programs at boot, be
 # It used to be copied into \AUTO\ as well, as the end-to-end launch proof.
 # That copy is gone (user decision 2026-09-30, TASK/T13): the launch path has
 # been proven many times over since, and every boot paid for a banner nobody
-# reads. \AUTO\ is therefore EMPTY by default now -- \AUTO\READ.ME above still
-# says what the folder is for, and the SD_*_AUTO switches below still fill it
-# on request.
+# reads. Since 2026-10-26 \AUTO\ holds exactly one program by default,
+# MXPROBE.NCP (see its block below), so that every boot of this image runs
+# Malloc/Mxalloc through the trap path and reaches the TASK/MEM11 debug
+# assertions; \AUTO\READ.ME above still says what the folder is for, and the
+# SD_*_AUTO switches below add more on request.
 python3 "$SCRIPT_DIR/mk-hello-ncp.py" "$V/HELLO.NCP"
 
 # Native C SDK Stage 1: HELLO2.NCP is the *clang-built* console program (the
 # SDK end-to-end proof), compiled from sdk/examples/hello.c + sdk/crt0.S and
 # linked with sdk/newtos.ld into a NewTOS-native ELF. Placed on C: so it is
-# double-clickable and runnable via run_program(b"C:\\HELLO2.NCP"). Skipped
-# (with a note) if the clang/lld toolchain is unavailable on this host.
-if "$SCRIPT_DIR/../sdk/build.sh" "$SCRIPT_DIR/../sdk/examples/hello.c" "$V/HELLO2.NCP" >/dev/null 2>&1; then
-  echo "built + installed C:\\HELLO2.NCP (clang-built native C program)"
-else
-  echo "note: sdk/build.sh unavailable (no clang/lld?); C:\\HELLO2.NCP skipped"
-fi
+# double-clickable and runnable via run_program(b"C:\\HELLO2.NCP").
+build_example hello.c "$V/HELLO2.NCP"
+echo "built + installed C:\\HELLO2.NCP (clang-built native C program)"
 
 # BIG.NCP is the multi-page-TPA proof: a clang-built program larger than a
 # single 4-KiB page (8-KiB initialized table + 32-KiB BSS + deep-recursion
 # stack + an in-TPA heap). The loader hands it a pool-backed multi-MiB TPA
 # and frees it at Pterm; run it via run_program(b"C:\\BIG.NCP") to see its
 # computed results on the console.
-if "$SCRIPT_DIR/../sdk/build.sh" "$SCRIPT_DIR/../sdk/examples/big.c" "$V/BIG.NCP" >/dev/null 2>&1; then
-  echo "built + installed C:\\BIG.NCP (clang-built multi-page-TPA program)"
-else
-  echo "note: sdk/build.sh unavailable (no clang/lld?); C:\\BIG.NCP skipped"
-fi
+build_example big.c "$V/BIG.NCP"
+echo "built + installed C:\\BIG.NCP (clang-built multi-page-TPA program)"
 
 # PHYSBASE.NCP is the direct-screen-access proof: it calls XBIOS Physbase
 # (0x02) / Logbase (0x03), prints both addresses, and stores three colour
@@ -133,11 +190,8 @@ fi
 # into the process (ADR-023 amendment). Run it via
 # run_program(b"C:\\PHYSBASE.NCP"); it blocks on a key so the bands stay up
 # for a screendump. Deliberately NOT in AUTO: it would stop every boot.
-if "$SCRIPT_DIR/../sdk/build.sh" "$SCRIPT_DIR/../sdk/examples/physbase.c" "$V/PHYSBASE.NCP" >/dev/null 2>&1; then
-  echo "built + installed C:\\PHYSBASE.NCP (Physbase direct-screen proof)"
-else
-  echo "note: sdk/build.sh unavailable (no clang/lld?); C:\\PHYSBASE.NCP skipped"
-fi
+build_example physbase.c "$V/PHYSBASE.NCP"
+echo "built + installed C:\\PHYSBASE.NCP (Physbase direct-screen proof)"
 
 # SCRFLIP.NCP is the double-buffering proof: it finds the second screen page
 # through the Setscreen/Logbase contract, paints it while it is invisible,
@@ -146,14 +200,11 @@ fi
 # back, so the boot carries on into the desktop. Two screendumps around those
 # windows are the proof. It restores everything and exits, so unlike
 # PHYSBASE.NCP it is safe in \AUTO\ -- set SD_SCRFLIP_AUTO=1 for that.
-if "$SCRIPT_DIR/../sdk/build.sh" "$SCRIPT_DIR/../sdk/examples/scrflip.c" "$V/SCRFLIP.NCP" >/dev/null 2>&1; then
-  echo "built + installed C:\\SCRFLIP.NCP (Setscreen page-flip proof)"
-  if [ "${SD_SCRFLIP_AUTO:-0}" = "1" ]; then
-    cp "$V/SCRFLIP.NCP" "$V/AUTO/SCRFLIP.NCP"
-    echo "  + \\AUTO\\SCRFLIP.NCP (runs at boot; adds ~20 s)"
-  fi
-else
-  echo "note: sdk/build.sh unavailable (no clang/lld?); C:\\SCRFLIP.NCP skipped"
+build_example scrflip.c "$V/SCRFLIP.NCP"
+echo "built + installed C:\\SCRFLIP.NCP (Setscreen page-flip proof)"
+if [ "${SD_SCRFLIP_AUTO:-0}" = "1" ]; then
+  cp "$V/SCRFLIP.NCP" "$V/AUTO/SCRFLIP.NCP"
+  echo "  + \\AUTO\\SCRFLIP.NCP (runs at boot; adds ~20 s)"
 fi
 
 # CURDIR.NCP is the working-directory proof (DESK18): it prints the current
@@ -162,11 +213,8 @@ fi
 # must read C:\SUB\PROOF.TXT ("PROOF: C:\SUB"), and only does so if the
 # launcher set the current directory first. Never in \AUTO\: the AUTO path has
 # its own (root) directory and the program is there to distinguish the two.
-if "$SCRIPT_DIR/../sdk/build.sh" "$SCRIPT_DIR/../sdk/examples/curdir.c" "$V/SUB/CURDIR.NCP" >/dev/null 2>&1; then
-  echo "built + installed C:\\SUB\\CURDIR.NCP (working-directory proof)"
-else
-  echo "note: sdk/build.sh unavailable (no clang/lld?); C:\\SUB\\CURDIR.NCP skipped"
-fi
+build_example curdir.c "$V/SUB/CURDIR.NCP"
+echo "built + installed C:\\SUB\\CURDIR.NCP (working-directory proof)"
 
 # CMDLINE.NCP is the command-line proof (DESK19): it prints its own
 # `p_cmdlin` out of the BasePage the loader maps at VA 0, plus the current
@@ -185,12 +233,9 @@ fi
 # command line (PTTP, sdk/apps/teradesk/applik.c:1390) and then shows the tail
 # that arrived; started from our own desktop it shows the empty tail that
 # launcher passes today (the parameter dialog is DESK44).
-if "$SCRIPT_DIR/../sdk/build.sh" "$SCRIPT_DIR/../sdk/examples/cmdline.c" "$V/CMDLINE.NCP" >/dev/null 2>&1; then
-  cp "$V/CMDLINE.NCP" "$V/CMDLINE.NTP"
-  echo "built + installed C:\\CMDLINE.NCP + C:\\CMDLINE.NTP (command-line proof; .NTP demo)"
-else
-  echo "note: sdk/build.sh unavailable (no clang/lld?); C:\\CMDLINE.NCP + .NTP skipped"
-fi
+build_example cmdline.c "$V/CMDLINE.NCP"
+cp "$V/CMDLINE.NCP" "$V/CMDLINE.NTP"
+echo "built + installed C:\\CMDLINE.NCP + C:\\CMDLINE.NTP (command-line proof; .NTP demo)"
 
 # ARGVTEST.NAP is the argc/argv proof (PORT01), the other half of CMDLINE.NCP:
 # that one reads `p_cmdlin` itself and so only shows what the KERNEL delivered,
@@ -203,13 +248,8 @@ fi
 # gesture inside the C:\ window; never in \AUTO\ (console-only, ADR-018).
 # Built by `sdk/libc/build-libc.sh sdk/examples/argvtest.c \
 #            sdk/libc/build/argvtest.NAP`.
-ARGVTEST_NAP="$SCRIPT_DIR/../sdk/libc/build/argvtest.NAP"
-if [ -f "$ARGVTEST_NAP" ]; then
-  cp "$ARGVTEST_NAP" "$V/ARGVTEST.NAP"
-  echo "installed C:\\ARGVTEST.NAP (argc/argv proof)"
-else
-  echo "note: sdk/libc/build/argvtest.NAP not built; C:\\ARGVTEST.NAP skipped"
-fi
+cp "$ROOT/sdk/libc/build/argvtest.NAP" "$V/ARGVTEST.NAP"
+echo "installed C:\\ARGVTEST.NAP (argc/argv proof)"
 
 # DTACHILD.NCP is the per-process-DTA proof (S1c): a console program that moves
 # its OWN DTA (Fsetdta(0x2000)) and exits. A parent runs it between its own
@@ -217,11 +257,8 @@ fi
 # lives in the running process's basepage (p_xdta) and not in a global.
 # Console-only, so it belongs on C: (double-clickable / Pexec-able), never in
 # \AUTO\ as a side effect.
-if "$SCRIPT_DIR/../sdk/build.sh" "$SCRIPT_DIR/../sdk/examples/dtachild.c" "$V/DTACHILD.NCP" >/dev/null 2>&1; then
-  echo "built + installed C:\\DTACHILD.NCP (per-process DTA test child)"
-else
-  echo "note: sdk/build.sh unavailable (no clang/lld?); C:\\DTACHILD.NCP skipped"
-fi
+build_example dtachild.c "$V/DTACHILD.NCP"
+echo "built + installed C:\\DTACHILD.NCP (per-process DTA test child)"
 
 # PTERMCH.NCP is the Pexec exit-code child (TASK/PROC06): it ends with the exit
 # code its one-character command tail selects (m = Pterm(-1), h = Pterm(0x8000),
@@ -230,16 +267,10 @@ fi
 # (65535 / 32768 / 0). CTRLCPAR.NCP Pexecs it in mode c and prints the Pexec
 # result after a Ctrl-C (65504) -- it waits for that key, so it lives on C:
 # only, never in \AUTO\.
-if "$SCRIPT_DIR/../sdk/build.sh" "$SCRIPT_DIR/../sdk/examples/ptermch.c" "$V/PTERMCH.NCP" >/dev/null 2>&1; then
-  echo "built + installed C:\\PTERMCH.NCP (Pexec exit-code test child)"
-else
-  echo "note: sdk/build.sh unavailable (no clang/lld?); C:\\PTERMCH.NCP skipped"
-fi
-if "$SCRIPT_DIR/../sdk/build.sh" "$SCRIPT_DIR/../sdk/examples/ctrlcpar.c" "$V/CTRLCPAR.NCP" >/dev/null 2>&1; then
-  echo "built + installed C:\\CTRLCPAR.NCP (Ctrl-C'd child -> Pexec rc 65504)"
-else
-  echo "note: sdk/build.sh unavailable (no clang/lld?); C:\\CTRLCPAR.NCP skipped"
-fi
+build_example ptermch.c "$V/PTERMCH.NCP"
+echo "built + installed C:\\PTERMCH.NCP (Pexec exit-code test child)"
+build_example ctrlcpar.c "$V/CTRLCPAR.NCP"
+echo "built + installed C:\\CTRLCPAR.NCP (Ctrl-C'd child -> Pexec rc 65504)"
 
 # FPPEXEC.NCP is the ARCH02 probe: it holds a pattern in all of v0..v31 plus
 # FPCR/FPSR across Pexec 0, 3+6 and 3+4 of itself (the child role, command tail
@@ -247,14 +278,11 @@ fi
 # "FPPEXEC: RESULT PASS|FAIL". The child is C:\FPPEXEC.NCP, so it is always
 # installed in the root; set SD_FPPEXEC_AUTO=1 to also run it from \AUTO\
 # (console only, no key wait) for a serial-verifiable boot.
-if "$SCRIPT_DIR/../sdk/build.sh" "$SCRIPT_DIR/../sdk/examples/fppexec.c" "$V/FPPEXEC.NCP" >/dev/null 2>&1; then
-  echo "built + installed C:\\FPPEXEC.NCP (FP/SIMD registers across Pexec)"
-  if [ "${SD_FPPEXEC_AUTO:-0}" = "1" ]; then
-    cp "$V/FPPEXEC.NCP" "$V/AUTO/FPPEXEC.NCP"
-    echo "  + \\AUTO\\FPPEXEC.NCP (runs at boot)"
-  fi
-else
-  echo "note: sdk/build.sh unavailable (no clang/lld?); C:\\FPPEXEC.NCP skipped"
+build_example fppexec.c "$V/FPPEXEC.NCP"
+echo "built + installed C:\\FPPEXEC.NCP (FP/SIMD registers across Pexec)"
+if [ "${SD_FPPEXEC_AUTO:-0}" = "1" ]; then
+  cp "$V/FPPEXEC.NCP" "$V/AUTO/FPPEXEC.NCP"
+  echo "  + \\AUTO\\FPPEXEC.NCP (runs at boot)"
 fi
 
 # SYSINFO.NCP is the ACC06-part-1 proof: it reads the ARM core clock and the
@@ -266,14 +294,11 @@ fi
 # Double-clickable in the root. With SD_SYSINFO_AUTO=1 it additionally goes
 # into \AUTO\, which is how a headless QEMU run gets the two lines onto the
 # serial console without a click.
-if "$SCRIPT_DIR/../sdk/build.sh" "$SCRIPT_DIR/../sdk/examples/sysinfo.c" "$V/SYSINFO.NCP" >/dev/null 2>&1; then
-  echo "built + installed C:\\SYSINFO.NCP (Ssystem 2000/2001 clock + temperature)"
-  if [ "${SD_SYSINFO_AUTO:-0}" = "1" ]; then
-    cp "$V/SYSINFO.NCP" "$V/AUTO/SYSINFO.NCP"
-    echo "  + \\AUTO\\SYSINFO.NCP (runs at boot, prints to the serial console)"
-  fi
-else
-  echo "note: sdk/build.sh unavailable (no clang/lld?); C:\\SYSINFO.NCP skipped"
+build_example sysinfo.c "$V/SYSINFO.NCP"
+echo "built + installed C:\\SYSINFO.NCP (Ssystem 2000/2001 clock + temperature)"
+if [ "${SD_SYSINFO_AUTO:-0}" = "1" ]; then
+  cp "$V/SYSINFO.NCP" "$V/AUTO/SYSINFO.NCP"
+  echo "  + \\AUTO\\SYSINFO.NCP (runs at boot, prints to the serial console)"
 fi
 
 # USBSNAP.NCP is the USB device recorder (USB01 step 2, docs/api/usb/
@@ -281,11 +306,8 @@ fi
 # 30 s of their reports and writes one text file per device to C:\USB\.
 # Double-clickable in the root; NOT in \AUTO\ (it needs the user). On QEMU
 # raspi4b (no USB controller) it says so and writes nothing.
-if "$SCRIPT_DIR/../sdk/build.sh" "$SCRIPT_DIR/../sdk/examples/usbsnap.c" "$V/USBSNAP.NCP" >/dev/null 2>&1; then
-  echo "built + installed C:\\USBSNAP.NCP (Ssystem 2022 USB snapshot recorder)"
-else
-  echo "note: sdk/build.sh unavailable (no clang/lld?); C:\\USBSNAP.NCP skipped"
-fi
+build_example usbsnap.c "$V/USBSNAP.NCP"
+echo "built + installed C:\\USBSNAP.NCP (Ssystem 2022 USB snapshot recorder)"
 
 # ACC05 / ACC02: the desk accessories. SYSACC.NAC is the accessory half of the
 # ACC06 pair (SYSINFO.NCP above is the console half): it registers " System
@@ -299,102 +321,84 @@ fi
 # which is the rule, not a defect; two names prove both locations are read.
 # Set SD_ACC_ROOT_ONLY=1 to install only the root copy (the scan then finds
 # exactly one accessory, in the second location).
-if "$SCRIPT_DIR/../sdk/build.sh" "$SCRIPT_DIR/../sdk/examples/sysacc.c" "$V/ACC/SYSACC.NAC" >/dev/null 2>&1; then
-  echo "built + installed C:\\ACC\\SYSACC.NAC (desk accessory, folder location)"
-  if [ "${SD_ACC_ROOT_ONLY:-0}" = "1" ]; then
-    mv "$V/ACC/SYSACC.NAC" "$V/SYSACC2.NAC"
-    echo "  moved to C:\\SYSACC2.NAC (SD_ACC_ROOT_ONLY=1: root location only)"
-  else
-    cp "$V/ACC/SYSACC.NAC" "$V/SYSACC2.NAC"
-    echo "  + C:\\SYSACC2.NAC (root location; a second, independently loaded copy)"
-  fi
+build_example sysacc.c "$V/ACC/SYSACC.NAC"
+echo "built + installed C:\\ACC\\SYSACC.NAC (desk accessory, folder location)"
+if [ "${SD_ACC_ROOT_ONLY:-0}" = "1" ]; then
+  mv "$V/ACC/SYSACC.NAC" "$V/SYSACC2.NAC"
+  echo "  moved to C:\\SYSACC2.NAC (SD_ACC_ROOT_ONLY=1: root location only)"
 else
-  echo "note: sdk/build.sh unavailable (no clang/lld?); SYSACC.NAC skipped"
+  cp "$V/ACC/SYSACC.NAC" "$V/SYSACC2.NAC"
+  echo "  + C:\\SYSACC2.NAC (root location; a second, independently loaded copy)"
 fi
 
 # libc milestone (mintlib port): LIBTEST.NCP is the mintlib-linked proof — real
 # printf(), malloc()/free(), and a stdio file round-trip (fopen/fwrite/fread/
 # fclose), linked against the ported mintlib libc.a by sdk/libc/build-libc.sh.
-# Copied in if already built (the 600-object archive build is slow, so it is not
-# forced here); double-clickable and runnable via run_program(b"C:\\LIBTEST.NCP")
+# Built beforehand by `sdk/libc/build-libc.sh` (the 600-object archive build is
+# slow, so the script does not run it; a missing file stops it, see REQUIRED);
+# double-clickable and runnable via run_program(b"C:\\LIBTEST.NCP")
 # (or drop it into \AUTO\ for a serial-verifiable auto-run).
-LIBTEST_NCP="$SCRIPT_DIR/../sdk/libc/build/libtest.NCP"
-if [ -f "$LIBTEST_NCP" ]; then
-  cp "$LIBTEST_NCP" "$V/LIBTEST.NCP"
-  echo "installed C:\\LIBTEST.NCP (mintlib-linked libc proof)"
-else
-  echo "note: sdk/libc/build/libtest.NCP not built; C:\\LIBTEST.NCP skipped (run sdk/libc/build-libc.sh)"
-fi
+cp "$ROOT/sdk/libc/build/libtest.NCP" "$V/LIBTEST.NCP"
+echo "installed C:\\LIBTEST.NCP (mintlib-linked libc proof)"
 
 # 200 Hz system-tick proof: CLOCKTST.NCP measures mintlib's own clock() (which
 # reads the `_hz_200` sysvar at $4ba) against GEMDOS Tgettime and prints the
-# error in ticks — see sdk/libc/tests/clocktest.c. Copied in if already built
+# error in ticks — see sdk/libc/tests/clocktest.c. Built beforehand
 # (`sdk/libc/build-libc.sh sdk/libc/tests/clocktest.c`). Installed on C: only;
 # set SD_CLOCKTEST_AUTO=1 to also drop it into \AUTO\ so it runs and prints
 # its verdict on the console at every boot (costs ~12 s of boot time).
-CLOCKTST_NCP="$SCRIPT_DIR/../sdk/libc/build/clocktest.NCP"
-if [ -f "$CLOCKTST_NCP" ]; then
-  cp "$CLOCKTST_NCP" "$V/CLOCKTST.NCP"
-  echo "installed C:\\CLOCKTST.NCP (200 Hz tick / _hz_200 proof)"
-  if [ "${SD_CLOCKTEST_AUTO:-0}" = "1" ]; then
-    cp "$CLOCKTST_NCP" "$V/AUTO/CLOCKTST.NCP"
-    echo "  + \\AUTO\\CLOCKTST.NCP (runs at boot)"
-  fi
-else
-  echo "note: sdk/libc/build/clocktest.NCP not built; C:\\CLOCKTST.NCP skipped"
+CLOCKTST_NCP="$ROOT/sdk/libc/build/clocktest.NCP"
+cp "$CLOCKTST_NCP" "$V/CLOCKTST.NCP"
+echo "installed C:\\CLOCKTST.NCP (200 Hz tick / _hz_200 proof)"
+if [ "${SD_CLOCKTEST_AUTO:-0}" = "1" ]; then
+  cp "$CLOCKTST_NCP" "$V/AUTO/CLOCKTST.NCP"
+  echo "  + \\AUTO\\CLOCKTST.NCP (runs at boot)"
 fi
 
 # setjmp/longjmp proof (TASK/T07): SETJMPT.NCP runs the checks in
 # sdk/libc/tests/setjmp-cases.h against the archive's AArch64 setjmp.S through
 # mintlib's <setjmp.h> and prints one PASS/FAIL line per check over Cconws --
-# see sdk/examples/setjmptst.c. Copied in if already built
+# see sdk/examples/setjmptst.c. Built beforehand
 # (`sdk/libc/build-libc.sh sdk/examples/setjmptst.c sdk/libc/build/setjmptst.NCP`).
 # Set SD_SETJMPTST_AUTO=1 to also drop it into \AUTO\ for a serial-verifiable run.
-SETJMPT_NCP="$SCRIPT_DIR/../sdk/libc/build/setjmptst.NCP"
-if [ -f "$SETJMPT_NCP" ]; then
-  cp "$SETJMPT_NCP" "$V/SETJMPT.NCP"
-  echo "installed C:\\SETJMPT.NCP (setjmp/longjmp proof)"
-  if [ "${SD_SETJMPTST_AUTO:-0}" = "1" ]; then
-    cp "$SETJMPT_NCP" "$V/AUTO/SETJMPT.NCP"
-    echo "  + \\AUTO\\SETJMPT.NCP (runs at boot)"
-  fi
-else
-  echo "note: sdk/libc/build/setjmptst.NCP not built; C:\\SETJMPT.NCP skipped"
+SETJMPT_NCP="$ROOT/sdk/libc/build/setjmptst.NCP"
+cp "$SETJMPT_NCP" "$V/SETJMPT.NCP"
+echo "installed C:\\SETJMPT.NCP (setjmp/longjmp proof)"
+if [ "${SD_SETJMPTST_AUTO:-0}" = "1" ]; then
+  cp "$SETJMPT_NCP" "$V/AUTO/SETJMPT.NCP"
+  echo "  + \\AUTO\\SETJMPT.NCP (runs at boot)"
 fi
 
 # libm proof (TASK/T07): MATHTST.NCP checks sqrt/sin/pow/floor/frexp/atan2/...
 # from libm.a (OpenLibm, sdk/libm/) against closed-form values and prints one
-# PASS/FAIL line per check over Cconws -- see sdk/examples/mathtst.c. Copied in
-# if already built (`sdk/libm/build-libm.sh`). Set SD_MATHTST_AUTO=1 to also
+# PASS/FAIL line per check over Cconws -- see sdk/examples/mathtst.c. Built
+# beforehand (`sdk/libm/build-libm.sh`). Set SD_MATHTST_AUTO=1 to also
 # drop it into \AUTO\.
-MATHTST_NCP="$SCRIPT_DIR/../sdk/libm/build/mathtst.NCP"
-if [ -f "$MATHTST_NCP" ]; then
-  cp "$MATHTST_NCP" "$V/MATHTST.NCP"
-  echo "installed C:\\MATHTST.NCP (libm proof)"
-  if [ "${SD_MATHTST_AUTO:-0}" = "1" ]; then
-    cp "$MATHTST_NCP" "$V/AUTO/MATHTST.NCP"
-    echo "  + \\AUTO\\MATHTST.NCP (runs at boot)"
-  fi
-else
-  echo "note: sdk/libm/build/mathtst.NCP not built; C:\\MATHTST.NCP skipped"
+MATHTST_NCP="$ROOT/sdk/libm/build/mathtst.NCP"
+cp "$MATHTST_NCP" "$V/MATHTST.NCP"
+echo "installed C:\\MATHTST.NCP (libm proof)"
+if [ "${SD_MATHTST_AUTO:-0}" = "1" ]; then
+  cp "$MATHTST_NCP" "$V/AUTO/MATHTST.NCP"
+  echo "  + \\AUTO\\MATHTST.NCP (runs at boot)"
 fi
 
 # Mxalloc pool proof (TASK/MEM02): MXPROBE.NCP asks Mxalloc for every pool mode
 # (MX_STRAM/TTRAM/PREFSTRAM/PREFTTRAM), classifies each block against phystop,
 # writes/reads it from EL0, checks refusal and fallback, one PASS/FAIL line per
-# check over Cconws -- see sdk/libc/tests/mxprobe.c. Copied in if already built
+# check over Cconws -- see sdk/libc/tests/mxprobe.c. Built beforehand
 # (`sdk/libc/build-libc.sh sdk/libc/tests/mxprobe.c sdk/libc/build/MXPROBE.NCP`).
-# Set SD_MXPROBE_AUTO=1 to also drop it into \AUTO\ for a serial-verifiable run.
-MXPROBE_NCP="$SCRIPT_DIR/../sdk/libc/build/MXPROBE.NCP"
-if [ -f "$MXPROBE_NCP" ]; then
-  cp "$MXPROBE_NCP" "$V/MXPROBE.NCP"
-  echo "installed C:\\MXPROBE.NCP (Mxalloc pool proof)"
-  if [ "${SD_MXPROBE_AUTO:-0}" = "1" ]; then
-    cp "$MXPROBE_NCP" "$V/AUTO/MXPROBE.NCP"
-    echo "  + \\AUTO\\MXPROBE.NCP (runs at boot)"
-  fi
-else
-  echo "note: sdk/libc/build/MXPROBE.NCP not built; C:\\MXPROBE.NCP skipped"
+#
+# In \AUTO\ BY DEFAULT (user decision 2026-10-26): it is the boot-time caller of
+# Mxalloc through the trap path, so a boot of a debug kernel on this image
+# runs the TASK/MEM11 assertion on every returned block
+# (tos-api/src/gemdos/memory.rs `pointer_result`). It ends by itself and waits
+# for no key. SD_MXPROBE_AUTO=0 leaves it out of \AUTO\ (C:\MXPROBE.NCP stays).
+MXPROBE_NCP="$ROOT/sdk/libc/build/MXPROBE.NCP"
+cp "$MXPROBE_NCP" "$V/MXPROBE.NCP"
+echo "installed C:\\MXPROBE.NCP (Mxalloc pool proof)"
+if [ "${SD_MXPROBE_AUTO:-1}" = "1" ]; then
+  cp "$MXPROBE_NCP" "$V/AUTO/MXPROBE.NCP"
+  echo "  + \\AUTO\\MXPROBE.NCP (runs at boot; SD_MXPROBE_AUTO=0 leaves it out)"
 fi
 
 # LDG proof (TASK/LDG-M1): EX_LIB.NLD is LDG's unmodified demo library ex_lib
@@ -404,22 +408,17 @@ fi
 # Pexec 5/3/4), calls sinus()/cosinus() and closes it, one PASS/FAIL line per
 # check over Cconws -- see sdk/examples/ldgtest.c. The client opens the
 # module as C:\LDG\EX_LIB.NLD and by the relative name after Dsetpath(\LDG),
-# so the module must sit exactly there. Copied in if already built
+# so the module must sit exactly there. Built beforehand
 # (`sdk/ldg/build-ldg-demo.sh`). Set SD_LDGTEST_AUTO=1 to also drop the client
 # into \AUTO\ for a serial-verifiable run (no key pause).
-LDG_NLD="$SCRIPT_DIR/../sdk/ldg/build/EX_LIB.NLD"
-LDGTEST_NCP="$SCRIPT_DIR/../sdk/ldg/build/LDGTEST.NCP"
-if [ -f "$LDG_NLD" ] && [ -f "$LDGTEST_NCP" ]; then
-  mkdir -p "$V/LDG"
-  cp "$LDG_NLD" "$V/LDG/EX_LIB.NLD"
-  cp "$LDGTEST_NCP" "$V/LDGTEST.NCP"
-  echo "installed C:\\LDG\\EX_LIB.NLD + C:\\LDGTEST.NCP (LDG proof)"
-  if [ "${SD_LDGTEST_AUTO:-0}" = "1" ]; then
-    cp "$LDGTEST_NCP" "$V/AUTO/LDGTEST.NCP"
-    echo "  + \\AUTO\\LDGTEST.NCP (runs at boot)"
-  fi
-else
-  echo "note: sdk/ldg/build/{EX_LIB.NLD,LDGTEST.NCP} not built; LDG proof skipped"
+LDGTEST_NCP="$ROOT/sdk/ldg/build/LDGTEST.NCP"
+mkdir -p "$V/LDG"
+cp "$ROOT/sdk/ldg/build/EX_LIB.NLD" "$V/LDG/EX_LIB.NLD"
+cp "$LDGTEST_NCP" "$V/LDGTEST.NCP"
+echo "installed C:\\LDG\\EX_LIB.NLD + C:\\LDGTEST.NCP (LDG proof)"
+if [ "${SD_LDGTEST_AUTO:-0}" = "1" ]; then
+  cp "$LDGTEST_NCP" "$V/AUTO/LDGTEST.NCP"
+  echo "  + \\AUTO\\LDGTEST.NCP (runs at boot)"
 fi
 
 # zView (TASK/ZVIEW-M4) — the z-tools image viewer, LDG version, built from unchanged upstream sources plus per-program patch files (sdk/zview/overlay/)
@@ -431,17 +430,17 @@ fi
 # C:\ZVIEW\SAMPLES\ gets one synthesised sample per codec path
 # (sdk/zview/samples/gen-samples.py). Start ZVIEW.NAP by double-click (opens
 # with its menu bar; File > Open), or with a file argument (main.c:164-165).
-ZV_DIST="$SCRIPT_DIR/../sdk/zview/build/dist/ZVIEW"
-if [ -f "$ZV_DIST/ZVIEW.NAP" ]; then
-  mkdir -p "$V/ZVIEW"
-  cp -R "$ZV_DIST/" "$V/ZVIEW/"
-  if [ -d "$SCRIPT_DIR/../sdk/zview/build/samples/IMAGES" ]; then
-    mkdir -p "$V/ZVIEW/SAMPLES"
-    cp "$SCRIPT_DIR/../sdk/zview/build/samples/IMAGES/"* "$V/ZVIEW/SAMPLES/"
-  fi
+# The sample images stay optional: build-zview.sh itself treats a failing
+# gen-samples.py (no Pillow) as a note, not an error.
+ZV_DIST="$ROOT/sdk/zview/build/dist/ZVIEW"
+mkdir -p "$V/ZVIEW"
+cp -R "$ZV_DIST/" "$V/ZVIEW/"
+if [ -d "$ROOT/sdk/zview/build/samples/IMAGES" ]; then
+  mkdir -p "$V/ZVIEW/SAMPLES"
+  cp "$ROOT/sdk/zview/build/samples/IMAGES/"* "$V/ZVIEW/SAMPLES/"
   echo "installed C:\\ZVIEW\\ (zView: ZVIEW.NAP, ZVIEW.RSC, ICONS\\, CODECS\\*.NLD, SAMPLES\\)"
 else
-  echo "note: sdk/zview/build/dist/ZVIEW not built; zView skipped (run sdk/zview/build-zview.sh)"
+  echo "installed C:\\ZVIEW\\ (zView: ZVIEW.NAP, ZVIEW.RSC, ICONS\\, CODECS\\*.NLD; no SAMPLES\\ -- gen-samples.py did not run)"
 fi
 
 # CoreMark 1.0 (EEMBC) — the CPU benchmark, built UNMODIFIED apart from its own
@@ -471,19 +470,15 @@ fi
 # anyway — that is the only way to drive it under QEMU raspi4b, which emulates
 # the SD controller but no keyboard/mouse, so nothing can be double-clicked; the
 # report then has to be read off the serial log.
-CM_DIR="$SCRIPT_DIR/../sdk/apps/coremark/build"
-if [ -f "$CM_DIR/CORE.NCP" ] && [ -f "$CM_DIR/COREVAL.NCP" ]; then
-  mkdir -p "$V/COREMARK"
-  cp "$CM_DIR/CORE.NCP"    "$V/COREMARK/CORE.NCP"
-  cp "$CM_DIR/COREVAL.NCP" "$V/COREMARK/COREVAL.NCP"
-  echo "installed C:\\COREMARK\\{CORE,COREVAL}.NCP (EEMBC CoreMark 1.0)"
-  if [ "${SD_COREMARK_AUTO:-0}" = "1" ]; then
-    cp "$CM_DIR/CORE.NCP"    "$V/AUTO/CORE.NCP"
-    cp "$CM_DIR/COREVAL.NCP" "$V/AUTO/COREVAL.NCP"
-    echo "  + \\AUTO\\{CORE,COREVAL}.NCP (both run at boot; ~1 min extra)"
-  fi
-else
-  echo "note: sdk/apps/coremark/build/{CORE,COREVAL}.NCP not built; C:\\COREMARK skipped (run sdk/apps/build-coremark.sh)"
+CM_DIR="$ROOT/sdk/apps/coremark/build"
+mkdir -p "$V/COREMARK"
+cp "$CM_DIR/CORE.NCP"    "$V/COREMARK/CORE.NCP"
+cp "$CM_DIR/COREVAL.NCP" "$V/COREMARK/COREVAL.NCP"
+echo "installed C:\\COREMARK\\{CORE,COREVAL}.NCP (EEMBC CoreMark 1.0)"
+if [ "${SD_COREMARK_AUTO:-0}" = "1" ]; then
+  cp "$CM_DIR/CORE.NCP"    "$V/AUTO/CORE.NCP"
+  cp "$CM_DIR/COREVAL.NCP" "$V/AUTO/COREVAL.NCP"
+  echo "  + \\AUTO\\{CORE,COREVAL}.NCP (both run at boot; ~1 min extra)"
 fi
 
 # QED (Atari GEM editor) — the first ported GEM application, compiled from unchanged upstream sources plus patch files
@@ -497,7 +492,7 @@ fi
 # sdk/apps/build-qed.sh (the .rsc via `tools/mkrsc.py convert`, staged into
 # build/ after the link — docs/sdk/04-porting-anatomy.md). Launched by
 # double-clicking QED.NAP on the desktop — NEVER from \AUTO\ (console-only,
-# ADR-018). Copied in if the LP64 build exists.
+# ADR-018). Built beforehand (`sdk/apps/build-qed.sh`).
 # ── TOSDUMP: the VDI reference dumper (docs/TOS-REFERENCE-DUMPER.md) ─────────
 # DUMPVDI.NAP measures what this machine's VDI does, case by case, so it can be
 # compared against the same measurement taken on an Atari TT (the dumps live in
@@ -509,27 +504,20 @@ fi
 # the current directory before launching a program (programs/desktop/src/main.rs,
 # `launch_native` -- no Dsetpath), so the working directory is whatever the
 # boot left it at. The root is the one place that is likely to be.
-TOSDUMP_DIR="$SCRIPT_DIR/../tosdump"
-if [ -f "$TOSDUMP_DIR/build/DUMPVDI.NAP" ] && [ -f "$TOSDUMP_DIR/cases/vdi-r2.tsv" ]; then
-  cp "$TOSDUMP_DIR/build/DUMPVDI.NAP" "$V/DUMPVDI.NAP"
-  # Round 2: 120 cases, the broadest opcode coverage, and the reference the
-  # generated Rust tests are built against. Copied verbatim -- its bytes are
-  # the identity the dump carries, so the CRC must stay A0706A6D.
-  cp "$TOSDUMP_DIR/cases/vdi-r2.tsv" "$V/VDI.TSV"
-  echo "  + C:\\DUMPVDI.NAP + C:\\VDI.TSV (VDI reference dumper, round 2)"
-else
-  echo "  ! tosdump/build/DUMPVDI.NAP (or cases/vdi-r2.tsv) not built (run 'make -C tosdump all'); skipping DUMPVDI"
-fi
+TOSDUMP_DIR="$ROOT/tosdump"
+cp "$TOSDUMP_DIR/build/DUMPVDI.NAP" "$V/DUMPVDI.NAP"
+# Round 2: 120 cases, the broadest opcode coverage, and the reference the
+# generated Rust tests are built against. Copied verbatim -- its bytes are
+# the identity the dump carries, so the CRC must stay A0706A6D.
+cp "$TOSDUMP_DIR/cases/vdi-r2.tsv" "$V/VDI.TSV"
+echo "  + C:\\DUMPVDI.NAP + C:\\VDI.TSV (VDI reference dumper, round 2)"
 # VDIDRAW draws every output primitive into a numbered, captioned cell. The
 # dumper cannot see those: the drawing opcodes leave the parameter block
 # empty, so a matching dump proves the block survived, not that a pixel
 # landed where it should. This is the visual half, and it needs no case table.
-if [ -f "$TOSDUMP_DIR/build/VDIDRAW.NAP" ]; then
-  cp "$TOSDUMP_DIR/build/VDIDRAW.NAP" "$V/VDIDRAW.NAP"
-  echo "  + C:\\VDIDRAW.NAP (visual VDI primitive sheet)"
-else
-  echo "  ! tosdump/build/VDIDRAW.NAP not built (run 'make -C tosdump all'); skipping VDIDRAW"
-fi
+# Built by tosdump/build-vdidraw-newtos.sh (no Makefile target).
+cp "$TOSDUMP_DIR/build/VDIDRAW.NAP" "$V/VDIDRAW.NAP"
+echo "  + C:\\VDIDRAW.NAP (visual VDI primitive sheet)"
 
 # ── The bouncing-ball demo is no longer built from this tree ───────────────
 # BALL.NAP and its texture BALL.NTX used to be installed here. The demo is an
@@ -546,15 +534,11 @@ fi
 # It is a `.NAP` (it opens a VDI workstation), so it is DOUBLE-CLICKED on the
 # desktop, never run from \AUTO\. For a headless QEMU run the demo's own
 # notes describe the EmuTOS `#Z` autorun line in C:\NEWDESK.INF.
-QED_DIR="$SCRIPT_DIR/../sdk/apps/qed/build"
-if [ -f "$QED_DIR/QED.NAP" ] && [ -f "$QED_DIR/qed.rsc" ]; then
-  mkdir -p "$V/Apps/QED"
-  cp "$QED_DIR/QED.NAP" "$V/Apps/QED/QED.NAP"
-  cp "$QED_DIR/qed.rsc" "$V/Apps/QED/qed.rsc"
-  echo "installed C:\\Apps\\QED\\QED.NAP + qed.rsc (ported GEM editor, LP64)"
-else
-  echo "note: sdk/apps/qed/build/{QED.NAP,qed.rsc} not built; C:\\Apps\\QED skipped"
-fi
+QED_DIR="$ROOT/sdk/apps/qed/build"
+mkdir -p "$V/Apps/QED"
+cp "$QED_DIR/QED.NAP" "$V/Apps/QED/QED.NAP"
+cp "$QED_DIR/qed.rsc" "$V/Apps/QED/qed.rsc"
+echo "installed C:\\Apps\\QED\\QED.NAP + qed.rsc (ported GEM editor, LP64)"
 
 # TeraDesk 4.08 (GEM desktop replacement) — the second ported GEM application,
 # compiled from unchanged upstream sources plus seven patch files
@@ -570,20 +554,16 @@ fi
 # dist/ (a dist/ staged before A41 part 2 has none), so an older staging still
 # yields a mono desktop rather than a broken one.
 # Launched by double-clicking DESKTOP.NAP — NEVER from \AUTO\ (ADR-018).
-TERA_DIR="$SCRIPT_DIR/../sdk/apps/teradesk/build/dist"
-if [ -f "$TERA_DIR/DESKTOP.NAP" ] && [ -f "$TERA_DIR/desktop.rsc" ] && [ -f "$TERA_DIR/icons.rsc" ]; then
-  mkdir -p "$V/Apps/TERADESK"
-  cp "$TERA_DIR/DESKTOP.NAP" "$V/Apps/TERADESK/DESKTOP.NAP"
-  cp "$TERA_DIR/desktop.rsc" "$V/Apps/TERADESK/desktop.rsc"
-  cp "$TERA_DIR/icons.rsc"   "$V/Apps/TERADESK/icons.rsc"
-  if [ -f "$TERA_DIR/cicons.rsc" ]; then
-    cp "$TERA_DIR/cicons.rsc" "$V/Apps/TERADESK/cicons.rsc"
-    echo "installed C:\\Apps\\TERADESK\\{DESKTOP.NAP,desktop.rsc,icons.rsc,cicons.rsc} (ported GEM desktop, LP64, colour icons)"
-  else
-    echo "installed C:\\Apps\\TERADESK\\{DESKTOP.NAP,desktop.rsc,icons.rsc} (ported GEM desktop, LP64; no cicons.rsc staged -> mono icons)"
-  fi
+TERA_DIR="$ROOT/sdk/apps/teradesk/build/dist"
+mkdir -p "$V/Apps/TERADESK"
+cp "$TERA_DIR/DESKTOP.NAP" "$V/Apps/TERADESK/DESKTOP.NAP"
+cp "$TERA_DIR/desktop.rsc" "$V/Apps/TERADESK/desktop.rsc"
+cp "$TERA_DIR/icons.rsc"   "$V/Apps/TERADESK/icons.rsc"
+if [ -f "$TERA_DIR/cicons.rsc" ]; then
+  cp "$TERA_DIR/cicons.rsc" "$V/Apps/TERADESK/cicons.rsc"
+  echo "installed C:\\Apps\\TERADESK\\{DESKTOP.NAP,desktop.rsc,icons.rsc,cicons.rsc} (ported GEM desktop, LP64, colour icons)"
 else
-  echo "note: sdk/apps/teradesk/build/dist not staged; C:\\Apps\\TERADESK skipped (run sdk/apps/build-teradesk.sh)"
+  echo "installed C:\\Apps\\TERADESK\\{DESKTOP.NAP,desktop.rsc,icons.rsc} (ported GEM desktop, LP64; no cicons.rsc staged -> mono icons)"
 fi
 
 # PRESENT.NAP (TASK/PRESENT01) — our own full-screen slide show
@@ -592,16 +572,12 @@ fi
 # (sdk/apps/present/build-present.sh writes build/PRESENT.NAP + build/TEST.PNG).
 # QEMU image only: the slides for a real card are copied there by hand.
 # Started by double-click (or #Z); it reads SLIDES.TXT from its folder.
-PRES_DIR="$SCRIPT_DIR/../sdk/apps/present"
-if [ -f "$PRES_DIR/build/PRESENT.NAP" ] && [ -f "$PRES_DIR/build/TEST.PNG" ]; then
-  mkdir -p "$V/Apps/PRESENT"
-  cp "$PRES_DIR/build/PRESENT.NAP" "$V/Apps/PRESENT/PRESENT.NAP"
-  cp "$PRES_DIR/sample/SLIDES.TXT" "$V/Apps/PRESENT/SLIDES.TXT"
-  cp "$PRES_DIR/build/TEST.PNG"    "$V/Apps/PRESENT/TEST.PNG"
-  echo "installed C:\\Apps\\PRESENT\\{PRESENT.NAP,SLIDES.TXT,TEST.PNG} (slide show + sample slides)"
-else
-  echo "note: sdk/apps/present/build/PRESENT.NAP not built; C:\\Apps\\PRESENT skipped (run sdk/apps/present/build-present.sh)"
-fi
+PRES_DIR="$ROOT/sdk/apps/present"
+mkdir -p "$V/Apps/PRESENT"
+cp "$PRES_DIR/build/PRESENT.NAP" "$V/Apps/PRESENT/PRESENT.NAP"
+cp "$PRES_DIR/sample/SLIDES.TXT" "$V/Apps/PRESENT/SLIDES.TXT"
+cp "$PRES_DIR/build/TEST.PNG"    "$V/Apps/PRESENT/TEST.PNG"
+echo "installed C:\\Apps\\PRESENT\\{PRESENT.NAP,SLIDES.TXT,TEST.PNG} (slide show + sample slides)"
 
 # ── TERADESK.INF: TeraDesk's own configuration — GENERATED here (DESK41) ────
 # TeraDesk does NOT know the NewTOS extensions by itself: its built-in defaults
@@ -996,12 +972,8 @@ avstats=
 end
 
 TERAINF
-if [ -d "$V/Apps/TERADESK" ]; then
-  cp "$V/TERADESK.INF" "$V/Apps/TERADESK/TERADESK.INF"
-  echo "generated C:\\TERADESK.INF + C:\\Apps\\TERADESK\\TERADESK.INF (registers *.NAP/*.NCP/*.NTP/*.NAC)"
-else
-  echo "generated C:\\TERADESK.INF (registers *.NAP/*.NCP/*.NTP/*.NAC; no C:\\Apps\\TERADESK staged)"
-fi
+cp "$V/TERADESK.INF" "$V/Apps/TERADESK/TERADESK.INF"
+echo "generated C:\\TERADESK.INF + C:\\Apps\\TERADESK\\TERADESK.INF (registers *.NAP/*.NCP/*.NTP/*.NAC)"
 
 # Strip macOS metadata so it does not clutter the directory listing.
 sync

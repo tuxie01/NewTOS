@@ -18,6 +18,11 @@
  * ends in "MXPROBE: PASS" / "MXPROBE: FAIL". Needs alternate RAM (TT pool);
  * the expected answers do not depend on memprot (on/off/strict).
  *
+ * TASK/MEM11: tools/make-sd-image.sh puts it into \AUTO\ by default, and it
+ * also calls Malloc with a real size and Fgetdta, so every boot of that image
+ * with a debug kernel reaches the user-pointer assertions of Malloc, Mxalloc
+ * and Fgetdta.
+ *
  * Build: sdk/libc/build-libc.sh sdk/libc/tests/mxprobe.c sdk/libc/build/MXPROBE.NCP
  */
 #include <mint/basepage.h>
@@ -172,6 +177,24 @@ int main(void)
 	/* the preference falls back to the other pool */
 	if (q[1] > q[0] + 0x20000)
 		b[n++] = one("MX_PREFSTRAM > ST largest (falls back)", q[0] + 0x10000, MX_PREFSTRAM, 1, 0);
+
+	/* TASK/MEM11: the two other kernel pointers that leave as a LONG, so a
+	   boot from \AUTO\ runs their debug assertions too. Malloc with a real
+	   size (Malloc(-1) above is a size query, exempt from the check), and
+	   Fgetdta before any Fsetdta: the default DTA = &p_cmdlin = basepage +
+	   0x80 (EmuTOS bdos/proc.c:375). */
+	{
+		unsigned long m = (unsigned long)Malloc(0x1000L);
+
+		Cconws("[MXPROBE]");
+		kv("Malloc(0x1000)", m);
+		Cconws("\r\n");
+		check("Malloc(0x1000) -> a block", m != 0);
+		if (m)
+			Mfree((void *)m);
+		checkhex("Fgetdta() == default DTA (basepage + 0x80)",
+			 (unsigned long)Fgetdta(), (unsigned long)((char *)_base + 0x80));
+	}
 
 	for (i = 0; i < n; i++)
 		if (b[i])
