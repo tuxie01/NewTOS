@@ -203,7 +203,64 @@ if you find yourself wanting one, the case is wrong, not the comparator.
 
 The AES form has grown two columns since (the four control counts stated
 explicitly) and one optional one; `core/cases.h` is the authority for it. The
-optional one is the point of the next section.
+optional one is the point of the section after next.
+
+### Line kinds: comments, directives, preludes, cases
+
+Added 2026-10-26 from `core/cases.h`, where the rules have lived since
+2026-08-30 (preludes) and 2026-09-06 (`!reset`); nothing here is new, it was
+only missing from this spec.
+
+Every line consumes a line number, because **a case id is the physical
+1-based line number** and nothing may renumber the cases (`core/cases.h`
+header). Four kinds of line:
+
+- **Comment** — first non-blank character `#`, or an empty line.
+- **Directive** — first non-blank character `!`. Carries no call. Two exist,
+  for AES tables only:
+
+  ```
+  !reset   <TAB> none | wind_new
+  !columns <TAB> 7 | 8
+  ```
+
+  Each must stand before the first case or prelude, at most once, and an
+  unknown value is refused, never defaulted (`core/cases.h`, "The
+  directives"). `!columns 8` adds the `addr_in` column (next section).
+  `!reset` names **which** reset the runner issues; the sequence itself is in
+  `core/` (`td_reset_aes`, `core/runner_aes.c`), so both targets run the
+  identical one. `wind_new` is opcode 109 with all control counts 0, as gemlib
+  lays it (`a_wind_new.c:25`; `OUT_LEN 0`, because `xif` copies `OUT_LEN`
+  words out of an uninitialised stack buffer, `gemsuper.c:430-432,444-445`).
+  It is the AES' own reset: `wm_new` closes and deletes every window with
+  handle ≥ 1 and drains the `wind_update` locks (`gemwmlib.c:1875-1893`), and
+  EmuTOS issues it itself after every graphics program the shell runs
+  (`gemshlib.c:676-677`). The runner issues the declared reset before every
+  case and once after the last (`core/runner_aes.c`, both `td_reset_aes`
+  calls). **The table declares it, not the program,** because the dumper is
+  double-clicked on the TT without arguments and always reads `AES.TSV`: the
+  file, whose CRC the dump header carries, is the only thing that tells two
+  rounds apart. **Absent means `none`,** so the frozen round-1 table
+  (`cases/aes-r1.tsv`, CRC `33C13C8F`) still measures exactly what its dumps
+  recorded. What `wind_new` does not reach (`gl_newdesk`, `gl_aname`/
+  `gl_ainfo`, `gl_wtcolor`/`gl_wbcolor`, `D.w_win[0]`, only reset by
+  `wm_init`/`wm_start`) stays out of the tables through the guards below.
+- **Prelude** — the opcode field starts with `+`. A call issued after the
+  reset and before the next case's measured call, and **not recorded**. It is
+  what makes an effect measurable rather than an echo: a setter's echo only
+  proves the echo; a read-back after a non-default set proves the effect.
+  Preludes stack (several may precede one case, at most `TD_MAX_PRELUDES` =
+  256 per table; a VDI prelude carries at most `TD_PRELUDE_VALUES` = 16
+  `intin` and 16 `ptsin` values, an AES prelude the case's own `int_in`
+  limit), and a prelude with no
+  case after it is an error (`TD_CASE_ERR_DANGLING`). The refusal and
+  parameter guards apply to preludes as to cases. The raster table
+  (`vdi-raster.tsv`) refuses `+` lines; the screen table allows a fixed
+  whitelist of preludes (`core/cases.h`, raster and screen sections).
+- **Case** — everything else: one measured, recorded call.
+
+A malformed line of any kind is an error, never a skipped case: a table that
+half-loads produces a dump that compares against the wrong cases.
 
 ### The `addr_in` column — naming a buffer instead of an address
 
