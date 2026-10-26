@@ -6,7 +6,7 @@
 # while xtask and host tests build for the host. Naked functions and the inline
 # asm in use are stable (docs/MEMORY.md LESSON-003); no `#![feature]` gate is
 # used anywhere.
-# Update policy: the date is pinned (since 2026-05-02) so every build uses the
+# Update policy (PROPOSED 2026-10-26, not approved yet): the date is pinned (since 2026-05-02) so every build uses the
 # same compiler. Move it only on purpose, in a commit of its own, after a fresh
 # build of both boards and the host tests; drop nightly once
 # `per-package-target` is stable.
