@@ -207,7 +207,7 @@ counted defence (`gsxif::clipped_saves`). **Observable:** the length
 `wind_get(WF_SCREEN)` reports is larger than on a TOS/EmuTOS of the same
 resolution (614 400 against 163 840 at 640×480/16 bit; 40 960 on the
 four-plane TT). A program that takes the length as an upper bound for its own
-saves (TeraDesk `resource.c:307-320`, which deletes thirteen menu entries when
+saves (TeraDesk `sdk/apps/teradesk/resource.c:305-319`, which deletes thirteen menu entries when
 its largest drop-down does not fit) gets more room, never less. Two more
 things are internal and unobservable: the block is taken once at
 `sh_tographic` and — unlike `gsx_mfree` in `sh_toalpha`
@@ -252,7 +252,7 @@ Three reasons, and they point the same way:
    And 0 is what the client binding itself *intends* for such a word: gemlib
    pre-zeroes `aes_intout[3..4]` before `wind_get` and `aes_intout[5]` before
    `graf_xhandle` "for AES that doesn't support this extension"
-   (`sdk/gemlib/gemlib-0.44.0/a_wind_get.c:355-358`, `a_graf_xhandle.c:48-49`)
+   (`sdk/gemlib/gemlib-0.44.0/a_wind_get.c:355-358`, `sdk/gemlib/gemlib-0.44.0/a_graf_xhandle.c:48-49`)
    — a pre-zeroing that EmuTOS' unconditional copy-back defeats and NewTOS
    honours.
 2. **Measurement: real effect, and it must be read as noise.** Every
@@ -479,7 +479,7 @@ wrong**: at `&int_out[1]` after `wind_get(WF_SCREEN)` it yields
 `address | length << 32`, not the address (measured, `aes_t04_intin_long_
 contract.rs`). `sdk/gemlib/overlay/a_wind_get_ptr.c` reads `WF_SCREEN` as
 the LONG it is; the pristine `mt_wind_get` (four WORD copies) was never
-affected. cflib's `purec.c` reader of the same shape (`purec.c:166,171`) is
+affected. cflib's `purec.c` reader of the same shape (`sdk/cflib/cflib-21/purec.c:166,171`) is
 `__PUREC__`-only and not compiled into NewTOS's `cflib.a` (`purec.o` has no
 symbols; cflib's `wind_get` *is* gemlib's `mt_wind_get`). Host guards:
 `sdk/gemlib/tests/intin_long_words.c` (the four bindings, the `WF_SCREEN`
@@ -589,8 +589,8 @@ EmuTOS, each observable:
    `0x00000001` — non-zero, odd. On TOS the value is the address of an m68k
    function dispatcher (opcode in `d0`, Pure C convention); that convention
    has no AArch64 mapping and the jar stores 32-bit values. The in-tree
-   consumers only test the cookie's presence (zView `zvdi/vdi.c:28`,
-   HighWire `romvdi.c:70`); the probe `tosdump/core/scrninfo.c` does not call
+   consumers only test the cookie's presence (zView `sdk/zview/z-tools-04805b7/zview/zvdi/vdi.c:28`,
+   HighWire `sdk/apps/highwire/src/romvdi.c:70`); the probe `tosdump/core/scrninfo.c` does not call
    a zero or odd value. **A program that calls the dispatcher faults** —
    accepted until a callable trampoline exists (E2 option a, later). There is
    therefore no dispatcher opcode 0 and no reported EdDI version.
@@ -1000,7 +1000,7 @@ ends the accessory. E15 (only an owner frees) is unchanged. **Observable
 differences:** (1) memory an accessory allocates while program P is in front
 is the accessory's and survives P's `Pterm` (EmuTOS: freed with P — the
 pitfall `wait_for_accs(AP_MESAG)` and `ap_exit`'s `AP_ACCLOSE` wait mitigate,
-`aes/geminit.c:569-598`, `aes/gemaplib.c:249-262`); an accessory's `Mfree` of
+`aes/geminit.c:569-598`, `aes/gemaplib.c:251-261`); an accessory's `Mfree` of
 a block P owns answers `EIMBA` (E15; EmuTOS: freed); (2) an accessory's
 `Dsetdrv`/`Dsetpath`/`Fsetdta`/`Fforce`/`Fopen`/`Fcreate` change the
 accessory's state, not P's, and a file it opens is closed only by its own end;
