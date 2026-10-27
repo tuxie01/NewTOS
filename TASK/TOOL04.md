@@ -47,6 +47,12 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Werkzeug (Testbarkeit) — Anwen
      cargo ausfuehren, unter Datenschutz & Sicherheit → Entwicklertools
      zulassen (`spctl developer-mode enable-terminal`); bei einem EDR eine
      Ausnahme fuer `target/`. Abwaegung berichten, nicht anwenden.
+- Groesse variieren (Anwender 2026-10-27): dasselbe Testbinary frisch
+  gebaut mit voller Debuginfo gegen `[profile.test] debug =
+  "line-tables-only"` (oder gestrippt), je erster Start gemessen. Waechst die
+  Wartezeit mit der Groesse, sind kleinere Testbinaries eine **dritte
+  Abhilfe ohne Sicherheitsaenderung**, neben dem Zusammenfassen der
+  Integrationstests.
 
 ## Arbeit
 
