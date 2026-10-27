@@ -25,13 +25,20 @@ struct td_casefile {
 	uint16_t count;                                /* cases held             */
 	uint16_t line[TD_MAX_CASES];                   /* physical line = case id*/
 	char     comment[TD_MAX_CASES][TD_COMMENT_LEN];
+	/* Call areas only (BIOS / XBIOS / GEMDOS): the retclass column, which
+	 * the comparator needs to judge `ret` (spec section 6).  Read with the
+	 * core's own call-table parser, so a table the dumper would refuse is
+	 * refused here too, and with the same reason. */
+	uint8_t  retclass[TD_MAX_CASES];               /* TD_RET_*               */
+	uint8_t  retwidth[TD_MAX_CASES];               /* TD_RET_WIDTH_*         */
 };
 
 /*
  * `area` is one of TD_AREA_*: it selects the column count the comment is
- * taken from, and nothing else.  Returns 0 on success, -1 on I/O failure,
- * -2 if the table holds more than TD_MAX_CASES cases.  On failure *why is
- * set to a static message.
+ * taken from, and -- for a call area -- that the retclass column is read.
+ * Returns 0 on success, -1 on I/O failure, -2 if the table holds more than
+ * TD_MAX_CASES cases, -3 if a call table is refused by the core's loader.
+ * On failure *why is set to a static message.
  */
 int td_casefile_read(struct td_casefile *cf, const char *path, uint16_t area,
                      const char **why);

@@ -8,8 +8,9 @@
 #            falcontc  Falcon030, VGA, 640x480 16-bit truecolor, set by
 #                      EMUDESK.INF "#E 1A E0 00 1C 60" -- the machine of the
 #                      *-falcontc references and of NewTOS' colour model
-#   dumper   DUMPVDI.PRG, DUMPAES.PRG or DUMPRAST.PRG (m68k build)
-#   table    the case table; staged as VDI.TSV / AES.TSV / RASTER.TSV
+#   dumper   DUMPVDI.PRG, DUMPAES.PRG, DUMPRAST.PRG or DUMPBIOS.PRG (m68k)
+#   table    the case table; staged as VDI.TSV / AES.TSV / RASTER.TSV /
+#            BIOS.TSV
 #   out-dir  receives hd/ (the GEMDOS drive C:), <AREA>.BIN, <AREA>.LOG and
 #            hatari.log; must not exist yet
 #   rom      defaults to $ORACLE_ROM from tools/oracle/oracle.env
@@ -49,6 +50,7 @@ case $PRG in
     DUMPVDI.PRG)  AREA=VDI ;;
     DUMPAES.PRG)  AREA=AES ;;
     DUMPRAST.PRG) AREA=RASTER ;;
+    DUMPBIOS.PRG) AREA=BIOS ;;
     *) echo "unknown dumper: $PRG" >&2; exit 2 ;;
 esac
 

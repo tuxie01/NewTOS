@@ -292,7 +292,9 @@ void td_poison_call(struct td_call_frame *f)
 	int i;
 
 	poison32(f->args, TD_CALL_ARGS_N);
-	f->ret = (int32_t)0xDEADDEADuL;
+	f->ret    = (int32_t)0xDEADDEADuL;
+	f->ret_hi = 0xDEADDEADuL;
+	f->trap   = TD_POISON16;
 	for (i = 0; i < TD_CALL_CAPTURE_LEN; i += 2) {
 		f->capture[i]     = TD_POISON_HI;
 		f->capture[i + 1] = TD_POISON_LO;
@@ -424,8 +426,34 @@ void td_call_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
 	td_store_be16(rec + TD_CALL_OFF_OPCODE, opcode);
 	store32_array(rec + TD_CALL_OFF_ARGS, f->args, TD_CALL_ARGS_N);
 	td_store_be32(rec + TD_CALL_OFF_RET, (uint32_t)f->ret);
+	/* the capture is already in record order: td_call_capture stored it
+	 * element by element through td_store_be16 / td_store_be32 */
 	memcpy(rec + TD_CALL_OFF_CAPTURE, f->capture, TD_CALL_CAPTURE_LEN);
+	td_store_be32(rec + TD_CALL_OFF_RET_HI, f->ret_hi);
+	td_store_be16(rec + TD_CALL_OFF_TRAP, (uint16_t)f->trap);
 	/* reserved stays zero from the memset above */
+}
+
+void td_call_capture(uint8_t *dst, const void *src, uint16_t len, uint8_t unit)
+{
+	const uint8_t *p = (const uint8_t *)src;
+	uint16_t i;
+
+	if (len > TD_CALL_CAPTURE_LEN)
+		len = TD_CALL_CAPTURE_LEN;
+	for (i = 0; i + unit <= len; i = (uint16_t)(i + unit)) {
+		if (unit == 4) {
+			uint32_t v;
+			memcpy(&v, p + i, sizeof v);       /* machine order */
+			td_store_be32(dst + i, v);
+		} else if (unit == 2) {
+			uint16_t v;
+			memcpy(&v, p + i, sizeof v);
+			td_store_be16(dst + i, v);
+		} else {
+			dst[i] = p[i];
+		}
+	}
 }
 
 void td_raster_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
@@ -497,10 +525,20 @@ const struct td_field td_aes_fields[] = {
 	{ NULL, 0, 0, 0, 0, 0, 0, 0 }
 };
 
+/*
+ * The call record (BIOS / XBIOS / GEMDOS).  Every field is class value.
+ * `ret` is the one whose comparison the case's retclass column refines
+ * (docs/TOS-REFERENCE-DUMPER.md section 6): EXACT is the value comparison,
+ * the other four classes replace it by a property on each side.  The
+ * comparator reads `ret` together with the high half at TD_CALL_OFF_RET_HI
+ * as the 64-bit return register; the high half has no descriptor of its
+ * own because it is not a field a report could name apart from `ret`.
+ */
 const struct td_field td_call_fields[] = {
 	{ "args",    TD_CALL_OFF_ARGS,    TD_CALL_ARGS_N,      4, 0, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
 	{ "ret",     TD_CALL_OFF_RET,     1,                   4, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
 	{ "capture", TD_CALL_OFF_CAPTURE, TD_CALL_CAPTURE_LEN, 1, 0, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+	{ "trap",    TD_CALL_OFF_TRAP,    1,                   2, 0, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
 	{ NULL, 0, 0, 0, 0, 0, 0, 0 }
 };
 

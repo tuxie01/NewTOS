@@ -29,6 +29,8 @@ $(BUILD)/runner_aes.o: $(CORE)/runner_aes.c $(CORE)/runner_aes.h $(CORE)/abi.h |
 	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/runner_rast.o: $(CORE)/runner_rast.c $(CORE)/runner_rast.h $(CORE)/abi.h | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/runner_call.o: $(CORE)/runner_call.c $(CORE)/runner_call.h $(CORE)/abi.h | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/dump.o: $(CORE)/dump.c $(CORE)/dump.h | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/log.o: $(CORE)/log.c $(CORE)/log.h | $(BUILD)
@@ -38,7 +40,7 @@ $(BUILD)/stub_abi.o: $(TESTS)/stub_abi.c $(TESTS)/stub_abi.h $(CORE)/abi.h | $(B
 
 CORE_OBJ := $(BUILD)/record.o $(BUILD)/cases.o $(BUILD)/gem.o \
             $(BUILD)/runner.o $(BUILD)/runner_aes.o $(BUILD)/runner_rast.o \
-            $(BUILD)/dump.o $(BUILD)/log.o
+            $(BUILD)/runner_call.o $(BUILD)/dump.o $(BUILD)/log.o
 
 # The same writer, built for both target configurations (spec section 2.1).
 $(BUILD)/record_be.o: $(CORE)/record.c $(CORE)/record.h $(CORE)/tosdump.h | $(BUILD)
@@ -128,6 +130,20 @@ $(BUILD)/test_runner_rast: $(BUILD)/test_runner_rast.o $(CORE_OBJ) \
                            $(BUILD)/stub_abi.o
 	$(CC) $(CFLAGS) $^ -o $@
 
+$(BUILD)/test_cases_call.o: $(TESTS)/test_cases_call.c $(TESTS)/tdtest.h \
+                           $(CORE)/cases.h | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/test_cases_call: $(BUILD)/test_cases_call.o $(BUILD)/cases.o \
+                          $(BUILD)/record.o
+	$(CC) $(CFLAGS) $^ -o $@
+
+$(BUILD)/test_runner_call.o: $(TESTS)/test_runner_call.c $(TESTS)/tdtest.h \
+                             $(TESTS)/stub_abi.h $(CORE)/runner_call.h | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/test_runner_call: $(BUILD)/test_runner_call.o $(CORE_OBJ) \
+                           $(BUILD)/stub_abi.o
+	$(CC) $(CFLAGS) $^ -o $@
+
 $(BUILD)/emit_record.o: $(TESTS)/emit_record.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/emit_be: $(BUILD)/emit_record.o $(BUILD)/record_be.o
@@ -147,6 +163,7 @@ test:
 run-tests: $(BUILD)/test_record $(BUILD)/test_cases $(BUILD)/test_log \
       $(BUILD)/test_runner $(BUILD)/test_cases_aes $(BUILD)/test_runner_aes \
       $(BUILD)/test_cases_rast $(BUILD)/test_runner_rast \
+      $(BUILD)/test_cases_call $(BUILD)/test_runner_call \
       $(BUILD)/test_casefile $(BUILD)/tosdiff $(BUILD)/mkdump \
       $(BUILD)/emit_be $(BUILD)/emit_le
 	@echo "== record format"
@@ -169,6 +186,12 @@ run-tests: $(BUILD)/test_record $(BUILD)/test_cases $(BUILD)/test_log \
 	@echo "== VDI raster runner against the stub backend"
 	@$(BUILD)/test_runner_rast $(BUILD)/stub-raster.bin $(BUILD)/stub-raster.tsv
 	@$(BUILD)/tosdiff --validate $(BUILD)/stub-raster.bin | sed 's/^/  /'
+	@echo "== call case table (BIOS + XBIOS) and its guard"
+	@$(BUILD)/test_cases_call
+	@echo "== call runner against the stub backend"
+	@$(BUILD)/test_runner_call $(BUILD)/stub-bios.bin $(BUILD)/stub-bios.tsv
+	@$(BUILD)/tosdiff --validate $(BUILD)/stub-bios.bin $(BUILD)/stub-bios.tsv \
+	    | sed 's/^/  /'
 	@echo "== case table reader, per area"
 	@$(BUILD)/test_casefile $(BUILD)
 	@echo "== byte order: both target configurations emit identical records"

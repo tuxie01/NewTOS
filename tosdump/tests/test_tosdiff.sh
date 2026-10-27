@@ -335,6 +335,130 @@ else
 	fails=$((fails + 1))
 fi
 
+# --- the call area: retclass and capture (task T7) ---------------------
+#
+# The stub BIOS dump and its table come from test_runner_call earlier in the
+# suite.  Record i of case table line i+2; a record is 320 bytes after the
+# 32 byte header: ret at 36, capture at 40, ret_hi at 296, trap at 300.
+#   0 Bconstat EXACT      1 Physbase PTR_RAM     2 Protobt IGNORE
+#   3 Dsp_Available IGNORE  4 NVMaccess EXACT.W  5 EgetPalette IGNORE
+#   6 Getrez EXACT.W      7 Drvmap NONZERO       8 VgetMonitor HANDLE.W
+CALLBIN="$BUILD/stub-bios.bin"
+CALLTSV="$BUILD/stub-bios.tsv"
+cpatch() {   # cpatch <out> <record> <offset> <printf-bytes>  (from CALLBIN)
+	[ -f "$1" ] || cp "$CALLBIN" "$1"
+	printf "$4" | dd of="$1" bs=1 seek=$((32 + $2 * 320 + $3)) \
+	    conv=notrunc status=none
+}
+if [ -f "$CALLBIN" ] && [ -f "$CALLTSV" ]; then
+	"$TOSDIFF" --validate "$CALLBIN" "$CALLTSV" >"$TMP/cval.out" 2>&1
+	check "validate accepts the BIOS dump against its table" 0 $?
+	grep_out "validate names the BIOS area" "$TMP/cval.out" "area BIOS"
+	grep_out "validate matches the table" "$TMP/cval.out" "matches stub-bios.tsv (9 cases)"
+
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$CALLBIN" >"$TMP/csame.out" 2>&1
+	check "identical BIOS dumps compare clean" 0 $?
+	grep_out "the BIOS area is compared, not refused" "$TMP/csame.out" \
+	    "0 of 9 cases differ"
+
+	# EXACT: the low half differs
+	rm -f "$TMP/c_ex.bin"; cpatch "$TMP/c_ex.bin" 0 36 '\000\000\000\000'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_ex.bin" >"$TMP/cex.out" 2>&1
+	check "an EXACT return difference is reported" 1 $?
+	grep_out "EXACT names the class" "$TMP/cex.out" "ret .*EXACT"
+	grep_out "EXACT names the case" "$TMP/cex.out" "case 2 "
+	grep_out "the comment is column five" "$TMP/cex.out" "Bconstat CON"
+	grep_out "EXACT counts the case" "$TMP/cex.out" "1 of 9 cases differ"
+
+	# EXACT at LONG width is the 64-bit register: -1 zero-extended differs
+	rm -f "$TMP/c_zx.bin"; cpatch "$TMP/c_zx.bin" 0 296 '\000\000\000\000'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_zx.bin" >"$TMP/czx.out" 2>&1
+	check "a LONG returned zero-extended is a difference" 1 $?
+	grep_out "the 64-bit value is shown" "$TMP/czx.out" "0x00000000FFFFFFFF"
+
+	# EXACT.W: only the WORD is the contract
+	rm -f "$TMP/c_wh.bin"; cpatch "$TMP/c_wh.bin" 6 36 '\377\377'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_wh.bin" >"$TMP/cwh.out" 2>&1
+	check "EXACT.W ignores d0 above the WORD" 0 $?
+	rm -f "$TMP/c_wl.bin"; cpatch "$TMP/c_wl.bin" 6 38 '\022\064'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_wl.bin" >"$TMP/cwl.out" 2>&1
+	check "EXACT.W compares the WORD" 1 $?
+	grep_out "the WORD is shown" "$TMP/cwl.out" "0x1234"
+
+	# IGNORE
+	rm -f "$TMP/c_ig.bin"; cpatch "$TMP/c_ig.bin" 2 36 '\001\002\003\004'
+	cpatch "$TMP/c_ig.bin" 2 296 '\005\006\007\010'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_ig.bin" >"$TMP/cig.out" 2>&1
+	check "an IGNORE return is not compared" 0 $?
+
+	# PTR_RAM, per side: misaligned, null, at the limit, above 4 GiB
+	rm -f "$TMP/c_pa.bin"; cpatch "$TMP/c_pa.bin" 1 36 '\000\253\315\002'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_pa.bin" >"$TMP/cpa.out" 2>&1
+	check "PTR_RAM: a misaligned pointer is flagged" 1 $?
+	grep_out "PTR_RAM names the side and the reason" "$TMP/cpa.out" \
+	    "ret .*PTR_RAM c_pa.bin *= .*not a multiple of 4"
+	if grep -q "PTR_RAM stub-bios.bin" "$TMP/cpa.out"; then
+		echo "  FAIL PTR_RAM flagged the side that is fine"
+		fails=$((fails + 1))
+	fi
+	rm -f "$TMP/c_p0.bin"; cpatch "$TMP/c_p0.bin" 1 36 '\000\000\000\000'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_p0.bin" >"$TMP/cp0.out" 2>&1
+	check "PTR_RAM: a null pointer is flagged" 1 $?
+	grep_out "PTR_RAM null" "$TMP/cp0.out" "PTR_RAM c_p0.bin .*is null"
+	rm -f "$TMP/c_pl.bin"; cpatch "$TMP/c_pl.bin" 1 36 '\200\000\000\000'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_pl.bin" >"$TMP/cpl.out" 2>&1
+	check "PTR_RAM: 0x80000000 is flagged" 1 $?
+	grep_out "PTR_RAM limit" "$TMP/cpl.out" "PTR_RAM c_pl.bin .*not < 0x80000000"
+	rm -f "$TMP/c_ph.bin"; cpatch "$TMP/c_ph.bin" 1 296 '\000\000\000\001'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_ph.bin" >"$TMP/cph.out" 2>&1
+	check "PTR_RAM: a pointer above 4 GiB is flagged" 1 $?
+	grep_out "PTR_RAM high half" "$TMP/cph.out" \
+	    "PTR_RAM c_ph.bin *= 0x0000000100ABCD00, not < 0x80000000"
+	# the same violation on both sides: equal values, still a violation
+	"$TOSDIFF" "$CALLTSV" "$TMP/c_pa.bin" "$TMP/c_pa.bin" >"$TMP/cpp.out" 2>&1
+	check "PTR_RAM: a violation on both sides is still flagged" 1 $?
+	if [ "$(grep -c "PTR_RAM c_pa.bin" "$TMP/cpp.out")" != 2 ]; then
+		echo "  FAIL PTR_RAM must judge each side on its own"
+		fails=$((fails + 1))
+	fi
+	grep_out "PTR_RAM counts the case" "$TMP/cpp.out" "1 of 9 cases differ"
+
+	# NONZERO and HANDLE.W
+	rm -f "$TMP/c_nz.bin"; cpatch "$TMP/c_nz.bin" 7 36 '\000\000\000\000'
+	cpatch "$TMP/c_nz.bin" 7 296 '\000\000\000\000'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_nz.bin" >"$TMP/cnz.out" 2>&1
+	check "NONZERO: zero is flagged" 1 $?
+	grep_out "NONZERO names the reason" "$TMP/cnz.out" "NONZERO c_nz.bin .*is zero"
+	rm -f "$TMP/c_hd.bin"; cpatch "$TMP/c_hd.bin" 8 38 '\377\376'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_hd.bin" >"$TMP/chd.out" 2>&1
+	check "HANDLE.W: a negative WORD is flagged" 1 $?
+	grep_out "HANDLE names the reason" "$TMP/chd.out" "HANDLE c_hd.bin .*is negative"
+	rm -f "$TMP/c_hp.bin"; cpatch "$TMP/c_hp.bin" 8 36 '\177\377\000\001'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_hp.bin" >"$TMP/chp.out" 2>&1
+	check "HANDLE: a different non-negative value is no difference" 0 $?
+
+	# capture, trap and args are compared by value and named
+	rm -f "$TMP/c_cp.bin"; cpatch "$TMP/c_cp.bin" 2 43 '\000'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_cp.bin" >"$TMP/ccp.out" 2>&1
+	check "a capture difference is reported" 1 $?
+	grep_out "the capture byte is named" "$TMP/ccp.out" "capture\[3\]"
+	rm -f "$TMP/c_tr.bin"; cpatch "$TMP/c_tr.bin" 6 300 '\000\015'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_tr.bin" >"$TMP/ctr.out" 2>&1
+	check "a trap difference is reported" 1 $?
+	grep_out "the trap is named" "$TMP/ctr.out" "trap\[0\]"
+	rm -f "$TMP/c_ar.bin"; cpatch "$TMP/c_ar.bin" 0 4 '\000\000\000\003'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_ar.bin" >"$TMP/car.out" 2>&1
+	check "an argument difference is reported" 1 $?
+	grep_out "the argument is named" "$TMP/car.out" "args\[0\]"
+	if grep -q "ret_hi\|reserved" "$TMP/car.out"; then
+		echo "  FAIL ret_hi or the reserved bytes were compared as a field"
+		fails=$((fails + 1))
+	fi
+else
+	echo "  FAIL stub BIOS dump missing: $CALLBIN / $CALLTSV"
+	fails=$((fails + 1))
+fi
+
 if [ "$fails" -eq 0 ]; then
 	echo "  ok"
 	exit 0

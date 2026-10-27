@@ -1,0 +1,1629 @@
+diff --git a/tosdump/Makefile b/tosdump/Makefile
+index fac0c064..255e1daa 100644
+--- a/tosdump/Makefile
++++ b/tosdump/Makefile
+@@ -6,6 +6,8 @@
+ #   make dumpaes-newtos   DUMPAES.NAP for NewTOS on the Pi 4 (AArch64)
+ #   make dumprast-m68k    DUMPRAST.PRG for TOS/EmuTOS on the TT
+ #   make dumprast-newtos  DUMPRAST.NAP for NewTOS on the Pi 4 (AArch64)
++#   make dumpbios-m68k    DUMPBIOS.PRG, BIOS + XBIOS, for TOS/EmuTOS (m68k)
++#   make dumpbios-newtos  DUMPBIOS.NAP, BIOS + XBIOS, for NewTOS (AArch64)
+ #   make scrninfo-m68k    SCRNINFO.TTP, the EdDI / vq_scrninfo probe (TOS)
+ #   make scrninfo-newtos  SCRNINFO.NAP, the same probe for NewTOS (AArch64)
+ #   make host-test        the host-side suite (same as make -C host test)
+@@ -36,6 +38,9 @@ AES_SRC  := $(CORE_SRC) core/runner_aes.c core/dumpaes.c
+ # case is the same sequence, and stating it twice is how two runs stop being
+ # comparable.
+ RAST_SRC := $(CORE_SRC) core/runner.c core/runner_rast.c core/dumprast.c
++# The BIOS + XBIOS dumper is no AES client: no gem.c, no VDI reset.
++BIOS_SRC := core/record.c core/cases.c core/dump.c core/log.c \
++            core/runner_call.c core/dumpbios.c
+ # The EdDI probe needs only the workstation handling; the cookie jar, the
+ # EdDI dispatcher and the clock are TOS-only and sit in their own backend.
+ SCRN_SRC := core/gem.c core/scrninfo.c abi/m68k_scrninfo.c
+@@ -43,10 +48,11 @@ SCRN_SRC := core/gem.c core/scrninfo.c abi/m68k_scrninfo.c
+ BUILD := build
+ 
+ .PHONY: all dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
+-        dumprast-m68k dumprast-newtos scrninfo-m68k scrninfo-newtos host-test \
+-        clean
++        dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
++        scrninfo-m68k scrninfo-newtos host-test clean
+ all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
+-     dumprast-m68k dumprast-newtos scrninfo-m68k scrninfo-newtos host-test
++     dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
++     scrninfo-m68k scrninfo-newtos host-test
+ 
+ $(BUILD):
+ 	@mkdir -p $(BUILD)
+@@ -84,6 +90,17 @@ dumprast-newtos: $(BUILD)/DUMPRAST.NAP
+ $(BUILD)/DUMPRAST.NAP: $(RAST_SRC) abi/newtos_svc.c $(wildcard core/*.h) | $(BUILD)
+ 	./build-dumprast-newtos.sh $@
+ 
++# .PRG like the others, so the oracle's --auto and the desktop start it the
++# same way; it makes no AES call.
++dumpbios-m68k: $(BUILD)/DUMPBIOS.PRG
++$(BUILD)/DUMPBIOS.PRG: $(BIOS_SRC) abi/m68k_trap.c $(wildcard core/*.h) | $(BUILD)
++	$(M68K_CC) $(M68K_CFLAGS) $(BIOS_SRC) abi/m68k_trap.c -o $@
++	@$(CROSS_MINT)size $@
++
++dumpbios-newtos: $(BUILD)/DUMPBIOS.NAP
++$(BUILD)/DUMPBIOS.NAP: $(BIOS_SRC) abi/newtos_svc.c $(wildcard core/*.h) | $(BUILD)
++	./build-dumpbios-newtos.sh $@
++
+ # .TTP: it takes the report file name as its argument.  appl_init works from
+ # a TOS program as well, which is all the probe needs of the AES.  The TOS
+ # backend reads the jar via Supexec and calls an m68k EdDI dispatcher.
+diff --git a/tosdump/abi/m68k_trap.c b/tosdump/abi/m68k_trap.c
+index 40df6c45..a98daa9d 100644
+--- a/tosdump/abi/m68k_trap.c
++++ b/tosdump/abi/m68k_trap.c
+@@ -92,3 +92,65 @@ int32_t td_abi_aes(int16_t *control, int16_t *global, int16_t *int_in,
+ 	);
+ 	return (int32_t)ret;
+ }
++
++/*
++ * The register / stack traps (abi.h): GEMDOS trap #1, BIOS trap #13, XBIOS
++ * trap #14.  The frame is what mintlib's trap_13_wwl & friends push
++ * (sdk/libc/mintlib/include/mint/osbind.h, the m68k original): the
++ * arguments right to left, a WORD as one WORD and a LONG as two, most
++ * significant first, then the function number on top.  It is laid here in
++ * a WORD array in exactly that memory order and copied onto the stack in
++ * one loop, so the frame does not depend on how many arguments a case has.
++ *
++ * Every operand the asm still needs after it has moved the stack pointer is
++ * in a register ("a"/"d"), never a stack-relative memory operand, and none
++ * of them is in d0-d2/a0-a2, which the trap may clobber and which the asm
++ * uses itself -- the clobber list keeps the compiler out of them.  The
++ * trap returns with d3-d7/a3-a6 intact (bios/vectors.S, biosxbios saves
++ * them), so the frame size survives it.
++ */
++#define TD_M68K_FRAME_WORDS (1 + 2 * TD_ABI_ARGS_MAX)
++
++#define TD_M68K_TRAP(insn)                                                  \
++	__asm__ volatile (                                                      \
++		"move.l %1,%%a0\n\t"      /* a0 = end of the frame          */      \
++		"move.l %2,%%d1\n\t"      /* d1 = WORDs - 1, for dbra       */      \
++		"1:\n\t"                                                            \
++		"move.w -(%%a0),-(%%sp)\n\t"                                        \
++		"dbra   %%d1,1b\n\t"                                                \
++		insn "\n\t"                                                         \
++		"add.l  %3,%%sp\n\t"      /* pop the frame                  */      \
++		"move.l %%d0,%0"                                                    \
++		: "=&d"(ret)                                                        \
++		: "a"(end), "d"(count), "d"(bytes)                                  \
++		: "d0", "d1", "d2", "a0", "a1", "a2", "memory", "cc")
++
++long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
++                 const uint8_t *kind, const long *value)
++{
++	uint16_t frame[TD_M68K_FRAME_WORDS];
++	uint16_t *end;
++	long ret = TD_ABI_NO_TRAP, count, bytes;
++	int n = 0, i;
++
++	frame[n++] = (uint16_t)opcode;
++	for (i = 0; i < (int)nargs && i < TD_ABI_ARGS_MAX; i++) {
++		if (kind[i] == TD_ABI_ARG_WORD) {
++			frame[n++] = (uint16_t)value[i];
++		} else {
++			frame[n++] = (uint16_t)((unsigned long)value[i] >> 16);
++			frame[n++] = (uint16_t)value[i];
++		}
++	}
++	end   = frame + n;
++	count = n - 1;
++	bytes = 2L * n;
++
++	switch (trap) {
++	case 1:  TD_M68K_TRAP("trap   #1");  break;
++	case 13: TD_M68K_TRAP("trap   #13"); break;
++	case 14: TD_M68K_TRAP("trap   #14"); break;
++	default: break;
++	}
++	return ret;
++}
+diff --git a/tosdump/abi/newtos_svc.c b/tosdump/abi/newtos_svc.c
+index d0797c99..812cba40 100644
+--- a/tosdump/abi/newtos_svc.c
++++ b/tosdump/abi/newtos_svc.c
+@@ -96,3 +96,46 @@ int32_t td_abi_aes(int16_t *control, int16_t *global, int16_t *int_in,
+ 	);
+ 	return (int32_t)x0;
+ }
++
++/*
++ * The register traps (abi.h): GEMDOS svc #1, BIOS svc #13, XBIOS svc #14.
++ * The register ABI is the one sdk/libc/mintlib/include/mint/osbind.h's
++ * NewTOS trap layer uses (verified there against tos_api::trap): the
++ * function number in x8, the arguments in x0..x7 left to right, the result
++ * in x0; the SVC entry preserves x1..x29.  `value` already holds every
++ * argument at register width -- a WORD sign-narrowed, a LONG sign-extended,
++ * a pointer whole, an unused slot poison -- so all eight registers are
++ * loaded as they stand.  `kind` says how a WORD travels on the m68k stack;
++ * a register has one width, so it has nothing to say here.
++ */
++#define TD_SVC_TRAP(insn)                                                   \
++	__asm__ __volatile__ (                                                  \
++		insn                                                                \
++		: "+r"(x0)                                                          \
++		: "r"(x1), "r"(x2), "r"(x3), "r"(x4), "r"(x5), "r"(x6), "r"(x7),     \
++		  "r"(x8)                                                           \
++		: "memory", "cc")
++
++long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
++                 const uint8_t *kind, const long *value)
++{
++	register long x0 __asm__("x0") = value[0];
++	register long x1 __asm__("x1") = value[1];
++	register long x2 __asm__("x2") = value[2];
++	register long x3 __asm__("x3") = value[3];
++	register long x4 __asm__("x4") = value[4];
++	register long x5 __asm__("x5") = value[5];
++	register long x6 __asm__("x6") = value[6];
++	register long x7 __asm__("x7") = value[7];
++	register long x8 __asm__("x8") = (long)opcode;
++
++	(void)nargs;
++	(void)kind;
++	switch (trap) {
++	case 1:  TD_SVC_TRAP("svc	#1");  break;
++	case 13: TD_SVC_TRAP("svc	#13"); break;
++	case 14: TD_SVC_TRAP("svc	#14"); break;
++	default: return TD_ABI_NO_TRAP;
++	}
++	return x0;
++}
+diff --git a/tosdump/core/abi.h b/tosdump/core/abi.h
+index d4251177..3df51a58 100644
+--- a/tosdump/core/abi.h
++++ b/tosdump/core/abi.h
+@@ -36,4 +36,36 @@ int32_t td_abi_vdi(int16_t *contrl, int16_t *intin, int16_t *ptsin,
+ int32_t td_abi_aes(int16_t *control, int16_t *global, int16_t *int_in,
+                    int16_t *int_out, void **addr_in, void **addr_out);
+ 
++/*
++ * The register / stack traps: GEMDOS (1), BIOS (13), XBIOS (14).
++ *
++ * `kind[i]` says how argument i travels -- the one thing the two ABIs
++ * disagree about:
++ *
++ *   TD_ABI_ARG_WORD  one WORD on the m68k stack (the low 16 bits of
++ *                    value[i]); on AArch64 the register gets value[i],
++ *                    which the caller has already sign-narrowed.
++ *   TD_ABI_ARG_LONG  a LONG or a pointer: two WORDs on the m68k stack, most
++ *                    significant first; on AArch64 the whole register.
++ *
++ * `value` always holds TD_ABI_ARGS_MAX entries.  The m68k backend pushes
++ * the first `nargs` right to left under the function number, issues the
++ * trap and pops the frame; the AArch64 backend loads all eight into x0..x7
++ * (the caller fills the unused ones with poison) and the function number
++ * into x8, as sdk/libc/mintlib/include/mint/osbind.h's NewTOS trap layer
++ * does.  Marshalling only, no logic (spec section 2, section 8 rule 5).
++ *
++ * Returns the return register at its native width -- d0 (32 bits) on the
++ * m68k, x0 (64 bits) on AArch64 -- as a `long`, which is exactly that width
++ * on both.  An unknown trap number issues nothing and returns
++ * TD_ABI_NO_TRAP; the case loader never lets one through.
++ */
++#define TD_ABI_ARG_WORD  1
++#define TD_ABI_ARG_LONG  2
++#define TD_ABI_ARGS_MAX  8
++#define TD_ABI_NO_TRAP   ((long)(int32_t)0xDEADDEADuL)
++
++long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
++                 const uint8_t *kind, const long *value);
++
+ #endif /* TOSDUMP_ABI_H */
+diff --git a/tosdump/core/cases.c b/tosdump/core/cases.c
+index 3f12140a..fbe4f0e7 100644
+--- a/tosdump/core/cases.c
++++ b/tosdump/core/cases.c
+@@ -2674,6 +2674,704 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
+ 	return rc;
+ }
+ 
++/* ------------------------------------------------------------------ */
++/* Call tables: BIOS + XBIOS (cases.h, "Call tables")                  */
++/* ------------------------------------------------------------------ */
++
++/*
++ * One 32-bit value, decimal or 0x hex, -2147483648..4294967295: a LONG is
++ * stated as a bit pattern (0xFFFFFFFF) as often as a number (-1), and both
++ * spellings must reach the machine as the same 32 bits.
++ */
++static int parse_value32(const char *s, size_t len, int32_t *out)
++{
++	int negative = 0, base = 10, digits = 0;
++	uint32_t v = 0;
++	size_t i = 0;
++
++	trim(&s, &len);
++	if (len == 0)
++		return TD_CASE_ERR_VALUE;
++	if (s[0] == '-') {
++		negative = 1;
++		i = 1;
++	} else if (s[0] == '+') {
++		i = 1;
++	}
++	if (len - i > 2 && s[i] == '0' && (s[i + 1] == 'x' || s[i + 1] == 'X')) {
++		base = 16;
++		i += 2;
++	}
++	for (; i < len; i++) {
++		uint32_t d;
++		char c = s[i];
++
++		if (c >= '0' && c <= '9')
++			d = (uint32_t)(c - '0');
++		else if (base == 16 && c >= 'a' && c <= 'f')
++			d = (uint32_t)(c - 'a' + 10);
++		else if (base == 16 && c >= 'A' && c <= 'F')
++			d = (uint32_t)(c - 'A' + 10);
++		else
++			return TD_CASE_ERR_VALUE;
++		if (v > (0xFFFFFFFFuL - d) / (uint32_t)base)
++			return TD_CASE_ERR_RANGE;
++		v = v * (uint32_t)base + d;
++		digits++;
++	}
++	if (digits == 0)
++		return TD_CASE_ERR_VALUE;
++	if (negative) {
++		if (v > 0x80000000uL)
++			return TD_CASE_ERR_RANGE;
++		*out = (int32_t)(0u - v);
++	} else {
++		*out = (int32_t)v;
++	}
++	return 0;
++}
++
++/* A small unsigned number, for the trap, the function and the capture. */
++static int parse_small(const char *s, size_t len, uint32_t max, uint32_t *out)
++{
++	int32_t v;
++	int rc = parse_value32(s, len, &v);
++
++	if (rc != 0)
++		return rc;
++	if (v < 0 || (uint32_t)v > max)
++		return TD_CASE_ERR_RANGE;
++	*out = (uint32_t)v;
++	return 0;
++}
++
++const char *td_retclass_name(uint8_t retclass)
++{
++	switch (retclass) {
++	case TD_RET_EXACT:   return "EXACT";
++	case TD_RET_IGNORE:  return "IGNORE";
++	case TD_RET_NONZERO: return "NONZERO";
++	case TD_RET_HANDLE:  return "HANDLE";
++	case TD_RET_PTR_RAM: return "PTR_RAM";
++	default:             return "?";
++	}
++}
++
++static int span_is(const char *s, size_t len, const char *word)
++{
++	return strlen(word) == len && memcmp(s, word, len) == 0;
++}
++
++static int parse_retclass(const char *s, size_t len, struct td_call_case *c,
++                          const char **why)
++{
++	static const uint8_t classes[] = { TD_RET_EXACT, TD_RET_IGNORE,
++	                                   TD_RET_NONZERO, TD_RET_HANDLE,
++	                                   TD_RET_PTR_RAM };
++	size_t dot, i;
++
++	trim(&s, &len);
++	for (dot = 0; dot < len && s[dot] != '.'; dot++)
++		;
++	c->retclass = 0xFF;
++	for (i = 0; i < sizeof classes; i++)
++		if (span_is(s, dot, td_retclass_name(classes[i])))
++			c->retclass = classes[i];
++	if (c->retclass == 0xFF) {
++		*why = "retclass is not EXACT, IGNORE, NONZERO, HANDLE or PTR_RAM";
++		return TD_CASE_ERR_RETCLASS;
++	}
++	c->retwidth = TD_RET_WIDTH_LONG;
++	if (dot == len)
++		return 0;
++	/* ".L" is the default and is not spelt: one spelling per meaning, so
++	 * that two tables saying the same thing have the same bytes. */
++	if (span_is(s + dot, len - dot, ".W"))
++		c->retwidth = TD_RET_WIDTH_WORD;
++	else if (span_is(s + dot, len - dot, ".B"))
++		c->retwidth = TD_RET_WIDTH_BYTE;
++	else {
++		*why = "retclass width is not .W or .B (LONG has no suffix)";
++		return TD_CASE_ERR_RETCLASS;
++	}
++	if (c->retclass == TD_RET_IGNORE) {
++		*why = "IGNORE takes no width";
++		return TD_CASE_ERR_RETCLASS;
++	}
++	if (c->retclass == TD_RET_PTR_RAM) {
++		*why = "PTR_RAM takes no width: a pointer is a LONG";
++		return TD_CASE_ERR_RETCLASS;
++	}
++	return 0;
++}
++
++static int parse_call_args(const char *s, size_t len, struct td_call_case *c,
++                           const char **why)
++{
++	size_t i = 0, start = 0;
++
++	c->nargs = 0;
++	trim(&s, &len);
++	if (len == 1 && s[0] == '-')
++		return 0;
++	if (len == 0) {
++		*why = "the args column is empty (\"-\" for none)";
++		return TD_CASE_ERR_VALUE;
++	}
++	for (;;) {
++		if (i == len || s[i] == ',') {
++			const char *a = s + start;
++			size_t alen = i - start;
++			struct td_call_arg *arg;
++			int32_t v;
++			int rc;
++
++			trim(&a, &alen);
++			if (c->nargs >= TD_CALL_ARGS_N) {
++				*why = "more than eight arguments";
++				return TD_CASE_ERR_TOO_MANY_VALUES;
++			}
++			arg = &c->arg[c->nargs];
++			if (alen < 3 || a[1] != ':') {
++				*why = "an argument is not w:<v>, l:<v> or b:<n>";
++				return TD_CASE_ERR_VALUE;
++			}
++			rc = parse_value32(a + 2, alen - 2, &v);
++			if (rc != 0) {
++				*why = "an argument value is not a number";
++				return rc;
++			}
++			switch (a[0]) {
++			case 'w':
++				if (v < -32768 || v > 65535) {
++					*why = "a WORD argument does not fit in 16 bits";
++					return TD_CASE_ERR_RANGE;
++				}
++				arg->kind  = TD_CALL_ARG_WORD;
++				arg->value = (int32_t)(int16_t)(uint16_t)v;
++				break;
++			case 'l':
++				arg->kind  = TD_CALL_ARG_LONG;
++				arg->value = v;
++				break;
++			case 'b':
++				if (v < 0 || v >= TD_CALL_BUF_N) {
++					*why = "a buffer argument names no dumper buffer";
++					return TD_CASE_ERR_RANGE;
++				}
++				arg->kind  = TD_CALL_ARG_BUF;
++				arg->value = v;
++				break;
++			default:
++				*why = "an argument is not w:<v>, l:<v> or b:<n>";
++				return TD_CASE_ERR_VALUE;
++			}
++			c->nargs++;
++			if (i == len)
++				break;
++			start = i + 1;
++		}
++		i++;
++	}
++	return 0;
++}
++
++static int parse_capture(const char *s, size_t len, struct td_call_case *c,
++                         const char **why)
++{
++	size_t colon, end, at;
++	uint32_t idx, length, off = 0;
++	uint8_t unit = 1;
++	int rc;
++
++	c->cap_arg = -1;
++	trim(&s, &len);
++	if (len == 1 && s[0] == '-')
++		return 0;
++	*why = "capture is not - or <argindex>:<length>[.B|.W|.L][@<offset>]";
++	for (colon = 0; colon < len && s[colon] != ':'; colon++)
++		;
++	if (colon == 0 || colon >= len)
++		return TD_CASE_ERR_CAPTURE;
++	for (at = colon; at < len && s[at] != '@'; at++)
++		;
++	for (end = colon; end < at && s[end] != '.'; end++)
++		;
++	if (parse_small(s, colon, 255, &idx) != 0)
++		return TD_CASE_ERR_CAPTURE;
++	rc = parse_small(s + colon + 1, end - colon - 1, 0xFFFF, &length);
++	if (rc != 0)
++		return TD_CASE_ERR_CAPTURE;
++	if (end < at) {
++		if (span_is(s + end, at - end, ".B"))
++			unit = 1;
++		else if (span_is(s + end, at - end, ".W"))
++			unit = 2;
++		else if (span_is(s + end, at - end, ".L"))
++			unit = 4;
++		else {
++			*why = "capture unit is not .B, .W or .L";
++			return TD_CASE_ERR_CAPTURE;
++		}
++	}
++	if (at < len && parse_small(s + at + 1, len - at - 1, 0xFFFF, &off) != 0)
++		return TD_CASE_ERR_CAPTURE;
++
++	if (idx >= c->nargs || c->arg[idx].kind != TD_CALL_ARG_BUF) {
++		*why = "capture names an argument that is not a b: buffer";
++		return TD_CASE_ERR_CAPTURE;
++	}
++	if (length == 0 || length > TD_CALL_CAPTURE_LEN) {
++		*why = "capture length is not 1..256 bytes";
++		return TD_CASE_ERR_CAPTURE;
++	}
++	if (length % unit != 0 || off % unit != 0) {
++		*why = "capture length or offset is not a whole number of units";
++		return TD_CASE_ERR_CAPTURE;
++	}
++	if (off + length > TD_CALL_BUF_BYTES) {
++		*why = "capture runs past the end of the buffer";
++		return TD_CASE_ERR_CAPTURE;
++	}
++	c->cap_arg  = (int8_t)idx;
++	c->cap_unit = unit;
++	c->cap_off  = (uint16_t)off;
++	c->cap_len  = (uint16_t)length;
++	return 0;
++}
++
++/*
++ * THE GUARD (cases.h).  The whitelist: every (trap, function) whose query
++ * arm is established as safe on both machines in tosdump/cases/
++ * COVERAGE-BIOS.md, with the binding's argument widths and the rule its
++ * values have to meet.  Citations per entry are in the ledger; the rule
++ * comments name the arm that makes the call safe.
++ *
++ * Signature letters: 'w' a WORD, 'l' a LONG, 'p' a pointer -- a b: buffer
++ * or an l: value (NULL, or -1 where the call reads -1 as "unchanged").
++ */
++enum {
++	CR_NONE,         /* every value is a query                            */
++	CR_ARG0_M1,      /* arg 0 is -1: the inquiry arm                      */
++	CR_ARG1_M1,      /* arg 1 is -1: Setexc, Setcolor, EsetColor          */
++	CR_ALL_M1,       /* every argument is -1: Kbrate, Keytbl              */
++	CR_SETSCREEN,    /* logLoc, physLoc, rez all -1                       */
++	CR_RSCONF,       /* all -1, or baud -2 (and the rest -1)              */
++	CR_BCONIN,       /* only handles that answer at once on both machines */
++	CR_BCONOUT,      /* CON / raw CON with a printable byte; or no device */
++	CR_CURSCONF,     /* function 5, the blink-rate inquiry                */
++	CR_GIACCESS,     /* a register read: no GIACCESS_WRITE bit            */
++	CR_FLOPRATE,     /* rate -1 or -4: the two inquiries                  */
++	CR_BCONMAP,      /* -1, -2, or a device number that maps nothing      */
++	CR_NVM,          /* read or an invalid op; never write or reset       */
++	CR_BUF0,         /* arg 0 is a dumper buffer: Protobt, Buffptr        */
++	CR_BUF01,        /* args 0 and 1 are dumper buffers: Dsp_Available    */
++	CR_EGETPAL,      /* buffer argument, count fits it as WORDs           */
++	CR_VGETRGB,      /* buffer argument, count fits it as LONGs           */
++	CR_SOUNDCMD,     /* modes 0, 1, 6 with data -1                        */
++	CR_SNDSTATUS     /* reset 0                                           */
++};
++
++struct call_policy {
++	int16_t     trap;
++	int16_t     fn_lo, fn_hi;
++	const char *sig;
++	const char *sig_alt;      /* a second accepted signature, or NULL */
++	uint8_t     rule;
++};
++
++static const struct call_policy call_policy[] = {
++	/* BIOS, trap #13 (bios/bios.c:1252-1265) */
++	{ 13,    1,    1, "w",      NULL,   CR_NONE      },  /* Bconstat    */
++	{ 13,    2,    2, "w",      NULL,   CR_BCONIN    },  /* Bconin      */
++	{ 13,    3,    3, "ww",     NULL,   CR_BCONOUT   },  /* Bconout     */
++	{ 13,    5,    5, "wl",     NULL,   CR_ARG1_M1   },  /* Setexc      */
++	{ 13,    6,    6, "",       NULL,   CR_NONE      },  /* Tickcal     */
++	{ 13,    8,    8, "w",      NULL,   CR_NONE      },  /* Bcostat     */
++	{ 13,   10,   10, "",       NULL,   CR_NONE      },  /* Drvmap      */
++	{ 13,   11,   11, "w",      NULL,   CR_ARG0_M1   },  /* Kbshift     */
++	{ 13,   12,  255, "",       NULL,   CR_NONE      },  /* past table  */
++	/* XBIOS, trap #14 (bios/xbios.c:1285-1515) */
++	{ 14, 0x02, 0x04, "",       NULL,   CR_NONE      },  /* Physbase, Logbase, Getrez */
++	{ 14, 0x05, 0x05, "ppw",    "ppww", CR_SETSCREEN },  /* Setscreen   */
++	{ 14, 0x07, 0x07, "ww",     NULL,   CR_ARG1_M1   },  /* Setcolor    */
++	{ 14, 0x0E, 0x0E, "w",      NULL,   CR_NONE      },  /* Iorec       */
++	{ 14, 0x0F, 0x0F, "wwwwww", NULL,   CR_RSCONF    },  /* Rsconf      */
++	{ 14, 0x10, 0x10, "ppp",    NULL,   CR_ALL_M1    },  /* Keytbl      */
++	{ 14, 0x11, 0x11, "",       NULL,   CR_NONE      },  /* Random      */
++	{ 14, 0x12, 0x12, "plww",   NULL,   CR_BUF0      },  /* Protobt     */
++	{ 14, 0x15, 0x15, "ww",     NULL,   CR_CURSCONF  },  /* Cursconf    */
++	{ 14, 0x17, 0x17, "",       NULL,   CR_NONE      },  /* Gettime     */
++	{ 14, 0x1C, 0x1C, "ww",     NULL,   CR_GIACCESS  },  /* Giaccess    */
++	{ 14, 0x20, 0x20, "p",      NULL,   CR_ARG0_M1   },  /* Dosound     */
++	{ 14, 0x21, 0x21, "w",      NULL,   CR_ARG0_M1   },  /* Setprt      */
++	{ 14, 0x22, 0x22, "",       NULL,   CR_NONE      },  /* Kbdvbase    */
++	{ 14, 0x23, 0x23, "ww",     NULL,   CR_ALL_M1    },  /* Kbrate      */
++	{ 14, 0x25, 0x25, "",       NULL,   CR_NONE      },  /* Vsync       */
++	{ 14, 0x28, 0x28, "",       NULL,   CR_NONE      },  /* empty slot  */
++	{ 14, 0x29, 0x29, "ww",     NULL,   CR_FLOPRATE  },  /* Floprate    */
++	{ 14, 0x2C, 0x2C, "w",      NULL,   CR_BCONMAP   },  /* Bconmap     */
++	{ 14, 0x2D, 0x2D, "",       NULL,   CR_NONE      },  /* empty slot  */
++	{ 14, 0x2E, 0x2E, "wwwp",   NULL,   CR_NVM       },  /* NVMaccess   */
++	{ 14, 0x2F, 0x3F, "",       NULL,   CR_NONE      },  /* empty slots */
++	{ 14, 0x40, 0x40, "w",      NULL,   CR_ARG0_M1   },  /* Blitmode    */
++	{ 14, 0x41, 0x4F, "",       NULL,   CR_NONE      },  /* empty slots */
++	{ 14, 0x51, 0x51, "",       NULL,   CR_NONE      },  /* EgetShift   */
++	{ 14, 0x52, 0x52, "w",      NULL,   CR_ARG0_M1   },  /* EsetBank    */
++	{ 14, 0x53, 0x53, "ww",     NULL,   CR_ARG1_M1   },  /* EsetColor   */
++	{ 14, 0x55, 0x55, "wwp",    NULL,   CR_EGETPAL   },  /* EgetPalette */
++	{ 14, 0x56, 0x57, "w",      NULL,   CR_ARG0_M1   },  /* EsetGray, EsetSmear */
++	{ 14, 0x58, 0x58, "w",      NULL,   CR_ARG0_M1   },  /* VsetMode    */
++	{ 14, 0x59, 0x59, "",       NULL,   CR_NONE      },  /* VgetMonitor */
++	{ 14, 0x5B, 0x5B, "w",      NULL,   CR_NONE      },  /* VgetSize    */
++	{ 14, 0x5C, 0x5C, "",       NULL,   CR_NONE      },  /* empty slot  */
++	{ 14, 0x5E, 0x5E, "wwp",    NULL,   CR_VGETRGB   },  /* VgetRGB     */
++	{ 14, 0x5F, 0x5F, "w",      NULL,   CR_NONE      },  /* Vfixmode    */
++	{ 14, 0x67, 0x67, "",       NULL,   CR_NONE      },  /* Dsp_GetWordSize */
++	{ 14, 0x6A, 0x6A, "pp",     NULL,   CR_BUF01     },  /* Dsp_Available   */
++	{ 14, 0x72, 0x72, "",       NULL,   CR_NONE      },  /* Dsp_GetProgAbility */
++	{ 14, 0x75, 0x75, "w",      NULL,   CR_NONE      },  /* Dsp_InqSubrAbility */
++	{ 14, 0x77, 0x78, "w",      NULL,   CR_ARG0_M1   },  /* Dsp_Hf0, Dsp_Hf1 */
++	{ 14, 0x79, 0x7A, "",       NULL,   CR_NONE      },  /* Dsp_Hf2, Dsp_Hf3 */
++	{ 14, 0x7D, 0x7D, "",       NULL,   CR_NONE      },  /* Dsp_Hstat   */
++	{ 14, 0x82, 0x82, "ww",     NULL,   CR_SOUNDCMD  },  /* Soundcmd    */
++	{ 14, 0x88, 0x88, "w",      NULL,   CR_ARG0_M1   },  /* Buffoper    */
++	{ 14, 0x8C, 0x8C, "w",      NULL,   CR_SNDSTATUS },  /* Sndstatus   */
++	{ 14, 0x8D, 0x8D, "p",      NULL,   CR_BUF0      },  /* Buffptr     */
++	{ 14, 0x8E, 0x8E, "",       NULL,   CR_NONE      },  /* past table  */
++	{  0,    0,    0, NULL,     NULL,   CR_NONE      }
++};
++
++/*
++ * The calls the ledger EXCLUDES, with the reason a refusal names.  Every
++ * other call that is not on the whitelist is refused as "not established".
++ */
++struct call_refusal {
++	int16_t     trap;
++	int16_t     fn;
++	const char *why;
++};
++
++static const struct call_refusal call_refusals[] = {
++	{ 13, 0x00, "Getmpb rewrites the initial memory descriptor GEMDOS "
++	            "built its pool on (bios/biosmem.c:134-151)" },
++	{ 13, 0x04, "Rwabs writes media; its read arm needs a BIOS drive the "
++	            "oracle does not have (COVERAGE-BIOS.md)" },
++	{ 14, 0x00, "Initmous installs a mouse packet handler "
++	            "(bios/mouse.c:40)" },
++	{ 14, 0x01, "Ssbrk reserves memory at the top of RAM on a real TOS" },
++	{ 14, 0x06, "Setpalette reprograms the palette at the next VBL "
++	            "(bios/screen.c:1168)" },
++	{ 14, 0x09, "Flopwr writes a disk" },
++	{ 14, 0x0A, "Flopfmt formats a disk" },
++	{ 14, 0x0D, "Mfpint installs an interrupt vector (bios/mfp.c:114)" },
++	{ 14, 0x16, "Settime sets the machine clock (bios/clock.c:1218)" },
++	{ 14, 0x19, "Ikbdws commands the keyboard processor "
++	            "(bios/ikbd.c:948)" },
++	{ 14, 0x1A, "Jdisint switches an MFP interrupt (bios/mfp.c:122)" },
++	{ 14, 0x1B, "Jenabint switches an MFP interrupt (bios/mfp.c:127)" },
++	{ 14, 0x1D, "Offgibit writes PSG port A: drive select, strobe "
++	            "(bios/sound.c:130)" },
++	{ 14, 0x1E, "Ongibit writes PSG port A (bios/sound.c:115)" },
++	{ 14, 0x1F, "Xbtimer programs an MFP timer and its vector "
++	            "(bios/mfp.c:163)" },
++	{ 14, 0x24, "Prtblk prints a block on a real TOS" },
++	{ 14, 0x26, "Supexec runs code the table cannot name "
++	            "(bios/vectors.S:1376)" },
++	{ 14, 0x27, "Puntaes discards the AES and reboots a real TOS" },
++	{ 14, 0x2B, "DMAwrite writes a disk (bios/disk.c:1254)" },
++	{ 14, 0x50, "EsetShift changes the resolution (bios/screen.c:180)" },
++	{ 14, 0x54, "EsetPalette reprograms the palette (bios/screen.c:265)" },
++	{ 14, 0x5A, "VsetSync changes the video sync (bios/videl.c:675)" },
++	{ 14, 0x5D, "VsetRGB reprograms the palette (bios/videl.c:806)" },
++	{  0,    0, NULL }
++};
++
++static const struct call_policy *call_policy_for(int16_t trap, int16_t fn)
++{
++	const struct call_policy *p;
++
++	for (p = call_policy; p->sig; p++)
++		if (p->trap == trap && fn >= p->fn_lo && fn <= p->fn_hi)
++			return p;
++	return NULL;
++}
++
++static const char *call_refusal_for(int16_t trap, int16_t fn)
++{
++	const struct call_refusal *r;
++
++	for (r = call_refusals; r->why; r++)
++		if (r->trap == trap && r->fn == fn)
++			return r->why;
++	return "the call is not established as safe on both machines "
++	       "(tosdump/cases/COVERAGE-BIOS.md)";
++}
++
++static int sig_matches(const char *sig, const struct td_call_case *c)
++{
++	uint16_t i;
++
++	if (!sig || strlen(sig) != c->nargs)
++		return 0;
++	for (i = 0; i < c->nargs; i++) {
++		uint8_t k = c->arg[i].kind;
++
++		switch (sig[i]) {
++		case 'w': if (k != TD_CALL_ARG_WORD) return 0; break;
++		case 'l': if (k != TD_CALL_ARG_LONG) return 0; break;
++		case 'p': if (k != TD_CALL_ARG_LONG && k != TD_CALL_ARG_BUF)
++		              return 0;
++		          break;
++		default:  return 0;
++		}
++	}
++	return 1;
++}
++
++static int is_value(const struct td_call_case *c, int i, int32_t v)
++{
++	return i < (int)c->nargs && c->arg[i].kind != TD_CALL_ARG_BUF &&
++	       c->arg[i].value == v;
++}
++
++static int is_buf(const struct td_call_case *c, int i)
++{
++	return i < (int)c->nargs && c->arg[i].kind == TD_CALL_ARG_BUF;
++}
++
++/* The value rule of a whitelisted call: NULL when the values pick its safe
++ * arm, else the reason. */
++static const char *call_value_refusal(const struct call_policy *p,
++                                      const struct td_call_case *c)
++{
++	int32_t a0 = c->nargs > 0 ? c->arg[0].value : 0;
++	int32_t a1 = c->nargs > 1 ? c->arg[1].value : 0;
++	uint16_t i;
++
++	switch (p->rule) {
++	case CR_NONE:
++		return NULL;
++	case CR_ARG0_M1:
++		return is_value(c, 0, -1) ? NULL
++		       : "only -1, the inquiry, is established: any other value sets";
++	case CR_ARG1_M1:
++		return is_value(c, 1, -1) ? NULL
++		       : "only -1 in the second argument, the inquiry, is "
++		         "established: any other value sets";
++	case CR_ALL_M1:
++		for (i = 0; i < c->nargs; i++)
++			if (!is_value(c, (int)i, -1))
++				return "only all -1, the inquiry, is established";
++		return NULL;
++	case CR_SETSCREEN:
++		/* rez -1 returns before videlmode is read (bios/screen.c:1115) */
++		return (is_value(c, 0, -1) && is_value(c, 1, -1) &&
++		        is_value(c, 2, -1)) ? NULL
++		       : "only Setscreen(-1, -1, -1), which changes nothing, is "
++		         "established";
++	case CR_RSCONF:
++		for (i = 1; i < c->nargs; i++)
++			if (!is_value(c, (int)i, -1))
++				return "Rsconf: only all -1, or -2 then all -1, inquire";
++		return (a0 == -1 || a0 == -2) ? NULL
++		       : "Rsconf: a baud rate reprograms the serial port";
++	case CR_BCONIN:
++		/* 4, 5: char_dummy (bios/chardev.c:34-36); < 0 and >= 10: no
++		 * device on either machine.  0..3 wait for input, 6..9 are
++		 * Bconmap devices (bios/bios.c:966-972). */
++		return (a0 == 4 || a0 == 5 || a0 < 0 || a0 >= 10) ? NULL
++		       : "Bconin on this handle waits for input";
++	case CR_BCONOUT:
++		if (a0 < 0 || a0 >= 10)
++			return NULL;
++		if ((a0 == 2 || a0 == 5) && a1 >= 0x20 && a1 <= 0x7E)
++			return NULL;
++		return "Bconout: only a printable byte to CON or raw CON is "
++		       "established (PRT waits 30 s, IKBD and MIDI are commands, "
++		       "a control byte leaves VT52 state)";
++	case CR_CURSCONF:
++		return a0 == 5 ? NULL
++		       : "Cursconf: only function 5, the blink-rate inquiry";
++	case CR_GIACCESS:
++		return (a1 >= 0 && a1 <= 15) ? NULL
++		       : "Giaccess: only a register read (no write bit 0x80)";
++	case CR_FLOPRATE:
++		return (a1 == -1 || a1 == -4) ? NULL
++		       : "Floprate: only rate -1 or -4, the two inquiries";
++	case CR_BCONMAP:
++		return (a0 < 6 || a0 >= 10) ? NULL
++		       : "Bconmap: a device number 6..9 remaps AUX";
++	case CR_NVM:
++		if (a0 == 1 || a0 == 2)
++			return "NVMaccess: write and reset change the NVRAM";
++		if (a0 == 0 && is_buf(c, 3) &&
++		    (c->arg[2].value < 0 || c->arg[2].value > TD_CALL_BUF_BYTES))
++			return "NVMaccess: the count does not fit the buffer";
++		if (a0 == 0 && !is_buf(c, 3) && !is_value(c, 3, 0))
++			return "NVMaccess: a read needs a dumper buffer (or NULL)";
++		return NULL;
++	case CR_BUF0:
++		return is_buf(c, 0) ? NULL
++		       : "the call writes through its first argument: name a buffer";
++	case CR_BUF01:
++		return (is_buf(c, 0) && is_buf(c, 1)) ? NULL
++		       : "the call writes through both arguments: name two buffers";
++	case CR_EGETPAL:
++		return (is_buf(c, 2) && a1 >= 0 && a1 * 2 <= TD_CALL_BUF_BYTES)
++		       ? NULL
++		       : "EgetPalette: name a buffer that holds count WORDs";
++	case CR_VGETRGB:
++		return (is_buf(c, 2) && a1 >= 0 && a1 * 4 <= TD_CALL_BUF_BYTES)
++		       ? NULL
++		       : "VgetRGB: name a buffer that holds count LONGs";
++	case CR_SOUNDCMD:
++		return ((a0 == 0 || a0 == 1 || a0 == 6) && is_value(c, 1, -1))
++		       ? NULL
++		       : "Soundcmd: only modes 0, 1, 6 with -1, the inquiries";
++	case CR_SNDSTATUS:
++		return a0 == 0 ? NULL : "Sndstatus: a non-zero argument resets";
++	default:
++		return "unknown rule";
++	}
++}
++
++int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
++                        const char *buf, size_t len,
++                        struct td_case_error *err)
++{
++	struct td_line_iter it;
++	const char *line;
++	size_t line_len;
++	uint16_t line_no;
++	int is_case;
++
++	memset(t, 0, sizeof *t);
++	t->crc  = td_crc32((const uint8_t *)buf, len);
++	t->area = area;
++	if (err) {
++		err->line = 0;
++		err->what = NULL;
++	}
++	if (area != TD_AREA_BIOS) {
++		fail(err, 0, "no call guard exists for this area yet");
++		return TD_CASE_ERR_UNSAFE_OPCODE;
++	}
++
++	td_line_iter_init(&it, buf, len);
++	while (td_line_iter_next(&it, &line, &line_len, &line_no, &is_case)) {
++		const char *col[TD_CALL_CASE_COLUMNS];
++		size_t col_len[TD_CALL_CASE_COLUMNS];
++		const struct call_policy *p;
++		struct td_call_case *c;
++		const char *why = NULL, *o;
++		size_t olen, colon;
++		uint32_t trap, fn;
++		int rc;
++
++		if (!is_case) {
++			if (td_case_line_is_directive(line, line_len)) {
++				fail(err, line_no, "a call table has no directives");
++				return TD_CASE_ERR_DIRECTIVE;
++			}
++			continue;
++		}
++		if (td_case_line_is_prelude(line, line_len)) {
++			fail(err, line_no, "a call table has no preludes: round 1 "
++			                   "issues queries only");
++			return TD_CASE_ERR_DIRECTIVE;
++		}
++		if (split_columns(line, line_len, col, col_len,
++		                  TD_CALL_CASE_COLUMNS) < TD_CALL_CASE_COLUMNS) {
++			fail(err, line_no, "needs five tab separated columns");
++			return TD_CASE_ERR_COLUMNS;
++		}
++		if (t->count >= TD_MAX_CASES) {
++			fail(err, line_no, "more cases than TD_MAX_CASES");
++			return TD_CASE_ERR_TOO_MANY_CASES;
++		}
++		c = &t->cases[t->count];
++		memset(c, 0, sizeof *c);
++		c->line = line_no;
++
++		/* trap:function */
++		o = col[0];
++		olen = col_len[0];
++		trim(&o, &olen);
++		for (colon = 0; colon < olen && o[colon] != ':'; colon++)
++			;
++		if (colon == 0 || colon >= olen) {
++			fail(err, line_no, "the call column is not <trap>:<function>");
++			return TD_CASE_ERR_VALUE;
++		}
++		rc = parse_small(o, colon, 255, &trap);
++		if (rc != 0) {
++			fail(err, line_no, "the trap is not a number");
++			return rc;
++		}
++		rc = parse_small(o + colon + 1, olen - colon - 1, 255, &fn);
++		if (rc != 0) {
++			fail(err, line_no, "the function number is not 0..255");
++			return rc;
++		}
++		if (trap != 13 && trap != 14) {
++			fail(err, line_no, "a BIOS table issues trap 13 and trap 14 "
++			                   "only");
++			return TD_CASE_ERR_UNSAFE_OPCODE;
++		}
++		c->trap   = (int16_t)trap;
++		c->opcode = (int16_t)fn;
++
++		rc = parse_call_args(col[1], col_len[1], c, &why);
++		if (rc == 0)
++			rc = parse_retclass(col[2], col_len[2], c, &why);
++		if (rc == 0)
++			rc = parse_capture(col[3], col_len[3], c, &why);
++		if (rc != 0) {
++			fail(err, line_no, why);
++			return rc;
++		}
++
++		/* the guard */
++		p = call_policy_for(c->trap, c->opcode);
++		if (!p) {
++			fail(err, line_no, call_refusal_for(c->trap, c->opcode));
++			return TD_CASE_ERR_UNSAFE_OPCODE;
++		}
++		if (!sig_matches(p->sig, c) && !sig_matches(p->sig_alt, c)) {
++			fail(err, line_no, "the argument widths are not the "
++			                   "binding's");
++			return TD_CASE_ERR_SIGNATURE;
++		}
++		why = call_value_refusal(p, c);
++		if (why) {
++			fail(err, line_no, why);
++			return TD_CASE_ERR_UNSAFE_FIELD;
++		}
++
++		td_case_line_comment_n(line, line_len, TD_CALL_CASE_COLUMNS,
++		                       c->comment, TD_COMMENT_LEN);
++		t->count++;
++	}
++	return 0;
++}
++
++int td_call_cases_load(struct td_call_case_table *t, uint16_t area,
++                       const char *path, struct td_case_error *err)
++{
++	char *raw;
++	size_t got;
++	int rc;
++
++	rc = slurp(path, &raw, &got, err);
++	if (rc != 0)
++		return rc;
++
++	rc = td_call_cases_parse(t, area, raw, got, err);
++	free(raw);
++	return rc;
++}
++
+ const char *td_case_error_text(int rc)
+ {
+ 	switch (rc) {
+@@ -2704,6 +3402,14 @@ const char *td_case_error_text(int rc)
+ 	case TD_CASE_ERR_AES_VERSION:    return "this AES does not report a "
+ 	                                        "version that establishes an "
+ 	                                        "opcode the table needs";
++	case TD_CASE_ERR_RETCLASS:       return "the retclass column is not a "
++	                                        "class (and width) the "
++	                                        "comparator knows";
++	case TD_CASE_ERR_CAPTURE:        return "the capture column does not "
++	                                        "name a buffer range the record "
++	                                        "can hold";
++	case TD_CASE_ERR_SIGNATURE:      return "the argument widths are not "
++	                                        "the binding's";
+ 	default:                         return "unknown error";
+ 	}
+ }
+diff --git a/tosdump/core/cases.h b/tosdump/core/cases.h
+index 7bf8f612..bbd46496 100644
+--- a/tosdump/core/cases.h
++++ b/tosdump/core/cases.h
+@@ -91,6 +91,9 @@ struct td_case_table {
+ #define TD_CASE_ERR_UNSAFE_STATE   (-15)  /* the run could not finish     */
+ #define TD_CASE_ERR_PLANT          (-16)  /* the addr_in column is wrong  */
+ #define TD_CASE_ERR_AES_VERSION    (-17)  /* this AES does not have it    */
++#define TD_CASE_ERR_RETCLASS       (-18)  /* retclass column is wrong     */
++#define TD_CASE_ERR_CAPTURE        (-19)  /* capture column is wrong      */
++#define TD_CASE_ERR_SIGNATURE      (-20)  /* argument widths != binding   */
+ 
+ struct td_case_error {
+ 	uint16_t    line;                  /* physical line, 0 if not a line  */
+@@ -699,6 +702,91 @@ int td_rast_cases_parse(struct td_rast_case_table *t, const char *buf,
+ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
+                        struct td_case_error *err);
+ 
++/* ------------------------------------------------------------------ */
++/* Call tables: BIOS + XBIOS (cases/bios-*.tsv), later GEMDOS           */
++/* ------------------------------------------------------------------ */
++/*
++ * Format, five tab separated columns (docs/TOS-REFERENCE-DUMPER.md
++ * section 6, "The call table, as built for DUMPBIOS"):
++ *
++ *   trap:function <TAB> args <TAB> retclass <TAB> capture <TAB> comment
++ *
++ *   trap:function  13 or 14 in a BIOS-area table, then the function number,
++ *                  decimal or 0x hex, 0..255.  "14:0x04" is Getrez.
++ *   args           "-" or up to eight comma separated arguments in binding
++ *                  order, each with its width: "w:<v>" a WORD, "l:<v>" a
++ *                  LONG, "b:<n>" the dumper's buffer n (0..TD_CALL_BUF_N-1).
++ *   retclass       EXACT | IGNORE | NONZERO | HANDLE | PTR_RAM, optionally
++ *                  ".W" or ".B" (not on IGNORE or PTR_RAM): the width of the
++ *                  EmuTOS handler's return type.  No suffix = LONG.
++ *   capture        "-" or <argindex>:<length>[.B|.W|.L][@<offset>] -- copy
++ *                  `length` bytes from `offset` of the buffer argument
++ *                  `argindex` (0-based), as elements of the unit.
++ *
++ * Physical line number = case id, '#' comments, a malformed line refuses
++ * the whole table: as for every other form.  There are NO preludes and NO
++ * directives: a '+' or '!' line is refused.  Round 1 is queries only, so
++ * there is no state to reset or to establish.
++ *
++ * ------------------------------------------------------------------
++ * THE GUARD -- a whitelist
++ * ------------------------------------------------------------------
++ *
++ * A BIOS typo can write a sector (Rwabs), install a vector (Setexc) or wait
++ * forever for a key (Bconin).  The loader therefore refuses the whole table
++ * unless EVERY line is a call whose safety on both machines -- EmuTOS on the
++ * TT and NewTOS on the Pi -- is established in tosdump/cases/
++ * COVERAGE-BIOS.md: the trap and function are on the list in cases.c
++ * (call_policy), the argument widths are the binding's, and the values pick
++ * the query arm.  Anything else is "not established", and a later round
++ * that establishes it extends the list.  As in the AES and raster guards
++ * there is no override.
++ */
++#define TD_CALL_CASE_COLUMNS 5
++
++/* Argument kinds of a call-table line. */
++#define TD_CALL_ARG_WORD     1     /* "w:"                                */
++#define TD_CALL_ARG_LONG     2     /* "l:"                                */
++#define TD_CALL_ARG_BUF      3     /* "b:", value = buffer number         */
++
++struct td_call_arg {
++	uint8_t kind;                      /* TD_CALL_ARG_*                   */
++	int32_t value;                     /* WORD / LONG value, buffer no.   */
++};
++
++struct td_call_case {
++	uint16_t line;                     /* physical line number = case id  */
++	int16_t  trap;                     /* 13 / 14                         */
++	int16_t  opcode;                   /* function number                 */
++	uint16_t nargs;
++	struct td_call_arg arg[TD_CALL_ARGS_N];
++	uint8_t  retclass;                 /* TD_RET_*                        */
++	uint8_t  retwidth;                 /* TD_RET_WIDTH_*                  */
++	int8_t   cap_arg;                  /* -1: no capture                  */
++	uint8_t  cap_unit;                 /* 1, 2, 4                         */
++	uint16_t cap_off;                  /* bytes into the buffer           */
++	uint16_t cap_len;                  /* bytes, <= TD_CALL_CAPTURE_LEN   */
++	char     comment[TD_COMMENT_LEN];
++};
++
++struct td_call_case_table {
++	uint32_t            crc;           /* CRC32 over the raw file bytes   */
++	uint16_t            area;          /* TD_AREA_BIOS                    */
++	uint16_t            count;
++	struct td_call_case cases[TD_MAX_CASES];
++};
++
++/* `area` is the dump's area: TD_AREA_BIOS (traps 13 and 14).  No other
++ * area has a guard yet, so any other is refused. */
++int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
++                        const char *buf, size_t len,
++                        struct td_case_error *err);
++int td_call_cases_load(struct td_call_case_table *t, uint16_t area,
++                       const char *path, struct td_case_error *err);
++
++/* "EXACT", "IGNORE", ... -- for a report. */
++const char *td_retclass_name(uint8_t retclass);
++
+ /*
+  * Shared line iterator.  One rule for what a line is, used by the parser and
+  * by the host-side reader, so the two cannot drift apart.  Returns 0 when the
+diff --git a/tosdump/core/record.c b/tosdump/core/record.c
+index f3838830..624f3ac0 100644
+--- a/tosdump/core/record.c
++++ b/tosdump/core/record.c
+@@ -292,7 +292,9 @@ void td_poison_call(struct td_call_frame *f)
+ 	int i;
+ 
+ 	poison32(f->args, TD_CALL_ARGS_N);
+-	f->ret = (int32_t)0xDEADDEADuL;
++	f->ret    = (int32_t)0xDEADDEADuL;
++	f->ret_hi = 0xDEADDEADuL;
++	f->trap   = TD_POISON16;
+ 	for (i = 0; i < TD_CALL_CAPTURE_LEN; i += 2) {
+ 		f->capture[i]     = TD_POISON_HI;
+ 		f->capture[i + 1] = TD_POISON_LO;
+@@ -424,10 +426,36 @@ void td_call_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
+ 	td_store_be16(rec + TD_CALL_OFF_OPCODE, opcode);
+ 	store32_array(rec + TD_CALL_OFF_ARGS, f->args, TD_CALL_ARGS_N);
+ 	td_store_be32(rec + TD_CALL_OFF_RET, (uint32_t)f->ret);
++	/* the capture is already in record order: td_call_capture stored it
++	 * element by element through td_store_be16 / td_store_be32 */
+ 	memcpy(rec + TD_CALL_OFF_CAPTURE, f->capture, TD_CALL_CAPTURE_LEN);
++	td_store_be32(rec + TD_CALL_OFF_RET_HI, f->ret_hi);
++	td_store_be16(rec + TD_CALL_OFF_TRAP, (uint16_t)f->trap);
+ 	/* reserved stays zero from the memset above */
+ }
+ 
++void td_call_capture(uint8_t *dst, const void *src, uint16_t len, uint8_t unit)
++{
++	const uint8_t *p = (const uint8_t *)src;
++	uint16_t i;
++
++	if (len > TD_CALL_CAPTURE_LEN)
++		len = TD_CALL_CAPTURE_LEN;
++	for (i = 0; i + unit <= len; i = (uint16_t)(i + unit)) {
++		if (unit == 4) {
++			uint32_t v;
++			memcpy(&v, p + i, sizeof v);       /* machine order */
++			td_store_be32(dst + i, v);
++		} else if (unit == 2) {
++			uint16_t v;
++			memcpy(&v, p + i, sizeof v);
++			td_store_be16(dst + i, v);
++		} else {
++			dst[i] = p[i];
++		}
++	}
++}
++
+ void td_raster_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
+                             int32_t ret, const struct td_raster_arrays *after,
+                             const int16_t *contrl_before,
+@@ -497,10 +525,20 @@ const struct td_field td_aes_fields[] = {
+ 	{ NULL, 0, 0, 0, 0, 0, 0, 0 }
+ };
+ 
++/*
++ * The call record (BIOS / XBIOS / GEMDOS).  Every field is class value.
++ * `ret` is the one whose comparison the case's retclass column refines
++ * (docs/TOS-REFERENCE-DUMPER.md section 6): EXACT is the value comparison,
++ * the other four classes replace it by a property on each side.  The
++ * comparator reads `ret` together with the high half at TD_CALL_OFF_RET_HI
++ * as the 64-bit return register; the high half has no descriptor of its
++ * own because it is not a field a report could name apart from `ret`.
++ */
+ const struct td_field td_call_fields[] = {
+ 	{ "args",    TD_CALL_OFF_ARGS,    TD_CALL_ARGS_N,      4, 0, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+ 	{ "ret",     TD_CALL_OFF_RET,     1,                   4, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+ 	{ "capture", TD_CALL_OFF_CAPTURE, TD_CALL_CAPTURE_LEN, 1, 0, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
++	{ "trap",    TD_CALL_OFF_TRAP,    1,                   2, 0, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+ 	{ NULL, 0, 0, 0, 0, 0, 0, 0 }
+ };
+ 
+diff --git a/tosdump/core/record.h b/tosdump/core/record.h
+index aec041e5..90fd792a 100644
+--- a/tosdump/core/record.h
++++ b/tosdump/core/record.h
+@@ -95,7 +95,9 @@ struct td_aes_arrays {
+ 
+ struct td_call_frame {
+ 	uint32_t args[TD_CALL_ARGS_N];
+-	int32_t  ret;
++	int32_t  ret;                      /* return register bits 31..0      */
++	uint32_t ret_hi;                   /* return register bits 63..32     */
++	int16_t  trap;                     /* 13, 14 (1)                      */
+ 	uint8_t  capture[TD_CALL_CAPTURE_LEN];
+ };
+ 
+@@ -158,6 +160,17 @@ void td_aes_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
+                          int32_t ret, const struct td_aes_arrays *after);
+ void td_call_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
+                           const struct td_call_frame *f);
++
++/*
++ * Copy `len` bytes of a call buffer into a frame's capture field, as
++ * elements of `unit` bytes (1, 2 or 4) read in the machine's own order and
++ * stored through td_store_be16 / td_store_be32 -- the raster record's rule
++ * for its pixel words.  A LONG a call wrote is four bytes in opposite order
++ * on the two machines; only the element value means the same on both.
++ * `src` must be aligned for `unit`; `len` a multiple of it and at most
++ * TD_CALL_CAPTURE_LEN.  What `len` does not cover keeps the poison.
++ */
++void td_call_capture(uint8_t *dst, const void *src, uint16_t len, uint8_t unit);
+ /* `src_mfdb` / `dst_mfdb` are the TD_RAST_MFDB_N WORD fields that follow
+  * fd_addr, read back out of the two MFDBs after the call. */
+ void td_raster_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
+diff --git a/tosdump/core/tosdump.h b/tosdump/core/tosdump.h
+index 321cd418..3ad5c983 100644
+--- a/tosdump/core/tosdump.h
++++ b/tosdump/core/tosdump.h
+@@ -314,11 +314,53 @@
+ 
+ #define TD_CALL_RECORD_SIZE  320
+ #define TD_CALL_OFF_CASEID     0   /* u16                                 */
+-#define TD_CALL_OFF_OPCODE     2   /* u16                                 */
++#define TD_CALL_OFF_OPCODE     2   /* u16, the function number            */
+ #define TD_CALL_OFF_ARGS       4   /* 8 longs as passed                   */
+-#define TD_CALL_OFF_RET       36   /* i32, return value (d0)              */
++#define TD_CALL_OFF_RET       36   /* u32, return register bits 31..0     */
+ #define TD_CALL_OFF_CAPTURE   40   /* capture buffer                      */
+-#define TD_CALL_OFF_RESERVED 296   /* 24 bytes, zero                      */
+-#define TD_CALL_RESERVED_LEN  24
++#define TD_CALL_OFF_RET_HI   296   /* u32, return register bits 63..32    */
++#define TD_CALL_OFF_TRAP     300   /* u16, 13 BIOS / 14 XBIOS / 1 GEMDOS  */
++#define TD_CALL_OFF_RESERVED 302   /* 18 bytes, zero                      */
++#define TD_CALL_RESERVED_LEN  18
++
++/*
++ * The two fields at 296 and 300 were added on 2026-10-27, before the first
++ * dump of this record was taken (docs/TOS-REFERENCE-DUMPER.md section 3,
++ * "Extended 2026-10-27").
++ *
++ * RET_HI.  NewTOS returns a TOS LONG in the 64-bit x0, and an LP64 caller
++ * compares the whole register (`long r = Bconstat(2); if (r < 0)`).  A
++ * negative error code returned zero-extended, or a pointer above 4 GiB, is
++ * invisible in the low 32 bits.  The m68k's d0 has no high half; its RET_HI
++ * is the sign extension of the low half -- what (int64_t)(long) gives -- so
++ * the comparator reads the return as the 64-bit ret_hi:ret on both sides.
++ *
++ * TRAP.  DUMPBIOS measures trap #13 and trap #14 from one table into one
++ * dump (header area TD_AREA_BIOS); the same function number is a different
++ * call on each, so every record says which trap it was.
++ */
++
++/*
++ * The call buffers.  A case table cannot name an address (one file, two
++ * machines), so -- exactly as the AES addr_in column and the raster MFDBs
++ * do -- it names one of the dumper's own buffers by number, "b:<n>", and the
++ * runner passes the buffer's address.  Poisoned with 0xDEAD before every
++ * case.  1024 bytes because the largest round-1 output is Protobt's 512-byte
++ * boot sector (bios/floppy.c:690).
++ */
++#define TD_CALL_BUF_N           2
++#define TD_CALL_BUF_BYTES    1024
++
++/* What the record's argument slot carries for a buffer argument: a token
++ * that says "buffer n", never the address, which differs between the two
++ * machines by construction.  Same value as the AES's TD_AES_ADDR_TOKEN. */
++#define TD_CALL_BUF_TOKEN(n)  ((uint32_t)0xB0FF0000uL + (uint32_t)(n))
++
++/* The width of the return value a retclass judges, in bytes: the return
++ * type of the EmuTOS handler (LONG, WORD, UBYTE).  d0 above that type is
++ * not defined by the m68k calling convention. */
++#define TD_RET_WIDTH_LONG     4
++#define TD_RET_WIDTH_WORD     2
++#define TD_RET_WIDTH_BYTE     1
+ 
+ #endif /* TOSDUMP_H */
+diff --git a/tosdump/core/dumpbios.c b/tosdump/core/dumpbios.c
+new file mode 100644
+index 00000000..213450b2
+--- /dev/null
++++ b/tosdump/core/dumpbios.c
+@@ -0,0 +1,113 @@
++/*
++ * dumpbios.c -- DUMPBIOS, the BIOS + XBIOS reference dumper (spec section 7,
++ * task T7).
++ *
++ * Portable.  The same source builds for TOS on the TT (or the oracle) and for
++ * NewTOS on the Pi 4; only the ABI backend underneath differs.
++ *
++ * usage: DUMPBIOS [CASES.TSV [OUT.BIN [OUT.LOG]]]
++ *        defaults: BIOS.TSV in the current directory, BIOS.BIN and BIOS.LOG
++ *        beside it.
++ *
++ * One table, one dump: trap #13 and trap #14 cases live in the same table
++ * and the same BIOS.BIN (header area TD_AREA_BIOS); each record names its
++ * trap (docs/TOS-REFERENCE-DUMPER.md section 3).
++ *
++ * Unlike DUMPVDI and DUMPAES this program is no AES client: nothing it
++ * measures needs an application context, and every GEM call it made would
++ * be one more thing that could differ between the two machines for reasons
++ * that have nothing to do with the BIOS.
++ *
++ * As in the other dumpers: the case table is read at runtime, records are
++ * buffered in RAM and written once at the end (spec section 7), the log is
++ * written once before the first case -- so a run that hangs leaves its setup
++ * and the line "running N cases" on disk -- and once at the end, and the
++ * program never waits for a key.
++ */
++#include <stdio.h>
++#include <string.h>
++
++#include "cases.h"
++#include "dump.h"
++#include "log.h"
++#include "runner_call.h"
++
++#ifndef TD_BUILD_ID
++#define TD_BUILD_ID "----"
++#endif
++
++static struct td_call_case_table table;
++static uint8_t records[(size_t)TD_MAX_CASES * TD_CALL_RECORD_SIZE];
++
++static const char *log_path = "BIOS.LOG";
++
++static int finish(int rc)
++{
++	int lr = td_log_write(log_path);
++
++	if (lr != 0)
++		printf("cannot write %s (%d)\n", log_path, lr);
++	else
++		printf("%s: %lu bytes%s\n", log_path,
++		       (unsigned long)td_log_len(),
++		       td_log_truncated() ? " (truncated)" : "");
++	return rc;
++}
++
++int main(int argc, char **argv)
++{
++	const char *table_path = (argc > 1) ? argv[1] : "BIOS.TSV";
++	const char *out_path   = (argc > 2) ? argv[2] : "BIOS.BIN";
++	struct td_case_error err;
++	size_t bytes;
++	int rc;
++
++	if (argc > 3)
++		log_path = argv[3];
++
++	td_log_init();
++	td_log("DUMPBIOS build %s, record format %d\n", TD_BUILD_ID,
++	       TD_FORMAT_VERSION);
++	td_log("pointer %u bytes, word order %u\n",
++	       (unsigned)td_native_ptr_width(), (unsigned)td_native_word_order());
++
++	memset(&err, 0, sizeof err);
++	rc = td_call_cases_load(&table, TD_AREA_BIOS, table_path, &err);
++	if (rc != 0) {
++		if (err.line)
++			td_log("%s line %u: %s (%s)\n", table_path, err.line,
++			       err.what ? err.what : "", td_case_error_text(rc));
++		else
++			td_log("%s: %s (%s)\n", table_path, err.what ? err.what : "",
++			       td_case_error_text(rc));
++		return finish(1);
++	}
++	td_log("%s: %u cases, CRC %08lX\n", table_path, table.count,
++	       (unsigned long)table.crc);
++	if (table.count == 0) {
++		td_log("nothing to do\n");
++		return finish(1);
++	}
++
++	/* Written before the first case: a run that hangs still leaves this. */
++	td_log("running %u cases\n", table.count);
++	td_log_write(log_path);
++
++	bytes = (size_t)table.count * TD_CALL_RECORD_SIZE;
++	rc = td_run_call(&table, records, sizeof records);
++	if (rc != 0) {
++		td_log("runner failed (%d)\n", rc);
++		return finish(1);
++	}
++	td_log("all %u cases ran\n", table.count);
++
++	rc = td_dump_write(out_path, TD_AREA_BIOS, table.count, TD_BUILD_ID,
++	                   table.crc, records, bytes);
++	if (rc != 0) {
++		td_log("cannot write %s (%d)\n", out_path, rc);
++		return finish(1);
++	}
++	td_log("%s: %u records, %lu bytes\n", out_path, table.count,
++	       (unsigned long)(TD_HEADER_SIZE + bytes));
++	return finish(0);
++}
+diff --git a/tosdump/core/runner_call.c b/tosdump/core/runner_call.c
+new file mode 100644
+index 00000000..201c7c4c
+--- /dev/null
++++ b/tosdump/core/runner_call.c
+@@ -0,0 +1,146 @@
++/*
++ * runner_call.c -- poison, call, record for the call tables.  See
++ * runner_call.h and docs/TOS-REFERENCE-DUMPER.md sections 3, 4 and 6.
++ *
++ * Portable: the same lines run on the TT and on the Pi.  The one thing that
++ * differs between the two machines -- how an argument travels -- is the ABI
++ * backend's (td_abi_trap); this file only says WHAT is passed.
++ */
++#include <string.h>
++
++#include "abi.h"
++#include "runner_call.h"
++
++/* The buffers a case names with "b:<n>".  uint32_t so that a LONG capture
++ * reads aligned on both machines. */
++static uint32_t call_buf[TD_CALL_BUF_N][TD_CALL_BUF_BYTES / 4];
++
++static struct td_call_frame run_frame;
++
++void *td_call_buffer(int n)
++{
++	if (n < 0 || n >= TD_CALL_BUF_N)
++		return NULL;
++	return call_buf[n];
++}
++
++/*
++ * Spec section 4: the 0xDEAD pattern -- laid in the UNIT the case's capture
++ * reads the buffer in.  The two machines differ in byte order, so one fill
++ * cannot read the same in every unit: the bytes DE AD are the WORD 0xADDE
++ * on AArch64, and the WORD 0xDEAD is the bytes AD DE there.  An element the
++ * call left alone must read the same on both, or the poison itself becomes
++ * a difference:
++ *
++ *   unit B (and every buffer no capture reads): the bytes DE AD, the same
++ *          memory on both -- which is also what a call that reads the
++ *          buffer as bytes (Protobt's checksum, a disk format) must see;
++ *   unit W: native WORDs 0xDEAD;   unit L: native LONGs 0xDEADDEAD.
++ */
++static void poison_buffer(int n, uint8_t unit)
++{
++	uint8_t *b = (uint8_t *)call_buf[n];
++	uint32_t *l = call_buf[n];
++	uint16_t *w = (uint16_t *)call_buf[n];
++	int i;
++
++	if (unit == 4) {
++		for (i = 0; i < TD_CALL_BUF_BYTES / 4; i++)
++			l[i] = 0xDEADDEADuL;
++	} else if (unit == 2) {
++		for (i = 0; i < TD_CALL_BUF_BYTES / 2; i++)
++			w[i] = (uint16_t)TD_POISON16;
++	} else {
++		for (i = 0; i < TD_CALL_BUF_BYTES; i += 2) {
++			b[i]     = TD_POISON_HI;
++			b[i + 1] = TD_POISON_LO;
++		}
++	}
++}
++
++static void poison_buffers(const struct td_call_case *c)
++{
++	int n;
++
++	for (n = 0; n < TD_CALL_BUF_N; n++) {
++		uint8_t unit = 1;
++
++		if (c->cap_arg >= 0 && c->arg[c->cap_arg].value == n)
++			unit = c->cap_unit;
++		poison_buffer(n, unit);
++	}
++}
++
++int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
++                size_t out_bytes)
++{
++	uint8_t kind[TD_ABI_ARGS_MAX];
++	long value[TD_ABI_ARGS_MAX];
++	uint16_t i;
++	int j;
++
++	if (out_bytes < (size_t)ct->count * TD_CALL_RECORD_SIZE)
++		return TD_RUN_CALL_ERR_BUFFER;
++
++	for (i = 0; i < ct->count; i++) {
++		const struct td_call_case *c = &ct->cases[i];
++		uint8_t *rec = out + (size_t)i * TD_CALL_RECORD_SIZE;
++		int64_t r;
++		long ret;
++
++		/* 1. poison the frame and both buffers (spec section 4) */
++		td_poison_call(&run_frame);
++		poison_buffers(c);
++
++		/* 2. the arguments: what the backend passes, and what the record
++		 *    says was passed.  An unused register slot carries poison. */
++		for (j = 0; j < TD_ABI_ARGS_MAX; j++) {
++			kind[j]  = 0;
++			value[j] = (long)(int32_t)0xDEADDEADuL;
++		}
++		for (j = 0; j < (int)c->nargs; j++) {
++			const struct td_call_arg *a = &c->arg[j];
++
++			switch (a->kind) {
++			case TD_CALL_ARG_WORD:
++				kind[j]  = TD_ABI_ARG_WORD;
++				value[j] = (long)(int16_t)a->value;
++				run_frame.args[j] = (uint32_t)(int32_t)(int16_t)a->value;
++				break;
++			case TD_CALL_ARG_LONG:
++				kind[j]  = TD_ABI_ARG_LONG;
++				value[j] = (long)a->value;
++				run_frame.args[j] = (uint32_t)a->value;
++				break;
++			default:   /* TD_CALL_ARG_BUF: its address, and its token */
++				kind[j]  = TD_ABI_ARG_LONG;
++				value[j] = (long)td_call_buffer((int)a->value);
++				run_frame.args[j] = TD_CALL_BUF_TOKEN(a->value);
++				break;
++			}
++		}
++		run_frame.trap = c->trap;
++
++		/* 3. the call under measurement */
++		ret = td_abi_trap(c->trap, c->opcode, c->nargs, kind, value);
++
++		/* 4. the return register at its native width, as one 64-bit
++		 *    value: on the m68k the high half is the sign extension of
++		 *    d0, on AArch64 it is x0's own (section 3) */
++		r = (int64_t)ret;
++		run_frame.ret    = (int32_t)(uint32_t)((uint64_t)r & 0xFFFFFFFFuL);
++		run_frame.ret_hi = (uint32_t)((uint64_t)r >> 32);
++
++		/* 5. the capture, element by element in record order */
++		if (c->cap_arg >= 0) {
++			const uint8_t *b =
++				(const uint8_t *)td_call_buffer((int)c->arg[c->cap_arg].value);
++
++			td_call_capture(run_frame.capture, b + c->cap_off, c->cap_len,
++			                c->cap_unit);
++		}
++
++		td_call_record_write(rec, c->line, (uint16_t)c->opcode, &run_frame);
++	}
++	return 0;
++}
+diff --git a/tosdump/core/runner_call.h b/tosdump/core/runner_call.h
+new file mode 100644
+index 00000000..775c4792
+--- /dev/null
++++ b/tosdump/core/runner_call.h
+@@ -0,0 +1,27 @@
++/*
++ * runner_call.h -- poison, call, record for the call tables (BIOS + XBIOS).
++ *
++ * Spec: docs/TOS-REFERENCE-DUMPER.md sections 3, 4 and 6 ("The call table,
++ * as built for DUMPBIOS").
++ *
++ * One case is: poison the frame and both buffers, marshal the arguments
++ * (a buffer argument becomes the buffer's address, and its TOKEN in the
++ * record), issue the trap through the ABI backend, copy the capture, write
++ * the record.  No reset: a round-1 call table holds queries only.
++ */
++#ifndef TOSDUMP_RUNNER_CALL_H
++#define TOSDUMP_RUNNER_CALL_H
++
++#include "cases.h"
++
++#define TD_RUN_CALL_ERR_BUFFER (-1)   /* the output cannot hold every record */
++
++int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
++                size_t out_bytes);
++
++/* The runner's own buffer n (0..TD_CALL_BUF_N-1), for the host tests'
++ * stub backend, which has to recognise a buffer address to write into it
++ * the way a real call would. */
++void *td_call_buffer(int n);
++
++#endif /* TOSDUMP_RUNNER_CALL_H */
+diff --git a/tosdump/build-dumpbios-newtos.sh b/tosdump/build-dumpbios-newtos.sh
+new file mode 100755
+index 00000000..c98302c0
+--- /dev/null
++++ b/tosdump/build-dumpbios-newtos.sh
+@@ -0,0 +1,103 @@
++#!/usr/bin/env bash
++#
++# build-dumpbios-newtos.sh -- build DUMPBIOS.NAP, the NewTOS/AArch64 half of the
++# TOS reference dumper (docs/TOS-REFERENCE-DUMPER.md, task T4).
++#
++# Same portable core as the TT build (core/*.c), same case table, only
++# abi/newtos_svc.c instead of abi/m68k_trap.c. It follows the proven client
++# link path of the other NewTOS apps (sdk/apps/build-qed.sh): clang
++# -target aarch64-unknown-none-elf, the libc-aware crt0, mintlib's libc.a, and
++# sdk/newtos.ld. No gemlib: the dumper issues the BIOS and XBIOS traps itself
++# through its own thin backend, so no library sits between the measurement
++# and the kernel.
++#
++# A .NAP like the other dumpers, so the desktop's #Z autorun starts it the
++# same way; unlike them it makes no AES or VDI call (core/dumpbios.c).
++#
++# Usage:  tosdump/build-dumpbios-newtos.sh [output.NAP]
++set -uo pipefail
++
++HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"        # .../tosdump
++ROOT="$(cd "$HERE/.." && pwd)"
++SDK="$ROOT/sdk"
++LIBC="$SDK/libc"
++BUILD="$HERE/build"
++OBJ="$BUILD/obj-newtos-bios"
++OUT="${1:-$BUILD/DUMPBIOS.NAP}"
++mkdir -p "$OBJ"
++
++# --- libc ---------------------------------------------------------------------
++if [ ! -f "$LIBC/libc.a" ]; then
++  echo "libc.a absent -- running build-libc.sh first…"
++  "$LIBC/build-libc.sh" >/dev/null 2>&1 || { echo "error: build-libc.sh failed" >&2; exit 1; }
++fi
++MINT="$LIBC/mintlib/include"
++[ -d "$MINT" ] || { echo "error: mintlib headers missing ($MINT); run build-libc.sh" >&2; exit 1; }
++
++# --- toolchain ----------------------------------------------------------------
++CLANG="${CLANG:-clang}"
++command -v "$CLANG" >/dev/null 2>&1 || { echo "error: clang not found" >&2; exit 1; }
++RES="$($CLANG -print-resource-dir)/include"
++SYSROOT="$(rustc --print sysroot 2>/dev/null)"
++BIN="$SYSROOT/lib/rustlib/$(rustc -vV | sed -n 's/host: //p')/bin"
++LLD="${LLD:-$BIN/rust-lld}"
++READOBJ="$BIN/llvm-readobj"
++NM="$BIN/llvm-nm"
++[ -x "$LLD" ] || { echo "error: missing rust-lld ($LLD)" >&2; exit 1; }
++
++# The header's build id field is exactly 4 bytes; git widens --short when 4
++# hex digits are not unique, so cut it to what actually gets stored.
++BUILD_ID="$(cd "$ROOT" && git rev-parse HEAD 2>/dev/null | cut -c1-4)"
++[ -n "$BUILD_ID" ] || BUILD_ID='----'
++
++# AArch64 is little-endian, so the record writer swaps on write. This is the
++# only compile-time difference from the TT build (spec section 2.1).
++CFLAGS=(-target aarch64-unknown-none-elf -ffreestanding -nostdlib -O2
++        -fPIE -fno-builtin -nostdinc -D__NEWTOS__
++        -std=c99 -Wall -Wextra -Werror
++        -DTD_BIG_ENDIAN_TARGET=0 -DTD_BUILD_ID="\"$BUILD_ID\"")
++INCS=(-I"$HERE/core" -I"$MINT" -isystem "$RES")
++
++echo "clang : $($CLANG --version | head -1)"
++echo "lld   : $LLD"
++echo "build : $BUILD_ID"
++echo
++
++SRC=(core/record.c core/cases.c core/dump.c core/log.c core/runner_call.c
++     core/dumpbios.c abi/newtos_svc.c)
++
++rm -f "$OBJ"/*.o
++for s in "${SRC[@]}"; do
++    o="$OBJ/$(echo "${s%.c}" | tr '/' '__').o"
++    if ! "$CLANG" "${CFLAGS[@]}" "${INCS[@]}" -c "$HERE/$s" -o "$o"; then
++        echo "error: $s failed to compile" >&2
++        exit 1
++    fi
++    echo "  CC  $s"
++done
++
++"$CLANG" -target aarch64-unknown-none-elf -ffreestanding -nostdlib -O2 \
++    -fPIE -fno-builtin -nostdinc -I"$SDK/include" -I"$MINT" -isystem "$RES" \
++    -c "$LIBC/crt0.S" -o "$BUILD/crt0-newtos-bios.o" || exit 1
++
++rm -f "$OUT"
++"$LLD" -flavor gnu -T "$SDK/newtos.ld" -pie --no-dynamic-linker -z text -z max-page-size=0x1000 \
++    --build-id=none --why-extract="$BUILD/why-newtos-bios.txt" \
++    "$BUILD/crt0-newtos-bios.o" "$OBJ"/*.o "$LIBC/libc.a" \
++    -o "$OUT" 2>"$BUILD/link-newtos-bios.err"
++lr=$?
++
++if [ $lr -ne 0 ]; then
++    echo
++    echo "LINK FAILED -- residual undefined symbols:"
++    grep -oE "undefined symbol: [^ ]+" "$BUILD/link-newtos-bios.err" \
++        | awk '{print $3}' | sort -u | sed 's/^/    /'
++    exit 1
++fi
++
++echo
++echo "LINK OK -> $OUT ($(wc -c < "$OUT" | tr -d ' ') bytes)"
++"$READOBJ" --file-headers "$OUT" | grep -iE 'Class:|DataEncoding:|Type:|Machine:|Entry:'
++u=$("$NM" -u "$OUT" 2>/dev/null | grep -c . || true)
++echo "undefined symbols in the final image (goal 0): $u"
++[ "$u" -eq 0 ] || exit 1

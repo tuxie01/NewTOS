@@ -3,6 +3,7 @@
 
 #include "stub_abi.h"
 #include "abi.h"
+#include "runner_call.h"
 
 struct td_stub_call td_stub_calls[TD_STUB_MAX_CALLS];
 int                 td_stub_ncalls;
@@ -253,4 +254,53 @@ int32_t td_abi_aes(int16_t *control, int16_t *global, int16_t *int_in,
 	}
 
 	return TD_STUB_AES_D0;
+}
+
+/* ------------------------------------------------------------------ */
+/* The register / stack traps -- see stub_abi.h, "Call side".          */
+/* ------------------------------------------------------------------ */
+
+static void stub_fill_buffer(uint8_t *b, int n, int16_t fn)
+{
+	uint32_t v = TD_STUB_BUF_LONG;
+
+	memcpy(b, TD_STUB_BUF_TEXT, 4);
+	b[4] = (uint8_t)n;
+	b[5] = (uint8_t)(fn & 0xFF);
+	memcpy(b + 8, &v, sizeof v);           /* machine order, on purpose */
+	b[510] = 0x55;
+	b[511] = 0xAA;
+}
+
+long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
+                 const uint8_t *kind, const long *value)
+{
+	struct td_stub_call *c = log_slot();
+	int i, n;
+
+	c->kind       = TD_STUB_KIND_CALL;
+	c->opcode     = opcode;
+	c->call_trap  = trap;
+	c->call_nargs = nargs;
+	for (i = 0; i < TD_ABI_ARGS_MAX && i < TD_CALL_ARGS_N; i++) {
+		c->call_kind[i]  = i < (int)nargs ? kind[i] : 0;
+		c->call_value[i] = value[i];
+	}
+
+	if (opcode != TD_STUB_NOWRITE_FN || trap != 14) {
+		for (i = 0; i < (int)nargs; i++) {
+			if (kind[i] != TD_ABI_ARG_LONG)
+				continue;
+			for (n = 0; n < TD_CALL_BUF_N; n++)
+				if (value[i] == (long)td_call_buffer(n))
+					stub_fill_buffer((uint8_t *)td_call_buffer(n), n,
+					                 opcode);
+		}
+	}
+
+	if (trap == 13 && opcode == 1)
+		return -1L;
+	if (trap == 14 && opcode == 2)
+		return TD_STUB_PHYSBASE;
+	return TD_STUB_TRAP_RET(trap, opcode);
 }

@@ -314,11 +314,53 @@
 
 #define TD_CALL_RECORD_SIZE  320
 #define TD_CALL_OFF_CASEID     0   /* u16                                 */
-#define TD_CALL_OFF_OPCODE     2   /* u16                                 */
+#define TD_CALL_OFF_OPCODE     2   /* u16, the function number            */
 #define TD_CALL_OFF_ARGS       4   /* 8 longs as passed                   */
-#define TD_CALL_OFF_RET       36   /* i32, return value (d0)              */
+#define TD_CALL_OFF_RET       36   /* u32, return register bits 31..0     */
 #define TD_CALL_OFF_CAPTURE   40   /* capture buffer                      */
-#define TD_CALL_OFF_RESERVED 296   /* 24 bytes, zero                      */
-#define TD_CALL_RESERVED_LEN  24
+#define TD_CALL_OFF_RET_HI   296   /* u32, return register bits 63..32    */
+#define TD_CALL_OFF_TRAP     300   /* u16, 13 BIOS / 14 XBIOS / 1 GEMDOS  */
+#define TD_CALL_OFF_RESERVED 302   /* 18 bytes, zero                      */
+#define TD_CALL_RESERVED_LEN  18
+
+/*
+ * The two fields at 296 and 300 were added on 2026-10-27, before the first
+ * dump of this record was taken (docs/TOS-REFERENCE-DUMPER.md section 3,
+ * "Extended 2026-10-27").
+ *
+ * RET_HI.  NewTOS returns a TOS LONG in the 64-bit x0, and an LP64 caller
+ * compares the whole register (`long r = Bconstat(2); if (r < 0)`).  A
+ * negative error code returned zero-extended, or a pointer above 4 GiB, is
+ * invisible in the low 32 bits.  The m68k's d0 has no high half; its RET_HI
+ * is the sign extension of the low half -- what (int64_t)(long) gives -- so
+ * the comparator reads the return as the 64-bit ret_hi:ret on both sides.
+ *
+ * TRAP.  DUMPBIOS measures trap #13 and trap #14 from one table into one
+ * dump (header area TD_AREA_BIOS); the same function number is a different
+ * call on each, so every record says which trap it was.
+ */
+
+/*
+ * The call buffers.  A case table cannot name an address (one file, two
+ * machines), so -- exactly as the AES addr_in column and the raster MFDBs
+ * do -- it names one of the dumper's own buffers by number, "b:<n>", and the
+ * runner passes the buffer's address.  Poisoned with 0xDEAD before every
+ * case.  1024 bytes because the largest round-1 output is Protobt's 512-byte
+ * boot sector (bios/floppy.c:690).
+ */
+#define TD_CALL_BUF_N           2
+#define TD_CALL_BUF_BYTES    1024
+
+/* What the record's argument slot carries for a buffer argument: a token
+ * that says "buffer n", never the address, which differs between the two
+ * machines by construction.  Same value as the AES's TD_AES_ADDR_TOKEN. */
+#define TD_CALL_BUF_TOKEN(n)  ((uint32_t)0xB0FF0000uL + (uint32_t)(n))
+
+/* The width of the return value a retclass judges, in bytes: the return
+ * type of the EmuTOS handler (LONG, WORD, UBYTE).  d0 above that type is
+ * not defined by the m68k calling convention. */
+#define TD_RET_WIDTH_LONG     4
+#define TD_RET_WIDTH_WORD     2
+#define TD_RET_WIDTH_BYTE     1
 
 #endif /* TOSDUMP_H */

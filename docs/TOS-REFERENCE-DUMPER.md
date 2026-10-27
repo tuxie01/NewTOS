@@ -98,7 +98,7 @@ line of logic there is a bug you cannot chase.
 |---|---|---|
 | 0 | 4 | magic `TDMP` |
 | 4 | 2 | format version (currently 3; 2 is still read, see below) |
-| 6 | 2 | area: 1=BIOS, 2=XBIOS, 3=GEMDOS, 4=VDI, 5=AES, 6=VDI-RASTER (the raster record, 3696 bytes, layout `TD_RAST_OFF_*` in `tosdump/core/tosdump.h`) |
+| 6 | 2 | area: 1=BIOS, 2=XBIOS, 3=GEMDOS, 4=VDI, 5=AES, 6=VDI-RASTER (the raster record, 3696 bytes, layout `TD_RAST_OFF_*` in `tosdump/core/tosdump.h`). `DUMPBIOS` writes area 1 for its BIOS **and** XBIOS cases, the trap in each record (section 3, the call record); area 2 is written by no program |
 | 8 | 2 | record size in bytes |
 | 10 | 2 | record count |
 | 12 | 4 | build id (git short hash as ASCII, zero padded) |
@@ -144,7 +144,10 @@ order is not 1 or 2.
   one`), either way round. The address check would run on one side only, and
   the format 2 side cannot be made to state what it lacks.
 
-All fourteen pinned EmuTOS references `tosdump/reference/EMUTOS-1a7484ab-*`
+The two BIOS + XBIOS references `tosdump/reference/EMUTOS-1a7484ab-BIOS`
+and `-BIOS-falcontc` (2026-10-27) were recorded in format 3 from the start
+(`measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`). The fourteen
+VDI, AES and raster references `tosdump/reference/EMUTOS-1a7484ab-*`
 are format 3 since 2026-10-26, re-recorded on the oracle. The twelve VDI and
 AES payloads are byte-identical to their format 2 recording
 (`measurements/measurement-2026-10-26-ref07-v3/RUNINFO.TXT`). The two raster
@@ -248,6 +251,40 @@ violation visible.
 | 36 | 4 | return value (d0) |
 | 40 | 256 | capture buffer (see case table `capture` column) |
 | 296 | 24 | reserved, zero |
+
+**Extended 2026-10-27 (DUMPBIOS, task T7)** — before the first dump of this
+record was taken, so no existing dump changes. The record keeps its 320
+bytes and offsets 0–295; six of the 24 reserved bytes now carry two fields
+the comparison needs:
+
+| Offset | Size | Field |
+|---|---|---|
+| 0 | 2 | case id (physical line number in the case table) |
+| 2 | 2 | opcode = the function number (`Getrez` = 4) |
+| 4 | 32 | the 8 arguments as passed, one LONG each: a WORD sign-extended, a LONG as is, a buffer argument as its token `0xB0FF0000 + n` (never its address, which differs per machine by construction — the AES `addr_in` rule, section 6), an unused slot `0xDEADDEAD` |
+| 36 | 4 | return value, **low** 32 bits of the return register (`d0` / `x0`) |
+| 40 | 256 | capture (section 6, `capture` column); what no capture wrote stays `0xDEAD` |
+| 296 | 4 | return value, **high** 32 bits of the return register: `x0` bits 63..32 on AArch64; on the m68k, whose `d0` has no high half, the sign extension of the low half — the value C's `(int64_t)(long)` gives on both targets, so the comparator always reads the return as the 64-bit value `ret_hi:ret` |
+| 300 | 2 | trap number: 13 BIOS, 14 XBIOS (1 GEMDOS) |
+| 302 | 18 | reserved, zero |
+
+Why the high half: NewTOS returns a TOS `LONG` in a 64-bit register
+(`tos_api::trap`, "return value in `x0` (sign-extended `i64`)"), and an LP64
+caller compares the whole register — `if (Bconstat(2) < 0)` on a `long`.
+A negative error code returned zero-extended, or a pointer above 4 GiB, is
+invisible in the low 32 bits and is exactly what the comparison must see.
+
+Why the trap number: one program, `DUMPBIOS`, measures both traps (section
+7), from one table into one dump. The dump's header carries area 1 (`BIOS`)
+for both; the trap of each record is in the record. Area 2 (`XBIOS`) stays
+defined and is not written by any program.
+
+The field descriptors (`td_call_fields`, `tosdump/core/record.c`) keep every
+field of this record in class **value**: `args`, `capture` and `trap` are
+compared by value; `ret`, read together with `ret_hi`, is the one field
+whose comparison the case's `retclass` refines (section 6) — EXACT is the
+value comparison, the other four classes replace it by a property on each
+side.
 
 ---
 
@@ -534,6 +571,113 @@ pointers, handles and timestamps that differ legitimately between a TT and a
 Pi 4. VDI and AES do not — they are number arrays at fixed positions, which is
 why they get the strict treatment.
 
+### The call table, as built for DUMPBIOS (added 2026-10-27, T7)
+
+The five columns above, made precise. `tosdump/core/cases.h` ("call tables")
+is the authority; `tosdump/cases/bios-r1.tsv` the first table, with its
+ledger `tosdump/cases/COVERAGE-BIOS.md`.
+
+**The opcode column names the trap too:** `<trap>:<function>`, e.g. `14:0x04`
+for `Getrez`. One table holds the BIOS and the XBIOS (section 7), and the same
+function number means different calls on the two traps. A BIOS-area table
+accepts traps 13 and 14; the trap lands in the record (section 3).
+
+**`args`** is `-` or up to eight comma separated arguments, in the order of the
+binding, each with its width, because the m68k stack frame is laid by width
+(`trap_14_wwl` and friends, `sdk/libc/mintlib/include/mint/osbind.h`) and a
+wrong width is a different call:
+
+- `w:<v>` a WORD, `-32768..65535`
+- `l:<v>` a LONG, `-2147483648..4294967295`
+- `b:<n>` a pointer to the dumper's own buffer `n` — `TD_CALL_BUF_N` = 2
+  buffers of `TD_CALL_BUF_BYTES` = 1024 bytes, statics of the runner,
+  poisoned with `0xDEAD` before every case. The table names a buffer by
+  number and the dumper puts its address in (the AES `addr_in` rule); the
+  record carries the token, never the address.
+
+  The poison is laid **in the unit the case's capture reads** (below): the
+  bytes `DE AD` for unit B and for a buffer no capture reads, native WORDs
+  `0xDEAD` for W, native LONGs `0xDEADDEAD` for L (`poison_buffer`,
+  `tosdump/core/runner_call.c`). One fill cannot read the same in every unit
+  on two byte orders — the bytes `DE AD` are the WORD `0xADDE` on AArch64 —
+  and an element the call left alone must read the same on both machines,
+  or the poison becomes a difference. The byte fill is also what a call that
+  reads the buffer as bytes must see on both (`Protobt`'s checksum over a
+  disk-format sector).
+
+How a backend passes them (section 2, marshalling only): the m68k pushes the
+WORDs and LONGs right to left under the function number and issues
+`trap #13/#14`; AArch64 loads `x0..x7` left to right — a WORD sign-narrowed,
+a LONG sign-extended, a pointer whole — and the function number into `x8`,
+exactly as the retargeted mintlib bindings do (`osbind.h`, "NewTOS (AArch64)
+trap layer"). Argument slots the case does not use are `0xDEADDEAD` in the
+AArch64 registers, the counterpart of whatever lies above an m68k frame.
+
+**`retclass`** is one of the five classes above, optionally followed by the
+return value's width: `EXACT.W`, `NONZERO.B` … — no suffix means LONG. The
+width is the return type of the EmuTOS handler (`WORD getrez(void)`,
+`bios/screen.c:1076`; `UBYTE dsp_hstat(void)`, `bios/dsp.c:1273`), because
+`d0` above the returned type is not defined by the m68k calling convention:
+the VDI's `d0` precedent (`td_vdi_fields`, "the compared field is the half the
+contract defines"). A void handler gets `IGNORE`. What each class checks, on
+the return value read as the 64-bit `ret_hi:ret` (section 3) and cut to the
+class width, sign-extended:
+
+| Class | The check | A failure prints |
+|---|---|---|
+| `EXACT` | equal on both sides. At LONG width the whole 64-bit value: a negative LONG that NewTOS returns zero-extended in `x0` is a difference | `ret EXACT <a> = … <b> = …` |
+| `IGNORE` | nothing | — |
+| `NONZERO` | non-zero, on each side | `ret NONZERO <dump> = 0x…, is zero` |
+| `HANDLE` | `>= 0`, on each side | `ret HANDLE <dump> = 0x…, is negative` |
+| `PTR_RAM` | on each side: non-zero, a multiple of 4, and `< 0x80000000` | `ret PTR_RAM <dump> = 0x…, <which property>` |
+
+"Inside RAM" in `PTR_RAM` is checked as far as a dump can state it: as the
+address class's relational property (`< 0x80000000`, section 3,
+`TASK/MEM11.md`) plus non-null. A dump carries no RAM bounds of its machine;
+the property "between the machine's RAM base and its top" would need them
+and is not checked. `PTR_RAM` takes no width suffix: a pointer is a LONG.
+
+*Measured 2026-10-27, open:* the reference itself fails the 4-byte rule for
+three of its eight `PTR_RAM` cases on the TT profile — `Iorec(2)`
+`0x30E2`, `Keytbl` `0x40AE`, `Bconmap(-2)` `0x4A76` — and a fourth on
+`falcontc`, `Iorec(0)` `0x478A`: m68k structures are WORD aligned. The rule stands as written until the lead decides
+(`measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`).
+
+A retclass failure **counts as a case difference** ("N of M cases differ")
+and makes `tosdiff` exit 1, like a value difference of `args`, `capture` or
+`trap`.
+
+**`capture`** is `-` or `<argindex>:<length>[.<unit>][@<offset>]`:
+
+- `argindex` is 0-based and must name a `b:` argument;
+- `unit` is `B` (default), `W` or `L` — the element type the call writes
+  there. The buffer is read as elements of that type in the machine's own
+  order and each element goes into the record through `td_store_be16` /
+  `td_store_be32`, exactly as the raster record stores its pixel words: a
+  LONG `Dsp_Available` writes is four bytes in opposite order on the two
+  machines, and only the element value means the same on both;
+- `length` is in bytes, `1..256`, a multiple of the unit;
+- `offset` (default 0) is in bytes, a multiple of the unit, and
+  `offset + length <= TD_CALL_BUF_BYTES`. `Protobt` writes its checksum at
+  510 (`bios/floppy.c:731-735`), past the 256 bytes the record has room for.
+
+**No preludes, no directives.** A `+` or `!` line is refused. A call table
+issues no reset either: the admission rule of a round-1 table is that every
+case is a query, or a call whose effect does not outlive it (ledger), so
+there is no state to restore. A round that sets state needs a restoring
+prelude, and gets it with its own table form.
+
+**The guard is a whitelist.** A typo in this table can write a disk sector
+(`Rwabs`), install a vector (`Setexc`) or hang the machine on input
+(`Bconin`). The loader (`td_call_cases_parse`) therefore refuses the whole
+table — named reason, offending line — unless every line is a call whose
+safety on **both** machines has been established in the ledger:
+the trap and function are on the list, the argument widths match the
+binding, and the values select the query arm (`Kbshift(-1)`,
+`Setcolor(n,-1)`, `Bconin` only on the handles that return at once on both
+machines, …). Everything else is "not established" until a later round
+establishes it; there is no override.
+
 ---
 
 ## 7. Programs to build
@@ -544,7 +688,7 @@ One program per area, sharing `tosdump/core/` and one `tosdump/abi/` backend:
 |---|---|---|
 | `DUMPVDI` | VDI | build this first |
 | `DUMPAES` | AES | after VDI is clean |
-| `DUMPBIOS` | BIOS + XBIOS | needs `retclass` support |
+| `DUMPBIOS` | BIOS + XBIOS | `retclass` and `capture` since 2026-10-27; table `tosdump/cases/bios-r1.tsv`, ledger `tosdump/cases/COVERAGE-BIOS.md`, references `EMUTOS-1a7484ab-BIOS` (TT) and `-BIOS-falcontc`, first comparison `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT` |
 | `DUMPGDOS` | GEMDOS | needs `retclass` and `capture` |
 
 Each writes exactly one output file, named `<AREA>.BIN`, into the current

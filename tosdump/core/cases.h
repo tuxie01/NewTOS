@@ -91,6 +91,9 @@ struct td_case_table {
 #define TD_CASE_ERR_UNSAFE_STATE   (-15)  /* the run could not finish     */
 #define TD_CASE_ERR_PLANT          (-16)  /* the addr_in column is wrong  */
 #define TD_CASE_ERR_AES_VERSION    (-17)  /* this AES does not have it    */
+#define TD_CASE_ERR_RETCLASS       (-18)  /* retclass column is wrong     */
+#define TD_CASE_ERR_CAPTURE        (-19)  /* capture column is wrong      */
+#define TD_CASE_ERR_SIGNATURE      (-20)  /* argument widths != binding   */
 
 struct td_case_error {
 	uint16_t    line;                  /* physical line, 0 if not a line  */
@@ -698,6 +701,91 @@ int td_rast_cases_parse(struct td_rast_case_table *t, const char *buf,
                         size_t len, struct td_case_error *err);
 int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
                        struct td_case_error *err);
+
+/* ------------------------------------------------------------------ */
+/* Call tables: BIOS + XBIOS (cases/bios-*.tsv), later GEMDOS           */
+/* ------------------------------------------------------------------ */
+/*
+ * Format, five tab separated columns (docs/TOS-REFERENCE-DUMPER.md
+ * section 6, "The call table, as built for DUMPBIOS"):
+ *
+ *   trap:function <TAB> args <TAB> retclass <TAB> capture <TAB> comment
+ *
+ *   trap:function  13 or 14 in a BIOS-area table, then the function number,
+ *                  decimal or 0x hex, 0..255.  "14:0x04" is Getrez.
+ *   args           "-" or up to eight comma separated arguments in binding
+ *                  order, each with its width: "w:<v>" a WORD, "l:<v>" a
+ *                  LONG, "b:<n>" the dumper's buffer n (0..TD_CALL_BUF_N-1).
+ *   retclass       EXACT | IGNORE | NONZERO | HANDLE | PTR_RAM, optionally
+ *                  ".W" or ".B" (not on IGNORE or PTR_RAM): the width of the
+ *                  EmuTOS handler's return type.  No suffix = LONG.
+ *   capture        "-" or <argindex>:<length>[.B|.W|.L][@<offset>] -- copy
+ *                  `length` bytes from `offset` of the buffer argument
+ *                  `argindex` (0-based), as elements of the unit.
+ *
+ * Physical line number = case id, '#' comments, a malformed line refuses
+ * the whole table: as for every other form.  There are NO preludes and NO
+ * directives: a '+' or '!' line is refused.  Round 1 is queries only, so
+ * there is no state to reset or to establish.
+ *
+ * ------------------------------------------------------------------
+ * THE GUARD -- a whitelist
+ * ------------------------------------------------------------------
+ *
+ * A BIOS typo can write a sector (Rwabs), install a vector (Setexc) or wait
+ * forever for a key (Bconin).  The loader therefore refuses the whole table
+ * unless EVERY line is a call whose safety on both machines -- EmuTOS on the
+ * TT and NewTOS on the Pi -- is established in tosdump/cases/
+ * COVERAGE-BIOS.md: the trap and function are on the list in cases.c
+ * (call_policy), the argument widths are the binding's, and the values pick
+ * the query arm.  Anything else is "not established", and a later round
+ * that establishes it extends the list.  As in the AES and raster guards
+ * there is no override.
+ */
+#define TD_CALL_CASE_COLUMNS 5
+
+/* Argument kinds of a call-table line. */
+#define TD_CALL_ARG_WORD     1     /* "w:"                                */
+#define TD_CALL_ARG_LONG     2     /* "l:"                                */
+#define TD_CALL_ARG_BUF      3     /* "b:", value = buffer number         */
+
+struct td_call_arg {
+	uint8_t kind;                      /* TD_CALL_ARG_*                   */
+	int32_t value;                     /* WORD / LONG value, buffer no.   */
+};
+
+struct td_call_case {
+	uint16_t line;                     /* physical line number = case id  */
+	int16_t  trap;                     /* 13 / 14                         */
+	int16_t  opcode;                   /* function number                 */
+	uint16_t nargs;
+	struct td_call_arg arg[TD_CALL_ARGS_N];
+	uint8_t  retclass;                 /* TD_RET_*                        */
+	uint8_t  retwidth;                 /* TD_RET_WIDTH_*                  */
+	int8_t   cap_arg;                  /* -1: no capture                  */
+	uint8_t  cap_unit;                 /* 1, 2, 4                         */
+	uint16_t cap_off;                  /* bytes into the buffer           */
+	uint16_t cap_len;                  /* bytes, <= TD_CALL_CAPTURE_LEN   */
+	char     comment[TD_COMMENT_LEN];
+};
+
+struct td_call_case_table {
+	uint32_t            crc;           /* CRC32 over the raw file bytes   */
+	uint16_t            area;          /* TD_AREA_BIOS                    */
+	uint16_t            count;
+	struct td_call_case cases[TD_MAX_CASES];
+};
+
+/* `area` is the dump's area: TD_AREA_BIOS (traps 13 and 14).  No other
+ * area has a guard yet, so any other is refused. */
+int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
+                        const char *buf, size_t len,
+                        struct td_case_error *err);
+int td_call_cases_load(struct td_call_case_table *t, uint16_t area,
+                       const char *path, struct td_case_error *err);
+
+/* "EXACT", "IGNORE", ... -- for a report. */
+const char *td_retclass_name(uint8_t retclass);
 
 /*
  * Shared line iterator.  One rule for what a line is, used by the parser and

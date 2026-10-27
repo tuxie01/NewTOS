@@ -1,0 +1,237 @@
+EMUTOS.BIN vs EMUTOS-FALCONTC.BIN -- area BIOS, 147 cases from bios-r1.tsv
+
+case 87  trap 14 function 0x04  Getrez() -- WORD getrez, bios/screen.c:1076 (TT-Medium: profile
+    ret                      EXACT   EMUTOS.BIN          = 0x0004 (4)   EMUTOS-FALCONTC.BIN = 0x0002 (2)
+
+case 98  trap 14 function 0x0E  Iorec(0) RS-232 -- bios/xbios.c:336
+    ret                      PTR_RAM EMUTOS-FALCONTC.BIN = 0x000000000000478A, not a multiple of 4
+
+case 100  trap 14 function 0x0E  Iorec(2) MIDI -- bios/xbios.c:336
+    ret                      PTR_RAM EMUTOS.BIN          = 0x00000000000030E2, not a multiple of 4
+    ret                      PTR_RAM EMUTOS-FALCONTC.BIN = 0x00000000000030E2, not a multiple of 4
+
+case 105  trap 14 function 0x0F  Rsconf(-1 x6) old ucr/rsr/tsr -- bios/serport.c:226
+    ret                      EXACT   EMUTOS.BIN          = 0xFFFFFFFF88018100 (-2013167360)   EMUTOS-FALCONTC.BIN = 0xFFFFFFFF88000000 (-2013265920)
+
+case 109  trap 14 function 0x10  Keytbl(-1,-1,-1) -- bios/ikbd.c:122
+    ret                      PTR_RAM EMUTOS.BIN          = 0x00000000000040AE, not a multiple of 4
+    ret                      PTR_RAM EMUTOS-FALCONTC.BIN = 0x00000000000040AE, not a multiple of 4
+
+case 129  trap 14 function 0x1C  Giaccess(0,14) port A -- bios/sound.c:94
+    ret                      EXACT   EMUTOS.BIN          = 0x00000000000000A7 (167)   EMUTOS-FALCONTC.BIN = 0x0000000000000027 (39)
+
+case 183  trap 14 function 0x2C  Bconmap(-1) mapped device -- bios/serport.c:1089-1090
+    ret                      EXACT   EMUTOS.BIN          = 0x0000000000000006 (6)   EMUTOS-FALCONTC.BIN = 0x0000000000000007 (7)
+
+case 184  trap 14 function 0x2C  Bconmap(-2) BCONMAP pointer -- bios/serport.c:1092-1093
+    ret                      PTR_RAM EMUTOS.BIN          = 0x0000000000004A76, not a multiple of 4
+    ret                      PTR_RAM EMUTOS-FALCONTC.BIN = 0x0000000000004A76, not a multiple of 4
+
+case 200  trap 14 function 0x51  EgetShift() -- bios/screen.c:210
+    ret                      EXACT   EMUTOS.BIN          = 0x0400 (1024)   EMUTOS-FALCONTC.BIN = 0x0051 (81)
+
+case 201  trap 14 function 0x52  EsetBank(-1) -- bios/screen.c:222
+    ret                      EXACT   EMUTOS.BIN          = 0x0000 (0)   EMUTOS-FALCONTC.BIN = 0x0052 (82)
+
+case 202  trap 14 function 0x53  EsetColor(0,-1) -- bios/screen.c:241
+    ret                      EXACT   EMUTOS.BIN          = 0x0FFF (4095)   EMUTOS-FALCONTC.BIN = 0x0053 (83)
+
+case 203  trap 14 function 0x53  EsetColor(15,-1) -- bios/screen.c:241
+    ret                      EXACT   EMUTOS.BIN          = 0x0000 (0)   EMUTOS-FALCONTC.BIN = 0x0053 (83)
+
+case 204  trap 14 function 0x53  EsetColor(255,-1) -- bios/screen.c:241
+    ret                      EXACT   EMUTOS.BIN          = 0x0000 (0)   EMUTOS-FALCONTC.BIN = 0x0053 (83)
+
+case 205  trap 14 function 0x55  EgetPalette(0,16,b0) -- bios/screen.c:290
+    capture[0]             EMUTOS.BIN          = 0x0F   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[1]             EMUTOS.BIN          = 0xFF   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[2]             EMUTOS.BIN          = 0x0F   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[3]             EMUTOS.BIN          = 0x00   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[4]             EMUTOS.BIN          = 0x00   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[5]             EMUTOS.BIN          = 0xF0   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[6]             EMUTOS.BIN          = 0x0F   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[7]             EMUTOS.BIN          = 0xF0   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[8]             EMUTOS.BIN          = 0x00   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[9]             EMUTOS.BIN          = 0x0F   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[10]             EMUTOS.BIN          = 0x0F   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[11]             EMUTOS.BIN          = 0x0F   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[12]             EMUTOS.BIN          = 0x00   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[13]             EMUTOS.BIN          = 0xFF   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[14]             EMUTOS.BIN          = 0x0A   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[15]             EMUTOS.BIN          = 0xAA   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[16]             EMUTOS.BIN          = 0x06   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[17]             EMUTOS.BIN          = 0x66   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[18]             EMUTOS.BIN          = 0x0F   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[19]             EMUTOS.BIN          = 0x99   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[20]             EMUTOS.BIN          = 0x09   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[21]             EMUTOS.BIN          = 0xF9   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[22]             EMUTOS.BIN          = 0x0F   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[23]             EMUTOS.BIN          = 0xF9   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[24]             EMUTOS.BIN          = 0x09   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[25]             EMUTOS.BIN          = 0x9F   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[26]             EMUTOS.BIN          = 0x0F   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[27]             EMUTOS.BIN          = 0x9F   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[28]             EMUTOS.BIN          = 0x09   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[29]             EMUTOS.BIN          = 0xFF   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[30]             EMUTOS.BIN          = 0x00   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[31]             EMUTOS.BIN          = 0x00   EMUTOS-FALCONTC.BIN = 0xAD
+
+case 206  trap 14 function 0x55  EgetPalette(240,16,b0) -- bios/screen.c:290
+    capture[0]             EMUTOS.BIN          = 0x00   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[1]             EMUTOS.BIN          = 0x24   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[2]             EMUTOS.BIN          = 0x00   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[3]             EMUTOS.BIN          = 0x34   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[4]             EMUTOS.BIN          = 0x00   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[5]             EMUTOS.BIN          = 0x44   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[6]             EMUTOS.BIN          = 0x00   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[7]             EMUTOS.BIN          = 0x43   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[8]             EMUTOS.BIN          = 0x00   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[9]             EMUTOS.BIN          = 0x42   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[10]             EMUTOS.BIN          = 0x00   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[11]             EMUTOS.BIN          = 0x41   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[12]             EMUTOS.BIN          = 0x00   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[13]             EMUTOS.BIN          = 0x40   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[14]             EMUTOS.BIN          = 0x01   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[15]             EMUTOS.BIN          = 0x40   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[16]             EMUTOS.BIN          = 0x02   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[17]             EMUTOS.BIN          = 0x40   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[18]             EMUTOS.BIN          = 0x03   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[19]             EMUTOS.BIN          = 0x40   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[20]             EMUTOS.BIN          = 0x04   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[21]             EMUTOS.BIN          = 0x40   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[22]             EMUTOS.BIN          = 0x04   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[23]             EMUTOS.BIN          = 0x30   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[24]             EMUTOS.BIN          = 0x04   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[25]             EMUTOS.BIN          = 0x20   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[26]             EMUTOS.BIN          = 0x04   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[27]             EMUTOS.BIN          = 0x10   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[28]             EMUTOS.BIN          = 0x0F   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[29]             EMUTOS.BIN          = 0xFF   EMUTOS-FALCONTC.BIN = 0xAD
+    capture[30]             EMUTOS.BIN          = 0x00   EMUTOS-FALCONTC.BIN = 0xDE
+    capture[31]             EMUTOS.BIN          = 0x00   EMUTOS-FALCONTC.BIN = 0xAD
+
+case 207  trap 14 function 0x56  EsetGray(-1) -- bios/screen.c:313
+    ret                      EXACT   EMUTOS.BIN          = 0x0000 (0)   EMUTOS-FALCONTC.BIN = 0x0056 (86)
+
+case 208  trap 14 function 0x57  EsetSmear(-1) -- bios/screen.c:334
+    ret                      EXACT   EMUTOS.BIN          = 0x0000 (0)   EMUTOS-FALCONTC.BIN = 0x0057 (87)
+
+case 211  trap 14 function 0x58  VsetMode(-1) -- bios/videl.c:619
+    ret                      EXACT   EMUTOS.BIN          = 0x0058 (88)   EMUTOS-FALCONTC.BIN = 0x001C (28)
+
+case 212  trap 14 function 0x59  VgetMonitor() -- bios/videl.c:664
+    ret                      EXACT   EMUTOS.BIN          = 0x0059 (89)   EMUTOS-FALCONTC.BIN = 0x0002 (2)
+
+case 213  trap 14 function 0x5B  VgetSize(0x1C) -- LONG vgetsize, bios/videl.c:724
+    ret                      EXACT   EMUTOS.BIN          = 0x000000000000005B (91)   EMUTOS-FALCONTC.BIN = 0x0000000000096000 (614400)
+
+case 214  trap 14 function 0x5E  VgetRGB(0,16,b0) -- WORD vgetrgb, bios/videl.c:862
+    ret                      EXACT   EMUTOS.BIN          = 0x005E (94)   EMUTOS-FALCONTC.BIN = 0x0000 (0)
+    capture[0]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[1]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0xFF
+    capture[2]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0xFF
+    capture[3]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0xFF
+    capture[4]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[5]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0xFF
+    capture[6]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[7]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x00
+    capture[8]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[9]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x00
+    capture[10]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0xFF
+    capture[11]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x00
+    capture[12]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[13]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0xFF
+    capture[14]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0xFF
+    capture[15]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x00
+    capture[16]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[17]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x00
+    capture[18]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[19]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0xFF
+    capture[20]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[21]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0xFF
+    capture[22]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[23]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0xFF
+    capture[24]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[25]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x00
+    capture[26]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0xFF
+    capture[27]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0xFF
+    capture[28]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[29]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0xBB
+    capture[30]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0xBB
+    capture[31]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0xBB
+    capture[32]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[33]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x88
+    capture[34]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x88
+    capture[35]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x88
+    capture[36]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[37]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0xAA
+    capture[38]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[39]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x00
+    capture[40]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[41]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x00
+    capture[42]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0xAA
+    capture[43]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x00
+    capture[44]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[45]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0xAA
+    capture[46]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0xAA
+    capture[47]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x00
+    capture[48]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[49]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x00
+    capture[50]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[51]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0xAA
+    capture[52]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[53]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0xAA
+    capture[54]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[55]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0xAA
+    capture[56]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[57]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x00
+    capture[58]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0xAA
+    capture[59]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0xAA
+    capture[60]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[61]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x00
+    capture[62]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[63]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x00
+
+case 215  trap 14 function 0x5F  Vfixmode(0x1C) -- bios/videl.c:917
+    ret                      EXACT   EMUTOS.BIN          = 0xFFE0 (-32)   EMUTOS-FALCONTC.BIN = 0x001C (28)
+
+case 218  trap 14 function 0x67  Dsp_GetWordSize() -- bios/dsp.c:508
+    ret                      EXACT   EMUTOS.BIN          = 0x0067 (103)   EMUTOS-FALCONTC.BIN = 0x0003 (3)
+
+case 219  trap 14 function 0x6A  Dsp_Available(b0,b1) x -- bios/dsp.c:619 (no has_dsp test)
+    capture[0]             EMUTOS.BIN          = 0xFF   EMUTOS-FALCONTC.BIN = 0x00
+    capture[1]             EMUTOS.BIN          = 0xFF   EMUTOS-FALCONTC.BIN = 0x00
+    capture[2]             EMUTOS.BIN          = 0xC0   EMUTOS-FALCONTC.BIN = 0x3E
+    capture[3]             EMUTOS.BIN          = 0x00   EMUTOS-FALCONTC.BIN = 0xA9
+
+case 221  trap 14 function 0x72  Dsp_GetProgAbility() -- bios/dsp.c:976
+    ret                      EXACT   EMUTOS.BIN          = 0x0072 (114)   EMUTOS-FALCONTC.BIN = 0x0000 (0)
+
+case 222  trap 14 function 0x75  Dsp_InqSubrAbility(0) -- bios/dsp.c:1146
+    ret                      EXACT   EMUTOS.BIN          = 0x0075 (117)   EMUTOS-FALCONTC.BIN = 0x0017 (23)
+
+case 223  trap 14 function 0x77  Dsp_Hf0(-1) -- bios/dsp.c:1200
+    ret                      EXACT   EMUTOS.BIN          = 0x0077 (119)   EMUTOS-FALCONTC.BIN = 0x0000 (0)
+
+case 224  trap 14 function 0x78  Dsp_Hf1(-1) -- bios/dsp.c:1222
+    ret                      EXACT   EMUTOS.BIN          = 0x0078 (120)   EMUTOS-FALCONTC.BIN = 0x0000 (0)
+
+case 225  trap 14 function 0x79  Dsp_Hf2() -- bios/dsp.c:1247
+    ret                      EXACT   EMUTOS.BIN          = 0x0079 (121)   EMUTOS-FALCONTC.BIN = 0x0000 (0)
+
+case 226  trap 14 function 0x7A  Dsp_Hf3() -- bios/dsp.c:1257
+    ret                      EXACT   EMUTOS.BIN          = 0x007A (122)   EMUTOS-FALCONTC.BIN = 0x0000 (0)
+
+case 227  trap 14 function 0x7D  Dsp_Hstat() -- UBYTE dsp_hstat, bios/dsp.c:1273
+    ret                      EXACT   EMUTOS.BIN          = 0x7D (125)   EMUTOS-FALCONTC.BIN = 0x06 (6)
+
+case 232  trap 14 function 0x82  Soundcmd(6,-1) -- bios/dmasound.c:342
+    ret                      EXACT   EMUTOS.BIN          = 0x0000000000000000 (0)   EMUTOS-FALCONTC.BIN = 0x0000000000000003 (3)
+
+case 235  trap 14 function 0x8D  Buffptr(b0) -- bios/dmasound.c:772
+    capture[4]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[5]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x00
+    capture[6]             EMUTOS.BIN          = 0xDE   EMUTOS-FALCONTC.BIN = 0x00
+    capture[7]             EMUTOS.BIN          = 0xAD   EMUTOS-FALCONTC.BIN = 0x00
+
+33 of 147 cases differ

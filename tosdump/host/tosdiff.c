@@ -11,14 +11,16 @@
  *        tosdiff CASES.TSV A.BIN B.BIN
  *
  * exit: 0 = accepted / no differences, 1 = differences found (a value
- *       difference, an address cell that is not < 0x80000000, or an MFDB
- *       pointer cell the call changed -- the kept check), 2 = refused.
+ *       difference, an address cell that is not < 0x80000000, an MFDB
+ *       pointer cell the call changed -- the kept check -- or, in a call
+ *       area, a return value that fails its case's retclass), 2 = refused.
  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "casefile.h"
+#include "cases.h"
 
 struct td_dump {
 	const char       *path;
@@ -473,6 +475,129 @@ static void kept_check_summary(const struct td_dump *d,
 	}
 }
 
+/*
+ * The call areas (BIOS / XBIOS / GEMDOS): `ret` is judged by the case's
+ * retclass column (docs/TOS-REFERENCE-DUMPER.md section 6), on the 64-bit
+ * return register ret_hi:ret (section 3) cut to the class width.
+ */
+static int is_call_area(uint16_t area)
+{
+	return area == TD_AREA_BIOS || area == TD_AREA_XBIOS ||
+	       area == TD_AREA_GEMDOS;
+}
+
+static int64_t call_ret(const uint8_t *rec, uint8_t width)
+{
+	uint64_t v = ((uint64_t)td_load_be32(rec + TD_CALL_OFF_RET_HI) << 32) |
+	             (uint64_t)td_load_be32(rec + TD_CALL_OFF_RET);
+
+	switch (width) {
+	case TD_RET_WIDTH_WORD: return (int64_t)(int16_t)(uint16_t)(v & 0xFFFFu);
+	case TD_RET_WIDTH_BYTE: return (int64_t)(int8_t)(uint8_t)(v & 0xFFu);
+	default:                return (int64_t)v;   /* LONG: the register */
+	}
+}
+
+static void print_ret(int64_t v, uint8_t width)
+{
+	switch (width) {
+	case TD_RET_WIDTH_WORD:
+		printf("0x%04X (%d)", (unsigned)(uint16_t)v, (int)v);
+		break;
+	case TD_RET_WIDTH_BYTE:
+		printf("0x%02X (%d)", (unsigned)(uint8_t)v, (int)v);
+		break;
+	default:
+		printf("0x%016llX (%lld)", (unsigned long long)v, (long long)v);
+		break;
+	}
+}
+
+/* The per-side property of a class, or NULL when it holds. */
+static const char *retclass_violation(uint8_t retclass, int64_t v)
+{
+	switch (retclass) {
+	case TD_RET_NONZERO:
+		return v == 0 ? "is zero" : NULL;
+	case TD_RET_HANDLE:
+		return v < 0 ? "is negative" : NULL;
+	case TD_RET_PTR_RAM:
+		if (v == 0)
+			return "is null";
+		if ((uint64_t)v >= (uint64_t)TD_ADDR_LIMIT)
+			return "not < 0x80000000";
+		if ((uint64_t)v % 4u != 0)
+			return "not a multiple of 4";
+		return NULL;
+	default:
+		return NULL;
+	}
+}
+
+static void print_call_case_header(const struct td_casefile *cf,
+                                   uint16_t case_id, const uint8_t *rec,
+                                   int *printed)
+{
+	const char *c;
+
+	if (*printed)
+		return;
+	c = td_casefile_comment(cf, case_id);
+	printf("\ncase %u  trap %u function 0x%02X%s%s\n", case_id,
+	       td_load_be16(rec + TD_CALL_OFF_TRAP),
+	       td_load_be16(rec + TD_CALL_OFF_OPCODE), *c ? "  " : "", c);
+	*printed = 1;
+}
+
+/* Judge one record's `ret` by its retclass.  Returns 1 when the case
+ * differs on account of it. */
+static int retclass_check(const struct td_casefile *cf, uint16_t index,
+                          const struct td_dump *a, const uint8_t *ra,
+                          const struct td_dump *b, const uint8_t *rb,
+                          int label_w, uint16_t case_id, int *printed)
+{
+	uint8_t cls = cf->retclass[index], w = cf->retwidth[index];
+	int64_t va = call_ret(ra, w), vb = call_ret(rb, w);
+	const char *why;
+	int differs = 0, side;
+
+	if (cls == TD_RET_IGNORE)
+		return 0;
+	if (cls == TD_RET_EXACT) {
+		if (va == vb)
+			return 0;
+		print_call_case_header(cf, case_id, ra, printed);
+		printf("    %-24s %-7s %-*s = ", "ret", "EXACT", label_w, a->label);
+		print_ret(va, w);
+		printf("   %-*s = ", label_w, b->label);
+		print_ret(vb, w);
+		printf("\n");
+		return 1;
+	}
+	for (side = 0; side < 2; side++) {
+		const struct td_dump *d = side ? b : a;
+		int64_t v = side ? vb : va;
+
+		why = retclass_violation(cls, v);
+		if (!why)
+			continue;
+		print_call_case_header(cf, case_id, ra, printed);
+		/* hex only, like an address verdict: the property is about the
+		 * bit pattern, not the number */
+		printf("    %-24s %s %-*s = ", "ret", td_retclass_name(cls),
+		       label_w, d->label);
+		if (w == TD_RET_WIDTH_WORD)
+			printf("0x%04X", (unsigned)(uint16_t)v);
+		else if (w == TD_RET_WIDTH_BYTE)
+			printf("0x%02X", (unsigned)(uint8_t)v);
+		else
+			printf("0x%016llX", (unsigned long long)v);
+		printf(", %s\n", why);
+		differs = 1;
+	}
+	return differs;
+}
+
 static int cmd_compare(const char *cases_path, const char *a_path,
                        const char *b_path)
 {
@@ -561,15 +686,6 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 		        a.h.area);
 		goto refuse;
 	}
-	if (a.h.area != TD_AREA_VDI && a.h.area != TD_AREA_AES &&
-	    a.h.area != TD_AREA_RASTER) {
-		fprintf(stderr,
-		        "tosdiff: comparing area %s needs the retclass and capture "
-		        "columns of the case table, which land with task T7; "
-		        "--validate works for this area today\n",
-		        td_area_name(a.h.area));
-		goto refuse;
-	}
 	nkept = kept_resolve(a.h.area, fields, kept);
 	if (nkept < 0)
 		goto refuse;
@@ -597,9 +713,29 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 			goto refuse;
 		}
 
+		/* The retclass is the case table's, by position: the record must
+		 * be the case the table has there. */
+		if (is_call_area(a.h.area) && cf.line[rec] != case_id) {
+			fprintf(stderr,
+			        "tosdiff: refusing: record %u is case %u, %s has case %u "
+			        "on that position\n", rec, case_id,
+			        basename_of(cases_path), cf.line[rec]);
+			goto refuse;
+		}
+
+		/* A call area: `ret` is judged by the case's retclass, not by
+		 * value (docs/TOS-REFERENCE-DUMPER.md section 6). */
+		if (is_call_area(a.h.area) &&
+		    retclass_check(&cf, rec, &a, ra, &b, rb, label_w, case_id,
+		                   &printed_header))
+			value_differs = 1;
+
 		for (fi = 0; fields[fi].name; fi++) {
 			const struct td_field *f = &fields[fi];
 			uint16_t idx;
+
+			if (is_call_area(a.h.area) && f->off == TD_CALL_OFF_RET)
+				continue;   /* judged above */
 
 			/* Field class address: never compared by value -- the two
 			 * values cannot be equal by construction, so a difference
@@ -623,8 +759,13 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 				if (va == vb)
 					continue;
 
-				print_case_header(&cf, case_id, record_opcode(&a, rec),
-				                  &printed_header);
+				if (is_call_area(a.h.area))
+					print_call_case_header(&cf, case_id, ra,
+					                       &printed_header);
+				else
+					print_case_header(&cf, case_id,
+					                  record_opcode(&a, rec),
+					                  &printed_header);
 				value_differs = 1;
 				printf("    %s[%u]", f->name, f->first + idx);
 				printf("%*s", (int)(20 - strlen(f->name)) > 0

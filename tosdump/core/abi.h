@@ -36,4 +36,36 @@ int32_t td_abi_vdi(int16_t *contrl, int16_t *intin, int16_t *ptsin,
 int32_t td_abi_aes(int16_t *control, int16_t *global, int16_t *int_in,
                    int16_t *int_out, void **addr_in, void **addr_out);
 
+/*
+ * The register / stack traps: GEMDOS (1), BIOS (13), XBIOS (14).
+ *
+ * `kind[i]` says how argument i travels -- the one thing the two ABIs
+ * disagree about:
+ *
+ *   TD_ABI_ARG_WORD  one WORD on the m68k stack (the low 16 bits of
+ *                    value[i]); on AArch64 the register gets value[i],
+ *                    which the caller has already sign-narrowed.
+ *   TD_ABI_ARG_LONG  a LONG or a pointer: two WORDs on the m68k stack, most
+ *                    significant first; on AArch64 the whole register.
+ *
+ * `value` always holds TD_ABI_ARGS_MAX entries.  The m68k backend pushes
+ * the first `nargs` right to left under the function number, issues the
+ * trap and pops the frame; the AArch64 backend loads all eight into x0..x7
+ * (the caller fills the unused ones with poison) and the function number
+ * into x8, as sdk/libc/mintlib/include/mint/osbind.h's NewTOS trap layer
+ * does.  Marshalling only, no logic (spec section 2, section 8 rule 5).
+ *
+ * Returns the return register at its native width -- d0 (32 bits) on the
+ * m68k, x0 (64 bits) on AArch64 -- as a `long`, which is exactly that width
+ * on both.  An unknown trap number issues nothing and returns
+ * TD_ABI_NO_TRAP; the case loader never lets one through.
+ */
+#define TD_ABI_ARG_WORD  1
+#define TD_ABI_ARG_LONG  2
+#define TD_ABI_ARGS_MAX  8
+#define TD_ABI_NO_TRAP   ((long)(int32_t)0xDEADDEADuL)
+
+long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
+                 const uint8_t *kind, const long *value);
+
 #endif /* TOSDUMP_ABI_H */

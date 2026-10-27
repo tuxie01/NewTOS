@@ -96,3 +96,46 @@ int32_t td_abi_aes(int16_t *control, int16_t *global, int16_t *int_in,
 	);
 	return (int32_t)x0;
 }
+
+/*
+ * The register traps (abi.h): GEMDOS svc #1, BIOS svc #13, XBIOS svc #14.
+ * The register ABI is the one sdk/libc/mintlib/include/mint/osbind.h's
+ * NewTOS trap layer uses (verified there against tos_api::trap): the
+ * function number in x8, the arguments in x0..x7 left to right, the result
+ * in x0; the SVC entry preserves x1..x29.  `value` already holds every
+ * argument at register width -- a WORD sign-narrowed, a LONG sign-extended,
+ * a pointer whole, an unused slot poison -- so all eight registers are
+ * loaded as they stand.  `kind` says how a WORD travels on the m68k stack;
+ * a register has one width, so it has nothing to say here.
+ */
+#define TD_SVC_TRAP(insn)                                                   \
+	__asm__ __volatile__ (                                                  \
+		insn                                                                \
+		: "+r"(x0)                                                          \
+		: "r"(x1), "r"(x2), "r"(x3), "r"(x4), "r"(x5), "r"(x6), "r"(x7),     \
+		  "r"(x8)                                                           \
+		: "memory", "cc")
+
+long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
+                 const uint8_t *kind, const long *value)
+{
+	register long x0 __asm__("x0") = value[0];
+	register long x1 __asm__("x1") = value[1];
+	register long x2 __asm__("x2") = value[2];
+	register long x3 __asm__("x3") = value[3];
+	register long x4 __asm__("x4") = value[4];
+	register long x5 __asm__("x5") = value[5];
+	register long x6 __asm__("x6") = value[6];
+	register long x7 __asm__("x7") = value[7];
+	register long x8 __asm__("x8") = (long)opcode;
+
+	(void)nargs;
+	(void)kind;
+	switch (trap) {
+	case 1:  TD_SVC_TRAP("svc	#1");  break;
+	case 13: TD_SVC_TRAP("svc	#13"); break;
+	case 14: TD_SVC_TRAP("svc	#14"); break;
+	default: return TD_ABI_NO_TRAP;
+	}
+	return x0;
+}

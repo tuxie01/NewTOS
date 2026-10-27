@@ -56,8 +56,8 @@ whole configuration back into the `--configfile` path.
 
 | Profile | Command-line machine | Screen | References |
 |---|---|---|---|
-| `tt` | `--machine tt --tos-res ttmed --monitor vga` | 640×480, 4 planes (TT-Medium) | `EMUTOS14-VDI`, `-VDI-r2`, `-VDI-r3`, `-VDI-all`, `-AES`, `-AES-r2wind`, `-AES-r2brlist`, `-AES-r3`, `-AES-m05/m06/m07`, `-RASTER` |
-| `falcontc` | `--machine falcon --monitor vga` + `EMUDESK.INF` `#E 1A E0 00 1C 60` | 640×480, 16-bit truecolor (VIDEL `0x001C`, read by `process_inf1`, `aes/geminit.c`) | `EMUTOS14-VDI-all-falcontc`, `-RASTER-screen-falcontc` |
+| `tt` | `--machine tt --tos-res ttmed --monitor vga` | 640×480, 4 planes (TT-Medium) | `EMUTOS14-VDI`, `-VDI-r2`, `-VDI-r3`, `-VDI-all`, `-AES`, `-AES-r2wind`, `-AES-r2brlist`, `-AES-r3`, `-AES-m05/m06/m07`, `-RASTER`; pin only: `EMUTOS-1a7484ab-BIOS` |
+| `falcontc` | `--machine falcon --monitor vga` + `EMUDESK.INF` `#E 1A E0 00 1C 60` | 640×480, 16-bit truecolor (VIDEL `0x001C`, read by `process_inf1`, `aes/geminit.c`) | `EMUTOS14-VDI-all-falcontc`, `-RASTER-screen-falcontc`; pin only: `EMUTOS-1a7484ab-BIOS-falcontc` |
 
 The INF is byte-identical to `measurements/measurement-2026-09-21-vdi-qemu/method/EMUDESK-falcon-truecolor.INF`.
 
@@ -166,7 +166,15 @@ with the user's full configuration and again with the cleaned `hatari.cfg`.
   `measurements/measurement-2026-10-26-oracle/method/compare-set.sh` of the run) and map every new difference to a commit.
 - A change of Hatari, its config, or the toolchain = rerun the control and
   calibration runs first.
-- All fourteen `EMUTOS-1a7484ab-*` references are record **format 3**
+- The BIOS + XBIOS references `EMUTOS-1a7484ab-BIOS` (`tt`) and
+  `EMUTOS-1a7484ab-BIOS-falcontc` were measured on this pin on 2026-10-27,
+  in format 3 from the start, with `DUMPBIOS` build `a8b7` and the table
+  `tosdump/cases/bios-r1.tsv` (CRC `583C11E0`, 147 cases); they have no
+  `EMUTOS14-*` counterpart. Two `tt` runs are identical except the
+  `Gettime` case (class `NONZERO`). Why the second profile: a third of the
+  XBIOS answers is the machine's (TT shifter, Videl, DSP, DMA sound,
+  palette) — `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`.
+- All fourteen VDI, AES and raster `EMUTOS-1a7484ab-*` references are record **format 3**
   (pointer width and word order in the header,
   `docs/TOS-REFERENCE-DUMPER.md` section 3), re-recorded on this pin on
   2026-10-26 with each reference's own build id. The twelve VDI and AES
@@ -196,7 +204,11 @@ format 2 dump as "not checkable" (`docs/TOS-REFERENCE-DUMPER.md` section 3,
 field classes). A second relational property within one side is the raster
 **kept check**: every MFDB pointer cell after the call equals the one before
 it (the VDI must not modify the pointers), again its own verdict and "not
-checkable" on format 2 (same section). Still open: null/non-null and alignment, and the GEMDOS/BIOS
-area itself (task T7 of the dumper spec). tos-api's `aes_reference` harness
+checkable" on format 2 (same section). Since 2026-10-27 the BIOS + XBIOS area
+exists (`DUMPBIOS`, task T7): a returned pointer is class `PTR_RAM` —
+non-null, a multiple of 4 and `< 0x80000000` on each side
+(`docs/TOS-REFERENCE-DUMPER.md` section 6); the reference itself fails the
+multiple-of-4 rule for three or four WORD-aligned m68k structures, which is
+open. Still open: the GEMDOS area. tos-api's `aes_reference` harness
 checks `ap_3resv` relationally on its own (non-zero iff the reference's is,
 `tos-api/tests/aes_reference/harness.rs`).

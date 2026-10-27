@@ -2674,6 +2674,704 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
 	return rc;
 }
 
+/* ------------------------------------------------------------------ */
+/* Call tables: BIOS + XBIOS (cases.h, "Call tables")                  */
+/* ------------------------------------------------------------------ */
+
+/*
+ * One 32-bit value, decimal or 0x hex, -2147483648..4294967295: a LONG is
+ * stated as a bit pattern (0xFFFFFFFF) as often as a number (-1), and both
+ * spellings must reach the machine as the same 32 bits.
+ */
+static int parse_value32(const char *s, size_t len, int32_t *out)
+{
+	int negative = 0, base = 10, digits = 0;
+	uint32_t v = 0;
+	size_t i = 0;
+
+	trim(&s, &len);
+	if (len == 0)
+		return TD_CASE_ERR_VALUE;
+	if (s[0] == '-') {
+		negative = 1;
+		i = 1;
+	} else if (s[0] == '+') {
+		i = 1;
+	}
+	if (len - i > 2 && s[i] == '0' && (s[i + 1] == 'x' || s[i + 1] == 'X')) {
+		base = 16;
+		i += 2;
+	}
+	for (; i < len; i++) {
+		uint32_t d;
+		char c = s[i];
+
+		if (c >= '0' && c <= '9')
+			d = (uint32_t)(c - '0');
+		else if (base == 16 && c >= 'a' && c <= 'f')
+			d = (uint32_t)(c - 'a' + 10);
+		else if (base == 16 && c >= 'A' && c <= 'F')
+			d = (uint32_t)(c - 'A' + 10);
+		else
+			return TD_CASE_ERR_VALUE;
+		if (v > (0xFFFFFFFFuL - d) / (uint32_t)base)
+			return TD_CASE_ERR_RANGE;
+		v = v * (uint32_t)base + d;
+		digits++;
+	}
+	if (digits == 0)
+		return TD_CASE_ERR_VALUE;
+	if (negative) {
+		if (v > 0x80000000uL)
+			return TD_CASE_ERR_RANGE;
+		*out = (int32_t)(0u - v);
+	} else {
+		*out = (int32_t)v;
+	}
+	return 0;
+}
+
+/* A small unsigned number, for the trap, the function and the capture. */
+static int parse_small(const char *s, size_t len, uint32_t max, uint32_t *out)
+{
+	int32_t v;
+	int rc = parse_value32(s, len, &v);
+
+	if (rc != 0)
+		return rc;
+	if (v < 0 || (uint32_t)v > max)
+		return TD_CASE_ERR_RANGE;
+	*out = (uint32_t)v;
+	return 0;
+}
+
+const char *td_retclass_name(uint8_t retclass)
+{
+	switch (retclass) {
+	case TD_RET_EXACT:   return "EXACT";
+	case TD_RET_IGNORE:  return "IGNORE";
+	case TD_RET_NONZERO: return "NONZERO";
+	case TD_RET_HANDLE:  return "HANDLE";
+	case TD_RET_PTR_RAM: return "PTR_RAM";
+	default:             return "?";
+	}
+}
+
+static int span_is(const char *s, size_t len, const char *word)
+{
+	return strlen(word) == len && memcmp(s, word, len) == 0;
+}
+
+static int parse_retclass(const char *s, size_t len, struct td_call_case *c,
+                          const char **why)
+{
+	static const uint8_t classes[] = { TD_RET_EXACT, TD_RET_IGNORE,
+	                                   TD_RET_NONZERO, TD_RET_HANDLE,
+	                                   TD_RET_PTR_RAM };
+	size_t dot, i;
+
+	trim(&s, &len);
+	for (dot = 0; dot < len && s[dot] != '.'; dot++)
+		;
+	c->retclass = 0xFF;
+	for (i = 0; i < sizeof classes; i++)
+		if (span_is(s, dot, td_retclass_name(classes[i])))
+			c->retclass = classes[i];
+	if (c->retclass == 0xFF) {
+		*why = "retclass is not EXACT, IGNORE, NONZERO, HANDLE or PTR_RAM";
+		return TD_CASE_ERR_RETCLASS;
+	}
+	c->retwidth = TD_RET_WIDTH_LONG;
+	if (dot == len)
+		return 0;
+	/* ".L" is the default and is not spelt: one spelling per meaning, so
+	 * that two tables saying the same thing have the same bytes. */
+	if (span_is(s + dot, len - dot, ".W"))
+		c->retwidth = TD_RET_WIDTH_WORD;
+	else if (span_is(s + dot, len - dot, ".B"))
+		c->retwidth = TD_RET_WIDTH_BYTE;
+	else {
+		*why = "retclass width is not .W or .B (LONG has no suffix)";
+		return TD_CASE_ERR_RETCLASS;
+	}
+	if (c->retclass == TD_RET_IGNORE) {
+		*why = "IGNORE takes no width";
+		return TD_CASE_ERR_RETCLASS;
+	}
+	if (c->retclass == TD_RET_PTR_RAM) {
+		*why = "PTR_RAM takes no width: a pointer is a LONG";
+		return TD_CASE_ERR_RETCLASS;
+	}
+	return 0;
+}
+
+static int parse_call_args(const char *s, size_t len, struct td_call_case *c,
+                           const char **why)
+{
+	size_t i = 0, start = 0;
+
+	c->nargs = 0;
+	trim(&s, &len);
+	if (len == 1 && s[0] == '-')
+		return 0;
+	if (len == 0) {
+		*why = "the args column is empty (\"-\" for none)";
+		return TD_CASE_ERR_VALUE;
+	}
+	for (;;) {
+		if (i == len || s[i] == ',') {
+			const char *a = s + start;
+			size_t alen = i - start;
+			struct td_call_arg *arg;
+			int32_t v;
+			int rc;
+
+			trim(&a, &alen);
+			if (c->nargs >= TD_CALL_ARGS_N) {
+				*why = "more than eight arguments";
+				return TD_CASE_ERR_TOO_MANY_VALUES;
+			}
+			arg = &c->arg[c->nargs];
+			if (alen < 3 || a[1] != ':') {
+				*why = "an argument is not w:<v>, l:<v> or b:<n>";
+				return TD_CASE_ERR_VALUE;
+			}
+			rc = parse_value32(a + 2, alen - 2, &v);
+			if (rc != 0) {
+				*why = "an argument value is not a number";
+				return rc;
+			}
+			switch (a[0]) {
+			case 'w':
+				if (v < -32768 || v > 65535) {
+					*why = "a WORD argument does not fit in 16 bits";
+					return TD_CASE_ERR_RANGE;
+				}
+				arg->kind  = TD_CALL_ARG_WORD;
+				arg->value = (int32_t)(int16_t)(uint16_t)v;
+				break;
+			case 'l':
+				arg->kind  = TD_CALL_ARG_LONG;
+				arg->value = v;
+				break;
+			case 'b':
+				if (v < 0 || v >= TD_CALL_BUF_N) {
+					*why = "a buffer argument names no dumper buffer";
+					return TD_CASE_ERR_RANGE;
+				}
+				arg->kind  = TD_CALL_ARG_BUF;
+				arg->value = v;
+				break;
+			default:
+				*why = "an argument is not w:<v>, l:<v> or b:<n>";
+				return TD_CASE_ERR_VALUE;
+			}
+			c->nargs++;
+			if (i == len)
+				break;
+			start = i + 1;
+		}
+		i++;
+	}
+	return 0;
+}
+
+static int parse_capture(const char *s, size_t len, struct td_call_case *c,
+                         const char **why)
+{
+	size_t colon, end, at;
+	uint32_t idx, length, off = 0;
+	uint8_t unit = 1;
+	int rc;
+
+	c->cap_arg = -1;
+	trim(&s, &len);
+	if (len == 1 && s[0] == '-')
+		return 0;
+	*why = "capture is not - or <argindex>:<length>[.B|.W|.L][@<offset>]";
+	for (colon = 0; colon < len && s[colon] != ':'; colon++)
+		;
+	if (colon == 0 || colon >= len)
+		return TD_CASE_ERR_CAPTURE;
+	for (at = colon; at < len && s[at] != '@'; at++)
+		;
+	for (end = colon; end < at && s[end] != '.'; end++)
+		;
+	if (parse_small(s, colon, 255, &idx) != 0)
+		return TD_CASE_ERR_CAPTURE;
+	rc = parse_small(s + colon + 1, end - colon - 1, 0xFFFF, &length);
+	if (rc != 0)
+		return TD_CASE_ERR_CAPTURE;
+	if (end < at) {
+		if (span_is(s + end, at - end, ".B"))
+			unit = 1;
+		else if (span_is(s + end, at - end, ".W"))
+			unit = 2;
+		else if (span_is(s + end, at - end, ".L"))
+			unit = 4;
+		else {
+			*why = "capture unit is not .B, .W or .L";
+			return TD_CASE_ERR_CAPTURE;
+		}
+	}
+	if (at < len && parse_small(s + at + 1, len - at - 1, 0xFFFF, &off) != 0)
+		return TD_CASE_ERR_CAPTURE;
+
+	if (idx >= c->nargs || c->arg[idx].kind != TD_CALL_ARG_BUF) {
+		*why = "capture names an argument that is not a b: buffer";
+		return TD_CASE_ERR_CAPTURE;
+	}
+	if (length == 0 || length > TD_CALL_CAPTURE_LEN) {
+		*why = "capture length is not 1..256 bytes";
+		return TD_CASE_ERR_CAPTURE;
+	}
+	if (length % unit != 0 || off % unit != 0) {
+		*why = "capture length or offset is not a whole number of units";
+		return TD_CASE_ERR_CAPTURE;
+	}
+	if (off + length > TD_CALL_BUF_BYTES) {
+		*why = "capture runs past the end of the buffer";
+		return TD_CASE_ERR_CAPTURE;
+	}
+	c->cap_arg  = (int8_t)idx;
+	c->cap_unit = unit;
+	c->cap_off  = (uint16_t)off;
+	c->cap_len  = (uint16_t)length;
+	return 0;
+}
+
+/*
+ * THE GUARD (cases.h).  The whitelist: every (trap, function) whose query
+ * arm is established as safe on both machines in tosdump/cases/
+ * COVERAGE-BIOS.md, with the binding's argument widths and the rule its
+ * values have to meet.  Citations per entry are in the ledger; the rule
+ * comments name the arm that makes the call safe.
+ *
+ * Signature letters: 'w' a WORD, 'l' a LONG, 'p' a pointer -- a b: buffer
+ * or an l: value (NULL, or -1 where the call reads -1 as "unchanged").
+ */
+enum {
+	CR_NONE,         /* every value is a query                            */
+	CR_ARG0_M1,      /* arg 0 is -1: the inquiry arm                      */
+	CR_ARG1_M1,      /* arg 1 is -1: Setexc, Setcolor, EsetColor          */
+	CR_ALL_M1,       /* every argument is -1: Kbrate, Keytbl              */
+	CR_SETSCREEN,    /* logLoc, physLoc, rez all -1                       */
+	CR_RSCONF,       /* all -1, or baud -2 (and the rest -1)              */
+	CR_BCONIN,       /* only handles that answer at once on both machines */
+	CR_BCONOUT,      /* CON / raw CON with a printable byte; or no device */
+	CR_CURSCONF,     /* function 5, the blink-rate inquiry                */
+	CR_GIACCESS,     /* a register read: no GIACCESS_WRITE bit            */
+	CR_FLOPRATE,     /* rate -1 or -4: the two inquiries                  */
+	CR_BCONMAP,      /* -1, -2, or a device number that maps nothing      */
+	CR_NVM,          /* read or an invalid op; never write or reset       */
+	CR_BUF0,         /* arg 0 is a dumper buffer: Protobt, Buffptr        */
+	CR_BUF01,        /* args 0 and 1 are dumper buffers: Dsp_Available    */
+	CR_EGETPAL,      /* buffer argument, count fits it as WORDs           */
+	CR_VGETRGB,      /* buffer argument, count fits it as LONGs           */
+	CR_SOUNDCMD,     /* modes 0, 1, 6 with data -1                        */
+	CR_SNDSTATUS     /* reset 0                                           */
+};
+
+struct call_policy {
+	int16_t     trap;
+	int16_t     fn_lo, fn_hi;
+	const char *sig;
+	const char *sig_alt;      /* a second accepted signature, or NULL */
+	uint8_t     rule;
+};
+
+static const struct call_policy call_policy[] = {
+	/* BIOS, trap #13 (bios/bios.c:1252-1265) */
+	{ 13,    1,    1, "w",      NULL,   CR_NONE      },  /* Bconstat    */
+	{ 13,    2,    2, "w",      NULL,   CR_BCONIN    },  /* Bconin      */
+	{ 13,    3,    3, "ww",     NULL,   CR_BCONOUT   },  /* Bconout     */
+	{ 13,    5,    5, "wl",     NULL,   CR_ARG1_M1   },  /* Setexc      */
+	{ 13,    6,    6, "",       NULL,   CR_NONE      },  /* Tickcal     */
+	{ 13,    8,    8, "w",      NULL,   CR_NONE      },  /* Bcostat     */
+	{ 13,   10,   10, "",       NULL,   CR_NONE      },  /* Drvmap      */
+	{ 13,   11,   11, "w",      NULL,   CR_ARG0_M1   },  /* Kbshift     */
+	{ 13,   12,  255, "",       NULL,   CR_NONE      },  /* past table  */
+	/* XBIOS, trap #14 (bios/xbios.c:1285-1515) */
+	{ 14, 0x02, 0x04, "",       NULL,   CR_NONE      },  /* Physbase, Logbase, Getrez */
+	{ 14, 0x05, 0x05, "ppw",    "ppww", CR_SETSCREEN },  /* Setscreen   */
+	{ 14, 0x07, 0x07, "ww",     NULL,   CR_ARG1_M1   },  /* Setcolor    */
+	{ 14, 0x0E, 0x0E, "w",      NULL,   CR_NONE      },  /* Iorec       */
+	{ 14, 0x0F, 0x0F, "wwwwww", NULL,   CR_RSCONF    },  /* Rsconf      */
+	{ 14, 0x10, 0x10, "ppp",    NULL,   CR_ALL_M1    },  /* Keytbl      */
+	{ 14, 0x11, 0x11, "",       NULL,   CR_NONE      },  /* Random      */
+	{ 14, 0x12, 0x12, "plww",   NULL,   CR_BUF0      },  /* Protobt     */
+	{ 14, 0x15, 0x15, "ww",     NULL,   CR_CURSCONF  },  /* Cursconf    */
+	{ 14, 0x17, 0x17, "",       NULL,   CR_NONE      },  /* Gettime     */
+	{ 14, 0x1C, 0x1C, "ww",     NULL,   CR_GIACCESS  },  /* Giaccess    */
+	{ 14, 0x20, 0x20, "p",      NULL,   CR_ARG0_M1   },  /* Dosound     */
+	{ 14, 0x21, 0x21, "w",      NULL,   CR_ARG0_M1   },  /* Setprt      */
+	{ 14, 0x22, 0x22, "",       NULL,   CR_NONE      },  /* Kbdvbase    */
+	{ 14, 0x23, 0x23, "ww",     NULL,   CR_ALL_M1    },  /* Kbrate      */
+	{ 14, 0x25, 0x25, "",       NULL,   CR_NONE      },  /* Vsync       */
+	{ 14, 0x28, 0x28, "",       NULL,   CR_NONE      },  /* empty slot  */
+	{ 14, 0x29, 0x29, "ww",     NULL,   CR_FLOPRATE  },  /* Floprate    */
+	{ 14, 0x2C, 0x2C, "w",      NULL,   CR_BCONMAP   },  /* Bconmap     */
+	{ 14, 0x2D, 0x2D, "",       NULL,   CR_NONE      },  /* empty slot  */
+	{ 14, 0x2E, 0x2E, "wwwp",   NULL,   CR_NVM       },  /* NVMaccess   */
+	{ 14, 0x2F, 0x3F, "",       NULL,   CR_NONE      },  /* empty slots */
+	{ 14, 0x40, 0x40, "w",      NULL,   CR_ARG0_M1   },  /* Blitmode    */
+	{ 14, 0x41, 0x4F, "",       NULL,   CR_NONE      },  /* empty slots */
+	{ 14, 0x51, 0x51, "",       NULL,   CR_NONE      },  /* EgetShift   */
+	{ 14, 0x52, 0x52, "w",      NULL,   CR_ARG0_M1   },  /* EsetBank    */
+	{ 14, 0x53, 0x53, "ww",     NULL,   CR_ARG1_M1   },  /* EsetColor   */
+	{ 14, 0x55, 0x55, "wwp",    NULL,   CR_EGETPAL   },  /* EgetPalette */
+	{ 14, 0x56, 0x57, "w",      NULL,   CR_ARG0_M1   },  /* EsetGray, EsetSmear */
+	{ 14, 0x58, 0x58, "w",      NULL,   CR_ARG0_M1   },  /* VsetMode    */
+	{ 14, 0x59, 0x59, "",       NULL,   CR_NONE      },  /* VgetMonitor */
+	{ 14, 0x5B, 0x5B, "w",      NULL,   CR_NONE      },  /* VgetSize    */
+	{ 14, 0x5C, 0x5C, "",       NULL,   CR_NONE      },  /* empty slot  */
+	{ 14, 0x5E, 0x5E, "wwp",    NULL,   CR_VGETRGB   },  /* VgetRGB     */
+	{ 14, 0x5F, 0x5F, "w",      NULL,   CR_NONE      },  /* Vfixmode    */
+	{ 14, 0x67, 0x67, "",       NULL,   CR_NONE      },  /* Dsp_GetWordSize */
+	{ 14, 0x6A, 0x6A, "pp",     NULL,   CR_BUF01     },  /* Dsp_Available   */
+	{ 14, 0x72, 0x72, "",       NULL,   CR_NONE      },  /* Dsp_GetProgAbility */
+	{ 14, 0x75, 0x75, "w",      NULL,   CR_NONE      },  /* Dsp_InqSubrAbility */
+	{ 14, 0x77, 0x78, "w",      NULL,   CR_ARG0_M1   },  /* Dsp_Hf0, Dsp_Hf1 */
+	{ 14, 0x79, 0x7A, "",       NULL,   CR_NONE      },  /* Dsp_Hf2, Dsp_Hf3 */
+	{ 14, 0x7D, 0x7D, "",       NULL,   CR_NONE      },  /* Dsp_Hstat   */
+	{ 14, 0x82, 0x82, "ww",     NULL,   CR_SOUNDCMD  },  /* Soundcmd    */
+	{ 14, 0x88, 0x88, "w",      NULL,   CR_ARG0_M1   },  /* Buffoper    */
+	{ 14, 0x8C, 0x8C, "w",      NULL,   CR_SNDSTATUS },  /* Sndstatus   */
+	{ 14, 0x8D, 0x8D, "p",      NULL,   CR_BUF0      },  /* Buffptr     */
+	{ 14, 0x8E, 0x8E, "",       NULL,   CR_NONE      },  /* past table  */
+	{  0,    0,    0, NULL,     NULL,   CR_NONE      }
+};
+
+/*
+ * The calls the ledger EXCLUDES, with the reason a refusal names.  Every
+ * other call that is not on the whitelist is refused as "not established".
+ */
+struct call_refusal {
+	int16_t     trap;
+	int16_t     fn;
+	const char *why;
+};
+
+static const struct call_refusal call_refusals[] = {
+	{ 13, 0x00, "Getmpb rewrites the initial memory descriptor GEMDOS "
+	            "built its pool on (bios/biosmem.c:134-151)" },
+	{ 13, 0x04, "Rwabs writes media; its read arm needs a BIOS drive the "
+	            "oracle does not have (COVERAGE-BIOS.md)" },
+	{ 14, 0x00, "Initmous installs a mouse packet handler "
+	            "(bios/mouse.c:40)" },
+	{ 14, 0x01, "Ssbrk reserves memory at the top of RAM on a real TOS" },
+	{ 14, 0x06, "Setpalette reprograms the palette at the next VBL "
+	            "(bios/screen.c:1168)" },
+	{ 14, 0x09, "Flopwr writes a disk" },
+	{ 14, 0x0A, "Flopfmt formats a disk" },
+	{ 14, 0x0D, "Mfpint installs an interrupt vector (bios/mfp.c:114)" },
+	{ 14, 0x16, "Settime sets the machine clock (bios/clock.c:1218)" },
+	{ 14, 0x19, "Ikbdws commands the keyboard processor "
+	            "(bios/ikbd.c:948)" },
+	{ 14, 0x1A, "Jdisint switches an MFP interrupt (bios/mfp.c:122)" },
+	{ 14, 0x1B, "Jenabint switches an MFP interrupt (bios/mfp.c:127)" },
+	{ 14, 0x1D, "Offgibit writes PSG port A: drive select, strobe "
+	            "(bios/sound.c:130)" },
+	{ 14, 0x1E, "Ongibit writes PSG port A (bios/sound.c:115)" },
+	{ 14, 0x1F, "Xbtimer programs an MFP timer and its vector "
+	            "(bios/mfp.c:163)" },
+	{ 14, 0x24, "Prtblk prints a block on a real TOS" },
+	{ 14, 0x26, "Supexec runs code the table cannot name "
+	            "(bios/vectors.S:1376)" },
+	{ 14, 0x27, "Puntaes discards the AES and reboots a real TOS" },
+	{ 14, 0x2B, "DMAwrite writes a disk (bios/disk.c:1254)" },
+	{ 14, 0x50, "EsetShift changes the resolution (bios/screen.c:180)" },
+	{ 14, 0x54, "EsetPalette reprograms the palette (bios/screen.c:265)" },
+	{ 14, 0x5A, "VsetSync changes the video sync (bios/videl.c:675)" },
+	{ 14, 0x5D, "VsetRGB reprograms the palette (bios/videl.c:806)" },
+	{  0,    0, NULL }
+};
+
+static const struct call_policy *call_policy_for(int16_t trap, int16_t fn)
+{
+	const struct call_policy *p;
+
+	for (p = call_policy; p->sig; p++)
+		if (p->trap == trap && fn >= p->fn_lo && fn <= p->fn_hi)
+			return p;
+	return NULL;
+}
+
+static const char *call_refusal_for(int16_t trap, int16_t fn)
+{
+	const struct call_refusal *r;
+
+	for (r = call_refusals; r->why; r++)
+		if (r->trap == trap && r->fn == fn)
+			return r->why;
+	return "the call is not established as safe on both machines "
+	       "(tosdump/cases/COVERAGE-BIOS.md)";
+}
+
+static int sig_matches(const char *sig, const struct td_call_case *c)
+{
+	uint16_t i;
+
+	if (!sig || strlen(sig) != c->nargs)
+		return 0;
+	for (i = 0; i < c->nargs; i++) {
+		uint8_t k = c->arg[i].kind;
+
+		switch (sig[i]) {
+		case 'w': if (k != TD_CALL_ARG_WORD) return 0; break;
+		case 'l': if (k != TD_CALL_ARG_LONG) return 0; break;
+		case 'p': if (k != TD_CALL_ARG_LONG && k != TD_CALL_ARG_BUF)
+		              return 0;
+		          break;
+		default:  return 0;
+		}
+	}
+	return 1;
+}
+
+static int is_value(const struct td_call_case *c, int i, int32_t v)
+{
+	return i < (int)c->nargs && c->arg[i].kind != TD_CALL_ARG_BUF &&
+	       c->arg[i].value == v;
+}
+
+static int is_buf(const struct td_call_case *c, int i)
+{
+	return i < (int)c->nargs && c->arg[i].kind == TD_CALL_ARG_BUF;
+}
+
+/* The value rule of a whitelisted call: NULL when the values pick its safe
+ * arm, else the reason. */
+static const char *call_value_refusal(const struct call_policy *p,
+                                      const struct td_call_case *c)
+{
+	int32_t a0 = c->nargs > 0 ? c->arg[0].value : 0;
+	int32_t a1 = c->nargs > 1 ? c->arg[1].value : 0;
+	uint16_t i;
+
+	switch (p->rule) {
+	case CR_NONE:
+		return NULL;
+	case CR_ARG0_M1:
+		return is_value(c, 0, -1) ? NULL
+		       : "only -1, the inquiry, is established: any other value sets";
+	case CR_ARG1_M1:
+		return is_value(c, 1, -1) ? NULL
+		       : "only -1 in the second argument, the inquiry, is "
+		         "established: any other value sets";
+	case CR_ALL_M1:
+		for (i = 0; i < c->nargs; i++)
+			if (!is_value(c, (int)i, -1))
+				return "only all -1, the inquiry, is established";
+		return NULL;
+	case CR_SETSCREEN:
+		/* rez -1 returns before videlmode is read (bios/screen.c:1115) */
+		return (is_value(c, 0, -1) && is_value(c, 1, -1) &&
+		        is_value(c, 2, -1)) ? NULL
+		       : "only Setscreen(-1, -1, -1), which changes nothing, is "
+		         "established";
+	case CR_RSCONF:
+		for (i = 1; i < c->nargs; i++)
+			if (!is_value(c, (int)i, -1))
+				return "Rsconf: only all -1, or -2 then all -1, inquire";
+		return (a0 == -1 || a0 == -2) ? NULL
+		       : "Rsconf: a baud rate reprograms the serial port";
+	case CR_BCONIN:
+		/* 4, 5: char_dummy (bios/chardev.c:34-36); < 0 and >= 10: no
+		 * device on either machine.  0..3 wait for input, 6..9 are
+		 * Bconmap devices (bios/bios.c:966-972). */
+		return (a0 == 4 || a0 == 5 || a0 < 0 || a0 >= 10) ? NULL
+		       : "Bconin on this handle waits for input";
+	case CR_BCONOUT:
+		if (a0 < 0 || a0 >= 10)
+			return NULL;
+		if ((a0 == 2 || a0 == 5) && a1 >= 0x20 && a1 <= 0x7E)
+			return NULL;
+		return "Bconout: only a printable byte to CON or raw CON is "
+		       "established (PRT waits 30 s, IKBD and MIDI are commands, "
+		       "a control byte leaves VT52 state)";
+	case CR_CURSCONF:
+		return a0 == 5 ? NULL
+		       : "Cursconf: only function 5, the blink-rate inquiry";
+	case CR_GIACCESS:
+		return (a1 >= 0 && a1 <= 15) ? NULL
+		       : "Giaccess: only a register read (no write bit 0x80)";
+	case CR_FLOPRATE:
+		return (a1 == -1 || a1 == -4) ? NULL
+		       : "Floprate: only rate -1 or -4, the two inquiries";
+	case CR_BCONMAP:
+		return (a0 < 6 || a0 >= 10) ? NULL
+		       : "Bconmap: a device number 6..9 remaps AUX";
+	case CR_NVM:
+		if (a0 == 1 || a0 == 2)
+			return "NVMaccess: write and reset change the NVRAM";
+		if (a0 == 0 && is_buf(c, 3) &&
+		    (c->arg[2].value < 0 || c->arg[2].value > TD_CALL_BUF_BYTES))
+			return "NVMaccess: the count does not fit the buffer";
+		if (a0 == 0 && !is_buf(c, 3) && !is_value(c, 3, 0))
+			return "NVMaccess: a read needs a dumper buffer (or NULL)";
+		return NULL;
+	case CR_BUF0:
+		return is_buf(c, 0) ? NULL
+		       : "the call writes through its first argument: name a buffer";
+	case CR_BUF01:
+		return (is_buf(c, 0) && is_buf(c, 1)) ? NULL
+		       : "the call writes through both arguments: name two buffers";
+	case CR_EGETPAL:
+		return (is_buf(c, 2) && a1 >= 0 && a1 * 2 <= TD_CALL_BUF_BYTES)
+		       ? NULL
+		       : "EgetPalette: name a buffer that holds count WORDs";
+	case CR_VGETRGB:
+		return (is_buf(c, 2) && a1 >= 0 && a1 * 4 <= TD_CALL_BUF_BYTES)
+		       ? NULL
+		       : "VgetRGB: name a buffer that holds count LONGs";
+	case CR_SOUNDCMD:
+		return ((a0 == 0 || a0 == 1 || a0 == 6) && is_value(c, 1, -1))
+		       ? NULL
+		       : "Soundcmd: only modes 0, 1, 6 with -1, the inquiries";
+	case CR_SNDSTATUS:
+		return a0 == 0 ? NULL : "Sndstatus: a non-zero argument resets";
+	default:
+		return "unknown rule";
+	}
+}
+
+int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
+                        const char *buf, size_t len,
+                        struct td_case_error *err)
+{
+	struct td_line_iter it;
+	const char *line;
+	size_t line_len;
+	uint16_t line_no;
+	int is_case;
+
+	memset(t, 0, sizeof *t);
+	t->crc  = td_crc32((const uint8_t *)buf, len);
+	t->area = area;
+	if (err) {
+		err->line = 0;
+		err->what = NULL;
+	}
+	if (area != TD_AREA_BIOS) {
+		fail(err, 0, "no call guard exists for this area yet");
+		return TD_CASE_ERR_UNSAFE_OPCODE;
+	}
+
+	td_line_iter_init(&it, buf, len);
+	while (td_line_iter_next(&it, &line, &line_len, &line_no, &is_case)) {
+		const char *col[TD_CALL_CASE_COLUMNS];
+		size_t col_len[TD_CALL_CASE_COLUMNS];
+		const struct call_policy *p;
+		struct td_call_case *c;
+		const char *why = NULL, *o;
+		size_t olen, colon;
+		uint32_t trap, fn;
+		int rc;
+
+		if (!is_case) {
+			if (td_case_line_is_directive(line, line_len)) {
+				fail(err, line_no, "a call table has no directives");
+				return TD_CASE_ERR_DIRECTIVE;
+			}
+			continue;
+		}
+		if (td_case_line_is_prelude(line, line_len)) {
+			fail(err, line_no, "a call table has no preludes: round 1 "
+			                   "issues queries only");
+			return TD_CASE_ERR_DIRECTIVE;
+		}
+		if (split_columns(line, line_len, col, col_len,
+		                  TD_CALL_CASE_COLUMNS) < TD_CALL_CASE_COLUMNS) {
+			fail(err, line_no, "needs five tab separated columns");
+			return TD_CASE_ERR_COLUMNS;
+		}
+		if (t->count >= TD_MAX_CASES) {
+			fail(err, line_no, "more cases than TD_MAX_CASES");
+			return TD_CASE_ERR_TOO_MANY_CASES;
+		}
+		c = &t->cases[t->count];
+		memset(c, 0, sizeof *c);
+		c->line = line_no;
+
+		/* trap:function */
+		o = col[0];
+		olen = col_len[0];
+		trim(&o, &olen);
+		for (colon = 0; colon < olen && o[colon] != ':'; colon++)
+			;
+		if (colon == 0 || colon >= olen) {
+			fail(err, line_no, "the call column is not <trap>:<function>");
+			return TD_CASE_ERR_VALUE;
+		}
+		rc = parse_small(o, colon, 255, &trap);
+		if (rc != 0) {
+			fail(err, line_no, "the trap is not a number");
+			return rc;
+		}
+		rc = parse_small(o + colon + 1, olen - colon - 1, 255, &fn);
+		if (rc != 0) {
+			fail(err, line_no, "the function number is not 0..255");
+			return rc;
+		}
+		if (trap != 13 && trap != 14) {
+			fail(err, line_no, "a BIOS table issues trap 13 and trap 14 "
+			                   "only");
+			return TD_CASE_ERR_UNSAFE_OPCODE;
+		}
+		c->trap   = (int16_t)trap;
+		c->opcode = (int16_t)fn;
+
+		rc = parse_call_args(col[1], col_len[1], c, &why);
+		if (rc == 0)
+			rc = parse_retclass(col[2], col_len[2], c, &why);
+		if (rc == 0)
+			rc = parse_capture(col[3], col_len[3], c, &why);
+		if (rc != 0) {
+			fail(err, line_no, why);
+			return rc;
+		}
+
+		/* the guard */
+		p = call_policy_for(c->trap, c->opcode);
+		if (!p) {
+			fail(err, line_no, call_refusal_for(c->trap, c->opcode));
+			return TD_CASE_ERR_UNSAFE_OPCODE;
+		}
+		if (!sig_matches(p->sig, c) && !sig_matches(p->sig_alt, c)) {
+			fail(err, line_no, "the argument widths are not the "
+			                   "binding's");
+			return TD_CASE_ERR_SIGNATURE;
+		}
+		why = call_value_refusal(p, c);
+		if (why) {
+			fail(err, line_no, why);
+			return TD_CASE_ERR_UNSAFE_FIELD;
+		}
+
+		td_case_line_comment_n(line, line_len, TD_CALL_CASE_COLUMNS,
+		                       c->comment, TD_COMMENT_LEN);
+		t->count++;
+	}
+	return 0;
+}
+
+int td_call_cases_load(struct td_call_case_table *t, uint16_t area,
+                       const char *path, struct td_case_error *err)
+{
+	char *raw;
+	size_t got;
+	int rc;
+
+	rc = slurp(path, &raw, &got, err);
+	if (rc != 0)
+		return rc;
+
+	rc = td_call_cases_parse(t, area, raw, got, err);
+	free(raw);
+	return rc;
+}
+
 const char *td_case_error_text(int rc)
 {
 	switch (rc) {
@@ -2704,6 +3402,14 @@ const char *td_case_error_text(int rc)
 	case TD_CASE_ERR_AES_VERSION:    return "this AES does not report a "
 	                                        "version that establishes an "
 	                                        "opcode the table needs";
+	case TD_CASE_ERR_RETCLASS:       return "the retclass column is not a "
+	                                        "class (and width) the "
+	                                        "comparator knows";
+	case TD_CASE_ERR_CAPTURE:        return "the capture column does not "
+	                                        "name a buffer range the record "
+	                                        "can hold";
+	case TD_CASE_ERR_SIGNATURE:      return "the argument widths are not "
+	                                        "the binding's";
 	default:                         return "unknown error";
 	}
 }

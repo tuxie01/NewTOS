@@ -107,6 +107,40 @@ int td_casefile_read(struct td_casefile *cf, const char *path, uint16_t area,
 		cf->count++;
 	}
 
+	/* A call table: the retclass column, through the core's own loader.
+	 * The case ids it finds must be the ones counted above -- one line
+	 * rule for every reader. */
+	if (area == TD_AREA_BIOS || area == TD_AREA_XBIOS ||
+	    area == TD_AREA_GEMDOS) {
+		static struct td_call_case_table ct;
+		struct td_case_error err;
+		uint16_t i;
+
+		memset(&err, 0, sizeof err);
+		if (td_call_cases_parse(&ct, area, raw, got, &err) != 0) {
+			free(raw);
+			if (why)
+				*why = err.what ? err.what
+				       : "the call table is refused by the loader";
+			return -3;
+		}
+		if (ct.count != cf->count) {
+			free(raw);
+			if (why) *why = "the call loader and the line reader disagree";
+			return -3;
+		}
+		for (i = 0; i < ct.count; i++) {
+			if (ct.cases[i].line != cf->line[i]) {
+				free(raw);
+				if (why)
+					*why = "the call loader and the line reader disagree";
+				return -3;
+			}
+			cf->retclass[i] = ct.cases[i].retclass;
+			cf->retwidth[i] = ct.cases[i].retwidth;
+		}
+	}
+
 	free(raw);
 	return 0;
 }

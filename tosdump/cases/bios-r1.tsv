@@ -1,0 +1,238 @@
+# bios-r1.tsv -- DUMPBIOS round 1: the BIOS (trap #13) and XBIOS (trap #14)
+# queries, against EmuTOS 1a7484ab (references/emutos, docs/analysis/ORACLE.md).
+#
+# Form (docs/TOS-REFERENCE-DUMPER.md section 6, "The call table, as built for
+# DUMPBIOS"; tosdump/core/cases.h "Call tables"):
+#
+#   trap:function <TAB> args <TAB> retclass <TAB> capture <TAB> comment
+#
+#   args      w:<v> WORD, l:<v> LONG, b:<n> the dumper's buffer n (0, 1)
+#   retclass  EXACT IGNORE NONZERO HANDLE PTR_RAM, ".W"/".B" = the width of
+#             the EmuTOS handler's return type (no suffix: LONG)
+#   capture   <argindex>:<length>[.B|.W|.L][@<offset>]
+#
+# ROUND 1 = QUERIES ONLY.  Every line is a call whose effect does not outlive
+# it, in the arm that only reads -- Kbshift(-1), Setcolor(n,-1), Rsconf(-1..)
+# -- and the guard in tosdump/core/cases.c refuses anything else.  The
+# ledger with every one of the 12 BIOS and 142 XBIOS slots, its status and
+# the reason: tosdump/cases/COVERAGE-BIOS.md.  Each comment cites the EmuTOS
+# handler the function number reaches on the pin (bios/bios.c:1252-1265,
+# bios/xbios.c:1285-1515 are the two dispatch tables).
+#
+# Measured on the oracle's TT profile (tools/hatari-oracle.sh tt): 4 MiB
+# ST-RAM, 16 MiB TT-RAM, TT-Medium, no blitter, no DSP, no Falcon video.
+# Where a call is profile dependent the comment says so.
+#
+# One table per round: a case id is the physical line number and the dump
+# header carries the CRC of this file, so it is frozen once measured.
+
+# ---- BIOS 1 Bconstat(dev) -- LONG bconstat, bios/bios.c:914
+13:1	w:0	EXACT	-	Bconstat(0) PRT -- bios/bios.c:914
+13:1	w:1	EXACT	-	Bconstat(1) AUX -- bios/bios.c:914
+13:1	w:2	EXACT	-	Bconstat(2) CON -- bios/bios.c:914
+13:1	w:3	EXACT	-	Bconstat(3) MIDI -- bios/bios.c:914
+13:1	w:4	EXACT	-	Bconstat(4) IKBD -- bios/bios.c:914
+13:1	w:5	EXACT	-	Bconstat(5) RAWCON -- bios/bios.c:914
+13:1	w:6	EXACT	-	Bconstat(6) Bconmap 6 -- bios/bios.c:914
+13:1	w:10	EXACT	-	Bconstat(10) past the map -- bios/bios.c:914
+13:1	w:-1	EXACT	-	Bconstat(-1) negative -- bios/bios.c:914
+
+# ---- BIOS 2 Bconin(dev) -- only the handles that return at once, bios/bios.c:958
+13:2	w:4	EXACT	-	Bconin(4) IKBD char_dummy -- bios/bios.c:958
+13:2	w:5	EXACT	-	Bconin(5) RAWCON char_dummy -- bios/bios.c:958
+13:2	w:10	EXACT	-	Bconin(10) past the map -- bios/bios.c:958
+13:2	w:-1	EXACT	-	Bconin(-1) negative -- bios/bios.c:958
+
+# ---- BIOS 3 Bconout(dev,c) -- printable byte to CON / raw CON, no device; bios/bios.c:991
+13:3	w:2,w:0x2A	EXACT	-	Bconout(2,'*') CON -- bios/bios.c:991, chardev.c:91
+13:3	w:5,w:0x2A	EXACT	-	Bconout(5,'*') raw CON -- bios/bios.c:991, chardev.c:98
+13:3	w:10,w:0x41	EXACT	-	Bconout(10,'A') past the map -- bios/bios.c:1001-1003
+13:3	w:-1,w:0x41	EXACT	-	Bconout(-1,'A') negative -- bios/bios.c:1008-1010
+
+# ---- BIOS 5 Setexc(n,-1) -- the inquiry, LONG setexc, bios/bios.c:1070
+13:5	w:0x2,l:-1	NONZERO	-	Setexc(0x2,-1) bus error -- bios/bios.c:1070
+13:5	w:0x21,l:-1	NONZERO	-	Setexc(0x21,-1) trap #1 -- bios/bios.c:1070
+13:5	w:0x100,l:-1	NONZERO	-	Setexc(0x100,-1) etv_timer -- bios/bios.c:1070
+13:5	w:0x101,l:-1	NONZERO	-	Setexc(0x101,-1) etv_critic -- bios/bios.c:1070
+13:5	w:0x102,l:-1	NONZERO	-	Setexc(0x102,-1) etv_term -- bios/bios.c:1070
+
+# ---- BIOS 6 Tickcal -- LONG tickcal, bios/bios.c:1096
+13:6	-	EXACT	-	Tickcal() -- bios/bios.c:1096 returns 20
+
+# ---- BIOS 8 Bcostat(dev) -- LONG bcostat, bios/bios.c:1143 (3/4 swapped, chardev.c:38-42)
+13:8	w:0	EXACT	-	Bcostat(0) PRT -- bios/bios.c:1143
+13:8	w:1	EXACT	-	Bcostat(1) AUX -- bios/bios.c:1143
+13:8	w:2	EXACT	-	Bcostat(2) CON -- bios/bios.c:1143
+13:8	w:3	EXACT	-	Bcostat(3) IKBD slot -- bios/bios.c:1143
+13:8	w:4	EXACT	-	Bcostat(4) MIDI slot -- bios/bios.c:1143
+13:8	w:5	EXACT	-	Bcostat(5) RAWCON -- bios/bios.c:1143
+13:8	w:6	EXACT	-	Bcostat(6) Bconmap 6 -- bios/bios.c:1143
+13:8	w:7	EXACT	-	Bcostat(7) Bconmap 7 -- bios/bios.c:1143
+13:8	w:-1	EXACT	-	Bcostat(-1) negative -- bios/bios.c:1143
+
+# ---- BIOS 10 Drvmap -- blkdev_drvmap, bios/blkdev.c:833; the drive set is the machine's
+13:10	-	NONZERO	-	Drvmap() -- bios/bios.c:1206, blkdev.c:833
+
+# ---- BIOS 11 Kbshift(-1) -- the inquiry, LONG kbshift, bios/ikbd.c:145
+13:11	w:-1	EXACT	-	Kbshift(-1) -- bios/ikbd.c:145
+
+# ---- BIOS past the table: d0 keeps the number, bios/vectors.S:1323-1326
+13:12	-	EXACT	-	BIOS 12 past bios_ent -- bios/vectors.S:1325-1326
+13:127	-	EXACT	-	BIOS 127 past bios_ent -- bios/vectors.S:1325-1326
+13:255	-	EXACT	-	BIOS 255 past bios_ent -- bios/vectors.S:1325-1326
+
+# ---- XBIOS 2-4 Physbase Logbase Getrez -- bios/screen.c:1042,1071,1076
+14:0x02	-	PTR_RAM	-	Physbase() -- bios/screen.c:1042
+14:0x03	-	PTR_RAM	-	Logbase() -- bios/screen.c:1071
+14:0x04	-	EXACT.W	-	Getrez() -- WORD getrez, bios/screen.c:1076 (TT-Medium: profile)
+
+# ---- XBIOS 5 Setscreen(-1,-1,-1) -- rez -1 returns 0 at once, bios/screen.c:1115-1117
+14:0x05	l:-1,l:-1,w:-1	EXACT.W	-	Setscreen(-1,-1,-1) -- WORD setscreen, bios/screen.c:1102
+
+# ---- XBIOS 7 Setcolor(n,-1) -- the inquiry, WORD atari_setcolor, bios/screen.c:1192,1015
+14:0x07	w:0,w:-1	EXACT.W	-	Setcolor(0,-1) -- bios/screen.c:1192 (palette: profile)
+14:0x07	w:1,w:-1	EXACT.W	-	Setcolor(1,-1) -- bios/screen.c:1192 (palette: profile)
+14:0x07	w:15,w:-1	EXACT.W	-	Setcolor(15,-1) -- bios/screen.c:1192 (palette: profile)
+
+# ---- XBIOS 14 Iorec(dev) -- LONG iorec, bios/xbios.c:336
+14:0x0E	w:0	PTR_RAM	-	Iorec(0) RS-232 -- bios/xbios.c:336
+14:0x0E	w:1	PTR_RAM	-	Iorec(1) IKBD -- bios/xbios.c:336
+14:0x0E	w:2	PTR_RAM	-	Iorec(2) MIDI -- bios/xbios.c:336
+14:0x0E	w:3	EXACT	-	Iorec(3) invalid -- bios/xbios.c:336
+14:0x0E	w:-1	EXACT	-	Iorec(-1) invalid -- bios/xbios.c:336
+
+# ---- XBIOS 15 Rsconf inquiries -- rsconf_mfp, bios/serport.c:217-229
+14:0x0F	w:-1,w:-1,w:-1,w:-1,w:-1,w:-1	EXACT	-	Rsconf(-1 x6) old ucr/rsr/tsr -- bios/serport.c:226
+14:0x0F	w:-2,w:-1,w:-1,w:-1,w:-1,w:-1	EXACT	-	Rsconf(-2,..) baud -- bios/serport.c:220-221
+
+# ---- XBIOS 16 Keytbl(-1,-1,-1) -- the inquiry, bios/ikbd.c:122
+14:0x10	l:-1,l:-1,l:-1	PTR_RAM	-	Keytbl(-1,-1,-1) -- bios/ikbd.c:122
+
+# ---- XBIOS 17 Random -- bios/xbios.c:421, a pseudo-random number
+14:0x11	-	IGNORE	-	Random() -- bios/xbios.c:421
+
+# ---- XBIOS 18 Protobt -- builds a boot sector in buffer 0, bios/floppy.c:690 (void)
+14:0x12	b:0,l:-1,w:-1,w:-1	IGNORE	0:2@510	Protobt(b0,-1,-1,-1) checksum -- bios/floppy.c:725-735
+14:0x12	b:0,l:-1,w:-1,w:1	IGNORE	0:2@510	Protobt(b0,-1,-1,1) exec checksum -- bios/floppy.c:725-735
+14:0x12	b:0,l:0x123456,w:1,w:0	IGNORE	0:32	Protobt(b0,0x123456,1,0) serial+BPB -- bios/floppy.c:703-717
+14:0x12	b:0,l:0x123456,w:1,w:0	IGNORE	0:2@510	Protobt(b0,0x123456,1,0) checksum -- bios/floppy.c:731-735
+14:0x12	b:0,l:-1,w:7,w:-1	IGNORE	0:32	Protobt(b0,-1,7,-1) type out of range -- bios/floppy.c:711
+
+# ---- XBIOS 21 Cursconf(5,0) -- the blink-rate inquiry, bios/vt52.c:893
+14:0x15	w:5,w:0	EXACT.W	-	Cursconf(5,0) -- WORD cursconf, bios/vt52.c:893,918
+
+# ---- XBIOS 23 Gettime -- LONG gettime, bios/clock.c:1266; the date is the machine's
+14:0x17	-	NONZERO	-	Gettime() -- bios/clock.c:1266
+
+# ---- XBIOS 28 Giaccess(0,reg) -- register read, no write bit; LONG giaccess, bios/sound.c:94
+14:0x1C	w:0,w:7	EXACT	-	Giaccess(0,7) mixer -- bios/sound.c:94
+14:0x1C	w:0,w:14	EXACT	-	Giaccess(0,14) port A -- bios/sound.c:94
+
+# ---- XBIOS 32 Dosound(-1) -- the inquiry, LONG dosound, bios/sound.c:145
+14:0x20	l:-1	EXACT	-	Dosound(-1) idle table -- bios/sound.c:145-157
+
+# ---- XBIOS 33-37 Setprt Kbdvbase Kbrate Vsync
+14:0x21	w:-1	EXACT.W	-	Setprt(-1) -- WORD setprt, bios/parport.c:49
+14:0x22	-	PTR_RAM	-	Kbdvbase() -- bios/xbios.c:716
+14:0x23	w:-1,w:-1	EXACT.W	-	Kbrate(-1,-1) -- WORD kbrate, bios/ikbd.c:439
+14:0x25	-	IGNORE	-	Vsync() -- void, bios/screen.c:1205
+
+# ---- XBIOS empty slots: xbios_unimpl returns the number, bios/vectors.S:1366, xbios.c:1251
+14:0x28	-	EXACT	-	XBIOS 0x28 empty slot -- bios/xbios.c:1251-1257
+14:0x2D	-	EXACT	-	XBIOS 0x2D empty slot -- bios/xbios.c:1251-1257
+14:0x2F	-	EXACT	-	XBIOS 0x2F empty slot -- bios/xbios.c:1251-1257
+14:0x30	-	EXACT	-	XBIOS 0x30 empty slot -- bios/xbios.c:1251-1257
+14:0x31	-	EXACT	-	XBIOS 0x31 empty slot -- bios/xbios.c:1251-1257
+14:0x32	-	EXACT	-	XBIOS 0x32 empty slot -- bios/xbios.c:1251-1257
+14:0x33	-	EXACT	-	XBIOS 0x33 empty slot -- bios/xbios.c:1251-1257
+14:0x34	-	EXACT	-	XBIOS 0x34 empty slot -- bios/xbios.c:1251-1257
+14:0x35	-	EXACT	-	XBIOS 0x35 empty slot -- bios/xbios.c:1251-1257
+14:0x36	-	EXACT	-	XBIOS 0x36 empty slot -- bios/xbios.c:1251-1257
+14:0x37	-	EXACT	-	XBIOS 0x37 empty slot -- bios/xbios.c:1251-1257
+14:0x38	-	EXACT	-	XBIOS 0x38 empty slot -- bios/xbios.c:1251-1257
+14:0x39	-	EXACT	-	XBIOS 0x39 empty slot -- bios/xbios.c:1251-1257
+14:0x3A	-	EXACT	-	XBIOS 0x3A empty slot -- bios/xbios.c:1251-1257
+14:0x3B	-	EXACT	-	XBIOS 0x3B empty slot -- bios/xbios.c:1251-1257
+14:0x3C	-	EXACT	-	XBIOS 0x3C empty slot -- bios/xbios.c:1251-1257
+14:0x3D	-	EXACT	-	XBIOS 0x3D empty slot -- bios/xbios.c:1251-1257
+14:0x3E	-	EXACT	-	XBIOS 0x3E empty slot -- bios/xbios.c:1251-1257
+14:0x3F	-	EXACT	-	XBIOS 0x3F empty slot -- bios/xbios.c:1251-1257
+14:0x41	-	EXACT	-	XBIOS 0x41 empty slot -- bios/xbios.c:1251-1257
+14:0x42	-	EXACT	-	XBIOS 0x42 empty slot -- bios/xbios.c:1251-1257
+14:0x43	-	EXACT	-	XBIOS 0x43 empty slot -- bios/xbios.c:1251-1257
+14:0x44	-	EXACT	-	XBIOS 0x44 empty slot -- bios/xbios.c:1251-1257
+14:0x45	-	EXACT	-	XBIOS 0x45 empty slot -- bios/xbios.c:1251-1257
+14:0x46	-	EXACT	-	XBIOS 0x46 empty slot -- bios/xbios.c:1251-1257
+14:0x47	-	EXACT	-	XBIOS 0x47 empty slot -- bios/xbios.c:1251-1257
+14:0x48	-	EXACT	-	XBIOS 0x48 empty slot -- bios/xbios.c:1251-1257
+14:0x49	-	EXACT	-	XBIOS 0x49 empty slot -- bios/xbios.c:1251-1257
+14:0x4A	-	EXACT	-	XBIOS 0x4A empty slot -- bios/xbios.c:1251-1257
+14:0x4B	-	EXACT	-	XBIOS 0x4B empty slot -- bios/xbios.c:1251-1257
+14:0x4C	-	EXACT	-	XBIOS 0x4C empty slot -- bios/xbios.c:1251-1257
+14:0x4D	-	EXACT	-	XBIOS 0x4D empty slot -- bios/xbios.c:1251-1257
+14:0x4E	-	EXACT	-	XBIOS 0x4E empty slot -- bios/xbios.c:1251-1257
+14:0x4F	-	EXACT	-	XBIOS 0x4F empty slot -- bios/xbios.c:1251-1257
+14:0x5C	-	EXACT	-	XBIOS 0x5C empty slot -- bios/xbios.c:1251-1257
+
+# ---- XBIOS 41 Floprate inquiries -- LONG floprate, bios/floppy.c:1039
+14:0x29	w:0,w:-1	EXACT	-	Floprate(0,-1) rate -- bios/floppy.c:1058-1061
+14:0x29	w:0,w:-4	EXACT	-	Floprate(0,-4) HD? -- bios/floppy.c:1050-1051
+14:0x29	w:2,w:-1	EXACT	-	Floprate(2,-1) no floppy 2 -- bios/floppy.c:1044-1045
+
+# ---- XBIOS 44 Bconmap inquiries -- LONG bconmap, bios/serport.c:1082
+14:0x2C	w:-1	EXACT	-	Bconmap(-1) mapped device -- bios/serport.c:1089-1090
+14:0x2C	w:-2	PTR_RAM	-	Bconmap(-2) BCONMAP pointer -- bios/serport.c:1092-1093
+14:0x2C	w:0	EXACT	-	Bconmap(0) maps nothing -- bios/serport.c:1095-1097
+14:0x2C	w:10	EXACT	-	Bconmap(10) past the table -- bios/serport.c:1095-1097
+
+# ---- XBIOS 46 NVMaccess read and invalid -- WORD nvmaccess, bios/nvram.c:155
+14:0x2E	w:0,w:0,w:48,b:0	EXACT.W	3:48	NVMaccess(0,0,48,b0) read all 48 -- bios/nvram.c:30,183-197
+14:0x2E	w:0,w:0,w:0,b:0	EXACT.W	-	NVMaccess(0,0,0,b0) count 0 -- bios/nvram.c:180-181
+14:0x2E	w:0,w:-1,w:1,b:0	EXACT.W	-	NVMaccess(0,-1,1,b0) start<0 -- bios/nvram.c:180-181
+14:0x2E	w:0,w:47,w:2,b:0	EXACT.W	-	NVMaccess(0,47,2,b0) past 48 -- bios/nvram.c:180-181
+14:0x2E	w:0,w:0,w:1,l:0	EXACT.W	-	NVMaccess(0,0,1,NULL) -- bios/nvram.c:180-181
+14:0x2E	w:3,w:0,w:1,b:0	EXACT.W	-	NVMaccess(3,..) bad op -- bios/nvram.c:206-208
+
+# ---- XBIOS 64 Blitmode(-1) -- WORD blitmode, bios/xbios.c:886
+14:0x40	w:-1	EXACT.W	-	Blitmode(-1) -- bios/xbios.c:886
+
+# ---- XBIOS 81-87 TT shifter inquiries -- bios/screen.c:210-345 (TT only: profile)
+14:0x51	-	EXACT.W	-	EgetShift() -- bios/screen.c:210
+14:0x52	w:-1	EXACT.W	-	EsetBank(-1) -- bios/screen.c:222
+14:0x53	w:0,w:-1	EXACT.W	-	EsetColor(0,-1) -- bios/screen.c:241
+14:0x53	w:15,w:-1	EXACT.W	-	EsetColor(15,-1) -- bios/screen.c:241
+14:0x53	w:255,w:-1	EXACT.W	-	EsetColor(255,-1) -- bios/screen.c:241
+14:0x55	w:0,w:16,b:0	IGNORE	2:32.W	EgetPalette(0,16,b0) -- bios/screen.c:290
+14:0x55	w:240,w:16,b:0	IGNORE	2:32.W	EgetPalette(240,16,b0) -- bios/screen.c:290
+14:0x56	w:-1	EXACT.W	-	EsetGray(-1) -- bios/screen.c:313
+14:0x57	w:-1	EXACT.W	-	EsetSmear(-1) -- bios/screen.c:334
+
+# ---- XBIOS 88-95 Videl inquiries -- bios/videl.c (Falcon only: profile)
+14:0x58	w:-1	EXACT.W	-	VsetMode(-1) -- bios/videl.c:619
+14:0x59	-	EXACT.W	-	VgetMonitor() -- bios/videl.c:664
+14:0x5B	w:0x1C	EXACT	-	VgetSize(0x1C) -- LONG vgetsize, bios/videl.c:724
+14:0x5E	w:0,w:16,b:0	EXACT.W	2:64.L	VgetRGB(0,16,b0) -- WORD vgetrgb, bios/videl.c:862
+14:0x5F	w:0x1C	EXACT.W	-	Vfixmode(0x1C) -- bios/videl.c:917
+
+# ---- XBIOS 96-127 DSP inquiries -- bios/dsp.c (Falcon only: profile)
+14:0x67	-	EXACT.W	-	Dsp_GetWordSize() -- bios/dsp.c:508
+14:0x6A	b:0,b:1	IGNORE	0:4.L	Dsp_Available(b0,b1) x -- bios/dsp.c:619 (no has_dsp test)
+14:0x6A	b:0,b:1	IGNORE	1:4.L	Dsp_Available(b0,b1) y -- bios/dsp.c:619
+14:0x72	-	EXACT.W	-	Dsp_GetProgAbility() -- bios/dsp.c:976
+14:0x75	w:0	EXACT.W	-	Dsp_InqSubrAbility(0) -- bios/dsp.c:1146
+14:0x77	w:-1	EXACT.W	-	Dsp_Hf0(-1) -- bios/dsp.c:1200
+14:0x78	w:-1	EXACT.W	-	Dsp_Hf1(-1) -- bios/dsp.c:1222
+14:0x79	-	EXACT.W	-	Dsp_Hf2() -- bios/dsp.c:1247
+14:0x7A	-	EXACT.W	-	Dsp_Hf3() -- bios/dsp.c:1257
+14:0x7D	-	EXACT.B	-	Dsp_Hstat() -- UBYTE dsp_hstat, bios/dsp.c:1273
+
+# ---- XBIOS 128-141 DMA sound inquiries -- bios/dmasound.c (STe/TT vs Falcon: profile)
+14:0x82	w:0,w:-1	EXACT	-	Soundcmd(0,-1) -- bios/dmasound.c:342
+14:0x82	w:1,w:-1	EXACT	-	Soundcmd(1,-1) -- bios/dmasound.c:342
+14:0x82	w:6,w:-1	EXACT	-	Soundcmd(6,-1) -- bios/dmasound.c:342
+14:0x88	w:-1	EXACT	-	Buffoper(-1) -- bios/dmasound.c:499
+14:0x8C	w:0	EXACT	-	Sndstatus(0) -- bios/dmasound.c:751
+14:0x8D	b:0	EXACT	0:16.L	Buffptr(b0) -- bios/dmasound.c:772
+
+# ---- XBIOS past the table: d0 keeps the number, bios/vectors.S:1323-1326
+14:0x8E	-	EXACT	-	XBIOS 0x8E past xbios_ent -- bios/vectors.S:1325-1326

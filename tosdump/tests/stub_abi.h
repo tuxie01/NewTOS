@@ -120,6 +120,34 @@
 #define TD_STUB_NAME_LEN      8   /* AP_NAMELEN, aes/struct.h:111 */
 #define TD_STUB_APPL_FIND_RET (-1)
 
+/* Call side (BIOS / XBIOS, td_abi_trap) ---------------------------------
+ * The stub logs the trap, the function number and the eight marshalled
+ * argument slots exactly as the backend received them, so a test can prove
+ * that a WORD arrives sign-extended, a buffer argument as the runner's own
+ * buffer address, and an unused slot as poison.
+ *
+ * What it answers, so the record writer and the comparator get something to
+ * chew on:
+ *   - by default TD_STUB_TRAP_RET(trap, fn): positive, high half zero;
+ *   - Bconstat (13:1) answers -1 -- the high half of the return register is
+ *     then all ones, which is what a sign-extended LONG must look like;
+ *   - Physbase (14:2) answers TD_STUB_PHYSBASE, a pointer that passes
+ *     PTR_RAM (non-zero, LONG aligned, below 0x80000000);
+ *   - every LONG argument that IS one of the runner's buffers
+ *     (td_call_buffer) gets TD_STUB_BUF_TEXT at bytes 0..3, the buffer
+ *     number and the low byte of the function number at 4..5, the LONG
+ *     TD_STUB_BUF_LONG in machine order at 8..11 and the bytes 0x55 0xAA at
+ *     510..511 -- except for EgetPalette (14:0x55), which the stub leaves
+ *     alone so that a test can see the poison the runner laid before the
+ *     case.
+ */
+#define TD_STUB_KIND_CALL     2
+#define TD_STUB_TRAP_RET(trap, fn)  ((long)(trap) * 0x10000L + (long)(fn))
+#define TD_STUB_PHYSBASE      0x00ABCD00L
+#define TD_STUB_BUF_TEXT      "STUB"
+#define TD_STUB_BUF_LONG      0x0A0B0C0DuL
+#define TD_STUB_NOWRITE_FN    0x55
+
 struct td_stub_call {
 	int16_t kind;
 	int16_t opcode;
@@ -140,6 +168,11 @@ struct td_stub_call {
 	void   *aes_addr_in[TD_AES_ADDRIN_N];
 	char    aes_name[TD_STUB_NAME_LEN + 1];
 	int     aes_name_seen;
+	/* Call side only: what td_abi_trap was handed. */
+	int16_t call_trap;
+	uint16_t call_nargs;
+	uint8_t call_kind[TD_CALL_ARGS_N];
+	long    call_value[TD_CALL_ARGS_N];
 };
 
 extern struct td_stub_call td_stub_calls[TD_STUB_MAX_CALLS];

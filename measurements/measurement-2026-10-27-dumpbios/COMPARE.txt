@@ -1,0 +1,15 @@
+EMUTOS.BIN: area BIOS, 147 records of 320 bytes, build a8b7, case CRC 583C11E0
+EMUTOS.BIN: format 3, pointer 4 bytes, most significant word first
+EMUTOS.BIN: matches bios-r1.tsv (147 cases)
+EMUTOS.BIN: accepted
+EMUTOS-FALCONTC.BIN: area BIOS, 147 records of 320 bytes, build a8b7, case CRC 583C11E0
+EMUTOS-FALCONTC.BIN: format 3, pointer 4 bytes, most significant word first
+EMUTOS-FALCONTC.BIN: matches bios-r1.tsv (147 cases)
+EMUTOS-FALCONTC.BIN: accepted
+NEWTOS.BIN: area BIOS, 147 records of 320 bytes, build a8b7, case CRC 583C11E0
+NEWTOS.BIN: format 3, pointer 8 bytes, least significant word first
+NEWTOS.BIN: matches bios-r1.tsv (147 cases)
+NEWTOS.BIN: accepted
+NewTOS vs EmuTOS tt:       exit 1
+NewTOS vs EmuTOS falcontc: exit 1
+EmuTOS tt vs falcontc:     exit 1

@@ -95,7 +95,9 @@ struct td_aes_arrays {
 
 struct td_call_frame {
 	uint32_t args[TD_CALL_ARGS_N];
-	int32_t  ret;
+	int32_t  ret;                      /* return register bits 31..0      */
+	uint32_t ret_hi;                   /* return register bits 63..32     */
+	int16_t  trap;                     /* 13, 14 (1)                      */
 	uint8_t  capture[TD_CALL_CAPTURE_LEN];
 };
 
@@ -158,6 +160,17 @@ void td_aes_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
                          int32_t ret, const struct td_aes_arrays *after);
 void td_call_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
                           const struct td_call_frame *f);
+
+/*
+ * Copy `len` bytes of a call buffer into a frame's capture field, as
+ * elements of `unit` bytes (1, 2 or 4) read in the machine's own order and
+ * stored through td_store_be16 / td_store_be32 -- the raster record's rule
+ * for its pixel words.  A LONG a call wrote is four bytes in opposite order
+ * on the two machines; only the element value means the same on both.
+ * `src` must be aligned for `unit`; `len` a multiple of it and at most
+ * TD_CALL_CAPTURE_LEN.  What `len` does not cover keeps the poison.
+ */
+void td_call_capture(uint8_t *dst, const void *src, uint16_t len, uint8_t unit);
 /* `src_mfdb` / `dst_mfdb` are the TD_RAST_MFDB_N WORD fields that follow
  * fd_addr, read back out of the two MFDBs after the call. */
 void td_raster_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,

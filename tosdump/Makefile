@@ -6,6 +6,8 @@
 #   make dumpaes-newtos   DUMPAES.NAP for NewTOS on the Pi 4 (AArch64)
 #   make dumprast-m68k    DUMPRAST.PRG for TOS/EmuTOS on the TT
 #   make dumprast-newtos  DUMPRAST.NAP for NewTOS on the Pi 4 (AArch64)
+#   make dumpbios-m68k    DUMPBIOS.PRG, BIOS + XBIOS, for TOS/EmuTOS (m68k)
+#   make dumpbios-newtos  DUMPBIOS.NAP, BIOS + XBIOS, for NewTOS (AArch64)
 #   make scrninfo-m68k    SCRNINFO.TTP, the EdDI / vq_scrninfo probe (TOS)
 #   make scrninfo-newtos  SCRNINFO.NAP, the same probe for NewTOS (AArch64)
 #   make host-test        the host-side suite (same as make -C host test)
@@ -36,6 +38,9 @@ AES_SRC  := $(CORE_SRC) core/runner_aes.c core/dumpaes.c
 # case is the same sequence, and stating it twice is how two runs stop being
 # comparable.
 RAST_SRC := $(CORE_SRC) core/runner.c core/runner_rast.c core/dumprast.c
+# The BIOS + XBIOS dumper is no AES client: no gem.c, no VDI reset.
+BIOS_SRC := core/record.c core/cases.c core/dump.c core/log.c \
+            core/runner_call.c core/dumpbios.c
 # The EdDI probe needs only the workstation handling; the cookie jar, the
 # EdDI dispatcher and the clock are TOS-only and sit in their own backend.
 SCRN_SRC := core/gem.c core/scrninfo.c abi/m68k_scrninfo.c
@@ -43,10 +48,11 @@ SCRN_SRC := core/gem.c core/scrninfo.c abi/m68k_scrninfo.c
 BUILD := build
 
 .PHONY: all dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
-        dumprast-m68k dumprast-newtos scrninfo-m68k scrninfo-newtos host-test \
-        clean
+        dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
+        scrninfo-m68k scrninfo-newtos host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
-     dumprast-m68k dumprast-newtos scrninfo-m68k scrninfo-newtos host-test
+     dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
+     scrninfo-m68k scrninfo-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -83,6 +89,17 @@ $(BUILD)/DUMPRAST.PRG: $(RAST_SRC) abi/m68k_trap.c $(wildcard core/*.h) | $(BUIL
 dumprast-newtos: $(BUILD)/DUMPRAST.NAP
 $(BUILD)/DUMPRAST.NAP: $(RAST_SRC) abi/newtos_svc.c $(wildcard core/*.h) | $(BUILD)
 	./build-dumprast-newtos.sh $@
+
+# .PRG like the others, so the oracle's --auto and the desktop start it the
+# same way; it makes no AES call.
+dumpbios-m68k: $(BUILD)/DUMPBIOS.PRG
+$(BUILD)/DUMPBIOS.PRG: $(BIOS_SRC) abi/m68k_trap.c $(wildcard core/*.h) | $(BUILD)
+	$(M68K_CC) $(M68K_CFLAGS) $(BIOS_SRC) abi/m68k_trap.c -o $@
+	@$(CROSS_MINT)size $@
+
+dumpbios-newtos: $(BUILD)/DUMPBIOS.NAP
+$(BUILD)/DUMPBIOS.NAP: $(BIOS_SRC) abi/newtos_svc.c $(wildcard core/*.h) | $(BUILD)
+	./build-dumpbios-newtos.sh $@
 
 # .TTP: it takes the report file name as its argument.  appl_init works from
 # a TOS program as well, which is all the probe needs of the AES.  The TOS
