@@ -692,3 +692,48 @@ Hosttests `tos-api/tests/xbios_kbdvecs.rs` (10), `kernel/src/key_repeat.rs`
 | D6 | Neuer interner Syscall fuer `kbdvec_default` (Nummer vergibt der Lead) | ja |
 | D7 | Umfang: Minimum (kbdvec + sichere Vorgaben + Aufraeumen) jetzt; Maus/Joystick/Status/Uhr/MIDI als Folge-Tickets, im Minimum nur `ret_stub`, dokumentierte Luecke | Minimum |
 | D8 | Abweichung "Haken verschwindet mit dem Prozess" in COMPATIBILITY.md "Sanctioned deviations" eintragen | ja |
+
+# Teil D — MEM12: Ort der Tabelle und Empfaenger eines Ereignisses (ENTWURF, braucht Freigabe)
+
+Anlass: TASK/MEM12, Anwenderentscheidung 2026-10-27 ("E2: yes; also specify
+whose Kbdvbase table receives an input event (owner/foreground)"). Teil B/C
+bleiben gueltig, bis auf D1 (Ort) und B4 (Empfaenger), die hier ersetzt werden.
+
+## D1-neu. Ort
+
+Die Tabelle (`mousexvec` … `kbdlength`, Layout B1 unveraendert) zieht aus
+Seite 0 in eine **zweite private Seite je Prozess**, EL0 lesen + schreiben,
+nicht ausfuehrbar, an fester VA unter 2 MiB, die nie geteilt abgebildet wird
+(Seite 0 ist ab MEM12 fuer EL0 nur im Supervisor-Zustand beschreibbar,
+`docs/api/_super-state.md`). `Kbdvbase()` liefert die EL0-VA des `midivec`-Slots
+dort. Die Vorgabe-Stubs (`just_rts`, `kbdvec_default`) ziehen in die gemeinsame,
+fuer EL0 nur ausfuehrbare Stub-Seite; ihre Adressen bleiben fuer alle Prozesse
+gleich. Beobachtbar aendert sich nur der Zahlenwert des Zeigers.
+
+## D9. Wessen Tabelle bekommt ein Eingabeereignis
+
+EmuTOS hat **eine** Tabelle; `ikbdraw` springt durch den `kbdvec`, der gerade
+eingetragen ist, gleich welches Programm laeuft (`bios/aciavecs.S:405-414`).
+Auf einem Single-TOS ist das der Haken des Programms im Vordergrund — oder
+eines Accessorys, wenn eines ihn gesetzt hat.
+
+Heute (KEYS02 C3) nimmt NewTOS die Tabelle des Prozesses, der beim Poll gerade
+die CPU hat (`tos-api/src/xbios/kbdvecs.rs:316@route_key`, `current()`). Pollt der
+Pump im Kontext eines Accessorys, sieht DOOMs Haken das Byte nicht.
+
+**Vorschlag:** Empfaenger ist der **innerste gestartete Prozess** — EmuTOS'
+`run` ohne Accessories, in NewTOS `process::emutos_run()`
+(`tos-api/src/bdos/process.rs:990@emutos_run`): das Programm im Vordergrund oder
+sein laufendes `Pexec`-Kind. Gleich, welcher Prozess beim Poll die CPU hat:
+
+* Steht in dessen `kbdvec` die Vorgabe (oder lebt kein gestarteter Prozess),
+  laeuft `kbd_int` direkt (Schnellpfad wie bisher).
+* Sonst kommt das Byte in den Ring **dieses** Prozesses und wird an seiner
+  naechsten Rueckkehr nach EL0 zugestellt (C3). Schlaeft er in einer Warte, die
+  bei wartenden Ring-Bytes ausweicht (C3 "O1"), wird er dafuer geweckt.
+* Die Tabelle eines **Accessorys** wird nie befragt (Accessories werden nicht
+  gestartet, `emutos_run` nennt sie nie). Abweichung von EmuTOS: dort wirkte
+  ein Accessory-Haken global. Kein portiertes Accessory setzt einen.
+
+Entscheidung **D9** fuer den Anwender: Empfaenger = `emutos_run()` (Vorschlag)
+oder wie heute der Prozess mit der CPU.

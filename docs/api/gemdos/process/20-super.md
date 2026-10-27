@@ -311,6 +311,11 @@ three-way `stack` convention with no error return.
 
 ## NewTOS implementation notes
 
+> **MEM12 draft (2026-10-27, awaiting approval):** the NewTOS mapping as a
+> per-process *super state* that makes page 0 EL0-writable and grants nothing
+> else — [`_super-state.md`](../../_super-state.md). It supersedes the deferral below once
+> approved.
+
 (Empty during Phase 00.)
 
 **Deferred — grouped with ADR-Supexec.** AArch64 has no m68k-style

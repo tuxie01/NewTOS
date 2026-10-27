@@ -167,6 +167,70 @@ Nebenbefund: der Absturzbericht nennt einen Schreibversuch auf Seite 0
 "Memory violation: hardware memory" (`memprot::region_kind` kennt Seite 0
 nicht) — beim Umbau mitbenennen.
 
+### Anwenderentscheidungen 2026-10-27 (woertlich)
+
+> E1: (a). E2: yes; also specify whose Kbdvbase table receives an input event (owner/foreground). E5: yes.
+> E3/E4: no Ssystem and no patches for now. Map the Atari protection model onto page tables instead:
+> - page 0: EL0 read-only in user state, read-write while the process is in super state (inside Super()/Supexec), never executable
+> - write in user state → bus error, as on Atari
+> - HypView conterm and TeraDesk Reboot/Shift+Esc then run unpatched, if they write in super state. Verify per program (source + probe kernel) before building.
+> - cold vs warm start: the Reset stub reads memvalid, as on Atari
+> - the kernel treats page 0 as output only; it reads only documented input sysvars (conterm, memvalid …), validated
+> Ssystem S_GETBVAL/S_SETBVAL: later, as a FreeMiNT extension (ADR-027), oracle = FreeMiNT in Hatari.
+> The acceptance run must include the interactive paths (qemu-virt): HypView key, TeraDesk Reboot + Shift+Esc, DOOM keyboard.
+
+Damit gilt: E1 = Seite 0 `UserRoNx`, Stubs in eine eigene, fuer EL0 nur
+ausfuehrbare Seite; E2 = zweite private RW-Seite je Prozess (Kbdvbase-Tabelle,
+PARMBLK), dazu wird festgelegt, wessen Tabelle ein Eingabeereignis bekommt;
+E5 = `Setexc` bleibt; E3/E4 = Supervisor-Zustand je Prozess (Seite 0 dann
+EL0-RW), keine Overlay-Patches, kein `Ssystem` jetzt. Vor dem Bau: Spec fuer
+`Super`/`Supexec` (Regel 5) und Freigabe.
+
+Spec-Entwurf (2026-10-27, wartet auf Freigabe): `docs/api/_super-state.md`
+(Super-Zustand), `docs/api/xbios/22-kbdvbase.md` Teil D (Ort der Tabelle,
+Empfaenger D9).
+
+### Super/Supexec in den Programmen (2026-10-27)
+
+Quelle und gebaute Binaerdatei (`llvm-objdump -d`, Stand der Karte):
+
+| Pfad | Quelle: im Super-Zustand? | Binaerdatei heute |
+|---|---|---|
+| HypView `conterm` | ja: `Supexec(ChangeSysKeyconfig)` (`sdk/apps/hypview/dl_routs.c:325,334@Supexec`), nach `Ssystem(0x0C)` = `EINVFN` | `KeyboardOnOff` @`0x594c`: `svc` Ssystem 12, dann der Callee **eingebettet**: `ldrb/strb [0x484]` @`0x59a8/0x59b4` |
+| TeraDesk "Reboot" | ja: `Super(0L)` (`sdk/overlays/teradesk/main.c:2114@Super`), Schreibzugriffe `:2121-2124`, dann `Supexec(rv)` `:2142` | (Pfad nur per Menue; Super-Makro erzeugt keinen Befehl, s. naechste Zeile) |
+| TeraDesk Shift+Esc | ja: `Super(0L)` … `Super(stack)` um die `hdv_*`-Zugriffe (`sdk/apps/teradesk/file.c:945-969@hdv_rw`) | `force_mediach` @`0xb3f4`: **kein** Befehl fuer `Super`; 8-Byte-`str` nach `0x476`, `0x472`, `0x47E` @`0xb490/0xb49c/0xb4ac`, `Fopen`/`Fclose` per `svc` dazwischen |
+| DOOM `kbdvec` | ja: `Supexec(kbd_install)` (`sdk/apps/doom/doomgeneric_gem.c:1939@kbd_install`) | `kbd_install`/`kbd_probe` ohne eigenes Symbol, eingebettet |
+
+Folgerung: alle vier Schreiber stehen in der Quelle im Supervisor-Klammer; mit
+den heutigen SDK-Makros wird daraus gewoehnlicher EL0-Code ohne jeden Trap. Kein
+Kern — auch kein Probe-Kern — kann in diesen Binaerdateien einen
+Super-Zustand sehen. Erst nach Umstellung der Makros auf Traps und Neubau der
+Programme ist "schreibt im Super-Zustand" messbar; die Messung je Pfad gehoert
+deshalb hinter den Bau (Probe-Kern zum Abgleich der Fehlerstelle: s. Plan).
+
+Nebenbefund TeraDesk (LP64-Fehler im unveraenderten `file.c`, ausserhalb
+MEM12): `hdv_bpb`/`hdv_rw`/`hdv_mediach` sind 8-Byte-Zeiger an 4 Byte
+Abstand. `hdv_bpb = …` ueberschreibt die obere Haelfte von `hdv_rw`, die
+Rueckpruefung `hdv_rw == Newrwabs` schlaegt fehl, die alten Werte werden nie
+zurueckgeschrieben; `hdv_mediach` (8 Byte ab `0x47E`) setzt dabei `conterm`
+(`0x484`) in TeraDesks Seite 0 auf 0 (Tastenklick, Wiederholung, Glocke aus).
+
+### Interaktive Abnahme: qemu-virt geht nicht, raspi4b mit Injektor (Plan)
+
+qemu-virt hat kein `C:`: `cargo xtask run --sd` haengt das Abbild nur fuer
+raspi4b an (`tools/xtask/src/main.rs:867@sd`), der Kern hat fuer virt keinen
+Blocktreiber (`kernel/src/drivers/qemu_virt/` = PL011 + ramfb), und HypView,
+TeraDesk, DOOM sind keine eingebetteten Programme. `.claude/agents/tester.md`
+("qemu-virt has input but no `C:`") stimmt also noch. Weg: raspi4b mit dem
+Kratz-Injektor `tools/inject-arm.py` (Ausloeser `launch:NAME`/`up:NAME`),
+wie RST01 TeraDesk "Reboot" schon gefahren hat
+(`measurements/measurement-2026-10-17-rst01/RUNINFO.TXT` Abschnitt 4). Alle vier
+Pfade warten in AES-Schleifen (`evnt_*`), in denen der Pump laeuft; keiner
+haengt in `Cconin`. Je Pfad eine Karte (#Z) und ein Skript: HypView (+ eine
+`.HYP`-Datei, Taste im Fenster), TeraDesk Shift+Esc (Laufwerksfenster oeffnen,
+Shift+Esc) und Quit → Reboot (`-no-reboot`: "[reset] … (Cold)" + QEMU-Ende),
+DOOM (+ WAD aus `Applications/doom-wad`, Tasten ueber den `kbdvec`-Haken).
+
 ## Arbeit
 
 - Ergebnis von 1–3 als Abschnitt in diesem Ticket.
