@@ -443,131 +443,36 @@ __extension__								\
 
 /*
  * ---------------------------------------------------------------------------
- * Super (GEMDOS 0x20) -- NewTOS/AArch64. See TASK/X01.
+ * Super (GEMDOS 0x20) -- NewTOS/AArch64: a real trap again (TASK/MEM12).
  * ---------------------------------------------------------------------------
  *
- * The original m68k binding was `trap_1_wl(0x20, ptr)` under this header note:
+ * The m68k binding is `trap_1_wl(0x20, ptr)`; so is this one. EmuTOS answers
+ * the call in the TRAP #1 front end (bdos/rwa.S:159-184): x20_inq for 1L,
+ * x20_usr from user mode, x20_sup from supervisor mode (:280-346).
  *
- *	1. Super(1L) from either user or supervisor mode
- *	2. ret = Super(0L) from user mode and after this Super(ret) from
- *	   supervisor mode
- *	Parameter	Userstack	Superstack	Calling Mode	ret
- *	   1L		   usp		   ssp		    user	 0L
- *	   1L		   usp		   ssp		 supervisor	-1L
- *	   0L		  usp-6		   usp		    user	ssp
- *	   0L		   ssp		  ssp-6		 supervisor   ssp-6
- *	  ptr		  usp-6		  ptr+6		    user	ssp
- *	  ptr		  usp+6		   ptr		 supervisor	 sr
+ * On NewTOS the kernel keeps a per-process SUPER STATE
+ * (docs/api/_super-state.md, approved 2026-10-27). It grants exactly one
+ * thing: the process's page 0 -- the classic system variables -- is
+ * writable from EL0 while it is on; in user state page 0 is read-only and a
+ * write there ends the program like a bus error on the Atari. The code keeps
+ * running at EL0 either way; nothing else becomes privileged.
  *
- * WHERE THAT TABLE COMES FROM. Super is not an ordinary BDOS function: EmuTOS
- * implements it in the TRAP #1 FRONT END, in assembly, because it rewrites the
- * exception frame. `bdos/rwa.S:159-182` (`_enter`) compares the function word
- * against 0x20 BEFORE the BDOS table is consulted and branches to one of three
- * handlers -- `x20_usr` (:277-296), `x20_sup` (:300-330), `x20_inq` (:334-339).
- * The `{ NI, 0, 0 }` slot for 0x20 in `bdos/bdosmain.c:221` is therefore DEAD
- * CODE and never reached; "EmuTOS does not implement Super" is wrong.
+ *   Super(1L)          the inquiry: 0 in user state, -1 in super state;
+ *   Super(x), user     enters the super state and returns a token (the
+ *                      caller's stack pointer); the stack does NOT change,
+ *                      an explicit x is not used as a stack (S4);
+ *   Super(x), super    leaves it (SuperToUser); returns the stack pointer.
  *
- * WHAT THE THREE HANDLERS ACTUALLY DO:
- *   x20_inq (parameter == 1L, either mode): changes nothing, and answers the
- *       question "am I privileged?" -- 0L for a user-mode caller, -1L for a
- *       supervisor-mode caller (`btst.b #5,(sp)`).
- *   x20_usr (user mode, parameter != 1L): makes the new SSP either the current
- *       USP (parameter == 0L) or the supplied pointer, moves the return address
- *       and the SR across, sets the supervisor bit, and returns the OLD SSP
- *       (`move.l sp,d0`, :291). The return value is the token the caller must
- *       hand back to undo the switch.
- *   x20_sup (supervisor mode, parameter != 1L): the reverse -- rebuilds a USP
- *       and clears the supervisor bit. It never writes d0, so the "ret" column
- *       above is the caller's own leftover register for those two rows: the
- *       closing half of the bracket has NO defined return value, and no caller
- *       reads one.
- *
- * WHAT THIS MEANS ON AArch64. NewTOS runs applications at EL0 and cannot raise
- * them to EL1: the kernel's page tables, its stack and its vectors are not the
- * application's, and the pointer would come from the application. So there is
- * no mode to enter -- and, crucially, none is needed. Everything the callers
- * actually want lies in the classic $400 system-variable area, and NewTOS
- * materialises that area in the PROCESS's OWN address space, user-readable and
- * user-writable (tos-api/src/bdos/process/loader.rs `populate_sysvars`;
- * docs/analysis/bios-audit/b1-lowmem-feasibility.md, Option 1). Every one of
- * the nine call sites in our ported applications -- TeraDesk
- * library/utility/gettos.c:40-42 ($4F2), main.c:2090, file.c:945/969 (the
- * hdv_* vectors), video.c:289/318 -- is a bracket around a low-memory access,
- * not a request for privilege.
- *
- * THE SIX CASES, RESOLVED FOR EL0:
- *   1L / user       -> 0L.  Unchanged and truthful: an EL0 caller is not
- *                     privileged. Programs branch on this ("do I still need to
- *                     call Super(0)?"), so it must stay honest.
- *   1L / supervisor -> -1L. UNREACHABLE: code that expands this macro runs at
- *                     EL0 by construction, so it collapses into case 1.
- *   0L / user       -> no-op; must return a TOKEN, because the caller feeds it
- *                     straight back in (`stack = Super(NULL); ...;
- *                     Super(stack);`). The token must be neither 0 (which would
- *                     re-open the bracket) nor 1 (which would be read as the
- *                     inquiry). We return the caller's own stack pointer: on
- *                     AArch64 an EL0 thread has exactly one stack (SP_EL0) and
- *                     the EL1 stack is not addressable from here, so "the stack
- *                     pointer that was in force" IS SP_EL0 -- the same thing
- *                     x20_usr hands back, minus a privilege level that does not
- *                     exist. It is naturally neither 0 nor 1, and it keeps the
- *                     callers' `void *stack` variables type-honest.
- *   0L / supervisor -> UNREACHABLE (see above).
- *   ptr / user      -> UNREACHABLE in the bracket idiom: the pointer can only
- *                     have come from a preceding Super(0L), which on NewTOS
- *                     left us at EL0. Treated as the next case.
- *   ptr / supervisor-> the CLOSING half of the bracket: no-op. EmuTOS leaves no
- *                     defined return value here and no caller reads one; we
- *                     return the same stack pointer for symmetry.
- *
- * So the whole function collapses to: report "not privileged" for the inquiry,
- * and be a no-op returning a round-trippable token otherwise. That is a
- * REIMPLEMENTATION of the observable contract (docs/COMPATIBILITY.md), not a
- * stub: the argument decides the behaviour, and the answer it gives is the one
- * the machine can truthfully give.
- *
- * WHY THE BINDING AND NOT THE KERNEL. GEMDOS 0x20 stays unimplemented in
- * tos-api (EINVFN), exactly as an honest "NewTOS has no supervisor mode to
- * hand out". A trap could not do better -- it cannot return the caller's SP
- * meaningfully without inventing a privilege model -- and EmuTOS itself keeps
- * Super out of the BDOS function table for the same structural reason: it is
- * not a service call, it is a manipulation of the caller's own machine state.
- * The place to resolve caller-side machine state is the caller-side binding.
- *
- * The argument is evaluated exactly once (callers pass expressions).
+ * Until MEM12 (TASK/X01) this macro was an EL0 no-op, because page 0 was
+ * writable anyway. A program built with that macro still READS its system
+ * variables, but its writes fault until it is rebuilt with this header.
  */
 #define	       Super(ptr)					       \
-__extension__								\
-({									\
-	long __super_arg = (long)(ptr);					\
-	long __super_ret;						\
-									\
-	if (__super_arg == 1L) {					\
-		/* x20_inq from user mode (rwa.S:334-339). */		\
-		__super_ret = 0L;					\
-	} else {							\
-		/* No mode to switch; hand back SP_EL0 as the token. */	\
-		__asm__ ("mov %0, sp" : "=r"(__super_ret));		\
-	}								\
-	__super_ret;							\
-})
+       (long)trap_1_wl((short)(0x20),(long)(ptr))
 
 /*
- * SuperToUser -- mintlib's stack-safe way to close the bracket.
- *
- * On m68k it exists only because of a real TOS/EmuTOS bug: if the stack
- * pointer moved between Super(0) and Super(oldssp), the reconstructed USP is
- * wrong (x20_sup's `addq.l #6,a0` assumes an untouched frame), so the binding
- * saved and restored the stack pointer around the trap by hand.
- *
- * On NewTOS there is no mode change, hence no stack reconstruction, hence
- * nothing to compensate: it is Super's closing half with the result discarded.
- * The argument is still evaluated, because callers pass expressions.
- *
- * This is not cosmetic. The m68k inline assembly that used to stand here does
- * not compile for AArch64 ("unknown register name 'a0' in asm"), and that
- * alone cost the libc build two real files -- mintlib/setsysvar.c (the
- * set_sysvar_to_short/long pair) and unix/sysinfo.c.
+ * SuperToUser -- mintlib's stack-safe way to close the bracket. On NewTOS no
+ * stack is switched, so it is Super's closing half with the result discarded.
  */
 #define SuperToUser(ptr)						\
 	((void)Super(ptr))
@@ -773,45 +678,35 @@ __extension__								\
        (void)trap_14_w((short)(0x25))
 /*
  * ---------------------------------------------------------------------------
- * Supexec (XBIOS 0x26) -- NewTOS/AArch64. See TASK/X01 and Super() above.
+ * Supexec (XBIOS 0x26) -- NewTOS/AArch64: a real trap again (TASK/MEM12).
  * ---------------------------------------------------------------------------
  *
- * EmuTOS' whole implementation is two instructions (bios/vectors.S:1376):
+ * EmuTOS: `movea.l 4(a7),a0; jmp (a0)` (bios/vectors.S:1376-1378) -- the
+ * callback runs in the trap's supervisor mode and its `rts` returns through
+ * the dispatcher with its d0. NewTOS (docs/api/_super-state.md S6): the
+ * kernel turns the super state on, runs `funcptr()` at EL0 as an upcall, and
+ * on its return gives back its x0 as Supexec's result with the state of
+ * before. The callback may make system calls.
  *
- *	_supexec:
- *		movea.l 4(a7),a0
- *		jmp     (a0)
- *
- * It does NOT raise anything -- the trap has already put the CPU in supervisor
- * mode -- it only jumps to the caller's function, whose `rts` then returns
- * straight to Supexec's caller with the callee's LONG still in d0. So the
- * observable contract is exactly: "call this function, give me its result".
- *
- * On NewTOS the trap would give no privilege to pass on (an EL0 caller stays
- * at EL0), and the callers do not want any: they want low memory, which their
- * own address space already holds (see Super() above). What remains of the
- * contract is the part that still has meaning -- calling the function -- and
- * on AArch64 that is a plain indirect call, the exact analogue of `jmp (a0)`
- * minus a mode the machine cannot grant.
- *
- * The callee's m68k prototype is `long f(void)` in every call site we have
- * (TeraDesk main.c:2118 `rv`, library/utility/nf_ops.c:260 `_nf_detect`,
- * cflib-21/cookie.c:76 `get_cookie_adr`), which is also what the XBIOS
- * contract says, so the cast is to that type. Going through `long` first
- * keeps clang from complaining about the function-pointer cast when the
- * caller's declared type differs in its (unused) parameter list.
- *
- * WARNING for whoever reads this next: making Supexec real also makes
- * TeraDesk's brute-force shutdown real. main.c:2118 calls `Supexec(rv)` with
- * rv == lobo() (main.c:1723), an endless loop whose job is to lobotomise the
- * machine, or with a reset vector read out of the OS header. Before this
- * change XBIOS 0x26 answered 38 and TeraDesk fell through to a clean
- * `appl_exit(); return 0;`. That path is menu-driven ("Quit -> Shutdown") and
- * is not reached by a boot, but it is a genuine behaviour change and it is
- * flagged in TASK/X01.
+ * The kernel restores every general register of the caller except x0. The
+ * FP/SIMD registers are not saved by an upcall, so the callback -- ordinary C
+ * code -- may clobber the caller-saved ones (v0-v7, v16-v31) as any call
+ * may; the asm says so.
  */
 #define	       Supexec(funcptr)					       \
-       ((long)((long (*)(void))(long)(funcptr))())
+__extension__								\
+({									\
+	register long __r8 __asm__("x8") = 0x26L;			\
+	register long __retvalue __asm__("x0") = (long)(funcptr);	\
+	__asm__ volatile("svc #14"					\
+		: "+r"(__retvalue)					\
+		: "r"(__r8)						\
+		: "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6",	\
+		  "v7", "v16", "v17", "v18", "v19", "v20", "v21", "v22",	\
+		  "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30",	\
+		  "v31");						\
+	__retvalue;							\
+})
 #define			 Puntaes() \
 		 (void)trap_14_w((short)(0x27))
 #define	       Floprate(drive,rate)				       \

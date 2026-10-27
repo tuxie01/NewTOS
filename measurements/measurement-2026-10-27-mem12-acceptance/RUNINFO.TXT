@@ -1,0 +1,67 @@
+measurement-2026-10-27-mem12-acceptance -- MEM12 checkpoint 3b: programs rebuilt against Super/Supexec as traps, per-program
+probes, NewTOS side of super-r1.tsv, page-0 fault probe, start of every card program, both boards.
+Developer, 2026-10-27. Kernel/tos-api = HEAD 34530791 (checkpoint 3a). Uncommitted at run time: sdk/libc/overlay/include/mint/
+osbind.h (Super = trap_1_wl(0x20), SuperToUser = Super, Supexec = svc #14 x8 0x26 with the FP caller-saved clobbers),
+sdk/apps/apitest/apitest.c (SX03 expects -1), sdk/examples/p0par.c + p0kid.c (new), this run. QEMU only; no hardware, no real card.
+
+RESULT IN ONE LINE: PASS on QEMU -- every fault case ends the program (0xFFFF), every allowed case passes, HypView/TeraDesk/DOOM
+write page 0 only in super state, super-r1.tsv 0 of 9 differ from EmuTOS, all card programs start, both boards boot. Real Pi open.
+
+1 PROGRAMS (method/build-programs.sh, logs/build-*.log, logs/build-programs.out: all rc=0, "ALL-OK")
+  libc (+ argvtest, clocktest, setjmptst, MXPROBE), libm, LDG demo, zView, CoreMark, DUMPVDI, VDIDRAW, DUMPBIOS, QED, TeraDesk
+  (overlays incl. file.c b03aadab and library/utility/gettos.c 0edf53d0), PRESENT, HypView, DOOM, APITEST.
+  Disassembly: TeraDesk force_mediach `mov w8,#0x20; svc #1` around the hdv_* stores; HypView KeyboardOnOff and DOOM
+  `mov w8,#0x26; svc #0xe`; libc.a mintlib__setsysvar.o `mov w8,#0x20; svc #1`.
+  sha256: DESKTOP.NAP daac0004..., HYP_VIEW.NAP 3c271d55..., DOOM.NAP 86abca15..., QED.NAP c95a7fe0..., PRESENT.NAP 1433062a...,
+  ZVIEW.NAP 3a31a0a7..., DUMPBIOS.NAP 5709c498..., VDIDRAW.NAP 657c40d2..., DUMPVDI.NAP 6a045039..., APITEST.NCP 7d19194c...,
+  libc.a d872e765...; P0PAR.NAP / P0KID.NAP copies in dumpers/ (manifest.sha256).
+  sdk/run-host-tests.sh: 26 passed, 0 failed (logs/sdk-host-tests.log).
+
+2 KERNELS (method/build-kernels.sh, release rpi4, scratch trees = git archive 34530791, SOURCE_DATE_EPOCH fixed)
+  plain  7b8703d9a6afa3de3ed94b01e922ec2d35b5bf23b789a7263e3b9ee77e1211f0  (rebuilt three times, identical)
+  probe  19d39e86c0f7bd7dec53e5b9cf2874bb79d2fdd07c5ff726fe759b578a5fc37e  = plain + tools/inject-arm.py
+         (up:DESKTOP=td.script, up:HYP_VIEW=hv.script, launch:DOOM=doom.script, launch:P0PAR=p0.script)
+         + method/probe-mem12.py ([m12p] lines: every Super, Supexec entry/return, the first 32 kbdvec upcalls, and the shell
+         child's conterm / $472 / $476 / $47E on change).
+  qemu-virt: method/run-virt.sh (fresh release build of the working tree, 60 s): "[desk] desktop up (0 drives)", 0 crash, 0 PANIC
+  (serial/virt-boot-serial.log).
+
+3 CARDS (method/mkcards.sh; tools/make-sd-image.sh for std, tools/mkcard.sh for the others; every manifest in cards/)
+  std td hv doom super api qed present zview vdidraw p0. optional_missing line of every manifest, verbatim:
+optional_missing none
+  Post-run sha256 of every booted clone: checks/post-run.sha256 (runs that wrote to their image: newtos-super (BIOS.BIN/LOG),
+  start-qed, start-api (APITEST.LOG)).
+
+4 PROBES (probe kernel, QEMU raspi4b -append serial=on, method/run.sh, serial/probe-*-serial.log, screendumps/probe-*)
+  p0     P0PAR: R 0, w 0xFFFF ("Memory violation: page-0 system-variable memory, write (permission fault, level 3)"),
+         S 0 (read page 0 first, Super(0L), write + read back conterm, Super(token), inquiry 0), x 0xFFFF (execute, page 0),
+         E 0 (Supexec callback writes conterm, Super(1L) = -1 inside, value 0x12345678 back, inquiry 0 after),
+         r 0xFFFF / W 0xFFFF ("execute-only stub memory, read/write"), T 0xFFFF (write right after leaving the super state),
+         K 0 (Kbdvbase()[-1] written in user state: private page), L 0 + "own state after L: user OK", . 0; "P0PAR: PASS";
+         desktop up afterwards.
+  td     TeraDesk: 4 Super(0L)/Super(token) pairs (2 at start: gettos; 2 at the two Shift+Esc), conterm stays 0x07, hdv cells 0;
+         Ctrl+Q -> Reboot: Super(0L), Supexec(0x7e080 = reset stub) -> "[reset] OSHEADER reset entry (Cold) requested",
+         "PM watchdog full reset", QEMU exits (-no-reboot; mdrive rc 1 = QMP pipe closed by the reset).
+         screendumps open, shesc1, shesc2, quit-dialog.
+  hv     HypView: per Down-arrow two Supexec(ChangeSysKeyconfig) (callback 0x1a0c9d0), conterm 0x07 -> 0x05 -> 0x07, each
+         returning the caller's state (false); no crash; screendumps loaded/key1/key2 (README.TXT shown).
+  doom   DOOM: "keys via kbdvec -- TOS 4.04, Kbdvbase 0007f010, kbdvec was 0007e048"; Supexec(kbd_probe), Supexec(kbd_install);
+         kbdvec upcalls 0x44 0xc4 0x15 to the hook 0x1a0e134; screendump f10 = the quit prompt; y -> Supexec(kbd_remove),
+         "exited with rc=0", desktop up.
+
+5 ORACLE S3-S6 (plain kernel, super card, out/newtos-super-BIOS.{BIN,LOG})
+  DUMPBIOS build 3453, pointer 8, word order 2, "all 9 cases ran". checks/tosdiff-super-newtos-vs-emutos.txt against
+  tosdump/reference/EMUTOS-1a7484ab-SUPER.BIN: "0 of 9 cases differ" (exit 0). NewTOS values: Super(1L) 0, Super(0L) 0x01A6C1A0
+  (SP_EL0), -1 inside, SuperToUser 0x01A6C1A0 (IGNORE), 0 after, Supexec 0x12345678 / -2 (64-bit) / -1, 0 after.
+
+6 START OF EVERY CARD PROGRAM (plain kernel, 75 s each, no input; serial/start-*-serial.log)
+  std (AUTO MXPROBE, 2 accessories, NEWDESK: desktop up), td, qed, present, zview, vdidraw, hv, doom: crash 0, PANIC 0 each.
+  api (AUTO\APITEST.NCP, 90 s): out/start-api-APITEST.LOG TOTAL 105 PASS, 0 FAIL, 9 SKIP (no key / PTERMCH not on the card);
+  SUPER group 17/0/0 incl. SX03 "Super(1L) inside the bracket says -1".
+
+7 HOST
+  cargo xtask test: logs/xtask-test.log (once, at the end of 3b): exit 0, 164 binaries, 1715 passed, 0 failed, 1 ignored.
+  Builds and clippy of both boards: checkpoint 3a (kernel/tos-api unchanged since).
+
+NOT COVERED: real Pi 4 (TLB maintenance on silicon -- procedure in TASK/MEM12.md "Prueffolge echte Pi"); memprot=off/strict
+modes for the probes (default mode only); HypView .HYP documents.

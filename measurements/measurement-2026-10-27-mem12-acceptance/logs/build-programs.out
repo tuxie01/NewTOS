@@ -1,0 +1,19 @@
+libc rc=0
+argvtest rc=0
+clocktest rc=0
+setjmptst rc=0
+mxprobe rc=0
+libm rc=0
+ldg-demo rc=0
+zview rc=0
+coremark rc=0
+dumpvdi rc=0
+vdidraw rc=0
+dumpbios rc=0
+qed rc=0
+teradesk rc=0
+present rc=0
+hypview rc=0
+doom rc=0
+apitest rc=0
+ALL-OK

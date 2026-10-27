@@ -1,0 +1,14 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh
+image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/32d8cb6c-2819-4e51-b178-dafc6b28ed0d/scratchpad/mem12/acc/cards/hv.img
+image_sha256 e7067b0dfb669c71ebd36d18f5b620a981ea90e2a63d764e0e825c44f81c07bd
+size_mib 64
+created 2026-10-27T13:39:11Z
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+metadata C:\.Spotlight-V100 (macOS volume metadata, not hashed)
+file 6d8a75f5e140775e6374ae4daffc50e9a107f947de3cc5f847ddfb227e7880c9 36 C:\APPS\HYPVIEW\HYP_VIEW.CFG
+file 3c271d553757069450ea67017c73508ddd1aa4669f2ce7735d3ba77ea6e89e82 280320 C:\APPS\HYPVIEW\HYP_VIEW.NAP
+file 70cd32448fe21210f7d1aeb751b20340cc10926e03e275634b49f04da80ca8fd 68 C:\APPS\HYPVIEW\README.TXT
+file 54589e1c59da47f45a5b6529ded425908c8f6f28d4d5a9e7bcab7e47a8540caa 27747 C:\APPS\HYPVIEW\hyp_view.rsc
+file 73d4e48294bb8aba1b2539895b54bbcdf58b7202117b85bf6bd6bbc6d886e999 44 C:\NEWDESK.INF

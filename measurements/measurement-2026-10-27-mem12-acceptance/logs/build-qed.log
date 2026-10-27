@@ -1,0 +1,27 @@
+cflib.a out of date [libc/overlay/include/mint/osbind.h] -- running build-cflib.sh…
+  compiled OK=129  skipped=0  (of 129)
+  failures match cflib/expected-failures.txt: 0 today, 0 recorded, 0 new
+  archived -> /Volumes/Daten/Development/PiRusTOS/sdk/cflib/cflib.a (259208 bytes)
+  (full log: cflib/build/build-cflib.log)
+clang : Apple clang version 21.0.0 (clang-2100.3.34.2)
+ar    : /Users/ingouhlemann/.rustup/toolchains/nightly-2026-04-15-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/llvm-ar
+lld   : /Users/ingouhlemann/.rustup/toolchains/nightly-2026-04-15-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/rust-lld
+
+QED COBJS manifest: 37 files
+  overlay: memory.c (from sdk/overlays/qed/, src/ untouched)
+  overlay: set.c (from sdk/overlays/qed/, src/ untouched)
+compiled OK=37  FAILED=0  (of 37)
+
+LINK OK -> /Volumes/Daten/Development/PiRusTOS/sdk/apps/qed/build/QED.NAP (544280 bytes)
+    Class: 64-bit (0x2)
+    DataEncoding: LittleEndian (0x1)
+    FileVersion: 1
+    ABIVersion: 0
+  Type: SharedObject (0x3)
+  Machine: EM_AARCH64 (0xB7)
+  Version: 1
+  Entry: 0x1000
+
+undefined symbols in the final image (goal 0): 0
+converted /Volumes/Daten/Development/PiRusTOS/sdk/apps/qed/src/qed.rsc -> /Volumes/Daten/Development/PiRusTOS/sdk/apps/qed/build/qed.rsc: 32 trees, 682 objects, 118 tedinfo, 7 bitblk, 1 iconblk, 0 ciconblk, 0 cicon, 44 frstr, 0 frimg (41378 bytes, RSHDR vrsn 0) [LP64/32B-OBJECT, NRSC v13]
+resource -> /Volumes/Daten/Development/PiRusTOS/sdk/apps/qed/build/qed.rsc (41378 bytes)

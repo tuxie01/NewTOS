@@ -282,3 +282,65 @@ NewTOS-Seite folgt nach Pruefpunkt 3.
 - Frischer Bau beider Boards, QEMU-Boot bis Desktop (raspi4b mit
   `serial=on`); die Anwendungen der Karte starten wie vorher.
 - `docs/COMPATIBILITY.md` beschreibt den neuen Stand.
+
+## Abnahmestand 2026-10-27 (Pruefpunkt 3b, QEMU)
+
+Lauf `measurements/measurement-2026-10-27-mem12-acceptance/RUNINFO.TXT`
+(Kern `34530791`, alle Programme in einem Zug neu gebaut, Karten mit Manifest):
+
+- **EL0-Schreiben nach Seite 0 endet mit Prozessende, nicht mit Kernpanik:**
+  Probe `sdk/examples/p0par.c` + `sdk/examples/p0kid.c` (raspi4b) — Schreiben
+  im User-Zustand, Ausfuehren aus Seite 0, Lesen und Schreiben der Stub-Seite,
+  Schreiben direkt nach dem Verlassen des Super-Zustands: je "Bus Error",
+  `Pterm(-1)`, `0xFFFF` beim Elternprozess; Lesen, `Super`-Klammer,
+  `Supexec`, `Kbdvbase`-Haken, Ende im Super-Zustand: 0; "P0PAR: PASS".
+- **Proben je Programm** (neu gebaut, unveraendert gegenueber upstream bis auf
+  die LP64-Patchdateien): HypView-Taste → `Supexec(ChangeSysKeyconfig)`,
+  `conterm` 7 → 5 → 7 im Super-Zustand; TeraDesk Shift+Esc → `Super`-Klammer
+  um `hdv_*`, `conterm` bleibt 7; TeraDesk "Reboot" → `Super(0L)`,
+  `memvalid` = 0, `Supexec(Reset-Stub)` → "(Cold) requested"; DOOM →
+  `Supexec(kbd_install)`, Haken in der privaten Seite (`Kbdvbase` `0x7F010`),
+  F10 + `y` nur ueber den Haken → Ende mit 0.
+- **Orakel S3–S6:** `super-r1.tsv` NewTOS gegen EmuTOS: 0 von 9 Faellen
+  verschieden. APITEST SX01–SX09 OK (105/0/9).
+- **Frischer Bau beider Boards, Boot bis Desktop:** raspi4b (`serial=on`) und
+  qemu-virt; die Programme der Karte (NEWDESK, TeraDesk, QED, PRESENT, zView,
+  VDIDRAW, HypView, DOOM) starten ohne Absturz.
+- **Offen:** Lauf auf der echten Pi (Anwenderentscheidung 2026-10-27,
+  Punkt 5), Prueffolge unten. Erst danach gilt MEM12 als erledigt und kommt
+  auf die Alltagskarte.
+
+## Prueffolge echte Pi (fuer Anwender/Lead; der Developer fasst keine Hardware an)
+
+Zweck: die TLB-Pflege beim Umschalten von Seite 0 (RO ↔ RW) auf echtem
+Silizium; QEMU verdeckt fehlende Invalidierungen oft.
+
+1. **Karte** (eine Testkarte, nicht die Alltagskarte): `kernel8.img` aus
+   `cargo xtask build --board rpi4 --release` des committeten Stands;
+   `cmdline.txt` mit `serial=on`, falls ein UART-Adapter haengt. Auf `C:`
+   aus dem einen Neubau (`measurements/measurement-2026-10-27-mem12-acceptance/method/build-programs.sh`):
+   `P0PAR.NAP` + `P0KID.NAP` (Wurzel), TeraDesk (`C:\Apps\TERADESK\`, wie
+   `tools/make-sd-image.sh`), HypView mit `HYP_VIEW.CFG` + `README.TXT`
+   (`C:\APPS\HYPVIEW\`, Inhalte im Lauf unter method), DOOM + `DOOM1.WAD`
+   (`C:\DOOM\`), `DUMPBIOS.NAP` + `tosdump/cases/super-r1.tsv` als `C:\BIOS.TSV`.
+   Ein Manifest der Karte (`tools/sd-manifest.sh`) gehoert zum Lauf.
+2. **Boot:** Desktop erscheint; seriell `[desk] desktop up`.
+3. **P0PAR** starten (Doppelklick): fuenf Absturzberichte nacheinander
+   ("Memory violation: page-0 system-variable memory, write …",
+   "… execute …", "execute-only stub memory, read/write", wieder "page-0 …
+   write"), jeden mit einer Taste beantworten. Ergebnis auf dem Schirm:
+   alle Zeilen `OK`, "own state after L: user OK", **"P0PAR: PASS"**. Ein
+   `WRONG` bei Fall `S` (Schreiben im Super-Zustand wird abgewiesen) oder bei
+   Fall `T` (Schreiben nach dem Verlassen gelingt) waere ein TLB-Fehler.
+4. **HypView** starten, mehrmals Pfeil-runter im Fenster: kein Absturz;
+   danach Tastenwiederholung (Taste halten) und Tastenklick wie vorher.
+5. **TeraDesk** starten, Laufwerk C: oeffnen, mehrmals Shift+Esc: kein
+   Absturz, Klick/Wiederholung bleiben an. Dann Strg+Q → "Reboot": die Pi
+   startet neu (seriell `[reset] OSHEADER reset entry (Cold) requested`).
+6. **DOOM** starten, mit Pfeiltasten laufen, F10 → `y`: zurueck zum Desktop,
+   Tastatur des Desktops arbeitet.
+7. **DUMPBIOS** (Doppelklick) schreibt `C:\BIOS.BIN`; auf dem Host
+   `tosdump/host/build/tosdiff tosdump/cases/super-r1.tsv tosdump/reference/EMUTOS-1a7484ab-SUPER.BIN BIOS.BIN`
+   → "0 of 9 cases differ".
+8. Ergebnis mit Seriellprotokoll und Fotos in einem Lauf unter
+   `measurements/` und in `docs/HW-TEST-LOG.md`.

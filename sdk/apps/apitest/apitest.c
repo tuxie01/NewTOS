@@ -623,11 +623,11 @@ static int wait_input(unsigned int ticks)
  * The two GEMDOS/XBIOS calls every ported TOS program reaches for when it
  * wants a low-memory system variable: Super (GEMDOS 0x20) and Supexec
  * (XBIOS 0x26). On m68k they are the only legal way to touch $400..$5FF;
- * on NewTOS those cells live in the process's OWN address space
- * (tos-api/src/bdos/process/loader.rs `populate_sysvars`), so there is no
- * privilege to gain -- but the CALL still has to behave, because the callers
- * bracket their accesses with it (TeraDesk library/utility/gettos.c:40-42,
- * main.c:2090, file.c:945/969, video.c:289/318).
+ * on NewTOS those cells live in the process's own page 0, readable always
+ * and writable only in the SUPER STATE these two calls switch on
+ * (docs/api/_super-state.md, TASK/MEM12). The callers bracket their accesses
+ * with them (TeraDesk library/utility/gettos.c:40-42, main.c:2090,
+ * file.c:945/969, video.c:289/318).
  *
  * The probes below drive exactly those shapes. They are written so they are
  * SAFE in both states of the world: before the binding was retargeted,
@@ -1640,9 +1640,8 @@ int main(void)
 		long ss_rc;
 
 		/* SX01: Super(1L) is the inquiry. EmuTOS x20_inq returns 0L for a
-		 * user-mode caller. An EL0 NewTOS process IS the user-mode caller
-		 * and can never be anything else, so 0 is both the TOS answer and
-		 * the truthful one. */
+		 * user-mode caller; NewTOS answers it from the process's super
+		 * state (docs/api/_super-state.md S3, TASK/MEM12), off at load. */
 		inq = Super(1L);
 		ck_eq(G_SUPER, "SX01 Super(1L) inquiry reports user mode (0)", inq, 0L);
 
@@ -1660,11 +1659,12 @@ int main(void)
 		ck_bool(G_SUPER, "SX02 Super(0L) returns a token, not an error",
 			tok > 1L);
 
-		/* SX03: inside the bracket the inquiry must STILL say user mode --
-		 * NewTOS has no supervisor mode to have entered. */
+		/* SX03: inside the bracket the inquiry says super state, -1 --
+		 * EmuTOS x20_inq in supervisor mode (bdos/rwa.S:340-346). Until
+		 * TASK/MEM12 NewTOS had no such state and this expected 0. */
 		inq_in = Super(1L);
-		ck_eq(G_SUPER, "SX03 Super(1L) inside the bracket still says 0",
-		      inq_in, 0L);
+		ck_eq(G_SUPER, "SX03 Super(1L) inside the bracket says -1 (super state)",
+		      inq_in, -1L);
 
 		/* SX04: the TeraDesk get_tosversion() shape, verbatim
 		 * (library/utility/gettos.c:38-44): Super(NULL), read

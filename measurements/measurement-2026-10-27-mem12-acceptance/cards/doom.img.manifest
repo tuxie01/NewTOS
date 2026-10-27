@@ -1,0 +1,12 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh
+image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/32d8cb6c-2819-4e51-b178-dafc6b28ed0d/scratchpad/mem12/acc/cards/doom.img
+image_sha256 f8debe0743b04549e813a7ecd5bf4e24bad9f568f192b50fe5dd4599752ff7d3
+size_mib 64
+created 2026-10-27T13:39:19Z
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+metadata C:\.Spotlight-V100 (macOS volume metadata, not hashed)
+file 86abca15e09202d8538afb8504f4835fdda2ecc5f33f74f5852570832e1df132 790816 C:\DOOM\DOOM.NAP
+file 1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771 4196020 C:\DOOM\DOOM1.WAD
+file 5e4d56e7831af6e93635c1a84f25a924e620cda793ed9b75aac18e2465419149 399 C:\NEWDESK.INF

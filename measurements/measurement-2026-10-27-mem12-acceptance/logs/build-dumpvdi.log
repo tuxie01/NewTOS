@@ -1,0 +1,21 @@
+./build-dumpvdi-newtos.sh build/DUMPVDI.NAP
+clang : Apple clang version 21.0.0 (clang-2100.3.34.2)
+lld   : /Users/ingouhlemann/.rustup/toolchains/nightly-2026-04-15-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/rust-lld
+build : 3453
+
+  CC  core/record.c
+  CC  core/cases.c
+  CC  core/gem.c
+  CC  core/runner.c
+  CC  core/dump.c
+  CC  core/log.c
+  CC  core/dumpvdi.c
+  CC  abi/newtos_svc.c
+
+LINK OK -> build/DUMPVDI.NAP (221904 bytes)
+    Class: 64-bit (0x2)
+    DataEncoding: LittleEndian (0x1)
+  Type: SharedObject (0x3)
+  Machine: EM_AARCH64 (0xB7)
+  Entry: 0x1000
+undefined symbols in the final image (goal 0): 0

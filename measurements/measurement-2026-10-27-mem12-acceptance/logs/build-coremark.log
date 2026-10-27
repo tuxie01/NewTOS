@@ -1,0 +1,32 @@
+CoreMark tree : /Volumes/Daten/Development/PiRusTOS/sdk/apps/coremark
+port dir      : /Volumes/Daten/Development/PiRusTOS/sdk/overlays/coremark/newtos
+checking the files the run rules freeze against coremark-sources.md5…
+  ok       core_list_join.c  761e73db06e1e9fbc7c322784f5def4c
+  ok       core_main.c  4a9e6dadce1ac3866381021fbe843fc9
+  ok       core_matrix.c  5fa21a0f7c3964167c9691db531ca652
+  ok       core_state.c  fb49e7605c125306575a83f14f5798ac
+  ok       core_util.c  45540ba2145adea1ec7ea2c72a1fbbcb
+  ok       coremark.h  8ca974c013b380dc7f0d6d1afb76eb2d
+
+clang : Apple clang version 21.0.0 (clang-2100.3.34.2)
+lld   : /Users/ingouhlemann/.rustup/toolchains/nightly-2026-04-15-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/rust-lld
+
+── perf (PERFORMANCE_RUN=1) ───────────────────────────────────────────
+LINK OK -> /Volumes/Daten/Development/PiRusTOS/sdk/apps/coremark/build/CORE.NCP (158176 bytes, undefined symbols: 0)
+    Class: 64-bit (0x2)
+  Type: SharedObject (0x3)
+  Machine: EM_AARCH64 (0xB7)
+  Entry: 0x1000
+
+── val (VALIDATION_RUN=1) ───────────────────────────────────────────
+LINK OK -> /Volumes/Daten/Development/PiRusTOS/sdk/apps/coremark/build/COREVAL.NCP (158176 bytes, undefined symbols: 0)
+    Class: 64-bit (0x2)
+  Type: SharedObject (0x3)
+  Machine: EM_AARCH64 (0xB7)
+  Entry: 0x1000
+
+reported compiler version : (compiled in from __clang_version__)
+reported compiler flags   : -target aarch64-unknown-none-elf -O2 -fomit-frame-pointer -ffreestanding -fPIE -fno-builtin
+ITERATIONS                : 0 (CoreMark auto-scales the run to 10-100 s)
+
+Install with tools/make-sd-image.sh (installs C:\COREMARK\{CORE,COREVAL}.NCP).

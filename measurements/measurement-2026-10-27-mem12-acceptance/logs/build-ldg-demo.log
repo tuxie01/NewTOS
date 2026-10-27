@@ -1,0 +1,20 @@
+gemlib.a out of date [libc/overlay/include/mint/osbind.h] -- running build-gemlib.sh…
+  compiled OK=578  skipped=0  (of 578)
+  failures match gemlib/expected-failures.txt: 0 today, 0 recorded, 0 new
+  archived -> /Volumes/Daten/Development/PiRusTOS/sdk/gemlib/gemlib.a (743386 bytes)
+  (full log: gemlib/build/build-gemlib.log)
+libldg.a out of date [libc/overlay/include/mint/osbind.h] -- running build-ldg.sh…
+  compiled OK=4  FAILED=0  (files with warnings: 0)
+  archived -> /Volumes/Daten/Development/PiRusTOS/sdk/ldg/libldg.a (10228 bytes)
+  exported symbols: _ldg_adr_regctx _ldg_nb_regctx ldg_Calloc ldg_close ldg_cookie ldg_cpush ldg_error ldg_find ldg_Free ldg_getpath ldg_init ldg_libpath ldg_load ldg_Malloc ldg_open ldg_Realloc ldg_unload ldg_version set_error 
+  (full log: ldg/build/build-ldg.log)
+libshare.a out of date [libc/overlay/include/mint/osbind.h] -- running build-libshare.sh…
+  compiled OK=7  FAILED=0  (files with warnings: 0)
+  (full log: libshare/build/build-libshare.log)
+LINK OK -> /Volumes/Daten/Development/PiRusTOS/sdk/ldg/build/EX_LIB.NLD (97480 bytes)
+  Type: SharedObject (0x3)
+  undefined symbols (goal 0): 0
+  allocator: libshare only (calloc.o malloc.o realloc.o sbrk.o ); none of libc.a's mintlib__malloc.o mintlib__calloc.o mintlib__realloc.o mintlib__posix_memalign.o unix__sbrk.o
+LINK OK -> /Volumes/Daten/Development/PiRusTOS/sdk/ldg/build/LDGTEST.NCP (164272 bytes)
+  Type: SharedObject (0x3)
+  undefined symbols (goal 0): 0

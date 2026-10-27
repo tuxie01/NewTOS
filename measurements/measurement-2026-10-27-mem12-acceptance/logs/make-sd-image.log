@@ -1,0 +1,39 @@
+Creating /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/32d8cb6c-2819-4e51-b178-dafc6b28ed0d/scratchpad/mem12/acc/cards/std.img (64 MiB, MBR + FAT16, volume NEWTOS)…
+hdiutil: WARNING: 'hdiutil attach -nomount ...' is deprecated. Please use 'diskutil image attach --noMount ...' instead.
+attached /dev/disk13
+wrote /Volumes/NEWTOS/HELLO.NCP: 4388 bytes, entry=0x1000, filesz=0x124, banner=36 bytes
+built + installed C:\HELLO2.NCP (clang-built native C program)
+built + installed C:\BIG.NCP (clang-built multi-page-TPA program)
+built + installed C:\PHYSBASE.NCP (Physbase direct-screen proof)
+built + installed C:\SCRFLIP.NCP (Setscreen page-flip proof)
+built + installed C:\SUB\CURDIR.NCP (working-directory proof)
+built + installed C:\CMDLINE.NCP + C:\CMDLINE.NTP (command-line proof; .NTP demo)
+installed C:\ARGVTEST.NAP (argc/argv proof)
+built + installed C:\DTACHILD.NCP (per-process DTA test child)
+built + installed C:\PTERMCH.NCP (Pexec exit-code test child)
+built + installed C:\CTRLCPAR.NCP (Ctrl-C'd child -> Pexec rc 65504)
+built + installed C:\FPPEXEC.NCP (FP/SIMD registers across Pexec)
+built + installed C:\SYSINFO.NCP (Ssystem 2000/2001 clock + temperature)
+built + installed C:\USBSNAP.NCP (Ssystem 2022 USB snapshot recorder)
+built + installed C:\ACC\SYSACC.NAC (desk accessory, folder location)
+  + C:\SYSACC2.NAC (root location; a second, independently loaded copy)
+installed C:\LIBTEST.NCP (mintlib-linked libc proof)
+installed C:\CLOCKTST.NCP (200 Hz tick / _hz_200 proof)
+installed C:\SETJMPT.NCP (setjmp/longjmp proof)
+installed C:\MATHTST.NCP (libm proof)
+installed C:\MXPROBE.NCP (Mxalloc pool proof)
+  + \AUTO\MXPROBE.NCP (runs at boot; SD_MXPROBE_AUTO=0 leaves it out)
+installed C:\LDG\EX_LIB.NLD + C:\LDGTEST.NCP (LDG proof)
+installed C:\ZVIEW\ (zView: ZVIEW.NAP, ZVIEW.RSC, ICONS\, CODECS\*.NLD, SAMPLES\)
+installed C:\COREMARK\{CORE,COREVAL}.NCP (EEMBC CoreMark 1.0)
+  + C:\DUMPVDI.NAP + C:\VDI.TSV (VDI reference dumper, round 2)
+  + C:\VDIDRAW.NAP (visual VDI primitive sheet)
+installed C:\Apps\QED\QED.NAP + qed.rsc (ported GEM editor, LP64)
+installed C:\Apps\TERADESK\{DESKTOP.NAP,desktop.rsc,icons.rsc,cicons.rsc} (ported GEM desktop, LP64, colour icons)
+installed C:\Apps\PRESENT\{PRESENT.NAP,SLIDES.TXT,TEST.PNG} (slide show + sample slides)
+generated C:\TERADESK.INF + C:\Apps\TERADESK\TERADESK.INF (registers *.NAP/*.NCP/*.NTP/*.NAC)
+OK: MBR FAT16 partition type=0x06 start_lba=63 sectors=130977
+done: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/32d8cb6c-2819-4e51-b178-dafc6b28ed0d/scratchpad/mem12/acc/cards/std.img
+optional missing: none
+manifest: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/32d8cb6c-2819-4e51-b178-dafc6b28ed0d/scratchpad/mem12/acc/cards/std.img.manifest (86 files; copy it into the measurement run, RUNINFO.TXT cites it)
+run:  cargo xtask run --sd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/32d8cb6c-2819-4e51-b178-dafc6b28ed0d/scratchpad/mem12/acc/cards/std.img --board rpi4 --window   # raspi4b emulates the SD controller
