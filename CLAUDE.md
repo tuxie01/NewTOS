@@ -260,6 +260,7 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   `tools/sd-manifest.sh`) into the run directory; `RUNINFO.TXT` cites it and
   quotes its `optional_missing` lines verbatim (`none` included). New runs
   call `tools/mkcard.sh` and keep only that call in the run's method/ dir, not a copy.
+  A run that writes to a booted image also records its sha256 after the run.
 - **Runs are immutable once committed.** Never edit files inside an existing
   run directory — several carry sha256 manifests over their own files. A
   correction is a new run or a note in the ticket.

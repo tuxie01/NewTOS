@@ -122,7 +122,10 @@ it builds several) and its `RUNINFO.TXT` cites that copy and states the
 card afterwards (an `mcopy`'d program, a `#Z` line in `NEWDESK.INF`) records
 those changes in `RUNINFO.TXT` itself; the manifest describes the image as
 the tool left it. An image the run boots as an APFS clone of a manifested
-image is described by the original's manifest.
+image is described by the original's manifest **as the clone stood before
+the run**. A run that writes to the image (a program saving a file, a
+filesystem test) also records the clone's sha256 after the run in
+`RUNINFO.TXT`.
 
 Build order on a fresh checkout (each command from the repository root; the
 library scripts rebuild what is stale, `sdk/lib-stale.sh`; QED, TeraDesk and
