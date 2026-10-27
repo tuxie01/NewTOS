@@ -224,25 +224,27 @@ and the page size for double buffering has to be probed with
 did not compile ("unknown register name 'a0'"); a program bracketing a
 low-memory read with `Super(0)`/`Super(ssp)` got `EINVFN`.
 
-**Cause and state**: NewTOS cannot raise an EL0 program to EL1, and nothing
-the callers want needs it — the low-memory area is already in the process's
-own address space. The **bindings** in
-`sdk/libc/overlay/include/mint/osbind.h` therefore implement the observable
-contract without a trap: `Super(1L)` → `0L` ("not privileged"); `Super(0L)`
-/ `Super(ptr)` → no-op returning `SP_EL0` as the round-trippable token;
-`SuperToUser(p)` → `(void)Super(p)`; `Supexec(f)` → a direct call of `f`
-returning its `long` (`osbind.h:445-574`, `:776-814`; the EmuTOS derivation
-is in the comment). The kernel is unchanged: GEMDOS 0x20 answers `EINVFN`,
-XBIOS 0x26 answers `38` (`TASK/X01.md`).
+**Cause and state**: NewTOS cannot raise an EL0 program to EL1. From
+2026-09-14 to MEM12 (`TASK/X01.md`) the bindings therefore answered without
+a trap (`Super` an EL0 no-op, `Supexec(f)` a direct call of `f`), because
+page 0 was writable from EL0 anyway. Since MEM12 (`60d3c4fd`) both are real
+traps again: the kernel keeps a per-process **super state**
+(`docs/api/_super-state.md`). In user state page 0 is read-only for EL0 and
+a write there ends the program like a bus error; `Super(x)` enters or leaves
+the super state, in which page 0 is writable; `Supexec(f)` runs `f` at EL0
+as an upcall in the super state and returns its `x0`
+(`sdk/libc/overlay/include/mint/osbind.h:470@Super`, `:696@Supexec`; the
+EmuTOS derivation is in the comments). The code runs at EL0 either way;
+nothing else becomes privileged.
 
-**Do**: nothing for the classic bracket idiom — it works. Be aware that a
-real `Supexec` makes code paths live that used to fail silently: TeraDesk's
-shutdown (`sdk/apps/teradesk/main.c:2118`, `Supexec(rv)` with an endless-loop `lobo()`) is now
-executed for real (`osbind.h:804-812`). And do not expect privilege: an
-`Supexec`'d function that pokes MMIO faults.
-A statement `Supexec(f);` compiles with clang's `-Wunused-value` warning
-("expression result unused", from the cast in the `osbind.h` macro) —
-harmless; seen in HypView's `init.c`/`dl_routs.c` (TASK/SDK01 H).
+**Do**: rebuild with the current header. A binary built with the old no-op
+`Super` still reads its system variables, but its page-0 writes now end it.
+The classic bracket idiom works. A real `Supexec` makes TeraDesk's shutdown
+path live (`sdk/apps/teradesk/main.c:2118@Supexec`, `Supexec(rv)` with the
+endless-loop `lobo()`). And do not expect privilege: an `Supexec`'d function
+that pokes MMIO faults.
+The pre-MEM12 cast macro drew clang's `-Wunused-value` warning on a
+statement `Supexec(f);` (HypView's `init.c`/`dl_routs.c`, TASK/SDK01 H).
 
 ### B5. `Fattrib` on directories — TOS 4 / FreeMiNT semantics
 
