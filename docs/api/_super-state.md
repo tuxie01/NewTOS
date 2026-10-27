@@ -1,7 +1,8 @@
 # Super state: `Super` (GEMDOS 0x20) and `Supexec` (XBIOS 0x26) on NewTOS
 
-> **Status: DRAFT (TASK/MEM12, 2026-10-27) — needs user approval before any
-> code (CLAUDE.md Rule 5).** Source: EmuTOS @ `1a7484ab`. The EmuTOS side of
+> **Status: APPROVED (user, 2026-10-27; TASK/MEM12 "Anwenderentscheidungen
+> 2026-10-27, zweite Runde").** S1–S12 approved; O1 and O2 resolved (§4).
+> Source: EmuTOS @ `1a7484ab`. The EmuTOS side of
 > both calls is already extracted in
 > [`gemdos/process/20-super.md`](gemdos/process/20-super.md) and
 > [`xbios/26-supexec.md`](xbios/26-supexec.md); this file adds the NewTOS
@@ -56,7 +57,7 @@ source. On the Atari a user-mode **read** of that area faults too; NewTOS
 keeps reads open in user state (TASK/MEM12 question 1: native readers exist),
 a deliberate superset.
 
-## 3. NewTOS contract (PROPOSED)
+## 3. NewTOS contract (approved 2026-10-27)
 
 **S1 — the state.** Every process has one bit, *super state*, off at load
 (`Pexec` 0/3/4/6, accessory load; EmuTOS `bdos/proc.c:549`). It belongs to the
@@ -77,7 +78,8 @@ unchanged; the stub page (EL0 execute-only) and the private read-write page
 
 **S4 — `Super(stack)`, `stack != 1`, in user state:** enters super state.
 Returns a token: the caller's `SP_EL0` at the trap (never 0 or 1 — the stack
-is 16-byte aligned and non-null). **Deviation:** the stack does not change;
+is 16-byte aligned and non-null). **Documented deviation (O2 = a):** the
+stack does not change, also for an explicit `stack`, which is ignored;
 EmuTOS makes `stack` (or the USP) the new SSP and the program continues on
 it. NewTOS has one stack per EL0 thread, and switching `SP_EL0` under
 compiled AArch64 code (SP-relative locals) would break the caller.
@@ -123,8 +125,18 @@ result move off page 0 (MEM12 E2). `Setexc(n < 0x200, v)` keeps reading and
 writing the cell through the kernel, in either state (MEM12 E5: the TOS API
 path, EmuTOS allows it).
 
-**S11 — upcalls** (the kbdvec hook, `G_USERDEF`, …) run in the process's
-current state and leave it unchanged — see open point O1.
+**S11 — upcalls.** The `kbdvec` hook upcall runs in **super state**, as
+EmuTOS calls `kbdvec` from the IKBD interrupt in supervisor mode
+(`bios/aciavecs.S:405-414`); the state in force before the upcall is
+restored at its `Psigreturn` (O1 = yes). Other upcalls (`G_USERDEF`, …) run
+in the process's current state and leave it unchanged.
+
+**S13 — whose `Kbdvbase` table gets a key** (D9, `xbios/22-kbdvbase.md`
+Teil D): the innermost started process (`process::emutos_run()`), whichever
+process has the CPU. An accessory's table is never consulted (deviation:
+on EmuTOS an accessory's hook is global). When an accessory installs a
+`kbdvec` hook — its `kbdvec` slot no longer holds the default — the kernel
+logs a warning once per accessory, so the deviation never bites silently.
 
 **S12 — ABI.** `Super`: GEMDOS `x8 = 0x20`, `x0` = `stack` (64-bit pointer or
 `0`/`1`), result in `x0`. `Supexec`: XBIOS `x8 = 0x26`, `x0` = `codeptr`,
@@ -134,14 +146,17 @@ result in `x0`. The SDK macros become traps again (`Super` →
 page-0 writes fault (S9) until rebuilt. APITEST's `SX03` ("inside the
 bracket still says 0") changes to `-1`, which is the EmuTOS value.
 
-## 4. Open points (not decided here)
+## 4. Resolved points (user, 2026-10-27)
 
-- **O1 — kbdvec hook in super state?** EmuTOS calls `kbdvec` from the
-  interrupt, so a hook always runs in supervisor mode
-  (`bios/aciavecs.S:405-414`). Proposal: the kbdvec upcall runs in super
-  state and the entry state is restored at its `Psigreturn`, EmuTOS-faithful;
-  alternative: S11 as written. `G_USERDEF` stays S11 (not checked how the
-  EmuTOS AES calls `ub_code`).
-- **O2 — `Super(stack)` with an explicit `stack` from user state**: ignore
-  `stack` (S4, proposed) or refuse with `EINVFN`? No ported program passes
+- **O1 — kbdvec hook in super state: yes** (S11). `G_USERDEF` keeps the
+  current state (not checked how the EmuTOS AES calls `ub_code`).
+- **O2 — `Super(stack)` with an explicit `stack` from user state: (a)**,
+  `stack` is ignored, a documented deviation (S4). No ported program passes
   anything but `0L`/`1L`/a token (TASK/X01 inventory).
+- **D9 — yes**, with the accessory-hook warning (S13).
+
+## 5. Measurement (user, 2026-10-27)
+
+S3–S6 get oracle cases (EmuTOS in Hatari vs NewTOS): `Super(1L)` in user and
+super state, the `Super(0L)`/`SuperToUser` returns as an address class (not an
+exact value), and `Supexec` passing the callback's return value through.

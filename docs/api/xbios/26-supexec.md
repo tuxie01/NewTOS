@@ -188,10 +188,10 @@ generic exception handlers.
 
 ## NewTOS implementation notes
 
-> **MEM12 draft (2026-10-27, awaiting approval):** the NewTOS mapping as a
+> **MEM12 (approved 2026-10-27):** the NewTOS mapping as a
 > per-process *super state* that makes page 0 EL0-writable and grants nothing
 > else — [`_super-state.md`](../_super-state.md). It supersedes the deferral below once
-> approved.
+> implemented.
 
 (Empty during Phase 00.)
 

@@ -693,7 +693,7 @@ Hosttests `tos-api/tests/xbios_kbdvecs.rs` (10), `kernel/src/key_repeat.rs`
 | D7 | Umfang: Minimum (kbdvec + sichere Vorgaben + Aufraeumen) jetzt; Maus/Joystick/Status/Uhr/MIDI als Folge-Tickets, im Minimum nur `ret_stub`, dokumentierte Luecke | Minimum |
 | D8 | Abweichung "Haken verschwindet mit dem Prozess" in COMPATIBILITY.md "Sanctioned deviations" eintragen | ja |
 
-# Teil D — MEM12: Ort der Tabelle und Empfaenger eines Ereignisses (ENTWURF, braucht Freigabe)
+# Teil D — MEM12: Ort der Tabelle und Empfaenger eines Ereignisses (FREIGEGEBEN 2026-10-27)
 
 Anlass: TASK/MEM12, Anwenderentscheidung 2026-10-27 ("E2: yes; also specify
 whose Kbdvbase table receives an input event (owner/foreground)"). Teil B/C
@@ -735,5 +735,8 @@ sein laufendes `Pexec`-Kind. Gleich, welcher Prozess beim Poll die CPU hat:
   gestartet, `emutos_run` nennt sie nie). Abweichung von EmuTOS: dort wirkte
   ein Accessory-Haken global. Kein portiertes Accessory setzt einen.
 
-Entscheidung **D9** fuer den Anwender: Empfaenger = `emutos_run()` (Vorschlag)
-oder wie heute der Prozess mit der CPU.
+**D9 freigegeben (Anwender 2026-10-27):** Empfaenger = `emutos_run()`.
+Setzt ein Accessory je einen `kbdvec`-Haken (sein Slot haelt nicht mehr die
+Vorgabe), schreibt der Kern einmal je Accessory eine Warnung ins Protokoll —
+die Abweichung soll nie still zuschlagen. Der Haken laeuft im
+Supervisor-Zustand (`docs/api/_super-state.md` S11, O1 = ja).

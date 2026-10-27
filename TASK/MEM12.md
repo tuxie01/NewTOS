@@ -214,6 +214,10 @@ Abstand. `hdv_bpb = …` ueberschreibt die obere Haelfte von `hdv_rw`, die
 Rueckpruefung `hdv_rw == Newrwabs` schlaegt fehl, die alten Werte werden nie
 zurueckgeschrieben; `hdv_mediach` (8 Byte ab `0x47E`) setzt dabei `conterm`
 (`0x484`) in TeraDesks Seite 0 auf 0 (Tastenklick, Wiederholung, Glocke aus).
+**Behoben 2026-10-27 (Pruefpunkt 1):** Patchdatei `sdk/overlays/teradesk/file.c`
+(die drei Zellen als `uint32_t`, Umwandlung ueber `uintptr_t`); Beleg
+`measurements/measurement-2026-10-27-mem12-td-lp64/RUNINFO.TXT` (objdump vorher/
+nachher; raspi4b: nach Shift+Esc `conterm` 0 → bleibt 7).
 
 ### Interaktive Abnahme: qemu-virt geht nicht, raspi4b mit Injektor (Plan)
 
@@ -230,6 +234,22 @@ haengt in `Cconin`. Je Pfad eine Karte (#Z) und ein Skript: HypView (+ eine
 `.HYP`-Datei, Taste im Fenster), TeraDesk Shift+Esc (Laufwerksfenster oeffnen,
 Shift+Esc) und Quit → Reboot (`-no-reboot`: "[reset] … (Cold)" + QEMU-Ende),
 DOOM (+ WAD aus `Applications/doom-wad`, Tasten ueber den `kbdvec`-Haken).
+
+### Anwenderentscheidungen 2026-10-27, zweite Runde (woertlich)
+
+> 1. S1–S12 approved. Add measurement cases for S3–S6 against the oracle: Super(1) return values, Super(0)/SuperToUser returns (address class), Supexec passes the callback's return value through.
+> 2. O1: yes, the hook runs in super state (as EmuTOS from the interrupt).
+> 3. O2: (a), documented deviation.
+> 4. D9: yes. If an accessory ever installs a kbdvec hook: log a warning, so the deviation never bites silently.
+> 5. Yes, raspi4b with inject-arm.py. Plus one run on the real Pi before MEM12 counts as done: toggling page-0 permissions needs correct TLB maintenance (TLBI + DSB/ISB), and QEMU often hides missing invalidations.
+> 6. Yes, probe per program after the rebuild.
+> TeraDesk LP64 bug: fix it before enabling MEM12. Once the kernel reads conterm (S10), TeraDesk's zeroed conterm turns off click, repeat and bell system-wide. This is a porting bug in our TeraDesk port, not an app patch for NewTOS.
+> Real card: only after the real-Pi acceptance run, with all programs rebuilt in one go (manifest).
+
+Ablauf in drei Pruefpunkten (Lead, 2026-10-27): (1) TeraDesk-LP64-Fehler
+`hdv_*` beheben; (2) Messfaelle S3–S6 am Orakel, vor jeder Kernaenderung;
+(3) Umbau nach `docs/api/_super-state.md`, Proben je Programm, Abnahmelauf,
+Prueffolge fuer die echte Pi.
 
 ## Arbeit
 
