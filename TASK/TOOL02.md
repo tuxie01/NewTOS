@@ -1,6 +1,6 @@
 # TOOL02 — Jedes Abbild eines Messlaufs bekommt ein Manifest, auch die `mkcard.sh`-Karten
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Werkzeug (Reproduzierbarkeit) — Anwenderentscheidung 2026-10-27
+Status: **ERLEDIGT** 2026-10-27 — [Quittung](TOOL02-STATUS-DONE.MD) · Prioritaet: **P2** · Typ: Werkzeug (Reproduzierbarkeit) — Anwenderentscheidung 2026-10-27
 
 ## Sachverhalt
 
