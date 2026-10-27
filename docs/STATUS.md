@@ -53,7 +53,9 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
 **Offen (Stand 2026-10-26, aus der Statuszeile der Tickets ohne DONE-Quittung):**
 
 - **Warteschlange (Anwender 2026-10-28), in dieser Reihenfolge:**
-  [TOOL04](../TASK/TOOL04.md) → Audit „BIOS-Speicher“ (`Getbpb`, `Rwabs`,
+  [TOOL04](../TASK/TOOL04.md) → MEM12-Nachmessung: `cargo xtask test` auf
+  `a7ffd707` im eigenen Target-Verzeichnis, neuer Lauf, Verweis in
+  [MEM12](../TASK/MEM12.md) (der committete Lauf bleibt unveraendert) → Audit „BIOS-Speicher“ (`Getbpb`, `Rwabs`,
   `Mediach`, `Drvmap`) mit dem Auditor = erste Triage der DUMPBIOS-Funde
   (`measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`) und Probe des
   Audit-Ablaufs → die uebrigen BIOS-Gruppen von unten nach oben → Track B:
@@ -77,7 +79,7 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   offen nur die Abnahme von K unter Linux/Homebrew), [USB03](../TASK/USB03.md),
   [SND01](../TASK/SND01.md), [SND02](../TASK/SND02.md),
   [NET01](../TASK/NET01.md) (Vorrecherche, Ziel 1.2), [HW04](../TASK/HW04.md)
-  (teilweise), [W01](../TASK/W01.md), [TOOL01](../TASK/TOOL01.md) (`cargo xtask doctor`, Projekt-venv), [TOOL03](../TASK/TOOL03.md) (reproduzierbare Messabbilder, vor dem DUMPGDOS-Abbildvergleich), [TOOL04](../TASK/TOOL04.md) (Testlaufzeit: schnelle und volle Stufe), [TOOL05](../TASK/TOOL05.md) (doc-check auch fuer Doku, die eine geaenderte Datei zitiert); geparkt: [H04](../TASK/H04.md),
+  (teilweise), [W01](../TASK/W01.md), [TOOL01](../TASK/TOOL01.md) (`cargo xtask doctor`, Projekt-venv), [TOOL03](../TASK/TOOL03.md) (reproduzierbare Messabbilder und Dumper-Bauten, vor dem DUMPGDOS-Abbildvergleich), [TOOL04](../TASK/TOOL04.md) (Testlaufzeit: schnelle und volle Stufe), [TOOL05](../TASK/TOOL05.md) (doc-check auch fuer Doku, die eine geaenderte Datei zitiert); geparkt: [H04](../TASK/H04.md),
   [H01](../TASK/H01.md) (wartet auf Hardware); zurueckgestellt:
   [HW05](../TASK/HW05.md), [T13](../TASK/T13.md).
 - **„ERLEDIGT“ ohne DONE-Quittung — gelten als offen, bis gemessen
