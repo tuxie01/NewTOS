@@ -1,0 +1,73 @@
+
+000000000000b3f4 <force_mediach>:
+    b3f4:      	str	x30, [sp, #-0x10]!
+    b3f8:      	adrp	x9, 0x3f000 <tzparse.new_york+0x33f4>
+    b3fc:      	mov	x8, x0
+    b400:      	ldr	x9, [x9, #0xaf0]
+    b404:      	ldrb	w0, [x0]
+    b408:      	ldr	x9, [x9]
+    b40c:      	add	w10, w0, #0x1
+    b410:      	and	x10, x10, #0xff
+    b414:      	ldr	w9, [x9, x10, lsl #2]
+    b418:      	tst	w9, #0xc
+    b41c:      	b.eq	0xb508 <force_mediach+0x114>
+    b420:      	ldrb	w9, [x8, #0x1]
+    b424:      	cmp	w9, #0x3a
+    b428:      	b.ne	0xb508 <force_mediach+0x114>
+    b42c:      	ldrb	w8, [x8, #0x2]
+    b430:      	cmp	w8, #0x5c
+    b434:      	b.eq	0xb43c <force_mediach+0x48>
+    b438:      	cbnz	w8, 0xb508 <force_mediach+0x114>
+    b43c:      	bl	0x2dd38 <tolower>
+    b440:      	mov	w12, #0x476             // =1142
+    b444:      	adrp	x8, 0x43000 <dirwindows+0xf8>
+    b448:      	sub	w10, w0, #0x61
+    b44c:      	ldr	w13, [x12]
+    b450:      	adrp	x9, 0x43000 <dirwindows+0xf8>
+    b454:      	strh	w10, [x8, #0x78]
+    b458:      	mov	w8, #0x47e              // =1150
+    b45c:      	adrp	x10, 0x43000 <dirwindows+0xf8>
+    b460:      	mov	w14, #0x472             // =1138
+    b464:      	str	x13, [x9, #0x80]
+    b468:      	ldr	w13, [x8]
+    b46c:      	ldr	w15, [x14]
+    b470:      	adrp	x11, 0x43000 <dirwindows+0xf8>
+    b474:      	mov	x1, xzr
+    b478:      	str	x13, [x10, #0x90]
+    b47c:      	adrp	x13, 0xb000 <chdir+0x58>
+    b480:      	add	x13, x13, #0x510
+    b484:      	str	w13, [x12]
+    b488:      	adrp	x12, 0xb000 <chdir+0x58>
+    b48c:      	add	x12, x12, #0x558
+    b490:      	str	w12, [x14]
+    b494:      	adrp	x12, 0xb000 <chdir+0x58>
+    b498:      	add	x12, x12, #0x5a0
+    b49c:      	str	w12, [x8]
+    b4a0:      	sub	w8, w0, #0x20
+    b4a4:      	nop
+    b4a8:      	adr	x0, 0x40630 <force_mediach.fname>
+    b4ac:      	str	x15, [x11, #0x88]
+    b4b0:      	strb	w8, [x0]
+    b4b4:      	mov	w8, #0x3d               // =61
+    b4b8:      	svc	#0x1
+    b4bc:      	tbnz	x0, #0x3f, 0xb4cc <force_mediach+0xd8>
+    b4c0:      	sxth	x0, w0
+    b4c4:      	mov	w8, #0x3e               // =62
+    b4c8:      	svc	#0x1
+    b4cc:      	mov	w8, #0x476              // =1142
+    b4d0:      	adrp	x12, 0xb000 <chdir+0x58>
+    b4d4:      	add	x12, x12, #0x510
+    b4d8:      	ldr	w8, [x8]
+    b4dc:      	cmp	w8, w12
+    b4e0:      	b.ne	0xb508 <force_mediach+0x114>
+    b4e4:      	ldr	x8, [x11, #0x88]
+    b4e8:      	mov	w11, #0x472             // =1138
+    b4ec:      	ldr	x9, [x9, #0x80]
+    b4f0:      	ldr	x10, [x10, #0x90]
+    b4f4:      	mov	w12, #0x476             // =1142
+    b4f8:      	str	w8, [x11]
+    b4fc:      	mov	w8, #0x47e              // =1150
+    b500:      	str	w9, [x12]
+    b504:      	str	w10, [x8]
+    b508:      	ldr	x30, [sp], #0x10
+    b50c:      	ret

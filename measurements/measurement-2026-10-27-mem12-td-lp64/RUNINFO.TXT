@@ -1,0 +1,42 @@
+measurement-2026-10-27-mem12-td-lp64 -- MEM12 checkpoint 1: TeraDesk LP64 defect in force_mediach (hdv_* vectors).
+Developer, 2026-10-27, HEAD a89cd4bf + working tree (sdk/overlays/teradesk/file.c new, sdk/apps/build-teradesk.sh comment).
+No hardware, no real card. Kernel and tos-api unchanged by this checkpoint.
+
+ROOT CAUSE
+ sdk/apps/teradesk/file.c (vendored, unchanged) declares hdv_bpb ($472), hdv_rw ($476), hdv_mediach ($47E) as
+ `*(long (**)(...))addr`: 8-byte function pointers on LP64, but the TOS cells are 4-byte LONGs 4 bytes apart.
+ checks/force_mediach-before.txt (llvm-objdump of the shipped DESKTOP.NAP): `str x13,[0x476]` (b490), `str x9,[0x472]` (b49c,
+ overwrites 0x476..0x479 with the upper half of Newgetbpb = 0), `str x8,[0x47E]` (b4ac, covers 0x47E..0x485 incl. conterm 0x484);
+ the check `ldr x8,[0x476]; cmp x8,Newrwabs` (b4d4/b4d8) then fails and the old vectors are never written back.
+
+FIX
+ sdk/overlays/teradesk/file.c = vendored file.c with the three cells as uint32_t and HDV_WORD()/HDV_FUNC() conversions through
+ uintptr_t (header says why; build-teradesk.sh shadow-tree overlay, upstream untouched). Rebuilt with sdk/apps/build-teradesk.sh,
+ "overlay: file.c" in the log, 0 undefined symbols.
+ DESKTOP.NAP before sha256 7e314c90c8c3042bb4c3e158c322b097aeae21bdd852cbd0689790b585979b5d
+             after  sha256 f2b561182f182e7b2ae3e1a6f706e3c17d6ac0bde984d6c4542663f17312c75c
+ checks/force_mediach-after.txt: every access is 32-bit -- `ldr w` from 0x476/0x47E/0x472 (b44c/b468/b46c), `str w` of the new
+ vectors (b484/b490/b49c), 32-bit compare `ldr w8,[0x476]; cmp w8,w12` (b4d8/b4dc), `str w` restore (b4f8/b500/b504).
+
+RUN (QEMU raspi4b, -append serial=on, one QEMU at a time, APFS clone per run, deleted after)
+ Kernel: method/build-kernel.sh = git archive HEAD + tools/inject-arm.py up:DESKTOP=method/td-shesc.script + method/probe-conterm.py
+   (scratch-only: per trap-side input pump, print the shell child's page-0 conterm and the 32-bit words at $472/$476/$47E on change),
+   release rpi4, sha256 644513a0049b104476033931b750ff749a6d228d43745878815389d9cab48323.
+ Cards: method/mkcard.sh (64 MiB FAT16, never a real card), NEWDESK.INF = method/z-teradesk.inf (#Z TeraDesk), TERADESK.INF,
+   desktop/icons/cicons.rsc from sdk/apps/teradesk/build/dist; td-old = DESKTOP.NAP before, td-new = after.
+   td-old.img sha256 82f847958f3e5f8e27e9eefe53fe0e2e8821d1e52f6e5a87dc33a9b4bae5fbdc, td-new.img b2a8e980d13bedd3e81586117647ce702df5512f842e8a54632c9d1c87e9cf94
+   (made by mkcard.sh, not tools/make-sd-image.sh: no manifest).
+ Script (method/td-shesc.spec -> gen.py, + `shift` command): double-click drive C: (195,40) -> directory window, Shift+Esc, Shift+Esc.
+ method/run.sh old|new, screendumps keyed to the injector feed lines (+716 open, +1072, +1416).
+
+RESULT
+ td-old: [m12] slot 0 conterm 0x07 hdv_bpb 0x00000000 hdv_rw 0x00000000 hdv_mediach 0x00000000
+         [m12] slot 0 conterm 0x00 hdv_bpb 0x01a12554 hdv_rw 0x00000000 hdv_mediach 0x01a125a0   <- after Shift+Esc: conterm 0,
+         vectors left behind.
+ td-new: [m12] slot 0 conterm 0x07 hdv_bpb 0x00000000 hdv_rw 0x00000000 hdv_mediach 0x00000000   <- only line: conterm stays 7,
+         the vectors are back to their values before the hook.
+ Both: directory window C:\ open (screendumps/td-*-shesc1.png), crash 0, PANIC/[EXC] 0.
+
+LIMIT
+ The probe samples once per input pump; set, Fopen/Fclose and restore of force_mediach happen inside one program step, so td-new
+ shows no intermediate line. That the same script reaches force_mediach is shown by td-old (same kernel, same ticks).
