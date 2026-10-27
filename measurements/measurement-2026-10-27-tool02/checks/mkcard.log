@@ -1,0 +1,8 @@
+mkcard: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/32d8cb6c-2819-4e51-b178-dafc6b28ed0d/scratchpad/tool02/tool02.img (64 MiB, MBR + FAT16, label TOOL02)
+  + C:\SUB\ (empty folder)
+  + C:\TMP\ (empty folder)
+  + C:\AUTO\MXPROBE.NCP <- /Volumes/Daten/Development/PiRusTOS/sdk/libc/build/MXPROBE.NCP
+  + C:\ARGVTEST.NAP <- /Volumes/Daten/Development/PiRusTOS/sdk/libc/build/argvtest.NAP
+  + C:\NEWDESK.INF <- /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-27-tool02/method/NEWDESK.INF
+done: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/32d8cb6c-2819-4e51-b178-dafc6b28ed0d/scratchpad/tool02/tool02.img
+manifest: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/32d8cb6c-2819-4e51-b178-dafc6b28ed0d/scratchpad/tool02/tool02.img.manifest (3 files; copy it into the measurement run, RUNINFO.TXT cites it)

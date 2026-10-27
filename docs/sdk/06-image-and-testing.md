@@ -68,7 +68,10 @@ optional part goes through the script's `optional_missing` function, never
 through a bare `if` that skips it.
 
 **The manifest: `<image-path>.manifest`.** Next to every image it builds the
-script writes a plain-text record of the card, one key per line:
+script writes a plain-text record of the card, one key per line. The writer
+is a tool of its own, `tools/sd-manifest.sh` (format v1 in its header; a
+`files` step per mounted partition, a `write` step after the image is
+detached), shared with `tools/mkcard.sh` below:
 
 ```
 # NewTOS SD image manifest v1 -- written by tools/make-sd-image.sh
@@ -86,16 +89,40 @@ file <sha256> <bytes> C:\Apps\TERADESK\cicons.rsc  (one line per file, C: and D:
 script removed them; they are unreadable and not TOS content, so they are
 listed but not hashed. A failed build deletes the manifest together with the
 image, and a new build deletes the old one first, so a manifest always
-describes the image beside it.
+describes the image beside it. Between two builds from the same inputs only
+`image_sha256`, `created` and the `file` lines of the three random-content
+files (`C:\KERNEL8.IMG`, `C:\LYNXBOOT.IMG`, `C:\DATA.BIN`) differ.
 
-**Measurement runs carry the manifest.** A run under `measurements/` that
-boots an image from this script copies `<image>.manifest` into its run
-directory (for example next to its method scripts, one copy per image when it builds
-several) and its `RUNINFO.TXT` cites that copy and states the
+**Per-run cards: `tools/mkcard.sh`.** Runs that need a small card of their
+own (the injector runs on `raspi4b`, `tools/inject-arm.py`) build it with
+
+```
+tools/mkcard.sh <image> <NEWDESK.INF> [dest=host-file[@YYYYMMDDhhmm] ...]
+    MKCARD_LABEL=<label>  MKCARD_SIZE_MIB=64  MKCARD_DIRS="SUB TMP"  MKCARD_STAMP=202610171200
+```
+
+a fresh MBR + FAT16 card (64 MiB by default) holding only `C:\NEWDESK.INF`,
+the `dest=host-file` pairs (`dest` relative to `C:\`, `/` as separator) and
+the `MKCARD_DIRS` empty folders. It replaces the `mkcard.sh` copies that older
+runs carry in their method directories (same positional interface; the
+copies' label, empty folders and time stamp are the `MKCARD_*` variables). A
+new run keeps only its call — which files, which variables — in its method
+directory, not a copy of the tool. A missing input ends it before the image
+is touched; a later failure deletes the half-written image. It writes the same
+`<image>.manifest` through `tools/sd-manifest.sh`, header `written by
+tools/mkcard.sh`, with `switch n/a` (it reads no `SD_*` switches) and
+`optional_missing none` (it has no optional parts: every pair is required).
+
+**Measurement runs carry the manifest of every image they boot.** A run
+under `measurements/` copies the `<image>.manifest` of each image it boots —
+from `tools/make-sd-image.sh` or from `tools/mkcard.sh` — into its run
+directory (for example next to its method scripts, one copy per image when
+it builds several) and its `RUNINFO.TXT` cites that copy and states the
 `optional_missing` lines verbatim — "none" included. A run that changes the
 card afterwards (an `mcopy`'d program, a `#Z` line in `NEWDESK.INF`) records
 those changes in `RUNINFO.TXT` itself; the manifest describes the image as
-the script left it.
+the tool left it. An image the run boots as an APFS clone of a manifested
+image is described by the original's manifest.
 
 Build order on a fresh checkout (each command from the repository root; the
 library scripts rebuild what is stale, `sdk/lib-stale.sh`; QED, TeraDesk and

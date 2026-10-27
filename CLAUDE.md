@@ -255,9 +255,11 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   `<run>/method/` (scripts, patches, action files), `<run>/serial/`,
   `<run>/screendumps/`.
   Per-run SD images and kernel binaries are gitignored; record their sha256.
-  A run that boots an image from `tools/make-sd-image.sh` copies the image's
-  `<image>.manifest` into the run directory; `RUNINFO.TXT` cites it and quotes
-  its `optional_missing` lines verbatim (`none` included).
+  A run copies the `<image>.manifest` of every image it boots (built by
+  `tools/make-sd-image.sh` or `tools/mkcard.sh`, both through
+  `tools/sd-manifest.sh`) into the run directory; `RUNINFO.TXT` cites it and
+  quotes its `optional_missing` lines verbatim (`none` included). New runs
+  call `tools/mkcard.sh` and keep only that call in the run's method/ dir, not a copy.
 - **Runs are immutable once committed.** Never edit files inside an existing
   run directory — several carry sha256 manifests over their own files. A
   correction is a new run or a note in the ticket.

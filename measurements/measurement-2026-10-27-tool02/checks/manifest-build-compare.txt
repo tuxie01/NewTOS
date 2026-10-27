@@ -1,0 +1,79 @@
+old-A1: rc=0
+old-A2: rc=0
+new-A1: rc=0
+new-A2: rc=0
+old-B: rc=0
+new-B: rc=0
+== old-A1 vs old-A2: raw differing lines (key, last field):
+    < image_sha256 30bae40b4f77bf673d2a8d4f7418b119b2338705998caae958ec97ffeeb4e700
+    > image_sha256 62b723592806d003707c272a3de7d6c67023f14b7d5c1bc705add2a889bc538f
+    < created 2026-10-27T09:40:04Z
+    > created 2026-10-27T09:40:11Z
+    < file C:\DATA.BIN
+    > file C:\DATA.BIN
+    < file C:\KERNEL8.IMG
+    > file C:\KERNEL8.IMG
+    < file C:\LYNXBOOT.IMG
+    > file C:\LYNXBOOT.IMG
+   masked: IDENTICAL (94 lines)
+   stdout+stderr: IDENTICAL
+== old-A1 vs new-A1: raw differing lines (key, last field):
+    < image_sha256 30bae40b4f77bf673d2a8d4f7418b119b2338705998caae958ec97ffeeb4e700
+    > image_sha256 126f71eca7da1ec482ffa60f6a46d1064d527daead7804574f7c8daac34950b3
+    < created 2026-10-27T09:40:04Z
+    > created 2026-10-27T09:40:18Z
+    < file C:\DATA.BIN
+    > file C:\DATA.BIN
+    < file C:\KERNEL8.IMG
+    > file C:\KERNEL8.IMG
+    < file C:\LYNXBOOT.IMG
+    > file C:\LYNXBOOT.IMG
+   masked: IDENTICAL (94 lines)
+   stdout+stderr: IDENTICAL
+== old-A2 vs new-A2: raw differing lines (key, last field):
+    < image_sha256 62b723592806d003707c272a3de7d6c67023f14b7d5c1bc705add2a889bc538f
+    > image_sha256 63cb1337c7365cec118d5b10b7e9c8c5651c492e932ac22ac69b7479d58da5a4
+    < created 2026-10-27T09:40:11Z
+    > created 2026-10-27T09:40:24Z
+    < file C:\DATA.BIN
+    > file C:\DATA.BIN
+    < file C:\KERNEL8.IMG
+    > file C:\KERNEL8.IMG
+    < file C:\LYNXBOOT.IMG
+    > file C:\LYNXBOOT.IMG
+   masked: IDENTICAL (94 lines)
+   stdout+stderr: IDENTICAL
+== new-A1 vs new-A2: raw differing lines (key, last field):
+    < image_sha256 126f71eca7da1ec482ffa60f6a46d1064d527daead7804574f7c8daac34950b3
+    > image_sha256 63cb1337c7365cec118d5b10b7e9c8c5651c492e932ac22ac69b7479d58da5a4
+    < created 2026-10-27T09:40:18Z
+    > created 2026-10-27T09:40:24Z
+    < file C:\DATA.BIN
+    > file C:\DATA.BIN
+    < file C:\KERNEL8.IMG
+    > file C:\KERNEL8.IMG
+    < file C:\LYNXBOOT.IMG
+    > file C:\LYNXBOOT.IMG
+   masked: IDENTICAL (94 lines)
+   stdout+stderr: IDENTICAL
+== old-B vs new-B: raw differing lines (key, last field):
+    < image_sha256 db5f585119b45a3dee2afaeaa8176eecdd84c4b571966a9dd18495554d3ac575
+    > image_sha256 a8dfc1ab44920b1363f6aad562d272a4087c8aa02f21f638646b0ec1ca205925
+    < created 2026-10-27T09:40:32Z
+    > created 2026-10-27T09:40:40Z
+    < file C:\DATA.BIN
+    > file C:\DATA.BIN
+    < file C:\KERNEL8.IMG
+    > file C:\KERNEL8.IMG
+    < file C:\LYNXBOOT.IMG
+    > file C:\LYNXBOOT.IMG
+   masked: IDENTICAL (99 lines)
+   stdout+stderr: IDENTICAL
+== B switch/optional/D: lines (new-B):
+    switch SD_FSBENCH_D=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/32d8cb6c-2819-4e51-b178-dafc6b28ed0d/scratchpad/tool02/bc/fsb
+    switch SD_MXPROBE_AUTO=0
+    optional_missing none
+    metadata D:\.Spotlight-V100 (macOS volume metadata, not hashed)
+    file f5d47bb8a0b95a2c81a0643f801657cb60f49ae0cb0526630a1432ed3ba30638 10 D:\FSBENCH\F1.DAT
+    file 2106362f9c9129bad6c59f721f890feaeaceb98a3dff0602f462896ad914d2aa 10 D:\FSBENCH\F2.DAT
+    file f93522e6a49d4ec168269bd804c8ba5a3db6a7513bc198c0420e2febdcf5c1ae 10 D:\FSBENCH\F3.DAT

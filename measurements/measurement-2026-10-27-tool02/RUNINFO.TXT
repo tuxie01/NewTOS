@@ -1,0 +1,57 @@
+measurement-2026-10-27-tool02 -- TASK/TOOL02: one manifest writer for every card image a run boots; tools/mkcard.sh demo.
+Developer, 2026-10-27, HEAD 85055757 + working tree (tools/sd-manifest.sh new, tools/mkcard.sh new, tools/make-sd-image.sh
+and docs/sdk/06-image-and-testing.md changed; uncommitted when run). No kernel/tos-api change. QEMU only, no real card,
+no hardware.
+
+WHAT / WHY
+ User decision 2026-10-27 (TASK/TOOL02): the per-run mkcard.sh cards of the injector runs must carry the same
+ <image>.manifest as tools/make-sd-image.sh. Done as
+  - tools/sd-manifest.sh: the manifest part of make-sd-image.sh moved into its own tool, format v1 unchanged
+    (`files <mnt> <drive> <image>` per partition, `write <image> <size-mib> <writer> [--optional-missing T]...
+    [--switches env|n/a]` after detach); tools/make-sd-image.sh calls it.
+  - tools/mkcard.sh: the shared card builder replacing the per-run copies, same positional interface
+    (<image> <NEWDESK.INF> [dest=host-file[@YYYYMMDDhhmm] ...]); the copies' label, empty folders, size and stamp are
+    MKCARD_LABEL, MKCARD_DIRS, MKCARD_SIZE_MIB, MKCARD_STAMP. Manifest with `switch n/a`, `optional_missing none`.
+ Tool sha256 as run: tools/sd-manifest.sh 031e63f7c6a7113a14f56c752ba30ecff8d59d06650268539f4937b931f9be92
+                     tools/mkcard.sh      99875f7cc344556ee3fcba9f4493bcf35b760c1fb277b7b60a59a8db99900ad1
+                     tools/make-sd-image.sh 14145579da7bd6eda52951cad15dcec6d71e505cf6734bc8d56dcf7419c66f15
+
+1. MANIFEST OF tools/make-sd-image.sh UNCHANGED (TOOL02 Abnahme 1)
+ checks/manifest-unit-equivalence.txt (method/manifest-unit-equivalence.sh): same inputs (one image file, two trees as
+   C:/D: with a space in a path, an empty file and a .fseventsd metadata dir), old code = list_card_files() + assembly
+   block verbatim from 85055757:tools/make-sd-image.sh, new = tools/sd-manifest.sh, `date` shimmed on both sides.
+   6 cases (0/1/2 optional_missing entries x SD_* switches unset/set): all 6 byte-IDENTICAL, no part/tmp file left.
+ checks/manifest-build-compare.txt (method/manifest-build-compare.sh): full builds, same image path and environment.
+   The format has a timestamp and the image is not reproducible: two builds of the UNCHANGED script (old-A1 vs old-A2)
+   already differ in exactly 5 lines -- image_sha256, created, and the file lines of C:\DATA.BIN, C:\KERNEL8.IMG,
+   C:\LYNXBOOT.IMG (filled from /dev/urandom by the script).
+   old vs new (A: default env, 64 MiB; B: SD_FSBENCH_D + SD_MXPROBE_AUTO=0, 128 MiB, D: partition and switch lines):
+   the raw diff is exactly those same 5 lines; with them masked the manifests are byte-IDENTICAL (94 lines A, 99 lines B);
+   the script's stdout+stderr is IDENTICAL in every pair. Full manifests: checks/manifests/{old,new}-{A1,B}.manifest.
+
+2. tools/mkcard.sh CARD BOOTED ON QEMU raspi4b (TOOL02 Abnahme 2)
+ Card: method/mkcard-call.sh = this run's call of tools/mkcard.sh (only the call, no copy of the tool): label TOOL02,
+   MKCARD_DIRS="SUB TMP", C:\NEWDESK.INF = method/NEWDESK.INF (measurement-2026-10-27-mem12-td-lp64/method/z-teradesk.inf
+   without its #Z line, CRLF), C:\AUTO\MXPROBE.NCP, C:\ARGVTEST.NAP with its own stamp @202001011200.
+   Build log checks/mkcard.log (hdiutil deprecation warnings filtered out).
+ Manifest: card/tool02.img.manifest (copied from <scratch>/tool02.img.manifest; written by tools/mkcard.sh, 3 file lines,
+   one `metadata C:\.Spotlight-V100` line). Its optional_missing line, verbatim:
+     optional_missing none
+   and its switch line, verbatim:
+     switch n/a
+   No make-sd-image.sh image was booted in this run (the section-1 images were built for the comparison only and deleted).
+ Image tool02.img sha256 1629bd48440de5d5dea4cdeb7a583f117b07705251dad3a1b9b9febb43723376 (= the manifest's image_sha256);
+   booted as an APFS clone (cp -c), clone deleted after the run, base image deleted after the checks.
+ checks/manifest-vs-image.txt (method/manifest-vs-image.sh): independent read-back with mtools -- image sha256 equals
+   image_sha256, all 3 file lines match the files read out of the FAT, SUB/TMP present as empty folders, ARGVTEST.NAP
+   dated 2020-01-01 12:00 (the @stamp), NEWDESK.INF 2026-10-17.
+ Kernel: `cargo xtask build --board rpi4 --release` on HEAD 85055757 (kernel/tos-api unchanged), kernel8.img moved to
+   scratch, sha256 b26b50264362b211876976520b15197afa03f5f9d401511db9e590bf73a85d63 (not kept).
+ Run: method/run.sh -- qemu-system-aarch64 -M raspi4b -append serial=on, wait for `[desk] desktop up`, one QMP screendump.
+ RESULT serial/boot-serial.log: `[serial] output on`, `[auto] running C:\AUTO\MXPROBE.NCP`, `[MXPROBE] MXPROBE: PASS`,
+   `[auto] 1 AUTO program(s) run`, `[desk] desktop up (1 drives)`; crash 0, PANIC/[EXC] 0.
+   screendumps/desktop.png: the desktop with the icons NEWDESK.INF names (4 Hard disk, Trash, Printer), 640x480.
+
+NOT DONE HERE
+ Existing runs and their mkcard.sh copies are untouched (runs are immutable). The CLAUDE.md wording is the lead's
+ (proposal in the TOOL02 report). No real Pi, no TT.

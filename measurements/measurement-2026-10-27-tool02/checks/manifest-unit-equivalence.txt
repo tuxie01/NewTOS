@@ -1,0 +1,23 @@
+old.sh: list_card_files() + the manifest assembly block of 85055757:tools/make-sd-image.sh (39 lines)
+optional_missing entries=0 SD_* switches=unset: IDENTICAL (12 lines, sha256 29d60156d8cf46ed); leftover part/tmp files: 0
+optional_missing entries=0 SD_* switches=set: IDENTICAL (14 lines, sha256 e6b52c00925f86bc); leftover part/tmp files: 0
+optional_missing entries=1 SD_* switches=unset: IDENTICAL (12 lines, sha256 7115d1fcfa98cc6f); leftover part/tmp files: 0
+optional_missing entries=1 SD_* switches=set: IDENTICAL (14 lines, sha256 03302813ea4a83a6); leftover part/tmp files: 0
+optional_missing entries=2 SD_* switches=unset: IDENTICAL (13 lines, sha256 1b1dd0be9b0c4559); leftover part/tmp files: 0
+optional_missing entries=2 SD_* switches=set: IDENTICAL (15 lines, sha256 ad8c25cb928e2728); leftover part/tmp files: 0
+--- last case, new.m:
+# NewTOS SD image manifest v1 -- written by tools/make-sd-image.sh
+image X.img
+image_sha256 d5a63d91ae6689ba899a29f62d497bc3344726e8724be17f57a06da531f47ee0
+size_mib 64
+created 2026-10-27T00:00:00Z
+switch SD_ALPHA=x
+switch SD_ZED=1
+optional_missing one -- a
+optional_missing two -- b
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+metadata C:\.fseventsd (macOS volume metadata, not hashed)
+file e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0 C:\AUTO\EMPTY
+file b42094348e4b8b82faefbb932b4bfa364c14daae0c480a11d69d58a53b95f74f 3000 C:\Apps\My Dir\X.NAP
+file 8e4621379786ef42a4fec155cd525c291dd7db3c1fde3478522f4f61c03fd1bd 3 C:\README.TXT
+file 30080caad4adf2a4057fae9993286d1592f6498873ee517539c19fca65824819 999 D:\FSBENCH\A.DAT

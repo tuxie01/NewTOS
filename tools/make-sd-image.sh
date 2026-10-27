@@ -37,11 +37,12 @@
 # Manifest: next to the image the script writes `<image-path>.manifest`, a
 # plain-text record of what went onto the card -- one `file <sha256> <bytes>
 # <TOS path>` line per file, the `optional_missing` lines, the SD_* switches
-# in effect and the image's own sha256. A measurement run that uses the image
-# copies the manifest into its run directory and RUNINFO.TXT cites it
-# (docs/sdk/06-image-and-testing.md). The manifest is deleted together with
-# the image when a build fails, so a manifest always belongs to the image
-# beside it.
+# in effect and the image's own sha256 (format v1, written by the shared
+# tools/sd-manifest.sh, which tools/mkcard uses too). A measurement run that
+# uses the image copies the manifest into its run directory and RUNINFO.TXT
+# cites it (docs/sdk/06-image-and-testing.md). The manifest is deleted
+# together with the image when a build fails, so a manifest always belongs to
+# the image beside it.
 #
 set -euo pipefail
 
@@ -122,25 +123,11 @@ optional_missing() {
 }
 
 # Append one `file <sha256> <bytes> <drive>:\<path>` line per file under the
-# mounted partition $1 (drive letter $2) to MANIFEST_FILES, sorted by path.
-# The macOS volume metadata directories the script tries to remove can come
-# back and are not readable; they are not TOS content and are not hashed, but
-# one that is still on the card gets a `metadata <path>` line, so the manifest
-# does not pretend the card is cleaner than it is.
+# mounted partition $1 (drive letter $2) to MANIFEST_FILES, sorted by path,
+# plus a `metadata <path>` line per macOS volume metadata directory that came
+# back -- the shared manifest writer does it (tools/sd-manifest.sh, `files`).
 list_card_files() {
-  local mnt="$1" drive="$2" rel sha size meta
-  for meta in .Spotlight-V100 .fseventsd .Trashes .TemporaryItems; do
-    if [ -e "$mnt/$meta" ]; then
-      printf 'metadata %s:\\%s (macOS volume metadata, not hashed)\n' "$drive" "$meta" >> "$MANIFEST_FILES"
-    fi
-  done
-  ( cd "$mnt" && find . \( -name .Spotlight-V100 -o -name .fseventsd -o -name .Trashes \
-      -o -name .TemporaryItems \) -prune -o -type f -print | LC_ALL=C sort ) | while IFS= read -r rel; do
-    rel="${rel#./}"
-    sha=$(shasum -a 256 "$mnt/$rel" | awk '{print $1}')
-    size=$(stat -f %z "$mnt/$rel")
-    printf 'file %s %s %s:\\%s\n' "$sha" "$size" "$drive" "$(printf '%s' "$rel" | tr '/' '\\')"
-  done >> "$MANIFEST_FILES"
+  "$SCRIPT_DIR/sd-manifest.sh" files "$1" "$2" "$IMG"
 }
 
 echo "Creating ${IMG} (${SIZE_MB} MiB, MBR + FAT16, volume ${VOL})…"
@@ -1064,26 +1051,13 @@ if len(sys.argv) > 2:
     print(f"OK: MBR FAT16 partition 2 (D:) type=0x{typ2:02x} start_lba={start2} sectors={count2}")
 PY
 
-# Assemble the manifest (format: header comment of this script). Every line
-# starts with its key, so `grep '^optional_missing' <image>.manifest` is the
-# whole check a run script needs.
-{
-  echo "# NewTOS SD image manifest v1 -- written by tools/make-sd-image.sh"
-  echo "image ${IMG}"
-  echo "image_sha256 $(shasum -a 256 "$IMG" | awk '{print $1}')"
-  echo "size_mib ${SIZE_MB}"
-  echo "created $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  # Every SD_* switch set in the environment (they change what is on the card).
-  env | LC_ALL=C sort | sed -n 's/^\(SD_[A-Za-z0-9_]*=\)/switch \1/p'
-  if [ "${#OPTIONAL_MISSING[@]}" -eq 0 ]; then
-    echo "optional_missing none"
-  else
-    for m in "${OPTIONAL_MISSING[@]}"; do echo "optional_missing $m"; done
-  fi
-  echo "# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)"
-  cat "$MANIFEST_FILES"
-} > "$MANIFEST"
-rm -f "$MANIFEST_FILES"
+# Assemble the manifest (format v1: tools/sd-manifest.sh) from MANIFEST_FILES,
+# the optional_missing entries and the SD_* switches in the environment; the
+# writer deletes MANIFEST_FILES.
+om_args=()
+for m in ${OPTIONAL_MISSING[@]+"${OPTIONAL_MISSING[@]}"}; do om_args+=(--optional-missing "$m"); done
+"$SCRIPT_DIR/sd-manifest.sh" write "$IMG" "$SIZE_MB" tools/make-sd-image.sh \
+  ${om_args[@]+"${om_args[@]}"}
 trap - EXIT
 
 echo "done: ${IMG}"

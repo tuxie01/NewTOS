@@ -1,0 +1,19 @@
+image sha256 now:      1629bd48440de5d5dea4cdeb7a583f117b07705251dad3a1b9b9febb43723376
+manifest image_sha256: 1629bd48440de5d5dea4cdeb7a583f117b07705251dad3a1b9b9febb43723376
+match C:\ARGVTEST.NAP (84336 bytes)
+match C:\AUTO\MXPROBE.NCP (88872 bytes)
+match C:\NEWDESK.INF (374 bytes)
+files and folders in the image (mtools; .Spotlight-V100 left out):
+  .
+  ./ARGVTEST.NAP
+  ./AUTO
+  ./AUTO/MXPROBE.NCP
+  ./NEWDESK.INF
+  ./SUB
+  ./TMP
+FAT dates of the root entries (mdir):
+  SUB          <DIR>     2026-10-27  10:38 
+  TMP          <DIR>     2026-10-27  10:38 
+  AUTO         <DIR>     2026-10-27  10:38 
+  ARGVTEST NAP     84336 2020-01-01  12:00 
+  NEWDESK  INF       374 2026-10-17  11:00 
