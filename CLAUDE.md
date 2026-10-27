@@ -333,9 +333,19 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   path, `file:line` and `ADR-NNN` cite in them must resolve.
   `CLAUDE.md`, `docs/STATUS.md` and `docs/MEMORY.md` are always clean.
   Plain `cargo xtask doc-check` checks all of `docs/` except `docs/archive/`
-  and dated snapshots, and still reports the old backlog (2026-10-26: 758
+  and dated snapshots, and still reports the old backlog (2026-10-27: 752
   failures, mostly undated `docs/analysis/`, `docs/INVENTORY.md` and
   `docs/hardware/`; `docs/api/` and `docs/sdk/` are clean).
+- A line cite into NewTOS code (git-tracked files under `kernel/`, `tos-api/`,
+  `tos-types/`, `programs/`, `tools/`, `tosdump/`, `sdk/`, `boot/`,
+  `keyboards/`) carries a symbol anchor, `<path>:<line>@<symbol>`: doc-check
+  fails it unless the symbol stands within ±5 lines of the cited line (range:
+  `a-5`…`b+5`; a comma list: every part) and names the nearest line where it
+  does. doc-check requires the anchor on every line new since `HEAD`, so run
+  it **before** committing (`--base <rev>` checks a commit afterwards); older
+  unanchored cites are counted and fixed when their line is touched.
+  EmuTOS/FreeMiNT cites stay line-based (pinned); an anchor there is checked
+  too.
 
 ---
 
