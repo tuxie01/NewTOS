@@ -105,7 +105,7 @@ physical line number and the dump header carries the table's CRC
 | 0x23 | Kbrate | `bios/ikbd.c:439` | **round 1** | 1 case, (-1,-1); setting: later |
 | 0x24 | Prtblk | `xbios_unimpl, bios/xbios.c:1339` | excluded | empty on the pin; a real TOS prints a block |
 | 0x25 | Vsync | `bios/screen.c:1205` | **round 1** | 1 case, IGNORE (void) |
-| 0x26 | Supexec | `bios/vectors.S:1376` | later | runs code; a table can name buffers, not code -- needs a dumper-owned function |
+| 0x26 | Supexec | `bios/vectors.S:1376` | super-r1 | only with a dumper-owned callback `f:<n>` (MEM12, 2026-10-27): `tosdump/cases/super-r1.tsv`, see the section at the end |
 | 0x27 | Puntaes | `xbios_unimpl, bios/xbios.c:1342` | excluded | empty on the pin; a real TOS discards the AES and reboots |
 | 0x28 | (empty) | `xbios_unimpl, bios/xbios.c:1251-1257, vectors.S:1366` | **round 1** | 1 case: answers its own number |
 | 0x29 | Floprate | `bios/floppy.c:1039` | **round 1** | 3 cases: rate -1 and -4 (the inquiries) on drive 0, -1 on drive 2; setting: later |
@@ -220,3 +220,18 @@ physical line number and the dump header carries the table's CRC
 
 Plus the probes past each table (3 BIOS, 1 XBIOS). `bios-r1.tsv` holds 147 cases; every round-1 row above names how many are its own. 35 of the 81 XBIOS round-1 slots are empty (`xbios_unimpl`) and answer their own number.
 
+## Super and Supexec -- `super-r1.tsv` (MEM12, 2026-10-27)
+
+A second table for the processor-state calls behind the NewTOS super state
+(`docs/api/_super-state.md` S3-S6, `TASK/MEM12.md`). Separate from
+`bios-r1.tsv`, so that table, its CRC and its references stay as they are.
+Form and guard: `docs/TOS-REFERENCE-DUMPER.md` section 6, "Super and Supexec
+in a BIOS-area table".
+
+| trap:fn | call | admitted as | why safe |
+|---|---|---|---|
+| `1:0x20` | `Super` (GEMDOS; the only GEMDOS call a BIOS table may issue) | `l:1` inquiry; `l:0` ... `t:0` bracket, closed in the same table | the inquiry changes nothing (`x20_inq`, `bdos/rwa.S:340-346`); the bracket returns to user mode on the stack it left (`x20_usr`/`x20_sup`, `:280-336`); an explicit stack address is refused |
+| `14:0x26` | `Supexec` | `f:0`, `f:1`, `f:2` -- the dumper's own callbacks (`tosdump/core/runner_call.c`) | the code run is the dumper's: two return constants, one asks `Super(1L)`, which the TRAP #1 front end answers before the BDOS (`bios/xbios.c:767-773` forbids BDOS calls from a callback) |
+
+References: `tosdump/reference/EMUTOS-1a7484ab-SUPER` (TT) and
+`-SUPER-falcontc`, `measurements/measurement-2026-10-27-mem12-super-oracle/RUNINFO.TXT`.

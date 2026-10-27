@@ -1,0 +1,37 @@
+rm -rf build
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../tests/test_record.c -o build/test_record.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../core/record.c -o build/record.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests build/test_record.o build/record.o -o build/test_record
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../tests/test_cases.c -o build/test_cases.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../core/cases.c -o build/cases.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests build/test_cases.o build/cases.o build/record.o -o build/test_cases
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../tests/test_log.c -o build/test_log.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../core/log.c -o build/log.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests build/test_log.o build/log.o build/record.o -o build/test_log
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../tests/test_runner.c -o build/test_runner.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../core/gem.c -o build/gem.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../core/runner.c -o build/runner.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../core/runner_aes.c -o build/runner_aes.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../core/runner_rast.c -o build/runner_rast.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../core/runner_call.c -o build/runner_call.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../core/dump.c -o build/dump.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../tests/stub_abi.c -o build/stub_abi.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests build/test_runner.o build/record.o build/cases.o build/gem.o build/runner.o build/runner_aes.o build/runner_rast.o build/runner_call.o build/dump.o build/log.o build/stub_abi.o -o build/test_runner
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../tests/test_cases_aes.c -o build/test_cases_aes.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests build/test_cases_aes.o build/cases.o build/record.o -o build/test_cases_aes
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../tests/test_runner_aes.c -o build/test_runner_aes.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests build/test_runner_aes.o build/record.o build/cases.o build/gem.o build/runner.o build/runner_aes.o build/runner_rast.o build/runner_call.o build/dump.o build/log.o build/stub_abi.o -o build/test_runner_aes
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../tests/test_cases_rast.c -o build/test_cases_rast.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests build/test_cases_rast.o build/cases.o build/record.o -o build/test_cases_rast
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../tests/test_runner_rast.c -o build/test_runner_rast.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests build/test_runner_rast.o build/record.o build/cases.o build/gem.o build/runner.o build/runner_aes.o build/runner_rast.o build/runner_call.o build/dump.o build/log.o build/stub_abi.o -o build/test_runner_rast
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../tests/test_cases_call.c -o build/test_cases_call.o
+../tests/test_cases_call.c:367:30: error: use of undeclared identifier 'TD_CALL_ARG_TOKEN'
+  367 |         TD_CHECK_EQ(c->arg[0].kind, TD_CALL_ARG_TOKEN);
+      |                                     ^~~~~~~~~~~~~~~~~
+../tests/test_cases_call.c:373:30: error: use of undeclared identifier 'TD_CALL_ARG_FUNC'
+  373 |         TD_CHECK_EQ(c->arg[0].kind, TD_CALL_ARG_FUNC);
+      |                                     ^~~~~~~~~~~~~~~~
+2 errors generated.
+make[1]: *** [build/test_cases_call.o] Error 1
+make: *** [test] Error 2

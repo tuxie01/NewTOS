@@ -272,6 +272,20 @@ static void stub_fill_buffer(uint8_t *b, int n, int16_t fn)
 	b[511] = 0xAA;
 }
 
+/* the modelled processor state (stub_abi.h, "Super and Supexec") */
+static int super_state;
+
+static long stub_supexec(long (*fn)(void))
+{
+	int was = super_state;
+	long r;
+
+	super_state = 1;
+	r = fn();
+	super_state = was;
+	return r;
+}
+
 long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
                  const uint8_t *kind, const long *value)
 {
@@ -298,6 +312,19 @@ long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
 		}
 	}
 
+	if (trap == 1 && opcode == 0x20) {
+		if (value[0] == 1L)
+			return super_state ? -1L : 0L;
+		super_state = !super_state;
+		return super_state ? TD_STUB_SUPER_SSP : TD_STUB_SUPER_LEAVE_D0;
+	}
+	if (trap == 14 && opcode == 0x26) {
+		long (*fn)(void) = (long (*)(void))value[0];
+		long r;
+
+		r = stub_supexec(fn);
+		return r;
+	}
 	if (trap == 13 && opcode == 1)
 		return -1L;
 	if (trap == 14 && opcode == 2)

@@ -17,6 +17,62 @@ static uint32_t call_buf[TD_CALL_BUF_N][TD_CALL_BUF_BYTES / 4];
 
 static struct td_call_frame run_frame;
 
+/*
+ * The callbacks a Supexec case names with "f:<n>" (MEM12; docs/TOS-REFERENCE-
+ * DUMPER.md section 6, "Super and Supexec").  Portable C, the same lines on
+ * both machines; EmuTOS jumps to them in supervisor mode, NewTOS calls them
+ * at EL0 in super state.
+ *   0  a positive LONG                    -- the value comes back
+ *   1  a negative LONG                    -- sign-extended in the register
+ *   2  what Super(1L) answers in here     -- the callback runs in super
+ *      state.  EmuTOS forbids GEMDOS calls from Supexec (bios/xbios.c:770);
+ *      Super(1L) is answered by the TRAP #1 front end before the BDOS
+ *      (bdos/rwa.S:159-184, 340-346), so nothing the rule protects is used.
+ */
+static long td_cb_positive(void)
+{
+	return 0x12345678L;
+}
+
+static long td_cb_negative(void)
+{
+	return -2L;
+}
+
+static long td_cb_super_inquiry(void)
+{
+	uint8_t kind[TD_ABI_ARGS_MAX];
+	long value[TD_ABI_ARGS_MAX];
+	int j;
+
+	for (j = 0; j < TD_ABI_ARGS_MAX; j++) {
+		kind[j]  = 0;
+		value[j] = (long)(int32_t)0xDEADDEADuL;
+	}
+	kind[0]  = TD_ABI_ARG_LONG;
+	value[0] = 1L;
+	return td_abi_trap(1, 0x20, 1, kind, value);
+}
+
+typedef long (*td_call_cb)(void);
+
+static const td_call_cb call_cb[TD_CALL_CB_N] = {
+	td_cb_positive, td_cb_negative, td_cb_super_inquiry
+};
+
+void *td_call_callback(int n)
+{
+	if (n < 0 || n >= TD_CALL_CB_N)
+		return NULL;
+	return (void *)call_cb[n];
+}
+
+/* What the last Super(0L) case returned: the argument of the "t:0" case
+ * that closes the bracket.  The two calls come from this one call site with
+ * the same frame, so on the m68k EmuTOS's x20_sup finds the USP where
+ * x20_usr left it (bdos/rwa.S:305-336, "already at old USP"). */
+static long super_token;
+
 void *td_call_buffer(int n)
 {
 	if (n < 0 || n >= TD_CALL_BUF_N)
@@ -112,6 +168,16 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 				value[j] = (long)a->value;
 				run_frame.args[j] = (uint32_t)a->value;
 				break;
+			case TD_CALL_ARG_FUNC:   /* the callback, and its token */
+				kind[j]  = TD_ABI_ARG_LONG;
+				value[j] = (long)td_call_callback((int)a->value);
+				run_frame.args[j] = TD_CALL_CB_TOKEN(a->value);
+				break;
+			case TD_CALL_ARG_TOKEN:  /* what Super(0L) returned */
+				kind[j]  = TD_ABI_ARG_LONG;
+				value[j] = super_token;
+				run_frame.args[j] = TD_CALL_SUPER_TOKEN(a->value);
+				break;
 			default:   /* TD_CALL_ARG_BUF: its address, and its token */
 				kind[j]  = TD_ABI_ARG_LONG;
 				value[j] = (long)td_call_buffer((int)a->value);
@@ -123,6 +189,11 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 
 		/* 3. the call under measurement */
 		ret = td_abi_trap(c->trap, c->opcode, c->nargs, kind, value);
+
+		/* Super(0L) opened the bracket: keep the token for its t:0 */
+		if (c->trap == 1 && c->opcode == 0x20 && c->nargs == 1 &&
+		    c->arg[0].kind == TD_CALL_ARG_LONG && c->arg[0].value == 0)
+			super_token = ret;
 
 		/* 4. the return register at its native width, as one 64-bit
 		 *    value: on the m68k the high half is the sign extension of

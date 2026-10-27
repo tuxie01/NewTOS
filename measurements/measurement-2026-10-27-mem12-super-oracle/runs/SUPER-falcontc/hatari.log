@@ -1,0 +1,53 @@
+INFO : Hatari v2.6.1, compiled on:  Aug 15 2025, 14:15:19
+INFO : IPF : capsimage library version release=5 revision=1
+INFO : GEMDOS HDD emulation, C: <-> /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-27-mem12-super-oracle/runs/SUPER-falcontc/hd.
+ERROR: Microphone: SDL_OpenAudioDevice failed.
+INFO : NVRAM not found at '/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-27-mem12-super-oracle/runs/SUPER-falcontc/home/hatari.nvram'
+WARN : Bus Error reading at address $20fffff, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fffffc21, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6c4710, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $5d1234, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6d3148, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $d003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+INFO : Strange screen size 16x480 -> aspect corrected by 32x1!
+INFO : OS clock ticks / second: 100
+
+
+
+
+
+                                                         
+                                                         
+                                                         
+                                                         
+                                                         
+                    ________________________________________
+
+                    EmuTOS Version:     20260414 
+                    CPU-Typ:            M68030 
+                    Rechner:            Atari Falcon 
+                    ST-RAM:             4 MB 
+                    Alt-RAM:            16 MB 
+                    GEMDOS-Laufwerke:   ABC 
+                    Boot-Zeit:          2026/10/27 09:03:38 
+                    ________________________________________
+
+                    Halte <Strg> = ohne AUTO/ACC
+                    Halte <Alt> = keine Harddisk
+                    DrUcke 'X' um von Laufwerk X: zu booten
+                    DrUcke <Esc> fUr die Textkonsole
+
+                       FUr Pause <Shift> gedrUckt halten    
+WARN : No GEMDOS dir '/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-27-mem12-super-oracle/runs/SUPER-falcontc/hd/AUTO'
+
+
+WARN : No GEMDOS dir '/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-27-mem12-super-oracle/runs/SUPER-falcontc/hd/etc'
+DUMPBIOS build a7ff, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV: 9 cases, CRC 3D9C560E
+running 9 cases
+all 9 cases ran
+BIOS.BIN: 9 records, 2912 bytes
+BIOS.LOG: 163 bytes

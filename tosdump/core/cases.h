@@ -711,11 +711,14 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
  *
  *   trap:function <TAB> args <TAB> retclass <TAB> capture <TAB> comment
  *
- *   trap:function  13 or 14 in a BIOS-area table, then the function number,
- *                  decimal or 0x hex, 0..255.  "14:0x04" is Getrez.
+ *   trap:function  13 or 14 in a BIOS-area table -- and 1 for function 0x20
+ *                  (Super) only -- then the function number, decimal or 0x
+ *                  hex, 0..255.  "14:0x04" is Getrez.
  *   args           "-" or up to eight comma separated arguments in binding
  *                  order, each with its width: "w:<v>" a WORD, "l:<v>" a
- *                  LONG, "b:<n>" the dumper's buffer n (0..TD_CALL_BUF_N-1).
+ *                  LONG, "b:<n>" the dumper's buffer n (0..TD_CALL_BUF_N-1),
+ *                  "f:<n>" the dumper's callback n (0..TD_CALL_CB_N-1, for
+ *                  Supexec), "t:0" the token the last Super(0L) returned.
  *   retclass       EXACT | IGNORE | NONZERO | HANDLE | PTR_RAM, optionally
  *                  ".W" or ".B" (not on IGNORE or PTR_RAM): the width of the
  *                  EmuTOS handler's return type.  No suffix = LONG.
@@ -741,6 +744,11 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
  * the query arm.  Anything else is "not established", and a later round
  * that establishes it extends the list.  As in the AES and raster guards
  * there is no override.
+ *
+ * Super is admitted as l:1 (the inquiry) and as a BRACKET: l:0 opens it,
+ * t:0 closes it, no nesting, and a table that ends with it open is refused
+ * (TD_CASE_ERR_UNSAFE_STATE) -- MEM12, docs/TOS-REFERENCE-DUMPER.md section
+ * 6, "Super and Supexec in a BIOS-area table".
  */
 #define TD_CALL_CASE_COLUMNS 5
 
@@ -748,6 +756,8 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
 #define TD_CALL_ARG_WORD     1     /* "w:"                                */
 #define TD_CALL_ARG_LONG     2     /* "l:"                                */
 #define TD_CALL_ARG_BUF      3     /* "b:", value = buffer number         */
+#define TD_CALL_ARG_TOKEN    4     /* "t:", value = 0: the Super token    */
+#define TD_CALL_ARG_FUNC     5     /* "f:", value = callback number       */
 
 struct td_call_arg {
 	uint8_t kind;                      /* TD_CALL_ARG_*                   */
@@ -756,7 +766,7 @@ struct td_call_arg {
 
 struct td_call_case {
 	uint16_t line;                     /* physical line number = case id  */
-	int16_t  trap;                     /* 13 / 14                         */
+	int16_t  trap;                     /* 13 / 14, 1 for Super            */
 	int16_t  opcode;                   /* function number                 */
 	uint16_t nargs;
 	struct td_call_arg arg[TD_CALL_ARGS_N];

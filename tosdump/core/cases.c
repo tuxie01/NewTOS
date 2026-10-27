@@ -2833,7 +2833,7 @@ static int parse_call_args(const char *s, size_t len, struct td_call_case *c,
 			}
 			arg = &c->arg[c->nargs];
 			if (alen < 3 || a[1] != ':') {
-				*why = "an argument is not w:<v>, l:<v> or b:<n>";
+				*why = "an argument is not w:<v>, l:<v>, b:<n>, f:<n> or t:0";
 				return TD_CASE_ERR_VALUE;
 			}
 			rc = parse_value32(a + 2, alen - 2, &v);
@@ -2862,8 +2862,24 @@ static int parse_call_args(const char *s, size_t len, struct td_call_case *c,
 				arg->kind  = TD_CALL_ARG_BUF;
 				arg->value = v;
 				break;
+			case 'f':
+				if (v < 0 || v >= TD_CALL_CB_N) {
+					*why = "a callback argument names no dumper callback";
+					return TD_CASE_ERR_RANGE;
+				}
+				arg->kind  = TD_CALL_ARG_FUNC;
+				arg->value = v;
+				break;
+			case 't':
+				if (v != 0) {
+					*why = "the Super token is t:0, there is no other";
+					return TD_CASE_ERR_RANGE;
+				}
+				arg->kind  = TD_CALL_ARG_TOKEN;
+				arg->value = v;
+				break;
 			default:
-				*why = "an argument is not w:<v>, l:<v> or b:<n>";
+				*why = "an argument is not w:<v>, l:<v>, b:<n>, f:<n> or t:0";
 				return TD_CASE_ERR_VALUE;
 			}
 			c->nargs++;
@@ -2948,7 +2964,8 @@ static int parse_capture(const char *s, size_t len, struct td_call_case *c,
  * comments name the arm that makes the call safe.
  *
  * Signature letters: 'w' a WORD, 'l' a LONG, 'p' a pointer -- a b: buffer
- * or an l: value (NULL, or -1 where the call reads -1 as "unchanged").
+ * or an l: value (NULL, or -1 where the call reads -1 as "unchanged") --,
+ * 'f' a dumper callback (f:<n>), 't' the Super token (t:0).
  */
 enum {
 	CR_NONE,         /* every value is a query                            */
@@ -2969,7 +2986,8 @@ enum {
 	CR_EGETPAL,      /* buffer argument, count fits it as WORDs           */
 	CR_VGETRGB,      /* buffer argument, count fits it as LONGs           */
 	CR_SOUNDCMD,     /* modes 0, 1, 6 with data -1                        */
-	CR_SNDSTATUS     /* reset 0                                           */
+	CR_SNDSTATUS,    /* reset 0                                           */
+	CR_SUPER         /* l:1 the inquiry, l:0 / t:0 the bracket (MEM12)    */
 };
 
 struct call_policy {
@@ -2981,6 +2999,9 @@ struct call_policy {
 };
 
 static const struct call_policy call_policy[] = {
+	/* GEMDOS, trap #1: Super only, the processor-state call answered by
+	 * the TRAP #1 front end (bdos/rwa.S:159-184, 280-346); MEM12 */
+	{  1, 0x20, 0x20, "l",      "t",    CR_SUPER     },  /* Super       */
 	/* BIOS, trap #13 (bios/bios.c:1252-1265) */
 	{ 13,    1,    1, "w",      NULL,   CR_NONE      },  /* Bconstat    */
 	{ 13,    2,    2, "w",      NULL,   CR_BCONIN    },  /* Bconin      */
@@ -3008,6 +3029,7 @@ static const struct call_policy call_policy[] = {
 	{ 14, 0x22, 0x22, "",       NULL,   CR_NONE      },  /* Kbdvbase    */
 	{ 14, 0x23, 0x23, "ww",     NULL,   CR_ALL_M1    },  /* Kbrate      */
 	{ 14, 0x25, 0x25, "",       NULL,   CR_NONE      },  /* Vsync       */
+	{ 14, 0x26, 0x26, "f",      NULL,   CR_NONE      },  /* Supexec: the dumper's own callback only (MEM12) */
 	{ 14, 0x28, 0x28, "",       NULL,   CR_NONE      },  /* empty slot  */
 	{ 14, 0x29, 0x29, "ww",     NULL,   CR_FLOPRATE  },  /* Floprate    */
 	{ 14, 0x2C, 0x2C, "w",      NULL,   CR_BCONMAP   },  /* Bconmap     */
@@ -3076,8 +3098,6 @@ static const struct call_refusal call_refusals[] = {
 	{ 14, 0x1F, "Xbtimer programs an MFP timer and its vector "
 	            "(bios/mfp.c:163)" },
 	{ 14, 0x24, "Prtblk prints a block on a real TOS" },
-	{ 14, 0x26, "Supexec runs code the table cannot name "
-	            "(bios/vectors.S:1376)" },
 	{ 14, 0x27, "Puntaes discards the AES and reboots a real TOS" },
 	{ 14, 0x2B, "DMAwrite writes a disk (bios/disk.c:1254)" },
 	{ 14, 0x50, "EsetShift changes the resolution (bios/screen.c:180)" },
@@ -3104,6 +3124,9 @@ static const char *call_refusal_for(int16_t trap, int16_t fn)
 	for (r = call_refusals; r->why; r++)
 		if (r->trap == trap && r->fn == fn)
 			return r->why;
+	if (trap == 1)
+		return "of GEMDOS a BIOS table issues Super only; the rest waits "
+		       "for DUMPGDOS";
 	return "the call is not established as safe on both machines "
 	       "(tosdump/cases/COVERAGE-BIOS.md)";
 }
@@ -3123,6 +3146,8 @@ static int sig_matches(const char *sig, const struct td_call_case *c)
 		case 'p': if (k != TD_CALL_ARG_LONG && k != TD_CALL_ARG_BUF)
 		              return 0;
 		          break;
+		case 'f': if (k != TD_CALL_ARG_FUNC) return 0; break;
+		case 't': if (k != TD_CALL_ARG_TOKEN) return 0; break;
 		default:  return 0;
 		}
 	}
@@ -3131,7 +3156,9 @@ static int sig_matches(const char *sig, const struct td_call_case *c)
 
 static int is_value(const struct td_call_case *c, int i, int32_t v)
 {
-	return i < (int)c->nargs && c->arg[i].kind != TD_CALL_ARG_BUF &&
+	return i < (int)c->nargs &&
+	       (c->arg[i].kind == TD_CALL_ARG_WORD ||
+	        c->arg[i].kind == TD_CALL_ARG_LONG) &&
 	       c->arg[i].value == v;
 }
 
@@ -3231,6 +3258,13 @@ static const char *call_value_refusal(const struct call_policy *p,
 		       : "Soundcmd: only modes 0, 1, 6 with -1, the inquiries";
 	case CR_SNDSTATUS:
 		return a0 == 0 ? NULL : "Sndstatus: a non-zero argument resets";
+	case CR_SUPER:
+		/* the bracket itself (open / close) is the parse loop's */
+		if (c->arg[0].kind == TD_CALL_ARG_TOKEN || is_value(c, 0, 1) ||
+		    is_value(c, 0, 0))
+			return NULL;
+		return "Super: only 1L, 0L and the token t:0 -- any other value is "
+		       "a stack address EmuTOS would run on (bdos/rwa.S:280-301)";
 	default:
 		return "unknown rule";
 	}
@@ -3245,6 +3279,7 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 	size_t line_len;
 	uint16_t line_no;
 	int is_case;
+	uint16_t bracket_open = 0;         /* line of an open Super(0L), or 0 */
 
 	memset(t, 0, sizeof *t);
 	t->crc  = td_crc32((const uint8_t *)buf, len);
@@ -3314,9 +3349,9 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 			fail(err, line_no, "the function number is not 0..255");
 			return rc;
 		}
-		if (trap != 13 && trap != 14) {
-			fail(err, line_no, "a BIOS table issues trap 13 and trap 14 "
-			                   "only");
+		if (trap != 13 && trap != 14 && trap != 1) {
+			fail(err, line_no, "a BIOS table issues trap 13 and trap 14, "
+			                   "and trap 1 for Super only");
 			return TD_CASE_ERR_UNSAFE_OPCODE;
 		}
 		c->trap   = (int16_t)trap;
@@ -3349,9 +3384,32 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 			return TD_CASE_ERR_UNSAFE_FIELD;
 		}
 
+		/* the Super bracket: l:0 opens, t:0 closes, no nesting */
+		if (p->rule == CR_SUPER && is_value(c, 0, 0)) {
+			if (bracket_open) {
+				fail(err, line_no, "Super(0L) while a bracket is open: "
+				                   "brackets do not nest");
+				return TD_CASE_ERR_UNSAFE_STATE;
+			}
+			bracket_open = line_no;
+		} else if (p->rule == CR_SUPER &&
+		           c->arg[0].kind == TD_CALL_ARG_TOKEN) {
+			if (!bracket_open) {
+				fail(err, line_no, "Super(token) with no Super(0L) "
+				                   "before it");
+				return TD_CASE_ERR_UNSAFE_STATE;
+			}
+			bracket_open = 0;
+		}
+
 		td_case_line_comment_n(line, line_len, TD_CALL_CASE_COLUMNS,
 		                       c->comment, TD_COMMENT_LEN);
 		t->count++;
+	}
+	if (bracket_open) {
+		fail(err, bracket_open, "Super(0L) is never closed: the run would "
+		                        "end in supervisor state");
+		return TD_CASE_ERR_UNSAFE_STATE;
 	}
 	return 0;
 }

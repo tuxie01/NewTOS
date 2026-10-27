@@ -1,0 +1,15 @@
+EMUTOS-1a7484ab-BIOS.BIN vs BIOS-r1-NEWDUMPER.BIN -- area BIOS, 147 cases from bios-r1.tsv
+
+case 100  trap 14 function 0x0E  Iorec(2) MIDI -- bios/xbios.c:336
+    ret                      PTR_RAM EMUTOS-1a7484ab-BIOS.BIN = 0x00000000000030E2, not a multiple of 4
+    ret                      PTR_RAM BIOS-r1-NEWDUMPER.BIN    = 0x00000000000030E2, not a multiple of 4
+
+case 109  trap 14 function 0x10  Keytbl(-1,-1,-1) -- bios/ikbd.c:122
+    ret                      PTR_RAM EMUTOS-1a7484ab-BIOS.BIN = 0x00000000000040AE, not a multiple of 4
+    ret                      PTR_RAM BIOS-r1-NEWDUMPER.BIN    = 0x00000000000040AE, not a multiple of 4
+
+case 184  trap 14 function 0x2C  Bconmap(-2) BCONMAP pointer -- bios/serport.c:1092-1093
+    ret                      PTR_RAM EMUTOS-1a7484ab-BIOS.BIN = 0x0000000000004A76, not a multiple of 4
+    ret                      PTR_RAM BIOS-r1-NEWDUMPER.BIN    = 0x0000000000004A76, not a multiple of 4
+
+3 of 147 cases differ

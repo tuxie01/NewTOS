@@ -1,0 +1,30 @@
+# super-r1.tsv -- DUMPBIOS, Super (GEMDOS 0x20) and Supexec (XBIOS 0x26): the
+# processor-state calls behind the NewTOS super state (TASK/MEM12,
+# docs/api/_super-state.md S3-S6), against EmuTOS 1a7484ab
+# (references/emutos, docs/analysis/ORACLE.md).
+#
+# Form: docs/TOS-REFERENCE-DUMPER.md section 6, "The call table, as built for
+# DUMPBIOS" and "Super and Supexec in a BIOS-area table".  f:<n> is the
+# dumper's callback n (tosdump/core/runner_call.c): 0 returns 0x12345678,
+# 1 returns -2, 2 returns what Super(1L) answers inside the callback.  t:0 is
+# the token the last Super(0L) case returned.  Super(0L) ... Super(t:0) is a
+# bracket the guard insists on closing; the cases between run in supervisor
+# state on the m68k.
+#
+# A separate table, so bios-r1.tsv and its references stay as they are.  One
+# table per round: the case id is the physical line number and the dump
+# header carries the CRC of this file, so it is frozen once measured.
+
+# ---- Super(1L), user state: x20_inq, bdos/rwa.S:340-346
+1:0x20	l:1	EXACT	-	Super(1L) in user state: 0 -- x20_inq, bdos/rwa.S:340-346
+# ---- Super(0L): x20_usr, bdos/rwa.S:280-301 -- returns the old SSP (NewTOS: a token, S4)
+1:0x20	l:0	NONZERO	-	Super(0L) enters supervisor state, returns the token -- x20_usr, bdos/rwa.S:280-301
+1:0x20	l:1	EXACT	-	Super(1L) in supervisor state: -1 -- x20_inq, bdos/rwa.S:340-346
+# ---- SuperToUser: x20_sup, bdos/rwa.S:305-336 -- writes no d0, so IGNORE; the next inquiry measures the state
+1:0x20	t:0	IGNORE	-	Super(token) = SuperToUser leaves supervisor state -- x20_sup, bdos/rwa.S:305-336
+1:0x20	l:1	EXACT	-	Super(1L) after SuperToUser: 0 -- x20_inq
+# ---- Supexec(codeptr): bios/vectors.S:1376-1378, jmp to the callback in supervisor mode
+14:0x26	f:0	EXACT	-	Supexec(cb 0): the callback's 0x12345678 -- bios/vectors.S:1376-1378
+14:0x26	f:1	EXACT	-	Supexec(cb 1): the callback's -2, sign-extended -- bios/vectors.S:1376-1378
+14:0x26	f:2	EXACT	-	Supexec(cb 2): Super(1L) inside the callback, -1 -- bios/vectors.S:1376-1378, bdos/rwa.S:340-346
+1:0x20	l:1	EXACT	-	Super(1L) after Supexec: 0, the caller's state -- bios/vectors.S:1376-1378

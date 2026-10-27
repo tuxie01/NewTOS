@@ -154,6 +154,101 @@ static void test_records(void)
 	TD_CHECK_EQ(be32(r + 36), (uint32_t)TD_STUB_TRAP_RET(14, 4));
 }
 
+/*
+ * Super and Supexec (MEM12, section 6 "Super and Supexec in a BIOS-area
+ * table"): the token Super(0L) returned travels into the closing case, the
+ * callbacks are the runner's own, and the record carries tokens, never the
+ * addresses.  The stub models EmuTOS: a processor state, x20_inq, and
+ * Supexec calling the function in supervisor state (stub_abi.h).
+ */
+static const char *super_text =
+	"# stub super table\n"
+	"1:0x20\tl:1\tEXACT\t-\tSuper(1L) user\n"
+	"1:0x20\tl:0\tNONZERO\t-\tSuper(0L) opens\n"
+	"1:0x20\tl:1\tEXACT\t-\tSuper(1L) super\n"
+	"1:0x20\tt:0\tIGNORE\t-\tSuperToUser\n"
+	"1:0x20\tl:1\tEXACT\t-\tSuper(1L) user again\n"
+	"14:0x26\tf:0\tEXACT\t-\tSupexec(cb0)\n"
+	"14:0x26\tf:1\tEXACT\t-\tSupexec(cb1)\n"
+	"14:0x26\tf:2\tEXACT\t-\tSupexec(cb2)\n";
+
+#define NSUPER 8
+
+static struct td_call_case_table super_table;
+static uint8_t super_records[NSUPER * TD_CALL_RECORD_SIZE];
+
+static const uint8_t *srec(int i)
+{
+	return super_records + (size_t)i * TD_CALL_RECORD_SIZE;
+}
+
+static void test_super_supexec(void)
+{
+	struct td_case_error err;
+	const struct td_stub_call *c;
+	int rc;
+
+	printf("Super and Supexec\n");
+	memset(&err, 0, sizeof err);
+	rc = td_call_cases_parse(&super_table, TD_AREA_BIOS, super_text,
+	                         strlen(super_text), &err);
+	TD_CHECK_EQ(rc, 0);
+	if (rc != 0) {
+		printf("    line %u: %s\n", err.line, err.what ? err.what : "");
+		return;
+	}
+	td_stub_reset();
+	rc = td_run_call(&super_table, super_records, sizeof super_records);
+	TD_CHECK_EQ(rc, 0);
+
+	/* eight cases, plus the Super(1L) callback 2 issues from inside */
+	TD_CHECK_EQ(td_stub_ncalls, NSUPER + 1);
+
+	c = &td_stub_calls[0];                       /* Super(1L) */
+	TD_CHECK_EQ(c->call_trap, 1);
+	TD_CHECK_EQ(c->opcode, 0x20);
+	TD_CHECK_EQ(c->call_nargs, 1);
+	TD_CHECK_EQ(c->call_kind[0], TD_ABI_ARG_LONG);
+	TD_CHECK(c->call_value[0] == 1L);
+	c = &td_stub_calls[1];                       /* Super(0L) */
+	TD_CHECK(c->call_value[0] == 0L);
+	c = &td_stub_calls[3];                       /* Super(token) */
+	TD_CHECK_EQ(c->call_kind[0], TD_ABI_ARG_LONG);
+	TD_CHECK(c->call_value[0] == TD_STUB_SUPER_SSP);
+	c = &td_stub_calls[5];                       /* Supexec(cb0) */
+	TD_CHECK_EQ(c->call_trap, 14);
+	TD_CHECK_EQ(c->opcode, 0x26);
+	TD_CHECK_EQ(c->call_kind[0], TD_ABI_ARG_LONG);
+	TD_CHECK(c->call_value[0] == (long)td_call_callback(0));
+	TD_CHECK(td_call_callback(0) != NULL);
+	TD_CHECK(td_call_callback(0) != td_call_callback(1));
+	TD_CHECK(td_call_callback(3) == NULL);
+	c = &td_stub_calls[8];                       /* cb2's own Super(1L) */
+	TD_CHECK_EQ(c->call_trap, 1);
+	TD_CHECK_EQ(c->opcode, 0x20);
+	TD_CHECK(c->call_value[0] == 1L);
+
+	/* the records: tokens, returns */
+	TD_CHECK_MEM(srec(0) + 300, "\x00\x01", 2);           /* trap 1 */
+	TD_CHECK_MEM(srec(0) + 2, "\x00\x20", 2);
+	TD_CHECK_MEM(srec(0) + 4, "\x00\x00\x00\x01", 4);
+	TD_CHECK_MEM(srec(0) + 36, "\x00\x00\x00\x00", 4);   /* user: 0 */
+	TD_CHECK_EQ(be32(srec(1) + 36), (uint32_t)TD_STUB_SUPER_SSP);
+	TD_CHECK_MEM(srec(2) + 36, "\xFF\xFF\xFF\xFF", 4);   /* super: -1 */
+	TD_CHECK_MEM(srec(2) + 296, "\xFF\xFF\xFF\xFF", 4);
+	TD_CHECK_MEM(srec(3) + 4, "\xB0\xF5\x00\x00", 4);    /* the token */
+	TD_CHECK_MEM(srec(3) + 8, "\xDE\xAD\xDE\xAD", 4);
+	TD_CHECK_MEM(srec(4) + 36, "\x00\x00\x00\x00", 4);   /* user again */
+	TD_CHECK_MEM(srec(5) + 4, "\xB0\xFC\x00\x00", 4);    /* callback 0 */
+	TD_CHECK_MEM(srec(5) + 36, "\x12\x34\x56\x78", 4);
+	TD_CHECK_MEM(srec(5) + 296, "\x00\x00\x00\x00", 4);
+	TD_CHECK_MEM(srec(6) + 4, "\xB0\xFC\x00\x01", 4);
+	TD_CHECK_MEM(srec(6) + 36, "\xFF\xFF\xFF\xFE", 4);   /* -2 ... */
+	TD_CHECK_MEM(srec(6) + 296, "\xFF\xFF\xFF\xFF", 4);  /* ... 64 bit */
+	TD_CHECK_MEM(srec(7) + 4, "\xB0\xFC\x00\x02", 4);
+	TD_CHECK_MEM(srec(7) + 36, "\xFF\xFF\xFF\xFF", 4);   /* super in cb */
+}
+
 int main(int argc, char **argv)
 {
 	struct td_case_error err;
@@ -186,6 +281,7 @@ int main(int argc, char **argv)
 
 	test_marshalling();
 	test_records();
+	test_super_supexec();
 
 	rc = td_dump_write(argv[1], TD_AREA_BIOS, table.count, "test",
 	                   table.crc, records, sizeof records);

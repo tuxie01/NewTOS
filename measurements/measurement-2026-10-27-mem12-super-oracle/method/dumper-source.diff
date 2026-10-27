@@ -1,0 +1,735 @@
+diff --git a/tosdump/core/cases.c b/tosdump/core/cases.c
+index fbe4f0e7..fc3239b9 100644
+--- a/tosdump/core/cases.c
++++ b/tosdump/core/cases.c
+@@ -2833,7 +2833,7 @@ static int parse_call_args(const char *s, size_t len, struct td_call_case *c,
+ 			}
+ 			arg = &c->arg[c->nargs];
+ 			if (alen < 3 || a[1] != ':') {
+-				*why = "an argument is not w:<v>, l:<v> or b:<n>";
++				*why = "an argument is not w:<v>, l:<v>, b:<n>, f:<n> or t:0";
+ 				return TD_CASE_ERR_VALUE;
+ 			}
+ 			rc = parse_value32(a + 2, alen - 2, &v);
+@@ -2862,8 +2862,24 @@ static int parse_call_args(const char *s, size_t len, struct td_call_case *c,
+ 				arg->kind  = TD_CALL_ARG_BUF;
+ 				arg->value = v;
+ 				break;
++			case 'f':
++				if (v < 0 || v >= TD_CALL_CB_N) {
++					*why = "a callback argument names no dumper callback";
++					return TD_CASE_ERR_RANGE;
++				}
++				arg->kind  = TD_CALL_ARG_FUNC;
++				arg->value = v;
++				break;
++			case 't':
++				if (v != 0) {
++					*why = "the Super token is t:0, there is no other";
++					return TD_CASE_ERR_RANGE;
++				}
++				arg->kind  = TD_CALL_ARG_TOKEN;
++				arg->value = v;
++				break;
+ 			default:
+-				*why = "an argument is not w:<v>, l:<v> or b:<n>";
++				*why = "an argument is not w:<v>, l:<v>, b:<n>, f:<n> or t:0";
+ 				return TD_CASE_ERR_VALUE;
+ 			}
+ 			c->nargs++;
+@@ -2948,7 +2964,8 @@ static int parse_capture(const char *s, size_t len, struct td_call_case *c,
+  * comments name the arm that makes the call safe.
+  *
+  * Signature letters: 'w' a WORD, 'l' a LONG, 'p' a pointer -- a b: buffer
+- * or an l: value (NULL, or -1 where the call reads -1 as "unchanged").
++ * or an l: value (NULL, or -1 where the call reads -1 as "unchanged") --,
++ * 'f' a dumper callback (f:<n>), 't' the Super token (t:0).
+  */
+ enum {
+ 	CR_NONE,         /* every value is a query                            */
+@@ -2969,7 +2986,8 @@ enum {
+ 	CR_EGETPAL,      /* buffer argument, count fits it as WORDs           */
+ 	CR_VGETRGB,      /* buffer argument, count fits it as LONGs           */
+ 	CR_SOUNDCMD,     /* modes 0, 1, 6 with data -1                        */
+-	CR_SNDSTATUS     /* reset 0                                           */
++	CR_SNDSTATUS,    /* reset 0                                           */
++	CR_SUPER         /* l:1 the inquiry, l:0 / t:0 the bracket (MEM12)    */
+ };
+ 
+ struct call_policy {
+@@ -2981,6 +2999,9 @@ struct call_policy {
+ };
+ 
+ static const struct call_policy call_policy[] = {
++	/* GEMDOS, trap #1: Super only, the processor-state call answered by
++	 * the TRAP #1 front end (bdos/rwa.S:159-184, 280-346); MEM12 */
++	{  1, 0x20, 0x20, "l",      "t",    CR_SUPER     },  /* Super       */
+ 	/* BIOS, trap #13 (bios/bios.c:1252-1265) */
+ 	{ 13,    1,    1, "w",      NULL,   CR_NONE      },  /* Bconstat    */
+ 	{ 13,    2,    2, "w",      NULL,   CR_BCONIN    },  /* Bconin      */
+@@ -3008,6 +3029,7 @@ static const struct call_policy call_policy[] = {
+ 	{ 14, 0x22, 0x22, "",       NULL,   CR_NONE      },  /* Kbdvbase    */
+ 	{ 14, 0x23, 0x23, "ww",     NULL,   CR_ALL_M1    },  /* Kbrate      */
+ 	{ 14, 0x25, 0x25, "",       NULL,   CR_NONE      },  /* Vsync       */
++	{ 14, 0x26, 0x26, "f",      NULL,   CR_NONE      },  /* Supexec: the dumper's own callback only (MEM12) */
+ 	{ 14, 0x28, 0x28, "",       NULL,   CR_NONE      },  /* empty slot  */
+ 	{ 14, 0x29, 0x29, "ww",     NULL,   CR_FLOPRATE  },  /* Floprate    */
+ 	{ 14, 0x2C, 0x2C, "w",      NULL,   CR_BCONMAP   },  /* Bconmap     */
+@@ -3076,8 +3098,6 @@ static const struct call_refusal call_refusals[] = {
+ 	{ 14, 0x1F, "Xbtimer programs an MFP timer and its vector "
+ 	            "(bios/mfp.c:163)" },
+ 	{ 14, 0x24, "Prtblk prints a block on a real TOS" },
+-	{ 14, 0x26, "Supexec runs code the table cannot name "
+-	            "(bios/vectors.S:1376)" },
+ 	{ 14, 0x27, "Puntaes discards the AES and reboots a real TOS" },
+ 	{ 14, 0x2B, "DMAwrite writes a disk (bios/disk.c:1254)" },
+ 	{ 14, 0x50, "EsetShift changes the resolution (bios/screen.c:180)" },
+@@ -3104,6 +3124,9 @@ static const char *call_refusal_for(int16_t trap, int16_t fn)
+ 	for (r = call_refusals; r->why; r++)
+ 		if (r->trap == trap && r->fn == fn)
+ 			return r->why;
++	if (trap == 1)
++		return "of GEMDOS a BIOS table issues Super only; the rest waits "
++		       "for DUMPGDOS";
+ 	return "the call is not established as safe on both machines "
+ 	       "(tosdump/cases/COVERAGE-BIOS.md)";
+ }
+@@ -3123,6 +3146,8 @@ static int sig_matches(const char *sig, const struct td_call_case *c)
+ 		case 'p': if (k != TD_CALL_ARG_LONG && k != TD_CALL_ARG_BUF)
+ 		              return 0;
+ 		          break;
++		case 'f': if (k != TD_CALL_ARG_FUNC) return 0; break;
++		case 't': if (k != TD_CALL_ARG_TOKEN) return 0; break;
+ 		default:  return 0;
+ 		}
+ 	}
+@@ -3131,7 +3156,9 @@ static int sig_matches(const char *sig, const struct td_call_case *c)
+ 
+ static int is_value(const struct td_call_case *c, int i, int32_t v)
+ {
+-	return i < (int)c->nargs && c->arg[i].kind != TD_CALL_ARG_BUF &&
++	return i < (int)c->nargs &&
++	       (c->arg[i].kind == TD_CALL_ARG_WORD ||
++	        c->arg[i].kind == TD_CALL_ARG_LONG) &&
+ 	       c->arg[i].value == v;
+ }
+ 
+@@ -3231,6 +3258,13 @@ static const char *call_value_refusal(const struct call_policy *p,
+ 		       : "Soundcmd: only modes 0, 1, 6 with -1, the inquiries";
+ 	case CR_SNDSTATUS:
+ 		return a0 == 0 ? NULL : "Sndstatus: a non-zero argument resets";
++	case CR_SUPER:
++		/* the bracket itself (open / close) is the parse loop's */
++		if (c->arg[0].kind == TD_CALL_ARG_TOKEN || is_value(c, 0, 1) ||
++		    is_value(c, 0, 0))
++			return NULL;
++		return "Super: only 1L, 0L and the token t:0 -- any other value is "
++		       "a stack address EmuTOS would run on (bdos/rwa.S:280-301)";
+ 	default:
+ 		return "unknown rule";
+ 	}
+@@ -3245,6 +3279,7 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
+ 	size_t line_len;
+ 	uint16_t line_no;
+ 	int is_case;
++	uint16_t bracket_open = 0;         /* line of an open Super(0L), or 0 */
+ 
+ 	memset(t, 0, sizeof *t);
+ 	t->crc  = td_crc32((const uint8_t *)buf, len);
+@@ -3314,9 +3349,9 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
+ 			fail(err, line_no, "the function number is not 0..255");
+ 			return rc;
+ 		}
+-		if (trap != 13 && trap != 14) {
+-			fail(err, line_no, "a BIOS table issues trap 13 and trap 14 "
+-			                   "only");
++		if (trap != 13 && trap != 14 && trap != 1) {
++			fail(err, line_no, "a BIOS table issues trap 13 and trap 14, "
++			                   "and trap 1 for Super only");
+ 			return TD_CASE_ERR_UNSAFE_OPCODE;
+ 		}
+ 		c->trap   = (int16_t)trap;
+@@ -3349,10 +3384,33 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
+ 			return TD_CASE_ERR_UNSAFE_FIELD;
+ 		}
+ 
++		/* the Super bracket: l:0 opens, t:0 closes, no nesting */
++		if (p->rule == CR_SUPER && is_value(c, 0, 0)) {
++			if (bracket_open) {
++				fail(err, line_no, "Super(0L) while a bracket is open: "
++				                   "brackets do not nest");
++				return TD_CASE_ERR_UNSAFE_STATE;
++			}
++			bracket_open = line_no;
++		} else if (p->rule == CR_SUPER &&
++		           c->arg[0].kind == TD_CALL_ARG_TOKEN) {
++			if (!bracket_open) {
++				fail(err, line_no, "Super(token) with no Super(0L) "
++				                   "before it");
++				return TD_CASE_ERR_UNSAFE_STATE;
++			}
++			bracket_open = 0;
++		}
++
+ 		td_case_line_comment_n(line, line_len, TD_CALL_CASE_COLUMNS,
+ 		                       c->comment, TD_COMMENT_LEN);
+ 		t->count++;
+ 	}
++	if (bracket_open) {
++		fail(err, bracket_open, "Super(0L) is never closed: the run would "
++		                        "end in supervisor state");
++		return TD_CASE_ERR_UNSAFE_STATE;
++	}
+ 	return 0;
+ }
+ 
+diff --git a/tosdump/core/cases.h b/tosdump/core/cases.h
+index bbd46496..0a9124ed 100644
+--- a/tosdump/core/cases.h
++++ b/tosdump/core/cases.h
+@@ -711,11 +711,14 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
+  *
+  *   trap:function <TAB> args <TAB> retclass <TAB> capture <TAB> comment
+  *
+- *   trap:function  13 or 14 in a BIOS-area table, then the function number,
+- *                  decimal or 0x hex, 0..255.  "14:0x04" is Getrez.
++ *   trap:function  13 or 14 in a BIOS-area table -- and 1 for function 0x20
++ *                  (Super) only -- then the function number, decimal or 0x
++ *                  hex, 0..255.  "14:0x04" is Getrez.
+  *   args           "-" or up to eight comma separated arguments in binding
+  *                  order, each with its width: "w:<v>" a WORD, "l:<v>" a
+- *                  LONG, "b:<n>" the dumper's buffer n (0..TD_CALL_BUF_N-1).
++ *                  LONG, "b:<n>" the dumper's buffer n (0..TD_CALL_BUF_N-1),
++ *                  "f:<n>" the dumper's callback n (0..TD_CALL_CB_N-1, for
++ *                  Supexec), "t:0" the token the last Super(0L) returned.
+  *   retclass       EXACT | IGNORE | NONZERO | HANDLE | PTR_RAM, optionally
+  *                  ".W" or ".B" (not on IGNORE or PTR_RAM): the width of the
+  *                  EmuTOS handler's return type.  No suffix = LONG.
+@@ -741,6 +744,11 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
+  * the query arm.  Anything else is "not established", and a later round
+  * that establishes it extends the list.  As in the AES and raster guards
+  * there is no override.
++ *
++ * Super is admitted as l:1 (the inquiry) and as a BRACKET: l:0 opens it,
++ * t:0 closes it, no nesting, and a table that ends with it open is refused
++ * (TD_CASE_ERR_UNSAFE_STATE) -- MEM12, docs/TOS-REFERENCE-DUMPER.md section
++ * 6, "Super and Supexec in a BIOS-area table".
+  */
+ #define TD_CALL_CASE_COLUMNS 5
+ 
+@@ -748,6 +756,8 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
+ #define TD_CALL_ARG_WORD     1     /* "w:"                                */
+ #define TD_CALL_ARG_LONG     2     /* "l:"                                */
+ #define TD_CALL_ARG_BUF      3     /* "b:", value = buffer number         */
++#define TD_CALL_ARG_TOKEN    4     /* "t:", value = 0: the Super token    */
++#define TD_CALL_ARG_FUNC     5     /* "f:", value = callback number       */
+ 
+ struct td_call_arg {
+ 	uint8_t kind;                      /* TD_CALL_ARG_*                   */
+@@ -756,7 +766,7 @@ struct td_call_arg {
+ 
+ struct td_call_case {
+ 	uint16_t line;                     /* physical line number = case id  */
+-	int16_t  trap;                     /* 13 / 14                         */
++	int16_t  trap;                     /* 13 / 14, 1 for Super            */
+ 	int16_t  opcode;                   /* function number                 */
+ 	uint16_t nargs;
+ 	struct td_call_arg arg[TD_CALL_ARGS_N];
+diff --git a/tosdump/core/runner_call.c b/tosdump/core/runner_call.c
+index 201c7c4c..a2077a00 100644
+--- a/tosdump/core/runner_call.c
++++ b/tosdump/core/runner_call.c
+@@ -17,6 +17,62 @@ static uint32_t call_buf[TD_CALL_BUF_N][TD_CALL_BUF_BYTES / 4];
+ 
+ static struct td_call_frame run_frame;
+ 
++/*
++ * The callbacks a Supexec case names with "f:<n>" (MEM12; docs/TOS-REFERENCE-
++ * DUMPER.md section 6, "Super and Supexec").  Portable C, the same lines on
++ * both machines; EmuTOS jumps to them in supervisor mode, NewTOS calls them
++ * at EL0 in super state.
++ *   0  a positive LONG                    -- the value comes back
++ *   1  a negative LONG                    -- sign-extended in the register
++ *   2  what Super(1L) answers in here     -- the callback runs in super
++ *      state.  EmuTOS forbids GEMDOS calls from Supexec (bios/xbios.c:770);
++ *      Super(1L) is answered by the TRAP #1 front end before the BDOS
++ *      (bdos/rwa.S:159-184, 340-346), so nothing the rule protects is used.
++ */
++static long td_cb_positive(void)
++{
++	return 0x12345678L;
++}
++
++static long td_cb_negative(void)
++{
++	return -2L;
++}
++
++static long td_cb_super_inquiry(void)
++{
++	uint8_t kind[TD_ABI_ARGS_MAX];
++	long value[TD_ABI_ARGS_MAX];
++	int j;
++
++	for (j = 0; j < TD_ABI_ARGS_MAX; j++) {
++		kind[j]  = 0;
++		value[j] = (long)(int32_t)0xDEADDEADuL;
++	}
++	kind[0]  = TD_ABI_ARG_LONG;
++	value[0] = 1L;
++	return td_abi_trap(1, 0x20, 1, kind, value);
++}
++
++typedef long (*td_call_cb)(void);
++
++static const td_call_cb call_cb[TD_CALL_CB_N] = {
++	td_cb_positive, td_cb_negative, td_cb_super_inquiry
++};
++
++void *td_call_callback(int n)
++{
++	if (n < 0 || n >= TD_CALL_CB_N)
++		return NULL;
++	return (void *)call_cb[n];
++}
++
++/* What the last Super(0L) case returned: the argument of the "t:0" case
++ * that closes the bracket.  The two calls come from this one call site with
++ * the same frame, so on the m68k EmuTOS's x20_sup finds the USP where
++ * x20_usr left it (bdos/rwa.S:305-336, "already at old USP"). */
++static long super_token;
++
+ void *td_call_buffer(int n)
+ {
+ 	if (n < 0 || n >= TD_CALL_BUF_N)
+@@ -112,6 +168,16 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
+ 				value[j] = (long)a->value;
+ 				run_frame.args[j] = (uint32_t)a->value;
+ 				break;
++			case TD_CALL_ARG_FUNC:   /* the callback, and its token */
++				kind[j]  = TD_ABI_ARG_LONG;
++				value[j] = (long)td_call_callback((int)a->value);
++				run_frame.args[j] = TD_CALL_CB_TOKEN(a->value);
++				break;
++			case TD_CALL_ARG_TOKEN:  /* what Super(0L) returned */
++				kind[j]  = TD_ABI_ARG_LONG;
++				value[j] = super_token;
++				run_frame.args[j] = TD_CALL_SUPER_TOKEN(a->value);
++				break;
+ 			default:   /* TD_CALL_ARG_BUF: its address, and its token */
+ 				kind[j]  = TD_ABI_ARG_LONG;
+ 				value[j] = (long)td_call_buffer((int)a->value);
+@@ -124,6 +190,11 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
+ 		/* 3. the call under measurement */
+ 		ret = td_abi_trap(c->trap, c->opcode, c->nargs, kind, value);
+ 
++		/* Super(0L) opened the bracket: keep the token for its t:0 */
++		if (c->trap == 1 && c->opcode == 0x20 && c->nargs == 1 &&
++		    c->arg[0].kind == TD_CALL_ARG_LONG && c->arg[0].value == 0)
++			super_token = ret;
++
+ 		/* 4. the return register at its native width, as one 64-bit
+ 		 *    value: on the m68k the high half is the sign extension of
+ 		 *    d0, on AArch64 it is x0's own (section 3) */
+diff --git a/tosdump/core/runner_call.h b/tosdump/core/runner_call.h
+index 775c4792..31fc7482 100644
+--- a/tosdump/core/runner_call.h
++++ b/tosdump/core/runner_call.h
+@@ -24,4 +24,8 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
+  * the way a real call would. */
+ void *td_call_buffer(int n);
+ 
++/* The runner's own callback n (0..TD_CALL_CB_N-1) for a Supexec case
++ * ("f:<n>"), or NULL; for the host tests' stub, which calls it. */
++void *td_call_callback(int n);
++
+ #endif /* TOSDUMP_RUNNER_CALL_H */
+diff --git a/tosdump/core/tosdump.h b/tosdump/core/tosdump.h
+index 3ad5c983..050ec679 100644
+--- a/tosdump/core/tosdump.h
++++ b/tosdump/core/tosdump.h
+@@ -356,6 +356,17 @@
+  * machines by construction.  Same value as the AES's TD_AES_ADDR_TOKEN. */
+ #define TD_CALL_BUF_TOKEN(n)  ((uint32_t)0xB0FF0000uL + (uint32_t)(n))
+ 
++/*
++ * Super and Supexec (MEM12; docs/TOS-REFERENCE-DUMPER.md section 6, "Super
++ * and Supexec in a BIOS-area table").  "f:<n>" names the dumper's own
++ * callback n (runner_call.c), passed as a pointer; "t:0" the token the last
++ * Super(0L) case returned.  The record carries these tokens, never the
++ * address or the token's value, which differ per machine by construction.
++ */
++#define TD_CALL_CB_N            3
++#define TD_CALL_CB_TOKEN(n)    ((uint32_t)0xB0FC0000uL + (uint32_t)(n))
++#define TD_CALL_SUPER_TOKEN(n) ((uint32_t)0xB0F50000uL + (uint32_t)(n))
++
+ /* The width of the return value a retclass judges, in bytes: the return
+  * type of the EmuTOS handler (LONG, WORD, UBYTE).  d0 above that type is
+  * not defined by the m68k calling convention. */
+diff --git a/tosdump/tests/stub_abi.c b/tosdump/tests/stub_abi.c
+index b9fc9232..1705cee3 100644
+--- a/tosdump/tests/stub_abi.c
++++ b/tosdump/tests/stub_abi.c
+@@ -272,6 +272,20 @@ static void stub_fill_buffer(uint8_t *b, int n, int16_t fn)
+ 	b[511] = 0xAA;
+ }
+ 
++/* the modelled processor state (stub_abi.h, "Super and Supexec") */
++static int super_state;
++
++static long stub_supexec(long (*fn)(void))
++{
++	int was = super_state;
++	long r;
++
++	super_state = 1;
++	r = fn();
++	super_state = was;
++	return r;
++}
++
+ long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
+                  const uint8_t *kind, const long *value)
+ {
+@@ -298,6 +312,19 @@ long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
+ 		}
+ 	}
+ 
++	if (trap == 1 && opcode == 0x20) {
++		if (value[0] == 1L)
++			return super_state ? -1L : 0L;
++		super_state = !super_state;
++		return super_state ? TD_STUB_SUPER_SSP : TD_STUB_SUPER_LEAVE_D0;
++	}
++	if (trap == 14 && opcode == 0x26) {
++		long (*fn)(void) = (long (*)(void))value[0];
++		long r;
++
++		r = stub_supexec(fn);
++		return r;
++	}
+ 	if (trap == 13 && opcode == 1)
+ 		return -1L;
+ 	if (trap == 14 && opcode == 2)
+diff --git a/tosdump/tests/stub_abi.h b/tosdump/tests/stub_abi.h
+index d3e74a6c..2bf7e2c4 100644
+--- a/tosdump/tests/stub_abi.h
++++ b/tosdump/tests/stub_abi.h
+@@ -148,6 +148,19 @@
+ #define TD_STUB_BUF_LONG      0x0A0B0C0DuL
+ #define TD_STUB_NOWRITE_FN    0x55
+ 
++/* Super and Supexec (MEM12) -- the stub models EmuTOS's processor state:
++ *   - Super (1:0x20): 1L answers 0 in user state and -1 in supervisor state
++ *     (x20_inq, bdos/rwa.S:340-346); any other value in user state enters
++ *     supervisor state and answers TD_STUB_SUPER_SSP, the "old SSP"
++ *     (x20_usr); in supervisor state it leaves and answers
++ *     TD_STUB_SUPER_LEAVE_D0 (x20_sup writes no d0 -- the stub may not be
++ *     undefined, so it answers a mark);
++ *   - Supexec (14:0x26): calls value[0] as `long (*)(void)` in supervisor
++ *     state, restores the state it found, answers the function's value
++ *     (bios/vectors.S:1376-1378). */
++#define TD_STUB_SUPER_SSP       0x00E0F000L
++#define TD_STUB_SUPER_LEAVE_D0  0x00005AE5L
++
+ struct td_stub_call {
+ 	int16_t kind;
+ 	int16_t opcode;
+diff --git a/tosdump/tests/test_cases_call.c b/tosdump/tests/test_cases_call.c
+index 2c713dc8..48a743ff 100644
+--- a/tosdump/tests/test_cases_call.c
++++ b/tosdump/tests/test_cases_call.c
+@@ -265,8 +265,8 @@ static void test_guard(void)
+ 	               TD_CASE_ERR_UNSAFE_OPCODE, "Rwabs is not established");
+ 	expect_refused("14:0x09\tb:0,l:0,w:0,w:1,w:0,w:0,w:1\tEXACT.W\t-\tFlopwr",
+ 	               TD_CASE_ERR_UNSAFE_OPCODE, "Flopwr writes a disk");
+-	expect_refused("14:0x26\tb:0\tEXACT\t-\tSupexec", TD_CASE_ERR_UNSAFE_OPCODE,
+-	               "Supexec runs code");
++	expect_refused("14:0x26\tb:0\tEXACT\t-\tSupexec", TD_CASE_ERR_SIGNATURE,
++	               "Supexec runs code: only a dumper callback (MEM12)");
+ 	expect_refused("14:0x27\t-\tEXACT\t-\tPuntaes", TD_CASE_ERR_UNSAFE_OPCODE,
+ 	               "Puntaes reboots a real TOS");
+ 	expect_refused("14:0x00\tw:0,l:0,l:0\tIGNORE\t-\tInitmous",
+@@ -329,6 +329,99 @@ static void test_guard(void)
+ 	                "a BIOS number past the table");
+ }
+ 
++/*
++ * Super (1:0x20) and Supexec (14:0x26) -- MEM12, docs/TOS-REFERENCE-DUMPER.md
++ * section 6, "Super and Supexec in a BIOS-area table".
++ */
++static void test_super_supexec(void)
++{
++	struct td_case_error err;
++	const struct td_call_case *c;
++	int rc;
++	static const char *bracket =
++		"# super bracket\n"
++		"1:0x20\tl:1\tEXACT\t-\tSuper(1L) user\n"
++		"1:0x20\tl:0\tNONZERO\t-\tSuper(0L) opens\n"
++		"1:0x20\tl:1\tEXACT\t-\tSuper(1L) super\n"
++		"1:0x20\tt:0\tIGNORE\t-\tSuperToUser closes\n"
++		"14:0x26\tf:2\tEXACT\t-\tSupexec(cb2)\n"
++		"1:0x20\tl:0\tNONZERO\t-\ta second bracket\n"
++		"1:0x20\tt:0\tIGNORE\t-\tclosed again\n";
++
++	printf("Super and Supexec: the bracket, the callbacks, the guard\n");
++	rc = parse(bracket, &err);
++	TD_CHECK_EQ(rc, 0);
++	if (rc != 0) {
++		printf("    line %u: %s\n", err.line, err.what ? err.what : "");
++		return;
++	}
++	TD_CHECK_EQ(t.count, 7);
++	c = &t.cases[0];
++	TD_CHECK_EQ(c->trap, 1);
++	TD_CHECK_EQ(c->opcode, 0x20);
++	TD_CHECK_EQ(c->arg[0].kind, TD_CALL_ARG_LONG);
++	TD_CHECK_EQ(c->arg[0].value, 1);
++	c = &t.cases[3];
++	TD_CHECK_EQ(c->line, 5);
++	TD_CHECK_EQ(c->nargs, 1);
++	TD_CHECK_EQ(c->arg[0].kind, TD_CALL_ARG_TOKEN);
++	TD_CHECK_EQ(c->arg[0].value, 0);
++	TD_CHECK_EQ(c->retclass, TD_RET_IGNORE);
++	c = &t.cases[4];
++	TD_CHECK_EQ(c->trap, 14);
++	TD_CHECK_EQ(c->opcode, 0x26);
++	TD_CHECK_EQ(c->arg[0].kind, TD_CALL_ARG_FUNC);
++	TD_CHECK_EQ(c->arg[0].value, 2);
++
++	expect_accepted("1:0x20\tl:1\tEXACT\t-\tSuper inquiry", "Super(1L)");
++	expect_accepted("14:0x26\tf:0\tEXACT\t-\tSupexec cb0", "Supexec(cb0)");
++	expect_accepted("14:0x26\tf:1\tEXACT\t-\tSupexec cb1", "Supexec(cb1)");
++
++	/* the bracket */
++	expect_refused("1:0x20\tl:0\tNONZERO\t-\tnever closed",
++	               TD_CASE_ERR_UNSAFE_STATE, "a bracket left open");
++	expect_refused("1:0x20\tt:0\tIGNORE\t-\tnothing to close",
++	               TD_CASE_ERR_UNSAFE_STATE, "SuperToUser outside a bracket");
++	rc = parse("# nested\n"
++	           "1:0x20\tl:0\tNONZERO\t-\topens\n"
++	           "1:0x20\tl:0\tNONZERO\t-\topens again\n"
++	           "1:0x20\tt:0\tIGNORE\t-\tcloses\n", &err);
++	TD_CHECK_EQ(rc, TD_CASE_ERR_UNSAFE_STATE);
++	TD_CHECK_EQ(err.line, 3);
++
++	/* the values and widths */
++	expect_refused("1:0x20\tl:0x1000\tNONZERO\t-\texplicit stack",
++	               TD_CASE_ERR_UNSAFE_FIELD,
++	               "Super with a stack address runs on that address");
++	expect_refused("1:0x20\tl:-1\tEXACT\t-\tSuper(-1)",
++	               TD_CASE_ERR_UNSAFE_FIELD, "Super(-1) is a stack address");
++	expect_refused("1:0x20\tw:1\tEXACT\t-\tSuper WORD",
++	               TD_CASE_ERR_SIGNATURE, "Super's argument is a LONG");
++	expect_refused("1:0x20\t-\tEXACT\t-\tSuper nothing",
++	               TD_CASE_ERR_SIGNATURE, "Super takes one argument");
++	expect_refused("1:0x20\tt:1\tIGNORE\t-\tSuper t:1",
++	               TD_CASE_ERR_RANGE, "there is one token, t:0");
++	expect_refused("14:0x26\tf:3\tEXACT\t-\tSupexec cb3",
++	               TD_CASE_ERR_RANGE, "there are three callbacks");
++	expect_refused("14:0x26\tl:0\tEXACT\t-\tSupexec NULL",
++	               TD_CASE_ERR_SIGNATURE, "Supexec only with a callback");
++	expect_refused("14:0x26\tf:0,f:1\tEXACT\t-\tSupexec two",
++	               TD_CASE_ERR_SIGNATURE, "Supexec takes one argument");
++	expect_refused("13:5\tw:2,f:0\tNONZERO\t-\tSetexc callback",
++	               TD_CASE_ERR_SIGNATURE, "a callback only where f is in the "
++	               "signature");
++	expect_refused("14:0x2E\tw:0,w:0,w:50,t:0\tEXACT.W\t-\tNVM token",
++	               TD_CASE_ERR_SIGNATURE, "a token only for Super");
++
++	/* the rest of GEMDOS waits for DUMPGDOS */
++	expect_refused("1:0x19\t-\tEXACT.W\t-\tDgetdrv",
++	               TD_CASE_ERR_UNSAFE_OPCODE, "GEMDOS other than Super");
++	expect_refused("1:0x30\t-\tEXACT.W\t-\tSversion",
++	               TD_CASE_ERR_UNSAFE_OPCODE, "GEMDOS other than Super");
++	expect_refused("2:0x20\tl:1\tEXACT\t-\ttrap 2",
++	               TD_CASE_ERR_UNSAFE_OPCODE, "trap 2 is no call trap");
++}
++
+ /* The shipped table is carried to a machine with no debugger: it must pass. */
+ static void test_shipped(void)
+ {
+@@ -347,6 +440,23 @@ static void test_shipped(void)
+ 	TD_CHECK(t.count > 0);
+ }
+ 
++static void test_shipped_super(void)
++{
++	struct td_case_error err;
++	int rc;
++
++	printf("the shipped table cases/super-r1.tsv passes the guard\n");
++	memset(&err, 0, sizeof err);
++	rc = td_call_cases_load(&t, TD_AREA_BIOS, "../cases/super-r1.tsv", &err);
++	if (rc != 0) {
++		printf("  FAIL cases/super-r1.tsv line %u: %s (%s)\n", err.line,
++		       err.what ? err.what : "", td_case_error_text(rc));
++		td_test_failures++;
++		return;
++	}
++	TD_CHECK(t.count > 0);
++}
++
+ int main(void)
+ {
+ 	test_well_formed();
+@@ -355,6 +465,8 @@ int main(void)
+ 	test_retclass();
+ 	test_capture();
+ 	test_guard();
++	test_super_supexec();
+ 	test_shipped();
++	test_shipped_super();
+ 	return TD_TEST_RESULT();
+ }
+diff --git a/tosdump/tests/test_runner_call.c b/tosdump/tests/test_runner_call.c
+index 57d1ec55..323d4b72 100644
+--- a/tosdump/tests/test_runner_call.c
++++ b/tosdump/tests/test_runner_call.c
+@@ -154,6 +154,101 @@ static void test_records(void)
+ 	TD_CHECK_EQ(be32(r + 36), (uint32_t)TD_STUB_TRAP_RET(14, 4));
+ }
+ 
++/*
++ * Super and Supexec (MEM12, section 6 "Super and Supexec in a BIOS-area
++ * table"): the token Super(0L) returned travels into the closing case, the
++ * callbacks are the runner's own, and the record carries tokens, never the
++ * addresses.  The stub models EmuTOS: a processor state, x20_inq, and
++ * Supexec calling the function in supervisor state (stub_abi.h).
++ */
++static const char *super_text =
++	"# stub super table\n"
++	"1:0x20\tl:1\tEXACT\t-\tSuper(1L) user\n"
++	"1:0x20\tl:0\tNONZERO\t-\tSuper(0L) opens\n"
++	"1:0x20\tl:1\tEXACT\t-\tSuper(1L) super\n"
++	"1:0x20\tt:0\tIGNORE\t-\tSuperToUser\n"
++	"1:0x20\tl:1\tEXACT\t-\tSuper(1L) user again\n"
++	"14:0x26\tf:0\tEXACT\t-\tSupexec(cb0)\n"
++	"14:0x26\tf:1\tEXACT\t-\tSupexec(cb1)\n"
++	"14:0x26\tf:2\tEXACT\t-\tSupexec(cb2)\n";
++
++#define NSUPER 8
++
++static struct td_call_case_table super_table;
++static uint8_t super_records[NSUPER * TD_CALL_RECORD_SIZE];
++
++static const uint8_t *srec(int i)
++{
++	return super_records + (size_t)i * TD_CALL_RECORD_SIZE;
++}
++
++static void test_super_supexec(void)
++{
++	struct td_case_error err;
++	const struct td_stub_call *c;
++	int rc;
++
++	printf("Super and Supexec\n");
++	memset(&err, 0, sizeof err);
++	rc = td_call_cases_parse(&super_table, TD_AREA_BIOS, super_text,
++	                         strlen(super_text), &err);
++	TD_CHECK_EQ(rc, 0);
++	if (rc != 0) {
++		printf("    line %u: %s\n", err.line, err.what ? err.what : "");
++		return;
++	}
++	td_stub_reset();
++	rc = td_run_call(&super_table, super_records, sizeof super_records);
++	TD_CHECK_EQ(rc, 0);
++
++	/* eight cases, plus the Super(1L) callback 2 issues from inside */
++	TD_CHECK_EQ(td_stub_ncalls, NSUPER + 1);
++
++	c = &td_stub_calls[0];                       /* Super(1L) */
++	TD_CHECK_EQ(c->call_trap, 1);
++	TD_CHECK_EQ(c->opcode, 0x20);
++	TD_CHECK_EQ(c->call_nargs, 1);
++	TD_CHECK_EQ(c->call_kind[0], TD_ABI_ARG_LONG);
++	TD_CHECK(c->call_value[0] == 1L);
++	c = &td_stub_calls[1];                       /* Super(0L) */
++	TD_CHECK(c->call_value[0] == 0L);
++	c = &td_stub_calls[3];                       /* Super(token) */
++	TD_CHECK_EQ(c->call_kind[0], TD_ABI_ARG_LONG);
++	TD_CHECK(c->call_value[0] == TD_STUB_SUPER_SSP);
++	c = &td_stub_calls[5];                       /* Supexec(cb0) */
++	TD_CHECK_EQ(c->call_trap, 14);
++	TD_CHECK_EQ(c->opcode, 0x26);
++	TD_CHECK_EQ(c->call_kind[0], TD_ABI_ARG_LONG);
++	TD_CHECK(c->call_value[0] == (long)td_call_callback(0));
++	TD_CHECK(td_call_callback(0) != NULL);
++	TD_CHECK(td_call_callback(0) != td_call_callback(1));
++	TD_CHECK(td_call_callback(3) == NULL);
++	c = &td_stub_calls[8];                       /* cb2's own Super(1L) */
++	TD_CHECK_EQ(c->call_trap, 1);
++	TD_CHECK_EQ(c->opcode, 0x20);
++	TD_CHECK(c->call_value[0] == 1L);
++
++	/* the records: tokens, returns */
++	TD_CHECK_MEM(srec(0) + 300, "\x00\x01", 2);           /* trap 1 */
++	TD_CHECK_MEM(srec(0) + 2, "\x00\x20", 2);
++	TD_CHECK_MEM(srec(0) + 4, "\x00\x00\x00\x01", 4);
++	TD_CHECK_MEM(srec(0) + 36, "\x00\x00\x00\x00", 4);   /* user: 0 */
++	TD_CHECK_EQ(be32(srec(1) + 36), (uint32_t)TD_STUB_SUPER_SSP);
++	TD_CHECK_MEM(srec(2) + 36, "\xFF\xFF\xFF\xFF", 4);   /* super: -1 */
++	TD_CHECK_MEM(srec(2) + 296, "\xFF\xFF\xFF\xFF", 4);
++	TD_CHECK_MEM(srec(3) + 4, "\xB0\xF5\x00\x00", 4);    /* the token */
++	TD_CHECK_MEM(srec(3) + 8, "\xDE\xAD\xDE\xAD", 4);
++	TD_CHECK_MEM(srec(4) + 36, "\x00\x00\x00\x00", 4);   /* user again */
++	TD_CHECK_MEM(srec(5) + 4, "\xB0\xFC\x00\x00", 4);    /* callback 0 */
++	TD_CHECK_MEM(srec(5) + 36, "\x12\x34\x56\x78", 4);
++	TD_CHECK_MEM(srec(5) + 296, "\x00\x00\x00\x00", 4);
++	TD_CHECK_MEM(srec(6) + 4, "\xB0\xFC\x00\x01", 4);
++	TD_CHECK_MEM(srec(6) + 36, "\xFF\xFF\xFF\xFE", 4);   /* -2 ... */
++	TD_CHECK_MEM(srec(6) + 296, "\xFF\xFF\xFF\xFF", 4);  /* ... 64 bit */
++	TD_CHECK_MEM(srec(7) + 4, "\xB0\xFC\x00\x02", 4);
++	TD_CHECK_MEM(srec(7) + 36, "\xFF\xFF\xFF\xFF", 4);   /* super in cb */
++}
++
+ int main(int argc, char **argv)
+ {
+ 	struct td_case_error err;
+@@ -186,6 +281,7 @@ int main(int argc, char **argv)
+ 
+ 	test_marshalling();
+ 	test_records();
++	test_super_supexec();
+ 
+ 	rc = td_dump_write(argv[1], TD_AREA_BIOS, table.count, "test",
+ 	                   table.crc, records, sizeof records);
+diff --git a/tosdump/cases/super-r1.tsv b/tosdump/cases/super-r1.tsv
+new file mode 100644
+index 00000000..212ef7dd
+--- /dev/null
++++ b/tosdump/cases/super-r1.tsv
+@@ -0,0 +1,30 @@
++# super-r1.tsv -- DUMPBIOS, Super (GEMDOS 0x20) and Supexec (XBIOS 0x26): the
++# processor-state calls behind the NewTOS super state (TASK/MEM12,
++# docs/api/_super-state.md S3-S6), against EmuTOS 1a7484ab
++# (references/emutos, docs/analysis/ORACLE.md).
++#
++# Form: docs/TOS-REFERENCE-DUMPER.md section 6, "The call table, as built for
++# DUMPBIOS" and "Super and Supexec in a BIOS-area table".  f:<n> is the
++# dumper's callback n (tosdump/core/runner_call.c): 0 returns 0x12345678,
++# 1 returns -2, 2 returns what Super(1L) answers inside the callback.  t:0 is
++# the token the last Super(0L) case returned.  Super(0L) ... Super(t:0) is a
++# bracket the guard insists on closing; the cases between run in supervisor
++# state on the m68k.
++#
++# A separate table, so bios-r1.tsv and its references stay as they are.  One
++# table per round: the case id is the physical line number and the dump
++# header carries the CRC of this file, so it is frozen once measured.
++
++# ---- Super(1L), user state: x20_inq, bdos/rwa.S:340-346
++1:0x20	l:1	EXACT	-	Super(1L) in user state: 0 -- x20_inq, bdos/rwa.S:340-346
++# ---- Super(0L): x20_usr, bdos/rwa.S:280-301 -- returns the old SSP (NewTOS: a token, S4)
++1:0x20	l:0	NONZERO	-	Super(0L) enters supervisor state, returns the token -- x20_usr, bdos/rwa.S:280-301
++1:0x20	l:1	EXACT	-	Super(1L) in supervisor state: -1 -- x20_inq, bdos/rwa.S:340-346
++# ---- SuperToUser: x20_sup, bdos/rwa.S:305-336 -- writes no d0, so IGNORE; the next inquiry measures the state
++1:0x20	t:0	IGNORE	-	Super(token) = SuperToUser leaves supervisor state -- x20_sup, bdos/rwa.S:305-336
++1:0x20	l:1	EXACT	-	Super(1L) after SuperToUser: 0 -- x20_inq
++# ---- Supexec(codeptr): bios/vectors.S:1376-1378, jmp to the callback in supervisor mode
++14:0x26	f:0	EXACT	-	Supexec(cb 0): the callback's 0x12345678 -- bios/vectors.S:1376-1378
++14:0x26	f:1	EXACT	-	Supexec(cb 1): the callback's -2, sign-extended -- bios/vectors.S:1376-1378
++14:0x26	f:2	EXACT	-	Supexec(cb 2): Super(1L) inside the callback, -1 -- bios/vectors.S:1376-1378, bdos/rwa.S:340-346
++1:0x20	l:1	EXACT	-	Super(1L) after Supexec: 0, the caller's state -- bios/vectors.S:1376-1378

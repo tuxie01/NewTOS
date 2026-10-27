@@ -24,4 +24,8 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
  * the way a real call would. */
 void *td_call_buffer(int n);
 
+/* The runner's own callback n (0..TD_CALL_CB_N-1) for a Supexec case
+ * ("f:<n>"), or NULL; for the host tests' stub, which calls it. */
+void *td_call_callback(int n);
+
 #endif /* TOSDUMP_RUNNER_CALL_H */

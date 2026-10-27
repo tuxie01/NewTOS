@@ -148,6 +148,19 @@
 #define TD_STUB_BUF_LONG      0x0A0B0C0DuL
 #define TD_STUB_NOWRITE_FN    0x55
 
+/* Super and Supexec (MEM12) -- the stub models EmuTOS's processor state:
+ *   - Super (1:0x20): 1L answers 0 in user state and -1 in supervisor state
+ *     (x20_inq, bdos/rwa.S:340-346); any other value in user state enters
+ *     supervisor state and answers TD_STUB_SUPER_SSP, the "old SSP"
+ *     (x20_usr); in supervisor state it leaves and answers
+ *     TD_STUB_SUPER_LEAVE_D0 (x20_sup writes no d0 -- the stub may not be
+ *     undefined, so it answers a mark);
+ *   - Supexec (14:0x26): calls value[0] as `long (*)(void)` in supervisor
+ *     state, restores the state it found, answers the function's value
+ *     (bios/vectors.S:1376-1378). */
+#define TD_STUB_SUPER_SSP       0x00E0F000L
+#define TD_STUB_SUPER_LEAVE_D0  0x00005AE5L
+
 struct td_stub_call {
 	int16_t kind;
 	int16_t opcode;

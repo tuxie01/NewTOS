@@ -1,0 +1,57 @@
+measurement-2026-10-27-mem12-super-oracle -- MEM12 checkpoint 2: oracle cases for the super state (S3-S6), EmuTOS side.
+Developer, 2026-10-27, HEAD a7ffd707 + method/dumper-source.diff (tosdump core/tests/cases, uncommitted when built).
+No NewTOS product code (kernel, tos-api) changed; NewTOS side of these cases comes after checkpoint 3. No hardware.
+
+WHAT / WHY
+ User decision 2026-10-27 (TASK/MEM12, "zweite Runde", item 1): measurement cases for S3-S6 against the oracle --
+ Super(1L) in user and super state, the Super(0L)/SuperToUser returns, Supexec passing the callback's value through.
+ Order per docs/TOS-REFERENCE-DUMPER.md section 8: dumper doc first, tests first and seen red, reference before NewTOS.
+
+DUMPER EXTENSION (docs/TOS-REFERENCE-DUMPER.md section 6 "Super and Supexec in a BIOS-area table", section 3 arg tokens)
+ - A BIOS-area call table may issue trap 1 for function 0x20 (Super) only; all other GEMDOS is refused ("waits for DUMPGDOS").
+ - Two argument kinds: f:<n> = the dumper's callback n (0..2, tosdump/core/runner_call.c; record token 0xB0FC0000+n),
+   t:0 = the token the last Super(0L) returned (record token 0xB0F50000).
+ - Guard: Supexec only with one f: argument; Super only l:1, or the bracket l:0 ... t:0 (no nesting, must close; an explicit
+   stack address is refused).
+ - Separate table tosdump/cases/super-r1.tsv (9 cases, CRC 3D9C560E, sha256 83a7bdbc...). bios-r1.tsv, its CRC and the
+   record format are unchanged.
+
+TESTS (make -C tosdump/host test)
+ checks/host-test-before.log  base: exit 0
+ checks/host-test-red.log     tests written first: build fails (TD_CALL_ARG_TOKEN / TD_CALL_ARG_FUNC undeclared) -- red
+ checks/host-test-green.log   after the implementation: exit 0, incl. "Super and Supexec: the bracket, the callbacks, the guard",
+                              "the shipped table cases/super-r1.tsv passes the guard", runner "Super and Supexec".
+ One existing expectation changed with the doc: Supexec(b:0) was refused as an unsafe opcode, is now refused for its signature
+ (only a dumper callback is admitted).
+
+BINARIES (dumpers/a7ff/, build id "a7ff")
+ DUMPBIOS.PRG sha256 2dec08f5ed20cb63e127d5fd5306931803d2dcc67e79c85fe33c82897597fc87  (make -C tosdump dumpbios-m68k, -Werror)
+ DUMPBIOS.NAP sha256 2e41ef97c2774748d6b4ba02d436034026ab778408f9aa0a152208e29089da97  (make -C tosdump dumpbios-newtos, 0 undefined)
+
+REFERENCE (method/run-oracle.sh: tools/hatari-oracle.sh, default ROM = the pin, TT and falcontc)
+ runs/SUPER-tt        exit 0, "all 9 cases ran"   -> tosdump/reference/EMUTOS-1a7484ab-SUPER.{BIN,LOG}
+ runs/SUPER-falcontc  exit 0                      -> tosdump/reference/EMUTOS-1a7484ab-SUPER-falcontc.{BIN,LOG}
+   the two BIN are byte-identical (sha256 9bb58b27...); checks/tosdiff-super-tt-vs-falcontc.txt: 0 of 9 differ.
+ checks/decode-SUPER-tt.txt (method/decode-super.py), ret as ret_hi:ret:
+   case 19 Super(1L) user               00000000:00000000   EXACT  -> S3: 0
+   case 21 Super(0L)                    00000000:00007F58   NONZERO (the old SSP; it is also 4-aligned)  -> S4
+   case 22 Super(1L) in super state     FFFFFFFF:FFFFFFFF   EXACT  -> S3: -1
+   case 24 Super(token) = SuperToUser   FFFFFFFF:DEAD2300   IGNORE: x20_sup writes no d0 (bdos/rwa.S:305-336); the value is
+                                                            what the caller's d0 held -> S5 is measured by case 25
+   case 25 Super(1L) after it           00000000:00000000   EXACT  -> back in user state
+   case 27 Supexec(cb 0)                00000000:12345678   EXACT  -> S6: the callback's value
+   case 28 Supexec(cb 1)                FFFFFFFF:FFFFFFFE   EXACT  -> S6: -2, sign-extended in the 64-bit view
+   case 29 Supexec(cb 2) = Super(1L) inside the callback  FFFFFFFF:FFFFFFFF  EXACT -> S6: the callback runs in super state
+   case 30 Super(1L) after Supexec      00000000:00000000   EXACT  -> the caller's state is back
+
+COMPATIBILITY (existing references stay byte-compatible)
+ runs/BIOS-r1-tt: the NEW DUMPBIOS.PRG on the unchanged bios-r1.tsv (TT), against tosdump/reference/EMUTOS-1a7484ab-BIOS.BIN:
+ same size 47072; bytes differ only in the header build id (13..15: "a7ff" vs "a8b7") and in the raw return of case 112
+ Random and case 125 Gettime, both time-dependent and not compared by value (the reference's own repeat run differed in 125,
+ measurement-2026-10-27-dumpbios/RUNINFO.TXT). checks/tosdiff-bios-r1-reference-vs-new-dumper.txt: 3 of 147 differ = the
+ three known PTR_RAM alignment cases (Iorec(2), Keytbl, Bconmap(-2), equal values failing on both sides, open item R1 of that
+ run), nothing else.
+
+NOT DONE HERE
+ The NewTOS side (DUMPBIOS.NAP on raspi4b with SUPER.TSV) -- after checkpoint 3, when Super/Supexec exist in the kernel.
+ cargo xtask test: no Rust changed in this checkpoint; result in the checkpoint report.

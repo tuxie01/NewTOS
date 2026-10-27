@@ -1,0 +1,6 @@
+DUMPBIOS build a7ff, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV: 147 cases, CRC 583C11E0
+running 147 cases
+all 147 cases ran
+BIOS.BIN: 147 records, 47072 bytes

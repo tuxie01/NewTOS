@@ -356,6 +356,17 @@
  * machines by construction.  Same value as the AES's TD_AES_ADDR_TOKEN. */
 #define TD_CALL_BUF_TOKEN(n)  ((uint32_t)0xB0FF0000uL + (uint32_t)(n))
 
+/*
+ * Super and Supexec (MEM12; docs/TOS-REFERENCE-DUMPER.md section 6, "Super
+ * and Supexec in a BIOS-area table").  "f:<n>" names the dumper's own
+ * callback n (runner_call.c), passed as a pointer; "t:0" the token the last
+ * Super(0L) case returned.  The record carries these tokens, never the
+ * address or the token's value, which differ per machine by construction.
+ */
+#define TD_CALL_CB_N            3
+#define TD_CALL_CB_TOKEN(n)    ((uint32_t)0xB0FC0000uL + (uint32_t)(n))
+#define TD_CALL_SUPER_TOKEN(n) ((uint32_t)0xB0F50000uL + (uint32_t)(n))
+
 /* The width of the return value a retclass judges, in bytes: the return
  * type of the EmuTOS handler (LONG, WORD, UBYTE).  d0 above that type is
  * not defined by the m68k calling convention. */

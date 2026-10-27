@@ -265,8 +265,8 @@ static void test_guard(void)
 	               TD_CASE_ERR_UNSAFE_OPCODE, "Rwabs is not established");
 	expect_refused("14:0x09\tb:0,l:0,w:0,w:1,w:0,w:0,w:1\tEXACT.W\t-\tFlopwr",
 	               TD_CASE_ERR_UNSAFE_OPCODE, "Flopwr writes a disk");
-	expect_refused("14:0x26\tb:0\tEXACT\t-\tSupexec", TD_CASE_ERR_UNSAFE_OPCODE,
-	               "Supexec runs code");
+	expect_refused("14:0x26\tb:0\tEXACT\t-\tSupexec", TD_CASE_ERR_SIGNATURE,
+	               "Supexec runs code: only a dumper callback (MEM12)");
 	expect_refused("14:0x27\t-\tEXACT\t-\tPuntaes", TD_CASE_ERR_UNSAFE_OPCODE,
 	               "Puntaes reboots a real TOS");
 	expect_refused("14:0x00\tw:0,l:0,l:0\tIGNORE\t-\tInitmous",
@@ -329,6 +329,99 @@ static void test_guard(void)
 	                "a BIOS number past the table");
 }
 
+/*
+ * Super (1:0x20) and Supexec (14:0x26) -- MEM12, docs/TOS-REFERENCE-DUMPER.md
+ * section 6, "Super and Supexec in a BIOS-area table".
+ */
+static void test_super_supexec(void)
+{
+	struct td_case_error err;
+	const struct td_call_case *c;
+	int rc;
+	static const char *bracket =
+		"# super bracket\n"
+		"1:0x20\tl:1\tEXACT\t-\tSuper(1L) user\n"
+		"1:0x20\tl:0\tNONZERO\t-\tSuper(0L) opens\n"
+		"1:0x20\tl:1\tEXACT\t-\tSuper(1L) super\n"
+		"1:0x20\tt:0\tIGNORE\t-\tSuperToUser closes\n"
+		"14:0x26\tf:2\tEXACT\t-\tSupexec(cb2)\n"
+		"1:0x20\tl:0\tNONZERO\t-\ta second bracket\n"
+		"1:0x20\tt:0\tIGNORE\t-\tclosed again\n";
+
+	printf("Super and Supexec: the bracket, the callbacks, the guard\n");
+	rc = parse(bracket, &err);
+	TD_CHECK_EQ(rc, 0);
+	if (rc != 0) {
+		printf("    line %u: %s\n", err.line, err.what ? err.what : "");
+		return;
+	}
+	TD_CHECK_EQ(t.count, 7);
+	c = &t.cases[0];
+	TD_CHECK_EQ(c->trap, 1);
+	TD_CHECK_EQ(c->opcode, 0x20);
+	TD_CHECK_EQ(c->arg[0].kind, TD_CALL_ARG_LONG);
+	TD_CHECK_EQ(c->arg[0].value, 1);
+	c = &t.cases[3];
+	TD_CHECK_EQ(c->line, 5);
+	TD_CHECK_EQ(c->nargs, 1);
+	TD_CHECK_EQ(c->arg[0].kind, TD_CALL_ARG_TOKEN);
+	TD_CHECK_EQ(c->arg[0].value, 0);
+	TD_CHECK_EQ(c->retclass, TD_RET_IGNORE);
+	c = &t.cases[4];
+	TD_CHECK_EQ(c->trap, 14);
+	TD_CHECK_EQ(c->opcode, 0x26);
+	TD_CHECK_EQ(c->arg[0].kind, TD_CALL_ARG_FUNC);
+	TD_CHECK_EQ(c->arg[0].value, 2);
+
+	expect_accepted("1:0x20\tl:1\tEXACT\t-\tSuper inquiry", "Super(1L)");
+	expect_accepted("14:0x26\tf:0\tEXACT\t-\tSupexec cb0", "Supexec(cb0)");
+	expect_accepted("14:0x26\tf:1\tEXACT\t-\tSupexec cb1", "Supexec(cb1)");
+
+	/* the bracket */
+	expect_refused("1:0x20\tl:0\tNONZERO\t-\tnever closed",
+	               TD_CASE_ERR_UNSAFE_STATE, "a bracket left open");
+	expect_refused("1:0x20\tt:0\tIGNORE\t-\tnothing to close",
+	               TD_CASE_ERR_UNSAFE_STATE, "SuperToUser outside a bracket");
+	rc = parse("# nested\n"
+	           "1:0x20\tl:0\tNONZERO\t-\topens\n"
+	           "1:0x20\tl:0\tNONZERO\t-\topens again\n"
+	           "1:0x20\tt:0\tIGNORE\t-\tcloses\n", &err);
+	TD_CHECK_EQ(rc, TD_CASE_ERR_UNSAFE_STATE);
+	TD_CHECK_EQ(err.line, 3);
+
+	/* the values and widths */
+	expect_refused("1:0x20\tl:0x1000\tNONZERO\t-\texplicit stack",
+	               TD_CASE_ERR_UNSAFE_FIELD,
+	               "Super with a stack address runs on that address");
+	expect_refused("1:0x20\tl:-1\tEXACT\t-\tSuper(-1)",
+	               TD_CASE_ERR_UNSAFE_FIELD, "Super(-1) is a stack address");
+	expect_refused("1:0x20\tw:1\tEXACT\t-\tSuper WORD",
+	               TD_CASE_ERR_SIGNATURE, "Super's argument is a LONG");
+	expect_refused("1:0x20\t-\tEXACT\t-\tSuper nothing",
+	               TD_CASE_ERR_SIGNATURE, "Super takes one argument");
+	expect_refused("1:0x20\tt:1\tIGNORE\t-\tSuper t:1",
+	               TD_CASE_ERR_RANGE, "there is one token, t:0");
+	expect_refused("14:0x26\tf:3\tEXACT\t-\tSupexec cb3",
+	               TD_CASE_ERR_RANGE, "there are three callbacks");
+	expect_refused("14:0x26\tl:0\tEXACT\t-\tSupexec NULL",
+	               TD_CASE_ERR_SIGNATURE, "Supexec only with a callback");
+	expect_refused("14:0x26\tf:0,f:1\tEXACT\t-\tSupexec two",
+	               TD_CASE_ERR_SIGNATURE, "Supexec takes one argument");
+	expect_refused("13:5\tw:2,f:0\tNONZERO\t-\tSetexc callback",
+	               TD_CASE_ERR_SIGNATURE, "a callback only where f is in the "
+	               "signature");
+	expect_refused("14:0x2E\tw:0,w:0,w:50,t:0\tEXACT.W\t-\tNVM token",
+	               TD_CASE_ERR_SIGNATURE, "a token only for Super");
+
+	/* the rest of GEMDOS waits for DUMPGDOS */
+	expect_refused("1:0x19\t-\tEXACT.W\t-\tDgetdrv",
+	               TD_CASE_ERR_UNSAFE_OPCODE, "GEMDOS other than Super");
+	expect_refused("1:0x30\t-\tEXACT.W\t-\tSversion",
+	               TD_CASE_ERR_UNSAFE_OPCODE, "GEMDOS other than Super");
+	expect_refused("2:0x20\tl:1\tEXACT\t-\ttrap 2",
+	               TD_CASE_ERR_UNSAFE_OPCODE, "trap 2 is no call trap");
+}
+
 /* The shipped table is carried to a machine with no debugger: it must pass. */
 static void test_shipped(void)
 {
@@ -347,6 +440,23 @@ static void test_shipped(void)
 	TD_CHECK(t.count > 0);
 }
 
+static void test_shipped_super(void)
+{
+	struct td_case_error err;
+	int rc;
+
+	printf("the shipped table cases/super-r1.tsv passes the guard\n");
+	memset(&err, 0, sizeof err);
+	rc = td_call_cases_load(&t, TD_AREA_BIOS, "../cases/super-r1.tsv", &err);
+	if (rc != 0) {
+		printf("  FAIL cases/super-r1.tsv line %u: %s (%s)\n", err.line,
+		       err.what ? err.what : "", td_case_error_text(rc));
+		td_test_failures++;
+		return;
+	}
+	TD_CHECK(t.count > 0);
+}
+
 int main(void)
 {
 	test_well_formed();
@@ -355,6 +465,8 @@ int main(void)
 	test_retclass();
 	test_capture();
 	test_guard();
+	test_super_supexec();
 	test_shipped();
+	test_shipped_super();
 	return TD_TEST_RESULT();
 }

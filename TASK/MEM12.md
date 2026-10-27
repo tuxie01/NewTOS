@@ -218,6 +218,9 @@ zurueckgeschrieben; `hdv_mediach` (8 Byte ab `0x47E`) setzt dabei `conterm`
 (die drei Zellen als `uint32_t`, Umwandlung ueber `uintptr_t`); Beleg
 `measurements/measurement-2026-10-27-mem12-td-lp64/RUNINFO.TXT` (objdump vorher/
 nachher; raspi4b: nach Shift+Esc `conterm` 0 → bleibt 7).
+Ebenso behoben (Lead, `0edf53d0`): TeraDesks `_sysbase`-Lesen in `gettos.c`
+war 8 Byte breit (nahm `_shell_p` `$4F6` als obere Haelfte mit); Patchdatei
+`sdk/overlays/teradesk/library/utility/gettos.c` liest die 32-Bit-Zelle.
 
 ### Interaktive Abnahme: qemu-virt geht nicht, raspi4b mit Injektor (Plan)
 
@@ -250,6 +253,17 @@ Ablauf in drei Pruefpunkten (Lead, 2026-10-27): (1) TeraDesk-LP64-Fehler
 `hdv_*` beheben; (2) Messfaelle S3–S6 am Orakel, vor jeder Kernaenderung;
 (3) Umbau nach `docs/api/_super-state.md`, Proben je Programm, Abnahmelauf,
 Prueffolge fuer die echte Pi.
+
+**Pruefpunkt 2 (2026-10-27): Orakelseite der Faelle S3–S6.** Dumper-Erweiterung
+(`docs/TOS-REFERENCE-DUMPER.md` Abschnitt 6, "Super and Supexec in a
+BIOS-area table": Trap 1 nur fuer `Super`, Argumente `f:<n>`/`t:0`,
+Klammerregel), Tabelle `tosdump/cases/super-r1.tsv`, Referenzen
+`tosdump/reference/EMUTOS-1a7484ab-SUPER` und `-SUPER-falcontc`; Beleg
+`measurements/measurement-2026-10-27-mem12-super-oracle/RUNINFO.TXT`. EmuTOS:
+`Super(1L)` 0 / −1 / 0, `Super(0L)` = altes SSP, `SuperToUser` ohne
+definiertes `d0` (IGNORE, Zustand ueber die folgende Abfrage gemessen),
+`Supexec` reicht 0x12345678 und −2 durch, `Super(1L)` im Callback = −1. Die
+NewTOS-Seite folgt nach Pruefpunkt 3.
 
 ## Arbeit
 

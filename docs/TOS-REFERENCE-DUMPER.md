@@ -261,11 +261,11 @@ the comparison needs:
 |---|---|---|
 | 0 | 2 | case id (physical line number in the case table) |
 | 2 | 2 | opcode = the function number (`Getrez` = 4) |
-| 4 | 32 | the 8 arguments as passed, one LONG each: a WORD sign-extended, a LONG as is, a buffer argument as its token `0xB0FF0000 + n` (never its address, which differs per machine by construction — the AES `addr_in` rule, section 6), an unused slot `0xDEADDEAD` |
+| 4 | 32 | the 8 arguments as passed, one LONG each: a WORD sign-extended, a LONG as is, a buffer argument as its token `0xB0FF0000 + n` (never its address, which differs per machine by construction — the AES `addr_in` rule, section 6), a callback argument as `0xB0FC0000 + n`, the `Super` token argument as `0xB0F50000` (both section 6, "Super and Supexec"), an unused slot `0xDEADDEAD` |
 | 36 | 4 | return value, **low** 32 bits of the return register (`d0` / `x0`) |
 | 40 | 256 | capture (section 6, `capture` column); what no capture wrote stays `0xDEAD` |
 | 296 | 4 | return value, **high** 32 bits of the return register: `x0` bits 63..32 on AArch64; on the m68k, whose `d0` has no high half, the sign extension of the low half — the value C's `(int64_t)(long)` gives on both targets, so the comparator always reads the return as the 64-bit value `ret_hi:ret` |
-| 300 | 2 | trap number: 13 BIOS, 14 XBIOS (1 GEMDOS) |
+| 300 | 2 | trap number: 13 BIOS, 14 XBIOS, 1 GEMDOS (in a BIOS-area table only `Super`, section 6) |
 | 302 | 18 | reserved, zero |
 
 Why the high half: NewTOS returns a TOS `LONG` in a 64-bit register
@@ -580,7 +580,9 @@ ledger `tosdump/cases/COVERAGE-BIOS.md`.
 **The opcode column names the trap too:** `<trap>:<function>`, e.g. `14:0x04`
 for `Getrez`. One table holds the BIOS and the XBIOS (section 7), and the same
 function number means different calls on the two traps. A BIOS-area table
-accepts traps 13 and 14; the trap lands in the record (section 3).
+accepts traps 13 and 14, and trap 1 for function `0x20` (`Super`) only — the
+processor-state call, see "Super and Supexec" below; GEMDOS proper waits for
+`DUMPGDOS`. The trap lands in the record (section 3).
 
 **`args`** is `-` or up to eight comma separated arguments, in the order of the
 binding, each with its width, because the m68k stack frame is laid by width
@@ -678,6 +680,68 @@ binding, and the values select the query arm (`Kbshift(-1)`,
 machines, …). Everything else is "not established" until a later round
 establishes it; there is no override.
 
+### Super and Supexec in a BIOS-area table (added 2026-10-27, MEM12)
+
+`Super` (GEMDOS `0x20`) and `Supexec` (XBIOS `0x26`) change or use the
+processor state, which no query above does. They get their own table,
+`tosdump/cases/super-r1.tsv` (run with `DUMPBIOS SUPER.TSV`; header area 1,
+like every BIOS-area dump), so `bios-r1.tsv`, its CRC and its references stay
+byte for byte as they are. Why they are measured: the NewTOS super state
+(`docs/api/_super-state.md` S3–S6, TASK/MEM12).
+
+**Two more argument kinds**, both standing for something only the dumper has:
+
+- `f:<n>` — the dumper's own callback `n`, `0 .. TD_CALL_CB_N - 1`
+  (`TD_CALL_CB_N` = 3), passed as a pointer; the record carries
+  `0xB0FC0000 + n`. The callbacks are portable C in `tosdump/core/runner_call.c`,
+  the same lines on both machines:
+
+  | n | returns | measures |
+  |---|---|---|
+  | 0 | `0x12345678` | the callback's LONG comes back (S6) |
+  | 1 | `-2` | a negative LONG comes back sign-extended in the 64-bit register (S6, section 3 `ret_hi`) |
+  | 2 | what `Super(1L)` answers inside the callback | the callback runs in supervisor / super state: `-1` (S6) |
+
+  Callback 2 makes a GEMDOS call from inside `Supexec`, which EmuTOS forbids
+  in general (`bios/xbios.c:767-773`). `Super(1L)` is the exception: the
+  TRAP #1 front end answers it before the BDOS is entered
+  (`bdos/rwa.S:159-184`, `x20_inq` `:340-346`), so nothing the restriction
+  protects is reached.
+- `t:0` — the token the last `Super(0L)` case returned, passed as a LONG;
+  the record carries `0xB0F50000`.
+
+**The bracket.** `Super(0L)` leaves the processor in supervisor state, which
+outlives the case — what a call table does not otherwise allow. It is
+admitted as one half of an explicit bracket that the same table closes:
+
+| line | means | rule |
+|---|---|---|
+| `1:0x20  l:1` | `Super(1L)`, the inquiry | anywhere |
+| `1:0x20  l:0` | `Super(0L)`, opens the bracket; the runner keeps the return as the token | refused while a bracket is open |
+| `1:0x20  t:0` | `Super(token)` = `SuperToUser`, closes the bracket | refused unless a bracket is open |
+
+Every other `Super` argument is refused: an explicit stack address makes
+EmuTOS run on that address (`x20_usr`, `bdos/rwa.S:280-301`). A table that
+ends with the bracket open is refused (`TD_CASE_ERR_UNSAFE_STATE`). The cases
+between the two halves run in supervisor state on the m68k — the runner's own
+code included, on the stack `Super(0L)` left it (the old USP), which is why
+the opening and the closing call come from the same call site with the same
+frame: EmuTOS's `x20_sup` then finds the USP where it left it
+(`bdos/rwa.S:305-336`, "already at old USP").
+
+**Return classes.** `Super(1L)` returns `0` or `-1` (`x20_inq`): `EXACT`.
+`Super(0L)` returns the old supervisor stack pointer on EmuTOS and a token on
+NewTOS (S4): an address, `NONZERO` — not `PTR_RAM`, whose four-byte rule an
+m68k stack need not meet. `SuperToUser` returns nothing defined on EmuTOS:
+`x20_sup` does not write `d0` (`bdos/rwa.S:305-336`), so the register holds
+whatever the caller left there: `IGNORE`; whether it left supervisor state is
+measured by the `Super(1L)` case after it. `Supexec` returns the callback's
+value: `EXACT`.
+
+**Guard.** `Supexec` is admitted with exactly one argument and only an `f:`
+one (signature letter `f`); `Super` with `l:1`, `l:0` or `t:0` under the
+bracket rule. Nothing else in GEMDOS is admitted.
+
 ---
 
 ## 7. Programs to build
@@ -688,7 +752,7 @@ One program per area, sharing `tosdump/core/` and one `tosdump/abi/` backend:
 |---|---|---|
 | `DUMPVDI` | VDI | build this first |
 | `DUMPAES` | AES | after VDI is clean |
-| `DUMPBIOS` | BIOS + XBIOS | `retclass` and `capture` since 2026-10-27; table `tosdump/cases/bios-r1.tsv`, ledger `tosdump/cases/COVERAGE-BIOS.md`, references `EMUTOS-1a7484ab-BIOS` (TT) and `-BIOS-falcontc`, first comparison `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT` |
+| `DUMPBIOS` | BIOS + XBIOS | `retclass` and `capture` since 2026-10-27; table `tosdump/cases/bios-r1.tsv`, ledger `tosdump/cases/COVERAGE-BIOS.md`, references `EMUTOS-1a7484ab-BIOS` (TT) and `-BIOS-falcontc`, first comparison `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`. Second table `tosdump/cases/super-r1.tsv` (`Super`/`Supexec`, section 6), references `EMUTOS-1a7484ab-SUPER` (TT) and `-SUPER-falcontc` |
 | `DUMPGDOS` | GEMDOS | needs `retclass` and `capture` |
 
 Each writes exactly one output file, named `<AREA>.BIN`, into the current
