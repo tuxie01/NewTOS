@@ -1,0 +1,1020 @@
+# mapping.tsv -- EmuTOS function -> NewTOS function (n:m) for every function
+# defined in EmuTOS bios/ and bdos/ at the oracle pin (the `def` rows of
+# edges.tsv). HAND-CURATED: each row is a reading of both sources; the
+# EmuTOS side follows edges.tsv, so regenerate edges.tsv first, then fix
+# the rows `cargo xtask deps --check-mapping` reports.
+# columns: emutos_fn<TAB>emutos_file<TAB>newtos_file<TAB>newtos_fn<TAB>note
+# One row per pair; several rows per EmuTOS function when NewTOS splits it.
+# newtos_file/newtos_fn `-` = no NewTOS counterpart; the note says why.
+# Checked by `cargo xtask test` (deps::tests::mapping_rows_exist_on_both_sides):
+# the EmuTOS function is a def row of emutos_file, the NewTOS file exists
+# and has `fn <newtos_fn>`, every bios/ and bdos/ function has a row.
+emutos_fn	emutos_file	newtos_file	newtos_fn	note
+freetree	bdos/bdosmain.c	-	-	no counterpart: EmuTOS frees the per-drive DND tree on a media change (osif); NewTOS keeps no DND tree (paths are resolved by scanning, bdos/fs/path.rs)
+mark_bcbs_invalid	bdos/bdosmain.c	-	-	no counterpart: EmuTOS invalidates a drive's buffer-cache entries on media change or hard error; no NewTOS function found
+ni	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	dispatch_inner	empty table slot -> EINVFN (build_table None)
+offree	bdos/bdosmain.c	-	-	no counterpart: EmuTOS frees the OFDs of a changed drive (osif media-change block); no NewTOS counterpart found (media change: bdos/fs/fat.rs log_out_all)
+osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	dispatch	GEMDOS trap dispatcher
+osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	dispatch_inner	the table call
+osif	bdos/bdosmain.c	tos-api/src/gemdos/console.rs	redirect_to_file	osif's file block for redirected standard handles
+osif	bdos/bdosmain.c	tos-api/src/bdos/fs/file.rs	resolve	osif's handle resolution for Fread/Fwrite/Fseek
+osif	bdos/bdosmain.c	tos-api/src/gemdos/console.rs	device_read	osif's Fread on a character device
+osif	bdos/bdosmain.c	tos-api/src/gemdos/console.rs	device_write	osif's Fwrite on a character device
+osinit_after_xmaddalt	bdos/bdosmain.c	tos-api/src/bdos/process/standin.rs	init	run = initial_basepage, its PD fields
+osinit_before_xmaddalt	bdos/bdosmain.c	tos-api/src/bdos/mem/init.rs	init	BDOS pool set-up half (umem_init); trap install is kernel boot code
+xgetver	bdos/bdosmain.c	tos-api/src/gemdos/version.rs	sversion	Sversion 0x30
+backsp	bdos/console.c	tos-api/src/gemdos/console.rs	backsp	-
+buflush	bdos/console.c	tos-api/src/gemdos/console.rs	flush	Typeahead::flush
+cgets	bdos/console.c	tos-api/src/gemdos/console.rs	edit_line	the line editor
+cgets	bdos/console.c	tos-api/src/gemdos/console.rs	cgets	its body
+conbrk	bdos/console.c	tos-api/src/gemdos/console.rs	conbrk	-
+conin	bdos/console.c	tos-api/src/gemdos/console.rs	cconin	getch + echo, inline in Cconin
+conout	bdos/console.c	tos-api/src/gemdos/console.rs	conout	-
+constat	bdos/console.c	tos-api/src/gemdos/console.rs	constat	-
+cookdout	bdos/console.c	tos-api/src/gemdos/console.rs	io_cookdout	-
+get_default_handle	bdos/console.c	-	-	no counterpart: NewTOS reads the const table standin::DEFAULT_HANDLE directly (file.rs xclose); no function
+getch	bdos/console.c	tos-api/src/gemdos/console.rs	getch	-
+getch	bdos/console.c	tos-api/src/gemdos/console.rs	getch_restartable	restartable variant (kbdvec hooks)
+newline	bdos/console.c	tos-api/src/gemdos/console.rs	newline	-
+prt_line	bdos/console.c	tos-api/src/gemdos/console.rs	cconws	the print loop, inline in Cconws
+stdhdl_init	bdos/console.c	tos-api/src/gemdos/console.rs	stdhdl_init_console	typeahead and column half; the handle half is standin.rs DEFAULT_HANDLE
+tabout	bdos/console.c	tos-api/src/gemdos/console.rs	tabout	-
+xauxin	bdos/console.c	tos-api/src/gemdos/console.rs	cauxin	Cauxin 0x03
+xauxistat	bdos/console.c	tos-api/src/gemdos/console.rs	cauxis	Cauxis 0x12
+xauxostat	bdos/console.c	tos-api/src/gemdos/console.rs	cauxos	Cauxos 0x13
+xauxout	bdos/console.c	tos-api/src/gemdos/console.rs	cauxout	Cauxout 0x04
+xconin	bdos/console.c	tos-api/src/gemdos/console.rs	cconin	Cconin 0x01
+xconostat	bdos/console.c	tos-api/src/gemdos/console.rs	cconos	Cconos 0x10
+xconout	bdos/console.c	tos-api/src/gemdos/console.rs	cconout	Cconout 0x02
+xconrs	bdos/console.c	tos-api/src/gemdos/console.rs	cconrs	Cconrs 0x0A
+xconstat	bdos/console.c	tos-api/src/gemdos/console.rs	cconis	Cconis 0x0B
+xconws	bdos/console.c	tos-api/src/gemdos/console.rs	cconws	Cconws 0x09
+xnecin	bdos/console.c	tos-api/src/gemdos/console.rs	cnecin	Cnecin 0x08
+xprtostat	bdos/console.c	tos-api/src/gemdos/console.rs	cprnos	Cprnos 0x11
+xprtout	bdos/console.c	tos-api/src/gemdos/console.rs	cprnout	Cprnout 0x05
+xrawcin	bdos/console.c	tos-api/src/gemdos/console.rs	crawcin	Crawcin 0x07
+xrawio	bdos/console.c	tos-api/src/gemdos/console.rs	crawio	Crawio 0x06
+xrawio	bdos/console.c	tos-api/src/gemdos/console.rs	rawio	its body
+bufl_init	bdos/fsbuf.c	tos-api/src/bdos/fs/cache.rs	initial_order	the buffer lists are a const-initialised static
+create_chain	bdos/fsbuf.c	tos-api/src/bdos/fs/cache.rs	initial_order	the buffer lists are a const-initialised static
+flush	bdos/fsbuf.c	tos-api/src/bdos/fs/cache.rs	write_back	-
+getbcb	bdos/fsbuf.c	tos-api/src/bdos/fs/cache.rs	get	-
+getbcb	bdos/fsbuf.c	tos-api/src/bdos/fs/cache.rs	victim	the victim choice
+getrec	bdos/fsbuf.c	tos-api/src/bdos/fs/cache.rs	with_sector	-
+getrec	bdos/fsbuf.c	tos-api/src/bdos/fs/fat.rs	with_fat_sector	FAT records
+getrec	bdos/fsbuf.c	tos-api/src/bdos/fs/fsio.rs	partial	partial data records
+builds	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	fcb_pattern	name with wildcards to the 11-byte form
+builds	bdos/fsdir.c	tos-api/src/bdos/fs/dir.rs	fcb_name	name without wildcards to the 11-byte form
+contains_wildcard_characters	bdos/fsdir.c	tos-api/src/bdos/fs/dirops.rs	dsetpath	the wildcard refusal is inline in Dsetpath
+dcrack	bdos/fsdir.c	tos-api/src/bdos/fs/path.rs	split_drive	-
+decr_curdir_usage	bdos/fsdir.c	tos-api/src/bdos/fs/curdir.rs	decr	-
+dirinit	bdos/fsdir.c	tos-api/src/bdos/fs/dir.rs	grow_dir	zero a new directory cluster
+dopath	bdos/fsdir.c	-	-	no counterpart: NewTOS stores the current directory as a canonical path string (bdos/fs/curdir.rs); there is no DND chain to walk
+findit	bdos/fsdir.c	tos-api/src/bdos/fs/path.rs	findit	-
+findit	bdos/fsdir.c	tos-api/src/bdos/fs/path.rs	resolve_parent	-
+free_available_dnds	bdos/fsdir.c	-	-	no counterpart: EmuTOS caches directory nodes (DND tree) in OS memory; NewTOS keeps no DND tree, it resolves paths by scanning directories through the sector cache (bdos/fs/path.rs, dir.rs)
+freednd	bdos/fsdir.c	-	-	no counterpart: EmuTOS caches directory nodes (DND tree) in OS memory; NewTOS keeps no DND tree, it resolves paths by scanning directories through the sector cache (bdos/fs/path.rs, dir.rs)
+getdnd	bdos/fsdir.c	-	-	no counterpart: EmuTOS caches directory nodes (DND tree) in OS memory; NewTOS keeps no DND tree, it resolves paths by scanning directories through the sector cache (bdos/fs/path.rs, dir.rs)
+getpath	bdos/fsdir.c	tos-api/src/bdos/fs/path.rs	resolve_parent	the path-component loop
+incr_curdir_usage	bdos/fsdir.c	tos-api/src/bdos/fs/curdir.rs	incr	-
+is_subdir	bdos/fsdir.c	tos-api/src/bdos/fs/file.rs	is_self_or_descendant	Frename cycle check; NewTOS checks the whole ancestry, EmuTOS one level (file.rs comment)
+ixsfirst	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	fsfirst	the search; NewTOS has no separate ix layer
+ixsnext	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	scan	-
+makbuf	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	makbuf	-
+makdnd	bdos/fsdir.c	-	-	no counterpart: EmuTOS caches directory nodes (DND tree) in OS memory; NewTOS keeps no DND tree, it resolves paths by scanning directories through the sector cache (bdos/fs/path.rs, dir.rs)
+makofd	bdos/fsdir.c	-	-	no counterpart: builds the OFD of a DND's directory; NewTOS keeps no DND tree (directories are scanned by cluster, bdos/fs/dir.rs)
+match	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	pattern_match	-
+namlen	bdos/fsdir.c	-	-	no counterpart: length of an unpacked 11-byte name, used by xmkdir's path-length check; no NewTOS function found
+packit	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	name_83	11-byte name to NAME.EXT
+process_dnd_tree	bdos/fsdir.c	-	-	no counterpart: EmuTOS caches directory nodes (DND tree) in OS memory; NewTOS keeps no DND tree, it resolves paths by scanning directories through the sector cache (bdos/fs/path.rs, dir.rs)
+scan	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	scan	-
+scan	bdos/fsdir.c	tos-api/src/bdos/fs/dir.rs	find_in_dir	-
+scan	bdos/fsdir.c	tos-api/src/bdos/fs/dir.rs	find_file_in_dir	-
+snipdnd	bdos/fsdir.c	-	-	no counterpart: EmuTOS caches directory nodes (DND tree) in OS memory; NewTOS keeps no DND tree, it resolves paths by scanning directories through the sector cache (bdos/fs/path.rs, dir.rs)
+unpackit	bdos/fsdir.c	tos-api/src/bdos/fs/dir.rs	fcb_name	NAME.EXT to the 11-byte name
+update_fcb	bdos/fsdir.c	tos-api/src/bdos/fs/file.rs	flush_ofd	write an open file's directory entry back
+xchdir	bdos/fsdir.c	tos-api/src/bdos/fs/dirops.rs	dsetpath	Dsetpath 0x3B
+xchmod	bdos/fsdir.c	tos-api/src/bdos/fs/file.rs	fattrib	Fattrib 0x43
+xgetdir	bdos/fsdir.c	tos-api/src/bdos/fs/dirops.rs	dgetpath	Dgetpath 0x47
+xgsdtof	bdos/fsdir.c	tos-api/src/bdos/fs/file.rs	fdatime	Fdatime 0x57
+xmkdir	bdos/fsdir.c	tos-api/src/bdos/fs/dirops.rs	dcreate	Dcreate 0x39
+xrename	bdos/fsdir.c	tos-api/src/bdos/fs/file.rs	frename	Frename 0x56
+xrmdir	bdos/fsdir.c	tos-api/src/bdos/fs/dirops.rs	ddelete	Ddelete 0x3A
+xsfirst	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	fsfirst	Fsfirst 0x4E
+xsnext	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	fsnext	Fsnext 0x4F
+ckdrv	bdos/fsdrive.c	tos-api/src/bdos/fs/fat.rs	mount	doc: "This is EmuTOS ckdrv"
+getdmd	bdos/fsdrive.c	tos-api/src/bdos/fs/fat.rs	log_in	DMD allocation of log_media; a NewTOS Volume is a value
+log2ul	bdos/fsdrive.c	-	-	no counterpart: log2 of a power of two for log_media's shift fields; no NewTOS function found
+log_media	bdos/fsdrive.c	tos-api/src/bdos/fs/fat.rs	log_in	Getbpb + log_media
+cl2rec	bdos/fsfat.c	tos-api/src/bdos/fs/fat.rs	cl2rec	-
+clfix	bdos/fsfat.c	tos-api/src/bdos/fs/fat.rs	set_fat_entry	FAT16 only
+countfree16	bdos/fsfat.c	tos-api/src/bdos/fs/fat.rs	count_free_clusters	-
+findfree	bdos/fsfat.c	tos-api/src/bdos/fs/fat.rs	findfree	-
+findfree16	bdos/fsfat.c	tos-api/src/bdos/fs/fat.rs	findfree16	-
+getclnum	bdos/fsfat.c	tos-api/src/bdos/fs/fat.rs	fat_entry	root-directory pseudo clusters: fat.rs dir_nth_sector
+getrealcl	bdos/fsfat.c	tos-api/src/bdos/fs/fat.rs	fat_entry	-
+nextcl	bdos/fsfat.c	tos-api/src/bdos/fs/fsio.rs	nextcl	-
+xgetfree	bdos/fsfat.c	tos-api/src/bdos/fs/drive.rs	dfree	Dfree 0x36
+ixforce	bdos/fshand.c	tos-api/src/bdos/fs/file.rs	ixforce	-
+xdup	bdos/fshand.c	tos-api/src/bdos/fs/file.rs	fdup	Fdup 0x45
+xforce	bdos/fshand.c	tos-api/src/bdos/fs/file.rs	fforce	Fforce 0x46
+addit	bdos/fsio.c	tos-api/src/bdos/fs/fsio.rs	addit	-
+eof	bdos/fsio.c	tos-api/src/bdos/fs/file.rs	eof	-
+ixgetfcb	bdos/fsio.c	tos-api/src/bdos/fs/dir.rs	next	DirIter::next, the next directory entry
+ixlseek	bdos/fsio.c	tos-api/src/bdos/fs/fsio.rs	ixlseek	-
+ixlseek	bdos/fsio.c	tos-api/src/bdos/fs/file.rs	seek_deleted	a file deleted while open
+ixread	bdos/fsio.c	tos-api/src/bdos/fs/file.rs	ixread	-
+ixwrite	bdos/fsio.c	tos-api/src/bdos/fs/file.rs	ixwrite	-
+usrio	bdos/fsio.c	tos-api/src/bdos/fs/fsio.rs	usrio	-
+usrio	bdos/fsio.c	tos-api/src/bdos/fs/cache.rs	direct_read	-
+usrio	bdos/fsio.c	tos-api/src/bdos/fs/cache.rs	direct_write	-
+usrio	bdos/fsio.c	tos-api/src/bdos/fs/cache.rs	usrio_invalidate	-
+xlseek	bdos/fsio.c	tos-api/src/bdos/fs/file.rs	fseek	Fseek 0x42
+xread	bdos/fsio.c	tos-api/src/bdos/fs/file.rs	xread	-
+xread	bdos/fsio.c	tos-api/src/bdos/fs/file.rs	fread	Fread 0x3F
+xrw	bdos/fsio.c	tos-api/src/bdos/fs/fsio.rs	xrw	-
+xrw_recs	bdos/fsio.c	tos-api/src/bdos/fs/fsio.rs	xrw_recs	-
+xwrite	bdos/fsio.c	tos-api/src/bdos/fs/file.rs	xwrite	-
+xwrite	bdos/fsio.c	tos-api/src/bdos/fs/file.rs	fwrite	Fwrite 0x40
+getofd	bdos/fsmain.c	tos-api/src/bdos/fs/file.rs	getofd	-
+syshnd	bdos/fsmain.c	tos-api/src/bdos/fs/file.rs	getofd	doc: "via syshnd"
+xgetdrv	bdos/fsmain.c	tos-api/src/bdos/fs/drive.rs	dgetdrv	Dgetdrv 0x19
+xgetdta	bdos/fsmain.c	tos-api/src/bdos/fs/find.rs	fgetdta	Fgetdta 0x2F
+xsetdrv	bdos/fsmain.c	tos-api/src/bdos/fs/drive.rs	dsetdrv	Dsetdrv 0x0E
+xsetdta	bdos/fsmain.c	tos-api/src/bdos/fs/find.rs	fsetdta	Fsetdta 0x1A
+contains_illegal_characters	bdos/fsopnclo.c	tos-api/src/bdos/fs/path.rs	contains_illegal_characters	-
+ixclose	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	ixclose	-
+ixclose	bdos/fsopnclo.c	tos-api/src/bdos/fs/cache.rs	flush	the write-back loop at its end
+ixcreat	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	fcreate	-
+ixcreat	bdos/fsopnclo.c	tos-api/src/bdos/fs/dirops.rs	dcreate	the folder case
+ixdel	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	ixdel	-
+ixopen	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	fopen	-
+ixunlink	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	fdelete	-
+makopn	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	open_handle	a fresh OFD
+opnfil	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	claim_sft	-
+sftdel	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	sftdel	-
+sftofdsrch	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	sftdel	the search is inline in sftdel
+xclose	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	xclose	-
+xclose	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	fclose	Fclose 0x3E
+xcreat	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	fcreate	Fcreate 0x3C
+xopen	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	fopen	Fopen 0x3D
+xunlink	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	fdelete	Fdelete 0x41
+ffit	bdos/iumem.c	tos-api/src/bdos/mem/pool.rs	ffit	-
+freeit	bdos/iumem.c	tos-api/src/bdos/mem/pool.rs	freeit	-
+shrinkit	bdos/iumem.c	tos-api/src/bdos/mem/pool.rs	shrinkit	-
+kpgm_relocate	bdos/kpgmld.c	tos-api/src/bdos/process/reloc.rs	relocate	relocation: ELF RELA, not the PRG fixup list
+kpgmhdrld	bdos/kpgmld.c	tos-api/src/bdos/process/elf.rs	parse	program header: NewTOS loads ELF, not PRG
+kpgmld	bdos/kpgmld.c	tos-api/src/bdos/process/loader.rs	load_from_source	load a program: ELF, not PRG
+pgfix01	bdos/kpgmld.c	tos-api/src/bdos/process/reloc.rs	relocate	relocation: ELF RELA, not the PRG fixup list
+pgmld01	bdos/kpgmld.c	tos-api/src/bdos/process/loader.rs	populate_and_map	segments + BSS + basepage
+getosm	bdos/osmem.c	-	-	no counterpart: EmuTOS's OS memory pool (osmem[]) for DMD/DND/OFD blocks; NewTOS keeps those in Rust statics, no OS pool
+osmem_init	bdos/osmem.c	-	-	no counterpart: initialises the OS pool (osmem); NewTOS has no OS pool, the MD pool is static (bdos/mem/mdpool.rs)
+unlink_mdblock	bdos/osmem.c	tos-api/src/bdos/mem/mdpool.rs	unlink_mdblock	-
+xmfreblk	bdos/osmem.c	-	-	no counterpart: frees OS-pool blocks (osmem); NewTOS has no OS pool
+xmfremd	bdos/osmem.c	tos-api/src/bdos/mem/mdpool.rs	xmfremd_global	-
+xmgetblk	bdos/osmem.c	-	-	no counterpart: allocates OS-pool blocks (osmem); NewTOS has no OS pool
+xmgetmd	bdos/osmem.c	tos-api/src/bdos/mem/mdpool.rs	xmgetmd_global	-
+alloc_env	bdos/proc.c	tos-api/src/bdos/process/loader.rs	alloc_env_for	-
+alloc_env	bdos/proc.c	tos-api/src/bdos/process/loader.rs	alloc_env	-
+alloc_tpa	bdos/proc.c	tos-api/src/bdos/process/arena.rs	alloc_tpa	-
+envsize	bdos/proc.c	tos-api/src/bdos/process/standin.rs	env_image	-
+free_all_owned	bdos/proc.c	tos-api/src/bdos/mem/free_all_owned.rs	free_all_owned	-
+init_pd_fields	bdos/proc.c	tos-api/src/bdos/process/loader.rs	populate_basepage	-
+init_pd_fields	bdos/proc.c	tos-api/src/bdos/process/standin.rs	rom_pd	the stand-in PDs
+init_pd_files	bdos/proc.c	tos-api/src/bdos/process/loader.rs	init_pd_files	the standard-handle half
+init_pd_files	bdos/proc.c	tos-api/src/bdos/fs/curdir.rs	inherit	the directory half
+ixterm	bdos/proc.c	tos-api/src/bdos/fs/file.rs	close_process_files	the file half
+ixterm	bdos/proc.c	tos-api/src/bdos/fs/curdir.rs	release	the directory half
+proc_go	bdos/proc.c	tos-api/src/bdos/process/pexec.rs	go	Pexec 4/6
+proc_go	bdos/proc.c	tos-api/src/bdos/process/pexec.rs	start_of	-
+proc_go	bdos/proc.c	tos-api/src/bdos/process/pexec.rs	set_parent	-
+proc_go	bdos/proc.c	tos-api/src/bdos/process.rs	note_started	run = p
+reserve_blocks	bdos/proc.c	tos-api/src/bdos/mem/free_all_owned.rs	reserve_all_owned	Ptermres; NewTOS keeps the block on mp_mal under the TSR owner
+x0term	bdos/proc.c	tos-api/src/bdos/process/pterm.rs	terminate_zero	Pterm0 0x00
+xexec	bdos/proc.c	tos-api/src/bdos/process/pexec.rs	dispatch	Pexec 0x4B
+xterm	bdos/proc.c	tos-api/src/bdos/process/pterm.rs	terminate	Pterm 0x4C
+xtermres	bdos/proc.c	tos-api/src/bdos/process/pterm.rs	terminate_resident	Ptermres 0x31
+bdos_trap2	bdos/rwa.S	-	-	no counterpart: trap #2 with d0 = 0 as Pterm0 (CP/M-68K relic, bdos/rwa.S); no NewTOS counterpart found
+enter	bdos/rwa.S	tos-api/src/gemdos/mod.rs	dispatch	trap #1 entry; the AArch64 SVC entry itself is kernel code (kernel/src/arch)
+gouser	bdos/rwa.S	-	-	no counterpart: m68k return-to-user tail of the trap #1 handler; NewTOS returns through the kernel SVC path (kernel/src/arch), no function in the mapping
+termuser	bdos/rwa.S	-	-	no counterpart: m68k process-termination stack switch (bdos/rwa.S); NewTOS terminates through pterm.rs and the kernel SVC path
+tikfrk	bdos/time.c	tos-api/src/gemdos/time.rs	now_secs	analogue: NewTOS derives the time from the monotonic timer, no 2-second tick fork
+time_init	bdos/time.c	-	-	no counterpart: reads the clock chip (Gettime) and hooks tikfrk into etv_timer; NewTOS has no RTC, its clock is a settable base plus the monotonic timer (gemdos/time.rs)
+xgetdate	bdos/time.c	tos-api/src/gemdos/time.rs	tgetdate	Tgetdate 0x2A
+xgettime	bdos/time.c	tos-api/src/gemdos/time.rs	tgettime	Tgettime 0x2C
+xsetdate	bdos/time.c	tos-api/src/gemdos/time.rs	tsetdate	Tsetdate 0x2B
+xsettime	bdos/time.c	tos-api/src/gemdos/time.rs	tsettime	Tsettime 0x2D
+find_mpb	bdos/umem.c	tos-api/src/bdos/mem/traps.rs	find_mpb	-
+set_owner	bdos/umem.c	tos-api/src/bdos/mem/traps.rs	set_owner	-
+srealloc	bdos/umem.c	-	-	no counterpart: GEMDOS 0x15 Srealloc (VIDEL) has no slot in NewTOS's GEMDOS table (gemdos/mod.rs build_table): EINVFN
+total_alt_ram	bdos/umem.c	-	-	no counterpart: sum of the alt-RAM pool (for the _FRB cookie); no NewTOS function found
+umem_init	bdos/umem.c	tos-api/src/bdos/mem/init.rs	init	both BDOS pools
+xmaddalt	bdos/umem.c	tos-api/src/gemdos/memory.rs	maddalt	Maddalt 0x14
+xmaddalt	bdos/umem.c	tos-api/src/bdos/mem/traps.rs	maddalt	-
+xmalloc	bdos/umem.c	tos-api/src/gemdos/memory.rs	malloc	Malloc 0x48
+xmalloc	bdos/umem.c	tos-api/src/bdos/mem/traps.rs	malloc	-
+xmfree	bdos/umem.c	tos-api/src/gemdos/memory.rs	mfree	Mfree 0x49
+xmfree	bdos/umem.c	tos-api/src/bdos/mem/traps.rs	mfree	-
+xmxalloc	bdos/umem.c	tos-api/src/gemdos/memory.rs	mxalloc	Mxalloc 0x44
+xmxalloc	bdos/umem.c	tos-api/src/bdos/mem/traps.rs	mxalloc	-
+xsetblk	bdos/umem.c	tos-api/src/gemdos/memory.rs	mshrink	Mshrink 0x4A
+xsetblk	bdos/umem.c	tos-api/src/bdos/mem/traps.rs	mshrink	-
+call_mousevec	bios/aciavecs.S	-	-	no counterpart: ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
+ikbdraw	bios/aciavecs.S	tos-api/src/xbios/kbdvecs.rs	route_key	the jump through kbdvec
+ikbdsys	bios/aciavecs.S	-	-	no counterpart: ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
+init_acia_vecs	bios/aciavecs.S	tos-api/src/xbios/kbdvecs.rs	write_defaults	the kbdvecs table defaults
+int_acia	bios/aciavecs.S	-	-	no counterpart: ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
+kbdvec	bios/aciavecs.S	kernel/src/ikbd.rs	kbd_int	the default kbdvec
+midisys	bios/aciavecs.S	-	-	no counterpart: ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
+midivec	bios/aciavecs.S	-	-	no counterpart: ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
+acsi_begin	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+acsi_capacity	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+acsi_end	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+acsi_init	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+acsi_inquiry	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+acsi_ioctl	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+acsi_request_sense	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+acsi_rw	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+acsi_testunit	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+calculate_repeat	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+detect_acsi	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+dma_send_byte	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+do_acsi_rw	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+hdc_start_dma	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+send_command	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ultrasatan_get_clock	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ultrasatan_get_running_firmware	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ultrasatan_set_clock	bios/acsi.c	-	-	no counterpart: Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+autoexec	bios/bios.c	kernel/src/launch.rs	run_auto_folder	-
+bconin	bios/bios.c	tos-api/src/bios/chardev.rs	bconin	Bconin 0x02 (trap entry, line 412)
+bconout	bios/bios.c	tos-api/src/bios/chardev.rs	bconout	Bconout 0x03 (trap entry, line 421)
+bconstat	bios/bios.c	tos-api/src/bios/chardev.rs	bconstat	Bconstat 0x01 (trap entry, line 293)
+bcostat	bios/bios.c	tos-api/src/bios/chardev.rs	bcostat	Bcostat 0x08 (trap entry, line 430)
+bios_init	bios/bios.c	-	-	no counterpart: m68k hardware initialisation sequence; NewTOS boots through the kernel init, not mapped function by function
+biosmain	bios/bios.c	-	-	no counterpart: the BIOS main sequence; NewTOS boots through the kernel init (kernel/src/lib.rs), not mapped function by function
+bootstrap	bios/bios.c	-	-	no counterpart: NatFeats kernel bootstrap (emulators); no NewTOS counterpart
+can_shutdown	bios/bios.c	-	-	no counterpart: power-off capability probe (NatFeats/hardware); no NewTOS counterpart found
+drvmap	bios/bios.c	tos-api/src/bios/mod.rs	drvmap	Drvmap 0x0A
+getbpb	bios/bios.c	tos-api/src/bios/bpb.rs	getbpb	Getbpb 0x07
+init_default_environment	bios/bios.c	tos-api/src/bdos/process/standin.rs	init	the AES environment string (standin.rs doc)
+is_text_pointer	bios/bios.c	-	-	no counterpart: pointer-in-ROM-text test for the boot screen; no NewTOS counterpart
+lrwabs	bios/bios.c	tos-api/src/bios/mod.rs	rwabs	Rwabs 0x04
+mediach	bios/bios.c	tos-api/src/bios/mod.rs	mediach	Mediach 0x09
+run_auto_program	bios/bios.c	-	-	no counterpart: Pexec of one AUTO program; NewTOS runs them from kernel/src/launch.rs run_auto_folder, no per-program function
+setexc	bios/bios.c	tos-api/src/bios/vectors.rs	setexc	Setexc 0x05
+shutdown	bios/bios.c	-	-	no counterpart: power off (NatFeats/hardware); no NewTOS counterpart found
+tickcal	bios/bios.c	tos-api/src/bios/mod.rs	dispatch	Tickcal 0x06: a constant in the dispatcher
+vecs_init	bios/bios.c	-	-	no counterpart: installs the m68k exception vectors; AArch64 vectors are kernel code (kernel/src/arch)
+balloc_stram	bios/biosmem.c	-	-	no counterpart: boot-time ST-RAM allocator below membot; no NewTOS counterpart
+bmem_init	bios/biosmem.c	-	-	no counterpart: boot-time memory bounds (membot/memtop); NewTOS takes its map from the firmware (kernel/src/bios/machine/layout.rs)
+getmpb	bios/biosmem.c	tos-api/src/bios/getmpb.rs	getmpb	Getmpb 0x00
+add_partition	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+blkdev_avail	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+blkdev_boot	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+blkdev_drvmap	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+blkdev_getbpb	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+blkdev_hdv_boot	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+blkdev_hdv_init	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+blkdev_init	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+blkdev_mediach	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+blkdev_rwabs	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+bootcheck	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+bus_init	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+compute_cksum	bios/blkdev.c	tos-api/src/xbios/floppy.rs	compute_cksum	-
+get_shift	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+getbpb_allowed	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+getiword	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+hd_boot_read	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+next_logical	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+pun_info_setup	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+bconout2	bios/chardev.c	tos-api/src/bios/chardev.rs	bconout	Console impl; the VT52 automaton is vdi/escape.rs
+bconout2	bios/chardev.c	tos-api/src/vdi/escape.rs	conout	Bconout(2) through the VT52 automaton
+bconout5	bios/chardev.c	tos-api/src/vdi/escape.rs	rawout	Bconout(5)
+bcostat2	bios/chardev.c	tos-api/src/bios/chardev.rs	bcostat	Console impl
+char_dummy	bios/chardev.c	tos-api/src/bios/chardev.rs	bconstat	Absent impl (absent device)
+chardev_init	bios/chardev.c	-	-	no counterpart: NewTOS's device table is a static (bios/chardev.rs), no init function
+charout_dummy	bios/chardev.c	tos-api/src/bios/chardev.rs	bconout	Absent impl (absent device)
+bcd2int	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+clock_init	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+clockvec	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+detect_icdrtc	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+detect_megartc	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+detect_monster_rtc	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+extract_date	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+extract_time	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+gettime	bios/clock.c	tos-api/src/gemdos/time.rs	xbios_gettime	Gettime 0x17
+i2c_read	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+i2c_start	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+i2c_stop	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+i2c_write	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+icd_clock_begin	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+icd_clock_end	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+icdgetdate	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+icdgetdt	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+icdgetregs	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+icdgettime	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+icdsetdate	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+icdsetdt	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+icdsetregs	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+icdsettime	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+idogetdate	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+idogettime	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+idosetdate	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+idosettime	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+igetdt	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+igetregs	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+int2bcd	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+isetdt	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+isetregs	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+mdogetdate	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+mdogettime	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+mdosetdate	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+mdosettime	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+mgetdt	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+mgetregs	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+monstergetdt	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+monstersetdt	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+msetdt	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+msetregs	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+ngetdt	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+nsetdt	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+nvram_getregs	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+nvram_setregs	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+read_ds1307	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+settime	bios/clock.c	tos-api/src/gemdos/time.rs	xbios_settime	Settime 0x16
+ultrasatan_getdt	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+ultrasatan_setdt	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+write_ds1307	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+ascii_out	bios/conout.c	tos-api/src/vdi/escape.rs	ascii_out	-
+blank_out	bios/conout.c	tos-api/src/vdi/escape.rs	blank_out	-
+blank_out16	bios/conout.c	tos-api/src/vdi/escape.rs	blank_out	the 16-bit path is part of blank_out
+cell_addr	bios/conout.c	-	-	no counterpart: VT52 cell helper: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+cell_xfer	bios/conout.c	tos-api/src/vdi/escape.rs	cell_xfer	-
+cell_xfer16	bios/conout.c	tos-api/src/vdi/escape.rs	cell_xfer	the 16-bit path is part of cell_xfer
+char_addr	bios/conout.c	-	-	no counterpart: VT52 cell helper: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+invert_cell	bios/conout.c	-	-	no counterpart: VT52 cell helper: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+move_cursor	bios/conout.c	tos-api/src/vdi/escape.rs	move_cursor	-
+neg_cell	bios/conout.c	tos-api/src/vdi/escape.rs	neg_cell	-
+next_cell	bios/conout.c	-	-	no counterpart: VT52 cell helper: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+scroll_down	bios/conout.c	tos-api/src/vdi/escape.rs	scroll_down	-
+scroll_up	bios/conout.c	tos-api/src/vdi/escape.rs	scroll_up	-
+detect_akp	bios/country.c	-	-	no counterpart: country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
+detect_idt	bios/country.c	-	-	no counterpart: country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
+get_country_record	bios/country.c	-	-	no counterpart: country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
+get_current_country_input	bios/country.c	-	-	no counterpart: country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
+get_default_country	bios/country.c	-	-	no counterpart: country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
+get_fonts	bios/country.c	-	-	no counterpart: country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
+get_kbd_index	bios/country.c	-	-	no counterpart: country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
+get_keytbl	bios/country.c	-	-	no counterpart: country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
+calibrate_delay	bios/delay.c	-	-	no counterpart: busy-loop calibration: no NewTOS counterpart found
+init_delay	bios/delay.c	-	-	no counterpart: busy-loop calibration: no NewTOS counterpart found
+run_calibration	bios/delayasm.S	-	-	no counterpart: busy-loop calibration: no NewTOS counterpart found
+DMAread	bios/disk.c	tos-api/src/xbios/mod.rs	dispatch	XBIOS 0x2A: EUNDEV arm (no floppy/DMA controller)
+DMAwrite	bios/disk.c	tos-api/src/xbios/mod.rs	dispatch	XBIOS 0x2B: EUNDEV arm (no floppy/DMA controller)
+OK_id	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+VALID_PARTITION	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+atari_partition	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+byteswap	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+check_for_no_partitions	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+disk_get_capacity	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+disk_init_all	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+disk_init_one	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+disk_inquire	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+disk_mediach	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+disk_rescan	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+disk_rw	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+disk_try_dmaboot	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+disk_valid_major	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+dmaboot	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+internal_inquire	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+map_gpt_to_atari	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+natfeats_inquire	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+process_dos_mbr	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+process_gpt	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+unit_is_byteswapped	bios/disk.c	-	-	no counterpart: disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
+set_dma_addr	bios/dma.c	-	-	no counterpart: Atari DMA controller: no NewTOS counterpart
+buffoper	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+buffptr	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+detect_dmasound	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+devconnect	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+devconnect_falcon	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+devconnect_ste	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+dmasound_init	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+dsptristate	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+falcon_dmasound_init	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+gpio	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+lmc1992_init	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+locksnd	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+setbuffer	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+setinterrupt	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+setmontracks	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+setsndmode	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+settracks	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+sndcmd_falcon	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+sndcmd_ste	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+sndstatus	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+soundcmd	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+unlocksnd	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+write_microwire	bios/dmasound.c	-	-	no counterpart: Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+convert_lod	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+detect_dsp	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_available	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_blkbytes	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_blkhandshake	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_blkunpacked	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_blkwords	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_doblock	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_execboot	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_execprog	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_flushsubroutines	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_getprogability	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_getwordsize	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_hf0	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_hf1	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_hf2	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_hf3	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_hstat	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_init	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_inout_handler	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_inqsubrability	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_instream	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_io_handler	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_iostream	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_loadprog	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_loadsubroutine	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_lock	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_lodtobinary	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_multblocks	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_outstream	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_removeinterrupts	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_requestuniqueability	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_reserve	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_runsubroutine	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_setvectors	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_sv_handler	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_triggerhc	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_unlock	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+filesize	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+handle_DATA	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+hex	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+inword	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+iseol	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+load_sub	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+move_block	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+outword	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+send_uservect	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+skipspaces	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+skiptoeol	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+update_dspvect	bios/dsp.c	-	-	no counterpart: Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_inout_asm	bios/dsp2.S	-	-	no counterpart: Falcon DSP56001 interrupt glue: not implemented in NewTOS
+dsp_io_asm	bios/dsp2.S	-	-	no counterpart: Falcon DSP56001 interrupt glue: not implemented in NewTOS
+dsp_sv_asm	bios/dsp2.S	-	-	no counterpart: Falcon DSP56001 interrupt glue: not implemented in NewTOS
+convert_drive_and_side	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+decode_error	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+deselect	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+dummy_seek	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+fdc_start_dma_read	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+fdc_start_dma_write	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+flop_add_drive	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+flop_boot_read	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+flop_checksum	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+flop_detect_drive	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+flop_hdv_init	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+flop_init	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+flop_mediach	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+flopcmd	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+flopfmt	bios/floppy.c	tos-api/src/xbios/mod.rs	dispatch	XBIOS 0x0A: EUNDEV arm (no floppy/DMA controller)
+flopio	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+flopio_ver	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+floplock	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+floppy_rw	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+floprate	bios/floppy.c	tos-api/src/xbios/mod.rs	dispatch	XBIOS 0x29: EUNDEV arm (no floppy/DMA controller)
+floprd	bios/floppy.c	tos-api/src/xbios/mod.rs	dispatch	XBIOS 0x08: EUNDEV arm (no floppy/DMA controller)
+flopunlk	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+flopvbl	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+flopver	bios/floppy.c	tos-api/src/xbios/mod.rs	dispatch	XBIOS 0x13: EUNDEV arm (no floppy/DMA controller)
+flopwr	bios/floppy.c	tos-api/src/xbios/mod.rs	dispatch	XBIOS 0x09: EUNDEV arm (no floppy/DMA controller)
+flopwtrack	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+get_dma_status	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+get_fdc_reg	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+protobt	bios/floppy.c	tos-api/src/xbios/floppy.rs	protobt	Protobt 0x12
+restore	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+select	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+set_density	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+set_fdc_reg	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+set_psg_porta	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+set_track	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+switch_density	bios/floppy.c	-	-	no counterpart: floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+font_init	bios/font.c	-	-	no counterpart: system-font selection: no NewTOS counterpart function found (fonts: tos-api/src/vdi/font_data.rs)
+font_set_default	bios/font.c	-	-	no counterpart: system-font selection: no NewTOS counterpart function found (fonts: tos-api/src/vdi/font_data.rs)
+ata_identify	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ata_request_sense	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+atapi_identify	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+atapi_request_sense	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+atapi_rw_start	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+atapi_send_cdb	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+check_interface_magic	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+check_lun_and_zeroes	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+clear_multiple_mode	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+detect_ide	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+get_disk_size	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+get_start_count	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+handle_ata_device	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+handle_atapi_device	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_decode_type	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_detect_devices	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_device_type	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_get_data	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_get_data_32	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_init	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_interface_exists	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_interface_is_ghost	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_ioctl	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_nodata	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_put_data	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_read	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_request_sense	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_reset	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_rw	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_rw_start	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_select_device	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+ide_write	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+send_ide_command	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+set_chs_mode	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+set_command_head	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+set_cylinder	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+set_interface_magic	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+set_lba48_mode	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+set_multiple_mode	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+set_packet_size	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+set_start_count	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+wait_for_not_BSY	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+wait_for_not_BSY_and_DRDY	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+wait_for_not_BSY_not_DRQ	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
+bconin2	bios/ikbd.c	tos-api/src/bios/chardev.rs	bconin	Console impl
+bconin2	bios/ikbd.c	tos-api/src/bios/chardev.rs	pack_console_key	-
+bconin2	bios/ikbd.c	tos-api/src/bios/chardev.rs	shift_fold	-
+bconout4	bios/ikbd.c	-	-	no counterpart: IKBD output: the IKBD is the absent device on NewTOS (bios/chardev.rs Absent)
+bconstat2	bios/ikbd.c	tos-api/src/bios/chardev.rs	bconstat	Console impl
+bcostat4	bios/ikbd.c	-	-	no counterpart: IKBD output: the IKBD is the absent device on NewTOS (bios/chardev.rs Absent)
+bioskeys	bios/ikbd.c	-	-	no counterpart: XBIOS 0x18 Bioskeys is not implemented: NewTOS's XBIOS dispatcher returns the function number (xbios/mod.rs)
+convert_scancode	bios/ikbd.c	-	-	no counterpart: IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
+do_key_repeat	bios/ikbd.c	kernel/src/ikbd.rs	poll_repeat	polled, not from timer C
+handle_mouse_mode	bios/ikbd.c	-	-	no counterpart: IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
+ikbd_readb	bios/ikbd.c	-	-	no counterpart: IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
+ikbd_reset	bios/ikbd.c	-	-	no counterpart: IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
+ikbd_writeb	bios/ikbd.c	-	-	no counterpart: IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
+ikbd_writew	bios/ikbd.c	-	-	no counterpart: IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
+ikbdws	bios/ikbd.c	tos-api/src/xbios/system.rs	ikbdws	Ikbdws 0x19: no-op
+kb_timerc_int	bios/ikbd.c	-	-	no counterpart: IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
+kbd_init	bios/ikbd.c	kernel/src/key_repeat.rs	new	key-repeat power-up state; the boot conterm value is read by bios/chardev.rs current_conterm
+kbd_int	bios/ikbd.c	kernel/src/ikbd.rs	kbd_int	the default kbdvec
+kbd_int	bios/ikbd.c	tos-api/src/bios/reset.rs	reset_key	the reset-key test
+kbd_int	bios/ikbd.c	tos-api/src/bios/vectors.rs	mousexvec	the mousexvec call
+kbrate	bios/ikbd.c	tos-api/src/xbios/system.rs	kbrate	Kbrate 0x23
+kbshift	bios/ikbd.c	tos-api/src/bios/mod.rs	kbshift	Kbshift 0x0B
+keytbl	bios/ikbd.c	tos-api/src/xbios/keytbl.rs	keytbl	Keytbl 0x10
+push_ikbdiorec	bios/ikbd.c	-	-	no counterpart: IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
+cprint_asctime	bios/initinfo.c	-	-	no counterpart: boot-screen helper: no NewTOS counterpart function found (the boot screen is kernel/src/initinfo.rs)
+cprint_devices	bios/initinfo.c	-	-	no counterpart: boot-screen helper: no NewTOS counterpart function found (the boot screen is kernel/src/initinfo.rs)
+cprintf_bytesize	bios/initinfo.c	kernel/src/initinfo.rs	size_str	-
+display_inverse	bios/initinfo.c	kernel/src/initinfo.rs	display_inverse	-
+display_message	bios/initinfo.c	-	-	no counterpart: boot-screen helper: no NewTOS counterpart function found (the boot screen is kernel/src/initinfo.rs)
+display_startup_msg	bios/initinfo.c	-	-	no counterpart: boot-screen helper: no NewTOS counterpart function found (the boot screen is kernel/src/initinfo.rs)
+initinfo	bios/initinfo.c	kernel/src/initinfo.rs	run	-
+pair_end	bios/initinfo.c	-	-	no counterpart: boot-screen helper: no NewTOS counterpart function found (the boot screen is kernel/src/initinfo.rs)
+pair_start	bios/initinfo.c	-	-	no counterpart: boot-screen helper: no NewTOS counterpart function found (the boot screen is kernel/src/initinfo.rs)
+print_art	bios/initinfo.c	-	-	no counterpart: boot-screen helper: no NewTOS counterpart function found (the boot screen is kernel/src/initinfo.rs)
+print_spaces	bios/initinfo.c	-	-	no counterpart: boot-screen helper: no NewTOS counterpart function found (the boot screen is kernel/src/initinfo.rs)
+set_line	bios/initinfo.c	-	-	no counterpart: boot-screen helper: no NewTOS counterpart function found (the boot screen is kernel/src/initinfo.rs)
+set_margin	bios/initinfo.c	-	-	no counterpart: boot-screen helper: no NewTOS counterpart function found (the boot screen is kernel/src/initinfo.rs)
+cprintf	bios/kprint.c	-	-	no counterpart: formatted console/debug print helper: NewTOS formats with core::fmt; no counterpart function
+cprintf_outc	bios/kprint.c	-	-	no counterpart: formatted console/debug print helper: NewTOS formats with core::fmt; no counterpart function
+dopanic	bios/kprint.c	tos-api/src/bios/crash.rs	write_report	the report text
+dopanic	bios/kprint.c	kernel/src/arch/aarch64/crash.rs	report_and_wait	prompt and wait
+kcprintf	bios/kprint.c	-	-	no counterpart: formatted console/debug print helper: NewTOS formats with core::fmt; no counterpart function
+kprintf	bios/kprint.c	-	-	no counterpart: formatted console/debug print helper: NewTOS formats with core::fmt; no counterpart function
+kprintf_outc_natfeat	bios/kprint.c	-	-	no counterpart: formatted console/debug print helper: NewTOS formats with core::fmt; no counterpart function
+vcprintf	bios/kprint.c	-	-	no counterpart: formatted console/debug print helper: NewTOS formats with core::fmt; no counterpart function
+vkcprintf	bios/kprint.c	-	-	no counterpart: formatted console/debug print helper: NewTOS formats with core::fmt; no counterpart function
+vkprintf	bios/kprint.c	-	-	no counterpart: formatted console/debug print helper: NewTOS formats with core::fmt; no counterpart function
+int_linea	bios/linea.S	-	-	no counterpart: Line-A trap: no NewTOS counterpart
+linea_0	bios/linea.S	-	-	no counterpart: Line-A trap: no NewTOS counterpart
+linea_init	bios/lineainit.c	-	-	no counterpart: Line-A variable set-up: no NewTOS counterpart function found
+set_screen_shift	bios/lineainit.c	-	-	no counterpart: Line-A variable set-up: no NewTOS counterpart function found
+add_cookie_frb	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+aranym_machine_detect	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+check_busses	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+detect_blitter	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+detect_dip_switches	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+detect_magnum	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+detect_modectl	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+detect_monster	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+detect_scc	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+detect_tt_mfp	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+detect_video	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+detect_vme	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+fill_cookie_jar	bios/machine.c	tos-api/src/cookie.rs	seed_defaults	replaces fill_cookie_jar (doc)
+guess_machine_name	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+machine_detect	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+machine_init	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+machine_name	bios/machine.c	kernel/src/initinfo.rs	machine_name	-
+setvalue_fdc	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+setvalue_mch	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+setvalue_snd	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+setvalue_swi	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+setvalue_vdo	bios/machine.c	-	-	no counterpart: Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+detect_32bit_address_bus	bios/memory.S	-	-	no counterpart: m68k RAM sizing: no NewTOS counterpart (memory map from the firmware, kernel/src/bios/machine/layout.rs)
+meminit	bios/memory.S	kernel/src/bios/machine/layout.rs	discover	analogue: memory map from the firmware, no RAM probing
+altram_init	bios/memory2.c	-	-	no counterpart: TT-RAM / alt-RAM probing: no NewTOS counterpart (memory map from the firmware, kernel/src/bios/machine/layout.rs)
+detect_ttram_size	bios/memory2.c	-	-	no counterpart: TT-RAM / alt-RAM probing: no NewTOS counterpart (memory map from the firmware, kernel/src/bios/machine/layout.rs)
+ttram_detect	bios/memory2.c	-	-	no counterpart: TT-RAM / alt-RAM probing: no NewTOS counterpart (memory map from the firmware, kernel/src/bios/machine/layout.rs)
+disable_mfp_interrupt	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
+enable_mfp_interrupt	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
+init_system_timer	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
+jdisint	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
+jenabint	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
+mfp_init	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
+mfpint	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
+reset_mfp_regs	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
+setup_timer	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
+timeout_gpip	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
+tt_mfp_init	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
+tt_mfpint	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
+xbtimer	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
+bconin3	bios/midi.c	-	-	no counterpart: MIDI ACIA: MIDI is the absent device on NewTOS (bios/chardev.rs Absent)
+bconout3	bios/midi.c	tos-api/src/xbios/system.rs	midiws	MIDI output goes to the absent device
+bconstat3	bios/midi.c	-	-	no counterpart: MIDI ACIA: MIDI is the absent device on NewTOS (bios/chardev.rs Absent)
+bcostat3	bios/midi.c	-	-	no counterpart: MIDI ACIA: MIDI is the absent device on NewTOS (bios/chardev.rs Absent)
+midi_init	bios/midi.c	-	-	no counterpart: MIDI ACIA: MIDI is the absent device on NewTOS (bios/chardev.rs Absent)
+midiws	bios/midi.c	tos-api/src/xbios/system.rs	midiws	Midiws 0x0C
+Initmous	bios/mouse.c	-	-	no counterpart: XBIOS 0x00 Initmous is not implemented: NewTOS's XBIOS dispatcher returns the function number (xbios/mod.rs)
+detect_native_features	bios/natfeat.S	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
+natfeat_cookie	bios/natfeat.S	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
+xhdi_vec	bios/natfeat.S	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
+get_xhdi_nfid	bios/natfeats.c	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
+has_natfeats	bios/natfeats.c	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
+has_nf_shutdown	bios/natfeats.c	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
+is_nfStdErr	bios/natfeats.c	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
+mmu_is_emulated	bios/natfeats.c	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
+natfeat_init	bios/natfeats.c	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
+nfGetFullName	bios/natfeats.c	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
+nfStdErr	bios/natfeats.c	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
+nf_bootstrap	bios/natfeats.c	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
+nf_getbootdrive	bios/natfeats.c	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
+nf_getbootstrap_args	bios/natfeats.c	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
+nf_setlinea	bios/natfeats.c	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
+nf_shutdown	bios/natfeats.c	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
+check_for_vga	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+count_vbls	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+detect_mach	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+detect_nova	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+get_idxreg	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+get_novamembase	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+init_et4000	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+init_mach32	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+init_mach64	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+init_nova	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+init_nova_resolution	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+init_system_vars	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+mach_dac_setrs2rs3	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+prog_ics2595	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+ramdac_68860_config	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+ramdac_ch8398_config	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+ramdac_ch8398_unlock	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+ramdac_hicolor_off	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+set_idxreg	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+set_mach_idxreg	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+set_multiple_atcreg	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+set_multiple_idxreg	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+set_palette_entries	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+test_video_memory	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+unlock_et4000	bios/nova.c	-	-	no counterpart: Nova graphics card driver: no NewTOS counterpart
+compute_sum	bios/nvram.c	-	-	no counterpart: TT/Falcon NVRAM: not implemented in NewTOS (XBIOS 0x2E falls to the dispatcher's default arm)
+detect_nvram	bios/nvram.c	-	-	no counterpart: TT/Falcon NVRAM: not implemented in NewTOS (XBIOS 0x2E falls to the dispatcher's default arm)
+get_nvram_rtc	bios/nvram.c	-	-	no counterpart: TT/Falcon NVRAM: not implemented in NewTOS (XBIOS 0x2E falls to the dispatcher's default arm)
+get_sum	bios/nvram.c	-	-	no counterpart: TT/Falcon NVRAM: not implemented in NewTOS (XBIOS 0x2E falls to the dispatcher's default arm)
+nvmaccess	bios/nvram.c	-	-	no counterpart: TT/Falcon NVRAM: not implemented in NewTOS (XBIOS 0x2E falls to the dispatcher's default arm)
+set_nvram_rtc	bios/nvram.c	-	-	no counterpart: TT/Falcon NVRAM: not implemented in NewTOS (XBIOS 0x2E falls to the dispatcher's default arm)
+set_sum	bios/nvram.c	-	-	no counterpart: TT/Falcon NVRAM: not implemented in NewTOS (XBIOS 0x2E falls to the dispatcher's default arm)
+cold_reset	bios/panicasm.S	tos-api/src/host.rs	system_restart	-
+cold_reset	bios/panicasm.S	tos-api/src/bios/reset.rs	s_newtos_reset	-
+halt	bios/panicasm.S	kernel/src/arch/aarch64/mod.rs	halt	-
+kill_program	bios/panicasm.S	kernel/src/arch/aarch64/exceptions.rs	kill_program	-
+panic	bios/panicasm.S	-	-	no counterpart: fatal-error path: NewTOS uses the Rust panic handler; no counterpart function
+warm_reset	bios/panicasm.S	tos-api/src/host.rs	system_restart	-
+warm_reset	bios/panicasm.S	tos-api/src/bios/reset.rs	s_newtos_reset	-
+bconin0	bios/parport.c	-	-	no counterpart: printer port: PRN is the absent device on NewTOS (bios/chardev.rs Absent)
+bconout0	bios/parport.c	-	-	no counterpart: printer port: PRN is the absent device on NewTOS (bios/chardev.rs Absent)
+bcostat0	bios/parport.c	-	-	no counterpart: printer port: PRN is the absent device on NewTOS (bios/chardev.rs Absent)
+parport_init	bios/parport.c	-	-	no counterpart: printer port: PRN is the absent device on NewTOS (bios/chardev.rs Absent)
+prnout	bios/parport.c	-	-	no counterpart: printer port: PRN is the absent device on NewTOS (bios/chardev.rs Absent)
+setprt	bios/parport.c	tos-api/src/xbios/system.rs	setprt	Setprt 0x21
+setup_68030_pmmu	bios/pmmu030.c	-	-	no counterpart: m68k 68030 PMMU set-up: no NewTOS counterpart (the AArch64 MMU is a different design, bdos/process/mmu.rs)
+cache_exists	bios/processor.S	-	-	no counterpart: m68k CPU/FPU detection and cache control: no NewTOS counterpart
+detect_cpu	bios/processor.S	-	-	no counterpart: m68k CPU/FPU detection and cache control: no NewTOS counterpart
+detect_fpu	bios/processor.S	-	-	no counterpart: m68k CPU/FPU detection and cache control: no NewTOS counterpart
+flush_data_cache	bios/processor.S	-	-	no counterpart: m68k CPU/FPU detection and cache control: no NewTOS counterpart
+instruction_cache_kludge	bios/processor.S	-	-	no counterpart: m68k CPU/FPU detection and cache control: no NewTOS counterpart
+invalidate_data_cache	bios/processor.S	-	-	no counterpart: m68k CPU/FPU detection and cache control: no NewTOS counterpart
+invalidate_instruction_cache	bios/processor.S	-	-	no counterpart: m68k CPU/FPU detection and cache control: no NewTOS counterpart
+processor_init	bios/processor.S	-	-	no counterpart: m68k CPU/FPU detection and cache control: no NewTOS counterpart
+set_cache	bios/processor.S	-	-	no counterpart: m68k CPU/FPU detection and cache control: no NewTOS counterpart
+atari_get_current_mode_info	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+atari_getrez	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+atari_physbase	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+atari_setcolor	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+atari_setphys	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+atari_setrez	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+calc_vram_size	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+check_moderez	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+detect_monitor_change	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+egetpalette	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+egetshift	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+esetbank	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+esetcolor	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+esetgray	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+esetpalette	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+esetshift	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+esetsmear	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+fixup_ste_palette	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+get_default_palmode	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+get_monitor_type	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+get_palette	bios/screen.c	tos-api/src/vdi/workstation.rs	palette_precision	DEV_TAB[39]
+get_pixel_size	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+get_std_pixel_size	bios/screen.c	tos-api/src/vdi/workstation.rs	get_std_pixel_size	-
+getrez	bios/screen.c	tos-api/src/xbios/screen.rs	getrez	Getrez 0x04
+initialise_palette_registers	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+initialise_ste_palette	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+initialise_tt_palette	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+logbase	bios/screen.c	tos-api/src/xbios/screen.rs	logbase	Logbase 0x03
+physbase	bios/screen.c	tos-api/src/xbios/screen.rs	physbase	Physbase 0x02
+rez_changeable	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+screen_get_current_mode_info	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+screen_init_address	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+screen_init_mode	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+set_rez_hacked	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+setcolor	bios/screen.c	tos-api/src/xbios/screen.rs	setcolor	Setcolor 0x07
+setpalette	bios/screen.c	tos-api/src/xbios/screen.rs	setpalette	Setpalette 0x06
+setphys	bios/screen.c	tos-api/src/host.rs	set_screen_physical	-
+setscreen	bios/screen.c	tos-api/src/xbios/screen.rs	setscreen	Setscreen 0x05
+shifter_check_moderez	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+shifter_get_current_mode_info	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+shifter_get_monitor_type	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+shifter_rez_changeable	bios/screen.c	-	-	no counterpart: ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+vsync	bios/screen.c	tos-api/src/xbios/system.rs	vsync	Vsync 0x25
+and_icr_reg	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+and_mode_reg	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+build_rw_command	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+cleanup_scsi	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+cleanup_tt_dma	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+decode_scsi_status	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+decode_sense	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+detect_scsi	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+do_scsi_rw	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+fscsi_and	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+fscsi_get	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+fscsi_or	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+fscsi_put	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+get_bus_status_reg	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+get_data_reg	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+get_dma_status_reg	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+get_icr_reg	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+get_next_phase	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+handle_command	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+handle_data_in	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+handle_data_out	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+handle_msg_in	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+handle_msg_out	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+handle_status	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+handshake	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+init_data_in	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+init_data_out	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+or_icr_reg	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+or_mode_reg	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+put_data_reg	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+put_icr_reg	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+put_mode_reg	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+put_select_enable_reg	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+put_tcr_reg	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+receive_byte	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+reset_bus	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+scsi_arbitrate	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+scsi_capacity	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+scsi_dispatcher	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+scsi_init	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+scsi_inquiry	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+scsi_ioctl	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+scsi_request_sense	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+scsi_rw	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+scsi_select	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+send_byte	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+send_scsi_command	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+set_input_phase	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+set_output_phase	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+setup_falcon_dma	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+setup_tt_dma	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+toggle_dmaout	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+use_dma	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+wait_dma_complete	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+wait_phase_change	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+wait_req	bios/scsi.c	-	-	no counterpart: SCSI bus driver: no NewTOS counterpart
+get_bus_info	bios/scsidriv.c	-	-	no counterpart: SCSIDRV programming interface: not implemented in NewTOS
+get_bus_maxlen	bios/scsidriv.c	-	-	no counterpart: SCSIDRV programming interface: not implemented in NewTOS
+get_handle_entry	bios/scsidriv.c	-	-	no counterpart: SCSIDRV programming interface: not implemented in NewTOS
+scsidriv_CheckDev	bios/scsidriv.c	-	-	no counterpart: SCSIDRV programming interface: not implemented in NewTOS
+scsidriv_Close	bios/scsidriv.c	-	-	no counterpart: SCSIDRV programming interface: not implemented in NewTOS
+scsidriv_Error	bios/scsidriv.c	-	-	no counterpart: SCSIDRV programming interface: not implemented in NewTOS
+scsidriv_In	bios/scsidriv.c	-	-	no counterpart: SCSIDRV programming interface: not implemented in NewTOS
+scsidriv_InOut	bios/scsidriv.c	-	-	no counterpart: SCSIDRV programming interface: not implemented in NewTOS
+scsidriv_InquireBus	bios/scsidriv.c	-	-	no counterpart: SCSIDRV programming interface: not implemented in NewTOS
+scsidriv_InquireSCSI	bios/scsidriv.c	-	-	no counterpart: SCSIDRV programming interface: not implemented in NewTOS
+scsidriv_Open	bios/scsidriv.c	-	-	no counterpart: SCSIDRV programming interface: not implemented in NewTOS
+scsidriv_Out	bios/scsidriv.c	-	-	no counterpart: SCSIDRV programming interface: not implemented in NewTOS
+scsidriv_RescanBus	bios/scsidriv.c	-	-	no counterpart: SCSIDRV programming interface: not implemented in NewTOS
+scsidriv_init	bios/scsidriv.c	-	-	no counterpart: SCSIDRV programming interface: not implemented in NewTOS
+valid_bus	bios/scsidriv.c	-	-	no counterpart: SCSIDRV programming interface: not implemented in NewTOS
+valid_bus_and_device	bios/scsidriv.c	-	-	no counterpart: SCSIDRV programming interface: not implemented in NewTOS
+bconin1	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconinA	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconinB	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconinTT	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconin_iorec	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconmap	bios/serport.c	tos-api/src/xbios/system.rs	bconmap	Bconmap 0x2C
+bconout1	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconoutA	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconoutB	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconoutTT	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconstat1	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconstatA	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconstatB	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconstatTT	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconstat_iorec	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bcostat1	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bcostatA	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bcostatB	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bcostatTT	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+get_iorecbuf	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+incr_tail	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+init_bconmap	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+init_serport	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+mfp_rs232_rx_interrupt_handler	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+mfp_rs232_tx_interrupt_handler	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+mfp_tt_rx_interrupt_handler	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+mfp_tt_tx_interrupt_handler	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+push_serial_iorec	bios/serport.c	kernel/src/console.rs	serial_rx_byte	routing of a received serial byte
+put_iorecbuf	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+rsconf1	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+rsconfA	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+rsconfB	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+rsconfTT	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+rsconf_dummy	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+rsconf_mfp	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+rsconf_scc	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+scc_es_interrupt_handler	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+scc_init	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+scc_rx_interrupt_handler	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+scc_tx_interrupt_handler	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+write_scc	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+write_scc_reg0	bios/serport.c	-	-	no counterpart: MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bell	bios/sound.c	tos-api/src/vdi/escape.rs	bell	no audio device: the bell is silent
+do_bell	bios/sound.c	tos-api/src/vdi/escape.rs	bell	no audio device: the bell is silent
+do_keyclick	bios/sound.c	-	-	no counterpart: YM2149 PSG: no sound chip on NewTOS
+dosound	bios/sound.c	tos-api/src/xbios/system.rs	dosound	Dosound 0x20: no PSG
+giaccess	bios/sound.c	tos-api/src/xbios/system.rs	giaccess	Giaccess 0x1C: no PSG
+offgibit	bios/sound.c	tos-api/src/xbios/system.rs	offgibit	Offgibit 0x1D: no PSG
+ongibit	bios/sound.c	tos-api/src/xbios/system.rs	ongibit	Ongibit 0x1E: no PSG
+snd_init	bios/sound.c	-	-	no counterpart: YM2149 PSG: no sound chip on NewTOS
+sndirq	bios/sound.c	-	-	no counterpart: YM2149 PSG: no sound chip on NewTOS
+main	bios/startup.S	tos-api/src/bios/reset.rs	entry_kind	warm/cold decision only; the boot entry is kernel code
+memdone	bios/startup.S	-	-	no counterpart: m68k reset entry / OS header: NewTOS boots from kernel8.img (kernel/src/arch); no counterpart function
+os_header	bios/startup.S	-	-	no counterpart: m68k reset entry / OS header: NewTOS boots from kernel8.img (kernel/src/arch); no counterpart function
+osxhbootdelay	bios/startup.S	-	-	no counterpart: m68k reset entry / OS header: NewTOS boots from kernel8.img (kernel/src/arch); no counterpart function
+realmain	bios/startup.S	-	-	no counterpart: m68k reset entry / OS header: NewTOS boots from kernel8.img (kernel/src/arch); no counterpart function
+run_cartridge_applications	bios/startup.S	-	-	no counterpart: m68k reset entry / OS header: NewTOS boots from kernel8.img (kernel/src/arch); no counterpart function
+biostrap	bios/vectors.S	tos-api/src/bios/mod.rs	dispatch	trap #13 dispatcher
+call_etv_critic	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+check_read_byte	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+default_etv_critic	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+init_exc_vec	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+init_user_vec	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+int_hbl	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+int_illegal	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+int_priv	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+int_timerc	bios/vectors.S	tos-api/src/bios/tick.rs	advance	the 200 Hz counter
+int_unimpint	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+int_vbl	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+just_rte	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+keyclick	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+mfp_rs232_rx_interrupt	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+mfp_rs232_tx_interrupt	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+mfp_tt_rx_interrupt	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+mfp_tt_tx_interrupt	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+scca_es_interrupt	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+scca_rx_interrupt	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+scca_tx_interrupt	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+sccb_es_interrupt	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+sccb_rx_interrupt	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+sccb_tx_interrupt	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+supexec	bios/vectors.S	-	-	no counterpart: XBIOS 0x26 Supexec is not implemented: NewTOS's XBIOS dispatcher returns the function number (xbios/mod.rs)
+xbios_unimpl	bios/vectors.S	tos-api/src/xbios/mod.rs	dispatch	default arm: the function number
+xbiostrap	bios/vectors.S	tos-api/src/xbios/mod.rs	dispatch	trap #14 dispatcher
+convert2ste	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+determine_regc0	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+determine_vctl	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+determine_width	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+get_videl_bpp	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+get_videl_height	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+get_videl_mode	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+get_videl_width	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+initialise_falcon_palette	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+lookup_videl_mode	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+set_videl_vga	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+use_ste_palette	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+vfixmode	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+vgetrgb	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+vgetsize	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+videl_check_moderez	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+videl_get_current_mode_info	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+videl_setrez	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+vmontype	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+vsetmode	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+vsetrgb	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+vsetsync	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+ascii_cr	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+ascii_lf	bios/vt52.c	tos-api/src/vdi/escape.rs	ascii_lf	-
+blink	bios/vt52.c	tos-api/src/vdi/escape.rs	blink	-
+clear_and_home	bios/vt52.c	tos-api/src/vdi/escape.rs	clear_and_home	-
+cputc	bios/vt52.c	tos-api/src/vdi/escape.rs	cputc	-
+cursconf	bios/vt52.c	tos-api/src/xbios/screen.rs	cursconf	Cursconf 0x15
+cursconf	bios/vt52.c	tos-api/src/vdi/escape.rs	cursconf	-
+cursor_down	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+cursor_down_impl	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+cursor_home	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+cursor_left	bios/vt52.c	tos-api/src/vdi/escape.rs	cursor_left	-
+cursor_left_impl	bios/vt52.c	tos-api/src/vdi/escape.rs	cursor_left	-
+cursor_off	bios/vt52.c	tos-api/src/vdi/escape.rs	cursor_off	-
+cursor_on	bios/vt52.c	tos-api/src/vdi/escape.rs	cursor_on	-
+cursor_on_cnt	bios/vt52.c	tos-api/src/vdi/escape.rs	cursor_on_cnt	-
+cursor_right	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+cursor_up	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+delete_line	bios/vt52.c	tos-api/src/vdi/escape.rs	delete_line	-
+do_backspace	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+do_bell	bios/vt52.c	tos-api/src/vdi/escape.rs	do_bell	-
+do_cnt_esce	bios/vt52.c	tos-api/src/vdi/escape.rs	do_cnt_esce	-
+do_tab	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+erase_from_bol	bios/vt52.c	tos-api/src/vdi/escape.rs	erase_from_bol	-
+erase_from_bol_impl	bios/vt52.c	tos-api/src/vdi/escape.rs	erase_from_bol	-
+erase_from_home	bios/vt52.c	tos-api/src/vdi/escape.rs	erase_from_home	-
+erase_line	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+erase_to_eol	bios/vt52.c	tos-api/src/vdi/escape.rs	erase_to_eol	-
+erase_to_eol_impl	bios/vt52.c	tos-api/src/vdi/escape.rs	erase_to_eol	-
+erase_to_eos	bios/vt52.c	tos-api/src/vdi/escape.rs	erase_to_eos	-
+esc_ch1	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	-
+get_bg_col	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+get_column	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+get_fg_col	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+get_row	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+insert_line	bios/vt52.c	tos-api/src/vdi/escape.rs	insert_line	-
+line_wrap_off	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+line_wrap_on	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+nop	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+normal_ascii	bios/vt52.c	tos-api/src/vdi/escape.rs	normal_ascii	-
+restore_cursor_pos	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+reverse_linefeed	bios/vt52.c	tos-api/src/vdi/escape.rs	reverse_linefeed	-
+reverse_video_off	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+reverse_video_on	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+save_cursor_pos	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+set_bg	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+set_fg	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+vt52_init	bios/vt52.c	tos-api/src/vdi/escape.rs	init	-
+vt52_init	bios/vt52.c	kernel/src/fbcon.rs	init	-
+blitmode	bios/xbios.c	tos-api/src/xbios/system.rs	blitmode	Blitmode 0x40
+iorec	bios/xbios.c	-	-	no counterpart: XBIOS 0x0E Iorec is not implemented: NewTOS's XBIOS dispatcher returns the function number (xbios/mod.rs)
+kbdvbase	bios/xbios.c	tos-api/src/xbios/kbdvecs.rs	kbdvbase	Kbdvbase 0x22
+random	bios/xbios.c	tos-api/src/xbios/system.rs	random	Random 0x11
+rsconf	bios/xbios.c	tos-api/src/xbios/system.rs	rsconf	Rsconf 0x0F
+scrdmp	bios/xbios.c	tos-api/src/xbios/system.rs	scrdmp	Scrdmp 0x14
+xbios_do_unimpl	bios/xbios.c	tos-api/src/xbios/mod.rs	dispatch	default arm: the function number
+XHDOSLimits	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHDriverSpecial	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHDrvMap	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHEject	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHGetCapacity	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHGetVersion	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHInqDev	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHInqDev2	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHInqDriver	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHInqTarget	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHInqTarget2	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHLastAccess	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHLock	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHMediumChanged	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHMiNTInfo	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHNewCookie	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHReaccess	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHReadWrite	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHReserve	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+XHStop	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+init_XHDI_drvmap	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
+xhdi_handler	bios/xhdi.c	-	-	no counterpart: XHDI driver interface: not implemented in NewTOS
