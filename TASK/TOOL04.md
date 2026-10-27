@@ -19,6 +19,35 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Werkzeug (Testbarkeit) — Anwen
   a full tier (milestones/nightly). Look for fixed sleeps/timeouts in
   QEMU-based tests first.“
 
+## Vorbefund des Leads (2026-10-27, waehrend eines laufenden Testlaufs)
+
+- Ein Testbinary, das in diesem Lauf schon einmal lief
+  (`target/debug/deps/tos_api-*`), startet zweimal hintereinander in 0,12 s
+  und 0,10 s. Eine Kopie davon (gleiche Codesignatur) 0,25 s / 0,10 s, ein
+  frisch mit clang gebautes Mini-Programm 0,13 s / 0,00 s.
+- Das gerade vom Lauf gestartete Binary
+  (`aes_t04_intin_long_contract-*`, 1,9 MB) stand 40 s lang bei 0 % CPU im
+  Zustand `S`; gleichzeitig lief `XprotectService` mit 10,6 % CPU als
+  zweitgroesster Verbraucher.
+- Lesart (Hypothese, nicht bewiesen): der erste Start jedes **neu gelinkten**
+  Binarys wartet auf einen XProtect-Scan; die Tests selbst sind schnell.
+  Warum das Mini-Programm nicht wartet, klaert die Messung (Groesse,
+  Signatur des Linkers, Pfad unter `target/`).
+
+## Anwenderhinweise 2026-10-27
+
+- Schnelldiagnose: dasselbe Testbinary zweimal starten; ist der zweite Start
+  schnell, ist es der Erstscan neuer Binaries (Gatekeeper/XProtect oder ein
+  EDR), nicht die Tests.
+- Abhilfen fuer den Bericht:
+  1. **Strukturell, ohne Sicherheitsaenderung:** die Integrationstests zu
+     wenigen Binaries zusammenfassen (ein `tests/`-Crate mit Modulen statt
+     163 `tests/*.rs`). Spart die Kosten je Binary und Linkzeit.
+  2. **Konfiguration, nur Anwenderentscheidung:** Terminal/VS Code, die
+     cargo ausfuehren, unter Datenschutz & Sicherheit → Entwicklertools
+     zulassen (`spctl developer-mode enable-terminal`); bei einem EDR eine
+     Ausnahme fuer `target/`. Abwaegung berichten, nicht anwenden.
+
 ## Arbeit
 
 1. **Messen, bevor etwas geaendert wird:** Laufzeit je Testbinary und je
