@@ -1,0 +1,44 @@
+measurement-2026-10-27-mem12 -- MEM12 question 1-3: who touches page 0 [0, 0x1000) from EL0 when it is not writable.
+Developer, 2026-10-27, HEAD a90bcfb0 (tree clean). No hardware, no card, no product code change (scratch edit reverted, see below).
+
+WHAT
+ Two debug kernels (cargo xtask build --board rpi4, dev profile, fresh, kernel8.img moved to scratch):
+   base  = HEAD a90bcfb0 unchanged                     sha256 6f6ce912580ba2a2f77d1004104141f630f5b1b4719fa9d96d5968ed1c0c5101
+   ro    = HEAD + one scratch edit in tos-api/src/bdos/process/mmu.rs init_slot_tables:
+           `t.l3.0[0] = page0_pa | PageFlags::UserRwExec...` -> `PageFlags::UserRoExec` (page 0 EL0 read+execute, no write)
+                                                       sha256 8c039019e56dfce3c5371a86c779ab12e0f39654a5cb81e08fc4ba152ef91f7e
+           The file was restored from a copy taken before the edit (cmp identical, git status clean afterwards).
+ Card: tools/make-sd-image.sh <scratch>/base.img (64 MiB), manifest copied here as base.img.manifest,
+   image_sha256 d94c4526db78916ef3fff9ce012524fa49cac468e27ba12bce1c5ad9cb8a0c8d
+   manifest optional_missing line, verbatim:
+optional_missing none
+ Per run an APFS clone (cp -c) of base.img, deleted after the run; NEWDESK.INF replaced (mcopy) for the #Z runs by
+ method/inf/<n>.INF = measurements/measurement-2026-10-26-a118-retest/method/reg/z-qed.inf with the #Z path replaced.
+
+HOW
+ method/run.sh <kernel> <tag> <secs> [INF]: QEMU raspi4b -append serial=on, headless, killed after 70-75 s; serial -> serial/<tag>.log.
+ No input is injected: each program is started and left idle (start-up path only). Count of "[crash]" lines = EL0 faults that end a program.
+
+RESULT
+ tag        program (#Z or default)          crash  desktop up  note
+ base-std   AUTO\MXPROBE.NCP, 2 ACCs, NEWDESK  0      1
+ ro-std     same                              0      1           AUTO program, accessories, NEWDESK start with page 0 read-only
+ base-TD    C:\Apps\TERADESK\DESKTOP.NAP       0      -
+ ro-TD      same                              1      -           "[crash] slot 2 Bus Error esr=0x9200004f pc=0x724 far=Some(1888)"
+                                                                 = 0x760, write permission fault (level 3) by the kernel's own AES
+                                                                 G_USERDEF callout stub (loader.rs USERDEF_STUB_CODE, `str w0, [x9]`
+                                                                 at 0x724) storing ub_code's result into USERDEF_RET_SLOT_VA.
+                                                                 Report line: "Memory violation: hardware memory, write (permission
+                                                                 fault, level 3)" -- page 0 is labelled "hardware memory".
+ ro-QED     C:\Apps\QED\QED.NAP               0      -           started, idle
+ ro-PRES    C:\Apps\PRESENT\PRESENT.NAP       0      -           started, idle
+ ro-ZV      C:\ZVIEW\ZVIEW.NAP                0      -           started, codecs loaded (Pexec 3 "[exec] launching"), idle
+ ro-DV      C:\DUMPVDI.NAP                    0      1           ran to completion (rc=0), then NEWDESK
+ ro-VD      C:\VDIDRAW.NAP                    0      -           started, idle
+ ro-ARGV    C:\ARGVTEST.NAP                   0      1           ran to completion, then NEWDESK
+ PANIC/[EXC] lines: 0 in all 10 logs.
+
+NOT COVERED
+ Interactive paths (no injector): HypView key presses (conterm write), TeraDesk Shift+Esc / Reboot, DOOM's kbdvec install --
+ found by source reading (TASK/MEM12.md "Befund"), not measured here. HypView and DOOM are not on the QEMU card.
+ Real Pi 4.
