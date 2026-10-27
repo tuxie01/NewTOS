@@ -68,7 +68,7 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   offen nur die Abnahme von K unter Linux/Homebrew), [USB03](../TASK/USB03.md),
   [SND01](../TASK/SND01.md), [SND02](../TASK/SND02.md),
   [NET01](../TASK/NET01.md) (Vorrecherche, Ziel 1.2), [HW04](../TASK/HW04.md)
-  (teilweise), [W01](../TASK/W01.md), [TOOL01](../TASK/TOOL01.md) (`cargo xtask doctor`, Projekt-venv), [TOOL03](../TASK/TOOL03.md) (reproduzierbare Messabbilder, vor dem DUMPGDOS-Abbildvergleich); geparkt: [H04](../TASK/H04.md),
+  (teilweise), [W01](../TASK/W01.md), [TOOL01](../TASK/TOOL01.md) (`cargo xtask doctor`, Projekt-venv), [TOOL03](../TASK/TOOL03.md) (reproduzierbare Messabbilder, vor dem DUMPGDOS-Abbildvergleich), [TOOL04](../TASK/TOOL04.md) (Testlaufzeit: schnelle und volle Stufe); geparkt: [H04](../TASK/H04.md),
   [H01](../TASK/H01.md) (wartet auf Hardware); zurueckgestellt:
   [HW05](../TASK/HW05.md), [T13](../TASK/T13.md).
 - **„ERLEDIGT“ ohne DONE-Quittung — gelten als offen, bis gemessen
