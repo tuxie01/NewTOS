@@ -151,10 +151,49 @@ The other 70 commits (38 of them in `bios/`) change nothing these tables see.
 
 ## 6. Canary
 
-`tools/hatari-oracle.sh` with its default ROM (the pin, sha256 checked by the
-script) on `vdi-all.tsv`: `tt` vs `EMUTOS14-VDI-all` and `falcontc` vs
-`EMUTOS14-VDI-all-falcontc` — **BIN and LOG bit-identical** (182 cases each),
-with the user's full configuration and again with the cleaned `hatari.cfg`.
+The canary proves that the oracle in front of you is the pinned one: same
+ROM, Hatari, configuration and dumper output as when the references were
+recorded. The auditor pre-flight runs it before every audit
+(`.claude/agents/auditor.md`, "Pre-flight"); any other result than two OKs
+stops the audit (BLOCKED).
+
+| | |
+|---|---|
+| Cases | `tosdump/cases/vdi-all.tsv`, 182 cases, CRC `D135ADAF`, sha256 `7ca7de7ce52af54e82bfe0dca8dff310b32f75359177068060172a841a764ada` |
+| Dumper | `DUMPVDI.PRG` built from the current tree with build id `19b7` (the id in the references' header) |
+| ROM | the pin, `tools/oracle/etos512de-1a7484ab.img` (§1); `tools/hatari-oracle.sh` refuses another sha256 |
+| Profiles | `tt` and `falcontc` (§2) |
+| Expected `tt` | `tosdump/reference/EMUTOS-1a7484ab-VDI-all.BIN` sha256 `715c734cbac5fdfeb61bb107ea76b807c60e4dd0470b95ae7cc3628d21def8b6`, `.LOG` sha256 `d30e973c0c0646e2aee035b9f3c019c0b18270ad931f68f66d7da802c6945936` |
+| Expected `falcontc` | `tosdump/reference/EMUTOS-1a7484ab-VDI-all-falcontc.BIN` sha256 `81b3bdba2004e7f812739d7f389bfca726d4f46b92d26ae610c04f73e9821dab`, `.LOG` sha256 `64dacda7760dab0561630990c69514b4f61d27e123fd47079dff15ce38d32742` |
+| Pass | both profiles: `VDI.BIN` and `VDI.LOG` byte-identical to the expected files (`cmp`) |
+| Runtime | about 12 s per profile |
+
+Command, from the repository root, with a scratch directory that does not
+exist yet (never inside the repository):
+
+```sh
+sh measurements/measurement-2026-10-28-oracle-canary/method/canary.sh "$CLAUDE_JOB_DIR/tmp/canary"
+# prints "canary tt: OK" and "canary falcontc: OK"; exit 0 only if both pass
+```
+
+It builds the dumper with `make -C tosdump BUILD=<dir>/dumpers/19b7
+BUILD_ID=19b7 dumpvdi-m68k`, runs `tools/hatari-oracle.sh <profile>
+<dir>/dumpers/19b7/DUMPVDI.PRG tosdump/cases/vdi-all.tsv <dir>/<profile>`
+for each profile and compares both files. Last pass: 2026-10-28 on
+`d8e9628c` (`measurements/measurement-2026-10-28-oracle-canary/RUNINFO.TXT`).
+
+Why this table: it reproduces byte for byte with a current dumper. It holds
+no pointer cells into the dumper's own text (unlike RASTER, §7), and its
+output stayed identical while the dumper code grew. If a dumper change ever
+breaks the canary, the fix is a re-recording under §7, not a looser compare.
+
+History: the first canary (2026-10-26, Phase 0 step 5,
+`measurements/measurement-2026-10-26-oracle/RUNINFO.TXT`) compared against
+`EMUTOS14-VDI-all` and `-falcontc`, BIN and LOG bit-identical, with the
+user's full Hatari configuration and again with the cleaned `hatari.cfg`.
+Those references stay record format 2 (frozen 1.4 evidence), which no
+dumper built since format 3 (`d42675e5`) reproduces; the canary therefore
+moved to the format-3 pin references above.
 
 ## 7. Rules from here on
 

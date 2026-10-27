@@ -142,9 +142,10 @@ measured verdict, do not take it.
 
 1. Record NewTOS commit (+ dirty flag), EmuTOS commit, ROM hash, Hatari version
    and image hash. Without them a report cannot be re-checked.
-2. **Oracle canary:** run one existing tosdump case and confirm it reproduces
-   its stored reference record bit-identically with the pinned ROM. Then run it
-   on NewTOS through `cargo xtask`.
+2. **Oracle canary:** run the canary exactly as defined in
+   `docs/analysis/ORACLE.md` §6 (cases, profiles, expected hashes, command);
+   both profiles must report OK. Then run a case on NewTOS through
+   `cargo xtask`.
 3. If the canary fails, the ROM is unidentified, or the harness does not run:
    stop with verdict **BLOCKED** and the reason.
 

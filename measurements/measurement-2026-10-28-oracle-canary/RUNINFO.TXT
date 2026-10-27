@@ -1,0 +1,45 @@
+measurement-2026-10-28-oracle-canary -- the oracle canary, defined and run
+Lead, 2026-10-28 ~00:32-00:40, HEAD d8e9628c (clean tosdump/, tools/oracle/). No NewTOS code, no hardware.
+
+WHAT / WHY
+ User decision 2026-10-28: docs/analysis/ORACLE.md must define the canary explicitly (cases, profiles, expected
+ hashes, command); the auditor pre-flight (.claude/agents/auditor.md, "Pre-flight" step 2) depends on it.
+ The 2026-10-26 canary (measurements/measurement-2026-10-26-oracle/RUNINFO.TXT, canary/RESULT.txt) compared
+ against EMUTOS14-VDI-all{,-falcontc}. Those stay format 2 (frozen 1.4 evidence); since format 3 (d42675e5) no
+ current dumper can reproduce them byte for byte. The canary therefore moves to the pinned format-3 references
+ EMUTOS-1a7484ab-VDI-all{,-falcontc} (re-recorded 2026-10-26 with build id 19b7,
+ measurements/measurement-2026-10-26-ref07-v3/RUNINFO.TXT).
+
+HOW
+ method/canary.sh <empty scratch dir>, from the repository root:
+  1 make -C tosdump BUILD=<dir>/dumpers/19b7 BUILD_ID=19b7 dumpvdi-m68k  (the build id is in the dump header)
+  2 tools/hatari-oracle.sh tt|falcontc <DUMPVDI.PRG> tosdump/cases/vdi-all.tsv <dir>/<profile>
+    (default ROM = the pin; the script refuses a ROM whose sha256 is not ORACLE_ROM_SHA256)
+  3 cmp VDI.BIN and VDI.LOG with tosdump/reference/EMUTOS-1a7484ab-VDI-all{,-falcontc}.{BIN,LOG}
+ Run twice: once by hand (out/), once through method/canary.sh (scratch, same result).
+
+INPUTS (sha256)
+ ROM tools/oracle/etos512de-1a7484ab.img   323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+ table tosdump/cases/vdi-all.tsv           7ca7de7ce52af54e82bfe0dca8dff310b32f75359177068060172a841a764ada
+                                           (182 cases, CRC D135ADAF)
+ Hatari 2.6.1 and tools/oracle/hatari.cfg  as pinned in docs/analysis/ORACLE.md section 1
+ DUMPVDI.PRG build 19b7, run 1             e2ae6d7eef6eeb9398e5647549211cd1646157c9dcc921cda12852df9914d6b3
+ DUMPVDI.PRG build 19b7, run 2 (script)    f555e960afa396fab5d0cade774c8db36403ec35e201d6a435cc9e509a7e762a
+ No SD image is booted (Hatari GEMDOS drive only), so no image manifest.
+
+RESULT
+ tt        exit 0, "all 182 cases ran", 11.7 s wall   VDI.BIN 715c734c...  VDI.LOG d30e973c...  BIT-IDENTICAL
+ falcontc  exit 0, "all 182 cases ran", 11.2 s wall   VDI.BIN 81b3bdba...  VDI.LOG 64dacda7...  BIT-IDENTICAL
+ Both runs (by hand and via method/canary.sh): "canary tt: OK", "canary falcontc: OK".
+ Full expected hashes: docs/analysis/ORACLE.md section 6.
+ out/<profile>/: VDI.LOG, hatari.log, stdout.txt. The BIN files are not kept: they are byte-identical to the
+ committed references (cmp), their sha256 is above.
+
+OBSERVATIONS (for triage, not acted on)
+ - Two builds of DUMPVDI.PRG from the same source and build id differ in sha256 (run 1 vs run 2); the dump
+   output does not. The dumper build is not reproducible byte for byte -- same family as TOOL03 (reproducible
+   measurement images). Not investigated.
+ - The dumper's code grew since the 2026-10-26 re-recording (adfb419a, ff1da029), yet VDI-all reproduces:
+   unlike RASTER (ORACLE.md section 7) this table holds no pointer cells into the dumper's own text.
+ - A TOOL04 developer was measuring test-binary launch times on the same host during this run (two Hatari
+   runs of ~12 s each, 00:32 and ~00:38).
