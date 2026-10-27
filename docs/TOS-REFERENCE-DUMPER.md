@@ -559,7 +559,7 @@ opcode <TAB> args <TAB> retclass <TAB> capture <TAB> comment
 - `IGNORE` — not compared (times, tick counts)
 - `NONZERO` — must be non-zero on both
 - `HANDLE` — must be >= 0 on both, value not compared
-- `PTR_RAM` — must be 4-byte aligned and inside RAM on both, value not compared
+- `PTR_RAM` — must be even (WORD aligned) and inside RAM on both, value not compared
 
 `capture` is either `-` or `<argindex>:<length>`, meaning: after the call, copy
 `length` bytes from the buffer pointed to by argument `argindex` into the record.
@@ -631,7 +631,7 @@ class width, sign-extended:
 | `IGNORE` | nothing | — |
 | `NONZERO` | non-zero, on each side | `ret NONZERO <dump> = 0x…, is zero` |
 | `HANDLE` | `>= 0`, on each side | `ret HANDLE <dump> = 0x…, is negative` |
-| `PTR_RAM` | on each side: non-zero, a multiple of 4, and `< 0x80000000` | `ret PTR_RAM <dump> = 0x…, <which property>` |
+| `PTR_RAM` | on each side: non-zero, even, and `< 0x80000000` | `ret PTR_RAM <dump> = 0x…, <which property>` |
 
 "Inside RAM" in `PTR_RAM` is checked as far as a dump can state it: as the
 address class's relational property (`< 0x80000000`, section 3,
@@ -639,15 +639,29 @@ address class's relational property (`< 0x80000000`, section 3,
 the property "between the machine's RAM base and its top" would need them
 and is not checked. `PTR_RAM` takes no width suffix: a pointer is a LONG.
 
-*Measured 2026-10-27, open:* the reference itself fails the 4-byte rule for
-three of its eight `PTR_RAM` cases on the TT profile — `Iorec(2)`
-`0x30E2`, `Keytbl` `0x40AE`, `Bconmap(-2)` `0x4A76` — and a fourth on
-`falcontc`, `Iorec(0)` `0x478A`: m68k structures are WORD aligned. The rule stands as written until the lead decides
-(`measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`).
+*Even, not four-byte aligned* (user decision 2026-10-27): the first rule
+asked for a multiple of 4, and the reference itself failed it for three of
+its eight `PTR_RAM` cases on the TT profile — `Iorec(2)` `0x30E2`, `Keytbl`
+`0x40AE`, `Bconmap(-2)` `0x4A76` — and a fourth on `falcontc`, `Iorec(0)`
+`0x478A` (`measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`): m68k
+structures are WORD aligned. An odd address stays a failure. The self-check
+below keeps such a rule from reaching a NewTOS comparison again.
 
 A retclass failure **counts as a case difference** ("N of M cases differ")
 and makes `tosdiff` exit 1, like a value difference of `args`, `capture` or
 `trap`.
+
+### The oracle self-check
+
+A comparison rule is only valid if the oracle passes it (user decision
+2026-10-27). `tosdiff --selfcheck CASES.TSV ORACLE.BIN` applies every
+relational rule — the address check, the kept check and the per-side
+retclasses (`NONZERO`, `HANDLE`, `PTR_RAM`) — to the oracle reference alone
+and exits 1 if one fails. Such a failure is a bug in the rule or the case
+table, routed to the Researcher, **never a NewTOS finding**.
+`tosdump/tests/test_selfcheck.sh` runs it in `make -C tosdump host-test` over
+every pinned `EMUTOS-1a7484ab-*` reference, each against the table whose CRC
+it carries; a new reference or a new rule is checked on the spot.
 
 **`capture`** is `-` or `<argindex>:<length>[.<unit>][@<offset>]`:
 
@@ -731,8 +745,9 @@ frame: EmuTOS's `x20_sup` then finds the USP where it left it
 
 **Return classes.** `Super(1L)` returns `0` or `-1` (`x20_inq`): `EXACT`.
 `Super(0L)` returns the old supervisor stack pointer on EmuTOS and a token on
-NewTOS (S4): an address, `NONZERO` — not `PTR_RAM`, whose four-byte rule an
-m68k stack need not meet. `SuperToUser` returns nothing defined on EmuTOS:
+NewTOS (S4): an address, `NONZERO`. It stays `NONZERO`: the cases were
+recorded when `PTR_RAM` still asked for four-byte alignment, which an m68k
+stack need not meet. `SuperToUser` returns nothing defined on EmuTOS:
 `x20_sup` does not write `d0` (`bdos/rwa.S:305-336`), so the register holds
 whatever the caller left there: `IGNORE`; whether it left supervisor state is
 measured by the `Super(1L)` case after it. `Supexec` returns the callback's

@@ -200,6 +200,8 @@ run-tests: $(BUILD)/test_record $(BUILD)/test_cases $(BUILD)/test_log \
 	@cmp $(BUILD)/be.bin $(BUILD)/le.bin && echo "  ok"
 	@echo "== comparator"
 	@sh $(TESTS)/test_tosdiff.sh $(BUILD)
+	@echo "== self-check: every relational rule holds on the pinned oracle"
+	@sh $(TESTS)/test_selfcheck.sh $(BUILD)
 
 clean:
 	rm -rf $(BUILD)

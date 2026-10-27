@@ -206,9 +206,12 @@ field classes). A second relational property within one side is the raster
 it (the VDI must not modify the pointers), again its own verdict and "not
 checkable" on format 2 (same section). Since 2026-10-27 the BIOS + XBIOS area
 exists (`DUMPBIOS`, task T7): a returned pointer is class `PTR_RAM` —
-non-null, a multiple of 4 and `< 0x80000000` on each side
-(`docs/TOS-REFERENCE-DUMPER.md` section 6); the reference itself fails the
-multiple-of-4 rule for three or four WORD-aligned m68k structures, which is
-open. Still open: the GEMDOS area. tos-api's `aes_reference` harness
+non-null, even and `< 0x80000000` on each side
+(`docs/TOS-REFERENCE-DUMPER.md` section 6; first a multiple of 4, which the
+reference failed for WORD-aligned m68k structures). A relational rule is only
+valid if the oracle passes it: `tosdiff --selfcheck` runs every one on each
+pinned reference alone in the host tests, and a failure there is a rule bug
+for the Researcher, never a NewTOS finding (same section, "The oracle
+self-check"). Still open: the GEMDOS area. tos-api's `aes_reference` harness
 checks `ap_3resv` relationally on its own (non-zero iff the reference's is,
 `tos-api/tests/aes_reference/harness.rs`).

@@ -8,12 +8,19 @@
  * by field name and element index, never as a hex offset.
  *
  * usage: tosdiff --validate DUMP.BIN [CASES.TSV]
+ *        tosdiff --selfcheck CASES.TSV ORACLE.BIN
  *        tosdiff CASES.TSV A.BIN B.BIN
  *
  * exit: 0 = accepted / no differences, 1 = differences found (a value
  *       difference, an address cell that is not < 0x80000000, an MFDB
  *       pointer cell the call changed -- the kept check -- or, in a call
  *       area, a return value that fails its case's retclass), 2 = refused.
+ *
+ * --selfcheck applies every relational rule (address check, kept check,
+ * the per-side retclasses) to one oracle reference alone.  A comparison
+ * rule is only valid if the oracle passes it: a violation there is a bug
+ * in the rule or the case table (route: Researcher), never a NewTOS
+ * finding.  Exit 1 on a violation.
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -526,8 +533,10 @@ static const char *retclass_violation(uint8_t retclass, int64_t v)
 			return "is null";
 		if ((uint64_t)v >= (uint64_t)TD_ADDR_LIMIT)
 			return "not < 0x80000000";
-		if ((uint64_t)v % 4u != 0)
-			return "not a multiple of 4";
+		/* even, not 4-aligned: m68k structures are WORD aligned, and
+		 * the oracle returns such pointers (Iorec, Keytbl, Bconmap) */
+		if ((uint64_t)v % 2u != 0)
+			return "is odd";
 		return NULL;
 	default:
 		return NULL;
@@ -554,7 +563,8 @@ static void print_call_case_header(const struct td_casefile *cf,
 static int retclass_check(const struct td_casefile *cf, uint16_t index,
                           const struct td_dump *a, const uint8_t *ra,
                           const struct td_dump *b, const uint8_t *rb,
-                          int label_w, uint16_t case_id, int *printed)
+                          int label_w, uint16_t case_id, int *printed,
+                          int nsides)
 {
 	uint8_t cls = cf->retclass[index], w = cf->retwidth[index];
 	int64_t va = call_ret(ra, w), vb = call_ret(rb, w);
@@ -574,7 +584,7 @@ static int retclass_check(const struct td_casefile *cf, uint16_t index,
 		printf("\n");
 		return 1;
 	}
-	for (side = 0; side < 2; side++) {
+	for (side = 0; side < nsides; side++) {
 		const struct td_dump *d = side ? b : a;
 		int64_t v = side ? vb : va;
 
@@ -598,8 +608,12 @@ static int retclass_check(const struct td_casefile *cf, uint16_t index,
 	return differs;
 }
 
+/*
+ * Compare A against B, or -- `single`, the self-check -- judge A alone: B is
+ * then the same file and only A's side of each relational rule runs.
+ */
 static int cmd_compare(const char *cases_path, const char *a_path,
-                       const char *b_path)
+                       const char *b_path, int single)
 {
 	struct td_casefile cf;
 	struct td_dump a, b;
@@ -694,9 +708,14 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 	if ((int)strlen(b.label) > label_w)
 		label_w = (int)strlen(b.label);
 
-	printf("%s vs %s -- area %s, %u cases from %s\n",
-	       a.label, b.label, td_area_name(a.h.area), a.h.record_count,
-	       basename_of(cases_path));
+	if (single)
+		printf("self-check %s -- area %s, %u cases from %s\n", a.label,
+		       td_area_name(a.h.area), a.h.record_count,
+		       basename_of(cases_path));
+	else
+		printf("%s vs %s -- area %s, %u cases from %s\n",
+		       a.label, b.label, td_area_name(a.h.area), a.h.record_count,
+		       basename_of(cases_path));
 
 	for (rec = 0; rec < a.h.record_count; rec++) {
 		const uint8_t *ra = record_at(&a, rec);
@@ -727,7 +746,7 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 		 * value (docs/TOS-REFERENCE-DUMPER.md section 6). */
 		if (is_call_area(a.h.area) &&
 		    retclass_check(&cf, rec, &a, ra, &b, rb, label_w, case_id,
-		                   &printed_header))
+		                   &printed_header, single ? 1 : 2))
 			value_differs = 1;
 
 		for (fi = 0; fields[fi].name; fi++) {
@@ -746,9 +765,10 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 				addr_check_side(&a, ra, f, &acheck_a, label_w, &cf,
 				                case_id, record_opcode(&a, rec),
 				                &printed_header);
-				addr_check_side(&b, rb, f, &acheck_b, label_w, &cf,
-				                case_id, record_opcode(&a, rec),
-				                &printed_header);
+				if (!single)
+					addr_check_side(&b, rb, f, &acheck_b, label_w, &cf,
+					                case_id, record_opcode(&a, rec),
+					                &printed_header);
 				continue;
 			}
 
@@ -780,11 +800,34 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 		for (ki = 0; ki < nkept; ki++) {
 			kept_check_side(&a, ra, &kept[ki], &kcheck_a[ki], label_w, &cf,
 			                case_id, record_opcode(&a, rec), &printed_header);
-			kept_check_side(&b, rb, &kept[ki], &kcheck_b[ki], label_w, &cf,
-			                case_id, record_opcode(&a, rec), &printed_header);
+			if (!single)
+				kept_check_side(&b, rb, &kept[ki], &kcheck_b[ki], label_w,
+				                &cf, case_id, record_opcode(&a, rec),
+				                &printed_header);
 		}
 		if (value_differs)
 			differing++;
+	}
+
+	if (single) {
+		/* B is A: no value can differ, so every flagged case is a
+		 * relational rule the oracle fails */
+		addr_check_summary(&a, &acheck_a);
+		kept_check_summary(&a, kept, nkept, kcheck_a);
+		for (ki = 0; ki < nkept; ki++)
+			kept_changed += kcheck_a[ki].changed;
+		if (differing || acheck_a.violations || kept_changed)
+			printf("\nself-check, %s: the oracle fails a rule -- %u "
+			       "case(s) by retclass, %lu address cell(s), %lu kept "
+			       "cell(s); a bug in the rule or the case table (route: "
+			       "Researcher), not a NewTOS finding\n", a.label,
+			       differing, acheck_a.violations, kept_changed);
+		else
+			printf("\nself-check, %s: the oracle passes every relational "
+			       "rule (%u cases)\n", a.label, a.h.record_count);
+		dump_free(&a);
+		dump_free(&b);
+		return (differing || acheck_a.violations || kept_changed) ? 1 : 0;
 	}
 
 	printf("\n%u of %u cases differ\n", differing, a.h.record_count);
@@ -814,11 +857,14 @@ int main(int argc, char **argv)
 		}
 		return cmd_validate(argv[2], argc == 4 ? argv[3] : NULL);
 	}
+	if (argc == 4 && strcmp(argv[1], "--selfcheck") == 0)
+		return cmd_compare(argv[2], argv[3], argv[3], 1);
 	if (argc == 4)
-		return cmd_compare(argv[1], argv[2], argv[3]);
+		return cmd_compare(argv[1], argv[2], argv[3], 0);
 
 	fprintf(stderr,
 	        "usage: tosdiff --validate DUMP.BIN [CASES.TSV]\n"
+	        "       tosdiff --selfcheck CASES.TSV ORACLE.BIN\n"
 	        "       tosdiff CASES.TSV A.BIN B.BIN\n");
 	return 2;
 }

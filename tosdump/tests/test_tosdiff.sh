@@ -391,12 +391,17 @@ if [ -f "$CALLBIN" ] && [ -f "$CALLTSV" ]; then
 	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_ig.bin" >"$TMP/cig.out" 2>&1
 	check "an IGNORE return is not compared" 0 $?
 
-	# PTR_RAM, per side: misaligned, null, at the limit, above 4 GiB
-	rm -f "$TMP/c_pa.bin"; cpatch "$TMP/c_pa.bin" 1 36 '\000\253\315\002'
+	# PTR_RAM, per side: odd, null, at the limit, above 4 GiB.  An even
+	# address is fine: m68k structures are WORD aligned, and the oracle
+	# itself returns such pointers (Iorec, Keytbl, Bconmap).
+	rm -f "$TMP/c_pe.bin"; cpatch "$TMP/c_pe.bin" 1 36 '\000\253\315\002'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_pe.bin" >"$TMP/cpe.out" 2>&1
+	check "PTR_RAM: an even, not 4-aligned pointer is fine" 0 $?
+	rm -f "$TMP/c_pa.bin"; cpatch "$TMP/c_pa.bin" 1 36 '\000\253\315\001'
 	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_pa.bin" >"$TMP/cpa.out" 2>&1
-	check "PTR_RAM: a misaligned pointer is flagged" 1 $?
+	check "PTR_RAM: an odd pointer is flagged" 1 $?
 	grep_out "PTR_RAM names the side and the reason" "$TMP/cpa.out" \
-	    "ret .*PTR_RAM c_pa.bin *= .*not a multiple of 4"
+	    "ret .*PTR_RAM c_pa.bin *= .*is odd"
 	if grep -q "PTR_RAM stub-bios.bin" "$TMP/cpa.out"; then
 		echo "  FAIL PTR_RAM flagged the side that is fine"
 		fails=$((fails + 1))
@@ -422,6 +427,22 @@ if [ -f "$CALLBIN" ] && [ -f "$CALLTSV" ]; then
 		fails=$((fails + 1))
 	fi
 	grep_out "PTR_RAM counts the case" "$TMP/cpp.out" "1 of 9 cases differ"
+
+	# --selfcheck: one dump alone, every relational rule on its own side
+	"$TOSDIFF" --selfcheck "$CALLTSV" "$CALLBIN" >"$TMP/csc.out" 2>&1
+	check "self-check: a clean dump passes" 0 $?
+	grep_out "self-check names the verdict" "$TMP/csc.out" \
+	    "passes every relational rule (9 cases)"
+	"$TOSDIFF" --selfcheck "$CALLTSV" "$TMP/c_pa.bin" >"$TMP/csf.out" 2>&1
+	check "self-check: a rule the dump fails is flagged" 1 $?
+	grep_out "self-check routes a failure to the Researcher" "$TMP/csf.out" \
+	    "route: Researcher), not a NewTOS finding"
+	if [ "$(grep -c "PTR_RAM c_pa.bin" "$TMP/csf.out")" != 1 ]; then
+		echo "  FAIL self-check must judge the one dump once"
+		fails=$((fails + 1))
+	fi
+	"$TOSDIFF" --selfcheck "$CASES" "$CALLBIN" >"$TMP/csr.out" 2>&1
+	check "self-check: a dump of another table is refused" 2 $?
 
 	# NONZERO and HANDLE.W
 	rm -f "$TMP/c_nz.bin"; cpatch "$TMP/c_nz.bin" 7 36 '\000\000\000\000'
