@@ -704,9 +704,10 @@ protection off — no process is protected from another (stage 3b below). **Obse
 (1) page 0 `[0, 0x1000)` is per process — the system variables, the OSHEADER
 and its `os_run` cell (`0x5B8`, holding the process's own PD — a desk
 accessory's holds EmuTOS's `run`, TASK/PROC03 B5 below), the cookie-jar
-mirror, the trampolines, the `Keytbl` area and the KEYS02 table — so a pointer
-*into page 0* means something different in another process (on EmuTOS the
-area is global but supervisor-only); (2) `p_tbase` is `p_lowtpa + 0x1000`,
+mirror and the `Keytbl` area — so a pointer *into page 0* means something
+different in another process (on EmuTOS the area is global but
+supervisor-only); page 0 is EL0 read-only outside the super state (next
+paragraph); (2) `p_tbase` is `p_lowtpa + 0x1000`,
 not `+ 0x100` (a position-independent image keeps its link-time page
 offsets), and the TPA starts on a page: without memory protection the
 less-than-a-page slack in front of the largest free block stays in the pool.
@@ -717,6 +718,42 @@ less-than-a-page slack in front of the largest free block stays in the pool.
 `_crtinit` and the accessory loader like EmuTOS `pgmld`
 (`util/gemdos.c:29-47`), so `Malloc(-1)` right after start reports the rest of
 the pool, as on TOS.
+
+**Page 0 is read-only outside the super state; `Super`/`Supexec` switch it**
+(TASK/MEM12, user decisions 2026-10-26/27; spec `docs/api/_super-state.md`).
+On the Atari, `$0..$7FF` is reachable in supervisor mode only; a program
+writes a system variable after `Super()` or from a `Supexec` callback, and a
+user-mode access is a bus error. NewTOS maps that onto the page tables: a
+process has a **super state**, off at load, which `Super(0L)`/`Supexec` turn
+on (`tos-api/src/bdos/process/superstate.rs:66@super_call`,
+`kernel/src/arch/aarch64/exceptions.rs:1826@handle_super`,
+`:1857@handle_supexec`). In super state page 0 is EL0 read-write, in user
+state EL0 read-only, never executable
+(`tos-api/src/bdos/process/mmu.rs:733@set_page0_writable`, with the TLB
+maintenance ARM ARM `RGPPYH` requires); a write in user state ends the
+program with "Bus Error" and the report line "page-0 system-variable memory"
+(`kernel/src/arch/aarch64/exceptions.rs:1434@kill_crashed_program`). The
+super state grants **nothing else**: the code still runs at EL0, memory
+protection is unchanged. The EL0 stubs (upcall trampoline, `G_USERDEF`
+callout, `kbdvec` stubs, OSHEADER reset stub) moved to one shared stub page
+at `0x7E000`, EL0 execute-only; what a program may write — the `Kbdvbase`
+table, the `G_USERDEF` `PARMBLK` — to its private read-write page at
+`0x7F000` (`tos-api/src/bdos/process/mmu.rs:244@STUB_PAGE_VA`). The `kbdvec`
+hook runs in super state, as EmuTOS calls it from the IKBD interrupt in
+supervisor mode. The kernel reads page 0 only as documented input:
+`conterm` (bits 0–3) and the `memvalid` magics of the reset entry.
+**Observable differences:** (1) a user-mode **read** of page 0 does not fault
+(on the Atari it does) — native programs read `_hz_200`, `_sysbase` and
+`_p_cookies` directly; (2) `Super(stack)` does not switch the stack, an
+explicit `stack` is ignored, and `Super(0L)` returns the caller's stack
+pointer as its token (S4/S5); (3) a `Supexec` callback may make system calls;
+(4) a desk accessory's `kbdvec` hook is never called — keys go to the
+innermost started program's table (`tos-api/src/xbios/kbdvecs.rs:372@hook_owner`;
+EmuTOS's one table is global), and the kernel logs a warning when an
+accessory installs one; (5) a program built before MEM12 with the SDK's former
+EL0 `Super`/`Supexec` macros keeps its reads, but its page-0 writes fault
+until it is rebuilt. Tests `tos-api/tests/mem12_super_state.rs`,
+`tos-api/tests/xbios_kbdvecs.rs`; oracle cases `tosdump/cases/super-r1.tsv`.
 
 **`p_parent` and the environment as on EmuTOS, through two stand-in PDs**
 (TASK/PPARENT, user decision 2026-10-06 "Way A"). EmuTOS's `run` while the
@@ -1120,8 +1157,10 @@ hands out the LINEA variable block (`references/emutos/bios/bios.c:176`,
   an EL0 data abort (`kernel/src/arch/aarch64/exceptions.rs:303-309`). Not
   so the `__LINEA` struct fields (`__aline->_VPLANES`, the MWC macros,
   `sdk/libc/mintlib/include/mint/linea.h:485`ff.): null plus their positive
-  offset lies in page 0, which is mapped user read/write in every process
-  (`tos-api/src/bdos/process/mmu.rs:643`), so such an access does not fault.
+  offset lies in page 0, which is EL0 **read-only** outside the super state
+  (TASK/MEM12, `tos-api/src/bdos/process/mmu.rs:789@UserRoNx`): such a read
+  does not fault and returns system-variable bytes, a write ends the program
+  with a bus error — unless it runs in super state, inside `Super()`/`Supexec`.
 * **mintlib's `linea.c` is excluded from the SDK build by ADR-030**; there is
   no `linea0()` … `lineaf()`, and a port that calls them does not link.
 
@@ -1156,6 +1195,9 @@ kind of caller:
   (2026-07-24, commit `3d1c1fe`) populates the classic low-memory sysvars +
   OSHEADER + `$5A0` per-process at their real addresses in each app's EL0 VA**,
   so these raw accesses work — see `docs/analysis/bios-audit/b1-lowmem-feasibility.md`.
+  Since MEM12 (2026-10-27) a raw **write** works as on TOS only inside
+  `Super()`/`Supexec` (the super state, "Page 0 is read-only outside the
+  super state" above); reads work always.
 - **m68k binaries** (Phase 10 emulator) get the variables at their real
   addresses too: the emulator maps the low-memory region, so direct pokes work.
 

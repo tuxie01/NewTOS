@@ -471,18 +471,26 @@ fn user_kptr(va: u64, len: u64, write: bool) -> Result<u64, UserFault> {
         // not user memory — probe the highest address so the fault is real.
         None => probe(u64::MAX)?,
     }
-    if va < PAGE && va + len > PAGE {
-        return Err(UserFault);
+    // A slot-private page (page 0, the stub page, the private read-write
+    // page, MEM12) is not contiguous with the memory around it: a range may
+    // not run across its end.
+    if crate::bdos::process::mmu::in_private_page(va) {
+        let page_end = (va & !(PAGE - 1)) + PAGE;
+        if va + len > page_end {
+            return Err(UserFault);
+        }
     }
     Ok(alias_of(va))
 }
 
-/// The kernel alias of user address `va` of the running process: page 0
-/// through the process's own page-0 frame, everything else VA = PA.
+/// The kernel alias of user address `va` of the running process: page 0 and
+/// the private read-write page through the process's own frames, everything
+/// else VA = PA. (The stub page never gets here: it is EL0 execute-only, so
+/// the probe of [`user_kptr`] faults on it.)
 fn alias_of(va: u64) -> u64 {
-    if va < 0x1000 {
-        if let Some(p0) = crate::bdos::process::current_page0_kva() {
-            return p0 as u64 + va;
+    if let Some(slot) = crate::bdos::process::slot_for(crate::bdos::process::current()) {
+        if let Some(a) = crate::bdos::process::mmu::private_page_alias(slot, va) {
+            return a;
         }
     }
     crate::bdos::process::kalias(va)

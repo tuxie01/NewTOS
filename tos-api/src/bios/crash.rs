@@ -180,9 +180,15 @@ pub enum RegionKind {
     /// Free pool memory, or a `PROT_I` block (FreeMiNT reports both as
     /// "free": `berr_msg[PROT_I]`).
     Free,
-    /// Not controlled by memory protection (outside the pools, page 0, a
-    /// global block).
+    /// Not controlled by memory protection (outside the pools, a global
+    /// block).
     Hardware,
+    /// Page 0, the classic system variables (MEM12): EL0 read-only outside
+    /// the super state, so a write there in user state is the Atari's bus
+    /// error (`docs/api/_super-state.md` S9).
+    SystemVariables,
+    /// The shared stub page (MEM12): EL0 execute-only, no data access.
+    StubPage,
 }
 
 impl RegionKind {
@@ -194,6 +200,8 @@ impl RegionKind {
             RegionKind::Readable => "readable",
             RegionKind::Free => "free",
             RegionKind::Hardware => "hardware",
+            RegionKind::SystemVariables => "page-0 system-variable",
+            RegionKind::StubPage => "execute-only stub",
         }
     }
 }

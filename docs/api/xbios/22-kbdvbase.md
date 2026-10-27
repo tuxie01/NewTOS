@@ -717,13 +717,14 @@ eingetragen ist, gleich welches Programm laeuft (`bios/aciavecs.S:405-414`).
 Auf einem Single-TOS ist das der Haken des Programms im Vordergrund — oder
 eines Accessorys, wenn eines ihn gesetzt hat.
 
-Heute (KEYS02 C3) nimmt NewTOS die Tabelle des Prozesses, der beim Poll gerade
-die CPU hat (`tos-api/src/xbios/kbdvecs.rs:316@route_key`, `current()`). Pollt der
+Bis MEM12 (KEYS02 C3) nahm NewTOS die Tabelle des Prozesses, der beim Poll
+gerade die CPU hat (`route_key` mit `current()`, Stand `a90bcfb0`; seit D9
+`tos-api/src/xbios/kbdvecs.rs:352@route_key`). Pollt der
 Pump im Kontext eines Accessorys, sieht DOOMs Haken das Byte nicht.
 
 **Vorschlag:** Empfaenger ist der **innerste gestartete Prozess** — EmuTOS'
 `run` ohne Accessories, in NewTOS `process::emutos_run()`
-(`tos-api/src/bdos/process.rs:990@emutos_run`): das Programm im Vordergrund oder
+(`tos-api/src/bdos/process.rs:1023@emutos_run`): das Programm im Vordergrund oder
 sein laufendes `Pexec`-Kind. Gleich, welcher Prozess beim Poll die CPU hat:
 
 * Steht in dessen `kbdvec` die Vorgabe (oder lebt kein gestarteter Prozess),

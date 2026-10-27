@@ -8,11 +8,19 @@
 //! BDOS pools, the published kernel structures (ADR-023) and the screen
 //! memory appear at the same address in every process, so a pointer means the
 //! same thing in every process, like on EmuTOS' flat machine and under
-//! FreeMiNT with memory protection off. The single exception is **page 0**,
-//! `[0, 0x1000)`: each process has its own (the classic system variables, the
-//! OSHEADER, the `$5A0` cookie jar, the upcall trampolines, the `Keytbl` area
-//! and the KEYS02 vector table — plan E3), backed by a per-slot kernel page
-//! ([`page0_kva`]).
+//! FreeMiNT with memory protection off. The exceptions are three pages in
+//! the slot-private `[0, 2 MiB)` (MEM12, `docs/api/_super-state.md`):
+//!
+//! * **page 0**, `[0, 0x1000)`, each process its own (the classic system
+//!   variables, the OSHEADER, the `$5A0` cookie jar, the `Keytbl` area —
+//!   plan E3), backed by a per-slot kernel page ([`page0_kva`]): EL0
+//!   read-only in user state, read-write in super state, never executable
+//!   ([`set_page0_writable`]);
+//! * the **stub page** at [`STUB_PAGE_VA`], one page for all (the upcall
+//!   trampoline and the other EL0 stubs): EL0 execute-only;
+//! * the **private read-write page** at [`PRIV_PAGE_VA`], each process its
+//!   own (the KEYS02 `Kbdvbase` table, the `G_USERDEF` `PARMBLK`): EL0
+//!   read-write, never executable.
 //!
 //! FreeMiNT keeps "one of these per process" over one logical address space
 //! (`references/freemint/sys/arch/mprot030.c:18,76-80`); stage 1 is its
@@ -132,6 +140,10 @@ const D_PAGE_L3: u64 = 1 << 1; // L3 page (same bit, level-dependent)
 const D_AF: u64 = 1 << 10;
 const D_AP_USER_RW: u64 = 0b01 << 6; // EL1 + EL0 R/W
 const D_AP_USER_RO: u64 = 0b11 << 6; // EL1 + EL0 RO
+/// `AP[2:1] = 10`: EL1 read-only, no EL0 data access (ARM ARM Table D8-63).
+/// With `UXN = 0`, `PXN = 1` the page is **execute-only** for EL0:
+/// `PrivRead, UnprivExecute` (Table D8-65, D8-7760) — the stub page (MEM12).
+const D_AP_PRIV_RO: u64 = 0b10 << 6;
 const D_SH_INNER: u64 = 0b11 << 8;
 /// Non-shareable. Only used with [`D_ATTRIDX_NC`]: Normal Non-cacheable
 /// memory is architecturally treated as Outer Shareable whatever the SH
@@ -209,6 +221,36 @@ static mut __USER_TABLES: [SlotTables; MAX_PROCESSES] = [const {
 
 /// The per-slot page-0 data pages.
 static mut PAGE0: [Page0; MAX_PROCESSES] = [const { Page0([0; 4096]) }; MAX_PROCESSES];
+
+/// The one **stub page** (MEM12, `docs/api/_super-state.md`): the EL0 code
+/// the kernel and the programs jump to — upcall trampoline, `G_USERDEF`
+/// callout stub, the KEYS02 `kbdvec` stubs, the OSHEADER reset stub. Its
+/// content is the same for every process, so one page serves all; every slot
+/// maps it at [`STUB_PAGE_VA`], EL0 execute-only.
+static mut STUB_PAGE: Page0 = Page0([0; 4096]);
+
+/// The per-slot **private read-write page** (MEM12): what a program may write
+/// that used to sit in page 0 — the KEYS02 `Kbdvbase` table and the AES
+/// `PARMBLK` scratch. Mapped at [`PRIV_PAGE_VA`], EL0 read-write, never
+/// executable.
+static mut PRIV_PAGE: [Page0; MAX_PROCESSES] = [const { Page0([0; 4096]) }; MAX_PROCESSES];
+
+/// EL0 VA of the shared stub page. Inside the slot-private `[0, 2 MiB)` L3,
+/// below the Pi kernel's load address (`0x80000`, `link-rpi4.ld`; there is
+/// only the pre-MMU boot stack below it, never a published kernel object)
+/// and far below the qemu-virt RAM (`0x4000_0000`) — so no VA = PA user
+/// mapping can ever want this VA; [`map_shared`] refuses it all the same.
+/// Below 4 GiB, so a stub address fits the 32-bit OSHEADER fields.
+pub const STUB_PAGE_VA: u64 = 0x7E000;
+
+/// EL0 VA of the slot's private read-write page (see [`STUB_PAGE_VA`]).
+pub const PRIV_PAGE_VA: u64 = 0x7F000;
+
+const STUB_PAGE_IDX: usize = (STUB_PAGE_VA / PAGE_SIZE) as usize;
+const PRIV_PAGE_IDX: usize = (PRIV_PAGE_VA / PAGE_SIZE) as usize;
+const _: () = assert!(STUB_PAGE_IDX > 0 && PRIV_PAGE_IDX > 0 && STUB_PAGE_IDX < 512 && PRIV_PAGE_IDX < 512);
+const _: () = assert!(PRIV_PAGE_VA == STUB_PAGE_VA + PAGE_SIZE);
+const _: () = assert!(PRIV_PAGE_VA + PAGE_SIZE <= 0x80000);
 
 /// The shared L2 **templates**, one per GiB, that every slot's own L2s copy
 /// (GiB 0's entry 0 is unused — it is the slot's own page-0 L3).
@@ -473,9 +515,9 @@ fn table_at(desc: u64) -> *mut UserTable {
 /// to EL0, EL1 instruction fetches from that VA fault.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum PageFlags {
-    /// User Read/Write, EL0 executable — what every pool page and page 0
-    /// carry (plan §3.2: `AP=01`, `PXN=1`, `UXN=0`; LDG and `Pexec` load
-    /// code into ordinary pool blocks).
+    /// User Read/Write, EL0 executable — what every pool page carries
+    /// (plan §3.2: `AP=01`, `PXN=1`, `UXN=0`; LDG and `Pexec` load code into
+    /// ordinary pool blocks). Page 0 no longer does (MEM12).
     UserRwExec,
     /// User Read-Only, EL0 executable.
     UserRoExec,
@@ -502,6 +544,11 @@ pub enum PageFlags {
     /// [`Self::UserRwNxUncached`], for a DMA-shared region a program is
     /// only allowed to read.
     UserRoNxUncached,
+    /// EL0 **execute-only**: EL1 read, EL0 instruction fetch, no EL0 data
+    /// access (`AP=10`, `PXN=1`, `UXN=0` → `PrivRead, UnprivExecute`, ARM
+    /// ARM Table D8-65, D8-7760). The shared stub page ([`STUB_PAGE_VA`],
+    /// MEM12): code every process jumps to, which no program reads or writes.
+    UserExecOnly,
 }
 
 impl PageFlags {
@@ -517,6 +564,7 @@ impl PageFlags {
             Self::UserRoNx => core | D_AP_USER_RO | D_UXN,
             Self::UserRwNxUncached => nc_core | D_AP_USER_RW | D_UXN,
             Self::UserRoNxUncached => nc_core | D_AP_USER_RO | D_UXN,
+            Self::UserExecOnly => core | D_AP_PRIV_RO,
         }
     }
 
@@ -538,7 +586,8 @@ pub enum MapError {
     UnalignedPa,
     /// VA is outside the range the call may map: for [`map_page`] the
     /// slot-private `[0, 2 MiB)`, for [`map_shared`] `[0x1000,
-    /// USER_VA_LIMIT)`.
+    /// USER_VA_LIMIT)` without the stub and private pages
+    /// (`[STUB_PAGE_VA, PRIV_PAGE_VA + 0x1000)`).
     VaOutOfRange,
     /// A page or block is already mapped there with different attributes.
     /// Stage 1 never changes a valid entry (that would need a TLB
@@ -602,9 +651,106 @@ pub unsafe fn page0_bytes(slot: usize) -> Option<&'static mut [u8; 4096]> {
     Some(unsafe { &mut *(p as *mut [u8; 4096]) })
 }
 
+/// Kernel VA of the shared stub page ([`STUB_PAGE_VA`]).
+pub fn stub_page_kva() -> *mut u8 {
+    // Raw address of a `static mut`: no reference is formed.
+    (&raw mut STUB_PAGE) as *mut u8
+}
+
+/// [`stub_page_kva`] as a mutable byte page.
+///
+/// # Safety
+///
+/// Caller holds the BDOS giant lock for the borrow's lifetime and does not
+/// alias it.
+pub unsafe fn stub_page_bytes() -> &'static mut [u8; 4096] {
+    // SAFETY: the static page; caller's aliasing contract.
+    unsafe { &mut *(stub_page_kva() as *mut [u8; 4096]) }
+}
+
+/// Kernel VA of `slot`'s private read-write page ([`PRIV_PAGE_VA`]).
+/// `None` for an out-of-range slot.
+pub fn priv_page_kva(slot: usize) -> Option<*mut u8> {
+    if slot >= MAX_PROCESSES {
+        return None;
+    }
+    let base = (&raw mut PRIV_PAGE) as *mut Page0;
+    // SAFETY: `slot < MAX_PROCESSES`, in bounds of the array.
+    Some(unsafe { base.add(slot) } as *mut u8)
+}
+
+/// [`priv_page_kva`] as a mutable byte page.
+///
+/// # Safety
+///
+/// Caller holds the BDOS giant lock for the borrow's lifetime and does not
+/// alias it.
+pub unsafe fn priv_page_bytes(slot: usize) -> Option<&'static mut [u8; 4096]> {
+    let p = priv_page_kva(slot)?;
+    // SAFETY: `p` addresses the slot's 4-KiB page; caller's aliasing contract.
+    Some(unsafe { &mut *(p as *mut [u8; 4096]) })
+}
+
+/// The kernel alias of a user VA in one of `slot`'s **private** pages —
+/// page 0 or the private read-write page — or `None` for any other VA (those
+/// are VA = PA). The stub page is not listed: no program may read it.
+pub fn private_page_alias(slot: usize, va: u64) -> Option<u64> {
+    if va < PAGE_SIZE {
+        return page0_kva(slot).map(|p| p as u64 + va);
+    }
+    if (PRIV_PAGE_VA..PRIV_PAGE_VA + PAGE_SIZE).contains(&va) {
+        return priv_page_kva(slot).map(|p| p as u64 + (va - PRIV_PAGE_VA));
+    }
+    None
+}
+
+/// Is `va` in one of the slot-private pages (page 0, the stub page, the
+/// private read-write page)? Such a page is not contiguous with what lies
+/// around it, so a user range may not run across its end.
+pub fn in_private_page(va: u64) -> bool {
+    va < PAGE_SIZE || (STUB_PAGE_VA..PRIV_PAGE_VA + PAGE_SIZE).contains(&va)
+}
+
+/// Make page 0 of `slot` EL0-writable (`on`, the **super state**) or
+/// EL0-read-only (user state) — `docs/api/_super-state.md` S2. Never
+/// executable. Only the slot's own L3 entry 0 changes.
+///
+/// TLB maintenance: this changes a **valid** leaf in both directions, and
+/// "when a translation table entry associated with a specific VMID or ASID is
+/// modified, software is required to invalidate the corresponding TLB entry"
+/// (ARM ARM DDI 0487 M.d `RGPPYH`, D8-7858); a read-only entry that faulted a
+/// write may itself be cached (`RJVXRH`/`IWJLXV`, D8-7841), so the widening
+/// RO → RW needs it as much as the narrowing. [`set_leaf`] records the change
+/// and [`flush_tlb`] issues `dsb ish` (the table write visible to the walker
+/// before the invalidation), `tlbi vmalle1is` — or with ASIDs on `tlbi
+/// vae1is` for VA 0 with the slot's ASID —, `dsb ish` and `isb`: the TLBI is
+/// complete after the DSB followed by a context synchronisation event
+/// (`IBLDZX`, D8-7875).
+///
+/// # Safety
+///
+/// Caller holds the BDOS giant lock; EL1; [`init_slot_tables`] ran for `slot`.
+pub unsafe fn set_page0_writable(slot: usize, on: bool) {
+    if slot >= MAX_PROCESSES {
+        return;
+    }
+    let Some(p0) = page0_kva(slot) else { return };
+    let flags = if on { PageFlags::UserRwNx } else { PageFlags::UserRoNx };
+    let desc = va_to_pa(p0 as u64) | flags.descriptor_bits();
+    // SAFETY: caller's lock contract; the slot's own L3 (entry 0 = page 0).
+    unsafe {
+        let t = &raw mut slot_tables(slot).l3;
+        set_leaf(t, 0, desc, 0, Some(slot));
+        flush_tlb();
+    }
+}
+
 /// Build `slot`'s root: `L0[0] → L1`, `L1[g]` → the slot's own L2 of GiB `g`
 /// (a copy of the shared template), `L2₀[0] → L3`, `L3[0]` = the slot's page
-/// 0 (`UserRwExec`), `L3[1..]` = the `[0, 2 MiB)` template. Private L3 tables
+/// 0 (`UserRoNx` — user state; [`set_page0_writable`] widens it in super
+/// state), `L3[1..]` = the `[0, 2 MiB)` template, except the stub page
+/// (`UserExecOnly`) and the slot's private read-write page (`UserRwNx`) —
+/// MEM12, `docs/api/_super-state.md`. Private L3 tables
 /// a previous tenant of the slot held go back to the arena first.
 /// Idempotent; the page-0 *contents* are not touched (the loader writes them).
 ///
@@ -640,7 +786,10 @@ pub unsafe fn init_slot_tables(slot: usize) -> Result<(), MapError> {
 
     // SAFETY: caller's lock contract.
     t.l3.0 = unsafe { shared_l3_0() }.0;
-    t.l3.0[0] = page0_pa | PageFlags::UserRwExec.descriptor_bits();
+    t.l3.0[0] = page0_pa | PageFlags::UserRoNx.descriptor_bits();
+    t.l3.0[STUB_PAGE_IDX] = va_to_pa(stub_page_kva() as u64) | PageFlags::UserExecOnly.descriptor_bits();
+    let priv_pa = va_to_pa(priv_page_kva(slot).ok_or(MapError::InvalidSlot)? as u64);
+    t.l3.0[PRIV_PAGE_IDX] = priv_pa | PageFlags::UserRwNx.descriptor_bits();
     Ok(())
 }
 
@@ -807,6 +956,11 @@ pub unsafe fn map_shared(va: u64, len: u64, flags: PageFlags, allow_blocks: bool
         .map(|e| (e + PAGE_SIZE - 1) & !(PAGE_SIZE - 1))
         .ok_or(MapError::VaOutOfRange)?;
     if va < PAGE_SIZE || end > USER_VA_LIMIT {
+        return Err(MapError::VaOutOfRange);
+    }
+    // The stub page and the private read-write page are each slot's own
+    // (MEM12); a VA = PA publication there would shadow them.
+    if va < PRIV_PAGE_VA + PAGE_SIZE && end > STUB_PAGE_VA {
         return Err(MapError::VaOutOfRange);
     }
     let page_bits = flags.descriptor_bits();

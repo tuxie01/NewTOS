@@ -1968,9 +1968,17 @@ pub unsafe fn block_containing(addr: u64) -> Option<(u64, u64)> {
 /// lies in ("private", "super", "readable"; a global block is a hardware
 /// error), "free" pool memory, or memory protection does not control
 /// ("hardware"). `None` with protection off (FreeMiNT reports nothing then,
-/// `mprot.x:96-97`).
+/// `mprot.x:96-97`) — except for page 0 and the stub page, which are named in
+/// every mode: their rights are the super state's, not memory protection's
+/// (MEM12, `docs/api/_super-state.md` S9).
 pub fn region_kind(far: u64) -> Option<crate::bios::crash::RegionKind> {
     use crate::bios::crash::RegionKind;
+    if far < super::mmu::PAGE_SIZE {
+        return Some(RegionKind::SystemVariables);
+    }
+    if (super::mmu::STUB_PAGE_VA..super::mmu::STUB_PAGE_VA + super::mmu::PAGE_SIZE).contains(&far) {
+        return Some(RegionKind::StubPage);
+    }
     if !enabled() {
         return None;
     }

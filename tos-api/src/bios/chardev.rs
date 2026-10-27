@@ -322,8 +322,16 @@ pub fn current_conterm() -> u8 {
     // (a static kernel page per slot); `$484` lies in the loader-populated
     // sysvar area (`populate_sysvars`). Same reasoning as
     // `bios::tick::publish`.
-    unsafe { page0.add(CONTERM_ADDR).read_volatile() }
+    let raw = unsafe { page0.add(CONTERM_ADDR).read_volatile() };
+    // A program may write `conterm` in super state (MEM12,
+    // `docs/api/_super-state.md` S10): the kernel takes only the documented
+    // bits — 0 key click, 1 key repeat, 2 bell, 3 `Bconin` shift state
+    // (EmuTOS `bios/ikbd.c:279,475,495,1100`) — and ignores the rest.
+    raw & CONTERM_DOCUMENTED
 }
+
+/// The `conterm` bits the kernel reads (S10): 0..3.
+const CONTERM_DOCUMENTED: u8 = 0x0F;
 
 /// Pack an IKBD key word (`scancode << 8 | ascii`) into the console
 /// `Bconin`/`Cconin` return LONG: bits 0-7 = ASCII (0 for non-ASCII keys),

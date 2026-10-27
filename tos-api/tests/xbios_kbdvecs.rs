@@ -1,7 +1,9 @@
 //! KEYS02 — `Kbdvbase` (XBIOS 0x22), the per-process IKBD vector table and
 //! the `kbdvec` hook's queue.
 //!
-//! Spec: `docs/api/xbios/22-kbdvbase.md` (approved 2026-10-04, D1–D8).
+//! Spec: `docs/api/xbios/22-kbdvbase.md` (approved 2026-10-04, D1–D8; Teil
+//! D approved 2026-10-27 — the table in the private read-write page, the
+//! stubs in the stub page, D9 the receiving table; TASK/MEM12).
 //! EmuTOS: `bios/aciavecs.S:126-141` (layout), `:146-223` (defaults),
 //! `:407-414` (`ikbdraw` → `kbdvec`), `:372-376` (`_kbdvec` → `kbd_int`).
 //!
@@ -18,6 +20,7 @@ use std::sync::atomic::{AtomicBool, AtomicU16, Ordering};
 use std::sync::{Mutex, MutexGuard, Once};
 
 use tos_api::bdos::process::loader::KBDVECS_AREA_VA;
+use tos_api::bdos::process::mmu::{PRIV_PAGE_VA, STUB_PAGE_VA};
 use tos_api::bdos::process::{free_slot, sched, set_current, State, PROCESS_TABLE};
 use tos_api::host::Host;
 use tos_api::trap::{TrapArgs, TrapClass};
@@ -96,14 +99,15 @@ fn rig() {
 }
 
 /// A process in `SLOT` as the loader leaves it (only the KEYS02 part): its
-/// basepage (here a box of its own, which is all `slot_for` needs) and its
-/// page 0 — since ARCH03 stage 1 the slot's own kernel page
-/// (`process::mmu::page0_kva`), separate from the basepage.
+/// basepage (here a box of its own, which is all `slot_for` needs), the table
+/// in its private read-write page (`process::mmu::priv_page_kva`, MEM12) and
+/// the two stubs in the shared stub page.
 struct Page0(Box<[u64; 32]>);
 
 impl Page0 {
     fn loaded() -> Page0 {
-        kbdvecs::write_defaults(page0());
+        kbdvecs::write_table(private_page());
+        kbdvecs::write_stubs(stub_page());
         let p = Page0(Box::new([0; 32]));
         // The standard handles `init_pd_files` gives every loaded PD (here the
         // kernel's `default_handle`): the console calls read their device from
@@ -113,16 +117,16 @@ impl Page0 {
         p
     }
     fn bytes(&self) -> &[u8] {
-        page0()
+        private_page()
     }
     fn slot_value(&self, off: u64) -> u64 {
-        let at = (KBDVECS_AREA_VA + off) as usize;
+        let at = (KBDVECS_AREA_VA - PRIV_PAGE_VA + off) as usize;
         u64::from_le_bytes(self.bytes()[at..at + 8].try_into().unwrap())
     }
     /// What a program does: `((void **)Kbdvbase())[-1] = hook`.
     fn set_slot(&mut self, off: u64, v: u64) {
-        let at = (KBDVECS_AREA_VA + off) as usize;
-        page0()[at..at + 8].copy_from_slice(&v.to_le_bytes());
+        let at = (KBDVECS_AREA_VA - PRIV_PAGE_VA + off) as usize;
+        private_page()[at..at + 8].copy_from_slice(&v.to_le_bytes());
     }
     fn kva(&self) -> *mut BasePage {
         self.0.as_ptr() as *mut BasePage
@@ -131,11 +135,17 @@ impl Page0 {
 
 const SLOT: usize = 6;
 
-/// `SLOT`'s page 0.
-fn page0() -> &'static mut [u8; 4096] {
+/// `SLOT`'s private read-write page.
+fn private_page() -> &'static mut [u8; 4096] {
     // SAFETY: the tests run one at a time under `lock()`; nothing else in this
-    // binary touches `SLOT`'s page 0.
-    unsafe { tos_api::bdos::process::mmu::page0_bytes(SLOT) }.expect("page 0")
+    // binary touches `SLOT`'s private page.
+    unsafe { tos_api::bdos::process::mmu::priv_page_bytes(SLOT) }.expect("private page")
+}
+
+/// The shared stub page.
+fn stub_page() -> &'static mut [u8; 4096] {
+    // SAFETY: as above.
+    unsafe { tos_api::bdos::process::mmu::stub_page_bytes() }
 }
 
 /// Make `page` the running process in `SLOT` (the identity `slot_for` uses is
@@ -149,8 +159,14 @@ fn run(page: &Page0) {
     }
     sched::set_kernel_parked(false);
     kbdvecs::release_slot(SLOT);
+    for p in PROCESS_TABLE.iter() {
+        p.start_seq.store(0, Ordering::Release);
+    }
     PROCESS_TABLE[SLOT].set_state(State::Running);
     PROCESS_TABLE[SLOT].basepage_kva.store(page.kva(), Ordering::Release);
+    // A started process (`pexec::write_parent` → `note_started`): the
+    // innermost one, whose table gets the keys (D9).
+    PROCESS_TABLE[SLOT].start_seq.store(1, Ordering::Release);
     set_current(page.kva());
 }
 
@@ -220,11 +236,20 @@ fn loader_writes_the_table_and_the_two_stubs() {
     assert_eq!(OFF_IKBDSYS, OFF_KBDVBASE + 0x40);
     // D5: drvstat and kbdlength are 0.
     let b = p.bytes();
-    assert_eq!(b[(KBDVECS_AREA_VA + OFF_DRVSTAT) as usize], 0);
-    assert_eq!(b[(KBDVECS_AREA_VA + OFF_KBDLENGTH) as usize], 0);
+    assert_eq!(b[(KBDVECS_AREA_VA - PRIV_PAGE_VA + OFF_DRVSTAT) as usize], 0);
+    assert_eq!(b[(KBDVECS_AREA_VA - PRIV_PAGE_VA + OFF_KBDLENGTH) as usize], 0);
+    // The table is in the private read-write page, the stubs in the stub page
+    // (MEM12, 22-kbdvbase.md Teil D "D1-neu").
+    assert!((PRIV_PAGE_VA..PRIV_PAGE_VA + 0x1000).contains(&KBDVECS_AREA_VA));
+    assert!((STUB_PAGE_VA..STUB_PAGE_VA + 0x1000).contains(&RET_STUB_VA));
+    assert!((STUB_PAGE_VA..STUB_PAGE_VA + 0x1000).contains(&KBDVEC_DEFAULT_VA));
     // The stubs: `ret`, and mov x1,x0 / mov x0,#2002 / mov x2,#0 /
     // mov x8,#0x154 / svc #1 / ret.
-    let word = |va: u64| u32::from_le_bytes(b[va as usize..va as usize + 4].try_into().unwrap());
+    let st = stub_page();
+    let word = |va: u64| {
+        let at = (va - STUB_PAGE_VA) as usize;
+        u32::from_le_bytes(st[at..at + 4].try_into().unwrap())
+    };
     assert_eq!(word(RET_STUB_VA), 0xD65F_03C0);
     let stub: Vec<u32> = (0..6).map(|i| word(KBDVEC_DEFAULT_VA + 4 * i)).collect();
     assert_eq!(
@@ -451,4 +476,88 @@ fn single_key_reads_give_way_without_side_effects() {
     assert_eq!(*ECHOED.lock().unwrap(), vec![0x61]);
     assert_eq!(bios(BCONIN, 2), 0x001E_0061);
     assert!(!kbdvecs::take_restart());
+}
+
+// ─── D9: whose table gets the key (MEM12) ────────────────────────────────
+
+/// A second process, `ACC`, here a desk accessory: its basepage box and its
+/// own table in its private page.
+const ACC: usize = 9;
+
+fn acc_private_page() -> &'static mut [u8; 4096] {
+    // SAFETY: under `lock()`; nothing else in this binary touches `ACC`'s page.
+    unsafe { tos_api::bdos::process::mmu::priv_page_bytes(ACC) }.expect("private page")
+}
+
+fn acc_set_kbdvec(v: u64) {
+    let at = (KBDVECS_AREA_VA - PRIV_PAGE_VA + OFF_KBDVEC) as usize;
+    acc_private_page()[at..at + 8].copy_from_slice(&v.to_le_bytes());
+}
+
+/// `ACC` loaded as an accessory (never started, `start_seq` 0) and running.
+fn run_accessory(acc_bp: &Page0) {
+    kbdvecs::write_table(acc_private_page());
+    kbdvecs::release_slot(ACC);
+    PROCESS_TABLE[ACC].set_state(State::Running);
+    PROCESS_TABLE[ACC].basepage_kva.store(acc_bp.kva(), Ordering::Release);
+    PROCESS_TABLE[ACC].start_seq.store(0, Ordering::Release);
+    tos_api::aes::acc::register_process(ACC);
+    set_current(acc_bp.kva());
+}
+
+fn forget_accessory() {
+    tos_api::aes::acc::forget_process(ACC);
+    PROCESS_TABLE[ACC].set_state(State::Free);
+    PROCESS_TABLE[ACC].basepage_kva.store(core::ptr::null_mut(), Ordering::Release);
+    kbdvecs::release_slot(ACC);
+}
+
+#[test]
+fn keys_go_to_the_innermost_started_process_not_the_running_accessory() {
+    let _g = lock();
+    rig();
+    let mut p = Page0::loaded();
+    p.set_slot(OFF_KBDVEC, HOOK);
+    run(&p);
+    // The program waits in a blocking call while the accessory has the CPU
+    // and the pump decodes a key in its context.
+    PROCESS_TABLE[SLOT].wait_cond.store(0x1234, Ordering::Release);
+    let a = Page0(Box::new([0; 32]));
+    run_accessory(&a);
+    assert_eq!(kbdvecs::hook_owner(), Some(SLOT), "D9: the innermost started process");
+    assert!(kbdvecs::route_key(UP), "the program's hook gets it");
+    assert_eq!(kbdvecs::pending(SLOT), 1);
+    assert_eq!(kbdvecs::pending(ACC), 0, "not the running accessory");
+    assert_eq!(
+        PROCESS_TABLE[SLOT].wait_cond.load(Ordering::Acquire),
+        0,
+        "the waiting owner is woken for the delivery"
+    );
+    assert!(DECODED.lock().unwrap().is_empty());
+    // The accessory's own table is never consulted: with the program's
+    // default back in place, the default decoder runs, whatever the
+    // accessory installed.
+    acc_set_kbdvec(HOOK + 0x100);
+    p.set_slot(OFF_KBDVEC, KBDVEC_DEFAULT_VA);
+    assert!(!kbdvecs::route_key(RIGHT));
+    assert_eq!(kbdvecs::pending(ACC), 0);
+    forget_accessory();
+}
+
+#[test]
+fn an_accessory_hook_is_reported_once() {
+    let _g = lock();
+    rig();
+    let p = Page0::loaded();
+    run(&p);
+    let a = Page0(Box::new([0; 32]));
+    run_accessory(&a);
+    assert!(!kbdvecs::accessory_hook_unwarned(ACC), "default in place: nothing to report");
+    acc_set_kbdvec(HOOK);
+    assert!(kbdvecs::accessory_hook_unwarned(ACC), "first time: report");
+    assert!(!kbdvecs::accessory_hook_unwarned(ACC), "once per tenancy");
+    assert!(!kbdvecs::accessory_hook_unwarned(SLOT), "a program is no accessory");
+    kbdvecs::release_slot(ACC);
+    assert!(kbdvecs::accessory_hook_unwarned(ACC), "a new tenant is reported again");
+    forget_accessory();
 }

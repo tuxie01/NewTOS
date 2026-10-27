@@ -2773,7 +2773,7 @@ fn ob_format(just: i16, raw: &[u8], tmpl: &[u8], out: &mut [u8]) -> usize {
 /// **Privilege split (AUD-P3-002).** For a **kernel-built** tree
 /// ([`ObjTree::kernel_built`]) `ub_code` is an EL1 function at this AES code's
 /// privilege and is called directly. For an **app-provided** tree the callback
-/// is EL0 code: the PARMBLK goes into the current process's page-0 scratch and
+/// is EL0 code: the PARMBLK goes into the current process's private-page scratch and
 /// the AES fiber stalls while the kernel runs `ub_code` at EL0 in the
 /// **current** process ([`crate::aes::thread::block_for_userdef`]) — also when
 /// the tree belongs to another process (ARCH03 3c, E10 (a): EmuTOS runs it
@@ -2829,7 +2829,8 @@ fn ob_user(
         // App-provided tree: `ub_code` lives in EL0 app memory. Synchronous
         // `G_USERDEF` callout via the AES fiber (AES-as-thread design §3.4/§5
         // step 2). Write the PARMBLK into the process's reserved EL0 scratch —
-        // through the kernel alias of its page 0 + `PARMBLK_SCRATCH_VA`,
+        // through the kernel alias of its private read-write page (MEM12: the
+        // routine may write its PARMBLK, as on EmuTOS's AES stack),
         // at the tree's ABI width — then stall the fiber: the kernel runs
         // `ub_code(parmblk)` at EL0 (no PXN) and resumes us with the WORD result
         // (EmuTOS `state = ob_user(...)`, gemoblib.c:793). No live process slot
@@ -2856,7 +2857,7 @@ fn ob_user(
             // callout.
             return new_state;
         };
-        let Some(page0) = mmu::page0_kva(slot) else {
+        let Some(private) = mmu::priv_page_kva(slot) else {
             return new_state;
         };
         // The tree owner when it is another process; a dead owner's slot has
@@ -2870,10 +2871,10 @@ fn ob_user(
             }
             _ => None,
         };
-        // SAFETY: `page0 + PARMBLK_SCRATCH_VA` is the kernel alias of the
-        // reserved scratch in the process's page 0, RW-mapped, ≥ 40 bytes;
-        // single-CPU under the trap.
-        unsafe { pb.write_abi(page0 as u64 + PARMBLK_SCRATCH_VA, t.abi()); }
+        // SAFETY: `private + (PARMBLK_SCRATCH_VA - PRIV_PAGE_VA)` is the kernel
+        // alias of the reserved scratch in the process's private page,
+        // ≥ 40 bytes (loader asserts); single-CPU under the trap.
+        unsafe { pb.write_abi(private as u64 + (PARMBLK_SCRATCH_VA - mmu::PRIV_PAGE_VA), t.abi()); }
         let parmblk_ptr = USER_VA_BASE + PARMBLK_SCRATCH_VA;
         if let Some(owner) = foreign {
             // SAFETY: AES trap context under the BDOS giant lock (single CPU).

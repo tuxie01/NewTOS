@@ -19,13 +19,16 @@
 //! there restarts the machine; TeraDesk's "Reboot" does exactly that
 //! (`sdk/apps/teradesk/main.c:2096,2118`). On NewTOS a program runs at EL0
 //! and cannot restart anything itself, so both fields point at a small
-//! **reset stub** the loader writes into every process's page 0
-//! ([`RESET_STUB_VA`], [`write_stub`]): it calls the NewTOS-own
+//! **reset stub** in the shared stub page (`mmu::STUB_PAGE_VA`, MEM12;
+//! [`RESET_STUB_VA`], [`write_stub`]): it calls the NewTOS-own
 //! `Ssystem(S_NEWTOS_RESET, 0, 0)` ([`S_NEWTOS_RESET`] = 2021, the 2000+ block
 //! of `docs/api/gemdos/154-ssystem.md`, like `S_NEWTOS_KBDVEC`'s stub), and
-//! the kernel restarts the machine. Page 0 is mapped `UserRwExec` in every
-//! memory-protection mode, so the stub is reachable with protection off, on
-//! and strict, and its address is below 4 GiB, so it fits the 32-bit fields.
+//! the kernel restarts the machine. The stub page is mapped EL0
+//! execute-only in every memory-protection mode, so the stub is reachable
+//! with protection off, on and strict, and its address is below 4 GiB, so it
+//! fits the 32-bit fields. Warm or cold follows the `memvalid` magics in the
+//! caller's page 0, as on the Atari (`entry_kind`): a program clears them in
+//! super state — TeraDesk's "Reboot" does, after `Super(0L)` (MEM12).
 //!
 //! `os_entry` (+0x00) is the one entry this cannot cover: on m68k it is the
 //! instruction `bra.s _main` itself, two bytes, followed by `os_version`
@@ -40,7 +43,8 @@
 use tos_types::error::{EINVAL, ERROR};
 use tos_types::Long;
 
-use crate::bdos::process::loader::{RESET_STUB_AREA_SIZE, RESET_STUB_AREA_VA, USER_VA_BASE};
+use crate::bdos::process::loader::{write_stub_code, RESET_STUB_AREA_SIZE, RESET_STUB_AREA_VA, USER_VA_BASE};
+use crate::bdos::process::mmu::STUB_PAGE_VA;
 use crate::host;
 use crate::trap::TrapArgs;
 
@@ -137,15 +141,13 @@ const _: () = assert!((RESET_STUB_CODE[0] >> 5) & 0xFFFF == S_NEWTOS_RESET as u3
 const _: () = assert!(RESET_STUB_CODE[0] & 0x1F == 0); // Rd = x0
 const _: () = assert!(RESET_STUB_VA <= u32::MAX as u64);
 
-/// Write the reset stub into a freshly loaded TPA's page 0 through the
-/// kernel alias `tpa`. Called by the loader next to the other page-0 stubs,
-/// before the code-cache maintenance.
-pub fn write_stub(tpa: &mut [u8]) {
-    let at = RESET_STUB_AREA_VA as usize;
-    tpa[at..at + RESET_STUB_AREA_SIZE as usize].fill(0);
-    for (i, insn) in RESET_STUB_CODE.iter().enumerate() {
-        tpa[at + i * 4..at + i * 4 + 4].copy_from_slice(&insn.to_le_bytes());
-    }
+/// Write the reset stub into the shared stub page `page` (the kernel alias
+/// of the whole page). Called once by `loader::ensure_stub_page`, next to the
+/// other stubs, before the code-cache maintenance.
+pub fn write_stub(page: &mut [u8]) {
+    let at = (RESET_STUB_AREA_VA - STUB_PAGE_VA) as usize;
+    page[at..at + RESET_STUB_AREA_SIZE as usize].fill(0);
+    write_stub_code(page, RESET_STUB_VA, &RESET_STUB_CODE);
 }
 
 /// `memvalid` / `memval2` / `memval3` and their magics (EmuTOS `memchk`,

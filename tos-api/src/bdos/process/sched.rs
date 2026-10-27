@@ -895,6 +895,22 @@ pub fn wake(cond: u64) {
     }
 }
 
+/// Bytes for `slot`'s `kbdvec` hook were queued while another process had
+/// the CPU (KEYS02 D9, MEM12: the hook owner is the innermost started
+/// process, not the running one). A blocking wait gives way only when its own
+/// process runs (`sleep`'s ring check), so a WAITING owner is made READY
+/// (onto `drl`, as [`wake`] does) — it then re-enters its wait, finds the
+/// bytes and yields for the delivery. A READY or RUNNING owner needs nothing.
+pub fn wake_for_upcall(slot: usize) {
+    let Some(p) = PROCESS_TABLE.get(slot) else {
+        return;
+    };
+    if p.wait_cond.load(Ordering::Acquire) != 0 {
+        p.wait_cond.store(0, Ordering::Release);
+        push_drl(slot);
+    }
+}
+
 /// `true` when the [`wait_multi`] key `waiter` asked for the source the
 /// single-class key `cond` names ([`wait_input`], [`wait_mesg`] or
 /// [`wait_mutex`]).

@@ -315,7 +315,9 @@ fn in_publication(va: u64) -> bool {
 /// drawing another process's tree or window title, A83/A97) or must check one
 /// (XBIOS `Setscreen`'s screen base):
 ///
-/// * `va` in page 0 (`< 0x1000`) — the slot's own page 0 ([`mmu::page0_kva`]);
+/// * `va` in page 0 (`< 0x1000`) or in the private read-write page — the
+///   slot's own frame ([`mmu::private_page_alias`]); the EL0 execute-only stub
+///   page names no data (`None`);
 /// * `va` inside an **allocated** BDOS pool block, or inside a publication —
 ///   `va + VA_OFFSET` (VA = PA);
 /// * anything else — free pool memory, unmapped addresses — `None`.
@@ -333,8 +335,10 @@ pub fn resolve_kva(slot: usize, va: u64) -> Option<u64> {
     if slot >= MAX_PROCESSES {
         return None;
     }
-    if va < PAGE_SIZE {
-        return mmu::page0_kva(slot).map(|p| p as u64 + va);
+    if mmu::in_private_page(va) {
+        // Page 0 and the private read-write page through the slot's own
+        // frames; the EL0 execute-only stub page is no data (MEM12).
+        return mmu::private_page_alias(slot, va);
     }
     // SAFETY: single-CPU under the BDOS lock; read-only list walk.
     let allocated = unsafe { crate::bdos::mem::traps::is_allocated(va) };

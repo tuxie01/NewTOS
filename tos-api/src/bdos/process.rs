@@ -55,6 +55,7 @@ pub mod registry;
 pub mod reloc;
 pub mod sched;
 pub mod standin;
+pub mod superstate;
 pub mod usermem;
 
 // ─── Bounds + state encoding ────────────────────────────────────────
@@ -532,6 +533,11 @@ pub struct Process {
     /// encoded per [`Disposition::encode`]; `0` (= [`Disposition::Resume`])
     /// for step-1 consumers.
     pub upcall_pending_disp: AtomicU64,
+
+    /// The **super state** (MEM12, `docs/api/_super-state.md` S1): set by
+    /// `Super`/`Supexec` and the `kbdvec` upcall, it makes the process's page
+    /// 0 EL0-writable and grants nothing else ([`superstate`]). Off at load.
+    pub super_state: AtomicBool,
 }
 
 /// A pending EL0 upcall: the handler VA to jump to, up to four
@@ -590,6 +596,22 @@ pub enum Disposition {
     /// `aes::thread::AES_CALL_ORIGIN` instead of the interrupted (stub) context.
     /// Neither resume-in-place (the stub context is discarded) nor terminate.
     UserdefReturn,
+    /// The handler was a `Supexec` callback (MEM12, `docs/api/_super-state.md`
+    /// S6): on `Psigreturn` the interrupted context — the caller right after
+    /// its `svc` — resumes with `x0` = the callback's return value, and the
+    /// super state goes back to `prev_super`, the state at the `Supexec`.
+    SupexecReturn {
+        /// The caller's super state before the `Supexec`.
+        prev_super: bool,
+    },
+    /// Resume as [`Disposition::Resume`], and put the super state back to
+    /// `prev_super`: an upcall delivered **in** super state — the `kbdvec`
+    /// hook, which EmuTOS calls from the interrupt in supervisor mode (MEM12
+    /// S11, `bios/aciavecs.S:405-414`).
+    ResumeSuper {
+        /// The process's super state before the upcall.
+        prev_super: bool,
+    },
 }
 
 impl Disposition {
@@ -604,6 +626,10 @@ impl Disposition {
     /// §6.1.6). Distinct from [`Self::TERM_TAG`]; a `0` word still decodes to
     /// [`Disposition::Resume`], keeping the step-1 default a plain zero.
     const USERDEF_TAG: u64 = 1 << 61;
+    /// Tag bit of [`Disposition::SupexecReturn`]; bit 0 = `prev_super`.
+    const SUPEXEC_TAG: u64 = 1 << 60;
+    /// Tag bit of [`Disposition::ResumeSuper`]; bit 0 = `prev_super`.
+    const RESUME_SUPER_TAG: u64 = 1 << 59;
 
     /// Encode into the per-nest / pending `AtomicU64`. [`Disposition::Resume`]
     /// is `0`, so a freshly-zeroed slot means "resume".
@@ -619,6 +645,8 @@ impl Disposition {
                     | (rc as u32 as u64 & 0xFFFF)
             }
             Disposition::UserdefReturn => Self::USERDEF_TAG,
+            Disposition::SupexecReturn { prev_super } => Self::SUPEXEC_TAG | u64::from(prev_super),
+            Disposition::ResumeSuper { prev_super } => Self::RESUME_SUPER_TAG | u64::from(prev_super),
         }
     }
 
@@ -631,6 +659,10 @@ impl Disposition {
             }
         } else if v & Self::USERDEF_TAG != 0 {
             Disposition::UserdefReturn
+        } else if v & Self::SUPEXEC_TAG != 0 {
+            Disposition::SupexecReturn { prev_super: v & 1 != 0 }
+        } else if v & Self::RESUME_SUPER_TAG != 0 {
+            Disposition::ResumeSuper { prev_super: v & 1 != 0 }
         } else {
             Disposition::Resume
         }
@@ -844,6 +876,7 @@ impl Process {
             upcall_pending_args: [const { AtomicU64::new(0) }; 4],
             upcall_pending_mask: AtomicU32::new(0),
             upcall_pending_disp: AtomicU64::new(0),
+            super_state: AtomicBool::new(false),
         }
     }
 
@@ -1308,6 +1341,9 @@ pub fn free_slot(idx: usize) {
     }
     p.upcall_pending_mask.store(0, Ordering::Release);
     p.upcall_pending_disp.store(0, Ordering::Release);
+    // The super state ends with the process (S7); the next tenant's root is
+    // rebuilt with page 0 read-only by `mmu::init_slot_tables`.
+    p.super_state.store(false, Ordering::Release);
     for c in p.upcall_ctx.iter() {
         c.clear();
     }
@@ -1322,8 +1358,8 @@ pub fn free_slot(idx: usize) {
     // space is gone (see `vdi::mouse::release_wheel_vector`).
     crate::vdi::mouse::release_wheel_vector(idx);
     // Drop any `kbdvec` bytes still queued for this process (KEYS02, D8): the
-    // hook lived in the address space that is going away; its table and stubs
-    // in page 0 go with the TPA.
+    // hook lived in the address space that is going away; its table in the
+    // private page is rewritten for the next tenant (the stubs are shared).
     crate::xbios::kbdvecs::release_slot(idx);
     // State last so that any concurrent reader sees `Free` only once
     // every other field is observably reset.

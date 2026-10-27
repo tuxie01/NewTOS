@@ -392,7 +392,7 @@ fn sync_handler(frame: &mut ExceptionFrame) {
         // instead, where the program path has already been read out of the
         // caller's address space.
         if tos_api::gemdos::trace::ENABLED
-            && matches!(func, 0x4C | 0x00 | 0x31 | 0x4D | 0x11A)
+            && matches!(func, 0x4C | 0x00 | 0x31 | 0x4D | 0x11A | 0x20)
         {
             let regs = frame_arg_regs(frame);
             tos_api::gemdos::trace::note_frame_call(func, &regs, &[], &[]);
@@ -418,6 +418,25 @@ fn sync_handler(frame: &mut ExceptionFrame) {
             handle_psigreturn(frame);
             return;
         }
+        // Super (0x20) — the super state (MEM12, `docs/api/_super-state.md`
+        // S3–S5). Needs the caller's `SP_EL0` for its token, which the leaf
+        // table cannot see; EmuTOS too answers it in the TRAP #1 front end,
+        // before the BDOS table (`bdos/rwa.S:159-184`).
+        if func == 0x20 {
+            handle_super(frame);
+            return;
+        }
+    }
+
+    // Supexec (XBIOS 0x26) from an EL0 program — run the callback at EL0 in
+    // super state as an upcall (MEM12 S6); `Psigreturn` hands its `x0` back.
+    // An EL1 caller keeps the dispatcher's answer for an absent slot.
+    if matches!(class, TrapClass::Xbios)
+        && frame.gpr[8] as u16 == 0x26
+        && frame.spsr & 0xF == 0
+        && handle_supexec(frame)
+    {
+        return;
     }
 
     let args = TrapArgs {
@@ -781,6 +800,14 @@ fn deliver_pending_kbdvec(frame: &mut ExceptionFrame) -> bool {
     let Some(slot) = slot_for(current()) else {
         return false;
     };
+    // D9 (MEM12): an accessory's hook is never called — say so, once.
+    if kbdvecs::accessory_hook_unwarned(slot) {
+        crate::kprintln!(
+            "[kbdvec] warning: desk accessory in slot {} installed a kbdvec hook; it is never called \
+             (keys go to the innermost started program, docs/api/xbios/22-kbdvbase.md Teil D, D9)",
+            slot
+        );
+    }
     if PROCESS_TABLE[slot].upcall_mask.load(Ordering::Acquire) & UPCALL_MASK_KBDVEC != 0 {
         return false;
     }
@@ -790,13 +817,20 @@ fn deliver_pending_kbdvec(frame: &mut ExceptionFrame) -> bool {
             crate::ikbd::kbd_int(byte);
             continue;
         }
+        // The hook runs in super state, as EmuTOS calls `kbdvec` from the
+        // IKBD interrupt in supervisor mode (`bios/aciavecs.S:405-414`;
+        // MEM12 S11, O1); `Psigreturn` puts the state back.
+        let prev_super = tos_api::bdos::process::superstate::is_super(slot);
+        // SAFETY: trap context, BDOS giant lock held implicitly; the slot is
+        // the running process, its root built.
+        unsafe { tos_api::bdos::process::superstate::set_super(slot, true) };
         deliver_upcall(
             frame,
             UpcallDesc {
                 handler_va: handler,
                 args: [u64::from(byte), 0, 0, 0],
                 mask_bit: UPCALL_MASK_KBDVEC,
-                disposition: Disposition::Resume,
+                disposition: Disposition::ResumeSuper { prev_super },
             },
         );
         return true;
@@ -891,18 +925,6 @@ fn restore_call_origin(frame: &mut ExceptionFrame) {
     o.clear();
     tos_api::aes::thread::AES_CALL_ORIGIN_SLOT
         .store(tos_api::aes::thread::AES_ORIGIN_NONE, Ordering::Release);
-}
-
-/// Read the userdef return-WORD the EL0 stub stored in the ret-slot, through
-/// the kernel alias of the process's page 0 (design §3.4(e)).
-fn read_userdef_ret_slot(slot_idx: usize) -> i16 {
-    let Some(page0) = tos_api::bdos::process::mmu::page0_kva(slot_idx) else {
-        return 0;
-    };
-    let va = page0 as u64 + tos_api::bdos::process::loader::USERDEF_RET_SLOT_VA;
-    // SAFETY: `va` is the kernel alias of the reserved ret-slot in the
-    // process's page 0 (RW), written by the EL0 stub before its `Psigreturn`.
-    unsafe { (va as *const i16).read_unaligned() }
 }
 
 /// Snapshot `frame` into slot `cur`'s `saved_frame` so the scheduler can
@@ -1796,6 +1818,66 @@ fn deliver_upcall(
     // `frame.spsr` is left as-is — the handler runs in the same EL0 context.
 }
 
+/// GEMDOS `Super` (0x20) — the super state (MEM12,
+/// `docs/api/_super-state.md` S3–S5, approved 2026-10-27). For an EL0
+/// program: `superstate::super_call` with the caller's `SP_EL0` (the token
+/// `Super(0L)` hands back); the result goes through the ordinary completion
+/// tail. An EL1 caller (kernel code, no process) runs privileged by
+/// definition: the inquiry answers `-1` like EmuTOS's `x20_inq` in supervisor
+/// mode; there is no state to switch, so any other argument is `EINVFN`.
+fn handle_super(frame: &mut ExceptionFrame) {
+    use tos_api::bdos::process::{current, slot_for, superstate};
+
+    if frame.spsr & 0xF != 0 {
+        frame.gpr[0] = if frame.gpr[0] == 1 {
+            -1i64 as u64
+        } else {
+            tos_types::error::EINVFN as i64 as u64
+        };
+        return;
+    }
+    let Some(slot) = slot_for(current()) else {
+        frame.gpr[0] = tos_types::error::EINVFN as i64 as u64;
+        return;
+    };
+    // SAFETY: trap context under the BDOS giant lock; the running slot's root
+    // is built.
+    let result = unsafe { superstate::super_call(slot, frame.gpr[0], frame.sp_el0) };
+    complete_call_tail(frame, result);
+}
+
+/// XBIOS `Supexec` (0x26) from an EL0 program (MEM12 S6): enter the super
+/// state and deliver `codeptr` (`x0`) as an EL0 upcall with no arguments
+/// (EmuTOS `jmp (a0)`, `bios/vectors.S:1376-1378`). The interrupted context
+/// is the caller right after its `svc`; the callback's `ret` lands in the
+/// trampoline, whose `Psigreturn` ([`Disposition::SupexecReturn`]) resumes
+/// it with `x0` = the callback's value and the super state of before.
+/// Unlike EmuTOS, the callback may make system calls. Returns `false` when
+/// there is no running process (the caller then takes the dispatcher path).
+///
+/// [`Disposition::SupexecReturn`]: tos_api::bdos::process::Disposition::SupexecReturn
+fn handle_supexec(frame: &mut ExceptionFrame) -> bool {
+    use tos_api::bdos::process::{current, slot_for, superstate, Disposition, UpcallDesc};
+
+    let Some(slot) = slot_for(current()) else {
+        return false;
+    };
+    let codeptr = frame.gpr[0];
+    let prev_super = superstate::is_super(slot);
+    // SAFETY: trap context under the BDOS giant lock; running slot.
+    unsafe { superstate::set_super(slot, true) };
+    deliver_upcall(
+        frame,
+        UpcallDesc {
+            handler_va: codeptr,
+            args: [0; 4],
+            mask_bit: 0,
+            disposition: Disposition::SupexecReturn { prev_super },
+        },
+    );
+    true
+}
+
 /// GEMDOS `Psigreturn` (0x11A) — the EL0 upcall trampoline's return syscall
 /// (design §5). Pops the top saved EL0 context off the running process's
 /// kernel-side upcall stack and acts on its [`Disposition`]
@@ -1836,6 +1918,10 @@ fn handle_psigreturn(frame: &mut ExceptionFrame) {
     }
     let top = depth - 1;
     let disp = Disposition::decode(p.upcall_ctx_disp[top].load(Ordering::Acquire));
+    // The handler's `x0` at its `Psigreturn`: the trampoline and the
+    // `G_USERDEF` stub leave it alone, so it is the routine's return value
+    // (`Supexec`'s result, the `G_USERDEF` WORD).
+    let handler_x0 = frame.gpr[0];
 
     // Pop the nesting level bookkeeping first (FreeMiNT `p_sigmask &= ~…`,
     // `sig_mach.c:291`), so the process state is clean regardless of
@@ -1854,7 +1940,9 @@ fn handle_psigreturn(frame: &mut ExceptionFrame) {
         // it to the fiber, and either deliver the next userdef (a further stall)
         // or restore the client's original `wind_*` frame and finish the call.
         p.upcall_ctx[top].clear();
-        let word = read_userdef_ret_slot(slot_idx);
+        // `ub_code`'s WORD, which the stub leaves in `w0` (MEM12: it no longer
+        // stores it in page 0).
+        let word = handler_x0 as i16;
         match tos_api::aes::thread::resume(word) {
             tos_api::aes::thread::AesCallOutcome::Stalled(next) => {
                 deliver_userdef_upcall(frame, next);
@@ -1909,6 +1997,21 @@ fn handle_psigreturn(frame: &mut ExceptionFrame) {
     frame.spsr = ctx.spsr().load(Ordering::Acquire);
     frame.sp_el0 = ctx.sp_el0().load(Ordering::Acquire);
     ctx.clear();
+
+    // MEM12: a `Supexec` callback's value is the `Supexec`'s result (S6), and
+    // an upcall delivered in super state leaves it as it found it (S6, S11).
+    match disp {
+        Disposition::SupexecReturn { prev_super } => {
+            frame.gpr[0] = handler_x0;
+            // SAFETY: trap context under the BDOS giant lock; running slot.
+            unsafe { tos_api::bdos::process::superstate::set_super(slot_idx, prev_super) };
+        }
+        Disposition::ResumeSuper { prev_super } => {
+            // SAFETY: as above.
+            unsafe { tos_api::bdos::process::superstate::set_super(slot_idx, prev_super) };
+        }
+        _ => {}
+    }
 
     // KEYS02 (B4): more bytes for the `kbdvec` hook — chain the next upcall
     // onto the context just restored instead of resuming it, so a make and

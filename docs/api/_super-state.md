@@ -19,21 +19,26 @@
 > - the kernel treats page 0 as output only; it reads only documented input
 >   sysvars (conterm, memvalid …), validated
 
-## 1. Today (read)
+## 1. Before MEM12 (read at `a90bcfb0`)
 
 - The kernel has no super state. GEMDOS 0x20 answers `EINVFN`, XBIOS 0x26
   answers `38` (TASK/X01; [`xbios/26-supexec.md`](xbios/26-supexec.md)
   "Supexec is deferred").
 - The SDK binding replaces both by EL0 code: `Super` is a no-op that hands
-  back `SP_EL0` (`sdk/libc/overlay/include/mint/osbind.h:539@Super`),
+  back `SP_EL0` (`sdk/libc/overlay/include/mint/osbind.h` at `a90bcfb0`),
   `Supexec(f)` is a plain call `f()`
-  (`sdk/libc/overlay/include/mint/osbind.h:813@Supexec`), `SuperToUser` is
-  `Super` (`:572@SuperToUser`). In the built programs the bracket leaves no
+  (same file), `SuperToUser` is `Super`. In the built programs the bracket leaves no
   trace: TeraDesk's `force_mediach` has no instruction for `Super(0L)` and
   stores straight to `0x472..0x485`; HypView's `ChangeSysKeyconfig` is
   inlined into `KeyboardOnOff` (`strb` to `0x484`); DOOM's `kbd_install` is
   inlined (TASK/MEM12, "Super/Supexec in den Programmen").
-- Page 0 is `UserRwExec` in every process (`tos-api/src/bdos/process/mmu.rs:643@UserRwExec`).
+- Page 0 was `UserRwExec` in every process (`tos-api/src/bdos/process/mmu.rs`
+  `init_slot_tables` at `a90bcfb0`).
+
+Since MEM12 the SDK macros are traps again
+(`sdk/libc/overlay/include/mint/osbind.h:470@Super`,
+`:696@Supexec`), and the kernel implements S1–S13
+(`tos-api/src/bdos/process/superstate.rs:66@super_call`).
 
 ## 2. EmuTOS reference (read, pinned)
 
@@ -113,7 +118,7 @@ exactly in super state.
 **S9 — a page-0 write in user state** is a permission fault at EL0: crash
 report with "Bus Error", key, `Pterm(-1)` — EmuTOS's bus-error path
 (`any_vec` → `dopanic` → `kill_program`), the kernel survives
-(`kernel/src/arch/aarch64/exceptions.rs:1412@kill_crashed_program`). The
+(`kernel/src/arch/aarch64/exceptions.rs:1434@kill_crashed_program`). The
 report names the area "system variables (page 0)".
 
 **S10 — the kernel reads page 0 only as input it documents, validated.**

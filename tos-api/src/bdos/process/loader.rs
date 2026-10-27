@@ -38,8 +38,11 @@
 //!
 //! Page 0 (`[0, 0x1000)`) is **per process** and not part of the TPA (plan
 //! E3, §3.1): the classic system variables, the OSHEADER, the `$5A0` cookie
-//! jar, the `os_run` cell, the upcall trampolines, the `Keytbl` area and the
-//! KEYS02 vector table live in the slot's own page ([`mmu::page0_kva`]).
+//! jar, the `os_run` cell and the `Keytbl` area live in the slot's own page
+//! ([`mmu::page0_kva`]), EL0 read-only outside the super state (MEM12). The
+//! EL0 stubs are in the one shared stub page, the KEYS02 table and the
+//! `PARMBLK` scratch in the slot's private read-write page
+//! ([`ensure_stub_page`], [`mmu::priv_page_kva`]).
 //!
 //! ## Deliberate simplifications
 //!
@@ -190,9 +193,9 @@ pub struct LoadedImage {
 }
 
 /// Base of **page 0** — the per-process page at user VA `[0, 0x1000)` that
-/// holds the classic low-memory system area, the trampolines and the vector
-/// tables (plan E3). The page-0 VAs below (`TRAMPOLINE_VA`, …) are offsets
-/// from it. Since ARCH03 stage 1 the basepage is **not** here any more but
+/// holds the classic low-memory system area and the `Keytbl` area (plan E3;
+/// the stubs and the KEYS02 table moved to the stub page and the private
+/// read-write page with MEM12). The page-0 VAs below are offsets from it. Since ARCH03 stage 1 the basepage is **not** here any more but
 /// at the start of the process's TPA block ([`LoadedImage::basepage_va`]).
 pub const USER_VA_BASE: u64 = 0x0;
 
@@ -649,14 +652,15 @@ unsafe fn install_slot(
     let page0 = unsafe { mmu::page0_bytes(slot) }.ok_or(LoadError::InvalidSlot)?;
     page0.fill(0);
     populate_sysvars(page0, tpa.base);
-    write_upcall_trampoline(page0);
-    write_userdef_trampoline(page0);
-    crate::xbios::kbdvecs::write_defaults(page0);
-    crate::bios::reset::write_stub(page0);
-    // Page 0's trampolines and stubs are code: make them visible to
-    // instruction fetch (see the image sync in `populate_and_map`).
-    // SAFETY: page 0 is live and mapped in the kernel's high half.
-    unsafe { mmu::sync_code_cache(page0.as_ptr() as usize, page0.len()) };
+    // The private read-write page (MEM12): the KEYS02 table with its
+    // defaults; the PARMBLK scratch starts zeroed.
+    // SAFETY: BDOS lock held; the slot's private page belongs to this process.
+    let private = unsafe { mmu::priv_page_bytes(slot) }.ok_or(LoadError::InvalidSlot)?;
+    private.fill(0);
+    crate::xbios::kbdvecs::write_table(private);
+    // The shared stub page: written once, the same code for every process.
+    // SAFETY: BDOS lock held.
+    unsafe { ensure_stub_page() };
 
     // Build the slot's root: the shared tables (pools, publications) plus
     // its own page 0. Nothing is mapped per TPA page any more — the pool
@@ -965,118 +969,95 @@ pub const OS_RUN_CELL_VA: u64 = 0x5B8;
 
 const _: () = assert!(OS_RUN_CELL_VA >= 0x5B4 && OS_RUN_CELL_VA + 8 <= OSHEADER_VA as u64);
 
-/// EL0 VA of the per-process upcall trampoline (cooperative-kernel building
-/// block 1, `docs/analysis/coop-kernel/10-upcall-signal-design.md` §4.1).
-/// Placed in the reserved low-memory gap `[SYSVAR_AREA_END (0x670),
-/// RESERVED_LOW_END (0x1000))`, inside page 0 (mapped [`PageFlags::UserRwExec`]),
-/// so it is EL0-executable with no extra mapping and collides with nothing
-/// (above the sysvar area, below the app image base). The kernel-side model
-/// of FreeMiNT's per-process `user_things` trampoline (`user_things.S`), at a
-/// fixed VA rather than via `tp_ptr`.
-pub const TRAMPOLINE_VA: u64 = 0x700;
+// ── The stub page and the private read-write page (MEM12) ───────────────
+//
+// Page 0 holds only what TOS fixes at low addresses (sysvars, OSHEADER,
+// `os_run` cell, cookie jar) and the `Keytbl` area; it is EL0 read-only in
+// user state and never executable (`docs/api/_super-state.md` S2). The EL0
+// code that used to sit in its gap lives in the one shared **stub page**
+// (`mmu::STUB_PAGE_VA`, EL0 execute-only), and what a program may write in
+// the per-slot **private read-write page** (`mmu::PRIV_PAGE_VA`). All VAs
+// stay below 4 GiB: the reset stub's address goes into 32-bit OSHEADER
+// fields.
 
-// The trampoline (5 × 4-byte A64 instructions) must sit wholly in the gap
-// between the sysvar area and the app image base.
-const _: () = assert!(TRAMPOLINE_VA >= SYSVAR_AREA_END);
-const _: () = assert!(TRAMPOLINE_VA + 5 * 4 <= RESERVED_LOW_END);
+/// EL0 VA of the upcall trampoline (cooperative-kernel building block 1,
+/// `docs/analysis/coop-kernel/10-upcall-signal-design.md` §4.1): the first
+/// stub of the stub page. The kernel-side model of FreeMiNT's per-process
+/// `user_things` trampoline (`user_things.S`), at a fixed VA rather than via
+/// `tp_ptr`.
+pub const TRAMPOLINE_VA: u64 = mmu::STUB_PAGE_VA;
 
-/// EL0 VA of the per-process **AES `G_USERDEF` callout stub** (AES-as-thread
-/// design, `docs/analysis/coop-kernel/30-aes-thread-design.md` §4). Placed in
-/// the same reserved low-memory gap as [`TRAMPOLINE_VA`], directly above it
-/// (`[0x714, 0x730)`, 7 × 4-byte A64 instructions). The kernel delivers this VA
-/// as an upcall handler with `x0 = ub_code`, `x1 = parmblk_ptr`; the stub calls
-/// `ub_code(parmblk_ptr)` at EL0 (user→user, no PXN), stores its WORD result in
-/// [`USERDEF_RET_SLOT_VA`], then issues `Psigreturn` exactly like the resume
-/// trampoline. `ub_code`/`parmblk_ptr` travel as upcall **arguments**, so the
-/// stub is written once at load (like [`write_upcall_trampoline`]), never
-/// re-emitted per call.
-pub const USERDEF_TRAMPOLINE_VA: u64 = 0x714;
+/// EL0 VA of the **AES `G_USERDEF` callout stub** (AES-as-thread design,
+/// `docs/analysis/coop-kernel/30-aes-thread-design.md` §4), in the stub page.
+/// The kernel delivers this VA as an upcall handler with `x0 = ub_code`,
+/// `x1 = parmblk_ptr`; the stub calls `ub_code(parmblk_ptr)` at EL0
+/// (user→user, no PXN) and issues `Psigreturn` with `ub_code`'s WORD result
+/// still in `w0`, which the kernel reads from the trap frame (MEM12: no
+/// result slot in page 0 any more).
+pub const USERDEF_TRAMPOLINE_VA: u64 = mmu::STUB_PAGE_VA + 0x20;
 
 /// EL0 VA of the **PARMBLK scratch region** the kernel writes before an AES
-/// `G_USERDEF` callout and the app's `ub_code` reads (design §4). ABI-wide: a
-/// LP64 `PARMBLK` is 40 bytes, an ILP32 one 32 bytes — both fit the reserved
-/// `[0x730, 0x760)` window (48 bytes). Written through the kernel high-half
-/// alias (`basepage_kva + offset`), read by EL0 at this low-half VA.
-pub const PARMBLK_SCRATCH_VA: u64 = 0x730;
-
-/// EL0 VA of the **userdef return-WORD slot** (design §4). The callout stub
-/// stores `ub_code`'s WORD result here (`str w0, [#0x760]`); `Psigreturn` reads
-/// it through the kernel high-half alias to feed `aes::thread::resume`. The
-/// value is baked into the stub as a `mov` immediate, so it must stay `0x760`.
-pub const USERDEF_RET_SLOT_VA: u64 = 0x760;
-
-// The userdef stub (7 × 4-byte A64 instructions = 28 B) sits between the resume
-// trampoline and the PARMBLK scratch; the scratch + ret-slot stay inside the
-// reserved low gap, below the app image base.
-const _: () = assert!(USERDEF_TRAMPOLINE_VA >= TRAMPOLINE_VA + 5 * 4);
-const _: () = assert!(USERDEF_TRAMPOLINE_VA + 7 * 4 <= PARMBLK_SCRATCH_VA);
-// The widest PARMBLK the writer emits is the LP64 layout (40 bytes); it must
-// fit before the ret-slot.
-const _: () = assert!(PARMBLK_SCRATCH_VA + 40 <= USERDEF_RET_SLOT_VA);
-const _: () = assert!(USERDEF_RET_SLOT_VA + 4 <= RESERVED_LOW_END);
-// The ret-slot VA is a `mov` immediate baked into `USERDEF_STUB_CODE`; keep the
-// constant and the encoding in lockstep.
-const _: () = assert!(USERDEF_RET_SLOT_VA == 0x760);
+/// `G_USERDEF` callout and the app's `ub_code` reads (design §4) — and may
+/// write, as on EmuTOS, where the `PARMBLK` lies on the AES's writable stack
+/// (WinDom's `xedit` changes `pb_x`/`pb_w`, MEM12). In the private read-write
+/// page. ABI-wide: a LP64 `PARMBLK` is 40 bytes, an ILP32 one 32 bytes.
+pub const PARMBLK_SCRATCH_VA: u64 = mmu::PRIV_PAGE_VA + 0x100;
 
 /// EL0 VA of the **`Keytbl` area**: the `struct keytbl` XBIOS `Keytbl` (0x10)
 /// returns, followed by the three 128-byte scancode→ASCII tables and the three
-/// AltGr override arrays it points at. Placed at the top of the same reserved
-/// low-memory gap as [`TRAMPOLINE_VA`] / [`PARMBLK_SCRATCH_VA`], above the
-/// userdef return slot. Written through the kernel high-half alias
-/// (`basepage_kva + offset`) when `Keytbl` is called by a running EL0 process,
-/// and read back by that process at this low-half VA — EmuTOS' desktop
-/// dereferences the returned pointer directly (`desk/deskmain.c:1144-1145`).
-/// See `crate::xbios::keytbl` for the layout inside the area.
+/// AltGr override arrays it points at. In page 0, above the classic system
+/// area. Written through the kernel alias (`page0_kva(slot) + offset`) when
+/// `Keytbl` is called by a running EL0 process, and read back by that process
+/// at this low-half VA — EmuTOS' desktop dereferences the returned pointer
+/// directly (`desk/deskmain.c:1144-1145`). See `crate::xbios::keytbl` for the
+/// layout inside the area.
 pub const KEYTBL_AREA_VA: u64 = 0x768;
 
 /// Size of the [`KEYTBL_AREA_VA`] region, in bytes.
 pub const KEYTBL_AREA_SIZE: u64 = 0x238;
 
-// The Keytbl area sits above the userdef return slot and stays inside the
-// reserved low gap, below the app image base.
-const _: () = assert!(KEYTBL_AREA_VA >= USERDEF_RET_SLOT_VA + 4);
+const _: () = assert!(KEYTBL_AREA_VA >= SYSVAR_AREA_END);
 const _: () = assert!(KEYTBL_AREA_VA + KEYTBL_AREA_SIZE <= RESERVED_LOW_END);
 
 /// EL0 VA of the per-process **IKBD vector table** (KEYS02, spec
-/// `docs/api/xbios/22-kbdvbase.md` B1, decision D1): `mousexvec`, `kbdvec`,
-/// the nine `struct kbdvecs` slots and the `drvstat`/`kbdlength` bytes, in
-/// EmuTOS order (`bios/aciavecs.S:126-141`) with 8-byte slots. Directly above
-/// the [`KEYTBL_AREA_VA`] area, in the same page-0 gap. Written once at load
-/// by [`crate::xbios::kbdvecs::write_defaults`]; `Kbdvbase` returns
+/// `docs/api/xbios/22-kbdvbase.md` B1, location D1-neu of Teil D): `mousexvec`,
+/// `kbdvec`, the nine `struct kbdvecs` slots and the `drvstat`/`kbdlength`
+/// bytes, in EmuTOS order (`bios/aciavecs.S:126-141`) with 8-byte slots. At
+/// the start of the private read-write page — a program installs its hook by
+/// writing a slot. Written at load by
+/// [`crate::xbios::kbdvecs::write_table`]; `Kbdvbase` returns
 /// `KBDVECS_AREA_VA + 0x10` (the `midivec` slot), so `kbdvec` sits at `-8`.
-/// See [`crate::xbios::kbdvecs`] for the inner layout.
-pub const KBDVECS_AREA_VA: u64 = 0x9A0;
+pub const KBDVECS_AREA_VA: u64 = mmu::PRIV_PAGE_VA;
 
 /// Size of the [`KBDVECS_AREA_VA`] table region, in bytes (0x5A used).
 pub const KBDVECS_AREA_SIZE: u64 = 0x60;
 
 /// EL0 VA of the **IKBD default stubs** (spec B3): the `ret` stub every
 /// unhooked slot points at (EmuTOS `just_rts`) and the `kbdvec_default` stub
-/// (EmuTOS `_kbdvec` → `kbd_int`). `[0xA00, 0xA40)`, page 0 (`UserRwExec`).
-pub const KBDVEC_STUB_AREA_VA: u64 = 0xA00;
+/// (EmuTOS `_kbdvec` → `kbd_int`). In the stub page.
+pub const KBDVEC_STUB_AREA_VA: u64 = mmu::STUB_PAGE_VA + 0x40;
 
 /// Size of the [`KBDVEC_STUB_AREA_VA`] region, in bytes.
 pub const KBDVEC_STUB_AREA_SIZE: u64 = 0x40;
 
-// The table follows the Keytbl area, the stubs follow the table; both stay in
-// the reserved low gap below the app image base.
-const _: () = assert!(KBDVECS_AREA_VA >= KEYTBL_AREA_VA + KEYTBL_AREA_SIZE);
-const _: () = assert!(KBDVECS_AREA_VA.is_multiple_of(8));
-const _: () = assert!(KBDVEC_STUB_AREA_VA >= KBDVECS_AREA_VA + KBDVECS_AREA_SIZE);
-const _: () = assert!(KBDVEC_STUB_AREA_VA + KBDVEC_STUB_AREA_SIZE <= RESERVED_LOW_END);
-
 /// EL0 VA of the **reset stub** (TASK/RST01): the code OSHEADER `reseth`
 /// (+0x04) and `os_res1` (+0x10) point at — EmuTOS stores `_main` in both
 /// (`bios/startup.S:82-83,92-93`). It calls `Ssystem(S_NEWTOS_RESET)`; see
-/// [`crate::bios::reset`]. `[0xA40, 0xA60)`, page 0 (`UserRwExec`), directly
-/// above the IKBD stubs.
-pub const RESET_STUB_AREA_VA: u64 = 0xA40;
+/// [`crate::bios::reset`]. In the stub page.
+pub const RESET_STUB_AREA_VA: u64 = mmu::STUB_PAGE_VA + 0x80;
 
 /// Size of the [`RESET_STUB_AREA_VA`] region, in bytes.
 pub const RESET_STUB_AREA_SIZE: u64 = 0x20;
 
+// The stubs follow one another inside the stub page; the table and the
+// PARMBLK (LP64: 40 bytes) inside the private page, apart.
+const _: () = assert!(USERDEF_TRAMPOLINE_VA >= TRAMPOLINE_VA + 4 * TRAMPOLINE_CODE.len() as u64);
+const _: () = assert!(KBDVEC_STUB_AREA_VA >= USERDEF_TRAMPOLINE_VA + 4 * USERDEF_STUB_CODE.len() as u64);
 const _: () = assert!(RESET_STUB_AREA_VA >= KBDVEC_STUB_AREA_VA + KBDVEC_STUB_AREA_SIZE);
-const _: () = assert!(RESET_STUB_AREA_VA + RESET_STUB_AREA_SIZE <= RESERVED_LOW_END);
+const _: () = assert!(RESET_STUB_AREA_VA + RESET_STUB_AREA_SIZE <= mmu::STUB_PAGE_VA + mmu::PAGE_SIZE);
+const _: () = assert!(KBDVECS_AREA_VA.is_multiple_of(8));
+const _: () = assert!(PARMBLK_SCRATCH_VA >= KBDVECS_AREA_VA + KBDVECS_AREA_SIZE);
+const _: () = assert!(PARMBLK_SCRATCH_VA + 40 <= mmu::PRIV_PAGE_VA + mmu::PAGE_SIZE);
 
 /// OSHEADER `os_version` (+0x02): Falcon TOS 4.04. EmuTOS' own default is
 /// 0x206 (`config.h:1367-1372`); NewTOS reports 4.04 — user-pinned.
@@ -1153,7 +1134,7 @@ fn populate_sysvars(tpa: &mut [u8], pd: u64) {
     // os_version (+0x02):
     wr_word(tpa, oh + 0x02, OS_VERSION);
     // reseth (+0x04): EmuTOS `.dc.l _main` (startup.S:82-83), the full
-    // restart. NewTOS: the page-0 reset stub, which ends in the restart
+    // restart. NewTOS: the reset stub (stub page), which ends in the restart
     // (`bios::reset`, `Ssystem(S_NEWTOS_RESET)`; TASK/RST01).
     wr_long(tpa, oh + 0x04, crate::bios::reset::RESET_STUB_VA as u32);
     // os_beg (+0x08): "base address of the operating system"
@@ -1177,7 +1158,7 @@ fn populate_sysvars(tpa: &mut [u8], pd: u64) {
     // os_rsvl (+0x10): EmuTOS `os_res1: .dc.l _main` (startup.S:92-93) —
     // the same restart entry as `reseth`, not 0 (osheader.md §os_rsvl,
     // corrected 2026-10-17). TeraDesk's "Reboot" jumps through it
-    // (`main.c:2096`). NewTOS: the page-0 reset stub, as for `reseth`.
+    // (`main.c:2096`). NewTOS: the reset stub, as for `reseth`.
     wr_long(tpa, oh + 0x10, crate::bios::reset::RESET_STUB_VA as u32);
     // os_magic (+0x14): pointer to the GEM_MUPB — populated only once GEM/AES
     // is reimplemented into a per-process GEM_MUPB (osheader.md §os_magic);
@@ -1413,62 +1394,67 @@ pub fn refresh_cookie_mirrors() {
 ///   d2800988  mov x8, #0x4C    ; Pterm
 ///   d4000021  svc #1
 /// ```
-const TRAMPOLINE_CODE: [u32; 5] =
+pub const TRAMPOLINE_CODE: [u32; 5] =
     [0xD280_2348, 0xD400_0021, 0xD29F_8340, 0xD280_0988, 0xD400_0021];
 
-/// Write the EL0 upcall trampoline (design §4.2) into the reserved
-/// low-memory gap at [`TRAMPOLINE_VA`], through the kernel high-half alias
-/// `tpa`. Called from [`populate_and_map`] alongside [`populate_sysvars`],
-/// before the code-cache maintenance, so the freshly written instructions
-/// are cleaned to PoU / I-cache-invalidated over the image window
-/// (`image_top >= RESERVED_LOW_END > TRAMPOLINE_VA + 20`) and are visible to
-/// the EL0 instruction fetch on real hardware (QEMU is cache-less).
-fn write_upcall_trampoline(tpa: &mut [u8]) {
-    let base = TRAMPOLINE_VA as usize;
-    for (i, insn) in TRAMPOLINE_CODE.iter().enumerate() {
+/// Has [`ensure_stub_page`] written the stub page?
+static STUB_PAGE_READY: core::sync::atomic::AtomicBool = core::sync::atomic::AtomicBool::new(false);
+
+/// Write every EL0 stub into the shared stub page (`mmu::STUB_PAGE_VA`,
+/// MEM12) — the upcall trampoline, the `G_USERDEF` callout stub, the KEYS02
+/// `kbdvec` stubs and the RST01 reset stub — once, the first time a process
+/// is installed, then make them visible to instruction fetch (clean D-cache
+/// to PoU, invalidate I-cache: QEMU is cache-less, the A72 is not). The page
+/// is EL0 execute-only; no process can change it.
+///
+/// # Safety
+///
+/// Caller holds the BDOS giant lock; EL1.
+pub unsafe fn ensure_stub_page() {
+    if STUB_PAGE_READY.load(Ordering::Acquire) {
+        return;
+    }
+    // SAFETY: caller's lock contract; nothing executes from the page yet.
+    let page = unsafe { mmu::stub_page_bytes() };
+    page.fill(0);
+    write_stub_code(page, TRAMPOLINE_VA, &TRAMPOLINE_CODE);
+    write_stub_code(page, USERDEF_TRAMPOLINE_VA, &USERDEF_STUB_CODE);
+    crate::xbios::kbdvecs::write_stubs(page);
+    crate::bios::reset::write_stub(page);
+    // SAFETY: the stub page is live and mapped in the kernel's high half.
+    unsafe { mmu::sync_code_cache(page.as_ptr() as usize, page.len()) };
+    STUB_PAGE_READY.store(true, Ordering::Release);
+}
+
+/// Store `code` (little-endian A64 words) at EL0 VA `va` of the stub page
+/// `page`.
+pub fn write_stub_code(page: &mut [u8], va: u64, code: &[u32]) {
+    let base = (va - mmu::STUB_PAGE_VA) as usize;
+    for (i, insn) in code.iter().enumerate() {
         let off = base + i * 4;
-        tpa[off..off + 4].copy_from_slice(&insn.to_le_bytes());
+        page[off..off + 4].copy_from_slice(&insn.to_le_bytes());
     }
 }
 
-/// The seven AArch64 instructions of the AES `G_USERDEF` callout stub
+/// The five AArch64 instructions of the AES `G_USERDEF` callout stub
 /// (AES-as-thread design §4). Delivered as an EL0 upcall with `x0 = ub_code`,
 /// `x1 = parmblk_ptr` (AAPCS64); it calls `ub_code(parmblk_ptr)` at EL0
-/// (user→user — no PXN, exactly XaAES' `progdef_callout`), stores the WORD
-/// result in the ret-slot, then issues `Psigreturn` (GEMDOS 0x11A) so the kernel
-/// resumes the stalled AES fiber.
+/// (user→user — no PXN, exactly XaAES' `progdef_callout`), then issues
+/// `Psigreturn` (GEMDOS 0x11A) with the WORD result still in `w0`, so the
+/// kernel reads it from the trap frame and resumes the stalled AES fiber.
+/// Until MEM12 the stub stored the WORD in page 0 (`str w0, [#0x760]`), a
+/// write the now read-only page 0 refuses.
 ///
-/// Encodings verified with `aarch64-elf-as`:
+/// Encodings: the five words of the former seven-word stub that remain
+/// (verified with `aarch64-elf-as` then):
 /// ```text
 ///   aa0003e9  mov x9, x0        ; x9 = ub_code
 ///   aa0103e0  mov x0, x1        ; x0 = parmblk_ptr (arg0 to ub_code)
 ///   d63f0120  blr x9            ; ub_code(parmblk_ptr) -> WORD in w0
-///   d280ec09  mov x9, #0x760    ; USERDEF_RET_SLOT_VA
-///   b9000120  str w0, [x9]      ; store the userdef WORD result
 ///   d2802348  mov x8, #0x11A    ; Psigreturn
 ///   d4000021  svc #1            ; GEMDOS trap — resumes the AES fiber
 /// ```
-const USERDEF_STUB_CODE: [u32; 7] = [
-    0xAA00_03E9, 0xAA01_03E0, 0xD63F_0120, 0xD280_EC09, 0xB900_0120, 0xD280_2348,
-    0xD400_0021,
-];
-
-/// Write the AES `G_USERDEF` callout stub (design §4) into the reserved
-/// low-memory gap at [`USERDEF_TRAMPOLINE_VA`], through the kernel high-half
-/// alias `tpa`. Called from [`populate_and_map`] alongside
-/// [`write_upcall_trampoline`], **before** the code-cache maintenance, so the
-/// stub is cleaned to PoU / I-cache-invalidated over the image window
-/// (`image_top >= RESERVED_LOW_END > USERDEF_TRAMPOLINE_VA + 28`) and is visible
-/// to the EL0 instruction fetch on real hardware (QEMU is cache-less). Like the
-/// resume trampoline, this is written once at load — `ub_code`/`parmblk_ptr`
-/// arrive as upcall arguments, not baked constants.
-fn write_userdef_trampoline(tpa: &mut [u8]) {
-    let base = USERDEF_TRAMPOLINE_VA as usize;
-    for (i, insn) in USERDEF_STUB_CODE.iter().enumerate() {
-        let off = base + i * 4;
-        tpa[off..off + 4].copy_from_slice(&insn.to_le_bytes());
-    }
-}
+pub const USERDEF_STUB_CODE: [u32; 5] = [0xAA00_03E9, 0xAA01_03E0, 0xD63F_0120, 0xD280_2348, 0xD400_0021];
 
 /// Resolve an [`EnvSpec`] into an optional pool address for `p_env`,
 /// allocating + copying the environment via the BDOS pool. Mirrors
@@ -1991,13 +1977,15 @@ mod basepage_segment_tests {
 
     /// RST01: `reseth` (+0x04) and `os_res1` (+0x10) both hold the reset
     /// stub's address, as EmuTOS stores `_main` in both
-    /// (`bios/startup.S:82-83,92-93`), and the stub is in page 0 where the
-    /// loader writes it. `os_entry` stays 0 (no AArch64 branch fits it).
+    /// (`bios/startup.S:82-83,92-93`), and the stub is in the stub page where
+    /// the loader writes it (MEM12). `os_entry` stays 0 (no AArch64 branch
+    /// fits it).
     #[test]
     fn osheader_reset_entries_point_at_the_reset_stub() {
         let mut page0 = vec![0u8; RESERVED_LOW_END as usize];
         populate_sysvars(&mut page0, 0x0109_7000);
-        crate::bios::reset::write_stub(&mut page0);
+        let mut stubs = vec![0u8; mmu::PAGE_SIZE as usize];
+        crate::bios::reset::write_stub(&mut stubs);
         let rd32 = |off: usize| u32::from_le_bytes(page0[off..off + 4].try_into().unwrap());
         let oh = rd32(0x4F2) as usize;
         let stub = crate::bios::reset::RESET_STUB_VA as u32;
@@ -2007,7 +1995,8 @@ mod basepage_segment_tests {
         assert_eq!(rd32(oh) >> 16, OS_VERSION as u32, "os_version untouched");
         // TeraDesk's LP64-fixed read `*(uint32_t *)(os_start + 0x10)` lands
         // on the first stub instruction: `mov x0, #2021`.
-        assert_eq!(rd32(stub as usize), 0xD280_FCA0);
+        let at = (stub as u64 - mmu::STUB_PAGE_VA) as usize;
+        assert_eq!(u32::from_le_bytes(stubs[at..at + 4].try_into().unwrap()), 0xD280_FCA0);
     }
 
     /// A data segment with no BSS (`memsz == filesz`) gives `p_blen = 0`

@@ -222,7 +222,7 @@ xsetblk	bdos/umem.c	tos-api/src/bdos/mem/traps.rs	mshrink	-
 call_mousevec	bios/aciavecs.S	-	-	no counterpart: ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
 ikbdraw	bios/aciavecs.S	tos-api/src/xbios/kbdvecs.rs	route_key	the jump through kbdvec
 ikbdsys	bios/aciavecs.S	-	-	no counterpart: ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
-init_acia_vecs	bios/aciavecs.S	tos-api/src/xbios/kbdvecs.rs	write_defaults	the kbdvecs table defaults
+init_acia_vecs	bios/aciavecs.S	tos-api/src/xbios/kbdvecs.rs	write_table	the kbdvecs table defaults (MEM12: the stubs in write_stubs)
 int_acia	bios/aciavecs.S	-	-	no counterpart: ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
 kbdvec	bios/aciavecs.S	kernel/src/ikbd.rs	kbd_int	the default kbdvec
 midisys	bios/aciavecs.S	-	-	no counterpart: ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)

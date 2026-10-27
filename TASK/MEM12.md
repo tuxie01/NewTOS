@@ -57,7 +57,7 @@ mit Seite 0 testweise `UserRoExec` (EL0 lesen + ausfuehren, nicht schreiben):
 
 Vorbemerkung: `Super()`/`Supexec()` heben auf NewTOS nichts an; `Super` ist
 eine Klammer ohne Wirkung, `Supexec` ein gewoehnlicher Aufruf bei EL0
-(`sdk/libc/overlay/include/mint/osbind.h:539@Super`). Jeder "Supervisor-Zugriff"
+(`sdk/libc/overlay/include/mint/osbind.h` (Stand `a90bcfb0`; seit MEM12 wieder Traps)). Jeder "Supervisor-Zugriff"
 eines Programms auf die Systemvariablen ist also ein EL0-Zugriff auf Seite 0.
 
 ### 1. Lesen — es gibt Leser; Ausblenden geht nicht
@@ -83,8 +83,8 @@ Accessories, NEWDESK, QED, PRESENT, zView, DUMPVDI, VDIDRAW, ARGVTEST an
 
 | Stub | VA | Wer springt hin |
 |---|---|---|
-| Upcall-Trampolin | `0x700` | Kern setzt `lr` darauf (`kernel/src/arch/aarch64/exceptions.rs:1791@TRAMPOLINE_VA`) |
-| AES-`G_USERDEF`-Stub | `0x714` | Kern als Upcall-Handler (`exceptions.rs:849@USERDEF_TRAMPOLINE_VA`); gemessen in TeraDesk (`pc=0x724`) |
+| Upcall-Trampolin | `0x700` | Kern setzt `lr` darauf (`kernel/src/arch/aarch64/exceptions.rs:1813@TRAMPOLINE_VA`) |
+| AES-`G_USERDEF`-Stub | `0x714` | Kern als Upcall-Handler (`exceptions.rs:883@USERDEF_TRAMPOLINE_VA`); gemessen in TeraDesk (`pc=0x724`) |
 | `just_rts` / `kbdvec_default` | `0xA00` / `0xA08` | Werte der `Kbdvbase`-Tabelle; DOOM kettet an den alten `kbdvec` (`sdk/apps/doom/doomgeneric_gem_kbdvec.c:57@kbdvec_old`) |
 | Reset-Stub | `0xA40` | OSHEADER `reseth`/`os_res1`; TeraDesk "Reboot" (`sdk/overlays/teradesk/main.c:2120,2142@rv`) |
 
@@ -104,14 +104,14 @@ gelingt. Im Usermodus loest die Hardware einen Busfehler aus, EmuTOS beendet
 das Programm (`any_vec` → `dopanic` → `kill_program`, `bios/vectors.S:152-153`,
 `bios/kprint.c:302`, `:587-594`, `bios/panicasm.S:96-99`). NewTOS mit Seite 0
 nur lesbar: Berechtigungsfehler bei EL0 → `kill_crashed_program`
-(`kernel/src/arch/aarch64/exceptions.rs:1412@kill_crashed_program`):
+(`kernel/src/arch/aarch64/exceptions.rs:1434@kill_crashed_program`):
 Absturzbericht, Taste, `Pterm(-1)`, der Kern laeuft weiter (gemessen, s. u.).
 Ein Systemaufruf mit Ausgabepuffer in Seite 0 endet ebenso: `uaccess` prueft
 mit den Rechten des Aufrufers (`tos-api/src/uaccess.rs:453@user_kptr`).
 
 | Schreiber | Stelle | Was | Folge bei Seite 0 nur lesbar |
 |---|---|---|---|
-| **Kern-Stub** `G_USERDEF` | `tos-api/src/bdos/process/loader.rs:1447,1452@USERDEF_STUB_CODE` | `str w0, [0x760]` (Rueckgabewort von `ub_code`) | **gemessen**: TeraDesk endet beim ersten Zeichnen, `pc=0x724 far=0x760` |
+| **Kern-Stub** `G_USERDEF` | `tos-api/src/bdos/process/loader.rs`, `USERDEF_STUB_CODE` (Stand `a90bcfb0`; der Speicherbefehl ist seit MEM12 entfernt) | `str w0, [0x760]` (Rueckgabewort von `ub_code`) | **gemessen**: TeraDesk endet beim ersten Zeichnen, `pc=0x724 far=0x760` |
 | **Kern-Ablage** PARMBLK `0x730` | `tos-api/src/aes/object.rs:2876@PARMBLK_SCRATCH_VA` | der Kern schreibt, `ub_code` liest — und darf schreiben: WinDom `xedit` aendert `pb_x`/`pb_w` (`sdk/windom/windom-1.21.3/src/userdef.c:1819-1820@pblk`); in EmuTOS liegt der PARMBLK auf dem beschreibbaren AES-Stapel | WinDom-`XEDIT` endet; in zView kein `XEDIT` gefunden |
 | DOOM | `sdk/apps/doom/doomgeneric_gem.c:1884,1896@kbdvec_hook` | haengt den `kbdvec`-Haken in die `Kbdvbase`-Tabelle (`0x9A8`) | DOOM endet beim Start (Tastatur ueber `kbdvec`) |
 | `sdk/examples/kbdvec.c` | `:182,211@hook` | dasselbe (KEYS02-Testprogramm) | endet |
@@ -127,10 +127,10 @@ nimmt `Ssystem(S_SETCOOKIE)`), mintlib `set_sysvar_to_*` (gebaut, kein Aufrufer)
 
 | Wert | Leser im Kern | Wirkung |
 |---|---|---|
-| `conterm` `0x484` | `tos-api/src/bios/chardev.rs:317@current_conterm` → Tastenwiederholung `kernel/src/ikbd.rs:336@current_conterm`, `Bconin`-Shiftfaltung `chardev.rs:373@current_conterm`, Glocke `tos-api/src/vdi/escape.rs:693@current_conterm` | Bits 1/2/3 wirken |
-| `kbdvec`, `ikbdsys` | `tos-api/src/xbios/kbdvecs.rs:198@read_slot`, `:212@kbdvec_of`, `:221@current_ikbdsys` | Haken-Upcall, Wiederholstopp |
+| `conterm` `0x484` | `tos-api/src/bios/chardev.rs:317@current_conterm` → Tastenwiederholung `kernel/src/ikbd.rs:336@current_conterm`, `Bconin`-Shiftfaltung `chardev.rs:381@current_conterm`, Glocke `tos-api/src/vdi/escape.rs:693@current_conterm` | Bits 1/2/3 wirken |
+| `kbdvec`, `ikbdsys` | `tos-api/src/xbios/kbdvecs.rs:209@read_slot`, `:212@kbdvec_of`, `:221@current_ikbdsys` | Haken-Upcall, Wiederholstopp |
 | `memvalid`/`memval2`/`memval3` | `tos-api/src/bios/reset.rs:160@entry_kind` | warm/kalt (auf der Pi warm = kalt) |
-| Rueckgabewort `0x760` | `kernel/src/arch/aarch64/exceptions.rs:897@read_userdef_ret_slot` | `G_USERDEF`-Ergebnis |
+| Rueckgabewort `0x760` | `kernel/src/arch/aarch64/exceptions.rs`, `read_userdef_ret_slot` (Stand `a90bcfb0`; seit MEM12 entfernt) | `G_USERDEF`-Ergebnis |
 | beliebige Zelle `< 0x800` | `tos-api/src/bios/vectors.rs:98-133@setexc` | `Setexc(n, v)` liest/schreibt sie ueber den Kern-Alias — der API-Weg, kein EL0-Speicherzugriff |
 
 ### Entscheidungen, die vor dem Umbau noetig sind (offen, beim Lead)
@@ -148,7 +148,7 @@ Vorschlag des Developers, je Punkt mit Alternativen:
   Seite je Prozess**, `UserRwNx`, an fester VA unter 2 MiB, die nie geteilt
   abgebildet wird (Pi: unter dem Kernbild `0x80000`; virt: unter 1 GiB).
   `alias_of`/`resolve_kva`/`user_kptr` (`tos-api/src/uaccess.rs:482@alias_of`,
-  `tos-api/src/bdos/process/usermem.rs:336@page0_kva`) muessen sie wie Seite 0
+  `tos-api/src/bdos/process/usermem.rs`, `resolve_kva`) muessen sie wie Seite 0
   behandeln, `map_shared` muss die VA verweigern. Aendert den Ort aus
   `docs/api/xbios/22-kbdvbase.md` D1 ("in page 0"), nicht Layout oder Wirkung.
   Das Rueckgabewort `0x760` entfaellt: der Stub uebergibt `w0` im Register an

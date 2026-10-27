@@ -7,13 +7,17 @@
 //! (`_kbdvec` → `kbd_int`), `bios/ikbd.c:451-472` (`ikbdsys`-change repeat
 //! stop).
 //!
-//! # Where the table lives (D1)
+//! # Where the table lives (D1, moved by MEM12)
 //!
-//! Per process, in page 0 of its TPA at
-//! [`KBDVECS_AREA_VA`](crate::bdos::process::loader::KBDVECS_AREA_VA),
-//! written by the loader ([`write_defaults`]). An EL0 handler address means
-//! nothing in another address space, so the table belongs to the address
-//! space it points into, and it disappears with it (D8). `Kbdvbase` returns
+//! Per process, at the start of its **private read-write page**
+//! ([`KBDVECS_AREA_VA`](crate::bdos::process::loader::KBDVECS_AREA_VA),
+//! `docs/api/xbios/22-kbdvbase.md` Teil D "D1-neu"), written by the loader
+//! ([`write_table`]). It used to be in page 0, which is EL0 read-only since
+//! MEM12; a program installs its hook by writing a slot, so the table needs a
+//! page the program may write. An EL0 handler address means nothing in
+//! another address space, so the table belongs to the address space it
+//! points into, and it disappears with it (D8). The two default stubs are in
+//! the shared stub page ([`write_stubs`]). `Kbdvbase` returns
 //! the EL0 VA of the `midivec` slot; `kbdvec` is the slot directly before it
 //! (8 bytes, LP64), `mousexvec` before that:
 //!
@@ -36,13 +40,17 @@
 //!   `Ssystem(S_NEWTOS_KBDVEC, scancode, 0)` (GEMDOS 0x154, mode 2002, D6),
 //!   which runs the kernel's key decoder (`Host::kbd_int`) for the byte.
 //!
-//! # What is called (D7 minimum)
+//! # What is called (D7 minimum), and whose table (D9)
 //!
 //! Only `kbdvec`. The kernel's IKBD decoder hands every key byte (`< 0xF6`,
-//! make and break) to [`route_key`]: while the running process's `kbdvec` is
-//! still [`KBDVEC_DEFAULT_VA`] — or no process runs — the decoder runs
-//! directly, exactly as before KEYS02. Otherwise the byte goes into the
-//! process's 64-entry ring (D3/D3a, overflow drops the newest byte) and the
+//! make and break) to [`route_key`]. The table consulted is the **innermost
+//! started process's** — EmuTOS's `run` without the accessories
+//! (`process::emutos_run`, D9, MEM12), whichever process has the CPU when the
+//! byte is polled; an accessory's table is never consulted, and a hook an
+//! accessory installs is reported once ([`accessory_hook_unwarned`]). While
+//! that table's `kbdvec` is still [`KBDVEC_DEFAULT_VA`] — or no started
+//! process lives — the decoder runs directly, exactly as before KEYS02.
+//! Otherwise the byte goes into that process's 64-entry ring (D3/D3a, overflow drops the newest byte) and the
 //! kernel delivers it to the hook as an EL0 upcall (`x0` = scancode, `x1` = 0,
 //! D2/D2a) at the next syscall return, one byte per upcall, in order. The other
 //! eight slots and `mousexvec` exist with their defaults, but a program hook
@@ -54,8 +62,10 @@ use core::cell::UnsafeCell;
 use core::sync::atomic::{AtomicBool, AtomicU8, AtomicUsize, Ordering};
 
 use crate::bdos::process::loader::{
-    KBDVECS_AREA_SIZE, KBDVECS_AREA_VA, KBDVEC_STUB_AREA_SIZE, KBDVEC_STUB_AREA_VA, USER_VA_BASE,
+    write_stub_code, KBDVECS_AREA_SIZE, KBDVECS_AREA_VA, KBDVEC_STUB_AREA_SIZE, KBDVEC_STUB_AREA_VA,
+    USER_VA_BASE,
 };
+use crate::bdos::process::mmu::{PRIV_PAGE_VA, STUB_PAGE_VA};
 use crate::bdos::process::{current, slot_for, MAX_PROCESSES, PROCESS_TABLE};
 
 // ─── Layout ──────────────────────────────────────────────────────────────
@@ -128,31 +138,32 @@ const fn default_of(off: u64) -> u64 {
     }
 }
 
-/// Write the table with its defaults and the two stubs into a freshly loaded
-/// TPA's page 0, through the kernel alias `tpa` (the whole-TPA byte view).
-/// Called by the loader next to the upcall trampolines, before the
-/// code-cache maintenance (EmuTOS `init_acia_vecs`, `aciavecs.S:146-223`).
-pub fn write_defaults(tpa: &mut [u8]) {
-    let base = KBDVECS_AREA_VA as usize;
-    tpa[base..base + KBDVECS_AREA_SIZE as usize].fill(0);
+/// Byte offset of the table in the private read-write page.
+const TABLE_OFF: usize = (KBDVECS_AREA_VA - PRIV_PAGE_VA) as usize;
+
+/// Write the table with its defaults into a freshly loaded process's private
+/// read-write page `page` (the kernel alias of the whole page; EmuTOS
+/// `init_acia_vecs`, `aciavecs.S:146-223`).
+pub fn write_table(page: &mut [u8]) {
+    let base = TABLE_OFF;
+    page[base..base + KBDVECS_AREA_SIZE as usize].fill(0);
     let mut off = OFF_MOUSEXVEC;
     while off <= OFF_IKBDSYS {
         let o = base + off as usize;
-        tpa[o..o + 8].copy_from_slice(&default_of(off).to_le_bytes());
+        page[o..o + 8].copy_from_slice(&default_of(off).to_le_bytes());
         off += 8;
     }
     // `drvstat` / `kbdlength` stay 0 (D5): a packet is never observable
     // half-received, the HID translator feeds whole reports.
-    let stub = KBDVEC_STUB_AREA_VA as usize;
-    tpa[stub..stub + KBDVEC_STUB_AREA_SIZE as usize].fill(0);
-    let mut put = |va: u64, code: &[u32]| {
-        let at = (va - USER_VA_BASE) as usize;
-        for (i, insn) in code.iter().enumerate() {
-            tpa[at + i * 4..at + i * 4 + 4].copy_from_slice(&insn.to_le_bytes());
-        }
-    };
-    put(RET_STUB_VA, &RET_STUB_CODE);
-    put(KBDVEC_DEFAULT_VA, &KBDVEC_DEFAULT_CODE);
+}
+
+/// Write the two default stubs into the shared stub page `page` (the kernel
+/// alias of the whole page) — once, by `loader::ensure_stub_page`.
+pub fn write_stubs(page: &mut [u8]) {
+    let stub = (KBDVEC_STUB_AREA_VA - STUB_PAGE_VA) as usize;
+    page[stub..stub + KBDVEC_STUB_AREA_SIZE as usize].fill(0);
+    write_stub_code(page, RET_STUB_VA, &RET_STUB_CODE);
+    write_stub_code(page, KBDVEC_DEFAULT_VA, &KBDVEC_DEFAULT_CODE);
 }
 
 // ─── The table with no process running ───────────────────────────────────
@@ -193,18 +204,18 @@ pub fn kbdvbase() -> i64 {
 }
 
 /// Read slot `off` of process `slot`'s table through the kernel alias of its
-/// page 0 (`mmu::page0_kva`, as `bios::chardev::current_conterm` reads
-/// `$484`). `None` for a slot with no loaded image.
+/// private read-write page (`mmu::priv_page_kva`). `None` for a slot with no
+/// loaded image.
 fn read_slot(slot: usize, off: u64) -> Option<u64> {
     if PROCESS_TABLE.get(slot)?.basepage_kva.load(Ordering::Acquire).is_null() {
         return None;
     }
-    let page0 = crate::bdos::process::mmu::page0_kva(slot)? as u64;
-    let va = page0 + KBDVECS_AREA_VA + off;
-    // SAFETY: `page0` is the kernel alias of the process's page 0 (a static
-    // kernel page); the table lies inside it (loader asserts) and the slot is
-    // 8-aligned. The program may rewrite it at any time, hence the volatile
-    // read.
+    let page = crate::bdos::process::mmu::priv_page_kva(slot)? as u64;
+    let va = page + TABLE_OFF as u64 + off;
+    // SAFETY: `page` is the kernel alias of the process's private page (a
+    // static kernel page); the table lies inside it (loader asserts) and the
+    // slot is 8-aligned. The program may rewrite it at any time, hence the
+    // volatile read.
     Some(unsafe { (va as *const u64).read_volatile() })
 }
 
@@ -214,12 +225,12 @@ pub fn kbdvec_of(slot: usize) -> Option<u64> {
 }
 
 /// The `ikbdsys` value in force for the key-repeat stop (EmuTOS
-/// `kbdvecs.ikbdsys`, `bios/ikbd.c:453,507,903`): the running process's slot,
-/// or the default [`RET_STUB_VA`] when no process runs — every table starts
-/// with that value, so moving between the desktop and an unhooked program
-/// does not count as a change.
+/// `kbdvecs.ikbdsys`, `bios/ikbd.c:453,507,903`): the table that receives
+/// the input ([`hook_owner`], D9), or the default [`RET_STUB_VA`] when no
+/// started process lives — every table starts with that value, so moving
+/// between the desktop and an unhooked program does not count as a change.
 pub fn current_ikbdsys() -> u64 {
-    slot_for(current())
+    hook_owner()
         .and_then(|s| read_slot(s, OFF_IKBDSYS))
         .unwrap_or(RET_STUB_VA)
 }
@@ -303,27 +314,63 @@ pub fn release_slot(slot: usize) {
         r.len.store(0, Ordering::Release);
         r.head.store(0, Ordering::Release);
     }
+    if let Some(w) = ACC_WARNED.get(slot) {
+        w.store(false, Ordering::Release);
+    }
+}
+
+/// One flag per slot: the warning of [`accessory_hook_unwarned`] was given.
+static ACC_WARNED: [AtomicBool; MAX_PROCESSES] = [const { AtomicBool::new(false) }; MAX_PROCESSES];
+
+/// `true` exactly once per accessory tenancy of `slot`: when `slot` is a desk
+/// accessory whose `kbdvec` slot no longer holds the default — it installed a
+/// hook that, by D9, is never called (on EmuTOS an accessory's hook is
+/// global). The kernel then logs a warning, so the deviation never bites
+/// silently (user decision 2026-10-27, TASK/MEM12).
+pub fn accessory_hook_unwarned(slot: usize) -> bool {
+    if !crate::bdos::process::is_accessory(slot) {
+        return false;
+    }
+    match kbdvec_of(slot) {
+        Some(v) if v != KBDVEC_DEFAULT_VA => {}
+        _ => return false,
+    }
+    ACC_WARNED.get(slot).is_some_and(|w| !w.swap(true, Ordering::AcqRel))
 }
 
 /// Decide where the key byte `byte` (`< 0xF6`, bit 7 = break) goes — EmuTOS
 /// `ikbdraw`'s jump through `kbdvec` (`aciavecs.S:407-414`).
 ///
-/// Returns `false` when the caller must run the default decoder itself: no
-/// process runs, or the running process's `kbdvec` is still
-/// [`KBDVEC_DEFAULT_VA`] (the fast path — normal programs see no change).
-/// Returns `true` when the byte belongs to the program's hook: it was queued
-/// for upcall delivery (or dropped on a full ring, D3a).
+/// The table is the innermost started process's ([`hook_owner`], D9), not
+/// necessarily the running one's. Returns `false` when the caller must run
+/// the default decoder itself: no started process lives, or its `kbdvec` is
+/// still [`KBDVEC_DEFAULT_VA`] (the fast path — normal programs see no
+/// change). Returns `true` when the byte belongs to the program's hook: it was
+/// queued for upcall delivery at that process's next return to EL0 (or
+/// dropped on a full ring, D3a); a hook owner waiting in a blocking call is
+/// woken for it.
 pub fn route_key(byte: u8) -> bool {
-    let Some(slot) = slot_for(current()) else {
+    let Some(slot) = hook_owner() else {
         return false;
     };
     match kbdvec_of(slot) {
         Some(v) if v != KBDVEC_DEFAULT_VA => {
             push(slot, byte);
+            if slot_for(current()) != Some(slot) {
+                crate::bdos::process::sched::wake_for_upcall(slot);
+            }
             true
         }
         _ => false,
     }
+}
+
+/// Whose `Kbdvbase` table an input event goes to (D9, MEM12): the innermost
+/// started process — EmuTOS's `run` without the accessories
+/// (`process::emutos_run`, which names a stand-in PD, no slot, between
+/// programs). `None` when no started process lives.
+pub fn hook_owner() -> Option<usize> {
+    slot_for(crate::bdos::process::emutos_run())
 }
 
 // ─── Restart of a blocking read (delivery while waiting) ─────────────────
