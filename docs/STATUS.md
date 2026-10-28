@@ -61,10 +61,10 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   Retest-Luecken aus dem heutigen `mapping.tsv` im Ticket) →
 
   [TOOL16](../TASK/TOOL16.md) (Dumper liest durch Rueckgabezeiger) → das S1
-  `Iorec` ([XBIOS01](../TASK/XBIOS01.md)) → [TOOL17](../TASK/TOOL17.md)
+  `Iorec` ([XBIOS01](../TASK/XBIOS01.md)) → [BIOS15](../TASK/BIOS15.md)
+  (ADR-031: Haken-Warnungen, Besitz, `prt_*`) → [TOOL17](../TASK/TOOL17.md)
   (`mapping.tsv`-Klassen, Abdeckung je Schicht; danach BIOS01-Liste neu
-  klassifizieren) → [BIOS15](../TASK/BIOS15.md) (ADR-031: Haken-Warnungen,
-  Besitz, `prt_*`) → BIOS01
+  klassifizieren) → BIOS01
   Rest → die uebrigen Audit-Tickets BIOS04–BIOS14, XBIOS02–XBIOS14 (S2
   zuerst; BIOS05 und XBIOS03 sind ACCEPTED nach ADR-031, XBIOS10 nach ARCH05) →
   [TOOL13](../TASK/TOOL13.md), [TOOL14](../TASK/TOOL14.md),
