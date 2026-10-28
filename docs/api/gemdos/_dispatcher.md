@@ -377,6 +377,10 @@ recognised.
 For console functions this longjmp path is unreachable; only file/disk
 operations use it.
 
+**[FS20]** Where the BDOS meets a media change, what the re-login does to open
+files, current directories and buffers, and how NewTOS reproduces the restart
+without `longjmp`: `_state.md` §4a.
+
 ---
 
 ## 9. Return path

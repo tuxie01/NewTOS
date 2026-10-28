@@ -545,7 +545,7 @@ state, still read-only to programs).
 | root DND gets a slot lazily in `ckdrv` | the root is `p_curdir[d] == 0`, no slot (same directory, one slot saved) [R] |
 | accessory PD's uses leak (D-10) | released in `free_accs` (and on an accessory's failed `Mshrink`) — not reproduced |
 | a byte naming any index is followed | a byte that names no live slot of its drive reads as the root, is copied as 0 and never decremented; on a full table the uses are recounted from every live PD (process slots + stand-ins) before `Dsetpath` gives up, so PDs gone without `ixterm` (unstarted `PE_LOAD` children freed by `Mfree`, scribbled bytes) cannot exhaust it [R] |
-| stale `dirtbl` slot after a media change → root via `ckdrv` | a stored path that no longer resolves → root (unchanged) |
+| stale `dirtbl` slot after a media change → root via `ckdrv` | **[FS20]** the re-login frees every slot of the drive (`curdir::free_drive`, `freetree`'s `dirtbl` half) → the bytes read as the root; besides, a stored path that no longer resolves → root (`_state.md` §4a) |
 
 Kernel-context consequences, all EmuTOS-faithful: the AUTO programs inherit
 `initial_basepage` (`p_curdrv = bootdev`, all roots), so the global reset the

@@ -10,6 +10,8 @@
 #   make dumpbios-newtos  DUMPBIOS.NAP, BIOS + XBIOS, for NewTOS (AArch64)
 #   make scrninfo-m68k    SCRNINFO.TTP, the EdDI / vq_scrninfo probe (TOS)
 #   make scrninfo-newtos  SCRNINFO.NAP, the same probe for NewTOS (AArch64)
+#   make gcprobe-m68k     GCPROBE.PRG, the media-change probe (probes/gcprobe.c)
+#   make gcprobe-newtos   GCPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make host-test        the host-side suite (same as make -C host test)
 #
 # Same core sources for both; only abi/ differs (spec section 2).
@@ -49,10 +51,10 @@ BUILD := build
 
 .PHONY: all dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
         dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
-        scrninfo-m68k scrninfo-newtos host-test clean
+        scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
-     scrninfo-m68k scrninfo-newtos host-test
+     scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -115,6 +117,18 @@ $(BUILD)/SCRNINFO.TTP: $(SCRN_SRC) abi/m68k_trap.c $(wildcard core/*.h) | $(BUIL
 scrninfo-newtos: $(BUILD)/SCRNINFO.NAP
 $(BUILD)/SCRNINFO.NAP: core/gem.c core/scrninfo.c abi/newtos_scrninfo.c abi/newtos_svc.c $(wildcard core/*.h) | $(BUILD)
 	./build-scrninfo-newtos.sh $@
+
+# The media-change probe (TASK/FS20): GEMDOS calls, so no dumper and no core;
+# a .PRG for the oracle's --auto (tools/hatari-oracle.sh profile disk), a .NAP
+# for the desktop's #Z autorun. Run by probes/run-gcprobe.sh.
+gcprobe-m68k: $(BUILD)/GCPROBE.PRG
+$(BUILD)/GCPROBE.PRG: probes/gcprobe.c | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror probes/gcprobe.c -o $@
+	@$(CROSS_MINT)size $@
+
+gcprobe-newtos: $(BUILD)/GCPROBE.NAP
+$(BUILD)/GCPROBE.NAP: probes/gcprobe.c build-gcprobe-newtos.sh | $(BUILD)
+	./build-gcprobe-newtos.sh $@
 
 host-test:
 	@$(MAKE) --no-print-directory -C host test

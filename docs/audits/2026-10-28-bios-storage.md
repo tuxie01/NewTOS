@@ -35,7 +35,7 @@ PLAUSIBLE, keiner CONFIRMED, und keine Funktion wird dadurch EQUAL.
 **Der forcechange-Handshake fehlt: Schreiben von logischem Sektor 0.**
 
 - Lokalisierung: LOCALIZED: `rwabs` (`tos-api/src/bios/mod.rs:148@rwabs`);
-  beteiligt `mediach` (`tos-api/src/bios/mod.rs:237@mediach`) und
+  beteiligt `mediach` (`tos-api/src/bios/mod.rs:269@mediach`) und
   `bpb::getbpb` (`tos-api/src/bios/bpb.rs:284@getbpb`). Beobachtet ueber
   `Rwabs`- und `Mediach`-Rueckgaben. `cargo xtask deps lrwabs --down` nennt nur
   `protect_wlwwwl` (ext) — die Lokalisierungsbedingung ist damit leer erfuellt,
@@ -73,8 +73,8 @@ PLAUSIBLE, keiner CONFIRMED, und keine Funktion wird dadurch EQUAL.
 
 **`RW_NOTRANSLATE` adressiert per Laufwerksbuchstabe statt per physischer Einheit.**
 
-- LOCALIZED: `rwabs`, `tos-api/src/bios/mod.rs:160@resolve` und
-  `tos-api/src/bios/mod.rs:178@RW_NOTRANSLATE`.
+- LOCALIZED: `rwabs`, `tos-api/src/bios/mod.rs:173@resolve` und
+  `tos-api/src/bios/mod.rs:189@RW_NOTRANSLATE`.
 - Faelle P01–P04. EmuTOS: Einheit 2 = ACSI 0 → EUNDEV, Einheit 18 = IDE-Master
   → MBR, letzter Gerätesektor (P03) ESECNF (`>=`-Grenze). NewTOS: „Einheit" 2 =
   C: → MBR, 18 → EUNDEV.
@@ -94,7 +94,7 @@ PLAUSIBLE, keiner CONFIRMED, und keine Funktion wird dadurch EQUAL.
 
 **`Rwabs` mit Anzahl 0 ueberspringt die Bereichspruefung.**
 
-- LOCALIZED: `rwabs`, `tos-api/src/bios/mod.rs:170@numb` (Rueckkehr vor der
+- LOCALIZED: `rwabs`, `tos-api/src/bios/mod.rs:164@numb` (Rueckkehr vor der
   Pruefung).
 - Fall R10: `Rwabs(0,buf,0,-1,2,PSIZE+10)` — EmuTOS ESECNF (-8), NewTOS 0.
   R09 (Anzahl 0 im Bereich) gleich.
@@ -143,7 +143,7 @@ PLAUSIBLE, keiner CONFIRMED, und keine Funktion wird dadurch EQUAL.
 
 **Logisches `Rwabs` nach gescheitertem `Getbpb` liefert Daten statt ESECNF.**
 
-- LOCALIZED: `rwabs`, `tos-api/src/bios/mod.rs:160@resolve` (keine BPB-Pruefung).
+- LOCALIZED: `rwabs`, `tos-api/src/bios/mod.rs:173@resolve` (keine BPB-Pruefung).
 - Fall X08 (nach X07, spf = 0, beide `Getbpb` = NULL): EmuTOS ESECNF, NewTOS 0
   mit Daten.
 - EmuTOS: `references/emutos/bios/blkdev.c:443-444` (recsiz 0 → ESECNF),
@@ -158,7 +158,7 @@ PLAUSIBLE, keiner CONFIRMED, und keine Funktion wird dadurch EQUAL.
 - Fall F03; die Kontrolle ohne Floppy-Laufwerke (`EMUTOS-falcon-nofloppy`)
   liefert ebenfalls 0 — der Unterschied bleibt also auch bei gleicher
   Hardwarelage. EmuTOS: `references/emutos/bios/blkdev.c:425` (vor jeder
-  Laufwerkspruefung). NewTOS: `tos-api/src/bios/mod.rs:160@resolve`.
+  Laufwerkspruefung). NewTOS: `tos-api/src/bios/mod.rs:173@resolve`.
 - Nur fuer Floppy-Kopierer sichtbar (Nicht-Ziel); braucht einen
   `docs/COMPATIBILITY.md`-Eintrag oder Angleichung. Route: Researcher.
 
@@ -172,7 +172,7 @@ Route: Researcher.
   `RW_NOMEDIACH`-Zugriffe sperrt (W01, W04, X14). Edge case 7: Anzahl 0 wird
   trotzdem bereichsgeprueft (R10). Pi-Bindung: Tabelle „`RW_NOTRANSLATE` …
   not honoured" und die Zeilenzitate auf `bios/mod.rs` (66-116, 75-95, 86-90)
-  sind veraltet (Code: `tos-api/src/bios/mod.rs:178@RW_NOTRANSLATE`).
+  sind veraltet (Code: `tos-api/src/bios/mod.rs:189@RW_NOTRANSLATE`).
 - `docs/api/bios/07-getbpb.md`, Pi-Bindung „Gaps": „No sector-size /
   cluster-size / FAT-count validation" und „Zero-FAT→2 quirk not applied"
   sind ueberholt — X02–X05, X07 gleich auf beiden Seiten. Es fehlt dagegen der
@@ -219,8 +219,8 @@ Researcher (Vertrag festlegen).
 |---|---|---|---|---|
 | `lrwabs` → `blkdev_rwabs` | `tos-api/src/bios/mod.rs:148@rwabs` | bios | **DIFF** (Sonde; BIOS-STOR-001/002/003/006/007), tosdiff UNMEASURED (Lader verweigert, Orakel ohne Blockgeraet) | R01–R20, P01–P05, W01–W11, X08–X14, F03 |
 | `getbpb` → `blkdev_getbpb` | `tos-api/src/bios/bpb.rs:284@getbpb` | bios | **DIFF** (Sonde; BIOS-STOR-004/005), tosdiff UNMEASURED | G01–G07, W06, X01–X07, X10, X15, F02, F05 |
-| `mediach` → `blkdev_mediach` | `tos-api/src/bios/mod.rs:237@mediach` | bios | **DIFF** (Sonde; BIOS-STOR-001), tosdiff UNMEASURED | M01–M07, W02/W05/W07/W10, X13/X16, F01/F04/F06 |
-| `drvmap` → `blkdev_drvmap` | `tos-api/src/bios/mod.rs:247@drvmap` | bios | **EQUAL** (tosdiff `bios-r1.tsv` Fall 74 auf `c3db3747`, Klasse NONZERO — schwach, siehe Abschnitt 11) | 74; Sonde D01 |
+| `mediach` → `blkdev_mediach` | `tos-api/src/bios/mod.rs:269@mediach` | bios | **DIFF** (Sonde; BIOS-STOR-001), tosdiff UNMEASURED | M01–M07, W02/W05/W07/W10, X13/X16, F01/F04/F06 |
+| `drvmap` → `blkdev_drvmap` | `tos-api/src/bios/mod.rs:312@drvmap` | bios | **EQUAL** (tosdiff `bios-r1.tsv` Fall 74 auf `c3db3747`, Klasse NONZERO — schwach, siehe Abschnitt 11) | 74; Sonde D01 |
 
 Gleich auf beiden Seiten (Sonde): BPB-Inhalt und Zeigerstabilitaet,
 Bereichsgrenzen logisch (letzter Sektor ja, Ende/Ueberlappung/negativ ESECNF),
@@ -317,7 +317,7 @@ keine); `RW_NORETRIES` ist bei `RWABS_RETRIES = 1` unbeobachtbar.
    Funktion gesperrt"). Vorschlag: DUMPBIOS-Plattenrunde (Abschnitt 5) als
    Ticket, vor dem naechsten Speicher-Audit.
 2. **Plattenfall-Regeln widersprechen dem Werkzeug.** Rolle: GEMDOS-Emulation
-   aus, Programm nicht auf dem Testabbild. `tools/hatari-oracle.sh:86@PRG`
+   aus, Programm nicht auf dem Testabbild. `tools/hatari-oracle.sh:66@PRG`
    haengt immer einen GEMDOS-Ordner als C: ein und startet von dort. Ich habe
    ein eigenes Skript gebaut: IDE-Master = C:, GEMDOS-Ordner = D: nur fuers
    Programm (BIOS-Aufrufe faengt Hatari nicht ab; die Abbilder zeigen, dass

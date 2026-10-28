@@ -1,0 +1,125 @@
+measurement-2026-10-28-fs20 -- FS20: GEMDOS meets a media change and logs the drive in again
+=============================================================================================
+Developer, TASK/FS20, 2026-10-28/29 (host clock CET). Base HEAD a36ea390; the lead committed
+d47be1b4, 2de6909a and c80c04b0 (docs only, no product code) while the runs were made, so the
+run files name d47be1b4 + the uncommitted FS20 change. No hardware, no real card, nothing flashed. Not
+committed.
+
+WHAT / WHY
+  S1 (TASK/FS20, measured in measurements/measurement-2026-10-28-bios01-s2/RUNINFO.TXT, section
+  "GEMDOS consequence"): after a program rewrites C:'s boot sector (Rwabs RW_NOMEDIACH), EmuTOS's
+  GEMDOS meets the pending forcechange on its next buffer access and logs C: in again (osif,
+  bdos/bdosmain.c:449-487); NewTOS's BDOS read past the BIOS media state, kept the old geometry
+  and wrote a new file's cluster 3 into the sector that is cluster 7 by the boot sector on disk.
+  Spec: docs/api/gemdos/_state.md section 4a [FS20] (new), from the EmuTOS source.
+
+CHANGE (uncommitted, for the lead)
+  tos-api/src/bdos/fs/cache.rs   each buffer knows its drive (b_bufdrv); hit_test = getbcb's
+                                 Mediach on a hit (2 -> E_CHNG, 1 -> re-read); rwabs_test = the
+                                 media tests of the logical Rwabs of a miss, a write-back, a
+                                 whole-record transfer; signal_media_change / take_media_change
+                                 (errdrv); invalidate_drive = mark_bcbs_invalid; evict split out of
+                                 victim; the drive threaded through with_sector/read/write/direct_*
+  tos-api/src/bdos/fs/fat.rs     Volume carries its drive (m_drvnum); log_out (one drive)
+  tos-api/src/bdos/fs/fsio.rs    passes the volume's drive to the cache
+  tos-api/src/bdos/fs/file.rs    free_drive_files = offree
+  tos-api/src/bdos/fs/curdir.rs  free_drive = freetree's dirtbl half
+  tos-api/src/bios/mod.rs        media_change and MEDIA* constants public (the BDOS's Mediach)
+  tos-api/src/gemdos/mod.rs      dispatch_inner = osif: fresh error context per run, re-login
+                                 (media_change_relog: offree, log out, freetree, mark_bcbs_invalid,
+                                 Getbpb + log_media) and restart of the call
+  tos-api/tests/fs20_media_change.rs (6 tests), fs20_media_change_geometry.rs (1 test)
+  tosdump/probes/gcprobe.c (the probe, code byte for byte the BIOS01 copy), run-gcprobe.sh,
+  gcprobe-compare.py, gcprobe-trace-check.py; tosdump/build-gcprobe-newtos.sh; tosdump/Makefile
+  targets gcprobe-m68k / gcprobe-newtos; tools/hatari-oracle.sh accepts the probe GCPROBE.PRG
+  (table "-", profile disk only, destructive by itself).
+  docs: _state.md 4a, _dispatcher.md 8, _run-ownership-curdir.md (media-change row),
+  bios/09-mediach.md (used by, two shifted anchors), ORACLE.md 2 (probe form), TOS-REFERENCE-
+  DUMPER.md 7 (probes until DUMPGDOS), docs/audits/2026-10-28-bios-storage.md (one shifted anchor),
+  docs/analysis/deps/mapping.tsv (mark_bcbs_invalid, offree, freetree, osif, getbcb rows).
+
+THE PROBE (method/gcprobe-runs.sh: the calls; the tools are permanent in tosdump/)
+  Same source both sides, tosdump/probes/gcprobe.c. Build: make -C tosdump gcprobe-m68k
+  gcprobe-newtos. GCPROBE.PRG bec2f2bad2e03c80a64153fff8380f313d5233d0563402f7c777c151a1f22cdb
+  (differs from BIOS01's 185d494f only in the temp object name in its symbol table; same code),
+  GCPROBE.NAP 8f74934aef2b666520fc1598fef39409a310764079f602cf2a512d42329c042c (= BIOS01's).
+  Test image: tools/mktestdisk.sh with C:\NEWDESK.INF "#R 02 / #Z 01 D:\GCPROBE.NAP@",
+  7c1b91c8e16014b8bbf4d40483070df5ba0069fe6e75c9cb01a2d809963d2496 (= BIOS01's), a fresh clone per
+  run; manifests runs/gc-*/test.img.manifest, verbatim:  optional_missing none
+  Oracle: tools/hatari-oracle.sh disk GCPROBE.PRG - (pinned ROM, tools/oracle/hatari.cfg, IDE
+  master C:, --ide-swap 0=off, probe on D:), twice (gc-emutos-1, gc-emutos-2).
+  NewTOS: tools/mkcard.sh MKCARD_TESTDISK (card e54aba13bdc4798fda3aa19b087f45d521c6d7f8b3b40664918c597d21ee6959,
+  runs/gc-newtos-*/card.img.manifest, verbatim:  optional_missing none), QEMU raspi4b,
+  -append serial=on, kernels built with `cargo xtask build --board rpi4 --release --features
+  bios-arg-trace`:
+    after  3262999811c12e359e68dded0e7ff36b951343f88f05a6cfddd01482460d2f49 (this tree)
+    before 94e55514cfbea5454acc2b1de3c70895b0cfbfd4b3954877615b6f812a7ae26f (git archive of a36ea390
+           in scratch; product code = 45ed73d0: `git diff --stat 45ed73d0 HEAD -- kernel tos-api
+           tos-types programs sdk tosdump/core tosdump/cases tools/xtask tools/mkcard.sh
+           tools/mktestdisk.sh` empty)
+  Both NewTOS runs: "D:\GCPROBE.NAP' exited with rc=0", "desktop up (2 drives)".
+
+RESULTS (runs/compare-*.txt, runs/gc-*/GCPROBE.LOG)
+  step                                   EmuTOS (1, 2)   NewTOS before   NewTOS after
+  A05 Mediach after sector-0 write       2               2               2
+  A07 Mediach after Dfree                0               2               0
+  B04 Dfree(C:) total clusters           32676           32672 (old)     32676
+  B05 Mediach after Dfree                0               2               0
+  B06 Fcreate/Fwrite/Fclose              6/512/0         6/512/0         6/512/0
+  marker (file's cluster 3) in sector    277             293 (=cl. 7)    277
+  GCPROBE.LOG vs EmuTOS-1                (2: identical)  A07 B04 B05     identical
+  test partition after (sha256)          3799d02f.. / aa26a538..   9bd39503.. (= BIOS01's)   36b5a14f..
+  Image comparison of the test partition, against gc-emutos-1, root-directory time stamps zeroed
+  (each side stamps GCPROBE.DAT with its own clock; the normalisation of cargo xtask tosdump):
+    EmuTOS-2: identical (the oracle reproduces itself).
+    NewTOS before: differs in partition sectors 257, 277, 293 (the marker at 293 instead of 277)
+      and the attribute byte below.
+    NewTOS after: differs in ONE byte: sector 257 offset 0x04b = GCPROBE.DAT's attribute,
+      EmuTOS 0x20 (FA_ARCHIVE), NewTOS 0x00. Boot sector, both FATs, the root directory
+      otherwise, the marker sector 277 and every other sector equal.
+    The attribute byte is pre-existing and outside FS20 (also 0x00 before): EmuTOS's ixclose
+    sets FA_ARCHIVE on the entry of a written file (bdos/fsopnclo.c:530-549); NewTOS's close
+    path (tos-api/src/bdos/fs/file.rs flush_ofd) writes cluster and length only. Finding,
+    not fixed here.
+  fsck_msdos -n of every test partition after the probe: exit 0 (runs/gc-*/fsck-after.txt).
+  VERDICT: A07, B04, B05 and the end state "cluster 3 in partition sector 277" equal to the oracle;
+  the whole test partition equal except the pre-existing FA_ARCHIVE byte.
+
+INPUT TRACE (runs/trace-check-*.txt, tosdump/probes/gcprobe-trace-check.py)
+  Both NewTOS runs: the probe's 13 BIOS calls (A02-A09, B01-B08) found contiguous in caller U0's
+  trace, every argument at the EmuTOS call form as gcprobe.c passes it (Rwabs w:0x0002/0x0003,
+  one buffer address, w:0x0001 w:0x0000 w:0x0002 l:0x00000000; Mediach/Getbpb w:0x0002), no
+  register outside its sign extension, every traced result = the logged value; no other
+  BIOS/XBIOS call of U0; no Rwabs/Getbpb/Mediach of the kernel itself (the BDOS's re-login calls
+  bpb::geometry, not the trap). Oracle side: no trace (Hatari's --trace bios drops lrecno;
+  docs/TOS-REFERENCE-DUMPER.md section 6).
+
+NO-REGRESSION (method/regress-runs.sh, cargo xtask tosdump, QEMU raspi4b, this tree, no features)
+  Compared per case with the BIOS01 "after" runs (measurements/measurement-2026-10-28-bios01-s2,
+  same product code as HEAD):
+    bios-r2      3 of 51   (was 3)    x001 0 of 8   (was 0)    x004 6 of 10 (was 6)
+    x005         1 of 13   (was 1)    x006 5 of 11  (was 5)    phys 11 of 12 (was 11)
+    bios-r1 tt  46 of 147  (was 46)   bios-r1 falcontc 50 of 147 (was 50)
+  NEWLY DIFFERING: none (per-case lists, comm -23, every table).
+  End states: x001 84bcadfb.., x004 a7cf3d2c.., x005 84bcadfb.., x006 ea645cfc.. = BIOS01's (= the
+  oracle's). Every run "ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0"; test
+  partition fsck_msdos -n exit 0 after r2, x001, x005, phys (x004 206, x006 202: the broken boot
+  sectors those tables write, as on the oracle). Manifests runs/after-*/*.manifest, every one
+  verbatim:  optional_missing none
+
+HOST TESTS
+  cargo xtask test (full): 1767 passed, 0 failed, 1 ignored (baseline 1760/0/1 + 7 new;
+  runs/xtask-test-summary.txt). The 7 new tests fail on a36ea390 (run in a scratch copy:
+  A07 2!=0, B04 5000!=5016, Fread 5!=EIHNDL, ...) and pass with the change.
+  make -C tosdump host-test: exit 0, "30 references, every relational rule holds"
+  (runs/host-test.txt). cargo xtask deps --check-mapping: 1020 rows resolve.
+
+FILES
+  method/  gcprobe-runs.sh (the probe calls), regress-runs.sh (the BIOS tables)
+  runs/    gc-emutos-1, gc-emutos-2, gc-newtos-after, gc-newtos-before (GCPROBE.LOG, run.txt,
+           manifests, hatari.log/disk.sha256 or BOOT-SERIAL.txt, fsck-after.txt),
+           compare-after.txt, compare-before.txt, compare-emutos-1-vs-2.txt,
+           trace-check-after.txt, trace-check-before.txt, after-{r2,x001,x004,x005,x006,phys,r1},
+           xtask-test-summary.txt, host-test.txt
+  Images, cards, kernels and the scratch trees are not kept (scratch, deleted); sha256 above and
+  in runs/gc-*/run.txt. manifest.sha256 covers every file of this run except itself.

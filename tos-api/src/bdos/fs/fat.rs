@@ -43,6 +43,10 @@ pub fn fat_lookups() -> u32 {
 /// Mounted FAT volume geometry for one TOS drive.
 #[derive(Clone, Copy)]
 pub struct Volume {
+    /// The TOS drive (0 = A:) — EmuTOS `m_drvnum` (`bdos/fsdrive.c:212`):
+    /// every cache access names it, so a buffer knows its drive (`b_bufdrv`)
+    /// and the media tests ask the right one (`super::cache`).
+    drive: u16,
     /// Absolute start LBA of the partition on the block device.
     start_lba: u32,
     /// Bytes per sector.
@@ -87,13 +91,26 @@ static MOUNTED: Mounted = Mounted(UnsafeCell::new([None; 16]));
 
 /// Log every drive out, so the next [`Volume::mount`] re-reads its boot
 /// sector. EmuTOS clears the drive's `drvsel` bit and frees its `DMD` when the
-/// media changes (`bdos/bdosmain.c:456-482`); NewTOS has one moment with the
-/// same meaning — the BIOS re-scanning the partition table
+/// media changes (`bdos/bdosmain.c:456-482`; NewTOS: [`log_out`], called by
+/// the dispatcher's re-login); NewTOS has one more moment with that meaning
+/// for every drive at once — the BIOS re-scanning the partition table
 /// (`crate::bios::mount`), which can move or replace every partition.
 pub fn log_out_all() {
     // SAFETY: single trap path; no outstanding borrow of the table.
     let table = unsafe { &mut *MOUNTED.0.get() };
     *table = [None; 16];
+}
+
+/// Log one drive out — `xmfreblk(dmd); drvtbl[errdrv] = NULL` and the
+/// `drvsel` bit of `osif`'s media-change block (`bdos/bdosmain.c:459-463,
+/// 474`): the next [`Volume::mount`] reads the drive's boot sector again
+/// (`docs/api/gemdos/_state.md` §4a).
+pub fn log_out(drive: u16) {
+    // SAFETY: single trap path; no outstanding borrow of the table.
+    let table = unsafe { &mut *MOUNTED.0.get() };
+    if let Some(slot) = table.get_mut(drive as usize) {
+        *slot = None;
+    }
 }
 
 impl Volume {
@@ -106,6 +123,12 @@ impl Volume {
     /// block device; only the first call for a drive — and any call for a
     /// drive that failed to log in, exactly as `ckdrv` retries `Getbpb` while
     /// the `drvsel` bit stays clear — reads its boot sector.
+    ///
+    /// `ckdrv`'s `Mediach` test of a removable drive (`bdos/fsdrive.c:
+    /// 106-114`) has no counterpart: the SD card is not removable (`drvrem`
+    /// empty, `docs/api/bios/09-mediach.md`). A media change on a logged-in
+    /// drive is met by the sector cache instead and handled by the
+    /// dispatcher (`docs/api/gemdos/_state.md` §4a).
     pub fn mount(drive: u16) -> Option<Volume> {
         if drive as usize >= 16 {
             return None;
@@ -127,6 +150,7 @@ impl Volume {
         let geo = bpb::geometry(drive)?;
         let bpb: Bpb = geo.bpb;
         Some(Volume {
+            drive,
             start_lba: part.start_lba,
             recsiz: bpb.recsiz as u32,
             clsiz: bpb.clsiz as u32,
@@ -139,6 +163,11 @@ impl Volume {
             numcl: bpb.numcl as u32,
             fat16: bpb.b_flags & B_16 != 0,
         })
+    }
+
+    /// The TOS drive this volume is logged in on (0 = A:).
+    pub fn drive(&self) -> u16 {
+        self.drive
     }
 
     /// Absolute start LBA of this volume's partition.
@@ -209,13 +238,13 @@ impl Volume {
     /// Read one partition-relative directory/data sector into `buf` (must be
     /// 512 bytes), through the cache's data list.
     fn read_rel(&self, rel_sector: u32, buf: &mut [u8; SECTOR]) -> bool {
-        cache::read(Kind::Data, (self.start_lba + rel_sector) as u64, buf)
+        cache::read(Kind::Data, self.drive, (self.start_lba + rel_sector) as u64, buf)
     }
 
     /// Write one partition-relative directory/data sector from `buf` through
     /// the cache's data list.
     fn write_rel(&self, rel_sector: u32, buf: &[u8; SECTOR]) -> bool {
-        cache::write(Kind::Data, (self.start_lba + rel_sector) as u64, buf)
+        cache::write(Kind::Data, self.drive, (self.start_lba + rel_sector) as u64, buf)
     }
 
     /// The cache list FAT sectors of this volume go to: keyed by the last
@@ -236,7 +265,7 @@ impl Volume {
         f: impl FnOnce(&mut [u8; SECTOR]) -> R,
     ) -> Option<R> {
         let lba = (self.start_lba + self.fatrec + recnum) as u64;
-        cache::with_sector(self.fat_kind(), lba, write, f)
+        cache::with_sector(self.fat_kind(), self.drive, lba, write, f)
     }
 
     /// Absolute LBA of data-area record `rec` (EmuTOS `RECNO` relative to

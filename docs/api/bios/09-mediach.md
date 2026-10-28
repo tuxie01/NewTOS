@@ -201,6 +201,11 @@ to `1` (may have changed)**. Both prior claims were wrong.
 
 - GEMDOS FAT-write paths (mandatory pre-flight check); `Getbpb` (resets the
   flag); `Rwabs` (internal check in logical mode).
+- **[FS20]** The BDOS: `getbcb` asks `Mediach` before it uses a cached record
+  (`bdos/fsbuf.c:179-191`), and `ckdrv` for a removable drive
+  (`bdos/fsdrive.c:106-114`); a `2` makes `osif` log the drive in again and
+  restart the call. NewTOS: the BDOS sector cache asks it the same way
+  (`docs/api/gemdos/_state.md` §4a).
 
 ---
 
@@ -269,12 +274,12 @@ report no-change).
 |-----------------|------------------|
 | WD1772 floppy change-line (first status read clears the latch) | **no probe** — the SD has no removal event wired |
 | ACSI/SCSI removable Test-Unit-Ready | **no probe** |
-| `forcechange` armed by a sector-0 write | **[BIOS01] armed** by `Rwabs` (`04-rwabs.md` step 6), reported here as `2` (`tos-api/src/bios/mod.rs:296@forcechange`), cleared by `Getbpb` |
+| `forcechange` armed by a sector-0 write | **[BIOS01] armed** by `Rwabs` (`04-rwabs.md` step 6), reported here as `2` (`tos-api/src/bios/mod.rs:304@forcechange`), cleared by `Getbpb` |
 
 ### `forcechange` / sector-0-write contract vs. the Pi
 
 **[BIOS01] (2) is implemented:** `media_change` returns `2` while the drive's
-`forcechange` is armed (`tos-api/src/bios/mod.rs:292@media_change`); (1), a
+`forcechange` is armed (`tos-api/src/bios/mod.rs:300@media_change`); (1), a
 latched `mediachange`, still does not exist (no probe). The paragraph below is
 the state before BIOS01.
 

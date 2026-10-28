@@ -1,0 +1,60 @@
+command   cargo xtask tosdump bios tosdump/cases/bios-r2-phys.tsv --disk --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-phys-disk.BIN --out /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-28-fs20/runs/after-phys --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs20/reg/xtask
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    2de6909abd84cb9abeb2cf5e5c986ae23e95b425
+dirty     21 path(s) in git status --porcelain
+   M docs/analysis/deps/mapping.tsv
+   M docs/api/bios/09-mediach.md
+   M docs/api/gemdos/_dispatcher.md
+   M docs/api/gemdos/_state.md
+   M docs/api/gemdos/process/_run-ownership-curdir.md
+   M docs/audits/2026-10-28-bios-storage.md
+   M docs/sdk/05-abi-pitfalls.md
+   M tools/hatari-oracle.sh
+   M tos-api/src/bdos/fs/cache.rs
+   M tos-api/src/bdos/fs/curdir.rs
+   M tos-api/src/bdos/fs/fat.rs
+   M tos-api/src/bdos/fs/file.rs
+   M tos-api/src/bdos/fs/fsio.rs
+   M tos-api/src/bios/mod.rs
+   M tos-api/src/gemdos/mod.rs
+   M tosdump/Makefile
+  ?? measurements/measurement-2026-10-28-fs20/
+  ?? tos-api/tests/fs20_media_change.rs
+  ?? tos-api/tests/fs20_media_change_geometry.rs
+  ?? tosdump/build-gcprobe-newtos.sh
+  ?? tosdump/probes/
+harness commit 2de6909abd84cb9abeb2cf5e5c986ae23e95b425
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-r2-phys.tsv sha256 f2a49911ee5191b98cd30304cebc0164bbba55cdfc9098d0d41abfae3cbcc35c
+target/   own (9 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (9 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 796c6c2b1c692fc432e7be322aa7d6f4951f5222661e1bf96cd4be829e835bb3
+kernel ELF  sha256 9e94ec41482c702bc61ea3f46811dd6ff01d5d086054c1739c52be2645ad49f0 (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id 2de6
+DUMPBIOS.NAP sha256 406f8e2ffbe420c0855d2be9e8e3dc713d8f93cd05264f7d3f9ddcd890b82ce9
+test image built by tools/mktestdisk.sh NEWDESK.INF=<autorun D:\DUMPBIOS.NAP>
+test image sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+D:\DISKUNIT.TXT 26 (the profile's physical unit of C:, for u:0)
+card.img.manifest: image_sha256 80c148587db3d2e7c52bde78c7f303ab2fc57d456c48d47546c96ce2b3d3f731
+card.img.manifest: optional_missing none
+test.img.manifest: image_sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+test.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs20/reg/xtask/tosdump-68389/card.img sha256 80c148587db3d2e7c52bde78c7f303ab2fc57d456c48d47546c96ce2b3d3f731 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 9ba0551bbee78b2a1ab0ae434043a952f992b2642c410df624e6db1503d8e166
+BIOS.BIN 3872 bytes, sha256 b803d424df3b0d8b617b37dbf0bc351cbc1c17f2f3ac59e1e12c6973a1676958
+BIOS.LOG 273 bytes, sha256 a9ba71670c99354a4ee653232e5077ecd6c52faf35c4371507712e02ee83c083
+testpart: identical
+fsck_msdos -n testpart-before.img: exit 0
+fsck_msdos -n testpart-after.img: exit 0
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 ceedc75c119df67a27c42383cddeb14ff8a7fc180f972de7e5d4c1211d633c60
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 12 records of 320 bytes, build 2de6, case CRC 514944FD
+tosdiff EMUTOS-1a7484ab-BIOS-r2-phys-disk.BIN vs NEWTOS.BIN: exit 1, 11 of 12 cases differ
+total     31 s
+result    run complete (differences above are findings, not failures)

@@ -35,9 +35,10 @@
 //!
 //! * A slot holds the directory as its canonical absolute path (`\A\B`,
 //!   upper case, no drive letter) and its drive, not a DND pointer: NewTOS has
-//!   no DND cache. A path that no longer resolves reads as the root, which is
-//!   what `ckdrv`'s repair gives after a media change (`bdos/fsdrive.c:
-//!   112-132`).
+//!   no DND cache. A path that no longer resolves reads as the root. A media
+//!   change frees every slot of its drive ([`free_drive`], `freetree`), so
+//!   every PD's directory there reads as the root, what `ckdrv`'s repair
+//!   gives in EmuTOS (`bdos/fsdrive.c:120-131`).
 //! * The **root** is never given a slot: `p_curdir[d] == 0` *is* the root.
 //!   EmuTOS creates a root slot lazily in `ckdrv` (`fsdrive.c:119-131`); the
 //!   directory a program sees is the same, a slot is saved.
@@ -318,6 +319,22 @@ pub unsafe fn release_pd(pd: *mut BasePage) {
     let kva = crate::bdos::process::kalias(pd as u64) as *const BasePage;
     // SAFETY: caller contract.
     unsafe { release(kva) };
+}
+
+/// The `dirtbl[]` half of EmuTOS `freetree` (`bdos/bdosmain.c:356-378`),
+/// run by `osif`'s re-login after a media change on `drive`: every slot of
+/// that drive is emptied (`dnd = NULL`, `use = 0`). The PDs' `p_curdir[]`
+/// bytes are left as they are and read as the root from now on ([`curdir`]),
+/// which is what `ckdrv`'s repair gives them in EmuTOS (`bdos/fsdrive.c:
+/// 120-131`): after a media change every process's current directory on the
+/// drive is its root (`docs/api/gemdos/process/_run-ownership-curdir.md`
+/// §4.5). NewTOS keeps no DND tree, so this is all of `freetree`.
+pub fn free_drive(drive: u16) {
+    for s in table().iter_mut().skip(1) {
+        if s.uses != 0 && u16::from(s.drive) == drive {
+            *s = Slot::FREE;
+        }
+    }
 }
 
 /// Recount every slot's uses from the PDs that are alive — every process

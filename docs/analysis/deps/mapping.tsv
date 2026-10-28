@@ -10,12 +10,14 @@
 # the EmuTOS function is a def row of emutos_file, the NewTOS file exists
 # and has `fn <newtos_fn>`, every bios/ and bdos/ function has a row.
 emutos_fn	emutos_file	newtos_file	newtos_fn	note
-freetree	bdos/bdosmain.c	-	-	no counterpart: EmuTOS frees the per-drive DND tree on a media change (osif); NewTOS keeps no DND tree (paths are resolved by scanning, bdos/fs/path.rs)
-mark_bcbs_invalid	bdos/bdosmain.c	-	-	no counterpart: EmuTOS invalidates a drive's buffer-cache entries on media change or hard error; no NewTOS function found
+freetree	bdos/bdosmain.c	tos-api/src/bdos/fs/curdir.rs	free_drive	its dirtbl half: the changed drive's current-directory slots emptied (FS20); NewTOS keeps no DND tree (paths are resolved by scanning, bdos/fs/path.rs)
+mark_bcbs_invalid	bdos/bdosmain.c	tos-api/src/bdos/fs/cache.rs	invalidate_drive	the media-change half (FS20): every buffer of the drive dropped, dirty ones not written back; the hard-error half is the HW03 deviation (cache.rs write_back keeps a failed dirty buffer)
 ni	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	dispatch_inner	empty table slot -> EINVFN (build_table None)
-offree	bdos/bdosmain.c	-	-	no counterpart: EmuTOS frees the OFDs of a changed drive (osif media-change block); no NewTOS counterpart found (media change: bdos/fs/fat.rs log_out_all)
+offree	bdos/bdosmain.c	tos-api/src/bdos/fs/file.rs	free_drive_files	the sft entries and OFDs of the changed drive freed (FS20)
 osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	dispatch	GEMDOS trap dispatcher
-osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	dispatch_inner	the table call
+osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	dispatch_inner	the fresh error context per run and the restart after a media change (goto restrt)
+osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	run_call	the table call
+osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	media_change_relog	the media-change block: offree, DMD, freetree, mark_bcbs_invalid, Getbpb + log_media (FS20)
 osif	bdos/bdosmain.c	tos-api/src/gemdos/console.rs	redirect_to_file	osif's file block for redirected standard handles
 osif	bdos/bdosmain.c	tos-api/src/bdos/fs/file.rs	resolve	osif's handle resolution for Fread/Fwrite/Fseek
 osif	bdos/bdosmain.c	tos-api/src/gemdos/console.rs	device_read	osif's Fread on a character device
@@ -60,6 +62,9 @@ create_chain	bdos/fsbuf.c	tos-api/src/bdos/fs/cache.rs	initial_order	the buffer 
 flush	bdos/fsbuf.c	tos-api/src/bdos/fs/cache.rs	write_back	-
 getbcb	bdos/fsbuf.c	tos-api/src/bdos/fs/cache.rs	get	-
 getbcb	bdos/fsbuf.c	tos-api/src/bdos/fs/cache.rs	victim	the victim choice
+getbcb	bdos/fsbuf.c	tos-api/src/bdos/fs/cache.rs	evict	the write-back of a dirty victim (fsbuf.c:162-163), also before the re-read of a 'may have changed' hit
+getbcb	bdos/fsbuf.c	tos-api/src/bdos/fs/cache.rs	hit_test	the Mediach test of a buffer hit (fsbuf.c:177-191, FS20)
+getbcb	bdos/fsbuf.c	tos-api/src/bdos/fs/cache.rs	rwabs_test	the media tests of the longjmp_rwabs of a miss (fsbuf.c:165, FS20); also flush's and usrio's
 getrec	bdos/fsbuf.c	tos-api/src/bdos/fs/cache.rs	with_sector	-
 getrec	bdos/fsbuf.c	tos-api/src/bdos/fs/fat.rs	with_fat_sector	FAT records
 getrec	bdos/fsbuf.c	tos-api/src/bdos/fs/fsio.rs	partial	partial data records

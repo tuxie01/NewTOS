@@ -45,7 +45,7 @@
 use core::cell::UnsafeCell;
 use core::sync::atomic::{AtomicI32, AtomicU32, Ordering};
 
-use tos_types::error::{EUNDEV, E_OK};
+use tos_types::error::{EUNDEV, E_CHNG, E_OK};
 use tos_types::Long;
 
 use crate::bios::block::BlockDev;
@@ -103,6 +103,11 @@ const WRITEBACK_ATTEMPTS: u8 = 3;
 
 struct Slot {
     lba: u64,
+    /// The drive the sector belongs to — EmuTOS `b_bufdrv` (`bdos/fs.h:
+    /// 290-299`). Read while `valid`: the media test of a hit asks this
+    /// drive (`bdos/fsbuf.c:179`), a write-back is that drive's `Rwabs`, and
+    /// a re-login drops the drive's slots ([`invalidate_drive`]).
+    drv: u16,
     valid: bool,
     dirty: bool,
     /// The list's kind the slot was filled for; for a FAT slot this carries
@@ -128,6 +133,7 @@ struct List {
 
 const EMPTY_SLOT: Slot = Slot {
     lba: 0,
+    drv: 0,
     valid: false,
     dirty: false,
     kind: Kind::Data,
@@ -170,6 +176,14 @@ static DIRECT_SECTORS: AtomicU32 = AtomicU32::new(0);
 /// `errcode` (`bdos/fsglob.c:40-41`). `E_OK` when there is none pending.
 static LAST_ERROR: AtomicI32 = AtomicI32::new(E_OK);
 
+/// The drive of the first media change met in the running GEMDOS call —
+/// EmuTOS `errdrv` when `errcode == E_CHNG` (`bdos/fsbuf.c:185-187`,
+/// `bdos/fs.h:64-68`); [`NO_DRIVE`] when there is none. Separate from
+/// [`LAST_ERROR`], which the calls' own error paths take ([`take_error`]):
+/// the dispatcher needs it after the call returned ([`take_media_change`]).
+static MEDIA_CHANGE_DRV: AtomicI32 = AtomicI32::new(NO_DRIVE);
+const NO_DRIVE: i32 = -1;
+
 // ── Write-back bookkeeping (HW03 point 4: a retry must be visible) ────
 /// Write-backs that failed, counting every attempt.
 static WB_FAILURES: AtomicU32 = AtomicU32::new(0);
@@ -196,11 +210,88 @@ fn set_error(code: Long) {
     LAST_ERROR.store(code, Ordering::Relaxed);
 }
 
-/// Forget any pending hard error. Called at the top of a GEMDOS call, the
-/// place EmuTOS establishes a fresh `setjmp(errbuf)` context
-/// (`bdos/bdosmain.c:448`).
+/// Forget any pending hard error and media change. Called at the top of a
+/// GEMDOS call, the place EmuTOS establishes a fresh `setjmp(errbuf)`
+/// context (`bdos/bdosmain.c:442-449`).
 pub fn clear_error() {
     LAST_ERROR.store(E_OK, Ordering::Relaxed);
+    MEDIA_CHANGE_DRV.store(NO_DRIVE, Ordering::Relaxed);
+}
+
+/// A media change on drive `drv` was met: the access fails with `E_CHNG`,
+/// and the drive is kept for the dispatcher's re-login — EmuTOS `errdrv =
+/// drv; rwerr = errcode = E_CHNG; longjmp(errbuf, 1)` (`bdos/fsbuf.c:
+/// 185-188`, `bdos/fs.h:64-68`). EmuTOS jumps at the first one; here the
+/// call runs on through its error paths, so the **first** drive of the call
+/// is the one kept.
+fn signal_media_change(drv: u16) -> Long {
+    set_error(E_CHNG);
+    let _ = MEDIA_CHANGE_DRV.compare_exchange(
+        NO_DRIVE,
+        i32::from(drv),
+        Ordering::Relaxed,
+        Ordering::Relaxed,
+    );
+    E_CHNG
+}
+
+/// The drive of the media change the running GEMDOS call met, if any, and
+/// clear it — what `osif`'s `setjmp` branch finds in `errdrv` when
+/// `errcode == E_CHNG` (`bdos/bdosmain.c:456-459`).
+pub fn take_media_change() -> Option<u16> {
+    let d = MEDIA_CHANGE_DRV.swap(NO_DRIVE, Ordering::Relaxed);
+    (d != NO_DRIVE).then_some(d as u16)
+}
+
+/// What `getbcb` does with a buffer hit (`bdos/fsbuf.c:177-191`): it asks
+/// `Mediach(b_bufdrv)` before the record is used. `Ok(true)` = use the
+/// buffer (`0`, or a negative driver answer); `Ok(false)` = the media may
+/// have changed (`1`), read the record again as on a miss (`goto doio`);
+/// `Err(E_CHNG)` = the media has changed (`2`).
+///
+/// NewTOS's `Mediach` answers `0`, `2` or `EUNDEV` (the SD card has no
+/// "may have changed", `docs/api/bios/09-mediach.md`); the `1` branch is
+/// kept so the BDOS follows the BIOS contract, not today's BIOS.
+fn hit_test(drv: u16) -> Result<bool, Long> {
+    match crate::bios::media_change(drv) {
+        crate::bios::MEDIACHANGE => Err(signal_media_change(drv)),
+        crate::bios::MEDIAMAYCHANGE => Ok(false),
+        _ => Ok(true),
+    }
+}
+
+/// The media tests of the logical `Rwabs` every BDOS device access is
+/// (`longjmp_rwabs`, `bdos/fs.h:60-77`, flag 0 or 1, never
+/// `RW_NOMEDIACH`): a pending `forcechange` (step 5 of
+/// `docs/api/bios/04-rwabs.md`) or a media-change answer (step 10) fails it
+/// with `E_CHNG`. NewTOS's BDOS reaches the card through the block cache,
+/// not through `Rwabs`, so it asks here before every device access: the read
+/// of a miss, a write-back, a whole-record transfer.
+fn rwabs_test(drv: u16) -> Result<(), Long> {
+    if crate::bios::drive::forcechange(drv)
+        || crate::bios::media_change(drv) > crate::bios::MEDIANOCHANGE
+    {
+        return Err(signal_media_change(drv));
+    }
+    Ok(())
+}
+
+/// EmuTOS `mark_bcbs_invalid` (`bdos/bdosmain.c:411-424`): every slot of
+/// drive `drv`, in both lists, is made invalid. Dirty slots are
+/// **discarded, not written back** — the media they belonged to is gone
+/// (`docs/api/gemdos/_state.md` §3, §4a). Called by the re-login after a
+/// media change.
+pub fn invalidate_drive(drv: u16) {
+    for list in lists().iter_mut() {
+        for s in list.slots.iter_mut() {
+            if s.valid && s.drv == drv {
+                s.valid = false;
+                s.dirty = false;
+                s.wb_fails = 0;
+                s.wb_err = E_OK;
+            }
+        }
+    }
 }
 
 /// Is a hard device error pending (without taking it)? Lets a caller tell
@@ -240,7 +331,14 @@ pub fn take_error() -> Option<Long> {
 /// unreachable from the point the jump lands. We do not jump, so we are not
 /// forced to discard, and the ticket's integrity requirement is exactly
 /// that no sector disappears because its write-back failed.
+///
+/// The write is the logical `Rwabs` of `flush` (`bdos/fsbuf.c:95,100`), so
+/// it meets that call's media tests first ([`rwabs_test`]): with a media
+/// change pending on the slot's drive it fails with `E_CHNG` without
+/// touching the device (and without counting as a failed write-back); the
+/// slot stays as it is until the re-login drops it ([`invalidate_drive`]).
 fn write_back(s: &mut Slot) -> Result<(), Long> {
+    rwabs_test(s.drv)?;
     if s.wb_fails > 0 {
         WB_RETRIES.fetch_add(1, Ordering::Relaxed);
     }
@@ -313,19 +411,25 @@ impl List {
 
     /// Pick the victim for a miss — `getbcb`'s choice (`bdos/fsbuf.c:
     /// 130-157`): the **last** invalid slot in list order, else the tail
-    /// (least recently used). A dirty victim is written back first
-    /// (`:162-163`). Returns its order position.
-    ///
-    /// When the victim is dirty and cannot be written back, the slot is
-    /// **not** handed out — the caller's access fails rather than silently
-    /// overwriting a sector that never reached the card (HW03). The slot is
-    /// moved to the head, so the next miss picks a different victim and one
-    /// bad sector does not block the whole list.
+    /// (least recently used), made ready by [`List::evict`]. Returns its
+    /// order position.
     fn victim(&mut self) -> Result<usize, Long> {
         let pos = (0..SLOTS)
             .rev()
             .find(|&p| !self.slots[self.order[p] as usize].valid)
             .unwrap_or(SLOTS - 1);
+        self.evict(pos)
+    }
+
+    /// Make the slot at order position `pos` ready to take another record: a
+    /// dirty slot is written back first (`bdos/fsbuf.c:162-163`).
+    ///
+    /// When the slot is dirty and cannot be written back, it is **not**
+    /// handed out — the caller's access fails rather than silently
+    /// overwriting a sector that never reached the card (HW03). The slot is
+    /// moved to the head, so the next miss picks a different victim and one
+    /// bad sector does not block the whole list.
+    fn evict(&mut self, pos: usize) -> Result<usize, Long> {
         let s = &mut self.slots[self.order[pos] as usize];
         if s.valid && s.dirty {
             let r = if retryable(s) {
@@ -344,23 +448,40 @@ impl List {
         Ok(pos)
     }
 
-    /// EmuTOS `getbcb` (`bdos/fsbuf.c:114-202`): the slot holding `lba`,
-    /// read in on a miss unless `fill` is `false` (the caller overwrites all
-    /// 512 bytes), moved to the head. Returns the slot index.
-    fn get(&mut self, kind: Kind, lba: u64, fill: bool) -> Result<usize, Long> {
-        if let Some(pos) = self.find(lba) {
-            HITS.fetch_add(1, Ordering::Relaxed);
-            let idx = self.order[pos] as usize;
-            self.promote(pos);
-            return Ok(idx);
-        }
-        MISSES.fetch_add(1, Ordering::Relaxed);
-        LIST_MISSES[kind.list()].fetch_add(1, Ordering::Relaxed);
-        let pos = self.victim()?;
+    /// EmuTOS `getbcb` (`bdos/fsbuf.c:114-202`): the slot holding `lba` of
+    /// drive `drv`, read in on a miss unless `fill` is `false` (the caller
+    /// overwrites all 512 bytes), moved to the head. Returns the slot index.
+    ///
+    /// A hit is used only after the media test of `getbcb` ([`hit_test`],
+    /// `bdos/fsbuf.c:177-191`); "may have changed" reads the record again
+    /// into the same slot (`goto doio`). A miss — and that re-read — is the
+    /// logical `Rwabs` of `longjmp_rwabs` (`bdos/fsbuf.c:165`) and meets its
+    /// media tests ([`rwabs_test`]) whether or not the old contents are read:
+    /// EmuTOS always reads.
+    fn get(&mut self, kind: Kind, drv: u16, lba: u64, fill: bool) -> Result<usize, Long> {
+        let pos = match self.find(lba) {
+            Some(pos) => {
+                let idx = self.order[pos] as usize;
+                if hit_test(self.slots[idx].drv)? {
+                    HITS.fetch_add(1, Ordering::Relaxed);
+                    self.promote(pos);
+                    return Ok(idx);
+                }
+                MISSES.fetch_add(1, Ordering::Relaxed);
+                LIST_MISSES[kind.list()].fetch_add(1, Ordering::Relaxed);
+                self.evict(pos)?
+            }
+            None => {
+                MISSES.fetch_add(1, Ordering::Relaxed);
+                LIST_MISSES[kind.list()].fetch_add(1, Ordering::Relaxed);
+                self.victim()?
+            }
+        };
         let idx = self.order[pos] as usize;
         let s = &mut self.slots[idx];
         // "in case longjmp_rwabs() fails" (`bdos/fsbuf.c:164`).
         s.valid = false;
+        rwabs_test(drv)?;
         if fill {
             let r = match block() {
                 Some(b) => b.read_blocks(lba, &mut s.data),
@@ -372,6 +493,7 @@ impl List {
             }
         }
         s.lba = lba;
+        s.drv = drv;
         s.kind = kind;
         s.valid = true;
         s.dirty = false;
@@ -383,18 +505,19 @@ impl List {
 }
 
 /// EmuTOS `getrec` (`bdos/fsbuf.c:209-235`): run `f` on the cached contents
-/// of sector `lba` in `kind`'s list, reading it in on a miss; with `write`
-/// the slot is marked dirty afterwards (`:231-232`).
+/// of sector `lba` of drive `drv` in `kind`'s list, reading it in on a miss;
+/// with `write` the slot is marked dirty afterwards (`:231-232`).
 ///
 /// `None` means the access failed; the TOS code is in [`take_error`].
 pub fn with_sector<R>(
     kind: Kind,
+    drv: u16,
     lba: u64,
     write: bool,
     f: impl FnOnce(&mut [u8; SECTOR]) -> R,
 ) -> Option<R> {
     let list = &mut lists()[kind.list()];
-    let idx = list.get(kind, lba, true).ok()?;
+    let idx = list.get(kind, drv, lba, true).ok()?;
     let s = &mut list.slots[idx];
     let r = f(&mut s.data);
     if write {
@@ -407,23 +530,24 @@ pub fn with_sector<R>(
     Some(r)
 }
 
-/// Read sector `lba` into `out`, through `kind`'s list.
+/// Read sector `lba` of drive `drv` into `out`, through `kind`'s list.
 ///
 /// `false` means the access failed; the TOS code is in [`take_error`].
-pub fn read(kind: Kind, lba: u64, out: &mut [u8; SECTOR]) -> bool {
-    with_sector(kind, lba, false, |d| out.copy_from_slice(d)).is_some()
+pub fn read(kind: Kind, drv: u16, lba: u64, out: &mut [u8; SECTOR]) -> bool {
+    with_sector(kind, drv, lba, false, |d| out.copy_from_slice(d)).is_some()
 }
 
-/// Write sector `lba` from `data` into `kind`'s list (write-back: the slot
-/// is marked dirty and flushed later). A miss does not read the old
-/// contents first — all 512 bytes are replaced, so the read would be
-/// unobservable.
+/// Write sector `lba` of drive `drv` from `data` into `kind`'s list
+/// (write-back: the slot is marked dirty and flushed later). A miss does not
+/// read the old contents first — all 512 bytes are replaced, so the read
+/// would be unobservable; it still meets the media tests of that read.
 ///
 /// `false` means no slot could be made available because another sector's
-/// write-back failed; the TOS code is in [`take_error`].
-pub fn write(kind: Kind, lba: u64, data: &[u8; SECTOR]) -> bool {
+/// write-back failed, or a media change is pending; the TOS code is in
+/// [`take_error`].
+pub fn write(kind: Kind, drv: u16, lba: u64, data: &[u8; SECTOR]) -> bool {
     let list = &mut lists()[kind.list()];
-    let Ok(idx) = list.get(kind, lba, false) else {
+    let Ok(idx) = list.get(kind, drv, lba, false) else {
         return false;
     };
     let s = &mut list.slots[idx];
@@ -455,14 +579,15 @@ fn usrio_invalidate(lba: u64, count: u64) -> Result<(), Long> {
     Ok(())
 }
 
-/// Read `buf.len() / 512` sectors from `lba` straight into `buf` in **one**
-/// block request, bypassing the cache — EmuTOS `usrio(0, …)`
-/// (`bdos/fsio.c:57-74`).
+/// Read `buf.len() / 512` sectors of drive `drv` from `lba` straight into
+/// `buf` in **one** block request, bypassing the cache — EmuTOS `usrio(0, …)`
+/// (`bdos/fsio.c:57-74`), whose `longjmp_rwabs` meets the media tests of a
+/// logical `Rwabs` ([`rwabs_test`]).
 ///
 /// `false` means the access failed; the TOS code is in [`take_error`].
-pub fn direct_read(lba: u64, buf: &mut [u8]) -> bool {
+pub fn direct_read(drv: u16, lba: u64, buf: &mut [u8]) -> bool {
     let count = (buf.len() / SECTOR) as u64;
-    if usrio_invalidate(lba, count).is_err() {
+    if usrio_invalidate(lba, count).is_err() || rwabs_test(drv).is_err() {
         return false;
     }
     DIRECT_REQS.fetch_add(1, Ordering::Relaxed);
@@ -480,13 +605,14 @@ pub fn direct_read(lba: u64, buf: &mut [u8]) -> bool {
     }
 }
 
-/// Write `buf.len() / 512` sectors from `buf` to `lba` in **one** block
-/// request, bypassing the cache — EmuTOS `usrio(1, …)`.
+/// Write `buf.len() / 512` sectors from `buf` to `lba` of drive `drv` in
+/// **one** block request, bypassing the cache — EmuTOS `usrio(1, …)`, with
+/// the same media tests as [`direct_read`].
 ///
 /// `false` means the access failed; the TOS code is in [`take_error`].
-pub fn direct_write(lba: u64, buf: &[u8]) -> bool {
+pub fn direct_write(drv: u16, lba: u64, buf: &[u8]) -> bool {
     let count = (buf.len() / SECTOR) as u64;
-    if usrio_invalidate(lba, count).is_err() {
+    if usrio_invalidate(lba, count).is_err() || rwabs_test(drv).is_err() {
         return false;
     }
     DIRECT_REQS.fetch_add(1, Ordering::Relaxed);

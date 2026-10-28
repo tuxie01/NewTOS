@@ -274,9 +274,13 @@ fn mediach(args: &TrapArgs) -> Long {
 }
 
 /// `MEDIANOCHANGE` — the media has not changed (`bios/disk.h:69`).
-const MEDIANOCHANGE: Long = 0;
+pub const MEDIANOCHANGE: Long = 0;
+/// `MEDIAMAYCHANGE` — the media may have changed (`bios/disk.h:70`). Never
+/// answered on the Pi (no probe, `docs/api/bios/09-mediach.md`); named for
+/// the BDOS, which follows the contract (`bdos::fs::cache`).
+pub const MEDIAMAYCHANGE: Long = 1;
 /// `MEDIACHANGE` — the media has changed (`bios/disk.h:71`).
-const MEDIACHANGE: Long = 2;
+pub const MEDIACHANGE: Long = 2;
 
 /// EmuTOS `blkdev_mediach` (`bios/blkdev.c:783-820`): the media-change state
 /// of a logical drive, shared by the `Mediach` trap and `Rwabs`' media-change
@@ -289,7 +293,11 @@ const MEDIACHANGE: Long = 2;
 /// Pi's SD card is treated as non-removable — no probe, no latched
 /// `mediachange` — so the answer is `MEDIANOCHANGE` (spec §"Pi / BCM2711
 /// binding", `docs/HARDWARE-PROFILE.md` §3.4).
-fn media_change(drive: u16) -> Long {
+///
+/// Also the `Mediach` the BDOS asks before it uses a cached record (EmuTOS
+/// `getbcb`, `bdos/fsbuf.c:179`) and the media test of the BDOS's own
+/// device accesses (`bdos::fs::cache`, `docs/api/gemdos/_state.md` §4a).
+pub fn media_change(drive: u16) -> Long {
     if drive::resolve(drive).is_none() {
         return EUNDEV; // out-of-range / unmounted drive
     }

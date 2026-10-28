@@ -19,9 +19,12 @@
 #                      2 + 8*2 = 18 (bios/disk.h:30), in D:\DISKUNIT.TXT for
 #                      DUMPBIOS' unit token u:0 (docs/api/bios/04-rwabs.md
 #                      "Decisions"; docs/TOS-REFERENCE-DUMPER.md section 6)
-#   dumper   DUMPVDI.PRG, DUMPAES.PRG, DUMPRAST.PRG or DUMPBIOS.PRG (m68k)
+#   dumper   DUMPVDI.PRG, DUMPAES.PRG, DUMPRAST.PRG or DUMPBIOS.PRG (m68k);
+#            or the probe GCPROBE.PRG (tosdump/probes/gcprobe.c, TASK/FS20):
+#            no table (give -), profile disk only, always destructive (it
+#            rewrites C:'s boot sector), writes GCPROBE.LOG only
 #   table    the case table; staged as VDI.TSV / AES.TSV / RASTER.TSV /
-#            BIOS.TSV
+#            BIOS.TSV; - for a probe
 #   out-dir  receives hd/ (the GEMDOS drive: C:, in profile disk D:),
 #            <AREA>.BIN, <AREA>.LOG and hatari.log; must not exist yet. Profile
 #            disk adds disk.img (the clone after the run; the caller deletes
@@ -58,8 +61,23 @@ ROM=${5:-$ORACLE_ROM}
 [ -f "$ORACLE_HATARI_CFG" ] || { echo "Hatari config not found: $ORACLE_HATARI_CFG" >&2; exit 1; }
 [ -f "$ROM" ]               || { echo "ROM not found: $ROM" >&2; exit 1; }
 [ -f "$DUMPER" ]            || { echo "dumper not found: $DUMPER" >&2; exit 1; }
-[ -f "$TABLE" ]             || { echo "table not found: $TABLE" >&2; exit 1; }
 [ ! -e "$OUT" ]             || { echo "out-dir exists: $OUT" >&2; exit 1; }
+
+PRG=$(basename "$DUMPER" | tr '[:lower:]' '[:upper:]')
+PROBE=0
+case $PRG in
+    DUMPVDI.PRG)  AREA=VDI ;;
+    DUMPAES.PRG)  AREA=AES ;;
+    DUMPRAST.PRG) AREA=RASTER ;;
+    DUMPBIOS.PRG) AREA=BIOS ;;
+    GCPROBE.PRG)  AREA=GCPROBE; PROBE=1 ;;
+    *) echo "unknown dumper: $PRG" >&2; exit 2 ;;
+esac
+if [ "$PROBE" = 1 ]; then
+    [ "$TABLE" = - ] || { echo "$PRG is a probe: it takes no table (give -)" >&2; exit 2; }
+else
+    [ -f "$TABLE" ] || { echo "table not found: $TABLE" >&2; exit 1; }
+fi
 if [ "$ROM" = "$ORACLE_ROM" ] &&
    [ "$(shasum -a 256 "$ROM" | cut -d' ' -f1)" != "$ORACLE_ROM_SHA256" ]; then
     echo "pinned ROM does not match ORACLE_ROM_SHA256: $ROM" >&2; exit 1
@@ -67,21 +85,16 @@ fi
 
 # Read more broadly than the dumper's loader (any whitespace separates), so a
 # table the loader takes as destructive is never run as an ordinary one.
-DESTRUCTIVE=0
-if grep -Eq '^[[:space:]]*!disk[[:space:]]+[^[:space:]]+[[:space:]]+destructive[[:space:]]*$' "$TABLE"; then
+# A probe rewrites C:'s boot sector: destructive by itself.
+DESTRUCTIVE=$PROBE
+if [ "$PROBE" = 0 ] &&
+   grep -Eq '^[[:space:]]*!disk[[:space:]]+[^[:space:]]+[[:space:]]+destructive[[:space:]]*$' "$TABLE"; then
     DESTRUCTIVE=1
+fi
+if [ "$DESTRUCTIVE" = 1 ]; then
     [ "$PROFILE" = disk ] || {
         echo "destructive table: runs only in profile disk, on a fresh clone of the test image" >&2; exit 2; }
 fi
-
-PRG=$(basename "$DUMPER" | tr '[:lower:]' '[:upper:]')
-case $PRG in
-    DUMPVDI.PRG)  AREA=VDI ;;
-    DUMPAES.PRG)  AREA=AES ;;
-    DUMPRAST.PRG) AREA=RASTER ;;
-    DUMPBIOS.PRG) AREA=BIOS ;;
-    *) echo "unknown dumper: $PRG" >&2; exit 2 ;;
-esac
 
 DRIVE=C
 case $PROFILE in
@@ -104,7 +117,7 @@ esac
 mkdir -p "$OUT/hd" "$OUT/home"
 OUT=$(cd "$OUT" && pwd)
 cp "$DUMPER" "$OUT/hd/$PRG"
-cp "$TABLE" "$OUT/hd/$AREA.TSV"
+[ "$PROBE" = 1 ] || cp "$TABLE" "$OUT/hd/$AREA.TSV"
 if [ "$PROFILE" = falcontc ]; then
     # 0x001C = VIDEL_VGA|VIDEL_80COL|VIDEL_TRUECOLOR, read by process_inf1
     # (aes/geminit.c). Byte-identical to the INF of the 2026-09-21 runs.

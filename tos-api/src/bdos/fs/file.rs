@@ -1314,6 +1314,30 @@ fn sftdel(n: usize) {
     }
 }
 
+/// EmuTOS `offree` (`bdos/bdosmain.c:387-405`), the first step of `osif`'s
+/// re-login after a media change on `drive`: every `sft[]` entry whose OFD
+/// lives on that drive (`f->o_dmd == d`) is freed — the OFD released,
+/// `f_ofd`/`f_own` cleared, `f_use = 0`. The handle numbers stay in the
+/// programs' hands and name free entries: `Fread`/`Fwrite`/`Fseek`/`Fclose`
+/// on them answer `EIHNDL` (`bdos/bdosmain.c:591-592`, `bdos/fsopnclo.c:
+/// 481-482`). Nothing is written back; the drive's buffers are dropped next
+/// (`super::cache::invalidate_drive`). Standard handles forced to such an
+/// entry keep their `p_uft[]` value, as in EmuTOS.
+pub fn free_drive_files(drive: u16) {
+    for j in 0..OPEN_FILES {
+        let on_drive = ofds()[j].as_ref().is_some_and(|o| o.s.vol.drive() == drive);
+        if !on_drive {
+            continue;
+        }
+        for e in sft().iter_mut() {
+            if e.ofd == FOfd::File(j) {
+                *e = FREE;
+            }
+        }
+        ofds()[j] = None;
+    }
+}
+
 /// The file half of EmuTOS `ixterm` (`bdos/proc.c:116-123`), for the
 /// process `r` that terminates (`Pterm`, `Pterm0`, `Ptermres`): close every
 /// standard handle it redirected to a file (`p_uft[i] > 0`), then every

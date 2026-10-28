@@ -1,0 +1,10 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh, MKCARD_TESTDISK 7c1b91c8e16014b8bbf4d40483070df5ba0069fe6e75c9cb01a2d809963d2496 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs20/gcprobe.wJpDzi/test.img
+image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs20/gcprobe.wJpDzi/card.img
+image_sha256 e54aba13bdc4798fda3aa19b087f45d521c6d7f8b3b40664918c597d21ee6959
+size_mib 128
+created 2026-10-28T23:03:04Z
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+file 93b5b1674fda72976c1a9606584c95379f1deb282b4604b18e0465900873b45d 30 C:\NEWDESK.INF
+file 8f74934aef2b666520fc1598fef39409a310764079f602cf2a512d42329c042c 145168 D:\GCPROBE.NAP

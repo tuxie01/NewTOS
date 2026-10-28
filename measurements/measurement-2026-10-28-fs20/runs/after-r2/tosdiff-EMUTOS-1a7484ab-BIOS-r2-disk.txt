@@ -1,0 +1,12 @@
+EMUTOS-1a7484ab-BIOS-r2-disk.BIN vs NEWTOS.BIN -- area BIOS, 51 cases from bios-r2.tsv
+
+case 68  trap 13 function 0x04  R10 count 0 past the end -> ESECNF (BIOS-STOR-003) -- blkdev.c:
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-r2-disk.BIN = 0xFFFFFFFFFFFFFFF8 (-8)   NEWTOS.BIN                       = 0x0000000000000000 (0)
+
+case 83  trap 13 function 0x04  F03 Rwabs(0,NULL,2,0,A:) FastCopy (BIOS-STOR-007) -- blkdev.c:4
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-r2-disk.BIN = 0x0000000000000000 (0)   NEWTOS.BIN                       = 0xFFFFFFFFFFFFFFF1 (-15)
+
+case 84  trap 13 function 0x04  F03b Rwabs(0,NULL,0,0,A:) back to 0 -- blkdev.c:425-428
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-r2-disk.BIN = 0x0000000000000000 (0)   NEWTOS.BIN                       = 0xFFFFFFFFFFFFFFF1 (-15)
+
+3 of 51 cases differ

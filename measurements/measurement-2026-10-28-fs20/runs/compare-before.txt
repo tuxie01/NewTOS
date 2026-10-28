@@ -1,0 +1,35 @@
+emutos:
+  A05 Mediach(2) ret=2
+  A06 Dfree(C:) ret=0 free=32671 total=32672 secsiz=512 clsiz=4
+  A07 Mediach(2) ret=0
+  B03 Mediach(2) ret=2
+  B04 Dfree(C:) ret=0 free=32675 total=32676 secsiz=512 clsiz=4
+  B05 Mediach(2) ret=0
+  B06 Fcreate(C:\GCPROBE.DAT) ret=6 Fwrite=512 Fclose=0
+  B07 Getbpb(2) nz=1 bpb=512,4,2048,16,128,129,273,32676,1
+  B08 Mediach(2) ret=0
+  testpart-after sha256 3799d02fbe8dab7bbe59393f2db8b6cf2d72d657bdc42593f1b84db1faf7507a
+  root entries 256, data area (datrec) 273
+  marker in partition sector 277 = cluster 3 by the boot sector on disk
+newtos-before:
+  A05 Mediach(2) ret=2
+  A06 Dfree(C:) ret=0 free=32671 total=32672 secsiz=512 clsiz=4
+  A07 Mediach(2) ret=2
+  B03 Mediach(2) ret=2
+  B04 Dfree(C:) ret=0 free=32671 total=32672 secsiz=512 clsiz=4
+  B05 Mediach(2) ret=2
+  B06 Fcreate(C:\GCPROBE.DAT) ret=6 Fwrite=512 Fclose=0
+  B07 Getbpb(2) nz=1 bpb=512,4,2048,16,128,129,273,32676,1
+  B08 Mediach(2) ret=0
+  testpart-after sha256 9bd39503a677bb814788e193bb037c85d5ad7e590c33461e3c3ec5a2c6f477c0
+  root entries 256, data area (datrec) 273
+  marker in partition sector 293 = cluster 7 by the boot sector on disk
+  GCPROBE.LOG vs emutos: DIFFERENT
+    A07: emutos 'A07 Mediach(2) ret=0' / newtos-before 'A07 Mediach(2) ret=2'
+    B04: emutos 'B04 Dfree(C:) ret=0 free=32675 total=32676 secsiz=512 clsiz=4' / newtos-before 'B04 Dfree(C:) ret=0 free=32671 total=32672 secsiz=512 clsiz=4'
+    B05: emutos 'B05 Mediach(2) ret=0' / newtos-before 'B05 Mediach(2) ret=2'
+  testpart vs emutos: raw DIFFERENT in partition sectors [257, 277, 293]; after zeroing the root directory time stamps: DIFFERENT in [257, 277, 293]
+    sector 257: bytes 0x04b (entry 2 +0x0b) emutos 20 / newtos-before 00
+    sector 277: bytes 0x000 (entry 0 +0x00) emutos 47 / newtos-before 00, 0x001 (entry 0 +0x01) emutos 43 / newtos-before 00, 0x002 (entry 0 +0x02) emutos 50 / newtos-before 00, 0x003 (entry 0 +0x03) emutos 52 / newtos-before 00, 0x004 (entry 0 +0x04) emutos 4f / newtos-before 00, 0x005 (entry 0 +0x05) emutos 42 / newtos-before 00, 0x006 (entry 0 +0x06) emutos 45 / newtos-before 00, 0x007 (entry 0 +0x07) emutos 2d / newtos-before 00, 0x008 (entry 0 +0x08) emutos 53 / newtos-before 00, 0x009 (entry 0 +0x09) emutos 54 / newtos-before 00, 0x00a (entry 0 +0x0a) emutos 41 / newtos-before 00, 0x00b (entry 0 +0x0b) emutos 4c / newtos-before 00, 0x00c (entry 0 +0x0c) emutos 45 / newtos-before 00, 0x00d (entry 0 +0x0d) emutos 2d / newtos-before 00, 0x00e (entry 0 +0x0e) emutos 47 / newtos-before 00, 0x00f (entry 0 +0x0f) emutos 45 / newtos-before 00
+    sector 293: bytes 0x000 (entry 0 +0x00) emutos 00 / newtos-before 47, 0x001 (entry 0 +0x01) emutos 00 / newtos-before 43, 0x002 (entry 0 +0x02) emutos 00 / newtos-before 50, 0x003 (entry 0 +0x03) emutos 00 / newtos-before 52, 0x004 (entry 0 +0x04) emutos 00 / newtos-before 4f, 0x005 (entry 0 +0x05) emutos 00 / newtos-before 42, 0x006 (entry 0 +0x06) emutos 00 / newtos-before 45, 0x007 (entry 0 +0x07) emutos 00 / newtos-before 2d, 0x008 (entry 0 +0x08) emutos 00 / newtos-before 53, 0x009 (entry 0 +0x09) emutos 00 / newtos-before 54, 0x00a (entry 0 +0x0a) emutos 00 / newtos-before 41, 0x00b (entry 0 +0x0b) emutos 00 / newtos-before 4c, 0x00c (entry 0 +0x0c) emutos 00 / newtos-before 45, 0x00d (entry 0 +0x0d) emutos 00 / newtos-before 2d, 0x00e (entry 0 +0x0e) emutos 00 / newtos-before 47, 0x00f (entry 0 +0x0f) emutos 00 / newtos-before 45
+VERDICT: differs from the reference

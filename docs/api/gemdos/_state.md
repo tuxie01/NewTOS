@@ -477,6 +477,153 @@ D-025.)
 source): `Dsetdrv`/`Dgetdrv` are **0-based** (`0 = A:`); `Dfree`/`Dgetpath` use
 the **`+1`** convention (`0 = current`, `1 = A:`).
 
+### 4a. Drive login and media change (`ckdrv`, `getbcb`, `osif`) — [FS20]
+
+Extracted 2026-10-28 from EmuTOS @ `1a7484ab` for TASK/FS20. Measured with
+the probe `tosdump/probes/gcprobe.c` (oracle and NewTOS,
+`measurements/measurement-2026-10-28-fs20/RUNINFO.TXT`; the first,
+NewTOS-before-the-fix run: `measurements/measurement-2026-10-28-bios01-s2/RUNINFO.TXT`,
+section "GEMDOS consequence").
+
+**When the BDOS calls `Getbpb` [FS20].**
+
+1. **Log-in.** `ckdrv(d, checkrem)` (`bdos/fsdrive.c:77-132`), called by
+   every path-resolving call (`dcrack`, `bdos/fsdir.c:1715`), `Dfree`
+   (`bdos/fsfat.c:345`) and `Dgetpath` (`bdos/fsdir.c:1237`, with
+   `checkrem = FALSE`): a drive whose bit in `drvsel` is clear is logged in —
+   `Getbpb(d)`, then `log_media(b, d)` builds the DMD from that BPB
+   (`bdos/fsdrive.c:94-104`, `:184-249`) and the bit is set. `Getbpb` NULL →
+   `EPTHNF` for a removable drive (`drvrem`), else `EDRIVE`; `log_media`
+   failing → `ENSMEM`. A logged-in drive is answered from `drvtbl[d]`; no
+   sector is read.
+2. **Re-login after a media change**, in `osif` (below), `bdos/bdosmain.c:471`.
+
+There is no other `Getbpb` in `bdos/`.
+
+**When the BDOS learns of a media change [FS20].** Three places, each of
+which ends in `longjmp(errbuf, 1)` with `errcode = rwerr = E_CHNG` (-14) and
+`errdrv` = the drive:
+
+1. **`ckdrv` on a removable drive** (`bdos/fsdrive.c:106-114`): with
+   `checkrem` TRUE and the drive in `drvrem`, `Mediach(d) != 0` (1 or 2, or
+   a negative driver error) → `E_CHNG`. A fixed drive (`drvrem` bit clear) is
+   never asked here.
+2. **A buffer hit in `getbcb`** (`bdos/fsbuf.c:179-191`): before a cached
+   record is used, `Mediach(b_bufdrv)`: `1` (may have changed) → the record
+   is read again as on a miss (`goto doio`); `2` → `E_CHNG`; `0` or a
+   negative value → the buffer is used.
+3. **Every device access of the BDOS is a logical `Rwabs` without
+   `RW_NOMEDIACH`** — `longjmp_rwabs` (`bdos/fs.h:60-77`, flag 0 or 1): the
+   read of a `getbcb` miss (`bdos/fsbuf.c:165`), the write-back of a dirty
+   buffer (`flush`, `bdos/fsbuf.c:95,100`; called for an evicted buffer,
+   `:162-163`, by `usrio` and by `ixclose`'s loop) and the whole-record file
+   transfers (`usrio`, `bdos/fsio.c:73`). A non-zero `Rwabs` return of any
+   kind is stored in `rwerr`/`errcode` with `errdrv` = the drive and jumps
+   (`bdos/fs.h:64-68,73-77`). For a drive whose logical sector 0 was written
+   (`forcechange`), `Rwabs` fails every logical request with `E_CHNG`
+   (`docs/api/bios/04-rwabs.md`, order table, steps 5 and 10). `flush` marks
+   the buffer invalid **before** its write (`bdos/fsbuf.c:93`), `getbcb` the
+   victim before its read (`:164`), so a failed access leaves no stale buffer.
+
+So a call that touches no buffer and no sector of the drive — `Dgetpath`,
+`Dsetdrv`, `Fsetdta`, `Dgetdrv` — does **not** notice a pending change on a
+fixed drive; the next call that reads or writes one of its records does.
+
+**What the re-login does — `osif`'s media-change block** (`bdos/bdosmain.c:
+449-487`; the `setjmp` is re-armed at the top of every call, `:442-449`).
+On `errcode == E_CHNG`, in this order:
+
+1. **Open files** — `offree(drvtbl[errdrv])` (`bdos/bdosmain.c:387-405`):
+   every `sft[]` entry whose OFD belongs to the drive's DMD is freed (the OFD
+   released, `f_ofd = NULL`, `f_own = NULL`, `f_use = 0`). The handle number
+   stays in the program's hands but names a free entry: `Fread`/`Fwrite`/
+   `Fseek` on it answer `EIHNDL` ("invalid handle: media change, etc",
+   `bdos/bdosmain.c:591-592`), `Fclose` answers `EIHNDL` (`getofd` NULL,
+   `bdos/fsopnclo.c:481-482`). Data the program wrote that was still in a
+   buffer is lost with step 4. Standard handles forced to such an entry
+   (`p_uft[h] > 0`) are not reset; they name the free entry.
+2. **The DMD** is released and `drvtbl[errdrv] = NULL` (`:459-463`).
+3. **Current directories** — `freetree(dmd->m_dtl)` (`bdos/bdosmain.c:
+   356-378`): the drive's DND tree is released and every `dirtbl[]` slot that
+   named one of its DNDs is emptied (`dnd = NULL`, `use = 0`). The PDs'
+   `p_curdir[d]` bytes are not touched; the next `ckdrv` on the drive finds an
+   empty slot and gives the running PD the root (`bdos/fsdrive.c:120-131`).
+   Observable: after a media change every process's current directory on that
+   drive is the root (`process/_run-ownership-curdir.md` §4.5).
+4. **Buffers** — `mark_bcbs_invalid(errdrv)` (`bdos/bdosmain.c:411-424`):
+   every buffer of the drive, in both lists (FAT and data), is marked invalid
+   (`b_bufdrv = -1`). Dirty buffers are **discarded, not written back** (§3).
+5. **`Getbpb(errdrv)`** (`:471`), which also clears the drive's
+   `forcechange` and `mediachange` (`docs/api/bios/07-getbpb.md`,
+   `bios/blkdev.c:589-590`). NULL → the drive's `drvsel` bit is cleared and
+   the call returns **`E_CHNG`** (-14) to the program (`:472-476`); the next
+   call on the drive logs it in afresh through `ckdrv`.
+6. **`log_media(b, errdrv)`** with that BPB (`:478-482`) — the geometry is the
+   **new** boot sector's. Failure → `drvsel` bit cleared, **`ENSMEM`**.
+7. `rwerr = errdrv = 0` and **`goto restrt`** (`:484-486`): the whole call is
+   run again from its function number, with its original arguments, under a
+   fresh `setjmp`. Whatever the first run did before the jump stays done
+   (except the buffers of the drive, step 4); its return value is dropped.
+
+Any other hard error (`errcode != E_CHNG`) only marks the drive's buffers
+invalid and returns the code (`:489-492`); see §3 and the HW03 deviation in
+`tos-api/src/bdos/fs/cache.rs:340@write_back` (NewTOS keeps a dirty buffer
+whose write-back failed).
+
+**What a media change does not touch.** The DTA of an `Fsfirst`/`Fsnext`
+search holds drive, cluster and offset, no DND pointer (`xsnext`,
+`bdos/fsdir.c:556-580`): `Fsnext` after a re-login continues on the new
+geometry. `p_curdrv` is not changed.
+
+**Measured (gcprobe, oracle).** C: a fixed IDE drive. After a logical
+sector-0 write with `RW_NOMEDIACH` (arms `forcechange`), `Mediach(2)` = 2;
+the next `Dfree(C:)` (a FAT-buffer access) re-logs C: in, and `Mediach(2)` is
+0 after it (A05 → A07). After the boot sector's root-entry count is changed
+512 → 256 and written back the same way, `Dfree(C:)` returns the **new**
+cluster total 32676 (B04), `Mediach` 0 (B05), and a file created next has its
+cluster 3 in partition sector 277, the new geometry's (`datrec` 273).
+
+**NewTOS [FS20].**
+
+- The SD card is non-removable (`docs/api/bios/09-mediach.md`, Pi binding):
+  `drvrem` is empty, so place 1 does not exist; `Volume::mount`
+  (`tos-api/src/bdos/fs/fat.rs:132@mount`) answers a logged-in drive without
+  a device access, as `ckdrv` does for a fixed drive.
+- The BDOS reaches the card through the block cache (`bios::bcache`), not
+  through `Rwabs`, so the BDOS sector cache asks the BIOS media state itself
+  at places 2 and 3 (`tos-api/src/bdos/fs/cache.rs:255@hit_test`,
+  `tos-api/src/bdos/fs/cache.rs:270@rwabs_test`): on a hit `Mediach`'s answer
+  (`bios::media_change`), before every device access the media tests of a
+  logical `Rwabs` without `RW_NOMEDIACH` (`forcechange` armed or
+  `Mediach` > 0 → `E_CHNG`). Each buffer remembers its drive (`b_bufdrv`).
+- There is no `longjmp`: the access fails, the cache records `E_CHNG` and the
+  first `errdrv` of the call (`tos-api/src/bdos/fs/cache.rs:227@signal_media_change`),
+  and the call returns through its error paths. While the change is pending
+  every further access to that drive fails the same way, so nothing reaches
+  the disk after the detection. `gemdos::dispatch` — `osif` — then runs steps
+  1-7 (`tos-api/src/gemdos/mod.rs:210@media_change_relog`) and runs the call
+  again (`tos-api/src/gemdos/mod.rs:150@dispatch_inner`): `offree` =
+  `tos-api/src/bdos/fs/file.rs:1326@free_drive_files`, `freetree`'s
+  `dirtbl` half = `tos-api/src/bdos/fs/curdir.rs:332@free_drive` (NewTOS keeps
+  no DND tree), the DMD = `tos-api/src/bdos/fs/fat.rs:108@log_out`,
+  `mark_bcbs_invalid` = `tos-api/src/bdos/fs/cache.rs:284@invalidate_drive`,
+  `Getbpb` + `log_media` = `Volume::mount` (`bpb::geometry` clears
+  `forcechange`, `docs/api/bios/07-getbpb.md`). A `Getbpb` refusal returns
+  `E_CHNG`; NewTOS has no `log_media` failure of its own (`bpb::parse` already
+  refuses what `log_media` would, `fsiz == 0`), so `ENSMEM` does not occur.
+- Difference in kind, not in the measured result: EmuTOS abandons the call at
+  the first failed access; NewTOS lets it run on through its error paths
+  before the restart. Device state cannot differ (every later access to the
+  drive fails until the re-login); in-memory effects of those error paths
+  are overwritten by the restarted run or freed by steps 1-4.
+- **Open [FS20]:** BDOS work that does not enter through `gemdos::dispatch`
+  — `Pexec` (the kernel's frame-mutating path) and the kernel's direct file
+  readers (`bdos::fs::read_file`: the AES resource loader, `shel_find`, the
+  file selector's resource, `NEWDESK.INF`, the keyboard table) — meets the
+  pending change and fails, without a re-login; the next GEMDOS call that
+  touches the drive re-logs it. In EmuTOS all of these are GEMDOS traps and
+  restart. Not decided (report of TASK/FS20).
+
 ---
 
 ## 5. Current Path per Drive

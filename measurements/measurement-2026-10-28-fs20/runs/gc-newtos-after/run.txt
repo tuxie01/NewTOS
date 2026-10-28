@@ -1,0 +1,9 @@
+gcprobe run, side newtos (2026-10-28T23:03:01Z)
+tree      d47be1b4d364fc448583637565b4127b6b11439c 10 dirty paths in kernel tos-api tos-types tosdump/probes
+test.img  7c1b91c8e16014b8bbf4d40483070df5ba0069fe6e75c9cb01a2d809963d2496 (tools/mktestdisk.sh NEWDESK.INF=#R 02/#Z 01 D:\GCPROBE.NAP@)
+testpart  before a173d32ac0bd71f22aee8ac7250496f028a0706ba3f7eff3d84f17d36086e3dd
+probe     GCPROBE.NAP 8f74934aef2b666520fc1598fef39409a310764079f602cf2a512d42329c042c
+kernel    3262999811c12e359e68dded0e7ff36b951343f88f05a6cfddd01482460d2f49 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs20/kernel8-after-trace.img
+card      e54aba13bdc4798fda3aa19b087f45d521c6d7f8b3b40664918c597d21ee6959 (tools/mkcard.sh MKCARD_TESTDISK, D:\GCPROBE.NAP)
+qemu      done
+testpart  after  36b5a14f88f075a7a649b7a1945d418378eb399f06d7f38e612573ee8d8bb1b0

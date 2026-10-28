@@ -986,7 +986,7 @@ One program per area, sharing `tosdump/core/` and one `tosdump/abi/` backend:
 | `DUMPVDI` | VDI | build this first |
 | `DUMPAES` | AES | after VDI is clean |
 | `DUMPBIOS` | BIOS + XBIOS | `retclass` and `capture` since 2026-10-27; table `tosdump/cases/bios-r1.tsv`, ledger `tosdump/cases/COVERAGE-BIOS.md`, references `EMUTOS-1a7484ab-BIOS` (TT) and `-BIOS-falcontc`, first comparison `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`. Second table `tosdump/cases/super-r1.tsv` (`Super`/`Supexec`, section 6), references `EMUTOS-1a7484ab-SUPER` (TT) and `-SUPER-falcontc`. Disk table `tosdump/cases/bios-r2.tsv` (section 6, "The disk round"), reference `EMUTOS-1a7484ab-BIOS-r2-disk` (profile `disk`), first comparison `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`; the closing tables `bios-r2-phys.tsv`, `-x004.tsv`, `-x005.tsv`, `-x006.tsv` (section 6, "The closing tables"), references `EMUTOS-1a7484ab-BIOS-r2-<phys\|x004\|x005\|x006>-disk`, `measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT` |
-| `DUMPGDOS` | GEMDOS | needs `retclass` and `capture` |
+| `DUMPGDOS` | GEMDOS | needs `retclass` and `capture`. Until it exists, GEMDOS behaviour that needs a measurement is a **probe**: a C program of `tosdump/probes/` with a text log, built for both sides from one source and run by its own script — `gcprobe.c` (media change, TASK/FS20; `make -C tosdump gcprobe-m68k gcprobe-newtos`, `tosdump/probes/run-gcprobe.sh`, oracle side through `tools/hatari-oracle.sh` profile `disk`). Its cases move to DUMPGDOS when that exists |
 
 Each writes exactly one output file, named `<AREA>.BIN`, into the current
 directory. Buffer records in RAM and write once at the end. Do not write

@@ -153,11 +153,11 @@ fn usrio(s: &Stream, wrt: bool, num: u32, strt: u32, space: Space, ubuf: u64) ->
         // caller (or is a kernel caller's buffer) and stays mapped for the
         // call; nothing else aliases it on the single trap path.
         let buf = unsafe { core::slice::from_raw_parts(kva as *const u8, bytes) };
-        cache::direct_write(lba, buf)
+        cache::direct_write(s.vol.drive(), lba, buf)
     } else {
         // SAFETY: as above, checked writable.
         let buf = unsafe { core::slice::from_raw_parts_mut(kva as *mut u8, bytes) };
-        cache::direct_read(lba, buf)
+        cache::direct_read(s.vol.drive(), lba, buf)
     };
     if ok { Ok(()) } else { Err(Fail::Device) }
 }
@@ -175,7 +175,7 @@ fn partial(
     ubuf: u64,
 ) -> Result<(), Fail> {
     let (a, b) = (off as usize, (off + n) as usize);
-    let r = cache::with_sector(Kind::Data, s.vol.data_lba(rec), wrt, |buf| {
+    let r = cache::with_sector(Kind::Data, s.vol.drive(), s.vol.data_lba(rec), wrt, |buf| {
         if wrt {
             space.copy_from(&mut buf[a..b], ubuf)
         } else {

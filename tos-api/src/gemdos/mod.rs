@@ -19,7 +19,7 @@
 
 use crate::host::host;
 use crate::trap::TrapArgs;
-use tos_types::error::{EINVFN, EUNDEV};
+use tos_types::error::{EINVFN, EUNDEV, E_CHNG};
 use tos_types::Long;
 
 pub mod console;
@@ -133,7 +133,19 @@ pub fn dispatch(args: &TrapArgs) -> Long {
     ret
 }
 
-/// The dispatch itself, unchanged; [`dispatch`] only wraps it in the tracer.
+/// The dispatch itself; [`dispatch`] only wraps it in the tracer.
+///
+/// EmuTOS `osif` (`bdos/bdosmain.c:431-492`): each run of the call starts
+/// with a fresh hard-error context (`restrt:` + `setjmp(errbuf)`,
+/// `:442-449`); when the run met a media change, the drive is logged in
+/// again ([`media_change_relog`]) and the call is run once more from the
+/// start with the same arguments (`goto restrt`, `:486`), its first return
+/// value dropped (`docs/api/gemdos/_state.md` §4a, TASK/FS20).
+///
+/// The loop ends: a successful re-login has read the boot sector through
+/// `Getbpb`, which disarms the drive's `forcechange`
+/// (`crate::bios::bpb::geometry`), and its buffers are gone; a GEMDOS call
+/// issues no `Rwabs` that could arm it again.
 #[inline]
 fn dispatch_inner(args: &TrapArgs) -> Long {
     if host().is_none() {
@@ -141,12 +153,27 @@ fn dispatch_inner(args: &TrapArgs) -> Long {
         // the trap path remains reentrant.
         return EUNDEV;
     }
-    // A fresh hard-error context for this call — EmuTOS establishes one by
-    // re-arming `setjmp(errbuf)` at the top of `osif`
-    // (`bdos/bdosmain.c:448`, `docs/api/gemdos/_dispatcher.md` §8). Without
-    // it a device error nobody consumed could leak into the next call's
-    // result (HW03).
-    crate::bdos::fs::cache::clear_error();
+    loop {
+        // A fresh hard-error context for this run — EmuTOS re-arms
+        // `setjmp(errbuf)` at the top of `osif` (`bdos/bdosmain.c:442-449`,
+        // `docs/api/gemdos/_dispatcher.md` §8). Without it a device error
+        // nobody consumed could leak into the next call's result (HW03).
+        crate::bdos::fs::cache::clear_error();
+        let rc = run_call(args);
+        match crate::bdos::fs::cache::take_media_change() {
+            None => return rc,
+            Some(drv) => {
+                if let Err(code) = media_change_relog(drv) {
+                    return code;
+                }
+            }
+        }
+    }
+}
+
+/// One run of the call: the MiNT extensions, the redirected character
+/// functions, then the table (`osif` after `restrt:`).
+fn run_call(args: &TrapArgs) -> Long {
     let id = args.func_id() as usize;
     // MiNT extensions live above MAX_FN and are special-cased before the
     // static table lookup (FreeMiNT compatibility, ADR-012).
@@ -165,5 +192,29 @@ fn dispatch_inner(args: &TrapArgs) -> Long {
     match TABLE[id] {
         Some(f) => f(args),
         None => EINVFN,
+    }
+}
+
+/// `osif`'s media-change block (`bdos/bdosmain.c:456-487`) for drive `drv`,
+/// in its order: the drive's open files are freed (`offree`), it is logged
+/// out (the DMD, `drvtbl[errdrv] = NULL`), its current directories are
+/// dropped (`freetree`), its buffers discarded (`mark_bcbs_invalid`), then it
+/// is logged in again with a fresh `Getbpb` + `log_media` — the **new** boot
+/// sector's geometry.
+///
+/// `Err(E_CHNG)` when `Getbpb` refuses the drive (`:471-476`): the drive
+/// stays logged out (`drvsel` bit clear) and the next call logs it in through
+/// `ckdrv`. EmuTOS' `ENSMEM` for a failing `log_media` (`:478-482`) has no
+/// NewTOS cause: `bpb::parse` already refuses the one boot sector
+/// `log_media` would (`fsiz == 0`).
+fn media_change_relog(drv: u16) -> Result<(), Long> {
+    use crate::bdos::fs::{cache, curdir, fat, file};
+    file::free_drive_files(drv);
+    fat::log_out(drv);
+    curdir::free_drive(drv);
+    cache::invalidate_drive(drv);
+    match fat::Volume::mount(drv) {
+        Some(_) => Ok(()),
+        None => Err(E_CHNG),
     }
 }

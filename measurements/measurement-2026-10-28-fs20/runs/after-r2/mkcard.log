@@ -1,0 +1,6 @@
+mkcard: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs20/reg/xtask/tosdump-58577/card.img (128 MiB, test image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs20/reg/xtask/tosdump-58577/test.img as C:, program partition D: LBA 131072+131072, label NTCARD)
+  + D:\DUMPBIOS.NAP <- /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs20/reg/xtask/tosdump-58577/DUMPBIOS.NAP
+  + D:\BIOS.TSV <- /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-r2.tsv
+  + D:\DISKUNIT.TXT <- /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs20/reg/xtask/tosdump-58577/DISKUNIT.TXT
+done: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs20/reg/xtask/tosdump-58577/card.img
+manifest: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs20/reg/xtask/tosdump-58577/card.img.manifest (4 files; copy it into the measurement run, RUNINFO.TXT cites it)

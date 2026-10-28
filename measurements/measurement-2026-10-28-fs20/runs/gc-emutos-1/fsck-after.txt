@@ -1,0 +1,6 @@
+** /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-28-fs20/runs/gc-emutos-1/testpart-after.img
+** Phase 1 - Preparing FAT
+** Phase 2 - Checking Directories
+** Phase 3 - Checking for Orphan Clusters
+Warning: 2 files, 65348 KiB free (32674 clusters)
+exit 0

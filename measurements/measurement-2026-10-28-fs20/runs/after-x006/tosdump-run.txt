@@ -1,0 +1,61 @@
+command   cargo xtask tosdump bios tosdump/cases/bios-r2-x006.tsv --disk --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-x006-disk.BIN --out /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-28-fs20/runs/after-x006 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs20/reg/xtask
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    2de6909abd84cb9abeb2cf5e5c986ae23e95b425
+dirty     18 path(s) in git status --porcelain
+   M docs/analysis/deps/mapping.tsv
+   M docs/api/gemdos/_state.md
+   M docs/api/gemdos/process/_run-ownership-curdir.md
+   M docs/sdk/05-abi-pitfalls.md
+   M tools/hatari-oracle.sh
+   M tos-api/src/bdos/fs/cache.rs
+   M tos-api/src/bdos/fs/curdir.rs
+   M tos-api/src/bdos/fs/fat.rs
+   M tos-api/src/bdos/fs/file.rs
+   M tos-api/src/bdos/fs/fsio.rs
+   M tos-api/src/bios/mod.rs
+   M tos-api/src/gemdos/mod.rs
+   M tosdump/Makefile
+  ?? measurements/measurement-2026-10-28-fs20/
+  ?? tos-api/tests/fs20_media_change.rs
+  ?? tos-api/tests/fs20_media_change_geometry.rs
+  ?? tosdump/build-gcprobe-newtos.sh
+  ?? tosdump/probes/
+harness commit 2de6909abd84cb9abeb2cf5e5c986ae23e95b425
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-r2-x006.tsv sha256 ea0298b34f5dfff3288da37dcbc21a6118217d14c3c86aeb9257d1abefd4bf62
+table     DESTRUCTIVE: runs on a fresh clone of the test image (the card is built from it for this run)
+target/   own (9 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (9 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 796c6c2b1c692fc432e7be322aa7d6f4951f5222661e1bf96cd4be829e835bb3
+kernel ELF  sha256 9e94ec41482c702bc61ea3f46811dd6ff01d5d086054c1739c52be2645ad49f0 (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id 2de6
+DUMPBIOS.NAP sha256 406f8e2ffbe420c0855d2be9e8e3dc713d8f93cd05264f7d3f9ddcd890b82ce9
+test image built by tools/mktestdisk.sh NEWDESK.INF=<autorun D:\DUMPBIOS.NAP>
+test image sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+D:\DISKUNIT.TXT 26 (the profile's physical unit of C:, for u:0)
+card.img.manifest: image_sha256 4e031487a4649af3a37f4a7f788c10e0a2fbe705506847578450674a1b633285
+card.img.manifest: optional_missing none
+test.img.manifest: image_sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+test.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs20/reg/xtask/tosdump-67325/card.img sha256 4e031487a4649af3a37f4a7f788c10e0a2fbe705506847578450674a1b633285 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 25f02c178e255ad7d3363953fd196766404fbcd49c746a12fdab503bf9724a64
+BIOS.BIN 3552 bytes, sha256 02718480b5e6f0b4ded94581b0463cc8a6de68db4d40fc530f4e182811901acb
+BIOS.LOG 257 bytes, sha256 d3eba03960f55c0201fe42e14fba8fc816b113935698a44d396c1c0be54127cf
+testpart: DIFFERENT; differing sectors (partition-relative): 0
+testpart: still different after normalising root directory time stamps
+fsck_msdos -n testpart-before.img: exit 0
+fsck_msdos -n testpart-after.img: exit 202
+  (a destructive table: its end state is compared with the oracle's, not judged here)
+testpart after sha256 ea645cfc2af367c57f7902b66d8806c14ae9d4ed759c029403ee9f16f20ef818 (kept: testpart-after.img)
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 ceedc75c119df67a27c42383cddeb14ff8a7fc180f972de7e5d4c1211d633c60
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 11 records of 320 bytes, build 2de6, case CRC E4B17B75
+tosdiff EMUTOS-1a7484ab-BIOS-r2-x006-disk.BIN vs NEWTOS.BIN: exit 1, 5 of 11 cases differ
+total     31 s
+result    run complete (differences above are findings, not failures)
