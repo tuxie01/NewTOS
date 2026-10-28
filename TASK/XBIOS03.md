@@ -1,6 +1,6 @@
 # XBIOS03 — Haken in `mousevec`/`statvec`/`clockvec`/`joyvec` der `Kbdvbase`-Tabelle werden nie gerufen
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer (oder Researcher, falls die Luecke als Abweichung sanktioniert werden soll) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md` · verwandt mit [BIOS03](BIOS03.md) und [BIOS05](BIOS05.md) (Haken, die NewTOS nie ruft)
+Status: **ACCEPTED-Abweichung** 2026-10-28 (ADR-031), offen nur die Warnung in [BIOS15](BIOS15.md) · Prioritaet: **P1** · Typ: Developer (oder Researcher, falls die Luecke als Abweichung sanktioniert werden soll) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md` · verwandt mit [BIOS03](BIOS03.md) und [BIOS05](BIOS05.md) (Haken, die NewTOS nie ruft)
 
 ## Sachverhalt
 
@@ -26,3 +26,9 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer (oder Researcher, fall
 - Kein vorher gleicher Fall in `bios-r1.tsv`, `bios-core-r1.tsv`, `xbios-chardev-r1.tsv`, `xbios-system-r1.tsv` weicht neu ab.
 - `cargo xtask test` gruen.
 - `docs/STATUS.md` und Spec im selben Commit; `cargo xtask doc-check` der geaenderten Doku 0 Fehler.
+
+## Anwenderentscheidung 2026-10-28
+
+- ADR-031 (`docs/MEMORY.md`): der Haken wird nicht bedient, XBIOS-CHARDEV-003 ist eine
+  ACCEPTED-Abweichung mit dem ADR als Beleg. Kein Fix; die einmalige Warnung
+  je Haken und Prozess setzt [BIOS15](BIOS15.md) um.

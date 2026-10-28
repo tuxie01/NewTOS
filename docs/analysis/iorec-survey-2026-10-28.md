@@ -44,3 +44,18 @@ Dass `ostruct.h` ein Feld `_IOREC *iorec` enthaelt (Zeiger-Member in `ostruct.h`
   `programs/newtos-gem/src/xbios.rs` Modulkommentar), kein Iorec-Aufruf.
 - Programmquellen, die nicht lokal liegen (z. B. nur als fertige Binaries),
   sind nicht erfasst.
+
+## Nachtrag (Lead, 2026-10-28): Luecke „kein lokaler Quelltext“
+
+Gegen das Manifest des Standardabbilds geprueft
+(`measurements/measurement-2026-10-27-mem12-acceptance/cards/std.img.manifest`,
+geschrieben von `tools/make-sd-image.sh`): alle 31 ausfuehrbaren Dateien
+(`.NAP`, `.NCP`, `.NAC`) werden von `tools/make-sd-image.sh` aus Quellen im
+Baum gebaut (`sdk/apps/`, `sdk/examples/`, `sdk/libc/`, `sdk/libm/`,
+`sdk/ldg/`, `sdk/zview/`, `tosdump/`, `tools/mk-hello-ncp.py`). Fuer NewTOS ist
+die Luecke damit **per Konstruktion leer**: native Programme gibt es nur als
+Neubau aus lokaler Quelle (der Lader nimmt nur ELF64, m68k-Binaerprogramme
+laufen erst mit dem spaeteren Emulator). Nicht geprueft: die echte Karte des
+Anwenders, deren Belegung nicht aus `make-sd-image.sh` kommt; fuer sie gilt
+dieselbe Pruefung gegen ihr eigenes Manifest. Wiederverwendbar fuer kuenftige
+Erhebungen: `.claude/agents/researcher.md`, Abschnitt zu Programmerhebungen.

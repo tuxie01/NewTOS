@@ -1,6 +1,6 @@
 # BIOS05 — Ein per `Setexc(0x100, …)` eingehaengter `etv_timer`-Haken wird nie aufgerufen
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md` · verwandt mit [BIOS03](BIOS03.md) und [XBIOS03](XBIOS03.md) (Haken, die NewTOS nie ruft)
+Status: **ACCEPTED-Abweichung** 2026-10-28 (ADR-031), offen nur die Warnung in [BIOS15](BIOS15.md) · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md` · verwandt mit [BIOS03](BIOS03.md) und [XBIOS03](XBIOS03.md) (Haken, die NewTOS nie ruft)
 
 ## Sachverhalt
 
@@ -24,3 +24,9 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidu
 - Kein vorher gleicher Fall in `bios-r1.tsv`, `bios-core-r1.tsv`, `xbios-chardev-r1.tsv`, `xbios-system-r1.tsv` weicht neu ab.
 - `cargo xtask test` gruen.
 - `docs/STATUS.md` und Spec im selben Commit; `cargo xtask doc-check` der geaenderten Doku 0 Fehler.
+
+## Anwenderentscheidung 2026-10-28
+
+- ADR-031 (`docs/MEMORY.md`): der Haken wird nicht bedient, BIOS-CORE-002 ist eine
+  ACCEPTED-Abweichung mit dem ADR als Beleg. Kein Fix; die einmalige Warnung
+  je Haken und Prozess setzt [BIOS15](BIOS15.md) um.

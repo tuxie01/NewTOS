@@ -1133,6 +1133,21 @@ automaton.
   difference:** no bell, and a program cannot hook the bell through
   `bell_hook` ($5AC).
 
+**OS hooks installed by programs: most are not served, never silently** —
+user decision 2026-10-28, ADR-031 (`docs/MEMORY.md`). On TOS a program can
+hang code into OS vectors that the OS later calls (`etv_*`, `hdv_*`,
+`Kbdvbase`, `vex_*`, trap/CPU vectors, …;
+`docs/analysis/os-hooks-adr-proposal-2026-10-28.md`). NewTOS serves
+`kbdvec`, `etv_term`, `vex_wheelv`, `Supexec` and `G_USERDEF`; every other
+hook is stored but not called, and the first installation per hook and
+process writes one warning to the log.
+
+**Observable difference:** a RAM disk or disk cache hooked into `hdv_*` does
+not take over a drive (NewTOS GEMDOS uses the block layer directly);
+TeraDesk's `force_mediach` has no effect; `etv_timer` and the `Kbdvbase`
+mouse/status/clock/joystick hooks are never called (accepted deviations
+BIOS-CORE-002, XBIOS-CHARDEV-003).
+
 **No Line-A: no opcode trap, no LINEA variable block** — user decision
 2026-10-26, ADR-030 (`docs/MEMORY.md`). On TOS the m68k opcodes
 `$A000`–`$A00F` trap through vector `$28` into 16 graphics routines, and op 0

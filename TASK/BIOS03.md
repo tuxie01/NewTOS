@@ -1,6 +1,6 @@
 # BIOS03 — ADR „OS hooks installed by programs“: welche eingehaengten Haken wirken
 
-Status: **ENTWURF LIEGT VOR** 2026-10-28 (`docs/analysis/os-hooks-adr-proposal-2026-10-28.md`), Entscheidungen Q1–Q6 beim Anwender · Prioritaet: **P1** · Typ: Researcher (Bestand + ADR-Vorschlag), Entscheidung Anwender — Anwenderentscheidung 2026-10-28 (erweitert am selben Tag)
+Status: **ERLEDIGT** 2026-10-28 — ADR-031 in `docs/MEMORY.md` (Vorschlag `docs/analysis/os-hooks-adr-proposal-2026-10-28.md`); Umsetzung [BIOS15](BIOS15.md) · Prioritaet: **P1** · Typ: Researcher (Bestand + ADR-Vorschlag), Entscheidung Anwender — Anwenderentscheidung 2026-10-28 (erweitert am selben Tag)
 
 ## Sachverhalt
 
@@ -51,3 +51,18 @@ Status: **ENTWURF LIEGT VOR** 2026-10-28 (`docs/analysis/os-hooks-adr-proposal-2
 - E6 aus [XBIOS01](XBIOS01.md): der `kbdvec`-Haken bekommt den
   IOREC-Zeiger als Argument (EmuTOS `a0`, `references/emutos/bios/aciavecs.S:412`)
   — Anwender: ja, im ADR mit festzuhalten.
+
+## Entscheidungen des Anwenders 2026-10-28 (Q1–Q6)
+
+- Q1 `hdv_*`: nicht bedient, mit Warnung; im ADR getrennt nach Floppy-Nutzung
+  (Hardware fehlt, Nicht-Ziel) und Nicht-Floppy-Nutzung (RAM-Disk, Cache =
+  Ausloeser, volle Unterstuetzung neu zu pruefen); kein App-Patch.
+- Q2 Haken ohne Nutzer: nicht bedient, mit Warnung; BIOS-CORE-002 und
+  XBIOS-CHARDEV-003 ACCEPTED mit dem ADR als Beleg; `Kbdvbase`-Haken koennen
+  den `kbdvec`-Mechanismus wiederverwenden, sobald ein Nutzer auftaucht.
+- Q3 Besitz: einhaengender Prozess; `Pterm` stellt nur zurueck, wenn der
+  Vektor noch oben in der XBRA-Kette auf seinen Haken zeigt, sonst stehen
+  lassen und warnen; `Ptermres` behaelt Haken und Besitzer.
+- Q4 Warnung einmal je Haken und Prozess. Q5 Seite 0 nur zum Warnen lesen,
+  Pruefung beim Verlassen des Super-Zustands. Q6 `prt_stat`/`prt_vec` =
+  `just_rts`-Stub. Dazu: `vex_butv/motv/curv/timv` bekommen die Warnung.

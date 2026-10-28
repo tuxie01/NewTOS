@@ -3014,6 +3014,78 @@ Evidence, checked 2026-10-26:
 
 ---
 
+## ADR-031: OS hooks installed by programs
+
+**Date:** 2026-10-28
+**Status:** **Accepted** (2026-10-28, user decision on TASK/BIOS03, Q1-Q6
+of the proposal).
+**Phase:** cross-cutting (BIOS, XBIOS, VDI, process lifecycle).
+
+### Context
+
+On TOS a program can install code that the OS later calls: `Setexc`
+vectors (`etv_*`, trap and CPU vectors), page-0 cells reached only by a
+direct write (`hdv_*`, `swv_vec`, `exec_os`, `dump_vec`, `resvector`), the
+`Kbdvbase` table, the XBIOS installers (`Initmous`, `Mfpint`, `Xbtimer`) and
+the VDI exchange vectors (`vex_*`). NewTOS serves some of them and stores
+others without ever calling them. Audit findings: BIOS-STOR-010 (`hdv_*`),
+BIOS-CORE-002 (`etv_timer`), XBIOS-CHARDEV-003 (`Kbdvbase` hooks).
+
+Evidence: `docs/analysis/os-hooks-adr-proposal-2026-10-28.md` — the hook
+list with EmuTOS install and call sites (section 1), the survey of the
+ported programs (section 2), what NewTOS does per hook (section 3). Among the
+ported programs only TeraDesk installs hooks NewTOS does not serve
+(`hdv_*` in `force_mediach`, `etv_critic`, the VBL/Timer-C vectors in its
+shutdown, `resvector`); Doom and two test programs install only `kbdvec`,
+which is served.
+
+### Decision
+
+1. **Rule: never silent.** A hook NewTOS does not serve is reported: one
+   warning in the log **per hook per process** (the accessory model,
+   `accessory_hook_unwarned`, `tos-api/src/xbios/kbdvecs.rs:322@accessory_hook_unwarned`).
+   Hooks that EmuTOS itself never calls (`etv_xtra`, `hdv_init`,
+   `hdv_boot`, `prt_stat`/`prt_vec`, `aux_stat`/`aux_vec`) get no warning.
+2. **Per-hook table:**
+
+| Hook | NewTOS | Reason / semantics | Observable consequence |
+|---|---|---|---|
+| `kbdvec`, `etv_term`, `vex_wheelv`, `Supexec`, `G_USERDEF` | served | as built (KEYS02, upcalls) | as EmuTOS |
+| `hdv_rw`, `hdv_bpb`, `hdv_mediach` — **floppy use** (default floppy driver chain, `force_mediach` for unreliable floppy change detection, `Mediach` "maybe changed", A:/B: specifics) | not served, warning | hardware absence: no floppy/DMA (CLAUDE.md non-goals; FAT12/floppy out of scope) | TeraDesk's `force_mediach` has no effect; NewTOS GEMDOS reads the block layer directly and never calls `hdv_*` |
+| `hdv_rw`, `hdv_bpb`, `hdv_mediach` — **non-floppy use** (RAM disks, disk caches) | not served, warning | no ported program needs it today | a RAM disk or cache that hooks `hdv_*` does not take over a drive. **Revisit with full support** (GEMDOS block access through a hookable path) when a ported program needs it. No app patch. |
+| `etv_critic` | not served, warning | NewTOS `Rwabs` has no retry/critical-error path | the error code is returned directly (TeraDesk's handler returns it anyway) |
+| `etv_timer` | not served, warning | no program in the survey | BIOS-CORE-002 is an **ACCEPTED deviation** (proof: this ADR) |
+| `Kbdvbase` `mousevec`, `statvec`, `clockvec`, `joyvec`, `midivec`, `vkbderr`, `vmiderr`, `ikbdsys`, `midisys` | not served, warning | no program in the survey; no MIDI/ACIA | XBIOS-CHARDEV-003 is an **ACCEPTED deviation** (proof: this ADR). The `kbdvec` mechanism (chain with a default stub, upcall) can be reused once a user appears. |
+| `bell_hook`, `kcl_hook` | not served, warning | no sound device yet | no bell/click hook |
+| `dump_vec`, `swv_vec`, `exec_os`, `resvector`/`resvalid`, `vblqueue` | not served, warning | no program in the survey needs them called | the hook is never called |
+| trap and CPU vectors via `Setexc` (< 0x100), `Mfpint`, `Xbtimer`, `Jdisint`, `Jenabint` | not served, warning | AArch64 has no m68k trap/autovector; no MFP (as ADR-030 decision 1) | the vector is stored, nothing dispatches it |
+| `vex_butv`, `vex_motv`, `vex_curv`, `vex_timv` | not served, **warning added** | stored but never called (today a silent violation of rule 1) | the vector round-trips, the handler is never called |
+| `prt_stat`, `prt_vec` | default = the `just_rts` stub like EmuTOS, not 0 | EmuTOS never calls them | a program that chains to the old value gets a valid entry |
+
+3. **Ownership.** The installing process owns the hook. At `Pterm` without
+   unhooking: restore the previous vector **only** if the vector still
+   points to the exiting process's hook (top of an XBRA chain); otherwise
+   leave it and warn. At `Ptermres` the hook stays and its owner stays
+   resident.
+4. **Page 0.** The kernel may read page-0 vector cells **for warnings only**,
+   never to call or act on them. Detection: when a process leaves the super
+   state (page 0 is writable for EL0 only there, TASK/MEM12), compare the
+   vector cells with their defaults.
+5. **Detection points** for the warning: in `Setexc` itself; page-0 cells on
+   leaving the super state; `Kbdvbase` slots on the first event that would
+   call them; `Initmous`, `Mfpint`, `Xbtimer` and the `vex_*` calls in the
+   call itself.
+
+### Consequences
+
+- BIOS-CORE-002 and XBIOS-CHARDEV-003 become ACCEPTED deviations; their
+  tickets (TASK/BIOS05.md, TASK/XBIOS03.md) keep only the warning.
+  BIOS-STOR-010 likewise. Implementation of rules 1, 3, 4, 5 and the
+  `prt_*` default: TASK/BIOS15.md.
+- `docs/COMPATIBILITY.md` gets an "OS hooks" entry next to "No Line-A".
+- A hook moves to "served" only by amending this table, with the program
+  that needs it as evidence.
+
 ## Template for new ADRs
 
 ```markdown

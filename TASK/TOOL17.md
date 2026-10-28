@@ -51,3 +51,9 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer (Werkzeug + Zuordnung)
   beruehrten Schichten (Beispiel fuer BIOS01).
 - `cargo xtask test` gruen (Basislinie 1748/0/1 plus neue); doc-check 0
   Fehler.
+
+## Nachtrag Anwender 2026-10-28
+
+- Floppy-Funktionen (`flop*`, FDC/WD1772 und Verwandte) werden
+  `design:hardware:floppy` (Nicht-Ziel in CLAUDE.md, FAT12/Floppy ausser
+  Reichweite; ADR-031 trennt `hdv_*` ebenso).

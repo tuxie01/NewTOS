@@ -103,3 +103,14 @@ Your final message to the lead: a structured report — files written (paths), k
 findings, spec corrections, cited vs. inferred, open questions / STOP-blocks,
 out-of-scope observations (one line each). Write the specs/analysis to disk under
 `docs/`; summarize in the report. German prose; English identifiers.
+
+## Program surveys (which ported program uses X)
+
+Search the sources under `sdk/apps/`, `sdk/overlays/`, `sdk/examples/`,
+`programs/`, `tosdump/` and `Applications/` (gitignored) with `/usr/bin/grep`.
+Then close the "no local source" gap: check the manifest of the card or
+image in question (`<image>.manifest`, `tools/sd-manifest.sh` format) and map
+every executable on it to the build recipe that makes it from a local source
+(`tools/make-sd-image.sh` for the standard image). If every executable maps,
+say the gap is empty by construction; name any that does not.
+
