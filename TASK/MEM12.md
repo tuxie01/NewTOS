@@ -131,7 +131,7 @@ nimmt `Ssystem(S_SETCOOKIE)`), mintlib `set_sysvar_to_*` (gebaut, kein Aufrufer)
 | `kbdvec`, `ikbdsys` | `tos-api/src/xbios/kbdvecs.rs:209@read_slot`, `:212@kbdvec_of`, `:221@current_ikbdsys` | Haken-Upcall, Wiederholstopp |
 | `memvalid`/`memval2`/`memval3` | `tos-api/src/bios/reset.rs:160@entry_kind` | warm/kalt (auf der Pi warm = kalt) |
 | Rueckgabewort `0x760` | `kernel/src/arch/aarch64/exceptions.rs`, `read_userdef_ret_slot` (Stand `a90bcfb0`; seit MEM12 entfernt) | `G_USERDEF`-Ergebnis |
-| beliebige Zelle `< 0x800` | `tos-api/src/bios/vectors.rs:98-133@setexc` | `Setexc(n, v)` liest/schreibt sie ueber den Kern-Alias — der API-Weg, kein EL0-Speicherzugriff |
+| beliebige Zelle `< 0x800` | `tos-api/src/bios/vectors.rs:98-133@setexc` | `Setexc(n, v)` liest/schreibt die Zelle fuer `n` in `0x120…0x1FF` ueber den Kern-Alias — der API-Weg, kein EL0-Speicherzugriff; fuer `n < 0x120` (auch `$40C–$47F`) liest/schreibt es den Schatten `VECTORS[]`, nicht die Systemvariable (BIOS-CORE-006, [BIOS07](BIOS07.md); Nachtrag 2026-10-28 aus BIOS13) |
 
 ### Entscheidungen, die vor dem Umbau noetig sind (offen, beim Lead)
 
@@ -162,6 +162,9 @@ Vorschlag des Developers, je Punkt mit Alternativen:
   der Pi gleich); (b) TeraDesk endet hinnehmen.
 - **E5 `Setexc(n < 0x200, v)`** schreibt weiter ueber den Kern in Seite 0
   (TOS-API-Weg, EmuTOS erlaubt ihn). Bestaetigen oder einschraenken.
+  *Nachtrag 2026-10-28 (BIOS13):* gilt nur fuer `n` in `0x120…0x1FF`; fuer
+  `n < 0x120` schreibt `Setexc` den Schatten `VECTORS[]` (BIOS-CORE-006,
+  `bios-core-r1` 58–62, Sonde S06–S08; [BIOS07](BIOS07.md)).
 
 Nebenbefund: der Absturzbericht nennt einen Schreibversuch auf Seite 0
 "Memory violation: hardware memory" (`memprot::region_kind` kennt Seite 0

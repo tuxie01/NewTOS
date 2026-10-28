@@ -289,7 +289,7 @@ BIOS/XBIOS calls, not a poke:
 |-------------------|------------|--------|--------|
 | `drvbits` (`0x4c2`) | mounted-partition bitmap from the SD MBR | `Drvmap` (0x0A) | `tos-api/src/bios/drive.rs` (see `0a-drvmap.md`) |
 | `hz_200` (`0x4ba`) | **live 200 Hz counter** — ARM generic timer IRQ (PPI INTID 30) advances it and mirrors it into the running process's `$4BA` | direct read at `$4BA` from EL0 (mintlib `get_sysvar(_hz_200)`); `bios::tick::hz_200()` in-kernel | `kernel/src/drivers/timer.rs`, `tos-api/src/bios/tick.rs` (see `06-tickcal.md`) |
-| `etv_timer/critic/term` (`$0400/04/08`) | software vector shadow `VECTORS[0x100/0x101/0x102]` | `Setexc` (0x05) | `tos-api/src/bios/vectors.rs:22,27-29` (see `05-setexc.md`) |
+| `etv_timer/critic/term` (`$0400/04/08`) | software vector shadow `VECTORS[0x100/0x101/0x102]` | `Setexc` (0x05) | `tos-api/src/bios/vectors.rs:21@NVEC`, `:28@ETV_TIMER` (see `05-setexc.md`) [BIOS13] |
 | `shifty` / `os_kbshift` | IKBD-decoder modifier byte from USB-HID | `host().keyboard_shift_state()` (EL1); `Kbshift` trap **not exposed** | `kernel/src/ikbd.rs`, `host_env.rs:231-233` (see `0b-kbshift.md`) |
 | `membot`/`memtop`/`phystop` | ST-RAM pool extent from the AArch64 memory map | (allocator internal; `Getmpb` vestigial) | `kernel/src/bios/machine/layout.rs` (see `00-getmpb.md`) |
 | `bconstat/in/out/cost_vec[8]` | kernel char-device dispatch, not a poked table | BIOS char calls | `tos-api/src/bios/chardev.rs` (see `_state.md §3`) |

@@ -819,9 +819,12 @@ caller does not own answer `EIMBA` (FreeMiNT's `EFAULT`, the same −40);
 allocated and owned. **Observable differences:** (1) freeing or shrinking
 another process's block — or a TSR's — fails with `EIMBA` (EmuTOS: succeeds;
 for a TSR's block EmuTOS answers `EIMBA` too); (2) a block shared with a
-running child goes back to the pool only after both let go; (3) a program
-walking the `Getmpb` lists finds a TSR's blocks on the allocated list, owned
-by a sentinel (EmuTOS: on no list). Specs: `docs/api/gemdos/memory/
+running child goes back to the pool only after both let go; (3) a TSR's
+blocks stay on NewTOS's internal allocated list, owned by a sentinel
+(EmuTOS: on no list). This is not visible through `Getmpb`: on both systems
+it returns `mp_mal = NULL` and a single free MD (probe G02/G03,
+`measurements/measurement-2026-10-28-bios-core-audit/RUNINFO.TXT`), so no
+list can be walked. Specs: `docs/api/gemdos/memory/
 49-mfree.md`, `4a-mshrink.md`, `docs/api/gemdos/process/4b-pexec.md`,
 `31-ptermres.md`; tests `tos-api/tests/arch03_region_owners.rs`,
 `arch03_pexec_567_ptermres.rs`.

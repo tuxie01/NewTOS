@@ -30,3 +30,19 @@ Dokument- und Regelbefunde, die keiner Funktion gehoeren (alle S4, MEASURED; Bel
   `just_rts` auch fuer `etv_timer`; EmuTOS setzt dort `tikfrk`.
 - `docs/api/bios/_state.md:292` verweist auf veraltete Zeilen in `vectors.rs`.
 - `TASK/MEM12.md`: die `Setexc`-Fallzeile nennt „jede Zelle < 0x800“.
+
+## Stand 2026-10-28
+
+- Erledigt (`[BIOS13]`): `tosdump/cases/ERRATA.md` (Abschnitt `bios-r1.tsv`:
+  NONZERO-Regel, verschobene Zitate), `docs/api/bios/_state.md` (Zitate in
+  `vectors.rs`); `docs/COMPATIBILITY.md` (TSR-Bloecke ueber `Getmpb` nicht
+  sichtbar) und `TASK/MEM12.md` (`Setexc`-Bereiche) vom Lead nach Vorschlag.
+  `tosdump/cases/COVERAGE-BIOS.md` (Punkte 4, 5) liegt im Arbeitsbaum und geht
+  mit dem BIOS01-S2-Commit hinein (dieselbe Datei hat dort uncommittete
+  Aenderungen).
+- **Fuer den Developer (Code-Kommentare, `tos-api/src/bios/vectors.rs`):**
+  Kommentar zu `ETV_DEFAULT_JUST_RTS` (EmuTOS setzt fuer `etv_timer` `tikfrk`),
+  Kommentar zu `NVEC` („GEM hooks to `$047F`“ gibt es nicht, BIOS-CORE-006),
+  Doc-Kommentar von `setexc` gegen den Code pruefen — mit [BIOS07](BIOS07.md).
+- Punkt 7 ist [TOOL16](TOOL16.md).
+

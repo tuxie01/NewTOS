@@ -81,3 +81,36 @@ and in **0** after it; no `int_out` word differs any more, only the six
 the screen the run had, not noise; `int_out[3..4]` (buttons, shift state)
 did not differ either. The dumps remain valid as recorded. Why the comment
 itself stays: `TASK/M10.md`.
+
+---
+
+## `bios-r1.tsv` (CRC `583C11E0`) — `Setexc` rule, and file:line cites in comments [BIOS13]
+
+**Item 1 — the rule of lines 53–57.** *Where:* `Setexc(n,-1)` for `0x2`, `0x21`,
+`0x100`, `0x101`, `0x102`, compared as `NONZERO`. *What is wrong:* a vector
+inquiry returns a TOS address, and `NONZERO` also passes a non-zero value
+that is no address — NewTOS' placeholders for `etv_timer/critic/term` are
+64-bit tokens (`tos-api/src/bios/vectors.rs:45@ETV_DEFAULT_JUST_RTS`,
+`:54@ETV_DEFAULT_CRITIC`), while EmuTOS returns ROM addresses
+(`references/emutos/bios/bios.c:1070-1080`). *Evidence:* `docs/audits/2026-10-28-bios-core.md`
+BIOS-CORE-005 (probe S01–S03). *What follows:* a pass of lines 55–57 does not
+show that the value is an address. `tosdump/cases/bios-core-r1.tsv` lines
+55–57 state the stronger rule (`PTR_RAM`, "not < 0x80000000") and are the
+measurement; the dumps of `bios-r1.tsv` stay valid as recorded. A table
+revision carries `PTR_RAM` into these five lines.
+
+**Item 2 — cites in comments (shifted against the pin `1a7484ab`).** The
+comments name lines of the EmuTOS source that stand elsewhere at the pin
+(`docs/audits/2026-10-28-xbios-system.md` XBIOS-SYS-006 point 4):
+
+| Table lines | Comment says | Pin has (`references/emutos/…`) |
+|---|---|---|
+| 190–193 (`NVMaccess` count/start/NULL) | `bios/nvram.c:180-181` | `bios/nvram.c:178-179` |
+| 194 (`NVMaccess` bad op) | `bios/nvram.c:206-208` | `bios/nvram.c:208-210` |
+| 117 (`Protobt` serial+BPB) | `bios/floppy.c:703-717` | `bios/floppy.c:698-713` |
+| 115, 116 (`Protobt` checksum, exec) | `bios/floppy.c:725-735` | `bios/floppy.c:727-735` |
+| 119 (`Protobt` type out of range) | `bios/floppy.c:711` | `bios/floppy.c:706` |
+
+Not checked here: lines 189 (`bios/nvram.c:30,183-197`) and 118
+(`bios/floppy.c:731-735`), which the audit does not name. The measured values are
+unaffected; the comments are only wrong as cites.
