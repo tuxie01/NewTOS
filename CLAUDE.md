@@ -388,6 +388,10 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   the NewTOS function; that function and the `--up` retest set go into the
   ticket before the developer begins (user 2026-10-28; the audit findings
   were NOT LOCALIZED while the graph had gaps, closed by TOOL12).
+  Ratchet: every fix adds the `mapping.tsv` rows for the functions it
+  touches. A retest set is complete only if its `--up` set has no
+  `unmapped` entry in the touched layers; otherwise the ticket lists them
+  (`no counterpart by design` needs a reason: an ADR or hardware; TOOL17).
 - Hardware tests on RPi4 are manual, documented in `docs/HW-TEST-LOG.md`.
 - Every TOS API function gets at least one test that verifies the documented
   return value for documented input, and one that verifies the documented

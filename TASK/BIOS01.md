@@ -84,3 +84,8 @@ Regel (CLAUDE.md „Testing“): vor jedem Fix NewTOS-Funktion per
   GEMDOS-Dateisystem-Hosttests unter `tos-api/tests/` und — 001 betrifft das
   Neueinloggen nach `Mediach` 2 (`ckdrv`) — ein Boot bis zum Desktop mit
   `fsck_msdos` der Testpartition.
+- **Vollstaendigkeit offen:** die Retest-Menge zaehlt erst als vollstaendig,
+  wenn ihre `--up`-Menge in den beruehrten Schichten keine `unmapped`-Funktion
+  hat ([TOOL17](TOOL17.md), CLAUDE.md „Testing“); nach TOOL17 traegt der Lead
+  die `unmapped`-Liste hier nach. Der Fix ergaenzt die `mapping.tsv`-Zeilen der
+  Funktionen, die er beruehrt (Ratsche).
