@@ -31,3 +31,6 @@ Status: **OFFEN** · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheid
   sind 4 Byte (`references/emutos/bios/ikbd.c:163,269`).
 - `docs/api/xbios/_state.md` §3: `EXT_IOREC` „24 bytes“ — es sind 33 Byte
   Felder, auf m68k 34.
+- `docs/api/structures/iorec.md:24` „total 16 bytes“ widerspricht EmuTOS
+  (14 Byte, `references/emutos/bios/iorec.h:20-27`) und dem Vertrag in
+  `docs/api/xbios/0e-iorec.md` (aus der SDK04-Erhebung).

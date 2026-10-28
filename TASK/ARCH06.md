@@ -36,3 +36,13 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidu
   QEMU `raspi4b` und `qemu-virt` bis zum Desktop. Der tosdiff-Fall folgt mit
   [TOOL18](TOOL18.md) (Werkzeug hinter dem Fix).
 - `_VDO`-Messung im RUNINFO; doc-check 0 Fehler; STATUS im selben Commit.
+
+## Hinweis aus SDK04 (2026-10-28)
+
+- `Getcookie()` liefert Cookie-Werte **null-erweitert**
+  (`docs/analysis/lp64-tos-struct-survey-2026-10-28.md`): ein LP64-Programm
+  liest `_MCH` = `0xFFFFFFFF` als `0x00000000FFFFFFFF`, nicht als `-1L`. Fuer
+  den Vergleichshinweis im Nachtrag zu ADR-012 mitpruefen (mintlib `sysinfo`
+  ist laut Erhebung nicht betroffen, `short hi` ergibt beidseitig -1).
+- TeraDesk findet ein spaeter gesetztes `_VDO` heute nicht (SDK04 C6): die
+  `_VDO`-Messung hier zuerst gegen den 16-Byte-Schritt bewerten.

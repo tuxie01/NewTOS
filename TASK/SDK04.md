@@ -39,3 +39,22 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (Erhebung) + Develope
 
 - Erhebungstabelle mit Belegen; je Fund Messung oder Begruendung.
 - SDK-Hosttests gruen mit den neuen Pruefungen; doc-check 0 Fehler.
+
+## Stand 2026-10-28 (Punkt 1 erledigt)
+
+- Erhebung: `docs/analysis/lp64-tos-struct-survey-2026-10-28.md`. Offene Funde:
+  Cookie-Jar 7 (davon im Bau erreichbar 1: TeraDesk `find_cookie`, C6), Sysvars/
+  OSHEADER 3 ohne Fehlwirkung, Basepage 1 tot, DTA 0, sonstige 0. HighWire
+  (C1–C5) hat kein Bau-Rezept und liegt auf keiner Karte.
+- C6: TeraDesk liest das Jar mit 16-Byte-Schritt, findet also nur Cookies im
+  geraden Slot mit Wert 0; heute ohne sichtbare Wirkung, weil `CT60`, `_FLK`,
+  `_VDO` fehlen — latent fuer ein spaeteres `_VDO` (ARCH06).
+- **Punkt 2 (Messung):** Vorschlag M1 der Erhebung (AUTO-Sonde mit HighWires
+  `getcookie` und TeraDesks `find_cookie` unveraendert gegen `Getcookie`);
+  M2 (TeraDesk mit eingeschleustem `_VDO`) gehoert zu ARCH06.
+- **Punkt 3 (Typen):** neu noetig Cookie-Eintrag `{u32 tag; u32 value}` mit
+  Schritt-8-Pruefung, Seite-0-Zellen als `volatile uint32_t*`-Kopf fuer
+  `sysvars.h`, OSHEADER mit 48 Byte und `offsetof`-Pruefungen; niedriger MD/MPB,
+  `_IOREC`/`_KBDVECS`. Dazu `docs/sdk/05-abi-pitfalls.md` B2 berichtigen
+  (TeraDesks `find_cookie` ist trotz `Setexc` funktionslos) und die
+  Null-Erweiterung von Cookie-Werten durch `Getcookie` dokumentieren.

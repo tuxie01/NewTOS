@@ -75,7 +75,7 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   [FS19](../TASK/FS19.md) → [MEM11](../TASK/MEM11.md) (Erzwingung) →
   [TOOL01](../TASK/TOOL01.md); [SDK02](../TASK/SDK02.md) (P3) bei Gelegenheit.
   Daneben ein Auditor bzw. Researcher zur Zeit, in eigenem Arbeitsbaum:
-  [SDK04](../TASK/SDK04.md) Erhebung (LP64-Zugriffe auf TOS-Strukturen) → Vertrag `Getmpb` (BIOS06) →
+ Vertrag `Getmpb` (BIOS06) →
   Spec-Tickets der Audits.
 - **P1:** [MEM12](../TASK/MEM12.md) — umgesetzt und auf QEMU abgenommen (Seite 0 nur im Super-Zustand beschreibbar); offen nur der Lauf auf der echten Pi.
   [USB01](../TASK/USB01.md) — F1/F2/F3/F8 auf echter Hardware
