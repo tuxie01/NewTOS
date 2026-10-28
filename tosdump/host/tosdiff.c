@@ -529,15 +529,9 @@ static const char *retclass_violation(uint8_t retclass, int64_t v)
 	case TD_RET_HANDLE:
 		return v < 0 ? "is negative" : NULL;
 	case TD_RET_PTR_RAM:
-		if (v == 0)
-			return "is null";
-		if ((uint64_t)v >= (uint64_t)TD_ADDR_LIMIT)
-			return "not < 0x80000000";
-		/* even, not 4-aligned: m68k structures are WORD aligned, and
-		 * the oracle returns such pointers (Iorec, Keytbl, Bconmap) */
-		if ((uint64_t)v % 2u != 0)
-			return "is odd";
-		return NULL;
+		/* non-zero, TD_PTR_LOW <= v < TD_ADDR_LIMIT, even: one rule
+		 * with the runner's "r:" read (record.h, TASK/TOOL11.md) */
+		return td_ptr_ram_violation((uint64_t)v);
 	default:
 		return NULL;
 	}

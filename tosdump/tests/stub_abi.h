@@ -132,7 +132,8 @@
  *   - Bconstat (13:1) answers -1 -- the high half of the return register is
  *     then all ones, which is what a sign-extended LONG must look like;
  *   - Physbase (14:2) answers TD_STUB_PHYSBASE, a pointer that passes
- *     PTR_RAM (non-zero, LONG aligned, below 0x80000000);
+ *     PTR_RAM (non-zero, at or above 0x400, LONG aligned, below
+ *     0x80000000);
  *   - every LONG argument that IS one of the runner's buffers
  *     (td_call_buffer) gets TD_STUB_BUF_TEXT at bytes 0..3, the buffer
  *     number and the low byte of the function number at 4..5, the LONG
@@ -170,14 +171,45 @@
  *   - Rwabs WRITE does not fill: it copies the first TD_STUB_WRITTEN_N bytes
  *     of the buffer it was handed into the call log (call_written) and
  *     answers 0, so a test sees what a write would have put on the disk;
- *   - Getbpb (13:7) answers, for drive 2 only, the address of a static
- *     9-WORD BPB whose WORD i is TD_STUB_BPB_WORD(i) (machine order, as a
- *     real BPB is), and 0 for every other drive. */
+ *   - Getbpb (13:7) answers, for drive 2, the TOS address TD_STUB_BPB_ADDR
+ *     of a 9-WORD BPB whose WORD i is TD_STUB_BPB_WORD(i) (machine order,
+ *     as a real BPB is); for drives TD_STUB_BAD_DRIVE0 .. +4 one of the
+ *     answers PTR_RAM refuses (TD_STUB_BAD_RET); 0 for every other drive.
+ *
+ * The stub's TOS memory (TOOL11).  The runner reads through a returned
+ * address only inside the PTR_RAM bounds (TD_PTR_LOW .. TD_ADDR_LIMIT,
+ * record.h), and only after td_abi_addr (abi.h) has turned it into a C
+ * pointer.  On both real machines that is the identity.  The host test
+ * process has no memory below 4 GiB at all (a 64-bit macOS process keeps
+ * the whole low 4 GiB as __PAGEZERO), so the stub models a window of TOS
+ * memory: TD_STUB_MEM_BYTES bytes at TOS address TD_STUB_MEM_ADDR, backed
+ * by a static array; every other address maps to itself, as on the
+ * targets -- so a read the runner should not have made faults the test.
+ * The BPB sits at the window's start, which is TD_PTR_LOW itself: the
+ * lowest address PTR_RAM accepts is read through.
+ *
+ * TD_STUB_BAD_RET(i), the five refused answers, for drive
+ * TD_STUB_BAD_DRIVE0 + i:
+ *   0  0x07                 Getbpb's own function number
+ *   1  0x3FE                even, one WORD below the lower bound
+ *   2  0x401                odd
+ *   3  0x80000000           at the upper bound: an error code to a LONG
+ *   4  0x4E75000000000000   a 64-bit value above 4 GiB, positive and
+ *                           even (the shape of BIOS-CORE-005's
+ *                           placeholder) */
 #define TD_STUB_RWABS_FAIL      0x7777L
 #define TD_STUB_RWABS_FAIL_STR  "0x7777"
 #define TD_STUB_RWABS_FAIL_RET  (-14L)
 #define TD_STUB_WRITTEN_N       8
 #define TD_STUB_BPB_WORD(i)     (0x0B00 + (i))
+#define TD_STUB_MEM_ADDR        0x400L
+#define TD_STUB_MEM_BYTES       512
+#define TD_STUB_BPB_ADDR        TD_STUB_MEM_ADDR
+#define TD_STUB_BAD_DRIVE0      3
+#define TD_STUB_BAD_N           5
+#define TD_STUB_BAD_RET(i)                                        \
+	((i) == 0 ? 0x07L : (i) == 1 ? 0x3FEL : (i) == 2 ? 0x401L :   \
+	 (i) == 3 ? 0x80000000L : 0x4E75000000000000L)
 
 struct td_stub_call {
 	int16_t kind;

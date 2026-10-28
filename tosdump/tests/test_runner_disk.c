@@ -120,9 +120,62 @@ static void test_failed_prelude_stops(void)
 	TD_CHECK(td_stub_calls[1].call_value[0] == 2L);
 }
 
+/*
+ * TOOL11: "r:" reads through the returned value only inside the PTR_RAM
+ * bounds the comparator judges it by (TD_PTR_LOW <= v < TD_ADDR_LIMIT, even,
+ * record.h).  The stub answers Getbpb on drives 3..7 with five values
+ * outside them (stub_abi.h, TD_STUB_BAD_RET); a read through any of them
+ * would fault this process, so a run that finishes is half the proof and a
+ * capture that keeps the poison the other half.  Drive 2 answers the lower
+ * bound itself, 0x400, which is read through.
+ */
+static void test_ret_bounds(void)
+{
+	static const char *text =
+		"!disk\t2\n"
+		"13:7\tw:2\tPTR_RAM\tr:8.W\tGetbpb at 0x400: read\n"
+		"13:7\tw:3\tPTR_RAM\tr:8.W\tits function number 0x07\n"
+		"13:7\tw:4\tPTR_RAM\tr:8.W\t0x3FE, below the bound\n"
+		"13:7\tw:5\tPTR_RAM\tr:8.W\t0x401, odd\n"
+		"13:7\tw:6\tPTR_RAM\tr:8.W\t0x80000000\n"
+		"13:7\tw:7\tPTR_RAM\tr:8.W\t0x4E75000000000000\n";
+	const uint8_t *rec;
+	int rc, i;
+
+	printf("r: reads through the returned value only inside PTR_RAM\n");
+	load(text);
+	td_stub_reset();
+	rc = td_run_call(&table, records, sizeof records);
+	TD_CHECK_EQ(rc, 0);
+	TD_CHECK_EQ(td_stub_ncalls, 6);
+
+	rec = records;                               /* 0x400: inside */
+	TD_CHECK_EQ(be16(rec + 0), 2);
+	for (i = 0; i < 4; i++)
+		TD_CHECK_EQ(be16(rec + 40 + 2 * i), TD_STUB_BPB_WORD(i));
+
+	for (i = 0; i < TD_STUB_BAD_N; i++) {
+		uint64_t want = (uint64_t)TD_STUB_BAD_RET(i);
+		uint64_t got;
+		int k;
+
+		rec = records + (size_t)(i + 1) * TD_CALL_RECORD_SIZE;
+		TD_CHECK_EQ(be16(rec + 0), 3 + i);
+		/* the return is recorded as it came, all 64 bits */
+		got = ((uint64_t)be16(rec + 296) << 48) |
+		      ((uint64_t)be16(rec + 298) << 32) |
+		      ((uint64_t)be16(rec + 36) << 16) | be16(rec + 38);
+		TD_CHECK(got == want);
+		/* and the capture was not taken: the poison stays */
+		for (k = 0; k < 4; k++)
+			TD_CHECK_EQ(be16(rec + 40 + 2 * k), 0xDEAD);
+	}
+}
+
 int main(void)
 {
 	test_preludes_and_write();
 	test_failed_prelude_stops();
+	test_ret_bounds();
 	return TD_TEST_RESULT();
 }

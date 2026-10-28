@@ -1,0 +1,112 @@
+measurement-2026-10-28-tool11 -- TASK/TOOL11 items 2 and 3: PTR_RAM gets the lower bound 0x400, the
+call runner reads through a returned pointer ("r:") only inside the same PTR_RAM bounds; the
+committed NewTOS call-area dumps re-judged with the new rule.
+Developer, 2026-10-28 ~12:50 .. 13:20 CET. HEAD a5dc93a1 throughout; the change is uncommitted
+(paths below). No hardware, no real card. QEMU and Hatari processes ended with their runs (none left).
+
+WHAT / WHY
+  TOOL11: `ff1da029` relaxed PTR_RAM from "multiple of 4" to "even", so NewTOS's Iorec -> 0x0E and
+  Bconmap(-2) -> 0x2C (their XBIOS function numbers, no pointers) passed. Researcher's proposal
+  docs/analysis/ptr-ram-rule-2026-10-28.md, Option A: PTR_RAM additionally requires v >= 0x400
+  (EmuTOS sysvars_start, references/emutos/tosvars.ld:31). Same proposal, section 6: the runner
+  followed a returned pointer with only "positive and even", so a 64-bit placeholder like
+  BIOS-CORE-005's 0x4E75000000000000 would fault the EL0 dumper once an r: case meets it.
+
+CHANGE (uncommitted)
+  tosdump/core/record.h      TD_PTR_LOW 0x400 beside TD_ADDR_LIMIT; td_ptr_ram_violation() declared
+  tosdump/core/record.c      td_ptr_ram_violation(): null / not < 0x80000000 / below 0x400 / odd
+  tosdump/host/tosdiff.c     retclass_violation's PTR_RAM branch calls it (one rule for both users)
+  tosdump/core/runner_call.c r: capture only when td_ptr_ram_violation(r) == NULL, through td_abi_addr
+  tosdump/core/abi.h         td_abi_addr(addr): the memory behind a returned TOS address
+  tosdump/abi/m68k_trap.c, tosdump/abi/newtos_svc.c   td_abi_addr = identity (flat address space)
+  tosdump/tests/stub_abi.[ch] the stub's TOS memory window (0x400.., 512 B; a 64-bit macOS process
+                             has no memory below 4 GiB, __PAGEZERO), Getbpb(2) -> 0x400, Getbpb(3..7)
+                             -> 0x07, 0x3FE, 0x401, 0x80000000, 0x4E75000000000000
+  tosdump/tests/test_runner_disk.c  test_ret_bounds: 0x400 read through; the five refused values
+                             recorded as returned (64 bit), capture keeps the 0xDEAD poison
+  tosdump/tests/test_tosdiff.sh     0x0E flagged "below 0x400", 0x3FE and 0x3FF flagged, 0x400 fine,
+                             --selfcheck flags 0x0E
+  tosdump/tests/test_selfcheck.sh   negative control: the pinned TT BIOS reference with Iorec's
+                             first record patched to ret 0x0000000E must fail --selfcheck "below 0x400"
+  docs/TOS-REFERENCE-DUMPER.md      retclass list, PTR_RAM table row, "Lower bound 0x400" paragraph,
+                             r: paragraph (runner bound, td_abi_addr)
+  Why td_abi_addr: with the bound in the runner, the host test's old Getbpb stub (a host pointer,
+  always >= 4 GiB on macOS) could no longer be read through; the stub needs an address inside the
+  bounds that maps to its own memory. On both machines the function returns its argument (no logic,
+  abi.h); the canaries below confirm byte-identical dumper output.
+
+TESTS (tests/)
+  red   red-host-test.txt      tests + stub before the runner change: test_runner_disk segfaults
+                               (old runner reads the TOS address 0x400 directly)
+        red-tosdiff.txt        7 FAIL: 0x0E / 0x3FE / 0x3FF pass the old rule, --selfcheck too
+        red-selfcheck.txt      negative control: "the function number 0x0E as Iorec's pointer passes"
+        red-runner-oldbound.txt  scratch experiment: runner with td_abi_addr but the old
+                               "r > 0 && even" bound -> test_runner_disk rc=139 (segfault on 0x3FE);
+                               runner_call.c restored from a copy afterwards
+  green green-host-test.txt    make -C tosdump host-test: every section ok; self-check
+                               "ok (25 references, every relational rule holds on the oracle; a
+                               function number as pointer is refused)"
+        cargo-xtask-test-totals.txt  full cargo xtask test: passed 1745 failed 0 ignored 1 (baseline)
+  Cross builds (scratch, -Werror): DUMPVDI/AES/RAST/BIOS .PRG + SCRNINFO.TTP (m68k-atari-mint-gcc)
+  and DUMPVDI/AES/RAST/BIOS .NAP + SCRNINFO.NAP (clang aarch64): all clean.
+
+ITEM 3 -- RE-COMPARISON (recompare.txt, method/recompare.sh)
+  method/recompare.sh <repo> a5dc93a1 <scratch>: old tosdiff = `git archive a5dc93a1 tosdump`, built
+  in scratch; new tosdiff = the tree's. Every dump copied to scratch first (read only).
+  Per dump and reference: cases differing under old and new rule, newly / no longer differing.
+  bios-r1 (10 committed NewTOS dumps + this run's), vs EMUTOS-1a7484ab-BIOS and -falcontc:
+    tt 42 -> 46, falcontc 46 -> 50 of 147; newly differing 98 99 100 184 in every dump and both
+    profiles, no case no longer differing.  98-100 Iorec(0..2) = 0x0E, 184 Bconmap(-2) = 0x2C,
+    each "below 0x400".
+  xbios-chardev-r1 (xbios-chardev-audit NEWTOS-xbios-chardev-r1): 15 -> 19 of 23, both profiles;
+    newly 21 22 23 44 (Iorec(0..2) 0x0E, Bconmap(-2) 0x2C).
+  bios-core-r1 (3 dumps): 15 / 14 of 44 unchanged, nothing new.
+  xbios-system-r1: 9 of 43 unchanged (no PTR_RAM case in the table).
+  bios-r2 (5 dumps, vs EMUTOS-1a7484ab-BIOS-r2-disk): 10 of 51 unchanged.
+  => exactly the proposal's prediction; no other newly differing cell.
+
+  This run's bios-r1 (runs/bios-r1/, cargo xtask tosdump, tree = HEAD a5dc93a1 + this change):
+    cargo xtask tosdump bios tosdump/cases/bios-r1.tsv --out measurements/measurement-2026-10-28-tool11/runs/bios-r1 \
+      --reference tosdump/reference/EMUTOS-1a7484ab-BIOS.BIN \
+      --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-falcontc.BIN --scratch <scratch>
+    kernel8.img ea0505cb6bd6d934a0425c27e9a7b2092df57e86a50dfed9bd1da25380501cab, DUMPBIOS build a5dc
+    sha256 0525b5e384d1d8f546bfdd8cf2695e696db0588d17d3e991a0abc2a5fd710ac5
+    card.img.manifest (runs/bios-r1/card.img.manifest) image_sha256
+      892dcc710625f36114d81cef1c2a2d19f7185a75fc29b1a4fd4052415d587853
+      optional_missing none
+    card after the run ededed3085d89e3b2e01970d5336fcd65e85aaabb58b59cb8d1641b2a0380ba7
+    ended normally after 19 s, rc=0; BIOS.BIN sha256 5d59641d22e9a5748609f25ce4f5d6cf2f63b91e29927257a59c0b0f75b88eba
+    tosdiff tt 46 of 147, falcontc 50 of 147 (the 42 / 46 of the storage audit + 98 99 100 184).
+    Note: the root .gitignore's `*.bin` matches BIOS.BIN on the case-insensitive volume; the
+    earlier runs' BIOS.BIN are tracked, so committing this one needs `git add -f`.
+
+  Every PTR_RAM case, NewTOS value and new verdict (ptr-ram-values.txt, method/ptr-ram-values.py):
+    bios-r1 85/86 Physbase/Logbase 0x3C100000 ok -- screen memory, no structure
+    bios-r1 98-100 Iorec(0..2) 0x0E below 0x400 -- function number (Iorec not wired), finding
+    bios-r1 109 Keytbl 0x768 ok -- struct keytbl in the process's page 0 (proposal section 3)
+    bios-r1 136 Kbdvbase 0x7F010 ok -- an address; the struct behind it is not checked by any rule
+    bios-r1 184 Bconmap(-2) 0x2C below 0x400 -- EmuTOS's no-BCONMAP_AVAILABLE answer; the
+            reference build has BCONMAP (proposal section 1.3), triage
+    xbios-chardev-r1 21-23, 34, 37, 44: the same values and verdicts as bios-r1 98-100, 109, 136, 184
+    bios-core-r1 46-54 Setexc CPU vectors 0 "is null" -- already DIFF under the old rule (BIOS-CORE)
+    bios-core-r1 55-57 Setexc etv_* 0x4E75000000000000 / 0x4372697400000000 "not < 0x80000000"
+            -- already DIFF (BIOS-CORE-005)
+    bios-core-r1 60/61 Setexc(0x168) 0x5F0, (0x169) 0x39800000 ok -- _p_cookies in page 0, ramtop
+    bios-r2 42/97/108 Getbpb(2) 0x265024 ok, captured r:18.W as before
+
+CANARIES (canary/) -- dumper source changed (runner_call.c, abi backends, record.c)
+  ORACLE.md section 6: measurements/measurement-2026-10-28-oracle-canary/method/canary.sh
+    "canary tt: OK", "canary falcontc: OK" (DUMPVDI 19b7 from this tree, BIN+LOG bit-identical)
+  disk canary: measurements/measurement-2026-10-28-tool06/method/canary-disk.sh
+    "canary disk: OK (BIN+LOG sha256 as pinned)", test image unchanged
+  The one table with r: cases, re-run on the oracle (oracle-r2-check/):
+    measurements/measurement-2026-10-28-tool07/method/oracle-runs.sh <scratch> <scratch> 1
+    (DUMPBIOS b81d from this tree, profile disk, test image d95a60c3...): BIOS.BIN and BIOS.LOG
+    byte-identical to tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-disk.{BIN,LOG} (result.sha256);
+    test partition unchanged.
+  => No reference needs re-recording: every oracle PTR_RAM value is >= 0x30D4 and < 0x80000000, so
+     the runner reads through exactly what it read before; the r2-disk reproduction shows it.
+
+FILES
+  RUNINFO.TXT, recompare.txt, ptr-ram-values.txt, method/recompare.sh, method/ptr-ram-values.py,
+  runs/bios-r1/ (cargo xtask tosdump output), tests/, canary/, oracle-r2-check/

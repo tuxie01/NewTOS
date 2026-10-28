@@ -1,0 +1,279 @@
+EMUTOS-1a7484ab-BIOS-falcontc.BIN vs NEWTOS.BIN -- area BIOS, 147 cases from bios-r1.tsv
+
+case 53  trap 13 function 0x05  Setexc(0x2,-1) bus error -- bios/bios.c:1070
+    ret                      NONZERO NEWTOS.BIN                        = 0x0000000000000000, is zero
+
+case 54  trap 13 function 0x05  Setexc(0x21,-1) trap #1 -- bios/bios.c:1070
+    ret                      NONZERO NEWTOS.BIN                        = 0x0000000000000000, is zero
+
+case 66  trap 13 function 0x08  Bcostat(3) IKBD slot -- bios/bios.c:1143
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFFFFFFFFFFFFFF (-1)   NEWTOS.BIN                        = 0x0000000000000000 (0)
+
+case 67  trap 13 function 0x08  Bcostat(4) MIDI slot -- bios/bios.c:1143
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFFFFFFFFFFFFFF (-1)   NEWTOS.BIN                        = 0x0000000000000000 (0)
+
+case 69  trap 13 function 0x08  Bcostat(6) Bconmap 6 -- bios/bios.c:1143
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFFFFFFFFFFFFFF (-1)   NEWTOS.BIN                        = 0x0000000000000000 (0)
+
+case 70  trap 13 function 0x08  Bcostat(7) Bconmap 7 -- bios/bios.c:1143
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFFFFFFFFFFFFFF (-1)   NEWTOS.BIN                        = 0x0000000000000000 (0)
+
+case 87  trap 14 function 0x04  Getrez() -- WORD getrez, bios/screen.c:1076 (TT-Medium: profile
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0002 (2)   NEWTOS.BIN                        = 0x0004 (4)
+
+case 93  trap 14 function 0x07  Setcolor(0,-1) -- bios/screen.c:1192 (palette: profile)
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0FFF (4095)   NEWTOS.BIN                        = 0x0000 (0)
+
+case 94  trap 14 function 0x07  Setcolor(1,-1) -- bios/screen.c:1192 (palette: profile)
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0F00 (3840)   NEWTOS.BIN                        = 0x0000 (0)
+
+case 98  trap 14 function 0x0E  Iorec(0) RS-232 -- bios/xbios.c:336
+    ret                      PTR_RAM NEWTOS.BIN                        = 0x000000000000000E, below 0x400
+
+case 99  trap 14 function 0x0E  Iorec(1) IKBD -- bios/xbios.c:336
+    ret                      PTR_RAM NEWTOS.BIN                        = 0x000000000000000E, below 0x400
+
+case 100  trap 14 function 0x0E  Iorec(2) MIDI -- bios/xbios.c:336
+    ret                      PTR_RAM NEWTOS.BIN                        = 0x000000000000000E, below 0x400
+
+case 101  trap 14 function 0x0E  Iorec(3) invalid -- bios/xbios.c:336
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFFFFFFFFFFFFFF (-1)   NEWTOS.BIN                        = 0x000000000000000E (14)
+
+case 102  trap 14 function 0x0E  Iorec(-1) invalid -- bios/xbios.c:336
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFFFFFFFFFFFFFF (-1)   NEWTOS.BIN                        = 0x000000000000000E (14)
+
+case 105  trap 14 function 0x0F  Rsconf(-1 x6) old ucr/rsr/tsr -- bios/serport.c:226
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFFFFFF88000000 (-2013265920)   NEWTOS.BIN                        = 0x0000000088010100 (2281767168)
+
+case 128  trap 14 function 0x1C  Giaccess(0,7) mixer -- bios/sound.c:94
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00000000000000C0 (192)   NEWTOS.BIN                        = 0x0000000000000000 (0)
+
+case 129  trap 14 function 0x1C  Giaccess(0,14) port A -- bios/sound.c:94
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000000027 (39)   NEWTOS.BIN                        = 0x0000000000000000 (0)
+
+case 178  trap 14 function 0x29  Floprate(0,-1) rate -- bios/floppy.c:1058-1061
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000000003 (3)   NEWTOS.BIN                        = 0xFFFFFFFFFFFFFFF1 (-15)
+
+case 179  trap 14 function 0x29  Floprate(0,-4) HD? -- bios/floppy.c:1050-1051
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFFFFFFFFFFFFFF (-1)   NEWTOS.BIN                        = 0xFFFFFFFFFFFFFFF1 (-15)
+
+case 183  trap 14 function 0x2C  Bconmap(-1) mapped device -- bios/serport.c:1089-1090
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000000007 (7)   NEWTOS.BIN                        = 0x000000000000002C (44)
+
+case 184  trap 14 function 0x2C  Bconmap(-2) BCONMAP pointer -- bios/serport.c:1092-1093
+    ret                      PTR_RAM NEWTOS.BIN                        = 0x000000000000002C, below 0x400
+
+case 185  trap 14 function 0x2C  Bconmap(0) maps nothing -- bios/serport.c:1095-1097
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000000000 (0)   NEWTOS.BIN                        = 0x000000000000002C (44)
+
+case 186  trap 14 function 0x2C  Bconmap(10) past the table -- bios/serport.c:1095-1097
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000000000 (0)   NEWTOS.BIN                        = 0x000000000000002C (44)
+
+case 189  trap 14 function 0x2E  NVMaccess(0,0,48,b0) read all 48 -- bios/nvram.c:30,183-197
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000 (0)   NEWTOS.BIN                        = 0x002E (46)
+    capture[0]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[1]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[2]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[3]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[4]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[5]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[6]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[7]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[8]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x11   NEWTOS.BIN                        = 0xDE
+    capture[9]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x2E   NEWTOS.BIN                        = 0xAD
+    capture[10]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x20   NEWTOS.BIN                        = 0xDE
+    capture[11]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x01   NEWTOS.BIN                        = 0xAD
+    capture[12]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFF   NEWTOS.BIN                        = 0xDE
+    capture[13]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[14]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[15]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x1A   NEWTOS.BIN                        = 0xAD
+    capture[16]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x87   NEWTOS.BIN                        = 0xDE
+    capture[17]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[18]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[19]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[20]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[21]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[22]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[23]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[24]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[25]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[26]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[27]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[28]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[29]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[30]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[31]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[32]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[33]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[34]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[35]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[36]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[37]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[38]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[39]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[40]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[41]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[42]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[43]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[44]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[45]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[46]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[47]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+
+case 190  trap 14 function 0x2E  NVMaccess(0,0,0,b0) count 0 -- bios/nvram.c:180-181
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFB (-5)   NEWTOS.BIN                        = 0x002E (46)
+
+case 191  trap 14 function 0x2E  NVMaccess(0,-1,1,b0) start<0 -- bios/nvram.c:180-181
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFB (-5)   NEWTOS.BIN                        = 0x002E (46)
+
+case 192  trap 14 function 0x2E  NVMaccess(0,47,2,b0) past 48 -- bios/nvram.c:180-181
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFB (-5)   NEWTOS.BIN                        = 0x002E (46)
+
+case 193  trap 14 function 0x2E  NVMaccess(0,0,1,NULL) -- bios/nvram.c:180-181
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFB (-5)   NEWTOS.BIN                        = 0x002E (46)
+
+case 194  trap 14 function 0x2E  NVMaccess(3,..) bad op -- bios/nvram.c:206-208
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFB (-5)   NEWTOS.BIN                        = 0x002E (46)
+
+case 211  trap 14 function 0x58  VsetMode(-1) -- bios/videl.c:619
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x001C (28)   NEWTOS.BIN                        = 0x0058 (88)
+
+case 212  trap 14 function 0x59  VgetMonitor() -- bios/videl.c:664
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0002 (2)   NEWTOS.BIN                        = 0x0059 (89)
+
+case 213  trap 14 function 0x5B  VgetSize(0x1C) -- LONG vgetsize, bios/videl.c:724
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000096000 (614400)   NEWTOS.BIN                        = 0x000000000000005B (91)
+
+case 214  trap 14 function 0x5E  VgetRGB(0,16,b0) -- WORD vgetrgb, bios/videl.c:862
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000 (0)   NEWTOS.BIN                        = 0x005E (94)
+    capture[0]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[1]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFF   NEWTOS.BIN                        = 0xAD
+    capture[2]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFF   NEWTOS.BIN                        = 0xDE
+    capture[3]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFF   NEWTOS.BIN                        = 0xAD
+    capture[4]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[5]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFF   NEWTOS.BIN                        = 0xAD
+    capture[6]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[7]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[8]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[9]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[10]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFF   NEWTOS.BIN                        = 0xDE
+    capture[11]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[12]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[13]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFF   NEWTOS.BIN                        = 0xAD
+    capture[14]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFF   NEWTOS.BIN                        = 0xDE
+    capture[15]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[16]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[17]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[18]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[19]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFF   NEWTOS.BIN                        = 0xAD
+    capture[20]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[21]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFF   NEWTOS.BIN                        = 0xAD
+    capture[22]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[23]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFF   NEWTOS.BIN                        = 0xAD
+    capture[24]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[25]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[26]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFF   NEWTOS.BIN                        = 0xDE
+    capture[27]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFF   NEWTOS.BIN                        = 0xAD
+    capture[28]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[29]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xBB   NEWTOS.BIN                        = 0xAD
+    capture[30]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xBB   NEWTOS.BIN                        = 0xDE
+    capture[31]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xBB   NEWTOS.BIN                        = 0xAD
+    capture[32]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[33]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x88   NEWTOS.BIN                        = 0xAD
+    capture[34]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x88   NEWTOS.BIN                        = 0xDE
+    capture[35]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x88   NEWTOS.BIN                        = 0xAD
+    capture[36]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[37]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xAA   NEWTOS.BIN                        = 0xAD
+    capture[38]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[39]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[40]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[41]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[42]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xAA   NEWTOS.BIN                        = 0xDE
+    capture[43]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[44]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[45]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xAA   NEWTOS.BIN                        = 0xAD
+    capture[46]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xAA   NEWTOS.BIN                        = 0xDE
+    capture[47]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[48]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[49]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[50]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[51]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xAA   NEWTOS.BIN                        = 0xAD
+    capture[52]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[53]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xAA   NEWTOS.BIN                        = 0xAD
+    capture[54]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[55]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xAA   NEWTOS.BIN                        = 0xAD
+    capture[56]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[57]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[58]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xAA   NEWTOS.BIN                        = 0xDE
+    capture[59]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xAA   NEWTOS.BIN                        = 0xAD
+    capture[60]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[61]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[62]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[63]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+
+case 215  trap 14 function 0x5F  Vfixmode(0x1C) -- bios/videl.c:917
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x001C (28)   NEWTOS.BIN                        = 0x005F (95)
+
+case 218  trap 14 function 0x67  Dsp_GetWordSize() -- bios/dsp.c:508
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0003 (3)   NEWTOS.BIN                        = 0x0067 (103)
+
+case 219  trap 14 function 0x6A  Dsp_Available(b0,b1) x -- bios/dsp.c:619 (no has_dsp test)
+    capture[0]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[1]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[2]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x3E   NEWTOS.BIN                        = 0xDE
+    capture[3]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xA9   NEWTOS.BIN                        = 0xAD
+
+case 220  trap 14 function 0x6A  Dsp_Available(b0,b1) y -- bios/dsp.c:619
+    capture[0]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[1]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[2]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x40   NEWTOS.BIN                        = 0xDE
+    capture[3]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+
+case 221  trap 14 function 0x72  Dsp_GetProgAbility() -- bios/dsp.c:976
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000 (0)   NEWTOS.BIN                        = 0x0072 (114)
+
+case 222  trap 14 function 0x75  Dsp_InqSubrAbility(0) -- bios/dsp.c:1146
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0017 (23)   NEWTOS.BIN                        = 0x0075 (117)
+
+case 223  trap 14 function 0x77  Dsp_Hf0(-1) -- bios/dsp.c:1200
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000 (0)   NEWTOS.BIN                        = 0x0077 (119)
+
+case 224  trap 14 function 0x78  Dsp_Hf1(-1) -- bios/dsp.c:1222
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000 (0)   NEWTOS.BIN                        = 0x0078 (120)
+
+case 225  trap 14 function 0x79  Dsp_Hf2() -- bios/dsp.c:1247
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000 (0)   NEWTOS.BIN                        = 0x0079 (121)
+
+case 226  trap 14 function 0x7A  Dsp_Hf3() -- bios/dsp.c:1257
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000 (0)   NEWTOS.BIN                        = 0x007A (122)
+
+case 227  trap 14 function 0x7D  Dsp_Hstat() -- UBYTE dsp_hstat, bios/dsp.c:1273
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x06 (6)   NEWTOS.BIN                        = 0x7D (125)
+
+case 230  trap 14 function 0x82  Soundcmd(0,-1) -- bios/dmasound.c:342
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000000000 (0)   NEWTOS.BIN                        = 0x0000000000000082 (130)
+
+case 231  trap 14 function 0x82  Soundcmd(1,-1) -- bios/dmasound.c:342
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000000000 (0)   NEWTOS.BIN                        = 0x0000000000000082 (130)
+
+case 232  trap 14 function 0x82  Soundcmd(6,-1) -- bios/dmasound.c:342
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000000003 (3)   NEWTOS.BIN                        = 0x0000000000000082 (130)
+
+case 233  trap 14 function 0x88  Buffoper(-1) -- bios/dmasound.c:499
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000000000 (0)   NEWTOS.BIN                        = 0x0000000000000088 (136)
+
+case 234  trap 14 function 0x8C  Sndstatus(0) -- bios/dmasound.c:751
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000000000 (0)   NEWTOS.BIN                        = 0x000000000000008C (140)
+
+case 235  trap 14 function 0x8D  Buffptr(b0) -- bios/dmasound.c:772
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000000000 (0)   NEWTOS.BIN                        = 0x000000000000008D (141)
+    capture[0]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[1]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[2]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[3]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[4]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[5]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+    capture[6]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xDE
+    capture[7]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   NEWTOS.BIN                        = 0xAD
+
+50 of 147 cases differ

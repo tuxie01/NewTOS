@@ -1,0 +1,125 @@
+== bios-r1
+case 85  Physbase() -- bios/screen.c:1042
+    TT         0x00000000003DA700  ok
+    FALCONTC   0x0000000000369F00  ok
+    NEWTOS     0x000000003C100000  ok
+case 86  Logbase() -- bios/screen.c:1071
+    TT         0x00000000003DA700  ok
+    FALCONTC   0x0000000000369F00  ok
+    NEWTOS     0x000000003C100000  ok
+case 98  Iorec(0) RS-232 -- bios/xbios.c:336
+    TT         0x0000000000004A54  ok
+    FALCONTC   0x000000000000478A  ok
+    NEWTOS     0x000000000000000E  below 0x400
+case 99  Iorec(1) IKBD -- bios/xbios.c:336
+    TT         0x00000000000030D4  ok
+    FALCONTC   0x00000000000030D4  ok
+    NEWTOS     0x000000000000000E  below 0x400
+case 100  Iorec(2) MIDI -- bios/xbios.c:336
+    TT         0x00000000000030E2  ok
+    FALCONTC   0x00000000000030E2  ok
+    NEWTOS     0x000000000000000E  below 0x400
+case 109  Keytbl(-1,-1,-1) -- bios/ikbd.c:122
+    TT         0x00000000000040AE  ok
+    FALCONTC   0x00000000000040AE  ok
+    NEWTOS     0x0000000000000768  ok
+case 136  Kbdvbase() -- bios/xbios.c:716
+    TT         0x00000000000030F8  ok
+    FALCONTC   0x00000000000030F8  ok
+    NEWTOS     0x000000000007F010  ok
+case 184  Bconmap(-2) BCONMAP pointer -- bios/serport.c:1092-1093
+    TT         0x0000000000004A76  ok
+    FALCONTC   0x0000000000004A76  ok
+    NEWTOS     0x000000000000002C  below 0x400
+== xbios-chardev-r1
+case 21  Iorec(0) RS-232 -- bios/xbios.c:339-340
+    TT         0x0000000000004A54  ok
+    FALCONTC   0x000000000000478A  ok
+    NEWTOS     0x000000000000000E  below 0x400
+case 22  Iorec(1) IKBD -- bios/xbios.c:341-342
+    TT         0x00000000000030D4  ok
+    FALCONTC   0x00000000000030D4  ok
+    NEWTOS     0x000000000000000E  below 0x400
+case 23  Iorec(2) MIDI -- bios/xbios.c:343-344
+    TT         0x00000000000030E2  ok
+    FALCONTC   0x00000000000030E2  ok
+    NEWTOS     0x000000000000000E  below 0x400
+case 34  Keytbl(-1,-1,-1) -- bios/ikbd.c:133
+    TT         0x00000000000040AE  ok
+    FALCONTC   0x00000000000040AE  ok
+    NEWTOS     0x0000000000000768  ok
+case 37  Kbdvbase() -- bios/xbios.c:718
+    TT         0x00000000000030F8  ok
+    FALCONTC   0x00000000000030F8  ok
+    NEWTOS     0x000000000007F010  ok
+case 44  Bconmap(-2) BCONMAP pointer -- bios/serport.c:1092-1093
+    TT         0x0000000000004A76  ok
+    FALCONTC   0x0000000000004A76  ok
+    NEWTOS     0x000000000000002C  below 0x400
+== bios-core-r1
+case 46  Setexc(0x2,-1) bus error -- bios/bios.c:1073-1074
+    TT         0x0000000000E00774  ok
+    FALCONTC   0x0000000000E00774  ok
+    NEWTOS     0x0000000000000000  is null
+case 47  Setexc(0x3,-1) address error -- bios/bios.c:1073-1074
+    TT         0x0000000000E00776  ok
+    FALCONTC   0x0000000000E00776  ok
+    NEWTOS     0x0000000000000000  is null
+case 48  Setexc(0x4,-1) illegal instruction -- bios/bios.c:1073-1074
+    TT         0x0000000000E00778  ok
+    FALCONTC   0x0000000000E00778  ok
+    NEWTOS     0x0000000000000000  is null
+case 49  Setexc(0x1C,-1) level-4 autovector (VBL) -- bios/bios.c:1073-1074
+    TT         0x0000000000E0086E  ok
+    FALCONTC   0x0000000000E0086E  ok
+    NEWTOS     0x0000000000000000  is null
+case 50  Setexc(0x21,-1) trap #1 -- bios/bios.c:1073-1074
+    TT         0x0000000000FA002A  ok
+    FALCONTC   0x0000000000FA002A  ok
+    NEWTOS     0x0000000000000000  is null
+case 51  Setexc(0x22,-1) trap #2 -- bios/bios.c:1073-1074
+    TT         0x0000000000E30078  ok
+    FALCONTC   0x0000000000E30078  ok
+    NEWTOS     0x0000000000000000  is null
+case 52  Setexc(0x2D,-1) trap #13 -- bios/bios.c:1073-1074
+    TT         0x0000000000E00D00  ok
+    FALCONTC   0x0000000000E00D00  ok
+    NEWTOS     0x0000000000000000  is null
+case 53  Setexc(0x2E,-1) trap #14 -- bios/bios.c:1073-1074
+    TT         0x0000000000E00D0E  ok
+    FALCONTC   0x0000000000E00D0E  ok
+    NEWTOS     0x0000000000000000  is null
+case 54  Setexc(0x45,-1) MFP timer C -- bios/bios.c:1073-1074
+    TT         0x0000000000E00936  ok
+    FALCONTC   0x0000000000E00936  ok
+    NEWTOS     0x0000000000000000  is null
+case 55  Setexc(0x100,-1) etv_timer -- bios/bios.c:1073-1074
+    TT         0x0000000000E2A190  ok
+    FALCONTC   0x0000000000E2A190  ok
+    NEWTOS     0x4E75000000000000  not < 0x80000000
+case 56  Setexc(0x101,-1) etv_critic -- bios/bios.c:1073-1074
+    TT         0x0000000000E2FFE4  ok
+    FALCONTC   0x0000000000E2FFE4  ok
+    NEWTOS     0x4372697400000000  not < 0x80000000
+case 57  Setexc(0x102,-1) etv_term -- bios/bios.c:1073-1074
+    TT         0x0000000000E20EA4  ok
+    FALCONTC   0x0000000000E20EA4  ok
+    NEWTOS     0x4E75000000000000  not < 0x80000000
+case 60  Setexc(0x168,-1) _p_cookies $5A0 -- bios/bios.c:1073-1074
+    TT         0x0000000000008760  ok
+    FALCONTC   0x0000000000008760  ok
+    NEWTOS     0x00000000000005F0  ok
+case 61  Setexc(0x169,-1) ramtop $5A4 -- bios/bios.c:1073-1074
+    TT         0x0000000002000000  ok
+    FALCONTC   0x0000000002000000  ok
+    NEWTOS     0x0000000039800000  ok
+== bios-r2
+case 42  Getbpb(2) C: the BPB -- blkdev.c:569-777
+    DISK       0x0000000000003254  ok
+    NEWTOS     0x0000000000265024  ok
+case 97  W06 Getbpb(2) clears it -- blkdev.c:589-590
+    DISK       0x0000000000003254  ok
+    NEWTOS     0x0000000000265024  ok
+case 108  X15 Getbpb(2) clears it -- blkdev.c:589-590
+    DISK       0x0000000000003254  ok
+    NEWTOS     0x0000000000265024  ok

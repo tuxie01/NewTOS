@@ -6,7 +6,7 @@
  * can be explained by the backends rather than by the API implementations,
  * the whole exercise is worthless.
  *
- * A backend implements exactly these two functions:
+ * A backend implements exactly the functions below:
  *
  *   abi/m68k_trap.c    TOS 3.06 on the TT   -- trap #2, d0 = 115 / 200
  *   abi/newtos_svc.c   NewTOS on the Pi 4   -- svc #2, x0 = 115 / 200
@@ -67,5 +67,17 @@ int32_t td_abi_aes(int16_t *control, int16_t *global, int16_t *int_in,
 
 long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
                  const uint8_t *kind, const long *value);
+
+/*
+ * The memory behind a TOS address a trap returned, for a capture through
+ * the returned pointer ("r:", docs/TOS-REFERENCE-DUMPER.md section 6).  On
+ * both machines the dumper shares the API's flat address space, so the
+ * address IS the C pointer and both backends return `addr` unchanged --
+ * no logic.  It exists for the host tests' stub, which has no memory below
+ * 4 GiB and models a window of TOS memory instead (tests/stub_abi.h).  The
+ * caller has already checked `addr` against the PTR_RAM bounds
+ * (td_ptr_ram_violation, record.h); this function checks nothing.
+ */
+const void *td_abi_addr(long addr);
 
 #endif /* TOSDUMP_ABI_H */

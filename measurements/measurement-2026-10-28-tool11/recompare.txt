@@ -1,0 +1,300 @@
+old tosdiff: a5dc93a1 (998e6c5c735dd7b8)
+new tosdiff: working tree (b511e7152a729245)
+
+measurement-2026-10-27-dumpbios/runs/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS.BIN
+  old: 42 of 147 cases differ (exit 1)
+  new: 46 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-27-dumpbios_runs_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-27-dumpbios_runs_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-27-dumpbios_runs_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-27-dumpbios_runs_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-27-dumpbios/runs/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS-falcontc.BIN
+  old: 46 of 147 cases differ (exit 1)
+  new: 50 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-27-dumpbios_runs_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-27-dumpbios_runs_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-27-dumpbios_runs_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-27-dumpbios_runs_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-bios-core-audit/runs/NEWTOS-bios-r1/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS.BIN
+  old: 42 of 147 cases differ (exit 1)
+  new: 46 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-bios-core-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-bios-core-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-bios-core-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-bios-core-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-bios-core-audit/runs/NEWTOS-bios-r1/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS-falcontc.BIN
+  old: 46 of 147 cases differ (exit 1)
+  new: 50 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-bios-core-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-bios-core-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-bios-core-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-bios-core-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-tool08/runs/r1/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS.BIN
+  old: 42 of 147 cases differ (exit 1)
+  new: 46 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-tool08_runs_r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool08_runs_r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool08_runs_r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool08_runs_r1_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-tool08/runs/r1/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS-falcontc.BIN
+  old: 46 of 147 cases differ (exit 1)
+  new: 50 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-tool08_runs_r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool08_runs_r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool08_runs_r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool08_runs_r1_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-tool08/runs-control/r1/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS.BIN
+  old: 42 of 147 cases differ (exit 1)
+  new: 46 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-tool08_runs-control_r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool08_runs-control_r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool08_runs-control_r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool08_runs-control_r1_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-tool08/runs-control/r1/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS-falcontc.BIN
+  old: 46 of 147 cases differ (exit 1)
+  new: 50 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-tool08_runs-control_r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool08_runs-control_r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool08_runs-control_r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool08_runs-control_r1_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-tool09/runs/r1-argtrace-head/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS.BIN
+  old: 42 of 147 cases differ (exit 1)
+  new: 46 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-tool09_runs_r1-argtrace-head_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool09_runs_r1-argtrace-head_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool09_runs_r1-argtrace-head_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool09_runs_r1-argtrace-head_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-tool09/runs/r1-argtrace-head/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS-falcontc.BIN
+  old: 46 of 147 cases differ (exit 1)
+  new: 50 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-tool09_runs_r1-argtrace-head_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool09_runs_r1-argtrace-head_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool09_runs_r1-argtrace-head_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool09_runs_r1-argtrace-head_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-tool09/runs/r1-c3db-clone/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS.BIN
+  old: 42 of 147 cases differ (exit 1)
+  new: 46 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-tool09_runs_r1-c3db-clone_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool09_runs_r1-c3db-clone_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool09_runs_r1-c3db-clone_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool09_runs_r1-c3db-clone_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-tool09/runs/r1-c3db-clone/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS-falcontc.BIN
+  old: 46 of 147 cases differ (exit 1)
+  new: 50 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-tool09_runs_r1-c3db-clone_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool09_runs_r1-c3db-clone_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool09_runs_r1-c3db-clone_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool09_runs_r1-c3db-clone_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-tool10/tosdump-r1/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS.BIN
+  old: 42 of 147 cases differ (exit 1)
+  new: 46 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-tool10_tosdump-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool10_tosdump-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool10_tosdump-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool10_tosdump-r1_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-tool10/tosdump-r1/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS-falcontc.BIN
+  old: 46 of 147 cases differ (exit 1)
+  new: 50 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-tool10_tosdump-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool10_tosdump-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool10_tosdump-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool10_tosdump-r1_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-xbios-chardev-audit/runs/NEWTOS-bios-r1/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS.BIN
+  old: 42 of 147 cases differ (exit 1)
+  new: 46 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-xbios-chardev-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-chardev-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-chardev-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-chardev-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-xbios-chardev-audit/runs/NEWTOS-bios-r1/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS-falcontc.BIN
+  old: 46 of 147 cases differ (exit 1)
+  new: 50 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-xbios-chardev-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-chardev-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-chardev-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-chardev-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-xbios-system-audit/runs/NEWTOS-bios-r1/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS.BIN
+  old: 42 of 147 cases differ (exit 1)
+  new: 46 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-xbios-system-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-system-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-system-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-system-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-xbios-system-audit/runs/NEWTOS-bios-r1/cmp/NEWTOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS-falcontc.BIN
+  old: 46 of 147 cases differ (exit 1)
+  new: 50 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-xbios-system-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-system-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-system-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-system-audit_runs_NEWTOS-bios-r1_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-tool11/runs/bios-r1/BIOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS.BIN
+  old: 42 of 147 cases differ (exit 1)
+  new: 46 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-tool11_runs_bios-r1_BIOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool11_runs_bios-r1_BIOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool11_runs_bios-r1_BIOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool11_runs_bios-r1_BIOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-tool11/runs/bios-r1/BIOS.BIN  [bios-r1.tsv]  vs EMUTOS-1a7484ab-BIOS-falcontc.BIN
+  old: 46 of 147 cases differ (exit 1)
+  new: 50 of 147 cases differ (exit 1)
+  newly differing: 98 99 100 184 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-tool11_runs_bios-r1_BIOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool11_runs_bios-r1_BIOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool11_runs_bios-r1_BIOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-tool11_runs_bios-r1_BIOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-xbios-chardev-audit/runs/NEWTOS-xbios-chardev-r1/cmp/NEWTOS.BIN  [xbios-chardev-r1.tsv]  vs EMUTOS-1a7484ab-XBIOS-chardev.BIN
+  old: 15 of 23 cases differ (exit 1)
+  new: 19 of 23 cases differ (exit 1)
+  newly differing: 21 22 23 44 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-xbios-chardev-audit_runs_NEWTOS-xbios-chardev-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-chardev-audit_runs_NEWTOS-xbios-chardev-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-chardev-audit_runs_NEWTOS-xbios-chardev-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-chardev-audit_runs_NEWTOS-xbios-chardev-r1_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-xbios-chardev-audit/runs/NEWTOS-xbios-chardev-r1/cmp/NEWTOS.BIN  [xbios-chardev-r1.tsv]  vs EMUTOS-1a7484ab-XBIOS-chardev-falcontc.BIN
+  old: 15 of 23 cases differ (exit 1)
+  new: 19 of 23 cases differ (exit 1)
+  newly differing: 21 22 23 44 
+  no longer differing: 
+        ret                      PTR_RAM measurement-2026-10-28-xbios-chardev-audit_runs_NEWTOS-xbios-chardev-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-chardev-audit_runs_NEWTOS-xbios-chardev-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-chardev-audit_runs_NEWTOS-xbios-chardev-r1_cmp_NEWTOS.BIN = 0x000000000000000E, below 0x400
+        ret                      PTR_RAM measurement-2026-10-28-xbios-chardev-audit_runs_NEWTOS-xbios-chardev-r1_cmp_NEWTOS.BIN = 0x000000000000002C, below 0x400
+
+measurement-2026-10-28-bios-core-audit/runs/NEWTOS-bios-core-r1/cmp/NEWTOS.BIN  [bios-core-r1.tsv]  vs EMUTOS-1a7484ab-BIOS-core.BIN
+  old: 15 of 44 cases differ (exit 1)
+  new: 15 of 44 cases differ (exit 1)
+  newly differing: 
+  no longer differing: 
+
+measurement-2026-10-28-bios-core-audit/runs/NEWTOS-bios-core-r1/cmp/NEWTOS.BIN  [bios-core-r1.tsv]  vs EMUTOS-1a7484ab-BIOS-core-falcontc.BIN
+  old: 14 of 44 cases differ (exit 1)
+  new: 14 of 44 cases differ (exit 1)
+  newly differing: 
+  no longer differing: 
+
+measurement-2026-10-28-tool08/runs/core/cmp/NEWTOS.BIN  [bios-core-r1.tsv]  vs EMUTOS-1a7484ab-BIOS-core.BIN
+  old: 15 of 44 cases differ (exit 1)
+  new: 15 of 44 cases differ (exit 1)
+  newly differing: 
+  no longer differing: 
+
+measurement-2026-10-28-tool08/runs/core/cmp/NEWTOS.BIN  [bios-core-r1.tsv]  vs EMUTOS-1a7484ab-BIOS-core-falcontc.BIN
+  old: 14 of 44 cases differ (exit 1)
+  new: 14 of 44 cases differ (exit 1)
+  newly differing: 
+  no longer differing: 
+
+measurement-2026-10-28-tool08/runs-control/core/cmp/NEWTOS.BIN  [bios-core-r1.tsv]  vs EMUTOS-1a7484ab-BIOS-core.BIN
+  old: 15 of 44 cases differ (exit 1)
+  new: 15 of 44 cases differ (exit 1)
+  newly differing: 
+  no longer differing: 
+
+measurement-2026-10-28-tool08/runs-control/core/cmp/NEWTOS.BIN  [bios-core-r1.tsv]  vs EMUTOS-1a7484ab-BIOS-core-falcontc.BIN
+  old: 14 of 44 cases differ (exit 1)
+  new: 14 of 44 cases differ (exit 1)
+  newly differing: 
+  no longer differing: 
+
+measurement-2026-10-28-xbios-system-audit/runs/NEWTOS-xbios-system-r1/cmp/NEWTOS.BIN  [xbios-system-r1.tsv]  vs EMUTOS-1a7484ab-XBIOS-system.BIN
+  old: 9 of 43 cases differ (exit 1)
+  new: 9 of 43 cases differ (exit 1)
+  newly differing: 
+  no longer differing: 
+
+measurement-2026-10-28-xbios-system-audit/runs/NEWTOS-xbios-system-r1/cmp/NEWTOS.BIN  [xbios-system-r1.tsv]  vs EMUTOS-1a7484ab-XBIOS-system-falcontc.BIN
+  old: 9 of 43 cases differ (exit 1)
+  new: 9 of 43 cases differ (exit 1)
+  newly differing: 
+  no longer differing: 
+
+measurement-2026-10-28-tool07/runs/newtos-1/BIOS.BIN  [bios-r2.tsv]  vs EMUTOS-1a7484ab-BIOS-r2-disk.BIN
+  old: 10 of 51 cases differ (exit 1)
+  new: 10 of 51 cases differ (exit 1)
+  newly differing: 
+  no longer differing: 
+
+measurement-2026-10-28-tool07/runs/newtos-2/BIOS.BIN  [bios-r2.tsv]  vs EMUTOS-1a7484ab-BIOS-r2-disk.BIN
+  old: 10 of 51 cases differ (exit 1)
+  new: 10 of 51 cases differ (exit 1)
+  newly differing: 
+  no longer differing: 
+
+measurement-2026-10-28-tool08/runs/r2/cmp/NEWTOS.BIN  [bios-r2.tsv]  vs EMUTOS-1a7484ab-BIOS-r2-disk.BIN
+  old: 10 of 51 cases differ (exit 1)
+  new: 10 of 51 cases differ (exit 1)
+  newly differing: 
+  no longer differing: 
+
+measurement-2026-10-28-tool08/runs-control/r2/cmp/NEWTOS.BIN  [bios-r2.tsv]  vs EMUTOS-1a7484ab-BIOS-r2-disk.BIN
+  old: 10 of 51 cases differ (exit 1)
+  new: 10 of 51 cases differ (exit 1)
+  newly differing: 
+  no longer differing: 
+
+measurement-2026-10-28-tool09/runs/r2-disk-head/cmp/NEWTOS.BIN  [bios-r2.tsv]  vs EMUTOS-1a7484ab-BIOS-r2-disk.BIN
+  old: 10 of 51 cases differ (exit 1)
+  new: 10 of 51 cases differ (exit 1)
+  newly differing: 
+  no longer differing: 

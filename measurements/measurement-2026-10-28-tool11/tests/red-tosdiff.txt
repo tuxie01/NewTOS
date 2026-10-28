@@ -1,0 +1,32 @@
+tosdiff against synthetic dumps
+  FAIL PTR_RAM: a function number (0x0E) is flagged: expected exit 1, got 0
+  FAIL PTR_RAM lower bound: output does not mention 'PTR_RAM c_pf.bin *= 0x000000000000000E, below 0x400'
+  --- output ---
+  | stub-bios.bin vs c_pf.bin -- area BIOS, 9 cases from stub-bios.tsv
+  | 
+  | 0 of 9 cases differ
+  --------------
+  FAIL PTR_RAM: 0x3FE is flagged: expected exit 1, got 0
+  FAIL PTR_RAM 0x3FE: output does not mention 'PTR_RAM c_pb.bin .*below 0x400'
+  --- output ---
+  | stub-bios.bin vs c_pb.bin -- area BIOS, 9 cases from stub-bios.tsv
+  | 
+  | 0 of 9 cases differ
+  --------------
+  FAIL PTR_RAM 0x3FF: output does not mention 'PTR_RAM c_pc.bin .*below 0x400'
+  --- output ---
+  | stub-bios.bin vs c_pc.bin -- area BIOS, 9 cases from stub-bios.tsv
+  | 
+  | case 3  trap 14 function 0x02  Physbase
+  |     ret                      PTR_RAM c_pc.bin      = 0x00000000000003FF, is odd
+  | 
+  | 1 of 9 cases differ
+  --------------
+  FAIL self-check: a function number as pointer is flagged: expected exit 1, got 0
+  FAIL self-check names the lower bound: output does not mention 'PTR_RAM c_pf.bin .*below 0x400'
+  --- output ---
+  | self-check c_pf.bin -- area BIOS, 9 cases from stub-bios.tsv
+  | 
+  | self-check, c_pf.bin: the oracle passes every relational rule (9 cases)
+  --------------
+  7 failure(s)

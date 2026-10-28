@@ -139,3 +139,10 @@ long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
 	}
 	return x0;
 }
+
+/* abi.h: an EL0 program shares the API's address space -- a returned
+ * address is the C pointer itself. */
+const void *td_abi_addr(long addr)
+{
+	return (const void *)addr;
+}

@@ -1,0 +1,5 @@
+  FAIL negative control: the function number 0x0E as Iorec's pointer passes (exit 0)
+  | self-check iorec-fn.bin -- area BIOS, 147 cases from bios-r1.tsv
+  | 
+  | self-check, iorec-fn.bin: the oracle passes every relational rule (147 cases)
+  1 failure(s)

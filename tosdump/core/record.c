@@ -628,3 +628,16 @@ int td_addr_ok(uint64_t v)
 {
 	return v < (uint64_t)TD_ADDR_LIMIT;
 }
+
+const char *td_ptr_ram_violation(uint64_t v)
+{
+	if (v == 0)
+		return "is null";
+	if (v >= (uint64_t)TD_ADDR_LIMIT)
+		return "not < 0x80000000";
+	if (v < (uint64_t)TD_PTR_LOW)
+		return "below 0x400";
+	if ((v & 1u) != 0)
+		return "is odd";
+	return NULL;
+}

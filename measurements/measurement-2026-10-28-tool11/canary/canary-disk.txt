@@ -1,0 +1,4 @@
+   text	   data	    bss	    dec	    hex	filename
+ 152200	   1588	 159044	 312832	  4c600	/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool11-dev/canary-disk-20261028-130840/dumpers/a8b7/DUMPBIOS.PRG
+canary disk: OK (BIN+LOG sha256 as pinned)
+canary disk: test image unchanged (d83c543471fd30f29e4704cb9450f70517fe43a4e5e0250e137205e409bfc4a0)

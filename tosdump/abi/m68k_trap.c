@@ -154,3 +154,10 @@ long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
 	}
 	return ret;
 }
+
+/* abi.h: the dumper shares TOS's flat 24/32-bit address space -- a returned
+ * address is the C pointer itself. */
+const void *td_abi_addr(long addr)
+{
+	return (const void *)addr;
+}

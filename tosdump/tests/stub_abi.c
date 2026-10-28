@@ -272,6 +272,19 @@ static void stub_fill_buffer(uint8_t *b, int n, int16_t fn)
 	b[511] = 0xAA;
 }
 
+/* The stub's TOS memory window (stub_abi.h, "The stub's TOS memory").
+ * uint32_t so that a LONG capture reads aligned. */
+static uint32_t stub_mem_l[TD_STUB_MEM_BYTES / 4];
+static uint8_t *const stub_mem = (uint8_t *)stub_mem_l;
+
+const void *td_abi_addr(long addr)
+{
+	if (addr >= TD_STUB_MEM_ADDR &&
+	    addr < TD_STUB_MEM_ADDR + TD_STUB_MEM_BYTES)
+		return stub_mem + (addr - TD_STUB_MEM_ADDR);
+	return (const void *)addr;
+}
+
 /* the modelled processor state (stub_abi.h, "Super and Supexec") */
 static int super_state;
 
@@ -313,11 +326,17 @@ long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
 			return TD_STUB_RWABS_FAIL_RET;
 	}
 	if (trap == 13 && opcode == 7) {
-		static uint16_t bpb[9];
+		uint16_t *bpb = (uint16_t *)(void *)
+			(stub_mem + (TD_STUB_BPB_ADDR - TD_STUB_MEM_ADDR));
 
 		for (i = 0; i < 9; i++)
 			bpb[i] = (uint16_t)TD_STUB_BPB_WORD(i);
-		return value[0] == 2L ? (long)bpb : 0L;
+		if (value[0] == 2L)
+			return TD_STUB_BPB_ADDR;
+		if (value[0] >= TD_STUB_BAD_DRIVE0 &&
+		    value[0] < TD_STUB_BAD_DRIVE0 + TD_STUB_BAD_N)
+			return TD_STUB_BAD_RET(value[0] - TD_STUB_BAD_DRIVE0);
+		return 0L;
 	}
 
 	if (opcode != TD_STUB_NOWRITE_FN || trap != 14) {

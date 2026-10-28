@@ -231,6 +231,31 @@ void td_raster_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
 
 #define TD_ADDR_LIMIT  0x80000000uL
 
+/*
+ * The lower bound of retclass PTR_RAM (TASK/TOOL11.md): EmuTOS's
+ * sysvars_start (references/emutos/tosvars.ld:31).  Below it lie the 68000
+ * exception vectors and the processor-state save area, no structure a
+ * BIOS / XBIOS call returns a pointer to; above it start the system
+ * variables, and NewTOS keeps answers in its page 0 there (Setexc(0x168)
+ * 0x5F0, Keytbl 0x768).  What it catches: a function number or a small
+ * constant returned where a pointer belongs (Iorec's 0x0E).  It cannot say
+ * that a structure lies behind an address above it -- only a capture
+ * through the pointer can (docs/analysis/ptr-ram-rule-2026-10-28.md).
+ */
+#define TD_PTR_LOW     0x400uL
+
+/*
+ * The per-side property of retclass PTR_RAM, for a returned register value
+ * `v` (all 64 bits): NULL when it holds, else the reason -- "is null",
+ * "not < 0x80000000", "below 0x400", "is odd".  Even, not 4-aligned: m68k
+ * structures are WORD aligned, and the oracle returns such pointers
+ * (Iorec, Keytbl, Bconmap).  One rule for both users: the comparator
+ * judges a return by it, and the call runner reads through a returned
+ * pointer ("r:") only when it holds, so a value the comparator flags is
+ * never dereferenced by the dumper.
+ */
+const char *td_ptr_ram_violation(uint64_t v);
+
 struct td_field {
 	const char *name;
 	uint16_t    off;    /* byte offset inside the record          */

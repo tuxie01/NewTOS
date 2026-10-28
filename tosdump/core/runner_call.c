@@ -250,13 +250,15 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 
 		/* 5. the capture, element by element in record order: from a
 		 *    buffer argument, or (r:) through the returned pointer -- only
-		 *    when it is positive and even (an error code is negative, a
-		 *    NULL is no BPB); PTR_RAM checks the rest on each side, and a
-		 *    capture not taken keeps the poison */
+		 *    when it passes PTR_RAM, the rule the comparator judges it by
+		 *    (td_ptr_ram_violation, record.h): an error code, a NULL, a
+		 *    function number or a 64-bit placeholder is never read
+		 *    through.  A capture not taken keeps the poison. */
 		if (c->cap_arg == TD_CALL_CAP_RET) {
-			if (r > 0 && (r & 1) == 0)
+			if (td_ptr_ram_violation((uint64_t)r) == NULL)
 				td_call_capture(run_frame.capture,
-				                (const uint8_t *)ret + c->cap_off,
+				                (const uint8_t *)td_abi_addr(ret) +
+				                c->cap_off,
 				                c->cap_len, c->cap_unit);
 		} else if (c->cap_arg >= 0) {
 			const uint8_t *b =

@@ -1,6 +1,6 @@
 # TOOL11 — `PTR_RAM` laesst die Funktionsnummer als Zeiger durch
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Werkzeug (Vergleichsregel) — Befund des Leads 2026-10-28
+Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL11-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Werkzeug (Vergleichsregel) — Befund des Leads 2026-10-28
 
 ## Sachverhalt
 

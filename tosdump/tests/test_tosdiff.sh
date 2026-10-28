@@ -427,6 +427,29 @@ if [ -f "$CALLBIN" ] && [ -f "$CALLTSV" ]; then
 		fails=$((fails + 1))
 	fi
 	grep_out "PTR_RAM counts the case" "$TMP/cpp.out" "1 of 9 cases differ"
+	# the lower bound (TOOL11): below 0x400, EmuTOS's sysvars_start, lies
+	# no structure the API points at -- a function number (Iorec's 0x0E)
+	# or a small error code returned in place of a pointer is flagged
+	rm -f "$TMP/c_pf.bin"; cpatch "$TMP/c_pf.bin" 1 36 '\000\000\000\016'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_pf.bin" >"$TMP/cpf.out" 2>&1
+	check "PTR_RAM: a function number (0x0E) is flagged" 1 $?
+	grep_out "PTR_RAM lower bound" "$TMP/cpf.out" \
+	    "PTR_RAM c_pf.bin *= 0x000000000000000E, below 0x400"
+	rm -f "$TMP/c_pb.bin"; cpatch "$TMP/c_pb.bin" 1 36 '\000\000\003\376'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_pb.bin" >"$TMP/cpb.out" 2>&1
+	check "PTR_RAM: 0x3FE is flagged" 1 $?
+	grep_out "PTR_RAM 0x3FE" "$TMP/cpb.out" "PTR_RAM c_pb.bin .*below 0x400"
+	rm -f "$TMP/c_pc.bin"; cpatch "$TMP/c_pc.bin" 1 36 '\000\000\003\377'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_pc.bin" >"$TMP/cpc.out" 2>&1
+	check "PTR_RAM: 0x3FF is flagged" 1 $?
+	grep_out "PTR_RAM 0x3FF" "$TMP/cpc.out" "PTR_RAM c_pc.bin .*below 0x400"
+	rm -f "$TMP/c_pd.bin"; cpatch "$TMP/c_pd.bin" 1 36 '\000\000\004\000'
+	"$TOSDIFF" "$CALLTSV" "$CALLBIN" "$TMP/c_pd.bin" >"$TMP/cpd.out" 2>&1
+	check "PTR_RAM: 0x400 is fine" 0 $?
+	"$TOSDIFF" --selfcheck "$CALLTSV" "$TMP/c_pf.bin" >"$TMP/cpfs.out" 2>&1
+	check "self-check: a function number as pointer is flagged" 1 $?
+	grep_out "self-check names the lower bound" "$TMP/cpfs.out" \
+	    "PTR_RAM c_pf.bin .*below 0x400"
 
 	# --selfcheck: one dump alone, every relational rule on its own side
 	"$TOSDIFF" --selfcheck "$CALLTSV" "$CALLBIN" >"$TMP/csc.out" 2>&1

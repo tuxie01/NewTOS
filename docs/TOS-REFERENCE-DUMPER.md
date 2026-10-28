@@ -559,7 +559,7 @@ opcode <TAB> args <TAB> retclass <TAB> capture <TAB> comment
 - `IGNORE` — not compared (times, tick counts)
 - `NONZERO` — must be non-zero on both
 - `HANDLE` — must be >= 0 on both, value not compared
-- `PTR_RAM` — must be even (WORD aligned) and inside RAM on both, value not compared
+- `PTR_RAM` — must be even (WORD aligned), at or above `0x400` and inside RAM on both, value not compared
 
 `capture` is either `-` or `<argindex>:<length>`, meaning: after the call, copy
 `length` bytes from the buffer pointed to by argument `argindex` into the record.
@@ -631,13 +631,31 @@ class width, sign-extended:
 | `IGNORE` | nothing | — |
 | `NONZERO` | non-zero, on each side | `ret NONZERO <dump> = 0x…, is zero` |
 | `HANDLE` | `>= 0`, on each side | `ret HANDLE <dump> = 0x…, is negative` |
-| `PTR_RAM` | on each side: non-zero, even, and `< 0x80000000` | `ret PTR_RAM <dump> = 0x…, <which property>` |
+| `PTR_RAM` | on each side: non-zero, `>= 0x400`, `< 0x80000000`, and even | `ret PTR_RAM <dump> = 0x…, <which property>` (`is null`, `below 0x400`, `not < 0x80000000`, `is odd`) |
 
 "Inside RAM" in `PTR_RAM` is checked as far as a dump can state it: as the
 address class's relational property (`< 0x80000000`, section 3,
 `TASK/MEM11.md`) plus non-null. A dump carries no RAM bounds of its machine;
 the property "between the machine's RAM base and its top" would need them
 and is not checked. `PTR_RAM` takes no width suffix: a pointer is a LONG.
+
+*Lower bound `0x400`* (`TD_PTR_LOW` beside `TD_ADDR_LIMIT` in
+`tosdump/core/record.h`; `TASK/TOOL11.md`, proposal
+`docs/analysis/ptr-ram-rule-2026-10-28.md` Option A): EmuTOS's
+`sysvars_start` (`references/emutos/tosvars.ld:31`). Below it lie the 68000
+exception vectors and the processor-state save area, no structure a BIOS or
+XBIOS call returns a pointer to; the smallest `PTR_RAM` value in the pinned
+references is `0x30D4` (`Iorec(1)`). The bound catches a function number or a
+small constant returned in place of a pointer — `Iorec` returning its own
+`0x0E`, `Bconmap(-2)` its `0x2C` — which the rule let through while it only
+asked for non-null, even and `< 0x80000000`. NewTOS's answers in its page 0
+above the bound (`Setexc(0x168)` `0x5F0`, `Keytbl` `0x768`) stay valid. It
+cannot tell that a structure lies behind an address above the bound; only a
+capture through the pointer can (`r:`, section 6, "The disk round"). The
+checks run in the order null, upper bound, lower bound, odd; the first that
+fails is printed. One function holds the rule, `td_ptr_ram_violation`
+(`tosdump/core/record.c`), which the comparator and the runner's `r:` read
+share.
 
 *Even, not four-byte aligned* (user decision 2026-10-27): the first rule
 asked for a multiple of 4, and the reference itself failed it for three of
@@ -810,8 +828,13 @@ restore through the physical path — are not in this round.
 address the call **returned** (Getbpb's BPB, `r:18.W` = its nine WORDs),
 element by element as for a buffer capture. Only with retclass `PTR_RAM`,
 so the address is checked on each side; the runner reads only through a
-positive, even return — a NULL or an error code leaves the capture
-poisoned.
+return that passes `PTR_RAM` itself (the same function the comparator
+uses, `td_ptr_ram_violation`) — a NULL, an error code, a function number
+or a 64-bit value above 4 GiB leaves the capture poisoned instead of
+faulting the dumper (`TASK/TOOL11.md`). The address becomes a C pointer
+through the backend's `td_abi_addr` (`tosdump/core/abi.h`): the identity on
+both machines; the host tests' stub maps a window of modelled TOS memory
+there, since a 64-bit host process has no memory below 4 GiB.
 
 **Drvmap** is `EXACT` in this table: both setups give C: + D:,
 `0x0000000C` (user decision 2026-10-28; round 1 keeps `NONZERO`).
