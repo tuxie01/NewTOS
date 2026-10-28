@@ -1,35 +1,44 @@
-# BIOS03 — Wirken eingehaengte `hdv_*`-Vektoren? Zielfrage, ADR zuerst
+# BIOS03 — ADR „OS hooks installed by programs“: welche eingehaengten Haken wirken
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher (ADR-Vorschlag), Entscheidung Anwender — Anwenderentscheidung 2026-10-28
+Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (Bestand + ADR-Vorschlag), Entscheidung Anwender — Anwenderentscheidung 2026-10-28 (erweitert am selben Tag)
 
 ## Sachverhalt
 
-- BIOS-STOR-010 (S3, nicht gemessen, NOT LOCALIZED;
-  `docs/audits/2026-10-28-bios-storage.md`): ein Programm, das `hdv_rw`,
-  `hdv_bpb` oder `hdv_mediach` umhaengt, wird auf NewTOS nicht gerufen. Bei
-  EmuTOS laufen `Rwabs`, `Getbpb` und `Mediach` ueber diese Vektoren.
-- RAM-Disks und Plattencaches haengen sich genau dort ein. Ob NewTOS das
-  unterstuetzen soll, ist eine Zielfrage, keine Fehlerbehebung.
-  Anwenderentscheidung 2026-10-28: **erst ein ADR**, wie bei Line-A
-  (ADR-030 in `docs/MEMORY.md`).
+- Programme haengen sich bei TOS in OS-Haken ein; NewTOS ruft mehrere davon
+  nie:
+  - `hdv_rw`/`hdv_bpb`/`hdv_mediach` — BIOS-STOR-010
+    (`docs/audits/2026-10-28-bios-storage.md`); RAM-Disks, Plattencaches.
+  - `etv_timer` per `Setexc(0x100)` — [BIOS05](BIOS05.md).
+  - `mousevec`/`statvec`/`clockvec`/`joyvec` der `Kbdvbase`-Tabelle —
+    [XBIOS03](XBIOS03.md).
+- Anwenderentscheidung 2026-10-28: **ein gemeinsames ADR** „OS hooks
+  installed by programs“, wie bei Line-A (ADR-030 in `docs/MEMORY.md`), mit
+  einer Tabelle je Haken: wirkt / wirkt mit Semantik X / wirkt nicht +
+  Grund + beobachtbare Folge. **Je Haken nach Beleg entscheiden:** zuerst
+  der Bestand, welche portierten Programme welchen Haken nutzen (wie die
+  Line-A-Erhebung).
+- **Regel: nie still.** Haengt ein Programm einen Haken ein, den NewTOS nicht
+  bedient, schreibt NewTOS einmal eine Warnung ins Log.
 - Bezug: seit MEM12 ist Seite 0 fuer EL0 nur im Super-Zustand beschreibbar
-  (`docs/api/_super-state.md`); TeraDesk liest `hdv_*` als 32-Bit-Zellen.
+  (`docs/api/_super-state.md`).
 
 ## Arbeit
 
-1. Bestand: wo EmuTOS die Vektoren setzt und ruft (`references/emutos/bios/`),
-   was NewTOS heute an den Adressen hat und wer sie liest oder schreibt
-   (Kern, SDK, portierte Programme).
-2. Wer sie umhaengt: bekannte Atari-Programme (RAM-Disks, Caches,
-   Treiber) mit Quelle; welche davon in der Portliste stehen oder fuer 1.0
-   bzw. 2.0 in Frage kommen.
-3. ADR-Vorschlag mit Optionen (z. B. Vektoren wirken wie bei EmuTOS — native
-   EL0-Routine ueber den Vektor in Seite 0 gerufen, Rueckkehr in den Kern;
-   Vektoren nur lesbar, Schreiben ohne Wirkung und dokumentiert; spaeter mit
-   dem m68k-Thunk), je mit Aufwand, Sicherheitsfolgen (EL0-Code im
-   BIOS-Pfad), Folgen fuer GEMDOS und Messfall.
-4. Entscheidung beim Anwender; danach Messfall auf dem Orakel und ggf.
-   Developer-Ticket.
+1. Liste der Haken: alle Vektoren und Tabellen, ueber die EmuTOS
+   programm-eingehaengten Code ruft (Systemvektoren in Seite 0, `Setexc`-
+   Nummern, `Kbdvbase`, `etv_*`, `hdv_*`, weitere aus
+   `references/emutos/bios/`), je mit Aufrufstelle.
+2. Bestand: welche portierten Programme (`sdk/apps/`, `sdk/overlays/`,
+   Portliste, Kandidaten fuer 1.0/2.0) welchen Haken setzen, mit Quelle —
+   Vorbild die Line-A-Erhebung hinter ADR-030.
+3. Was NewTOS heute je Haken tut (Adresse vorhanden, gelesen, geschrieben,
+   gerufen), mit Codezitat.
+4. ADR-Vorschlag mit der Tabelle je Haken (wirkt / wirkt mit Semantik X /
+   wirkt nicht + Grund + Folge), Aufwand und Sicherheitsfolgen (EL0-Code im
+   Kernpfad), der Warnregel (einmal je Haken und Programm? — Vorschlag) und
+   dem Messfall je Haken.
+5. Entscheidung beim Anwender; danach Developer-Tickets (BIOS05, XBIOS03,
+   `hdv_*`) gemaess Tabelle.
 
 ## Abnahme
 

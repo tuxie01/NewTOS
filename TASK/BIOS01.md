@@ -1,6 +1,6 @@
 # BIOS01 — BIOS-Speicher an EmuTOS angleichen (Befunde des Audits 2026-10-28)
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28 · haengt an [TOOL07](TOOL07.md) und [SDK02](SDK02.md) (Pruefung vor Beginn); Spec [BIOS02](BIOS02.md) freigegeben
+Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28 · haengt an [TOOL07](TOOL07.md); Spec [BIOS02](BIOS02.md) freigegeben
 
 ## Sachverhalt
 
@@ -53,8 +53,9 @@ im Graphen, Track B), BIOS-STOR-010 (`hdv_*`-Vektoren, BIOS03).
   (`docs/api/bios/04-rwabs.md`, Abschnitt „Decisions“).
 - 001: der bestaetigende Fall belegt „schreibt nichts“ per Vergleich der
   Testpartition vor/nach (wie TOOL07), nicht nur per Rueckgabewert.
-- Beginn erst nach der Pruefung in [SDK02](SDK02.md) Punkt 1 (erledigt
+- Pruefung der SDK-Konstanten ([SDK02](SDK02.md) Punkt 1) erledigt
   2026-10-28: die Sonde nutzte Zahlenwerte, kein Header — keine Neumessung
-  noetig) und nach dem TOOL07-Rest.
+  noetig. SDK02 selbst ist P3 und kein Vorlauf mehr. Beginn nach dem
+  TOOL07-Rest.
 - Reihenfolge: S2 (001) → dann sofort das S1 `Iorec` (eigenes Ticket aus dem
   Audit „XBIOS-Zeichengeraete“) → Rest von BIOS01.

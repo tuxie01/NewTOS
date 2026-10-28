@@ -28,3 +28,12 @@ Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-xbios-char
 - Kein vorher gleicher Fall in `bios-r1.tsv`, `bios-core-r1.tsv`, `xbios-chardev-r1.tsv`, `xbios-system-r1.tsv` weicht neu ab.
 - `cargo xtask test` gruen.
 - `docs/STATUS.md` und Spec im selben Commit; `cargo xtask doc-check` der geaenderten Doku 0 Fehler.
+
+## Anwenderentscheidung 2026-10-28
+
+- Der Inhalt hinter dem Rueckgabezeiger wird per tosdiff abgenommen, sobald
+  [TOOL16](TOOL16.md) (Dumper liest durch Rueckgabezeiger, Layout aus
+  `docs/api/`) steht; TOOL16 kommt in der Warteschlange davor.
+- Bis dahin gilt fuer den MEASURED-Teil die Sondenregel aus CLAUDE.md
+  „Testing“ (Sonde als dauerhafter Test, beidseitig gegen das gepinnte
+  Orakel, mit Eingabe-Trace; Folgeticket nach tosdiff).

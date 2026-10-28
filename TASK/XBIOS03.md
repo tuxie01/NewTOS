@@ -17,7 +17,7 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer (oder Researcher, fall
 ## Arbeit
 
 1. Fix gegen `references/emutos/bios/aciavecs.S:470-530`, oder (Researcher) die Luecke mit Begruendung in `docs/COMPATIBILITY.md` eintragen.
-2. Ein Haken-Aufruf braucht EL0-Code im Eingabepfad: gleiche Zielfrage wie bei den `hdv_*`-Vektoren ([BIOS03](BIOS03.md)). **Offener Punkt — Entscheidung beim Anwender: gemeinsames ADR mit BIOS03?** Bis dahin kein Fix.
+2. Ein Haken-Aufruf braucht EL0-Code im Eingabepfad: gleiche Zielfrage wie bei den `hdv_*`-Vektoren ([BIOS03](BIOS03.md)). **Anwender 2026-10-28: ja — gemeinsames ADR „OS hooks installed by programs“ in [BIOS03](BIOS03.md)** (Tabelle je Haken; nie still: ein nicht bedienter Haken wird einmal im Log gewarnt). Bis zum ADR kein Fix.
 3. Hosttest: Paket → Haken-Aufruf je Vektor; Eingabesonde X04 als Messfall.
 
 ## Abnahme

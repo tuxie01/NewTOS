@@ -15,7 +15,7 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidu
 
 ## Arbeit
 
-1. Ein Haken-Aufruf braucht EL0-Code im Kernpfad: gleiche Zielfrage wie bei den `hdv_*`-Vektoren ([BIOS03](BIOS03.md)) und den `Kbdvbase`-Haken ([XBIOS03](XBIOS03.md)). **Offener Punkt — Entscheidung beim Anwender: gemeinsames ADR mit BIOS03?** Bis dahin kein Fix.
+1. Ein Haken-Aufruf braucht EL0-Code im Kernpfad: gleiche Zielfrage wie bei den `hdv_*`-Vektoren ([BIOS03](BIOS03.md)) und den `Kbdvbase`-Haken ([XBIOS03](XBIOS03.md)). **Anwender 2026-10-28: ja — gemeinsames ADR „OS hooks installed by programs“ in [BIOS03](BIOS03.md)** (Tabelle je Haken; nie still: ein nicht bedienter Haken wird einmal im Log gewarnt). Bis zum ADR kein Fix.
 2. Danach Fix gegen `references/emutos/bios/vectors.S:540-544`; Hosttest/Sonde T01 als Messfall.
 
 ## Abnahme

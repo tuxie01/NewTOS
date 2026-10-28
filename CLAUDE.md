@@ -377,6 +377,12 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   the kernel's code and data bytes equal the build without the change,
   except the line/column fields of `core::panic::Location` records (user
   2026-10-28). Checked by an xtask command (TOOL13), not explained by hand.
+- A fix for a finding measured only by probe (verdict MEASURED, no tosdiff
+  case yet) may use the probe as its acceptance case if the probe is
+  committed as a permanent test (under `tosdump/`, not only in
+  `measurements/`), runs on both sides against the pinned oracle, and comes
+  with the input trace (`bios-arg-trace` on NewTOS). Each such fix gets a
+  follow-up ticket that moves the case to tosdiff (user 2026-10-28).
 - Hardware tests on RPi4 are manual, documented in `docs/HW-TEST-LOG.md`.
 - Every TOS API function gets at least one test that verifies the documented
   return value for documented input, and one that verifies the documented

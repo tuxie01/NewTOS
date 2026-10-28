@@ -22,3 +22,9 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher (Entscheidung „kein
 
 - Bei Entscheidung NVRAM: `bios-r1` 189–194 und `xbios-system-r1` 68–76 EQUAL gegen das Orakel (tt und falcontc); sonst Eintrag in `docs/COMPATIBILITY.md` und die Faelle ACCEPTED.
 - Kein vorher gleicher Fall in den vier Tabellen weicht neu ab; `cargo xtask test` gruen; `cargo xtask doc-check` der geaenderten Doku 0 Fehler.
+
+## Anwenderentscheidung 2026-10-28
+
+- Die NVRAM-Frage folgt daraus, welche Maschine NewTOS meldet (`_MCH`).
+  ADR-012 legt nur fest, dass es eine eigene Kennung gibt; der Wert ist im
+  Code vorlaeufig. Zuerst [ARCH05](ARCH05.md) (ADR), danach dieses Ticket.
