@@ -1,0 +1,35 @@
+=== diff EMUTOS-falcon/BSTPROBE.LOG EMUTOS-tt/BSTPROBE.LOG
+(identical)
+=== diff EMUTOS-falcon/BSTPROB2.LOG EMUTOS-tt/BSTPROB2.LOG
+(identical)
+=== diff EMUTOS-falcon/BSTPROBE.LOG EMUTOS-falcon-repeat/BSTPROBE.LOG
+(identical)
+=== diff EMUTOS-falcon/BSTPROB2.LOG EMUTOS-falcon-repeat/BSTPROB2.LOG
+(identical)
+=== diff NEWTOS-raspi4b/BSTPROBE.LOG NEWTOS-raspi4b-repeat/BSTPROBE.LOG
+(identical)
+=== diff NEWTOS-raspi4b/BSTPROB2.LOG NEWTOS-raspi4b-repeat/BSTPROB2.LOG
+(identical)
+=== diff EMUTOS-falcon/BSTPROBE.LOG EMUTOS-falcon-nofloppy/BSTPROBE.LOG
+2c2
+< D01 Drvmap() ret=0000000f sx=1
+---
+> D01 Drvmap() ret=0000000c sx=1
+=== diff EMUTOS-falcon/BSTPROB2.LOG EMUTOS-falcon-nofloppy/BSTPROB2.LOG
+1c1
+< F01 Mediach(0) ret=00000002 sx=1
+---
+> F01 Mediach(0) ret=fffffff1 sx=1
+4c4
+< F04 Mediach(0) ret=00000002 sx=1
+---
+> F04 Mediach(0) ret=fffffff1 sx=1
+6c6
+< F06 Mediach(1) ret=00000000 sx=1
+---
+> F06 Mediach(1) ret=fffffff1 sx=1
+=== diff EMUTOS-falcon-nofloppy/BSTPROB2.LOG NEWTOS-raspi4b/BSTPROB2.LOG
+3c3
+< F03 Rwabs(0,NULL,2,0,0,0) ret=00000000 sx=1
+---
+> F03 Rwabs(0,NULL,2,0,0,0) ret=fffffff1 sx=1

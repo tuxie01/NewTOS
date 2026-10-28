@@ -1,0 +1,49 @@
+# sha256 of the card before and of each booted clone after its run
+50d3f69711f9fcb76a2596bf98d213c7c22e07a126cb9dc1e4bfb7a643da4e34  card.img
+50d3f69711f9fcb76a2596bf98d213c7c22e07a126cb9dc1e4bfb7a643da4e34  keep-falcon1.img
+50d3f69711f9fcb76a2596bf98d213c7c22e07a126cb9dc1e4bfb7a643da4e34  emutos-tt-after.img
+50d3f69711f9fcb76a2596bf98d213c7c22e07a126cb9dc1e4bfb7a643da4e34  emutos-falcon-after.img
+50d3f69711f9fcb76a2596bf98d213c7c22e07a126cb9dc1e4bfb7a643da4e34  emutos-falconnofloppy-after.img
+a18bd4698b5fa4a21a4d8bd2e5cc2cc645c46d697f38c95da05d9d17760248de  keep-newtos1.img
+a18bd4698b5fa4a21a4d8bd2e5cc2cc645c46d697f38c95da05d9d17760248de  newtos-after.img
+# keep-falcon1 = EMUTOS-falcon, emutos-falcon-after = EMUTOS-falcon-repeat, emutos-falconnofloppy-after = EMUTOS-falcon-nofloppy, keep-newtos1 = NEWTOS-raspi4b, newtos-after = NEWTOS-raspi4b-repeat
+# differing 512-byte sectors vs card.img (absolute LBA; partition starts at 63)
+keep-falcon1.img 0 []
+emutos-tt-after.img 0 []
+emutos-falcon-after.img 0 []
+emutos-falconnofloppy-after.img 0 []
+keep-newtos1.img 13 [64, 192, 320, 352, 353, 354, 355, 356, 357, 358, 359, 384, 388]
+newtos-after.img 13 [64, 192, 320, 352, 353, 354, 355, 356, 357, 358, 359, 384, 388]
+# fsck_msdos -n (partition dd'd out: skip=63 count=130977) card.img
+** part-card.img
+** Phase 1 - Preparing FAT
+** Phase 2 - Checking Directories
+** Phase 3 - Checking for Orphan Clusters
+Warning: 6 files, 65182 KiB free (32591 clusters)
+exit 0
+# fsck_msdos -n (partition dd'd out: skip=63 count=130977) keep-falcon1.img
+** part-keep-falcon1.img
+** Phase 1 - Preparing FAT
+** Phase 2 - Checking Directories
+** Phase 3 - Checking for Orphan Clusters
+Warning: 6 files, 65182 KiB free (32591 clusters)
+exit 0
+# fsck_msdos -n (partition dd'd out: skip=63 count=130977) keep-newtos1.img
+** part-keep-newtos1.img
+** Phase 1 - Preparing FAT
+** Phase 2 - Checking Directories
+** Phase 3 - Checking for Orphan Clusters
+Warning: 8 files, 65174 KiB free (32587 clusters)
+exit 0
+# NewTOS card root after the run (mdir)
+ Volume in drive : is NTCARD     
+ Volume Serial Number is E96B-0F17
+Directory for ::/
+
+BSTPROBE LOG      4443 1980-01-01   0:00 
+BSTPROB2 LOG       195 1980-01-01   0:00 
+BSTPROBE NAP    150224 2026-10-17  11:00 
+NEWDESK  INF        31 2026-10-17  11:00 
+        4 files             154 893 bytes
+                         66 738 176 bytes free
+

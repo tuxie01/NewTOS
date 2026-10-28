@@ -1,0 +1,76 @@
+BSTPROBE PSIZE=130977 DSIZE=131072 IDEUNIT=18
+D01 Drvmap() ret=0000000c sx=1
+G01 Getbpb(2) nz=1 sx=1 bpb=512,4,2048,32,128,129,289,32672,1 same=1
+G02 Getbpb(3) nz=0 sx=1
+G03 Getbpb(5) nz=0 sx=1
+G04 Getbpb(15) nz=0 sx=1
+G05 Getbpb(16) nz=0 sx=1
+G06 Getbpb(-1) nz=0 sx=1
+G07 Getbpb(32767) nz=0 sx=1
+M01 Mediach(2) ret=00000000 sx=1
+M02 Mediach(3) ret=fffffff1 sx=1
+M03 Mediach(5) ret=fffffff1 sx=1
+M04 Mediach(15) ret=fffffff1 sx=1
+M05 Mediach(16) ret=fffffff1 sx=1
+M06 Mediach(-1) ret=fffffff1 sx=1
+M07 Mediach(2) ret=00000000 sx=1
+R01 Rwabs(0,buf,1,0,2,0) ret=00000000 sx=1 ck=02282375 b=eb3c904253442020342e340002040100
+R02 Rwabs(0,buf,2,0,2,0) ret=00000000 sx=1 ck=07cbc428 b=eb3c904253442020342e340002040100
+R03 Rwabs(0,buf,1,-1,2,1) ret=00000000 sx=1 ck=636b6eb8 b=f8ffffff00000000ffffffff07000800
+R04 Rwabs(0,buf,1,1,2,0) ret=00000000 sx=1 ck=636b6eb8 b=f8ffffff00000000ffffffff07000800
+R05 Rwabs(0,buf,1,-1,2,130976) ret=00000000 sx=1 ck=4d7705c5 b=00000000000000000000000000000000
+R06 Rwabs(0,buf,1,-1,2,130977) ret=fffffff8 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+R07 Rwabs(0,buf,2,-1,2,130976) ret=fffffff8 sx=1 ck=284171c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+R08 Rwabs(0,buf,1,-1,2,-5) ret=fffffff8 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+R09 Rwabs(0,buf,0,0,2,0) ret=00000000 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+R10 Rwabs(0,buf,0,-1,2,130987) ret=fffffff8 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+R11 Rwabs(0,buf,1,0,15,0) ret=fffffff1 sx=1
+R12 Rwabs(0,buf,1,0,5,0) ret=fffffff1 sx=1
+R13 Rwabs(0,buf,1,0,-1,0) ret=fffffff1 sx=1
+R14 Rwabs(0,buf,1,0,16,0) ret=fffffff1 sx=1
+R15 Rwabs(2,buf,1,0,2,0) ret=00000000 sx=1 ck=02282375 b=eb3c904253442020342e340002040100
+R16 Rwabs(4,buf,1,0,2,0) ret=00000000 sx=1 ck=02282375 b=eb3c904253442020342e340002040100
+R17 Rwabs(128,buf,1,0,2,0) ret=00000000 sx=1 ck=02282375 b=eb3c904253442020342e340002040100
+R18 Rwabs(0,buf,1,-32768,2,0) ret=00000000 sx=1 ck=4d7705c5 b=00000000000000000000000000000000
+R19 Rwabs(0,buf,1,-1,2,32768) ret=00000000 sx=1 ck=4d7705c5 b=00000000000000000000000000000000
+R20 Rwabs(0,buf,1,-2,2,0) ret=00000000 sx=1 ck=4d7705c5 b=00000000000000000000000000000000
+P01 Rwabs(8,buf,1,0,2,0) ret=fffffff1 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+P02 Rwabs(8,buf,1,0,18,0) ret=00000000 sx=1 ck=b0162934 b=00000000000000000000000000000000
+P03 Rwabs(8,buf,1,-1,18,131071) ret=fffffff8 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+P04 Rwabs(8,buf,1,-1,18,131070) ret=00000000 sx=1 ck=4d7705c5 b=00000000000000000000000000000000
+P05 Rwabs(8,buf,1,0,40,0) ret=fffffff1 sx=1
+W01 Rwabs(1,sec0,1,0,2,0) ret=fffffff2 sx=1
+W02 Mediach(2) ret=00000002 sx=1
+W03 Rwabs(0,buf,1,1,2,0) ret=fffffff2 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+W04 Rwabs(2,buf,1,1,2,0) ret=fffffff2 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+W05 Mediach(2) ret=00000002 sx=1
+W06 Getbpb(2) nz=1 sx=1 bpb=512,4,2048,32,128,129,289,32672,1 same=1
+W07 Mediach(2) ret=00000000 sx=1
+W08 Rwabs(0,buf,1,1,2,0) ret=00000000 sx=1 ck=636b6eb8 b=f8ffffff00000000ffffffff07000800
+W09 Rwabs(1,last,1,-1,2,PSIZE-1) ret=00000000 sx=1
+W10 Mediach(2) ret=00000000 sx=1
+W11 Rwabs(0,buf,1,1,2,0) ret=00000000 sx=1 ck=636b6eb8 b=f8ffffff00000000ffffffff07000800
+X01 patch[0c]=04 ret=00000000 sx=1
+X01 Getbpb(2) nz=0 sx=1
+X02 patch[10]=00 ret=00000000 sx=1
+X02 Getbpb(2) nz=1 sx=1 bpb=512,4,2048,32,128,129,289,32672,1 same=1
+X03 patch[10]=03 ret=00000000 sx=1
+X03 Getbpb(2) nz=0 sx=1
+X04 patch[0d]=80 ret=00000000 sx=1
+X04 Getbpb(2) nz=0 sx=1
+X05 patch[0e]=00 ret=00000000 sx=1
+X05 Getbpb(2) nz=1 sx=1 bpb=512,4,2048,32,128,129,289,32672,1 same=1
+X06 patch[20]=00 ret=00000000 sx=1
+X06 Getbpb(2) nz=1 sx=1 bpb=512,4,2048,32,128,129,289,0,0 same=1
+X07 patch[16]=00 ret=00000000 sx=1
+X07 Getbpb(2) nz=0 sx=1
+X08 Rwabs(0,buf,1,1,2,0) ret=fffffff8 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+X09 Rwabs(11,sec0,1,-1,PHYSUNIT,PSTART) restore ret=00000000 sx=1
+X10 Getbpb(2) nz=1 sx=1 bpb=512,4,2048,32,128,129,289,32672,1 same=1
+X11 Rwabs(0,buf,1,1,2,0) ret=00000000 sx=1 ck=636b6eb8 b=f8ffffff00000000ffffffff07000800
+X12 Rwabs(3,sec0,1,0,2,0) ret=00000000 sx=1
+X13 Mediach(2) ret=00000002 sx=1
+X14 Rwabs(2,buf,1,1,2,0) ret=fffffff2 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+X15 Getbpb(2) nz=1 sx=1 bpb=512,4,2048,32,128,129,289,32672,1 same=1
+X16 Mediach(2) ret=00000000 sx=1
+END

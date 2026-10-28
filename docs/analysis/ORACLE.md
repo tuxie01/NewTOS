@@ -168,11 +168,12 @@ stops the audit (BLOCKED).
 | Pass | both profiles: `VDI.BIN` and `VDI.LOG` byte-identical to the expected files (`cmp`) |
 | Runtime | about 12 s per profile |
 
-Command, from the repository root, with a scratch directory that does not
-exist yet (never inside the repository):
+Command, from the repository root. `SCRATCH` is `$CLAUDE_JOB_DIR/tmp` or,
+when that is empty, the session scratchpad — never `/tmp`, never inside the
+repository; the timestamp keeps the directory new, which the script requires:
 
 ```sh
-sh measurements/measurement-2026-10-28-oracle-canary/method/canary.sh "$CLAUDE_JOB_DIR/tmp/canary"
+sh measurements/measurement-2026-10-28-oracle-canary/method/canary.sh "$SCRATCH/canary-$(date +%Y%m%d-%H%M%S)"
 # prints "canary tt: OK" and "canary falcontc: OK"; exit 0 only if both pass
 ```
 

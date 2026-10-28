@@ -1,0 +1,142 @@
+BIOS storage audit (Getbpb, Rwabs, Mediach, Drvmap) -- probe measurement on both sides -- 2026-10-28
+=====================================================================================================
+Auditor run for docs/audits/2026-10-28-bios-storage.md. MEASUREMENT ONLY: no product code changed,
+no tosdump/tosdiff change, nothing flashed, no card, no hardware. Not committed.
+
+WHY
+  User decision 2026-10-28 (docs/STATUS.md, "Warteschlange"): first triage of the DUMPBIOS findings
+  for the four BIOS storage functions, and a probe of the audit procedure.
+  Triage result in one line: none of the 47 (tt) / 51 (falcontc) differing cases of
+  measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT concerns these four functions; the
+  only case in scope is case 74 Drvmap (NONZERO), which passes. Rwabs/Getbpb/Mediach are not in
+  bios-r1.tsv at all: the DUMPBIOS loader refuses them (tosdump/core/cases.c, call_policy /
+  call_refusals) and the oracle has no BIOS block drive (tosdump/cases/COVERAGE-BIOS.md, "later").
+  The auditor may not change tosdump, so the three functions were measured with an AD-HOC PROBE,
+  same C source on both sides. Its results are evidence for PLAUSIBLE findings and for the
+  tosdump disk round; they are not tosdiff verdicts.
+
+STATE
+  NewTOS   : c3db3747d6822b74d4c8d65e34d99af8b9bf5755, clean (git status: only this run dir untracked)
+  EmuTOS   : 1a7484aba1bfba23e2c0899e243b6d8177fe41df (references/emutos HEAD)
+  ROM      : tools/oracle/etos512de-1a7484ab.img sha256 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+  Hatari   : 2.6.1 (Aug 15 2025), binary sha256 953f4e78eea55a8ca12ed6c83de1f045545b8da42a49e00112eaa235dffcd6f6
+  cfg      : tools/oracle/hatari.cfg sha256 c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46 (unchanged,
+             no --saveconfig)
+  Canary   : docs/analysis/ORACLE.md section 6, run 2026-10-28 before this audit:
+             "canary tt: OK", "canary falcontc: OK" (scratch: session scratchpad/canary-audit,
+             because $CLAUDE_JOB_DIR is unset in this session -- see the report, procedure section)
+  Kernel   : cargo xtask build --board rpi4 --release (after touch kernel/src/lib.rs tos-api/src/lib.rs)
+             kernel8.img sha256 9e3773d258278be929248d80d573d06016527ec56b02ed45f1b2a767563b3c71
+             ELF target/aarch64-unknown-none-softfloat/release/kernel sha256
+             50fedc21b8f4b14a43bba9c853590690274d548a5d03fbc99809d4ecc8c70cfe
+
+THE PROBE (method/bstprobe.c, method/build-probe.sh <scratch> 130977 131072)
+  One C file, mintlib's trap_13_* helpers on both sides (as a ported TOS program calls them):
+    probe/BSTPROBE.PRG  f3b8f75874f65acc0a81f2392620c2b4e94101abc21368c768b4501ce80486ac
+                        /opt/cross-mint m68k-atari-mint-gcc 7.5.0 -O2 -Werror, mintlib
+    probe/BSTPROBE.NAP  9ed15f1639a1e1b1d52804d1014df4288deaabd75509adcd9e267bf7d701100a
+                        clang aarch64 + sdk/libc crt0.S/libc.a + sdk/newtos.ld (link path of
+                        tosdump/build-dumpbios-newtos.sh)
+  Compile-time constants from the card's MBR: PSIZE=130977 (partition 1, type 0x06, start LBA 63),
+  DSIZE=131072, PSTART=63, IDEUNIT=18 (EmuTOS GET_UNITNUM(IDE_BUS,0), bios/disk.h:30,
+  bios/machine.h:41); PHYSUNIT = 18 on m68k, 2 on NewTOS (NewTOS resolves a physical "unit"
+  through the drive table, measured in P01/P02).
+  Case groups: D Drvmap; G Getbpb (2,3,5,15,16,-1,0x7FFF; BPB words + pointer stable);
+  M Mediach (same drives); R logical Rwabs reads (bounds, lfirst, count 0, flags 2/4/0x80,
+  unsigned first, absent drives); P physical Rwabs (RW_NOTRANSLATE, units 2/18/40, device end);
+  W write sector 0 back unchanged (flag 1) + Mediach/Rwabs/Getbpb handshake, write last sector
+  back unchanged; X boot-sector patches written physically (flag 11) then Getbpb(2): bps 1024,
+  FAT count 0 and 3, spc 128, reserved 0, tot16=tot32=0, spf 0 (+ logical read), restore, then a
+  logical sector-0 write with RW_NOMEDIACH (flag 3) and its handshake; F floppy-only (A:/B:,
+  Rwabs NULL buffer) written to a second log after the first (a floppy access may end in an AES
+  critical-error alert on EmuTOS).
+  Output: BSTPROBE.LOG + BSTPROB2.LOG, one line per case; ret = low 32 bits, sx = the native
+  register is the sign-extended LONG.
+
+THE CARD (method/mkcard-call.sh -> tools/mkcard.sh, defaults 64 MiB, MBR + FAT16)
+  card.img image_sha256 50d3f69711f9fcb76a2596bf98d213c7c22e07a126cb9dc1e4bfb7a643da4e34
+  manifest copied as card.img.manifest; its optional-missing line, verbatim:
+    optional_missing none
+  The same file, APFS-cloned (cp -c) per run, is the EmuTOS IDE master disk and the NewTOS SD
+  card. On NewTOS the program has to live on it (raspi4b has one SD); on EmuTOS it lives on a
+  Hatari GEMDOS drive D: and C: is the IDE disk (see EMUTOS below).
+
+EMUTOS (method/run-emutos.sh <scratch> <out> falcon|tt [nofloppy])
+  The pinned ROM + Hatari + hatari.cfg exactly as tools/hatari-oracle.sh (empty HOME, SDL dummy,
+  --conout 2, SIGKILL), plus on the command line: --ide-master <clone> (BIOS drive C:, IDE unit
+  18), -d <out>/hd --gemdos-drive D --auto D:\BSTPROBE.PRG (program drive only), --trace bios.
+  Both floppy drives on (Hatari default = the pin), no disk inserted; "nofloppy" adds
+  --drive-a off --drive-b off (device-parameter control).
+    runs/EMUTOS-falcon            Falcon030, VGA
+    runs/EMUTOS-tt                TT, TT-Medium     -> identical logs to EMUTOS-falcon
+    runs/EMUTOS-falcon-repeat     Falcon            -> identical logs to EMUTOS-falcon
+    runs/EMUTOS-falcon-nofloppy   Falcon, no floppy -> differs only in Drvmap (0xC) and A:/B:
+  Input check (EmuTOS side): runs/*/trace-bios-probe.txt = Hatari's decoded trap #13 calls from
+  the probe's text (PC 0x100xxxx): 87 calls, in the probe's order, with flag, buffer, count,
+  first, drive as the probe passed them. Hatari does not print Rwabs' 6th argument (lfirst).
+  runs/EMUTOS-falcon/trace-bios-full.txt is the whole trace (boot + desktop + probe).
+  hatari.log names the clone as emutos-falcon-after.img (renamed after the run in scratch).
+
+NEWTOS (method/run-newtos.sh <scratch> <out>)
+  QEMU raspi4b, -append serial=on, the clone as SD, NEWDESK.INF "#Z 01 C:\BSTPROBE.NAP@".
+    runs/NEWTOS-raspi4b, runs/NEWTOS-raspi4b-repeat -> identical logs; serial: "BSTPROBE done",
+    "sh_ldapp: 'C:\BSTPROBE.NAP' exited with rc=0", no PANIC/exception.
+  Input check (NewTOS side): NOT available -- no tracer records BIOS arguments (svc-seq-trace
+  logs function + result only, kernel/src/dbg_qedtrace.rs record(); gemdos-trace is GEMDOS only).
+  Indirect evidence only: every lfirst-addressed read (R03, R05, R18/R19) returns the same
+  checksum as on EmuTOS.
+
+DUMPBIOS AT THE AUDITED COMMIT (method/run-dumpbios-newtos.sh)
+  tosdump/build-dumpbios-newtos.sh -> DUMPBIOS.NAP build c3db, sha256
+  a18538355e7ff80aa44a60fe372a77731a53a9a08ad19db9d13dd1a77323b1a5; card tools/mkcard.sh
+  (runs/NEWTOS-dumpbios/db.img.manifest, optional_missing none, image_sha256
+  59bb28c3ec4058a9f2109fcea158bf51f6a326e7c1e63be0aab3e783a70cb46e; after the run
+  a0b045ba76e59df620c2799c6bd900098619c5d5ebaebe17d5dffb115feaa9e3, db.img.after.sha256).
+  tosdiff against tosdump/reference/EMUTOS-1a7484ab-BIOS{,-falcontc}.BIN: NEWTOS.BIN accepted;
+  42 (tt) / 46 (falcontc) cases differ, case 74 Drvmap is NOT among them (NONZERO passes;
+  NewTOS 0x4, reference 0x7).
+
+RESULTS
+  runs/DIFF-emutos-falcon-vs-newtos.txt -- every probe line that differs (EmuTOS left):
+    D01        Drvmap 0xF vs 0x4: A:/B: = floppy device parameter (nofloppy control: 0xC),
+               D: = Hatari's GEMDOS program drive (harness); C: bit equal.
+    R10        Rwabs count 0 at sector PSIZE+10: EmuTOS ESECNF (-8), NewTOS 0.
+    P01-P04    Rwabs RW_NOTRANSLATE: EmuTOS unit 2 = ACSI 0 -> EUNDEV, unit 18 = IDE master ->
+               MBR; NewTOS "unit" 2 = drive C: -> MBR, 18 -> EUNDEV. EmuTOS last device sector
+               (P03) ESECNF (>= check), P04 ok.
+    W01-W05    logical write of sector 0 (flag 1): EmuTOS E_CHNG (-14), then Mediach 2 and
+               Rwabs E_CHNG (also with RW_NOMEDIACH) until Getbpb; NewTOS 0 / 0 / 0.
+    X01        boot sector bps 1024: EmuTOS Getbpb NULL, NewTOS BPB 1024,4,4096,...
+    X06        tot16 = tot32 = 0: EmuTOS numcl 0, flags 0; NewTOS numcl 32672, B_16.
+    X08        logical read after Getbpb failed on spf 0: EmuTOS ESECNF, NewTOS 0 + data.
+    X13-X14    after a logical sector-0 write with RW_NOMEDIACH (X12: 0 on both): EmuTOS Mediach 2,
+               Rwabs E_CHNG; NewTOS 0 / 0.
+    F01/F04/F06 Mediach A:/B:: EmuTOS 2/2/0 (drives present, empty) -- nofloppy control gives
+               EUNDEV like NewTOS.
+    F03        Rwabs(0,NULL,2,0,0,0): EmuTOS 0 also without floppy drives; NewTOS EUNDEV.
+  Equal on both sides: G01-G07, W06, X10, X15 (BPB 512,4,2048,32,128,129,289,32672,1, pointer
+  stable), X02 FAT count 0 -> 2, X03 FAT count 3 -> NULL, X04 64 KiB clusters -> NULL, X05
+  reserved 0 -> 1, X07 spf 0 -> NULL; M01-M07; R01-R09, R11-R20 (incl. last sector accepted,
+  past end/straddle/negative -> ESECNF, absent drives -> EUNDEV, flags 2/4/0x80, unsigned
+  first 0x8000 and -2); P05; W06-W11; X09-X12, X15-X16; F02, F05.
+  runs/DIFF-controls.txt -- TT = Falcon, repeat = first run on both systems, nofloppy control.
+
+IMAGES (runs/IMAGES.txt)
+  Every EmuTOS clone is byte-identical to card.img after its run (the unchanged-content writes
+  and the restore leave no trace; EmuTOS wrote nothing else). The NewTOS clone differs in 13
+  sectors: FAT1/FAT2 first sectors (64, 192), root directory (320) and the clusters of the two
+  log files (352-359, 384, 388); boot sector (63) and partition end unchanged. fsck_msdos -n on
+  the dd'd-out partitions (skip=63 count=130977) of card.img, the EmuTOS and the NewTOS clone:
+  exit 0, no repairs. Clones deleted from scratch after the comparison.
+
+DEVELOPMENT ITERATION (not evidence)
+  A first probe build without the X group ran once on each side (scratch only); every case it
+  shared with the final probe gave the same values.
+
+NOT VERIFIED
+  Real Raspberry Pi 4; card removal / reinsertion (Mediach on a removable medium); logical
+  sectors > 512 on a disk present at boot; > 16 drives (FS12); hooked hdv_rw/hdv_bpb/hdv_mediach
+  vectors; the NewTOS-side argument arrival (no tracer).
+
+FILES
+  manifest.sha256 covers every file of this run except itself.

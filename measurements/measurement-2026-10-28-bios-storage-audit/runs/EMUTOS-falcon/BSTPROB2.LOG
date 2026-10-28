@@ -1,0 +1,7 @@
+F01 Mediach(0) ret=00000002 sx=1
+F02 Getbpb(0) nz=0 sx=1
+F03 Rwabs(0,NULL,2,0,0,0) ret=00000000 sx=1
+F04 Mediach(0) ret=00000002 sx=1
+F05 Getbpb(1) nz=0 sx=1
+F06 Mediach(1) ret=00000000 sx=1
+END

@@ -1,0 +1,63 @@
+# diff runs/EMUTOS-falcon/BSTPROBE.LOG runs/NEWTOS-raspi4b/BSTPROBE.LOG, then BSTPROB2.LOG
+2c2
+< D01 Drvmap() ret=0000000f sx=1
+---
+> D01 Drvmap() ret=00000004 sx=1
+26c26
+< R10 Rwabs(0,buf,0,-1,2,130987) ret=fffffff8 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+---
+> R10 Rwabs(0,buf,0,-1,2,130987) ret=00000000 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+37,40c37,40
+< P01 Rwabs(8,buf,1,0,2,0) ret=fffffff1 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+< P02 Rwabs(8,buf,1,0,18,0) ret=00000000 sx=1 ck=b0162934 b=00000000000000000000000000000000
+< P03 Rwabs(8,buf,1,-1,18,131071) ret=fffffff8 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+< P04 Rwabs(8,buf,1,-1,18,131070) ret=00000000 sx=1 ck=4d7705c5 b=00000000000000000000000000000000
+---
+> P01 Rwabs(8,buf,1,0,2,0) ret=00000000 sx=1 ck=b0162934 b=00000000000000000000000000000000
+> P02 Rwabs(8,buf,1,0,18,0) ret=fffffff1 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+> P03 Rwabs(8,buf,1,-1,18,131071) ret=fffffff1 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+> P04 Rwabs(8,buf,1,-1,18,131070) ret=fffffff1 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+42,46c42,46
+< W01 Rwabs(1,sec0,1,0,2,0) ret=fffffff2 sx=1
+< W02 Mediach(2) ret=00000002 sx=1
+< W03 Rwabs(0,buf,1,1,2,0) ret=fffffff2 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+< W04 Rwabs(2,buf,1,1,2,0) ret=fffffff2 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+< W05 Mediach(2) ret=00000002 sx=1
+---
+> W01 Rwabs(1,sec0,1,0,2,0) ret=00000000 sx=1
+> W02 Mediach(2) ret=00000000 sx=1
+> W03 Rwabs(0,buf,1,1,2,0) ret=00000000 sx=1 ck=636b6eb8 b=f8ffffff00000000ffffffff07000800
+> W04 Rwabs(2,buf,1,1,2,0) ret=00000000 sx=1 ck=636b6eb8 b=f8ffffff00000000ffffffff07000800
+> W05 Mediach(2) ret=00000000 sx=1
+54c54
+< X01 Getbpb(2) nz=0 sx=1
+---
+> X01 Getbpb(2) nz=1 sx=1 bpb=1024,4,4096,16,128,129,273,32676,1 same=1
+64c64
+< X06 Getbpb(2) nz=1 sx=1 bpb=512,4,2048,32,128,129,289,0,0 same=1
+---
+> X06 Getbpb(2) nz=1 sx=1 bpb=512,4,2048,32,128,129,289,32672,1 same=1
+67c67
+< X08 Rwabs(0,buf,1,1,2,0) ret=fffffff8 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+---
+> X08 Rwabs(0,buf,1,1,2,0) ret=00000000 sx=1 ck=636b6eb8 b=f8ffffff00000000ffffffff07000800
+72,73c72,73
+< X13 Mediach(2) ret=00000002 sx=1
+< X14 Rwabs(2,buf,1,1,2,0) ret=fffffff2 sx=1 ck=52c707c5 b=a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5
+---
+> X13 Mediach(2) ret=00000000 sx=1
+> X14 Rwabs(2,buf,1,1,2,0) ret=00000000 sx=1 ck=636b6eb8 b=f8ffffff00000000ffffffff07000800
+1c1
+< F01 Mediach(0) ret=00000002 sx=1
+---
+> F01 Mediach(0) ret=fffffff1 sx=1
+3,4c3,4
+< F03 Rwabs(0,NULL,2,0,0,0) ret=00000000 sx=1
+< F04 Mediach(0) ret=00000002 sx=1
+---
+> F03 Rwabs(0,NULL,2,0,0,0) ret=fffffff1 sx=1
+> F04 Mediach(0) ret=fffffff1 sx=1
+6c6
+< F06 Mediach(1) ret=00000000 sx=1
+---
+> F06 Mediach(1) ret=fffffff1 sx=1
