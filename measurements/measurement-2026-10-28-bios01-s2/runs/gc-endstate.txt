@@ -1,0 +1,15 @@
+gc-emutos-1: sha256 72abedf7e5a75e887d75b43af4308a8dedbf8fa49242119926af2ae26aa88628
+  root entries (sector 0, 0x11) 256
+  marker in sector(s) [277]  (data area start: datrec 289 old geometry, 273 new)
+    sector 277: cluster -1 by the old geometry (datrec 289), cluster 3 by the new one (datrec 273)
+  sectors differing from the original: [0, 1, 129, 257, 277]
+gc-newtos-after: sha256 9bd39503a677bb814788e193bb037c85d5ad7e590c33461e3c3ec5a2c6f477c0
+  root entries (sector 0, 0x11) 256
+  marker in sector(s) [293]  (data area start: datrec 289 old geometry, 273 new)
+    sector 293: cluster 3 by the old geometry (datrec 289), cluster 7 by the new one (datrec 273)
+  sectors differing from the original: [0, 1, 129, 257, 293]
+gc-newtos-before: sha256 9bd39503a677bb814788e193bb037c85d5ad7e590c33461e3c3ec5a2c6f477c0
+  root entries (sector 0, 0x11) 256
+  marker in sector(s) [293]  (data area start: datrec 289 old geometry, 273 new)
+    sector 293: cluster 3 by the old geometry (datrec 289), cluster 7 by the new one (datrec 273)
+  sectors differing from the original: [0, 1, 129, 257, 293]

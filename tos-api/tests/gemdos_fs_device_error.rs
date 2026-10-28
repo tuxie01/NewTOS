@@ -142,15 +142,28 @@ fn rwabs_passes_the_drivers_own_code_through() {
     host.disk.disarm();
     assert_eq!(rc, EREADF as i64, "Rwabs read must report the driver's code");
 
+    // A write of logical sector 0 reaches the driver only with `RW_NOMEDIACH`
+    // (r_w 3): without it the write arms `forcechange` and fails `E_CHNG`
+    // before any transfer (BIOS-STOR-001, `docs/api/bios/04-rwabs.md` steps
+    // 6 and 10).
     host.disk.fail_write_at(lba, EWRITF);
     let rc = tos_api::bios::dispatch(&tos_api::trap::TrapArgs {
-        regs: [1, buf.as_ptr() as u64, 1, 0, 2, 0, 0, 0],
+        regs: [3, buf.as_ptr() as u64, 1, 0, 2, 0, 0, 0],
         func: 0x04,
         svc_imm: tos_api::trap::TrapClass::Bios as u16,
         space: tos_api::uaccess::Space::Kernel,
     });
     host.disk.disarm();
     assert_eq!(rc, EWRITF as i64, "Rwabs write must report the driver's code");
+    // The write armed `forcechange` (step 6, before the transfer failed);
+    // `Getbpb` clears it, so the other tests of this binary find C: settled.
+    let bpb = tos_api::bios::dispatch(&tos_api::trap::TrapArgs {
+        regs: [2, 0, 0, 0, 0, 0, 0, 0],
+        func: 0x07,
+        svc_imm: tos_api::trap::TrapClass::Bios as u16,
+        space: tos_api::uaccess::Space::Kernel,
+    });
+    assert_ne!(bpb, 0, "Getbpb(C:) after the failed write");
 }
 
 // ─────────────────────────────────────────────────────────────────────

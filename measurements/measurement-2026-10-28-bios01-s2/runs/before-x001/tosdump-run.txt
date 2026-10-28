@@ -1,0 +1,42 @@
+command   cargo xtask tosdump bios tosdump/cases/bios-r2-x001.tsv --disk --tree /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01/tree-head --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-x001-disk.BIN --out measurements/measurement-2026-10-28-bios01-s2/runs/before-x001 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01/run/xtask
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01/tree-head (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    5f105c39c03f7bcca0515e3f492945a9c04136fd
+dirty     0 path(s) in git status --porcelain
+harness commit e9070656c3c2c771eb6cb2be389131d574398b16
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-r2-x001.tsv sha256 39352bce63b7ab334f236641d265dce69fd39856b0b47dda8ef4b3502b54fdf0
+table     DESTRUCTIVE: runs on a fresh clone of the test image (the card is built from it for this run)
+target/   own (0 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (5 artifact dep-info files checked after the build)
+kernel8.img /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01/tree-head/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 99628e8cbe7fa1ad49e7ba079c282953943a03ca6356fe8003eb52a00877e44f
+kernel ELF  sha256 91b95d42477caa7352da801bb103a72c642188486ab22bfb46bb39a522b70420 (/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01/tree-head/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id 5f10
+DUMPBIOS.NAP sha256 edf4850a6bc5df317e596891ceaa95cafd53a55d4b2fae2c6db173ede4af5d7c
+test image built by tools/mktestdisk.sh NEWDESK.INF=<autorun D:\DUMPBIOS.NAP>
+test image sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+D:\DISKUNIT.TXT 26 (the profile's physical unit of C:, for u:0)
+card.img.manifest: image_sha256 2323932633b53016f917d847141b1a1bef2c3becfa7d6f97993631c9732f9d8a
+card.img.manifest: optional_missing none
+test.img.manifest: image_sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+test.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01/run/xtask/tosdump-16724/card.img sha256 2323932633b53016f917d847141b1a1bef2c3becfa7d6f97993631c9732f9d8a (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 0236189995bbd26d8526d39dd8fffa16efff489ba80c13b96029d8ccfd03663e
+BIOS.BIN 2592 bytes, sha256 488d54aadf150b06433784c199fa175196dc690e228c26e103637861eb66c759
+BIOS.LOG 253 bytes, sha256 77937318ca757b74f8a1026d27ad9bbf10bec8c37a9465ac5946805436141e37
+testpart: DIFFERENT; differing sectors (partition-relative): 0
+testpart: still different after normalising root directory time stamps
+fsck_msdos -n testpart-before.img: exit 0
+fsck_msdos -n testpart-after.img: exit 0
+testpart after sha256 089e349d63d1bf0237b5fde272501d793951dc1662eb8394836b586f20da3419 (kept: testpart-after.img)
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 f9cd925be8e559ec07fe1b9233b635e2b83a1f45f7dadfd7ce443f0dc13851ea
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 8 records of 320 bytes, build 5f10, case CRC 268E6D29
+tosdiff EMUTOS-1a7484ab-BIOS-r2-x001-disk.BIN vs NEWTOS.BIN: exit 1, 4 of 8 cases differ
+total     54 s
+result    run complete (differences above are findings, not failures)

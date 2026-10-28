@@ -269,9 +269,14 @@ report no-change).
 |-----------------|------------------|
 | WD1772 floppy change-line (first status read clears the latch) | **no probe** — the SD has no removal event wired |
 | ACSI/SCSI removable Test-Unit-Ready | **no probe** |
-| `forcechange` armed by a sector-0 write | **not armed** — `Rwabs` does not set any change flag (see `04-rwabs.md`) |
+| `forcechange` armed by a sector-0 write | **[BIOS01] armed** by `Rwabs` (`04-rwabs.md` step 6), reported here as `2` (`tos-api/src/bios/mod.rs:296@forcechange`), cleared by `Getbpb` |
 
 ### `forcechange` / sector-0-write contract vs. the Pi
+
+**[BIOS01] (2) is implemented:** `media_change` returns `2` while the drive's
+`forcechange` is armed (`tos-api/src/bios/mod.rs:292@media_change`); (1), a
+latched `mediachange`, still does not exist (no probe). The paragraph below is
+the state before BIOS01.
 
 The EmuTOS contract has two ways `Mediach` reports a change without hardware
 help: (1) a latched `mediachange` from a prior probe, and (2) a `forcechange`
@@ -291,14 +296,19 @@ contract**, not a cosmetic one.
   an out-of-range / unmounted drive, `0` only for a valid one
   (`tos-api/src/bios/mod.rs:237-243`, matching `blkdev.c:789-790`). This was the one observable
   deviation; it no longer diverges.]**
-- **No `forcechange` after a sector-0 write — [BIOS02] measured DIFF, not a
+- **[BIOS01] implemented** (W02, W05, X13 EQUAL;
+  `measurements/measurement-2026-10-28-bios01-s2/RUNINFO.TXT`). Before:
+  **No `forcechange` after a sector-0 write — [BIOS02] measured DIFF, not a
   candidate any more.** Oracle W02 = 2, W05 = 2, X13 = 2; NewTOS 0 in all
   three. What must be reproduced: one `forcechange` flag per valid logical
   drive, armed by `Rwabs` (`04-rwabs.md` step 6), returned as `2` here
   **without** the "SD is non-removable" shortcut, cleared by `Getbpb` on
   the same drive (`bios/blkdev.c:590`). The "non-removable ⇒ constant 0"
   model of this section holds only while nobody writes sector 0.
-- **Latch/reset pair absent.** With `Mediach`≡0 there is no latch for `Getbpb`
+- **[BIOS01]** The `forcechange` half of the pair now exists: `Getbpb` clears
+  it (`tos-api/src/bios/bpb.rs:247@clear_forcechange`); the `mediachange` latch
+  is still absent. Before:
+  **Latch/reset pair absent.** With `Mediach`≡0 there is no latch for `Getbpb`
   to clear; the `Getbpb`→`Mediach` reset handshake is a no-op. (Measured:
   W06/W07 and X15/X16 are EQUAL only because NewTOS never left 0.)
 - **`MEDIAMAYCHANGE` (1) is never produced** — the Pi SD path has no "same card

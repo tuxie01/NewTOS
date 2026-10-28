@@ -227,33 +227,45 @@ pub struct Geometry {
     pub num_fats: u8,
 }
 
-/// Read and parse a drive's boot sector into full geometry.
-pub fn geometry(drive: u16) -> Option<Geometry> {
+/// The start of EmuTOS `blkdev_getbpb` (`references/emutos/bios/blkdev.c:
+/// 569-625`): validate the drive, **reset its media-change state**, read its
+/// boot sector. Shared by [`geometry`] (the BDOS log-in's `Getbpb`) and
+/// [`bpb_for`] (the trap's), so both clear the state as EmuTOS' one
+/// `Getbpb` does.
+///
+/// The reset sits where EmuTOS has it (`blkdev.c:589-590`): after the drive
+/// test, before the read and every boot-sector test — so a `Getbpb` whose
+/// boot sector is then refused (`None`) has cleared it as well
+/// (`docs/api/bios/07-getbpb.md`, "Gaps vs. the contract"). The Pi keeps no
+/// latched `mediachange` (the SD is non-removable, `09-mediach.md`), so the
+/// state to clear is `forcechange` alone (BIOS-STOR-001).
+fn boot_sector(drive: u16) -> Option<([u8; 512], drive::Partition)> {
     if drive as usize >= 16 {
         return None;
     }
     let part = drive::resolve(drive)?;
+    drive::clear_forcechange(drive);
     let blk = crate::bios::bcache::device()?;
     let mut sec = [0u8; 512];
     if blk.read_blocks(part.start_lba as u64, &mut sec).is_err() {
         return None;
     }
+    Some((sec, part))
+}
+
+/// Read and parse a drive's boot sector into full geometry — the BDOS
+/// log-in's `Getbpb` (EmuTOS `ckdrv`, `bdos/fsdrive.c:96`), so it resets the
+/// drive's media-change state like the trap does ([`boot_sector`]).
+pub fn geometry(drive: u16) -> Option<Geometry> {
+    let (sec, part) = boot_sector(drive)?;
     parse(&sec, part.count)
 }
 
 /// Read a drive's boot sector, parse its BPB, and cache it in the
 /// per-drive static. Returns the parsed value (`None` on failure).
-/// Shared by [`getbpb`] (the BIOS trap) and the BDOS FAT mount.
+/// Used by [`getbpb`] (the BIOS trap).
 pub fn bpb_for(drive: u16) -> Option<Bpb> {
-    if drive as usize >= 16 {
-        return None;
-    }
-    let part = drive::resolve(drive)?;
-    let blk = crate::bios::bcache::device()?;
-    let mut sec = [0u8; 512];
-    if blk.read_blocks(part.start_lba as u64, &mut sec).is_err() {
-        return None;
-    }
+    let (sec, part) = boot_sector(drive)?;
     let bpb = parse(&sec, part.count)?.bpb;
     // SAFETY: single trap path; one BPB slot per drive.
     let table = unsafe { &mut *TABLE.0.get() };

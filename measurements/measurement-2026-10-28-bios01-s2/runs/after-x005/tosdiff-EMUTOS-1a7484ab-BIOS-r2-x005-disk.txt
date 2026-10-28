@@ -1,0 +1,8 @@
+EMUTOS-1a7484ab-BIOS-r2-x005-disk.BIN vs NEWTOS.BIN -- area BIOS, 13 cases from bios-r2-x005.tsv
+
+case 40  trap 13 function 0x07  X06b Getbpb(2): numcl 0, no B_16 (BIOS-STOR-005) -- blkdev.c:73
+    capture[14]             EMUTOS-1a7484ab-BIOS-r2-x005-disk.BIN = 0x00   NEWTOS.BIN                            = 0x7F
+    capture[15]             EMUTOS-1a7484ab-BIOS-r2-x005-disk.BIN = 0x00   NEWTOS.BIN                            = 0xA0
+    capture[17]             EMUTOS-1a7484ab-BIOS-r2-x005-disk.BIN = 0x00   NEWTOS.BIN                            = 0x01
+
+1 of 13 cases differ

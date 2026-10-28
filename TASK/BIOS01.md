@@ -1,6 +1,6 @@
 # BIOS01 — BIOS-Speicher an EmuTOS angleichen (Befunde des Audits 2026-10-28)
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28 · haengt an [TOOL07](TOOL07.md); Spec [BIOS02](BIOS02.md) freigegeben
+Status: **TEILWEISE** — BIOS-STOR-001 erledigt 2026-10-28 ([Quittung](BIOS01-S2-STATUS-DONE.MD)), Rest offen · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28 · haengt an [TOOL07](TOOL07.md); Spec [BIOS02](BIOS02.md) freigegeben
 
 ## Sachverhalt
 
@@ -96,3 +96,15 @@ Regel (CLAUDE.md „Testing“): vor jedem Fix NewTOS-Funktion per
     [TOOL17](TOOL17.md) klassifiziert der Lead diese Liste neu (mit Absicht /
     nicht abgebildet). Der Fix ergaenzt die `mapping.tsv`-Zeilen der
     Funktionen, die er beruehrt (Ratsche, CLAUDE.md „Testing“).
+
+## Stand 2026-10-28 (BIOS-STOR-001)
+
+- Erledigt: forcechange-Handshake; `bios-r2` W01–W05, X13, X14 und die
+  001-Faelle in x004–x006 EQUAL; neue Tabelle `bios-r2-x001.tsv` belegt
+  „schreibt nichts“ per Abbildvergleich (NewTOS vorher 4/8 verschieden und
+  Sektor 0 geaendert, nachher 0/8, Abbild = Original = Orakel). Kein vorher
+  gleicher Fall neu verschieden. Beleg
+  `measurements/measurement-2026-10-28-bios01-s2/RUNINFO.TXT`.
+- Arbeit 4 (GEMDOS-Folge): S1 gefunden — GEMDOS schreibt nach geaendertem
+  Bootsektor mit alter Geometrie; dazu bleibt `Mediach` 2 nach GEMDOS-Zugriff
+  stehen (fehlende Neuanmeldung). Eigenes Ticket [FS20](FS20.md).

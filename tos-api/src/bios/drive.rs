@@ -7,6 +7,7 @@
 //! `(drive, sector)` to an absolute LBA via [`resolve`].
 
 use core::cell::UnsafeCell;
+use core::sync::atomic::{AtomicBool, Ordering};
 
 const MAX_DRIVES: usize = 16;
 /// First hard-disk drive letter (`C:`); A:/B: are reserved for floppies.
@@ -137,6 +138,41 @@ pub fn resolve(drive: u16) -> Option<Partition> {
     }
     // SAFETY: single trap path; table is only mutated at boot.
     unsafe { (*TABLE.0.get())[drive as usize] }
+}
+
+/// Per-drive `forcechange` flag — EmuTOS `blkdev[dev].forcechange`
+/// (`references/emutos/bios/blkdev.h:141-159`): "force EmuTOS to recognise a
+/// media change when logical sector zero is written to". Armed by a logical
+/// `Rwabs` write starting at sector 0 (`bios/blkdev.c:452-453`), tested by
+/// `Rwabs` (`:450-451`) and `Mediach` (`:802-803`), cleared only by `Getbpb`
+/// (`:590`). A partition rescan ([`mount`]) leaves it alone, as EmuTOS'
+/// `add_partition` does (`bios/blkdev.c:354-381` writes `mediachange`, not
+/// `forcechange`). Spec: `docs/api/bios/04-rwabs.md` (order table, steps 5
+/// and 6), `09-mediach.md`, `07-getbpb.md`.
+static FORCECHANGE: [AtomicBool; MAX_DRIVES] = [const { AtomicBool::new(false) }; MAX_DRIVES];
+
+/// Is `drive`'s `forcechange` armed? `false` for a drive number outside the
+/// table (there is no such `blkdev[]` entry to be armed).
+pub fn forcechange(drive: u16) -> bool {
+    FORCECHANGE
+        .get(drive as usize)
+        .is_some_and(|f| f.load(Ordering::Relaxed))
+}
+
+/// Arm `drive`'s `forcechange` (`bios/blkdev.c:452-453`). Callers have
+/// validated the drive; a number outside the table is ignored.
+pub fn arm_forcechange(drive: u16) {
+    if let Some(f) = FORCECHANGE.get(drive as usize) {
+        f.store(true, Ordering::Relaxed);
+    }
+}
+
+/// Clear `drive`'s `forcechange` — the reset at the top of `Getbpb`
+/// (`bios/blkdev.c:590`). A number outside the table is ignored.
+pub fn clear_forcechange(drive: u16) {
+    if let Some(f) = FORCECHANGE.get(drive as usize) {
+        f.store(false, Ordering::Relaxed);
+    }
 }
 
 /// Bitmap of present drives (bit `n` = drive `n`), for `Drvmap`.

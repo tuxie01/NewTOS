@@ -54,7 +54,7 @@ physical line number and the dump header carries the table's CRC
 |---|---|---|---|---|
 | 0x00 | Getmpb | `bios/biosmem.c:134` | excluded | rewrites `themd`, the memory descriptor GEMDOS built its pool on (`biosmem.c:143-150`); its capture would be three addresses |
 | 0x01 | Bconstat | `bios/bios.c:914` | **round 1** | 9 cases: handles 0-6, 10, -1 (0..7 `bconstat_vec`, 6.. Bconmap, `bios/bios.c:923-933`) |
-| 0x02 | Bconin | `bios/bios.c:958` | **round 1** | 4 cases: only handles that return at once on both machines -- 4, 5 (`char_dummy`, `chardev.c:34-36`), 10, -1. Handles 0-3 and the Bconmap devices 6-9 wait for input: never |
+| 0x02 | Bconin | `bios/bios.c:958` | **round 1** | 4 cases: only handles that return at once on both machines -- 4, 5 (`char_dummy`, `chardev.c:34-36`), 10, -1. Handle 0 returns at once with 0 on EmuTOS (`bconin0`: "not implemented", `bios/parport.c:121-125`; probe B09, `docs/audits/2026-10-28-bios-core.md`); handles 1-3 and the Bconmap devices 6-9 wait for input: never [BIOS13] |
 | 0x03 | Bconout | `bios/bios.c:991` | **round 1** | 4 cases: a printable byte to CON (2) and raw CON (5), handles 10 and -1. PRT (0) waits up to 30 s for a printer (`parport.c:150-168`), IKBD (4) and MIDI (3) are commands to a device, AUX (1) is NewTOS' serial console: later, with their own reasons |
 | 0x04 | Rwabs | `bios/bios.c:1045` | disk round | `!disk` tables only, on a test image. `bios-r2.tsv`: 31 cases -- logical reads, the FastCopy NULL arm, write-back of sectors a prelude read; the closing tables: `RW_NOTRANSLATE` with the unit token `u:0` (`bios-r2-phys.tsv`, 12 cases) and writes of patched boot sectors (`bios-r2-x004.tsv`, `-x005.tsv`, `-x006.tsv`); see "Disk round" below. Round 1: refused |
 | 0x05 | Setexc | `bios/bios.c:1070` | **round 1** | 5 cases, the inquiry `Setexc(n,-1)` (`bios/bios.c:1076-1078`), NONZERO: a vector address differs per machine. Setting a vector: excluded |
@@ -304,6 +304,7 @@ section 6, "The closing tables". Cases from the probe's groups P and X
 | `bios-r2-x004.tsv` | 10 | boot sector bps 1024 written logically (`+set 0x0C=0x04`, `RW_NOMEDIACH`), `Mediach`, `Getbpb` (EmuTOS 0), reads after it (EmuTOS ESECNF) | BIOS-STOR-004 (and -001) | boot sector bps 1024 |
 | `bios-r2-x005.tsv` | 13 | tot16 = tot32 = 0, `Getbpb` (EmuTOS numcl 0, no `B_16`), reads; then tot32 restored logically and `Getbpb` again | BIOS-STOR-005 (and -001) | image restored |
 | `bios-r2-x006.tsv` | 11 | spf 0, `Getbpb` (EmuTOS 0, recsiz marked 0), logical reads and count 0 after it (EmuTOS ESECNF) | BIOS-STOR-006 (and -001) | boot sector spf 0 |
+| `bios-r2-x001.tsv` (BIOS01) | 8 | a CHANGED sector 0 (`+set 3=0x58`, OEM name) written without `RW_NOMEDIACH` (EmuTOS E_CHNG, nothing written), `Mediach`, a read while armed, `Getbpb`, sector 0 read back | BIOS-STOR-001 | image unchanged |
 
 Why each new form is safe: `+set` changes only a dumper buffer, and only
 before the write-back of the read it follows, on the test drive; the image
@@ -316,3 +317,24 @@ device sector (probe P03/P04) -- the device sizes differ between the image
 
 References `tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-<phys|x004|x005|x006>-disk`,
 `measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT`.
+`bios-r2-x001.tsv`: reference `EMUTOS-1a7484ab-BIOS-r2-x001-disk`,
+`measurements/measurement-2026-10-28-bios01-s2/RUNINFO.TXT` (TASK/BIOS01).
+
+## Audit tables -- `bios-core-r1.tsv`, `xbios-chardev-r1.tsv`, `xbios-system-r1.tsv` (2026-10-28) [BIOS13]
+
+Three further round-1 tables, each separate from `bios-r1.tsv` (whose table,
+CRC `583C11E0` and references stay as they are). They hold only calls the
+round-1 guard admits; every row is a query or a call whose effect does not
+outlive it. References: `tosdump/reference/EMUTOS-1a7484ab-<BIOS-core|XBIOS-chardev|XBIOS-system>[-falcontc].{BIN,LOG}`.
+
+| Table | Cases | CRC | Audit | What |
+|---|---|---|---|---|
+| `bios-core-r1.tsv` | 44 | `C056A3E0` | `docs/audits/2026-10-28-bios-core.md` section 5 | `Bconstat` 7, 8, 9, 11, 0x7FFF, -2, -32768; `Bconin` 11, 0x7FFF, -2, -32768; `Bconout` CON/raw-CON at the printable limits and non-devices with ESC/0xFF/`'A'`; `Setexc` inquiries (nine CPU vectors, `etv_*` with PTR_RAM, `$40C`, `$420`, `$5A8` EXACT, `$5A0`, `$5A4` PTR_RAM); `Bcostat` 8, 9, 10, 11, 0x7FFF, -2, -32768 |
+| `xbios-chardev-r1.tsv` | 23 | `5C3A5F7A` | `docs/audits/2026-10-28-xbios-chardev.md` section 5 | XBIOS character-device queries: `Iorec` (0x0E, 7 rows), `Rsconf` (0x0F), `Kbrate` (0x23), `Bconmap` (0x2C, 11 rows) and the neighbouring slots 0x10, 0x22; build `b81d` |
+| `xbios-system-r1.tsv` | 43 | `3944A677` | `docs/audits/2026-10-28-xbios-system.md` section 5 | `Protobt` 31 (disktype 0-6 and out-of-range, serial numbers, random arm, `exec`), `Cursconf(5,x)` 3, `NVMaccess` 9 |
+
+Rows the guard still refuses and the audits propose (the setting arms
+`Kbshift`/`Setexc`, `Getmpb`, `Bconout` to devices, `Midiws`, `Bioskeys`,
+`Ikbdws`): status **later** -- they need a restoring prelude and a capture
+"through the return pointer" (`TASK/TOOL16.md`). Cite for the guard: audits
+BIOS-CORE section 11.4, XBIOS-CHARDEV section 11.3.

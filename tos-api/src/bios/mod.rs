@@ -42,7 +42,7 @@ pub fn mount() -> usize {
     drive::mount()
 }
 
-use tos_types::error::{ESECNF, EUNDEV, E_OK};
+use tos_types::error::{ESECNF, EUNDEV, E_CHNG, E_OK};
 use tos_types::Long;
 
 use crate::host;
@@ -53,6 +53,10 @@ const SECTOR: usize = 512;
 // `Rwabs` read/write flag bits (EmuTOS `bios/disk.h:52-61`).
 /// Bit 0 — write (vs. read); also `RW_WRITE` (`disk.h:54,56`).
 const RW_RW: i16 = 1;
+/// Bit 1 — skip the media-change test of the logical path (`disk.h:57`,
+/// `blkdev.c:473`). It does **not** skip the `forcechange` test
+/// (`blkdev.c:450-451`, ahead of it).
+const RW_NOMEDIACH: i16 = 2;
 /// Bit 3 — physical (untranslated) I/O (`disk.h:59`). When set, the
 /// sector argument is an **absolute device sector**: no partition-relative
 /// translation, and the range check is against the whole device rather than
@@ -139,12 +143,21 @@ fn kbshift(args: &TrapArgs) -> Long {
 /// no partition translation and a range check against the whole device
 /// (`blkdev.c:483-490`). The device is validated up front in both modes.
 ///
+/// The logical path's `forcechange` handshake (BIOS-STOR-001) follows the
+/// order of `blkdev_rwabs` (`docs/api/bios/04-rwabs.md`, order table): an
+/// armed drive fails every logical request with `E_CHNG`, `RW_NOMEDIACH`
+/// included (step 5); a write starting at logical sector 0 arms it (step 6)
+/// and then fails the media-change test itself unless `RW_NOMEDIACH` is set
+/// (step 10) — so it writes nothing and returns `E_CHNG`. The physical path
+/// never arms (the arming is in the logical branch, `blkdev.c:438-453`).
+///
 /// Deviations from EmuTOS that are out of scope for L1 (HW-adapted or
 /// deferred, unchanged here): the retry loop / `etv_critic` chain
-/// (H1/M1), the `RW_NOMEDIACH` media-change probe (the SD is
-/// non-removable ⇒ `Mediach`≡0), the `RW_NORETRIES` retry count (single
-/// PIO attempt), and `RW_NOBYTESWAP` (AArch64 is little-endian). See
-/// `docs/api/bios/04-rwabs.md` and `docs/analysis/bios-audit/bios-findings.md`.
+/// (H1/M1), a media-change *probe* behind step 10 (the SD is non-removable,
+/// so [`media_change`] reports only `forcechange`), the `RW_NORETRIES` retry
+/// count (single PIO attempt), and `RW_NOBYTESWAP` (AArch64 is
+/// little-endian). See `docs/api/bios/04-rwabs.md` and
+/// `docs/analysis/bios-audit/bios-findings.md`.
 fn rwabs(args: &TrapArgs) -> Long {
     let r_w = args.arg_i16(0);
     let adr = args.arg_u64(1);
@@ -167,15 +180,36 @@ fn rwabs(args: &TrapArgs) -> Long {
         Some(b) => b,
         None => return EUNDEV,
     };
-    if numb == 0 {
-        return E_OK;
-    }
     let sector = if first == -1 {
         lfirst as u32 as u64
     } else {
         first as u16 as u64
     };
-    let lba = if r_w & RW_NOTRANSLATE != 0 {
+    let write = r_w & RW_RW != 0;
+    let logical = r_w & RW_NOTRANSLATE == 0;
+    if logical {
+        // Step 5 (`blkdev.c:450-451`): a drive whose logical sector 0 was
+        // written fails every logical request until `Getbpb` — ahead of the
+        // `RW_NOMEDIACH` test, so that flag does not get past it.
+        if drive::forcechange(drive) {
+            return E_CHNG;
+        }
+        // Step 6 (`blkdev.c:452-453`): a write starting at logical sector 0
+        // arms it, before the range and media-change checks of this call.
+        if write && sector == 0 {
+            drive::arm_forcechange(drive);
+        }
+    }
+    // Step 10 (`blkdev.c:473-477`), evaluated here because the count-0
+    // return below needs it too; it is *reported* after the range check.
+    let media_changed =
+        logical && r_w & RW_NOMEDIACH == 0 && media_change(drive) != MEDIANOCHANGE;
+    if numb == 0 {
+        // BIOS-STOR-003 (open, not this change): EmuTOS range-checks a count
+        // of 0 as well (`blkdev.c:461-463`); here it skips the range check.
+        return if media_changed { E_CHNG } else { E_OK };
+    }
+    let lba = if !logical {
         // Physical: the sector is already an absolute device sector — no
         // partition translation. Range-check against the device's total
         // sector count (EmuTOS `blkdev.c:488-490`, which uses `>=` and skips
@@ -193,8 +227,12 @@ fn rwabs(args: &TrapArgs) -> Long {
         }
         part.start_lba as u64 + sector
     };
+    if media_changed {
+        // Step 10 reported: the media-change test failed (`blkdev.c:474-477`)
+        // — a write that just armed `forcechange` transfers nothing.
+        return E_CHNG;
+    }
     let len = numb * SECTOR;
-    let write = r_w & RW_RW != 0;
 
     // `adr` is the caller's buffer for `len` bytes, in the caller's space
     // (ARCH03 3a): a program's buffer is checked with its rights — readable
@@ -228,18 +266,37 @@ fn rwabs(args: &TrapArgs) -> Long {
 }
 
 /// `Mediach` (0x09) — media-change probe. `drv` is in `x0`
-/// (`docs/api/bios/09-mediach.md` §"Trap interface").
-///
-/// The contract validates the drive first: an invalid / unmounted drive
-/// returns `EUNDEV` (-15). A valid drive returns `0` (`MEDIANOCHANGE`) —
-/// the Pi's SD card is treated as non-removable, so it never reports a
-/// change (spec §"Pi / BCM2711 binding", `docs/HARDWARE-PROFILE.md` §3.4).
+/// (`docs/api/bios/09-mediach.md` §"Trap interface"). The trap forwards to
+/// [`media_change`], as EmuTOS' `mediach` forwards to `hdv_mediach`
+/// (`bios/bios.c:1184`).
 fn mediach(args: &TrapArgs) -> Long {
-    let drive = args.arg_u16(0);
-    match drive::resolve(drive) {
-        Some(_) => 0,     // valid drive → non-removable → no change
-        None => EUNDEV,   // out-of-range / unmounted drive
+    media_change(args.arg_u16(0))
+}
+
+/// `MEDIANOCHANGE` — the media has not changed (`bios/disk.h:69`).
+const MEDIANOCHANGE: Long = 0;
+/// `MEDIACHANGE` — the media has changed (`bios/disk.h:71`).
+const MEDIACHANGE: Long = 2;
+
+/// EmuTOS `blkdev_mediach` (`bios/blkdev.c:783-820`): the media-change state
+/// of a logical drive, shared by the `Mediach` trap and `Rwabs`' media-change
+/// test (step 10 of `docs/api/bios/04-rwabs.md`).
+///
+/// An invalid / unmounted drive returns `EUNDEV` (`blkdev.c:789-790`). An
+/// armed `forcechange` returns `MEDIACHANGE` (2) until `Getbpb` clears it
+/// (`blkdev.c:802-803`), without storing a latch (`09-mediach.md`, edge case
+/// 3). Otherwise EmuTOS asks the driver (`flop_mediach`/`disk_mediach`); the
+/// Pi's SD card is treated as non-removable — no probe, no latched
+/// `mediachange` — so the answer is `MEDIANOCHANGE` (spec §"Pi / BCM2711
+/// binding", `docs/HARDWARE-PROFILE.md` §3.4).
+fn media_change(drive: u16) -> Long {
+    if drive::resolve(drive).is_none() {
+        return EUNDEV; // out-of-range / unmounted drive
     }
+    if drive::forcechange(drive) {
+        return MEDIACHANGE;
+    }
+    MEDIANOCHANGE
 }
 
 /// `Drvmap` (0x0A) — bitmap of present drives (bit `n` = drive `n`),

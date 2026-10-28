@@ -1,0 +1,18 @@
+A01 Dfree(C:) ret=0 free=32671 total=32672 secsiz=512 clsiz=4
+A02 Mediach(2) ret=0
+A03 Rwabs(2,buf,1,0,2,0) ret=0 b11=0002
+A04 Rwabs(3,buf,1,0,2,0) ret=0 b11=0002
+A05 Mediach(2) ret=2
+A06 Dfree(C:) ret=0 free=32671 total=32672 secsiz=512 clsiz=4
+A07 Mediach(2) ret=2
+A08 Getbpb(2) nz=1 bpb=512,4,2048,32,128,129,289,32672,1
+A09 Mediach(2) ret=0
+B01 Rwabs(2,buf,1,0,2,0) ret=0 b11=0002
+B02 Rwabs(3,buf,1,0,2,0) ret=0 b11=0001
+B03 Mediach(2) ret=2
+B04 Dfree(C:) ret=0 free=32671 total=32672 secsiz=512 clsiz=4
+B05 Mediach(2) ret=2
+B06 Fcreate(C:\GCPROBE.DAT) ret=6 Fwrite=512 Fclose=0
+B07 Getbpb(2) nz=1 bpb=512,4,2048,16,128,129,273,32676,1
+B08 Mediach(2) ret=0
+END

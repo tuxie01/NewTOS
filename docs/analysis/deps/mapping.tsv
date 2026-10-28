@@ -275,11 +275,16 @@ blkdev_drvmap	bios/blkdev.c	tos-api/src/bios/mod.rs	drvmap	behind Drvmap 0x0A (b
 blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	getbpb	behind hdv_bpb (Getbpb 0x07): NewTOS calls it from the trap directly, no hdv_bpb vector (BIOS-STOR-010)
 blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	bpb_for	the boot-sector read and the per-drive BPB slot
 blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	parse	the BPB checks and arithmetic of blkdev.c:641-756, 1:1
+blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	boot_sector	drive test, the media-state reset (blkdev.c:589-590) and the boot-sector read, shared by bpb_for and geometry
+blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/drive.rs	clear_forcechange	forcechange = FALSE (blkdev.c:590)
+blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	geometry	the Getbpb of the BDOS log-in (ckdrv/log_media, bdos/fsdrive.c:96): boot-sector read and reset, no BPB slot
 blkdev_hdv_boot	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 blkdev_hdv_init	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 blkdev_init	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
-blkdev_mediach	bios/blkdev.c	tos-api/src/bios/mod.rs	mediach	behind hdv_mediach (Mediach 0x09): NewTOS calls it from the trap directly, no hdv_mediach vector (BIOS-STOR-010); no forcechange, the SD is non-removable (BIOS-STOR-001)
-blkdev_rwabs	bios/blkdev.c	tos-api/src/bios/mod.rs	rwabs	behind hdv_rw (Rwabs 0x04): NewTOS calls it from the trap directly, no hdv_rw vector (BIOS-STOR-010); no retry/etv_critic chain
+blkdev_mediach	bios/blkdev.c	tos-api/src/bios/mod.rs	media_change	behind hdv_mediach (Mediach 0x09; the trap fn mediach forwards to it, no hdv_mediach vector, BIOS-STOR-010) and the direct call of Rwabs step 10: EUNDEV, forcechange -> 2 (BIOS-STOR-001); no probe/latched mediachange, the SD is non-removable
+blkdev_rwabs	bios/blkdev.c	tos-api/src/bios/mod.rs	rwabs	behind hdv_rw (Rwabs 0x04): NewTOS calls it from the trap directly, no hdv_rw vector (BIOS-STOR-010); forcechange test/arm and media-change test of the logical path (BIOS-STOR-001); no retry/etv_critic chain
+blkdev_rwabs	bios/blkdev.c	tos-api/src/bios/drive.rs	forcechange	the blkdev[dev].forcechange test (blkdev.c:450-451)
+blkdev_rwabs	bios/blkdev.c	tos-api/src/bios/drive.rs	arm_forcechange	forcechange = TRUE after a logical write of sector 0 (blkdev.c:452-453)
 bootcheck	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 bus_init	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 compute_cksum	bios/blkdev.c	tos-api/src/xbios/floppy.rs	compute_cksum	-

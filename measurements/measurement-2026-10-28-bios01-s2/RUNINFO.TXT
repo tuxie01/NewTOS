@@ -1,0 +1,142 @@
+measurement-2026-10-28-bios01-s2 -- BIOS-STOR-001 (S2): the forcechange handshake, fixed and measured
+=====================================================================================================
+Developer, TASK/BIOS01 (finding BIOS-STOR-001 only), 2026-10-28 (host clock CET). Base HEAD 5f105c39;
+the lead committed e326cb92 and e9070656 (docs only: `git diff --stat 5f105c39 e9070656 -- kernel
+tos-api tos-types programs sdk` is empty) while the runs were made, so the "after" runs name e326cb92
++ the uncommitted change. No hardware, no real card, nothing flashed. Not committed.
+
+WHAT / WHY
+  EmuTOS: a logical Rwabs write starting at sector 0 arms blkdev[dev].forcechange
+  (bios/blkdev.c:452-453) before the range and media-change checks; the write itself then fails
+  E_CHNG and writes nothing unless RW_NOMEDIACH (blkdev.c:473-477); every logical Rwabs on the drive
+  returns E_CHNG, RW_NOMEDIACH included (blkdev.c:450-451), and Mediach 2 (blkdev.c:802-803), until
+  Getbpb clears it (blkdev.c:590). NewTOS answered 0 everywhere (TOOL07: W01-W05, X13, X14 DIFF;
+  TOOL07b: x004 39, x005 39/50, x006 38 DIFF). Spec: docs/api/bios/04-rwabs.md (order table),
+  09-mediach.md, 07-getbpb.md.
+
+CHANGE (uncommitted, for the lead)
+  tos-api/src/bios/drive.rs   FORCECHANGE (one flag per drive), forcechange / arm_forcechange /
+                              clear_forcechange
+  tos-api/src/bios/mod.rs     rwabs: steps 5, 6 and 10 of the logical path in EmuTOS order;
+                              media_change = blkdev_mediach (EUNDEV, forcechange -> 2, else 0);
+                              mediach forwards to it
+  tos-api/src/bios/bpb.rs     boot_sector: drive test, forcechange reset, boot-sector read -- shared by
+                              bpb_for (the trap's Getbpb) and geometry (the BDOS log-in's Getbpb)
+  tos-api/tests/bios01_forcechange.rs (new, 9 tests), tos-api/tests/gemdos_fs_device_error.rs (its
+                              sector-0 write now uses RW_NOMEDIACH, then Getbpb)
+  tosdump/cases/bios-r2-x001.tsv + tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-x001-disk.BIN/.LOG (new):
+                              the image proof (below); COVERAGE-BIOS.md row
+  docs/analysis/deps/mapping.tsv, docs/api/bios/04-rwabs.md, 07-getbpb.md, 09-mediach.md (Pi-binding
+                              rows marked implemented, shifted anchors)
+
+THE IMAGE PROOF -- why a new table
+  bios-r2.tsv W01 writes back the bytes its prelude read, so "testpart: identical" holds whether or
+  not the write reached the disk. bios-r2-x001.tsv (destructive, 8 cases) changes ONE byte of the
+  buffer before the write (+set 3=0x58, the OEM name 'M' -> 'X', no BPB field) and writes it WITHOUT
+  RW_NOMEDIACH. A write that goes through changes the end state and the last case's capture.
+  table sha256 39352bce63b7ab334f236641d265dce69fd39856b0b47dda8ef4b3502b54fdf0, CRC 268E6D29
+  Oracle (method/oracle-x001.sh, profile disk, 2 runs, each on a fresh clone):
+    DUMPBIOS.PRG (build e326) 85e17ca4777693e6bc26e9970f242aadd34eddebea734db67bab17bb805c26e5
+    test image d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37 (TOOL07's), manifest
+    runs/test.img.manifest, verbatim:  optional_missing none
+    BIN 425b4e6de9631909006bb99aefbdc01f34c6fdfe582eab00fd7c7158cef075a7, LOG a0d145ab..., identical in
+    both runs (cmp); whole image before = after = d95a60c3... in both runs; the reference = oracle-x001-1.
+    tosdiff --selfcheck: passes (runs/selfcheck-x001.txt). Answers: X17 -14, X17a 2, X17b -14 (buffer
+    poison), X17c BPB, X17d 0, X17e sector 0 = EB 3C 90 4D ('M').
+  NewTOS BEFORE the fix (runs/before-x001; a `git clone --shared` of 5f105c39 in scratch, 0 dirty,
+  measured with --tree; kernel8.img 99628e8cbe7fa1ad49e7ba079c282953943a03ca6356fe8003eb52a00877e44f):
+    4 of 8 differ (37 X17 0, 38 X17a 0, 39 X17b 0 + data, 42 X17e EB 3C 90 58 = 'X');
+    testpart: DIFFERENT, sector 0 (089e349d63d1bf0237b5fde272501d793951dc1662eb8394836b586f20da3419)
+    -- the write reached the disk. The table catches the defect.
+  NewTOS AFTER the fix (runs/after-x001; kernel8.img
+  e195e774bc8ac7bbd8f65e711918361e6343685e94b9e5e1c0fb075b5b72711f):
+    0 of 8 differ; testpart: identical; end state 84bcadfb750eef7880acf837c31a84b678f25fa4f10aeb0a710b639c9e56f09b
+    = the original test partition = the oracle's end state (both runs); fsck_msdos -n exit 0 before
+    and after. VERDICT: writes nothing, measured by the image.
+
+TOSDIFF PER CONFIRMING CASE (method/newtos-runs.sh, cargo xtask tosdump --disk, QEMU raspi4b)
+  "before" = measurements/measurement-2026-10-28-tool07/RUNINFO.TXT (bios-r2) and
+  measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT (closing tables); the product code is
+  unchanged between their commits and 5f105c39 (git diff --stat empty for kernel tos-api tos-types
+  programs sdk).
+  case               EmuTOS        before     after
+  r2   92  W01       -14           0          -14     EQUAL
+  r2   93  W02       2             0          2       EQUAL
+  r2   94  W03       -14, poison   0, data    EQUAL
+  r2   95  W04       -14, poison   0, data    EQUAL
+  r2   96  W05       2             0          2       EQUAL
+  r2  106  X13       2             0          2       EQUAL
+  r2  107  X14       -14, poison   0, data    EQUAL
+  x004 39  X01a      2             0          EQUAL
+  x005 39  X06a      2             0          EQUAL
+  x005 50  X06h      2             0          EQUAL
+  x006 38  X07a      2             0          EQUAL
+  x001 37-42                       4 differ   0 of 8 differ
+  Totals after: bios-r2 3 of 51 (68 R10 BIOS-STOR-003; 83, 84 F03/F03b BIOS-STOR-007), was 10;
+  x004 6 of 10 (40 42-46, BIOS-STOR-004/-006), was 7; x005 1 of 13 (40, BIOS-STOR-005), was 3;
+  x006 5 of 11 (41-44 46, BIOS-STOR-006), was 6; phys 11 of 12 (BIOS-STOR-002), unchanged list.
+  NEWLY DIFFERING: none (per-case lists compared, comm -13: empty for r2, x004, x005, x006, phys).
+  bios-r1.tsv (runs/after-r1): tt 46 of 147, falcontc 50 of 147 -- the same case lists as
+  measurements/measurement-2026-10-28-tool11/RUNINFO.TXT (the current PTR_RAM rule; TOOL09's 42/46
+  predate it: +98 99 100 184). Newly differing: none.
+  End states (closing tables) after: x004 a7cf3d2c..., x005 84bcadfb..., x006 ea645cfc... = the
+  oracle's end states recorded in measurements/measurement-2026-10-28-tool07b/runs/endstate-*.txt.
+  Every run "ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0" (boot to the desktop);
+  test partition fsck_msdos -n exit 0 after r2, x001, x005, phys (x004 206 / x006 202 are the broken
+  boot sectors those tables write, as on the oracle).
+  Manifests: runs/<run>/card.img.manifest and test.img.manifest, every one verbatim:
+    optional_missing none
+
+GEMDOS CONSEQUENCE (BIOS01 work item 4) -- probe method/gcprobe.c, same source both sides
+  EmuTOS (source): the next GEMDOS access to the drive meets forcechange -- getbcb's Mediach on a
+  buffer hit (bdos/fsbuf.c:179-190) or E_CHNG from the Rwabs of a miss (bdos/fs.h:60-68) -- and osif
+  re-logs the drive in with Getbpb + log_media and restarts the call (bdos/bdosmain.c:448-482); that
+  Getbpb clears forcechange. NewTOS's BDOS reads through bios::bcache directly, never through
+  Rwabs/Mediach, and keeps a logged-in drive's geometry (bdos/fs/fat.rs Volume::mount), so it neither
+  meets the state nor re-logs.
+  Build: method/gcprobe-build.sh; GCPROBE.PRG 185d494f86791d324be1a0ae68a310f5b0fe976a7a7e8ee654a67046b473e6e9,
+  GCPROBE.NAP 8f74934aef2b666520fc1598fef39409a310764079f602cf2a512d42329c042c.
+  Run: method/gcprobe-runs.sh -- C: = the same test image on both sides (mktestdisk, INF autorun
+  D:\GCPROBE.NAP, sha256 7c1b91c8e16014b8bbf4d40483070df5ba0069fe6e75c9cb01a2d809963d2496, manifest
+  runs/gc-test.img.manifest), the probe on D:; EmuTOS: pinned ROM + Hatari + hatari.cfg, Falcon VGA,
+  floppies off, --ide-master; NewTOS: mkcard MKCARD_TESTDISK (card image_sha256
+  e54aba13bdc4798fda3aa19b087f45d521c6d7f8b3b40664918c597d21ee6959, runs/gc-newtos-*/card.img.manifest,
+  verbatim: optional_missing none), QEMU raspi4b, after = e195e774... kernel, before = 99628e8c... kernel.
+  runs/gc-{emutos-1,newtos-after,newtos-before}/GCPROBE.LOG:
+    step                                   EmuTOS        NewTOS after   NewTOS before
+    A05 Mediach after sector-0 write (NOMEDIACH)  2      2              0
+    A06 Dfree(C:)                          0             0              0
+    A07 Mediach after that GEMDOS call     0             2              0
+    B02 write boot sector, root entries 512->256 (NOMEDIACH)  0  0     0
+    B04 Dfree(C:) total clusters           32676 (new)   32672 (OLD)    32672 (OLD)
+    B05 Mediach                            0             2              0
+    B06 Fcreate/Fwrite 512/Fclose C:\GCPROBE.DAT  6/512/0  6/512/0     6/512/0
+    B07 Getbpb(2)                          BPB ...,16,128,129,273,32676,1 on all three
+  End states (runs/gc-endstate.txt, method/gcprobe-compare.py; test partition):
+    EmuTOS  marker in partition sector 277 = cluster 3 by the boot sector on disk (datrec 273)
+    NewTOS  marker in partition sector 293 = cluster 3 by the OLD geometry (datrec 289) = cluster 7
+            by the boot sector on disk -- before and after the fix (both 9bd39503...).
+  Findings:
+  1. Re-login: EmuTOS re-logs C: on the first GEMDOS access after the arming and clears forcechange;
+     NewTOS does not. With this fix, Mediach and every logical Rwabs on C: stay 2 / E_CHNG after a
+     GEMDOS access until somebody calls Getbpb (A07, B05: 2 vs 0). Before the fix they were 0 by
+     accident (nothing armed). This window is new with the fix; its cause is the missing BDOS
+     re-login, not the BIOS state.
+  2. S1, OCCURS: after a program changes the boot sector's geometry, NewTOS's GEMDOS keeps the old
+     geometry (B04) and WRITES WITH IT (B06): the file's cluster 3 goes to the sector that is cluster
+     7 under the boot sector on disk -- a write into another cluster than FAT and directory name.
+     Pre-existing (identical before and after this fix; BDOS layer: bdos/fs/fat.rs Volume::mount
+     caches, no ckdrv/getbcb media-change path). Reported, not fixed (BIOS01 work item 4).
+
+HOST TESTS
+  cargo xtask test (full): 1760 passed, 0 failed, 1 ignored (baseline 1751/0/1 + 9 new;
+  runs/xtask-test-summary.txt). make -C tosdump host-test: exit 0, self-check "30 references, every
+  relational rule holds" (runs/host-test.txt). cargo xtask deps --check-mapping: 1015 rows resolve.
+
+FILES
+  method/  oracle-x001.sh, newtos-runs.sh, gcprobe.c, gcprobe-build.sh, gcprobe-runs.sh,
+           gcprobe-compare.py, decode-bios.py (copy of measurement-2026-10-28-tool07's)
+  runs/    oracle-x001-{1,2}, before-x001, after-{r2,x001,x004,x005,x006,phys,r1},
+           gc-{emutos-1,newtos-after,newtos-before}, gc-endstate.txt, manifests, host tests
+  Images, cards and the scratch tree are not kept (scratch, deleted after the run); sha256 above.
+  manifest.sha256 covers every file of this run except itself.

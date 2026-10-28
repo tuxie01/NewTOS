@@ -1,0 +1,42 @@
+# bios-r2-x001.tsv -- DUMPBIOS disk round, closing table for BIOS-STOR-001:
+# a CHANGED logical sector 0 written without RW_NOMEDIACH, against EmuTOS
+# 1a7484ab (docs/analysis/ORACLE.md; TASK/BIOS01, docs/api/bios/04-rwabs.md,
+# docs/audits/2026-10-28-bios-storage.md).  EmuTOS arms forcechange
+# (bios/blkdev.c:452-453) and then fails the same call in its media-change
+# test (blkdev.c:473-477, blkdev_mediach :802-803): E_CHNG, NOTHING WRITTEN.
+# bios-r2.tsv W01 measures the return of that write, but it writes back the
+# bytes it read, so the image cannot tell whether it reached the disk; here
+# the buffer differs from the disk in one byte (the OEM name at offset 3, no
+# BPB field), so a write that goes through shows in the end state and in the
+# last case's capture.
+#
+# WHERE IT RUNS -- as bios-r2.tsv: the oracle's profile disk
+# (HATARI_ORACLE_DISK=<test.img> tools/hatari-oracle.sh disk ...) and on NewTOS
+# a card from tools/mkcard.sh with MKCARD_TESTDISK (cargo xtask tosdump bios
+# <table> --disk ...).  The test image: tools/mktestdisk.sh <img>
+# NEWDESK.INF=<inf>, the one of bios-r2.tsv (sha256 d95a60c3...); C: = LBA 63,
+# 130977 sectors, BPB 512,4,2048,32,128,129,289,32672,1.
+#
+# DESTRUCTIVE ("!disk 2 destructive", docs/TOS-REFERENCE-DUMPER.md section 6,
+# "The closing tables") because its write carries changed bytes ("+set"); it
+# runs on a fresh clone of the test image only (the runners refuse
+# otherwise), and both sides must END in the same state: the test partitions
+# after the run are compared (RUNINFO of the run).
+#   End state: the test partition as before the run (the write is refused).
+#
+# One table per round: a case id is the physical line number and the dump
+# header carries the CRC of this file, so it is frozen once measured.
+!disk	2	destructive
+
+13:7	w:2	PTR_RAM	r:18.W	Getbpb(2) before: the image's BPB -- blkdev.c:569-777
+13:9	w:2	EXACT	-	Mediach(2) before -- blkdev.c:783-820
+
+# ---- the write: sector 0 with OEM name byte 3 'M' (0x4D) -> 'X' (0x58)
++13:4	w:2,b:0,w:1,w:0,w:2,l:0	-	-	sector 0 of C: into buffer 0
++set	3=0x58	OEM name byte 3 -> 'X'
+13:4	w:1,b:0,w:1,w:0,w:2,l:0	EXACT	-	X17 write the changed sector 0, no RW_NOMEDIACH: E_CHNG, nothing written -- blkdev.c:450-453, 473-477
+13:9	w:2	EXACT	-	X17a Mediach(2) after it: forcechange -- blkdev.c:799-803
+13:4	w:0,b:0,w:1,w:0,w:2,l:0	EXACT	1:16	X17b read sector 0 while armed: E_CHNG, buffer untouched -- blkdev.c:450-451
+13:7	w:2	PTR_RAM	r:18.W	X17c Getbpb(2): the image's BPB, clears forcechange -- blkdev.c:589-590
+13:9	w:2	EXACT	-	X17d Mediach(2) after Getbpb -- blkdev.c:783-820
+13:4	w:0,b:0,w:1,w:0,w:2,l:0	EXACT	1:16	X17e read sector 0: byte 3 is the image's 'M', not 'X' -- blkdev.c:430-481

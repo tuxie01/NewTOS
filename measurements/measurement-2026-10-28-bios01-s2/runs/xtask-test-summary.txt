@@ -1,0 +1,4 @@
+cargo xtask test (full): 1760 passed, 0 failed, 1 ignored
+     Running tests/bios01_forcechange.rs (target/debug/deps/bios01_forcechange-0b84e0b7e51f6837)
+
+running 9 tests

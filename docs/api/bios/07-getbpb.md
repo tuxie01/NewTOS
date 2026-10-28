@@ -337,7 +337,13 @@ exFAT is a Phase-09 goal (`docs/HARDWARE-PROFILE.md` §3.4).
 
 ### Gaps vs. the contract (Step-2 candidates)
 
-- **Media-state reset not implemented.** EmuTOS resets
+- **[BIOS01] implemented** for `forcechange`: `boot_sector`, shared by the
+  trap's `bpb_for` and the BDOS log-in's `geometry`, clears it after the drive
+  test and before the read (`tos-api/src/bios/bpb.rs:247@clear_forcechange`);
+  W06/W07, X15/X16 and `bios-r2-x001.tsv` EQUAL with the state armed
+  (`measurements/measurement-2026-10-28-bios01-s2/RUNINFO.TXT`). There is still
+  no `mediachange` latch to reset. Before:
+  **Media-state reset not implemented.** EmuTOS resets
   `mediachange = MEDIANOCHANGE`, `forcechange = FALSE` at the top of `Getbpb`
   (`bios/blkdev.c:589-590`) — right after the drive-valid test and **before**
   any test of the boot sector, so a `Getbpb` that returns NULL clears it too.
