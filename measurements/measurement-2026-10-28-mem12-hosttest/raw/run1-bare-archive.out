@@ -1,0 +1,5 @@
+rustc 1.97.0-nightly (a5c825cd8 2026-04-14)
+cargo 1.97.0-nightly (eb94155a9 2026-04-09)
+exit=1
+wall_s=22
+method/run-hosttest.sh $S  143,04s user 23,55s system 597% cpu 27,880 total

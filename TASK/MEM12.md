@@ -264,6 +264,13 @@ Klammerregel), Tabelle `tosdump/cases/super-r1.tsv`, Referenzen
 definiertes `d0` (IGNORE, Zustand ueber die folgende Abfrage gemessen),
 `Supexec` reicht 0x12345678 und −2 durch, `Super(1L)` im Callback = −1. Die
 NewTOS-Seite folgt nach Pruefpunkt 3.
+Hosttests dieses Pruefpunkts (`cargo xtask test` auf `a7ffd707`): der
+Beleglauf verwies auf einen Chat-Bericht, der nicht mehr vorliegt; der
+committete Lauf bleibt unveraendert. Nachgemessen 2026-10-28 aus
+`git archive` mit eigenem Target: **1706 / 0 / 1**
+(`measurements/measurement-2026-10-28-mem12-hosttest/RUNINFO.TXT`; gitignorierte
+Eingaben `references/` und `sdk/apps/teradesk` dafuer aus dem heutigen Baum
+gelinkt, dort benannt).
 
 ## Arbeit
 

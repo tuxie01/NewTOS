@@ -1,0 +1,8 @@
+d9b81044137d9896f547e09feeb98e862379ed511620e631b5d96f512cea329a  ./method/prepare-inputs.sh
+c4025d3f540a18f039e2437d725dd1726d8cb27109699d032c5fae9080b7a691  ./method/run-hosttest.sh
+49f5fd52f1a7f74311ed2e675436603f2365046568cddc44914751d0fd1a98ef  ./raw/run1-bare-archive-failures.txt
+3ead7b586dc4346554372bb4c7dbc10d9a0c567da75b9faeea45aba8477690d8  ./raw/run1-bare-archive.out
+3aa11373fa39a3cc362ea2a69883a06b129b9ac834938cbde02cbc1678ea057e  ./raw/run2-emutos-only-failures.txt
+737ab94b35f91fbdc8b3bf34cef34df107050388ba0bf1da591dcec569eb7f14  ./raw/summary-final.txt
+b1f6e71c45f9a9950164fbfbfe9384055845eef14ed309c4760b8b26d74633ec  ./raw/test-names-final.txt
+71b436e2b2ddbbedd7ca064d4d9a91cc31fc9cca9e16e743fd0632b30d5696ae  ./RUNINFO.TXT

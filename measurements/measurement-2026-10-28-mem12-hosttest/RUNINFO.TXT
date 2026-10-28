@@ -1,0 +1,58 @@
+measurement-2026-10-28-mem12-hosttest -- `cargo xtask test` on a7ffd707 (MEM12 checkpoint 2).
+Tester, 2026-10-28. No product code touched, no hardware, no git state changed.
+No SD image was booted, so there is no image manifest (no optional_missing to quote).
+
+WHAT / WHY
+ measurements/measurement-2026-10-27-mem12-super-oracle/RUNINFO.TXT says under NOT DONE HERE: "cargo xtask test: no Rust
+ changed in this checkpoint; result in the checkpoint report". That report was a chat message and is lost. That run is
+ committed and immutable (manifest.sha256 over its RUNINFO.TXT) and stays UNCHANGED. User decision 2026-10-28: this new run
+ measures the host tests on that checkpoint instead.
+
+HOW (method/run-hosttest.sh, then method/prepare-inputs.sh)
+ - Source = `git archive a7ffd707 | tar -x` into a scratch dir (session scratchpad, outside the repo); own CARGO_TARGET_DIR
+   in the same scratch area. No worktree/checkout/stash; the main repo and its target/ were not touched.
+ - rustc 1.97.0-nightly (a5c825cd8 2026-04-14), cargo 1.97.0-nightly (eb94155a9 2026-04-09), toolchain nightly-2026-04-15
+   (rust-toolchain.toml of a7ffd707), host aarch64-apple-darwin.
+ - Command: `cargo xtask test` (tos-api, tos-types, xtask; includes doc-tests).
+
+STEPS AND WHAT THEY SHOWED
+ 1. Bare archive (cold build): exit 1, wall 22 s (incl. the cold build; `time`: 27.9 s total). xtask suite 172 passed / 9 FAILED.
+    All 9 are missing-input failures, not test failures (raw/run1-bare-archive-failures.txt):
+      - doc_check x4 (anchors_resolve_against_the_workspace, bare_names_resolve_when_unique, newtos_code_roots,
+        resolves_against_the_workspace): "doc-check: git ls-files failed" -- an archive has no .git.
+      - rsc_obfix_tests x3, rsc_cicon_tests x2: "references/emutos/aes/gem.rsc must exist" / sdk/apps/teradesk/cicons.rsc absent.
+ 2. + scratch git repo + symlink references/emutos only: 3 failures left (raw/run2-emutos-only-failures.txt):
+    doc_check emutos_resolves_at_the_pin and resolves_against_the_workspace (they expect Outcome::Fail("missing") but get
+    Skipped while any other references/<x> is absent), and rsc_cicon_tests teradesk_cicons_rsc (cicons.rsc absent).
+ 3. + symlinks for ALL other references/* checkouts and sdk/apps/teradesk (all gitignored in the main repo): see below.
+    Final run, warm target: exit 0, wall 4 s.
+
+LINKED INPUTS (read-only symlinks into /Volumes/Daten/Development/PiRusTOS, scratch tree only; exact commands in method/prepare-inputs.sh)
+ - .git: NOT linked; a scratch `git init` + `git add -A` + commit of the extracted tree (needed by doc_check `git ls-files`).
+ - references/* (gitignored except README.md): arm-arm circle datasheets emutos emutos-oracle freemint gabi libshare rpi4-boot
+   sd-spec usb xhci (every directory present in the main checkout at run time).
+ - sdk/apps/teradesk (gitignored in full; cicons.rsc is the one read).
+ These are exactly the gitignored inputs; the tracked content is a7ffd707's. The linked content is the CURRENT main checkout's,
+ not a7ffd707-era; the reference checkouts are pinned and the .rsc is an input blob, the tests passed with them.
+
+RESULT (final run, raw/summary-final.txt, raw/test-names-final.txt = every test line, sorted)
+ cargo xtask test on a7ffd707: exit 0, 163 test-result lines, passed 1706 / failed 0 / ignored 1.
+ The one ignored is the doc-test tos-api/src/bdos/mem/stats.rs - bdos::mem::stats (line 18).
+ Wall time: 22 s cold (step 1, incl. build), 4 s warm (final run). Neither includes the earlier cache state of the main repo.
+
+COMPARISON WITH main (docs/STATUS.md "Hosttests": 1726 / 0 / 1 on 75527af8, full tier)
+ Delta +20 passed on main, failed 0 and ignored 1 identical. Explained by counting `#[test]` in tracked files of
+ tos-api, tos-types, tools/xtask (git grep -c at each rev): a7ffd707 = 1579, 75527af8 = 1599 -> +20, equal to the delta.
+ Source of the +20: commits a7ffd707..75527af8 touching those crates: 34530791 (MEM12, page 0 read-only; new
+ tos-api/tests/mem12_super_state.rs, mmu.rs/superstate.rs/kbdvecs tests), 6c943310 and 75527af8 (TOOL04, xtask test tiers).
+ The count is of #[test] attributes, not a per-test attribution; it matches the totals exactly, which is the check made here.
+
+FINDINGS
+ - A bare `git archive` tree cannot run the full `cargo xtask test`: 9 tests depend on .git, references/ and
+   sdk/apps/teradesk (3 more fail when only part of references/ is present, because the doc_check expectation
+   "missing" turns into Skipped). Not a defect of a7ffd707; relevant to anyone reproducing a host-test baseline from an archive.
+ - Checkpoint 2 itself: nothing red. The earlier claim "no Rust changed" is consistent with a clean 1706/0/1.
+
+CLEANUP
+ The scratch source tree and scratch target dir were deleted at the end (see the report). Raw logs kept small: failure
+ extracts and summaries only, no build log.
