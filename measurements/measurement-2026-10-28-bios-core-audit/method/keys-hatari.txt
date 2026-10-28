@@ -1,0 +1,20 @@
+# ST scancodes: a 0x1E=30, b 0x30=48, F1 0x3B=59, Return 0x1C=28,
+# LShift 0x2A=42, Ctrl 0x1D=29, c 0x2E=46
+hatari-event keydown 30
+hatari-event keyup 30
+hatari-event keydown 42
+hatari-event keydown 30
+hatari-event keyup 30
+hatari-event keyup 42
+hatari-event keydown 59
+hatari-event keyup 59
+hatari-event keydown 29
+hatari-event keydown 46
+hatari-event keyup 46
+hatari-event keyup 29
+hatari-event keydown 28
+hatari-event keyup 28
+hatari-event keydown 42
+hatari-event keydown 48
+hatari-event keyup 48
+hatari-event keyup 42

@@ -1,0 +1,60 @@
+INFO : Hatari v2.6.1, compiled on:  Aug 15 2025, 14:15:19
+INFO : IPF : capsimage library version release=5 revision=1
+INFO : GEMDOS HDD emulation, C: <-> /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-28-bios-core-audit/runs/TRACE-EMUTOS-bios-r1/hd.
+INFO : NVRAM not found at '/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-28-bios-core-audit/runs/TRACE-EMUTOS-bios-r1/home/hatari.nvram'
+WARN : Bus Error writing at address $41fffe, PC=$e00232 addr_e3=e00232 op_e3=3305
+WARN : Bus Error writing at address $ffd000e0, PC=$e0025a addr_e3=e0025a op_e3=33fc
+WARN : Bus Error reading at address $20fffff, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fffffc21, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $ffffa200, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6c4710, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $5d1234, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6d3148, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fe9003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fedc03c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $febf03c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $d003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+INFO : OS clock ticks / second: 100
+
+
+
+
+
+                                                         
+                                                         
+                                                         
+                                                         
+                                                         
+                    ________________________________________
+
+                    EmuTOS Version:     20260414 
+                    CPU-Typ:            M68030 
+                    Rechner:            Atari TT 
+                    ST-RAM:             4 MB 
+                    Alt-RAM:            16 MB 
+                    GEMDOS-Laufwerke:   ABC 
+                    Boot-Zeit:          2026/10/28 11:01:36 
+                    ________________________________________
+
+                    Halte <Strg> = ohne AUTO/ACC
+                    Halte <Alt> = keine Harddisk
+                    DrUcke 'X' um von Laufwerk X: zu booten
+                    DrUcke <Esc> fUr die Textkonsole
+
+                       FUr Pause <Shift> gedrUckt halten    
+WARN : No GEMDOS dir '/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-28-bios-core-audit/runs/TRACE-EMUTOS-bios-r1/hd/AUTO'
+
+
+WARN : No GEMDOS dir '/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-28-bios-core-audit/runs/TRACE-EMUTOS-bios-r1/hd/etc'
+DUMPBIOS build 1680, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV: 147 cases, CRC 583C11E0
+running 147 cases
+*WARN : Unknown BIOS call 0xc! at PC 0x1015914
+WARN : Unknown BIOS call 0x7f! at PC 0x1015914
+WARN : Unknown BIOS call 0xff! at PC 0x1015914
+all 147 cases ran
+BIOS.BIN: 147 records, 47072 bytes
+BIOS.LOG: 172 bytes

@@ -1,0 +1,11 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh
+image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/audit-bios-core/card-PROBE-NEWTOS-raspi4b.img
+image_sha256 7024bdcb3900fc64438852f727d193e2559480ec65b6ce278139e3535b78069c
+size_mib 64
+created 2026-10-28T09:58:39Z
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+metadata C:\.Spotlight-V100 (macOS volume metadata, not hashed)
+file dd97745cae77abab0f7fb8c5f3464ba823065a7e7050c36f7fad81b9c229735e 149152 C:\BCPROBE.NAP
+file 03f0c8c1bcb06865ac0059eabcca44fe2d46419313dc7aca3a3d1e6a13e22297 30 C:\NEWDESK.INF

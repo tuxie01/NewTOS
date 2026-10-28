@@ -1,0 +1,133 @@
+BIOS core audit (Getmpb, Bconstat, Bconin, Bconout, Setexc, Tickcal, Bcostat, Kbshift) -- 2026-10-28
+=====================================================================================================
+Auditor run for docs/audits/2026-10-28-bios-core.md. MEASUREMENT ONLY: no product code changed, no
+tosdump/tosdiff change, nothing flashed, no card, no hardware. Not committed.
+
+WHY
+  User decision 2026-10-28 (docs/STATUS.md, "Warteschlange"): the BIOS groups after the storage
+  audit, bottom-up; this one is trap #13 without disk access. Scope: BIOS 0x00, 0x01, 0x02, 0x03,
+  0x05, 0x06, 0x08, 0x0B. Excluded: Rwabs, Getbpb, Mediach, Drvmap (2026-10-28 storage audit), XBIOS.
+
+STATE
+  NewTOS   : 1680d5b27e33c099f1d70f5b1f208c2c95a3567e, clean -- built and run ONLY from the detached
+             worktree <session scratchpad>/wt-audit (git status empty before and after). The shared
+             main tree had foreign uncommitted TOOL06 work (docs/analysis/ORACLE.md,
+             tools/hatari-oracle.sh modified; tools/mktestdisk.sh, measurements/...-tool06 new); none
+             of it was used.
+  EmuTOS   : 1a7484aba1bfba23e2c0899e243b6d8177fe41df (references/emutos HEAD)
+  ROM      : tools/oracle/etos512de-1a7484ab.img sha256 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+             (checked at start and end)
+  Hatari   : 2.6.1 (Aug 15 2025), binary sha256 953f4e78eea55a8ca12ed6c83de1f045545b8da42a49e00112eaa235dffcd6f6
+  cfg      : tools/oracle/hatari.cfg sha256 c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46
+             (unchanged at start and end, never --saveconfig)
+  QEMU     : 11.0.2, -M raspi4b, -append serial=on
+  Canary   : docs/analysis/ORACLE.md section 6 command from the worktree, scratch
+             <scratchpad>/audit-bios-core/canary-20261028-103759:
+             "canary tt: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all)"
+             "canary falcontc: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all-falcontc)"
+             VDI.BIN tt 715c734c..., falcontc 81b3bdba...; VDI.LOG tt d30e973c..., falcontc 64dacda7...
+  Kernel   : cargo xtask build --board rpi4 --release in the worktree (after touch kernel/src/lib.rs
+             tos-api/src/lib.rs): kernel8.img 8dd07ed27c693c35a71144b3631ff5a04a36df04492ba5926b0b6d343df5b64f,
+             ELF 3ec80e416c4dd3d5f0055f50cf5742b1a86ffd9b936f5b895a2b791300d60ae9
+  Injector kernel (KEYS-NEWTOS-* runs only): an APFS clone of the worktree (wt-inject, its .git
+             file removed so no git command could reach the worktree's metadata), patched by
+             tools/inject-arm.py <clone> launch:KPROBE=method/keys-ikbd.txt (diff:
+             method/injector-scratch.diff, INJ-ARM-TEMP lines), xtask+kernel fingerprints deleted
+             to force a rebuild in the clone: kernel8.img
+             3dd7af8b84eb763393ac5794b1b26d555a65f66c11b8d1da37c425d39e4b087e. Clone deleted after.
+
+PRE-FLIGHT NEWTOS CASE TABLE (runs/NEWTOS-bios-r1, method/run-dumpbios-newtos.sh = the storage
+audit's script, copied as run-dumpbios-newtos.orig.sh, parametrised copy for repo/table/refs)
+  DUMPBIOS.NAP build 1680 (tosdump/build-dumpbios-newtos.sh): probe/DUMPBIOS.NAP
+  tosdiff vs EMUTOS-1a7484ab-BIOS (tt): 42 of 147 differ; vs -falcontc: 46 of 147.
+  In scope (cases 30-71, 77): DIFF 53, 54 (Setexc 2/0x21 NONZERO: NewTOS 0), 66, 67, 69, 70 (Bcostat
+  3/4/6/7: EmuTOS -1, NewTOS 0); all others EQUAL. method/listrec.py prints the records (display only).
+
+NEW CASE TABLE tosdump/cases/bios-core-r1.tsv (44 cases, CRC C056A3E0, sha256
+db802dc60c30099409f82399b37c42faa3f483d802bbfa7c6694e6d9d633e4dc)
+  Inside the round-1 guard; boundary handles for Bconstat/Bconin/Bconout/Bcostat, Setexc inquiries
+  with PTR_RAM / EXACT. A scouting copy with every row IGNORE ran first (scratch, not evidence) to
+  choose the classes.
+  DUMPBIOS.PRG build 1680 (make -C tosdump BUILD=... BUILD_ID=1680 dumpbios-m68k): probe/DUMPBIOS.PRG
+  runs/EMUTOS-core-tt, -falcontc, -tt-repeat: tools/hatari-oracle.sh (worktree copy); tt-repeat BIN
+  byte-identical to tt. tosdiff --selfcheck on both: "the oracle passes every relational rule (44
+  cases)". Installed as tosdump/reference/EMUTOS-1a7484ab-BIOS-core{,-falcontc}.{BIN,LOG}:
+    c1f8ba322dfa2f1d9f5dcbbbced6cd62db5a0603c9be7f880a991bded57257b1  EMUTOS-1a7484ab-BIOS-core.BIN
+    a5ec1db2ac97194e364f870e6162b11ba1bd79309b59915e9b4579b24ab663db  EMUTOS-1a7484ab-BIOS-core.LOG
+    112ec869d69f36ae5262270ddc2007d85630c90199cc30386870a2d75ff8577a  EMUTOS-1a7484ab-BIOS-core-falcontc.BIN
+    a5ec1db2ac97194e364f870e6162b11ba1bd79309b59915e9b4579b24ab663db  EMUTOS-1a7484ab-BIOS-core-falcontc.LOG
+  runs/NEWTOS-bios-core-r1: tosdiff tt 15 of 44 differ (46-57 Setexc CPU vectors null / etv_* not
+  < 0x80000000, 59 memvalid, 65-66 Bcostat 8/9); falcontc 14 of 44 (Bcostat(9) is 0 on the Falcon:
+  3 Bconmap ports, bios/serport.c:981 vs :993).
+
+INPUT CHECK
+  EmuTOS: runs/TRACE-EMUTOS-bios-r1 and -bios-core-r1 = method/run-dumpbios-emutos-traced.sh (same
+  start + --trace bios,xbios). Core BIN byte-identical to the reference; bios-r1 records identical to
+  the reference except case 125 Gettime (NONZERO). trace-program.txt = the calls issued from the
+  dumper's text (PC 0x1015914): every in-scope row arrived with the table's arguments (WORDs printed
+  unsigned: -2 = 0xFFFE). Probe runs: trace-program.txt in each EmuTOS run dir, same check.
+  NewTOS: NOT available -- no tracer records BIOS arguments (TASK/TOOL08). Indirect only: Kbshift
+  round-trips the set values (bits 0-4), Setexc q1_is_new=1 (the 64-bit vector arrived whole),
+  Bconout(2,0x141) printed "A" on the serial console (PROBE-NEWTOS-raspi4b/BOOT-SERIAL.txt).
+
+THE PROBES (method/bcprobe.c, method/kprobe.c; method/build-probe.sh <repo> <scratch>)
+  Same C source, m68k-atari-mint-gcc 7.5.0 + mintlib / clang aarch64 + sdk mintlib + sdk/newtos.ld.
+  m68k PRGs are not bit-reproducible between builds (5 bytes in the symbol table: the temporary
+  object name); the binaries in probe/ are the ones every final run used. NAPs reproduce.
+  bcprobe: K Kbshift set arm, S Setexc set/restore cycles, T etv_timer dispatch (hook counter over
+  400 hz_200 ticks via Supexec), B Bconout to AUX/MIDI/IKBD/Bconmap 6,7/PRT, Bconin(0), Tickcal;
+  G Getmpb (last, own log; the MD is read in super state -- a user-mode read of EmuTOS' themd at
+  $48E is a bus error, measured in a development run: "Panic: Bus Error addr=00000494").
+  BCHANGn (HANGLIST=0,n): "before" line flushed, Bconin(n), "after" line; EmuTOS killed 20 s wall
+  (fast-forward) after the first line. BCHANG.NAP: HANGLIST=0,1,3,6 in one run.
+  kprobe: Bconstat(2)/Bconin(2) with six key strokes (a, Shift+a, F1, Ctrl+c, Return, Shift+b; the
+  last read with conterm bit 3). EmuTOS: method/run-emutos-keys.sh, Hatari --cmd-fifo
+  "hatari-event keydown/keyup <ST scancode>" (method/keys-hatari.txt) after KEYREADY on --conout 2,
+  --fast-forward off (with fast-forward on, a development run showed key auto-repeat between
+  keydown and keyup). NewTOS: injector kernel, method/keys-ikbd.txt (IKBD make/break bytes).
+  Runners: method/run-emutos.sh (hatari-oracle.sh's start + --trace bios,xbios),
+  method/run-newtos.sh (tools/mkcard.sh card, #Z autorun, QEMU raspi4b).
+
+RUNS (runs/)
+  PROBE-EMUTOS-tt, -falcontc, -tt-repeat      BCPROBE/BCPROB2: tt = repeat except T01 loop count;
+                                              falcontc differs only in memtop/md_length (device) and loops
+  PROBE-NEWTOS-raspi4b, -repeat               identical except T01 loop count
+  HANG-EMUTOS-tt-1/-3/-6                      "H0 after" present, "Hn after" absent (blocked)
+  HANG-NEWTOS-raspi4b                         every "after" present, ret 0
+  KEYS-EMUTOS-tt, -repeat                     identical except K01 timing
+  KEYS-NEWTOS-raspi4b-injector, -repeat       identical except K01 poll count
+  EMUTOS-core-*, NEWTOS-bios-core-r1, NEWTOS-bios-r1, TRACE-EMUTOS-*   see above
+  Development runs (first probe build, scouting table, two key-injection trials) stayed in scratch:
+  not evidence; every case they shared with the final runs gave the same values.
+
+RESULTS (EmuTOS left, NewTOS right; details in the report)
+  Kbshift   K04/K05 0x1FF -> reads 0xFF | 0x1F; K08/K09 0x7F81 -> 0x81 | 0x01 (bits 5-7 dropped)
+  Setexc    etv_* old value: TOS address | 0x4E75000000000000 / 0x4372697400000000 (hi word set);
+            CPU vectors 2/4: address | 0; set/restore round-trip: equal; S08 memvalid 0x752019F3 | 0
+  etv_timer T01 calls=100 over 400 ticks | calls=0
+  Bconout   AUX 1 | 1; MIDI 1 | 0; IKBD 1 | 0; Bconmap 6, 7: 1 | 0; PRT 0 | 0; BEL, 0x141, raw LF 1 | 1
+  Bcostat   3, 4 after output: -1 | 0;  Bconin(0) 0 | 0;  Tickcal 20 | 20
+  Bconin    1, 3, 6: blocks (no return) | 0 at once
+  Bconin(2) keys 1-5 equal (0x001E0061, 0x001E0041, 0x003B0000, 0x002E0003, 0x001C000D);
+            conterm|8 Shift+b: 0x02300042 | 0x00300042
+  Getmpb    mp_free tosaddr, mp_used NULL, mp_rover kept: equal; md_next/md_owner NULL: equal;
+            through mintlib _MD: md_start 0x00023BA0 | 0x00A0000000400000, md_length 0x003B6B60 | 0;
+            sizeof(_MD) 16 | 32; raw bytes NewTOS = tos-types MD (m_start u32 @8, m_length u32 @12):
+            m_start 0x00400000, m_length 0x00A00000 = [membot, memtop) of page 0.
+
+CARDS / IMAGES
+  Every NewTOS run card: tools/mkcard.sh defaults (64 MiB, MBR + FAT16); manifests copied as
+  <run>/db.img.manifest or <run>/card.img.manifest, image sha256 before/after in each run dir
+  (db.img.after.sha256, card.img.{before,after}.sha256). optional_missing line of every manifest,
+  verbatim (all seven identical):
+    optional_missing none
+  Cards deleted after the logs were copied (mcopy). No EmuTOS disk image (no disk call in scope;
+  the EmuTOS program drive is Hatari's GEMDOS drive C:).
+
+NOT VERIFIED
+  Real Raspberry Pi 4; NewTOS-side argument arrival (no tracer); Bconin(1) with data on a real
+  serial line (no NewTOS RX path); Alt+Clr/Home / Alt+Insert key strokes (MODE_HOME/INSERT from the
+  decoder); etv_term and etv_critic dispatch; Setexc(n >= 0x200) (EmuTOS answers RAM content).
+
+FILES
+  manifest.sha256 covers every file of this run except itself.

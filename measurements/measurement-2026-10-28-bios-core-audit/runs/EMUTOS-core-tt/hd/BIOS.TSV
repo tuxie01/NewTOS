@@ -1,0 +1,71 @@
+# bios-core-r1.tsv -- DUMPBIOS, audit bios-core (2026-10-28): boundary handles
+# and further vector inquiries for the BIOS character calls and Setexc, against
+# EmuTOS 1a7484ab (references/emutos, docs/analysis/ORACLE.md).
+#
+# Added by the auditor (docs/audits/2026-10-28-bios-core.md, section 5) as a
+# table of its own, so bios-r1.tsv, its CRC and its references stay as they
+# are.  Every row is inside the round-1 guard of tosdump/core/cases.c
+# (call_policy): Bconstat/Bcostat any handle, Bconin only handles that return at
+# once, Bconout a printable byte to CON/raw CON or any byte to no device,
+# Setexc only the inquiry (-1).  Form: tosdump/cases/bios-r1.tsv header.
+#
+# Setexc rows that name an address use PTR_RAM (non-null, even, < 0x80000000),
+# not NONZERO: a vector is a TOS LONG address.  memvalid ($420) and ramvalid
+# ($5A8) are documented magic values: EXACT.
+#
+# References: tosdump/reference/EMUTOS-1a7484ab-BIOS-core (tt) and
+# -BIOS-core-falcontc.  One table per round: frozen once measured.
+
+# ---- BIOS 1 Bconstat(dev) -- the Bconmap range and past it, bios/bios.c:914-933
+13:1	w:7	EXACT	-	Bconstat(7) Bconmap 7 -- bios/bios.c:923-927
+13:1	w:8	EXACT	-	Bconstat(8) Bconmap 8 -- bios/bios.c:923-927
+13:1	w:9	EXACT	-	Bconstat(9) Bconmap 9 -- bios/bios.c:923-927
+13:1	w:11	EXACT	-	Bconstat(11) past the map -- bios/bios.c:924-925
+13:1	w:0x7FFF	EXACT	-	Bconstat(0x7FFF) WORD max -- bios/bios.c:924-925
+13:1	w:-2	EXACT	-	Bconstat(-2) negative -- bios/bios.c:930-932
+13:1	w:-32768	EXACT	-	Bconstat(-32768) WORD min -- bios/bios.c:923-932
+
+# ---- BIOS 2 Bconin(dev) -- only handles that return at once, bios/bios.c:958-977
+13:2	w:11	EXACT	-	Bconin(11) past the map -- bios/bios.c:968-969
+13:2	w:0x7FFF	EXACT	-	Bconin(0x7FFF) WORD max -- bios/bios.c:968-969
+13:2	w:-2	EXACT	-	Bconin(-2) negative -- bios/bios.c:974-976
+13:2	w:-32768	EXACT	-	Bconin(-32768) WORD min -- bios/bios.c:967-976
+
+# ---- BIOS 3 Bconout(dev,c) -- printable edges to CON/raw CON, any byte to no device
+13:3	w:2,w:0x20	EXACT	-	Bconout(2,' ') CON lowest printable -- bios/bios.c:1008-1009, chardev.c:91
+13:3	w:2,w:0x7E	EXACT	-	Bconout(2,'~') CON highest printable -- chardev.c:91
+13:3	w:5,w:0x20	EXACT	-	Bconout(5,' ') raw CON -- chardev.c:98
+13:3	w:5,w:0x7E	EXACT	-	Bconout(5,'~') raw CON -- chardev.c:98
+13:3	w:10,w:0x1B	EXACT	-	Bconout(10,ESC) past the map -- bios/bios.c:1001-1003
+13:3	w:11,w:0xFF	EXACT	-	Bconout(11,0xFF) past the map -- bios/bios.c:1001-1003
+13:3	w:0x7FFF,w:0x41	EXACT	-	Bconout(0x7FFF,'A') WORD max -- bios/bios.c:1001-1003
+13:3	w:-2,w:0x41	EXACT	-	Bconout(-2,'A') negative -- bios/bios.c:1008-1010
+13:3	w:-32768,w:0x41	EXACT	-	Bconout(-32768,'A') WORD min -- bios/bios.c:1000-1010
+
+# ---- BIOS 5 Setexc(n,-1) -- the inquiry, LONG setexc, bios/bios.c:1070-1080
+13:5	w:0x2,l:-1	PTR_RAM	-	Setexc(0x2,-1) bus error -- bios/bios.c:1073-1074
+13:5	w:0x3,l:-1	PTR_RAM	-	Setexc(0x3,-1) address error -- bios/bios.c:1073-1074
+13:5	w:0x4,l:-1	PTR_RAM	-	Setexc(0x4,-1) illegal instruction -- bios/bios.c:1073-1074
+13:5	w:0x1C,l:-1	PTR_RAM	-	Setexc(0x1C,-1) level-4 autovector (VBL) -- bios/bios.c:1073-1074
+13:5	w:0x21,l:-1	PTR_RAM	-	Setexc(0x21,-1) trap #1 -- bios/bios.c:1073-1074
+13:5	w:0x22,l:-1	PTR_RAM	-	Setexc(0x22,-1) trap #2 -- bios/bios.c:1073-1074
+13:5	w:0x2D,l:-1	PTR_RAM	-	Setexc(0x2D,-1) trap #13 -- bios/bios.c:1073-1074
+13:5	w:0x2E,l:-1	PTR_RAM	-	Setexc(0x2E,-1) trap #14 -- bios/bios.c:1073-1074
+13:5	w:0x45,l:-1	PTR_RAM	-	Setexc(0x45,-1) MFP timer C -- bios/bios.c:1073-1074
+13:5	w:0x100,l:-1	PTR_RAM	-	Setexc(0x100,-1) etv_timer -- bios/bios.c:1073-1074
+13:5	w:0x101,l:-1	PTR_RAM	-	Setexc(0x101,-1) etv_critic -- bios/bios.c:1073-1074
+13:5	w:0x102,l:-1	PTR_RAM	-	Setexc(0x102,-1) etv_term -- bios/bios.c:1073-1074
+13:5	w:0x103,l:-1	EXACT	-	Setexc(0x103,-1) etv_xtra $40C -- bios/bios.c:1073-1074
+13:5	w:0x108,l:-1	EXACT	-	Setexc(0x108,-1) memvalid $420 -- bios/bios.c:1073-1074
+13:5	w:0x168,l:-1	PTR_RAM	-	Setexc(0x168,-1) _p_cookies $5A0 -- bios/bios.c:1073-1074
+13:5	w:0x169,l:-1	PTR_RAM	-	Setexc(0x169,-1) ramtop $5A4 -- bios/bios.c:1073-1074
+13:5	w:0x16A,l:-1	EXACT	-	Setexc(0x16A,-1) ramvalid $5A8 -- bios/bios.c:1073-1074
+
+# ---- BIOS 8 Bcostat(dev) -- the Bconmap range and past it, bios/bios.c:1143-1163
+13:8	w:8	EXACT	-	Bcostat(8) Bconmap 8 -- bios/bios.c:1152-1156
+13:8	w:9	EXACT	-	Bcostat(9) Bconmap 9 (TT: 4 ports; profile) -- bios/bios.c:1152-1156
+13:8	w:10	EXACT	-	Bcostat(10) past the map -- bios/bios.c:1153-1154
+13:8	w:11	EXACT	-	Bcostat(11) past the map -- bios/bios.c:1153-1154
+13:8	w:0x7FFF	EXACT	-	Bcostat(0x7FFF) WORD max -- bios/bios.c:1153-1154
+13:8	w:-2	EXACT	-	Bcostat(-2) negative -- bios/bios.c:1159-1162
+13:8	w:-32768	EXACT	-	Bcostat(-32768) WORD min -- bios/bios.c:1152-1162

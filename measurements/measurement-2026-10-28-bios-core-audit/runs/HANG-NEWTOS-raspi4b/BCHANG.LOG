@@ -1,0 +1,8 @@
+H0 before Bconin(0)
+H0 after ret=00000000 hi=00000000
+H1 before Bconin(1)
+H1 after ret=00000000 hi=00000000
+H3 before Bconin(3)
+H3 after ret=00000000 hi=00000000
+H6 before Bconin(6)
+H6 after ret=00000000 hi=00000000
