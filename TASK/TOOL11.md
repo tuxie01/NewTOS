@@ -55,3 +55,19 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Werkzeug (Vergleichsregel) — B
   andere `PTR_RAM`-Fall ist im RUNINFO begruendet.
 - Hosttests gruen (`cargo xtask test` und `tosdump/tests`); doc-check der
   geaenderten Doku 0 Fehler.
+
+## Stand 2026-10-28 (Arbeitspunkt 1 erledigt)
+
+- Regelvorschlag `docs/analysis/ptr-ram-rule-2026-10-28.md`, Empfehlung
+  Option A: feste Untergrenze `v >= 0x400` (`sysvars_start`,
+  `references/emutos/tosvars.ld:31`); kleinster Orakelwert `0x30D4`, NewTOS
+  `Keytbl` `0x768` und `Setexc(0x168)` `0x5F0` bleiben gueltig; neu
+  abweichend nur `Iorec(0..2)` und `Bconmap(-2)`. Erkennt nur kleine
+  Konstanten.
+- Spaeter fuer `Iorec`/`Bconmap`: Capture durch den Rueckgabezeiger
+  (`r:<len>` aus TOOL07, Option B), sobald der LP64-Vertrag des IOREC-Abbilds
+  geklaert ist.
+- Developer-Schritt zusaetzlich: der Laeufer folgt dem Rueckgabezeiger ohne
+  die PTR_RAM-Grenzen (`tosdump/core/runner_call.c:257@TD_CALL_CAP_RET`); er
+  muss dieselben Grenzen einhalten, bevor `r:` fuer weitere Faelle genutzt
+  wird.
