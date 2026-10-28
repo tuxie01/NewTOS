@@ -1,0 +1,4 @@
+table   tosdump/cases/bios-core-r1.tsv: 44 cases, 0 preludes, 44 calls in issue order
+trace   /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-28-tool08/runs-control/core/BOOT-SERIAL.txt: 0 [biostrace] records
+RESULT  FAIL: no [biostrace] line (kernel without bios-arg-trace, or serial=off?)
+exit 1

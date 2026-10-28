@@ -1,0 +1,168 @@
+measurement-2026-10-28-tool08 -- BIOS/XBIOS arguments in the NewTOS tracer (input check)
+=========================================================================================
+Developer, TASK/TOOL08, 2026-10-28 ~11:40-12:25 (host clock CET), HEAD 3d74514b + the uncommitted
+changes listed under CHANGED. No hardware, no real card, nothing flashed. Not committed.
+
+WHAT / WHY
+  The auditor role asks for an input check on both sides ("inputs before outputs",
+  .claude/agents/auditor.md). For BIOS/XBIOS it was impossible on NewTOS: svc-seq-trace records
+  function and result only, gemdos-trace GEMDOS only (docs/audits/2026-10-28-bios-storage.md
+  section 11 point 4, docs/audits/2026-10-28-bios-core.md section 11 point 3). On the oracle,
+  Hatari's --trace bios shows Rwabs without its sixth argument. This run adds a kernel feature
+  that prints every completed trap #13/#14 call with its arguments at the width of the EmuTOS
+  call form, a checker against the case table, runs bios-r1, bios-core-r1 and bios-r2 with it
+  on QEMU raspi4b, proves the default build unchanged, and measures how the oracle can show
+  Rwabs' sixth argument.
+
+CHANGED (uncommitted, for the lead)
+  kernel/src/dbg_biostrace.rs (new)   the tracer: call forms of all 12 BIOS and 142 XBIOS slots
+                                      (form, kernel/src/dbg_biostrace.rs:117@form), record,
+                                      record_supexec_upcall, the line format (module doc)
+  kernel/src/lib.rs                   `#[cfg(feature = "bios-arg-trace")] pub mod dbg_biostrace;`
+                                      (kernel/src/lib.rs:92@dbg_biostrace)
+  kernel/src/arch/aarch64/exceptions.rs  two #[cfg(feature = "bios-arg-trace")] hooks: the EL0
+                                      Supexec before its upcall (kernel/src/arch/aarch64/exceptions.rs:438@record_supexec_upcall),
+                                      every completed call after the KEYS02 rewind and before the
+                                      completion tail (kernel/src/arch/aarch64/exceptions.rs:676@record)
+  kernel/Cargo.toml                   feature `bios-arg-trace = []` with its comment
+  tools/biostrace-check.py (new)      the checker (usage and rules in its docstring)
+  docs/TOS-REFERENCE-DUMPER.md        section 6, "Input check on NewTOS: the BIOS/XBIOS argument
+                                      tracer (added 2026-10-28, TOOL08)"
+  anchors shifted by the 12 new lines in exceptions.rs (+12 each, nothing else changed):
+    docs/api/_super-state.md:121, docs/COMPATIBILITY.md:729,735, TASK/MEM12.md:86,87,107,
+    docs/audits/2026-10-28-bios-core.md:100,189
+  Untouched: dbg_qedtrace.rs / svc-seq-trace, gemdos-trace, tosdump/, tools/hatari-oracle.sh,
+  every case table and reference.
+
+THE RECORD (docs/TOS-REFERENCE-DUMPER.md section 6, "Input check on NewTOS"; module doc)
+  One serial-console line per completed trap #13/#14 call, written after the dispatch from the
+  TrapArgs built before it:
+    [biostrace] <seq:06> <caller> <trap>:0x<fn:02x>[=0x<x8>] <name> <args|-> -> 0x<x0:016x>
+  caller U<slot> (EL0 process slot, U? none) or K (svc from EL1); name from the EmuTOS table,
+  (empty) for an xbios_unimpl slot, (beyond) past the table; each argument x0, x1, ... at the
+  width of the EmuTOS call form, read off the debug wrappers bios_N / xbios_N that sit in the same
+  table slots (references/emutos bios/bios.c:895-1235, bios/xbios.c:49-1236 at 1a7484ab):
+  w:0x%04x WORD/UWORD, l:0x%08x LONG/ULONG, p:0x%016x pointer; "=0x<register>" after a w:/l:
+  value when the register is not the sign extension of it (same for x8). EL0 Supexec: recorded
+  before the upcall, "-> upcall". To the console, not a file: no drive is written (the disk
+  round compares C: byte for byte), no flush point, no buffer bound.
+  Enable: cargo xtask build --board rpi4 --release --features bios-arg-trace; QEMU raspi4b with
+  -append serial=on -serial file:<log>.
+
+METHOD (method/)
+  tool08-runs.sh <scratch> [control]   kernel build, DUMPBIOS.NAP build, the three runs, tosdiff,
+                                       the checker; "control" = same with the default kernel
+                                       into runs-control/ (no checker result expected)
+  run-dumpbios-newtos.sh, z-dumpbios.inf   copies (unchanged) of
+                       measurements/measurement-2026-10-28-bios-core-audit/method/ -- bios-r1,
+                       bios-core-r1 on a tools/mkcard.sh card (C: = DUMPBIOS.NAP + BIOS.TSV)
+  newtos-runs.sh, run-newtos.sh, compare-testpart.sh, normalise-fat-times.py, newdesk-d.inf
+                       copies (unchanged) of measurements/measurement-2026-10-28-tool07/method/ --
+                       bios-r2 on the MKCARD_TESTDISK card (C: = test image, D: = program part.)
+  buildall.sh, locdiff.py, default-build-proof.txt   the default-build equality proof
+  oracle-traced.sh, oracle-probe.sh, oracle-rwabs-check.py   the oracle-side probe (item 3)
+  The tool08-runs.sh call: method/tool08-runs.sh <scratch>/run ; method/tool08-runs.sh <scratch>/runc control
+
+INPUTS (sha256; runs/inputs.sha256, runs-control/inputs.sha256, runs/r2/inputs-newtos.sha256)
+  kernel, feature on   c955214223b8cd6f54136f28b1dd15f44954ddbfb01e17f1d2a9a1eff5e42b3b (runs/)
+  kernel, default      cd4b694ad5a9ff0c9a088de45b06e6a4f7d48e5d30a3d356eb6abcdf75259d72 (runs-control/)
+  DUMPBIOS.NAP         27f3fbd8d3aa6eadbcd31f7346a7cc3c9def4798118b59ba8407a88ff2e1747c (build id 3d74)
+  bios-r1.tsv          231f2dfe73e5a80628167b216a66fe6475992b9b3a692b9025a92e8d6f3b2bf8
+  bios-core-r1.tsv     db802dc60c30099409f82399b37c42faa3f483d802bbfa7c6694e6d9d633e4dc
+  bios-r2.tsv          071300e43736d1c3371e65d4a0e2b3f4b5e327dcd4d7147763fe0c04e553bc44
+  biostrace-check.py   60a7c9cf80ca36f0c355ba4b0088592f496228247bc03f7e1ca332e49eb62a5c
+  test image           d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+                       (tools/mktestdisk.sh ... NEWDESK.INF=method/newdesk-d.inf; the same sha256
+                       as TOOL07's test image)
+
+IMAGES (manifests copied into the run; optional_missing quoted verbatim)
+  runs/r1/db.img.manifest            image_sha256 b1f5c611...8332df   optional_missing none
+    after the run                    7ba03e8d4427dfaba81adedf6f02c6ea3f5d3817376871b233356b897151cdd6
+  runs/core/db.img.manifest          image_sha256 80a928cb...4c1989   optional_missing none
+    after the run                    runs/core/db.img.after.sha256
+  runs/r2/card.img.manifest          image_sha256 5e05276f...c99b79e  optional_missing none
+    after the run                    8c27b6d9380e96993877b6eced13fd35e0ae9b33bd617aefd3b8d363ca69c499
+  runs/test.img.manifest             image_sha256 d95a60c3...a92d37   optional_missing none
+  runs-control/r1/db.img.manifest    image_sha256 c6c12eb6...c89737   optional_missing none
+    after the run                    b984bfa4dbb6b2a126b38158d7cbadf4290b185bb10e28780ac17769d267a95e
+  runs-control/core/db.img.manifest  image_sha256 255ef967...26f636d  optional_missing none
+  runs-control/r2/card.img.manifest  image_sha256 5e05276f...c99b79e  optional_missing none
+    after the run                    4894143ebc0f653bd8f18c0e882ba9440d21dbe1d7e3202c42c7af4801c95430
+  runs-control/test.img.manifest     image_sha256 d95a60c3...a92d37   optional_missing none
+  (The two round-1 cards differ in image sha256 although their manifests list the same files
+  with the same sha256: mkcard's FAT is not bit-reproducible between two calls here; not used
+  for any comparison. All images were scratch clones and are deleted.)
+
+RESULT 1 -- the input check, NewTOS, feature on (runs/check-*.txt, exit codes in the files)
+  bios-r1.tsv       PASS  147 calls, 172 table arguments, 0 rows differ, 0 unchecked;
+                          BIN 147 records cross-checked (case id, trap, function, 64-bit ret)
+  bios-core-r1.tsv  PASS  44 calls, 70 table arguments, 0 differ; BIN 44 records cross-checked
+  bios-r2.tsv       PASS  54 calls (51 cases + 3 preludes), 223 table arguments, 0 differ;
+                          BIN 51 records cross-checked
+  In all three the dumper (caller U0) made no BIOS/XBIOS call outside the table's run. Every WORD
+  arrived sign-extended, every LONG sign-extended, both buffers as one constant address each, and
+  every call-form slot the table leaves out held the poison (Setscreen's 4th WORD,
+  w:0xdead=0xffffffffdeaddead). No WIDTH or BEYOND-FORM row: the three tables' argument widths are
+  the EmuTOS call forms.
+
+RESULT 2 -- the instrument changes nothing it measures (runs/ against runs-control/)
+  BIOS.BIN r1 and core: byte-identical (header included). BIOS.BIN r2: identical except the
+  64-bit return of the three Getbpb(2) cases (lines 42, 97, 108): 0x266024 with the feature,
+  0x265024 without -- the address of the kernel's BPB static, moved 4 KiB by the added code;
+  retclass PTR_RAM, the BPB capture behind it identical. All five tosdiff outputs (r1 tt/falcontc,
+  core tt/falcontc, r2) are byte-identical between the two runs: r1 42 (tt) / 46 (falcontc) of 147
+  cases differ, core 15 / 14 of 44, r2 10 of 51 -- the same in the control run, so not
+  findings of this change.
+  Test partition (bios-r2): "testpart: identical" in both runs (runs*/r2/newtos-1/
+  testpart-compare.txt), fsck_msdos -n exit 0 -- the tracer leaves C: untouched.
+
+RESULT 3 -- default build unchanged (runs/default-build/, method/default-build-proof.txt)
+  4 builds (rpi4/qemu-virt x release/dev) at HEAD 3d74514b without the change (base2.sha256)
+  against the tree with the change, feature off (after-off.sha256): same size; the only
+  differing bytes are the `line` fields of core::panic::Location records -- kernel/src/lib.rs
+  +4 (the 4 new lines before them), kernel/src/arch/aarch64/exceptions.rs +12 (the 12 new
+  lines) -- 20 / 21 / 34 / 30 words for rpi4-release / qemu-virt-release / rpi4-dev /
+  qemu-virt-dev, 0 unexplained (locdiff-*.txt). No code byte, no other data byte differs.
+  Feature on builds on both boards (on.sha256).
+
+RESULT 4 -- the oracle side: Rwabs' sixth argument (runs/oracle-r2/, method/oracle-probe.sh)
+  One bios-r2 run on the oracle's disk profile through method/oracle-traced.sh = a copy of
+  tools/hatari-oracle.sh with two additions (diff in its header comment): Hatari's
+  --trace bios,xbios and a debugger script (--parse) with
+      b pc = $e01050 :trace :quiet :file <out>/hd-dbg/rwabs-args.ini     rwabs-args.ini: m "a7"-"a7+20"
+  $e01050 = _lrwabs in references/emutos-oracle/1a7484ab/emutos.map; the pinned ROM and the
+  rebuilt etos512de.img hold the same code there (both sha256 323c87bb...d2750c).
+  Measured:
+  - Hatari's own trace (runs/oracle-r2/rwabs-in-hatari-trace.txt) prints five arguments:
+      "BIOS 0x04 Rwabs(0,0x1037d28,1,65535,2) at PC 0x10167C0" -- lrecno is missing, as the
+      audits said; first/recno = 65535 tells only that the long form was used.
+  - The breakpoint dumps the argument block at lrwabs' entry (return address 0x00e00d50 =
+    the trap dispatcher, then r_w, adr, numb, first, drive, lfirst), e.g. for table line 63
+    "00 e0 0d 50 | 00 00 | 01 03 7d 28 | 00 01 | ff ff | 00 02 | 00 01 ff a0".
+    method/oracle-rwabs-check.py: PASS, 34 lrwabs entries after "running 51 cases" = the
+    table's 34 Rwabs calls (31 cases + 3 preludes) in order, 6 arguments each, 0 differ
+    (runs/oracle-r2/oracle-rwabs-check.txt).
+  - This run's BIN records equal tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-disk.BIN (bytes 33..);
+    the header differs only in the build id (3d74 vs b81d) -- the probe speaks for the reference.
+    Test image unchanged (disk.sha256 before = after = d95a60c3...).
+  Proposal (not done; tools/hatari-oracle.sh is unchanged): an opt-in trace mode in
+  tools/hatari-oracle.sh -- --trace bios,xbios into <out>/trace.txt plus, for disk tables, the
+  _lrwabs breakpoint above (address taken from the oracle build's emutos.map, not hard-coded) --
+  so the reference run and its input check are one run instead of two bridged by cmp.
+
+HOST TESTS / CHECKS
+  cargo xtask test (full): 1726 passed, 0 failed, 1 ignored (runs/host-test.txt) = baseline.
+  cargo clippy -p kernel, board-rpi4 / board-qemu-virt, with and without bios-arg-trace:
+  kernel 121 warnings, tos-api 74 in every combination (baseline 121/74), none in the new
+  module or the new lines.
+  cargo xtask doc-check docs/TOS-REFERENCE-DUMPER.md: 0 failures (with this RUNINFO present).
+  cargo xtask doc-check --base 8656379f on the four docs whose anchors moved: 0 failures; on all
+  88 docs citing a changed file by line: 0 anchor failures; the 930 failures there are the old
+  backlog, those naming a changed file are all "ambiguous" bare lib.rs:/Cargo.toml: cites.
+
+LIMITS
+  - The checker ties the table to one caller by its call sequence; the dumper's own console
+    lines are not used as markers (stdout buffering would not order them).
+  - Supexec from EL0 is recorded before the upcall, so its value is not in the trace; a Super
+    token argument (t:0, super-r1.tsv) is reported UNCHECKED. Neither occurs in the three tables.
+  - QEMU raspi4b only; the instrument is UART output and needs serial=on on any board.

@@ -82,7 +82,10 @@ measured verdict, do not take it.
   natives are little-endian).
 - **Inputs before outputs.** A result comparison counts only if the parameters
   that *arrived* match the case table on both sides: NewTOS via the
-  `gemdos-trace` / `svc-seq-trace` features, EmuTOS via Hatari's trace. An
+  `gemdos-trace` feature (GEMDOS) and the `bios-arg-trace` feature (BIOS/XBIOS,
+  checked by `tools/biostrace-check.py`; `docs/TOS-REFERENCE-DUMPER.md` §6),
+  EmuTOS via Hatari's trace (`Rwabs`'s 6th argument only through a debugger
+  breakpoint on `_lrwabs`, see `measurements/measurement-2026-10-28-tool08/RUNINFO.TXT`). An
   input mismatch is a binding/toolchain finding (route: SDK), not an OS finding.
 - **Disk cases:** Hatari's GEMDOS hard-disk emulation must never reach the
   test image — it intercepts GEMDOS itself, so you would measure Hatari, not

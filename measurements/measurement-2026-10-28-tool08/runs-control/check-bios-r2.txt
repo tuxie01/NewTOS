@@ -1,0 +1,4 @@
+table   tosdump/cases/bios-r2.tsv: 51 cases, 3 preludes, 54 calls in issue order
+trace   /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-28-tool08/runs-control/r2/newtos-1/BOOT-SERIAL.txt: 0 [biostrace] records
+RESULT  FAIL: no [biostrace] line (kernel without bios-arg-trace, or serial=off?)
+exit 1

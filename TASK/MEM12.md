@@ -83,8 +83,8 @@ Accessories, NEWDESK, QED, PRESENT, zView, DUMPVDI, VDIDRAW, ARGVTEST an
 
 | Stub | VA | Wer springt hin |
 |---|---|---|
-| Upcall-Trampolin | `0x700` | Kern setzt `lr` darauf (`kernel/src/arch/aarch64/exceptions.rs:1813@TRAMPOLINE_VA`) |
-| AES-`G_USERDEF`-Stub | `0x714` | Kern als Upcall-Handler (`exceptions.rs:883@USERDEF_TRAMPOLINE_VA`); gemessen in TeraDesk (`pc=0x724`) |
+| Upcall-Trampolin | `0x700` | Kern setzt `lr` darauf (`kernel/src/arch/aarch64/exceptions.rs:1825@TRAMPOLINE_VA`) |
+| AES-`G_USERDEF`-Stub | `0x714` | Kern als Upcall-Handler (`exceptions.rs:895@USERDEF_TRAMPOLINE_VA`); gemessen in TeraDesk (`pc=0x724`) |
 | `just_rts` / `kbdvec_default` | `0xA00` / `0xA08` | Werte der `Kbdvbase`-Tabelle; DOOM kettet an den alten `kbdvec` (`sdk/apps/doom/doomgeneric_gem_kbdvec.c:57@kbdvec_old`) |
 | Reset-Stub | `0xA40` | OSHEADER `reseth`/`os_res1`; TeraDesk "Reboot" (`sdk/overlays/teradesk/main.c:2120,2142@rv`) |
 
@@ -104,7 +104,7 @@ gelingt. Im Usermodus loest die Hardware einen Busfehler aus, EmuTOS beendet
 das Programm (`any_vec` → `dopanic` → `kill_program`, `bios/vectors.S:152-153`,
 `bios/kprint.c:302`, `:587-594`, `bios/panicasm.S:96-99`). NewTOS mit Seite 0
 nur lesbar: Berechtigungsfehler bei EL0 → `kill_crashed_program`
-(`kernel/src/arch/aarch64/exceptions.rs:1434@kill_crashed_program`):
+(`kernel/src/arch/aarch64/exceptions.rs:1446@kill_crashed_program`):
 Absturzbericht, Taste, `Pterm(-1)`, der Kern laeuft weiter (gemessen, s. u.).
 Ein Systemaufruf mit Ausgabepuffer in Seite 0 endet ebenso: `uaccess` prueft
 mit den Rechten des Aufrufers (`tos-api/src/uaccess.rs:453@user_kptr`).

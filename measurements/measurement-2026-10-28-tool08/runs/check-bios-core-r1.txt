@@ -1,0 +1,49 @@
+table   tosdump/cases/bios-core-r1.tsv: 44 cases, 0 preludes, 44 calls in issue order
+trace   /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-28-tool08/runs/core/BOOT-SERIAL.txt: 44 [biostrace] records
+caller  U0: run = its records 0..43 (seq 0..43, serial lines 59..102); 0 of its BIOS/XBIOS calls lie outside the run
+ok   line   20 case    13:0x01 Bconstat     w:0x7
+ok   line   21 case    13:0x01 Bconstat     w:0x8
+ok   line   22 case    13:0x01 Bconstat     w:0x9
+ok   line   23 case    13:0x01 Bconstat     w:0xb
+ok   line   24 case    13:0x01 Bconstat     w:0x7fff
+ok   line   25 case    13:0x01 Bconstat     w:0xfffe
+ok   line   26 case    13:0x01 Bconstat     w:0x8000
+ok   line   29 case    13:0x02 Bconin       w:0xb
+ok   line   30 case    13:0x02 Bconin       w:0x7fff
+ok   line   31 case    13:0x02 Bconin       w:0xfffe
+ok   line   32 case    13:0x02 Bconin       w:0x8000
+ok   line   35 case    13:0x03 Bconout      w:0x2 w:0x20
+ok   line   36 case    13:0x03 Bconout      w:0x2 w:0x7e
+ok   line   37 case    13:0x03 Bconout      w:0x5 w:0x20
+ok   line   38 case    13:0x03 Bconout      w:0x5 w:0x7e
+ok   line   39 case    13:0x03 Bconout      w:0xa w:0x1b
+ok   line   40 case    13:0x03 Bconout      w:0xb w:0xff
+ok   line   41 case    13:0x03 Bconout      w:0x7fff w:0x41
+ok   line   42 case    13:0x03 Bconout      w:0xfffe w:0x41
+ok   line   43 case    13:0x03 Bconout      w:0x8000 w:0x41
+ok   line   46 case    13:0x05 Setexc       w:0x2 l:0xffffffff
+ok   line   47 case    13:0x05 Setexc       w:0x3 l:0xffffffff
+ok   line   48 case    13:0x05 Setexc       w:0x4 l:0xffffffff
+ok   line   49 case    13:0x05 Setexc       w:0x1c l:0xffffffff
+ok   line   50 case    13:0x05 Setexc       w:0x21 l:0xffffffff
+ok   line   51 case    13:0x05 Setexc       w:0x22 l:0xffffffff
+ok   line   52 case    13:0x05 Setexc       w:0x2d l:0xffffffff
+ok   line   53 case    13:0x05 Setexc       w:0x2e l:0xffffffff
+ok   line   54 case    13:0x05 Setexc       w:0x45 l:0xffffffff
+ok   line   55 case    13:0x05 Setexc       w:0x100 l:0xffffffff
+ok   line   56 case    13:0x05 Setexc       w:0x101 l:0xffffffff
+ok   line   57 case    13:0x05 Setexc       w:0x102 l:0xffffffff
+ok   line   58 case    13:0x05 Setexc       w:0x103 l:0xffffffff
+ok   line   59 case    13:0x05 Setexc       w:0x108 l:0xffffffff
+ok   line   60 case    13:0x05 Setexc       w:0x168 l:0xffffffff
+ok   line   61 case    13:0x05 Setexc       w:0x169 l:0xffffffff
+ok   line   62 case    13:0x05 Setexc       w:0x16a l:0xffffffff
+ok   line   65 case    13:0x08 Bcostat      w:0x8
+ok   line   66 case    13:0x08 Bcostat      w:0x9
+ok   line   67 case    13:0x08 Bcostat      w:0xa
+ok   line   68 case    13:0x08 Bcostat      w:0xb
+ok   line   69 case    13:0x08 Bcostat      w:0x7fff
+ok   line   70 case    13:0x08 Bcostat      w:0xfffe
+ok   line   71 case    13:0x08 Bcostat      w:0x8000
+RESULT  PASS: 44 calls, 70 table arguments; 0 row(s) differ; 0 argument(s) unchecked; BIN 44 records cross-checked
+exit 0

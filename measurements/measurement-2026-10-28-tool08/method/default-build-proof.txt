@@ -1,0 +1,30 @@
+default-build-proof.txt -- how runs/default-build/ was made (TOOL08), commands as run, 2026-10-28.
+
+The question: does the kernel built WITHOUT the feature bios-arg-trace differ from the kernel
+built from HEAD (3d74514b) without the change? Four builds each side: rpi4 and qemu-virt, each
+release and dev, as raw binaries (llvm-objcopy -O binary of the kernel ELF; for rpi4 that is
+kernel8.img).
+
+1. With the change in the tree:
+     method/buildall.sh <scratch>/after-off          -> runs/default-build/after-off.sha256
+     method/buildall.sh <scratch>/on bios-arg-trace  -> runs/default-build/on.sha256 (build check)
+2. The HEAD state, restored by hand for the build only (no git command that writes the tree or
+   the index; the four changed paths copied aside first and copied back afterwards):
+     cp kernel/Cargo.toml kernel/src/arch/aarch64/exceptions.rs kernel/src/lib.rs \
+        kernel/src/dbg_biostrace.rs <scratch>/mine/
+     git show HEAD:kernel/Cargo.toml > kernel/Cargo.toml
+     git show HEAD:kernel/src/arch/aarch64/exceptions.rs > kernel/src/arch/aarch64/exceptions.rs
+     git show HEAD:kernel/src/lib.rs > kernel/src/lib.rs
+     mv kernel/src/dbg_biostrace.rs <scratch>/mine/dbg_biostrace.rs.moved
+     git status --short kernel                       (printed nothing: kernel/ = HEAD)
+     method/buildall.sh <scratch>/base2              -> runs/default-build/base2.sha256
+     cp <scratch>/mine/{Cargo.toml,exceptions.rs,lib.rs,dbg_biostrace.rs} back to their paths
+   (A first baseline, built at 8656379f before the lead's commits 05bd0be2/3d74514b, differed in
+   the embedded build hash "(8656379f)" as well; those two commits change no code under kernel/,
+   tos-api/, tos-types/, programs/, sdk/, tools/. It was discarded and rebuilt at 3d74514b.)
+3. python3 method/locdiff.py <scratch>/base2/<b>.bin <scratch>/after-off/<b>.bin
+                                                     -> runs/default-build/locdiff-<b>.txt
+   locdiff.py explains each differing 4-byte word as the `line` field of a core::panic::Location
+   {file: &str, line: u32, col: u32} (file pointer, length and column equal on both sides, the
+   file string resolved through the image's load address) and prints anything else as
+   UNEXPLAINED; exit 0 = nothing unexplained.

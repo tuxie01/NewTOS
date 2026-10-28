@@ -1,0 +1,6 @@
+cd4b694ad5a9ff0c9a088de45b06e6a4f7d48e5d30a3d356eb6abcdf75259d72  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool08/runc/kernel8.img
+27f3fbd8d3aa6eadbcd31f7346a7cc3c9def4798118b59ba8407a88ff2e1747c  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool08/runc/DUMPBIOS.NAP
+231f2dfe73e5a80628167b216a66fe6475992b9b3a692b9025a92e8d6f3b2bf8  tosdump/cases/bios-r1.tsv
+db802dc60c30099409f82399b37c42faa3f483d802bbfa7c6694e6d9d633e4dc  tosdump/cases/bios-core-r1.tsv
+071300e43736d1c3371e65d4a0e2b3f4b5e327dcd4d7147763fe0c04e553bc44  tosdump/cases/bios-r2.tsv
+60a7c9cf80ca36f0c355ba4b0088592f496228247bc03f7e1ca332e49eb62a5c  tools/biostrace-check.py

@@ -726,13 +726,13 @@ writes a system variable after `Super()` or from a `Supexec` callback, and a
 user-mode access is a bus error. NewTOS maps that onto the page tables: a
 process has a **super state**, off at load, which `Super(0L)`/`Supexec` turn
 on (`tos-api/src/bdos/process/superstate.rs:66@super_call`,
-`kernel/src/arch/aarch64/exceptions.rs:1826@handle_super`,
+`kernel/src/arch/aarch64/exceptions.rs:1838@handle_super`,
 `:1857@handle_supexec`). In super state page 0 is EL0 read-write, in user
 state EL0 read-only, never executable
 (`tos-api/src/bdos/process/mmu.rs:733@set_page0_writable`, with the TLB
 maintenance ARM ARM `RGPPYH` requires); a write in user state ends the
 program with "Bus Error" and the report line "page-0 system-variable memory"
-(`kernel/src/arch/aarch64/exceptions.rs:1434@kill_crashed_program`). The
+(`kernel/src/arch/aarch64/exceptions.rs:1446@kill_crashed_program`). The
 super state grants **nothing else**: the code still runs at EL0, memory
 protection is unchanged. The EL0 stubs (upcall trampoline, `G_USERDEF`
 callout, `kbdvec` stubs, OSHEADER reset stub) moved to one shared stub page

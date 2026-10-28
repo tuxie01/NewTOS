@@ -431,6 +431,12 @@ fn sync_handler(frame: &mut ExceptionFrame) {
     // Supexec (XBIOS 0x26) from an EL0 program — run the callback at EL0 in
     // super state as an upcall (MEM12 S6); `Psigreturn` hands its `x0` back.
     // An EL1 caller keeps the dispatcher's answer for an absent slot.
+    // BIOS/XBIOS argument tracer (TOOL08): this call never reaches the
+    // dispatcher, so it is recorded here, before the upcall rewrites `x0`.
+    #[cfg(feature = "bios-arg-trace")]
+    if matches!(class, TrapClass::Xbios) && frame.gpr[8] as u16 == 0x26 && frame.spsr & 0xF == 0 {
+        crate::dbg_biostrace::record_supexec_upcall(&frame.gpr);
+    }
     if matches!(class, TrapClass::Xbios)
         && frame.gpr[8] as u16 == 0x26
         && frame.spsr & 0xF == 0
@@ -662,6 +668,12 @@ fn sync_handler(frame: &mut ExceptionFrame) {
         restart_for_kbdvec(frame);
         return;
     }
+
+    // BIOS/XBIOS argument tracer (TOOL08): one console line per completed
+    // trap #13/#14 call. After the KEYS02 rewind above, so a restarted call is
+    // recorded once, when it completes.
+    #[cfg(feature = "bios-arg-trace")]
+    crate::dbg_biostrace::record(class, &args, result);
 
     if complete_call_tail(frame, result) {
         if let Some(sw) = post_call_switch {

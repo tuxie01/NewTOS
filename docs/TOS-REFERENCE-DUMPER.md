@@ -816,6 +816,67 @@ poisoned.
 **Drvmap** is `EXACT` in this table: both setups give C: + D:,
 `0x0000000C` (user decision 2026-10-28; round 1 keeps `NONZERO`).
 
+### Input check on NewTOS: the BIOS/XBIOS argument tracer (added 2026-10-28, TOOL08)
+
+A result comparison counts only if the arguments that **arrived** match the
+table on both sides (`.claude/agents/auditor.md`, "Inputs before outputs").
+The record's `args` field is what the dumper says it passed, not what the
+dispatcher received. On NewTOS the received side is the kernel's cargo
+feature `bios-arg-trace` (`kernel/src/dbg_biostrace.rs`, off by default and
+compiled out without it): one serial-console line per **completed** trap #13
+or #14 call,
+
+```
+[biostrace] 000042 U0  13:0x04 Rwabs       w:0x0000 p:0x0000000001a5cd20 w:0x0001 w:0xffff w:0x0002 l:0x0001ffa0 -> 0x0000000000000000
+```
+
+— running number, caller (`U<slot>` an EL0 process, `K` an EL1 `svc`),
+`trap:function`, the slot's name (`(empty)` an `xbios_unimpl` slot, `(beyond)`
+past the table), the arguments `x0`, `x1`, … **at the width of the EmuTOS
+call form** and the 64-bit `x0` result. The call form of every slot is the
+prototype of EmuTOS' debug wrapper in the same table slot
+(`bios/bios.c:895-1235`, `bios/xbios.c:49-1236`): `w:0x%04x` a WORD/UWORD
+(low 16 bits), `l:0x%08x` a LONG/ULONG (low 32 bits), `p:0x%016x` a pointer
+(the whole register). A `w:`/`l:` value carries `=0x<register>` when the
+register is not the sign extension of the printed value; registers beyond
+the call form are not printed. An EL0 `Supexec` never reaches the
+dispatcher (it becomes an upcall) and is recorded before the upcall with
+`-> upcall` instead of a result.
+
+The console, not a file: the tracer writes no drive, so the disk round's
+test partition stays byte for byte comparable, and it needs no flush point.
+A QEMU `raspi4b` run captures it with `-append serial=on -serial file:…`.
+
+**The procedure.** Build the kernel with
+`cargo xtask build --board rpi4 --release --features bios-arg-trace`, run the
+table as usual (round 1: a `tools/mkcard.sh` card; the disk round: the
+`MKCARD_TESTDISK` card), then
+
+```
+tools/biostrace-check.py <BOOT-SERIAL.txt> <table.tsv> [--bin <BIOS.BIN>] [--caller U0]
+```
+
+The checker orders the table's calls as the runner issues them (per case its
+preludes, then the case), finds them as one contiguous run in the trace of
+one caller, lists that caller's other BIOS/XBIOS calls, and compares every
+argument: `w:`/`l:` by value at their width and with the register
+sign-extended (the backend's marshalling, section 6 "The call table"); `l:`
+in a pointer slot against the sign-extended LONG; `b:<n>`/`f:<n>` as a
+non-null address that is the same for the same `n`; a call-form slot the
+table leaves out must hold the poison `0xDEADDEAD` sign-extended; a table
+width that is not the call form's is `WIDTH`, a table argument the call form
+does not have is `BEYOND-FORM`; `t:0` (the `Super` token) is `UNCHECKED`.
+`--bin` ties the run to its dump: record *k* has the *k*-th case's line,
+trap and function, and its `ret_hi:ret` equals the traced result. Exit 0 =
+every argument matched.
+
+**The oracle side.** Hatari's `--trace bios` prints `Rwabs` with five
+arguments, without `lrecno`. A debugger breakpoint on the pinned ROM's
+`_lrwabs` (`references/emutos-oracle/1a7484ab/emutos.map`, `0x00e01050`) that
+dumps `sp..sp+20` on entry shows all six as `lrwabs` receives them:
+`measurements/measurement-2026-10-28-tool08/RUNINFO.TXT`, which has the probe
+(a copy of `tools/hatari-oracle.sh`, the script itself is unchanged).
+
 ---
 
 ## 7. Programs to build

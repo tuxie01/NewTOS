@@ -1,6 +1,6 @@
 # TOOL08 — BIOS/XBIOS-Argumente im NewTOS-Tracer
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Werkzeug (Eingabepruefung) — Anwenderentscheidung 2026-10-28
+Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL08-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Werkzeug (Eingabepruefung) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt
 

@@ -1,0 +1,7 @@
+qemu-system-aarch64: terminating on signal 15 from pid 14361 (<unknown process>)
+NEWTOS.BIN: area BIOS, 44 records of 320 bytes, build 3d74, case CRC C056A3E0
+NEWTOS.BIN: format 3, pointer 8 bytes, least significant word first
+NEWTOS.BIN: matches bios-core-r1.tsv (44 cases)
+NEWTOS.BIN: accepted
+tt exit 1
+falcontc exit 1

@@ -47,6 +47,15 @@ gemdos-trace = ["tos-api/gemdos-trace"]
 # default (the hooks fold away); `cargo xtask build --board rpi4 --features
 # svc-seq-trace`. Writes to C:, so only for a test card.
 svc-seq-trace = []
+# BIOS/XBIOS argument tracer (TOOL08), the NewTOS half of the auditor's input
+# check: one serial-console line per completed trap #13/#14 call -- caller,
+# trap:function, the arguments at the width of the EmuTOS call form, the
+# 64-bit result (`kernel/src/dbg_biostrace.rs`). Writes no drive, so it also
+# runs on a test card whose C: is compared after the run. Off by default (the
+# module and both hooks are compiled out); `cargo xtask build --board rpi4
+# --features bios-arg-trace`, QEMU with `-append serial=on`. Checker:
+# `tools/biostrace-check.py`.
+bios-arg-trace = []
 # microSD / FAT / GEMDOS-file self-test build (board-rpi4 / QEMU raspi4b):
 # runs `selftest_emmc::run()` right after the card is mounted at boot -- the
 # Phase-09 block-device, FAT, Fopen/Fsfirst/Dsetpath, Fattrib/Frename/Fdatime

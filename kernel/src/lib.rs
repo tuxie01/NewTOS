@@ -86,6 +86,10 @@ pub mod vdi_client;
 // `dbg_qedtrace::SVC_TRACE` (QED mode / `svc-seq-trace` feature); remove the
 // module + its exception hooks to drop it entirely.
 pub mod dbg_qedtrace;
+/// BIOS/XBIOS argument tracer to the serial console (TOOL08; feature
+/// `bios-arg-trace` only).
+#[cfg(feature = "bios-arg-trace")]
+pub mod dbg_biostrace;
 
 // ---------------------------------------------------------------------------
 // kprintf! / kprintln! (Phase 03 D7) — formatter macros into the boot

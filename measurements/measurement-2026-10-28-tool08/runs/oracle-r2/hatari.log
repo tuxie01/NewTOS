@@ -1,0 +1,198 @@
+INFO : Hatari v2.6.1, compiled on:  Aug 15 2025, 14:15:19
+INFO : IPF : capsimage library version release=5 revision=1
+INFO : Mounting IDE hard drive image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool08/oracle-r2/disk.img
+INFO : GEMDOS HDD emulation, D: <-> /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool08/oracle-r2/hd.
+ERROR: Microphone: SDL_OpenAudioDevice failed.
+INFO : NVRAM not found at '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool08/oracle-r2/home/hatari.nvram'
+Reading debugger commands from '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool08/oracle-r2/hd-dbg/rwabs.ini'...
+Changed to input file dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool08/oracle-r2/hd-dbg'.
+> b pc = $e01050 :trace :quiet :file /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool08/oracle-r2/hd-dbg/rwabs-args.ini
+Changed back to '/Volumes/Daten/Development/PiRusTOS' dir.
+WARN : Bus Error reading at address $20fffff, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fffffc21, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6c4710, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $5d1234, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6d3148, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $d003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+INFO : Strange screen size 16x480 -> aspect corrected by 32x1!
+INFO : OS clock ticks / second: 100
+
+
+
+
+
+                                                         
+                                                         
+                                                         
+                                                         
+                                                         
+                    ________________________________________
+
+                    EmuTOS Version:     20260414 
+                    CPU-Typ:            M68030 
+                    Rechner:            Atari Falcon 
+                    ST-RAM:             4 MB 
+                    Alt-RAM:            16 MB 
+                    GEMDOS-Laufwerke:   CD 
+                    Boot-Zeit:          2026/10/28 12:16:58 
+                    ________________________________________
+
+                    Halte <Strg> = ohne AUTO/ACC
+                    Halte <Alt> = keine Harddisk
+                    DrUcke 'X' um von Laufwerk X: zu booten
+                    DrUcke <Esc> fUr die Textkonsole
+
+                       FUr Pause <Shift> gedrUckt halten    
+- 'a7' -> $85c8
+- 'a7+20' -> $85dc
+000085C8: 00 e0 0d 50 00 00 00 02 39 a0 00 01 01 01 00 02  .α.P....9á......
+000085D8: 00 00 00 00                                      ....
+
+
+WARN : No GEMDOS dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool08/oracle-r2/hd/etc'
+DUMPBIOS build 3d74, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV: 51 cases, CRC 09C71B80
+disk table: test drive C:, 3 preludes
+running 51 cases
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 00 00 00 02  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 00 00 00 02  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 02 00 00 00 02  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 ff ff 00 02  .α.P....}(..¯¯..
+01066790: 00 00 00 01                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 00 01 00 02  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 ff ff 00 02  .α.P....}(..¯¯..
+01066790: 00 01 ff a0                                      ..¯á
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 ff ff 00 02  .α.P....}(..¯¯..
+01066790: 00 01 ff a1                                      ..¯í
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 02 ff ff 00 02  .α.P....}(..¯¯..
+01066790: 00 01 ff a0                                      ..¯á
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 ff ff 00 02  .α.P....}(..¯¯..
+01066790: ff ff ff fb                                      ¯¯¯√
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 00 00 00 00 02  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 00 ff ff 00 02  .α.P....}(..¯¯..
+01066790: 00 01 ff ab                                      ..¯½
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 00 00 00 0f  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 00 00 00 05  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 00 00 ff ff  .α.P....}(....¯¯
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 00 00 00 10  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 02 01 03 7d 28 00 01 00 00 00 02  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 04 01 03 7d 28 00 01 00 00 00 02  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 80 01 03 7d 28 00 01 00 00 00 02  .α.P.Ç..}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 80 00 00 02  .α.P....}(..Ç...
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 ff ff 00 02  .α.P....}(..¯¯..
+01066790: 00 00 80 00                                      ..Ç.
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 ff fe 00 02  .α.P....}(..¯³..
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 00 00 00 00 00 02 00 00 00 00  .α.P............
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 00 00 00 00 00 00 00 00 00 00  .α.P............
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 02 01 03 7d 28 00 01 00 00 00 02  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 01 01 03 7d 28 00 01 00 00 00 02  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 00 01 00 02  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 02 01 03 7d 28 00 01 00 01 00 02  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 00 01 00 02  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 02 01 03 7d 28 00 01 ff ff 00 02  .α.P....}(..¯¯..
+01066790: 00 01 ff a0                                      ..¯á
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 01 01 03 7d 28 00 01 ff ff 00 02  .α.P....}(..¯¯..
+01066790: 00 01 ff a0                                      ..¯á
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 00 01 03 7d 28 00 01 00 01 00 02  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 02 01 03 7d 28 00 01 00 00 00 02  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 03 01 03 7d 28 00 01 00 00 00 02  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+- 'a7' -> $1066780
+- 'a7+20' -> $1066794
+01066780: 00 e0 0d 50 00 02 01 03 7d 28 00 01 00 01 00 02  .α.P....}(......
+01066790: 00 00 00 00                                      ....
+all 51 cases ran
+BIOS.BIN: 51 records, 16352 bytes
+BIOS.LOG: 206 bytes
