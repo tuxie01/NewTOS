@@ -84,8 +84,15 @@ Regel (CLAUDE.md „Testing“): vor jedem Fix NewTOS-Funktion per
   GEMDOS-Dateisystem-Hosttests unter `tos-api/tests/` und — 001 betrifft das
   Neueinloggen nach `Mediach` 2 (`ckdrv`) — ein Boot bis zum Desktop mit
   `fsck_msdos` der Testpartition.
-- **Vollstaendigkeit offen:** die Retest-Menge zaehlt erst als vollstaendig,
-  wenn ihre `--up`-Menge in den beruehrten Schichten keine `unmapped`-Funktion
-  hat ([TOOL17](TOOL17.md), CLAUDE.md „Testing“); nach TOOL17 traegt der Lead
-  die `unmapped`-Liste hier nach. Der Fix ergaenzt die `mapping.tsv`-Zeilen der
-  Funktionen, die er beruehrt (Ratsche).
+- **Retest-Menge, Funktionen ohne NewTOS-Gegenstueck** (Anwender 2026-10-28:
+  aus dem heutigen `mapping.tsv`, `-`-Zeilen in den beruehrten Schichten
+  `bios` und `bdos`, Vereinigung der `--up`-Mengen von `blkdev_rwabs`,
+  `blkdev_mediach`, `blkdev_getbpb`): 51 Funktionen.
+  - `bdos` (1): `bdos_trap2`.
+  - `bios` (50): `add_cookie_frb`, `altram_init`, `balloc_stram`, `bios_init`, `biosmain`, `blkdev_hdv_init`, `blkdev_init`, `bootstrap`, `bus_init`, `check_busses`, `check_read_byte`, `detect_blitter`, `detect_dip_switches`, `detect_dmasound`, `detect_dsp`, `detect_ide`, `detect_magnum`, `detect_megartc`, `detect_modectl`, `detect_monster`, `detect_nova`, `detect_nvram`, `detect_scc`, `detect_scsi`, `detect_tt_mfp`, `detect_ttram_size`, `detect_video`, `detect_vme`, `dsp_loadprog`, `dsp_lodtobinary`, `filesize`, `ide_init`, `ide_interface_exists`, `init_exc_vec`, `init_user_vec`, `int_illegal`, `int_priv`, `int_unimpint`, `machine_detect`, `memdone`, `panic`, `pun_info_setup`, `run_auto_program`, `screen_init_address`, `ttram_detect`, `vecs_init`, `xhdi_handler`, `xhdi_vec`, `XHInqDev`, `XHInqDev2`.
+  - Die meisten sind Start- und Hardwareerkennung (`detect_*`, `*_init`,
+    XHDI, DSP), die ueber Aufrufketten des Starts in der Menge stehen (z. B.
+    `bios_init -> blkdev_init`, `detect_nova -> check_read_byte`). Nach
+    [TOOL17](TOOL17.md) klassifiziert der Lead diese Liste neu (mit Absicht /
+    nicht abgebildet). Der Fix ergaenzt die `mapping.tsv`-Zeilen der
+    Funktionen, die er beruehrt (Ratsche, CLAUDE.md „Testing“).

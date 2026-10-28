@@ -1,6 +1,6 @@
 # BIOS03 — ADR „OS hooks installed by programs“: welche eingehaengten Haken wirken
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (Bestand + ADR-Vorschlag), Entscheidung Anwender — Anwenderentscheidung 2026-10-28 (erweitert am selben Tag)
+Status: **ENTWURF LIEGT VOR** 2026-10-28 (`docs/analysis/os-hooks-adr-proposal-2026-10-28.md`), Entscheidungen Q1–Q6 beim Anwender · Prioritaet: **P1** · Typ: Researcher (Bestand + ADR-Vorschlag), Entscheidung Anwender — Anwenderentscheidung 2026-10-28 (erweitert am selben Tag)
 
 ## Sachverhalt
 

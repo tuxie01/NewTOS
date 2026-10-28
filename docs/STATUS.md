@@ -52,11 +52,15 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
 
 **Offen (Stand 2026-10-26, aus der Statuszeile der Tickets ohne DONE-Quittung):**
 
-- **Warteschlange (Anwender 2026-10-28, Stand nach den Entscheidungen zu SDK02, BIOS03, MEASURED-Fixes, TOOL16, XBIOS10), in dieser Reihenfolge.**
+- **Warteschlange (Anwender 2026-10-28), in dieser Reihenfolge.** Regel: ein
+  neues Werkzeug-Ticket kommt hinter den Produkt-Fix, den es verzoegern wuerde,
+  ausser der Fix ist ohne das Werkzeug nicht abnehmbar.
   Developer, einer zur Zeit: [TOOL07](../TASK/TOOL07.md) Rest (Variante B; laeuft) →
-  [TOOL17](../TASK/TOOL17.md) (`mapping.tsv`-Klassen, Abdeckung je Schicht) →
   [BIOS01](../TASK/BIOS01.md) S2
-  (BIOS-STOR-001; Rueckgabewerte + Abbildvergleich, braucht TOOL16 nicht) →
+  (BIOS-STOR-001; Rueckgabewerte + Abbildvergleich, braucht TOOL16 nicht;
+  Retest-Luecken aus dem heutigen `mapping.tsv` im Ticket) →
+  [TOOL17](../TASK/TOOL17.md) (`mapping.tsv`-Klassen, Abdeckung je Schicht;
+  danach BIOS01-Liste neu klassifizieren) →
   [TOOL16](../TASK/TOOL16.md) (Dumper liest durch Rueckgabezeiger) → das S1
   `Iorec` ([XBIOS01](../TASK/XBIOS01.md)) → BIOS01
   Rest → die uebrigen Audit-Tickets BIOS04–BIOS14, XBIOS02–XBIOS14 (S2
@@ -66,7 +70,8 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   [FS19](../TASK/FS19.md) → [MEM11](../TASK/MEM11.md) (Erzwingung) →
   [TOOL01](../TASK/TOOL01.md); [SDK02](../TASK/SDK02.md) (P3) bei Gelegenheit.
   Daneben ein Auditor bzw. Researcher zur Zeit, in eigenem Arbeitsbaum:
-  [BIOS03](../TASK/BIOS03.md) (laeuft) → Erhebung fuer XBIOS01 E3/E4
+  [BIOS03](../TASK/BIOS03.md) (Entwurf liegt vor, Q1–Q6 beim Anwender) →
+  Erhebung fuer XBIOS01 E3/E4
   (Ring ohne Trap gepollt? `buf`/`size` ersetzt?) →
   [ARCH05](../TASK/ARCH05.md) (Maschinenidentitaet: Cookie-Bestand, Programmbeleg, ggf. Nachtrag ADR-012) → Vertrag `Getmpb` (BIOS06) →
   Spec-Tickets der Audits.
