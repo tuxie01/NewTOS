@@ -49,3 +49,11 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (Vertrag festlegen), 
 - Randbefund: `docs/COMPATIBILITY.md` (TSR-Bloecke ueber `Getmpb` auffindbar;
   „`Getmpb` unchanged“) widerspricht dem Code (`mp_mal` immer NULL, ein MD).
 
+## Entscheidungen des Anwenders 2026-10-28
+
+- O1 = A (LP64-Header-Layout `_MD` 32 / `_MPB` 24 Byte, eigener oeffentlicher
+  Deskriptor im Kern, `offsetof`/`sizeof`-Pruefungen im SDK und im Kern,
+  `apitest` verliert `MDX`/`MPBX`); O2 = (a) statischer Schnappschuss
+  (COMPATIBILITY schon berichtigt, `c173cddc`); O3 = (a) bleibt, **zuerst
+  EmuTOS bei `Getmpb(NULL)` auf dem Orakel messen**; O4 bestaetigt.
+- Lokalisierung (Lead) vor Beginn nach CLAUDE.md „Testing“.

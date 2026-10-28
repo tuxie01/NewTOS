@@ -65,3 +65,9 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (Erhebung) + Develope
   wird **vor ARCH06** behoben (benannter Patch in `sdk/overlays/teradesk/`, mit
   Messung vorher/nachher nach Punkt 2), damit die `_VDO`-Messung von ARCH06
   den ST-Zweig misst und nicht den Schrittfehler.
+
+## Erweiterung 2026-10-28 (Anwender)
+
+- Zusaetzlich Byte-Reihenfolge-Annahmen in allen Ports: Unions oder
+  Byte-Arrays, die als 32-Bit-Kennung gelesen werden (Cookie-, XBRA-Tags,
+  `char[4]` als `long`). Erster Fund: cflib, [SDK05](SDK05.md).

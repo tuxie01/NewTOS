@@ -256,6 +256,9 @@ host method.
 
 ### Open decisions
 
+**Decision (user 2026-10-28):** D1 = **1**, one real byte in the decoder,
+as EmuTOS' `shifty`. The options stay below as rationale.
+
 **D1. Storage of bits 5-7 written by `Kbshift` (BIOS10).** EmuTOS keeps one
 byte (`shifty`); a write replaces all eight bits and a later key event only
 touches its own bit (`bios/ikbd.c:780-839`).

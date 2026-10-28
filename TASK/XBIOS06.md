@@ -24,3 +24,19 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Erweiterung) + Resear
 - Kein vorher gleicher Fall in `bios-r1.tsv`, `bios-core-r1.tsv`, `xbios-chardev-r1.tsv`, `xbios-system-r1.tsv` weicht neu ab.
 - `cargo xtask test` gruen.
 - `docs/STATUS.md` und Spec im selben Commit; `cargo xtask doc-check` der geaenderten Doku 0 Fehler.
+
+## Anwender 2026-10-28 und Pruefung durch den Lead
+
+- Vorzeichenerweiterung gemaess Regel (`tos-api/src/trap.rs:6@TrapArgs`;
+  `docs/COMPATIBILITY.md`, „LONG results in `x0`“). Die Kommentare in
+  `tos-api/src/xbios/system.rs` (heute „zero-extended“, passend zum heutigen
+  Code) werden **mit diesem Fix** geaendert, nicht vorher.
+- TSR-Byte, Schluss des Anwenders geprueft: EmuTOS nutzt TSR Bit 7 selbst als
+  „Sender leer“ — `Bcostat` liefert `-1`, wenn `tsr & 0x80`
+  (`references/emutos/bios/serport.c:277`), gesendet wird bei leerem Ring und
+  gesetztem Bit (`:314`, TT-MFP `:433`); `Rsconf` liefert das alte TSR im Byte
+  15–8 (`:229`). Gemessen: TT `0x81`, NewTOS `0x01`; Falcon (SCC) `0x00`.
+  Abgeleitet: ein Programm, das auf Bit 7 wartet, wartet auf NewTOS ewig. Kein
+  portierter Nutzer von `Rsconf` gefunden
+  (`docs/analysis/abi-assumptions-check-2026-10-28.md` §5). Vorschlag fuer die
+  Entscheidung: ruhender Port meldet „Sender leer“ (Bit 7 gesetzt).

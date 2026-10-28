@@ -408,10 +408,16 @@ matters). The provisional `0x00050000` was the registered **ARAnyM** id
 measuring what TeraDesk's ST branch does on NewTOS (TASK/ARCH06.md).
 **Note for every port:** depending on signedness, `-1` reads as "below ST"
 (signed) or as "above Falcon" (unsigned: `(mch >> 16) >= 2` is true), so
-every future port is checked for numeric `_MCH` comparisons. `Getcookie()`
-zero-extends cookie values, so for a native LP64 port `0xFFFFFFFF` is a
-large positive value and numeric comparisons take the "above Falcon"
-hardware path (`docs/sdk/08-porting-checklist.md`). NVRAM does not
+every future port is checked for numeric `_MCH` comparisons. Verified
+state (`docs/analysis/abi-assumptions-check-2026-10-28.md` §3): the
+pointer form of `Getcookie()` zero-extends as a side effect
+(`sdk/libc/newtos-arch/getcookie.c:35@Getcookie` presets `long v = 0`, the kernel
+writes 4 bytes); the value form sign-extends. Only a port that compares the
+untruncated 64-bit value would see a large positive number; none does today
+(the readers mask or narrow to 16 bit, where `0xFFFFFFFF` gives `-1` either
+way). `MCH_NOHARD` is `references/emutos/include/cookie.h:50`; the pinned
+make-512 oracle never sets it, so `_MCH` is an ACCEPTED deviation
+(`docs/COMPATIBILITY.md`). NVRAM does not
 follow from `_MCH` (EmuTOS gates it on `has_nvram`): NewTOS has none and
 answers `NVMaccess` like EmuTOS without an NVRAM chip (TASK/XBIOS10.md).
 Evidence: `docs/analysis/machine-identity-adr-proposal-2026-10-28.md`.
@@ -3072,7 +3078,7 @@ which is served.
 | `hdv_rw`, `hdv_bpb`, `hdv_mediach` — **floppy use** (default floppy driver chain, `force_mediach` for unreliable floppy change detection, `Mediach` "maybe changed", A:/B: specifics) | not served, warning | hardware absence: no floppy/DMA (CLAUDE.md non-goals; FAT12/floppy out of scope) | TeraDesk's `force_mediach` has no effect; NewTOS GEMDOS reads the block layer directly and never calls `hdv_*` |
 | `hdv_rw`, `hdv_bpb`, `hdv_mediach` — **non-floppy use** (RAM disks, disk caches) | not served, warning | no ported program needs it today | a RAM disk or cache that hooks `hdv_*` does not take over a drive. **Revisit with full support** (GEMDOS block access through a hookable path) when a ported program needs it. No app patch. |
 | `etv_critic` | not served, warning | NewTOS `Rwabs` has no retry/critical-error path | the error code is returned directly (TeraDesk's handler returns it anyway) |
-| `etv_timer` | not served, warning | no program in the survey | BIOS-CORE-002 is an **ACCEPTED deviation** (proof: this ADR) |
+| `etv_timer` | not served, warning | no program in the survey; NewTOS keeps time natively. In EmuTOS the OS itself sits on the chain: BIOS installs `just_rts`, GEMDOS sets `tikfrk` (`references/emutos/bdos/time.c:167`), the VDI chains `tick_int` via `Setexc(0x100)` keeping the old value as `tim_chain` (`references/emutos/vdi/vdi_misc.c:131-132`, `:88`); Timer C calls it every 20 ms (`references/emutos/bios/vectors.S:540-544`) | BIOS-CORE-002 is an **ACCEPTED deviation** (proof: this ADR). `Setexc(0x100, -1)` cannot equal EmuTOS's value: EmuTOS returns its own chain head, NewTOS has no OS-internal chain (added 2026-10-28) |
 | `Kbdvbase` `mousevec`, `statvec`, `clockvec`, `joyvec`, `midivec`, `vkbderr`, `vmiderr`, `ikbdsys`, `midisys` | not served, warning | no program in the survey; no MIDI/ACIA | XBIOS-CHARDEV-003 is an **ACCEPTED deviation** (proof: this ADR). The `kbdvec` mechanism (chain with a default stub, upcall) can be reused once a user appears. |
 | `bell_hook`, `kcl_hook` | not served, warning | no sound device yet | no bell/click hook |
 | `dump_vec`, `swv_vec`, `exec_os`, `resvector`/`resvalid`, `vblqueue` | not served, warning | no program in the survey needs them called | the hook is never called |

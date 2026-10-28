@@ -1154,6 +1154,25 @@ TeraDesk's `force_mediach` has no effect; `etv_timer` and the `Kbdvbase`
 mouse/status/clock/joystick hooks are never called (accepted deviations
 BIOS-CORE-002, XBIOS-CHARDEV-003).
 
+**`Bconmap` MAPTAB function pointers are not callable from programs** —
+user decision 2026-10-28 (TASK/XBIOS05.md). EmuTOS calls the six pointers of
+a `MAPTAB` entry itself for handles 6 and up
+(`references/emutos/bios/bios.c:928`, `:972`, `:1005`, `:1157`; layout
+`references/emutos/bios/serport.h:102-117`). No ported program reads
+`maptab` or calls through it (`docs/analysis/abi-assumptions-check-2026-10-28.md`
+§5). On NewTOS the table is published with the EmuTOS layout, but a call
+through one of its pointers from EL0 fails loud rather than silently.
+**Requirement to revisit** when a ported program (e.g. a terminal program)
+calls through it.
+
+**`_MCH` is `0xFFFFFFFF` ("no Atari hardware")** — ADR-012 amendment
+2026-10-28. The value is EmuTOS' `MCH_NOHARD`
+(`references/emutos/include/cookie.h:50`, assigned at
+`references/emutos/bios/machine.c:401` when `CONF_ATARI_HARDWARE` is 0); the
+pinned make-512 oracle never reports it, so every `_MCH` cookie case is an
+**ACCEPTED deviation** per profile (values from TASK/TOOL18.md once
+measured).
+
 **No Line-A: no opcode trap, no LINEA variable block** — user decision
 2026-10-26, ADR-030 (`docs/MEMORY.md`). On TOS the m68k opcodes
 `$A000`–`$A00F` trap through vector `$28` into 16 graphics routines, and op 0
@@ -1229,6 +1248,20 @@ ADR-019 (1:1-compiled ports) + the TeraDesk `$4F2` boot crash refuted that:
 native EL0 ports *do* hit the classic addresses, so NewTOS now provides them
 per-process (B1). The kernel-struct-behind-BIOS-calls path (Phase-03 R3) remains
 the source of truth and the idiom for freshly-written source.
+
+## LONG results in `x0`: sign-extended
+
+A TOS LONG result arrives in `x0` as a **sign-extended `i64`**
+(`tos-api/src/trap.rs:6@TrapArgs`; the one normal write of `x0` is
+`kernel/src/arch/aarch64/exceptions.rs:758@result`); pointers are full 64
+bit and lie below 2 GiB. This is the m68k `D0` read as a signed LONG. Known
+deviations, each with its fix ticket (user 2026-10-28;
+`docs/analysis/abi-assumptions-check-2026-10-28.md` §1): `Rsconf`
+zero-extends (TASK/XBIOS06.md), `Gettime` zero-extends (TASK/XBIOS09.md),
+`Setexc(0x100…0x102, -1)` returns 64-bit placeholders instead of handler
+addresses (TASK/BIOS07.md), the pointer form of `Getcookie()` zero-extends
+in the SDK (TASK/SDK06.md). The `Pexec` child exit code is zero-extended on
+purpose, as in EmuTOS (`references/emutos/bdos/proc.c:601`, `:616`).
 
 ## Native vs m68k struct variants
 

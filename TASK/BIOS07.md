@@ -24,3 +24,17 @@ Fehlerbild 004: XBRA-Installer sehen „kein Handler“, Programme mit NULL-als-
 - Kein vorher gleicher Fall in `bios-r1.tsv`, `bios-core-r1.tsv`, `xbios-chardev-r1.tsv`, `xbios-system-r1.tsv` weicht neu ab.
 - `cargo xtask test` gruen.
 - `docs/STATUS.md` und Spec im selben Commit; `cargo xtask doc-check` der geaenderten Doku 0 Fehler.
+
+## Entscheidungen des Anwenders 2026-10-28 (BIOS12)
+
+- D1: Vorzeichenerweiterung bleibt (`tos-api/src/trap.rs:6@TrapArgs`); die
+  Platzhalter von `Setexc(0x100…0x102, -1)` (Faelle 55–57) liefern mit D3
+  echte Handler-Adressen.
+- D2: `num >= 0x200` liefert 0 (dokumentierte Abweichung).
+- D3: Seite 0 traegt alle `num < 0x200`; nicht bediente Vektoren zeigen auf
+  den `just_rts`-Stub.
+- P3, eigener Teilpunkt: der Abfragetest `v == -1` prueft die unteren 32 Bit
+  wie EmuTOS (`references/emutos/bios/bios.c:1074`) — Sonde zuerst (Vorschlag
+  in `docs/analysis/abi-assumptions-check-2026-10-28.md` §1).
+- Code-Kommentare in `tos-api/src/bios/vectors.rs` mitziehen (BIOS13).
+- Spec: `docs/api/bios/05-setexc.md`, Abschnitt „Decisions“.

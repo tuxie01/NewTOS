@@ -23,3 +23,8 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidu
 - Kein vorher gleicher Fall in `bios-r1.tsv`, `bios-core-r1.tsv`, `xbios-chardev-r1.tsv`, `xbios-system-r1.tsv` weicht neu ab.
 - `cargo xtask test` gruen.
 - `docs/STATUS.md` und Spec im selben Commit; `cargo xtask doc-check` der geaenderten Doku 0 Fehler.
+
+## Entscheidung des Anwenders 2026-10-28 (BIOS12)
+
+- D1 = 1: ein echtes Byte im Tastaturdekoder wie EmuTOS' `shifty`
+  (`docs/api/bios/0b-kbshift.md`, „Decision“).

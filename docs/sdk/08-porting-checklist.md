@@ -63,10 +63,15 @@ Tick each line; every line points at the section that explains it.
       with 8-byte slots → [05 B2](05-abi-pitfalls.md#b2-the-cookie-jar-at-5a0)
 - [ ] Numeric `_MCH`/`_VDO` comparisons checked. NewTOS reports
       `_MCH = 0xFFFFFFFF` ("no Atari hardware", ADR-012 amendment
-      2026-10-28) and `Getcookie()` zero-extends, so a native port sees a
-      large positive value: `mch >= 2`, `(mch >> 16) >= 3` and the like take
-      the TT/Falcon ("above Falcon") hardware path. Patch such a test in
-      `sdk/overlays/<app>/` (user 2026-10-28)
+      2026-10-28). The pointer form of `Getcookie()` zero-extends as a side
+      effect, so a port that compares the **untruncated 64-bit** value sees a
+      large positive number and takes the TT/Falcon path (`mch >= 2`); a port
+      that masks or narrows to 16 bit sees `-1`. No ported program compares
+      untruncated today (`docs/analysis/abi-assumptions-check-2026-10-28.md`
+      §3). Patch such a test in `sdk/overlays/<app>/`
+- [ ] No 32-bit IDs built from byte arrays or unions (`char[4]` read as
+      `long`, cookie or XBRA tags): on little-endian AArch64 the bytes come
+      out reversed → TASK/SDK05.md
 - [ ] No dereference of `Kbdvbase()`; returned pointers range-checked;
       screen writes assume XRGB8888 → [05 B3](05-abi-pitfalls.md#b3-kernel-addresses-vs-user-addresses)
 - [ ] `Super`/`Supexec` bracket idioms reviewed: they run, but grant no

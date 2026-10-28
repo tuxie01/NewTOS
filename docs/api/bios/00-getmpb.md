@@ -14,7 +14,7 @@ answer — `getmpb` is a real, in-range handler (`bios_vecs[0]`).
 
 > **[BIOS06] 2026-10-28:** Abschnitt "NewTOS-Vertrag" ergaenzt (Layout,
 > Inhalt, Pruefung, Abnahme) und "Offene Entscheidungen" (O1-O4). Stand:
-> **Vertrag vorgeschlagen, Anwenderentscheidung O1 steht aus** — bis dahin ist
+> **Vertrag entschieden 2026-10-28 (O1 = A, O2 = (a), O3 = (a) bis zur Orakelmessung, O4 bestaetigt)** — bis dahin ist
 > nichts davon umgesetzt. Quellen: `references/emutos/bios/biosmem.c:134-151`
 > (gelesen), Kern und SDK-Header (gelesen, Zitate unten), Sonde G00-G06
 > (gemessen).
@@ -70,7 +70,7 @@ Layout je als oeffentlicher Vertrag entschieden wurde. Der unveraenderte
 Upstream-Header ist dann die Vertragsseite. Das ist die Folgerung aus der
 Regel; die Wahl selbst ist **O1** unten.
 
-**Vorgeschlagenes oeffentliches Layout (O1 = A, noch nicht entschieden):**
+**Oeffentliches Layout (O1 = A, Anwender 2026-10-28):**
 
 | Struktur | Offset | Feld | Breite |
 |---|---:|---|---:|
@@ -209,6 +209,13 @@ Speicher-Infoprogramm und die Sonde G00-G06.
 ### Offene Entscheidungen (Anwender) [BIOS06]
 
 Keine davon ist entschieden; der Rest dieses Abschnitts ist Folgerung.
+
+**Entscheidungen (Anwender 2026-10-28):** O1 = **A** (LP64-Header-Layout,
+eigener oeffentlicher Deskriptor im Kern); O2 = **(a)** statischer
+Anfangsschnappschuss; O3 = **(a)** stiller Erfolg bleibt, bis das Verhalten von
+EmuTOS bei `mpb == NULL` auf dem Orakel gemessen ist; O4 bestaetigt (Sonde
+G00–G06 als dauerhafter Test bis TOOL16). Die Optionen bleiben unten als
+Begruendung.
 
 **O1 — Welches Layout ist der Vertrag?**
 - **A — LP64-Header-Layout** (32/24 Byte, alle Felder 8 Byte). Der Kern

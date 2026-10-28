@@ -309,6 +309,16 @@ read for `etv_term` (`tos-api/src/bios/vectors.rs:149@vector`).
 
 ### Open decisions (NewTOS choices; no decision taken here)
 
+**Decisions (user 2026-10-28):** D1 = **1**, keep sign extension (the rule
+of `tos-api/src/trap.rs:6@TrapArgs`); the deviations from the rule are
+fixed: the `Setexc(0x100…0x102, -1)` placeholders (cases 55–57) return real
+handler addresses with D3. The query test `v == -1` checks the **low 32
+bits** like EmuTOS (`references/emutos/bios/bios.c:1074`) — probe first,
+P3 (no caller affected today). D2 = **1** (return 0, documented
+deviation). D3 = **1** (page 0 backs every `num < 0x200`); vectors NewTOS
+does not serve default to the `just_rts` stub. The options stay below as
+rationale.
+
 **D1. Width of the `Setexc` return value.** EmuTOS returns a 32-bit LONG in
 D0 (`bios/bios.c:1070-1080`). NewTOS returns `x0` (64 bit). Today: page-0
 cells are sign-extended (`tos-api/src/bios/vectors.rs:131@read_unaligned`),

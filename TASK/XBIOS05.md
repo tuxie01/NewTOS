@@ -24,3 +24,16 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher (Profil „ein Port, 
 - Kein vorher gleicher Fall in `bios-r1.tsv`, `bios-core-r1.tsv`, `xbios-chardev-r1.tsv`, `xbios-system-r1.tsv` weicht neu ab.
 - `cargo xtask test` gruen.
 - `docs/STATUS.md` und Spec im selben Commit; `cargo xtask doc-check` der geaenderten Doku 0 Fehler.
+
+## Entscheidung des Anwenders 2026-10-28
+
+- Option 1: Tabelle mit einem Eintrag wie EmuTOS auf dem ST
+  (`Bconmap(-1)` = 6, `-2` = Zeiger auf `{maptab, 1, 6}`, andere Geraete 0;
+  `references/emutos/bios/serport.c:962-965`, `:1096-1097`). Die Falcon-Faelle
+  (7) werden als Geraeteparameter je Profil ACCEPTED.
+- Die MAPTAB-Funktionszeiger: kein portierter Nutzer → Anforderung zum
+  Wiedervorlegen; bis dahin aus EL0 nicht aufrufbar, laut fehlschlagend,
+  dokumentiert in `docs/COMPATIBILITY.md`.
+- Neue Orakelzeile `Bconmap(-2)` mit Mitschnitt 8 Byte (`BCONMAP`) + 24 Byte
+  (erstes `MAPTAB`), in einer neuen Tabelle (bestehende sind eingefroren).
+- Lokalisierung (Lead) vor Beginn nach CLAUDE.md „Testing“.
