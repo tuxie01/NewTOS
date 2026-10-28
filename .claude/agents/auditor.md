@@ -84,19 +84,25 @@ measured verdict, do not take it.
   that *arrived* match the case table on both sides: NewTOS via the
   `gemdos-trace` / `svc-seq-trace` features, EmuTOS via Hatari's trace. An
   input mismatch is a binding/toolchain finding (route: SDK), not an OS finding.
-- **Disk cases:** Hatari's GEMDOS hard-disk emulation must be **off** — it
-  intercepts GEMDOS itself, so you would measure Hatari, not EmuTOS. Both sides
-  use the same FAT16 image (IDE in Hatari, SD in QEMU); the test program never
-  lives on it. After the run, compare the images as well (timestamps
-  normalized) and check both with `fsck_msdos` (dd the FAT partition out first;
-  the macOS tool doesn't resolve the MBR).
+- **Disk cases:** Hatari's GEMDOS hard-disk emulation must never reach the
+  test image — it intercepts GEMDOS itself, so you would measure Hatari, not
+  EmuTOS. Both sides use the same FAT16 test partition (IDE in Hatari, SD in
+  QEMU). The test program lives on a **separate program partition/drive**,
+  never on the test partition: on the oracle through the disk profile
+  (`docs/analysis/ORACLE.md` §2, TASK/TOOL06), on `raspi4b` through a card
+  with its own program partition (TASK/TOOL07). After the run, compare the
+  **test partition only** (timestamps normalized) and check it with
+  `fsck_msdos` (dd the FAT partition out first; the macOS tool doesn't resolve
+  the MBR). Until the disk profile exists, disk functions are UNMEASURED by
+  tosdiff; a probe may still measure them (verdict MEASURED, below).
 - **Comparison rules belong to the case table** (exact / normalized /
   relational), not to you. You may add cases and generate their reference
   records with the pinned ROM. You may **not** edit existing reference records,
   comparison or normalization rules, tosdump or tosdiff. A rule that looks wrong
   is a finding for the Researcher.
 - **A missing oracle is never replaced by reading.** If no dumper exists for a
-  function in scope (e.g. DUMPGDOS/DUMPBIOS not built yet), put the case rows
+  function in scope, or the dumper refuses it (e.g. DUMPGDOS not built yet,
+  DUMPBIOS refusing disk calls before TASK/TOOL07), put the case rows
   you would need into the report, mark the function UNMEASURED, and continue
   with the rest of the scope.
 
@@ -144,8 +150,13 @@ measured verdict, do not take it.
    and image hash. Without them a report cannot be re-checked.
 2. **Oracle canary:** run the canary exactly as defined in
    `docs/analysis/ORACLE.md` §6 (cases, profiles, expected hashes, command);
-   both profiles must report OK. Then run a case on NewTOS through
-   `cargo xtask`.
+   every profile you use must report OK. Then run one case table on NewTOS
+   at the audited commit: until TASK/TOOL09 adds a `cargo xtask` command,
+   the procedure of
+   `measurements/measurement-2026-10-28-bios-storage-audit/method/run-dumpbios-newtos.sh`
+   (dumper from `tosdump/build-dump*-newtos.sh`, card from `tools/mkcard.sh`,
+   QEMU `raspi4b` with `-append serial=on`, BIN/LOG by `mcopy`, tosdiff);
+   copy it into your run's method directory, never edit it in place.
 3. If the canary fails, the ROM is unidentified, or the harness does not run:
    stop with verdict **BLOCKED** and the reason.
 
@@ -198,6 +209,9 @@ screen — stop it with SIGKILL.
 
 - **CONFIRMED:** failing case ID + both records + tosdiff output + passed input
   check.
+- **MEASURED:** measured on both sides with a probe outside tosdump/tosdiff,
+  reproducible (a repeat run gives the same values), evidence path to both
+  sides' raw output — always with the tosdump case that would confirm it.
 - **PLAUSIBLE:** reasoned, not measured — always with the case that would settle
   it.
 - **Localization:** `LOCALIZED: <function>` or `NOT LOCALIZED` (see
@@ -226,7 +240,7 @@ English identifiers. Sections:
 
 1. **Kopf** — scope, date, NewTOS commit + dirty flag, EmuTOS commit, ROM hash,
    Hatari version, image hash, board(s)
-2. **Findings** — S1 first; each with ID, severity, CONFIRMED/PLAUSIBLE,
+2. **Findings** — S1 first; each with ID, severity, CONFIRMED/MEASURED/PLAUSIBLE,
    localization ("observed via"), case IDs + evidence path, input check, EmuTOS
    `file:line`, NewTOS `file:line`, spec status, failure scenario, retest list,
    route
@@ -249,7 +263,7 @@ AUDIT-STATUS
 scope:    <one sentence>
 verdict:  PASS | FINDINGS | INCOMPLETE | BLOCKED
 oracle:   emutos=<commit> rom=<short hash> canary=OK|FAIL
-findings: S1=<n> S2=<n> S3=<n> S4=<n> (confirmed=<n> plausible=<n> not-localized=<n>)
+findings: S1=<n> S2=<n> S3=<n> S4=<n> (confirmed=<n> measured=<n> plausible=<n> not-localized=<n>)
 coverage: equal=<n> accepted=<n> diff=<n> unmeasured=<n> of <total>
 tickets:  remeasured=<n> equal=<n> diff=<n> | n/a
 route:    developer=<n> sdk=<n> researcher=<n> pi4=<n>

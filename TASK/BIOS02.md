@@ -1,0 +1,41 @@
+# BIOS02 — Spec BIOS-Speicher nachziehen; physische Einheit der Pi-SD festlegen
+
+Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher — Anwenderentscheidung 2026-10-28
+
+## Sachverhalt
+
+Aus dem Audit „BIOS-Speicher“ (`docs/audits/2026-10-28-bios-storage.md`):
+
+- BIOS-STOR-008: die Spec ist an mehreren Stellen veraltet oder durch die
+  Sonde widerlegt, u. a. `docs/api/bios/04-rwabs.md` (der Schreibaufruf auf
+  Sektor 0 liefert selbst `E_CHNG` und schreibt ohne `RW_NOMEDIACH` nicht)
+  und `docs/api/bios/09-mediach.md` (forcechange als „Step-2 candidate“).
+- BIOS-STOR-002: `RW_NOTRANSLATE` braucht eine Zuordnung physischer
+  Einheiten (EmuTOS: Einheit 2 = ACSI 0, 18 = IDE-Master). Welche Einheit
+  die SD der Pi hat, legt bisher nichts fest.
+- BIOS-STOR-005: `Getbpb` bei leerer Sektorzahl im Bootsektor — ist das
+  NewTOS-Verhalten (Partitionslaenge) beabsichtigt und belegt besser, oder
+  EmuTOS folgen?
+- BIOS-STOR-007: `Rwabs` mit Puffer NULL auf A:/B: — Angleichung oder
+  `docs/COMPATIBILITY.md`-Eintrag (A:/B: sind auf der Pi keine Floppys).
+
+## Arbeit
+
+1. Spec-Eintraege fuer `Rwabs`, `Getbpb`, `Mediach`, `Drvmap` gegen den Pin
+   (`references/emutos/`, Commit laut `docs/analysis/ORACLE.md`) neu pruefen
+   und berichtigen, mit `file:line`; Sondenwerte aus
+   `measurements/measurement-2026-10-28-bios-storage-audit/RUNINFO.TXT` als
+   Gegenprobe.
+2. Einheitenzuordnung fuer `RW_NOTRANSLATE` vorschlagen (Pi-SD, spaetere
+   USB-Massenspeicher), mit Begruendung aus EmuTOS (`bios/blkdev.c`,
+   `bios/disk.c`) und der Wirkung auf Programme, die physisch adressieren;
+   Entscheidung beim Anwender.
+3. 005 und 007: je Empfehlung (angleichen / COMPATIBILITY-Eintrag) mit
+   Beleg; Entscheidung beim Anwender.
+4. Die Faelle aus TOOL07, die den Spec-Stand messen, je Eintrag nennen.
+
+## Abnahme
+
+- Spec-Eintraege mit Zitaten, doc-check 0 Fehler; freigegeben vom Anwender.
+- Entscheidungen zu 002/005/007 in der Spec bzw. `docs/COMPATIBILITY.md`
+  vermerkt; danach sind die betroffenen BIOS01-Teile frei.
