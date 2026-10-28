@@ -1,6 +1,6 @@
 # ARCH05 — ADR: welche Maschine meldet NewTOS (`_MCH`) und was folgt daraus
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher (ADR-Vorschlag), Entscheidung Anwender — Anwenderentscheidung 2026-10-28, aus [XBIOS10](XBIOS10.md)
+Status: **ENTWURF LIEGT VOR** 2026-10-28 (`docs/analysis/machine-identity-adr-proposal-2026-10-28.md`), Entscheidungen beim Anwender · Prioritaet: **P2** · Typ: Researcher (ADR-Vorschlag), Entscheidung Anwender — Anwenderentscheidung 2026-10-28, aus [XBIOS10](XBIOS10.md)
 
 ## Sachverhalt
 
