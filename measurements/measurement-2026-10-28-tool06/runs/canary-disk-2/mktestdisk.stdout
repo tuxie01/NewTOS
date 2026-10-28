@@ -1,0 +1,2 @@
+mktestdisk: canary-disk-20261028-111346/test.img (64 MiB, MBR + FAT16 at LBA 63, label NTTESTDISK)
+done: canary-disk-20261028-111346/test.img sha256 d83c543471fd30f29e4704cb9450f70517fe43a4e5e0250e137205e409bfc4a0

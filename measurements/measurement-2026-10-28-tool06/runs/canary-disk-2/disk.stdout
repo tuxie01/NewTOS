@@ -1,0 +1,8 @@
+DUMPBIOS build a8b7, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV: 145 cases, CRC 37812B33
+running 145 cases
+all 145 cases ran
+BIOS.BIN: 145 records, 46432 bytes
+before d83c543471fd30f29e4704cb9450f70517fe43a4e5e0250e137205e409bfc4a0 canary-disk-20261028-111346/test.img
+after  d83c543471fd30f29e4704cb9450f70517fe43a4e5e0250e137205e409bfc4a0 canary-disk-20261028-111346/disk/disk.img

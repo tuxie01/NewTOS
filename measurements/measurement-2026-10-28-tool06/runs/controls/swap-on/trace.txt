@@ -1,0 +1,2807 @@
+DOS MBR:
+- Partition 0: type=0x06, start=0x0000003f, size=64.0 MB 
+- Partition 1: type=0x00, start=0x00000000, size=0.0 MB (invalid)
+- Partition 2: type=0x00, start=0x00000000, size=0.0 MB (invalid)
+- Partition 3: type=0x00, start=0x00000000, size=0.0 MB (invalid)
+- Total size: 64.0 MB in 1 partitions
+IDE: little->big endian byte-swapping disabled for drive 0
+IDE: using geometry LCHS=130 16 63
+IDE: read addr=0x7 reg='Status' val=50
+IDE: bget($f0001d) = $50
+IDE: bget($f00038) = $ff
+IDE: bput($f00039, $2)
+IDE: write control addr=0x0 val=02
+IDE: bput($f00038, $2)
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $0)
+IDE: write addr=0x6 reg='Device/Head' val=0x00
+IDE: bput($f0000d, $cc)
+IDE: write addr=0x3 reg='Sector Number' val=0xcc
+IDE: bput($f00009, $33)
+IDE: write addr=0x2 reg='Sector Count' val=0x33
+IDE: read addr=0x3 reg='Sector Number' val=cc
+IDE: bget($f0000d) = $cc
+IDE: read addr=0x2 reg='Sector Count' val=33
+IDE: bget($f00009) = $33
+IDE: bput($f00039, $2)
+IDE: write control addr=0x0 val=02
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $0)
+IDE: write addr=0x6 reg='Device/Head' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f0000d, $aa)
+IDE: write addr=0x3 reg='Sector Number' val=0xaa
+IDE: bput($f00009, $55)
+IDE: write addr=0x2 reg='Sector Count' val=0x55
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f0000d, $55)
+IDE: write addr=0x3 reg='Sector Number' val=0x55
+IDE: bput($f00009, $aa)
+IDE: write addr=0x2 reg='Sector Count' val=0xaa
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f0000d, $aa)
+IDE: write addr=0x3 reg='Sector Number' val=0xaa
+IDE: bput($f00009, $55)
+IDE: write addr=0x2 reg='Sector Count' val=0x55
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read addr=0x3 reg='Sector Number' val=aa
+IDE: bget($f0000d) = $aa
+IDE: read addr=0x2 reg='Sector Count' val=55
+IDE: bget($f00009) = $55
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $10)
+IDE: write addr=0x6 reg='Device/Head' val=0x10
+IDE: read status addr=0x0 val=00
+IDE: bget($f00039) = $00
+IDE: read status addr=0x0 val=00
+IDE: bget($f00039) = $00
+IDE: bput($f0000d, $aa)
+IDE: write addr=0x3 reg='Sector Number' val=0xaa
+IDE: bput($f00009, $55)
+IDE: write addr=0x2 reg='Sector Count' val=0x55
+IDE: read status addr=0x0 val=00
+IDE: bget($f00039) = $00
+IDE: bput($f0000d, $55)
+IDE: write addr=0x3 reg='Sector Number' val=0x55
+IDE: bput($f00009, $aa)
+IDE: write addr=0x2 reg='Sector Count' val=0xaa
+IDE: read status addr=0x0 val=00
+IDE: bget($f00039) = $00
+IDE: bput($f0000d, $aa)
+IDE: write addr=0x3 reg='Sector Number' val=0xaa
+IDE: bput($f00009, $55)
+IDE: write addr=0x2 reg='Sector Count' val=0x55
+IDE: read status addr=0x0 val=00
+IDE: bget($f00039) = $00
+IDE: read addr=0x3 reg='Sector Number' val=aa
+IDE: bget($f0000d) = $aa
+IDE: read addr=0x2 reg='Sector Count' val=55
+IDE: bget($f00009) = $55
+IDE: read status addr=0x0 val=00
+IDE: bget($f00039) = $00
+IDE: bput($f00019, $0)
+IDE: write addr=0x6 reg='Device/Head' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00039, $6)
+IDE: write control addr=0x0 val=06
+IDE: bput($f00039, $2)
+IDE: write control addr=0x0 val=02
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $0)
+IDE: write addr=0x6 reg='Device/Head' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read addr=0x3 reg='Sector Number' val=01
+IDE: bget($f0000d) = $01
+IDE: read addr=0x2 reg='Sector Count' val=01
+IDE: bget($f00009) = $01
+IDE: read addr=0x7 reg='Status' val=50
+IDE: bget($f0001d) = $50
+IDE: read addr=0x5 reg='Cylinder High' val=00
+IDE: bget($f00015) = $00
+IDE: read addr=0x4 reg='Cylinder Low' val=00
+IDE: bget($f00011) = $00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $10)
+IDE: write addr=0x6 reg='Device/Head' val=0x10
+IDE: read status addr=0x0 val=00
+IDE: bget($f00039) = $00
+IDE: read status addr=0x0 val=00
+IDE: bget($f00039) = $00
+IDE: read addr=0x3 reg='Sector Number' val=01
+IDE: bget($f0000d) = $01
+IDE: read addr=0x2 reg='Sector Count' val=01
+IDE: bget($f00009) = $01
+IDE: read addr=0x7 reg='Status' val=00
+IDE: bget($f0001d) = $00
+IDE: read addr=0x5 reg='Cylinder High' val=ff
+IDE: bget($f00015) = $ff
+IDE: read addr=0x4 reg='Cylinder Low' val=ff
+IDE: bget($f00011) = $ff
+IDE: read status addr=0x0 val=00
+IDE: bget($f00039) = $00
+IDE: bput($f00019, $0)
+IDE: write addr=0x6 reg='Device/Head' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f0000d, $0)
+IDE: write addr=0x3 reg='Sector Number' val=0x00
+IDE: bput($f00009, $1)
+IDE: write addr=0x2 reg='Sector Count' val=0x01
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00015, $0)
+IDE: write addr=0x5 reg='Cylinder High' val=0x00
+IDE: bput($f00011, $0)
+IDE: write addr=0x4 reg='Cylinder Low' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $40)
+IDE: write addr=0x6 reg='Device/Head' val=0x40
+IDE: bput($f0001d, $ec)
+IDE: write addr=0x7 reg='Command' val=0xec
+IDE: CMD=ec
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read addr=0x7 reg='Status' val=58
+IDE: bget($f0001d) = $58
+IDE: wget($f00000) = $0040
+IDE: wget($f00002) = $0082
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0010
+IDE: wget($f00000) = $7e00
+IDE: wget($f00002) = $0200
+IDE: wget($f00000) = $003f
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $514d
+IDE: wget($f00002) = $3030
+IDE: wget($f00000) = $3030
+IDE: wget($f00002) = $3120
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $0003
+IDE: wget($f00002) = $0200
+IDE: wget($f00000) = $0004
+IDE: wget($f00002) = $312e
+IDE: wget($f00000) = $3020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $4861
+IDE: wget($f00000) = $7461
+IDE: wget($f00002) = $7269
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $4944
+IDE: wget($f00000) = $4520
+IDE: wget($f00002) = $6469
+IDE: wget($f00000) = $736b
+IDE: wget($f00002) = $2036
+IDE: wget($f00000) = $344d
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $8010
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $0b00
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0200
+IDE: wget($f00000) = $0200
+IDE: wget($f00002) = $0007
+IDE: wget($f00000) = $0082
+IDE: wget($f00002) = $0010
+IDE: wget($f00000) = $003f
+IDE: wget($f00002) = $ffe0
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $0110
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0002
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0007
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0078
+IDE: wget($f00000) = $0078
+IDE: wget($f00002) = $0078
+IDE: wget($f00000) = $0078
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $00f0
+IDE: wget($f00002) = $0016
+IDE: wget($f00000) = $4000
+IDE: wget($f00002) = $7400
+IDE: wget($f00000) = $4000
+IDE: wget($f00002) = $4000
+IDE: wget($f00000) = $7400
+IDE: wget($f00002) = $4000
+IDE: wget($f00000) = $203f
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $6001
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0002
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $1000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0100
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read addr=0x7 reg='Status' val=50
+IDE: bget($f0001d) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $0)
+IDE: write addr=0x6 reg='Device/Head' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f0000d, $0)
+IDE: write addr=0x3 reg='Sector Number' val=0x00
+IDE: bput($f00009, $10)
+IDE: write addr=0x2 reg='Sector Count' val=0x10
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00015, $0)
+IDE: write addr=0x5 reg='Cylinder High' val=0x00
+IDE: bput($f00011, $0)
+IDE: write addr=0x4 reg='Cylinder Low' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $40)
+IDE: write addr=0x6 reg='Device/Head' val=0x40
+IDE: bput($f0001d, $c6)
+IDE: write addr=0x7 reg='Command' val=0xc6
+IDE: CMD=c6
+IDE: read status addr=0x0 val=40
+IDE: bget($f00039) = $40
+IDE: read addr=0x7 reg='Status' val=40
+IDE: bget($f0001d) = $40
+IDE: read status addr=0x0 val=40
+IDE: bget($f00039) = $40
+IDE: bput($f00019, $0)
+IDE: write addr=0x6 reg='Device/Head' val=0x00
+IDE: read status addr=0x0 val=40
+IDE: bget($f00039) = $40
+IDE: read status addr=0x0 val=40
+IDE: bget($f00039) = $40
+IDE: bput($f0000d, $0)
+IDE: write addr=0x3 reg='Sector Number' val=0x00
+IDE: bput($f00009, $1)
+IDE: write addr=0x2 reg='Sector Count' val=0x01
+IDE: read status addr=0x0 val=40
+IDE: bget($f00039) = $40
+IDE: bput($f00015, $0)
+IDE: write addr=0x5 reg='Cylinder High' val=0x00
+IDE: bput($f00011, $0)
+IDE: write addr=0x4 reg='Cylinder Low' val=0x00
+IDE: read status addr=0x0 val=40
+IDE: bget($f00039) = $40
+IDE: bput($f00019, $40)
+IDE: write addr=0x6 reg='Device/Head' val=0x40
+IDE: bput($f0001d, $ec)
+IDE: write addr=0x7 reg='Command' val=0xec
+IDE: CMD=ec
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read addr=0x7 reg='Status' val=58
+IDE: bget($f0001d) = $58
+IDE: wget($f00000) = $0040
+IDE: wget($f00002) = $0082
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0010
+IDE: wget($f00000) = $7e00
+IDE: wget($f00002) = $0200
+IDE: wget($f00000) = $003f
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $514d
+IDE: wget($f00002) = $3030
+IDE: wget($f00000) = $3030
+IDE: wget($f00002) = $3120
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $0003
+IDE: wget($f00002) = $0200
+IDE: wget($f00000) = $0004
+IDE: wget($f00002) = $312e
+IDE: wget($f00000) = $3020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $4861
+IDE: wget($f00000) = $7461
+IDE: wget($f00002) = $7269
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $4944
+IDE: wget($f00000) = $4520
+IDE: wget($f00002) = $6469
+IDE: wget($f00000) = $736b
+IDE: wget($f00002) = $2036
+IDE: wget($f00000) = $344d
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $8010
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $0b00
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0200
+IDE: wget($f00000) = $0200
+IDE: wget($f00002) = $0007
+IDE: wget($f00000) = $0082
+IDE: wget($f00002) = $0010
+IDE: wget($f00000) = $003f
+IDE: wget($f00002) = $ffe0
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $0110
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0002
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0007
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0078
+IDE: wget($f00000) = $0078
+IDE: wget($f00002) = $0078
+IDE: wget($f00000) = $0078
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $00f0
+IDE: wget($f00002) = $0016
+IDE: wget($f00000) = $4000
+IDE: wget($f00002) = $7400
+IDE: wget($f00000) = $4000
+IDE: wget($f00002) = $4000
+IDE: wget($f00000) = $7400
+IDE: wget($f00002) = $4000
+IDE: wget($f00000) = $203f
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $6001
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0002
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $1000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0100
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read addr=0x7 reg='Status' val=50
+IDE: bget($f0001d) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $0)
+IDE: write addr=0x6 reg='Device/Head' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f0000d, $0)
+IDE: write addr=0x3 reg='Sector Number' val=0x00
+IDE: bput($f00009, $1)
+IDE: write addr=0x2 reg='Sector Count' val=0x01
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00015, $0)
+IDE: write addr=0x5 reg='Cylinder High' val=0x00
+IDE: bput($f00011, $0)
+IDE: write addr=0x4 reg='Cylinder Low' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $40)
+IDE: write addr=0x6 reg='Device/Head' val=0x40
+IDE: bput($f0001d, $c4)
+IDE: write addr=0x7 reg='Command' val=0xc4
+IDE: CMD=c4
+IDE: read sector=0
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read addr=0x7 reg='Status' val=58
+IDE: bget($f0001d) = $58
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0100
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $0f06
+IDE: wget($f00000) = $813f
+IDE: wget($f00002) = $003f
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $ffa1
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $aa55
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read addr=0x7 reg='Status' val=50
+IDE: bget($f0001d) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $0)
+IDE: write addr=0x6 reg='Device/Head' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f0000d, $0)
+IDE: write addr=0x3 reg='Sector Number' val=0x00
+IDE: bput($f00009, $1)
+IDE: write addr=0x2 reg='Sector Count' val=0x01
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00015, $0)
+IDE: write addr=0x5 reg='Cylinder High' val=0x00
+IDE: bput($f00011, $0)
+IDE: write addr=0x4 reg='Cylinder Low' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $40)
+IDE: write addr=0x6 reg='Device/Head' val=0x40
+IDE: bput($f0001d, $ec)
+IDE: write addr=0x7 reg='Command' val=0xec
+IDE: CMD=ec
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read addr=0x7 reg='Status' val=58
+IDE: bget($f0001d) = $58
+IDE: wget($f00000) = $0040
+IDE: wget($f00002) = $0082
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0010
+IDE: wget($f00000) = $7e00
+IDE: wget($f00002) = $0200
+IDE: wget($f00000) = $003f
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $514d
+IDE: wget($f00002) = $3030
+IDE: wget($f00000) = $3030
+IDE: wget($f00002) = $3120
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $0003
+IDE: wget($f00002) = $0200
+IDE: wget($f00000) = $0004
+IDE: wget($f00002) = $312e
+IDE: wget($f00000) = $3020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $4861
+IDE: wget($f00000) = $7461
+IDE: wget($f00002) = $7269
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $4944
+IDE: wget($f00000) = $4520
+IDE: wget($f00002) = $6469
+IDE: wget($f00000) = $736b
+IDE: wget($f00002) = $2036
+IDE: wget($f00000) = $344d
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $8010
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $0b00
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0200
+IDE: wget($f00000) = $0200
+IDE: wget($f00002) = $0007
+IDE: wget($f00000) = $0082
+IDE: wget($f00002) = $0010
+IDE: wget($f00000) = $003f
+IDE: wget($f00002) = $ffe0
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $0110
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0002
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0007
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0078
+IDE: wget($f00000) = $0078
+IDE: wget($f00002) = $0078
+IDE: wget($f00000) = $0078
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $00f0
+IDE: wget($f00002) = $0016
+IDE: wget($f00000) = $4000
+IDE: wget($f00002) = $7400
+IDE: wget($f00000) = $4000
+IDE: wget($f00002) = $4000
+IDE: wget($f00000) = $7400
+IDE: wget($f00002) = $4000
+IDE: wget($f00000) = $203f
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $6001
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0002
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $1000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0100
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read addr=0x7 reg='Status' val=50
+IDE: bget($f0001d) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $0)
+IDE: write addr=0x6 reg='Device/Head' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f0000d, $0)
+IDE: write addr=0x3 reg='Sector Number' val=0x00
+IDE: bput($f00009, $1)
+IDE: write addr=0x2 reg='Sector Count' val=0x01
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00015, $0)
+IDE: write addr=0x5 reg='Cylinder High' val=0x00
+IDE: bput($f00011, $0)
+IDE: write addr=0x4 reg='Cylinder Low' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $40)
+IDE: write addr=0x6 reg='Device/Head' val=0x40
+IDE: bput($f0001d, $ec)
+IDE: write addr=0x7 reg='Command' val=0xec
+IDE: CMD=ec
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read addr=0x7 reg='Status' val=58
+IDE: bget($f0001d) = $58
+IDE: wget($f00000) = $0040
+IDE: wget($f00002) = $0082
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0010
+IDE: wget($f00000) = $7e00
+IDE: wget($f00002) = $0200
+IDE: wget($f00000) = $003f
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $514d
+IDE: wget($f00002) = $3030
+IDE: wget($f00000) = $3030
+IDE: wget($f00002) = $3120
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $0003
+IDE: wget($f00002) = $0200
+IDE: wget($f00000) = $0004
+IDE: wget($f00002) = $312e
+IDE: wget($f00000) = $3020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $4861
+IDE: wget($f00000) = $7461
+IDE: wget($f00002) = $7269
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $4944
+IDE: wget($f00000) = $4520
+IDE: wget($f00002) = $6469
+IDE: wget($f00000) = $736b
+IDE: wget($f00002) = $2036
+IDE: wget($f00000) = $344d
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $2020
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $8010
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $0b00
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0200
+IDE: wget($f00000) = $0200
+IDE: wget($f00002) = $0007
+IDE: wget($f00000) = $0082
+IDE: wget($f00002) = $0010
+IDE: wget($f00000) = $003f
+IDE: wget($f00002) = $ffe0
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $0110
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0002
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0007
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0078
+IDE: wget($f00000) = $0078
+IDE: wget($f00002) = $0078
+IDE: wget($f00000) = $0078
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $00f0
+IDE: wget($f00002) = $0016
+IDE: wget($f00000) = $4000
+IDE: wget($f00002) = $7400
+IDE: wget($f00000) = $4000
+IDE: wget($f00002) = $4000
+IDE: wget($f00000) = $7400
+IDE: wget($f00002) = $4000
+IDE: wget($f00000) = $203f
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $6001
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0002
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $1000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0100
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read addr=0x7 reg='Status' val=50
+IDE: bget($f0001d) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $0)
+IDE: write addr=0x6 reg='Device/Head' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f0000d, $0)
+IDE: write addr=0x3 reg='Sector Number' val=0x00
+IDE: bput($f00009, $1)
+IDE: write addr=0x2 reg='Sector Count' val=0x01
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00015, $0)
+IDE: write addr=0x5 reg='Cylinder High' val=0x00
+IDE: bput($f00011, $0)
+IDE: write addr=0x4 reg='Cylinder Low' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $40)
+IDE: write addr=0x6 reg='Device/Head' val=0x40
+IDE: bput($f0001d, $c4)
+IDE: write addr=0x7 reg='Command' val=0xc4
+IDE: CMD=c4
+IDE: read sector=0
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read addr=0x7 reg='Status' val=58
+IDE: bget($f0001d) = $58
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0100
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $0f06
+IDE: wget($f00000) = $813f
+IDE: wget($f00002) = $003f
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $ffa1
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $aa55
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read addr=0x7 reg='Status' val=50
+IDE: bget($f0001d) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $0)
+IDE: write addr=0x6 reg='Device/Head' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f0000d, $3f)
+IDE: write addr=0x3 reg='Sector Number' val=0x3f
+IDE: bput($f00009, $1)
+IDE: write addr=0x2 reg='Sector Count' val=0x01
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00015, $0)
+IDE: write addr=0x5 reg='Cylinder High' val=0x00
+IDE: bput($f00011, $0)
+IDE: write addr=0x4 reg='Cylinder Low' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $40)
+IDE: write addr=0x6 reg='Device/Head' val=0x40
+IDE: bput($f0001d, $c4)
+IDE: write addr=0x7 reg='Command' val=0xc4
+IDE: CMD=c4
+IDE: read sector=63
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read addr=0x7 reg='Status' val=58
+IDE: bget($f0001d) = $58
+IDE: wget($f00000) = $3ceb
+IDE: wget($f00002) = $4d90
+IDE: wget($f00000) = $4f54
+IDE: wget($f00002) = $344f
+IDE: wget($f00000) = $3430
+IDE: wget($f00002) = $0039
+IDE: wget($f00000) = $0402
+IDE: wget($f00002) = $0001
+IDE: wget($f00000) = $0002
+IDE: wget($f00002) = $0002
+IDE: wget($f00000) = $f800
+IDE: wget($f00002) = $0080
+IDE: wget($f00000) = $003f
+IDE: wget($f00002) = $0010
+IDE: wget($f00000) = $003f
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $ffa1
+IDE: wget($f00002) = $0001
+IDE: wget($f00000) = $0080
+IDE: wget($f00002) = $4429
+IDE: wget($f00000) = $5454
+IDE: wget($f00002) = $4e4e
+IDE: wget($f00000) = $5454
+IDE: wget($f00002) = $5345
+IDE: wget($f00000) = $4454
+IDE: wget($f00002) = $5349
+IDE: wget($f00000) = $204b
+IDE: wget($f00002) = $4146
+IDE: wget($f00000) = $3154
+IDE: wget($f00002) = $2036
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $31fa
+IDE: wget($f00000) = $8ec0
+IDE: wget($f00002) = $8ed8
+IDE: wget($f00000) = $fcc0
+IDE: wget($f00002) = $00b9
+IDE: wget($f00000) = $be01
+IDE: wget($f00002) = $7c00
+IDE: wget($f00000) = $00bf
+IDE: wget($f00002) = $f380
+IDE: wget($f00000) = $eaa5
+IDE: wget($f00002) = $0056
+IDE: wget($f00000) = $0800
+IDE: wget($f00002) = $01b8
+IDE: wget($f00000) = $bb02
+IDE: wget($f00002) = $7c00
+IDE: wget($f00000) = $80ba
+IDE: wget($f00002) = $b900
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $13cd
+IDE: wget($f00000) = $0572
+IDE: wget($f00002) = $00ea
+IDE: wget($f00000) = $007c
+IDE: wget($f00002) = $cd00
+IDE: wget($f00000) = $0019
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0080
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $0f06
+IDE: wget($f00000) = $813f
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $ffe0
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $aa55
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read addr=0x7 reg='Status' val=50
+IDE: bget($f0001d) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $0)
+IDE: write addr=0x6 reg='Device/Head' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f0000d, $3f)
+IDE: write addr=0x3 reg='Sector Number' val=0x3f
+IDE: bput($f00009, $1)
+IDE: write addr=0x2 reg='Sector Count' val=0x01
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00015, $0)
+IDE: write addr=0x5 reg='Cylinder High' val=0x00
+IDE: bput($f00011, $0)
+IDE: write addr=0x4 reg='Cylinder Low' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $40)
+IDE: write addr=0x6 reg='Device/Head' val=0x40
+IDE: bput($f0001d, $c4)
+IDE: write addr=0x7 reg='Command' val=0xc4
+IDE: CMD=c4
+IDE: read sector=63
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read addr=0x7 reg='Status' val=58
+IDE: bget($f0001d) = $58
+IDE: wget($f00000) = $3ceb
+IDE: wget($f00002) = $4d90
+IDE: wget($f00000) = $4f54
+IDE: wget($f00002) = $344f
+IDE: wget($f00000) = $3430
+IDE: wget($f00002) = $0039
+IDE: wget($f00000) = $0402
+IDE: wget($f00002) = $0001
+IDE: wget($f00000) = $0002
+IDE: wget($f00002) = $0002
+IDE: wget($f00000) = $f800
+IDE: wget($f00002) = $0080
+IDE: wget($f00000) = $003f
+IDE: wget($f00002) = $0010
+IDE: wget($f00000) = $003f
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $ffa1
+IDE: wget($f00002) = $0001
+IDE: wget($f00000) = $0080
+IDE: wget($f00002) = $4429
+IDE: wget($f00000) = $5454
+IDE: wget($f00002) = $4e4e
+IDE: wget($f00000) = $5454
+IDE: wget($f00002) = $5345
+IDE: wget($f00000) = $4454
+IDE: wget($f00002) = $5349
+IDE: wget($f00000) = $204b
+IDE: wget($f00002) = $4146
+IDE: wget($f00000) = $3154
+IDE: wget($f00002) = $2036
+IDE: wget($f00000) = $2020
+IDE: wget($f00002) = $31fa
+IDE: wget($f00000) = $8ec0
+IDE: wget($f00002) = $8ed8
+IDE: wget($f00000) = $fcc0
+IDE: wget($f00002) = $00b9
+IDE: wget($f00000) = $be01
+IDE: wget($f00002) = $7c00
+IDE: wget($f00000) = $00bf
+IDE: wget($f00002) = $f380
+IDE: wget($f00000) = $eaa5
+IDE: wget($f00002) = $0056
+IDE: wget($f00000) = $0800
+IDE: wget($f00002) = $01b8
+IDE: wget($f00000) = $bb02
+IDE: wget($f00002) = $7c00
+IDE: wget($f00000) = $80ba
+IDE: wget($f00002) = $b900
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $13cd
+IDE: wget($f00000) = $0572
+IDE: wget($f00002) = $00ea
+IDE: wget($f00000) = $007c
+IDE: wget($f00002) = $cd00
+IDE: wget($f00000) = $0019
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0080
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $0f06
+IDE: wget($f00000) = $813f
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $ffe0
+IDE: wget($f00000) = $0001
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $aa55
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read addr=0x7 reg='Status' val=50
+IDE: bget($f0001d) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $0)
+IDE: write addr=0x6 reg='Device/Head' val=0x00
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f0000d, $40)
+IDE: write addr=0x3 reg='Sector Number' val=0x40
+IDE: bput($f00009, $1)
+IDE: write addr=0x2 reg='Sector Count' val=0x01
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00015, $0)
+IDE: write addr=0x5 reg='Cylinder High' val=0x00
+IDE: bput($f00011, $1)
+IDE: write addr=0x4 reg='Cylinder Low' val=0x01
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: bput($f00019, $40)
+IDE: write addr=0x6 reg='Device/Head' val=0x40
+IDE: bput($f0001d, $c4)
+IDE: write addr=0x7 reg='Command' val=0xc4
+IDE: CMD=c4
+IDE: read sector=320
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read status addr=0x0 val=58
+IDE: bget($f00039) = $58
+IDE: read addr=0x7 reg='Status' val=58
+IDE: bget($f0001d) = $58
+IDE: wget($f00000) = $544e
+IDE: wget($f00002) = $4554
+IDE: wget($f00000) = $5453
+IDE: wget($f00002) = $4944
+IDE: wget($f00000) = $4b53
+IDE: wget($f00002) = $0820
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $6000
+IDE: wget($f00000) = $5d51
+IDE: wget($f00002) = $5d51
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $6000
+IDE: wget($f00000) = $5d51
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: wget($f00000) = $0000
+IDE: wget($f00002) = $0000
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read status addr=0x0 val=50
+IDE: bget($f00039) = $50
+IDE: read addr=0x7 reg='Status' val=50
+IDE: bget($f0001d) = $50

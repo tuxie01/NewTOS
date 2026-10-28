@@ -1,0 +1,158 @@
+measurement-2026-10-28-tool06 -- the oracle's disk profile: EmuTOS reads the FAT16 test image itself
+==================================================================================================
+Developer, TASK/TOOL06, 2026-10-28 ~10:40-11:10 (host clock CET), HEAD 1680d5b2 + the uncommitted
+changes listed under CHANGED. No NewTOS code, no hardware, no card, nothing flashed. Not committed.
+
+WHAT / WHY
+  The oracle had no BIOS block device: tools/hatari-oracle.sh always mounted a Hatari GEMDOS folder
+  as C:, and Hatari answers GEMDOS on that drive itself, so a disk case there measures Hatari.
+  User decision 2026-10-28 (TASK/TOOL06): a second, own oracle profile for disk cases with its own
+  canary; tt and falcontc (profiles, tools/oracle/hatari.cfg, references, canary section 6) stay
+  byte-identical. This run builds the profile, measures every choice in it, and defines its canary.
+
+CHANGED (uncommitted, for the lead)
+  tools/hatari-oracle.sh  profile "disk"; tt/falcontc: the Hatari command line is unchanged (an
+                          empty "$@" in front of -d, --gemdos-drive C, --auto C:\<PRG>), proven by
+                          the section 6 canary below. sha256 final (both canaries below ran
+                          with it): b2c39e026fb27fba8d0731b525456952007cf8625ee50272f01aaebc68f90f8d.
+                          The controls, profile and canary-table runs ran with the previous
+                          version 042d0cecc7d454d4139de6e64198396d7af363a7c8da9cec40024775ffeee5e2,
+                          which wrote the image's after-hash only when the run produced a LOG;
+                          the final one writes it before that check. Hatari command identical.
+  tools/mktestdisk.sh     new: the byte-reproducible FAT16 test image. sha256 at the runs:
+                          8e0b4cd316f9a7c849dcaf171416779f259d3c66ae4dac27316c0f76fcc86d3d
+  docs/analysis/ORACLE.md section 2 (profile table row, "Profile disk"), section 6 ("Canary of the
+                          disk profile")
+  Untouched: tools/oracle/* (hatari.cfg c8f4998a..., oracle.env ef1f930f..., ROM 323c87bb...),
+  tosdump/ (no source, table or reference changed), .claude/agents/auditor.md.
+
+INPUTS (sha256)
+  ROM        tools/oracle/etos512de-1a7484ab.img  323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+  Hatari     2.6.1 binary                         953f4e78eea55a8ca12ed6c83de1f045545b8da42a49e00112eaa235dffcd6f6
+  config     tools/oracle/hatari.cfg               c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46
+  table      tosdump/cases/bios-r1.tsv              231f2dfe73e5a80628167b216a66fe6475992b9b3a692b9025a92e8d6f3b2bf8
+             (147 cases, CRC 583C11E0)
+  dumper     make -C tosdump BUILD=<scratch>/dumpers/a8b7 BUILD_ID=a8b7 dumpbios-m68k
+             controls + profile runs: DUMPBIOS.PRG 74d59d642cdbba4a6f1468be4e834aa6761c9a21d383ce9aca6fbb21025b309d
+             canary-disk 1 / 2 (own builds): a642a3d464294e53128d52145fa6d0ae34565c4b66c2116182470251f6d9508e /
+             8f1336d70443d959ce32804b8727b39dcc20fceb385268001e05ab3c5f615be5 (same source; the .PRG differs
+             in its symbol table between builds, measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT;
+             the dump output does not)
+  mtools     4.0.49 (Homebrew, /opt/homebrew/bin), macOS 27.0.1
+  tosdiff    tosdump/host/build/tosdiff (make -q: up to date with HEAD sources), and a fresh build into
+             scratch gave the same verdicts
+
+THE TEST IMAGE (tools/mktestdisk.sh <image> [dest=host-file ...])
+  64 MiB, MBR entry 1 type 0x06 LBA 63..131039 (130977 sectors, CHS 16 heads x 63 sectors), FAT16 by
+  mformat: 512 B/sector, 4 sectors/cluster, 2 FATs x 128 sectors, 512 root entries, 32672 clusters,
+  hidden sectors 63, serial 4E54-5444, label NTTESTDISK, every FAT stamp 2026-10-17 12:00 UTC
+  (SOURCE_DATE_EPOCH). Geometry and BPB = tools/mkcard.sh's 64 MiB default as measured by the BIOS
+  storage audit (512,4,2048,32,128,129,289,32672).
+  Image of every run here: no files, image_sha256 d83c543471fd30f29e4704cb9450f70517fe43a4e5e0250e137205e409bfc4a0;
+  its manifest copied as test.img.manifest (runs/controls/test.img.manifest is the controls' build,
+  same image_sha256). optional_missing line, verbatim:
+    optional_missing none
+  runs/mktestdisk-repro.txt (method/mktestdisk-repro.sh): the empty image built three times 7 s apart
+  and an image with two files (one in a folder, one with its own stamp) twice 13 s apart -- each set
+  byte-identical; fsck_msdos -n on the dd'd-out partition of both kinds: exit 0, no repairs.
+  DEVELOPMENT FIX: the first version took SOURCE_DATE_EPOCH from `date -j -f %Y%m%d%H%M`, which fills
+  the unparsed seconds from the host clock -- two builds differed in the label entry's time stamp
+  (2 bytes). Fixed (explicit seconds) before any run below; earlier exploratory runs used that image
+  (sha256 06ae515f...) and are not evidence.
+
+THE PROFILE (tools/hatari-oracle.sh disk; HATARI_ORACLE_DISK=<test image>)
+  Hatari command = the tt/falcontc one (empty HOME, SDL dummy, --configfile hatari.cfg, --tos <pin>,
+  --sound off --fast-forward on --conout 2 --run-vbls 30000, SIGKILL after the final LOG) with:
+    --machine falcon --monitor vga --drive-a off --drive-b off
+    --ide-master <out>/disk.img --ide-swap 0=off           (disk.img = cp -c clone of the test image)
+    -d <out>/hd --gemdos-drive D --auto D:\DUMPBIOS.PRG    (dumper, table, BIN, LOG on the host)
+  Drive layout, Drvmap() = 0x0000000C (case 74, every disk-profile run):
+    A:, B:  absent (floppy drives off)
+    C:      the test image, IDE master, FAT16 partition -- EmuTOS' own BIOS drive (bit 2)
+    D:      Hatari GEMDOS folder with the dumper -- set by Hatari's GEMDOS emulation (bit 3)
+
+CONTROLS (method/controls.sh <scratch> runs/controls; each variant = the profile's command changed
+in the named argument only, own clone of the test image, BIOS.BIN/LOG + hatari.log + disk.sha256)
+  trace      + --trace ide,bios,gemdos      Drvmap 0xC, boot screen "GEMDOS-Laufwerke: CD"
+  swap-auto  no --ide-swap (Hatari "auto")   Drvmap 0xC; tosdiff vs trace: 0 of 147 cases differ
+  swap-on    --ide-swap 0=on                 Drvmap 0xC; tosdiff vs trace: 0 of 147 cases differ
+  floppy-on  floppy drives on (default)      Drvmap 0xF, "ABCD"; tosdiff vs trace: 3 of 147 differ --
+                                             129 Giaccess(0,14) 0x25 -> 0x27, 178 Floprate(0,-1)
+                                             -15 -> 3, 179 Floprate(0,-4) -15 -> -1
+  no-ide     no --ide-master                 boot screen "GEMDOS-Laufwerke: D"; the dumper never
+                                             started (no BIOS.LOG within 60 s)
+  ide-slave  dumper on a second IDE image    boot screen "CD" (C: test, D: program image), but no
+             (--ide-slave, --ide-swap 1=off), BIOS.LOG within 60 s: Hatari's --auto INF override
+             no -d, --auto D:\DUMPBIOS.PRG   is inactive without its GEMDOS emulation -- the trace
+                                             shows the desktop's Fopen("C:\EMUDESK.INF") "-> to TOS"
+                                             and no Pexec of D:\DUMPBIOS.PRG. Program image
+                                             (prog.img.manifest, image_sha256 58653e0f...) unchanged.
+  Every control left the test image unchanged (disk.sha256: before = after = d83c5434...).
+
+PROOF THAT EMUTOS READS THE TEST IMAGE ITSELF (runs/controls/trace/)
+  trace.txt = Hatari's trace; ide-and-os-calls.txt = method/ide-commands.py of it (IDE commands with
+  LBA from the task-file registers -- Hatari's own "IDE: read sector=N" lines agree -- interleaved
+  with the BIOS/GEMDOS calls and Hatari's routing lines):
+    IDE READ MULTIPLE drive 0 LBA 0 (MBR), LBA 63 (boot sector; first data words eb3c 904d 544f 4f34
+    = the file's bytes at 0x7E00), then
+      GEMDOS Fsfirst("\AUTO\*.PRG") -> BIOS Getbpb(2) -> IDE LBA 63
+      -> BIOS Rwabs(0,...,1,257,2) -> IDE READ MULTIPLE LBA 320 (root directory: 63+1+2*128 = 320)
+    No IDE write command in the whole run.
+  Hatari's GEMDOS layer on C:: every C: call is "-> to TOS" except the desktop's first
+  Fopen("C:\EMUDESK.INF"), answered "-> FD 64" by Hatari's --auto INF override (a host file; no IDE
+  access, image unchanged); the second Fopen of it after the dumper is "-> to TOS". All D: paths
+  "-> host".
+  Byte order: swap-auto/ide-and-os-calls.txt shows the same words as trace (file order);
+  swap-on/ide-and-os-calls.txt shows 3ceb 4d90 4f54 344f, byte-swapped, and EmuTOS' answers are unchanged
+  (it detects the swapped MBR and swaps back, bios/disk.c:867-870).
+
+PROFILE RUNS WITH bios-r1.tsv (runs/profile-bios-r1-1, -2; runs/COMPARE.txt)
+  both: exit 0, "all 147 cases ran", image before = after = d83c5434...
+  BIOS.LOG identical (4de256f3075c42e1a1bc5bcffdf739244b3382286b086adc071e57690872e247, = the LOG of both
+  the EMUTOS-1a7484ab-BIOS references); BIOS.BIN differs in ONE byte: case 125 Gettime
+  (0x5D5C575D vs 0x5D5C5764). tosdiff: 0 of 147 cases differ. tosdiff --selfcheck on run 1: passes.
+  vs tosdump/reference/EMUTOS-1a7484ab-BIOS-falcontc.BIN: 4 of 147 cases differ -- 129, 178, 179
+  (floppy drives off, as in the floppy-on control) and 211 VsetMode(-1) 0x001C -> 0x001A (no
+  truecolor INF in this profile). Drvmap: reference 0x7, disk profile 0xC.
+  => acceptance "two runs byte-identical BIN/LOG" is NOT met by bios-r1.tsv itself: LOG yes, BIN no.
+
+THE CANARY TABLE (runs/canary-table-without-125-*, runs/canary-table-*, runs/canary-disk-*)
+  First try, bios-r1.tsv with line 125 (Gettime) commented out: two runs differ in case 112 Random
+  (0x001A01B8 vs 0x00D725EB; in the two full-table runs above it happened to be equal, 0x007893D1).
+  EmuTOS seeds Random from hz_200 at its first call (bios/xbios.c:421-426); the tick count at that
+  point varies from run to run.
+  Canary table = bios-r1.tsv with lines 112 and 125 commented out in place (sed, in
+  method/canary-disk.sh): 145 cases, CRC 37812B33, sha256
+  7f1dfe2d575c40b3336aa321637c953eae68e6e8bec0d01ab68249728a0404c7.
+    runs/canary-table-1..3 (tools/hatari-oracle.sh disk, by hand) and runs/canary-disk-1..2
+    (method/canary-disk.sh): all five BIOS.BIN 0bce674c24bb094c6647157c9d4a8b5d0c98ab3210a66bbe46efaca128c9d1f9,
+    all five BIOS.LOG ae160cac6e37c0d54acc7dc1092c093f0a2e7717b782a22772835938dc33fb6f,
+    image before = after = d83c5434... in all five.
+  canary-disk.sh, both runs (final tools/hatari-oracle.sh): "canary disk: OK (BIN+LOG sha256 as
+  pinned)", "canary disk: test image unchanged (d83c5434...)", exit 0, ~10 s wall
+  (runs/canary-disk-*/canary-disk.stdout). It also passed twice with the previous script version.
+
+SECTION 6 CANARY (tt, falcontc) WITH THE CHANGED SCRIPT (runs/canary-section6.txt)
+  measurements/measurement-2026-10-28-oracle-canary/method/canary.sh, three times (twice with the
+  previous script version, once with the final one -- the one captured):
+  "canary tt: OK", "canary falcontc: OK", exit 0; VDI.BIN/LOG sha256 715c734c... d30e973c... /
+  81b3bdba... 64dacda7... = docs/analysis/ORACLE.md section 6, unchanged.
+
+NOT VERIFIED / OPEN
+  - No reference of the disk profile is recorded (that is TOOL07); no NewTOS run.
+  - The profile's video mode is EmuTOS' Falcon default (0x001A); a truecolor INF would have to come
+    from the test image (the boot drive) -- not done, the image carries no files.
+  - mtools comes from PATH (not pinned in oracle.env, which this ticket must not touch); another
+    mtools version writes another boot sector (banner "MTOO4049"), which the canary's image sha256
+    check catches.
+  - Hatari's RTC and hz_200 jitter are not pinned; the canary avoids them by leaving out Gettime
+    and Random. Other tables with time-dependent cases will need the same treatment.
+
+OBSERVATIONS (not acted on)
+  - An auditor's files appeared in the main working tree during this run
+    (measurements/measurement-2026-10-28-bios-core-audit/, tosdump/cases/bios-core-r1.tsv,
+    tosdump/reference/EMUTOS-1a7484ab-BIOS-core*); not touched.
+
+FILES
+  manifest.sha256 covers every file of this run except itself. Images are not kept (scratch, deleted
+  after the run); their sha256 is above and in each run's disk.sha256.

@@ -1,0 +1,56 @@
+INFO : Hatari v2.6.1, compiled on:  Aug 15 2025, 14:15:19
+INFO : IPF : capsimage library version release=5 revision=1
+INFO : Mounting IDE hard drive image canary-disk-20261028-111335/disk/disk.img
+INFO : GEMDOS HDD emulation, D: <-> canary-disk-20261028-111335/disk/hd.
+ERROR: Microphone: SDL_OpenAudioDevice failed.
+INFO : NVRAM not found at 'canary-disk-20261028-111335/disk/home/hatari.nvram'
+WARN : Bus Error reading at address $20fffff, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fffffc21, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6c4710, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $5d1234, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6d3148, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $d003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+INFO : Strange screen size 16x480 -> aspect corrected by 32x1!
+INFO : OS clock ticks / second: 100
+
+
+
+
+
+                                                         
+                                                         
+                                                         
+                                                         
+                                                         
+                    ________________________________________
+
+                    EmuTOS Version:     20260414 
+                    CPU-Typ:            M68030 
+                    Rechner:            Atari Falcon 
+                    ST-RAM:             4 MB 
+                    Alt-RAM:            16 MB 
+                    GEMDOS-Laufwerke:   CD 
+                    Boot-Zeit:          2026/10/28 11:13:40 
+                    ________________________________________
+
+                    Halte <Strg> = ohne AUTO/ACC
+                    Halte <Alt> = keine Harddisk
+                    DrUcke 'X' um von Laufwerk X: zu booten
+                    DrUcke <Esc> fUr die Textkonsole
+
+                       FUr Pause <Shift> gedrUckt halten    
+
+
+WARN : No GEMDOS dir 'canary-disk-20261028-111335/disk/hd/etc'
+DUMPBIOS build a8b7, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV: 145 cases, CRC 37812B33
+running 145 cases
+*WARN : Unknown BIOS call 0xc! at PC 0x1015914
+WARN : Unknown BIOS call 0x7f! at PC 0x1015914
+WARN : Unknown BIOS call 0xff! at PC 0x1015914
+all 145 cases ran
+BIOS.BIN: 145 records, 46432 bytes
+BIOS.LOG: 172 bytes

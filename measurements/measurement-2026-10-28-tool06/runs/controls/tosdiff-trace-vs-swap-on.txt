@@ -1,0 +1,3 @@
+BIOS.BIN vs BIOS.BIN -- area BIOS, 147 cases from bios-r1.tsv
+
+0 of 147 cases differ

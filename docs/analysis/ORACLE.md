@@ -29,12 +29,12 @@ not on it.
 
 ## 2. Machine profiles (`tools/hatari-oracle.sh`)
 
-Common to both: `HOME` = an empty directory (no user config, no user NVRAM —
+Common to all profiles: `HOME` = an empty directory (no user config, no user NVRAM —
 Hatari starts with a fresh NVRAM), `--configfile tools/oracle/hatari.cfg`,
 `SDL_VIDEODRIVER=dummy`, `--sound off --fast-forward on --conout 2`,
-GEMDOS drive C: = a host directory holding the dumper and its table,
-`--auto C:\DUMP*.PRG`. The run ends when the dumper's final LOG is on the
-drive; Hatari is stopped with SIGKILL (SIGTERM opens the "really quit?"
+GEMDOS drive C: (profile `disk`: D:) = a host directory holding the dumper
+and its table, `--auto C:\DUMP*.PRG` (`disk`: `D:\DUMP*.PRG`). The run ends
+when the dumper's final LOG is on the drive; Hatari is stopped with SIGKILL (SIGTERM opens the "really quit?"
 dialog, `bConfirmQuit = TRUE`).
 
 `tools/oracle/hatari.cfg` holds only settings that can change what EmuTOS
@@ -58,8 +58,86 @@ whole configuration back into the `--configfile` path.
 |---|---|---|---|
 | `tt` | `--machine tt --tos-res ttmed --monitor vga` | 640×480, 4 planes (TT-Medium) | `EMUTOS14-VDI`, `-VDI-r2`, `-VDI-r3`, `-VDI-all`, `-AES`, `-AES-r2wind`, `-AES-r2brlist`, `-AES-r3`, `-AES-m05/m06/m07`, `-RASTER`; pin only: `EMUTOS-1a7484ab-BIOS` |
 | `falcontc` | `--machine falcon --monitor vga` + `EMUDESK.INF` `#E 1A E0 00 1C 60` | 640×480, 16-bit truecolor (VIDEL `0x001C`, read by `process_inf1`, `aes/geminit.c`) | `EMUTOS14-VDI-all-falcontc`, `-RASTER-screen-falcontc`; pin only: `EMUTOS-1a7484ab-BIOS-falcontc` |
+| `disk` | `--machine falcon --monitor vga --drive-a off --drive-b off` + `--ide-master <clone of the test image> --ide-swap 0=off`, dumper on GEMDOS drive D: | 640×480, EmuTOS' default mode (`VsetMode(-1)` = `0x001A`, no INF) | none yet (TASK/TOOL07); canary §6 |
 
 The INF is byte-identical to `measurements/measurement-2026-09-21-vdi-qemu/method/EMUDESK-falcon-truecolor.INF`.
+
+### Profile `disk` — EmuTOS on its own block device
+
+For disk cases (`Rwabs`, `Getbpb`, `Mediach`, `Drvmap`, later GEMDOS on a
+real FAT): Hatari's GEMDOS drive answers GEMDOS calls itself, so a disk case
+on it would measure Hatari. In this profile EmuTOS reads and writes the test
+image through its own IDE driver. Evidence for every statement below:
+`measurements/measurement-2026-10-28-tool06/RUNINFO.TXT`.
+
+```
+HATARI_ORACLE_DISK=<test.img> tools/hatari-oracle.sh disk <DUMP*.PRG> <table.tsv> <out-dir>
+```
+
+The script clones the image to `<out-dir>/disk.img` (the caller's file is
+never attached; the caller deletes the clone) and writes the sha256 before
+and after the run to `<out-dir>/disk.sha256`. The Hatari command is the one
+of the other profiles with: `--machine falcon --monitor vga --drive-a off
+--drive-b off`, `--ide-master <out-dir>/disk.img --ide-swap 0=off`,
+`-d <out-dir>/hd --gemdos-drive D --auto D:\<DUMPER>`.
+
+| Drive | What | Set by | `_drvbits` |
+|---|---|---|---|
+| A:, B: | absent (`--drive-a off --drive-b off`) | — | — |
+| C: | the test image, IDE master, its one FAT16 partition | EmuTOS (`bios/disk.c`, IDE unit) | bit 2 |
+| D: | host directory: dumper, table, BIN, LOG | Hatari's GEMDOS emulation | bit 3 |
+
+`Drvmap()` = `0x0000000C`, measured. Controls: without `--ide-master` the
+boot screen lists drive D only; with Hatari's default floppies (both drives
+on, no disk inserted) `Drvmap()` = `0xF`, and `Giaccess(0,14)` and both
+`Floprate` cases change — the other `bios-r1.tsv` answers stay the same.
+
+- **Machine Falcon030**: the Falcon has its IDE port on board, and NewTOS'
+  target profile is the Falcon030/TOS4 one. Against the `falcontc` reference
+  `EMUTOS-1a7484ab-BIOS-falcontc`, `bios-r1.tsv` differs in four cases only:
+  the floppy-related `Giaccess(0,14)`, `Floprate(0,-1)`, `Floprate(0,-4)`
+  (the drives are off), and `VsetMode(-1)` (`0x001A`: the desktop reads no
+  INF with `#E`).
+- **Why the dumper is on a Hatari GEMDOS drive.** Measured alternative: the
+  dumper on a second IDE image (`--ide-slave`), no GEMDOS drive at all. EmuTOS
+  then has C: and D:, but `--auto` does nothing — Hatari's `--auto` works only
+  through its GEMDOS emulation (it overrides the desktop's INF), and the
+  dumper never starts. So D: is a GEMDOS drive, and only D:.
+- **What Hatari's GEMDOS layer does on C:**: Hatari's trace shows every GEMDOS
+  call on C: handed to EmuTOS (`-> to TOS`), except one — the desktop's first
+  `Fopen("C:\EMUDESK.INF")`, which Hatari answers from its `--auto` INF
+  override (a host file, handle 64), without touching the image. EmuTOS reads
+  the image itself: IDE `READ MULTIPLE` of LBA 0 (MBR), 63 (boot sector) and
+  320 (root directory, = `Rwabs(0,…,1,257,2)` after `Fsfirst("\AUTO\*.PRG")`).
+  No IDE write in a `bios-r1.tsv` run; the image's sha256 is unchanged.
+- **`--ide-swap 0=off`**: EmuTOS gets the sectors in file order, as NewTOS
+  gets them from the SD card, and its IDE unit stays unswapped
+  (`bios/disk.c:867-870` enables its own byte swap only for a swapped MBR).
+  Traced: with `off` and with Hatari's default `auto` the boot sector arrives
+  as `eb3c 904d …` (file order), with `on` as `3ceb 4d90 …`; all three give
+  the same `bios-r1.tsv` answers (EmuTOS swaps back). `off` is stated so that
+  Hatari's heuristic cannot change it for another image.
+- **No own Hatari configuration.** As for `tt` and `falcontc`, what differs
+  between profiles is on the command line; `tools/oracle/hatari.cfg` holds
+  what they share and stays unchanged.
+
+The test image comes from one command, `tools/mktestdisk.sh <image>
+[dest=host-file …]`: 64 MiB, MBR with one FAT16 partition (type `0x06`,
+LBA 63, 130977 sectors — the geometry and BPB of `tools/mkcard.sh`'s
+default card), volume serial `4E54-5444`, label `NTTESTDISK`, every FAT time
+stamp fixed. It is byte-reproducible (mtools with `SOURCE_DATE_EPOCH`, no
+mount); `fsck_msdos -n` on the partition is clean. The image of the canary
+(no files) has sha256 `d83c543471fd30f29e4704cb9450f70517fe43a4e5e0250e137205e409bfc4a0`
+with mtools 4.0.49; mtools writes its version into the boot sector
+(`MTOO4049`), so another mtools gives another image — the canary checks it.
+
+Two values are not the oracle's but the run's: `Gettime` (the RTC, which
+Hatari starts from the host clock) and the first `Random` (seeded from
+`hz_200` at its first call, `bios/xbios.c:421-426`; the tick count at that
+point varied between runs). Measured: two runs of `bios-r1.tsv` differed in
+`Gettime` alone; with `Gettime` left out, two runs differed in `Random` alone
+(BIN only, LOG identical). The disk canary in §6 leaves both out; five runs
+without them were byte-identical.
 
 ## 3. Rebuilding the ROM
 
@@ -195,6 +273,30 @@ user's full Hatari configuration and again with the cleaned `hatari.cfg`.
 Those references stay record format 2 (frozen 1.4 evidence), which no
 dumper built since format 3 (`d42675e5`) reproduces; the canary therefore
 moved to the format-3 pin references above.
+
+### Canary of the disk profile
+
+Proves the same for profile `disk`, plus the test image. An audit with disk
+cases runs it in addition to the two canaries above.
+
+| | |
+|---|---|
+| Cases | `tosdump/cases/bios-r1.tsv` (sha256 `231f2dfe73e5a80628167b216a66fe6475992b9b3a692b9025a92e8d6f3b2bf8`) with lines 112 (`Random`) and 125 (`Gettime`) commented out in place: 145 cases, CRC `37812B33`, sha256 `7f1dfe2d575c40b3336aa321637c953eae68e6e8bec0d01ab68249728a0404c7` — until TOOL07's read-only disk cases replace it |
+| Dumper | `DUMPBIOS.PRG` built from the current tree with build id `a8b7` (the id of the BIOS references) |
+| Image | `tools/mktestdisk.sh <dir>/test.img`, no files, sha256 `d83c543471fd30f29e4704cb9450f70517fe43a4e5e0250e137205e409bfc4a0` |
+| Expected | `BIOS.BIN` sha256 `0bce674c24bb094c6647157c9d4a8b5d0c98ab3210a66bbe46efaca128c9d1f9`, `BIOS.LOG` sha256 `ae160cac6e37c0d54acc7dc1092c093f0a2e7717b782a22772835938dc33fb6f`; the image unchanged by the run |
+| Runtime | about 10 s |
+
+```sh
+sh measurements/measurement-2026-10-28-tool06/method/canary-disk.sh "$SCRATCH/canary-disk-$(date +%Y%m%d-%H%M%S)"
+# prints "canary disk: OK ..." and "canary disk: test image unchanged ..."; exit 0 only then
+```
+
+`SCRATCH` as above. The script checks the table, the derived table and the
+image against their sha256 before the run, then runs `tools/hatari-oracle.sh
+disk`, and deletes the image and its clone. Last pass: 2026-10-28, twice,
+five identical runs of the derived table in all
+(`measurements/measurement-2026-10-28-tool06/RUNINFO.TXT`).
 
 ## 7. Rules from here on
 

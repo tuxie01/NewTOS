@@ -87,14 +87,19 @@ measured verdict, do not take it.
 - **Disk cases:** Hatari's GEMDOS hard-disk emulation must never reach the
   test image — it intercepts GEMDOS itself, so you would measure Hatari, not
   EmuTOS. Both sides use the same FAT16 test partition (IDE in Hatari, SD in
-  QEMU). The test program lives on a **separate program partition/drive**,
-  never on the test partition: on the oracle through the disk profile
-  (`docs/analysis/ORACLE.md` §2, TASK/TOOL06), on `raspi4b` through a card
-  with its own program partition (TASK/TOOL07). After the run, compare the
-  **test partition only** (timestamps normalized) and check it with
-  `fsck_msdos` (dd the FAT partition out first; the macOS tool doesn't resolve
-  the MBR). Until the disk profile exists, disk functions are UNMEASURED by
-  tosdiff; a probe may still measure them (verdict MEASURED, below).
+  QEMU). The test program lives on a **separate program drive**, never on the
+  test image: on the oracle use profile `disk` —
+  `HATARI_ORACLE_DISK=<image> tools/hatari-oracle.sh disk <DUMP*.PRG> <table> <out>`
+  (`docs/analysis/ORACLE.md` §2): test image from `tools/mktestdisk.sh` as
+  IDE master C:, floppies off, the dumper on Hatari's GEMDOS drive D:
+  (`_drvbits` 0xC). The out-dir keeps the run's image clone `disk.img` and
+  `disk.sha256` (before/after); compare and check it, then delete the clone.
+  On `raspi4b` use a card with its own program partition (TASK/TOOL07). After
+  the run, compare the **test partition only** (timestamps normalized) and
+  check it with `fsck_msdos` (dd the FAT partition out first; the macOS tool
+  doesn't resolve the MBR). Until TASK/TOOL07 lifts DUMPBIOS's refusal,
+  `Rwabs`/`Getbpb`/`Mediach` are UNMEASURED by tosdiff; a probe may measure
+  them on profile `disk` (verdict MEASURED, below).
 - **Comparison rules belong to the case table** (exact / normalized /
   relational), not to you. You may add cases and generate their reference
   records with the pinned ROM. You may **not** edit existing reference records,
@@ -150,7 +155,8 @@ measured verdict, do not take it.
    and image hash. Without them a report cannot be re-checked.
 2. **Oracle canary:** run the canary exactly as defined in
    `docs/analysis/ORACLE.md` §6 (cases, profiles, expected hashes, command);
-   every profile you use must report OK. Then run one case table on NewTOS
+   every profile you use must report OK; an audit with disk cases also runs
+   the disk-profile canary (§6, "Canary of the disk profile"). Then run one case table on NewTOS
    at the audited commit: until TASK/TOOL09 adds a `cargo xtask` command,
    the procedure of
    `measurements/measurement-2026-10-28-bios-storage-audit/method/run-dumpbios-newtos.sh`

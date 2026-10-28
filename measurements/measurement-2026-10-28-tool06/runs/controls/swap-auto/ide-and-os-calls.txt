@@ -1,0 +1,15 @@
+IDE  IDENTIFY DEVICE    drive 0 LBA       0 count 1
+IDE  SET MULTIPLE MODE  drive 0 LBA       0 count 16
+IDE  IDENTIFY DEVICE    drive 0 LBA       0 count 1
+IDE  READ MULTIPLE      drive 0 LBA       0 count 1
+     first data words: 0000 0000 0000 0000
+IDE  IDENTIFY DEVICE    drive 0 LBA       0 count 1
+IDE  IDENTIFY DEVICE    drive 0 LBA       0 count 1
+IDE  READ MULTIPLE      drive 0 LBA       0 count 1
+     first data words: 0000 0000 0000 0000
+IDE  READ MULTIPLE      drive 0 LBA      63 count 1
+     first data words: eb3c 904d 544f 4f34
+IDE  READ MULTIPLE      drive 0 LBA      63 count 1
+     first data words: eb3c 904d 544f 4f34
+IDE  READ MULTIPLE      drive 0 LBA     320 count 1
+     first data words: 4e54 5445 5354 4449

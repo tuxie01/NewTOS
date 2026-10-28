@@ -1,0 +1,71 @@
+empty-1 built 10:03:06
+empty-2 built 10:03:13
+empty-3 built 10:03:21
+files-1 built 10:03:28
+files-2 built 10:03:42
+d83c543471fd30f29e4704cb9450f70517fe43a4e5e0250e137205e409bfc4a0  empty-1.img
+d83c543471fd30f29e4704cb9450f70517fe43a4e5e0250e137205e409bfc4a0  empty-2.img
+d83c543471fd30f29e4704cb9450f70517fe43a4e5e0250e137205e409bfc4a0  empty-3.img
+7908a71a5fb74f34a6a9da49da6ebeab324ccbbaba0ff9fa9c107e290a62e8fa  files-1.img
+7908a71a5fb74f34a6a9da49da6ebeab324ccbbaba0ff9fa9c107e290a62e8fa  files-2.img
+fsck_msdos -n empty-1 (partition):
+empty-1.part
+** Phase 1 - Preparing FAT
+** Phase 2 - Checking Directories
+** Phase 3 - Checking for Orphan Clusters
+Warning: 0 files, 65344 KiB free (32672 clusters)
+fsck_msdos exit 0
+fsck_msdos -n files-1 (partition):
+files-1.part
+** Phase 1 - Preparing FAT
+** Phase 2 - Checking Directories
+** Phase 3 - Checking for Orphan Clusters
+Warning: 3 files, 65338 KiB free (32669 clusters)
+fsck_msdos exit 0
+ Volume in drive : is NTTESTDISK 
+ Volume Serial Number is 4E54-5444
+Directory for ::/
+
+A            <DIR>     2026-10-17  12:00 
+X        TXT        18 2020-01-01   0:00 
+        2 files                  18 bytes
+
+Directory for ::/A
+
+.            <DIR>     2026-10-17  12:00 
+..           <DIR>     2026-10-17  12:00 
+B        TXT        18 2026-10-17  12:00 
+        3 files                  18 bytes
+
+Total files listed:
+        5 files                  36 bytes
+                         66 906 112 bytes free
+
+bootsector information
+======================
+banner:"MTOO4049"
+sector size: 512 bytes
+cluster size: 4 sectors
+reserved (boot) sectors: 1
+fats: 2
+max available root directory slots: 512
+small size: 0 sectors
+media descriptor byte: 0xf8
+sectors per fat: 128
+sectors per track: 63
+heads: 16
+hidden sectors: 63
+big size: 130977 sectors
+physical drive id: 0x80
+reserved=0x0
+dos4=0x29
+serial number: 4E545444
+disk label="NTTESTDISK "
+disk type="FAT16   "
+MBR partition table (offset 446, 66 bytes):
+000001be: 0001 0100 060f 3f81 3f00 0000 a1ff 0100  ......?.?.......
+000001ce: 0000 0000 0000 0000 0000 0000 0000 0000  ................
+000001de: 0000 0000 0000 0000 0000 0000 0000 0000  ................
+000001ee: 0000 0000 0000 0000 0000 0000 0000 0000  ................
+000001fe: 55aa                                     U.
+mformat (GNU mtools) 4.0.49

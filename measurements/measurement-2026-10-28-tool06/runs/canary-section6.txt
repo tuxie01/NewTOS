@@ -1,0 +1,10 @@
+sh measurements/measurement-2026-10-28-oracle-canary/method/canary.sh <scratch>/canary-20261028-111311   (tools/hatari-oracle.sh b2c39e02..., with the disk profile)
+canary tt: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all)
+canary falcontc: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all-falcontc)
+canary.sh exit 0
+715c734cbac5fdfeb61bb107ea76b807c60e4dd0470b95ae7cc3628d21def8b6  tt/VDI.BIN
+d30e973c0c0646e2aee035b9f3c019c0b18270ad931f68f66d7da802c6945936  tt/VDI.LOG
+81b3bdba2004e7f812739d7f389bfca726d4f46b92d26ae610c04f73e9821dab  falcontc/VDI.BIN
+64dacda7760dab0561630990c69514b4f61d27e123fd47079dff15ce38d32742  falcontc/VDI.LOG
+INFO : GEMDOS HDD emulation, C: <-> tt/hd.
+INFO : GEMDOS HDD emulation, C: <-> falcontc/hd.

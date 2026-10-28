@@ -1,0 +1,9 @@
+ Volume in drive : is NTTESTDISK 
+ Volume Serial Number is 4E54-5444
+Directory for ::/
+
+DUMPBIOS PRG    191233 2026-10-17  12:00 
+BIOS     TSV     13823 2026-10-17  12:00 
+        2 files             205 056 bytes
+                         66 705 408 bytes free
+

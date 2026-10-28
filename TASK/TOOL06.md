@@ -1,6 +1,6 @@
 # TOOL06 — Orakel-Plattenprofil: EmuTOS liest dieselbe FAT16-Karte wie NewTOS
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Werkzeug (Orakel) — Anwenderentscheidung 2026-10-28
+Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL06-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Werkzeug (Orakel) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt
 
