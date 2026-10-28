@@ -73,7 +73,10 @@ change:
    `--window`, `--debug`, `--sd` (attaches the SD image); `build-programs`,
    `gen-font` for artifact regen. Build must be clean for **both** boards
    (`board-qemu-virt` and `board-rpi4`) for every touched crate, plus no new
-   `clippy` warnings — paste the result and the delta.
+   `clippy` warnings — paste the result and the delta. Host tests: the full
+   `cargo xtask test` for any change touching tos-api, tos-types or xtask;
+   compare passed/failed/ignored with the Hosttests baseline in
+   `docs/STATUS.md` and report the delta.
 2. **Kernel-side `svc` selftests.** GEMDOS/BIOS/XBIOS/FS/time/cookie/AES logic is
    verified by selftests that call the API through the real trap dispatcher and
    assert results, read over serial (e.g. `selftest_bios`, `selftest_xbios`,

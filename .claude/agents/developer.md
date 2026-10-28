@@ -122,6 +122,9 @@ the verify.** Do not re-run the whole regression suite yourself.
    fix unrelated pre-existing warnings — report the baseline). Paste the result +
    the delta. **Never hand off a change that does not compile on both boards** —
    that wastes the Tester's cycle.
+   If you touched tos-api, tos-types or tools/xtask, also run the **full**
+   `cargo xtask test` (minutes; `--fast` only for intermediate steps) and paste
+   its passed/failed/ignored totals.
 3. **The behavioural + no-regression verdict is the Tester's, not your
    self-report** — do not duplicate it. Instead of driving the full
    boot/selftest/screendump suite yourself, give the Tester a precise

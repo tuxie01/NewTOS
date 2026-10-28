@@ -355,7 +355,14 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
 ## Testing
 
 - Unit tests in-crate, `#[cfg(test)]`, runnable on host where logic permits.
-- Host tests: `cargo xtask test` (tos-api, tos-types, xtask).
+- Host tests: `cargo xtask test` (tos-api, tos-types, xtask) after every
+  change; `cargo xtask test --fast` (no doctests) only for quick intermediate
+  steps. Both take seconds to a few minutes only when cargo runs from an app
+  with the Developer Tools exemption (Privacy & Security → Developer Tools;
+  today Terminal only). VS Code, ssh and launchd/cron are not covered: there
+  every newly linked test binary waits 12–80 s at its first start, a full run
+  about 2 h — so no nightly launchd runs until that is solved
+  (`measurements/measurement-2026-10-28-tool04/RUNINFO.TXT`, TOOL04).
 - Integration runs in QEMU via `cargo xtask run --board rpi4|qemu-virt`, driven
   by the scripts in the run's `measurements/*/method/`.
 - Conformance with EmuTOS: tosdump cases against the oracle
