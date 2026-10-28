@@ -94,7 +94,8 @@ Requires the pinned Rust nightly (installed via `rust-toolchain.toml`) and,
 for QEMU runs, `qemu-system-aarch64`.
 
 ```sh
-# Kernel for the Raspberry Pi 4 -> kernel8.img
+# Kernel for the Raspberry Pi 4
+#   -> target/aarch64-unknown-none-softfloat/release/kernel8.img
 cargo xtask build --board rpi4 --release
 
 # Kernel for QEMU virt

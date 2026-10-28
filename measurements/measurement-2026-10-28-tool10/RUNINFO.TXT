@@ -1,0 +1,85 @@
+measurement-2026-10-28-tool10 -- TASK/TOOL10: `cargo xtask build` no longer writes kernel8.img into the repository
+root; the image goes beside the kernel ELF in target/. Readers/writers of a root kernel8.img measured first.
+Developer, 2026-10-28 12:45 .. 13:00 CET. HEAD 51b24286 at the start, ed83bb69 at the end (docs/analysis only,
+TOOL11; nothing under tools/, kernel/, tos-api/). Uncommitted in the tree by this ticket: tools/xtask/src/main.rs,
+tools/xtask/src/tosdump.rs, docs/sdk/06-image-and-testing.md, docs/sdk/15-host-checklist.md, docs/HW-TEST-LOG.md,
+README.md, TASK/MEM12.md (one shifted anchor), this run directory. No hardware, no real card touched.
+
+WHAT / WHY
+ CLAUDE.md "Source Tree Conventions": nothing new in the repository root; the built kernel8.img is not kept there.
+ `cargo xtask build --board rpi4` wrote <tree>/kernel8.img all the same (produce_kernel8_img). Ticket items:
+ (1) measure every reader/writer of a root kernel8.img, (2) write it to target/ and print the path, adapt the
+ readers in tools/ and xtask, (3) docs naming the old path (CLAUDE.md wording proposed to the lead, not edited).
+
+1. READERS / WRITERS OF A ROOT kernel8.img (measured before the change, HEAD 51b24286)
+ Writer
+  tools/xtask/src/main.rs produce_kernel8_img      objcopy -> workspace_root()/kernel8.img; called by cmd_build
+                                                   (--board rpi4) and cmd_run_rpi4. The only writer in the repo.
+ Readers in code
+  tools/xtask/src/main.rs cmd_run_rpi4             QEMU raspi4b -kernel workspace_root()/kernel8.img
+  tools/xtask/src/tosdump.rs cmd                   copies <tree>/kernel8.img after the tree's build (TOOL09)
+ Not readers (checked): tools/*.sh, tools/*.py, tools/auto-test, tools/oracle, tools/qemu-serial-on -- no root
+  kernel8.img (make-sd-image.sh writes a random C:\KERNEL8.IMG test file on the card; sd-manifest.sh names it);
+  tosdump/deploy-pi4/kernel8.img is a gitignored deploy-kit copy of 2026-09-09, README.TXT says "boot partition";
+  boot/rpi4/config.txt names the card file; .github has no workflows.
+ Outside the tracked tree
+  .claude/settings.local.json                      7 permission entries with `-kernel kernel8.img` or
+                                                   `-kernel /Volumes/Daten/Development/PiRusTOS/kernel8.img`
+                                                   (old allow-list lines; config, not edited)
+ Docs naming the root path as the build output (live, undated)
+  README.md "Building"; docs/HW-TEST-LOG.md section 4; docs/sdk/06-image-and-testing.md "Running in QEMU
+  (raspi4b)" + "Screendumps via QMP"; docs/sdk/15-host-checklist.md section C; CLAUDE.md "Placement rules".
+  Historical text left as is: phases/PHASE-01-boot-uart.md, dated snapshots (docs/audits/2026-10-28-*,
+  docs/analysis/*-YYYY-MM-DD.md), docs/api/hw/emmc-audit.md (record of a past run), TASK receipts.
+ Measurement runs (immutable, read only): measurement-scripts-root-kernel8.txt, produced by
+  method/classify-runs.py over the 1208 files under measurements/*/method/ that contain "kernel8":
+   A  302 files in 125 runs run `cargo xtask build` (in the main tree or a worktree/clone) and then take
+      <tree>/kernel8.img (293 .sh, 7 build logs, 1 .diff, 1 .MD). Re-run on a tree at or after TOOL10 they would
+      find no root image -- or a stale one left from an older build. They stay valid for the commits they pin.
+   B  3 files name /Volumes/Daten/Development/PiRusTOS/kernel8.img literally without a build
+      (measurement-2026-09-13-regression boot.sh, boot-qmp.sh; arch03-0c build log).
+  The heuristic (build + kernel8.img path in one file) is stated in the script; it is a list for reading, not a
+  proof per file.
+
+2. CHANGE
+ tools/xtask/src/main.rs  kernel8_img_path(release) = kernel_elf_path(release) with file name kernel8.img, i.e.
+  target/aarch64-unknown-none-softfloat/<debug|release>/kernel8.img; produce_kernel8_img writes there and returns
+  the path; cmd_build prints "xtask: kernel8.img for the card: <path>" as its last line; cmd_run_rpi4 boots the
+  returned path. Usage text names the path. Test kernel8_img_lies_beside_the_elf_in_target_not_in_the_root.
+ tools/xtask/src/tosdump.rs  the measured tree (--tree) may be a commit before TOOL10, so the image is looked up
+  in KERNEL8_IMG_LOCATIONS = [KERNEL8_IMG_RELEASE (target/.../release/kernel8.img), "kernel8.img"] and
+  fresh_kernel_image takes the one candidate whose mtime is at or after the build start (whole seconds); none or
+  two fresh = error. A stale root image in a post-TOOL10 tree is never measured. The report names the image path.
+  Tests only_the_image_the_build_wrote_is_taken, kernel8_img_release_is_where_this_xtask_writes_it.
+
+3. RESULTS
+ Builds (logs/build-*.log, all exit 0): cargo xtask build --board rpi4 [--release], --board qemu-virt [--release].
+  rpi4 debug   -> target/aarch64-unknown-none-softfloat/debug/kernel8.img   1523504 B sha256 b01063b6...354d3
+  rpi4 release -> target/aarch64-unknown-none-softfloat/release/kernel8.img 1416952 B sha256 77687c89...be2b9
+  kernel crate warnings 93 (unchanged; kernel not touched).
+ Root image (logs/root-before.txt, root-after-builds.txt, root-after-all.txt): the pre-existing gitignored
+  <root>/kernel8.img (1416952 B, mtime 2026-10-28T12:40:18, sha256 09a5db64...7baa1b, from a build before this
+  change) is unchanged after every build, run and the tosdump run below -- not rewritten, not deleted (lead decides).
+ cargo xtask run --board rpi4 (debug, no --sd; /tmp/sd.img absent): serial/xtask-run-rpi4-debug-nocard.txt;
+  QEMU command `-M raspi4b ... -kernel <root>/target/aarch64-unknown-none-softfloat/debug/kernel8.img -append
+  serial=on`; "[desk] desktop up (0 drives)" after ~16 s; QEMU stopped by kill.
+ cargo xtask run --board rpi4 --release --sd <APFS clone of card.img>: serial/xtask-run-rpi4-release-card.txt;
+  "[desk] desktop up (1 drives)" after ~24 s; QEMU stopped by kill.
+  Card: method/mkcard-call.sh (tools/mkcard.sh, NEWDESK.INF = "#R 02" only), manifest card.img.manifest:
+  image_sha256 3e2fdc3ebd4f2718edeea54c2bba90f737a5e015713e4c5b8f4b68d263d430f1, `optional_missing none`.
+  Booted clone after the run: sha256 3e2fdc3e...d430f1 (unchanged). Image and clone deleted (scratch).
+ cargo xtask tosdump bios tosdump/cases/bios-r1.tsv --out <scratch>/r1 --scratch <scratch>/td: exit 0, "run
+  complete", run ended normally after 19 s (dumper rc=0); tosdump-r1/tosdump-run.txt: "kernel8.img
+  <root>/target/aarch64-unknown-none-softfloat/release/kernel8.img", sha256 fc9524f3...afadfb6; card manifest
+  tosdump-r1/card.img.manifest `optional_missing none`; BIOS.BIN 147 records, tosdiff --validate exit 0.
+  tosdiff tosdump/cases/bios-r1.tsv against the oracle references (by hand, tosdump-r1/tosdiff-*.txt):
+   EMUTOS-1a7484ab-BIOS (tt)              42 of 147 cases differ
+   EMUTOS-1a7484ab-BIOS-falcontc          46 of 147 cases differ
+  (= the 42 / 46 of docs/STATUS.md 2026-10-28.) DUMPBIOS.NAP not kept here (sha256 in tosdump-run.txt).
+ Host tests (logs/xtask-test-summary.txt): cargo xtask test (full) 1745 passed / 0 failed / 1 ignored
+  (baseline 1742/0/1 + the 3 new tests).
+ clippy -p xtask --all-targets (logs/clippy-before.txt, clippy-after.txt): bin 1 warning, bin test 8 warnings,
+  before and after; the same warnings (one line number shifted 415 -> 419 by the usage text).
+
+NOT DRIVEN
+ tosdump --tree on a commit before TOOL10 (the root fallback) is covered by the unit test only, not by a run.

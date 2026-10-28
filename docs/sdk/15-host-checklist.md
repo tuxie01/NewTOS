@@ -72,7 +72,7 @@ Simplest: copy the whole repo folder from the Mac mini (rsync without
 
 ```sh
 cargo xtask test                                   # host tests: 1268 passed / 0 failed / 1 ignored
-cargo xtask build --board rpi4 --release           # kernel8.img; then move it out of the repo root
+cargo xtask build --board rpi4 --release           # target/aarch64-unknown-none-softfloat/release/kernel8.img
 sdk/run-host-tests.sh                              # 22 passed / 0 failed / 0 skipped (2026-10-20)
 sdk/apps/present/build-present.sh                  # PRESENT.NAP
 sdk/apps/build-doom.sh                             # DOOM.NAP (needs A6)
@@ -82,8 +82,9 @@ sdk/zview/build-zview.sh                           # ZVIEW.NAP + codecs (builds 
 
 Expected: each script ends without error; the libraries build on first use
 (`sdk/lib-stale.sh`). Report the first failing step with its last 20 lines
-of output. A `cargo xtask build` writes `kernel8.img` into the repo root —
-move it out afterwards (CLAUDE.md: nothing new in the root).
+of output. `cargo xtask build --board rpi4` writes `kernel8.img` beside the
+kernel ELF in `target/` and prints its path as the last line (TOOL10); the
+repository root stays free of build output (CLAUDE.md: nothing new in the root).
 
 ## D. Report format
 

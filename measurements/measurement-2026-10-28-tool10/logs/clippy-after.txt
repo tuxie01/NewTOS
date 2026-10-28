@@ -1,0 +1,20 @@
+warning: manual implementation of `.is_multiple_of()`
+   --> tools/xtask/src/main.rs:419:12
+warning: `xtask` (bin "xtask") generated 1 warning (run `cargo clippy --fix --bin "xtask" -p xtask -- ` to apply 1 suggestion)
+warning: constant `PROPTAG_GET_MAX_CLOCK_RATE` is never used
+  --> tools/xtask/src/../../../kernel/src/drivers/bcm2711/clock_tags.rs:25:11
+warning: constant `PROPTAG_GET_CLOCK_RATE_MEASURED` is never used
+  --> tools/xtask/src/../../../kernel/src/drivers/bcm2711/clock_tags.rs:29:11
+warning: slow zero-filling initialization
+  --> tools/xtask/src/rsc_cicon_tests.rs:92:17
+warning: manual implementation of `.is_multiple_of()`
+   --> tools/xtask/src/rsc_cicon_tests.rs:368:13
+warning: manual implementation of `.is_multiple_of()`
+   --> tools/xtask/src/rsc_cicon_tests.rs:368:31
+warning: this assertion has a constant value
+   --> tools/xtask/src/../../../kernel/src/input_gate.rs:418:9
+warning: this assertion has a constant value
+   --> tools/xtask/src/../../../kernel/src/input_gate.rs:420:9
+warning: manual implementation of `.is_multiple_of()`
+   --> tools/xtask/src/main.rs:419:12
+warning: `xtask` (bin "xtask" test) generated 8 warnings (run `cargo clippy --fix --bin "xtask" -p xtask --tests -- ` to apply 3 suggestions)

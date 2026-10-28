@@ -285,13 +285,17 @@ cargo xtask run --board rpi4 --sd /tmp/sd.img --release  # release-profile kerne
 cargo xtask run --board rpi4 --sd /tmp/sd.img --debug    # halted, gdbstub on :1234
 ```
 
-`cmd_run_rpi4` (`tools/xtask/src/main.rs:525-563`) builds the kernel for
-`rpi4`, produces `kernel8.img` in the workspace root by `objcopy -O binary`
-(`:355-366`), and runs
+`cmd_run_rpi4` (`tools/xtask/src/main.rs:897@cmd_run_rpi4`) builds the kernel for
+`rpi4`, produces `kernel8.img` beside the kernel ELF,
+`target/aarch64-unknown-none-softfloat/<debug|release>/kernel8.img`, by
+`objcopy -O binary` (`tools/xtask/src/main.rs:636@produce_kernel8_img`; never in the
+repository root since TOOL10 — `cargo xtask build --board rpi4` prints the
+path as its last line), and runs
 
 ```
 qemu-system-aarch64 -M raspi4b -no-reboot -display none|cocoa -serial stdio \
-    -kernel kernel8.img -append serial=on -drive file=<sd>,if=sd,format=raw [-S -s]
+    -kernel target/aarch64-unknown-none-softfloat/<debug|release>/kernel8.img \
+    -append serial=on -drive file=<sd>,if=sd,format=raw [-S -s]
 ```
 
 Facts about that machine that matter for a test:
@@ -342,7 +346,8 @@ tools/qmpshot.c`; it exists because `nc -U` is blocked by the agent sandbox,
 cc -o qmpshot tools/qmpshot.c
 qemu-system-aarch64 -M raspi4b -no-reboot -display none -serial file:serial.log \
     -qmp unix:/tmp/claude-501/<job>-qmp.sock,server,nowait \
-    -kernel kernel8.img -append serial=on -drive file=sd.img,if=sd,format=raw &
+    -kernel target/aarch64-unknown-none-softfloat/release/kernel8.img \
+    -append serial=on -drive file=sd.img,if=sd,format=raw &
 sleep 45 && ./qmpshot /tmp/claude-501/<job>-qmp.sock shot.ppm
 sips -s format png shot.ppm --out shot.png        # QEMU writes PPM
 ```

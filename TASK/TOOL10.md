@@ -1,6 +1,6 @@
 # TOOL10 — `cargo xtask build` legt `kernel8.img` im Repo-Wurzelverzeichnis ab
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Werkzeug — Anwenderentscheidung 2026-10-28
+Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL10-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Werkzeug — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt
 

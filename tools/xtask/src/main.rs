@@ -172,7 +172,10 @@ Usage: cargo xtask <command> [options]
 Commands:
   build --board {{rpi4|qemu-virt}} [--release] [--features a,b]
                                  — the board's programs (build-programs),
-                                   then the kernel, which embeds them
+                                   then the kernel, which embeds them;
+                                   rpi4 also kernel8.img beside the ELF,
+                                   target/aarch64-unknown-none-softfloat/
+                                   <debug|release>/kernel8.img (TOOL10)
   build-programs --board {{rpi4|qemu-virt}}
                                  — the native Rust programs in programs/
                                    (programs/build.sh), built with the
@@ -356,7 +359,8 @@ fn cmd_build(args: &[String]) -> Result<(), String> {
     let board = opts.board.ok_or("build: --board {rpi4|qemu-virt} is required")?;
     build_kernel(board, opts.release, &opts.features)?;
     if board == Board::Rpi4 {
-        produce_kernel8_img(opts.release)?;
+        let img = produce_kernel8_img(opts.release)?;
+        println!("xtask: kernel8.img for the card: {}", img.display());
     }
     Ok(())
 }
@@ -618,19 +622,44 @@ fn kernel_elf_path(release: bool) -> PathBuf {
         .join("kernel")
 }
 
+/// Where `produce_kernel8_img` writes `kernel8.img`: beside the kernel ELF
+/// it is made from, in `target/` (TOOL10 — CLAUDE.md keeps build output out
+/// of the repository root). `tosdump::KERNEL8_IMG_RELEASE` names the same
+/// file relative to a tree.
+fn kernel8_img_path(release: bool) -> PathBuf {
+    kernel_elf_path(release).with_file_name("kernel8.img")
+}
+
 /// Convert the kernel ELF to `kernel8.img` (raw binary) using `rust-objcopy`
-/// from the `llvm-tools-preview` component (installed via rust-toolchain).
-fn produce_kernel8_img(release: bool) -> Result<(), String> {
+/// from the `llvm-tools-preview` component (installed via rust-toolchain),
+/// and return the image's path ([`kernel8_img_path`]).
+fn produce_kernel8_img(release: bool) -> Result<PathBuf, String> {
     let elf = kernel_elf_path(release);
     if !elf.exists() {
         return Err(format!("kernel ELF not found at {}", elf.display()));
     }
-    let out = workspace_root().join("kernel8.img");
+    let out = kernel8_img_path(release);
     let objcopy = locate_rust_objcopy()?;
     let mut c = Command::new(objcopy);
     c.arg("-O").arg("binary").arg(&elf).arg(&out);
     println!("xtask: objcopy → {}", out.display());
-    run(c)
+    run(c)?;
+    Ok(out)
+}
+
+#[cfg(test)]
+mod kernel8_img_path_tests {
+    use super::{kernel8_img_path, kernel_elf_path, workspace_root};
+
+    #[test]
+    fn kernel8_img_lies_beside_the_elf_in_target_not_in_the_root() {
+        for release in [false, true] {
+            let img = kernel8_img_path(release);
+            assert_eq!(img.parent(), kernel_elf_path(release).parent());
+            assert!(img.starts_with(workspace_root().join("target")), "{}", img.display());
+            assert_ne!(img, workspace_root().join("kernel8.img"));
+        }
+    }
 }
 
 fn locate_rust_objcopy() -> Result<PathBuf, String> {
@@ -873,8 +902,7 @@ fn cmd_run_rpi4(
     features: &[String],
 ) -> Result<(), String> {
     build_kernel(Board::Rpi4, release, features)?;
-    produce_kernel8_img(release)?;
-    let img = workspace_root().join("kernel8.img");
+    let img = produce_kernel8_img(release)?;
 
     let mut c = Command::new("qemu-system-aarch64");
     c.args(["-M", "raspi4b", "-no-reboot"]);

@@ -1,0 +1,5 @@
+2026-10-28 12:50:29
+kernel8.img 1416952 bytes mtime 2026-10-28T12:40:18
+09a5db64998e0561d336f5397812808256f0cc9ec54bfd7c4ade365db17baa1b  kernel8.img
+ls: target/aarch64-unknown-none-softfloat/debug/kernel8.img: No such file or directory
+ls: target/aarch64-unknown-none-softfloat/release/kernel8.img: No such file or directory

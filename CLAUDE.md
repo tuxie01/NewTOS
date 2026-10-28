@@ -275,8 +275,10 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   stay correct.
 - **Scratch** (temporary images, scratch kernels, probes) goes to
   `$CLAUDE_JOB_DIR/tmp` or the session scratchpad, never the repo or shared `/tmp`.
-- Built `kernel8.img` for the card is not kept in the root; build with
-  `cargo xtask build --release` when needed.
+- `cargo xtask build --board rpi4 [--release]` writes `kernel8.img` beside
+  the kernel ELF, `target/aarch64-unknown-none-softfloat/<debug|release>/kernel8.img`,
+  and prints that path as its last line (TOOL10); nothing is built into the
+  root. Use `--release` for the card.
 
 ---
 

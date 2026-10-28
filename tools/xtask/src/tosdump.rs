@@ -60,7 +60,7 @@
 use std::fs;
 use std::path::{Component, Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Stdio};
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 /// One tosdump dumper: its program file, the area its files are named after
 /// (`<AREA>.TSV/.BIN/.LOG`, `tosdump/core/dump*.c` defaults) and its NewTOS
@@ -510,6 +510,37 @@ pub fn tosdiff_summary(output: &str) -> Option<&str> {
     output.lines().rev().find(|l| l.ends_with("cases differ")).map(str::trim)
 }
 
+/// `kernel8.img` of `cargo xtask build --board rpi4 --release`, relative to
+/// the tree: since TOOL10 beside the release ELF.
+pub const KERNEL8_IMG_RELEASE: &str = "target/aarch64-unknown-none-softfloat/release/kernel8.img";
+
+/// Where a tree's `cargo xtask build --board rpi4 --release` may leave
+/// `kernel8.img`: [`KERNEL8_IMG_RELEASE`], or the tree root for a measured
+/// commit before TOOL10.
+pub const KERNEL8_IMG_LOCATIONS: [&str; 2] = [KERNEL8_IMG_RELEASE, "kernel8.img"];
+
+/// The one candidate (path, modification time) the build that started at
+/// `build_start` wrote — modified at or after it, compared in whole seconds
+/// so a coarse file-system clock cannot hide it. An image that only exists
+/// from an earlier build (a stale root `kernel8.img` in a tree that now
+/// writes to `target/`, or the reverse) is never taken; none or two fresh
+/// images are an error.
+pub fn fresh_kernel_image(candidates: &[(PathBuf, Option<SystemTime>)], build_start: SystemTime) -> Result<PathBuf, String> {
+    let secs = |t: SystemTime| t.duration_since(UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
+    let start = secs(build_start);
+    let fresh: Vec<&PathBuf> = candidates
+        .iter()
+        .filter(|(_, m)| m.is_some_and(|m| secs(m) >= start))
+        .map(|(p, _)| p)
+        .collect();
+    let names = || candidates.iter().map(|(p, _)| p.display().to_string()).collect::<Vec<_>>().join(", ");
+    match fresh.as_slice() {
+        [one] => Ok((*one).clone()),
+        [] => Err(format!("the kernel build wrote no kernel8.img (looked at {})", names())),
+        _ => Err(format!("the kernel build wrote more than one kernel8.img ({}): which one is measured?", names())),
+    }
+}
+
 // ── the run ─────────────────────────────────────────────────────────────
 
 /// The summary file and stdout, one line per entry.
@@ -779,11 +810,22 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
     }
     let log = out.join("kernel-build.log");
     rep.line("building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …");
+    let build_start = SystemTime::now();
     require_ok(run_logged(c, &log)?, "kernel build", &log)?;
     let n = check_target_is_own(&tree)?;
     rep.line(format!("target/   own ({n} artifact dep-info files checked after the build)"));
+    let candidates: Vec<(PathBuf, Option<SystemTime>)> = KERNEL8_IMG_LOCATIONS
+        .iter()
+        .map(|rel| {
+            let p = tree.join(rel);
+            let mtime = fs::metadata(&p).and_then(|m| m.modified()).ok();
+            (p, mtime)
+        })
+        .collect();
+    let built = fresh_kernel_image(&candidates, build_start)?;
+    rep.line(format!("kernel8.img {}", built.display()));
     let kimg = run_dir.join("kernel8.img");
-    fs::copy(tree.join("kernel8.img"), &kimg).map_err(|e| format!("kernel8.img: {e}"))?;
+    fs::copy(&built, &kimg).map_err(|e| format!("{}: {e}", built.display()))?;
     let elf = tree.join("target/aarch64-unknown-none-softfloat/release/kernel");
     rep.line(format!("kernel8.img sha256 {}", sha256(&kimg)?));
     rep.line(format!("kernel ELF  sha256 {} ({})", sha256(&elf)?, elf.display()));
@@ -1190,6 +1232,27 @@ mod tests {
         assert_eq!(p[2], None);
         m[511] = 0;
         assert!(mbr_partitions(&m).is_err());
+    }
+
+    #[test]
+    fn kernel8_img_release_is_where_this_xtask_writes_it() {
+        assert_eq!(crate::workspace_root().join(KERNEL8_IMG_RELEASE), crate::kernel8_img_path(true));
+    }
+
+    #[test]
+    fn only_the_image_the_build_wrote_is_taken() {
+        let t = |s: u64| Some(UNIX_EPOCH + Duration::from_secs(s));
+        let start = UNIX_EPOCH + Duration::from_millis(1_000_700);
+        let new = PathBuf::from("/t/target/aarch64-unknown-none-softfloat/release/kernel8.img");
+        let root = PathBuf::from("/t/kernel8.img");
+        // A tree since TOOL10, a stale root image left over.
+        assert_eq!(fresh_kernel_image(&[(new.clone(), t(1_200)), (root.clone(), t(900))], start), Ok(new.clone()));
+        // A tree before TOOL10: no target image, or a stale one.
+        assert_eq!(fresh_kernel_image(&[(new.clone(), None), (root.clone(), t(1_100))], start), Ok(root.clone()));
+        assert_eq!(fresh_kernel_image(&[(new.clone(), t(999)), (root.clone(), t(1_000))], start), Ok(root.clone()));
+        // Neither fresh, or both: refused.
+        assert!(fresh_kernel_image(&[(new.clone(), t(999)), (root.clone(), None)], start).is_err());
+        assert!(fresh_kernel_image(&[(new, t(1_001)), (root, t(1_002))], start).is_err());
     }
 
     const OK_RUN: &str = "\

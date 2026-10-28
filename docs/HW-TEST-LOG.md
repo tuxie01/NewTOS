@@ -68,7 +68,8 @@ That's it. No `cmdline.txt` is required for a bare-metal kernel.
 
 ```sh
 cargo xtask build --board rpi4 --release
-# → produces ./kernel8.img at the workspace root (raw binary via objcopy)
+# → produces target/aarch64-unknown-none-softfloat/release/kernel8.img
+#   (raw binary via objcopy; the path is the build's last line)
 ```
 
 Copy that `kernel8.img` to the SD card's boot partition.
