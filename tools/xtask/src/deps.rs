@@ -18,17 +18,20 @@
 //!
 //! `--down` walks what `fn` needs to be right first, `--up` who is affected
 //! when `fn` is wrong. For call-like kinds (`direct`, `table`, `callback`,
-//! `asm`, `layer`) an edge `a -> b` means `a` uses `b`: `--down` follows it
-//! forward, `--up` backward. A `data` edge runs writer -> reader: the reader
-//! depends on the writer, so `--down` follows it backward and `--up` forward.
+//! `asm`, `layer`, `vector`) an edge `a -> b` means `a` uses `b`: `--down`
+//! follows it forward, `--up` backward. A `data` edge runs writer -> reader:
+//! the reader depends on the writer, so `--down` follows it backward and
+//! `--up` forward.
 //!
 //! # Default kinds
 //!
-//! `direct,table,asm,layer`. `callback` (an address taken: a vector install,
-//! a handler handed to a driver) and `data` (shared globals) are opt-in with
-//! `--kinds`: they connect nearly everything (the trap handlers are installed
-//! by the boot code; `run` is read by hundreds of functions), so by default
-//! they would bury the call structure.
+//! `direct,table,asm,layer,vector`. `vector` is a call through a variable
+//! holding a function address (`lrwabs` -> `blkdev_rwabs` via `hdv_rw`):
+//! call structure, like a table slot. `callback` (an address taken: a vector
+//! install, a handler handed to a driver) and `data` (shared globals) are
+//! opt-in with `--kinds`: they connect nearly everything (the trap handlers
+//! are installed by the boot code; `run` is read by hundreds of functions),
+//! so by default they would bury the call structure.
 
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::fs;
@@ -39,9 +42,9 @@ pub const EDGES_FILE: &str = "docs/analysis/deps/edges.tsv";
 /// The hand-curated EmuTOS → NewTOS mapping.
 pub const MAPPING_FILE: &str = "docs/analysis/deps/mapping.tsv";
 /// Every edge kind `edges.tsv` may carry (besides the node kind `def`).
-pub const KINDS: [&str; 6] = ["direct", "table", "callback", "asm", "layer", "data"];
+pub const KINDS: [&str; 7] = ["direct", "table", "callback", "asm", "layer", "vector", "data"];
 /// The kinds a query follows unless `--kinds` says otherwise.
-pub const DEFAULT_KINDS: [&str; 4] = ["direct", "table", "asm", "layer"];
+pub const DEFAULT_KINDS: [&str; 5] = ["direct", "table", "asm", "layer", "vector"];
 /// NewTOS code a mapping row may name.
 pub const NEWTOS_ROOTS: [&str; 2] = ["tos-api/src/", "kernel/src/"];
 /// The EmuTOS directories the mapping covers.
@@ -179,7 +182,8 @@ pub fn closure(
 }
 
 /// Every edge of `kind` with both ends in the closure, in the walk's
-/// direction: the trap entries (`table`, `layer`) a query crosses.
+/// direction: the trap entries (`table`, `layer`) and vector calls
+/// (`vector`) a query crosses.
 pub fn crossed<'a>(
     g: &'a Graph,
     set: &BTreeMap<String, Reached>,
@@ -265,7 +269,7 @@ pub fn report(
             newtos_of(map, f)
         ));
     }
-    for k in ["table", "layer"] {
+    for k in ["table", "layer", "vector"] {
         if !kinds.contains(k) {
             continue;
         }
@@ -537,6 +541,72 @@ a\tcb\tcallback\taddress\tbdos/a.c:3
         for not in ["funcs[0x48]", "funcs[0x49]", "funcs[0x19]", "funcs[0x2a]", "funcs[0x57]"] {
             assert!(!slots.contains(not), "--up getrec reaches {not}");
         }
+    }
+
+    /// The edge `from -> to` of `kind` in the real graph, if any.
+    fn edge<'a>(g: &'a Graph, from: &str, to: &str, kind: &str) -> Option<&'a Edge> {
+        g.edges.iter().find(|e| e.from == from && e.to == to && e.kind == kind)
+    }
+
+    /// TOOL12: the BIOS storage calls reach the block-device handlers behind
+    /// the system vectors (`hdv_rw` 0x476, `hdv_bpb` 0x472, `hdv_mediach`
+    /// 0x47e, installed by `blkdev_init`, EmuTOS `bios/blkdev.c`) with the
+    /// default kinds, so `--down lrwabs` no longer ends at `protect_wlwwwl`.
+    #[test]
+    fn down_lrwabs_reaches_blkdev_rwabs_over_the_hdv_rw_vector() {
+        let (g, _) = real();
+        for (entry, handler, slot) in [
+            ("lrwabs", "blkdev_rwabs", "via hdv_rw"),
+            ("getbpb", "blkdev_getbpb", "via hdv_bpb"),
+            ("mediach", "blkdev_mediach", "via hdv_mediach"),
+        ] {
+            let s = closure(&g, entry, Dir::Down, &kinds(&DEFAULT_KINDS), None);
+            let r = s.get(handler).unwrap_or_else(|| panic!("--down {entry} misses {handler}"));
+            let via = r.via.as_ref().unwrap();
+            assert_eq!((via.from.as_str(), via.kind.as_str(), via.detail.as_str()),
+                       (entry, "vector", slot));
+        }
+        let s = closure(&g, "lrwabs", Dir::Down, &kinds(&DEFAULT_KINDS), None);
+        assert!(s.contains_key("blkdev_rwabs") && s.len() > 2, "{:?}", s.keys());
+        // and the other way: the handler is affected by the trap entry
+        let s = closure(&g, "blkdev_rwabs", Dir::Up, &kinds(&DEFAULT_KINDS), None);
+        assert!(s.contains_key("lrwabs") && s.contains_key("biostrap"), "{:?}", s.keys());
+    }
+
+    /// TOOL12: an AES call is resolved per opcode through the `crysbind`
+    /// switch (EmuTOS `aes/gemsuper.c`): `appl_init` (desk binding, opcode
+    /// 10 = APPL_INIT via `gem_if`) reaches `ap_init`.
+    #[test]
+    fn aes_opcode_resolves_through_the_crysbind_switch() {
+        let (g, _) = real();
+        let e = edge(&g, "appl_init", "ap_init", "layer").expect("appl_init -> ap_init");
+        assert_eq!(e.detail, "trap #2 0xa crysbind[0xa] via gem_if");
+        let t = edge(&g, "crysbind", "ap_init", "table").expect("crysbind -> ap_init");
+        assert_eq!(t.detail, "crysbind[0xa]");
+        // evnt_multi sets the opcode itself (gem_if0) and calls gem directly
+        let e = edge(&g, "evnt_multi", "ev_multi", "layer").expect("evnt_multi -> ev_multi");
+        assert_eq!(e.detail, "trap #2 0x19 crysbind[0x19] via gem");
+        let s = closure(&g, "appl_init", Dir::Down, &kinds(&DEFAULT_KINDS), None);
+        assert!(s.contains_key("ap_init"));
+        // the unresolved fan-out of the binding to every trap #2 handler is gone
+        assert!(!g.edges.iter().any(|e| e.kind == "layer" && e.detail.contains("not resolved")));
+    }
+
+    /// TOOL12: a VDI call is resolved per opcode through `jmptb1`/`jmptb2`
+    /// (EmuTOS `vdi/vdi_main.c`): `gsx_tblt` stores TEXT (8) into
+    /// `contrl[0]` and calls `gsx2`; `gsx_moff` passes HIDE_CUR (123) on
+    /// through the carrier `gsx_0code`.
+    #[test]
+    fn vdi_opcode_resolves_through_the_jmptb_tables() {
+        let (g, _) = real();
+        let e = edge(&g, "gsx_tblt", "vdi_v_gtext", "layer").expect("gsx_tblt -> vdi_v_gtext");
+        assert_eq!(e.detail, "trap #2 0x8 jmptb1[0x8] via gsx2");
+        let e = edge(&g, "gsx_moff", "vdi_v_hide_c", "layer").expect("gsx_moff -> vdi_v_hide_c");
+        assert_eq!(e.detail, "trap #2 0x7b jmptb2[0x7b] via gsx_0code");
+        // the opcode stored by vst_height (called first) is not issued again
+        assert!(edge(&g, "gsx_tblt", "vdi_vst_height", "layer").is_none());
+        let s = closure(&g, "gsx_moff", Dir::Down, &kinds(&DEFAULT_KINDS), None);
+        assert!(s.contains_key("vdi_v_hide_c"));
     }
 
     /// Every row of `mapping.tsv` names an existing EmuTOS definition and an

@@ -7,7 +7,7 @@ onto NewTOS. Generated, queried, never drawn by hand.
 | File | What | Made by |
 |---|---|---|
 | `docs/analysis/deps/edges.tsv` | nodes (`def` rows) and edges | `tools/deps/gen-deps.py` |
-| `docs/analysis/deps/layers.md` | counts, layer matrix, tables, traps, everything not resolved | `tools/deps/gen-deps.py` |
+| `docs/analysis/deps/layers.md` | counts, layer matrix, tables, traps, vector slots, everything not resolved | `tools/deps/gen-deps.py` |
 | `docs/analysis/deps/mapping.tsv` | EmuTOS function → NewTOS function (n:m), `bios/` + `bdos/` | by hand, checked |
 
 ```
@@ -20,10 +20,10 @@ cargo xtask deps --check-mapping  # what the mapping test checks, as a report
 `--down` lists what `<fn>` needs to be right first, `--up` who is affected
 when `<fn>` is wrong, each function with the edge it was reached over and its
 NewTOS counterpart from `mapping.tsv`, then every `table` and `layer` edge
-inside the set (the trap entries crossed). Default kinds are
-`direct,table,asm,layer`; `callback` and `data` are opt-in (`--kinds +data`):
-both connect nearly everything — the trap handlers are installed by boot
-code, and `run` is read by hundreds of functions.
+inside the set (the trap entries and vector calls crossed). Default kinds
+are `direct,table,asm,layer,vector`; `callback` and `data` are opt-in
+(`--kinds +data`): both connect nearly everything — the trap handlers are
+installed by boot code, and `run` is read by hundreds of functions.
 
 ## Inputs and reproducibility
 
@@ -37,7 +37,9 @@ prerequisites, so it never runs in the build tree. The generator stops if the
 script no longer contains that recipe line. All sources compile with one flag
 set (`-m68000 -mshort -O2 … -Iinclude -DWITH_AES=1 -DWITH_CLI=1
 -DTARGET_512`), recorded in both output headers together with the commit, the
-ROM sha256, the cross compiler and cflow versions.
+ROM sha256, the cross compiler and cflow versions. The addresses of the
+system variables come from `tosvars.ld`, preprocessed by the recipe's own
+`-P -x c` command for `emutos.ld` (which includes it).
 
 The eleven `bug`-translated sources (`*.tr.c`) are analysed as their
 untranslated `.c`, so sites cite the source the spec cites; the generator
@@ -104,11 +106,20 @@ tables, indexed in assembler (`bios/vectors.S` `biosxbios`: function number ×
 4 + table base), it is stated as 0 in `TABLES` — the one number not
 machine-read.
 
+The AES dispatch `crysbind` (`aes/gemsuper.c`) is a `switch` on its
+parameter `opcode`, configured in `TRAP2` of the generator: every function
+called in a case — reached over the gimple control flow (labels, gotos,
+fall-through into the next case) without leaving the source lines of the
+switch statement — is a slot `crysbind[case]` (layers.md, "Dispatch tables").
+Those calls stay `direct` edges as well.
+
 Misses:
-- Dispatch that is not a table: the AES `crysbind` is a `switch` (its cases are
-  plain `direct` edges, without the opcode), the VDI escape sub-functions, the
-  Line-A table (`bios/linea.S` `linea_vecs`, a local label: its `.dc.l` entries
-  are `asm` edges of the region it sits in, `linea_0`).
+- Dispatch that is neither a table nor that switch: the VDI escape
+  sub-functions (`esctbl[]`, `vdi/vdi_esc.c`) and the VT52 tables are `vector`
+  edges; the Line-A table (`bios/linea.S` `linea_vecs`) stays `asm` edges of
+  the region it sits in, `linea_0`.
+- A case that calls no function (`GRAF_HANDLE` only copies globals) is a slot
+  without an edge; a trap call to it is listed in `layers.md`.
 - GEMDOS 0x20 `Super` is answered by `enter` before the table is consulted; the
   table says `funcs[0x20]` = `ni`, and so does the graph.
 
@@ -157,14 +168,94 @@ is checked on every run: a handler installed on that trap vector (gimple
 `setexc`, assembler `move.l #_aestrap,0x88`) must reach the table's
 dispatcher over `direct`/`asm` edges, or the generator stops.
 
+**Trap #2** (`TRAP2` in the generator). AES and VDI pass the opcode in a
+parameter block: d0 selects the class (`gem` loads 200 = AES, `gsx2` 0x73 =
+VDI — read from the binding; an installed trap #2 handler must compare d0
+with that value and reach the class's dispatch, or the generator stops), d1
+points to the block, whose control array holds the opcode in element 0
+(stated: the AES/VDI parameter-block ABI, `OP_CODE` = `control[0]`; checked:
+the binding's file stores `&control` / `&contrl` into a block field). The
+generator follows the opcode in gimple, statement by statement: a constant
+stored into element 0 (`contrl[0] = 8`, or through a pointer from `&control`),
+a parameter stored there (`gsx_ncode(code, …)`, with the operations applied:
+`gem_if0` stores `(ctrlcode >> 9) + 10`), and functions that pass a parameter
+on (`gem_if`, `gsx_0code`, `gsx_1code`: "carriers", listed in `layers.md`).
+Every call site where the opcode becomes a constant gives an edge caller →
+the function(s) in the slot: `jmptb1`/`jmptb2` for VDI, the `crysbind` case
+for AES; detail `trap #2 0xOP <dispatch>[0xOP] via <function called>`
+(`appl_init → ap_init`, `trap #2 0xa crysbind[0xa] via gem_if`).
+
 Misses:
-- trap #2: AES and VDI pass the opcode in a parameter block, not on the stack.
-  `gem` and `gsx2` get one edge to every installed trap #2 handler (`aestrap`,
-  `bdos_trap2`, `vditrap`), detail `not resolved`; the per-opcode step is the
-  `crysbind` switch / the VDI `jmptb` table below them.
-- A non-constant opcode is listed in `layers.md`, not guessed (none at the pin).
+- trap #2 control flow is not followed inside a function: values stored on
+  two branches both count (`gsx_attr` stores 0 = FALSE when no attribute
+  changes; that opcode has no slot and is listed in `layers.md`). A call of a
+  function that may issue a trap #2 itself ends the values pending in the
+  caller (what it leaves in element 0 is not followed).
+- A non-constant opcode is listed in `layers.md`, not guessed.
 - Vector installs through a computed address (`move.l #_aestrap,(a0)`) are not
   seen; the absolute form next to it is.
+
+### `vector` — a call through a variable holding a function address
+
+A **slot** is a variable (`hdv_rw`), a field (`kbdvecs.mousevec`), or any
+element of an array (`bconstat_vec[]`; indices are not told apart); a
+`static` variable carries its file (`cntl_tab@bios/vt52.c[]`). An edge runs
+from the function that calls through the slot to every function stored into
+it, detail `via <slot>`, site = the call. `layers.md` lists each slot with
+its callers, handlers and (for a system variable) address.
+
+Stores (handlers), all in the node dirs:
+- gimple: an assignment of a function address to the slot (`hdv_rw =
+  blkdev_rwabs`), or of the value of another slot (`bconstat_vec[i] =
+  bconstat_init[i]`: the handlers of `bconstat_init[]` flow on);
+- C initialisers: every function in an array's initialiser (`V[]`), the
+  function a scalar is initialised with;
+- `Setexc(n, f)` and `*(PFVOID*)addr = f` with `4 * n` / `addr` ≥ 0x400: the
+  system variable at that address (`Setexc(0x100, tick_int)` → `etv_timer`;
+  names and addresses from `tosvars.ld`); below 0x400 is an exception vector,
+  entered by the CPU (traps: `layer` edges), not called through;
+- assembler, with the address registers tracked inside a region and reset at
+  every label: `move.l #_f,<slot>` and `move.l aN,<slot>` with `aN` from
+  `lea _f,aN`; `<slot>` is a symbol (`_hdv_rw`, `_etv_timer.w`, a local data
+  label), a system-variable address, or `label-_base(aN)` with `aN` from `lea
+  _base,aN`; `.dc.l` lists under a data label.
+
+Calls through a slot:
+- gimple: a call through a temporary or local whose value was read from the
+  slot (`con_state.1_2 = con_state; con_state.1_2 (_4);`), or returned by
+  `Setexc(n, …)` (the vector before the call: `xterm` calls `etv_term`; the
+  VDI timer saves the old `etv_timer` in `tim_chain`, so the handlers of
+  `etv_timer` flow into `tim_chain` — the handler it installs itself
+  included, the order not followed);
+- gimple: the slot's value passed to a function that calls its argument: the
+  assembler `protect_v`/`protect_w`/`protect_ww`/`protect_wlwwwl`
+  (`CALLS_ARGUMENT` of the generator, stated from their prototypes in
+  `include/asm.h`, checked to be regions with a computed `jsr`), and C
+  functions whose gimple calls through one of their parameters (read);
+  `lrwabs` → `blkdev_rwabs` via `hdv_rw` this way;
+- assembler: `jsr (aN)` / `jmp (aN)` where `aN` was loaded from a slot
+  (`move.l _etv_timer.w,a0`) in the same region since its last label.
+
+A C field of an assembler structure is the local label of that name in the
+file defining the structure: `kbdvecs.mousevec` (C) and `mousevec:` under
+`_kbdvecs:` (`bios/aciavecs.S`) are one slot. That is a name match, valid
+because the KBDVECS layout is declared field by field there.
+
+Misses (each listed in `layers.md`):
+- a slot called through but never stored into with a function address in
+  the node dirs (`next_handler` of XHDI, set from a cookie);
+- stores of a value that is no function address: what a program installs at
+  run time (`vex_butv` → `user_but`), a value from a pointer (`maptabptr->
+  Bconstat` into `bconstat_vec[]`), a register computed in assembler; their
+  handlers are unknown;
+- C calls through a value not read from a variable: the `funcs[]`/`jmptb`
+  dispatch (`table` edges of `osif`/`screen`), NatFeats through
+  `natfeat_cookie`, a pointer into a structure (`bconmap_root.maptab[i]`);
+- assembler computed calls whose register was not loaded from a slot since
+  the last label: table dispatch (`xbiostrap`, `int_linea`), loops over a
+  list (`vblqueue` in `int_vbl`), the blitter's jump threads, return jumps;
+- `Setexc` from assembler with the handler in a register (`takeerr` installs
+  `criterr_handler` into `etv_critic` through `call_err`, `aes/gemdosif.S`).
 
 ### `data` — shared globals, writer → reader
 

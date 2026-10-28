@@ -1,6 +1,6 @@
 # TOOL12 — Abhaengigkeitsgraph Track B: Trap #2 aufloesen, Vektoraufruf-Kanten, Abschlusskriterium
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28
+Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL12-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt
 

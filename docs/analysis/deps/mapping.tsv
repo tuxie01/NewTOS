@@ -271,13 +271,15 @@ getmpb	bios/biosmem.c	tos-api/src/bios/getmpb.rs	getmpb	Getmpb 0x00
 add_partition	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 blkdev_avail	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 blkdev_boot	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
-blkdev_drvmap	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
-blkdev_getbpb	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+blkdev_drvmap	bios/blkdev.c	tos-api/src/bios/mod.rs	drvmap	behind Drvmap 0x0A (bios.c drvmap returns it): the drive bitmap; NewTOS has no separate block-device layer
+blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	getbpb	behind hdv_bpb (Getbpb 0x07): NewTOS calls it from the trap directly, no hdv_bpb vector (BIOS-STOR-010)
+blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	bpb_for	the boot-sector read and the per-drive BPB slot
+blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	parse	the BPB checks and arithmetic of blkdev.c:641-756, 1:1
 blkdev_hdv_boot	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 blkdev_hdv_init	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 blkdev_init	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
-blkdev_mediach	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
-blkdev_rwabs	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+blkdev_mediach	bios/blkdev.c	tos-api/src/bios/mod.rs	mediach	behind hdv_mediach (Mediach 0x09): NewTOS calls it from the trap directly, no hdv_mediach vector (BIOS-STOR-010); no forcechange, the SD is non-removable (BIOS-STOR-001)
+blkdev_rwabs	bios/blkdev.c	tos-api/src/bios/mod.rs	rwabs	behind hdv_rw (Rwabs 0x04): NewTOS calls it from the trap directly, no hdv_rw vector (BIOS-STOR-010); no retry/etv_critic chain
 bootcheck	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 bus_init	bios/blkdev.c	-	-	no counterpart: block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 compute_cksum	bios/blkdev.c	tos-api/src/xbios/floppy.rs	compute_cksum	-
@@ -895,7 +897,7 @@ run_cartridge_applications	bios/startup.S	-	-	no counterpart: m68k reset entry /
 biostrap	bios/vectors.S	tos-api/src/bios/mod.rs	dispatch	trap #13 dispatcher
 call_etv_critic	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 check_read_byte	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
-default_etv_critic	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+default_etv_critic	bios/vectors.S	-	-	no counterpart: the etv_critic default (handler of the etv_critic vector, called by call_etv_critic); NewTOS keeps only the opaque sentinel ETV_DEFAULT_CRITIC in bios/vectors.rs and does not dispatch etv_critic
 init_exc_vec	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 init_user_vec	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 int_hbl	bios/vectors.S	-	-	no counterpart: m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
@@ -941,52 +943,52 @@ vmontype	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTO
 vsetmode	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
 vsetrgb	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
 vsetsync	bios/videl.c	-	-	no counterpart: Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
-ascii_cr	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+ascii_cr	bios/vt52.c	tos-api/src/vdi/escape.rs	normal_ascii	cntl_tab entry for CR (0x0d): the 0x0d arm of normal_ascii (no own fn)
 ascii_lf	bios/vt52.c	tos-api/src/vdi/escape.rs	ascii_lf	-
 blink	bios/vt52.c	tos-api/src/vdi/escape.rs	blink	-
 clear_and_home	bios/vt52.c	tos-api/src/vdi/escape.rs	clear_and_home	-
 cputc	bios/vt52.c	tos-api/src/vdi/escape.rs	cputc	-
 cursconf	bios/vt52.c	tos-api/src/xbios/screen.rs	cursconf	Cursconf 0x15
 cursconf	bios/vt52.c	tos-api/src/vdi/escape.rs	cursconf	-
-cursor_down	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+cursor_down	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	am_tab entry ESC B: the b'B' arm of esc_ch1 (no own fn)
 cursor_down_impl	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
-cursor_home	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+cursor_home	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	am_tab entry ESC H: the b'H' arm of esc_ch1, move_cursor(0, 0) (no own fn)
 cursor_left	bios/vt52.c	tos-api/src/vdi/escape.rs	cursor_left	-
 cursor_left_impl	bios/vt52.c	tos-api/src/vdi/escape.rs	cursor_left	-
 cursor_off	bios/vt52.c	tos-api/src/vdi/escape.rs	cursor_off	-
 cursor_on	bios/vt52.c	tos-api/src/vdi/escape.rs	cursor_on	-
 cursor_on_cnt	bios/vt52.c	tos-api/src/vdi/escape.rs	cursor_on_cnt	-
-cursor_right	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
-cursor_up	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+cursor_right	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	am_tab entry ESC C: the b'C' arm of esc_ch1 (no own fn)
+cursor_up	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	am_tab entry ESC A: the b'A' arm of esc_ch1 (no own fn)
 delete_line	bios/vt52.c	tos-api/src/vdi/escape.rs	delete_line	-
-do_backspace	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+do_backspace	bios/vt52.c	tos-api/src/vdi/escape.rs	normal_ascii	cntl_tab entry for BS (0x08): the 0x08 arm of normal_ascii, which calls cursor_left (no own fn)
 do_bell	bios/vt52.c	tos-api/src/vdi/escape.rs	do_bell	-
 do_cnt_esce	bios/vt52.c	tos-api/src/vdi/escape.rs	do_cnt_esce	-
-do_tab	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+do_tab	bios/vt52.c	tos-api/src/vdi/escape.rs	normal_ascii	cntl_tab entry for TAB (0x09): the 0x09 arm of normal_ascii (no own fn)
 erase_from_bol	bios/vt52.c	tos-api/src/vdi/escape.rs	erase_from_bol	-
 erase_from_bol_impl	bios/vt52.c	tos-api/src/vdi/escape.rs	erase_from_bol	-
 erase_from_home	bios/vt52.c	tos-api/src/vdi/escape.rs	erase_from_home	-
-erase_line	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+erase_line	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	bw_tab entry ESC l: the b'l' arm of esc_ch1 (no own fn)
 erase_to_eol	bios/vt52.c	tos-api/src/vdi/escape.rs	erase_to_eol	-
 erase_to_eol_impl	bios/vt52.c	tos-api/src/vdi/escape.rs	erase_to_eol	-
 erase_to_eos	bios/vt52.c	tos-api/src/vdi/escape.rs	erase_to_eos	-
 esc_ch1	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	-
-get_bg_col	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
-get_column	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
-get_fg_col	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
-get_row	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+get_bg_col	bios/vt52.c	tos-api/src/vdi/escape.rs	cputc	con_state handler: the ConState::BgCol arm of cputc (no own fn)
+get_column	bios/vt52.c	tos-api/src/vdi/escape.rs	cputc	con_state handler: the ConState::Column arm of cputc (no own fn)
+get_fg_col	bios/vt52.c	tos-api/src/vdi/escape.rs	cputc	con_state handler: the ConState::FgCol arm of cputc (no own fn)
+get_row	bios/vt52.c	tos-api/src/vdi/escape.rs	cputc	con_state handler: the ConState::Row arm of cputc (no own fn)
 insert_line	bios/vt52.c	tos-api/src/vdi/escape.rs	insert_line	-
-line_wrap_off	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
-line_wrap_on	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
-nop	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+line_wrap_off	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	bw_tab entry ESC w: the b'w' arm of esc_ch1 (no own fn)
+line_wrap_on	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	bw_tab entry ESC v: the b'v' arm of esc_ch1 (no own fn)
+nop	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	am_tab/bw_tab entries for unsupported letters: the catch-all arm of esc_ch1 (no own fn)
 normal_ascii	bios/vt52.c	tos-api/src/vdi/escape.rs	normal_ascii	-
-restore_cursor_pos	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+restore_cursor_pos	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	bw_tab entry ESC k: the b'k' arm of esc_ch1 (no own fn)
 reverse_linefeed	bios/vt52.c	tos-api/src/vdi/escape.rs	reverse_linefeed	-
-reverse_video_off	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
-reverse_video_on	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
-save_cursor_pos	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
-set_bg	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
-set_fg	bios/vt52.c	-	-	no counterpart: VT52 command: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
+reverse_video_off	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	bw_tab entry ESC q: the b'q' arm of esc_ch1 (no own fn)
+reverse_video_on	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	bw_tab entry ESC p: the b'p' arm of esc_ch1 (no own fn)
+save_cursor_pos	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	bw_tab entry ESC j: the b'j' arm of esc_ch1 (no own fn)
+set_bg	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	bw_tab entry ESC c: the b'c' arm of esc_ch1 sets ConState::BgCol (no own fn)
+set_fg	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	bw_tab entry ESC b: the b'b' arm of esc_ch1 sets ConState::FgCol (no own fn)
 vt52_init	bios/vt52.c	tos-api/src/vdi/escape.rs	init	-
 vt52_init	bios/vt52.c	kernel/src/fbcon.rs	init	-
 blitmode	bios/xbios.c	tos-api/src/xbios/system.rs	blitmode	Blitmode 0x40

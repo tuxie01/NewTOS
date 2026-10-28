@@ -26,10 +26,11 @@ known gaps: `tools/deps/README.md`. Query: `cargo xtask deps <fn> --down|--up`.
 | nodes (functions, merged by name) | 2068 |
 | nodes defined in the node dirs | 1952 |
 | direct edges | 4235 |
-| table edges | 316 |
+| table edges | 403 |
 | callback edges | 224 |
 | asm edges | 117 |
-| layer edges | 145 |
+| layer edges | 230 |
+| vector edges | 114 |
 | data edges | 19787 |
 | def rows | 2014 |
 
@@ -39,14 +40,14 @@ Rows: layer of `from`; columns: layer of `to`; all edge kinds except `data`. `in
 
 | from \ to | aes | bdos | bios | desk | desk,vdi | ext | include | vdi |
 |---|---|---|---|---|---|---|---|---|
-| aes | 926 | 9 | 15 | 1 | 0 | 119 | 100 | 1 |
-| bdos | 0 | 380 | 34 | 0 | 0 | 35 | 30 | 0 |
-| bios | 2 | 14 | 1411 | 0 | 0 | 88 | 17 | 17 |
-| desk | 15 | 4 | 31 | 887 | 2 | 235 | 153 | 1 |
+| aes | 1011 | 8 | 15 | 1 | 0 | 119 | 101 | 45 |
+| bdos | 0 | 380 | 34 | 0 | 0 | 36 | 30 | 0 |
+| bios | 2 | 15 | 1481 | 0 | 0 | 96 | 17 | 19 |
+| desk | 60 | 3 | 31 | 887 | 2 | 235 | 153 | 0 |
 | desk,vdi | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 |
 | ext | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | include | 0 | 22 | 0 | 0 | 0 | 22 | 0 | 0 |
-| vdi | 1 | 4 | 35 | 0 | 12 | 27 | 40 | 345 |
+| vdi | 1 | 5 | 35 | 0 | 12 | 35 | 40 | 368 |
 
 ## Names merged into one node
 
@@ -65,6 +66,7 @@ Defined more than once (static functions of the same name, or static inline func
 | xbios_vecs | `bios/xbios.c` | #14 (XBIOS) | 0 | xbiostrap | 142 |
 | jmptb1 | `vdi/vdi_main.c` | #2 (AES/VDI) | 1 | screen | 39 |
 | jmptb2 | `vdi/vdi_main.c` | #2 (AES/VDI) | 100 | screen | 35 |
+| crysbind (switch on `opcode`) | `aes/gemsuper.c` | #2 (AES) | case value | crysbind | 89 |
 
 Trap handlers found (vector installs) and the check that each table's
 dispatcher is reachable from them over `direct`/`asm` edges:
@@ -76,6 +78,15 @@ dispatcher is reachable from them over `direct`/`asm` edges:
 | jmptb1 | #2 | aestrap, bdos_trap2, vditrap | yes |
 | jmptb2 | #2 | aestrap, bdos_trap2, vditrap | yes |
 | xbios_vecs | #14 | xbiostrap | yes |
+
+Trap #2 serves two classes, told apart by d0. For each, the d0 value its
+binding loads, the installed handler that compares d0 with it, and the
+dispatch that handler reaches over `direct`/`asm` edges:
+
+| class | d0 | handler comparing d0 | dispatch reached |
+|---|---|---|---|
+| AES | 0xc8 | aestrap | crysbind |
+| VDI | 0x73 | vditrap | screen |
 
 Vector installs found:
 
@@ -126,8 +137,8 @@ Vector installs found:
 | bios_l_ww | #13 | argument 1 |
 | bios_v_l | #13 | argument 1 |
 | bios_w_w | #13 | argument 1 |
-| gem | #2 | parameter block (not resolved) |
-| gsx2 | #2 | parameter block (not resolved) |
+| gem | #2 | parameter block: control[0] (AES, d0 = 0xc8) |
+| gsx2 | #2 | parameter block: contrl[0] (VDI, d0 = 0x73) |
 | trap1 | #1 | argument 1 |
 | trap1_pexec | #1 | fixed 0x4b |
 | xbios_l_l | #14 | argument 1 |
@@ -144,11 +155,228 @@ Vector installs found:
 | xbios_w_w | #14 | argument 1 |
 | xbios_w_ww | #14 | argument 1 |
 
+Trap #2 opcode carriers: functions that pass one of their parameters on as the opcode (a caller's constant argument is the opcode after the shown operations; the `layer` edge starts at that caller):
+
+| function | class | opcode |
+|---|---|---|
+| gem_if | AES | (argument 1 >> 9) + 10 |
+| gsx_0code | VDI | argument 1 |
+| gsx_1code | VDI | argument 1 |
+| gsx_ncode | VDI | argument 1 |
+
+## Vector slots (`vector` edges)
+
+Variables, fields or array elements holding function addresses that a
+function calls through (`via <slot>`; `[]` = any element). Handlers are the
+functions stored into the slot (assignment, initialiser, `Setexc`, assembler
+store), or into a slot copied into it. A system variable carries its
+address from `tosvars.ld`.
+
+| slot | address | callers | handlers |
+|---|---|---|---|
+| SEEDABORT | - | contourfill | no_abort |
+| am_tab@bios/vt52.c[] | - | esc_ch1 | clear_and_home, cursor_down, cursor_home, cursor_left, cursor_right, cursor_up, delete_line, erase_to_eol, erase_to_eos, insert_line, nop, reverse_linefeed |
+| bconin_vec[] | - | bconin | bconin0, bconin1, bconin2, bconin3, char_dummy |
+| bconout_vec[] | - | bconout | bconout0, bconout1, bconout2, bconout3, bconout4, bconout5, charout_dummy |
+| bconstat_vec[] | - | bconstat | bconstat1, bconstat2, bconstat3, char_dummy |
+| bcostat_vec[] | - | bcostat | bcostat0, bcostat1, bcostat2, bcostat3, bcostat4, char_dummy |
+| bell_hook | 0x5ac | bell | do_bell |
+| bw_tab@bios/vt52.c[] | - | esc_ch1 | cursor_off, cursor_on, erase_from_bol, erase_from_home, erase_line, line_wrap_off, line_wrap_on, nop, restore_cursor_pos, reverse_video_off, reverse_video_on, save_cursor_pos, set_bg, set_fg |
+| cntl_tab@bios/vt52.c[] | - | normal_ascii | ascii_cr, ascii_lf, do_backspace, do_bell, do_tab |
+| con_state | 0x4a8 | cputc | esc_ch1, get_bg_col, get_column, get_fg_col, get_row, normal_ascii |
+| dump_vec | 0x502 | int_vbl, scrdmp | just_rts |
+| esctbl@vdi/vdi_esc.c[] | - | vdi_v_escape | escfn0, escfn1, escfn10, escfn11, escfn12, escfn13, escfn14, escfn15, escfn16, escfn17, escfn18, escfn19, escfn2, escfn3, escfn4, escfn5, escfn6, escfn7, escfn8, escfn9 |
+| etv_critic | 0x404 | call_etv_critic | default_etv_critic |
+| etv_term | 0x408 | xterm | just_rts |
+| etv_timer | 0x400 | int_timerc | just_rts, tick_int, tikfrk |
+| hdv_bpb | 0x472 | getbpb | blkdev_getbpb |
+| hdv_mediach | 0x47e | mediach | blkdev_mediach |
+| hdv_rw | 0x476 | lrwabs | blkdev_rwabs |
+| ikbdsys | - | int_acia | ikbdsys |
+| kcl_hook | 0x5b0 | keyclick | do_keyclick |
+| midisys | - | int_acia | midisys |
+| midivec | - | midisys | midivec |
+| mousevec | - | call_mousevec | just_rts |
+| mousexvec | - | kbd_int | just_rts, vdi_mousex_handler |
+| next_handler@bios/xhdi.c | - | XHDOSLimits, XHDriverSpecial, XHDrvMap, XHEject, XHGetCapacity, XHGetVersion, XHInqDev, XHInqDev2, XHInqDriver, XHInqTarget, XHInqTarget2, XHLastAccess, XHLock, XHMediumChanged, XHMiNTInfo, XHNewCookie, XHReaccess, XHReadWrite, XHReserve, XHStop | - |
+| rsconfptr | - | init_serport, rsconf | rsconf1 |
+| save_etv_critic | - | takeerr | - |
+| swv_vec | 0x46e | detect_monitor_change | just_rts |
+| tim_addr | - | tick_int | just_rts |
+| tim_chain | - | tick_int | just_rts, tick_int, tikfrk |
+| user_but | - | call_user_but, mouse_int | just_rts |
+| user_cur | - | mouse_int | just_rts, mov_cur |
+| user_mot | - | mouse_int | just_rts |
+| user_rcv@bios/dsp.c | - | dsp_sv_handler | - |
+| user_send@bios/dsp.c | - | dsp_sv_handler | - |
+| user_wheel | - | call_user_wheel, wheel_int | just_rts |
+| vkbderr | - | ikbdsys | just_rts |
+| vmiderr | - | midisys | just_rts |
+
+Functions that call through an argument (the slot passed in is the one called; assembler ones stated in `CALLS_ARGUMENT` of the generator):
+
+- everyobj (argument 4)
+- protect_v (argument 1)
+- protect_w (argument 1)
+- protect_wlwwwl (argument 1)
+- protect_ww (argument 1)
+
 ## Not resolved
 
-Trap call sites whose opcode is not a constant (0):
+Trap call sites whose opcode is not a constant or whose slot holds no function (2):
 
-- none
+- graf_handle -> gem_if (trap #2 AES 0x4d: no function in that slot) at desk/gembind.c:641
+- gsx_attr -> gsx2 (trap #2 VDI 0x0: no function in that slot) at aes/gemgraf.c:237
+
+Calls through a vector slot no function of the node dirs is stored into (23; no `vector` edge: the handler is installed at run time, by another program, or from a value not traced):
+
+- XHDOSLimits -> next_handler@bios/xhdi.c at bios/xhdi.c:253
+- XHDriverSpecial -> next_handler@bios/xhdi.c at bios/xhdi.c:224
+- XHDrvMap -> next_handler@bios/xhdi.c at bios/xhdi.c:76
+- XHEject -> next_handler@bios/xhdi.c at bios/xhdi.c:186
+- XHGetCapacity -> next_handler@bios/xhdi.c at bios/xhdi.c:416
+- XHGetVersion -> next_handler@bios/xhdi.c at bios/xhdi.c:63
+- XHInqDev -> next_handler@bios/xhdi.c at bios/xhdi.c:146
+- XHInqDev2 -> next_handler@bios/xhdi.c at bios/xhdi.c:104
+- XHInqDriver -> next_handler@bios/xhdi.c at bios/xhdi.c:198
+- XHInqTarget -> next_handler@bios/xhdi.c at bios/xhdi.c:394
+- XHInqTarget2 -> next_handler@bios/xhdi.c at bios/xhdi.c:371
+- XHLastAccess -> next_handler@bios/xhdi.c at bios/xhdi.c:345
+- XHLock -> next_handler@bios/xhdi.c at bios/xhdi.c:168
+- XHMediumChanged -> next_handler@bios/xhdi.c at bios/xhdi.c:233
+- XHMiNTInfo -> next_handler@bios/xhdi.c at bios/xhdi.c:242
+- XHNewCookie -> next_handler@bios/xhdi.c at bios/xhdi.c:84
+- XHReaccess -> next_handler@bios/xhdi.c at bios/xhdi.c:354
+- XHReadWrite -> next_handler@bios/xhdi.c at bios/xhdi.c:440
+- XHReserve -> next_handler@bios/xhdi.c at bios/xhdi.c:159
+- XHStop -> next_handler@bios/xhdi.c at bios/xhdi.c:177
+- dsp_sv_handler -> user_rcv@bios/dsp.c at bios/dsp.c:1321
+- dsp_sv_handler -> user_send@bios/dsp.c at bios/dsp.c:1326
+- takeerr -> save_etv_critic at aes/gemdosif.S:157
+
+Stores into a called vector slot of a value that is no function address (23; their handlers are unknown):
+
+- bconin_vec[]: bconmap at bios/serport.c:1115
+- bconin_vec[]: init_bconmap at bios/serport.c:999
+- bconout_vec[]: bconmap at bios/serport.c:1117
+- bconout_vec[]: init_bconmap at bios/serport.c:1001
+- bconstat_vec[]: bconmap at bios/serport.c:1114
+- bconstat_vec[]: init_bconmap at bios/serport.c:998
+- bcostat_vec[]: bconmap at bios/serport.c:1116
+- bcostat_vec[]: init_bconmap at bios/serport.c:1000
+- mousevec: Initmous at bios/mouse.c:117
+- next_handler@bios/xhdi.c: XHNewCookie at bios/xhdi.c:86
+- rsconfptr: bconmap at bios/serport.c:1118
+- rsconfptr: init_bconmap at bios/serport.c:1002
+- save_etv_critic: takeerr at aes/gemdosif.S:130
+- swv_vec: bios_init at bios/bios.c:552
+- tim_addr: vdi_vex_timv at vdi/vdi_misc.c:107
+- user_but: vdi_vex_butv at vdi/vdi_mouse.c:373
+- user_cur: vdi_vex_curv at vdi/vdi_mouse.c:417
+- user_mot: vdi_vex_motv at vdi/vdi_mouse.c:394
+- user_rcv@bios/dsp.c: dsp_setvectors at bios/dsp.c:1291
+- user_rcv@bios/dsp.c: dsp_setvectors at bios/dsp.c:1296
+- user_send@bios/dsp.c: dsp_setvectors at bios/dsp.c:1292
+- user_send@bios/dsp.c: dsp_setvectors at bios/dsp.c:1304
+- user_wheel: vdi_vex_wheelv at vdi/vdi_mouse.c:441
+
+C calls through a value not read from a variable (30; a table dispatch among them is a `table` edge of its dispatcher):
+
+- bconin: argument 1 of protect_v at bios/bios.c:972
+- bconout: argument 1 of protect_ww at bios/bios.c:1005
+- bconstat: argument 1 of protect_v at bios/bios.c:928
+- bcostat: argument 1 of protect_v at bios/bios.c:1157
+- disk_get_capacity: call through `_4` at bios/disk.c:1123
+- disk_rw: call through `_4` at bios/disk.c:1188
+- forker: call through `_38` at aes/gemdisp.c:151
+- mmu_is_emulated: call through `_3` at bios/natfeats.c:158
+- natfeat_init: call through `_11` at bios/natfeats.c:41
+- natfeat_init: call through `_13` at bios/natfeats.c:42
+- natfeat_init: call through `_3` at bios/natfeats.c:37
+- natfeat_init: call through `_5` at bios/natfeats.c:38
+- natfeat_init: call through `_7` at bios/natfeats.c:39
+- natfeat_init: call through `_9` at bios/natfeats.c:40
+- natfeats_inquire: call through `_2` at bios/disk.c:1017
+- nfGetFullName: call through `_2` at bios/natfeats.c:62
+- nfStdErr: call through `_2` at bios/natfeats.c:80
+- nf_bootstrap: call through `_3` at bios/natfeats.c:113
+- nf_getbootdrive: call through `_3` at bios/natfeats.c:126
+- nf_getbootstrap_args: call through `_3` at bios/natfeats.c:139
+- nf_setlinea: call through `_3` at bios/natfeats.c:175
+- nf_shutdown: call through `_2` at bios/natfeats.c:96
+- osif: call through `_107` at bdos/bdosmain.c:690
+- osif: call through `_118` at bdos/bdosmain.c:694
+- osif: call through `_82` at bdos/bdosmain.c:670
+- osif: call through `_83` at bdos/bdosmain.c:674
+- osif: call through `_86` at bdos/bdosmain.c:678
+- osif: call through `_91` at bdos/bdosmain.c:682
+- osif: call through `_98` at bdos/bdosmain.c:686
+- screen: call through `_17` at vdi/vdi_main.c:160
+
+Assembler computed calls and jumps whose register is not loaded from a variable in the same region since its last label (62):
+
+- gotopgm: jmp (a1) at aes/gemasm.S:119
+- ikbdraw: jmp (a1) at bios/aciavecs.S:475
+- ikbdraw: jsr (a1) at bios/aciavecs.S:529
+- int_linea: jsr (a1) at bios/linea.S:120
+- meminit: jmp (a5) at bios/memory.S:444
+- cold_reset: jmp (a0) at bios/panicasm.S:135
+- realmain: jmp (a0) at bios/startup.S:519
+- run_cartridge_applications: jsr (a0) at bios/startup.S:568
+- int_vbl: jsr (a1) at bios/vectors.S:454
+- xbiostrap: jsr (a0) at bios/vectors.S:1332
+- supexec: jmp (a0) at bios/vectors.S:1378
+- fast_bit_blt: jsr (a4) at vdi/vdi_blit.S:1099
+- fast_bit_blt: jsr (a4) at vdi/vdi_blit.S:1143
+- normal_blit: jmp (a2) at vdi/vdi_tblit.S:543
+- normal_blit: jmp (a5) at vdi/vdi_tblit.S:596
+- normal_blit: jmp (a5) at vdi/vdi_tblit.S:644
+- normal_blit: jmp (a4) at vdi/vdi_tblit.S:656
+- normal_blit: jmp (a5) at vdi/vdi_tblit.S:705
+- normal_blit: jmp (a4) at vdi/vdi_tblit.S:746
+- normal_blit: jmp (a5) at vdi/vdi_tblit.S:758
+- normal_blit: jmp (a5) at vdi/vdi_tblit.S:801
+- normal_blit: jmp (a4) at vdi/vdi_tblit.S:838
+- normal_blit: jmp (a5) at vdi/vdi_tblit.S:850
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:876
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:883
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:890
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:896
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:902
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:906
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:911
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:916
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:922
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:928
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:933
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:939
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:946
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:952
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:959
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:964
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:979
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:983
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:988
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:991
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:996
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:1000
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:1004
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:1008
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:1013
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:1018
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:1023
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:1028
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:1032
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:1037
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:1042
+- normal_blit: jmp (a3) at vdi/vdi_tblit.S:1046
+- normal_blit: jmp (a2) at vdi/vdi_tblit.S:1112
+- normal_blit: jmp (a2) at vdi/vdi_tblit.S:1149
+- normal_blit: jmp (a2) at vdi/vdi_tblit.S:1233
+- normal_blit: jmp (a2) at vdi/vdi_tblit.S:1251
+- normal_blit: jmp (a2) at vdi/vdi_tblit.S:1256
+- normal_blit: jmp (a2) at vdi/vdi_tblit.S:1261
+- normal_blit: jmp (a2) at vdi/vdi_tblit.S:1303
 
 Initialised variables holding function addresses that no function or assembler region of the node dirs references (1; their functions get no `callback` edge):
 

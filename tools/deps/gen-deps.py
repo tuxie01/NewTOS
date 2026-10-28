@@ -19,6 +19,8 @@ Inputs, all named by tools/oracle/oracle.env (never by $PATH):
     `-fdump-tree-gimple-lineno` for the per-statement facts below.
   * GNU cflow 1.8 (/opt/homebrew/bin/cflow) over the preprocessed sources,
     one run over bios+bdos+vdi+aes+desk.
+  * tosvars.ld (the system-variable addresses), preprocessed by the recipe's
+    own `-P -x c` command for the linker script.
 
 How each edge kind is derived and what it misses: tools/deps/README.md.
 Outputs are sorted and carry no time stamp or absolute path: two runs on the
@@ -69,7 +71,33 @@ TABLES = {
     "jmptb2": ("vdi/vdi_main.c", 2, None),
 }
 TRAP_NAMES = {1: "GEMDOS", 2: "AES/VDI", 13: "BIOS", 14: "XBIOS"}
-KINDS = ("direct", "table", "callback", "asm", "layer", "data")
+KINDS = ("direct", "table", "callback", "asm", "layer", "vector", "data")
+
+# Trap #2 (TOOL12): AES and VDI pass the opcode in a parameter block, not on
+# the stack. binding -> (class, opcode array, dispatch). Machine-read and
+# checked on every run: the d0 value the binding loads (AES 200, VDI 0x73),
+# an installed trap #2 handler that compares d0 with it and reaches the
+# dispatch, and a store of `&<opcode array>` into a parameter-block field in
+# the binding's file. Stated, not read: element 0 of the array is the opcode
+# (the AES/VDI parameter-block ABI: AES `OP_CODE` = control[0],
+# include/aesdefs.h; VDI `opcode = contrl[0]` in screen(), vdi/vdi_main.c).
+# The AES dispatch is a `switch` on the named parameter of the named function;
+# the VDI dispatch is the two tables of TABLES.
+TRAP2 = {
+    "gem": ("AES", "control", ("switch", "aes/gemsuper.c", "crysbind", "opcode")),
+    "gsx2": ("VDI", "contrl", ("tables", ("jmptb1", "jmptb2"))),
+}
+
+# Assembler functions that call the function pointer passed as an argument
+# (TOOL12, `vector` edges): name -> argument index. Stated from their
+# prototypes (`LONG protect_v(LONG (*func)(void))`, include/asm.h); checked
+# on every run to be an assembler region that does a computed `jsr`.
+CALLS_ARGUMENT = {"protect_v": 0, "protect_w": 0, "protect_ww": 0, "protect_wlwwwl": 0}
+
+# The linker script fragment naming the TOS system variables (fixed
+# addresses 0x380-0x800); preprocessed as the build does (`-P -x c` of
+# emutos.ld, which includes it).
+SYSVARS_LD = "tosvars.ld"
 
 C_KEYWORDS = set("""
 auto break case char const continue default do double else enum extern float
@@ -146,8 +174,15 @@ def compile_commands(env, tree, tmp):
     p = run(["make", "-n", *MAKE_ARGS, f"TOOLCHAIN_PREFIX={env['ORACLE_CROSS_MINT']}",
              "BUILD_TOOLS_OPTFLAGS=-O -arch x86_64"], cwd=clone, env=menv)
     cmds = {}
+    ldcmd = None
     for line in p.stdout.splitlines():
         words = line.split()
+        if words and words[0] == cc and "-E" in words and "emutos.ld" in words \
+                and "-o" in words:
+            # the linker script's preprocessing; its output goes to stdout here
+            j = words.index("-o")
+            ldcmd = words[:j] + words[j + 2:]
+            continue
         if not words or words[0] != cc or "-c" not in words:
             continue
         i = words.index("-c")
@@ -159,7 +194,28 @@ def compile_commands(env, tree, tmp):
         cmds[src] = flags
     if not cmds:
         die("`make -n` printed no compile command")
-    return cc, cmds
+    if ldcmd is None:
+        die("`make -n` printed no preprocessing command for emutos.ld")
+    return cc, cmds, ldcmd
+
+
+SYSVAR_LINE = re.compile(r"^\s*(_?[A-Za-z]\w*)\s*=\s*(0x[0-9a-fA-F]+|\d+)\s*;")
+
+
+def sysvars(ldcmd, tree, tmp):
+    """{C name: address} of the system variables: the `_name = 0x...;`
+    assignments of tosvars.ld, as the preprocessed emutos.ld holds them."""
+    text = run(ldcmd, cwd=tree, env=cc_env(tmp)).stdout
+    if SYSVARS_LD not in (tree / "emutos.ld").read_text():
+        die(f"emutos.ld no longer includes {SYSVARS_LD}")
+    out = {}
+    for line in text.splitlines():
+        m = SYSVAR_LINE.match(line)
+        if m and m.group(1).startswith("_"):
+            out[m.group(1)[1:]] = int(m.group(2), 0)
+    if "hdv_rw" not in out or "etv_timer" not in out:
+        die(f"no system variables read from {SYSVARS_LD}")
+    return out
 
 
 def select_sources(cmds, tree):
@@ -283,6 +339,8 @@ class CFile:
         self.typedefs = set()
         self.inits = {}          # var -> initializer tokens [(tok, file, line)]
         self.bodies = {}         # fn name -> body tokens (text only)
+        self.body_toks = {}      # fn name -> body tokens [(tok, file, line)]
+        self.arrays = set()      # variables declared as arrays
 
 
 def parse_c(path, text):
@@ -338,6 +396,7 @@ def fn_def(cf, stmt):
     name = head[k - 1]
     cf.fndefs.setdefault(name[0], (name[1], name[2]))
     cf.bodies[name[0]] = [tk[0] for tk in stmt[first:]]
+    cf.body_toks[name[0]] = stmt[first:]
     return True
 
 
@@ -380,6 +439,8 @@ def decl(cf, stmt):
             cf.vars[name[0]] = (static or (prev[0] if prev else False), *site)
         if init is not None:
             cf.inits[name[0]] = init
+        if any(tk[0] == "[" for tk in drop_tags_and_bodies(dtoks)):
+            cf.arrays.add(name[0])
 
 
 def drop_tags_and_bodies(toks):
@@ -456,6 +517,7 @@ ASM_SYM = re.compile(r"(?<![\w.$])(_[A-Za-z]\w*)")
 ASM_TRAP = re.compile(r"^\s*trap\s+#(\d+)")
 ASM_PUSH = re.compile(r"^\s*(move|clr|pea|movem)(?:\.([bwl]))?\s+(.*?)-\((?:sp|a7)\)\s*$")
 ASM_VEC = re.compile(r"^\s*move\.l\s+#_?([A-Za-z]\w*)\s*,\s*(0x[0-9a-fA-F]+|[0-9]+)(?:\.[wl])?\s*$")
+ASM_CMP_D0 = re.compile(r"^\s*cmpi?\.w\s+#(\S+?)\s*,\s*d0\s*$")
 NO_FALLTHROUGH = {"rts", "rte", "rtr", "jra", "bra", "jmp", "jbra", "illegal"}
 
 
@@ -474,7 +536,10 @@ class AsmFile:
         self.vectors = []        # (vector number, handler, line)
         self.fallthrough = []    # (owner, next owner, line)
         self.data_labels = {}    # variable label in .data/.bss -> (file, line)
+        self.local_data = set()  # data labels without the C prefix `_`
         self.inits = defaultdict(list)   # data label -> [(symbol, line)]
+        self.events = []         # ("label", label, line) | ("insn", owner, mnem, operands, line)
+        self.d0_cmps = []        # (owner, value, line): `cmp.w #value,d0`
 
 
 def parse_asm(path, text):
@@ -519,6 +584,8 @@ def parse_asm(path, text):
             if not in_text:
                 data_label = c_name(label)
                 af.data_labels.setdefault(data_label, (f, ln))
+                if not label.startswith("_"):
+                    af.local_data.add(label)
             elif label in globls or label.startswith("_"):
                 new_owner = c_name(label)
                 if owner is not None and last_mnem is not None and last_mnem not in NO_FALLTHROUGH:
@@ -530,6 +597,7 @@ def parse_asm(path, text):
                 pending_push = None
             if in_text:
                 af.label_owner[label] = owner
+                af.events.append(("label", label, ln))
             m = ASM_LABEL.match(code)
         s = code.strip()
         if not s:
@@ -555,6 +623,13 @@ def parse_asm(path, text):
         last_mnem = base_mnem
         if owner is None:
             continue
+        af.events.append(("insn", owner, mnem, s[len(mnem):].strip(), ln))
+        c = ASM_CMP_D0.match(s)
+        if c:
+            try:
+                af.d0_cmps.append((owner, int(c.group(1), 0), ln))
+            except ValueError:
+                pass
         t = ASM_TRAP.match(s)
         if t:
             trap = int(t.group(1))
@@ -616,6 +691,8 @@ class GFn:
         self.fn_temps = {}       # temp -> fn name
         self.deref_writes = []   # (base temp/local, site)
         self.assign_src = defaultdict(set)   # local/temp -> idents in RHS
+        self.seq = []            # every statement in order: (site|None, body, locals)
+        self.decls = []          # declaration lines (`register ... __asm__ (*d0)`)
 
 
 def split_args(toks):
@@ -661,8 +738,10 @@ def parse_gimple(path, text, fnset, varset, typedefs):
             i += 1
             continue
         g = GFn(m.group(1), path)
-        for p in (m.group(2).split(", ") if m.group(2) else []):
-            ids = re.findall(r"[A-Za-z_]\w*", p)
+        # parameters split at top-level commas (a function-pointer parameter
+        # `void (*T) (A, B) routine` holds commas of its own)
+        for p in (split_args(tokens("(" + m.group(2) + ")")) if m.group(2) else []):
+            ids = [t for t in p if is_ident(t)]
             if ids:
                 g.params.append(ids[-1])
         i += 2
@@ -692,15 +771,19 @@ def parse_gimple(path, text, fnset, varset, typedefs):
                 if len(ids) >= 2 and not d.lstrip().startswith(("*", "MEM")) and \
                         ("(" not in d or "(*" in d):
                     scopes[-1].add(ids[-1])
+                    g.decls.append(rest)
                 else:
                     UNPREFIXED.append(f"{path}: {rest[:80]}")
                 continue
             if not pre:
+                # labels and gotos gcc adds without a source line
+                g.seq.append((None, rest, frozenset().union(*scopes)))
                 continue
             site = GANNOT.match(pre)
             site = (site.group(1), int(site.group(2)))
             body = GANNOT.sub("", rest)
             stmts.append((body, site, frozenset().union(*scopes)))
+            g.seq.append((site, body, frozenset().union(*scopes)))
         i += 1
         analyse_stmts(g, stmts, fnset, varset, typedefs)
         fns.append(g)
@@ -888,6 +971,636 @@ def parse_int(arg):
 
 
 # --------------------------------------------------------------------------
+# F2. statement walks over gimple: trap #2 opcodes, the AES switch
+
+BINOPS = {">>": lambda a, b: a >> b, "<<": lambda a, b: a << b,
+          "+": lambda a, b: a + b, "-": lambda a, b: a - b,
+          "&": lambda a, b: a & b, "|": lambda a, b: a | b}
+GOTO_RE = re.compile(r"goto (<[^<>]+>|[A-Za-z_]\w*);")
+LABEL_RE = re.compile(r"^(<[^<>]+>|[A-Za-z_]\w*):$")
+
+
+def split_assign(body):
+    """(lhs tokens, rhs tokens) of a gimple statement; lhs is [] if none."""
+    toks = tokens(body)
+    if toks and toks[-1] == ";":
+        toks = toks[:-1]
+    depth = 0
+    for k, t in enumerate(toks):
+        if t in "([":
+            depth += 1
+        elif t in ")]":
+            depth -= 1
+        elif t == "=" and depth == 0:
+            return toks[:k], toks[k + 1:]
+    return [], toks
+
+
+def strip_cast(toks):
+    """`(type) x` -> `x` (gimple prints a conversion as a leading cast)."""
+    while len(toks) >= 2 and toks[0] == "(":
+        depth = 0
+        for k, t in enumerate(toks):
+            if t == "(":
+                depth += 1
+            elif t == ")":
+                depth -= 1
+                if depth == 0:
+                    break
+        if k == len(toks) - 1:
+            return toks
+        toks = toks[k + 1:]
+    return toks
+
+
+def call_of(rhs):
+    """(callee, [argument token lists]) if the right-hand side is a call."""
+    if len(rhs) >= 2 and is_ident(rhs[0]) and rhs[1] == "(" and rhs[0] not in C_KEYWORDS:
+        return rhs[0], split_args(rhs[1:])
+    return None
+
+
+def apply_op(v, op, n):
+    if v[0] == "k":
+        return ("k", BINOPS[op](v[1], n))
+    return ("p", v[1], v[2] + ((op, n),))
+
+
+def opcode_facts(g, arr, arr_ok, binding, setters, carriers, may_issue):
+    """What `g` stores into element 0 of the opcode array `arr` and which
+    trap #2 calls it issues, walking its statements in order.
+
+    A value is ("k", n) (a constant), ("p", i, ops) (parameter i with the
+    operations `ops` applied) or None (not a constant). Branches are not
+    followed: the pending values are those element 0 may hold now -- a store
+    after a trap call replaces them, a store after a store adds to them (the
+    two arms of an `if`). A call of a function that may issue a trap #2
+    itself (`may_issue`) ends the pending values: what it leaves in element
+    0 is not followed. Returns (pending values at the end, issues: [(called
+    function, value, site)]); an issue is a call of the binding (with every
+    pending value) or of a carrier. setters: function name -> the values a
+    function that never issues leaves pending (`gem_if0`); carriers: function
+    name -> the parameter-valued opcodes it issues."""
+    env = {}
+    stores, issues = [], []
+    issued = [False]
+
+    def store(vals):
+        if issued[0]:
+            stores.clear()
+        stores.extend(vals)
+        issued[0] = False
+
+    def val(toks, locs):
+        toks = strip_cast(toks)
+        if len(toks) == 1:
+            t = toks[0]
+            n = parse_int([t])
+            if n is not None:
+                return ("k", n)
+            if t in env:
+                return env[t]
+            if t in g.params:
+                return ("p", g.params.index(t), ())
+            return None
+        if len(toks) == 2 and toks[0] == "&" and toks[1] == arr and arr_ok and arr not in locs:
+            return ("ptr", 0)
+        if len(toks) == 3 and toks[1] in BINOPS:
+            a, n = val([toks[0]], locs), parse_int([toks[2]])
+            if a is None or n is None:
+                return None
+            if a[0] == "ptr":
+                return ("ptr", a[1] + n) if toks[1] == "+" else None
+            return apply_op(a, toks[1], n)
+        return None
+
+    def subst(pe, args, locs):
+        if pe is None or pe[0] == "k":
+            return pe
+        if pe[1] >= len(args):
+            return None
+        a = val(args[pe[1]], locs)
+        if a is None or a[0] not in ("k", "p"):
+            return None
+        for op, n in pe[2]:
+            a = apply_op(a, op, n)
+        return a
+
+    for site, body, locs in g.seq:
+        if site is None:
+            continue
+        lhs, rhs = split_assign(body)
+        call = call_of(rhs)
+        if call:
+            callee, args = call
+            if callee == binding:
+                for v in (stores or [None]):
+                    issues.append((binding, v, site))
+                issued[0] = True
+            elif callee in may_issue:
+                issues += [(callee, subst(pe, args, locs), site)
+                           for pe in sorted(carriers.get(callee, ()), key=repr)]
+                stores.clear()
+                issued[0] = True
+            elif callee in setters:
+                store([subst(pe, args, locs) for pe in sorted(setters[callee], key=repr)])
+            if len(lhs) == 1:
+                env.pop(lhs[0], None)
+            continue
+        if not lhs:
+            continue
+        if arr_ok and lhs == [arr, "[", "0", "]"] and arr not in locs:
+            store([val(rhs, locs)])
+        elif len(lhs) == 2 and lhs[0] == "*" and env.get(lhs[1]) == ("ptr", 0):
+            store([val(rhs, locs)])
+        elif len(lhs) == 1 and (lhs[0] in locs or TEMP_RE.match(lhs[0])):
+            v = val(rhs, locs)
+            if v is None:
+                env.pop(lhs[0], None)
+            else:
+                env[lhs[0]] = v
+    return stores, issues
+
+
+def trap2_issues(gfns, binding, arr, arr_key_of):
+    """({function name: [(called function, value, site)]}, carriers) for one
+    trap #2 binding, after propagating setters and carriers to a fixpoint.
+    `may_issue`: every function whose gimple calls reach the binding."""
+    callers = defaultdict(set)
+    for g in gfns:
+        for c, _a, _s in g.calls:
+            callers[c].add(g.name)
+    may_issue, todo = set(), [binding]
+    while todo:
+        x = todo.pop()
+        for c in callers.get(x, ()):
+            if c not in may_issue:
+                may_issue.add(c)
+                todo.append(c)
+    want = arr_key_of(None)
+    setters, carriers = {}, {}
+    for _round in range(64):
+        facts = defaultdict(list)
+        new_s, new_c = defaultdict(set), defaultdict(set)
+        for g in gfns:
+            ok = arr_key_of(g.path) == want
+            st, iss = opcode_facts(g, arr, ok, binding, setters, carriers, may_issue)
+            facts[g.name] += iss
+            if st and g.name not in may_issue:
+                new_s[g.name] |= set(st)
+            for _via, v, _s in iss:
+                if v is not None and v[0] == "p":
+                    new_c[g.name].add(v)
+        if dict(new_s) == setters and dict(new_c) == carriers:
+            return facts, carriers
+        setters, carriers = dict(new_s), dict(new_c)
+    die(f"trap #2 via {binding}: opcode propagation does not settle")
+
+
+def switch_slots(g, cf, param, fnset, typedefs):
+    """{case value: {(fn, site)}}: the functions called in each case of the
+    switch on parameter `param` of `g`, reached over the gimple control flow
+    (labels, gotos, fall-through) without leaving the source lines of the
+    switch statement."""
+    seq = g.seq
+    labels = {}
+    for i, (_s, body, _l) in enumerate(seq):
+        m = LABEL_RE.match(body)
+        if m:
+            labels[m.group(1)] = i
+    copies = {param}
+    sws = []
+    for i, (site, body, _l) in enumerate(seq):
+        if body.startswith("switch ("):
+            m = re.match(r"switch \(([\w.]+)\)", body)
+            if m and m.group(1) in copies:
+                sws.append(i)
+            continue
+        lhs, rhs = split_assign(body)
+        if len(lhs) == 1 and len(strip_cast(rhs)) == 1 and strip_cast(rhs)[0] in copies:
+            copies.add(lhs[0])
+    if len(sws) != 1:
+        die(f"{g.name}: {len(sws)} switch statements on `{param}`, want 1")
+    ssite, sbody, _l = seq[sws[0]]
+    btoks = cf.body_toks.get(g.name, [])
+    k = next((k for k, tk in enumerate(btoks)
+              if tk[0] == "switch" and (tk[1], tk[2]) == ssite), None)
+    if k is None or btoks[k + 1][0] != "(":
+        die(f"{g.name}: the switch at {ssite[0]}:{ssite[1]} is not in the source")
+    brace = match_close(btoks, k + 1) + 1
+    if btoks[brace][0] != "{":
+        die(f"{g.name}: the switch at {ssite[0]}:{ssite[1]} has no braced body")
+    sfile, lo, hi = ssite[0], ssite[1], btoks[match_close(btoks, brace)][2]
+
+    def calls_from(start):
+        seen, todo, found = set(), [start], set()
+        while todo:
+            i = todo.pop()
+            if i in seen or i >= len(seq):
+                continue
+            seen.add(i)
+            site, body, locs = seq[i]
+            if site is not None and not (site[0] == sfile and lo <= site[1] <= hi):
+                continue
+            if body.startswith(("goto ", "if (")):
+                todo += [labels[t] for t in GOTO_RE.findall(body) if t in labels]
+                continue
+            if body.startswith("switch ("):
+                todo += [labels[t] for t in re.findall(r": (<[^<>]+>)", body) if t in labels]
+                continue
+            if body.startswith("return"):
+                continue
+            toks = tokens(body)
+            for j, t in enumerate(toks[:-1]):
+                if toks[j + 1] == "(" and t in fnset and t not in locs and \
+                        t not in C_KEYWORDS and t not in typedefs and not TEMP_RE.match(t):
+                    found.add((t, site))
+            todo.append(i + 1)
+        return found
+
+    out = defaultdict(set)
+    for a, b, lab in re.findall(r"case (-?\d+)(?: \.\.\. (-?\d+))?: (<[^<>]+>)", sbody):
+        if lab not in labels:
+            die(f"{g.name}: case label {lab} not found")
+        found = calls_from(labels[lab])
+        for v in range(int(a), int(b or a) + 1):
+            out[v] |= found
+    return out
+
+
+def binding_d0(g):
+    """The constant a trap #2 binding loads into d0 before the trap: an
+    immediate in its asm template, or a `register ... __asm__ (d0)` input
+    operand assigned a constant."""
+    regs = {}
+    for d in g.decls:
+        m = re.match(r"register .*?\b(\w+) __asm__ \(\*?(\w+)\);$", d)
+        if m:
+            regs[m.group(1)] = m.group(2)
+    for tmpl, operands, _site in g.asms:
+        lines = [ln.strip() for ln in tmpl.split("\n")]
+        for idx, ln in enumerate(lines):
+            if not re.match(r"trap\s+#2$", ln):
+                continue
+            for prev in reversed(lines[:idx]):
+                m = re.match(r"(?:moveq|move\.[wl])\s+#(\S+?),\s*d0$", prev)
+                if m:
+                    return int(m.group(1), 0)
+            for expr in operands:
+                if len(expr) == 1 and regs.get(expr[0]) == "d0":
+                    for _site, body, _l in g.seq:
+                        lhs, rhs = split_assign(body)
+                        if lhs == expr and parse_int(rhs) is not None:
+                            return parse_int(rhs)
+    return None
+
+
+# --------------------------------------------------------------------------
+# F3. vector slots: installs of function addresses, calls through them
+
+AREG = re.compile(r"^a[0-7]$")
+ASM_PLAIN_SYM = re.compile(r"^(_?[A-Za-z]\w*)(?:\.[wl])?$")
+
+
+def split_operands(ops):
+    out, cur, depth = [], "", 0
+    for ch in ops:
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        if ch == "," and depth == 0:
+            out.append(cur.strip())
+            cur = ""
+        else:
+            cur += ch
+    if cur.strip():
+        out.append(cur.strip())
+    return out
+
+
+def areg_list(op):
+    """Address registers a register operand names (`a0`, `d0-d1/a0-a1`)."""
+    out = set()
+    if not re.match(r"^[ad][0-7](?:-[ad][0-7])?(?:/[ad][0-7](?:-[ad][0-7])?)*$", op):
+        return out
+    for part in op.split("/"):
+        a, _, b = part.partition("-")
+        b = b or a
+        if b[0] == "a":
+            lo = int(a[1]) if a[0] == "a" else 0
+            out |= {f"a{i}" for i in range(lo, int(b[1]) + 1)}
+    return out
+
+
+def vector_scan(gfns, cfiles, afiles, fnset, varset, var_key, sysvar_addr, abs_installs,
+                setexc_read):
+    """Function addresses stored into variables ("slots") and the calls
+    through them (tools/deps/README.md, kind `vector`).
+
+    A slot is a variable (`hdv_rw`), a field (`kbdvecs.mousevec`), or any
+    element of an array (`bconstat_vec[]`). Returns (installs: slot ->
+    {(fn, site)}, copies: slot -> {(slot, site)}, calls: [(caller, slot,
+    site, through)], notes). setexc_read(callee, args): the address whose
+    value a `Setexc(n, ...)` call returns (the vector before the call), else
+    None."""
+    sysname = {a: n for n, a in sysvar_addr.items()}
+    installs = defaultdict(set)
+    copies = defaultdict(set)
+    calls = []
+    notes = defaultdict(list)
+    computed = defaultdict(set)     # slot -> {"fn at site"}: a stored value not traced
+
+    cvisible = {}   # C-visible asm data label -> its AsmFile
+    for af in sorted(afiles.values(), key=lambda a: a.path):
+        for lab in af.data_labels:
+            if lab not in af.local_data:
+                cvisible.setdefault(lab, af)
+
+    def field_slot(base, field):
+        # an asm structure (`_kbdvecs:` followed by `mousevec: .ds.l 1`): the
+        # field is the local label of that name in the defining file
+        af = cvisible.get(base)
+        if af is not None and field in af.local_data:
+            return field
+        return f"{base}.{field}"
+
+    def c_slot(toks, locs, path):
+        toks = strip_cast(toks)
+        if not toks or not is_ident(toks[0]) or toks[0] in locs or TEMP_RE.match(toks[0]):
+            return None
+        v = toks[0]
+        if v not in varset and v not in sysvar_addr:
+            return None
+        key, rest = var_key(v, path), toks[1:]
+        if rest[:1] == ["["]:
+            depth = 0
+            for j, t in enumerate(rest):
+                if t == "[":
+                    depth += 1
+                elif t == "]":
+                    depth -= 1
+                    if depth == 0:
+                        break
+            key, rest = key + "[]", rest[j + 1:]
+        if len(rest) == 2 and rest[0] == "." and is_ident(rest[1]):
+            key = field_slot(v, rest[1]) if key == v else f"{key}.{rest[1]}"
+            rest = []
+        return key if not rest else None
+
+    def is_fn(t, locs):
+        return t in fnset and t not in locs and t not in varset
+
+    # assembler regions that call through a register (CALLS_ARGUMENT check)
+    jsr_owners = set()
+    for af in afiles.values():
+        for ev in af.events:
+            if ev[0] == "insn" and ev[2].split(".")[0] in ("jsr", "jmp") and \
+                    re.match(r"^\(a[0-7]\)$", ev[3]):
+                jsr_owners.add(ev[1])
+    calls_arg = {}
+    for name, idx in sorted(CALLS_ARGUMENT.items()):
+        if name not in jsr_owners:
+            die(f"{name} (CALLS_ARGUMENT) is no assembler region with a computed jsr")
+        calls_arg[name] = idx
+    # C functions that call through one of their own parameters
+    for g in gfns:
+        env = {}
+        for site, body, locs in g.seq:
+            if site is None:
+                continue
+            lhs, rhs = split_assign(body)
+            call = call_of(rhs)
+            if call:
+                c = call[0]
+                src = g.params.index(c) if c in g.params else env.get(c)
+                if isinstance(src, int) and c in locs | set(env):
+                    calls_arg.setdefault(g.name, src)
+                continue
+            if len(lhs) == 1 and (lhs[0] in locs or TEMP_RE.match(lhs[0])):
+                r = strip_cast(rhs)
+                if len(r) == 1 and r[0] in g.params:
+                    env[lhs[0]] = g.params.index(r[0])
+                elif len(r) == 1 and r[0] in env:
+                    env[lhs[0]] = env[r[0]]
+                else:
+                    env.pop(lhs[0], None)
+
+    # ---- C: stores and calls, statement by statement
+    for g in gfns:
+        env = {}    # temp/local -> ("slot", key) | ("fn", name) | ("param", i)
+        for site, body, locs in g.seq:
+            if site is None:
+                continue
+            lhs, rhs = split_assign(body)
+            call = call_of(rhs)
+            if call:
+                c, args = call
+                if c in g.params:
+                    pass                            # calls_arg above
+                elif c in locs or TEMP_RE.match(c):
+                    ev = env.get(c)
+                    if ev and ev[0] == "slot":
+                        calls.append((g.name, ev[1], site, None))
+                    elif not (ev and ev[0] == "param"):
+                        notes["untraced_calls"].append(
+                            f"{g.name}: call through `{c}` at {site[0]}:{site[1]}")
+                elif c in calls_arg and calls_arg[c] < len(args):
+                    a = strip_cast(args[calls_arg[c]])
+                    if len(a) == 2 and a[0] == "&":
+                        a = a[1:]
+                    ev = None
+                    if len(a) == 1 and a[0] in env:
+                        ev = env[a[0]]
+                    elif len(a) == 1 and is_fn(a[0], locs):
+                        ev = ("fn", a[0])
+                    else:
+                        s = c_slot(a, locs, g.path)
+                        ev = ("slot", s) if s else None
+                    if ev and ev[0] == "slot":
+                        calls.append((g.name, ev[1], site, c))
+                    elif not (ev and ev[0] in ("fn", "param")):
+                        notes["untraced_calls"].append(
+                            f"{g.name}: argument {calls_arg[c] + 1} of {c} at {site[0]}:{site[1]}")
+                if len(lhs) == 1:
+                    a = setexc_read(c, args)
+                    if a is not None and a >= 0x400:
+                        env[lhs[0]] = ("slot", sysname.get(a, f"{a:#x}"))
+                    else:
+                        env.pop(lhs[0], None)
+                continue
+            if not lhs:
+                continue
+            k = c_slot(lhs, locs, g.path)
+            if k is not None:
+                r = strip_cast(rhs)
+                if len(r) == 2 and r[0] == "&":
+                    r = r[1:]
+                ev = None
+                if len(r) == 1 and r[0] in env:
+                    ev = env[r[0]]
+                elif len(r) == 1 and is_fn(r[0], locs):
+                    ev = ("fn", r[0])
+                elif r:
+                    s = c_slot(r, locs, g.path)
+                    ev = ("slot", s) if s else None
+                if ev and ev[0] == "fn":
+                    installs[k].add((ev[1], site))
+                elif ev and ev[0] == "slot":
+                    copies[k].add((ev[1], site))
+                else:
+                    computed[k].add(f"{g.name} at {site[0]}:{site[1]}")
+                continue
+            if len(lhs) == 1 and (lhs[0] in locs or TEMP_RE.match(lhs[0])):
+                r = strip_cast(rhs)
+                ev = None
+                if len(r) == 2 and r[0] == "&" and is_fn(r[1], locs):
+                    ev = ("fn", r[1])
+                elif len(r) == 1 and r[0] in env:
+                    ev = env[r[0]]
+                elif len(r) == 1 and is_fn(r[0], locs):
+                    ev = ("fn", r[0])
+                elif len(r) == 1 and r[0] in g.params:
+                    ev = ("param", g.params.index(r[0]))
+                else:
+                    s = c_slot(r, locs, g.path)
+                    ev = ("slot", s) if s else None
+                if ev is None:
+                    env.pop(lhs[0], None)
+                else:
+                    env[lhs[0]] = ev
+
+    # ---- C initialisers: an array's elements, a scalar's value
+    for path in sorted(cfiles):
+        cf = cfiles[path]
+        for v, init in sorted(cf.inits.items()):
+            fns = sorted({(tk[0], tk[1], tk[2]) for tk in init if tk[0] in fnset})
+            if not fns:
+                continue
+            key = var_key(v, path) + ("[]" if v in cf.arrays else "")
+            for f, file, ln in fns:
+                installs[key].add((f, (file, ln)))
+
+    # ---- absolute installs (`*(PFVOID*)0x400 = f`, Setexc(0x100, f)) at a
+    # system-variable address; exception vectors below 0x400 are entered by
+    # the CPU (traps: `layer` edges), not called through
+    for vec in sorted(abs_installs):
+        addr = vec * 4
+        if addr >= 0x400:
+            key = sysname.get(addr, f"{addr:#x}")
+            for f, site in abs_installs[vec]:
+                installs[key].add((f, site))
+
+    # ---- assembler: register-tracked loads, stores and computed calls
+    def name_slot(n, af):
+        if n in af.local_data:
+            return n
+        if n in fnset:
+            return None
+        if n in varset or n in sysvar_addr or n in cvisible:
+            return n
+        return None
+
+    def asm_slot(op, regs, af):
+        m = ASM_PLAIN_SYM.match(op)
+        if m:
+            sym = m.group(1)
+            if sym.startswith("_"):
+                n = c_name(sym)
+                return None if n in af.local_data else name_slot(n, af)
+            return sym if sym in af.local_data else None
+        m = re.match(r"^(0x[0-9a-fA-F]+|\d+)(?:\.[wl])?$", op)
+        if m:
+            a = int(m.group(1), 0)
+            return sysname.get(a) if a >= 0x400 else None
+        m = re.match(r"^(_?[A-Za-z]\w*)-(_?[A-Za-z]\w*)\((a[0-7])\)$", op)
+        if m and regs.get(m.group(3)) == ("addr", c_name(m.group(2))):
+            return asm_slot(m.group(1), {}, af)
+        m = re.match(r"^\((a[0-7])\)$", op)
+        if m and regs.get(m.group(1), ("",))[0] == "addr":
+            return name_slot(regs[m.group(1)][1], af)
+        return None
+
+    for af in sorted(afiles.values(), key=lambda a: a.path):
+        in_nodes = af.path.split("/")[0] in DIRS
+        if not in_nodes:
+            continue
+        for lab, syms in sorted(af.inits.items()):
+            for sym, ln in syms:
+                if sym in fnset:
+                    for key in (lab, lab + "[]"):
+                        installs[key].add((sym, (af.path, ln)))
+        regs = {}
+        for ev in af.events:
+            if ev[0] == "label":
+                regs = {}    # control may arrive from elsewhere
+                continue
+            _k, owner, mnem, ops, ln = ev
+            base, _, size = mnem.partition(".")
+            opl = split_operands(ops)
+            site = (af.path, ln)
+            if base in ("jsr", "jmp") and len(opl) == 1 and re.match(r"^\(a[0-7]\)$", opl[0]):
+                r = regs.get(opl[0][1:3])
+                if r and r[0] == "val":
+                    calls.append((owner, r[1], site, None))
+                elif r and r[0] == "addr" and r[1] in fnset:
+                    pass        # a direct call: the `asm` edge of the lea
+                elif owner not in calls_arg:
+                    notes["asm_computed"].append(f"{owner}: {mnem} {ops} at {af.path}:{ln}")
+                regs.pop("a0", None)
+                regs.pop("a1", None)
+                continue
+            if base == "lea" and len(opl) == 2 and AREG.match(opl[1]):
+                m = ASM_PLAIN_SYM.match(opl[0])
+                if m:
+                    regs[opl[1]] = ("addr", c_name(m.group(1)))
+                else:
+                    regs.pop(opl[1], None)
+                continue
+            if base in ("move", "movea") and len(opl) == 2 and size == "l":
+                src, dst = opl
+                for grp in re.findall(r"\((a[0-7])\)\+|-\((a[0-7])\)", src):
+                    for r in grp:
+                        regs.pop(r, None)
+                if AREG.match(dst):
+                    m = ASM_PLAIN_SYM.match(src[1:]) if src.startswith("#") else None
+                    s = None if src.startswith("#") else asm_slot(src, regs, af)
+                    if m:
+                        regs[dst] = ("addr", c_name(m.group(1)))
+                    elif s:
+                        regs[dst] = ("val", s)
+                    else:
+                        regs.pop(dst, None)
+                    continue
+                k = asm_slot(dst, regs, af)
+                if k:
+                    f = None
+                    if src.startswith("#") and ASM_PLAIN_SYM.match(src[1:]):
+                        f = c_name(ASM_PLAIN_SYM.match(src[1:]).group(1))
+                    elif AREG.match(src) and regs.get(src, ("",))[0] == "addr":
+                        f = regs[src][1]
+                    if f in fnset:
+                        installs[k].add((f, site))
+                    else:
+                        computed[k].add(f"{owner} at {af.path}:{ln}")
+                    continue
+            for op in opl:
+                for grp in re.findall(r"\((a[0-7])\)\+|-\((a[0-7])\)", op):
+                    for r in grp:
+                        regs.pop(r, None)
+            if opl:
+                for r in areg_list(opl[-1]):
+                    regs.pop(r, None)
+
+    called = {s for _c, s, _site, _t in calls}
+    for k in sorted(called):
+        for x in sorted(computed.get(k, ())):
+            notes["computed_installs"].append(f"{k}: {x}")
+    notes["calls_arg"] = sorted(f"{n} (argument {i + 1})" for n, i in calls_arg.items())
+    return installs, copies, calls, notes
+
+
+# --------------------------------------------------------------------------
 # G. cflow
 
 CFLOW_LINE = re.compile(r"^( *)([A-Za-z_]\w*)\(\)")
@@ -946,7 +1659,8 @@ def generate(outdir):
     tree = verify_tree(env)
     with tempfile.TemporaryDirectory(prefix="gen-deps-") as td:
         tmp = Path(td)
-        cc, cmds = compile_commands(env, tree, tmp)
+        cc, cmds, ldcmd = compile_commands(env, tree, tmp)
+        sysvar_addr = sysvars(ldcmd, tree, tmp)
         graph_srcs, binding_srcs, translated = select_sources(cmds, tree)
         flagsets = {tuple(f) for f in graph_srcs.values()}
         if len(flagsets) != 1:
@@ -995,11 +1709,11 @@ def generate(outdir):
         cf_edges = cflow_edges(pp, cflow_files)
 
         return build(env, tree, flags, cc, ccver, cflowver, cfiles, afiles, gtexts,
-                     cf_edges, binding_srcs, outdir)
+                     cf_edges, binding_srcs, sysvar_addr, outdir)
 
 
 def build(env, tree, flags, cc, ccver, cflowver, cfiles, afiles, gtexts,
-          cf_edges, binding_srcs, outdir):
+          cf_edges, binding_srcs, sysvar_addr, outdir):
     graph_asm = {p: a for p, a in afiles.items() if p.split("/")[0] in DIRS}
 
     # ---- nodes
@@ -1271,14 +1985,61 @@ def build(env, tree, flags, cc, ccver, cflowver, cfiles, afiles, gtexts,
                 for c in sorted(set(callers)):
                     site = g_call_site[(c, name)]
                     add(c, fn, "layer", f"trap #{trap} {fixed:#x} {tname}[{fixed:#x}] via {name}", site)
-    # trap #2: the opcode travels in a parameter block; edge to every handler
-    trap2_handlers = sorted(vectors.get(0x22, ()))
-    for name, (trap, argidx, fixed) in sorted(bindings.items()):
-        if trap != 2:
-            continue
-        bsite = min(defs.get(name, {("?", 0)}))
-        for h, _s in trap2_handlers:
-            add(name, h, "layer", "trap #2 (opcode in parameter block, not resolved)", bsite)
+    # trap #2: the opcode travels in a parameter block (TRAP2); it is followed
+    # from the constant at the call site into element 0 of the opcode array
+    trap2 = []          # (binding, class, d0, array, dispatchers, carriers, slots)
+    switch_entries = {}  # AES dispatch switch -> [(case, fn, site)]
+    if sorted(n for n, b in bindings.items() if b[0] == 2) != sorted(TRAP2):
+        die(f"trap #2 bindings {sorted(n for n, b in bindings.items() if b[0] == 2)}"
+            f" != TRAP2 {sorted(TRAP2)}")
+    for bname, (cls, arr, disp) in sorted(TRAP2.items()):
+        bgs = [g for g in gfns if g.name == bname]
+        if len(bgs) != 1:
+            die(f"trap #2 binding {bname}: {len(bgs)} definitions")
+        bg = bgs[0]
+        d0 = binding_d0(bg)
+        if d0 is None:
+            die(f"trap #2 binding {bname}: no constant d0")
+        if not any(re.match(rf"^[\w.]+\.\w+ = &{arr};$", body)
+                   for g in gfns if g.path == bg.path for _s, body, _l in g.seq):
+            die(f"trap #2 binding {bname}: no parameter-block field holds &{arr} in {bg.path}")
+        if disp[0] == "switch":
+            _k, sfile, sfn, sparam = disp
+            sgs = [g for g in gfns if g.name == sfn and g.path == sfile]
+            if len(sgs) != 1:
+                die(f"trap #2 {cls}: dispatch {sfn} not found in {sfile}")
+            cfs = cfiles[sfile]
+            cases = switch_slots(sgs[0], cfs, sparam, fnset, typedefs | cfs.typedefs)
+            entries = sorted((op, fn, site) for op, s in cases.items() for fn, site in s)
+            switch_entries[sfn] = entries
+            for op, fn, site in entries:
+                add(sfn, fn, "table", f"{sfn}[{op:#x}]", site)
+            dispatchers = {sfn}
+            slots = defaultdict(list)
+            for op, fn, _s in entries:
+                slots[op].append((sfn, fn))
+        else:
+            dispatchers = set().union(*(table_dispatchers[t] for t in disp[1]))
+            slots = defaultdict(list)
+            for t in disp[1]:
+                for op, fn, _s in table_entries[t]:
+                    slots[op].append((t, fn))
+        bpath = bg.path
+        facts, carriers = trap2_issues(gfns, bname, arr,
+                                       lambda p, arr=arr, bpath=bpath: var_key(arr, p or bpath))
+        for caller in sorted(facts):
+            for via, v, site in facts[caller]:
+                if v is None:
+                    unresolved.append(f"{caller} -> {via} (trap #2 {cls}, opcode not a constant) "
+                                      f"at {site[0]}:{site[1]}")
+                elif v[0] == "k":
+                    if not slots.get(v[1]):
+                        unresolved.append(f"{caller} -> {via} (trap #2 {cls} {v[1]:#x}: "
+                                          f"no function in that slot) at {site[0]}:{site[1]}")
+                    for tname, fn in slots.get(v[1], ()):
+                        add(caller, fn, "layer",
+                            f"trap #2 {v[1]:#x} {tname}[{v[1]:#x}] via {via}", site)
+        trap2.append((bname, cls, d0, arr, sorted(dispatchers), carriers, len(slots)))
 
     # ---- callback edges through initialised function-pointer variables
     unreferenced_inits = []
@@ -1385,9 +2146,70 @@ def build(env, tree, flags, cc, ccver, cflowver, cfiles, afiles, gtexts,
             todo += adj.get(x, ())
         ok = bool(table_dispatchers[tname] & reach)
         trap_checks.append((tname, trap, handlers, sorted(table_dispatchers[tname]), ok))
-        if not ok and trap != 2:
+        if not ok:
             die(f"trap #{trap}: no installed handler ({handlers}) reaches the dispatcher "
                 f"of {tname} ({sorted(table_dispatchers[tname])})")
+    # trap #2 per class: an installed handler compares d0 with the binding's
+    # value and reaches the class's dispatch
+    trap2_checks = []
+    handlers2 = {h for h, _s in vectors.get(0x22, ())}
+    cmps = defaultdict(set)
+    for af in afiles.values():
+        for owner, val, _ln in af.d0_cmps:
+            cmps[val].add(owner)
+    for bname, cls, d0, arr, disp, _c, _n in trap2:
+        hs = sorted(handlers2 & cmps.get(d0, set()))
+        reach = set()
+        todo = list(hs)
+        while todo:
+            x = todo.pop()
+            if x in reach:
+                continue
+            reach.add(x)
+            todo += adj.get(x, ())
+        if not hs or not set(disp) & reach:
+            die(f"trap #2 {cls}: no installed handler comparing d0 with {d0:#x} ({hs}) "
+                f"reaches {disp}")
+        trap2_checks.append((cls, d0, hs, disp))
+
+    # ---- vector edges: calls through a variable to the functions stored in it
+    def setexc_read(callee, args):
+        b = bindings.get(callee)
+        if not b or len(args) < 3:
+            return None
+        trap, argidx, fixed = b
+        op = fixed if fixed is not None else (
+            parse_int(args[argidx]) if argidx is not None and argidx < len(args) else None)
+        if op is None or not any(fn == "setexc" for _t, fn in resolve(trap, op)):
+            return None
+        vec = parse_int(["".join(args[1])])
+        return vec * 4 if vec is not None else None
+
+    v_installs, v_copies, v_calls, v_notes = vector_scan(
+        gfns, cfiles, afiles, fnset, varset, var_key, sysvar_addr, vectors, setexc_read)
+
+    def v_handlers(slot):
+        out, seen, todo = set(), set(), [slot]
+        while todo:
+            s = todo.pop()
+            if s in seen:
+                continue
+            seen.add(s)
+            out |= {f for f, _site in v_installs.get(s, ())}
+            todo += [s2 for s2, _site in v_copies.get(s, ())]
+        return out
+
+    v_slots = defaultdict(lambda: [set(), set()])   # slot -> [callers, handlers]
+    no_handler = []
+    for caller, slot, site, through in v_calls:
+        hs = v_handlers(slot)
+        v_slots[slot][0].add(caller)
+        v_slots[slot][1] |= hs
+        if not hs:
+            no_handler.append(f"{caller} -> {slot} at {site[0]}:{site[1]}"
+                              + (f" (through {through})" if through else ""))
+        for f in sorted(hs):
+            add(caller, f, "vector", f"via {slot}", site)
 
     # ---- def rows (one per definition; merged names have several)
     def_rows = sorted((name, "-", "def", layer_of(f), f"{f}:{ln}")
@@ -1399,7 +2221,10 @@ def build(env, tree, flags, cc, ccver, cflowver, cfiles, afiles, gtexts,
                 bindings=bindings, table_entries=table_entries, table_base=table_base,
                 table_dispatchers=table_dispatchers, vectors=vectors,
                 trap_checks=trap_checks, defs=defs, cfiles=cfiles, graph_asm=graph_asm,
-                unprefixed=sorted(set(UNPREFIXED)))
+                unprefixed=sorted(set(UNPREFIXED)), trap2=trap2, trap2_checks=trap2_checks,
+                switch_entries=switch_entries, v_slots=v_slots, v_installs=v_installs,
+                v_copies=v_copies, no_handler=sorted(set(no_handler)), v_notes=v_notes,
+                sysvar_addr=sysvar_addr)
     write_outputs(outdir, edges, def_rows, meta)
 
 
@@ -1517,6 +2342,12 @@ def layers_md(edges, def_rows, meta):
                    f"{meta['table_base'][tname]} | "
                    f"{', '.join(sorted(meta['table_dispatchers'][tname]))} | "
                    f"{len(meta['table_entries'][tname])} |")
+    for bname, cls, d0, arr, disp, _c, _n in meta["trap2"]:
+        spec = TRAP2[bname][2]
+        if spec[0] == "switch":
+            n = len(meta["switch_entries"][spec[2]])
+            out.append(f"| {spec[2]} (switch on `{spec[3]}`) | `{spec[1]}` | #2 ({cls}) | "
+                       f"case value | {spec[2]} | {n} |")
     out.append("")
     out += ["Trap handlers found (vector installs) and the check that each table's",
             "dispatcher is reachable from them over `direct`/`asm` edges:", "",
@@ -1524,6 +2355,13 @@ def layers_md(edges, def_rows, meta):
     for tname, trap, handlers, disp, ok in meta["trap_checks"]:
         out.append(f"| {tname} | #{trap} | {', '.join(handlers) or '-'} | "
                    f"{'yes' if ok else 'NO'} |")
+    out.append("")
+    out += ["Trap #2 serves two classes, told apart by d0. For each, the d0 value its",
+            "binding loads, the installed handler that compares d0 with it, and the",
+            "dispatch that handler reaches over `direct`/`asm` edges:", "",
+            "| class | d0 | handler comparing d0 | dispatch reached |", "|---|---|---|---|"]
+    for cls, d0, hs, disp in meta["trap2_checks"]:
+        out.append(f"| {cls} | {d0:#x} | {', '.join(hs)} | {', '.join(disp)} |")
     out.append("")
     out += ["Vector installs found:", ""]
     for vec in sorted(meta["vectors"]):
@@ -1540,13 +2378,74 @@ def layers_md(edges, def_rows, meta):
         elif argidx is not None:
             op = f"argument {argidx + 1}"
         else:
-            op = "parameter block (not resolved)"
+            op = "parameter block"
+            for bname, cls, d0, arr, _d, _c, _n in meta["trap2"]:
+                if bname == name:
+                    op = f"parameter block: {arr}[0] ({cls}, d0 = {d0:#x})"
         out.append(f"| {name} | #{trap} | {op} |")
     out.append("")
 
+    def pexpr(v):
+        e = f"argument {v[1] + 1}"
+        for o, n in v[2]:
+            e = f"({e} {o} {n})"
+        return e[1:-1] if e.startswith("(") else e
+
+    out += ["Trap #2 opcode carriers: functions that pass one of their parameters on"
+            " as the opcode (a caller's constant argument is the opcode after the"
+            " shown operations; the `layer` edge starts at that caller):", "",
+            "| function | class | opcode |", "|---|---|---|"]
+    for bname, cls, d0, arr, _d, carriers, _n in meta["trap2"]:
+        for fn in sorted(carriers):
+            for v in sorted(carriers[fn], key=repr):
+                out.append(f"| {fn} | {cls} | {pexpr(v)} |")
+    out.append("")
+
+    # vectors
+    vs = meta["v_slots"]
+    out += ["## Vector slots (`vector` edges)", "",
+            "Variables, fields or array elements holding function addresses that a",
+            "function calls through (`via <slot>`; `[]` = any element). Handlers are the",
+            "functions stored into the slot (assignment, initialiser, `Setexc`, assembler",
+            "store), or into a slot copied into it. A system variable carries its",
+            f"address from `{SYSVARS_LD}`.", "",
+            "| slot | address | callers | handlers |", "|---|---|---|---|"]
+    for slot in sorted(vs):
+        callers, hs = vs[slot]
+        addr = meta["sysvar_addr"].get(slot)
+        out.append(f"| {slot} | {f'{addr:#x}' if addr is not None else '-'} | "
+                   f"{', '.join(sorted(callers))} | {', '.join(sorted(hs)) or '-'} |")
+    out.append("")
+    out += ["Functions that call through an argument (the slot passed in is the one"
+            " called; assembler ones stated in `CALLS_ARGUMENT` of the generator):", ""]
+    out += [f"- {x}" for x in meta["v_notes"]["calls_arg"]] or ["- none"]
+    out.append("")
+
     out += ["## Not resolved", ""]
-    out += [f"Trap call sites whose opcode is not a constant ({len(meta['unresolved'])}):", ""]
+    out += [f"Trap call sites whose opcode is not a constant or whose slot holds no"
+            f" function ({len(meta['unresolved'])}):", ""]
     out += [f"- {u}" for u in meta["unresolved"]] or ["- none"]
+    out.append("")
+    nh = meta["no_handler"]
+    out += [f"Calls through a vector slot no function of the node dirs is stored into"
+            f" ({len(nh)}; no `vector` edge: the handler is installed at run time,"
+            " by another program, or from a value not traced):", ""]
+    out += [f"- {x}" for x in nh] or ["- none"]
+    out.append("")
+    ci = meta["v_notes"]["computed_installs"]
+    out += [f"Stores into a called vector slot of a value that is no function address"
+            f" ({len(ci)}; their handlers are unknown):", ""]
+    out += [f"- {x}" for x in ci] or ["- none"]
+    out.append("")
+    uc = sorted(set(meta["v_notes"]["untraced_calls"]))
+    out += [f"C calls through a value not read from a variable ({len(uc)}; a table"
+            " dispatch among them is a `table` edge of its dispatcher):", ""]
+    out += [f"- {x}" for x in uc] or ["- none"]
+    out.append("")
+    ac = meta["v_notes"]["asm_computed"]
+    out += [f"Assembler computed calls and jumps whose register is not loaded from a"
+            f" variable in the same region since its last label ({len(ac)}):", ""]
+    out += [f"- {x}" for x in ac] or ["- none"]
     out.append("")
     out += ["Initialised variables holding function addresses that no function or"
             f" assembler region of the node dirs references ({len(meta['unreferenced_inits'])};"

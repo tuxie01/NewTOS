@@ -9,7 +9,7 @@
 # node dirs: bios bdos vdi aes desk; read for trap bindings only: util/lisautil.S util/memmove.S util/memset.S util/miscasm.S util/optimopt.S util/setjmp.S util/stringasm.S
 # columns: from<TAB>to<TAB>kind<TAB>detail<TAB>site
 # kind def: a node row (to = '-', detail = layer, site = definition); all other kinds are edges.
-# kinds: direct table callback asm layer data (tools/deps/README.md); data edges run writer -> reader.
+# kinds: direct table callback asm layer vector data (tools/deps/README.md); data edges run writer -> reader.
 from	to	kind	detail	site
 DMAread	-	def	bios	bios/disk.c:1241
 DMAread	disk_rw	direct	-	bios/disk.c:1246
@@ -533,6 +533,8 @@ add_3d_effect	gsx_moff	direct	-	aes/gemoblib.c:225
 add_3d_effect	gsx_mon	direct	-	aes/gemoblib.c:276
 add_3d_effect	rc_copy	direct	-	aes/gemoblib.c:229
 add_3d_effect	v_pline	direct	-	aes/gemoblib.c:254
+add_3d_effect	vdi_vsl_type	layer	trap #2 0xf jmptb1[0xf] via gsx_1code	aes/gemoblib.c:226
+add_3d_effect	vdi_vsl_udsty	layer	trap #2 0x71 jmptb2[0x71] via gsx_1code	aes/gemoblib.c:227
 add_cookie_frb	-	def	bios	bios/machine.c:458
 add_cookie_frb	balloc_stram	direct	-	bios/machine.c:477
 add_cookie_frb	cookie_add	direct	-	bios/machine.c:478
@@ -824,6 +826,8 @@ ap_tplay	kchange	callback	address	aes/gemaplib.c:156
 ap_tplay	mchange	callback	address	aes/gemaplib.c:153
 ap_tplay	mchange	data	gl_play	aes/gemaplib.c:125
 ap_tplay	v_opnwk	data	*contrl	aes/gemaplib.c:146
+ap_tplay	vdi_vex_curv	layer	trap #2 0x7f jmptb2[0x7f] via gsx_0code	aes/gemaplib.c:147
+ap_tplay	vdi_vex_motv	layer	trap #2 0x7e jmptb2[0x7e] via gsx_0code	aes/gemaplib.c:150
 ap_tplay	vex_wheelv	data	*contrl	aes/gemaplib.c:146
 ap_tplay	vrn_trnfm	data	*contrl	aes/gemaplib.c:146
 ap_tplay	vro_cpyfm	data	*contrl	aes/gemaplib.c:146
@@ -1855,8 +1859,10 @@ app_start	win_view	data	G	desk/deskapp.c:810
 app_tran	-	def	desk	desk/deskapp.c:439
 app_tran	gsx_trans	direct	-	desk/deskapp.c:445
 appl_exit	-	def	desk	desk/gembind.c:123
+appl_exit	ap_exit	layer	trap #2 0x13 crysbind[0x13] via gem_if	desk/gembind.c:125
 appl_exit	gem_if	direct	-	desk/gembind.c:125
 appl_init	-	def	desk	desk/gembind.c:111
+appl_init	ap_init	layer	trap #2 0xa crysbind[0xa] via gem_if	desk/gembind.c:119
 appl_init	evnt_multi	data	gb	desk/gembind.c:113
 appl_init	gem_if	data	gb	desk/gembind.c:113
 appl_init	gem_if	direct	-	desk/gembind.c:119
@@ -2136,6 +2142,8 @@ bb_fill	gsx_xbox	data	ptsin	aes/gemgraf.c:448
 bb_fill	gsx_xcbox	data	ptsin	aes/gemgraf.c:448
 bb_fill	v_opnwk	data	ptsin	aes/gemgraf.c:448
 bb_fill	v_pline	data	ptsin	aes/gemgraf.c:448
+bb_fill	vdi_vsf_interior	layer	trap #2 0x17 jmptb1[0x17] via gsx_1code	aes/gemgraf.c:439
+bb_fill	vdi_vsf_style	layer	trap #2 0x18 jmptb1[0x18] via gsx_1code	aes/gemgraf.c:444
 bb_fill	vr_recfl	data	ptsin	aes/gemgraf.c:448
 bb_fill	vr_recfl	direct	-	aes/gemgraf.c:452
 bb_fill	vro_cpyfm	data	ptsin	aes/gemgraf.c:448
@@ -2186,6 +2194,11 @@ bchange	set_mown	data	button	aes/geminput.c:342
 bchange	set_mown	data	gl_mowner	aes/geminput.c:335
 bchange	wheel_change	data	gl_mowner	aes/geminput.c:335
 bconin	-	def	bios	bios/bios.c:958
+bconin	bconin0	vector	via bconin_vec[]	bios/bios.c:976
+bconin	bconin1	vector	via bconin_vec[]	bios/bios.c:976
+bconin	bconin2	vector	via bconin_vec[]	bios/bios.c:976
+bconin	bconin3	vector	via bconin_vec[]	bios/bios.c:976
+bconin	char_dummy	vector	via bconin_vec[]	bios/bios.c:976
 bconin	protect_v	direct	-	bios/bios.c:972
 bconin0	-	def	bios	bios/parport.c:123
 bconin1	-	def	bios	bios/serport.c:260
@@ -2242,6 +2255,13 @@ bconmap	init_serport	data	rsconfptr	bios/serport.c:1118
 bconmap	iorec	data	rs232iorecptr	bios/serport.c:1119
 bconmap	rsconf	data	rsconfptr	bios/serport.c:1118
 bconout	-	def	bios	bios/bios.c:991
+bconout	bconout0	vector	via bconout_vec[]	bios/bios.c:1009
+bconout	bconout1	vector	via bconout_vec[]	bios/bios.c:1009
+bconout	bconout2	vector	via bconout_vec[]	bios/bios.c:1009
+bconout	bconout3	vector	via bconout_vec[]	bios/bios.c:1009
+bconout	bconout4	vector	via bconout_vec[]	bios/bios.c:1009
+bconout	bconout5	vector	via bconout_vec[]	bios/bios.c:1009
+bconout	charout_dummy	vector	via bconout_vec[]	bios/bios.c:1009
 bconout	protect_ww	direct	-	bios/bios.c:1005
 bconout0	-	def	bios	bios/parport.c:144
 bconout0	bconin2	direct	-	bios/parport.c:164
@@ -2282,6 +2302,10 @@ bconoutTT	mfp_tt_tx_interrupt_handler	data	iorecTT	bios/serport.c:436
 bconoutTT	put_iorecbuf	direct	-	bios/serport.c:436
 bconoutTT	rsconfTT	data	iorecTT	bios/serport.c:436
 bconstat	-	def	bios	bios/bios.c:914
+bconstat	bconstat1	vector	via bconstat_vec[]	bios/bios.c:932
+bconstat	bconstat2	vector	via bconstat_vec[]	bios/bios.c:932
+bconstat	bconstat3	vector	via bconstat_vec[]	bios/bios.c:932
+bconstat	char_dummy	vector	via bconstat_vec[]	bios/bios.c:932
 bconstat	protect_v	direct	-	bios/bios.c:928
 bconstat1	-	def	bios	bios/serport.c:255
 bconstat1	bconin1	data	iorec1	bios/serport.c:257
@@ -2314,6 +2338,12 @@ bconstatTT	mfp_tt_tx_interrupt_handler	data	iorecTT	bios/serport.c:402
 bconstatTT	rsconfTT	data	iorecTT	bios/serport.c:402
 bconstat_iorec	-	def	bios	bios/serport.c:191
 bcostat	-	def	bios	bios/bios.c:1143
+bcostat	bcostat0	vector	via bcostat_vec[]	bios/bios.c:1161
+bcostat	bcostat1	vector	via bcostat_vec[]	bios/bios.c:1161
+bcostat	bcostat2	vector	via bcostat_vec[]	bios/bios.c:1161
+bcostat	bcostat3	vector	via bcostat_vec[]	bios/bios.c:1161
+bcostat	bcostat4	vector	via bcostat_vec[]	bios/bios.c:1161
+bcostat	char_dummy	vector	via bcostat_vec[]	bios/bios.c:1161
 bcostat	protect_v	direct	-	bios/bios.c:1157
 bcostat0	-	def	bios	bios/parport.c:129
 bcostat1	-	def	bios	bios/serport.c:271
@@ -2330,6 +2360,7 @@ bcostatTT	incr_tail	direct	-	bios/serport.c:415
 bdos_trap2	-	def	bdos	bdos/rwa.S:145
 bdos_trap2	xterm	asm	jsr	bdos/rwa.S:154
 bell	-	def	bios	bios/sound.c:251
+bell	do_bell	vector	via bell_hook	bios/sound.c:253
 bell	protect_v	direct	-	bios/sound.c:253
 best_match	-	def	aes	aes/gemrslib.c:267
 bios_conin	-	def	desk	desk/desksupp.c:482
@@ -2892,9 +2923,13 @@ calibrate_delay	run_calibration	direct	-	bios/delay.c:109
 calibrate_delay	scc_init	data	loopcount_1_msec	bios/delay.c:126
 calibrate_delay	scsi_init	data	loopcount_1_msec	bios/delay.c:126
 call_etv_critic	-	def	bios	bios/vectors.S:807
+call_etv_critic	default_etv_critic	vector	via etv_critic	bios/vectors.S:814
 call_mousevec	-	def	bios	bios/aciavecs.S:538
+call_mousevec	just_rts	vector	via mousevec	bios/aciavecs.S:547
 call_user_but	-	def	vdi	vdi/vdi_asm.S:540
+call_user_but	just_rts	vector	via user_but	vdi/vdi_asm.S:543
 call_user_wheel	-	def	vdi	vdi/vdi_asm.S:548
+call_user_wheel	just_rts	vector	via user_wheel	vdi/vdi_asm.S:552
 call_usercode	-	def	aes	aes/gemoblib.c:411
 can_shutdown	-	def	bios	bios/bios.c:754
 can_shutdown	has_nf_shutdown	direct	-	bios/bios.c:757
@@ -3782,6 +3817,7 @@ contourfill	end_pts16	data	seed_type	vdi/vdi_fill.c:973
 contourfill	get_seed	data	qbottom	vdi/vdi_fill.c:997
 contourfill	get_seed	data	qtop	vdi/vdi_fill.c:1001
 contourfill	get_seed	direct	-	vdi/vdi_fill.c:1007
+contourfill	no_abort	vector	via SEEDABORT	vdi/vdi_fill.c:1060
 contourfill	pixelread	direct	-	vdi/vdi_fill.c:972
 convert	-	def	desk	desk/deskfun.c:264
 convert2ste	-	def	bios	bios/videl.c:763
@@ -4038,6 +4074,12 @@ cprintf_bytesize	cprintf	direct	-	bios/initinfo.c:259
 cprintf_outc	-	def	bios	bios/kprint.c:53
 cprintf_outc	bconout2	direct	-	bios/kprint.c:57
 cputc	-	def	bios	bios/vt52.c:142
+cputc	esc_ch1	vector	via con_state	bios/vt52.c:159
+cputc	get_bg_col	vector	via con_state	bios/vt52.c:159
+cputc	get_column	vector	via con_state	bios/vt52.c:159
+cputc	get_fg_col	vector	via con_state	bios/vt52.c:159
+cputc	get_row	vector	via con_state	bios/vt52.c:159
+cputc	normal_ascii	vector	via con_state	bios/vt52.c:159
 cpy_raster	-	def	vdi	vdi/vdi_raster.c:1331
 cpy_raster	arb_corner	direct	-	vdi/vdi_raster.c:1336
 cpy_raster	bit_blt	direct	-	vdi/vdi_raster.c:1452
@@ -4065,104 +4107,181 @@ crysbind	akbin	data	*rlr	aes/gemsuper.c:137
 crysbind	amouse	data	*rlr	aes/gemsuper.c:137
 crysbind	ap_exit	data	*rlr	aes/gemsuper.c:137
 crysbind	ap_exit	direct	-	aes/gemsuper.c:122
+crysbind	ap_exit	table	crysbind[0x13]	aes/gemsuper.c:122
 crysbind	ap_find	direct	-	aes/gemsuper.c:107
+crysbind	ap_find	table	crysbind[0xd]	aes/gemsuper.c:107
 crysbind	ap_init	data	*rlr	aes/gemsuper.c:137
 crysbind	ap_init	direct	-	aes/gemsuper.c:99
+crysbind	ap_init	table	crysbind[0xa]	aes/gemsuper.c:99
 crysbind	ap_rdwr	direct	-	aes/gemsuper.c:103
+crysbind	ap_rdwr	table	crysbind[0xb]	aes/gemsuper.c:103
+crysbind	ap_rdwr	table	crysbind[0xc]	aes/gemsuper.c:103
 crysbind	ap_sendmsg	data	*rlr	aes/gemsuper.c:137
 crysbind	ap_tplay	direct	-	aes/gemsuper.c:110
+crysbind	ap_tplay	table	crysbind[0xe]	aes/gemsuper.c:110
 crysbind	ap_trecd	direct	-	aes/gemsuper.c:113
+crysbind	ap_trecd	table	crysbind[0xf]	aes/gemsuper.c:113
 crysbind	apret	data	*rlr	aes/gemsuper.c:137
 crysbind	clamp_height	data	gl_rfull	aes/gemsuper.c:224
 crysbind	clamp_ypos	data	gl_rfull	aes/gemsuper.c:224
 crysbind	combine_cms	direct	-	aes/gemsuper.c:151
+crysbind	combine_cms	table	crysbind[0x19]	aes/gemsuper.c:151
 crysbind	ct_mouse	direct	-	aes/gemsuper.c:297
+crysbind	ct_mouse	table	crysbind[0x4e]	aes/gemsuper.c:297
 crysbind	desk_clear	data	gl_rfull	aes/gemsuper.c:224
 crysbind	disp	data	*rlr	aes/gemsuper.c:137
 crysbind	disp_act	data	*rlr	aes/gemsuper.c:137
 crysbind	do_chg	direct	-	aes/gemsuper.c:172
+crysbind	do_chg	table	crysbind[0x1f]	aes/gemsuper.c:172
+crysbind	do_chg	table	crysbind[0x20]	aes/gemsuper.c:175
+crysbind	do_chg	table	crysbind[0x21]	aes/gemsuper.c:179
 crysbind	do_dopen	data	gl_rfull	aes/gemsuper.c:224
 crysbind	do_walk	data	gl_rfull	aes/gemsuper.c:224
 crysbind	do_wopen	data	gl_rfull	aes/gemsuper.c:224
 crysbind	dsptch	direct	-	aes/gemsuper.c:117
+crysbind	dsptch	table	crysbind[0x11]	aes/gemsuper.c:117
 crysbind	ev_block	direct	-	aes/gemsuper.c:127
+crysbind	ev_block	table	crysbind[0x14]	aes/gemsuper.c:127
 crysbind	ev_button	direct	-	aes/gemsuper.c:130
+crysbind	ev_button	table	crysbind[0x15]	aes/gemsuper.c:130
 crysbind	ev_dclick	direct	-	aes/gemsuper.c:164
+crysbind	ev_dclick	table	crysbind[0x1a]	aes/gemsuper.c:164
 crysbind	ev_mesag	data	*rlr	aes/gemsuper.c:137
 crysbind	ev_mesag	direct	-	aes/gemsuper.c:138
+crysbind	ev_mesag	table	crysbind[0x17]	aes/gemsuper.c:138
 crysbind	ev_mouse	direct	-	aes/gemsuper.c:133
+crysbind	ev_mouse	table	crysbind[0x16]	aes/gemsuper.c:133
 crysbind	ev_multi	data	*rlr	aes/gemsuper.c:137
 crysbind	ev_multi	direct	-	aes/gemsuper.c:153
+crysbind	ev_multi	table	crysbind[0x19]	aes/gemsuper.c:153
 crysbind	ev_timer	direct	-	aes/gemsuper.c:143
+crysbind	ev_timer	table	crysbind[0x18]	aes/gemsuper.c:143
 crysbind	findfile	data	*rlr	aes/gemsuper.c:137
 crysbind	fm_alert	data	*rlr	aes/gemsuper.c:137
 crysbind	fm_alert	direct	-	aes/gemsuper.c:246
+crysbind	fm_alert	table	crysbind[0x34]	aes/gemsuper.c:246
 crysbind	fm_button	direct	-	aes/gemsuper.c:262
+crysbind	fm_button	table	crysbind[0x38]	aes/gemsuper.c:262
 crysbind	fm_dial	direct	-	aes/gemsuper.c:243
+crysbind	fm_dial	table	crysbind[0x33]	aes/gemsuper.c:243
 crysbind	fm_do	data	gl_rfull	aes/gemsuper.c:224
 crysbind	fm_do	direct	-	aes/gemsuper.c:240
+crysbind	fm_do	table	crysbind[0x32]	aes/gemsuper.c:240
 crysbind	fm_error	direct	-	aes/gemsuper.c:249
+crysbind	fm_error	table	crysbind[0x35]	aes/gemsuper.c:249
 crysbind	fm_keybd	direct	-	aes/gemsuper.c:258
+crysbind	fm_keybd	table	crysbind[0x37]	aes/gemsuper.c:258
 crysbind	fm_own	data	*rlr	aes/gemsuper.c:137
 crysbind	fm_show	direct	-	aes/gemsuper.c:415
 crysbind	forker	data	*rlr	aes/gemsuper.c:137
 crysbind	fpdnm	direct	-	aes/gemsuper.c:103
+crysbind	fpdnm	table	crysbind[0xb]	aes/gemsuper.c:103
+crysbind	fpdnm	table	crysbind[0xc]	aes/gemsuper.c:103
 crysbind	fq	data	*rlr	aes/gemsuper.c:137
 crysbind	fs_input	direct	-	aes/gemsuper.c:323
+crysbind	fs_input	table	crysbind[0x5a]	aes/gemsuper.c:323
+crysbind	fs_input	table	crysbind[0x5b]	aes/gemsuper.c:326
 crysbind	gem_main	data	*rlr	aes/gemsuper.c:137
 crysbind	gr_dragbox	direct	-	aes/gemsuper.c:270
+crysbind	gr_dragbox	table	crysbind[0x47]	aes/gemsuper.c:270
 crysbind	gr_growbox	direct	-	aes/gemsuper.c:276
+crysbind	gr_growbox	table	crysbind[0x49]	aes/gemsuper.c:276
 crysbind	gr_mkstate	direct	-	aes/gemsuper.c:305
+crysbind	gr_mkstate	table	crysbind[0x4f]	aes/gemsuper.c:305
 crysbind	gr_mouse	data	*rlr	aes/gemsuper.c:137
 crysbind	gr_mouse	direct	-	aes/gemsuper.c:298
+crysbind	gr_mouse	table	crysbind[0x4e]	aes/gemsuper.c:298
 crysbind	gr_movebox	direct	-	aes/gemsuper.c:273
+crysbind	gr_movebox	table	crysbind[0x48]	aes/gemsuper.c:273
 crysbind	gr_rubbox	direct	-	aes/gemsuper.c:267
+crysbind	gr_rubbox	table	crysbind[0x46]	aes/gemsuper.c:267
 crysbind	gr_shrinkbox	direct	-	aes/gemsuper.c:279
+crysbind	gr_shrinkbox	table	crysbind[0x4a]	aes/gemsuper.c:279
 crysbind	gr_slidebox	direct	-	aes/gemsuper.c:285
+crysbind	gr_slidebox	table	crysbind[0x4c]	aes/gemsuper.c:285
 crysbind	gr_watchbox	direct	-	aes/gemsuper.c:282
+crysbind	gr_watchbox	table	crysbind[0x4b]	aes/gemsuper.c:282
 crysbind	gsx_sclip	direct	-	aes/gemsuper.c:211
+crysbind	gsx_sclip	table	crysbind[0x2a]	aes/gemsuper.c:211
+crysbind	gsx_sclip	table	crysbind[0x2e]	aes/gemsuper.c:224
+crysbind	gsx_sclip	table	crysbind[0x2f]	aes/gemsuper.c:229
+crysbind	gsx_sclip	table	crysbind[0x37]	aes/gemsuper.c:255
+crysbind	gsx_sclip	table	crysbind[0x38]	aes/gemsuper.c:261
 crysbind	gsx_start	data	gl_rfull	aes/gemsuper.c:224
 crysbind	iasync	data	*rlr	aes/gemsuper.c:137
 crysbind	inline_strcpy	direct	-	aes/gemsuper.c:183
+crysbind	inline_strcpy	table	crysbind[0x22]	aes/gemsuper.c:183
 crysbind	mn_attach	direct	-	aes/gemsuper.c:193
+crysbind	mn_attach	table	crysbind[0x25]	aes/gemsuper.c:193
 crysbind	mn_bar	data	*rlr	aes/gemsuper.c:137
 crysbind	mn_bar	direct	-	aes/gemsuper.c:169
+crysbind	mn_bar	table	crysbind[0x1e]	aes/gemsuper.c:169
 crysbind	mn_istart	direct	-	aes/gemsuper.c:196
+crysbind	mn_istart	table	crysbind[0x26]	aes/gemsuper.c:196
 crysbind	mn_popup	data	gl_rfull	aes/gemsuper.c:224
 crysbind	mn_popup	direct	-	aes/gemsuper.c:190
+crysbind	mn_popup	table	crysbind[0x24]	aes/gemsuper.c:190
 crysbind	mn_register	data	*rlr	aes/gemsuper.c:137
 crysbind	mn_register	direct	-	aes/gemsuper.c:186
+crysbind	mn_register	table	crysbind[0x23]	aes/gemsuper.c:186
 crysbind	mn_settings	direct	-	aes/gemsuper.c:199
+crysbind	mn_settings	table	crysbind[0x27]	aes/gemsuper.c:199
 crysbind	mwait	data	*rlr	aes/gemsuper.c:137
 crysbind	ob_add	direct	-	aes/gemsuper.c:205
+crysbind	ob_add	table	crysbind[0x28]	aes/gemsuper.c:205
 crysbind	ob_center	direct	-	aes/gemsuper.c:252
+crysbind	ob_center	table	crysbind[0x36]	aes/gemsuper.c:252
 crysbind	ob_change	direct	-	aes/gemsuper.c:230
+crysbind	ob_change	table	crysbind[0x2f]	aes/gemsuper.c:230
 crysbind	ob_delete	direct	-	aes/gemsuper.c:208
+crysbind	ob_delete	table	crysbind[0x29]	aes/gemsuper.c:208
 crysbind	ob_draw	direct	-	aes/gemsuper.c:212
+crysbind	ob_draw	table	crysbind[0x2a]	aes/gemsuper.c:212
 crysbind	ob_edit	direct	-	aes/gemsuper.c:226
+crysbind	ob_edit	table	crysbind[0x2e]	aes/gemsuper.c:226
 crysbind	ob_find	direct	-	aes/gemsuper.c:215
+crysbind	ob_find	table	crysbind[0x2b]	aes/gemsuper.c:215
 crysbind	ob_offset	direct	-	aes/gemsuper.c:218
+crysbind	ob_offset	table	crysbind[0x2c]	aes/gemsuper.c:218
 crysbind	ob_order	direct	-	aes/gemsuper.c:221
+crysbind	ob_order	table	crysbind[0x2d]	aes/gemsuper.c:221
 crysbind	ob_sysvar	direct	-	aes/gemsuper.c:234
+crysbind	ob_sysvar	table	crysbind[0x30]	aes/gemsuper.c:234
 crysbind	popup_blit	data	gl_rfull	aes/gemsuper.c:224
 crysbind	rs_free	direct	-	aes/gemsuper.c:367
+crysbind	rs_free	table	crysbind[0x6f]	aes/gemsuper.c:367
 crysbind	rs_gaddr	direct	-	aes/gemsuper.c:370
+crysbind	rs_gaddr	table	crysbind[0x70]	aes/gemsuper.c:370
 crysbind	rs_load	direct	-	aes/gemsuper.c:364
+crysbind	rs_load	table	crysbind[0x6e]	aes/gemsuper.c:364
 crysbind	rs_obfix	direct	-	aes/gemsuper.c:376
+crysbind	rs_obfix	table	crysbind[0x72]	aes/gemsuper.c:376
 crysbind	rs_saddr	direct	-	aes/gemsuper.c:373
+crysbind	rs_saddr	table	crysbind[0x71]	aes/gemsuper.c:373
 crysbind	sc_clear	direct	-	aes/gemsuper.c:317
+crysbind	sc_clear	table	crysbind[0x52]	aes/gemsuper.c:317
 crysbind	sc_read	direct	-	aes/gemsuper.c:310
+crysbind	sc_read	table	crysbind[0x50]	aes/gemsuper.c:310
 crysbind	sc_write	direct	-	aes/gemsuper.c:313
+crysbind	sc_write	table	crysbind[0x51]	aes/gemsuper.c:313
 crysbind	schedule	data	*rlr	aes/gemsuper.c:137
 crysbind	sh_envrn	direct	-	aes/gemsuper.c:396
+crysbind	sh_envrn	table	crysbind[0x7d]	aes/gemsuper.c:396
 crysbind	sh_find	direct	-	aes/gemsuper.c:393
+crysbind	sh_find	table	crysbind[0x7c]	aes/gemsuper.c:393
 crysbind	sh_get	direct	-	aes/gemsuper.c:387
+crysbind	sh_get	table	crysbind[0x7a]	aes/gemsuper.c:387
 crysbind	sh_ldapp	data	*rlr	aes/gemsuper.c:137
 crysbind	sh_put	direct	-	aes/gemsuper.c:390
+crysbind	sh_put	table	crysbind[0x7b]	aes/gemsuper.c:390
 crysbind	sh_rdef	direct	-	aes/gemsuper.c:400
+crysbind	sh_rdef	table	crysbind[0x7e]	aes/gemsuper.c:400
 crysbind	sh_read	direct	-	aes/gemsuper.c:381
+crysbind	sh_read	table	crysbind[0x78]	aes/gemsuper.c:381
 crysbind	sh_wdef	direct	-	aes/gemsuper.c:403
+crysbind	sh_wdef	table	crysbind[0x7f]	aes/gemsuper.c:403
 crysbind	sh_write	direct	-	aes/gemsuper.c:384
+crysbind	sh_write	table	crysbind[0x79]	aes/gemsuper.c:384
 crysbind	signal	data	*rlr	aes/gemsuper.c:137
 crysbind	start_dialog	data	gl_rfull	aes/gemsuper.c:224
 crysbind	tak_flag	data	*rlr	aes/gemsuper.c:137
@@ -4171,20 +4290,30 @@ crysbind	w_mvfix	data	gl_rfull	aes/gemsuper.c:224
 crysbind	w_update	data	gl_rfull	aes/gemsuper.c:224
 crysbind	win_blt	data	gl_rfull	aes/gemsuper.c:224
 crysbind	wm_calc	direct	-	aes/gemsuper.c:355
+crysbind	wm_calc	table	crysbind[0x6c]	aes/gemsuper.c:355
 crysbind	wm_close	direct	-	aes/gemsuper.c:337
+crysbind	wm_close	table	crysbind[0x66]	aes/gemsuper.c:337
 crysbind	wm_create	data	*rlr	aes/gemsuper.c:137
 crysbind	wm_create	direct	-	aes/gemsuper.c:331
+crysbind	wm_create	table	crysbind[0x64]	aes/gemsuper.c:331
 crysbind	wm_delete	data	gl_rfull	aes/gemsuper.c:224
 crysbind	wm_delete	direct	-	aes/gemsuper.c:340
+crysbind	wm_delete	table	crysbind[0x67]	aes/gemsuper.c:340
 crysbind	wm_find	direct	-	aes/gemsuper.c:349
+crysbind	wm_find	table	crysbind[0x6a]	aes/gemsuper.c:349
 crysbind	wm_get	direct	-	aes/gemsuper.c:343
+crysbind	wm_get	table	crysbind[0x68]	aes/gemsuper.c:343
 crysbind	wm_init	data	*rlr	aes/gemsuper.c:137
 crysbind	wm_init	data	gl_rfull	aes/gemsuper.c:224
 crysbind	wm_new	direct	-	aes/gemsuper.c:359
+crysbind	wm_new	table	crysbind[0x6d]	aes/gemsuper.c:359
 crysbind	wm_open	direct	-	aes/gemsuper.c:334
+crysbind	wm_open	table	crysbind[0x65]	aes/gemsuper.c:334
 crysbind	wm_set	data	*rlr	aes/gemsuper.c:137
 crysbind	wm_set	direct	-	aes/gemsuper.c:346
+crysbind	wm_set	table	crysbind[0x69]	aes/gemsuper.c:346
 crysbind	wm_update	direct	-	aes/gemsuper.c:352
+crysbind	wm_update	table	crysbind[0x6b]	aes/gemsuper.c:352
 crysbind	xif	data	ad_rso	aes/gemsuper.c:370
 ct_chgown	-	def	aes	aes/gemctrl.c:392
 ct_chgown	set_ctrl	direct	-	aes/gemctrl.c:394
@@ -5470,6 +5599,7 @@ detect_modectl	set_density	data	has_modectl	bios/machine.c:89
 detect_monitor_change	-	def	bios	bios/screen.c:1238
 detect_monitor_change	atari_setrez	data	sshiftmod	bios/screen.c:1327
 detect_monitor_change	get_palette	data	sshiftmod	bios/screen.c:1327
+detect_monitor_change	just_rts	vector	via swv_vec	bios/screen.c:1329
 detect_monitor_change	screen_init_mode	data	sshiftmod	bios/screen.c:1327
 detect_monitor_change	shifter_get_current_mode_info	data	sshiftmod	bios/screen.c:1327
 detect_monster	-	def	bios	bios/machine.c:227
@@ -8124,34 +8254,60 @@ erase_to_eos	blank_out	direct	-	bios/vt52.c:464
 erase_to_eos	erase_to_eol_impl	direct	-	bios/vt52.c:457
 esc_ch1	-	def	bios	bios/vt52.c:242
 esc_ch1	clear_and_home	callback	via am_tab	bios/vt52.c:88
+esc_ch1	clear_and_home	vector	via am_tab@bios/vt52.c[]	bios/vt52.c:247
 esc_ch1	cputc	data	con_state	bios/vt52.c:244
 esc_ch1	cursor_down	callback	via am_tab	bios/vt52.c:85
+esc_ch1	cursor_down	vector	via am_tab@bios/vt52.c[]	bios/vt52.c:247
 esc_ch1	cursor_home	callback	via am_tab	bios/vt52.c:91
+esc_ch1	cursor_home	vector	via am_tab@bios/vt52.c[]	bios/vt52.c:247
 esc_ch1	cursor_left	callback	via am_tab	bios/vt52.c:87
+esc_ch1	cursor_left	vector	via am_tab@bios/vt52.c[]	bios/vt52.c:247
 esc_ch1	cursor_off	callback	via bw_tab	bios/vt52.c:106
+esc_ch1	cursor_off	vector	via bw_tab@bios/vt52.c[]	bios/vt52.c:250
 esc_ch1	cursor_on	callback	via bw_tab	bios/vt52.c:105
+esc_ch1	cursor_on	vector	via bw_tab@bios/vt52.c[]	bios/vt52.c:250
 esc_ch1	cursor_right	callback	via am_tab	bios/vt52.c:86
+esc_ch1	cursor_right	vector	via am_tab@bios/vt52.c[]	bios/vt52.c:247
 esc_ch1	cursor_up	callback	via am_tab	bios/vt52.c:84
+esc_ch1	cursor_up	vector	via am_tab@bios/vt52.c[]	bios/vt52.c:247
 esc_ch1	delete_line	callback	via am_tab	bios/vt52.c:96
+esc_ch1	delete_line	vector	via am_tab@bios/vt52.c[]	bios/vt52.c:247
 esc_ch1	erase_from_bol	callback	via bw_tab	bios/vt52.c:115
+esc_ch1	erase_from_bol	vector	via bw_tab@bios/vt52.c[]	bios/vt52.c:250
 esc_ch1	erase_from_home	callback	via bw_tab	bios/vt52.c:104
+esc_ch1	erase_from_home	vector	via bw_tab@bios/vt52.c[]	bios/vt52.c:250
 esc_ch1	erase_line	callback	via bw_tab	bios/vt52.c:112
+esc_ch1	erase_line	vector	via bw_tab@bios/vt52.c[]	bios/vt52.c:250
 esc_ch1	erase_to_eol	callback	via am_tab	bios/vt52.c:94
+esc_ch1	erase_to_eol	vector	via am_tab@bios/vt52.c[]	bios/vt52.c:247
 esc_ch1	erase_to_eos	callback	via am_tab	bios/vt52.c:93
+esc_ch1	erase_to_eos	vector	via am_tab@bios/vt52.c[]	bios/vt52.c:247
 esc_ch1	get_row	callback	address	bios/vt52.c:253
 esc_ch1	insert_line	callback	via am_tab	bios/vt52.c:95
+esc_ch1	insert_line	vector	via am_tab@bios/vt52.c[]	bios/vt52.c:247
 esc_ch1	line_wrap_off	callback	via bw_tab	bios/vt52.c:123
+esc_ch1	line_wrap_off	vector	via bw_tab@bios/vt52.c[]	bios/vt52.c:250
 esc_ch1	line_wrap_on	callback	via bw_tab	bios/vt52.c:122
+esc_ch1	line_wrap_on	vector	via bw_tab@bios/vt52.c[]	bios/vt52.c:250
 esc_ch1	nop	callback	via am_tab	bios/vt52.c:89
 esc_ch1	nop	callback	via bw_tab	bios/vt52.c:107
+esc_ch1	nop	vector	via am_tab@bios/vt52.c[]	bios/vt52.c:247
+esc_ch1	nop	vector	via bw_tab@bios/vt52.c[]	bios/vt52.c:250
 esc_ch1	normal_ascii	callback	address	bios/vt52.c:244
 esc_ch1	restore_cursor_pos	callback	via bw_tab	bios/vt52.c:111
+esc_ch1	restore_cursor_pos	vector	via bw_tab@bios/vt52.c[]	bios/vt52.c:250
 esc_ch1	reverse_linefeed	callback	via am_tab	bios/vt52.c:92
+esc_ch1	reverse_linefeed	vector	via am_tab@bios/vt52.c[]	bios/vt52.c:247
 esc_ch1	reverse_video_off	callback	via bw_tab	bios/vt52.c:117
+esc_ch1	reverse_video_off	vector	via bw_tab@bios/vt52.c[]	bios/vt52.c:250
 esc_ch1	reverse_video_on	callback	via bw_tab	bios/vt52.c:116
+esc_ch1	reverse_video_on	vector	via bw_tab@bios/vt52.c[]	bios/vt52.c:250
 esc_ch1	save_cursor_pos	callback	via bw_tab	bios/vt52.c:110
+esc_ch1	save_cursor_pos	vector	via bw_tab@bios/vt52.c[]	bios/vt52.c:250
 esc_ch1	set_bg	callback	via bw_tab	bios/vt52.c:103
+esc_ch1	set_bg	vector	via bw_tab@bios/vt52.c[]	bios/vt52.c:250
 esc_ch1	set_fg	callback	via bw_tab	bios/vt52.c:102
+esc_ch1	set_fg	vector	via bw_tab@bios/vt52.c[]	bios/vt52.c:250
 esc_exit	-	def	vdi	vdi/vdi_esc.c:365
 esc_exit	escfn3	direct	-	vdi/vdi_esc.c:367
 esc_init	-	def	vdi	vdi/vdi_esc.c:356
@@ -8526,20 +8682,25 @@ evinsert	xmfreblk	data	*root	aes/gemasync.c:89
 evinsert	xmgetblk	data	*root	aes/gemasync.c:89
 evnt_button	-	def	desk	desk/gembind.c:188
 evnt_button	appl_init	data	int_in	desk/gembind.c:191
+evnt_button	ev_button	layer	trap #2 0x15 crysbind[0x15] via gem_if	desk/gembind.c:194
 evnt_button	gem_if	direct	-	desk/gembind.c:194
 evnt_dclick	-	def	desk	desk/gembind.c:282
 evnt_dclick	appl_init	data	int_in	desk/gembind.c:284
+evnt_dclick	ev_dclick	layer	trap #2 0x1a crysbind[0x1a] via gem_if	desk/gembind.c:286
 evnt_dclick	gem_if	direct	-	desk/gembind.c:286
 evnt_multi	-	def	desk	desk/gembind.c:239
 evnt_multi	appl_init	data	addr_in	desk/gembind.c:263
 evnt_multi	appl_init	data	control	desk/gembind.c:269
 evnt_multi	appl_init	data	int_in	desk/gembind.c:245
+evnt_multi	combine_cms	layer	trap #2 0x19 crysbind[0x19] via gem	desk/gembind.c:270
+evnt_multi	ev_multi	layer	trap #2 0x19 crysbind[0x19] via gem	desk/gembind.c:270
 evnt_multi	gem	direct	-	desk/gembind.c:270
 evnt_multi	gem_if	data	gb	desk/gembind.c:270
 evnt_multi	gem_if0	data	control	desk/gembind.c:269
 evnt_multi	gem_if0	direct	-	desk/gembind.c:268
 evnt_timer	-	def	desk	desk/gembind.c:231
 evnt_timer	appl_init	data	int_in	desk/gembind.c:233
+evnt_timer	ev_timer	layer	trap #2 0x18 crysbind[0x18] via gem_if	desk/gembind.c:235
 evnt_timer	gem_if	direct	-	desk/gembind.c:235
 evremove	-	def	aes	aes/geminput.c:279
 evremove	azombie	direct	-	aes/geminput.c:284
@@ -9397,19 +9558,24 @@ forkq	wm_new	data	*D	aes/gemdisp.c:62
 form_alert	-	def	desk	desk/gembind.c:476
 form_alert	appl_init	data	addr_in	desk/gembind.c:479
 form_alert	appl_init	data	int_in	desk/gembind.c:478
+form_alert	fm_alert	layer	trap #2 0x34 crysbind[0x34] via gem_if	desk/gembind.c:480
 form_alert	gem_if	direct	-	desk/gembind.c:480
 form_center	-	def	desk	desk/gembind.c:497
 form_center	appl_init	data	addr_in	desk/gembind.c:499
 form_center	gem_if	direct	-	desk/gembind.c:500
+form_center	ob_center	layer	trap #2 0x36 crysbind[0x36] via gem_if	desk/gembind.c:500
 form_dial	-	def	desk	desk/gembind.c:460
 form_dial	appl_init	data	int_in	desk/gembind.c:463
+form_dial	fm_dial	layer	trap #2 0x33 crysbind[0x33] via gem_if	desk/gembind.c:472
 form_dial	gem_if	direct	-	desk/gembind.c:472
 form_do	-	def	desk	desk/gembind.c:452
 form_do	appl_init	data	addr_in	desk/gembind.c:454
 form_do	appl_init	data	int_in	desk/gembind.c:455
+form_do	fm_do	layer	trap #2 0x32 crysbind[0x32] via gem_if	desk/gembind.c:456
 form_do	gem_if	direct	-	desk/gembind.c:456
 form_error	-	def	desk	desk/gembind.c:489
 form_error	appl_init	data	int_in	desk/gembind.c:491
+form_error	fm_error	layer	trap #2 0x35 crysbind[0x35] via gem_if	desk/gembind.c:492
 form_error	gem_if	direct	-	desk/gembind.c:492
 format_floppy	-	def	desk	desk/desksupp.c:1436
 format_floppy	dos_alloc_stram	direct	-	desk/desksupp.c:1471
@@ -9808,6 +9974,7 @@ fscsi_or	-	def	bios	bios/scsi.c:453
 fscsi_put	-	def	bios	bios/scsi.c:431
 fsel_exinput	-	def	desk	desk/gembind.c:702
 fsel_exinput	appl_init	data	addr_in	desk/gembind.c:704
+fsel_exinput	fs_input	layer	trap #2 0x5b crysbind[0x5b] via gem_if	desk/gembind.c:707
 fsel_exinput	gem_if	direct	-	desk/gembind.c:707
 fun_alert	-	def	desk	desk/deskfun.c:75
 fun_alert	desktop_str_addr	direct	-	desk/deskfun.c:77
@@ -10671,9 +10838,6 @@ gdp_rbox	vdi_vst_font	data	*PTSIN	vdi/vdi_gdp.c:286
 gdp_rbox	vdi_vst_height	data	*PTSIN	vdi/vdi_gdp.c:286
 gdp_rbox	wideline	direct	-	vdi/vdi_gdp.c:333
 gem	-	def	desk	desk/gembind.c:72
-gem	aestrap	layer	trap #2 (opcode in parameter block, not resolved)	desk/gembind.c:72
-gem	bdos_trap2	layer	trap #2 (opcode in parameter block, not resolved)	desk/gembind.c:72
-gem	vditrap	layer	trap #2 (opcode in parameter block, not resolved)	desk/gembind.c:72
 gem_if	-	def	desk	desk/gembind.c:100
 gem_if	evnt_multi	data	gb	desk/gembind.c:103
 gem_if	gem	direct	-	desk/gembind.c:103
@@ -11258,6 +11422,7 @@ getbcb	usrio	data	errbuf	bdos/fsbuf.c:165
 getbcb	usrio	data	rwerr	bdos/fsbuf.c:165
 getbcb	xexec	data	errbuf	bdos/fsbuf.c:165
 getbpb	-	def	bios	bios/bios.c:1120
+getbpb	blkdev_getbpb	vector	via hdv_bpb	bios/bios.c:1122
 getbpb	protect_w	direct	-	bios/bios.c:1122
 getbpb_allowed	-	def	bios	bios/blkdev.c:329
 getbpb_allowed	strcmp	direct	-	bios/blkdev.c:332
@@ -11505,6 +11670,7 @@ gr_plns	gsx_pline	direct	-	desk/deskact.c:204
 gr_rect	-	def	aes	aes/gemgraf.c:547
 gr_rect	bb_fill	direct	-	aes/gemgraf.c:558
 gr_rect	gsx_1code	direct	-	aes/gemgraf.c:557
+gr_rect	vdi_vsf_color	layer	trap #2 0x19 jmptb1[0x19] via gsx_1code	aes/gemgraf.c:557
 gr_rubbox	-	def	aes	aes/gemgrlib.c:228
 gr_rubbox	do_chg	data	gl_rzero	aes/gemgrlib.c:231
 gr_rubbox	draw_change	data	gl_rzero	aes/gemgrlib.c:231
@@ -11595,28 +11761,31 @@ gr_xor	gsx_xcbox	direct	-	aes/gemgrlib.c:140
 graf_growbox_grect	-	def	desk	desk/gembind.c:589
 graf_growbox_grect	appl_init	data	int_in	desk/gembind.c:591
 graf_growbox_grect	gem_if	direct	-	desk/gembind.c:599
+graf_growbox_grect	gr_growbox	layer	trap #2 0x49 crysbind[0x49] via gem_if	desk/gembind.c:599
 graf_handle	-	def	desk	desk/gembind.c:639
 graf_handle	gem_if	direct	-	desk/gembind.c:641
 graf_mkstate	-	def	desk	desk/gembind.c:658
 graf_mkstate	gem_if	direct	-	desk/gembind.c:660
+graf_mkstate	gr_mkstate	layer	trap #2 0x4f crysbind[0x4f] via gem_if	desk/gembind.c:660
 graf_mouse	-	def	desk	desk/gembind.c:650
 graf_mouse	appl_init	data	addr_in	desk/gembind.c:653
 graf_mouse	appl_init	data	int_in	desk/gembind.c:652
+graf_mouse	ct_mouse	layer	trap #2 0x4e crysbind[0x4e] via gem_if	desk/gembind.c:654
 graf_mouse	gem_if	direct	-	desk/gembind.c:654
+graf_mouse	gr_mouse	layer	trap #2 0x4e crysbind[0x4e] via gem_if	desk/gembind.c:654
 graf_rubbox	-	def	desk	desk/gembind.c:541
 graf_rubbox	appl_init	data	int_in	desk/gembind.c:544
 graf_rubbox	gem_if	direct	-	desk/gembind.c:548
+graf_rubbox	gr_rubbox	layer	trap #2 0x46 crysbind[0x46] via gem_if	desk/gembind.c:548
 graf_shrinkbox_grect	-	def	desk	desk/gembind.c:603
 graf_shrinkbox_grect	appl_init	data	int_in	desk/gembind.c:605
 graf_shrinkbox_grect	gem_if	direct	-	desk/gembind.c:613
+graf_shrinkbox_grect	gr_shrinkbox	layer	trap #2 0x4a crysbind[0x4a] via gem_if	desk/gembind.c:613
 grid_free	-	def	desk	desk/deskins.c:118
 gshift_s	-	def	vdi	vdi/vdi_input.c:185
 gshift_s	bios_l_w	direct	-	vdi/vdi_input.c:187
 gshift_s	kbshift	layer	trap #13 0xb bios_vecs[0xb] via bios_l_w	vdi/vdi_input.c:187
 gsx2	-	def	aes	aes/gsx2.c:20
-gsx2	aestrap	layer	trap #2 (opcode in parameter block, not resolved)	aes/gsx2.c:20
-gsx2	bdos_trap2	layer	trap #2 (opcode in parameter block, not resolved)	aes/gsx2.c:20
-gsx2	vditrap	layer	trap #2 (opcode in parameter block, not resolved)	aes/gsx2.c:20
 gsx_0code	-	def	aes	aes/gemgsxif.c:144
 gsx_0code	gsx_ncode	direct	-	aes/gemgsxif.c:146
 gsx_1code	-	def	aes	aes/gemgsxif.c:151
@@ -11646,6 +11815,9 @@ gsx_attr	gsx_wsopen	data	intin	aes/gemgraf.c:212
 gsx_attr	just_draw	data	intin	aes/gemgraf.c:212
 gsx_attr	v_opnwk	data	contrl	aes/gemgraf.c:206
 gsx_attr	v_opnwk	data	intin	aes/gemgraf.c:212
+gsx_attr	vdi_vsl_color	layer	trap #2 0x11 jmptb1[0x11] via gsx2	aes/gemgraf.c:237
+gsx_attr	vdi_vst_color	layer	trap #2 0x16 jmptb1[0x16] via gsx2	aes/gemgraf.c:237
+gsx_attr	vdi_vswr_mode	layer	trap #2 0x20 jmptb1[0x20] via gsx2	aes/gemgraf.c:213
 gsx_attr	vex_wheelv	data	contrl	aes/gemgraf.c:206
 gsx_attr	vrn_trnfm	data	contrl	aes/gemgraf.c:206
 gsx_attr	vro_cpyfm	data	contrl	aes/gemgraf.c:206
@@ -11700,6 +11872,8 @@ gsx_char	gsx_tcalc	data	intin	aes/gemgsxif.c:461
 gsx_char	gsx_wsopen	data	intin	aes/gemgsxif.c:461
 gsx_char	just_draw	data	intin	aes/gemgsxif.c:461
 gsx_char	v_opnwk	data	intin	aes/gemgsxif.c:461
+gsx_char	vdi_v_string	layer	trap #2 0x1f jmptb1[0x1f] via gsx_ncode	aes/gemgsxif.c:467
+gsx_char	vdi_vsin_mode	layer	trap #2 0x21 jmptb1[0x21] via gsx_ncode	aes/gemgsxif.c:463
 gsx_chkclip	-	def	aes	aes/gemgraf.c:121
 gsx_cline	-	def	aes	aes/gemgraf.c:188
 gsx_cline	gsx_moff	direct	-	aes/gemgraf.c:192
@@ -11725,6 +11899,7 @@ gsx_graphic	gsx_setmb	data	contrl	aes/gemgsxif.c:305
 gsx_graphic	gsx_setmb	direct	-	aes/gemgsxif.c:307
 gsx_graphic	gsx_tick	data	contrl	aes/gemgsxif.c:305
 gsx_graphic	v_opnwk	data	contrl	aes/gemgsxif.c:305
+gsx_graphic	vdi_v_escape	layer	trap #2 0x5 jmptb1[0x5] via gsx_0code	aes/gemgsxif.c:306
 gsx_graphic	vex_wheelv	data	contrl	aes/gemgsxif.c:305
 gsx_graphic	vrn_trnfm	data	contrl	aes/gemgsxif.c:305
 gsx_graphic	vro_cpyfm	data	contrl	aes/gemgsxif.c:305
@@ -11740,9 +11915,11 @@ gsx_init	gsx_graphic	data	drwaddr	aes/gemgsxif.c:271
 gsx_init	gsx_setmb	direct	-	aes/gemgsxif.c:271
 gsx_init	gsx_start	direct	-	aes/gemgsxif.c:270
 gsx_init	gsx_wsopen	direct	-	aes/gemgsxif.c:269
+gsx_init	vdi_vq_mouse	layer	trap #2 0x7c jmptb2[0x7c] via gsx_0code	aes/gemgsxif.c:272
 gsx_init	vex_wheelv	direct	-	aes/gemgsxif.c:291
 gsx_kstate	-	def	aes	aes/gemgsxif.c:432
 gsx_kstate	gsx_0code	direct	-	aes/gemgsxif.c:434
+gsx_kstate	vdi_vq_key_s	layer	trap #2 0x80 jmptb2[0x80] via gsx_0code	aes/gemgsxif.c:434
 gsx_malloc	-	def	aes	aes/gemgsxif.c:108
 gsx_malloc	bb_set	data	gl_tmp	aes/gemgsxif.c:113
 gsx_malloc	dos_alloc_anyram	direct	-	aes/gemgsxif.c:113
@@ -11773,14 +11950,17 @@ gsx_mfset	gsx_wsopen	data	intin	aes/gemgsxif.c:417
 gsx_mfset	just_draw	data	intin	aes/gemgsxif.c:417
 gsx_mfset	memcpy	direct	-	aes/gemgsxif.c:417
 gsx_mfset	v_opnwk	data	intin	aes/gemgsxif.c:417
+gsx_mfset	vdi_vsc_form	layer	trap #2 0x6f jmptb2[0x6f] via gsx_ncode	aes/gemgsxif.c:418
 gsx_moff	-	def	aes	aes/gemgsxif.c:440
 gsx_moff	ct_mouse	data	gl_moff	aes/gemgsxif.c:445
 gsx_moff	gsx_0code	direct	-	aes/gemgsxif.c:443
 gsx_moff	gsx_mon	data	gl_moff	aes/gemgsxif.c:445
+gsx_moff	vdi_v_hide_c	layer	trap #2 0x7b jmptb2[0x7b] via gsx_0code	aes/gemgsxif.c:443
 gsx_mon	-	def	aes	aes/gemgsxif.c:450
 gsx_mon	ct_mouse	data	gl_moff	aes/gemgsxif.c:452
 gsx_mon	gsx_1code	direct	-	aes/gemgsxif.c:454
 gsx_mon	gsx_moff	data	gl_moff	aes/gemgsxif.c:452
+gsx_mon	vdi_v_show_c	layer	trap #2 0x7a jmptb2[0x7a] via gsx_1code	aes/gemgsxif.c:454
 gsx_mret	-	def	aes	aes/gemgsxif.c:125
 gsx_mxmy	-	def	aes	aes/gemgsxif.c:424
 gsx_ncode	-	def	aes	aes/gemgsxif.c:133
@@ -11799,6 +11979,7 @@ gsx_ncode	vro_cpyfm	data	contrl	aes/gemgsxif.c:135
 gsx_ncode	vrt_cpyfm	data	contrl	aes/gemgsxif.c:135
 gsx_nplanes	-	def	aes	aes/gemgsxif.c:497
 gsx_nplanes	gsx_1code	direct	-	aes/gemgsxif.c:499
+gsx_nplanes	vdi_vq_extnd	layer	trap #2 0x66 jmptb2[0x66] via gsx_1code	aes/gemgsxif.c:499
 gsx_pline	-	def	aes	aes/gemgraf.c:170
 gsx_pline	bb_fill	data	ptsin	aes/gemgraf.c:177
 gsx_pline	gsx_box	data	ptsin	aes/gemgraf.c:177
@@ -11821,6 +12002,8 @@ gsx_resetmb	gsx_char	data	*contrl	aes/gemgsxif.c:240
 gsx_resetmb	gsx_setmb	data	*contrl	aes/gemgsxif.c:240
 gsx_resetmb	gsx_tick	data	*contrl	aes/gemgsxif.c:240
 gsx_resetmb	v_opnwk	data	*contrl	aes/gemgsxif.c:240
+gsx_resetmb	vdi_vex_butv	layer	trap #2 0x7d jmptb2[0x7d] via gsx_0code	aes/gemgsxif.c:241
+gsx_resetmb	vdi_vex_motv	layer	trap #2 0x7e jmptb2[0x7e] via gsx_0code	aes/gemgsxif.c:244
 gsx_resetmb	vex_wheelv	data	*contrl	aes/gemgsxif.c:240
 gsx_resetmb	vrn_trnfm	data	*contrl	aes/gemgsxif.c:240
 gsx_resetmb	vro_cpyfm	data	*contrl	aes/gemgsxif.c:240
@@ -11853,6 +12036,8 @@ gsx_setmb	gsx_resetmb	data	*old_bcode	aes/gemgsxif.c:223
 gsx_setmb	gsx_resetmb	data	*old_mcode	aes/gemgsxif.c:227
 gsx_setmb	gsx_tick	data	*contrl	aes/gemgsxif.c:221
 gsx_setmb	v_opnwk	data	*contrl	aes/gemgsxif.c:221
+gsx_setmb	vdi_vex_butv	layer	trap #2 0x7d jmptb2[0x7d] via gsx_0code	aes/gemgsxif.c:222
+gsx_setmb	vdi_vex_motv	layer	trap #2 0x7e jmptb2[0x7e] via gsx_0code	aes/gemgsxif.c:226
 gsx_setmb	vex_wheelv	data	*contrl	aes/gemgsxif.c:221
 gsx_setmb	vrn_trnfm	data	*contrl	aes/gemgsxif.c:221
 gsx_setmb	vro_cpyfm	data	*contrl	aes/gemgsxif.c:221
@@ -11874,6 +12059,8 @@ gsx_setmousexy	just_draw	data	intin	aes/gemgsxif.c:486
 gsx_setmousexy	v_opnwk	data	intin	aes/gemgsxif.c:486
 gsx_setmousexy	v_opnwk	data	ptsin	aes/gemgsxif.c:489
 gsx_setmousexy	v_pline	data	ptsin	aes/gemgsxif.c:489
+gsx_setmousexy	vdi_v_locator	layer	trap #2 0x1c jmptb1[0x1c] via gsx_ncode	aes/gemgsxif.c:491
+gsx_setmousexy	vdi_vsin_mode	layer	trap #2 0x21 jmptb1[0x21] via gsx_ncode	aes/gemgsxif.c:488
 gsx_setmousexy	vr_recfl	data	ptsin	aes/gemgsxif.c:489
 gsx_setmousexy	vro_cpyfm	data	ptsin	aes/gemgsxif.c:489
 gsx_setmousexy	vrt_cpyfm	data	ptsin	aes/gemgsxif.c:489
@@ -12018,6 +12205,8 @@ gsx_start	sob_malloc	data	gl_hchar	aes/gemgraf.c:405
 gsx_start	sob_malloc	data	gl_wchar	aes/gemgraf.c:405
 gsx_start	start_dialog	data	gl_rfull	aes/gemgraf.c:424
 gsx_start	transform_all_cicons	data	gl_nplanes	aes/gemgraf.c:395
+gsx_start	vdi_vsl_type	layer	trap #2 0xf jmptb1[0xf] via gsx_1code	aes/gemgraf.c:420
+gsx_start	vdi_vsl_udsty	layer	trap #2 0x71 jmptb2[0x71] via gsx_1code	aes/gemgraf.c:422
 gsx_start	vsl_width	direct	-	aes/gemgraf.c:421
 gsx_start	vst_height	direct	-	aes/gemgraf.c:407
 gsx_start	w_bldactive	data	gl_hbox	aes/gemgraf.c:412
@@ -12118,6 +12307,7 @@ gsx_tblt	sob_malloc	data	gl_wchar	aes/gemgraf.c:506
 gsx_tblt	v_opnwk	data	contrl	aes/gemgraf.c:522
 gsx_tblt	v_opnwk	data	ptsin	aes/gemgraf.c:525
 gsx_tblt	v_pline	data	ptsin	aes/gemgraf.c:525
+gsx_tblt	vdi_v_gtext	layer	trap #2 0x8 jmptb1[0x8] via gsx2	aes/gemgraf.c:528
 gsx_tblt	vex_wheelv	data	contrl	aes/gemgraf.c:522
 gsx_tblt	vr_recfl	data	ptsin	aes/gemgraf.c:525
 gsx_tblt	vrn_trnfm	data	contrl	aes/gemgraf.c:522
@@ -12143,6 +12333,7 @@ gsx_tcalc	just_draw	data	intin	aes/gemgraf.c:488
 gsx_tcalc	v_opnwk	data	intin	aes/gemgraf.c:488
 gsx_textsize	-	def	aes	aes/gemgsxif.c:505
 gsx_textsize	gsx_0code	direct	-	aes/gemgsxif.c:507
+gsx_textsize	vdi_vqt_attributes	layer	trap #2 0x26 jmptb1[0x26] via gsx_0code	aes/gemgsxif.c:507
 gsx_tick	-	def	aes	aes/gemgsxif.c:397
 gsx_tick	ap_tplay	data	*contrl	aes/gemgsxif.c:399
 gsx_tick	gsx2	data	*contrl	aes/gemgsxif.c:399
@@ -12152,6 +12343,7 @@ gsx_tick	gsx_char	data	*contrl	aes/gemgsxif.c:399
 gsx_tick	gsx_resetmb	data	*contrl	aes/gemgsxif.c:399
 gsx_tick	gsx_setmb	data	*contrl	aes/gemgsxif.c:399
 gsx_tick	v_opnwk	data	*contrl	aes/gemgsxif.c:399
+gsx_tick	vdi_vex_timv	layer	trap #2 0x76 jmptb2[0x76] via gsx_0code	aes/gemgsxif.c:400
 gsx_tick	vex_wheelv	data	*contrl	aes/gemgsxif.c:399
 gsx_tick	vrn_trnfm	data	*contrl	aes/gemgsxif.c:399
 gsx_tick	vro_cpyfm	data	*contrl	aes/gemgsxif.c:399
@@ -12168,8 +12360,10 @@ gsx_trans	transform_cicon	data	gl_src	aes/gemgraf.c:371
 gsx_trans	vrn_trnfm	direct	-	aes/gemgraf.c:375
 gsx_wsclear	-	def	aes	aes/gemgsxif.c:198
 gsx_wsclear	gsx_0code	direct	-	aes/gemgsxif.c:200
+gsx_wsclear	vdi_v_clrwk	layer	trap #2 0x3 jmptb1[0x3] via gsx_0code	aes/gemgsxif.c:200
 gsx_wsclose	-	def	aes	aes/gemgsxif.c:191
 gsx_wsclose	gsx_0code	direct	-	aes/gemgsxif.c:193
+gsx_wsclose	vdi_v_clswk	layer	trap #2 0x2 jmptb1[0x2] via gsx_0code	aes/gemgsxif.c:193
 gsx_wsopen	-	def	aes	aes/gemgsxif.c:169
 gsx_wsopen	add_3d_effect	data	gl_ws	aes/gemgsxif.c:184
 gsx_wsopen	crysbind	data	gl_handle	aes/gemgsxif.c:185
@@ -12225,6 +12419,7 @@ gsx_xcbox	vs_clip	data	ptsin	aes/gemgraf.c:291
 gsx_xline	-	def	aes	aes/gemgraf.c:140
 gsx_xline	gsx_1code	direct	-	aes/gemgraf.c:158
 gsx_xline	v_pline	direct	-	aes/gemgraf.c:159
+gsx_xline	vdi_vsl_udsty	layer	trap #2 0x71 jmptb2[0x71] via gsx_1code	aes/gemgraf.c:158
 guess_machine_name	-	def	bios	bios/machine.c:800
 halt	-	def	bios	bios/panicasm.S:79
 handle_DATA	-	def	bios	bios/dsp.c:815
@@ -12864,6 +13059,7 @@ ikbd_writew	-	def	bios	bios/ikbd.c:972
 ikbd_writew	ikbd_writeb	direct	-	bios/ikbd.c:974
 ikbdraw	-	def	bios	bios/aciavecs.S:407
 ikbdsys	-	def	bios	bios/aciavecs.S:382
+ikbdsys	just_rts	vector	via vkbderr	bios/aciavecs.S:397
 ikbdws	-	def	bios	bios/ikbd.c:948
 ikbdws	ikbd_writeb	direct	-	bios/ikbd.c:952
 illegal_op_msg	-	def	desk	desk/deskdir.c:220
@@ -14099,6 +14295,7 @@ init_serport	push_serial_iorec	data	iorec1	bios/serport.c:1015
 init_serport	rsconf	data	rsconfptr	bios/serport.c:1019
 init_serport	rsconf1	callback	address	bios/serport.c:1019
 init_serport	rsconf1	data	iorec1	bios/serport.c:1015
+init_serport	rsconf1	vector	via rsconfptr	bios/serport.c:1066
 init_serport	rsconfA	data	iorecA	bios/serport.c:1024
 init_serport	rsconfA	direct	-	bios/serport.c:1039
 init_serport	rsconfB	direct	-	bios/serport.c:1040
@@ -15050,6 +15247,8 @@ instr	-	def	aes	aes/gemobed.c:228
 instruction_cache_kludge	-	def	bios	bios/processor.S:380
 int2bcd	-	def	bios	bios/clock.c:40
 int_acia	-	def	bios	bios/aciavecs.S:249
+int_acia	ikbdsys	vector	via ikbdsys	bios/aciavecs.S:269
+int_acia	midisys	vector	via midisys	bios/aciavecs.S:265
 int_hbl	-	def	bios	bios/vectors.S:288
 int_illegal	-	def	bios	bios/vectors.S:837
 int_illegal	init_user_vec	asm	jra illg_vec	bios/vectors.S:851
@@ -15058,8 +15257,11 @@ int_linea	linea_0	asm	lea linea_vecs	bios/linea.S:104
 int_priv	-	def	bios	bios/vectors.S:859
 int_priv	init_user_vec	asm	jra priv_vec	bios/vectors.S:902
 int_timerc	-	def	bios	bios/vectors.S:502
+int_timerc	just_rts	vector	via etv_timer	bios/vectors.S:543
 int_timerc	kb_timerc_int	asm	jsr	bios/vectors.S:534
 int_timerc	sndirq	asm	jsr	bios/vectors.S:538
+int_timerc	tick_int	vector	via etv_timer	bios/vectors.S:543
+int_timerc	tikfrk	vector	via etv_timer	bios/vectors.S:543
 int_unimpint	-	def	bios	bios/vectors.S:954
 int_unimpint	init_user_vec	asm	jeq unimp_vec	bios/vectors.S:959
 int_unimpint	init_user_vec	asm	jra buserr_vec	bios/vectors.S:1236
@@ -15067,6 +15269,7 @@ int_vbl	-	def	bios	bios/vectors.S:329
 int_vbl	blink	asm	jsr	bios/vectors.S:355
 int_vbl	detect_monitor_change	asm	jsr	bios/vectors.S:352
 int_vbl	flopvbl	asm	jsr	bios/vectors.S:433
+int_vbl	just_rts	vector	via dump_vec	bios/vectors.S:470
 internal_inquire	-	def	bios	bios/disk.c:1023
 internal_inquire	acsi_ioctl	direct	-	bios/disk.c:1045
 internal_inquire	ide_ioctl	direct	-	bios/disk.c:1055
@@ -15399,6 +15602,7 @@ just_draw	sh_put	data	D	aes/gemoblib.c:718
 just_draw	sh_read	data	D	aes/gemoblib.c:718
 just_draw	sh_write	data	D	aes/gemoblib.c:718
 just_draw	v_opnwk	data	intin	aes/gemoblib.c:805
+just_draw	vdi_vsf_color	layer	trap #2 0x19 jmptb1[0x19] via gsx_1code	aes/gemoblib.c:896
 just_draw	w_bldactive	data	D	aes/gemoblib.c:718
 just_draw	w_getxptr	data	D	aes/gemoblib.c:718
 just_draw	w_redraw	data	D	aes/gemoblib.c:718
@@ -15457,9 +15661,11 @@ kbd_int	do_key_repeat	data	shifty	bios/ikbd.c:780
 kbd_int	handle_mouse_mode	data	kb_arrowkeys	bios/ikbd.c:820
 kbd_int	handle_mouse_mode	data	shifty	bios/ikbd.c:780
 kbd_int	handle_mouse_mode	direct	-	bios/ikbd.c:821
+kbd_int	just_rts	vector	via mousexvec	bios/ikbd.c:758
 kbd_int	kbshift	data	shifty	bios/ikbd.c:780
 kbd_int	keyclick	direct	-	bios/ikbd.c:846
 kbd_int	push_ikbdiorec	direct	-	bios/ikbd.c:909
+kbd_int	vdi_mousex_handler	vector	via mousexvec	bios/ikbd.c:758
 kbd_int	warm_reset	direct	-	bios/ikbd.c:744
 kbdvbase	-	def	bios	bios/xbios.c:716
 kbdvec	-	def	bios	bios/aciavecs.S:372
@@ -15477,6 +15683,7 @@ kchange	post_keybd	direct	-	aes/geminput.c:295
 kcprintf	-	def	bios	bios/kprint.c:271
 kcprintf	vkcprintf	direct	-	bios/kprint.c:276
 keyclick	-	def	bios	bios/vectors.S:1430
+keyclick	do_keyclick	vector	via kcl_hook	bios/vectors.S:1435
 keytbl	-	def	bios	bios/ikbd.c:122
 keytbl	convert_scancode	data	current_keytbl	bios/ikbd.c:125
 keytbl	kbd_int	data	current_keytbl	bios/ikbd.c:125
@@ -15737,6 +15944,7 @@ logbase	-	def	bios	bios/screen.c:1071
 lookup_ascii_shortcut	-	def	desk	desk/deskmain.c:1169
 lookup_videl_mode	-	def	bios	bios/videl.c:384
 lrwabs	-	def	bios	bios/bios.c:1045
+lrwabs	blkdev_rwabs	vector	via hdv_rw	bios/bios.c:1047
 lrwabs	protect_wlwwwl	direct	-	bios/bios.c:1047
 mach_dac_setrs2rs3	-	def	bios	bios/nova.c:342
 mach_dac_setrs2rs3	set_idxreg	direct	-	bios/nova.c:344
@@ -15830,6 +16038,7 @@ mdosetdate	extract_date	direct	-	bios/clock.c:775
 mdosettime	-	def	bios	bios/clock.c:740
 mdosettime	extract_time	direct	-	bios/clock.c:744
 mediach	-	def	bios	bios/bios.c:1184
+mediach	blkdev_mediach	vector	via hdv_mediach	bios/bios.c:1186
 mediach	protect_w	direct	-	bios/bios.c:1186
 memdone	-	def	bios	bios/startup.S:528
 memdone	biosmain	asm	jmp	bios/startup.S:535
@@ -15887,6 +16096,7 @@ menu_bar	-	def	desk	desk/gembind.c:293
 menu_bar	appl_init	data	addr_in	desk/gembind.c:295
 menu_bar	appl_init	data	int_in	desk/gembind.c:296
 menu_bar	gem_if	direct	-	desk/gembind.c:297
+menu_bar	mn_bar	layer	trap #2 0x1e crysbind[0x1e] via gem_if	desk/gembind.c:297
 menu_down	-	def	aes	aes/gemmnlib.c:229
 menu_down	do_chg	direct	-	aes/gemmnlib.c:236
 menu_down	menu_sr	direct	-	aes/gemmnlib.c:239
@@ -15903,10 +16113,12 @@ menu_fixup	ob_add	direct	-	aes/gemmnlib.c:111
 menu_icheck	-	def	desk	desk/gembind.c:301
 menu_icheck	appl_init	data	addr_in	desk/gembind.c:303
 menu_icheck	appl_init	data	int_in	desk/gembind.c:304
+menu_icheck	do_chg	layer	trap #2 0x1f crysbind[0x1f] via gem_if	desk/gembind.c:306
 menu_icheck	gem_if	direct	-	desk/gembind.c:306
 menu_ienable	-	def	desk	desk/gembind.c:310
 menu_ienable	appl_init	data	addr_in	desk/gembind.c:312
 menu_ienable	appl_init	data	int_in	desk/gembind.c:313
+menu_ienable	do_chg	layer	trap #2 0x20 crysbind[0x20] via gem_if	desk/gembind.c:315
 menu_ienable	gem_if	direct	-	desk/gembind.c:315
 menu_select	-	def	aes	aes/gemmnlib.c:192
 menu_select	do_chg	direct	-	aes/gemmnlib.c:196
@@ -15929,6 +16141,7 @@ menu_sub	-	def	aes	aes/gemmnlib.c:71
 menu_tnormal	-	def	desk	desk/gembind.c:319
 menu_tnormal	appl_init	data	addr_in	desk/gembind.c:321
 menu_tnormal	appl_init	data	int_in	desk/gembind.c:322
+menu_tnormal	do_chg	layer	trap #2 0x21 crysbind[0x21] via gem_if	desk/gembind.c:324
 menu_tnormal	gem_if	direct	-	desk/gembind.c:324
 merge_byte	-	def	vdi	vdi/vdi_textblit.c:239
 mfp_init	-	def	bios	bios/mfp.c:103
@@ -15976,6 +16189,8 @@ mgetdt	mgetregs	direct	-	bios/clock.c:812
 mgetregs	-	def	bios	bios/clock.c:679
 midi_init	-	def	bios	bios/midi.c:117
 midisys	-	def	bios	bios/aciavecs.S:295
+midisys	just_rts	vector	via vmiderr	bios/aciavecs.S:309
+midisys	midivec	vector	via midivec	bios/aciavecs.S:303
 midivec	-	def	bios	bios/aciavecs.S:315
 midiws	-	def	bios	bios/midi.c:104
 midiws	bconout3	direct	-	bios/midi.c:108
@@ -16240,6 +16455,10 @@ monstersetdt	int2bcd	direct	-	bios/clock.c:499
 monstersetdt	write_ds1307	direct	-	bios/clock.c:499
 mouse_int	-	def	vdi	vdi/vdi_asm.S:231
 mouse_int	GSX_ENTRY	asm	jbsr scrn_clip	vdi/vdi_asm.S:357
+mouse_int	just_rts	vector	via user_but	vdi/vdi_asm.S:284
+mouse_int	just_rts	vector	via user_cur	vdi/vdi_asm.S:368
+mouse_int	just_rts	vector	via user_mot	vdi/vdi_asm.S:360
+mouse_int	mov_cur	vector	via user_cur	vdi/vdi_asm.S:368
 mov_cur	-	def	vdi	vdi/vdi_asm.S:496
 move_block	-	def	bios	bios/dsp.c:1020
 move_cursor	-	def	bios	bios/conout.c:416
@@ -16531,12 +16750,17 @@ nomem_alert	fun_alert	direct	gimple-only	desk/deskapp.c:198
 nop	-	def	bios	bios/vt52.c:204
 normal_ascii	-	def	bios	bios/vt52.c:166
 normal_ascii	ascii_cr	callback	via cntl_tab	bios/vt52.c:135
+normal_ascii	ascii_cr	vector	via cntl_tab@bios/vt52.c[]	bios/vt52.c:198
 normal_ascii	ascii_lf	callback	via cntl_tab	bios/vt52.c:132
+normal_ascii	ascii_lf	vector	via cntl_tab@bios/vt52.c[]	bios/vt52.c:198
 normal_ascii	ascii_out	direct	-	bios/vt52.c:173
 normal_ascii	cputc	data	con_state	bios/vt52.c:190
 normal_ascii	do_backspace	callback	via cntl_tab	bios/vt52.c:130
+normal_ascii	do_backspace	vector	via cntl_tab@bios/vt52.c[]	bios/vt52.c:198
 normal_ascii	do_bell	callback	via cntl_tab	bios/vt52.c:129
+normal_ascii	do_bell	vector	via cntl_tab@bios/vt52.c[]	bios/vt52.c:198
 normal_ascii	do_tab	callback	via cntl_tab	bios/vt52.c:131
+normal_ascii	do_tab	vector	via cntl_tab@bios/vt52.c[]	bios/vt52.c:198
 normal_ascii	esc_ch1	callback	address	bios/vt52.c:190
 normal_blit	-	def	vdi	vdi/vdi_tblit.S:243
 nq	-	def	aes	aes/geminput.c:241
@@ -17127,22 +17351,28 @@ objc_add	-	def	desk	desk/gembind.c:352
 objc_add	appl_init	data	addr_in	desk/gembind.c:354
 objc_add	appl_init	data	int_in	desk/gembind.c:355
 objc_add	gem_if	direct	-	desk/gembind.c:357
+objc_add	ob_add	layer	trap #2 0x28 crysbind[0x28] via gem_if	desk/gembind.c:357
 objc_draw	-	def	desk	desk/gembind.c:371
 objc_draw	appl_init	data	addr_in	desk/gembind.c:374
 objc_draw	appl_init	data	int_in	desk/gembind.c:375
 objc_draw	gem_if	direct	-	desk/gembind.c:381
+objc_draw	gsx_sclip	layer	trap #2 0x2a crysbind[0x2a] via gem_if	desk/gembind.c:381
+objc_draw	ob_draw	layer	trap #2 0x2a crysbind[0x2a] via gem_if	desk/gembind.c:381
 objc_find	-	def	desk	desk/gembind.c:385
 objc_find	appl_init	data	addr_in	desk/gembind.c:387
 objc_find	appl_init	data	int_in	desk/gembind.c:388
 objc_find	gem_if	direct	-	desk/gembind.c:392
+objc_find	ob_find	layer	trap #2 0x2b crysbind[0x2b] via gem_if	desk/gembind.c:392
 objc_offset	-	def	desk	desk/gembind.c:396
 objc_offset	appl_init	data	addr_in	desk/gembind.c:398
 objc_offset	appl_init	data	int_in	desk/gembind.c:399
 objc_offset	gem_if	direct	-	desk/gembind.c:400
+objc_offset	ob_offset	layer	trap #2 0x2c crysbind[0x2c] via gem_if	desk/gembind.c:400
 objc_order	-	def	desk	desk/gembind.c:407
 objc_order	appl_init	data	addr_in	desk/gembind.c:409
 objc_order	appl_init	data	int_in	desk/gembind.c:410
 objc_order	gem_if	direct	-	desk/gembind.c:412
+objc_order	ob_order	layer	trap #2 0x2d crysbind[0x2d] via gem_if	desk/gembind.c:412
 offgibit	-	def	bios	bios/sound.c:130
 offree	-	def	bdos	bdos/bdosmain.c:387
 offree	getofd	data	sft	bdos/bdosmain.c:399
@@ -18442,6 +18672,7 @@ ratinit	ct_mouse	data	gl_moff	aes/gemgsxif.c:208
 ratinit	gsx_1code	direct	-	aes/gemgsxif.c:207
 ratinit	gsx_moff	data	gl_moff	aes/gemgsxif.c:208
 ratinit	gsx_mon	data	gl_moff	aes/gemgsxif.c:208
+ratinit	vdi_v_show_c	layer	trap #2 0x7a jmptb2[0x7a] via gsx_1code	aes/gemgsxif.c:207
 rc_copy	-	def	include	include/rectfunc.h:23
 read_ds1307	-	def	bios	bios/clock.c:457
 read_ds1307	i2c_read	direct	-	bios/clock.c:466
@@ -18780,6 +19011,7 @@ rs_sglobe	rs_readit	data	rs_global	aes/gemrslib.c:677
 rs_sglobe	rs_readit	data	rs_hdr	aes/gemrslib.c:678
 rs_str	-	def	aes	aes/gemrslib.c:854
 rsconf	-	def	bios	bios/xbios.c:376
+rsconf	rsconf1	vector	via rsconfptr	bios/xbios.c:378
 rsconf1	-	def	bios	bios/serport.c:386
 rsconf1	bconin1	data	iorec1	bios/serport.c:389
 rsconf1	bconout1	data	iorec1	bios/serport.c:389
@@ -18814,13 +19046,16 @@ rsconf_scc	-	def	bios	bios/serport.c:775
 rsconf_scc	write_scc	direct	-	bios/serport.c:802
 rsrc_free	-	def	desk	desk/gembind.c:845
 rsrc_free	gem_if	direct	-	desk/gembind.c:847
+rsrc_free	rs_free	layer	trap #2 0x6f crysbind[0x6f] via gem_if	desk/gembind.c:847
 rsrc_load	-	def	desk	desk/gembind.c:838
 rsrc_load	appl_init	data	addr_in	desk/gembind.c:840
 rsrc_load	gem_if	direct	-	desk/gembind.c:841
+rsrc_load	rs_load	layer	trap #2 0x6e crysbind[0x6e] via gem_if	desk/gembind.c:841
 rsrc_obfix	-	def	desk	desk/gembind.c:877
 rsrc_obfix	appl_init	data	addr_in	desk/gembind.c:879
 rsrc_obfix	appl_init	data	int_in	desk/gembind.c:880
 rsrc_obfix	gem_if	direct	-	desk/gembind.c:881
+rsrc_obfix	rs_obfix	layer	trap #2 0x72 crysbind[0x72] via gem_if	desk/gembind.c:881
 run_accs_and_desktop	-	def	aes	aes/geminit.c:654
 run_accs_and_desktop	ap_exit	data	D	aes/geminit.c:672
 run_accs_and_desktop	b_click	data	gl_bclick	aes/geminit.c:670
@@ -19210,6 +19445,7 @@ schedule	signal	data	drl	aes/gemdisp.c:195
 schedule	stop_until_interrupt	direct	-	aes/gemdisp.c:202
 scrdmp	-	def	bios	bios/xbios.c:490
 scrdmp	convert_scancode	data	dumpflg	bios/xbios.c:493
+scrdmp	just_rts	vector	via dump_vec	bios/xbios.c:492
 scrdmp	protect_v	direct	-	bios/xbios.c:492
 screen	-	def	vdi	vdi/vdi_main.c:121
 screen	ap_tplay	data	*contrl	vdi/vdi_main.c:132
@@ -20880,17 +21116,21 @@ shel_get	-	def	desk	desk/gembind.c:918
 shel_get	appl_init	data	addr_in	desk/gembind.c:920
 shel_get	appl_init	data	int_in	desk/gembind.c:921
 shel_get	gem_if	direct	-	desk/gembind.c:922
+shel_get	sh_get	layer	trap #2 0x7a crysbind[0x7a] via gem_if	desk/gembind.c:922
 shel_put	-	def	desk	desk/gembind.c:926
 shel_put	appl_init	data	addr_in	desk/gembind.c:928
 shel_put	appl_init	data	int_in	desk/gembind.c:929
 shel_put	gem_if	direct	-	desk/gembind.c:930
+shel_put	sh_put	layer	trap #2 0x7b crysbind[0x7b] via gem_if	desk/gembind.c:930
 shel_wdef	-	def	desk	desk/gembind.c:963
 shel_wdef	appl_init	data	addr_in	desk/gembind.c:965
 shel_wdef	gem_if	direct	-	desk/gembind.c:967
+shel_wdef	sh_wdef	layer	trap #2 0x7f crysbind[0x7f] via gem_if	desk/gembind.c:967
 shel_write	-	def	desk	desk/gembind.c:907
 shel_write	appl_init	data	addr_in	desk/gembind.c:912
 shel_write	appl_init	data	int_in	desk/gembind.c:909
 shel_write	gem_if	direct	-	desk/gembind.c:914
+shel_write	sh_write	layer	trap #2 0x79 crysbind[0x79] via gem_if	desk/gembind.c:914
 shift_and_update	-	def	vdi	vdi/vdi_textblit.c:560
 shifter_check_moderez	-	def	bios	bios/screen.c:86
 shifter_check_moderez	getrez	direct	-	bios/screen.c:107
@@ -21463,6 +21703,10 @@ text_init2	vq_color16	data	DEV_TAB	vdi/vdi_text.c:589
 text_init2	vs_color16	data	DEV_TAB	vdi/vdi_text.c:589
 text_init2	wideline	data	DEV_TAB	vdi/vdi_text.c:589
 tick_int	-	def	vdi	vdi/vdi_misc.c:78
+tick_int	just_rts	vector	via tim_addr	vdi/vdi_misc.c:83
+tick_int	just_rts	vector	via tim_chain	vdi/vdi_misc.c:88
+tick_int	tick_int	vector	via tim_chain	vdi/vdi_misc.c:88
+tick_int	tikfrk	vector	via tim_chain	vdi/vdi_misc.c:88
 tickcal	-	def	bios	bios/bios.c:1096
 tikcod	-	def	aes	aes/gemdosif.S:389
 tikcod	b_delay	asm	jsr	aes/gemdosif.S:408
@@ -21739,9 +21983,11 @@ usrio	xexec	data	errbuf	bdos/fsio.c:73
 v_opnwk	-	def	aes	aes/gemgsxif.c:552
 v_opnwk	gsx2	data	vdipb	aes/gemgsxif.c:557
 v_opnwk	gsx_ncode	direct	-	aes/gemgsxif.c:560
+v_opnwk	vdi_v_opnwk	layer	trap #2 0x1 jmptb1[0x1] via gsx_ncode	aes/gemgsxif.c:560
 v_pline	-	def	aes	aes/gemgsxif.c:573
 v_pline	gsx2	data	vdipb	aes/gemgsxif.c:575
 v_pline	gsx_ncode	direct	-	aes/gemgsxif.c:576
+v_pline	vdi_v_pline	layer	trap #2 0x6 jmptb1[0x6] via gsx_ncode	aes/gemgsxif.c:576
 valid_bus	-	def	bios	bios/scsidriv.c:142
 valid_bus_and_device	-	def	bios	bios/scsidriv.c:156
 valid_bus_and_device	valid_bus	direct	-	bios/scsidriv.c:158
@@ -21860,25 +22106,45 @@ vdi_v_contourfill	contourfill	direct	-	vdi/vdi_fill.c:1090
 vdi_v_contourfill	no_abort	callback	address	vdi/vdi_fill.c:1088
 vdi_v_escape	-	def	vdi	vdi/vdi_esc.c:334
 vdi_v_escape	escfn0	callback	via esctbl	vdi/vdi_esc.c:295
+vdi_v_escape	escfn0	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn1	callback	via esctbl	vdi/vdi_esc.c:296
+vdi_v_escape	escfn1	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn10	callback	via esctbl	vdi/vdi_esc.c:305
+vdi_v_escape	escfn10	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn11	callback	via esctbl	vdi/vdi_esc.c:306
+vdi_v_escape	escfn11	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn12	callback	via esctbl	vdi/vdi_esc.c:307
+vdi_v_escape	escfn12	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn13	callback	via esctbl	vdi/vdi_esc.c:308
+vdi_v_escape	escfn13	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn14	callback	via esctbl	vdi/vdi_esc.c:309
+vdi_v_escape	escfn14	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn15	callback	via esctbl	vdi/vdi_esc.c:310
+vdi_v_escape	escfn15	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn16	callback	via esctbl	vdi/vdi_esc.c:311
+vdi_v_escape	escfn16	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn17	callback	via esctbl	vdi/vdi_esc.c:312
+vdi_v_escape	escfn17	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn18	callback	via esctbl	vdi/vdi_esc.c:313
+vdi_v_escape	escfn18	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn19	callback	via esctbl	vdi/vdi_esc.c:314
+vdi_v_escape	escfn19	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn2	callback	via esctbl	vdi/vdi_esc.c:297
+vdi_v_escape	escfn2	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn3	callback	via esctbl	vdi/vdi_esc.c:298
+vdi_v_escape	escfn3	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn4	callback	via esctbl	vdi/vdi_esc.c:299
+vdi_v_escape	escfn4	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn5	callback	via esctbl	vdi/vdi_esc.c:300
+vdi_v_escape	escfn5	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn6	callback	via esctbl	vdi/vdi_esc.c:301
+vdi_v_escape	escfn6	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn7	callback	via esctbl	vdi/vdi_esc.c:302
+vdi_v_escape	escfn7	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn8	callback	via esctbl	vdi/vdi_esc.c:303
+vdi_v_escape	escfn8	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_escape	escfn9	callback	via esctbl	vdi/vdi_esc.c:304
+vdi_v_escape	escfn9	vector	via esctbl@vdi/vdi_esc.c[]	vdi/vdi_esc.c:349
 vdi_v_fillarea	-	def	vdi	vdi/vdi_fill.c:617
 vdi_v_fillarea	polygon	direct	-	vdi/vdi_fill.c:628
 vdi_v_gdp	-	def	vdi	vdi/vdi_gdp.c:426
@@ -24225,6 +24491,7 @@ vex_wheelv	gsx_resetmb	data	*contrl	aes/gemgsxif.c:665
 vex_wheelv	gsx_setmb	data	*contrl	aes/gemgsxif.c:665
 vex_wheelv	gsx_tick	data	*contrl	aes/gemgsxif.c:665
 vex_wheelv	v_opnwk	data	*contrl	aes/gemgsxif.c:665
+vex_wheelv	vdi_vex_wheelv	layer	trap #2 0x86 jmptb2[0x86] via gsx_0code	aes/gemgsxif.c:666
 vex_wheelv	vrn_trnfm	data	*contrl	aes/gemgsxif.c:665
 vex_wheelv	vro_cpyfm	data	*contrl	aes/gemgsxif.c:665
 vex_wheelv	vrt_cpyfm	data	*contrl	aes/gemgsxif.c:665
@@ -24304,6 +24571,7 @@ vq_color16	vdi_vswr_mode	data	*INTOUT	vdi/vdi_col.c:823
 vr_recfl	-	def	aes	aes/gemgsxif.c:604
 vr_recfl	gsx2	data	vdipb	aes/gemgsxif.c:606
 vr_recfl	gsx_ncode	direct	-	aes/gemgsxif.c:607
+vr_recfl	vdi_vr_recfl	layer	trap #2 0x72 jmptb2[0x72] via gsx_ncode	aes/gemgsxif.c:607
 vr_trnfm16	-	def	vdi	vdi/vdi_raster.c:190
 vr_trnfm16	bzero_nobuiltin	direct	-	vdi/vdi_raster.c:216
 vr_trnfm16	dos_alloc_anyram	direct	-	vdi/vdi_raster.c:207
@@ -24319,6 +24587,7 @@ vrn_trnfm	gsx_resetmb	data	*contrl	aes/gemgsxif.c:642
 vrn_trnfm	gsx_setmb	data	*contrl	aes/gemgsxif.c:642
 vrn_trnfm	gsx_tick	data	*contrl	aes/gemgsxif.c:642
 vrn_trnfm	v_opnwk	data	*contrl	aes/gemgsxif.c:642
+vrn_trnfm	vdi_vr_trnfm	layer	trap #2 0x6e jmptb2[0x6e] via gsx_0code	aes/gemgsxif.c:645
 vrn_trnfm	vex_wheelv	data	*contrl	aes/gemgsxif.c:642
 vrn_trnfm	vro_cpyfm	data	*contrl	aes/gemgsxif.c:642
 vrn_trnfm	vrt_cpyfm	data	*contrl	aes/gemgsxif.c:642
@@ -24340,6 +24609,7 @@ vro_cpyfm	gsx_wsopen	data	intin	aes/gemgsxif.c:615
 vro_cpyfm	just_draw	data	intin	aes/gemgsxif.c:615
 vro_cpyfm	v_opnwk	data	*contrl	aes/gemgsxif.c:616
 vro_cpyfm	v_opnwk	data	intin	aes/gemgsxif.c:615
+vro_cpyfm	vdi_vro_cpyfm	layer	trap #2 0x6d jmptb2[0x6d] via gsx_ncode	aes/gemgsxif.c:619
 vro_cpyfm	vex_wheelv	data	*contrl	aes/gemgsxif.c:616
 vro_cpyfm	vrn_trnfm	data	*contrl	aes/gemgsxif.c:616
 vro_cpyfm	vrt_cpyfm	data	*contrl	aes/gemgsxif.c:616
@@ -24362,6 +24632,7 @@ vrt_cpyfm	gsx_wsopen	data	intin	aes/gemgsxif.c:628
 vrt_cpyfm	just_draw	data	intin	aes/gemgsxif.c:628
 vrt_cpyfm	v_opnwk	data	*contrl	aes/gemgsxif.c:631
 vrt_cpyfm	v_opnwk	data	intin	aes/gemgsxif.c:628
+vrt_cpyfm	vdi_vrt_cpyfm	layer	trap #2 0x79 jmptb2[0x79] via gsx_ncode	aes/gemgsxif.c:634
 vrt_cpyfm	vex_wheelv	data	*contrl	aes/gemgsxif.c:631
 vrt_cpyfm	vrn_trnfm	data	*contrl	aes/gemgsxif.c:631
 vrt_cpyfm	vro_cpyfm	data	*contrl	aes/gemgsxif.c:631
@@ -24376,6 +24647,7 @@ vs_clip	gsx_tcalc	data	intin	aes/gemgsxif.c:584
 vs_clip	gsx_wsopen	data	intin	aes/gemgsxif.c:584
 vs_clip	just_draw	data	intin	aes/gemgsxif.c:584
 vs_clip	v_opnwk	data	intin	aes/gemgsxif.c:584
+vs_clip	vdi_vs_clip	layer	trap #2 0x81 jmptb2[0x81] via gsx_ncode	aes/gemgsxif.c:585
 vs_color16	-	def	vdi	vdi/vdi_col.c:620
 vs_color16	set_color16	direct	-	vdi/vdi_col.c:648
 vsetmode	-	def	bios	bios/videl.c:619
@@ -24404,6 +24676,7 @@ vsl_width	gsx_xbox	data	ptsin	aes/gemgsxif.c:655
 vsl_width	gsx_xcbox	data	ptsin	aes/gemgsxif.c:655
 vsl_width	v_opnwk	data	ptsin	aes/gemgsxif.c:655
 vsl_width	v_pline	data	ptsin	aes/gemgsxif.c:655
+vsl_width	vdi_vsl_width	layer	trap #2 0x10 jmptb1[0x10] via gsx_ncode	aes/gemgsxif.c:657
 vsl_width	vr_recfl	data	ptsin	aes/gemgsxif.c:655
 vsl_width	vro_cpyfm	data	ptsin	aes/gemgsxif.c:655
 vsl_width	vrt_cpyfm	data	ptsin	aes/gemgsxif.c:655
@@ -24418,6 +24691,7 @@ vst_height	gsx_xbox	data	ptsin	aes/gemgsxif.c:593
 vst_height	gsx_xcbox	data	ptsin	aes/gemgsxif.c:593
 vst_height	v_opnwk	data	ptsin	aes/gemgsxif.c:593
 vst_height	v_pline	data	ptsin	aes/gemgsxif.c:593
+vst_height	vdi_vst_height	layer	trap #2 0xc jmptb1[0xc] via gsx_ncode	aes/gemgsxif.c:595
 vst_height	vr_recfl	data	ptsin	aes/gemgsxif.c:593
 vst_height	vro_cpyfm	data	ptsin	aes/gemgsxif.c:593
 vst_height	vrt_cpyfm	data	ptsin	aes/gemgsxif.c:593
@@ -24718,6 +24992,7 @@ warm_reset	flush_data_cache	asm	jsr	bios/panicasm.S:106
 warm_reset	main	asm	jmp	bios/panicasm.S:107
 wheel_change	-	def	aes	aes/geminput.c:395
 wheel_int	-	def	vdi	vdi/vdi_asm.S:391
+wheel_int	just_rts	vector	via user_wheel	vdi/vdi_asm.S:453
 wideline	-	def	vdi	vdi/vdi_line.c:1389
 wideline	arrow	direct	-	vdi/vdi_line.c:1408
 wideline	cir_dda	direct	-	vdi/vdi_line.c:1403
@@ -25701,36 +25976,46 @@ win_view	wind_calc_grect	direct	-	desk/deskwin.c:95
 wind_calc_grect	-	def	desk	desk/gembind.c:810
 wind_calc_grect	appl_init	data	int_in	desk/gembind.c:812
 wind_calc_grect	gem_if	direct	-	desk/gembind.c:818
+wind_calc_grect	wm_calc	layer	trap #2 0x6c crysbind[0x6c] via gem_if	desk/gembind.c:818
 wind_close	-	def	desk	desk/gembind.c:739
 wind_close	appl_init	data	int_in	desk/gembind.c:741
 wind_close	gem_if	direct	-	desk/gembind.c:742
+wind_close	wm_close	layer	trap #2 0x66 crysbind[0x66] via gem_if	desk/gembind.c:742
 wind_create_grect	-	def	desk	desk/gembind.c:717
 wind_create_grect	appl_init	data	int_in	desk/gembind.c:719
 wind_create_grect	gem_if	direct	-	desk/gembind.c:724
+wind_create_grect	wm_create	layer	trap #2 0x64 crysbind[0x64] via gem_if	desk/gembind.c:724
 wind_delete	-	def	desk	desk/gembind.c:746
 wind_delete	appl_init	data	int_in	desk/gembind.c:748
 wind_delete	gem_if	direct	-	desk/gembind.c:749
+wind_delete	wm_delete	layer	trap #2 0x67 crysbind[0x67] via gem_if	desk/gembind.c:749
 wind_find	-	def	desk	desk/gembind.c:795
 wind_find	appl_init	data	int_in	desk/gembind.c:797
 wind_find	gem_if	direct	-	desk/gembind.c:799
+wind_find	wm_find	layer	trap #2 0x6a crysbind[0x6a] via gem_if	desk/gembind.c:799
 wind_get	-	def	desk	desk/gembind.c:753
 wind_get	appl_init	data	int_in	desk/gembind.c:755
 wind_get	gem_if	direct	-	desk/gembind.c:757
+wind_get	wm_get	layer	trap #2 0x68 crysbind[0x68] via gem_if	desk/gembind.c:757
 wind_get_grect	-	def	desk	desk/gembind.c:766
 wind_get_grect	wind_get	direct	-	desk/gembind.c:768
 wind_new	-	def	desk	desk/gembind.c:828
 wind_new	gem_if	direct	-	desk/gembind.c:830
+wind_new	wm_new	layer	trap #2 0x6d crysbind[0x6d] via gem_if	desk/gembind.c:830
 wind_open_grect	-	def	desk	desk/gembind.c:728
 wind_open_grect	appl_init	data	int_in	desk/gembind.c:730
 wind_open_grect	gem_if	direct	-	desk/gembind.c:735
+wind_open_grect	wm_open	layer	trap #2 0x65 crysbind[0x65] via gem_if	desk/gembind.c:735
 wind_set	-	def	desk	desk/gembind.c:772
 wind_set	appl_init	data	int_in	desk/gembind.c:778
 wind_set	gem_if	direct	-	desk/gembind.c:785
+wind_set	wm_set	layer	trap #2 0x69 crysbind[0x69] via gem_if	desk/gembind.c:785
 wind_set_grect	-	def	desk	desk/gembind.c:789
 wind_set_grect	wind_set	direct	-	desk/gembind.c:791
 wind_update	-	def	desk	desk/gembind.c:803
 wind_update	appl_init	data	int_in	desk/gembind.c:805
 wind_update	gem_if	direct	-	desk/gembind.c:806
+wind_update	wm_update	layer	trap #2 0x6b crysbind[0x6b] via gem_if	desk/gembind.c:806
 wm_calc	-	def	aes	aes/gemwmlib.c:1807
 wm_close	-	def	aes	aes/gemwmlib.c:1438
 wm_close	do_chg	data	gl_rzero	aes/gemwmlib.c:1449
@@ -26787,6 +27072,7 @@ xterm	ffit	data	run	bdos/proc.c:609
 xterm	init_pd_files	data	run	bdos/proc.c:609
 xterm	ixdel	data	run	bdos/proc.c:609
 xterm	ixterm	direct	gimple-only	bdos/proc.c:610
+xterm	just_rts	vector	via etv_term	bdos/proc.c:607
 xterm	opnfil	data	run	bdos/proc.c:609
 xterm	osif	data	run	bdos/proc.c:609
 xterm	osinit_after_xmaddalt	data	run	bdos/proc.c:609
