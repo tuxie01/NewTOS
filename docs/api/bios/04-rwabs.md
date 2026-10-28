@@ -4,7 +4,7 @@
 > Verified against `bios/bios.c:1045` (`lrwabs`) and the installed handler
 > `bios/blkdev.c:406` (`blkdev_rwabs`).
 
-> **BIOS02 revision (2026-10-28) — for user approval.** Every change below is
+> **BIOS02 revision (2026-10-28) — approved by the user 2026-10-28.** Every change below is
 > tagged **[BIOS02]**. Source: re-read of `references/emutos/bios/blkdev.c`
 > at the pin `1a7484ab` (`docs/analysis/ORACLE.md`); cross-check: the disk
 > round `tosdump/cases/bios-r2.tsv` on the oracle
@@ -13,8 +13,8 @@
 > row labels of `bios-r2.tsv` (R01-R20, F03, W01-W11, X12-X16); the dumper's
 > own case number is the table's line number. Corrected: sector-0 write
 > (BIOS-STOR-001), count 0 (BIOS-STOR-003), Pi binding (BIOS-STOR-008).
-> Open decisions (not spec yet): BIOS-STOR-002, -007 — see "Decisions
-> pending" at the end of the Pi binding.
+> Decisions BIOS-STOR-002 and -007 (user 2026-10-28): "Decisions" at the end
+> of the Pi binding.
 
 ## EmuTOS source
 
@@ -528,7 +528,7 @@ the SD partitions are assigned from **C:** upward (`tos-api/src/bios/drive.rs:12
 | 0 | `RW_WRITE` | selects `write_blocks` (CMD24) vs `read_blocks` (CMD17) — `bios/mod.rs:97,102-108` |
 | 1 | `RW_NOMEDIACH` | **no effect** — `Rwabs` never invokes the media-change check (the SD is non-removable, `Mediach`≡0; see `09-mediach.md`). GAP vs the contract's step 10 (`bios/blkdev.c:473-477`). Observable only together with `forcechange` (BIOS-STOR-001): without that state there is nothing for the flag to bypass. |
 | 2 | `RW_NORETRIES` | **no effect** — the EMMC driver does a single PIO attempt; there is no `RWABS_RETRIES` retry loop and no `etv_critic` chain. Unobservable at `RWABS_RETRIES = 1` (audit §6). |
-| 3 | `RW_NOTRANSLATE` | **[BIOS02, corrected]** the bit **is** honoured: `r_w & RW_NOTRANSLATE` selects an absolute device sector, range-checked against the whole device with `>=` like EmuTOS (`tos-api/src/bios/mod.rs:178@RW_NOTRANSLATE`). What is **wrong** is the `drive` argument: it is still resolved as a *logical drive letter* (`tos-api/src/bios/mod.rs:160@resolve`) — EmuTOS reads it as a *physical unit number* (`bios/blkdev.c:484-485`). BIOS-STOR-002, decision pending below. |
+| 3 | `RW_NOTRANSLATE` | **[BIOS02, corrected]** the bit **is** honoured: `r_w & RW_NOTRANSLATE` selects an absolute device sector, range-checked against the whole device with `>=` like EmuTOS (`tos-api/src/bios/mod.rs:178@RW_NOTRANSLATE`). What is **wrong** is the `drive` argument: it is still resolved as a *logical drive letter* (`tos-api/src/bios/mod.rs:160@resolve`) — EmuTOS reads it as a *physical unit number* (`bios/blkdev.c:484-485`). BIOS-STOR-002, decided below (unit 26). |
 | 7 | `RW_NOBYTESWAP` | **irrelevant on ARM** — see below. |
 
 - **No byte-swap on ARM.** The Atari byte-swap logic (`RW_NOBYTESWAP`, forced
@@ -544,7 +544,7 @@ the SD partitions are assigned from **C:** upward (`tos-api/src/bios/drive.rs:12
   returns 0 *before* any drive test (`bios/blkdev.c:425-428`). **Measured
   DIFF, F03/F03b** (EmuTOS 0, NewTOS -15), also on an EmuTOS without floppy
   drives (audit §1, `EMUTOS-falcon-nofloppy`) — so not a device parameter.
-  **[BIOS02]** Decision BIOS-STOR-007 pending below.
+  **[BIOS02]** Decided below: match EmuTOS (BIOS-STOR-007).
 - **Sector-0 write → `forcechange`:** **[BIOS02] not implemented, measured
   DIFF** (W01-W05, X13, X14: EmuTOS -14/2/-14/-14/2/2/-14, NewTOS
   0/0/0/0/0/0/0). Required state per drive: a `forcechange` flag armed by a
@@ -610,16 +610,19 @@ negative `numb`, negative `dev` with `buf == NULL`, the physical-mode `>=`
 asymmetry (edge case 8: audit probe P03 only), `etv_critic`, the 0x7FFF
 chunking.
 
-### Decisions pending (user) [BIOS02] — not spec until approved
+### Decisions (user 2026-10-28) [BIOS02]
 
 - **BIOS-STOR-002 — physical unit numbering for `RW_NOTRANSLATE`.** EmuTOS:
   `unit = NUMFLOPPIES (2) + 8*bus + device`
   (`bios/disk.h:18,20,30`), buses ACSI 0, SCSI 1, IDE 2, SD/MMC 3
   (`bios/machine.h:39-42`) → ACSI 0 = 2, SCSI 0 = 10, IDE master = 18,
   SD/MMC = 26; `sd_rw` accepts device 0 only (`bios/sd.c:160-161`), so the
-  SD/MMC bus offers exactly unit 26. Recommendation and alternatives: report
-  of BIOS02 (memo 1); the chosen option goes here on approval.
-- **BIOS-STOR-007 — `Rwabs(…, NULL, n, …, A:/B:)`.** Options and the
-  recommendation (match: return 0 for `dev` 0/1 with `adr == NULL`): report of
-  BIOS02 (memo 3); on approval either the `rwabs` rule or a
-  `docs/COMPATIBILITY.md` entry goes here.
+  SD/MMC bus offers exactly unit 26. **Rule:** on NewTOS the Pi's SD card is
+  physical unit **26**; in physical mode every other unit returns `EUNDEV`.
+  Case tables name the unit by a token resolved from the profile definition
+  (oracle `disk` profile: 18, NewTOS: 26), never by a search at run time.
+- **BIOS-STOR-007 — `Rwabs(…, NULL, n, …, A:/B:)`.** **Rule:** match EmuTOS —
+  `dev` 0 or 1 with `adr == NULL` returns 0 before any drive test
+  (`bios/blkdev.c:425-428`), although A:/B: are no floppy drives on the Pi.
+- **BIOS-STOR-005** (`Getbpb`, `tot16 == tot32 == 0`): follow EmuTOS, see
+  `07-getbpb.md`.

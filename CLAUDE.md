@@ -373,6 +373,10 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   --out <run dir> [--reference <BIN>]…` (`--tree`, `--disk`,
   `--features bios-arg-trace`; TOOL09) — one call builds, boots QEMU
   raspi4b and compares; no per-run scripts.
+- Debug features (cargo features, off by default): with the feature off,
+  the kernel's code and data bytes equal the build without the change,
+  except the line/column fields of `core::panic::Location` records (user
+  2026-10-28). Checked by an xtask command (TOOL13), not explained by hand.
 - Hardware tests on RPi4 are manual, documented in `docs/HW-TEST-LOG.md`.
 - Every TOS API function gets at least one test that verifies the documented
   return value for documented input, and one that verifies the documented

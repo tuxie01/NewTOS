@@ -4,7 +4,7 @@
 > Verified against `bios/bios.c:1120` (`getbpb`) and the installed handler
 > `bios/blkdev.c:569` (`blkdev_getbpb`).
 
-> **BIOS02 revision (2026-10-28) — for user approval.** Changes tagged
+> **BIOS02 revision (2026-10-28) — approved by the user 2026-10-28.** Changes tagged
 > **[BIOS02]**. Source re-read at the pin `1a7484ab`
 > (`references/emutos/bios/blkdev.c:569-777`, `bios/blkdev.c:117-163`).
 > Cross-check: oracle `tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-disk.BIN`
@@ -370,7 +370,7 @@ exFAT is a Phase-09 goal (`docs/HARDWARE-PROFILE.md` §3.4).
   (edge case 9). Probe X06: `…,289,0,0` vs `…,289,32672,1`. Intent: the code
   comment gives none and the introducing commit `b247f99f` (first
   implementation of `Getbpb`) records none; no later doc or ADR mentions
-  it. Recommendation in the report of BIOS02 (memo 2): follow EmuTOS.
+  it. **Decided (user 2026-10-28): follow EmuTOS** (`numcl` 0, probe X06).
 - **`Geometry` extension:** NewTOS additionally exposes `reserved`+`num_fats`
   raw (`bpb.rs:105-134`) for the FAT write path — a NewTOS-native superset, not
   part of the Atari ABI BPB.

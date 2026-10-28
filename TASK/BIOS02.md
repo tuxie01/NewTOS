@@ -1,6 +1,6 @@
 # BIOS02 — Spec BIOS-Speicher nachziehen; physische Einheit der Pi-SD festlegen
 
-Status: **ENTWURF LIEGT VOR** 2026-10-28, wartet auf Freigabe · Prioritaet: **P1** · Typ: Researcher — Anwenderentscheidung 2026-10-28
+Status: **ERLEDIGT** 2026-10-28 (Spec freigegeben) · Prioritaet: **P1** · Typ: Researcher — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt
 
@@ -54,3 +54,17 @@ Aus dem Audit „BIOS-Speicher“ (`docs/audits/2026-10-28-bios-storage.md`):
 - Nebenbefund SDK: mintlibs `ostruct.h` definiert `RW_NOMEDIACH 1`,
   `RW_NORETRIES 2`, `RW_NOTRANSLATE 3` als Werte, EmuTOS als Masken 2/4/8
   (`references/emutos/bios/disk.h:53-61`) — Triage offen.
+
+## Entscheidungen des Anwenders 2026-10-28
+
+- Spec fuer 001, 003, 005, 007 freigegeben; die `[BIOS02]`-Kopfzeilen der
+  vier Dateien sagen „approved“.
+- 002: Variante A — die SD der Pi ist physische Einheit **26** (EmuTOS-
+  Zaehlung SD/MMC), jede andere Einheit `EUNDEV`. Falltabellen nennen die
+  Einheit per Token, aufgeloest aus der Profildefinition (Orakel-Profil
+  `disk` 18, NewTOS 26), keine Suchlogik. Regel in
+  `docs/api/bios/04-rwabs.md`, Abschnitt „Decisions“.
+- 005: EmuTOS folgen. 007: angleichen (NULL-Puffer auf A:/B: liefert 0).
+- 001: der BIOS01-Fall muss „schreibt nichts“ per Abbildvergleich belegen,
+  nicht nur per Rueckgabewert.
+- Nebenbefund SDK (`RW_*`-Konstanten): [SDK02](SDK02.md).

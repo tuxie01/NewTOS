@@ -4,7 +4,7 @@
 > Verified against `bios/bios.c:1206` (`drvmap`) and `bios/blkdev.c:833`
 > (`blkdev_drvmap`).
 
-> **BIOS02 revision (2026-10-28) — for user approval.** Changes tagged
+> **BIOS02 revision (2026-10-28) — approved by the user 2026-10-28.** Changes tagged
 > **[BIOS02]**. Source re-read at the pin `1a7484ab`. Corrected: the drive
 > limit is 26, not 16; the "single floppy sets A: and B:" convention is not in
 > the code; measured value added. Cross-check: oracle

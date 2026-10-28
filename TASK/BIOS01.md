@@ -1,6 +1,6 @@
 # BIOS01 — BIOS-Speicher an EmuTOS angleichen (Befunde des Audits 2026-10-28)
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28 · haengt an [TOOL07](TOOL07.md), Teile an [BIOS02](BIOS02.md)
+Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28 · haengt an [TOOL07](TOOL07.md) und [SDK02](SDK02.md) (Pruefung vor Beginn); Spec [BIOS02](BIOS02.md) freigegeben
 
 ## Sachverhalt
 
@@ -45,3 +45,16 @@ im Graphen, Track B), BIOS-STOR-010 (`hdv_*`-Vektoren, BIOS03).
 - Hosttests gruen (`cargo xtask test`); QEMU `raspi4b` bootet bis zum
   Desktop, Testpartition nach dem Lauf `fsck_msdos`-sauber.
 - `docs/STATUS.md` und Spec im selben Commit; doc-check 0 Fehler.
+
+## Entscheidungen des Anwenders 2026-10-28
+
+- Spec freigegeben (BIOS02): 001, 003, 005 (EmuTOS folgen), 007 (angleichen);
+  002 = Variante A: SD = physische Einheit 26, jede andere Einheit `EUNDEV`
+  (`docs/api/bios/04-rwabs.md`, Abschnitt „Decisions“).
+- 001: der bestaetigende Fall belegt „schreibt nichts“ per Vergleich der
+  Testpartition vor/nach (wie TOOL07), nicht nur per Rueckgabewert.
+- Beginn erst nach der Pruefung in [SDK02](SDK02.md) Punkt 1 (erledigt
+  2026-10-28: die Sonde nutzte Zahlenwerte, kein Header — keine Neumessung
+  noetig) und nach dem TOOL07-Rest.
+- Reihenfolge: S2 (001) → dann sofort das S1 `Iorec` (eigenes Ticket aus dem
+  Audit „XBIOS-Zeichengeraete“) → Rest von BIOS01.

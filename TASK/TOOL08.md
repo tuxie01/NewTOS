@@ -38,3 +38,10 @@ Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL08-STATUS-DONE.MD)) · Prioritae
   jeder Abweichung.
 - Hosttests gruen (`cargo xtask test`); doc-check der geaenderten Doku 0
   Fehler.
+
+## Entscheidung des Anwenders 2026-10-28
+
+- Zeilennummern im Standardbau: angenommen (a) und als stehende Regel (c):
+  mit abgeschaltetem Debug-Feature sind Code- und Datenbytes gleich, bis auf
+  die Zeilen-/Spaltenfelder von `core::panic::Location`. Die Pruefung wird
+  ein wiederverwendbarer xtask-Befehl: [TOOL13](TOOL13.md).
