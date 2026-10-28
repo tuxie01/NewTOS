@@ -1,0 +1,3 @@
+canary disk: OK (BIN+LOG sha256 as pinned)
+canary disk: test image unchanged (d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37)
+exit 0

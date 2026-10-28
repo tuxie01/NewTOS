@@ -1,0 +1,43 @@
+# bios-r2-phys.tsv -- DUMPBIOS disk round, Rwabs with RW_NOTRANSLATE
+# (BIOS-STOR-002, docs/audits/2026-10-28-bios-storage.md; probe group P of
+# measurements/measurement-2026-10-28-bios-storage-audit/method/bstprobe.c),
+# against EmuTOS 1a7484ab (docs/analysis/ORACLE.md; TASK/TOOL07).
+#
+# The unit is the token u:0, "the physical unit of the test disk", resolved by
+# each build from its profile (docs/api/bios/04-rwabs.md, "Decisions"): the
+# oracle's profile disk 18 (IDE master), NewTOS 26 (the SD card).  No search,
+# no literal unit number (a literal stays refused).  Physical sector 63 is C:'s
+# boot sector on both sides: the test image and the NewTOS card put C: at
+# LBA 63 (tools/mkcard.sh copies the image to the card's start).  The card's
+# MBR differs from the image's in entry 2 (the program partition D:), so only
+# entry 1 and the signature are captured.  Device-size cases (the last device
+# sector, BIOS-STOR-002 probe P03/P04) are out: the image has 131072 sectors,
+# the card 262144.
+#
+# WHERE IT RUNS -- as bios-r2.tsv: the oracle's profile disk
+# (HATARI_ORACLE_DISK=<test.img> tools/hatari-oracle.sh disk ...) and on NewTOS
+# a card from tools/mkcard.sh with MKCARD_TESTDISK (cargo xtask tosdump bios
+# <table> --disk ...).  The test image: tools/mktestdisk.sh <img>
+# NEWDESK.INF=<inf>, the one of bios-r2.tsv (sha256 d95a60c3...); C: = LBA 63,
+# 130977 sectors, BPB 512,4,2048,32,128,129,289,32672,1.
+#
+# Not destructive: reads only.
+#
+# One table per round: a case id is the physical line number and the dump
+# header carries the CRC of this file, so it is frozen once measured.
+!disk	2
+
+# ---- Rwabs(RW_NOTRANSLATE, buf, n, recno, u:0, lrecno) -- the physical arm,
+#      bios/blkdev.c:483-504 (unit, range, UNIT_CHANGED), disk_rw bios/disk.c:1177
+13:4	w:8,b:0,w:1,w:0,u:0,l:0	EXACT	1:16@446	P02 physical sector 0 = the MBR, partition entry 1 -- blkdev.c:484-504
+13:4	w:8,b:0,w:1,w:0,u:0,l:0	EXACT	1:2@510	P02b the MBR's signature -- blkdev.c:484-504
+13:4	w:8,b:0,w:1,w:-1,u:0,l:63	EXACT	1:256	P06 physical sector 63 = C:'s boot sector, bytes 0-255 -- blkdev.c:484-504
+13:4	w:8,b:0,w:1,w:-1,u:0,l:63	EXACT	1:256@256	P06b bytes 256-511 -- blkdev.c:484-504
+13:4	w:0,b:0,w:1,w:0,w:2,l:0	EXACT	1:256	control: C: logical sector 0, bytes 0-255 (= R01) -- blkdev.c:430-481
+13:4	w:8,b:0,w:2,w:-1,u:0,l:63	EXACT	1:64@512	P07 two sectors from 63: C:'s FAT starts at 64 -- blkdev.c:484-504
+13:4	w:10,b:0,w:1,w:-1,u:0,l:64	EXACT	1:16	P08 RW_NOMEDIACH, sector 64 -- blkdev.c:496-503
+13:4	w:12,b:0,w:1,w:-1,u:0,l:64	EXACT	1:16	P09 RW_NORETRIES, sector 64 -- blkdev.c:433
+13:4	w:8,b:0,w:1,w:-32768,u:0,l:0	EXACT	1:16	P10 recno 0x8000 unsigned = sector 32768 -- blkdev.c:430-431
+13:4	w:8,b:0,w:0,w:-1,u:0,l:63	EXACT	1:16	P11 count 0 -- blkdev.c:488-490, ide.c:1373
+13:4	w:8,b:0,w:1,w:-1,u:0,l:-5	EXACT	1:16	P12 negative lrecno -> ESECNF -- blkdev.c:488-490
+13:4	w:8,b:0,w:1,w:-1,u:0,l:0x7FFFFFF0	EXACT	1:16	P13 past any device -> ESECNF -- blkdev.c:488-490

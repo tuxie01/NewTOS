@@ -602,10 +602,13 @@ cases differ). Dumper case number = line of the row in `bios-r2.tsv`.
 | **sector-0 write with `RW_NOMEDIACH`: writes (0) and arms** | X12 105 (0), X13 106, X14 107 | 0, 2, -14 | 0, 0, 0 | X12 EQUAL; **X13, X14 DIFF** |
 | `Getbpb` / `Mediach` after it | X15 108, X16 109 | BPB, 0 | same | EQUAL |
 
-**Not measured by `bios-r2.tsv` (stay [source]-only):** `RW_NOTRANSLATE`
-(refused by the dumper guard, `tosdump/core/cases.c:3208@rwabs_value_refusal`; probe cases P01-P04
-in the audit only), `recsiz == 0` → `ESECNF` after a failed `Getbpb` (X07/X08,
-BIOS-STOR-006, no case yet), arming before a failing range/mediach check,
+**Measured since TOOL07 (rest) by the closing tables** (`tosdump/cases/bios-r2-phys.tsv`,
+`bios-r2-x004.tsv`, `bios-r2-x005.tsv`, `bios-r2-x006.tsv`;
+`measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT`): `RW_NOTRANSLATE`
+through the unit token `u:0` (a literal unit stays refused by the dumper
+guard, `tosdump/core/cases.c:3225@rwabs_value_refusal`), and `recsiz == 0` →
+`ESECNF` after a failed `Getbpb` (BIOS-STOR-006, `x006`).
+**Not measured (stay [source]-only):** arming before a failing range/mediach check,
 negative `numb`, negative `dev` with `buf == NULL`, the physical-mode `>=`
 asymmetry (edge case 8: audit probe P03 only), `etv_critic`, the 0x7FFF
 chunking.

@@ -1,0 +1,12 @@
+ 32 13:4   ret=0            0x00000000 cap=00010100060f3f813f000000a1ff0100dead P02 physical sector 0 = the MBR, partition entry 1 -- blkdev
+ 33 13:4   ret=0            0x00000000 cap=55aadeaddeaddeaddeaddeaddeaddeaddead P02b the MBR's signature -- blkdev.c:484-504
+ 34 13:4   ret=0            0x00000000 cap=eb3c904d544f4f3430343900020401000200 P06 physical sector 63 = C:'s boot sector, bytes 0-255 -- bl
+ 35 13:4   ret=0            0x00000000 cap=000000000000000000000000000000000000 P06b bytes 256-511 -- blkdev.c:484-504
+ 36 13:4   ret=0            0x00000000 cap=eb3c904d544f4f3430343900020401000200 control: C: logical sector 0, bytes 0-255 (= R01) -- blkdev.
+ 37 13:4   ret=0            0x00000000 cap=f8ffffffffff000000000000000000000000 P07 two sectors from 63: C:'s FAT starts at 64 -- blkdev.c:4
+ 38 13:4   ret=0            0x00000000 cap=f8ffffffffff00000000000000000000dead P08 RW_NOMEDIACH, sector 64 -- blkdev.c:496-503
+ 39 13:4   ret=0            0x00000000 cap=f8ffffffffff00000000000000000000dead P09 RW_NORETRIES, sector 64 -- blkdev.c:433
+ 40 13:4   ret=0            0x00000000 cap=00000000000000000000000000000000dead P10 recno 0x8000 unsigned = sector 32768 -- blkdev.c:430-431
+ 41 13:4   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead P11 count 0 -- blkdev.c:488-490, ide.c:1373
+ 42 13:4   ret=-8           0xFFFFFFF8 cap=deaddeaddeaddeaddeaddeaddeaddeaddead P12 negative lrecno -> ESECNF -- blkdev.c:488-490
+ 43 13:4   ret=-8           0xFFFFFFF8 cap=deaddeaddeaddeaddeaddeaddeaddeaddead P13 past any device -> ESECNF -- blkdev.c:488-490

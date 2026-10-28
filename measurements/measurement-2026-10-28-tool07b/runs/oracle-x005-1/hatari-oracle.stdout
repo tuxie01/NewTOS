@@ -1,0 +1,10 @@
+DUMPBIOS build 99ad, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV: 13 cases, CRC FBB54EFF
+disk table: test drive C:, 4 preludes, destructive (a fresh clone of the test image only)
+running 13 cases
+all 13 cases ran
+BIOS.BIN: 13 records, 4192 bytes
+before d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07b/run/test.img
+destructive table: fresh clone, partition 1 clean (fsck_msdos -n)
+after  d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07b/run/oracle-x005-1/disk.img

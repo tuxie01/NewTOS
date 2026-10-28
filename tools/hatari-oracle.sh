@@ -14,7 +14,11 @@
 #                      (tools/mktestdisk.sh) cloned to <out-dir>/disk.img as
 #                      IDE master = BIOS drive C:, read and written by EmuTOS
 #                      alone (no byte swap); the dumper on the GEMDOS drive D:
-#                      -- the profile for disk cases, _drvbits C: and D: (0xC)
+#                      -- the profile for disk cases, _drvbits C: and D: (0xC).
+#                      The profile names C:'s physical unit, IDE master
+#                      2 + 8*2 = 18 (bios/disk.h:30), in D:\DISKUNIT.TXT for
+#                      DUMPBIOS' unit token u:0 (docs/api/bios/04-rwabs.md
+#                      "Decisions"; docs/TOS-REFERENCE-DUMPER.md section 6)
 #   dumper   DUMPVDI.PRG, DUMPAES.PRG, DUMPRAST.PRG or DUMPBIOS.PRG (m68k)
 #   table    the case table; staged as VDI.TSV / AES.TSV / RASTER.TSV /
 #            BIOS.TSV
@@ -23,6 +27,13 @@
 #            disk adds disk.img (the clone after the run; the caller deletes
 #            it) and disk.sha256 (the image before and after the run)
 #   rom      defaults to $ORACLE_ROM from tools/oracle/oracle.env
+#
+# A DESTRUCTIVE table ("!disk <drive> destructive", the disk round's closing
+# tables, docs/TOS-REFERENCE-DUMPER.md section 6) changes the test image. It
+# runs only in profile disk, on the fresh clone this script makes of
+# $HATARI_ORACLE_DISK for the run (out-dir must not exist, so the clone is
+# new), and only if that image's partition 1 passes fsck_msdos -n -- an image
+# a previous destructive run broke does not. Anything else is refused (exit 2).
 #
 # Hermetic on purpose: HOME points at an empty directory so Hatari cannot pick
 # up the user's own configuration, and every setting comes from
@@ -52,6 +63,15 @@ ROM=${5:-$ORACLE_ROM}
 if [ "$ROM" = "$ORACLE_ROM" ] &&
    [ "$(shasum -a 256 "$ROM" | cut -d' ' -f1)" != "$ORACLE_ROM_SHA256" ]; then
     echo "pinned ROM does not match ORACLE_ROM_SHA256: $ROM" >&2; exit 1
+fi
+
+# Read more broadly than the dumper's loader (any whitespace separates), so a
+# table the loader takes as destructive is never run as an ordinary one.
+DESTRUCTIVE=0
+if grep -Eq '^[[:space:]]*!disk[[:space:]]+[^[:space:]]+[[:space:]]+destructive[[:space:]]*$' "$TABLE"; then
+    DESTRUCTIVE=1
+    [ "$PROFILE" = disk ] || {
+        echo "destructive table: runs only in profile disk, on a fresh clone of the test image" >&2; exit 2; }
 fi
 
 PRG=$(basename "$DUMPER" | tr '[:lower:]' '[:upper:]')
@@ -97,7 +117,24 @@ if [ "$PROFILE" = disk ]; then
     # is and the run's own image can be compared with it afterwards.
     cp -c "$DISK" "$OUT/disk.img" 2>/dev/null || cp "$DISK" "$OUT/disk.img"
     echo "before $(shasum -a 256 "$OUT/disk.img" | cut -d' ' -f1) $DISK" > "$OUT/disk.sha256"
+    if [ "$DESTRUCTIVE" = 1 ]; then
+        # partition 1 of the MBR: start and length, little-endian LONGs
+        le32() { od -An -t u4 -j "$2" -N 4 "$1" | tr -d ' '; }
+        command -v fsck_msdos >/dev/null || {
+            echo "destructive table: fsck_msdos is needed to check the test image" >&2; rm -rf "$OUT"; exit 2; }
+        dd if="$OUT/disk.img" of="$OUT/testpart-check.img" bs=512 \
+           skip="$(le32 "$OUT/disk.img" 454)" count="$(le32 "$OUT/disk.img" 458)" 2>/dev/null
+        if ! fsck_msdos -n "$OUT/testpart-check.img" > "$OUT/fsck-before.txt" 2>&1; then
+            echo "destructive table: partition 1 of $DISK fails fsck_msdos -n -- not a fresh test image" >&2
+            cat "$OUT/fsck-before.txt" >&2
+            rm -rf "$OUT"; exit 2
+        fi
+        rm -f "$OUT/testpart-check.img"
+        echo "destructive table: fresh clone, partition 1 clean (fsck_msdos -n)" >> "$OUT/disk.sha256"
+    fi
     set -- --ide-master "$OUT/disk.img" --ide-swap 0=off
+    # the profile's physical unit of C:, for a u:0 case (header above)
+    printf '18\r\n' > "$OUT/hd/DISKUNIT.TXT"
 fi
 
 # shellcheck disable=SC2086  # MACHINE is a word list by design

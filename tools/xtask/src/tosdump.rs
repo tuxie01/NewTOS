@@ -34,10 +34,23 @@
 //!    APFS clone (`cp -c`) so the card itself stays as built.
 //!    `--disk`/`--testdisk`: the disk round of TOOL07 — C: is the test image
 //!    (built by `tools/mktestdisk.sh` with the autorun INF, or the given one),
-//!    the dumper and table on D: (`MKCARD_TESTDISK`); afterwards the test
+//!    the dumper and table on D: (`MKCARD_TESTDISK`), and `D:\DISKUNIT.TXT`
+//!    with [`NEWTOS_DISK_UNIT`], the profile's physical unit of C: for
+//!    DUMPBIOS' unit token `u:0`; afterwards the test
 //!    partition of the card and of the booted clone are compared (raw, then
 //!    with the root directory's FAT time stamps zeroed) and `fsck_msdos -n`
 //!    runs on both.
+//!    A **destructive** table (`!disk <drive> destructive`, the closing
+//!    tables of TOOL07, `docs/TOS-REFERENCE-DUMPER.md` section 6) is refused
+//!    without `--disk`/`--testdisk`: it runs on a fresh clone of the test
+//!    image only. The card is built from the test image for this run and
+//!    booted as an APFS clone, so every run starts from the image; a
+//!    `--testdisk` image must pass `fsck_msdos -n` on its test partition
+//!    first (a boot sector a previous destructive run broke does not). The
+//!    test partition after the run is kept as `<out>/testpart-after.img`
+//!    (gitignored, `*.img`) for the comparison with the oracle's end state;
+//!    the caller deletes it. A changed partition and a failing `fsck_msdos`
+//!    after the run are then the table's purpose, not a failure.
 //! 4. **QEMU** `raspi4b`, headless, `-append serial=on`, serial to
 //!    `<out>/BOOT-SERIAL.txt`; the run ends when the desktop is up after the
 //!    dumper, on a kernel panic / unhandled exception / program crash screen
@@ -119,6 +132,13 @@ pub struct Opts {
     pub scratch: Option<PathBuf>,
     pub time_limit: u64,
 }
+
+/// The physical unit of the test disk on NewTOS, what DUMPBIOS' unit token
+/// `u:0` passes (`RW_NOTRANSLATE`): the SD card is unit 26
+/// (`docs/api/bios/04-rwabs.md`, "Decisions", BIOS-STOR-002). The profile
+/// names it in `D:\DISKUNIT.TXT`, as `tools/hatari-oracle.sh` profile `disk`
+/// names the oracle's (18) — never a search at run time.
+pub const NEWTOS_DISK_UNIT: u16 = 26;
 
 /// Default time limit of the QEMU run, seconds (the per-run scripts waited
 /// 240 × 2 s).
@@ -266,6 +286,32 @@ pub fn scratch_dir(given: Option<&Path>, job_dir: Option<&Path>) -> Result<PathB
         return Err(format!("tosdump: scratch {} is the shared /tmp; give a directory of your own", dir.display()));
     }
     Ok(dir)
+}
+
+/// Does the case table say `!disk <drive> destructive` (TOOL07's closing
+/// tables)? Read more broadly than the dumper's loader
+/// (`tosdump/core/cases.c` `parse_call_directive`: tab separated, trimmed):
+/// any whitespace separates here, so a table the loader takes as destructive
+/// is never run as an ordinary one.
+pub fn table_is_destructive(table: &[u8]) -> bool {
+    String::from_utf8_lossy(table).lines().any(|line| {
+        let w: Vec<&str> = line.split_whitespace().collect();
+        w.len() == 3 && w[0] == "!disk" && w[2] == "destructive"
+    })
+}
+
+/// The runner rule for a destructive table: only in the disk round, where
+/// the card is built from the test image for this run.
+pub fn destructive_refusal(destructive: bool, disk: &Disk) -> Option<String> {
+    if destructive && *disk == Disk::None {
+        Some(
+            "the table is destructive (\"!disk <drive> destructive\"): it runs only on a fresh clone of \
+             the test image, in the disk round -- give --disk or --testdisk <img>"
+                .into(),
+        )
+    } else {
+        None
+    }
 }
 
 /// `NEWDESK.INF` that autostarts `nap` from `drive` (`#Z`, ISGEM 01), with
@@ -752,6 +798,10 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
             bad.push(format!("--testdisk {} not found", t.display()));
         }
     }
+    let destructive = fs::read(&o.table).map(|t| table_is_destructive(&t)).unwrap_or(false);
+    if let Some(m) = destructive_refusal(destructive, &o.disk) {
+        bad.push(m);
+    }
     if o.out.exists() && fs::read_dir(&o.out).map(|mut d| d.next().is_some()).unwrap_or(true) {
         bad.push(format!("--out {} exists and is not empty (runs are not overwritten)", o.out.display()));
     }
@@ -799,6 +849,27 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
     rep.line(format!("harness commit {}", git_line(harness, &["rev-parse", "HEAD"])));
     rep.line(format!("features  {}", if o.features.is_empty() { "(none)".into() } else { o.features.join(",") }));
     rep.line(format!("table     {} sha256 {}", o.table.display(), sha256(&o.table)?));
+    if destructive {
+        rep.line("table     DESTRUCTIVE: runs on a fresh clone of the test image (the card is built from it for this run)");
+    }
+    if let (true, Disk::Image(t)) = (destructive, &o.disk) {
+        // A previous destructive run's image would not be fresh: its broken
+        // boot sector fails fsck_msdos.
+        let p1 = mbr_partitions(&read_sector0(t)?).map_err(|e| format!("{}: {e}", t.display()))?[0]
+            .ok_or(format!("{}: no partition 1", t.display()))?;
+        let f = run_dir.join("testpart-check.img");
+        fs::write(&f, read_part(t, p1)?).map_err(|e| e.to_string())?;
+        let ck = Command::new("fsck_msdos").arg("-n").arg(&f).output().map_err(|e| e.to_string())?;
+        let _ = fs::remove_file(&f);
+        if !ck.status.success() {
+            rep.line(format!("test image {}: fsck_msdos -n on partition 1 exit {}: not a fresh image", t.display(), ck.status.code().unwrap_or(-1)));
+            return Err(format!(
+                "tosdump: --testdisk {} fails fsck_msdos -n on its test partition: a destructive table needs a fresh test image",
+                t.display()
+            ));
+        }
+        rep.line(format!("test image {}: fsck_msdos -n on partition 1 clean (fresh)", t.display()));
+    }
 
     // 1. the measured tree's kernel.
     let n = check_target_is_own(&tree)?;
@@ -900,6 +971,10 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
     if let Some(t) = &testimg {
         rep.line(format!("test image sha256 {}", sha256(t)?));
         mk.env("MKCARD_TESTDISK", t);
+        let unit = run_dir.join("DISKUNIT.TXT");
+        fs::write(&unit, format!("{NEWTOS_DISK_UNIT}\r\n")).map_err(|e| e.to_string())?;
+        mk.arg(format!("DISKUNIT.TXT={}", unit.display()));
+        rep.line(format!("D:\\DISKUNIT.TXT {NEWTOS_DISK_UNIT} (the profile's physical unit of C:, for u:0)"));
     }
     let log = out.join("mkcard.log");
     require_ok(run_logged(mk, &log)?, "tools/mkcard.sh", &log)?;
@@ -1018,7 +1093,13 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
             });
         }
         for (label, bytes) in [("before", &before), ("after", &after)] {
-            let f = run_dir.join(format!("testpart-{label}.img"));
+            // A destructive table's end state is kept for the comparison
+            // with the oracle's (the caller deletes it, *.img is ignored).
+            let f = if destructive && label == "after" {
+                out.join("testpart-after.img")
+            } else {
+                run_dir.join(format!("testpart-{label}.img"))
+            };
             fs::write(&f, bytes).map_err(|e| e.to_string())?;
             let o = Command::new("fsck_msdos").arg("-n").arg(&f).output().map_err(|e| e.to_string())?;
             txt.push(format!("fsck_msdos -n testpart-{label}.img: exit {}", o.status.code().unwrap_or(-1)));
@@ -1026,11 +1107,18 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
                 txt.push(format!("  {l}"));
             }
             if !o.status.success() {
-                failures.push(format!("fsck_msdos -n on the test partition {label} the run failed"));
+                if destructive && label == "after" {
+                    txt.push("  (a destructive table: its end state is compared with the oracle's, not judged here)".into());
+                } else {
+                    failures.push(format!("fsck_msdos -n on the test partition {label} the run failed"));
+                }
             }
         }
+        if destructive {
+            txt.push(format!("testpart after sha256 {} (kept: testpart-after.img)", sha256(&out.join("testpart-after.img"))?));
+        }
         fs::write(out.join("testpart-compare.txt"), txt.join("\n") + "\n").map_err(|e| e.to_string())?;
-        for l in txt.iter().filter(|l| l.starts_with("testpart") || l.starts_with("fsck")) {
+        for l in txt.iter().filter(|l| l.starts_with("testpart") || l.starts_with("fsck") || l.starts_with("  (a destructive")) {
             rep.line(l.clone());
         }
     }
@@ -1212,6 +1300,35 @@ mod tests {
         assert!(!inf_autoruns(&d, 'C', "DUMPBIOS.NAP"));
         assert!(!inf_autoruns(&z, 'D', "DUMPBIOS.NAP"));
         assert!(!inf_autoruns(b"#R 02\r\n", 'D', "DUMPBIOS.NAP"));
+    }
+
+    #[test]
+    fn destructive_tables_are_recognised() {
+        assert!(table_is_destructive(b"# x\n!disk\t2\tdestructive\n13:10\t-\tEXACT\t-\tx\n"));
+        assert!(table_is_destructive(b"!disk\t2\tdestructive\r\n"));
+        assert!(table_is_destructive(b"  !disk 0x2  destructive  \n"), "broader than the loader");
+        assert!(!table_is_destructive(b"!disk\t2\n13:10\t-\tEXACT\t-\tx\n"));
+        assert!(!table_is_destructive(b"# !disk 2 destructive is a comment\n"));
+        assert!(!table_is_destructive(b"13:10\t-\tEXACT\t-\tDrvmap\n"));
+    }
+
+    #[test]
+    fn destructive_tables_need_the_disk_round() {
+        assert!(destructive_refusal(true, &Disk::None).is_some());
+        assert!(destructive_refusal(true, &Disk::Build).is_none());
+        assert!(destructive_refusal(true, &Disk::Image(PathBuf::from("/t.img"))).is_none());
+        assert!(destructive_refusal(false, &Disk::None).is_none());
+    }
+
+    #[test]
+    fn the_closing_tables_are_destructive_and_bios_r2_is_not() {
+        let cases = repo().join("tosdump/cases");
+        for t in ["bios-r2-x004.tsv", "bios-r2-x005.tsv", "bios-r2-x006.tsv"] {
+            assert!(table_is_destructive(&fs::read(cases.join(t)).unwrap()), "{t}");
+        }
+        for t in ["bios-r2.tsv", "bios-r2-phys.tsv", "bios-r1.tsv"] {
+            assert!(!table_is_destructive(&fs::read(cases.join(t)).unwrap()), "{t}");
+        }
     }
 
     #[test]

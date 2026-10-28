@@ -1,11 +1,11 @@
 # TOOL07 — DUMPBIOS-Plattenrunde: `Rwabs`, `Getbpb`, `Mediach`, `Drvmap` per tosdiff
 
-Status: **TEILWEISE** (Etappe 1 2026-10-28, siehe unten) · Prioritaet: **P1** · Typ: Werkzeug (Messung) — Anwenderentscheidung 2026-10-28 · haengt an [TOOL06](TOOL06.md)
+Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL07-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Werkzeug (Messung) — Anwenderentscheidung 2026-10-28 · haengt an [TOOL06](TOOL06.md)
 
 ## Sachverhalt
 
 - DUMPBIOS weist `Rwabs`, `Getbpb` und `Mediach` ab
-  (`tosdump/core/cases.c:3097@call_refusals`); das Audit „BIOS-Speicher“
+  (`tosdump/core/cases.c:3109@call_refusals`); das Audit „BIOS-Speicher“
   konnte sie nur per eigener Sonde messen, alle zehn Befunde blieben
   PLAUSIBLE (`docs/audits/2026-10-28-bios-storage.md`, Abschnitte 5 und 11).
 - `Drvmap` (Fall 74, Klasse `NONZERO`) besteht fuer jede nichtleere

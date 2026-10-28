@@ -7,7 +7,10 @@
  *
  * usage: DUMPBIOS [CASES.TSV [OUT.BIN [OUT.LOG]]]
  *        defaults: BIOS.TSV in the current directory, BIOS.BIN and BIOS.LOG
- *        beside it.
+ *        beside it.  A table that names the unit token "u:0" also reads
+ *        DISKUNIT.TXT from the current directory: the physical unit of the
+ *        test disk, which the run's profile names (docs/TOS-REFERENCE-
+ *        DUMPER.md section 6, "The closing tables").
  *
  * One table, one dump: trap #13 and trap #14 cases live in the same table
  * and the same BIOS.BIN (header area TD_AREA_BIOS); each record names its
@@ -40,6 +43,41 @@ static struct td_call_case_table table;
 static uint8_t records[(size_t)TD_MAX_CASES * TD_CALL_RECORD_SIZE];
 
 static const char *log_path = "BIOS.LOG";
+
+/* The profile's physical unit of the test disk: DISKUNIT.TXT, one decimal
+ * number 0..32767, optionally followed by a line end -- what
+ * tools/hatari-oracle.sh (profile disk) and cargo xtask tosdump (--disk)
+ * put beside the table.  0 on success. */
+static const char *unit_path = "DISKUNIT.TXT";
+
+static int read_disk_unit(int32_t *unit)
+{
+	char buf[16];
+	FILE *f = fopen(unit_path, "rb");
+	size_t n, i = 0;
+	int32_t v = 0;
+	int digits = 0;
+
+	if (!f)
+		return -1;
+	n = fread(buf, 1, sizeof buf, f);
+	fclose(f);
+	if (n == sizeof buf)
+		return -2;
+	for (; i < n && buf[i] >= '0' && buf[i] <= '9'; i++) {
+		if (++digits > 5)
+			return -2;
+		v = v * 10 + (buf[i] - '0');
+	}
+	if (i < n && buf[i] == '\r')
+		i++;
+	if (i < n && buf[i] == '\n')
+		i++;
+	if (digits == 0 || i != n || v > 0x7FFF)
+		return -2;
+	*unit = v;
+	return 0;
+}
 
 static int finish(int rc)
 {
@@ -87,8 +125,23 @@ int main(int argc, char **argv)
 	/* a disk table (docs/TOS-REFERENCE-DUMPER.md section 6, "The disk
 	 * round") says so; a round-1 table's log stays as it was */
 	if (table.disk)
-		td_log("disk table: test drive %c:, %u preludes\n",
-		       'A' + table.disk_drive, table.prelude_count);
+		td_log("disk table: test drive %c:, %u preludes%s\n",
+		       'A' + table.disk_drive, table.prelude_count,
+		       table.destructive ? ", destructive (a fresh clone of the "
+		                           "test image only)" : "");
+	if (table.unit_token) {
+		int32_t unit;
+
+		if (read_disk_unit(&unit) != 0) {
+			td_log("the table names u:0 and the run's profile names no "
+			       "unit (%s missing, or not one number 0..32767): not "
+			       "run, no %s written\n", unit_path, out_path);
+			return finish(1);
+		}
+		td_run_call_set_disk_unit(unit);
+		td_log("unit token u:0 = physical unit %ld (%s, the run's "
+		       "profile)\n", (long)unit, unit_path);
+	}
 	if (table.count == 0) {
 		td_log("nothing to do\n");
 		return finish(1);
@@ -106,6 +159,11 @@ int main(int argc, char **argv)
 		td_log("prelude at line %u returned %ld, not 0: run stopped "
 		       "before its case, no %s written\n",
 		       td_run_call_stop_line(), td_run_call_stop_ret(), out_path);
+		return finish(1);
+	}
+	if (rc == TD_RUN_CALL_ERR_UNIT) {
+		td_log("u:0 without a unit: nothing issued, no %s written\n",
+		       out_path);
 		return finish(1);
 	}
 	if (rc != 0) {

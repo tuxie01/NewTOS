@@ -741,6 +741,31 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
  * test drive.  The capture column also takes "r:<length>..." -- through the
  * address the call returned, retclass PTR_RAM only.
  *
+ * Two additions of the closing tables (TASK/TOOL07, user decision
+ * 2026-10-28, same section of the spec):
+ *   !disk <TAB> <drive> <TAB> destructive
+ *                     the table changes the test image: it runs on a fresh
+ *                     clone of the test image only (the runners enforce it,
+ *                     tools/hatari-oracle.sh and cargo xtask tosdump), and
+ *                     only such a table may hold
+ *   +set <TAB> <offset>=<byte>[,<offset>=<byte>...]
+ *                     a prelude that changes the buffer of the read prelude
+ *                     IMMEDIATELY before it -- at most eight pairs, offsets
+ *                     inside what that read read, no offset twice; the case
+ *                     after it is the write that writes "read + set" back
+ *                     (the write-back rule then names the read before the
+ *                     +set).  Offset and byte decimal or 0x hex.
+ *   u:0               an argument: the physical unit of the test disk, for
+ *                     Rwabs with RW_NOTRANSLATE -- the only way that flag is
+ *                     admitted (reads, b: buffer, count 0..2).  The runner
+ *                     passes the unit the run's profile names
+ *                     (td_run_call_set_disk_unit; DUMPBIOS reads it from
+ *                     DISKUNIT.TXT, which the profile's runner writes: the
+ *                     oracle's profile disk IDE master 18, NewTOS the SD
+ *                     card 26 -- docs/api/bios/04-rwabs.md, "Decisions");
+ *                     the record carries TD_CALL_UNIT_TOKEN, never the
+ *                     number.
+ *
  * ------------------------------------------------------------------
  * THE GUARD -- a whitelist
  * ------------------------------------------------------------------
@@ -768,6 +793,12 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
 #define TD_CALL_ARG_BUF      3     /* "b:", value = buffer number         */
 #define TD_CALL_ARG_TOKEN    4     /* "t:", value = 0: the Super token    */
 #define TD_CALL_ARG_FUNC     5     /* "f:", value = callback number       */
+#define TD_CALL_ARG_UNIT     6     /* "u:0", the test disk's physical unit */
+#define TD_CALL_ARG_SET      7     /* a +set pair: (offset << 8) | byte    */
+
+/* The trap field of a "+set" prelude: it issues no trap. */
+#define TD_CALL_TRAP_SET     0
+#define TD_CALL_SET_PAIRS    TD_CALL_ARGS_N
 
 struct td_call_arg {
 	uint8_t kind;                      /* TD_CALL_ARG_*                   */
@@ -779,7 +810,9 @@ struct td_call_arg {
 #define TD_CALL_CAP_RET     (-2)
 
 /* Preludes of a disk table ("+" lines, "!disk" only): Rwabs reads into a
- * dumper buffer, issued after the case's poison and before its call. */
+ * dumper buffer, issued after the case's poison and before its call; in a
+ * destructive table also "+set" (trap TD_CALL_TRAP_SET, nargs pairs of kind
+ * TD_CALL_ARG_SET), which changes the buffer of the read before it. */
 #define TD_MAX_CALL_PRELUDES 32
 
 struct td_call_case {
@@ -805,6 +838,8 @@ struct td_call_case_table {
 	uint16_t            count;
 	uint8_t             disk;          /* 1: the table says "!disk"       */
 	uint8_t             disk_drive;    /* its test drive (2 = C:)         */
+	uint8_t             destructive;   /* 1: "!disk <d> destructive"      */
+	uint8_t             unit_token;    /* 1: some case names "u:0"        */
 	uint16_t            prelude_count;
 	struct td_call_case cases[TD_MAX_CASES];
 	struct td_call_case preludes[TD_MAX_CALL_PRELUDES];

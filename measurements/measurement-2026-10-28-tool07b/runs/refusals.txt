@@ -1,0 +1,24 @@
+$ cargo xtask tosdump bios tosdump/cases/bios-r2-x004.tsv --out <scratch>/refuse-1 --scratch <scratch>/xtask
+xtask: tosdump: 1 problem(s), nothing run:
+  the table is destructive ("!disk <drive> destructive"): it runs only on a fresh clone of the test image, in the disk round -- give --disk or --testdisk <img>
+exit 1
+
+$ cargo xtask tosdump bios tosdump/cases/bios-r2-x004.tsv --testdisk <scratch>/broken.img --out <scratch>/refuse-2 --scratch <scratch>/xtask
+  (broken.img = the test image with C: boot sector byte 0x16 = 0, spf 0)
+tosdump: table     DESTRUCTIVE: runs on a fresh clone of the test image (the card is built from it for this run)
+tosdump: test image <scratch>/broken.img: fsck_msdos -n on partition 1 exit 202: not a fresh image
+xtask: tosdump: --testdisk <scratch>/broken.img fails fsck_msdos -n on its test partition: a destructive table needs a fresh test image
+exit 1 (nothing built: no 'building' line)
+
+$ tools/hatari-oracle.sh tt <DUMPBIOS.PRG> tosdump/cases/bios-r2-x006.tsv <scratch>/refuse-3
+destructive table: runs only in profile disk, on a fresh clone of the test image
+exit 2
+
+$ HATARI_ORACLE_DISK=<scratch>/broken.img tools/hatari-oracle.sh disk <DUMPBIOS.PRG> tosdump/cases/bios-r2-x006.tsv <scratch>/refuse-4
+destructive table: partition 1 of <scratch>/broken.img fails fsck_msdos -n -- not a fresh test image
+Calculated zero cache blocks
+** <scratch>/refuse-4/testpart-check.img
+  ...
+exit 2
+
+out-dirs refuse-3, refuse-4 left behind: 0

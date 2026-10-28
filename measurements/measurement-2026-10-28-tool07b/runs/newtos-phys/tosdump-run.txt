@@ -1,0 +1,63 @@
+command   cargo xtask tosdump bios tosdump/cases/bios-r2-phys.tsv --disk --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-phys-disk.BIN --out measurements/measurement-2026-10-28-tool07b/runs/newtos-phys --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07b/run/xtask
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    99ad54a786891caf3a413ae68a42e8a4fc7128ba
+dirty     24 path(s) in git status --porcelain
+   M tools/hatari-oracle.sh
+   M tools/xtask/src/main.rs
+   M tools/xtask/src/tosdump.rs
+   M tosdump/core/cases.c
+   M tosdump/core/cases.h
+   M tosdump/core/dumpbios.c
+   M tosdump/core/runner_call.c
+   M tosdump/core/runner_call.h
+   M tosdump/core/tosdump.h
+   M tosdump/tests/test_cases_disk.c
+   M tosdump/tests/test_runner_disk.c
+  ?? measurements/measurement-2026-10-28-tool07b/
+  ?? tosdump/cases/bios-r2-phys.tsv
+  ?? tosdump/cases/bios-r2-x004.tsv
+  ?? tosdump/cases/bios-r2-x005.tsv
+  ?? tosdump/cases/bios-r2-x006.tsv
+  ?? tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-phys-disk.BIN
+  ?? tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-phys-disk.LOG
+  ?? tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN
+  ?? tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-x004-disk.LOG
+  ?? tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-x005-disk.BIN
+  ?? tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-x005-disk.LOG
+  ?? tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-x006-disk.BIN
+  ?? tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-x006-disk.LOG
+harness commit 99ad54a786891caf3a413ae68a42e8a4fc7128ba
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-r2-phys.tsv sha256 f2a49911ee5191b98cd30304cebc0164bbba55cdfc9098d0d41abfae3cbcc35c
+target/   own (8 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (8 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 0a3b38d4bc0a4805bf702c1b2899993428db0e883846240c663cf3e7b507929d
+kernel ELF  sha256 9a23d614d8f344a364a24849b3365821846f29315de24493705826b4847e3119 (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id 99ad
+DUMPBIOS.NAP sha256 aede3a7fdb5dd5e9e9fbe8049622bb9d82377160e93c7cd2b354fd0752457203
+test image built by tools/mktestdisk.sh NEWDESK.INF=<autorun D:\DUMPBIOS.NAP>
+test image sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+D:\DISKUNIT.TXT 26 (the profile's physical unit of C:, for u:0)
+card.img.manifest: image_sha256 b23080354fa83a94490294ab9198f6bbed0da1ac537a7d28f2086f13f58b5072
+card.img.manifest: optional_missing none
+test.img.manifest: image_sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+test.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07b/run/xtask/tosdump-72935/card.img sha256 b23080354fa83a94490294ab9198f6bbed0da1ac537a7d28f2086f13f58b5072 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 75c856728c51506b7918c437cf92b5c9cc6b121f2e4792224f539035368df3d9
+BIOS.BIN 3872 bytes, sha256 c6b75d84510137a8b43f798c0064c06b17d1f18ecae73ed2dca370931eca5dd3
+BIOS.LOG 273 bytes, sha256 0d3cf4713f485f599b16948d238941edc1491433c8a3f000b704cfce18a09da0
+testpart: identical
+fsck_msdos -n testpart-before.img: exit 0
+fsck_msdos -n testpart-after.img: exit 0
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 ce1075d9f3b2f68a3421c5483de56bf1c2d5fe01c2e5cfb5dfafb29d29362070
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 12 records of 320 bytes, build 99ad, case CRC 514944FD
+tosdiff EMUTOS-1a7484ab-BIOS-r2-phys-disk.BIN vs NEWTOS.BIN: exit 1, 11 of 12 cases differ
+total     31 s
+result    run complete (differences above are findings, not failures)

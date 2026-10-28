@@ -1,0 +1,41 @@
+end state of bios-r2-x004.tsv (test partition, LBA 63 + 130977)
+original vs oracle-1: DIFFERENT (84bcadfb750eef7880acf837c31a84b678f25fa4f10aeb0a710b639c9e56f09b vs a7cf3d2c9a841ba327d14daa6fb41d5c38b10d82a04f39974247f8fcec98e86a); differing bytes (partition offset: a b, octal):
+  sector 0 offset 0x00C: 2 4
+oracle-1 vs oracle-2: IDENTICAL (a7cf3d2c9a841ba327d14daa6fb41d5c38b10d82a04f39974247f8fcec98e86a)
+original vs newtos: DIFFERENT (84bcadfb750eef7880acf837c31a84b678f25fa4f10aeb0a710b639c9e56f09b vs a7cf3d2c9a841ba327d14daa6fb41d5c38b10d82a04f39974247f8fcec98e86a); differing bytes (partition offset: a b, octal):
+  sector 0 offset 0x00C: 2 4
+oracle-1 vs newtos (THE RULE): IDENTICAL (a7cf3d2c9a841ba327d14daa6fb41d5c38b10d82a04f39974247f8fcec98e86a)
+fsck_msdos -n newtos-x004.img:
+  ** /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07b/run/end/newtos-x004.img
+  ** Phase 1 - Preparing FAT
+  Warning: FAT[0] is incorrect (is 0x0; should be 0xFFF8)
+  Correct?
+  : no
+  Warning: FAT[1] is incorrect (is 0x0; should be 0xFFF8)
+  Correct?
+  : no
+  ** Phase 2 - Checking Directories
+  ** Phase 3 - Checking for Orphan Clusters
+  Warning: Found orphan cluster(s)
+  Fix?
+  : no
+  Warning: Found 3 orphaned clusters
+  Warning: 0 files, 130692 KiB free (32673 clusters)
+  exit 206
+fsck_msdos -n oracle-x004-1.img:
+  ** /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07b/run/end/oracle-x004-1.img
+  ** Phase 1 - Preparing FAT
+  Warning: FAT[0] is incorrect (is 0x0; should be 0xFFF8)
+  Correct?
+  : no
+  Warning: FAT[1] is incorrect (is 0x0; should be 0xFFF8)
+  Correct?
+  : no
+  ** Phase 2 - Checking Directories
+  ** Phase 3 - Checking for Orphan Clusters
+  Warning: Found orphan cluster(s)
+  Fix?
+  : no
+  Warning: Found 3 orphaned clusters
+  Warning: 0 files, 130692 KiB free (32673 clusters)
+  exit 206

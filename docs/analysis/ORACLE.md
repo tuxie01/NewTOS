@@ -58,7 +58,7 @@ whole configuration back into the `--configfile` path.
 |---|---|---|---|
 | `tt` | `--machine tt --tos-res ttmed --monitor vga` | 640×480, 4 planes (TT-Medium) | `EMUTOS14-VDI`, `-VDI-r2`, `-VDI-r3`, `-VDI-all`, `-AES`, `-AES-r2wind`, `-AES-r2brlist`, `-AES-r3`, `-AES-m05/m06/m07`, `-RASTER`; pin only: `EMUTOS-1a7484ab-BIOS` |
 | `falcontc` | `--machine falcon --monitor vga` + `EMUDESK.INF` `#E 1A E0 00 1C 60` | 640×480, 16-bit truecolor (VIDEL `0x001C`, read by `process_inf1`, `aes/geminit.c`) | `EMUTOS14-VDI-all-falcontc`, `-RASTER-screen-falcontc`; pin only: `EMUTOS-1a7484ab-BIOS-falcontc` |
-| `disk` | `--machine falcon --monitor vga --drive-a off --drive-b off` + `--ide-master <clone of the test image> --ide-swap 0=off`, dumper on GEMDOS drive D: | 640×480, EmuTOS' default mode (`VsetMode(-1)` = `0x001A`, no INF) | pin only: `EMUTOS-1a7484ab-BIOS-r2-disk` (TASK/TOOL07); canary §6 |
+| `disk` | `--machine falcon --monitor vga --drive-a off --drive-b off` + `--ide-master <clone of the test image> --ide-swap 0=off`, dumper on GEMDOS drive D: | 640×480, EmuTOS' default mode (`VsetMode(-1)` = `0x001A`, no INF) | pin only: `EMUTOS-1a7484ab-BIOS-r2-disk` and the closing tables' `-BIOS-r2-<phys\|x004\|x005\|x006>-disk` (TASK/TOOL07); canary §6 |
 
 The INF is byte-identical to `measurements/measurement-2026-09-21-vdi-qemu/method/EMUDESK-falcon-truecolor.INF`.
 
@@ -120,6 +120,16 @@ on, no disk inserted) `Drvmap()` = `0xF`, and `Giaccess(0,14)` and both
 - **No own Hatari configuration.** As for `tt` and `falcontc`, what differs
   between profiles is on the command line; `tools/oracle/hatari.cfg` holds
   what they share and stays unchanged.
+- **The physical unit of C: is 18**, EmuTOS' IDE master `2 + 8 × 2`
+  (`bios/disk.h:30`). The profile names it in `D:\DISKUNIT.TXT` (`18`), which
+  DUMPBIOS reads for the unit token `u:0` of an `Rwabs(RW_NOTRANSLATE)` case
+  (`docs/api/bios/04-rwabs.md`, "Decisions"; `docs/TOS-REFERENCE-DUMPER.md`
+  section 6, "The closing tables"); NewTOS' runner names 26, the SD card.
+- **Destructive tables** (`!disk <drive> destructive`, the closing tables)
+  run only in this profile: the script refuses them in any other, clones the
+  test image for the run as for every disk table, and refuses an image whose
+  partition 1 fails `fsck_msdos -n`
+  (`measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT`).
 
 The test image comes from one command, `tools/mktestdisk.sh <image>
 [dest=host-file …]`: 64 MiB, MBR with one FAT16 partition (type `0x06`,
@@ -281,22 +291,30 @@ cases runs it in addition to the two canaries above.
 
 | | |
 |---|---|
-| Cases | `tosdump/cases/bios-r1.tsv` (sha256 `231f2dfe73e5a80628167b216a66fe6475992b9b3a692b9025a92e8d6f3b2bf8`) with lines 112 (`Random`) and 125 (`Gettime`) commented out in place: 145 cases, CRC `37812B33`, sha256 `7f1dfe2d575c40b3336aa321637c953eae68e6e8bec0d01ab68249728a0404c7` — until TOOL07's read-only disk cases replace it |
-| Dumper | `DUMPBIOS.PRG` built from the current tree with build id `a8b7` (the id of the BIOS references) |
-| Image | `tools/mktestdisk.sh <dir>/test.img`, no files, sha256 `d83c543471fd30f29e4704cb9450f70517fe43a4e5e0250e137205e409bfc4a0` |
-| Expected | `BIOS.BIN` sha256 `0bce674c24bb094c6647157c9d4a8b5d0c98ab3210a66bbe46efaca128c9d1f9`, `BIOS.LOG` sha256 `ae160cac6e37c0d54acc7dc1092c093f0a2e7717b782a22772835938dc33fb6f`; the image unchanged by the run |
+| Cases | `tosdump/cases/bios-r2.tsv`, the disk round's non-destructive table, as it is: 51 cases, CRC `09C71B80`, sha256 `071300e43736d1c3371e65d4a0e2b3f4b5e327dcd4d7147763fe0c04e553bc44` (no time-dependent case; its writes write back what was just read) |
+| Dumper | `DUMPBIOS.PRG` built from the current tree with build id `b81d` (the id of the reference) |
+| Image | `tools/mktestdisk.sh <dir>/test.img NEWDESK.INF=<inf>`, the INF `#R 02` / `#Z 01 D:\DUMPBIOS.NAP@` (CRLF, sha256 `c779a308dbfae3b61747e3ebcf5d45f7d616bc53e63b83ec4afa3557f02ecf5b`, written by the script), image sha256 `d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37` |
+| Expected | `tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-disk`: `BIOS.BIN` sha256 `072d8cd1bdbc03127d6175d888f51fb2ec100209d96b61f1a4c5f0c684177b1e`, `BIOS.LOG` sha256 `055e586a71f6c3bc32065d08099b14b5e8ee50d1871191083724a52e768a5a76`; the image unchanged by the run |
 | Runtime | about 10 s |
 
 ```sh
-sh measurements/measurement-2026-10-28-tool06/method/canary-disk.sh "$SCRATCH/canary-disk-$(date +%Y%m%d-%H%M%S)"
+sh measurements/measurement-2026-10-28-tool07b/method/canary-disk.sh "$SCRATCH/canary-disk-$(date +%Y%m%d-%H%M%S)"
 # prints "canary disk: OK ..." and "canary disk: test image unchanged ..."; exit 0 only then
 ```
 
-`SCRATCH` as above. The script checks the table, the derived table and the
-image against their sha256 before the run, then runs `tools/hatari-oracle.sh
-disk`, and deletes the image and its clone. Last pass: 2026-10-28, twice,
-five identical runs of the derived table in all
-(`measurements/measurement-2026-10-28-tool06/RUNINFO.TXT`).
+`SCRATCH` as above. The script checks the table, the INF and the image
+against their sha256 before the run, then runs `tools/hatari-oracle.sh disk`,
+and deletes the image and its clone. Since 2026-10-28 (TOOL07, user
+decision): the reference reproduced bit-identically in its own two runs
+(`measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`) and in two runs of
+this script with the dumper source of TOOL07's closing tables
+(`measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT`), the last pass.
+The destructive closing tables are no canary material: they change the image
+by design. History: the first disk canary ran `bios-r1.tsv` without its
+`Random` and `Gettime` lines on an image without files
+(`measurements/measurement-2026-10-28-tool06/method/canary-disk.sh`,
+`measurements/measurement-2026-10-28-tool06/RUNINFO.TXT`); it still passed on
+2026-10-28 with the new dumper source.
 
 ## 7. Rules from here on
 
@@ -325,6 +343,16 @@ five identical runs of the derived table in all
   (`measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`). The NewTOS
   side is a card from `tools/mkcard.sh` with `MKCARD_TESTDISK` = the same
   image, so both sides read the same bytes on C:.
+- The closing tables' references `EMUTOS-1a7484ab-BIOS-r2-phys-disk`,
+  `-r2-x004-disk`, `-r2-x005-disk` and `-r2-x006-disk` were measured on this
+  pin on 2026-10-28 with profile `disk`, `DUMPBIOS` build `99ad` and the
+  tables `tosdump/cases/bios-r2-phys.tsv` (CRC `514944FD`, 12 cases),
+  `-x004.tsv` (`9F135A6F`, 10), `-x005.tsv` (`FBB54EFF`, 13), `-x006.tsv`
+  (`E4B17B75`, 11), on the test image of `bios-r2.tsv`, each run on its own
+  fresh clone. Two runs of each byte-identical, the end states of the two
+  runs identical; x004 and x006 leave C:'s boot sector changed by design,
+  x005 and phys leave the image unchanged
+  (`measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT`).
 - All fourteen VDI, AES and raster `EMUTOS-1a7484ab-*` references are record **format 3**
   (pointer width and word order in the header,
   `docs/TOS-REFERENCE-DUMPER.md` section 3), re-recorded on this pin on

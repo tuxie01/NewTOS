@@ -367,6 +367,11 @@
 #define TD_CALL_CB_TOKEN(n)    ((uint32_t)0xB0FC0000uL + (uint32_t)(n))
 #define TD_CALL_SUPER_TOKEN(n) ((uint32_t)0xB0F50000uL + (uint32_t)(n))
 
+/* The physical unit of the test disk ("u:0", the disk round's closing tables,
+ * docs/TOS-REFERENCE-DUMPER.md section 6): the record carries this token,
+ * never the unit number, which is the machine's (oracle 18, NewTOS 26). */
+#define TD_CALL_UNIT_TOKEN(n)  ((uint32_t)0xB0F40000uL + (uint32_t)(n))
+
 /* The width of the return value a retclass judges, in bytes: the return
  * type of the EmuTOS handler (LONG, WORD, UBYTE).  d0 above that type is
  * not defined by the m68k calling convention. */

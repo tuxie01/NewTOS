@@ -18,6 +18,22 @@ static uint32_t call_buf[TD_CALL_BUF_N][TD_CALL_BUF_BYTES / 4];
 static struct td_call_frame run_frame;
 
 /*
+ * The physical unit of the test disk, what a "u:0" argument passes (the
+ * disk round, docs/TOS-REFERENCE-DUMPER.md section 6).  It is the machine's,
+ * so the run's PROFILE names it -- the oracle's profile disk 18 (IDE master),
+ * NewTOS 26 (the SD card), docs/api/bios/04-rwabs.md "Decisions" -- and the
+ * dumper hands it in (td_run_call_set_disk_unit) before the run; no search,
+ * and nothing compiled in, so the two builds stay the same but for the byte
+ * order (section 2.1).  -1: not given.
+ */
+static int32_t disk_unit = -1;
+
+void td_run_call_set_disk_unit(int32_t unit)
+{
+	disk_unit = unit;
+}
+
+/*
  * The callbacks a Supexec case names with "f:<n>" (MEM12; docs/TOS-REFERENCE-
  * DUMPER.md section 6, "Super and Supexec").  Portable C, the same lines on
  * both machines; EmuTOS jumps to them in supervisor mode, NewTOS calls them
@@ -181,6 +197,11 @@ static long issue(const struct td_call_case *c, struct td_call_frame *f)
 			value[j] = super_token;
 			rec = TD_CALL_SUPER_TOKEN(a->value);
 			break;
+		case TD_CALL_ARG_UNIT:   /* the test disk's physical unit */
+			kind[j]  = TD_ABI_ARG_WORD;
+			value[j] = (long)(int16_t)disk_unit;
+			rec = TD_CALL_UNIT_TOKEN(a->value);
+			break;
 		default:   /* TD_CALL_ARG_BUF: its address, and its token */
 			kind[j]  = TD_ABI_ARG_LONG;
 			value[j] = (long)td_call_buffer((int)a->value);
@@ -204,6 +225,9 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 	stop_ret  = 0;
 	if (out_bytes < (size_t)ct->count * TD_CALL_RECORD_SIZE)
 		return TD_RUN_CALL_ERR_BUFFER;
+	/* a "u:0" with no unit from the profile: nothing is issued */
+	if (ct->unit_token && (disk_unit < 0 || disk_unit > 0x7FFF))
+		return TD_RUN_CALL_ERR_UNIT;
 
 	for (i = 0; i < ct->count; i++) {
 		const struct td_call_case *c = &ct->cases[i];
@@ -224,7 +248,22 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 		for (k = 0; k < c->prelude_count; k++) {
 			const struct td_call_case *p =
 				&ct->preludes[c->prelude_first + k];
-			long pr = issue(p, NULL);
+			long pr;
+
+			/* "+set" (destructive tables): change the buffer the
+			 * read before it filled -- the loader put that read
+			 * right before it, in this case's preludes */
+			if (p->trap == TD_CALL_TRAP_SET) {
+				uint8_t *b = (uint8_t *)td_call_buffer(
+					(int)p[-1].arg[1].value);
+				uint16_t j;
+
+				for (j = 0; j < p->nargs; j++)
+					b[p->arg[j].value >> 8] =
+						(uint8_t)(p->arg[j].value & 0xFF);
+				continue;
+			}
+			pr = issue(p, NULL);
 
 			if (pr != 0) {
 				stop_line = p->line;

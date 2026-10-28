@@ -2833,7 +2833,8 @@ static int parse_call_args(const char *s, size_t len, struct td_call_case *c,
 			}
 			arg = &c->arg[c->nargs];
 			if (alen < 3 || a[1] != ':') {
-				*why = "an argument is not w:<v>, l:<v>, b:<n>, f:<n> or t:0";
+				*why = "an argument is not w:<v>, l:<v>, b:<n>, f:<n>, "
+				       "t:0 or u:0";
 				return TD_CASE_ERR_VALUE;
 			}
 			rc = parse_value32(a + 2, alen - 2, &v);
@@ -2878,8 +2879,19 @@ static int parse_call_args(const char *s, size_t len, struct td_call_case *c,
 				arg->kind  = TD_CALL_ARG_TOKEN;
 				arg->value = v;
 				break;
+			case 'u':
+				/* the test disk's physical unit: the run's profile
+				 * names it (td_run_call_set_disk_unit) */
+				if (v != 0) {
+					*why = "the unit token is u:0, there is no other";
+					return TD_CASE_ERR_RANGE;
+				}
+				arg->kind  = TD_CALL_ARG_UNIT;
+				arg->value = v;
+				break;
 			default:
-				*why = "an argument is not w:<v>, l:<v>, b:<n>, f:<n> or t:0";
+				*why = "an argument is not w:<v>, l:<v>, b:<n>, f:<n>, "
+				       "t:0 or u:0";
 				return TD_CASE_ERR_VALUE;
 			}
 			c->nargs++;
@@ -3021,7 +3033,7 @@ static const struct call_policy call_policy[] = {
 	{  1, 0x20, 0x20, "l",      "t",    CR_SUPER     },  /* Super       */
 	/* BIOS, trap #13 (bios/bios.c:1252-1265) */
 	{ 13,    1,    1, "w",      NULL,   CR_NONE      },  /* Bconstat    */
-	{ 13,    4,    4, "wpwwwl", NULL,   CR_RWABS     },  /* Rwabs, !disk only */
+	{ 13,    4,    4, "wpwwwl", "wpwwul", CR_RWABS   },  /* Rwabs, !disk only; u:0 physical */
 	{ 13,    7,    7, "w",      NULL,   CR_DISK_DRIVE},  /* Getbpb, !disk only */
 	{ 13,    9,    9, "w",      NULL,   CR_DISK_DRIVE},  /* Mediach, !disk only */
 	{ 13,    2,    2, "w",      NULL,   CR_BCONIN    },  /* Bconin      */
@@ -3173,6 +3185,7 @@ static int sig_matches(const char *sig, const struct td_call_case *c)
 		          break;
 		case 'f': if (k != TD_CALL_ARG_FUNC) return 0; break;
 		case 't': if (k != TD_CALL_ARG_TOKEN) return 0; break;
+		case 'u': if (k != TD_CALL_ARG_UNIT) return 0; break;
 		default:  return 0;
 		}
 	}
@@ -3197,9 +3210,13 @@ static int is_buf(const struct td_call_case *c, int i)
  * part of the rule; that a write writes back what its last prelude read is
  * checked in td_call_cases_parse, which sees the preludes.
  *   rw     bits RW_WRITE 1, RW_NOMEDIACH 2, RW_NORETRIES 4, RW_NOBYTESWAP
- *          0x80 only.  RW_NOTRANSLATE (8) is refused: a physical unit number
- *          is the machine's (EmuTOS IDE master 18, bios/disk.h:30), and which
- *          one the Pi's card carries is open (BIOS-STOR-002).
+ *          0x80 only.  RW_NOTRANSLATE (8) only with the unit token "u:0" as
+ *          dev: a physical unit number is the machine's (EmuTOS IDE master
+ *          18, bios/disk.h:30; the Pi's card 26, docs/api/bios/04-rwabs.md
+ *          "Decisions"), so a table names it by the token, which the runner
+ *          resolves from the build's profile.  Physical is a read into a b:
+ *          buffer, count 0..2, flags RW_NOMEDIACH and RW_NORETRIES besides
+ *          (RW_NOBYTESWAP reaches the driver in physical mode: no).
  *   buf    a dumper buffer, count 0..2 (two 512-byte sectors fill one); or
  *          NULL, the FastCopy arm, on A:/B: only, as a read with count 0..2:
  *          it returns before any I/O (bios/blkdev.c:425-428).
@@ -3209,9 +3226,23 @@ static const char *rwabs_value_refusal(const struct td_call_case *c)
 {
 	int32_t rw = c->arg[0].value, cnt = c->arg[2].value, dev = c->arg[4].value;
 
+	if (c->arg[4].kind == TD_CALL_ARG_UNIT) {
+		if (!(rw & 8))
+			return "Rwabs: the unit token u:0 is a physical unit: only "
+			       "with RW_NOTRANSLATE";
+		if (rw & ~0x0E)
+			return "Rwabs: a physical access is a read, flags "
+			       "RW_NOMEDIACH and RW_NORETRIES besides "
+			       "RW_NOTRANSLATE";
+		if (c->arg[1].kind != TD_CALL_ARG_BUF)
+			return "Rwabs: a physical read reads into a b: buffer";
+		if (cnt < 0 || cnt * 512 > TD_CALL_BUF_BYTES)
+			return "Rwabs: count 0..2, what one dumper buffer holds";
+		return NULL;
+	}
 	if (rw & 8)
-		return "Rwabs: RW_NOTRANSLATE (a physical unit) is not "
-		       "established -- the unit number is the machine's";
+		return "Rwabs: RW_NOTRANSLATE only with the unit token u:0 -- "
+		       "the unit number is the machine's (BIOS-STOR-002)";
 	if (rw & ~0x87)
 		return "Rwabs: only the flags RW_WRITE, RW_NOMEDIACH, "
 		       "RW_NORETRIES and RW_NOBYTESWAP";
@@ -3342,27 +3373,35 @@ static const char *call_value_refusal(const struct call_policy *p,
 	}
 }
 
-/* "!disk <TAB> <drive>" (docs/TOS-REFERENCE-DUMPER.md section 6, "The disk
- * round"): the table is a disk table, <drive> its test drive, 2..15. */
+/* "!disk <TAB> <drive> [<TAB> destructive]" (docs/TOS-REFERENCE-DUMPER.md
+ * section 6, "The disk round"): the table is a disk table, <drive> its test
+ * drive, 2..15; "destructive" marks a table that changes the test image and
+ * runs on a fresh clone only (the closing tables). */
 static int parse_call_directive(const char *line, size_t len,
                                 struct td_call_case_table *t, int late,
                                 const char **why)
 {
-	const char *col[2];
-	size_t col_len[2];
-	const char *name, *val;
-	size_t name_len, val_len;
+	const char *col[3];
+	size_t col_len[3];
+	const char *name, *val, *mark;
+	size_t name_len, val_len, mark_len;
 	uint32_t drive;
+	int ncol = split_columns(line, len, col, col_len, 3);
 
-	if (split_columns(line, len, col, col_len, 2) < 2) {
+	if (ncol < 2) {
 		col[1] = line + len;
 		col_len[1] = 0;
+	}
+	if (ncol < 3) {
+		col[2] = line + len;
+		col_len[2] = 0;
 	}
 	name = col[0];
 	name_len = col_len[0];
 	trim(&name, &name_len);
 	if (!span_is(name, name_len, "!disk")) {
-		*why = "a call table knows one directive, \"!disk <drive>\"";
+		*why = "a call table knows one directive, \"!disk <drive> "
+		       "[destructive]\"";
 		return TD_CASE_ERR_DIRECTIVE;
 	}
 	if (t->disk) {
@@ -3381,8 +3420,17 @@ static int parse_call_directive(const char *line, size_t len,
 		*why = "\"!disk\" names its test drive, 2 (C:) .. 15 (P:)";
 		return TD_CASE_ERR_DIRECTIVE;
 	}
+	mark = col[2];
+	mark_len = col_len[2];
+	trim(&mark, &mark_len);
+	if (mark_len != 0 && !span_is(mark, mark_len, "destructive")) {
+		*why = "after the drive \"!disk\" takes one word, "
+		       "\"destructive\"";
+		return TD_CASE_ERR_DIRECTIVE;
+	}
 	t->disk = 1;
 	t->disk_drive = (uint8_t)drive;
+	t->destructive = mark_len != 0;
 	return 0;
 }
 
@@ -3394,7 +3442,9 @@ static int same_value(const struct td_call_arg *a, const struct td_call_arg *b)
 /*
  * A write in a disk table writes back what the LAST prelude before it read:
  * same buffer, count, recno, drive and lrecno, the prelude a logical read
- * (the per-line rules hold for it already).  The runner stops the run when
+ * (the per-line rules hold for it already).  In a destructive table the last
+ * prelude may be a "+set": the read is then the one before it, and what is
+ * written back is "read + set".  The runner stops the run when
  * that read does not return 0 (runner_call.c), so the write never carries
  * the poison.  The drive is the table's test drive.
  */
@@ -3413,11 +3463,120 @@ static const char *write_back_refusal(const struct td_call_case_table *t,
 		return "Rwabs: a write needs a prelude that read the same "
 		       "sectors into the same buffer just before it";
 	p = &t->preludes[t->prelude_count - 1];
+	if (p->trap == TD_CALL_TRAP_SET)
+		p--;            /* parse_set_prelude: a read stands before it */
 	for (i = 1; i < 6; i++)
 		if (!same_value(&p->arg[i], &c->arg[i]))
 			return "Rwabs: a write writes back exactly what its last "
 			       "prelude read -- same buffer, count, sector, drive";
 	return NULL;
+}
+
+/* Is this prelude line a "+set"?  (The opcode column, '+' stripped.) */
+static int is_set_line(const char *line, size_t len)
+{
+	const char *col[2];
+	size_t col_len[2];
+	const char *o;
+	size_t olen;
+
+	split_columns(line, len, col, col_len, 2);
+	o = col[0];
+	olen = col_len[0];
+	trim(&o, &olen);
+	return olen >= 1 && o[0] == '+' && span_is(o + 1, olen - 1, "set");
+}
+
+/*
+ * "+set <TAB> <offset>=<byte>[,<offset>=<byte>...] [<TAB> comment]" -- only
+ * in a destructive disk table, IMMEDIATELY after the read prelude whose
+ * buffer it changes (docs/TOS-REFERENCE-DUMPER.md section 6, "The closing
+ * tables").  At most TD_CALL_SET_PAIRS pairs; an offset inside what the read
+ * read (count * 512 bytes), no offset twice, a byte 0..255.  That the case
+ * after it is the write-back of "read + set" is checked by the parse loop.
+ */
+static int parse_set_prelude(const struct td_call_case_table *t,
+                             uint16_t pending, const char *line, size_t len,
+                             struct td_call_case *c, const char **why)
+{
+	const char *col[3];
+	size_t col_len[3];
+	const struct td_call_case *read;
+	const char *s;
+	size_t slen, i, start;
+	int32_t limit;
+
+	if (!t->disk || !t->destructive) {
+		*why = "+set changes the test image: only in a destructive disk "
+		       "table (\"!disk <drive> destructive\")";
+		return TD_CASE_ERR_UNSAFE_STATE;
+	}
+	if (pending == 0 ||
+	    t->preludes[t->prelude_count - 1].trap == TD_CALL_TRAP_SET) {
+		*why = "+set follows the read prelude whose buffer it changes";
+		return TD_CASE_ERR_UNSAFE_FIELD;
+	}
+	read = &t->preludes[t->prelude_count - 1];
+	limit = read->arg[2].value * 512;
+	if (limit <= 0) {
+		*why = "+set after a read of count 0: nothing was read";
+		return TD_CASE_ERR_UNSAFE_FIELD;
+	}
+	if (split_columns(line, len, col, col_len, 3) < 2) {
+		*why = "+set needs its <offset>=<byte> list in the second column";
+		return TD_CASE_ERR_COLUMNS;
+	}
+	s = col[1];
+	slen = col_len[1];
+	trim(&s, &slen);
+	c->trap = TD_CALL_TRAP_SET;
+	c->opcode = 0;
+	c->nargs = 0;
+	c->cap_arg = -1;
+	for (i = 0, start = 0; ; i++) {
+		if (i == slen || s[i] == ',') {
+			const char *a = s + start;
+			size_t alen = i - start, eq, k;
+			int32_t off, byte;
+
+			trim(&a, &alen);
+			for (eq = 0; eq < alen && a[eq] != '='; eq++)
+				;
+			if (alen == 0 || eq == 0 || eq >= alen - 1 ||
+			    parse_value32(a, eq, &off) != 0 ||
+			    parse_value32(a + eq + 1, alen - eq - 1, &byte) != 0) {
+				*why = "+set takes <offset>=<byte>[,<offset>=<byte>...], "
+				       "decimal or 0x hex";
+				return TD_CASE_ERR_VALUE;
+			}
+			if (byte < 0 || byte > 255) {
+				*why = "+set: a byte is 0..255";
+				return TD_CASE_ERR_RANGE;
+			}
+			if (off < 0 || off >= limit) {
+				*why = "+set: an offset outside what the read before it "
+				       "read (count * 512 bytes)";
+				return TD_CASE_ERR_RANGE;
+			}
+			if (c->nargs >= TD_CALL_SET_PAIRS) {
+				*why = "+set: more than eight pairs";
+				return TD_CASE_ERR_TOO_MANY_VALUES;
+			}
+			for (k = 0; k < c->nargs; k++)
+				if ((c->arg[k].value >> 8) == off) {
+					*why = "+set: an offset named twice";
+					return TD_CASE_ERR_VALUE;
+				}
+			c->arg[c->nargs].kind = TD_CALL_ARG_SET;
+			c->arg[c->nargs].value = (off << 8) | byte;
+			c->nargs++;
+			if (i == slen)
+				break;
+			start = i + 1;
+		}
+	}
+	td_case_line_comment_n(line, len, 3, c->comment, TD_COMMENT_LEN);
+	return 0;
 }
 
 int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
@@ -3455,6 +3614,7 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 		size_t olen, colon;
 		uint32_t trap, fn;
 		int rc, prelude;
+		uint16_t i;
 
 		if (!is_case) {
 			if (td_case_line_is_directive(line, line_len)) {
@@ -3469,6 +3629,25 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 			continue;
 		}
 		prelude = td_case_line_is_prelude(line, line_len);
+		if (prelude && is_set_line(line, line_len)) {
+			if (t->prelude_count >= TD_MAX_CALL_PRELUDES) {
+				fail(err, line_no, "more preludes than "
+				                   "TD_MAX_CALL_PRELUDES");
+				return TD_CASE_ERR_TOO_MANY_PRE;
+			}
+			c = &t->preludes[t->prelude_count];
+			memset(c, 0, sizeof *c);
+			c->line = line_no;
+			rc = parse_set_prelude(t, pending, line, line_len, c, &why);
+			if (rc != 0) {
+				fail(err, line_no, why);
+				return rc;
+			}
+			t->prelude_count++;
+			pending++;
+			last_prelude = line_no;
+			continue;
+		}
 		if (prelude && !t->disk) {
 			fail(err, line_no, "a call table has no preludes: round 1 "
 			                   "issues queries only (a disk table, "
@@ -3571,10 +3750,19 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 		}
 		why = call_value_refusal(p, c);
 		if (!why && prelude &&
-		    (p->rule != CR_RWABS || (c->arg[0].value & 1) ||
+		    (p->rule != CR_RWABS || (c->arg[0].value & 9) ||
 		     c->arg[1].kind != TD_CALL_ARG_BUF))
-			why = "a prelude is an Rwabs read into a dumper buffer, "
-			      "nothing else (a write is a measured case)";
+			why = "a prelude is a logical Rwabs read into a dumper "
+			      "buffer, nothing else (a write is a measured case)";
+		if (!why && prelude && pending &&
+		    t->preludes[t->prelude_count - 1].trap == TD_CALL_TRAP_SET)
+			why = "after a +set comes the write that writes its "
+			      "buffer back, no other prelude";
+		if (!why && !prelude && pending &&
+		    t->preludes[t->prelude_count - 1].trap == TD_CALL_TRAP_SET &&
+		    (p->rule != CR_RWABS || !(c->arg[0].value & 1)))
+			why = "after a +set comes the write that writes its "
+			      "buffer back";
 		if (!why && !prelude && p->rule == CR_RWABS &&
 		    (c->arg[0].value & 1))
 			why = write_back_refusal(t, c, pending);
@@ -3601,6 +3789,9 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 			bracket_open = 0;
 		}
 
+		for (i = 0; i < c->nargs; i++)
+			if (c->arg[i].kind == TD_CALL_ARG_UNIT)
+				t->unit_token = 1;
 		td_case_line_comment_n(line, line_len, TD_CALL_CASE_COLUMNS,
 		                       c->comment, TD_COMMENT_LEN);
 		if (prelude) {

@@ -17,8 +17,8 @@
 
 **Wie gemessen wurde — und was das fuer die Urteile heisst.** `bios-r1.tsv`
 enthaelt von den vier Funktionen nur `Drvmap` (Fall 74). `Rwabs`, `Getbpb`
-und `Mediach` weist der DUMPBIOS-Lader ab (`tosdump/core/cases.c:3010@call_policy`,
-`tosdump/core/cases.c:3097@call_refusals`), und das Orakel hat kein
+und `Mediach` weist der DUMPBIOS-Lader ab (`tosdump/core/cases.c:3022@call_policy`,
+`tosdump/core/cases.c:3109@call_refusals`), und das Orakel hat kein
 BIOS-Blockgeraet (`tosdump/cases/COVERAGE-BIOS.md`, Status „later"). tosdump
 darf der Auditor nicht aendern. Deshalb lief eine **Ad-hoc-Sonde**
 (`measurements/measurement-2026-10-28-bios-storage-audit/method/bstprobe.c`): eine C-Quelle, fuer m68k und AArch64
@@ -236,7 +236,7 @@ Bug-Dichte: CONFIRMED 0 ÷ 4 gemessene Funktionen = 0 — weil nichts ausser
 ## 5. Neue Faelle
 
 Kein tosdump-Fall angelegt: jede Zeile wuerde vom Lader abgewiesen
-(`tosdump/core/cases.c:3097@call_refusals`), und das Orakel hat keinen
+(`tosdump/core/cases.c:3109@call_refusals`), und das Orakel hat keinen
 Plattenaufbau. Vorschlag fuer eine DUMPBIOS-Plattenrunde (`bios-r2.tsv`,
 Orakel mit IDE-Master = dieselbe Karte, Programm nicht auf ihr), Zeilen in
 der Form von `bios-r1.tsv`; erst auf dem Orakel, dann NewTOS:

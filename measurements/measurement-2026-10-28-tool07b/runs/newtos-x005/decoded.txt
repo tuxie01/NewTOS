@@ -1,0 +1,13 @@
+ 33 13:7   ret=2510884      0x00265024 cap=02000004080000200080008101217fa00001 Getbpb(2) before: the image's BPB -- blkdev.c:569-777
+ 38 13:4   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead X06 write the patched boot sector, RW_NOMEDIACH -- blkdev.c:
+ 39 13:9   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead X06a Mediach(2) after it: forcechange -- blkdev.c:799-803
+ 40 13:7   ret=2510884      0x00265024 cap=02000004080000200080008101217fa00001 X06b Getbpb(2): numcl 0, no B_16 (BIOS-STOR-005) -- blkdev.c
+ 41 13:9   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead X06c Mediach(2) after Getbpb -- blkdev.c:589-590, 783-820
+ 42 13:4   ret=0            0x00000000 cap=0200020000f880003f0010003f0000000000 X06d read sector 0: the patched fields, bytes 16-47 -- blkde
+ 43 13:4   ret=0            0x00000000 cap=f8ffffffffff00000000000000000000dead X06e read sector 1: recsiz 512 stays -- blkdev.c:430-481
+ 44 13:4   ret=0            0x00000000 cap=00000000000000000000000000000000dead X06f read the last sector: the partition's size, not the BPB
+ 49 13:4   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead X06g write the restored boot sector, RW_NOMEDIACH -- blkdev.
+ 50 13:9   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead X06h Mediach(2) after it: forcechange -- blkdev.c:799-803
+ 51 13:7   ret=2510884      0x00265024 cap=02000004080000200080008101217fa00001 X06i Getbpb(2): the image's BPB again -- blkdev.c:569-777
+ 52 13:9   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead X06j Mediach(2) after Getbpb -- blkdev.c:783-820
+ 53 13:4   ret=0            0x00000000 cap=0200020000f880003f0010003f000000a1ff X06k read sector 0: the image's bytes 16-47 again -- blkdev.

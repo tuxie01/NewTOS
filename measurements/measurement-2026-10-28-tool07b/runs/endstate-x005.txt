@@ -1,0 +1,19 @@
+end state of bios-r2-x005.tsv (test partition, LBA 63 + 130977)
+original vs oracle-1: IDENTICAL (84bcadfb750eef7880acf837c31a84b678f25fa4f10aeb0a710b639c9e56f09b)
+oracle-1 vs oracle-2: IDENTICAL (84bcadfb750eef7880acf837c31a84b678f25fa4f10aeb0a710b639c9e56f09b)
+original vs newtos: IDENTICAL (84bcadfb750eef7880acf837c31a84b678f25fa4f10aeb0a710b639c9e56f09b)
+oracle-1 vs newtos (THE RULE): IDENTICAL (84bcadfb750eef7880acf837c31a84b678f25fa4f10aeb0a710b639c9e56f09b)
+fsck_msdos -n newtos-x005.img:
+  ** /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07b/run/end/newtos-x005.img
+  ** Phase 1 - Preparing FAT
+  ** Phase 2 - Checking Directories
+  ** Phase 3 - Checking for Orphan Clusters
+  Warning: 1 files, 65342 KiB free (32671 clusters)
+  exit 0
+fsck_msdos -n oracle-x005-1.img:
+  ** /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07b/run/end/oracle-x005-1.img
+  ** Phase 1 - Preparing FAT
+  ** Phase 2 - Checking Directories
+  ** Phase 3 - Checking for Orphan Clusters
+  Warning: 1 files, 65342 KiB free (32671 clusters)
+  exit 0

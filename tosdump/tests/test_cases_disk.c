@@ -231,8 +231,156 @@ static void test_capture_ret(void)
 	          2, "not whole WORDs");
 }
 
+/* The closing tables (TASK/TOOL07, user decision 2026-10-28): the
+ * "destructive" mark, the "+set" prelude and the unit token "u:0". */
+#define DESTR "!disk\t2\tdestructive\n"
+#define WRITE0_NM "13:4\tw:3,b:0,w:1,w:0,w:2,l:0\tEXACT\t-\twrite it back\n"
+
+static void test_destructive_mark(void)
+{
+	printf("the destructive mark\n");
+	expect_ok(DESTR "13:10\t-\tEXACT\t-\tDrvmap\n", 1, "!disk 2 destructive");
+	TD_CHECK_EQ(t.disk, 1);
+	TD_CHECK_EQ(t.disk_drive, 2);
+	TD_CHECK_EQ(t.destructive, 1);
+	expect_ok(DISK "13:10\t-\tEXACT\t-\tDrvmap\n", 1, "!disk 2");
+	TD_CHECK_EQ(t.destructive, 0);
+	expect_rc("!disk\t2\tdestroy\n13:10\t-\tEXACT\t-\tDrvmap\n",
+	          TD_CASE_ERR_DIRECTIVE, 1, "another word than destructive");
+	expect_rc("!disk\tdestructive\n13:10\t-\tEXACT\t-\tDrvmap\n",
+	          TD_CASE_ERR_DIRECTIVE, 1, "the mark in place of the drive");
+	expect_rc("!disk\t2\tdestructive\tx\n13:10\t-\tEXACT\t-\tDrvmap\n",
+	          TD_CASE_ERR_DIRECTIVE, 1, "one word after the drive, no more");
+}
+
+static void test_set(void)
+{
+	printf("+set: only in a destructive table, right after its read\n");
+	expect_ok(DESTR PRE_READ0 "+set\t0x0C=0x04,11=0\n" WRITE0_NM, 1,
+	          "read, set, write back");
+	TD_CHECK_EQ(t.prelude_count, 2);
+	TD_CHECK_EQ(t.cases[0].prelude_count, 2);
+	TD_CHECK_EQ(t.preludes[1].line, 3);
+	TD_CHECK_EQ(t.preludes[1].trap, TD_CALL_TRAP_SET);
+	TD_CHECK_EQ(t.preludes[1].nargs, 2);
+	TD_CHECK_EQ(t.preludes[1].arg[0].kind, TD_CALL_ARG_SET);
+	TD_CHECK_EQ(t.preludes[1].arg[0].value, (0x0C << 8) | 0x04);
+	TD_CHECK_EQ(t.preludes[1].arg[1].value, (11 << 8) | 0);
+	expect_ok(DESTR PRE_READ0 "+set\t0x20=0\tthe comment\n" WRITE0, 1,
+	          "a comment column, the write without RW_NOMEDIACH");
+	TD_CHECK(strcmp(t.preludes[1].comment, "the comment") == 0);
+	expect_ok(DESTR
+	    "+13:4\tw:2,b:1,w:2,w:-1,w:2,l:130975\t-\t-\ttwo\n"
+	    "+set\t1023=0xFF,0=1,2=3,4=5,6=7,8=9,10=11,12=13\n"
+	    "13:4\tw:1,b:1,w:2,w:-1,w:2,l:130975\tEXACT\t-\tback\n", 1,
+	    "eight pairs, the last byte of a two-sector read");
+	TD_CHECK_EQ(t.preludes[1].nargs, 8);
+	expect_ok(DESTR PRE_READ0 WRITE0, 1,
+	          "a plain write-back in a destructive table");
+
+	expect_rc(DISK PRE_READ0 "+set\t0x0C=4\n" WRITE0,
+	          TD_CASE_ERR_UNSAFE_STATE, 3, "not in a table that is not "
+	          "destructive");
+	expect_rc("+set\t0x0C=4\n13:10\t-\tEXACT\t-\tDrvmap\n",
+	          TD_CASE_ERR_UNSAFE_STATE, 1, "not without !disk");
+	expect_rc(DESTR "+set\t1=2\n" WRITE0, TD_CASE_ERR_UNSAFE_FIELD, 2,
+	          "no read before it");
+	expect_rc(DESTR "13:10\t-\tEXACT\t-\tDrvmap\n+set\t1=2\n" WRITE0,
+	          TD_CASE_ERR_UNSAFE_FIELD, 3, "after a case, not a read");
+	expect_rc(DESTR PRE_READ0 "+set\t1=2\n+set\t3=4\n" WRITE0,
+	          TD_CASE_ERR_UNSAFE_FIELD, 4, "after another +set");
+	expect_rc(DESTR "+13:4\tw:2,b:0,w:0,w:0,w:2,l:0\t-\t-\tcount 0\n"
+	          "+set\t1=2\n" WRITE0, TD_CASE_ERR_UNSAFE_FIELD, 3,
+	          "after a read of nothing");
+	expect_rc(DESTR PRE_READ0 "+set\t512=1\n" WRITE0, TD_CASE_ERR_RANGE, 3,
+	          "an offset past what the read read");
+	expect_rc(DESTR PRE_READ0 "+set\t-1=1\n" WRITE0, TD_CASE_ERR_RANGE, 3,
+	          "a negative offset");
+	expect_rc(DESTR PRE_READ0 "+set\t1=256\n" WRITE0, TD_CASE_ERR_RANGE, 3,
+	          "a byte past 255");
+	expect_rc(DESTR PRE_READ0 "+set\t1=1,2=2,3=3,4=4,5=5,6=6,7=7,8=8,9=9\n"
+	          WRITE0, TD_CASE_ERR_TOO_MANY_VALUES, 3, "nine pairs");
+	expect_rc(DESTR PRE_READ0 "+set\t1=1,0x01=2\n" WRITE0,
+	          TD_CASE_ERR_VALUE, 3, "an offset twice");
+	expect_rc(DESTR PRE_READ0 "+set\t0x0C\n" WRITE0, TD_CASE_ERR_VALUE, 3,
+	          "no byte");
+	expect_rc(DESTR PRE_READ0 "+set\t=4\n" WRITE0, TD_CASE_ERR_VALUE, 3,
+	          "no offset");
+	expect_rc(DESTR PRE_READ0 "+set\t12=\n" WRITE0, TD_CASE_ERR_VALUE, 3,
+	          "an empty byte");
+	expect_rc(DESTR PRE_READ0 "+set\t12=4,\n" WRITE0, TD_CASE_ERR_VALUE, 3,
+	          "an empty pair");
+	expect_rc(DESTR PRE_READ0 "+set\n" WRITE0, TD_CASE_ERR_COLUMNS, 3,
+	          "no list");
+	expect_rc(DESTR PRE_READ0 "+set\t1=2\n"
+	          "13:4\tw:0,b:0,w:1,w:1,w:2,l:0\tEXACT\t1:16\tread\n",
+	          TD_CASE_ERR_UNSAFE_FIELD, 4, "a read case after it");
+	expect_rc(DESTR PRE_READ0 "+set\t1=2\n13:10\t-\tEXACT\t-\tDrvmap\n",
+	          TD_CASE_ERR_UNSAFE_FIELD, 4, "a case that is no Rwabs");
+	expect_rc(DESTR PRE_READ0 "+set\t1=2\n"
+	          "+13:4\tw:2,b:1,w:1,w:1,w:2,l:0\t-\t-\tread\n" WRITE0,
+	          TD_CASE_ERR_UNSAFE_FIELD, 4, "another prelude after it");
+	expect_rc(DESTR PRE_READ0 "+set\t1=2\n"
+	          "13:4\tw:1,b:0,w:1,w:1,w:2,l:0\tEXACT\t-\tsector 1\n",
+	          TD_CASE_ERR_UNSAFE_FIELD, 4,
+	          "the write-back names the read before the +set");
+	expect_rc(DESTR PRE_READ0 "+set\t1=2\n", TD_CASE_ERR_DANGLING, 3,
+	          "a +set at the end");
+
+	/* +set is a prelude: no case id, so every reader skips it */
+	TD_CHECK_EQ(td_case_line_is_prelude("+set\t1=2", 9), 1);
+}
+
+static void test_unit_token(void)
+{
+	printf("u:0, the test disk's physical unit, with RW_NOTRANSLATE only\n");
+	expect_ok(DISK
+	    "13:4\tw:8,b:0,w:1,w:0,u:0,l:0\tEXACT\t1:16@446\tMBR\n"
+	    "13:4\tw:10,b:1,w:2,w:-1,u:0,l:63\tEXACT\t1:16\tNOMEDIACH\n"
+	    "13:4\tw:12,b:0,w:0,w:0,u:0,l:0\tEXACT\t-\tNORETRIES, count 0\n",
+	    3, "physical reads");
+	TD_CHECK_EQ(t.unit_token, 1);
+	TD_CHECK_EQ(t.cases[0].arg[4].kind, TD_CALL_ARG_UNIT);
+	TD_CHECK_EQ(t.cases[0].arg[4].value, 0);
+	expect_ok(DISK "13:10\t-\tEXACT\t-\tDrvmap\n", 1, "no token");
+	TD_CHECK_EQ(t.unit_token, 0);
+
+	expect_rc(DISK "13:4\tw:8,b:0,w:1,w:0,w:18,l:0\tEXACT\t-\tunit 18\n",
+	          TD_CASE_ERR_UNSAFE_FIELD, 2, "a unit number, not the token");
+	expect_rc(DISK "13:4\tw:0,b:0,w:1,w:0,u:0,l:0\tEXACT\t-\tlogical\n",
+	          TD_CASE_ERR_UNSAFE_FIELD, 2, "the token without RW_NOTRANSLATE");
+	expect_rc(DISK "13:4\tw:8,b:0,w:1,w:0,u:1,l:0\tEXACT\t-\tu:1\n",
+	          TD_CASE_ERR_RANGE, 2, "u:1");
+	expect_rc(DISK "+13:4\tw:2,b:0,w:1,w:0,w:2,l:0\t-\t-\tread\n"
+	          "13:4\tw:9,b:0,w:1,w:0,u:0,l:0\tEXACT\t-\tphysical write\n",
+	          TD_CASE_ERR_UNSAFE_FIELD, 3, "no physical write");
+	expect_rc(DESTR "13:4\tw:11,b:0,w:1,w:-1,u:0,l:63\tEXACT\t-\twrite\n",
+	          TD_CASE_ERR_UNSAFE_FIELD, 2,
+	          "no physical write in a destructive table either");
+	expect_rc(DISK "13:4\tw:0x88,b:0,w:1,w:0,u:0,l:0\tEXACT\t-\tswap\n",
+	          TD_CASE_ERR_UNSAFE_FIELD, 2, "no RW_NOBYTESWAP, physical");
+	expect_rc(DISK "13:4\tw:8,l:0,w:1,w:0,u:0,l:0\tEXACT\t-\tNULL\n",
+	          TD_CASE_ERR_UNSAFE_FIELD, 2, "a physical read needs a buffer");
+	expect_rc(DISK "13:4\tw:8,b:0,w:3,w:0,u:0,l:0\tEXACT\t-\tthree\n",
+	          TD_CASE_ERR_UNSAFE_FIELD, 2, "three sectors overrun a buffer");
+	expect_rc(DISK "+13:4\tw:8,b:0,w:1,w:0,u:0,l:0\t-\t-\tphysical\n"
+	          "13:10\t-\tEXACT\t-\tDrvmap\n", TD_CASE_ERR_UNSAFE_FIELD, 2,
+	          "a prelude is a logical read");
+	expect_rc(DISK "13:7\tu:0\tEXACT\t-\tGetbpb\n", TD_CASE_ERR_SIGNATURE,
+	          2, "Getbpb takes a drive");
+	expect_rc(DISK "13:4\tw:8,b:0,u:0,w:0,w:2,l:0\tEXACT\t-\tcount\n",
+	          TD_CASE_ERR_SIGNATURE, 2, "the token is the dev argument only");
+	expect_rc("13:4\tw:8,b:0,w:1,w:0,u:0,l:0\tEXACT\t-\tno !disk\n",
+	          TD_CASE_ERR_UNSAFE_OPCODE, 1, "Rwabs outside a disk table");
+	expect_rc("14:0x2C\tu:0\tEXACT\t-\tBconmap\n", TD_CASE_ERR_SIGNATURE,
+	          1, "nowhere else");
+}
+
 int main(void)
 {
+	test_destructive_mark();
+	test_set();
+	test_unit_token();
 	test_directive();
 	test_outside_a_disk_table();
 	test_getbpb_mediach();

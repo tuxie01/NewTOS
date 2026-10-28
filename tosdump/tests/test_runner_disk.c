@@ -172,8 +172,81 @@ static void test_ret_bounds(void)
 	}
 }
 
+/*
+ * The closing tables (TASK/TOOL07): "+set" changes the buffer its read
+ * filled, issues no trap, and the write hands "read + set" to the call;
+ * "u:0" reaches the backend as the unit the run's profile set, a WORD, and
+ * the record as TD_CALL_UNIT_TOKEN(0); without a unit nothing is issued.
+ */
+static void test_set_and_unit(void)
+{
+	static const char *text =
+		"!disk\t2\tdestructive\n"
+		"13:4\tw:10,b:1,w:1,w:-1,u:0,l:63\tEXACT\t1:8\tphysical read\n"
+		"+13:4\tw:2,b:0,w:1,w:0,w:2,l:0\t-\t-\tsector 0 into buffer 0\n"
+		"+set\t1=0x41,6=0x42,300=0x43\n"
+		"13:4\tw:3,b:0,w:1,w:0,w:2,l:0\tEXACT\t-\twrite read + set\n";
+	const struct td_stub_call *c;
+	const uint8_t *b0, *rec;
+	int rc;
+
+	load(text);
+	TD_CHECK_EQ(table.destructive, 1);
+	TD_CHECK_EQ(table.unit_token, 1);
+
+	printf("a table that names u:0 is not run without the profile's unit\n");
+	td_stub_reset();
+	td_run_call_set_disk_unit(-1);
+	rc = td_run_call(&table, records, sizeof records);
+	TD_CHECK_EQ(rc, TD_RUN_CALL_ERR_UNIT);
+	TD_CHECK_EQ(td_stub_ncalls, 0);
+	td_run_call_set_disk_unit(0x8000);
+	rc = td_run_call(&table, records, sizeof records);
+	TD_CHECK_EQ(rc, TD_RUN_CALL_ERR_UNIT);
+	TD_CHECK_EQ(td_stub_ncalls, 0);
+
+	td_run_call_set_disk_unit(26);              /* NewTOS' SD card */
+	rc = td_run_call(&table, records, sizeof records);
+	TD_CHECK_EQ(rc, 0);
+	/* physical read, read, write: +set issued no trap */
+	TD_CHECK_EQ(td_stub_ncalls, 3);
+
+	printf("u:0 reaches the backend as the profile's unit, the record as a token\n");
+	c = &td_stub_calls[0];
+	TD_CHECK(c->call_value[0] == 10L);
+	TD_CHECK(c->call_value[1] == (long)td_call_buffer(1));
+	TD_CHECK_EQ(c->call_kind[4], TD_ABI_ARG_WORD);
+	TD_CHECK(c->call_value[4] == 26L);
+	TD_CHECK(c->call_value[5] == 63L);
+	rec = records;
+	TD_CHECK_EQ(be16(rec + 0), 2);
+	TD_CHECK_EQ(be16(rec + 4 + 4 * 4), 0xB0F4);   /* args[4], high half */
+	TD_CHECK_EQ(be16(rec + 4 + 4 * 4 + 2), 0x0000);
+	TD_CHECK_EQ(be16(rec + 4 + 4 * 3 + 2), 0xFFFF); /* recno -1, a WORD */
+
+	printf("+set changes the read's buffer, the write hands it on\n");
+	c = &td_stub_calls[2];
+	TD_CHECK(c->call_value[0] == 3L);
+	TD_CHECK_EQ(c->call_written[0], 'S');         /* the read's fill ...  */
+	TD_CHECK_EQ(c->call_written[1], 0x41);        /* ... with the set     */
+	TD_CHECK_EQ(c->call_written[2], 'U');
+	TD_CHECK_EQ(c->call_written[3], 'B');
+	TD_CHECK_EQ(c->call_written[4], 0);           /* buffer 0, untouched  */
+	TD_CHECK_EQ(c->call_written[5], 4);
+	TD_CHECK_EQ(c->call_written[6], 0x42);        /* poison, then the set */
+	TD_CHECK_EQ(c->call_written[7], TD_POISON_LO); /* poison, no set      */
+	rec = records + 1 * TD_CALL_RECORD_SIZE;
+	TD_CHECK_EQ(be16(rec + 0), 5);                /* the write's case id  */
+	/* the write was the last call: nothing poisoned the buffer since */
+	b0 = (const uint8_t *)td_call_buffer(0);
+	TD_CHECK_EQ(b0[300], 0x43);
+	TD_CHECK_EQ(b0[299], TD_POISON_LO);
+	TD_CHECK_EQ(b0[301], TD_POISON_LO);
+}
+
 int main(void)
 {
+	test_set_and_unit();
 	test_preludes_and_write();
 	test_failed_prelude_stops();
 	test_ret_bounds();

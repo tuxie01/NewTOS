@@ -255,7 +255,8 @@ Commands:
                                    manifests, sha256 and tosdiff against each
                                    --reference into <dir>; --disk/--testdisk:
                                    the disk round (TOOL07) with the test-
-                                   partition comparison; --features
+                                   partition comparison (a destructive
+                                   table runs only there); --features
                                    bios-arg-trace adds the input check
                                    (tools/biostrace-check.py, TOOL08)
   help

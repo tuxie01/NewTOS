@@ -56,12 +56,12 @@ physical line number and the dump header carries the table's CRC
 | 0x01 | Bconstat | `bios/bios.c:914` | **round 1** | 9 cases: handles 0-6, 10, -1 (0..7 `bconstat_vec`, 6.. Bconmap, `bios/bios.c:923-933`) |
 | 0x02 | Bconin | `bios/bios.c:958` | **round 1** | 4 cases: only handles that return at once on both machines -- 4, 5 (`char_dummy`, `chardev.c:34-36`), 10, -1. Handles 0-3 and the Bconmap devices 6-9 wait for input: never |
 | 0x03 | Bconout | `bios/bios.c:991` | **round 1** | 4 cases: a printable byte to CON (2) and raw CON (5), handles 10 and -1. PRT (0) waits up to 30 s for a printer (`parport.c:150-168`), IKBD (4) and MIDI (3) are commands to a device, AUX (1) is NewTOS' serial console: later, with their own reasons |
-| 0x04 | Rwabs | `bios/bios.c:1045` | disk round | `bios-r2.tsv` only (a `!disk` table, on a test image): 31 cases -- logical reads, the FastCopy NULL arm, write-back of sectors a prelude read; see "Disk round" below. `RW_NOTRANSLATE` and writes that change the image: later. Round 1: refused |
+| 0x04 | Rwabs | `bios/bios.c:1045` | disk round | `!disk` tables only, on a test image. `bios-r2.tsv`: 31 cases -- logical reads, the FastCopy NULL arm, write-back of sectors a prelude read; the closing tables: `RW_NOTRANSLATE` with the unit token `u:0` (`bios-r2-phys.tsv`, 12 cases) and writes of patched boot sectors (`bios-r2-x004.tsv`, `-x005.tsv`, `-x006.tsv`); see "Disk round" below. Round 1: refused |
 | 0x05 | Setexc | `bios/bios.c:1070` | **round 1** | 5 cases, the inquiry `Setexc(n,-1)` (`bios/bios.c:1076-1078`), NONZERO: a vector address differs per machine. Setting a vector: excluded |
 | 0x06 | Tickcal | `bios/bios.c:1096` | **round 1** | 1 case, EmuTOS answers 20 |
-| 0x07 | Getbpb | `bios/bios.c:1120` | disk round | `bios-r2.tsv` only: 8 cases (C: -- three times, around the forcechange handshake --, absent and out-of-range drives; the BPB captured through the return); A:/B: excluded (a floppy without a disk). Round 1: refused |
+| 0x07 | Getbpb | `bios/bios.c:1120` | disk round | `!disk` tables only. `bios-r2.tsv`: 8 cases (C: -- three times, around the forcechange handshake --, absent and out-of-range drives; the BPB captured through the return); the closing tables `bios-r2-x004.tsv`, `-x005.tsv`, `-x006.tsv`: C: around patched boot sectors. A:/B: excluded (a floppy without a disk). Round 1: refused |
 | 0x08 | Bcostat | `bios/bios.c:1143` | **round 1** | 9 cases: handles 0-7, -1 (IKBD/MIDI slots swapped, `chardev.c:38-42`) |
-| 0x09 | Mediach | `bios/bios.c:1184` | disk round | `bios-r2.tsv` only: 11 cases (C: around the forcechange handshake, absent drives); A:/B: excluded. Round 1: refused |
+| 0x09 | Mediach | `bios/bios.c:1184` | disk round | `!disk` tables only. `bios-r2.tsv`: 11 cases (C: around the forcechange handshake, absent drives); the closing tables: C: around patched boot sectors. A:/B: excluded. Round 1: refused |
 | 0x0A | Drvmap | `bios/bios.c:1206` | **round 1** | 1 case, NONZERO: the drive set is the machine's (`blkdev.c:833`). `bios-r2.tsv`: EXACT, both disk setups are C: + D: (`0xC`) |
 | 0x0B | Kbshift | `bios/ikbd.c:145` | **round 1** | 1 case, the inquiry -1; setting the shift state: later, with a restoring prelude |
 | 0x0C-0xFF | past `bios_ent` | `bios/vectors.S:1325-1326` | **round 1** | 3 cases (12, 127, 255): the dispatcher leaves the number in d0 |
@@ -285,4 +285,34 @@ Not in this round (later), with the reason:
   partition -- a setup difference, not behaviour.
 
 Reference: `tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-disk` (profile
-`disk`), `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`.
+`disk`), `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`. The two
+"later" items above were built as the closing tables below (TOOL07,
+2026-10-28); `bios-r2.tsv` itself is frozen.
+
+### The closing tables (TOOL07, 2026-10-28)
+
+User decision 2026-10-28 (variant B): one table per sequence that changes the
+image, which ends with it changed; the form (`!disk <drive> destructive`,
+`+set`, the unit token `u:0`) and the runner rule (a destructive table only
+on a fresh clone of the test image) are `docs/TOS-REFERENCE-DUMPER.md`
+section 6, "The closing tables". Cases from the probe's groups P and X
+(`bstprobe.c`, same ids in the comments).
+
+| Table | Cases | What | Finding | End state |
+|---|---|---|---|---|
+| `bios-r2-phys.tsv` (not destructive) | 12 | `Rwabs(RW_NOTRANSLATE, …, u:0, …)`: MBR entry 1 and signature, C:'s boot sector at LBA 63 (two halves) and the same sector logically, two sectors, flags 2 and 4, `recno` 0x8000, count 0, negative `lrecno` and far past the device (ESECNF) | BIOS-STOR-002 | image unchanged |
+| `bios-r2-x004.tsv` | 10 | boot sector bps 1024 written logically (`+set 0x0C=0x04`, `RW_NOMEDIACH`), `Mediach`, `Getbpb` (EmuTOS 0), reads after it (EmuTOS ESECNF) | BIOS-STOR-004 (and -001) | boot sector bps 1024 |
+| `bios-r2-x005.tsv` | 13 | tot16 = tot32 = 0, `Getbpb` (EmuTOS numcl 0, no `B_16`), reads; then tot32 restored logically and `Getbpb` again | BIOS-STOR-005 (and -001) | image restored |
+| `bios-r2-x006.tsv` | 11 | spf 0, `Getbpb` (EmuTOS 0, recsiz marked 0), logical reads and count 0 after it (EmuTOS ESECNF) | BIOS-STOR-006 (and -001) | boot sector spf 0 |
+
+Why each new form is safe: `+set` changes only a dumper buffer, and only
+before the write-back of the read it follows, on the test drive; the image
+it changes is a clone made for the run (both runners). The physical read
+(`u:0`) reads at most two sectors into a 1024-byte buffer from the unit the
+run's profile names (`D:\DISKUNIT.TXT`, oracle 18, NewTOS 26); a literal unit
+number, a physical write and `RW_NOBYTESWAP` stay refused. Left out: the last
+device sector (probe P03/P04) -- the device sizes differ between the image
+(131072 sectors) and the card (262144), a setup difference.
+
+References `tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-<phys|x004|x005|x006>-disk`,
+`measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT`.

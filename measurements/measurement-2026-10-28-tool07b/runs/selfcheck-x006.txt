@@ -1,0 +1,3 @@
+self-check EMUTOS-1a7484ab-BIOS-r2-x006-disk.BIN -- area BIOS, 11 cases from bios-r2-x006.tsv
+
+self-check, EMUTOS-1a7484ab-BIOS-r2-x006-disk.BIN: the oracle passes every relational rule (11 cases)

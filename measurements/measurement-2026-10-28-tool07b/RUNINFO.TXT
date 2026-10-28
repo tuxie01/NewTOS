@@ -1,0 +1,212 @@
+measurement-2026-10-28-tool07b -- DUMPBIOS disk round, the closing tables: RW_NOTRANSLATE (u:0)
+and the patched boot sectors of BIOS-STOR-004/-005/-006 under tosdiff, plus the end-state rule
+=====================================================================================================
+Developer, TASK/TOOL07 (rest, user decisions 2026-10-28), 2026-10-28 ~21:30-23:30 (host clock CET).
+Trees: oracle runs at HEAD 99ad54a7, NewTOS run phys at 99ad54a7, x004/x005/x006 at db0d3951
+(the lead committed docs only in between: `git diff --stat 99ad54a7 db0d3951 -- kernel tos-api
+tos-types programs` is empty), each plus the uncommitted changes listed under CHANGED. No NewTOS
+product code (kernel/, tos-api/, tos-types/, programs/) touched, no hardware, no real card, nothing
+flashed. Not committed.
+
+WHAT / WHY
+  TOOL07 stage 1 (measurements/measurement-2026-10-28-tool07/RUNINFO.TXT) left BIOS-STOR-002,
+  -004, -005, -006 without a tosdiff case: they need boot sectors that differ from the image,
+  and after a failed Getbpb EmuTOS refuses every logical access (recsiz 0, bios/blkdev.c:443-444,
+  :601), so no logical restore exists. User decisions 2026-10-28 (TASK/TOOL07.md, "Entscheidungen
+  des Anwenders 2026-10-28 (Rest)"): variant B -- one closing table per destructive sequence,
+  marked "!disk 2 destructive", run only on a fresh disk clone on both sides, a "+set" prelude
+  for the patch (format chosen by the lead), the end states of both sides compared; BIOS-STOR-002
+  by a unit token resolved from the profile (oracle 18, NewTOS 26), no search; the disk canary to
+  the non-destructive bios-r2.tsv once its reference reproduces twice. Deviations are findings.
+
+CHANGED (uncommitted, for the lead)
+  tosdump/core/cases.h, cases.c   "!disk <d> destructive" (t->destructive); "+set <TAB> off=byte,..."
+                                  (parse_set_prelude: destructive tables only, right after a read
+                                  prelude, <= 8 pairs, offsets inside the read, no duplicates, the
+                                  next case = the write-back of read+set, no prelude after it);
+                                  write_back_refusal names the read before a +set; the unit token
+                                  "u:0" (TD_CALL_ARG_UNIT, Rwabs signature "wpwwul"): RW_NOTRANSLATE
+                                  admitted only with it, read only, b: buffer, count 0..2, flags 2/4
+                                  besides 8; a literal unit, a physical write, RW_NOBYTESWAP and a
+                                  physical prelude stay refused; t->unit_token
+  tosdump/core/tosdump.h          TD_CALL_UNIT_TOKEN(n) = 0xB0F40000 + n (the record's args slot)
+  tosdump/core/runner_call.c, .h  +set applied to the buffer of the read before it (no trap); u:0
+                                  passes the unit set by td_run_call_set_disk_unit (a WORD), the
+                                  record the token; TD_RUN_CALL_ERR_UNIT when a u:0 table has no unit
+  tosdump/core/dumpbios.c         reads DISKUNIT.TXT (current dir) only for a u:0 table, refuses
+                                  the run without it; logs "destructive (...)" and the unit -- the
+                                  LOG of a table without either is unchanged (bios-r2 canary below)
+  tosdump/tests/test_cases_disk.c, test_runner_disk.c  new tests: destructive mark, +set (13
+                                  refusals), u:0 (13 refusals), runner +set/u:0/ERR_UNIT
+  tosdump/cases/bios-r2-phys.tsv, -x004.tsv, -x005.tsv, -x006.tsv (new)
+  tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-{phys,x004,x005,x006}-disk.BIN/.LOG (new) = runs/oracle-*-1
+  tools/hatari-oracle.sh          destructive tables: profile disk only, source image partition 1
+                                  must pass fsck_msdos -n, else exit 2 and no out-dir; profile disk
+                                  writes hd/DISKUNIT.TXT = 18 (IDE master, bios/disk.h:30)
+  tools/xtask/src/tosdump.rs, main.rs  destructive table refused without --disk/--testdisk;
+                                  --testdisk image must pass fsck_msdos -n; testpart-after.img kept
+                                  in --out for a destructive table, a changed partition / failing
+                                  fsck after it no failure; D:\DISKUNIT.TXT = NEWTOS_DISK_UNIT (26)
+                                  on the card; 3 new unit tests
+  docs/TOS-REFERENCE-DUMPER.md    section 3 args row (unit token), section 6 guard row and "The
+                                  closing tables", section 7 DUMPBIOS row
+  docs/analysis/ORACLE.md         section 2 profile row and two bullets (unit 18, destructive), section 6
+                                  disk canary on bios-r2.tsv, section 7 references bullet
+  tosdump/cases/COVERAGE-BIOS.md  rows 0x04/0x07/0x09, section "The closing tables"
+  Untouched: bios-r1.tsv, bios-r2.tsv, super-r1.tsv, every existing reference, tools/mkcard.sh,
+  tools/mktestdisk.sh, tools/oracle/*, tosdump/Makefile, tosdump/build-dumpbios-newtos.sh.
+
+DESIGN NOTE -- where the unit comes from
+  A first version compiled the unit into the dumper (-DTD_DISK_UNIT=18 in the m68k build, 26 in the
+  NewTOS build); it was replaced before any kept run: docs/TOS-REFERENCE-DUMPER.md section 2.1
+  allows the byte order as the ONLY asymmetry between the two builds, and the decision says the
+  token is resolved from the PROFILE. Now the profile's runner names the unit in D:\DISKUNIT.TXT
+  (tools/hatari-oracle.sh profile disk: 18; cargo xtask tosdump --disk: 26) and DUMPBIOS reads it
+  for a u:0 table only. Trial runs of the first version (scratch, not kept) gave the same oracle
+  BINs byte for byte and the same NewTOS verdicts.
+
+INPUTS (sha256)
+  ROM        tools/oracle/etos512de-1a7484ab.img 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+  Hatari     2.6.1, tools/oracle/hatari.cfg (unchanged)   mtools 4.0.49
+  tables     bios-r2-phys.tsv f2a49911ee5191b98cd30304cebc0164bbba55cdfc9098d0d41abfae3cbcc35c CRC 514944FD 12 cases
+             bios-r2-x004.tsv e9bf233a66aded57a6f103fd866fc2f8d6a4587fa83b9ac1973d7801f0276ba9 CRC 9F135A6F 10 cases, 2 preludes
+             bios-r2-x005.tsv eec0b34b0494514b113e9074b2ad8c743a121ed970d7a62e46c9804774d8aa75 CRC FBB54EFF 13 cases, 4 preludes
+             bios-r2-x006.tsv ea0298b34f5dfff3288da37dcbc21a6118217d14c3c86aeb9257d1abefd4bf62 CRC E4B17B75 11 cases, 2 preludes
+  test image tools/mktestdisk.sh <scratch>/test.img NEWDESK.INF=<inf "#R 02 / #Z 01 D:\DUMPBIOS.NAP@" CRLF,
+             c779a308...>: d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37 -- the image of
+             stage 1, on both sides (the NewTOS runs built it again via --disk: the same sha256).
+             runs/test.img.manifest, verbatim:
+               optional_missing none
+  dumper m68k  make -C tosdump BUILD=<scratch>/dumpers/99ad BUILD_ID=99ad dumpbios-m68k
+             DUMPBIOS.PRG 7f2f1c6c4347a540fc1918c1eb0491e86801f51fc94a50ff9797a3f9c07650a0 (runs/inputs-oracle.sha256)
+  NewTOS     cargo xtask tosdump (TOOL09 runner), kernel rpi4 release:
+             phys  99ad54a7  kernel8.img 0a3b38d4bc0a4805bf702c1b2899993428db0e883846240c663cf3e7b507929d
+                             DUMPBIOS.NAP aede3a7fdb5dd5e9e9fbe8049622bb9d82377160e93c7cd2b354fd0752457203 (build 99ad)
+             x00*  db0d3951  kernel8.img e0d3b08a16e3db049df06dbc7966da840ef886859edbd783c04f44480ab7c9b0
+                             DUMPBIOS.NAP 7c6be2dfd3aa3cea64179d82f75aec38849fb5fe6c61c5240aaed8bba2fcb2e0 (build db0d)
+             cards (one per table: D: holds the table), manifests runs/newtos-<t>/card.img.manifest:
+             phys b23080354fa8..., x004 0ff6a2b142dc..., x005 bbaac9d60030..., x006 382911dbce16...;
+             every card.img.manifest and test.img.manifest, verbatim:
+               optional_missing none
+
+METHOD (method/)
+  oracle-runs.sh <scratch> runs 2   each table twice on profile disk, every run on its own clone
+  newtos-runs.sh <scratch> runs     each table once: cargo xtask tosdump bios <table> --disk
+                                    --reference <its EMUTOS reference> --out runs/newtos-<t>
+  compare-ends.sh <scratch> runs    end states (test partition, LBA 63 + 130977), runs/endstate-<t>.txt
+  canary-disk.sh <dir>              the new disk canary (docs/analysis/ORACLE.md section 6)
+  decode-bios.py                    copy of measurement-2026-10-28-tool07/method/decode-bios.py
+                                    (runs/*/decoded.txt)
+
+ORACLE -- references, two runs each
+  table  BIN sha256 (both runs)      LOG (both runs)    image after (disk.sha256)
+  phys   05ad06cf8f53b9eb...         63c1409d100fcca0... d95a60c3... = before (unchanged)
+  x004   a17b36397882930f...         8be09f5ac14911e5... ac018ed24563... (boot sector bps 1024)
+  x005   9d546ce301c07177...         cf75d359fbeb15ab... d95a60c3... = before (restored)
+  x006   0ccfe164996b7a0d...         733514083f506c68... d674939dcafe... (boot sector spf 0)
+  BIN and LOG byte-identical between run 1 and run 2 for all four (cmp); no normalising needed.
+  The references are runs/oracle-<t>-1. tosdiff --selfcheck: all four pass (runs/selfcheck-<t>.txt);
+  make -C tosdump host-test's self-check: "29 references, every relational rule holds".
+  Every destructive run logged "destructive table: fresh clone, partition 1 clean (fsck_msdos -n)".
+  phys LOG: "unit token u:0 = physical unit 18 (DISKUNIT.TXT, the run's profile)".
+
+NEWTOS -- tosdiff per case (runs/newtos-<t>/tosdiff-*.txt, decoded.txt; all four runs ended
+normally, "desktop up after DUMPBIOS.NAP, rc=0", ~19 s in QEMU; tosdiff --validate exit 0)
+
+  bios-r2-phys.tsv  11 of 12 differ (BIOS-STOR-002: DIFF).  NewTOS LOG: "physical unit 26".
+   case  call                                       EmuTOS (unit 18)        NewTOS (unit 26)
+   32    P02 phys LBA 0, MBR entry 1                0, entry bytes          -15 EUNDEV, poison
+   33    P02b MBR signature                         0, 55 AA                -15, poison
+   34/35 P06 phys LBA 63 = C:'s boot sector         0, EB 3C 90 4D ...      -15, poison
+   36    control: the same sector logically         0, EB 3C ...            0, EB 3C ...   EQUAL
+   37    P07 two sectors from 63                    0, FAT F8 FF ...        -15
+   38    P08 RW_NOMEDIACH                           0, data                 -15
+   39    P09 RW_NORETRIES                           0, data                 -15
+   40    P10 recno 0x8000                           0, data                 -15
+   41    P11 count 0                                0                       -15
+   42    P12 lrecno -5                              -8 ESECNF               -15
+   43    P13 lrecno 0x7FFFFFF0                      -8 ESECNF               -15
+   Expected: NewTOS does not implement unit 26 yet (the decision's rule, 04-rwabs.md); a finding.
+
+  bios-r2-x004.tsv  7 of 10 differ (BIOS-STOR-004: DIFF).
+   32 Getbpb before EQUAL (BPB 512,4,2048,32,128,129,289,32672,1); 38 X01 write (RW_NOMEDIACH) 0/0
+   EQUAL; 41 X01c Mediach 0/0 EQUAL.
+   39    X01a Mediach after the write               2                       0       (BIOS-STOR-001)
+   40    X01b Getbpb, bps 1024                      0 (refused)             a BPB pointer 0x265024
+   42    X01d read sector 1                         -8 ESECNF               0, data F8 FF ...
+   43    X01e read sector 0, RW_NOMEDIACH           -8                      0, EB 3C ... 04 04 (bps 1024)
+   44    X01f read the last sector                  -8                      0, data
+   45    X01g Getbpb again                          0                       0x265024
+   46    X01h read sector 1 again                   -8                      0, data
+
+  bios-r2-x005.tsv  3 of 13 differ (BIOS-STOR-005: DIFF).
+   EQUAL: 33 Getbpb before, 38 X06 write, 41/52 Mediach after Getbpb, 42 X06d read sector 0 (the
+   patched bytes 16-47 on both: tot16 = tot32 = 0 reached the disk), 43, 44 reads, 49 X06g restore
+   write, 51 X06i Getbpb after the restore (the image's BPB), 53 X06k the image's bytes again.
+   39    X06a Mediach after the write               2                       0       (BIOS-STOR-001)
+   40    X06b Getbpb, tot16 = tot32 = 0             BPB ...,289,0,0         ...,289,32672,1 (capture
+                                                    (numcl 0, no B_16)      bytes 14,15,17)
+   50    X06h Mediach after the restore write       2                       0       (BIOS-STOR-001)
+
+  bios-r2-x006.tsv  6 of 11 differ (BIOS-STOR-006: DIFF).
+   EQUAL: 32 Getbpb before, 37 X07 write, 39 X07b Getbpb with spf 0 -> 0 on both, 40 X07c Mediach,
+   45 X08d Getbpb again -> 0 on both.
+   38    X07a Mediach after the write               2                       0       (BIOS-STOR-001)
+   41    X08 read sector 1                          -8 ESECNF               0, data
+   42    X08a read sector 0, RW_NOMEDIACH           -8                      0, data
+   43    X08b read the last sector                  -8                      0, data
+   44    X08c count 0                               -8                      0
+   46    X08e read sector 1 again                   -8                      0, data
+
+  Verdicts: BIOS-STOR-002 DIFF (11 cases), -004 DIFF (cases 40, 42-46 of x004), -005 DIFF (case 40
+  of x005), -006 DIFF (cases 41-44, 46 of x006); BIOS-STOR-001 again in every table (the Mediach
+  after a write of sector 0: x004 39, x005 39/50, x006 38) -- known from stage 1.
+
+END STATES (runs/endstate-<t>.txt; compare-ends.sh, the method of compare-testpart.sh)
+  table  original vs oracle               oracle-1 vs -2  oracle-1 vs NewTOS (THE RULE)   fsck_msdos -n end
+  x004   DIFFERENT: sector 0 offset 0x00C, IDENTICAL       IDENTICAL a7cf3d2c9a84...      206 on both
+         0x02 -> 0x04 (bps 1024), nothing else
+  x005   IDENTICAL (restored, 84bcadfb75...) IDENTICAL     IDENTICAL 84bcadfb750e...      0 on both
+  x006   DIFFERENT: sector 0 offset 0x016,  IDENTICAL       IDENTICAL ea645cfc2af3...      202 on both
+         0x80 -> 0x00 (spf 0), nothing else
+  phys   image unchanged on both (oracle disk.sha256 before = after; NewTOS testpart "identical")
+  Both sides end in the same state for every destructive table, the broken boot sector included.
+  (The partition sha256 84bcadfb... is the one stage 1 measured for the untouched test partition.)
+
+RUNNER RULES -- refusals (runs/refusals.txt)
+  cargo xtask tosdump bios bios-r2-x004.tsv without --disk     "the table is destructive ...", exit 1, nothing run
+  ... --testdisk <image with spf 0>                             fsck_msdos exit 202, refused before any build, exit 1
+  tools/hatari-oracle.sh tt ... bios-r2-x006.tsv                "runs only in profile disk", exit 2, no out-dir
+  HATARI_ORACLE_DISK=<image with spf 0> ... disk ... x006       "fails fsck_msdos -n", exit 2, no out-dir
+  The dumper itself cannot tell a fresh image from a used one; it logs the mark.
+
+CANARY (docs/analysis/ORACLE.md section 6)
+  method/canary-disk.sh (bios-r2.tsv as it is, dumper b81d from this source, image d95a60c3...):
+  runs/canary-disk-1.txt, -2.txt: "canary disk: OK (BIN+LOG sha256 as pinned)", "test image unchanged",
+  exit 0 both -- the reference EMUTOS-1a7484ab-BIOS-r2-disk (BIN 072d8cd1..., LOG 055e586a...)
+  reproduced bit-identically twice with the changed dumper (and twice in stage 1). ORACLE.md section 6
+  now names this script. Controls with the changed source: the VDI canary "canary tt: OK",
+  "canary falcontc: OK" (runs/canary-vdi.txt); the old bios-r1 disk canary still OK
+  (runs/canary-disk-bios-r1.txt).
+
+HOST TESTS
+  make -C tosdump host-test: exit 0, every group ok, self-check "29 references" (runs/host-test.txt).
+  cargo xtask test (full): 1751 passed, 0 failed, 1 ignored (baseline 1748/0/1 + 3 new xtask tests;
+  runs/xtask-test-summary.txt).
+  cargo clippy -p xtask: 1 warning, pre-existing (tools/xtask/src/main.rs:420, manual_is_multiple_of).
+
+OPEN / NOT DONE
+  - Left out: the last physical device sector (probe P03/P04): the image has 131072 sectors, the card
+    262144 -- a setup difference, not behaviour.
+  - tools/biostrace-check.py (TOOL08 input check) does not know "+set" lines and "u:0"; not run here.
+
+FILES
+  method/  oracle-runs.sh, newtos-runs.sh, compare-ends.sh, canary-disk.sh, decode-bios.py
+  runs/    oracle-<t>-<1|2>/ (BIOS.BIN, BIOS.LOG, disk.sha256, hatari.log, hatari-oracle.stdout,
+           fsck-before.txt for destructive tables, decoded.txt in -1), newtos-<t>/ (the xtask --out:
+           tosdump-run.txt, BIOS.BIN/.LOG, BOOT-SERIAL.txt, manifests, tosdiff-*.txt, testpart-compare.txt,
+           build logs, decoded.txt), endstate-<t>.txt, selfcheck-<t>.txt, refusals.txt, canary-*.txt,
+           test.img.manifest, mktestdisk.stdout, dumper-build.stdout, inputs-oracle.sha256,
+           host-test.txt, xtask-test-summary.txt
+  manifest.sha256 covers every file of this run except itself. Images (test image, cards, clones, end
+  states) are not kept: scratch, deleted after the run; their sha256 is above.

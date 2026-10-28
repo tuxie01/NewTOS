@@ -1,0 +1,25 @@
+end state of bios-r2-x006.tsv (test partition, LBA 63 + 130977)
+original vs oracle-1: DIFFERENT (84bcadfb750eef7880acf837c31a84b678f25fa4f10aeb0a710b639c9e56f09b vs ea645cfc2af367c57f7902b66d8806c14ae9d4ed759c029403ee9f16f20ef818); differing bytes (partition offset: a b, octal):
+  sector 0 offset 0x016: 200 0
+oracle-1 vs oracle-2: IDENTICAL (ea645cfc2af367c57f7902b66d8806c14ae9d4ed759c029403ee9f16f20ef818)
+original vs newtos: DIFFERENT (84bcadfb750eef7880acf837c31a84b678f25fa4f10aeb0a710b639c9e56f09b vs ea645cfc2af367c57f7902b66d8806c14ae9d4ed759c029403ee9f16f20ef818); differing bytes (partition offset: a b, octal):
+  sector 0 offset 0x016: 200 0
+oracle-1 vs newtos (THE RULE): IDENTICAL (ea645cfc2af367c57f7902b66d8806c14ae9d4ed759c029403ee9f16f20ef818)
+fsck_msdos -n newtos-x006.img:
+  Calculated zero cache blocks
+  ** /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07b/run/end/newtos-x006.img
+  Warning: FAT size too small, 32738 entries won't fit into 0 sectors
+  Fix total sectors?
+  : no
+  Warning: Continuing, assuming 4294967294 clusters
+  ** Phase 1 - Preparing FAT
+  exit 202
+fsck_msdos -n oracle-x006-1.img:
+  Calculated zero cache blocks
+  ** /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07b/run/end/oracle-x006-1.img
+  Warning: FAT size too small, 32738 entries won't fit into 0 sectors
+  Fix total sectors?
+  : no
+  Warning: Continuing, assuming 4294967294 clusters
+  ** Phase 1 - Preparing FAT
+  exit 202

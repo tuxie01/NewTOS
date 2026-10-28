@@ -1,0 +1,11 @@
+ 32 13:7   ret=2510884      0x00265024 cap=02000004080000200080008101217fa00001 Getbpb(2) before: the image's BPB -- blkdev.c:569-777
+ 37 13:4   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead X07 write the patched boot sector, RW_NOMEDIACH -- blkdev.c:
+ 38 13:9   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead X07a Mediach(2) after it: forcechange -- blkdev.c:799-803
+ 39 13:7   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead X07b Getbpb(2) -> 0: fsiz 0, recsiz marked 0 -- blkdev.c:736
+ 40 13:9   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead X07c Mediach(2) after the failed Getbpb -- blkdev.c:589-590,
+ 41 13:4   ret=0            0x00000000 cap=f8ffffffffff00000000000000000000dead X08 read sector 1: ESECNF (BIOS-STOR-006) -- blkdev.c:443-44
+ 42 13:4   ret=0            0x00000000 cap=eb3c904d544f4f343034390002040100dead X08a read sector 0, RW_NOMEDIACH: ESECNF -- blkdev.c:443-444
+ 43 13:4   ret=0            0x00000000 cap=00000000000000000000000000000000dead X08b read the last sector: ESECNF -- blkdev.c:443-444
+ 44 13:4   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead X08c count 0: ESECNF before the range check -- blkdev.c:443-
+ 45 13:7   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead X08d Getbpb(2) again -> 0 -- blkdev.c:736-741
+ 46 13:4   ret=0            0x00000000 cap=f8ffffffffff00000000000000000000dead X08e read sector 1 again: ESECNF -- blkdev.c:443-444

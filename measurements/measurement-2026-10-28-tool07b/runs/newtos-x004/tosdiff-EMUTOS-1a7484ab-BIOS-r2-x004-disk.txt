@@ -1,0 +1,88 @@
+EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN vs NEWTOS.BIN -- area BIOS, 10 cases from bios-r2-x004.tsv
+
+case 39  trap 13 function 0x09  X01a Mediach(2) after it: forcechange -- blkdev.c:799-803
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0x0000000000000002 (2)   NEWTOS.BIN                            = 0x0000000000000000 (0)
+
+case 40  trap 13 function 0x07  X01b Getbpb(2) -> 0: recsiz 1024 too large (BIOS-STOR-004) -- b
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0x0000000000000000 (0)   NEWTOS.BIN                            = 0x0000000000265024 (2510884)
+
+case 42  trap 13 function 0x04  X01d read sector 1: recsiz 0 -> ESECNF -- blkdev.c:443-444
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xFFFFFFFFFFFFFFF8 (-8)   NEWTOS.BIN                            = 0x0000000000000000 (0)
+    capture[0]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0xF8
+    capture[1]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0xFF
+    capture[2]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0xFF
+    capture[3]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0xFF
+    capture[4]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0xFF
+    capture[5]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0xFF
+    capture[6]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[7]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+    capture[8]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[9]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+    capture[10]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[11]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+    capture[12]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[13]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+    capture[14]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[15]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+
+case 43  trap 13 function 0x04  X01e read sector 0, RW_NOMEDIACH: ESECNF -- blkdev.c:443-444
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xFFFFFFFFFFFFFFF8 (-8)   NEWTOS.BIN                            = 0x0000000000000000 (0)
+    capture[0]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0xEB
+    capture[1]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x3C
+    capture[2]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x90
+    capture[3]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x4D
+    capture[4]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x54
+    capture[5]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x4F
+    capture[6]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x4F
+    capture[7]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x34
+    capture[8]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x30
+    capture[9]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x34
+    capture[10]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x39
+    capture[11]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+    capture[12]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x04
+    capture[13]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x04
+    capture[14]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x01
+    capture[15]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+
+case 44  trap 13 function 0x04  X01f read the last sector: ESECNF -- blkdev.c:443-444
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xFFFFFFFFFFFFFFF8 (-8)   NEWTOS.BIN                            = 0x0000000000000000 (0)
+    capture[0]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[1]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+    capture[2]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[3]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+    capture[4]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[5]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+    capture[6]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[7]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+    capture[8]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[9]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+    capture[10]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[11]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+    capture[12]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[13]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+    capture[14]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[15]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+
+case 45  trap 13 function 0x07  X01g Getbpb(2) again -> 0 -- blkdev.c:642-646
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0x0000000000000000 (0)   NEWTOS.BIN                            = 0x0000000000265024 (2510884)
+
+case 46  trap 13 function 0x04  X01h read sector 1 again: ESECNF -- blkdev.c:443-444
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xFFFFFFFFFFFFFFF8 (-8)   NEWTOS.BIN                            = 0x0000000000000000 (0)
+    capture[0]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0xF8
+    capture[1]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0xFF
+    capture[2]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0xFF
+    capture[3]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0xFF
+    capture[4]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0xFF
+    capture[5]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0xFF
+    capture[6]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[7]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+    capture[8]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[9]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+    capture[10]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[11]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+    capture[12]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[13]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+    capture[14]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xDE   NEWTOS.BIN                            = 0x00
+    capture[15]             EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN = 0xAD   NEWTOS.BIN                            = 0x00
+
+7 of 10 cases differ

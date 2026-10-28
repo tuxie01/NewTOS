@@ -17,6 +17,8 @@
 #define TD_RUN_CALL_ERR_BUFFER  (-1)  /* the output cannot hold every record */
 #define TD_RUN_CALL_ERR_PRELUDE (-2)  /* an Rwabs prelude did not return 0:
                                        * the run stopped before its case    */
+#define TD_RUN_CALL_ERR_UNIT    (-3)  /* the table names "u:0" and no unit
+                                       * was set: nothing was issued        */
 
 int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
                 size_t out_bytes);
@@ -29,6 +31,12 @@ void *td_call_buffer(int n);
 /* The runner's own callback n (0..TD_CALL_CB_N-1) for a Supexec case
  * ("f:<n>"), or NULL; for the host tests' stub, which calls it. */
 void *td_call_callback(int n);
+
+/* The physical unit of the test disk a "u:0" argument passes, 0..0x7FFF,
+ * named by the run's profile (DISKUNIT.TXT, read by dumpbios.c;
+ * docs/TOS-REFERENCE-DUMPER.md section 6).  Until it is set, a table that
+ * names "u:0" is not run (TD_RUN_CALL_ERR_UNIT). */
+void td_run_call_set_disk_unit(int32_t unit);
 
 /* After TD_RUN_CALL_ERR_PRELUDE: the line of the prelude that stopped the
  * run, and what it returned.  0 / 0 after a run that did not stop. */

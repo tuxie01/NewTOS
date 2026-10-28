@@ -261,7 +261,7 @@ the comparison needs:
 |---|---|---|
 | 0 | 2 | case id (physical line number in the case table) |
 | 2 | 2 | opcode = the function number (`Getrez` = 4) |
-| 4 | 32 | the 8 arguments as passed, one LONG each: a WORD sign-extended, a LONG as is, a buffer argument as its token `0xB0FF0000 + n` (never its address, which differs per machine by construction — the AES `addr_in` rule, section 6), a callback argument as `0xB0FC0000 + n`, the `Super` token argument as `0xB0F50000` (both section 6, "Super and Supexec"), an unused slot `0xDEADDEAD` |
+| 4 | 32 | the 8 arguments as passed, one LONG each: a WORD sign-extended, a LONG as is, a buffer argument as its token `0xB0FF0000 + n` (never its address, which differs per machine by construction — the AES `addr_in` rule, section 6), a callback argument as `0xB0FC0000 + n`, the `Super` token argument as `0xB0F50000` (both section 6, "Super and Supexec"), the unit token `u:0` as `0xB0F40000` (section 6, "The closing tables"), an unused slot `0xDEADDEAD` |
 | 36 | 4 | return value, **low** 32 bits of the return register (`d0` / `x0`) |
 | 40 | 256 | capture (section 6, `capture` column); what no capture wrote stays `0xDEAD` |
 | 296 | 4 | return value, **high** 32 bits of the return register: `x0` bits 63..32 on AArch64; on the m68k, whose `d0` has no high half, the sign extension of the low half — the value C's `(int64_t)(long)` gives on both targets, so the comparator always reads the return as the 64-bit value `ret_hi:ret` |
@@ -812,7 +812,7 @@ should be, and the write after it would put the poison on the disk.
 | Call | Signature | Admitted |
 |---|---|---|
 | `Getbpb` (13:7), `Mediach` (13:9) | `w` | any drive but A: and B: (a floppy without a disk ends in the critical-error handler on a real TOS, and the disk profile has no floppy drives) |
-| `Rwabs` (13:4) | `wpwwwl`, the AHDI 3.1 long form only | flags from `RW_WRITE` 1, `RW_NOMEDIACH` 2, `RW_NORETRIES` 4, `RW_NOBYTESWAP` 0x80; **`RW_NOTRANSLATE` (8) refused** — a physical unit number is the machine's (EmuTOS' IDE master is unit 18, `bios/disk.h:30`; the unit of the Pi's card is open, BIOS-STOR-002). A `b:` buffer with count 0..2 (two sectors fill one buffer), not on A:/B:; or `l:0` (NULL), the FastCopy arm, only as a read on A:/B: with count 0..2 — EmuTOS returns before any I/O (`bios/blkdev.c:425-428`) |
+| `Rwabs` (13:4) | `wpwwwl`, the AHDI 3.1 long form only | flags from `RW_WRITE` 1, `RW_NOMEDIACH` 2, `RW_NORETRIES` 4, `RW_NOBYTESWAP` 0x80; **`RW_NOTRANSLATE` (8) only with the unit token `u:0`** (signature `wpwwul`, "The closing tables" below) — a literal unit number stays refused, it is the machine's. A `b:` buffer with count 0..2 (two sectors fill one buffer), not on A:/B:; or `l:0` (NULL), the FastCopy arm, only as a read on A:/B: with count 0..2 — EmuTOS returns before any I/O (`bios/blkdev.c:425-428`) |
 | `Rwabs` **write** | as above, a measured case | **write-back only**: on the test drive, and the **last** prelude before it read exactly the same buffer, count, `recno`, drive and `lrecno`. A write is never a prelude |
 
 Write-back only means the test image keeps every byte even where a write
@@ -820,8 +820,7 @@ goes through: what reaches the disk is what was just read from the same
 sectors, or nothing (the stopped run). This is what makes the
 forcechange handshake measurable (writing logical sector 0, BIOS-STOR-001)
 without a restore step. Writes that change the image — patched boot
-sectors, which need a patch step and, after a failed `Getbpb` on EmuTOS, a
-restore through the physical path — are not in this round.
+sectors — are the closing tables' (below), never an ordinary disk table's.
 
 **Capture through the returned pointer.** The capture column also takes
 `r:<length>[.B|.W|.L][@<offset>]`: copy `length` bytes from `offset` of the
@@ -838,6 +837,82 @@ there, since a 64-bit host process has no memory below 4 GiB.
 
 **Drvmap** is `EXACT` in this table: both setups give C: + D:,
 `0x0000000C` (user decision 2026-10-28; round 1 keeps `NONZERO`).
+
+### The closing tables (added 2026-10-28, TOOL07)
+
+A `Getbpb` that refuses a boot sector leaves EmuTOS at `recsiz = 0`
+(`bios/blkdev.c:601`, `:740`), after which no logical `Rwabs` reaches the
+disk (`bios/blkdev.c:443-444`): a sequence that breaks C:'s boot sector
+cannot put it back the way it came. User decision 2026-10-28 (variant B):
+**one closing table per such sequence**, which ends with the image changed;
+the end state itself is measured. Tables, references and the run:
+`tosdump/cases/bios-r2-x004.tsv`, `-x005.tsv`, `-x006.tsv` (BIOS-STOR-004,
+-005, -006) and `bios-r2-phys.tsv` (BIOS-STOR-002, not destructive), references
+`EMUTOS-1a7484ab-BIOS-r2-<x004|x005|x006|phys>-disk`,
+`measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT`. Three additions,
+nothing else:
+
+**`!disk <TAB> <drive> <TAB> destructive`** marks a table that changes the
+test image. Without the third word the directive is the one above; any
+other word is refused (`TD_CASE_ERR_DIRECTIVE`). **Runner rule: a
+destructive table runs only on a fresh clone of the test image**, on the
+oracle and on NewTOS, and both runners refuse otherwise:
+
+- `tools/hatari-oracle.sh` refuses it in a profile other than `disk`, clones
+  `$HATARI_ORACLE_DISK` for the run into the new out-dir (as for every disk
+  table), and refuses an image whose partition 1 fails `fsck_msdos -n` (the
+  boot sector of a previous destructive run does).
+- `cargo xtask tosdump` (`tools/xtask/src/tosdump.rs`) refuses it without
+  `--disk`/`--testdisk`; the card is built from the test image for the run and
+  booted as an APFS clone; a `--testdisk` image must pass `fsck_msdos -n` on
+  its test partition first. The test partition after the run is kept as
+  `<out>/testpart-after.img` for the end-state comparison (the caller deletes
+  it); a changed partition and a failing `fsck_msdos` after the run are the
+  table's purpose there, not a failure.
+
+Both read the mark more broadly than the loader (any whitespace separates),
+so a table the loader takes as destructive is never run as an ordinary one.
+The dumper cannot tell a fresh image from a used one; it logs
+`disk table: …, destructive (a fresh clone of the test image only)`.
+
+**`+set <TAB> <offset>=<byte>[,<offset>=<byte>…] [<TAB> comment]`**, only in
+a destructive table: a prelude that changes the buffer of the read prelude
+**immediately before it**; it issues no trap. Offset and byte decimal or
+`0x` hex; at most eight pairs (`TD_CALL_SET_PAIRS`); every offset inside what
+that read read (`count × 512` bytes, so not after a count-0 read); no offset
+twice; a byte 0..255. The case after it is the write that writes the buffer
+back: the write-back rule then names the read before the `+set` (same
+buffer, count, `recno`, drive, `lrecno`) — what reaches the disk is "read +
+set". Refused: a `+set` in a table that is not destructive
+(`TD_CASE_ERR_UNSAFE_STATE`), one that does not follow a read prelude, a
+second `+set`, any prelude after it, and a case after it that is not that
+write (`TD_CASE_ERR_UNSAFE_FIELD`). The runner applies it between the
+poison and the case, as the reads (`td_run_call`,
+`tosdump/core/runner_call.c`).
+
+**`u:0`, the unit token** (BIOS-STOR-002; `docs/api/bios/04-rwabs.md`,
+"Decisions"): an `Rwabs` `dev` argument meaning "the physical unit of the test
+disk". It is the machine's — EmuTOS' IDE master is `2 + 8 × 2` = 18
+(`bios/disk.h:30`), NewTOS' SD card is 26 — so the **run's profile names it**
+and nothing is compiled in (the two builds still differ in byte order only,
+section 2.1): `tools/hatari-oracle.sh` profile `disk` puts `18` into
+`D:\DISKUNIT.TXT`, `cargo xtask tosdump --disk` puts `26` there
+(`NEWTOS_DISK_UNIT`). DUMPBIOS reads `DISKUNIT.TXT` from its current directory
+only for a table that names `u:0` — one decimal number 0..32767, an optional
+line end — and logs `unit token u:0 = physical unit <n> (DISKUNIT.TXT, the
+run's profile)`; without it the table is not run and no BIN is written
+(`TD_RUN_CALL_ERR_UNIT` in the runner). No search at run time. The
+argument travels as a WORD; the record carries `0xB0F40000`, never the
+number, so the two sides compare. `RW_NOTRANSLATE` is admitted only with the
+token, and then only as a measured read: a `b:` buffer, count 0..2, flags
+`RW_NOMEDIACH` and `RW_NORETRIES` besides (no `RW_WRITE`; no `RW_NOBYTESWAP`,
+which reaches the driver in physical mode); never in a prelude, never as
+another argument.
+
+**End state.** After each destructive table the test partitions of both sides
+are compared (`compare-ends.sh` of the run, the method of
+`compare-testpart.sh`): both must end in the same state, the broken boot
+sector included; the result per table stands in the run's RUNINFO.
 
 ### Input check on NewTOS: the BIOS/XBIOS argument tracer (added 2026-10-28, TOOL08)
 
@@ -910,7 +985,7 @@ One program per area, sharing `tosdump/core/` and one `tosdump/abi/` backend:
 |---|---|---|
 | `DUMPVDI` | VDI | build this first |
 | `DUMPAES` | AES | after VDI is clean |
-| `DUMPBIOS` | BIOS + XBIOS | `retclass` and `capture` since 2026-10-27; table `tosdump/cases/bios-r1.tsv`, ledger `tosdump/cases/COVERAGE-BIOS.md`, references `EMUTOS-1a7484ab-BIOS` (TT) and `-BIOS-falcontc`, first comparison `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`. Second table `tosdump/cases/super-r1.tsv` (`Super`/`Supexec`, section 6), references `EMUTOS-1a7484ab-SUPER` (TT) and `-SUPER-falcontc`. Disk table `tosdump/cases/bios-r2.tsv` (section 6, "The disk round"), reference `EMUTOS-1a7484ab-BIOS-r2-disk` (profile `disk`), first comparison `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT` |
+| `DUMPBIOS` | BIOS + XBIOS | `retclass` and `capture` since 2026-10-27; table `tosdump/cases/bios-r1.tsv`, ledger `tosdump/cases/COVERAGE-BIOS.md`, references `EMUTOS-1a7484ab-BIOS` (TT) and `-BIOS-falcontc`, first comparison `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`. Second table `tosdump/cases/super-r1.tsv` (`Super`/`Supexec`, section 6), references `EMUTOS-1a7484ab-SUPER` (TT) and `-SUPER-falcontc`. Disk table `tosdump/cases/bios-r2.tsv` (section 6, "The disk round"), reference `EMUTOS-1a7484ab-BIOS-r2-disk` (profile `disk`), first comparison `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`; the closing tables `bios-r2-phys.tsv`, `-x004.tsv`, `-x005.tsv`, `-x006.tsv` (section 6, "The closing tables"), references `EMUTOS-1a7484ab-BIOS-r2-<phys\|x004\|x005\|x006>-disk`, `measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT` |
 | `DUMPGDOS` | GEMDOS | needs `retclass` and `capture` |
 
 Each writes exactly one output file, named `<AREA>.BIN`, into the current
