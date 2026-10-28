@@ -11,7 +11,7 @@ the application-visible interface to the typeahead queue: programs
 can read the queue depth, install a new buffer, or flush by adjusting
 `head == tail`.
 
-## Binary layout (16 bytes)
+## Binary layout (14 bytes on m68k)
 
 ```c
 struct iorec {
@@ -21,7 +21,7 @@ struct iorec {
 /* 0x08 */ volatile WORD tail; /* write index (producer, ISR) */
 /* 0x0A */ WORD   low;    /* low water mark (handshake on)    */
 /* 0x0C */ WORD   high;   /* high water mark (handshake off)  */
-/* 0x0E — total 16 bytes */
+/* 0x0E — total 14 bytes (bios/iorec.h:20-27) */
 };
 ```
 
@@ -38,12 +38,15 @@ release semantics are required — `volatile` alone is not enough.
 ### Indices, not byte counts
 
 `head` and `tail` are **byte offsets within `buf`**, not modular
-counters. Empty: `head == tail`. Full: `(tail + 1) % size == head`
-(one slot wasted to distinguish full from empty). Index advance:
-`idx = (idx + 1) % size`.
+counters. Empty: `head == tail`. Full: the producer advances by the entry size and wraps at `size`
+(IKBD: `tail + 4`, `bios/ikbd.c:163-166`; one slot wasted to distinguish full
+from empty).
 
-`size` should be a power of 2; the IKBD driver uses `size = 128`
-(`KBBUFSZ = 64 WORD` = 128 bytes — comment in `bdos/fs.h:46`).
+`size` should be a power of 2; the IKBD driver uses `size = 256`
+(`ikbd_bufsize`, `bios/aciavecs.S:97`), MIDI 128 (`midi_bufsize`, `:98`).
+**[XBIOS07] correction:** earlier text said 128 (`KBBUFSZ`, `bdos/fs.h:46`
+is a different, GEMDOS-side constant). IKBD entries are 4 bytes, so the
+256-byte ring holds 63 keystrokes.
 
 ### `low` / `high` — flow control
 
@@ -66,21 +69,25 @@ present) live in the per-port `bconmap_root.maptab[]` entries.
 
 `Iorec(devno)` returns `IOREC *` for the requested device:
 ```
-0 → MIDI
-1 → AUX (Bconmap-dependent)
-2 → IKBD (only the **first** WORD of each entry: scancode)
-3 → reserved
-4 → reserved (MIDI in modern EmuTOS)
+0 → RS-232 (`rs232iorecptr`, an EXT_IOREC; Bconmap-dependent)
+1 → IKBD (`&ikbdiorec`)
+2 → MIDI (`&midiiorec`)
+other → -1
 ```
 
-(Values per Compendium / `bios/xbios.c:iorec`.)
+(`bios/xbios.c:336-348`.) **[XBIOS07] correction:** earlier text had
+0 = MIDI, 1 = AUX, 2 = IKBD and "3/4 reserved"; the source returns `-1` for
+every other `devno`.
 
 ### IKBD scancode encoding
 
-The IKBD IOREC uses **WORD-sized entries**, not byte: each enqueued
-event is one WORD with `(make_code << 8) | ascii`. So `tail - head`
-in bytes is twice the queue depth in keystrokes. Programs reading
-the IORec must advance by 2 bytes per dequeue.
+The IKBD IOREC uses **4-byte entries** (a LONG), not byte or WORD: the
+push advances `tail` and `head` by 4 and wraps at `size`
+(`bios/ikbd.c:163,269`, `ikbdiorec.tail + 4`). **[XBIOS07] correction:**
+earlier text said "WORD-sized entries ... advance by 2 bytes". So `tail - head`
+in bytes is four times the queue depth in keystrokes and programs reading
+the IOREC advance by 4 bytes per dequeue. Entry content layout: see
+`docs/api/xbios/0e-iorec.md` (not re-derived here).
 
 ## Typical use patterns
 

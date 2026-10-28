@@ -220,7 +220,7 @@ therefore unchanged.
 > `IOREC` is **14 bytes and input-only**; the output ring lives in the
 > separate `EXT_IOREC` (below); the IKBD buffer is 256 bytes. See D-043.
 
-### `EXT_IOREC` — the RS-232 record (`bios/serport.h:57-65`) — **24 bytes**
+### `EXT_IOREC` — the RS-232 record (`bios/serport.h:57-65`) — **33 bytes of fields (34 on m68k)**
 
 `Iorec(0)` returns `rs232iorecptr`, which points at an `EXT_IOREC`:
 
@@ -235,9 +235,10 @@ therefore unchanged.
 | 0x20   | `wr5`      | `UBYTE` | SCC WR5 shadow (SCC only) |
 
 (The two nested 14-byte `IOREC`s make the leading 28 bytes; the 5 trailing
-`UBYTE`s + struct padding give 24 bytes of fields — actual `sizeof` is
-compiler/alignment-dependent, but the `in`/`out` offsets 0x00/0x0E are
-contract.)
+`UBYTE`s end at offset 0x21, so the fields total 33 bytes and, with the
+struct's 2-byte alignment on m68k, `sizeof` is 34. [XBIOS07] correction:
+earlier text said "24 bytes". The `in`/`out` offsets 0x00/0x0E are contract;
+the total is compiler dependent and not asserted by a measurement.)
 
 ### `bconmap_root` (`BCONMAP`, `bios/serport.h:115-119`)
 

@@ -34,3 +34,20 @@ Status: **OFFEN** · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheid
 - `docs/api/structures/iorec.md:24` „total 16 bytes“ widerspricht EmuTOS
   (14 Byte, `references/emutos/bios/iorec.h:20-27`) und dem Vertrag in
   `docs/api/xbios/0e-iorec.md` (aus der SDK04-Erhebung).
+
+## Stand 2026-10-28
+
+- Berichtigt (`[XBIOS07]`): `docs/api/xbios/18-bioskeys.md`,
+  `docs/api/xbios/2c-bconmap.md` (pending XBIOS05), `docs/api/xbios/0f-rsconf.md`
+  (pending XBIOS06), `docs/api/structures/iorec.md` (14 Byte, 4-Byte-IKBD-
+  Eintraege, Geraetezuordnung 0 = RS-232, 1 = IKBD, 2 = MIDI),
+  `docs/api/xbios/_state.md` (`EXT_IOREC` 33/34 Byte, abgeleitet);
+  `docs/COMPATIBILITY.md` (Lage der IKBD-Vektortabelle: private Seite
+  `0x7F000`, nicht Seite 0) vom Lead nach Vorschlag eingetragen.
+- Offen: `docs/api/xbios/22-kbdvbase.md` nennt noch `0x9A0` als Tabellenort;
+  `docs/api/xbios/_state.md` beschreibt im IOREC-Block `head`/`tail` vertauscht
+  (`references/emutos/bios/ikbd.c:163-170`); in `2c-bconmap.md` ist offen, ob
+  `init_bconmap` allein durch `BCONMAP_AVAILABLE` ausgeblendet wird.
+- Entscheidung fuer [XBIOS05](XBIOS05.md) (`Bconmap`-Profil): Optionen in
+  `2c-bconmap.md`, „NewTOS implementation notes“.
+

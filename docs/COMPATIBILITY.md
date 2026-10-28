@@ -673,8 +673,11 @@ landed as KEYS02. EmuTOS has **one** global `kbdvecs` table in BIOS BSS
 (`bios/xbios.c:716-719`), and nothing in the BDOS touches it at process exit
 (`bdos/proc.c:110-140,601-618`) — a hook a program forgot to restore stays
 installed and the next key jumps into freed memory (spec A8). NewTOS keeps the
-table in each process's own page 0 (`0x9A0`, 8-byte slots,
-`tos-api/src/xbios/kbdvecs.rs`) and returns that process's EL0 VA. **Reason:** a
+table in each process's own **private read-write page** (`0x7F000`, since
+MEM12; `Kbdvbase()` returns `0x7F010`, measured:
+`measurements/measurement-2026-10-28-xbios-chardev-audit/runs/PROBE-NEWTOS-raspi4b/XCPROBE.LOG`
+V01; `tos-api/src/bdos/process/mmu.rs:247@PRIV_PAGE_VA`) and returns that
+process's EL0 VA. **Reason:** a
 hook is code of its process (the same rule as `vex_wheelv`); the table goes
 away with the process, so a dangling hook cannot exist, and `free_slot` drops
 any bytes still queued for it. (Since ARCH03 stage 1 every other user address

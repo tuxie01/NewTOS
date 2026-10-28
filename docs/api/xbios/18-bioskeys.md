@@ -179,10 +179,17 @@ PHASE-07: `Bioskeys` reloads the NewTOS country-default tables into
   of `Keytbl` (`10-keytbl.md`), which shares `keymap::install`
   (`keymap.rs:214-217`).
 - **Step-2 — not wired.** `Bioskeys` (XBIOS `0x18`) has **no entry in the
-  NewTOS XBIOS dispatcher** (`tos-api/src/xbios/mod.rs`), so it returns
-  `EINVFN` instead of resetting the active layout. `keymap::select_builtin`
-  provides the "install a named built-in" mechanism the handler would call,
-  but nothing routes `Bioskeys` to it. Recorded as K-series below.
-  (Consistent with `Keytbl`/`Initmous` also being unwired — the whole XBIOS
-  keyboard group needs a dispatcher pass.)
+  NewTOS XBIOS dispatcher** (`tos-api/src/xbios/mod.rs:65-138@dispatch`,
+  the catch-all `other => other as i64`), so the trap returns the **function
+  number `0x18`** (zero-extended, not `EINVFN`) and the active layout is not
+  reset. `kernel/src/keymap.rs:223@select_builtin` provides the "install a
+  named built-in" mechanism the handler would call, but nothing routes
+  `Bioskeys` to it. Recorded as K-series below. (`Keytbl` is wired,
+  `tos-api/src/xbios/mod.rs:65-138@dispatch`; `Initmous` is not.)
+  **[XBIOS07] correction:** earlier text said "returns `EINVFN`". Measured:
+  the function number — the same catch-all as `Iorec` (`0x0E`), see
+  `docs/api/xbios/0e-iorec.md`; audit XBIOS-CHARDEV-002/-007
+  (`measurements/measurement-2026-10-28-xbios-chardev-audit/RUNINFO.TXT`,
+  sonde K04-K10: after `Bioskeys()` NewTOS keeps the program's tables,
+  EmuTOS restores all three pointers).
 - **Datasheet.** No peripheral register (software table swap).

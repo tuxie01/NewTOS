@@ -76,9 +76,19 @@ low 16 bits after a `baud`-only call, but the canonical query is `baud == -2`.
     0: function_id (word) = 0x000F
   ```
 - **Total parameter bytes:** 14 (W × 6).
-- **Native (AArch64) ABI:** ID `0x0F` in `x8`; args in `x0..x5`; the ULONG
-  result **zero-extended** into `x0` (packed register bytes; treat as
-  unsigned 32-bit).
+- **Native (AArch64) ABI:** ID `0x0F` in `x8`; args in `x0..x5`; the result
+  in `x0` is a **sign-extended `i64`** like every trap result
+  (`tos-api/src/trap.rs:6@TrapArgs`: "return value in `x0` (sign-extended
+  `i64`)"; dumper rule `docs/TOS-REFERENCE-DUMPER.md` §3 `ret_hi`).
+  **[XBIOS07] correction:** earlier text said "zero-extended". The EmuTOS
+  handler returns a 32-bit `ULONG` in `d0` (`bios/serport.c:219-229`); the
+  oracle's `Rsconf(-1 x6)` therefore reads `0xFFFFFFFF_88018100` (TT) /
+  `0xFFFFFFFF_88000000` (Falcon, SCC), i.e. bit 31 of `ucr<<24` is extended
+  (`bios-r1` 105, `xbios-chardev-r1` 31). NewTOS today returns
+  `0x00000000_88010100` (`tos-api/src/xbios/system.rs:263-295@rsconf`,
+  `old as i64`) — **pending XBIOS06**. The register bytes themselves are
+  device parameters (TT != Falcon), whether NewTOS adopts the TT bytes
+  (TSR bit 7 "buffer empty" set) is the XBIOS06 profile decision.
 
   | m68k stack | AArch64 reg | Name    | Type / size |
   |------------|-------------|---------|-------------|
@@ -278,7 +288,7 @@ policy — see decision D-SER-1.
 
 | Rsconf parameter | Atari MFP mechanism | PL011 equivalent | NewTOS today |
 |------------------|---------------------|------------------|--------------|
-| `speed` (baud idx 0..15) | MFP timer-D divisor | `IBRD`/`FBRD` (DS §11.5 p.150) | **not wired** (dispatcher gap R1); designed to program IBRD/FBRD |
+| `speed` (baud idx 0..15) | MFP timer-D divisor | `IBRD`/`FBRD` (DS §11.5 p.150) | wired ([XBIOS07], see R1 below); whether it programs IBRD/FBRD is not verified here |
 | `speed == -2` (query) | read `rs232iorec.baudrate` | return the driver's stored baud index | **synthesized** — PL011 has no "baud index" register; the code must keep a shadow (no HW read-back) |
 | `ctrl` (flow 0..3) | XON/XOFF sw + MFP GPIP RTS/CTS | sw XON/XOFF in the driver; `CR.RTSEN`/`CR.CTSEN` bits 14/15 (DS §11.5 p.151-152) for RTS/CTS | RTS/CTS pins (GPIO16/17 ALT3, DS §11.3 p.145) are **not muxed** today (only TX/RX GPIO14/15 ALT0, `kernel/src/drivers/bcm2711/pl011.rs:98-103`) → HARD flow cannot actually assert; **map only NONE/SOFT truthfully** until pins are wired |
 | `ucr` (USART control: word len, parity, stop, clock ÷16) | MFP UCR | `LCRH.WLEN`/`PEN`/`EPS`/`STP2`/`FEN` (DS §11.5 p.150-151) | **ignored on input**; the framing bits *could* map to LCRH but the MFP UCR bit layout ≠ LCRH, so a translation table is needed — not done |
@@ -296,10 +306,15 @@ registers do not exist on the PL011.
 
 ### Current-code gaps → Step-2
 
-- **R1 (GAP):** `Rsconf (0x0F)` is **not in the XBIOS dispatcher**
-  (`tos-api/src/xbios/mod.rs:33-55`) → returns `EINVFN`, so *no* baud change,
-  query, or flow config works today. The "PHASE-07" note above describes the
-  intended behaviour, not the wired one.
+- **R1 (superseded, [XBIOS07]):** earlier text said `Rsconf` was not
+  dispatched and returned `EINVFN`. It is wired
+  (`tos-api/src/xbios/mod.rs:65-138@dispatch`, `system::rsconf`): baud
+  set/query (`-2`), `-1` keep, out-of-range handling and UCR/RSR set/readback
+  agree with the oracle (audit probe S01-S18); only the TSR byte (`0x81` TT
+  vs `0x01` NewTOS shadow, `tos-api/src/xbios/system.rs:248@RS_TSR`) and the
+  upper 32 bits differ (XBIOS-CHARDEV-006, **pending XBIOS06**). The
+  "synthesizes plausible bytes" statements in the table above describe the
+  intent; the measured result is as stated here.
 - **R2 (GAP):** even when wired, the `ucr` framing bits are planned to be
   **ignored on input** rather than translated to `LCRH` — silently does nothing
   for word-length/parity/stop changes.
