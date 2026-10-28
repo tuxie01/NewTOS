@@ -71,8 +71,6 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   [TOOL01](../TASK/TOOL01.md); [SDK02](../TASK/SDK02.md) (P3) bei Gelegenheit.
   Daneben ein Auditor bzw. Researcher zur Zeit, in eigenem Arbeitsbaum:
   [BIOS03](../TASK/BIOS03.md) (Entwurf liegt vor, Q1–Q6 beim Anwender) →
-  Erhebung fuer XBIOS01 E3/E4
-  (Ring ohne Trap gepollt? `buf`/`size` ersetzt?) →
   [ARCH05](../TASK/ARCH05.md) (Maschinenidentitaet: Cookie-Bestand, Programmbeleg, ggf. Nachtrag ADR-012) → Vertrag `Getmpb` (BIOS06) →
   Spec-Tickets der Audits.
 - **P1:** [MEM12](../TASK/MEM12.md) — umgesetzt und auf QEMU abgenommen (Seite 0 nur im Super-Zustand beschreibbar); offen nur der Lauf auf der echten Pi.

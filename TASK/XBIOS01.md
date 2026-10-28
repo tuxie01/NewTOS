@@ -63,3 +63,7 @@ Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-xbios-char
 - **Lokalisierung vor dem Fix (Lead):** NewTOS-Funktion per
   `cargo xtask deps <fn> --down` + `docs/analysis/deps/mapping.tsv` und die
   `--up`-Retest-Menge hier eintragen, bevor der Developer beginnt.
+- **Erhebung E3/E4 erledigt 2026-10-28**
+  (`docs/analysis/iorec-survey-2026-10-28.md`): kein Nutzer von `Iorec` in den
+  portierten Quellen → E3 (a), E4 (a) kernel-eigener Puffer mit einmaliger
+  Warnung und Wiederherstellung (`docs/api/xbios/0e-iorec.md`, „Entscheidungen“).

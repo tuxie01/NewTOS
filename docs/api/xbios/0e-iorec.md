@@ -11,7 +11,7 @@
 > the field layout and ring semantics a program reads/writes. Reference: the
 > ACIA/UART drivers behind each record, the concrete addresses.
 
-## Status: **Vertrag entschieden 2026-10-28 (E1-E6, Ende dieses Dokuments); E3/E4 nach Erhebung**
+## Status: **Vertrag entschieden 2026-10-28 (E1-E6, Ende dieses Dokuments)**
 
 [XBIOS01] Vorher stand hier "decision deferred" und "returns `EINVFN`". Beides
 ist falsch: `Iorec` ist in NewTOS nicht verdrahtet; der Sammelzweig
@@ -320,6 +320,12 @@ Atari Compendium / Profibuch: nicht in `references/`, Abgleich ausstehend.
   besitzenden Prozesses auf den Standardpuffer zurueckgesetzt.
 - **E5 = (a):** Records fuer Geraete 0 und 2 vorhanden und leer, wie das
   Orakel.
+- **Erhebung 2026-10-28** (`docs/analysis/iorec-survey-2026-10-28.md`): kein
+  portiertes Programm ruft `Iorec`; keines pollt den Ring, keines ersetzt
+  `buf`/`size` (nur Quelltext durchsucht, keine Binaerprogramme). Damit nach
+  der Regel des Anwenders: **E3 = (a)** bleibt, **E4 = (a)** kernel-eigener
+  Puffer, einmalige Warnung und Wiederherstellung des Standards beim
+  naechsten Trap nach einer Aenderung von `buf`/`size`.
 - **E6 = ja**, entschieden im gemeinsamen Haken-ADR (TASK/BIOS03.md).
 
 ### Optionen, wie vorgelegt (Begruendung)
