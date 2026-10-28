@@ -1,0 +1,104 @@
+measurement-2026-10-28-tool04-profile -- TASK/TOOL04, user decisions 2026-10-28: `[profile.test] split-debuginfo =
+"packed"` for the host test builds, and a warning in `cargo xtask test` when target/debug/deps grows past 20 000
+entries. Measures that the deps directory stays flat over repeated tos-api relinks, and that debug info stays usable.
+Developer, 2026-10-28 07:05 .. 07:25 CET. Continues measurement-2026-10-28-tool04 (result 4/5, finding 1).
+HEAD 366f2da4. Uncommitted in the tree (this ticket): Cargo.toml ([profile.test]), tools/xtask/src/test_tiers.rs
+(DEPS_WARN_ENTRIES, host_deps_dir, count_entries, deps_warning + 5 unit tests), tools/xtask/src/main.rs
+(warn_if_deps_bloated, called by both tiers of cmd_test). Host: Apple M4, macOS 27.0.1 (26A434), cargo 1.97.0-nightly
+(eb94155a9 2026-04-09), repo on /Volumes/Daten (external USB SSD, APFS); Terminal is a Developer Tool (since
+2026-10-28, previous run). No SD image booted, no hardware touched, `cargo clean` not run.
+
+INPUT (not by this run)
+ The lead deleted target/debug before this run; cold `cargo xtask test` afterwards 24.9 s, green, target/debug/deps =
+ 3411 entries (all built with the old profile: split-debuginfo unpacked).
+
+WHAT / WHY
+ 1. Does the new profile reach exactly the host test builds and not the aarch64 kernel builds?
+ 2. Does target/debug/deps stay flat over repeated `touch tos-api/src/lib.rs` + `cargo xtask test` (both tiers)?
+ 3. Is the debug info still usable (source lines for test code and for tos-api code)?
+ 4. Does the guard warn above 20 000 entries, in both tiers, without failing the run?
+
+HOW (method/)
+ unit-graph.sh + unit-graph-profiles.py   `cargo <cmd> --unit-graph -Z unstable-options` for the dev kernel build
+                     (qemu-virt), the release kernel build (rpi4) and the host test build; per workspace unit: platform,
+                     target kind, mode, profile name, split_debuginfo (raw/unit-graph-profiles.txt).
+ Fingerprint check   before the Cargo.toml edit `cargo xtask build --board qemu-virt`, then `cargo build --package
+                     kernel --no-default-features --features board-qemu-virt -v`: 14 units Fresh; after the edit the
+                     same command again: 14 units Fresh (no output file; numbers quoted here).
+ relink-loop.sh      one step = optional touch of tos-api/src/lib.rs, one tier of `cargo xtask test` in the main
+                     target, wall time (perl Time::HiRes), rc, summed `test result:` lines, and the entries of
+                     target/debug/deps afterwards (all / *.o / *.dSYM) -> raw/steps.tsv, logs raw/s*.log.
+                     raw/before.txt = the deps count before step s0 (after this run's first xtask builds and one
+                     `cargo test -p xtask test_tiers` under the new profile).
+ debuginfo-check.sh  for one packed test binary: .dSYM present, UUIDs of binary and .dSYM, its debug map (N_OSO
+                     entries, deleted or present), and lldb: the loaded symbol file plus two breakpoints by file:line
+                     (one in the test, one in tos-api) -> raw/debuginfo.txt.
+ guard-demo.sh       the warning end to end in a scratch CARGO_TARGET_DIR (session scratchpad, internal disk, deleted
+                     afterwards): cold fast tier, then 20 000 empty files into debug/deps, then fast and full tier
+                     -> raw/guard-*.log, raw/guard.txt.
+
+RESULTS
+ 1. Profile scope (raw/unit-graph-profiles.txt):
+      cargo build -p kernel (dev, qemu-virt) and (--release, rpi4): every aarch64-unknown-none-softfloat unit (kernel
+        bin/lib/build-script run, tos-api, tos-types) has profile dev resp. release, split_debuginfo None; the host
+        build scripts of kernel and tos-api dev/release, unpacked (the macOS default, unchanged).
+      cargo test -p tos-api -p tos-types -p xtask: every unit profile test, split_debuginfo packed (lib, doctest, the
+        159 integration targets, the xtask test binary, the tos-api build script).
+    The dev kernel build stayed Fresh across the edit (14/14 units before and after), i.e. the change does not touch
+    its fingerprint. `cargo xtask build --board rpi4`, `--board qemu-virt`, `--board rpi4 --release` afterwards: all
+    finished, warnings unchanged (kernel lib 93, tos-api lib 64).
+
+ 2. Repeated relinks, main target (raw/steps.tsv):
+      step                         wall     rc  passed/failed/ignored  deps entries  .o     .dSYM
+      before (raw/before.txt)      -        -   -                      3437          3079   1
+      s0 first run, new profile    26.7 s   0   1726/0/1               3996          3149   162
+      s1 touch + full              13.8 s   0   1726/0/1               3996          3149   162
+      s2 touch + full              13.9 s   0   1726/0/1               3996          3149   162
+      s3 touch + full              13.8 s   0   1726/0/1               3996          3149   162
+      s4 touch + full              14.1 s   0   1726/0/1               3996          3149   162
+      s5 touch + fast              14.0 s   0   1726/0/0               3996          3149   162
+      s6 touch + fast              13.8 s   0   1726/0/0               3996          3149   162
+      s7 touch + fast              13.9 s   0   1726/0/0               3996          3149   162
+      s8 no change, full            3.7 s   0   1726/0/1               3996          3149   162
+      s9 no change, fast            3.5 s   0   1726/0/0               3996          3149   162
+    => flat: 3996 entries after each of the 7 relinks (old profile: +~3 000 per relink, previous run result 4).
+    s0 rebuilt the whole test set (the profile is part of the artifact hash): +559 entries, the size of a cold set
+    (the scratch cold build in 4. leaves 564). The 3 079 .o of the old unpacked set stay in deps/ as dead files until
+    target/debug is deleted; they no longer grow. The +70 .o between before and s0: not broken down; most likely xtask's own dev-profile build
+    (`cargo xtask` = `cargo run`, profile dev, still unpacked; deps/ now holds two such xtask sets, 122 + 140 .o).
+    Relink 13.8-14.1 s (old profile in the bloated main target: 165-212 s; previous run result 5 predicted 13.7 s for
+    packed in a fresh dir vs 9.0-11.0 s unpacked: ~4-5 s per relink is the price of dsymutil per binary).
+    Totals 1726/0/1 (full) and 1726/0/0 (fast) = the STATUS baseline 1721/0/1 + the 5 new guard tests.
+    The doctests now cost almost nothing: s8 full 3.7 s vs s9 fast 3.5 s with nothing changed (previous run: 18.7 s
+    vs 3.4 s, 16 s of it doctests) -- presumably rustdoc, like rustc, listed the bloated deps/ (not measured separately).
+
+ 3. Debug info (raw/debuginfo.txt, binary aes_window_rectlist_capacity-8a886357ceeea6b9):
+      .dSYM next to the binary, UUID B5F6F847-1795-339C-A2CA-1449FE6512AB in both.
+      Debug map: 19 entries for the binary's own codegen-unit .o, all deleted; 101 rlib members, present.
+      lldb loads the .dSYM as symbol file and resolves
+        `breakpoint set -f aes_window_rectlist_capacity.rs -l 347` -> thirty_pieces_all_reach_the_caller,
+          aes_window_rectlist_capacity.rs:347:14 (inlined into its test closure)
+        `breakpoint set -f window.rs -l 3360` -> tos_api::aes::window::wind_create + 100 at window.rs:3363:19
+          (the nearest line with code; wind_create starts at tos-api/src/aes/window.rs:3357@wind_create).
+    => full debug info, file and line for test and library code, from the .dSYM; nothing needs the deleted .o.
+    Side note, not used as evidence: with the .dSYM renamed away lldb still resolved line 347 -- presumably the
+    DebugSymbols UUID lookup; not followed up.
+
+ 4. Guard (raw/guard.txt, raw/guard-*.log; scratch target, not the main one):
+      cold fast tier                  564 entries     rc=0   1726/0/0  no warning
+      + 20 000 empty files, fast      20 564 entries  rc=0   1726/0/0  one warning at the end
+      same, full tier                 20 564 entries  rc=0   1726/0/1  one warning at the end
+    The warning names the directory, the count, the limit, the cause (rustc lists deps/ at start; previous run's
+    numbers and RUNINFO), the profile line to check and the remedy (delete <target>/debug, host builds only, ~25 s
+    cold; not cargo clean). Host tests of the logic without 20 000 files: test_tiers::tests
+    deps_warning_only_above_the_limit_and_names_count_cause_remedy, counted_directory_triggers_the_warning_past_a_
+    small_limit (5 entries, limit 4/5), host_deps_dir_follows_cargo_target_dir, the_test_profile_keeps_packed_
+    debuginfo, the_cited_run_exists.
+
+FINDINGS FOR TRIAGE (not changed here)
+ 1. The dev profile (xtask itself, run by `cargo xtask`) still leaves its .o in deps/: most likely the +70 of result 2.
+    Slow growth, only on xtask edits; the guard would catch it.
+ 2. With the bloat gone, the fast tier saves ~0.2 s over the full tier with nothing changed and nothing after a
+    tos-api touch (s1-s4 vs s5-s7). DOCTESTS_WHY in tools/xtask/src/test_tiers.rs still quotes the old 16 of 18.7 s.
+ 3. target/debug/deps still carries ~3 400 dead files of the old profile; harmless at this size, gone with the next
+    deletion of target/debug.

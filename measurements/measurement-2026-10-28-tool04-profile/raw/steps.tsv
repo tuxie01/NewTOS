@@ -1,0 +1,10 @@
+s0-first-packed	full	touch=0	wall=26.7s	rc=0	p/f/i=1726/0/1	deps=3996	.o=3149	.dSYM=162	warn=0
+s1-touch-full	full	touch=1	wall=13.8s	rc=0	p/f/i=1726/0/1	deps=3996	.o=3149	.dSYM=162	warn=0
+s2-touch-full	full	touch=1	wall=13.9s	rc=0	p/f/i=1726/0/1	deps=3996	.o=3149	.dSYM=162	warn=0
+s3-touch-full	full	touch=1	wall=13.8s	rc=0	p/f/i=1726/0/1	deps=3996	.o=3149	.dSYM=162	warn=0
+s4-touch-full	full	touch=1	wall=14.1s	rc=0	p/f/i=1726/0/1	deps=3996	.o=3149	.dSYM=162	warn=0
+s5-touch-fast	fast	touch=1	wall=14.0s	rc=0	p/f/i=1726/0/0	deps=3996	.o=3149	.dSYM=162	warn=0
+s6-touch-fast	fast	touch=1	wall=13.8s	rc=0	p/f/i=1726/0/0	deps=3996	.o=3149	.dSYM=162	warn=0
+s7-touch-fast	fast	touch=1	wall=13.9s	rc=0	p/f/i=1726/0/0	deps=3996	.o=3149	.dSYM=162	warn=0
+s8-nochange-full	full	touch=0	wall=3.7s	rc=0	p/f/i=1726/0/1	deps=3996	.o=3149	.dSYM=162	warn=0
+s9-nochange-fast	fast	touch=0	wall=3.5s	rc=0	p/f/i=1726/0/0	deps=3996	.o=3149	.dSYM=162	warn=0

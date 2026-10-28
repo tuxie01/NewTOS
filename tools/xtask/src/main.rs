@@ -917,7 +917,9 @@ fn cmd_test(args: &[String]) -> Result<(), String> {
         c.args(["--package", p]);
     }
     if !fast {
-        return run(c);
+        let r = run(c);
+        warn_if_deps_bloated(&root);
+        return r;
     }
     // TOOL04 fast tier: the unit tests of every package and the
     // integration tests outside test_tiers::FULL_ONLY; no doctests
@@ -953,7 +955,21 @@ fn cmd_test(args: &[String]) -> Result<(), String> {
             .map_or("", |(_, w)| *w);
         println!("  - tests/{name}: {why}");
     }
+    warn_if_deps_bloated(&root);
     r
+}
+
+/// TOOL04: warn (never fail) when the host `debug/deps` directory has grown
+/// past [`test_tiers::DEPS_WARN_ENTRIES`], so the slow-rustc bloat of
+/// `measurements/measurement-2026-10-28-tool04/RUNINFO.TXT` cannot return
+/// unnoticed. Runs after the tests, whatever their result.
+fn warn_if_deps_bloated(root: &Path) {
+    let dir = test_tiers::host_deps_dir(root, env::var_os("CARGO_TARGET_DIR").as_deref());
+    if let Some(n) = test_tiers::count_entries(&dir) {
+        if let Some(w) = test_tiers::deps_warning(n, test_tiers::DEPS_WARN_ENTRIES, &dir) {
+            eprintln!("{w}");
+        }
+    }
 }
 
 // ── prgflags (ARCH03 E8b) ───────────────────────────────────────────────

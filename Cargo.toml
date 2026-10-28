@@ -25,6 +25,15 @@ opt-level = 1
 debug = true
 overflow-checks = true
 
+# Host test builds (`cargo test`, `cargo xtask test`: tos-api, tos-types,
+# xtask) only; the kernel is built with `dev`/`release` and is not affected.
+# `packed` puts each test binary's debug info into its own .dSYM instead of
+# leaving the codegen-unit objects in target/debug/deps, which grew by
+# ~3 000 files per tos-api edit and slowed every rustc start (TOOL04,
+# measurements/measurement-2026-10-28-tool04/RUNINFO.TXT, results 4-5).
+[profile.test]
+split-debuginfo = "packed"
+
 [profile.release]
 panic = "abort"
 opt-level = 3

@@ -1,0 +1,3 @@
+guard-1-cold: rc=0 warnings=0 totals=1726/0/0 last-line=  - the doctests of tos-api, tos-types: rustdoc re-reads both lib crates on ever
+guard-2-filled: rc=0 warnings=1 totals=1726/0/0 last-line=  a cold host test build takes ~25 s). Not cargo clean, which also drops the ker
+guard-3-filled-full: rc=0 warnings=1 totals=1726/0/1 last-line=  a cold host test build takes ~25 s). Not cargo clean, which also drops the ker

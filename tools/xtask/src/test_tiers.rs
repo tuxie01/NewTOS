@@ -19,7 +19,7 @@
 //! depend on what changed (rustdoc re-reads both lib crates on every run).
 
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// The package that has integration tests (`tests/*.rs`). `tos-types` and
 /// `xtask` have unit tests only; the fast tier runs those in full.
@@ -97,6 +97,52 @@ pub fn split(targets: &[String]) -> Result<(Vec<&str>, Vec<&str>), String> {
     Ok((fast, full))
 }
 
+/// Above this many entries in the host `debug/deps` directory, `cargo xtask
+/// test` warns (both tiers). A cold host build leaves about 3 400; with the
+/// old test profile (`split-debuginfo` unpacked) every tos-api edit added
+/// ~3 000 objects that nothing removed, and every rustc lists the whole
+/// directory at start (516 186 entries made a relink take 165-212 s instead
+/// of ~5 s; `measurements/measurement-2026-10-28-tool04/RUNINFO.TXT`,
+/// results 4-5).
+pub const DEPS_WARN_ENTRIES: usize = 20_000;
+
+/// The directory the host test builds put their artifacts in:
+/// `$CARGO_TARGET_DIR/debug/deps` (relative to `root`, the directory cargo
+/// runs in, when relative), else `<root>/target/debug/deps`.
+pub fn host_deps_dir(root: &Path, cargo_target_dir: Option<&std::ffi::OsStr>) -> PathBuf {
+    let target = match cargo_target_dir {
+        Some(d) if !d.is_empty() => root.join(d),
+        _ => root.join("target"),
+    };
+    target.join("debug").join("deps")
+}
+
+/// Number of entries in `dir`; `None` if it does not exist (no host build
+/// yet) or cannot be read.
+pub fn count_entries(dir: &Path) -> Option<usize> {
+    Some(fs::read_dir(dir).ok()?.count())
+}
+
+/// The warning for `count` entries in `dir`, or `None` if `count` does not
+/// exceed `limit`.
+pub fn deps_warning(count: usize, limit: usize, dir: &Path) -> Option<String> {
+    if count <= limit {
+        return None;
+    }
+    Some(format!(
+        "warning: xtask test: {} holds {count} entries (warning above {limit}).\n\
+         \x20 Cause: every rustc lists this directory when it starts, so a large one slows every\n\
+         \x20 build (516 186 entries: relink after a tos-api edit 165-212 s instead of ~5 s;\n\
+         \x20 measurements/measurement-2026-10-28-tool04/RUNINFO.TXT, result 4, finding 1).\n\
+         \x20 It grows by ~3 000 objects per edit when the test profile leaves the codegen-unit\n\
+         \x20 objects there: check that Cargo.toml still has `[profile.test] split-debuginfo = \"packed\"`.\n\
+         \x20 Remedy: delete {} (host builds only; the kernel's target/aarch64-*/ stays;\n\
+         \x20 a cold host test build takes ~25 s). Not cargo clean, which also drops the kernel builds.",
+        dir.display(),
+        dir.parent().unwrap_or(dir).display()
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -151,6 +197,60 @@ mod tests {
                 "`{p}`: lib target {has_lib}, but DOCTEST_PACKAGES says otherwise"
             );
         }
+    }
+
+    #[test]
+    fn deps_warning_only_above_the_limit_and_names_count_cause_remedy() {
+        let d = Path::new("/x/target/debug/deps");
+        assert_eq!(deps_warning(DEPS_WARN_ENTRIES, DEPS_WARN_ENTRIES, d), None);
+        assert_eq!(deps_warning(0, DEPS_WARN_ENTRIES, d), None);
+        let w = deps_warning(DEPS_WARN_ENTRIES + 1, DEPS_WARN_ENTRIES, d).unwrap();
+        assert!(w.contains("20001 entries"), "{w}");
+        assert!(w.contains("/x/target/debug/deps"), "{w}");
+        assert!(w.contains("measurements/measurement-2026-10-28-tool04/RUNINFO.TXT"), "{w}");
+        assert!(w.contains("split-debuginfo = \"packed\""), "{w}");
+        assert!(w.contains("delete /x/target/debug "), "{w}");
+    }
+
+    #[test]
+    fn the_cited_run_exists() {
+        assert!(root().join("measurements/measurement-2026-10-28-tool04/RUNINFO.TXT").is_file());
+    }
+
+    #[test]
+    fn the_test_profile_keeps_packed_debuginfo() {
+        let m = fs::read_to_string(root().join("Cargo.toml")).unwrap();
+        let profile = m.split("[profile.test]").nth(1).expect("no [profile.test]");
+        let profile = profile.split("\n[").next().unwrap();
+        assert!(
+            profile.lines().any(|l| l.trim() == "split-debuginfo = \"packed\""),
+            "[profile.test] lost split-debuginfo = \"packed\""
+        );
+    }
+
+    #[test]
+    fn host_deps_dir_follows_cargo_target_dir() {
+        let r = Path::new("/ws");
+        assert_eq!(host_deps_dir(r, None), Path::new("/ws/target/debug/deps"));
+        assert_eq!(host_deps_dir(r, Some("".as_ref())), Path::new("/ws/target/debug/deps"));
+        assert_eq!(host_deps_dir(r, Some("t2".as_ref())), Path::new("/ws/t2/debug/deps"));
+        assert_eq!(host_deps_dir(r, Some("/abs".as_ref())), Path::new("/abs/debug/deps"));
+    }
+
+    #[test]
+    fn counted_directory_triggers_the_warning_past_a_small_limit() {
+        let base = root().join("target").join("xtask-test-tiers-deps");
+        let _ = fs::remove_dir_all(&base);
+        assert_eq!(count_entries(&base), None);
+        fs::create_dir_all(base.join("sub.dSYM")).unwrap();
+        for i in 0..4 {
+            fs::write(base.join(format!("f{i}.o")), "").unwrap();
+        }
+        let n = count_entries(&base).unwrap();
+        assert_eq!(n, 5);
+        assert!(deps_warning(n, 5, &base).is_none());
+        assert!(deps_warning(n, 4, &base).unwrap().contains("5 entries"));
+        fs::remove_dir_all(&base).unwrap();
     }
 
     #[test]

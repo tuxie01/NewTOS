@@ -1,0 +1,29 @@
+== cargo build --package kernel --no-default-features --features board-qemu-virt
+1	kernel	aarch64-unknown-none-softfloat	bin	build	dev	None
+1	kernel	aarch64-unknown-none-softfloat	custom-build	run-custom-build	dev	None
+1	kernel	aarch64-unknown-none-softfloat	lib	build	dev	None
+1	kernel	host	custom-build	build	dev	unpacked
+1	tos-api	aarch64-unknown-none-softfloat	custom-build	run-custom-build	dev	None
+1	tos-api	aarch64-unknown-none-softfloat	lib	build	dev	None
+1	tos-api	host	custom-build	build	dev	unpacked
+1	tos-types	aarch64-unknown-none-softfloat	lib	build	dev	None
+== cargo build --package kernel --no-default-features --features board-rpi4 --release
+1	kernel	aarch64-unknown-none-softfloat	bin	build	release	None
+1	kernel	aarch64-unknown-none-softfloat	custom-build	run-custom-build	release	None
+1	kernel	aarch64-unknown-none-softfloat	lib	build	release	None
+1	kernel	host	custom-build	build	release	unpacked
+1	tos-api	aarch64-unknown-none-softfloat	custom-build	run-custom-build	release	None
+1	tos-api	aarch64-unknown-none-softfloat	lib	build	release	None
+1	tos-api	host	custom-build	build	release	unpacked
+1	tos-types	aarch64-unknown-none-softfloat	lib	build	release	None
+== cargo test --package tos-api --package tos-types --package xtask
+1	tos-api	host	custom-build	build	test	packed
+1	tos-api	host	custom-build	run-custom-build	test	None
+1	tos-api	host	lib	build	test	packed
+1	tos-api	host	lib	doctest	test	packed
+1	tos-api	host	lib	test	test	packed
+159	tos-api	host	test	test	test	packed
+1	tos-types	host	lib	build	test	packed
+1	tos-types	host	lib	doctest	test	packed
+1	tos-types	host	lib	test	test	packed
+1	xtask	host	bin	test	test	packed

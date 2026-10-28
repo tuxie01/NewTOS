@@ -1,0 +1,14 @@
+== binary and .dSYM
+-rwxr-xr-x@ 1 ingouhlemann  staff  2002960 28 Okt. 07:16 aes_window_rectlist_capacity-8a886357ceeea6b9
+drwxr-xr-x@ 3 ingouhlemann  staff       96 28 Okt. 07:15 aes_window_rectlist_capacity-8a886357ceeea6b9.dSYM
+== UUIDs (binary and dSYM must match)
+UUID: B5F6F847-1795-339C-A2CA-1449FE6512AB (arm64) aes_window_rectlist_capacity-8a886357ceeea6b9
+UUID: B5F6F847-1795-339C-A2CA-1449FE6512AB (arm64) aes_window_rectlist_capacity-8a886357ceeea6b9.dSYM/Contents/Resources/DWARF/aes_window_rectlist_capacity-8a886357ceeea6b9
+== debug map (N_OSO) of the binary: own .o vs rlib members, present on disk?
+19 own .o deleted
+101 rlib member present
+== lldb: symbol file loaded, source lines in the test file and in tos-api
+[  0] 
+      /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_window_rectlist_capacity-8a886357ceeea6b9.dSYM/Contents/Resources/DWARF/aes_window_rectlist_capacity-8a886357ceeea6b9
+Breakpoint 1: where = aes_window_rectlist_capacity-8a886357ceeea6b9`<aes_window_rectlist_capacity::thirty_pieces_all_reach_the_caller::{closure#0} as core::ops::function::FnOnce<()>>::call_once + 188 [inlined] aes_window_rectlist_capacity::thirty_pieces_all_reach_the_caller + 152 at aes_window_rectlist_capacity.rs:347:14, address = 0x000000010000520c
+Breakpoint 2: where = aes_window_rectlist_capacity-8a886357ceeea6b9`tos_api::aes::window::wind_create + 100 at window.rs:3363:19, address = 0x0000000100065b14
