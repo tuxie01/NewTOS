@@ -367,6 +367,10 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   by the scripts in the run's `measurements/*/method/`.
 - Conformance with EmuTOS: tosdump cases against the oracle
   (`docs/analysis/ORACLE.md`).
+- A tosdump case table on NewTOS: `cargo xtask tosdump <dumper> <table.tsv>
+  --out <run dir> [--reference <BIN>]…` (`--tree`, `--disk`,
+  `--features bios-arg-trace`; TOOL09) — one call builds, boots QEMU
+  raspi4b and compares; no per-run scripts.
 - Hardware tests on RPi4 are manual, documented in `docs/HW-TEST-LOG.md`.
 - Every TOS API function gets at least one test that verifies the documented
   return value for documented input, and one that verifies the documented

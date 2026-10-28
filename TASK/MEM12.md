@@ -225,7 +225,7 @@ war 8 Byte breit (nahm `_shell_p` `$4F6` als obere Haelfte mit); Patchdatei
 ### Interaktive Abnahme: qemu-virt geht nicht, raspi4b mit Injektor (Plan)
 
 qemu-virt hat kein `C:`: `cargo xtask run --sd` haengt das Abbild nur fuer
-raspi4b an (`tools/xtask/src/main.rs:873@sd`), der Kern hat fuer virt keinen
+raspi4b an (`tools/xtask/src/main.rs:895@sd`), der Kern hat fuer virt keinen
 Blocktreiber (`kernel/src/drivers/qemu_virt/` = PL011 + ramfb), und HypView,
 TeraDesk, DOOM sind keine eingebetteten Programme. `.claude/agents/tester.md`
 ("qemu-virt has input but no `C:`") stimmt also noch. Weg: raspi4b mit dem

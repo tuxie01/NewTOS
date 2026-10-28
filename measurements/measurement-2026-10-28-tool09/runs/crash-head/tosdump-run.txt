@@ -1,0 +1,30 @@
+command   cargo xtask tosdump /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool09/crash-probe/DUMPBIOS.NAP tosdump/cases/bios-r1.tsv --out measurements/measurement-2026-10-28-tool09/runs/crash-head --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool09
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    6b4e12806ff3f38b0d1a436f88bf880ac941aacd
+dirty     4 path(s) in git status --porcelain
+   M TASK/MEM12.md
+   M tools/xtask/src/main.rs
+  ?? measurements/measurement-2026-10-28-tool09/
+  ?? tools/xtask/src/tosdump.rs
+harness commit 6b4e12806ff3f38b0d1a436f88bf880ac941aacd
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-r1.tsv sha256 231f2dfe73e5a80628167b216a66fe6475992b9b3a692b9025a92e8d6f3b2bf8
+target/   own (8 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (8 artifact dep-info files checked after the build)
+kernel8.img sha256 09a5db64998e0561d336f5397812808256f0cc9ec54bfd7c4ade365db17baa1b
+kernel ELF  sha256 155f8bb21179a5f1d2deab3707be1f4e8355c4aeef38dd00ba238fd289a1fdb7 (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+dumper    prebuilt /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool09/crash-probe/DUMPBIOS.NAP
+DUMPBIOS.NAP sha256 f2b57e9764d2b83aa0470905efb681d05a1ff9e815c514530d8d854dc400a581
+card.img.manifest: image_sha256 682e7fe370cd6aa870d28ca7abebbab5a7d44a37929abe6540726f03ca62172b
+card.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool09/tosdump-37572/card.img sha256 682e7fe370cd6aa870d28ca7abebbab5a7d44a37929abe6540726f03ca62172b (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ENDED ABNORMALLY after 17 s: program crash screen (waits for a key): [crash] slot 0 Bus Error esr=0x9200004f pc=0x1a080dc far=Some(24) | Panic: Bus Error | esr=9200004f
+card after the run sha256 76549f903be34c32f193d7f09433c33969bde8fb5e9c57829f28abe4983da18c
+BIOS.BIN MISSING on the card
+BIOS.LOG MISSING on the card
+total     31 s
+result    FAILED: program crash screen (waits for a key): [crash] slot 0 Bus Error esr=0x9200004f pc=0x1a080dc far=Some(24) | Panic: Bus Error | esr=9200004f; no BIOS.BIN from the run

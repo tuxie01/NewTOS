@@ -1,0 +1,7 @@
+DUMPBIOS build c686, record format 3
+pointer 8 bytes, word order 2
+BIOS.TSV: 51 cases, CRC 09C71B80
+disk table: test drive C:, 3 preludes
+running 51 cases
+all 51 cases ran
+BIOS.BIN: 51 records, 16352 bytes

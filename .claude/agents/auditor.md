@@ -169,12 +169,16 @@ measured verdict, do not take it.
    `docs/analysis/ORACLE.md` §6 (cases, profiles, expected hashes, command);
    every profile you use must report OK; an audit with disk cases also runs
    the disk-profile canary (§6, "Canary of the disk profile"). Then run one case table on NewTOS
-   at the audited commit: until TASK/TOOL09 adds a `cargo xtask` command,
-   the procedure of
-   `measurements/measurement-2026-10-28-bios-storage-audit/method/run-dumpbios-newtos.sh`
-   (dumper from `tosdump/build-dump*-newtos.sh`, card from `tools/mkcard.sh`,
-   QEMU `raspi4b` with `-append serial=on`, BIN/LOG by `mcopy`, tosdiff);
-   copy it into your run's method directory, never edit it in place.
+   at the audited commit with one command (TASK/TOOL09):
+   `cargo xtask tosdump <dumper> <table.tsv> --tree <frozen tree> --out <run>/runs/<name> --reference <EMUTOS-…BIN>… --scratch <scratch>`.
+   Run it from the main tree (the instruments are the current ones); it
+   builds the kernel (`rpi4`, release) and the dumper in the frozen tree,
+   boots the card in QEMU `raspi4b` with `serial=on`, and writes BIN/LOG,
+   the card manifest, the kernel and image sha256 and one tosdiff per
+   reference into the run (`tosdump-run.txt`). Disk tables add `--disk`; the
+   NewTOS input check adds `--features bios-arg-trace`. The frozen tree must
+   be a fresh worktree or clone: the command refuses a `target/` copied from
+   another tree. Keep the call in your run's method directory.
 3. If the canary fails, the ROM is unidentified, or the harness does not run:
    stop with verdict **BLOCKED** and the reason.
 

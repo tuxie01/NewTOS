@@ -1,0 +1,135 @@
+measurement-2026-10-28-tool09 -- one command for a tosdump run on NewTOS (cargo xtask tosdump)
+=============================================================================================
+Developer, TASK/TOOL09, 2026-10-28. Main tree HEAD moved during the session (the lead committed
+two audit commits): runs 1-2 at c686cd7d, run 3 with the harness at d4ecde93, runs 4-6 at
+6b4e1280 -- each run's tosdump-run.txt names its commit and dirty paths. The command itself
+is uncommitted (tools/xtask/src/tosdump.rs new, tools/xtask/src/main.rs). No hardware, no real
+card, nothing flashed. Not committed.
+
+WHAT / WHY
+  Until today every NewTOS tosdump run built its own script (dumper, card, QEMU, mcopy,
+  tosdiff), and the auditor's pre-flight asked for a `cargo xtask` command that did not exist
+  (TASK/TOOL09). The command is `cargo xtask tosdump`; this run is its acceptance: bios-r1 at
+  the storage audit's commit reproduced in a tree other than the main tree, the disk round,
+  the input check with bios-arg-trace, plus the copied-target guard, the time limit and a live
+  crash screen.
+
+THE COMMAND (tools/xtask/src/tosdump.rs, module doc = the full description)
+  cargo xtask tosdump <dumper> <table.tsv> --out <dir> [--reference <BIN>]...
+        [--tree <dir>] [--features a,b] [--disk | --testdisk <img>]
+        [--scratch <dir>] [--time-limit <s>]
+  - measured tree (--tree, default the xtask's own tree): `cargo xtask build --board rpi4
+    --release [--features]` and tosdump/build-dump*-newtos.sh run IN that tree, with the
+    outer cargo/rustup variables removed (its own rust-toolchain.toml and target/ apply).
+    Its target/ must be its own: every artifact dep-info file (target/**/<artifact>.d) must
+    name an artifact under that target/, checked before and after the build. A copied
+    target/ (APFS clone of another tree) is refused with its own message.
+    Why not a separate CARGO_TARGET_DIR: the build code of every commit up to this one
+    hardcodes <tree>/target (xtask's kernel_elf_path/produce_kernel8_img,
+    kernel/embed.rs programs_dir, programs/build.sh LIB) -- with the variable set, an older
+    commit would fail to link or (in a copied tree) link stale programs.
+  - instruments from the harness tree (the xtask's): tools/mkcard.sh, tools/mktestdisk.sh,
+    tosdump/host tosdiff (make build/tosdiff), tools/biostrace-check.py.
+  - card in <scratch>/tosdump-<pid>/ with NEWDESK.INF "#R 02" + "#Z 01 <d>:\DUMP*.NAP@"
+    (byte-equal to the audits' z-dumpbios.inf / TOOL07's newdesk-d.inf, host test), booted as
+    an APFS clone (cp -c); QEMU raspi4b -no-reboot -display none -append serial=on.
+  - end: "desktop up" after the dumper (+3 s as the scripts), or with its own message on
+    [PANIC] / [EXC] / [crash] slot (crash screen), the desktop without the dumper, QEMU exit,
+    or the time limit (default 480 s); QEMU is killed in every case.
+  - --out (new or empty): BOOT-SERIAL.txt, <AREA>.BIN/.LOG, card.img.manifest (+
+    test.img.manifest), the dumper, kernel-build.log, dumper-build.log, mkcard.log,
+    tosdiff-validate.txt, tosdiff-<reference>.txt per reference, cmp/, testpart-compare.txt
+    (disk), biostrace-check.txt (bios-arg-trace), tosdump-run.txt (commit, dirty paths,
+    kernel8.img and ELF sha256, dumper build id and sha256, table sha256, manifest
+    image_sha256 and optional_missing lines verbatim, card sha256 before and after the run,
+    every result line). Scratch subdirectory deleted at the end, also on failure.
+  - exit 0 = run complete (tosdiff/checker differences are findings); non-zero = a step
+    failed, the run ended abnormally, the dumper's rc != 0, a dump was refused.
+
+METHOD (method/)
+  runs.sh <scratch>        runs 1-3 (the three calls and the clone of run 3)
+  crash-demo.sh <scratch>  run 6 (builds the crashing probe, one call)
+  run 4 and 5 were single calls from the main tree:
+    cp -c -R <scratch>/tree-c3db <scratch>/tree-c3db-copy      (after run 3)
+    cargo xtask tosdump bios tosdump/cases/bios-r1.tsv --tree <scratch>/tree-c3db-copy \
+        --out <scratch>/guard-out --scratch <scratch>           -> runs/guard-copied-target/
+    cargo xtask tosdump bios tosdump/cases/bios-r1.tsv --out runs/timelimit-head \
+        --time-limit 5 --scratch <scratch>
+  <scratch> = the session scratchpad .../scratchpad/tool09 ($CLAUDE_JOB_DIR was unset).
+
+RUNS (runs/<name>/tosdump-run.txt has every value; sha256 below are from there)
+  1 r1-argtrace-head   bios-r1, main tree c686cd7d (+ this change), --features bios-arg-trace
+      kernel8.img 7bdd79e38d800a1223cac86fd31c42e99c4a8be55f5a0f3996d91a77e851a846, DUMPBIOS c686
+      card.img.manifest image_sha256 ded46c084faf8965aa2592426c90d10e2f0a1af3538efec4a49d832bb7c7a311
+        optional_missing none
+      card after the run bc523d7db93e75da4931e73dcf67a31fd66ec77206065c2ac6ab5cf5a9e4345d
+      ended normally after 19 s, rc=0; tosdiff tt 42 of 147, falcontc 46 of 147 cases differ
+      (the same case lists as the storage audit's run); input check:
+      "RESULT  PASS: 147 calls, 172 table arguments; 0 row(s) differ; 0 argument(s) unchecked;
+      BIN 147 records cross-checked", exit 0
+  2 r2-disk-head       bios-r2, main tree c686cd7d (+ this change), --disk
+      test image built by tools/mktestdisk.sh NEWDESK.INF=<autorun D:\DUMPBIOS.NAP>:
+        test.img.manifest image_sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+        (= TOOL07's and TOOL08's test image), optional_missing none
+      card.img.manifest image_sha256 766de0bba11c57aceec444f0f7aa99cd3febd0e4fa2fb60427e5950fd8238de4
+        optional_missing none
+      card after the run d8d1902b662a0b8b0273bae2dfe2556d1265a8d959ea1e6d3aea68b781050d4c
+      ended normally after 19 s, rc=0; "testpart: identical"; fsck_msdos -n exit 0 before and
+      after; tosdiff vs EMUTOS-1a7484ab-BIOS-r2-disk: 10 of 51 cases differ (the same case
+      list as measurements/measurement-2026-10-28-tool08/runs-control/r2)
+  3 r1-c3db-clone      bios-r1 at c3db3747 (the storage audit's commit), measured in a tree
+      other than the main tree: `git clone --shared --no-checkout` of the main repository into
+      the scratch + `checkout --detach c3db3747` (clean, 0 dirty paths; the main repository is
+      not changed by this). Its target/ was empty: 0 dep-info files before, 5 after, all own.
+      kernel8.img 9e3773d258278be929248d80d573d06016527ec56b02ed45f1b2a767563b3c71
+        = the storage audit's kernel8.img, byte for byte
+      DUMPBIOS build c3db, 13a3e167f7a07eeb291489f7af0c245fc4871f3da64250fd8ff39a8fa101ffa8
+      card.img.manifest image_sha256 2a6d86b7eca78ed7fda89db6a92c1e559f858b62fa1faa00cdeecdfebad0f98e
+        optional_missing none
+      card after the run 1c518d6aed4b523555e9aeb46c7862fc4066c35128bf0353e136f631f83d35b6
+      ended normally after 19 s, rc=0
+      BIOS.BIN b6d610703ef8ace7dceae2bf3c345e56a0ebb25e4346890c1577de41ec1668dd and BIOS.LOG
+      d0836bd9a2ae587a491a89214cf52709a882a18f5c3d787156ec9090c5678e56 are byte-identical to
+      measurements/measurement-2026-10-28-bios-storage-audit/runs/NEWTOS-dumpbios/BIOS.{BIN,LOG}.
+      tosdiff: 42 (tt) / 46 (falcontc) of 147 cases differ -- the acceptance number. The two
+      outputs equal the storage audit's after the reference file name is mapped
+      (EMUTOS-1a7484ab-BIOS.BIN -> EMUTOS.BIN etc.) and blanks are ignored (diff -b: 0 lines);
+      the only textual difference is tosdiff's column padding, which follows the longer file
+      name.
+      The dumper differs from the audit's (a18538...b1a5, 219016 bytes, vs 219112 bytes):
+      sdk/libc/libc.a was built fresh in the clone and mintlib's realloc.c embeds its absolute
+      source path (strings: <scratch>/tree-c3db/sdk/libc/mintlib/mintlib/realloc.c), 96 bytes
+      longer than the main tree's. The records it writes are identical (BIN above).
+  4 guard-copied-target  an APFS clone (cp -c -R) of run 3's tree, target/ included, given as
+      --tree: refused before any build:
+      "…/tree-c3db-copy/target/debug/xtask.d belongs to another tree (artifact
+      …/tree-c3db/target/debug/xtask): this target/ was copied, …", exit 1 (stdout.txt). The
+      copy was deleted afterwards.
+  5 timelimit-head     bios-r1, main tree 6b4e1280, --time-limit 5: "ENDED ABNORMALLY after
+      6 s: time limit 5 s reached in state Booting; last serial line: [pcie] RC not present
+      …", QEMU killed, no BIN, exit 1. Card manifest image_sha256
+      2c93d7a1df644b7655bb068d3ffefe2c43d4e90f7e687a6f86a7f639f01c976a, optional_missing none;
+      after the run the same sha256 (the kernel had not reached the card).
+  6 crash-head         a prebuilt DUMPBIOS.NAP that is the XCIOFL probe of the XBIOS character
+      device audit (method/crash-demo.sh), main tree 6b4e1280: "ENDED ABNORMALLY after 17 s:
+      program crash screen (waits for a key): [crash] slot 0 Bus Error esr=0x9200004f
+      pc=0x1a080dc far=Some(24) | Panic: Bus Error | esr=9200004f", exit 1 -- the same crash
+      the audit's script only left at its time limit. Card manifest image_sha256
+      682e7fe370cd6aa870d28ca7abebbab5a7d44a37929abe6540726f03ca62172b, optional_missing none;
+      after the run 76549f903be34c32f193d7f09433c33969bde8fb5e9c57829f28abe4983da18c.
+  Every card and clone was in the scratch and is deleted; no QEMU process is left.
+
+HOST TESTS (runs/host-test.txt)
+  cargo xtask test (full): 1742 passed, 0 failed, 1 ignored (baseline 1726/0/1 + the 16 new
+  tests of tools/xtask/src/tosdump.rs: argument parsing and relative paths, dumper names,
+  scratch refusal of /tmp, the INF bytes against the two committed INF files, MBR entries,
+  serial states incl. the recorded crash log of the XBIOS character device audit and the
+  recorded normal run of TOOL08, the test-partition comparison with time-stamp
+  normalisation, dep-info provenance, the scrubbed variables, the tosdiff summary line).
+
+LIMITS
+  - QEMU raspi4b only (the command boots no other board).
+  - The dumper's own output files are the only files collected (a probe's own LOG, as in
+    run 6, is not).
+  - --tree with a pre-TOOL09 commit works (run 3) because only the harness tree runs this
+    command; the measured tree is built with its own `cargo xtask build`.

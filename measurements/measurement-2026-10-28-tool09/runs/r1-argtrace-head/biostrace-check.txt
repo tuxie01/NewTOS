@@ -1,0 +1,151 @@
+table   /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-r1.tsv: 147 cases, 0 preludes, 147 calls in issue order
+trace   /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-28-tool09/runs/r1-argtrace-head/BOOT-SERIAL.txt: 147 [biostrace] records
+caller  U0: run = its records 0..146 (seq 0..146, serial lines 59..205); 0 of its BIOS/XBIOS calls lie outside the run
+ok   line   30 case    13:0x01 Bconstat     w:0x0
+ok   line   31 case    13:0x01 Bconstat     w:0x1
+ok   line   32 case    13:0x01 Bconstat     w:0x2
+ok   line   33 case    13:0x01 Bconstat     w:0x3
+ok   line   34 case    13:0x01 Bconstat     w:0x4
+ok   line   35 case    13:0x01 Bconstat     w:0x5
+ok   line   36 case    13:0x01 Bconstat     w:0x6
+ok   line   37 case    13:0x01 Bconstat     w:0xa
+ok   line   38 case    13:0x01 Bconstat     w:0xffff
+ok   line   41 case    13:0x02 Bconin       w:0x4
+ok   line   42 case    13:0x02 Bconin       w:0x5
+ok   line   43 case    13:0x02 Bconin       w:0xa
+ok   line   44 case    13:0x02 Bconin       w:0xffff
+ok   line   47 case    13:0x03 Bconout      w:0x2 w:0x2a
+ok   line   48 case    13:0x03 Bconout      w:0x5 w:0x2a
+ok   line   49 case    13:0x03 Bconout      w:0xa w:0x41
+ok   line   50 case    13:0x03 Bconout      w:0xffff w:0x41
+ok   line   53 case    13:0x05 Setexc       w:0x2 l:0xffffffff
+ok   line   54 case    13:0x05 Setexc       w:0x21 l:0xffffffff
+ok   line   55 case    13:0x05 Setexc       w:0x100 l:0xffffffff
+ok   line   56 case    13:0x05 Setexc       w:0x101 l:0xffffffff
+ok   line   57 case    13:0x05 Setexc       w:0x102 l:0xffffffff
+ok   line   60 case    13:0x06 Tickcal      -
+ok   line   63 case    13:0x08 Bcostat      w:0x0
+ok   line   64 case    13:0x08 Bcostat      w:0x1
+ok   line   65 case    13:0x08 Bcostat      w:0x2
+ok   line   66 case    13:0x08 Bcostat      w:0x3
+ok   line   67 case    13:0x08 Bcostat      w:0x4
+ok   line   68 case    13:0x08 Bcostat      w:0x5
+ok   line   69 case    13:0x08 Bcostat      w:0x6
+ok   line   70 case    13:0x08 Bcostat      w:0x7
+ok   line   71 case    13:0x08 Bcostat      w:0xffff
+ok   line   74 case    13:0x0a Drvmap       -
+ok   line   77 case    13:0x0b Kbshift      w:0xffff
+ok   line   80 case    13:0x0c (beyond)     -
+ok   line   81 case    13:0x7f (beyond)     -
+ok   line   82 case    13:0xff (beyond)     -
+ok   line   85 case    14:0x02 Physbase     -
+ok   line   86 case    14:0x03 Logbase      -
+ok   line   87 case    14:0x04 Getrez       -
+ok   line   90 case    14:0x05 Setscreen    p:0xffffffffffffffff p:0xffffffffffffffff w:0xffff w:0xdead=0xffffffffdeaddead
+ok   line   93 case    14:0x07 Setcolor     w:0x0 w:0xffff
+ok   line   94 case    14:0x07 Setcolor     w:0x1 w:0xffff
+ok   line   95 case    14:0x07 Setcolor     w:0xf w:0xffff
+ok   line   98 case    14:0x0e Iorec        w:0x0
+ok   line   99 case    14:0x0e Iorec        w:0x1
+ok   line  100 case    14:0x0e Iorec        w:0x2
+ok   line  101 case    14:0x0e Iorec        w:0x3
+ok   line  102 case    14:0x0e Iorec        w:0xffff
+ok   line  105 case    14:0x0f Rsconf       w:0xffff w:0xffff w:0xffff w:0xffff w:0xffff w:0xffff
+ok   line  106 case    14:0x0f Rsconf       w:0xfffe w:0xffff w:0xffff w:0xffff w:0xffff w:0xffff
+ok   line  109 case    14:0x10 Keytbl       p:0xffffffffffffffff p:0xffffffffffffffff p:0xffffffffffffffff
+ok   line  112 case    14:0x11 Random       -
+ok   line  115 case    14:0x12 Protobt      p:0x1a5cd20 l:0xffffffff w:0xffff w:0xffff
+ok   line  116 case    14:0x12 Protobt      p:0x1a5cd20 l:0xffffffff w:0xffff w:0x1
+ok   line  117 case    14:0x12 Protobt      p:0x1a5cd20 l:0x123456 w:0x1 w:0x0
+ok   line  118 case    14:0x12 Protobt      p:0x1a5cd20 l:0x123456 w:0x1 w:0x0
+ok   line  119 case    14:0x12 Protobt      p:0x1a5cd20 l:0xffffffff w:0x7 w:0xffff
+ok   line  122 case    14:0x15 Cursconf     w:0x5 w:0x0
+ok   line  125 case    14:0x17 Gettime      -
+ok   line  128 case    14:0x1c Giaccess     w:0x0 w:0x7
+ok   line  129 case    14:0x1c Giaccess     w:0x0 w:0xe
+ok   line  132 case    14:0x20 Dosound      p:0xffffffffffffffff
+ok   line  135 case    14:0x21 Setprt       w:0xffff
+ok   line  136 case    14:0x22 Kbdvbase     -
+ok   line  137 case    14:0x23 Kbrate       w:0xffff w:0xffff
+ok   line  138 case    14:0x25 Vsync        -
+ok   line  141 case    14:0x28 (empty)      -
+ok   line  142 case    14:0x2d (empty)      -
+ok   line  143 case    14:0x2f (empty)      -
+ok   line  144 case    14:0x30 (empty)      -
+ok   line  145 case    14:0x31 (empty)      -
+ok   line  146 case    14:0x32 (empty)      -
+ok   line  147 case    14:0x33 (empty)      -
+ok   line  148 case    14:0x34 (empty)      -
+ok   line  149 case    14:0x35 (empty)      -
+ok   line  150 case    14:0x36 (empty)      -
+ok   line  151 case    14:0x37 (empty)      -
+ok   line  152 case    14:0x38 (empty)      -
+ok   line  153 case    14:0x39 (empty)      -
+ok   line  154 case    14:0x3a (empty)      -
+ok   line  155 case    14:0x3b (empty)      -
+ok   line  156 case    14:0x3c (empty)      -
+ok   line  157 case    14:0x3d (empty)      -
+ok   line  158 case    14:0x3e (empty)      -
+ok   line  159 case    14:0x3f (empty)      -
+ok   line  160 case    14:0x41 (empty)      -
+ok   line  161 case    14:0x42 (empty)      -
+ok   line  162 case    14:0x43 (empty)      -
+ok   line  163 case    14:0x44 (empty)      -
+ok   line  164 case    14:0x45 (empty)      -
+ok   line  165 case    14:0x46 (empty)      -
+ok   line  166 case    14:0x47 (empty)      -
+ok   line  167 case    14:0x48 (empty)      -
+ok   line  168 case    14:0x49 (empty)      -
+ok   line  169 case    14:0x4a (empty)      -
+ok   line  170 case    14:0x4b (empty)      -
+ok   line  171 case    14:0x4c (empty)      -
+ok   line  172 case    14:0x4d (empty)      -
+ok   line  173 case    14:0x4e (empty)      -
+ok   line  174 case    14:0x4f (empty)      -
+ok   line  175 case    14:0x5c (empty)      -
+ok   line  178 case    14:0x29 Floprate     w:0x0 w:0xffff
+ok   line  179 case    14:0x29 Floprate     w:0x0 w:0xfffc
+ok   line  180 case    14:0x29 Floprate     w:0x2 w:0xffff
+ok   line  183 case    14:0x2c Bconmap      w:0xffff
+ok   line  184 case    14:0x2c Bconmap      w:0xfffe
+ok   line  185 case    14:0x2c Bconmap      w:0x0
+ok   line  186 case    14:0x2c Bconmap      w:0xa
+ok   line  189 case    14:0x2e NVMaccess    w:0x0 w:0x0 w:0x30 p:0x1a5cd20
+ok   line  190 case    14:0x2e NVMaccess    w:0x0 w:0x0 w:0x0 p:0x1a5cd20
+ok   line  191 case    14:0x2e NVMaccess    w:0x0 w:0xffff w:0x1 p:0x1a5cd20
+ok   line  192 case    14:0x2e NVMaccess    w:0x0 w:0x2f w:0x2 p:0x1a5cd20
+ok   line  193 case    14:0x2e NVMaccess    w:0x0 w:0x0 w:0x1 p:0x0
+ok   line  194 case    14:0x2e NVMaccess    w:0x3 w:0x0 w:0x1 p:0x1a5cd20
+ok   line  197 case    14:0x40 Blitmode     w:0xffff
+ok   line  200 case    14:0x51 EgetShift    -
+ok   line  201 case    14:0x52 EsetBank     w:0xffff
+ok   line  202 case    14:0x53 EsetColor    w:0x0 w:0xffff
+ok   line  203 case    14:0x53 EsetColor    w:0xf w:0xffff
+ok   line  204 case    14:0x53 EsetColor    w:0xff w:0xffff
+ok   line  205 case    14:0x55 EgetPalette  w:0x0 w:0x10 p:0x1a5cd20
+ok   line  206 case    14:0x55 EgetPalette  w:0xf0 w:0x10 p:0x1a5cd20
+ok   line  207 case    14:0x56 EsetGray     w:0xffff
+ok   line  208 case    14:0x57 EsetSmear    w:0xffff
+ok   line  211 case    14:0x58 VsetMode     w:0xffff
+ok   line  212 case    14:0x59 VgetMonitor  -
+ok   line  213 case    14:0x5b VgetSize     w:0x1c
+ok   line  214 case    14:0x5e VgetRGB      w:0x0 w:0x10 p:0x1a5cd20
+ok   line  215 case    14:0x5f Vfixmode     w:0x1c
+ok   line  218 case    14:0x67 Dsp_GetWordSize -
+ok   line  219 case    14:0x6a Dsp_Available p:0x1a5cd20 p:0x1a5d120
+ok   line  220 case    14:0x6a Dsp_Available p:0x1a5cd20 p:0x1a5d120
+ok   line  221 case    14:0x72 Dsp_GetProgAbility -
+ok   line  222 case    14:0x75 Dsp_InqSubrAbility w:0x0
+ok   line  223 case    14:0x77 Dsp_Hf0      w:0xffff
+ok   line  224 case    14:0x78 Dsp_Hf1      w:0xffff
+ok   line  225 case    14:0x79 Dsp_Hf2      -
+ok   line  226 case    14:0x7a Dsp_Hf3      -
+ok   line  227 case    14:0x7d Dsp_HStat    -
+ok   line  230 case    14:0x82 Soundcmd     w:0x0 w:0xffff
+ok   line  231 case    14:0x82 Soundcmd     w:0x1 w:0xffff
+ok   line  232 case    14:0x82 Soundcmd     w:0x6 w:0xffff
+ok   line  233 case    14:0x88 Buffoper     w:0xffff
+ok   line  234 case    14:0x8c Sndstatus    w:0x0
+ok   line  235 case    14:0x8d Buffptr      l:0x1a5cd20
+ok   line  238 case    14:0x8e (beyond)     -
+RESULT  PASS: 147 calls, 172 table arguments; 0 row(s) differ; 0 argument(s) unchecked; BIN 147 records cross-checked

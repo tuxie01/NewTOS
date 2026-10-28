@@ -1,6 +1,6 @@
 # TOOL09 — Ein Befehl fuer einen tosdump-Lauf auf NewTOS
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Werkzeug (Messablauf) — Anwenderentscheidung 2026-10-28
+Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL09-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Werkzeug (Messablauf) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt
 

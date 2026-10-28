@@ -113,6 +113,9 @@ mod programs_tests;
 /// TOOL04 — the fast and the full tier of `xtask test`.
 mod test_tiers;
 
+/// TOOL09 — one tosdump case table on NewTOS in one command.
+mod tosdump;
+
 /// ARCH03 E8b — the loader's ELF parser, compiled here by path (it is pure,
 /// `no_std`, dependency-free) so `xtask prgflags` reads the PRGFLAGS note
 /// exactly the way the kernel does.
@@ -144,6 +147,7 @@ fn main() -> ExitCode {
         "prgflags" => cmd_prgflags(&rest),
         "run" => cmd_run(&rest),
         "test" => cmd_test(&rest),
+        "tosdump" => tosdump::cmd(&workspace_root(), &rest),
         "help" | "--help" | "-h" => {
             print_usage();
             Ok(())
@@ -233,6 +237,24 @@ Commands:
                                    without the doctests and the
                                    integration tests listed as full-only
                                    (test_tiers.rs, TOOL04), named at the end
+  tosdump <dumper> <table.tsv> --out <dir> [--reference <BIN>]...
+          [--tree <dir>] [--features a,b] [--disk | --testdisk <img>]
+          [--scratch <dir>] [--time-limit <s>]
+                                 — one tosdump run on NewTOS (TOOL09): kernel
+                                   (rpi4, release) and dumper (bios|vdi|aes|
+                                   rast, or a DUMP*.NAP path) built in the
+                                   measured tree (--tree, default this one;
+                                   its target/ must be its own), card by
+                                   tools/mkcard.sh in the scratch (--scratch
+                                   or $CLAUDE_JOB_DIR/tmp), QEMU raspi4b with
+                                   serial=on until the desktop is up again
+                                   (panic/crash end the run), BIN/LOG,
+                                   manifests, sha256 and tosdiff against each
+                                   --reference into <dir>; --disk/--testdisk:
+                                   the disk round (TOOL07) with the test-
+                                   partition comparison; --features
+                                   bios-arg-trace adds the input check
+                                   (tools/biostrace-check.py, TOOL08)
   help
 "
     );

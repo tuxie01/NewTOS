@@ -1,0 +1,31 @@
+command   cargo xtask tosdump bios tosdump/cases/bios-r1.tsv --out /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-28-tool09/runs/timelimit-head --time-limit 5 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool09
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    6b4e12806ff3f38b0d1a436f88bf880ac941aacd
+dirty     4 path(s) in git status --porcelain
+   M TASK/MEM12.md
+   M tools/xtask/src/main.rs
+  ?? measurements/measurement-2026-10-28-tool09/
+  ?? tools/xtask/src/tosdump.rs
+harness commit 6b4e12806ff3f38b0d1a436f88bf880ac941aacd
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-r1.tsv sha256 231f2dfe73e5a80628167b216a66fe6475992b9b3a692b9025a92e8d6f3b2bf8
+target/   own (8 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (8 artifact dep-info files checked after the build)
+kernel8.img sha256 09a5db64998e0561d336f5397812808256f0cc9ec54bfd7c4ade365db17baa1b
+kernel ELF  sha256 155f8bb21179a5f1d2deab3707be1f4e8355c4aeef38dd00ba238fd289a1fdb7 (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id 6b4e
+DUMPBIOS.NAP sha256 b0aaf1be3216251002b0991798341fd184888610ada13201f7dafc8a7d5e0c90
+card.img.manifest: image_sha256 2c93d7a1df644b7655bb068d3ffefe2c43d4e90f7e687a6f86a7f639f01c976a
+card.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool09/tosdump-37039/card.img sha256 2c93d7a1df644b7655bb068d3ffefe2c43d4e90f7e687a6f86a7f639f01c976a (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 5 s
+run       ENDED ABNORMALLY after 6 s: time limit 5 s reached in state Booting; last serial line: [pcie] RC not present (no response at RC_BASE); USB disabled
+card after the run sha256 2c93d7a1df644b7655bb068d3ffefe2c43d4e90f7e687a6f86a7f639f01c976a
+BIOS.BIN MISSING on the card
+BIOS.LOG MISSING on the card
+total     22 s
+result    FAILED: time limit 5 s reached in state Booting; last serial line: [pcie] RC not present (no response at RC_BASE); USB disabled; no BIOS.BIN from the run
