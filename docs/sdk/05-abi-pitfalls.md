@@ -16,22 +16,22 @@ and the argument carrier (`tos-api/src/trap.rs`):
 
 | Item | Value | Source |
 |------|-------|--------|
-| GEMDOS | `svc #1` | `trap.rs:22-35`, `TrapClass::from_imm` `:40-48` |
+| GEMDOS | `svc #1` | `tos-api/src/trap.rs:28@Gemdos`, `TrapClass::from_imm` `tos-api/src/trap.rs:42@from_imm` |
 | GEM (VDI + AES) | `svc #2` | same |
 | BIOS | `svc #13` | same |
 | XBIOS | `svc #14` | same |
-| function id | `x8`, low 16 bits significant | `trap.rs:60-61`, `:67-71`; `exceptions.rs:284` (`frame.gpr[8] as u16`) |
-| arguments | `x0..x7`, left to right, one register per argument | `trap.rs:57-59`, `exceptions.rs:326-338` |
-| WORD arguments | the kernel reads the low 16 bits (`arg_i16`/`arg_u16`), LONGs the low 32 (`arg_i32`), pointers all 64 (`arg_u64`) | `trap.rs:73-102` |
-| result | `x0`, a sign-extended `i64` of the TOS LONG; BIOS `Getbpb` returns a full 64-bit pointer | `exceptions.rs:359-362`, `:434` |
-| GEM trap | `x0` = selector (`115` VDI, `200` AES), `x1` = parameter block of native pointers (VDI: contrl,intin,ptsin,intout,ptsout; AES: control,global,intin,intout,addrin,addrout) | `exceptions.rs:363-392`, `sdk/gemlib/overlay/_gc_aes.c:9-24`, `_gc_vdi.c:9-24` |
-| GEM trap result | VDI: `flip_y` zero-extended in `x0`; AES: `0`; selector `−1`: `0` (no jsr-able dispatcher exists — documented deviation); any other selector (e.g. the `−2` GDOS probe): `x0` **unchanged** | `exceptions.rs:363-431` |
-| registers preserved | `x1..x30` are saved on entry and restored before `eret`; only `x0` is rewritten with the result | `kernel/src/arch/aarch64/exception_vectors.s:25-46`, `:51-71` |
-| unknown `svc` immediate | `EINVFN` in `x0` | `exceptions.rs:270-277` |
-| frame-mutating GEMDOS calls | `Pterm`/`Pterm0`/`Ptermres`/`Pexec`/`Pwait`/`Psigreturn` are dispatched before the table | `exceptions.rs:283-318` |
+| function id | `x8`, low 16 bits significant | `tos-api/src/trap.rs:63@func`, `tos-api/src/trap.rs:86@func_id`; `kernel/src/arch/aarch64/exceptions.rs:383@func` (`frame.gpr[8] as u16`) |
+| arguments | `x0..x7`, left to right, one register per argument | `tos-api/src/trap.rs:61@regs`; `kernel/src/arch/aarch64/exceptions.rs:448@TrapArgs` |
+| WORD arguments | the kernel reads the low 16 bits (`arg_i16`/`arg_u16`), LONGs the low 32 (`arg_i32`), pointers all 64 (`arg_u64`) | `tos-api/src/trap.rs:92@arg_i16`, `tos-api/src/trap.rs:104@arg_i32`, `tos-api/src/trap.rs:110@arg_u64` |
+| result | `x0`, a sign-extended `i64` of the TOS LONG (`docs/COMPATIBILITY.md` section "LONG results in `x0`: sign-extended"; the listed deviations there excepted); BIOS `Getbpb` returns a full 64-bit pointer (pointers lie below 2 GiB) | `kernel/src/arch/aarch64/exceptions.rs:504@result`, written to `x0` at `kernel/src/arch/aarch64/exceptions.rs:758@result` |
+| GEM trap | `x0` = selector (`115` VDI, `200` AES), `x1` = parameter block of native pointers (VDI: contrl,intin,ptsin,intout,ptsout; AES: control,global,intin,intout,addrin,addrout) | `kernel/src/arch/aarch64/exceptions.rs:516@Gem`, `kernel/src/arch/aarch64/exceptions.rs:525@dispatch_in`, `kernel/src/arch/aarch64/exceptions.rs:532@AesCallOutcome`; `sdk/gemlib/overlay/_gc_aes.c:32@x0`, `sdk/gemlib/overlay/_gc_vdi.c:38@x0` |
+| GEM trap result | VDI: `flip_y` zero-extended in `x0`; AES: `0`; selector `−1`: `0` (no jsr-able dispatcher exists — documented deviation); any other selector (e.g. the `−2` GDOS probe): `x0` **unchanged** | `kernel/src/arch/aarch64/exceptions.rs:509@flip_y`, `kernel/src/arch/aarch64/exceptions.rs:532@AesCallOutcome`, `kernel/src/arch/aarch64/exceptions.rs:558@GEM_SEL_ADDR_QUERY`, `kernel/src/arch/aarch64/exceptions.rs:573@gpr` |
+| registers preserved | `x1..x30` are saved on entry and restored before `eret`; only `x0` is rewritten with the result | `kernel/src/arch/aarch64/exception_vectors.s:25@stp`, `kernel/src/arch/aarch64/exception_vectors.s:71@ldp`, `kernel/src/arch/aarch64/exception_vectors.s:73@eret` |
+| unknown `svc` immediate | `EINVFN` in `x0` | `kernel/src/arch/aarch64/exceptions.rs:373@EINVFN` |
+| frame-mutating GEMDOS calls | `Pterm`/`Pterm0`/`Ptermres`/`Pexec`/`Pwait`/`Psigreturn` are dispatched before the table | `kernel/src/arch/aarch64/exceptions.rs:378@Pterm`, `kernel/src/arch/aarch64/exceptions.rs:395@func`, `kernel/src/arch/aarch64/exceptions.rs:417@func` |
 
 The clean-room helpers in `sdk/include/newtos.h` and the retargeted mintlib
-macros in `sdk/libc/overlay/include/mint/osbind.h:119-160` are direct
+macros in `sdk/libc/overlay/include/mint/osbind.h:133-134@svc` are direct
 transcriptions of this table. `docs/ARCHITECTURE.md:48-54` states the same
 for `svc #1/#13/#14` but does not mention `svc #2` (a documentation gap, see
 the report).
@@ -66,7 +66,7 @@ The whole pool is mapped user-read/write/execute; the image span (BSS
 included) is zeroed before the image is copied, the rest of the TPA only
 without `PF_FASTLOAD` (EmuTOS `kpgmld`). Every user address is below 2 GiB (plan
 invariant I2) — which is why the 32-bit fields of the classic TOS structures
-can hold a NewTOS pointer (`sdk/gemlib/overlay/gem.h:62-64`, `sdk/libc/overlay/include/mint/basepage.h:16-17`).
+can hold a NewTOS pointer (`sdk/gemlib/overlay/gem.h:62-64@USER_TPA_MAX_VA`, `sdk/libc/overlay/include/mint/basepage.h:17@NewTOS`).
 
 The basepage the loader writes is the classic 256-byte layout with 4-byte
 fields (`loader.rs` `populate_basepage`; kernel struct
@@ -95,10 +95,10 @@ verbatim (length byte first).
 | Resource | How | Limit |
 |----------|-----|-------|
 | stack | crt0 / `__libc_crtinit` keep `_stksize` bytes (mintlib default MINKEEP = 64 KiB) above the image and `Mshrink` the TPA to image + stack (`sdk/crt0.S`, `sdk/libc/newtos-arch/heap_init.c`, mintlib `sdk/libc/mintlib/mintlib/crtinit.c:154-247`); an accessory gets a `Malloc`'ed stack (`_acc_main`) | `_stksize` (mintlib's rules: `-1` keep all, `0` MINKEEP, `1/2/3` quarters, `n` bytes, `-n` bytes + own heap; env `STACKSIZE`) |
-| libc `malloc` | mintlib `__sbrk` → GEMDOS `Malloc` in hunks of 8–32 KiB (larger requests one block each) with the default `_stksize` (`_split_mem`, `sbrk.c:54-73`, `sdk/libc/overlay/mintlib/malloc.c:64-95`); with `_stksize < -1`/`-1` the own heap above the image | the pool (`PF_TTRAMMEM` → TT-RAM preferred); every hunk is one BDOS block: at most 8192 blocks per process (`mdlimit=`), no fixed system-wide MD count (MEM05, `docs/COMPATIBILITY.md`) |
+| libc `malloc` | mintlib `__sbrk` → GEMDOS `Malloc` in hunks of 8–32 KiB (larger requests one block each) with the default `_stksize` (`_split_mem`, `sdk/libc/mintlib/unix/sbrk.c:54-66@_split_mem`, `sdk/libc/overlay/mintlib/malloc.c:26-27@MINHUNK`, `sdk/libc/mintlib/unix/sbrk.c:59@Malloc`); with `_stksize < -1`/`-1` the own heap above the image | the pool (`PF_TTRAMMEM` → TT-RAM preferred); every hunk is one BDOS block: at most 8192 blocks per process (`mdlimit=`), no fixed system-wide MD count (MEM05, `docs/COMPATIBILITY.md`) |
 | GEMDOS `Malloc`/`Mxalloc` | the pool block's own address, valid in every process (ARCH03 stage 1, VA = PA; `tos-api/src/gemdos/memory.rs`) | the pool itself — no per-process window or block-table limit any more |
 | kernel structures returned by pointer | published read-only into the window (ADR-023): `Getbpb`, `Getmpb`; screen memory published read/write, uncached: `Physbase`, `Logbase` | see B3 for what is still not published |
-| system variables, OSHEADER, cookie jar | materialised in page 0 of the TPA at the classic addresses (`loader.rs:861` `populate_sysvars`) | read-only in substance: the cookie mirror is rewritten from the kernel jar on every change (`loader.rs:1057-1100`); writes to the mirror do not reach the kernel |
+| system variables, OSHEADER, cookie jar | materialised in page 0 of the TPA at the classic addresses (`tos-api/src/bdos/process/loader.rs:1124@populate_sysvars`) | read-only in substance: the cookie mirror is rewritten from the kernel jar on every change (`tos-api/src/bdos/process/loader.rs:1367@refresh_cookie_mirrors`); writes to the mirror do not reach the kernel |
 
 ---
 
@@ -117,8 +117,8 @@ therefore the wrong shape on LP64.
 | Structure | m68k → LP64 size with pristine mintlib | What broke | Fixed in |
 |-----------|-----------------------------------------|-----------|----------|
 | `BASEPAGE` | 256 → 376; `p_env` moves from 0x2C to 88 | every field after `p_lowtpa` misread by a program using `_base->…` (fixed as a *latent* trap before a port hit it: commit `ff67aa6`, "Fixes the latent lp64-tos-struct-trap for readers") | `sdk/libc/overlay/include/mint/basepage.h` — every field `__UINT32_TYPE__`/`__INT32_TYPE__`, `_Static_assert` on `p_hitpa@4`, `p_tbase@8`, `p_env@0x2c`, `sizeof == 256` (`:35-64`) |
-| `_DTA` | 44 → 48; `dta_size` widens, `dta_name` moves 30 → 34 | every filename returned by `Fsfirst`/`Fsnext` shifted by 4 bytes (QED reads the DTA directly) | `ostruct.h:70-102` — `dta_size` is `__INT32_TYPE__`, struct `packed`, offsets pinned to `makbuf` (`tos-api/src/bdos/fs/find.rs`) |
-| `_DISKINFO` | 16 → 32 | TeraDesk's drive info showed garbage: `b_free` read `(b_total << 32) \| b_free`, `b_secsiz`/`b_clsiz` read uninitialised stack (`TASK/T01.md`) | `ostruct.h:22-53` — four `__UINT32_TYPE__`, `packed`, pinned to the kernel writer `tos-api/src/bdos/fs/drive.rs` (`5a5820b`, 2026-09-17) |
+| `_DTA` | 44 → 48; `dta_size` widens, `dta_name` moves 30 → 34 | every filename returned by `Fsfirst`/`Fsnext` shifted by 4 bytes (QED reads the DTA directly) | `sdk/libc/overlay/include/mint/ostruct.h:70-92@_DTA` — `dta_size` is `__INT32_TYPE__`, struct `packed`, offsets pinned to `makbuf` (`tos-api/src/bdos/fs/find.rs`) |
+| `_DISKINFO` | 16 → 32 | TeraDesk's drive info showed garbage: `b_free` read `(b_total << 32) \| b_free`, `b_secsiz`/`b_clsiz` read uninitialised stack (`TASK/T01.md`) | `sdk/libc/overlay/include/mint/ostruct.h:22-47@_DISKINFO` — four `__UINT32_TYPE__`, `packed`, pinned to the kernel writer `tos-api/src/bdos/fs/drive.rs` (`5a5820b`, 2026-09-17) |
 
 **Symptom** in general: fields read as two adjacent 32-bit values fused into
 one, or as stack garbage; filenames shifted; a pointer that is
@@ -146,7 +146,7 @@ Three of them are read by a built application today
 | typedef | m68k → LP64 | Reader | State |
 |---------|-------------|--------|-------|
 | `OSHEADER` | 48 → 96 | TeraDesk `gettos.c` (`_sysbase->os_version`), apitest T04 | correct **by accident**: only `os_entry`/`os_version` at offsets 0/2 precede the first pointer; everything from `reseth` on is shifted |
-| `MFDB` | 20 → 24 | TeraDesk, QED via cflib | correct: the kernel decodes the MFDB at the caller's ABI width (`tos-api/src/vdi/raster.rs:109-117`); `fd_addr` is a real pointer and cannot be pinned to 32 bits |
+| `MFDB` | 20 → 24 | TeraDesk, QED via cflib | correct: the kernel decodes the MFDB at the caller's ABI width (`tos-api/src/vdi/raster.rs:93-105@read`); `fd_addr` is a real pointer and cannot be pinned to 32 bits |
 | `_KEYTAB` | 28 → 56 | TeraDesk `xdevent.c`, QED via cflib `nkcc` | correct: `Keytbl` writes each pointer field at the caller's width into the process's own KEYTBL area (`tos-api/src/xbios/keytbl.rs`) |
 
 `_MD`/`_MPB` (behind `Getmpb`), `_KBDVECS`, `_IOREC`, `_MAPTAB`, `_BCONMAP`,
@@ -172,7 +172,7 @@ COOKIE) = 16`, the stride scan takes 3 steps from `0x5F0` and stops at
 
 **Cause**: two independent LP64 effects. (1) An **8-byte read of `$5A0`**
 fuses `_p_cookies` with `ramtop`@`$5A4`: measured `0x3BE00000000005F0`. (2) A
-jar slot is two 32-bit LONGs = 8 bytes (`loader.rs:1033-1055` writes
+jar slot is two 32-bit LONGs = 8 bytes (`tos-api/src/bdos/process/loader.rs:1315-1316@wr_long` writes
 `wr_long(tag); wr_long(value)` per slot), but `struct { long name; long
 value; }` is **16** bytes on LP64, so `cookie++` reads every second slot and
 the `{0, capacity}` terminator reads as `capacity << 32 ≠ 0`.
@@ -205,7 +205,7 @@ phys`); a `&'static` returned as-is is unreachable from EL0. Measured 2026-09-05
 | `Getbpb` (BIOS 7), `Getmpb` (BIOS 0) | user VA, read-only page (`PROT_PR`) — measured `0x00401024`, `0x00402000` | 2026-09-05 |
 | `Physbase` (XBIOS 2), `Logbase` (XBIOS 3) | user VA of the **whole** screen memory (both pages), read/write, **Normal Non-Cacheable** — plain stores land in DRAM, no cache maintenance needed; measured `0x00400000` | 2026-09-05 |
 | `Keytbl` (XBIOS 16) | user VA — the tables are copied into the process's page 0 at `0x768` | never affected |
-| `Kbdvbase` (XBIOS 34) | **still a kernel VA** (`tos-api/src/xbios/system.rs:131-134`); the kernel does not dispatch through those vectors, so publishing it writable "would be a promise without cover" | open |
+| `Kbdvbase` (XBIOS 34) | user VA (full 64 bits) of the `midivec` slot of the process's own table in a private read-write page (`tos-api/src/xbios/kbdvecs.rs:195-203@kbdvbase`); the kernel dispatches `kbdvec` through that table (`tos-api/src/xbios/kbdvecs.rs:223@kbdvec_of`) | KEYS02 |
 | `Iorec` (XBIOS 14) | not implemented (returns the function number) | open |
 | `Bconmap` | not a pointer (`0x2C`) | n/a |
 
@@ -213,9 +213,9 @@ phys`); a `&'static` returned as-is is unreachable from EL0. Measured 2026-09-05
 pointer against the process window (`< 32 MiB`) before use — apitest's
 `el0_readable()` does exactly that and reports instead of faulting. When
 writing to the screen through `Physbase`, the pixel format is the
-framebuffer's own **XRGB8888**, not bit-planes (`sdk/examples/physbase.c:24-29`),
+framebuffer's own **XRGB8888**, not bit-planes (`sdk/examples/physbase.c:21@XRGB8888`),
 and the page size for double buffering has to be probed with
-`Setscreen`/`Logbase` (`sdk/examples/scrflip.c:14-25`) — there is no
+`Setscreen`/`Logbase` (`sdk/examples/scrflip.c:14-16@Setscreen`) — there is no
 `Vgetsize` (open question, `docs/STATUS.md` Recent Decisions 2026-09-05, "Offen").
 
 ### B4. `Super`, `Supexec`, `SuperToUser`
@@ -278,7 +278,7 @@ document it was started with.
 **Cause (until 2026-09-25)**: the libc crt0 passed a hardcoded `argc = 1`,
 `argv = {"", NULL}`, because mintlib's `crtinit.c` — which parses `p_cmdlin`
 in `parseargs()` — is m68k assembly in its other half and excluded
-(`sdk/libc/expected-failures.txt:27`). Every libc-linked program therefore saw
+(`sdk/libc/expected-failures.txt:27@crtinit`). Every libc-linked program therefore saw
 no arguments whatever the launcher handed it; a file dropped on QED opened an
 empty editor (TASK/PORT01, `measurements/measurement-2026-09-25-port01/`).
 
@@ -301,8 +301,8 @@ the program's path), as mintlib's `parseargs()` does — including its in-place
 rewrite of the block (cut at `ARGV=`, `"PATH=\0C:\\\0"` joined to
 `"PATH=C:\\"`), see [07](07-mintlib-limits.md) §5. A program that must work with either route can still
 read the tail itself from the basepage (`p_cmdlin` at offset 0x80: length
-byte, then text — `loader.rs:680-691`) or use `shel_read`
-(`sdk/apps/chaintest/chaintest.c:41-47` shows both directions, including a
+byte, then text — `tos-api/src/bdos/process/loader.rs:746-752@p_cmdlin`) or use `shel_read`
+(`sdk/apps/chaintest/chaintest.c:41@shel_read`, `:56@shel_write` shows both directions, including a
 `shel_write` that passes a tail). For a benchmark that needs parameters, build
 one binary per configuration (CoreMark's `CORE.NCP`/`COREVAL.NCP`).
 
@@ -311,9 +311,9 @@ one binary per configuration (CoreMark's `CORE.NCP`/`COREVAL.NCP`).
 **Symptom**: a pointer round-tripped through `uintptr_t` loses its upper
 half; CoreMark's `check_data_types()` would report a size error.
 
-**Cause**: `sdk/libc/mintlib/include/stdint.h:132-143` defines `intptr_t`/
+**Cause**: `sdk/libc/mintlib/include/stdint.h:132-143@intptr_t` defines `intptr_t`/
 `uintptr_t` as `int`/`unsigned int` unless `__MSHORT__`; with `-nostdinc -I$MINT
-… -isystem $RES` that header shadows clang's (`core_portme.h:182-198`).
+… -isystem $RES` that header shadows clang's (`sdk/overlays/coremark/newtos/core_portme.h:185-187@stdint`).
 
 **Fixed (TASK/PORT10, 2026-10-02)**: the overlay
 `sdk/libc/overlay/include/stdint.h` makes `intptr_t`/`uintptr_t` `long`/
@@ -331,8 +331,8 @@ and are the LP64 values since (`sdk/libc/tests/lp64-limits.sh`, all
 ### B8. Resource files: format, alignment, and who loads them
 
 **Symptom** 1: `rsrc_load` fails on a classic Atari `.RSC`.
-**Cause**: the kernel loads only the native NRSC format (`tos-api/src/aes/resource.rs:440-460`
-checks the `NRSC` magic at `:458`). **Do**: `python3 tools/mkrsc.py convert app.rsc
+**Cause**: the kernel loads only the native NRSC format (`tos-api/src/aes/resource.rs:1049@nrsc_header_offset`
+checks the `NRSC` magic at `tos-api/src/aes/resource.rs:1052@NRSC`). **Do**: `python3 tools/mkrsc.py convert app.rsc
 app.rsc` and ship the converted file beside the `.NAP`.
 
 **Symptom** 2 (2026-09-11): TeraDesk panicked at start in a debug kernel —
@@ -341,7 +341,7 @@ in a release kernel the same access ran as undefined behaviour.
 **Cause**: the converter interned strings and raster data into one section
 without alignment, so an odd-length label pushed the next icon raster to an
 odd offset (36 of 76 rasters in `icons.rsc`); every raster consumer reads
-16-bit words (`tools/mkrsc.py:87-100`, `docs/STATUS.md` 2026-09-11,
+16-bit words (`tools/mkrsc.py:117@RASTER_ALIGN`, `docs/STATUS.md` 2026-09-11,
 `docs/HW-TEST-LOG.md:129`). **Do**: regenerate with the current `mkrsc.py`
 (it pads to `RASTER_ALIGN = 2` and asserts the result); the kernel side now
 reads rasters unaligned as well.
@@ -349,7 +349,7 @@ reads rasters unaligned as well.
 **Symptom** 3: an application with its **own** resource loader (TeraDesk
 `xrsrc_load` for `icons.rsc`) reads garbage from a kernel-format file.
 **Do**: convert those with `mkrsc.py convert --rshdr` (native-RSHDR onto LP64
-structs, `build-teradesk.sh:189-205`). A new-format `CICONBLK` file (colour
+structs, `sdk/apps/build-teradesk.sh:198-199@rsc_load`). A new-format `CICONBLK` file (colour
 icons) is for the **kernel's** `rsrc_load` (`mkrsc.py convert`, NRSC v13,
 since A41) — `--rshdr` refuses it.
 
@@ -357,7 +357,7 @@ since A41) — `--rshdr` refuses it.
 application faults with a wild pointer built from the bytes `"NRSC"`.
 **Cause**: the application parses the image behind `ap_rscmem`
 (`aes_global[7]`) as a classic `RSHDR` — TeraDesk's `xrsrc_gaddr`
-(`sdk/apps/teradesk/rsc_load.c:496-541`) does that on the AES-loaded `cicons.rsc` — because
+(`sdk/apps/teradesk/rsc_load.c:496@xrsrc_gaddr`) does that on the AES-loaded `cicons.rsc` — because
 that is what EmuTOS leaves there (`rs_readit`, `gemrslib.c:787`: the loaded
 file, `RSHDR` at its head). A blob converted before A41 part 2 (NRSC v1–v12)
 has the NRSC header at its first byte instead. **Do**: reconvert with the
@@ -405,7 +405,7 @@ this (TASK/SDK01 H).
 Also on LP64: `OBJECT` is 32 bytes with a 64-bit `ob_spec` (`docs/COMPATIBILITY.md:232-246`),
 and gemlib's `BFOBSPEC` bit-field is declared in **reverse** order on a
 little-endian target so `framesize`/`framecol`/… land on the documented bits
-(`sdk/gemlib/overlay/mt_gem.h.in:2053-2100`; without it TeraDesk drew 111 red
+(`sdk/gemlib/overlay/mt_gem.h.in:2093@BFOBSPEC`; without it TeraDesk drew 111 red
 lines instead of a 2-pixel corner).
 
 ### B9. `AESGLOBAL` is 15 WORDs with 4-byte pointer fields
@@ -416,11 +416,11 @@ lines instead of a 2-pixel corner).
 **Cause**: gemlib's pristine accessors read `*(long *)&global[3]`,
 `*(OBJECT ***)&global[5]`, `*(void **)&global[7]` — 8 bytes each on LP64,
 overlapping inside a 30-byte array whose fields are 4 bytes
-(`sdk/gemlib/overlay/gem.h:40-77`).
+(`sdk/gemlib/overlay/gem.h:56-57@_AESrscfile`).
 
 **Do**: use gemlib's macros — the overlay narrows them to 4-byte reads and
 turns the two pointer fields into explicit setters
-(`_AESrscfile_set`/`_AESrscmem_set` in `sdk/gemlib/overlay/gem.h:79-125`, `mt_AESrscfile_set` in `mt_gem.h.in:2524-2575`). Never
+(`_AESrscfile_set`/`_AESrscmem_set` in `sdk/gemlib/overlay/gem.h:106@_AESrscfile_set`, `mt_AESrscfile_set` in `sdk/gemlib/overlay/mt_gem.h.in:2564@mt_AESrscfile_set`). Never
 declare your own `long` view of `global[]`. Related: the AES reports version
 `0x0340`, so gemlib/cflib never issue `appl_getinfo` (they gate on
 `>= 0x0400`); do not rely on AES-4 queries (`docs/analysis/qed-launch-findings-log.md`, F1).
@@ -430,12 +430,12 @@ declare your own `long` view of `global[]`. Related: the AES reports version
 **Symptom**: a window title of garbage, or a compile error passing a `char *`
 as `short`.
 
-**Cause**: gemlib's `wind_set` takes four `short`s (`sdk/gemlib/gemlib-0.44.0/mt_gem.h:2456`); the
+**Cause**: gemlib's `wind_set` takes four `short`s (`sdk/gemlib/gemlib-0.44.0/mt_gem.h:2456@mt_wind_set`); the
 m68k idiom of splitting a 32-bit pointer across two WORDs does not carry an
 8-byte pointer.
 
 **Do**: use the pointer-typed variants `wind_set_str` / `wind_set_ptr` /
-`wind_set_ptr_int` / `wind_set_grect` (`sdk/gemlib/gemlib-0.44.0/mt_gem.h:2468,2470,2474-2475`).
+`wind_set_ptr_int` / `wind_set_grect` (`sdk/gemlib/gemlib-0.44.0/mt_gem.h:2468@mt_wind_set_grect`, `:2470@mt_wind_set_str`, `:2474-2475@mt_wind_set_ptr`).
 Under A81 these bindings pass the pointer through `addr_in[0]` — the
 *native* NewTOS convention, the same slot every other AES pointer-class
 argument uses (`docs/api/aes/window-graphics.md`, "Pointers in
@@ -462,7 +462,7 @@ one 8-byte `*(const char**)(aes_intin+4) = 0` store zeroing the wider
 they are silently harmless — not because the overlap itself is benign, but
 because the value written happens to match what the pointer's upper half
 already is for any EL0 address on the current stage-1 boot tables
-(identity-mapped only in `0..4 GiB`, `kernel/src/arch/aarch64/el0.rs:16-18`).
+(identity-mapped only in `0..4 GiB`, `kernel/src/arch/aarch64/el0.rs:16-18@identity`).
 All three are fixed by the A81 overlay move to `addr_in[0]` + `int_in[2]`.
 
 ### B11. Bit-fields, `int` alignment, and big-endian word tricks
@@ -471,11 +471,11 @@ All three are fixed by the A81 overlay move to `addr_in[0]` + `int_in[2]`.
 half; a bit-set routine answers 25 where 1 is expected.
 
 **Cause**: `unsigned int x : 1` bit-fields make a 4-byte struct on AArch64
-(alignment 4) where m68k gcc made 2 (`sdk/overlays/teradesk/window.h:23-34`);
+(alignment 4) where m68k gcc made 2 (`sdk/overlays/teradesk/window.h:31-33@AArch64`);
 code that addresses the same bits both byte-wise and as hard-coded 32-bit
 big-endian words disagrees with itself on LP64/little-endian
-(`sdk/overlays/qed/set.c:7-50`); m68k `ror`/`swap` inline asm does not
-assemble (`sdk/libc/overlay/include/bits/byteswap.h:47-57`); bit-fields laid
+(`sdk/overlays/qed/set.c:22@TWO`); m68k `ror`/`swap` inline asm does not
+assemble (`sdk/libc/overlay/include/bits/byteswap.h:47-48@asm`); bit-fields laid
 over an `int` in big-endian order land in the wrong bits — mintlib's
 `struct __wait` made `WEXITSTATUS` 0 for every status until the overlay
 `sdk/libc/overlay/include/sys/wait.h` declared them in little-endian order
@@ -524,7 +524,7 @@ maxima 0.5–1.7). `__extenddftf2` still comes from
 
 **Cause**: `sdk/libc/mintlib/mintlib/labs.c` was `strong_alias(abs, labs)` with `abs` in another
 file; clang silently drops an alias to a symbol not defined in the same TU
-(`sdk/libc/overlay/stdlib/labs.c:1-19`).
+(`sdk/libc/overlay/stdlib/labs.c:1-3@labs`).
 
 **Do**: give the function a real body in an overlay, as `labs.c` does. Expect
 the same for any other `strong_alias`/`weak_alias` across files.
@@ -535,14 +535,14 @@ the same for any other `strong_alias`/`weak_alias` across files.
 prints scrolls text over its own window.
 
 **Cause**: a `.NCP` gets the VT52 text screen and the "press any key" pause
-(`programs/desktop/src/main.rs:482-497`, `:610`); a `.NAP` runs on the GEM screen with no
+(`kernel/src/shell_loop.rs:309@sh_chgrf`, `kernel/src/shell_loop.rs:377@sh_toalpha`); a `.NAP` runs on the GEM screen with no
 console handoff. `AUTO` programs run **before** the AES; their output is
-painted over when the desktop comes up (`kernel/src/launch.rs:216-226`,
-`tools/make-sd-image.sh:184-187`).
+painted over when the desktop comes up (`kernel/src/launch.rs:385@run_auto_folder`,
+`tools/make-sd-image.sh:198@AUTO`).
 
 **Do**: choose `.NCP` for text tools; in a `.NAP` write diagnostics to a file
 (the `Fopen`/`Fseek`/`Fwrite`/`Fclose`-per-line pattern of
-`sdk/apps/gemtest/gemtest.c:59-73` survives a hang) or to the serial console
+`sdk/apps/gemtest/gemtest.c:67@Fopen` survives a hang) or to the serial console
 via `Cconws` while debugging in QEMU.
 
 ### B15. A libc `malloc` that suddenly fails
@@ -570,11 +570,11 @@ never shows its dialog while the mouse keeps moving (ticket `TASK/H03.md`,
 bindings split a `long` argument into the two AES/VDI words by casting its
 address: `((unsigned short *)&interval)[0]` is the high word on m68k and the
 **low** word on AArch64, so the pair lands in `int_in` swapped
-(`sdk/gemlib/gemlib-0.44.0/a_evnt_timer.c:27-31`, pristine). The kernel reads
-`int_in[0]` as the low word exactly like EmuTOS (`tos-api/src/aes/event.rs:673`,
+(`sdk/gemlib/gemlib-0.44.0/a_evnt_timer.c:8@interval`, pristine). The kernel reads
+`int_in[0]` as the low word exactly like EmuTOS (`tos-api/src/aes/event.rs:1001@evnt_timer`, `tos-api/src/aes/event.rs:503@ms`,
 `references/emutos/aes/gemsuper.c:142`), so `150` becomes `150 << 16` ms.
 Bindings that use arithmetic (`interval`, `interval >> 16`,
-`sdk/gemlib/gemlib-0.44.0/a_evnt_multi.c:91-92`) are correct on every width and byte order.
+`sdk/gemlib/gemlib-0.44.0/a_evnt_multi.c:91@interval`) are correct on every width and byte order.
 
 **Do**: fix the binding in `sdk/gemlib/overlay/` with the arithmetic form
 (`sdk/gemlib/overlay/a_evnt_timer.c` is the model) and guard it with a host
@@ -620,14 +620,14 @@ own ticket: the `vex_*` vector exchange in `CONTRL[7..]`/`[9..]`
 reader of the same 8-byte shape) is `__PUREC__`-only and not compiled on
 NewTOS — cflib's `wind_get` is gemlib's `mt_wind_get`; a `union { long
 size; struct { _WORD high, low; } words; }` around `wind_get(0, WF_SCREEN,
-…)` (TeraDesk `resource.c:233-241`) gets the right low 32 bits and leaves
+…)` (TeraDesk `sdk/apps/teradesk/resource.c:240@words`, `:307@wind_get`) gets the right low 32 bits and leaves
 the upper 32 bits of the 8-byte `long` uninitialised — compare through a
 32-bit type.
 
 ### B17. Small contract differences a port may notice
 
 * `Cconws` returns the number of bytes written; EmuTOS's is `void`
-  (documented divergence D-009, `sdk/include/newtos.h:158-162`).
+  (documented divergence D-009, `sdk/include/newtos.h:159-164@Cconws`).
 * `Sversion()` measured `0x3000` in the run of 2026-09-17
   (`docs/sdk/03-first-programs.md`); `os_version` in the OSHEADER is
   `0x0404` (`docs/STATUS.md`, B1). Which GEMDOS version a TOS-4-expecting app

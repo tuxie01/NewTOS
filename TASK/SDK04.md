@@ -71,3 +71,17 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (Erhebung) + Develope
 - Zusaetzlich Byte-Reihenfolge-Annahmen in allen Ports: Unions oder
   Byte-Arrays, die als 32-Bit-Kennung gelesen werden (Cookie-, XBRA-Tags,
   `char[4]` als `long`). Erster Fund: cflib, [SDK05](SDK05.md).
+
+## Nachtrag 2026-10-29 (Zitate in `docs/sdk/05-abi-pitfalls.md` nachgezogen)
+
+- Alle Zeilenzitate verankert; die `Kbdvbase`-Zeile berichtigt (liefert die
+  EL0-VA der prozesseigenen Tabelle, der Kern dispatcht `kbdvec` darueber).
+- Offen fuer Punkt 3 (Doku): der Folgetext „never dereference a pointer from
+  `Kbdvbase`; range-check < 32 MiB“ ist vermutlich ueberholt; die Aussage, ein
+  `.NCP` bekomme ein „press any key“-Warten, ist im Code nicht zu finden (nur
+  im Absturzbildschirm) — beides gegen die Quelle pruefen.
+- Veraltete Kommentare im SDK (Code, Developer): `sdk/gemlib/overlay/_gc_aes.c`
+  und `_gc_vdi.c` nennen `handle_svc` (heute `rust_sync_handler`),
+  „x1..x29“ (gesichert werden x0..x30) und `vdi::dispatch` (heute
+  `dispatch_in`).
+
