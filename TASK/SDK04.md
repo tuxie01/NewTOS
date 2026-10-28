@@ -58,3 +58,10 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (Erhebung) + Develope
   `_IOREC`/`_KBDVECS`. Dazu `docs/sdk/05-abi-pitfalls.md` B2 berichtigen
   (TeraDesks `find_cookie` ist trotz `Setexc` funktionslos) und die
   Null-Erweiterung von Cookie-Werten durch `Getcookie` dokumentieren.
+
+## Anwenderentscheidung 2026-10-28
+
+- Fund C6 (TeraDesk `find_cookie`, `sdk/apps/teradesk/library/utility/cookie.c`)
+  wird **vor ARCH06** behoben (benannter Patch in `sdk/overlays/teradesk/`, mit
+  Messung vorher/nachher nach Punkt 2), damit die `_VDO`-Messung von ARCH06
+  den ST-Zweig misst und nicht den Schrittfehler.

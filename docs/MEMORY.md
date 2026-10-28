@@ -408,7 +408,10 @@ matters). The provisional `0x00050000` was the registered **ARAnyM** id
 measuring what TeraDesk's ST branch does on NewTOS (TASK/ARCH06.md).
 **Note for every port:** depending on signedness, `-1` reads as "below ST"
 (signed) or as "above Falcon" (unsigned: `(mch >> 16) >= 2` is true), so
-every future port is checked for numeric `_MCH` comparisons. NVRAM does not
+every future port is checked for numeric `_MCH` comparisons. `Getcookie()`
+zero-extends cookie values, so for a native LP64 port `0xFFFFFFFF` is a
+large positive value and numeric comparisons take the "above Falcon"
+hardware path (`docs/sdk/08-porting-checklist.md`). NVRAM does not
 follow from `_MCH` (EmuTOS gates it on `has_nvram`): NewTOS has none and
 answers `NVMaccess` like EmuTOS without an NVRAM chip (TASK/XBIOS10.md).
 Evidence: `docs/analysis/machine-identity-adr-proposal-2026-10-28.md`.

@@ -46,3 +46,14 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidu
   ist laut Erhebung nicht betroffen, `short hi` ergibt beidseitig -1).
 - TeraDesk findet ein spaeter gesetztes `_VDO` heute nicht (SDK04 C6): die
   `_VDO`-Messung hier zuerst gegen den 16-Byte-Schritt bewerten.
+
+## Anwenderentscheidung 2026-10-28
+
+- `Getcookie` erweitert mit Nullen: fuer native Ports ist `0xFFFFFFFF` ein
+  grosser positiver Wert, numerische `_MCH`-Vergleiche nehmen den
+  Hardwarepfad „ueber Falcon“. Eingetragen in den Nachtrag zu ADR-012 und in
+  `docs/sdk/08-porting-checklist.md` („numerische `_MCH`/`_VDO`-Vergleiche
+  pruefen“).
+- **Vor der `_VDO`-Messung** wird TeraDesks `find_cookie` (16-Byte-Schritt
+  unter LP64, SDK04 Fund C6) behoben — sonst misst die Messung den Fehler
+  statt den ST-Zweig. Teil von [SDK04](SDK04.md), vor ARCH06 in der Reihe.

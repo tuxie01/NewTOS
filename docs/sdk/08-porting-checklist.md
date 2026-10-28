@@ -61,6 +61,12 @@ Tick each line; every line points at the section that explains it.
       `_Static_assert`s → [05 B1](05-abi-pitfalls.md#b1-long-and-pointers-are-8-bytes-tos-structures-are-32-bit-on-the-wire)
 - [ ] Cookie jar accessed via `Getcookie()`/`Ssystem`, or as 4-byte reads
       with 8-byte slots → [05 B2](05-abi-pitfalls.md#b2-the-cookie-jar-at-5a0)
+- [ ] Numeric `_MCH`/`_VDO` comparisons checked. NewTOS reports
+      `_MCH = 0xFFFFFFFF` ("no Atari hardware", ADR-012 amendment
+      2026-10-28) and `Getcookie()` zero-extends, so a native port sees a
+      large positive value: `mch >= 2`, `(mch >> 16) >= 3` and the like take
+      the TT/Falcon ("above Falcon") hardware path. Patch such a test in
+      `sdk/overlays/<app>/` (user 2026-10-28)
 - [ ] No dereference of `Kbdvbase()`; returned pointers range-checked;
       screen writes assume XRGB8888 → [05 B3](05-abi-pitfalls.md#b3-kernel-addresses-vs-user-addresses)
 - [ ] `Super`/`Supexec` bracket idioms reviewed: they run, but grant no
