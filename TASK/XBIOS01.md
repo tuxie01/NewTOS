@@ -81,3 +81,25 @@ Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-xbios-char
   braucht der Fall Tasten im Ring vor dem Flush (Eingabe am Orakel und in
   QEMU). Ausserdem kennt `tools/biostrace-check.py` die Zeilen `+put`/`+set`
   nicht (kein NewTOS-Eingabe-Trace fuer diese Tabelle).
+
+## Lokalisierung (Lead, 2026-10-29, Graph nach TOOL12)
+
+- EmuTOS → NewTOS laut `cargo xtask deps <fn> --down` + `mapping.tsv`:
+  `iorec` (XBIOS 0x0E) → **ohne Gegenstueck** (Sammelzweig
+  `tos-api/src/xbios/mod.rs@dispatch`); `push_ikbdiorec` → **ohne
+  Gegenstueck** (heute `kernel/src/ikbd.rs@push_rx` in `RX_RING`);
+  `do_key_repeat` → `kernel/src/ikbd.rs@poll_repeat`; `kbd_int` →
+  `kernel/src/ikbd.rs@kbd_int`; `bconstat2` → `tos-api/src/bios/chardev.rs@bconstat`;
+  `bconin2` → `chardev.rs@bconin`, `@pack_console_key`, `@shift_fold`.
+- `--up`-Retest-Mengen (gesamt / mit Gegenstueck): `iorec` 3/2,
+  `push_ikbdiorec` 10/5, `kbd_int` 6/3, `bconstat2` 366/37, `bconin2` 359/32.
+  Ohne Gegenstueck in `bios`/`bdos` (heutiges `mapping.tsv`): `iorec`,
+  `push_ikbdiorec`, `kb_timerc_int`, `bconout0` und die Start-/
+  Erkennungsfunktionen wie in BIOS01 (`biosmain`, `bios_init`, `detect_*`, …);
+  nach TOOL17 neu klassifizieren. Der Fix ergaenzt die Zeilen fuer `iorec`
+  und `push_ikbdiorec` (Ratsche).
+- Retest praktisch: `xbios-ptr-r1.tsv`, `bios-r1.tsv`, `xbios-chardev-r1.tsv`
+  (tt/falcontc), Tastatur-Hosttests, `Bconin(2)`/`Cconin`-Pfade (BIOS11 geht
+  mit), AES-Eingabe (Desktop bis zur Menueleiste, Taste im Dialog), `Fread`
+  auf `CON:`.
+
