@@ -26,7 +26,21 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Werkzeug (Messablauf) — Anwend
    gegen die genannten Referenzen.
 2. Scratch nur in `$CLAUDE_JOB_DIR/tmp` bzw. einem uebergebenen Verzeichnis,
    nie `/tmp`; Zeitgrenze fuer den Lauf, Abbruch mit klarer Meldung.
-3. Vorschlag fuer den Wortlaut von Pre-flight 2 im Bericht (der Lead traegt
+3. Was die Audits vom 2026-10-28 an den Einzelskripten bemaengelt haben
+   (`docs/audits/2026-10-28-bios-core.md` und
+   `docs/audits/2026-10-28-xbios-chardev.md`, je Abschnitt 11): der Befehl
+   nimmt den zu messenden Baum als Parameter (gemessen wird oft in einem
+   eingefrorenen Arbeitsbaum, berichtet im Hauptbaum) und baut dort mit
+   eigenem Target-Verzeichnis, damit kopierte cargo/xtask-Artefakte mit
+   absoluten Pfaden nicht den falschen Baum bauen; Kernel-sha256 in der
+   Ausgabe. Relative Pfade fuer Dumper und Tabelle funktionieren. Ein Panic-
+   oder Absturzbildschirm beendet den Lauf mit eigener Meldung statt mit der
+   Zeitgrenze.
+4. Varianten: Plattenrunde (`MKCARD_TESTDISK`, Vergleich der Testpartition
+   wie `measurements/measurement-2026-10-28-tool07/method/compare-testpart.sh`)
+   und Eingabepruefung (`--features bios-arg-trace`, danach
+   `tools/biostrace-check.py`, TOOL08).
+5. Vorschlag fuer den Wortlaut von Pre-flight 2 im Bericht (der Lead traegt
    ein).
 
 ## Abnahme
