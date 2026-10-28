@@ -1,0 +1,8 @@
+
+running 3 tests
+test graf_handle_names_an_open_workstation_that_answers_vq_extnd ... ok
+test the_first_v_opnvwk_of_a_session_is_handle_2_and_the_session_end_frees_it ... ok
+test gsx_start_leaves_the_aes_line_and_text_setup_on_its_workstation ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

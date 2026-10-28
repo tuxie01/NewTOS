@@ -1,0 +1,21 @@
+
+running 16 tests
+test cconrs_cookdout_echo_and_backspace_over_wide_chars ... ok
+test cconrs_ctrl_x_erases_the_line ... ok
+test column_is_per_device ... ok
+test ctrl_x_flushes_the_typeahead ... ok
+test fread_line_full_keeps_the_next_key_in_the_typeahead ... ok
+test cconrs_ctrl_u_reindents_to_the_start_column ... ok
+test ctrl_c_during_output_terminates_and_flushes ... ok
+test cconrs_ctrl_r_redisplays_at_the_start_column ... ok
+test ctrl_s_pauses_cconws_until_ctrl_q ... ok
+test column_tracks_cr_bs_and_control_bytes ... ok
+test full_typeahead_rings_the_bell ... ok
+test raw_output_does_not_take_keys ... ok
+test key_typed_while_paused_is_kept ... ok
+test fwrite_to_con_expands_tabs_from_the_shared_column ... ok
+test tab_expands_to_column_8_and_16_after_prefixes ... ok
+test typeahead_keys_survive_output_and_come_back ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

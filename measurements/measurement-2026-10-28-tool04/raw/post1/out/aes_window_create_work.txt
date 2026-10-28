@@ -1,0 +1,11 @@
+
+running 6 tests
+test a_created_but_unopened_window_owns_no_rectangle_whatever_its_work_rect_holds ... ok
+test an_opened_window_still_answers_wind_calc_of_the_rectangle_it_was_opened_at ... ok
+test a_created_window_does_not_answer_wind_calc_of_its_maximum_extent ... ok
+test closing_a_never_opened_window_leaves_its_work_rect_where_the_create_found_it ... ok
+test created_after_a_sweep_answers_gl_rfull_like_the_dump ... ok
+test the_work_rect_of_a_created_window_does_not_depend_on_kind_or_maximum_extent ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

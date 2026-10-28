@@ -1,0 +1,11 @@
+
+running 6 tests
+test a_file_shorter_than_its_declared_size_is_refused ... ok
+test a_header_whose_arrays_run_past_the_blob_is_refused ... ok
+test a_resource_larger_than_the_loader_buffer_is_refused ... ok
+test a_truncated_blob_is_refused_without_writing_anywhere ... ok
+test the_complete_resource_still_loads ... ok
+test the_whole_blob_relocates_inside_itself ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

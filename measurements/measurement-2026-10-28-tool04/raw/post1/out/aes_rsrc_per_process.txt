@@ -1,0 +1,10 @@
+
+running 5 tests
+test a_childs_load_and_free_leaves_the_parents_resource_untouched ... ok
+test a_process_without_appl_init_loads_resolves_and_frees ... ok
+test appl_exit_does_not_touch_the_resource ... ok
+test a_second_load_is_selected_and_freed_the_first_stays_loaded_unselected ... ok
+test process_end_drops_only_the_dying_processs_entries ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

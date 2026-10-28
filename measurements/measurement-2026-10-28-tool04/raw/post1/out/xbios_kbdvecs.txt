@@ -1,0 +1,17 @@
+
+running 12 tests
+test aes_wait_gives_way_when_hook_bytes_are_queued ... ok
+test an_accessory_hook_is_reported_once ... ok
+test full_ring_drops_the_newest_byte ... ok
+test ikbdsys_value_for_the_repeat_stop ... ok
+test kbdvbase_is_the_processes_own_el0_table ... ok
+test keys_go_to_the_innermost_started_process_not_the_running_accessory ... ok
+test default_kbdvec_and_no_process_decode_directly ... ok
+test ssystem_kbdvec_runs_the_default_decoder ... ok
+test loader_writes_the_table_and_the_two_stubs ... ok
+test process_exit_drains_the_ring ... ok
+test hooked_kbdvec_gets_make_and_break_in_order ... ok
+test single_key_reads_give_way_without_side_effects ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

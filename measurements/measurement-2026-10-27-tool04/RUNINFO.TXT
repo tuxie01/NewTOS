@@ -1,0 +1,80 @@
+measurement-2026-10-27-tool04 -- TASK/TOOL04: why `cargo xtask test` takes ~2.5 h; per-binary start cost vs test time.
+Developer, 2026-10-27 22:07 .. 2026-10-28 00:10 CET, HEAD c0c5c7c3, working tree clean except this run dir and the
+uncommitted tools/xtask/src/test_tiers.rs + tools/xtask/src/main.rs (not used by any number below). Host: Apple M4,
+macOS 27.0.1 (26A434), repo on /Volumes/Daten = external USB SSD, APFS, Spotlight indexing on. cargo runs under
+Terminal.app -> zsh -> claude. No hardware, no security setting changed by this run.
+INTERRUPTED: the session ends because the user enabled Developer Tools for Terminal (~00:07 2026-10-28) and restarts
+Terminal. Rows of raw/base0-launch.tsv that started after ~00:07 (the last 3-4, see start_epoch) may be mixed.
+
+WHAT / WHY
+ TOOL04 Arbeit 1+2: measure before changing; separate the binary's start cost from its test time; find the cause of the
+ start hang; look for fixed sleeps.
+
+HOW (method/)
+ exes-from-json.py  test executables of `cargo test --no-run --message-format=json -p tos-api -p tos-types -p xtask`
+                    (raw/exes0.tsv: 162 = 159 tos-api integration tests + tos_api lib + tos_types lib + xtask bin).
+                    The build relinked tos-api and its 159 tests (2m44s, 50 s user / 151 s sys) -> 160 never-launched binaries.
+ launch-times.py    serially per binary: first launch `--list --format terse`, second launch (same), full run; cwd = package dir.
+ t.py               wall time of one command. copy-path.sh, parallel.sh, c-size-series.sh, dir-entries.sh: the probes below.
+ variants.sh        written, NOT run yet (profile.test size variants).
+ Logs: `log stream` predicate on syspolicyd / XprotectService / xprotectd / kernel AMFI+ASP (raw/logstream-*.txt excerpts).
+
+RESULTS
+ 1. Baseline, 162 binaries (raw/base0-launch.tsv, test names per binary in raw/base0-names/):
+      first launch: sum 6472 s (1 h 48 min), median 27.2 s, min 12.4 s, max 79.5 s
+      second launch: max 0.012 s
+      full test run (second+ launch): sum 4.81 s for all 162; slowest aes_window_rectlist_capacity 0.50 s,
+      aes_reference 0.44, xtask 0.30, vdi_reference 0.29, everything else < 0.16 s.
+      libtest totals over the 162 direct runs: 1715 passed, 0 failed, 0 ignored (no doctests in this count; NOT yet
+      reconciled with STATUS.md 1670/0/1 nor with the 1691 names the --list output gives -- open).
+    => the tests take seconds; the ~2 h is the first launch of each newly linked binary.
+    The first-launch time is not stable: blocks of ~25 s and of ~72-79 s alternate (22:35-22:50, 23:02-23:10,
+    23:14-23:19, 23:35-23:48 ...). Cause of the slow blocks NOT established. An earlier guess (Spotlight indexing of the
+    600k probe files of result 4) is NOT supported: slow blocks continued after those files were deleted (22:50).
+    Binaries launched once 30-40 min earlier (xtask, tos_types from earlier days; xbios_kbdvecs, vdi_vex_wheelv from
+    the probes) paid 12-14 s again: the approval does not last; re-check without the XProtect phase.
+
+ 2. What waits (raw/logstream-first-launch-aes_t04.txt, raw/logstream-gatekeeper-lines.txt, raw/cpu1.txt):
+    exec -> kernel AMFI "has no CMS blob? ... code signature validation failed" (ad-hoc, linker-signed; codesign -dv:
+    flags=0x20002(adhoc,linker-signed), xattr com.apple.provenance present) -> syspolicyd Gatekeeper exec assessment:
+      phase 1  exec .. "GK performScan"                       ~10.4-12.5 s  (aes_t04: 22:10:49.715 .. 22:11:00.897)
+      then notarization online lookup ~0.15 s, "Code did not match any currently allowed policy" (-67018)
+      phase 2  XprotectService AnalysisService .. "GK evaluateScanResult: 2"  ~10.5-12.5 s (.. 22:11:13.624)
+    the binary sits in state S at 0 % CPU; syspolicyd ~15 % and XprotectService ~13 % CPU meanwhile.
+
+ 3. Not size, not toolchain, not content -- the directory (raw/copy-path.txt, raw/csize-*.txt, raw/manual-probes.txt):
+      fresh Rust test binary copied/hard-linked to /private/tmp or to target/tool04-probe/:  0.16-0.24 s
+      same file afterwards launched at its target/debug/deps path (different file, cp):     20.9 / 22.1 s
+      16 KiB clang binary built into target/debug/deps:                                      20.75 s
+      clang binary padded 0/1/2/8/32 MiB, internal disk:     0.148 / 0.168 / 0.179 / 0.223 / 0.365 s
+      same series in target/tool04-probe/ on /Volumes/Daten: 0.146 / 0.164 / 0.174 / 0.227 / 0.357 s
+    => size adds ~0.2 s over 2000x; the volume alone adds nothing; the path target/debug/deps costs ~20 s.
+    target/debug/deps holds 501 078 entries: 498 352 .o files (split-debuginfo unpacked keeps every codegen-unit
+    object of every test binary build: ~570 per test binary, 6702 for tos_api; 625 test executables = ~4 generations
+    of stale builds; 4.0 GB). Listing it takes 5.6 s, listing+stat 12.5 s.
+ 4. Entry count (method/dir-entries.sh; raw/dir-100k.txt, raw/dir-500k.txt): fresh binary hard-linked into a dir with
+    100 000 empty files: 0.37 s; 500 000 empty files: 2.55 s. Grows with entries but does not reach deps' 20 s with
+    short-named empty files -- the exact per-entry work of syspolicyd/XProtect is not observable without root.
+ 5. Concurrency (raw/parallel6.txt): 6 fresh binaries at once: each 31.7-36.2 s, all done in 36.3 s (serial ~126 s).
+
+ 6. Fixed sleeps (raw/sleeps-tools.txt): none in tos-api/tests, tos-api/src, tos-types, tools/xtask (sched::sleep is
+    the TOS scheduler model, no wall clock); `cargo xtask test` starts no QEMU. tools/: only hatari-oracle.sh
+    (0.5 s poll, 300 s cap, 2 s grace). measurements/*/method (read only): 800 files with sleeps; largest fixed boot
+    waits 75 s (2026-09-21-t07 run.sh, 2026-09-27-hw03 run-selftest-qemu.sh), 80 s (2026-10-25-a117-test virt.sh).
+
+ Isolation note for merging tests (TOOL04 Arbeit 4): 70 of 159 tos-api/tests files call tos_api::host::install_host,
+ which debug_asserts once per process (tos-api/src/host.rs:538@install_host); 118 use per-file locks over global
+ kernel state. Merging the files into one binary would break that -> not done.
+ (Recounted 2026-10-28 incl. shared test modules: 85 install a host, 85 keep a static Mutex; see
+ measurement-2026-10-28-tool04/RUNINFO.TXT result 8.)
+
+OPEN (next session) -- closed 2026-10-28 in measurement-2026-10-28-tool04/RUNINFO.TXT (all items below; the
+  1715 / 1691 / 1670+1 reconciliation is its result 7; target/tool04-probe/ deleted there).
+ - Measurement after the Developer Tools toggle (~00:07 2026-10-28): fresh build, first launches in target/debug/deps.
+ - method/variants.sh (full / line-tables-only / strip / debug=false / packed): .o retention and first launch.
+ - A fresh target dir (post-`cargo clean` state) with the current profile vs a no-.o profile: the full suite's time.
+ - Tiers: tools/xtask/src/test_tiers.rs + cmd_test --fast/--full are written and compile (cargo check -p xtask --tests,
+   2 pre-existing warnings in kernel/src/drivers/bcm2711/clock_tags.rs), FULL_ONLY still empty, fast tier excludes
+   doctests -- not yet justified by numbers, not run.
+ - Test-name diff before/after and reconciliation of 1715 / 1691 / STATUS 1670+1.
+ - Cleanup: target/tool04-probe/ (csize/, rs/, h2.c) is probe output, delete when done.

@@ -1,0 +1,7 @@
+
+running 2 tests
+test a_g_icon_with_odd_raster_pointers_draws_like_an_even_one ... ok
+test a_g_image_with_an_odd_bi_pdata_draws_like_an_even_one ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

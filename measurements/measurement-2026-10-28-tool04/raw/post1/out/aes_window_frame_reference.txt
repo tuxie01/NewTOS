@@ -1,0 +1,11 @@
+
+running 6 tests
+test bevel_is_one_pixel_on_every_fl3dact_gadget ... ok
+test down_arrow_slot_ends_on_the_row_above_the_seam ... ok
+test gadget_glyphs_are_centred_in_the_grown_cell ... ok
+test horizontal_arrow_slots_sit_on_the_band_edges ... ok
+test topped_name_box_carries_the_fl3dact_bevel ... ok
+test untopped_name_is_drawn_disabled ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+

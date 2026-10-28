@@ -1,0 +1,1 @@
+a_handle_answers_zero_before_its_first_life_and_gl_rfull_after_it: test

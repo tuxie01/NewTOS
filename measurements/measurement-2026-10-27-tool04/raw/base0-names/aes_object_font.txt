@@ -1,0 +1,6 @@
+g_string_stays_in_the_normal_font_at_the_box_origin: test
+icon_label_box_shorter_than_the_cell_draws_nothing: test
+icon_label_drops_whole_characters_that_do_not_fit: test
+icon_label_is_drawn_in_the_small_font_and_fits_its_box: test
+icon_overlay_char_is_small_and_offset_by_ib_xicon: test
+tedinfo_te_font_picks_the_cell_size: test

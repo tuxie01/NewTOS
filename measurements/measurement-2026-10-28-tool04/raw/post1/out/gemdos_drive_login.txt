@@ -1,0 +1,7 @@
+
+running 2 tests
+test a_partition_rescan_logs_every_drive_out_again ... ok
+test a_logged_in_drive_does_not_re_read_its_boot_sector ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,2 @@
+a_logged_in_drive_does_not_re_read_its_boot_sector: test
+a_partition_rescan_logs_every_drive_out_again: test

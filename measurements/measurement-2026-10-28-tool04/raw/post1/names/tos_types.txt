@@ -1,0 +1,6 @@
+aes::tests::grect_intersect: test
+aes::tests::native_record_layout: test
+memory::prot_tests::mxalloc_nibble_is_one_more_than_the_prot_value: test
+memory::prot_tests::mxalloc_nibble_zero_takes_the_callers_prgflags: test
+memory::prot_tests::mxalloc_other_bits_and_out_of_range: test
+memory::prot_tests::prgflags_nibble_is_the_prot_value_itself: test

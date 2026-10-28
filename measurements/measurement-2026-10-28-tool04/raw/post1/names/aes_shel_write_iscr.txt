@@ -1,0 +1,2 @@
+shel_write_exec_retains_the_third_declared_word: test
+shel_write_exec_with_two_declared_words_reads_zero: test

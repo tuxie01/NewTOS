@@ -1,0 +1,13 @@
+
+running 8 tests
+test a68_boxtext_te_thickness_255_is_a_one_pixel_outside_border ... ok
+test a68_fl3dind_boxtext_te_thickness_255_draws_like_minus_one ... ok
+test a69_transparent_fl3dbak_g_text_stays_unboxed_over_the_background ... ok
+test a69_replace_fl3dbak_g_text_is_promoted_and_filled_backgrcol_without_border ... ok
+test a70_fl3dbak_g_box_still_takes_backgrcol ... ok
+test a70_fl3dact_g_button_takes_actbutcol ... ok
+test a69_transparent_fl3dbak_g_boxtext_is_filled_backgrcol_and_keeps_its_border ... ok
+test a70_fl3dbak_g_button_stays_hollow_white_with_a_black_border ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

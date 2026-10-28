@@ -1,0 +1,2 @@
+autorun_program_quitting_plainly_returns_to_def_desktop: test
+noexec_from_autorun_program_leaves_its_name_in_s_cmd: test

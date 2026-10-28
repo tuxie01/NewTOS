@@ -1,0 +1,12 @@
+a_aux_and_prn_to_files: test
+a_cconrs_max_is_unsigned: test
+a_cconrs_reads_lines_from_the_file: test
+a_cconws_cconout_write_the_file: test
+a_cconws_user_space: test
+a_crawio_is_not_redirected_to_the_file: test
+a_input_reads_the_file_then_eof: test
+b_stdaux_forced_to_prn: test
+b_stdio_forced_to_aux: test
+b_stdout_forced_below_prn: test
+b_stdprn_forced_to_con: test
+defaults_unchanged_with_and_without_process: test

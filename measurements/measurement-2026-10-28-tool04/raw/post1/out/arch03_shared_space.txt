@@ -1,0 +1,12 @@
+
+running 7 tests
+test a_pool_address_is_its_own_address_in_every_process_root ... ok
+test a_publication_reaches_every_root_present_and_future ... ok
+test an_el0_malloc_returns_the_pool_block_itself ... ok
+test page_zero_is_each_processs_own ... ok
+test the_running_process_is_its_pd_pointer ... ok
+test the_tpa_block_starts_on_a_page_and_is_an_ordinary_block ... ok
+test whole_aligned_regions_are_blocks_and_edges_are_pages ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

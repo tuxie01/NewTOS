@@ -1,0 +1,3 @@
+graf_handle_names_an_open_workstation_that_answers_vq_extnd: test
+gsx_start_leaves_the_aes_line_and_text_setup_on_its_workstation: test
+the_first_v_opnvwk_of_a_session_is_handle_2_and_the_session_end_frees_it: test

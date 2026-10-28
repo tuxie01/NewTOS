@@ -1,0 +1,8 @@
+
+running 3 tests
+test the_other_two_handle_free_fields_still_answer ... ok
+test wf_screen_reports_the_one_buffer_on_every_handle ... ok
+test wf_screen_writes_two_native_longs_over_int_out_1_to_4 ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

@@ -1,0 +1,7920 @@
+
+<html>
+<head>
+  <title>Cargo Build Timings — tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-api 0.6.1, tos-types 0.6.1, tos-types 0.6.1, xtask 0.1.0</title>
+  <meta charset="utf-8">
+<style type="text/css">
+:root {
+  --error-text: #e80000;
+  --text: #000;
+  --background: #fff;
+  --h1-border-bottom: #c0c0c0;
+  --table-box-shadow: rgba(0, 0, 0, 0.1);
+  --table-th: #d5dde5;
+  --table-th-background: #1b1e24;
+  --table-th-border-bottom: #9ea7af;
+  --table-th-border-right: #343a45;
+  --table-tr-border-top: #c1c3d1;
+  --table-tr-border-bottom: #c1c3d1;
+  --table-tr-odd-background: #ebebeb;
+  --table-td-background: #ffffff;
+  --table-td-border-right: #C1C3D1;
+  --canvas-background: #f7f7f7;
+  --canvas-axes: #303030;
+  --canvas-grid: #e6e6e6;
+  --canvas-codegen: #aa95e8;
+  --canvas-link: #95e8aa;
+  --canvas-other: #e895aa;
+  --canvas-custom-build: #f0b165;
+  --canvas-not-custom-build: #95cce8;
+  --canvas-dep-line: #ddd;
+  --canvas-dep-line-highlighted: #000;
+  --canvas-cpu: rgba(250, 119, 0, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --error-text: #e80000;
+    --text: #fff;
+    --background: #121212;
+    --h1-border-bottom: #444;
+    --table-box-shadow: rgba(255, 255, 255, 0.1);
+    --table-th: #a0a0a0;
+    --table-th-background: #2c2c2c;
+    --table-th-border-bottom: #555;
+    --table-th-border-right: #444;
+    --table-tr-border-top: #333;
+    --table-tr-border-bottom: #333;
+    --table-tr-odd-background: #1e1e1e;
+    --table-td-background: #262626;
+    --table-td-border-right: #333;
+    --canvas-background: #1a1a1a;
+    --canvas-axes: #b0b0b0;
+    --canvas-grid: #333;
+    --canvas-block: #aa95e8;
+    --canvas-custom-build: #f0b165;
+    --canvas-not-custom-build: #95cce8;
+    --canvas-dep-line: #444;
+    --canvas-dep-line-highlighted: #fff;
+    --canvas-cpu: rgba(250, 119, 0, 0.2);
+  }
+}
+
+html {
+  font-family: sans-serif;
+  color: var(--text);
+  background: var(--background);
+}
+
+.canvas-container {
+  position: relative;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.canvas-container.hidden {
+  display: none;
+}
+
+h1 {
+  border-bottom: 1px solid var(--h1-border-bottom);
+}
+
+.graph {
+  display: block;
+}
+
+.my-table {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  border-collapse: collapse;
+  box-shadow: 0 5px 10px var(--table-box-shadow);
+}
+
+.my-table th {
+  color: var(--table-th);
+  background: var(--table-th-background);
+  border-bottom: 4px solid var(--table-th-border-bottom);
+  border-right: 1px solid var(--table-th-border-right);
+  font-size: 18px;
+  font-weight: 100;
+  padding: 12px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.my-table th:first-child {
+  border-top-left-radius: 3px;
+}
+
+.my-table th:last-child {
+  border-top-right-radius: 3px;
+  border-right:none;
+}
+
+.my-table tr {
+  border-top: 1px solid var(--table-tr-border-top);
+  border-bottom: 1px solid var(--table-tr-border-bottom);
+  font-size: 16px;
+  font-weight: normal;
+}
+
+.my-table tr:first-child {
+  border-top:none;
+}
+
+.my-table tr:last-child {
+  border-bottom:none;
+}
+
+.my-table tr:nth-child(odd) td {
+  background: var(--table-tr-odd-background);
+}
+
+.my-table tr:last-child td:first-child {
+  border-bottom-left-radius:3px;
+}
+
+.my-table tr:last-child td:last-child {
+  border-bottom-right-radius:3px;
+}
+
+.my-table td {
+  background: var(--table-td-background);
+  padding: 10px;
+  text-align: left;
+  vertical-align: middle;
+  font-weight: 300;
+  font-size: 14px;
+  border-right: 1px solid var(--table-td-border-right);
+}
+
+.my-table td:last-child {
+  border-right: 0px;
+}
+
+.summary-table td:first-child {
+  vertical-align: top;
+  text-align: right;
+}
+
+.input-table td {
+  text-align: center;
+}
+
+.error-text {
+  color: var(--error-text);
+}
+
+</style>
+</head>
+<body>
+
+<h1>Cargo Build Timings</h1>
+See <a href="https://doc.rust-lang.org/nightly/cargo/reference/timings.html">Documentation</a>
+
+<table class="my-table summary-table">
+<tr>
+<td>Targets:</td><td>tos-api 0.6.1 (lib)<br>tos-api 0.6.1 (lib)<br>tos-api 0.6.1 ( aes_a100_a102_desk_menu_geometry "test")<br>tos-api 0.6.1 ( aes_a105_frame_remnants "test")<br>tos-api 0.6.1 ( aes_a106_restart "test")<br>tos-api 0.6.1 ( aes_a111_caret "test")<br>tos-api 0.6.1 ( aes_a112_wake_conditions "test")<br>tos-api 0.6.1 ( aes_a113_accessory_pid "test")<br>tos-api 0.6.1 ( aes_a116_appl_write_blocks "test")<br>tos-api 0.6.1 ( aes_a117_mn_selected_owner "test")<br>tos-api 0.6.1 ( aes_a118_lock_takers "test")<br>tos-api 0.6.1 ( aes_a73_event_neighbours "test")<br>tos-api 0.6.1 ( aes_a87_a88_menu_ctwait_popup "test")<br>tos-api 0.6.1 ( aes_a89_a92_menu_event_neighbours "test")<br>tos-api 0.6.1 ( aes_a96_zombie_windows "test")<br>tos-api 0.6.1 ( aes_app_return_descriptor "test")<br>tos-api 0.6.1 ( aes_appl_init "test")<br>tos-api 0.6.1 ( aes_appl_read_blocks "test")<br>tos-api 0.6.1 ( aes_button_dispatch "test")<br>tos-api 0.6.1 ( aes_cicon_draw "test")<br>tos-api 0.6.1 ( aes_desk_background "test")<br>tos-api 0.6.1 ( aes_desk_dialog_chain "test")<br>tos-api 0.6.1 ( aes_desk_dialog_exit_buttons "test")<br>tos-api 0.6.1 ( aes_desk_prefs_radio "test")<br>tos-api 0.6.1 ( aes_dialog_undraw "test")<br>tos-api 0.6.1 ( aes_dispatch_inlen_clamp "test")<br>tos-api 0.6.1 ( aes_ev_rets_state_at_event "test")<br>tos-api 0.6.1 ( aes_form_alert_cursor_bracket "test")<br>tos-api 0.6.1 ( aes_gh1_update_mutex "test")<br>tos-api 0.6.1 ( aes_global_layout "test")<br>tos-api 0.6.1 ( aes_graf_growbox_desk "test")<br>tos-api 0.6.1 ( aes_graf_mouse_invalid "test")<br>tos-api 0.6.1 ( aes_icon_unaligned_raster "test")<br>tos-api 0.6.1 ( aes_intout_underwrite "test")<br>tos-api 0.6.1 ( aes_k1_gl_handle "test")<br>tos-api 0.6.1 ( aes_key_owner "test")<br>tos-api 0.6.1 ( aes_launch_boundary_reset "test")<br>tos-api 0.6.1 ( aes_menu_bar_height "test")<br>tos-api 0.6.1 ( aes_menu_click_ownership "test")<br>tos-api 0.6.1 ( aes_menu_settings "test")<br>tos-api 0.6.1 ( aes_newdesk_root_word "test")<br>tos-api 0.6.1 ( aes_objc_change_toggle "test")<br>tos-api 0.6.1 ( aes_object_3d_box_border "test")<br>tos-api 0.6.1 ( aes_object_3d_text_button "test")<br>tos-api 0.6.1 ( aes_object_add_return "test")<br>tos-api 0.6.1 ( aes_object_cursor_bracket "test")<br>tos-api 0.6.1 ( aes_object_font "test")<br>tos-api 0.6.1 ( aes_object_nicelines "test")<br>tos-api 0.6.1 ( aes_object_order_links "test")<br>tos-api 0.6.1 ( aes_object_selected_xor "test")<br>tos-api 0.6.1 ( aes_pd_by_slot "test")<br>tos-api 0.6.1 ( aes_reference "test")<br>tos-api 0.6.1 ( aes_rsrc_gaddr_edges "test")<br>tos-api 0.6.1 ( aes_rsrc_global_fields "test")<br>tos-api 0.6.1 ( aes_rsrc_load_path "test")<br>tos-api 0.6.1 ( aes_rsrc_obfix_at_load "test")<br>tos-api 0.6.1 ( aes_rsrc_per_process "test")<br>tos-api 0.6.1 ( aes_rsrc_short_blob "test")<br>tos-api 0.6.1 ( aes_rsrc_substruct_arrays "test")<br>tos-api 0.6.1 ( aes_rsrc_tedinfo_reserve "test")<br>tos-api 0.6.1 ( aes_rsrc_tedinfo_txtlen "test")<br>tos-api 0.6.1 ( aes_screen_buffer_save_under "test")<br>tos-api 0.6.1 ( aes_shel_roundtrip "test")<br>tos-api 0.6.1 ( aes_shel_write_iscr "test")<br>tos-api 0.6.1 ( aes_shel_write_reschng "test")<br>tos-api 0.6.1 ( aes_shell_desk60_autorun_noexec "test")<br>tos-api 0.6.1 ( aes_t04_intin_long_contract "test")<br>tos-api 0.6.1 ( aes_wheel_change "test")<br>tos-api 0.6.1 ( aes_wind_get_desktop_geometry "test")<br>tos-api 0.6.1 ( aes_window_color_words "test")<br>tos-api 0.6.1 ( aes_window_content "test")<br>tos-api 0.6.1 ( aes_window_create_work "test")<br>tos-api 0.6.1 ( aes_window_delete_slot "test")<br>tos-api 0.6.1 ( aes_window_drag "test")<br>tos-api 0.6.1 ( aes_window_frame_reference "test")<br>tos-api 0.6.1 ( aes_window_gadget_rect "test")<br>tos-api 0.6.1 ( aes_window_hotclose "test")<br>tos-api 0.6.1 ( aes_window_move_blit "test")<br>tos-api 0.6.1 ( aes_window_name_get "test")<br>tos-api 0.6.1 ( aes_window_name_pointer "test")<br>tos-api 0.6.1 ( aes_window_open_oldtop "test")<br>tos-api 0.6.1 ( aes_window_rectlist_capacity "test")<br>tos-api 0.6.1 ( aes_window_rectlist_zorder "test")<br>tos-api 0.6.1 ( aes_window_screen_buffer "test")<br>tos-api 0.6.1 ( aes_window_screen_buffer_absent "test")<br>tos-api 0.6.1 ( aes_window_slid_rect "test")<br>tos-api 0.6.1 ( aes_window_slider_guard "test")<br>tos-api 0.6.1 ( aes_window_slider_subtree "test")<br>tos-api 0.6.1 ( aes_window_top_unopened "test")<br>tos-api 0.6.1 ( aes_window_virgin_slot "test")<br>tos-api 0.6.1 ( aes_window_zorder_counter "test")<br>tos-api 0.6.1 ( arch03_3a_caller_space "test")<br>tos-api 0.6.1 ( arch03_3a_gem_space "test")<br>tos-api 0.6.1 ( arch03_3b_fsetdta "test")<br>tos-api 0.6.1 ( arch03_3b_memprot "test")<br>tos-api 0.6.1 ( arch03_3c_e10 "test")<br>tos-api 0.6.1 ( arch03_3c_keep "test")<br>tos-api 0.6.1 ( arch03_3c_table_shortfall "test")<br>tos-api 0.6.1 ( arch03_4_asid_alloc "test")<br>tos-api 0.6.1 ( arch03_4_asid_on "test")<br>tos-api 0.6.1 ( arch03_e9_tpa "test")<br>tos-api 0.6.1 ( arch03_pexec_567_ptermres "test")<br>tos-api 0.6.1 ( arch03_region_owners "test")<br>tos-api 0.6.1 ( arch03_shared_space "test")<br>tos-api 0.6.1 ( bios_bcache "test")<br>tos-api 0.6.1 ( bios_reset "test")<br>tos-api 0.6.1 ( con01_console_typeahead "test")<br>tos-api 0.6.1 ( fs10_fseek_device_handles "test")<br>tos-api 0.6.1 ( fs11_device_rw "test")<br>tos-api 0.6.1 ( fs18_frename "test")<br>tos-api 0.6.1 ( fs18_frename_lfn "test")<br>tos-api 0.6.1 ( gemdos_drive_login "test")<br>tos-api 0.6.1 ( gemdos_fattrib_dir "test")<br>tos-api 0.6.1 ( gemdos_fs_bcache "test")<br>tos-api 0.6.1 ( gemdos_fs_chain_steps "test")<br>tos-api 0.6.1 ( gemdos_fs_curcl "test")<br>tos-api 0.6.1 ( gemdos_fs_device_error "test")<br>tos-api 0.6.1 ( gemdos_fs_lfn_delete "test")<br>tos-api 0.6.1 ( gemdos_fs_paths "test")<br>tos-api 0.6.1 ( gemdos_ssystem_cpuinfo "test")<br>tos-api 0.6.1 ( gemdos_ssystem_idt_cookie "test")<br>tos-api 0.6.1 ( gemdos_ssystem_sysinfo "test")<br>tos-api 0.6.1 ( gemdos_ssystem_usbsnap "test")<br>tos-api 0.6.1 ( loader_ilp32_rejected "test")<br>tos-api 0.6.1 ( loader_pie_reloc "test")<br>tos-api 0.6.1 ( loader_prgflags "test")<br>tos-api 0.6.1 ( mem02_mxalloc_modes "test")<br>tos-api 0.6.1 ( mem02_mxalloc_no_alt "test")<br>tos-api 0.6.1 ( mem05_growth "test")<br>tos-api 0.6.1 ( mem05_mdpool "test")<br>tos-api 0.6.1 ( mem05_memprot_tables "test")<br>tos-api 0.6.1 ( mem05_owner_limit "test")<br>tos-api 0.6.1 ( mem11_user_ptr_assert "test")<br>tos-api 0.6.1 ( mem12_super_state "test")<br>tos-api 0.6.1 ( memprot_fast "test")<br>tos-api 0.6.1 ( post_e9_free_accs "test")<br>tos-api 0.6.1 ( pparent_standin "test")<br>tos-api 0.6.1 ( proc02_handle_lifecycle "test")<br>tos-api 0.6.1 ( proc03_b5_accessory_run "test")<br>tos-api 0.6.1 ( proc03_chain_and_pterm_return "test")<br>tos-api 0.6.1 ( proc04_console_redirect "test")<br>tos-api 0.6.1 ( proc04_curdir_per_pd "test")<br>tos-api 0.6.1 ( proc04_fdelete_open "test")<br>tos-api 0.6.1 ( proc04_open_file_table "test")<br>tos-api 0.6.1 ( proc05_shell_exit_code "test")<br>tos-api 0.6.1 ( proc06_pexec_exit_code "test")<br>tos-api 0.6.1 ( sched_a115_ready_list "test")<br>tos-api 0.6.1 ( sched_dsptch_admits_the_caller "test")<br>tos-api 0.6.1 ( sched_dsptch_keeps_caller_ready "test")<br>tos-api 0.6.1 ( sched_pexec_parent_suspend "test")<br>tos-api 0.6.1 ( vdi_eddi_scrninfo "test")<br>tos-api 0.6.1 ( vdi_mouse_park "test")<br>tos-api 0.6.1 ( vdi_raster_reference "test")<br>tos-api 0.6.1 ( vdi_reference "test")<br>tos-api 0.6.1 ( vdi_reference_overlay_bit "test")<br>tos-api 0.6.1 ( vdi_reference_raster_screen "test")<br>tos-api 0.6.1 ( vdi_vex_wheelv "test")<br>tos-api 0.6.1 ( vt52_console "test")<br>tos-api 0.6.1 ( vt52_console_default_palette "test")<br>tos-api 0.6.1 ( xbios_kbdvecs "test")<br>tos-api 0.6.1 ( xbios_kbrate_repeat_source "test")<br>tos-types 0.6.1 (lib)<br>tos-types 0.6.1 (lib)<br>xtask 0.1.0 ( xtask "bin")</td>
+</tr>
+<tr>
+<td>Profile:</td><td>test</td>
+</tr>
+<tr>
+<td>Fresh units:</td><td>5</td>
+</tr>
+<tr>
+<td>Dirty units:</td><td>161</td>
+</tr>
+<tr>
+<td>Total units:</td><td>166</td>
+</tr>
+<tr>
+<td>Max concurrency:</td><td>12 (jobs=10 ncpu=10)</td>
+</tr>
+<tr>
+<td>Build start:</td><td>2026-10-27T23:30:17.320587Z</td>
+</tr>
+<tr>
+<td>Total time:</td><td>165.3s (2m 45.3s)</td>
+</tr>
+<tr>
+<td>rustc:</td><td>rustc 1.97.0-nightly (a5c825cd8 2026-04-14)<br>Host: aarch64-apple-darwin<br>Target: aarch64-apple-darwin</td>
+</tr>
+
+</table>
+
+<table class="input-table">
+  <tr>
+    <td><label for="min-unit-time">Min unit time:</label></td>
+    <td title="Scale corresponds to a number of pixels per second. It is automatically initialized based on your viewport width.">
+      <label for="scale">Scale:</label>
+    </td>
+  </tr>
+  <tr>
+    <td><input type="range" min="0" max="30" step="0.1" value="0" id="min-unit-time"></td>
+    <!--
+        The scale corresponds to some number of "pixels per second".
+        Its min, max, and initial values are automatically set by JavaScript on page load,
+        based on the client viewport.
+    -->
+    <td><input type="range" min="1" max="100" value="50" id="scale"></td>
+  </tr>
+  <tr>
+    <td><output for="min-unit-time" id="min-unit-time-output"></output></td>
+    <td><output for="scale" id="scale-output"></output></td>
+    <td></td>
+  </tr>
+</table>
+
+<div id="pipeline-container" class="canvas-container"></div>
+<div id="timing-container" class="canvas-container"></div>
+
+<table class="my-table">
+<thead>
+<tr>
+  <th></th>
+  <th>Unit</th>
+  <th>Total</th>
+  <th>Frontend</th>
+<th>Codegen</th>
+  <th>Features</th>
+</tr>
+</thead>
+<tbody>
+
+<tr>
+<td>1.</td>
+<td>tos-api v0.6.1 aes_reference "test" (test)</td>
+<td>10.5s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>2.</td>
+<td>tos-api v0.6.1 proc02_handle_lifecycle "test" (test)</td>
+<td>10.5s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>3.</td>
+<td>tos-api v0.6.1 gemdos_fs_bcache "test" (test)</td>
+<td>10.4s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>4.</td>
+<td>tos-api v0.6.1 aes_app_return_descriptor "test" (test)</td>
+<td>10.4s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>5.</td>
+<td>tos-api v0.6.1 aes_a100_a102_desk_menu_geometry "test" (test)</td>
+<td>10.4s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>6.</td>
+<td>tos-api v0.6.1 proc04_console_redirect "test" (test)</td>
+<td>10.3s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>7.</td>
+<td>tos-api v0.6.1 aes_window_zorder_counter "test" (test)</td>
+<td>10.3s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>8.</td>
+<td>tos-api v0.6.1 aes_window_name_get "test" (test)</td>
+<td>10.3s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>9.</td>
+<td>tos-api v0.6.1 aes_window_open_oldtop "test" (test)</td>
+<td>10.3s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>10.</td>
+<td>tos-api v0.6.1 aes_window_frame_reference "test" (test)</td>
+<td>10.3s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>11.</td>
+<td>tos-api v0.6.1 aes_object_add_return "test" (test)</td>
+<td>10.3s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>12.</td>
+<td>tos-api v0.6.1 aes_dialog_undraw "test" (test)</td>
+<td>10.3s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>13.</td>
+<td>tos-api v0.6.1 aes_appl_read_blocks "test" (test)</td>
+<td>10.3s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>14.</td>
+<td>tos-api v0.6.1 aes_wind_get_desktop_geometry "test" (test)</td>
+<td>10.3s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>15.</td>
+<td>tos-api v0.6.1 aes_a112_wake_conditions "test" (test)</td>
+<td>10.3s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>16.</td>
+<td>tos-api v0.6.1 proc04_curdir_per_pd "test" (test)</td>
+<td>10.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>17.</td>
+<td>tos-api v0.6.1 aes_key_owner "test" (test)</td>
+<td>10.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>18.</td>
+<td>tos-api v0.6.1 aes_a105_frame_remnants "test" (test)</td>
+<td>10.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>19.</td>
+<td>tos-api v0.6.1 vdi_mouse_park "test" (test)</td>
+<td>10.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>20.</td>
+<td>tos-api v0.6.1 vdi_reference_overlay_bit "test" (test)</td>
+<td>10.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>21.</td>
+<td>tos-api v0.6.1 aes_launch_boundary_reset "test" (test)</td>
+<td>10.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>22.</td>
+<td>tos-api v0.6.1 aes_menu_bar_height "test" (test)</td>
+<td>10.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>23.</td>
+<td>tos-api v0.6.1 aes_desk_prefs_radio "test" (test)</td>
+<td>10.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>24.</td>
+<td>tos-api v0.6.1 aes_window_top_unopened "test" (test)</td>
+<td>10.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>25.</td>
+<td>tos-api v0.6.1 aes_object_order_links "test" (test)</td>
+<td>10.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>26.</td>
+<td>tos-api v0.6.1 aes_window_screen_buffer_absent "test" (test)</td>
+<td>10.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>27.</td>
+<td>tos-api v0.6.1 gemdos_fs_lfn_delete "test" (test)</td>
+<td>10.1s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>28.</td>
+<td>tos-api v0.6.1 aes_object_selected_xor "test" (test)</td>
+<td>10.1s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>29.</td>
+<td>tos-api v0.6.1 mem05_mdpool "test" (test)</td>
+<td>10.1s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>30.</td>
+<td>tos-api v0.6.1 aes_rsrc_gaddr_edges "test" (test)</td>
+<td>10.1s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>31.</td>
+<td>tos-api v0.6.1 aes_window_slider_guard "test" (test)</td>
+<td>10.1s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>32.</td>
+<td>tos-api v0.6.1 aes_desk_background "test" (test)</td>
+<td>10.1s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>33.</td>
+<td>tos-api v0.6.1 loader_pie_reloc "test" (test)</td>
+<td>10.1s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>34.</td>
+<td>tos-api v0.6.1 aes_window_slider_subtree "test" (test)</td>
+<td>10.1s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>35.</td>
+<td>tos-api v0.6.1 aes_desk_dialog_chain "test" (test)</td>
+<td>10.1s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>36.</td>
+<td>tos-api v0.6.1 gemdos_fs_device_error "test" (test)</td>
+<td>10.1s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>37.</td>
+<td>tos-api v0.6.1 fs11_device_rw "test" (test)</td>
+<td>10.1s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>38.</td>
+<td>tos-api v0.6.1 aes_a116_appl_write_blocks "test" (test)</td>
+<td>10.1s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>39.</td>
+<td>tos-api v0.6.1 proc05_shell_exit_code "test" (test)</td>
+<td>10.1s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>40.</td>
+<td>tos-api v0.6.1 mem12_super_state "test" (test)</td>
+<td>10.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>41.</td>
+<td>tos-api v0.6.1 mem02_mxalloc_modes "test" (test)</td>
+<td>10.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>42.</td>
+<td>tos-api v0.6.1 fs18_frename "test" (test)</td>
+<td>10.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>43.</td>
+<td>tos-api v0.6.1 aes_window_virgin_slot "test" (test)</td>
+<td>10.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>44.</td>
+<td>tos-api v0.6.1 aes_a117_mn_selected_owner "test" (test)</td>
+<td>10.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>45.</td>
+<td>tos-api v0.6.1 arch03_3c_keep "test" (test)</td>
+<td>10.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>46.</td>
+<td>tos-api v0.6.1 aes_appl_init "test" (test)</td>
+<td>10.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>47.</td>
+<td>tos-api v0.6.1 arch03_region_owners "test" (test)</td>
+<td>10.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>48.</td>
+<td>tos-api v0.6.1 aes_rsrc_substruct_arrays "test" (test)</td>
+<td>10.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>49.</td>
+<td>tos-api v0.6.1 gemdos_fs_paths "test" (test)</td>
+<td>10.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>50.</td>
+<td>tos-api v0.6.1 gemdos_drive_login "test" (test)</td>
+<td>10.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>51.</td>
+<td>tos-api v0.6.1 aes_object_font "test" (test)</td>
+<td>10.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>52.</td>
+<td>tos-api v0.6.1 gemdos_ssystem_sysinfo "test" (test)</td>
+<td>10.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>53.</td>
+<td>tos-api v0.6.1 aes_rsrc_short_blob "test" (test)</td>
+<td>10.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>54.</td>
+<td>tos-api v0.6.1 arch03_3b_memprot "test" (test)</td>
+<td>10.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>55.</td>
+<td>tos-api v0.6.1 sched_a115_ready_list "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>56.</td>
+<td>tos-api v0.6.1 vdi_reference "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>57.</td>
+<td>tos-api v0.6.1 aes_k1_gl_handle "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>58.</td>
+<td>tos-api v0.6.1 aes_rsrc_load_path "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>59.</td>
+<td>tos-api v0.6.1 aes_graf_mouse_invalid "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>60.</td>
+<td>tos-api v0.6.1 arch03_3a_caller_space "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>61.</td>
+<td>tos-api v0.6.1 aes_rsrc_per_process "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>62.</td>
+<td>tos-api v0.6.1 gemdos_fs_curcl "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>63.</td>
+<td>tos-api v0.6.1 aes_icon_unaligned_raster "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>64.</td>
+<td>tos-api v0.6.1 aes_window_rectlist_zorder "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>65.</td>
+<td>tos-api v0.6.1 aes_window_content "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>66.</td>
+<td>tos-api v0.6.1 aes_global_layout "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>67.</td>
+<td>tos-api v0.6.1 aes_a118_lock_takers "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>68.</td>
+<td>tos-api v0.6.1 aes_window_hotclose "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>69.</td>
+<td>tos-api v0.6.1 mem02_mxalloc_no_alt "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>70.</td>
+<td>tos-api v0.6.1 vt52_console_default_palette "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>71.</td>
+<td>tos-api v0.6.1 aes_rsrc_tedinfo_reserve "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>72.</td>
+<td>tos-api v0.6.1 aes_window_slid_rect "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>73.</td>
+<td>tos-api v0.6.1 aes_a89_a92_menu_event_neighbours "test" (test)</td>
+<td>9.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>74.</td>
+<td>tos-api v0.6.1 aes_shel_write_iscr "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>75.</td>
+<td>tos-api v0.6.1 mem11_user_ptr_assert "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>76.</td>
+<td>tos-api v0.6.1 aes_ev_rets_state_at_event "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>77.</td>
+<td>tos-api v0.6.1 aes_newdesk_root_word "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>78.</td>
+<td>tos-api v0.6.1 vdi_raster_reference "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>79.</td>
+<td>tos-api v0.6.1 aes_a87_a88_menu_ctwait_popup "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>80.</td>
+<td>tos-api v0.6.1 aes_cicon_draw "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>81.</td>
+<td>tos-api v0.6.1 aes_a111_caret "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>82.</td>
+<td>tos-api v0.6.1 pparent_standin "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>83.</td>
+<td>tos-api v0.6.1 aes_menu_settings "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>84.</td>
+<td>tos-api v0.6.1 mem05_owner_limit "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>85.</td>
+<td>tos-api v0.6.1 mem05_memprot_tables "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>86.</td>
+<td>tos-api v0.6.1 aes_a96_zombie_windows "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>87.</td>
+<td>tos-api v0.6.1 proc04_fdelete_open "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>88.</td>
+<td>tos-api v0.6.1 arch03_3c_e10 "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>89.</td>
+<td>tos-api v0.6.1 proc03_chain_and_pterm_return "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>90.</td>
+<td>tos-api v0.6.1 aes_shel_write_reschng "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>91.</td>
+<td>tos-api v0.6.1 aes_gh1_update_mutex "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>92.</td>
+<td>tos-api v0.6.1 aes_object_cursor_bracket "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>93.</td>
+<td>tos-api v0.6.1 aes_window_create_work "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>94.</td>
+<td>tos-api v0.6.1 aes_intout_underwrite "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>95.</td>
+<td>tos-api v0.6.1 gemdos_ssystem_cpuinfo "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>96.</td>
+<td>tos-api v0.6.1 aes_a73_event_neighbours "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>97.</td>
+<td>tos-api v0.6.1 proc06_pexec_exit_code "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>98.</td>
+<td>tos-api v0.6.1 aes_desk_dialog_exit_buttons "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>99.</td>
+<td>tos-api v0.6.1 aes_a113_accessory_pid "test" (test)</td>
+<td>9.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>100.</td>
+<td>tos-api v0.6.1 loader_prgflags "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>101.</td>
+<td>tos-api v0.6.1 sched_dsptch_admits_the_caller "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>102.</td>
+<td>tos-api v0.6.1 vt52_console "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>103.</td>
+<td>tos-api v0.6.1 fs18_frename_lfn "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>104.</td>
+<td>tos-api v0.6.1 aes_graf_growbox_desk "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>105.</td>
+<td>tos-api v0.6.1 sched_pexec_parent_suspend "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>106.</td>
+<td>tos-api v0.6.1 vdi_eddi_scrninfo "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>107.</td>
+<td>tos-api v0.6.1 aes_wheel_change "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>108.</td>
+<td>tos-api v0.6.1 aes_window_screen_buffer "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>109.</td>
+<td>tos-api v0.6.1 sched_dsptch_keeps_caller_ready "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>110.</td>
+<td>tos-api v0.6.1 xbios_kbrate_repeat_source "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>111.</td>
+<td>tos-api v0.6.1 gemdos_fattrib_dir "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>112.</td>
+<td>tos-api v0.6.1 vdi_vex_wheelv "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>113.</td>
+<td>tos-api v0.6.1 aes_window_gadget_rect "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>114.</td>
+<td>tos-api v0.6.1 vdi_reference_raster_screen "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>115.</td>
+<td>tos-api v0.6.1 aes_window_rectlist_capacity "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>116.</td>
+<td>tos-api v0.6.1 aes_shel_roundtrip "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>117.</td>
+<td>tos-api v0.6.1 fs10_fseek_device_handles "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>118.</td>
+<td>tos-api v0.6.1 aes_object_nicelines "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>119.</td>
+<td>tos-api v0.6.1 bios_reset "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>120.</td>
+<td>tos-api v0.6.1 arch03_4_asid_alloc "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>121.</td>
+<td>tos-api v0.6.1 arch03_shared_space "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>122.</td>
+<td>tos-api v0.6.1 aes_objc_change_toggle "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>123.</td>
+<td>tos-api v0.6.1 arch03_3b_fsetdta "test" (test)</td>
+<td>9.7s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>124.</td>
+<td>tos-api v0.6.1 aes_window_color_words "test" (test)</td>
+<td>9.6s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>125.</td>
+<td>tos-api v0.6.1 aes_rsrc_global_fields "test" (test)</td>
+<td>9.6s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>126.</td>
+<td>tos-api v0.6.1 tos_api "lib" (test)</td>
+<td>9.6s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>127.</td>
+<td>tos-api v0.6.1 aes_form_alert_cursor_bracket "test" (test)</td>
+<td>9.6s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>128.</td>
+<td>tos-api v0.6.1 aes_window_delete_slot "test" (test)</td>
+<td>9.6s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>129.</td>
+<td>tos-api v0.6.1 aes_screen_buffer_save_under "test" (test)</td>
+<td>9.6s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>130.</td>
+<td>tos-api v0.6.1 gemdos_ssystem_idt_cookie "test" (test)</td>
+<td>9.6s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>131.</td>
+<td>tos-api v0.6.1 arch03_4_asid_on "test" (test)</td>
+<td>9.6s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>132.</td>
+<td>tos-api v0.6.1 proc03_b5_accessory_run "test" (test)</td>
+<td>9.6s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>133.</td>
+<td>tos-api v0.6.1 aes_pd_by_slot "test" (test)</td>
+<td>9.6s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>134.</td>
+<td>tos-api v0.6.1 gemdos_fs_chain_steps "test" (test)</td>
+<td>9.5s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>135.</td>
+<td>tos-api v0.6.1 loader_ilp32_rejected "test" (test)</td>
+<td>9.5s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>136.</td>
+<td>tos-api v0.6.1 gemdos_ssystem_usbsnap "test" (test)</td>
+<td>9.5s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>137.</td>
+<td>tos-api v0.6.1 aes_window_move_blit "test" (test)</td>
+<td>9.4s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>138.</td>
+<td>tos-api v0.6.1 aes_shell_desk60_autorun_noexec "test" (test)</td>
+<td>9.4s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>139.</td>
+<td>tos-api v0.6.1 aes_rsrc_obfix_at_load "test" (test)</td>
+<td>9.4s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>140.</td>
+<td>tos-api v0.6.1 aes_dispatch_inlen_clamp "test" (test)</td>
+<td>9.4s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>141.</td>
+<td>tos-api v0.6.1 proc04_open_file_table "test" (test)</td>
+<td>9.4s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>142.</td>
+<td>tos-api v0.6.1 bios_bcache "test" (test)</td>
+<td>9.3s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>143.</td>
+<td>tos-api v0.6.1 aes_window_name_pointer "test" (test)</td>
+<td>9.3s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>144.</td>
+<td>tos-api v0.6.1 aes_menu_click_ownership "test" (test)</td>
+<td>9.3s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>145.</td>
+<td>tos-api v0.6.1 mem05_growth "test" (test)</td>
+<td>9.3s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>146.</td>
+<td>tos-api v0.6.1 aes_t04_intin_long_contract "test" (test)</td>
+<td>9.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>147.</td>
+<td>tos-api v0.6.1 arch03_3a_gem_space "test" (test)</td>
+<td>9.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>148.</td>
+<td>tos-api v0.6.1 aes_button_dispatch "test" (test)</td>
+<td>9.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>149.</td>
+<td>tos-api v0.6.1 con01_console_typeahead "test" (test)</td>
+<td>9.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>150.</td>
+<td>tos-api v0.6.1 post_e9_free_accs "test" (test)</td>
+<td>9.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>151.</td>
+<td>tos-api v0.6.1 aes_a106_restart "test" (test)</td>
+<td>9.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>152.</td>
+<td>tos-api v0.6.1 aes_object_3d_text_button "test" (test)</td>
+<td>9.2s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>153.</td>
+<td>tos-api v0.6.1 xbios_kbdvecs "test" (test)</td>
+<td>9.1s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>154.</td>
+<td>tos-api v0.6.1 arch03_pexec_567_ptermres "test" (test)</td>
+<td>9.1s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>155.</td>
+<td>tos-api v0.6.1 arch03_3c_table_shortfall "test" (test)</td>
+<td>8.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>156.</td>
+<td>tos-api v0.6.1 aes_window_drag "test" (test)</td>
+<td>8.9s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>157.</td>
+<td>tos-api v0.6.1 aes_object_3d_box_border "test" (test)</td>
+<td>8.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>158.</td>
+<td>tos-api v0.6.1 arch03_e9_tpa "test" (test)</td>
+<td>8.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>159.</td>
+<td>tos-api v0.6.1 aes_rsrc_tedinfo_txtlen "test" (test)</td>
+<td>8.8s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>160.</td>
+<td>tos-api v0.6.1 memprot_fast "test" (test)</td>
+<td>8.4s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>161.</td>
+<td>tos-api v0.6.1</td>
+<td>8.1s</td>
+<td>7.9s (98%)</td>
+<td>0.2s (2%)</td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>162.</td>
+<td>tos-types v0.6.1</td>
+<td>0.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>163.</td>
+<td>tos-api v0.6.1 build-script (run)</td>
+<td>0.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>164.</td>
+<td>tos-api v0.6.1 tos_api "lib" (doc test)</td>
+<td>0.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>165.</td>
+<td>tos-types v0.6.1 tos_types "lib" (test)</td>
+<td>0.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>166.</td>
+<td>xtask v0.1.0 xtask "bin" (test)</td>
+<td>0.0s</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>167.</td>
+<td>tos-types v0.6.1 tos_types "lib" (doc test)</td>
+<td>0.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+
+<tr>
+<td>168.</td>
+<td>tos-api v0.6.1 build-script</td>
+<td>0.0s</td>
+<td></td>
+<td></td>
+<td>default</td>
+</tr>
+</tbody>
+</table>
+<script>
+DURATION = 166;
+const UNIT_DATA = [
+  {
+    "i": 164,
+    "name": "tos-types",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " tos_types \"lib\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 0.0,
+    "duration": 0.0,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 2,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " tos_api \"lib\" (doc test)",
+    "features": [
+      "default"
+    ],
+    "start": 0.0,
+    "duration": 0.0,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 167,
+    "name": "xtask",
+    "version": "0.1.0",
+    "mode": "todo",
+    "target": " xtask \"bin\" (test)",
+    "features": [],
+    "start": 0.0,
+    "duration": 0.0,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 166,
+    "name": "tos-types",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " tos_types \"lib\" (doc test)",
+    "features": [
+      "default"
+    ],
+    "start": 0.0,
+    "duration": 0.0,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 162,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " build-script",
+    "features": [
+      "default"
+    ],
+    "start": 0.0,
+    "duration": 0.0,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 165,
+    "name": "tos-types",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": "",
+    "features": [
+      "default"
+    ],
+    "start": 0.0,
+    "duration": 0.0,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 163,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "run-custom-build",
+    "target": " build-script (run)",
+    "features": [
+      "default"
+    ],
+    "start": 0.0,
+    "duration": 0.0,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 1,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": "",
+    "features": [
+      "default"
+    ],
+    "start": 0.09,
+    "duration": 8.05,
+    "unblocked_units": [
+      39,
+      156,
+      24,
+      92,
+      118,
+      8,
+      116,
+      61,
+      140,
+      129,
+      19,
+      73,
+      103,
+      137,
+      11,
+      63,
+      128,
+      136,
+      26,
+      98,
+      125,
+      20,
+      5,
+      78,
+      29,
+      54,
+      30,
+      36,
+      115,
+      80,
+      150,
+      57,
+      71,
+      101,
+      139,
+      102,
+      6,
+      138,
+      18,
+      66,
+      90,
+      122,
+      161,
+      28,
+      145,
+      51,
+      41,
+      104,
+      124,
+      3,
+      53,
+      16,
+      48,
+      55,
+      131,
+      65,
+      160,
+      83,
+      76,
+      142,
+      52,
+      15,
+      126,
+      148,
+      97,
+      112,
+      89,
+      67,
+      117,
+      110,
+      157,
+      17,
+      22,
+      106,
+      9,
+      82,
+      35,
+      62,
+      69,
+      100,
+      12,
+      13,
+      113,
+      4,
+      133,
+      86,
+      21,
+      60,
+      146,
+      114,
+      77,
+      127,
+      40,
+      58,
+      111,
+      121,
+      141,
+      32,
+      56,
+      50,
+      91,
+      88,
+      43,
+      96,
+      84,
+      34,
+      85,
+      134,
+      135,
+      143,
+      68,
+      123,
+      147,
+      64,
+      109,
+      151,
+      31,
+      120,
+      153,
+      119,
+      75,
+      149,
+      158,
+      105,
+      14,
+      25,
+      38,
+      47,
+      45,
+      27,
+      132,
+      155,
+      7,
+      79,
+      93,
+      152,
+      10,
+      42,
+      159,
+      2,
+      87,
+      59,
+      70,
+      95,
+      72,
+      130,
+      49,
+      154,
+      81,
+      108,
+      44,
+      23,
+      46,
+      33,
+      99,
+      37,
+      74,
+      94,
+      107,
+      144
+    ],
+    "unblocked_rmeta_units": [],
+    "sections": [
+      [
+        "frontend",
+        {
+          "start": 0.0,
+          "end": 7.88
+        }
+      ],
+      [
+        "codegen",
+        {
+          "start": 7.88,
+          "end": 8.05
+        }
+      ]
+    ]
+  },
+  {
+    "i": 0,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " tos_api \"lib\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 0.09,
+    "duration": 9.61,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 80,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_name_pointer \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 8.14,
+    "duration": 9.33,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 98,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " arch03_3c_table_shortfall \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 8.14,
+    "duration": 8.95,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 26,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_dispatch_inlen_clamp \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 8.14,
+    "duration": 9.36,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 102,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " arch03_pexec_567_ptermres \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 8.14,
+    "duration": 9.07,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 39,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_menu_click_ownership \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 8.14,
+    "duration": 9.31,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 19,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_button_dispatch \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 8.14,
+    "duration": 9.2,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 123,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " gemdos_ssystem_usbsnap \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 8.14,
+    "duration": 9.47,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 78,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_move_blit \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 8.14,
+    "duration": 9.45,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 129,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " mem05_growth \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 8.14,
+    "duration": 9.31,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 135,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " memprot_fast \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 9.7,
+    "duration": 8.44,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 146,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " proc06_pexec_exit_code \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 17.09,
+    "duration": 9.75,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 18,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_appl_read_blocks \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 17.21,
+    "duration": 10.27,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 109,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " fs11_device_rw \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 17.33,
+    "duration": 10.05,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 4,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_a105_frame_remnants \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 17.45,
+    "duration": 10.24,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 152,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " vdi_mouse_park \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 17.45,
+    "duration": 10.24,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 36,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_key_owner \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 17.47,
+    "duration": 10.25,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 118,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " gemdos_fs_lfn_delete \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 17.5,
+    "duration": 10.14,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 49,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_object_order_links \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 17.59,
+    "duration": 10.17,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 75,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_frame_reference \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 17.61,
+    "duration": 10.28,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 90,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_virgin_slot \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 18.14,
+    "duration": 10.02,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 15,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_a96_zombie_windows \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 26.84,
+    "duration": 9.81,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 95,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " arch03_3b_memprot \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 27.38,
+    "duration": 9.96,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 55,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_rsrc_load_path \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 27.48,
+    "duration": 9.92,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 8,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_a113_accessory_pid \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 27.64,
+    "duration": 9.75,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 72,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_create_work \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 27.69,
+    "duration": 9.78,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 108,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " fs10_fseek_device_handles \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 27.69,
+    "duration": 9.68,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 111,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " fs18_frename_lfn \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 27.72,
+    "duration": 9.73,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 119,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " gemdos_fs_paths \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 27.75,
+    "duration": 9.99,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 143,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " proc04_fdelete_open \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 27.89,
+    "duration": 9.8,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 32,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_graf_mouse_invalid \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 28.16,
+    "duration": 9.92,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 42,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_objc_change_toggle \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 36.65,
+    "duration": 9.66,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 100,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " arch03_4_asid_on \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 37.35,
+    "duration": 9.58,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 158,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " vt52_console \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 37.36,
+    "duration": 9.73,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 157,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " vdi_vex_wheelv \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 37.39,
+    "duration": 9.7,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 10,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_a117_mn_selected_owner \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 37.4,
+    "duration": 10.02,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 12,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_a73_event_neighbours \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 37.45,
+    "duration": 9.75,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 113,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " gemdos_fattrib_dir \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 37.47,
+    "duration": 9.7,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 94,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " arch03_3b_fsetdta \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 37.69,
+    "duration": 9.66,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 29,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_gh1_update_mutex \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 37.74,
+    "duration": 9.79,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 28,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_form_alert_cursor_bracket \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 38.08,
+    "duration": 9.61,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 96,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " arch03_3c_e10 \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 46.31,
+    "duration": 9.8,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 103,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " arch03_region_owners \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 46.92,
+    "duration": 10.0,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 140,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " proc03_chain_and_pterm_return \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 47.09,
+    "duration": 9.8,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 6,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_a111_caret \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 47.09,
+    "duration": 9.84,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 89,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_top_unopened \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 47.18,
+    "duration": 10.18,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 99,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " arch03_4_asid_alloc \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 47.21,
+    "duration": 9.67,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 150,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " sched_pexec_parent_suspend \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 47.35,
+    "duration": 9.73,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 20,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_cicon_draw \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 47.41,
+    "duration": 9.84,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 132,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " mem05_owner_limit \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 47.53,
+    "duration": 9.82,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 77,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_hotclose \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 47.69,
+    "duration": 9.88,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 137,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " pparent_standin \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 56.11,
+    "duration": 9.83,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 81,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_open_oldtop \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 56.87,
+    "duration": 10.29,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 38,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_menu_bar_height \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 56.89,
+    "duration": 10.21,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 142,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " proc04_curdir_per_pd \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 56.92,
+    "duration": 10.25,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 155,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " vdi_reference_overlay_bit \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 56.93,
+    "duration": 10.24,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 73,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_delete_slot \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 57.09,
+    "duration": 9.6,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 159,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " vt52_console_default_palette \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 57.26,
+    "duration": 9.87,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 64,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_shel_write_iscr \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 57.35,
+    "duration": 9.85,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 13,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_a87_a88_menu_ctwait_popup \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 57.36,
+    "duration": 9.84,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 161,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " xbios_kbrate_repeat_source \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 57.57,
+    "duration": 9.7,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 11,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_a118_lock_takers \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 65.94,
+    "duration": 9.89,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 40,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_menu_settings \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 66.69,
+    "duration": 9.83,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 117,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " gemdos_fs_device_error \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 67.1,
+    "duration": 10.06,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 127,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " mem02_mxalloc_modes \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 67.14,
+    "duration": 10.03,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 24,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_desk_prefs_radio \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 67.17,
+    "duration": 10.21,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 97,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " arch03_3c_keep \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 67.17,
+    "duration": 10.01,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 134,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " mem12_super_state \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 67.17,
+    "duration": 10.04,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 133,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " mem11_user_ptr_assert \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 67.2,
+    "duration": 9.85,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 153,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " vdi_raster_reference \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 67.2,
+    "duration": 9.84,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 125,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " loader_pie_reloc \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 67.27,
+    "duration": 10.09,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 144,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " proc04_open_file_table \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 75.83,
+    "duration": 9.36,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 139,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " proc03_b5_accessory_run \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 76.52,
+    "duration": 9.57,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 67,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_t04_intin_long_contract \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 77.04,
+    "duration": 9.23,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 44,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_object_3d_text_button \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 77.05,
+    "duration": 9.16,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 60,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_rsrc_tedinfo_reserve \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 77.16,
+    "duration": 9.87,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 66,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_shell_desk60_autorun_noexec \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 77.17,
+    "duration": 9.41,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 65,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_shel_write_reschng \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 77.18,
+    "duration": 9.79,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 82,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_rectlist_capacity \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 77.2,
+    "duration": 9.69,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 84,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_screen_buffer \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 77.36,
+    "duration": 9.71,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 51,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_pd_by_slot \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 77.38,
+    "duration": 9.56,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 112,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " gemdos_drive_login \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 85.19,
+    "duration": 9.97,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 115,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " gemdos_fs_chain_steps \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 86.09,
+    "duration": 9.54,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 37,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_launch_boundary_reset \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 86.21,
+    "duration": 10.22,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 3,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_a100_a102_desk_menu_geometry \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 86.27,
+    "duration": 10.39,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 52,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_reference \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 86.58,
+    "duration": 10.52,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 48,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_object_nicelines \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 86.89,
+    "duration": 9.68,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 85,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_screen_buffer_absent \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 86.93,
+    "duration": 10.15,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 87,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_slider_guard \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 86.97,
+    "duration": 10.1,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 17,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_appl_init \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 87.03,
+    "duration": 10.0,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 41,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_newdesk_root_word \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 87.07,
+    "duration": 9.84,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 63,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_shel_roundtrip \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 95.17,
+    "duration": 9.68,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 116,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " gemdos_fs_curcl \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 95.63,
+    "duration": 9.91,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 136,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " post_e9_free_accs \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 96.43,
+    "duration": 9.2,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 148,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " sched_dsptch_admits_the_caller \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 96.57,
+    "duration": 9.73,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 34,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_intout_underwrite \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 96.66,
+    "duration": 9.77,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 31,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_graf_growbox_desk \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 96.91,
+    "duration": 9.73,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 124,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " loader_ilp32_rejected \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 97.03,
+    "duration": 9.47,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 120,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " gemdos_ssystem_cpuinfo \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 97.07,
+    "duration": 9.77,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 92,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " arch03_3a_caller_space \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 97.08,
+    "duration": 9.92,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 131,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " mem05_memprot_tables \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 97.1,
+    "duration": 9.81,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 145,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " proc05_shell_exit_code \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 104.85,
+    "duration": 10.05,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 16,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_app_return_descriptor \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 105.54,
+    "duration": 10.41,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 114,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " gemdos_fs_bcache \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 105.63,
+    "duration": 10.41,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 126,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " loader_prgflags \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 106.3,
+    "duration": 9.74,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 22,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_desk_dialog_chain \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 106.43,
+    "duration": 10.07,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 9,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_a116_appl_write_blocks \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 106.5,
+    "duration": 10.05,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 45,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_object_add_return \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 106.64,
+    "duration": 10.28,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 25,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_dialog_undraw \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 106.84,
+    "duration": 10.28,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 69,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_wind_get_desktop_geometry \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 106.91,
+    "duration": 10.26,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 50,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_object_selected_xor \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 107.01,
+    "duration": 10.13,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 151,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " vdi_eddi_scrninfo \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 114.9,
+    "duration": 9.72,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 106,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " bios_reset \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 115.95,
+    "duration": 9.67,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 23,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_desk_dialog_exit_buttons \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 116.04,
+    "duration": 9.75,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 70,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_color_words \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 116.04,
+    "duration": 9.64,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 121,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " gemdos_ssystem_idt_cookie \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 116.51,
+    "duration": 9.58,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 156,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " vdi_reference_raster_screen \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 116.55,
+    "duration": 9.69,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 56,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_rsrc_obfix_at_load \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 116.91,
+    "duration": 9.37,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 76,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_gadget_rect \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 117.12,
+    "duration": 9.69,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 149,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " sched_dsptch_keeps_caller_ready \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 117.14,
+    "duration": 9.71,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 105,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " bios_bcache \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 117.17,
+    "duration": 9.34,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 154,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " vdi_reference \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 124.63,
+    "duration": 9.94,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 14,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_a89_a92_menu_event_neighbours \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 125.62,
+    "duration": 9.86,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 33,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_icon_unaligned_raster \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 125.68,
+    "duration": 9.91,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 71,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_content \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 125.79,
+    "duration": 9.89,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 68,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_wheel_change \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 126.08,
+    "duration": 9.72,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 54,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_rsrc_global_fields \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 126.23,
+    "duration": 9.63,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 35,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_k1_gl_handle \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 126.29,
+    "duration": 9.92,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 83,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_rectlist_zorder \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 126.51,
+    "duration": 9.89,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 104,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " arch03_shared_space \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 126.82,
+    "duration": 9.67,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 46,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_object_cursor_bracket \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 126.85,
+    "duration": 9.79,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 58,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_rsrc_short_blob \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 134.56,
+    "duration": 9.96,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 79,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_name_get \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 135.48,
+    "duration": 10.32,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 91,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_zorder_counter \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 135.59,
+    "duration": 10.34,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 141,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " proc04_console_redirect \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 135.68,
+    "duration": 10.35,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 138,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " proc02_handle_lifecycle \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 135.8,
+    "duration": 10.47,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 122,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " gemdos_ssystem_sysinfo \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 135.87,
+    "duration": 9.96,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 53,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_rsrc_gaddr_edges \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 136.21,
+    "duration": 10.1,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 130,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " mem05_mdpool \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 136.4,
+    "duration": 10.12,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 147,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " sched_a115_ready_list \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 136.49,
+    "duration": 9.95,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 7,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_a112_wake_conditions \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 136.64,
+    "duration": 10.26,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 86,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_slid_rect \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 144.53,
+    "duration": 9.87,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 59,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_rsrc_substruct_arrays \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 145.8,
+    "duration": 9.99,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 30,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_global_layout \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 145.83,
+    "duration": 9.89,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 110,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " fs18_frename \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 145.93,
+    "duration": 10.03,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 47,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_object_font \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 146.03,
+    "duration": 9.97,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 21,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_desk_background \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 146.28,
+    "duration": 10.1,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 88,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_slider_subtree \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 146.31,
+    "duration": 10.09,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 57,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_rsrc_per_process \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 146.44,
+    "duration": 9.92,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 128,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " mem02_mxalloc_no_alt \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 146.52,
+    "duration": 9.88,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 27,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_ev_rets_state_at_event \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 146.89,
+    "duration": 9.85,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 62,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_screen_buffer_save_under \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 154.4,
+    "duration": 9.59,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 93,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " arch03_3a_gem_space \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 155.72,
+    "duration": 9.23,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 107,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " con01_console_typeahead \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 155.79,
+    "duration": 9.2,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 160,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " xbios_kbdvecs \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 155.96,
+    "duration": 9.11,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 5,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_a106_restart \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 156.0,
+    "duration": 9.19,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 101,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " arch03_e9_tpa \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 156.37,
+    "duration": 8.83,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 74,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_window_drag \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 156.37,
+    "duration": 8.92,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 43,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_object_3d_box_border \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 156.4,
+    "duration": 8.84,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  },
+  {
+    "i": 61,
+    "name": "tos-api",
+    "version": "0.6.1",
+    "mode": "todo",
+    "target": " aes_rsrc_tedinfo_txtlen \"test\" (test)",
+    "features": [
+      "default"
+    ],
+    "start": 156.4,
+    "duration": 8.83,
+    "unblocked_units": [],
+    "unblocked_rmeta_units": [],
+    "sections": null
+  }
+];
+const CONCURRENCY_DATA = [
+  {
+    "t": 0.0,
+    "active": 0,
+    "waiting": 0,
+    "inactive": 161
+  },
+  {
+    "t": 0.09,
+    "active": 2,
+    "waiting": 0,
+    "inactive": 159
+  },
+  {
+    "t": 8.14,
+    "active": 10,
+    "waiting": 150,
+    "inactive": 0
+  },
+  {
+    "t": 9.7,
+    "active": 10,
+    "waiting": 149,
+    "inactive": 0
+  },
+  {
+    "t": 17.09,
+    "active": 10,
+    "waiting": 148,
+    "inactive": 0
+  },
+  {
+    "t": 17.21,
+    "active": 10,
+    "waiting": 147,
+    "inactive": 0
+  },
+  {
+    "t": 17.33,
+    "active": 11,
+    "waiting": 146,
+    "inactive": 0
+  },
+  {
+    "t": 17.34,
+    "active": 10,
+    "waiting": 146,
+    "inactive": 0
+  },
+  {
+    "t": 17.45,
+    "active": 12,
+    "waiting": 144,
+    "inactive": 0
+  },
+  {
+    "t": 17.450000000000003,
+    "active": 10,
+    "waiting": 144,
+    "inactive": 0
+  },
+  {
+    "t": 17.47,
+    "active": 10,
+    "waiting": 143,
+    "inactive": 0
+  },
+  {
+    "t": 17.5,
+    "active": 10,
+    "waiting": 142,
+    "inactive": 0
+  },
+  {
+    "t": 17.59,
+    "active": 10,
+    "waiting": 141,
+    "inactive": 0
+  },
+  {
+    "t": 17.61,
+    "active": 10,
+    "waiting": 140,
+    "inactive": 0
+  },
+  {
+    "t": 18.14,
+    "active": 10,
+    "waiting": 139,
+    "inactive": 0
+  },
+  {
+    "t": 26.84,
+    "active": 10,
+    "waiting": 138,
+    "inactive": 0
+  },
+  {
+    "t": 27.38,
+    "active": 10,
+    "waiting": 137,
+    "inactive": 0
+  },
+  {
+    "t": 27.48,
+    "active": 10,
+    "waiting": 136,
+    "inactive": 0
+  },
+  {
+    "t": 27.64,
+    "active": 10,
+    "waiting": 135,
+    "inactive": 0
+  },
+  {
+    "t": 27.689999999999998,
+    "active": 8,
+    "waiting": 135,
+    "inactive": 0
+  },
+  {
+    "t": 27.69,
+    "active": 10,
+    "waiting": 133,
+    "inactive": 0
+  },
+  {
+    "t": 27.72,
+    "active": 10,
+    "waiting": 132,
+    "inactive": 0
+  },
+  {
+    "t": 27.75,
+    "active": 11,
+    "waiting": 131,
+    "inactive": 0
+  },
+  {
+    "t": 27.759999999999998,
+    "active": 10,
+    "waiting": 131,
+    "inactive": 0
+  },
+  {
+    "t": 27.89,
+    "active": 10,
+    "waiting": 130,
+    "inactive": 0
+  },
+  {
+    "t": 28.16,
+    "active": 10,
+    "waiting": 129,
+    "inactive": 0
+  },
+  {
+    "t": 36.65,
+    "active": 10,
+    "waiting": 128,
+    "inactive": 0
+  },
+  {
+    "t": 37.34,
+    "active": 9,
+    "waiting": 128,
+    "inactive": 0
+  },
+  {
+    "t": 37.35,
+    "active": 10,
+    "waiting": 127,
+    "inactive": 0
+  },
+  {
+    "t": 37.36,
+    "active": 11,
+    "waiting": 126,
+    "inactive": 0
+  },
+  {
+    "t": 37.370000000000005,
+    "active": 10,
+    "waiting": 126,
+    "inactive": 0
+  },
+  {
+    "t": 37.39,
+    "active": 10,
+    "waiting": 125,
+    "inactive": 0
+  },
+  {
+    "t": 37.4,
+    "active": 10,
+    "waiting": 124,
+    "inactive": 0
+  },
+  {
+    "t": 37.45,
+    "active": 10,
+    "waiting": 123,
+    "inactive": 0
+  },
+  {
+    "t": 37.47,
+    "active": 10,
+    "waiting": 122,
+    "inactive": 0
+  },
+  {
+    "t": 37.69,
+    "active": 10,
+    "waiting": 121,
+    "inactive": 0
+  },
+  {
+    "t": 37.74,
+    "active": 10,
+    "waiting": 120,
+    "inactive": 0
+  },
+  {
+    "t": 38.08,
+    "active": 10,
+    "waiting": 119,
+    "inactive": 0
+  },
+  {
+    "t": 46.31,
+    "active": 10,
+    "waiting": 118,
+    "inactive": 0
+  },
+  {
+    "t": 46.92,
+    "active": 11,
+    "waiting": 117,
+    "inactive": 0
+  },
+  {
+    "t": 46.93,
+    "active": 10,
+    "waiting": 117,
+    "inactive": 0
+  },
+  {
+    "t": 47.09,
+    "active": 10,
+    "waiting": 115,
+    "inactive": 0
+  },
+  {
+    "t": 47.17,
+    "active": 9,
+    "waiting": 115,
+    "inactive": 0
+  },
+  {
+    "t": 47.18,
+    "active": 10,
+    "waiting": 114,
+    "inactive": 0
+  },
+  {
+    "t": 47.2,
+    "active": 9,
+    "waiting": 114,
+    "inactive": 0
+  },
+  {
+    "t": 47.21,
+    "active": 10,
+    "waiting": 113,
+    "inactive": 0
+  },
+  {
+    "t": 47.349999999999994,
+    "active": 9,
+    "waiting": 113,
+    "inactive": 0
+  },
+  {
+    "t": 47.35,
+    "active": 10,
+    "waiting": 112,
+    "inactive": 0
+  },
+  {
+    "t": 47.41,
+    "active": 11,
+    "waiting": 111,
+    "inactive": 0
+  },
+  {
+    "t": 47.42,
+    "active": 10,
+    "waiting": 111,
+    "inactive": 0
+  },
+  {
+    "t": 47.53,
+    "active": 10,
+    "waiting": 110,
+    "inactive": 0
+  },
+  {
+    "t": 47.69,
+    "active": 10,
+    "waiting": 109,
+    "inactive": 0
+  },
+  {
+    "t": 56.11,
+    "active": 10,
+    "waiting": 108,
+    "inactive": 0
+  },
+  {
+    "t": 56.87,
+    "active": 11,
+    "waiting": 107,
+    "inactive": 0
+  },
+  {
+    "t": 56.88,
+    "active": 10,
+    "waiting": 107,
+    "inactive": 0
+  },
+  {
+    "t": 56.89,
+    "active": 10,
+    "waiting": 106,
+    "inactive": 0
+  },
+  {
+    "t": 56.92,
+    "active": 10,
+    "waiting": 105,
+    "inactive": 0
+  },
+  {
+    "t": 56.93,
+    "active": 11,
+    "waiting": 104,
+    "inactive": 0
+  },
+  {
+    "t": 56.93000000000001,
+    "active": 10,
+    "waiting": 104,
+    "inactive": 0
+  },
+  {
+    "t": 57.08,
+    "active": 9,
+    "waiting": 104,
+    "inactive": 0
+  },
+  {
+    "t": 57.09,
+    "active": 10,
+    "waiting": 103,
+    "inactive": 0
+  },
+  {
+    "t": 57.25,
+    "active": 9,
+    "waiting": 103,
+    "inactive": 0
+  },
+  {
+    "t": 57.26,
+    "active": 10,
+    "waiting": 102,
+    "inactive": 0
+  },
+  {
+    "t": 57.35,
+    "active": 10,
+    "waiting": 101,
+    "inactive": 0
+  },
+  {
+    "t": 57.36,
+    "active": 10,
+    "waiting": 100,
+    "inactive": 0
+  },
+  {
+    "t": 57.57,
+    "active": 10,
+    "waiting": 99,
+    "inactive": 0
+  },
+  {
+    "t": 65.94,
+    "active": 10,
+    "waiting": 98,
+    "inactive": 0
+  },
+  {
+    "t": 66.69,
+    "active": 10,
+    "waiting": 97,
+    "inactive": 0
+  },
+  {
+    "t": 67.1,
+    "active": 10,
+    "waiting": 96,
+    "inactive": 0
+  },
+  {
+    "t": 67.13,
+    "active": 9,
+    "waiting": 96,
+    "inactive": 0
+  },
+  {
+    "t": 67.14,
+    "active": 10,
+    "waiting": 95,
+    "inactive": 0
+  },
+  {
+    "t": 67.16,
+    "active": 9,
+    "waiting": 95,
+    "inactive": 0
+  },
+  {
+    "t": 67.17,
+    "active": 10,
+    "waiting": 92,
+    "inactive": 0
+  },
+  {
+    "t": 67.2,
+    "active": 10,
+    "waiting": 90,
+    "inactive": 0
+  },
+  {
+    "t": 67.27,
+    "active": 10,
+    "waiting": 89,
+    "inactive": 0
+  },
+  {
+    "t": 75.83,
+    "active": 10,
+    "waiting": 88,
+    "inactive": 0
+  },
+  {
+    "t": 76.52,
+    "active": 10,
+    "waiting": 87,
+    "inactive": 0
+  },
+  {
+    "t": 77.04,
+    "active": 10,
+    "waiting": 86,
+    "inactive": 0
+  },
+  {
+    "t": 77.05,
+    "active": 10,
+    "waiting": 85,
+    "inactive": 0
+  },
+  {
+    "t": 77.16,
+    "active": 10,
+    "waiting": 84,
+    "inactive": 0
+  },
+  {
+    "t": 77.17,
+    "active": 10,
+    "waiting": 83,
+    "inactive": 0
+  },
+  {
+    "t": 77.18,
+    "active": 10,
+    "waiting": 82,
+    "inactive": 0
+  },
+  {
+    "t": 77.2,
+    "active": 11,
+    "waiting": 81,
+    "inactive": 0
+  },
+  {
+    "t": 77.21000000000001,
+    "active": 10,
+    "waiting": 81,
+    "inactive": 0
+  },
+  {
+    "t": 77.36,
+    "active": 10,
+    "waiting": 80,
+    "inactive": 0
+  },
+  {
+    "t": 77.38,
+    "active": 10,
+    "waiting": 79,
+    "inactive": 0
+  },
+  {
+    "t": 85.19,
+    "active": 10,
+    "waiting": 78,
+    "inactive": 0
+  },
+  {
+    "t": 86.09,
+    "active": 10,
+    "waiting": 77,
+    "inactive": 0
+  },
+  {
+    "t": 86.21,
+    "active": 10,
+    "waiting": 76,
+    "inactive": 0
+  },
+  {
+    "t": 86.27,
+    "active": 11,
+    "waiting": 75,
+    "inactive": 0
+  },
+  {
+    "t": 86.27000000000001,
+    "active": 10,
+    "waiting": 75,
+    "inactive": 0
+  },
+  {
+    "t": 86.58,
+    "active": 10,
+    "waiting": 74,
+    "inactive": 0
+  },
+  {
+    "t": 86.89,
+    "active": 10,
+    "waiting": 73,
+    "inactive": 0
+  },
+  {
+    "t": 86.93,
+    "active": 11,
+    "waiting": 72,
+    "inactive": 0
+  },
+  {
+    "t": 86.94,
+    "active": 10,
+    "waiting": 72,
+    "inactive": 0
+  },
+  {
+    "t": 86.97,
+    "active": 10,
+    "waiting": 71,
+    "inactive": 0
+  },
+  {
+    "t": 87.03,
+    "active": 10,
+    "waiting": 70,
+    "inactive": 0
+  },
+  {
+    "t": 87.07,
+    "active": 10,
+    "waiting": 69,
+    "inactive": 0
+  },
+  {
+    "t": 95.16,
+    "active": 9,
+    "waiting": 69,
+    "inactive": 0
+  },
+  {
+    "t": 95.17,
+    "active": 10,
+    "waiting": 68,
+    "inactive": 0
+  },
+  {
+    "t": 95.63,
+    "active": 10,
+    "waiting": 67,
+    "inactive": 0
+  },
+  {
+    "t": 96.42999999999999,
+    "active": 9,
+    "waiting": 67,
+    "inactive": 0
+  },
+  {
+    "t": 96.43,
+    "active": 10,
+    "waiting": 66,
+    "inactive": 0
+  },
+  {
+    "t": 96.57,
+    "active": 10,
+    "waiting": 65,
+    "inactive": 0
+  },
+  {
+    "t": 96.66,
+    "active": 10,
+    "waiting": 64,
+    "inactive": 0
+  },
+  {
+    "t": 96.91,
+    "active": 10,
+    "waiting": 63,
+    "inactive": 0
+  },
+  {
+    "t": 97.03,
+    "active": 10,
+    "waiting": 62,
+    "inactive": 0
+  },
+  {
+    "t": 97.07,
+    "active": 10,
+    "waiting": 61,
+    "inactive": 0
+  },
+  {
+    "t": 97.08,
+    "active": 11,
+    "waiting": 60,
+    "inactive": 0
+  },
+  {
+    "t": 97.08000000000001,
+    "active": 10,
+    "waiting": 60,
+    "inactive": 0
+  },
+  {
+    "t": 97.1,
+    "active": 10,
+    "waiting": 59,
+    "inactive": 0
+  },
+  {
+    "t": 104.85,
+    "active": 10,
+    "waiting": 58,
+    "inactive": 0
+  },
+  {
+    "t": 105.53999999999999,
+    "active": 9,
+    "waiting": 58,
+    "inactive": 0
+  },
+  {
+    "t": 105.54,
+    "active": 10,
+    "waiting": 57,
+    "inactive": 0
+  },
+  {
+    "t": 105.63,
+    "active": 11,
+    "waiting": 56,
+    "inactive": 0
+  },
+  {
+    "t": 105.63000000000001,
+    "active": 10,
+    "waiting": 56,
+    "inactive": 0
+  },
+  {
+    "t": 106.3,
+    "active": 10,
+    "waiting": 55,
+    "inactive": 0
+  },
+  {
+    "t": 106.42999999999999,
+    "active": 9,
+    "waiting": 55,
+    "inactive": 0
+  },
+  {
+    "t": 106.43,
+    "active": 10,
+    "waiting": 54,
+    "inactive": 0
+  },
+  {
+    "t": 106.5,
+    "active": 10,
+    "waiting": 53,
+    "inactive": 0
+  },
+  {
+    "t": 106.64,
+    "active": 10,
+    "waiting": 52,
+    "inactive": 0
+  },
+  {
+    "t": 106.83999999999999,
+    "active": 9,
+    "waiting": 52,
+    "inactive": 0
+  },
+  {
+    "t": 106.84,
+    "active": 10,
+    "waiting": 51,
+    "inactive": 0
+  },
+  {
+    "t": 106.91,
+    "active": 10,
+    "waiting": 50,
+    "inactive": 0
+  },
+  {
+    "t": 107.0,
+    "active": 9,
+    "waiting": 50,
+    "inactive": 0
+  },
+  {
+    "t": 107.01,
+    "active": 10,
+    "waiting": 49,
+    "inactive": 0
+  },
+  {
+    "t": 114.89999999999999,
+    "active": 9,
+    "waiting": 49,
+    "inactive": 0
+  },
+  {
+    "t": 114.9,
+    "active": 10,
+    "waiting": 48,
+    "inactive": 0
+  },
+  {
+    "t": 115.95,
+    "active": 10,
+    "waiting": 47,
+    "inactive": 0
+  },
+  {
+    "t": 116.03999999999999,
+    "active": 8,
+    "waiting": 47,
+    "inactive": 0
+  },
+  {
+    "t": 116.04,
+    "active": 10,
+    "waiting": 45,
+    "inactive": 0
+  },
+  {
+    "t": 116.5,
+    "active": 9,
+    "waiting": 45,
+    "inactive": 0
+  },
+  {
+    "t": 116.51,
+    "active": 10,
+    "waiting": 44,
+    "inactive": 0
+  },
+  {
+    "t": 116.55,
+    "active": 10,
+    "waiting": 43,
+    "inactive": 0
+  },
+  {
+    "t": 116.91,
+    "active": 11,
+    "waiting": 42,
+    "inactive": 0
+  },
+  {
+    "t": 116.92,
+    "active": 10,
+    "waiting": 42,
+    "inactive": 0
+  },
+  {
+    "t": 117.12,
+    "active": 10,
+    "waiting": 41,
+    "inactive": 0
+  },
+  {
+    "t": 117.14,
+    "active": 10,
+    "waiting": 40,
+    "inactive": 0
+  },
+  {
+    "t": 117.17,
+    "active": 10,
+    "waiting": 39,
+    "inactive": 0
+  },
+  {
+    "t": 124.62,
+    "active": 9,
+    "waiting": 39,
+    "inactive": 0
+  },
+  {
+    "t": 124.63,
+    "active": 10,
+    "waiting": 38,
+    "inactive": 0
+  },
+  {
+    "t": 125.62,
+    "active": 10,
+    "waiting": 37,
+    "inactive": 0
+  },
+  {
+    "t": 125.68,
+    "active": 10,
+    "waiting": 36,
+    "inactive": 0
+  },
+  {
+    "t": 125.79,
+    "active": 10,
+    "waiting": 35,
+    "inactive": 0
+  },
+  {
+    "t": 126.08,
+    "active": 11,
+    "waiting": 34,
+    "inactive": 0
+  },
+  {
+    "t": 126.09,
+    "active": 10,
+    "waiting": 34,
+    "inactive": 0
+  },
+  {
+    "t": 126.23,
+    "active": 11,
+    "waiting": 33,
+    "inactive": 0
+  },
+  {
+    "t": 126.24,
+    "active": 10,
+    "waiting": 33,
+    "inactive": 0
+  },
+  {
+    "t": 126.28,
+    "active": 9,
+    "waiting": 33,
+    "inactive": 0
+  },
+  {
+    "t": 126.29,
+    "active": 10,
+    "waiting": 32,
+    "inactive": 0
+  },
+  {
+    "t": 126.51,
+    "active": 10,
+    "waiting": 31,
+    "inactive": 0
+  },
+  {
+    "t": 126.81,
+    "active": 9,
+    "waiting": 31,
+    "inactive": 0
+  },
+  {
+    "t": 126.82,
+    "active": 10,
+    "waiting": 30,
+    "inactive": 0
+  },
+  {
+    "t": 126.85,
+    "active": 10,
+    "waiting": 29,
+    "inactive": 0
+  },
+  {
+    "t": 134.56,
+    "active": 11,
+    "waiting": 28,
+    "inactive": 0
+  },
+  {
+    "t": 134.57,
+    "active": 10,
+    "waiting": 28,
+    "inactive": 0
+  },
+  {
+    "t": 135.48,
+    "active": 11,
+    "waiting": 27,
+    "inactive": 0
+  },
+  {
+    "t": 135.48000000000002,
+    "active": 10,
+    "waiting": 27,
+    "inactive": 0
+  },
+  {
+    "t": 135.59,
+    "active": 10,
+    "waiting": 26,
+    "inactive": 0
+  },
+  {
+    "t": 135.68,
+    "active": 10,
+    "waiting": 25,
+    "inactive": 0
+  },
+  {
+    "t": 135.8,
+    "active": 10,
+    "waiting": 24,
+    "inactive": 0
+  },
+  {
+    "t": 135.86,
+    "active": 9,
+    "waiting": 24,
+    "inactive": 0
+  },
+  {
+    "t": 135.87,
+    "active": 10,
+    "waiting": 23,
+    "inactive": 0
+  },
+  {
+    "t": 136.21,
+    "active": 10,
+    "waiting": 22,
+    "inactive": 0
+  },
+  {
+    "t": 136.4,
+    "active": 10,
+    "waiting": 21,
+    "inactive": 0
+  },
+  {
+    "t": 136.48999999999998,
+    "active": 9,
+    "waiting": 21,
+    "inactive": 0
+  },
+  {
+    "t": 136.49,
+    "active": 10,
+    "waiting": 20,
+    "inactive": 0
+  },
+  {
+    "t": 136.64,
+    "active": 10,
+    "waiting": 19,
+    "inactive": 0
+  },
+  {
+    "t": 144.52,
+    "active": 9,
+    "waiting": 19,
+    "inactive": 0
+  },
+  {
+    "t": 144.53,
+    "active": 10,
+    "waiting": 18,
+    "inactive": 0
+  },
+  {
+    "t": 145.79999999999998,
+    "active": 9,
+    "waiting": 18,
+    "inactive": 0
+  },
+  {
+    "t": 145.8,
+    "active": 10,
+    "waiting": 17,
+    "inactive": 0
+  },
+  {
+    "t": 145.83,
+    "active": 10,
+    "waiting": 16,
+    "inactive": 0
+  },
+  {
+    "t": 145.93,
+    "active": 10,
+    "waiting": 15,
+    "inactive": 0
+  },
+  {
+    "t": 146.03,
+    "active": 10,
+    "waiting": 14,
+    "inactive": 0
+  },
+  {
+    "t": 146.27,
+    "active": 9,
+    "waiting": 14,
+    "inactive": 0
+  },
+  {
+    "t": 146.28,
+    "active": 10,
+    "waiting": 13,
+    "inactive": 0
+  },
+  {
+    "t": 146.31,
+    "active": 10,
+    "waiting": 12,
+    "inactive": 0
+  },
+  {
+    "t": 146.44,
+    "active": 10,
+    "waiting": 11,
+    "inactive": 0
+  },
+  {
+    "t": 146.52,
+    "active": 10,
+    "waiting": 10,
+    "inactive": 0
+  },
+  {
+    "t": 146.89,
+    "active": 11,
+    "waiting": 9,
+    "inactive": 0
+  },
+  {
+    "t": 146.89999999999998,
+    "active": 10,
+    "waiting": 9,
+    "inactive": 0
+  },
+  {
+    "t": 154.4,
+    "active": 10,
+    "waiting": 8,
+    "inactive": 0
+  },
+  {
+    "t": 155.72,
+    "active": 11,
+    "waiting": 7,
+    "inactive": 0
+  },
+  {
+    "t": 155.72000000000003,
+    "active": 10,
+    "waiting": 7,
+    "inactive": 0
+  },
+  {
+    "t": 155.79,
+    "active": 11,
+    "waiting": 6,
+    "inactive": 0
+  },
+  {
+    "t": 155.79000000000002,
+    "active": 10,
+    "waiting": 6,
+    "inactive": 0
+  },
+  {
+    "t": 155.96,
+    "active": 10,
+    "waiting": 5,
+    "inactive": 0
+  },
+  {
+    "t": 156.0,
+    "active": 10,
+    "waiting": 4,
+    "inactive": 0
+  },
+  {
+    "t": 156.35999999999999,
+    "active": 9,
+    "waiting": 4,
+    "inactive": 0
+  },
+  {
+    "t": 156.37,
+    "active": 11,
+    "waiting": 2,
+    "inactive": 0
+  },
+  {
+    "t": 156.38,
+    "active": 10,
+    "waiting": 2,
+    "inactive": 0
+  },
+  {
+    "t": 156.4,
+    "active": 10,
+    "waiting": 0,
+    "inactive": 0
+  },
+  {
+    "t": 156.73999999999998,
+    "active": 9,
+    "waiting": 0,
+    "inactive": 0
+  },
+  {
+    "t": 163.99,
+    "active": 8,
+    "waiting": 0,
+    "inactive": 0
+  },
+  {
+    "t": 164.95,
+    "active": 7,
+    "waiting": 0,
+    "inactive": 0
+  },
+  {
+    "t": 164.98999999999998,
+    "active": 6,
+    "waiting": 0,
+    "inactive": 0
+  },
+  {
+    "t": 165.07,
+    "active": 5,
+    "waiting": 0,
+    "inactive": 0
+  },
+  {
+    "t": 165.19,
+    "active": 4,
+    "waiting": 0,
+    "inactive": 0
+  },
+  {
+    "t": 165.20000000000002,
+    "active": 3,
+    "waiting": 0,
+    "inactive": 0
+  },
+  {
+    "t": 165.23000000000002,
+    "active": 2,
+    "waiting": 0,
+    "inactive": 0
+  },
+  {
+    "t": 165.24,
+    "active": 1,
+    "waiting": 0,
+    "inactive": 0
+  },
+  {
+    "t": 165.29,
+    "active": 0,
+    "waiting": 0,
+    "inactive": 0
+  }
+];
+const CPU_USAGE = [
+  [
+    0.596959208,
+    16.977928692699493
+  ],
+  [
+    1.09910475,
+    21.31474103585657
+  ],
+  [
+    1.604219166,
+    21.529175050301802
+  ],
+  [
+    2.10825675,
+    19.361277445109778
+  ],
+  [
+    2.61335125,
+    12.723658051689853
+  ],
+  [
+    3.11743025,
+    23.493975903614455
+  ],
+  [
+    3.622569375,
+    19.521912350597617
+  ],
+  [
+    4.127673541,
+    17.85714285714286
+  ],
+  [
+    4.629153958,
+    17.8714859437751
+  ],
+  [
+    5.134299208,
+    17.928286852589636
+  ],
+  [
+    5.639449333,
+    15.230460921843687
+  ],
+  [
+    6.142102083,
+    23.847695390781567
+  ],
+  [
+    6.64723625,
+    17.928286852589636
+  ],
+  [
+    7.150083458,
+    30.0
+  ],
+  [
+    7.6552092080000005,
+    20.47713717693837
+  ],
+  [
+    7.930203458,
+    22.140221402214024
+  ],
+  [
+    8.137828791,
+    29.245283018867923
+  ],
+  [
+    8.338706458,
+    47.120418848167546
+  ],
+  [
+    8.896255291,
+    30.741410488245933
+  ],
+  [
+    9.401291083,
+    21.843687374749493
+  ],
+  [
+    9.697928041,
+    26.027397260273972
+  ],
+  [
+    10.210856958,
+    30.03952569169961
+  ],
+  [
+    10.7149665,
+    34.331337325349295
+  ],
+  [
+    11.220003583,
+    20.040485829959508
+  ],
+  [
+    11.725058875,
+    18.548387096774192
+  ],
+  [
+    12.23009375,
+    17.261904761904773
+  ],
+  [
+    12.734682,
+    18.10865191146881
+  ],
+  [
+    13.239717791,
+    17.670682730923687
+  ],
+  [
+    13.744748583,
+    17.0
+  ],
+  [
+    14.249774291,
+    17.102615694164996
+  ],
+  [
+    14.754807666,
+    19.038076152304612
+  ],
+  [
+    15.259841666,
+    20.39999999999999
+  ],
+  [
+    15.764893208,
+    24.096385542168676
+  ],
+  [
+    16.26675875,
+    15.959595959595958
+  ],
+  [
+    16.767221166,
+    16.33064516129032
+  ],
+  [
+    17.087247666,
+    63.17460317460317
+  ],
+  [
+    17.206890208,
+    86.4406779661017
+  ],
+  [
+    17.333449333,
+    46.4
+  ],
+  [
+    17.446006041,
+    66.96428571428572
+  ],
+  [
+    17.586781375,
+    44.20289855072463
+  ],
+  [
+    18.115088958,
+    22.2011385199241
+  ],
+  [
+    18.646389666,
+    26.103646833013443
+  ],
+  [
+    19.149940625,
+    16.297786720321923
+  ],
+  [
+    19.655001916,
+    22.289156626506028
+  ],
+  [
+    20.160034666,
+    18.200000000000003
+  ],
+  [
+    20.665066791,
+    17.269076305220892
+  ],
+  [
+    21.166825375,
+    18.787878787878782
+  ],
+  [
+    21.670515625,
+    21.200000000000003
+  ],
+  [
+    22.172129583,
+    15.384615384615387
+  ],
+  [
+    22.677201666,
+    17.102615694164996
+  ],
+  [
+    23.182233916,
+    20.04008016032064
+  ],
+  [
+    23.684264541,
+    16.60000000000001
+  ],
+  [
+    24.18930325,
+    19.67545638945232
+  ],
+  [
+    24.694338375,
+    15.0
+  ],
+  [
+    25.195707666,
+    19.959677419354833
+  ],
+  [
+    25.700092708,
+    15.568862275449106
+  ],
+  [
+    26.205130041,
+    14.979757085020239
+  ],
+  [
+    26.710165291,
+    20.88353413654619
+  ],
+  [
+    26.838174916,
+    46.82539682539682
+  ],
+  [
+    27.340466875,
+    39.07815631262525
+  ],
+  [
+    27.475673541,
+    75.75757575757575
+  ],
+  [
+    27.64305375,
+    49.70059880239521
+  ],
+  [
+    27.754564082999998,
+    54.95495495495496
+  ],
+  [
+    27.889268291,
+    31.578947368421055
+  ],
+  [
+    28.162842375,
+    26.966292134831463
+  ],
+  [
+    28.663488041,
+    20.564516129032256
+  ],
+  [
+    29.164704125,
+    16.96969696969697
+  ],
+  [
+    29.669737583,
+    17.635270541082164
+  ],
+  [
+    30.174792875,
+    17.434869739478955
+  ],
+  [
+    30.677066166,
+    17.171717171717177
+  ],
+  [
+    31.182147708,
+    16.432865731462925
+  ],
+  [
+    31.68526525,
+    17.408906882591097
+  ],
+  [
+    32.1902955,
+    20.958083832335333
+  ],
+  [
+    32.695357958,
+    18.036072144288568
+  ],
+  [
+    33.20038175,
+    18.145161290322577
+  ],
+  [
+    33.705467375,
+    19.038076152304612
+  ],
+  [
+    34.205730291,
+    18.548387096774192
+  ],
+  [
+    34.710782707999996,
+    15.120967741935488
+  ],
+  [
+    35.214807125,
+    17.8714859437751
+  ],
+  [
+    35.719839458,
+    18.200000000000003
+  ],
+  [
+    36.224875041,
+    17.102615694164996
+  ],
+  [
+    36.649508416,
+    30.166270783847978
+  ],
+  [
+    37.154616041,
+    32.59557344064386
+  ],
+  [
+    37.345244375,
+    61.97916666666667
+  ],
+  [
+    37.451616166,
+    72.0
+  ],
+  [
+    37.689572708,
+    41.004184100418406
+  ],
+  [
+    38.07836,
+    31.675392670157066
+  ],
+  [
+    38.579092166,
+    19.83805668016194
+  ],
+  [
+    39.084128583,
+    16.46586345381526
+  ],
+  [
+    39.589162458,
+    18.87550200803213
+  ],
+  [
+    40.094195458,
+    15.338645418326692
+  ],
+  [
+    40.599229416,
+    13.73737373737373
+  ],
+  [
+    41.104266875,
+    15.904572564612323
+  ],
+  [
+    41.609302958,
+    16.532258064516128
+  ],
+  [
+    42.114337958,
+    21.713147410358573
+  ],
+  [
+    42.618111708,
+    15.415821501014207
+  ],
+  [
+    43.123153041,
+    14.970059880239518
+  ],
+  [
+    43.628184166,
+    17.330677290836647
+  ],
+  [
+    44.133215375,
+    18.346774193548384
+  ],
+  [
+    44.638250541,
+    20.808080808080803
+  ],
+  [
+    45.143312458,
+    23.24649298597194
+  ],
+  [
+    45.645845625,
+    21.01010101010101
+  ],
+  [
+    46.150923915999996,
+    36.58051689860835
+  ],
+  [
+    46.3115095,
+    42.675159235668794
+  ],
+  [
+    46.816547375,
+    34.33734939759037
+  ],
+  [
+    46.9214835,
+    47.11538461538461
+  ],
+  [
+    47.091134666,
+    51.4792899408284
+  ],
+  [
+    47.206346458,
+    53.04347826086956
+  ],
+  [
+    47.353905375,
+    41.78082191780822
+  ],
+  [
+    47.531675833,
+    40.34090909090909
+  ],
+  [
+    47.68708675,
+    22.222222222222214
+  ],
+  [
+    48.192166958,
+    16.06425702811245
+  ],
+  [
+    48.69288,
+    17.276422764227632
+  ],
+  [
+    49.197925,
+    20.833333333333343
+  ],
+  [
+    49.702974833,
+    17.505030181086525
+  ],
+  [
+    50.207986666,
+    16.901408450704224
+  ],
+  [
+    50.713022041,
+    17.06827309236948
+  ],
+  [
+    51.218055583,
+    20.35928143712576
+  ],
+  [
+    51.723085958,
+    23.326572008113587
+  ],
+  [
+    52.228118291,
+    23.90438247011953
+  ],
+  [
+    52.733154833,
+    24.949698189134807
+  ],
+  [
+    53.238198,
+    18.200000000000003
+  ],
+  [
+    53.743229166,
+    23.94366197183099
+  ],
+  [
+    54.248258666,
+    19.678714859437747
+  ],
+  [
+    54.753294083,
+    19.238476953907806
+  ],
+  [
+    55.258224333,
+    17.400000000000006
+  ],
+  [
+    55.763286958,
+    18.837675350701403
+  ],
+  [
+    56.108203,
+    35.92814371257485
+  ],
+  [
+    56.613341708,
+    24.44889779559118
+  ],
+  [
+    56.872109416,
+    58.13953488372093
+  ],
+  [
+    57.08597425,
+    63.20754716981132
+  ],
+  [
+    57.256392541,
+    57.73809523809524
+  ],
+  [
+    57.566152041,
+    46.27831715210357
+  ],
+  [
+    58.071216666,
+    17.90744466800804
+  ],
+  [
+    58.575688125,
+    18.400000000000006
+  ],
+  [
+    59.080722416,
+    16.498993963782695
+  ],
+  [
+    59.585771541,
+    17.06827309236948
+  ],
+  [
+    60.090806416,
+    21.084337349397586
+  ],
+  [
+    60.595852125,
+    21.35728542914171
+  ],
+  [
+    61.100884291,
+    21.774193548387103
+  ],
+  [
+    61.60591925,
+    26.599999999999994
+  ],
+  [
+    62.110979125,
+    17.670682730923687
+  ],
+  [
+    62.616013916,
+    26.19047619047619
+  ],
+  [
+    63.121054291,
+    17.444219066937123
+  ],
+  [
+    63.626087583,
+    17.0
+  ],
+  [
+    64.131121625,
+    17.13709677419355
+  ],
+  [
+    64.63615175,
+    17.234468937875747
+  ],
+  [
+    65.141187125,
+    19.038076152304612
+  ],
+  [
+    65.646217458,
+    15.261044176706832
+  ],
+  [
+    65.939821583,
+    36.111111111111114
+  ],
+  [
+    66.44487325,
+    24.649298597194388
+  ],
+  [
+    66.691014291,
+    30.041152263374485
+  ],
+  [
+    67.10407775,
+    61.55717761557178
+  ],
+  [
+    67.268478,
+    53.65853658536585
+  ],
+  [
+    67.77354025,
+    15.725806451612897
+  ],
+  [
+    68.278579166,
+    18.36327345309381
+  ],
+  [
+    68.783524541,
+    15.61866125760649
+  ],
+  [
+    69.28474375,
+    19.19999999999999
+  ],
+  [
+    69.789780666,
+    14.91935483870968
+  ],
+  [
+    70.29481875,
+    19.277108433734938
+  ],
+  [
+    70.795034083,
+    18.346774193548384
+  ],
+  [
+    71.300072833,
+    18.837675350701403
+  ],
+  [
+    71.805106375,
+    16.901408450704224
+  ],
+  [
+    72.310156666,
+    20.967741935483872
+  ],
+  [
+    72.8105745,
+    15.821501014198773
+  ],
+  [
+    73.310994125,
+    15.959595959595958
+  ],
+  [
+    73.814166541,
+    17.94354838709677
+  ],
+  [
+    74.319240083,
+    18.36327345309381
+  ],
+  [
+    74.823364958,
+    18.07228915662651
+  ],
+  [
+    75.3283985,
+    20.724346076458758
+  ],
+  [
+    75.833153666,
+    31.504065040650403
+  ],
+  [
+    76.337117791,
+    39.0
+  ],
+  [
+    76.518846416,
+    25.824175824175825
+  ],
+  [
+    77.023942083,
+    48.99598393574297
+  ],
+  [
+    77.163283458,
+    64.74820143884892
+  ],
+  [
+    77.357221958,
+    38.3419689119171
+  ],
+  [
+    77.880172291,
+    18.25242718446603
+  ],
+  [
+    78.383055583,
+    16.935483870967744
+  ],
+  [
+    78.886071208,
+    16.935483870967744
+  ],
+  [
+    79.391126375,
+    17.60000000000001
+  ],
+  [
+    79.89558575,
+    23.599999999999994
+  ],
+  [
+    80.400376833,
+    17.46987951807229
+  ],
+  [
+    80.905411666,
+    15.430861723446895
+  ],
+  [
+    81.40961825,
+    30.303030303030297
+  ],
+  [
+    81.914648666,
+    31.200000000000003
+  ],
+  [
+    82.419704625,
+    30.583501006036215
+  ],
+  [
+    82.922645291,
+    22.289156626506028
+  ],
+  [
+    83.425161291,
+    17.00404858299595
+  ],
+  [
+    83.93020125,
+    14.570858283433125
+  ],
+  [
+    84.435236416,
+    17.670682730923687
+  ],
+  [
+    84.940278125,
+    19.47791164658635
+  ],
+  [
+    85.19454075,
+    37.45019920318725
+  ],
+  [
+    85.699598125,
+    19.3158953722334
+  ],
+  [
+    86.091096833,
+    31.60621761658031
+  ],
+  [
+    86.209617208,
+    29.914529914529922
+  ],
+  [
+    86.579936291,
+    35.14986376021798
+  ],
+  [
+    86.891654958,
+    44.15584415584416
+  ],
+  [
+    87.034621375,
+    44.05594405594405
+  ],
+  [
+    87.571928583,
+    19.165085388994314
+  ],
+  [
+    88.076971333,
+    15.799999999999997
+  ],
+  [
+    88.580933333,
+    18.674698795180717
+  ],
+  [
+    89.086008208,
+    20.440881763527045
+  ],
+  [
+    89.586967291,
+    18.404907975460134
+  ],
+  [
+    90.092041083,
+    29.96031746031747
+  ],
+  [
+    90.597072291,
+    32.86290322580645
+  ],
+  [
+    91.102099416,
+    28.68525896414343
+  ],
+  [
+    91.6071295,
+    34.808853118712264
+  ],
+  [
+    92.110796875,
+    31.376518218623488
+  ],
+  [
+    92.615567333,
+    17.96407185628742
+  ],
+  [
+    93.120616833,
+    17.269076305220892
+  ],
+  [
+    93.625647416,
+    18.436873747494985
+  ],
+  [
+    94.130680458,
+    15.831663326653313
+  ],
+  [
+    94.635715375,
+    29.51807228915662
+  ],
+  [
+    95.140765291,
+    40.44265593561368
+  ],
+  [
+    95.628264875,
+    25.465838509316768
+  ],
+  [
+    96.133335916,
+    19.919517102615686
+  ],
+  [
+    96.429571208,
+    32.88135593220339
+  ],
+  [
+    96.569518916,
+    39.25925925925926
+  ],
+  [
+    96.907113791,
+    46.726190476190474
+  ],
+  [
+    97.030570416,
+    44.8
+  ],
+  [
+    97.603049583,
+    21.886120996441278
+  ],
+  [
+    98.108087541,
+    18.436873747494985
+  ],
+  [
+    98.613153208,
+    14.829659318637283
+  ],
+  [
+    99.113972833,
+    20.528455284552848
+  ],
+  [
+    99.614909875,
+    18.145161290322577
+  ],
+  [
+    100.119949416,
+    18.799999999999997
+  ],
+  [
+    100.620130375,
+    19.308943089430898
+  ],
+  [
+    101.122332333,
+    18.089430894308947
+  ],
+  [
+    101.62742275,
+    29.458917835671343
+  ],
+  [
+    102.132452458,
+    25.298804780876495
+  ],
+  [
+    102.636505458,
+    35.483870967741936
+  ],
+  [
+    103.137565333,
+    21.285140562248998
+  ],
+  [
+    103.64259925,
+    16.565656565656568
+  ],
+  [
+    104.147638416,
+    17.835671342685373
+  ],
+  [
+    104.652671583,
+    20.440881763527045
+  ],
+  [
+    104.850764375,
+    40.816326530612244
+  ],
+  [
+    105.354621125,
+    25.250501002004015
+  ],
+  [
+    105.539799125,
+    28.176795580110493
+  ],
+  [
+    106.138980625,
+    22.410865874363324
+  ],
+  [
+    106.304212791,
+    37.57575757575757
+  ],
+  [
+    106.431707416,
+    32.52032520325203
+  ],
+  [
+    106.636722583,
+    43.34975369458128
+  ],
+  [
+    106.839540083,
+    34.15841584158416
+  ],
+  [
+    107.006519916,
+    30.909090909090907
+  ],
+  [
+    107.506906875,
+    18.951612903225808
+  ],
+  [
+    108.007877,
+    16.024340770791085
+  ],
+  [
+    108.51291225,
+    17.365269461077844
+  ],
+  [
+    109.015936125,
+    38.25910931174089
+  ],
+  [
+    109.517534291,
+    28.94736842105263
+  ],
+  [
+    110.021972291,
+    18.799999999999997
+  ],
+  [
+    110.5270065,
+    19.799999999999997
+  ],
+  [
+    111.0279715,
+    17.886178861788622
+  ],
+  [
+    111.528593333,
+    16.96969696969697
+  ],
+  [
+    112.030474791,
+    18.38383838383838
+  ],
+  [
+    112.535530958,
+    18.91348088531187
+  ],
+  [
+    113.040583125,
+    18.725099601593627
+  ],
+  [
+    113.545649041,
+    14.545454545454547
+  ],
+  [
+    114.050686375,
+    17.693836978131216
+  ],
+  [
+    114.555731916,
+    14.889336016096578
+  ],
+  [
+    114.903278208,
+    35.0
+  ],
+  [
+    115.406620416,
+    22.489959839357425
+  ],
+  [
+    115.911683666,
+    31.790744466800803
+  ],
+  [
+    116.03984275,
+    38.888888888888886
+  ],
+  [
+    116.505063375,
+    30.735930735930737
+  ],
+  [
+    116.914142875,
+    39.0
+  ],
+  [
+    117.123397125,
+    36.61971830985915
+  ],
+  [
+    117.67493875,
+    16.544117647058826
+  ],
+  [
+    118.17998075,
+    31.663326653306612
+  ],
+  [
+    118.681160708,
+    16.024340770791085
+  ],
+  [
+    119.186195,
+    14.829659318637283
+  ],
+  [
+    119.690158166,
+    15.49295774647888
+  ],
+  [
+    120.194633041,
+    16.46586345381526
+  ],
+  [
+    120.699677916,
+    14.143426294820713
+  ],
+  [
+    121.204713958,
+    15.757575757575765
+  ],
+  [
+    121.70974575,
+    13.827655310621239
+  ],
+  [
+    122.214777833,
+    15.631262525050104
+  ],
+  [
+    122.719812416,
+    19.87951807228916
+  ],
+  [
+    123.22445125,
+    15.631262525050104
+  ],
+  [
+    123.729486166,
+    22.200000000000003
+  ],
+  [
+    124.234518083,
+    27.217741935483872
+  ],
+  [
+    124.626085583,
+    34.28571428571429
+  ],
+  [
+    125.127273,
+    18.21862348178138
+  ],
+  [
+    125.619324125,
+    28.45360824742268
+  ],
+  [
+    125.790326666,
+    39.411764705882355
+  ],
+  [
+    126.082822166,
+    32.986111111111114
+  ],
+  [
+    126.234722333,
+    41.55844155844156
+  ],
+  [
+    126.510170041,
+    27.205882352941174
+  ],
+  [
+    126.817285166,
+    32.0
+  ],
+  [
+    127.355593125,
+    20.11278195488721
+  ],
+  [
+    127.860634416,
+    19.07630522088354
+  ],
+  [
+    128.365672708,
+    17.338709677419345
+  ],
+  [
+    128.870708125,
+    19.681908548707753
+  ],
+  [
+    129.375771833,
+    18.787878787878782
+  ],
+  [
+    129.880805666,
+    20.318725099601593
+  ],
+  [
+    130.385841791,
+    19.47791164658635
+  ],
+  [
+    130.890871875,
+    24.34607645875252
+  ],
+  [
+    131.395902875,
+    21.200000000000003
+  ],
+  [
+    131.900938541,
+    16.129032258064512
+  ],
+  [
+    132.405970916,
+    18.200000000000003
+  ],
+  [
+    132.911008458,
+    17.74193548387096
+  ],
+  [
+    133.416041208,
+    16.33466135458167
+  ],
+  [
+    133.921078208,
+    18.47389558232932
+  ],
+  [
+    134.3859465,
+    26.039387308533918
+  ],
+  [
+    134.562569416,
+    47.953216374269005
+  ],
+  [
+    135.067669583,
+    27.634194831013914
+  ],
+  [
+    135.47693525,
+    42.394014962593516
+  ],
+  [
+    135.590371291,
+    39.31623931623932
+  ],
+  [
+    135.804272916,
+    40.0
+  ],
+  [
+    136.209658666,
+    34.24317617866005
+  ],
+  [
+    136.400477083,
+    30.890052356020945
+  ],
+  [
+    136.636300166,
+    29.13043478260869
+  ],
+  [
+    137.137362541,
+    18.346774193548384
+  ],
+  [
+    137.642399916,
+    25.553319919517108
+  ],
+  [
+    138.145770916,
+    17.635270541082164
+  ],
+  [
+    138.646620208,
+    15.010141987829613
+  ],
+  [
+    139.151655375,
+    18.091451292246518
+  ],
+  [
+    139.656689708,
+    20.081135902636916
+  ],
+  [
+    140.157175541,
+    19.191919191919197
+  ],
+  [
+    140.660502125,
+    23.293172690763058
+  ],
+  [
+    141.165538083,
+    18.91348088531187
+  ],
+  [
+    141.670583208,
+    18.60000000000001
+  ],
+  [
+    142.174670041,
+    18.181818181818173
+  ],
+  [
+    142.677850958,
+    19.718309859154928
+  ],
+  [
+    143.1829,
+    16.799999999999997
+  ],
+  [
+    143.685615875,
+    22.02020202020202
+  ],
+  [
+    144.185742916,
+    20.9775967413442
+  ],
+  [
+    144.527238958,
+    39.233038348082594
+  ],
+  [
+    145.032323125,
+    33.06613226452906
+  ],
+  [
+    145.537377625,
+    34.2741935483871
+  ],
+  [
+    145.800491375,
+    41.825095057034225
+  ],
+  [
+    145.926023458,
+    69.6
+  ],
+  [
+    146.033560958,
+    72.81553398058253
+  ],
+  [
+    146.276175166,
+    47.7366255144033
+  ],
+  [
+    146.444691625,
+    31.097560975609767
+  ],
+  [
+    146.892830375,
+    28.153153153153156
+  ],
+  [
+    147.39792275,
+    22.200000000000003
+  ],
+  [
+    147.902962541,
+    20.682730923694777
+  ],
+  [
+    148.408018125,
+    19.718309859154928
+  ],
+  [
+    148.913056458,
+    21.24248496993988
+  ],
+  [
+    149.418108541,
+    22.599999999999994
+  ],
+  [
+    149.923165625,
+    29.979879275653914
+  ],
+  [
+    150.428199,
+    23.44689378757515
+  ],
+  [
+    150.9302825,
+    23.636363636363626
+  ],
+  [
+    151.430721083,
+    21.529175050301802
+  ],
+  [
+    151.935759333,
+    17.8714859437751
+  ],
+  [
+    152.438915,
+    18.548387096774192
+  ],
+  [
+    152.940895166,
+    17.338709677419345
+  ],
+  [
+    153.445007625,
+    24.297188755020088
+  ],
+  [
+    153.950053,
+    19.12350597609563
+  ],
+  [
+    154.397821416,
+    29.290617848970243
+  ],
+  [
+    154.902909541,
+    18.400000000000006
+  ],
+  [
+    155.407856208,
+    23.94366197183099
+  ],
+  [
+    155.723375666,
+    36.53846153846154
+  ],
+  [
+    155.955316041,
+    34.19913419913419
+  ],
+  [
+    156.366301375,
+    45.67901234567901
+  ],
+  [
+    156.738730791,
+    23.78378378378379
+  ],
+  [
+    157.239551291,
+    14.40162271805275
+  ],
+  [
+    157.743628625,
+    33.40040241448692
+  ],
+  [
+    158.248719041,
+    45.418326693227094
+  ],
+  [
+    158.753814791,
+    62.37424547283702
+  ],
+  [
+    159.258954708,
+    40.2
+  ],
+  [
+    159.763350375,
+    29.718875502008032
+  ],
+  [
+    160.2683865,
+    27.454909819639283
+  ],
+  [
+    160.77341675,
+    29.458917835671343
+  ],
+  [
+    161.274446708,
+    33.60160965794769
+  ],
+  [
+    161.779481916,
+    37.2
+  ],
+  [
+    162.28451375,
+    25.903614457831324
+  ],
+  [
+    162.787247958,
+    29.11646586345381
+  ],
+  [
+    163.288338083,
+    28.600405679513187
+  ],
+  [
+    163.788655791,
+    35.09127789046653
+  ],
+  [
+    163.986365208,
+    48.2051282051282
+  ],
+  [
+    164.491430375,
+    37.298387096774185
+  ],
+  [
+    164.94895725,
+    67.3289183222958
+  ],
+  [
+    165.069473291,
+    72.41379310344828
+  ],
+  [
+    165.189192833,
+    75.0
+  ]
+];
+// Position of the vertical axis.
+const X_LINE = 50;
+// General-use margin size.
+const MARGIN = 5;
+// Position of the horizontal axis, relative to the bottom.
+const Y_LINE = 35;
+// Minimum distance between time tick labels.
+const MIN_TICK_DIST = 50;
+// Radius for rounded rectangle corners.
+const RADIUS = 3;
+// Height of unit boxes.
+const BOX_HEIGHT = 25;
+// Distance between Y tick marks on the unit graph.
+const Y_TICK_DIST = BOX_HEIGHT + 2;
+// Rects used for mouseover detection.
+// Objects of {x, y, x2, y2, i} where `i` is the index into UNIT_DATA.
+let HIT_BOXES = [];
+// Index into UNIT_DATA of the last unit hovered over by mouse.
+let LAST_HOVER = null;
+// Key is unit index, value is {x, y, width, sections} of the box.
+let UNIT_COORDS = {};
+// Map of unit index to the index it was unlocked by.
+let REVERSE_UNIT_DEPS = {};
+let REVERSE_UNIT_RMETA_DEPS = {};
+let UNIT_BY_INDEX = {};
+
+const MIN_GRAPH_WIDTH = 200;
+const MAX_GRAPH_WIDTH = 4096;
+
+// How many pixels per second is added by each scale value
+const SCALE_PIXELS_PER_SEC = 8;
+
+function scale_to_graph_width(scale) {
+  // The scale corresponds to `SCALE_PIXELS_PER_SEC` pixels per seconds.
+  // We thus multiply it by that, and the total duration, to get the graph width.
+  const width = scale * SCALE_PIXELS_PER_SEC * DURATION;
+
+  // We then cap the size of the graph. It is hard to view if it is too large, and
+  // browsers may not render a large graph because it takes too much memory.
+  // 4096 is still ridiculously large, and probably won't render on mobile
+  // browsers, but should be ok for many desktop environments.
+  // Also use a minimum width of 200.
+  return Math.max(MIN_GRAPH_WIDTH, Math.min(MAX_GRAPH_WIDTH, width));
+}
+
+// This function performs the reverse of `scale_to_graph_width`.
+function width_to_graph_scale(width) {
+  const maxWidth = Math.min(MAX_GRAPH_WIDTH, width);
+  const minWidth = Math.max(MIN_GRAPH_WIDTH, width);
+
+  const trimmedWidth = Math.max(minWidth, Math.min(maxWidth, width));
+
+  const scale = Math.round(trimmedWidth / (DURATION * SCALE_PIXELS_PER_SEC));
+  return Math.max(1, scale);
+}
+
+// Init scale value and limits based on the client's window width and min/max graph width.
+const scaleElement = document.getElementById('scale');
+scaleElement.min = width_to_graph_scale(MIN_GRAPH_WIDTH);
+scaleElement.max = width_to_graph_scale(MAX_GRAPH_WIDTH);
+scaleElement.value = width_to_graph_scale(window.innerWidth * 0.75);
+
+// Colors from css
+const getCssColor = name => getComputedStyle(document.body).getPropertyValue(name);
+const TEXT_COLOR = getCssColor('--text');
+const BG_COLOR = getCssColor('--background');
+const CANVAS_BG = getCssColor('--canvas-background');
+const AXES_COLOR = getCssColor('--canvas-axes');
+const GRID_COLOR = getCssColor('--canvas-grid');
+const CODEGEN_COLOR = getCssColor('--canvas-codegen');
+const LINK_COLOR = getCssColor('--canvas-link');
+// Final leftover section after link
+const OTHER_COLOR = getCssColor('--canvas-other');
+const CUSTOM_BUILD_COLOR = getCssColor('--canvas-custom-build');
+const NOT_CUSTOM_BUILD_COLOR = getCssColor('--canvas-not-custom-build');
+const DEP_LINE_COLOR = getCssColor('--canvas-dep-line');
+const DEP_LINE_HIGHLIGHTED_COLOR = getCssColor('--canvas-dep-line-highlighted');
+const CPU_COLOR = getCssColor('--canvas-cpu');
+
+for (const unit of UNIT_DATA) {
+  UNIT_BY_INDEX[unit.i] = unit;
+  for (let unblocked of unit.unblocked_units) {
+    REVERSE_UNIT_DEPS[unblocked] = unit.i;
+  }
+  for (let unblocked of unit.unblocked_rmeta_units) {
+    REVERSE_UNIT_RMETA_DEPS[unblocked] = unit.i;
+  }
+}
+
+// Compute x,y coordinate of each block.
+// We also populate a map with the count of each unit name to disambiguate if necessary
+function compute_unit_coords(units, px_per_sec) {
+  const unitCount = new Map();
+  UNIT_COORDS = {};
+  for (i = 0; i < units.length; i++) {
+    let unit = units[i];
+    let y = i * Y_TICK_DIST + 1;
+    let x = px_per_sec * unit.start;
+
+    const sections = [];
+    if (unit.sections !== null) {
+      // We have access to compilation sections
+      for (const section of unit.sections) {
+        const [name, { start, end }] = section;
+        sections.push({
+          name,
+          start: x + px_per_sec * start,
+          width: (end - start) * px_per_sec
+        });
+      }
+    }
+
+    let width = Math.max(px_per_sec * unit.duration, 1.0);
+    UNIT_COORDS[unit.i] = { x, y, width, sections };
+
+    const count = unitCount.get(unit.name) || 0;
+    unitCount.set(unit.name, count + 1);
+  }
+
+  return { UNIT_COORDS, unitCount }
+}
+
+class SvgRenderer {
+  constructor() {}
+
+  render_pipeline_graph() {
+    if (UNIT_DATA.length == 0) {
+      return;
+    }
+    HIT_BOXES.length = 0;
+    const min_time = document.getElementById('min-unit-time').valueAsNumber;
+
+    const units = UNIT_DATA.filter(unit => unit.duration >= min_time);
+
+    const graph_height = Y_TICK_DIST * units.length;
+    let { canvas_height, canvas_width, graph_width, px_per_sec } = graph_dimension(graph_height);
+    const axes = this._draw_graph_axes({ canvas_height, graph_height, graph_width, px_per_sec });
+
+    // Draw Y tick marks.
+    let y_ticks = '';
+    if (units.length != 0) {
+      const path_commands = Array(units.length - 1)
+        .fill(0)
+        .map((_, idx) => {
+          const n = idx + 1;
+          const y = MARGIN + Y_TICK_DIST * n;
+          return `M${X_LINE} ${y} h-5`;
+        });
+      y_ticks = `<path class="axis axis-y" d="${path_commands.join(" ")}"></path>`;
+    }
+
+    // Draw Y labels.
+    const y_labels = Array(units.length)
+      .fill(0)
+      .map((_, n) => {
+          let y = MARGIN + Y_TICK_DIST * n + Y_TICK_DIST / 2;
+          return `<text class="axis axis-y" x="${X_LINE - 4}" y="${y}">${n + 1}</text>`;
+      })
+      .join("");
+
+    // Draw the graph.
+    const { UNIT_COORDS, unitCount } = compute_unit_coords(units, px_per_sec);
+    const presentSections = new Set();
+
+    // Draw the blocks.
+    let blocks = Array(units.length)
+      .fill(0)
+      .map((_, i) => {
+        let unit = units[i];
+        let { x, y, width, sections } = UNIT_COORDS[unit.i];
+
+        const boxes = [this._roundedRect("", x, y, width, unit)].concat(
+          sections.map((section) => {
+            presentSections.add(section.name);
+            return this._roundedRect(
+              section.name,
+              section.start,
+              y,
+              section.width,
+              unit,
+            );
+          }),
+        );
+
+        const labelName = (unitCount.get(unit.name) || 0) > 1 ? `${unit.name} (v${unit.version})${unit.target}` : `${unit.name}${unit.target}`;
+        const label = `${labelName}: ${unit.duration}s`;
+
+        const text_info_width = measure_text_width(label);
+        const label_x = Math.min(x + 5.0, canvas_width - text_info_width - X_LINE);
+        const box_label = `<text class="box" x="${label_x}" y="${y + BOX_HEIGHT / 2}">${label}</text>`;
+
+        const dep_lines = this._draw_dep_lines(unit.i);
+        return boxes.concat(box_label).concat(dep_lines);
+      })
+      .flat()
+      .join("");
+
+    blocks = `
+<g id="boxes" transform="translate(${X_LINE} ${MARGIN})">${blocks}</g>
+<g id="hl-dep-lines" transform="translate(${X_LINE} ${MARGIN})"></g>`;
+
+    // Draw a legend.
+    const legend = `
+<g class="legend" transform="translate(${canvas_width-200},${MARGIN})">
+  ${this._draw_legend(160, get_legend_entries(presentSections))}
+</g>`;
+
+    const svg_container = document.getElementById("pipeline-container");
+    if (svg_container) {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("width", canvas_width);
+      svg.setAttribute("height", canvas_height);
+      Object.assign(svg.style, {
+        background: CANVAS_BG,
+        color: TEXT_COLOR,
+        fontFamily: 'sans-serif',
+        fontSize: '16px'
+      });
+      svg.innerHTML = `
+<style type="text/css">
+  path.axis {
+    fill: none;
+    stroke: ${AXES_COLOR};
+    stroke-width: 2;
+  }
+  text.axis {
+    fill: ${AXES_COLOR};
+    font-size: 16px;
+    stroke: none;
+    text-anchor: middle;
+  }
+  text.axis-y {
+    dominant-baseline: middle;
+    text-anchor: end;
+  }
+  .grid {
+    stroke: ${GRID_COLOR};
+    stroke-dasharray: 2 4;
+    stroke-width: 2;
+  }
+  rect.box {
+    fill: ${NOT_CUSTOM_BUILD_COLOR};
+    height: ${BOX_HEIGHT}px;
+    rx: ${RADIUS}px;
+    ry: ${RADIUS}px;
+  }
+  rect.box.run-custom-build {
+    fill: ${CUSTOM_BUILD_COLOR};
+  }
+  rect.box.codegen {
+    fill: ${CODEGEN_COLOR};
+  }
+  rect.box.link {
+    fill: ${LINK_COLOR};
+  }
+  rect.box.other {
+    fill: ${OTHER_COLOR}
+  }
+  text.box {
+    dominant-baseline: middle;
+    fill: ${TEXT_COLOR};
+    font-size: 14px;
+    text-anchor: start
+  }
+  .dep-line {
+    fill: none;
+    stroke: ${DEP_LINE_COLOR};
+    stroke-dasharray: 2;
+    stroke-width: 2;
+  }
+  #hl-dep-lines .dep-line{
+    stroke: ${DEP_LINE_HIGHLIGHTED_COLOR};
+  }
+  path.legend__cell {
+    stroke-width: 2;
+  }
+  .legend__desc {
+    fill: ${TEXT_COLOR};
+    dominant-baseline: middle;
+  }
+</style>
+${axes}
+${y_ticks}
+${y_labels}
+${blocks}
+${legend}`;
+      svg_container.innerHTML = svg.outerHTML;
+    }
+  }
+
+  // Draw a legend at the current position of the ctx.
+  // entries should be an array of objects with the following scheme:
+  // {
+  //   "name": <name of the legend entry> [string],
+  //   "color": <color of the legend entry> [string],
+  //   "line": <should the entry be a thin line or a rectangle> [bool]
+  // }
+  _draw_legend(width, entries) {
+    const entry_height = 20;
+
+    // Add a bit of margin to the bottom and top
+    const height = entries.length * entry_height + 4;
+
+    // Draw background
+    let legend = [];
+    legend.push(`<rect stroke="${TEXT_COLOR}" stroke-width="1" fill="${BG_COLOR}" width="${width}" height="${height}"></rect>`);
+
+    // Dimension of a block
+    const block_height = 15;
+    const block_width = 30;
+
+    // Margin from the left edge
+    const x_start = 5;
+    // Width of the "mark" section (line/block)
+    const mark_width = 45;
+
+    // Draw legend entries
+    let y = 12;
+    for (const entry of entries) {
+      const cell = entry.line ?
+        `<path class="legend__cell" stroke="${entry.color}" d="M${x_start} ${y} h ${mark_width}"></path>` :
+        `
+<rect class="legend__cell" fill="${entry.color}" width="${block_width}" height="${block_height}"
+  x="${x_start + (mark_width - block_width) / 2}" y="${y - (block_height / 2)}"
+></rect>`;
+      legend.push(cell);
+      legend.push(`<text class="legend__desc" x="${x_start + mark_width + 4}" y="${y + 1}">${entry.name}</text>`)
+      y += entry_height;
+    }
+    return legend.join("")
+  }
+
+  // Draws lines from the given unit to the units it unlocks.
+  _draw_dep_lines(unit_idx) {
+    const unit = UNIT_BY_INDEX[unit_idx];
+    const { x, y, sections } = UNIT_COORDS[unit_idx];
+    return unit.unblocked_units
+      .map((unblocked) => this._draw_one_dep_line(x, y, unblocked, unit_idx))
+      .concat(
+        unit.unblocked_rmeta_units.map((unblocked) => {
+          const codegen_x = get_codegen_section_x(sections);
+          return this._draw_one_dep_line(codegen_x, y, unblocked, unit_idx);
+        }),
+      )
+      .join("");
+  }
+
+  _draw_one_dep_line(from_x, from_y, to_unit, from_unit) {
+    if (to_unit in UNIT_COORDS) {
+      let { x: u_x, y: u_y } = UNIT_COORDS[to_unit];
+      // Use multiple path instead to avoid potential rendering issue while scrolling in Firefox.
+      return `
+<path class="dep-line" data-unblocked="${to_unit}" data-unblocked-by="${from_unit}" d="M ${from_x} ${from_y + BOX_HEIGHT / 2} h -5"></path>
+<path class="dep-line" data-unblocked="${to_unit}" data-unblocked-by="${from_unit}" d="M ${from_x - 5} ${from_y + BOX_HEIGHT / 2} V ${u_y + BOX_HEIGHT / 2}"></path>
+<path class="dep-line" data-unblocked="${to_unit}" data-unblocked-by="${from_unit}" d="M ${from_x - 5} ${u_y + BOX_HEIGHT / 2} H${u_x}"></path>
+`;
+    }
+  }
+
+  render_timing_graph() {
+    if (CONCURRENCY_DATA.length == 0) {
+      return;
+    }
+    const HEIGHT = 400;
+    const AXIS_HEIGHT = HEIGHT - MARGIN - Y_LINE;
+    const TOP_MARGIN = 10;
+    const GRAPH_HEIGHT = AXIS_HEIGHT - TOP_MARGIN;
+
+    let { canvas_height, canvas_width, graph_height, graph_width, px_per_sec } = graph_dimension(AXIS_HEIGHT);
+    const axis_bottom = this._draw_graph_axes({ canvas_height, graph_height, graph_width, px_per_sec });
+
+    // Draw Y tick marks and labels.
+    let max_v = 0;
+    for (let c of CONCURRENCY_DATA) {
+      max_v = Math.max(max_v, c.active, c.waiting, c.inactive);
+    }
+    const px_per_v = GRAPH_HEIGHT / max_v;
+    const { step, tick_dist, num_ticks } = split_ticks(max_v, px_per_v, GRAPH_HEIGHT);
+
+    const labels = [];
+    const ticks_path_commands = Array(num_ticks)
+      .fill(0)
+      .map((_, n) => {
+        const y = HEIGHT - Y_LINE - ((n + 1) * tick_dist);
+        labels.push( `<text class="axis axis-y" x="${X_LINE - 10}" y="${y}">${(n + 1) * step}</text>`);
+        return `M${X_LINE} ${y} h-5`;
+      })
+      .join(" ");
+    const ticks = `<path class="axis axis-y" d="${ticks_path_commands}"></path>`;
+    const ticks_labels = labels.join("");
+
+    // Label the Y axis.
+    let label_y = (HEIGHT - Y_LINE) / 2;
+
+    const y_axis_label = `<text class="axis axis-label" transform="translate(15, ${label_y}) rotate(270)"># Units</text>`
+    const axis_left = `${y_axis_label}${ticks}${ticks_labels}`;
+
+    // Draw the graph.
+
+    function coord(t, v) {
+      return {
+        x: graph_width * (t / DURATION),
+        y: TOP_MARGIN + GRAPH_HEIGHT * (1.0 - (v / max_v))
+      };
+    }
+
+    const cpuFillStyle = CPU_COLOR;
+    let cpu = "";
+    if (CPU_USAGE.length > 1) {
+      const bottomLeft = coord(CPU_USAGE[0][0], 0);
+      const bottomRight = coord(CPU_USAGE[CPU_USAGE.length - 1][0], 0);
+      const path_commands = [`M${bottomLeft.x} ${bottomLeft.y}`]
+      .concat(
+        Array(CPU_USAGE.length)
+          .fill(0)
+          .map((_, i) => {
+            let [time, usage] = CPU_USAGE[i];
+            let { x, y } = coord(time, (usage / 100.0) * max_v);
+            return `L${x} ${y}`;
+          }),
+      )
+      .concat(`L${bottomRight.x} ${bottomRight.y}`);
+      cpu = `<path stroke-width="0" fill="${cpuFillStyle}" d="${path_commands.join("")}"></path>`;
+    }
+
+    function draw_line(style, key) {
+      let first = CONCURRENCY_DATA[0];
+      let last = coord(first.t, key(first));
+      const path_commands = [];
+      path_commands.push(`M${last.x} ${last.y}`)
+      for (let i = 1; i < CONCURRENCY_DATA.length; i++) {
+        let c = CONCURRENCY_DATA[i];
+        let { x, y } = coord(c.t, key(c));
+        path_commands.push(`L${x} ${last.y} V${y}`);
+        last = { x, y };
+      }
+      return `<path class="status-line" stroke="${style}" d="${path_commands.join("")}"></path>`
+    }
+
+    const lines = [];
+    lines.push(draw_line('blue', function(c) { return c.inactive; }));
+    lines.push(draw_line('red', function(c) { return c.waiting; }));
+    lines.push(draw_line('green', function(c) { return c.active; }));
+
+    const timings = `<g class="graph-content" transform="translate(${X_LINE} ${MARGIN})">${cpu}${lines}</g>`;
+
+    // Draw a legend.
+    const legend = `
+<g class="legend" transform="translate(${canvas_width-200},${MARGIN})">
+${this._draw_legend(150, [{
+    name: "Waiting",
+    color: "red",
+    line: true
+  }, {
+    name: "Inactive",
+    color: "blue",
+    line: true
+  }, {
+    name: "Active",
+    color: "green",
+    line: true
+  }, {
+    name: "CPU Usage",
+    color: cpuFillStyle,
+    line: false
+}])}
+</g>`;
+
+    const svg_container = document.getElementById("timing-container");
+    if (svg_container) {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("width", canvas_width);
+      svg.setAttribute("height", canvas_height);
+      Object.assign(svg.style, {
+        background: CANVAS_BG,
+        color: TEXT_COLOR,
+        fontFamily: 'sans-serif',
+        fontSize: '16px'
+      });
+      svg.innerHTML = `
+<style type="text/css">
+  path.axis {
+    fill: none;
+    stroke: ${AXES_COLOR};
+    stroke-width: 2;
+  }
+  text.axis {
+    fill: ${AXES_COLOR};
+    font-size: 16px;
+    stroke: none;
+    text-anchor: middle;
+  }
+  text.axis-y {
+    dominant-baseline: middle;
+    text-anchor: end;
+  }
+  .grid {
+    stroke: ${GRID_COLOR};
+    stroke-dasharray: 2 4;
+    stroke-width: 2;
+  }
+  .status-line {
+    fill: none;
+    stroke-width: 2;
+  }
+  path.legend__cell {
+    stroke-width: 2;
+  }
+  .legend__desc {
+    fill: ${TEXT_COLOR};
+    dominant-baseline: middle;
+  }
+</style>
+${axis_bottom}
+${axis_left}
+${timings}
+${legend}
+`;
+      svg_container.innerHTML = svg.outerHTML;
+    }
+  }
+
+  _draw_graph_axes({ canvas_height, graph_height, graph_width, px_per_sec }) {
+    // Draw main axes.
+    const main_axes = `
+<path class="axis" d="
+  M${X_LINE} ${MARGIN}
+  V${graph_height + MARGIN}
+  H${X_LINE + graph_width + 20}"
+></path>`;
+
+    // Draw X tick marks.
+    const { step, tick_dist, num_ticks } = split_ticks(DURATION, px_per_sec, graph_width);
+    const TICK_LENGTH = 5;
+    const grid_height = canvas_height - Y_LINE;
+    const labels = [];
+    const ticks_path_commands = Array(num_ticks)
+        .fill(0)
+        .map((_, n) => {
+          const x = X_LINE + ((n + 1) * tick_dist);
+          const label = `
+  <text class="axis" x="${x}" y="${grid_height + 20}">
+    ${(n + 1) * step}s
+  </text>`;
+          labels.push(label);
+          return `M${x} ${grid_height} v${TICK_LENGTH}`;
+        })
+        .join(" ");
+
+    const ticks = `<path class="axis"  d="${ticks_path_commands}"></path>`;
+    const ticks_labels = labels.join("")
+
+    // Draw vertical lines.
+    const vertical_lines = Array(num_ticks)
+      .fill(0)
+      .map((_, n) => {
+        const x = X_LINE + ((n + 1) * tick_dist);
+        return `<path class="grid" d="M${x} ${grid_height - 1} V${MARGIN}"></path>`;
+      })
+      .join("");
+    return `${main_axes}${ticks}${vertical_lines}${ticks_labels}`;
+  }
+
+  _roundedRect(section_name, x, y, width, unit) {
+    return `
+<rect class="box ${unit.mode} ${section_name}" data-i="${unit.i}" x="${x}" y="${y}" width="${width}"
+  onmousemove="hl(${unit.i})"
+>
+</rect>`
+  }
+}
+
+// Determine the width of text for svg.
+function measure_text_width(text) {
+  let ctx;
+  let canvas = measure_text_width.canvas;
+  if (!canvas) {
+    canvas = (measure_text_width.canvas = document.createElement("canvas"));
+  }
+  ctx = canvas.getContext("2d");
+  ctx.font = '14px sans-serif';
+  const text_info = ctx.measureText(text);
+  return text_info.width;
+}
+
+// Gets the x-coordinate of the codegen section of a unit.
+//
+// This is for drawing rmeta dependency lines.
+function get_codegen_section_x(sections) {
+    const codegen_section = sections.find(s => s.name === "codegen")
+    if (!codegen_section) {
+        // This happens only when type-checking (e.g., `cargo check`)
+        return null;
+    }
+    return codegen_section.start;
+}
+
+function get_legend_entries(presentSections) {
+    let frontend_name = "Frontend/rest";
+    if (presentSections.has("other")) {
+      frontend_name = "Frontend";
+    }
+
+    const legend_entries = [{
+      name: frontend_name,
+      color: NOT_CUSTOM_BUILD_COLOR,
+      line: false
+    }];
+    if (presentSections.has("codegen")) {
+      legend_entries.push({
+        name: "Codegen",
+        color: CODEGEN_COLOR,
+        line: false
+      });
+    }
+    if (presentSections.has("link")) {
+      legend_entries.push({
+        name: "Linking",
+        color: LINK_COLOR,
+        line: false
+      });
+    }
+    if (presentSections.has("other")) {
+      legend_entries.push({
+        name: "Other",
+        color: OTHER_COLOR,
+        line: false
+      });
+    }
+  return legend_entries
+}
+
+function graph_dimension(graph_height) {
+  const scale = document.getElementById('scale').valueAsNumber;
+  const graph_width = scale_to_graph_width(scale);
+  const px_per_sec = graph_width / DURATION;
+  const canvas_width = Math.max(graph_width + X_LINE + 30, X_LINE + 250);
+  const canvas_height = graph_height + MARGIN + Y_LINE;
+  return { canvas_height, canvas_width, graph_height, graph_width, px_per_sec, scale }
+}
+
+// Determine the spacing and number of ticks along an axis.
+function split_ticks(max_value, px_per_v, max_px) {
+  const max_ticks = Math.floor(max_px / MIN_TICK_DIST);
+  if (max_ticks <= 1) {
+    // Graph is too small for even 1 tick.
+    return {step: max_value, tick_dist: max_px, num_ticks: 1};
+  }
+  let step;
+  if (max_value <= max_ticks) {
+    step = 1;
+  } else if (max_value <= max_ticks * 2) {
+    step = 2;
+  } else if (max_value <= max_ticks * 4) {
+    step = 4;
+  } else if (max_value <= max_ticks * 5) {
+    step = 5;
+  } else {
+    step = 10;
+    let count = 0;
+    while (true) {
+      if (count > 100) {
+        throw Error("tick loop too long");
+      }
+      count += 1;
+      if (max_value <= max_ticks * step) {
+        break;
+      }
+      step += 10;
+    }
+  }
+  const tick_dist = px_per_v * step;
+  const num_ticks = Math.floor(max_value / step);
+  return {step, tick_dist, num_ticks};
+}
+
+function hl(i) {
+  // Highlight dependency lines on mouse hover.
+  if (i === undefined || i == LAST_HOVER) {
+    return
+  }
+  LAST_HOVER = i;
+  let g = document.getElementById("hl-dep-lines");
+
+  if (g) {
+    const selector = '#boxes .dep-line[data-unblocked="'+i+'"],#boxes .dep-line[data-unblocked-by="' + i + '"]';
+    const lines = Array.from(document.querySelectorAll(selector)).map(el => el.outerHTML);
+    g.innerHTML = lines.join("");
+  }
+}
+
+let renderer = new SvgRenderer();
+try {
+  renderer.render_pipeline_graph();
+  renderer.render_timing_graph();
+} catch (err) {
+  console.error(err);
+}
+
+// Set up and handle controls.
+{
+  const range = document.getElementById('min-unit-time');
+  const time_output = document.getElementById('min-unit-time-output');
+  time_output.innerHTML = `${range.value}s`;
+  range.oninput = event => {
+    time_output.innerHTML = `${range.value}s`;
+    try {
+      renderer.render_pipeline_graph();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const scale = document.getElementById('scale');
+  const scale_output = document.getElementById('scale-output');
+  scale_output.innerHTML = `${scale.value}`;
+  scale.oninput = event => {
+    scale_output.innerHTML = `${scale.value}`;
+    try {
+      renderer.render_pipeline_graph();
+      renderer.render_timing_graph();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  Array.from(document.querySelectorAll("input[name='renderer']")).forEach(function(el) {
+    el.addEventListener("change", function(event) {
+      renderer = setupRenderer(event.target.value);
+      try {
+        renderer.render_pipeline_graph();
+        renderer.render_timing_graph();
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  });
+}
+
+</script>
+</body>
+</html>

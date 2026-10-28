@@ -1,0 +1,12 @@
+
+running 7 tests
+test t1_pure_move_of_the_top_window_blits_and_sends_no_redraw ... ok
+test t2_pure_shrink_of_the_top_window_sends_no_redraw ... ok
+test t3_grow_of_the_top_window_sends_one_redraw_for_the_full_rect ... ok
+test t5_move_leftwards_from_past_the_right_edge_is_not_blitted ... ok
+test t5b_move_rightwards_from_past_the_right_edge_is_blitted ... ok
+test t6_setting_the_same_rectangle_paints_and_sends_nothing ... ok
+test t4_move_of_a_lower_window_fans_out_top_down ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

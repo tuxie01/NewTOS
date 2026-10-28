@@ -1,0 +1,9 @@
+
+running 4 tests
+test every_nested_process_gets_a_descriptor_and_appl_init_never_returns_minus_one ... ok
+test nine_programs_in_one_slot_rename_one_descriptor ... ok
+test releasing_a_slot_resets_its_descriptor_and_queue ... ok
+test reported_values_follow_emutos ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

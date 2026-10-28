@@ -1,0 +1,7 @@
+
+running 2 tests
+test gemlib_accessors_see_the_tos_fields ... ok
+test appl_init_lays_the_tos_aesglobal_byte_for_byte ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

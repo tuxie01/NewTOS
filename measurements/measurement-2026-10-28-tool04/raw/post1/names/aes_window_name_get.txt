@@ -1,0 +1,3 @@
+the_refusal_writes_no_words_and_stays_inside_the_title_fields: test
+wf_info_is_refused_and_leaves_the_callers_buffer_untouched: test
+wf_name_is_refused_and_leaves_the_callers_buffer_untouched: test

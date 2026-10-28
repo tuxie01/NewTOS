@@ -1,0 +1,3 @@
+fattrib_get_resolves_a_directory_written_with_a_trailing_separator: test
+only_the_directory_answer_is_added_every_other_spelling_is_untouched: test
+the_other_calls_on_a_path_ending_in_a_separator_are_unchanged: test

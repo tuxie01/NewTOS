@@ -1,0 +1,6 @@
+dcolor_reaches_new_windows_only: test
+default_frames_are_pixel_identical_to_the_pinned_hash: test
+default_topped_window_matches_the_gadget_table: test
+default_untopped_window_renders_the_untopped_words: test
+t7_name_band_turns_red: test
+vslide_track_turns_black: test

@@ -1,0 +1,7 @@
+
+running 2 tests
+test desk_binding_zooms_from_the_icon_out_to_the_window ... ok
+test desk_binding_zooms_to_the_full_desktop_from_an_empty_source ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

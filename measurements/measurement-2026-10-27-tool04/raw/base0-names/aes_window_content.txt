@@ -1,0 +1,1 @@
+clicking_a_window_never_erases_its_content: test

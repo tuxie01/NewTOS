@@ -1,0 +1,9 @@
+
+running 4 tests
+test exit_code_is_the_uword_zero_extended ... ok
+test load_errors_map_to_their_fm_error_number ... ok
+test sh_ldapp_passes_load_errors_on_and_zeroes_the_rest ... ok
+test no_exit_code_raises_an_alert ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

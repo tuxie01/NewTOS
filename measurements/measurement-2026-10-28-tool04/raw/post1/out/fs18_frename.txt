@@ -1,0 +1,17 @@
+
+running 12 tests
+test cross_dir_folder_move_keeps_folder_attribute ... ok
+test cross_dir_rename_of_open_file_follows_the_entry ... ok
+test cross_dir_rename_to_dot_name_is_epthnf ... ok
+test cross_dir_rename_to_empty_name_is_epthnf ... ok
+test same_dir_rename_keeps_attribute_and_stamp ... ok
+test cross_dir_rename_into_full_root_is_epthnf ... ok
+test cross_dir_rename_sets_archive_and_keeps_stamp ... ok
+test same_dir_rename_keeps_directory_order ... ok
+test same_dir_rename_of_open_file_keeps_its_data ... ok
+test same_dir_rename_of_open_file_then_extend ... ok
+test source_is_checked_before_the_target_directory ... ok
+test target_exists_is_checked_before_the_source ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

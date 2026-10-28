@@ -1,0 +1,10 @@
+
+running 5 tests
+test both_orders_cover_the_same_area_with_disjoint_pieces ... ok
+test group_i_middle_window_is_broken_while_breaking_another ... ok
+test group_i_opened_1_2_3_gives_the_four_measured_pieces ... ok
+test group_ii_opened_1_3_2_gives_the_five_measured_pieces ... ok
+test topping_a_window_moves_it_in_the_subtraction_order_like_a_later_open ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+

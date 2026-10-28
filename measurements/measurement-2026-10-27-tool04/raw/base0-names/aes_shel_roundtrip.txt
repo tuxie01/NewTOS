@@ -1,0 +1,3 @@
+launcher_fills_the_cells_shel_read_returns: test
+shel_write_after_launch_wins_shel_read: test
+shel_write_exec_then_shel_read_returns_the_written_pair: test

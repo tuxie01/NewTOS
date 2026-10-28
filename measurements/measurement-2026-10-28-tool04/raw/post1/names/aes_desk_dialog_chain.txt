@@ -1,0 +1,3 @@
+fmd_finish_restores_only_the_dialog_rectangle: test
+form_center_places_the_desktop_dialog_below_the_menu_bar: test
+the_dialog_restore_draws_only_inside_its_own_rectangle: test

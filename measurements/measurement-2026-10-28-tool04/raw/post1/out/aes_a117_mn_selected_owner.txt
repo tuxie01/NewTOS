@@ -1,0 +1,8 @@
+
+running 3 tests
+test a_pick_tracked_in_a_chain_childs_wait_stays_with_the_chain ... ok
+test a_pick_tracked_in_an_accessorys_wait_reaches_the_chains_running_member ... ok
+test a_pick_tracked_in_an_accessorys_wait_goes_to_the_bar_owner ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

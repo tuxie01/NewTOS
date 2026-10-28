@@ -1,0 +1,4 @@
+cold-build	wall=17.9	deps_entries=3341
+relink-small-deps	wall=4.5	deps_entries=6212
+relink-after-adding-500000-empty-files	wall=446.6	deps_entries=509083
+relink-again-500000	wall=211.8	deps_entries=511954

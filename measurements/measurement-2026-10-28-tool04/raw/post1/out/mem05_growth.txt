@@ -1,0 +1,9 @@
+
+running 4 tests
+test a_page_is_taken_only_when_every_md_is_in_use_and_mds_never_move ... ok
+test a_refused_page_is_the_old_exhaustion_path ... ok
+test interleaved_rounds_give_every_md_back_and_leak_no_page ... ok
+test the_budget_refuses_like_the_source ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

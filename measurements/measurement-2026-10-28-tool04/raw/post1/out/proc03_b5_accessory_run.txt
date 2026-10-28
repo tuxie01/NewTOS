@@ -1,0 +1,11 @@
+
+running 6 tests
+test an_accessory_reads_the_innermost_started_process_and_follows_its_end ... ok
+test an_accessory_reads_the_program_in_front_as_os_run ... ok
+test an_accessorys_pexec_child_has_run_as_parent_and_returns_to_the_accessory ... ok
+test an_accessory_between_programs_reads_the_accdesk_pd_as_os_run ... ok
+test an_accessorys_pexec_child_between_programs_has_accdesk_as_parent ... ok
+test a_program_that_is_not_an_accessory_keeps_its_own_pd_as_the_childs_parent ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

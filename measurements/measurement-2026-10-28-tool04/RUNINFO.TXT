@@ -1,0 +1,136 @@
+measurement-2026-10-28-tool04 -- TASK/TOOL04 continued: test runtime after the Developer Tools toggle, the cause of the
+remaining build cost, profile variants, and the two tiers of `cargo xtask test`.
+Developer, 2026-10-28 00:19 .. 01:12 CET. Continues measurement-2026-10-27-tool04 (its OPEN list is closed here).
+HEAD c0c5c7c3 at the start, a9ee00fe at the end: the commits in between are docs only (no change under tos-api/,
+tos-types/, tools/, Cargo.toml, Cargo.lock, .cargo/). Uncommitted in the tree: tools/xtask/src/main.rs and
+tools/xtask/src/test_tiers.rs (the tiers, this ticket). Host: Apple M4 (10 cores), macOS 27.0.1 (26A434), cargo/rustc
+1.97.0-nightly (2026-04-09/-14), repo on /Volumes/Daten (external USB SSD, APFS). cargo runs under
+Terminal.app -> login -> zsh -> claude -> zsh. No SD image booted, no hardware touched, no security setting changed
+by this run.
+
+INPUT (not by this run)
+ ~00:07 the user enabled Privacy & Security > Developer Tools for Terminal and restarted Terminal. Lead spot check
+ ~00:18 (two binaries, first/second launch): aes_a111_caret 0.04/0.02 s, aes_a106_restart 0.00/0.00 s.
+
+WHAT / WHY
+ OPEN list of the 2026-10-27 run: (1) first launches after the toggle and the full suite's time; (2) profile variants
+ (.o retention, first launch), current target vs a fresh one; (3) tiers chosen from the numbers, both run green;
+ (4) test names before/after, reconcile 1715 / 1691 / STATUS 1670+1; (5) merging integration tests, with numbers.
+
+HOW (method/; exes-from-json.py, launch-times.py, t.py copied unchanged from the 2026-10-27 run)
+ launch-times.py   per binary: first + second launch of `--list --format terse`, then the full run (cwd = package dir).
+ fresh-suite.sh    `cargo test -p tos-api -p tos-types -p xtask` in a NEW empty CARGO_TARGET_DIR ("cold"), then touch
+                   tos-api/src/lib.rs and run it again in that dir ("relink" = what an edit in tos-api costs).
+                   Optional CARGO_PROFILE_TEST_* variables = the profile variant.
+ variants.sh       per variant, 3 test binaries built in a new target dir: size, first/second launch, first launch of a
+                   copy in the shared target/debug/deps, the binary's debug map (N_OSO entries, how many still exist),
+                   .dSYM present. Derived from the 2026-10-27 variants.sh (never run there); target dirs moved to scratch.
+ deps-bloat.sh     causal test: one new target dir, relink with its own small deps/, then add 500 000 empty files named
+                   like rustc objects to that deps/ and relink again (twice). Nothing else differs.
+ suite-summary.py  per-target result lines of a cargo test log, totals, and the test names (for names-diff.py).
+ names-diff.py     names before (--list of all 162 binaries) vs the fast and the full tier run.
+ Target dirs: the main target/ for the "main target" rows; the session scratchpad (internal disk) for fresh-suite and
+ variants; target/tool04-probe/ (same volume as target/, deleted at the end) for the daten-full row and deps-bloat.
+ `cargo clean` was NOT run on the main target.
+
+RESULTS
+ 1. First launch after the toggle (raw/post1/launch.tsv; 161 of 162 binaries freshly relinked 00:20-00:24 by
+    `cargo test --no-run`, raw/build1.err; launched 00:24:25-00:24:31):
+      first launch sum 1.61 s (before the toggle, 2026-10-27 run: 6472 s), median 0.011 s, max 0.023 s
+      second launch max 0.010 s; full test run of all 162: sum 3.82 s, slowest aes_window_rectlist_capacity 0.52 s,
+      aes_reference 0.46, vdi_reference 0.28, xtask 0.24, all others < 0.14 s. 1720 passed, 0 failed.
+    => with Terminal as a Developer Tool the Gatekeeper/XProtect first-launch assessment is gone for these binaries.
+    Per test (raw/report-time.log, libtest -Z unstable-options --report-time, report-time-top.txt): 1721 tests, sum of
+    per-test times 15.8 s (threads overlap); 8 tests >= 0.1 s, slowest 0.51 s (aes_window_rectlist_capacity
+    thirty_pieces_all_reach_the_caller). No fixed sleeps (2026-10-27 run, result 6).
+
+ 2. The whole suite in the main target after an edit of tos-api (touch tos-api/src/lib.rs):
+      cargo xtask test (raw/full1.log)            212.6 s wall (build 3m12s), 1720/0/1, rc=0
+      cargo test --no-run --timings (timings-relink.html) 165.4 s: tos-api lib 8 s, then the 159 integration
+        binaries, each 9.8 s median (max 10.5 s) as a cargo unit, 10 at a time; CPU user 49-55 s + sys 155-173 s over
+        198-221 s wall (raw/build1.err, full1.log, tier-*.log) = about 1 of 10 cores busy.
+    With nothing changed (raw/nochange.txt): full 18.7 s, fast 3.4 s, doctests alone (`cargo test --doc`) 16.0 s;
+    doctests after a touch 23.1 s. The doctests run 0 tests (1 `ignore`d block, tos-api/src/bdos/mem/stats.rs).
+
+ 3. The same suite in a FRESH target dir (raw/fresh-suite.txt), current profile:
+                         cold (all built + run)    relink after touch      deps entries cold -> after relink
+      internal disk      28.1 s (build 23.7 s)     11.0 s (build 6.9 s)    3341 -> 6212
+      /Volumes/Daten     23.4 s (build 19.4 s)      9.0 s (build 5.1 s)    3341 -> 6212
+    => the relink costs ~5 s in a fresh dir and 165-192 s in the main target: ~30x; the volume is not the cause.
+
+ 4. Cause (raw/deps-bloat.txt, raw/rustc-sample-bloated-relink.txt): the entry count of target/debug/deps.
+      new target dir, relink with its own deps/ (6212 entries)              4.5 s
+      same dir after adding 500 000 empty *.rcgu.o files (509 083 entries)  446.6 s (first; mds/Spotlight at ~11 % CPU
+                                                                            while the new files were fresh -- not
+                                                                            separated, see FINDINGS)
+      same, relinked again (511 954 entries)                                211.8 s (= the main target's 165-212 s)
+    sample(1) of one rustc during that relink: 1219 of 1229 samples of the main thread in readdir_r ->
+    __getdirentries64 under rustc_session::search_paths::SearchPath::new (build_session_options): every rustc
+    process lists the whole `-L dependency=.../target/debug/deps` directory at start. 160 rustc processes per relink.
+    Why deps/ is that big: with the current profile (incremental, split-debuginfo unpacked = macOS default) each relink
+    leaves ~2 900 new codegen-unit objects in deps/ (fresh-suite: 3341 -> 6212 after one relink; .o files are hard
+    links into target/debug/incremental, link counts up to 93) and nothing removes the old ones. Main target:
+    501 186 entries at 00:19, 516 186 at 01:11 after the 5 relinks of this run (+3 000 each); target/debug 12 GB.
+
+ 5. Profile variants (raw/fresh-suite.txt: full suite cold + relink; raw/variants.txt: 3 binaries, launches, debug map).
+    Variants in scratch (internal disk; the current profile on /Volumes/Daten: 23.4 s / 9.0 s). All variants: first launch 0.003 s at the build path, 0.008-0.010 s as a copy in the shared deps/; results 1720 or
+    1721/0/1 (1721 = after the test added to test_tiers.rs, from v-strip on).
+      variant (CARGO_PROFILE_TEST_*)        cold    relink  deps after relink (.o)   deps size  debug info for our code
+      current (debug=2, unpacked)           28.1 s 11.0 s   6212 (5880), grows       0.43 GB    .o in deps/ (debug map)
+      DEBUG=line-tables-only                19.8 s  8.1 s   6212 (5880), grows       0.36 GB    same, lines only
+      STRIP=symbols                         24.5 s  9.3 s   6334 (6002), grows       0.37 GB    stripped, no symbols
+      DEBUG=false                           18.2 s  8.1 s   332 (0), constant        0.25 GB    none
+      SPLIT_DEBUGINFO=off                   22.0 s  7.8 s   332 (0), constant        0.28 GB    lost: debug map points at
+                                                                                               deleted .o (0 present)
+      SPLIT_DEBUGINFO=packed                26.7 s 13.7 s   494 (0), constant        1.8 GB     full, in .dSYM per binary
+      line-tables-only + packed             23.6 s 12.2 s   494 (0), constant        1.4 GB     lines, in .dSYM
+      INCREMENTAL=false                     19.6 s 18.9 s   763 (431), constant      0.42 GB    .o in deps/, stable names
+    Binary size does not matter for the launch (2026-10-27 run result 3, and above). The v-lto row of fresh-suite.txt
+    failed in its relink (rc=101, raw/fresh-v-lto-relink-FAILED-own-edit.log): this run's own half-finished edit of
+    test_tiers.rs; rerun as v-lto-rerun (the numbers above).
+
+ 6. Tiers (tools/xtask/src/test_tiers.rs, cmd_test in tools/xtask/src/main.rs), chosen from 1-5:
+      fast  `cargo xtask test --fast`: unit tests of tos-api, tos-types, xtask + all 159 integration targets of
+            tos-api; not the doctests. Prints at the end what it skipped and why.
+      full  `cargo xtask test` (= --full): everything, one `cargo test` over the three packages, doctests included.
+    Why: no integration target is slow (all 162 binaries run in 3.8 s together), so FULL_ONLY is empty; the doctests
+    are the one fixed cost independent of the change (16 of 18.7 s with nothing changed) and execute no test.
+    Every test is in exactly one tier (unit tests in test_tiers.rs check the split and the doctest packages).
+    Runs, main target, after a touch of tos-api/src/lib.rs (HEAD a9ee00fe + the uncommitted tiers):
+      fast (raw/tier-fast.log)  197.9 s, 1721 passed / 0 failed / 0 ignored, rc=0
+      full (raw/tier-full.log)  208.7 s, 1721 passed / 0 failed / 1 ignored, rc=0
+    after the final clippy edit (lifetime elision in test_tiers::split), nothing else changed (raw/final-check.txt):
+      fast 11.0 s rc=0 (includes rebuilding xtask), full 19.1 s rc=0.
+    Both tiers stay < 10 min on this host only while Terminal is a Developer Tool; in the main target the fast tier is
+    dominated by result 4 (~190 s relink), not by tests.
+
+ 7. Test names (raw/names-diff.txt): before = --list of all 162 binaries after the toggle (raw/post1/names, 1720);
+    lost: none; new: test_tiers::tests::doctest_packages_are_the_host_packages_with_a_lib; fast = full minus the one
+    doctest (ignored). Reconciliation of the 2026-10-27 numbers:
+      1715 run vs 1691 listed: that run's names/ lacks the last two binaries (interrupted at the toggle):
+        aes_window_rectlist_capacity 2 + gemdos_ssystem_usbsnap 22 = 24 = 1715 - 1691.
+      1715 (HEAD c0c5c7c3) vs STATUS 1670/0/1 (measured on 5a21cee7): +45 `#[test]` in tos-api/tos-types/tools/xtask
+        between the two commits, 0 removed; the 1 ignored is the doctest above (the 2026-10-27 per-binary count has no
+        doctests). Today: 1715 + 6 new test_tiers tests = 1721 passed, 0 failed, 1 ignored.
+
+ 8. Merging integration tests (TOOL04 Arbeit 4): not done. 85 of 159 targets install a host into the process-global
+    tos_api::host (63 directly, 20 through tests/fatclus, fatvol, vt52_common, 2 through the reference harnesses);
+    install_host debug_asserts it runs once per process (tos-api/src/host.rs:538@install_host). 85 targets keep a
+    file-local static Mutex over global kernel state. One binary would run them in parallel threads in one process.
+    What merging could save: ~160 rustc+link units of ~10 s each in the main target, i.e. most of result 2's ~190 s --
+    but result 3 shows the same 160 units cost ~5 s in total when deps/ is not bloated, so the gain is a cure for
+    result 4, which has a cheaper cure (FINDINGS 1).
+
+FINDINGS FOR TRIAGE (not fixed here)
+ 1. target/debug/deps grows by ~3 000 objects per tos-api edit and never shrinks; every rustc lists it at start
+    (result 4). Remedies, each a lead/user decision: one-time removal of target/debug (host builds only; the kernel's
+    target/aarch64-*/ untouched; cold rebuild of the host suite ~25 s) and/or a [profile.test] that stops the growth
+    (result 5: split-debuginfo=packed keeps full debug info at 1.8 GB and ~13 s relink; =off is fastest but loses
+    source lines in backtraces/lldb; incremental=false keeps debug info, no growth, ~19 s relink).
+ 2. The first bloated relink (446.6 s) took twice the second (211.8 s); mds was busy indexing the new files. Excluding
+    target/ from Spotlight was not measured.
+ 3. Without the Developer Tools exemption (cargo started from VS Code, ssh, launchd/cron for a nightly run) the
+    2026-10-27 numbers apply again: ~25-75 s per newly linked binary, ~2 h per tos-api edit, in either tier.
+ 4. Pre-existing compiler warnings under the test profile, same before and after this run's edits (raw/full1.log,
+    raw/tier-full.log): tos-api lib 64, tests arch03_shared_space 1 and vdi_reference 1, xtask 2 (the two unused
+    constants in kernel/src/drivers/bcm2711/clock_tags.rs that xtask compiles by path).

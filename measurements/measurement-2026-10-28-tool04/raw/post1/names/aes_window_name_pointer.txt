@@ -1,0 +1,3 @@
+a_null_pointer_is_an_empty_title: test
+a_title_longer_than_79_characters_is_not_truncated: test
+t10_title_rewritten_in_place_shows_on_the_next_frame_repaint: test

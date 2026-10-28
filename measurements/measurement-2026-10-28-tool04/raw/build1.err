@@ -1,0 +1,6 @@
+   Compiling xtask v0.1.0 (/Volumes/Daten/Development/PiRusTOS/tools/xtask)
+   Compiling tos-api v0.6.1 (/Volumes/Daten/Development/PiRusTOS/tos-api)
+    Finished `test` profile [optimized + debuginfo] target(s) in 3m 40s
+real 220,73
+user 49,49
+sys 155,74

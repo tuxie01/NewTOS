@@ -1,0 +1,28 @@
+== full [] build 3.7s deps_entries=207 deps_o=193 deps_dsym=0 deps_kib=39528
+full	test	bios_reset	size=1424888	first=0.003	second=0.003	copy-in-shared-deps-first=0.009	oso=91	oso_present=14	dsym=no
+full	test	aes_t04_intin_long_contract	size=1962624	first=0.003	second=0.002	copy-in-shared-deps-first=0.008	oso=111	oso_present=12	dsym=no
+full	test	vdi_reference	size=2120192	first=0.003	second=0.003	copy-in-shared-deps-first=0.009	oso=68	oso_present=16	dsym=no
+== lto [CARGO_PROFILE_TEST_DEBUG=line-tables-only] build 3.1s deps_entries=207 deps_o=193 deps_dsym=0 deps_kib=27784
+lto	test	bios_reset	size=1424824	first=0.003	second=0.002	copy-in-shared-deps-first=0.009	oso=90	oso_present=14	dsym=no
+lto	test	aes_t04_intin_long_contract	size=1962384	first=0.003	second=0.002	copy-in-shared-deps-first=0.008	oso=109	oso_present=12	dsym=no
+lto	test	vdi_reference	size=2119200	first=0.003	second=0.003	copy-in-shared-deps-first=0.009	oso=66	oso_present=16	dsym=no
+== strip [CARGO_PROFILE_TEST_STRIP=symbols] build 3.5s deps_entries=207 deps_o=193 deps_dsym=0 deps_kib=38284
+strip	test	bios_reset	size=1060672	first=0.003	second=0.003	copy-in-shared-deps-first=0.009	oso=0	oso_present=0	dsym=no
+strip	test	aes_t04_intin_long_contract	size=1492240	first=0.003	second=0.003	copy-in-shared-deps-first=0.009	oso=0	oso_present=0	dsym=no
+strip	test	vdi_reference	size=1683712	first=0.003	second=0.003	copy-in-shared-deps-first=0.009	oso=0	oso_present=0	dsym=no
+== nodebug [CARGO_PROFILE_TEST_DEBUG=false] build 2.9s deps_entries=14 deps_o=0 deps_dsym=0 deps_kib=15076
+nodebug	test	bios_reset	size=1304416	first=0.003	second=0.002	copy-in-shared-deps-first=0.009	oso=0	oso_present=0	dsym=no
+nodebug	test	aes_t04_intin_long_contract	size=1788640	first=0.003	second=0.002	copy-in-shared-deps-first=0.008	oso=0	oso_present=0	dsym=no
+nodebug	test	vdi_reference	size=1975744	first=0.003	second=0.002	copy-in-shared-deps-first=0.009	oso=0	oso_present=0	dsym=no
+== lto-packed [CARGO_PROFILE_TEST_DEBUG=line-tables-only CARGO_PROFILE_TEST_SPLIT_DEBUGINFO=packed] build 3.1s deps_entries=17 deps_o=0 deps_dsym=3 deps_kib=39468
+lto-packed	test	bios_reset	size=1441992	first=0.003	second=0.002	copy-in-shared-deps-first=0.009	oso=90	oso_present=0	dsym=yes
+lto-packed	test	aes_t04_intin_long_contract	size=1963104	first=0.003	second=0.003	copy-in-shared-deps-first=0.009	oso=109	oso_present=0	dsym=yes
+lto-packed	test	vdi_reference	size=2119616	first=0.003	second=0.003	copy-in-shared-deps-first=0.009	oso=66	oso_present=0	dsym=yes
+== full-packed [CARGO_PROFILE_TEST_SPLIT_DEBUGINFO=packed] build 3.5s deps_entries=17 deps_o=0 deps_dsym=3 deps_kib=51744
+full-packed	test	bios_reset	size=1425256	first=0.003	second=0.002	copy-in-shared-deps-first=0.010	oso=91	oso_present=0	dsym=yes
+full-packed	test	aes_t04_intin_long_contract	size=1963440	first=0.003	second=0.002	copy-in-shared-deps-first=0.010	oso=111	oso_present=0	dsym=yes
+full-packed	test	vdi_reference	size=2120688	first=0.003	second=0.003	copy-in-shared-deps-first=0.010	oso=68	oso_present=0	dsym=yes
+== full-off [CARGO_PROFILE_TEST_SPLIT_DEBUGINFO=off] build 3.4s deps_entries=14 deps_o=0 deps_dsym=0 deps_kib=25020
+full-off	test	bios_reset	size=1441560	first=0.003	second=0.002	copy-in-shared-deps-first=0.010	oso=91	oso_present=0	dsym=no
+full-off	test	aes_t04_intin_long_contract	size=1963216	first=0.003	second=0.002	copy-in-shared-deps-first=0.009	oso=111	oso_present=0	dsym=no
+full-off	test	vdi_reference	size=2120544	first=0.003	second=0.002	copy-in-shared-deps-first=0.009	oso=68	oso_present=0	dsym=no

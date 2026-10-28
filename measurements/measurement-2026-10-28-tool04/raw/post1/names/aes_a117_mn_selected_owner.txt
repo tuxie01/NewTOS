@@ -1,0 +1,3 @@
+a_pick_tracked_in_a_chain_childs_wait_stays_with_the_chain: test
+a_pick_tracked_in_an_accessorys_wait_goes_to_the_bar_owner: test
+a_pick_tracked_in_an_accessorys_wait_reaches_the_chains_running_member: test

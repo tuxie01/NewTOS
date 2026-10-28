@@ -1,0 +1,12 @@
+
+running 7 tests
+test the_crash_report_names_page_0_and_the_stub_page ... ok
+test the_new_dispositions_round_trip ... ok
+test conterm_is_read_through_its_documented_bits_only ... ok
+test the_super_state_ends_with_the_process ... ok
+test a_fresh_root_maps_page_0_read_only_the_stubs_execute_only_the_private_page_read_write ... ok
+test no_publication_may_cover_the_private_pages ... ok
+test super_toggles_page_0_and_answers_as_x20_inq_x20_usr_x20_sup ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

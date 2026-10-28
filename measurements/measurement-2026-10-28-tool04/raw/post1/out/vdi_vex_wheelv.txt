@@ -1,0 +1,8 @@
+
+running 3 tests
+test a_wheel_scancode_does_not_touch_the_button_mask ... ok
+test mousex_handler_keeps_buttons_3_to_5_in_mouse_bt ... ok
+test vex_wheelv_returns_the_previous_vector_in_the_lp64_pointer_slot ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,12 @@
+
+running 7 tests
+test a105_1_info_text_starts_one_column_inside_the_border_on_the_third_row ... ok
+test a105_4_pressed_closer_takes_the_complement_colours_with_actcolchange ... ok
+test a105_2_overlong_name_is_left_aligned_and_cut_to_whole_glyphs ... ok
+test a105_4_pressed_closer_keeps_its_colours_without_actcolchange ... ok
+test a105_2_odd_width_name_is_centred_with_gr_justs_rounding ... ok
+test a109_a_held_scroll_arrow_is_drawn_selected_and_restored_on_release ... ok
+test a109_a_page_click_in_the_track_draws_no_feedback ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+

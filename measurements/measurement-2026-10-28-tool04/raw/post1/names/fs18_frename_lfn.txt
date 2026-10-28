@@ -1,0 +1,1 @@
+rename_erases_the_old_long_name_chain: test

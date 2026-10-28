@@ -1,0 +1,15 @@
+
+running 10 tests
+test a_bad_note_is_an_unloadable_program ... ok
+test notes_of_other_owners_and_types_are_skipped ... ok
+test parse_records_the_note_segment_and_its_value_is_found ... ok
+test note_segments_outside_the_file_too_big_or_too_many_are_refused ... ok
+test an_eight_aligned_note_segment_pads_to_eight ... ok
+test a_prgflags_note_in_two_segments_is_refused ... ok
+test a_malformed_prgflags_note_is_refused ... ok
+test no_note_means_no_value_and_the_loader_takes_pf_standard ... ok
+test the_sdk_note_reads_back_its_value_and_place ... ok
+test the_flags_choose_the_pool_like_emutos_alloc_env_and_alloc_tpa ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

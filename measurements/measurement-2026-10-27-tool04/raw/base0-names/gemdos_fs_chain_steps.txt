@@ -1,0 +1,3 @@
+forward_seek_chains_on_backward_seek_restarts: test
+sequential_reads_take_one_fat_step_per_cluster: test
+sequential_writes_take_one_step_per_new_cluster: test

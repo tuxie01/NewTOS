@@ -1,0 +1,7 @@
+
+running 2 tests
+test horizontal_elevator_drag_wm_hslid_carries_ws_curr_ywh ... ok
+test vertical_elevator_drag_wm_vslid_carries_ws_curr_ywh ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

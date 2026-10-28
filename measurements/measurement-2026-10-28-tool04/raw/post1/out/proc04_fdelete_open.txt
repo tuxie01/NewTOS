@@ -1,0 +1,14 @@
+
+running 9 tests
+test a_file_open_in_another_process_is_not_deleted ... ok
+test deleting_a_dirty_open_file_frees_its_whole_chain ... ok
+test fcreate_over_an_own_open_file ... ok
+test ixdel_order_newest_ofd_first_without_rollback ... ok
+test a_stale_close_leaves_the_file_that_reused_the_slot_alone ... ok
+test nothing_through_a_deleted_handle_touches_the_card ... ok
+test own_open_file_is_deleted_and_its_handle_stays_valid ... ok
+test aliases_of_a_deleted_file_stay_valid ... ok
+test ddelete_of_a_folder_in_the_slot_of_a_deleted_open_file ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

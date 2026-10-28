@@ -1,0 +1,11 @@
+
+running 6 tests
+test a110_a_dead_clients_screen_lock_is_released ... ok
+test a110_a_living_clients_screen_lock_survives_a_childs_death ... ok
+test a107_a_window_the_pexec_child_left_open_is_gone_at_the_parents_next_aes_call ... ok
+test a110_a_dead_clients_mouse_control_hold_is_released_and_unparks_the_menu ... ok
+test a107_the_pexec_childs_menu_bar_goes_with_it_and_the_parents_stays ... ok
+test a107_the_pexec_childs_background_tree_goes_with_it_and_the_parents_stays ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

@@ -1,0 +1,1 @@
+an_exhausted_arena_is_counted_and_reported_once_per_process: test

@@ -1,0 +1,11 @@
+# A xattrs (copy, original):
+com.apple.provenance
+com.apple.provenance
+# B xattrs (copy, original):
+com.apple.provenance
+com.apple.provenance
+A-copy-noxattr-first	0.239	rc=0
+A-original-after	20.949	rc=0
+B-copy-xattr-first	0.164	rc=0
+B-original-after	22.098	rc=0
+B-copy-second	0.003	rc=0

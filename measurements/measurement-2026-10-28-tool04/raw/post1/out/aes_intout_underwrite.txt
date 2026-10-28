@@ -1,0 +1,9 @@
+
+running 4 tests
+test graf_handle_at_out_len_7_delivers_zero_in_the_two_words_past_its_metrics ... ok
+test objc_sysvar_set_mode_at_out_len_3_delivers_zero_in_the_two_output_words ... ok
+test wind_get_wf_color_delivers_zero_in_the_three_words_it_never_writes ... ok
+test wind_get_wf_hslide_at_out_len_5_delivers_zero_not_the_previous_rectangle ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

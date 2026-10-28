@@ -1,0 +1,3 @@
+fuller_wm_fulled_carries_ws_curr: test
+hotclose_wm_closed_carries_ws_curr: test
+plain_closer_wm_closed_carries_ws_curr: test

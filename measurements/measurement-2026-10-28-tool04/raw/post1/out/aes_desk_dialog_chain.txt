@@ -1,0 +1,8 @@
+
+running 3 tests
+test fmd_finish_restores_only_the_dialog_rectangle ... ok
+test form_center_places_the_desktop_dialog_below_the_menu_bar ... ok
+test the_dialog_restore_draws_only_inside_its_own_rectangle ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

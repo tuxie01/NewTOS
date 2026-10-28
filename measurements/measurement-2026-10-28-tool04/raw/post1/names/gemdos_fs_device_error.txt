@@ -1,0 +1,5 @@
+a_failed_write_back_keeps_the_sector_and_lands_it_afterwards: test
+fread_reports_ereadf_when_the_sector_cannot_be_read: test
+fwrite_reports_ewritf_when_the_sector_does_not_reach_the_card: test
+rwabs_passes_the_drivers_own_code_through: test
+the_write_back_retry_is_bounded_and_visible: test

@@ -1,0 +1,5 @@
+a_fully_declared_call_still_receives_every_word: test
+in_len_0_copies_nothing_at_all: test
+scrp_write_with_ain_len_0_must_not_see_the_pointer_behind_it: test
+the_cut_is_exactly_at_in_len_not_one_word_early_or_late: test
+wind_create_with_in_len_1_must_not_see_the_four_words_behind_it: test

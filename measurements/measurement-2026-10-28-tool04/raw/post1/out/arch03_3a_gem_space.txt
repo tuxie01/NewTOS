@@ -1,0 +1,9 @@
+
+running 4 tests
+test appl_init_fills_the_same_aesglobal_in_both_spaces ... ok
+test appl_find_reads_the_name_in_the_callers_space ... ok
+test out_len_zero_writes_nothing_in_user_space ... ok
+test vdi_block_and_contrl_go_through_the_callers_space ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,5 @@
+internal	0 MiB	16840 bytes	first	0.148	rc=0	second	0.002	rc=0
+internal	1 MiB	1073608 bytes	first	0.168	rc=0	second	0.003	rc=0
+internal	2 MiB	2130376 bytes	first	0.179	rc=0	second	0.003	rc=0
+internal	8 MiB	8470984 bytes	first	0.223	rc=0	second	0.003	rc=0
+internal	32 MiB	33833416 bytes	first	0.365	rc=0	second	0.003	rc=0

@@ -1,0 +1,17 @@
+
+running 12 tests
+test a_aux_and_prn_to_files ... ok
+test a_input_reads_the_file_then_eof ... ok
+test b_stdaux_forced_to_prn ... ok
+test a_cconws_cconout_write_the_file ... ok
+test a_cconrs_max_is_unsigned ... ok
+test a_cconws_user_space ... ok
+test a_crawio_is_not_redirected_to_the_file ... ok
+test b_stdio_forced_to_aux ... ok
+test defaults_unchanged_with_and_without_process ... ok
+test a_cconrs_reads_lines_from_the_file ... ok
+test b_stdprn_forced_to_con ... ok
+test b_stdout_forced_below_prn ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

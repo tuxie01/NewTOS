@@ -1,0 +1,7 @@
+
+running 2 tests
+test autorun_program_quitting_plainly_returns_to_def_desktop ... ok
+test noexec_from_autorun_program_leaves_its_name_in_s_cmd ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

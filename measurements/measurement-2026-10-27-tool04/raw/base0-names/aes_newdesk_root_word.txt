@@ -1,0 +1,3 @@
+lp64_packed_form_takes_the_root_from_the_word_after_the_pointer: test
+lp64_packed_form_with_root_0_paints_the_whole_background: test
+native_form_takes_the_root_from_int_in_2: test

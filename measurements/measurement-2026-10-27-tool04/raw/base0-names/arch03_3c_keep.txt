@@ -1,0 +1,3 @@
+a_kept_block_outlives_its_owner_and_anybody_may_free_it_then: test
+a_kept_block_with_a_further_owner_passes_to_it_first: test
+an_owner_frees_a_kept_block_like_any_other: test

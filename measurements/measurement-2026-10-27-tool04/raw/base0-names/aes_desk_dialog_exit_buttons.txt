@@ -1,0 +1,2 @@
+the_copy_delete_box_can_tell_ok_from_cancel_by_state_alone: test
+the_name_conflict_box_identifies_one_of_its_three_buttons: test

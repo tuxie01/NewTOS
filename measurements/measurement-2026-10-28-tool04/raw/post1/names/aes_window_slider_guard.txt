@@ -1,0 +1,8 @@
+a_later_change_still_draws_and_stores: test
+an_unopened_window_stores_without_drawing: test
+default_size_on_a_fresh_window_is_not_a_change: test
+hslide_set_twice_draws_only_once: test
+hslsiz_set_twice_draws_only_once: test
+t8_vslide_set_twice_draws_only_once: test
+the_guard_compares_after_clamping: test
+vslsiz_set_twice_draws_only_once: test

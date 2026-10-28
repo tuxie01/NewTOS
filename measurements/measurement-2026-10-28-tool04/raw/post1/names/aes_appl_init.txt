@@ -1,0 +1,1 @@
+appl_init_preserves_caller_memory_and_pending_messages_on_both_profiles: test

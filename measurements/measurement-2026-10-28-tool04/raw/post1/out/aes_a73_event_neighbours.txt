@@ -1,0 +1,10 @@
+
+running 5 tests
+test leaving_the_box_keeps_it_open_and_reentry_press_selects ... ok
+test m1_armed_before_release_track_is_delivered_with_mn_selected ... ok
+test m1_armed_before_press_track_is_not_delivered_with_mn_selected ... ok
+test menu_popup_waits_for_the_selecting_press_to_be_released ... ok
+test press_outside_the_open_box_is_consumed_as_cancel ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

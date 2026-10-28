@@ -1,0 +1,11 @@
+a_kernel_given_dta_above_4_gib_fires_on_the_full_address: test
+a_kernel_given_dta_at_2_gib_fires: test
+a_kernel_given_dta_below_2_gib_passes: test
+a_program_dta_below_2_gib_passes: test
+a_program_set_dta_at_or_above_2_gib_round_trips: test
+a_program_set_dta_never_fires: test
+the_default_dta_is_p_cmdlin: test
+the_first_address_at_2_gib_fires: test
+the_last_address_below_2_gib_and_null_pass: test
+the_size_probes_and_real_blocks_pass_through_the_trap_entries: test
+the_trap_entry_checks_the_default_dta: test

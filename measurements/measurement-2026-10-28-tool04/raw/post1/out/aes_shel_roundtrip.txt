@@ -1,0 +1,8 @@
+
+running 3 tests
+test shel_write_after_launch_wins_shel_read ... ok
+test launcher_fills_the_cells_shel_read_returns ... ok
+test shel_write_exec_then_shel_read_returns_the_written_pair ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

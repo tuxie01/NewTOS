@@ -1,0 +1,16 @@
+
+running 11 tests
+test a_kernel_given_dta_below_2_gib_passes ... ok
+test a_program_set_dta_never_fires ... ok
+test a_program_dta_below_2_gib_passes ... ok
+test a_program_set_dta_at_or_above_2_gib_round_trips ... ok
+test the_last_address_below_2_gib_and_null_pass ... ok
+test the_default_dta_is_p_cmdlin ... ok
+test the_trap_entry_checks_the_default_dta ... ok
+test the_first_address_at_2_gib_fires - should panic ... ok
+test a_kernel_given_dta_above_4_gib_fires_on_the_full_address - should panic ... ok
+test a_kernel_given_dta_at_2_gib_fires - should panic ... ok
+test the_size_probes_and_real_blocks_pass_through_the_trap_entries ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

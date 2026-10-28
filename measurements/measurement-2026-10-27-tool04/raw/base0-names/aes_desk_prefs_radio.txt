@@ -1,0 +1,3 @@
+a_radio_click_selects_one_button_of_its_own_group: test
+each_group_keeps_its_own_selection_across_clicks: test
+without_its_ibox_a_group_takes_the_whole_parent_with_it: test

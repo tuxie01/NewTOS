@@ -1,0 +1,14 @@
+
+running 9 tests
+test forced_to_a_device_seeks_to_zero_forced_to_minus_4_is_invalid ... ok
+test fread_fwrite_take_negative_handles_as_devices ... ok
+test t10_t11_fdup_of_a_device_handle ... ok
+test t12_free_and_out_of_range_handles ... ok
+test t13_fdatime_on_a_console_handle_is_invalid ... ok
+test t1_t2_default_standard_handles_seek_to_zero ... ok
+test t3_t4_offset_and_mode_are_ignored_on_a_device ... ok
+test t5_t6_negative_handles ... ok
+test t7_t8_t9_forced_standard_handle_seeks_the_file ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

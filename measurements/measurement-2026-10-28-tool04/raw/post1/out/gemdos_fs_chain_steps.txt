@@ -1,0 +1,8 @@
+
+running 3 tests
+test sequential_reads_take_one_fat_step_per_cluster ... ok
+test forward_seek_chains_on_backward_seek_restarts ... ok
+test sequential_writes_take_one_step_per_new_cluster ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,11 @@
+
+running 6 tests
+test only_the_delete_make_code_restarts ... ok
+test a_host_without_restart_answers_error ... ok
+test delete_make_under_every_modifier_combination ... ok
+test the_named_combinations ... ok
+test reserved_arguments_must_be_zero ... ok
+test the_reset_stub_calls_ssystem_2021 ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

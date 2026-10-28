@@ -1,0 +1,8 @@
+
+running 3 tests
+test no_tedinfo_claims_more_bytes_than_the_blob_reserves ... ok
+test tedinfo_lengths_are_recomputed_from_the_strings ... ok
+test typing_into_a_loaded_field_touches_nothing_outside_its_text_buffer ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,8 @@
+
+running 3 tests
+test ilp32_load_failure_reports_eplfmt ... ok
+test parser_still_recognises_elf32_as_ilp32 ... ok
+test elf64_parses_as_lp64 ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

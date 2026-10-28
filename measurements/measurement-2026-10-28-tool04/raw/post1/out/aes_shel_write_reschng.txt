@@ -1,0 +1,8 @@
+
+running 3 tests
+test shel_write_reschng_records_the_falcon_family_request_unvalidated ... ok
+test shel_write_reschng_records_the_st_tt_family_request ... ok
+test shel_write_shutdown_records_nothing_and_leaves_the_rez_request_alone ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

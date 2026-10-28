@@ -1,0 +1,6 @@
+
+running 1 test
+test a_kernel_dta_never_lands_in_the_running_processs_basepage ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

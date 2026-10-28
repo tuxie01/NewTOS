@@ -1,0 +1,49 @@
+2026-10-27 22:10:49.707 Df syspolicyd[538:12e3bfc] [com.apple.xpc:connection] [0x79fe89b480] activating connection: mach=false listener=false peer=true name=com.apple.security.syspolicy.peer[31709].0x79fe89b480
+2026-10-27 22:10:49.708 Df syspolicyd[538:12e3bfc] [com.apple.xpc:connection] [0x79fe89b480] invalidated because the client process (pid 31709) either cancelled the connection or exited
+2026-10-27 22:10:49.715 Df kernel[0:12e4272] (AppleMobileFileIntegrity) AMFI: '/Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e' has no CMS blob?
+2026-10-27 22:10:49.715 Df kernel[0:12e4272] (AppleMobileFileIntegrity) AMFI: '/Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e': Unrecoverable CT signature issue, bailing out.
+2026-10-27 22:10:49.715 Df kernel[0:12e4272] (AppleMobileFileIntegrity) AMFI: code signature validation failed.
+2026-10-27 22:10:49.722 Df xprotectd[412:12e4279] [com.apple.Safari.SafeBrowsing:Database] Service did finish database update with protection type 1 and provider 3
+2026-10-27 22:10:49.722 Df xprotectd[412:12e4279] [com.apple.Safari.SafeBrowsing:Database] Service did finish database update with protection type 1 and provider 3
+2026-10-27 22:11:00.895 Df syspolicyd[538:12e3bfc] [com.apple.securityd:security_exception] MacOS error: -67062
+2026-10-27 22:11:00.896 Df syspolicyd[538:12e3bfc] [com.apple.securityd:security_exception] MacOS error: -67062
+2026-10-27 22:11:00.896 E  syspolicyd[538:12e3bfc] [com.apple.syspolicy:default] Unable to get certificates array: (null)
+2026-10-27 22:11:00.897 Df syspolicyd[538:12e3bfc] [com.apple.syspolicy.exec:default] GK performScan: PST: (path: f747cc31c6a619af), (team: (null)), (id: (null)), (bundle_id: (null))
+2026-10-27 22:11:00.918 A  syspolicyd[538:12e4337] (Security) SecKeyCopyPublicBytes
+2026-10-27 22:11:00.918 A  syspolicyd[538:12e4337] (Security) SecKeyCopyAttributes
+2026-10-27 22:11:00.918 A  syspolicyd[538:12e4337] (Security) SecKeyCopyPublicBytes
+2026-10-27 22:11:00.919 Df syspolicyd[538:12e4337] [com.apple.securityd:trust] (Trust 0x79fa93cd80) No pending evals, starting
+2026-10-27 22:11:00.919 A  syspolicyd[538:12e4337] (Security) SecTrustEvaluateIfNecessaryFastAsync
+2026-10-27 22:11:00.919 Df syspolicyd[538:12e4337] [com.apple.securityd:trust] (Trust 0x79fa93cd80) Completed async eval kickoff
+2026-10-27 22:11:00.921 Df syspolicyd[538:12e4337] [com.apple.securityd:trust] (Trust 0x79fa93cd80) trustd returned 4
+2026-10-27 22:11:00.921 A  syspolicyd[538:12e4337] (Security) SecKeyCopyPublicBytes
+2026-10-27 22:11:00.921 A  syspolicyd[538:12e4337] (Security) SecKeyCopyAttributes
+2026-10-27 22:11:00.921 A  syspolicyd[538:12e4337] (Security) SecKeyCopyPublicBytes
+2026-10-27 22:11:00.921 A  syspolicyd[538:12e4337] (Security) SecKeyCopyPublicBytes
+2026-10-27 22:11:00.921 A  syspolicyd[538:12e4337] (Security) SecKeyCopyAttributes
+2026-10-27 22:11:00.921 A  syspolicyd[538:12e4337] (Security) SecKeyCopyPublicBytes
+2026-10-27 22:11:00.922 A  syspolicyd[538:12e4337] (Security) SecKeyCopyPublicBytes
+2026-10-27 22:11:00.922 A  syspolicyd[538:12e4337] (Security) SecKeyCopyAttributes
+2026-10-27 22:11:00.922 A  syspolicyd[538:12e4337] (Security) SecKeyCopyPublicBytes
+2026-10-27 22:11:00.922 A  syspolicyd[538:12e4260] (Security) SecTrustReportNetworkingAnalytics
+2026-10-27 22:11:00.922 A  syspolicyd[538:12e4260] (Security) SecTrustReportNetworkingAnalytics
+2026-10-27 22:11:00.923 Df syspolicyd[538:12e4337] [com.apple.cfnetwork:h3stream] 0x79fb19a4d8 ID=0 Task <EA26C72F-6367-42BD-9793-D09657AEBEF4>.<51604> sent request, body S 77
+2026-10-27 22:11:00.934 A  syspolicyd[538:12e4260] (Security) SecKeyCopyPublicBytes
+2026-10-27 22:11:00.934 A  syspolicyd[538:12e4260] (Security) SecKeyCopyAttributes
+2026-10-27 22:11:00.934 A  syspolicyd[538:12e4260] (Security) SecKeyCopyPublicBytes
+2026-10-27 22:11:00.934 A  syspolicyd[538:12e4260] (Security) SecKeyCopyPublicBytes
+2026-10-27 22:11:00.934 A  syspolicyd[538:12e4260] (Security) SecKeyCopyAttributes
+2026-10-27 22:11:00.934 A  syspolicyd[538:12e4260] (Security) SecKeyCopyPublicBytes
+2026-10-27 22:11:01.047 Df syspolicyd[538:12e4260] [com.apple.cfnetwork:h3stream] 0x79fb19a4d8 ID=0 Task <EA26C72F-6367-42BD-9793-D09657AEBEF4>.<51604> received response, status 200 content K
+2026-10-27 22:11:01.047 A  syspolicyd[538:12e4260] (Security) SecTrustEvaluateIfNecessary
+2026-10-27 22:11:01.053 Df syspolicyd[538:12e3bfc] [com.apple.securityd:SecError] Error checking with notarization daemon: 3
+2026-10-27 22:11:01.065 Df syspolicyd[538:12e3bfc] [com.apple.securityd:SecError] Error checking with notarization daemon: 3
+2026-10-27 22:11:01.065 E  syspolicyd[538:12e3bfc] [com.apple.syspolicy.exec:default] Error Domain=GatekeeperPolicyScanError Code=-67018 "Code did not match any currently allowed policy" UserInfo={NSURL=<private>, NSLocalizedDescription=Code did not match any currently allowed policy}
+2026-10-27 22:11:01.066 Df syspolicyd[538:12e3bfc] [com.apple.securityd:SecError] Error checking with notarization daemon: 3
+2026-10-27 22:11:01.066 Df syspolicyd[538:12e3bfc] [com.apple.xpc:connection] [0x79fe8997c0] activating connection: mach=false listener=false peer=false name=com.apple.XprotectFramework.AnalysisService
+2026-10-27 22:11:01.067 Df XprotectService[44906:12e40c9] [com.apple.xpc:connection] [0x758505c8c0] activating connection: mach=false listener=false peer=true name=com.apple.XprotectFramework.AnalysisService.peer[538].0x758505c8c0
+2026-10-27 22:11:13.623 Df syspolicyd[538:12e433e] [com.apple.xpc:connection] [0x79fe8997c0] invalidated because the current process cancelled the connection by calling xpc_connection_cancel()
+2026-10-27 22:11:13.623 Df XprotectService[44906:12e40c9] [com.apple.xpc:connection] [0x758505c8c0] invalidated because the client process (pid 538) either cancelled the connection or exited
+2026-10-27 22:11:13.624 Df syspolicyd[538:12e433e] [com.apple.syspolicy.exec:default] GK evaluateScanResult: 2, PST: (path: f747cc31c6a619af), (team: (null)), (id: aes_t04_intin_long_contract-62e0f5dd573fc99e), (bundle_id: NOT_A_BUNDLE), 0, 0, 1, 0, 0, 0, 0
+2026-10-27 22:11:13.624 Df syspolicyd[538:12e433e] [com.apple.syspolicy.exec:default] Found provenance data on target: TA(9d2f17f36bb1fa2e, 2), PST: (path: f747cc31c6a619af), (team: (null)), (id: aes_t04_intin_long_contract-62e0f5dd573fc99e), (bundle_id: NOT_A_BUNDLE)
+2026-10-27 22:11:13.624 Df syspolicyd[538:12e433e] [com.apple.syspolicy.exec:default] Putting executable into provenance with metadata: TA(9d2f17f36bb1fa2e, 2)

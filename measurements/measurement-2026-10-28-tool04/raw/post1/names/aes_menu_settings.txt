@@ -1,0 +1,1 @@
+only_flag_zero_reads_and_only_flag_one_writes: test

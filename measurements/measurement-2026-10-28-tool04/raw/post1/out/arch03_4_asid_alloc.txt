@@ -1,0 +1,13 @@
+
+running 8 tests
+test operand_carries_asid_and_page_number ... ok
+test running_out_starts_a_new_generation_and_stales_every_slot ... ok
+test unconfigured_and_out_of_range_give_no_asid ... ok
+test with_asids_off_the_user_leaves_are_global_as_before ... ok
+test each_slot_gets_its_own_asid_and_keeps_it ... ok
+test queue_dedups_and_overflows_into_a_full_flush ... ok
+test a_retired_asid_is_not_handed_out_again_in_its_generation ... ok
+test many_rollovers_never_hand_out_asid_zero_or_out_of_range ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

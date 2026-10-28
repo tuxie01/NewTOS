@@ -1,0 +1,9 @@
+
+running 4 tests
+test fl3dind_boxchar_with_inside_border_draws_the_bevel_inside_the_border ... ok
+test fl3dind_boxchar_with_outside_border_matches_the_reference_drive_box ... ok
+test fl3dind_boxtext_with_outside_border_keeps_it_under_the_bevel ... ok
+test selected_fl3dind_boxchar_keeps_the_border_and_inverts_the_bevel ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

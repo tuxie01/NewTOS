@@ -1,0 +1,9 @@
+
+running 4 tests
+test disabled_string_with_a_non_dash_stays_text ... ok
+test disabled_three_dashes_stay_text ... ok
+test disabled_all_dashes_string_is_a_line_across_the_object ... ok
+test enabled_all_dashes_string_stays_text ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

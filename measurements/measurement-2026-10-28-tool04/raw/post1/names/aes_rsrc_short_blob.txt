@@ -1,0 +1,6 @@
+a_file_shorter_than_its_declared_size_is_refused: test
+a_header_whose_arrays_run_past_the_blob_is_refused: test
+a_resource_larger_than_the_loader_buffer_is_refused: test
+a_truncated_blob_is_refused_without_writing_anywhere: test
+the_complete_resource_still_loads: test
+the_whole_blob_relocates_inside_itself: test

@@ -1,0 +1,8 @@
+
+running 3 tests
+test bb_save_clips_the_height_to_the_buffer_and_writes_nothing_past_it ... ok
+test drop_down_over_a_truecolor_pattern_restores_it_byte_for_byte_through_the_screen_buffer ... ok
+test form_alert_over_a_truecolor_pattern_restores_it_byte_for_byte_through_the_screen_buffer ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

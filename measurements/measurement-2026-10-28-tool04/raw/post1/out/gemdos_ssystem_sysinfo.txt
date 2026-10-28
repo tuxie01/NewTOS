@@ -1,0 +1,14 @@
+
+running 9 tests
+test block_cache_reports_its_arena_and_share_or_off ... ok
+test input_mode_reports_the_pump_in_effect ... ok
+test arg2_is_refused_for_every_scalar_mode_before_anything_is_read ... ok
+test memory_protection_and_asids_report_the_switch_in_effect ... ok
+test the_block_ends_at_2020_and_2023_is_the_first_free_number ... ok
+test unknown_host_facts_are_error_and_write_nothing ... ok
+test host_facts_come_back_in_both_forms ... ok
+test version_string_follows_strncpy_f ... ok
+test pool_sizes_are_error_before_init_then_kib ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,11 @@
+
+running 6 tests
+test the_bit_tables_rebuild_the_device_word ... ok
+test the_eddi_cookie_is_seeded_with_the_non_callable_marker ... ok
+test sub_opcode_1_without_mode_2_stays_vq_extnd ... ok
+test vq_scrninfo_on_an_unopened_handle_writes_nothing ... ok
+test vq_extnd_modes_are_unchanged ... ok
+test vq_scrninfo_answers_the_falcon_hicolor_table_word_for_word ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

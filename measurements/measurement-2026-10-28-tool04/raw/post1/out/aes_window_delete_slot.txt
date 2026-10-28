@@ -1,0 +1,10 @@
+
+running 5 tests
+test a_freed_handle_answers_no_rectangle_at_all ... ok
+test a_sweep_does_not_disturb_a_slot_that_is_already_free ... ok
+test a_window_created_in_a_deleted_handle_inherits_gl_rfull_as_its_work_rect ... ok
+test deleting_a_never_opened_window_arms_the_slot_just_the_same ... ok
+test the_freed_slots_screen_rectangles_do_not_survive_the_next_create ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+

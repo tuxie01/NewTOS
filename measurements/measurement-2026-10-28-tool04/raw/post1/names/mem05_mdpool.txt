@@ -1,0 +1,2 @@
+a_wild_or_double_free_is_ignored: test
+freeing_costs_one_step_per_md_in_any_order: test

@@ -1,0 +1,12 @@
+
+running 7 tests
+test whole_record_freads_go_straight_to_the_device_in_one_request ... ok
+test mixed_partial_and_whole_record_reads_across_boundaries ... ok
+test fseek_forward_backward_and_boundaries ... ok
+test write_then_read_back_and_both_fats_agree ... ok
+test one_fread_of_a_fragmented_file_is_one_request_per_contiguous_run ... ok
+test sequential_small_freads_read_each_fat_sector_once ... ok
+test whole_record_writes_go_straight_to_the_device_and_stale_copies_are_dropped ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

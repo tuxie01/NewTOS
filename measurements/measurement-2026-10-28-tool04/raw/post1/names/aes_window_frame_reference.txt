@@ -1,0 +1,6 @@
+bevel_is_one_pixel_on_every_fl3dact_gadget: test
+down_arrow_slot_ends_on_the_row_above_the_seam: test
+gadget_glyphs_are_centred_in_the_grown_cell: test
+horizontal_arrow_slots_sit_on_the_band_edges: test
+topped_name_box_carries_the_fl3dact_bevel: test
+untopped_name_is_drawn_disabled: test

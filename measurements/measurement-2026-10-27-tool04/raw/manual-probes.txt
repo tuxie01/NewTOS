@@ -1,0 +1,10 @@
+# TOOL04 probes run by hand from the session shell (method/t.py, same as the scripts); 2026-10-27, times in s.
+# Rust test binaries, freshly linked, never launched, copied/linked into target/tool04-probe/rs/ (small dir, same volume):
+rust-copy-noxattr-daten-probe   0.180   (vdi_reference_raster_screen, cp -X)
+rust-copy-xattr-daten-probe     0.171   (vdi_reference_overlay_bit, cp)
+rust-hardlink-daten-probe       0.178   (vdi_raster_reference, ln)
+rust-original-after-hardlink    0.005   (same inode, now in target/debug/deps)
+# A fresh 16 KiB clang binary built straight into target/debug/deps (zz-tool04-probe-c, removed after):
+c-built-into-deps-first         20.751
+c-built-into-deps-second        0.003
+# First single launch, aes_t04_intin_long_contract, 22:10:49: first 23.92, second <0.01 (/usr/bin/time -p).

@@ -1,0 +1,12 @@
+
+running 7 tests
+test a_terminate_disposition_carries_ptermres_blkln ... ok
+test a_loaded_program_keeps_its_elf_entry_and_takes_the_stack_at_p_hitpa ... ok
+test a_basepage_without_an_image_starts_at_p_tbase_on_p_hitpa ... ok
+test an_unknown_mode_is_einvfn_and_5_6_7_are_known ... ok
+test ptermres_keeps_every_owned_block_allocated_under_the_tsr_holder ... ok
+test go_refuses_a_pd_its_caller_does_not_own ... ok
+test go_takes_only_an_unstarted_pd ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

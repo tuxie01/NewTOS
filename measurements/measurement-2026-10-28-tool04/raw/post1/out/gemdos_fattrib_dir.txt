@@ -1,0 +1,8 @@
+
+running 3 tests
+test only_the_directory_answer_is_added_every_other_spelling_is_untouched ... ok
+test fattrib_get_resolves_a_directory_written_with_a_trailing_separator ... ok
+test the_other_calls_on_a_path_ending_in_a_separator_are_unchanged ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

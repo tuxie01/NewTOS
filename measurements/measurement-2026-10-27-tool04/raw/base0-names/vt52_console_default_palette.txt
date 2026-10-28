@@ -1,0 +1,1 @@
+registers_use_the_falcon_default_palette_without_a_workstation: test

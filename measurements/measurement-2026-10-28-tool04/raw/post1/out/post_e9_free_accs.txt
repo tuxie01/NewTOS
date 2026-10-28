@@ -1,0 +1,8 @@
+
+running 3 tests
+test a_block_another_process_also_holds_stays_for_that_owner ... ok
+test a_second_session_finds_the_same_memory_as_the_first ... ok
+test freeing_an_accessory_by_its_pd_returns_tpa_environment_and_its_mallocs ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

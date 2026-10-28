@@ -1,0 +1,16 @@
+cconrs_cookdout_echo_and_backspace_over_wide_chars: test
+cconrs_ctrl_r_redisplays_at_the_start_column: test
+cconrs_ctrl_u_reindents_to_the_start_column: test
+cconrs_ctrl_x_erases_the_line: test
+column_is_per_device: test
+column_tracks_cr_bs_and_control_bytes: test
+ctrl_c_during_output_terminates_and_flushes: test
+ctrl_s_pauses_cconws_until_ctrl_q: test
+ctrl_x_flushes_the_typeahead: test
+fread_line_full_keeps_the_next_key_in_the_typeahead: test
+full_typeahead_rings_the_bell: test
+fwrite_to_con_expands_tabs_from_the_shared_column: test
+key_typed_while_paused_is_kept: test
+raw_output_does_not_take_keys: test
+tab_expands_to_column_8_and_16_after_prefixes: test
+typeahead_keys_survive_output_and_come_back: test

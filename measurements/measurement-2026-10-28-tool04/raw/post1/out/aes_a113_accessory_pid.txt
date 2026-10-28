@@ -1,0 +1,11 @@
+
+running 6 tests
+test accessories_report_pids_in_load_order_and_appl_find_answers_them ... ok
+test a_forgotten_accessory_does_not_shift_the_others ... ok
+test a_pid_beyond_the_loaded_accessories_is_refused ... ok
+test an_accessory_window_reports_the_accessory_as_owner_and_sender ... ok
+test pid_0_from_an_accessory_is_the_innermost_live_chain_member ... ok
+test a_program_reaches_an_accessory_and_the_reply_to_0_reaches_the_program ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,2 @@
+path_without_a_final_component_is_file_not_found_not_path_not_found: test
+the_other_path_calls_answer_the_empty_name_the_way_emutos_does: test

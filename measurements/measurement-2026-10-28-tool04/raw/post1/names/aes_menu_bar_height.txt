@@ -1,0 +1,4 @@
+gl_hbox_is_gl_hchar_plus_3_for_both_ring_fonts: test
+graf_handle_reports_gl_hbox_derived_from_its_own_gl_hchar: test
+the_desktop_work_area_starts_at_graf_handles_gl_hbox: test
+the_menu_bar_hitbox_ends_at_graf_handles_gl_hbox: test

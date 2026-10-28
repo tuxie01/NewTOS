@@ -1,0 +1,7 @@
+
+running 2 tests
+test the_file_selector_undraws_itself ... ok
+test the_desktop_background_is_the_aes_desktop_tree_not_white ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

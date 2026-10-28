@@ -1,0 +1,14 @@
+tests with time: 1721 sum 15.83 s
+>=0.1 s: 8  >=0.01 s: 581
+0.507	aes_window_rectlist_capacity	thirty_pieces_all_reach_the_caller	ok
+0.460	aes_window_rectlist_capacity	the_pool_limit_stops_the_open_that_crosses_it	ok
+0.224	xtask	doc_check::tests::emutos_resolves_at_the_pin	ok
+0.131	aes_window_name_pointer	t10_title_rewritten_in_place_shows_on_the_next_frame_repaint	ok
+0.120	xtask	doc_check::tests::resolves_against_the_workspace	ok
+0.119	xtask	doc_check::tests::anchors_resolve_against_the_workspace	ok
+0.119	mem05_memprot_tables	no_table_page_refuses_the_allocation_before_anything_changes	ok
+0.116	xtask	doc_check::tests::bare_names_resolve_when_unique	ok
+0.098	aes_reference	window_rectangles_after_create_and_open_match_the_tt	ok
+0.097	tos_api	vdi::raster::gui07_tests::mem_to_screen_matches_the_per_pixel_path	ok
+0.089	tos_api	vdi::raster::gui07_tests::screen_to_mem_matches_the_per_pixel_path	ok
+0.087	xtask	emutos_consts::tests::desk_consts_match_emutos_snapshot	ok

@@ -1,0 +1,7 @@
+
+running 2 tests
+test thirty_pieces_all_reach_the_caller ... ok
+test the_pool_limit_stops_the_open_that_crosses_it ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+

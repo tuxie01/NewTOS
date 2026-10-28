@@ -1,0 +1,8 @@
+
+running 3 tests
+test bb_save_bb_restore_round_trip_leaves_no_ghost ... ok
+test bb_save_does_not_capture_the_cursor ... ok
+test form_alert_leaves_no_ghost_arrow_at_the_opening_position ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

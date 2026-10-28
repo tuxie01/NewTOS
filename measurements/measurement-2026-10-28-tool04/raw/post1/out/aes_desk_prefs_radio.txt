@@ -1,0 +1,8 @@
+
+running 3 tests
+test a_radio_click_selects_one_button_of_its_own_group ... ok
+test each_group_keeps_its_own_selection_across_clicks ... ok
+test without_its_ibox_a_group_takes_the_whole_parent_with_it ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

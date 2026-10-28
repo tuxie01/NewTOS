@@ -1,0 +1,2 @@
+tools/hatari-oracle.sh:89:        sleep 2
+tools/hatari-oracle.sh:95:    sleep 0.5

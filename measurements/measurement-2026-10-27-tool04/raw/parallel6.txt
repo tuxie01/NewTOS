@@ -1,0 +1,7 @@
+vdi_vex_wheelv-d1b70451104ce83f	31.656	rc=0
+vdi_eddi_scrninfo-868f49a6ad5dbab7	36.145	rc=0
+vt52_console_default_palette-5a28f4fd845c4106	36.185	rc=0
+sched_pexec_parent_suspend-9329e2ecbfe94b54	36.201	rc=0
+vt52_console-491d557a0783299f	36.204	rc=0
+vdi_mouse_park-14aa44dc2572b57a	36.219	rc=0
+total	36.275

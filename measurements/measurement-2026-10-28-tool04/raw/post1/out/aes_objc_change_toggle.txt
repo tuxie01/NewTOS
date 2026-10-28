@@ -1,0 +1,17 @@
+
+running 12 tests
+test a99_g_string_select_deselect_round_trip_is_pixel_identical ... ok
+test a99_selected_toggle_on_an_xor_able_object_is_exactly_one_xor_fill ... ok
+test a99_fl3dact_button_toggle_redraws_without_a_bare_xor ... ok
+test a99_g_userdef_toggle_issues_no_generic_draw ... ok
+test a99_g_icon_toggle_redraws_without_xor ... ok
+test a99_redraw_zero_stores_the_state_and_draws_nothing ... ok
+test a99_g_string_toggle_is_exactly_one_xor_fill ... ok
+test a99_g_image_deselect_xors_and_redraws ... ok
+test a99_inside_border_insets_the_xor_by_th ... ok
+test a99_g_ibox_deselect_restores_the_ground ... ok
+test a99_unboxed_g_ftext_deselect_restores_the_parent_ground_and_glyphs ... ok
+test a99_unchanged_state_is_a_no_op ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

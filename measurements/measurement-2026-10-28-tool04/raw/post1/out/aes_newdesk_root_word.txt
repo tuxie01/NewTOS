@@ -1,0 +1,8 @@
+
+running 3 tests
+test lp64_packed_form_takes_the_root_from_the_word_after_the_pointer ... ok
+test lp64_packed_form_with_root_0_paints_the_whole_background ... ok
+test native_form_takes_the_root_from_int_in_2 ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

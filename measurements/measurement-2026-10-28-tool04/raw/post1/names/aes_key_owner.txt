@@ -1,0 +1,6 @@
+an_accessory_dialog_reads_its_keys_and_gives_them_back: test
+an_accessory_window_on_top_gets_the_keys: test
+desktop_shortcuts_reach_the_desktop_with_an_accessory_loaded: test
+evnt_keybd_follows_the_owner: test
+keys_go_to_the_accessory_inside_its_beg_mctrl: test
+typing_goes_to_the_top_window_owner_not_to_an_idle_accessory: test

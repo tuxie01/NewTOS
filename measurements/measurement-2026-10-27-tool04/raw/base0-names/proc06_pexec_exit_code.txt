@@ -1,0 +1,4 @@
+ctrl_c_exit_code_reaches_the_parent_as_65504: test
+exit_code_for_caller_is_zero_extended_into_x0: test
+parent_exit_code_is_never_negative: test
+parent_exit_code_matrix: test

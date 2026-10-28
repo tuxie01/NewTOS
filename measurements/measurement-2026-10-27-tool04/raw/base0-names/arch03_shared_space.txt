@@ -1,0 +1,7 @@
+a_pool_address_is_its_own_address_in_every_process_root: test
+a_publication_reaches_every_root_present_and_future: test
+an_el0_malloc_returns_the_pool_block_itself: test
+page_zero_is_each_processs_own: test
+the_running_process_is_its_pd_pointer: test
+the_tpa_block_starts_on_a_page_and_is_an_ordinary_block: test
+whole_aligned_regions_are_blocks_and_edges_are_pages: test

@@ -1,0 +1,6 @@
+a_free_image_yields_a_dereferenceable_raster: test
+a_shared_tedinfo_is_relocated_exactly_once: test
+an_unreferenced_tedinfo_gets_its_lengths_recomputed: test
+every_bitblk_pdata_is_relocated: test
+every_tedinfo_pointer_is_relocated: test
+unreferenced_substructures_are_relocated_too: test

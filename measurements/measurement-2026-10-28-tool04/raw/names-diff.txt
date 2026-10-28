@@ -1,0 +1,6 @@
+before (binaries, --list): 1720
+fast tier: 1721   full tier: 1722 (binaries 1721, doctests 1)
+lost (before, not in full): none
+new (full, not before): [('bin:xtask', 'test_tiers::tests::doctest_packages_are_the_host_packages_with_a_lib')]
+in fast, not in full: none
+in full only (not fast): [('doc:tos_api', 'tos-api/src/bdos/mem/stats.rs - bdos::mem::stats (line 18)')]

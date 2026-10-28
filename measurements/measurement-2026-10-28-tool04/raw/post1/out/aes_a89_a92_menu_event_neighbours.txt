@@ -1,0 +1,15 @@
+
+running 10 tests
+test evnt_mouse_rectangle_crossed_while_the_selecting_press_is_held_is_delivered_at_the_release ... ok
+test leaving_the_submenu_and_returning_to_the_parent_item_a_press_selects_the_parent ... ok
+test leaving_the_submenu_into_no_mans_land_keeps_the_parent_and_a_press_selects_it ... ok
+test a103_press_on_the_submenu_boxs_own_area_picks_smroot ... ok
+test evnt_mouse_satisfied_at_arm_time_returns_at_once_regardless_of_ownership ... ok
+test a_press_queued_before_the_call_counts_for_the_arm_time_level ... ok
+test a103_a_disabled_item_with_a_submenu_attached_opens_nothing ... ok
+test press_on_the_parent_item_with_its_submenu_showing_selects_the_parent ... ok
+test hovering_a_disabled_title_drops_no_box_and_hilites_nothing ... ok
+test a_move_queued_before_the_call_counts_for_the_arm_time_position ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+

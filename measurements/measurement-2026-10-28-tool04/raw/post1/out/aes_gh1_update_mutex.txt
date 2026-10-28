@@ -1,0 +1,16 @@
+
+running 11 tests
+test beg_update_nests_within_the_application_chain ... ok
+test beg_update_of_another_process_parks_until_the_holder_ends ... ok
+test a_dead_holder_hands_the_lock_to_the_waiter ... ok
+test another_processs_beg_update_during_the_pick_waits_for_the_release ... ok
+test a_press_completes_only_the_mouse_owners_button_wait ... ok
+test the_press_that_cancels_a_dropdown_holds_the_screen_until_released ... ok
+test the_menu_owners_beg_update_after_a_pick_waits_for_the_release ... ok
+test the_bar_is_not_tracked_while_another_process_holds_the_lock ... ok
+test beg_mctrl_waits_for_the_lock_before_it_takes_the_mouse ... ok
+test beg_mctrl_after_the_cancelling_press_waits_for_the_release ... ok
+test waiters_are_served_in_arrival_order ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+

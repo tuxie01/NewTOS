@@ -1,0 +1,11 @@
+
+running 6 tests
+test an_accessory_dialog_reads_its_keys_and_gives_them_back ... ok
+test evnt_keybd_follows_the_owner ... ok
+test desktop_shortcuts_reach_the_desktop_with_an_accessory_loaded ... ok
+test keys_go_to_the_accessory_inside_its_beg_mctrl ... ok
+test an_accessory_window_on_top_gets_the_keys ... ok
+test typing_goes_to_the_top_window_owner_not_to_an_idle_accessory ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

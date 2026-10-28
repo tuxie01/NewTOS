@@ -1,0 +1,11 @@
+
+running 6 tests
+test dcolor_reaches_new_windows_only ... ok
+test default_frames_are_pixel_identical_to_the_pinned_hash ... ok
+test default_untopped_window_renders_the_untopped_words ... ok
+test vslide_track_turns_black ... ok
+test default_topped_window_matches_the_gadget_table ... ok
+test t7_name_band_turns_red ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+

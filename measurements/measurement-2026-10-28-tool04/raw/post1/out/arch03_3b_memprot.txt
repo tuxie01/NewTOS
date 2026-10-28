@@ -1,0 +1,18 @@
+
+running 13 tests
+test a_child_inherits_its_parents_blocks_unless_strict ... ok
+test a_pexec4_thread_shares_its_callers_space ... ok
+test equal_rights_share_the_table_and_different_rights_copy_it ... ok
+test further_owners_get_and_lose_rights ... ok
+test malloc_takes_the_prgflags_mode_and_free_memory_is_nobodys ... ok
+test page_grain_with_protection_on ... ok
+test crash_classification_names_what_was_hit ... ok
+test a_released_slot_gives_its_tables_back ... ok
+test publications_reach_private_copies ... ok
+test resident_private_memory_becomes_global ... ok
+test rights_matrix_owner_and_others_for_every_mode ... ok
+test temporary_rights_for_a_foreign_callout ... ok
+test the_kernel_allocates_supervisor_memory ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

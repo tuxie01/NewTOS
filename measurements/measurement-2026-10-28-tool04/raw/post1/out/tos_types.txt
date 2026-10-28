@@ -1,0 +1,11 @@
+
+running 6 tests
+test aes::tests::grect_intersect ... ok
+test aes::tests::native_record_layout ... ok
+test memory::prot_tests::mxalloc_nibble_zero_takes_the_callers_prgflags ... ok
+test memory::prot_tests::prgflags_nibble_is_the_prot_value_itself ... ok
+test memory::prot_tests::mxalloc_other_bits_and_out_of_range ... ok
+test memory::prot_tests::mxalloc_nibble_is_one_more_than_the_prot_value ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

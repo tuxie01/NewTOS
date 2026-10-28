@@ -1,0 +1,9 @@
+
+running 4 tests
+test desktop_click_still_delivers_mu_button ... ok
+test menu_item_press_delivers_only_mn_selected ... ok
+test menu_item_release_after_drag_delivers_only_mn_selected ... ok
+test mn_selected_carries_menu_tree_and_parent ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

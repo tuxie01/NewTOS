@@ -1,0 +1,11 @@
+
+running 6 tests
+test icon_label_is_drawn_in_the_small_font_and_fits_its_box ... ok
+test icon_label_box_shorter_than_the_cell_draws_nothing ... ok
+test icon_label_drops_whole_characters_that_do_not_fit ... ok
+test g_string_stays_in_the_normal_font_at_the_box_origin ... ok
+test icon_overlay_char_is_small_and_offset_by_ib_xicon ... ok
+test tedinfo_te_font_picks_the_cell_size ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

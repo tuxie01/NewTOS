@@ -1,0 +1,5 @@
+a_board_without_the_sensor_answers_error_and_writes_nothing: test
+arg2_is_reserved_and_a_non_zero_value_is_refused: test
+both_values_come_back_in_the_calls_own_long: test
+the_neighbouring_mode_numbers_are_still_unimplemented: test
+the_pointer_form_writes_the_long_and_returns_e_ok: test

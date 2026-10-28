@@ -1,0 +1,1 @@
+double_click_spin_on_graf_mkstate_terminates: test

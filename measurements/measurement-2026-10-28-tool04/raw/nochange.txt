@@ -1,0 +1,7 @@
+Mi. 28 Okt. 2026 00:29:09 CET
+full-nochange	18.655	rc=0
+fast-nochange	3.445	rc=0
+doc-only-nochange	16.016	rc=0
+doc-only-after-touch	23.120	rc=0
+Mi. 28 Okt. 2026 00:30:10 CET
+norun-timings-after-touch	165.366	rc=0

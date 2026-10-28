@@ -1,0 +1,13 @@
+
+running 8 tests
+test a01_wf_wxywh_of_the_desktop_is_the_screen_below_the_menu_row ... ok
+test a02_wf_cxywh_of_the_desktop_is_the_whole_screen ... ok
+test a03_wf_pxywh_of_the_desktop_is_the_whole_screen ... ok
+test a04_wf_fxywh_of_the_desktop_is_the_screen_below_the_menu_row ... ok
+test a_wrong_height_is_detected_in_all_four_fields ... ok
+test a_wrong_menu_bar_height_is_detected_in_the_two_gl_rfull_fields_only ... ok
+test a_wrong_width_is_detected_in_all_four_fields ... ok
+test the_desktop_rectangles_follow_the_backend_from_one_profile_to_the_other ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

@@ -1,0 +1,36 @@
+# sample(1) of one rustc during relink-after-adding-500000-empty-files (method/deps-bloat.sh), 2 s, 2026-10-28 ~00:56;
+# head of the report and the main thread's call graph down to the kernel call; symbol names demangled by hand: no
+Analysis of sampling rustc (pid 16332) every 1 millisecond
+Process:         rustc [16332]
+Path:            /Users/USER/*/rustc
+Load Address:    0x104a40000
+Identifier:      rustc
+Version:         0
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  cargo [14490]
+Target Type:     live task
+
+Date/Time:       2026-10-28 00:56:43.965 +0100
+Call graph:
+    1229 Thread_20299926   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 1229 start
+    +   1229 main
+    +     1229 _RNvNtCsafWCisYhM3i_3std2rt19lang_start_internal
+    +       1229 _RNCINvNtCsafWCisYhM3i_3std2rt10lang_startNtNtB6_7process8ExitCodeE0Cs9b9bhKsgDqw_10rustc_main
+    +         1229 _RINvNtNtCsafWCisYhM3i_3std3sys9backtrace28___rust_begin_short_backtraceFENtNtB6_7process8ExitCodeB19_ECs9b9bhKsgDqw_10rustc_main
+    +           1229 _RNvCsbrhT0ZfH1b0_17rustc_driver_impl4main
+    +             1229 _RNvCsbrhT0ZfH1b0_17rustc_driver_impl12run_compiler
+    +               1229 _RNvNtCsd3IPeASPgzd_13rustc_session6config21build_session_options
+    +                 1229 _RNvMs1_NtCsd3IPeASPgzd_13rustc_session12search_pathsNtB5_10SearchPath12from_cli_opt
+    +                   1229 _RNvMs1_NtCsd3IPeASPgzd_13rustc_session12search_pathsNtB5_10SearchPath3new
+    +                     1226 _RNvXs0_NtNtNtCs4PqEUJav98s_4core4iter8adapters10filter_mapINtB5_9FilterMapNtNtCsafWCisYhM3i_3std2fs7ReadDirNCNvMs1_NtCsd3IPeASPgzd_13rustc_session12search_pathsNtB1P_10SearchPath3new0ENtNtNtB9_6traits8iterator8Iterator4nextB1R_
+    +                     ! 1222 _RNvXsB_NtCsafWCisYhM3i_3std2fsNtB5_7ReadDirNtNtNtNtCs4PqEUJav98s_4core4iter6traits8iterator8Iterator4next
+    +                     ! : 1219 readdir_r
+    +                     ! : | 1219 _readdir_unlocked
+    +                     ! : |   1219 __getdirentries64
+    +                     ! : 2 readdir_r
+    +                     ! : | 2 _platform_memmove
+    +                     ! : 1 ???  (in <unknown binary>)  [0x19588494c]
+    +                     ! 2 _RNvXsB_NtCsafWCisYhM3i_3std2fsNtB5_7ReadDirNtNtNtNtCs4PqEUJav98s_4core4iter6traits8iterator8Iterator4next
+    +                     ! : 2 _platform_memmove

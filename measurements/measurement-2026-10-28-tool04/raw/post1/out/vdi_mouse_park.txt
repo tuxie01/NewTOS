@@ -1,0 +1,7 @@
+
+running 2 tests
+test park_position_halves_the_last_coordinate_not_the_pixel_count ... ok
+test vq_mouse_reports_the_parked_centre_after_open ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

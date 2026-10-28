@@ -1,0 +1,49 @@
+
+running 44 tests
+test midiws_sends_cnt_plus_one_bytes_through_the_midi_entry ... ok
+test cconout_cconws_go_through_the_con_entry ... ok
+test r01_scancode_only_key_is_stored_as_its_low_byte ... ok
+test r01_r02_one_byte_is_conin ... ok
+test bios_absent_profile ... ok
+test r03_r04_r05_line_read_ends_at_cr_or_lf ... ok
+test r06_line_read_ends_at_len ... ok
+test bcostat_keeps_the_ikbd_midi_swap ... ok
+test r09_r10_ctrl_x_and_ctrl_u_discard_the_line ... ok
+test fseek_on_devices_unchanged ... ok
+test r11_r12_tab_and_esc_are_stored_raw_and_echoed_cooked ... ok
+test gemdos_aux_prn_absent_profile ... ok
+test r07_r08_backspace_and_delete ... ok
+test r16_console_standard_handles ... ok
+test r13_r14_r15_zero_huge_and_negative_low_word ... ok
+test r21_r22_invalid_handles ... ok
+test r23_fdup_of_console ... ok
+test r17_r18_r29_absent_aux ... ok
+test r24_fforce_stdin_to_aux ... ok
+test r25_r26_fforce_stdin_to_a_file_and_back ... ok
+test r27_ctrl_c_in_a_line_read_terminates ... ok
+test r19_r20_absent_prn ... ok
+test r27b_ctrl_c_in_a_one_byte_read_is_data ... ok
+test r28_typeahead_survives_between_calls ... ok
+test r30_largest_line_read_on_absent_devices ... ok
+test r31_r32_guards_on_absent_devices ... ok
+test rt1_rt2_aux_entry_is_the_one_dispatch_point ... ok
+test w15_to_w18_aux_no_cable_and_absent_prn ... ok
+test rt3_prn_entry_is_index_0 ... ok
+test w03_to_w08_tabs_follow_the_column ... ok
+test w01_w02_console_writes ... ok
+test w12_pending_key_goes_to_the_typeahead ... ok
+test w13_ctrl_c_terminates_before_the_first_byte ... ok
+test w14_ctrl_s_pauses_until_ctrl_q ... ok
+test w19_w20_w21_short_counts ... ok
+test w09_w10_w11_counts_and_nuls ... ok
+test w22_counts_on_absent_devices ... ok
+test w26_fforce_stdout_to_prn ... ok
+test w23_w24_invalid_handles ... ok
+test w25_fdup_of_aux ... ok
+test w28_fwrite_2_without_fforce_returns_count ... ok
+test wt1_wt2_aux_entry_is_the_one_dispatch_point ... ok
+test w27_fforce_stdout_to_a_file_and_back ... ok
+test wt3_prn_entry_is_index_0 ... ok
+
+test result: ok. 44 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

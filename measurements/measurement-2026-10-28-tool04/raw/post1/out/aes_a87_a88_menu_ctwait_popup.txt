@@ -1,0 +1,12 @@
+
+running 7 tests
+test a87_a_click_right_of_theactive_is_the_control_managers_and_blocks_nothing ... ok
+test a87_a_title_inside_theactive_still_starts_the_track ... ok
+test a87_entering_the_bar_row_right_of_theactive_keeps_the_mouse_with_the_app ... ok
+test a87_the_app_keeps_running_while_the_pointer_rests_right_of_theactive ... ok
+test a87_with_no_bar_no_move_hands_the_mouse_over ... ok
+test a87_theactive_right_edge_is_the_boundary ... ok
+test a88_menu_popup_clamps_the_box_below_the_bar_and_onto_the_screen ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

@@ -1,0 +1,4 @@
+disabled_all_dashes_string_is_a_line_across_the_object: test
+disabled_string_with_a_non_dash_stays_text: test
+disabled_three_dashes_stay_text: test
+enabled_all_dashes_string_stays_text: test

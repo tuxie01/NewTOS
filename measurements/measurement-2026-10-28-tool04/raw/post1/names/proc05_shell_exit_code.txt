@@ -1,0 +1,4 @@
+exit_code_is_the_uword_zero_extended: test
+load_errors_map_to_their_fm_error_number: test
+no_exit_code_raises_an_alert: test
+sh_ldapp_passes_load_errors_on_and_zeroes_the_rest: test

@@ -1,0 +1,4 @@
+a_load_that_publishes_nothing_still_works: test
+ap_rsclen_lands_together_with_the_two_address_fields: test
+rsrc_load_publishes_the_relocated_tree_index: test
+the_two_address_fields_are_never_a_truncated_address: test

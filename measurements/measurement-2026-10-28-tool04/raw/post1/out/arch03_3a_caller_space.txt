@@ -1,0 +1,14 @@
+
+running 9 tests
+test dgetpath_writes_path_and_terminator ... ok
+test dfree_and_dgetpath_same_in_both_spaces ... ok
+test a_path_is_read_up_to_128_bytes_and_a_null_path_is_refused ... ok
+test fdatime_get_same_in_both_spaces ... ok
+test fdatime_set_reads_the_callers_stamp ... ok
+test fopen_fread_same_in_both_spaces ... ok
+test frename_and_fattrib_take_their_paths_in_the_callers_space ... ok
+test fsfirst_fills_the_same_dta_in_both_spaces ... ok
+test fwrite_then_fread_round_trip_in_user_space ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

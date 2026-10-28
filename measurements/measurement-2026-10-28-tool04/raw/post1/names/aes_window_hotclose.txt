@@ -1,0 +1,3 @@
+hotclose_press_delivers_wm_closed_before_the_release: test
+hotclose_press_is_consumed_and_the_closer_rearms_on_the_next_press: test
+plain_closer_fires_only_after_the_release_inside: test

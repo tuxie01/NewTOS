@@ -1,0 +1,8 @@
+
+running 3 tests
+test appl_read_on_a_non_empty_queue_returns_1_with_the_message_without_sleeping ... ok
+test appl_write_on_a_full_queue_parks_until_a_read_of_that_queue ... ok
+test appl_read_on_an_empty_queue_blocks_and_delivers_the_message_written_meanwhile ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

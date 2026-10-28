@@ -1,0 +1,10 @@
+
+running 5 tests
+test f3_a_completed_aes_call_gives_the_cpu_to_a_ready_peer ... ok
+test f2_a_message_from_another_process_wakes_a_parked_evnt_multi_mesag ... ok
+test appl_yield_gives_up_the_cpu_before_and_after_it_completes ... ok
+test evnt_timer_0_and_sub_tick_counts_wait_for_the_next_tick ... ok
+test f1_the_timer_of_a_parked_evnt_multi_fires_while_another_process_runs ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

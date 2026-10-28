@@ -1,0 +1,13 @@
+
+running 8 tests
+test several_parked_writers_are_served_one_per_read_most_recent_first ... ok
+test evnt_multi_mesag_releases_a_parked_writer_too ... ok
+test a_128_byte_message_parks_on_a_queue_holding_16_bytes_and_the_fast_path_read_leaves_it ... ok
+test a_write_to_a_full_accessory_queue_parks_until_the_accessorys_evnt_mesag ... ok
+test a_writer_that_ends_while_parked_leaves_nothing_behind ... ok
+test a_target_that_ends_releases_its_parked_writers_with_1 ... ok
+test a_self_write_on_a_full_own_queue_parks_until_another_process_reads_it ... ok
+test a_parked_writer_stays_parked_until_appl_read_of_its_target ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

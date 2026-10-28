@@ -1,0 +1,12 @@
+
+running 7 tests
+test the_default_limit_is_8192 ... ok
+test a_process_at_its_limit_gets_zero_and_nobody_else_is_affected ... ok
+test aligned_and_largest_allocations_count_one_block ... ok
+test every_tag_change_is_booked_and_the_recount_agrees ... ok
+test f_keep_and_ptermres_hand_the_count_to_unlimited_holders ... ok
+test kernel_and_null_cookies_are_never_counted ... ok
+test limit_zero_is_off ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

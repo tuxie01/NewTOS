@@ -1,0 +1,11 @@
+
+running 6 tests
+test a_child_without_a_parent_slot_is_left_alone ... ok
+test a_parent_that_was_never_a_peer_does_not_become_one ... ok
+test blocking_child_never_yields_to_its_own_parent ... ok
+test the_childs_pterm_puts_the_parent_back_exactly_as_it_was ... ok
+test a_stale_wake_key_cannot_re_arm_the_suspended_parent ... ok
+test an_awake_accessory_still_gets_the_cpu_while_the_child_blocks ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

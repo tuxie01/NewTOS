@@ -1,0 +1,4 @@
+appl_find_reads_the_name_in_the_callers_space: test
+appl_init_fills_the_same_aesglobal_in_both_spaces: test
+out_len_zero_writes_nothing_in_user_space: test
+vdi_block_and_contrl_go_through_the_callers_space: test

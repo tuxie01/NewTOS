@@ -1,0 +1,2 @@
+a_g_icon_with_odd_raster_pointers_draws_like_an_even_one: test
+a_g_image_with_an_odd_bi_pdata_draws_like_an_even_one: test

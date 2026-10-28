@@ -1,0 +1,4 @@
+a_char_grid_resource_is_fixed_with_the_screen_it_is_loaded_on: test
+a_pixel_coordinate_blob_is_left_alone: test
+at_640_the_load_time_fix_equals_the_old_pre_converted_pixels: test
+rsrc_obfix_computes_what_the_loader_computes: test

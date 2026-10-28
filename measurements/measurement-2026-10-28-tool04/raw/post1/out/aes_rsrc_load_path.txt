@@ -1,0 +1,12 @@
+
+running 7 tests
+test a_bare_name_is_found_at_the_root_of_the_current_drive ... ok
+test a_name_that_exists_nowhere_returns_zero ... ok
+test a_qualified_path_outside_the_application_directory_loads ... ok
+test an_application_directory_longer_than_sixty_four_bytes_is_kept_whole ... ok
+test a_path_longer_than_sixty_four_bytes_loads ... ok
+test a_qualified_path_in_the_application_directory_loads ... ok
+test a_spec_relative_to_the_current_directory_loads ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

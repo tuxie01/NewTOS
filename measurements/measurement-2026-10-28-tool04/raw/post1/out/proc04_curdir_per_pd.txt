@@ -1,0 +1,16 @@
+
+running 11 tests
+test a_byte_naming_no_live_slot_reads_as_the_root_and_is_not_inherited ... ok
+test a_childs_dsetpath_does_not_move_the_parents_directory ... ok
+test a_drive_prefix_moves_that_drives_directory_of_run_only ... ok
+test a_full_table_is_recounted_before_dsetpath_gives_up ... ok
+test a_new_pd_inherits_run_s_current_drive_at_creation ... ok
+test a_program_writing_its_own_pd_0x37_changes_its_dgetdrv ... ok
+test kernel_context_calls_act_on_the_stand_in_that_is_run ... ok
+test sh_chdef_sets_the_directory_of_accdesk_not_of_the_running_program ... ok
+test stand_ins_give_their_uses_back_when_they_end ... ok
+test the_restart_drive_reset_lands_in_the_aes_pd_and_the_next_accdesk ... ok
+test uses_follow_inheritance_dsetpath_and_pterm ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

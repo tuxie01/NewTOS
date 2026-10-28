@@ -1,0 +1,27 @@
+
+running 22 tests
+test snapshot::tests::a_refusing_sink_is_a_fault ... ok
+test snapshot::tests::layout_version_is_2 ... ok
+test snapshot::tests::controller_without_devices_lists_zero ... ok
+test snapshot::tests::device_golden ... ok
+test snapshot::tests::bad_index_and_mute_argument_are_invalid ... ok
+test reports_more_and_mute ... ok
+test snapshot::tests::list_golden ... ok
+test device_answer_matches_the_encoder ... ok
+test bad_index_and_mute_argument_are_einval_with_header ... ok
+test null_buffer_short_buffer_and_bad_magic_write_nothing ... ok
+test list_full_answer_and_too_small_buffer ... ok
+test snapshot::tests::mute_expires_by_itself ... ok
+test no_controller_is_error_and_writes_nothing ... ok
+test snapshot::tests::mute_start_is_seen_once ... ok
+test snapshot::tests::no_controller_answers_nothing ... ok
+test snapshot::tests::report_sections_beyond_four_are_skipped ... ok
+test snapshot::tests::reports_ring ... ok
+test snapshot::tests::sequence_numbers_wrap ... ok
+test snapshot::tests::several_functions_share_one_tagged_ring ... ok
+test snapshot::tests::strings_become_ascii_and_cap_at_31 ... ok
+test snapshot::tests::too_small_buffer_is_header_only ... ok
+test wrong_version_and_unknown_op_are_einval_with_header_even_without_controller ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

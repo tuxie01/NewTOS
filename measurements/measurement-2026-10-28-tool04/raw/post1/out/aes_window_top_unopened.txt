@@ -1,0 +1,9 @@
+
+running 4 tests
+test t5_topping_the_desktop_handle_paints_nothing_and_recomputes_its_work_rect ... ok
+test t5b_topping_the_desktop_handle_with_nothing_open_recomputes_its_work_rect ... ok
+test t6_topping_a_created_but_unopened_handle_does_nothing ... ok
+test t7_topping_an_open_window_under_the_top_one_still_repaints_and_redraws ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

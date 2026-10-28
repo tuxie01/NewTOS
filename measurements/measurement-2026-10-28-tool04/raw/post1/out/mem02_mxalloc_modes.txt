@@ -1,0 +1,8 @@
+
+running 3 tests
+test a_forcing_mode_refuses_what_its_pool_cannot_give_and_a_preference_falls_back ... ok
+test each_mode_takes_its_pool_and_returns_the_block_itself ... ok
+test the_size_queries_report_the_selected_pools ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

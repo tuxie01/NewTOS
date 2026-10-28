@@ -4,7 +4,7 @@
 //!   xtask build --board {rpi4|qemu-virt} [--release]
 //!   xtask build-programs --board {rpi4|qemu-virt}   — programs/ (DESK43 U6b)
 //!   xtask run [--release]                 — qemu-virt in QEMU, serial → stdout
-//!   xtask test                             — host-side unit tests (tos-types, xtask)
+//!   xtask test [--full|--fast]             — host-side tests (tos-api, tos-types, xtask)
 //!
 //! All commands shell out to `cargo`; this binary holds only the argument
 //! plumbing and the QEMU invocation.
@@ -109,6 +109,9 @@ mod kernel_embed;
 /// boot screen (review §6, X03 row).
 #[cfg(test)]
 mod programs_tests;
+
+/// TOOL04 — the fast and the full tier of `xtask test`.
+mod test_tiers;
 
 /// ARCH03 E8b — the loader's ELF parser, compiled here by path (it is pure,
 /// `no_std`, dependency-free) so `xtask prgflags` reads the PRGFLAGS note
@@ -223,9 +226,13 @@ Commands:
                                      on the xHCI bus `usb.0` (repeatable,
                                      e.g. usb-tablet or
                                      usb-mouse,bus=usb.0,port=4.3)
-  test                           — run every host-runnable test in the
+  test [--full|--fast]           — run every host-runnable test in the
                                    workspace (tos-api, tos-types, xtask);
-                                   the kernel is not host-linkable
+                                   the kernel is not host-linkable.
+                                   --full (default): all of them; --fast:
+                                   without the doctests and the
+                                   integration tests listed as full-only
+                                   (test_tiers.rs, TOOL04), named at the end
   help
 "
     );
@@ -893,17 +900,60 @@ fn cmd_run_rpi4(
 const HOST_TEST_PACKAGES: [&str; 3] = ["tos-api", "tos-types", "xtask"];
 
 fn cmd_test(args: &[String]) -> Result<(), String> {
-    if !args.is_empty() {
-        return Err(format!("test: unexpected arguments: {args:?}"));
+    let mut fast = false;
+    for a in args {
+        match a.as_str() {
+            "--fast" => fast = true,
+            "--full" => fast = false,
+            other => return Err(format!("test: unexpected argument: {other}")),
+        }
     }
+    let root = workspace_root();
     // Host-runnable tests only: kernel cannot be linked for the host.
     let mut c = cargo();
-    c.current_dir(workspace_root());
+    c.current_dir(&root);
     c.arg("test");
     for p in HOST_TEST_PACKAGES {
         c.args(["--package", p]);
     }
-    run(c)
+    if !fast {
+        return run(c);
+    }
+    // TOOL04 fast tier: the unit tests of every package and the
+    // integration tests outside test_tiers::FULL_ONLY; no doctests
+    // (`--lib --bins --test …` selects no doc target).
+    let pkg = root.join(test_tiers::INTEGRATION_PACKAGE);
+    let manifest = std::fs::read_to_string(pkg.join("Cargo.toml"))
+        .map_err(|e| format!("{}: {e}", pkg.join("Cargo.toml").display()))?;
+    test_tiers::check_autodiscovery(&manifest)?;
+    let targets = test_tiers::integration_targets(&pkg)?;
+    let (run_these, skipped) = test_tiers::split(&targets)?;
+    c.args(["--lib", "--bins"]);
+    for t in &run_these {
+        c.args(["--test", t]);
+    }
+    let r = run(c);
+    println!(
+        "xtask test --fast: ran the unit tests of {} and {} of {} integration-test targets of {}; \
+         skipped (full tier only, `cargo xtask test`):",
+        HOST_TEST_PACKAGES.join(", "),
+        run_these.len(),
+        targets.len(),
+        test_tiers::INTEGRATION_PACKAGE
+    );
+    println!(
+        "  - the doctests of {}: {}",
+        test_tiers::DOCTEST_PACKAGES.join(", "),
+        test_tiers::DOCTESTS_WHY
+    );
+    for name in &skipped {
+        let why = test_tiers::FULL_ONLY
+            .iter()
+            .find(|(n, _)| n == name)
+            .map_or("", |(_, w)| *w);
+        println!("  - tests/{name}: {why}");
+    }
+    r
 }
 
 // ── prgflags (ARCH03 E8b) ───────────────────────────────────────────────

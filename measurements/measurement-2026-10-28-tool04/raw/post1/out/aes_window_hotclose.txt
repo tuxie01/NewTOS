@@ -1,0 +1,8 @@
+
+running 3 tests
+test hotclose_press_is_consumed_and_the_closer_rearms_on_the_next_press ... ok
+test plain_closer_fires_only_after_the_release_inside ... ok
+test hotclose_press_delivers_wm_closed_before_the_release ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

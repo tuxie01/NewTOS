@@ -1,0 +1,10 @@
+
+running 5 tests
+test a_desktop_or_autorun_program_has_the_accdesk_pd_as_parent_and_the_aes_environment ... ok
+test a_pexec_from_a_process_keeps_the_callers_pd_and_a_kernel_caller_gets_the_stand_in ... ok
+test an_auto_program_has_initial_basepage_as_parent_and_an_empty_environment ... ok
+test the_chain_ends_at_initial_basepage ... ok
+test shel_envrn_answers_from_the_aes_pd_environment ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

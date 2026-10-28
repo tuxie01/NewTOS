@@ -1,0 +1,8 @@
+
+running 3 tests
+test evnt_timer_reads_int_in_0_as_the_low_word_and_int_in_1_as_the_high_word ... ok
+test evnt_multi_reads_int_in_14_as_the_low_word_and_int_in_15_as_the_high_word ... ok
+test wf_screen_writes_two_native_32bit_longs_and_an_8_byte_reader_gets_addr_or_len_shl_32 ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

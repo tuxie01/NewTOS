@@ -1,0 +1,10 @@
+
+running 5 tests
+test first_of_two_to_tail_closes_the_chain_the_other_way_round ... ok
+test only_child_to_head_leaves_tail_and_next_at_nil_as_emutos_does ... ok
+test last_of_two_to_head_closes_the_chain_the_other_way_round ... ok
+test only_child_to_tail_relinks_it_as_sole_child_without_writing_outside_the_tree ... ok
+test root_is_refused_and_the_tree_is_untouched ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

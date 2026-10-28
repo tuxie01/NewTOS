@@ -1,0 +1,3 @@
+a_forcing_mode_refuses_what_its_pool_cannot_give_and_a_preference_falls_back: test
+each_mode_takes_its_pool_and_returns_the_block_itself: test
+the_size_queries_report_the_selected_pools: test

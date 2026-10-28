@@ -1,0 +1,49 @@
+
+running 44 tests
+test bel_draws_nothing_and_does_not_move ... ok
+test bconout_5_draws_every_byte_as_a_glyph ... ok
+test bs_moves_left_without_erasing_and_stops_at_column_0 ... ok
+test cr_returns_to_column_0 ... ok
+test cursconf_rate_round_trips_and_0_1_hide_and_show ... ok
+test bconout_5_leaves_a_pending_handle_2_escape_alone ... ok
+test esc_b_and_esc_c_take_the_low_4_bits_as_registers ... ok
+test cursconf_2_stops_the_blink_and_3_restarts_it ... ok
+test esc_b_follows_the_physical_workstation_palette ... ok
+test esc_a_b_c_d_move_one_cell_and_stop_at_the_edges ... ok
+test esc_d_erases_from_home_through_the_cursor ... ok
+test esc_e_clears_with_the_background_and_homes_keeping_the_modes ... ok
+test esc_e_shows_the_cursor_as_an_inverted_cell_and_esc_f_hides_it ... ok
+test esc_f_counts_and_one_esc_e_forces_the_cursor_back ... ok
+test esc_h_homes ... ok
+test esc_i_moves_up_and_scrolls_down_on_the_top_row ... ok
+test esc_j_and_esc_k_save_and_restore_and_a_second_k_homes ... ok
+test esc_j_erases_to_the_end_of_the_screen ... ok
+test esc_k_erases_to_the_end_of_the_line ... ok
+test esc_k_under_reverse_video_erases_uniformly_with_the_background ... ok
+test esc_l_inserts_a_line_and_goes_to_column_0 ... ok
+test esc_l_lowercase_erases_the_whole_line_and_goes_to_column_0 ... ok
+test esc_m_deletes_a_line_and_goes_to_column_0 ... ok
+test esc_o_erases_from_the_line_start_through_the_cursor ... ok
+test esc_p_and_esc_q_swap_the_colours_of_new_glyphs ... ok
+test esc_v_wraps_after_drawing_and_esc_w_turns_it_off ... ok
+test esc_y_addresses_row_then_column_and_clamps ... ok
+test ht_goes_to_the_next_multiple_of_8_and_clamps ... ok
+test init_clears_homes_and_hides_the_cursor ... ok
+test lf_keeps_the_column ... ok
+test lf_on_the_last_row_scrolls_and_keeps_the_column ... ok
+test nop_sequences_take_no_extra_byte ... ok
+test printable_bytes_draw_in_fg_15_on_bg_0_and_advance ... ok
+test the_cursor_blinks_every_half_second_of_the_200_hz_counter ... ok
+test the_cursor_follows_output_and_movement ... ok
+test the_other_control_bytes_are_discarded ... ok
+test unknown_sequences_are_swallowed_with_their_byte ... ok
+test v_curtext_goes_through_the_automaton ... ok
+test v_eeol_v_rvon_and_cursor_moves_write_into_the_same_console ... ok
+test v_enter_cur_clears_and_shows_the_cursor_v_exit_cur_hides_it ... ok
+test vs_curaddress_sets_the_position_directly_with_clamping ... ok
+test vt_and_ff_are_line_feeds ... ok
+test wrap_in_the_last_row_scrolls ... ok
+test wrap_is_off_after_init_and_the_last_cell_is_overwritten ... ok
+
+test result: ok. 44 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+

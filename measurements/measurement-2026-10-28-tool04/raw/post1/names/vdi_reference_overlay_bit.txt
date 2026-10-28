@@ -1,0 +1,4 @@
+overlay_bit::a_cleared_pixel_and_a_pen_0_pixel_differ_by_overlay_bit_alone: test
+overlay_bit::pen_0_fill_then_v_get_pixel_reports_the_pseudo_palette_white_0xffdf: test
+overlay_bit::the_device_pixel_round_trips_the_cleared_word_0xffff: test
+overlay_bit::v_clrwk_then_v_get_pixel_reports_the_falcon_word_0xffff: test

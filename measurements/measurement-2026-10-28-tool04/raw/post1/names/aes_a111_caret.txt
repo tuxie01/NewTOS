@@ -1,0 +1,2 @@
+ed_init_draws_only_the_xor_caret: test
+edit_sequence_leaves_exactly_one_caret: test

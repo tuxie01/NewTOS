@@ -1,0 +1,8 @@
+
+running 3 tests
+test fuller_wm_fulled_carries_ws_curr ... ok
+test hotclose_wm_closed_carries_ws_curr ... ok
+test plain_closer_wm_closed_carries_ws_curr ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

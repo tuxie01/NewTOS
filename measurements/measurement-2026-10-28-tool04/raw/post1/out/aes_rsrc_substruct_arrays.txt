@@ -1,0 +1,11 @@
+
+running 6 tests
+test a_free_image_yields_a_dereferenceable_raster ... ok
+test a_shared_tedinfo_is_relocated_exactly_once ... ok
+test every_bitblk_pdata_is_relocated ... ok
+test an_unreferenced_tedinfo_gets_its_lengths_recomputed ... ok
+test every_tedinfo_pointer_is_relocated ... ok
+test unreferenced_substructures_are_relocated_too ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

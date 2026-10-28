@@ -1,0 +1,8 @@
+
+running 3 tests
+test a_kept_block_outlives_its_owner_and_anybody_may_free_it_then ... ok
+test a_kept_block_with_a_further_owner_passes_to_it_first ... ok
+test an_owner_frees_a_kept_block_like_any_other ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

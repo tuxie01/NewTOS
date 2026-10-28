@@ -1,0 +1,11 @@
+
+running 6 tests
+test a_null_slot_answers_address_zero_and_true ... ok
+test an_index_past_the_table_answers_zero_and_false ... ok
+test an_unknown_type_answers_minus_one_and_false ... ok
+test nothing_loaded_answers_zero_and_false_for_every_defined_type ... ok
+test saddr_on_an_unknown_type_answers_false_and_stores_nothing ... ok
+test saddr_through_a_null_slot_answers_false_and_stores_nothing ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

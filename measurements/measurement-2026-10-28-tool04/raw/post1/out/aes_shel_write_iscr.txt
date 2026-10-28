@@ -1,0 +1,7 @@
+
+running 2 tests
+test shel_write_exec_retains_the_third_declared_word ... ok
+test shel_write_exec_with_two_declared_words_reads_zero ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

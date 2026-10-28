@@ -1,0 +1,9 @@
+
+running 4 tests
+test gl_hbox_is_gl_hchar_plus_3_for_both_ring_fonts ... ok
+test graf_handle_reports_gl_hbox_derived_from_its_own_gl_hchar ... ok
+test the_menu_bar_hitbox_ends_at_graf_handles_gl_hbox ... ok
+test the_desktop_work_area_starts_at_graf_handles_gl_hbox ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

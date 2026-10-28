@@ -1,0 +1,8 @@
+
+running 3 tests
+test objc_change_does_not_leave_the_cursor_save_under_stale ... ok
+test objc_draw_does_not_leave_the_cursor_save_under_stale ... ok
+test the_save_under_box_is_sixteen_wide_and_sixteen_minus_k_tall ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,10 @@
+
+running 5 tests
+test a_failed_write_back_keeps_the_sector_and_lands_it_afterwards ... ok
+test fread_reports_ereadf_when_the_sector_cannot_be_read ... ok
+test fwrite_reports_ewritf_when_the_sector_does_not_reach_the_card ... ok
+test the_write_back_retry_is_bounded_and_visible ... ok
+test rwabs_passes_the_drivers_own_code_through ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

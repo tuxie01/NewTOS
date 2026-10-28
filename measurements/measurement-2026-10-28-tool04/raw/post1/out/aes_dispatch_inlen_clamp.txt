@@ -1,0 +1,10 @@
+
+running 5 tests
+test a_fully_declared_call_still_receives_every_word ... ok
+test scrp_write_with_ain_len_0_must_not_see_the_pointer_behind_it ... ok
+test in_len_0_copies_nothing_at_all ... ok
+test the_cut_is_exactly_at_in_len_not_one_word_early_or_late ... ok
+test wind_create_with_in_len_1_must_not_see_the_four_words_behind_it ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

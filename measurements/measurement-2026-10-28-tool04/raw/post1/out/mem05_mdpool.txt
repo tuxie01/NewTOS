@@ -1,0 +1,7 @@
+
+running 2 tests
+test freeing_costs_one_step_per_md_in_any_order ... ok
+test a_wild_or_double_free_is_ignored ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

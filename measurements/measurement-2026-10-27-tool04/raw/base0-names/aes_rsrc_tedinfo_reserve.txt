@@ -1,0 +1,2 @@
+an_empty_selector_field_has_the_typing_room_it_declares: test
+typing_a_selector_field_full_stays_inside_its_own_buffer: test

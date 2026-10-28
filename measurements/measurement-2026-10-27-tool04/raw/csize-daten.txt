@@ -1,0 +1,5 @@
+daten	0 MiB	16840 bytes	first	0.146	rc=0	second	0.002	rc=0
+daten	1 MiB	1073608 bytes	first	0.164	rc=0	second	0.002	rc=0
+daten	2 MiB	2130376 bytes	first	0.174	rc=0	second	0.002	rc=0
+daten	8 MiB	8470984 bytes	first	0.227	rc=0	second	0.003	rc=0
+daten	32 MiB	33833416 bytes	first	0.357	rc=0	second	0.003	rc=0

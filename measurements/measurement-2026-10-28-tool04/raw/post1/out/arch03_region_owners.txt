@@ -1,0 +1,16 @@
+
+running 11 tests
+test a_freed_block_forgets_its_owners_and_a_new_one_starts_alone ... ok
+test pterm_drops_the_process_everywhere_and_frees_only_its_own ... ok
+test a_pexec_4_child_owns_what_its_caller_owns ... ok
+test a_second_owner_keeps_the_block_alive_and_takes_the_tag ... ok
+test hand_over_is_pexec_6 ... ok
+test mfree_and_mshrink_only_for_an_owner ... ok
+test one_owner_frees_like_emutos_and_a_stranger_cannot ... ok
+test owners_per_block_are_bounded ... ok
+test a_further_owner_leaving_frees_nothing ... ok
+test resident_memory_is_nobodys_to_free ... ok
+test ptermres_hands_every_link_to_the_tsr_holder ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

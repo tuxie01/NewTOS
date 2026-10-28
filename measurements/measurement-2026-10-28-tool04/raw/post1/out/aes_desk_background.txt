@@ -1,0 +1,17 @@
+
+running 12 tests
+test an_invalid_handle_does_not_disturb_the_rectangle_list ... ok
+test a_programmatic_move_does_not_paint_the_window_below ... ok
+test opening_a_window_does_not_paint_its_work_area ... ok
+test the_end_of_the_rectangle_list_writes_the_last_piece_it_examined ... ok
+test the_mover_drag_repaints_only_desktop_it_uncovered ... ok
+test the_owner_rectangle_list_is_broken_in_top_left_right_bottom_order ... ok
+test form_dial_finish_does_not_paint_the_windows_under_the_dialog ... ok
+test the_background_repaint_stops_at_the_menu_row ... ok
+test the_breaking_rectangle_of_a_covering_window_includes_its_drop_shadow ... ok
+test closing_a_window_does_not_paint_the_window_below ... ok
+test the_rectangle_list_and_its_cursor_belong_to_one_window ... ok
+test the_redraw_message_spans_the_raw_owner_rectangle_not_the_work_clipped_one ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+

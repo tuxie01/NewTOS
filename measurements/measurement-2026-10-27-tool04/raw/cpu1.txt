@@ -1,0 +1,506 @@
+22:10:49
+  401  17,3 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538   0,1 Us   /usr/libexec/syspolicyd
+  541   0,1 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830  10,1 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   3,3 S    /usr/libexec/trustd
+53632   4,3 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:10:50
+  401   9,4 Rs   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538  15,4 Us   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,1 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:10:51
+  401   8,5 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538  15,6 Us   /usr/libexec/syspolicyd
+  541   0,1 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830   3,6 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:10:52
+  401   6,8 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538  15,4 Us   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830   2,2 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:10:53
+  401  15,2 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538  15,9 Us   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830  14,2 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:10:54
+  401   7,1 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538  15,3 Us   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830   3,2 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:10:56
+  401   8,8 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538  15,7 Us   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830   0,4 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:10:57
+  401   5,6 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538  15,7 Us   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830  11,2 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:10:58
+  401   8,1 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538  15,1 Us   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830   3,2 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:10:59
+  401   9,7 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538  15,6 Us   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830  10,3 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:11:00
+  401   8,4 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538  15,0 Us   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830  16,3 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:11:01
+  401  12,5 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538   6,5 Ss   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830  12,6 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906   9,3 Us   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   1,2 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:11:02
+  401   6,0 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538   0,0 Ss   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830   6,4 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906  15,0 Us   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:11:03
+  401   8,9 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538   0,0 Ss   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830   5,7 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906  13,7 Rs   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:11:04
+  401   7,0 Rs   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538   0,0 Ss   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830   4,6 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906  12,6 Us   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,8 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:11:05
+  401   8,4 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538   0,0 Ss   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830   1,3 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906  13,6 Us   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:11:06
+  401  13,9 Rs   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538   0,0 Ss   /usr/libexec/syspolicyd
+  541   0,1 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830  10,2 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906  13,4 Us   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:11:07
+  401  10,3 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538   0,0 Ss   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830  13,3 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906  13,4 Us   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:11:08
+  401   6,3 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538   0,0 Ss   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830   7,3 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906  13,3 Us   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:11:09
+  401   8,0 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538   0,0 Ss   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830   1,2 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906  13,8 Us   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:11:10
+  401   6,3 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538   0,0 Ss   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830   6,1 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906  13,5 Us   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:11:11
+  401   7,4 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538   0,0 Ss   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830   1,7 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906  13,8 Us   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd
+22:11:12
+  401  10,4 Us   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  412   0,0 Ss   /usr/libexec/xprotectd
+  538   0,0 Ss   /usr/libexec/syspolicyd
+  541   0,0 Ss   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  830   3,3 Rs   /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+ 3161   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+16296   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16297   0,0 Ss   /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+16319   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtect
+16320   0,0 S    /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/XPCServices/XProtectPluginService.xpc/Contents/MacOS/XProtectPluginService
+31729   0,0 S    /Volumes/Daten/Development/PiRusTOS/target/debug/deps/aes_t04_intin_long_contract-62e0f5dd573fc99e
+35793   0,0 Ss   /usr/libexec/amfid
+37490   0,0 S    /usr/libexec/trustd
+44906  12,9 Us   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService
+46053   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectBridgeService.xpc/Contents/MacOS/XProtectBridgeService
+46085   0,0 Ss   /System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XProtectUpdateService.xpc/Contents/MacOS/XProtectUpdateService
+53630   0,0 S    /usr/libexec/trustd
+53632   0,0 Ss   /usr/libexec/trustd
+54882   0,0 S    /System/Library/PrivateFrameworks/CommunicationTrust.framework/Support/communicationtrustd
+58752   0,0 S    /usr/libexec/trustd
+65198   0,0 S    /usr/libexec/trustd

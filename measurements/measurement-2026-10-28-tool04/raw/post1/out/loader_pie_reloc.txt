@@ -1,0 +1,32 @@
+
+running 27 tests
+test dynamic_array_without_dt_null_is_refused ... ok
+test dynamic_array_outside_file_bytes_is_refused ... ok
+test dynamic_without_rela_needs_no_relocation ... ok
+test image_without_dynamic_header_needs_no_relocation ... ok
+test interpreter_request_is_refused ... ok
+test misaligned_place_is_refused ... ok
+test et_exec_is_refused_with_eplfmt ... ok
+test negative_addend_within_range_is_applied ... ok
+test every_other_relocation_type_is_refused ... ok
+test every_tag_lld_writes_is_on_the_positive_list ... ok
+test nonzero_e_flags_are_refused ... ok
+test other_e_type_is_not_an_executable ... ok
+test pie_parses_and_records_its_dynamic_header ... ok
+test place_in_bss_is_writable ... ok
+test place_in_text_is_refused ... ok
+test place_inside_the_dynamic_array_is_refused ... ok
+test place_outside_every_segment_is_refused ... ok
+test rela_size_and_entsize_are_checked ... ok
+test rela_table_outside_the_file_is_refused ... ok
+test relacount_is_ignored ... ok
+test relative_adds_the_load_base ... ok
+test relative_against_a_symbol_is_refused ... ok
+test relative_at_base_zero_writes_the_addend ... ok
+test relocation_only_writes_the_places ... ok
+test unknown_tags_such_as_dt_relr_are_refused ... ok
+test value_overflow_is_refused ... ok
+test tags_needing_a_dynamic_linker_are_refused ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

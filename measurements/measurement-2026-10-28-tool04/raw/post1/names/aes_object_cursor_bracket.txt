@@ -1,0 +1,3 @@
+objc_change_does_not_leave_the_cursor_save_under_stale: test
+objc_draw_does_not_leave_the_cursor_save_under_stale: test
+the_save_under_box_is_sixteen_wide_and_sixteen_minus_k_tall: test

@@ -1,0 +1,12 @@
+
+running 7 tests
+test a104_a_preset_the_window_never_showed_at_repaints_to_the_same_pixels ... ok
+test a104_open_at_a_same_size_move_of_the_preset_paints_the_window_not_a_blit ... ok
+test a104_open_at_the_preset_rect_repaints_the_old_top_untopped ... ok
+test non_overlapping_second_open_still_repaints_the_old_top_untopped ... ok
+test second_open_repaints_the_old_top_untopped_outside_the_new_window ... ok
+test a104_open_at_a_superset_of_the_preset_rect_leaves_the_old_top_alone ... ok
+test fully_covered_old_top_paints_nothing_outside ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
