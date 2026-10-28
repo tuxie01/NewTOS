@@ -85,3 +85,14 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (Erhebung) + Develope
   „x1..x29“ (gesichert werden x0..x30) und `vdi::dispatch` (heute
   `dispatch_in`).
 
+## Stand 2026-10-29 (Erhebung Byte-Reihenfolge)
+
+- `docs/analysis/byte-order-survey-2026-10-29.md`: 9 Funde, 7 gebaut, 6
+  erreichbar (alles abgeleitet, nicht gemessen):
+  - Stellen mit `file:line` im Dokument. Klasse A (Byte-Union als Kennung): cflib `getcookie` → [SDK05](SDK05.md).
+  - Klasse B (Dateikopf-Magic als `long`): hypview `.REF` und `.BGH` — Byte-Reihenfolge und 8-Byte-Breite; hypview gebaut,
+    nicht auf der Standardkarte.
+  - Klasse C: zView `remap_color` nimmt Big-Endian an; im 4-/8-Bit-Farbmodus Rot/Gruen vertauscht, Blau 0 —
+    ob ZVIEW auf der Karte diesen Modus nutzt, ist offen.
+  - Klasse D: WinDom `vqt_xname`, unerreichbar solange `vq_vgdos()` -2.
+- Vorgeschlagene Sonden S1–S3 im Dokument; Fixes erst nach Messung (Punkt 2).

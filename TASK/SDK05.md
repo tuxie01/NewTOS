@@ -25,3 +25,11 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer (SDK) — Anwenderents
 
 - Sonde vorher/nachher im RUNINFO; QED zeigt `_IDT` = `0x112F`.
 - SDK-Hosttests gruen; doc-check 0 Fehler.
+
+## Nachtrag 2026-10-29 (Erhebung Byte-Reihenfolge)
+
+- Bestaetigt (`docs/analysis/byte-order-survey-2026-10-29.md`, Klasse A):
+  `cookie.o` mit `getcookie` ist in `sdk/cflib/cflib.a` gebaut, kein Ersatz im
+  Overlay. Zusaetzlich fuellt die Union nur 4 der 8 Byte der LP64-`long`; die
+  oberen 4 bleiben unbestimmt. Betroffen alle cflib-Programme: QED `_IDT`
+  (sichtbar), `DHST`, cflib `appinit`.
