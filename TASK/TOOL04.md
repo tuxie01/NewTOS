@@ -1,6 +1,6 @@
 # TOOL04 — Testlaufzeit: schnelle Stufe fuer jede Aenderung, volle Stufe fuer Meilensteine
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Werkzeug (Testbarkeit) — Anwenderentscheidung 2026-10-27
+Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL04-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Werkzeug (Testbarkeit) — Anwenderentscheidung 2026-10-27
 
 ## Sachverhalt
 
