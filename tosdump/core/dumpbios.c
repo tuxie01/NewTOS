@@ -84,6 +84,11 @@ int main(int argc, char **argv)
 	}
 	td_log("%s: %u cases, CRC %08lX\n", table_path, table.count,
 	       (unsigned long)table.crc);
+	/* a disk table (docs/TOS-REFERENCE-DUMPER.md section 6, "The disk
+	 * round") says so; a round-1 table's log stays as it was */
+	if (table.disk)
+		td_log("disk table: test drive %c:, %u preludes\n",
+		       'A' + table.disk_drive, table.prelude_count);
 	if (table.count == 0) {
 		td_log("nothing to do\n");
 		return finish(1);
@@ -95,6 +100,14 @@ int main(int argc, char **argv)
 
 	bytes = (size_t)table.count * TD_CALL_RECORD_SIZE;
 	rc = td_run_call(&table, records, sizeof records);
+	if (rc == TD_RUN_CALL_ERR_PRELUDE) {
+		/* the buffer holds poison, not the sectors: nothing after it
+		 * was issued, and a dump of part of a table is no dump */
+		td_log("prelude at line %u returned %ld, not 0: run stopped "
+		       "before its case, no %s written\n",
+		       td_run_call_stop_line(), td_run_call_stop_ret(), out_path);
+		return finish(1);
+	}
 	if (rc != 0) {
 		td_log("runner failed (%d)\n", rc);
 		return finish(1);

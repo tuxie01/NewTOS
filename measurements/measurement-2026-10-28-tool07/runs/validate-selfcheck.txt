@@ -1,0 +1,12 @@
+NEWTOS.BIN: area BIOS, 51 records of 320 bytes, build b81d, case CRC 09C71B80
+NEWTOS.BIN: format 3, pointer 8 bytes, least significant word first
+NEWTOS.BIN: matches bios-r2.tsv (51 cases)
+NEWTOS.BIN: accepted
+EMUTOS.BIN: area BIOS, 51 records of 320 bytes, build b81d, case CRC 09C71B80
+EMUTOS.BIN: format 3, pointer 4 bytes, most significant word first
+EMUTOS.BIN: matches bios-r2.tsv (51 cases)
+EMUTOS.BIN: accepted
+self-check EMUTOS-1a7484ab-BIOS-r2-disk.BIN -- area BIOS, 51 cases from bios-r2.tsv
+
+self-check, EMUTOS-1a7484ab-BIOS-r2-disk.BIN: the oracle passes every relational rule (51 cases)
+selfcheck exit 0

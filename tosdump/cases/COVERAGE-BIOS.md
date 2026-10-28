@@ -22,6 +22,8 @@ handler cited is the function the slot reaches (`DBG_BIOS`/`DBG_XBIOS` are
 - **later** -- safe to measure once something exists that round 1 does not
   have: a prelude that restores what the call changes, a BIOS drive on the
   oracle, a dumper-owned function, a DSP program.
+- **disk round** -- measured by `bios-r2.tsv` only, a `!disk` table on a
+  test image (section "Disk round" at the end); refused in every other table.
 - **excluded** -- never in an unattended table: writes media, resets or
   reboots a real TOS, installs vectors or interrupt handlers, or reprograms
   hardware the run depends on (the screen, AUX = NewTOS' serial console).
@@ -31,7 +33,8 @@ carried to, like the AES guard ("the union of what either machine would find
 fatal", `docs/TOS-REFERENCE-DUMPER.md` section 6): `Ssbrk`, `Prtblk`,
 `Puntaes` are empty slots on the pin and still excluded. The loader's
 whitelist (`call_policy`, `tosdump/core/cases.c`) admits exactly the round-1
-rows below and refuses everything else.
+rows below -- and, in a `!disk` table only, the disk-round rows -- and
+refuses everything else.
 
 **Profile.** The reference is the oracle's TT profile, like every other
 area; the same table was also recorded on the `falcontc` profile, because a
@@ -53,13 +56,13 @@ physical line number and the dump header carries the table's CRC
 | 0x01 | Bconstat | `bios/bios.c:914` | **round 1** | 9 cases: handles 0-6, 10, -1 (0..7 `bconstat_vec`, 6.. Bconmap, `bios/bios.c:923-933`) |
 | 0x02 | Bconin | `bios/bios.c:958` | **round 1** | 4 cases: only handles that return at once on both machines -- 4, 5 (`char_dummy`, `chardev.c:34-36`), 10, -1. Handles 0-3 and the Bconmap devices 6-9 wait for input: never |
 | 0x03 | Bconout | `bios/bios.c:991` | **round 1** | 4 cases: a printable byte to CON (2) and raw CON (5), handles 10 and -1. PRT (0) waits up to 30 s for a printer (`parport.c:150-168`), IKBD (4) and MIDI (3) are commands to a device, AUX (1) is NewTOS' serial console: later, with their own reasons |
-| 0x04 | Rwabs | `bios/bios.c:1045` | later | write: never (media). Read: needs a BIOS drive on the oracle -- its C: is a Hatari GEMDOS drive, not a block device; a disk image is an oracle change (`docs/analysis/ORACLE.md` §7) |
+| 0x04 | Rwabs | `bios/bios.c:1045` | disk round | `bios-r2.tsv` only (a `!disk` table, on a test image): 31 cases -- logical reads, the FastCopy NULL arm, write-back of sectors a prelude read; see "Disk round" below. `RW_NOTRANSLATE` and writes that change the image: later. Round 1: refused |
 | 0x05 | Setexc | `bios/bios.c:1070` | **round 1** | 5 cases, the inquiry `Setexc(n,-1)` (`bios/bios.c:1076-1078`), NONZERO: a vector address differs per machine. Setting a vector: excluded |
 | 0x06 | Tickcal | `bios/bios.c:1096` | **round 1** | 1 case, EmuTOS answers 20 |
-| 0x07 | Getbpb | `bios/bios.c:1120` | later | reads the boot sector of a BIOS drive: same oracle precondition as Rwabs; A:/B: would touch the floppy |
+| 0x07 | Getbpb | `bios/bios.c:1120` | disk round | `bios-r2.tsv` only: 8 cases (C: -- three times, around the forcechange handshake --, absent and out-of-range drives; the BPB captured through the return); A:/B: excluded (a floppy without a disk). Round 1: refused |
 | 0x08 | Bcostat | `bios/bios.c:1143` | **round 1** | 9 cases: handles 0-7, -1 (IKBD/MIDI slots swapped, `chardev.c:38-42`) |
-| 0x09 | Mediach | `bios/bios.c:1184` | later | same oracle precondition as Getbpb |
-| 0x0A | Drvmap | `bios/bios.c:1206` | **round 1** | 1 case, NONZERO: the drive set is the machine's (`blkdev.c:833`) |
+| 0x09 | Mediach | `bios/bios.c:1184` | disk round | `bios-r2.tsv` only: 11 cases (C: around the forcechange handshake, absent drives); A:/B: excluded. Round 1: refused |
+| 0x0A | Drvmap | `bios/bios.c:1206` | **round 1** | 1 case, NONZERO: the drive set is the machine's (`blkdev.c:833`). `bios-r2.tsv`: EXACT, both disk setups are C: + D: (`0xC`) |
 | 0x0B | Kbshift | `bios/ikbd.c:145` | **round 1** | 1 case, the inquiry -1; setting the shift state: later, with a restoring prelude |
 | 0x0C-0xFF | past `bios_ent` | `bios/vectors.S:1325-1326` | **round 1** | 3 cases (12, 127, 255): the dispatcher leaves the number in d0 |
 
@@ -213,10 +216,10 @@ physical line number and the dump header carries the table's CRC
 
 ## Summary
 
-| Table | Slots | round 1 | later | excluded |
-|---|---|---|---|---|
-| BIOS | 12 | 8 | 3 | 1 |
-| XBIOS | 142 | 81 | 43 | 18 |
+| Table | Slots | round 1 | disk round | later | excluded |
+|---|---|---|---|---|---|
+| BIOS | 12 | 8 | 3 | 0 | 1 |
+| XBIOS | 142 | 81 | 0 | 43 | 18 |
 
 Plus the probes past each table (3 BIOS, 1 XBIOS). `bios-r1.tsv` holds 147 cases; every round-1 row above names how many are its own. 35 of the 81 XBIOS round-1 slots are empty (`xbios_unimpl`) and answer their own number.
 
@@ -235,3 +238,51 @@ in a BIOS-area table".
 
 References: `tosdump/reference/EMUTOS-1a7484ab-SUPER` (TT) and
 `-SUPER-falcontc`, `measurements/measurement-2026-10-27-mem12-super-oracle/RUNINFO.TXT`.
+
+## Disk round -- `bios-r2.tsv` (TOOL07, 2026-10-28)
+
+`Rwabs`, `Getbpb`, `Mediach` and an exact `Drvmap`, on a BIOS block drive
+that is a test image: the oracle's profile `disk` (`docs/analysis/ORACLE.md`
+§2) and, on NewTOS, a card from `tools/mkcard.sh` with `MKCARD_TESTDISK` --
+the same image as C:, the dumper on D:. Separate from `bios-r1.tsv`, whose
+table, CRC and references stay as they are. Form and guard:
+`docs/TOS-REFERENCE-DUMPER.md` section 6, "The disk round" (`!disk`,
+Rwabs-read preludes, write-back only, `r:` capture). The cases come from the
+audit's probe (`docs/audits/2026-10-28-bios-storage.md` section 5;
+`measurements/measurement-2026-10-28-bios-storage-audit/method/bstprobe.c`,
+same ids in the comments).
+
+| Group | Cases | What | Finding |
+|---|---|---|---|
+| `Drvmap` | 1 | EXACT, `0x0000000C` on both setups | -- |
+| `Getbpb` | 6 | C: (PTR_RAM, the BPB as nine WORDs via `r:18.W`), F:, P:, 16, -1, 0x7FFF | FS12 (16) |
+| `Mediach` | 5 | C:, F:, P:, 16, -1 | FS12 (16) |
+| `Rwabs` reads R01-R20 | 21 | sector 0 (two halves), two sectors, `recno`/`lrecno`, the last sector, past the end, negative, count 0, count 0 past the end, absent drives, the flags 2/4/0x80, `recno` 0x8000 and -2 | BIOS-STOR-003 (R10) |
+| FastCopy F03 | 2 | `Rwabs(0,NULL,2,0,A:)` and back to 0: EmuTOS sets A:'s media-change state and returns 0 before any I/O (`bios/blkdev.c:425-428`) | BIOS-STOR-007 |
+| forcechange W01-W11, X12-X16 | 16 | write-back of sector 0 (without and with `RW_NOMEDIACH`) and of the last sector, with `Mediach`, reads and `Getbpb` around it (`bios/blkdev.c:450-453`, `:473-477`, `:589-590`, `:799-803`) | BIOS-STOR-001 |
+
+51 cases, 3 preludes, CRC `09C71B80`. Why each call is safe:
+
+| Call | Admitted as | Why safe |
+|---|---|---|
+| `Getbpb`, `Mediach` | any drive but A:/B: | they read a boot sector or ask the device; a floppy without a disk ends in the critical-error handler on a real TOS (`bios/blkdev.c:623-629`) |
+| `Rwabs` read | flags 0/2/4/0x80, a dumper buffer, count 0..2, not A:/B: | it reads at most two sectors into a 1024-byte buffer |
+| `Rwabs` NULL arm | read, A:/B:, count 0..2 | EmuTOS returns before any I/O; NewTOS has no floppy (EUNDEV) |
+| `Rwabs` write | write-back only: the last prelude read the same sectors into the same buffer; test drive only | the disk gets the bytes it already holds, or nothing (a failed prelude stops the run) |
+
+Not in this round (later), with the reason:
+
+- `RW_NOTRANSLATE` (physical unit; BIOS-STOR-002): the unit number is the
+  machine's -- EmuTOS' IDE master is unit 18 (`bios/disk.h:30`), the Pi's
+  card has none fixed yet (a spec decision).
+- Patched boot sectors (BIOS-STOR-004 bps 1024, -005 tot16 = tot32 = 0,
+  -006 logical `Rwabs` after a failed `Getbpb`): a write that changes the
+  image needs a patch step the dumper does not have, and after a failed
+  `Getbpb` EmuTOS refuses every logical access to the drive
+  (`bios/blkdev.c:443-444`, `:601`), so the restore would have to go through
+  the physical path -- the open unit number again.
+- D: (drive 3): on the oracle Hatari's GEMDOS drive, on NewTOS the program
+  partition -- a setup difference, not behaviour.
+
+Reference: `tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-disk` (profile
+`disk`), `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`.

@@ -58,7 +58,7 @@ whole configuration back into the `--configfile` path.
 |---|---|---|---|
 | `tt` | `--machine tt --tos-res ttmed --monitor vga` | 640×480, 4 planes (TT-Medium) | `EMUTOS14-VDI`, `-VDI-r2`, `-VDI-r3`, `-VDI-all`, `-AES`, `-AES-r2wind`, `-AES-r2brlist`, `-AES-r3`, `-AES-m05/m06/m07`, `-RASTER`; pin only: `EMUTOS-1a7484ab-BIOS` |
 | `falcontc` | `--machine falcon --monitor vga` + `EMUDESK.INF` `#E 1A E0 00 1C 60` | 640×480, 16-bit truecolor (VIDEL `0x001C`, read by `process_inf1`, `aes/geminit.c`) | `EMUTOS14-VDI-all-falcontc`, `-RASTER-screen-falcontc`; pin only: `EMUTOS-1a7484ab-BIOS-falcontc` |
-| `disk` | `--machine falcon --monitor vga --drive-a off --drive-b off` + `--ide-master <clone of the test image> --ide-swap 0=off`, dumper on GEMDOS drive D: | 640×480, EmuTOS' default mode (`VsetMode(-1)` = `0x001A`, no INF) | none yet (TASK/TOOL07); canary §6 |
+| `disk` | `--machine falcon --monitor vga --drive-a off --drive-b off` + `--ide-master <clone of the test image> --ide-swap 0=off`, dumper on GEMDOS drive D: | 640×480, EmuTOS' default mode (`VsetMode(-1)` = `0x001A`, no INF) | pin only: `EMUTOS-1a7484ab-BIOS-r2-disk` (TASK/TOOL07); canary §6 |
 
 The INF is byte-identical to `measurements/measurement-2026-09-21-vdi-qemu/method/EMUDESK-falcon-truecolor.INF`.
 
@@ -316,6 +316,15 @@ five identical runs of the derived table in all
   `Gettime` case (class `NONZERO`). Why the second profile: a third of the
   XBIOS answers is the machine's (TT shifter, Videl, DSP, DMA sound,
   palette) — `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`.
+- The disk-round reference `EMUTOS-1a7484ab-BIOS-r2-disk` was measured on
+  this pin on 2026-10-28 with profile `disk`, `DUMPBIOS` build `b81d` and
+  the table `tosdump/cases/bios-r2.tsv` (CRC `09C71B80`, 51 cases), on the
+  test image `tools/mktestdisk.sh <img> NEWDESK.INF=<inf>` (the NEWDESK.INF
+  NewTOS needs on C:; EmuTOS does not read it). Two runs byte-identical, the
+  image unchanged by both
+  (`measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`). The NewTOS
+  side is a card from `tools/mkcard.sh` with `MKCARD_TESTDISK` = the same
+  image, so both sides read the same bytes on C:.
 - All fourteen VDI, AES and raster `EMUTOS-1a7484ab-*` references are record **format 3**
   (pointer width and word order in the header,
   `docs/TOS-REFERENCE-DUMPER.md` section 3), re-recorded on this pin on

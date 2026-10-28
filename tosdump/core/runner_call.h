@@ -14,7 +14,9 @@
 
 #include "cases.h"
 
-#define TD_RUN_CALL_ERR_BUFFER (-1)   /* the output cannot hold every record */
+#define TD_RUN_CALL_ERR_BUFFER  (-1)  /* the output cannot hold every record */
+#define TD_RUN_CALL_ERR_PRELUDE (-2)  /* an Rwabs prelude did not return 0:
+                                       * the run stopped before its case    */
 
 int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
                 size_t out_bytes);
@@ -27,5 +29,10 @@ void *td_call_buffer(int n);
 /* The runner's own callback n (0..TD_CALL_CB_N-1) for a Supexec case
  * ("f:<n>"), or NULL; for the host tests' stub, which calls it. */
 void *td_call_callback(int n);
+
+/* After TD_RUN_CALL_ERR_PRELUDE: the line of the prelude that stopped the
+ * run, and what it returned.  0 / 0 after a run that did not stop. */
+uint16_t td_run_call_stop_line(void);
+long     td_run_call_stop_ret(void);
 
 #endif /* TOSDUMP_RUNNER_CALL_H */

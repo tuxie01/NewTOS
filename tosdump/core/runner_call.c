@@ -127,14 +127,81 @@ static void poison_buffers(const struct td_call_case *c)
 	}
 }
 
-int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
-                size_t out_bytes)
+static uint16_t stop_line;
+static long     stop_ret;
+
+uint16_t td_run_call_stop_line(void)
+{
+	return stop_line;
+}
+
+long td_run_call_stop_ret(void)
+{
+	return stop_ret;
+}
+
+/*
+ * Marshal one line's arguments and issue its trap.  What the backend is
+ * handed, and -- when `f` is not NULL, for a measured case -- what the record
+ * says was passed.  An unused register slot carries poison.  Preludes go
+ * through here too (f NULL): the same marshalling, nothing recorded.
+ */
+static long issue(const struct td_call_case *c, struct td_call_frame *f)
 {
 	uint8_t kind[TD_ABI_ARGS_MAX];
 	long value[TD_ABI_ARGS_MAX];
-	uint16_t i;
 	int j;
 
+	for (j = 0; j < TD_ABI_ARGS_MAX; j++) {
+		kind[j]  = 0;
+		value[j] = (long)(int32_t)0xDEADDEADuL;
+	}
+	for (j = 0; j < (int)c->nargs; j++) {
+		const struct td_call_arg *a = &c->arg[j];
+		uint32_t rec;
+
+		switch (a->kind) {
+		case TD_CALL_ARG_WORD:
+			kind[j]  = TD_ABI_ARG_WORD;
+			value[j] = (long)(int16_t)a->value;
+			rec = (uint32_t)(int32_t)(int16_t)a->value;
+			break;
+		case TD_CALL_ARG_LONG:
+			kind[j]  = TD_ABI_ARG_LONG;
+			value[j] = (long)a->value;
+			rec = (uint32_t)a->value;
+			break;
+		case TD_CALL_ARG_FUNC:   /* the callback, and its token */
+			kind[j]  = TD_ABI_ARG_LONG;
+			value[j] = (long)td_call_callback((int)a->value);
+			rec = TD_CALL_CB_TOKEN(a->value);
+			break;
+		case TD_CALL_ARG_TOKEN:  /* what Super(0L) returned */
+			kind[j]  = TD_ABI_ARG_LONG;
+			value[j] = super_token;
+			rec = TD_CALL_SUPER_TOKEN(a->value);
+			break;
+		default:   /* TD_CALL_ARG_BUF: its address, and its token */
+			kind[j]  = TD_ABI_ARG_LONG;
+			value[j] = (long)td_call_buffer((int)a->value);
+			rec = TD_CALL_BUF_TOKEN(a->value);
+			break;
+		}
+		if (f)
+			f->args[j] = rec;
+	}
+	if (f)
+		f->trap = c->trap;
+	return td_abi_trap(c->trap, c->opcode, c->nargs, kind, value);
+}
+
+int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
+                size_t out_bytes)
+{
+	uint16_t i, k;
+
+	stop_line = 0;
+	stop_ret  = 0;
 	if (out_bytes < (size_t)ct->count * TD_CALL_RECORD_SIZE)
 		return TD_RUN_CALL_ERR_BUFFER;
 
@@ -144,51 +211,30 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 		int64_t r;
 		long ret;
 
-		/* 1. poison the frame and both buffers (spec section 4) */
+		/* 1. poison the frame and both buffers (spec section 4) -- once,
+		 *    before the preludes, so a prelude's buffer reaches its case */
 		td_poison_call(&run_frame);
 		poison_buffers(c);
 
-		/* 2. the arguments: what the backend passes, and what the record
-		 *    says was passed.  An unused register slot carries poison. */
-		for (j = 0; j < TD_ABI_ARGS_MAX; j++) {
-			kind[j]  = 0;
-			value[j] = (long)(int32_t)0xDEADDEADuL;
-		}
-		for (j = 0; j < (int)c->nargs; j++) {
-			const struct td_call_arg *a = &c->arg[j];
+		/* 2. the preludes of a disk table: Rwabs reads into a buffer the
+		 *    case then writes back or reads again.  One that does not
+		 *    return 0 left the poison where its data should be, so the run
+		 *    stops here: no case after it is issued, no dump is written
+		 *    (docs/TOS-REFERENCE-DUMPER.md section 6, "The disk round"). */
+		for (k = 0; k < c->prelude_count; k++) {
+			const struct td_call_case *p =
+				&ct->preludes[c->prelude_first + k];
+			long pr = issue(p, NULL);
 
-			switch (a->kind) {
-			case TD_CALL_ARG_WORD:
-				kind[j]  = TD_ABI_ARG_WORD;
-				value[j] = (long)(int16_t)a->value;
-				run_frame.args[j] = (uint32_t)(int32_t)(int16_t)a->value;
-				break;
-			case TD_CALL_ARG_LONG:
-				kind[j]  = TD_ABI_ARG_LONG;
-				value[j] = (long)a->value;
-				run_frame.args[j] = (uint32_t)a->value;
-				break;
-			case TD_CALL_ARG_FUNC:   /* the callback, and its token */
-				kind[j]  = TD_ABI_ARG_LONG;
-				value[j] = (long)td_call_callback((int)a->value);
-				run_frame.args[j] = TD_CALL_CB_TOKEN(a->value);
-				break;
-			case TD_CALL_ARG_TOKEN:  /* what Super(0L) returned */
-				kind[j]  = TD_ABI_ARG_LONG;
-				value[j] = super_token;
-				run_frame.args[j] = TD_CALL_SUPER_TOKEN(a->value);
-				break;
-			default:   /* TD_CALL_ARG_BUF: its address, and its token */
-				kind[j]  = TD_ABI_ARG_LONG;
-				value[j] = (long)td_call_buffer((int)a->value);
-				run_frame.args[j] = TD_CALL_BUF_TOKEN(a->value);
-				break;
+			if (pr != 0) {
+				stop_line = p->line;
+				stop_ret  = pr;
+				return TD_RUN_CALL_ERR_PRELUDE;
 			}
 		}
-		run_frame.trap = c->trap;
 
 		/* 3. the call under measurement */
-		ret = td_abi_trap(c->trap, c->opcode, c->nargs, kind, value);
+		ret = issue(c, &run_frame);
 
 		/* Super(0L) opened the bracket: keep the token for its t:0 */
 		if (c->trap == 1 && c->opcode == 0x20 && c->nargs == 1 &&
@@ -202,8 +248,17 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 		run_frame.ret    = (int32_t)(uint32_t)((uint64_t)r & 0xFFFFFFFFuL);
 		run_frame.ret_hi = (uint32_t)((uint64_t)r >> 32);
 
-		/* 5. the capture, element by element in record order */
-		if (c->cap_arg >= 0) {
+		/* 5. the capture, element by element in record order: from a
+		 *    buffer argument, or (r:) through the returned pointer -- only
+		 *    when it is positive and even (an error code is negative, a
+		 *    NULL is no BPB); PTR_RAM checks the rest on each side, and a
+		 *    capture not taken keeps the poison */
+		if (c->cap_arg == TD_CALL_CAP_RET) {
+			if (r > 0 && (r & 1) == 0)
+				td_call_capture(run_frame.capture,
+				                (const uint8_t *)ret + c->cap_off,
+				                c->cap_len, c->cap_unit);
+		} else if (c->cap_arg >= 0) {
 			const uint8_t *b =
 				(const uint8_t *)td_call_buffer((int)c->arg[c->cap_arg].value);
 

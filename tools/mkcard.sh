@@ -22,6 +22,14 @@
 #                      (default: none)
 #     MKCARD_STAMP     FAT time stamp of every copied file, `touch -t` form
 #                      (default 202610171200, the stamp of the per-run copies)
+#     MKCARD_TESTDISK  a test image from tools/mktestdisk.sh: the card gets
+#                      it byte for byte as partition 1 = C: (the test
+#                      partition) and a separate program partition 2 = D:
+#                      behind it; the dest=file pairs and MKCARD_DIRS go to
+#                      D:, nothing is written to C:. The test image must
+#                      already carry C:\NEWDESK.INF equal to <NEWDESK.INF>
+#                      (tools/mktestdisk.sh <img> NEWDESK.INF=<file>). Size
+#                      default 128 MiB here (QEMU wants a power of two).
 #
 # This replaces the per-run copies of measurements/*/method/mkcard.sh (same
 # positional interface; their label, empty folders and stamp are the MKCARD_*
@@ -41,6 +49,20 @@
 # partition is mounted on a private mount point next to the image, never
 # under /Volumes/<label>. QEMU images only -- never a real card.
 #
+# Test-disk mode (MKCARD_TESTDISK; TASK/TOOL07): the card for disk cases on
+# NewTOS. The test partition is the oracle's test image (profile disk,
+# docs/analysis/ORACLE.md section 2) copied unchanged -- MBR entry 1, its
+# hidden sectors and every sector of the partition -- so EmuTOS and NewTOS
+# read the same bytes on C:; the program (dumper, table, BIN, LOG) lives on
+# D:, never on the test partition. MBR entry 2 is added for D: (type 0x06,
+# from the first sector after the test image to the end of the card); a
+# test image with more than one partition is refused. D: is FAT16 written by
+# mtools' mformat (hermetic as in tools/mktestdisk.sh: no mount, volume serial
+# 4E54-4344, every time stamp MKCARD_STAMP unless a file names its own). The
+# manifest lists the C: files read back from the test image and the D:
+# files; its header names the test image and its sha256. A run compares only
+# the test partition before and after (dd it out, fsck_msdos -n).
+#
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -51,7 +73,8 @@ usage() {
 [ "$#" -ge 2 ] || usage
 IMG="$1"; INF="$2"; shift 2
 LABEL="${MKCARD_LABEL:-NTCARD}"
-SIZE_MB="${MKCARD_SIZE_MIB:-64}"
+TESTDISK="${MKCARD_TESTDISK:-}"
+if [ -n "$TESTDISK" ]; then SIZE_MB="${MKCARD_SIZE_MIB:-128}"; else SIZE_MB="${MKCARD_SIZE_MIB:-64}"; fi
 DIRS="${MKCARD_DIRS:-}"
 STAMP="${MKCARD_STAMP:-202610171200}"
 STAMP_RE='[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'
@@ -72,9 +95,92 @@ for spec in "$@"; do
   [ -f "$s" ] || { echo "mkcard: host file $s (for C:\\$d) not found" >&2; bad=$((bad + 1)); }
 done
 case "$SIZE_MB" in ''|*[!0-9]*) echo "mkcard: MKCARD_SIZE_MIB '$SIZE_MB' is not a number" >&2; bad=$((bad + 1)) ;; esac
+if [ -n "$TESTDISK" ]; then
+  if [ ! -f "$TESTDISK" ]; then
+    echo "mkcard: MKCARD_TESTDISK $TESTDISK not found" >&2; bad=$((bad + 1))
+  else
+    for t in mformat mcopy mmd; do
+      command -v "$t" >/dev/null || { echo "mkcard: $t (mtools) not found, MKCARD_TESTDISK needs it" >&2; bad=$((bad + 1)); }
+    done
+  fi
+fi
 if [ "$bad" -ne 0 ]; then
   echo "mkcard: $bad problem(s); no image written" >&2
   exit 1
+fi
+
+# ---- test-disk mode (MKCARD_TESTDISK): see the header ----------------------
+if [ -n "$TESTDISK" ]; then
+  export MTOOLSRC=/dev/null MTOOLS_NO_VFAT=1 MTOOLS_SKIP_CHECK=1 TZ=UTC
+  SOURCE_DATE_EPOCH=$(date -j -u -f %Y%m%d%H%M%S "${STAMP}00" +%s)
+  export SOURCE_DATE_EPOCH
+  MANIFEST="${IMG}.manifest"
+  STAGE="$(cd "$(dirname "$IMG")" && pwd)/stage.$$"
+  trap 'rc=$?; rm -rf "$STAGE"; [ "$rc" -eq 0 ] || rm -f "$IMG" "$MANIFEST" "${IMG}.manifest.part"' EXIT
+  le32() { od -An -t u4 -j "$2" -N 4 "$1" | tr -d ' '; }
+  byte() { od -An -t u1 -j "$2" -N 1 "$1" | tr -d ' '; }
+  # The test image: an MBR with entry 1 only (the layout of tools/mktestdisk.sh).
+  tbytes=$(stat -f %z "$TESTDISK")
+  [ $((tbytes % 512)) -eq 0 ] || { echo "mkcard: test image is not whole sectors" >&2; exit 1; }
+  [ "$(byte "$TESTDISK" 510)" = 85 ] && [ "$(byte "$TESTDISK" 511)" = 170 ] ||
+    { echo "mkcard: test image has no MBR signature" >&2; exit 1; }
+  [ "$(byte "$TESTDISK" 450)" != 0 ] || { echo "mkcard: test image has no partition 1" >&2; exit 1; }
+  for e in 1 2 3; do
+    [ "$(byte "$TESTDISK" $((446 + 16 * e + 4)))" = 0 ] ||
+      { echo "mkcard: test image has a partition $((e + 1)); only one is supported" >&2; exit 1; }
+  done
+  TSTART=$(le32 "$TESTDISK" 454); TCOUNT=$(le32 "$TESTDISK" 458)
+  [ $(( (TSTART + TCOUNT) * 512 )) -le "$tbytes" ] || { echo "mkcard: test partition runs past the test image" >&2; exit 1; }
+  # C:\NEWDESK.INF must already be on the test image and equal to <NEWDESK.INF>.
+  mkdir -p "$STAGE/C" "$STAGE/D"
+  mcopy -s -m -n -i "${TESTDISK}@@$((TSTART * 512))" '::*' "$STAGE/C/" 2>/dev/null || true
+  cmp -s "$STAGE/C/NEWDESK.INF" "$INF" ||
+    { echo "mkcard: the test image carries no C:\\NEWDESK.INF equal to $INF (tools/mktestdisk.sh <img> NEWDESK.INF=$INF)" >&2; exit 1; }
+  CARD=$((SIZE_MB * 2048)); PSTART=$((tbytes / 512)); PCOUNT=$((CARD - PSTART))
+  [ "$PCOUNT" -ge 32768 ] || { echo "mkcard: MKCARD_SIZE_MIB $SIZE_MB leaves less than 16 MiB after the test image" >&2; exit 1; }
+  echo "mkcard: ${IMG} (${SIZE_MB} MiB, test image ${TESTDISK} as C:, program partition D: LBA ${PSTART}+${PCOUNT}, label ${LABEL})"
+  rm -f "$IMG" "$MANIFEST" "${IMG}.manifest.part"
+  dd if=/dev/zero of="$IMG" bs=1m count="$SIZE_MB" status=none
+  dd if="$TESTDISK" of="$IMG" bs=512 conv=notrunc status=none
+  # MBR entry 2: CHS for 16 heads x 63 sectors (as the test image's entry 1).
+  chs() { local l=$1 c h s; c=$((l / 1008)); h=$(((l / 63) % 16)); s=$((l % 63 + 1))
+          [ "$c" -le 1023 ] || { c=1023; h=254; s=63; }
+          printf '\\%03o\\%03o\\%03o' "$h" $((s | ((c >> 8) & 3) << 6)) $((c & 255)); }
+  le() { printf '\\%03o\\%03o\\%03o\\%03o' $(($1 & 255)) $((($1 >> 8) & 255)) $((($1 >> 16) & 255)) $((($1 >> 24) & 255)); }
+  printf "\\000$(chs "$PSTART")\\006$(chs $((CARD - 1)))$(le "$PSTART")$(le "$PCOUNT")" |
+    dd of="$IMG" bs=1 seek=462 conv=notrunc status=none
+  # FAT16 on D:, the cluster size the smallest that keeps it below 65525 clusters.
+  spc=4; while [ $((PCOUNT / spc)) -ge 65000 ]; do spc=$((spc * 2)); done
+  DPART="${IMG}@@$((PSTART * 512))"
+  mformat -i "$DPART" -T "$PCOUNT" -h 16 -s 63 -H "$PSTART" -c "$spc" -N 4E544344 -v "$LABEL" ::
+  for d in $DIRS; do
+    mkdir -p "$STAGE/D/$d"; p=
+    IFS=/; for c in $d; do p="${p:+$p/}$c"; mmd -D s -i "$DPART" "::$p" 2>/dev/null || true; done; unset IFS
+    echo "  + D:\\$(printf '%s' "$d" | tr '/' '\\')\\ (empty folder)"
+  done
+  for spec in "$@"; do
+    d="${spec%%=*}"; s="${spec#*=}"; ts="$STAMP"
+    case "$s" in *@$STAMP_RE) ts="${s##*@}"; s="${s%@*}" ;; esac
+    dir="$(dirname "$d")"
+    if [ "$dir" != . ]; then
+      mkdir -p "$STAGE/D/$dir"; p=
+      IFS=/; for c in $dir; do p="${p:+$p/}$c"; mmd -D s -i "$DPART" "::$p" 2>/dev/null || true; done; unset IFS
+    fi
+    cp -X "$s" "$STAGE/D/$d"; touch -t "$ts" "$STAGE/D/$d"
+    mcopy -m -i "$DPART" "$STAGE/D/$d" "::$d"
+    echo "  + D:\\$(printf '%s' "$d" | tr '/' '\\') <- $s"
+  done
+  # The test partition must be the test image's, byte for byte.
+  cmp -s <(dd if="$IMG" bs=512 skip="$TSTART" count="$TCOUNT" status=none) \
+         <(dd if="$TESTDISK" bs=512 skip="$TSTART" count="$TCOUNT" status=none) ||
+    { echo "mkcard: the test partition differs from the test image" >&2; exit 1; }
+  "$SCRIPT_DIR/sd-manifest.sh" files "$STAGE/C" C "$IMG"
+  "$SCRIPT_DIR/sd-manifest.sh" files "$STAGE/D" D "$IMG"
+  "$SCRIPT_DIR/sd-manifest.sh" write "$IMG" "$SIZE_MB" \
+    "tools/mkcard.sh, MKCARD_TESTDISK $(shasum -a 256 "$TESTDISK" | awk '{print $1}') $TESTDISK" --switches n/a
+  echo "done: ${IMG}"
+  echo "manifest: ${MANIFEST} ($(sed -n '/^file /p' "$MANIFEST" | wc -l | tr -d ' ') files; copy it into the measurement run, RUNINFO.TXT cites it)"
+  exit 0
 fi
 
 MANIFEST="${IMG}.manifest"

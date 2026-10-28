@@ -113,6 +113,20 @@ is touched; a later failure deletes the half-written image. It writes the same
 tools/mkcard.sh`, with `switch n/a` (it reads no `SD_*` switches) and
 `optional_missing none` (it has no optional parts: every pair is required).
 
+**Cards for disk cases: `MKCARD_TESTDISK`.** With
+`MKCARD_TESTDISK=<image from tools/mktestdisk.sh>` (TASK/TOOL07) the card is
+that test image byte for byte as partition 1 = `C:` plus a separate FAT16
+program partition 2 = `D:` behind it (default card size 128 MiB; QEMU wants a
+power of two). The `dest=host-file` pairs and `MKCARD_DIRS` go to `D:`;
+nothing is written to `C:`, so the test image must already carry the
+`NEWDESK.INF` given on the command line (`tools/mktestdisk.sh <img>
+NEWDESK.INF=<file>`), and its `#Z` line names the program on `D:`. The
+manifest lists the `C:` files read back from the test image and the `D:`
+files; its header names the test image and its sha256. A run compares only
+the test partition before and after the boot (dd'd out, `fsck_msdos -n`),
+as `measurements/measurement-2026-10-28-tool07/method/compare-testpart.sh`
+does.
+
 **Measurement runs carry the manifest of every image they boot.** A run
 under `measurements/` copies the `<image>.manifest` of each image it boots —
 from `tools/make-sd-image.sh` or from `tools/mkcard.sh` — into its run

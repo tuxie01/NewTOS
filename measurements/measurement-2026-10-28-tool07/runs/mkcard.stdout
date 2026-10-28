@@ -1,0 +1,5 @@
+mkcard: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07/finaln/card.img (128 MiB, test image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07/final/test.img as C:, program partition D: LBA 131072+131072, label NTCARD)
+  + D:\DUMPBIOS.NAP <- /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07/finaln/DUMPBIOS.NAP
+  + D:\BIOS.TSV <- tosdump/cases/bios-r2.tsv
+done: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07/finaln/card.img
+manifest: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07/finaln/card.img.manifest (3 files; copy it into the measurement run, RUNINFO.TXT cites it)

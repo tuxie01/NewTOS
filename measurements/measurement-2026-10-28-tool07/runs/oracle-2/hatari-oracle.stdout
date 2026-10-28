@@ -1,0 +1,9 @@
+DUMPBIOS build b81d, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV: 51 cases, CRC 09C71B80
+disk table: test drive C:, 3 preludes
+running 51 cases
+all 51 cases ran
+BIOS.BIN: 51 records, 16352 bytes
+before d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07/final/test.img
+after  d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07/final/oracle-2/disk.img

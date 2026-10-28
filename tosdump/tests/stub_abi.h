@@ -161,6 +161,24 @@
 #define TD_STUB_SUPER_SSP       0x00E0F000L
 #define TD_STUB_SUPER_LEAVE_D0  0x00005AE5L
 
+/* The disk round (TASK/TOOL07) -- the stub models what the runner needs to
+ * be seen doing with Rwabs and Getbpb:
+ *   - Rwabs (13:4) READ (bit 0 of the flag clear) fills the buffer like any
+ *     other call (above) and answers 0 -- except at the long sector
+ *     TD_STUB_RWABS_FAIL, where it answers TD_STUB_RWABS_FAIL_RET (E_CHNG)
+ *     and leaves the buffer alone;
+ *   - Rwabs WRITE does not fill: it copies the first TD_STUB_WRITTEN_N bytes
+ *     of the buffer it was handed into the call log (call_written) and
+ *     answers 0, so a test sees what a write would have put on the disk;
+ *   - Getbpb (13:7) answers, for drive 2 only, the address of a static
+ *     9-WORD BPB whose WORD i is TD_STUB_BPB_WORD(i) (machine order, as a
+ *     real BPB is), and 0 for every other drive. */
+#define TD_STUB_RWABS_FAIL      0x7777L
+#define TD_STUB_RWABS_FAIL_STR  "0x7777"
+#define TD_STUB_RWABS_FAIL_RET  (-14L)
+#define TD_STUB_WRITTEN_N       8
+#define TD_STUB_BPB_WORD(i)     (0x0B00 + (i))
+
 struct td_stub_call {
 	int16_t kind;
 	int16_t opcode;
@@ -186,6 +204,8 @@ struct td_stub_call {
 	uint16_t call_nargs;
 	uint8_t call_kind[TD_CALL_ARGS_N];
 	long    call_value[TD_CALL_ARGS_N];
+	/* Call side, Rwabs writes only: the buffer's first bytes as handed in. */
+	uint8_t call_written[TD_STUB_WRITTEN_N];
 };
 
 extern struct td_stub_call td_stub_calls[TD_STUB_MAX_CALLS];

@@ -677,11 +677,13 @@ it carries; a new reference or a new rule is checked on the spot.
   `offset + length <= TD_CALL_BUF_BYTES`. `Protobt` writes its checksum at
   510 (`bios/floppy.c:731-735`), past the 256 bytes the record has room for.
 
-**No preludes, no directives.** A `+` or `!` line is refused. A call table
-issues no reset either: the admission rule of a round-1 table is that every
-case is a query, or a call whose effect does not outlive it (ledger), so
-there is no state to restore. A round that sets state needs a restoring
-prelude, and gets it with its own table form.
+**No preludes, no directives** — outside a disk table. A `+` or `!` line is
+refused, except the `!disk` directive and the Rwabs-read preludes of a disk
+table ("The disk round", below). A call table issues no reset either: the
+admission rule of a round-1 table is that every case is a query, or a call
+whose effect does not outlive it (ledger), so there is no state to restore.
+A round that sets state needs a restoring prelude, and gets it with its own
+table form.
 
 **The guard is a whitelist.** A typo in this table can write a disk sector
 (`Rwabs`), install a vector (`Setexc`) or hang the machine on input
@@ -757,6 +759,63 @@ value: `EXACT`.
 one (signature letter `f`); `Super` with `l:1`, `l:0` or `t:0` under the
 bracket rule. Nothing else in GEMDOS is admitted.
 
+### The disk round (added 2026-10-28, TOOL07)
+
+`Rwabs`, `Getbpb` and `Mediach` reach a BIOS block drive. They are measured
+by their own table, `tosdump/cases/bios-r2.tsv` (run with `DUMPBIOS`, header
+area 1), on a test image only: the oracle's profile `disk`
+(`docs/analysis/ORACLE.md` §2, the test image as IDE master C:, the dumper on
+D:) and, on NewTOS, a card from `tools/mkcard.sh` with `MKCARD_TESTDISK` (the
+same test image as partition C:, the dumper on a program partition D:). The
+table, its CRC and the references of round 1 stay as they are. Ledger:
+`tosdump/cases/COVERAGE-BIOS.md`, section "Disk round".
+
+**The directive.** `!disk <TAB> <drive>` before the first case or prelude,
+at most once, `<drive>` 2 (C:) … 15 (P:): this table is a disk table and
+`<drive>` its test drive. Without it, `Rwabs`, `Getbpb`, `Mediach` and every
+`+` line are refused as in round 1 (`call_refusals`,
+`tosdump/core/cases.c`); any other `!` line is refused in every call table.
+
+**Preludes.** In a disk table a `+` line is a prelude, and a prelude is one
+thing only: an `Rwabs` read (no `RW_WRITE`, no `RW_NOTRANSLATE`) into a
+dumper buffer. Its `retclass` and `capture` columns are `-` — it is not
+recorded. Preludes stack before the next case (at most
+`TD_MAX_CALL_PRELUDES` = 32 per table); one with no case after it is an
+error (`TD_CASE_ERR_DANGLING`). The runner poisons the frame and both
+buffers **once per case, before its preludes**, so what a prelude read is
+what the case finds in the buffer (`td_run_call`,
+`tosdump/core/runner_call.c`). **A prelude that does not return 0 stops the
+run**: no further call is issued, the LOG names the line and its return,
+and no BIN is written — the buffer would hold poison where the sectors
+should be, and the write after it would put the poison on the disk.
+
+**The guard for the three calls**, in a disk table only:
+
+| Call | Signature | Admitted |
+|---|---|---|
+| `Getbpb` (13:7), `Mediach` (13:9) | `w` | any drive but A: and B: (a floppy without a disk ends in the critical-error handler on a real TOS, and the disk profile has no floppy drives) |
+| `Rwabs` (13:4) | `wpwwwl`, the AHDI 3.1 long form only | flags from `RW_WRITE` 1, `RW_NOMEDIACH` 2, `RW_NORETRIES` 4, `RW_NOBYTESWAP` 0x80; **`RW_NOTRANSLATE` (8) refused** — a physical unit number is the machine's (EmuTOS' IDE master is unit 18, `bios/disk.h:30`; the unit of the Pi's card is open, BIOS-STOR-002). A `b:` buffer with count 0..2 (two sectors fill one buffer), not on A:/B:; or `l:0` (NULL), the FastCopy arm, only as a read on A:/B: with count 0..2 — EmuTOS returns before any I/O (`bios/blkdev.c:425-428`) |
+| `Rwabs` **write** | as above, a measured case | **write-back only**: on the test drive, and the **last** prelude before it read exactly the same buffer, count, `recno`, drive and `lrecno`. A write is never a prelude |
+
+Write-back only means the test image keeps every byte even where a write
+goes through: what reaches the disk is what was just read from the same
+sectors, or nothing (the stopped run). This is what makes the
+forcechange handshake measurable (writing logical sector 0, BIOS-STOR-001)
+without a restore step. Writes that change the image — patched boot
+sectors, which need a patch step and, after a failed `Getbpb` on EmuTOS, a
+restore through the physical path — are not in this round.
+
+**Capture through the returned pointer.** The capture column also takes
+`r:<length>[.B|.W|.L][@<offset>]`: copy `length` bytes from `offset` of the
+address the call **returned** (Getbpb's BPB, `r:18.W` = its nine WORDs),
+element by element as for a buffer capture. Only with retclass `PTR_RAM`,
+so the address is checked on each side; the runner reads only through a
+positive, even return — a NULL or an error code leaves the capture
+poisoned.
+
+**Drvmap** is `EXACT` in this table: both setups give C: + D:,
+`0x0000000C` (user decision 2026-10-28; round 1 keeps `NONZERO`).
+
 ---
 
 ## 7. Programs to build
@@ -767,7 +826,7 @@ One program per area, sharing `tosdump/core/` and one `tosdump/abi/` backend:
 |---|---|---|
 | `DUMPVDI` | VDI | build this first |
 | `DUMPAES` | AES | after VDI is clean |
-| `DUMPBIOS` | BIOS + XBIOS | `retclass` and `capture` since 2026-10-27; table `tosdump/cases/bios-r1.tsv`, ledger `tosdump/cases/COVERAGE-BIOS.md`, references `EMUTOS-1a7484ab-BIOS` (TT) and `-BIOS-falcontc`, first comparison `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`. Second table `tosdump/cases/super-r1.tsv` (`Super`/`Supexec`, section 6), references `EMUTOS-1a7484ab-SUPER` (TT) and `-SUPER-falcontc` |
+| `DUMPBIOS` | BIOS + XBIOS | `retclass` and `capture` since 2026-10-27; table `tosdump/cases/bios-r1.tsv`, ledger `tosdump/cases/COVERAGE-BIOS.md`, references `EMUTOS-1a7484ab-BIOS` (TT) and `-BIOS-falcontc`, first comparison `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`. Second table `tosdump/cases/super-r1.tsv` (`Super`/`Supexec`, section 6), references `EMUTOS-1a7484ab-SUPER` (TT) and `-SUPER-falcontc`. Disk table `tosdump/cases/bios-r2.tsv` (section 6, "The disk round"), reference `EMUTOS-1a7484ab-BIOS-r2-disk` (profile `disk`), first comparison `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT` |
 | `DUMPGDOS` | GEMDOS | needs `retclass` and `capture` |
 
 Each writes exactly one output file, named `<AREA>.BIN`, into the current

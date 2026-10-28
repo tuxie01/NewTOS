@@ -731,6 +731,16 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
  * directives: a '+' or '!' line is refused.  Round 1 is queries only, so
  * there is no state to reset or to establish.
  *
+ * The disk round (TASK/TOOL07; docs/TOS-REFERENCE-DUMPER.md section 6, "The
+ * disk round") is the one exception: a table that starts with
+ *   !disk <TAB> <drive>          its test drive, 2 (C:) .. 15 (P:)
+ * may name Rwabs, Getbpb and Mediach, and may hold '+' preludes -- Rwabs
+ * reads into a dumper buffer, retclass and capture "-", issued after the
+ * case's poison and before its call.  An Rwabs write is a measured case that
+ * writes back exactly what its last prelude read (write-back only), on the
+ * test drive.  The capture column also takes "r:<length>..." -- through the
+ * address the call returned, retclass PTR_RAM only.
+ *
  * ------------------------------------------------------------------
  * THE GUARD -- a whitelist
  * ------------------------------------------------------------------
@@ -764,15 +774,25 @@ struct td_call_arg {
 	int32_t value;                     /* WORD / LONG value, buffer no.   */
 };
 
+/* The capture reads through the address the call RETURNED ("r:" in the
+ * capture column, disk tables), not through a buffer argument. */
+#define TD_CALL_CAP_RET     (-2)
+
+/* Preludes of a disk table ("+" lines, "!disk" only): Rwabs reads into a
+ * dumper buffer, issued after the case's poison and before its call. */
+#define TD_MAX_CALL_PRELUDES 32
+
 struct td_call_case {
 	uint16_t line;                     /* physical line number = case id  */
+	uint16_t prelude_first;            /* index into the table's preludes */
+	uint16_t prelude_count;            /* Rwabs reads issued before it    */
 	int16_t  trap;                     /* 13 / 14, 1 for Super            */
 	int16_t  opcode;                   /* function number                 */
 	uint16_t nargs;
 	struct td_call_arg arg[TD_CALL_ARGS_N];
 	uint8_t  retclass;                 /* TD_RET_*                        */
 	uint8_t  retwidth;                 /* TD_RET_WIDTH_*                  */
-	int8_t   cap_arg;                  /* -1: no capture                  */
+	int8_t   cap_arg;                  /* -1: none, TD_CALL_CAP_RET: r:   */
 	uint8_t  cap_unit;                 /* 1, 2, 4                         */
 	uint16_t cap_off;                  /* bytes into the buffer           */
 	uint16_t cap_len;                  /* bytes, <= TD_CALL_CAPTURE_LEN   */
@@ -783,7 +803,11 @@ struct td_call_case_table {
 	uint32_t            crc;           /* CRC32 over the raw file bytes   */
 	uint16_t            area;          /* TD_AREA_BIOS                    */
 	uint16_t            count;
+	uint8_t             disk;          /* 1: the table says "!disk"       */
+	uint8_t             disk_drive;    /* its test drive (2 = C:)         */
+	uint16_t            prelude_count;
 	struct td_call_case cases[TD_MAX_CASES];
+	struct td_call_case preludes[TD_MAX_CALL_PRELUDES];
 };
 
 /* `area` is the dump's area: TD_AREA_BIOS (traps 13 and 14).  No other

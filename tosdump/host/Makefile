@@ -144,6 +144,20 @@ $(BUILD)/test_runner_call: $(BUILD)/test_runner_call.o $(CORE_OBJ) \
                            $(BUILD)/stub_abi.o
 	$(CC) $(CFLAGS) $^ -o $@
 
+$(BUILD)/test_cases_disk.o: $(TESTS)/test_cases_disk.c $(TESTS)/tdtest.h \
+                           $(CORE)/cases.h | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/test_cases_disk: $(BUILD)/test_cases_disk.o $(BUILD)/cases.o \
+                          $(BUILD)/record.o
+	$(CC) $(CFLAGS) $^ -o $@
+
+$(BUILD)/test_runner_disk.o: $(TESTS)/test_runner_disk.c $(TESTS)/tdtest.h \
+                             $(TESTS)/stub_abi.h $(CORE)/runner_call.h | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/test_runner_disk: $(BUILD)/test_runner_disk.o $(CORE_OBJ) \
+                           $(BUILD)/stub_abi.o
+	$(CC) $(CFLAGS) $^ -o $@
+
 $(BUILD)/emit_record.o: $(TESTS)/emit_record.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/emit_be: $(BUILD)/emit_record.o $(BUILD)/record_be.o
@@ -164,6 +178,7 @@ run-tests: $(BUILD)/test_record $(BUILD)/test_cases $(BUILD)/test_log \
       $(BUILD)/test_runner $(BUILD)/test_cases_aes $(BUILD)/test_runner_aes \
       $(BUILD)/test_cases_rast $(BUILD)/test_runner_rast \
       $(BUILD)/test_cases_call $(BUILD)/test_runner_call \
+      $(BUILD)/test_cases_disk $(BUILD)/test_runner_disk \
       $(BUILD)/test_casefile $(BUILD)/tosdiff $(BUILD)/mkdump \
       $(BUILD)/emit_be $(BUILD)/emit_le
 	@echo "== record format"
@@ -192,6 +207,10 @@ run-tests: $(BUILD)/test_record $(BUILD)/test_cases $(BUILD)/test_log \
 	@$(BUILD)/test_runner_call $(BUILD)/stub-bios.bin $(BUILD)/stub-bios.tsv
 	@$(BUILD)/tosdiff --validate $(BUILD)/stub-bios.bin $(BUILD)/stub-bios.tsv \
 	    | sed 's/^/  /'
+	@echo "== disk round: !disk, preludes, Rwabs/Getbpb/Mediach guard, r: capture"
+	@$(BUILD)/test_cases_disk
+	@echo "== disk round: runner against the stub backend"
+	@$(BUILD)/test_runner_disk
 	@echo "== case table reader, per area"
 	@$(BUILD)/test_casefile $(BUILD)
 	@echo "== byte order: both target configurations emit identical records"

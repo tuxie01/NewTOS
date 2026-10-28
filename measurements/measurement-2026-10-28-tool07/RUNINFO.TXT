@@ -1,0 +1,142 @@
+measurement-2026-10-28-tool07 -- DUMPBIOS disk round: Rwabs, Getbpb, Mediach, Drvmap under tosdiff
+=====================================================================================================
+Developer, TASK/TOOL07, 2026-10-28 ~11:20-12:00 (host clock CET), HEAD b81d0ddc + the uncommitted
+changes listed under CHANGED. No NewTOS product code (kernel/, tos-api/) touched, no hardware, no
+real card, nothing flashed. Not committed.
+
+WHAT / WHY
+  DUMPBIOS refused Rwabs, Getbpb and Mediach (tosdump/core/cases.c call_refusals), so the audit
+  docs/audits/2026-10-28-bios-storage.md could measure them only with its own probe (all findings
+  PLAUSIBLE). Drvmap (bios-r1.tsv case 74, NONZERO) passed for any non-empty drive map. TOOL06 gave
+  the oracle a disk profile. This run adds the disk round -- a table, the dumper mechanism it
+  needs, a NewTOS card with a separate program partition -- records the reference on the oracle
+  and measures NewTOS in QEMU raspi4b. Deviations are findings for the lead, not fixes.
+
+CHANGED (uncommitted, for the lead)
+  tosdump/core/cases.h, cases.c   "!disk <drive>" directive; Rwabs/Getbpb/Mediach admitted only in
+                                  a !disk table (refused as before elsewhere, call_refusals kept);
+                                  preludes in a !disk table (Rwabs reads into a dumper buffer only);
+                                  Rwabs writes write-back only (the last prelude read the same
+                                  buffer/count/recno/drive/lrecno; test drive only); RW_NOTRANSLATE
+                                  refused; capture "r:<len>" through the returned pointer (PTR_RAM)
+  tosdump/core/runner_call.c, .h  poison once per case BEFORE its preludes; preludes issued with the
+                                  same marshalling; a prelude returning != 0 stops the run
+                                  (TD_RUN_CALL_ERR_PRELUDE, td_run_call_stop_line/_ret); r: capture
+  tosdump/core/dumpbios.c         logs "disk table: ..." for a !disk table only (round-1 LOGs
+                                  unchanged), logs a stopped run and writes no BIN
+  tosdump/tests/test_cases_disk.c, test_runner_disk.c (new), stub_abi.c/.h (Rwabs/Getbpb arms
+                                  added; existing arms unchanged), tosdump/host/Makefile (two new
+                                  test binaries). Both new tests were run red first: 54 failures
+                                  (loader, scaffolding only), then 23 (runner) before the runner code.
+  tosdump/cases/bios-r2.tsv (new) 51 cases + 3 preludes, CRC 09C71B80,
+                                  sha256 071300e43736d1c3371e65d4a0e2b3f4b5e327dcd4d7147763fe0c04e553bc44
+  tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-disk.BIN/.LOG (new) = runs/oracle-1
+  tosdump/cases/COVERAGE-BIOS.md  rows 0x04/0x07/0x09/0x0A, status "disk round", section "Disk round"
+  tools/mkcard.sh                 MKCARD_TESTDISK (test-disk mode); the default path is unchanged
+  docs/TOS-REFERENCE-DUMPER.md    section 6 "The disk round", section 7 DUMPBIOS row
+  docs/analysis/ORACLE.md         section 2 profile row (reference), section 7 rule bullet
+  docs/sdk/06-image-and-testing.md  MKCARD_TESTDISK paragraph
+  Untouched: bios-r1.tsv, super-r1.tsv, every existing reference, tools/oracle/*,
+  tools/hatari-oracle.sh, tools/mktestdisk.sh, the canary scripts.
+
+INPUTS (sha256)
+  ROM        tools/oracle/etos512de-1a7484ab.img  323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+  Hatari     2.6.1, tools/oracle/hatari.cfg c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46
+  mtools     4.0.49 (PATH, as TOOL06)
+  table      tosdump/cases/bios-r2.tsv 071300e4...53bc44 (CRC 09C71B80, 51 cases, 3 preludes)
+  dumper     m68k: make -C tosdump BUILD=<scratch>/dumpers/b81d BUILD_ID=b81d dumpbios-m68k
+                   DUMPBIOS.PRG b6d160fdb9f265987a86215220867d478985ef7d586b9420c0f0349814f43a19
+             AArch64: tosdump/build-dumpbios-newtos.sh (build id b81d)
+                   DUMPBIOS.NAP 6c22ff225154be7cb926c431e8e7b765021f465bb353610d46ac5d6f36ef2c23
+  kernel     cargo xtask build --board rpi4 --release at b81d0ddc (clean product tree),
+             kernel8.img feab5e0f9eb9342b217ef6a56daafb0891df64ace0e87dcbbf8fea3f8581a207
+  inputs.sha256 / inputs-newtos.sha256 in runs/ list them as used.
+
+THE TEST IMAGE (both sides, the same file)
+  tools/mktestdisk.sh <scratch>/test.img NEWDESK.INF=method/newdesk-d.inf  (method/oracle-runs.sh)
+  image sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37 (reproduced: the same
+  sha256 in the trial build earlier the same day); manifest runs/test.img.manifest, verbatim:
+    optional_missing none
+  C:\NEWDESK.INF = "#R 02 / #Z 01 D:\DUMPBIOS.NAP@" (CRLF): NewTOS reads C:\NEWDESK.INF
+  (programs/desktop/src/inf.rs:51@INF_PATH), EmuTOS reads EMUDESK.INF, so the file is inert on the
+  oracle and makes the two test partitions the same bytes. Test partition = LBA 63, 130977 sectors.
+
+THE NEWTOS CARD (tools/mkcard.sh, test-disk mode; method/newtos-runs.sh)
+  MKCARD_TESTDISK=<test.img> tools/mkcard.sh <scratch>/card.img method/newdesk-d.inf \
+      DUMPBIOS.NAP=<scratch>/DUMPBIOS.NAP BIOS.TSV=tosdump/cases/bios-r2.tsv
+  128 MiB; MBR entry 1 = the test image's (type 0x06, LBA 63 + 130977); entry 2 added: type 0x06,
+  LBA 131072 + 131072 (the program partition D:, mformat FAT16, serial 4E54-4344, label NTCARD).
+  mkcard checks that the card's test partition equals the test image's byte for byte.
+  card sha256 47dd3aaba26c8cfdcced86f5aebd8bbc90be674423c4a3ed2d54be75dd2c12b1 (the same in the trial
+  build: reproducible); manifest runs/card.img.manifest, verbatim:
+    optional_missing none
+  Drive layout on NewTOS: C: test partition, D: program partition -> Drvmap 0x0000000C, the same as
+  the oracle's disk profile (C: IDE master test image, D: Hatari GEMDOS drive with the dumper).
+  The #Z autorun starts D:\DUMPBIOS.NAP with D:\ as current directory
+  (tos-api/src/aes/shell.rs:933@sh_chdef): BIOS.TSV read from D:, BIOS.BIN/.LOG written to D:. Serial: "sh_ldapp: starting
+  D:\DUMPBIOS.NAP", "exited with rc=0", "desktop up (2 drives)".
+
+ORACLE (method/oracle-runs.sh <scratch> runs 2; profile disk, HATARI_ORACLE_DISK=<test.img>)
+  runs/oracle-1, -2: "all 51 cases ran"; BIN 072d8cd1bdbc03127d6175d888f51fb2ec100209d96b61f1a4c5f0c684177b1e,
+  LOG 055e586a71f6c3bc32065d08099b14b5e8ee50d1871191083724a52e768a5a76 in BOTH runs (cmp: identical;
+  no class needed normalising -- the table has no Gettime/Random).
+  Whole image (disk.sha256): before = after = d95a60c3... in both runs; testpart-compare.txt:
+  "testpart: identical", fsck_msdos -n exit 0 before and after.
+  tosdiff --selfcheck tosdump/cases/bios-r2.tsv EMUTOS-1a7484ab-BIOS-r2-disk.BIN: passes (51 cases),
+  runs/validate-selfcheck.txt. The EmuTOS answers match the audit probe's (W01 -14, W02 2, W03/W04
+  -14, X12 0, X13 2, X14 -14, R10 -8, F03 0; BPB 512,4,2048,32,128,129,289,32672,1).
+  Trial runs earlier the same day (one oracle, one NewTOS, scratch only) gave the same results.
+
+NEWTOS (method/newtos-runs.sh <scratch> runs <test.img> <kernel8.img> 2; QEMU raspi4b, serial=on)
+  runs/newtos-1, -2: "all 51 cases ran", BIN and LOG identical between the two runs.
+  Card (whole) before 47dd3aab..., after 1b204964d8878c9b32df517afa9fa3ff31ed0f220465f42d54ee820b76beee78
+  (both runs) -- the change is D: (BIOS.BIN/.LOG written there). Test partition: testpart-compare.txt
+  "testpart: identical" in both runs (before = after
+  84bcadfb750eef7880acf837c31a84b678f25fa4f10aeb0a710b639c9e56f09b, no time stamp normalising needed),
+  fsck_msdos -n exit 0 before and after.
+  tosdiff bios-r2.tsv EMUTOS(-r2-disk) vs NEWTOS-1: 10 of 51 cases differ, exit 1
+  (runs/tosdiff-newtos-vs-emutos-r2-disk.txt; decoded dumps runs/oracle-1/decoded.txt,
+  runs/newtos-1/decoded.txt):
+
+  case  call                              EmuTOS          NewTOS        finding
+   68   R10 Rwabs count 0 past the end    -8 ESECNF       0             BIOS-STOR-003  DIFF
+   83   F03 Rwabs(0,NULL,2,0,A:)          0               -15 EUNDEV    BIOS-STOR-007  DIFF
+   84   F03b Rwabs(0,NULL,0,0,A:)         0               -15 EUNDEV    BIOS-STOR-007  DIFF
+   92   W01 write sector 0 back           -14 E_CHNG      0             BIOS-STOR-001  DIFF
+   93   W02 Mediach(2) after              2               0             BIOS-STOR-001  DIFF
+   94   W03 read after                    -14, poison     0, data       BIOS-STOR-001  DIFF
+   95   W04 read after, RW_NOMEDIACH      -14, poison     0, data       BIOS-STOR-001  DIFF
+   96   W05 Mediach(2) again              2               0             BIOS-STOR-001  DIFF
+  106   X13 Mediach(2) after X12          2               0             BIOS-STOR-001  DIFF
+  107   X14 read after X12, NOMEDIACH     -14, poison     0, data       BIOS-STOR-001  DIFF
+  EQUAL (41): case 39 Drvmap 0x0000000C (EXACT); Getbpb(2) BPB (r:18.W) in 42, 97 (W06), 108 (X15);
+  Getbpb 5/15/16/-1/0x7FFF -> 0; Mediach(2) 0 at 50, 98, 102, 109 and EUNDEV for 5/15/16/-1; R01-R09,
+  R11-R20 (data, ESECNF, EUNDEV, flags); W08, W09 (write-back of the last sector: 0 on both), W10,
+  W11, X12 (write-back of sector 0 with RW_NOMEDIACH: 0 on both).
+  Per finding: BIOS-STOR-001 DIFF (8 cases), -003 DIFF (68), -007 DIFF (83, 84);
+  BIOS-STOR-004, -005, -006: NO CASE -- not built, see OPEN.
+
+HOST TESTS
+  make -C tosdump host-test: exit 0, runs/host-test.txt (self-check: "23 references, every
+  relational rule holds" -- the new reference included).
+  Canaries with the changed dumper source: measurements/measurement-2026-10-28-tool06/method/
+  canary-disk.sh "canary disk: OK", "test image unchanged"; measurements/measurement-2026-10-28-
+  oracle-canary/method/canary.sh "canary tt: OK", "canary falcontc: OK" (scratch output, not kept).
+  cargo xtask test: 1726 passed, 0 failed, 1 ignored (baseline).
+
+OPEN
+  - BIOS-STOR-004/-005/-006 have no tosdiff case. They need boot sectors that differ from the image
+    (bps 1024, tot16 = tot32 = 0, spf 0): a patch step the dumper does not have, and a restore after
+    a failed Getbpb, which EmuTOS allows only through the physical path (bios/blkdev.c:443-444, :601)
+    -- whose unit number is the machine's (IDE 18 on the oracle, open on the Pi, BIOS-STOR-002).
+    Stopped per the brief; options in the report to the lead.
+  - BIOS-STOR-002 (RW_NOTRANSLATE) is refused by the guard for the same reason.
+  - The disk canary (ORACLE section 6) still uses the derived bios-r1.tsv; TOOL06 foresaw "the
+    non-writing cases of the disk round" -- not changed here (the brief: both canaries unchanged).
+
+FILES
+  method/  newdesk-d.inf, oracle-runs.sh, newtos-runs.sh, run-newtos.sh, compare-testpart.sh,
+           normalise-fat-times.py, decode-bios.py
+  runs/    see above; test.img.manifest and card.img.manifest are the manifests of the two images
+  manifest.sha256 covers every file of this run except itself. Images are not kept (scratch,
+  deleted after the run); their sha256 is above.

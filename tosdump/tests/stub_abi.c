@@ -301,6 +301,25 @@ long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
 		c->call_value[i] = value[i];
 	}
 
+	/* the disk round (stub_abi.h): a write does not fill, it is logged */
+	if (trap == 13 && opcode == 4 && nargs == 6) {
+		if (value[0] & 1) {
+			if (value[1])
+				memcpy(c->call_written, (const void *)value[1],
+				       TD_STUB_WRITTEN_N);
+			return 0L;
+		}
+		if (value[5] == TD_STUB_RWABS_FAIL)
+			return TD_STUB_RWABS_FAIL_RET;
+	}
+	if (trap == 13 && opcode == 7) {
+		static uint16_t bpb[9];
+
+		for (i = 0; i < 9; i++)
+			bpb[i] = (uint16_t)TD_STUB_BPB_WORD(i);
+		return value[0] == 2L ? (long)bpb : 0L;
+	}
+
 	if (opcode != TD_STUB_NOWRITE_FN || trap != 14) {
 		for (i = 0; i < (int)nargs; i++) {
 			if (kind[i] != TD_ABI_ARG_LONG)
@@ -325,6 +344,8 @@ long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
 		r = stub_supexec(fn);
 		return r;
 	}
+	if (trap == 13 && opcode == 4 && nargs == 6)
+		return 0L;                         /* an Rwabs read, filled above */
 	if (trap == 13 && opcode == 1)
 		return -1L;
 	if (trap == 14 && opcode == 2)

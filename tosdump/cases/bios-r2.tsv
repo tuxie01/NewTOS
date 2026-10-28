@@ -1,0 +1,109 @@
+# bios-r2.tsv -- DUMPBIOS round 2, the DISK ROUND: Drvmap, Getbpb, Mediach and
+# Rwabs on a BIOS block drive, against EmuTOS 1a7484ab (references/emutos,
+# docs/analysis/ORACLE.md; TASK/TOOL07, docs/audits/2026-10-28-bios-storage.md).
+#
+# Form: tosdump/cases/bios-r1.tsv header, plus the disk round
+# (docs/TOS-REFERENCE-DUMPER.md section 6, "The disk round"):
+#   !disk 2   this is a disk table, C: its test drive -- the only drive a
+#             write may reach;
+#   +line     a prelude: an Rwabs read into a dumper buffer, issued after the
+#             case's poison and before its call, not recorded; one that does
+#             not return 0 stops the run (no dump);
+#   writes    write back exactly what the prelude before them read (same
+#             buffer, count, sector, drive), so the test image keeps every
+#             byte even where the write goes through;
+#   r:<len>   capture through the returned pointer (Getbpb's BPB), PTR_RAM.
+#
+# WHERE IT RUNS -- never on a disk with data on it:
+#   oracle  HATARI_ORACLE_DISK=<test.img> tools/hatari-oracle.sh disk ...:
+#           C: = the test image (IDE master), D: = Hatari's GEMDOS drive with
+#           the dumper; A:/B: off.  Drvmap 0x0000000C.
+#   NewTOS  tools/mkcard.sh with MKCARD_TESTDISK=<the same test.img>: C: =
+#           the test image's partition byte for byte, D: = the program
+#           partition.  Drvmap 0x0000000C.
+#   The test image: tools/mktestdisk.sh <img> NEWDESK.INF=<inf> -- one FAT16
+#   partition at LBA 63, 130977 sectors (PSIZE below), BPB
+#   512,4,2048,32,128,129,289,32672,1; C:\NEWDESK.INF is on both sides (NewTOS
+#   reads it, EmuTOS does not) so the two test partitions are the same bytes.
+#
+# Not in this round (TASK/TOOL07 receipt): RW_NOTRANSLATE (a physical unit
+# number is the machine's -- BIOS-STOR-002, open), and the patched boot
+# sectors of BIOS-STOR-004/-005/-006, which need a patch step and a restore
+# through the physical path.
+#
+# One table per round: a case id is the physical line number and the dump
+# header carries the CRC of this file, so it is frozen once measured.
+!disk	2
+
+# ---- BIOS 10 Drvmap -- EXACT per profile: both setups are C: + D: (0xC)
+13:10	-	EXACT	-	Drvmap() C: test, D: program -- bios/bios.c:1206, blkdev.c:833
+
+# ---- BIOS 7 Getbpb(drive) -- blkdev_getbpb, bios/blkdev.c:569-777
+13:7	w:2	PTR_RAM	r:18.W	Getbpb(2) C: the BPB -- blkdev.c:569-777
+13:7	w:5	EXACT	-	Getbpb(5) F: absent -> 0 -- blkdev.c:581-585
+13:7	w:15	EXACT	-	Getbpb(15) P: absent -> 0 -- blkdev.c:581-585
+13:7	w:16	EXACT	-	Getbpb(16) -> 0 (FS12: limit 16 vs 26) -- blkdev.c:581
+13:7	w:-1	EXACT	-	Getbpb(-1) -> 0 -- blkdev.c:581
+13:7	w:0x7FFF	EXACT	-	Getbpb(0x7FFF) -> 0 -- blkdev.c:581
+
+# ---- BIOS 9 Mediach(drive) -- blkdev_mediach, bios/blkdev.c:783-820
+13:9	w:2	EXACT	-	Mediach(2) C: -> 0 -- blkdev.c:783-820
+13:9	w:5	EXACT	-	Mediach(5) F: absent -> EUNDEV -- blkdev.c:789-790
+13:9	w:15	EXACT	-	Mediach(15) P: absent -> EUNDEV -- blkdev.c:789-790
+13:9	w:16	EXACT	-	Mediach(16) -> EUNDEV -- blkdev.c:789-790
+13:9	w:-1	EXACT	-	Mediach(-1) -> EUNDEV -- blkdev.c:789-790
+
+# ---- BIOS 4 Rwabs(rw,buf,count,recno,drive,lrecno), logical reads --
+#      lrwabs bios/bios.c:1045, blkdev_rwabs bios/blkdev.c:406-540
+13:4	w:0,b:0,w:1,w:0,w:2,l:0	EXACT	1:256	R01 C: sector 0, bytes 0-255 -- blkdev.c:430-481
+13:4	w:0,b:0,w:1,w:0,w:2,l:0	EXACT	1:256@256	R01 C: sector 0, bytes 256-511 -- blkdev.c:430-481
+13:4	w:0,b:0,w:2,w:0,w:2,l:0	EXACT	1:64@512	R02 two sectors, the FAT's start -- blkdev.c:430-481
+13:4	w:0,b:0,w:1,w:-1,w:2,l:1	EXACT	1:16	R03 recno -1 -> lrecno 1 -- blkdev.c:430-431
+13:4	w:0,b:0,w:1,w:1,w:2,l:0	EXACT	1:16	R04 the same sector via recno -- blkdev.c:430-431
+13:4	w:0,b:0,w:1,w:-1,w:2,l:130976	EXACT	1:16	R05 last sector PSIZE-1 -- blkdev.c:461-463
+13:4	w:0,b:0,w:1,w:-1,w:2,l:130977	EXACT	1:16	R06 one past the end -> ESECNF -- blkdev.c:461-463
+13:4	w:0,b:0,w:2,w:-1,w:2,l:130976	EXACT	1:16	R07 straddles the end -> ESECNF -- blkdev.c:461-463
+13:4	w:0,b:0,w:1,w:-1,w:2,l:-5	EXACT	1:16	R08 negative lrecno -> ESECNF -- blkdev.c:461
+13:4	w:0,b:0,w:0,w:0,w:2,l:0	EXACT	1:16	R09 count 0 -- blkdev.c:461-463
+13:4	w:0,b:0,w:0,w:-1,w:2,l:130987	EXACT	1:16	R10 count 0 past the end -> ESECNF (BIOS-STOR-003) -- blkdev.c:461-463
+13:4	w:0,b:0,w:1,w:0,w:15,l:0	EXACT	1:16	R11 P: absent -> EUNDEV -- blkdev.c:440-441
+13:4	w:0,b:0,w:1,w:0,w:5,l:0	EXACT	1:16	R12 F: absent -> EUNDEV -- blkdev.c:440-441
+13:4	w:0,b:0,w:1,w:0,w:-1,l:0	EXACT	1:16	R13 drive -1 -> EUNDEV -- blkdev.c:440-441
+13:4	w:0,b:0,w:1,w:0,w:16,l:0	EXACT	1:16	R14 drive 16 -> EUNDEV (FS12) -- blkdev.c:440-441
+13:4	w:2,b:0,w:1,w:0,w:2,l:0	EXACT	1:16	R15 RW_NOMEDIACH -- blkdev.c:473-477
+13:4	w:4,b:0,w:1,w:0,w:2,l:0	EXACT	1:16	R16 RW_NORETRIES -- blkdev.c:433
+13:4	w:0x80,b:0,w:1,w:0,w:2,l:0	EXACT	1:16	R17 RW_NOBYTESWAP, logical: ignored -- blkdev.c:480-481
+13:4	w:0,b:0,w:1,w:-32768,w:2,l:0	EXACT	1:16	R18 recno 0x8000 = sector 32768 -- blkdev.c:430-431
+13:4	w:0,b:0,w:1,w:-1,w:2,l:32768	EXACT	1:16	R19 the same sector via lrecno -- blkdev.c:430-431
+13:4	w:0,b:0,w:1,w:-2,w:2,l:0	EXACT	1:16	R20 recno -2 = sector 65534 -- blkdev.c:430-431
+
+# ---- Rwabs(0, NULL, n, 0, A:) -- the FastCopy arm: sets A:'s media change
+#      state to n and returns 0 before any I/O (bios/blkdev.c:418-428);
+#      the second case sets it back to 0 (MEDIANOCHANGE, bios/disk.h:69)
+13:4	w:0,l:0,w:2,w:0,w:0,l:0	EXACT	-	F03 Rwabs(0,NULL,2,0,A:) FastCopy (BIOS-STOR-007) -- blkdev.c:425-428
+13:4	w:0,l:0,w:0,w:0,w:0,l:0	EXACT	-	F03b Rwabs(0,NULL,0,0,A:) back to 0 -- blkdev.c:425-428
+
+# ---- Writing logical sector 0: the forcechange handshake (BIOS-STOR-001).
+#      EmuTOS: a write of sector 0 arms forcechange (blkdev.c:450-453); the
+#      write itself then fails E_CHNG without RW_NOMEDIACH (blkdev.c:473-477,
+#      blkdev_mediach :799-803); every logical access fails E_CHNG, with
+#      RW_NOMEDIACH too, until Getbpb clears it (blkdev.c:589-590).
++13:4	w:2,b:0,w:1,w:0,w:2,l:0	-	-	sector 0 of C: into buffer 0
+13:4	w:1,b:0,w:1,w:0,w:2,l:0	EXACT	-	W01 write sector 0 back -- blkdev.c:450-453, 473-477
+13:9	w:2	EXACT	-	W02 Mediach(2) after it -- blkdev.c:799-803
+13:4	w:0,b:0,w:1,w:1,w:2,l:0	EXACT	1:16	W03 read sector 1 after it -- blkdev.c:450-451
+13:4	w:2,b:0,w:1,w:1,w:2,l:0	EXACT	1:16	W04 the same, RW_NOMEDIACH -- blkdev.c:450-451
+13:9	w:2	EXACT	-	W05 Mediach(2) again -- blkdev.c:799-803
+13:7	w:2	PTR_RAM	r:18.W	W06 Getbpb(2) clears it -- blkdev.c:589-590
+13:9	w:2	EXACT	-	W07 Mediach(2) after Getbpb -- blkdev.c:783-820
+13:4	w:0,b:0,w:1,w:1,w:2,l:0	EXACT	1:16	W08 read sector 1 after Getbpb -- blkdev.c:430-481
++13:4	w:2,b:0,w:1,w:-1,w:2,l:130976	-	-	the last sector of C: into buffer 0
+13:4	w:1,b:0,w:1,w:-1,w:2,l:130976	EXACT	-	W09 write the last sector back: no forcechange -- blkdev.c:452
+13:9	w:2	EXACT	-	W10 Mediach(2) after it -- blkdev.c:783-820
+13:4	w:0,b:0,w:1,w:1,w:2,l:0	EXACT	1:16	W11 read sector 1 after it -- blkdev.c:430-481
++13:4	w:2,b:0,w:1,w:0,w:2,l:0	-	-	sector 0 of C: into buffer 0
+13:4	w:3,b:0,w:1,w:0,w:2,l:0	EXACT	-	X12 write sector 0 back, RW_NOMEDIACH -- blkdev.c:450-453, 473-477
+13:9	w:2	EXACT	-	X13 Mediach(2) after it -- blkdev.c:799-803
+13:4	w:2,b:0,w:1,w:1,w:2,l:0	EXACT	1:16	X14 read sector 1, RW_NOMEDIACH -- blkdev.c:450-451
+13:7	w:2	PTR_RAM	r:18.W	X15 Getbpb(2) clears it -- blkdev.c:589-590
+13:9	w:2	EXACT	-	X16 Mediach(2) after Getbpb -- blkdev.c:783-820

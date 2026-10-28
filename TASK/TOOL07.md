@@ -1,6 +1,6 @@
 # TOOL07 — DUMPBIOS-Plattenrunde: `Rwabs`, `Getbpb`, `Mediach`, `Drvmap` per tosdiff
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Werkzeug (Messung) — Anwenderentscheidung 2026-10-28 · haengt an [TOOL06](TOOL06.md)
+Status: **TEILWEISE** (Etappe 1 2026-10-28, siehe unten) · Prioritaet: **P1** · Typ: Werkzeug (Messung) — Anwenderentscheidung 2026-10-28 · haengt an [TOOL06](TOOL06.md)
 
 ## Sachverhalt
 
@@ -53,3 +53,23 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Werkzeug (Messung) — Anwendere
 - `tosdiff --selfcheck` besteht fuer alle Referenzen; Hosttests gruen
   (`cargo xtask test` und `tosdump/tests`).
 - doc-check der geaenderten Doku 0 Fehler.
+
+## Stand 2026-10-28 (Etappe 1)
+
+- Erledigt: `!disk`-Tabellen in DUMPBIOS (Vorspann nur lesend, Schreiben nur
+  als Write-back desselben Sektors), `tosdump/cases/bios-r2.tsv` (51 Faelle),
+  Referenz `EMUTOS-1a7484ab-BIOS-r2-disk` (Profil `disk`, zwei Laeufe
+  bytegleich, Abbild unveraendert), Karte mit `MKCARD_TESTDISK`
+  (Partition 1 = Testabbild bytegleich, Partition 2 = Programme), `Drvmap`
+  EXACT: Orakel und NewTOS `0xC`, EQUAL. NewTOS: 10 von 51 DIFF —
+  BIOS-STOR-001 (7 Faelle), -003 (1), -007 (2). Beleg
+  `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`.
+- Offen: BIOS-STOR-004, -005, -006 brauchen Bootsektoren, die vom Abbild
+  abweichen (Patch-Schritt im Dumper); nach gescheitertem `Getbpb` geht
+  EmuTOS auf `recsiz=0`, Wiederherstellung dann nur ueber `RW_NOTRANSLATE`,
+  dessen Einheit ein Geraeteparameter ist (BIOS-STOR-002, BIOS02).
+  Optionen des Developers (Entscheidung beim Anwender): (B) Abschlusstabelle
+  je Folge mit Vorspann-Art „Byte n setzen“, ohne Wiederherstellung auf dem
+  verworfenen Klon — empfohlen; (A) Token fuer die physische Einheit, nach
+  BIOS02; (C) vorbereitete Abbilder — fuer 004 ungeeignet; (D) Einheit als
+  Dumper-Argument.

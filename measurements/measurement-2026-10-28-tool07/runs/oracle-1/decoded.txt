@@ -1,0 +1,51 @@
+ 39 13:10  ret=12           0x0000000C cap=deaddeaddeaddeaddeaddeaddeaddeaddead Drvmap() C: test, D: program -- bios/bios.c:1206, blkdev.c:8
+ 42 13:7   ret=12884        0x00003254 cap=02000004080000200080008101217fa00001 Getbpb(2) C: the BPB -- blkdev.c:569-777
+ 43 13:7   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead Getbpb(5) F: absent -> 0 -- blkdev.c:581-585
+ 44 13:7   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead Getbpb(15) P: absent -> 0 -- blkdev.c:581-585
+ 45 13:7   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead Getbpb(16) -> 0 (FS12: limit 16 vs 26) -- blkdev.c:581
+ 46 13:7   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead Getbpb(-1) -> 0 -- blkdev.c:581
+ 47 13:7   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead Getbpb(0x7FFF) -> 0 -- blkdev.c:581
+ 50 13:9   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead Mediach(2) C: -> 0 -- blkdev.c:783-820
+ 51 13:9   ret=-15          0xFFFFFFF1 cap=deaddeaddeaddeaddeaddeaddeaddeaddead Mediach(5) F: absent -> EUNDEV -- blkdev.c:789-790
+ 52 13:9   ret=-15          0xFFFFFFF1 cap=deaddeaddeaddeaddeaddeaddeaddeaddead Mediach(15) P: absent -> EUNDEV -- blkdev.c:789-790
+ 53 13:9   ret=-15          0xFFFFFFF1 cap=deaddeaddeaddeaddeaddeaddeaddeaddead Mediach(16) -> EUNDEV -- blkdev.c:789-790
+ 54 13:9   ret=-15          0xFFFFFFF1 cap=deaddeaddeaddeaddeaddeaddeaddeaddead Mediach(-1) -> EUNDEV -- blkdev.c:789-790
+ 58 13:4   ret=0            0x00000000 cap=eb3c904d544f4f3430343900020401000200 R01 C: sector 0, bytes 0-255 -- blkdev.c:430-481
+ 59 13:4   ret=0            0x00000000 cap=000000000000000000000000000000000000 R01 C: sector 0, bytes 256-511 -- blkdev.c:430-481
+ 60 13:4   ret=0            0x00000000 cap=f8ffffffffff000000000000000000000000 R02 two sectors, the FAT's start -- blkdev.c:430-481
+ 61 13:4   ret=0            0x00000000 cap=f8ffffffffff00000000000000000000dead R03 recno -1 -> lrecno 1 -- blkdev.c:430-431
+ 62 13:4   ret=0            0x00000000 cap=f8ffffffffff00000000000000000000dead R04 the same sector via recno -- blkdev.c:430-431
+ 63 13:4   ret=0            0x00000000 cap=00000000000000000000000000000000dead R05 last sector PSIZE-1 -- blkdev.c:461-463
+ 64 13:4   ret=-8           0xFFFFFFF8 cap=deaddeaddeaddeaddeaddeaddeaddeaddead R06 one past the end -> ESECNF -- blkdev.c:461-463
+ 65 13:4   ret=-8           0xFFFFFFF8 cap=deaddeaddeaddeaddeaddeaddeaddeaddead R07 straddles the end -> ESECNF -- blkdev.c:461-463
+ 66 13:4   ret=-8           0xFFFFFFF8 cap=deaddeaddeaddeaddeaddeaddeaddeaddead R08 negative lrecno -> ESECNF -- blkdev.c:461
+ 67 13:4   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead R09 count 0 -- blkdev.c:461-463
+ 68 13:4   ret=-8           0xFFFFFFF8 cap=deaddeaddeaddeaddeaddeaddeaddeaddead R10 count 0 past the end -> ESECNF (BIOS-STOR-003) -- blkdev
+ 69 13:4   ret=-15          0xFFFFFFF1 cap=deaddeaddeaddeaddeaddeaddeaddeaddead R11 P: absent -> EUNDEV -- blkdev.c:440-441
+ 70 13:4   ret=-15          0xFFFFFFF1 cap=deaddeaddeaddeaddeaddeaddeaddeaddead R12 F: absent -> EUNDEV -- blkdev.c:440-441
+ 71 13:4   ret=-15          0xFFFFFFF1 cap=deaddeaddeaddeaddeaddeaddeaddeaddead R13 drive -1 -> EUNDEV -- blkdev.c:440-441
+ 72 13:4   ret=-15          0xFFFFFFF1 cap=deaddeaddeaddeaddeaddeaddeaddeaddead R14 drive 16 -> EUNDEV (FS12) -- blkdev.c:440-441
+ 73 13:4   ret=0            0x00000000 cap=eb3c904d544f4f343034390002040100dead R15 RW_NOMEDIACH -- blkdev.c:473-477
+ 74 13:4   ret=0            0x00000000 cap=eb3c904d544f4f343034390002040100dead R16 RW_NORETRIES -- blkdev.c:433
+ 75 13:4   ret=0            0x00000000 cap=eb3c904d544f4f343034390002040100dead R17 RW_NOBYTESWAP, logical: ignored -- blkdev.c:480-481
+ 76 13:4   ret=0            0x00000000 cap=00000000000000000000000000000000dead R18 recno 0x8000 = sector 32768 -- blkdev.c:430-431
+ 77 13:4   ret=0            0x00000000 cap=00000000000000000000000000000000dead R19 the same sector via lrecno -- blkdev.c:430-431
+ 78 13:4   ret=0            0x00000000 cap=00000000000000000000000000000000dead R20 recno -2 = sector 65534 -- blkdev.c:430-431
+ 83 13:4   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead F03 Rwabs(0,NULL,2,0,A:) FastCopy (BIOS-STOR-007) -- blkdev.
+ 84 13:4   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead F03b Rwabs(0,NULL,0,0,A:) back to 0 -- blkdev.c:425-428
+ 92 13:4   ret=-14          0xFFFFFFF2 cap=deaddeaddeaddeaddeaddeaddeaddeaddead W01 write sector 0 back -- blkdev.c:450-453, 473-477
+ 93 13:9   ret=2            0x00000002 cap=deaddeaddeaddeaddeaddeaddeaddeaddead W02 Mediach(2) after it -- blkdev.c:799-803
+ 94 13:4   ret=-14          0xFFFFFFF2 cap=deaddeaddeaddeaddeaddeaddeaddeaddead W03 read sector 1 after it -- blkdev.c:450-451
+ 95 13:4   ret=-14          0xFFFFFFF2 cap=deaddeaddeaddeaddeaddeaddeaddeaddead W04 the same, RW_NOMEDIACH -- blkdev.c:450-451
+ 96 13:9   ret=2            0x00000002 cap=deaddeaddeaddeaddeaddeaddeaddeaddead W05 Mediach(2) again -- blkdev.c:799-803
+ 97 13:7   ret=12884        0x00003254 cap=02000004080000200080008101217fa00001 W06 Getbpb(2) clears it -- blkdev.c:589-590
+ 98 13:9   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead W07 Mediach(2) after Getbpb -- blkdev.c:783-820
+ 99 13:4   ret=0            0x00000000 cap=f8ffffffffff00000000000000000000dead W08 read sector 1 after Getbpb -- blkdev.c:430-481
+101 13:4   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead W09 write the last sector back: no forcechange -- blkdev.c:4
+102 13:9   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead W10 Mediach(2) after it -- blkdev.c:783-820
+103 13:4   ret=0            0x00000000 cap=f8ffffffffff00000000000000000000dead W11 read sector 1 after it -- blkdev.c:430-481
+105 13:4   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead X12 write sector 0 back, RW_NOMEDIACH -- blkdev.c:450-453, 4
+106 13:9   ret=2            0x00000002 cap=deaddeaddeaddeaddeaddeaddeaddeaddead X13 Mediach(2) after it -- blkdev.c:799-803
+107 13:4   ret=-14          0xFFFFFFF2 cap=deaddeaddeaddeaddeaddeaddeaddeaddead X14 read sector 1, RW_NOMEDIACH -- blkdev.c:450-451
+108 13:7   ret=12884        0x00003254 cap=02000004080000200080008101217fa00001 X15 Getbpb(2) clears it -- blkdev.c:589-590
+109 13:9   ret=0            0x00000000 cap=deaddeaddeaddeaddeaddeaddeaddeaddead X16 Mediach(2) after Getbpb -- blkdev.c:783-820

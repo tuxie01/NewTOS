@@ -94,12 +94,21 @@ measured verdict, do not take it.
   IDE master C:, floppies off, the dumper on Hatari's GEMDOS drive D:
   (`_drvbits` 0xC). The out-dir keeps the run's image clone `disk.img` and
   `disk.sha256` (before/after); compare and check it, then delete the clone.
-  On `raspi4b` use a card with its own program partition (TASK/TOOL07). After
-  the run, compare the **test partition only** (timestamps normalized) and
-  check it with `fsck_msdos` (dd the FAT partition out first; the macOS tool
-  doesn't resolve the MBR). Until TASK/TOOL07 lifts DUMPBIOS's refusal,
-  `Rwabs`/`Getbpb`/`Mediach` are UNMEASURED by tosdiff; a probe may measure
-  them on profile `disk` (verdict MEASURED, below).
+  On `raspi4b` the card comes from `tools/mkcard.sh` with
+  `MKCARD_TESTDISK=<the same test image>`: partition 1 = C: is the test image
+  byte for byte, partition 2 = D: is the program partition (dumper, table,
+  BIN, LOG). `C:\NEWDESK.INF` must be on the test image itself
+  (`tools/mktestdisk.sh <img> NEWDESK.INF=<inf>` with `#Z 01 D:\DUMP*.NAP@`),
+  and the oracle run uses that same image, so both sides read the same bytes.
+  Procedure: `measurements/measurement-2026-10-28-tool07/method/newtos-runs.sh`
+  (copy it, never edit it). After the run compare the **test partition only**
+  with `measurements/measurement-2026-10-28-tool07/method/compare-testpart.sh`
+  (dd it out, raw sha256, root-directory time stamps normalised on a
+  difference, `fsck_msdos -n`). `Rwabs`/`Getbpb`/`Mediach` are measured by
+  tosdiff with `tosdump/cases/bios-r2.tsv` (a `!disk` table, reference
+  `EMUTOS-1a7484ab-BIOS-r2-disk`); what that table cannot express
+  (`RW_NOTRANSLATE`, patched boot sectors) stays probe territory (verdict
+  MEASURED, below).
 - **Comparison rules belong to the case table** (exact / normalized /
   relational), not to you. You may add cases and generate their reference
   records with the pinned ROM. You may **not** edit existing reference records,

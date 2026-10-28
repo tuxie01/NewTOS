@@ -1,0 +1,3 @@
+/opt/cross-mint/bin/m68k-atari-mint-gcc -std=c99 -O2 -Wall -Wextra -Werror -Icore -DTD_BIG_ENDIAN_TARGET=1 -DTD_BUILD_ID='"b81d"' core/record.c core/cases.c core/dump.c core/log.c core/runner_call.c core/dumpbios.c abi/m68k_trap.c -o /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07/final/dumpers/b81d/DUMPBIOS.PRG
+   text	   data	    bss	    dec	    hex	filename
+ 151976	   1588	 159044	 312608	  4c520	/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool07/final/dumpers/b81d/DUMPBIOS.PRG
