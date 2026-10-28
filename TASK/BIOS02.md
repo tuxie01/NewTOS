@@ -1,6 +1,6 @@
 # BIOS02 — Spec BIOS-Speicher nachziehen; physische Einheit der Pi-SD festlegen
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher — Anwenderentscheidung 2026-10-28
+Status: **ENTWURF LIEGT VOR** 2026-10-28, wartet auf Freigabe · Prioritaet: **P1** · Typ: Researcher — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt
 
@@ -39,3 +39,18 @@ Aus dem Audit „BIOS-Speicher“ (`docs/audits/2026-10-28-bios-storage.md`):
 - Spec-Eintraege mit Zitaten, doc-check 0 Fehler; freigegeben vom Anwender.
 - Entscheidungen zu 002/005/007 in der Spec bzw. `docs/COMPATIBILITY.md`
   vermerkt; danach sind die betroffenen BIOS01-Teile frei.
+
+## Stand 2026-10-28 (Entwurf, Freigabe offen)
+
+- Spec-Korrekturen in `docs/api/bios/04-rwabs.md`, `07-getbpb.md`,
+  `09-mediach.md`, `0a-drvmap.md`, je mit `[BIOS02]` markiert: forcechange-
+  Handshake samt Pruefreihenfolge (001), Anzahl 0 durchlaeuft die Pruefungen
+  (003), `BLKDEVNUM` 26 statt 16, `RW_NOTRANSLATE` wirkt, nur `drive` wird als
+  Laufwerksbuchstabe gelesen, `Getbpb`-Grenzen (004/005), Fall-Tabellen je
+  Eintrag aus `bios-r2.tsv`.
+- Entscheidungsvorlagen (Anwender): 002 Pi-SD = Einheit 26 (SD/MMC-Bus 3,
+  `2 + 8*Bus + Geraet`) empfohlen, Alternativen 18 oder Status quo; 005
+  EmuTOS folgen; 007 angleichen (NULL-Puffer auf A:/B: liefert 0).
+- Nebenbefund SDK: mintlibs `ostruct.h` definiert `RW_NOMEDIACH 1`,
+  `RW_NORETRIES 2`, `RW_NOTRANSLATE 3` als Werte, EmuTOS als Masken 2/4/8
+  (`references/emutos/bios/disk.h:53-61`) — Triage offen.

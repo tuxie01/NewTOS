@@ -4,6 +4,14 @@
 > Verified against `bios/bios.c:1184` (`mediach`) and the installed handler
 > `bios/blkdev.c:783` (`blkdev_mediach`).
 
+> **BIOS02 revision (2026-10-28) — for user approval.** Changes tagged
+> **[BIOS02]**. Source re-read at the pin `1a7484ab`
+> (`references/emutos/bios/blkdev.c:783-820`). Cross-check: oracle
+> `tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-disk.BIN` vs NewTOS, run
+> `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`. The
+> `forcechange` handshake is no longer a "Step-2 candidate": it is a measured
+> difference (W02, W05, X13) and a requirement (BIOS-STOR-001).
+
 ## EmuTOS source
 
 **Primary location:** `bios/bios.c:1184` — `LONG mediach(WORD drv)`
@@ -81,7 +89,7 @@ sector; `MEDIAMAYCHANGE` forces GEMDOS to re-validate the BPB/serial.
 
 | Position | Name  | Type   | Size | Source location     | Notes |
 |----------|-------|--------|------|---------------------|-------|
-| arg0     | `drv` | `WORD` | 2    | `bios/blkdev.c:783` | logical drive 0=A:..15=P:; validated against `BLKDEVNUM` |
+| arg0     | `drv` | `WORD` | 2    | `bios/blkdev.c:783` | logical drive 0=A:..25=Z: **[BIOS02]**; validated against `BLKDEVNUM` (26, `include/sysconf.h:43`) |
 
 ---
 
@@ -138,8 +146,12 @@ to `1` (may have changed)**. Both prior claims were wrong.
 ## Verification criteria
 
 - **Nominal (no change):** `Mediach(2)` on a settled fixed disk returns `0`.
-- **Nominal (changed):** after a floppy swap (or a logical write to sector 0
-  arming `forcechange`), `Mediach(0)` returns `2`.
+- **Nominal (changed):** after a floppy swap, `Mediach(0)` returns `2`.
+- **After a sector-0 write [BIOS02, measured]:** once a logical `Rwabs` write
+  starting at sector 0 has been issued on C: (whether it returned `E_CHNG` or,
+  with `RW_NOMEDIACH`, 0), `Mediach(2)` returns `2` (oracle W02, W05, X13) —
+  each time, until `Getbpb(2)`; then `0` (W07, X16). A write to any other
+  sector leaves it `0` (W10).
 - **Latched:** two successive `Mediach(d)` calls without an intervening
   `Getbpb(d)` return the same latched value; `Getbpb(d)` then resets it to `0`.
 - **Invalid drive:** `Mediach(15)` with no P: returns `EUNDEV` (-15), **not**
@@ -159,7 +171,13 @@ to `1` (may have changed)**. Both prior claims were wrong.
 
 3. **`forcechange` short-circuits to `MEDIACHANGE`.** If a prior write to
    logical sector 0 armed `forcechange`, `Mediach` returns `2` without probing
-   hardware, until `Getbpb` clears it (`bios/blkdev.c:802-803`).
+   hardware, until `Getbpb` clears it (`bios/blkdev.c:802-803`). **[BIOS02]**
+   This return neither stores `mediachange` nor sets `UNIT_CHANGED`
+   (`bios/blkdev.c:795-819` — those are written only on the probe path), so
+   the answer depends on `forcechange` alone; it is the same state `Rwabs`
+   step 5 tests (`04-rwabs.md`, order table). Note the test order inside
+   `blkdev_mediach`: the latched `mediachange == MEDIACHANGE` (line 795) is
+   tested before `forcechange` (line 802).
 
 4. **The change is latched, not one-shot.** Once `mediachange == MEDIACHANGE`
    is set, `Mediach` keeps returning `2` (`bios/blkdev.c:795-796`); only
@@ -261,8 +279,10 @@ armed by a logical write to sector 0 (forces a re-login when the boot sector is
 edited). **Neither is implemented on NewTOS today:** there is no per-drive
 `mediachange`/`forcechange` state, and `Rwabs`'s sector-0 write does not arm
 anything, so `Mediach` always returns `0` even immediately after rewriting the
-boot sector. With a genuinely non-removable card this is behaviourally safe, but
-it is a **divergence from the contract** — flagged below.
+boot sector. With a genuinely non-removable card this is behaviourally safe
+*only until a program writes logical sector 0* — **[BIOS02]** that case is
+measured (W01-W05, X12-X14) and differs; it is a **divergence from the
+contract**, not a cosmetic one.
 
 ### Divergences vs. the contract (Step-2 candidates)
 
@@ -271,10 +291,34 @@ it is a **divergence from the contract** — flagged below.
   an out-of-range / unmounted drive, `0` only for a valid one
   (`tos-api/src/bios/mod.rs:237-243`, matching `blkdev.c:789-790`). This was the one observable
   deviation; it no longer diverges.]**
-- **No `forcechange` after a sector-0 write** (see above; ties to `04-rwabs.md`
-  and `07-getbpb.md`'s missing media-state reset).
+- **No `forcechange` after a sector-0 write — [BIOS02] measured DIFF, not a
+  candidate any more.** Oracle W02 = 2, W05 = 2, X13 = 2; NewTOS 0 in all
+  three. What must be reproduced: one `forcechange` flag per valid logical
+  drive, armed by `Rwabs` (`04-rwabs.md` step 6), returned as `2` here
+  **without** the "SD is non-removable" shortcut, cleared by `Getbpb` on
+  the same drive (`bios/blkdev.c:590`). The "non-removable ⇒ constant 0"
+  model of this section holds only while nobody writes sector 0.
 - **Latch/reset pair absent.** With `Mediach`≡0 there is no latch for `Getbpb`
-  to clear; the `Getbpb`→`Mediach` reset handshake is a no-op.
+  to clear; the `Getbpb`→`Mediach` reset handshake is a no-op. (Measured:
+  W06/W07 and X15/X16 are EQUAL only because NewTOS never left 0.)
 - **`MEDIAMAYCHANGE` (1) is never produced** — the Pi SD path has no "same card
   reinserted?" ambiguity, so only `0` is ever returned. (If USB-MSC hot-plug
   drives land in a later phase, they would reintroduce the full 3-state latch.)
+
+### Measured cross-check — `bios-r2.tsv` cases per statement [BIOS02]
+
+Oracle `tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-disk.BIN`; NewTOS run
+`measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`. Dumper no. = line of
+the row in `tosdump/cases/bios-r2.tsv`.
+
+| Statement | Cases (label : dumper no.) | EmuTOS | NewTOS | Verdict |
+|-----------|----------------------------|--------|--------|---------|
+| valid, settled drive → 0 | `Mediach(2)` 50; W07 98; W10 102; X16 109 | 0 | 0 | EQUAL |
+| absent / out-of-range drive → `EUNDEV` | `Mediach(5/15/16/-1)` 51-54 | -15 | -15 | EQUAL |
+| **after sector-0 write: 2, repeated** | W02 93, W05 96, X13 106 | 2 | 0 | **DIFF** (BIOS-STOR-001) |
+| `Getbpb` clears it | W06 97 → W07 98; X15 108 → X16 109 | 0 | 0 | EQUAL (vacuous on NewTOS) |
+
+Not measured: `MEDIAMAYCHANGE`, driver-error pass-through, the
+`mediachange` latch from a probe, the 0.5 s `last_access` rule
+(`bios/disk.c:389`, would need a removable unit), A:/B: (`Mediach(0/1)` is a
+device parameter, audit §8).

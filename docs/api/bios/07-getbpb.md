@@ -4,6 +4,14 @@
 > Verified against `bios/bios.c:1120` (`getbpb`) and the installed handler
 > `bios/blkdev.c:569` (`blkdev_getbpb`).
 
+> **BIOS02 revision (2026-10-28) — for user approval.** Changes tagged
+> **[BIOS02]**. Source re-read at the pin `1a7484ab`
+> (`references/emutos/bios/blkdev.c:569-777`, `bios/blkdev.c:117-163`).
+> Cross-check: oracle `tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-disk.BIN`
+> vs NewTOS, `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`. The
+> "Gaps" list of the Pi binding was out of date (the guards exist and agree);
+> two real differences were missing (BIOS-STOR-004, -005).
+
 ## EmuTOS source
 
 **Primary location:** `bios/bios.c:1120` — `LONG getbpb(WORD drive)`
@@ -86,7 +94,7 @@ There is no separate error code — the only failure signal is the NULL return.
 
 | Position | Name    | Type   | Size | Source location     | Notes |
 |----------|---------|--------|------|---------------------|-------|
-| arg0     | `drive` | `WORD` | 2    | `bios/blkdev.c:569` | logical drive 0=A:..15=P:; validated against `BLKDEVNUM` |
+| arg0     | `drive` | `WORD` | 2    | `bios/blkdev.c:569` | logical drive 0=A:..25=Z: **[BIOS02]**; validated against `BLKDEVNUM` (26) |
 
 ---
 
@@ -176,7 +184,28 @@ are EmuTOS-specific NULL returns.
    returns `ESECNF` (see `04-rwabs.md`).
 
 5. **Zero-FAT boot sector accepted as 2 FATs.** For TOS compatibility, `fat ==
-   0` is treated as 2 (`bios/blkdev.c:662-665`).
+   0` is treated as 2 (`bios/blkdev.c:662-665`). `reserved == 0` is treated as
+   1 (`:703-704`). NewTOS does both (`tos-api/src/bios/bpb.rs:123@parse`).
+
+8. **`pun_info.max_sect_siz` has two values over time [BIOS02, BIOS-STOR-004].**
+   While `pun_info_setup` runs (boot, once per valid hard-disk partition) it
+   is `MAX_LOGSEC_SIZE = 32768` (`bios/blkdev.c:122`,
+   `bios/blkdev.h:30`). When it finishes it is replaced by
+   `max(largest bpb.recsiz of a GETBPB_ALLOWED hard-disk partition, 512)`,
+   where 512 = `CONF_LOGSEC_SIZE` (`bios/blkdev.c:134,147-150,159`,
+   `include/config.h:1606`). The test at `bios/blkdev.c:642` uses whatever
+   value is current. So **after boot** a boot sector with `bps` above that
+   maximum is refused (NULL), even though the same sector would have been
+   accepted *during* boot. Measured by the audit probe (X01: `bps` 1024 →
+   EmuTOS NULL, NewTOS BPB) — **not** by `bios-r2.tsv` (no case yet).
+
+9. **Total sectors: `tot16`, else `tot32`, else 0 clusters [BIOS02,
+   BIOS-STOR-005].** For a hard-disk unit (`unit >= NUMFLOPPIES`), if the
+   16-bit total is 0 the 32-bit field (`sec2`) is used **whatever its value**
+   (`bios/blkdev.c:730-731`); a total smaller than `datrec` gives a cluster
+   count of 0 (`:732-733`) — not an error, so `Getbpb` returns a BPB with
+   `numcl == 0` and no `B_16` (audit X06: `…,289,0,0`; the drive is then
+   unusable but logged in). There is no fallback to the partition length.
 
 6. **Per-drive pointer, stable across drives.** `Getbpb(0)` and `Getbpb(1)`
    return distinct pointers (each into its own `blkdev[].bpb`) that both stay
@@ -225,7 +254,7 @@ are EmuTOS-specific NULL returns.
 
 ## Configuration / version notes
 
-- `BLKDEVNUM = 16`. `MAX_FAT12_CLUSTERS = 4084`, `MAX_FAT16_CLUSTERS = 65524`.
+- `BLKDEVNUM = 26` (`include/sysconf.h:43`) **[BIOS02, corrected from 16]**. `MAX_FAT12_CLUSTERS = 4084`, `MAX_FAT16_CLUSTERS = 65524`.
 - `CONF_WITH_1FAT_SUPPORT` toggles the single-FAT path.
 
 ---
@@ -285,14 +314,15 @@ BPB at the standard offsets:
 | `clsizb` | — | `recsiz * clsiz` |
 | `rdlen` | `0x11..0x12` root entries | `ceil(root_entries*32 / recsiz)` sectors |
 | `fsiz` | `0x16..0x17` sectors/FAT (16-bit) | direct |
-| `fatrec` | `0x0E..0x0F` reserved, `0x10` num_fats | `reserved + (num_fats-1)*fsiz` (first sector of the last FAT) |
+| `fatrec` | `0x0E..0x0F` reserved (0 → 1), `0x10` num_fats | `reserved`, plus `fsiz` if `num_fats >= 2` (the second FAT; `bios/blkdev.c:703-712`; `MAX_FATS = 2` so this equals `reserved + (num_fats-1)*fsiz`) |
 | `datrec` | reserved, num_fats, rdlen | `reserved + num_fats*fsiz + rdlen` |
 | `numcl` | total sectors, `datrec`, `clsiz` | `(total - datrec) / clsiz` |
 | `b_flags` | `numcl`, num_fats | `B_16` if `numcl >= 4085`; `B_1FAT` if `num_fats == 1` |
 
 - **Total sectors:** `tot16` (`0x13..0x14`) if non-zero, else `tot32`
-  (`0x20..0x23`), else the partition length `part.count` from the MBR
-  (`bpb.rs:75-81`).
+  (`0x20..0x23`), else — **NewTOS only, differs from EmuTOS [BIOS02]** — the
+  partition length `part.count` from the MBR
+  (`tos-api/src/bios/bpb.rs:186@part_sectors`). EmuTOS: see edge case 9.
 - **FAT type = cluster count** (`numcl >= 4085` ⇒ `B_16`), the Microsoft rule,
   matching EmuTOS (`bpb.rs:95-97`).
 
@@ -309,16 +339,38 @@ exFAT is a Phase-09 goal (`docs/HARDWARE-PROFILE.md` §3.4).
 
 - **Media-state reset not implemented.** EmuTOS resets
   `mediachange = MEDIANOCHANGE`, `forcechange = FALSE` at the top of `Getbpb`
-  (`bios/blkdev.c:589-590`). NewTOS keeps **no per-drive media/force flags** at
-  all (`Mediach`≡0, no `forcechange`), so there is nothing to reset. Consistent
-  with the non-removable model, but the reset step is absent (B-series).
-- **No sector-size / cluster-size / FAT-count validation branches** beyond the
-  degenerate-zero check — EmuTOS's `max_sect_siz`, `MAX_CLUSTER_SIZE`,
-  `MIN_FATS`/`MAX_FATS` guards (each a NULL return) are not reproduced; a
-  malformed-but-nonzero BPB is parsed as-is.
-- **Zero-FAT→2 quirk not applied.** EmuTOS treats `num_fats==0` as 2; NewTOS
-  rejects `num_fats==0` outright (`bpb.rs:71`). Harmless for real FAT16 media
-  (always ≥1 FAT).
+  (`bios/blkdev.c:589-590`) — right after the drive-valid test and **before**
+  any test of the boot sector, so a `Getbpb` that returns NULL clears it too.
+  NewTOS keeps **no per-drive media/force flags** (`Mediach`≡0), so there is
+  nothing to reset. **[BIOS02]** Once the `forcechange` handshake is built
+  (BIOS-STOR-001, `04-rwabs.md`), the reset must be in `getbpb` at the same
+  place: after the drive check, before parsing, and for every outcome. Oracle
+  W06/W07, X15/X16 show the reset working on EmuTOS; they are EQUAL on NewTOS
+  only because the state never arms.
+- ~~**No sector-size / cluster-size / FAT-count validation branches.**~~
+  **[BIOS02, superseded]** The guards are in `parse`
+  (`tos-api/src/bios/bpb.rs:123@parse`: sector size, cluster bytes, FAT count
+  1..2, `reserved == 0`, FAT32 test) and the audit probe found them equal to
+  EmuTOS (X02-X05, X07 equal on both sides) — except the two differences
+  below.
+- ~~**Zero-FAT→2 quirk not applied.**~~ **[BIOS02, superseded]** applied
+  (`bpb.rs:123@parse`, `num_fats_raw == 0` → 2).
+- **[BIOS02] BIOS-STOR-004 — sector-size limit is the boot-time constant.**
+  NewTOS keeps `MAX_LOGSEC_SIZE = 32768` forever
+  (`tos-api/src/bios/bpb.rs:64@MAX_LOGSEC_SIZE`); EmuTOS lowers it after
+  boot (edge case 8). Probe X01: EmuTOS NULL, NewTOS BPB. Consequence beyond
+  the return value: NewTOS's `Rwabs` does not scale logical to physical
+  sectors (`04-rwabs.md` step 7, `bios/blkdev.c:456-458`), so a logged-in
+  `recsiz` > 512 is addressed wrongly (audit, *not measured*). Decision of
+  which constant to hold at run time needs the boot-time scan to exist on
+  NewTOS first — **open**.
+- **[BIOS02] BIOS-STOR-005 — `tot16 == tot32 == 0` replaced by the partition
+  length.** NewTOS uses `part_sectors`
+  (`tos-api/src/bios/bpb.rs:186@part_sectors`), EmuTOS yields `numcl 0`
+  (edge case 9). Probe X06: `…,289,0,0` vs `…,289,32672,1`. Intent: the code
+  comment gives none and the introducing commit `b247f99f` (first
+  implementation of `Getbpb`) records none; no later doc or ADR mentions
+  it. Recommendation in the report of BIOS02 (memo 2): follow EmuTOS.
 - **`Geometry` extension:** NewTOS additionally exposes `reserved`+`num_fats`
   raw (`bpb.rs:105-134`) for the FAT write path — a NewTOS-native superset, not
   part of the Atari ABI BPB.
@@ -345,3 +397,21 @@ exFAT is a Phase-09 goal (`docs/HARDWARE-PROFILE.md` §3.4).
   would fault on. Measured after the change on QEMU `raspi4b`:
   `Getbpb(2) = 0x00401024`, `APITEST` BB17..BB28 all PASS (every BPB field
   checked against the boot sector actually read from the medium).
+
+### Measured cross-check — `bios-r2.tsv` cases per statement [BIOS02]
+
+Oracle `tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-disk.BIN`; NewTOS run
+`measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`. Dumper no. = line of
+the row in `tosdump/cases/bios-r2.tsv`. Oracle BPB of the test image:
+`512,4,2048,32,128,129,289,32672,1`.
+
+| Statement | Cases (label : dumper no.) | EmuTOS | NewTOS | Verdict |
+|-----------|----------------------------|--------|--------|---------|
+| BPB fields of a FAT16 partition (18 bytes through the returned pointer) | `Getbpb(2)` 42; W06 97; X15 108 | BPB above | same | EQUAL |
+| absent / out-of-range drive → NULL | `Getbpb(5/15/16/-1/0x7FFF)` 43-47 | 0 | 0 | EQUAL |
+| `Getbpb` after the forcechange state returns the BPB (and clears it) | W06 97, X15 108 | BPB | BPB | EQUAL (state never armed on NewTOS) |
+| BIOS-STOR-004 (`bps` 1024), -005 (`tot16 = tot32 = 0`), -006 (`spf` 0, then `Rwabs`) | — | NULL / `…,289,0,0` / `ESECNF` | BPB / `…,289,32672,1` / data | **no `bios-r2` case** — audit probe X01, X06, X07/X08 only (PLAUSIBLE) |
+
+Not measured at all: FAT12 floppy path (out of scope), removable-unit rescan
+(`disk_mediach` at `bios/blkdev.c:608-609`), `!GETBPB_ALLOWED` partition types,
+the `Geometry`/serial fields.

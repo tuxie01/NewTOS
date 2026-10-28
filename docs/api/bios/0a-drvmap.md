@@ -4,6 +4,13 @@
 > Verified against `bios/bios.c:1206` (`drvmap`) and `bios/blkdev.c:833`
 > (`blkdev_drvmap`).
 
+> **BIOS02 revision (2026-10-28) — for user approval.** Changes tagged
+> **[BIOS02]**. Source re-read at the pin `1a7484ab`. Corrected: the drive
+> limit is 26, not 16; the "single floppy sets A: and B:" convention is not in
+> the code; measured value added. Cross-check: oracle
+> `tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-disk.BIN` vs NewTOS,
+> `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`.
+
 ## EmuTOS source
 
 **Primary location:** `bios/bios.c:1206` — `LONG drvmap(void)`
@@ -38,8 +45,13 @@ sets its bit). `blkdev_avail(dev)` (`bios/blkdev.c:846`) is the matching
 predicate — `(1L << dev) & drvbits`.
 
 The bitmap is essentially static after boot: EmuTOS does not update `drvbits`
-on hot-plug (Atari hardware had no such expectation). Bits 16..31 are unused
-in EmuTOS (only 16 logical drives). Steem's GEMDOS-HD emulation is known to
+on hot-plug (Atari hardware had no such expectation). **[BIOS02, corrected]**
+EmuTOS has `BLKDEVNUM = 26` logical drives, A: to Z. (`include/sysconf.h:43`);
+bits are set by `add_partition` (`bios/blkdev.c:392`) for every found partition
+up to the 26th (`next_logical`, `bios/blkdev.c:315-324`; `disk_init_all`,
+`bios/disk.c:320`) and by the floppy detection for A:/B: (`bios/floppy.c:387`);
+only bits 26..31 are never set. (Earlier text: "16 drives, bits 16..31 unused"
+— wrong; `PUN_MAXUNITS` = 16, `include/ahdi.h:19`, limits only the AHDI `pun_info` copy.) Steem's GEMDOS-HD emulation is known to
 poke `drvbits` from a cartridge hook, which is why `biosmain` calls `Drvmap()`
 once at boot (`bios/bios.c:791`) to let it take effect.
 
@@ -75,8 +87,8 @@ None.
 
 - **Register:** D0 / `x0`
 - **Type:** LONG (drive bitmap)
-- **Encoding:** bit `n` set ⇒ drive index `n` (0=A:) is present. Bits 16..31
-  are 0.
+- **Encoding:** bit `n` set ⇒ drive index `n` (0=A:) is present. **[BIOS02]**
+  Bits 26..31 are 0; bits 16..25 (Q:..Z:) can be set (`BLKDEVNUM = 26`).
 - **Source location:** `bios/blkdev.c:835` (`return drvbits;`).
 
 | Bit | Drive | … | Bit | Drive |
@@ -84,6 +96,7 @@ None.
 | 0   | A:    |   | 8   | I:    |
 | 1   | B:    |   | …   | …     |
 | 2   | C:    |   | 15  | P:    |
+| …   | …     |   | 25  | Z:    |
 
 ### Side effects on global state
 
@@ -122,8 +135,13 @@ None.
    each call* — that is wrong; it is precomputed into `drvbits` and simply
    read back.)
 
-2. **A:+B: single-floppy convention.** If a floppy is present, both bit 0 and
-   bit 1 are set so B:-swap prompts work, even with one physical drive.
+2. **A:+B: single-floppy convention — [BIOS02] not implemented by the code.**
+   The comment above `blkdev_drvmap` (`bios/blkdev.c:824-830`) states the
+   convention ("should return both bits set if a floppy drive is present"),
+   but `flop_hdv_init` detects drive 0 and drive 1 independently
+   (`bios/floppy.c:329-330`) and `flop_add_drive` sets only that drive's own
+   bit (`bios/floppy.c:387`). Nothing duplicates A: into B:. The comment is
+   documentation of the Atari convention; the code is what a program sees.
 
 3. **Static after boot.** `drvbits` is not updated on hot-plug in EmuTOS. A
    card inserted after boot does not flip a bit.
@@ -132,8 +150,11 @@ None.
    `Dsetdrv(15)` succeed regardless; `Drvmap` remains the truthful presence
    map, and clients must consult it before assuming a drive is usable.
 
-5. **Bits 16..31 are always 0** in EmuTOS (16-drive limit); do not assume they
-   carry information.
+5. **Bits 26..31 are always 0** in EmuTOS (26-drive limit, `BLKDEVNUM`
+   `include/sysconf.h:43`) **[BIOS02, corrected from "16..31 / 16-drive
+   limit"]**; do not assume they carry information. Q:..Z: (bits 16..25) are
+   reachable when more than 16 logical drives are found; NewTOS stops at 16
+   (ticket FS12, `tos-api/src/bios/drive.rs:11@MAX_DRIVES`).
 
 ---
 
@@ -174,7 +195,8 @@ None.
 
 ## Configuration / version notes
 
-- `BLKDEVNUM = 16` logical drives.
+- `BLKDEVNUM = 26` logical drives, A:..Z. **[BIOS02, corrected from 16]**
+  (`include/sysconf.h:43`).
 
 ---
 
@@ -240,7 +262,12 @@ partition slot. The table is filled once at boot by `drive::mount()`
   above).
 - **`drvbits` is kernel-owned** — no `0x4c2` low-memory address; native callers
   reach it only through `Drvmap`.
-- **Bits 16..31 always 0** — `MAX_DRIVES = 16` (`tos-api/src/bios/drive.rs:11`).
+- **Bits 16..31 always 0** — `MAX_DRIVES = 16` (`tos-api/src/bios/drive.rs:11@MAX_DRIVES`).
+  **[BIOS02]** This is a difference from EmuTOS (26 drives), tracked by FS12;
+  not observable with one SD card and four partitions, not measured
+  (`Getbpb(16)`, `Mediach(16)`, `Rwabs(…,16,…)` are EQUAL only because both
+  sides have no drive 16, bios-r2 cases `Getbpb(16)` 45, `Mediach(16)` 53,
+  R14 72).
 
 ### Gaps vs. the contract (Step-2 candidates)
 
@@ -251,3 +278,15 @@ partition slot. The table is filled once at boot by `drive::mount()`
   extended chain, the EBR walk can assign G:+; documented here so the C:-F:
   "verified" figure is understood as the 4-primary real-HW layout, not a hard
   cap.
+
+### Measured cross-check — `bios-r2.tsv` cases per statement [BIOS02]
+
+| Statement | Case (dumper no.) | EmuTOS | NewTOS | Verdict |
+|-----------|-------------------|--------|--------|---------|
+| `Drvmap` with C: (test partition) and D: (program drive), A:/B: off | `Drvmap()` 39 (EXACT) | `0x0000000C` | `0x0000000C` | EQUAL |
+| `Drvmap` value is a device parameter outside C:+D: | `bios-r1.tsv` 74 (class NONZERO, weak) | `0x7` (Hatari with floppies) | `0x4` | EQUAL by class; A:/B: = device parameter, audit §8 |
+
+Layout of the two sides is arranged to give the same map
+(`tosdump/cases/bios-r2.tsv` header), so case 39 confirms the *value format*
+and bit order, not the partition-scan rules. Not measured: more than 16
+drives, floppy bits, bits changing after boot.

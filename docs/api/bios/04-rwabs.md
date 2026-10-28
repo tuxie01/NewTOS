@@ -4,6 +4,18 @@
 > Verified against `bios/bios.c:1045` (`lrwabs`) and the installed handler
 > `bios/blkdev.c:406` (`blkdev_rwabs`).
 
+> **BIOS02 revision (2026-10-28) — for user approval.** Every change below is
+> tagged **[BIOS02]**. Source: re-read of `references/emutos/bios/blkdev.c`
+> at the pin `1a7484ab` (`docs/analysis/ORACLE.md`); cross-check: the disk
+> round `tosdump/cases/bios-r2.tsv` on the oracle
+> (`tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-disk.BIN`) and the NewTOS run
+> `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`. Case ids are the
+> row labels of `bios-r2.tsv` (R01-R20, F03, W01-W11, X12-X16); the dumper's
+> own case number is the table's line number. Corrected: sector-0 write
+> (BIOS-STOR-001), count 0 (BIOS-STOR-003), Pi binding (BIOS-STOR-008).
+> Open decisions (not spec yet): BIOS-STOR-002, -007 — see "Decisions
+> pending" at the end of the Pi binding.
+
 ## EmuTOS source
 
 **Primary location:** `bios/bios.c:1045` — `lrwabs(r_w, adr, numb, first,
@@ -60,9 +72,17 @@ calling `floppy_rw`/`disk_rw`, retrying up to `RWABS_RETRIES` times (unless
 Two behaviours are invisible from the signature but are real contract for
 compatible software: (1) if `dev < NUMFLOPPIES` **and `adr == NULL`**, the
 call does **not** transfer data — it *sets* `blkdev[dev].mediachange = numb`
-and returns 0 (used by FastCopy III); (2) a logical **write to sector 0**
-sets `forcechange`, so the next `Mediach`/`Rwabs` reports a media change until
-`Getbpb` clears it (this is how altering the boot sector forces a re-login).
+and returns 0 (used by FastCopy III); (2) a logical **write that starts at
+sector 0** sets `forcechange` (`bios/blkdev.c:452-453`) — **before** the range
+check and the media-change check, so the write call **itself** normally
+fails: without `RW_NOMEDIACH` it returns `E_CHNG` (-14) and transfers nothing
+(`blkdev_mediach` sees `forcechange`, `bios/blkdev.c:474-476,802-803`); with
+`RW_NOMEDIACH` it transfers and returns 0. From then on **every** logical
+`Rwabs` on that drive returns `E_CHNG` — `RW_NOMEDIACH` does not help, the
+test is at `bios/blkdev.c:450-451` ahead of that flag — and `Mediach` returns
+2, until `Getbpb` on that drive clears the flag (`bios/blkdev.c:590`).
+**[BIOS02]** (previous text said only "the next Mediach/Rwabs reports a media
+change"; measured W01-W08, X12-X16, below.)
 
 The `recnr == -1` convention selects the LONG sector number `lfirst`;
 otherwise `first` is used as an **unsigned** 16-bit sector (`(UWORD)recnr`,
@@ -163,19 +183,48 @@ wrong; retry is bit 2 and no-translate is bit 3, and it omitted
 |-----------|-----------------|----------------|
 | Logical: `drive` invalid / not `DEVICE_VALID` | `bios/blkdev.c:440` | `EUNDEV` (-15) |
 | Logical: invalid BPB (`recsiz == 0`, e.g. FAT32/ext2) | `bios/blkdev.c:443` | `ESECNF` (-8) |
-| Logical: `forcechange` still pending | `bios/blkdev.c:450` | `E_CHNG` (-14) |
-| Logical: `lrecnr < 0` or `lrecnr+lcount > partition size` | `bios/blkdev.c:461` | `ESECNF` (-8) |
-| Logical: `blkdev_mediach` != no-change (unless `RW_NOMEDIACH`) | `bios/blkdev.c:474` | `E_CHNG` (-14) |
+| Logical: `forcechange` already armed (**also with `RW_NOMEDIACH`**) | `bios/blkdev.c:450-451` | `E_CHNG` (-14) — W03/W04/X14 |
+| Logical: `lrecnr < 0` or `lrecnr+lcount > partition size` (physical sectors, **also for `numb == 0`**; skipped when `blkdev[dev].size == 0`) | `bios/blkdev.c:461-463` | `ESECNF` (-8) — R06-R08, R10 |
+| Logical: `blkdev_mediach` != no-change (unless `RW_NOMEDIACH`) — this is how the sector-0 write itself fails | `bios/blkdev.c:473-477` | `E_CHNG` (-14) — W01 |
 | Physical: `unit` invalid / not present | `bios/blkdev.c:484` | `EUNDEV` (-15) |
 | Physical: sector range out of unit bounds | `bios/blkdev.c:488` | `ESECNF` (-8) |
 | Physical: `UNIT_CHANGED` set (unless `RW_NOMEDIACH`) | `bios/blkdev.c:498` | `E_CHNG` (-14) |
 | Underlying `floppy_rw`/`disk_rw` failure (retries exhausted) | `bios/blkdev.c:515-523` | driver code, e.g. `EREADF`/`EWRITF`/`EWRPRO`/`ESECNF` |
 
-**Error paths not in Compendium:** the `forcechange`-driven `E_CHNG` on the
-call *following* a sector-0 write, and the whole `adr == NULL` set-mediachange
-branch (which returns `0`, not an error). Prior spec listed `EBADRQ` for
-`numb == 0`; **the source has no such check** — a zero count simply performs
-zero transfers and returns `E_OK`.
+**Order of the checks in the logical path (load-bearing, `bios/blkdev.c`)
+[BIOS02]:**
+
+| Step | Line | Test | Result |
+|-----:|------|------|--------|
+| 1 | 425 | `dev < NUMFLOPPIES && buf == NULL` | set `blkdev[dev].mediachange = cnt`, return 0 |
+| 2 | 430-431 | `recnr != -1` | `lrecnr = (UWORD)recnr` |
+| 3 | 440-441 | `dev < 0 \|\| dev >= BLKDEVNUM \|\| !DEVICE_VALID` | `EUNDEV` |
+| 4 | 443-444 | `bpb.recsiz == 0` | `ESECNF` |
+| 5 | 450-451 | `forcechange` | `E_CHNG` |
+| 6 | 452-453 | `(rw & RW_WRITE) && lrecnr == 0` (logical sector, before scaling) | arm `forcechange` — **no return** |
+| 7 | 456-458 | scale `lcount`, `lrecnr` by `bpb.recsiz >> psshift` | — |
+| 8 | 461-463 | range check (see table) | `ESECNF` |
+| 9 | 466 | `lrecnr += blkdev[dev].start` | — |
+| 10 | 473-477 | `!(rw & RW_NOMEDIACH)` and `blkdev_mediach(dev) != 0` | `E_CHNG` |
+| 11 | 481 | `rw &= ~RW_NOBYTESWAP` | — |
+| 12 | 510-528 | transfer loop | driver code |
+
+Consequences (read from the order; W01/W02/X12/X13 measure the first two,
+the rest is **inference** from the same order, not measured): the arming at
+step 6 happens even when step 8 or 10 then fails the same call; a write that
+merely *covers* sector 0 but starts later does not arm; a physical
+(`RW_NOTRANSLATE`) write never arms (the arming lives in the logical branch).
+`forcechange` is cleared only in `blkdev_getbpb` (`bios/blkdev.c:590`), and
+there **before** any validity test of the boot sector — so even a `Getbpb`
+that returns NULL clears it.
+
+**Error paths not in Compendium:** the `forcechange`-driven `E_CHNG` for
+every logical access after a sector-0 write (and for that write itself unless
+`RW_NOMEDIACH`), and the whole `adr == NULL` set-mediachange branch (which
+returns `0`, not an error). Prior spec listed `EBADRQ` for `numb == 0`;
+**the source has no such check** — and `numb == 0` is **not** exempt from the
+checks above (it fails `ESECNF` when `lrecnr` is out of range, R10, and
+`E_CHNG` when `forcechange` is armed).
 
 ---
 
@@ -187,9 +236,22 @@ zero transfers and returns `E_OK`.
   P: returns `EUNDEV` (-15).
 - **FAT32 partition:** logical `Rwabs` on a device whose `bpb.recsiz == 0`
   returns `ESECNF` (-8).
-- **Sector-0 write forces media change:** after
-  `Rwabs(RW_WRITE, buf, 1, 0, 2, 0)`, the next `Mediach(2)` returns
-  `MEDIACHANGE` (2) until `Getbpb(2)` is called.
+- **Sector-0 write forces media change [BIOS02, corrected]:**
+  `Rwabs(RW_WRITE, buf, 1, 0, 2, 0)` itself returns `E_CHNG` (-14) and writes
+  nothing (oracle W01 = -14; the image stays identical, `testpart: identical`).
+  Then `Mediach(2)` = 2 (W02, again W05), and every logical `Rwabs(…, 2, …)`
+  returns `E_CHNG` with the buffer untouched — **including with
+  `RW_NOMEDIACH`** (W03, W04) — until `Getbpb(2)` (W06); afterwards `Mediach(2)`
+  = 0 (W07) and reads work (W08).
+- **Sector-0 write with `RW_NOMEDIACH`:** `Rwabs(RW_WRITE|RW_NOMEDIACH, buf,
+  1, 0, 2, 0)` writes and returns 0 (X12) **and** arms the same state:
+  `Mediach(2)` = 2 (X13), `Rwabs(RW_NOMEDIACH)` read = `E_CHNG` (X14), cleared
+  by `Getbpb(2)` (X15, X16 = 0).
+- **Another sector does not arm:** a write of the last sector returns 0 and
+  leaves `Mediach` = 0 and reads working (W09-W11).
+- **Count 0 is range-checked [BIOS02]:** `Rwabs(0, buf, 0, -1, 2,
+  PSIZE+10)` returns `ESECNF` (-8) (R10); `Rwabs(0, buf, 0, 0, 2, 0)` returns 0
+  (R09).
 - **NULL-buffer feature (floppy):** `Rwabs(0, NULL, 2, 0, 0, 0)` sets
   `blkdev[0].mediachange = 2` and returns `0` (no transfer).
 
@@ -202,9 +264,15 @@ zero transfers and returns `E_OK`.
    drive's media-change status; **no I/O happens**. Only for `dev <
    NUMFLOPPIES`.
 
-2. **Logical write to sector 0 arms `forcechange`.** `bios/blkdev.c:452-453`.
-   The *next* logical access then returns `E_CHNG` (line 450) until `Getbpb`
-   resets it. This makes editing the boot sector force a re-login.
+2. **Logical write starting at sector 0 arms `forcechange`.**
+   `bios/blkdev.c:452-453`. **[BIOS02, corrected]** The arming precedes the
+   `E_CHNG` test of `blkdev_mediach` (`:473-477`), so the arming call itself
+   fails with `E_CHNG` and does **not** write unless `RW_NOMEDIACH` is set
+   (W01 vs X12). Every later logical access returns `E_CHNG` (line 450-451)
+   until `Getbpb` resets it — `RW_NOMEDIACH` does not bypass it (W04, X14).
+   This makes editing the boot sector force a re-login; a tool that rewrites
+   the boot sector must pass `RW_NOMEDIACH` or expect the first call to fail
+   and repeat it after `Getbpb`.
 
 3. **`first`/`recnr` is unsigned 16-bit unless -1.** `lrecnr = (UWORD)recnr`
    (`bios/blkdev.c:431`) — sectors 32768..65535 work via `first`; `first == -1`
@@ -220,8 +288,16 @@ zero transfers and returns `E_OK`.
 6. **No buffer bounds check.** `adr + numb*secsize` is never validated against
    any process region.
 
-7. **`numb == 0` is not an error.** Contrary to the prior spec, there is no
-   `EBADRQ` path; the loop just does nothing and returns `E_OK`.
+7. **`numb == 0` is not an `EBADRQ` error, but it is not exempt either
+   [BIOS02, corrected].** There is no `EBADRQ` path. The drive tests
+   (`:440-444`), the `forcechange` test (`:450`), the range check
+   (`:461-463`) and the media-change test (`:473-477`) all run with
+   `lcount == 0`; R10 (`ESECNF`) measures the range check, R09 (0) the
+   in-range case. The transfer `do … while (lcount > 0)` (`:510-528`) then
+   runs **once** with `scount == 0`, i.e. the driver is called with a zero
+   count (`sd_rw` returns 0 for it, `bios/sd.c:163-164`; the IDE oracle
+   returns 0, R09). The former text "returns `E_OK`" held only for an
+   in-range sector.
 
 8. **Logical vs. physical range checks use different boundary operators
    (gap filled this pass).** The logical-mode bounds check is
@@ -300,6 +376,18 @@ zero transfers and returns `E_OK`.
      GEMDOS/error-alert follow-up work referenced in the task) is a
      separate, AES-scoped extraction.
 
+10. **Negative or huge `numb` [BIOS02, open].** `cnt` is a signed `WORD`
+    widened to `LONG lcount` (`:411`); for `cnt < 0` the loop passes a
+    negative `scount` to the driver once (`:512-515`, `lcount > 0` is false
+    afterwards). Not measured; NewTOS reads `numb` as unsigned
+    (`tos-api/src/bios/mod.rs:148@rwabs`). **Needs deeper analysis /
+    a case before anyone relies on either behaviour.**
+
+11. **`dev` negative with `buf == NULL` [BIOS02, source observation].** The
+    NULL-buffer test is `dev < NUMFLOPPIES` on a signed `WORD`
+    (`:425`), so `dev == -1` with `buf == NULL` writes `blkdev[-1].mediachange`
+    — outside the array — and returns 0. Not a contract to copy; unmeasured.
+
 ---
 
 ## Dependencies
@@ -341,7 +429,7 @@ zero transfers and returns `E_OK`.
 
 ## Configuration / version notes
 
-- `BLKDEVNUM = 16` logical drives (A:..P:); `UNITSNUM` physical units.
+- `BLKDEVNUM = 26` logical drives (A:..Z:, `include/sysconf.h:43`) **[BIOS02, corrected from 16]**; `UNITSNUM = NUMFLOPPIES + 8*(MAX_BUS+1)` physical units (`bios/disk.h:22`; 26 in the Falcon-like build with IDE, 34 where `CONF_WITH_SDMMC` is on — default only for Firebee and M548X, `include/config.h:167,645`).
 - `RWABS_RETRIES` sets the auto-retry count — **currently defined as `1`**
   (`bios/blkdev.h:34`, `#define RWABS_RETRIES 1 /* on real machine might
   want to increase this */`). Gap-filled finding this pass: since
@@ -427,7 +515,9 @@ failed). Return values and error codes are unchanged; `RW_NORETRIES` /
 
 `Rwabs` in **logical** mode maps `(drive, sector)` to
 `part.start_lba + sector` and range-checks `sector + numb <= part.count`
-(`bios/mod.rs:75-95`). `part.start_lba`/`part.count` come from the MBR parse in
+(`tos-api/src/bios/mod.rs:178@RW_NOTRANSLATE`; the check sits after the
+`numb == 0` return at `tos-api/src/bios/mod.rs:170@numb` — BIOS-STOR-003).
+`part.start_lba`/`part.count` come from the MBR parse in
 `bios/drive.rs` (see `0a-drvmap.md`). Drives are numbered A:=0, B:=1, C:=2, …;
 the SD partitions are assigned from **C:** upward (`tos-api/src/bios/drive.rs:12-13,69`).
 
@@ -436,9 +526,9 @@ the SD partitions are assigned from **C:** upward (`tos-api/src/bios/drive.rs:12
 | Bit | Constant | On the EMMC SD today |
 |----:|----------|----------------------|
 | 0 | `RW_WRITE` | selects `write_blocks` (CMD24) vs `read_blocks` (CMD17) — `bios/mod.rs:97,102-108` |
-| 1 | `RW_NOMEDIACH` | **no effect** — `Rwabs` never invokes the media-change check (the SD is non-removable, `Mediach`≡0; see `09-mediach.md`). GAP vs the contract's "unless `RW_NOMEDIACH`, call `Mediach`". |
-| 2 | `RW_NORETRIES` | **no effect** — the EMMC driver does a single PIO attempt; there is no `RWABS_RETRIES` retry loop and no `etv_critic` chain. |
-| 3 | `RW_NOTRANSLATE` | **not honoured** — `drive` is always treated as a **logical** drive resolved through the partition table; physical/unit mode is not implemented. A caller setting bit 3 still gets partition-relative addressing (or `EUNDEV` if the letter is unmounted). GAP. |
+| 1 | `RW_NOMEDIACH` | **no effect** — `Rwabs` never invokes the media-change check (the SD is non-removable, `Mediach`≡0; see `09-mediach.md`). GAP vs the contract's step 10 (`bios/blkdev.c:473-477`). Observable only together with `forcechange` (BIOS-STOR-001): without that state there is nothing for the flag to bypass. |
+| 2 | `RW_NORETRIES` | **no effect** — the EMMC driver does a single PIO attempt; there is no `RWABS_RETRIES` retry loop and no `etv_critic` chain. Unobservable at `RWABS_RETRIES = 1` (audit §6). |
+| 3 | `RW_NOTRANSLATE` | **[BIOS02, corrected]** the bit **is** honoured: `r_w & RW_NOTRANSLATE` selects an absolute device sector, range-checked against the whole device with `>=` like EmuTOS (`tos-api/src/bios/mod.rs:178@RW_NOTRANSLATE`). What is **wrong** is the `drive` argument: it is still resolved as a *logical drive letter* (`tos-api/src/bios/mod.rs:160@resolve`) — EmuTOS reads it as a *physical unit number* (`bios/blkdev.c:484-485`). BIOS-STOR-002, decision pending below. |
 | 7 | `RW_NOBYTESWAP` | **irrelevant on ARM** — see below. |
 
 - **No byte-swap on ARM.** The Atari byte-swap logic (`RW_NOBYTESWAP`, forced
@@ -449,16 +539,28 @@ the SD partitions are assigned from **C:** upward (`tos-api/src/bios/drive.rs:12
 
 ### Contract behaviours vs. the current code (Step-2 candidates)
 
-- **`adr == NULL` set-mediachange feature:** not implemented — the branch is
-  floppy-only in EmuTOS and there is no floppy; a NULL buffer would be
-  dereferenced. Harmless on the Pi (no floppy caller) but the branch is absent.
-- **Sector-0 write → `forcechange`:** **not implemented.** A logical write to
-  sector 0 does not arm any change flag; the next `Mediach` still returns 0.
-  With a non-removable card this is cosmetically fine, but the boot-sector
-  re-login contract step is missing (see `09-mediach.md`, B-series).
+- **`adr == NULL` set-mediachange feature:** not implemented — a NULL buffer
+  on A:/B: ends in `EUNDEV` (`tos-api/src/bios/mod.rs:160@resolve`), EmuTOS
+  returns 0 *before* any drive test (`bios/blkdev.c:425-428`). **Measured
+  DIFF, F03/F03b** (EmuTOS 0, NewTOS -15), also on an EmuTOS without floppy
+  drives (audit §1, `EMUTOS-falcon-nofloppy`) — so not a device parameter.
+  **[BIOS02]** Decision BIOS-STOR-007 pending below.
+- **Sector-0 write → `forcechange`:** **[BIOS02] not implemented, measured
+  DIFF** (W01-W05, X13, X14: EmuTOS -14/2/-14/-14/2/2/-14, NewTOS
+  0/0/0/0/0/0/0). Required state per drive: a `forcechange` flag armed by a
+  logical write starting at sector 0 (step 6), tested before everything else
+  once the drive and BPB checks have passed (step 5), reported by `Mediach`
+  as 2 (`09-mediach.md`), cleared only by `Getbpb` on that drive. A
+  consequence if left out: a boot-sector rewrite is not seen as a media
+  change, so GEMDOS does not re-log the drive (EmuTOS `ckdrv`/`getbcb` ask
+  `Mediach`, audit BIOS-STOR-001 — *closed reasoning, not measured*).
 - **`first` unsigned-16 / `first==-1`⇒`lfirst`:** implemented
-  (`bios/mod.rs:86-90`).
-- **`numb == 0` ⇒ `E_OK`, no transfer:** implemented (`bios/mod.rs:83-84`).
+  (`tos-api/src/bios/mod.rs:170@numb`, the `sector` computation below it);
+  R03/R04/R18-R20 equal.
+- **`numb == 0` ⇒ `E_OK`, no transfer:** **[BIOS02, wrong]** implemented as an
+  early return *before* the range check (`tos-api/src/bios/mod.rs:170@numb`).
+  EmuTOS checks the range first: R10 (`Rwabs(0,buf,0,-1,2,PSIZE+10)`) is
+  `ESECNF` on EmuTOS, 0 on NewTOS — **measured DIFF**; R09 (in range) equal.
 - **`0x7FFF`-sector chunking:** not needed — transfers loop one 512-byte block
   at a time (`emmc.rs:343-346,353-356`); no signed-WORD count limit.
 - **Error codes:** invalid/unmounted drive → `EUNDEV`; out-of-range sector →
@@ -468,6 +570,7 @@ the SD partitions are assigned from **C:** upward (`tos-api/src/bios/drive.rs:12
   (R1 error bit) and a broken transfer arrive as `EWRITF`/`EREADF`, a wait
   that ran out as `EDRVNR`, and a block outside the card's address space as
   `ESECNF` (`docs/hardware/emmc-sd.md` §5).
+  **[BIOS02]** measured equal for R06-R08, R11-R14 (`ESECNF`, `EUNDEV`).
   The invalid-BPB (`recsiz==0`) `ESECNF` guard is **not** in `Rwabs` here —
   FAT32/exFAT rejection happens in `Getbpb` (see `07-getbpb.md`), and `Rwabs`
   does no BPB lookup, so a logical `Rwabs` on a FAT32 partition transfers raw
@@ -475,3 +578,48 @@ the SD partitions are assigned from **C:** upward (`tos-api/src/bios/drive.rs:12
 - **Buffer pointer:** `adr` is used raw (`bios/mod.rs:99-108`); EL0 user-pointer
   validation is deferred to the process-aware BIOS path (matches EmuTOS's
   no-bounds-check note).
+
+### Measured cross-check — `bios-r2.tsv` cases per statement [BIOS02]
+
+Oracle = `tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-disk.BIN`; NewTOS =
+`measurements/measurement-2026-10-28-tool07/RUNINFO.TXT` (tosdiff: 10 of 51
+cases differ). Dumper case number = line of the row in `bios-r2.tsv`.
+
+| Statement | Cases (label : dumper no.) | EmuTOS | NewTOS | Verdict |
+|-----------|----------------------------|--------|--------|---------|
+| logical read, data, `first`/`lfirst`, 16-bit unsigned recno | R01 58-59, R02 60, R03 61, R04 62, R18-R20 76-78 | 0 + data | same | EQUAL |
+| last sector reachable; one past / straddle / negative → `ESECNF` | R05 63; R06 64, R07 65, R08 66 | 0; -8 | same | EQUAL |
+| count 0 in range → 0 | R09 67 | 0 | 0 | EQUAL |
+| **count 0 out of range → `ESECNF`** | R10 68 | -8 | 0 | **DIFF** (BIOS-STOR-003) |
+| absent / out-of-range drive → `EUNDEV` | R11-R14 69-72 | -15 | -15 | EQUAL |
+| flags `RW_NOMEDIACH`, `RW_NORETRIES`, `RW_NOBYTESWAP` accepted | R15-R17 73-75 | 0 | 0 | EQUAL |
+| **NULL buffer on A: → 0** | F03 83, F03b 84 | 0 | -15 | **DIFF** (BIOS-STOR-007) |
+| **sector-0 write returns `E_CHNG`, no write** | W01 92 | -14 | 0 | **DIFF** (BIOS-STOR-001) |
+| **`Mediach` = 2 after it, latched** | W02 93, W05 96 | 2 | 0 | **DIFF** |
+| **logical read `E_CHNG`, also with `RW_NOMEDIACH`, buffer untouched** | W03 94, W04 95 | -14 | 0 + data | **DIFF** |
+| `Getbpb` clears the state; `Mediach` 0, reads work again | W06 97, W07 98, W08 99 | BPB, 0, 0 | same | EQUAL (nothing to clear on NewTOS) |
+| non-zero sector does not arm | W09 101, W10 102, W11 103 | 0, 0, 0 | same | EQUAL |
+| **sector-0 write with `RW_NOMEDIACH`: writes (0) and arms** | X12 105 (0), X13 106, X14 107 | 0, 2, -14 | 0, 0, 0 | X12 EQUAL; **X13, X14 DIFF** |
+| `Getbpb` / `Mediach` after it | X15 108, X16 109 | BPB, 0 | same | EQUAL |
+
+**Not measured by `bios-r2.tsv` (stay [source]-only):** `RW_NOTRANSLATE`
+(refused by the dumper guard, `tosdump/core/cases.c:3208@rwabs_value_refusal`; probe cases P01-P04
+in the audit only), `recsiz == 0` → `ESECNF` after a failed `Getbpb` (X07/X08,
+BIOS-STOR-006, no case yet), arming before a failing range/mediach check,
+negative `numb`, negative `dev` with `buf == NULL`, the physical-mode `>=`
+asymmetry (edge case 8: audit probe P03 only), `etv_critic`, the 0x7FFF
+chunking.
+
+### Decisions pending (user) [BIOS02] — not spec until approved
+
+- **BIOS-STOR-002 — physical unit numbering for `RW_NOTRANSLATE`.** EmuTOS:
+  `unit = NUMFLOPPIES (2) + 8*bus + device`
+  (`bios/disk.h:18,20,30`), buses ACSI 0, SCSI 1, IDE 2, SD/MMC 3
+  (`bios/machine.h:39-42`) → ACSI 0 = 2, SCSI 0 = 10, IDE master = 18,
+  SD/MMC = 26; `sd_rw` accepts device 0 only (`bios/sd.c:160-161`), so the
+  SD/MMC bus offers exactly unit 26. Recommendation and alternatives: report
+  of BIOS02 (memo 1); the chosen option goes here on approval.
+- **BIOS-STOR-007 — `Rwabs(…, NULL, n, …, A:/B:)`.** Options and the
+  recommendation (match: return 0 for `dev` 0/1 with `adr == NULL`): report of
+  BIOS02 (memo 3); on approval either the `rwabs` rule or a
+  `docs/COMPATIBILITY.md` entry goes here.
