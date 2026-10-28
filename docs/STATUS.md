@@ -54,9 +54,10 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
 
 - **Warteschlange (Anwender 2026-10-28, Stand nach den Entscheidungen zu SDK02, BIOS03, MEASURED-Fixes, TOOL16, XBIOS10), in dieser Reihenfolge.**
   Developer, einer zur Zeit: [TOOL12](../TASK/TOOL12.md) (Track B; laeuft) →
-  [TOOL07](../TASK/TOOL07.md) Rest (Variante B) → [TOOL16](../TASK/TOOL16.md)
-  (Dumper liest durch Rueckgabezeiger) → [BIOS01](../TASK/BIOS01.md) S2
-  (BIOS-STOR-001) → das S1 `Iorec` ([XBIOS01](../TASK/XBIOS01.md)) → BIOS01
+  [TOOL07](../TASK/TOOL07.md) Rest (Variante B) → [BIOS01](../TASK/BIOS01.md) S2
+  (BIOS-STOR-001; Rueckgabewerte + Abbildvergleich, braucht TOOL16 nicht) →
+  [TOOL16](../TASK/TOOL16.md) (Dumper liest durch Rueckgabezeiger) → das S1
+  `Iorec` ([XBIOS01](../TASK/XBIOS01.md)) → BIOS01
   Rest → die uebrigen Audit-Tickets BIOS04–BIOS14, XBIOS02–XBIOS14 (S2
   zuerst; BIOS05 und XBIOS03 nach dem ADR aus BIOS03, XBIOS10 nach ARCH05) →
   [TOOL13](../TASK/TOOL13.md), [TOOL14](../TASK/TOOL14.md),
@@ -66,7 +67,7 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   Daneben ein Auditor bzw. Researcher zur Zeit, in eigenem Arbeitsbaum:
   Vertrag des IOREC-Abbilds (XBIOS01 Punkt 1) → [BIOS03](../TASK/BIOS03.md)
   (gemeinsames ADR „OS hooks installed by programs“, Bestand zuerst) →
-  [ARCH05](../TASK/ARCH05.md) (`_MCH`-ADR) → Vertrag `Getmpb` (BIOS06) →
+  [ARCH05](../TASK/ARCH05.md) (Maschinenidentitaet: Cookie-Bestand, Programmbeleg, ggf. Nachtrag ADR-012) → Vertrag `Getmpb` (BIOS06) →
   Spec-Tickets der Audits.
 - **P1:** [MEM12](../TASK/MEM12.md) — umgesetzt und auf QEMU abgenommen (Seite 0 nur im Super-Zustand beschreibbar); offen nur der Lauf auf der echten Pi.
   [USB01](../TASK/USB01.md) — F1/F2/F3/F8 auf echter Hardware

@@ -18,17 +18,30 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher (ADR-Vorschlag), Ents
 
 ## Arbeit
 
-1. Bestand: wo EmuTOS Verhalten am Maschinentyp festmacht (`_MCH`-Werte,
-   `cookie_mch`, `HAS_*`/`IS_*`-Pruefungen fuer NVRAM, RTC, DSP, Videomodi
-   usw.), welche davon fuer NewTOS beobachtbar sind.
-2. Was Programme mit `_MCH` tun (portierte Programme, SDK), mit Quelle.
-3. Bedeutung von `0x0005_0000` belegen (EmuTOS/FreeMiNT-Quellen); kollidiert
-   der Wert mit einer vergebenen Kennung?
-4. ADR-Vorschlag mit Optionen (z. B. eigene Kennung ohne Atari-Hardware,
-   Falcon-Kennung, Falcon-Kennung mit Abweichungsliste), je mit Folgen fuer
-   NVRAM (`NVMaccess`), RTC und die anderen maschinenabhaengigen Funktionen,
-   und mit Messfall.
-5. Entscheidung beim Anwender; danach XBIOS10 entsprechend.
+Anwender 2026-10-28: Ausgangslage ist ADR-012 (`_MCH` = eigener
+NewTOS-Wert); `0x0005_0000` (laut Anwender die ARAnyM-Kennung) ist die
+vorlaeufige Abweichung davon. Kein eigenes Ticket fuer die
+Maschinenidentitaet, sie gehoert hierher.
+
+1. **Bestand:** alle Kennungs-Cookies, die NewTOS heute meldet (`_MCH`,
+   `_CPU`, `_FPU`, `_VDO`, `_SND`, `_FDC`, `_AKP`, `_IDT`, `NTOS`, `EdDI`, …),
+   je mit Wert und `file:line`; daneben, was die Orakel-Profile (`tt`,
+   `falcontc`, `disk`) melden (gemessen, nicht aus der Quelle).
+2. **Beleg:** welche portierten Programme (`sdk/apps/`, `sdk/overlays/`,
+   Portliste) welchen Cookie lesen und was sie je Wert tun (`file:line`).
+   Besonders numerische Vergleiche (z. B. `mch >= 2` → TT/Falcon-Hardwarepfade):
+   ein eigener Wert darf sie nicht ausloesen. Dazu die Stellen in EmuTOS, die
+   Verhalten am Maschinentyp festmachen (NVRAM, RTC, DSP, Videomodi), soweit
+   fuer NewTOS beobachtbar.
+3. Zeigt der Beleg, dass ein eigener Wert unsicher ist: ADR-012
+   **ausdruecklich** ueberarbeiten (Nachtrag mit Begruendung), nie still.
+4. **Kennungs-Cookie fuer NewTOS:** Name gegen das bekannte Cookie-Register
+   pruefen (Quelle nennen); heute gesetzt ist `NTOS`
+   (`tos-api/src/cookie.rs:221@seed_defaults`) — Kollision ja/nein.
+5. Cookie-Jar-Faelle gegen das Orakel werden je Profil dokumentierte
+   ACCEPTED-Abweichungen (Falltabelle bzw. `docs/COMPATIBILITY.md`, Form im
+   Vorschlag); danach folgt XBIOS10 (NVRAM) aus der Entscheidung.
+6. ADR-Vorschlag mit Optionen und Folgen; Entscheidung beim Anwender.
 
 ## Abnahme
 
