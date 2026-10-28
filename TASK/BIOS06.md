@@ -33,3 +33,19 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (Vertrag festlegen), 
 - Bis dahin gilt fuer den MEASURED-Teil die Sondenregel aus CLAUDE.md
   „Testing“ (Sonde als dauerhafter Test, beidseitig gegen das gepinnte
   Orakel, mit Eingabe-Trace; Folgeticket nach tosdiff).
+
+## Stand 2026-10-28 (Vertrag, Entwurf)
+
+- Vertrag als Vorschlag in `docs/api/bios/00-getmpb.md` („NewTOS-Vertrag
+  [BIOS06]“, V1–V5) und `docs/api/structures/md.md`: LP64-Header-Layout
+  (`_MD` 32 Byte, `_MPB` 24 Byte); falsch ist abgeleitet der Kern, der sein
+  internes 24-Byte-BDOS-`MD` veroeffentlicht; Inhalt ein statischer
+  Schnappschuss `[membot, memtop)`, nur `mp_mfl`/`mp_mal` werden geschrieben.
+  Entscheidungen O1–O4 beim Anwender.
+- Programmerhebung: einziger Leser `sdk/apps/apitest/apitest.c` (eigenes
+  `MDX`). Kartenluecke: per Konstruktion leer fuer das Standardabbild (alle
+  ausfuehrbaren Dateien aus lokalen Rezepten,
+  `docs/analysis/iorec-survey-2026-10-28.md`, Nachtrag).
+- Randbefund: `docs/COMPATIBILITY.md` (TSR-Bloecke ueber `Getmpb` auffindbar;
+  „`Getmpb` unchanged“) widerspricht dem Code (`mp_mal` immer NULL, ein MD).
+

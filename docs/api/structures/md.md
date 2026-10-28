@@ -50,6 +50,27 @@ Comment in the header: *"roving pointer - no longer used"*. EmuTOS
 keeps the field for ABI compatibility with code that walks the MPB
 externally.
 
+## NewTOS: oeffentliches Layout von `MD`/`MPB` [BIOS06]
+
+> **Vorgeschlagen, Anwenderentscheidung O1 steht aus**
+> (`docs/api/bios/00-getmpb.md`, "Offene Entscheidungen"). Nichts davon ist
+> umgesetzt.
+
+Drei Layouts existieren heute nebeneinander (gelesen):
+
+| Layout | `MD` | `MPB` | Quelle |
+|---|---|---|---|
+| EmuTOS m68k | 16 Byte (0/4/8/12) | 12 Byte | `references/emutos/include/bdosdefs.h:108-125` |
+| Kern (BDOS-intern, von `Getmpb` mitveroeffentlicht) | 24 Byte (Zeiger 8 @0, `m_start` 4 @8, `m_length` 4 @12, Zeiger 8 @16) | 24 Byte | `tos-types/src/memory.rs:61@MD`, `:101@MPB` |
+| SDK-Header unter LP64 (`long` = 8) | 32 Byte (0/8/16/24, alle 8) — abgeleitet, gemessen `sizeof=32` | 24 Byte (0/8/16) | `sdk/libc/overlay/include/mint/ostruct.h:293@_md`, `:305@_MPB` |
+
+Das Kern-24-Byte-`MD` ist ein **internes** BDOS-Layout. Was ein Programm ueber
+`Getmpb` sieht, ist der Vertrag aus `docs/api/bios/00-getmpb.md` (V1);
+der Vorschlag dort ist das LP64-Header-Layout (32/24 Byte). Pool-`MD`s
+(`pmd`/`pmdalt`, Allokationslisten) werden keinem Programm veroeffentlicht
+(abgeleitet: einzige Veroeffentlichung eines `MD` an ein Programm ist
+`tos-api/src/bios/getmpb.rs:35@ThemdPage`).
+
 ## Allocator semantics
 
 ### Allocation strategy
