@@ -5,7 +5,7 @@ Status: **TEILWEISE** (Etappe 1 2026-10-28, siehe unten) · Prioritaet: **P1** �
 ## Sachverhalt
 
 - DUMPBIOS weist `Rwabs`, `Getbpb` und `Mediach` ab
-  (`tosdump/core/cases.c:3077@call_refusals`); das Audit „BIOS-Speicher“
+  (`tosdump/core/cases.c:3097@call_refusals`); das Audit „BIOS-Speicher“
   konnte sie nur per eigener Sonde messen, alle zehn Befunde blieben
   PLAUSIBLE (`docs/audits/2026-10-28-bios-storage.md`, Abschnitte 5 und 11).
 - `Drvmap` (Fall 74, Klasse `NONZERO`) besteht fuer jede nichtleere
