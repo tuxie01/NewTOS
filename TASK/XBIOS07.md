@@ -1,0 +1,26 @@
+# XBIOS07 — Spec und Doku der Zeichengeraete/Tastatur widersprechen Messung und Code
+
+Status: **OFFEN** · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`
+
+## Sachverhalt
+
+**XBIOS-CHARDEV-007 — S4 — MEASURED (Doku widerspricht Messung oder Code).** Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-xbios-chardev-audit/RUNINFO.TXT`. Dateigruppe `docs/api/xbios/` plus `docs/COMPATIBILITY.md`:
+
+1. `docs/api/xbios/0e-iorec.md` und `docs/api/xbios/18-bioskeys.md` (Pi binding): „returns `EINVFN`“ — gemessen die Funktionsnummer (`0x0E`, `0x18`).
+2. `tos-api/src/xbios/mod.rs:26@PHYSBASE`: `Iorec`/`Bioskeys` „need NewTOS keyboard/mouse infrastructure that does not exist yet“ — fuer `Bioskeys` nennt die eigene Spec `keymap::select_builtin` als vorhanden (Code-Kommentar: Developer, siehe [XBIOS01](XBIOS01.md)/[XBIOS02](XBIOS02.md)).
+3. `docs/COMPATIBILITY.md`, Abschnitt „The IKBD vector table is per process“: „NewTOS keeps the table in each process's own page 0 (`0x9A0` …)“ — gemessen `0x7F010` (private RW-Seite seit MEM12, wie der MEM12-Absatz weiter unten richtig sagt).
+4. `docs/api/xbios/2c-bconmap.md`: „single-serial build“ — der gepinnte Referenzbau hat `BCONMAP_AVAILABLE` ([XBIOS05](XBIOS05.md)).
+5. `docs/api/xbios/0f-rsconf.md` „zero-extended“ gegen das Trap-ABI ([XBIOS06](XBIOS06.md)).
+
+(Punkt 6 des Berichts, das Ledger, steht in [BIOS13](BIOS13.md).)
+
+## Arbeit
+
+1. Die Punkte 1, 3, 4, 5 aus der EmuTOS-Quelle und den Messlaeufen korrigieren, jede Korrektur mit `file:line` belegen.
+2. Wo ein Punkt von einer offenen Entscheidung abhaengt (4, 5): erst nach der Entscheidung in XBIOS05/XBIOS06.
+
+## Abnahme
+
+- Jede korrigierte Aussage hat einen Beleg (EmuTOS `file:line` oder Laufdatei); kein Eintrag widerspricht mehr einem Fall der vier Tabellen.
+- `cargo xtask test` gruen (unveraendert); kein vorher gleicher tosdump-Fall weicht neu ab.
+- `cargo xtask doc-check` der geaenderten Doku 0 Fehler.
