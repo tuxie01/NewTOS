@@ -11,7 +11,7 @@
 > the field layout and ring semantics a program reads/writes. Reference: the
 > ACIA/UART drivers behind each record, the concrete addresses.
 
-## Status: **ENTWURF — wartet auf Anwenderentscheidung (E1-E6, Ende dieses Dokuments)**
+## Status: **Vertrag entschieden 2026-10-28 (E1-E6, Ende dieses Dokuments); E3/E4 nach Erhebung**
 
 [XBIOS01] Vorher stand hier "decision deferred" und "returns `EINVFN`". Beides
 ist falsch: `Iorec` ist in NewTOS nicht verdrahtet; der Sammelzweig
@@ -22,7 +22,8 @@ auch `3`, `-1`, `0x7FFF`, `-32768`, liefert `0x0000000E`
 Zeilen I01-I07). Die zurueckgestellte Entscheidung ist mit XBIOS-CHARDEV-001
 (`docs/audits/2026-10-28-xbios-chardev.md`) und TASK/XBIOS01 faellig.
 Der Teil "NewTOS-Vertrag" legt fest, was aus dem Quelltext **folgt**; was eine
-Wahl ist, steht als E1-E6 offen — nichts davon ist entschieden.
+Wahl war, hat der Anwender am 2026-10-28 als E1-E6 entschieden (Ende dieses
+Dokuments); die Optionen bleiben dort als Begruendung stehen.
 
 ---
 
@@ -270,6 +271,12 @@ solange F1-F3 gelten.
   einspeisen, flushen, `Bconstat(2)`" fehlt; sie braucht Eingabe-Trace wie die
   X-Sonden, TASK/TOOL08).
 - Inhalt durch den Zeiger: erst nach TASK/TOOL16 per tosdiff.
+- **[Anwender 2026-10-28]** Layout: Pruefung zur Uebersetzungszeit
+  (`offsetof`/`sizeof` des SDK-`_IOREC` und der Geraet-0-Struktur) gegen die
+  Offsets dieser Spec — heute sind die LP64-Offsets nur abgeleitet.
+- **[Anwender 2026-10-28]** Flush als gemessener Fall auf beiden Seiten:
+  `io->ibufhd = io->ibuftl` schreiben, danach `Bconstat(2) == 0`. Braucht
+  „durch den Rueckgabezeiger schreiben“ in TASK/TOOL16.
 
 ---
 
@@ -294,7 +301,28 @@ Atari Compendium / Profibuch: nicht in `references/`, Abgleich ausstehend.
 
 ---
 
-## Offene Entscheidungen fuer den Anwender (keine getroffen)
+## Entscheidungen (Anwender 2026-10-28)
+
+- **E1 = 1:** ein gemeinsamer Ring ersetzt `RX_RING`. Der Ringinhalt ist
+  Programmdaten; der Kernel validiert `head`/`tail` (und `buf`/`size`, E4)
+  bei **jeder** Nutzung.
+- **E2 = 32 Bit:** `shifty<<24 | scancode<<16 | ascii`, Shift zum
+  Push-Zeitpunkt; schliesst BIOS11 (TASK/BIOS11.md) mit.
+- **E3 = (a) vorerst, dokumentiert:** eine Warnung ist nicht moeglich (es
+  kommt kein Kernelaufruf). Erhebung: pollt ein portiertes Programm den Ring
+  ohne Trap? Wenn ja → (b), die treuere Variante (EmuTOS fuellt den Ring per
+  Interrupt, unabhaengig von Traps).
+- **E4 = nach Erhebung:** keine Nutzer, die `buf`/`size` ersetzen → (a)
+  kernel-eigener Puffer; bemerkt der Kernel beim naechsten Trap ein
+  geaendertes `buf`/`size`, warnt er einmal (nie still) und stellt den
+  Standard wieder her. Nutzer vorhanden → (b) nur fuer Puffer in global
+  abgebildetem Speicher, bei jeder Nutzung validiert, beim Ende des
+  besitzenden Prozesses auf den Standardpuffer zurueckgesetzt.
+- **E5 = (a):** Records fuer Geraete 0 und 2 vorhanden und leer, wie das
+  Orakel.
+- **E6 = ja**, entschieden im gemeinsamen Haken-ADR (TASK/BIOS03.md).
+
+### Optionen, wie vorgelegt (Begruendung)
 
 **E1 — Ort und Kopplung der IKBD-Schlange (Kern; bestimmt F1-Ort, F3).**
 1. *Lebender gemeinsamer Ring:* der IOREC-Ring **ersetzt** `RX_RING` (alle

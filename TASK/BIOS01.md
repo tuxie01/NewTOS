@@ -59,3 +59,28 @@ im Graphen, Track B), BIOS-STOR-010 (`hdv_*`-Vektoren, BIOS03).
   TOOL07-Rest.
 - Reihenfolge: S2 (001) → dann sofort das S1 `Iorec` (eigenes Ticket aus dem
   Audit „XBIOS-Zeichengeraete“) → Rest von BIOS01.
+
+## Lokalisierung (Lead, 2026-10-28, Graph nach TOOL12 `e70700d6`)
+
+Regel (CLAUDE.md „Testing“): vor jedem Fix NewTOS-Funktion per
+`cargo xtask deps <fn> --down` + `docs/analysis/deps/mapping.tsv`, dazu die
+`--up`-Retest-Menge.
+
+- **BIOS-STOR-001 (forcechange):** `lrwabs --down` → `blkdev_rwabs` (Kante
+  `vector via hdv_rw`) → `blkdev_mediach` (`direct`); `mediach --down` →
+  `blkdev_mediach` (`vector via hdv_mediach`); `getbpb --down` →
+  `blkdev_getbpb` (`vector via hdv_bpb`). NewTOS:
+  `tos-api/src/bios/mod.rs@rwabs`, `tos-api/src/bios/mod.rs@mediach`,
+  `tos-api/src/bios/bpb.rs@getbpb` (dazu `bpb_for`, `parse`).
+- **`--up`-Retest-Menge:** `blkdev_rwabs --up` 405 EmuTOS-Funktionen, davon 83
+  mit NewTOS-Gegenstueck; `blkdev_mediach` 407/85; `blkdev_getbpb` 184/26.
+  Die naechsten Ebenen (Tiefe ≤ 3) mit Gegenstueck: `biostrap` →
+  `bios/mod.rs@dispatch`; `flush`/`getbcb`/`usrio`/`getrec` →
+  `bdos/fs/cache.rs` (`write_back`, `get`, `victim`, `direct_read`,
+  `direct_write`, `with_sector`), `bdos/fs/fsio.rs` (`usrio`, `partial`,
+  `xrw_recs`), `bdos/fs/fat.rs@mount` (`ckdrv`), `fat.rs@with_fat_sector`,
+  `bdos/fs/file.rs@ixclose`, `bdos/fs/find.rs@scan`, `gemdos/mod.rs@dispatch`.
+  Retest also: `bios-r1.tsv`, `bios-r2.tsv` (beide Profile), die
+  GEMDOS-Dateisystem-Hosttests unter `tos-api/tests/` und — 001 betrifft das
+  Neueinloggen nach `Mediach` 2 (`ckdrv`) — ein Boot bis zum Desktop mit
+  `fsck_msdos` der Testpartition.

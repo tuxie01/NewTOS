@@ -23,3 +23,10 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidu
 - Kein vorher gleicher Fall in `bios-r1.tsv`, `bios-core-r1.tsv`, `xbios-chardev-r1.tsv`, `xbios-system-r1.tsv` weicht neu ab.
 - `cargo xtask test` gruen.
 - `docs/STATUS.md` und Spec im selben Commit; `cargo xtask doc-check` der geaenderten Doku 0 Fehler.
+
+## Anwenderentscheidung 2026-10-28
+
+- Wird mit [XBIOS01](XBIOS01.md) geschlossen: E2 = 32-Bit-Ringeintraege mit
+  dem Shift-Zustand zum Push-Zeitpunkt (`docs/api/xbios/0e-iorec.md`,
+  Abschnitt „Entscheidungen“). Kein eigener Fix; die Abnahmefaelle dieses
+  Tickets gehen in die Abnahme von XBIOS01 ein.

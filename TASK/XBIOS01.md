@@ -43,3 +43,23 @@ Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-xbios-char
   (`[XBIOS01]`): LP64-Layout des SDK-Headers, Ort ausserhalb Seite 0, Ring =
   die Schlange von `Bconstat(2)`/`Bconin(2)`, `head`/`tail` als
   unvertrauenswuerdige Eingabe. Entscheidungen E1–E6 beim Anwender.
+
+## Entscheidungen des Anwenders 2026-10-28 (E1-E6)
+
+- E1 gemeinsamer Ring ersetzt `RX_RING`, Kernel validiert `head`/`tail`
+  (und `buf`/`size`) bei jeder Nutzung; E2 32-Bit-Eintraege (schliesst
+  [BIOS11](BIOS11.md)); E3 (a) vorerst; E4 nach Erhebung; E5 leere Records
+  fuer 0 und 2; E6 ja (in [BIOS03](BIOS03.md)). Volltext:
+  `docs/api/xbios/0e-iorec.md`, Abschnitt „Entscheidungen“.
+- **Vor dem Developer (Researcher):** Erhebung in den portierten Programmen
+  (`sdk/apps/`, `sdk/overlays/`, Portliste): (E3) pollt eines den Ring ohne
+  Trap? (E4) ersetzt eines `buf`/`size`? Ergebnis mit `file:line`; danach
+  steht E3/E4 fest.
+- **Abnahme zusaetzlich:** `offsetof`/`sizeof`-Pruefung zur
+  Uebersetzungszeit des SDK-`_IOREC` (und der Geraet-0-Struktur) gegen die
+  Spec; Flush (`ibufhd = ibuftl` → `Bconstat(2) == 0`) als gemessener Fall
+  auf beiden Seiten — braucht „durch den Rueckgabezeiger schreiben“ in
+  [TOOL16](TOOL16.md).
+- **Lokalisierung vor dem Fix (Lead):** NewTOS-Funktion per
+  `cargo xtask deps <fn> --down` + `docs/analysis/deps/mapping.tsv` und die
+  `--up`-Retest-Menge hier eintragen, bevor der Developer beginnt.

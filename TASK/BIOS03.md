@@ -45,3 +45,9 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (Bestand + ADR-Vorsch
 - ADR-Vorschlag mit Quellen; vom Anwender entschieden und als ADR in
   `docs/MEMORY.md` eingetragen (Lead).
 - doc-check der geaenderten Doku 0 Fehler.
+
+## Nachtrag 2026-10-28
+
+- E6 aus [XBIOS01](XBIOS01.md): der `kbdvec`-Haken bekommt den
+  IOREC-Zeiger als Argument (EmuTOS `a0`, `references/emutos/bios/aciavecs.S:412`)
+  — Anwender: ja, im ADR mit festzuhalten.

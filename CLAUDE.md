@@ -383,6 +383,11 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   `measurements/`), runs on both sides against the pinned oracle, and comes
   with the input trace (`bios-arg-trace` on NewTOS). Each such fix gets a
   follow-up ticket that moves the case to tosdiff (user 2026-10-28).
+- Before a fix from an audit ticket starts, the lead localizes it:
+  `cargo xtask deps <fn> --down` plus `docs/analysis/deps/mapping.tsv` give
+  the NewTOS function; that function and the `--up` retest set go into the
+  ticket before the developer begins (user 2026-10-28; the audit findings
+  were NOT LOCALIZED while the graph had gaps, closed by TOOL12).
 - Hardware tests on RPi4 are manual, documented in `docs/HW-TEST-LOG.md`.
 - Every TOS API function gets at least one test that verifies the documented
   return value for documented input, and one that verifies the documented

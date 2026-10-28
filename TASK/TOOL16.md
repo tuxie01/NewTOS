@@ -38,3 +38,12 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer (Werkzeug) — Anwende
   bitgleich; NewTOS-Lauf per `cargo xtask tosdump`, Ergebnis je Fall im
   RUNINFO (DIFF bei `Iorec`/`Getmpb` erwartet bis XBIOS01/BIOS06).
 - Hosttests gruen (`cargo xtask test`, `tosdump/tests`); doc-check 0 Fehler.
+
+## Nachtrag Anwender 2026-10-28
+
+- Zusaetzlich **durch den Rueckgabezeiger schreiben**, minimal wie `+set`
+  (TOOL07): ein Feld der Struktur hinter dem Rueckgabezeiger eines
+  vorangehenden Falls setzen, bevor der naechste Fall laeuft — Feld per Name
+  aus dem Layout, nur innerhalb der `PTR_RAM`-Grenzen, nur in Tabellen, die
+  das ausdruecklich erlauben. Erster Nutzer: der Flush-Fall von
+  [XBIOS01](XBIOS01.md) (`ibufhd = ibuftl`, danach `Bconstat(2)`).
