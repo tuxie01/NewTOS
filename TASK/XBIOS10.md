@@ -1,6 +1,6 @@
 # XBIOS10 — `NVMaccess` ist nicht verdrahtet: jede Operation liefert `0x2E`
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher (Entscheidung „kein NVRAM wie EmuTOS ohne Chip“ + COMPATIBILITY, oder emuliertes 50-Byte-NVRAM → Developer) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md`
+Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28: kein NVRAM, Antwort wie EmuTOS ohne NVRAM-Chip — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md`
 
 ## Sachverhalt
 
@@ -28,3 +28,14 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher (Entscheidung „kein
 - Die NVRAM-Frage folgt daraus, welche Maschine NewTOS meldet (`_MCH`).
   ADR-012 legt nur fest, dass es eine eigene Kennung gibt; der Wert ist im
   Code vorlaeufig. Zuerst [ARCH05](ARCH05.md) (ADR), danach dieses Ticket.
+
+## Anwenderentscheidung 2026-10-28 (nach ARCH05)
+
+- Unabhaengig von `_MCH` (EmuTOS schaltet NVRAM ueber `has_nvram`,
+  `references/emutos/bios/nvram.c:161`). NewTOS hat kein NVRAM → `NVMaccess`
+  antwortet wie EmuTOS ohne NVRAM-Chip.
+- Messung dafuer mit einem **ST-Profil** in Hatari (ein Profil ohne NVRAM;
+  `tt` und `falcontc` haben eines): als neues Orakel-Profil mit eigenem
+  Kanarienvogel wie TOOL06 (`docs/analysis/ORACLE.md`), bestehende Profile
+  unveraendert — Teil dieses Tickets, weil die Abnahme es braucht.
+- Lokalisierung (Lead) vor Beginn nach CLAUDE.md „Testing“.

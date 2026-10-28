@@ -398,6 +398,21 @@ And no NewTOS-own `Getcookie`/`Setcookie` function ids were reserved:
 the Syscall placement decision above uses FreeMiNT's `Ssystem` modes
 `S_GETCOOKIE`/`S_SETCOOKIE`/`S_DELCOOKIE`, which replaces that bullet.
 
+*Amendment 2026-10-28 (user decision on TASK/ARCH05).* **`_MCH` =
+`0xFFFFFFFF`**, EmuTOS' value for "no Atari hardware" (`MCH_NOHARD`,
+`references/emutos/bios/machine.c:400-401`); **`NTOS`** is the NewTOS
+identifier (no collision in the cookie registry: only `nTOS` exists, case
+matters). The provisional `0x00050000` was the registered **ARAnyM** id
+(`references/emutos/include/cookie.h:57`) and is withdrawn. `_CPU`, `_FPU`,
+`_SND`, `_FDC` stay absent (no such hardware); `_VDO` is decided after
+measuring what TeraDesk's ST branch does on NewTOS (TASK/ARCH06.md).
+**Note for every port:** depending on signedness, `-1` reads as "below ST"
+(signed) or as "above Falcon" (unsigned: `(mch >> 16) >= 2` is true), so
+every future port is checked for numeric `_MCH` comparisons. NVRAM does not
+follow from `_MCH` (EmuTOS gates it on `has_nvram`): NewTOS has none and
+answers `NVMaccess` like EmuTOS without an NVRAM chip (TASK/XBIOS10.md).
+Evidence: `docs/analysis/machine-identity-adr-proposal-2026-10-28.md`.
+
 ### Alternatives considered
 
 - **Map a `$5A0` (or any fixed) sysvar page so apps read+scan it**

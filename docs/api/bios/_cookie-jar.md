@@ -133,7 +133,7 @@ probing:
 | Cookie | Value | Meaning | Source |
 |--------|-------|---------|--------|
 | `NTOS` | `0x00000100` | NewTOS identity + version 0x100 (the NewTOS-specific cookie; lets ports detect the environment) | `cookie.rs:142` |
-| `_MCH` | `0x00050000` | machine id — a **NewTOS-specific, non-Atari** marker (not ST/STe/TT/Falcon) | `cookie.rs:143` |
+| `_MCH` | `0x00050000` today → **`0xFFFFFFFF`** (ADR-012 amendment 2026-10-28, TASK/ARCH06) | machine id. `0x00050000` is **not** NewTOS-specific: it is the registered **ARAnyM** id (`references/emutos/include/cookie.h:57`); `0xFFFFFFFF` is EmuTOS' "no Atari hardware" (`references/emutos/bios/machine.c:400-401`) | `tos-api/src/cookie.rs:223@seed_defaults` |
 | `_IDT` | `0x0000112F` | date/time format: `/` separator, DD-MM-YY, 24-hour | `cookie.rs:144` |
 | `_AKP` | `0x00000000` | keyboard/language: US | `cookie.rs:145` |
 | `EdDI` | `0x00000001` | the VDI answers `vq_scrninfo`; the value is a **non-callable marker**, not a dispatcher address (E2 of [`../vdi/eddi-vq_scrninfo.md`](../vdi/eddi-vq_scrninfo.md); deviation from TOS/EmuTOS, `docs/COMPATIBILITY.md`) | `cookie.rs` `EDDI_MARKER` (2026-10-02) |
@@ -145,7 +145,7 @@ missing and falls back.
 
 | Atari reference | Pi-4 model today |
 |-----------------|------------------|
-| `_MCH` = ST/STe/TT/Falcon id from bus/Shifter probe | `_MCH` = `0x00050000` fixed NewTOS marker |
+| `_MCH` = ST/STe/TT/Falcon id from bus/Shifter probe | `_MCH` fixed: `0x00050000` today (ARAnyM id, withdrawn), `0xFFFFFFFF` decided (ADR-012 amendment 2026-10-28) |
 | `_CPU`/`_FPU` = m68k CPU/FPU type | **omitted** (AArch64) — see decision below |
 | `_VDO`/`_SND`/`_FDC` from hardware detect | **omitted** (hardware absent) |
 | `_AKP` from the IKBD layout | `_AKP` = `0` (US), matches the loaded keymap default (§3.3) |

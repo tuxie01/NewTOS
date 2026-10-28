@@ -1,6 +1,6 @@
 # ARCH05 — ADR: welche Maschine meldet NewTOS (`_MCH`) und was folgt daraus
 
-Status: **ENTWURF LIEGT VOR** 2026-10-28 (`docs/analysis/machine-identity-adr-proposal-2026-10-28.md`), Entscheidungen beim Anwender · Prioritaet: **P2** · Typ: Researcher (ADR-Vorschlag), Entscheidung Anwender — Anwenderentscheidung 2026-10-28, aus [XBIOS10](XBIOS10.md)
+Status: **ERLEDIGT** 2026-10-28 — Nachtrag ADR-012 in `docs/MEMORY.md`; Umsetzung [ARCH06](ARCH06.md), [SDK03](SDK03.md), [TOOL18](TOOL18.md) · Prioritaet: **P2** · Typ: Researcher (ADR-Vorschlag), Entscheidung Anwender — Anwenderentscheidung 2026-10-28, aus [XBIOS10](XBIOS10.md)
 
 ## Sachverhalt
 
@@ -48,3 +48,14 @@ Maschinenidentitaet, sie gehoert hierher.
 - ADR-Vorschlag mit Quellen; vom Anwender entschieden und als ADR bzw.
   Nachtrag zu ADR-012 in `docs/MEMORY.md` eingetragen (Lead).
 - doc-check der geaenderten Doku 0 Fehler.
+
+## Entscheidungen des Anwenders 2026-10-28
+
+1. `_MCH` = `0xFFFFFFFF` (A2), `NTOS` ist die Kennung; Nachtrag ADR-012 mit
+   Wert und Hinweis auf numerische Vergleiche (vorzeichenabhaengig).
+   `docs/api/bios/_cookie-jar.md` berichtigt. Umsetzung [ARCH06](ARCH06.md).
+2. `sysinfo(SI_PLATFORM)` im SDK-libc-Overlay korrigieren: [SDK03](SDK03.md).
+3. `_CPU`, `_FPU`, `_SND`, `_FDC` bleiben weg; `_VDO` erst messen (ARCH06).
+4. Cookie-Falltabelle auf dem Pin, alle drei Profile: [TOOL18](TOOL18.md);
+   ACCEPTED-Abweichungen mit den gemessenen Werten.
+- XBIOS10 haengt nicht an `_MCH`. LP64-Randbefund: [SDK04](SDK04.md).
