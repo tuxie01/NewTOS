@@ -8,10 +8,13 @@
 struct td_stub_call td_stub_calls[TD_STUB_MAX_CALLS];
 int                 td_stub_ncalls;
 
+static int iorec_laid;
+
 void td_stub_reset(void)
 {
 	memset(td_stub_calls, 0, sizeof td_stub_calls);
 	td_stub_ncalls = 0;
+	iorec_laid = 0;
 }
 
 static struct td_stub_call *log_slot(void)
@@ -288,6 +291,56 @@ const void *td_abi_addr(long addr)
 /* the modelled processor state (stub_abi.h, "Super and Supexec") */
 static int super_state;
 
+/* The structures behind a pointer (stub_abi.h, TOOL16), in the host's own
+ * (LP64) layout: _IOREC 24 bytes, EXT_IOREC 56, _MD 32. */
+static uint8_t *tos_mem(long addr)
+{
+	return stub_mem + (addr - TD_STUB_MEM_ADDR);
+}
+
+static void lay_iorec(long addr, int16_t size, int16_t head, int16_t tail,
+                      int16_t low, int16_t high)
+{
+	uint8_t *p = tos_mem(addr);
+	long buf = TD_STUB_RING_ADDR;
+
+	memcpy(p, &buf, 8);
+	memcpy(p + 8, &size, 2);
+	memcpy(p + 10, &head, 2);
+	memcpy(p + 12, &tail, 2);
+	memcpy(p + 14, &low, 2);
+	memcpy(p + 16, &high, 2);
+}
+
+static void lay_iorecs(void)
+{
+	static const long ptrs[5] = { TD_STUB_IKBD_ADDR, 0x0EL, 0x401L, 0L,
+	                              0x7FFFFFF0L };
+	uint8_t *ext = tos_mem(TD_STUB_EXTIOREC_ADDR);
+	uint8_t *md = tos_mem(TD_STUB_MD_ADDR);
+	long v;
+
+	if (iorec_laid)
+		return;
+	lay_iorec(TD_STUB_EXTIOREC_ADDR, 256, 0, 0, 64, 192);
+	lay_iorec(TD_STUB_EXTIOREC_ADDR + 24, 256, 2, 2, 64, 192);
+	ext[48] = 1;      /* baudrate */
+	ext[49] = 0;      /* flowctrl */
+	ext[50] = 0x88;   /* ucr      */
+	ext[51] = 0xFF;   /* datamask */
+	ext[52] = 0xEA;   /* wr5      */
+	lay_iorec(TD_STUB_IKBD_ADDR, 256, TD_STUB_IKBD_HEAD, TD_STUB_IKBD_TAIL,
+	          64, 192);
+	lay_iorec(TD_STUB_MIDI_ADDR, 128, 0, 0, 32, 96);
+	memcpy(tos_mem(TD_STUB_PTRS_ADDR), ptrs, sizeof ptrs);
+	memset(md, 0, 32);
+	v = TD_STUB_MD_START;
+	memcpy(md + 8, &v, 8);
+	v = TD_STUB_MD_LENGTH;
+	memcpy(md + 16, &v, 8);
+	iorec_laid = 1;
+}
+
 static long stub_supexec(long (*fn)(void))
 {
 	int was = super_state;
@@ -312,6 +365,35 @@ long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
 	for (i = 0; i < TD_ABI_ARGS_MAX && i < TD_CALL_ARGS_N; i++) {
 		c->call_kind[i]  = i < (int)nargs ? kind[i] : 0;
 		c->call_value[i] = value[i];
+	}
+
+	/* structures behind a pointer (stub_abi.h, TOOL16) */
+	if (trap == 14 && opcode == 0x0E) {
+		lay_iorecs();
+		switch (value[0]) {
+		case 0:                   return TD_STUB_EXTIOREC_ADDR;
+		case 1:                   return TD_STUB_IKBD_ADDR;
+		case 2:                   return TD_STUB_MIDI_ADDR;
+		case TD_STUB_IOREC_FN:    return 0x0EL;
+		case TD_STUB_IOREC_END:   return 0x7FFFFFF0L;
+		case TD_STUB_IOREC_PTRS:  return TD_STUB_PTRS_ADDR;
+		default:                  return -1L;
+		}
+	}
+	if (trap == 13 && opcode == 0 && nargs == 1) {
+		long free_md = TD_STUB_MD_ADDR, none = 0;
+
+		lay_iorecs();
+		memcpy((void *)value[0], &free_md, sizeof free_md);
+		memcpy((uint8_t *)value[0] + sizeof(long), &none, sizeof none);
+		return 0L;
+	}
+	if (trap == 13 && opcode == 1 && value[0] == 2 && iorec_laid) {
+		int16_t hd, tl;
+
+		memcpy(&hd, tos_mem(TD_STUB_IKBD_ADDR) + 10, 2);
+		memcpy(&tl, tos_mem(TD_STUB_IKBD_ADDR) + 12, 2);
+		return hd == tl ? 0L : -1L;
 	}
 
 	/* the disk round (stub_abi.h): a write does not fill, it is logged */

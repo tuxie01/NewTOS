@@ -19,6 +19,7 @@
 #define TOSDUMP_CASEFILE_H
 
 #include "record.h"
+#include "cases.h"
 
 struct td_casefile {
 	uint32_t crc;                                  /* CRC32 of the raw file  */
@@ -31,6 +32,11 @@ struct td_casefile {
 	 * refused here too, and with the same reason. */
 	uint8_t  retclass[TD_MAX_CASES];               /* TD_RET_*               */
 	uint8_t  retwidth[TD_MAX_CASES];               /* TD_RET_WIDTH_*         */
+	/* Call areas only: the whole table as the core's loader read it --
+	 * the layouts and each case's layout capture (TOOL16), which the
+	 * comparator reads slot by slot.  Points at storage of the reader
+	 * (one table at a time); NULL for the other areas. */
+	const struct td_call_case_table *calls;
 };
 
 /*

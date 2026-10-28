@@ -12,7 +12,8 @@ CORE    := ../core
 TESTS   := ../tests
 
 .PHONY: all test run-tests clean
-all: $(BUILD)/tosdiff $(BUILD)/casecheck $(BUILD)/mkrusttests
+all: $(BUILD)/tosdiff $(BUILD)/casecheck $(BUILD)/mkrusttests \
+     $(BUILD)/layoutcheck
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -72,6 +73,12 @@ $(BUILD)/mkdump: $(BUILD)/mkdump.o $(BUILD)/casefile.o $(BUILD)/record.o \
 $(BUILD)/casecheck.o: casecheck.c $(CORE)/cases.h | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/casecheck: $(BUILD)/casecheck.o $(BUILD)/cases.o $(BUILD)/record.o
+	$(CC) $(CFLAGS) $^ -o $@
+
+# TOOL16: the tables' "!layout" lines are the docs/api/ specs' lines.
+$(BUILD)/layoutcheck.o: layoutcheck.c $(CORE)/cases.h | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/layoutcheck: $(BUILD)/layoutcheck.o $(BUILD)/cases.o $(BUILD)/record.o
 	$(CC) $(CFLAGS) $^ -o $@
 
 $(BUILD)/test_log.o: $(TESTS)/test_log.c $(TESTS)/tdtest.h $(CORE)/log.h | $(BUILD)
@@ -158,6 +165,20 @@ $(BUILD)/test_runner_disk: $(BUILD)/test_runner_disk.o $(CORE_OBJ) \
                            $(BUILD)/stub_abi.o
 	$(CC) $(CFLAGS) $^ -o $@
 
+$(BUILD)/test_cases_ptr.o: $(TESTS)/test_cases_ptr.c $(TESTS)/tdtest.h \
+                          $(CORE)/cases.h | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/test_cases_ptr: $(BUILD)/test_cases_ptr.o $(BUILD)/cases.o \
+                         $(BUILD)/record.o
+	$(CC) $(CFLAGS) $^ -o $@
+
+$(BUILD)/test_runner_ptr.o: $(TESTS)/test_runner_ptr.c $(TESTS)/tdtest.h \
+                            $(TESTS)/stub_abi.h $(CORE)/runner_call.h | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/test_runner_ptr: $(BUILD)/test_runner_ptr.o $(CORE_OBJ) \
+                          $(BUILD)/stub_abi.o
+	$(CC) $(CFLAGS) $^ -o $@
+
 $(BUILD)/emit_record.o: $(TESTS)/emit_record.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/emit_be: $(BUILD)/emit_record.o $(BUILD)/record_be.o
@@ -179,6 +200,7 @@ run-tests: $(BUILD)/test_record $(BUILD)/test_cases $(BUILD)/test_log \
       $(BUILD)/test_cases_rast $(BUILD)/test_runner_rast \
       $(BUILD)/test_cases_call $(BUILD)/test_runner_call \
       $(BUILD)/test_cases_disk $(BUILD)/test_runner_disk \
+      $(BUILD)/test_cases_ptr $(BUILD)/test_runner_ptr $(BUILD)/layoutcheck \
       $(BUILD)/test_casefile $(BUILD)/tosdiff $(BUILD)/mkdump \
       $(BUILD)/emit_be $(BUILD)/emit_le
 	@echo "== record format"
@@ -211,6 +233,14 @@ run-tests: $(BUILD)/test_record $(BUILD)/test_cases $(BUILD)/test_log \
 	@$(BUILD)/test_cases_disk
 	@echo "== disk round: runner against the stub backend"
 	@$(BUILD)/test_runner_disk
+	@echo "== structures behind a pointer: !layout, layout captures, +put, Getmpb"
+	@$(BUILD)/test_cases_ptr
+	@echo "== structures behind a pointer: runner against the stub backend"
+	@$(BUILD)/test_runner_ptr $(BUILD)/stub-ptr.bin $(BUILD)/stub-ptr.tsv
+	@$(BUILD)/tosdiff --validate $(BUILD)/stub-ptr.bin $(BUILD)/stub-ptr.tsv \
+	    | sed 's/^/  /'
+	@echo "== layouts: the tables' are the docs/api/ specs'"
+	@sh $(TESTS)/test_layoutcheck.sh $(BUILD)
 	@echo "== case table reader, per area"
 	@$(BUILD)/test_casefile $(BUILD)
 	@echo "== byte order: both target configurations emit identical records"

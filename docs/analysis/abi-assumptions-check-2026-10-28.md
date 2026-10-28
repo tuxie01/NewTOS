@@ -407,7 +407,7 @@ Muster: `Bconmap|MAPTAB|maptab|BCONMAP` (gross/klein) ueber `sdk/apps`, `sdk/ove
   in Vanilla-Conquer, die das Muster `maptab` ohne Gross-/Kleinunterscheidung traf).
 - Treffer nur in Definitionen: `sdk/libc/overlay/include/mint/ostruct.h:527-530@Bconmap` (`BMAP_MAPTAB = -2`),
   `sdk/libc/overlay/include/mint/ostruct.h:679-698@_BCONMAP` (`_MAPTAB`, `_BCONMAP`), `sdk/libc/overlay/include/mint/osbind.h:760@Bconmap` (Binder);
-  `tosdump/core/cases.c:3006@CR_BCONMAP`, `tosdump/core/cases.c:3067@CR_BCONMAP`, `tosdump/core/cases.c:3324@CR_BCONMAP` (Dumper-Aufrufpolitik, kein Programm).
+  `tosdump/core/cases.c:3446@CR_BCONMAP`, `tosdump/core/cases.c:3511@CR_BCONMAP`, `tosdump/core/cases.c:3766@CR_BCONMAP` (Dumper-Aufrufpolitik, kein Programm).
 - Es gibt kein portiertes Terminalprogramm (keines unter `sdk/apps/`, keines auf der Standard-Abbildung).
   `Applications/thing-neo-codeSVN-r62`, `Applications/z-tools`, `Applications/qed` etc. enthalten kein
   `Bconmap`.

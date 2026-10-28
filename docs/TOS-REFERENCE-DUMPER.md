@@ -695,9 +695,13 @@ it carries; a new reference or a new rule is checked on the spot.
   `offset + length <= TD_CALL_BUF_BYTES`. `Protobt` writes its checksum at
   510 (`bios/floppy.c:731-735`), past the 256 bytes the record has room for.
 
+Or `<argindex>:<layout>` / `r:<layout>`: field by field through a layout
+("Structures behind a pointer", below).
+
 **No preludes, no directives** — outside a disk table. A `+` or `!` line is
 refused, except the `!disk` directive and the Rwabs-read preludes of a disk
-table ("The disk round", below). A call table issues no reset either: the
+table ("The disk round", below), and `!layout`, `!write return` and `+put`
+("Structures behind a pointer", below). A call table issues no reset either: the
 admission rule of a round-1 table is that every case is a query, or a call
 whose effect does not outlive it (ledger), so there is no state to restore.
 A round that sets state needs a restoring prelude, and gets it with its own
@@ -914,6 +918,142 @@ are compared (`compare-ends.sh` of the run, the method of
 `compare-testpart.sh`): both must end in the same state, the broken boot
 sector included; the result per table stands in the run's RUNINFO.
 
+### Structures behind a pointer (added 2026-10-29, TOOL16)
+
+`Iorec` returns a pointer to an IOREC, `Getmpb` fills an MPB whose first
+field points at an MD: the structure is the result, and its layout is not
+the same on the two machines -- an m68k pointer is four bytes, an LP64 one
+eight, so every field after it moves. `r:<length>` copies raw bytes and
+cannot say that. A call table therefore describes the structure once and
+captures it field by field. `tosdump/core/cases.h` ("Layouts") is the
+authority; `tosdump/cases/xbios-ptr-r1.tsv` the first table.
+
+**The layout comes from `docs/api/`, not from the dumper.** A structure
+spec states it in a fenced block ```` ```tosdump-layout ```` beside its prose
+tables (`docs/api/structures/iorec.md`, `docs/api/structures/md.md`). The
+case table carries a copy of each line -- the table is the one file carried
+to both machines, and its CRC is the dump's identity -- and the host test
+`layoutcheck` (`tosdump/host/layoutcheck.c`, run by `make -C tosdump
+host-test`) refuses a table whose `!layout` line is not, byte for byte, a
+spec line, and a spec block that does not parse. So the single source is
+the spec; the table's copy is checked against it on every test run.
+
+```
+!layout <TAB> <name> <TAB> <size m68k>/<size LP64> <TAB> <field>,<field>...
+field:  <fname>:<type>@<offset m68k>/<offset LP64>[:<class>]
+```
+
+| type | C type | bytes m68k / LP64 | slot value |
+|---|---|---|---|
+| `b` | `UBYTE` | 1 / 1 | zero-extended |
+| `w` | `WORD` (`short`) | 2 / 2 | sign-extended |
+| `L` | `LONG` (`int32`) | 4 / 4 | sign-extended |
+| `l` | C `long` | 4 / 8 | sign-extended |
+| `p` | a pointer | 4 / 8 | sign-extended (the `ret_hi` rule, section 3) |
+| `p><layout>` | a pointer the runner **follows** into `<layout>` | 4 / 8 | as `p`; `<layout>`'s fields follow it |
+| `[<layout>]` | `<layout>` embedded at this offset | its sizes | its fields, under `<fname>.` |
+
+`class` is how `tosdiff` judges the field: `EXACT`, `IGNORE`, `NONZERO`,
+`HANDLE`, `PTR_RAM` -- the retclass rules (above) on the field's 64-bit
+value; default `PTR_RAM` for `p`, `EXACT` for the rest; none on `[..]`,
+whose fields carry their own. The comparison rule thus stands in the table
+(and in the spec it is copied from), field by field.
+
+**The loader checks the numbers against C** (`td_layout_parse`,
+`tosdump/core/cases.c`): every offset must be the one C gives the fields in
+this order on that ABI -- on the m68k everything wider than a byte is WORD
+aligned (`bios/iorec.h:20-27`, the 14-byte IOREC), on LP64 every type is
+aligned on its own size -- with no gap, and every size must be the end of
+the last field rounded to the structure's alignment. A layout may name
+only layouts defined before it, so following a pointer cannot loop; the
+depth is bounded anyway (`TD_LAYOUT_MAX_HOPS` = 2 pointers from the base).
+At most eight layouts per table, 32 slots per capture. `!layout` stands
+before the first case or prelude.
+
+**Capture.** `r:<layout>` -- through the returned pointer, retclass
+`PTR_RAM` only; `<n>:<layout>` -- the `b:` buffer argument `n` (`Getmpb`
+writes its MPB there). The record's 256 capture bytes then hold one
+**slot** of 8 bytes per field, in layout order (an embedded layout's fields
+in place, a followed pointer's structure right after the pointer): the
+field's value read at its width on the machine, in the machine's order,
+extended to 64 bits as in the table above, stored big-endian. A field the
+two ABIs lay out differently lands in the same slot with the same value on
+both. Slots past the layout keep the poison and are compared byte by byte.
+
+**The follow rule** (`td_layout_follow_refusal`, `tosdump/core/record.c`):
+the runner reads a structure -- behind the returned pointer or behind a
+`p>` field -- only when the pointer passes `PTR_RAM` (non-null,
+`< 0x80000000`, `>= 0x400`, even, in that order) **and** the structure's
+end (pointer + its size on this machine) lies at or below `0x80000000`.
+Otherwise it reads nothing and every slot behind that pointer holds
+`TD_LAYOUT_NOREAD(reason)` = `0xB0F3B0F3_000000NN` (`tosdump/core/tosdump.h`;
+1 null, 2 not `< 0x80000000`, 3 below `0x400`, 4 odd, 5 the structure runs
+past `0x80000000`), a value above 4 GiB that no TOS field holds.
+`tosdiff` prints such a slot as `not read (<reason>)`; for a per-side class
+it is a violation of its own (`<layout>:<path> NONZERO <dump> = not read,
+the pointer is below 0x400`), for `EXACT` a value like any other.
+
+A pointer the rule admits can still point at memory the program may not
+read: EmuTOS' `themd` lies at `$48E`, and a user-mode read there is a bus
+error on the oracle (`measurements/measurement-2026-10-28-bios-core-audit/RUNINFO.TXT`,
+probe G). The table reads such a structure inside a `Super` bracket.
+
+**Poison of a buffer read through a layout.** The buffer is laid with the
+byte poison, then every field of the layout with the poison **of its type**
+at the machine's width: `0xAD`, `0xDEAD`, `0xDEADDEAD`, and for `l`/`p` the
+LONG `0xDEADDEAD` sign-extended to the machine's width (the unused-register
+rule above). A field the call left alone -- `Getmpb`'s `mp_rover`
+(`bios/biosmem.c:149-150`) -- then reads `0xFFFFFFFFDEADDEAD` on both
+machines and is `EXACT`.
+
+**Writing through a returned pointer.** Only in a table that says
+
+```
+!write <TAB> return
+```
+
+(before the first case, once, no other word), one prelude form:
+
+```
++put <TAB> <field>=<field> [<TAB> comment]
+```
+
+It stands **immediately after** the case whose `r:<layout>` capture names
+the structure, and is the only prelude of the case after it: the runner
+issues it after that case's poison and before its call, and copies the
+value of one field onto another of the same type -- the keyboard flush
+`ibufhd=ibuftl` (XBIOS01). Both fields are top-level, non-pointer fields of
+the layout (an embedded one, `in.ibufhd`, counts as top-level; one behind a
+followed pointer does not). It writes only when the returned pointer
+passes the follow rule; a WORD is stored as one WORD (an IOREC index is
+read by an interrupt on a real TOS, `bios/ikbd.c:157-173`). What it did --
+written, or not written and why -- is kept per prelude
+(`td_run_call_put_result`) and logged by DUMPBIOS **after** the run
+(`+put line 29: written`), so no console output falls between two
+measurements. The record does not carry it; a read-back case after it
+measures the effect. Refused: `+put` without `!write return`
+(`TD_CASE_ERR_UNSAFE_STATE`), not right after an `r:<layout>` case, a
+second prelude after it, a pointer field, a field behind a pointer, a
+field onto itself, two types (`TD_CASE_ERR_UNSAFE_FIELD`), and `+put` with
+no case after it (`TD_CASE_ERR_DANGLING`).
+
+**`Getmpb` (13:0)** is admitted with this round (`call_policy`,
+`tosdump/core/cases.c`; ledger `tosdump/cases/COVERAGE-BIOS.md`): a `b:`
+buffer argument (it writes `mp_mfl` and `mp_mal` through it), **inside a
+`Super(0L)` ... `Super(t:0)` bracket, and last** -- after it only another
+`Getmpb` and the `Super(t:0)` that closes the bracket. On EmuTOS it
+rewrites `themd`, the descriptor GEMDOS built its pool on
+(`bios/biosmem.c:143-150`); the audit's probe ran it the same way, last and
+the MD read in supervisor state, and the machine went on to write its log
+on both profiles. Outside a bracket it is refused as before
+(`TD_CASE_ERR_UNSAFE_OPCODE`); after it, any other call
+(`TD_CASE_ERR_UNSAFE_STATE`).
+
+The runners need nothing new: `xbios-ptr-r1.tsv` writes no disk and runs
+on the oracle's `tt` and `falcontc` profiles and through `cargo xtask
+tosdump` like a round-1 table. References `EMUTOS-1a7484ab-XBIOS-ptr` (TT)
+and `-XBIOS-ptr-falcontc`, `measurements/measurement-2026-10-29-tool16/RUNINFO.TXT`.
+
 ### Input check on NewTOS: the BIOS/XBIOS argument tracer (added 2026-10-28, TOOL08)
 
 A result comparison counts only if the arguments that **arrived** match the
@@ -985,7 +1125,7 @@ One program per area, sharing `tosdump/core/` and one `tosdump/abi/` backend:
 |---|---|---|
 | `DUMPVDI` | VDI | build this first |
 | `DUMPAES` | AES | after VDI is clean |
-| `DUMPBIOS` | BIOS + XBIOS | `retclass` and `capture` since 2026-10-27; table `tosdump/cases/bios-r1.tsv`, ledger `tosdump/cases/COVERAGE-BIOS.md`, references `EMUTOS-1a7484ab-BIOS` (TT) and `-BIOS-falcontc`, first comparison `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`. Second table `tosdump/cases/super-r1.tsv` (`Super`/`Supexec`, section 6), references `EMUTOS-1a7484ab-SUPER` (TT) and `-SUPER-falcontc`. Disk table `tosdump/cases/bios-r2.tsv` (section 6, "The disk round"), reference `EMUTOS-1a7484ab-BIOS-r2-disk` (profile `disk`), first comparison `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`; the closing tables `bios-r2-phys.tsv`, `-x004.tsv`, `-x005.tsv`, `-x006.tsv` (section 6, "The closing tables"), references `EMUTOS-1a7484ab-BIOS-r2-<phys\|x004\|x005\|x006>-disk`, `measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT` |
+| `DUMPBIOS` | BIOS + XBIOS | `retclass` and `capture` since 2026-10-27; table `tosdump/cases/bios-r1.tsv`, ledger `tosdump/cases/COVERAGE-BIOS.md`, references `EMUTOS-1a7484ab-BIOS` (TT) and `-BIOS-falcontc`, first comparison `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`. Second table `tosdump/cases/super-r1.tsv` (`Super`/`Supexec`, section 6), references `EMUTOS-1a7484ab-SUPER` (TT) and `-SUPER-falcontc`. Disk table `tosdump/cases/bios-r2.tsv` (section 6, "The disk round"), reference `EMUTOS-1a7484ab-BIOS-r2-disk` (profile `disk`), first comparison `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`; the closing tables `bios-r2-phys.tsv`, `-x004.tsv`, `-x005.tsv`, `-x006.tsv` (section 6, "The closing tables"), references `EMUTOS-1a7484ab-BIOS-r2-<phys\|x004\|x005\|x006>-disk`, `measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT`. Structures behind a pointer (section 6, "Structures behind a pointer"): `tosdump/cases/xbios-ptr-r1.tsv` (`Iorec`, the flush, `Getmpb`), references `EMUTOS-1a7484ab-XBIOS-ptr` (TT) and `-XBIOS-ptr-falcontc`, `measurements/measurement-2026-10-29-tool16/RUNINFO.TXT` |
 | `DUMPGDOS` | GEMDOS | needs `retclass` and `capture`. Until it exists, GEMDOS behaviour that needs a measurement is a **probe**: a C program of `tosdump/probes/` with a text log, built for both sides from one source and run by its own script — `gcprobe.c` (media change, TASK/FS20; `make -C tosdump gcprobe-m68k gcprobe-newtos`, `tosdump/probes/run-gcprobe.sh`, oracle side through `tools/hatari-oracle.sh` profile `disk`). Its cases move to DUMPGDOS when that exists |
 
 Each writes exactly one output file, named `<AREA>.BIN`, into the current

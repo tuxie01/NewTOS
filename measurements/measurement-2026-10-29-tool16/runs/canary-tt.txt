@@ -1,0 +1,13 @@
+bios-r1.tsv (tt, DUMPBIOS.PRG d6fe21a9): hatari-oracle exit 0, BIN DIFFERS from reference EMUTOS-1a7484ab-BIOS.BIN
+super-r1.tsv (tt, DUMPBIOS.PRG d6fe21a9): hatari-oracle exit 0, BIN DIFFERS from reference EMUTOS-1a7484ab-SUPER.BIN
+xbios-chardev-r1.tsv (tt, DUMPBIOS.PRG d6fe21a9): hatari-oracle exit 0, BIN DIFFERS from reference EMUTOS-1a7484ab-XBIOS-chardev.BIN
+bios-core-r1.tsv (tt, DUMPBIOS.PRG d6fe21a9): hatari-oracle exit 0, BIN DIFFERS from reference EMUTOS-1a7484ab-BIOS-core.BIN
+xbios-system-r1.tsv (tt, DUMPBIOS.PRG d6fe21a9): hatari-oracle exit 0, BIN DIFFERS from reference EMUTOS-1a7484ab-XBIOS-system.BIN
+
+Byte differences against the references (cmp -l, 0-based file offsets):
+  every table: 12-15, the header's build id (c0f9 against the reference's build) -- expected.
+  bios-r1: ret of case 112 Random() (IGNORE) and case 125 Gettime() (NONZERO);
+  xbios-system-r1: ret of cases 53, 54, 55 Protobt random serial (IGNORE).
+  All of them time-dependent values the table does not compare; nothing else differs.
+tosdiff <table> <reference> <this run>: 0 of 147 / 9 / 23 / 44 / 43 cases differ.
+The existing tables keep their meaning under the TOOL16 dumper.

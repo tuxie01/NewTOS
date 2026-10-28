@@ -1,0 +1,195 @@
+measurement-2026-10-29-tool16 -- DUMPBIOS reads (and writes) through a returned pointer:
+layouts from docs/api/, Iorec(0/1/2), the keyboard flush, Getmpb, under tosdiff
+=====================================================================================================
+Developer, TASK/TOOL16 (incl. "Nachtrag Anwender 2026-10-28": write through the returned
+pointer), 2026-10-29 ~00:00-01:00 (host clock CET). Tree: HEAD c0f9cec3 (main; the lead
+committed c0f9cec3, docs only, on top of d6ff251b while this ran) plus the uncommitted changes
+listed under CHANGED. No NewTOS product code (kernel/, tos-api/, tos-types/, programs/, sdk/)
+touched, no hardware, no real card, nothing flashed. Not committed.
+
+WHAT / WHY
+  Iorec returns a pointer to an IOREC, Getmpb fills an MPB whose first field points at an MD:
+  the structure is the result. A call table could only copy raw bytes behind a returned
+  pointer (r:<len>, TOOL07) and check the address (PTR_RAM, TOOL11); it could not say that the
+  m68k and the LP64 structure lay their fields at different offsets, nor follow a pointer
+  field, nor write a field. The acceptance of XBIOS01 and BIOS06 hangs on that (BIOS13 point
+  7). TOOL16 adds: layouts (field, type, both ABIs' offsets, the compare class) from
+  docs/api/, a capture through a layout, a follow rule with its own error value, tosdiff
+  field by field, and -- the user's addendum -- one write through the returned pointer
+  ("+put"), first user the XBIOS01 flush ibufhd = ibuftl, then Bconstat(2).
+
+DESIGN (docs/TOS-REFERENCE-DUMPER.md section 6, "Structures behind a pointer")
+  Source of the layout: a ```tosdump-layout block in the structure's spec,
+  docs/api/structures/iorec.md (iorec, extiorec) and docs/api/structures/md.md (md, mpb), one
+  "!layout <name> <m68k>/<LP64> <fields>" line each; a field is
+  <name>:<type>@<m68k off>/<LP64 off>[:<class>], types b w L l p p><layout> [<layout>].
+  The case table carries a byte-identical copy (it is the one file carried to both machines,
+  its CRC the dump's identity); the host test layoutcheck (tosdump/host/layoutcheck.c, in
+  make -C tosdump host-test) refuses a table line that is not a spec line and a spec block
+  that does not parse. The loader (td_layout_parse) checks every offset and size against C on
+  both ABIs (m68k: everything but a UBYTE WORD aligned; LP64 natural; no gaps; size = end
+  rounded to the alignment); layouts name only earlier layouts (no loops), at most 2 pointer
+  hops, 8 layouts, 32 slots.
+  Record: no format change. The 256 capture bytes hold one 8-byte slot per field, the value
+  extended to 64 bits (UBYTE zero-, the rest sign-extended, the ret_hi rule), big-endian.
+  Follow rule (td_layout_follow_refusal, record.c): PTR_RAM (null, < 0x80000000, >= 0x400,
+  even) and the structure's end <= 0x80000000; otherwise nothing is read and every slot behind
+  it is 0xB0F3B0F3_000000NN (N = reason). tosdiff judges each slot by the field's class from
+  the table (EXACT between the dumps, NONZERO/HANDLE/PTR_RAM per side, IGNORE not); a not-read
+  slot prints its reason. A buffer read through a layout is poisoned per field type, so an
+  untouched field (Getmpb's mp_rover) reads 0xFFFFFFFFDEADDEAD on both machines.
+  Write: "!write return" admits "+put <field>=<field>" right after an r:<layout> case; copies
+  one top-level non-pointer field onto another of the same type, only through a pointer the
+  follow rule admits; the outcome is logged by DUMPBIOS after the run.
+  Getmpb (13:0) leaves the excluded list: b: buffer, inside a Super bracket, last (as the
+  bios-core audit's probe ran it, measurement-2026-10-28-bios-core-audit/RUNINFO.TXT group G).
+
+CHANGED (uncommitted, for the lead)
+  tosdump/core/tosdump.h       TD_LAYOUT_SLOT_BYTES/SLOTS, TD_LAYOUT_NOREAD(r), TD_NOREAD_*
+  tosdump/core/record.h, .c    td_layout_follow_refusal, td_layout_noread_text
+  tosdump/core/cases.h, .c     layouts (td_layout, td_layout_slot, td_layout_parse, width, ABI,
+                               slot_find); td_call_case.cap_layout; table nlayouts/layouts/writes;
+                               directives !layout and !write return; captures r:<layout> and
+                               <n>:<layout>; prelude +put (TD_CALL_TRAP_PUT); Getmpb in call_policy
+                               (CR_GETMPB), out of call_refusals, bracket + "last" rule
+  tosdump/core/runner_call.h,.c  td_layout_capture (slots, follow rule), typed buffer poison,
+                               +put (td_run_call_put_result, TD_PUT_WRITTEN)
+  tosdump/core/dumpbios.c      logs "layouts: N, writes ..." and each +put after the run
+  tosdump/host/casefile.h, .c  td_casefile.calls (the parsed call table)
+  tosdump/host/tosdiff.c       layout_check: slot by slot by class; capture field not byte-compared
+  tosdump/host/layoutcheck.c   new: table layouts = docs/api/ spec lines
+  tosdump/host/Makefile        layoutcheck, test_cases_ptr, test_runner_ptr, test_layoutcheck.sh
+  tosdump/tests/test_cases_ptr.c (new), test_runner_ptr.c (new), test_layoutcheck.sh (new),
+  stub_abi.h, stub_abi.c (Iorec/Getmpb/Bconstat(2) arms), test_tosdiff.sh (layout section)
+  tosdump/cases/xbios-ptr-r1.tsv (new, 9 cases, 1 prelude, CRC 87DF757E)
+  tosdump/reference/EMUTOS-1a7484ab-XBIOS-ptr{,-falcontc}.{BIN,LOG} (new) = runs/oracle-*-1
+  docs/api/structures/iorec.md, md.md  "Dumper layout (tosdump) [TOOL16]" + tosdump-layout block
+  docs/api/bios/00-getmpb.md   V5: tosdump measures Getmpb since TOOL16 (was "excluded")
+  docs/TOS-REFERENCE-DUMPER.md section 6 "Structures behind a pointer", capture/prelude notes,
+                               section 7 DUMPBIOS row
+  tosdump/cases/COVERAGE-BIOS.md  rows 0x00/0x0E, status "pointer round", summary, new section
+  anchor renumbering only (cases.c / runner_call.c lines moved): docs/api/bios/04-rwabs.md,
+  docs/audits/2026-10-28-bios-core.md, -bios-storage.md, docs/analysis/iorec-survey-2026-10-28.md,
+  abi-assumptions-check-2026-10-28.md, ptr-ram-rule-2026-10-28.md, TASK/TOOL07.md, TASK/TOOL11.md
+  Untouched: every existing case table and reference, tools/hatari-oracle.sh, tools/xtask,
+  tools/mkcard.sh, tosdump/Makefile, the build-dump*-newtos.sh scripts.
+
+INPUTS (sha256, runs/inputs-and-results.sha256)
+  ROM        tools/oracle/etos512de-1a7484ab.img 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+  Hatari     2.6.1, tools/oracle/hatari.cfg (unchanged)
+  table      tosdump/cases/xbios-ptr-r1.tsv 48206d1690fcffb36d27107b265da07d32e95b838655910730164051739df05e
+             CRC 87DF757E, 9 cases, 1 prelude
+  dumper m68k  make -C tosdump dumpbios-m68k (build id c0f9)
+             DUMPBIOS.PRG d6fe21a96ba2fa8bb0dce5f6870c06ea619c5c231a5be9ca2a76cc6cc80bf415
+  NewTOS     cargo xtask tosdump (TOOL09 runner), kernel rpi4 release of this tree:
+             kernel8.img e6c25520cc117178393de7bf957e0913d779cb609ed3154b1862f0aaef088707
+             DUMPBIOS.NAP 0bc831b7a7b367decfad61a952ad1c0abb991d9b74f57423f484302b2dc1ebc5 (build c0f9)
+             card (tools/mkcard.sh, built by the runner): image f88a5dbd5f9d2506...,
+             runs/newtos-xbios-ptr-r1/card.img.manifest, verbatim:
+               optional_missing none
+             card after the run 7313b16ff88da94e... (booted as an APFS clone; scratch, deleted)
+
+METHOD (method/)
+  oracle-runs.sh <scratch> runs   tt and falcontc, twice each (tools/hatari-oracle.sh), cmp of
+                                  the two runs, tosdiff --selfcheck of run 1, tt vs falcontc
+  newtos-run.sh <scratch> runs    cargo xtask tosdump bios tosdump/cases/xbios-ptr-r1.tsv
+                                  --reference <tt> --reference <falcontc> --out runs/newtos-xbios-ptr-r1
+
+ORACLE -- references, two runs each (runs/oracle-<profile>-<n>)
+  profile   BIN sha256 (both runs)                                             LOG (all four runs)
+  tt        751811ec4524b5ff86bfd04d023cfa1709147d34cf87aebda4975a7b1812a1a9   2130525670d28766...
+  falcontc  f6d53b75507596e125967abb9c6885f6e57c9e338fd7df18ad5038ae72014695   2130525670d28766...
+  BIN and LOG byte-identical between run 1 and run 2 on both profiles (cmp); the references are
+  run 1. tosdiff --selfcheck: both pass (runs/selfcheck-*.txt). tt vs falcontc: 0 of 9 cases
+  differ (runs/tosdiff-tt-vs-falcontc.txt; the pointers differ, they are PTR_RAM). LOG:
+  "+put line 29: written" on both profiles. make -C tosdump host-test's self-check: "32
+  references, every relational rule holds".
+
+  case  call                         TT (falcontc where it differs)
+  24    Iorec(0) r:extiorec          0x4A54 (0x478A): in ibuf 0x4954 (0x448A) 256 0 0 64 192,
+                                     out ibuf 0x4854 (0x438A) 256 0 0 64 192, baud 1 flow 0
+                                     ucr 0x88 datamask 0xFF wr5 0xEA (IGNORE)
+  25    Iorec(1) r:iorec             0x30D4: ibuf 0x2F54, 256, head 0, tail 0, 64, 192
+  26    Iorec(2) r:iorec             0x30E2: ibuf 0x3054, 128, 0, 0, 32, 96
+  28    Iorec(1) r:iorec             as 25 (the pointer +put 29 writes through)
+  29    +put ibufhd=ibuftl           written
+  30    Bconstat(2)                  0
+  31    Iorec(1) read back           as 25: head == tail == 0
+  33    Super(0L)                    0x7F58 (NONZERO)
+  34    Getmpb(b:0) 0:mpb            mp_free 0x48E -> md_next 0, md_start 0x23BA0, md_length
+                                     0x3B6B60 (falcontc 0x382360), md_owner 0; mp_used 0;
+                                     mp_rover 0xFFFFFFFFDEADDEAD (left alone)
+  35    Super(t:0)                   IGNORE
+  These are the probe's values (measurement-2026-10-28-xbios-chardev-audit I01-I08,
+  measurement-2026-10-28-bios-core-audit G00-G06), now in a tosdiff case.
+
+NEWTOS -- tosdiff per case (runs/newtos-xbios-ptr-r1/tosdiff-*.txt; run ended normally,
+"desktop up after DUMPBIOS.NAP, rc=0", 19 s in QEMU; tosdiff --validate exit 0)
+  6 of 9 cases differ against both references -- the expected DIFF of XBIOS01 and BIOS06:
+  case  call                 EmuTOS                         NewTOS
+  24    Iorec(0)             0x4A54, EXT_IOREC              0x0E: ret PTR_RAM "below 0x400";
+                                                            all 17 slots not read (reason 3)
+  25    Iorec(1)             0x30D4, IOREC                  0x0E, not read
+  26    Iorec(2)             0x30E2, IOREC                  0x0E, not read
+  28    Iorec(1)             0x30D4                         0x0E, not read
+  29    +put                 written                        not written, "the pointer is below 0x400"
+                                                            (LOG; nothing was written to 0x0E)
+  30    Bconstat(2)          0                              0                    EQUAL
+  31    Iorec(1) read back   head == tail                   0x0E, not read
+  33    Super(0L)            NONZERO                        NONZERO (0x1A76450)  EQUAL
+  34    Getmpb               see above                      mp_free 0x266000 (PTR_RAM ok);
+                                                            md_start 0x00A00000_00400000:
+                                                            PTR_RAM "not < 0x80000000";
+                                                            md_length 0: NONZERO "is zero";
+                                                            md_next/md_owner/mp_used 0,
+                                                            mp_rover untouched: EQUAL
+  35    Super(t:0)           IGNORE                         IGNORE               EQUAL
+  Case 34 is BIOS-CORE-003 (BIOS06): the kernel publishes its 24-byte BDOS MD, the LP64
+  layout reads m_start|m_length<<32 as md_start and the padding as md_length -- the probe's
+  G03 values, now under tosdiff. Cases 24-31 are XBIOS-CHARDEV-001 (XBIOS01): Iorec returns
+  its function number. These are findings, not fixed here.
+
+REFUSALS MEASURED
+  On the machines: NewTOS case 24-31, the follow rule refused the returned 0x0E (below 0x400):
+  no read, slots 0xB0F3B0F3_00000003; the +put through it was refused and logged, nothing
+  written (the run went on to the desktop; XCIOFL's bus error did not recur because no write
+  was issued). On the oracle no refusal (every pointer passed).
+  On the host (make -C tosdump host-test, runs/host-test.txt): test_cases_ptr (layout C-checks:
+  LP64 offset, m68k alignment, gap, both sizes, unknown type, forward and self reference, field
+  twice, class on an embedded layout, unknown class, layout twice, upper-case name, layout after
+  its case, !layout after the first case, 33 slots, 3 hops; captures: r:<layout> without
+  PTR_RAM, unknown layout, <n>:<layout> without b:; +put: without !write return, !write with
+  another word / twice / late, after a case without r:<layout>, before any case, a second
+  prelude after it, dangling, unknown field, pointer field, a field onto itself, two types,
+  a field behind a pointer, no "="; Getmpb: outside a bracket, without a buffer, a call after
+  it, a call after the bracket), test_runner_ptr (follow rule: 0x0E, 0x401, NULL, 0x7FFFFFF0
+  structure end, a refused base; +put through 0x0E not written; m68k column), test_tosdiff.sh
+  (slot verdicts, not-read slots, IGNORE, bytes after the slots, self-check),
+  test_layoutcheck.sh (a differing table line, an unknown layout, a non-C spec offset).
+  The new tests were seen failing: before the spec blocks existed layoutcheck failed (no
+  tosdump-layout block), and three mutations (LP64 offset check off, +put write off, structure
+  end check off) each turned test_cases_ptr / test_runner_ptr red (the last by a fault: the
+  runner read 0x7FFFFFF0 on the host) -- scratch edits, restored by copy, not kept.
+
+TESTS
+  make -C tosdump host-test   exit 0 (runs/host-test.txt): every suite ok, layoutcheck "4 layouts
+                              in the specs, 4 table lines in 26 tables", self-check 32 references
+  cargo xtask test (full)     1767 passed, 0 failed, 1 ignored (runs/xtask-test.txt, summary
+                              lines) -- no Rust changed; the baseline
+  Dumper builds: make -C tosdump dumpbios-m68k dumpvdi-m68k dumpaes-m68k dumprast-m68k
+  and the four *-newtos: all build with -Werror.
+
+NOT DONE / LIMITS
+  - The flush case measures that the write is accepted and Bconstat(2) is 0 after it; the ring
+    was already empty (head == tail == 0) on the oracle, so it does not measure that a NON-empty
+    ring is emptied. That needs key input during a dumper run (TOOL08-style injection).
+  - No NewTOS input trace (bios-arg-trace, TOOL08) for this table: tools/biostrace-check.py
+    does not parse "+put" (nor TOOL07's "+set") lines.
+  - Run BINs are gitignored (*.bin); their sha256 are above and in runs/inputs-and-results.sha256.
+
+CANARY -- the existing BIOS-area tables under the TOOL16 dumper (runs/canary-tt.txt)
+  bios-r1, super-r1, xbios-chardev-r1, bios-core-r1, xbios-system-r1 on profile tt with the same
+  DUMPBIOS.PRG (d6fe21a9): tosdiff against their references 0 cases differ each; the bytes that
+  differ are the header's build id and the time-dependent returns of Random, Gettime and the
+  random-serial Protobt cases (IGNORE / NONZERO). The disk tables were not re-run (profile disk;
+  their code paths -- !disk, preludes, +set, u:0 -- are unchanged and covered by host-test).

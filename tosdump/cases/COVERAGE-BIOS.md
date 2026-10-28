@@ -24,6 +24,9 @@ handler cited is the function the slot reaches (`DBG_BIOS`/`DBG_XBIOS` are
   oracle, a dumper-owned function, a DSP program.
 - **disk round** -- measured by `bios-r2.tsv` only, a `!disk` table on a
   test image (section "Disk round" at the end); refused in every other table.
+- **pointer round** -- measured by `xbios-ptr-r1.tsv` only, under the rule
+  that table states (section "Structures behind a pointer" at the end);
+  refused in every other table.
 - **excluded** -- never in an unattended table: writes media, resets or
   reboots a real TOS, installs vectors or interrupt handlers, or reprograms
   hardware the run depends on (the screen, AUX = NewTOS' serial console).
@@ -52,7 +55,7 @@ physical line number and the dump header carries the table's CRC
 
 | # | Name | EmuTOS handler | Status | Cases / reason |
 |---|---|---|---|---|
-| 0x00 | Getmpb | `bios/biosmem.c:134` | excluded | rewrites `themd`, the memory descriptor GEMDOS built its pool on (`biosmem.c:143-150`); its capture would be three addresses |
+| 0x00 | Getmpb | `bios/biosmem.c:134` | pointer round | `xbios-ptr-r1.tsv` only (TOOL16, section "Structures behind a pointer" below): a `b:` buffer, inside a `Super` bracket, last -- it rewrites `themd`, the memory descriptor GEMDOS built its pool on (`biosmem.c:143-150`), and the MD lies in protected memory. 1 case, the MPB and the MD through `mp_free` (`0:mpb`). Every other table: refused |
 | 0x01 | Bconstat | `bios/bios.c:914` | **round 1** | 9 cases: handles 0-6, 10, -1 (0..7 `bconstat_vec`, 6.. Bconmap, `bios/bios.c:923-933`) |
 | 0x02 | Bconin | `bios/bios.c:958` | **round 1** | 4 cases: only handles that return at once on both machines -- 4, 5 (`char_dummy`, `chardev.c:34-36`), 10, -1. Handle 0 returns at once with 0 on EmuTOS (`bconin0`: "not implemented", `bios/parport.c:121-125`; probe B09, `docs/audits/2026-10-28-bios-core.md`); handles 1-3 and the Bconmap devices 6-9 wait for input: never [BIOS13] |
 | 0x03 | Bconout | `bios/bios.c:991` | **round 1** | 4 cases: a printable byte to CON (2) and raw CON (5), handles 10 and -1. PRT (0) waits up to 30 s for a printer (`parport.c:150-168`), IKBD (4) and MIDI (3) are commands to a device, AUX (1) is NewTOS' serial console: later, with their own reasons |
@@ -84,7 +87,7 @@ physical line number and the dump header carries the table's CRC
 | 0x0B | (used by BIOS) | `xbios_unimpl, bios/xbios.c:1297` | later | empty on the pin; what a real TOS has there is not established |
 | 0x0C | Midiws | `bios/midi.c:104` | later | sends bytes to the MIDI port |
 | 0x0D | Mfpint | `bios/mfp.c:114` | excluded | installs an interrupt vector |
-| 0x0E | Iorec | `bios/xbios.c:336` | **round 1** | 5 cases: devices 0-2 PTR_RAM, 3 and -1 EXACT (-1) |
+| 0x0E | Iorec | `bios/xbios.c:336` | **round 1** | 5 cases: devices 0-2 PTR_RAM, 3 and -1 EXACT (-1). The records behind the pointer: `xbios-ptr-r1.tsv` (TOOL16), section "Structures behind a pointer" below |
 | 0x0F | Rsconf | `bios/xbios.c:376, bios/serport.c:217` | **round 1** | 2 cases, all -1 and -2 (baud), `serport.c:220-226`; a real setting reprograms AUX, NewTOS' serial console: excluded |
 | 0x10 | Keytbl | `bios/ikbd.c:122` | **round 1** | 1 case, `Keytbl(-1,-1,-1)` PTR_RAM; installing tables: later |
 | 0x11 | Random | `bios/xbios.c:421` | **round 1** | 1 case, IGNORE |
@@ -216,10 +219,10 @@ physical line number and the dump header carries the table's CRC
 
 ## Summary
 
-| Table | Slots | round 1 | disk round | later | excluded |
-|---|---|---|---|---|---|
-| BIOS | 12 | 8 | 3 | 0 | 1 |
-| XBIOS | 142 | 81 | 0 | 43 | 18 |
+| Table | Slots | round 1 | disk round | pointer round | later | excluded |
+|---|---|---|---|---|---|---|
+| BIOS | 12 | 8 | 3 | 1 | 0 | 0 |
+| XBIOS | 142 | 81 | 0 | 0 | 43 | 18 |
 
 Plus the probes past each table (3 BIOS, 1 XBIOS). `bios-r1.tsv` holds 147 cases; every round-1 row above names how many are its own. 35 of the 81 XBIOS round-1 slots are empty (`xbios_unimpl`) and answer their own number.
 
@@ -334,7 +337,37 @@ outlive it. References: `tosdump/reference/EMUTOS-1a7484ab-<BIOS-core|XBIOS-char
 | `xbios-system-r1.tsv` | 43 | `3944A677` | `docs/audits/2026-10-28-xbios-system.md` section 5 | `Protobt` 31 (disktype 0-6 and out-of-range, serial numbers, random arm, `exec`), `Cursconf(5,x)` 3, `NVMaccess` 9 |
 
 Rows the guard still refuses and the audits propose (the setting arms
-`Kbshift`/`Setexc`, `Getmpb`, `Bconout` to devices, `Midiws`, `Bioskeys`,
-`Ikbdws`): status **later** -- they need a restoring prelude and a capture
-"through the return pointer" (`TASK/TOOL16.md`). Cite for the guard: audits
-BIOS-CORE section 11.4, XBIOS-CHARDEV section 11.3.
+`Kbshift`/`Setexc`, `Bconout` to devices, `Midiws`, `Bioskeys`,
+`Ikbdws`): status **later** -- they need a restoring prelude. Cite for the
+guard: audits BIOS-CORE section 11.4, XBIOS-CHARDEV section 11.3. `Getmpb`
+and the capture "through the return pointer" came with TOOL16 (next
+section).
+
+## Structures behind a pointer -- `xbios-ptr-r1.tsv` (TOOL16, 2026-10-29)
+
+The structures behind `Iorec`'s pointer and in `Getmpb`'s MPB, field by
+field, with the layouts of `docs/api/structures/iorec.md` and
+`docs/api/structures/md.md` (copied lines, `layoutcheck`). Form and rules:
+`docs/TOS-REFERENCE-DUMPER.md` section 6, "Structures behind a pointer"
+(`!layout`, `r:<layout>` / `<n>:<layout>`, the follow rule, `!write return`,
+`+put`). Separate from every earlier table, whose CRCs and references stay
+as they are. 9 cases, 1 prelude, CRC `87DF757E`.
+
+| Line | Call | Capture / rule | What |
+|---|---|---|---|
+| 24 | `Iorec(0)` | `r:extiorec` | RS-232 `EXT_IOREC`: `in`, `out`, baud, flow, UCR, data mask (`wr5` IGNORE) |
+| 25, 26 | `Iorec(1)`, `Iorec(2)` | `r:iorec` | the IKBD and MIDI `IOREC`: size, head, tail, water marks; `ibuf` PTR_RAM |
+| 28, +29, 30, 31 | `Iorec(1)`, `+put ibufhd=ibuftl`, `Bconstat(2)`, `Iorec(1)` | `!write return` | the keyboard flush of XBIOS01 in user state, `Bconstat(2)` after it, the record read back |
+| 33-35 | `Super(0L)`, `Getmpb(b:0)`, `Super(t:0)` | `0:mpb` | the MPB in buffer 0 and the MD behind `mp_free`, read in supervisor state |
+
+Why each new form is safe:
+
+| Form | Admitted as | Why safe |
+|---|---|---|
+| layout read | through a pointer only when it passes `PTR_RAM` and the structure ends at or below `0x80000000` (`td_layout_follow_refusal`) | the address rule of the comparator; nothing below `0x400`, nothing odd, nothing past 2 GiB is read |
+| `+put` | `!write return` tables only; right after the `r:<layout>` case; one non-pointer field copied onto another of the same type, through a pointer the follow rule admits | it writes inside the structure the call returned, a value of the same structure: the flush `ibufhd=ibuftl` sets the ring's read index to its write index, which `Bconin(2)` itself does when it drains the ring (`bios/ikbd.c:269-273`); measured in user state on the oracle by XCIOFL (`measurements/measurement-2026-10-28-xbios-chardev-audit/runs/XCIOFL-EMUTOS-tt`) |
+| `Getmpb` | a `b:` buffer; inside a `Super(0L)` ... `Super(t:0)` bracket; last (only `Getmpb` and the closing `Super(t:0)` after it) | as the audit's probe ran it (group G, last, MD read in super state; `measurements/measurement-2026-10-28-bios-core-audit/RUNINFO.TXT`): the machine wrote its log afterwards on both profiles. It rewrites `themd` (`bios/biosmem.c:143-150`), so nothing that allocates follows it in the table |
+
+References: `tosdump/reference/EMUTOS-1a7484ab-XBIOS-ptr` (TT) and
+`-XBIOS-ptr-falcontc`, two runs each byte-identical,
+`measurements/measurement-2026-10-29-tool16/RUNINFO.TXT`.

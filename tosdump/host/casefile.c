@@ -139,6 +139,7 @@ int td_casefile_read(struct td_casefile *cf, const char *path, uint16_t area,
 			cf->retclass[i] = ct.cases[i].retclass;
 			cf->retwidth[i] = ct.cases[i].retwidth;
 		}
+		cf->calls = &ct;
 	}
 
 	free(raw);

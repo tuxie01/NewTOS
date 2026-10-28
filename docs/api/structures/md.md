@@ -52,9 +52,8 @@ externally.
 
 ## NewTOS: oeffentliches Layout von `MD`/`MPB` [BIOS06]
 
-> **Vorgeschlagen, Anwenderentscheidung O1 steht aus**
-> (`docs/api/bios/00-getmpb.md`, "Offene Entscheidungen"). Nichts davon ist
-> umgesetzt.
+> **Entschieden 2026-10-28: O1 = A** (`docs/api/bios/00-getmpb.md`,
+> „Entscheidungen“). Noch nicht umgesetzt (TASK/BIOS06.md).
 
 Drei Layouts existieren heute nebeneinander (gelesen):
 
@@ -63,6 +62,35 @@ Drei Layouts existieren heute nebeneinander (gelesen):
 | EmuTOS m68k | 16 Byte (0/4/8/12) | 12 Byte | `references/emutos/include/bdosdefs.h:108-125` |
 | Kern (BDOS-intern, von `Getmpb` mitveroeffentlicht) | 24 Byte (Zeiger 8 @0, `m_start` 4 @8, `m_length` 4 @12, Zeiger 8 @16) | 24 Byte | `tos-types/src/memory.rs:61@MD`, `:101@MPB` |
 | SDK-Header unter LP64 (`long` = 8) | 32 Byte (0/8/16/24, alle 8) — abgeleitet, gemessen `sizeof=32` | 24 Byte (0/8/16) | `sdk/libc/overlay/include/mint/ostruct.h:293@_md`, `:305@_MPB` |
+
+### Dumper layout (tosdump) [TOOL16]
+
+The layout the reference dumper reads through `Getmpb`'s MPB
+(`docs/TOS-REFERENCE-DUMPER.md` section 6, "Structures behind a pointer").
+This block is the **source**: a case table carries a copy of each line, and
+the host test `layoutcheck` (`tosdump/host/layoutcheck.c`) refuses a copy
+that is not this line byte for byte; the loader checks every number against
+C on both ABIs.
+
+- `md` -- m68k: EmuTOS' 16-byte `MD` above (`include/bdosdefs.h:108-115`;
+  mintlib's m68k `_MD` has the same widths); LP64: the SDK's `_MD`, 32
+  bytes, the contract O1 = A (`docs/api/bios/00-getmpb.md` V1). Field names
+  are the SDK's: `md_next` = `m_link`, `md_start` = `m_start`,
+  `md_length` = `m_length`, `md_owner` = `m_own`. `md_start` is a C `long`
+  in the SDK and a pointer in EmuTOS -- four bytes on the m68k either way.
+- `mpb` -- `MPB` above / the SDK's `_MPB`, 24 bytes on LP64; `mp_free` =
+  `mp_mfl` is followed into `md` (`p>md`), `mp_used` = `mp_mal`,
+  `mp_rover`.
+- Classes (V2): `md_next`, `md_owner`, `mp_used` are NULL on both sides
+  (EXACT); `mp_rover` is left as the caller laid it (EXACT: the dumper's
+  poison); `md_start` is an address (PTR_RAM, `membot` differs per machine);
+  `md_length` is the machine's free ST-RAM (NONZERO); `mp_free` an address
+  (PTR_RAM).
+
+```tosdump-layout
+!layout	md	16/32	md_next:p@0/0:EXACT,md_start:l@4/8:PTR_RAM,md_length:l@8/16:NONZERO,md_owner:p@12/24:EXACT
+!layout	mpb	12/24	mp_free:p>md@0/0,mp_used:p@4/8:EXACT,mp_rover:p@8/16:EXACT
+```
 
 Das Kern-24-Byte-`MD` ist ein **internes** BDOS-Layout. Was ein Programm ueber
 `Getmpb` sieht, ist der Vertrag aus `docs/api/bios/00-getmpb.md` (V1);

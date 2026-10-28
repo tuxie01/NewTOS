@@ -1,0 +1,35 @@
+# xbios-ptr-r1.tsv -- DUMPBIOS, structures behind a returned pointer
+# (TASK/TOOL16): the IOREC records behind Iorec(0/1/2), the keyboard flush
+# through Iorec(1)'s pointer, and the MPB/MD of Getmpb, against EmuTOS
+# 1a7484ab (references/emutos, docs/analysis/ORACLE.md).
+#
+# Form: docs/TOS-REFERENCE-DUMPER.md section 6, "Structures behind a
+# pointer".  The !layout lines are copies of the tosdump-layout blocks in
+# docs/api/structures/iorec.md and md.md -- layoutcheck refuses this table
+# if one differs.  r:<layout> reads the structure behind the returned
+# pointer, 0:<layout> the one in buffer 0, one 64-bit slot per field; a
+# pointer the follow rule refuses is not read.  !write return admits +put,
+# which writes one field through the pointer of the case right before it.
+#
+# A separate table, so bios-r1.tsv and xbios-chardev-r1.tsv and their
+# references stay as they are.  One table per round: the case id is the
+# physical line number and the dump header carries the CRC of this file, so
+# it is frozen once measured.
+!layout	iorec	14/24	ibuf:p@0/0,ibufsiz:w@4/8,ibufhd:w@6/10,ibuftl:w@8/12,ibuflow:w@10/14,ibufhi:w@12/16
+!layout	extiorec	34/56	in:[iorec]@0/0,out:[iorec]@14/24,baudrate:b@28/48,flowctrl:b@29/49,ucr:b@30/50,datamask:b@31/51,wr5:b@32/52:IGNORE
+!layout	md	16/32	md_next:p@0/0:EXACT,md_start:l@4/8:PTR_RAM,md_length:l@8/16:NONZERO,md_owner:p@12/24:EXACT
+!layout	mpb	12/24	mp_free:p>md@0/0,mp_used:p@4/8:EXACT,mp_rover:p@8/16:EXACT
+!write	return
+# ---- Iorec(dev): bios/xbios.c:336-348; the records: docs/api/xbios/0e-iorec.md, F1
+14:0x0E	w:0	PTR_RAM	r:extiorec	Iorec(0) RS-232 EXT_IOREC -- bios/xbios.c:339-340
+14:0x0E	w:1	PTR_RAM	r:iorec	Iorec(1) IKBD IOREC -- bios/xbios.c:341-342
+14:0x0E	w:2	PTR_RAM	r:iorec	Iorec(2) MIDI IOREC -- bios/xbios.c:343-344
+# ---- the flush io->ibufhd = io->ibuftl in user state, then Bconstat(2) (XBIOS01; bios/ikbd.c:242)
+14:0x0E	w:1	PTR_RAM	r:iorec	Iorec(1): the pointer the flush writes through
++put	ibufhd=ibuftl	the flush: head = tail (XBIOS01 E1)
+13:1	w:2	EXACT	-	Bconstat(2) after the flush: 0 -- bios/ikbd.c:242-246
+14:0x0E	w:1	PTR_RAM	r:iorec	Iorec(1) read back after the flush: head == tail
+# ---- Getmpb(mpb), last and in super state: the MD at $48E is protected memory (bios/biosmem.c:134-151)
+1:0x20	l:0	NONZERO	-	Super(0L): Getmpb's MD is read in supervisor state
+13:0	b:0	IGNORE	0:mpb	Getmpb(buffer 0): MPB, the MD via mp_free -- bios/biosmem.c:144-150
+1:0x20	t:0	IGNORE	-	Super(token) = SuperToUser -- bdos/rwa.S:305-336

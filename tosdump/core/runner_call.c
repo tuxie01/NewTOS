@@ -130,7 +130,44 @@ static void poison_buffer(int n, uint8_t unit)
 	}
 }
 
-static void poison_buffers(const struct td_call_case *c)
+/*
+ * A buffer a layout capture reads (TOOL16): every field gets the poison OF
+ * ITS TYPE at the machine's own width -- a UBYTE 0xAD, a WORD 0xDEAD, a LONG
+ * 0xDEADDEAD, a C long and a pointer the LONG 0xDEADDEAD sign-extended to
+ * the machine's width (the unused-register rule of issue()).  Read back as
+ * a slot (tosdump.h) a field the call left alone then holds the same 64-bit
+ * value on both machines, although its bytes and its offset differ.  The
+ * bytes between the fields keep the byte poison laid first.
+ */
+static void poison_layout(uint8_t *b, const struct td_layout *l)
+{
+	int abi = td_layout_native_abi();
+	uint8_t i;
+
+	for (i = 0; i < l->nslots; i++) {
+		const struct td_layout_slot *s = &l->slot[i];
+		uint8_t *d = b + s->off[abi];
+		uint8_t w = td_layout_width(s->type, abi);
+
+		if (s->parent >= 0)
+			continue;           /* behind a pointer: not in the buffer */
+		if (w == 1) {
+			*d = TD_POISON_LO;
+		} else if (w == 2) {
+			uint16_t v = (uint16_t)TD_POISON16;
+			memcpy(d, &v, 2);
+		} else if (w == 4) {
+			uint32_t v = 0xDEADDEADuL;
+			memcpy(d, &v, 4);
+		} else {
+			int64_t v = (int64_t)(int32_t)0xDEADDEADuL;
+			memcpy(d, &v, 8);
+		}
+	}
+}
+
+static void poison_buffers(const struct td_call_case_table *ct,
+                           const struct td_call_case *c)
 {
 	int n;
 
@@ -140,7 +177,136 @@ static void poison_buffers(const struct td_call_case *c)
 		if (c->cap_arg >= 0 && c->arg[c->cap_arg].value == n)
 			unit = c->cap_unit;
 		poison_buffer(n, unit);
+		if (c->cap_layout && c->cap_arg >= 0 &&
+		    c->arg[c->cap_arg].value == n)
+			poison_layout((uint8_t *)call_buf[n],
+			              &ct->layouts[c->cap_layout - 1]);
 	}
+}
+
+/* ------------------------------------------------------------------ */
+/* Layout captures (TOOL16; cases.h, "Layouts")                         */
+/* ------------------------------------------------------------------ */
+
+static void store_slot(uint8_t *dst, uint64_t v)
+{
+	td_store_be32(dst, (uint32_t)(v >> 32));
+	td_store_be32(dst + 4, (uint32_t)(v & 0xFFFFFFFFuL));
+}
+
+/* One field at `p`, at its width on `abi`, in the machine's own order,
+ * extended to 64 bits: a UBYTE zero-, everything else sign-extended. */
+static uint64_t read_field(const uint8_t *p, uint8_t type, int abi)
+{
+	switch (td_layout_width(type, abi)) {
+	case 1: {
+		uint8_t v = *p;
+		return (uint64_t)v;
+	}
+	case 2: {
+		int16_t v;
+		memcpy(&v, p, 2);
+		return (uint64_t)(int64_t)v;
+	}
+	case 4: {
+		int32_t v;
+		memcpy(&v, p, 4);
+		return (uint64_t)(int64_t)v;
+	}
+	default: {
+		int64_t v;
+		memcpy(&v, p, 8);
+		return (uint64_t)v;
+	}
+	}
+}
+
+void td_layout_capture(uint8_t *dst, const struct td_layout *set,
+                       const struct td_layout *l, const void *base,
+                       uint8_t base_refusal, int abi)
+{
+	const uint8_t *addr[TD_LAYOUT_SLOTS];
+	uint8_t why[TD_LAYOUT_SLOTS];
+	uint8_t i;
+
+	for (i = 0; i < l->nslots; i++) {
+		const struct td_layout_slot *s = &l->slot[i];
+		const uint8_t *b;
+		uint8_t r;
+		uint64_t v;
+
+		if (s->parent < 0) {
+			b = (const uint8_t *)base;
+			r = base_refusal;
+		} else {
+			b = addr[s->parent];
+			r = why[s->parent];
+		}
+		addr[i] = NULL;
+		why[i]  = 0;
+		if (r) {
+			/* not read: the pointer it hangs from fails the rule;
+			 * whatever hangs from THIS field is not read either */
+			store_slot(dst + (size_t)i * TD_LAYOUT_SLOT_BYTES,
+			           TD_LAYOUT_NOREAD(r));
+			why[i] = r;
+			continue;
+		}
+		v = read_field(b + s->off[abi], s->type, abi);
+		store_slot(dst + (size_t)i * TD_LAYOUT_SLOT_BYTES, v);
+		if (s->follow >= 0) {
+			r = td_layout_follow_refusal(v, set[s->follow].size[abi]);
+			if (r)
+				why[i] = r;
+			else
+				addr[i] = (const uint8_t *)td_abi_addr((long)v);
+		}
+	}
+}
+
+/*
+ * "+put" (TOOL16): copy one field of the structure behind the previous
+ * case's returned pointer onto another, when that pointer passes the follow
+ * rule -- the same rule the read takes.  A WORD is stored as one WORD (an
+ * IOREC index is read by an interrupt on a real TOS, bios/ikbd.c:157-173);
+ * the other types through memcpy.  The outcome is kept per prelude and
+ * logged by the program after the run (td_run_call_put_result): no console
+ * output between two measurements.
+ */
+static uint8_t put_result[TD_MAX_CALL_PRELUDES];
+
+uint8_t td_run_call_put_result(uint16_t prelude)
+{
+	return prelude < TD_MAX_CALL_PRELUDES ? put_result[prelude] : 0;
+}
+
+static void put_field(const struct td_call_case_table *ct,
+                      const struct td_call_case *p, long prev_ret)
+{
+	const struct td_layout *l = &ct->layouts[p->cap_layout - 1];
+	const struct td_layout_slot *d = &l->slot[p->arg[0].value];
+	const struct td_layout_slot *s = &l->slot[p->arg[1].value];
+	int abi = td_layout_native_abi();
+	uint16_t k = (uint16_t)(p - ct->preludes);
+	uint8_t r = td_layout_follow_refusal((uint64_t)(int64_t)prev_ret,
+	                                     l->size[abi]);
+	uint8_t *b;
+
+	if (r) {
+		put_result[k] = r;
+		return;
+	}
+	b = (uint8_t *)td_abi_addr(prev_ret);
+	if (d->type == TD_LT_WORD) {
+		int16_t v;
+
+		memcpy(&v, b + s->off[abi], 2);
+		*(volatile int16_t *)(void *)(b + d->off[abi]) = v;
+	} else {
+		memmove(b + d->off[abi], b + s->off[abi],
+		        td_layout_width(d->type, abi));
+	}
+	put_result[k] = TD_PUT_WRITTEN;
 }
 
 static uint16_t stop_line;
@@ -220,9 +386,11 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
                 size_t out_bytes)
 {
 	uint16_t i, k;
+	long prev_ret = 0;   /* the return of the case before (+put)      */
 
 	stop_line = 0;
 	stop_ret  = 0;
+	memset(put_result, 0, sizeof put_result);
 	if (out_bytes < (size_t)ct->count * TD_CALL_RECORD_SIZE)
 		return TD_RUN_CALL_ERR_BUFFER;
 	/* a "u:0" with no unit from the profile: nothing is issued */
@@ -238,7 +406,7 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 		/* 1. poison the frame and both buffers (spec section 4) -- once,
 		 *    before the preludes, so a prelude's buffer reaches its case */
 		td_poison_call(&run_frame);
-		poison_buffers(c);
+		poison_buffers(ct, c);
 
 		/* 2. the preludes of a disk table: Rwabs reads into a buffer the
 		 *    case then writes back or reads again.  One that does not
@@ -263,6 +431,12 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 						(uint8_t)(p->arg[j].value & 0xFF);
 				continue;
 			}
+			/* "+put" (TOOL16): through the pointer the case before
+			 * returned -- the loader put that case right before it */
+			if (p->trap == TD_CALL_TRAP_PUT) {
+				put_field(ct, p, prev_ret);
+				continue;
+			}
 			pr = issue(p, NULL);
 
 			if (pr != 0) {
@@ -274,6 +448,7 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 
 		/* 3. the call under measurement */
 		ret = issue(c, &run_frame);
+		prev_ret = ret;
 
 		/* Super(0L) opened the bracket: keep the token for its t:0 */
 		if (c->trap == 1 && c->opcode == 0x20 && c->nargs == 1 &&
@@ -293,7 +468,27 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 		 *    (td_ptr_ram_violation, record.h): an error code, a NULL, a
 		 *    function number or a 64-bit placeholder is never read
 		 *    through.  A capture not taken keeps the poison. */
-		if (c->cap_arg == TD_CALL_CAP_RET) {
+		if (c->cap_layout) {
+			/* field by field (TOOL16): through the return, or the
+			 * buffer argument; a return that fails the follow rule
+			 * is never read through, every slot says why */
+			const struct td_layout *l = &ct->layouts[c->cap_layout - 1];
+			int abi = td_layout_native_abi();
+
+			if (c->cap_arg == TD_CALL_CAP_RET) {
+				uint8_t why = td_layout_follow_refusal((uint64_t)r,
+				                                       l->size[abi]);
+
+				td_layout_capture(run_frame.capture, ct->layouts, l,
+				                  why ? NULL : td_abi_addr(ret), why,
+				                  abi);
+			} else {
+				td_layout_capture(run_frame.capture, ct->layouts, l,
+				                  td_call_buffer((int)
+				                      c->arg[c->cap_arg].value),
+				                  0, abi);
+			}
+		} else if (c->cap_arg == TD_CALL_CAP_RET) {
 			if (td_ptr_ram_violation((uint64_t)r) == NULL)
 				td_call_capture(run_frame.capture,
 				                (const uint8_t *)td_abi_addr(ret) +

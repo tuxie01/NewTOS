@@ -256,6 +256,20 @@ void td_raster_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
  */
 const char *td_ptr_ram_violation(uint64_t v);
 
+/*
+ * The follow rule of a layout capture (TASK/TOOL16): may the runner read a
+ * structure of `size` bytes at the address `v` -- a returned pointer, or a
+ * pointer field of a structure it already read?  0 when it may, else the
+ * reason, TD_NOREAD_* (tosdump.h): the PTR_RAM rule above, in its order
+ * (null, upper bound, lower bound, odd), and then the end of the structure,
+ * which must lie at or below TD_ADDR_LIMIT too.  The runner reads nothing
+ * when it is refused and records TD_LAYOUT_NOREAD(reason) instead; the
+ * same function writes through a returned pointer ("+put") only when it
+ * holds.  td_layout_noread_text names a reason for a report.
+ */
+uint8_t     td_layout_follow_refusal(uint64_t v, uint32_t size);
+const char *td_layout_noread_text(uint8_t reason);
+
 struct td_field {
 	const char *name;
 	uint16_t    off;    /* byte offset inside the record          */

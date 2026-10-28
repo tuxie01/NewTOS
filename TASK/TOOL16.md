@@ -1,6 +1,6 @@
 # TOOL16 — Dumper liest durch zurueckgegebene Zeiger (Strukturlayout aus `docs/api/`)
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](TOOL16-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt
 

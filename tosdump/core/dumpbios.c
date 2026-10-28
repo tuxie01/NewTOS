@@ -129,6 +129,12 @@ int main(int argc, char **argv)
 		       'A' + table.disk_drive, table.prelude_count,
 		       table.destructive ? ", destructive (a fresh clone of the "
 		                           "test image only)" : "");
+	/* structures behind a pointer (TOOL16): what the table reads and
+	 * whether it writes through returned pointers */
+	if (table.nlayouts)
+		td_log("layouts: %u%s\n", table.nlayouts,
+		       table.writes ? ", writes through returned pointers "
+		                      "(+put)" : "");
 	if (table.unit_token) {
 		int32_t unit;
 
@@ -171,6 +177,27 @@ int main(int argc, char **argv)
 		return finish(1);
 	}
 	td_log("all %u cases ran\n", table.count);
+	/* what each +put did -- logged after the run, so no console output
+	 * falls between two measurements */
+	{
+		uint16_t k;
+
+		for (k = 0; k < table.prelude_count; k++) {
+			const struct td_call_case *p = &table.preludes[k];
+			uint8_t r;
+
+			if (p->trap != TD_CALL_TRAP_PUT)
+				continue;
+			r = td_run_call_put_result(k);
+			if (r == TD_PUT_WRITTEN)
+				td_log("+put line %u: written\n", p->line);
+			else if (r == 0)
+				td_log("+put line %u: not reached\n", p->line);
+			else
+				td_log("+put line %u: not written, %s\n", p->line,
+				       td_layout_noread_text(r));
+		}
+	}
 
 	rc = td_dump_write(out_path, TD_AREA_BIOS, table.count, TD_BUILD_ID,
 	                   table.crc, records, bytes);

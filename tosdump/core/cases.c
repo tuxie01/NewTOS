@@ -2805,6 +2805,397 @@ static int parse_retclass(const char *s, size_t len, struct td_call_case *c,
 	return 0;
 }
 
+/* ------------------------------------------------------------------ */
+/* Layouts: structures behind a pointer (cases.h, TASK/TOOL16)         */
+/* ------------------------------------------------------------------ */
+
+uint8_t td_layout_width(uint8_t type, int abi)
+{
+	switch (type) {
+	case TD_LT_BYTE:  return 1;
+	case TD_LT_WORD:  return 2;
+	case TD_LT_LONG:  return 4;
+	case TD_LT_CLONG:
+	case TD_LT_PTR:   return abi == TD_LAYOUT_ABI_LP64 ? 8 : 4;
+	default:          return 0;
+	}
+}
+
+/* C's alignment of a scalar field: the m68k ABI aligns everything wider
+ * than a byte on 2 (m68k-atari-mint-gcc; bios/iorec.h, the 14-byte IOREC),
+ * LP64 aligns every type on its own size. */
+static uint8_t layout_align(uint8_t type, int abi)
+{
+	uint8_t w = td_layout_width(type, abi);
+
+	if (abi == TD_LAYOUT_ABI_M68K)
+		return w > 1 ? 2 : 1;
+	return w;
+}
+
+int td_layout_native_abi(void)
+{
+	return td_native_ptr_width() == 8 ? TD_LAYOUT_ABI_LP64
+	                                  : TD_LAYOUT_ABI_M68K;
+}
+
+int td_layout_slot_find(const struct td_layout *l, const char *path)
+{
+	int i;
+
+	for (i = 0; i < (int)l->nslots; i++)
+		if (strcmp(l->slot[i].name, path) == 0)
+			return i;
+	return -1;
+}
+
+/* A name: [a-z_][a-z0-9_]*, at most TD_LAYOUT_NAME_LEN - 1 characters. */
+static int layout_name_ok(const char *s, size_t len)
+{
+	size_t i;
+
+	if (len == 0 || len >= TD_LAYOUT_NAME_LEN)
+		return 0;
+	for (i = 0; i < len; i++) {
+		char c = s[i];
+
+		if (c == '_' || (c >= 'a' && c <= 'z') ||
+		    (i > 0 && c >= '0' && c <= '9'))
+			continue;
+		return 0;
+	}
+	return 1;
+}
+
+static int layout_lookup(const struct td_layout *set, uint8_t n,
+                         const char *s, size_t len)
+{
+	int i;
+
+	for (i = 0; i < (int)n; i++)
+		if (span_is(s, len, set[i].name))
+			return i;
+	return -1;
+}
+
+/* "<a>/<b>", two unsigned numbers 0..max. */
+static int parse_pair(const char *s, size_t len, uint32_t max, uint32_t *a,
+                      uint32_t *b)
+{
+	size_t slash;
+
+	trim(&s, &len);
+	for (slash = 0; slash < len && s[slash] != '/'; slash++)
+		;
+	if (slash == 0 || slash >= len - 1)
+		return TD_CASE_ERR_VALUE;
+	if (parse_small(s, slash, max, a) != 0 ||
+	    parse_small(s + slash + 1, len - slash - 1, max, b) != 0)
+		return TD_CASE_ERR_VALUE;
+	return 0;
+}
+
+/* Append slot `src` of layout `from` under the prefix, as part of `l`.
+ * `ptr` is the slot index of the pointer the copied layout hangs from
+ * (-1: embedded, at `base_off` in l's own structure). */
+static int layout_append(struct td_layout *l, const struct td_layout *from,
+                         const char *prefix, size_t plen, int ptr,
+                         const uint16_t *base_off, uint8_t base_hops,
+                         const char **why)
+{
+	int first = l->nslots, i;
+
+	for (i = 0; i < (int)from->nslots; i++) {
+		const struct td_layout_slot *s = &from->slot[i];
+		struct td_layout_slot *d;
+		size_t nlen = strlen(s->name);
+
+		if (l->nslots >= TD_LAYOUT_SLOTS) {
+			*why = "the layout has more fields than the record's 32 slots";
+			return TD_CASE_ERR_TOO_MANY_VALUES;
+		}
+		if (plen + nlen >= TD_LAYOUT_PATH_LEN) {
+			*why = "a field path is longer than TD_LAYOUT_PATH_LEN";
+			return TD_CASE_ERR_RANGE;
+		}
+		d = &l->slot[l->nslots];
+		*d = *s;
+		memcpy(d->name, prefix, plen);
+		memcpy(d->name + plen, s->name, nlen + 1);
+		if (s->parent < 0) {
+			d->parent = (int8_t)ptr;
+			if (ptr < 0) {
+				d->off[0] = (uint16_t)(s->off[0] + base_off[0]);
+				d->off[1] = (uint16_t)(s->off[1] + base_off[1]);
+			}
+		} else {
+			d->parent = (int8_t)(s->parent + first);
+		}
+		d->hops = (uint8_t)(s->hops + base_hops);
+		if (d->hops > TD_LAYOUT_MAX_HOPS) {
+			*why = "the layout follows pointers deeper than "
+			       "TD_LAYOUT_MAX_HOPS";
+			return TD_CASE_ERR_RANGE;
+		}
+		l->nslots++;
+	}
+	return 0;
+}
+
+/*
+ * One field "<name>:<type>@<m68k>/<lp64>[:<class>]" of layout `l`.
+ * `cursor`/`maxal` are the C layout so far, per ABI.
+ */
+static int layout_field(struct td_layout *l, const struct td_layout *set,
+                        uint8_t n, const char *f, size_t flen,
+                        uint32_t *cursor, uint8_t *maxal, const char **why)
+{
+	size_t c1, at, c2, i;
+	const char *t;
+	size_t tlen;
+	uint32_t off[TD_LAYOUT_ABIS], width[TD_LAYOUT_ABIS];
+	uint8_t align[TD_LAYOUT_ABIS], type = 0;
+	int target = -1, embedded = 0, abi, rc;
+	uint8_t cls = 0xFF;
+
+	trim(&f, &flen);
+	for (c1 = 0; c1 < flen && f[c1] != ':'; c1++)
+		;
+	for (at = c1; at < flen && f[at] != '@'; at++)
+		;
+	for (c2 = at; c2 < flen && f[c2] != ':'; c2++)
+		;
+	*why = "a layout field is <name>:<type>@<m68k offset>/<LP64 offset>"
+	       "[:<class>]";
+	if (c1 == 0 || c1 >= flen || at >= flen)
+		return TD_CASE_ERR_VALUE;
+	if (!layout_name_ok(f, c1)) {
+		*why = "a field name is [a-z_][a-z0-9_]*, at most 15 characters";
+		return TD_CASE_ERR_VALUE;
+	}
+	for (i = 0; i < l->nslots; i++) {
+		const char *sn = l->slot[i].name;
+
+		/* the field itself, or the head of an embedded or followed
+		 * layout's paths ("in.ibuf", "mp_free->md_start") */
+		if (strncmp(sn, f, c1) == 0 &&
+		    (sn[c1] == '\0' || sn[c1] == '.' ||
+		     (sn[c1] == '-' && sn[c1 + 1] == '>'))) {
+			*why = "a field name stands twice in one layout";
+			return TD_CASE_ERR_VALUE;
+		}
+	}
+
+	t = f + c1 + 1;
+	tlen = at - c1 - 1;
+	if (tlen == 1) {
+		switch (t[0]) {
+		case 'b': type = TD_LT_BYTE;  break;
+		case 'w': type = TD_LT_WORD;  break;
+		case 'L': type = TD_LT_LONG;  break;
+		case 'l': type = TD_LT_CLONG; break;
+		case 'p': type = TD_LT_PTR;   break;
+		default:  break;
+		}
+	} else if (tlen > 2 && t[0] == 'p' && t[1] == '>') {
+		type = TD_LT_PTR;
+		target = layout_lookup(set, n, t + 2, tlen - 2);
+		if (target < 0) {
+			*why = "p><layout> names no layout defined before this one";
+			return TD_CASE_ERR_VALUE;
+		}
+	} else if (tlen > 2 && t[0] == '[' && t[tlen - 1] == ']') {
+		embedded = 1;
+		target = layout_lookup(set, n, t + 1, tlen - 2);
+		if (target < 0) {
+			*why = "[<layout>] names no layout defined before this one";
+			return TD_CASE_ERR_VALUE;
+		}
+	}
+	if (!type && !embedded) {
+		*why = "a field type is b, w, L, l, p, p><layout> or [<layout>]";
+		return TD_CASE_ERR_VALUE;
+	}
+
+	rc = parse_pair(f + at + 1, c2 - at - 1, 0xFFFF, &off[0], &off[1]);
+	if (rc != 0) {
+		*why = "a field offset is <m68k>/<LP64>, two numbers";
+		return rc;
+	}
+	if (c2 < flen) {
+		const char *k = f + c2 + 1;
+		size_t klen = flen - c2 - 1;
+		static const uint8_t classes[] = { TD_RET_EXACT, TD_RET_IGNORE,
+		                                   TD_RET_NONZERO, TD_RET_HANDLE,
+		                                   TD_RET_PTR_RAM };
+
+		trim(&k, &klen);
+		for (i = 0; i < sizeof classes; i++)
+			if (span_is(k, klen, td_retclass_name(classes[i])))
+				cls = classes[i];
+		if (cls == 0xFF) {
+			*why = "a field class is EXACT, IGNORE, NONZERO, HANDLE or "
+			       "PTR_RAM";
+			return TD_CASE_ERR_RETCLASS;
+		}
+		if (embedded) {
+			*why = "an embedded [<layout>] takes no class: its fields "
+			       "carry their own";
+			return TD_CASE_ERR_RETCLASS;
+		}
+	} else if (!embedded) {
+		cls = type == TD_LT_PTR ? TD_RET_PTR_RAM : TD_RET_EXACT;
+	}
+
+	/* the C layout: each offset is the one C gives this field after the
+	 * ones before it, on both ABIs */
+	for (abi = 0; abi < TD_LAYOUT_ABIS; abi++) {
+		uint32_t expect;
+
+		if (embedded) {
+			width[abi] = set[target].size[abi];
+			align[abi] = set[target].align[abi];
+		} else {
+			width[abi] = td_layout_width(type, abi);
+			align[abi] = layout_align(type, abi);
+		}
+		expect = (cursor[abi] + align[abi] - 1u) & ~(uint32_t)(align[abi] - 1u);
+		if (off[abi] != expect) {
+			*why = abi == TD_LAYOUT_ABI_M68K
+			       ? "an m68k offset is not where C puts the field "
+			         "(everything but a UBYTE WORD aligned, no gaps)"
+			       : "an LP64 offset is not where C puts the field "
+			         "(natural alignment, no gaps)";
+			return TD_CASE_ERR_GEOMETRY;
+		}
+		cursor[abi] = off[abi] + width[abi];
+		if (align[abi] > maxal[abi])
+			maxal[abi] = align[abi];
+	}
+
+	if (embedded) {
+		char prefix[TD_LAYOUT_NAME_LEN + 1];
+		uint16_t base[TD_LAYOUT_ABIS];
+
+		memcpy(prefix, f, c1);
+		prefix[c1] = '.';
+		base[0] = (uint16_t)off[0];
+		base[1] = (uint16_t)off[1];
+		return layout_append(l, &set[target], prefix, c1 + 1, -1, base, 0,
+		                     why);
+	}
+
+	if (l->nslots >= TD_LAYOUT_SLOTS) {
+		*why = "the layout has more fields than the record's 32 slots";
+		return TD_CASE_ERR_TOO_MANY_VALUES;
+	}
+	{
+		struct td_layout_slot *s = &l->slot[l->nslots];
+		int self = l->nslots;
+
+		memset(s, 0, sizeof *s);
+		memcpy(s->name, f, c1);
+		s->name[c1] = '\0';
+		s->type   = type;
+		s->cls    = cls;
+		s->parent = -1;
+		s->follow = (int8_t)target;
+		s->hops   = 0;
+		s->off[0] = (uint16_t)off[0];
+		s->off[1] = (uint16_t)off[1];
+		l->nslots++;
+		if (target >= 0) {
+			char prefix[TD_LAYOUT_NAME_LEN + 2];
+			static const uint16_t zero[TD_LAYOUT_ABIS] = { 0, 0 };
+
+			memcpy(prefix, f, c1);
+			prefix[c1] = '-';
+			prefix[c1 + 1] = '>';
+			return layout_append(l, &set[target], prefix, c1 + 2, self,
+			                     zero, 1, why);
+		}
+	}
+	return 0;
+}
+
+int td_layout_parse(struct td_layout *set, uint8_t *n, const char *line,
+                    size_t len, const char **why)
+{
+	const char *col[4];
+	size_t col_len[4];
+	const char *s;
+	size_t slen, i, start;
+	struct td_layout *l;
+	uint32_t size[TD_LAYOUT_ABIS], cursor[TD_LAYOUT_ABIS] = { 0, 0 };
+	uint8_t maxal[TD_LAYOUT_ABIS] = { 1, 1 };
+	int abi, rc;
+
+	if (*n >= TD_LAYOUT_MAX) {
+		*why = "more than eight layouts in one table";
+		return TD_CASE_ERR_TOO_MANY_VALUES;
+	}
+	if (split_columns(line, len, col, col_len, 4) < 4) {
+		*why = "!layout <name> <m68k size>/<LP64 size> <fields>";
+		return TD_CASE_ERR_COLUMNS;
+	}
+	l = &set[*n];
+	memset(l, 0, sizeof *l);
+	s = col[1];
+	slen = col_len[1];
+	trim(&s, &slen);
+	if (!layout_name_ok(s, slen)) {
+		*why = "a layout name is [a-z_][a-z0-9_]*, at most 15 characters";
+		return TD_CASE_ERR_DIRECTIVE;
+	}
+	if (layout_lookup(set, *n, s, slen) >= 0) {
+		*why = "a layout name stands twice";
+		return TD_CASE_ERR_DIRECTIVE;
+	}
+	memcpy(l->name, s, slen);
+	l->name[slen] = '\0';
+	rc = parse_pair(col[2], col_len[2], TD_CALL_BUF_BYTES, &size[0], &size[1]);
+	if (rc != 0 || size[0] == 0 || size[1] == 0) {
+		*why = "a layout size is <m68k>/<LP64>, 1..1024 bytes each";
+		return TD_CASE_ERR_DIRECTIVE;
+	}
+
+	s = col[3];
+	slen = col_len[3];
+	trim(&s, &slen);
+	if (slen == 0) {
+		*why = "a layout has at least one field";
+		return TD_CASE_ERR_DIRECTIVE;
+	}
+	for (i = 0, start = 0; ; i++) {
+		if (i == slen || s[i] == ',') {
+			rc = layout_field(l, set, *n, s + start, i - start, cursor,
+			                  maxal, why);
+			if (rc != 0)
+				return rc;
+			if (i == slen)
+				break;
+			start = i + 1;
+		}
+	}
+	for (abi = 0; abi < TD_LAYOUT_ABIS; abi++) {
+		uint32_t end = (cursor[abi] + maxal[abi] - 1u) &
+		               ~(uint32_t)(maxal[abi] - 1u);
+
+		if (size[abi] != end) {
+			*why = abi == TD_LAYOUT_ABI_M68K
+			       ? "the m68k size is not the end of the last field "
+			         "rounded to the structure's alignment"
+			       : "the LP64 size is not the end of the last field "
+			         "rounded to the structure's alignment";
+			return TD_CASE_ERR_GEOMETRY;
+		}
+		l->size[abi]  = (uint16_t)size[abi];
+		l->align[abi] = maxal[abi];
+	}
+	(*n)++;
+	return 0;
+}
+
 static int parse_call_args(const char *s, size_t len, struct td_call_case *c,
                            const char **why)
 {
@@ -2904,8 +3295,53 @@ static int parse_call_args(const char *s, size_t len, struct td_call_case *c,
 	return 0;
 }
 
-static int parse_capture(const char *s, size_t len, struct td_call_case *c,
-                         const char **why)
+/*
+ * "r:<layout>" / "<argindex>:<layout>" (TOOL16): the structure behind the
+ * returned pointer or in the b: buffer, field by field (cases.h, "Layouts").
+ */
+static int parse_layout_capture(const struct td_call_case_table *t,
+                                const char *s, size_t len, size_t colon,
+                                struct td_call_case *c, const char **why)
+{
+	uint32_t idx;
+	int li = layout_lookup(t->layouts, t->nlayouts, s + colon + 1,
+	                       len - colon - 1);
+	const struct td_layout *l;
+
+	if (li < 0) {
+		*why = "the capture names no layout the table defines (\"!layout\" "
+		       "before the first case)";
+		return TD_CASE_ERR_CAPTURE;
+	}
+	l = &t->layouts[li];
+	if (colon == 1 && s[0] == 'r') {
+		if (c->retclass != TD_RET_PTR_RAM) {
+			*why = "r:<layout> reads through the returned pointer: the "
+			       "retclass must be PTR_RAM";
+			return TD_CASE_ERR_CAPTURE;
+		}
+		c->cap_arg = (int8_t)TD_CALL_CAP_RET;
+	} else {
+		if (parse_small(s, colon, 255, &idx) != 0 || idx >= c->nargs ||
+		    c->arg[idx].kind != TD_CALL_ARG_BUF) {
+			*why = "capture names an argument that is not a b: buffer";
+			return TD_CASE_ERR_CAPTURE;
+		}
+		if (l->size[0] > TD_CALL_BUF_BYTES || l->size[1] > TD_CALL_BUF_BYTES) {
+			*why = "the layout is larger than a dumper buffer";
+			return TD_CASE_ERR_CAPTURE;
+		}
+		c->cap_arg = (int8_t)idx;
+	}
+	c->cap_layout = (uint8_t)(li + 1);
+	c->cap_unit   = 1;
+	c->cap_off    = 0;
+	c->cap_len    = (uint16_t)(l->nslots * TD_LAYOUT_SLOT_BYTES);
+	return 0;
+}
+
+static int parse_capture(const struct td_call_case_table *t, const char *s,
+                         size_t len, struct td_call_case *c, const char **why)
 {
 	size_t colon, end, at;
 	uint32_t idx, length, off = 0;
@@ -2913,15 +3349,19 @@ static int parse_capture(const char *s, size_t len, struct td_call_case *c,
 	int rc;
 
 	c->cap_arg = -1;
+	c->cap_layout = 0;
 	trim(&s, &len);
 	if (len == 1 && s[0] == '-')
 		return 0;
 	*why = "capture is not - or <argindex>:<length>[.B|.W|.L][@<offset>] "
-	       "(r:<length>... through the returned pointer)";
+	       "(r:<length>... through the returned pointer; r:<layout> or "
+	       "<argindex>:<layout> field by field)";
 	for (colon = 0; colon < len && s[colon] != ':'; colon++)
 		;
 	if (colon == 0 || colon >= len)
 		return TD_CASE_ERR_CAPTURE;
+	if (colon + 1 < len && s[colon + 1] >= 'a' && s[colon + 1] <= 'z')
+		return parse_layout_capture(t, s, len, colon, c, why);
 	for (at = colon; at < len && s[at] != '@'; at++)
 		;
 	for (end = colon; end < at && s[end] != '.'; end++)
@@ -3012,6 +3452,9 @@ enum {
 	CR_SOUNDCMD,     /* modes 0, 1, 6 with data -1                        */
 	CR_SNDSTATUS,    /* reset 0                                           */
 	CR_SUPER,        /* l:1 the inquiry, l:0 / t:0 the bracket (MEM12)    */
+	CR_GETMPB,       /* a b: buffer, inside the Super bracket, last       */
+	                 /* (TOOL16; the bracket and "last" are the parse     */
+	                 /* loop's)                                           */
 	/* The disk round (TASK/TOOL07): only in a table that says "!disk";
 	 * outside one these calls are refused as before (call_refusals). */
 	CR_DISK_DRIVE,   /* Getbpb, Mediach: any drive but the floppies A:/B: */
@@ -3032,6 +3475,7 @@ static const struct call_policy call_policy[] = {
 	 * the TRAP #1 front end (bdos/rwa.S:159-184, 280-346); MEM12 */
 	{  1, 0x20, 0x20, "l",      "t",    CR_SUPER     },  /* Super       */
 	/* BIOS, trap #13 (bios/bios.c:1252-1265) */
+	{ 13,    0,    0, "p",      NULL,   CR_GETMPB    },  /* Getmpb, TOOL16 */
 	{ 13,    1,    1, "w",      NULL,   CR_NONE      },  /* Bconstat    */
 	{ 13,    4,    4, "wpwwwl", "wpwwul", CR_RWABS   },  /* Rwabs, !disk only; u:0 physical */
 	{ 13,    7,    7, "w",      NULL,   CR_DISK_DRIVE},  /* Getbpb, !disk only */
@@ -3107,8 +3551,6 @@ struct call_refusal {
 };
 
 static const struct call_refusal call_refusals[] = {
-	{ 13, 0x00, "Getmpb rewrites the initial memory descriptor GEMDOS "
-	            "built its pool on (bios/biosmem.c:134-151)" },
 	{ 13, 0x04, "Rwabs reads and writes media: only in a disk table "
 	            "(\"!disk\", the oracle's disk profile and the NewTOS "
 	            "test card; COVERAGE-BIOS.md)" },
@@ -3361,6 +3803,11 @@ static const char *call_value_refusal(const struct call_policy *p,
 		       ? "Getbpb/Mediach: not on the floppies A: and B:" : NULL;
 	case CR_RWABS:
 		return rwabs_value_refusal(c);
+	case CR_GETMPB:
+		/* it writes mp_mfl and mp_mal through its argument
+		 * (bios/biosmem.c:149-150): a dumper buffer only */
+		return is_buf(c, 0) ? NULL
+		       : "Getmpb writes through its argument: name a b: buffer";
 	case CR_SUPER:
 		/* the bracket itself (open / close) is the parse loop's */
 		if (c->arg[0].kind == TD_CALL_ARG_TOKEN || is_value(c, 0, 1) ||
@@ -3399,9 +3846,38 @@ static int parse_call_directive(const char *line, size_t len,
 	name = col[0];
 	name_len = col_len[0];
 	trim(&name, &name_len);
+	if (span_is(name, name_len, "!layout")) {
+		/* TOOL16: a structure the captures name (cases.h, "Layouts") */
+		if (late) {
+			*why = "\"!layout\" stands before the first case and prelude";
+			return TD_CASE_ERR_DIRECTIVE;
+		}
+		return td_layout_parse(t->layouts, &t->nlayouts, line, len, why);
+	}
+	if (span_is(name, name_len, "!write")) {
+		/* TOOL16: the table writes through returned pointers ("+put") */
+		val = col[1];
+		val_len = col_len[1];
+		trim(&val, &val_len);
+		if (t->writes) {
+			*why = "\"!write\" stands once";
+			return TD_CASE_ERR_DIRECTIVE;
+		}
+		if (late) {
+			*why = "\"!write\" stands before the first case and prelude";
+			return TD_CASE_ERR_DIRECTIVE;
+		}
+		if (!span_is(val, val_len, "return") || col_len[2] != 0) {
+			*why = "\"!write\" takes one word, \"return\": the table "
+			       "writes through returned pointers (+put)";
+			return TD_CASE_ERR_DIRECTIVE;
+		}
+		t->writes = 1;
+		return 0;
+	}
 	if (!span_is(name, name_len, "!disk")) {
-		*why = "a call table knows one directive, \"!disk <drive> "
-		       "[destructive]\"";
+		*why = "a call table knows the directives \"!disk <drive> "
+		       "[destructive]\", \"!layout\" and \"!write return\"";
 		return TD_CASE_ERR_DIRECTIVE;
 	}
 	if (t->disk) {
@@ -3579,6 +4055,110 @@ static int parse_set_prelude(const struct td_call_case_table *t,
 	return 0;
 }
 
+/* Is this prelude line a "+put"?  (TOOL16) */
+static int is_put_line(const char *line, size_t len)
+{
+	const char *col[2];
+	size_t col_len[2];
+	const char *o;
+	size_t olen;
+
+	split_columns(line, len, col, col_len, 2);
+	o = col[0];
+	olen = col_len[0];
+	trim(&o, &olen);
+	return olen >= 1 && o[0] == '+' && span_is(o + 1, olen - 1, "put");
+}
+
+/* A top-level, non-pointer field of layout `l` named by s[0..len). */
+static int put_field(const struct td_layout *l, const char *s, size_t len)
+{
+	char name[TD_LAYOUT_PATH_LEN];
+	int k;
+
+	trim(&s, &len);
+	if (len == 0 || len >= sizeof name)
+		return -1;
+	memcpy(name, s, len);
+	name[len] = '\0';
+	k = td_layout_slot_find(l, name);
+	if (k < 0 || l->slot[k].hops != 0 || l->slot[k].type == TD_LT_PTR)
+		return -1;
+	return k;
+}
+
+/*
+ * "+put <TAB> <field>=<field> [<TAB> comment]" -- only in a table that says
+ * "!write return", IMMEDIATELY after the case whose "r:<layout>" capture it
+ * writes through (docs/TOS-REFERENCE-DUMPER.md section 6, "Structures behind
+ * a pointer").  One field of that structure gets the value of another of the
+ * same type; both are top-level, non-pointer fields (cases.h, "Layouts").
+ * That a case follows it, and no other prelude, is the parse loop's.
+ */
+static int parse_put_prelude(const struct td_call_case_table *t,
+                             uint16_t pending, const char *line, size_t len,
+                             struct td_call_case *c, const char **why)
+{
+	const char *col[3];
+	size_t col_len[3];
+	const struct td_call_case *prev;
+	const struct td_layout *l;
+	const char *s;
+	size_t slen, eq;
+	int dst, src;
+
+	if (!t->writes) {
+		*why = "+put writes through a returned pointer: only in a table "
+		       "that says \"!write return\"";
+		return TD_CASE_ERR_UNSAFE_STATE;
+	}
+	if (pending != 0 || t->count == 0 ||
+	    t->cases[t->count - 1].cap_arg != TD_CALL_CAP_RET ||
+	    t->cases[t->count - 1].cap_layout == 0) {
+		*why = "+put stands right after the case whose returned pointer it "
+		       "writes through, a case with an r:<layout> capture";
+		return TD_CASE_ERR_UNSAFE_FIELD;
+	}
+	prev = &t->cases[t->count - 1];
+	l = &t->layouts[prev->cap_layout - 1];
+	if (split_columns(line, len, col, col_len, 3) < 2) {
+		*why = "+put needs its <field>=<field> in the second column";
+		return TD_CASE_ERR_COLUMNS;
+	}
+	s = col[1];
+	slen = col_len[1];
+	trim(&s, &slen);
+	for (eq = 0; eq < slen && s[eq] != '='; eq++)
+		;
+	if (eq == 0 || eq >= slen - 1) {
+		*why = "+put takes <field>=<field>: one field of the structure "
+		       "gets the value of another";
+		return TD_CASE_ERR_VALUE;
+	}
+	dst = put_field(l, s, eq);
+	src = put_field(l, s + eq + 1, slen - eq - 1);
+	if (dst < 0 || src < 0) {
+		*why = "+put names a field that is not a top-level, non-pointer "
+		       "field of the case's layout";
+		return TD_CASE_ERR_UNSAFE_FIELD;
+	}
+	if (dst == src || l->slot[dst].type != l->slot[src].type) {
+		*why = "+put copies between two different fields of the same type";
+		return TD_CASE_ERR_UNSAFE_FIELD;
+	}
+	c->trap       = TD_CALL_TRAP_PUT;
+	c->opcode     = 0;
+	c->nargs      = 2;
+	c->arg[0].kind  = TD_CALL_ARG_PUT;
+	c->arg[0].value = dst;
+	c->arg[1].kind  = TD_CALL_ARG_PUT;
+	c->arg[1].value = src;
+	c->cap_arg    = -1;
+	c->cap_layout = prev->cap_layout;
+	td_case_line_comment_n(line, len, 3, c->comment, TD_COMMENT_LEN);
+	return 0;
+}
+
 int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
                         const char *buf, size_t len,
                         struct td_case_error *err)
@@ -3591,6 +4171,7 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 	uint16_t bracket_open = 0;         /* line of an open Super(0L), or 0 */
 	uint16_t pending = 0;              /* preludes since the last case    */
 	uint16_t last_prelude = 0;         /* line of the newest one          */
+	uint16_t getmpb_line = 0;          /* a Getmpb case stood here (TOOL16) */
 
 	memset(t, 0, sizeof *t);
 	t->crc  = td_crc32((const uint8_t *)buf, len);
@@ -3629,6 +4210,31 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 			continue;
 		}
 		prelude = td_case_line_is_prelude(line, line_len);
+		if (prelude && pending &&
+		    t->preludes[t->prelude_count - 1].trap == TD_CALL_TRAP_PUT) {
+			fail(err, line_no, "after a +put comes the case it is for, "
+			                   "no other prelude");
+			return TD_CASE_ERR_UNSAFE_FIELD;
+		}
+		if (prelude && is_put_line(line, line_len)) {
+			if (t->prelude_count >= TD_MAX_CALL_PRELUDES) {
+				fail(err, line_no, "more preludes than "
+				                   "TD_MAX_CALL_PRELUDES");
+				return TD_CASE_ERR_TOO_MANY_PRE;
+			}
+			c = &t->preludes[t->prelude_count];
+			memset(c, 0, sizeof *c);
+			c->line = line_no;
+			rc = parse_put_prelude(t, pending, line, line_len, c, &why);
+			if (rc != 0) {
+				fail(err, line_no, why);
+				return rc;
+			}
+			t->prelude_count++;
+			pending++;
+			last_prelude = line_no;
+			continue;
+		}
 		if (prelude && is_set_line(line, line_len)) {
 			if (t->prelude_count >= TD_MAX_CALL_PRELUDES) {
 				fail(err, line_no, "more preludes than "
@@ -3651,7 +4257,8 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 		if (prelude && !t->disk) {
 			fail(err, line_no, "a call table has no preludes: round 1 "
 			                   "issues queries only (a disk table, "
-			                   "\"!disk\", has Rwabs reads)");
+			                   "\"!disk\", has Rwabs reads; a \"!write "
+			                   "return\" table +put)");
 			return TD_CASE_ERR_DIRECTIVE;
 		}
 		if (split_columns(line, line_len, col, col_len,
@@ -3727,7 +4334,7 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 		} else if (rc == 0) {
 			rc = parse_retclass(col[2], col_len[2], c, &why);
 			if (rc == 0)
-				rc = parse_capture(col[3], col_len[3], c, &why);
+				rc = parse_capture(t, col[3], col_len[3], c, &why);
 		}
 		if (rc != 0) {
 			fail(err, line_no, why);
@@ -3770,6 +4377,31 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 			fail(err, line_no, why);
 			return TD_CASE_ERR_UNSAFE_FIELD;
 		}
+
+		/* Getmpb (TOOL16): on EmuTOS it rewrites themd, the descriptor
+		 * GEMDOS built its pool on (bios/biosmem.c:143-150), and the MD
+		 * lies in protected low memory ($48E, a user-mode read is a bus
+		 * error).  As the probe that established it measured it (BCPROB2,
+		 * measurements/measurement-2026-10-28-bios-core-audit): inside a
+		 * Super bracket, and last -- after it only another Getmpb and the
+		 * Super(t:0) that closes the bracket. */
+		if (p->rule == CR_GETMPB && !bracket_open) {
+			fail(err, line_no, "Getmpb only inside a Super(0L) ... "
+			                   "Super(t:0) bracket, as the last call: it "
+			                   "rewrites the descriptor GEMDOS built its "
+			                   "pool on, in protected memory "
+			                   "(bios/biosmem.c:143-150)");
+			return TD_CASE_ERR_UNSAFE_OPCODE;
+		}
+		if (getmpb_line && p->rule != CR_GETMPB &&
+		    !(p->rule == CR_SUPER && c->arg[0].kind == TD_CALL_ARG_TOKEN)) {
+			fail(err, line_no, "after Getmpb only Getmpb and the Super(t:0) "
+			                   "that closes the bracket: Getmpb rewrites "
+			                   "the descriptor GEMDOS's pool uses");
+			return TD_CASE_ERR_UNSAFE_STATE;
+		}
+		if (p->rule == CR_GETMPB)
+			getmpb_line = line_no;
 
 		/* the Super bracket: l:0 opens, t:0 closes, no nesting */
 		if (p->rule == CR_SUPER && is_value(c, 0, 0)) {

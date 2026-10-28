@@ -57,3 +57,11 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (Vertrag festlegen), 
   (COMPATIBILITY schon berichtigt, `c173cddc`); O3 = (a) bleibt, **zuerst
   EmuTOS bei `Getmpb(NULL)` auf dem Orakel messen**; O4 bestaetigt.
 - Lokalisierung (Lead) vor Beginn nach CLAUDE.md „Testing“.
+
+## Stand 2026-10-29 (TOOL16)
+
+- Messfall `Getmpb` in `tosdump/cases/xbios-ptr-r1.tsv` (Fall 34, Layout aus
+  `docs/api/structures/md.md`): Orakel `mp_free` `0x48E`, `md_start`
+  `0x23BA0`, `md_length` `0x3B6B60`; NewTOS liest das 24-Byte-Mischformat als
+  LP64 (`md_start` `0x00A00000_00400000`, `md_length` 0) — DIFF, erwartet bis
+  zum Fix (BIOS-CORE-003).

@@ -197,8 +197,11 @@ Siehe `docs/analysis/lp64-tos-struct-survey-2026-10-28.md` (Zeile "MD/MPB")
 und die Erhebung dieses Tickets: einziger Leser von `md_start`/`md_length` ist
 `sdk/apps/apitest/apitest.c:2176@MDX` (B3, BS03-BS10). `sdk/examples/uakid.c`
 ruft `Getmpb(BAD)` nur mit ungueltigem Zeiger (kein Lesen des MD, nicht im
-Standard-Image); `tosdump` schliesst `Getmpb` aus
-(`tosdump/core/cases.c:3110@Getmpb`, `tosdump/cases/COVERAGE-BIOS.md:55@Getmpb`). Kein
+Standard-Image); `tosdump` misst `Getmpb` seit TOOL16 nur in
+`tosdump/cases/xbios-ptr-r1.tsv` (in einer `Super`-Klammer, als letzten
+Aufruf; `tosdump/core/cases.c:3478@CR_GETMPB`,
+`tosdump/cases/COVERAGE-BIOS.md:58@Getmpb`), MPB und MD feldweise mit dem
+Layout aus `docs/api/structures/md.md` ("Dumper layout"). Kein
 portiertes Programm unter `sdk/apps/`, `sdk/overlays/`, `sdk/examples/`,
 `programs/`, `Applications/` ruft `Getmpb` im Quelltext (Binaerdateien:
 `sdk/apps/highwire/modules/network.src/socklib/mintlib.lib` enthaelt nur den

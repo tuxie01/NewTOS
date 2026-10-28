@@ -17,7 +17,8 @@
  *       area, a return value that fails its case's retclass), 2 = refused.
  *
  * --selfcheck applies every relational rule (address check, kept check,
- * the per-side retclasses) to one oracle reference alone.  A comparison
+ * the per-side retclasses and layout field classes) to one oracle
+ * reference alone.  A comparison
  * rule is only valid if the oracle passes it: a violation there is a bug
  * in the rule or the case table (route: Researcher), never a NewTOS
  * finding.  Exit 1 on a violation.
@@ -603,6 +604,119 @@ static int retclass_check(const struct td_casefile *cf, uint16_t index,
 }
 
 /*
+ * A layout capture (TOOL16; docs/TOS-REFERENCE-DUMPER.md section 6,
+ * "Structures behind a pointer"): the capture holds one 64-bit slot per
+ * field of the case's layout, and each slot is judged by the field's class
+ * from the table -- EXACT by value between the two dumps, NONZERO / HANDLE
+ * / PTR_RAM on each side, IGNORE not at all.  A slot the runner did not
+ * read (TD_LAYOUT_NOREAD) is printed with its reason; for a per-side class
+ * it is a violation of its own, for EXACT a value like any other.  The
+ * bytes after the last slot are compared by value (they keep the poison).
+ * Returns 1 when the case differs on account of a slot.
+ */
+static uint64_t slot_get(const uint8_t *rec, int i)
+{
+	const uint8_t *p = rec + TD_CALL_OFF_CAPTURE + i * TD_LAYOUT_SLOT_BYTES;
+
+	return ((uint64_t)td_load_be32(p) << 32) | (uint64_t)td_load_be32(p + 4);
+}
+
+static uint8_t slot_noread(uint64_t v)
+{
+	uint64_t r = v - TD_LAYOUT_NOREAD_BASE;
+
+	return (v >= TD_LAYOUT_NOREAD_BASE && r >= 1 && r <= TD_NOREAD_MAX)
+	       ? (uint8_t)r : 0;
+}
+
+static void print_slot(uint64_t v)
+{
+	uint8_t r = slot_noread(v);
+
+	if (r)
+		printf("not read (%s)", td_layout_noread_text(r));
+	else
+		printf("0x%016llX", (unsigned long long)v);
+}
+
+static int layout_check(const struct td_casefile *cf, uint16_t index,
+                        const struct td_dump *a, const uint8_t *ra,
+                        const struct td_dump *b, const uint8_t *rb,
+                        int label_w, uint16_t case_id, int *printed,
+                        int nsides)
+{
+	const struct td_call_case *c = &cf->calls->cases[index];
+	const struct td_layout *l = &cf->calls->layouts[c->cap_layout - 1];
+	int differs = 0, i, side;
+	unsigned k;
+
+	for (i = 0; i < (int)l->nslots; i++) {
+		const struct td_layout_slot *s = &l->slot[i];
+		uint64_t va = slot_get(ra, i), vb = slot_get(rb, i);
+		char name[TD_LAYOUT_NAME_LEN + TD_LAYOUT_PATH_LEN + 1];
+
+		snprintf(name, sizeof name, "%s:%s", l->name, s->name);
+		if (s->cls == TD_RET_IGNORE)
+			continue;
+		if (s->cls == TD_RET_EXACT) {
+			if (nsides == 1 || va == vb)
+				continue;
+			print_call_case_header(cf, case_id, ra, printed);
+			printf("    %-24s %-7s %-*s = ", name, "EXACT", label_w,
+			       a->label);
+			print_slot(va);
+			printf("   %-*s = ", label_w, b->label);
+			print_slot(vb);
+			printf("\n");
+			differs = 1;
+			continue;
+		}
+		for (side = 0; side < nsides; side++) {
+			const struct td_dump *d = side ? b : a;
+			uint64_t v = side ? vb : va;
+			const char *why = NULL;
+
+			if (slot_noread(v))
+				why = td_layout_noread_text(slot_noread(v));
+			else
+				why = retclass_violation(s->cls, (int64_t)v);
+			if (!why)
+				continue;
+			print_call_case_header(cf, case_id, ra, printed);
+			printf("    %-24s %s %-*s = ", name, td_retclass_name(s->cls),
+			       label_w, d->label);
+			if (slot_noread(v))
+				printf("not read, %s\n", why);
+			else
+				printf("0x%016llX, %s\n", (unsigned long long)v, why);
+			differs = 1;
+		}
+	}
+	if (nsides == 1)
+		return differs;
+	for (k = (unsigned)l->nslots * TD_LAYOUT_SLOT_BYTES;
+	     k < TD_CALL_CAPTURE_LEN; k++) {
+		uint8_t xa = ra[TD_CALL_OFF_CAPTURE + k];
+		uint8_t xb = rb[TD_CALL_OFF_CAPTURE + k];
+
+		if (xa == xb)
+			continue;
+		print_call_case_header(cf, case_id, ra, printed);
+		printf("    capture[%u]%*s%-*s = 0x%02X   %-*s = 0x%02X  (after "
+		       "the layout's slots)\n", k, 10, "", label_w, a->label, xa,
+		       label_w, b->label, xb);
+		differs = 1;
+	}
+	return differs;
+}
+
+static int has_layout(const struct td_casefile *cf, uint16_t index)
+{
+	return cf->calls && index < cf->calls->count &&
+	       cf->calls->cases[index].cap_layout != 0;
+}
+
+/*
  * Compare A against B, or -- `single`, the self-check -- judge A alone: B is
  * then the same file and only A's side of each relational rule runs.
  */
@@ -742,6 +856,12 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 		    retclass_check(&cf, rec, &a, ra, &b, rb, label_w, case_id,
 		                   &printed_header, single ? 1 : 2))
 			value_differs = 1;
+		/* A layout capture (TOOL16): slot by slot, by the field's class
+		 * -- the capture field below is then not compared byte-wise. */
+		if (is_call_area(a.h.area) && has_layout(&cf, rec) &&
+		    layout_check(&cf, rec, &a, ra, &b, rb, label_w, case_id,
+		                 &printed_header, single ? 1 : 2))
+			value_differs = 1;
 
 		for (fi = 0; fields[fi].name; fi++) {
 			const struct td_field *f = &fields[fi];
@@ -749,6 +869,9 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 
 			if (is_call_area(a.h.area) && f->off == TD_CALL_OFF_RET)
 				continue;   /* judged above */
+			if (is_call_area(a.h.area) && f->off == TD_CALL_OFF_CAPTURE &&
+			    has_layout(&cf, rec))
+				continue;   /* slot by slot, above */
 
 			/* Field class address: never compared by value -- the two
 			 * values cannot be equal by construction, so a difference

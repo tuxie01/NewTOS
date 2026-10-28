@@ -53,9 +53,39 @@ is a different, GEMDOS-side constant). IKBD entries are 4 bytes, so the
 Used only on hardware-flow-controlled input devices (RS-232 with
 RTS/CTS). When `tail` advances past `high`, the driver de-asserts
 RTS to throttle the sender; when `head` consumes back below `low`,
-RTS is reasserted. For IKBD/MIDI, `low` and `high` are zero and
-ignored — the IKBD has no flow control and dropped bytes are simply
-lost.
+RTS is reasserted. For IKBD/MIDI the fields are set but not used
+for flow control — measured on the oracle: IKBD `low`/`high` 64/192, MIDI
+32/96 (`tosdump/reference/EMUTOS-1a7484ab-XBIOS-ptr.LOG`, cases 25/26;
+`measurements/measurement-2026-10-29-tool16/RUNINFO.TXT`); the IKBD has no
+flow control and dropped bytes are simply lost. [TOOL16]
+
+## Dumper layout (tosdump) [TOOL16]
+
+The layout the reference dumper reads behind `Iorec`'s returned pointer
+(`docs/TOS-REFERENCE-DUMPER.md` section 6, "Structures behind a pointer").
+This block is the **source**: a case table carries a copy of each line, and
+the host test `layoutcheck` (`tosdump/host/layoutcheck.c`) refuses a copy
+that is not this line byte for byte. Each field is
+`<name>:<type>@<m68k offset>/<LP64 offset>[:<class>]`; the loader checks
+every number against C on both ABIs.
+
+- `iorec` -- m68k: the 14-byte `IOREC` above (`bios/iorec.h:20-27`);
+  LP64: the SDK's `_IOREC`, 24 bytes
+  (`sdk/libc/overlay/include/mint/ostruct.h:576-583@_IOREC`), the NewTOS
+  contract F1 (`docs/api/xbios/0e-iorec.md`). Field names are the SDK's:
+  `ibuf` = `buf`, `ibufsiz` = `size`, `ibufhd` = `head`, `ibuftl` = `tail`,
+  `ibuflow` = `low`, `ibufhi` = `high`.
+- `extiorec` -- device 0: m68k `EXT_IOREC` (`bios/serport.h:57-65`), two
+  `IOREC`s and five `UBYTE`s, 33 bytes of fields, 34 with the WORD
+  alignment; LP64 56 (F1).
+- Classes: `ibuf` is an address (PTR_RAM: never a contract value, F4);
+  `wr5` is the SCC shadow register, reference not contract (F4): IGNORE;
+  every other field EXACT.
+
+```tosdump-layout
+!layout	iorec	14/24	ibuf:p@0/0,ibufsiz:w@4/8,ibufhd:w@6/10,ibuftl:w@8/12,ibuflow:w@10/14,ibufhi:w@12/16
+!layout	extiorec	34/56	in:[iorec]@0/0,out:[iorec]@14/24,baudrate:b@28/48,flowctrl:b@29/49,ucr:b@30/50,datamask:b@31/51,wr5:b@32/52:IGNORE
+```
 
 ## Standard EmuTOS instances
 

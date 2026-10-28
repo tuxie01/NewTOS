@@ -68,6 +68,6 @@ Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL11-STATUS-DONE.MD)) · Prioritae
   (`r:<len>` aus TOOL07, Option B), sobald der LP64-Vertrag des IOREC-Abbilds
   geklaert ist.
 - Developer-Schritt zusaetzlich: der Laeufer folgt dem Rueckgabezeiger ohne
-  die PTR_RAM-Grenzen (`tosdump/core/runner_call.c:257@TD_CALL_CAP_RET`); er
+  die PTR_RAM-Grenzen (`tosdump/core/runner_call.c:491@TD_CALL_CAP_RET`); er
   muss dieselben Grenzen einhalten, bevor `r:` fuer weitere Faelle genutzt
   wird.

@@ -379,4 +379,34 @@
 #define TD_RET_WIDTH_WORD     2
 #define TD_RET_WIDTH_BYTE     1
 
+/*
+ * A capture WITH A LAYOUT (TASK/TOOL16; docs/TOS-REFERENCE-DUMPER.md
+ * section 6, "Structures behind a pointer").  The capture field then holds
+ * one SLOT per field of the layout, in layout order: the field's value as a
+ * big-endian 64-bit number -- a UBYTE zero-extended, a WORD, a LONG, a C
+ * long and a pointer sign-extended from the width they have on the machine
+ * (the value C's (int64_t) cast gives on both targets; the ret_hi rule of
+ * the record).  So a field the two ABIs lay out differently (an m68k
+ * pointer is 4 bytes at offset 4, an LP64 one 8 bytes at offset 8) lands
+ * in the same slot and means the same number on both sides.  Slots past the
+ * layout keep the 0xDEAD poison.
+ */
+#define TD_LAYOUT_SLOT_BYTES  8
+#define TD_LAYOUT_SLOTS      (TD_CALL_CAPTURE_LEN / TD_LAYOUT_SLOT_BYTES)
+
+/*
+ * A slot the runner did NOT read, because the pointer it hangs from fails
+ * the follow rule (td_layout_follow_refusal, record.h): this value, the
+ * reason in the low byte.  No read happens; the value is the dumper's own
+ * and lies above 4 GiB, where no field of a TOS structure points.
+ */
+#define TD_LAYOUT_NOREAD_BASE 0xB0F3B0F300000000uLL
+#define TD_LAYOUT_NOREAD(r)   (TD_LAYOUT_NOREAD_BASE + (uint64_t)(r))
+#define TD_NOREAD_NULL        1   /* the pointer is null                  */
+#define TD_NOREAD_HIGH        2   /* not < 0x80000000                     */
+#define TD_NOREAD_LOW         3   /* below 0x400                          */
+#define TD_NOREAD_ODD         4   /* odd                                  */
+#define TD_NOREAD_END         5   /* the structure runs past 0x80000000   */
+#define TD_NOREAD_MAX         5
+
 #endif /* TOSDUMP_H */

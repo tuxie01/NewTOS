@@ -211,6 +211,40 @@
 	((i) == 0 ? 0x07L : (i) == 1 ? 0x3FEL : (i) == 2 ? 0x401L :   \
 	 (i) == 3 ? 0x80000000L : 0x4E75000000000000L)
 
+/* Structures behind a pointer (TASK/TOOL16) -- laid in the stub's TOS
+ * memory, in the HOST's own ABI (LP64), the first time Iorec is called
+ * after td_stub_reset, so a "+put" written through one stays there for the
+ * read-back:
+ *   - Iorec (14:0x0E): device 0 an EXT_IOREC at TD_STUB_EXTIOREC_ADDR,
+ *     1 an IOREC at TD_STUB_IKBD_ADDR, 2 one at TD_STUB_MIDI_ADDR (fields
+ *     TD_STUB_IOREC_*: buf, size, head, tail, low, high per device, below);
+ *     device TD_STUB_IOREC_FN answers 0x0E (the function number, below
+ *     0x400), TD_STUB_IOREC_END answers 0x7FFFFFF0 (even and below
+ *     0x80000000, but a 24-byte IOREC there runs past it), TD_STUB_IOREC_PTRS
+ *     answers TD_STUB_PTRS_ADDR, five native pointers: the IKBD IOREC,
+ *     0x0E, 0x401, NULL, 0x7FFFFFF0; every other device -1.
+ *   - Bconstat (13:1) w:2 answers 0 once the IOREC is laid and its head
+ *     equals its tail (bios/ikbd.c:242), -1 otherwise -- the IKBD IOREC
+ *     starts with one entry pending (head 4, tail 8), so a flush is seen.
+ *   - Getmpb (13:0) writes mp_mfl = TD_STUB_MD_ADDR and mp_mal = NULL
+ *     through its argument and nothing else (bios/biosmem.c:149-150); the
+ *     MD there (LP64 _MD) is md_next NULL, md_start TD_STUB_MD_START,
+ *     md_length TD_STUB_MD_LENGTH, md_owner NULL.  It answers 0 and does not
+ *     fill the buffer like the other calls. */
+#define TD_STUB_EXTIOREC_ADDR  0x420L
+#define TD_STUB_IKBD_ADDR      0x460L
+#define TD_STUB_MIDI_ADDR      0x480L
+#define TD_STUB_PTRS_ADDR      0x4A0L
+#define TD_STUB_MD_ADDR        0x4D0L
+#define TD_STUB_RING_ADDR      0x500L
+#define TD_STUB_IOREC_FN       5
+#define TD_STUB_IOREC_END      6
+#define TD_STUB_IOREC_PTRS     7
+#define TD_STUB_IKBD_HEAD      4
+#define TD_STUB_IKBD_TAIL      8
+#define TD_STUB_MD_START       0x1000L
+#define TD_STUB_MD_LENGTH      0x3000L
+
 struct td_stub_call {
 	int16_t kind;
 	int16_t opcode;

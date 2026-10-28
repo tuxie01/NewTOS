@@ -503,6 +503,100 @@ else
 	fails=$((fails + 1))
 fi
 
+# --- structures behind a pointer: layout captures (TOOL16) --------------
+#
+# The stub dump and its table come from test_runner_ptr.  A layout capture
+# holds one 64-bit slot per field at capture + 8 * slot (record 40 + 8k).
+# Its cases, record i: 0 Iorec(0) extiorec, 1 Iorec(1) iorec, 2 Bconstat,
+# 3 Iorec(1) read back, 4 Iorec -> 0x0E, 5 Bconstat, 6 Iorec -> 0x7FFFFFF0,
+# 7 four pointers (ptrs), 8 Super(0L), 9 Getmpb 0:mpb, 10 Super(token).
+# Records 4, 6 and 7 fail rules on purpose (the stub's refused pointers),
+# so even two identical dumps differ in exactly those three cases.
+PTRBIN="$BUILD/stub-ptr.bin"
+PTRTSV="$BUILD/stub-ptr.tsv"
+ppatch() {   # ppatch <out> <record> <slot> <printf-bytes, 8>  (from PTRBIN)
+	[ -f "$1" ] || cp "$PTRBIN" "$1"
+	printf "$4" | dd of="$1" bs=1 seek=$((32 + $2 * 320 + 40 + $3 * 8)) \
+	    conv=notrunc status=none
+}
+if [ -f "$PTRBIN" ] && [ -f "$PTRTSV" ]; then
+	"$TOSDIFF" "$PTRTSV" "$PTRBIN" "$PTRBIN" >"$TMP/psame.out" 2>&1
+	check "layout: identical dumps differ only in the refused pointers" 1 $?
+	grep_out "layout: three cases" "$TMP/psame.out" "3 of 11 cases differ"
+	grep_out "layout: a slot not read is named with its reason" \
+	    "$TMP/psame.out" \
+	    "iorec:ibuf *PTR_RAM stub-ptr.bin = not read, the pointer is below 0x400"
+	grep_out "layout: the structure's end is checked" "$TMP/psame.out" \
+	    "not read, the structure runs past 0x80000000"
+	grep_out "layout: a followed pointer field is judged" "$TMP/psame.out" \
+	    "ptrs:c *PTR_RAM stub-ptr.bin = 0x0000000000000401, is odd"
+	grep_out "layout: what hangs from it is not read" "$TMP/psame.out" \
+	    "ptrs:d->ibuf *PTR_RAM stub-ptr.bin = not read, the pointer is null"
+	if grep -q "^case \(8\|9\|11\|12\|15\|18\|19\|20\) \|EXACT" "$TMP/psame.out"; then
+		echo "  FAIL layout: a case that passes its rules was flagged"
+		fails=$((fails + 1))
+	fi
+
+	# EXACT: a field value differs
+	rm -f "$TMP/p_ex.bin"
+	ppatch "$TMP/p_ex.bin" 1 1 '\000\000\000\000\000\000\000\200'
+	"$TOSDIFF" "$PTRTSV" "$PTRBIN" "$TMP/p_ex.bin" >"$TMP/pex.out" 2>&1
+	check "layout: an EXACT field difference is reported" 1 $?
+	grep_out "layout: the field is named by layout and path" "$TMP/pex.out" \
+	    "iorec:ibufsiz *EXACT *stub-ptr.bin *= 0x0000000000000100 *p_ex.bin *= 0x0000000000000080"
+	grep_out "layout: the EXACT case counts" "$TMP/pex.out" "4 of 11 cases differ"
+
+	# EXACT: one side not read
+	rm -f "$TMP/p_nr.bin"
+	ppatch "$TMP/p_nr.bin" 1 2 '\260\363\260\363\000\000\000\003'
+	"$TOSDIFF" "$PTRTSV" "$PTRBIN" "$TMP/p_nr.bin" >"$TMP/pnr.out" 2>&1
+	check "layout: a slot read on one side only differs" 1 $?
+	grep_out "layout: the unread side says why" "$TMP/pnr.out" \
+	    "iorec:ibufhd .*p_nr.bin *= not read (the pointer is below 0x400)"
+
+	# PTR_RAM and NONZERO on a followed structure (the MD behind mp_free)
+	rm -f "$TMP/p_md.bin"
+	ppatch "$TMP/p_md.bin" 9 2 '\000\240\000\000\000\100\000\000'
+	ppatch "$TMP/p_md.bin" 9 3 '\000\000\000\000\000\000\000\000'
+	"$TOSDIFF" "$PTRTSV" "$PTRBIN" "$TMP/p_md.bin" >"$TMP/pmd.out" 2>&1
+	check "layout: per-side classes on a followed structure" 1 $?
+	grep_out "layout: PTR_RAM on a long field" "$TMP/pmd.out" \
+	    "mpb:mp_free->md_start *PTR_RAM p_md.bin *= 0x00A0000000400000, not < 0x80000000"
+	grep_out "layout: NONZERO" "$TMP/pmd.out" \
+	    "mpb:mp_free->md_length *NONZERO p_md.bin *= 0x0000000000000000, is zero"
+	if grep -q "PTR_RAM stub-ptr.bin.*md_start\|md_length *NONZERO stub-ptr" "$TMP/pmd.out"; then
+		echo "  FAIL layout: a per-side class flagged the side that is fine"
+		fails=$((fails + 1))
+	fi
+
+	# IGNORE: the EXT_IOREC's wr5 is reference, not contract
+	rm -f "$TMP/p_ig.bin"
+	ppatch "$TMP/p_ig.bin" 0 16 '\000\000\000\000\000\000\000\001'
+	"$TOSDIFF" "$PTRTSV" "$PTRBIN" "$TMP/p_ig.bin" >"$TMP/pig.out" 2>&1
+	grep_out "layout: an IGNORE field is not compared" "$TMP/pig.out" \
+	    "3 of 11 cases differ"
+
+	# the bytes after the last slot keep the poison and are compared
+	rm -f "$TMP/p_tl.bin"
+	ppatch "$TMP/p_tl.bin" 1 6 '\000'
+	"$TOSDIFF" "$PTRTSV" "$PTRBIN" "$TMP/p_tl.bin" >"$TMP/ptl.out" 2>&1
+	grep_out "layout: the capture after the slots is compared" "$TMP/ptl.out" \
+	    "capture\[48\] .*after the layout's slots"
+
+	# the self-check judges the per-side field classes too
+	"$TOSDIFF" --selfcheck "$PTRTSV" "$TMP/p_md.bin" >"$TMP/psc.out" 2>&1
+	check "layout: the self-check flags a field class" 1 $?
+	grep_out "layout: self-check names the field" "$TMP/psc.out" \
+	    "mpb:mp_free->md_length *NONZERO p_md.bin"
+	if grep -q "EXACT" "$TMP/psc.out"; then
+		echo "  FAIL layout: the self-check compared an EXACT field"
+		fails=$((fails + 1))
+	fi
+else
+	echo "  FAIL stub pointer dump missing: $PTRBIN / $PTRTSV"
+	fails=$((fails + 1))
+fi
+
 if [ "$fails" -eq 0 ]; then
 	echo "  ok"
 	exit 0

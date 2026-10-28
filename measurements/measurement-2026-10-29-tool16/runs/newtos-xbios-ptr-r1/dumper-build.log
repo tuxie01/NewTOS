@@ -1,0 +1,19 @@
+clang : Apple clang version 21.0.0 (clang-2100.3.34.2)
+lld   : /Users/ingouhlemann/.rustup/toolchains/nightly-2026-04-15-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/rust-lld
+build : c0f9
+
+  CC  core/record.c
+  CC  core/cases.c
+  CC  core/dump.c
+  CC  core/log.c
+  CC  core/runner_call.c
+  CC  core/dumpbios.c
+  CC  abi/newtos_svc.c
+
+LINK OK -> /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool16/newtos/xtask/tosdump-5374/DUMPBIOS.NAP (239808 bytes)
+    Class: 64-bit (0x2)
+    DataEncoding: LittleEndian (0x1)
+  Type: SharedObject (0x3)
+  Machine: EM_AARCH64 (0xB7)
+  Entry: 0x1000
+undefined symbols in the final image (goal 0): 0

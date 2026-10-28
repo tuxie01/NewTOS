@@ -38,6 +38,29 @@ void *td_call_callback(int n);
  * names "u:0" is not run (TD_RUN_CALL_ERR_UNIT). */
 void td_run_call_set_disk_unit(int32_t unit);
 
+/*
+ * A layout capture (TOOL16; cases.h, "Layouts"): write one 64-bit slot per
+ * field of `l` into `dst` (tosdump.h), reading the structure at `base` with
+ * the offsets and widths of `abi` and following its p> fields only where
+ * td_layout_follow_refusal (record.h) admits them.  `base_refusal` non-zero
+ * means the base pointer itself was refused: nothing is read, every slot is
+ * TD_LAYOUT_NOREAD(base_refusal).  `set` holds the layouts a p> field names.
+ * The runner passes the machine's own ABI; the host tests call it with the
+ * other one too.
+ */
+void td_layout_capture(uint8_t *dst, const struct td_layout *set,
+                       const struct td_layout *l, const void *base,
+                       uint8_t base_refusal, int abi);
+
+/*
+ * What "+put" prelude number `prelude` (an index into the table's
+ * preludes) did in the last run: 0 not reached, TD_PUT_WRITTEN written,
+ * else the follow rule's refusal (TD_NOREAD_*, tosdump.h) -- nothing was
+ * written.  DUMPBIOS logs it after the run (TOOL16).
+ */
+#define TD_PUT_WRITTEN 0xFF
+uint8_t td_run_call_put_result(uint16_t prelude);
+
 /* After TD_RUN_CALL_ERR_PRELUDE: the line of the prelude that stopped the
  * run, and what it returned.  0 / 0 after a run that did not stop. */
 uint16_t td_run_call_stop_line(void);

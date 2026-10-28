@@ -67,3 +67,17 @@ Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-xbios-char
   (`docs/analysis/iorec-survey-2026-10-28.md`): kein Nutzer von `Iorec` in den
   portierten Quellen → E3 (a), E4 (a) kernel-eigener Puffer mit einmaliger
   Warnung und Wiederherstellung (`docs/api/xbios/0e-iorec.md`, „Entscheidungen“).
+
+## Stand 2026-10-29 (TOOL16)
+
+- Messfaelle stehen: `tosdump/cases/xbios-ptr-r1.tsv` (Faelle 24–31 Iorec
+  samt Layout aus `docs/api/structures/iorec.md`, Flush-Fall `+put
+  ibufhd=ibuftl` → `Bconstat(2)`), Referenzen tt/falcontc. NewTOS heute DIFF
+  (`0x0E`, nichts gelesen/geschrieben). Beleg
+  `measurements/measurement-2026-10-29-tool16/RUNINFO.TXT`.
+- **Grenze fuer die Abnahme:** am Orakel war der Ring leer; der Flush-Fall
+  zeigt nur, dass das Schreiben angenommen wird und `Bconstat(2)` danach 0
+  ist — nicht das Leeren eines vollen Rings. Fuer die Abnahme „Flush gemessen“
+  braucht der Fall Tasten im Ring vor dem Flush (Eingabe am Orakel und in
+  QEMU). Ausserdem kennt `tools/biostrace-check.py` die Zeilen `+put`/`+set`
+  nicht (kein NewTOS-Eingabe-Trace fuer diese Tabelle).

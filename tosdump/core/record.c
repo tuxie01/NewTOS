@@ -641,3 +641,30 @@ const char *td_ptr_ram_violation(uint64_t v)
 		return "is odd";
 	return NULL;
 }
+
+uint8_t td_layout_follow_refusal(uint64_t v, uint32_t size)
+{
+	if (v == 0)
+		return TD_NOREAD_NULL;
+	if (v >= (uint64_t)TD_ADDR_LIMIT)
+		return TD_NOREAD_HIGH;
+	if (v < (uint64_t)TD_PTR_LOW)
+		return TD_NOREAD_LOW;
+	if ((v & 1u) != 0)
+		return TD_NOREAD_ODD;
+	if (v + (uint64_t)size > (uint64_t)TD_ADDR_LIMIT)
+		return TD_NOREAD_END;
+	return 0;
+}
+
+const char *td_layout_noread_text(uint8_t reason)
+{
+	switch (reason) {
+	case TD_NOREAD_NULL: return "the pointer is null";
+	case TD_NOREAD_HIGH: return "the pointer is not < 0x80000000";
+	case TD_NOREAD_LOW:  return "the pointer is below 0x400";
+	case TD_NOREAD_ODD:  return "the pointer is odd";
+	case TD_NOREAD_END:  return "the structure runs past 0x80000000";
+	default:             return "?";
+	}
+}

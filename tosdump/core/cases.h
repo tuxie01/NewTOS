@@ -795,10 +795,112 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
 #define TD_CALL_ARG_FUNC     5     /* "f:", value = callback number       */
 #define TD_CALL_ARG_UNIT     6     /* "u:0", the test disk's physical unit */
 #define TD_CALL_ARG_SET      7     /* a +set pair: (offset << 8) | byte    */
+#define TD_CALL_ARG_PUT      8     /* a +put field: its slot in the layout */
 
 /* The trap field of a "+set" prelude: it issues no trap. */
 #define TD_CALL_TRAP_SET     0
 #define TD_CALL_SET_PAIRS    TD_CALL_ARGS_N
+/* The trap field of a "+put" prelude (TOOL16): it issues no trap either. */
+#define TD_CALL_TRAP_PUT     (-1)
+
+/* ------------------------------------------------------------------ */
+/* Layouts: structures behind a pointer (TASK/TOOL16)                   */
+/* ------------------------------------------------------------------ */
+/*
+ * docs/TOS-REFERENCE-DUMPER.md section 6, "Structures behind a pointer".
+ * A call table may describe a structure and capture it field by field:
+ *
+ *   !layout <TAB> <name> <TAB> <size m68k>/<size LP64> <TAB> <field>,...
+ *
+ *   field   <fname>:<type>@<offset m68k>/<offset LP64>[:<class>]
+ *   type    b  UBYTE                1 / 1 bytes, zero-extended
+ *           w  WORD                 2 / 2, sign-extended
+ *           L  LONG (int32)         4 / 4, sign-extended
+ *           l  C long               4 / 8, sign-extended
+ *           p  a pointer            4 / 8, sign-extended (the ret rule)
+ *           p><layout>  a pointer the runner FOLLOWS into <layout>
+ *           [<layout>]  <layout> embedded at this offset
+ *   class   EXACT, IGNORE, NONZERO, HANDLE, PTR_RAM -- how tosdiff compares
+ *           the field (the retclass rules, on the 64-bit slot).  Default:
+ *           PTR_RAM for p, EXACT for everything else; none on [..].
+ *
+ * The layout itself is not the dumper's: it is copied from the structure's
+ * spec in docs/api/ (a "tosdump-layout" block), and the host test
+ * `layoutcheck` (tosdump/host/layoutcheck.c) refuses a table whose
+ * "!layout" line is not, byte for byte, the spec's.  The loader checks the
+ * numbers against C: every offset is the one C gives the fields in this
+ * order on that ABI (m68k: everything but a UBYTE WORD aligned; LP64:
+ * natural alignment), every size the end rounded to the structure's
+ * alignment.  A layout names only layouts defined before it, so following
+ * a pointer cannot loop; TD_LAYOUT_MAX_HOPS bounds the depth anyway.
+ *
+ * Capture:  r:<layout>   through the returned pointer (retclass PTR_RAM)
+ *           <n>:<layout> the b: buffer argument n
+ * The record's capture holds one 64-bit slot per field (tosdump.h,
+ * TD_LAYOUT_SLOT_BYTES).  The runner follows a pointer -- the returned one,
+ * or a p> field -- only when td_layout_follow_refusal (record.h) admits it;
+ * otherwise every slot behind it is TD_LAYOUT_NOREAD(reason) and nothing
+ * is read.
+ *
+ * Writing through a returned pointer, only in a table that says
+ *   !write <TAB> return
+ * is one prelude form:
+ *   +put <TAB> <field>=<field> [<TAB> comment]
+ * immediately after the case whose "r:<layout>" capture it writes through:
+ * copy one field of that structure onto another of the same type -- the
+ * flush "ibufhd=ibuftl".  Only top-level, non-pointer fields; issued after
+ * the next case's poison, before its call, and only when the returned
+ * pointer passes the follow rule.
+ */
+#define TD_LAYOUT_ABI_M68K    0
+#define TD_LAYOUT_ABI_LP64    1
+#define TD_LAYOUT_ABIS        2
+
+#define TD_LT_BYTE            1    /* b */
+#define TD_LT_WORD            2    /* w */
+#define TD_LT_LONG            3    /* L */
+#define TD_LT_CLONG           4    /* l */
+#define TD_LT_PTR             5    /* p */
+
+#define TD_LAYOUT_MAX         8    /* layouts per table               */
+#define TD_LAYOUT_NAME_LEN   16    /* a name, NUL included            */
+#define TD_LAYOUT_PATH_LEN   48    /* "mp_free->md_start", NUL incl.  */
+#define TD_LAYOUT_MAX_HOPS    2    /* pointers followed from the base */
+
+struct td_layout_slot {
+	char     name[TD_LAYOUT_PATH_LEN];  /* the field's path            */
+	uint8_t  type;                      /* TD_LT_*                     */
+	uint8_t  cls;                       /* TD_RET_*                    */
+	int8_t   parent;     /* the pointer slot this field hangs from, -1:
+	                      * the base (the returned pointer / the buffer) */
+	int8_t   follow;     /* a followed pointer: the layout it points at */
+	uint8_t  hops;       /* pointers followed to reach this field       */
+	uint16_t off[TD_LAYOUT_ABIS];       /* in the parent's structure   */
+};
+
+struct td_layout {
+	char     name[TD_LAYOUT_NAME_LEN];
+	uint16_t size[TD_LAYOUT_ABIS];
+	uint8_t  align[TD_LAYOUT_ABIS];
+	uint8_t  nslots;
+	struct td_layout_slot slot[TD_LAYOUT_SLOTS];
+};
+
+/* Bytes of a field type on an ABI. */
+uint8_t td_layout_width(uint8_t type, int abi);
+/* The ABI of the machine running this code: LP64 when a pointer has 8
+ * bytes, m68k when 4 -- measured, td_native_ptr_width (record.h). */
+int     td_layout_native_abi(void);
+/* The slot index of a field path, or -1. */
+int     td_layout_slot_find(const struct td_layout *l, const char *path);
+
+/*
+ * Parse one "!layout" line into set[*n] (layouts before it in set[0..*n-1]
+ * may be named).  0 or a TD_CASE_ERR_*, *why the reason.  Exposed for the
+ * host test that binds the tables' layouts to docs/api/ (layoutcheck).
+ */
+int td_layout_parse(struct td_layout *set, uint8_t *n, const char *line,
+                    size_t len, const char **why);
 
 struct td_call_arg {
 	uint8_t kind;                      /* TD_CALL_ARG_*                   */
@@ -826,6 +928,8 @@ struct td_call_case {
 	uint8_t  retclass;                 /* TD_RET_*                        */
 	uint8_t  retwidth;                 /* TD_RET_WIDTH_*                  */
 	int8_t   cap_arg;                  /* -1: none, TD_CALL_CAP_RET: r:   */
+	uint8_t  cap_layout;               /* 0: none, else 1 + the capture's
+	                                    * layout index (TOOL16)           */
 	uint8_t  cap_unit;                 /* 1, 2, 4                         */
 	uint16_t cap_off;                  /* bytes into the buffer           */
 	uint16_t cap_len;                  /* bytes, <= TD_CALL_CAPTURE_LEN   */
@@ -840,6 +944,9 @@ struct td_call_case_table {
 	uint8_t             disk_drive;    /* its test drive (2 = C:)         */
 	uint8_t             destructive;   /* 1: "!disk <d> destructive"      */
 	uint8_t             unit_token;    /* 1: some case names "u:0"        */
+	uint8_t             writes;        /* 1: "!write return" (TOOL16)     */
+	uint8_t             nlayouts;      /* "!layout" lines (TOOL16)        */
+	struct td_layout    layouts[TD_LAYOUT_MAX];
 	uint16_t            prelude_count;
 	struct td_call_case cases[TD_MAX_CASES];
 	struct td_call_case preludes[TD_MAX_CALL_PRELUDES];
