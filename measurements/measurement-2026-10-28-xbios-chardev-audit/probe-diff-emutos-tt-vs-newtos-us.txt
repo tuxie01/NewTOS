@@ -1,0 +1,172 @@
+5,8c5,8
+< R05 Kbrate(-1,-1) ret=0000ffff hi=00000000
+< R06 Kbrate(-2,3) ret=0000ffff hi=00000000
+< R07 Kbrate(-1,-1) ret=0000ff03 hi=00000000
+< R08 Kbrate(0x100,-32768) ret=0000ff03 hi=00000000
+---
+> R05 Kbrate(-1,-1) ret=ffffffff hi=ffffffff
+> R06 Kbrate(-2,3) ret=ffffffff hi=ffffffff
+> R07 Kbrate(-1,-1) ret=ffffff03 hi=ffffffff
+> R08 Kbrate(0x100,-32768) ret=ffffff03 hi=ffffffff
+15c15
+< S02 Rsconf(-1 x6) regs ret=88018100 hi=ffffffff
+---
+> S02 Rsconf(-1 x6) regs ret=88010100 hi=00000000
+17c17
+< S04 Rsconf(4,-1..) set 2400 ret=88018100 hi=ffffffff
+---
+> S04 Rsconf(4,-1..) set 2400 ret=88010100 hi=00000000
+19c19
+< S06 Rsconf(16,-1..) out of range ret=88018100 hi=ffffffff
+---
+> S06 Rsconf(16,-1..) out of range ret=88010100 hi=00000000
+21c21
+< S08 Rsconf(-3,-1..) ret=88018100 hi=ffffffff
+---
+> S08 Rsconf(-3,-1..) ret=88010100 hi=00000000
+23,30c23,30
+< S10 Rsconf(-1,-1,0x98,..) ucr ret=88018100 hi=ffffffff
+< S11 Rsconf(-1 x6) ret=98018100 hi=ffffffff
+< S12 Rsconf(-1,-1,-1,0,-1,-1) rsr=0 ret=98018100 hi=ffffffff
+< S13 Rsconf(-1 x6) ret=98008100 hi=ffffffff
+< S14 Rsconf(-1,-1,0x188,-1..) ucr high byte ret=98008100 hi=ffffffff
+< S15 Rsconf(-1 x6) ret=88008100 hi=ffffffff
+< S16 Rsconf(b0,-1,ucr0,rsr0,tsr0,-1) restore ret=88008100 hi=ffffffff
+< S17 Rsconf(-1 x6) ret=88018100 hi=ffffffff
+---
+> S10 Rsconf(-1,-1,0x98,..) ucr ret=88010100 hi=00000000
+> S11 Rsconf(-1 x6) ret=98010100 hi=00000000
+> S12 Rsconf(-1,-1,-1,0,-1,-1) rsr=0 ret=98010100 hi=00000000
+> S13 Rsconf(-1 x6) ret=98000100 hi=00000000
+> S14 Rsconf(-1,-1,0x188,-1..) ucr high byte ret=98000100 hi=00000000
+> S15 Rsconf(-1 x6) ret=88000100 hi=00000000
+> S16 Rsconf(b0,-1,ucr0,rsr0,tsr0,-1) restore ret=88000100 hi=00000000
+> S17 Rsconf(-1 x6) ret=88010100 hi=00000000
+32,33c32,33
+< B01 Bconmap(-1) ret=00000006 hi=00000000
+< B02 Bconmap(-2) ret=00004a76 hi=00000000
+---
+> B01 Bconmap(-1) ret=0000002c hi=00000000
+> B02 Bconmap(-2) ret=0000002c hi=00000000
+35,49c35,45
+< B04 BCONMAP maptab_tosaddr=1 maptabsize=4 mapped_device=6 sizeof(_BCONMAP)=6
+< B05 maptab[0] fn_tosaddr=11111 iorec_tosaddr=1
+< B05 maptab[1] fn_tosaddr=11111 iorec_tosaddr=1
+< B05 maptab[2] fn_tosaddr=11111 iorec_tosaddr=1
+< B05 maptab[3] fn_tosaddr=11111 iorec_tosaddr=1
+< B06 Bconmap(0) ret=00000000 hi=00000000
+< B07 Bconmap(1) ret=00000000 hi=00000000
+< B08 Bconmap(5) ret=00000000 hi=00000000
+< B09 Bconmap(10) ret=00000000 hi=00000000
+< B10 Bconmap(-3) ret=00000000 hi=00000000
+< B11 Bconmap(0x7FFF) ret=00000000 hi=00000000
+< B12 Bconmap(-32768) ret=00000000 hi=00000000
+< B13 Bconmap(7) ret=00000006 hi=00000000
+< B14 Bconmap(-1) ret=00000007 hi=00000000
+< B15 after Bconmap(7): Iorec(0)_changed=1
+---
+> B04 BCONMAP maptab_tosaddr=0 maptabsize=0 mapped_device=0 sizeof(_BCONMAP)=16
+> B06 Bconmap(0) ret=0000002c hi=00000000
+> B07 Bconmap(1) ret=0000002c hi=00000000
+> B08 Bconmap(5) ret=0000002c hi=00000000
+> B09 Bconmap(10) ret=0000002c hi=00000000
+> B10 Bconmap(-3) ret=0000002c hi=00000000
+> B11 Bconmap(0x7FFF) ret=0000002c hi=00000000
+> B12 Bconmap(-32768) ret=0000002c hi=00000000
+> B13 Bconmap(7) ret=0000002c hi=00000000
+> B14 Bconmap(-1) ret=0000002c hi=00000000
+> B15 after Bconmap(7): Iorec(0)_changed=0
+51,52c47,48
+< B17 Bconmap(6) ret=00000007 hi=00000000
+< B18 Bconmap(-1) ret=00000006 hi=00000000
+---
+> B17 Bconmap(6) ret=0000002c hi=00000000
+> B18 Bconmap(-1) ret=0000002c hi=00000000
+54,59c50,55
+< B20 Bconmap(8) ret=00000006 hi=00000000
+< B21 Bconmap(9) ret=00000008 hi=00000000
+< B22 Bconmap(-1) ret=00000009 hi=00000000
+< B23 Bconmap(d0) restore ret=00000009 hi=00000000
+< B24 Bconmap(-1) ret=00000006 hi=00000000
+< I01 Iorec(0) ret=00004a54 hi=00000000
+---
+> B20 Bconmap(8) ret=0000002c hi=00000000
+> B21 Bconmap(9) ret=0000002c hi=00000000
+> B22 Bconmap(-1) ret=0000002c hi=00000000
+> B23 Bconmap(d0) restore ret=0000002c hi=00000000
+> B24 Bconmap(-1) ret=0000002c hi=00000000
+> I01 Iorec(0) ret=0000000e hi=00000000
+61,63c57,59
+< I01b IOREC ibuf_tosaddr=1 ibufsiz=256 hd=0 tl=0 low=64 hi=192 sizeof=14
+< I01c out-IOREC obuf_tosaddr=1 obufsiz=256 hd=0 tl=0 low=64 hi=192 ext baud=1 flow=0 ucr=88 datamask=ff
+< I02 Iorec(1) ret=000030d4 hi=00000000
+---
+> I01b IOREC ibuf_tosaddr=0 ibufsiz=0 hd=0 tl=0 low=0 hi=0 sizeof=24
+> I01c out-IOREC obuf_tosaddr=0 obufsiz=0 hd=0 tl=0 low=0 hi=0 ext baud=0 flow=0 ucr=00 datamask=00
+> I02 Iorec(1) ret=0000000e hi=00000000
+65,66c61,62
+< I02b IOREC ibuf_tosaddr=1 ibufsiz=256 hd=0 tl=0 low=64 hi=192 sizeof=14
+< I03 Iorec(2) ret=000030e2 hi=00000000
+---
+> I02b IOREC ibuf_tosaddr=0 ibufsiz=0 hd=0 tl=0 low=0 hi=0 sizeof=24
+> I03 Iorec(2) ret=0000000e hi=00000000
+68,72c64,68
+< I03b IOREC ibuf_tosaddr=1 ibufsiz=128 hd=0 tl=0 low=32 hi=96 sizeof=14
+< I04 Iorec(3) ret=ffffffff hi=ffffffff
+< I05 Iorec(-1) ret=ffffffff hi=ffffffff
+< I06 Iorec(0x7FFF) ret=ffffffff hi=ffffffff
+< I07 Iorec(-32768) ret=ffffffff hi=ffffffff
+---
+> I03b IOREC ibuf_tosaddr=0 ibufsiz=0 hd=0 tl=0 low=0 hi=0 sizeof=24
+> I04 Iorec(3) ret=0000000e hi=00000000
+> I05 Iorec(-1) ret=0000000e hi=00000000
+> I06 Iorec(0x7FFF) ret=0000000e hi=00000000
+> I07 Iorec(-32768) ret=0000000e hi=00000000
+74c70
+< K01 Keytbl(-1,-1,-1) ret=000040ae hi=00000000
+---
+> K01 Keytbl(-1,-1,-1) ret=00000768 hi=00000000
+76c72
+< K02 keytab ptrs_tosbyte=111111 f7=0000000000000000 w_after_f7=0000 sizeof(ptr)=4
+---
+> K02 keytab ptrs_tosbyte=111111 f7=0000000000000000 w_after_f7=0000 sizeof(ptr)=8
+83,86c79,82
+< K07 Bioskeys() ret=00e06e8c hi=00000000
+< K08 after Bioskeys: same_ptr=1 unshift_is_n0=1 shift_is_s0=1 caps_is_c0=1 unshift_is_my=0
+< K09 keytab ptrs_tosbyte=111111 f7=0000000000000000 w_after_f7=0000 sizeof(ptr)=4
+< K09 tables crc norm=32c7513b shft=c73c5dda caps=47f5e93a norm[0x10..0x13]=71776572 shft[0x1E]=41 caps[0x2C]=5a
+---
+> K07 Bioskeys() ret=00000018 hi=00000000
+> K08 after Bioskeys: same_ptr=1 unshift_is_n0=0 shift_is_s0=0 caps_is_c0=0 unshift_is_my=1
+> K09 keytab ptrs_tosbyte=111111 f7=0000000000000000 w_after_f7=0000 sizeof(ptr)=8
+> K09 tables crc norm=f0369527 shft=359fc63c caps=e1cc5e4c norm[0x10..0x13]=45444746 shft[0x1E]=34 caps[0x2C]=53
+89,90c85,86
+< K11 Bioskeys() final ret=00e06e8c hi=00000000
+< V01 Kbdvbase() ret=000030f8 hi=00000000
+---
+> K11 Bioskeys() final ret=00000018 hi=00000000
+> V01 Kbdvbase() ret=0007f010 hi=00000000
+92,96c88,92
+< V02 slots_all_tosaddr=1 distinct_values=7 kbstate=0 kbdvec(p[-1])_tosaddr=1 midivec==vkbderr=0
+< W01 Ikbdws(0,{0x1C}) ret=00000002 hi=00000000
+< W02 Ikbdws(0,{0x88}) ret=00000002 hi=00000000
+< W03 Ikbdws(0,{0x16}) ret=00000002 hi=00000000
+< W04 hooks after 3x100 ticks: clockvec=1 statvec=1 joyvec=1 st=08000000000000
+---
+> V02 slots_all_tosaddr=1 distinct_values=1 kbstate=0 kbdvec(p[-1])_tosaddr=1 midivec==vkbderr=1
+> W01 Ikbdws(0,{0x1C}) ret=00000000 hi=00000000
+> W02 Ikbdws(0,{0x88}) ret=00000000 hi=00000000
+> W03 Ikbdws(0,{0x16}) ret=00000000 hi=00000000
+> W04 hooks after 3x100 ticks: clockvec=0 statvec=0 joyvec=0 st=00000000000000
+98,102c94,98
+< M01 Bcostat(3) before ret=ffffffff hi=ffffffff
+< M02 Midiws(0,{0xFE}) ret=00000002 hi=00000000
+< M03 Midiws(255,256x0xFE) ret=00000002 hi=00000000
+< M04 Midiws(255) took_ticks_ge_10=1
+< M05 Bcostat(3) after ret=ffffffff hi=ffffffff
+---
+> M01 Bcostat(3) before ret=00000000 hi=00000000
+> M02 Midiws(0,{0xFE}) ret=00000000 hi=00000000
+> M03 Midiws(255,256x0xFE) ret=00000000 hi=00000000
+> M04 Midiws(255) took_ticks_ge_10=0
+> M05 Bcostat(3) after ret=00000000 hi=00000000

@@ -1,0 +1,53 @@
+# xbios-chardev-r1.tsv -- DUMPBIOS, audit xbios-chardev (2026-10-28): the XBIOS
+# character-device and keyboard inquiries -- Iorec, Rsconf, Keytbl, Kbdvbase,
+# Kbrate, Bconmap -- with their boundary arguments, against EmuTOS 1a7484ab
+# (references/emutos, docs/analysis/ORACLE.md).
+#
+# Added by the auditor (docs/audits/2026-10-28-xbios-chardev.md, section 5) as
+# a table of its own, so bios-r1.tsv, its CRC and its references stay as they
+# are.  Every row is inside the round-1 guard of tosdump/core/cases.c
+# (call_policy): Iorec any device, Rsconf only all -1 or -2 then all -1,
+# Keytbl and Kbrate only all -1, Kbdvbase, Bconmap any device but 6..9.  Form:
+# tosdump/cases/bios-r1.tsv header.
+#
+# What a pointer result points at (Iorec, Keytbl, Kbdvbase, Bconmap(-2)) is
+# out of reach of a call table: PTR_RAM checks the address class only
+# (TASK/TOOL11.md).  The audit measured the structures with a probe.
+#
+# References: tosdump/reference/EMUTOS-1a7484ab-XBIOS-chardev (tt) and
+# -XBIOS-chardev-falcontc.  One table per round: frozen once measured.
+
+# ---- XBIOS 0x0E Iorec(dev) -- LONG iorec, bios/xbios.c:336-348
+14:0x0E	w:0	PTR_RAM	-	Iorec(0) RS-232 -- bios/xbios.c:339-340
+14:0x0E	w:1	PTR_RAM	-	Iorec(1) IKBD -- bios/xbios.c:341-342
+14:0x0E	w:2	PTR_RAM	-	Iorec(2) MIDI -- bios/xbios.c:343-344
+14:0x0E	w:4	EXACT	-	Iorec(4) invalid -- bios/xbios.c:345-346
+14:0x0E	w:0x7FFF	EXACT	-	Iorec(0x7FFF) WORD max -- bios/xbios.c:345-346
+14:0x0E	w:-2	EXACT	-	Iorec(-2) negative -- bios/xbios.c:345-346
+14:0x0E	w:-32768	EXACT	-	Iorec(-32768) WORD min -- bios/xbios.c:345-346
+
+# ---- XBIOS 0x0F Rsconf -- ULONG rsconf, bios/xbios.c:376, bios/serport.c:217-249
+14:0x0F	w:-2,w:-1,w:-1,w:-1,w:-1,w:-1	EXACT	-	Rsconf(-2,..) baud code -- bios/serport.c:220-221
+14:0x0F	w:-1,w:-1,w:-1,w:-1,w:-1,w:-1	EXACT	-	Rsconf(-1 x6) old ucr/rsr/tsr (machine: TT MFP, Falcon SCC) -- bios/serport.c:226
+
+# ---- XBIOS 0x10 Keytbl(-1,-1,-1) -- LONG keytbl, bios/ikbd.c:122-134
+14:0x10	l:-1,l:-1,l:-1	PTR_RAM	-	Keytbl(-1,-1,-1) -- bios/ikbd.c:133
+
+# ---- XBIOS 0x22 Kbdvbase() -- LONG kbdvbase, bios/xbios.c:716-719
+14:0x22	-	PTR_RAM	-	Kbdvbase() -- bios/xbios.c:718
+
+# ---- XBIOS 0x23 Kbrate(-1,-1) -- WORD kbrate, bios/ikbd.c:439-449
+14:0x23	w:-1,w:-1	EXACT.W	-	Kbrate(-1,-1) power-up 15/2 -- bios/ikbd.c:441
+
+# ---- XBIOS 0x2C Bconmap(dev) -- LONG bconmap, bios/serport.c:1082-1131
+14:0x2C	w:-1	EXACT	-	Bconmap(-1) mapped device (TT 6, Falcon 7) -- bios/serport.c:1089-1090
+14:0x2C	w:-2	PTR_RAM	-	Bconmap(-2) BCONMAP pointer -- bios/serport.c:1092-1093
+14:0x2C	w:1	EXACT	-	Bconmap(1) below the map -- bios/serport.c:1095-1097
+14:0x2C	w:2	EXACT	-	Bconmap(2) below the map -- bios/serport.c:1095-1097
+14:0x2C	w:3	EXACT	-	Bconmap(3) below the map -- bios/serport.c:1095-1097
+14:0x2C	w:4	EXACT	-	Bconmap(4) below the map -- bios/serport.c:1095-1097
+14:0x2C	w:5	EXACT	-	Bconmap(5) below the map -- bios/serport.c:1095-1097
+14:0x2C	w:11	EXACT	-	Bconmap(11) past the map -- bios/serport.c:1095-1097
+14:0x2C	w:0x7FFF	EXACT	-	Bconmap(0x7FFF) WORD max -- bios/serport.c:1095-1097
+14:0x2C	w:-3	EXACT	-	Bconmap(-3) negative -- bios/serport.c:1095-1097
+14:0x2C	w:-32768	EXACT	-	Bconmap(-32768) WORD min -- bios/serport.c:1095-1097

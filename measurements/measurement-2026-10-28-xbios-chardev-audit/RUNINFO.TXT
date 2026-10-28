@@ -1,0 +1,136 @@
+XBIOS character devices and keyboard audit (Midiws, Iorec, Rsconf, Keytbl, Bioskeys, Ikbdws, Kbrate,
+Kbdvbase, Bconmap) -- 2026-10-28
+=====================================================================================================
+Auditor run for docs/audits/2026-10-28-xbios-chardev.md. MEASUREMENT ONLY: no product code changed, no
+tosdump/tosdiff change, no existing reference or rule changed, nothing flashed, no card, no hardware.
+Not committed.
+
+WHY
+  Lead brief 2026-10-28, bottom-up order of docs/STATUS.md "Warteschlange": the XBIOS layer directly
+  above the BIOS character layer audited the same day (docs/audits/2026-10-28-bios-core.md). Scope:
+  XBIOS 0x0C Midiws, 0x0E Iorec, 0x0F Rsconf, 0x10 Keytbl, 0x18 Bioskeys, 0x19 Ikbdws, 0x22 Kbdvbase,
+  0x23 Kbrate (the brief said "Kbrate (0x1E)"; 0x1E is Ongibit, bios/xbios.c dispatch; Kbrate is
+  0x23 and was audited there), 0x2C Bconmap.
+
+STATE
+  NewTOS   : b81d0ddcdd4eb84ee1693095bde80a23f29df271, clean -- built and run ONLY from the detached
+             worktree <session scratchpad>/wt-audit2 (git status empty before and after). The shared
+             main tree had foreign uncommitted TOOL07 work (tools/mkcard.sh, tosdump/core/*,
+             tosdump/host/Makefile, tosdump/tests/stub_abi.*, measurements/measurement-2026-10-28-tool07/);
+             none of it was used.
+  EmuTOS   : 1a7484aba1bfba23e2c0899e243b6d8177fe41df (references/emutos HEAD)
+  ROM      : tools/oracle/etos512de-1a7484ab.img sha256 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+             (checked at start and end)
+  Hatari   : 2.6.1, binary sha256 953f4e78eea55a8ca12ed6c83de1f045545b8da42a49e00112eaa235dffcd6f6
+  cfg      : tools/oracle/hatari.cfg sha256 c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46
+             (start and end, never --saveconfig)
+  QEMU     : 11.0.2, -M raspi4b, -append serial=on
+  Canary   : docs/analysis/ORACLE.md section 6 command from the worktree, scratch canary-20261028-112044:
+             "canary tt: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all)"
+             "canary falcontc: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all-falcontc)"
+             (no disk profile used: no disk call in scope)
+  Kernel   : cargo xtask build --board rpi4 --release in the worktree (tos-api and kernel compiled from
+             the worktree paths): kernel8.img feab5e0f9eb9342b217ef6a56daafb0891df64ace0e87dcbbf8fea3f8581a207,
+             ELF 2d4d080173cff3dd1e0f2b39fdf3843a77c30f87827d04387976ee78885f8178
+  Injector kernel (KEYS-NEWTOS-* only): APFS clone of the worktree (wt-inject; .git file and target/
+             removed before anything ran, so no git command and no stale fingerprint could reach the
+             worktree), tools/inject-arm.py <clone> launch:XKPROBE=method/xkeys-ikbd.txt, fresh build:
+             kernel8.img 83372fd7c3b2a764a2d218c7c82575952d6cd2bc37811af0200fadf53ae84d14 (differs from the
+             plain kernel; the worktree kernel stayed feab5e0f...). Diff: method/injector-scratch.diff
+             (INJ-ARM-TEMP lines). Clone deleted after.
+
+PRE-FLIGHT NEWTOS CASE TABLE (runs/NEWTOS-bios-r1)
+  method/run-dumpbios-newtos.sh = the bios-core audit's parametrised copy (itself a copy of the
+  storage audit's script, kept here unchanged as run-dumpbios-newtos.orig.sh).
+  DUMPBIOS.NAP build b81d (tosdump/build-dumpbios-newtos.sh, worktree): probe/DUMPBIOS.NAP
+  tosdiff vs EMUTOS-1a7484ab-BIOS (tt): 42 of 147 differ -- the same set of case ids as the bios-core
+  audit's run at 1680d5b2. In scope: DIFF 101, 102 (Iorec(3)/(-1): 14 for -1), 105 (Rsconf(-1 x6)),
+  183, 185, 186 (Bconmap: 44); EQUAL 98-100, 184 (PTR_RAM: 0x0E, 0x2C pass, TOOL11), 106, 109, 136, 137.
+
+NEW CASE TABLE tosdump/cases/xbios-chardev-r1.tsv (23 cases, CRC 5C3A5F7A, sha256
+a028a4ab46621d3cbdb52acf8f91b4ccf3380348d22cb47e9dcd767d10efad84)
+  Inside the round-1 guard: Iorec boundaries, the two Rsconf inquiries, Keytbl/Kbdvbase PTR_RAM,
+  Kbrate(-1,-1), Bconmap -1/-2/1..5/11/0x7FFF/-3/-32768.
+  DUMPBIOS.PRG build b81d (make -C tosdump BUILD=<scratch>/dumpers BUILD_ID=b81d dumpbios-m68k):
+  probe/DUMPBIOS.PRG. runs/EMUTOS-xc-tt, -falcontc, -tt-repeat: tools/hatari-oracle.sh (worktree);
+  tt-repeat BIN byte-identical to tt. tosdiff --selfcheck on both: "the oracle passes every relational
+  rule (23 cases)". Installed as new files:
+    a4a03aacaba10723891fca8d09f85142305976e3ce67a5aabf5fc5521c4b7b05  tosdump/reference/EMUTOS-1a7484ab-XBIOS-chardev.BIN
+    d328b0bcbe2acbef30927c8fd9d6b520cfbb5dbe3a63f252cc786a734f1e5d3c  tosdump/reference/EMUTOS-1a7484ab-XBIOS-chardev.LOG
+    c014fc27c2bb98c247957d63e1497f1e61caf52cc35bfc9ed5a92626268c06c9  tosdump/reference/EMUTOS-1a7484ab-XBIOS-chardev-falcontc.BIN
+    d328b0bcbe2acbef30927c8fd9d6b520cfbb5dbe3a63f252cc786a734f1e5d3c  tosdump/reference/EMUTOS-1a7484ab-XBIOS-chardev-falcontc.LOG
+  runs/NEWTOS-xbios-chardev-r1: tosdiff tt 15 of 23 differ (24-27 Iorec, 31 Rsconf, 43, 45-53 Bconmap),
+  falcontc 15 of 23 (same ids).
+
+INPUT CHECK
+  EmuTOS: runs/TRACE-EMUTOS-xc = method/run-dumpbios-emutos-traced.sh (hatari-oracle.sh's start +
+  --trace bios,xbios); BIN byte-identical to the tt reference; trace-program.txt = the calls from the
+  dumper's text (PC 0x10158FA): every row arrived with the table's arguments (WORDs unsigned: -2 =
+  0xFFFE); Hatari prints Keytbl without arguments ("XBIOS 0x10 (Keytbl)"). Probe runs: trace-program.txt
+  in each EmuTOS run dir (calls not from ROM), same check.
+  NewTOS: NOT available -- no tracer records BIOS/XBIOS arguments (TASK/TOOL08). Indirect only: Kbrate
+  and Rsconf round-trip the values set (R/S groups), Keytbl reports back the exact pointers passed
+  (K04-K06), Bconmap/Iorec answer the same for every argument (not informative).
+
+THE PROBES (method/xcprobe.c, method/xkprobe.c; method/build-xcprobe.sh <repo> <scratch>)
+  Same C source, m68k-atari-mint-gcc 7.5.0 + mintlib / clang aarch64 + SDK mintlib + sdk/newtos.ld;
+  calls through mintlib's osbind.h macros / trap_14_*; structures are mintlib's (_IOREC, _KEYTAB,
+  _KBDVECS, _BCONMAP, _MAPTAB). m68k PRGs are not bit-reproducible between builds (symbol table); the
+  binaries in probe/ are the ones every final run used. NAPs reproduce.
+  xcprobe: R Kbrate set/query/mask/restore; S Rsconf set/query (baud, ucr, rsr) and restore; B Bconmap
+  (-1, -2 + the BCONMAP it points at, invalid devices, remap 7/6/8/9 and restore); I Iorec 0..2 + the
+  IOREC it points at, invalid devices; K Keytbl query + tables (CRC32 of norm/shft/caps, alt pair
+  lists), set arms, Bioskeys, restore; V Kbdvbase slots; W Ikbdws 0x1C/0x88/0x16 with counting
+  clockvec/statvec/joyvec hooks (100 ticks each); M Midiws (1 and 256 bytes) and Bcostat(3).
+  XCIOFL (-DVARIANT=1): io = Iorec(1); io->ibufhd = io->ibuftl; in user mode, "before" flushed first.
+  XCKTNL (-DVARIANT=2): Keytbl(NULL,-1,-1), Bioskeys(), Keytbl(-1,-1,-1)->unshift.
+  xkprobe: mousevec counting hook + Keytbl(my_n) (my_n[i] = i^0x55), "KEYREADY", then input: right
+  button down/up (one IKBD mouse packet each), 'a', Bioskeys, 'a'.
+  EmuTOS input: method/run-emutos-xkeys.sh, Hatari --cmd-fifo "hatari-event rightdown/rightup/
+  keydown 30/keyup 30" (method/xkeys-hatari.txt) after KEYREADY, --fast-forward off.
+  NewTOS input: injector kernel, method/xkeys-ikbd.txt (0xF9 0 0, 0xF8 0 0, 0x1E/0x9E twice).
+  Runners: method/run-emutos.sh (copied; only change: every *.LOG of hd/ is copied out),
+  method/run-newtos.sh (copied; changes: KLINE env for a "#K de" layout line, list of logs).
+  NewTOS keyboard layout: PROBE-NEWTOS-raspi4b(-repeat) and KEYS-* ran with "#K de" in NEWDESK.INF,
+  PROBE-NEWTOS-raspi4b-us without. The EmuTOS ROM is etos512de, but its active layout on the oracle is
+  the US table (K02: norm/shft/caps CRC 32c7513b/c73c5dda/47f5e93a, no alt pairs); NewTOS' US table
+  gives the identical CRCs (PROBE-NEWTOS-raspi4b-us K02), the DE table differs (f269a940/...). The table
+  comparison therefore uses the -us run; every other line of -us equals the de run.
+  The two variant runs on EmuTOS were started with a wrong end condition and ran 240 s each with the
+  desktop idling; their trace.txt was cut after the program's last call + 200 lines (sha256 and line
+  count of the full trace in trace.full.sha256). The XCIOFL NewTOS run ended on the kernel's crash
+  screen ("Press any key") and was killed by the runner's 480 s timeout.
+
+RUNS (runs/)
+  NEWTOS-bios-r1, NEWTOS-xbios-chardev-r1, EMUTOS-xc-*, TRACE-EMUTOS-xc   see above
+  PROBE-EMUTOS-tt, -tt-repeat, -falcontc        XCPROBE.LOG; tt = repeat bit-identical; falcontc
+                                                differs only in Rsconf (SCC: 0x88000000), Bconmap
+                                                (mapped 7, maptabsize 3) and Iorec(0)
+  PROBE-NEWTOS-raspi4b, -repeat, -us            de = repeat bit-identical; -us differs only in K02/K09
+                                                tables (layout)
+  XCIOFL-EMUTOS-tt/-falcontc, XCIOFL-NEWTOS-raspi4b   flush idiom: EmuTOS "F02 after write", NewTOS
+                                                crash "Bus Error ... page-0 system-variable memory,
+                                                write", far 0x18 (BOOT-SERIAL.txt)
+  XCKTNL-EMUTOS-tt/-falcontc, XCKTNL-NEWTOS-raspi4b   Keytbl(NULL): both return the struct; after
+                                                Bioskeys EmuTOS unshift valid, NewTOS unshift NULL
+  KEYS-EMUTOS-tt, -tt-repeat, -falcontc         X02 0x001E004B, X03 0x001E0061, mousevec calls=2
+  KEYS-NEWTOS-raspi4b-injector, -repeat         X02 0x001E004B, X03 0x001E004B, mousevec calls=0
+  probe-diff-emutos-tt-vs-newtos-us.txt         diff of the two XCPROBE.LOGs (display only)
+  Development runs (first probe build, odd-address check) stayed in scratch: not evidence.
+
+CARDS / IMAGES
+  Every NewTOS run card: tools/mkcard.sh defaults (64 MiB, MBR + FAT16); manifests copied as
+  <run>/db.img.manifest or <run>/card.img.manifest, image sha256 before/after in each run dir.
+  optional_missing line of every manifest, verbatim (all identical):
+    optional_missing none
+  Cards deleted after the logs were copied (mcopy). No EmuTOS disk image (program drive = Hatari GEMDOS
+  drive C:; no disk call in scope).
+
+NOT VERIFIED
+  Real Raspberry Pi 4; NewTOS-side argument arrival (no tracer); Kbrate's effect on the actual repeat
+  timing; Midiws/Bconout(3) bytes on a MIDI wire (EmuTOS side: Hatari 2.6.1 has MIDI output only via
+  PortMidi, no file); Rsconf's effect on a real serial line; Ikbdws commands that change IKBD state
+  (mouse modes, 0x12 disable mouse); keyboard state after a program exits with a foreign Keytbl.
+
+FILES
+  manifest.sha256 covers every file of this run except itself.

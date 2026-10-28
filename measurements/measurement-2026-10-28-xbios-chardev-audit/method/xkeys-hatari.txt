@@ -1,0 +1,9 @@
+# <sleep-seconds-before> <hatari --cmd-fifo command>; sent after KEYREADY.
+# Right mouse button down/up (one IKBD relative mouse packet each), then
+# 'a' (ST scancode 0x1E = 30), then 'a' again after Bioskeys has run.
+0.2 hatari-event rightdown
+0.2 hatari-event rightup
+0.5 hatari-event keydown 30
+0.05 hatari-event keyup 30
+2.0 hatari-event keydown 30
+0.05 hatari-event keyup 30

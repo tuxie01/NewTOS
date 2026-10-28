@@ -1,0 +1,4 @@
+X01 after Bioskeys unshift_is_my=1 unshift_is_n0=0
+X02 k1 Bconin(2) with Keytbl(my_n) ret=001e004b
+X03 k2 Bconin(2) after Bioskeys ret=001e004b
+X04 mousevec hook calls=0 last_packet=000000

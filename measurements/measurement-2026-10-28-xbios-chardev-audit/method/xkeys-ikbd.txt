@@ -1,0 +1,9 @@
+# tools/inject-arm.py script, armed launch:XKPROBE: <hz_200 ticks after the
+# launch> <IKBD bytes>.  Same input as xkeys-hatari.txt: right button down
+# (0xF9 0 0) and up (0xF8 0 0), 'a' make/break, 'a' make/break ~2 s later.
+400 0xF9 0x00 0x00
+440 0xF8 0x00 0x00
+540 0x1E
+550 0x9E
+950 0x1E
+960 0x9E
