@@ -37,3 +37,9 @@ Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-xbios-char
 - Bis dahin gilt fuer den MEASURED-Teil die Sondenregel aus CLAUDE.md
   „Testing“ (Sonde als dauerhafter Test, beidseitig gegen das gepinnte
   Orakel, mit Eingabe-Trace; Folgeticket nach tosdiff).
+## Stand 2026-10-28 (Punkt 1, Entwurf)
+
+- Vertrag des IOREC-Abbilds als Entwurf in `docs/api/xbios/0e-iorec.md`
+  (`[XBIOS01]`): LP64-Layout des SDK-Headers, Ort ausserhalb Seite 0, Ring =
+  die Schlange von `Bconstat(2)`/`Bconin(2)`, `head`/`tail` als
+  unvertrauenswuerdige Eingabe. Entscheidungen E1–E6 beim Anwender.
