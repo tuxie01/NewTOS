@@ -1,0 +1,76 @@
+# xbios-system-r1.tsv -- DUMPBIOS, audit xbios-system (2026-10-28): the XBIOS
+# system calls without disk access -- Protobt, Cursconf, NVMaccess -- with
+# their boundary arguments, against EmuTOS 1a7484ab (references/emutos,
+# docs/analysis/ORACLE.md).
+#
+# Added by the auditor (docs/audits/2026-10-28-xbios-system.md, section 5) as
+# a table of its own, so bios-r1.tsv, its CRC and its references stay as they
+# are.  Every row is inside the round-1 guard of tosdump/core/cases.c
+# (call_policy): Protobt with a dumper buffer, Cursconf only function 5,
+# NVMaccess only a read into a dumper buffer (or NULL) or an invalid op.
+# Form: tosdump/cases/bios-r1.tsv header.
+#
+# Protobt's buffer is poisoned with the bytes DE AD before every case
+# (docs/TOS-REFERENCE-DUMPER.md section 6): its word checksum is 0xAD00, not
+# 0x1234, so every row starts from a non-executable sector.  The executable
+# start state, the random-serial value and Random's sequence need state a
+# call table cannot set up; the audit measured them with a probe.
+# Settime, the set arms of Cursconf and Setprt, and NVMaccess write/reset are
+# refused by the guard: probe territory too.
+#
+# References: tosdump/reference/EMUTOS-1a7484ab-XBIOS-system (tt) and
+# -XBIOS-system-falcontc.  One table per round: frozen once measured.
+
+# ---- XBIOS 0x12 Protobt(buf,serial,type,exec) -- void, bios/floppy.c:690-736
+# every disktype: the BPB template (bytes 11..29) and the checksum at 510
+14:0x12	b:0,l:-1,w:0,w:-1	IGNORE	0:32	Protobt(b0,-1,0,-1) type 0 BPB -- bios/floppy.c:679,706-713
+14:0x12	b:0,l:-1,w:0,w:-1	IGNORE	0:2@510	Protobt(b0,-1,0,-1) type 0 checksum -- bios/floppy.c:730-735
+14:0x12	b:0,l:-1,w:1,w:-1	IGNORE	0:2@510	Protobt(b0,-1,1,-1) type 1 checksum -- bios/floppy.c:730-735
+14:0x12	b:0,l:-1,w:2,w:-1	IGNORE	0:32	Protobt(b0,-1,2,-1) type 2 BPB -- bios/floppy.c:681,706-713
+14:0x12	b:0,l:-1,w:2,w:-1	IGNORE	0:2@510	Protobt(b0,-1,2,-1) type 2 checksum -- bios/floppy.c:730-735
+14:0x12	b:0,l:-1,w:3,w:-1	IGNORE	0:32	Protobt(b0,-1,3,-1) type 3 BPB -- bios/floppy.c:682,706-713
+14:0x12	b:0,l:-1,w:3,w:-1	IGNORE	0:2@510	Protobt(b0,-1,3,-1) type 3 checksum -- bios/floppy.c:730-735
+14:0x12	b:0,l:-1,w:4,w:-1	IGNORE	0:32	Protobt(b0,-1,4,-1) type 4 HD BPB -- bios/floppy.c:683,706-713
+14:0x12	b:0,l:-1,w:4,w:-1	IGNORE	0:2@510	Protobt(b0,-1,4,-1) type 4 checksum -- bios/floppy.c:730-735
+14:0x12	b:0,l:-1,w:5,w:-1	IGNORE	0:32	Protobt(b0,-1,5,-1) type 5 ED BPB -- bios/floppy.c:684,706-713
+14:0x12	b:0,l:-1,w:5,w:-1	IGNORE	0:2@510	Protobt(b0,-1,5,-1) type 5 checksum -- bios/floppy.c:730-735
+14:0x12	b:0,l:-1,w:6,w:-1	IGNORE	0:32	Protobt(b0,-1,6,-1) type 6 800K BPB -- bios/floppy.c:685,706-713
+14:0x12	b:0,l:-1,w:6,w:-1	IGNORE	0:2@510	Protobt(b0,-1,6,-1) type 6 checksum -- bios/floppy.c:730-735
+# disktype out of range: the BPB stays as it was
+14:0x12	b:0,l:-1,w:0x7FFF,w:-1	IGNORE	0:32	Protobt(b0,-1,0x7FFF,-1) WORD max -- bios/floppy.c:706
+14:0x12	b:0,l:-1,w:-32768,w:-1	IGNORE	0:32	Protobt(b0,-1,-32768,-1) WORD min -- bios/floppy.c:706
+14:0x12	b:0,l:-1,w:-1,w:-1	IGNORE	0:32	Protobt(b0,-1,-1,-1) nothing but the checksum -- bios/floppy.c:698,706
+# nothing outside serial, BPB and checksum is written
+14:0x12	b:0,l:0x123456,w:3,w:1	IGNORE	0:256@32	Protobt(b0,0x123456,3,1) bytes 32..287 untouched -- bios/floppy.c:690-736
+14:0x12	b:0,l:0x123456,w:3,w:1	IGNORE	0:222@288	Protobt(b0,0x123456,3,1) bytes 288..509 untouched -- bios/floppy.c:690-736
+14:0x12	b:0,l:0x123456,w:3,w:1	IGNORE	0:2@510	Protobt(b0,0x123456,3,1) checksum, executable -- bios/floppy.c:730-735
+# serial: stored reversed (low byte first) when >= 0, random when >= 0x01000000
+14:0x12	b:0,l:0xABCDEF,w:-1,w:-1	IGNORE	0:16	Protobt(b0,0xABCDEF,-1,-1) serial bytes -- bios/floppy.c:698-704
+14:0x12	b:0,l:0xFFFFFF,w:-1,w:-1	IGNORE	0:16	Protobt(b0,0xFFFFFF,-1,-1) largest literal serial -- bios/floppy.c:699,701-703
+14:0x12	b:0,l:0,w:-1,w:-1	IGNORE	0:16	Protobt(b0,0,-1,-1) serial 0 is stored -- bios/floppy.c:698,701-703
+14:0x12	b:0,l:-2,w:-1,w:-1	IGNORE	0:16	Protobt(b0,-2,-1,-1) negative: no serial -- bios/floppy.c:698
+14:0x12	b:0,l:-2147483648,w:-1,w:-1	IGNORE	0:16	Protobt(b0,0x80000000,-1,-1) LONG min: no serial -- bios/floppy.c:698
+14:0x12	b:0,l:0x1000000,w:-1,w:-1	IGNORE	0:8	Protobt(b0,0x1000000,-1,-1) random serial, bytes 0..7 untouched -- bios/floppy.c:699-700
+14:0x12	b:0,l:0x1000000,w:-1,w:-1	IGNORE	0:21@11	Protobt(b0,0x1000000,-1,-1) random serial, bytes 11..31 untouched -- bios/floppy.c:699-704
+14:0x12	b:0,l:0x7FFFFFFF,w:-1,w:-1	IGNORE	0:8	Protobt(b0,0x7FFFFFFF,-1,-1) random serial, LONG max -- bios/floppy.c:699-700
+# exec flag: < 0 keeps, 0 non-executable (0x1235), > 0 executable (0x1234)
+14:0x12	b:0,l:-1,w:-1,w:0	IGNORE	0:2@510	Protobt(b0,-1,-1,0) non-executable -- bios/floppy.c:727-735
+14:0x12	b:0,l:-1,w:-1,w:2	IGNORE	0:2@510	Protobt(b0,-1,-1,2) exec 2 is executable -- bios/floppy.c:727-735
+14:0x12	b:0,l:-1,w:-1,w:0x7FFF	IGNORE	0:2@510	Protobt(b0,-1,-1,0x7FFF) WORD max executable -- bios/floppy.c:727-735
+14:0x12	b:0,l:-1,w:-1,w:-32768	IGNORE	0:2@510	Protobt(b0,-1,-1,-32768) WORD min keeps (non-executable) -- bios/floppy.c:727-728
+
+# ---- XBIOS 0x15 Cursconf(5,x) -- WORD cursconf, bios/vt52.c:893-915; the operand is not read
+14:0x15	w:5,w:1	EXACT.W	-	Cursconf(5,1) -- bios/vt52.c:911-912
+14:0x15	w:5,w:-1	EXACT.W	-	Cursconf(5,-1) -- bios/vt52.c:911-912
+14:0x15	w:5,w:0x7FFF	EXACT.W	-	Cursconf(5,0x7FFF) -- bios/vt52.c:911-912
+
+# ---- XBIOS 0x2E NVMaccess(op,start,count,buf) -- WORD nvmaccess, bios/nvram.c:155-214
+14:0x2E	w:0,w:0,w:1,b:0	EXACT.W	3:1	NVMaccess(0,0,1,b0) one byte -- bios/nvram.c:181-199
+14:0x2E	w:0,w:47,w:1,b:0	EXACT.W	3:1	NVMaccess(0,47,1,b0) last user byte -- bios/nvram.c:178,193-197
+14:0x2E	w:0,w:8,w:6,b:0	EXACT.W	3:6	NVMaccess(0,8,6,b0) the reset block at 8 -- bios/nvram.c:41,193-197
+14:0x2E	w:0,w:48,w:1,b:0	EXACT.W	3:1	NVMaccess(0,48,1,b0) start past the user area -- bios/nvram.c:178-179
+14:0x2E	w:0,w:0,w:49,b:0	EXACT.W	3:49	NVMaccess(0,0,49,b0) count past the user area -- bios/nvram.c:178-179
+14:0x2E	w:0,w:-32768,w:1,b:0	EXACT.W	3:1	NVMaccess(0,-32768,1,b0) WORD min start -- bios/nvram.c:178-179
+14:0x2E	w:-1,w:0,w:1,b:0	EXACT.W	3:1	NVMaccess(-1,..) bad op -- bios/nvram.c:208-210
+14:0x2E	w:0x7FFF,w:0,w:1,b:0	EXACT.W	3:1	NVMaccess(0x7FFF,..) bad op -- bios/nvram.c:208-210
+14:0x2E	w:3,w:0,w:1,l:0	EXACT.W	-	NVMaccess(3,0,1,NULL) bad op, NULL first -- bios/nvram.c:178-179

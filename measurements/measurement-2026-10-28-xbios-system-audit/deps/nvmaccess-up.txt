@@ -1,0 +1,23 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps nvmaccess --up`
+deps nvmaccess --up (kinds asm,direct,layer,table): 13 functions besides nvmaccess
+depth	function	layer	reached over	newtos
+0	nvmaccess	bios	-	-
+1	detect_akp	bios	detect_akp -> nvmaccess [direct]	-
+1	detect_idt	bios	detect_idt -> nvmaccess [direct]	-
+1	screen_init_mode	bios	screen_init_mode -> nvmaccess [direct]	-
+1	scsi_init	bios	scsi_init -> nvmaccess [direct]	-
+1	xbiostrap	bios	xbiostrap -> nvmaccess [table xbios_vecs[0x2e]]	tos-api/src/xbios/mod.rs@dispatch
+2	bios_init	bios	bios_init -> screen_init_mode [direct]	-
+2	biostrap	bios	biostrap -> xbiostrap [asm jra biosxbios]	tos-api/src/bios/mod.rs@dispatch
+2	bus_init	bios	bus_init -> scsi_init [direct]	-
+2	fill_cookie_jar	bios	fill_cookie_jar -> detect_akp [direct]	tos-api/src/cookie.rs@seed_defaults
+3	biosmain	bios	biosmain -> bios_init [direct gimple-only]	-
+3	blkdev_hdv_init	bios	blkdev_hdv_init -> bus_init [direct]	-
+4	blkdev_init	bios	blkdev_init -> blkdev_hdv_init [direct]	-
+4	memdone	bios	memdone -> biosmain [asm jmp]	-
+
+table edges inside the set (1):
+xbios_vecs[0x2e]	xbiostrap -> nvmaccess	bios/xbios.c:1350
+
+layer edges inside the set (0):

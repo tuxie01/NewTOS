@@ -1,0 +1,3 @@
+BIOS.BIN vs BIOS.BIN -- area BIOS, 43 cases from xbios-system-r1.tsv
+
+0 of 43 cases differ

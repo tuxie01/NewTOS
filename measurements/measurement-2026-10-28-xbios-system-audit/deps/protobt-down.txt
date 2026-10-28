@@ -1,0 +1,13 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps protobt --down`
+deps protobt --down (kinds asm,direct,layer,table): 3 functions besides protobt
+depth	function	layer	reached over	newtos
+0	protobt	bios	-	tos-api/src/xbios/floppy.rs@protobt
+1	compute_cksum	bios	protobt -> compute_cksum [direct]	tos-api/src/xbios/floppy.rs@compute_cksum
+1	random	bios	protobt -> random [layer trap #14 0x11 xbios_vecs[0x11] via xbios_l_v]	tos-api/src/xbios/system.rs@random
+1	xbios_l_v	include	protobt -> xbios_l_v [direct]	
+
+table edges inside the set (0):
+
+layer edges inside the set (1):
+trap #14 0x11 xbios_vecs[0x11] via xbios_l_v	protobt -> random	bios/floppy.c:700

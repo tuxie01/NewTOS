@@ -1,0 +1,2 @@
+X01 first Random() matches a seed (hz_200<<16)+hz_200 for hz_200 in the window: yes
+X01 info hz_200 window=2573..2573 random=7d9272

@@ -1,0 +1,9 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps compute_cksum --down`
+deps compute_cksum --down (kinds asm,direct,layer,table): 0 functions besides compute_cksum
+depth	function	layer	reached over	newtos
+0	compute_cksum	bios	-	tos-api/src/xbios/floppy.rs@compute_cksum
+
+table edges inside the set (0):
+
+layer edges inside the set (0):

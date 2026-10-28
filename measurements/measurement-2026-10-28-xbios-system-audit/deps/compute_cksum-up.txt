@@ -1,0 +1,112 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps compute_cksum --up`
+deps compute_cksum --up (kinds asm,direct,layer,table): 101 functions besides compute_cksum
+depth	function	layer	reached over	newtos
+0	compute_cksum	bios	-	tos-api/src/xbios/floppy.rs@compute_cksum
+1	bootcheck	bios	bootcheck -> compute_cksum [direct]	-
+1	disk_try_dmaboot	bios	disk_try_dmaboot -> compute_cksum [direct]	-
+1	flop_checksum	bios	flop_checksum -> compute_cksum [direct]	-
+1	flop_mediach	bios	flop_mediach -> compute_cksum [direct]	-
+1	protobt	bios	protobt -> compute_cksum [direct]	tos-api/src/xbios/floppy.rs@protobt
+2	bios_init	bios	bios_init -> disk_try_dmaboot [direct]	-
+2	blkdev_getbpb	bios	blkdev_getbpb -> flop_checksum [direct]	-
+2	blkdev_hdv_boot	bios	blkdev_hdv_boot -> bootcheck [direct]	-
+2	blkdev_mediach	bios	blkdev_mediach -> flop_mediach [direct]	-
+2	write_boot	desk	write_boot -> protobt [layer trap #14 0x12 xbios_vecs[0x12] via xbios_v_llww]	
+2	xbiostrap	bios	xbiostrap -> protobt [table xbios_vecs[0x12]]	tos-api/src/xbios/mod.rs@dispatch
+3	XHInqDev2	bios	XHInqDev2 -> blkdev_getbpb [direct]	-
+3	biosmain	bios	biosmain -> bios_init [direct gimple-only]	-
+3	biostrap	bios	biostrap -> xbiostrap [asm jra biosxbios]	tos-api/src/bios/mod.rs@dispatch
+3	blkdev_boot	bios	blkdev_boot -> blkdev_hdv_boot [direct]	-
+3	blkdev_rwabs	bios	blkdev_rwabs -> blkdev_mediach [direct]	-
+3	init_start	desk	init_start -> write_boot [direct]	
+3	pun_info_setup	bios	pun_info_setup -> blkdev_getbpb [direct]	-
+4	XHInqDev	bios	XHInqDev -> XHInqDev2 [direct]	-
+4	blkdev_hdv_init	bios	blkdev_hdv_init -> pun_info_setup [direct]	-
+4	format_floppy	desk	format_floppy -> init_start [direct]	
+4	memdone	bios	memdone -> biosmain [asm jmp]	-
+4	xhdi_handler	bios	xhdi_handler -> XHInqDev2 [direct]	-
+5	blkdev_init	bios	blkdev_init -> blkdev_hdv_init [direct]	-
+5	do_format	desk	do_format -> format_floppy [direct]	
+5	xhdi_vec	bios	xhdi_vec -> xhdi_handler [asm jsr]	-
+6	do_filemenu	desk	do_filemenu -> do_format [direct]	
+7	hndl_button	desk	hndl_button -> do_filemenu [direct]	
+7	hndl_menu	desk	hndl_menu -> do_filemenu [direct]	
+7	hndl_msg	desk	hndl_msg -> do_filemenu [direct]	
+8	deskmain	desk	deskmain -> hndl_button [direct]	
+8	end_dialog	desk	end_dialog -> hndl_msg [direct]	
+8	fun_msg	desk	fun_msg -> hndl_msg [direct]	
+8	hndl_kbd	desk	hndl_kbd -> hndl_menu [direct]	
+9	deskstart	desk	deskstart -> deskmain [asm jsr]	
+9	dir_op	desk	dir_op -> end_dialog [direct]	
+9	do_deskmenu	desk	do_deskmenu -> end_dialog [direct]	
+9	do_diropen	desk	do_diropen -> fun_msg [direct]	
+9	fun_mkdir	desk	fun_mkdir -> end_dialog [direct]	
+9	fun_selectall	desk	fun_selectall -> fun_msg [direct]	
+9	inf_backgrounds	desk	inf_backgrounds -> end_dialog [direct]	
+9	inf_conf	desk	inf_conf -> end_dialog [direct]	
+9	inf_show	desk	inf_show -> end_dialog [direct]	
+9	ins_app_dialog	desk	ins_app_dialog -> end_dialog [direct]	
+9	install_desktop_icon	desk	install_desktop_icon -> end_dialog [direct]	
+9	install_window_icon	desk	install_window_icon -> end_dialog [direct]	
+9	print_file	desk	print_file -> end_dialog [direct]	
+9	rebuild_window	desk	rebuild_window -> fun_msg [direct]	
+9	wants_to_delete_files	desk	wants_to_delete_files -> fun_msg [direct]	
+9	win_shwall	desk	win_shwall -> fun_msg [direct]	
+10	change_falcon_rez	desk	change_falcon_rez -> inf_show [direct]	
+10	change_tt_rez	desk	change_tt_rez -> inf_show [direct]	
+10	cnx_get	desk	cnx_get -> do_diropen [direct]	
+10	desk_all	desk	desk_all -> win_shwall [direct]	
+10	do_aopen	desk	do_aopen -> print_file [direct]	
+10	do_dopen	desk	do_dopen -> do_diropen [direct]	
+10	do_fopen	desk	do_fopen -> do_diropen [direct]	
+10	do_optnmenu	desk	do_optnmenu -> inf_conf [direct]	
+10	do_viewmenu	desk	do_viewmenu -> inf_backgrounds [direct]	
+10	fun_del	desk	fun_del -> wants_to_delete_files [direct]	
+10	fun_file2desk	desk	fun_file2desk -> wants_to_delete_files [direct]	
+10	fun_mask	desk	fun_mask -> inf_show [direct]	
+10	fun_op	desk	fun_op -> dir_op [direct]	
+10	fun_print	desk	fun_print -> print_file [direct]	
+10	fun_rebld	desk	fun_rebld -> rebuild_window [direct]	
+10	fun_rebld_marked	desk	fun_rebld_marked -> rebuild_window [direct]	
+10	inf_disk	desk	inf_disk -> inf_show [direct]	
+10	inf_file_folder	desk	inf_file_folder -> inf_show [direct]	
+10	inf_pref	desk	inf_pref -> inf_show [direct]	
+10	ins_icon	desk	ins_icon -> install_desktop_icon [direct]	
+10	ins_one_app	desk	ins_one_app -> ins_app_dialog [direct]	
+10	opn_appl	desk	opn_appl -> inf_show [direct]	
+10	search_display	desk	search_display -> do_diropen [direct]	
+10	search_prompt	desk	search_prompt -> inf_show [direct]	
+11	change_resolution	desk	change_resolution -> change_falcon_rez [direct]	
+11	check_alt_letter_key	desk	check_alt_letter_key -> do_dopen [direct]	
+11	delete_ffd	desk	delete_ffd -> fun_op [direct]	
+11	do_info	desk	do_info -> inf_disk [direct]	
+11	do_open	desk	do_open -> do_aopen [direct]	
+11	fun_desk2win	desk	fun_desk2win -> do_aopen [direct]	
+11	fun_file2any	desk	fun_file2any -> fun_file2desk [direct]	
+11	fun_file2win	desk	fun_file2win -> fun_op [direct]	
+11	fun_search	desk	fun_search -> search_prompt [direct]	
+11	fun_win2desk	desk	fun_win2desk -> fun_rebld [direct]	
+11	fun_win2win	desk	fun_win2win -> fun_op [direct]	
+11	ins_app	desk	ins_app -> ins_one_app [direct]	
+11	process_funkey	desk	process_funkey -> do_aopen [direct]	
+11	refresh_window	desk	refresh_window -> do_fopen [direct]	
+11	save_to_disk	desk	save_to_disk -> fun_rebld [direct]	
+11	search_recursive	desk	search_recursive -> search_display [direct]	
+11	w_setpath	desk	w_setpath -> do_fopen [direct]	
+12	app_save	desk	app_save -> save_to_disk [direct]	
+12	check_function_key	desk	check_function_key -> process_funkey [direct]	
+12	fun_close	desk	fun_close -> w_setpath [direct]	
+12	fun_desk2desk	desk	fun_desk2desk -> fun_file2any [direct]	
+12	fun_drag	desk	fun_drag -> fun_win2win [direct]	
+12	refresh_drive	desk	refresh_drive -> refresh_window [direct]	
+12	search_icon	desk	search_icon -> search_recursive [direct]	
+13	update_modified_windows	desk	update_modified_windows -> fun_close [direct]	
+14	d_doop	desk	d_doop -> update_modified_windows [direct]	
+15	count_ffs	desk	count_ffs -> d_doop [direct]	
+
+table edges inside the set (1):
+xbios_vecs[0x12]	xbiostrap -> protobt	bios/xbios.c:1308
+
+layer edges inside the set (1):
+trap #14 0x12 xbios_vecs[0x12] via xbios_v_llww	write_boot -> protobt	desk/desksupp.c:1363

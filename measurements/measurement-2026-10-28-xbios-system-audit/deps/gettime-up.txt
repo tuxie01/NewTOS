@@ -1,0 +1,21 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps gettime --up`
+deps gettime --up (kinds asm,direct,layer,table): 9 functions besides gettime
+depth	function	layer	reached over	newtos
+0	gettime	bios	-	tos-api/src/gemdos/time.rs@xbios_gettime
+1	cprint_asctime	bios	cprint_asctime -> gettime [layer trap #14 0x17 xbios_vecs[0x17] via xbios_l_v]	-
+1	time_init	bdos	time_init -> gettime [layer trap #14 0x17 xbios_vecs[0x17] via xbios_l_v]	-
+1	xbiostrap	bios	xbiostrap -> gettime [table xbios_vecs[0x17]]	tos-api/src/xbios/mod.rs@dispatch
+2	biostrap	bios	biostrap -> xbiostrap [asm jra biosxbios]	tos-api/src/bios/mod.rs@dispatch
+2	initinfo	bios	initinfo -> cprint_asctime [direct]	kernel/src/initinfo.rs@run
+2	osinit_after_xmaddalt	bdos	osinit_after_xmaddalt -> time_init [direct]	tos-api/src/bdos/process/standin.rs@init
+3	bios_init	bios	bios_init -> osinit_after_xmaddalt [direct]	-
+3	biosmain	bios	biosmain -> initinfo [direct gimple-only]	-
+4	memdone	bios	memdone -> biosmain [asm jmp]	-
+
+table edges inside the set (1):
+xbios_vecs[0x17]	xbiostrap -> gettime	bios/xbios.c:1313
+
+layer edges inside the set (2):
+trap #14 0x17 xbios_vecs[0x17] via xbios_l_v	cprint_asctime -> gettime	bios/initinfo.c:178
+trap #14 0x17 xbios_vecs[0x17] via xbios_l_v	time_init -> gettime	bdos/time.c:162

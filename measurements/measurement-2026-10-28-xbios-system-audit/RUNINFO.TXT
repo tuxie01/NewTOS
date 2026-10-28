@@ -1,0 +1,125 @@
+XBIOS system audit (Random, Protobt, Cursconf, Settime, Gettime, Setprt, NVMaccess) -- 2026-10-28
+=================================================================================================
+Auditor run for docs/audits/2026-10-28-xbios-system.md. MEASUREMENT ONLY: no product code changed, no
+tosdump/tosdiff change, no existing reference, table or rule changed, nothing flashed, no card, no
+hardware. Not committed.
+
+WHY
+  Lead brief 2026-10-28, bottom-up order of docs/STATUS.md "Warteschlange": the XBIOS system calls
+  without disk access, after the BIOS core (docs/audits/2026-10-28-bios-core.md) and the XBIOS
+  character devices (docs/audits/2026-10-28-xbios-chardev.md). Scope: XBIOS 0x11 Random, 0x12 Protobt,
+  0x15 Cursconf, 0x16 Settime, 0x17 Gettime, 0x21 Setprt, 0x2E NVMaccess (numbers as in
+  tosdump/cases/COVERAGE-BIOS.md). Not in scope: Supexec, the PSG group, Puntaes.
+
+STATE
+  NewTOS   : 3d74514b24e6f274fed6a71d9e305d348da047b3, clean -- built and run ONLY from the detached
+             worktree <session scratchpad>/wt-audit3 (git status empty before and after). The main tree
+             moved on during the run (HEAD c686cd7d, TOOL08 tracer 61f39de2); nothing of it was used.
+  EmuTOS   : 1a7484aba1bfba23e2c0899e243b6d8177fe41df (references/emutos HEAD)
+  ROM      : tools/oracle/etos512de-1a7484ab.img sha256 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+  Hatari   : 2.6.1, binary sha256 953f4e78eea55a8ca12ed6c83de1f045545b8da42a49e00112eaa235dffcd6f6
+  cfg      : tools/oracle/hatari.cfg sha256 c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46
+             (never --saveconfig)
+  QEMU     : 11.0.2, -M raspi4b, -append serial=on
+  Canary   : docs/analysis/ORACLE.md section 6 command from the worktree, scratch canary-20261028-120518:
+             "canary tt: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all)"
+             "canary falcontc: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all-falcontc)"
+             (no disk profile: no disk call in scope)
+  Kernel   : cargo xtask build --board rpi4 --release in the worktree (dep-info paths point into the
+             worktree): kernel8.img bc724feaa9765c119673af79cf99068835f42ebd2459514f2dd9ce55a8a85f6a,
+             ELF b2ae119e762430c568363fc171129f783372e575a7a625357f633b450cdb8c71
+
+PRE-FLIGHT NEWTOS CASE TABLE (runs/NEWTOS-bios-r1)
+  method/run-dumpbios-newtos.sh = copy of the xbios-chardev audit's parametrised copy (original of the
+  storage audit kept as run-dumpbios-newtos.orig.sh). DUMPBIOS.NAP build 3d74
+  (tosdump/build-dumpbios-newtos.sh, worktree): probe/DUMPBIOS.NAP.
+  tosdiff vs EMUTOS-1a7484ab-BIOS (tt): 42 of 147 differ -- the same set of case ids as the two audits
+  before. In scope: EQUAL 112 (Random, IGNORE), 115-119 (Protobt), 122 (Cursconf(5,0)), 125 (Gettime,
+  NONZERO), 135 (Setprt(-1)); DIFF 189-194 (NVMaccess: 0x2E for every row).
+
+NEW CASE TABLE tosdump/cases/xbios-system-r1.tsv (43 cases, CRC 3944A677, sha256
+22c32ade8aed0ae5b8eced87ec21de4a14b3e4570bf91f4fe886e3e76b59241d)
+  Inside the round-1 guard: Protobt every disktype, out-of-range types, serial arms (literal, 0,
+  negative, random), exec arms, the untouched rest of the sector; Cursconf(5,x); NVMaccess reads and
+  error arms. A first recording with wrong EmuTOS line cites in the comments was discarded; the table
+  was corrected and every run below is of the corrected table.
+  DUMPBIOS.PRG build 3d74 (make -C tosdump BUILD=<scratch>/dumpers BUILD_ID=3d74 dumpbios-m68k):
+  probe/DUMPBIOS.PRG. runs/EMUTOS-xs-tt, -falcontc, -tt-repeat: tools/hatari-oracle.sh (worktree);
+  tt-repeat BIN byte-identical to tt; tt vs falcontc 0 of 43 differ
+  (runs/EMUTOS-xs-falcontc/tosdiff-tt-vs-falcontc.txt). tosdiff --selfcheck on both: "the oracle passes
+  every relational rule (43 cases)" (selfcheck.txt). Installed as new files:
+    aa356aa64969e440d2d9520ebd3145a2866cca738ae476072acebada42f94cbb  tosdump/reference/EMUTOS-1a7484ab-XBIOS-system.BIN
+    db909c2e3d10ff225532b0138238b71e7c501cd0fddfb9ac372a0c7c84e04c42  tosdump/reference/EMUTOS-1a7484ab-XBIOS-system.LOG
+    1408810f86a6ec12c954bb51ea121d2ae1e77ddd0d7d1a69f5bd3392052188cc  tosdump/reference/EMUTOS-1a7484ab-XBIOS-system-falcontc.BIN
+    db909c2e3d10ff225532b0138238b71e7c501cd0fddfb9ac372a0c7c84e04c42  tosdump/reference/EMUTOS-1a7484ab-XBIOS-system-falcontc.LOG
+  runs/NEWTOS-xbios-system-r1: tosdiff tt 9 of 43 differ (68-76, NVMaccess), falcontc the same 9.
+
+INPUT CHECK
+  EmuTOS: runs/TRACE-EMUTOS-xs = method/run-dumpbios-emutos-traced.sh; tosdiff against the tt reference
+  0 of 43 (its IGNOREd Protobt return words differ by timing, so cmp is not the test here);
+  trace-program.txt: Cursconf(0x5,0x1/0xFFFF/0x7FFF) as in the table; Hatari prints Protobt and
+  NVMaccess without arguments (31 and 9 calls, the table's counts), and shows the three random-serial
+  Protobt calls each issuing XBIOS Random from the ROM (PC 0xE09A1A).
+  Probe runs: trace-program.txt in each EmuTOS run dir (calls from the program's text, PC 0x10xxxxx):
+  the 27 Settime values equal the "set=" values of XSPROBE.LOG in order (plus the T30 pre-set and the
+  restore); Cursconf and Setprt arguments as in the source.
+  NewTOS: NOT available at 3d74514b -- no tracer records BIOS/XBIOS arguments (TOOL08 landed later,
+  61f39de2, not used). Indirect only: Setprt/Cursconf/Settime round-trip the values set (S01-S08,
+  C01-C07, T01), Protobt's output carries the serial and type passed.
+
+THE PROBES (method/xsprobe.c, method/xsseed.c, method/xshi.c; method/build-xsprobe.sh <repo> <scratch>)
+  Same C source, m68k-atari-mint-gcc 7.5.0 + mintlib / clang aarch64 + SDK mintlib + sdk/newtos.ld;
+  calls through mintlib's osbind.h macros. m68k PRGs are not bit-reproducible between builds; the
+  binaries in probe/ are the ones every final run used (EmuTOS run dirs: hd/ copy, same sha256). NAPs
+  reproduce.
+    92701afc1490f3bbbdb43d57586f614cfb41cae4831d1ab6da29a3e0245f4891  probe/XSPROBE.PRG
+    0d726dc0f6fed9e07f7441ccd339bf70dd8137de691ae57ec555ac41c8e16134  probe/XSPROBE.NAP
+    e7e77c2141981e3a4a0a56916f1c1dba5a2bdf09da8260391ef1278f834a4502  probe/XSSEED.PRG
+    d4898ac60cd019461fe121b67573cd008c5378338aa7be1527bb40b42ebca5d6  probe/XSSEED.NAP
+    2a6fda09fc93ec90c0d38d5dcd89d148fee1bee3ea7e9e873246559e9f02af8f  probe/XSHI.PRG
+    5ee53590edd7d3a4236f530aa24d2d7a5f000b571df1795a3f4b10b5bba2729b  probe/XSHI.NAP
+  xsprobe: P Protobt state paths; R Random range + LCG fit; C Cursconf; S Setprt; T Settime then the
+  GEMDOS clock (tear-free Tgetdate/Tgettime pair) at once and after its next change, valid and
+  impossible packed values, Tsetdate/Tsettime commit. Everything set is restored (C17, S09, T99).
+  Lines with "info" carry machine values and are not compared.
+  xsseed: first Random() after boot vs (hz_200<<16)+hz_200, hz_200 read around the call.
+  xshi: Settime(2050-06-15 12:00), Gettime's high half (bit 31 set), restore.
+  Runners: method/run-emutos.sh (copied unchanged from the xbios-chardev audit), method/run-emutos-
+  nvtrace.sh (copy; only change --trace bios,xbios,nvram), method/run-newtos.sh (copied; only change:
+  the list of logs copied out).
+  The development builds of xsprobe (three, before the tear-free GEMDOS read and the yes/no LCG lines)
+  stayed in scratch: not evidence. Their one lesson is in the audit, section 6 (torn Tgetdate/Tgettime
+  pair).
+
+RUNS (runs/)
+  NEWTOS-bios-r1, EMUTOS-xs-*, NEWTOS-xbios-system-r1, TRACE-EMUTOS-xs    see above
+  PROBE-EMUTOS-tt, -tt-repeat, -falcontc        XSPROBE.LOG; all three equal outside info/Gettime lines
+  PROBE-EMUTOS-tt-nvtrace                        same probe with Hatari's NVRAM trace: EmuTOS writes the
+                                                set time into RTC registers 0..9, the next Gettime
+                                                reads Hatari's host clock (trace.txt lines after the
+                                                first Settime)
+  PROBE-NEWTOS-raspi4b, -repeat                  XSPROBE.LOG; repeat equal outside info lines
+  probe-diff-emutos-tt-vs-newtos.txt            diff of the two XSPROBE.LOGs without info and Gettime
+                                                lines (display only): only T10-T28 differ
+  SEED-EMUTOS-tt, -tt-repeat, -falcontc         X01 yes
+  SEED-NEWTOS-raspi4b, -repeat                  X01 no (hz_200 3024, random 91cc67 = seed from
+                                                frame_clock 908, both runs)
+  HIGH-EMUTOS-tt                                 H01: Gettime = Hatari host clock (no write taken)
+  HIGH-NEWTOS-raspi4b, -repeat                   H01 ret=8ccf6000 hi=00000000 negative-as-long=no
+
+CARDS / IMAGES
+  Every NewTOS run card: tools/mkcard.sh defaults (64 MiB, MBR + FAT16); manifests copied as
+  <run>/db.img.manifest or <run>/card.img.manifest, image sha256 before/after in each probe run dir,
+  after in each DUMPBIOS run dir. optional_missing line of every manifest, verbatim (all identical):
+    optional_missing none
+  Cards deleted after the logs were copied (mcopy). No EmuTOS disk image (program drive = Hatari GEMDOS
+  drive C:; no disk call in scope).
+
+NOT VERIFIED
+  Real Raspberry Pi 4; NewTOS-side argument arrival (no tracer at 3d74514b); Gettime after Settime on
+  the oracle (Hatari's RTC takes no write); the oracle's answer for a Gettime value with bit 31 set;
+  EmuTOS' no-RTC and no-NVRAM branches (no pinned profile without RTC/NVRAM); Cursconf 0-3 on screen;
+  Protobt with a NULL or unmapped buffer (EmuTOS writes low memory).
+
+FILES
+  manifest.sha256 covers every file of this run except itself.

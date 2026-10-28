@@ -1,0 +1,59 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps gettime --down`
+deps gettime --down (kinds asm,direct,layer,table): 50 functions besides gettime
+depth	function	layer	reached over	newtos
+0	gettime	bios	-	tos-api/src/gemdos/time.rs@xbios_gettime
+1	icdgetdt	bios	gettime -> icdgetdt [direct]	-
+1	igetdt	bios	gettime -> igetdt [direct]	-
+1	mgetdt	bios	gettime -> mgetdt [direct]	-
+1	monstergetdt	bios	gettime -> monstergetdt [direct]	-
+1	ngetdt	bios	gettime -> ngetdt [direct]	-
+1	ultrasatan_getdt	bios	gettime -> ultrasatan_getdt [direct]	-
+2	acsi_ioctl	bios	ultrasatan_getdt -> acsi_ioctl [direct]	-
+2	bcd2int	bios	monstergetdt -> bcd2int [direct]	-
+2	icdgetdate	bios	icdgetdt -> icdgetdate [direct]	-
+2	icdgetregs	bios	icdgetdt -> icdgetregs [direct]	-
+2	icdgettime	bios	icdgetdt -> icdgettime [direct]	-
+2	idogetdate	bios	igetdt -> idogetdate [direct]	-
+2	idogettime	bios	igetdt -> idogettime [direct]	-
+2	igetregs	bios	igetdt -> igetregs [direct]	-
+2	mdogetdate	bios	mgetdt -> mdogetdate [direct]	-
+2	mdogettime	bios	mgetdt -> mdogettime [direct]	-
+2	memcmp	ext	ultrasatan_getdt -> memcmp [direct]	
+2	mgetregs	bios	mgetdt -> mgetregs [direct]	-
+2	nvram_getregs	bios	ngetdt -> nvram_getregs [direct]	-
+2	read_ds1307	bios	monstergetdt -> read_ds1307 [direct]	-
+3	acsi_capacity	bios	acsi_ioctl -> acsi_capacity [direct]	-
+3	acsi_inquiry	bios	acsi_ioctl -> acsi_inquiry [direct]	-
+3	acsi_testunit	bios	acsi_ioctl -> acsi_testunit [direct]	-
+3	get_nvram_rtc	bios	nvram_getregs -> get_nvram_rtc [direct]	-
+3	i2c_read	bios	read_ds1307 -> i2c_read [direct]	-
+3	i2c_start	bios	read_ds1307 -> i2c_start [direct]	-
+3	i2c_stop	bios	read_ds1307 -> i2c_stop [direct]	-
+3	i2c_write	bios	read_ds1307 -> i2c_write [direct]	-
+3	icd_clock_begin	bios	icdgetregs -> icd_clock_begin [direct]	-
+3	icd_clock_end	bios	icdgetregs -> icd_clock_end [direct]	-
+3	ikbdws	bios	igetregs -> ikbdws [direct]	tos-api/src/xbios/system.rs@ikbdws
+3	inline_strcpy	include	acsi_ioctl -> inline_strcpy [direct]	
+3	ultrasatan_get_clock	bios	acsi_ioctl -> ultrasatan_get_clock [direct]	-
+3	ultrasatan_get_running_firmware	bios	acsi_ioctl -> ultrasatan_get_running_firmware [direct]	-
+3	ultrasatan_set_clock	bios	acsi_ioctl -> ultrasatan_set_clock [direct]	-
+4	bzero_nobuiltin	ext	acsi_capacity -> bzero_nobuiltin [direct]	
+4	ikbd_writeb	bios	ikbdws -> ikbd_writeb [direct]	-
+4	send_command	bios	acsi_capacity -> send_command [direct]	-
+5	acsi_begin	bios	send_command -> acsi_begin [direct]	-
+5	acsi_end	bios	send_command -> acsi_end [direct]	-
+5	bcostat4	bios	ikbd_writeb -> bcostat4 [direct]	-
+5	calculate_repeat	bios	send_command -> calculate_repeat [direct]	-
+5	dma_send_byte	bios	send_command -> dma_send_byte [direct]	-
+5	flush_data_cache	bios	send_command -> flush_data_cache [direct]	-
+5	hdc_start_dma	bios	send_command -> hdc_start_dma [direct]	-
+5	invalidate_data_cache	bios	send_command -> invalidate_data_cache [direct]	-
+5	memcpy	ext	send_command -> memcpy [direct]	
+5	set_dma_addr	bios	send_command -> set_dma_addr [direct]	-
+5	stop_until_interrupt	ext	send_command -> stop_until_interrupt [direct]	
+5	timeout_gpip	bios	send_command -> timeout_gpip [direct]	-
+
+table edges inside the set (0):
+
+layer edges inside the set (0):

@@ -1,0 +1,20 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps settime --up`
+deps settime --up (kinds asm,direct,layer,table): 6 functions besides settime
+depth	function	layer	reached over	newtos
+0	settime	bios	-	tos-api/src/gemdos/time.rs@xbios_settime
+1	xbiostrap	bios	xbiostrap -> settime [table xbios_vecs[0x16]]	tos-api/src/xbios/mod.rs@dispatch
+1	xsetdate	bdos	xsetdate -> settime [layer trap #14 0x16 xbios_vecs[0x16] via xbios_v_l]	tos-api/src/gemdos/time.rs@tsetdate
+1	xsettime	bdos	xsettime -> settime [layer trap #14 0x16 xbios_vecs[0x16] via xbios_v_l]	tos-api/src/gemdos/time.rs@tsettime
+2	biostrap	bios	biostrap -> xbiostrap [asm jra biosxbios]	tos-api/src/bios/mod.rs@dispatch
+2	osif	bdos	osif -> xsetdate [table funcs[0x2b]]	tos-api/src/bdos/fs/file.rs@resolve tos-api/src/gemdos/console.rs@device_read tos-api/src/gemdos/console.rs@device_write tos-api/src/gemdos/console.rs@redirect_to_file tos-api/src/gemdos/mod.rs@dispatch tos-api/src/gemdos/mod.rs@dispatch_inner
+3	enter	bdos	enter -> osif [asm jsr]	tos-api/src/gemdos/mod.rs@dispatch
+
+table edges inside the set (3):
+funcs[0x2b]	osif -> xsetdate	bdos/bdosmain.c:233
+funcs[0x2d]	osif -> xsettime	bdos/bdosmain.c:235
+xbios_vecs[0x16]	xbiostrap -> settime	bios/xbios.c:1312
+
+layer edges inside the set (2):
+trap #14 0x16 xbios_vecs[0x16] via xbios_v_l	xsetdate -> settime	bdos/time.c:122
+trap #14 0x16 xbios_vecs[0x16] via xbios_v_l	xsettime -> settime	bdos/time.c:150

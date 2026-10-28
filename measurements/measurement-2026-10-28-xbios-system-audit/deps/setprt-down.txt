@@ -1,0 +1,9 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps setprt --down`
+deps setprt --down (kinds asm,direct,layer,table): 0 functions besides setprt
+depth	function	layer	reached over	newtos
+0	setprt	bios	-	tos-api/src/xbios/system.rs@setprt
+
+table edges inside the set (0):
+
+layer edges inside the set (0):

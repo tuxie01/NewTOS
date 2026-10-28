@@ -1,0 +1,15 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps cursconf --down`
+deps cursconf --down (kinds asm,direct,layer,table): 6 functions besides cursconf
+depth	function	layer	reached over	newtos
+0	cursconf	bios	-	tos-api/src/vdi/escape.rs@cursconf tos-api/src/xbios/screen.rs@cursconf
+1	cursor_off	bios	cursconf -> cursor_off [direct]	tos-api/src/vdi/escape.rs@cursor_off
+1	cursor_on	bios	cursconf -> cursor_on [direct]	tos-api/src/vdi/escape.rs@cursor_on
+2	do_cnt_esce	bios	cursor_on -> do_cnt_esce [direct]	tos-api/src/vdi/escape.rs@do_cnt_esce
+2	invert_cell	bios	cursor_off -> invert_cell [direct]	-
+3	cell_addr	bios	invert_cell -> cell_addr [direct]	-
+3	neg_cell	bios	invert_cell -> neg_cell [direct]	tos-api/src/vdi/escape.rs@neg_cell
+
+table edges inside the set (0):
+
+layer edges inside the set (0):

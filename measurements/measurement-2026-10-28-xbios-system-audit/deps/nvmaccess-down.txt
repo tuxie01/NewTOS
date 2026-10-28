@@ -1,0 +1,12 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps nvmaccess --down`
+deps nvmaccess --down (kinds asm,direct,layer,table): 3 functions besides nvmaccess
+depth	function	layer	reached over	newtos
+0	nvmaccess	bios	-	-
+1	compute_sum	bios	nvmaccess -> compute_sum [direct]	-
+1	get_sum	bios	nvmaccess -> get_sum [direct]	-
+1	set_sum	bios	nvmaccess -> set_sum [direct]	-
+
+table edges inside the set (0):
+
+layer edges inside the set (0):

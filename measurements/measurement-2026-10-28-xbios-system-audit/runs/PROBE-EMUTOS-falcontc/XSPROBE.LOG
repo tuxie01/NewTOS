@@ -1,0 +1,167 @@
+T00 info Gettime-at-start=5d5c622a 2026-10-28 12:17:20
+T00 info Tget-at-start=5d5c622c 2026-10-28 12:17:24
+T00 Gettime-vs-Tget differ
+P01 zero sector exec=1 sum=1234 cksum=1234
+P02 executable exec=-1 sum=1234
+P03 exec=0 sum=1235 cksum=1235
+P04 non-executable exec=-1 sum=1235
+P05 executable then (0x123456,3,-1) sum=1234
+P05 bytes 00 00 00 00 00 00 00 00 56 34 12 00 02 02 01 00 02 70 00 a0 05 f9 05 00 09 00 02 00 00 00 00 00
+P06 executable exec=-32768 sum=1234
+P07 odd buffer sum=1234
+P07 bytes 00 00 00 00 00 00 00 00 56 34 12 00 02 02 01 00 02 70 00 d0 02 f9 05 00 09 00 01 00 00 00 00 00
+P07 byte-before=00 byte-after=00
+P08 Random,Protobt(random serial),Random one LCG chain: yes
+P08 info seeds=32
+P08 bytes-0..7-untouched=yes sum=1235
+R01 1000 values, bits 24..31 set in 0, high half set in 0
+R02 10 consecutive values from one LCG seed: yes
+R02 info seeds=32
+R03 two consecutive values differ: yes
+C00 info blink-rate-at-start=30
+C01 Cursconf(4,7) ret.w=0000
+C02 Cursconf(5,0) after 7 ret.w=0007
+C03 Cursconf(4,0x1FF) ret.w=0000
+C04 Cursconf(5,0) after 0x1FF ret.w=00ff
+C05 Cursconf(5,0) after 0x80 ret.w=0080
+C06 Cursconf(5,0) after -1 ret.w=00ff
+C07 Cursconf(5,0) after 0 ret.w=0000
+C08 Cursconf(2,0) flash off ret.w=0000
+C09 Cursconf(3,0) flash on ret.w=0000
+C10 Cursconf(1,0) show ret.w=0000
+C11 Cursconf(0,0) hide ret.w=0000
+C12 Cursconf(6,5) ret.w=0000
+C13 Cursconf(-1,5) ret.w=0000
+C14 Cursconf(0x7FFF,5) ret.w=0000
+C15 Cursconf(-32768,5) ret.w=0000
+C16 Cursconf(5,0) unchanged by 6/-1/.. ret.w=0000
+C17 restored=yes
+S00 info word-at-start=0000
+S01 Setprt(0x1234) ret.w=0000
+S02 Setprt(-1) after 0x1234 ret.w=1234
+S03 Setprt(-2) ret.w=1234
+S04 Setprt(-1) after -2 (LONG view) ret=fffffffe hi=ffffffff
+S05 Setprt(-32768) ret.w=fffe
+S06 Setprt(-1) after -32768 ret.w=8000
+S07 Setprt(0) ret.w=8000
+S08 Setprt(-1) after 0 ret.w=0000
+S09 restored=yes
+T01 set=2a4320a3 2001-02-03 04:05:06
+T01 Tget=2a4320a3 2001-02-03 04:05:06
+T01 Gettime=5d5c622a 2026-10-28 12:17:20
+T01 Gettime.hi=00000000
+T02 set=2a4320a3 2001-02-03 04:05:06
+T02 Tget-after-change=2a4320a4 2001-02-03 04:05:08
+T02 Gettime-after-change=5d5c622b 2026-10-28 12:17:22
+T02 info ticks=335
+T03 set=2a43bf7d 2001-02-03 23:59:58
+T03 Tget-after-change=2a440000 2001-02-04 00:00:00
+T03 Gettime-after-change=5d5c622b 2026-10-28 12:17:22
+T03 info ticks=400
+T04 set=285cbf7d 2000-02-28 23:59:58
+T04 Tget-after-change=285d0000 2000-02-29 00:00:00
+T04 Gettime-after-change=5d5c622b 2026-10-28 12:17:22
+T04 info ticks=400
+T05 set=2a5cbf7d 2001-02-28 23:59:58
+T05 Tget-after-change=2a610000 2001-03-01 00:00:00
+T05 Gettime-after-change=5d5c622c 2026-10-28 12:17:24
+T05 info ticks=400
+T06 set=2b9fbf7d 2001-12-31 23:59:58
+T06 Tget-after-change=2c210000 2002-01-01 00:00:00
+T06 Gettime-after-change=5d5c622c 2026-10-28 12:17:24
+T06 info ticks=400
+T07 set=ef9fbf7d 2099-12-31 23:59:58
+T07 Tget-after-change=f0210000 2100-01-01 00:00:00
+T07 Gettime-after-change=5d5c622d 2026-10-28 12:17:26
+T07 info ticks=400
+T08 set=ff9fbf7d 2107-12-31 23:59:58
+T08 Tget-after-change=00210000 1980-01-01 00:00:00
+T08 Gettime-after-change=5d5c622d 2026-10-28 12:17:26
+T08 info ticks=400
+T10 set=2a43c800 2001-02-03 25:00:00
+T10 Tget=2a43c800 2001-02-03 25:00:00
+T10 Gettime=5d5c622d 2026-10-28 12:17:26
+T10 Gettime.hi=00000000
+T11 set=2a43ffff 2001-02-03 31:63:62
+T11 Tget=2a43ffff 2001-02-03 31:63:62
+T11 Gettime=5d5c622d 2026-10-28 12:17:26
+T11 Gettime.hi=00000000
+T12 set=2a4327a0 2001-02-03 04:61:00
+T12 Tget=2a4327a0 2001-02-03 04:61:00
+T12 Gettime=5d5c622d 2026-10-28 12:17:26
+T12 Gettime.hi=00000000
+T13 set=2a4320be 2001-02-03 04:05:60
+T13 Tget=2a4320be 2001-02-03 04:05:60
+T13 Gettime=5d5c622d 2026-10-28 12:17:26
+T13 Gettime.hi=00000000
+T14 set=2a4320bf 2001-02-03 04:05:62
+T14 Tget=2a4320bf 2001-02-03 04:05:62
+T14 Gettime=5d5c622d 2026-10-28 12:17:26
+T14 Gettime.hi=00000000
+T15 set=2ba320a3 2001-13-03 04:05:06
+T15 Tget=2ba320a3 2001-13-03 04:05:06
+T15 Gettime=5d5c622d 2026-10-28 12:17:26
+T15 Gettime.hi=00000000
+T16 set=2be320a3 2001-15-03 04:05:06
+T16 Tget=2be320a3 2001-15-03 04:05:06
+T16 Gettime=5d5c622d 2026-10-28 12:17:26
+T16 Gettime.hi=00000000
+T17 set=2a0020a3 2001-00-00 04:05:06
+T17 Tget=2a0020a3 2001-00-00 04:05:06
+T17 Gettime=5d5c622d 2026-10-28 12:17:26
+T17 Gettime.hi=00000000
+T18 set=2a5e20a3 2001-02-30 04:05:06
+T18 Tget=2a5e20a3 2001-02-30 04:05:06
+T18 Gettime=5d5c622d 2026-10-28 12:17:26
+T18 Gettime.hi=00000000
+T19 set=2a5d20a3 2001-02-29 04:05:06
+T19 Tget=2a5d20a3 2001-02-29 04:05:06
+T19 Gettime=5d5c622d 2026-10-28 12:17:26
+T19 Gettime.hi=00000000
+T20 set=2a9f20a3 2001-04-31 04:05:06
+T20 Tget=2a9f20a3 2001-04-31 04:05:06
+T20 Gettime=5d5c622d 2026-10-28 12:17:26
+T20 Gettime.hi=00000000
+T21 set=00000000 1980-00-00 00:00:00
+T21 Tget=00000000 1980-00-00 00:00:00
+T21 Gettime=5d5c622d 2026-10-28 12:17:26
+T21 Gettime.hi=00000000
+T22 set=ffffffff 2107-15-31 31:63:62
+T22 Tget=ffffffff 2107-15-31 31:63:62
+T22 Gettime=5d5c622d 2026-10-28 12:17:26
+T22 Gettime.hi=00000000
+T23 set=2a43bf7f 2001-02-03 23:59:62
+T23 Tget-after-change=2a43bf80 2001-02-03 23:60:00
+T23 Gettime-after-change=5d5c622e 2026-10-28 12:17:28
+T23 info ticks=378
+T24 set=2a4320bf 2001-02-03 04:05:62
+T24 Tget-after-change=2a4320c0 2001-02-03 04:06:00
+T24 Gettime-after-change=5d5c622e 2026-10-28 12:17:28
+T24 info ticks=400
+T25 set=2a43c800 2001-02-03 25:00:00
+T25 Tget-after-change=2a43c801 2001-02-03 25:00:02
+T25 Gettime-after-change=5d5c622e 2026-10-28 12:17:28
+T25 info ticks=400
+T26 set=2a4327bd 2001-02-03 04:61:58
+T26 Tget-after-change=2a4327c0 2001-02-03 04:62:00
+T26 Gettime-after-change=5d5c622f 2026-10-28 12:17:30
+T26 info ticks=400
+T27 set=2a5ebf7d 2001-02-30 23:59:58
+T27 Tget-after-change=2a610000 2001-03-01 00:00:00
+T27 Gettime-after-change=5d5c622f 2026-10-28 12:17:30
+T27 info ticks=400
+T28 set=2a0020a3 2001-00-00 04:05:06
+T28 Tget-after-change=2a0020a4 2001-00-00 04:05:08
+T28 Gettime-after-change=5d5c6230 2026-10-28 12:17:32
+T28 info ticks=400
+T30 Tsettime(10:20:30) ret=00000000 hi=00000000
+T30 Gettime=5d5c6230 2026-10-28 12:17:32
+T31 Tsetdate(2002-03-04) ret=00000000 hi=00000000
+T31 Gettime=5d5c6230 2026-10-28 12:17:32
+T32 Tsettime(24:00:00) invalid ret=ffffffff hi=ffffffff
+T32 Gettime=5d5c6230 2026-10-28 12:17:32
+T33 Tsetdate(2001-02-29) invalid ret=ffffffff hi=ffffffff
+T33 Gettime=5d5c6230 2026-10-28 12:17:32
+T99 info restored-to=5d5c6237 2026-10-28 12:17:46
+T99 info Gettime-after-restore=5d5c6230 2026-10-28 12:17:32
+END

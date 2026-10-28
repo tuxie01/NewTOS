@@ -1,0 +1,9 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps random --down`
+deps random --down (kinds asm,direct,layer,table): 0 functions besides random
+depth	function	layer	reached over	newtos
+0	random	bios	-	tos-api/src/xbios/system.rs@random
+
+table edges inside the set (0):
+
+layer edges inside the set (0):
