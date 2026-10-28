@@ -1,6 +1,6 @@
 # BIOS12 — Spec `docs/api/bios/` (`Setexc`, `Kbshift`) widerspricht Code und EmuTOS-Quelle
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
+Status: **SPEC BERICHTIGT** 2026-10-28, Entscheidungen beim Anwender (D1–D3 `Setexc`, D1 `Kbshift`) · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
 
 ## Sachverhalt
 
@@ -18,3 +18,15 @@ Status: **OFFEN** · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheid
 
 - Jede korrigierte Aussage ist belegt; kein Eintrag widerspricht mehr `bios-core-r1.tsv` 46–62 oder Sonde K01–K13.
 - `cargo xtask test` gruen (unveraendert); `cargo xtask doc-check` der geaenderten Doku 0 Fehler.
+
+## Stand 2026-10-28
+
+- `docs/api/bios/05-setexc.md` und `docs/api/bios/0b-kbshift.md` berichtigt
+  (`[BIOS12]`): drei Bereiche im Pi-Binding von `Setexc` (Schatten < 0x120,
+  Seite 0 bis 0x1FF vorzeichenerweitert, ab 0x200 Rueckgabe 0); `etv_term` wird
+  gerufen; ADR-031-Tabelle; `etv_timer` steht bei EmuTOS nach dem Start auf
+  `tikfrk` (`references/emutos/bdos/time.c:167`), nicht auf `just_rts`;
+  `Kbshift`-Bits 5/6 auf jeder Maschine, Bit 7 wird behalten.
+- Offene Entscheidungen (in den Spec-Dateien): `Setexc` D1 Rueckgabebreite,
+  D2 `num >= 0x200`, D3 Schatten gegen Seite 0 (speist [BIOS07](BIOS07.md));
+  `Kbshift` D1 Speicherung von Bit 5–7 (speist [BIOS10](BIOS10.md)).

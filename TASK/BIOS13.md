@@ -23,3 +23,10 @@ Dokument- und Regelbefunde, die keiner Funktion gehoeren (alle S4, MEASURED; Bel
 
 - Jede korrigierte Aussage ist belegt; die drei Ledger-Eintraege nennen Tabelle, Faellezahl und CRC (`C056A3E0`, `5C3A5F7A`, `3944A677`).
 - `cargo xtask test` gruen (unveraendert); kein vorher gleicher tosdump-Fall weicht neu ab; `cargo xtask doc-check` der geaenderten Doku 0 Fehler.
+
+## Nachtrag 2026-10-28 (aus BIOS12)
+
+- `tos-api/src/bios/vectors.rs`: Kommentare zu `ETV_DEFAULT_JUST_RTS` nennen
+  `just_rts` auch fuer `etv_timer`; EmuTOS setzt dort `tikfrk`.
+- `docs/api/bios/_state.md:292` verweist auf veraltete Zeilen in `vectors.rs`.
+- `TASK/MEM12.md`: die `Setexc`-Fallzeile nennt „jede Zelle < 0x800“.

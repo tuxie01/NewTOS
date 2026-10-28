@@ -2,6 +2,8 @@
 
 > Phase 00 spec (full-contract template). Source: EmuTOS @ `1a7484ab`.
 > Verified against `bios/bios.c:1070` (`setexc`).
+> [BIOS12] 2026-10-28: Pi binding, edge case 5 and the hook notes corrected
+> from EmuTOS and the audit measurements (`measurements/measurement-2026-10-28-bios-core-audit/RUNINFO.TXT`).
 
 ## EmuTOS source
 
@@ -133,21 +135,51 @@ error.
 
 4. **The standard TOS system-vector numbers** (via `4*num`): `0x100`=etv_timer
    (`0x400`), `0x101`=etv_critic (`0x404`), `0x102`=etv_term (`0x408`). AES
-   installs its own via these. (The prior spec listed these offsets
-   inconsistently; corrected here from `tosvars.ld:33-35`.)
+   installs its own via these. (`tosvars.ld:33-35`.)
 
-5. **The `etv_*` hooks have real, non-zero default handlers at boot, not
-   NULL (gap filled this pass).** `bios_init()` sets `etv_timer = just_rts`,
-   `etv_critic = default_etv_critic`, `etv_term = just_rts`
-   (`bios/bios.c:360-362`) *before* GEMDOS/AES ever run. So `Setexc(0x100,
-   -1)` / `Setexc(0x102, -1)` at any point after boot return the address of
-   the no-op `just_rts` stub — never `0` — and `Setexc(0x101, -1)` returns
-   `default_etv_critic` (`bios/vectors.S:823-826`), which just extracts the
-   error code passed on the stack and returns it in D0 — a real, callable
-   passthrough handler, not a null pointer. A conforming implementation must
-   not treat "unset" as `0`;
-   the query-before-install idiom (`old = Setexc(n, -1)`) always yields a
-   valid, callable address to chain to.
+5. **The `etv_*` hooks have real, non-zero default handlers, not NULL.**
+   `bios_init()` sets `etv_timer = just_rts`, `etv_critic =
+   default_etv_critic`, `etv_term = just_rts` (`bios/bios.c:360-362`).
+   `default_etv_critic` (`bios/vectors.S:823-828`) loads the error code from
+   `4(sp)`, sign-extends it and returns it in D0.
+   **[BIOS12] correction:** `etv_timer` does **not** keep `just_rts`. GEMDOS
+   `time_init()` (`bdos/bdosmain.c:343`, from `osinit_after_xmaddalt`)
+   overwrites it with `tikfrk` (`bdos/time.c:167`), the static BDOS clock
+   ticker (`bdos/time.c:175`). So after boot `Setexc(0x100, -1)` returns the
+   address of `tikfrk`, not of `just_rts`; `etv_critic` and `etv_term` keep
+   `default_etv_critic` / `just_rts`. (Read from code; that `bdosmain` runs
+   after `bios_init` is inferred from the boot order, not traced. The
+   measurement only shows the three values are TOS addresses, not which
+   ones.) The earlier text here (and `vectors.rs` comments) said `etv_timer`
+   is `just_rts`: wrong for a running system. A conforming implementation
+   must not treat "unset" as `0`; the query-before-install idiom always
+   yields a callable address to chain to.
+
+6. **[BIOS12] Who calls the hooks in EmuTOS (contract-relevant callers).**
+   - `etv_timer`: the Timer-C handler calls it every 20 ms with the tick
+     length in ms (`timer_ms`, a WORD) on the stack, all registers saved
+     (`bios/vectors.S:540-544`). Measured: a hook counts 100 calls over 400
+     `_hz_200` ticks on EmuTOS TT and Falcon (Sonde T01).
+   - `etv_critic`: `call_etv_critic(err_dev)` pushes the LONG `error code ||
+     device`, preloads D0 = -1, calls the hook and restores D2/A2
+     (`bios/vectors.S:807-821`); callers `bios/blkdev.c:521,628,808`
+     (logical requests only, `bios/blkdev.c:520`).
+   - `etv_term`: `xterm()` itself reads it with `Setexc(0x102, -1)` and calls
+     it through `protect_v` before any teardown, no arguments, D2/A2 kept
+     (`bdos/proc.c:606-607`, `util/miscasm.S:213-220`).
+
+7. **[BIOS12] Page-0 cells are plain memory, not "hooks".** `0x103` is
+   `etv_xtra` at `$40C` (`tosvars.ld:36`, "unused"); `$420` is `memvalid`
+   (`tosvars.ld:38`). There are no "GEM hooks to `$047F`" in EmuTOS: `$40C-$47F`
+   are ordinary system variables. `Setexc(0x108, -1)` returns the LONG
+   `memvalid`, measured `0x752019F3` on EmuTOS (`bios-core-r1` case 59,
+   `bios-core-r1.tsv`, row at file line 59; Sonde S08). `$5A0/$5A4/$5A8`
+   (`0x168-0x16A`: `_p_cookies`, `ramtop`, `ramvalid`) are read the same way
+   (cases 60-62).
+
+8. **[BIOS12] Return width.** `setexc` returns `LONG` (32 bit) read from a
+   32-bit cell (`bios/bios.c:1070-1080`). A 64-bit return of such a value is a
+   NewTOS choice, see "Open decisions".
 
 ---
 
@@ -200,7 +232,8 @@ None. Identical across all EmuTOS builds and TOS versions.
 
 (Empty during Phase 00.)
 
-PHASE-06: NewTOS keeps a software "m68k vector shadow" at virtual `0..0x400`
+[BIOS12] stale; see "Pi / BCM2711 binding" for the current state.
+PHASE-06 (history): NewTOS keeps a software "m68k vector shadow" at virtual `0..0x400`
 for m68k binaries; native AArch64 handlers consult the shadow for
 m68k-emulated hooks (etv_term etc.). For native source ports the etv_* hooks
 are reached by name, not by poking `4*num`.
@@ -216,51 +249,111 @@ are reached by name, not by poking `4*num`.
 > previous value) is unchanged; only the backing store is re-pointed here. See
 > `docs/HARDWARE-PROFILE.md` §3.8, §3.9.
 
-### There is no 68k vector page — `Setexc` is a software shadow
+### There is no 68k vector page; `Setexc` is a software shadow plus page 0
 
-AArch64 has **no flat `4*num` vector page**. Exceptions are dispatched through
-`VBAR_EL1` (a 2 KiB, 16-entry vector table set up in
-`kernel/src/arch/aarch64/exceptions.rs`), and hardware interrupts come from the
-GIC-400 (GICv2), not from the MFP/GLUE. NewTOS therefore keeps a **software
-shadow** of the m68k vector table in `tos-api/src/bios/vectors.rs`: a
-`[AtomicI64; NVEC]` array (`vectors.rs:22`) that `Setexc` reads/writes.
+AArch64 has **no flat `4*num` vector page**. Exceptions go through `VBAR_EL1`
+(`kernel/src/arch/aarch64/exceptions.rs`) and interrupts come from the
+GIC-400, not from the MFP/GLUE. [BIOS12] corrected: the code today
+(`tos-api/src/bios/vectors.rs:98@setexc`) has **three regimes**, not two:
 
-| Property | Value | Source |
-|----------|-------|--------|
-| Shadow size `NVEC` | `0x120` entries (the 256-LONG m68k vector page + `etv_*`/GEM hooks above `$0400`) | `vectors.rs:21` |
-| Entry width | `i64` (native handler addresses are 64-bit) | `vectors.rs:22` |
-| Out-of-range `num` (`>= NVEC`) | returns `0`, **no write** (safer than m68k, which clobbers low memory) | `vectors.rs:38-40` |
-| `vector == -1` | query only — returns old, no store | `vectors.rs:42-44` |
+| `num` (as `usize` of the `WORD`) | Behaviour today | Source |
+|---|---|---|
+| `< NVEC` (`0x120`) | software shadow `VECTORS[num]`, `AtomicI64`; `-1` queries, any other value stored; old value returned in full 64 bit | `tos-api/src/bios/vectors.rs:21@NVEC`, `tos-api/src/bios/vectors.rs:56@VECTORS`, `tos-api/src/bios/vectors.rs:98@setexc` |
+| `NVEC <= num < 0x200` | peek/poke of the 4-byte cell `4*num` in the calling process's page 0 (kernel alias; without a process, a faulting-safe user access); old value returned **sign-extended** `as i32 as i64` | `tos-api/src/bios/vectors.rs:73@SYSVAR_NUM_LIMIT`, `tos-api/src/bios/vectors.rs:124@old`, `tos-api/src/bios/vectors.rs:131@read_unaligned` |
+| `>= 0x200` | returns `0`, no access (EmuTOS reads/writes RAM there) | `tos-api/src/bios/vectors.rs:98@setexc` (final `0`) |
+
+[BIOS12] The earlier row "out-of-range `num` (`>= NVEC`) returns 0" was stale
+since the page-0 branch (B1) and is replaced by the table. Contract status:
+
+- `NVEC` has no basis in EmuTOS. The justification "etv_* / GEM hooks up to
+  `$047F`" is wrong (item 7 above): `$40C-$47F` are system variables, and the
+  shadow makes `Setexc(0x103..0x11F, -1)` return 0 instead of the variable
+  (BIOS-CORE-006, case 59: EmuTOS `0x752019F3`, NewTOS `0`, measured on both
+  profiles; fix is [BIOS07](../../../TASK/BIOS07.md)). Case 58 (`$40C`) is
+  0 on both.
+- `etv_*` shadow values today are the opaque 64-bit tokens
+  `0x4E75_0000_0000_0000` and `0x4372_6974_0000_0000`
+  (`tos-api/src/bios/vectors.rs:45@ETV_DEFAULT_JUST_RTS`,
+  `tos-api/src/bios/vectors.rs:54@ETV_DEFAULT_CRITIC`), not TOS addresses
+  (measured, Sonde S01-S03; `bios-core-r1` 55-57 PTR_RAM DIFF). CPU vectors
+  that nobody installed read 0 (cases 46-54 DIFF; `bios-r1` 53/54 NONZERO
+  DIFF). EmuTOS returns real addresses for all of them (`bios/bios.c:1073-1074`).
+  **Target** (EmuTOS, not yet implemented): non-zero TOS address < 2 GiB
+  (MEM11 invariant) for every queried vector.
+- Install/restore cycle is equal on both systems (Sonde S04/S05: new value
+  arrives whole, restore returns the previous value).
 
 ### Canonical hook vector numbers (unchanged from the contract)
 
-The `etv_*` system hooks keep their `4*num` addresses / `num` values as the
-contract; NewTOS shadows them at these indices (`vectors.rs:27-29`):
+| `Setexc` num | m68k addr | Symbol | Meaning | EmuTOS default after boot |
+|-------------:|-----------|--------|---------|---------------------------|
+| `0x100` | `$0400` | `etv_timer` | 20 ms system tick hook | `tikfrk` (`bdos/time.c:167`) |
+| `0x101` | `$0404` | `etv_critic` | critical-error handler | `default_etv_critic` (`bios/bios.c:361`) |
+| `0x102` | `$0408` | `etv_term` | process-terminate hook | `just_rts` (`bios/bios.c:362`) |
 
-| `Setexc` num | m68k addr | Symbol | Meaning |
-|-------------:|-----------|--------|---------|
-| `0x100` | `$0400` | `ETV_TIMER` | 20 ms system tick hook |
-| `0x101` | `$0404` | `ETV_CRITIC` | critical-error handler |
-| `0x102` | `$0408` | `ETV_TERM` | process-terminate hook |
+### What NewTOS serves (ADR-031, `docs/MEMORY.md`, "ADR-031: OS hooks installed by programs")
 
-| Atari reference | Pi-4 model today |
-|-----------------|------------------|
-| `4*num` LONG in physical low RAM | `VECTORS[num]` atomic entry (a kernel struct, no fixed VA) |
-| CPU exception vectors `0..0xFF` | shadowed but **not dispatched** by the native EL1 handlers (kept for the future m68k userland) |
-| MFP timer-C / GLUE IRQ vectors | replaced by GIC-400 + `VBAR_EL1`; the `etv_*` hooks are logical, invoked by name |
-| Installing a vector changes CPU dispatch | installing a shadow entry changes nothing until a NewTOS code path calls `vectors::vector(num)` |
+Decision text, not code reading: hooks NewTOS does not serve are reported by
+one warning per hook and process; never silent.
 
-### Gaps vs. the contract (Step-2 candidates)
+| Hook | NewTOS | Note |
+|---|---|---|
+| `etv_term` (`0x102`) | **served** | Pterm reads the shadow and delivers the handler as an EL0 upcall unless it is `0` or the non-callable boot token (`kernel/src/arch/aarch64/exceptions.rs:1385@etv`, `:1390@etv`). Corrects the earlier "Pterm does not run etv_term" |
+| `etv_timer` (`0x100`) | stored, **not served**, warning | BIOS-CORE-002 is an ACCEPTED deviation by ADR-031; measured T01: calls 100 (EmuTOS) / 0 (NewTOS) |
+| `etv_critic` (`0x101`) | stored, **not served**, warning | `Rwabs` has no critical-error retry path |
+| CPU/trap vectors `0..0xFF` | stored in the shadow, never dispatched (reserved for the m68k userland) | the EL1 handlers do not consult them |
+| page-0 hook cells written directly (`hdv_*`, `swv_vec`, `exec_os`, `dump_vec`, `resvector`) | not served; page 0 is only read to warn | ADR-031; they are not `Setexc` vectors |
 
-- **`etv_*` hooks are stored but never invoked.** `Setexc(0x100/0x101/0x102,
-  handler)` records the handler, but no NewTOS code path calls the reader
-  `vectors::vector(num)` (`vectors.rs:52-58`) — it is `#[allow(dead_code)]`.
-  So a program that installs an `etv_timer` / `etv_critic` / `etv_term` hook via
-  `Setexc` sees it **never fire**: there is no 20 ms timer IRQ dispatching
-  `etv_timer` (§ `06-tickcal.md` binding — the clock is derived on demand, not
-  tick-driven), no critical-error chain calling `etv_critic` (ties to the block
-  `Rwabs` B6 gap), and `Pterm` does not run `etv_term`. The get/set/return-old
-  contract holds; the **dispatch-through-the-vector** contract does not.
-- **CPU-exception shadow entries are inert.** Shadowing `num` in `0..0xFF` does
-  not redirect the AArch64 exception handlers; those entries exist only for the
-  deferred m68k userland.
+The accessor `vectors::vector(num)` is no longer `#[allow(dead_code)]`: it is
+read for `etv_term` (`tos-api/src/bios/vectors.rs:149@vector`).
+
+### Open decisions (NewTOS choices; no decision taken here)
+
+**D1. Width of the `Setexc` return value.** EmuTOS returns a 32-bit LONG in
+D0 (`bios/bios.c:1070-1080`). NewTOS returns `x0` (64 bit). Today: page-0
+cells are sign-extended (`tos-api/src/bios/vectors.rs:131@read_unaligned`),
+shadow entries are full 64 bit. For a page-0 cell holding a value
+`>= 0x80000000` the caller sees `0xFFFF_FFFF_8xxx_xxxx` (prediction from
+code, per `docs/analysis/lp64-tos-struct-survey-2026-10-28.md` section 2.2 and
+M3; not measured). The standard cells (`_p_cookies` etc.) are < 2 GiB, so
+nothing observable differs today.
+1. Keep sign extension. Matches m68k `D0` read as a signed LONG and a
+   `long` caller on LP64 that compares with `-1`/negative error codes;
+   a cell value >= 2 GiB looks negative.
+2. Zero-extend the 32-bit value (`as u32 as i64`). Pointers/addresses never
+   look negative; `-1` stored by a cell no longer compares equal to `-1` on
+   LP64 callers (an all-ones LONG would read `0xFFFF_FFFF`). A TOS error-style
+   use of the result is not defined for `Setexc`, so this breaks no
+   documented contract; costs a divergence from what the 68k D0 shows to a
+   `long` read.
+3. Return only the low 32 bit in `w0`, the upper half specified as 0 (same
+   as option 2 for the register, but states the width as contract). Makes
+   BIOS07's "every address < 2 GiB" the rule instead of a test.
+Consequence for BIOS07 (fix ticket): once all values are TOS addresses
+< 2 GiB the three options coincide on every queried vector, so D1 only matters
+for page-0 cells a program wrote itself.
+
+**D2. Cells at `num >= 0x200`.** EmuTOS reads/writes RAM at `4*num`
+(unchecked). Today NewTOS returns 0 and does nothing.
+1. Keep (safe; documented deviation; the audit excludes these from tables,
+   `docs/audits/2026-10-28-bios-core.md` "Setexc(n >= 0x200)").
+2. Read-only peek of the process's mapped memory, write refused.
+3. Full unchecked access: a corruption hazard on a 64-bit kernel; not
+   advisable, listed for completeness.
+
+**D3. Range of the shadow vs page 0 (BIOS07).** EmuTOS makes no distinction
+between CPU vectors, `etv_*` and variables (one memory cell per `num`).
+1. Page 0 backs all `num < 0x200` (shadow only as a cache for the
+   dispatched hooks). Matches `bios-core-r1` 46-62 and the cell semantics of
+   `TASK/MEM12.md`; needs page 0 initialised with real handler addresses.
+2. Keep the shadow for `0..0xFF` and `0x100-0x102`, route `0x103..0x1FF` to
+   page 0 (shrink `NVEC` to `0x103`). Smaller change; the shadow stays
+   64-bit for the CPU vectors, so D1 applies to them.
+3. Keep `NVEC = 0x120` (today). Contradicts case 59; listed as the status quo.
+
+### Gaps vs. the contract (open, fix tickets named)
+
+- BIOS07: NULL / token / shadow return values (above).
+- BIOS-CORE-002: `etv_timer` not dispatched (ACCEPTED, ADR-031).
+- CPU-exception shadow entries are inert: they do not redirect the AArch64
+  handlers.
