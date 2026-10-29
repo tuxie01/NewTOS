@@ -138,7 +138,7 @@ klein: unter einer Stunde plus Lauf.
 
 Zu **B** im Einzelnen — der Mechanismus ist da: `r:<len>[.B|.W|.L][@<offset>]`
 nimmt die Bytes hinter der zurueckgegebenen Adresse in die Capture
-(`tosdump/core/cases.c:3546@parse_capture`, nur mit `PTR_RAM` zulaessig;
+(`tosdump/core/cases.c:3630@parse_capture`, nur mit `PTR_RAM` zulaessig;
 `docs/TOS-REFERENCE-DUMPER.md` „Capture through the returned pointer“), nicht
 auf `!disk`-Tabellen beschraenkt. Wiederverwendbar ohne Code, **wenn** das Layout
 auf beiden Seiten gleich ist:
@@ -166,7 +166,7 @@ A schliesst die Luecke jetzt.
 
 ## 6. Befund: der Laeufer folgt dem Zeiger ohne Obergrenze (Defekt-Kandidat, nicht behoben)
 
-`tosdump/core/runner_call.c:560@TD_CALL_CAP_RET` liest hinter dem Rueckgabewert,
+`tosdump/core/runner_call.c:605@TD_CALL_CAP_RET` liest hinter dem Rueckgabewert,
 sobald er `> 0` und gerade ist — **ohne** die Grenzen von `PTR_RAM`. Bei einem
 NewTOS-Wert wie dem 64-Bit-Platzhalter `0x4E75…` (BIOS-CORE-005) oder
 `>= 0x80000000` waere das ein Datenabbruch im EL0-Dumper, der Lauf ginge verloren,

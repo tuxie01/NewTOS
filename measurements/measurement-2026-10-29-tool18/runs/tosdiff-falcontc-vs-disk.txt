@@ -1,0 +1,3 @@
+BIOS.BIN vs BIOS.BIN -- area BIOS, 22 cases from jar-r1.tsv
+
+0 of 22 cases differ

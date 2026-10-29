@@ -265,7 +265,7 @@ the comparison needs:
 | 36 | 4 | return value, **low** 32 bits of the return register (`d0` / `x0`) |
 | 40 | 256 | capture (section 6, `capture` column); what no capture wrote stays `0xDEAD` |
 | 296 | 4 | return value, **high** 32 bits of the return register: `x0` bits 63..32 on AArch64; on the m68k, whose `d0` has no high half, the sign extension of the low half — the value C's `(int64_t)(long)` gives on both targets, so the comparator always reads the return as the 64-bit value `ret_hi:ret` |
-| 300 | 2 | trap number: 13 BIOS, 14 XBIOS, 1 GEMDOS (in a BIOS-area table only `Super`, section 6) |
+| 300 | 2 | trap number: 13 BIOS, 14 XBIOS, 1 GEMDOS (in a BIOS-area table only `Super`, section 6); 256 a jar case, which issues no trap (section 6, "The cookie jar") |
 | 302 | 18 | reserved, zero |
 
 Why the high half: NewTOS returns a TOS `LONG` in a 64-bit register
@@ -1146,6 +1146,71 @@ which no user program reaches. References
 `EMUTOS-1a7484ab-BIOS-mc-<fs20|fs22|paths>-disk`,
 `measurements/measurement-2026-10-29-tool20/RUNINFO.TXT`.
 
+### The cookie jar (added 2026-10-29, TOOL18)
+
+The cookie jar is no call: a program finds it through `_p_cookies` (`$5A0`)
+and walks it. What it holds -- which tags, which values, how many, in which
+order -- is still observable, and the machine-identity decision (ADR-012 and
+its amendments, `docs/MEMORY.md`; `docs/COMPATIBILITY.md`) needs it measured
+on the pin. A call table therefore takes a second kind of case line, the
+**jar case**, in the call column instead of `<trap>:<function>`:
+
+| Line | Records | `retclass` |
+|---|---|---|
+| `jar:<TAG>` | the value of the first entry with that tag, as a `Getcookie` finds it; or *absent* | `EXACT`, `NONZERO`, `PTR_RAM`, `ABSENT` |
+| `jar:*` | the number of entries before the terminator, and their tags in jar order | `EXACT` |
+
+`<TAG>` is exactly four characters `0x21`..`0x7E`, the tag in memory order
+(`jar:_MCH` is `0x5F4D4348`). `args` and `capture` are `-`; no width suffix.
+The loader (`td_call_cases_parse`, `tosdump/core/cases.h` "Jar cases")
+refuses a jar case after a prelude, inside a `Super` bracket and after
+`Getmpb`, and `ABSENT` on a trap case.
+
+**No trap is issued**, so a jar case needs no whitelist entry. The runner
+reads the jar afresh for every jar case through the backend's `td_jar_read`
+(`tosdump/core/scrninfo.h`, the SCRNINFO probe's one copy): on the m68k in
+supervisor mode via `Supexec` (`tosdump/abi/m68k_scrninfo.c`), on NewTOS as
+a plain load of the per-process page 0 (`tosdump/abi/newtos_scrninfo.c`) --
+the address and the walk any program makes. No buffer is touched. Both
+`DUMPBIOS` builds link that backend.
+
+**The record** is the call record (section 3), its fields used as
+`tosdump/core/tosdump.h` "A JAR CASE" states:
+
+| Field | `jar:<TAG>` | `jar:*` |
+|---|---|---|
+| `trap` | 256 (`TD_CALL_TRAP_JAR`), outside the 0..255 a trap number has | 256 |
+| `opcode` | 0 | 1 |
+| `args[0]` | the tag as a LONG; the other slots `0xDEADDEAD` | all `0xDEADDEAD` |
+| `ret_hi:ret` | the value **zero-extended** (a cookie value is a 32-bit cell on both machines), or `0xFFFFFFFF_FFFFFFFF` (*absent*) | the count, or *absent* when `_p_cookies` is 0 |
+| `capture` | the poison | the tags as big-endian LONGs, at most 64; the rest the poison |
+
+A present value never has a high half, so *absent* cannot be a value -- not
+even a cookie `0xFFFFFFFF` (`_MCH` on NewTOS, `MCH_NOHARD`), which records as
+`0x00000000_FFFFFFFF`. `tosdiff` tells the two apart by the high half alone.
+
+**How `tosdiff` judges it** (`jar_check`, `tosdump/host/tosdiff.c`):
+
+| Class | The check | A failure prints |
+|---|---|---|
+| `EXACT` (`jar:<TAG>`) | present on both sides with the same value, or absent on both | `cookie EXACT <a> = 0x00020000   <b> = absent` |
+| `NONZERO`, `PTR_RAM` | on each side: present, and the class's property holds on the value (section 6, "The call table") | `cookie PTR_RAM <dump> = not in the jar` / `= 0x00000401, is odd` |
+| `ABSENT` | on each side: absent | `cookie ABSENT <dump> = 0x00000100, present` |
+| `EXACT` (`jar:*`) | the same count and the same tags in the same order; `jar:*`'s capture is not compared byte-wise | both lists, `12: _CPU _VDO …` |
+
+The case header names the cookie (`case 47  jar _MCH  …`). The self-check
+(above) applies `NONZERO`, `PTR_RAM` and `ABSENT` to the oracle alone, so a
+class that is not `EXACT` must hold on every profile the table is measured
+on. Not measured: the jar's capacity (the terminator's value).
+
+The table is `tosdump/cases/jar-r1.tsv`: `jar:*` and every tag EmuTOS names
+(`include/cookie.h:26-44`; the ones `fill_cookie_jar` adds in its order,
+`bios/machine.c:665-798`), then NewTOS's `NTOS` and `EdDI`
+(`tos-api/src/cookie.rs:223@seed_defaults`). References
+`EMUTOS-1a7484ab-BIOS-jar` (TT), `-BIOS-jar-falcontc` and `-BIOS-jar-disk`
+(profile `disk`; it touches no disk), `measurements/measurement-2026-10-29-tool18/RUNINFO.TXT`.
+A difference against NewTOS is entered in `docs/COMPATIBILITY.md`.
+
 ### Input check on NewTOS: the BIOS/XBIOS argument tracer (added 2026-10-28, TOOL08)
 
 A result comparison counts only if the arguments that **arrived** match the
@@ -1217,7 +1282,7 @@ One program per area, sharing `tosdump/core/` and one `tosdump/abi/` backend:
 |---|---|---|
 | `DUMPVDI` | VDI | build this first |
 | `DUMPAES` | AES | after VDI is clean |
-| `DUMPBIOS` | BIOS + XBIOS | `retclass` and `capture` since 2026-10-27; table `tosdump/cases/bios-r1.tsv`, ledger `tosdump/cases/COVERAGE-BIOS.md`, references `EMUTOS-1a7484ab-BIOS` (TT) and `-BIOS-falcontc`, first comparison `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`. Second table `tosdump/cases/super-r1.tsv` (`Super`/`Supexec`, section 6), references `EMUTOS-1a7484ab-SUPER` (TT) and `-SUPER-falcontc`. Disk table `tosdump/cases/bios-r2.tsv` (section 6, "The disk round"), reference `EMUTOS-1a7484ab-BIOS-r2-disk` (profile `disk`), first comparison `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`; the closing tables `bios-r2-phys.tsv`, `-x004.tsv`, `-x005.tsv`, `-x006.tsv` (section 6, "The closing tables"), references `EMUTOS-1a7484ab-BIOS-r2-<phys\|x004\|x005\|x006>-disk`, `measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT`. Structures behind a pointer (section 6, "Structures behind a pointer"): `tosdump/cases/xbios-ptr-r1.tsv` (`Iorec`, the flush, `Getmpb`), references `EMUTOS-1a7484ab-XBIOS-ptr` (TT) and `-XBIOS-ptr-falcontc`, `measurements/measurement-2026-10-29-tool16/RUNINFO.TXT`. GEMDOS after a media change (section 6, TOOL20): `tosdump/cases/gemdos-mc-fs20.tsv`, `-fs22.tsv`, `-paths.tsv`, references `EMUTOS-1a7484ab-BIOS-mc-<fs20\|fs22\|paths>-disk`, `measurements/measurement-2026-10-29-tool20/RUNINFO.TXT` |
+| `DUMPBIOS` | BIOS + XBIOS | `retclass` and `capture` since 2026-10-27; table `tosdump/cases/bios-r1.tsv`, ledger `tosdump/cases/COVERAGE-BIOS.md`, references `EMUTOS-1a7484ab-BIOS` (TT) and `-BIOS-falcontc`, first comparison `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`. Second table `tosdump/cases/super-r1.tsv` (`Super`/`Supexec`, section 6), references `EMUTOS-1a7484ab-SUPER` (TT) and `-SUPER-falcontc`. Disk table `tosdump/cases/bios-r2.tsv` (section 6, "The disk round"), reference `EMUTOS-1a7484ab-BIOS-r2-disk` (profile `disk`), first comparison `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`; the closing tables `bios-r2-phys.tsv`, `-x004.tsv`, `-x005.tsv`, `-x006.tsv` (section 6, "The closing tables"), references `EMUTOS-1a7484ab-BIOS-r2-<phys\|x004\|x005\|x006>-disk`, `measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT`. Structures behind a pointer (section 6, "Structures behind a pointer"): `tosdump/cases/xbios-ptr-r1.tsv` (`Iorec`, the flush, `Getmpb`), references `EMUTOS-1a7484ab-XBIOS-ptr` (TT) and `-XBIOS-ptr-falcontc`, `measurements/measurement-2026-10-29-tool16/RUNINFO.TXT`. GEMDOS after a media change (section 6, TOOL20): `tosdump/cases/gemdos-mc-fs20.tsv`, `-fs22.tsv`, `-paths.tsv`, references `EMUTOS-1a7484ab-BIOS-mc-<fs20\|fs22\|paths>-disk`, `measurements/measurement-2026-10-29-tool20/RUNINFO.TXT`. The cookie jar (section 6, TOOL18): `tosdump/cases/jar-r1.tsv`, references `EMUTOS-1a7484ab-BIOS-jar` (TT), `-BIOS-jar-falcontc`, `-BIOS-jar-disk`, `measurements/measurement-2026-10-29-tool18/RUNINFO.TXT` |
 | `DUMPGDOS` | GEMDOS | needs `retclass` and `capture`. Until it exists, GEMDOS behaviour that needs a measurement is a **probe**: a C program of `tosdump/probes/` with a text log, built for both sides from one source and run by its own script — `gcprobe.c` (media change, TASK/FS20; `make -C tosdump gcprobe-m68k gcprobe-newtos`, `tosdump/probes/run-gcprobe.sh`) and `pxprobe.c` (`Pexec` and `Fsfirst` after a media change, TASK/FS22; `make -C tosdump pxprobe-m68k pxprobe-newtos`, `tosdump/probes/run-pxprobe.sh`), oracle side through `tools/hatari-oracle.sh` profile `disk`. Since TOOL20 their cases are also `DUMPBIOS` tables (`gemdos-mc-*.tsv`, section 6, "GEMDOS after a media change"); the probes stay for what the tables cannot express (listed there) until their cases move to DUMPGDOS |
 
 Each writes exactly one output file, named `<AREA>.BIN`, into the current

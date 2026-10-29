@@ -2753,6 +2753,7 @@ const char *td_retclass_name(uint8_t retclass)
 	case TD_RET_NONZERO: return "NONZERO";
 	case TD_RET_HANDLE:  return "HANDLE";
 	case TD_RET_PTR_RAM: return "PTR_RAM";
+	case TD_RET_ABSENT:  return "ABSENT";
 	default:             return "?";
 	}
 }
@@ -2777,6 +2778,10 @@ static int parse_retclass(const char *s, size_t len, struct td_call_case *c,
 	for (i = 0; i < sizeof classes; i++)
 		if (span_is(s, dot, td_retclass_name(classes[i])))
 			c->retclass = classes[i];
+	if (c->retclass == 0xFF && span_is(s, dot, "ABSENT")) {
+		*why = "ABSENT is a cookie's class: jar:<TAG> lines only";
+		return TD_CASE_ERR_RETCLASS;
+	}
 	if (c->retclass == 0xFF) {
 		*why = "retclass is not EXACT, IGNORE, NONZERO, HANDLE or PTR_RAM";
 		return TD_CASE_ERR_RETCLASS;
@@ -2800,6 +2805,85 @@ static int parse_retclass(const char *s, size_t len, struct td_call_case *c,
 	}
 	if (c->retclass == TD_RET_PTR_RAM) {
 		*why = "PTR_RAM takes no width: a pointer is a LONG";
+		return TD_CASE_ERR_RETCLASS;
+	}
+	return 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Jar cases (cases.h, TASK/TOOL18)                                    */
+/* ------------------------------------------------------------------ */
+
+static int is_jar_column(const char *o, size_t olen)
+{
+	return olen >= 4 && memcmp(o, "jar:", 4) == 0;
+}
+
+/*
+ * One "jar:<TAG>" or "jar:*" line, its four value columns.  Fills the case
+ * as the runner and the comparator read it: trap TD_CALL_TRAP_JAR, opcode
+ * TD_JAR_FN_TAG / TD_JAR_FN_ALL, the tag as LONG argument 0.
+ */
+static int parse_jar_case(const char *const *col, const size_t *col_len,
+                          struct td_call_case *c, const char **why)
+{
+	const char *o = col[0], *a = col[1], *r = col[2], *k = col[3];
+	size_t olen = col_len[0], al = col_len[1], rl = col_len[2];
+	size_t kl = col_len[3], i;
+
+	trim(&o, &olen);
+	trim(&a, &al);
+	trim(&r, &rl);
+	trim(&k, &kl);
+	o += 4;                            /* "jar:" */
+	olen -= 4;
+	c->trap     = TD_CALL_TRAP_JAR;
+	c->cap_arg  = -1;
+	c->retwidth = TD_RET_WIDTH_LONG;
+	if (olen == 1 && o[0] == '*') {
+		c->opcode = TD_JAR_FN_ALL;
+	} else if (olen == 4) {
+		uint32_t tag = 0;
+
+		for (i = 0; i < 4; i++) {
+			unsigned char ch = (unsigned char)o[i];
+
+			if (ch < 0x21 || ch > 0x7E) {
+				*why = "a cookie tag is four characters 0x21..0x7E";
+				return TD_CASE_ERR_VALUE;
+			}
+			tag = (tag << 8) | ch;
+		}
+		c->opcode       = TD_JAR_FN_TAG;
+		c->nargs        = 1;
+		c->arg[0].kind  = TD_CALL_ARG_LONG;
+		c->arg[0].value = (int32_t)tag;
+	} else {
+		*why = "a jar case is jar:<TAG> (four characters) or jar:*";
+		return TD_CASE_ERR_VALUE;
+	}
+	if (!span_is(a, al, "-")) {
+		*why = "a jar case takes no arguments: its args are -";
+		return TD_CASE_ERR_SIGNATURE;
+	}
+	if (!span_is(k, kl, "-")) {
+		*why = "a jar case names no capture: jar:* records the tags "
+		       "itself, its capture is -";
+		return TD_CASE_ERR_CAPTURE;
+	}
+	if (span_is(r, rl, "EXACT"))
+		c->retclass = TD_RET_EXACT;
+	else if (c->opcode == TD_JAR_FN_TAG && span_is(r, rl, "NONZERO"))
+		c->retclass = TD_RET_NONZERO;
+	else if (c->opcode == TD_JAR_FN_TAG && span_is(r, rl, "PTR_RAM"))
+		c->retclass = TD_RET_PTR_RAM;
+	else if (c->opcode == TD_JAR_FN_TAG && span_is(r, rl, "ABSENT"))
+		c->retclass = TD_RET_ABSENT;
+	else {
+		*why = c->opcode == TD_JAR_FN_TAG
+		       ? "a cookie's retclass is EXACT, NONZERO, PTR_RAM or "
+		         "ABSENT, no width"
+		       : "jar:*'s retclass is EXACT";
 		return TD_CASE_ERR_RETCLASS;
 	}
 	return 0;
@@ -4682,6 +4766,31 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 		o = col[0];
 		olen = col_len[0];
 		trim(&o, &olen);
+
+		/* a jar case (TOOL18): it issues no trap, so it has no entry in
+		 * the whitelist -- only the rules of its own form */
+		if (!prelude && is_jar_column(o, olen)) {
+			rc = parse_jar_case(col, col_len, c, &why);
+			if (rc == 0 && pending) {
+				why = "a jar case takes no prelude: it issues no call";
+				rc = TD_CASE_ERR_DANGLING;
+			} else if (rc == 0 && (bracket_open || getmpb_line)) {
+				why = "a jar case outside a Super bracket and before "
+				      "Getmpb only: on the m68k the jar is read through "
+				      "Supexec";
+				rc = TD_CASE_ERR_UNSAFE_STATE;
+			}
+			if (rc != 0) {
+				fail(err, line_no, why);
+				return rc;
+			}
+			td_case_line_comment_n(line, line_len, TD_CALL_CASE_COLUMNS,
+			                       c->comment, TD_COMMENT_LEN);
+			c->prelude_first = t->prelude_count;
+			t->count++;
+			continue;
+		}
+
 		if (prelude) {                 /* step over the '+' */
 			o++;
 			olen--;

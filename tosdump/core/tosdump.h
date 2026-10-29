@@ -90,6 +90,8 @@
 #define TD_RET_NONZERO      2
 #define TD_RET_HANDLE       3
 #define TD_RET_PTR_RAM      4
+/* A cookie of the jar is not there (TOOL18): jar:<TAG> lines only. */
+#define TD_RET_ABSENT       5
 
 /*
  * The trap's own return value.
@@ -319,7 +321,8 @@
 #define TD_CALL_OFF_RET       36   /* u32, return register bits 31..0     */
 #define TD_CALL_OFF_CAPTURE   40   /* capture buffer                      */
 #define TD_CALL_OFF_RET_HI   296   /* u32, return register bits 63..32    */
-#define TD_CALL_OFF_TRAP     300   /* u16, 13 BIOS / 14 XBIOS / 1 GEMDOS  */
+#define TD_CALL_OFF_TRAP     300   /* u16, 13 BIOS / 14 XBIOS / 1 GEMDOS,
+                                    * 256 a jar case (below)             */
 #define TD_CALL_OFF_RESERVED 302   /* 18 bytes, zero                      */
 #define TD_CALL_RESERVED_LEN  18
 
@@ -385,6 +388,31 @@
 #define TD_RET_WIDTH_LONG     4
 #define TD_RET_WIDTH_WORD     2
 #define TD_RET_WIDTH_BYTE     1
+
+/*
+ * A JAR CASE (TASK/TOOL18; docs/TOS-REFERENCE-DUMPER.md section 6, "The
+ * cookie jar").  It issues no trap: the runner reads the cookie jar and
+ * writes the record itself, in the call record's own fields.
+ *   trap      TD_CALL_TRAP_JAR, outside 0..255, which no trap number reaches
+ *   opcode    TD_JAR_FN_TAG for "jar:<TAG>", TD_JAR_FN_ALL for "jar:*"
+ *   args[0]   jar:<TAG>: the tag as a LONG ('_MCH' = 0x5F4D4348); the other
+ *             slots, and every slot of jar:*, keep the poison
+ *   ret_hi:ret  jar:<TAG>: the cookie's value ZERO-extended -- a cookie value
+ *             is a 32-bit cell on both machines, so the high half is 0 --
+ *             or TD_JAR_ABSENT, all ones, when the tag is not in the jar;
+ *             jar:*: the number of entries before the terminator, or
+ *             TD_JAR_ABSENT when _p_cookies is 0 (no jar)
+ *   capture   jar:*: the tags in jar order, one big-endian LONG each, at
+ *             most TD_JAR_TAGS_MAX; the rest keeps the poison.  jar:<TAG>:
+ *             untouched poison.
+ * A present value never has a high half, so TD_JAR_ABSENT cannot be a
+ * value; tosdiff tells the two apart by the high half alone.
+ */
+#define TD_CALL_TRAP_JAR      256
+#define TD_JAR_FN_TAG           0
+#define TD_JAR_FN_ALL           1
+#define TD_JAR_ABSENT         0xFFFFFFFFFFFFFFFFuLL
+#define TD_JAR_TAGS_MAX      (TD_CALL_CAPTURE_LEN / 4)
 
 /*
  * A capture WITH A LAYOUT (TASK/TOOL16; docs/TOS-REFERENCE-DUMPER.md

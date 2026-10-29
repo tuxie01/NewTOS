@@ -277,6 +277,19 @@
 #define TD_STUB_PATH           "\\SUB"
 #define TD_STUB_STR_LEN        40
 
+/* The cookie jar (TASK/TOOL18) -- td_jar_read (core/scrninfo.h), which a
+ * jar case calls instead of a trap, copies td_stub_jar and counts the
+ * reads in td_stub_jar_reads.  td_stub_reset lays the default jar, in this
+ * order: _CPU 30, _MCH 0x00020000, _SWI 0x000000BF, XHDI TD_STUB_JAR_XHDI
+ * (a pointer that passes PTR_RAM), _FRB 0x401 (odd: PTR_RAM refuses it),
+ * _FLK 0 (present and zero: NONZERO refuses it); jar_addr
+ * TD_STUB_JAR_ADDR, terminator value TD_STUB_JAR_SIZE.  A test changes it
+ * between runs; jar_addr 0 is "no jar". */
+#define TD_STUB_JAR_ADDR      0x5A4L
+#define TD_STUB_JAR_SIZE      16
+#define TD_STUB_JAR_XHDI      0x00E01234uL
+#define TD_STUB_JAR_N         6
+
 struct td_stub_call {
 	int16_t kind;
 	int16_t opcode;
@@ -313,5 +326,9 @@ extern struct td_stub_call td_stub_calls[TD_STUB_MAX_CALLS];
 extern int                 td_stub_ncalls;
 
 void td_stub_reset(void);
+
+#include "scrninfo.h"
+extern struct td_jar td_stub_jar;
+extern int           td_stub_jar_reads;
 
 #endif /* TOSDUMP_STUB_ABI_H */

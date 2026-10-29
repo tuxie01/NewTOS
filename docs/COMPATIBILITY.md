@@ -1256,8 +1256,36 @@ calls through it.
 (`references/emutos/include/cookie.h:50`, assigned at
 `references/emutos/bios/machine.c:401` when `CONF_ATARI_HARDWARE` is 0); the
 pinned make-512 oracle never reports it, so every `_MCH` cookie case is an
-**ACCEPTED deviation** per profile (values from TASK/TOOL18.md once
-measured).
+**ACCEPTED deviation** per profile (measured values: "Cookie jar vs. the
+oracle" below, TASK/TOOL18.md).
+
+**Cookie jar vs. the oracle** — measured 2026-10-29 on the pinned ROM,
+table `tosdump/cases/jar-r1.tsv`, references `EMUTOS-1a7484ab-BIOS-jar` (tt),
+`-BIOS-jar-falcontc`, `-BIOS-jar-disk`
+(`measurements/measurement-2026-10-29-tool18/RUNINFO.TXT`). NewTOS seeds five
+cookies (`tos-api/src/cookie.rs:223@seed_defaults`); the oracle's jar has twelve.
+falcontc and disk are byte-identical, so their columns are one.
+
+| Case | Cookie | Oracle tt | Oracle falcontc = disk | NewTOS | Status | Reason |
+|---|---|---|---|---|---|---|
+| 41 | `jar:*` | 12: `_CPU _VDO _FPU _MCH _SWI _SND _FRB _AKP _IDT _FDC XHDI SCSI` | same | 5: `NTOS _MCH _IDT _AKP EdDI` | ACCEPTED | follows from the per-cookie rows; re-measure when the seeded set changes |
+| 44 | `_CPU` | `0x0000001E` | `0x0000001E` | absent | ACCEPTED | ADR-012 amendment 2026-10-28: no m68k CPU |
+| 45 | `_VDO` | `0x00020000` | `0x00030000` | absent | OPEN | ADR-012 amendment: decided after TASK/ARCH06 (TeraDesk's ST branch, `TASK/ARCH06-STATUS-DONE.MD` §3) |
+| 46 | `_FPU` | `0x00060000` | `0x00000000` | absent | ACCEPTED | ADR-012: no m68k FPU |
+| 47 | `_MCH` | `0x00020000` | `0x00030000` | `0xFFFFFFFF` | ACCEPTED | ADR-012 amendment 2026-10-28: `MCH_NOHARD` |
+| 48 | `_SWI` | `0x000000BF` | `0x000000BF` | absent | OPEN | no decision; EmuTOS adds it only with DIP switches (`bios/machine.c:702-706`) |
+| 49 | `_SND` | `0x00000003` | `0x0000001F` | absent | ACCEPTED | ADR-012: no PSG / DMA sound |
+| 50 | `_FRB` | `0x00013350` | `0x00013350` | absent | OPEN | no decision; ACSI/SCSI DMA bounce buffer with alt RAM (`bios/machine.c:478`) |
+| 51 | `_FLK` | absent | absent | absent | EQUAL | ADR-012 amendment 2026-10-26: not set |
+| 52 | `_AKP` | `0x00000100` | `0x00000100` | `0x00000000` | OPEN | oracle = `COUNTRY=de` ROM; NewTOS keeps US (keyboard-layout entry above, difference 2) |
+| 53 | `_IDT` | `0x0000112E` | `0x0000112E` | `0x0000112F` | OPEN | oracle = `COUNTRY=de` (`.`); NewTOS `/`, bring-up policy |
+| 54 | `_FDC` | `0x01415443` | `0x01415443` | absent | ACCEPTED | ADR-012: no floppy controller |
+| 55 | `__NF` | absent | absent | absent | EQUAL | — |
+| 56 | `XHDI` | `0x00E0F702` | `0x00E0F702` | absent | OPEN | no decision; NewTOS has no XHDI driver interface |
+| 57 | `SCSI` | `0x000050B6` | `0x000050B6` | absent | OPEN | no decision; NewTOS has no SCSI driver interface |
+| 58, 61-64 | `_5MS _CF_ _MCF _NET NVDI` | absent | absent | absent | EQUAL | — |
+| 67 | `NTOS` | absent | absent | `0x00000100` | ACCEPTED | ADR-012 (+ amendment 2026-10-28): NewTOS identity |
+| 68 | `EdDI` | absent | absent | `0x00000001` | ACCEPTED | "The VDI speaks EdDI" (this file): marker, spec E2 |
 
 **No Line-A: no opcode trap, no LINEA variable block** — user decision
 2026-10-26, ADR-030 (`docs/MEMORY.md`). On TOS the m68k opcodes

@@ -612,7 +612,7 @@ cases differ). Dumper case number = line of the row in `bios-r2.tsv`.
 `bios-r2-x004.tsv`, `bios-r2-x005.tsv`, `bios-r2-x006.tsv`;
 `measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT`): `RW_NOTRANSLATE`
 through the unit token `u:0` (a literal unit stays refused by the dumper
-guard, `tosdump/core/cases.c:3896@rwabs_value_refusal`), and `recsiz == 0` →
+guard, `tosdump/core/cases.c:3980@rwabs_value_refusal`), and `recsiz == 0` →
 `ESECNF` after a failed `Getbpb` (BIOS-STOR-006, `x006`).
 **Not measured (stay [source]-only):** arming before a failing range/mediach check,
 negative `numb`, negative `dev` with `buf == NULL`, the physical-mode `>=`

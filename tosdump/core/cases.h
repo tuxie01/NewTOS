@@ -844,6 +844,30 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
 /* The trap field of a "+put" prelude (TOOL16): it issues no trap either. */
 #define TD_CALL_TRAP_PUT     (-1)
 
+/*
+ * Jar cases (TASK/TOOL18; docs/TOS-REFERENCE-DUMPER.md section 6, "The
+ * cookie jar").  The call column may name the cookie jar instead of a trap:
+ *
+ *   jar:<TAG>   one cookie, TAG exactly four characters 0x21..0x7E, the tag
+ *               in memory order ("_MCH" = 0x5F4D4348).  The first entry
+ *               with that tag, as a Getcookie finds it.
+ *               retclass EXACT (present or absent on both sides, and the
+ *               same value), NONZERO / PTR_RAM (present on each side, and
+ *               the property holds on the value), ABSENT (absent on each
+ *               side)
+ *   jar:*       the jar as a whole: the number of entries and the tags in
+ *               their order.  retclass EXACT
+ *
+ * args and capture are "-", no width suffix, no prelude before it, not
+ * inside a Super bracket and not after Getmpb.  The case issues no trap,
+ * so it needs no whitelist entry: it reads, through the backend's
+ * td_jar_read (core/scrninfo.h; Supexec on the m68k, a plain load of the
+ * per-process page 0 on NewTOS), what any program reads through
+ * _p_cookies.  The record: tosdump.h, "A JAR CASE".  The case's trap field
+ * is TD_CALL_TRAP_JAR, its opcode TD_JAR_FN_TAG / TD_JAR_FN_ALL, the tag in
+ * arg[0] (kind TD_CALL_ARG_LONG).
+ */
+
 /* ------------------------------------------------------------------ */
 /* Layouts: structures behind a pointer (TASK/TOOL16)                   */
 /* ------------------------------------------------------------------ */

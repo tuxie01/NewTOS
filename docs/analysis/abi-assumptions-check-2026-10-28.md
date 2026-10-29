@@ -274,7 +274,7 @@ HighWire (nicht gebaut):
 **Ergebnis:** Kein gefundener Aufrufer vergleicht einen Cookie-Wert numerisch so, dass sich
 Vorzeichen- und Nullerweiterung unterscheiden.
 - `>> 16` mit anschliessender Verengung auf 16 Bit (`sdk/apps/teradesk/video.c:160@vdohi`) und
-  `(_mch & 0xffff0000) >> 16` in `short` (`sdk/libc/mintlib/unix/sysinfo.c:516@hi`) ergeben fuer `0xFFFFFFFF` in beiden
+  `(_mch & 0xffff0000) >> 16` in `short` (`sdk/libc/mintlib/unix/sysinfo.c:510@hi`) ergeben fuer `0xFFFFFFFF` in beiden
   Erweiterungen `-1` **[DERIVED]**: im ersten Fall schneidet der `(_WORD)`-Cast, im zweiten wirkt die
   Maske `0xffff0000` (positive 64-Bit-Konstante) auf beide Erweiterungen gleich.
 - `mach == 0x50000L` und `cpu & 0xFFFF` (zView) haben kein Bit 31.
@@ -282,7 +282,7 @@ Vorzeichen- und Nullerweiterung unterscheiden.
 - Kein Cookie im Seed-Jar hat Bit 31 (3.2). Die Frage stellt sich erst, wenn `_MCH = 0xFFFFFFFF`
   (`MCH_NOHARD`, Q4) oder ein anderer Wert mit Bit 31 gesetzt wird.
 
-**Nebenbefund (DERIVED, ausserhalb des Auftrags):** `sdk/cflib/cflib-21/cookie.c:33-49@as_char` baut den Tag aus
+**Nebenbefund (DERIVED, ausserhalb des Auftrags):** `sdk/cflib/cflib-21/cookie.c:69@as_char` baut den Tag aus
 `cast.as_char[0..3]` in einer `union` mit `long as_long` und liest `as_long`. Auf dem Big-Endian-m68k
 ist `as_long` der Tag `0x5F494454` (`"_IDT"`), auf Little-Endian-AArch64 liegt `cookie[0]` im niedrigsten
 Byte; `as_long` ist dann `0x5444495F`, die Kernel-Konstanten sind `u32::from_be_bytes(*b"_IDT")`
@@ -405,9 +405,9 @@ Muster: `Bconmap|MAPTAB|maptab|BCONMAP` (gross/klein) ueber `sdk/apps`, `sdk/ove
   `Bconmap`, `Rsconf` oder `Iorec` in `sdk/apps`, `sdk/overlays`, `sdk/examples`, `programs`, `sdk/cflib`,
   `sdk/windom`, `sdk/zview`, `sdk/ldg`, `Applications` (nach Entfernen von Fehltreffern auf `RemapTable`
   in Vanilla-Conquer, die das Muster `maptab` ohne Gross-/Kleinunterscheidung traf).
-- Treffer nur in Definitionen: `sdk/libc/overlay/include/mint/ostruct.h:527-530@Bconmap` (`BMAP_MAPTAB = -2`),
-  `sdk/libc/overlay/include/mint/ostruct.h:679-698@_BCONMAP` (`_MAPTAB`, `_BCONMAP`), `sdk/libc/overlay/include/mint/osbind.h:760@Bconmap` (Binder);
-  `tosdump/core/cases.c:3649@CR_BCONMAP`, `tosdump/core/cases.c:3735@CR_BCONMAP`, `tosdump/core/cases.c:3995@CR_BCONMAP` (Dumper-Aufrufpolitik, kein Programm).
+- Treffer nur in Definitionen: `sdk/libc/overlay/include/mint/ostruct.h:543-546@Bconmap` (`BMAP_MAPTAB = -2`),
+  `sdk/libc/overlay/include/mint/ostruct.h:733-750@_BCONMAP` (`_MAPTAB`, `_BCONMAP`), `sdk/libc/overlay/include/mint/osbind.h:760@Bconmap` (Binder);
+  `tosdump/core/cases.c:3733@CR_BCONMAP`, `tosdump/core/cases.c:3735@CR_BCONMAP`, `tosdump/core/cases.c:4079@CR_BCONMAP` (Dumper-Aufrufpolitik, kein Programm).
 - Es gibt kein portiertes Terminalprogramm (keines unter `sdk/apps/`, keines auf der Standard-Abbildung).
   `Applications/thing-neo-codeSVN-r62`, `Applications/z-tools`, `Applications/qed` etc. enthalten kein
   `Bconmap`.

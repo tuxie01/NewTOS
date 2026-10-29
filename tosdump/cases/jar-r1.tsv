@@ -1,0 +1,68 @@
+# jar-r1.tsv -- DUMPBIOS, the cookie jar: one case per cookie tag, and the jar
+# as a whole (number of entries, tags in order), against EmuTOS 1a7484ab
+# (references/emutos, docs/analysis/ORACLE.md).  TASK/TOOL18.
+#
+# Form (docs/TOS-REFERENCE-DUMPER.md section 6, "The cookie jar";
+# tosdump/core/cases.h "Jar cases"; the record: tosdump/core/tosdump.h
+# "A JAR CASE"):
+#
+#   jar:<TAG> <TAB> - <TAB> retclass <TAB> - <TAB> comment
+#   jar:*     <TAB> - <TAB> EXACT    <TAB> - <TAB> comment
+#
+#   jar:<TAG>  the value of the first entry with that tag, zero-extended, or
+#              "absent".  EXACT = present or absent on both sides with the
+#              same value; PTR_RAM / NONZERO = present on each side and the
+#              property holds; ABSENT = absent on each side
+#   jar:*      the number of entries before the terminator and their tags,
+#              in order (fill_cookie_jar's order, bios/machine.c:665-798)
+#
+# A jar case issues no trap: the dumper reads _p_cookies ($5A0) and the jar
+# through the backend's td_jar_read -- Supexec on the m68k
+# (tosdump/abi/m68k_scrninfo.c), a plain load of the per-process page 0 on
+# NewTOS (tosdump/abi/newtos_scrninfo.c) -- what any program reads there.
+# The jar's capacity (the terminator's value) is not measured.
+#
+# The rows: every tag EmuTOS names (include/cookie.h:26-44, the ones
+# fill_cookie_jar adds in its order first), then the two NewTOS adds
+# (tos-api/src/cookie.rs:223-229@seed_defaults).  ColdFire's _CF_/_MCF are
+# #ifdef __mcoldfire__ (bios/machine.c:667-671); _NET and NVDI EmuTOS
+# defines and never adds.
+#
+# One table for the oracle's profiles tt, falcontc and disk
+# (tools/hatari-oracle.sh): a class that is not EXACT holds on all three
+# (tosdiff --selfcheck).  The machine cookies differ between the profiles
+# and are EXACT.  A difference against NewTOS: docs/COMPATIBILITY.md, the
+# cookie jar entry (ADR-012 and its amendments, docs/MEMORY.md).
+#
+# One table, frozen once measured: a case id is the physical line number
+# and the dump header carries the CRC of this file.
+
+# ---- the jar as a whole
+jar:*	-	EXACT	-	the jar: count and tag order -- bios/machine.c:665-798
+
+# ---- fill_cookie_jar, in its order (bios/machine.c:665-798)
+jar:_CPU	-	EXACT	-	_CPU processor, mcpu -- bios/machine.c:673
+jar:_VDO	-	EXACT	-	_VDO video shifter -- bios/machine.c:684-685
+jar:_FPU	-	EXACT	-	_FPU fputype -- bios/machine.c:689
+jar:_MCH	-	EXACT	-	_MCH machine, setvalue_mch -- bios/machine.c:693-694
+jar:_SWI	-	EXACT	-	_SWI dip switches, has_dip_switches -- bios/machine.c:702-706
+jar:_SND	-	EXACT	-	_SND sound bitmap -- bios/machine.c:718-719
+jar:_FRB	-	PTR_RAM	-	_FRB 64k ST-RAM buffer, with alt RAM -- bios/machine.c:478
+jar:_FLK	-	ABSENT	-	_FLK file locking, never added -- bios/machine.c:730-733
+jar:_AKP	-	EXACT	-	_AKP keyboard/language, NVRAM or country -- bios/machine.c:741-742
+jar:_IDT	-	EXACT	-	_IDT date/time format -- bios/machine.c:760-761
+jar:_FDC	-	EXACT	-	_FDC floppy controller -- bios/machine.c:774-775
+jar:__NF	-	ABSENT	-	__NF NatFeats, has_natfeats -- bios/machine.c:778-783
+jar:XHDI	-	NONZERO	-	XHDI handler entry (ROM code) -- bios/machine.c:785-787
+jar:SCSI	-	PTR_RAM	-	SCSI scsidriv_root -- bios/machine.c:789-791
+jar:_5MS	-	ABSENT	-	_5MS, only without MFP -- bios/machine.c:793-797
+
+# ---- defined by EmuTOS, not added by a make-512 Atari build
+jar:_CF_	-	ABSENT	-	_CF_ ColdFire -- bios/machine.c:667-668
+jar:_MCF	-	ABSENT	-	_MCF ColdFire -- bios/machine.c:669-670
+jar:_NET	-	ABSENT	-	_NET, defined only -- include/cookie.h:35
+jar:NVDI	-	ABSENT	-	NVDI, defined only -- include/cookie.h:43
+
+# ---- NewTOS's own (tos-api/src/cookie.rs:223-229@seed_defaults)
+jar:NTOS	-	ABSENT	-	NTOS NewTOS identity -- ADR-012, docs/MEMORY.md
+jar:EdDI	-	ABSENT	-	EdDI marker, spec E2 -- docs/api/vdi/eddi-vq_scrninfo.md

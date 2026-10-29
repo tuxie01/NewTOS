@@ -37,6 +37,8 @@ struct td_jar {
 /* Copies the cookie jar (read in supervisor mode via Supexec, as the jar
  * pointer lives at 0x5A0).  Nothing is written outside *jar. */
 void td_jar_read(struct td_jar *jar);
+/* DUMPBIOS links the same backend for its jar cases (TASK/TOOL18,
+ * core/runner_call.c run_jar_case): one copy of the jar read. */
 
 /*
  * Calls the EdDI dispatcher at `fn` with function number 0 per the

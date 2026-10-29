@@ -13,6 +13,35 @@ static int iorec_laid;
 static long stub_dta;                  /* TOOL20: the DTA Fsetdta set */
 static long stub_drive = TD_STUB_DRIVE;
 
+struct td_jar td_stub_jar;
+int           td_stub_jar_reads;
+
+/* stub_abi.h, "The cookie jar" */
+static void lay_jar(void)
+{
+	static const struct td_cookie def[TD_STUB_JAR_N] = {
+		{ 0x5F435055uL, 30 },                 /* _CPU */
+		{ 0x5F4D4348uL, 0x00020000uL },       /* _MCH */
+		{ 0x5F535749uL, 0x000000BFuL },       /* _SWI */
+		{ 0x58484449uL, TD_STUB_JAR_XHDI },   /* XHDI */
+		{ 0x5F465242uL, 0x00000401uL },       /* _FRB */
+		{ 0x5F464C4BuL, 0 },                  /* _FLK */
+	};
+
+	memset(&td_stub_jar, 0, sizeof td_stub_jar);
+	td_stub_jar.jar_addr  = (uint32_t)TD_STUB_JAR_ADDR;
+	td_stub_jar.count     = TD_STUB_JAR_N;
+	td_stub_jar.end_value = TD_STUB_JAR_SIZE;
+	memcpy(td_stub_jar.e, def, sizeof def);
+	td_stub_jar_reads = 0;
+}
+
+void td_jar_read(struct td_jar *jar)
+{
+	td_stub_jar_reads++;
+	*jar = td_stub_jar;
+}
+
 void td_stub_reset(void)
 {
 	memset(td_stub_calls, 0, sizeof td_stub_calls);
@@ -20,6 +49,7 @@ void td_stub_reset(void)
 	iorec_laid = 0;
 	stub_dta = 0;
 	stub_drive = TD_STUB_DRIVE;
+	lay_jar();
 }
 
 static struct td_stub_call *log_slot(void)

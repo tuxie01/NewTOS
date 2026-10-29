@@ -538,6 +538,26 @@ static const char *retclass_violation(uint8_t retclass, int64_t v)
 	}
 }
 
+/* A cookie tag as its four characters, or as a number when one of them
+ * is not printable. */
+static void print_tag(uint32_t tag)
+{
+	int i, ok = 1;
+
+	for (i = 0; i < 4; i++) {
+		uint8_t ch = (uint8_t)(tag >> (24 - 8 * i));
+
+		if (ch < 0x21 || ch > 0x7E)
+			ok = 0;
+	}
+	if (!ok) {
+		printf("0x%08lX", (unsigned long)tag);
+		return;
+	}
+	for (i = 0; i < 4; i++)
+		putchar((int)(uint8_t)(tag >> (24 - 8 * i)));
+}
+
 static void print_call_case_header(const struct td_casefile *cf,
                                    uint16_t case_id, const uint8_t *rec,
                                    int *printed)
@@ -547,6 +567,17 @@ static void print_call_case_header(const struct td_casefile *cf,
 	if (*printed)
 		return;
 	c = td_casefile_comment(cf, case_id);
+	if (td_load_be16(rec + TD_CALL_OFF_TRAP) == TD_CALL_TRAP_JAR) {
+		/* a jar case (TOOL18) names its cookie, not a trap */
+		printf("\ncase %u  jar ", case_id);
+		if (td_load_be16(rec + TD_CALL_OFF_OPCODE) == TD_JAR_FN_ALL)
+			printf("*");
+		else
+			print_tag(td_load_be32(rec + TD_CALL_OFF_ARGS));
+		printf("%s%s\n", *c ? "  " : "", c);
+		*printed = 1;
+		return;
+	}
 	printf("\ncase %u  trap %u function 0x%02X%s%s\n", case_id,
 	       td_load_be16(rec + TD_CALL_OFF_TRAP),
 	       td_load_be16(rec + TD_CALL_OFF_OPCODE), *c ? "  " : "", c);
@@ -598,6 +629,121 @@ static int retclass_check(const struct td_casefile *cf, uint16_t index,
 		else
 			printf("0x%016llX", (unsigned long long)v);
 		printf(", %s\n", why);
+		differs = 1;
+	}
+	return differs;
+}
+
+/*
+ * A jar case (TOOL18; docs/TOS-REFERENCE-DUMPER.md section 6, "The cookie
+ * jar"; tosdump.h, "A JAR CASE").  ret_hi:ret is the cookie's value,
+ * zero-extended, or TD_JAR_ABSENT -- a present value has no high half, so
+ * the high half alone tells the two apart.  jar:* holds the number of
+ * entries and, in its capture, the tags in order.  Judged here instead of
+ * by retclass_check; jar:*'s capture is not compared byte-wise.
+ * Returns 1 when the case differs.
+ */
+static int is_jar(const struct td_casefile *cf, uint16_t index)
+{
+	return cf->calls && index < cf->calls->count &&
+	       cf->calls->cases[index].trap == TD_CALL_TRAP_JAR;
+}
+
+static uint64_t jar_ret(const uint8_t *rec)
+{
+	return ((uint64_t)td_load_be32(rec + TD_CALL_OFF_RET_HI) << 32) |
+	       (uint64_t)td_load_be32(rec + TD_CALL_OFF_RET);
+}
+
+static int jar_absent(uint64_t v)
+{
+	return (v >> 32) != 0;
+}
+
+static void print_jar_value(uint64_t v)
+{
+	if (jar_absent(v))
+		printf("absent");
+	else
+		printf("0x%08lX", (unsigned long)v);
+}
+
+static void print_jar_tags(const uint8_t *rec)
+{
+	uint64_t v = jar_ret(rec);
+	uint64_t i, n;
+
+	if (jar_absent(v)) {
+		printf("no jar (_p_cookies is 0)\n");
+		return;
+	}
+	n = v < TD_JAR_TAGS_MAX ? v : TD_JAR_TAGS_MAX;
+	printf("%lu:", (unsigned long)v);
+	for (i = 0; i < n; i++) {
+		putchar(' ');
+		print_tag(td_load_be32(rec + TD_CALL_OFF_CAPTURE + i * 4));
+	}
+	if (v > n)
+		printf(" ...");
+	printf("\n");
+}
+
+static int jar_check(const struct td_casefile *cf, uint16_t index,
+                     const struct td_dump *a, const uint8_t *ra,
+                     const struct td_dump *b, const uint8_t *rb,
+                     int label_w, uint16_t case_id, int *printed,
+                     int nsides)
+{
+	const struct td_call_case *c = &cf->calls->cases[index];
+	uint64_t va = jar_ret(ra), vb = jar_ret(rb);
+	int differs = 0, side;
+
+	if (c->opcode == TD_JAR_FN_ALL) {
+		/* EXACT: the count and the tags, in order */
+		if (nsides == 1 ||
+		    (va == vb && memcmp(ra + TD_CALL_OFF_CAPTURE,
+		                        rb + TD_CALL_OFF_CAPTURE,
+		                        TD_CALL_CAPTURE_LEN) == 0))
+			return 0;
+		print_call_case_header(cf, case_id, ra, printed);
+		printf("    %-24s %-7s %-*s = ", "jar", "EXACT", label_w, a->label);
+		print_jar_tags(ra);
+		printf("    %-24s %-7s %-*s = ", "", "", label_w, b->label);
+		print_jar_tags(rb);
+		return 1;
+	}
+	if (c->retclass == TD_RET_EXACT) {
+		if (nsides == 1 || va == vb)
+			return 0;
+		print_call_case_header(cf, case_id, ra, printed);
+		printf("    %-24s %-7s %-*s = ", "cookie", "EXACT", label_w,
+		       a->label);
+		print_jar_value(va);
+		printf("   %-*s = ", label_w, b->label);
+		print_jar_value(vb);
+		printf("\n");
+		return 1;
+	}
+	for (side = 0; side < nsides; side++) {
+		const struct td_dump *d = side ? b : a;
+		uint64_t v = side ? vb : va;
+		const char *why;
+
+		if (c->retclass == TD_RET_ABSENT)
+			why = jar_absent(v) ? NULL : "present";
+		else if (jar_absent(v))
+			why = "not in the jar";
+		else
+			why = retclass_violation(c->retclass, (int64_t)v);
+		if (!why)
+			continue;
+		print_call_case_header(cf, case_id, ra, printed);
+		printf("    %-24s %s %-*s = ", "cookie",
+		       td_retclass_name(c->retclass), label_w, d->label);
+		if (jar_absent(v))
+			printf("%s\n", why);
+		else
+			printf("0x%08lX, %s\n", (unsigned long)v, why);
 		differs = 1;
 	}
 	return differs;
@@ -852,10 +998,17 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 
 		/* A call area: `ret` is judged by the case's retclass, not by
 		 * value (docs/TOS-REFERENCE-DUMPER.md section 6). */
-		if (is_call_area(a.h.area) &&
-		    retclass_check(&cf, rec, &a, ra, &b, rb, label_w, case_id,
-		                   &printed_header, single ? 1 : 2))
+		if (is_call_area(a.h.area) && is_jar(&cf, rec)) {
+			/* a jar case (TOOL18): its own rule, below */
+			if (jar_check(&cf, rec, &a, ra, &b, rb, label_w, case_id,
+			              &printed_header, single ? 1 : 2))
+				value_differs = 1;
+		} else if (is_call_area(a.h.area) &&
+		           retclass_check(&cf, rec, &a, ra, &b, rb, label_w,
+		                          case_id, &printed_header,
+		                          single ? 1 : 2)) {
 			value_differs = 1;
+		}
 		/* A layout capture (TOOL16): slot by slot, by the field's class
 		 * -- the capture field below is then not compared byte-wise. */
 		if (is_call_area(a.h.area) && has_layout(&cf, rec) &&
@@ -872,6 +1025,10 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 			if (is_call_area(a.h.area) && f->off == TD_CALL_OFF_CAPTURE &&
 			    has_layout(&cf, rec))
 				continue;   /* slot by slot, above */
+			if (is_call_area(a.h.area) && f->off == TD_CALL_OFF_CAPTURE &&
+			    is_jar(&cf, rec) &&
+			    cf.calls->cases[rec].opcode == TD_JAR_FN_ALL)
+				continue;   /* the tags, in jar_check */
 
 			/* Field class address: never compared by value -- the two
 			 * values cannot be equal by construction, so a difference

@@ -1,6 +1,6 @@
 # TOOL18 — Cookie-Falltabelle, gemessen auf dem gepinnten ROM (alle drei Profile)
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28, aus [ARCH05](ARCH05.md)
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](TOOL18-STATUS-DONE.MD)); 7 Cookies OPEN beim Anwender · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28, aus [ARCH05](ARCH05.md)
 
 ## Sachverhalt
 

@@ -10,6 +10,7 @@
 
 #include "abi.h"
 #include "runner_call.h"
+#include "scrninfo.h"
 
 /* The buffers a case names with "b:<n>".  uint32_t so that a LONG capture
  * reads aligned on both machines. */
@@ -442,6 +443,41 @@ static long issue(const struct td_call_case_table *ct,
 	return td_abi_trap(c->trap, c->opcode, c->nargs, kind, value);
 }
 
+/*
+ * A jar case (TOOL18; tosdump.h, "A JAR CASE"): no trap.  The jar is read
+ * afresh for every case through the backend's td_jar_read -- Supexec on
+ * the m68k, the per-process page 0 on NewTOS (core/scrninfo.h) -- and the
+ * record says what a program finds through _p_cookies: the value of the
+ * first entry with the tag (zero-extended), or TD_JAR_ABSENT; for jar:*
+ * the number of entries and their tags in order.  No buffer is touched.
+ */
+static struct td_jar jar;
+
+static void run_jar_case(const struct td_call_case *c, struct td_call_frame *f)
+{
+	uint64_t v = TD_JAR_ABSENT;
+	uint16_t i;
+
+	td_jar_read(&jar);
+	f->trap = TD_CALL_TRAP_JAR;
+	if (c->opcode == TD_JAR_FN_TAG) {
+		uint32_t tag = (uint32_t)c->arg[0].value;
+
+		f->args[0] = tag;
+		for (i = 0; jar.jar_addr != 0 && i < jar.count; i++)
+			if (jar.e[i].tag == tag) {
+				v = (uint64_t)jar.e[i].value;
+				break;
+			}
+	} else if (jar.jar_addr != 0) {
+		v = (uint64_t)jar.count;
+		for (i = 0; i < jar.count && i < TD_JAR_TAGS_MAX; i++)
+			td_store_be32(f->capture + (size_t)i * 4, jar.e[i].tag);
+	}
+	f->ret    = (int32_t)(uint32_t)(v & 0xFFFFFFFFuL);
+	f->ret_hi = (uint32_t)(v >> 32);
+}
+
 int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
                 size_t out_bytes)
 {
@@ -465,6 +501,15 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 		uint8_t *rec = out + (size_t)i * TD_CALL_RECORD_SIZE;
 		int64_t r;
 		long ret;
+
+		/* a jar case: the poisoned frame, the jar, the record */
+		if (c->trap == TD_CALL_TRAP_JAR) {
+			td_poison_call(&run_frame);
+			run_jar_case(c, &run_frame);
+			td_call_record_write(rec, c->line, (uint16_t)c->opcode,
+			                     &run_frame);
+			continue;
+		}
 
 		/* 1. poison the frame and both buffers (spec section 4) -- once,
 		 *    before the preludes, so a prelude's buffer reaches its case */

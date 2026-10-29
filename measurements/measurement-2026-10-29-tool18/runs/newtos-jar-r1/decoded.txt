@@ -1,0 +1,23 @@
+format 3, area 1, 22 records, build 1ca7, case CRC 2D0D269D
+  41  jar:*      5 entries: NTOS _MCH _IDT _AKP EdDI
+  44  jar:_CPU   absent
+  45  jar:_VDO   absent
+  46  jar:_FPU   absent
+  47  jar:_MCH   0xFFFFFFFF
+  48  jar:_SWI   absent
+  49  jar:_SND   absent
+  50  jar:_FRB   absent
+  51  jar:_FLK   absent
+  52  jar:_AKP   0x00000000
+  53  jar:_IDT   0x0000112F
+  54  jar:_FDC   absent
+  55  jar:__NF   absent
+  56  jar:XHDI   absent
+  57  jar:SCSI   absent
+  58  jar:_5MS   absent
+  61  jar:_CF_   absent
+  62  jar:_MCF   absent
+  63  jar:_NET   absent
+  64  jar:NVDI   absent
+  67  jar:NTOS   0x00000100
+  68  jar:EdDI   0x00000001

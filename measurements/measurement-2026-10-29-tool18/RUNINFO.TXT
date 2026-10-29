@@ -1,0 +1,157 @@
+measurement-2026-10-29-tool18 -- TOOL18: the cookie jar as a tosdiff table, measured on the pinned ROM
+=====================================================================================================
+Developer, TASK/TOOL18, 2026-10-29 (host clock CET). Tree: HEAD 1ca7d09a (main) plus the uncommitted
+TOOL18 change listed under CHANGED; the dumpers carry build id 1ca7. No NewTOS product code changed
+(`git diff --stat HEAD -- kernel tos-api tos-types programs sdk` empty). No hardware, no real card,
+nothing flashed. Not committed.
+
+WHAT / WHY
+  The only jar values on record were the SCRNINFO probe's of 2026-10-02 on EmuTOS 1.4, not on the pin
+  (docs/analysis/machine-identity-adr-proposal-2026-10-28.md section 1). The user decided (2026-10-28,
+  TASK/ARCH05.md -> TASK/TOOL18.md): measure the jar on the pinned ROM, profiles tt, falcontc and disk;
+  the ACCEPTED deviations in docs/COMPATIBILITY.md take the measured values.
+
+DESIGN (docs/TOS-REFERENCE-DUMPER.md section 6, "The cookie jar")
+  A call table takes a second kind of case line, the jar case, in the call column:
+    jar:<TAG>   the value of the first entry with that tag (as Getcookie finds it), or absent;
+                retclass EXACT | NONZERO | PTR_RAM | ABSENT (new class, jar cases only)
+    jar:*       the number of entries and the tags in jar order; retclass EXACT
+  args and capture "-"; no prelude, not inside a Super bracket, not after Getmpb.
+  No trap is issued (no whitelist entry): the runner reads the jar afresh per case through the
+  SCRNINFO backend's td_jar_read (Supexec on the m68k, the per-process page 0 on NewTOS); both
+  DUMPBIOS builds now link that backend.
+  Record: the call record, no format change. trap 256 (TD_CALL_TRAP_JAR), opcode 0 tag / 1 jar:*,
+  args[0] the tag, ret_hi:ret the value ZERO-extended or 0xFFFFFFFF_FFFFFFFF (absent; a present value
+  has no high half, so a cookie 0xFFFFFFFF records as 0x00000000_FFFFFFFF), jar:*: ret = count, capture
+  = the tags as big-endian LONGs (max 64). tosdiff judges a jar case with jar_check: EXACT between the
+  dumps, NONZERO/PTR_RAM present + property per side, ABSENT absent per side; it prints "absent",
+  "not in the jar", and both tag lists for jar:*. Not measured: the jar's capacity (terminator value).
+
+CHANGED (uncommitted, for the lead)
+  tosdump/core/tosdump.h          TD_RET_ABSENT, "A JAR CASE" (TD_CALL_TRAP_JAR, TD_JAR_FN_*,
+                                  TD_JAR_ABSENT, TD_JAR_TAGS_MAX), trap field comment
+  tosdump/core/cases.h, .c        "Jar cases" doc; is_jar_column, parse_jar_case; the jar branch in
+                                  td_call_cases_parse; ABSENT name; ABSENT refused on trap cases
+  tosdump/core/runner_call.c      run_jar_case (td_jar_read), the jar branch in td_run_call
+  tosdump/core/scrninfo.h         one comment line after td_jar_read (line 39 unchanged)
+  tosdump/host/tosdiff.c          print_tag, jar case header, jar_check; jar:* capture not byte-compared
+  tosdump/Makefile, tosdump/build-dumpbios-newtos.sh   DUMPBIOS links abi/m68k_scrninfo.c /
+                                  abi/newtos_scrninfo.c
+  tosdump/host/Makefile           test_jar
+  tosdump/tests/test_jar.c (new), stub_abi.h, stub_abi.c (the stub's jar, td_jar_read),
+  test_tosdiff.sh (section "jar cases")
+  tosdump/cases/jar-r1.tsv (new, 22 cases, CRC 2D0D269D)
+  tosdump/reference/EMUTOS-1a7484ab-BIOS-jar{,-falcontc,-disk}.{BIN,LOG} (new) = runs/oracle-*-1
+  docs/TOS-REFERENCE-DUMPER.md    section 3 (trap 256), section 6 "The cookie jar", section 7 DUMPBIOS
+  anchor renumbering only (cases.c / runner_call.c lines moved): docs/analysis/ptr-ram-rule-2026-10-28.md,
+  iorec-survey-2026-10-28.md, abi-assumptions-check-2026-10-28.md, docs/audits/2026-10-28-bios-core.md,
+  -bios-storage.md, docs/api/bios/00-getmpb.md, 04-rwabs.md, TASK/TOOL07.md, TASK/TOOL11.md
+  Untouched: every existing case table and reference, tools/hatari-oracle.sh, tools/xtask.
+
+INPUTS
+  ROM        tools/oracle/etos512de-1a7484ab.img 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+  Hatari     2.6.1, tools/oracle/hatari.cfg (unchanged)
+  table      tosdump/cases/jar-r1.tsv 7b56cf55a2a5e2168330a3c71664bac137afd4eb08c5f28ad54425309d202c2d, CRC 2D0D269D
+  DUMPBIOS.PRG (build 1ca7) a5d46b4dccbe8a206e8e962a2570172e1187ab0b9263f4b89c91c21ba7a33ac9
+  test.img (profile disk; tools/mktestdisk.sh, no files) d83c543471fd30f29e4704cb9450f70517fe43a4e5e0250e137205e409bfc4a0
+             runs/test.img.manifest:  optional_missing none
+             unchanged by every disk run (runs/oracle-disk-<n>/disk.sha256: before = after)
+
+METHOD (method/)
+  oracle-runs.sh  tools/hatari-oracle.sh tt|falcontc|disk, two runs each, BIN+LOG + decoded.txt per run,
+                  cmp of the two runs, tosdiff --selfcheck of run 1, tt vs falcontc, falcontc vs disk
+  newtos-run.sh   cargo xtask tosdump bios tosdump/cases/jar-r1.tsv --reference <the three> (TOOL09):
+                  QEMU raspi4b, -append serial=on, kernel rpi4 release of this tree, no features
+  decode-jar.py   one line per record: the cookie and its value or "absent"; jar:* count and tags
+
+ORACLE REFERENCES (tosdump/reference/, copies of runs/oracle-<p>-1)
+  EMUTOS-1a7484ab-BIOS-jar            BIN bfd32306ea9706cea346d0a54146ddd6336b7084e3a0e0c3320c0fce0a1efaf9
+                                      LOG 3771395bf1549a6dd5027014d9999b0e0411c2cff4167a09c0710aa69b4a6bc5
+  EMUTOS-1a7484ab-BIOS-jar-falcontc   BIN c3442e6f1167ec6c635c973a1fbb7143c1000a960ffdb80837d75fdbffccf181
+                                      LOG 3771395bf1549a6dd5027014d9999b0e0411c2cff4167a09c0710aa69b4a6bc5
+  EMUTOS-1a7484ab-BIOS-jar-disk       BIN c3442e6f1167ec6c635c973a1fbb7143c1000a960ffdb80837d75fdbffccf181 (= falcontc)
+                                      LOG 3771395bf1549a6dd5027014d9999b0e0411c2cff4167a09c0710aa69b4a6bc5
+  run 1 vs run 2: BIN and LOG byte-identical in all three profiles. tosdiff --selfcheck: all three pass.
+  falcontc vs disk: byte-identical (tosdiff exit 0). tt vs falcontc: 4 of 22 differ (_VDO, _FPU, _MCH, _SND).
+
+  case  cookie   class    tt           falcontc     disk
+    41  jar:*    EXACT    12: _CPU _VDO _FPU _MCH _SWI _SND _FRB _AKP _IDT _FDC XHDI SCSI (all three)
+    44  _CPU     EXACT    0x0000001E   0x0000001E   0x0000001E
+    45  _VDO     EXACT    0x00020000   0x00030000   0x00030000
+    46  _FPU     EXACT    0x00060000   0x00000000   0x00000000
+    47  _MCH     EXACT    0x00020000   0x00030000   0x00030000
+    48  _SWI     EXACT    0x000000BF   0x000000BF   0x000000BF
+    49  _SND     EXACT    0x00000003   0x0000001F   0x0000001F
+    50  _FRB     PTR_RAM  0x00013350   0x00013350   0x00013350
+    51  _FLK     ABSENT   absent       absent       absent
+    52  _AKP     EXACT    0x00000100   0x00000100   0x00000100
+    53  _IDT     EXACT    0x0000112E   0x0000112E   0x0000112E
+    54  _FDC     EXACT    0x01415443   0x01415443   0x01415443
+    55  __NF     ABSENT   absent       absent       absent
+    56  XHDI     NONZERO  0x00E0F702   0x00E0F702   0x00E0F702
+    57  SCSI     PTR_RAM  0x000050B6   0x000050B6   0x000050B6
+    58  _5MS     ABSENT   absent       absent       absent
+    61  _CF_     ABSENT   absent       absent       absent
+    62  _MCF     ABSENT   absent       absent       absent
+    63  _NET     ABSENT   absent       absent       absent
+    64  NVDI     ABSENT   absent       absent       absent
+    67  NTOS     ABSENT   absent       absent       absent
+    68  EdDI     ABSENT   absent       absent       absent
+  The values equal the 2026-10-02 SCRNINFO probe on EmuTOS 1.4 (measurement-2026-10-02-scrninfo), now
+  measured on the pin; disk (not measured before) = falcontc.
+
+NEWTOS (runs/newtos-jar-r1/, cargo xtask tosdump)
+  kernel8.img c8e75cdcbb1b357e543b9c522639d9b0b38218cdf7f54b7b1c765e7e12a9b91a, DUMPBIOS.NAP (build 1ca7)
+  230ed02fa8cb9d1a8f069450517e3d19935f1c8f06456868fc81d4d42e8ea1ab, card e16eb0753a921aff...;
+  runs/newtos-jar-r1/card.img.manifest: optional_missing none. "ended normally after 19 s: desktop up
+  after DUMPBIOS.NAP, rc=0". BIOS.BIN 202cfbfdcce0a8a9ab99587edd277b1407ce7f4f39cda5d3d819ce45ffa3a2b7,
+  BIOS.LOG adf9f58c9ffb9f9481dd3a2b2ffc89d74a80295aaa9c2b2516176ec7e0c1f376. tosdiff --validate exit 0.
+  Against each of the three references: 15 of 22 cases differ (the same 15).
+
+  case  cookie   NewTOS                        verdict against tt / falcontc / disk
+    41  jar:*    5: NTOS _MCH _IDT _AKP EdDI   DIFF (12 entries, other set and order)
+    44  _CPU     absent                        DIFF (EXACT: 0x1E / absent)
+    45  _VDO     absent                        DIFF (EXACT: 0x00020000 | 0x00030000 / absent)
+    46  _FPU     absent                        DIFF (EXACT: 0x00060000 | 0 / absent)
+    47  _MCH     0xFFFFFFFF                    DIFF (EXACT: 0x00020000 | 0x00030000 / 0xFFFFFFFF)
+    48  _SWI     absent                        DIFF (EXACT: 0xBF / absent)
+    49  _SND     absent                        DIFF (EXACT: 0x03 | 0x1F / absent)
+    50  _FRB     absent                        DIFF (PTR_RAM: not in the jar)
+    51  _FLK     absent                        equal
+    52  _AKP     0x00000000                    DIFF (EXACT: 0x0100 / 0)
+    53  _IDT     0x0000112F                    DIFF (EXACT: 0x112E / 0x112F)
+    54  _FDC     absent                        DIFF (EXACT: 0x01415443 / absent)
+    55  __NF     absent                        equal
+    56  XHDI     absent                        DIFF (NONZERO: not in the jar)
+    57  SCSI     absent                        DIFF (PTR_RAM: not in the jar)
+    58  _5MS     absent                        equal
+    61  _CF_     absent                        equal
+    62  _MCF     absent                        equal
+    63  _NET     absent                        equal
+    64  NVDI     absent                        equal
+    67  NTOS     0x00000100                    DIFF (ABSENT: present)
+    68  EdDI     0x00000001                    DIFF (ABSENT: present)
+  NewTOS' jar = the five seeded cookies (tos-api/src/cookie.rs:223@seed_defaults), in seeding order;
+  _MCH = MCH_NOHARD (ARCH06) recorded as a value, not as absent.
+
+NO-REGRESSION OF THE DUMPER (runs/canary-*.txt)
+  canary-ptr  (measurements/measurement-2026-10-29-tool20/method/canary-ptr.sh, run as it is):
+              xbios-ptr-r1.tsv on tt, BIN+LOG identical to EMUTOS-1a7484ab-XBIOS-ptr.
+  canary-disk (measurements/measurement-2026-10-28-tool07b/method/canary-disk.sh, run as it is):
+              bios-r2.tsv on disk, BIN+LOG sha256 as pinned, test image unchanged.
+
+HOST TESTS
+  make -C tosdump host-test: exit 0 (runs/host-test.txt), incl. the new test_jar (form, refusals, the
+  runner against the stub's jar: count/order, zero-extension, absent, 0xFFFFFFFF, no jar, 70 entries,
+  duplicate tag), the tosdiff "jar cases" section and the self-check over 40 references (37 + 3).
+  cargo xtask test (full): 1828 passed, 0 failed, 1 ignored (runs/xtask-test.txt; = baseline).
+
+FILES
+  method/  oracle-runs.sh, newtos-run.sh, decode-jar.py
+  runs/    oracle-<tt|falcontc|disk>-<1|2>/ (BIOS.BIN, BIOS.LOG, decoded.txt; disk: disk.sha256),
+           selfcheck-<p>.txt, tosdiff-tt-vs-falcontc.txt, tosdiff-falcontc-vs-disk.txt,
+           newtos-jar-r1/ (cargo xtask tosdump's out-dir + decoded.txt), canary-ptr.txt,
+           canary-disk.txt, host-test.txt, xtask-test.txt, test.img.manifest
+  Images, cards and scratch trees are not kept (scratch, deleted); sha256 above. BIOS.BIN files under
+  runs/ are gitignored (*.bin); the references are their copies. manifest.sha256 covers every file of
+  this run except itself.

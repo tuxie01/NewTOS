@@ -1,0 +1,1 @@
+canary ptr: OK (BIN+LOG identical to EMUTOS-1a7484ab-XBIOS-ptr)

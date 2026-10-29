@@ -1,0 +1,15 @@
+BIOS.BIN vs BIOS.BIN -- area BIOS, 22 cases from jar-r1.tsv
+
+case 45  jar _VDO  _VDO video shifter -- bios/machine.c:684-685
+    cookie                   EXACT   BIOS.BIN = 0x00020000   BIOS.BIN = 0x00030000
+
+case 46  jar _FPU  _FPU fputype -- bios/machine.c:689
+    cookie                   EXACT   BIOS.BIN = 0x00060000   BIOS.BIN = 0x00000000
+
+case 47  jar _MCH  _MCH machine, setvalue_mch -- bios/machine.c:693-694
+    cookie                   EXACT   BIOS.BIN = 0x00020000   BIOS.BIN = 0x00030000
+
+case 49  jar _SND  _SND sound bitmap -- bios/machine.c:718-719
+    cookie                   EXACT   BIOS.BIN = 0x00000003   BIOS.BIN = 0x0000001F
+
+4 of 22 cases differ

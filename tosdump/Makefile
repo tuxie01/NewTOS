@@ -105,14 +105,15 @@ $(BUILD)/DUMPRAST.NAP: $(RAST_SRC) abi/newtos_svc.c $(wildcard core/*.h) | $(BUI
 	./build-dumprast-newtos.sh $@
 
 # .PRG like the others, so the oracle's --auto and the desktop start it the
-# same way; it makes no AES call.
+# same way; it makes no AES call.  A jar case (TOOL18) reads the cookie jar
+# through the SCRNINFO backend's td_jar_read (Supexec), the one copy of it.
 dumpbios-m68k: $(BUILD)/DUMPBIOS.PRG
-$(BUILD)/DUMPBIOS.PRG: $(BIOS_SRC) abi/m68k_trap.c $(wildcard core/*.h) | $(BUILD)
-	$(M68K_CC) $(M68K_CFLAGS) $(BIOS_SRC) abi/m68k_trap.c -o $@
+$(BUILD)/DUMPBIOS.PRG: $(BIOS_SRC) abi/m68k_trap.c abi/m68k_scrninfo.c $(wildcard core/*.h) | $(BUILD)
+	$(M68K_CC) $(M68K_CFLAGS) $(BIOS_SRC) abi/m68k_trap.c abi/m68k_scrninfo.c -o $@
 	@$(CROSS_MINT)size $@
 
 dumpbios-newtos: $(BUILD)/DUMPBIOS.NAP
-$(BUILD)/DUMPBIOS.NAP: $(BIOS_SRC) abi/newtos_svc.c $(wildcard core/*.h) | $(BUILD)
+$(BUILD)/DUMPBIOS.NAP: $(BIOS_SRC) abi/newtos_svc.c abi/newtos_scrninfo.c $(wildcard core/*.h) | $(BUILD)
 	./build-dumpbios-newtos.sh $@
 
 # .TTP: it takes the report file name as its argument.  appl_init works from

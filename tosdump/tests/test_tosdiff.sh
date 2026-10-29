@@ -597,6 +597,96 @@ else
 	fails=$((fails + 1))
 fi
 
+# --- jar cases (TOOL18) --------------------------------------------------
+#
+# The stub dump and its table come from test_jar.  A jar case's value is
+# ret_hi:ret (ret at 36, ret_hi at 296), all ones when the tag is absent;
+# jar:* holds the tags at capture (40) + 4k.  Records:
+#   0 jar:* EXACT            1 _CPU EXACT          2 _MCH EXACT
+#   3 XHDI PTR_RAM           4 _FRB PTR_RAM (odd)  5 _FLK NONZERO (zero)
+#   6 NTOS ABSENT            7 _SWI ABSENT (there) 8 EdDI NONZERO (absent)
+#   9 Bconstat(2)            10 _MCH EXACT
+# Records 4, 5, 7 and 8 fail their rule on purpose, so even two identical
+# dumps differ in exactly those four cases.
+JARBIN="$BUILD/stub-jar.bin"
+JARTSV="$BUILD/stub-jar.tsv"
+jpatch() {   # jpatch <out> <record> <offset> <printf-bytes>  (from JARBIN)
+	[ -f "$1" ] || cp "$JARBIN" "$1"
+	printf "$4" | dd of="$1" bs=1 seek=$((32 + $2 * 320 + $3)) \
+	    conv=notrunc status=none
+}
+if [ -f "$JARBIN" ] && [ -f "$JARTSV" ]; then
+	"$TOSDIFF" "$JARTSV" "$JARBIN" "$JARBIN" >"$TMP/jsame.out" 2>&1
+	check "jar: identical dumps differ only in the refused cookies" 1 $?
+	grep_out "jar: four cases" "$TMP/jsame.out" "4 of 11 cases differ"
+	grep_out "jar: the case names its cookie" "$TMP/jsame.out" \
+	    "^case 6  jar _FRB  _FRB, odd: refused"
+	grep_out "jar: PTR_RAM on the value" "$TMP/jsame.out" \
+	    "cookie *PTR_RAM stub-jar.bin = 0x00000401, is odd"
+	grep_out "jar: NONZERO on the value" "$TMP/jsame.out" \
+	    "cookie *NONZERO stub-jar.bin = 0x00000000, is zero"
+	grep_out "jar: ABSENT, but present" "$TMP/jsame.out" \
+	    "cookie *ABSENT stub-jar.bin = 0x000000BF, present"
+	grep_out "jar: NONZERO, but absent" "$TMP/jsame.out" \
+	    "cookie *NONZERO stub-jar.bin = not in the jar"
+	if grep -q "^case \(2\|3\|4\|5\|8\|11\|12\) " "$TMP/jsame.out"; then
+		echo "  FAIL jar: a case that passes its rule was flagged"
+		fails=$((fails + 1))
+	fi
+
+	# EXACT: present on one side, absent on the other
+	rm -f "$TMP/j_ab.bin"
+	jpatch "$TMP/j_ab.bin" 2 36 '\377\377\377\377'
+	jpatch "$TMP/j_ab.bin" 2 296 '\377\377\377\377'
+	"$TOSDIFF" "$JARTSV" "$JARBIN" "$TMP/j_ab.bin" >"$TMP/jab.out" 2>&1
+	check "jar: present against absent differs" 1 $?
+	grep_out "jar: absent is named" "$TMP/jab.out" \
+	    "cookie *EXACT *stub-jar.bin *= 0x00020000 *j_ab.bin *= absent"
+	grep_out "jar: the EXACT case counts" "$TMP/jab.out" "5 of 11 cases differ"
+
+	# EXACT: a value 0xFFFFFFFF (high half 0) is not absent
+	rm -f "$TMP/j_ff.bin"
+	jpatch "$TMP/j_ff.bin" 2 36 '\377\377\377\377'
+	"$TOSDIFF" "$JARTSV" "$TMP/j_ab.bin" "$TMP/j_ff.bin" >"$TMP/jff.out" 2>&1
+	check "jar: 0xFFFFFFFF against absent differs" 1 $?
+	grep_out "jar: 0xFFFFFFFF is a value" "$TMP/jff.out" \
+	    "j_ab.bin *= absent *j_ff.bin *= 0xFFFFFFFF"
+
+	# jar:*: one tag differs -- both lists are printed as tags
+	rm -f "$TMP/j_or.bin"
+	jpatch "$TMP/j_or.bin" 0 40 'NTOS'
+	"$TOSDIFF" "$JARTSV" "$JARBIN" "$TMP/j_or.bin" >"$TMP/jor.out" 2>&1
+	check "jar: a different order differs" 1 $?
+	grep_out "jar: the order of a" "$TMP/jor.out" \
+	    "jar *EXACT *stub-jar.bin *= 6: _CPU _MCH _SWI XHDI _FRB _FLK"
+	grep_out "jar: the order of b" "$TMP/jor.out" \
+	    "j_or.bin *= 6: NTOS _MCH _SWI XHDI _FRB _FLK"
+	if grep -q "capture\[" "$TMP/jor.out"; then
+		echo "  FAIL jar: jar:*'s capture was compared byte-wise"
+		fails=$((fails + 1))
+	fi
+
+	# jar:*: the count differs
+	rm -f "$TMP/j_ct.bin"
+	jpatch "$TMP/j_ct.bin" 0 36 '\000\000\000\005'
+	"$TOSDIFF" "$JARTSV" "$JARBIN" "$TMP/j_ct.bin" >"$TMP/jct.out" 2>&1
+	check "jar: a different count differs" 1 $?
+	grep_out "jar: the count" "$TMP/jct.out" "j_ct.bin *= 5: _CPU"
+
+	# the self-check judges the per-side classes, never EXACT
+	"$TOSDIFF" --selfcheck "$JARTSV" "$TMP/j_or.bin" >"$TMP/jsc.out" 2>&1
+	check "jar: the self-check flags the refused cookies" 1 $?
+	grep_out "jar: self-check counts four" "$TMP/jsc.out" \
+	    "the oracle fails a rule -- 4 case(s)"
+	if grep -q "EXACT" "$TMP/jsc.out"; then
+		echo "  FAIL jar: the self-check compared an EXACT cookie"
+		fails=$((fails + 1))
+	fi
+else
+	echo "  FAIL stub jar dump missing: $JARBIN / $JARTSV"
+	fails=$((fails + 1))
+fi
+
 if [ "$fails" -eq 0 ]; then
 	echo "  ok"
 	exit 0

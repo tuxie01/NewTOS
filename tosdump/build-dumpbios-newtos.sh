@@ -63,8 +63,10 @@ echo "lld   : $LLD"
 echo "build : $BUILD_ID"
 echo
 
+# abi/newtos_scrninfo.c: td_jar_read, which a jar case calls (TOOL18) -- the
+# SCRNINFO backend's one copy of the jar read.
 SRC=(core/record.c core/cases.c core/dump.c core/log.c core/runner_call.c
-     core/dumpbios.c abi/newtos_svc.c)
+     core/dumpbios.c abi/newtos_svc.c abi/newtos_scrninfo.c)
 
 rm -f "$OBJ"/*.o
 for s in "${SRC[@]}"; do
