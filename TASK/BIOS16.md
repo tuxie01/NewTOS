@@ -57,3 +57,22 @@ direkte Schreibung, danach liefert `Setexc(n,-1)` den geschriebenen Wert.
   Entscheidung sagt „nie aufrufen“. Developer prueft, welche Zellen bedient
   sind, und meldet vor der Umsetzung, falls die Uebernahme einen bedienten
   Haken aufrufbar macht.
+
+## Entscheidung (Anwender, 2026-10-30, nach dem Bericht zur offenen Frage)
+
+- **Option B:** direkt geschriebene Werte am Ende des Systemaufrufs fuer alle
+  Zellen `$008`–`$407` uebernehmen, die NewTOS nur speichert. `$408`
+  (`etv_term`) bleibt: Warnung, `Setexc(0x102,-1)` liefert den per `Setexc`
+  gesetzten Wert; als Restabweichung in `docs/COMPATIBILITY.md` (EmuTOS ruft
+  ein direkt geschriebenes `etv_term`, `references/emutos/bdos/proc.c:607-608`).
+- **Besitz: ja.** Uebernommene Werte bekommen einen Besitzer nach ADR-031
+  Regel 3; beim `Pterm` wird der alte Wert zurueckgeschrieben (XBRA-Regel wie
+  bei `Setexc`-Haken); `Ptermres` behaelt ihn.
+- **Umfang:** `$008`–`$408` wie heute; `etv_xtra` (`$40C`) und Vektoren 0/1
+  bleiben draussen, bis gemessen.
+- Mit dabei: `swv_vec` mit `just_rts` vorbelegen, die zwei veralteten
+  Kommentare.
+- **Abnahme:** Sonde beidseitig (MEASURED): direkte Schreibung, `Setexc`-Abfrage
+  liefert den geschriebenen Wert; nach `Pterm` auf NewTOS der alte Wert
+  zurueck — dass das Zurueckschreiben vom Orakel abweicht, wird dokumentiert.
+  Keine neue Abweichung in `bios-core-r1`, `super-r1`, `sxprobe`, `hkprobe`.
