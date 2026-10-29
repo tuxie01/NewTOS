@@ -918,6 +918,20 @@ after deep trees) do not occur; behaviour that depends on a directory node's
 identity rather than its path may differ and is measured case by case
 before it is accepted (e.g. TASK/FS24).
 
+**`Dsetpath` after a media change may take the change where EmuTOS does
+not, and vice versa** — user decision, 2026-10-30 (TASK/FS24, under
+`docs/MEMORY.md` ADR-033). EmuTOS checks a `Dsetpath` path in its DND tree
+without a disk access when the folder is cached, so a pending media change on
+a fixed disk stays pending (`Mediach` 2) and a cached folder is accepted even
+if it is gone from the new medium (`references/emutos/bdos/fsdir.c:1407-1487`).
+NewTOS has no DND tree and reads each path step, so it takes the change and
+logs the drive in again. Measured with `tosdump/cases/gemdos-mc-fs24.tsv`
+(`measurements/measurement-2026-10-29-fs24/RUNINFO.TXT`): case 76 (S04) and
+V3 (case 149: the folder survived buffer traffic in EmuTOS's DND tree) differ;
+a peek into NewTOS's sector cache (option B) would have made V2 (case 117,
+folder never logged) newly differ and left V3 different, so no folder cache is
+built. No known program depends on it.
+
 **Dragging several desktop icons processes all of them** — user decision,
 2026-10-17 (DESK48, option b). EmuTOS' `fun_file2any` calls
 `desk_clear(DESKWH)` inside the `win_isel` loop of
