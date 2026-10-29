@@ -96,3 +96,11 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Messung zuerst) — A
   Orakel (`Bconstat(1)` -1, `Bconstat(2)` 0, Bytes im Ring von Geraet 0);
   raspi4b unveraendert (verwirft).
 - Platz in der Reihe unveraendert (nach BIOS15).
+
+## Anwenderentscheidung 2026-10-29 (Bedienung von `cargo xtask run`)
+
+- Option (b): `cargo xtask run` auf qemu-virt startet standardmaessig mit
+  Fenster (`--window`, Tastatur = USB); das Terminal ist AUX (seriell). Ein
+  ausdruecklicher Schalter fuer Laeufe ohne Anzeige bleibt (z. B.
+  `--headless`). Lauf-Anleitungen in Doku und README nachziehen (CLAUDE.md,
+  `docs/`, Erinnerung „QEMU window view command“).

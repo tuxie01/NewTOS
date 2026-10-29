@@ -253,10 +253,13 @@ still reset `mousevec` to a no-op.
   (`tos-api/src/vdi/mouse.rs::feed_relative`). Absolute (`type == 2`) and
   keycode (`type == 4`) modes are not modelled by the current relative-only
   synthesiser.
-- **Step-2 — not wired.** `Initmous` (XBIOS `0x00`) has **no entry in the
-  NewTOS XBIOS dispatcher** (`tos-api/src/xbios/mod.rs` — only `0x22`
-  Kbdvbase is present); calling it returns `EINVFN` instead of configuring
-  the mouse or installing `mousevec`. And because the USB decoder calls
+- **Not served (ADR-031).** `Initmous` (XBIOS `0x00`) answers with its
+  **function number** (`0x00`), not `EINVFN` — the XBIOS dispatcher's
+  catch-all returns the function id
+  (`tos-api/src/xbios/mod.rs:158@INITMOUS`); since TASK/BIOS15 a call with
+  type 1/2/4 and a non-zero vector writes the one ADR-031 warning. It does not
+  configure the mouse or install `mousevec`. [corrected 2026-10-29, BIOS15
+  side finding] And because the USB decoder calls
   `feed_relative` directly rather than dispatching through
   `kbdvecs.mousevec` (which is all-zero, see `22-kbdvbase.md`), the
   "install `newvec`" and "reset to `just_rts`" contract steps are not

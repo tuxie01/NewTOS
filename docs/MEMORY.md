@@ -3112,6 +3112,14 @@ which is served.
 - A hook moves to "served" only by amending this table, with the program
   that needs it as evidence.
 
+*Addendum 2026-10-29 (user decision on TASK/BIOS15).* Rule 4/5 gain one
+detection point: page-0 vector cells are also compared with their defaults
+**after every trap a process makes in the super state** — read-only, warn
+only, never called or acted on. Without it the case this ADR was written for
+stays silent: TeraDesk's `force_mediach` puts `hdv_*` back before it leaves
+the super state. Implementation: `tos-api/src/bdos/process/hooks.rs`
+(TASK/BIOS15.md, `measurements/measurement-2026-10-29-bios15/RUNINFO.TXT`).
+
 ## Template for new ADRs
 
 ```markdown

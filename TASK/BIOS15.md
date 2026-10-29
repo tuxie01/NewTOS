@@ -1,6 +1,6 @@
 # BIOS15 — ADR-031 umsetzen: nicht bediente OS-Haken melden, Besitz, `prt_*`-Standard
 
-Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS15-STATUS-DONE.MD)); eine Erkennungsstelle zur Bestaetigung beim Anwender · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28 (ADR-031, aus [BIOS03](BIOS03.md))
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS15-STATUS-DONE.MD)), vom Anwender abgenommen · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28 (ADR-031, aus [BIOS03](BIOS03.md))
 
 ## Sachverhalt
 
@@ -92,7 +92,7 @@ Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS15-STATUS-DONE.MD)); eine Erkenn
   Timer `control`; Spec `docs/api/xbios/0d-mfpint.md`). Sonde `hkprobe`
   dauerhaft unter `tosdump/probes/`. Beleg
   `measurements/measurement-2026-10-29-bios15/RUNINFO.TXT`.
-- **Zur Bestaetigung (Anwender):** zusaetzliche Erkennungsstelle „nach jedem
+- **Bestaetigt (Anwender 2026-10-29, Nachtrag zu ADR-031):** zusaetzliche Erkennungsstelle „nach jedem
   Trap im Super-Zustand“ fuer Seite-0-Zellen. ADR-031 Regel 4 nennt nur das
   Verlassen des Super-Zustands; ohne die Zusatzstelle bliebe TeraDesks
   `force_mediach` still, weil es `hdv_*` vor dem Verlassen zuruecksetzt.
