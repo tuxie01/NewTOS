@@ -17,6 +17,34 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidu
   ([XBIOS03](XBIOS03.md)) und BIOS-STOR-010 zu ACCEPTED-Abweichungen; offen
   bleibt nur die Warnung.
 
+## Lokalisierung (Lead, 2026-10-29)
+
+- Erkennungsstellen → NewTOS (`cargo xtask deps <fn> --down` + `mapping.tsv`):
+  - `setexc` → `tos-api/src/bios/vectors.rs@setexc` (`--up` 313 / 27 mit
+    Gegenstueck).
+  - Seite-0-Zellen beim Verlassen des Super-Zustands →
+    `tos-api/src/bdos/process/superstate.rs:38@set_super`, `:66@super_call`
+    (EmuTOS-Seite: keine eigene Funktion, Zellen werden direkt beschrieben).
+  - `Kbdvbase`-Slots → `tos-api/src/xbios/kbdvecs.rs@kbdvbase` (`--up` 18 / 3);
+    Warnmuster `tos-api/src/xbios/kbdvecs.rs:330@accessory_hook_unwarned`.
+  - `Initmous` → Arm im XBIOS-Dispatcher `tos-api/src/xbios/mod.rs@dispatch`
+    (keine Zeile in `mapping.tsv`); `mfpint` (`--up` 10 / 3) und `xbtimer`
+    (7 / 2) **ohne Gegenstueck**.
+  - `vex_butv`/`motv`/`curv`/`timv` → `tos-api/src/vdi/mouse.rs:937@vex_butv`,
+    `:941@vex_motv`, `:945@vex_curv`, `:992@vex_timv` (VDI-Schicht, ohne
+    `mapping.tsv`-Zeilen).
+  - `prt_stat`/`prt_vec`-Startwert →
+    `tos-api/src/bdos/process/loader.rs:1281@prt_stat` (`populate_sysvars`).
+  - Besitz bei `Pterm`: `xterm` → `tos-api/src/bdos/process/pterm.rs@terminate`
+    (`--up` 299 / 25).
+- Ohne Gegenstueck in `bios`/`bdos` (heutiges `mapping.tsv`): `mfpint`,
+  `xbtimer` und die Start-/Erkennungsfunktionen wie in BIOS01; nach TOOL17 neu
+  klassifizieren. Der Fix ergaenzt die Zeilen der Funktionen, die er beruehrt.
+- Retest: `bios-core-r1` (Setexc-Faelle), `xbios-chardev-r1` (Kbdvbase),
+  `xbios-system-r1`, `super-r1`, Hosttests der Prozessverwaltung, Doom
+  (`kbdvec` muss weiter wirken), TeraDesk-Start und -Shutdown (haengt
+  `etv_critic`, `hdv_*`, Vektoren ein → genau die Warnungen, kein Absturz).
+
 ## Arbeit
 
 0. Lokalisierung (Lead, vor Beginn): `cargo xtask deps <fn> --down` +
