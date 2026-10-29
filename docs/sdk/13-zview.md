@@ -30,7 +30,7 @@ run time as LDG modules. On NewTOS it is `ZVIEW.NAP` plus ten codec modules
 |---|---|
 | Source pin | `sdk/zview/z-tools-04805b7.tar.xz` — a `git archive` subset of z-tools commit `04805b7` (zview/, common/, `ztask/gmem.{c,h}`; without the PDF fonts, the m68k goodies, HypView); command, origin and licence in `sdk/zview/zview-sources.sha256` |
 | Build | `sdk/zview/build-zview.sh` (extract, shadow tree + overlays, compile, link, map check, stack patch, RSC, dist, samples) |
-| Overlays | `sdk/zview/overlay/zview/…` — 13 files, §3 |
+| Overlays | `sdk/zview/overlay/zview/…` — 14 files, §3 |
 | Prelude | `sdk/zview/include/zview-ints.h` (`-DHAVE_INTS_DEFINED -include …`) |
 | Samples | `sdk/zview/samples/gen-samples.py` → `sdk/zview/build/samples/{IMAGES,expected}` (15 synthesised files, no third-party pictures) |
 | Output | `sdk/zview/build/dist/ZVIEW/` = `ZVIEW.NAP`, `ZVIEW.RSC`, `ICONS\*.GOD`, `CODECS\*.NLD` |
@@ -63,7 +63,7 @@ Codecs are linked like their makefiles (`-lshare -lldg` + image library) with
 `ls_check_module_map` (`sdk/libshare/libshare-link.sh`): libshare's
 allocator only. Two builds are byte-identical.
 
-## 3. Overlays (13 files)
+## 3. Overlays (14 files)
 
 | File | Kind | Change |
 |---|---|---|
@@ -72,6 +72,7 @@ allocator only. Two builds are byte-identical.
 | `sdk/zview/overlay/zview/winimg.c` | PDF omission | `if PDF return WindPdf(…)` removed (`:969-970`) |
 | `sdk/zview/overlay/zview/av_prot.c` | message pointer (endianness + width) | `VA_START` command pointer read as the hi/lo WORD pair (`:91`), the convention of the WinDom overlays |
 | `sdk/zview/overlay/zview/custom_font.c` | endianness | `draw_text()` builds each glyph's 1-plane MFDB WORD by WORD (row in bits 15..8, rows from `my_font_8[]` big-endian) instead of upstream's byte walk (`:182-183`, `:188-195`), which on little-endian put every row into bits 7..0 — outside the copied columns, so the browser drew no file/folder names (TASK/ZVIEW01; host test `sdk/zview/tests/custom-font-host.c`) |
+| `sdk/zview/overlay/zview/zvdi/color.c` | endianness (+ one LP64 mask) | `remap_color()` takes R, G, B from the `int32` 0x00RRGGBB by shifts and compares the `SRGB` entries field by field; `color_lookup()` assembles `idx << 24 \| RGB` from the fields and tests `0xFFFFFFnn` with a 32-bit mask (upstream: big-endian byte view, red matched to green, blue to black; `~0xFFuL` 64-bit). Reached only on ≤ 8-plane screens, latent on NewTOS (16 planes, ADR-024); fixed after the host measurement `sdk/zview/tests/color-host.sh` (pristine: 38 of 41 checks fail; TASK/SDK04 S3) |
 | `sdk/zview/overlay/zview/plugins/degas/degasldg.c` | endianness + bit-field order | header word (compression bit 15, resolution bits 1-0) and the 16 ST palette words decoded big-endian into the struct |
 | `sdk/zview/overlay/zview/plugins/neochrome/neoldg.c` | endianness | the 128-byte header's words swapped in place |
 | `sdk/zview/overlay/zview/plugins/godpaint/godldg.c` | endianness | file words swapped once after reading; encoder writes width/height/pixels big-endian |
@@ -88,10 +89,9 @@ and left alone: bmp, tga (byte-wise parsers), png, gif, jpg (library-based).
 casts (clang reported none besides `chrono.c`'s `Super` token, harmless: the
 SDK's `Super` is a no-op, [05](05-abi-pitfalls.md) B4). `winimg.c:1006`,
 `sdk/zview/z-tools-04805b7/zview/infobox.c:294` print `uint32` colours with `%ld` — formally a mismatch,
-value-correct (register-passed, AArch64 W-writes zero-extend). `sdk/zview/z-tools-04805b7/zview/zvdi/color.c`
-`remap_color`/`color_lookup` (`:66-113`) view an `int32` and the `SRGB`
-struct big-endian — reached only on ≤ 8-plane screens; NewTOS is fixed at
-16 planes (ADR-024): latent. `gifldg.c` keeps pointers to `reader_init()`'s
+value-correct (register-passed, AArch64 W-writes zero-extend). `sdk/zview/overlay/zview/zvdi/color.c`
+`remap_color`/`color_lookup`, latent here (≤ 8-plane screens only), are
+patched since TASK/SDK04 (table above). `gifldg.c` keeps pointers to `reader_init()`'s
 stack locals in `img_info` (`:359-360`) and reads them in `reader_read()` —
 undefined upstream, works here as on the 68k (verified: GIF pixel-exact).
 `sdk/zview/z-tools-04805b7/zview/plugins/bmp/bmpldg.c:256` writes `buff[2]` of a 2-byte array (4-bit BMP path) —

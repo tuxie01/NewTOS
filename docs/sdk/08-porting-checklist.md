@@ -58,7 +58,12 @@ Tick each line; every line points at the section that explains it.
 - [ ] Every TOS structure the app reads or writes itself (`BASEPAGE`, `_DTA`,
       `_DISKINFO`, `OSHEADER`, cookie slots, `_MD`, …) is either one the
       overlay pins to 32-bit fields, or gets a fixed-width declaration with
-      `_Static_assert`s → [05 B1](05-abi-pitfalls.md#b1-long-and-pointers-are-8-bytes-tos-structures-are-32-bit-on-the-wire)
+      `_Static_assert`s → [05 B1](05-abi-pitfalls.md#b1-long-and-pointers-are-8-bytes-tos-structures-are-32-bit-on-the-wire).
+      System variables: `<mint/sysvars.h>` declares every LONG/pointer cell
+      as a 32-bit `volatile __UINT32_TYPE__ *` and `OSHEADER` at its 48 wire
+      bytes; `NEWTOS_SYSBASE` / `NEWTOS_COOKIE_JAR` turn `_sysbase` /
+      `_p_cookies` into typed pointers. An app's own `*(long *)0x4F2`-style
+      macro needs the same 32-bit read
 - [ ] Cookie jar accessed via `Getcookie()`/`Ssystem`, or as 4-byte reads
       with 8-byte slots → [05 B2](05-abi-pitfalls.md#b2-the-cookie-jar-at-5a0)
 - [ ] Numeric `_MCH`/`_VDO` comparisons checked. NewTOS reports
@@ -72,8 +77,10 @@ Tick each line; every line points at the section that explains it.
 - [ ] No 32-bit IDs built from byte arrays or unions (`char[4]` read as
       `long`, cookie or XBRA tags): on little-endian AArch64 the bytes come
       out reversed → TASK/SDK05.md
-- [ ] No dereference of `Kbdvbase()`; returned pointers range-checked;
-      screen writes assume XRGB8888 → [05 B3](05-abi-pitfalls.md#b3-kernel-addresses-vs-user-addresses)
+- [ ] `Kbdvbase()` table used through `_KBDVECS` (8-byte slots, `kbdvec`
+      before it); a returned pointer that may be a kernel address
+      range-checked (user addresses < 2 GiB); screen writes assume XRGB8888
+      → [05 B3](05-abi-pitfalls.md#b3-kernel-addresses-vs-user-addresses)
 - [ ] `Super`/`Supexec` bracket idioms reviewed: they run, but grant no
       privilege; shutdown/reset paths become live → [05 B4](05-abi-pitfalls.md#b4-super-supexec-supertouser)
 - [ ] Directory probes via `Fattrib` expect the TOS4/FreeMiNT answer
@@ -107,7 +114,8 @@ Tick each line; every line points at the section that explains it.
 - [ ] Pointers in AES messages (`*(char **)&msg[3]`, AV protocol, BubbleGEM)
       carried as two WORDs, high first → [05 B18](05-abi-pitfalls.md#b18-pointers-inside-aes-messages-appl_write-av-protocol-bubblegem)
 - [ ] Binary file formats read with `Fread` into structs decoded byte by
-      byte (big-endian, 4-byte `long`, 2-byte alignment) → [05 B19](05-abi-pitfalls.md#b19-m68k-binary-file-formats-read-straight-into-structs)
+      byte (big-endian, 4-byte `long`, 2-byte alignment), file magics
+      included (`Fread(h, 4, &long_magic)`) → [05 B19](05-abi-pitfalls.md#b19-m68k-binary-file-formats-read-straight-into-structs)
 
 ## On the image and in the machine
 

@@ -119,6 +119,7 @@ therefore the wrong shape on LP64.
 | `BASEPAGE` | 256 → 376; `p_env` moves from 0x2C to 88 | every field after `p_lowtpa` misread by a program using `_base->…` (fixed as a *latent* trap before a port hit it: commit `ff67aa6`, "Fixes the latent lp64-tos-struct-trap for readers") | `sdk/libc/overlay/include/mint/basepage.h` — every field `__UINT32_TYPE__`/`__INT32_TYPE__`, `_Static_assert` on `p_hitpa@4`, `p_tbase@8`, `p_env@0x2c`, `sizeof == 256` (`:35-64`) |
 | `_DTA` | 44 → 48; `dta_size` widens, `dta_name` moves 30 → 34 | every filename returned by `Fsfirst`/`Fsnext` shifted by 4 bytes (QED reads the DTA directly) | `sdk/libc/overlay/include/mint/ostruct.h:70-92@_DTA` — `dta_size` is `__INT32_TYPE__`, struct `packed`, offsets pinned to `makbuf` (`tos-api/src/bdos/fs/find.rs`) |
 | `_DISKINFO` | 16 → 32 | TeraDesk's drive info showed garbage: `b_free` read `(b_total << 32) \| b_free`, `b_secsiz`/`b_clsiz` read uninitialised stack (`TASK/T01.md`) | `sdk/libc/overlay/include/mint/ostruct.h:22-47@_DISKINFO` — four `__UINT32_TYPE__`, `packed`, pinned to the kernel writer `tos-api/src/bdos/fs/drive.rs` (`5a5820b`, 2026-09-17) |
+| `<mint/sysvars.h>`: page-0 cells, `OSHEADER`, crash dump | every LONG/pointer cell 4 → 8 (`*_sysbase` fused `_shell_p`, `*_p_cookies` fused `ramtop`); `OSHEADER` 48 → 96 | latent: the SDK's readers went through `get_sysvar()` or their own 32-bit reads (TeraDesk `gettos.c`, WinDom `vq_tos.c`, DOOM) | `sdk/libc/overlay/include/mint/sysvars.h` (TASK/SDK04) — every LONG/pointer cell `volatile __UINT32_TYPE__ *` at its `docs/api/bios/_boot-init.md` §7 address; `OSHEADER` 48 bytes with `__UINT32_TYPE__` pointer members, every offset pinned (`docs/api/structures/osheader.md`); the `$384` dump area 104 bytes; host check `sdk/libc/tests/sysvars-layout.sh` |
 
 **Symptom** in general: fields read as two adjacent 32-bit values fused into
 one, or as stack garbage; filenames shifted; a pointer that is
@@ -145,13 +146,20 @@ Three of them are read by a built application today
 
 | typedef | m68k → LP64 | Reader | State |
 |---------|-------------|--------|-------|
-| `OSHEADER` | 48 → 96 | TeraDesk `gettos.c` (`_sysbase->os_version`), apitest T04 | correct **by accident**: only `os_entry`/`os_version` at offsets 0/2 precede the first pointer; everything from `reseth` on is shifted |
+| `OSHEADER` | 48 → 96 | TeraDesk `gettos.c` (`_sysbase->os_version`), apitest T04 | was correct **by accident** (only `os_entry`/`os_version` precede the first pointer); since TASK/SDK04 the overlay `<mint/sysvars.h>` declares it at its 48 wire bytes (table above) |
 | `MFDB` | 20 → 24 | TeraDesk, QED via cflib | correct: the kernel decodes the MFDB at the caller's ABI width (`tos-api/src/vdi/raster.rs:93-105@read`); `fd_addr` is a real pointer and cannot be pinned to 32 bits |
 | `_KEYTAB` | 28 → 56 | TeraDesk `xdevent.c`, QED via cflib `nkcc` | correct: `Keytbl` writes each pointer field at the caller's width into the process's own KEYTBL area (`tos-api/src/xbios/keytbl.rs`) |
 
 `_MD`/`_MPB` (behind `Getmpb`), `_KBDVECS`, `_IOREC`, `_MAPTAB`, `_BCONMAP`,
 `_PBDEF`, `_DSPBLOCK`, `META_INFO_*`, `HDINFO`, `BBPB`, `SDDB`,
 `__FONT`, `MCF_COOKIE`, `_CCONLINE` diverge and are read by nobody today.
+Three of them are not a defect but the decided LP64 contract, and the header
+pins it with `_Static_assert` so a change on either side is seen: `_MD`/`_MPB`
+(32/24 bytes, user decision O1 = A, `docs/api/bios/00-getmpb.md` V1/V4; the
+kernel follows in TASK/BIOS06), `_KBDVECS` (8-byte slots,
+`docs/api/xbios/22-kbdvbase.md` B1) and `_IOREC` (24 bytes,
+`docs/api/xbios/0e-iorec.md` F1; checked by `sdk/libc/tests/iorec-layout.sh`).
+`HDINFO` (behind `pun_ptr`) has no layout in `docs/api` yet and stays unpinned.
 `__LINEA` is not a divergence to watch: NewTOS exports no LINEA block and
 `__aline` stays NULL by design (ADR-030).
 **If your port reads one of them, it is the next `_DISKINFO`.** Note that
@@ -187,7 +195,11 @@ trap (`sdk/libc/newtos-arch/getcookie.c`), and cflib's `cookie.c` already
 takes that branch under clang (`TASK/X01.md`, correction 2). If the app
 *must* scan the jar itself, read `$5A0` as a **4-byte** value
 (`Setexc(0x5A0/4, -1)` returns exactly that) **and** declare the slot as two
-`__UINT32_TYPE__` — both halves are needed. TeraDesk's live path
+`__UINT32_TYPE__` — both halves are needed. Since TASK/SDK04 the SDK's
+`<mint/sysvars.h>` has both: `NEWTOS_COOKIE` (the 8-byte slot, `tag`@0,
+`value`@4, `_Static_assert`ed) and `NEWTOS_COOKIE_JAR` (the jar through the
+4-byte `$5A0` cell, zero-extended); `_p_cookies` itself is a
+`volatile __UINT32_TYPE__ *` there. TeraDesk's live path
 (`-D_TOS_ONLY`, so `find_cookie` takes the `Setexc` branch) had the first
 and not the second: the pointer was right, the 16-byte `COOKIE` stride still
 made `find_cookie` miss every cookie but an even-slot one with value 0. The
@@ -197,6 +209,14 @@ walks the slot as two `uint32_t`; host test `td-cookie-host`
 (narrowing the ported struct, or an LP64 mirror) is an open ABI decision,
 not done (`_cookie-jar.md:307-309`). Writes into the mirror never reach the
 kernel jar; use `Ssystem(S_SETCOOKIE)`.
+
+**Cookie values are zero-extended.** `Getcookie(tag, &v)` hands `Ssystem`
+a `long v = 0`, and the kernel stores the 32-bit value into its low four
+bytes (`sdk/libc/newtos-arch/getcookie.c:35@Getcookie`,
+`tos-api/src/gemdos/ssystem.rs:366@put_u32`): a value with bit 31 set
+(`_MCH` = `0xFFFFFFFF`) arrives as a large positive `long`, where the 68k's
+32-bit LONG was negative. Compare it as `(unsigned int)` or narrow it first
+([08](08-porting-checklist.md), the `_MCH`/`_VDO` item).
 
 ### B3. Kernel addresses vs. user addresses
 
@@ -220,9 +240,18 @@ phys`); a `&'static` returned as-is is unreachable from EL0. Measured 2026-09-05
 | `Iorec` (XBIOS 14) | not implemented (returns the function number) | open |
 | `Bconmap` | not a pointer (`0x2C`) | n/a |
 
-**Do**: never dereference a pointer from `Kbdvbase`; range-check any returned
-pointer against the process window (`< 32 MiB`) before use — apitest's
-`el0_readable()` does exactly that and reports instead of faulting. When
+**Do**: use the `Kbdvbase` pointer as on TOS. It addresses the process's own
+table, readable and writable at EL0 (`_KBDVECS` in `<mint/ostruct.h>`, 8-byte
+slots, `kbdvec` in the slot before it; `docs/api/xbios/22-kbdvbase.md` B1);
+installing a `kbdvec` hook is a plain store into that slot
+(`sdk/apps/doom/doomgeneric_gem.c:1931@Kbdvbase`). (Corrected by TASK/SDK04:
+this entry used to say "never dereference a pointer from `Kbdvbase`" and
+"range-check against the process window (`< 32 MiB`)" — both from before
+KEYS02 and ARCH03.) A returned pointer that might still be a kernel address
+(the symptom above) is told by its range: every user address is below 2 GiB
+(A2, plan invariant I2) — apitest's `el0_readable()`
+(`sdk/apps/apitest/apitest.c:589@el0_readable`, bound `NEWTOS_USER_VA_TOP`)
+checks exactly that and reports instead of faulting. When
 writing to the screen through `Physbase`, the pixel format is the
 framebuffer's own **XRGB8888**, not bit-planes (`sdk/examples/physbase.c:21@XRGB8888`),
 and the page size for double buffering has to be probed with
@@ -545,9 +574,14 @@ the same for any other `strong_alias`/`weak_alias` across files.
 **Symptom**: `printf` output vanishes behind the desktop; a `.NAP` that
 prints scrolls text over its own window.
 
-**Cause**: a `.NCP` gets the VT52 text screen and the "press any key" pause
-(`kernel/src/shell_loop.rs:309@sh_chgrf`, `kernel/src/shell_loop.rs:377@sh_toalpha`); a `.NAP` runs on the GEM screen with no
-console handoff. `AUTO` programs run **before** the AES; their output is
+**Cause**: a `.NCP` gets the VT52 text screen
+(`kernel/src/shell_loop.rs:309@sh_chgrf`, `kernel/src/shell_loop.rs:377@sh_toalpha`: arrow, mouse off,
+`gsx_graphic(FALSE)` = clear + text cursor) and no pause when it ends — the
+only "Press any key" wait is the crash screen's
+(`kernel/src/arch/aarch64/crash.rs:77@report_and_wait`), so a text tool that wants its
+output read waits for a key itself (`Cnecin()`); a `.NAP` runs on the GEM screen with no
+console handoff. (Corrected by TASK/SDK04: this entry used to promise a
+"press any key" pause for every `.NCP`; no such code exists.) `AUTO` programs run **before** the AES; their output is
 painted over when the desktop comes up (`kernel/src/launch.rs:385@run_auto_folder`,
 `tools/make-sd-image.sh:198@AUTO`).
 
@@ -698,4 +732,8 @@ for kernel structures; here the "writer" is a file.
 Bitmaps from such files are big-endian words too (see the zView codec
 patches, [13](13-zview.md)). Examples: `sdk/overlays/hypview/hyp/hyp.c`
 (header, index table, extra headers), `sdk/overlays/hypview/hyp/prepare.c`
-(`HYP_PICTURE`).
+(`HYP_PICTURE`), `sdk/overlays/hypview/hyp/ref.c` (`.REF` magic, module
+headers, label lines; host test `sdk/overlays/hypview/tests/ref-host.sh`).
+A magic read as `long` is the same bug in its smallest form: `'HREF'` in an
+8-byte little-endian `long` never equals `0x48524546L` — compare the bytes,
+or decode them big-endian into a 32-bit value.

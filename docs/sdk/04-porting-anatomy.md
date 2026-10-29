@@ -37,7 +37,7 @@ What is true, and what the build enforces:
    is a patch in every sense — it differs from upstream, it is applied at build
    time, and it must be re-checked when the upstream pin moves — and the
    header of each file says why it exists. zView's patches live in
-   `sdk/zview/overlay/` (13 files) and the library overlays next to their
+   `sdk/zview/overlay/` (14 files) and the library overlays next to their
    library, not under `sdk/overlays/`.
 4. **A build stops on the first failing file** (`build-qed.sh`,
    `build-teradesk.sh` print the failure and refuse to link), and CoreMark
@@ -58,9 +58,10 @@ the file headers and the inventory of 2026-10-20, section 2):
 | QED | `set.c` | `SET` addressed as 32-bit big-endian words; one flat byte numbering instead | LP64 + little-endian |
 | HypView | `sdk/overlays/hypview/hyp/prepare.c` | m68k inline asm `reduce()`/`mono_bitmap()` rewritten in C; `HYP_PICTURE` width/height big-endian (TASK/SDK01 H) | m68k asm + big-endian file format |
 | HypView | `sdk/overlays/hypview/hyp/hyp.c` | `.HYP` header, index table and extra headers are big-endian m68k structs on disk (12-byte header, `seek_offset` at byte 2); decoded into the native structs ([05 B19](05-abi-pitfalls.md#b19-m68k-binary-file-formats-read-straight-into-structs)) | big-endian file format + LP64 |
+| HypView | `sdk/overlays/hypview/hyp/ref.c` | `.REF` file: magic, module headers (`LONG module_len, num_entries`) and label lines are big-endian m68k LONG/WORD; upstream read them through `unsigned long`/`long *`/`short *`, so every REF file was refused; decoded from the bytes (TASK/SDK04 S2, host test `sdk/overlays/hypview/tests/ref-host.sh`) | big-endian file format + LP64 |
 | HypView | `dl_init.c` | resource header read as `*(RSHDR **)&aes_global[7]` (8 bytes over a 4-byte field, [05 B9](05-abi-pitfalls.md#b9-aesglobal-is-15-words-with-4-byte-pointer-fields)); now `_AESrscmem` + `rsrc_gaddr` | LP64 |
 | CoreMark | `newtos/core_portme.{c,h}` | CoreMark's own port layer — not a patch, this is where a port is meant to go | port layer |
-| zView | `sdk/zview/overlay/zview/…` (13 files) | m68k asm retarget (`sdk/zview/overlay/zview/plugins/img/xp32.c`, `sdk/zview/overlay/zview/plugins/jpg/jpgdsp.c`); big-endian file formats/bitmaps (`degasldg.c`, `neoldg.c`, `godldg.c`, `rawldg.c`, `imgldg.c`, `custom_font.c`, `av_prot.c`); LP64 (`jpgldg.c`); `.NLD` module suffix (`plugins.c`, ADR-018); PDF left out (`main.c`, `winimg.c`) | mixed, see [13](13-zview.md) |
+| zView | `sdk/zview/overlay/zview/…` (14 files) | m68k asm retarget (`sdk/zview/overlay/zview/plugins/img/xp32.c`, `sdk/zview/overlay/zview/plugins/jpg/jpgdsp.c`); big-endian file formats/bitmaps (`degasldg.c`, `neoldg.c`, `godldg.c`, `rawldg.c`, `imgldg.c`, `custom_font.c`, `av_prot.c`); big-endian colour words (`sdk/zview/overlay/zview/zvdi/color.c`, TASK/SDK04); LP64 (`jpgldg.c`); `.NLD` module suffix (`plugins.c`, ADR-018); PDF left out (`main.c`, `winimg.c`) | mixed, see [13](13-zview.md) |
 
 Counting: of the 9 QED/TeraDesk files, 1 is m68k asm and 8 are LP64
 corrections; none is NewTOS-specific behaviour. The only overlay that is

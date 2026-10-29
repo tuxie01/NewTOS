@@ -1,6 +1,6 @@
 # SDK04 — LP64: `long`-Zugriffe auf TOS-Strukturen in allen Ports; Typen fester Breite im SDK
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (Erhebung) + Developer (SDK-Typen, Fixes nach Messung) — Anwenderentscheidung 2026-10-28
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](SDK04-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Researcher (Erhebung) + Developer (SDK-Typen, Fixes nach Messung) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt
 

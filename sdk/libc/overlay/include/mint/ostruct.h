@@ -304,6 +304,22 @@ typedef struct {
     _MD *mp_rover;		/* rover memory descriptor */
 } _MPB;
 
+/* NewTOS (TASK/SDK04 point 3): the layout Getmpb() hands an LP64 program is
+ * THIS header's -- _MD 32 bytes, _MPB 24 -- by user decision O1 = A
+ * (docs/api/bios/00-getmpb.md "V1", the check is its "V4"; the kernel side
+ * follows in TASK/BIOS06). Pinned so a change on either side is seen. */
+#if defined(__LP64__)
+_Static_assert(__builtin_offsetof(_MD, md_next)   ==  0, "md_next@0");
+_Static_assert(__builtin_offsetof(_MD, md_start)  ==  8, "md_start@8");
+_Static_assert(__builtin_offsetof(_MD, md_length) == 16, "md_length@16");
+_Static_assert(__builtin_offsetof(_MD, md_owner)  == 24, "md_owner@24");
+_Static_assert(sizeof(_MD) == 32, "sizeof(_MD) == 32 (O1 = A)");
+_Static_assert(__builtin_offsetof(_MPB, mp_free)  ==  0, "mp_free@0");
+_Static_assert(__builtin_offsetof(_MPB, mp_used)  ==  8, "mp_used@8");
+_Static_assert(__builtin_offsetof(_MPB, mp_rover) == 16, "mp_rover@16");
+_Static_assert(sizeof(_MPB) == 24, "sizeof(_MPB) == 24 (O1 = A)");
+#endif
+
 
 /*
  * XBIOS defines and structures
@@ -607,6 +623,25 @@ typedef struct {
     long    (*ikbdsys)	(void);
     char    kbstate;
 } _KBDVECS;
+
+/* NewTOS (TASK/SDK04 point 3): Kbdvbase() returns the EL0 address of a
+ * per-process table with 8-byte slots in this order, kbdvec in the slot
+ * before midivec (docs/api/xbios/22-kbdvbase.md B1, decision D1; kernel
+ * offsets OFF_KBDVBASE.. in tos-api/src/xbios/kbdvecs.rs, relative to the
+ * table start, i.e. 0x10 more than here). kbstate is EmuTOS's drvstat byte,
+ * always 0 (D5). */
+#if defined(__LP64__)
+_Static_assert(__builtin_offsetof(_KBDVECS, midivec)  == 0x00, "midivec@0 (Kbdvbase)");
+_Static_assert(__builtin_offsetof(_KBDVECS, vkbderr)  == 0x08, "vkbderr@0x08");
+_Static_assert(__builtin_offsetof(_KBDVECS, vmiderr)  == 0x10, "vmiderr@0x10");
+_Static_assert(__builtin_offsetof(_KBDVECS, statvec)  == 0x18, "statvec@0x18");
+_Static_assert(__builtin_offsetof(_KBDVECS, mousevec) == 0x20, "mousevec@0x20");
+_Static_assert(__builtin_offsetof(_KBDVECS, clockvec) == 0x28, "clockvec@0x28");
+_Static_assert(__builtin_offsetof(_KBDVECS, joyvec)   == 0x30, "joyvec@0x30");
+_Static_assert(__builtin_offsetof(_KBDVECS, midisys)  == 0x38, "midisys@0x38");
+_Static_assert(__builtin_offsetof(_KBDVECS, ikbdsys)  == 0x40, "ikbdsys@0x40");
+_Static_assert(__builtin_offsetof(_KBDVECS, kbstate)  == 0x48, "kbstate (drvstat)@0x48");
+#endif
 
 /* Structure returned by Keytbl() */
 typedef struct {

@@ -216,6 +216,17 @@ report lp64-limits $rc "mintlib tree absent"
 [ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/iorec-layout.log"
 report iorec-layout $rc "mintlib tree absent"
 
+# sysvars-layout (SDK04 point 3): the overlay <mint/sysvars.h> -- every
+# LONG/pointer page-0 cell a 4-byte unsigned type at its docs/api address
+# (docs/api/bios/_boot-init.md section 7), OSHEADER 48 bytes with every offset,
+# the NEWTOS_COOKIE slot 8 bytes -- and <mint/ostruct.h>'s _MD/_MPB (32/24,
+# getmpb O1 = A) and _KBDVECS (8-byte slots, 22-kbdvbase.md B1); all
+# _Static_assert, compiled for the target. With mintlib's pristine sysvars.h
+# 42 diagnostics (35 failed assertions, NEWTOS_* undeclared).
+"$SDK/libc/tests/sysvars-layout.sh" > "$WORK/sysvars-layout.log" 2>&1; rc=$?
+[ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/sysvars-layout.log"
+report sysvars-layout $rc "mintlib tree absent"
+
 # libc-link (SDK01 A): against the built libc.a, tmpfile/mkstemp/glob/
 # wordexp/getlogin/sem_open (pwdgrp/), ttyname/ctermid (__sys_fstat),
 # gets/getwd/siggetmask (.stabs overlays) and the nf_* family (newtos-arch/
@@ -287,6 +298,17 @@ fi
 [ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/td-cookie-host.log"
 report td-cookie-host $rc "$(tail -1 "$WORK/td-cookie-host.log")"
 
+# hypview-ref-host (SDK04 S2): HypView's REF reader as the SDK builds it (the
+# overlay hyp/ref.c, patch site SDK04-S2) loads a big-endian REF file --
+# magic, num_entries, module headers, label lines as m68k LONG/WORD -- and
+# ref_findnode/ref_findall give the m68k results on a synthetic two-module
+# file and, if the pinned FreeMiNT clone is present, on its mint-prg.ref and
+# mint-de.ref. With the vendored ref.c 18 of 19 checks fail (every file
+# refused, "Illegal REF file"). Under ASan/UBSan.
+"$SDK/overlays/hypview/tests/ref-host.sh" > "$WORK/hypview-ref-host.log" 2>&1; rc=$?
+[ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/hypview-ref-host.log"
+report hypview-ref-host $rc "$(tail -1 "$WORK/hypview-ref-host.log")"
+
 # sysacc-cmdline-host (SYSINFO02): the System Info accessory's boot-argument
 # logic (sdk/examples/sysacc-cmdline.h, the header sysacc.c includes) -- the
 # parse reads C:\CMDLINE.TXT as kernel/src/bootargs.rs reads the boot
@@ -319,6 +341,16 @@ elif "$CC" -fsigned-char -Wall -Wno-pointer-sign -I "$SDK/zview/tests" -I "$ZVT"
 else
   echo "FAIL  custom-font-host (did not build)"; sed 's/^/      /' "$WORK/custom-font-host.log"; fail=$((fail+1))
 fi
+
+# zview-color-host (SDK04 S3): zView's palette matcher as the SDK builds it
+# (the overlay zview/zvdi/color.c, patch site SDK04-S3) -- remap_color()
+# finds each entry of a 16-colour palette and the nearest one to a colour,
+# color_lookup() returns (trans[idx] << 24) | its RGB and takes 0xFFFFFFnn as
+# index nn, cnvpal_4_8() as on the 68k. With the pristine color.c (big-endian
+# byte view of an int32 and of SRGB) 38 of 41 checks fail.
+"$SDK/zview/tests/color-host.sh" > "$WORK/zview-color-host.log" 2>&1; rc=$?
+[ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/zview-color-host.log"
+report zview-color-host $rc "$(tail -1 "$WORK/zview-color-host.log")"
 
 # libtest-host (LDG-M2): the codec libraries (zlib, libpng, libjpeg, giflib,
 # libexif) built for the host from the same pinned trees + config overlays;
