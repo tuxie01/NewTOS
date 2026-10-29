@@ -57,3 +57,9 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer (Werkzeug + Zuordnung)
 - Floppy-Funktionen (`flop*`, FDC/WD1772 und Verwandte) werden
   `design:hardware:floppy` (Nicht-Ziel in CLAUDE.md, FAT12/Floppy ausser
   Reichweite; ADR-031 trennt `hdv_*` ebenso).
+
+## Nachtrag 2026-10-29 (aus XBIOS15, SERRX-004)
+
+- Zeile fuer `scc_rx_interrupt_handler` (`references/emutos/bios/serport.c:647-683`):
+  Gegenstueck des Push-Teils ist `kernel/src/console.rs@serial_rx_byte` wie bei
+  `push_serial_iorec` (Falcon-Zielprofil).

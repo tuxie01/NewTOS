@@ -254,3 +254,10 @@ anstehendem Byte (es steht nie eines an); EmuTOS mit `CONF_SERIAL_CONSOLE=1` (00
 - Haupttree: keine Datei ausserhalb des neuen Laufverzeichnisses und dieses Berichts
   geaendert; fremde Aenderungen gesehen: die FS22-Arbeit des Entwicklers (jetzt committet,
   `b2eb3e0e`, `0d3bb485`), nicht angefasst.
+
+## Nachtrag Lead 2026-10-29 (Anwenderentscheidung)
+
+- XBIOS-SERRX-002: **won't measure** — kein Zweit-ROM mit
+  `CONF_SERIAL_CONSOLE=1`; das Orakel bleibt der eine Pin
+  (`docs/analysis/ORACLE.md`). Mit der Entscheidung (a) zu XBIOS15 (RX in den
+  Ring von Geraet 0) ist der Fund ohnehin gegenstandslos.

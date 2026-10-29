@@ -64,3 +64,35 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Messung zuerst) — A
   zweite Inkonsistenz. Optionen: AUX-Treiber ueber den Ring von Geraet 0 auf
   qemu-virt, oder Serienkonsolen-Profil als Abweichung in COMPATIBILITY.
 
+## Anwenderentscheidung 2026-10-29
+
+- **Option (a):** auf qemu-virt geht serielles RX in den Ring von Geraet 0
+  (`Iorec(0)`); ein AUX-Treiber liest daraus; `Bconstat(1)`/`Bconin(1)`
+  spiegeln den Ringzustand. Ziel: die Orakeltabelle in
+  `docs/audits/2026-10-29-xbios15-serial-rx.md` (Abschnitt 2, SERRX-001).
+- **Vor dem Fix — Pruefung (Lead, 2026-10-29), dem Anwender berichtet:**
+  - Der Injektor (`tools/inject-arm.py`) speist IKBD-Ereignisse ein, nicht
+    seriell — unberuehrt.
+  - Automatische Laeufe auf qemu-virt (z. B.
+    `measurements/measurement-2026-10-21-gh1-fix2/method/virtrun.py`) nutzen
+    `-serial file:` nur fuer die Ausgabe — unberuehrt.
+  - **Betroffen:** `cargo xtask run` (qemu-virt) startet mit `-display none
+    -serial stdio` (`tools/xtask/src/main.rs:848@serial`); wer dort im Terminal
+    tippt, tippt heute in den Tastaturring. Nach dem Fix kommen diese Zeichen
+    nur noch auf AUX an; Tastatur ist dann die USB-Tastatur (`-display cocoa`,
+    `--window`). Werkzeug wird nicht still geaendert — Entscheidung beim
+    Anwender.
+- SERRX-002: abgelehnt — kein Zweit-ROM, das Orakel bleibt der eine Pin;
+  „won't measure“, im Audit vermerkt.
+- SERRX-003: Teil dieses Tickets — die Begruendung „qemu-virt hat kein anderes
+  Eingabegeraet“ in `kernel/src/console.rs` (Modulkopf und `serial_rx_byte`)
+  und in `docs/api/xbios/0e-iorec.md` (E2) berichtigen, alle Kopien.
+- SERRX-004: Lokalisierung ergaenzt — fuer das Falcon-Zielprofil kommt RX ueber
+  `scc_rx_interrupt_handler` (`references/emutos/bios/serport.c:647-683`, Push
+  in `iorecB.in` `:676`), Gegenstueck ebenfalls
+  `kernel/src/console.rs@serial_rx_byte`; die `mapping.tsv`-Zeile kommt mit
+  [TOOL17](TOOL17.md).
+- **Abnahme:** die Audit-Faelle auf qemu-virt erneut, Ergebnis gleich dem
+  Orakel (`Bconstat(1)` -1, `Bconstat(2)` 0, Bytes im Ring von Geraet 0);
+  raspi4b unveraendert (verwirft).
+- Platz in der Reihe unveraendert (nach BIOS15).
