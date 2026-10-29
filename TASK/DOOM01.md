@@ -30,6 +30,20 @@ KBDVEC-Maske aus (dort wird nicht gepumpt). Uebrig, beide unbelegt:
 - **K6** DOOMs Seite-0-`_hz_200` steht, DOOM bleibt in seiner Warteschleife
   (`TryRunTics`), Tasten laufen weiter.
 
+## Richtung des Anwenders (2026-10-29)
+
+*„Der Unterschied zwischen QEMU und Pi ist der Cache.“* QEMU bildet weder
+I-/D-Cache noch TLB des Cortex-A72 nach. Nicht als Diagnose, sondern als Auftrag,
+wo zu schauen ist:
+
+- Code, den der Kern zur Laufzeit in den Prozess schreibt (Upcall-Trampolin,
+  `KBDVEC_DEFAULT_CODE` in `tos-api/src/xbios/kbdvecs.rs`): folgt jeder
+  Schreibung die I-Cache-Pflege (`dc cvau`/`ic ivau`/`dsb`/`isb`)?
+- Seite 0 nur lesbar/beschreibbar je Upcall (MEM12, `set_page0_writable`):
+  ist die TLB-Pflege vollstaendig und richtig geordnet (`dsb`/`isb`)?
+- `_hz_200` in Seite 0 (`tick.rs` `publish`): erreicht die Schreibung des
+  Kerns DOOMs Lesung ueber dieselbe physische Adresse und Attributlage?
+
 ## Arbeit
 
 1. Pi: beim Freeze zuerst Leertaste, 3 s warten, dann Strg+Alt+Entf.
