@@ -17,6 +17,21 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidu
   (`sdk/apps/teradesk/video.c:158`) und nimmt ohne den Cookie den ST-Zweig;
   was das auf NewTOS bewirkt, ist ungemessen.
 
+## Lokalisierung (Lead, 2026-10-29)
+
+- EmuTOS-Funktionen der Maschinenidentitaet sind alle `unmapped`:
+  `setvalue_mch`, `setvalue_vdo`, `machine_detect`, `add_cookie_frb`,
+  `guess_machine_name` (Gruppe E aus TOOL17). Ihr NewTOS-Gegenstueck ist der
+  feste Satz in `tos-api/src/cookie.rs@seed_defaults` (`_MCH` heute
+  `0x00050000`); die Kopien des Wertes stehen oben unter „Sachverhalt“.
+- `--up --layers bios,bdos` je Funktion unvollstaendig nur wegen der
+  Startfunktionen (`biosmain`, `bios_init`, …).
+- Der Fix traegt die Zeilen der Gruppe E in `mapping.tsv` ein (`mapped` auf
+  `seed_defaults` bzw. `design:` mit Beleg — Nachtrag ADR-012 mit Fundstelle).
+- Retest: Cookie-Selbsttest, `Ssystem(S_GETCOOKIE)`, Programme, die `_MCH`
+  lesen (mintlib `sysinfo` nach SDK03, zView-Zweig), Desktop-About-Box
+  (`programs/desktop/src/inf.rs`), beide Boards bis zum Desktop.
+
 ## Arbeit
 
 0. Lokalisierung (Lead, vor Beginn) nach CLAUDE.md „Testing“.
