@@ -18,6 +18,41 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (FS11-Entscheidung ne
 1. Researcher: Entscheidung mit dem Haenger als neuer Information vorlegen — FS11 fuer MIDI/IKBD auf „bereit, Ausgabe verwerfen“ (EmuTOS-Muster) aendern oder die Abweichung in `docs/COMPATIBILITY.md` aufnehmen.
 2. Developer: Fix gemaess Entscheidung; Hosttests fuer `Bcostat` und `Bconout` an 3/4.
 
+## Entscheidung (Anwender, 2026-10-29)
+
+„Wenn es in EmuTOS auch so ist, dann ja“: Geraete 3 und 4 verhalten sich wie
+das Orakel (Referenzbau mit MIDI- und IKBD-ACIA, `references/emutos/bios/chardev.c:30-45`):
+
+| | Geraet 3 (MIDI) | Geraet 4 (IKBD) |
+|---|---|---|
+| `Bconstat` | 0 (kein Eingang) | 0 (`char_dummy`) |
+| `Bconin` | **wartet** wie EmuTOS `bconin3` (`references/emutos/bios/midi.c:35`), Wartestil wie AUX nach XBIOS15/XBIOS18 (`give_way`) | 0 (`char_dummy`) |
+| `Bcostat` | -1 (vertauscht: `bcostat4`) | -1 (vertauscht: `bcostat3`, TDRE) |
+| `Bconout` | 1, Ausgabe verworfen | 1, Ausgabe verworfen |
+
+Damit kein COMPATIBILITY-Eintrag fuer `Bconin(3)` (anders als Vorschlag c2):
+das blockierende Lesen ist EmuTOS-Verhalten, Praezedenz `Bconin(1)` (XBIOS15).
+Die drei Stellen in `docs/api/xbios/0c-midiws.md` (Researcher, Beobachtung
+ausserhalb des Umfangs) werden im selben Schritt berichtigt.
+
+## Lokalisierung (Lead, 2026-10-29)
+
+- Geraetetabelle `tos-api/src/bios/chardev.rs:229@DEVICES`, Eintraege 3/4 heute
+  `Absent`; `mapping.tsv`: `bcostat3`, `bcostat4`, `bconout4`, `bconin3`,
+  `bconstat3` = `design:hardware:*` mit Notiz „absent device“ — nach dem Fix
+  `mapped` auf den neuen Eintrag (Ratsche); `bconout3` `mapped` auf
+  `tos-api/src/xbios/system.rs@midiws`.
+- `--up` (Wiedertestmenge): `bcostat`/`bconout`/`bconin`/`bconstat` in
+  `tos-api/src/bios/chardev.rs`, `biostrap` → `tos-api/src/bios/mod.rs@dispatch`,
+  `midiws`/`ikbdws` in `tos-api/src/xbios/system.rs`, GEMDOS `cauxos`, `cconos`,
+  `cprnos`, `cauxin`, `getch`, `conbrk`, `constat` in
+  `tos-api/src/gemdos/console.rs`. `unmapped` darin nur desk/vdi/aes-Aufrufer
+  (`bios_conout`, `bios_conws`, `bios_prnout`, `bios_conin`, `bios_conis`,
+  `fm_do`, `gchr_key`, `gloc_key`) — keine Geraete 3/4. Vollstaendig: nein,
+  diese Liste.
+- Hosttests heute fuer den alten Zustand: `tos-api/tests/fs11_device_rw.rs`
+  (Absent-Faelle), apitest BC15/BC16/BC23/BC24 (`sdk/apps/apitest/apitest.c`).
+
 ## Abnahme
 
 - Bestaetigende Faelle: `bios-r1` 66/67 (und 63–71) sowie Sonde B02/B03/B11/B12 EQUAL gegen das Orakel; vorgeschlagene Zeilen `13:3 w:3,w:0xFE` und `13:3 w:4,w:0x11` (Bericht Abschnitt 5) sind erst nach Lockerung des Round-1-Waechters in `bios-core-r1.tsv` aufnehmbar ([BIOS13](BIOS13.md)).

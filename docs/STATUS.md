@@ -56,8 +56,8 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   neues Werkzeug-Ticket kommt hinter den Produkt-Fix, den es verzoegern wuerde,
   ausser der Fix ist ohne das Werkzeug nicht abnehmbar.
   Developer, einer zur Zeit:
-  die S2-Audit-Tickets [XBIOS02](../TASK/XBIOS02.md) (erledigt 2026-10-29, Abnahme beim Lead),
-  [BIOS04](../TASK/BIOS04.md) (Researcher zuerst) →
+  die S2-Audit-Tickets [XBIOS02](../TASK/XBIOS02.md) (erledigt 2026-10-29, `7bc047a6`),
+  [BIOS04](../TASK/BIOS04.md) (entschieden 2026-10-29: wie das Orakel, laeuft) →
   [FS23](../TASK/FS23.md), [FS24](../TASK/FS24.md) (Vorschlag zuerst) →
   die uebrigen Audit-Tickets BIOS07–BIOS14, XBIOS04–XBIOS14 (BIOS05 und XBIOS03
   sind ACCEPTED nach ADR-031, XBIOS10 nach ARCH05) →
@@ -67,11 +67,11 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   [TOOL01](../TASK/TOOL01.md) → [FS26](../TASK/FS26.md) (Ordner anlegen
   ~3 s auf der Pi, erst messen) → [FS25](../TASK/FS25.md) (Messung),
   [PROC07](../TASK/PROC07.md), [COOK02](../TASK/COOK02.md),
-  [TOOL22](../TASK/TOOL22.md) (P3); [SDK02](../TASK/SDK02.md), [SDK06](../TASK/SDK06.md)
+  [TOOL22](../TASK/TOOL22.md), [XBIOS19](../TASK/XBIOS19.md), [TOOL23](../TASK/TOOL23.md),
+  [SPEC02](../TASK/SPEC02.md) (P3); [SDK02](../TASK/SDK02.md), [SDK06](../TASK/SDK06.md)
   (P3) bei Gelegenheit. Zurueckgestellt (Anwender 2026-10-29):
   [DOOM01](../TASK/DOOM01.md) (DOOM-Freeze im Menue, nur auf der Pi).
-  Daneben ein Researcher zur Zeit, ohne Produktaenderung: [BIOS04](../TASK/BIOS04.md)
-  (FS11-Entscheidung neu treffen, laeuft).
+  Daneben ein Researcher zur Zeit, ohne Produktaenderung: — (frei).
 - **P1:** [MEM12](../TASK/MEM12.md) — umgesetzt und auf QEMU abgenommen (Seite 0 nur im Super-Zustand beschreibbar); offen nur der Lauf auf der echten Pi.
   [USB01](../TASK/USB01.md) — F1/F2/F3/F8 auf echter Hardware
   bestaetigt (Pi 2026-10-23, zwei Steckpositionen; Ragnars Lauf 2026-10-25,
