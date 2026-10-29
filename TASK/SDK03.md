@@ -1,6 +1,6 @@
 # SDK03 — mintlib `sysinfo(SI_PLATFORM)`: NULL-Pruefung und fehlendes Komma
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (SDK) — Anwenderentscheidung 2026-10-28, aus [ARCH05](ARCH05.md)
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](SDK03-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Developer (SDK) — Anwenderentscheidung 2026-10-28, aus [ARCH05](ARCH05.md)
 
 ## Sachverhalt
 

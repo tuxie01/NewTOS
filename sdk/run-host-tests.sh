@@ -190,6 +190,16 @@ report waith-host $rc "mintlib tree absent or host not little-endian LP64"
 [ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/malloc-host.log"
 report malloc-host $rc "mintlib tree absent or host not LP64"
 
+# sysinfo-host (SDK03): the overlay unix/sysinfo.c names the platform for every
+# _MCH -- the families 0-5, Hades, FireBee, ColdFire EVB ("cfevb"), NewTOS's
+# 0xFFFFFFFF (MCH_NOHARD) as "unknown" like EmuTOS's machine_name(), a family
+# above 5 as "atariclone" -- through newtos-arch/getcookie.c's pointer form.
+# With the pristine file 5 of 15 fail (strlen (NULL), platforms[9] past the
+# table, "cfevbatariclone").
+"$SDK/libc/tests/sysinfo-host.sh" > "$WORK/sysinfo-host.log" 2>&1; rc=$?
+[ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/sysinfo-host.log"
+report sysinfo-host $rc "mintlib tree absent or host not LP64 little-endian"
+
 # lp64-limits (SDK01 A): SIZE_MAX, PTRDIFF_MIN/MAX, SSIZE_MAX (and the
 # neighbouring LONG/INTPTR/INTMAX limits) match their AArch64/LP64 types --
 # all _Static_assert, compiled for the target with build-libc.sh's flags.
