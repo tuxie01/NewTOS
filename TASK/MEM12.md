@@ -352,5 +352,12 @@ Silizium; QEMU verdeckt fehlende Invalidierungen oft.
 7. **DUMPBIOS** (Doppelklick) schreibt `C:\BIOS.BIN`; auf dem Host
    `tosdump/host/build/tosdiff tosdump/cases/super-r1.tsv tosdump/reference/EMUTOS-1a7484ab-SUPER.BIN BIOS.BIN`
    → "0 of 9 cases differ".
-8. Ergebnis mit Seriellprotokoll und Fotos in einem Lauf unter
+8. **USB-Tastatur → `Iorec(1)`-Ring** (aus XBIOS01, Anwender 2026-10-29): Tasten
+   auf der USB-Tastatur landen im IKBD-Ring von `Iorec(1)` (`Bconstat(2)` -1,
+   `tail` waechst in 4-Byte-Schritten; Sonde aus
+   `measurements/measurement-2026-10-29-xbios01/RUNINFO.TXT`).
+9. **Sonde K16 mit physischer Umschalttaste:** erwartet ein Wert der Klasse
+   `0x02300042` (Shift-Bit im oberen Byte gesetzt, Shift zum Zeitpunkt des
+   Tastendrucks; QEMU-Wert aus dem XBIOS01-Lauf).
+10. Ergebnis mit Seriellprotokoll und Fotos in einem Lauf unter
    `measurements/` und in `docs/HW-TEST-LOG.md`.

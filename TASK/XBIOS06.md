@@ -40,3 +40,14 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Erweiterung) + Resear
   portierter Nutzer von `Rsconf` gefunden
   (`docs/analysis/abi-assumptions-check-2026-10-28.md` §5). Vorschlag fuer die
   Entscheidung: ruhender Port meldet „Sender leer“ (Bit 7 gesetzt).
+
+## Teilpunkt 2026-10-29 (Anwender, aus XBIOS01)
+
+- `Rsconf` schreibt Baudrate und Flusssteuerung nicht in den Record von
+  Geraet 0 (`Iorec(0)`); EmuTOS tut das (`references/emutos/bios/serport.c:222-240`).
+  Gefunden beim XBIOS01-Lauf, nicht gemessen
+  (`measurements/measurement-2026-10-29-xbios01/RUNINFO.TXT`).
+- **Abnahme:** MEASURED-Sonde beidseitig gegen das Orakel (Sondenregel,
+  CLAUDE.md „Testing“): `Rsconf(speed, flow, …)`, danach Feld-Dump von
+  `Iorec(0)` (Layout aus `docs/api/structures/iorec.md`, TOOL16-Capture),
+  `baudrate`/`flowctrl` gleich dem Orakel.

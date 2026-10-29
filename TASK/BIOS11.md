@@ -1,6 +1,6 @@
 # BIOS11 — `Bconin(2)` mit `conterm` Bit 3 liefert den Shift-Zustand beim Lesen, EmuTOS den beim Tastendruck
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
+Status: **ERLEDIGT** 2026-10-29 mit [XBIOS01](XBIOS01.md) (`a32921d5`), vom Anwender abgenommen · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
 
 ## Sachverhalt
 

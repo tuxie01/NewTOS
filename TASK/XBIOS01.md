@@ -1,6 +1,6 @@
 # XBIOS01 — `Iorec` ist nicht verdrahtet: Funktionsnummer als Ergebnis, Tastaturpuffer-Leeren endet mit Bus Error
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer (Vertrag des IOREC-Abbilds: Researcher) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`; kommt nach BIOS01 Befund 001 sofort (Reihenfolge laut [BIOS01](BIOS01.md))
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](XBIOS01-STATUS-DONE.MD)), vom Anwender abgenommen (`a32921d5`) · Prioritaet: **P1** · Typ: Developer (Vertrag des IOREC-Abbilds: Researcher) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`; kommt nach BIOS01 Befund 001 sofort (Reihenfolge laut [BIOS01](BIOS01.md))
 
 ## Sachverhalt
 
