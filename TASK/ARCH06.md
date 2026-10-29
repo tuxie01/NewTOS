@@ -57,3 +57,10 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidu
 - **Vor der `_VDO`-Messung** wird TeraDesks `find_cookie` (16-Byte-Schritt
   unter LP64, SDK04 Fund C6) behoben — sonst misst die Messung den Fehler
   statt den ST-Zweig. Teil von [SDK04](SDK04.md), vor ARCH06 in der Reihe.
+
+## Anwender 2026-10-29 (aus TOOL17)
+
+- Gruppe E der TOOL17-Klassifizierung gehoert hierher: `setvalue_vdo`,
+  `setvalue_mch`, `machine_detect`, `machine_init`, `guess_machine_name`,
+  `add_cookie_frb`, `total_alt_ram`, `altram_init` (heute `unmapped`). Mit der
+  Umsetzung von ARCH06 je Zeile einordnen (`mapped` bzw. `design:` mit Beleg).
