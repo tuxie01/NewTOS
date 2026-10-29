@@ -1,0 +1,7 @@
+BIOS.BIN vs BIOS.BIN -- area BIOS, 1 cases from xbios-bconmap-r1.tsv
+
+case 18  trap 14 function 0x2C  Bconmap(-2) BCONMAP {maptab, maptabsize, mapped_device} and MAP
+    bconmap:maptabsize       EXACT   BIOS.BIN = 0x0000000000000004   BIOS.BIN = 0x0000000000000003
+    bconmap:mapped_device    EXACT   BIOS.BIN = 0x0000000000000006   BIOS.BIN = 0x0000000000000007
+
+1 of 1 cases differ

@@ -1284,10 +1284,42 @@ a `MAPTAB` entry itself for handles 6 and up
 (`references/emutos/bios/bios.c:928`, `:972`, `:1005`, `:1157`; layout
 `references/emutos/bios/serport.h:102-117`). No ported program reads
 `maptab` or calls through it (`docs/analysis/abi-assumptions-check-2026-10-28.md`
-§5). On NewTOS the table is published with the EmuTOS layout, but a call
-through one of its pointers from EL0 fails loud rather than silently.
+§5). On NewTOS the table is published with the EmuTOS field order in the
+LP64 layout (`docs/api/structures/bconmap.md`), but a call through one of its
+pointers from EL0 fails loud rather than silently: each of the five function
+slots holds its own address in a never-executable stretch of the IOREC page,
+so the call is an instruction abort; the crash report reads "Memory
+violation: Bconmap MAPTAB function (not callable) memory, execute" and the
+program ends with `Pterm(-1)` (TASK/XBIOS05, measured:
+`measurements/measurement-2026-10-29-xbios05/RUNINFO.TXT`, probe BMCALL).
+The sixth slot, `Iorec`, is `Iorec(0)`'s record and readable as on EmuTOS.
 **Requirement to revisit** when a ported program (e.g. a terminal program)
 calls through it.
+
+**`Bconmap`: one entry, the AUX port, device 6** — user decision 2026-10-28
+(TASK/XBIOS05.md, option 1; `docs/api/xbios/2c-bconmap.md`). NewTOS builds
+the table EmuTOS builds on a machine that is neither Falcon nor TT
+(`references/emutos/bios/serport.c:962-966,972`): `Bconmap(-1)` = 6,
+`Bconmap(-2)` = `{maptab, 1, 6}`, every device but 6 = 0. The two oracle
+profiles are machines with more ports, so these cells differ **by the
+machine** — **ACCEPTED device parameters per profile**:
+
+| Case | Call | Oracle TT | Oracle Falcon | NewTOS | Status |
+|---|---|---|---|---|---|
+| `bios-r1` 183, `xbios-chardev-r1` 43 | `Bconmap(-1)` | 6 | 7 (`serport.c:966`) | 6 | TT EQUAL; Falcon ACCEPTED |
+| `xbios-bconmap-r1` 18 | `BCONMAP.maptabsize` | 4 (`serport.c:993`) | 3 (`:981`) | 1 (`:965`) | ACCEPTED on both |
+| `xbios-bconmap-r1` 18 | `BCONMAP.mapped_device` | 6 | 7 | 6 | TT EQUAL; Falcon ACCEPTED |
+| (probe only; the dumper's guard refuses 6..9) | `Bconmap(7..9)` | a switch to the SCC / TT-MFP port | `7`, `8`: a switch | 0 | ACCEPTED: no such port |
+
+Every other `Bconmap` case is EQUAL on both profiles (`bios-r1` 184-186,
+`xbios-chardev-r1` 44-53; the pointers in `xbios-bconmap-r1` 18 by PTR_RAM).
+**Observable difference besides:** the kernel answers from its own state and
+never reads the published table back: a program that writes `maptab`,
+`maptabsize` or `mapped_device` into it changes what it reads, not what
+`Bconmap` does (EmuTOS reads `bconmap_root` live,
+`references/emutos/bios/serport.c:1086-1096`). What EmuTOS writes, NewTOS writes
+too: `Bconmap(6)` stores entry 0 back and sets `mapped_device`. The BIOS
+handles 6..9 are the device table's, not this table's (TASK/BIOS08.md).
 
 **`_MCH` is `0xFFFFFFFF` ("no Atari hardware")** — ADR-012 amendment
 2026-10-28. The value is EmuTOS' `MCH_NOHARD`

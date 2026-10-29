@@ -6,7 +6,7 @@ Datum 2026-10-29 · Beleg
 (SERRX-001 Abnahmetabelle, -003, -004) · Spec `docs/api/xbios/0e-iorec.md`
 (Abschnitt "NewTOS implementation", "XBIOS15")
 
-- **Ring von Geraet 0 (Option (a)):** `tos-api/src/xbios/iorec.rs:499@push_serial`
+- **Ring von Geraet 0 (Option (a)):** `tos-api/src/xbios/iorec.rs:519@push_serial`
   (EmuTOS `push_serial_iorec`, `bios/serport.c:331-343`, und der Push von
   `scc_rx_interrupt_handler`, `:670-678`: `tail` zuerst, voll → verworfen, 255
   Bytes, Byte mit dem `datamask` des Records maskiert wie der SCC-Pfad `:671`),

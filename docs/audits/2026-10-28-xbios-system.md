@@ -74,7 +74,7 @@ herstellen kann.
 
 **`Gettime` liefert den gepackten LONG nullerweitert in `x0`: ab Jahr 2044 (Bit 31 gesetzt) ist das Ergebnis fuer ein LP64-Programm positiv, der TOS-LONG aber negativ.**
 
-- LOCALIZED: `tos-api/src/xbios/mod.rs:116@GETTIME` (`xbios_gettime() as i64`
+- LOCALIZED: `tos-api/src/xbios/mod.rs:119@GETTIME` (`xbios_gettime() as i64`
   auf einem `u32`).
 - Fall: Sonde `xshi.c` H01, `Settime(0x8CCF6000)` (2050-06-15 12:00:00):
   `measurements/measurement-2026-10-28-xbios-system-audit/runs/HIGH-NEWTOS-raspi4b/XSHI.LOG`
@@ -234,7 +234,7 @@ Funktionen.
 | `cursconf` `bios/vt52.c:893` | `tos-api/src/xbios/screen.rs:380@cursconf`, `tos-api/src/vdi/escape.rs:761@cursconf` | bios | **EQUAL** (Rueckgaben; Bildschirmwirkung 0–3 offen, §6) | `bios-r1` 122; `xbios-system-r1` 63–65; Sonde C01–C17 |
 | `settime` `bios/clock.c:1218` | `tos-api/src/gemdos/time.rs:205@xbios_settime` | bios | **DIFF** (XBIOS-SYS-001) | Sonde T01–T33 |
 | `gettime` `bios/clock.c:1266` | `tos-api/src/gemdos/time.rs:222@xbios_gettime` | bios | **DIFF** (XBIOS-SYS-002) | `bios-r1` 125; Sonde T00, H01 |
-| `setprt` `bios/parport.c:49` | `tos-api/src/xbios/system.rs:226@setprt` | bios | **EQUAL** | `bios-r1` 135; Sonde S01–S09 |
+| `setprt` `bios/parport.c:49` | `tos-api/src/xbios/system.rs:210@setprt` | bios | **EQUAL** | `bios-r1` 135; Sonde S01–S09 |
 | `nvmaccess` `bios/nvram.c:155` | — (Auffangarm `tos-api/src/xbios/mod.rs:138@other`) | bios | **DIFF** (XBIOS-SYS-003) | `bios-r1` 189–194; `xbios-system-r1` 68–76 |
 
 equal 3, accepted 0, diff 4, unmeasured 0 von 7. Bug-Dichte: CONFIRMED 1 ÷ 7

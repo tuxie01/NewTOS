@@ -189,6 +189,11 @@ pub enum RegionKind {
     SystemVariables,
     /// The shared stub page (MEM12): EL0 execute-only, no data access.
     StubPage,
+    /// The call target of a `Bconmap` `MAPTAB` function slot (XBIOS05): a
+    /// program called through one of the table's function pointers, which
+    /// are not callable on NewTOS (`docs/api/xbios/2c-bconmap.md`,
+    /// `docs/COMPATIBILITY.md`).
+    BconmapVector,
 }
 
 impl RegionKind {
@@ -202,6 +207,7 @@ impl RegionKind {
             RegionKind::Hardware => "hardware",
             RegionKind::SystemVariables => "page-0 system-variable",
             RegionKind::StubPage => "execute-only stub",
+            RegionKind::BconmapVector => "Bconmap MAPTAB function (not callable)",
         }
     }
 }

@@ -7,14 +7,14 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidu
 **XBIOS-SYS-002 — S3 — MEASURED.** Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-xbios-system-audit/RUNINFO.TXT`.
 
 - Sonde `xshi.c` H01, `Settime(0x8CCF6000)` (2050-06-15 12:00:00): `ret=8ccf6000 hi=00000000 negative-as-long=no` (`measurements/measurement-2026-10-28-xbios-system-audit/runs/HIGH-NEWTOS-raspi4b`, `measurements/measurement-2026-10-28-xbios-system-audit/runs/HIGH-NEWTOS-raspi4b-repeat`).
-- Lokalisiert: `tos-api/src/xbios/mod.rs:116@GETTIME` (`xbios_gettime() as i64` auf einem `u32`).
+- Lokalisiert: `tos-api/src/xbios/mod.rs:119@GETTIME` (`xbios_gettime() as i64` auf einem `u32`).
 - EmuTOS-Seite: `LONG gettime(void)` (`references/emutos/bios/clock.c:1266`); die obere Haelfte ist die Vorzeichenerweiterung des LONG (`docs/TOS-REFERENCE-DUMPER.md` §3, `ret_hi`). **Am Orakel nicht messbar:** Hatari liefert die Wirtsuhr (2026), nie Bit 31 (`measurements/measurement-2026-10-28-xbios-system-audit/runs/HIGH-EMUTOS-tt`, `measurements/measurement-2026-10-28-xbios-system-audit/runs/PROBE-EMUTOS-tt-nvtrace`, siehe [XBIOS14](XBIOS14.md)) — der Befund stuetzt sich dort auf die ABI-Regel (gelesen, nicht gemessen).
-- Spec: `docs/api/xbios/17-gettime.md` „LONG result **sign-extended** into `x0`“, ebenso `sdk/libc/mintlib/include/mint/osbind.h`; der Kommentar `tos-api/src/xbios/mod.rs:109-111@SETTIME` sagt „zero-extended“. Gleiche Klasse wie [XBIOS06](XBIOS06.md).
+- Spec: `docs/api/xbios/17-gettime.md` „LONG result **sign-extended** into `x0`“, ebenso `sdk/libc/mintlib/include/mint/osbind.h`; der Kommentar `tos-api/src/xbios/mod.rs:120-122@SETTIME` sagt „zero-extended“. Gleiche Klasse wie [XBIOS06](XBIOS06.md).
 - Fehlerbild: `long t = Gettime(); if (t < 0) …` faellt ab 2044 anders aus.
 
 ## Arbeit
 
-1. Vorzeichenerweiterung des LONG im Dispatcher; Kommentar `tos-api/src/xbios/mod.rs:109-111@SETTIME` richtigstellen; Hosttest mit `0x8CCF6000`.
+1. Vorzeichenerweiterung des LONG im Dispatcher; Kommentar `tos-api/src/xbios/mod.rs:120-122@SETTIME` richtigstellen; Hosttest mit `0x8CCF6000`.
 
 ## Abnahme
 
@@ -27,4 +27,4 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidu
 
 - Vorzeichenerweiterung gemaess Regel (`docs/COMPATIBILITY.md`, „LONG
   results in `x0`“): `Gettime` erweitert heute mit Nullen
-  (`tos-api/src/xbios/mod.rs:116@GETTIME`).
+  (`tos-api/src/xbios/mod.rs:119@GETTIME`).

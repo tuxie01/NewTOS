@@ -180,7 +180,7 @@ NewTOS-Tastatur = USB-HID bzw. Atari-IKBD-über-UART2 (Memory
 | Op | Name | Kat. | Status |
 |---|---|---|---|
 | 0x0F | `Rsconf` | I | HAS (dünner PL011-Adapter) |
-| 0x2C | `Bconmap` | I | HAS (Kontrakt: ein serieller Port) |
+| 0x2C | `Bconmap` | I | HAS (ein Eintrag, Geraet 6; XBIOS05) |
 
 ### I) Uhr / Zufall / Misc-Software → **Kategorie I — vorhanden**
 

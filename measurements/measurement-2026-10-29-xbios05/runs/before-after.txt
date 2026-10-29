@@ -1,0 +1,22 @@
+after-bios-core-r1         EMUTOS-1a7484ab-BIOS-core-falcontc       1 of 44 cases differ: 65 
+after-bios-core-r1         EMUTOS-1a7484ab-BIOS-core                2 of 44 cases differ: 65 66 
+after-bios-r1              EMUTOS-1a7484ab-BIOS-falcontc            38 of 147 cases differ: 69 70 87 93 94 105 128 129 178 179 183 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235 
+after-bios-r1              EMUTOS-1a7484ab-BIOS                     33 of 147 cases differ: 69 70 93 94 105 128 129 178 179 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235 
+after-xbios-bconmap-r1     EMUTOS-1a7484ab-XBIOS-bconmap-falcontc   1 of 1 cases differ: 18 
+after-xbios-bconmap-r1     EMUTOS-1a7484ab-XBIOS-bconmap            1 of 1 cases differ: 18 
+after-xbios-chardev-r1     EMUTOS-1a7484ab-XBIOS-chardev-falcontc   2 of 23 cases differ: 31 43 
+after-xbios-chardev-r1     EMUTOS-1a7484ab-XBIOS-chardev            1 of 23 cases differ: 31 
+after-xbios-ptr-r1         EMUTOS-1a7484ab-XBIOS-ptr-falcontc       0 of 9 cases differ: 
+after-xbios-ptr-r1         EMUTOS-1a7484ab-XBIOS-ptr                0 of 9 cases differ: 
+after-xbios-system-r1      EMUTOS-1a7484ab-XBIOS-system-falcontc    9 of 43 cases differ: 68 69 70 71 72 73 74 75 76 
+after-xbios-system-r1      EMUTOS-1a7484ab-XBIOS-system             9 of 43 cases differ: 68 69 70 71 72 73 74 75 76 
+before-bios-core-r1        EMUTOS-1a7484ab-BIOS-core-falcontc       1 of 44 cases differ: 65 
+before-bios-core-r1        EMUTOS-1a7484ab-BIOS-core                2 of 44 cases differ: 65 66 
+before-bios-r1             EMUTOS-1a7484ab-BIOS-falcontc            41 of 147 cases differ: 69 70 87 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235 
+before-bios-r1             EMUTOS-1a7484ab-BIOS                     37 of 147 cases differ: 69 70 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235 
+before-xbios-chardev-r1    EMUTOS-1a7484ab-XBIOS-chardev-falcontc   12 of 23 cases differ: 31 43 44 45 46 47 48 49 50 51 52 53 
+before-xbios-chardev-r1    EMUTOS-1a7484ab-XBIOS-chardev            12 of 23 cases differ: 31 43 44 45 46 47 48 49 50 51 52 53 
+before-xbios-ptr-r1        EMUTOS-1a7484ab-XBIOS-ptr-falcontc       0 of 9 cases differ: 
+before-xbios-ptr-r1        EMUTOS-1a7484ab-XBIOS-ptr                0 of 9 cases differ: 
+before-xbios-system-r1     EMUTOS-1a7484ab-XBIOS-system-falcontc    9 of 43 cases differ: 68 69 70 71 72 73 74 75 76 
+before-xbios-system-r1     EMUTOS-1a7484ab-XBIOS-system             9 of 43 cases differ: 68 69 70 71 72 73 74 75 76 

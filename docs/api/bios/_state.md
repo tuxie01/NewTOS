@@ -172,6 +172,9 @@ Per-handle remap for handles ≥ `BCONMAP_START_HANDLE` (canonically 6). Used by
 `Bconmap` (XBIOS 0x2C) to switch which hardware port answers handles 6/7. Each
 `MAPTAB` entry holds the four function pointers plus IOREC pointers.
 NewTOS scope: deferred; early phases expose only handles 0–5.
+**[XBIOS05]** `bconmap_root` exists since XBIOS05 with one entry (device 6,
+`docs/api/xbios/2c-bconmap.md`); the BIOS handles 6..9 are still the device
+table's, their profile is TASK/BIOS08.
 
 ---
 

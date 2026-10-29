@@ -1,0 +1,18 @@
+# xbios-bconmap-r1.tsv -- DUMPBIOS, the Bconmap table behind Bconmap(-2)
+# (TASK/XBIOS05, user decision 2026-10-28): the BCONMAP and, through its maptab,
+# the first MAPTAB, against EmuTOS 1a7484ab (references/emutos,
+# docs/analysis/ORACLE.md).
+#
+# Form: docs/TOS-REFERENCE-DUMPER.md section 6, "Structures behind a
+# pointer".  The !layout lines are copies of the tosdump-layout block in
+# docs/api/structures/bconmap.md -- layoutcheck refuses this table if one
+# differs.  m68k: BCONMAP 8 bytes + MAPTAB 24; LP64 16 + 48.
+#
+# A separate table, so bios-r1.tsv, xbios-chardev-r1.tsv and xbios-ptr-r1.tsv
+# and their references stay as they are.  One table per round: the case id
+# is the physical line number and the dump header carries the CRC of this
+# file, so it is frozen once measured.
+!layout	maptab	24/48	bconstat:p@0/0,bconin:p@4/8,bcostat:p@8/16,bconout:p@12/24,rsconf:p@16/32,iorec:p@20/40
+!layout	bconmap	8/16	maptab:p>maptab@0/0,maptabsize:w@4/8,mapped_device:w@6/10
+# ---- Bconmap(-2): &bconmap_root, bios/serport.c:1092-1093; filled by init_bconmap, :954-1004
+14:0x2C	w:-2	PTR_RAM	r:bconmap	Bconmap(-2) BCONMAP {maptab, maptabsize, mapped_device} and MAPTAB[0] -- bios/serport.c:962-968

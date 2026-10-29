@@ -120,11 +120,14 @@ const _: () = assert!(OFF_WR5 < EXT_IOREC_SIZE && EXT_IOREC_SIZE.is_multiple_of(
 // ---------------------------------------------------------------------------
 
 /// Device 0 (RS-232) record, an `EXT_IOREC`.
-const AUX_RECORD: usize = 0x000;
+pub(super) const AUX_RECORD: usize = 0x000;
 /// Device 1 (IKBD) record.
 const IKBD_RECORD: usize = 0x040;
 /// Device 2 (MIDI) record.
 const MIDI_RECORD: usize = 0x060;
+/// The `Bconmap` table — `BCONMAP`, its one `MAPTAB` and the call targets of
+/// the entry's function slots (XBIOS05, [`super::bconmap`]).
+pub(super) const BCONMAP_AREA: usize = 0x080;
 /// The IKBD ring (`ikbd_bufsize` 256, `bios/aciavecs.S:97`).
 const IKBD_BUF: usize = 0x100;
 /// The MIDI ring (`midi_bufsize` 128, `bios/aciavecs.S:98`).
@@ -136,7 +139,8 @@ const AUX_OUT_BUF: usize = 0x400;
 
 const _: () = assert!(AUX_RECORD + EXT_IOREC_SIZE <= IKBD_RECORD);
 const _: () = assert!(IKBD_RECORD + IOREC_SIZE <= MIDI_RECORD);
-const _: () = assert!(MIDI_RECORD + IOREC_SIZE <= IKBD_BUF);
+const _: () = assert!(MIDI_RECORD + IOREC_SIZE <= BCONMAP_AREA);
+const _: () = assert!(BCONMAP_AREA + super::bconmap::AREA_SIZE <= IKBD_BUF);
 const _: () = assert!(IKBD_BUF + 256 <= MIDI_BUF && MIDI_BUF + 128 <= AUX_IN_BUF);
 const _: () = assert!(AUX_IN_BUF + 256 <= AUX_OUT_BUF && AUX_OUT_BUF + 256 <= 4096);
 
@@ -267,7 +271,8 @@ impl Page {
     }
 
     /// Write every record's initial values (E5, the oracle's I01-I03):
-    /// kernel buffer, size, empty, the water marks, device 0's line bytes.
+    /// kernel buffer, size, empty, the water marks, device 0's line bytes;
+    /// and the `Bconmap` table (XBIOS05).
     fn init(&self) {
         for d in &RINGS {
             self.reset(d);
@@ -277,6 +282,15 @@ impl Page {
         for (i, b) in AUX_LINE.iter().enumerate() {
             self.write_u8(AUX_RECORD + OFF_BAUDRATE + i, *b);
         }
+        self.bconmap_area().init();
+    }
+
+    /// The `Bconmap` table's area of this page.
+    fn bconmap_area(&self) -> super::bconmap::Area {
+        // SAFETY: `BCONMAP_AREA + AREA_SIZE` lies inside the page (asserted
+        // above).
+        let base = unsafe { self.base.add(BCONMAP_AREA) };
+        super::bconmap::Area { base, va: self.va + BCONMAP_AREA as u64 }
     }
 
     /// Give ring `d` the kernel buffer and size back, empty.
@@ -412,6 +426,12 @@ fn with_page<R>(f: impl FnOnce(&Page) -> (R, u8)) -> R {
 /// Write the records if they are not there yet.
 fn ensure_ready() {
     with_page(|_| ((), 0));
+}
+
+/// Run `f` on the `Bconmap` table of the real page (written first if it is
+/// not there yet), IRQs masked like every page access ([`super::bconmap`]).
+pub(super) fn with_bconmap_area<R>(f: impl FnOnce(&super::bconmap::Area) -> R) -> R {
+    with_page(|p| (f(&p.bconmap_area()), 0))
 }
 
 // ---------------------------------------------------------------------------

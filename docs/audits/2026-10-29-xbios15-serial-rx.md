@@ -30,7 +30,7 @@ Jeder Lauf zweimal (bytegleich), dazu je Seite ein Kontrolllauf ohne Bytes.
 
 - **Schwere:** S3 · **Status:** MEASURED · **Route:** Developer
 - **Lokalisierung:** LOCALIZED: `serial_rx_byte`, qemu-virt-Zweig
-  (`kernel/src/console.rs:169@serial_rx_byte`, ruft `tos-api/src/xbios/iorec.rs:439@push_key`).
+  (`kernel/src/console.rs:169@serial_rx_byte`, ruft `tos-api/src/xbios/iorec.rs:459@push_key`).
   Die einzige `--down`-Abhaengigkeit von `push_serial_iorec` ist `incr_tail`, ohne
   NewTOS-Gegenstueck (`docs/analysis/deps/mapping.tsv`); die Zielseite (`push_key`, Ring-
   arithmetik) ist durch `xbios-flush-r1` gleich gemessen

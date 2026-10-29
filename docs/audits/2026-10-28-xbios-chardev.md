@@ -162,7 +162,7 @@ BIOS-Kern-Audit DIFF sind (BIOS-CORE-001). Die Kanten von `rsconf` ueber
 
 **`Ikbdws` ist ein No-op: IKBD-Kommandos erzeugen keine Antwortpakete.**
 
-- NOT LOCALIZED: vermutete Wurzel `tos-api/src/xbios/system.rs:152@ikbdws`
+- NOT LOCALIZED: vermutete Wurzel `tos-api/src/xbios/system.rs:136@ikbdws`
   (gibt 0 zurueck, ignoriert beide Argumente — No-Stub-Regel). Die
   `--down`-Abhaengigkeit `bcostat4` ist DIFF (BIOS-CORE-001, `Bcostat(4)`
   EmuTOS `-1`, NewTOS `0`); fehlender Unterbau: `bios-r1` 67 muss erst
@@ -187,7 +187,7 @@ BIOS-Kern-Audit DIFF sind (BIOS-CORE-001). Die Kanten von `rsconf` ueber
 
 **`Bconmap` meldet „nicht vorhanden“ (`0x2C`) fuer jedes Argument; der gepinnte EmuTOS hat `Bconmap` auf jeder Maschine.**
 
-- LOCALIZED: `tos-api/src/xbios/system.rs:106@bconmap` (konstant `0x2c`).
+- LOCALIZED: `tos-api/src/xbios/system.rs` (`bconmap`, bis XBIOS05; seitdem `tos-api/src/xbios/bconmap.rs`) (konstant `0x2c`).
   `deps bconmap --down` leer.
 - Faelle: `bios-r1` 183, 185, 186; `xbios-chardev-r1` 43, 45–53 — EXACT-DIFF
   (EmuTOS `6` TT / `7` Falcon fuer `-1`, `0` fuer ungueltige Geraete; NewTOS
@@ -214,8 +214,8 @@ BIOS-Kern-Audit DIFF sind (BIOS-CORE-001). Die Kanten von `rsconf` ueber
 
 **`Rsconf(-1 x6)`: TSR-Byte ohne Bit 7 und die oberen 32 Bit null statt vorzeichenerweitert.**
 
-- LOCALIZED: `tos-api/src/xbios/system.rs:248@RS_TSR` (Schatten `0x01`) und
-  `tos-api/src/xbios/system.rs:263-295@rsconf` (`old as i64`, nullerweitert).
+- LOCALIZED: `tos-api/src/xbios/system.rs:232@RS_TSR` (Schatten `0x01`) und
+  `tos-api/src/xbios/system.rs:247-279@rsconf` (`old as i64`, nullerweitert).
 - Faelle: `bios-r1` 105, `xbios-chardev-r1` 31 — EXACT-DIFF: TT
   `0xFFFFFFFF_88018100`, Falcon `0xFFFFFFFF_88000000` (SCC), NewTOS
   `0x00000000_88010100`. Sonde S01–S18: die Semantik ist sonst gleich (Baud
@@ -283,13 +283,13 @@ der MIDI-Eintrag der Geraetetabelle `tos-api/src/bios/chardev.rs`;
 |---|---|---|---|---|
 | `midiws` `bios/midi.c:104` | `tos-api/src/xbios/system.rs:82@midiws` | xbios | **DIFF** — Wurzel BIOS-CORE-001 (MIDI-Eintrag „absent“, referenziert, nicht neu berichtet): Bytes verworfen, 256 Byte in 0 Ticks statt ≥ 10, `Bcostat(3)` 0 statt -1. API-eigenes Ergebnis gleich (`void`, kehrt zurueck) | Sonde M01–M05 |
 | `iorec` `bios/xbios.c:336` | — (Sammelzweig `tos-api/src/xbios/mod.rs:65-138@dispatch`) | xbios | **DIFF** — XBIOS-CHARDEV-001 | `bios-r1` 98–102, `xbios-chardev-r1` 21–27, Sonde I01–I08, XCIOFL |
-| `rsconf` `bios/xbios.c:376` | `tos-api/src/xbios/system.rs:263@rsconf` | xbios | **DIFF** — XBIOS-CHARDEV-006 (Setz-/Abfragesemantik gleich) | `bios-r1` 105–106, `xbios-chardev-r1` 30–31, Sonde S01–S18 |
+| `rsconf` `bios/xbios.c:376` | `tos-api/src/xbios/system.rs:247@rsconf` | xbios | **DIFF** — XBIOS-CHARDEV-006 (Setz-/Abfragesemantik gleich) | `bios-r1` 105–106, `xbios-chardev-r1` 30–31, Sonde S01–S18 |
 | `keytbl` `bios/ikbd.c:122` | `tos-api/src/xbios/keytbl.rs:185@keytbl` | xbios | **EQUAL** — Abfrage, Tabelleninhalt (US), Setz-Arme, Uebersetzung mit eigener Tabelle, `Keytbl(NULL)` | `bios-r1` 109, `xbios-chardev-r1` 34, Sonde K01–K06/K10, XCKTNL N02, Eingabe X02 |
 | `bioskeys` `bios/ikbd.c:136` | — (Sammelzweig) | xbios | **DIFF** — XBIOS-CHARDEV-002 | Sonde K07–K11, XCKTNL, Eingabe X01/X03 |
-| `ikbdws` `bios/ikbd.c:948` | `tos-api/src/xbios/system.rs:152@ikbdws` | xbios | **DIFF** — XBIOS-CHARDEV-004 | Sonde W01–W04 |
+| `ikbdws` `bios/ikbd.c:948` | `tos-api/src/xbios/system.rs:136@ikbdws` | xbios | **DIFF** — XBIOS-CHARDEV-004 | Sonde W01–W04 |
 | `kbdvbase` `bios/xbios.c:716` | `tos-api/src/xbios/kbdvecs.rs:198@kbdvbase` | xbios | **DIFF** — XBIOS-CHARDEV-003 (Zeiger, Layout, Beschreibbarkeit gleich) | `bios-r1` 136, `xbios-chardev-r1` 37, Sonde V01–V03, Eingabe X04 |
-| `kbrate` `bios/ikbd.c:439` | `tos-api/src/xbios/system.rs:181@kbrate` | xbios | **EQUAL** — Abfrage, Setzen, Maskierung, negative Argumente, `0xFFFF` als WORD, Wiederherstellung (Wirkung auf die Wiederholung: offen, Abschnitt 6) | `bios-r1` 137, `xbios-chardev-r1` 40, Sonde R01–R13 |
-| `bconmap` `bios/serport.c:1082` | `tos-api/src/xbios/system.rs:106@bconmap` | xbios | **DIFF** — XBIOS-CHARDEV-005 | `bios-r1` 183–186, `xbios-chardev-r1` 43–53, Sonde B01–B24 |
+| `kbrate` `bios/ikbd.c:439` | `tos-api/src/xbios/system.rs:165@kbrate` | xbios | **EQUAL** — Abfrage, Setzen, Maskierung, negative Argumente, `0xFFFF` als WORD, Wiederherstellung (Wirkung auf die Wiederholung: offen, Abschnitt 6) | `bios-r1` 137, `xbios-chardev-r1` 40, Sonde R01–R13 |
+| `bconmap` `bios/serport.c:1082` | `tos-api/src/xbios/system.rs` (`bconmap`, bis XBIOS05; seitdem `tos-api/src/xbios/bconmap.rs`) | xbios | **DIFF** — XBIOS-CHARDEV-005 | `bios-r1` 183–186, `xbios-chardev-r1` 43–53, Sonde B01–B24 |
 
 equal 2, accepted 0, diff 7, unmeasured 0 von 9.
 Bug-Dichte: 3 CONFIRMED / 9 gemessene Funktionen = 0,33 (mit den vier

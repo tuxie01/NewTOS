@@ -6,8 +6,8 @@ Datum 2026-10-29 · Beleg
 Abschnitt "NewTOS implementation") · Ticket [XBIOS01](XBIOS01.md), mit
 [BIOS11](BIOS11.md)
 
-- **`Iorec`** (`tos-api/src/xbios/iorec.rs:573@iorec`, Arm
-  `tos-api/src/xbios/mod.rs:107@IOREC`): `0/1/2` liefern Zeiger auf die
+- **`Iorec`** (`tos-api/src/xbios/iorec.rs:593@iorec`, Arm
+  `tos-api/src/xbios/mod.rs:110@IOREC`): `0/1/2` liefern Zeiger auf die
   Records, jedes andere Geraet `-1` (vorzeichenbehafteter `WORD`). Der
   Kommentar „intentionally NOT wired“ in `tos-api/src/xbios/mod.rs` ist
   richtiggestellt (Arbeit Punkt 3).

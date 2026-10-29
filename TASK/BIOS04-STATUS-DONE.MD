@@ -22,7 +22,7 @@ Punkt 1, `docs/api/xbios/0c-midiws.md`
   Eingabe gepumpt (`Host::pump_input`, Unterbrechungen kurz offen), kein Abgeben an andere
   Prozesse, auf dem Trap-Weg weicht es einem `kbdvec`-Haken aus (Neustart, nichts verbraucht).
   Ohne Host 0 (Bootsperre `CHARDEV_AVAILABLE`). Der Ring wird ueber
-  `tos-api/src/xbios/iorec.rs:477@pop_midi` und `midi_pending` gelesen; kein Kern-Erzeuger
+  `tos-api/src/xbios/iorec.rs:497@pop_midi` und `midi_pending` gelesen; kein Kern-Erzeuger
   fuellt ihn (E5), ein Byte darin hat ein Programm ueber den `Iorec(2)`-Record gelegt.
 - Die `Bcostat`-Vertauschung bleibt in `tos-api/src/bios/chardev.rs:403@bcostat_handle`.
 - `Midiws`/`Ikbdws`: beobachtbar unveraendert (`void`, kehren sofort zurueck); nur

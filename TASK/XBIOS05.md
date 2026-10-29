@@ -1,6 +1,6 @@
 # XBIOS05 — `Bconmap` meldet „nicht vorhanden“ (`0x2C`) fuer jedes Argument
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher (Profil „ein Port, `maptabsize` 1“ oder Abweichung in COMPATIBILITY), danach Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md` · Voraussetzung fuer [BIOS08](BIOS08.md)
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](XBIOS05-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Researcher (Profil „ein Port, `maptabsize` 1“ oder Abweichung in COMPATIBILITY), danach Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md` · Voraussetzung fuer [BIOS08](BIOS08.md)
 
 ## Sachverhalt
 
@@ -8,7 +8,7 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher (Profil „ein Port, 
 
 - Faelle: `bios-r1` 183, 185, 186; `xbios-chardev-r1` 43, 45–53 — EXACT-DIFF: EmuTOS `6` (TT) / `7` (Falcon) fuer `-1`, `0` fuer ungueltige Geraete; NewTOS `44` (`measurements/measurement-2026-10-28-xbios-chardev-audit/runs/NEWTOS-xbios-chardev-r1/tosdiff-newtos-vs-emutos.txt`). `bios-r1` 184 / `xbios-chardev-r1` 44 (`Bconmap(-2)`) bestehen PTR_RAM mit `0x2C`.
 - Sonde B01–B24: EmuTOS `BCONMAP` mit gueltigem `maptab`, `maptabsize` 4 (TT) / 3 (Falcon), Umschalten auf 7, 8, 9 und zurueck aendert `Iorec(0)`; NewTOS dereferenziert an `0x2C`: `maptab` NULL, Groesse 0 (`measurements/measurement-2026-10-28-xbios-chardev-audit/runs/PROBE-EMUTOS-tt`, `measurements/measurement-2026-10-28-xbios-chardev-audit/runs/PROBE-NEWTOS-raspi4b`).
-- Lokalisiert: `tos-api/src/xbios/system.rs:106@bconmap` (konstant `0x2c`).
+- Lokalisiert: `tos-api/src/xbios/system.rs` (`bconmap`, bis XBIOS05; seitdem `tos-api/src/xbios/bconmap.rs`) (konstant `0x2c`).
 - EmuTOS-Stellen: `references/emutos/bios/serport.c:1082-1124`; Vorbelegung `references/emutos/bios/serport.c:955-1003` — auch eine ST-Maschine unter diesem ROM hat `maptabsize = 1`, `mapped_device = 6` (`:962-965`).
 - Spec: `docs/api/xbios/2c-bconmap.md` waehlt `0x2c` „as on a single-serial build“; der Referenzbau (make 512) ist kein solcher Bau. Kein COMPATIBILITY-Eintrag. Wurzel von BIOS-CORE-007 ([BIOS08](BIOS08.md)).
 - Fehlerbild: Programme mit Pruefung `Bconmap(0) == 0x2C` fallen auf Handle 1 zurueck (funktioniert); wer `Bconmap(-2)` ohne Pruefung liest, liest Seite-0-Bytes als Tabelle.
@@ -50,3 +50,14 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher (Profil „ein Port, 
 - Spec zuerst: `docs/api/xbios/2c-bconmap.md` auf die Entscheidung (Option 1)
   umstellen; Falcon-Faelle (7) und die nicht aufrufbaren `MAPTAB`-Zeiger in
   `docs/COMPATIBILITY.md`.
+
+## Stand 2026-10-29 (Umsetzung)
+
+- Umgesetzt nach Option 1, Quittung [XBIOS05-STATUS-DONE.MD](XBIOS05-STATUS-DONE.MD),
+  Beleg `measurements/measurement-2026-10-29-xbios05/RUNINFO.TXT`. Neue Tabelle
+  `tosdump/cases/xbios-bconmap-r1.tsv` (CRC `DD429BF8`) mit Referenzen tt/falcontc.
+- Fuer [BIOS08](BIOS08.md): mit `maptabsize` 1 ist nach EmuTOS
+  (`references/emutos/bios/bios.c:923-928,967-972,1000-1005,1152-1157`) Handle 6
+  = Eintrag 0 = AUX (wie Handle 1), Handles 7..9 (und jedes hoehere) liefern 0 —
+  Entscheidung dort.
+

@@ -1,0 +1,137 @@
+measurement-2026-10-29-xbios05 -- Bconmap: EmuTOS' one-entry table (TASK/XBIOS05, user decision
+2026-10-28 option 1): the acceptance tables before/after, the new table xbios-bconmap-r1 on the
+oracle and on NewTOS, the probes XCPROBE (group B) and BMCALL (a call through a MAPTAB pointer)
+=====================================================================================================
+Developer, TASK/XBIOS05, 2026-10-29/30 (host clock CET). Tree: main at f7e80033 plus the
+uncommitted XBIOS05 change (TASK/XBIOS05-STATUS-DONE.MD lists the files). No hardware, no real
+card, nothing flashed. Not committed.
+
+WHAT / WHY
+  Bconmap returned its function number 0x2C for every argument (XBIOS-CHARDEV-005); the pinned
+  EmuTOS has Bconmap on every machine, and a program that reads Bconmap(-2) without the 0x2C
+  check read page 0 as a table. Implemented per the user decision: the table EmuTOS builds on
+  a machine that is neither Falcon nor TT (references/emutos/bios/serport.c:962-966,972):
+  Bconmap(-1) = 6, Bconmap(-2) = a BCONMAP {maptab, 1, 6} in the IOREC page (EL0 read-write,
+  never executable), every device but 6 = 0, Bconmap(6) = 6 with the save step; MAPTAB[0]'s
+  five function pointers point at never-executable call targets (a call is an instruction
+  abort whose crash report names "Bconmap MAPTAB function (not callable)"), its Iorec slot is
+  Iorec(0)'s record. Spec docs/api/xbios/2c-bconmap.md, layouts docs/api/structures/bconmap.md,
+  COMPATIBILITY "Bconmap: one entry" and "MAPTAB function pointers".
+
+INPUTS
+  ROM        tools/oracle/etos512de-1a7484ab.img (ORACLE_ROM_SHA256, checked by tools/hatari-oracle.sh)
+  Hatari     2.6.1, tools/oracle/hatari.cfg (unchanged)
+  QEMU       11.0.2, -M raspi4b, -append serial=on
+  new table  tosdump/cases/xbios-bconmap-r1.tsv 0b8b1a79b9997103d19898a0fdf4f47745399485a6f461c6ebb41ca53eeff381,
+             CRC DD429BF8, 1 case (line 18), layouts maptab + bconmap (copies of the tosdump-layout
+             block of docs/api/structures/bconmap.md; layoutcheck green)
+  dumper m68k  tosdump/build/DUMPBIOS.PRG (make -C tosdump dumpbios-m68k, build f7e8)
+             fe0d98e7fb249f90f0060aef70103a577d98a49fd8f11c969733165848593e92
+  NewTOS kernels (rpi4 release; gitignored, scratch, deleted after the run):
+    after   2262e6ae71db636a14365d5880d801ebe7c98c11b88d267c9b1852512ff022be (this tree; every
+            after-* table run and both probe runs XCPROBE/BMCALL)
+    before  b4738e115d8f0e1f514b3e7fa5830d27f3bd58a4febacb7c39c98ade6badc542 (`git archive
+            f7e80033` in scratch, --tree; every before-* run and XCPROBE-NEWTOS-raspi4b-before)
+  DUMPBIOS.NAP built by the runner per tree: after 385742749c422f86..., before 437f2a513ba64c90...
+            (tosdump/core unchanged between the two trees; the bytes differ by the build tree)
+  probes    method/build-probes.sh: XCPROBE.NAP deabdfc2383f6bdfb78dd9b7dab7c83688106ab8054070041ed5270bde627f06
+            (method/xcprobe.c, copied unchanged from measurement-2026-10-28-xbios-chardev-audit/method;
+            same bytes as measurement-2026-10-29-xbios01's XCPROBE.NAP), BMCALL.NAP
+            a9e1c6252c6ab7fe907e2d0b743de1171db6036cc2ccd2a573ab164b7132502e (method/bmcall.c, new)
+  EmuTOS side of the probe: the audit's runs, same ROM and probe source:
+            measurements/measurement-2026-10-28-xbios-chardev-audit/runs/PROBE-EMUTOS-tt,
+            .../PROBE-EMUTOS-falcontc (XCPROBE.LOG group B)
+
+CARDS / IMAGES
+  Every NewTOS card from tools/mkcard.sh (the TOOL09 runner for the tables, method/run-newtos.sh
+  for the probes), a file per run, deleted after the run. Manifests copied into each run dir
+  (runs/*/card.img.manifest), 14 in all; their optional_missing line, verbatim, all identical:
+    optional_missing none
+
+METHOD (method/)
+  newtos-tables-before.sh <head> <s> <runs>  bios-r1, xbios-chardev-r1, bios-core-r1, xbios-system-r1,
+                                             xbios-ptr-r1 on the head tree (--tree), each vs tt and falcontc
+  oracle-runs.sh <s> <runs>                  xbios-bconmap-r1.tsv on the oracle, tt and falcontc, twice
+                                             each (tools/hatari-oracle.sh); cmp; tosdiff --selfcheck;
+                                             tt vs falcontc
+  newtos-tables.sh <s> <runs>                the new table plus the five tables above on this tree
+  diffcases.sh <runs>                        display: the differing case numbers per tosdiff file
+  listslots.py BIN...                        display: the nine slots of the r:bconmap capture
+  build-probes.sh, run-newtos.sh             XCPROBE / BMCALL on NewTOS (QMP screendump on a crash)
+  lint.sh <tree> <out>                       build both boards (release) + clippy kernel per board
+
+RESULTS
+1. New table xbios-bconmap-r1, oracle (runs/oracle-*, runs/selfcheck-*.txt, runs/tosdiff-tt-vs-falcontc.txt):
+   BIN and LOG byte-identical run 1 = run 2 on both profiles; --selfcheck passes on both; the
+   references are run 1: tosdump/reference/EMUTOS-1a7484ab-XBIOS-bconmap.{BIN,LOG} (tt,
+   01f33b22... / 401cd03b...) and -XBIOS-bconmap-falcontc.{BIN,LOG} (b9d63605... / 401cd03b...).
+     case 18 Bconmap(-2) r:bconmap   (method/listslots.py)
+       tt        ret 0x4A76  maptab 0x47F4  bconstat e10d80 bconin e10d96 bcostat e10df0
+                 bconout e10e12 rsconf e114f0 iorec 0x4A54  maptabsize 4  mapped_device 6
+       falcontc  the same pointers                                    maptabsize 3  mapped_device 7
+       NewTOS    ret 0x7D080  maptab 0x7D090  bconstat 7d0c0 bconin 7d0c4 bcostat 7d0c8
+                 bconout 7d0cc rsconf 7d0d0 iorec 0x7D000 (= Iorec(0))  maptabsize 1  mapped_device 6
+   tosdiff NewTOS: every pointer slot passes PTR_RAM (EQUAL); differs only
+     tt:       bconmap:maptabsize 4 / 1
+     falcontc: bconmap:maptabsize 3 / 1, bconmap:mapped_device 7 / 6
+   = the device parameters ACCEPTED per profile (docs/COMPATIBILITY.md, "Bconmap: one entry").
+
+2. Frozen tables, NewTOS vs oracle, differing cases (runs/before-after.txt; tosdiff per run in
+   runs/before-*/ and runs/after-*/, every NewTOS dump "tosdiff --validate" accepted):
+     table             ref   before (f7e80033)                      after (XBIOS05)
+     bios-r1           tt    37: ... 179 183 184 185 186 189 ...    33: 183-186 gone, rest unchanged
+     bios-r1           fc    41: ... 179 183 184 185 186 189 ...    38: 184-186 gone; 183 stays (Falcon 7 / NewTOS 6, ACCEPTED)
+     xbios-chardev-r1  tt    12: 31 43-53                           1: 31 (Rsconf ucr, XBIOS06)
+     xbios-chardev-r1  fc    12: 31 43-53                           2: 31, 43 (Falcon 7 / NewTOS 6, ACCEPTED)
+     bios-core-r1      tt    2: 65 66                               2: 65 66 (Bcostat(8/9), BIOS08)
+     bios-core-r1      fc    1: 65                                  1: 65
+     xbios-system-r1   both  9: 68-76                               9: 68-76
+     xbios-ptr-r1      both  0                                      0 (Iorec(0..2) records incl. case 24, unchanged)
+   No case that was equal before differs after (all five tables, both references). bios-r1
+   69/70 (Bcostat(6/7)) and bios-core-r1 65/66 stay DIFF: they are BIOS08's (handles 6..9 in
+   the BIOS device table, not changed here).
+
+3. Probe XCPROBE group B (runs/XCPROBE-NEWTOS-raspi4b/XCPROBE.LOG; before:
+   runs/XCPROBE-NEWTOS-raspi4b-before/XCPROBE.LOG; every non-B line identical before/after):
+     B01 Bconmap(-1) 6 (EmuTOS tt 6, falcontc 7)        B02 Bconmap(-2) 0x7D080 (tt 0x4A76; address, not contract)
+     B03 tosaddr 1 (= EmuTOS)                            B04 maptab_tosaddr 1, maptabsize 1, mapped_device 6,
+                                                             sizeof(_BCONMAP) 16 (tt 4/6, 6; LP64)
+     B05 maptab[0] fn_tosaddr 11111 iorec_tosaddr 1 (= EmuTOS entry 0; entries 1-3 only on EmuTOS)
+     B06-B12 0 (= EmuTOS)                                B13 Bconmap(7) 0 (EmuTOS 6: a switch; no such port)
+     B14 6 (EmuTOS 7), B15 Iorec(0)_changed 0 (EmuTOS 1), B16 Rsconf(-2) 1 (= EmuTOS)
+     B17 Bconmap(6) 6 (EmuTOS 7, the old device), B18 6, B19 1 1 (= EmuTOS)
+     B20/B21 Bconmap(8/9) 0 (EmuTOS 6/8), B22 6, B23 6, B24 6 (= EmuTOS)
+   Before: every B line 0x2C, B04 maptab NULL size 0. Equal to EmuTOS where the table has the
+   entry; the rest differ by the missing ports 7..9 (ACCEPTED, decision option 1).
+
+4. Probe BMCALL (runs/BMCALL-NEWTOS-raspi4b): BMCALL.LOG
+     C01 Bconmap(-1)=6 Bconmap(-2)=7d080 maptab=7d090 maptabsize=1 mapped_device=6
+     C02 maptab[0] Bconstat=7d0c0 Bconin=7d0c4 Bcostat=7d0c8 Bconout=7d0cc Rsconf=7d0d0 iorec=7d000 Iorec(0)=7d000
+     C03 calling maptab[0].Bconstat(1)
+   no C04 ("returned"). Serial (BOOT-SERIAL.txt:55-61) and screen (crash-report.png, QMP):
+     [crash] slot 0 Bus Error esr=0x8200000f pc=0x7d0c0 far=Some(512192)
+     Panic: Bus Error / addr=000000000007d0c0 ... pc=000000000007d0c0
+     Memory violation: Bconmap MAPTAB function (not callable) memory, execute (permission fault, level 3)
+     ... *** Press any key to continue ***
+   The run was stopped there (no key in a headless run): the Pterm(-1) after the key is the
+   existing crash path, not driven here.
+
+TESTS / LINT
+  cargo xtask test (full)   1881 passed, 0 failed, 1 ignored (runs/xtask-test-summary.txt); base 1872/0/1:
+                            +6 tos-api/tests/xbios05_bconmap.rs, +3 unit tests xbios::bconmap
+  sdk/run-host-tests.sh     35 / 0 / 0 (runs/sdk-host-tests.txt); base 34: +1 bconmap-layout
+                            (sdk/libc/tests/bconmap-layout.c; a negative control with maptabsize @4 and
+                            mapped_device @6 fails with two static assertions -- scratch copy, not kept)
+  make -C tosdump host-test exit 0 (runs/host-test.txt): layoutcheck "7 layouts in the specs, 10 table
+                            lines in 33 tables", self-check 43 references
+  build + clippy (runs/lint-before = head tree, runs/lint-after = this tree): build both boards exit 0,
+                            159 warning lines each side (kernel 93, tos-api 64); clippy kernel 121 /
+                            tos-api 74 on both boards both sides; clippy tos-api --tests: no warning in
+                            the touched files
+  cargo xtask deps --check-mapping: 1055 rows resolve; deps bconmap --up complete (3/3 mapped)
+
+NOT DONE / LIMITS
+  - qemu-virt: built and linted, not booted here (Tester).
+  - Real Pi 4: nothing hardware-specific changed (a data page and a crash-report line); not run.
+  - The crash report's "press any key" -> Pterm(-1) after BMCALL: not driven headless.
+  - Run BINs are gitignored (*.bin); their sha256 are above; the references are committed.

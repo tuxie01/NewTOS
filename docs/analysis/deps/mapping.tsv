@@ -897,7 +897,8 @@ bconinB	bios/serport.c	kernel/src/console.rs	bconin	mapped	Falcon target profile
 bconinB	bios/serport.c	kernel/src/console.rs	bconin_restartable	mapped	the trap entry (Bconin(1), Cauxin, one-byte Fread on AUX): qemu-virt AuxSerial waits like bconin, but gives way to a kbdvec hook with queued bytes and the trap restarts (XBIOS18; EmuTOS calls the hook from the IKBD interrupt during the wait, bios/aciavecs.S:407-414)
 bconinTT	bios/serport.c	-	-	design:hardware:tt-mfp	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
 bconin_iorec	bios/serport.c	kernel/src/console.rs	aux_read_blocking	mapped	the wait for a byte in device 0 input ring, IRQs open, wfi (XBIOS15, qemu-virt); on the trap path it gives way when the running process has kbdvec hook bytes queued, the trap restarts after the hook ran (XBIOS18)
-bconmap	bios/serport.c	tos-api/src/xbios/system.rs	bconmap	mapped	Bconmap 0x2C
+bconmap	bios/serport.c	tos-api/src/xbios/bconmap.rs	bconmap	mapped	Bconmap 0x2C: the one-entry table (-1 = 6, -2 = the BCONMAP in the IOREC page, 6 = the save step, else 0; XBIOS05)
+bconmap	bios/serport.c	tos-api/src/xbios/bconmap.rs	store_entry	mapped	the save step into the old slot (bios/serport.c:1104-1110): entry 0 back to the kernel image (XBIOS05)
 bconout1	bios/serport.c	kernel/src/console.rs	bconout	mapped	qemu-virt AuxSerial::bconout, the device 1 output entry; AUX output (XBIOS15): accepted and discarded, always ready (bios/chardev.rs AuxNoCable; qemu-virt kernel/src/console.rs AuxSerial delegates its output to it)
 bconout1	bios/serport.c	tos-api/src/bios/chardev.rs	bconout	mapped	AuxNoCable::bconout: the body (1, byte discarded) and the rpi4 device 1 entry; EmuTOS queues into iorec1.out and transmits
 bconoutA	bios/serport.c	-	-	design:hardware:scc	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
@@ -919,7 +920,7 @@ get_iorecbuf	bios/serport.c	tos-api/src/xbios/iorec.rs	pop_serial	mapped	head fi
 get_iorecbuf	bios/serport.c	tos-api/src/xbios/iorec.rs	pop_byte	mapped	the byte-ring dequeue (Page::pop_byte)
 incr_tail	bios/serport.c	tos-api/src/xbios/iorec.rs	push_byte	mapped	tail + 1, wrap at size (inside Page::push_byte, XBIOS15); the out-ring uses (bcostat1/put_iorecbuf) have no counterpart: AUX output is discarded
 init_bconmap	bios/serport.c	kernel/src/console.rs	install_aux	mapped	the device 1 install (bcon*_vec[1] from the mapped port): qemu-virt AuxSerial into slot 1 (XBIOS15); rpi4 keeps the static AuxNoCable slot (bios/chardev.rs DEVICES)
-init_bconmap	bios/serport.c	-	-	unmapped	the maptable/bconmap_root half: no counterpart; NewTOS Bconmap answers 0x2c (xbios/system.rs bconmap, BCONMAP_AVAILABLE false), EmuTOS Falcon profile builds BCONMAP
+init_bconmap	bios/serport.c	tos-api/src/xbios/bconmap.rs	init	mapped	the maptable/bconmap_root half: Area::init writes BCONMAP {maptab, 1, 6} and MAPTAB[0] (non-callable function slots, Iorec(0) record) into the IOREC page with its records (XBIOS05); Falcon/TT entries: no such ports
 init_serport	bios/serport.c	tos-api/src/xbios/iorec.rs	init	mapped	Page::init: device 0 record = iorec_init (buffer, size, empty, water marks, line bytes; XBIOS01 E5) - the iorec1 half; rsconfptr = rsconf1: the Rsconf shadows start at the same defaults (xbios/system.rs); SCC/TT-MFP halves: no such hardware
 mfp_rs232_rx_interrupt_handler	bios/serport.c	kernel/src/console.rs	pl011_rx_drain	mapped	the receive interrupt: PL011 RX FIFO drained, each byte to serial_rx_byte (XBIOS15)
 mfp_rs232_tx_interrupt_handler	bios/serport.c	-	-	unmapped	MFP transmit interrupt (iorec1.out -> udr): no counterpart: NewTOS has no AUX output ring and no transmit interrupt; AUX output is discarded at once (bios/chardev.rs AuxNoCable::bconout, also behind qemu-virt AuxSerial, XBIOS15)
@@ -932,7 +933,7 @@ rsconf1	bios/serport.c	tos-api/src/xbios/system.rs	rsconf	mapped	Rsconf 0x0F on 
 rsconfA	bios/serport.c	-	-	design:hardware:scc	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
 rsconfB	bios/serport.c	-	-	unmapped	Falcon target profile Rsconf (SCC B -> rsconf_scc): no counterpart; NewTOS Rsconf (xbios/system.rs rsconf) follows rsconf_mfp (rsconf1), not rsconf_scc
 rsconfTT	bios/serport.c	-	-	design:hardware:tt-mfp	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
-rsconf_dummy	bios/serport.c	-	-	unmapped	the Rsconf of an unused Bconmap maptable slot: no counterpart, NewTOS has no maptable (Bconmap answers 0x2c, xbios/system.rs bconmap)
+rsconf_dummy	bios/serport.c	-	-	unmapped	the Rsconf of an unused Bconmap maptable slot (maptable_dummy, bios/serport.c:96): no counterpart, the NewTOS table has one entry and no unused slot (XBIOS05)
 rsconf_mfp	bios/serport.c	-	-	design:hardware:mfp68901	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
 rsconf_scc	bios/serport.c	-	-	design:hardware:scc	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
 scc_es_interrupt_handler	bios/serport.c	-	-	design:hardware:scc	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)

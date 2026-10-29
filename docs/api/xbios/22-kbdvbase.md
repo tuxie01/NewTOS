@@ -389,7 +389,7 @@ Haken nach AAPCS64; der Kernel sichert **alle** Register des unterbrochenen
 Kontexts (`deliver_upcall`), der Haken darf also jedes Register veraendern —
 strikt mehr Spielraum als `d2-d7/a2-a6` unter EmuTOS (`:250-259`).
 D2a: `IOREC`-Zeiger. **[XBIOS01, 2026-10-29, E6]** `x1` = der IKBD-`IOREC`
-(dieselbe Adresse wie `Iorec(1)`, `tos-api/src/xbios/iorec.rs:142@IKBD_IOREC_VA`,
+(dieselbe Adresse wie `Iorec(1)`, `tos-api/src/xbios/iorec.rs:146@IKBD_IOREC_VA`,
 gesetzt in `kernel/src/arch/aarch64/exceptions.rs:851@IKBD_IOREC_VA`), wie EmuTOS
 `a0 = &ikbdiorec` (`bios/aciavecs.S:412`); die Tastenschlange **ist** seit
 XBIOS01 dieser Ring (`docs/api/xbios/0e-iorec.md`). Vorher: `x1 = 0`, weil

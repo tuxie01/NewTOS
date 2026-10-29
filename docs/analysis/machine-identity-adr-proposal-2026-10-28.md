@@ -327,7 +327,7 @@ ACCEPTED, `_VDO`/`_SND`/`_CPU`/`_FPU` je mit Wert oder Abwesenheit festgelegt.
 | Funktion | A1 / A2 / A3 | B | C |
 |---|---|---|---|
 | `NVMaccess` (0x2E) | beliebig; `0x2E` = EmuTOS-Antwort ohne NVRAM; `XBIOS10` = „kein NVRAM“ mit Eintrag in COMPATIBILITY (Fall 189-194 ACCEPTED) | Programm erwartet NVRAM (Falcon hat es, Orakel `falcontc` auch) -> Druck Richtung Emulation | wie B, aber als Abweichung benennbar |
-| RTC (`Gettime`/`Settime`) | unberuehrt: wird ueber die GEMDOS-Uhr beantwortet (`tos-api/src/xbios/mod.rs:116@GETTIME`); EmuTOS' RTC-Wahl haengt an Flags (`clock.c:1150-1198`) | wie links | wie links |
+| RTC (`Gettime`/`Settime`) | unberuehrt: wird ueber die GEMDOS-Uhr beantwortet (`tos-api/src/xbios/mod.rs:119@GETTIME`); EmuTOS' RTC-Wahl haengt an Flags (`clock.c:1150-1198`) | wie links | wie links |
 | `_AKP`/`_IDT` | bleiben fest (US/`/`) oder folgen der Tastatur (`COMPATIBILITY.md`, offen) | wie links; EmuTOS-Falcon liest sie aus NVRAM | wie B |
 | Video (`0x58`-`0x5F`), `EgetShift` (`0x51`) | Funktionsnummer, ehrlich „nicht vorhanden“ | Funktionsnummer, aber „Falcon“-Kennung -> Widerspruch | ACCEPTED-Liste |
 | DSP (`0x67`-`0x7D`), `Soundcmd` | wie oben | wie oben | ACCEPTED-Liste |

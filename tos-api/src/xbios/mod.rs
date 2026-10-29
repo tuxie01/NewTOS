@@ -14,6 +14,7 @@
 //! trampoline. A handful of functions guard absent Atari peripherals with a
 //! defined contract value instead (floppy → `EUNDEV`, PSG → `0`, etc.).
 
+pub mod bconmap;
 pub mod floppy;
 pub mod iorec;
 pub mod kbdvecs;
@@ -62,7 +63,7 @@ const VSYNC: u16 = 0x25;
 const FLOPRATE: u16 = 0x29;
 const DMAREAD: u16 = 0x2A;
 const DMAWRITE: u16 = 0x2B;
-const BCONMAP: u16 = 0x2C; // single serial port → returns 0x2c ("absent")
+const BCONMAP: u16 = 0x2C; // the one-entry mapping table, AUX = device 6 (XBIOS05)
 const BLITMODE: u16 = 0x40;
 
 /// XBIOS Trap-14 dispatcher. Returns the value to load into `x0`.
@@ -88,11 +89,13 @@ pub fn dispatch(args: &TrapArgs) -> i64 {
         // "hardware not present", not the generic function-number catch-all.
         // Scrdmp: no printer / default dump_vec is a no-op (14-scrdmp.md);
         // Midiws: through the MIDI device-table entry, each byte accepted
-        // and dropped (0c-midiws.md, BIOS04);
-        // Bconmap: single serial port → 0x2c "unavailable" (2c-bconmap.md).
+        // and dropped (0c-midiws.md, BIOS04).
         SCRDMP => system::scrdmp(),
         MIDIWS => system::midiws(args),
-        BCONMAP => system::bconmap(),
+        // Bconmap: EmuTOS' one-entry table (`-1` = 6, `-2` = the `BCONMAP`
+        // in the IOREC page, invalid devices 0); its function pointers are
+        // not callable from EL0 (2c-bconmap.md, XBIOS05).
+        BCONMAP => bconmap::bconmap(args),
         // RS-232 config: thin adapter over the PL011 (no MFP). See
         // `docs/api/xbios/0f-rsconf.md`.
         RSCONF => system::rsconf(args),

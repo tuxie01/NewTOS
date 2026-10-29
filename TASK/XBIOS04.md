@@ -7,7 +7,7 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher (Umfang entscheiden),
 **XBIOS-CHARDEV-004 — S3 — MEASURED — NOT LOCALIZED.** Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-xbios-chardev-audit/RUNINFO.TXT`.
 
 - Sonde W01–W04: `Ikbdws(0,{0x1C})` (Uhr abfragen), `{0x88}` (Mausmodus erfragen), `{0x16}` (Joystick abfragen) — EmuTOS ruft je den Haken einmal, NewTOS nie (`measurements/measurement-2026-10-28-xbios-chardev-audit/runs/PROBE-EMUTOS-tt`, `measurements/measurement-2026-10-28-xbios-chardev-audit/runs/PROBE-NEWTOS-raspi4b`). Rueckgabe `void` (EmuTOS `d0` = 2, NewTOS 0; nicht verglichen).
-- Vermutete Wurzel (nicht lokalisiert): `tos-api/src/xbios/system.rs:152@ikbdws` (gibt 0 zurueck, ignoriert beide Argumente). Die `--down`-Abhaengigkeit `bcostat4` ist DIFF (BIOS-CORE-001, [BIOS04](BIOS04.md)): `bios-r1` 67 muss erst gleich sein.
+- Vermutete Wurzel (nicht lokalisiert): `tos-api/src/xbios/system.rs:136@ikbdws` (gibt 0 zurueck, ignoriert beide Argumente). Die `--down`-Abhaengigkeit `bcostat4` ist DIFF (BIOS-CORE-001, [BIOS04](BIOS04.md)): `bios-r1` 67 muss erst gleich sein.
 - EmuTOS-Stelle: `references/emutos/bios/ikbd.c:948-954`.
 - Spec: `docs/api/xbios/19-ikbdws.md` (No-op, Interpreter „does not exist yet“). IKBD-Uhr und Joystick fallen unter die Hardware-Nicht-Ziele; Mausmodus-Kommandos (0x08/0x09/0x0A/0x12) betreffen beobachtbares Verhalten, nicht gemessen (Bericht Abschnitt 6).
 - Fehlerbild: Uhr per `0x1C` lesen und auf das Paket warten haengt; Maus per `0x12` abschalten wirkt nicht.

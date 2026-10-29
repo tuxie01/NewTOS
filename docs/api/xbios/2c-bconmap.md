@@ -2,11 +2,18 @@
 
 > Phase 00 spec (full-contract template). Source: EmuTOS @ `1a7484ab`.
 > Verified against `bios/serport.c:1082` (`bconmap`).
+> NewTOS profile: **one-entry table like EmuTOS on a machine that is neither
+> Falcon nor TT** — user decision 2026-10-28 (`TASK/XBIOS05.md`, option 1),
+> implemented by XBIOS05 (2026-10-29).
 
 > **Contract vs. reference** — see [`docs/COMPATIBILITY.md`](../../COMPATIBILITY.md).
 > Contract: trap ID/ABI, the `-1`/`-2` queries, the `BCONMAP_START_HANDLE`
-> (6) base, the `BCONMAP`/`MAPTAB` layouts, the `0x2c` return when the
-> feature is absent. Reference: the vector-swap mechanics.
+> (6) base, `0` for a device outside the table, the `BCONMAP`/`MAPTAB`
+> field order (LP64 layout: `docs/api/structures/bconmap.md`). Device
+> parameters (ACCEPTED per profile): `maptabsize` and the default
+> `mapped_device` depend on the machine (TT 4/6, Falcon 3/7, NewTOS 1/6).
+> Not contract: the addresses; the `MAPTAB` function pointers are not
+> callable on NewTOS.
 
 ## EmuTOS source
 
@@ -14,7 +21,7 @@
 0x2C of `xbios_vecs[]` (`bios/xbios.c:1347`).
 
 **Installed handler / vector:** rewires the low-memory char-device vectors
-(`bconstat_vec`/`bconin_vec`/`bcostat_vec`/`bconout_vec` for the mapped slot)
+(`bconstat_vec`/`bconin_vec`/`bcostat_vec`/`bconout_vec` for device 1)
 and the `rsconfptr`/`rs232iorecptr` globals from the selected `MAPTAB` entry.
 
 **Helpers called:** none (inline vector copy).
@@ -27,50 +34,42 @@ and the `rsconfptr`/`rs232iorecptr` globals from the selected `MAPTAB` entry.
 
 **System variables / globals read/written:**
 - `bconmap_root.mapped_device`/`.maptab`/`.maptabsize`.
-- `bconstat_vec[…]`/`bconin_vec[…]`/`bcostat_vec[…]`/`bconout_vec[…]`,
+- `bconstat_vec[1]`/`bconin_vec[1]`/`bcostat_vec[1]`/`bconout_vec[1]`,
   `rsconfptr`, `rs232iorecptr`.
 
 **Build configuration affecting this function:**
-- `BCONMAP_AVAILABLE` — **only true** when `CONF_WITH_SCC` or
-  `CONF_WITH_TT_MFP` is set. On a single-serial build it is **false** and
-  `bconmap` returns the function number `0x2c`.
-  **[XBIOS07] correction:** the pinned reference build (make 512, Falcon/TT
-  profile) is **not** such a build: `CONF_WITH_SCC`/`CONF_WITH_TT_MFP` are 1
-  there (`docs/api/_emutos-config.md:201,211`; `include/config.h:89-90`), so
-  `BCONMAP_AVAILABLE` is true and `Bconmap` works. Measured on the oracle:
-  `Bconmap(-1)` = 6 (TT) / 7 (Falcon), invalid device = 0, `maptabsize` 4 (TT)
-  / 3 (Falcon)
-  (`measurements/measurement-2026-10-28-xbios-chardev-audit/RUNINFO.TXT`,
-  `xbios-chardev-r1` 43, 45-53; audit XBIOS-CHARDEV-005). The `0x2c` branch
-  (`bios/serport.c:1124`) belongs to a build without SCC and TT-MFP only. Even
-  then the table is initialised with `maptabsize = 1`,
-  `mapped_device = 6` (`bios/serport.c:962-965`; `init_bconmap` is not
-  compiled out by `BCONMAP_AVAILABLE` alone — **needs deeper analysis** which
-  gate covers it).
+- `BCONMAP_AVAILABLE` — true when `CONF_WITH_SCC` or `CONF_WITH_TT_MFP` is
+  set. The pinned reference build (make 512, Falcon/TT profile) has both
+  (`docs/api/_emutos-config.md:201,211`; `include/config.h:89-90`), so
+  `BCONMAP_AVAILABLE` is true and `Bconmap` works on **every** machine under
+  that ROM [XBIOS07]. The table is built by `init_bconmap`
+  (`bios/serport.c:956-1004`), defined and called under the same gate
+  (`:944`, `:1056-1059`, from `init_serport`). Only a build without SCC and
+  TT-MFP compiles the body out and returns `0x2c` (`:1123-1124`); NewTOS is
+  not such a build (decision 2026-10-28).
 
 ---
 
 ## Source extraction summary
 
-`Bconmap` maps the "current RS-232" logical device (BIOS handle 1 and the
-`Rsconf`/`Iorec`/`Bconout(1,…)` family) onto one of several physical serial
-ports (Falcon has modem-1/modem-2/serial-1/serial-2; TT has the ST MFP + TT
-MFP; etc.). `dev == -1` returns the currently-mapped device number; `dev ==
--2` returns `&bconmap_root` (so a program can walk the `MAPTAB` array and
-pre-configure it); a valid device (`>= BCONMAP_START_HANDLE = 6`) saves the
-current vectors into the previously-mapped slot, installs the new slot's
-vectors + `rsconfptr`/`rs232iorecptr`, updates `mapped_device`, and returns
-the old device number; an out-of-range device returns `0L`.
+`Bconmap` maps the "current RS-232" logical device (BIOS device 1 and the
+`Rsconf`/`Iorec(0)` family) onto one of several physical serial ports
+(Falcon: MFP, SCC B, SCC A; TT: MFP, SCC B, TT-MFP, SCC A). `dev == -1`
+returns the currently-mapped device number (`bios/serport.c:1089-1090`);
+`dev == -2` returns `&bconmap_root` (`:1092-1093`), so a program can walk
+the `MAPTAB` array; a valid device (`6 .. 6 + maptabsize - 1`) stores the
+current vectors into the old device's slot (`:1104-1110`), installs the new
+slot's vectors + `rsconfptr`/`rs232iorecptr` (`:1113-1119`), updates
+`mapped_device` (`:1121`) and returns the old device number (`:1122`); any
+other device returns `0L` (`:1095-1097`).
 
-When `BCONMAP_AVAILABLE` is false (a build without SCC and TT-MFP), the whole
-body is compiled out and `bconmap` returns `0x2c` (the function number), i.e.
-the D-008 "unimplemented" signal (`bios/serport.c:1123-1124`).
-**[XBIOS07]** The pinned reference build has `BCONMAP_AVAILABLE` true (see
-Build configuration above); "NewTOS profile = single-serial build" was a
-NewTOS choice, not the EmuTOS reference behaviour.
-**pending XBIOS05:** NewTOS today still returns `0x2c` for every argument
-(`tos-api/src/xbios/system.rs:106@bconmap`); which profile NewTOS takes
-(option list below) is decided in `TASK/XBIOS05.md`.
+`init_bconmap` (`bios/serport.c:956-1004`): four entries filled with
+`maptable_dummy`, `maptab = maptable`, `maptabsize = 1`, `mapped_device =
+7` on Falcon/ARAnyM else 6 (`:962-966`); entry 0 = `maptable_mfp` =
+`{bconstat1, bconin1, bcostat1, bconout1, rsconf1, &iorec1}` (`:98`, `:972`);
+Falcon/MSTe/ARAnyM: `maptabsize = 3` (`:974-981`), TT: `maptabsize = 4`
+(`:982-993`); every other machine keeps the one entry. Then device 1's
+vectors are taken from the mapped entry (`:996-1003`).
 
 ---
 
@@ -87,9 +86,9 @@ NewTOS choice, not the EmuTOS reference behaviour.
    0: function_id (word) = 0x002C
   ```
 - **Total parameter bytes:** 4 (W).
-- **Native (AArch64) ABI:** ID `0x2C` in `x8`; arg in `x0`; result is a LONG
-  (device number, `0`, or `0x2c`) — for the `-2` case a **pointer** in the
-  full 64-bit `x0`.
+- **Native (AArch64) ABI:** ID `0x2C` in `x8`; arg in `x0` (low 16 bits, a
+  signed `WORD`); result in `x0`: a device number or `0` sign-extended, for
+  the `-2` case a **pointer** in the full 64-bit `x0` (below 4 GiB on NewTOS).
 
   | m68k stack | AArch64 reg | Name  | Type / size |
   |------------|-------------|-------|-------------|
@@ -101,9 +100,11 @@ NewTOS choice, not the EmuTOS reference behaviour.
 
 | Position | Name  | Type   | Size | Source location      | Notes |
 |----------|-------|--------|------|----------------------|-------|
-| arg0     | `dev` | `WORD` | 2    | `bios/serport.c:1088`| `-1` query, `-2` table ptr, `>= 6` select device |
+| arg0     | `dev` | `WORD` | 2    | `bios/serport.c:1082`| `-1` query, `-2` table ptr, `6 .. 6+maptabsize-1` select device |
 
 `BCONMAP_START_HANDLE = 6` — valid devices are `6 .. 6 + maptabsize - 1`.
+`map_index = dev - 6` is computed in a `WORD` (`:1095`): `dev` below
+`-32762` wraps to a large index, which is past the table like any other.
 
 ---
 
@@ -112,34 +113,29 @@ NewTOS choice, not the EmuTOS reference behaviour.
 ### Return value
 
 - **Register:** D0 / `x0`
-- **Type:** LONG (device number / pointer / `0` / `0x2c`)
+- **Type:** LONG (device number / pointer / `0`)
 - **Encoding:**
 
   | `dev`   | Return | Source |
   |---------|--------|--------|
-  | `-1`    | currently-mapped device number | `bios/serport.c:1089` |
-  | `-2`    | pointer to `bconmap_root` (`BCONMAP`) | `bios/serport.c:1092` |
-  | valid `>= 6` | previously-mapped device number | `bios/serport.c` (switch tail) |
-  | invalid | `0L` | `bios/serport.c:1096` |
-  | (`BCONMAP_AVAILABLE == 0`) | `0x2c` (function number) | `bios/serport.c:1124` |
+  | `-1`    | currently-mapped device number | `bios/serport.c:1089-1090` |
+  | `-2`    | pointer to `bconmap_root` (`BCONMAP`) | `bios/serport.c:1092-1093` |
+  | valid (`6 .. 6+maptabsize-1`) | previously-mapped device number | `bios/serport.c:1122` |
+  | anything else | `0L` | `bios/serport.c:1095-1097` |
+  | (build without SCC and TT-MFP only) | `0x2c` (function number) | `bios/serport.c:1124` |
 
-### `BCONMAP` (`bconmap_root`, `bios/serport.h:115-119`)
+### `BCONMAP` / `MAPTAB`
 
-| Offset | Field           | Type | Meaning |
-|-------:|-----------------|------|---------|
-| 0x00   | `maptab`        | `MAPTAB *` | per-device vector-set array |
-| 0x04   | `maptabsize`    | `WORD` | number of entries |
-| 0x06   | `mapped_device` | `WORD` | currently mapped device |
-
-### `MAPTAB` (`bios/serport.h:106-113`) — 24 bytes
-
-Six 4-byte vectors in order: `Bconstat`, `Bconin`, `Bcostat`, `Bconout`,
-`Rsconf`, `EXT_IOREC *Iorec`.
+Layouts (m68k and LP64), EmuTOS instances and the dumper layout:
+`docs/api/structures/bconmap.md`. `BCONMAP = {maptab, maptabsize,
+mapped_device}`, `maptab` first (D-044); `MAPTAB` = six pointers `Bconstat`,
+`Bconin`, `Bcostat`, `Bconout`, `Rsconf`, `EXT_IOREC *Iorec`.
 
 ### Side effects on global state
 
-- The char-device vectors for the mapped slot + `rsconfptr`/`rs232iorecptr`
-  are swapped (valid-device path); `mapped_device` updated.
+- Valid-device path: the old device's slot gets the current vectors, device
+  1's vectors + `rsconfptr`/`rs232iorecptr` come from the new slot,
+  `mapped_device` updated. `-1`, `-2` and invalid devices change nothing.
 
 ---
 
@@ -147,42 +143,48 @@ Six 4-byte vectors in order: `Bconstat`, `Bconin`, `Bcostat`, `Bconout`,
 
 | Condition | Source location | Returned value |
 |-----------|-----------------|----------------|
-| `dev` out of range (`< 6` or `>= 6+maptabsize`) | `bios/serport.c:1096` | `0L` |
-| `BCONMAP_AVAILABLE == 0` (single-serial build) | `bios/serport.c:1124` | `0x2c` |
+| `dev` not `-1`/`-2` and outside `6 .. 6+maptabsize-1` | `bios/serport.c:1095-1097` | `0L` |
 
 ---
 
 ## Verification criteria
 
-- **Query current:** `Bconmap(-1)` returns the current mapped device (default
-  6, or 7 on Falcon/ARAnyM).
-- **Get table:** `Bconmap(-2)` returns `&bconmap_root`, a `BCONMAP` whose
-  first field is the `maptab` pointer.
-- **Invalid device:** `Bconmap(99)` returns `0L`.
-- **Unavailable build:** on a build without SCC/TT-MFP,
-  `Bconmap(anything)` returns `0x2c` (the function number). [XBIOS07] Not the
-  oracle's behaviour: oracle cases `bios-r1` 183/185/186, `xbios-chardev-r1`
-  43, 45-53 expect `6`/`7` for `-1` and `0` for invalid devices.
+Measured cases (oracle tt / falcontc; NewTOS):
+
+| Case | Call | Oracle TT | Oracle Falcon | NewTOS | Status |
+|---|---|---|---|---|---|
+| `bios-r1` 183, `xbios-chardev-r1` 43 | `Bconmap(-1)` | 6 | 7 | 6 | TT EQUAL; Falcon ACCEPTED (device parameter) |
+| `bios-r1` 184, `xbios-chardev-r1` 44 | `Bconmap(-2)` | `&bconmap_root` | same | the `BCONMAP` in the IOREC page | PTR_RAM, EQUAL |
+| `bios-r1` 185/186, `xbios-chardev-r1` 45-53 | `Bconmap(0..5, 10, 11, 0x7FFF, -3, -32768)` | 0 | 0 | 0 | EQUAL |
+| `xbios-bconmap-r1` 18 | `Bconmap(-2)`, `BCONMAP` + `MAPTAB[0]` through the pointer | `maptabsize` 4, `mapped_device` 6 | 3, 7 | 1, 6 | pointers PTR_RAM EQUAL; `maptabsize` (both) and `mapped_device` (Falcon) ACCEPTED |
+
+Not in a table (the dumper's guard refuses devices 6..9, they remap AUX on
+the oracle): `Bconmap(6)` returns 6 and keeps device 1 the AUX port;
+`Bconmap(7..9)` return 0 on NewTOS (oracle TT/Falcon: a switch). Host tests:
+`tos-api/tests/xbios05_bconmap.rs`. The probe
+`measurements/measurement-2026-10-29-xbios05/method/xcprobe.c` group B
+(B01-B24) on both systems.
 
 ---
 
 ## Edge cases discovered in source
 
-1. **`BCONMAP_AVAILABLE = (CONF_WITH_SCC || CONF_WITH_TT_MFP)`.** On a
-   build without SCC/TT-MFP it is false and `Bconmap` returns `0x2c`. The old
-   spec claimed NewTOS "enables `BCONMAP_AVAILABLE = 1` with a 1-entry table"
-   — a design *choice* NewTOS had not made at that time. [XBIOS07] The
-   oracle itself runs with `BCONMAP_AVAILABLE` true; see the pending-XBIOS05
-   options in "NewTOS implementation notes". See D-045.
+1. **`BCONMAP_AVAILABLE = (CONF_WITH_SCC || CONF_WITH_TT_MFP)`.** True on
+   the reference build; then `Bconmap` exists on every machine, an ST
+   included (one entry). See D-045.
 2. **`BCONMAP` field order is `{maptab, maptabsize, mapped_device}`.** The old
    spec (and `_state.md`) had it reversed. `maptab` is at offset 0. See D-044.
-3. **`MAPTAB.Iorec` is an `EXT_IOREC *`.** 24-byte struct, six 4-byte fields;
-   the sixth is the RS-232 `EXT_IOREC` pointer (not a bare `IOREC`).
+3. **`MAPTAB.Iorec` is an `EXT_IOREC *`.** Six pointer fields; the sixth is
+   the RS-232 `EXT_IOREC` pointer (not a bare `IOREC`).
 4. **Vector save-on-switch.** Before installing a new slot, `Bconmap` copies
-   the current low-memory vectors back into the *old* slot, so direct edits
-   made via `Bconmap`-managed slots survive a switch.
+   the current low-memory vectors back into the *old* slot
+   (`bios/serport.c:1104-1110`), so edits made to device 1's vectors survive
+   a switch — and edits made to the old slot itself are overwritten.
 5. **Default `mapped_device`.** 7 on Falcon/ARAnyM, else 6
    (`bios/serport.c:966`).
+6. **`maptabsize` by machine.** 1 unless Falcon/MSTe/ARAnyM (3) or TT (4)
+   (`bios/serport.c:965,981,993`); the extra entries exist whether or not
+   the SCC / TT-MFP is detected (a missing port keeps `maptable_dummy`).
 
 ---
 
@@ -190,21 +192,26 @@ Six 4-byte vectors in order: `Bconstat`, `Bconin`, `Bcostat`, `Bconout`,
 
 ### Requires (must be initialized / functional)
 
-- `BCONMAP_AVAILABLE` true (SCC or TT-MFP) for the function to do anything;
-  `bconmap_root` initialised (`init_bconmap`).
+- `bconmap_root` initialised (`init_bconmap`, from `init_serport`).
 
 ### Used by
 
-- Terminal programs targeting a second serial port, AES serial routing,
-  "select serial port" UIs.
+- Terminal programs targeting a second serial port, "select serial port"
+  UIs. No ported NewTOS program calls `Bconmap`
+  (`docs/analysis/abi-assumptions-check-2026-10-28.md` §5.4).
+- EmuTOS' own BIOS for handles `>= 6` (`bios/bios.c:924-928`, `:968-972`,
+  `:1001-1005`, `:1153-1157`): out of range → `0`, else through the entry.
+  On NewTOS the handles are the device table's (`TASK/BIOS08.md`), not this
+  table's.
 
 ---
 
 ## Related data structures
 
-- `docs/api/xbios/_state.md §3` — `BCONMAP`/`MAPTAB`/`EXT_IOREC`.
+- `docs/api/structures/bconmap.md` — `BCONMAP`/`MAPTAB`, both ABIs.
+- `docs/api/xbios/_state.md §3` — `bconmap_root`, `rsconfptr`, `rs232iorecptr`.
 - `docs/api/xbios/0f-rsconf.md`, `docs/api/xbios/0e-iorec.md` — retargeted by
-  `Bconmap`.
+  `Bconmap` on EmuTOS.
 - `docs/api/bios/_state.md` — the char-device vector tables.
 
 ---
@@ -224,78 +231,77 @@ Six 4-byte vectors in order: `Bconstat`, `Bconin`, `Bcostat`, `Bconout`,
 
 ## Configuration / version notes
 
-- `BCONMAP_AVAILABLE` requires `CONF_WITH_SCC` or `CONF_WITH_TT_MFP`. NewTOS
-  profile: neither → `Bconmap` returns `0x2c`. If NewTOS later exposes
-  multiple serial ports it must deliberately enable a `MAPTAB` and document
-  the choice.
+- A program that probes `Bconmap(0) == 0x2C` (the function-number answer of
+  a TOS without `Bconmap`) and falls back to handle 1 (audit
+  `docs/audits/2026-10-28-xbios-chardev.md`, XBIOS-CHARDEV-005, "Fehlerbild")
+  now gets `0`, as on the oracle: `Bconmap` exists.
 
 ---
 
-## NewTOS implementation notes
+## NewTOS implementation (XBIOS05, 2026-10-29)
 
-(Empty during Phase 00.)
+**Decision (user, 2026-10-28, `TASK/XBIOS05.md` option 1):** the table
+EmuTOS builds on a machine that is neither Falcon nor TT — one entry, the AUX
+port (`bios/serport.c:962-966,972`). Code:
+`tos-api/src/xbios/bconmap.rs:222@bconmap`, dispatch arm
+`tos-api/src/xbios/mod.rs:98@bconmap`.
 
-PHASE-07 (superseded by [XBIOS07]): the earlier note held that with a single
-PL011 UART the "honest EmuTOS behaviour" is the `0x2c` return. That is wrong
-for the pinned reference: EmuTOS built as make 512 has `BCONMAP_AVAILABLE`
-(`bios/serport.h:18`, `include/config.h:89-90`) and even an ST machine under
-that ROM gets `maptabsize = 1`, `mapped_device = 6` (`bios/serport.c:962-965`).
-Current NewTOS code returns `0x2c` (`tos-api/src/xbios/system.rs:106@bconmap`).
-
-**pending XBIOS05 — options for the NewTOS profile (no decision here):**
-1. *One-entry table like EmuTOS-on-ST:* `Bconmap(-1)` = 6, `-2` = pointer to a
-   `BCONMAP{maptab, 1, 6}`, other devices 0 (`bios/serport.c:1096-1097`).
-   Consequence: `bios-r1` 183/185/186 and `xbios-chardev-r1` 43, 45-53 can
-   reach EQUAL for TT (6); Falcon expects 7, so one profile stays DIFF unless
-   a device-profile entry is accepted; `Bconmap(-2)` becomes a real pointer.
-2. *Keep `0x2c`, record it as an accepted deviation in COMPATIBILITY:*
-   programs probing `Bconmap(0) == 0x2C` keep working (audit: Fehlerbild);
-   all listed oracle cases stay DIFF; `Bconmap(-2)` readers still read page 0
-   as a table.
-3. *Table with several entries (USB-CDC / more UARTs):* only after a second
-   serial device exists; larger work, no oracle case covers it.
+- **Answers.** `Bconmap(-1)` = 6. `Bconmap(-2)` = the address of the
+  `BCONMAP`, `{maptab, 1, 6}`. `Bconmap(6)` = 6: the entry is stored back
+  (the save step) and 6 stays mapped; device 1 stays the AUX port of the BIOS
+  device table. Every other device = 0, `7..9` included.
+- **Place.** `BCONMAP`, `MAPTAB[0]` and the five call targets lie in the
+  IOREC page (`tos-api/src/bdos/process/mmu.rs:264@IOREC_PAGE_VA`, 0x7D000 + 0x80;
+  `tos-api/src/xbios/iorec.rs:130@BCONMAP_AREA`): the same address in every
+  process, EL0 read-write, never executable, below 4 GiB. Written with the
+  page's records, before the first pointer is handed out. The address is not
+  contract.
+- **Layout.** LP64, as the SDK's `_BCONMAP`/`_MAPTAB`
+  (`docs/api/structures/bconmap.md`): `BCONMAP` 16 bytes, `maptab` @0,
+  `maptabsize` @8, `mapped_device` @10; `MAPTAB` 48 bytes, six 8-byte
+  pointers. Compile-time check: `sdk/libc/tests/bconmap-layout.c`.
+- **`MAPTAB[0].Iorec`** = `Iorec(0)`'s record (EmuTOS `maptable_mfp` holds
+  `&iorec1`, which `Iorec(0)` returns: `bios/serport.c:98,1003`,
+  `bios/xbios.c:339-340`).
+- **The five function pointers are not callable** (user decision
+  2026-10-28; `docs/COMPATIBILITY.md`, "`Bconmap` MAPTAB function pointers").
+  Each holds the address of its own 4-byte call target in a reserved,
+  never-executable stretch of the IOREC page
+  (`tos-api/src/xbios/bconmap.rs:129@vector_va`). A program that calls through one
+  takes an instruction abort; the crash report names it — "Memory violation:
+  Bconmap MAPTAB function (not callable) memory, execute (permission fault,
+  level 3)" (`tos-api/src/bios/crash.rs:196@BconmapVector`, classified in
+  `tos-api/src/bdos/process/memprot.rs:1977@region_kind`) — and the program ends
+  with `Pterm(-1)`. Reading the pointers is harmless. The kernel never calls
+  through the table.
+- **The kernel's state is its own.** `Bconmap` answers from the kernel's
+  mapped device and table size and never reads the page back: a program
+  that writes `maptab`, `maptabsize` or `mapped_device` changes what it
+  reads, not what `Bconmap` does (EmuTOS reads `bconmap_root` live,
+  `bios/serport.c:1086-1096`; documented in `docs/COMPATIBILITY.md`). A
+  write into `MAPTAB[0]` is overwritten by the next `Bconmap(6)`, as
+  EmuTOS' save step overwrites the old slot.
+- **Device parameters (ACCEPTED per profile).** The oracle profiles are TT
+  (4 entries, device 6) and Falcon (3 entries, device 7); NewTOS has one
+  entry and device 6. `Bconmap(-1)` on Falcon, `maptabsize` on both and
+  `mapped_device` on Falcon differ by the machine
+  (`docs/COMPATIBILITY.md`, "`Bconmap`: one entry").
 
 ---
 
 ## Pi / BCM2711 binding
 
 > Re-points the hardware reference from the Atari **multi-port serial** models
-> (Falcon modem-1/2 + serial-1/2, TT ST-MFP + TT-MFP, SCC) to the **single
-> BCM2711 PL011 UART0**. The contract above (trap ID/ABI, the `-1`/`-2`
-> queries, `BCONMAP_START_HANDLE = 6`, the `BCONMAP`/`MAPTAB` layouts, the
-> `0x2c` unavailable return) is **unchanged**. See `HARDWARE-PROFILE.md` §3.2.
+> (Falcon SCC A/B + MFP, TT ST-MFP + TT-MFP + SCC) to the **single
+> BCM2711 PL011 UART0**. See `HARDWARE-PROFILE.md` §3.2.
 
-**Peripheral / driver.** The Pi has exactly **one** TOS-visible serial port —
-**PL011 UART0** (`kernel/src/drivers/bcm2711/pl011.rs`), used as the AUX/debug channel. There is
-**no** SCC and **no** second MFP, so `BCONMAP_AVAILABLE = (CONF_WITH_SCC ||
-CONF_WITH_TT_MFP)` is **false** on the NewTOS-Pi profile
-(`HARDWARE-PROFILE.md` §4 — both off).
+**Peripheral / driver.** The Pi has one TOS-visible serial port — **PL011
+UART0** (`kernel/src/drivers/bcm2711/pl011.rs`) behind BIOS device 1 (AUX;
+on raspi4b the "no cable" entry, on qemu-virt the serial line, XBIOS15). It
+is entry 0 of the table, device 6. There is no SCC and no second MFP, so the
+table has no further entries — the shape EmuTOS gives a machine without them.
 
-**Pi rationale for the `0x2c` return.** `Bconmap` exists to *re-route* the
-"current RS-232" logical device across **several physical serial ports**. With
-a single UART there is nothing to map:
-- The `MAPTAB` array is **absent** (`maptabsize` would be 1, and a 1-entry map
-  is the no-op identity — EmuTOS compiles the whole body out rather than build
-  it).
-- `mapped_device` never changes from its single value.
-- `bconmap_root` is not initialised.
-
-So the honest, EmuTOS-faithful behaviour is the **`0x2c` "unavailable"** signal
-(the function number) — *not* a synthesized 1-entry table. This matches the
-default AUX wiring: `rsconfptr`/`rs232iorecptr` point at the one PL011 handler
-and are never swapped.
-
-**Absent second serial ports.** The BCM2711 does expose four *other* PL011s
-(UART2..5) plus the mini-UART (UART1) (DS §11.1 p.144), but NewTOS drives only
-UART0; a native Atari-IKBD UART2 is a shelved **(plan)** (`HARDWARE-PROFILE.md`
-§3.3) and would be the keyboard transport, not a `Bconmap`-selectable AUX port.
-If NewTOS later exposes a USB-CDC or second serial as a real second AUX device,
-it must **deliberately** enable a `MAPTAB` and document the choice (D-045).
-
-### Current-code gaps → Step-2
-
-- **R3 (superseded, [XBIOS07]):** earlier text said `Bconmap` was not in the
-  dispatcher and returned `EINVFN`. It is wired
-  (`tos-api/src/xbios/mod.rs:65-138@dispatch`) and returns the constant `0x2c`
-  (`tos-api/src/xbios/system.rs:106@bconmap`); the open point is the profile
-  (XBIOS05), not wiring.
+**Absent second serial ports.** The BCM2711 has four more PL011s (UART2..5)
+and the mini-UART (DS §11.1 p.144); NewTOS drives only UART0. A second AUX
+device (USB-CDC, another UART) would be a second entry (option 3 of the
+decision, not chosen) and a new decision on the BIOS handles 6+.

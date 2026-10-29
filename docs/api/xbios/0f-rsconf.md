@@ -85,7 +85,7 @@ low 16 bits after a `baud`-only call, but the canonical query is `baud == -2`.
   oracle's `Rsconf(-1 x6)` therefore reads `0xFFFFFFFF_88018100` (TT) /
   `0xFFFFFFFF_88000000` (Falcon, SCC), i.e. bit 31 of `ucr<<24` is extended
   (`bios-r1` 105, `xbios-chardev-r1` 31). NewTOS today returns
-  `0x00000000_88010100` (`tos-api/src/xbios/system.rs:263-295@rsconf`,
+  `0x00000000_88010100` (`tos-api/src/xbios/system.rs:247-279@rsconf`,
   `old as i64`) — **pending XBIOS06**. The register bytes themselves are
   device parameters (TT != Falcon), whether NewTOS adopts the TT bytes
   (TSR bit 7 "buffer empty" set) is the XBIOS06 profile decision.
@@ -311,7 +311,7 @@ registers do not exist on the PL011.
   (`tos-api/src/xbios/mod.rs:65-138@dispatch`, `system::rsconf`): baud
   set/query (`-2`), `-1` keep, out-of-range handling and UCR/RSR set/readback
   agree with the oracle (audit probe S01-S18); only the TSR byte (`0x81` TT
-  vs `0x01` NewTOS shadow, `tos-api/src/xbios/system.rs:248@RS_TSR`) and the
+  vs `0x01` NewTOS shadow, `tos-api/src/xbios/system.rs:232@RS_TSR`) and the
   upper 32 bits differ (XBIOS-CHARDEV-006, **pending XBIOS06**). The
   "synthesizes plausible bytes" statements in the table above describe the
   intent; the measured result is as stated here.

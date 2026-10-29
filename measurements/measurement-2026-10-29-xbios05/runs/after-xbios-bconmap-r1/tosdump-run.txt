@@ -1,0 +1,52 @@
+command   cargo xtask tosdump bios tosdump/cases/xbios-bconmap-r1.tsv --reference tosdump/reference/EMUTOS-1a7484ab-XBIOS-bconmap.BIN --reference tosdump/reference/EMUTOS-1a7484ab-XBIOS-bconmap-falcontc.BIN --out /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-29-xbios05/runs/after-xbios-bconmap-r1 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios05/xtask-after
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    f7e8003372285666fc9130d557571f1bb29ee8df
+dirty     18 path(s) in git status --porcelain
+   M docs/api/xbios/2c-bconmap.md
+   M sdk/run-host-tests.sh
+   M tos-api/src/bdos/process/memprot.rs
+   M tos-api/src/bios/crash.rs
+   M tos-api/src/xbios/iorec.rs
+   M tos-api/src/xbios/mod.rs
+   M tos-api/src/xbios/system.rs
+  ?? docs/api/structures/bconmap.md
+  ?? measurements/measurement-2026-10-29-xbios05/
+  ?? sdk/libc/tests/bconmap-layout.c
+  ?? sdk/libc/tests/bconmap-layout.sh
+  ?? tos-api/src/xbios/bconmap.rs
+  ?? tos-api/tests/xbios05_bconmap.rs
+  ?? tosdump/cases/xbios-bconmap-r1.tsv
+  ?? tosdump/reference/EMUTOS-1a7484ab-XBIOS-bconmap-falcontc.BIN
+  ?? tosdump/reference/EMUTOS-1a7484ab-XBIOS-bconmap-falcontc.LOG
+  ?? tosdump/reference/EMUTOS-1a7484ab-XBIOS-bconmap.BIN
+  ?? tosdump/reference/EMUTOS-1a7484ab-XBIOS-bconmap.LOG
+harness commit f7e8003372285666fc9130d557571f1bb29ee8df
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/xbios-bconmap-r1.tsv sha256 0b8b1a79b9997103d19898a0fdf4f47745399485a6f461c6ebb41ca53eeff381
+table     names the unit token u:0: no; a program path x:<path>: no
+profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+target/   own (9 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (9 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 2262e6ae71db636a14365d5880d801ebe7c98c11b88d267c9b1852512ff022be
+kernel ELF  sha256 2a1ed8a02f262bdd7cf3d4c093961a71e6c333bd4a36e373de3c17c080c62098 (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id f7e8
+DUMPBIOS.NAP sha256 385742749c422f86f4be9057ea648967d51b8dc23cffdbba7406c54b6134746e
+card.img.manifest: image_sha256 94952197fd4e83832083814925290913c5e6a712281cd630c6e640b6d639915b
+card.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios05/xtask-after/tosdump-9370/card.img sha256 94952197fd4e83832083814925290913c5e6a712281cd630c6e640b6d639915b (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 1b795cd12848140d8f8f91b0788c4fa673d1a649b8bdd1a16835f0aca596b074
+BIOS.BIN 352 bytes, sha256 643dd7a1a150b3c4e8c8c0dea73d14caf8e38f28e5e04d5b4d5c11a7232a0d72
+BIOS.LOG 173 bytes, sha256 5725eeef7003843a7eafccecf8a9b08d97725b93ff9e3319878df8b4668cce22
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 24e417bfe588afd69968b77cba7563a08f16599bd1621245cab2a1806364d392
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 1 records of 320 bytes, build f7e8, case CRC DD429BF8
+tosdiff EMUTOS-1a7484ab-XBIOS-bconmap.BIN vs NEWTOS.BIN: exit 1, 1 of 1 cases differ
+tosdiff EMUTOS-1a7484ab-XBIOS-bconmap-falcontc.BIN vs NEWTOS.BIN: exit 1, 1 of 1 cases differ
+total     36 s
+result    run complete (differences above are findings, not failures)

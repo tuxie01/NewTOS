@@ -217,10 +217,10 @@ implementation".
 | 2 | `&midiiorec`, 128, 1-Byte | nichts. MIDI ist "absent" (`chardev.rs:348@DEVICES`, Slot 3), `Midiws` verwirft (Audit BIOS-CORE-001) | Record vorhanden, leer, nie gefuellt (E5) |
 | sonst | `-1` | `0x0E` | `-1` (gemessen EmuTOS I04-I07) |
 
-`Bconmap` ist in NewTOS ebenfalls Funktionsnummer (`tos-api/src/xbios/system.rs:106@bconmap`
-gibt `0x2c`): `Iorec(0)` bleibt ein fester Record; ein Umbiegen durch `Bconmap`
-(`bios/serport.c:1003,1110-1119`) gibt es nicht (Abschnitt Bconmap: XBIOS-CHARDEV-005,
-ausserhalb dieses Auftrags).
+`Bconmap` war in NewTOS ebenfalls Funktionsnummer (`0x2c`, bis XBIOS05). **[XBIOS05]** Seit
+XBIOS05 hat `Bconmap` die Tabelle mit einem Eintrag (`docs/api/xbios/2c-bconmap.md`); dessen
+`Iorec` ist der Record von `Iorec(0)`. `Iorec(0)` bleibt ein fester Record: mit einem Eintrag
+gibt es nichts umzubiegen (`bios/serport.c:1003,1113-1119`).
 
 ### F3 — Kopplung: Spiegel oder die lebende Schlange? (Frage 3)
 
@@ -286,12 +286,12 @@ with the oracle values (E5): `ibufsiz` 256/128/256+256, `low`/`high` 64/192,
 32/96, 64/192, empty, device 0 `baudrate 1`, `flowctrl 0`, `ucr 0x88`, `datamask
 0xff`, `wr5 0xea` (`bios/serport.c:86-89`).
 
-**`Iorec`** (`tos-api/src/xbios/iorec.rs:573@iorec`, wired at
-`tos-api/src/xbios/mod.rs:107@IOREC`): signed `WORD` selector
+**`Iorec`** (`tos-api/src/xbios/iorec.rs:593@iorec`, wired at
+`tos-api/src/xbios/mod.rs:110@IOREC`): signed `WORD` selector
 (`:441@record_va`), `0/1/2` -> the record's EL0 address, anything else `-1`.
 
 **E1 — the ring is the queue.** `RX_RING` is gone; every producer and consumer
-goes through the IKBD record: push `tos-api/src/xbios/iorec.rs:439@push_key`
+goes through the IKBD record: push `tos-api/src/xbios/iorec.rs:459@push_key`
 (EmuTOS `push_ikbdiorec`: `tail` first, full -> dropped, 63 entries), pop
 `:374@pop_key` (`head` first, then the entry), `:384@key_pending` (`head !=
 tail`). Kernel side: `kernel/src/console.rs:198@push_rx` (IKBD decoder),
@@ -302,7 +302,7 @@ on both boards. Every operation runs with IRQs masked (the qemu-virt PL011
 receive interrupt fills device 0's ring, "XBIOS15" below).
 
 **The kernel distrusts the page.** Before every use the record is checked
-(`tos-api/src/xbios/iorec.rs:292@check`): `ibuf`/`ibufsiz` must be the kernel's,
+(`tos-api/src/xbios/iorec.rs:306@check`): `ibuf`/`ibufsiz` must be the kernel's,
 `ibufhd`/`ibuftl` below `ibufsiz` and on the entry step (4 IKBD, 1 MIDI/RS-232).
 A replaced buffer (E4 (a)) gets the kernel buffer back, emptied; bad indices
 empty the ring. The kernel never reads or writes through `ibuf`. After every
@@ -310,7 +310,7 @@ trap all four rings are checked as well (`kernel/src/console.rs:383@check_iorec_
 called from `kernel/src/arch/aarch64/exceptions.rs:664@check_iorec_after_trap`), so a
 replaced buffer is noticed "at the next trap" even when no key moves. Each
 repair is warned about once per process tenancy
-(`tos-api/src/xbios/iorec.rs:535@take_warnings`, printed by
+(`tos-api/src/xbios/iorec.rs:555@take_warnings`, printed by
 `kernel/src/console.rs:391@report_iorec_repairs`, reset at process exit
 `tos-api/src/bdos/process.rs:1366@release_slot`):
 `[iorec] warning: Iorec(1) IKBD buffer or size replaced by the program ...`.
@@ -339,7 +339,7 @@ writes it. Since BIOS04 (2026-10-29) the BIOS MIDI entry reads this ring as
 EmuTOS' `bconstat3`/`bconin3` read `midiiorec` (`references/emutos/bios/midi.c:22-62`):
 a byte a program puts into it is what `Bconin(3)` returns, and `Bconin(3)`
 waits while it is empty (`docs/api/bios/02-bconin.md`, BIOS04 note;
-`tos-api/src/xbios/iorec.rs:477@pop_midi`). Device 0: see "XBIOS15" — its input ring is filled on qemu-virt and
+`tos-api/src/xbios/iorec.rs:497@pop_midi`). Device 0: see "XBIOS15" — its input ring is filled on qemu-virt and
 stays empty on real Pi 4; its output ring stays empty on both.
 
 **XBIOS15 — serial receive into device 0 (qemu-virt).** The PL011 receive
@@ -347,15 +347,15 @@ interrupt (`kernel/src/console.rs:147@pl011_rx_drain`, EmuTOS
 `mfp_rs232_rx_interrupt_handler`, `bios/serport.c:350-359`; Falcon
 `scc_rx_interrupt_handler`, `:647-683`) hands each byte to
 `kernel/src/console.rs:169@serial_rx_byte`, which pushes it into device 0's
-input ring: `tos-api/src/xbios/iorec.rs:499@push_serial` (`push_serial_iorec`,
+input ring: `tos-api/src/xbios/iorec.rs:519@push_serial` (`push_serial_iorec`,
 `:331-343`: `tail` first, full -> dropped, 255 bytes; the byte masked with the
 record's `datamask` as the SCC path does, `:671`, 0xff unless a program wrote
 it). AUX (BIOS 1) on qemu-virt is the driver `kernel/src/console.rs:216@AuxSerial`,
 put into the device table at boot (`install_aux`): `Bconstat(1)` = `-1` while
 the ring holds a byte (`bconstat_iorec`, `:191-199`;
-`tos-api/src/xbios/iorec.rs:511@serial_pending`), `Bconin(1)` waits for a byte
+`tos-api/src/xbios/iorec.rs:531@serial_pending`), `Bconin(1)` waits for a byte
 and returns it zero-extended (`bconin_iorec` + `get_iorecbuf`, `:171-210`;
-`tos-api/src/xbios/iorec.rs:505@pop_serial`), output unchanged from the
+`tos-api/src/xbios/iorec.rs:525@pop_serial`), output unchanged from the
 "port present, no cable" entry (`Bconout(1)` 1 and discarded, `Bcostat(1)` -1).
 The key ring is not touched. Real Pi 4 is unchanged: the byte is dropped
 (`serial_rx_byte`, not-qemu-virt branch), AUX stays "no cable". Measured equal
@@ -527,7 +527,7 @@ werden (EmuTOS `a0`, `bios/aciavecs.S:412`) statt `0`. Ja/nein; haengt an E1.
 - [XBIOS01] `Rsconf` schreibt in EmuTOS `baudrate` und `flowctrl` in den
   Geraet-0-Record und liest `Rsconf(-2)` von dort
   (`references/emutos/bios/serport.c:222-240`, SCC `:780-800`); NewTOS fuehrt
-  die Werte in eigenen Zellen (`tos-api/src/xbios/system.rs:263@rsconf`), der
+  die Werte in eigenen Zellen (`tos-api/src/xbios/system.rs:247@rsconf`), der
   Record bleibt bei `baudrate 1`/`flowctrl 0`. Nach `Rsconf(speed)` liest ein
   Programm in `Iorec(0)` also den alten Wert. Nicht gemessen, ausserhalb dieses
   Auftrags (gehoert zu `Rsconf`, XBIOS-CHARDEV).

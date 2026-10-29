@@ -1,0 +1,3 @@
+self-check BIOS.BIN -- area BIOS, 1 cases from xbios-bconmap-r1.tsv
+
+self-check, BIOS.BIN: the oracle passes every relational rule (1 cases)

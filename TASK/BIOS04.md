@@ -115,7 +115,7 @@ gefolgert.
   Option unbeobachtbar, solange beide Eintraege dasselbe melden.
 - `Midiws` ruft `bconout_handle(DEV_MIDI, …)` pro Byte, Ergebnis verworfen
   (`tos-api/src/xbios/system.rs:82@midiws`); `Ikbdws` ist ein reines No-op und
-  ruft nie einen Geraeteeintrag (`tos-api/src/xbios/system.rs:152@ikbdws`).
+  ruft nie einen Geraeteeintrag (`tos-api/src/xbios/system.rs:136@ikbdws`).
 - Kein Kernel-/GEMDOS-Pfad ruft Geraet 3/4: `bconout_handle`-Aufrufer in
   `gemdos/console.rs` laufen ueber `std_dev` → `hxform` (Geraet 0..2,
   `tos-api/src/gemdos/console.rs:75@std_dev`), sonst nur `Midiws`.

@@ -1970,9 +1970,13 @@ pub unsafe fn block_containing(addr: u64) -> Option<(u64, u64)> {
 /// ("hardware"). `None` with protection off (FreeMiNT reports nothing then,
 /// `mprot.x:96-97`) — except for page 0 and the stub page, which are named in
 /// every mode: their rights are the super state's, not memory protection's
-/// (MEM12, `docs/api/_super-state.md` S9).
+/// (MEM12, `docs/api/_super-state.md` S9); and the call targets of the
+/// `Bconmap` `MAPTAB` function slots, which no program may call (XBIOS05).
 pub fn region_kind(far: u64) -> Option<crate::bios::crash::RegionKind> {
     use crate::bios::crash::RegionKind;
+    if crate::xbios::bconmap::is_vector(far) {
+        return Some(RegionKind::BconmapVector);
+    }
     if far < super::mmu::PAGE_SIZE {
         return Some(RegionKind::SystemVariables);
     }

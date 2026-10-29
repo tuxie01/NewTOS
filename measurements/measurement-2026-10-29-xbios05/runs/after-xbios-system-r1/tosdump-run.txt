@@ -1,0 +1,59 @@
+command   cargo xtask tosdump bios tosdump/cases/xbios-system-r1.tsv --reference tosdump/reference/EMUTOS-1a7484ab-XBIOS-system.BIN --reference tosdump/reference/EMUTOS-1a7484ab-XBIOS-system-falcontc.BIN --out /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-29-xbios05/runs/after-xbios-system-r1 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios05/xtask-after
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    f7e8003372285666fc9130d557571f1bb29ee8df
+dirty     25 path(s) in git status --porcelain
+   M docs/COMPATIBILITY.md
+   M docs/HARDWARE-PROFILE.md
+   M docs/analysis/bios-audit/bios-xbios-feasibility-triage.md
+   M docs/analysis/emutos-full-function-inventory.md
+   M docs/api/bios/_state.md
+   M docs/api/xbios/0e-iorec.md
+   M docs/api/xbios/2c-bconmap.md
+   M docs/api/xbios/_state.md
+   M sdk/run-host-tests.sh
+   M tos-api/src/bdos/process/memprot.rs
+   M tos-api/src/bios/crash.rs
+   M tos-api/src/xbios/iorec.rs
+   M tos-api/src/xbios/mod.rs
+   M tos-api/src/xbios/system.rs
+  ?? docs/api/structures/bconmap.md
+  ?? measurements/measurement-2026-10-29-xbios05/
+  ?? sdk/libc/tests/bconmap-layout.c
+  ?? sdk/libc/tests/bconmap-layout.sh
+  ?? tos-api/src/xbios/bconmap.rs
+  ?? tos-api/tests/xbios05_bconmap.rs
+  ?? tosdump/cases/xbios-bconmap-r1.tsv
+  ?? tosdump/reference/EMUTOS-1a7484ab-XBIOS-bconmap-falcontc.BIN
+  ?? tosdump/reference/EMUTOS-1a7484ab-XBIOS-bconmap-falcontc.LOG
+  ?? tosdump/reference/EMUTOS-1a7484ab-XBIOS-bconmap.BIN
+  ?? tosdump/reference/EMUTOS-1a7484ab-XBIOS-bconmap.LOG
+harness commit f7e8003372285666fc9130d557571f1bb29ee8df
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/xbios-system-r1.tsv sha256 22c32ade8aed0ae5b8eced87ec21de4a14b3e4570bf91f4fe886e3e76b59241d
+table     names the unit token u:0: no; a program path x:<path>: no
+profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+target/   own (9 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (9 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 2262e6ae71db636a14365d5880d801ebe7c98c11b88d267c9b1852512ff022be
+kernel ELF  sha256 2a1ed8a02f262bdd7cf3d4c093961a71e6c333bd4a36e373de3c17c080c62098 (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id f7e8
+DUMPBIOS.NAP sha256 385742749c422f86f4be9057ea648967d51b8dc23cffdbba7406c54b6134746e
+card.img.manifest: image_sha256 b74346502632fec49bc71accd8f242ee6d7c9e6287bd9ea8b19ec5e9fd8aad08
+card.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios05/xtask-after/tosdump-14046/card.img sha256 b74346502632fec49bc71accd8f242ee6d7c9e6287bd9ea8b19ec5e9fd8aad08 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 f7cb1bf471e21e27ae101912a723e28d9bc120fcd94015e0a5975745cc294e2e
+BIOS.BIN 13792 bytes, sha256 61399ef82f0c6bbaa6585871804483289195d0c4a20d54d68e08aa1afb799806
+BIOS.LOG 168 bytes, sha256 8beace583e5286251220dadabcd737631675d14519d106b90feeef0134b84543
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 24e417bfe588afd69968b77cba7563a08f16599bd1621245cab2a1806364d392
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 43 records of 320 bytes, build f7e8, case CRC 3944A677
+tosdiff EMUTOS-1a7484ab-XBIOS-system.BIN vs NEWTOS.BIN: exit 1, 9 of 43 cases differ
+tosdiff EMUTOS-1a7484ab-XBIOS-system-falcontc.BIN vs NEWTOS.BIN: exit 1, 9 of 43 cases differ
+total     35 s
+result    run complete (differences above are findings, not failures)

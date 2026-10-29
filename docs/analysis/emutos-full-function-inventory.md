@@ -500,7 +500,7 @@ gelesen) — Opcodes, die dort auf den generischen Catch-all
 | 0x29 | `Floprate` | Floppy-Zugriffsgeschwindigkeit setzen | — | `bios/floppy.c:1039` | `mod.rs` → `EUNDEV` | HAS (Kontrakt-Ebene) |
 | 0x2A | `DMAread` | ACSI-DMA-Sektoren lesen | — | `bios/disk.c:1241` | `mod.rs` → `EUNDEV` | HAS (Kontrakt-Ebene) |
 | 0x2B | `DMAwrite` | ACSI-DMA-Sektoren schreiben | — | `bios/disk.c:1254` | `mod.rs` → `EUNDEV` | HAS (Kontrakt-Ebene) |
-| 0x2C | `Bconmap` | Bconxxx-Handle auf physisches Gerät umbiegen | — | `bios/serport.c:1082` | `xbios/system.rs` `bconmap()` — Kontraktwert 0x2C („nur ein serieller Port") | HAS |
+| 0x2C | `Bconmap` | Bconxxx-Handle auf physisches Gerät umbiegen | — | `bios/serport.c:1082` | `xbios/bconmap.rs` `bconmap()` — Tabelle mit einem Eintrag wie EmuTOS auf einer Maschine ohne Falcon/TT (XBIOS05; vorher Kontraktwert 0x2C) | HAS |
 | 0x2E | `Nvmaccess` | NVRAM lesen/schreiben/rücksetzen | `CONF_WITH_NVRAM` | `bios/nvram.c:155` | — kein Treffer | **NO-COUNTERPART** |
 | 0x40 | `Blitmode` | BLiTTER-Modus abfragen/setzen | — | `bios/xbios.c:886` (real) | `system.rs` `blitmode()` — Kontraktwert 0x0000 (kein BLiTTER) | HAS |
 | 0x50 | `Esetshift` | TT-Shifter-Modus setzen | `CONF_WITH_TT_SHIFTER` | `bios/screen.c:180` | — kein Treffer | **NO-COUNTERPART** |

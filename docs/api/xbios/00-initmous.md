@@ -256,7 +256,7 @@ still reset `mousevec` to a no-op.
 - **Not served (ADR-031).** `Initmous` (XBIOS `0x00`) answers with its
   **function number** (`0x00`), not `EINVFN` — the XBIOS dispatcher's
   catch-all returns the function id
-  (`tos-api/src/xbios/mod.rs:158@INITMOUS`); since TASK/BIOS15 a call with
+  (`tos-api/src/xbios/mod.rs:161@INITMOUS`); since TASK/BIOS15 a call with
   type 1/2/4 and a non-zero vector writes the one ADR-031 warning. It does not
   configure the mouse or install `mousevec`. [corrected 2026-10-29, BIOS15
   side finding] And because the USB decoder calls
@@ -269,7 +269,7 @@ still reset `mousevec` to a no-op.
   the calls that install `mousevec` on EmuTOS (`bios/mouse.c:105-117`) —
   writes one `[hook] warning` per process (`Hook::Mousevec`, the key the
   `Kbdvbase` slot shares); the answer stays the dispatcher's function number
-  (`tos-api/src/xbios/mod.rs:169@note_installer`).
+  (`tos-api/src/xbios/mod.rs:172@note_installer`).
 - **Y direction.** The USB `+dy = down` convention is passed straight
   through (`kernel/src/drivers/usb/hid_decode.rs:143`); `ikbd.rs`/`feed_relative` add the signed delta so
   `+dy` increases `GCURY` (downward), matching the EmuTOS relative mode with

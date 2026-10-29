@@ -94,22 +94,6 @@ pub fn midiws(args: &TrapArgs) -> i64 {
     0
 }
 
-/// `Bconmap` (0x2C) — remap the "current RS-232" logical device onto one
-/// of several physical serial ports. The Pi has a single serial port
-/// (PL011 UART0) and no SCC / TT-MFP, so `BCONMAP_AVAILABLE` is false —
-/// as on a single-serial EmuTOS build — and the contract return is the
-/// function number `0x2c` ("feature not available"), independent of
-/// `dev` (the body is compiled out when the feature is absent). This is
-/// a real contractual value (the D-008 "unimplemented" signal), not the
-/// generic `EINVFN`: a caller probing for remappable ports learns there
-/// is one fixed port.
-///
-/// Spec: `docs/api/xbios/2c-bconmap.md` (`BCONMAP_AVAILABLE == 0` →
-/// `0x2c`); `docs/HARDWARE-PROFILE.md` §3.2.
-pub fn bconmap() -> i64 {
-    0x2c
-}
-
 // ── YM2149 PSG group (0x1C/0x1D/0x1E/0x20) ────────────────────────────────
 //
 // The Pi/BCM2711 has no Yamaha YM2149. As on an EmuTOS build without

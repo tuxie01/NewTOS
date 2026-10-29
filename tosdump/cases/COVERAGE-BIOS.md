@@ -121,7 +121,7 @@ physical line number and the dump header carries the table's CRC
 | 0x29 | Floprate | `bios/floppy.c:1039` | **round 1** | 3 cases: rate -1 and -4 (the inquiries) on drive 0, -1 on drive 2; setting: later |
 | 0x2A | DMAread | `bios/disk.c:1241` | later | reads an ACSI/SCSI unit: environment |
 | 0x2B | DMAwrite | `bios/disk.c:1254` | excluded | writes media |
-| 0x2C | Bconmap | `bios/serport.c:1082` | **round 1** | 4 cases: -1, -2 (PTR_RAM), 0 and 10 (map nothing); remapping AUX: later |
+| 0x2C | Bconmap | `bios/serport.c:1082` | **round 1** | 4 cases: -1, -2 (PTR_RAM), 0 and 10 (map nothing); remapping AUX: later. The `BCONMAP` and first `MAPTAB` behind `Bconmap(-2)`: `xbios-bconmap-r1.tsv` (XBIOS05), section "The Bconmap table" below |
 | 0x2D | (empty) | `xbios_unimpl, bios/xbios.c:1251-1257, vectors.S:1366` | **round 1** | 1 case: answers its own number |
 | 0x2E | NVMaccess | `bios/nvram.c:155` | **round 1** | 6 cases: a 48-byte read (`NVRAM_USER_SIZE`, `nvram.c:30`) captured, five error arms; write and reset: excluded |
 | 0x2F | (empty) | `xbios_unimpl, bios/xbios.c:1251-1257, vectors.S:1366` | **round 1** | 1 case: answers its own number |
@@ -399,6 +399,23 @@ scripts in `measurements/measurement-2026-10-29-xbios01/method/`. 207 cases,
 
 References: `tosdump/reference/EMUTOS-1a7484ab-XBIOS-flush` (TT) and
 `-XBIOS-flush-falcontc`, two runs each byte-identical.
+
+## The Bconmap table -- `xbios-bconmap-r1.tsv` (XBIOS05, 2026-10-29)
+
+A plain `r:<layout>` read, the form of `xbios-ptr-r1.tsv`, in a table of its
+own so the frozen tables stay as they are (user decision 2026-10-28,
+`TASK/XBIOS05.md`). Layouts `bconmap` and `maptab` from
+`docs/api/structures/bconmap.md`. 1 case, CRC `DD429BF8`.
+
+| Line | Call | Capture | What |
+|---|---|---|---|
+| 18 | `Bconmap(-2)` PTR_RAM | `r:bconmap` | `BCONMAP` (8 bytes m68k / 16 LP64) and, through `maptab`, `MAPTAB[0]` (24 / 48): six pointers PTR_RAM, `maptabsize` and `mapped_device` EXACT -- TT 4/6, Falcon 3/7, NewTOS 1/6 (device parameters, ACCEPTED per profile in `docs/COMPATIBILITY.md`) |
+
+Safe: `Bconmap(-2)` only returns `&bconmap_root` (`bios/serport.c:1092-1093`);
+the read is inside the structure, under the follow rule. References:
+`tosdump/reference/EMUTOS-1a7484ab-XBIOS-bconmap` (TT) and
+`-XBIOS-bconmap-falcontc`, two runs each byte-identical,
+`measurements/measurement-2026-10-29-xbios05/RUNINFO.TXT`.
 
 ## GEMDOS after a media change -- `gemdos-mc-*.tsv` (TOOL20, 2026-10-29)
 

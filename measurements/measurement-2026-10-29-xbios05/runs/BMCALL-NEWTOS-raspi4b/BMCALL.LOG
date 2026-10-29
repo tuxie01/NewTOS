@@ -1,0 +1,3 @@
+C01 Bconmap(-1)=6 Bconmap(-2)=7d080 maptab=7d090 maptabsize=1 mapped_device=6
+C02 maptab[0] Bconstat=7d0c0 Bconin=7d0c4 Bcostat=7d0c8 Bconout=7d0cc Rsconf=7d0d0 iorec=7d000 Iorec(0)=7d000
+C03 calling maptab[0].Bconstat(1)

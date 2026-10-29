@@ -216,6 +216,14 @@ report lp64-limits $rc "mintlib tree absent"
 [ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/iorec-layout.log"
 report iorec-layout $rc "mintlib tree absent"
 
+# bconmap-layout (XBIOS05): the SDK's _BCONMAP/_MAPTAB have the LP64 offsets
+# the kernel lays the Bconmap table out at (docs/api/structures/bconmap.md),
+# EmuTOS' third field mapped_device at 10 inside _BCONMAP's 16 bytes -- all
+# _Static_assert, compiled for the target like iorec-layout.
+"$SDK/libc/tests/bconmap-layout.sh" > "$WORK/bconmap-layout.log" 2>&1; rc=$?
+[ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/bconmap-layout.log"
+report bconmap-layout $rc "mintlib tree absent"
+
 # sysvars-layout (SDK04 point 3): the overlay <mint/sysvars.h> -- every
 # LONG/pointer page-0 cell a 4-byte unsigned type at its docs/api address
 # (docs/api/bios/_boot-init.md section 7), OSHEADER 48 bytes with every offset,

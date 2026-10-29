@@ -234,9 +234,11 @@ differ only in the peripheral drivers (`kernel/src/drivers/bcm2711/*` vs.
   map to LCRH but are currently **ignored on input**, and the packed status
   return is **synthesized** (`docs/api/xbios/0f-rsconf.md` Pi binding). **Not
   wired in the dispatcher today (Step-2 R1).**
-- **`Bconmap`:** single-UART build → contractually returns `0x2c`
-  (unavailable), per the XBIOS spec — no `MAPTAB`, nothing to remap. **Not
-  wired today (Step-2 R3): returns `EINVFN` instead of `0x2c`.** Handles:
+- **`Bconmap`:** one port → EmuTOS' one-entry table, as on a machine that
+  is neither Falcon nor TT: `Bconmap(-1)` = 6, `-2` = `{maptab, 1, 6}`,
+  other devices 0; the entry's function pointers are not callable
+  (`docs/api/xbios/2c-bconmap.md`, TASK/XBIOS05; the earlier "`0x2c`,
+  unavailable" profile was not the reference build's). Handles:
   `CON` = screen+keyboard; `AUX (1)` = PL011 (debug, but a BIOS *dummy*
   today — K9/R6); `PRN`/`MIDI` are absent.
 - **`Midiws`:** no MIDI ACIA on the Pi (§3.9) → contractual **no-op** (`void`).

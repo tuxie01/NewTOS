@@ -262,9 +262,13 @@ Six vectors per device, in order: `Bconstat`, `Bconin`, `Bcostat`,
 Pointers to the active RS-232 `Rsconf` handler and its `EXT_IOREC`. Default
 targets `rsconf1` / `&iorec1` (`bios/serport.c:1018-1019`), rewired by
 `Bconmap` from the active `MAPTAB` entry. `BCONMAP_AVAILABLE =
-(CONF_WITH_SCC || CONF_WITH_TT_MFP)` (`bios/serport.h:18`) — on a
-single-serial build it is **false**, so `Bconmap` returns the function
-number `0x2c` (see `2c-bconmap.md` and D-045).
+(CONF_WITH_SCC || CONF_WITH_TT_MFP)` (`bios/serport.h:18`) — true on the
+reference build (make 512), so `Bconmap` exists on every machine under it;
+only a build without SCC and TT-MFP returns the function number `0x2c`
+(see `2c-bconmap.md` and D-045). **[XBIOS05]** NewTOS: the one-entry table
+(`maptabsize` 1, device 6) and `Iorec(0)`'s record as its `Iorec`; NewTOS has
+no `rsconfptr`/`rs232iorecptr` vectors to rewire — device 1 stays the AUX
+port (`2c-bconmap.md`, "NewTOS implementation").
 
 ---
 
