@@ -65,3 +65,13 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (Vertrag festlegen), 
   `0x23BA0`, `md_length` `0x3B6B60`; NewTOS liest das 24-Byte-Mischformat als
   LP64 (`md_start` `0x00A00000_00400000`, `md_length` 0) — DIFF, erwartet bis
   zum Fix (BIOS-CORE-003).
+
+## Lokalisierung (Lead, 2026-10-29)
+
+- `getmpb` → `tos-api/src/bios/getmpb.rs@getmpb` (`mapped`); veroeffentlichter
+  Deskriptor heute `tos-api/src/bios/getmpb.rs:35@ThemdPage` (internes
+  24-Byte-BDOS-`MD`). `--up --layers bios,bdos`: 7 Funktionen, `unmapped` nur
+  `bios_init`, `biosmain` (Start).
+- Messfaelle: `tosdump/cases/xbios-ptr-r1.tsv` Fall 34 (TOOL16, Layout aus
+  `docs/api/structures/md.md`), Sonde G00–G06; SDK-Asserts fuer `_MD`/`_MPB`
+  (SDK04, `sdk/libc/overlay/include/mint/ostruct.h`).
