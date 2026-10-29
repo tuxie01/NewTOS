@@ -25,6 +25,12 @@
 #                 (__GNUC__ && __mc68000__); extend it to skip under __NEWTOS__
 #                 too (our AArch64 GNU/gemlib build gets its types from mt_gem.h
 #                 and ships no <portab.h>). Arch-detection fix only.
+#   - cookie.c  : patch site SDK05 -- getcookie() builds the cookie tag from the
+#                 4-character name with shifts (first character in bits 31..24,
+#                 the whole long defined) instead of upstream's char[4]/long
+#                 union, which on little-endian LP64 handed Getcookie the name
+#                 byte-reversed in the low half of an 8-byte long and found no
+#                 cookie (TASK/SDK05; host test sdk/cflib/tests/cookie-host.sh).
 #
 # WHICH cflib, AND WHY IT IS PINNED BY COMMIT (TASK/PORT03)
 #

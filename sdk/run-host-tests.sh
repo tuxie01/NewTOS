@@ -251,6 +251,16 @@ report rt-host $rc "$(tail -1 "$WORK/rt-host.log")"
 [ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/ldbl-host.log"
 report ldbl-host $rc "$(tail -1 "$WORK/ldbl-host.log")"
 
+# --- cflib host tests ------------------------------------------------------------
+# cookie-host (SDK05): the overlay cflib cookie.c (patch site SDK05) hands
+# Getcookie the jar tag of a 4-character name -- first character in bits
+# 31..24, bits 63..32 zero, bytes >= 0x80 not sign-extended -- so getcookie()
+# finds NTOS/_MCH/_IDT/_AKP/EdDI. With the pristine cookie.c (byte union) 17 of
+# 26 checks fail.
+"$SDK/cflib/tests/cookie-host.sh" > "$WORK/cookie-host.log" 2>&1; rc=$?
+[ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/cookie-host.log"
+report cookie-host $rc "mintlib headers absent or host not LP64 little-endian"
+
 # --- app host tests --------------------------------------------------------------
 # c2p-host (PORT06, user decision 2026-10-04): DOOM's table chunky-to-planar
 # (sdk/apps/doom/doomgeneric_gem.c, compiled without its GEM half) equals the

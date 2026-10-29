@@ -1,0 +1,94 @@
+measurement-2026-10-29-sdk05 -- TASK/SDK05: does cflib's getcookie() find a cookie that is in the jar
+(it builds the tag through a char[4]/long union), and which _IDT value does QED use? Before/after the
+SDK05 overlay sdk/cflib/overlay/cookie.c, on QEMU raspi4b.
+==========================================================================================
+Developer, 2026-10-29 (host clock CET). Main tree at 1b28ba37 plus the uncommitted SDK05 change (files
+in TASK/SDK05-STATUS-DONE.MD). Nothing committed, no hardware, no real card. Scratch (cards, clones, RAM
+dumps, binaries) in the session scratchpad, deleted after the run; sha256 below and in runs/*/run.txt.
+
+INPUTS
+  QEMU       11.0.2, -M raspi4b, -append serial=on
+  kernel     `cargo xtask build --board rpi4 --release` of the main tree (no kernel/tos-api change in
+             SDK05; the same kernel for both sides): kernel8.img
+             3fb96906bdf1870afe38ad24a8e3a3e87e03e7c54499cd8e11302bf5d71ed092
+  probe      sdk/cflib/tests/cookie-probe.c, built with
+             `sdk/cflib/build-cflib.sh sdk/cflib/tests/cookie-probe.c <side>/CKPROBE.NCP` -- the script
+             rebuilds cflib.a from tarball + overlay and links the probe against it, so the probe calls
+             the archive member cookie.o every cflib program links:
+               before CKPROBE.NCP ff9b636b76b39aecd5abfa15c0d13d890ab253a908e002996fffb251a21ded4d
+                      cflib.a     0a93a064dd3b69d3a9526b4a669fa552bb85a4e11c4e492a979984fd4ee85f4c
+                      (overlay without cookie.c = upstream cflib-21/cookie.c)
+               after  CKPROBE.NCP dbe0e68b6510490609d910fc36e121ba9f157c87750b84aed2f5f00d8d45e343
+                      cflib.a     3fa5d9cd7c11255a08acf8cab9a759e207103a260ec931b5d0150da1cc5b9ac2
+                      (overlay cookie.c, patch site SDK05)
+  QED        `sdk/apps/build-qed.sh` right after the matching cflib.a (QED's own sources unchanged):
+               before QED.NAP 8ef41461e72a3a1f7de73cec7b8acf0868806c891f6b02ff61e5a8cc70f5ec1a
+               after  QED.NAP a8777bbf7e83fa2700d725a5b82bfba25dc23990b60eabd3f56497645672e26c
+               qed.rsc (both) 30ac6bf24a28ce2c95fab6a7c663bf29f40de9ad9ee1dd6b80ec36c146264a79
+             runs/qed-getcookie-disasm.txt: getcookie in both QED.NAP. Before: `ldr w0, [x0]` -- the
+             four name bytes loaded little-endian as the tag (bits 63..32 zero by the 32-bit load);
+             after: `ldr w8, [x0]; rev w0, w8` -- the same bytes reversed = the big-endian tag.
+
+METHOD (method/run-side.sh <side> ...; one call per side, before then after)
+  Card: tools/mkcard.sh with C:\AUTO\CKPROBE.NCP, C:\Apps\QED\QED.NAP, C:\Apps\QED\qed.rsc and
+    NEWDESK.INF = method/z-qed.inf (`#R 02`, `#Z 01 C:\Apps\QED\QED.NAP@`). Booted as an APFS clone.
+    The AUTO probe runs before the AES, prints to the console (mirrored on the serial log) and writes
+    C:\CKPROBE.LOG, read back from the clone with mtools; then the AES autoruns QED.
+  QED's _idt: QED keeps the cookie value in `static long _idt` (sdk/apps/qed/src/global.c, set in
+    init_global from getcookie("_IDT"), 0x112E when not found). No QED source was changed. After 45 s
+    (QED's menu bar is up, runs/*/qed.png) the HMP monitor (pipe chardev, no socket) takes a
+    screendump and `pmemsave 0 0x40000000` (1 GiB of RAM). method/find-idt.py locates QED's TPA in the
+    dump -- the first 256 bytes of QED.NAP's executable PT_LOAD searched in RAM, a hit accepted only if
+    the BASEPAGE at B = hit - p_vaddr has p_lowtpa == B (NewTOS maps the TPA VA = PA) -- and reads the
+    8-byte long at B + the llvm-nm offset of `_idt` (0x6e270 in both QED.NAP).
+    Each side: 3 hits, exactly one a TPA (B = 0x1a07000); the other two are a copy of the text at
+    0x2da000 (p_lowtpa 0x7) and the whole file at 0x399c8c00 (p_lowtpa = "\x7fELF"), both rejected.
+  HMP note: pmemsave's size is parsed as an expression, so an absolute file name after it reads as a
+    division ("invalid char 'p' in expression"); QEMU therefore runs in the scratch dir and gets
+    relative file names.
+
+RESULTS
+  Probe (runs/<side>/CKPROBE.LOG, the same lines in runs/<side>/SERIAL.txt):
+    before: CKPROBE: 1/6 agree
+      P1-P5 NTOS, _IDT, _MCH, _AKP, EdDI: getcookie found=0 value=0, Getcookie(<tag>) found=1
+            (values 0x100, 0x112F, 0x50000, 0, 1) -> DIFFER
+      P6    XXXX (not in the jar): found=0 on both -> AGREE
+      U1-U6 the upstream union, rebuilt word for word in the probe: the name byte-reversed in the low
+            four bytes, e.g. _IDT -> 0x000000005444495F (jar tag 0x5F494454). Upper four bytes 0 in
+            this clang -O2 build (the union is loaded by a 32-bit ldr); the C code leaves them
+            unwritten, see the host test for a build where they are not 0.
+    after:  CKPROBE: 6/6 agree
+      P1-P5 getcookie found=1 with the value Getcookie returns (_IDT 0x0000112F); P6 still not found.
+      (U lines unchanged: they show the upstream construction, not the linked archive.)
+  QED _idt (runs/<side>/run.txt):
+    before: QED _idt @ PA 0x1a75270 = 0x000000000000112e   (QED's fallback, the cookie was not found)
+    after:  QED _idt @ PA 0x1a75270 = 0x000000000000112f   (the kernel's _IDT, tos-api/src/cookie.rs
+                                                            seed_defaults)
+  Visible effect in QED: none. QED reads only `_idt & 0xF00` (date order; make_date in
+    sdk/apps/qed/src/global.c) and formats with fixed separators; 0x112E and 0x112F both have order 1
+    (DD.MM.YYYY). The ticket's "fuer den Anwender sichtbar (Datumsformat)" (derived, not measured)
+    does not hold for QED: the value is now right, the display is the same. The screendumps of both
+    sides show QED's menu bar, no date.
+  Serial: crash=0 panic=0 on both sides.
+
+CARDS / IMAGES
+  runs/before/card.img.manifest, runs/after/card.img.manifest; optional_missing, verbatim, both:
+    optional_missing none
+  Card and clone sha256 (the clone is written by the probe, CKPROBE.LOG):
+    before card 8db80436681ff89dd24371ed9f6c2233dc893cf316fca81f9bf495102e9bc5a4
+           clone after 7dd607918a10a46e651ded546aab488f5c799b7eca661f346717ffc72eaff664
+    after  card 74d95dbb8122e22c13fe1c192b278ac4e2264f60750b6c40d499d2eea4646ac7
+           clone after 51c4e55166155cf853fa9be178bd15cd329b54e4c81cecad1eda37f1058016e0
+  RAM dumps: sha256 in runs/<side>/run.txt, deleted.
+
+EARLIER ATTEMPTS (not kept)
+  The before side ran twice more with the same binaries: the first pmemsave failed (the HMP '/'
+  parse above); the second gave the same result but printed scratch paths into run.txt. Probe lines
+  identical in all three before runs (1/6 agree), _idt 0x112e in both runs that dumped RAM.
+
+HOST TEST (sdk/cflib/tests/cookie-host.sh, wired into sdk/run-host-tests.sh as cookie-host)
+  overlay cookie.c: cookie-host: 0 of 26 checks failed
+  COOKIE_SRC=<pristine cflib-21/cookie.c from the tarball>: cookie-host: 17 of 26 checks failed --
+    e.g. "_IDT tag handed to Getcookie got 0x000000015444495F want 0x000000005F494454": reversed AND
+    a stale non-zero upper half (the -O0 build of the union on the macOS arm64 host).
+  sdk/run-host-tests.sh: host tests: 29 passed, 0 failed, 0 skipped (28 + cookie-host).

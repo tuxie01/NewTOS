@@ -1,6 +1,6 @@
 # SDK05 — cflib `getcookie`: Cookie-Name per Byte-Union, auf Little-Endian verdreht
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer (SDK) — Anwenderentscheidung 2026-10-28, aus `docs/analysis/abi-assumptions-check-2026-10-28.md` §3
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](SDK05-STATUS-DONE.MD)); QED-Anzeige unveraendert (siehe Quittung) · Prioritaet: **P1** · Typ: Developer (SDK) — Anwenderentscheidung 2026-10-28, aus `docs/analysis/abi-assumptions-check-2026-10-28.md` §3
 
 ## Sachverhalt
 

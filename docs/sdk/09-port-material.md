@@ -102,8 +102,9 @@ FONTSELECT-Pfad). Alles Uebrige waren CI-Skripte, `Makefile` und `README.md`.
 `SRCFILES`/COBJS blieben bei 129 Dateien, `expected-failures.txt` bleibt leer.
 
 **Wichtig fuer kuenftige Wechsel:** `sdk/cflib/overlay/fontsel.c` ist eine
-Vollkopie der Originaldatei. Ein Pin-Wechsel muss sie **umsetzen** (rebasen),
-sonst nimmt sie stromaufwaerts behobene Fehler wieder zurueck. Das ist die
+Vollkopie der Originaldatei, ebenso seit [SDK05](../../TASK/SDK05.md)
+`sdk/cflib/overlay/cookie.c`. Ein Pin-Wechsel muss sie **umsetzen** (rebasen),
+sonst nehmen sie stromaufwaerts behobene Fehler wieder zurueck. Das ist die
 generelle Gefahr jedes Voll-Datei-Overlays.
 
 ### Der Wechsel muss auch ankommen

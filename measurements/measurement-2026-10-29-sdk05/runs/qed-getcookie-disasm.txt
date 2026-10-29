@@ -1,0 +1,35 @@
+== before QED.NAP (8ef41461e72a3a1f...)
+0000000000033698 <getcookie>:
+   33698: a9be7bfd     	stp	x29, x30, [sp, #-0x20]!
+   3369c: 910003fd     	mov	x29, sp
+   336a0: b9400000     	ldr	w0, [x0]
+   336a4: f9000bf3     	str	x19, [sp, #0x10]
+   336a8: aa0103f3     	mov	x19, x1
+   336ac: 910063a1     	add	x1, x29, #0x18
+   336b0: 94002d2d     	bl	0x3eb64 <Getcookie>
+   336b4: b4000073     	cbz	x19, 0x336c0 <getcookie+0x28>
+   336b8: f9400fa8     	ldr	x8, [x29, #0x18]
+   336bc: f9000268     	str	x8, [x19]
+   336c0: 7100001f     	cmp	w0, #0x0
+   336c4: f9400bf3     	ldr	x19, [sp, #0x10]
+   336c8: 1a9f17e0     	cset	w0, eq
+   336cc: a8c27bfd     	ldp	x29, x30, [sp], #0x20
+   336d0: d65f03c0     	ret
+== after QED.NAP (a8777bbf7e83fa27...)
+0000000000033698 <getcookie>:
+   33698: a9be7bfd     	stp	x29, x30, [sp, #-0x20]!
+   3369c: b9400008     	ldr	w8, [x0]
+   336a0: 910003fd     	mov	x29, sp
+   336a4: f9000bf3     	str	x19, [sp, #0x10]
+   336a8: aa0103f3     	mov	x19, x1
+   336ac: 910063a1     	add	x1, x29, #0x18
+   336b0: 5ac00900     	rev	w0, w8
+   336b4: 94002d2d     	bl	0x3eb68 <Getcookie>
+   336b8: b4000073     	cbz	x19, 0x336c4 <getcookie+0x2c>
+   336bc: f9400fa8     	ldr	x8, [x29, #0x18]
+   336c0: f9000268     	str	x8, [x19]
+   336c4: 7100001f     	cmp	w0, #0x0
+   336c8: f9400bf3     	ldr	x19, [sp, #0x10]
+   336cc: 1a9f17e0     	cset	w0, eq
+   336d0: a8c27bfd     	ldp	x29, x30, [sp], #0x20
+   336d4: d65f03c0     	ret

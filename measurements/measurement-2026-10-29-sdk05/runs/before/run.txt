@@ -1,0 +1,16 @@
+side before  2026-10-29 13:59:05 CET
+ff9b636b76b39aecd5abfa15c0d13d890ab253a908e002996fffb251a21ded4d  CKPROBE.NCP
+8ef41461e72a3a1f7de73cec7b8acf0868806c891f6b02ff61e5a8cc70f5ec1a  QED.NAP
+30ac6bf24a28ce2c95fab6a7c663bf29f40de9ad9ee1dd6b80ec36c146264a79  qed.rsc
+3fb96906bdf1870afe38ad24a8e3a3e87e03e7c54499cd8e11302bf5d71ed092  kernel8.img
+card 8db80436681ff89dd24371ed9f6c2233dc893cf316fca81f9bf495102e9bc5a4
+_idt symbol (llvm-nm QED.NAP) 0x000000000006e270
+elf QED.NAP: exec PT_LOAD offset 0x1000 vaddr 0x1000; _idt link VA 0x6e270
+ram dump ram.bin: 1073741824 bytes
+  hit PA 0x2da000 -> B 0x2d9000; BASEPAGE p_lowtpa 0x7 -> not a TPA
+  hit PA 0x1a08000 -> B 0x1a07000; BASEPAGE p_lowtpa 0x1a07000 -> TPA
+  hit PA 0x399c9c00 -> B 0x399c8c00; BASEPAGE p_lowtpa 0x464c457f -> not a TPA
+QED _idt @ PA 0x1a75270 = 0x000000000000112e
+ram dump 6ff32658769b8b28c06d196023b5daad29e6e8080d0bc6d40611219fef5ee6e9 (1073741824 bytes, deleted)
+clone after run 7dd607918a10a46e651ded546aab488f5c799b7eca661f346717ffc72eaff664 (deleted)
+crash=0 panic=0

@@ -1,0 +1,14 @@
+CKPROBE SDK05 cflib getcookie vs Getcookie
+P1 NTOS getcookie found=0 value=0x00000000 | Getcookie(0x4E544F53) found=1 value=0x00000100 -> DIFFER
+P2 _IDT getcookie found=0 value=0x00000000 | Getcookie(0x5F494454) found=1 value=0x0000112F -> DIFFER
+P3 _MCH getcookie found=0 value=0x00000000 | Getcookie(0x5F4D4348) found=1 value=0x00050000 -> DIFFER
+P4 _AKP getcookie found=0 value=0x00000000 | Getcookie(0x5F414B50) found=1 value=0x00000000 -> DIFFER
+P5 EdDI getcookie found=0 value=0x00000000 | Getcookie(0x45644449) found=1 value=0x00000001 -> DIFFER
+P6 XXXX getcookie found=0 value=0x00000000 | Getcookie(0x58585858) found=0 value=0x00000000 -> AGREE
+U1 NTOS upstream union long=0x00000000534F544E (jar tag 0x4E544F53)
+U2 _IDT upstream union long=0x000000005444495F (jar tag 0x5F494454)
+U3 _MCH upstream union long=0x0000000048434D5F (jar tag 0x5F4D4348)
+U4 _AKP upstream union long=0x00000000504B415F (jar tag 0x5F414B50)
+U5 EdDI upstream union long=0x0000000049446445 (jar tag 0x45644449)
+U6 XXXX upstream union long=0x0000000058585858 (jar tag 0x58585858)
+CKPROBE: 1/6 agree
