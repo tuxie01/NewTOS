@@ -132,11 +132,14 @@ paired `Fsnext` can continue the enumeration.
 | 0x16   | `d_time`    | UWORD  | packed FAT time (native byte order) |
 | 0x18   | `d_date`    | UWORD  | packed FAT date (native byte order) |
 | 0x1A   | `d_length`  | LONG   | file size in bytes (native byte order) |
-| 0x1E   | `d_fname[14]`| char[]| dotted 8.3 name, NUL-terminated, upper-case |
+| 0x1E   | `d_fname[14]`| char[]| dotted 8.3 name, NUL-terminated, upper-case; only name + NUL written |
 
 ### Side effects on global state
 
-- The entire 44-byte DTA at `run->p_xdta` is (re)written.
+- The DTA at `run->p_xdta`: `dt_offset_drive = -1` first (`bdos/fsdir.c:530-531`);
+  on a match the 21 private bytes (`bdos/fsdir.c:473-490`), 0x15..0x1D and
+  `d_fname` up to and including its NUL (`makbuf`, `bdos/fsdir.c:1851-1862`).
+  The `d_fname` bytes after the NUL are **not** written (edge case 6).
 
 ### Side effects on hardware
 
@@ -198,7 +201,11 @@ wildcard) is EmuTOS-specific glue.
 
 6. **Filename is dotted 8.3, upper-case, NUL-terminated.** `packit` produces
    `NAME.EXT\0` (no dot if no extension); `d_fname` is 14 bytes
-   (`"12345678.123\0"` fits) (`bdos/fsdir.c:1861`).
+   (`"12345678.123\0"` fits) (`bdos/fsdir.c:1861`). `packit` writes the name
+   and one NUL and nothing else (`bdos/fsdir.c:1297-1324`): the bytes after
+   the NUL keep their previous content (a longer earlier name's tail, or the
+   caller's bytes). Measured on the oracle, TOOL20 finding F1; NewTOS since
+   FS23 (`docs/api/structures/dta.md`, `d_fname`).
 
 7. **Wildcards only in the final component.** `findit` does not match wildcards
    in intermediate path components; `"C:\\*\\F"` fails at path resolution

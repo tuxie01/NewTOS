@@ -99,6 +99,9 @@ None — the search state is entirely in the per-process DTA at `run->p_xdta`.
 Same public fields as `Fsfirst` (attribute, packed time/date in native byte
 order, size, dotted 8.3 name), refilled by `makbuf`
 (`bdos/fsdir.c:673,1851`). See `docs/api/gemdos/file/4e-fsfirst.md`.
+`d_fname` is written only up to and including its NUL (`packit`,
+`bdos/fsdir.c:1297-1324`): after a shorter name the tail of the previous,
+longer one stays behind the NUL (`docs/api/structures/dta.md`, `d_fname`).
 
 ### Side effects on global state
 

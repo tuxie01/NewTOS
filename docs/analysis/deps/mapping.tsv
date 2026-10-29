@@ -107,12 +107,12 @@ incr_curdir_usage	bdos/fsdir.c	tos-api/src/bdos/fs/curdir.rs	incr	mapped	-
 is_subdir	bdos/fsdir.c	tos-api/src/bdos/fs/file.rs	is_self_or_descendant	mapped	Frename cycle check; NewTOS checks the whole ancestry, EmuTOS one level (file.rs comment)
 ixsfirst	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	fsfirst	mapped	the search; NewTOS has no separate ix layer
 ixsnext	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	scan	mapped	-
-makbuf	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	makbuf	mapped	-
+makbuf	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	makbuf	mapped	the name through name_83 (packit); d_fname is written up to its NUL only, the bytes after it keep their content (FS23)
 makdnd	bdos/fsdir.c	-	-	unmapped	EmuTOS caches directory nodes (DND tree) in OS memory; NewTOS keeps no DND tree, it resolves paths by scanning directories through the sector cache (bdos/fs/path.rs, dir.rs)
 makofd	bdos/fsdir.c	-	-	unmapped	builds the OFD of a DND's directory; NewTOS keeps no DND tree (directories are scanned by cluster, bdos/fs/dir.rs)
 match	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	pattern_match	mapped	-
 namlen	bdos/fsdir.c	-	-	unmapped	length of an unpacked 11-byte name, used by xmkdir's path-length check; no NewTOS function found
-packit	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	name_83	mapped	11-byte name to NAME.EXT
+packit	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	name_83	mapped	11-byte name to NAME.EXT; returns a zero-filled 14-byte buffer, makbuf copies only up to the NUL (FS23)
 process_dnd_tree	bdos/fsdir.c	-	-	unmapped	EmuTOS caches directory nodes (DND tree) in OS memory; NewTOS keeps no DND tree, it resolves paths by scanning directories through the sector cache (bdos/fs/path.rs, dir.rs)
 scan	bdos/fsdir.c	tos-api/src/bdos/fs/find.rs	scan	mapped	-
 scan	bdos/fsdir.c	tos-api/src/bdos/fs/dir.rs	find_in_dir	mapped	-

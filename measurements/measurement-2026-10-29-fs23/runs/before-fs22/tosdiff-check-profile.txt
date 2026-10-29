@@ -1,0 +1,1 @@
+profile check, BIOS.BIN: xtask-tosdump disk (tosdump/profiles.tsv), x: = .NAP, as its LOG BIOS.LOG records

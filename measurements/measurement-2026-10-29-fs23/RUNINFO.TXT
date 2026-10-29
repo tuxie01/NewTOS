@@ -1,0 +1,105 @@
+measurement-2026-10-29-fs23 -- FS23: Fsfirst/Fsnext write into d_fname only the name and its NUL
+==================================================================================================
+Developer, TASK/FS23, 2026-10-29 (host clock CET). Base HEAD eccc6ecc (docs only since d10781a5).
+QEMU raspi4b (headless, -append serial=on). No hardware, no real card, nothing flashed. Not committed
+(the lead commits).
+
+WHAT / WHY
+  TOOL20 finding F1 (measurements/measurement-2026-10-29-tool20/RUNINFO.TXT): NewTOS' makbuf wrote all
+  14 bytes of d_fname, zero-filled after the name (tos-api/src/bdos/fs/find.rs:465@makbuf before the
+  change); EmuTOS' makbuf packs the name with packit, which writes NAME[.EXT] and one NUL and nothing
+  else (references/emutos/bdos/fsdir.c:1297-1324, makbuf :1851-1862), so the bytes after the NUL keep
+  what the DTA held before. User decision 2026-10-29: match it.
+  Change: makbuf copies name_83's result (the packit counterpart) only up to and including its NUL.
+  Acceptance (ticket): the F1 cases of gemdos-mc-fs22.tsv and gemdos-mc-paths.tsv EQUAL to the
+  oracle; no previously equal case of fs20, fs22, paths, bios-r1 newly differs; cargo xtask test green.
+
+STATE
+  Tree      main eccc6ecc plus the uncommitted FS23 change:
+              tos-api/src/bdos/fs/find.rs              makbuf (body and doc comment)
+              tos-api/tests/gemdos_dta_fname_tail.rs   new host test (3 tests)
+              docs/api/structures/dta.md, docs/api/gemdos/file/4e-fsfirst.md,
+              docs/api/gemdos/file/4f-fsnext.md        spec corrected from the EmuTOS source
+              docs/analysis/deps/mapping.tsv           notes of makbuf, packit
+  EmuTOS    oracle references only (no oracle run here): tosdump/reference/
+            EMUTOS-1a7484ab-BIOS-mc-<fs20|fs22|paths>-disk.BIN (TOOL20), EMUTOS-1a7484ab-BIOS.BIN and
+            EMUTOS-1a7484ab-BIOS-falcontc.BIN (bios-r1, tt and falcontc)
+  Kernels   (kernel8.img sha256, rpi4 release, no features, built by the runner)
+    before  9875c7f34d0c9b14a5f37437ae022657cf61f459793947e5f6df321252fa0918
+            `git archive eccc6ecc` extracted into scratch, passed as --tree (dumper build id ----)
+    after   ec56e48bb0c4f0f8f1cfa5df4d42e14cd5c2af733c38f70fd2d1f0b14fa8fede
+            this tree (dumper build id eccc)
+  Dumper    DUMPBIOS.NAP before 8f6d775dbb05e8c02658148b7a098ca63e4e1b2b301d935d8ba1983cf8f0b9a9,
+            after 24fb594796b178d2bc73fb750764402de358aabf1b2387110bac528403f5d08a (the build id
+            differs: the --tree copy has no .git)
+  Test image measurements/measurement-2026-10-29-tool20/method/mkimage.sh (called, not copied) into
+            scratch: test.img 5f9b26074437f970a4a6db7e0b8dae4b8f0320f0efce91265f2716ed2f85e1d1
+            (runs/test.img.manifest). PXPROBE.PRG 6c7d8c1eef25707b570d593e8075786a9c032d0c24969b94b8606415f920e593
+            (the m68k build is not byte-reproducible, TOOL20; its length 122863 equals the one the
+            oracle recorded, which the DTA cases compare), PXPROBE.NAP
+            d832211c10d3709393ceb46bc372fca1dad1c8f24f4a40c7b5ba5d918dd8428c (= TOOL20's). Before and
+            after booted the same image.
+
+METHOD (method/)
+  newtos-runs.sh before|after: cargo xtask tosdump bios for gemdos-mc-fs20/-fs22/-paths.tsv
+                 (--testdisk <scratch>/test.img; the card by tools/mkcard.sh inside the runner, booted
+                 as an APFS clone) and bios-r1.tsv (tt + falcontc references, no disk). The test
+                 partition after each destructive run goes to scratch for compare.sh.
+  compare.sh     differing cases per table and reference before/after, newly differing, now equal;
+                 then the NewTOS test partitions after the run, before vs after (sha256)
+                 -> runs/before-after.txt
+  Every run: "ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0"; tosdiff --validate
+  and --check-profile exit 0 (runs/*/tosdump-run.txt).
+
+MANIFESTS (every one verbatim)
+  runs/test.img.manifest:                optional_missing none
+  runs/before-fs20/card.img.manifest:    optional_missing none
+  runs/before-fs22/card.img.manifest:    optional_missing none
+  runs/before-paths/card.img.manifest:   optional_missing none
+  runs/before-bios-r1/card.img.manifest: optional_missing none
+  runs/newtos-fs20/card.img.manifest:    optional_missing none
+  runs/newtos-fs22/card.img.manifest:    optional_missing none
+  runs/newtos-paths/card.img.manifest:   optional_missing none
+  runs/newtos-bios-r1/card.img.manifest: optional_missing none
+
+RESULTS (runs/before-after.txt)
+  table     reference                              before (eccc6ecc)            after (FS23)
+  fs20      EMUTOS-1a7484ab-BIOS-mc-fs20-disk       0 of 17 differ               0
+  fs22      EMUTOS-1a7484ab-BIOS-mc-fs22-disk       6 of 13 (33 37 39 44 46 47)  0 -- all now EQUAL
+  paths     EMUTOS-1a7484ab-BIOS-mc-paths-disk     12 of 49 (45 47-52 56 58-60   1 (67)
+                                                   67)
+  bios-r1   EMUTOS-1a7484ab-BIOS (tt)              39 of 147                    39, same cases
+  bios-r1   EMUTOS-1a7484ab-BIOS-falcontc          43 of 147                    43, same cases
+  Newly differing cases in all five comparisons: none.
+  The 17 F1 cases (fs22 6, paths 11) differed only in d_fname[n] after the NUL (oracle 0xAD poison
+  or an earlier name's tail, NewTOS 0x00, runs/before-*/tosdiff-*.txt); all EQUAL after.
+  paths case 67 stays: S04 Mediach after Dsetpath(C:\SUB) after a media change, oracle 2, NewTOS 0 --
+  TOOL20 finding F2, ticket TASK/FS24 (not this ticket).
+  bios-r1: same counts and case lists as measurement-2026-10-29-bios04 "after" (39 tt / 43 falcontc).
+  NewTOS test partition after the run, before vs after (sha256): fs20, fs22, paths identical -- FS23
+  writes no disk. fsck_msdos -n of the NewTOS end states as before (runs/*/testpart-compare.txt):
+  fs20 206 (the table changes the geometry, as in TOOL20, both sides), fs22 0, paths 0.
+  The end-state comparison against the oracle (TOOL20 compare-ends.py) needs the oracle's end images,
+  which TOOL20 did not keep; not repeated here. TOOL20's findings on it (fs20 FA_ARCHIVE = FS21, paths
+  DELME.TXT entry = F3/FS25) are untouched by a change that writes no disk.
+
+HOST TESTS
+  tos-api/tests/gemdos_dta_fname_tail.rs: the DTA preset with 0xA5, then Fsfirst, a shorter name after
+  a longer one on the same DTA, and Fsnext through C:\SUB; every d_fname byte after the NUL checked.
+  All three fail against the HEAD makbuf (d_fname NUL+pad zero-filled) and pass with the change.
+  cargo xtask test (full): 1850 passed, 0 failed, 1 ignored (baseline 1847/0/1, +3).
+
+BUILD / CLIPPY
+  cargo xtask build --board rpi4 / --board qemu-virt: exit 0 both; tos-api 64 and kernel 93 build
+  warnings both boards (unchanged replay).
+  cargo clippy -p kernel --features board-rpi4 / board-qemu-virt: kernel 121, tos-api 74 warnings on
+  both boards, before (HEAD find.rs) and after alike; the one find.rs hit (derivable_impls, DirInfo,
+  untouched) is in both. cargo clippy -p tos-api --test gemdos_dta_fname_tail: no hit in the test.
+
+FILES
+  method/  newtos-runs.sh, compare.sh
+  runs/    before-<fs20|fs22|paths|bios-r1>/, newtos-<...>/ (cargo xtask tosdump's out-dirs: BIN, LOG,
+           manifests, tosdiff-*.txt, testpart-compare.txt, build logs), before-after.txt,
+           test.img.manifest
+  Images, cards, kernels and the scratch tree are not kept (scratch, deleted after the run); sha256
+  above and in the runs' files. manifest.sha256 covers every file of this run except itself.

@@ -454,42 +454,29 @@ fn list_dir_ex_once(path: &str, out: &mut [DirInfo]) -> usize {
 }
 
 /// Write the user-visible portion of the DTA from a found entry
-/// (EmuTOS `makbuf`): attribute, time, date, size, `8.3\0` name. Values
-/// are stored in native byte order (little-endian on AArch64).
+/// (EmuTOS `makbuf`, `bdos/fsdir.c:1851-1862`): attribute, time, date,
+/// size in native byte order (little-endian on AArch64), then `d_fname`:
+/// only the `8.3` name and its NUL, as `packit` writes it
+/// (`bdos/fsdir.c:1297-1324`) -- the bytes after the NUL keep their old
+/// content (FS23).
 ///
 /// `dta` is a 44-byte DTA in `space` ([`cur_dta_in`]); a DTA the program
 /// cannot write is a user-access fault (ARCH03 3a, [`crate::uaccess`]).
 fn makbuf(space: Space, dta: u64, e: &DirEntry) -> Result<(), UserFault> {
-    // Bytes 21..44 of the DTA: attrib, time, date, size, d_fname[14].
-    let mut out = [0u8; 23];
+    // Bytes 21..30 of the DTA: attrib, time, date, size.
+    let mut out = [0u8; 9 + 14];
     out[0] = e.attrib;
     out[1..3].copy_from_slice(&e.time.to_le_bytes());
     out[3..5].copy_from_slice(&e.date.to_le_bytes());
     out[5..9].copy_from_slice(&e.size.to_le_bytes());
 
-    // d_fname: trim-padded "NAME.EXT\0" (offset 30, 14 bytes).
-    let name = &mut out[9..23];
-    let mut n = 0;
-    for &c in &e.name[0..8] {
-        if c == b' ' {
-            break;
-        }
-        name[n] = c;
-        n += 1;
-    }
-    if e.name[8] != b' ' {
-        name[n] = b'.';
-        n += 1;
-        for &c in &e.name[8..11] {
-            if c == b' ' {
-                break;
-            }
-            name[n] = c;
-            n += 1;
-        }
-    }
-    // remaining bytes already zero (NUL terminator + pad)
-    space.copy_to(dta + 21, &out)
+    // d_fname (offset 30): "NAME.EXT" and its NUL, nothing after it.
+    // `name_83` (the `packit` counterpart) yields at most 12 characters, so
+    // the NUL always lies within the 14 bytes.
+    let name = name_83(&e.name);
+    let len = name.iter().position(|&c| c == 0).unwrap_or(name.len() - 1) + 1;
+    out[9..9 + len].copy_from_slice(&name[..len]);
+    space.copy_to(dta + 21, &out[..9 + len])
 }
 
 /// Store our resume state into the DTA reserved area (bytes 0..21 of the

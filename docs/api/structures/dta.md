@@ -107,6 +107,17 @@ Found filename in 8.3 form, NUL-terminated, **uppercase**, with the
 dot in place (e.g. `"FOO.TXT\0"`). 14 bytes is enough for "12345678.123\0"
 plus one trailing pad byte. Names with no extension lack the dot.
 
+Only the name and its NUL are written. `makbuf` packs the name with
+`packit` (`bdos/fsdir.c:1861`), which copies `NAME`, optionally `.EXT`,
+stores one `'\0'` and returns (`bdos/fsdir.c:1297-1324`); nothing clears
+the rest of the 14 bytes. The bytes after the NUL keep what the DTA held
+before the call: the caller's own bytes before the first search, the tail of
+a longer earlier name after a shorter one (`"PXPROBE.PRG"` then
+`"DELME.TXT"` leaves `"G\0"` behind the new NUL). Measured on the oracle:
+`tosdump/cases/gemdos-mc-fs22.tsv`, `tosdump/cases/gemdos-mc-paths.tsv`
+(`measurements/measurement-2026-10-29-tool20/RUNINFO.TXT`, finding F1;
+NewTOS matches since FS23, `measurements/measurement-2026-10-29-fs23/RUNINFO.TXT`).
+
 ## DTA pointer in the basepage
 
 `PD.p_xdta` (offset 0x20) is the active DTA pointer. **Default value
@@ -122,8 +133,12 @@ explicitly before any `Fsfirst`.
 ## Lifecycle / invariants
 
 1. `Fsetdta(buf)` writes `p_xdta = buf` and returns nothing.
-2. `Fsfirst(spec, attr)` initialises the entire 44-byte DTA and, on
-   success, fills bytes 0x15..0x2B with the first match.
+2. `Fsfirst(spec, attr)` marks the DTA uninitialised (`dt_offset_drive =
+   -1`, `bdos/fsdir.c:530-531`) and, on success, writes the search state
+   into `d_reserved` (`bdos/fsdir.c:473-490`) and the first match into
+   0x15..0x1D plus `d_fname` up to and including its NUL (`makbuf`,
+   `bdos/fsdir.c:1851-1862`); the `d_fname` bytes after the NUL are not
+   written (see `d_fname` above).
 3. Subsequent `Fsnext()` mutate `d_reserved[]` and rewrite the
    visible fields with the next match.
 4. After `ENMFIL` (-49, no more matches — **not** `EFILNF`, which is

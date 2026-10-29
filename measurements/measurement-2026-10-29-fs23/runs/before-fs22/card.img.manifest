@@ -1,0 +1,17 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh, MKCARD_TESTDISK 5f9b26074437f970a4a6db7e0b8dae4b8f0320f0efce91265f2716ed2f85e1d1 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs23/test.img
+image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs23/xtask-before/tosdump-57109/card.img
+image_sha256 3e0e07a7a0d272252a419a9aff64366c74c2fe46b4311f00ed5cf2d42caa1484
+size_mib 128
+created 2026-10-29T21:06:45Z
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+file 5ee62fc153acfeed7a3fc5daecf7718f8e831879046535ea53cb84775a4dba84 82 C:\DELME.TXT
+file c779a308dbfae3b61747e3ebcf5d45f7d616bc53e63b83ec4afa3557f02ecf5b 31 C:\NEWDESK.INF
+file d832211c10d3709393ceb46bc372fca1dad1c8f24f4a40c7b5ba5d918dd8428c 145024 C:\PXPROBE.NAP
+file 6c7d8c1eef25707b570d593e8075786a9c032d0c24969b94b8606415f920e593 122863 C:\PXPROBE.PRG
+file 2682ab98ceb3c35328b2e062c75b99e6c0b140dc944ae2a3f49ffb091ea35805 98 C:\SUB\INNER.TXT
+file 848a572324aa1d686d2c4200be0be4a37a3bc0dc56a38c40c73719d95f4701c4 3148 D:\BIOS.TSV
+file 2218c54ac6a0d40e422f1e643c5df24bcbbe62f33ffe335ca2501dc36629c402 4 D:\DISKUNIT.TXT
+file 8f6d775dbb05e8c02658148b7a098ca63e4e1b2b301d935d8ba1983cf8f0b9a9 251792 D:\DUMPBIOS.NAP
+file 206821246b10fc2e6ac73712e5d889601b45387b11665577171ccf1ddbbc0392 5 D:\PROGEXT.TXT

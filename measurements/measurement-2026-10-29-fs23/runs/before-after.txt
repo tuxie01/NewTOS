@@ -1,0 +1,29 @@
+fs20 vs EMUTOS-1a7484ab-BIOS-mc-fs20-disk
+  before (HEAD): 0 differ: 
+  after  (FS23): 0 differ: 
+  newly differing: 
+  now equal:       
+fs22 vs EMUTOS-1a7484ab-BIOS-mc-fs22-disk
+  before (HEAD): 6 differ: 33 37 39 44 46 47 
+  after  (FS23): 0 differ: 
+  newly differing: 
+  now equal:       33 37 39 44 46 47 
+paths vs EMUTOS-1a7484ab-BIOS-mc-paths-disk
+  before (HEAD): 12 differ: 45 47 48 49 50 51 52 56 58 59 60 67 
+  after  (FS23): 1 differ: 67 
+  newly differing: 
+  now equal:       45 47 48 49 50 51 52 56 58 59 60 
+bios-r1 vs EMUTOS-1a7484ab-BIOS-falcontc
+  before (HEAD): 43 differ: 53 54 69 70 87 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235 
+  after  (FS23): 43 differ: 53 54 69 70 87 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235 
+  newly differing: 
+  now equal:       
+bios-r1 vs EMUTOS-1a7484ab-BIOS
+  before (HEAD): 39 differ: 53 54 69 70 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235 
+  after  (FS23): 39 differ: 53 54 69 70 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235 
+  newly differing: 
+  now equal:       
+test partition after the run, NewTOS before vs after (sha256)
+  fs20  before 3fe109698177d7507a7b115c757e04301bb92f71411581f3943c8d1409b7bf0c  after 3fe109698177d7507a7b115c757e04301bb92f71411581f3943c8d1409b7bf0c  identical
+  fs22  before 4d95d2781cd42a80299cacc7081ef8d942a6cd016fb23b1a2e8c021517e3e3e6  after 4d95d2781cd42a80299cacc7081ef8d942a6cd016fb23b1a2e8c021517e3e3e6  identical
+  paths  before ac16e80da506dbe1e05cf2765b5ab5a17b718ebf52eaf955fedb73f492f56171  after ac16e80da506dbe1e05cf2765b5ab5a17b718ebf52eaf955fedb73f492f56171  identical
