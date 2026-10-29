@@ -442,7 +442,7 @@ handles (also after `Fdup`/`Fforce` to a device) resolves to a BIOS device numbe
 device-table entry's `Bconout`, the same table `Bconout`/`Cauxout`/`Cprnout`/
 `Midiws` use (device table and the absent-device profile are defined in
 `3f-fread.md` "NewTOS implementation notes"; not repeated). No GEMDOS special case
-for AUX/PRN. Documented, deliberate profile (not a stub): PRN and MIDI entries return 0 from `Bconout` like EmuTOS' `charout_dummy`
+for AUX/PRN. Documented, deliberate profile (not a stub): the PRN entry returns 0 from `Bconout` like EmuTOS' `charout_dummy` (the MIDI entry did too until BIOS04; since 2026-10-29 it returns 1 — irrelevant to `Fwrite`, which never reaches device 3, `3f-fread.md` item 1)
 (`bios/chardev.c:55-58`; AUX map entry `bios/serport.c:96`; PRN without
 `CONF_WITH_PRINTER_PORT` `bios/parport.c:144-172`). Hence, *derived* from the
 `osif` algorithm (`:622-640`): `Fwrite(-3|3, n>0, b)` = **0** (PRN: the first byte is refused, nothing is retried). **AUX revision (option A, user decision 2026-10-13, after FS11 acceptance finding 1,

@@ -63,7 +63,7 @@ erwartet LP64. Das Programm liest `md_start` = `m_start | m_length << 32` und
 sind das Kern-Layout mit den richtigen Werten 0x00400000 / 0x00A00000.
 `sdk/apps/apitest/apitest.c` deklarierte das Kern-Layout bis BIOS06 selbst
 (`MDX`/`MPBX`, `sizeof == 24`); seit BIOS06 nimmt es `_MD`/`_MPB` aus dem
-Header (`sdk/apps/apitest/apitest.c:2164@_MPB`).
+Header (`sdk/apps/apitest/apitest.c:2188@_MPB`).
 
 **Welche Seite bricht den Vertrag (Folgerung aus COMPATIBILITY:1227):** wenn
 der Vertrag "Felder gleich, Zeigerbreite folgt der ABI" lautet, ist das
@@ -227,7 +227,7 @@ aus dem Header. Die Pruefung `size_of::<MD>() == 2*usize+8`
 
 Siehe `docs/analysis/lp64-tos-struct-survey-2026-10-28.md` (Zeile "MD/MPB")
 und die Erhebung dieses Tickets: einziger Leser von `md_start`/`md_length` ist
-`sdk/apps/apitest/apitest.c:2164@_MPB` (B3, BS03-BS10; bis BIOS06 ueber das
+`sdk/apps/apitest/apitest.c:2188@_MPB` (B3, BS03-BS10; bis BIOS06 ueber das
 eigene `MDX`). `sdk/examples/uakid.c`
 ruft `Getmpb(BAD)` nur mit ungueltigem Zeiger (kein Lesen des MD, nicht im
 Standard-Image); `tosdump` misst `Getmpb` seit TOOL16 nur in

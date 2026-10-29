@@ -247,6 +247,22 @@ GEMDOS calls use the **same** per-device entry. A later UART/MIDI/printer driver
 
 **AUX (1) revised 2026-10-13 (option A, user decision, after FS11 acceptance finding 1; see `docs/api/gemdos/file/3f-fread.md` "NewTOS implementation notes" item 1a):** AUX is "port present, no cable" and is **no longer** part of the absent-device profile below: `Bconout(1)` → 1 (accept+discard), `Bcostat(1)` → -1, `Bconstat(1)` → 0, `Bconin(1)` → 0 non-blocking. PRN and MIDI stay absent.
 
+**[BIOS04] 2026-10-29 — MIDI (3) and IKBD (4) accept, user decision "like the
+oracle" (supersedes the device-3 part of the next paragraph):** `Bconout(3,b)`
+and `Bconout(4,b)` → `1`, the byte discarded — the oracle build has both ACIAs
+(`CONF_WITH_MIDI_ACIA`, `CONF_WITH_IKBD_ACIA` = 1,
+`references/emutos/include/config.h:994-996,1001-1003`): `bconout3` waits for
+`bcostat3` (TDRE), writes the ACIA and returns `1L`
+(`references/emutos/bios/midi.c:84-95`); `bconout4` calls `ikbd_writeb` and
+returns `1L` (`references/emutos/bios/ikbd.c:933-937`). NewTOS has no MIDI or
+IKBD transmitter and no IKBD command interpreter, so the byte has no effect
+(`docs/api/xbios/19-ikbdws.md`). Implementation
+`tos-api/src/bios/chardev.rs:163@MidiPort`,
+`tos-api/src/bios/chardev.rs:236@IkbdPort`. Measured equal to the oracle:
+`tosdump/probes/mdprobe.c` D06/D07 (the audit probe's B02/B03),
+`measurements/measurement-2026-10-29-bios04/RUNINFO.TXT`. Before, both
+returned `0` (finding BIOS-CORE-001, `docs/audits/2026-10-28-bios-core.md`).
+
 **Devices 0 (PRN), 3 (MIDI):** `Bconout` -> `0`, byte discarded
 (`charout_dummy` semantics, `bios/chardev.c:55-58`). **Device 1 (AUX), option A:** `Bconout(1,b)` -> `1`, byte discarded; EmuTOS `bconout1` with an MFP port returns `1L` (`bios/serport.c:323`; wait loop `:296` on `bcostat1` = ring space, no CTS; `FLOW_CTRL_NONE` default `:89`, `flowctrl` unused). Consistency with EmuTOS: dev 0 without
 `CONF_WITH_PRINTER_PORT` returns 0 at once (`bios/parport.c:144-172`, exact match).
@@ -274,8 +290,8 @@ returns 0 for a handle > 7 (`bios/bios.c:1008-1010`) and before
 | 0 | PRT / Centronics | **absent** → discard | `0` |
 | 1 | AUX / RS-232 | no-cable port entry (option A); PL011 UART0 later (`TASK/IO01.md`) | `1` (accept+discard) |
 | 2 | CON / screen (VT52) | **framebuffer VT52** (`fbcon.rs` → `vdi/escape.rs` automaton) + UART echo | `1` |
-| 3 | MIDI out | **absent** → discard | `0` |
-| 4 | IKBD command out | **absent** → discard | `0` |
+| 3 | MIDI out | MIDI port entry (BIOS04) → discard | `1` |
+| 4 | IKBD command out | IKBD port entry (BIOS04) → discard | `1` |
 | 5 | raw screen (no VT52) | framebuffer `ascii_out` (`alpha_rawout`), no automaton, no UART echo | `1` |
 | 6,7 | unused / Bconmap | absent → discard | `0` |
 
@@ -295,9 +311,11 @@ returns 0 for a handle > 7 (`bios/bios.c:1008-1010`) and before
   (dummy; **superseded by option A: returns `1`, byte discarded**) even though the PL011 exists — the UART is written only as the
   CON debug mirror, not as a proper AUX device. Minor divergence, recorded
   as K-series.
-- **Absent PRT/MIDI/IKBD-out (handles 0/3/4).** Return `0` (discarded),
-  matching §3.9 — no printer, no MIDI ACIA, no IKBD command channel. Note
-  the `char_dummy` semantics differ from `bconout`'s `1L`-on-CON: absent
-  devices here return `0`, an honest "not sent".
+- **Absent PRT (handle 0).** Returns `0` (discarded), matching §3.9 — no
+  printer. Note the `char_dummy` semantics differ from `bconout`'s
+  `1L`-on-CON: an absent device returns `0`, an honest "not sent".
+- **MIDI/IKBD-out (handles 3/4), BIOS04.** Return `1` and discard: the
+  reference machine always has both ACIAs, so its programs see "sent"; on
+  the Pi there is no MIDI ACIA and no IKBD command channel behind it.
 - **Datasheet.** Framebuffer transport = VideoCore mailbox (§1.3); AUX =
   PL011 UART0 (datasheet §11).

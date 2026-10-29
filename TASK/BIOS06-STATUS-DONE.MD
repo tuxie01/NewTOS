@@ -31,7 +31,7 @@ conditions) zur Entscheidung des Anwenders.
 - `kernel/src/selftest_bios.rs`: der (nirgends verdrahtete) `Getmpb`-Selbsttest
   liest jetzt `PublicMpb`/`PublicMd` statt des internen `MD`.
 - `sdk/apps/apitest/apitest.c`: `MDX`/`MPBX` entfernt, B3 nimmt `_MD`/`_MPB`
-  aus dem Header (`sdk/apps/apitest/apitest.c:2164@_MPB`).
+  aus dem Header (`sdk/apps/apitest/apitest.c:2188@_MPB`).
 
 ## Abnahme
 

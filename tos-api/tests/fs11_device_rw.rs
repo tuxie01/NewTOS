@@ -902,15 +902,16 @@ fn wt3_prn_entry_is_index_0() {
 
 // ═══ BIOS / GEMDOS / XBIOS on the absent profile ═════════════════════════
 
-/// The device profile per BIOS device (`docs/api/bios/{01,02,03,08}`): PRN,
-/// MIDI, IKBD and 6/7 are absent and answer 0 everywhere; AUX is "port
-/// present, no cable" (`Bconout` 1, `Bcostat` -1, `Bconstat`/`Bconin` 0
-/// without blocking); CON is the console; raw-CON writes; handles past the
-/// table are 0.
+/// The device profile per BIOS device (`docs/api/bios/{01,02,03,08}`): PRN
+/// and 6/7 are absent and answer 0 everywhere; AUX is "port present, no
+/// cable" (`Bconout` 1, `Bcostat` -1, `Bconstat`/`Bconin` 0 without
+/// blocking); MIDI and IKBD accept and discard output and are ready
+/// (BIOS04; `Bconin(3)` waits for the `Iorec(2)` ring, `tests/bios04_midi_ikbd.rs`);
+/// CON is the console; raw-CON writes; handles past the table are 0.
 #[test]
 fn bios_absent_profile() {
     let (_g, host, _p) = setup();
-    for dev in [0u64, 3, 4, 6, 7, 8, 0xFFFF] {
+    for dev in [0u64, 6, 7, 8, 0xFFFF] {
         assert_eq!(bios(BCONSTAT, dev, 0), 0, "Bconstat({dev})");
         assert_eq!(bios(BCONIN, dev, 0), 0, "Bconin({dev})");
         assert_eq!(bios(BCONOUT, dev, b'x' as u64), 0, "Bconout({dev})");
@@ -920,7 +921,14 @@ fn bios_absent_profile() {
     assert_eq!(bios(BCONIN, 1, 0), 0, "Bconin(1) AUX non-blocking");
     assert_eq!(bios(BCONOUT, 1, b'x' as u64), 1, "Bconout(1) AUX accepts");
     assert_eq!(bios(BCOSTAT, 1, 0), -1, "Bcostat(1) AUX ready");
-    assert!(host.take_output().is_empty(), "absent/AUX output discarded");
+    assert_eq!(bios(BCONSTAT, 3, 0), 0, "Bconstat(3) MIDI, empty ring");
+    assert_eq!(bios(BCONOUT, 3, b'x' as u64), 1, "Bconout(3) MIDI accepts");
+    assert_eq!(bios(BCOSTAT, 3, 0), -1, "Bcostat(3) IKBD slot ready");
+    assert_eq!(bios(BCONSTAT, 4, 0), 0, "Bconstat(4) char_dummy");
+    assert_eq!(bios(BCONIN, 4, 0), 0, "Bconin(4) char_dummy, no wait");
+    assert_eq!(bios(BCONOUT, 4, b'x' as u64), 1, "Bconout(4) IKBD accepts");
+    assert_eq!(bios(BCOSTAT, 4, 0), -1, "Bcostat(4) MIDI slot ready");
+    assert!(host.take_output().is_empty(), "absent/AUX/MIDI/IKBD output discarded");
     assert_eq!(bios(BCOSTAT, 2, 0), -1, "Bcostat(2)");
     assert_eq!(bios(BCOSTAT, 5, 0), 0, "Bcostat(5) char_dummy");
     assert_eq!(bios(BCONOUT, 2, b'c' as u64), 1);
@@ -970,6 +978,10 @@ fn cconout_cconws_go_through_the_con_entry() {
     assert!(host.take_output().is_empty());
 }
 
+/// The absent entry, to make the other slot of the swap distinguishable
+/// (since BIOS04 both default entries are ready, -1).
+static ABSENT_REF: &dyn CharDevice = &tos_api::bios::chardev::Absent;
+
 /// The `Bcostat` IKBD/MIDI slot swap (`bios/chardev.c:38-42`): `Bcostat(3)`
 /// reads the IKBD entry (4), `Bcostat(4)` the MIDI entry (3).
 #[test]
@@ -978,11 +990,13 @@ fn bcostat_keeps_the_ikbd_midi_swap() {
     DEV_A.reset(b"", usize::MAX);
     {
         let _ikbd = Installed::new(4, &DEV_A_REF);
+        let _midi = Installed::new(3, &ABSENT_REF);
         assert_eq!(bios(BCOSTAT, 3, 0), -1, "Bcostat(3) -> IKBD entry");
         assert_eq!(bios(BCOSTAT, 4, 0), 0, "Bcostat(4) -> MIDI entry");
     }
     {
         let _midi = Installed::new(3, &DEV_A_REF);
+        let _ikbd = Installed::new(4, &ABSENT_REF);
         assert_eq!(bios(BCOSTAT, 4, 0), -1, "Bcostat(4) -> MIDI entry");
         assert_eq!(bios(BCOSTAT, 3, 0), 0, "Bcostat(3) -> IKBD entry");
         // Bconout is not swapped.
@@ -997,7 +1011,7 @@ fn bcostat_keeps_the_ikbd_midi_swap() {
 fn midiws_sends_cnt_plus_one_bytes_through_the_midi_entry() {
     let (_g, host, _p) = setup();
     let data = b"abcdef";
-    assert_eq!(xbios(MIDIWS, 2, data.as_ptr() as u64), 0, "absent MIDI: void");
+    assert_eq!(xbios(MIDIWS, 2, data.as_ptr() as u64), 0, "MIDI port: void");
     DEV_A.reset(b"", usize::MAX);
     {
         let _midi = Installed::new(3, &DEV_A_REF);

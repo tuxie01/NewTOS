@@ -72,8 +72,11 @@ pub fn scrdmp() -> i64 {
 /// `void` → 0 — the shape of EmuTOS `midiws()` (`bios/midi.c:104-110`,
 /// `bconout3(3, *ptr++)` while `cnt--`).
 ///
-/// The entry is the documented absent device (no MIDI ACIA on the Pi): each
-/// byte is discarded and the call returns at once; a MIDI driver
+/// The entry is the MIDI port of the reference machine
+/// ([`crate::bios::chardev::MidiPort`], BIOS04): each byte is accepted and
+/// discarded (no MIDI transmitter on the Pi) and the call returns at once.
+/// EmuTOS' `bconout3` first waits for `bcostat3` (`bios/midi.c:86-87`); the
+/// entry is always ready, so there is nothing to wait for. A MIDI driver
 /// (`TASK/IO01.md`) replaces only the entry. Each byte is read from `ptr` in
 /// the caller's space before the device call; an unreadable byte ends the
 /// call as a user-pointer fault (ARCH03 3a, [`crate::uaccess::FAULTED`]).
@@ -142,7 +145,9 @@ pub fn dosound() -> i64 {
 /// The Pi has no IKBD 6301 / ACIA data register: the keyboard and mouse
 /// arrive as USB-HID reports, so the raw IKBD command string has no wire to
 /// reach and no ACIA to poll. As with `Midiws` (no transport → bytes
-/// dropped), this is the contract's documented `void` no-op (→ 0), not the
+/// dropped; EmuTOS' `ikbdws` calls `ikbd_writeb` directly, not the BIOS
+/// IKBD entry, `bios/ikbd.c:948-955`), this is the contract's documented
+/// `void` no-op (→ 0), not the
 /// generic function-number catch-all. A full implementation would *parse*
 /// the IKBD command bytes and re-apply them to the USB→IKBD translator; that
 /// interpreter does not exist yet (`docs/api/xbios/19-ikbdws.md` §Pi

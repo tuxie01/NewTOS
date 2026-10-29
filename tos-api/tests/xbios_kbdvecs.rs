@@ -11,8 +11,8 @@
 //! `Kbdvbase` returns, the decision "default `kbdvec` → decode directly /
 //! program hook → queue for upcall" (`route_key`), the queue's order and
 //! overflow rule, its drain at process exit, `Ssystem(S_NEWTOS_KBDVEC)`, the
-//! give-way of a blocking AES wait and of a blocking key read when hook bytes
-//! are waiting. The EL0 upcall delivery itself (trap frame, `Psigreturn`
+//! give-way of a blocking AES wait, of a blocking key read and of the MIDI
+//! wait (`Bconin(3)`, BIOS04) when hook bytes are waiting. The EL0 upcall delivery itself (trap frame, `Psigreturn`
 //! chain) is kernel code and is measured in QEMU
 //! (`measurements/measurement-2026-10-04-keys02/`).
 
@@ -476,6 +476,76 @@ fn single_key_reads_give_way_without_side_effects() {
     assert_eq!(*ECHOED.lock().unwrap(), vec![0x61]);
     assert_eq!(bios(BCONIN, 2), 0x001E_0061);
     assert!(!kbdvecs::take_restart());
+}
+
+/// Put one byte into the MIDI ring through the record `Iorec(2)` returns, as
+/// a program can (advance `ibuftl`, store at `ibuf[ibuftl]`).
+fn put_midi_byte(b: u8) {
+    use tos_api::bdos::process::mmu::{iorec_page_kva, IOREC_PAGE_VA};
+    use tos_api::xbios::iorec::{OFF_IBUF, OFF_IBUFSIZ, OFF_IBUFTL};
+    let rec = tos_api::xbios::dispatch(&TrapArgs {
+        regs: [2, 0, 0, 0, 0, 0, 0, 0],
+        func: 0x0E,
+        svc_imm: TrapClass::Xbios as u16,
+        space: tos_api::uaccess::Space::Kernel,
+    }) as u64;
+    let cell = |va: u64| {
+        assert!((IOREC_PAGE_VA..IOREC_PAGE_VA + 0x1000).contains(&va));
+        // SAFETY: inside the static IOREC page.
+        unsafe { iorec_page_kva().add((va - IOREC_PAGE_VA) as usize) }
+    };
+    // SAFETY: aligned cells of the record inside the page; `ibuf + tail` is
+    // inside the MIDI ring.
+    unsafe {
+        let ibuf = (cell(rec + OFF_IBUF as u64) as *const u64).read_volatile();
+        let size = (cell(rec + OFF_IBUFSIZ as u64) as *const i16).read_volatile();
+        let tl = cell(rec + OFF_IBUFTL as u64) as *mut i16;
+        let mut tail = tl.read_volatile() + 1;
+        if tail >= size {
+            tail = 0;
+        }
+        cell(ibuf + tail as u64).write_volatile(b);
+        tl.write_volatile(tail);
+    }
+}
+
+/// BIOS04: the MIDI wait (`Bconin(3)` on an empty `Iorec(2)` ring, EmuTOS
+/// `bconin3`, `bios/midi.c:37-38`) gives way to the hook like the console and
+/// AUX waits (KEYS02, XBIOS18): hook bytes already queued → restart at once;
+/// a hook byte arriving in the wait's own input pump → restart right after
+/// it. Nothing is consumed, so the re-executed call returns the MIDI byte
+/// that has arrived meanwhile.
+#[test]
+fn midi_wait_gives_way_without_side_effects() {
+    let _g = lock();
+    rig();
+    let mut p = Page0::loaded();
+    p.set_slot(OFF_KBDVEC, HOOK);
+    run(&p);
+    const BCONIN: u16 = 0x02;
+    const BCONSTAT: u16 = 0x01;
+
+    // (a) Queued before the wait.
+    kbdvecs::route_key(UP);
+    assert_eq!(bios(BCONIN, 3), 0, "the placeholder the trap handler discards");
+    assert!(kbdvecs::take_restart(), "Bconin(3) must request the restart");
+    assert_eq!(drain(SLOT), vec![UP], "the hook byte is still queued");
+
+    // (b) Arrives during the wait's input pump.
+    PUMP_FEEDS.store(u16::from(UP | BRK), Ordering::Release);
+    assert_eq!(bios(BCONIN, 3), 0);
+    assert!(kbdvecs::take_restart(), "a hook byte from the pump ends the wait");
+    assert_eq!(drain(SLOT), vec![UP | BRK]);
+
+    // (c) The re-executed call: a MIDI byte has arrived, the hook queue is
+    // empty — the byte, zero-extended, and no restart.
+    assert_eq!(bios(BCONSTAT, 3), 0);
+    put_midi_byte(0xF8);
+    assert_eq!(bios(BCONSTAT, 3), -1);
+    assert_eq!(bios(BCONIN, 3), 0xF8);
+    assert!(!kbdvecs::take_restart());
+    assert_eq!(bios(BCONSTAT, 3), 0);
+    no_process();
 }
 
 // ─── D9: whose table gets the key (MEM12) ────────────────────────────────

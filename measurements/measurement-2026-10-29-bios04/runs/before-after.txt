@@ -1,0 +1,40 @@
+bios-r1 vs EMUTOS-1a7484ab-BIOS-falcontc
+  before (679c505e): 53 54 66 67 69 70 87 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235 
+  after  (BIOS04):    53 54 69 70 87 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235 
+  newly differing:   
+  now equal:         66 67 
+bios-r1 vs EMUTOS-1a7484ab-BIOS
+  before (679c505e): 53 54 66 67 69 70 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235 
+  after  (BIOS04):    53 54 69 70 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235 
+  newly differing:   
+  now equal:         66 67 
+xbios-chardev-r1 vs EMUTOS-1a7484ab-XBIOS-chardev-falcontc
+  before (679c505e): 31 43 44 45 46 47 48 49 50 51 52 53 
+  after  (BIOS04):    31 43 44 45 46 47 48 49 50 51 52 53 
+  newly differing:   
+  now equal:         
+xbios-chardev-r1 vs EMUTOS-1a7484ab-XBIOS-chardev
+  before (679c505e): 31 43 44 45 46 47 48 49 50 51 52 53 
+  after  (BIOS04):    31 43 44 45 46 47 48 49 50 51 52 53 
+  newly differing:   
+  now equal:         
+bios-core-r1 vs EMUTOS-1a7484ab-BIOS-core-falcontc
+  before (679c505e): 46 47 48 49 50 51 52 53 54 55 56 57 59 65 
+  after  (BIOS04):    46 47 48 49 50 51 52 53 54 55 56 57 59 65 
+  newly differing:   
+  now equal:         
+bios-core-r1 vs EMUTOS-1a7484ab-BIOS-core
+  before (679c505e): 46 47 48 49 50 51 52 53 54 55 56 57 59 65 66 
+  after  (BIOS04):    46 47 48 49 50 51 52 53 54 55 56 57 59 65 66 
+  newly differing:   
+  now equal:         
+xbios-system-r1 vs EMUTOS-1a7484ab-XBIOS-system-falcontc
+  before (679c505e): 68 69 70 71 72 73 74 75 76 
+  after  (BIOS04):    68 69 70 71 72 73 74 75 76 
+  newly differing:   
+  now equal:         
+xbios-system-r1 vs EMUTOS-1a7484ab-XBIOS-system
+  before (679c505e): 68 69 70 71 72 73 74 75 76 
+  after  (BIOS04):    68 69 70 71 72 73 74 75 76 
+  newly differing:   
+  now equal:         

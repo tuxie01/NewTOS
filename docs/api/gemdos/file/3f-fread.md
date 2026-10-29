@@ -466,8 +466,31 @@ of the device (`conin`, `getch`, `conbrk`, `cgets` of `console.c`), `Fwrite` cal
 `Bconout`. A later UART/MIDI/printer driver (`TASK/IO01.md`) replaces only the
 table entry.
 
-Current entries (the documented *absent-device* profile): PRN (0),
-MIDI (3) and IKBD-in/6/7 (**AUX (1) is no longer absent, see item 1a**): `Bconin` → 0 **without blocking**, `Bconstat` → 0,
+**GEMDOS reaches only devices 0..2.** The table has eight entries, but a GEMDOS
+handle resolves only to CON, AUX or PRN: `osif` accepts the device handles
+`-1..-3` and answers `EIHNDL` below `-3`, and `HXFORM` maps them to BIOS
+devices 2, 1, 0 (`references/emutos/bdos/bdosmain.c:589-639`,
+`references/emutos/bdos/console.h:23-25,36`; the standard handles 4/5 default
+to CON, `references/emutos/bdos/console.c:60-67`). MIDI (3), IKBD (4) and 5..7
+are reached only through the BIOS calls (and MIDI through `Midiws`); what is
+said about them below describes the BIOS table, not a GEMDOS path — no `Fread`
+or `Fwrite` ever reaches them.
+
+**MIDI (3) and IKBD (4) since BIOS04 (2026-10-29, user decision "like the
+oracle"; supersedes the MIDI/IKBD part of the next paragraph):** both answer as
+the reference machine's ACIAs do — `Bconout` → `1` (byte discarded), `Bcostat`
+→ `-1` (both swapped slots); `Bconstat(4)`/`Bconin(4)` → `0` (`char_dummy`);
+`Bconstat(3)`/`Bconin(3)` read the MIDI ring of `Iorec(2)`, and `Bconin(3)`
+**waits** while it is empty, as EmuTOS' `bconin3`
+(`docs/api/bios/{01,02,03,08}-*.md`, BIOS04 notes;
+`tos-api/src/bios/chardev.rs:163@MidiPort`,
+`tos-api/src/bios/chardev.rs:236@IkbdPort`). Before, both were absent devices
+and a program waiting `while (!Bcostat(4));` hung for good (finding
+BIOS-CORE-001, `docs/audits/2026-10-28-bios-core.md`).
+
+Current entries (the documented *absent-device* profile): PRN (0) and 6/7
+(**AUX (1) is no longer absent, see item 1a; MIDI (3) and IKBD (4) are not
+absent since BIOS04, above**): `Bconin` → 0 **without blocking**, `Bconstat` → 0,
 `Bcostat` → 0, `Bconout` → 0 (byte discarded). Source of the values — what
 EmuTOS does for the same situation:
 - AUX: **superseded by item 1a** (was the Bconmap *dummy* map entry `{char_dummy, char_dummy, char_dummy,
@@ -476,12 +499,11 @@ EmuTOS does for the same situation:
   `char_dummy` (`bios/chardev.c:31`); without `CONF_WITH_PRINTER_PORT`
   `bcostat0` returns 0 (`parport.c:139-140`) and `bconout0` returns 0
   (`parport.c:144-172`, whole body gated).
-- MIDI: `charout_dummy`-style results. **Not** what EmuTOS' own MIDI routines do
-  without an ACIA — see "Inconsistencies" in `docs/api/xbios/0c-midiws.md`
-  (`bconout3`/`bconin3` spin forever); NewTOS deliberately takes the dummy-driver
-  result.
-- Device 4 (IKBD) and 5 (raw-CON) keep their existing entries
-  (`docs/api/bios/{01,02,03,08}-*.md`).
+- MIDI: **superseded by BIOS04** (was `charout_dummy`-style results, which are
+  not what EmuTOS' own MIDI routines do with or without an ACIA — see
+  "Inconsistencies" in `docs/api/xbios/0c-midiws.md`).
+- Device 4 (IKBD): **superseded by BIOS04**. Device 5 (raw-CON) keeps its
+  existing entry (`docs/api/bios/{01,02,03,08}-*.md`).
 Caveat (*cited*): EmuTOS built **without** any RS-232 backend does *not* behave
 like the AUX dummy (`bcostat1` returns -1 and `bconin1` blocks, `serport.c:271-286`,
 `bconin_iorec` loops `serport.c:202-205`); the AUX profile matches only the
@@ -504,7 +526,7 @@ received byte waits, `Bconin(1)` waits for a byte as EmuTOS' `bconin1`, so
 `Fread` on AUX reads received bytes and waits for the rest (R17 holds on real Pi 4
 only). `Bconout(1)`/`Bcostat(1)` are the values in this table on both boards.
 
-No-handshake argument (*cited*): `bconout1` waits only on `bcostat1` (`serport.c:296`), which tests ring space, not CTS; `iorec_init` sets `FLOW_CTRL_NONE` (`serport.c:89`, `serport.h:46`); `flowctrl` is never read by any tx/rx path (only assigned `serport.c:238,793`; `serport.h:61` comment "TODO, flow control"). So EmuTOS software does not block on CTS with no cable. (*Inferred*, not read: whether the MFP hardware gates its transmitter on CTS is hardware behaviour outside the software; the contract here is the returned value.) Not modelled: ring back-pressure, `rsconf`/baud/UCR state; a later UART driver (`TASK/IO01.md`) replaces the whole entry. PRN (0) and MIDI (3) stay absent, unchanged.
+No-handshake argument (*cited*): `bconout1` waits only on `bcostat1` (`serport.c:296`), which tests ring space, not CTS; `iorec_init` sets `FLOW_CTRL_NONE` (`serport.c:89`, `serport.h:46`); `flowctrl` is never read by any tx/rx path (only assigned `serport.c:238,793`; `serport.h:61` comment "TODO, flow control"). So EmuTOS software does not block on CTS with no cable. (*Inferred*, not read: whether the MFP hardware gates its transmitter on CTS is hardware behaviour outside the software; the contract here is the returned value.) Not modelled: ring back-pressure, `rsconf`/baud/UCR state; a later UART driver (`TASK/IO01.md`) replaces the whole entry. PRN (0) stays absent, unchanged; MIDI (3) is not absent since BIOS04 (item 1).
 
 **Resulting values (derived from the table above + `osif`/`console.c`):**
 - `Fread(-2|2, n, b)` / `Fread(-3|3, n, b)`:

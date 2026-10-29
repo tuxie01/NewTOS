@@ -110,8 +110,11 @@ No validation; a bogus `cnt` sends more/fewer bytes.
   port in order.
 - **Single byte:** `Midiws(0, &b)` sends one byte.
 - **Unsigned count:** `Midiws(0xFFFF, buf)` attempts 65536 bytes.
-- **No-MIDI profile:** with no MIDI ACIA the call returns without transmitting
-  (no error).
+- **NewTOS profile (BIOS04, corrected 2026-10-29):** NewTOS has no MIDI
+  transmitter; the MIDI entry accepts and discards each byte, so the call
+  returns without transmitting (no error). This is **not** an EmuTOS
+  configuration: EmuTOS with the MIDI ACIA (the oracle build) transmits, and
+  without it `Midiws` never returns (Edge case 2).
 
 ---
 
@@ -121,8 +124,12 @@ No validation; a bogus `cnt` sends more/fewer bytes.
    wraps to 65536 for `0xFFFF` (`bios/midi.c:106-109`) — the same off-by-one
    contract as `Ikbdws`.
 2. **Routes through `bconout3`, not the ACIA directly.** So it shares the MIDI
-   output path; on a build without `CONF_WITH_MIDI_ACIA` the bytes are
-   dropped.
+   output path: each byte waits `while (!bcostat3())` and is written to the
+   ACIA (`bios/midi.c:84-95`). On a build without `CONF_WITH_MIDI_ACIA` the
+   bytes are **not** dropped — `bcostat3` returns 0 there (`:78-79`), so the
+   first `bconout3` spins for good and `Midiws` never returns (the
+   `#else return 0L` at `:92-94` is unreachable). (Corrected 2026-10-29,
+   BIOS04; the earlier text said "dropped".)
 
 ---
 
@@ -159,7 +166,10 @@ No validation; a bogus `cnt` sends more/fewer bytes.
 
 ## Configuration / version notes
 
-- `CONF_WITH_MIDI_ACIA` — off in the NewTOS profile (no MIDI hardware).
+- `CONF_WITH_MIDI_ACIA` — 1 in the oracle build (`include/config.h:994-996`).
+  NewTOS has no MIDI hardware but answers as the ACIA-present build does
+  (BIOS04, user decision 2026-10-29: `Bconout(3)` → 1, `Bcostat(4)` → -1), with
+  every byte discarded.
 
 ---
 
@@ -170,17 +180,21 @@ No validation; a bogus `cnt` sends more/fewer bytes.
 FS11 / IO01 prep (2026-10-13, user decision 1): `Midiws(cnt, ptr)` sends `cnt+1`
 bytes (`cnt` unsigned 16 bit) by calling `Bconout(3, byte)` of the **MIDI
 device-table entry** once per byte, results ignored, `void` -- exactly the shape
-of `midiws()` (`bios/midi.c:104-110`, `bconout3(3, *ptr++)`). The entry is the
-documented absent device (`Bconout` -> 0, deliberate profile, not a stub; table in
-`docs/api/gemdos/file/3f-fread.md` "NewTOS implementation notes"), so the call
-returns normally and transmits nothing; a later MIDI driver (`TASK/IO01.md`)
-replaces only the entry. Each source byte is read from `ptr` before the device
+of `midiws()` (`bios/midi.c:104-110`, `bconout3(3, *ptr++)`). Since BIOS04
+(2026-10-29) the entry is the MIDI port of the reference machine
+(`tos-api/src/bios/chardev.rs:163@MidiPort`: `Bconout` -> 1, byte discarded,
+always ready — deliberate profile, not a stub; before, the absent device with
+`Bconout` -> 0), so the call returns normally and transmits nothing; the
+observable result of `Midiws` (`void`, returns at once) is the same before and
+after. A later MIDI driver (`TASK/IO01.md`) replaces only the entry. Each source byte is read from `ptr` before the device
 call as in EmuTOS (an unreadable byte is a user-pointer fault under the ARCH03 3a
 convention; the current `system::midiws()` takes no arguments and reads nothing --
 code to be aligned by the Developer, not changed here).
 
-**Inconsistencies found (spec text not rewritten; semantics decided by the user):**
-1. The "Behaviour on the Pi" paragraph below says the no-op is "consistent with
+**Inconsistencies found (semantics decided by the user; item 1 corrected in the
+text on 2026-10-29, BIOS04):**
+1. *(Resolved: "Behaviour on the Pi", Edge case 2 and the "NewTOS profile"
+   criterion are rewritten.)* The "Behaviour on the Pi" paragraph below said the no-op is "consistent with
    EmuTOS on a `CONF_WITH_MIDI_ACIA`-off build". **That is wrong.** Without the
    ACIA, `bconout3` is `while(!bcostat3()) ;` (`bios/midi.c:86-87`) and
    `bcostat3` returns 0 (`:78-79`), so EmuTOS `Midiws` **never returns**
@@ -210,19 +224,23 @@ DIN hardware on the Pi-4 board (`HARDWARE-PROFILE.md` §2 "Printer / MIDI …
 absent", §3.9 "MIDI ACIA absent → `Midiws`/MIDI iorec no-op"). The PL011 UART0
 is the *only* serial peripheral NewTOS drives, and it is reserved as the
 **debug/AUX** channel — it is **not** repurposed as a MIDI transport. So the
-EmuTOS `bconout3` path (BIOS handle 3, MIDI) has **no backing device**: BIOS
-handle 3 (MIDI) is one of the absent/dummy char devices
-(`tos-api/src/bios/chardev.rs` — only CON(2)/IKBD(4)/raw-CON(5) are real;
-handle 3 falls to the `char_dummy` "discard" slot).
+EmuTOS `bconout3` path (BIOS handle 3, MIDI) has **no backing transmitter**:
+since BIOS04 BIOS handle 3 is a MIDI port entry that is always ready and
+discards what it accepts (`tos-api/src/bios/chardev.rs:163@MidiPort`).
 
-**Behaviour on the Pi.** `Midiws` transmits nothing: each byte would route to
-the absent MIDI handle-3 output and be discarded. The call is a **no-op** that
-returns normally (`void`), honouring the `bytes − 1` unsigned count contract
-(it "consumes" `cnt + 1` bytes without emitting them). No error is raised —
-consistent with EmuTOS on a `CONF_WITH_MIDI_ACIA`-off build.
+**Behaviour on the Pi** (rewritten 2026-10-29, BIOS04). `Midiws` transmits
+nothing: each byte goes to the MIDI entry of the device table
+(`tos-api/src/bios/chardev.rs:163@MidiPort`), which accepts it (`Bconout(3)` →
+1) and discards it. The call returns normally (`void`), honouring the
+`bytes − 1` unsigned count contract (it "consumes" `cnt + 1` bytes without
+emitting them). No error is raised. This is **not** EmuTOS' behaviour on a
+`CONF_WITH_MIDI_ACIA`-off build — there `Midiws` never returns (Edge case 2);
+it is the ACIA-present build's result with the transmission left out, the
+same answer the oracle gives a program (`Bconout(3)` 1, `Bcostat(4)` -1).
 
-The related `Iorec(2)` MIDI **input** record is likewise a no-op / absent
-(cross-ref `docs/api/xbios/0e-iorec.md`).
+The related `Iorec(2)` MIDI **input** record exists; no driver fills its ring,
+and `Bconstat(3)`/`Bconin(3)` read it as `bconstat3`/`bconin3` do
+(`docs/api/bios/02-bconin.md` BIOS04 note, `docs/api/xbios/0e-iorec.md`).
 
 ### Current-code gaps → Step-2
 

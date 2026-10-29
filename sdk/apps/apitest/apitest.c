@@ -1850,18 +1850,24 @@ int main(void)
 	/* ---- B1: character I/O -- Bconstat / Bconin / Bconout / Bcostat ----
 	 *
 	 * Handle map per docs/api/bios/{01,02,03,08}-*.md "Pi / BCM2711
-	 * binding": CON (2) is the only input device; CON (2) and raw-CON (5)
-	 * are the output devices; PRT (0), MIDI (3), IKBD-TX (4) and 6/7 are
+	 * binding": CON (2) is the only keyboard input device; CON (2) and
+	 * raw-CON (5) are the screen output devices; PRT (0) and 6/7 are
 	 * absent and follow EmuTOS' char_dummy / charout_dummy slots. AUX (1)
 	 * is "port present, no cable" (docs/api/gemdos/file/3f-fread.md item
 	 * 1a): Bconout(1) accepts+discards -> 1, Bcostat(1) -> -1 (EmuTOS
-	 * bconout1/bcostat1 with an MFP port), Bconstat(1) -> 0.
+	 * bconout1/bcostat1 with an MFP port), Bconstat(1) -> 0. MIDI (3) and
+	 * IKBD (4) answer as the reference machine's ACIAs do (TASK/BIOS04):
+	 * Bconout -> 1 (byte discarded), Bcostat(3)/(4) -> -1; Bconstat(3) and
+	 * Bconin(3) read the Iorec(2) MIDI ring (bconstat3/bconin3,
+	 * references/emutos/bios/midi.c:22-62), IKBD input is char_dummy.
 	 * Bcostat is deliberately NOT symmetric with Bconout: bcostat_init[5]
 	 * is char_dummy (references/emutos/bios/chardev.c:38-41), so handle 5
 	 * writes (returns 1) but reports busy (returns 0).
 	 *
 	 * Bconin is only ever called on handles the source proves cannot
-	 * block (the char_dummy slots), plus handle 2 guarded by Bconstat.
+	 * block (the char_dummy slots), plus handle 2 guarded by Bconstat and
+	 * handle 3 after a byte was put into its Iorec(2) ring (bconin3 waits
+	 * while the ring is empty).
 	 * Handle 1 (AUX) is left out on purpose: EmuTOS' bconin1 blocks on the
 	 * RS-232 receiver, and probing a handle whose EmuTOS-side routine
 	 * blocks is not worth the risk of hanging the machine. */
@@ -1884,15 +1890,33 @@ int main(void)
 		ck_eq(G_BCHR, "BC06 Bconstat(9) invalid ->0",      Bconstat(9), 0);
 
 		ck_eq(G_BCHR, "BC07 Bconin(0) PRT ->0",            Bconin(0), 0);
-		ck_eq(G_BCHR, "BC08 Bconin(3) MIDI ->0",           Bconin(3), 0);
+		{
+			/* BC08: one byte into the MIDI ring, the way the MIDI
+			 * receive interrupt does it (tail advanced, byte at
+			 * ibuf[tail]); the IOREC page is EL0 read-write. Bconin(3)
+			 * returns it zero-extended; never called on an empty ring. */
+			_IOREC *mr = (_IOREC *)Iorec(2);
+			short tl = (short)(mr->ibuftl + 1);
+			long st3;
+
+			if (tl >= mr->ibufsiz)
+				tl = 0;
+			mr->ibuf[tl] = (char)0xFE;
+			mr->ibuftl = tl;
+			st3 = Bconstat(3);
+			ck_eq(G_BCHR, "BC08a Bconstat(3) byte in ring ->-1", st3, -1);
+			if (st3 != 0)
+				ck_eq(G_BCHR, "BC08 Bconin(3) MIDI ring ->0xFE", Bconin(3), 0xFE);
+			ck_eq(G_BCHR, "BC08b Bconstat(3) ring read ->0",    Bconstat(3), 0);
+		}
 		ck_eq(G_BCHR, "BC09 Bconin(4) dummy ->0",          Bconin(4), 0);
 		ck_eq(G_BCHR, "BC10 Bconin(9) invalid ->0",        Bconin(9), 0);
 
 		/* The console-output handles really put their character on the
 		 * screen. All eight calls run back to back, so the marker line
 		 * ends up showing exactly the bytes that reach the screen: "CR" from
-		 * handles 2 and 5, nothing from the five absent devices and nothing
-		 * from AUX (accepts and discards). */
+		 * handles 2 and 5, nothing from the three absent devices and nothing
+		 * from AUX, MIDI and IKBD (accept and discard). */
 		b_reset();
 		b_str("B1    Bconout(0..7) write here -> ");
 		b_emit();
@@ -1910,8 +1934,8 @@ int main(void)
 			ck_eq(G_BCHR, "BC12 Bconout(5,'R') raw ->1",   o5, 1);
 			ck_eq(G_BCHR, "BC13 Bconout(0,'*') PRT ->0",   o0, 0);
 			ck_eq(G_BCHR, "BC14 Bconout(1,'*') AUX ->1",   o1, 1);
-			ck_eq(G_BCHR, "BC15 Bconout(3,'*') MIDI ->0",  o3, 0);
-			ck_eq(G_BCHR, "BC16 Bconout(4,'*') IKBD ->0",  o4, 0);
+			ck_eq(G_BCHR, "BC15 Bconout(3,'*') MIDI ->1",  o3, 1);
+			ck_eq(G_BCHR, "BC16 Bconout(4,'*') IKBD ->1",  o4, 1);
 			ck_eq(G_BCHR, "BC17 Bconout(6,'*') dummy ->0", o6, 0);
 			ck_eq(G_BCHR, "BC18 Bconout(7,'*') dummy ->0", o7, 0);
 		}
@@ -1920,8 +1944,8 @@ int main(void)
 		ck_eq(G_BCHR, "BC20 Bcostat(5) dummy ->0",     Bcostat(5), 0);
 		ck_eq(G_BCHR, "BC21 Bcostat(0) PRT ->0",       Bcostat(0), 0);
 		ck_eq(G_BCHR, "BC22 Bcostat(1) AUX ->-1",      Bcostat(1), -1);
-		ck_eq(G_BCHR, "BC23 Bcostat(3) IKBD-TX ->0",   Bcostat(3), 0);
-		ck_eq(G_BCHR, "BC24 Bcostat(4) MIDI-TX ->0",   Bcostat(4), 0);
+		ck_eq(G_BCHR, "BC23 Bcostat(3) IKBD-TX ->-1",  Bcostat(3), -1);
+		ck_eq(G_BCHR, "BC24 Bcostat(4) MIDI-TX ->-1",  Bcostat(4), -1);
 		ck_eq(G_BCHR, "BC25 Bcostat(9) invalid ->0",   Bcostat(9), 0);
 
 		/* Bconin(2): the packed-LONG contract (docs/api/bios/02-bconin.md

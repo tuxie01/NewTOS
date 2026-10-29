@@ -256,6 +256,17 @@ Implementation `kernel/src/console.rs:216@AuxSerial`, installed at boot by
 `measurements/measurement-2026-10-29-xbios15/RUNINFO.TXT`). Real Pi 4 keeps the
 "no cable" entry above (serial input is dropped there).
 
+**[BIOS04] 2026-10-29 — MIDI (3) and IKBD (4), user decision "like the
+oracle":** `Bconstat(3)` is EmuTOS' `bconstat3` over the MIDI ring of
+`Iorec(2)` (`references/emutos/bios/midi.c:22-33`): `-1` while a byte waits,
+else `0`. No kernel producer fills that ring (no MIDI driver), so the answer
+is `0` unless a program put a byte there through the `Iorec(2)` record — then
+`-1`, as on the oracle (probe `tosdump/probes/mdprobe.c` R02, equal on both
+sides, `measurements/measurement-2026-10-29-bios04/RUNINFO.TXT`).
+`Bconstat(4)` stays `char_dummy` → `0` (`bconstat_init[4]`,
+`references/emutos/bios/chardev.c:30-32`). Implementation
+`tos-api/src/bios/chardev.rs:163@MidiPort`, `tos-api/src/bios/chardev.rs:236@IkbdPort`.
+
 **Devices 0 (PRN), 1 (AUX), 3 (MIDI):** `Bconstat` → `0` (no byte; for AUX unchanged by option A: EmuTOS `bconstat1` is also 0 on empty iorec, `serport.c:255-258`). Consistency
 with EmuTOS (read this session): dev 0 = `char_dummy` (`bios/chardev.c:31`);
 dev 1 = dummy Bconmap entry `char_dummy` (`bios/serport.c:96`) — EmuTOS' own
@@ -280,8 +291,8 @@ decided, documented profile until `TASK/IO01.md`.
 | 0 | PRT / Centronics | **absent** → always `0` | no printer (§3.9) |
 | 1 | AUX / RS-232 | no-cable port entry (option A); PL011 UART0 later (`TASK/IO01.md`) | always `0` (no input) |
 | 2 | CON | framebuffer VT52 + **USB-HID keyboard** | console RX ring |
-| 3 | MIDI in | **absent** → always `0` | no MIDI ACIA (§3.9) |
-| 4 | IKBD in (historical) | **absent** → always `0` | `char_dummy` |
+| 3 | MIDI in | MIDI port entry (BIOS04); no MIDI driver yet | the `Iorec(2)` MIDI ring (`bconstat3`) |
+| 4 | IKBD in (historical) | IKBD port entry (BIOS04), input slot `char_dummy` → always `0` | `char_dummy` |
 | 5..7 | unused / Bconmap | absent → `0` | — |
 
 - **What "ready" tests on the Pi.** For **CON (handle 2 — the only
@@ -289,8 +300,9 @@ decided, documented profile until `TASK/IO01.md`.
   non-empty (`tos-api/src/bios/chardev.rs` `is_console_in` →
   `Host::console_has_input` → `console::rx_has_input`,
   `kernel/src/console.rs`). This is the queue/flag test the contract calls
-  for — never a physical key scan. Absent devices (0/1-as-dummy/3/**4**/5..7)
-  return `0`, the `char_dummy` equivalent.
+  for — never a physical key scan. Absent devices (0/1-as-dummy/5..7) and
+  the IKBD input slot (**4**) return `0`, the `char_dummy` equivalent; MIDI
+  (3) tests the `Iorec(2)` ring (BIOS04).
 
   **Correction (2026-09-05):** an earlier revision of this section claimed
   handle 4 (IKBD-in) was "aliased to the console keyboard ring". It is not,

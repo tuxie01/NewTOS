@@ -20,6 +20,9 @@
 #   make axprobe-m68k     AXPROBE.PRG, a kbdvec hook during Bconin(1)
 #                         (probes/axprobe.c)
 #   make axprobe-newtos   AXPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make mdprobe-m68k     MDPROBE.PRG, BIOS devices 3 (MIDI) and 4 (IKBD)
+#                         (probes/mdprobe.c)
+#   make mdprobe-newtos   MDPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make host-test        the host-side suite (same as make -C host test)
 #
 # Same core sources for both; only abi/ differs (spec section 2).
@@ -61,12 +64,12 @@ BUILD := build
         dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
         scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
         pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
-        axprobe-m68k axprobe-newtos host-test clean
+        axprobe-m68k axprobe-newtos mdprobe-m68k mdprobe-newtos host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
      scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
      pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
-     axprobe-m68k axprobe-newtos host-test
+     axprobe-m68k axprobe-newtos mdprobe-m68k mdprobe-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -176,6 +179,17 @@ $(BUILD)/AXPROBE.PRG: probes/axprobe.c | $(BUILD)
 axprobe-newtos: $(BUILD)/AXPROBE.NAP
 $(BUILD)/AXPROBE.NAP: probes/axprobe.c build-axprobe-newtos.sh | $(BUILD)
 	./build-axprobe-newtos.sh $@
+
+# The MIDI/IKBD device probe (TASK/BIOS04): no disk; ends waiting in
+# Bconin(3). Run by probes/run-mdprobe.sh.
+mdprobe-m68k: $(BUILD)/MDPROBE.PRG
+$(BUILD)/MDPROBE.PRG: probes/mdprobe.c | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror probes/mdprobe.c -o $@
+	@$(CROSS_MINT)size $@
+
+mdprobe-newtos: $(BUILD)/MDPROBE.NAP
+$(BUILD)/MDPROBE.NAP: probes/mdprobe.c build-mdprobe-newtos.sh | $(BUILD)
+	./build-mdprobe-newtos.sh $@
 
 host-test:
 	@$(MAKE) --no-print-directory -C host test

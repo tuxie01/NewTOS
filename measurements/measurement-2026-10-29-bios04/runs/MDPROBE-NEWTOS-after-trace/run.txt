@@ -1,0 +1,8 @@
+mdprobe run, side newtos (2026-10-29T20:46:24Z)
+tree      679c505e6ef17748264c342b5edfacf51252189d 9 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    MDPROBE.PRG 5adce1c117bf22de8c9046a85de80235b2c8798bb157e7436c80d21ee080173c MDPROBE.NAP d5f7c8d79333e2b07078e3882ce9103b51036de5e2d8275c74dcddd8416248c7
+kernel    7ea0b65a407a338adb13b31b5ae009d775b2215cc556b5c73932621422e14f11 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios04/kernel8-after-trace.img
+card      7df79c5c475b580f144f7d823e0169dc168388e90a57591bb52612e4f9704283 (tools/mkcard.sh, C:\MDPROBE.NAP, #Z autorun)
+qemu      wait-seen; stopped
+card      after 7aeb9b4e705c50e3a7aba4e606924f6d2b9c64bc062b4c3e5cd7b0ed0838e751 (the booted clone)
+W01       Bconin(3) on the empty ring still waiting 10 s (wall) after 'W01 before'

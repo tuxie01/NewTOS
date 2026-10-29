@@ -1,0 +1,113 @@
+BIOS04 -- MIDI (3) and IKBD (4) answer like the oracle (Bconstat/Bconin/Bconout/Bcostat) -- 2026-10-29
+====================================================================================================
+Developer run for TASK/BIOS04.md (audit finding BIOS-CORE-001, docs/audits/2026-10-28-bios-core.md
+section 2), user decision 2026-10-29 "wenn es in EmuTOS auch so ist, dann ja". QEMU raspi4b (headless,
+-append serial=on) and the pinned oracle on Hatari. No hardware, no real card, nothing flashed. Not
+committed (the lead commits).
+
+WHY
+  Before: BIOS devices 3 (MIDI) and 4 (IKBD) were the absent device -- Bconout 0, Bcostat 0 -- while
+  the oracle answers Bconout 1 and Bcostat -1 (both ACIAs present, references/emutos/bios/midi.c:66-95,
+  references/emutos/bios/ikbd.c:916-937, slots references/emutos/bios/chardev.c:30-45). A program
+  waiting `while (!Bcostat(4));` hung for good. Decision table (ticket): Bconstat 0 on both (MIDI: the
+  Iorec(2) ring, see below); Bconin(3) waits like bconin3 with the AUX wait style (XBIOS15/XBIOS18,
+  give_way); Bconin(4) 0; Bcostat -1 on both; Bconout 1 on both, output dropped.
+  Acceptance (ticket): bios-r1 63-71 and the audit probe's B02/B03/B11/B12 EQUAL to the oracle; no
+  previously equal case of bios-r1, bios-core-r1, xbios-chardev-r1, xbios-system-r1 newly differs;
+  cargo xtask test green; sdk/run-host-tests.sh green.
+
+STATE
+  Tree      main 679c505e plus the uncommitted BIOS04 change:
+              tos-api/src/bios/chardev.rs   MidiPort, IkbdPort, midi_read; DEVICES 3/4; doc comments
+              tos-api/src/xbios/iorec.rs    pop_midi, midi_pending (MIDI_IDX)
+              tos-api/src/xbios/system.rs, tos-api/src/xbios/mod.rs   comments only (Midiws/Ikbdws)
+              tos-api/tests/bios04_midi_ikbd.rs (new), tests/fs11_device_rw.rs, tests/xbios_kbdvecs.rs
+              tosdump/probes/mdprobe.c, tosdump/probes/run-mdprobe.sh, tosdump/build-mdprobe-newtos.sh
+              (new), tosdump/Makefile (mdprobe-m68k, mdprobe-newtos)
+              sdk/apps/apitest/apitest.c (BC08, BC15, BC16, BC23, BC24)
+  EmuTOS    1a7484aba1bfba23e2c0899e243b6d8177fe41df, ROM tools/oracle/etos512de-1a7484ab.img sha256
+            323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c (checked by the runner),
+            Hatari 2.6.1 (tools/oracle/oracle.env), cfg tools/oracle/hatari.cfg sha256
+            c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46
+  QEMU      11.0.2, -M raspi4b, -append serial=on
+  Kernels   (kernel8.img sha256)
+    before       cfce74433b94b3b011a0e907783c60618fdc0d556c45dcd3b8e6cf4474c77d64
+                 `git archive 679c505e` extracted into scratch, built by the tosdump runner (--tree)
+    after        640d40aa167b7eac6f3ea850e2aadebf49f89aab8547c34e3a16e42ae94f1abb
+                 cargo xtask build --board rpi4 --release of this tree (= the "after" tosdump runs;
+                 rebuilt at the end of the run: same sha256, so no product code changed after them)
+    after-trace  7ea0b65a407a338adb13b31b5ae009d775b2215cc556b5c73932621422e14f11
+                 the same tree, --features bios-arg-trace (the probe's input check)
+  Probes    probe/MDPROBE.PRG 5adce1c117bf22de8c9046a85de80235b2c8798bb157e7436c80d21ee080173c
+            probe/MDPROBE.NAP d5f7c8d79333e2b07078e3882ce9103b51036de5e2d8275c74dcddd8416248c7
+            (make -C tosdump mdprobe-m68k mdprobe-newtos; every probe run used these two)
+
+METHOD (method/)
+  newtos-tables.sh   before|after: the four tables through cargo xtask tosdump (TOOL09), each against its
+                     tt and falcontc reference; copied from measurement-2026-10-29-xbios02/method (header)
+  compare.sh         differing cases before / after, newly differing, now equal -> runs/before-after.txt;
+                     copied from the same run (commit names, the "now equal" line)
+  Probe              tosdump/probes/run-mdprobe.sh (committed with the change, not copied here):
+                       emutos tt|falcontc  Hatari as tools/hatari-oracle.sh starts it, fast-forward on
+                       newtos <kernel8.img> tools/mkcard.sh card (C:\MDPROBE.NAP, #Z autorun), APFS clone
+                     HOLD = 10 s wall clock after the probe's "W01 before" (NewTOS: the console line
+                     MDPROBE:WAIT on serial), then the machine is stopped and the log copied.
+  Why a probe: DUMPBIOS refuses Bconout to devices 3/4 and every Bconin that may wait
+  (tosdump/core/cases.c CR_BCONOUT, CR_BCONIN); the Bconin(3) wait cannot be a tosdump case without
+  hanging the dumper. The probe is permanent (tosdump/probes/mdprobe.c, CLAUDE.md "Testing", probe rule);
+  the follow-up that moves the Bconout rows into a table is BIOS13 point 7 (round-1 guard).
+
+RESULTS
+  Tables (runs/before-after.txt; every tosdump run "run complete", tosdiff --validate exit 0)
+    table             ref       before (679c505e)                         after (BIOS04)
+    bios-r1           tt        41 of 147 differ (53 54 66 67 69 70 ...)   39: 66 67 now EQUAL
+    bios-r1           falcontc  45 of 147 differ (53 54 66 67 69 70 ...)   43: 66 67 now EQUAL
+    bios-core-r1      tt / fc   15 / 14                                    identical
+    xbios-chardev-r1  tt, fc    12 (31, 43-53)                             identical
+    xbios-system-r1   tt, fc    9 (68-76)                                  identical
+    Newly differing cases in all eight comparisons: none.
+    bios-r1 63-71 (Bcostat 0..7, -1): 63-68 and 71 EQUAL after; 69/70 (Bcostat(6)/(7), Bconmap ports)
+    stay DIFF -- finding BIOS-CORE-007, not this ticket (Bconmap, BIOS08).
+  Probe mdprobe (runs/MDPROBE-*/MDPROBE.LOG)
+    EmuTOS tt = EmuTOS falcontc = NewTOS after = NewTOS after-trace, byte for byte (diff empty):
+      D01-D03 Bconstat(3) 0, Bconstat(4) 0, Bconin(4) 0
+      D04/D05 Bcostat(3)/(4) before output -1 (hi ffffffff)
+      D06 Bconout(3,0xFE) 1, D07 Bconout(4,0x11) 1          = the audit probe's B02/B03
+      D08/D09 Bcostat(3)/(4) after the output -1             = the audit probe's B11/B12
+      D10 Bconstat(3) 0
+      R01 Iorec(2) ibufsiz=128 head_eq_tail=1; three bytes put into the ring through the record
+      R02 Bconstat(3) -1; R03-R05 Bconin(3) 0xFE, 0x90, 0x3C (zero-extended); R06 Bconstat(3) 0; R07 1
+      W01 Bconin(3) on the empty ring: still waiting 10 s (wall) after "W01 before" on both sides
+    NewTOS before (runs/MDPROBE-NEWTOS-before): D04/D05/D08/D09 0, D06/D07 0 (as the audit measured),
+      R02-R05 0 and R07 head_eq_tail=0 (the ring was never read), W01 returned 0 at once.
+  Input check (runs/MDPROBE-NEWTOS-after-trace/BOOT-SERIAL.txt, [biostrace] lines U0 000000-000018):
+    every completed probe call arrived with the arguments the source gives (Bconstat w:0x0003/0x0004,
+    Bconin w:0x0004/0x0003, Bcostat w:0x0003/0x0004, Bconout w:0x0003 w:0x00fe and w:0x0004 w:0x0011,
+    Iorec w:0x0002, Supexec p:...), returns as in the log. The waiting Bconin(3) has no line: the tracer
+    records completed calls only.
+  APITEST smoke (runs/APITEST-smoke-NEWTOS-after; not an acceptance run): APITEST.NCP built from this
+    tree (sha256 in inputs.sha256) in C:\AUTO\ of a minimal mkcard card, kernel "after": BIOS-CHR 27 pass,
+    0 fail, 5 skip (BC26-BC29: no key, as always); BC08a/BC08/BC08b (ring byte -> Bconstat(3) -1,
+    Bconin(3) 0xFE, Bconstat(3) 0), BC15/BC16 (1), BC23/BC24 (-1) OK. TOTAL 107/0/9 on that card: the
+    file checks that need the full image (QED files, PTERMCH.NCP) fail or skip there, unrelated.
+  Host tests: cargo xtask test 1847 passed / 0 failed / 1 ignored (baseline 1843/0/1, +4:
+    tests/bios04_midi_ikbd.rs 3, tests/xbios_kbdvecs.rs midi_wait_gives_way_without_side_effects 1);
+    sdk/run-host-tests.sh 34/0/0.
+
+CARDS / IMAGES
+  Every NewTOS card: tools/mkcard.sh defaults (64 MiB, MBR + FAT16). Manifests: runs/*/card.img.manifest
+  (tosdump runner, run-mdprobe.sh, the APITEST smoke). optional_missing line of every manifest, verbatim
+  (all twelve identical):
+    optional_missing none
+  Image sha256 before/after: tosdump runs in each tosdump-run.txt; probe runs in run.txt ("card", "card
+  after"); APITEST smoke in card.img.sha256. All images, clones and scratch kernels were deleted after
+  the runs.
+
+NOT VERIFIED
+  Real Raspberry Pi 4. qemu-virt: no run (the change is in tos-api, board-independent; both boards build).
+  The give-way of the MIDI wait to a kbdvec hook end to end (host test only: QEMU raspi4b has no USB
+  keyboard; the mechanism is the one XBIOS18 measured for AUX with tosdump/probes/axprobe.c).
+  Oracle-side argument trace for the probe (Hatari --trace bios not run).
+
+FILES
+  manifest.sha256 covers every file of this run except itself.

@@ -70,7 +70,7 @@ eines Programms auf die Systemvariablen ist also ein EL0-Zugriff auf Seite 0.
 | TeraDesk | `sdk/apps/teradesk/library/utility/gettos.c:40-42@os_version` | `_sysbase` → `os_version` |
 | WinDom (zView) | `sdk/windom/overlay/src/vq_tos.c:83@syshead`, `sdk/windom/overlay/src/cookieptr.c:48@__cookieptr` | `_sysbase`, `_p_cookies` `0x5A0` |
 | zView | `sdk/zview/z-tools-04805b7/zview/chrono.c:25,45@Super` | `_hz_200` |
-| cflib (QED) | `sdk/cflib/cflib-21/cookie.c:60-63@get_cookie_adr` | `_p_cookies` |
+| cflib (QED) | `sdk/cflib/cflib-21/cookie.c:90-92@get_cookie_adr` | `_p_cookies` |
 | `Keytbl`-Bereich (`0x768`) | TeraDesk `sdk/apps/teradesk/library/xdialog/xdevent.c:76@Keytbl`, cflib `sdk/cflib/cflib-21/nkccinit.c:99-102@Keytbl`, `sdk/cflib/cflib-21/menucre.c:38@Keytbl`, `sdk/cflib/cflib-21/fdfindsc.c:48@Keytbl`, WinDom `sdk/windom/windom-1.21.3/src/keybd2ascii.c:48@Keytbl`, HypView `sdk/overlays/hypview/dl_init.c:245@Keytbl`, DOOM `:1930`, NEWDESK `programs/desktop/src/main.rs:1350@Keytbl` | lesen die Tabellen, die `Keytbl` zurueckgibt |
 | Testprogramme | `sdk/examples/cmdline.c:40@run_cell`, `fppexec.c`, `ptermch.c`, `uakid.c`, `mpkid.c`, `e10usr.c`, `e10kid.c`, `crchild.c`; `sdk/apps/apitest/apitest.c:896-937@sysbase` | `_sysbase` → `os_run`; APITEST T03–T06, SX04 |
 
@@ -127,7 +127,7 @@ nimmt `Ssystem(S_SETCOOKIE)`), mintlib `set_sysvar_to_*` (gebaut, kein Aufrufer)
 
 | Wert | Leser im Kern | Wirkung |
 |---|---|---|
-| `conterm` `0x484` | `tos-api/src/bios/chardev.rs:317@current_conterm` → Tastenwiederholung `kernel/src/ikbd.rs:343@current_conterm`, `Bconin`-Shiftfaltung `chardev.rs:352@current_conterm`, Glocke `tos-api/src/vdi/escape.rs:693@current_conterm` | Bits 1/2/3 wirken |
+| `conterm` `0x484` | `tos-api/src/bios/chardev.rs:436@current_conterm` → Tastenwiederholung `kernel/src/ikbd.rs:343@current_conterm`, `Bconin`-Shiftfaltung `chardev.rs:471@current_conterm`, Glocke `tos-api/src/vdi/escape.rs:693@current_conterm` | Bits 1/2/3 wirken |
 | `kbdvec`, `ikbdsys` | `tos-api/src/xbios/kbdvecs.rs:209@read_slot`, `:212@kbdvec_of`, `:221@current_ikbdsys` | Haken-Upcall, Wiederholstopp |
 | `memvalid`/`memval2`/`memval3` | `tos-api/src/bios/reset.rs:160@entry_kind` | warm/kalt (auf der Pi warm = kalt) |
 | Rueckgabewort `0x760` | `kernel/src/arch/aarch64/exceptions.rs`, `read_userdef_ret_slot` (Stand `a90bcfb0`; seit MEM12 entfernt) | `G_USERDEF`-Ergebnis |
@@ -228,7 +228,7 @@ war 8 Byte breit (nahm `_shell_p` `$4F6` als obere Haelfte mit); Patchdatei
 ### Interaktive Abnahme: qemu-virt geht nicht, raspi4b mit Injektor (Plan)
 
 qemu-virt hat kein `C:`: `cargo xtask run --sd` haengt das Abbild nur fuer
-raspi4b an (`tools/xtask/src/main.rs:988@sd`), der Kern hat fuer virt keinen
+raspi4b an (`tools/xtask/src/main.rs:996@sd`), der Kern hat fuer virt keinen
 Blocktreiber (`kernel/src/drivers/qemu_virt/` = PL011 + ramfb), und HypView,
 TeraDesk, DOOM sind keine eingebetteten Programme. `.claude/agents/tester.md`
 ("qemu-virt has input but no `C:`") stimmt also noch. Weg: raspi4b mit dem

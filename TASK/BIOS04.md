@@ -1,6 +1,6 @@
 # BIOS04 — MIDI und IKBD melden „nie bereit“ und verweigern Ausgabe (`Bcostat`/`Bconout` 3, 4)
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (FS11-Entscheidung neu treffen), danach Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS04-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Researcher (FS11-Entscheidung neu treffen), danach Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
 
 ## Sachverhalt
 
@@ -8,10 +8,10 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (FS11-Entscheidung ne
 
 - `bios-r1` 66 `Bcostat(3)`, 67 `Bcostat(4)` — DIFF, EmuTOS `-1`, NewTOS `0`, beide Profile (`measurements/measurement-2026-10-28-bios-core-audit/runs/NEWTOS-bios-r1/tosdiff-newtos-vs-emutos.txt`).
 - Sonde: B02 `Bconout(3,0xFE)` EmuTOS `1`, NewTOS `0`; B03 `Bconout(4,0x11)` `1` / `0`; B11/B12 `Bcostat(3)`/`(4)` nach der Ausgabe `-1` / `0` (`measurements/measurement-2026-10-28-bios-core-audit/runs/PROBE-EMUTOS-tt`, `measurements/measurement-2026-10-28-bios-core-audit/runs/PROBE-NEWTOS-raspi4b`).
-- Lokalisiert: Geraetetabelle `tos-api/src/bios/chardev.rs:229@DEVICES` (Eintraege 3 MIDI und 4 IKBD = `Absent`, `tos-api/src/bios/chardev.rs:85@Absent`).
+- Lokalisiert: Geraetetabelle `tos-api/src/bios/chardev.rs:348@DEVICES` (Eintraege 3 MIDI und 4 IKBD = `Absent`, `tos-api/src/bios/chardev.rs:91@Absent`).
 - EmuTOS-Stellen: `references/emutos/bios/chardev.c:38-42` (Slots 3/4 vertauscht), `references/emutos/bios/ikbd.c:916` `bcostat4`, `:933` `bconout4` (gibt `1`); `references/emutos/bios/midi.c:66` `bcostat3`, `:84` `bconout3` (gibt `1`). Auch EmuTOS ohne IKBD-ACIA antwortet `bcostat4` mit `-1` „OK (but output will be ignored)“ (`ikbd.c:916`ff., `#else`-Zweig).
 - Entscheidung/Spec: FS11-Profil „absent device“ (Anwender 2026-10-13) steht in `docs/api/gemdos/file/3f-fread.md` (NewTOS-Notizen, Punkt 1), nicht in `docs/COMPATIBILITY.md`; NewTOS verhaelt sich wie dort beschrieben, die Abweichung ist beobachtbar und ohne COMPATIBILITY-Eintrag nicht ACCEPTED.
-- Fehlerbild: ein MIDI-Programm mit `while (!Bcostat(4)) ;` haengt auf NewTOS **fuer immer** (neue Information fuer den Anwender; bei AUX hat FS11 den Fall erkannt, `tos-api/src/bios/chardev.rs:115@AuxNoCable`). Auch `Midiws` (XBIOS) geht ueber denselben Eintrag.
+- Fehlerbild: ein MIDI-Programm mit `while (!Bcostat(4)) ;` haengt auf NewTOS **fuer immer** (neue Information fuer den Anwender; bei AUX hat FS11 den Fall erkannt, `tos-api/src/bios/chardev.rs:121@AuxNoCable`). Auch `Midiws` (XBIOS) geht ueber denselben Eintrag.
 
 ## Arbeit
 
@@ -37,7 +37,7 @@ ausserhalb des Umfangs) werden im selben Schritt berichtigt.
 
 ## Lokalisierung (Lead, 2026-10-29)
 
-- Geraetetabelle `tos-api/src/bios/chardev.rs:229@DEVICES`, Eintraege 3/4 heute
+- Geraetetabelle `tos-api/src/bios/chardev.rs:348@DEVICES`, Eintraege 3/4 heute
   `Absent`; `mapping.tsv`: `bcostat3`, `bcostat4`, `bconout4`, `bconin3`,
   `bconstat3` = `design:hardware:*` mit Notiz „absent device“ — nach dem Fix
   `mapped` auf den neuen Eintrag (Ratsche); `bconout3` `mapped` auf
@@ -106,12 +106,12 @@ gefolgert.
 
 ### 2. NewTOS heute (Quelle)
 
-- `DEVICES[3]` und `[4]` = `Absent` (`tos-api/src/bios/chardev.rs:232@DEVICES`,
-  `tos-api/src/bios/chardev.rs:87@Absent`): alles `0`. AUX ist seit FS11-AUX
-  `AuxNoCable` (`tos-api/src/bios/chardev.rs:118@AuxNoCable`): `Bconout` 1,
+- `DEVICES[3]` und `[4]` = `Absent` (`tos-api/src/bios/chardev.rs:351@DEVICES`,
+  `tos-api/src/bios/chardev.rs:93@Absent`): alles `0`. AUX ist seit FS11-AUX
+  `AuxNoCable` (`tos-api/src/bios/chardev.rs:124@AuxNoCable`): `Bconout` 1,
   `Bcostat` -1, Eingabe `0` ohne Blockieren.
 - Die Vertauschung beim Status steckt in
-  `tos-api/src/bios/chardev.rs:284@bcostat_handle`; sie bleibt unter jeder
+  `tos-api/src/bios/chardev.rs:403@bcostat_handle`; sie bleibt unter jeder
   Option unbeobachtbar, solange beide Eintraege dasselbe melden.
 - `Midiws` ruft `bconout_handle(DEV_MIDI, …)` pro Byte, Ergebnis verworfen
   (`tos-api/src/xbios/system.rs:82@midiws`); `Ikbdws` ist ein reines No-op und

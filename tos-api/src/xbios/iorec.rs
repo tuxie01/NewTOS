@@ -26,8 +26,11 @@
 //! is full, the consumer advances `head` first and then reads. The IKBD steps
 //! by 4 — an entry is the 32-bit `shifty << 24 | scancode << 16 | ascii`, the
 //! shift state taken when the key was pushed (E2, `bios/ikbd.c:427-435,900`);
-//! 256 bytes hold 63 keys. MIDI and RS-232 step by 1. MIDI stays empty:
-//! NewTOS has no driver behind it (E5). Device 0's input ring is filled on
+//! 256 bytes hold 63 keys. MIDI and RS-232 step by 1. No kernel producer
+//! fills the MIDI ring: NewTOS has no MIDI driver behind it (E5); the BIOS
+//! MIDI entry reads it ([`midi_pending`], [`pop_midi`], `Bconstat(3)`/
+//! `Bconin(3)`, BIOS04), so a byte a program puts there is what `Bconin(3)`
+//! returns, as on EmuTOS. Device 0's input ring is filled on
 //! qemu-virt by the serial receive interrupt ([`push_serial`], EmuTOS
 //! `push_serial_iorec` / the SCC receive handler, XBIOS15) and read by the
 //! board's AUX driver ([`pop_serial`], [`serial_pending`]); on real Pi 4 it
@@ -175,10 +178,13 @@ const AUX_OUT: RingDesc =
 const RINGS: [RingDesc; 4] = [IKBD, MIDI, AUX_IN, AUX_OUT];
 /// Index of the IKBD ring in [`RINGS`].
 const IKBD_IDX: usize = 0;
+/// Index of the MIDI ring in [`RINGS`].
+const MIDI_IDX: usize = 1;
 /// Index of device 0's input ring in [`RINGS`].
 const AUX_IN_IDX: usize = 2;
 
 const _: () = assert!(RINGS[IKBD_IDX].rec == IKBD_RECORD && RINGS[AUX_IN_IDX].rec == AUX_RECORD + OFF_IN);
+const _: () = assert!(RINGS[MIDI_IDX].rec == MIDI_RECORD);
 
 // ---------------------------------------------------------------------------
 // Repairs and their warnings.
@@ -457,6 +463,26 @@ pub fn ikbd_indices() -> (u16, u16) {
     with_page(|p| {
         let (head, tail, fault) = p.check(IKBD_IDX);
         ((head, tail), fault)
+    })
+}
+
+// ---------------------------------------------------------------------------
+// The MIDI input ring (device 2, read by BIOS device 3).
+// ---------------------------------------------------------------------------
+
+/// Dequeue the oldest byte of the MIDI ring — `bconin3`'s read
+/// (`bios/midi.c:46-57`: `head` advanced first, then the byte), `None` when
+/// it is empty. No producer in the kernel fills this ring (E5); a byte in it
+/// was put there by a program, through the record `Iorec(2)` returns (E1).
+pub fn pop_midi() -> Option<u8> {
+    with_page(|p| p.pop_byte(MIDI_IDX))
+}
+
+/// `bconstat3` (`bios/midi.c:22-33`): a byte waits in the MIDI ring.
+pub fn midi_pending() -> bool {
+    with_page(|p| {
+        let (head, tail, fault) = p.check(MIDI_IDX);
+        (head != tail, fault)
     })
 }
 

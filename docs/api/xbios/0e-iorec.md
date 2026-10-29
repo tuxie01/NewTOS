@@ -152,7 +152,7 @@ nicht anders markiert. Die Wahl-Punkte stehen als E1-E6 am Ende.
 
 **Der Kernel liefert das Layout des SDK-Headers, nicht das m68k-Drahtformat.**
 Begruendung: ein nativ uebersetztes Programm greift ueber `_IOREC`
-(`sdk/libc/overlay/include/mint/ostruct.h:576-583@_IOREC`: `char *ibuf;
+(`sdk/libc/overlay/include/mint/ostruct.h:592-599@_IOREC`: `char *ibuf;
 short ibufsiz; volatile short ibufhd; volatile short ibuftl; short ibuflow;
 short ibufhi;`) zu; diese Struktur ist unter LP64 **24 Byte** gross (gemessen:
 `sizeof=24`, `measurements/measurement-2026-10-28-xbios-chardev-audit/runs/PROBE-NEWTOS-raspi4b/XCPROBE.LOG` I01b-I03b, gegen 14 auf
@@ -212,9 +212,9 @@ implementation".
 
 | devno | EmuTOS (Oracle) | NewTOS vor XBIOS01 (2026-10-28) | Ziel-Vertrag (seit XBIOS01 umgesetzt) |
 |---|---|---|---|
-| 0 | `EXT_IOREC *`, 256/256 + Baud/Flow/UCR | nichts: `0x0E`. Dahinter AUX ohne Kabel, `Bconstat(1)=0`, `Bconout(1)` verwirft, `Bcostat(1)=-1` (`tos-api/src/bios/chardev.rs:115@AuxNoCable`, `:229@DEVICES`) | Record vorhanden; `in` leer und bleibt es, `out` ist immer leer (NewTOS verwirft sofort, der Ring kann nie fuellen) — konsistent zum BIOS (E5) |
+| 0 | `EXT_IOREC *`, 256/256 + Baud/Flow/UCR | nichts: `0x0E`. Dahinter AUX ohne Kabel, `Bconstat(1)=0`, `Bconout(1)` verwirft, `Bcostat(1)=-1` (`tos-api/src/bios/chardev.rs:121@AuxNoCable`, `:229@DEVICES`) | Record vorhanden; `in` leer und bleibt es, `out` ist immer leer (NewTOS verwirft sofort, der Ring kann nie fuellen) — konsistent zum BIOS (E5) |
 | 1 | `&ikbdiorec`, 256, 4-Byte-Eintraege | nichts. Die Tastenschlange war `RX_RING` in `kernel/src/console.rs` (mit XBIOS01 entfernt): 128 Eintraege **`u16`** `scancode<<8\|ascii`, ohne Shift-Byte (Wort `kernel/src/ikbd.rs:316@key_word`) | Record mit 64 4-Byte-Eintraegen (E1/E2 entscheiden, ob er die Schlange **ist**) |
-| 2 | `&midiiorec`, 128, 1-Byte | nichts. MIDI ist "absent" (`chardev.rs:229@DEVICES`, Slot 3), `Midiws` verwirft (Audit BIOS-CORE-001) | Record vorhanden, leer, nie gefuellt (E5) |
+| 2 | `&midiiorec`, 128, 1-Byte | nichts. MIDI ist "absent" (`chardev.rs:348@DEVICES`, Slot 3), `Midiws` verwirft (Audit BIOS-CORE-001) | Record vorhanden, leer, nie gefuellt (E5) |
 | sonst | `-1` | `0x0E` | `-1` (gemessen EmuTOS I04-I07) |
 
 `Bconmap` ist in NewTOS ebenfalls Funktionsnummer (`tos-api/src/xbios/system.rs:106@bconmap`
@@ -245,7 +245,7 @@ Spiegel muesste also bei **jedem** dieser Verbraucher synchronisieren. Dazu die
 Schlange nur, wenn eine Pump laeuft; die Pump rufen die Traps (`Bconstat`,
 blockierendes Lesen, AES-Idle) und der 200-Hz-Timer. **Der Timer decodiert nur
 Zeigerbewegung; Tasten und Wiederholung bleiben bei der Trap-Pump**
-(`kernel/src/host_env.rs:513@pump_devices_irq`, `kernel/src/ikbd.rs:341@poll_repeat`).
+(`kernel/src/host_env.rs:520@pump_devices_irq`, `kernel/src/ikbd.rs:341@poll_repeat`).
 Ein Programm, das den IOREC im Benutzerzustand pollt **ohne je einen Trap zu
 machen**, sieht also nie eine Taste, egal ob Spiegel oder lebender Ring (E3).
 Das ist der Unterschied zu EmuTOS, wo der ACIA-Interrupt asynchron fuellt.
@@ -286,12 +286,12 @@ with the oracle values (E5): `ibufsiz` 256/128/256+256, `low`/`high` 64/192,
 32/96, 64/192, empty, device 0 `baudrate 1`, `flowctrl 0`, `ucr 0x88`, `datamask
 0xff`, `wr5 0xea` (`bios/serport.c:86-89`).
 
-**`Iorec`** (`tos-api/src/xbios/iorec.rs:547@iorec`, wired at
+**`Iorec`** (`tos-api/src/xbios/iorec.rs:573@iorec`, wired at
 `tos-api/src/xbios/mod.rs:107@IOREC`): signed `WORD` selector
 (`:441@record_va`), `0/1/2` -> the record's EL0 address, anything else `-1`.
 
 **E1 — the ring is the queue.** `RX_RING` is gone; every producer and consumer
-goes through the IKBD record: push `tos-api/src/xbios/iorec.rs:433@push_key`
+goes through the IKBD record: push `tos-api/src/xbios/iorec.rs:439@push_key`
 (EmuTOS `push_ikbdiorec`: `tail` first, full -> dropped, 63 entries), pop
 `:374@pop_key` (`head` first, then the entry), `:384@key_pending` (`head !=
 tail`). Kernel side: `kernel/src/console.rs:198@push_rx` (IKBD decoder),
@@ -302,7 +302,7 @@ on both boards. Every operation runs with IRQs masked (the qemu-virt PL011
 receive interrupt fills device 0's ring, "XBIOS15" below).
 
 **The kernel distrusts the page.** Before every use the record is checked
-(`tos-api/src/xbios/iorec.rs:286@check`): `ibuf`/`ibufsiz` must be the kernel's,
+(`tos-api/src/xbios/iorec.rs:292@check`): `ibuf`/`ibufsiz` must be the kernel's,
 `ibufhd`/`ibuftl` below `ibufsiz` and on the entry step (4 IKBD, 1 MIDI/RS-232).
 A replaced buffer (E4 (a)) gets the kernel buffer back, emptied; bad indices
 empty the ring. The kernel never reads or writes through `ibuf`. After every
@@ -310,7 +310,7 @@ trap all four rings are checked as well (`kernel/src/console.rs:383@check_iorec_
 called from `kernel/src/arch/aarch64/exceptions.rs:664@check_iorec_after_trap`), so a
 replaced buffer is noticed "at the next trap" even when no key moves. Each
 repair is warned about once per process tenancy
-(`tos-api/src/xbios/iorec.rs:509@take_warnings`, printed by
+(`tos-api/src/xbios/iorec.rs:535@take_warnings`, printed by
 `kernel/src/console.rs:391@report_iorec_repairs`, reset at process exit
 `tos-api/src/bdos/process.rs:1366@release_slot`):
 `[iorec] warning: Iorec(1) IKBD buffer or size replaced by the program ...`.
@@ -320,7 +320,7 @@ repair is warned about once per process tenancy
 (`kernel/src/ikbd.rs:292@entry_from_word`), the key repeat with the repeat's
 shift state (`kernel/src/ikbd.rs:353@entry_from_word`, after `poll` re-converted
 the word when the modifiers changed, `bios/ikbd.c:502-508`). `Bconin(2)` keeps
-bits 24-31 only with `conterm & 8` (`tos-api/src/bios/chardev.rs:351@pack_console_key`,
+bits 24-31 only with `conterm & 8` (`tos-api/src/bios/chardev.rs:470@pack_console_key`,
 `bios/ikbd.c:279-280`); the host reads whole entries
 (`tos-api/src/host.rs:121@console_read_entry_blocking`,
 `kernel/src/host_env.rs:203@console_read_entry_blocking`). Closes BIOS11. Until
@@ -335,7 +335,11 @@ USB keyboard (`qemu-xhci` + `usb-kbd`, configured at boot,
 program that polls `ibuftl` without ever making a trap sees no key.
 
 **E5 (a).** Devices 0 and 2 have their records. MIDI stays empty: no producer
-writes it. Device 0: see "XBIOS15" — its input ring is filled on qemu-virt and
+writes it. Since BIOS04 (2026-10-29) the BIOS MIDI entry reads this ring as
+EmuTOS' `bconstat3`/`bconin3` read `midiiorec` (`references/emutos/bios/midi.c:22-62`):
+a byte a program puts into it is what `Bconin(3)` returns, and `Bconin(3)`
+waits while it is empty (`docs/api/bios/02-bconin.md`, BIOS04 note;
+`tos-api/src/xbios/iorec.rs:477@pop_midi`). Device 0: see "XBIOS15" — its input ring is filled on qemu-virt and
 stays empty on real Pi 4; its output ring stays empty on both.
 
 **XBIOS15 — serial receive into device 0 (qemu-virt).** The PL011 receive
@@ -343,15 +347,15 @@ interrupt (`kernel/src/console.rs:147@pl011_rx_drain`, EmuTOS
 `mfp_rs232_rx_interrupt_handler`, `bios/serport.c:350-359`; Falcon
 `scc_rx_interrupt_handler`, `:647-683`) hands each byte to
 `kernel/src/console.rs:169@serial_rx_byte`, which pushes it into device 0's
-input ring: `tos-api/src/xbios/iorec.rs:473@push_serial` (`push_serial_iorec`,
+input ring: `tos-api/src/xbios/iorec.rs:499@push_serial` (`push_serial_iorec`,
 `:331-343`: `tail` first, full -> dropped, 255 bytes; the byte masked with the
 record's `datamask` as the SCC path does, `:671`, 0xff unless a program wrote
 it). AUX (BIOS 1) on qemu-virt is the driver `kernel/src/console.rs:216@AuxSerial`,
 put into the device table at boot (`install_aux`): `Bconstat(1)` = `-1` while
 the ring holds a byte (`bconstat_iorec`, `:191-199`;
-`tos-api/src/xbios/iorec.rs:485@serial_pending`), `Bconin(1)` waits for a byte
+`tos-api/src/xbios/iorec.rs:511@serial_pending`), `Bconin(1)` waits for a byte
 and returns it zero-extended (`bconin_iorec` + `get_iorecbuf`, `:171-210`;
-`tos-api/src/xbios/iorec.rs:479@pop_serial`), output unchanged from the
+`tos-api/src/xbios/iorec.rs:505@pop_serial`), output unchanged from the
 "port present, no cable" entry (`Bconout(1)` 1 and discarded, `Bcostat(1)` -1).
 The key ring is not touched. Real Pi 4 is unchanged: the byte is dropped
 (`serial_rx_byte`, not-qemu-virt branch), AUX stays "no cable". Measured equal
@@ -480,7 +484,7 @@ EmuTOS-gleich). Empfehlung der Quelle: 32-Bit; die Wahl bleibt beim Anwender.
 **E3 — Zustellung ohne Trap:** (a) hinnehmen und dokumentieren: ein Programm,
 das den Ring pollt und nie einen Trap macht, haengt (heutiger Zustand der
 Pump; reale Programme rufen meist `Bconstat`/AES/Vsync-artig); (b) die
-200-Hz-Timer-Pump (`kernel/src/host_env.rs:513@pump_devices_irq`) so erweitern,
+200-Hz-Timer-Pump (`kernel/src/host_env.rs:520@pump_devices_irq`) so erweitern,
 dass sie auch Tastenbytes und Wiederholung in den Ring schreibt — das ist ein
 Eingriff in das INPUT01-Gate (`crate::input_gate`), dessen Grund die heutige
 Zeiger-Beschraenkung ist. Folge (a): einige Direktpoller laufen nie; Folge (b):

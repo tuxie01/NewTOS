@@ -597,10 +597,10 @@ wait_for_not_BSY_not_DRQ	bios/ide.c	-	-	design:hardware:ide	IDE/ATA disk driver:
 bconin2	bios/ikbd.c	tos-api/src/bios/chardev.rs	bconin	mapped	Console impl
 bconin2	bios/ikbd.c	tos-api/src/bios/chardev.rs	pack_console_key	mapped	the conterm bit 3 mask of the ring entry (XBIOS01 E2, closes BIOS11)
 bconin2	bios/ikbd.c	tos-api/src/xbios/iorec.rs	pop_key	mapped	the dequeue: head first, then the 4-byte entry (XBIOS01)
-bconout4	bios/ikbd.c	-	-	design:hardware:ikbd-acia	IKBD output: the IKBD is the absent device on NewTOS (bios/chardev.rs Absent)
+bconout4	bios/ikbd.c	tos-api/src/bios/chardev.rs	bconout	mapped	IkbdPort::bconout: accepts and discards, returns 1 (BIOS04; no IKBD transmitter, no IKBD command interpreter)
 bconstat2	bios/ikbd.c	tos-api/src/bios/chardev.rs	bconstat	mapped	Console impl
 bconstat2	bios/ikbd.c	tos-api/src/xbios/iorec.rs	key_pending	mapped	head != tail of the IKBD IOREC (XBIOS01)
-bcostat4	bios/ikbd.c	-	-	design:hardware:ikbd-acia	IKBD output: the IKBD is the absent device on NewTOS (bios/chardev.rs Absent)
+bcostat4	bios/ikbd.c	tos-api/src/bios/chardev.rs	bcostat	mapped	IkbdPort::bcostat: -1, always ready (BIOS04); Bcostat(3) reads it through the 3/4 swap (bcostat_handle)
 bioskeys	bios/ikbd.c	tos-api/src/xbios/keytbl.rs	bioskeys	mapped	Bioskeys 0x18 (XBIOS02): the remembered Keytbl pointers dropped, the struct rewritten from the default tables
 bioskeys	bios/ikbd.c	kernel/src/keymap.rs	restore_default	mapped	current_keytbl = *get_keytbl(): the power-up layout copied back into the active one (via Host::reset_key_tables)
 convert_scancode	bios/ikbd.c	-	-	unmapped	IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
@@ -689,10 +689,12 @@ timeout_gpip	bios/mfp.c	-	-	design:hardware:mfp68901	MFP 68901 timers/interrupts
 tt_mfp_init	bios/mfp.c	-	-	design:hardware:tt-mfp	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
 tt_mfpint	bios/mfp.c	-	-	design:hardware:tt-mfp	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
 xbtimer	bios/mfp.c	tos-api/src/xbios/mfp.rs	xbtimer	mapped	Xbtimer 0x1F without an MFP: timer 0-3 as mfpint(timer_num[timer]) (warning + mask register), another timer answers control (EmuTOS' d0; BIOS15)
-bconin3	bios/midi.c	-	-	design:hardware:midi-acia	MIDI ACIA: MIDI is the absent device on NewTOS (bios/chardev.rs Absent)
-bconout3	bios/midi.c	tos-api/src/xbios/system.rs	midiws	mapped	MIDI output goes to the absent device
-bconstat3	bios/midi.c	-	-	design:hardware:midi-acia	MIDI ACIA: MIDI is the absent device on NewTOS (bios/chardev.rs Absent)
-bcostat3	bios/midi.c	-	-	design:hardware:midi-acia	MIDI ACIA: MIDI is the absent device on NewTOS (bios/chardev.rs Absent)
+bconin3	bios/midi.c	tos-api/src/bios/chardev.rs	midi_read	mapped	MidiPort: waits for a byte in the Iorec(2) MIDI ring, returns it zero-extended (BIOS04); pumps input while waiting, no driver fills the ring
+bconin3	bios/midi.c	tos-api/src/bios/chardev.rs	bconin_restartable	mapped	MidiPort trap entry (Bconin(3)): midi_read(true) gives way to a kbdvec hook with queued bytes and the trap restarts (BIOS04, as XBIOS18 for AUX)
+bconout3	bios/midi.c	tos-api/src/xbios/system.rs	midiws	mapped	Midiws sends each byte through the MIDI entry (MidiPort::bconout, BIOS04)
+bconout3	bios/midi.c	tos-api/src/bios/chardev.rs	bconout	mapped	MidiPort::bconout: accepts and discards, returns 1 (BIOS04; no MIDI transmitter)
+bconstat3	bios/midi.c	tos-api/src/bios/chardev.rs	bconstat	mapped	MidiPort::bconstat: -1 while the Iorec(2) MIDI ring holds a byte (xbios/iorec.rs midi_pending), else 0 (BIOS04)
+bcostat3	bios/midi.c	tos-api/src/bios/chardev.rs	bcostat	mapped	MidiPort::bcostat: -1, always ready (BIOS04); Bcostat(4) reads it through the 3/4 swap (bcostat_handle)
 midi_init	bios/midi.c	-	-	design:hardware:midi-acia	MIDI ACIA: MIDI is the absent device on NewTOS (bios/chardev.rs Absent)
 midiws	bios/midi.c	tos-api/src/xbios/system.rs	midiws	mapped	Midiws 0x0C
 Initmous	bios/mouse.c	tos-api/src/xbios/mod.rs	note_installer	mapped	only the ADR-031 warning for a mousevec install (types 1/2/4, vec != NULL; BIOS15); the call itself is not implemented, the dispatcher answers the function number

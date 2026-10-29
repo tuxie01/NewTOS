@@ -7,7 +7,7 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher — Anwenderentscheid
 **BIOS-CORE-007 — S3 — CONFIRMED (`Bcostat`) + MEASURED (`Bconout`, `Bconin`).** Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-bios-core-audit/RUNINFO.TXT`.
 
 - `bios-r1` 69/70 `Bcostat(6)/(7)` EmuTOS `-1`, NewTOS `0`; `bios-core-r1` 65 `Bcostat(8)` `-1`/`0` (beide Profile), 66 `Bcostat(9)` nur TT (TT 4 Ports, Falcon 3: `references/emutos/bios/serport.c:981,993`). Sonde B04/B05 `Bconout(6/7,'A')` `1`/`0`; HANG-6 `Bconin(6)` blockiert auf EmuTOS, NewTOS `0` sofort (`measurements/measurement-2026-10-28-bios-core-audit/runs/NEWTOS-bios-core-r1`, `measurements/measurement-2026-10-28-bios-core-audit/runs/HANG-EMUTOS-tt-6`, `measurements/measurement-2026-10-28-bios-core-audit/runs/HANG-NEWTOS-raspi4b`).
-- Lokalisiert: `tos-api/src/bios/chardev.rs:229@DEVICES` (6/7 `Absent`, 8/9 jenseits `NDEV = 8`).
+- Lokalisiert: `tos-api/src/bios/chardev.rs:348@DEVICES` (6/7 `Absent`, 8/9 jenseits `NDEV = 8`).
 - EmuTOS-Stelle: `references/emutos/bios/bios.c:923-927,1152-1156` (Bconmap-Zweig).
 - Spec/Entscheidung: FS11 („6/7 unused“), nicht in COMPATIBILITY.
 

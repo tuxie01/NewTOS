@@ -216,6 +216,26 @@ GEMDOS calls use the **same** per-device entry. A later UART/MIDI/printer driver
 
 **AUX (1) revised 2026-10-13 (option A, user decision, after FS11 acceptance finding 1; see `docs/api/gemdos/file/3f-fread.md` "NewTOS implementation notes" item 1a):** AUX is "port present, no cable" and is **no longer** part of the absent-device profile below: `Bconout(1)` → 1 (accept+discard), `Bcostat(1)` → -1, `Bconstat(1)` → 0, `Bconin(1)` → 0 non-blocking. PRN and MIDI stay absent.
 
+**[BIOS04] 2026-10-29 — handles 3 and 4 ready, user decision "like the oracle"
+(supersedes the 3/4 part of the next paragraph):** `Bcostat(3)` and
+`Bcostat(4)` → **`-1`**. The oracle build has both ACIAs
+(`references/emutos/include/config.h:994-996,1001-1003`); with an empty
+transmit register `bcostat4` (slot 3) and `bcostat3` (slot 4) answer `-1`
+(`references/emutos/bios/ikbd.c:916-930`, `references/emutos/bios/midi.c:66-81`);
+EmuTOS' `bcostat4` answers `-1` "OK (but output will be ignored)" even on a
+build without an IKBD ACIA. NewTOS never has a byte in transmission (output is
+discarded at once), so both entries are always ready
+(`tos-api/src/bios/chardev.rs:163@MidiPort`,
+`tos-api/src/bios/chardev.rs:236@IkbdPort`). The swap stays in
+`tos-api/src/bios/chardev.rs:403@bcostat_handle`; with both entries `-1` it is
+not observable through the default entries, a host test pins it with a test
+entry (`tos-api/tests/fs11_device_rw.rs` `bcostat_keeps_the_ikbd_midi_swap`).
+Measured equal to the oracle: `bios-r1` cases 66/67 and `tosdump/probes/mdprobe.c`
+D04/D05/D08/D09 (the audit probe's B11/B12),
+`measurements/measurement-2026-10-29-bios04/RUNINFO.TXT`. Before, both answered
+`0` and a program waiting `while (!Bcostat(4));` hung for good (finding
+BIOS-CORE-001, `docs/audits/2026-10-28-bios-core.md`).
+
 **Devices 0 (PRN), 3, 4 (IKBD-TX/MIDI-TX):** `Bcostat` -> `0` (not ready). **Device 1 (AUX), option A:** `Bcostat(1)` -> **-1** (ready) always; EmuTOS `bcostat1` returns -1 while the out-ring has room (`bios/serport.c:271-283`).
 Consistency with EmuTOS: dev 0 `bcostat0` returns 0 without
 `CONF_WITH_PRINTER_PORT` (`bios/parport.c:139-140`, exact match); dev 1: superseded by option A (was dummy map entry, `bios/serport.c:96`; now agrees with `bcostat1`, -1); MIDI `bcostat3` returns 0 without ACIA
@@ -242,8 +262,8 @@ explicitly). `Cauxos`/`Cprnos` call `Bcostat(1)`/`Bcostat(0)` through the same e
 | 0 | PRT / Centronics | **absent** | `0` (busy) |
 | 1 | AUX / RS-232 | no-cable port entry (option A); PL011 UART0 later | `-1` (ready) |
 | 2 | CON / screen | **framebuffer VT52** | `-1` (always ready) |
-| 3 | **IKBD TX** (swapped) | **absent** | `0` |
-| 4 | **MIDI TX** (swapped) | **absent** | `0` |
+| 3 | **IKBD TX** (swapped) | IKBD port entry (BIOS04) | `-1` (ready) |
+| 4 | **MIDI TX** (swapped) | MIDI port entry (BIOS04) | `-1` (ready) |
 | 5 | raw screen | **`char_dummy` slot** | `0` (busy) |
 | 6,7 | unused / Bconmap | absent | `0` |
 
@@ -260,7 +280,9 @@ explicitly). `Cauxos`/`Cprnos` call `Bcostat(1)`/`Bcostat(0)` through the same e
   though `Bconout(5, …)` writes and returns `1`. The asymmetry is part of the
   contract, not a NewTOS shortcut; the code implements it. Measured by
   `APITEST` checks BC12 (`Bconout(5) → 1`) and BC20 (`Bcostat(5) → 0`).
-- **The MIDI/IKBD swap on the Pi.** The swap is a property of the *handle→
+- **The MIDI/IKBD swap on the Pi.** *Superseded by BIOS04 (2026-10-29): both
+  entries answer `-1`, the swap is kept in `bcostat_handle` (see "NewTOS
+  implementation notes").* The swap is a property of the *handle→
   routine* table on Atari; on the Pi both MIDI and IKBD-TX are **absent**
   (§3.9 — no MIDI ACIA, no outbound IKBD command channel), so handles 3 and
   4 both return `0` (busy) regardless of the swap. The swap is therefore

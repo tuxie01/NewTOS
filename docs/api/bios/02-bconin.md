@@ -299,6 +299,24 @@ it during `bconin1`'s spin (`bios/aciavecs.S:407-414`). Measured equal to the
 oracle with `tosdump/probes/axprobe.c`
 (`measurements/measurement-2026-10-29-xbios18/RUNINFO.TXT`).
 
+**[BIOS04] 2026-10-29 — MIDI (3) waits, IKBD (4) answers 0 (user decision "like
+the oracle"; supersedes the device-3 part of the next paragraph):**
+`Bconin(3)` is EmuTOS' `bconin3` (`references/emutos/bios/midi.c:35-62`): it
+**waits** until the MIDI ring of `Iorec(2)` holds a byte (`while
+(!bconstat3())`, `:37-38`), then advances `ibufhd` and returns the byte
+zero-extended (`:46-57`). No kernel producer fills the ring (no MIDI driver,
+`TASK/IO01.md`), so on an empty ring the call waits for good — as the oracle
+does with nothing on the MIDI cable; a byte a program put into the ring is
+returned at once. The wait has the AUX wait's style (XBIOS15/XBIOS18): the
+input is pumped meanwhile (`Host::pump_input`), the CPU is not given to another
+process, and on the trap path it gives way to a `kbdvec` hook (restart, nothing
+consumed; `tos-api/src/bios/chardev.rs:209@midi_read`). Before a host is
+installed it returns `0` (the boot gate). `Bconin(4)` stays `char_dummy` → `0`
+at once. Measured with `tosdump/probes/mdprobe.c` (R03-R05 ring read, W01 still
+waiting after 10 s; equal on both sides,
+`measurements/measurement-2026-10-29-bios04/RUNINFO.TXT`); DUMPBIOS refuses
+`Bconin(3)` (`tosdump/core/cases.c` `CR_BCONIN`: it may wait).
+
 **Devices 0 (PRN), 1 (AUX), 3 (MIDI):** `Bconin` -> `0`, **non-blocking** (AUX: unchanged by option A; a **documented divergence** from a real present port, where `bconin1` blocks forever, `serport.c:260-263`).
 Consistency with EmuTOS: dev 0 `bconin0` returns 0 (`bios/parport.c:123-127`,
 exact match); dev 1 = dummy Bconmap entry `char_dummy` (`bios/serport.c:96`).
@@ -320,8 +338,9 @@ drivers only.
 > Peripheral + driver: see `docs/HARDWARE-PROFILE.md` §2, §3.2, §3.3.
 
 - **Device-handle map:** as in `01-bconstat.md` — **CON (2) alone** reads the
-  console key ring fed by the USB-HID keyboard; PRT (0)/AUX (1)/MIDI (3)/
-  **IKBD (4)**/5..7 are `char_dummy` and return `0` without blocking
+  console key ring fed by the USB-HID keyboard; MIDI (3) waits for its
+  `Iorec(2)` ring (BIOS04, above); PRT (0)/AUX (1)/**IKBD (4)**/5..7 are
+  `char_dummy` and return `0` without blocking
   (EmuTOS `bconin_init[4] = char_dummy`,
   `references/emutos/bios/chardev.c:34-36`). An earlier revision of this
   section listed handle 4 as a second console-input handle; that was wrong
@@ -346,7 +365,7 @@ drivers only.
   2026-10-29]** The key ring is the IKBD `IOREC` (`docs/api/xbios/0e-iorec.md`,
   "NewTOS implementation"): its 32-bit entries carry the shift state **of the
   key press** (EmuTOS `bios/ikbd.c:898-909`), and
-  `tos-api/src/bios/chardev.rs:351@pack_console_key` keeps bits 24-31 only when
+  `tos-api/src/bios/chardev.rs:470@pack_console_key` keeps bits 24-31 only when
   the calling process's `conterm` (`$484`) has bit 3 set, else clears them
   (`value &= 0x00ffffff`, `bios/ikbd.c:279-280`). Until XBIOS01 the fold read
   the *current* `Kbshift` state at read time (`shift_fold`, removed) — a Shift

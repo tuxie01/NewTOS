@@ -20,12 +20,17 @@
 //! ([`AuxNoCable`], `3f-fread.md` item 1a): output accepted and discarded,
 //! always ready, no input — on qemu-virt the kernel replaces it at boot with
 //! a driver that reads the serial input ring of `Iorec(0)` (XBIOS15,
-//! `kernel::console::AuxSerial`). PRN, MIDI, IKBD and 6/7 are the documented
-//! **absent device** ([`Absent`], EmuTOS' `char_dummy` / `charout_dummy`,
-//! `bios/chardev.c:49-58`): status 0, input 0 without blocking, output
-//! discarded with 0 — rather than blocking on hardware that does not exist.
-//! The console entries answer 0 before a host is installed (EmuTOS'
-//! `CHARDEV_AVAILABLE` boot gate, `bios/bios.c:920-921,964-965,997-998`).
+//! `kernel::console::AuxSerial`). MIDI (3) and IKBD (4) answer as on the
+//! reference machine, whose MIDI and IKBD ACIAs always exist (BIOS04, user
+//! decision 2026-10-29): output ready and accepted, the byte discarded
+//! ([`MidiPort`], [`IkbdPort`]); MIDI input is the `Iorec(2)` ring, which
+//! `Bconin(3)` waits on, IKBD input is `char_dummy`. PRN and 6/7 are the
+//! documented **absent device** ([`Absent`], EmuTOS' `char_dummy` /
+//! `charout_dummy`, `bios/chardev.c:49-58`): status 0, input 0 without
+//! blocking, output discarded with 0 — rather than blocking on hardware that
+//! does not exist. The console entries and the MIDI wait answer 0 before a
+//! host is installed (EmuTOS' `CHARDEV_AVAILABLE` boot gate,
+//! `bios/bios.c:920-921,964-965,997-998`).
 
 use core::sync::atomic::{AtomicPtr, Ordering};
 
@@ -33,6 +38,7 @@ use tos_types::Long;
 
 use crate::host;
 use crate::trap::TrapArgs;
+use crate::xbios::{iorec, kbdvecs};
 
 // ---------------------------------------------------------------------------
 // The device table.
@@ -132,6 +138,118 @@ impl CharDevice for AuxNoCable {
     }
 }
 
+/// MIDI (device 3) as on the reference machine, whose MIDI ACIA always
+/// exists (deliberate profile, not a stub; BIOS04, user decision
+/// 2026-10-29): EmuTOS' `bconstat3`/`bconin3`/`bcostat3`/`bconout3`
+/// (`bios/midi.c:22-95`) with `CONF_WITH_MIDI_ACIA` = 1, the oracle build
+/// (`include/config.h:994-996`).
+///
+/// - `Bconstat(3)`: `-1` while the MIDI ring of `Iorec(2)` holds a byte, else
+///   `0` (`bconstat3`, `:22-33`). No kernel producer fills that ring, so it
+///   is `0` unless a program put a byte there ([`iorec::midi_pending`]).
+/// - `Bconin(3)`: waits until the ring holds a byte and returns it
+///   zero-extended (`bconin3`, `:35-62`) — with no MIDI driver that is
+///   forever, as on EmuTOS with nothing on the MIDI cable. The wait keeps
+///   the input pumped and, on the trap path, gives way to a `kbdvec` hook,
+///   like the AUX wait on qemu-virt (XBIOS15/XBIOS18, [`midi_read`]).
+/// - Output status: `-1` (`bcostat3` with an empty ACIA transmit register,
+///   `:66-81`); [`bcostat_handle`]'s swap makes it the answer of
+///   `Bcostat(4)`.
+/// - `Bconout(3)`: the byte is discarded — there is no MIDI transmitter —
+///   and the call returns `1` (`bconout3`, `:84-95`).
+///
+/// A MIDI driver (`TASK/IO01.md`) replaces the whole entry and fills the
+/// ring.
+pub struct MidiPort;
+
+impl CharDevice for MidiPort {
+    fn bconstat(&self) -> Long {
+        if iorec::midi_pending() {
+            -1
+        } else {
+            0
+        }
+    }
+    fn bconin(&self) -> Long {
+        // Never gives way: `midi_read(false)` only returns with a byte (or
+        // at once before a host is installed).
+        midi_read(false).unwrap_or(0)
+    }
+    fn bconin_restartable(&self) -> Option<Long> {
+        midi_read(true)
+    }
+    fn bconout(&self, _byte: u8) -> Long {
+        1
+    }
+    fn bcostat(&self) -> Long {
+        -1
+    }
+}
+
+/// `bconin3`'s wait (`bios/midi.c:37-38`, `while (!bconstat3());`) and read:
+/// the oldest byte of the MIDI ring ([`iorec::pop_midi`]), zero-extended.
+/// Between checks the host pumps its input with interrupts briefly open
+/// ([`host::Host::pump_input`]: timer tick, USB keyboard and mouse), as
+/// EmuTOS' interrupts keep running while `bconin3` spins. Like `bconin3`
+/// and the AUX wait it never gives the CPU to another process (user
+/// 2026-10-29, XBIOS18).
+///
+/// With `give_way` (the trap entry, [`MidiPort`]'s `bconin_restartable`),
+/// returns `None` as soon as the running process has bytes queued for its
+/// `kbdvec` hook ([`kbdvecs::pending_for_running`]; KEYS02/XBIOS18,
+/// `docs/api/xbios/22-kbdvbase.md` C3 "O1"): EmuTOS' IKBD interrupt jumps
+/// through `kbdvec` while `bconin3` spins, NewTOS delivers the bytes on the
+/// way back to EL0 — the caller requests a restart, the hook runs, and the
+/// `svc` waits again. Nothing is consumed before the byte arrives, so the
+/// restart has no side effect.
+///
+/// Before a host is installed it returns `0` at once: EmuTOS' boot gate
+/// (`CHARDEV_AVAILABLE`, `bios/bios.c:964-965`), and with no host there is
+/// nothing to pump.
+fn midi_read(give_way: bool) -> Option<Long> {
+    let Some(h) = host::host() else {
+        return Some(0);
+    };
+    loop {
+        if let Some(b) = iorec::pop_midi() {
+            return Some(Long::from(b));
+        }
+        h.pump_input();
+        if give_way && kbdvecs::pending_for_running() {
+            return None;
+        }
+    }
+}
+
+/// IKBD (device 4) as on the reference machine, whose IKBD ACIA always exists
+/// (deliberate profile, not a stub; BIOS04, user decision 2026-10-29;
+/// `CONF_WITH_IKBD_ACIA` = 1 in the oracle build, `include/config.h:1001-1003`):
+/// output ready and accepted, the byte discarded — EmuTOS' `bcostat4`
+/// (`bios/ikbd.c:916-930`, `-1` with an empty ACIA transmit register, and
+/// `-1` "OK (but output will be ignored)" on a build without one) and
+/// `bconout4` (`:933-937`, `ikbd_writeb` and `1`). NewTOS has no IKBD
+/// transmitter and no IKBD command interpreter (`docs/api/xbios/19-ikbdws.md`),
+/// so the byte has no effect. Input is `char_dummy` (`bconstat_init[4]`,
+/// `bconin_init[4]`, `bios/chardev.c:30-36`): `Bconstat(4)` and `Bconin(4)`
+/// are `0` at once. [`bcostat_handle`]'s swap makes the output status the
+/// answer of `Bcostat(3)`.
+pub struct IkbdPort;
+
+impl CharDevice for IkbdPort {
+    fn bconstat(&self) -> Long {
+        0
+    }
+    fn bconin(&self) -> Long {
+        0
+    }
+    fn bconout(&self, _byte: u8) -> Long {
+        1
+    }
+    fn bcostat(&self) -> Long {
+        -1
+    }
+}
+
 /// CON (device 2): keyboard input from the console key ring (`bconin2` /
 /// `bconstat2`, the IKBD queue), screen output (`bconout2`), output always
 /// ready (`bcostat2`, `bios/chardev.c:112-118`: the PL011 TX drains by
@@ -215,6 +333,8 @@ impl CharDevice for RawConsole {
 static ABSENT: &dyn CharDevice = &Absent;
 static AUX_NO_CABLE: &dyn CharDevice = &AuxNoCable;
 static CONSOLE: &dyn CharDevice = &Console;
+static MIDI_PORT: &dyn CharDevice = &MidiPort;
+static IKBD_PORT: &dyn CharDevice = &IkbdPort;
 static RAW_CONSOLE: &dyn CharDevice = &RawConsole;
 
 /// A table cell: a pointer to a `&'static dyn CharDevice` (a fat pointer
@@ -226,15 +346,14 @@ const fn slot(entry: &'static &'static dyn CharDevice) -> Slot {
     AtomicPtr::new(entry as *const &'static dyn CharDevice as *mut &'static dyn CharDevice)
 }
 
-/// The table, indexed by BIOS device number. IKBD (4) keeps its existing
-/// all-zero entry: EmuTOS' `bconin_init[4]`/`bconstat_init[4]` are
-/// `char_dummy` (`bios/chardev.c:30-36`) and NewTOS has no IKBD transmitter.
+/// The table, indexed by BIOS device number (EmuTOS' `bcon*_init[]`,
+/// `bios/chardev.c:30-45`).
 static DEVICES: [Slot; NDEV] = [
     slot(&ABSENT),       // 0 PRN
     slot(&AUX_NO_CABLE), // 1 AUX
     slot(&CONSOLE),      // 2 CON
-    slot(&ABSENT),       // 3 MIDI
-    slot(&ABSENT),       // 4 IKBD
+    slot(&MIDI_PORT),    // 3 MIDI
+    slot(&IKBD_PORT),    // 4 IKBD
     slot(&RAW_CONSOLE),  // 5 raw CON
     slot(&ABSENT),       // 6
     slot(&ABSENT),       // 7
@@ -365,8 +484,8 @@ pub fn pack_console_key(entry: u32) -> Long {
 /// packed console LONG (IKBD scancode in bits 16-23, ASCII in bits 0-7) — or,
 /// when a `kbdvec` hook has bytes waiting, requests a restart (KEYS02) and
 /// returns `0`, which the trap handler discards; the qemu-virt AUX driver's
-/// wait gives way the same way (XBIOS18). An absent device returns `0`
-/// immediately.
+/// wait gives way the same way (XBIOS18), and so does the MIDI wait
+/// ([`MidiPort`], BIOS04). An absent device returns `0` immediately.
 ///
 /// Shared with the GEMDOS pass-throughs (`Cauxin` = `Bconin(1)`, EmuTOS
 /// `xauxin`, `bdos/console.c:432`; `Cconin`/`Cnecin`/`Crawcin` = `Bconin(2)`)
@@ -389,25 +508,29 @@ pub fn bconin_handle(dev: u16) -> Long {
 /// `Bconin` (0x02) — blocking read from an input device. For the CON
 /// handle (2) the packed LONG carries the IKBD scancode in bits 16-23 and
 /// the ASCII value in bits 0-7 (non-ASCII keys → ASCII 0 + scancode), per
-/// `docs/api/bios/02-bconin.md`. Absent devices return `0` without blocking.
+/// `docs/api/bios/02-bconin.md`. MIDI (3) waits for a byte in the `Iorec(2)`
+/// ring ([`MidiPort`]); IKBD (4) and absent devices return `0` without
+/// blocking.
 pub fn bconin(args: &TrapArgs) -> Long {
     bconin_handle(args.arg_u16(0))
 }
 
 /// `Bconout` (0x03) — write a byte to an output device through its table
 /// entry. Console handles write to the screen and return `1` (byte accepted,
-/// `bconout2`/`bconout5`); the no-cable AUX discards and returns `1`
-/// ([`AuxNoCable`]); absent devices discard and return `0`
-/// (`charout_dummy`).
+/// `bconout2`/`bconout5`); the no-cable AUX, MIDI and IKBD discard and
+/// return `1` ([`AuxNoCable`], [`MidiPort`], [`IkbdPort`]); absent devices
+/// discard and return `0` (`charout_dummy`).
 pub fn bconout(args: &TrapArgs) -> Long {
     bconout_handle(args.arg_u16(0), args.arg_u16(1) as u8)
 }
 
 /// `Bcostat` (0x08) — output-device status through the table, with the
 /// IKBD/MIDI slot swap ([`bcostat_handle`]). Ready (`-1`) for CON
-/// (`bcostat2`) and the no-cable AUX ([`AuxNoCable`]); raw-CON's slot is `char_dummy` (`bcostat_init[5]`), so it
-/// reports busy (`0`) although `Bconout(5)` writes — deliberately **not** the
-/// same handle set as `Bconout`. Absent devices and the boot guard: `0`.
+/// (`bcostat2`), the no-cable AUX ([`AuxNoCable`]) and both swapped slots 3
+/// and 4 ([`IkbdPort`], [`MidiPort`]); raw-CON's slot is `char_dummy`
+/// (`bcostat_init[5]`), so it reports busy (`0`) although `Bconout(5)`
+/// writes — deliberately **not** the same handle set as `Bconout`. Absent
+/// devices and the boot guard: `0`.
 pub fn bcostat(args: &TrapArgs) -> Long {
     bcostat_handle(args.arg_u16(0))
 }
