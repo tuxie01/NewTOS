@@ -1,0 +1,17 @@
+K01 Kbshift(-1) ret=00000000 hi=00000000
+K02 Kbshift(0x10) ret=00000000 hi=00000000
+K03 Kbshift(-1) ret=00000010 hi=00000000
+K04 Kbshift(0x1FF) ret=00000010 hi=00000000
+K05 Kbshift(-1) ret=000000ff hi=00000000
+K06 Kbshift(-2) ret=000000ff hi=00000000
+K07 Kbshift(-1) ret=000000ff hi=00000000
+K08 Kbshift(0x7F81) ret=000000ff hi=00000000
+K09 Kbshift(-1) ret=00000081 hi=00000000
+K10 Kbshift(-32768) ret=00000081 hi=00000000
+K11 Kbshift(-1) ret=00000081 hi=00000000
+K12 Kbshift(s0) restore ret=00000081 hi=00000000
+K13 Kbshift(-1) ret=00000000 hi=00000000
+H00 conterm=07 Kbshift(-1)=00
+I00 per_tick=2978909
+H99 no change within 15 s
+Z99 end

@@ -1,0 +1,142 @@
+measurement-2026-10-29-bios10 -- TASK/BIOS10: Kbshift keeps the whole shift byte like EmuTOS'
+shifty (BIOS-CORE-009; user decision D1 = 1 in docs/api/bios/0b-kbshift.md "Decision").
+Before/after on the four tables of the ticket, the new permanent probe tosdump/probes/ksprobe.c
+(the audit's Kbshift lines K01-K13 plus the key path with injected keys, ticket work item 2) on
+both sides, its input check (bios-arg-trace), the oracle canary and a qemu-virt boot.
+==========================================================================================
+Developer, 2026-10-29 (host clock CET). Main tree at 8cc34fa0 plus the uncommitted BIOS10 change
+(files in TASK/BIOS10-STATUS-DONE.MD). "before" = 8cc34fa0 product code: the four before-tables
+ran on `git archive 8cc34fa0` unpacked in scratch (--tree); the before injector kernel and the
+oracle runs were made while the main tree had only the new probe files (tosdump/probes/ksprobe*,
+run-ksprobe.sh, tosdump/build-ksprobe-newtos.sh, tosdump/Makefile) and this run directory, no
+product file. Nothing committed, no hardware, no real card.
+
+INPUTS
+  ROM        tools/oracle/etos512de-1a7484ab.img 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+             (run-ksprobe.sh checks it against tools/oracle/oracle.env before every oracle run)
+  EmuTOS     1a7484aba1bfba23e2c0899e243b6d8177fe41df
+  Hatari     2.6.1 (tools/oracle/oracle.env), tools/oracle/hatari.cfg, --fast-forward off for the
+             key runs (the key pauses are wall-clock)
+  QEMU       11.0.2, -M raspi4b, -append serial=on
+  canary     ORACLE.md section 6, measurements/measurement-2026-10-28-oracle-canary/method/canary.sh,
+             run at the end: "canary tt: OK", "canary falcontc: OK" (runs/canary.txt)
+  kernels    (kernel8.img sha256; scratch copies, gitignored, deleted after the run)
+    tables before   0e7d33a2adee3d3d7bc44f7d51503c6ef91dfa5a91fbd310c6ef8c341e660c86 (git archive 8cc34fa0,
+                    built by the tosdump runner, cargo xtask build --board rpi4 --release)
+    tables after    ec681a38034fe1bcc4d901a90e612f3f76fdcf41550b15cf45afebf35927238c (the BIOS10 tree,
+                    built by the tosdump runner; rebuilt for ksprobe-NEWTOS-after-noinjector: same sha256)
+    inj-before      3b7f32bc09aea50683cb02a4e353c11157b1e9186f98b7e8a393eca5bbb858da
+    inj-after       8df97977b432ac24248edb32762ad912b3fc103aba5156f91a64bab0a5e3a496
+    inj-after-trace ef4f9e05f346821e11351c0f68d73a28432260fc3a41d886a1db54ef4e1fecc9 (--features bios-arg-trace)
+                    inj-* = `tosdump/probes/run-ksprobe.sh kernel . <out> [features]`: a scratch copy of
+                    the tree (tracked + untracked-not-ignored files) armed by `tools/inject-arm.py <copy>
+                    launch:KSPROBE=tosdump/probes/ksprobe-keys.txt` -- the only difference is
+                    method/injector-ksprobe-scratch.diff (INJ-ARM-TEMP lines) -- built rpi4 release.
+  probe      tosdump/probes/ksprobe.c 2539930026f81be49a3692d860fd7c771f92711d3eab3136ee2f3f1d304169bf
+             `make -C tosdump ksprobe-m68k ksprobe-newtos`:
+               KSPROBE.PRG 3bfa2a0713d159f2e43cebca9740930847be6df7ae827b36757cae37e9ffcec2
+               KSPROBE.NAP d24f12c9df1a43a768425ff8f0c61127598c577317c07a0ee856e0faeb9e5aeb
+             (the same two hashes in every runs/ksprobe-*/run.txt)
+             keys tosdump/probes/ksprobe-keys.txt c13d88abd7726dc112d5ea525c6b6dd0ab32584d85d985b50e54512d2afe0268
+             runner tosdump/probes/run-ksprobe.sh, NewTOS build tosdump/build-ksprobe-newtos.sh
+
+METHOD (method/)
+  newtos-tables.sh <scratch> <runs> before|after [<tree>]  the four tables, `cargo xtask tosdump bios`
+                                                            (TOOL09), each vs its tt and falcontc reference
+  compare-cases.sh <runs>                                   differing case numbers before/after per table
+  ksprobe-runs.sh <scratch> <runs> before|after             the probe runs below (commands as run)
+  injector-ksprobe-scratch.diff                             the injector patch of the inj-* kernels
+  lint.sh <tree> <tag>                                      build both boards + clippy kernel per board
+
+THE PROBE (tosdump/probes/ksprobe.c, header comment = full description)
+  Part K: K01-K13 = the audit probe's Kbshift lines (bcprobe.c group_k), same calls and format.
+  Part H: conterm |= 8, &= ~2 (shift byte in Bconin, no key repeat); KSPROBE.RDY; then a poll
+  about every 5 ms (busy loop calibrated against _hz_200; timing decisions read _hz_200):
+  Bconstat(2), Bconin(2) when a key is queued (keeps the queue empty: NewTOS pumps the input in
+  Bconstat only then, kernel/src/host_env.rs fill_from_device), Kbshift(-1); each change = a T line.
+  Key sequences A-E (ksprobe-keys.txt), 1 s quiet -> Kbshift(0x80) (H01/H02), sequence F, 1 s quiet
+  -> restore (H03), Q/A lines = the keys read (shift byte + scancode / ASCII), H04 their count.
+  I00 = the calibration, side-specific, not compared.
+  Keys: EmuTOS through Hatari --cmd-fifo "hatari-event keydown|keyup <scancode>", 0.3 s after
+  C:\KSPROBE.RDY, the tick gaps as wall-clock pauses (runs/ksprobe-EMUTOS-*/inject.txt); NewTOS
+  through the injector at the same ticks after the launch (BOOT-SERIAL.txt "[inj] ... feed").
+  A development version polled only Bconstat + Kbshift without reading the keys: on NewTOS the
+  shift byte then froze after the first queued key (see OBSERVATIONS); development runs stayed in
+  scratch and are not evidence.
+
+1 TABLES (runs/before-*, runs/after-*; every runner exit 0, tosdiff --validate accepted)
+                         tt before -> after     falcontc before -> after
+  bios-r1 (147)          37 -> 37               41 -> 41
+  bios-core-r1 (44)       2 -> 2                 1 -> 1
+  xbios-chardev-r1 (23)  12 -> 12               12 -> 12
+  xbios-system-r1 (43)    9 -> 9                 9 -> 9
+  Newly differing in any of the eight comparisons: none; no longer differing: none
+  (method/compare-cases.sh, case lists per comparison identical before/after).
+  bios-r1 case 77 Kbshift(-1): EQUAL before and after, tt and falcontc.
+
+2 PROBE, ORACLE (runs/ksprobe-EMUTOS-tt, -falcontc): KSPROBE.LOG identical except I00.
+  K01-K13  00 00 10 10 ff ff ff ff 81 81 81 81 00 (the audit's PROBE-EMUTOS-tt lines, unchanged)
+  T01-T18  08 28 08 00 | 08 48 08 00 | (C: none) | 08 28 20 00 | 08 48 68 48 08 00
+  H01 Kbshift(0x80) ret=00, H02 Kbshift(-1) ret=80
+  T19-T24  82 80 88 a8 88 80;  H03 restore ret=80
+  Q        2 keys: Home without Alt (sh=00 sc=47), Shift+a (sh=82 sc=1e asc=41) -- Alt+Clr/Home and
+           Alt+Insert are the keyboard mouse emulation buttons, no key (bios/ikbd.c:93-99, 904-908)
+
+3 PROBE, NEWTOS BEFORE (runs/ksprobe-NEWTOS-before, inj-before)
+  K05 0x1f, K06-K08 0x1f, K09-K12 0x01 (the audit's NewTOS values: bits 5-7 dropped)
+  T01-T08  08 00 | 08 00 | | 08 00 | 08 00          -> the key path never set bit 5/6 (MEASURED)
+  H02 Kbshift(-1) ret=00 (0x80 not stored); T09-T12 02 00 08 00
+  Q        8 keys (every Home/Insert press queued, no mouse emulation), sh without bits 5-7
+
+4 PROBE, NEWTOS AFTER (runs/ksprobe-NEWTOS-after, inj-after)
+  K01-K13, T01-T24, H00-H04 except H04's count: identical to the oracle (diff against
+  ksprobe-EMUTOS-tt/KSPROBE.LOG minus I00: only the Q/A lines and H04 differ).
+  Q        8 keys as before, now with the full shift byte: Home 28, Insert 48, Home (no Alt) 00,
+           Home 28, Insert 48, Home 68, Shift+a 82 (asc 41), Home a8 -- the difference to the
+           oracle is the missing keyboard mouse emulation (OBSERVATIONS), not the shift byte.
+  runs/ksprobe-NEWTOS-after-noinjector (product kernel ec681a38..., no injector): K01-K13
+  identical to the oracle; part H "H99 no change within 15 s" as designed.
+
+5 INPUT CHECK (runs/ksprobe-NEWTOS-after-trace, inj-after-trace; KSPROBE.LOG = the after run's)
+  BOOT-SERIAL.txt: 6276 [biostrace] lines (2086 Kbshift, 2070 Bconstat, 8 Bconin, 2112 Supexec).
+  Every set arm arrived as the source gives it, no `=` annotation (register = sign extension of
+  the WORD): 000001 w:0x0010 -> 0x0, 000003 w:0x01ff -> 0x10, 000005 w:0xfffe -> 0xff,
+  000007 w:0x7f81 -> 0xff, 000009 w:0x8000 -> 0x81, 000011 w:0x0000 -> 0x81,
+  003271 w:0x0080 -> 0x0, 006273 w:0x0000 -> 0x80; every query w:0xffff.
+
+6 BOOT qemu-virt (runs/boot-qemu-virt-after/BOOT-SERIAL.txt): `cargo xtask run --board qemu-virt
+  --release --headless`, "[desk] desktop up (0 drives)", no PANIC; QEMU and xtask stopped by PID.
+  raspi4b: every NewTOS run above booted to "desktop up" after its program.
+
+OBSERVATIONS (findings outside BIOS10, reported, not fixed)
+  O1 No keyboard mouse emulation on NewTOS (handle_mouse_mode unmapped in mapping.tsv): Alt+Clr/Home
+     and Alt+Insert are queued as keys; EmuTOS turns them into right/left mouse buttons. Q lines.
+  O2 NewTOS' AES key state (graf_mkstate, EV_KS) returns the whole byte; EmuTOS' AES reads
+     vq_key_s = Kbshift(-1) & 0x0f (aes/gemgsxif.c:432-436, vdi/vdi_input.c:185-188). CapsLock
+     leaked before BIOS10; bits 5-7 can now too. Not measured (code reading).
+  O3 The shift byte follows NewTOS' trap-side input pump: Kbshift does not pump, and Bconstat(2)
+     pumps only while the key queue is empty. A program polling Kbshift(-1) with a key queued (or
+     with no pumping call at all) sees a stale byte; EmuTOS updates shifty in the interrupt.
+     Seen in the development run (section METHOD), from code kernel/src/host_env.rs fill_from_device.
+
+CARDS / IMAGES
+  Every NewTOS card from tools/mkcard.sh (64 MiB, MBR + FAT16), booted as an APFS clone, both deleted
+  after the logs were copied. Manifests: runs/*/card.img.manifest (12). optional_missing line of
+  every manifest, verbatim (all 12 identical):
+    optional_missing none
+  Booted-clone sha256 after each run: runs/ksprobe-NEWTOS-*/run.txt ("card after"); the tables in
+  runs/*/tosdump-run.txt. Oracle: Hatari GEMDOS drive C: = a scratch host dir.
+
+BUILD / LINT (scratch logs; method/lint.sh)
+  cargo xtask build --board rpi4|qemu-virt --release: exit 0; rustc warnings kernel 93 / tos-api 64
+  on both boards; cargo clippy --package kernel --features board-<b>: kernel 121 / tos-api 74 on
+  both boards = the BIOS07 baseline (no product change since fe13475a); no warning in
+  kernel/src/ikbd.rs, tos-api/src/bios/shifty.rs, tos-api/src/bios/mod.rs, tos-api/src/host.rs,
+  tos-api/tests/bios10_kbshift.rs. cargo xtask test: 1872 passed / 0 failed / 1 ignored
+  (baseline 1859/0/1; +8 unit tests in shifty.rs, +5 in tos-api/tests/bios10_kbshift.rs).
+
+NOT VERIFIED
+  Real Raspberry Pi 4 (USB-HID keyboard: Home/Insert reach the decoder as 0x47/0x52 via
+  kernel/src/drivers/usb/hid_decode.rs, not driven here). The desktop's Shift-/Alt-/Ctrl-click
+  handling is unchanged by code reading (programs/desktop masks graf_mkstate's kstate with
+  0x03 / MODE_SCA / MODE_CTRL), not driven in this run.

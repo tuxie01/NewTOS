@@ -1,0 +1,5 @@
+ksprobe run, side emutos (2026-10-29T22:05:14Z)
+tree      8cc34fa0ec7d3e75897d2203b34c6f1f29286a1f 3 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    KSPROBE.PRG 3bfa2a0713d159f2e43cebca9740930847be6df7ae827b36757cae37e9ffcec2 KSPROBE.NAP d24f12c9df1a43a768425ff8f0c61127598c577317c07a0ee856e0faeb9e5aeb
+keys      c13d88abd7726dc112d5ea525c6b6dd0ab32584d85d985b50e54512d2afe0268 tosdump/probes/ksprobe-keys.txt
+oracle    /Volumes/Daten/hatari-2.6.1_macos/Hatari.app/Contents/MacOS/Hatari, ROM /Volumes/Daten/Development/PiRusTOS/tools/oracle/etos512de-1a7484ab.img (323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c), profile tt

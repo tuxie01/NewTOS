@@ -17,6 +17,7 @@ pub mod crash;
 pub mod drive;
 pub mod getmpb;
 pub mod reset;
+pub mod shifty;
 pub mod tick;
 pub mod vectors;
 
@@ -120,11 +121,11 @@ pub fn dispatch(args: &TrapArgs) -> i64 {
 
 /// `Kbshift` (0x0B) — get or set the keyboard modifier-state byte.
 ///
-/// `flag < 0` (the `-1` query idiom) returns the current shift-state
-/// bitmask without changing it; `flag >= 0` overwrites the modifier state
-/// with `flag` **truncated to a byte** (EmuTOS `bios/ikbd.c:145` stores
-/// `(UBYTE)flag` into `shifty`). Always returns the **previous** value,
-/// zero-extended into the LONG (bits 8-31 clear), per
+/// `flag < 0` (the `-1` query idiom) returns the current shift byte without
+/// changing it; `flag >= 0` overwrites the whole byte, all eight bits, with
+/// `flag` **truncated to a byte** (EmuTOS `bios/ikbd.c:145-153` stores
+/// `(UBYTE)flag` into `shifty`; [`shifty::Shifty`], BIOS10). Always returns
+/// the **previous** value, zero-extended into the LONG (bits 8-31 clear), per
 /// `docs/api/bios/0b-kbshift.md`. The state lives in the IKBD decoder and
 /// is reached through the host trait (there is no `os_kbshift` low-memory
 /// alias on the Pi — spec "Pi / BCM2711 binding").

@@ -620,8 +620,11 @@ kbd_init	bios/ikbd.c	kernel/src/keymap.rs	init_from_disk	mapped	its closing bios
 kbd_int	bios/ikbd.c	kernel/src/ikbd.rs	kbd_int	mapped	the default kbdvec
 kbd_int	bios/ikbd.c	tos-api/src/bios/reset.rs	reset_key	mapped	the reset-key test
 kbd_int	bios/ikbd.c	tos-api/src/bios/vectors.rs	mousexvec	mapped	the mousexvec call
+kbd_int	bios/ikbd.c	tos-api/src/bios/shifty.rs	key_event	mapped	its changes to shifty: modifier set/clear, CapsLock toggle, MODE_HOME/MODE_INSERT on Clr/Home/Insert with Alt and their clear on release (BIOS10)
 kbrate	bios/ikbd.c	tos-api/src/xbios/system.rs	kbrate	mapped	Kbrate 0x23
 kbshift	bios/ikbd.c	tos-api/src/bios/mod.rs	kbshift	mapped	Kbshift 0x0B
+kbshift	bios/ikbd.c	kernel/src/ikbd.rs	shift_state	mapped	oldshifty = shifty: the decoder's one shift byte (BIOS10)
+kbshift	bios/ikbd.c	kernel/src/ikbd.rs	set_shift_state	mapped	shifty = flag: all eight bits (BIOS10)
 keytbl	bios/ikbd.c	tos-api/src/xbios/keytbl.rs	keytbl	mapped	Keytbl 0x10
 push_ikbdiorec	bios/ikbd.c	tos-api/src/xbios/iorec.rs	push_key	mapped	the IKBD IOREC ring in the shared IOREC page; the record checked first (XBIOS01 E1/E2)
 push_ikbdiorec	bios/ikbd.c	kernel/src/console.rs	push_rx	mapped	the kernel entry point of the decoder (kernel/src/ikbd.rs decode_key, poll_repeat)

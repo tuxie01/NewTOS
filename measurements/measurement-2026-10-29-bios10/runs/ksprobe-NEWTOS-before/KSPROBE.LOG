@@ -1,0 +1,48 @@
+K01 Kbshift(-1) ret=00000000 hi=00000000
+K02 Kbshift(0x10) ret=00000000 hi=00000000
+K03 Kbshift(-1) ret=00000010 hi=00000000
+K04 Kbshift(0x1FF) ret=00000010 hi=00000000
+K05 Kbshift(-1) ret=0000001f hi=00000000
+K06 Kbshift(-2) ret=0000001f hi=00000000
+K07 Kbshift(-1) ret=0000001f hi=00000000
+K08 Kbshift(0x7F81) ret=0000001f hi=00000000
+K09 Kbshift(-1) ret=00000001 hi=00000000
+K10 Kbshift(-32768) ret=00000001 hi=00000000
+K11 Kbshift(-1) ret=00000001 hi=00000000
+K12 Kbshift(s0) restore ret=00000001 hi=00000000
+K13 Kbshift(-1) ret=00000000 hi=00000000
+H00 conterm=07 Kbshift(-1)=00
+I00 per_tick=2978909
+T01 now=08
+T02 now=00
+T03 now=08
+T04 now=00
+T05 now=08
+T06 now=00
+T07 now=08
+T08 now=00
+H01 Kbshift(0x80) ret=00000000 hi=00000000
+H02 Kbshift(-1) ret=00000000 hi=00000000
+T09 now=02
+T10 now=00
+T11 now=08
+T12 now=00
+H03 Kbshift(s0) restore ret=00000000 hi=00000000
+Q01 sh=08 sc=47
+A01 asc=00
+Q02 sh=08 sc=52
+A02 asc=00
+Q03 sh=00 sc=47
+A03 asc=00
+Q04 sh=08 sc=47
+A04 asc=00
+Q05 sh=08 sc=52
+A05 asc=00
+Q06 sh=08 sc=47
+A06 asc=00
+Q07 sh=02 sc=1e
+A07 asc=41
+Q08 sh=08 sc=47
+A08 asc=00
+H04 queued keys=8
+Z99 end

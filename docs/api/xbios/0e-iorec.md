@@ -476,7 +476,7 @@ Atari Compendium / Profibuch: nicht in `references/`, Abgleich ausstehend.
    Billigste Variante; widerspricht dem "1:1 EmuTOS"-Ziel am deutlichsten.
 
 **E2 — Eintragsbreite (nur falls E1 = 1 oder 2):** 32-Bit-Wort wie EmuTOS
-(`shifty` zum Push-Zeitpunkt; muss an der Push-Stelle `kernel/src/ikbd.rs:295@push_rx`
+(`shifty` zum Push-Zeitpunkt; muss an der Push-Stelle `kernel/src/ikbd.rs:288@push_rx`
 und fuer die Wiederholung `:334@poll_repeat` mitgefuehrt werden) — oder das
 bestehende 16-Bit-Wort behalten (dann ist der Ring fuer Direktleser nicht
 EmuTOS-gleich). Empfehlung der Quelle: 32-Bit; die Wahl bleibt beim Anwender.

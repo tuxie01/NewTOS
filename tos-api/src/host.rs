@@ -231,20 +231,22 @@ pub trait Host: Sync {
         false
     }
 
-    /// The current keyboard shift-state bitmask (`MODE_*` bits: `0x01`
-    /// right-shift, `0x02` left-shift, `0x04` ctrl, `0x08` alt, `0x10`
-    /// caps), as BIOS `Kbshift` and VDI `vq_key_s` report it. The kernel
-    /// host reads the IKBD decoder's modifier state; the default `0`
-    /// (no modifiers) suits a hostless / keyboard-less configuration.
+    /// The current keyboard shift byte, EmuTOS `shifty` (`MODE_*` bits:
+    /// `0x01` right-shift, `0x02` left-shift, `0x04` ctrl, `0x08` alt, `0x10`
+    /// caps, `0x20` Clr/Home and `0x40` Insert pressed with Alt, bit 7 as a
+    /// program stored it), as BIOS `Kbshift` reports it; VDI `vq_key_s` masks
+    /// it to the low four bits. The kernel host reads the IKBD decoder's byte
+    /// ([`crate::bios::shifty::Shifty`]); the default `0` (no modifiers) suits
+    /// a hostless / keyboard-less configuration.
     fn keyboard_shift_state(&self) -> u8 {
         0
     }
 
-    /// Overwrite the keyboard shift-state bitmask (same `MODE_*` bits as
-    /// [`Host::keyboard_shift_state`]) — the set half of BIOS `Kbshift`
+    /// Overwrite the keyboard shift byte, all eight bits (same `MODE_*` bits
+    /// as [`Host::keyboard_shift_state`]) — the set half of BIOS `Kbshift`
     /// (`flag >= 0`, EmuTOS `ikbd.c:150` stores `flag` into the `shifty`
-    /// byte). The kernel host writes the IKBD decoder's modifier state so
-    /// a subsequent [`Host::keyboard_shift_state`] reads the value back;
+    /// byte). The kernel host writes the IKBD decoder's byte so a
+    /// subsequent [`Host::keyboard_shift_state`] reads the value back;
     /// the default is a no-op (a hostless / keyboard-less configuration
     /// has no modifier state to set). Not a stub — a `Kbshift` set with no
     /// backing keyboard simply has nothing to store, exactly as EmuTOS'

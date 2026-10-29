@@ -27,27 +27,20 @@
 
 use core::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 
+use tos_api::bios::shifty::{self, Shifty, MODE_ALT, MODE_CAPS, MODE_CTRL, MODE_LSHIFT, MODE_RSHIFT};
+
 use crate::console;
 use crate::input_gate::{HeldBytes, HELD_CAP};
 use crate::key_repeat::KeyRepeat;
 use crate::sync::SpinMutex;
 
 // ── modifier state ────────────────────────────────────────────────────
-// Left and right Shift are separate bits, as in EmuTOS' `shifty`
-// (`MODE_LSHIFT`/`MODE_RSHIFT`, `bios/ikbd.c:779-783,830-834`): the reset
-// combination tells them apart (RST01, `bios/ikbd.c:734-747`).
-static LSHIFT: AtomicBool = AtomicBool::new(false);
-static RSHIFT: AtomicBool = AtomicBool::new(false);
-static CTRL: AtomicBool = AtomicBool::new(false);
-static CAPS: AtomicBool = AtomicBool::new(false);
-static ALT: AtomicBool = AtomicBool::new(false);
-
-// IKBD scancodes of the modifier keys.
-const SC_CTRL: u8 = 0x1D;
-const SC_LSHIFT: u8 = 0x2A;
-const SC_RSHIFT: u8 = 0x36;
-const SC_ALT: u8 = 0x38;
-const SC_CAPS: u8 = 0x3A;
+// One byte, as EmuTOS' `shifty` (`bios/ikbd.c:145-153`, BIOS10 decision
+// D1 = 1): `Kbshift` stores and returns all eight bits, a key byte changes
+// only its own bit (`tos_api::bios::shifty::key_event`) — left and right
+// Shift apart (RST01), Ctrl, Alt, CapsLock, and `MODE_HOME`/`MODE_INSERT`
+// for Clr/Home and Insert pressed with Alt.
+static SHIFTY: Shifty = Shifty::new();
 
 /// Remaining data bytes to skip for the packet currently being received
 /// (mouse / joystick / status / clock). `0` = expecting a scancode or a
@@ -272,16 +265,17 @@ fn decode_key(raw: u8) {
         tos_api::bios::vectors::mousexvec(raw);
         return;
     }
+    // The shift byte first, as `kbd_int` does: the modifier switches and the
+    // Alt+Home / Alt+Insert bits (`bios/ikbd.c:777-883`) come before the
+    // ASCII conversion and the queue entry, which therefore carry the new
+    // byte (`kb_last.k.shifty = shifty`, `:898`).
+    let shifty = SHIFTY.key(raw);
     match code {
         // Modifier makes and breaks only update the shift state; a running
-        // key repeat continues (EmuTOS `bios/ikbd.c:778-801,825-870`).
-        SC_LSHIFT => LSHIFT.store(make, Ordering::Relaxed),
-        SC_RSHIFT => RSHIFT.store(make, Ordering::Relaxed),
-        SC_CTRL => CTRL.store(make, Ordering::Relaxed),
-        SC_ALT => ALT.store(make, Ordering::Relaxed), // AltGr for the DE layout
-        SC_CAPS if make => {
-            CAPS.fetch_xor(true, Ordering::Relaxed);
-        }
+        // key repeat continues (EmuTOS `bios/ikbd.c:777-798,830-870`). Alt
+        // doubles as AltGr for the DE layout (`to_ascii`). CapsLock's break
+        // is no modifier event: it goes to the `default` arm below.
+        _ if shifty::is_modifier(code) && (make || code != shifty::KEY_CAPS) => {}
         _ if make => {
             // Queue every make key as the IOREC entry `shifty << 24 |
             // scancode << 16 | ascii` with the shift state of this moment
@@ -291,7 +285,6 @@ fn decode_key(raw: u8) {
             // 0 so the AES still sees the scancode (GEMDOS console readers
             // skip them).
             let word = key_word(code);
-            let shifty = shift_state();
             console::push_rx(tos_api::xbios::iorec::entry_from_word(word, shifty));
             // It becomes the repeating key, armed with the current initial
             // delay (EmuTOS `kbd_int` `:875,891,898-903`).
@@ -357,44 +350,21 @@ pub fn poll_repeat() {
     }
 }
 
-/// The current keyboard shift-state bitmask, in BIOS `Kbshift` /
-/// VDI `vq_key_s` encoding (`MODE_*` bits, `include/biosdefs.h`):
-/// `0x01` right-shift, `0x02` left-shift, `0x04` ctrl, `0x08` alt,
-/// `0x10` caps-lock — left and right Shift each on their own bit, as
-/// EmuTOS keeps them (`bios/ikbd.c:779-783,830-834`).
+/// The current keyboard shift byte — EmuTOS `shifty`, BIOS `Kbshift(-1)`
+/// (`MODE_*` bits, `include/biosdefs.h:90-100`): `0x01` right Shift, `0x02`
+/// left Shift, `0x04` Ctrl, `0x08` Alt, `0x10` CapsLock, `0x20` Clr/Home and
+/// `0x40` Insert pressed with Alt, and bit 7 as a program stored it. VDI
+/// `vq_key_s` masks it to the low four bits (`tos_api::vdi::inquiry`).
 pub fn shift_state() -> u8 {
-    let mut m = 0u8;
-    if RSHIFT.load(Ordering::Relaxed) {
-        m |= 0x01; // MODE_RSHIFT
-    }
-    if LSHIFT.load(Ordering::Relaxed) {
-        m |= 0x02; // MODE_LSHIFT
-    }
-    if CTRL.load(Ordering::Relaxed) {
-        m |= 0x04; // MODE_CTRL
-    }
-    if ALT.load(Ordering::Relaxed) {
-        m |= 0x08; // MODE_ALT
-    }
-    if CAPS.load(Ordering::Relaxed) {
-        m |= 0x10; // MODE_CAPS
-    }
-    m
+    SHIFTY.get()
 }
 
-/// Overwrite the keyboard shift-state from a `Kbshift(flag)` set call
-/// (`flag >= 0`). Mirrors EmuTOS storing `flag` into the single `shifty`
-/// byte (`bios/ikbd.c:150`): each modifier atomic is written from the
-/// matching `MODE_*` bit so a following [`shift_state`] reads the value
-/// back, and a later physical make/break still updates its own bit. Bits 5-7
-/// (`MODE_HOME`/`MODE_INSERT`/reserved) are TT/Falcon-era and not
-/// represented, so they do not round-trip (`docs/api/bios/0b-kbshift.md`).
+/// Store the whole shift byte — the set half of `Kbshift(flag)` (`flag >= 0`;
+/// EmuTOS `shifty = flag`, `bios/ikbd.c:149-150`, the caller has truncated
+/// the WORD to its low byte). All eight bits stay until a key byte changes
+/// its own bit (BIOS10).
 pub fn set_shift_state(mask: u8) {
-    RSHIFT.store(mask & 0x01 != 0, Ordering::Relaxed); // MODE_RSHIFT
-    LSHIFT.store(mask & 0x02 != 0, Ordering::Relaxed); // MODE_LSHIFT
-    CTRL.store(mask & 0x04 != 0, Ordering::Relaxed); // MODE_CTRL
-    ALT.store(mask & 0x08 != 0, Ordering::Relaxed); // MODE_ALT
-    CAPS.store(mask & 0x10 != 0, Ordering::Relaxed); // MODE_CAPS
+    SHIFTY.set(mask);
 }
 
 /// Translate a key scancode to ASCII against the active keyboard layout
@@ -402,15 +372,16 @@ pub fn set_shift_state(mask: u8) {
 /// its control code. Returns `None` when the key has no character (cursor /
 /// function keys, unmapped scancodes).
 fn to_ascii(code: u8) -> Option<u8> {
-    let shift = LSHIFT.load(Ordering::Relaxed) || RSHIFT.load(Ordering::Relaxed);
-    let caps = CAPS.load(Ordering::Relaxed);
-    let alt = ALT.load(Ordering::Relaxed);
+    let s = SHIFTY.get();
+    let shift = s & (MODE_LSHIFT | MODE_RSHIFT) != 0;
+    let caps = s & MODE_CAPS != 0;
+    let alt = s & MODE_ALT != 0;
     let mut ch = crate::keymap::to_ascii(code, shift, caps, alt);
     if ch == 0 {
         return None;
     }
     // Ctrl + letter → the corresponding control code (Ctrl-A = 0x01 …).
-    if CTRL.load(Ordering::Relaxed) {
+    if s & MODE_CTRL != 0 {
         let up = ch.to_ascii_uppercase();
         if up.is_ascii_uppercase() {
             ch = up - b'A' + 1;

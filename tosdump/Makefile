@@ -25,6 +25,8 @@
 #   make mdprobe-newtos   MDPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make sxprobe-m68k     SXPROBE.PRG, the Setexc probe (probes/sxprobe.c)
 #   make sxprobe-newtos   SXPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make ksprobe-m68k     KSPROBE.PRG, the Kbshift probe (probes/ksprobe.c)
+#   make ksprobe-newtos   KSPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make host-test        the host-side suite (same as make -C host test)
 #
 # Same core sources for both; only abi/ differs (spec section 2).
@@ -67,13 +69,14 @@ BUILD := build
         scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
         pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
         axprobe-m68k axprobe-newtos mdprobe-m68k mdprobe-newtos \
-        sxprobe-m68k sxprobe-newtos host-test clean
+        sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
+        host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
      scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
      pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
      axprobe-m68k axprobe-newtos mdprobe-m68k mdprobe-newtos \
-     sxprobe-m68k sxprobe-newtos host-test
+     sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -205,6 +208,17 @@ $(BUILD)/SXPROBE.PRG: probes/sxprobe.c | $(BUILD)
 sxprobe-newtos: $(BUILD)/SXPROBE.NAP
 $(BUILD)/SXPROBE.NAP: probes/sxprobe.c build-sxprobe-newtos.sh | $(BUILD)
 	./build-sxprobe-newtos.sh $@
+
+# The Kbshift probe (TASK/BIOS10): no disk, key strokes injected. Run by
+# probes/run-ksprobe.sh.
+ksprobe-m68k: $(BUILD)/KSPROBE.PRG
+$(BUILD)/KSPROBE.PRG: probes/ksprobe.c | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror probes/ksprobe.c -o $@
+	@$(CROSS_MINT)size $@
+
+ksprobe-newtos: $(BUILD)/KSPROBE.NAP
+$(BUILD)/KSPROBE.NAP: probes/ksprobe.c build-ksprobe-newtos.sh | $(BUILD)
+	./build-ksprobe-newtos.sh $@
 
 host-test:
 	@$(MAKE) --no-print-directory -C host test

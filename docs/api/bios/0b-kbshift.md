@@ -5,6 +5,10 @@
 > [BIOS12] 2026-10-28: bit 5-7 statements, config note and NewTOS gaps corrected
 > from `bios/ikbd.c:145-153,876-883` and the audit probes K01-K13
 > (`measurements/measurement-2026-10-28-bios-core-audit/RUNINFO.TXT`).
+> [BIOS10] 2026-10-29: NewTOS keeps the whole byte (D1 = 1); key-path rule,
+> keyboard mouse emulation note, VDI/AES readers and line ranges corrected from
+> `bios/ikbd.c`, `vdi/vdi_input.c`, `aes/gemgsxif.c`; measured with
+> `tosdump/probes/ksprobe.c` (`measurements/measurement-2026-10-29-bios10/RUNINFO.TXT`).
 
 ## NewTOS status: **implemented (wired at BIOS 0x0B)**
 
@@ -12,9 +16,9 @@ NewTOS handles the keyboard natively (USB-HID → `crate::ikbd::feed`); the
 modifier state lives in the `ikbd` decoder. As of Task #24 `Kbshift` **is**
 wired as an in-range dispatcher handler (`tos-api/src/bios/mod.rs`,
 `kbshift`): the query path (`flag < 0`) returns
-`host().keyboard_shift_state()` and the set path (`flag >= 0`) writes it back
-through `host().set_keyboard_shift_state(flag as u8)`
-(`kernel/src/ikbd.rs::set_shift_state`). `0x0B` is a real in-range function
+`host().keyboard_shift_state()` and the set path (`flag >= 0`) writes the
+whole byte back through `host().set_keyboard_shift_state(flag as u8)`
+(`kernel/src/ikbd.rs::set_shift_state`; one byte since BIOS10). `0x0B` is a real in-range function
 id, so it dispatches to `kbshift` — it is **not** the dispatcher's
 out-of-range fall-through (which returns the function number for ids
 `> 0x0B` only). See `docs/STATUS.md` and the "Keyboard via Atari IKBD"
@@ -62,8 +66,18 @@ K08/K09; the audit table lists `13:11 w:0x1FF` and `w:0x7F81` as EXACT). The ret
 by the dispatcher (upper bits 0).
 
 `shifty` is updated in interrupt context by the IKBD scancode handler
-(`bios/ikbd.c:780-839`): key-down sets a bit, key-up clears it; CapsLock is
-toggled on key-down.
+`kbd_int` (`bios/ikbd.c:776-883`), which changes only the bit of the key it
+handles: a Shift/Ctrl/Alt make sets its bit, the break clears it
+(`:779-789`, `:832-843`); CapsLock toggles on its make, its break does nothing
+(`:844-853`); a Clr/Home or Insert make sets `MODE_HOME`/`MODE_INSERT` only if
+`MODE_ALT` is set at that moment (`:876-883`), the key's break clears the bit
+unconditionally (`:807-814`). Every other bit -- bit 7, or a bit a program
+stored -- stays until its own key event. Measured on the oracle (tt and
+falcontc identical), `tosdump/probes/ksprobe.c`, transitions after each key:
+Alt, Home, Home up, Alt up = `08 28 08 00`; Alt+Insert = `08 48 08 00`; Home
+without Alt: no change; Alt, Home, Alt up, Home up = `08 28 20 00`; after
+`Kbshift(0x80)`: LShift, LShift up, Alt, Home, Home up, Alt up =
+`82 80 88 a8 88 80` (`measurements/measurement-2026-10-29-bios10/runs/ksprobe-EMUTOS-tt/KSPROBE.LOG`).
 
 ---
 
@@ -113,7 +127,7 @@ toggled on key-down.
 | 2   | 0x04 | `MODE_CTRL`   | Control down |
 | 3   | 0x08 | `MODE_ALT`    | Alternate down |
 | 4   | 0x10 | `MODE_CAPS`   | CapsLock engaged (toggle) |
-| 5   | 0x20 | `MODE_HOME`   | Clr/Home down; set only if Alt is down when the key is pressed (`bios/ikbd.c:876-883`), cleared on release of Home (`bios/ikbd.c:807-810`) |
+| 5   | 0x20 | `MODE_HOME`   | Clr/Home down; set only if Alt is down when the key is pressed (`bios/ikbd.c:876-880`), cleared on release of Home (`bios/ikbd.c:807-810`) |
 | 6   | 0x40 | `MODE_INSERT` | Insert down; same rule (`bios/ikbd.c:881-883`, release `:811-814`) |
 | 7   | 0x80 | (none)        | no `MODE_*` constant and no code that sets it; stores via `Kbshift(flag)` do keep it |
 
@@ -124,6 +138,16 @@ that both Shifts are separate bits); `HOTSWITCH_MODE = MODE_LSHIFT|MODE_ALT =
 0x0A` (`bios/ikbd.h:26,28`). Per `biosdefs.h:96-98`, `MODE_HOME`/`MODE_INSERT`
 are only set while Alt is already down, and stay set until their own key is
 released even if Alt is released first.
+
+Alt+Clr/Home and Alt+Insert are at the same time the buttons of the keyboard
+mouse emulation (`KEY_EMULATE_RIGHT_BUTTON` = Clr/Home,
+`KEY_EMULATE_LEFT_BUTTON` = Insert outside the Amiga build, `bios/ikbd.c:93-99`):
+both keys count as "arrow keys" (`:766-775`, `:828-829`), so with Alt down
+`convert_scancode` enters mouse mode and sends a button packet
+(`:589-593`, `handle_mouse_mode` `:295-387`), and no key is queued while
+mouse mode is on (`:904-908`). The bits are set all the same. Measured: the
+oracle queues none of the Alt+Clr/Home / Alt+Insert presses of the probe,
+only Clr/Home without Alt and Shift+a (`KSPROBE.LOG` Q lines).
 
 ### Side effects on global state
 
@@ -152,6 +176,11 @@ None (does not command the keyboard controller).
 - **Truncation:** `Kbshift(0x0104)` stores only `0x04` into `shifty`
   (`Kbshift(-1)` afterwards returns `0x04`); the high byte is dropped.
 - **Always zero-extended:** the return never has bits 8–31 set.
+- **All eight bits:** `Kbshift(0x1FF)` then `Kbshift(-1)` = `0xFF`;
+  `Kbshift(0x7F81)` then `Kbshift(-1)` = `0x81` (audit probe K04/K05, K08/K09).
+- **Key path:** Alt+Clr/Home reads `0x28` while both are down, Alt+Insert
+  `0x48`; Clr/Home or Insert without Alt changes nothing; a stored bit 7 stays
+  through key events (`tosdump/probes/ksprobe.c`, transition list above).
 
 ---
 
@@ -167,7 +196,7 @@ None (does not command the keyboard controller).
    reconcile the written state against physical key positions.
 
 3. **Race with the IKBD ISR.** The scancode handler updates `shifty` from
-   interrupt context (`bios/ikbd.c:780-839`); a `Kbshift` write racing with a
+   interrupt context (`bios/ikbd.c:776-883`); a `Kbshift` write racing with a
    key event can lose the event's bit change. On Atari the ISR runs at high IPL
    so the window is small.
 
@@ -192,9 +221,20 @@ None (does not command the keyboard controller).
 
 ### Used by
 
-- AES `evnt_keybd` / key-state queries; GEMDOS console reads that report shift
-  state; `bios_init` itself (`kbshift(-1)` probed for Ctrl/Alt at boot,
-  `bios/bios.c:517,812`).
+- VDI `vq_key_s` (`vdi/vdi_input.c:110-113`): `gshift_s()` =
+  `Kbshift(-1) & 0x000f` (`:185-188`) -- the four Shift/Ctrl/Alt bits only,
+  not CapsLock nor bits 5-7.
+- AES key state (`graf_mkstate`, the `evnt_*` key-state return): `kstate`
+  comes from `gsx_kstate()` = VDI `KEY_STATE` (opcode 128, `vq_key_s`;
+  `aes/gemgsxif.c:432-436`, `aes/funcdef.h:66`), polled in `chkkbd`
+  (`aes/gemdisp.c:165`) and stored by `kchange` (`aes/geminput.c:288-293`),
+  read by `gr_mkstate` (`aes/gemgrlib.c:458-464`) -- so the AES too reports
+  `shifty & 0x0f`.
+- The keyboard queue: every queued key carries `shifty` of its key press in
+  bits 24-31 (`kb_last.k.shifty = shifty`, `bios/ikbd.c:898-909`), which
+  `Bconin(2)` returns with `conterm` bit 3 -- not a `kbshift` call.
+- `bios_init` itself (`kbshift(-1)` probed for Ctrl/Alt at boot,
+  `bios/bios.c:517,812`) and the boot screen (`bios/initinfo.c:394,412,467`).
 
 ---
 
@@ -232,24 +272,47 @@ None (does not command the keyboard controller).
 
 ## NewTOS implementation notes
 
-Wired at BIOS 0x0B. `tos-api/src/bios/mod.rs:131@kbshift` returns the
+Wired at BIOS 0x0B. `tos-api/src/bios/mod.rs:132@kbshift` returns the
 previous shift byte (zero-extended) always, and on `flag >= 0` stores `flag`
-truncated to a byte through `Host::set_keyboard_shift_state`. The byte is
-assembled from five atomics in the IKBD decoder
-(`kernel/src/ikbd.rs:362@shift_state`, `kernel/src/ikbd.rs:389@set_shift_state`):
-left and right Shift apart (RST01), Ctrl, Alt, Caps.
+truncated to a byte through `Host::set_keyboard_shift_state`.
 
-**[BIOS12] Current deviation (BIOS-CORE-009, MEASURED):** bits 5-7 are not
-represented. `Kbshift(0x1FF)` then `Kbshift(-1)` reads `0x1F` (EmuTOS `0xFF`);
-`0x7F81` reads `0x01` (EmuTOS `0x81`). The earlier justification "TT/Falcon-era"
-is refuted (`bios/ikbd.c:876-883`). Equal on both: the return is the previous
-value, the store truncates to a byte, negative flags only query (K06, K10),
-restore works (K12/K13), `bios-r1` 77 (`-1`) EQUAL.
-Not measured (PLAUSIBLE from code): the key path never sets bit 5/6 on NewTOS,
-so Alt+Clr/Home reads without `0x20`. Contract target: the whole byte
-round-trips, and the decoder sets/clears bits 5/6 like `bios/ikbd.c:807-814,
-876-883`. Fix ticket: [BIOS10](../../../TASK/BIOS10.md); update this section
-after it lands.
+[BIOS10] The decoder keeps **one byte**, as EmuTOS' `shifty` (decision D1 =
+1): `kernel/src/ikbd.rs:43@SHIFTY` is a `tos_api::bios::shifty::Shifty`
+(`tos-api/src/bios/shifty.rs:119@Shifty`); `Kbshift` stores and returns all
+eight bits (`kernel/src/ikbd.rs:366@set_shift_state`,
+`kernel/src/ikbd.rs:358@shift_state`), and each IKBD key byte changes only its
+own bit (`tos-api/src/bios/shifty.rs:89@key_event`, applied in
+`kernel/src/ikbd.rs:272@SHIFTY` (`decode_key`) before the ASCII conversion and the queue
+entry, as in `kbd_int`): left and right Shift apart (RST01), Ctrl, Alt,
+CapsLock toggle, and `MODE_HOME`/`MODE_INSERT` for Clr/Home and Insert pressed
+with Alt, cleared on their release. The previous five atomics (bits 0-4 only)
+are gone. Measured (`measurements/measurement-2026-10-29-bios10/RUNINFO.TXT`):
+audit probe lines K01-K13 and the `ksprobe` transitions T01-T24 and H01-H03
+equal the oracle (tt = falcontc); `bios-r1` 77 (`-1`) EQUAL.
+
+**Residual deviations (outside BIOS10, open):**
+
+- **Keyboard mouse emulation missing.** NewTOS has no `handle_mouse_mode`
+  (`docs/analysis/deps/mapping.tsv`, `unmapped`): Alt+Clr/Home and Alt+Insert
+  are queued as keys (with `0x28`/`0x48` etc. in bits 24-31) instead of
+  becoming mouse buttons. Measured: `ksprobe` Q lines, NewTOS 8 queued keys,
+  oracle 2.
+- **AES key state not masked.** NewTOS' AES readers (`graf_mkstate`,
+  `evnt_*` `EV_KS`, the popup key state) return the whole byte
+  (`tos-api/src/aes/graf.rs:687@graf_mkstate`,
+  `tos-api/src/aes/event.rs:284@shift_state`); EmuTOS' AES reports
+  `shifty & 0x0f` through VDI `vq_key_s` (above). CapsLock already leaked
+  before BIOS10; bits 5-7 now can too (Alt+Clr/Home held, or a program's
+  `Kbshift` store). VDI `vq_key_s` masks to `0x0f` as EmuTOS
+  (`tos-api/src/vdi/inquiry.rs:208@vq_key_s`).
+- **The byte follows the input pump.** EmuTOS updates `shifty` in the IKBD
+  interrupt; NewTOS decodes key bytes only in the trap-side input pump, and
+  `Bconstat(2)` pumps only while the keyboard queue is empty
+  (`kernel/src/host_env.rs:56@fill_from_device`); `Kbshift` itself does not
+  pump. A program that polls `Kbshift(-1)` without reading its queued keys
+  (or without any pumping call) sees a stale byte. Observed in a development
+  run of `ksprobe` (probe then changed to read keys as they come); not a
+  table case.
 
 There is no `os_kbshift` low-memory alias on the Pi; access is the trap or the
 host method.
@@ -257,7 +320,8 @@ host method.
 ### Open decisions
 
 **Decision (user 2026-10-28):** D1 = **1**, one real byte in the decoder,
-as EmuTOS' `shifty`. The options stay below as rationale.
+as EmuTOS' `shifty` -- implemented by BIOS10 (2026-10-29). The options stay
+below as rationale.
 
 **D1. Storage of bits 5-7 written by `Kbshift` (BIOS10).** EmuTOS keeps one
 byte (`shifty`); a write replaces all eight bits and a later key event only
@@ -285,11 +349,13 @@ touches its own bit (`bios/ikbd.c:780-839`).
 `Kbshift` (BIOS 0x0B) is wired in the BIOS dispatcher
 (`tos-api/src/bios/mod.rs::kbshift`). The modifier state is maintained by the
 USB-HID stack: the HID report-modifier byte is translated into IKBD modifier
-make/break codes (`drivers/usb/hid.rs`), fed through `crate::ikbd::feed`, and
-kept as a `shifty`-equivalent (`crate::ikbd::{shift_state, set_shift_state}`).
-The trap's query path returns it via `Host::keyboard_shift_state`; the set
-path writes it via `Host::set_keyboard_shift_state`. The same byte reaches the
-AES / VDI key-state consumers through the host trait. There is no
+make/break codes (`kernel/src/drivers/usb/hid.rs`), fed through
+`crate::ikbd::feed`, and kept as one `shifty` byte
+(`crate::ikbd::{shift_state, set_shift_state}`, BIOS10). The trap's query path
+returns it via `Host::keyboard_shift_state`; the set path writes it via
+`Host::set_keyboard_shift_state`. VDI `vq_key_s` reads it through the host
+trait masked to `0x0f`, as EmuTOS; NewTOS' AES reads the whole byte (EmuTOS'
+AES goes through `vq_key_s`; residual deviation above). There is no
 `os_kbshift` low-memory alias on the Pi.
 
 | Atari reference | Pi-4 model today |
@@ -305,8 +371,9 @@ AES / VDI key-state consumers through the host trait. There is no
   decoder keeps `MODE_RSHIFT` and `MODE_LSHIFT` as two bits, set and cleared
   by their own make/break codes (`0x36`/`0x2A`), as EmuTOS does
   (`bios/ikbd.c:779-783,830-834`); both round-trip through a `Kbshift` set.
-- **Bits 5-7 not represented** [BIOS12 corrected]: `MODE_HOME`/`MODE_INSERT`
-  are not "TT/Falcon-era"; EmuTOS sets them on every machine
-  (`bios/ikbd.c:876-883`). NewTOS neither stores them via `Kbshift` (MEASURED,
-  K04/K05, K08/K09) nor, PLAUSIBLE, sets them from the USB-HID key path.
-  Bits 0-4 round-trip. Open: BIOS10 / decision D1 above.
+- ~~**Bits 5-7 not represented.**~~ Closed by BIOS10 (2026-10-29): one byte,
+  all eight bits round-trip through `Kbshift`, and the USB-HID key path sets
+  and clears `MODE_HOME`/`MODE_INSERT` like `bios/ikbd.c:807-814,876-883`
+  (measured with the IKBD injector, `ksprobe` T01-T24 equal the oracle).
+- **Keyboard mouse emulation, AES mask, pump-driven byte**: see "Residual
+  deviations" above.
