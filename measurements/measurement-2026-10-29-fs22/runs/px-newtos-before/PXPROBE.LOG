@@ -1,0 +1,15 @@
+P01 Fsfirst(C:\PXPROBE.*,0) ret=0 attr=20 time=6000 date=5d51 len=122863 name=PXPROBE.PRG
+P02 Rwabs(2,buf,1,0,2,0) ret=0
+P03 Rwabs(3,buf,1,0,2,0) ret=0
+P04 Mediach(2) ret=2
+P05 Pexec(0,C:\PXPROBE.<own>,child) ret=-33
+P06 Mediach(2) ret=2
+P07 Fgetdta same=1 dta-unchanged=1 attr=20 time=6000 date=5d51 len=122863 name=PXPROBE.PRG
+F01 Rwabs(2,buf,1,0,2,0) ret=-14
+F02 Rwabs(3,buf,1,0,2,0) ret=-14
+F03 Mediach(2) ret=2
+F04 Fsfirst(C:\PXPROBE.*,0) ret=0 attr=20 time=6000 date=5d51 len=122863 name=PXPROBE.PRG
+F05 Mediach(2) ret=0
+F06 Fsnext ret=0 attr=20 time=6000 date=5d51 len=145024 name=PXPROBE.NAP
+F07 Fsnext ret=-49
+END

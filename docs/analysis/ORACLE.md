@@ -73,13 +73,16 @@ image through its own IDE driver. Evidence for every statement below:
 ```
 HATARI_ORACLE_DISK=<test.img> tools/hatari-oracle.sh disk <DUMP*.PRG> <table.tsv> <out-dir>
 HATARI_ORACLE_DISK=<test.img> tools/hatari-oracle.sh disk GCPROBE.PRG - <out-dir>
+HATARI_ORACLE_DISK=<test.img> tools/hatari-oracle.sh disk PXPROBE.PRG - <out-dir>
 ```
 
-The second form is the media-change probe `tosdump/probes/gcprobe.c`
-(TASK/FS20): no table (`-`), destructive by itself (it rewrites C:'s boot
-sector, so the fresh-clone and `fsck_msdos` rules of a destructive table
-apply), output `GCPROBE.LOG` only; both sides are run by
-`tosdump/probes/run-gcprobe.sh`.
+The second and third forms are the media-change probes
+`tosdump/probes/gcprobe.c` (TASK/FS20) and `tosdump/probes/pxprobe.c`
+(`Pexec` and `Fsfirst`, TASK/FS22): no table (`-`), destructive by
+themselves (they rewrite C:'s boot sector, so the fresh-clone and
+`fsck_msdos` rules of a destructive table apply), output `GCPROBE.LOG` /
+`PXPROBE.LOG` only; both sides are run by `tosdump/probes/run-gcprobe.sh` /
+`tosdump/probes/run-pxprobe.sh`.
 
 The script clones the image to `<out-dir>/disk.img` (the caller's file is
 never attached; the caller deletes the clone) and writes the sha256 before

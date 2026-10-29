@@ -114,6 +114,12 @@ pub enum PexecError {
     /// Mapped to `EPLFMT` (-66) for parser errors and `ENSMEM` for the
     /// size/allocation shortfalls.
     LoadFailed(LoadError),
+    /// The load met a media change that the restart did not get past: the
+    /// re-login's `Getbpb` refused the drive, or the change was still there
+    /// after `gemdos::RESTART_LIMIT` restarts (TASK/FS22). Mapped to `E_CHNG`
+    /// (-14), what EmuTOS' `osif` returns for the refused `Getbpb`
+    /// (`bdos/bdosmain.c:471-476`).
+    MediaChange,
 }
 
 impl PexecError {
@@ -135,6 +141,9 @@ impl PexecError {
             PexecError::NotFound => error::EFILNF,
             PexecError::NoSlot | PexecError::NoOwnerRoom => error::ENSMEM,
             PexecError::BadHandle => error::EIMBA,
+            PexecError::MediaChange | PexecError::LoadFailed(LoadError::MediaChange) => {
+                error::E_CHNG
+            }
             PexecError::LoadFailed(le) => match le {
                 LoadError::ProgramTooLarge
                 | LoadError::NoEnvMemory
@@ -254,6 +263,42 @@ unsafe fn create(flags: u32, tail: &[u8], env: EnvSpec<'_>) -> Result<LoadedChil
 ///
 /// Caller's BDOS-lock contract; see [`dispatch`].
 pub unsafe fn load(
+    path_bytes: &[u8],
+    tail: &[u8],
+    env: EnvSpec<'_>,
+    launch: bool,
+    owned_by_child: bool,
+) -> Result<LoadedChild, PexecError> {
+    // EmuTOS runs `xexec` inside `osif`, so a media change met anywhere in
+    // the load restarts the whole `Pexec` after the re-login
+    // (`bdos/bdosmain.c:449-486`); every NewTOS caller of this function — the
+    // `Pexec` trap handler, the kernel launcher, the accessory loader — is
+    // outside `gemdos::dispatch`, so the load runs under the same restart
+    // here (TASK/FS22). A run that met a change has failed and left nothing
+    // behind — see [`load_once`] — so the restart starts clean, as after
+    // `xexec`'s own clean-up (`bdos/proc.c:319-332`).
+    // SAFETY: caller's BDOS-lock contract, forwarded to every run.
+    let run = || unsafe { load_once(path_bytes, tail, env, launch, owned_by_child) };
+    crate::gemdos::restartable(run).unwrap_or(Err(PexecError::MediaChange))
+}
+
+/// One run of [`load`] — EmuTOS `xexec`'s load modes from `ixsfirst` on
+/// (`bdos/proc.c:255-360`).
+///
+/// A run that meets a media change fails and leaves nothing behind, which is
+/// what the restart in [`load`] needs: before the slot is taken (resolving
+/// the file, `ixsfirst`/`xopen`, `:256-268`) nothing is held; the loader
+/// reads the header before it allocates (`kpgmhdrld`, "we haven't allocated
+/// anything yet", `:271-274`) and frees the environment and the TPA on any
+/// later failure, a media change included (`xmfree(cur_p->p_env);
+/// xmfree(cur_p)`, `:322-332`; `loader::load_file_to_slot`); the slot is
+/// released below. EmuTOS' third step, `xclose(fh)`, has no counterpart: a
+/// [`FileImage`] is no open file (no `sft` entry, no OFD).
+///
+/// # Safety
+///
+/// Caller's BDOS-lock contract; see [`dispatch`].
+unsafe fn load_once(
     path_bytes: &[u8],
     tail: &[u8],
     env: EnvSpec<'_>,

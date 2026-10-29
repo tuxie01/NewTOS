@@ -1,0 +1,134 @@
+measurement-2026-10-29-fs22 -- FS22: the kernel's own file-system paths restart after a media change
+=====================================================================================================
+Developer, TASK/FS22, 2026-10-29 (host clock CET). Base HEAD e4dacd70; the lead committed 193197be
+and 2487bbea (docs only: `git diff --stat e4dacd70 HEAD -- kernel tos-api tos-types programs sdk
+tosdump tools` empty) while the work was done, so the run files name 2487bbea + the uncommitted
+FS22 change. No hardware, no real card, nothing flashed. Not committed.
+
+WHAT / WHY
+  FS20 restarted a call after a media change only inside gemdos::dispatch. The kernel's own file
+  paths -- Pexec's load (the trap handler, the kernel launcher, the accessory loader), the whole-file
+  reads of bdos::fs::read_file (AES resources, shel_find, GEM.RSC, NEWDESK.INF, KEYBOARD.KBD), the
+  directory listings (file selector, scrap, AUTO, accessories) and the shell's direct GEMDOS calls --
+  failed on a pending change until the next GEMDOS call on the drive. In EmuTOS all of them are
+  trap #1 calls under osif's restart (bdos/bdosmain.c:449-486; xexec's clean-up bdos/proc.c:319-332;
+  docs/analysis/osif-restart-coverage-2026-10-29.md). User decision 2026-10-29: option B, one
+  shared restart helper, per-path clean-up, a bound of the restart.
+  Spec: docs/api/gemdos/_state.md section 4a ("The kernel's own file-system paths [FS22]", replacing
+  "Open [FS20]"); deviation docs/COMPATIBILITY.md "A media change restarts a call at most three times".
+
+CHANGE (uncommitted, for the lead)
+  tos-api/src/gemdos/mod.rs      restartable(op): osif's restart as one helper (fresh error context
+                                 per run, media_change_relog, run again); RESTART_LIMIT = 3, then
+                                 E_CHNG after the re-login; dispatch_inner uses it
+  tos-api/src/bdos/process/pexec.rs   load = restartable(load_once); PexecError::MediaChange (E_CHNG)
+  tos-api/src/bdos/process/loader.rs  LoadError::MediaChange: a file load that met a change fails in
+                                 populate_and_map (env + TPA freed by the existing failure path)
+  tos-api/src/bdos/fs/cache.rs   media_change_pending()
+  tos-api/src/bdos/fs/mod.rs     read_file = restartable(read_file_once)
+  tos-api/src/bdos/fs/find.rs    list_dir / list_dir_ex = restartable(..._once)
+  tos-api/src/aes/shell.rs       dos_call: the shell's Dsetpath/Dgetpath/Dsetdrv/Fdelete under it
+  tos-api/tests/fs22_media_change_kernel_paths.rs (7 tests)
+  tosdump/probes/pxprobe.c (new probe), run-pxprobe.sh, pxprobe-compare.py, pxprobe-trace-check.py;
+  tosdump/build-pxprobe-newtos.sh; tosdump/Makefile targets pxprobe-m68k / pxprobe-newtos;
+  tools/hatari-oracle.sh accepts the probe PXPROBE.PRG (table "-", profile disk only, destructive).
+  docs: _state.md 4a, _dispatcher.md 8, process/4b-pexec.md (error table, NewTOS notes),
+  COMPATIBILITY.md (deviation), ORACLE.md 2 and TOS-REFERENCE-DUMPER.md 7 (the probe),
+  docs/analysis/deps/mapping.tsv (osif restartable, xexec load / load_once, kpgmld populate_and_map,
+  dispatch_inner note); shifted anchors in docs/sdk/05-abi-pitfalls.md, docs/api/xbios/0e-iorec.md,
+  TASK/FS22.md, TASK/FS20-STATUS-DONE.MD (line numbers only).
+
+THE PROBE (method/probe-runs.sh: the calls; the tools are permanent in tosdump/)
+  Same source both sides, tosdump/probes/pxprobe.c; started with the tail "child" it returns 42. Both
+  builds lie on the test drive: C:\PXPROBE.PRG and C:\PXPROBE.NAP on BOTH sides (same image bytes);
+  each side Pexecs its own build from C:. The probe itself runs from D:.
+    P01 Fsetdta, Fsfirst(C:\PXPROBE.*)   P02/P03 Rwabs read/write sector 0 RW_NOMEDIACH (arms)
+    P04 Mediach 2   P05 Pexec(0, C:\PXPROBE.<own>, "child")   P06 Mediach   P07 Fgetdta + DTA unchanged
+    F01/F02 arm again   F03 Mediach 2   F04 Fsfirst after the change   F05 Mediach   F06/F07 Fsnext
+  Build: make -C tosdump pxprobe-m68k pxprobe-newtos. PXPROBE.PRG
+  8fd783dc32583a4db531792d4e1a2a89ed144de1c5d07ecd45f781489931ec91, PXPROBE.NAP
+  d832211c10d3709393ceb46bc372fca1dad1c8f24f4a40c7b5ba5d918dd8428c.
+  Test image: tools/mktestdisk.sh with C:\NEWDESK.INF "#R 02 / #Z 01 D:\PXPROBE.NAP@" and the two
+  probes, 7da8c3ce50131c5bddd084e0fb17474c71146735b4dd25a61ac5c4e9b89da99f, a fresh clone per run;
+  test partition before 429eab71dddc97022e55456f7e68c0ffef59db910fd58b59ca3f3356fca1a889.
+  Manifests runs/*/test.img.manifest, runs/*/card.img.manifest, every one verbatim:
+    optional_missing none
+  Oracle: tools/hatari-oracle.sh disk PXPROBE.PRG - (pinned ROM, tools/oracle/hatari.cfg, IDE master
+  C:, probe on D:), twice (px-emutos-1, px-emutos-2).
+  NewTOS: tools/mkcard.sh MKCARD_TESTDISK, QEMU raspi4b, -append serial=on, kernels built with
+  `cargo xtask build --board rpi4 --release --features bios-arg-trace`:
+    after  376bcdcdec2ad9f67ff7e223bb1b3651e781e868b9aad5f93812b361e87da317 (this tree)
+    before 5e78d74663554aea13a8392d408cdc44daaa34e92c73410ee657ff8c21636e56 (git archive of e4dacd70
+           in scratch)
+  Both NewTOS runs: "D:\PXPROBE.NAP' exited with rc=0", "desktop up (2 drives)".
+
+RESULTS (runs/px-compare-*.txt, runs/px-*/PXPROBE.LOG)
+  step                                     EmuTOS (1, 2)        NewTOS before     NewTOS after
+  P04 Mediach after the arming             2                    2                 2
+  P05 Pexec(0) of C:\PXPROBE.<own>         42 (child's code)    -33 (EFILNF)      42
+  P06 Mediach after the Pexec              0                    2                 0
+  P07 caller's DTA after the Pexec         unchanged (44 B)     unchanged         unchanged
+  F04 Fsfirst after the change: DTA        attr=20 time=6000 date=5d51 len=122863 name=PXPROBE.PRG (all three)
+  F05 Mediach                              0                    0                 0
+  F06/F07 Fsnext                           PXPROBE.NAP / -49    same              same
+  PXPROBE.LOG vs EmuTOS-1                  (2: identical)       P05, P06 (and     identical
+                                                                F01/F02 -14: the
+                                                                change of part P
+                                                                still pending)
+  test partition after                     = before (429eab71..) on all four runs; NewTOS after vs
+                                           EmuTOS-1 identical byte for byte.
+  fsck_msdos -n of every test partition after the probe: exit 0 (runs/*/fsck-after.txt).
+  The DTA's public part is logged by field (native byte order each side); the reserved bytes 0-20
+  are each system's own (docs/api/structures/dta.md) and are compared only same-side (P07).
+  F04 already matched before FS22 (Fsfirst goes through gemdos::dispatch, FS20); it is the acceptance
+  item "Fsfirst after the restart gives the oracle's DTA". The open point "ixsfirst DTA" of the
+  analysis is closed by P07: xexec's ixsfirst takes no DTA (bdos/proc.c:258 -- the analysis cites
+  :256 -- and bdos/fsdir.c:440-477), and NewTOS's Pexec leaves it alone too.
+  VERDICT: Pexec after a media change and Fsfirst after the restart equal to the oracle.
+
+INPUT TRACE (runs/px-trace-check-*.txt, tosdump/probes/pxprobe-trace-check.py)
+  Both NewTOS runs: the probe's 8 BIOS calls (P02-P04, P06, F01-F03, F05) contiguous in caller U0's
+  trace, every argument at the EmuTOS call form as pxprobe.c passes it, every traced result = the
+  logged value; no other BIOS/XBIOS call of U0 or of any other EL0 caller (the Pexec child makes
+  none); no Rwabs/Getbpb/Mediach of the kernel itself (the re-login calls bpb::geometry, not the
+  trap). Oracle side: no trace (as FS20).
+
+NO-REGRESSION
+  gcprobe (FS20; method/probe-runs.sh, after kernel above): GCPROBE.LOG identical to the oracle run
+  gc-emutos; test partition 36b5a14f88f075a7a649b7a1945d418378eb399f06d7f38e612573ee8d8bb1b0 = FS20's
+  "after", vs the oracle one byte (GCPROBE.DAT FA_ARCHIVE, the known FS21 finding); trace check OK;
+  fsck_msdos exit 0. (runs/gc-*.)
+  BIOS tables (method/regress-runs.sh, cargo xtask tosdump, QEMU raspi4b, no features), after = this
+  tree, before = --tree <git archive of e4dacd70>:
+    bios-r2      3 of 51   (before 3)     x001 0 of 8  (0)     x004 6 of 10 (6)
+    x005         1 of 13   (1)            x006 5 of 11 (5)     phys 11 of 12 (11)
+    bios-r1 tt  41 of 147  (41)           bios-r1 falcontc 45 of 147 (45)
+  NEWLY DIFFERING: none, GONE: none (per-case lists, comm, every table and reference).
+  End states x001 84bcadfb.., x004 a7cf3d2c.., x005 84bcadfb.., x006 ea645cfc.. before = after (= FS20's).
+  All 14 runs "ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0"; test partitions
+  fsck_msdos -n exit 0 except x004 206 / x006 202 (the broken boot sectors those tables write, as
+  before and on the oracle). Manifests runs/{after,before}-*/*.manifest: optional_missing none.
+
+HOST TESTS
+  cargo xtask test (full): 1790 passed, 0 failed, 1 ignored (baseline 1783/0/1 + 7 new). Of the 7
+  new tests of tos-api/tests/fs22_media_change_kernel_paths.rs, 5 were run on e4dacd70 (a scratch copy,
+  the PexecError::MediaChange assert dropped) and fail there: read_file None, list_dir_ex 0,
+  list_dir [], Pexec -33 (EFILNF) instead of -66, Pexec -33 instead of -14 (E_CHNG); the 2 tests of
+  restartable / RESTART_LIMIT do not compile there (new API). All 7 pass now.
+  make -C tosdump host-test exit 0; sdk/run-host-tests.sh 27 passed, 0 failed, 0 skipped.
+  cargo xtask deps --check-mapping: 1027 rows, all resolve.
+
+BUILD / BOOT
+  cargo xtask build --board rpi4 --release and --board qemu-virt: clean, tos-api 64 / kernel 93
+  rustc warnings (= base, none in the touched files); clippy tos-api 74 (= e4dacd70, measured in the
+  scratch copy), the new test file without a lint. Desktop: raspi4b in every run above ("desktop
+  up"); qemu-virt `cargo xtask run --board qemu-virt` headless: "[desk] desktop up (0 drives)".
+
+FILES
+  method/  probe-runs.sh (the probe calls), regress-runs.sh (the BIOS tables)
+  runs/    px-emutos-1, px-emutos-2, px-newtos-after, px-newtos-before, gc-emutos, gc-newtos-after
+           (PXPROBE.LOG / GCPROBE.LOG, run.txt, manifests, hatari.log/disk.sha256 or BOOT-SERIAL.txt,
+           fsck-after.txt), px-compare-*.txt, px-trace-check-*.txt, gc-compare-after.txt,
+           gc-trace-check-after.txt, {after,before}-{r2,x001,x004,x005,x006,phys,r1}
+  Images, cards, kernels and the scratch trees are not kept (scratch, deleted); sha256 above and in
+  runs/*/run.txt. manifest.sha256 covers every file of this run except itself.

@@ -12,6 +12,9 @@
 #   make scrninfo-newtos  SCRNINFO.NAP, the same probe for NewTOS (AArch64)
 #   make gcprobe-m68k     GCPROBE.PRG, the media-change probe (probes/gcprobe.c)
 #   make gcprobe-newtos   GCPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make pxprobe-m68k     PXPROBE.PRG, the Pexec/Fsfirst media-change probe
+#                         (probes/pxprobe.c)
+#   make pxprobe-newtos   PXPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make host-test        the host-side suite (same as make -C host test)
 #
 # Same core sources for both; only abi/ differs (spec section 2).
@@ -51,10 +54,12 @@ BUILD := build
 
 .PHONY: all dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
         dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
-        scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos host-test clean
+        scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
+        pxprobe-m68k pxprobe-newtos host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
-     scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos host-test
+     scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
+     pxprobe-m68k pxprobe-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -129,6 +134,18 @@ $(BUILD)/GCPROBE.PRG: probes/gcprobe.c | $(BUILD)
 gcprobe-newtos: $(BUILD)/GCPROBE.NAP
 $(BUILD)/GCPROBE.NAP: probes/gcprobe.c build-gcprobe-newtos.sh | $(BUILD)
 	./build-gcprobe-newtos.sh $@
+
+# The Pexec/Fsfirst media-change probe (TASK/FS22): the same shape as
+# gcprobe; each build is also the other side's test-image file (C:\PXPROBE.PRG
+# and C:\PXPROBE.NAP). Run by probes/run-pxprobe.sh.
+pxprobe-m68k: $(BUILD)/PXPROBE.PRG
+$(BUILD)/PXPROBE.PRG: probes/pxprobe.c | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror probes/pxprobe.c -o $@
+	@$(CROSS_MINT)size $@
+
+pxprobe-newtos: $(BUILD)/PXPROBE.NAP
+$(BUILD)/PXPROBE.NAP: probes/pxprobe.c build-pxprobe-newtos.sh | $(BUILD)
+	./build-pxprobe-newtos.sh $@
 
 host-test:
 	@$(MAKE) --no-print-directory -C host test

@@ -271,6 +271,7 @@ allocation and the block is copied verbatim. `env==NULL` → the parent's
 | Image too big for the TPA (text+data > TPA, or no room for BSS) | `bdos/kpgmld.c:140-141` | `ENSMEM` (-39) |
 | Relocation offset wraps/overruns BSS, or an odd/out-of-range fixup | `bdos/kpgmld.c:184-185,265-268` | `EPLFMT` (-66) |
 | I/O error during `kpgmld` (sector read fails) | `bdos/kpgmld.c:151-153` | pass-through of the negative BIOS/`Rwabs` error |
+| A media change met during the load (`E_CHNG` from a buffer or `Rwabs`) | `bdos/proc.c:319-332`, `bdos/bdosmain.c:455-486` | no error: the clean-up, the re-login in `osif` and the whole `Pexec` again; `E_CHNG` (-14) only when the re-login's `Getbpb` fails (`:471-476`) — NewTOS also after `RESTART_LIMIT` restarts (`docs/api/gemdos/_state.md` §4a [FS22]) |
 
 **Error paths not in Compendium:** the header-magic and relocation-format checks
 both collapse to `EPLFMT`; `EGSBF` (-67) is *documented* by Compendium as a
@@ -514,6 +515,19 @@ follows text+data+symbols (a 4-byte first offset, then byte deltas).
 ## NewTOS implementation notes
 
 (Empty during Phase 00.)
+
+Media change during the load (TASK/FS22, 2026-10-29): the kernel's `Pexec`
+handler, the kernel launcher and the accessory loader all load through
+`tos-api/src/bdos/process/pexec.rs:265@load`, which runs each load under the
+GEMDOS dispatcher's restart (`tos-api/src/gemdos/mod.rs:201@restartable`):
+a load that meets a media change on its drive fails and frees what it holds
+(the environment and the TPA in the loader, the slot in
+`tos-api/src/bdos/process/pexec.rs:301@load_once` — EmuTOS' `xexec` clean-up,
+`bdos/proc.c:319-332`; NewTOS streams a `FileImage`, so there is no file to
+close), the drive is logged in again and the load runs once more. The
+caller's DTA is untouched (`xexec` looks the file up without one,
+`bdos/proc.c:258`). Spec and measurement: `docs/api/gemdos/_state.md` §4a
+[FS22].
 
 PHASE-06 D4/D5 status (2026-06-16):
 - `PE_LOADGO` (0), `PE_LOAD` (3), `PE_GO` (4) implemented and verified in QEMU.

@@ -1,0 +1,8 @@
+DUMPBIOS build ----, record format 3
+pointer 8 bytes, word order 2
+BIOS.TSV: 12 cases, CRC 514944FD
+disk table: test drive C:, 0 preludes
+unit token u:0 = physical unit 26 (DISKUNIT.TXT, the run's profile)
+running 12 cases
+all 12 cases ran
+BIOS.BIN: 12 records, 3872 bytes

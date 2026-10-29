@@ -15,9 +15,10 @@ mark_bcbs_invalid	bdos/bdosmain.c	tos-api/src/bdos/fs/cache.rs	invalidate_drive	
 ni	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	dispatch_inner	empty table slot -> EINVFN (build_table None)
 offree	bdos/bdosmain.c	tos-api/src/bdos/fs/file.rs	free_drive_files	the sft entries and OFDs of the changed drive freed (FS20)
 osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	dispatch	GEMDOS trap dispatcher
-osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	dispatch_inner	the fresh error context per run and the restart after a media change (goto restrt)
+osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	dispatch_inner	the call under the restart after a media change (restartable: fresh error context per run, goto restrt)
 osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	run_call	the table call
 osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	media_change_relog	the media-change block: offree, DMD, freetree, mark_bcbs_invalid, Getbpb + log_media (FS20)
+osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	restartable	the restart after a media change (setjmp at restrt:, the E_CHNG block, goto restrt) as one helper: the dispatcher and the kernel's own file-system paths (Pexec load, read_file, list_dir, the shell's calls; FS22); bounded by RESTART_LIMIT, then E_CHNG (COMPATIBILITY.md)
 osif	bdos/bdosmain.c	tos-api/src/gemdos/console.rs	redirect_to_file	osif's file block for redirected standard handles
 osif	bdos/bdosmain.c	tos-api/src/bdos/fs/file.rs	resolve	osif's handle resolution for Fread/Fwrite/Fseek
 osif	bdos/bdosmain.c	tos-api/src/gemdos/console.rs	device_read	osif's Fread on a character device
@@ -170,6 +171,7 @@ shrinkit	bdos/iumem.c	tos-api/src/bdos/mem/pool.rs	shrinkit	-
 kpgm_relocate	bdos/kpgmld.c	tos-api/src/bdos/process/reloc.rs	relocate	relocation: ELF RELA, not the PRG fixup list
 kpgmhdrld	bdos/kpgmld.c	tos-api/src/bdos/process/elf.rs	parse	program header: NewTOS loads ELF, not PRG
 kpgmld	bdos/kpgmld.c	tos-api/src/bdos/process/loader.rs	load_from_source	load a program: ELF, not PRG
+kpgmld	bdos/kpgmld.c	tos-api/src/bdos/process/loader.rs	populate_and_map	the segment reads; a file load that met a media change fails here (LoadError::MediaChange), as the longjmp ends kpgmld (FS22)
 pgfix01	bdos/kpgmld.c	tos-api/src/bdos/process/reloc.rs	relocate	relocation: ELF RELA, not the PRG fixup list
 pgmld01	bdos/kpgmld.c	tos-api/src/bdos/process/loader.rs	populate_and_map	segments + BSS + basepage
 getosm	bdos/osmem.c	-	-	no counterpart: EmuTOS's OS memory pool (osmem[]) for DMD/DND/OFD blocks; NewTOS keeps those in Rust statics, no OS pool
@@ -197,6 +199,8 @@ proc_go	bdos/proc.c	tos-api/src/bdos/process.rs	note_started	run = p
 reserve_blocks	bdos/proc.c	tos-api/src/bdos/mem/free_all_owned.rs	reserve_all_owned	Ptermres; NewTOS keeps the block on mp_mal under the TSR owner
 x0term	bdos/proc.c	tos-api/src/bdos/process/pterm.rs	terminate_zero	Pterm0 0x00
 xexec	bdos/proc.c	tos-api/src/bdos/process/pexec.rs	dispatch	Pexec 0x4B
+xexec	bdos/proc.c	tos-api/src/bdos/process/pexec.rs	load	the load modes (0, 3) under osif's restart after a media change (FS22)
+xexec	bdos/proc.c	tos-api/src/bdos/process/pexec.rs	load_once	one run of the load modes; its failure path is xexec's setjmp clean-up (proc.c:319-332): env + TPA freed by the loader, the slot released, no file handle (FS22)
 xterm	bdos/proc.c	tos-api/src/bdos/process/pterm.rs	terminate	Pterm 0x4C
 xtermres	bdos/proc.c	tos-api/src/bdos/process/pterm.rs	terminate_resident	Ptermres 0x31
 bdos_trap2	bdos/rwa.S	-	-	no counterpart: trap #2 with d0 = 0 as Pterm0 (CP/M-68K relic, bdos/rwa.S); no NewTOS counterpart found

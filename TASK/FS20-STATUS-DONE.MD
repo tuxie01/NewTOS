@@ -15,12 +15,12 @@ Datum 2026-10-29 · Beleg
   Verweise in `docs/api/gemdos/_dispatcher.md` §8, `docs/api/bios/09-mediach.md`,
   `docs/api/gemdos/process/_run-ownership-curdir.md`.
 - **Fix:** `tos-api/src/bdos/fs/cache.rs` — jeder Puffer kennt sein Laufwerk;
-  Treffer fragt `Mediach` (`tos-api/src/bdos/fs/cache.rs:255@hit_test`), jeder
+  Treffer fragt `Mediach` (`tos-api/src/bdos/fs/cache.rs:263@hit_test`), jeder
   Geraetezugriff macht die Medientests eines logischen `Rwabs`
-  (`tos-api/src/bdos/fs/cache.rs:270@rwabs_test`), `mark_bcbs_invalid` =
-  `tos-api/src/bdos/fs/cache.rs:284@invalidate_drive`. `osif` =
+  (`tos-api/src/bdos/fs/cache.rs:278@rwabs_test`), `mark_bcbs_invalid` =
+  `tos-api/src/bdos/fs/cache.rs:292@invalidate_drive`. `osif` =
   `tos-api/src/gemdos/mod.rs:150@dispatch_inner` (Neustart) mit
-  `tos-api/src/gemdos/mod.rs:210@media_change_relog`; `offree` =
+  `tos-api/src/gemdos/mod.rs:254@media_change_relog`; `offree` =
   `tos-api/src/bdos/fs/file.rs:1326@free_drive_files`, `freetree`s
   `dirtbl`-Teil = `tos-api/src/bdos/fs/curdir.rs:332@free_drive`, Abmelden
   `tos-api/src/bdos/fs/fat.rs:108@log_out`; `Volume` traegt sein Laufwerk.

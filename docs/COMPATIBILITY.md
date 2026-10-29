@@ -1011,6 +1011,29 @@ EmuTOS would read the old one back from the card, and the clean buffers of that
 drive survive. Tests `tos-api/tests/gemdos_fs_device_error.rs`;
 run `measurements/measurement-2026-09-27-hw03/`.
 
+**A media change restarts a call at most three times** — user decision,
+2026-10-29 (TASK/FS22, work item 3: *"Wiederholungsgrenze: EmuTOS startet
+unbegrenzt neu. NewTOS begrenzt (z. B. 3), danach `E_CHNG` … (laut statt
+Haenger)"*). EmuTOS' `osif` logs a drive in again after a media change and
+restarts the call with `goto restrt` (`references/emutos/bdos/bdosmain.c:
+455-486`) — every time, with no count: a call that meets a change on every run
+never returns. NewTOS runs the same re-login and restart
+(`tos-api/src/gemdos/mod.rs:201@restartable`, used by the GEMDOS dispatcher
+and by the kernel's own file-system paths, `docs/api/gemdos/_state.md` §4a),
+but restarts one call at most `RESTART_LIMIT` = 3 times
+(`tos-api/src/gemdos/mod.rs:170@RESTART_LIMIT`, a policy value like
+`WRITEBACK_ATTEMPTS` above); a run that still meets a change after that gets
+the re-login and then `E_CHNG` (-14), the code EmuTOS returns when the
+re-login's `Getbpb` fails (`:471-476`). **Observable difference**, only where
+EmuTOS hangs: a single change needs one restart (the re-login's `Getbpb`
+disarms `forcechange`, and no BDOS path issues an `Rwabs` that could arm it
+again), so the bound is reached only when the medium changes again during
+every restarted run, or a driver keeps answering "changed" after `Getbpb`.
+There EmuTOS loops for ever; NewTOS reports the change. Test
+`tos-api/tests/fs22_media_change_kernel_paths.rs`
+(`the_restart_gives_up_with_e_chng_after_restart_limit_restarts`); run
+`measurements/measurement-2026-10-29-fs22/RUNINFO.TXT`.
+
 **A desk accessory's GEMDOS calls act on the accessory; only `*os_run` and
 the `p_parent` of its children follow `run`** — user decision, 2026-10-18
 (TASK/PROC03 B5, option 2, "Anwenderentscheidung B5"; kernel memory follows

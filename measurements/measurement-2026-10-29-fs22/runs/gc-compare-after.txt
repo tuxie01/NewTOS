@@ -1,0 +1,30 @@
+emutos:
+  A05 Mediach(2) ret=2
+  A06 Dfree(C:) ret=0 free=32671 total=32672 secsiz=512 clsiz=4
+  A07 Mediach(2) ret=0
+  B03 Mediach(2) ret=2
+  B04 Dfree(C:) ret=0 free=32675 total=32676 secsiz=512 clsiz=4
+  B05 Mediach(2) ret=0
+  B06 Fcreate(C:\GCPROBE.DAT) ret=6 Fwrite=512 Fclose=0
+  B07 Getbpb(2) nz=1 bpb=512,4,2048,16,128,129,273,32676,1
+  B08 Mediach(2) ret=0
+  testpart-after sha256 7fe84f32c48c90b0e67233b120c7361e88a87097ddea6979d9432b04ce294b24
+  root entries 256, data area (datrec) 273
+  marker in partition sector 277 = cluster 3 by the boot sector on disk
+newtos-after:
+  A05 Mediach(2) ret=2
+  A06 Dfree(C:) ret=0 free=32671 total=32672 secsiz=512 clsiz=4
+  A07 Mediach(2) ret=0
+  B03 Mediach(2) ret=2
+  B04 Dfree(C:) ret=0 free=32675 total=32676 secsiz=512 clsiz=4
+  B05 Mediach(2) ret=0
+  B06 Fcreate(C:\GCPROBE.DAT) ret=6 Fwrite=512 Fclose=0
+  B07 Getbpb(2) nz=1 bpb=512,4,2048,16,128,129,273,32676,1
+  B08 Mediach(2) ret=0
+  testpart-after sha256 36b5a14f88f075a7a649b7a1945d418378eb399f06d7f38e612573ee8d8bb1b0
+  root entries 256, data area (datrec) 273
+  marker in partition sector 277 = cluster 3 by the boot sector on disk
+  GCPROBE.LOG vs emutos: identical
+  testpart vs emutos: raw DIFFERENT in partition sectors [257]; after zeroing the root directory time stamps: DIFFERENT in [257]
+    sector 257: bytes 0x04b (entry 2 +0x0b) emutos 20 / newtos-after 00
+VERDICT: differs from the reference

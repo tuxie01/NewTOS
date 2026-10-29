@@ -110,6 +110,18 @@ const FA_SUBDIR: u8 = 0x10;
 /// the shared set `tos_types::gemdos` (DESK43 U6b).
 const TRAP_GEMDOS: u16 = 1;
 
+/// A GEMDOS call the shell makes straight into the BDOS (`dos_chdir`,
+/// `dos_gdir`, `dos_sdrv`, `dos_delete` in EmuTOS, `trap #1` calls): run under
+/// the dispatcher's restart after a media change, as `osif` runs them
+/// (TASK/FS22, `crate::gemdos::restartable`). `E_CHNG` when the restart gives
+/// up.
+fn dos_call(
+    f: fn(&crate::trap::TrapArgs) -> tos_types::Long,
+    args: &crate::trap::TrapArgs,
+) -> tos_types::Long {
+    crate::gemdos::restartable(|| f(args)).unwrap_or_else(|code| code)
+}
+
 /// The `SHELL sh` structure (`gemshlib.c:76-83`) plus the AES globals the
 /// shell manager owns: `D.s_cmd` (the command of the program to run next),
 /// `ad_stail` (its command tail) and `sh_apdir` (`:86-87`, the directory a
@@ -318,7 +330,7 @@ pub fn scrp_clear(pb: &Aespb) {
                 svc_imm: TRAP_GEMDOS,
                 space: crate::uaccess::Space::Kernel,
             };
-            if fdelete(&args) == tos_types::error::E_OK {
+            if dos_call(fdelete, &args) == tos_types::error::E_OK {
                 deleted_any = true;
             }
         }
@@ -572,7 +584,7 @@ fn sh_curdrvdir(ppath: &mut [u8]) {
         svc_imm: TRAP_GEMDOS,
         space: crate::uaccess::Space::Kernel,
     };
-    let _ = crate::bdos::fs::dirops::dgetpath(&args);
+    let _ = dos_call(crate::bdos::fs::dirops::dgetpath, &args);
     if ppath[2] == 0 {
         ppath[2] = PATHSEP;
         ppath[3] = 0;
@@ -909,7 +921,7 @@ fn set_drvdir(path: &[u8]) {
                 svc_imm: TRAP_GEMDOS,
                 space: crate::uaccess::Space::Kernel,
             };
-            let _ = crate::bdos::fs::drive::dsetdrv(&args);
+            let _ = dos_call(crate::bdos::fs::drive::dsetdrv, &args);
         }
     }
     // `dos_chdir(path)`: Dsetpath takes a NUL-terminated kernel pointer.
@@ -922,7 +934,7 @@ fn set_drvdir(path: &[u8]) {
         svc_imm: TRAP_GEMDOS,
         space: crate::uaccess::Space::Kernel,
     };
-    let _ = crate::bdos::fs::dirops::dsetpath(&args);
+    let _ = dos_call(crate::bdos::fs::dirops::dsetpath, &args);
 }
 
 /// `sh_chdef` (`gemshlib.c:537-566`) — set the drive and directory the next

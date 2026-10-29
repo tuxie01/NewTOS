@@ -380,6 +380,10 @@ operations use it.
 **[FS20]** Where the BDOS meets a media change, what the re-login does to open
 files, current directories and buffers, and how NewTOS reproduces the restart
 without `longjmp`: `_state.md` §4a.
+**[FS22]** NewTOS runs the same restart for the kernel's own file-system
+paths (`Pexec`'s load, the kernel's file reads and directory listings, the
+shell's GEMDOS calls) and bounds it: at most three restarts per call, then
+`E_CHNG` (a sanctioned deviation, `docs/COMPATIBILITY.md`): `_state.md` §4a.
 
 ---
 

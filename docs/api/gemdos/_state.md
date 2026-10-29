@@ -567,7 +567,7 @@ On `errcode == E_CHNG`, in this order:
 
 Any other hard error (`errcode != E_CHNG`) only marks the drive's buffers
 invalid and returns the code (`:489-492`); see §3 and the HW03 deviation in
-`tos-api/src/bdos/fs/cache.rs:340@write_back` (NewTOS keeps a dirty buffer
+`tos-api/src/bdos/fs/cache.rs:348@write_back` (NewTOS keeps a dirty buffer
 whose write-back failed).
 
 **What a media change does not touch.** The DTA of an `Fsfirst`/`Fsnext`
@@ -591,8 +591,8 @@ cluster 3 in partition sector 277, the new geometry's (`datrec` 273).
   a device access, as `ckdrv` does for a fixed drive.
 - The BDOS reaches the card through the block cache (`bios::bcache`), not
   through `Rwabs`, so the BDOS sector cache asks the BIOS media state itself
-  at places 2 and 3 (`tos-api/src/bdos/fs/cache.rs:255@hit_test`,
-  `tos-api/src/bdos/fs/cache.rs:270@rwabs_test`): on a hit `Mediach`'s answer
+  at places 2 and 3 (`tos-api/src/bdos/fs/cache.rs:263@hit_test`,
+  `tos-api/src/bdos/fs/cache.rs:278@rwabs_test`): on a hit `Mediach`'s answer
   (`bios::media_change`), before every device access the media tests of a
   logical `Rwabs` without `RW_NOMEDIACH` (`forcechange` armed or
   `Mediach` > 0 → `E_CHNG`). Each buffer remembers its drive (`b_bufdrv`).
@@ -600,13 +600,15 @@ cluster 3 in partition sector 277, the new geometry's (`datrec` 273).
   first `errdrv` of the call (`tos-api/src/bdos/fs/cache.rs:227@signal_media_change`),
   and the call returns through its error paths. While the change is pending
   every further access to that drive fails the same way, so nothing reaches
-  the disk after the detection. `gemdos::dispatch` — `osif` — then runs steps
-  1-7 (`tos-api/src/gemdos/mod.rs:210@media_change_relog`) and runs the call
-  again (`tos-api/src/gemdos/mod.rs:150@dispatch_inner`): `offree` =
+  the disk after the detection. `gemdos::dispatch` — `osif` — runs the call
+  under the restart (`tos-api/src/gemdos/mod.rs:146@dispatch_inner`,
+  `tos-api/src/gemdos/mod.rs:201@restartable`): after a run that met a
+  change, steps 1-7 (`tos-api/src/gemdos/mod.rs:254@media_change_relog`) and
+  the call once more: `offree` =
   `tos-api/src/bdos/fs/file.rs:1326@free_drive_files`, `freetree`'s
   `dirtbl` half = `tos-api/src/bdos/fs/curdir.rs:332@free_drive` (NewTOS keeps
   no DND tree), the DMD = `tos-api/src/bdos/fs/fat.rs:108@log_out`,
-  `mark_bcbs_invalid` = `tos-api/src/bdos/fs/cache.rs:284@invalidate_drive`,
+  `mark_bcbs_invalid` = `tos-api/src/bdos/fs/cache.rs:292@invalidate_drive`,
   `Getbpb` + `log_media` = `Volume::mount` (`bpb::geometry` clears
   `forcechange`, `docs/api/bios/07-getbpb.md`). A `Getbpb` refusal returns
   `E_CHNG`; NewTOS has no `log_media` failure of its own (`bpb::parse` already
@@ -616,13 +618,78 @@ cluster 3 in partition sector 277, the new geometry's (`datrec` 273).
   before the restart. Device state cannot differ (every later access to the
   drive fails until the re-login); in-memory effects of those error paths
   are overwritten by the restarted run or freed by steps 1-4.
-- **Open [FS20]:** BDOS work that does not enter through `gemdos::dispatch`
-  — `Pexec` (the kernel's frame-mutating path) and the kernel's direct file
-  readers (`bdos::fs::read_file`: the AES resource loader, `shel_find`, the
-  file selector's resource, `NEWDESK.INF`, the keyboard table) — meets the
-  pending change and fails, without a re-login; the next GEMDOS call that
-  touches the drive re-logs it. In EmuTOS all of these are GEMDOS traps and
-  restart. Not decided (report of TASK/FS20).
+
+**The kernel's own file-system paths [FS22]** (formerly "Open [FS20]",
+decided 2026-10-29: option B, `TASK/FS22.md`). In EmuTOS every file access of
+the AES, the desktop and the program loader is a `trap #1` call
+(`include/gemdos.h:55-100`, `include/bdosbind.h:38-50`,
+`util/miscasm.S:21-27,50-66`) and so runs inside `osif` under its restart;
+`Pexec` is `xexec` under `osif` (`bdos/bdosmain.c:271`)
+(`docs/analysis/osif-restart-coverage-2026-10-29.md` §2-3). NewTOS's kernel
+reads beside the dispatcher; each such path runs under the dispatcher's
+restart, the one helper `tos-api/src/gemdos/mod.rs:201@restartable`:
+
+| Path | NewTOS | Callers | EmuTOS |
+|---|---|---|---|
+| `Pexec`'s load (modes 0, 3) | `tos-api/src/bdos/process/pexec.rs:265@load` | the `Pexec` trap handler (outside `gemdos::dispatch`), the kernel launcher, the accessory loader | `xexec` (`bdos/proc.c:255-360`) |
+| whole-file read | `tos-api/src/bdos/fs/mod.rs:148@read_file` | AES resources, `shel_find`, the file selector's `GEM.RSC`, `NEWDESK.INF`, `KEYBOARD.KBD` | `dos_open`/`dos_read`/`dos_sfirst` (`aes/gemrslib.c:839`, `aes/gemshlib.c:414-462`, `aes/geminit.c:247`) |
+| directory listing | `tos-api/src/bdos/fs/find.rs:351@list_dir`, `tos-api/src/bdos/fs/find.rs:424@list_dir_ex` | the file selector; scrap clearing, accessory loader, AUTO folder, boot-image lookup | `dos_sfirst`/`dos_snext` (`aes/gemfslib.c:285-310`, `aes/gemsclib.c:93-100`) |
+| the shell's own GEMDOS calls | `tos-api/src/aes/shell.rs:118@dos_call` (`Dsetpath`, `Dgetpath`, `Dsetdrv`, `Fdelete`) | `sh_curdrvdir`, `set_drvdir`, `scrp_clear` | `dos_chdir`, `dos_gdir`, `dos_sdrv`, `dos_delete` |
+
+The desktop (`programs/desktop`) is an EL0 program; it reads through
+`svc #1` (`programs/newtos-gem/src/gemdos.rs:204@dos_open`), i.e. through
+`gemdos::dispatch`, and needs nothing of its own. The tracers (`gemdos-trace`,
+`aes-trace`, `dbg_qedtrace`) write their logs through the BDOS directly and
+are debug features outside this rule.
+
+**Clean-up before the restart [FS22].** EmuTOS's `longjmp` abandons a run at
+the first failed access. The one EmuTOS path that holds resources across it
+is `xexec`, which catches the jump with its own `setjmp`, frees the
+environment and the basepage, closes the program file and re-throws to
+`osif` (`bdos/proc.c:319-332`); before those allocations there is nothing to
+free (`:271-274`) and the open handle goes with `offree`. NewTOS's run goes
+on through its error paths instead, so each path's own failure path is that
+clean-up, and a run that met a change must have failed:
+
+- `Pexec`: resolving the file and reading the header allocate nothing; the
+  loader frees the environment and the TPA on every later failure
+  (`tos-api/src/bdos/process/loader.rs:391@load_from_source`), and a file
+  load that met a change fails even where the reads' own error paths would
+  not have said so (`LoadError::MediaChange` in `populate_and_map`,
+  `tos-api/src/bdos/process/loader.rs:598@MediaChange`); the run releases the process slot
+  (`tos-api/src/bdos/process/pexec.rs:301@load_once`). `xclose(fh)` has no
+  counterpart: the loader streams a `FileImage`, no `sft` entry or OFD.
+- `read_file`, `list_dir`, `list_dir_ex`: a run holds only the caller's
+  output buffer, which the next run writes again; the callers act on the
+  last run's result only.
+- `gemdos::dispatch` and the shell's calls: as above.
+
+The caller's DTA is not part of `Pexec`'s state: `xexec` looks the program up
+with `ixsfirst(path, 0, 0L)` — no DTA (`bdos/proc.c:258`,
+`bdos/fsdir.c:440-477`) — and NewTOS's lookup writes none either. Measured
+equal (`P07` below).
+
+**Restart bound [FS22].** EmuTOS restarts without limit (`goto restrt`,
+`bdos/bdosmain.c:484-486`). NewTOS restarts a call at most `RESTART_LIMIT`
+= 3 times (`tos-api/src/gemdos/mod.rs:170@RESTART_LIMIT`); a run that still
+meets a change after that gets the re-login (steps 1-6) and then `E_CHNG`
+(-14) instead of a fourth restart — for the dispatcher and for every path
+above (`Pexec` answers `E_CHNG`, `read_file` `None`, a listing 0 entries).
+One restart is all a single change needs (the re-login's `Getbpb` disarms
+`forcechange`; no BDOS path issues an `Rwabs`), so the bound is reached only
+by changes from outside the call — a medium swapped again during every
+restarted run, or a driver whose `Mediach` keeps answering "changed". A
+sanctioned deviation: `docs/COMPATIBILITY.md`, "A media change restarts a
+call at most three times".
+
+**Measured [FS22]** (probe `tosdump/probes/pxprobe.c`, both sides,
+`measurements/measurement-2026-10-29-fs22/RUNINFO.TXT`). After a logical
+sector-0 write with `RW_NOMEDIACH` on C:, `Pexec(0)` of a program on C:
+returns the child's exit code 42 and `Mediach(2)` is 0 after it (P05, P06);
+the caller's DTA is unchanged by the `Pexec`, all 44 bytes (P07). After a
+second arming, `Fsfirst` on C: fills the DTA's public part as before the
+change, and `Fsnext` continues the search (F04-F07). Oracle and NewTOS
+equal; NewTOS before FS22: `Pexec` -33 (`EFILNF`), the change still pending.
 
 ---
 

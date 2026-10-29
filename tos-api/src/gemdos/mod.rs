@@ -135,17 +135,13 @@ pub fn dispatch(args: &TrapArgs) -> Long {
 
 /// The dispatch itself; [`dispatch`] only wraps it in the tracer.
 ///
-/// EmuTOS `osif` (`bdos/bdosmain.c:431-492`): each run of the call starts
-/// with a fresh hard-error context (`restrt:` + `setjmp(errbuf)`,
-/// `:442-449`); when the run met a media change, the drive is logged in
-/// again ([`media_change_relog`]) and the call is run once more from the
-/// start with the same arguments (`goto restrt`, `:486`), its first return
-/// value dropped (`docs/api/gemdos/_state.md` §4a, TASK/FS20).
-///
-/// The loop ends: a successful re-login has read the boot sector through
-/// `Getbpb`, which disarms the drive's `forcechange`
-/// (`crate::bios::bpb::geometry`), and its buffers are gone; a GEMDOS call
-/// issues no `Rwabs` that could arm it again.
+/// EmuTOS `osif` (`bdos/bdosmain.c:431-492`): the call runs under the
+/// restart after a media change ([`restartable`]) — a fresh hard-error
+/// context per run, and after a run that met a media change the drive is
+/// logged in again and the call run once more with the same arguments, its
+/// first return value dropped (`docs/api/gemdos/_state.md` §4a, TASK/FS20).
+/// A call that still meets a change after [`RESTART_LIMIT`] restarts
+/// returns `E_CHNG` (TASK/FS22, `docs/COMPATIBILITY.md`).
 #[inline]
 fn dispatch_inner(args: &TrapArgs) -> Long {
     if host().is_none() {
@@ -153,21 +149,69 @@ fn dispatch_inner(args: &TrapArgs) -> Long {
         // the trap path remains reentrant.
         return EUNDEV;
     }
+    restartable(|| run_call(args)).unwrap_or_else(|code| code)
+}
+
+/// How often one call is restarted after a media change before it gives up
+/// with `E_CHNG` — a NewTOS bound on EmuTOS' unbounded `goto restrt`
+/// (`bdos/bdosmain.c:484-486`), sanctioned in `docs/COMPATIBILITY.md`
+/// (TASK/FS22).
+///
+/// One restart is all a single change needs: the re-login's `Getbpb`
+/// disarms the drive's `forcechange` (`crate::bios::bpb::geometry`) and
+/// drops its buffers, and no BDOS path issues an `Rwabs` that could arm it
+/// again. A second change can only come from outside the call — a medium
+/// swapped again while the restarted run is in progress, or a driver whose
+/// `Mediach` keeps answering "changed" after `Getbpb`. EmuTOS loops for ever
+/// on the second; NewTOS gives two more restarts and then reports the change
+/// instead of hanging the caller. Three is the policy number of the
+/// neighbouring bound, `WRITEBACK_ATTEMPTS` in `crate::bdos::fs::cache`: a
+/// policy value, not a specification one.
+pub const RESTART_LIMIT: u32 = 3;
+
+/// Run `op` under `osif`'s restart after a media change (`bdos/bdosmain.c:
+/// 442-487`) — the one restart helper of the GEMDOS dispatcher and every
+/// kernel-internal file-system path (`Pexec`'s load, `bdos::fs::read_file`,
+/// the directory listings of the file selector, the shell and the kernel
+/// launcher, the shell's own GEMDOS calls; TASK/FS22).
+///
+/// Each run starts with a fresh hard-error context — EmuTOS re-arms
+/// `setjmp(errbuf)` at `restrt:` (`:442-449`, `docs/api/gemdos/_dispatcher.md`
+/// §8); without it a device error nobody consumed could leak into the next
+/// result (HW03). When the run met a media change
+/// (`crate::bdos::fs::cache::take_media_change`, EmuTOS `errcode == E_CHNG`
+/// with `errdrv`), its result is dropped, the drive is logged in again
+/// ([`media_change_relog`], `:455-482`) and `op` runs once more
+/// (`goto restrt`, `:484-486`).
+///
+/// `op` must leave nothing behind when its run met a change: EmuTOS'
+/// `longjmp` abandons the run at the first failed access, and the one EmuTOS
+/// path that holds resources across the jump cleans up before it re-throws
+/// (`xexec`, `bdos/proc.c:319-332`). Here the run continues through its error
+/// paths instead, so each caller's own failure path is that cleanup (the
+/// per-path list: `docs/api/gemdos/_state.md` §4a).
+///
+/// `Err(E_CHNG)` when the re-login's `Getbpb` refuses the drive (`:471-476`)
+/// or after [`RESTART_LIMIT`] restarts: the drive is then logged in afresh
+/// (or out), but `op` is not run again.
+///
+/// Not nested: every caller is a trap entry or a kernel path outside one,
+/// so the media-change state the helper clears and takes is the current
+/// run's alone.
+pub fn restartable<T>(mut op: impl FnMut() -> T) -> Result<T, Long> {
+    let mut restarts = 0;
     loop {
-        // A fresh hard-error context for this run — EmuTOS re-arms
-        // `setjmp(errbuf)` at the top of `osif` (`bdos/bdosmain.c:442-449`,
-        // `docs/api/gemdos/_dispatcher.md` §8). Without it a device error
-        // nobody consumed could leak into the next call's result (HW03).
         crate::bdos::fs::cache::clear_error();
-        let rc = run_call(args);
-        match crate::bdos::fs::cache::take_media_change() {
-            None => return rc,
-            Some(drv) => {
-                if let Err(code) = media_change_relog(drv) {
-                    return code;
-                }
-            }
+        let result = op();
+        let Some(drv) = crate::bdos::fs::cache::take_media_change() else {
+            return Ok(result);
+        };
+        drop(result);
+        media_change_relog(drv)?;
+        if restarts == RESTART_LIMIT {
+            return Err(E_CHNG);
         }
+        restarts += 1;
     }
 }
 

@@ -138,7 +138,19 @@ fn read_stream(s: &mut fsio::Stream, dst: &mut [u8]) -> Option<usize> {
 /// the name is a directory. Used by the AES resource loader, the shell and
 /// the keyboard-table loader to pull a file off the FAT file system without
 /// going through the SFT handle table.
+///
+/// Runs under the restart after a media change, as every one of these reads
+/// is a GEMDOS call in EmuTOS (`dos_open`/`dos_read`/`dos_sfirst` through
+/// `trap #1`, `osif`'s restart; TASK/FS22): a read that meets a change logs
+/// the drive in again and is made once more. A run holds nothing but `out`,
+/// which the next run writes again; the caller sees only the last run's
+/// result. `None` also when the restart gives up (`E_CHNG`).
 pub fn read_file(path: &str, out: &mut [u8]) -> Option<usize> {
+    crate::gemdos::restartable(|| read_file_once(path, out)).ok().flatten()
+}
+
+/// One run of [`read_file`].
+fn read_file_once(path: &str, out: &mut [u8]) -> Option<usize> {
     let (vol, parent, name11) = path::findit(path).ok()?;
     let entry = dir::find_in_dir(&vol, parent, &name11)?;
     if entry.attrib & 0x10 != 0 {

@@ -243,6 +243,14 @@ pub fn take_media_change() -> Option<u16> {
     (d != NO_DRIVE).then_some(d as u16)
 }
 
+/// Has the running call met a media change (without taking it)? Lets a path
+/// that holds resources across its reads fail on it as EmuTOS' `longjmp`
+/// would (the program loader, TASK/FS22) and leave the drive to
+/// [`take_media_change`].
+pub fn media_change_pending() -> bool {
+    MEDIA_CHANGE_DRV.load(Ordering::Relaxed) != NO_DRIVE
+}
+
 /// What `getbcb` does with a buffer hit (`bdos/fsbuf.c:177-191`): it asks
 /// `Mediach(b_bufdrv)` before the record is used. `Ok(true)` = use the
 /// buffer (`0`, or a negative driver answer); `Ok(false)` = the media may

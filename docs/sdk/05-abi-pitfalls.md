@@ -98,7 +98,7 @@ verbatim (length byte first).
 | libc `malloc` | mintlib `__sbrk` → GEMDOS `Malloc` in hunks of 8–32 KiB (larger requests one block each) with the default `_stksize` (`_split_mem`, `sdk/libc/mintlib/unix/sbrk.c:54-66@_split_mem`, `sdk/libc/overlay/mintlib/malloc.c:26-27@MINHUNK`, `sdk/libc/mintlib/unix/sbrk.c:59@Malloc`); with `_stksize < -1`/`-1` the own heap above the image | the pool (`PF_TTRAMMEM` → TT-RAM preferred); every hunk is one BDOS block: at most 8192 blocks per process (`mdlimit=`), no fixed system-wide MD count (MEM05, `docs/COMPATIBILITY.md`) |
 | GEMDOS `Malloc`/`Mxalloc` | the pool block's own address, valid in every process (ARCH03 stage 1, VA = PA; `tos-api/src/gemdos/memory.rs`) | the pool itself — no per-process window or block-table limit any more |
 | kernel structures returned by pointer | published read-only into the window (ADR-023): `Getbpb`, `Getmpb`; screen memory published read/write, uncached: `Physbase`, `Logbase` | see B3 for what is still not published |
-| system variables, OSHEADER, cookie jar | materialised in page 0 of the TPA at the classic addresses (`tos-api/src/bdos/process/loader.rs:1124@populate_sysvars`) | read-only in substance: the cookie mirror is rewritten from the kernel jar on every change (`tos-api/src/bdos/process/loader.rs:1367@refresh_cookie_mirrors`); writes to the mirror do not reach the kernel |
+| system variables, OSHEADER, cookie jar | materialised in page 0 of the TPA at the classic addresses (`tos-api/src/bdos/process/loader.rs:1142@populate_sysvars`) | read-only in substance: the cookie mirror is rewritten from the kernel jar on every change (`tos-api/src/bdos/process/loader.rs:1385@refresh_cookie_mirrors`); writes to the mirror do not reach the kernel |
 
 ---
 
@@ -172,7 +172,7 @@ COOKIE) = 16`, the stride scan takes 3 steps from `0x5F0` and stops at
 
 **Cause**: two independent LP64 effects. (1) An **8-byte read of `$5A0`**
 fuses `_p_cookies` with `ramtop`@`$5A4`: measured `0x3BE00000000005F0`. (2) A
-jar slot is two 32-bit LONGs = 8 bytes (`tos-api/src/bdos/process/loader.rs:1315-1316@wr_long` writes
+jar slot is two 32-bit LONGs = 8 bytes (`tos-api/src/bdos/process/loader.rs:1333-1334@wr_long` writes
 `wr_long(tag); wr_long(value)` per slot), but `struct { long name; long
 value; }` is **16** bytes on LP64, so `cookie++` reads every second slot and
 the `{0, capacity}` terminator reads as `capacity << 32 ≠ 0`.
@@ -301,7 +301,7 @@ the program's path), as mintlib's `parseargs()` does — including its in-place
 rewrite of the block (cut at `ARGV=`, `"PATH=\0C:\\\0"` joined to
 `"PATH=C:\\"`), see [07](07-mintlib-limits.md) §5. A program that must work with either route can still
 read the tail itself from the basepage (`p_cmdlin` at offset 0x80: length
-byte, then text — `tos-api/src/bdos/process/loader.rs:746-752@p_cmdlin`) or use `shel_read`
+byte, then text — `tos-api/src/bdos/process/loader.rs:764-770@p_cmdlin`) or use `shel_read`
 (`sdk/apps/chaintest/chaintest.c:41@shel_read`, `:56@shel_write` shows both directions, including a
 `shel_write` that passes a tail). For a benchmark that needs parameters, build
 one binary per configuration (CoreMark's `CORE.NCP`/`COREVAL.NCP`).

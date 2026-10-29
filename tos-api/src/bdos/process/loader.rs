@@ -116,6 +116,13 @@ pub enum LoadError {
     /// the image (ARCH03 stage 0d, [`super::reloc`]). Maps to `EPLFMT`,
     /// like every other "this file is not a program I can load" answer.
     Reloc(RelocError),
+    /// The streamed file's drive met a media change during the load
+    /// (TASK/FS22): EmuTOS' `longjmp` ends `kpgmld` at the first failed
+    /// access and `xexec` frees the environment and the basepage
+    /// (`bdos/proc.c:319-332`); [`load_from_source`] frees both and fails the
+    /// same way, and `pexec::load` restarts the load after the re-login. Maps
+    /// to `E_CHNG` should it ever reach a caller.
+    MediaChange,
 }
 
 /// How `Pexec` supplies the child's environment block. Mirrors the
@@ -578,6 +585,17 @@ unsafe fn populate_and_map(
         // The BSS tail (`mem_size - file_size`) is already zero from the
         // image-span fill above, so no per-segment re-zero is needed.
         image_top = image_top.max(seg.vaddr + seg.mem_size);
+    }
+    // The reading is done. A file load that met a media change on the way
+    // has failed, whatever the reads' own error paths made of it
+    // (TASK/FS22): EmuTOS' `longjmp` ends `kpgmld` at the first failed access
+    // and `xexec` frees the environment and the basepage
+    // (`bdos/proc.c:319-338`) — here the caller's error path, before the
+    // root is built. Only a streamed file can meet a change; the flag
+    // belongs to the current run of `pexec::load`'s restart, which cleared
+    // it before the run.
+    if matches!(src, ImageSource::File(_)) && crate::bdos::fs::cache::media_change_pending() {
+        return Err(LoadError::MediaChange);
     }
 
     // Apply the image's `R_AARCH64_RELATIVE` relocations ([`super::reloc`]):

@@ -1,0 +1,12 @@
+caller U0: the probe's 8 BIOS calls at trace numbers 0..7
+  P02 #     0 13:0x04 Rwabs    w:0x0002 p:0x0000000001a26960 w:0x0001 w:0x0000 w:0x0002 l:0x00000000 -> 0x0000000000000000  OK
+  P03 #     1 13:0x04 Rwabs    w:0x0003 p:0x0000000001a26960 w:0x0001 w:0x0000 w:0x0002 l:0x00000000 -> 0x0000000000000000  OK
+  P04 #     2 13:0x09 Mediach  w:0x0002 -> 0x0000000000000002  OK
+  P06 #     3 13:0x09 Mediach  w:0x0002 -> 0x0000000000000000  OK
+  F01 #     4 13:0x04 Rwabs    w:0x0002 p:0x0000000001a26960 w:0x0001 w:0x0000 w:0x0002 l:0x00000000 -> 0x0000000000000000  OK
+  F02 #     5 13:0x04 Rwabs    w:0x0003 p:0x0000000001a26960 w:0x0001 w:0x0000 w:0x0002 l:0x00000000 -> 0x0000000000000000  OK
+  F03 #     6 13:0x09 Mediach  w:0x0002 -> 0x0000000000000002  OK
+  F05 #     7 13:0x09 Mediach  w:0x0002 -> 0x0000000000000000  OK
+other BIOS/XBIOS calls of U0: 0
+kernel (K) Rwabs/Getbpb/Mediach calls: 0
+VERDICT: every argument and result as the probe passes and logs

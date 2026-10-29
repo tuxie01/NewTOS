@@ -1,0 +1,6 @@
+** measurements/measurement-2026-10-29-fs22/runs/gc-newtos-after/testpart-after.img
+** Phase 1 - Preparing FAT
+** Phase 2 - Checking Directories
+** Phase 3 - Checking for Orphan Clusters
+Warning: 2 files, 65348 KiB free (32674 clusters)
+exit 0

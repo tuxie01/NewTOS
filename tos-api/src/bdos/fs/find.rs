@@ -342,7 +342,18 @@ fn name_83(fat: &[u8; 11]) -> [u8; 14] {
 /// `fs_active`). Like Atari TOS / EmuTOS (`gemfslib.c:290-292`), entries
 /// past the buffer are silently ignored. Returns the number written. Used
 /// by the AES file selector (`fsel_input`).
+///
+/// Runs under the restart after a media change: EmuTOS' file selector lists
+/// through `dos_sfirst`/`dos_snext`, GEMDOS calls with `osif`'s restart
+/// (`aes/gemfslib.c:285-310`; TASK/FS22). A run that met a change is made
+/// once more after the re-login; it holds nothing but `names`/`attrs`, which
+/// the next run writes again. 0 when the restart gives up (`E_CHNG`).
 pub fn list_dir(path: &str, names: &mut [[u8; 16]], attrs: &mut [u8]) -> usize {
+    crate::gemdos::restartable(|| list_dir_once(path, names, attrs)).unwrap_or(0)
+}
+
+/// One run of [`list_dir`].
+fn list_dir_once(path: &str, names: &mut [[u8; 16]], attrs: &mut [u8]) -> usize {
     let (vol, parent, comp) = match super::path::resolve_parent(path) {
         Ok(x) => x,
         Err(_) => return 0,
@@ -404,7 +415,18 @@ impl Default for DirInfo {
 
 /// Like [`list_dir`] but also captures size and date/time per entry, for
 /// the desktop's text view and sort orders. Returns the number filled.
+///
+/// Its callers are kernel paths — the shell's scrap clearing, the
+/// accessory loader, the AUTO folder and the boot-image lookup — that EmuTOS
+/// makes as `Fsfirst`/`Fsnext` calls (e.g. `aes/gemsclib.c:93-100`), so it
+/// runs under the restart after a media change like [`list_dir`]
+/// (TASK/FS22). 0 when the restart gives up (`E_CHNG`).
 pub fn list_dir_ex(path: &str, out: &mut [DirInfo]) -> usize {
+    crate::gemdos::restartable(|| list_dir_ex_once(path, out)).unwrap_or(0)
+}
+
+/// One run of [`list_dir_ex`].
+fn list_dir_ex_once(path: &str, out: &mut [DirInfo]) -> usize {
     let (vol, parent, comp) = match super::path::resolve_parent(path) {
         Ok(x) => x,
         Err(_) => return 0,

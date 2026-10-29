@@ -1,0 +1,6 @@
+** measurements/measurement-2026-10-29-fs22/runs/px-emutos-2/testpart-after.img
+** Phase 1 - Preparing FAT
+** Phase 2 - Checking Directories
+** Phase 3 - Checking for Orphan Clusters
+Warning: 3 files, 65080 KiB free (32540 clusters)
+exit 0

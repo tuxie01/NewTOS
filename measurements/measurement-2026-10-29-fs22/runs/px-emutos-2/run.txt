@@ -1,0 +1,7 @@
+pxprobe run, side emutos (2026-10-29T08:44:42Z)
+tree      2487bbea4130036b4a0dd06920d301777f73640a 12 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    PXPROBE.PRG 8fd783dc32583a4db531792d4e1a2a89ed144de1c5d07ecd45f781489931ec91 PXPROBE.NAP d832211c10d3709393ceb46bc372fca1dad1c8f24f4a40c7b5ba5d918dd8428c
+test.img  7da8c3ce50131c5bddd084e0fb17474c71146735b4dd25a61ac5c4e9b89da99f (tools/mktestdisk.sh NEWDESK.INF=#R 02/#Z 01 D:\PXPROBE.NAP@, C:\PXPROBE.PRG, C:\PXPROBE.NAP)
+testpart  before 429eab71dddc97022e55456f7e68c0ffef59db910fd58b59ca3f3356fca1a889
+oracle    tools/hatari-oracle.sh disk (pinned ROM, tools/oracle/hatari.cfg)
+testpart  after  429eab71dddc97022e55456f7e68c0ffef59db910fd58b59ca3f3356fca1a889

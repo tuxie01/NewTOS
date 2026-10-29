@@ -195,8 +195,8 @@ Damit der Flush im Benutzerzustand **schreibbar** ist, muss `ibufhd`/`ibuftl`
 ausfuehrbaren Seite liegen. Vor XBIOS01 gab es genau eine solche Seite: die
 prozessprivate RW-Seite bei `0x7F000` (`tos-api/src/bdos/process/mmu.rs:259@PRIV_PAGE_VA`,
 Modul-Kopf `tos-api/src/bdos/process/mmu.rs:21@PRIV_PAGE_VA`), belegt mit der `Kbdvbase`-Tabelle (`0x00-0x5F`,
-`tos-api/src/bdos/process/loader.rs:1033@KBDVECS_AREA_SIZE`) und dem
-`PARMBLK`-Scratch ab `+0x100` (`loader.rs:1004@PARMBLK_SCRATCH_VA`, 40 Byte).
+`tos-api/src/bdos/process/loader.rs:1051@KBDVECS_AREA_SIZE`) und dem
+`PARMBLK`-Scratch ab `+0x100` (`loader.rs:1022@PARMBLK_SCRATCH_VA`, 40 Byte).
 Frei bleiben ab `+0x128` rund 3,7 KiB; ein Satz Records mit Puffern
 (IKBD 24+256, MIDI 24+128, AUX 56+256+256 = 1000 Byte) passt dort hinein
 (Rechnung aus den oben zitierten Groessen). Ob es dorthin gehoert, haengt an

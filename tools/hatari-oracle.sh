@@ -20,9 +20,10 @@
 #                      DUMPBIOS' unit token u:0 (docs/api/bios/04-rwabs.md
 #                      "Decisions"; docs/TOS-REFERENCE-DUMPER.md section 6)
 #   dumper   DUMPVDI.PRG, DUMPAES.PRG, DUMPRAST.PRG or DUMPBIOS.PRG (m68k);
-#            or the probe GCPROBE.PRG (tosdump/probes/gcprobe.c, TASK/FS20):
-#            no table (give -), profile disk only, always destructive (it
-#            rewrites C:'s boot sector), writes GCPROBE.LOG only
+#            or a probe, GCPROBE.PRG (tosdump/probes/gcprobe.c, TASK/FS20)
+#            or PXPROBE.PRG (tosdump/probes/pxprobe.c, TASK/FS22): no table
+#            (give -), profile disk only, always destructive (it rewrites
+#            C:'s boot sector), writes <PROBE>.LOG only
 #   table    the case table; staged as VDI.TSV / AES.TSV / RASTER.TSV /
 #            BIOS.TSV; - for a probe
 #   out-dir  receives hd/ (the GEMDOS drive: C:, in profile disk D:),
@@ -71,6 +72,7 @@ case $PRG in
     DUMPRAST.PRG) AREA=RASTER ;;
     DUMPBIOS.PRG) AREA=BIOS ;;
     GCPROBE.PRG)  AREA=GCPROBE; PROBE=1 ;;
+    PXPROBE.PRG)  AREA=PXPROBE; PROBE=1 ;;
     *) echo "unknown dumper: $PRG" >&2; exit 2 ;;
 esac
 if [ "$PROBE" = 1 ]; then
