@@ -1,0 +1,53 @@
+measurement-2026-10-30-cook02 -- COOK02 country facts: where the oracle's _AKP 0x0100 and _IDT 0x112E come from
+==============================================================================================================
+Researcher, 2026-10-30 (host clock CET). Tree HEAD 60824ec8 (main) with other tasks' uncommitted changes
+(not touched). No product code changed, nothing on NewTOS, no hardware, no real card, nothing flashed.
+Oracle (Hatari) only. Not committed.
+
+WHAT / WHY
+  TOOL18 measured _AKP = 0x00000100 and _IDT = 0x0000112E on the pinned EmuTOS 1a7484ab (a `make 512
+  COUNTRY=de` ROM). The source read (docs/analysis/cook02-country-facts-2026-10-30.md section 3) explains
+  both from Hatari's default NVRAM: byte 7 (keyboard) = 0, bytes 8/9 (IDT) = 0x11 0x2E, and EmuTOS built
+  with CONF_MULTILANG 0 takes the display country (high byte) from the OS header (DE = 1) and only the
+  keyboard (low byte) from NVRAM. This run tests that explanation: the same jar table, same ROM, same
+  Hatari, with Hatari's [Keyboard] nKbdLayout / nLanguage set (Hatari copies them into NVRAM bytes 21 / 20
+  when they are not -1: Hatari src/falcon/nvram.c NvRam_Init). Prediction written BEFORE the runs:
+    base       nKbdLayout -1, nLanguage -1  -> _AKP 0x0100
+    kbd1       nKbdLayout  1, nLanguage -1  -> _AKP 0x0101   (keyboard byte follows NVRAM)
+    lang2      nKbdLayout -1, nLanguage  2  -> _AKP 0x0100   (language byte ignored: CONF_MULTILANG 0)
+    lang2kbd2  nKbdLayout  2, nLanguage  2  -> _AKP 0x0102
+    _IDT 0x112E in all four (NVRAM bytes 8/9 untouched).
+
+INPUTS
+  ROM        tools/oracle/etos512de-1a7484ab.img 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+  Hatari     2.6.1 macOS bundle (tools/oracle/oracle.env ORACLE_HATARI)
+  hatari.cfg tools/oracle/hatari.cfg c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46
+             base uses it unchanged in content; the other three are copies with only the two lines
+             nKbdLayout / nLanguage changed (runs/<variant>/hatari-<variant>.cfg, [Keyboard] section:
+             nCountryCode -1 in all four)
+  Profile    tt (tools/hatari-oracle.sh tt: --machine tt --tos-res ttmed --monitor vga); HOME = an empty
+             directory per run, so no hatari.nvram file exists and Hatari starts with its built-in NVRAM
+  table      tosdump/cases/jar-r1.tsv 7b56cf55a2a5e2168330a3c71664bac137afd4eb08c5f28ad54425309d202c2d
+  DUMPBIOS.PRG (make -C tosdump dumpbios-m68k at HEAD 60824ec8)
+             ba3403a66e655c620b4ee366e3a0daf6a75261cb50e9e7589d7815ed4711af06
+  hatari-oracle.sh sha256 bae9bb1bb37be1c9383ff55f42f1c0ba4c4fed428671bd57b294a511a050c02a; run through a
+             scratch copy that differs in two lines only (HERE fixed to the repo's tools/, and
+             ORACLE_HATARI_CFG := $COOK02_CFG after oracle.env is read; method/nvram-variants.sh)
+
+RESULT (runs/<variant>/decoded.txt; case 52 = jar:_AKP, case 53 = jar:_IDT)
+  variant     nKbdLayout nLanguage   _AKP         _IDT         BIOS.BIN sha256 (first 16)
+  base            -1        -1      0x00000100   0x0000112E   76c0054c5bbce9c7
+  kbd1             1        -1      0x00000101   0x0000112E   b77e435d9f3f565f
+  lang2           -1         2      0x00000100   0x0000112E   76c0054c5bbce9c7  (= base, byte-identical)
+  lang2kbd2        2         2      0x00000102   0x0000112E   6d614e8bd36cccf7
+  All four predictions hit. The other 20 jar cases are unchanged: tosdiff base vs kbd1 = 1 of 22 differ
+  (case 52 only). tosdiff against TOOL18's oracle-tt-1 BIOS.BIN: 0 of 22 differ.
+  Verdict MEASURED for: with this ROM and Hatari, _AKP's low byte is Hatari's NVRAM keyboard byte, its high
+  byte is not influenced by Hatari's nLanguage; _IDT is not influenced by either setting.
+
+FILES
+  method/nvram-variants.sh   the one script of the run
+  runs/<variant>/            BIOS.BIN, BIOS.LOG, profile.txt, hatari-<variant>.cfg, decoded.txt
+  manifest.sha256            sha256 of every file of this run except itself
+Scratch (deleted or in the session scratchpad, not kept): dumper build, per-run hd/ trees, the patched
+hatari-oracle script copy. BIOS.BIN files are gitignored (*.bin); the shas above identify them.

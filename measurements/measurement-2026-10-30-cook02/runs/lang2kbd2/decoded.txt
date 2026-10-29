@@ -1,0 +1,23 @@
+format 3, area 1, 22 records, build 6082, case CRC 2D0D269D
+  41  jar:*      12 entries: _CPU _VDO _FPU _MCH _SWI _SND _FRB _AKP _IDT _FDC XHDI SCSI
+  44  jar:_CPU   0x0000001E
+  45  jar:_VDO   0x00020000
+  46  jar:_FPU   0x00060000
+  47  jar:_MCH   0x00020000
+  48  jar:_SWI   0x000000BF
+  49  jar:_SND   0x00000003
+  50  jar:_FRB   0x00013350
+  51  jar:_FLK   absent
+  52  jar:_AKP   0x00000102
+  53  jar:_IDT   0x0000112E
+  54  jar:_FDC   0x01415443
+  55  jar:__NF   absent
+  56  jar:XHDI   0x00E0F702
+  57  jar:SCSI   0x000050B6
+  58  jar:_5MS   absent
+  61  jar:_CF_   absent
+  62  jar:_MCF   absent
+  63  jar:_NET   absent
+  64  jar:NVDI   absent
+  67  jar:NTOS   absent
+  68  jar:EdDI   absent
