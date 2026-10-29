@@ -48,3 +48,11 @@ was FireBee-Firmware tatsaechlich setzt (Quelle noch nicht gesehen).
 `_AKP`: Bits 0–7 Tastaturlayout, 8–15 Systemsprache (0 USA, 1 Deutschland, …);
 NewTOS setzt fest 0 (US/US) — sollte der geladenen Belegung folgen
 (`KEYBOARD.KBD` deutsch → Low-Byte 1), Sprache 0 (Desktop-Texte englisch).
+
+## Nachtrag 2026-10-29 (ARCH06)
+
+Umgesetzt mit [ARCH06](ARCH06.md) nach dem Nachtrag zu ADR-012 vom
+2026-10-28 (`docs/MEMORY.md`): `_MCH` = `0xFFFFFFFF` (`MCH_NOHARD`),
+`tos-api/src/cookie.rs:225@MCH_NOHARD`, Konstante
+`tos-api/src/cookie.rs:250@MCH_NOHARD`. Die Zeilenangaben im Befund oben
+beschreiben den Stand vom 2026-10-19. `_AKP` bleibt hier unberuehrt.

@@ -215,13 +215,36 @@ pub fn del(tag: u32) -> bool {
 
 /// Seed the NewTOS default cookie set at boot (replaces EmuTOS'
 /// `fill_cookie_jar`). Only the tags that are meaningful for NewTOS are
-/// present; the Atari-hardware cookies (`_VDO`/`_SND`/`_FDC`/`_FPU`) are
-/// deliberately omitted. Values are provisional bring-up policy, except
-/// `EdDI`, whose value is fixed by spec decision E2 ([`EDDI_MARKER`]).
+/// present; the Atari-hardware cookies (`_VDO`/`_SND`/`_FDC`/`_FPU`/`_CPU`)
+/// are deliberately omitted (ADR-012 amendment 2026-10-28; `_VDO` is open
+/// until TASK/ARCH06's measurement is decided). `_MCH` is fixed by that
+/// amendment ([`MCH_NOHARD`]) and `EdDI` by spec decision E2
+/// ([`EDDI_MARKER`]); `_IDT` and `_AKP` are bring-up policy.
 pub fn seed_defaults(version: u32) {
     set(NTOS, version); // NewTOS identity + version
-    set(MCH, 0x0005_0000); // machine id: a NewTOS-specific marker (non-Atari)
+    set(MCH, MCH_NOHARD); // machine id: EmuTOS MCH_NOHARD, no Atari hardware
     set(IDT, 0x0000_112F); // date/time: '/' sep, DD-MM-YY, 24-hour
     set(AKP, 0x0000_0000); // keyboard language: US
     set(EDDI, EDDI_MARKER); // VDI answers vq_scrninfo; marker, no dispatcher (E2)
 }
+
+/// Value of the [`MCH`] cookie: EmuTOS' `MCH_NOHARD`, "no ST-compatible
+/// hardware" (`references/emutos/include/cookie.h:50`), the value EmuTOS'
+/// `setvalue_mch` reports in a build without Atari hardware
+/// (`references/emutos/bios/machine.c:400-401`, the `#else` branch of
+/// `CONF_ATARI_HARDWARE`). That is NewTOS's situation: no Shifter, Videl,
+/// MFP or FDC. User decision, ADR-012 amendment 2026-10-28
+/// (`docs/MEMORY.md`, TASK/ARCH05, TASK/ARCH06); the NewTOS identity is the
+/// [`NTOS`] cookie, not `_MCH`.
+///
+/// It replaces the provisional `0x0005_0000`, which is the registered
+/// **ARAnyM** id (`MCH_ARANYM`, `references/emutos/include/cookie.h:57`).
+/// The pinned make-512 oracle never reports `MCH_NOHARD`, so every `_MCH`
+/// cookie case is an ACCEPTED deviation (`docs/COMPATIBILITY.md`).
+///
+/// Read through `Ssystem(S_GETCOOKIE, '_MCH', 0)` (value in `x0`) it comes
+/// back as `-1`, which is also that call's "not found" (`EERROR`, FreeMiNT
+/// `sys/cookie.c:508-509`): only the pointer form (`arg2 != 0`, return code
+/// `E_OK`) tells the two apart. The same holds on FreeMiNT for any cookie
+/// whose value is `-1`.
+pub const MCH_NOHARD: u32 = 0xFFFF_FFFF;

@@ -1,0 +1,130 @@
+measurement-2026-10-29-arch06 -- TASK/ARCH06: _MCH = 0xFFFFFFFF (MCH_NOHARD, ADR-012 amendment 2026-10-28) read back on
+QEMU raspi4b in every form a program can use, and the _VDO measurement: what TeraDesk does on NewTOS without _VDO (ST
+branch) and with a scratch-injected _VDO = 0x00030000 (Falcon branch). QEMU raspi4b; a smoke boot of qemu-virt.
+==========================================================================================
+Developer, 2026-10-29 (host clock CET). Main tree at 8b11d2f4 plus the uncommitted ARCH06 change (files in
+TASK/ARCH06-STATUS-DONE.MD). Nothing committed, no hardware, no real card. Scratch (trees, kernels, cards, clones) in the
+session scratchpad, deleted after the run; sha256 below and in runs/*/run.txt. Order of commands: method/COMMANDS.TXT.
+No decision on _VDO is taken here and _VDO is not changed: the injection is a scratch AUTO program on a scratch card.
+
+INPUTS
+  QEMU       11.0.2, -M raspi4b, -append serial=on (qemu-virt: method/virtrun.py's argument set)
+  kernels    all release, built from the working tree (scratch copies by method/mktree.sh for the patched ones):
+    kernel8-st.img                400edba4ded3fc84ca451f8a9065299bd3c7f317d8afc736c46de5836e6d939e
+                                  + method/selftest-wire.py (selftest_cookie::run() after tos_api::aes::init::init(), scratch only)
+    kernel8-trace.img             ba11fa70a8879d929344253ff7c1a4aeb76a77ddd0b4bd0babab1c1109cd1d1b
+    kernel8-trace-vid-novdo.img   da97caff90c72b6014f7b7de3475e06e0a027814eb3e89c5d4972631772ea7ca
+    kernel8-trace-vid-vdo.img     57cf7e1826dfb19602dd375513655512e500cdb0e716fda5146582dc3d80153b
+                                  the three trace kernels: --features svc-seq-trace,bios-arg-trace + tools/inject-arm.py
+                                  up:DESKTOP=<vid|vid-novdo|vid-vdo>.script (method/build-trace.sh, SOURCE_DATE_EPOCH 1792368000)
+    kernel8-main-rpi4.img         a0e76c7627d9a541d18e05258af1ac1ec244d6560cd7f4ff21bfe89ede3d3702 (main tree, unpatched)
+    qemu-virt kernel ELF          13e75493da8bccb8eaf7993eed8823844ff73f16ad89932cc27fecbb643f83f1 (main tree, unpatched)
+  probes     method/mchprobe.c, built by method/build-mchprobe.sh (crt0 + probe + sdk/libc/libc.a
+             fe060131fd09720832367a5917d64508b727aadc673d1604412af00627c83b1e, the SDK03 sysinfo overlay inside):
+    MCHPROBE.NCP  81be2b86f2cc1ca1c633f60f3e7475c6e1443fc8beb49fd668b3349397df8f1e  reads only
+    MCHVDO.NCP    617cf11a420af4c7b9f4def31261a29ace43c88328b32ecdc050ca5e0680e09f  -DSET_VDO=0x00030000L: Ssystem(S_SETCOOKIE,'_VDO')
+  TeraDesk   sdk/apps/build-teradesk.sh at 8b11d2f4 (find_cookie fixed, SDK04 C6 8da6370e):
+             DESKTOP.NAP f763e7d94c3d5d32da2b1d4cb942e15435f13542db5cf9463d359620c0bb27fb (= the SDK04-C6 "after" binary)
+             desktop.rsc 409f69a0..., icons.rsc 8d4bc8a2..., cicons.rsc ee7de7f3... (cards/*.manifest)
+             video.c is vendored unchanged (no overlay): sdk/apps/teradesk/video.c
+  cards      tools/mkcard.sh (method/mkcards.sh), 64 MiB MBR+FAT16, NEWDESK.INF = method/z-teradesk.inf (#Z autorun of
+             C:\Apps\TERADESK\DESKTOP.NAP), C:\AUTO\<probe>:
+               novdo dca5634e0335efd476fe36f2769a9b064ee3f272eb658b65761dd24cbb957014  (AUTO\MCHPROBE.NCP)
+               vdo   a3e4675b206904d9087772853340df6c434c68973d231c5d4fd97fdca2e8166f  (AUTO\MCHVDO.NCP)
+               plain a1ecc265b6964b0f6c00017af1d9a66b5c14502f74bdfa71191f405d7ebe38af  (method/plain.inf, no #Z, no AUTO)
+             manifests: cards/novdo.img.manifest, cards/vdo.img.manifest, cards/plain.img.manifest; optional_missing,
+             verbatim, all three:
+               optional_missing none
+             Every run boots an APFS clone (cp -c) of its card; the clone's sha256 after the run is in runs/*/run.txt; the
+             clones and cards are deleted. fsck_msdos -n of every clone after its run: rc 0 (runs/*/fsck.txt).
+
+RESULT 1 -- _MCH reads back as 0xFFFFFFFF in every form
+  a) Kernel cookie selftest (runs/st-mch/serial.log, kernel8-st.img): "[cookie] === Cookie jar PASS (18/18) ===", including
+       Getcookie(_MCH) value form = -1 (0xFFFFFFFF): OK
+       Getcookie(_MCH, &v) = E_OK, v = 0xFFFFFFFF: OK
+       _MCH: value form x0 = 0xffffffffffffffff, pointer form rc = 0, v = 0xffffffff
+     (an EL1 svc #1 caller; the pointer is a kernel address, Space::Kernel)
+  b) EL0 program, C:\AUTO\MCHPROBE.NCP (runs/st-mch/MCHPROBE.LOG; identical lines in every run):
+       V _MCH Ssystem(S_GETCOOKIE, 0x5F4D4348, 0) x0 = 0xFFFFFFFFFFFFFFFF (-1)
+       P _MCH Ssystem(S_GETCOOKIE, 0x5F4D4348, &v) rc = 0, v = 0x5A5A5A5AFFFFFFFF
+       G _MCH Getcookie(0x5F4D4348, &v) rc = 0 (C_FOUND), v = 0x00000000FFFFFFFF
+       V ZZZZ Ssystem(S_GETCOOKIE, 0x5A5A5A5A, 0) x0 = 0xFFFFFFFFFFFFFFFF (-1)
+       P ZZZZ Ssystem(S_GETCOOKIE, 0x5A5A5A5A, &v) rc = -1, v = 0x5A5A5A5A5A5A5A5A
+       G ZZZZ Getcookie(0x5A5A5A5A, &v) rc = -1 (C_NOTFOUND), v = 0x0000000000000000
+       J   slot  1 tag 0x5F4D4348 _MCH value 0xFFFFFFFF          ($5A0 mirror, Setexc(0x5A0/4, -1) = 0x5F0)
+     - value form: _MCH and an absent tag both give x0 = -1 (sign-extended); only the pointer form tells them apart.
+     - pointer form: the kernel writes 4 bytes; the upper half of an 8-byte long keeps what was there (sentinel 0x5A5A5A5A).
+       mintlib Getcookie presets long v = 0, so a program sees 0x00000000FFFFFFFF (zero-extended), as the ADR-012
+       amendment states.
+  c) mintlib after SDK03: S sysinfo(SI_PLATFORM) = 8 "unknown"; sysinfo(SI_HW_PROVIDER) = 8 "unknown";
+     uname() = 0 machine "unknown" sysname "TOS" -- no NULL dereference.
+  d) zView (sdk/zview/overlay/zview/plugins/jpg/jpgldg.c:801-813): the `mach == 0x50000L` branch runs only when _JPD exists;
+     the jar has NTOS _MCH _IDT _AKP EdDI only (J lines), so it stays dead. Not run (code reading).
+
+RESULT 2 -- _VDO absent (card novdo): TeraDesk takes the ST branch
+  Trace: runs/trace-novdo/serial.log and runs/vid-novdo-novdo/serial.log ([biostrace] lines, one per BIOS/XBIOS call of
+  TeraDesk, U0 = TeraDesk):
+    start-up get_set_video(0): Logbase, Physbase, Getrez -> 4, Setexc(0x5A0/4,-1) x3 (find_cookie _VDO, then OVER, Lace:
+      all three not found), Blitmode(-1) -> 0; get_set_video(1): Logbase, Physbase. No VsetMode / VgetMonitor.
+    Blitmode is called only in the ST/STe branch (video.c:248) -- the branch is proven by the call, not by reading.
+  Desktop: runs/*/...-desk.png are byte-identical in all five TeraDesk runs (novdo and vdo,
+    5148fde2f61b378d55275c085b3031155b4a4bed7d4084bff8380860fc92a690): no visible start-up difference.
+  Options -> Video options... (runs/trace-novdo/trace-novdo-video.png): ST-Low and ST-Medium selectable, ST-High and
+    TT-Low/TT-Medium/TT-High greyed, the TT-Medium radio set (Getrez 4 = TT_MEDRES, rmap[4]), Blitter greyed
+    (Blitmode -1 -> 0), Overscan ENABLED, Save palette, Colours 64K.
+  Overscan + OK (runs/vid-novdo-novdo): tick Overscan, Return (= OK). get_set_video(1): Logbase, Physbase, then
+    TeraDesk is killed by a Bus Error:
+      [crash] slot 0 Bus Error esr=0x92000046 pc=0x1a28c94 far=Some(16776192)
+      Memory violation: hardware memory, write (translation fault, level 2); X8 = 0xfffc00, X11 = 0xd6
+      Crash at text+00020c94 = DESKTOP.NAP 0x21c94, inside get_set_video (0x21a34, llvm-nm)
+    = video.c:280-294: `over` is a zero-initialised global (video.c:52) that find_cookie leaves untouched when neither
+    OVER nor Lace exists, so `over != -1L` holds and the box is offered (video.c:487); OK then runs Super(0L) and
+    `*acia = 0xD6` at 0xFFFC00 (the ACIA control register, Lacescan switch). On NewTOS that address is not mapped.
+    Screendumps -ovs/-ok/-after: the crash screen ("Panic: Bus Error ... *** Press any key to continue ***"); the run
+    ends there (no key pressed). Super(0L) itself is not in SVCSEQ.LOG (the tracer flushes at evnt_multi entry; the
+    crash came before the next one).
+
+RESULT 3 -- _VDO = 0x00030000 injected (card vdo): TeraDesk takes the Falcon branch
+  The AUTO probe: W Ssystem(S_SETCOOKIE, _VDO, 0x00030000) = 0; read back V x0 = 0x30000, G C_FOUND 0x30000; $5A0 mirror
+    slot 5 _VDO 0x00030000 (runs/trace-vdo/MCHPROBE.LOG). TeraDesk, launched after the AUTO folder, finds it.
+  Trace (runs/trace-vdo/serial.log, runs/vid-vdo-vdo/serial.log), start-up get_set_video(0):
+      Logbase, Physbase, Getrez -> 4, Setexc(0x5A0/4,-1) (find_cookie _VDO, found),
+      [biostrace] 000007 U0  14:0x58 VsetMode    w:0xffff -> 0x0000000000000058
+      [biostrace] 000008 U0  14:0x59 VgetMonitor - -> 0x0000000000000059
+    then get_set_video(1): Logbase, Physbase. No Blitmode, no OVER/Lace lookup. The same pair again on opening the dialog.
+    YES: TeraDesk calls VsetMode(-1) and VgetMonitor(), and NewTOS answers each with its function number (0x58, 0x59).
+    TeraDesk takes these as falmode = 0x58 (VM_80COL|VM_VGAMODE|VM_OVSCAN, 2 colours, video.c:81-88) and
+    fmtype = 0x59 (no monitor type 0-3).
+  Options -> Video options... (runs/trace-vdo/trace-vdo-video.png): the TT buttons relabelled "VGA-40-column" /
+    "VGA-80-column" (video.c:517), VGA-80-column set, ST-High and TT-High greyed, Overscan TICKED (bit 0x40 of 0x58),
+    "Doubleline" in place of Blitter and enabled, Colours 64K.
+  OK without touching anything (runs/vid-vdo-vdo): the alert "A change of video mode will terminate all running
+    applications. [OK|Cancel]" (-ok.png) -- the mode TeraDesk builds from the dialog (planes from the 64K screen) differs
+    from the 0x58 it was told; Return = OK: shel_write (AES 121) -> TeraDesk exits rc 0 ->
+      [shell] sh_main: session over -- shel_write(SHW_RESCHNG) pending, restarting the AES
+      [shell] AES restart (resolution change requested)
+    -> TeraDesk restarts, again with VsetMode/VgetMonitor -> 0x58/0x59; -after.png = the same desktop. No crash.
+    The shel_write arguments are not decoded by the tracer; by reading (video.c:356-379) they are SHW_RESCHNG,
+    wisgr = the dialog's mode word, wiscr = 1 -- not measured.
+
+RESULT 4 -- builds, tests, smoke boots
+  Build + clippy, HEAD 8b11d2f4 (scratch archive) against the working tree, method/lint.sh (checks/lint-*.txt):
+    cargo xtask build exit 0 both boards, 159 warnings each side; clippy kernel tos-api 74 / kernel 121 on both boards
+    and both sides; clippy desktop and newdesk: no warnings both boards both sides; clippy tos-api --tests: same set of
+    warning lines, none from the new test binary.
+  cargo xtask test: 1828 passed, 0 failed, 1 ignored (baseline 1824/0/1 + 4 in tos-api/tests/gemdos_ssystem_mch_cookie.rs)
+    (checks/xtask-test-results.txt); cargo xtask deps --check-mapping: 1040 rows, all resolve.
+  sdk/run-host-tests.sh: 30 passed, 0 failed, 0 skipped (cookie-host with the new _MCH value) (checks/sdk-host-tests.txt)
+  make -C tosdump host-test: ok (checks/tosdump-host-test.txt)
+  Smoke boots of the unpatched main-tree kernels: raspi4b on the plain card "[desk] desktop up (1 drives)"
+    (runs/boot-rpi4); qemu-virt "[desk] desktop up (0 drives)" (runs/boot-virt). 0 EXC/PANIC in both.
+  EXC/PANIC count over all runs: 1, the TeraDesk Bus Error of RESULT 2 (expected by the scenario).
+
+NOT DONE / OPEN
+  Real Pi 4 (hardware; not a worker's step). The crash screen's continuation (key press) after the Bus Error. Super(0L)'s
+  answer on the overscan path. The Falcon branch with other monitor/mode answers (would need VsetMode/VgetMonitor to
+  answer, which is the user's _VDO question). The full regression suite is the Tester's.
+
+FILES  method/ (scripts, probe source, specs/scripts of the injector, INF files, COMMANDS.TXT), cards/ (manifests),
+  runs/<tag>/ (serial.log, SVCSEQ.LOG where written, MCHPROBE.LOG, screendumps, run.txt, fsck.txt, qemu-stdout.txt),
+  checks/ (lint, test summaries).

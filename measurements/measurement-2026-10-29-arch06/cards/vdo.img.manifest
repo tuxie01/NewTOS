@@ -1,0 +1,16 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh
+image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/arch06/cards/vdo.img
+image_sha256 a3e4675b206904d9087772853340df6c434c68973d231c5d4fd97fdca2e8166f
+size_mib 64
+created 2026-10-29T13:36:28Z
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+metadata C:\.Spotlight-V100 (macOS volume metadata, not hashed)
+file 617cf11a420af4c7b9f4def31261a29ace43c88328b32ecdc050ca5e0680e09f 152536 C:\AUTO\MCHVDO.NCP
+file f763e7d94c3d5d32da2b1d4cb942e15435f13542db5cf9463d359620c0bb27fb 353216 C:\Apps\TERADESK\DESKTOP.NAP
+file f659c896166de17c45111839a556b151c7839f0383a63117905d459520bd30e5 3058 C:\Apps\TERADESK\TERADESK.INF
+file ee7de7f37985aba9856ccbe01fb852bec47e6ff9d200644ea3aced15231f6241 63650 C:\Apps\TERADESK\cicons.rsc
+file 409f69a09bf1d1d869bdf9e712510413917cc2355b05b3ba937e60366b0b0e08 39278 C:\Apps\TERADESK\desktop.rsc
+file 8d4bc8a2b8ca8e6890f318677a0445dd26b476b4cd0bf6ee4fc103a0f4f22e75 13284 C:\Apps\TERADESK\icons.rsc
+file c1cedc12ceb57524ef668ee0a4848d6b6667cfaa273cdf455827f03630f184f1 410 C:\NEWDESK.INF

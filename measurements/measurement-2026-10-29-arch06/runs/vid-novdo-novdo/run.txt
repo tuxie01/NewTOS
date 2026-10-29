@@ -1,0 +1,11 @@
+run vid-novdo-novdo 2026-10-29 14:43:28 CET
+da97caff90c72b6014f7b7de3475e06e0a027814eb3e89c5d4972631772ea7ca  kernel8.img (kernel8-trace-vid-novdo.img)
+dca5634e0335efd476fe36f2769a9b064ee3f272eb658b65761dd24cbb957014  base card novdo.img
+t=17.4s -> vid-novdo-novdo-desk.png {"return": {}}
+t=19.5s -> vid-novdo-novdo-opts.png {"return": {}}
+t=20.8s -> vid-novdo-novdo-hover.png {"return": {}}
+t=24.2s -> vid-novdo-novdo-ovs.png {"return": {}}
+t=25.1s -> vid-novdo-novdo-ok.png {"return": {}}
+t=29.2s -> vid-novdo-novdo-after.png {"return": {}}
+clone after run dd587f142a71b85c21357a95fe7966763db9dccec271dc0b3b50bd31f60cc35e (deleted)
+mdrive rc=0 fsck rc=0 EXC/PANIC: 1 lines: 188

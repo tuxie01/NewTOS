@@ -1,0 +1,12 @@
+casefile: the VDI form takes the comment from column five
+casefile: the AES form takes the comment from column seven
+casefile: an AES table that declares eight columns takes the comment from column eight
+casefile: the CRC and the case count do not depend on the area
+  ok
+== byte order: both target configurations emit identical records
+  ok
+== comparator
+tosdiff against synthetic dumps
+  ok
+== self-check: every relational rule holds on the pinned oracle
+  ok (37 references, every relational rule holds on the oracle; a function number as pointer is refused)

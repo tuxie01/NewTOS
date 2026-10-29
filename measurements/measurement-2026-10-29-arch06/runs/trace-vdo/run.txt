@@ -1,0 +1,9 @@
+run trace-vdo 2026-10-29 14:40:50 CET
+ba11fa70a8879d929344253ff7c1a4aeb76a77ddd0b4bd0babab1c1109cd1d1b  kernel8.img (kernel8-trace.img)
+a3e4675b206904d9087772853340df6c434c68973d231c5d4fd97fdca2e8166f  base card vdo.img
+t=17.5s -> trace-vdo-desk.png {"return": {}}
+t=19.6s -> trace-vdo-opts.png {"return": {}}
+t=20.9s -> trace-vdo-hover.png {"return": {}}
+t=21.7s -> trace-vdo-video.png {"return": {}}
+clone after run d20c16b5811c45cea4d02c0fd93622581c1167ad359548d025230737543c2cc5 (deleted)
+mdrive rc=0 fsck rc=0 EXC/PANIC: 0 lines: 153

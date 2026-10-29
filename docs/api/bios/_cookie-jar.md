@@ -50,7 +50,7 @@ hardware detection and `cookie_add`s the results. Tags (`cookie.h`):
 | `_CPU` | `0x5F435055` | m68k CPU type (0/10/20/30/40/60) | n/a (AArch64) — re-purpose or omit |
 | `_VDO` | `0x5F56444F` | video shifter revision (ST/STe/TT/Falcon) | **meaningless** (no Shifter) |
 | `_FPU` | `0x5F465055` | m68k FPU type | **meaningless** |
-| `_MCH` | `0x5F4D4348` | machine type | re-purpose: a NewTOS machine id |
+| `_MCH` | `0x5F4D4348` | machine type | kept, fixed to `MCH_NOHARD` = `0xFFFFFFFF` ("no Atari hardware", ADR-012 amendment 2026-10-28) |
 | `_SND` | `0x5F534E44` | sound feature bitmap (PSG/DMA/DSP) | **meaningless** (no PSG) |
 | `_FDC` | `0x5F464443` | floppy controller type | **meaningless** (no FDC) |
 | `_AKP` | `0x5F414B50` | keyboard/language (low word) | meaningful (IKBD layout) |
@@ -125,27 +125,28 @@ anyway), with `Setcookie(tag, value)` to add/update. No user mapping, no
 
 ### The Pi cookie set (seeded at boot)
 
-`tos_api::cookie::seed_defaults(version)` (`tos-api/src/cookie.rs:141-146`),
-called from `kernel/src/lib.rs:256` with `version = 0x0000_0100`, seeds a
-kernel-owned fixed array (`JAR_CAP = 32`, `cookie.rs:20`) — **no** hardware
+`tos_api::cookie::seed_defaults(version)` (`tos-api/src/cookie.rs:223-229@seed_defaults`),
+called from `kernel/src/lib.rs:362@seed_defaults` with `version = 0x0000_0100`, seeds a
+kernel-owned fixed array (`JAR_CAP = 32`, `tos-api/src/cookie.rs:20@JAR_CAP`) — **no** hardware
 probing:
 
 | Cookie | Value | Meaning | Source |
 |--------|-------|---------|--------|
-| `NTOS` | `0x00000100` | NewTOS identity + version 0x100 (the NewTOS-specific cookie; lets ports detect the environment) | `cookie.rs:142` |
-| `_MCH` | `0x00050000` today → **`0xFFFFFFFF`** (ADR-012 amendment 2026-10-28, TASK/ARCH06) | machine id. `0x00050000` is **not** NewTOS-specific: it is the registered **ARAnyM** id (`references/emutos/include/cookie.h:57`); `0xFFFFFFFF` is EmuTOS' "no Atari hardware" (`references/emutos/bios/machine.c:400-401`) | `tos-api/src/cookie.rs:223@seed_defaults` |
-| `_IDT` | `0x0000112F` | date/time format: `/` separator, DD-MM-YY, 24-hour | `cookie.rs:144` |
-| `_AKP` | `0x00000000` | keyboard/language: US | `cookie.rs:145` |
+| `NTOS` | `0x00000100` | NewTOS identity + version 0x100 (the NewTOS-specific cookie; lets ports detect the environment) | `tos-api/src/cookie.rs:224@NTOS` |
+| `_MCH` | **`0xFFFFFFFF`** (ADR-012 amendment 2026-10-28, TASK/ARCH06) | machine id: EmuTOS' `MCH_NOHARD`, "no ST-compatible hardware" (`references/emutos/include/cookie.h:50`, set by `setvalue_mch` without Atari hardware, `references/emutos/bios/machine.c:400-401`). Until ARCH06 it was `0x00050000`, the registered **ARAnyM** id (`references/emutos/include/cookie.h:57`), withdrawn. Read by value (`Ssystem(S_GETCOOKIE, '_MCH', 0)`) it comes back as `-1`, the same number as "not found"; only the pointer form (`E_OK`, `*arg2` = `0xFFFFFFFF`) tells the two apart | `tos-api/src/cookie.rs:250@MCH_NOHARD`, `tos-api/src/cookie.rs:225@MCH_NOHARD` |
+| `_IDT` | `0x0000112F` | date/time format: `/` separator, DD-MM-YY, 24-hour | `tos-api/src/cookie.rs:226@IDT` |
+| `_AKP` | `0x00000000` | keyboard/language: US | `tos-api/src/cookie.rs:227@AKP` |
 | `EdDI` | `0x00000001` | the VDI answers `vq_scrninfo`; the value is a **non-callable marker**, not a dispatcher address (E2 of [`../vdi/eddi-vq_scrninfo.md`](../vdi/eddi-vq_scrninfo.md); deviation from TOS/EmuTOS, `docs/COMPATIBILITY.md`) | `cookie.rs` `EDDI_MARKER` (2026-10-02) |
 
-Deliberately **absent** (no matching Pi hardware, `cookie.rs:139-140`): `_VDO`
-(no Shifter), `_SND` (no PSG/DMA sound), `_FDC` (no floppy controller), `_FPU`
-(re-purposing undecided). A program scanning for these correctly finds them
-missing and falls back.
+Deliberately **absent** (no matching Pi hardware, `tos-api/src/cookie.rs:216-222@seed_defaults`): `_VDO`
+(no Shifter; its decision waits for the TeraDesk measurement of TASK/ARCH06),
+`_SND` (no PSG/DMA sound), `_FDC` (no floppy controller), `_FPU` and `_CPU`
+(no m68k FPU/CPU; both stay absent per the ADR-012 amendment 2026-10-28). A
+program scanning for these correctly finds them missing and falls back.
 
 | Atari reference | Pi-4 model today |
 |-----------------|------------------|
-| `_MCH` = ST/STe/TT/Falcon id from bus/Shifter probe | `_MCH` fixed: `0x00050000` today (ARAnyM id, withdrawn), `0xFFFFFFFF` decided (ADR-012 amendment 2026-10-28) |
+| `_MCH` = ST/STe/TT/Falcon id from bus/Shifter probe | `_MCH` fixed: `0xFFFFFFFF` = `MCH_NOHARD` (ADR-012 amendment 2026-10-28; the earlier `0x00050000` was the ARAnyM id) |
 | `_CPU`/`_FPU` = m68k CPU/FPU type | **omitted** (AArch64) — see decision below |
 | `_VDO`/`_SND`/`_FDC` from hardware detect | **omitted** (hardware absent) |
 | `_AKP` from the IKBD layout | `_AKP` = `0` (US), matches the loaded keymap default (§3.3) |

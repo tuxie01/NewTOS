@@ -408,12 +408,12 @@ Seeded by `tos_api::cookie::seed_defaults` (`kernel/src/lib.rs`):
 | Cookie | Value        | Meaning |
 |--------|--------------|---------|
 | `NTOS` | `0x00000100` | NewTOS identity + version 0x100 |
-| `_MCH` | `0x00050000` | machine id — a **NewTOS-specific, non-Atari** marker (not ST/STe/TT/Falcon) |
+| `_MCH` | `0xFFFFFFFF` | machine id — EmuTOS `MCH_NOHARD`, "no ST-compatible hardware" (ADR-012 amendment 2026-10-28; until TASK/ARCH06 `0x00050000`, the ARAnyM id) |
 | `_IDT` | `0x0000112F` | date/time format: `/` separator, DD-MM-YY, 24-hour |
 | `_AKP` | `0x00000000` | keyboard/language: US |
 
-Seeded by `seed_defaults` (`tos-api/src/cookie.rs:141-146`) with **no hardware
-probing** — a fixed set (jar capacity 32, `cookie.rs:20`), read by native
+Seeded by `seed_defaults` (`tos-api/src/cookie.rs:223-229@seed_defaults`) with **no hardware
+probing** — a fixed set (jar capacity 32, `tos-api/src/cookie.rs:20@JAR_CAP`), read by native
 programs through the FreeMiNT `Ssystem` cookie subfunctions (ADR-012), **not**
 via `$5A0` + `Supexec` (both blocked on NewTOS).
 

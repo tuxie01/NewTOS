@@ -62,7 +62,16 @@ pub fn run() {
 
     // Seeded set: NTOS, _MCH, _IDT, _AKP, EdDI (5 cookies).
     check(ssystem(S_GETCOOKIE, NTOS, 0) == 0x0000_0100, "Getcookie(NTOS) = version 0x100");
-    check(ssystem(S_GETCOOKIE, MCH, 0) == 0x0005_0000, "Getcookie(_MCH) = 0x00050000");
+    // `_MCH` = 0xFFFFFFFF (`tos_api::cookie::MCH_NOHARD`, ADR-012 amendment
+    // 2026-10-28). The value form answers it as -1 in x0 (sign-extended),
+    // which is also EERROR; the pointer form is the unambiguous read: E_OK
+    // and the four bytes 0xFFFFFFFF written to the buffer.
+    check(ssystem(S_GETCOOKIE, MCH, 0) == -1, "Getcookie(_MCH) value form = -1 (0xFFFFFFFF)");
+    let mut mch: u32 = 0x5A5A_5A5A;
+    let rc = ssystem(S_GETCOOKIE, MCH, &raw mut mch as u64);
+    check(rc == E_OK && mch == 0xFFFF_FFFF, "Getcookie(_MCH, &v) = E_OK, v = 0xFFFFFFFF");
+    kprintln!("[cookie]   _MCH: value form x0 = {:#018x}, pointer form rc = {}, v = {:#010x}",
+        ssystem(S_GETCOOKIE, MCH, 0) as u64, rc, mch);
 
     // D-073: `tag == 0` returns the jar CAPACITY (32), not the occupied
     // count (which is 5 here) — the fix's headline behaviour change.

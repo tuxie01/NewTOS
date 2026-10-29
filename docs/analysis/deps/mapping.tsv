@@ -237,7 +237,8 @@ xsettime	bdos/time.c	tos-api/src/gemdos/time.rs	tsettime	mapped	Tsettime 0x2D
 find_mpb	bdos/umem.c	tos-api/src/bdos/mem/traps.rs	find_mpb	mapped	-
 set_owner	bdos/umem.c	tos-api/src/bdos/mem/traps.rs	set_owner	mapped	-
 srealloc	bdos/umem.c	-	-	unmapped	GEMDOS 0x15 Srealloc (VIDEL) has no slot in NewTOS's GEMDOS table (gemdos/mod.rs build_table): EINVFN
-total_alt_ram	bdos/umem.c	-	-	unmapped	sum of the alt-RAM pool (for the _FRB cookie); no NewTOS function found
+total_alt_ram	bdos/umem.c	tos-api/src/bdos/mem/stats.rs	pool_stats	mapped	walks the alt pool (pmdalt) free and allocated lists; Ttram kind (ARCH06 group E)
+total_alt_ram	bdos/umem.c	tos-api/src/bdos/mem/stats.rs	total_bytes	mapped	free + used bytes = total_alt_ram; read for the boot screen TT-RAM line (kernel/src/initinfo.rs; EmuTOS initinfo.c:279)
 umem_init	bdos/umem.c	tos-api/src/bdos/mem/init.rs	init	mapped	both BDOS pools
 xmaddalt	bdos/umem.c	tos-api/src/gemdos/memory.rs	maddalt	mapped	Maddalt 0x14
 xmaddalt	bdos/umem.c	tos-api/src/bdos/mem/traps.rs	maddalt	mapped	-
@@ -642,7 +643,7 @@ int_linea	bios/linea.S	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A
 linea_0	bios/linea.S	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A trap: no NewTOS counterpart
 linea_init	bios/lineainit.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A variable set-up: no NewTOS counterpart function found
 set_screen_shift	bios/lineainit.c	-	-	unmapped	Line-A variable set-up: no NewTOS counterpart function found
-add_cookie_frb	bios/machine.c	-	-	unmapped	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+add_cookie_frb	bios/machine.c	-	-	design:hardware:acsi	_FRB = ST-RAM bounce buffer for ACSI/SCSI DMA into Alt-RAM (bios/acsi.c:145-160); no ACSI/SCSI DMA on the Pi, cookie absent (ARCH06 group E)
 aranym_machine_detect	bios/machine.c	-	-	design:hardware:natfeats	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
 check_busses	bios/machine.c	-	-	design:hardware:m68k-cpu	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
 detect_blitter	bios/machine.c	-	-	design:hardware:blitter	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
@@ -655,18 +656,18 @@ detect_tt_mfp	bios/machine.c	-	-	design:hardware:tt-mfp	Atari hardware detection
 detect_video	bios/machine.c	-	-	design:hardware:video-shifter	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
 detect_vme	bios/machine.c	-	-	design:hardware:vme	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
 fill_cookie_jar	bios/machine.c	tos-api/src/cookie.rs	seed_defaults	mapped	replaces fill_cookie_jar (doc)
-guess_machine_name	bios/machine.c	-	-	unmapped	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
-machine_detect	bios/machine.c	-	-	unmapped	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
-machine_init	bios/machine.c	-	-	unmapped	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+guess_machine_name	bios/machine.c	kernel/src/initinfo.rs	machine_name	mapped	analogue: the name comes from the board (X03), not from _MCH; with _MCH = MCH_NOHARD EmuTOS would print "unknown" (default branch) (ARCH06 group E)
+machine_detect	bios/machine.c	-	-	design:source:docs/HARDWARE-PROFILE.md	probes the Atari hardware (TT-RAM, Shifter/Videl, MFPs, SCC, VME, RTCs, NVRAM, DMA sound, DSP, DIP switches, blitter, busses, MonSTer, Magnum, Nova); the Pi has none, the cookie set is fixed without probing (HARDWARE-PROFILE 3.7), memory from the firmware map (ARCH06 group E)
+machine_init	bios/machine.c	-	-	design:hardware:mfp68901	masks MFP/TT-MFP interrupts and resets the SCC (only without CONF_WITH_RESET); none of that hardware on the Pi (ARCH06 group E)
 machine_name	bios/machine.c	kernel/src/initinfo.rs	machine_name	mapped	-
 setvalue_fdc	bios/machine.c	-	-	design:hardware:floppy	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
-setvalue_mch	bios/machine.c	-	-	unmapped	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+setvalue_mch	bios/machine.c	tos-api/src/cookie.rs	seed_defaults	mapped	_MCH fixed to MCH_NOHARD 0xFFFFFFFF = setvalue_mch without CONF_ATARI_HARDWARE (bios/machine.c:400-401); ADR-012 amendment 2026-10-28, docs/MEMORY.md:401 (ARCH06)
 setvalue_snd	bios/machine.c	-	-	design:ADR-012@docs/MEMORY.md:295	ADR-012: _SND stays absent on NewTOS (no such hardware); Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
 setvalue_swi	bios/machine.c	-	-	design:hardware:dip-switches	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
-setvalue_vdo	bios/machine.c	-	-	unmapped	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+setvalue_vdo	bios/machine.c	-	-	design:ADR-012@docs/MEMORY.md:401	ADR-012: _VDO absent (no Shifter/Videl); the 2026-10-28 amendment leaves _VDO to the user after the TeraDesk measurement of TASK/ARCH06 -- revisit this row with that decision
 detect_32bit_address_bus	bios/memory.S	-	-	design:hardware:m68k-cpu	m68k RAM sizing: no NewTOS counterpart (memory map from the firmware, kernel/src/bios/machine/layout.rs)
 meminit	bios/memory.S	kernel/src/bios/machine/layout.rs	discover	mapped	analogue: memory map from the firmware, no RAM probing
-altram_init	bios/memory2.c	-	-	unmapped	TT-RAM / alt-RAM probing: no NewTOS counterpart (memory map from the firmware, kernel/src/bios/machine/layout.rs)
+altram_init	bios/memory2.c	tos-api/src/bdos/mem/init.rs	init	mapped	analogue: the TT-RAM range from the firmware memory map seeds pmdalt in init; no probing, no xmaddalt (ARCH06 group E)
 detect_ttram_size	bios/memory2.c	-	-	design:hardware:tt-ram	TT-RAM / alt-RAM probing: no NewTOS counterpart (memory map from the firmware, kernel/src/bios/machine/layout.rs)
 ttram_detect	bios/memory2.c	-	-	design:hardware:tt-ram	TT-RAM / alt-RAM probing: no NewTOS counterpart (memory map from the firmware, kernel/src/bios/machine/layout.rs)
 disable_mfp_interrupt	bios/mfp.c	-	-	design:hardware:mfp68901	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)

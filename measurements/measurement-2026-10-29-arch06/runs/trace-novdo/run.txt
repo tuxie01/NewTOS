@@ -1,0 +1,9 @@
+run trace-novdo 2026-10-29 14:39:37 CET
+ba11fa70a8879d929344253ff7c1a4aeb76a77ddd0b4bd0babab1c1109cd1d1b  kernel8.img (kernel8-trace.img)
+dca5634e0335efd476fe36f2769a9b064ee3f272eb658b65761dd24cbb957014  base card novdo.img
+t=17.4s -> trace-novdo-desk.png {"return": {}}
+t=19.5s -> trace-novdo-opts.png {"return": {}}
+t=20.8s -> trace-novdo-hover.png {"return": {}}
+t=21.7s -> trace-novdo-video.png {"return": {}}
+clone after run 3e32e19c12c3722eb948c6e64063c77c9069d348a00d2293e0709914e7fcd151 (deleted)
+mdrive rc=0 fsck rc=0 EXC/PANIC: 0 lines: 150

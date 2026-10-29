@@ -124,8 +124,9 @@ pub(crate) const BUILD_STAMP: &str = tos_api::build::BUILD_STAMP;
 /// 2026-10-01) and no longer calls this function — the last `crate::initinfo`
 /// reference DESK43 U4 left standing. Same reason as the block comment above:
 /// the desktop will not have `kernel` in its dependency graph, and no syscall
-/// carries the answer (`_MCH` is a single fixed NewTOS marker, `0x0005_0000`
-/// on both boards, `tos-api/src/cookie.rs:143`). Editing a text here means
+/// carries the answer (`_MCH` is one fixed value, `0xFFFF_FFFF` = EmuTOS
+/// `MCH_NOHARD`, on both boards, `tos_api::cookie::MCH_NOHARD`, ADR-012
+/// amendment 2026-10-28). Editing a text here means
 /// editing it there too. Private to this module since X03, so no second
 /// reader can attach to it.
 ///

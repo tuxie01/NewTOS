@@ -1,0 +1,21 @@
+MCHPROBE ARCH06 _MCH read-back
+V _MCH Ssystem(S_GETCOOKIE, 0x5F4D4348, 0) x0 = 0xFFFFFFFFFFFFFFFF (-1)
+P _MCH Ssystem(S_GETCOOKIE, 0x5F4D4348, &v) rc = 0, v = 0x5A5A5A5AFFFFFFFF
+G _MCH Getcookie(0x5F4D4348, &v) rc = 0 (C_FOUND), v = 0x00000000FFFFFFFF
+V ZZZZ Ssystem(S_GETCOOKIE, 0x5A5A5A5A, 0) x0 = 0xFFFFFFFFFFFFFFFF (-1)
+P ZZZZ Ssystem(S_GETCOOKIE, 0x5A5A5A5A, &v) rc = -1, v = 0x5A5A5A5A5A5A5A5A
+G ZZZZ Getcookie(0x5A5A5A5A, &v) rc = -1 (C_NOTFOUND), v = 0x0000000000000000
+V _VDO Ssystem(S_GETCOOKIE, 0x5F56444F, 0) x0 = 0xFFFFFFFFFFFFFFFF (-1)
+P _VDO Ssystem(S_GETCOOKIE, 0x5F56444F, &v) rc = -1, v = 0x5A5A5A5A5A5A5A5A
+G _VDO Getcookie(0x5F56444F, &v) rc = -1 (C_NOTFOUND), v = 0x0000000000000000
+S sysinfo(SI_PLATFORM) = 8 "unknown"
+S sysinfo(SI_HW_PROVIDER) = 8 "unknown"
+U uname() = 0 machine "unknown" sysname "TOS"
+J seeded jar: $5A0 mirror at 0x5F0
+J   slot  0 tag 0x4E544F53 NTOS value 0x00000100
+J   slot  1 tag 0x5F4D4348 _MCH value 0xFFFFFFFF
+J   slot  2 tag 0x5F494454 _IDT value 0x0000112F
+J   slot  3 tag 0x5F414B50 _AKP value 0x00000000
+J   slot  4 tag 0x45644449 EdDI value 0x00000001
+J   slot  5 tag 0x00000000 .... value 0x00000010
+MCHPROBE: done

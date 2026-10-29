@@ -1,0 +1,33 @@
+Commands of this run, in order (repository root; S = the session scratch .../scratchpad/arch06, never /tmp
+itself; TMPDIR=$S/tmp for every script that calls mktemp). Main tree at 8b11d2f4 plus the uncommitted ARCH06
+change (file list in TASK/ARCH06-STATUS-DONE.MD).
+
+1  lint:      $S/lint.sh <git archive 8b11d2f4> $S/logs/lint-head      (copy: method/lint.sh)
+              $S/lint.sh <main tree>             $S/logs/lint-wt        -> checks/lint-head-8b11d2f4.txt, checks/lint-worktree.txt
+2  tests:     cargo xtask test                                       -> checks/xtask-test-results.txt
+              cargo xtask deps --check-mapping ; cargo xtask deps setvalue_mch --up --layers bios,bdos
+              sdk/run-host-tests.sh                                  -> checks/sdk-host-tests.txt
+              make -C tosdump host-test                              -> checks/tosdump-host-test.txt
+3  probes:    method/build-mchprobe.sh $S/bin/MCHPROBE.NCP
+              method/build-mchprobe.sh $S/bin/MCHVDO.NCP 0x00030000L
+4  TeraDesk:  sdk/apps/build-teradesk.sh; cp sdk/apps/teradesk/build/dist/* $S/bin/td/
+5  cards:     method/mkcards.sh $S          (tools/mkcard.sh: novdo, vdo; manifests -> cards/)
+              tools/mkcard.sh $S/cards/plain.img method/plain.inf   (plain.inf = z-teradesk.inf without the #Z line)
+6  selftest:  method/mktree.sh $S/trees/st; python3 method/selftest-wire.py $S/trees/st
+              (cd $S/trees/st && cargo xtask build --board rpi4 --release) -> $S/bin/kernel8-st.img
+              S=$S method/run.sh $S/bin/kernel8-st.img $S/cards/novdo.img st-mch 'MCHPROBE: done@1=0:-' 'sh_ldapp: starting@1=20:teradesk.png'
+7  traces:    method/gen.py vid.spec vid.script ; gen.py vid-novdo.spec vid-novdo.script ; gen.py vid-vdo.spec vid-vdo.script
+              method/build-trace.sh $S              -> kernel8-trace.img            (up:DESKTOP=vid.script)
+              method/build-trace.sh $S vid-novdo    -> kernel8-trace-vid-novdo.img
+              method/build-trace.sh $S vid-vdo      -> kernel8-trace-vid-vdo.img
+              method/series.sh $S novdo ; method/series.sh $S vdo                  -> runs/trace-novdo, runs/trace-vdo
+              method/series.sh $S novdo vid-novdo ; method/series.sh $S vdo vid-vdo -> runs/vid-novdo-novdo, runs/vid-vdo-vdo
+8  smoke:     cargo xtask build --board rpi4 --release (main tree) -> $S/bin/kernel8-main-rpi4.img
+              S=$S method/run.sh $S/bin/kernel8-main-rpi4.img $S/cards/plain.img boot-rpi4 'desktop up@1=3:desktop.png'
+              cargo xtask build --board qemu-virt --release (main tree);
+              SOCKDIR=$S python3 method/virtrun.py target/.../release/kernel $S/bin/kernel-main-virt.img runs/boot-virt/serial.log \
+                runs/boot-virt/boot-virt-desktop.png 90 'desktop up'
+9  symbol:    llvm-nm -n $S/bin/td/DESKTOP.NAP: crash pc text+0x20c94 = 0x21c94 lies in get_set_video (starts 0x21a34)
+
+Copied unchanged from earlier runs: mdrive.py, gen.py, fx.py, virtrun.py (measurements/measurement-2026-10-21-gh1-reg/method/),
+z-teradesk.inf, TERADESK.INF (measurements/measurement-2026-10-29-sdk04-c6/method/).

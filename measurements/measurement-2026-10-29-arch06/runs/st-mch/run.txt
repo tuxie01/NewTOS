@@ -1,0 +1,7 @@
+run st-mch 2026-10-29 14:37:26 CET
+400edba4ded3fc84ca451f8a9065299bd3c7f317d8afc736c46de5836e6d939e  kernel8.img (kernel8-st.img)
+dca5634e0335efd476fe36f2769a9b064ee3f272eb658b65761dd24cbb957014  base card novdo.img
+t=35.4s -> st-mch-teradesk.png {"return": {}}
+SVCSEQ.LOG: not on the card
+clone after run d8e300cfd1e754a09114fd4876d7fa78c1a69b046c533d1d79399dbb04f6d7f1 (deleted)
+mdrive rc=0 fsck rc=0 EXC/PANIC: 0 lines: 102

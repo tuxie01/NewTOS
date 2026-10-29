@@ -1,6 +1,6 @@
 # ARCH06 — `_MCH` = `0xFFFFFFFF` umsetzen; `_VDO` erst messen
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28 (Nachtrag ADR-012, aus [ARCH05](ARCH05.md))
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](ARCH06-STATUS-DONE.MD)); `_VDO`-Entscheidung beim Anwender · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28 (Nachtrag ADR-012, aus [ARCH05](ARCH05.md))
 
 ## Sachverhalt
 

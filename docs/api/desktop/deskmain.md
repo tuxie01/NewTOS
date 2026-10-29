@@ -1336,8 +1336,9 @@ boot screen also prints (`deskmain.c:1880`). That holds only while the desktop
 is linked with the BIOS; NewTOS's desktop is to leave the kernel's dependency
 graph, so the shared symbol is a link that move removes.
 
-The machine line has no syscall source: `_MCH` is a single fixed NewTOS marker
-(`0x0005_0000`) on both boards (`docs/api/bios/_cookie-jar.md`). Per the user
+The machine line has no syscall source: `_MCH` is one fixed value on both
+boards, `0xFFFFFFFF` = EmuTOS `MCH_NOHARD`, "no Atari hardware" (ADR-012
+amendment 2026-10-28; `docs/api/bios/_cookie-jar.md`). Per the user
 decision of 2026-10-01 (`TASK/X03.md`) it is a **per-board build constant**,
 selected by `cfg(feature = "board-…")` — no board cookie, no `Ssystem`
 subfunction. A board feature without a line there fails the build (an

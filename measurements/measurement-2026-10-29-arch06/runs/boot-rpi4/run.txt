@@ -1,0 +1,8 @@
+run boot-rpi4 2026-10-29 14:45:55 CET
+a0e76c7627d9a541d18e05258af1ac1ec244d6560cd7f4ff21bfe89ede3d3702  kernel8.img (kernel8-main-rpi4.img)
+a1ecc265b6964b0f6c00017af1d9a66b5c14502f74bdfa71191f405d7ebe38af  base card plain.img
+t=18.2s -> boot-rpi4-desktop.png {"return": {}}
+MCHPROBE.LOG: not on the card
+SVCSEQ.LOG: not on the card
+clone after run a1ecc265b6964b0f6c00017af1d9a66b5c14502f74bdfa71191f405d7ebe38af (deleted)
+mdrive rc=0 fsck rc=0 EXC/PANIC: 0 lines: 55

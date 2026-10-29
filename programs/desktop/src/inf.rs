@@ -2594,9 +2594,10 @@ const INDEPENDENCE_NOTICE: &str =
 /// build-programs --board`, which the kernel build runs for its own board,
 /// DESK43 U6b/U9), not asked for at run time. Same texts as the boot screen's `kernel::initinfo::machine_name`,
 /// deliberately a second copy, for the reason in the block comment above.
-/// There is no syscall source for it: `_MCH` is one fixed NewTOS marker,
-/// `0x0005_0000` on **both** boards (`tos-api/src/cookie.rs:143`,
-/// `docs/api/bios/_cookie-jar.md:136`), so a cookie read cannot tell the Pi
+/// There is no syscall source for it: `_MCH` is one fixed value,
+/// `0xFFFF_FFFF` (EmuTOS `MCH_NOHARD`, "no Atari hardware", ADR-012
+/// amendment 2026-10-28) on **both** boards (`tos_api::cookie::MCH_NOHARD`,
+/// `docs/api/bios/_cookie-jar.md`), so a cookie read cannot tell the Pi
 /// from QEMU; a board cookie or an `Ssystem` subfunction was considered and
 /// declined (`TASK/X03.md`).
 ///
