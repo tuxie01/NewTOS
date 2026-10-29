@@ -1080,6 +1080,13 @@ const _: () = assert!(PARMBLK_SCRATCH_VA + 40 <= mmu::PRIV_PAGE_VA + mmu::PAGE_S
 /// OSHEADER `os_version` (+0x02): Falcon TOS 4.04. EmuTOS' own default is
 /// 0x206 (`config.h:1367-1372`); NewTOS reports 4.04 — user-pinned.
 const OS_VERSION: u16 = 0x0404;
+/// The first LONG of the OSHEADER instance as a program reads it from page 0
+/// (little-endian): `os_entry` (+0x00, left 0) in the low half, `os_version`
+/// (+0x02) in the high half. Vector 0 (`$000`) holds it, `$004` the next LONG,
+/// `reseth` — EmuTOS copies the OSHEADER's first two LONGs to address 0
+/// (`references/emutos/bios/bios.c:120-136`); `bios::vectors` seeds its
+/// shared cells 0 and 1 with them (TASK/BIOS07).
+pub(crate) const OSHEADER_LONG0: u32 = (OS_VERSION as u32) << 16;
 /// OSHEADER `os_conf` (+0x1C): `(country << 1) | PAL` (`osheader.md`
 /// §os_conf). NewTOS is US/English (`i18n::current_lang == En`, cookie
 /// `_AKP == US`) and ignores PAL → country US(0), PAL 0 → 0.
@@ -1287,6 +1294,14 @@ fn populate_sysvars(tpa: &mut [u8], pd: u64) {
     // branches to a valid entry, not to 0 (ADR-031 table, TASK/BIOS15).
     wr_long(tpa, 0x506, crate::xbios::kbdvecs::RET_STUB_VA as u32);
     wr_long(tpa, 0x50A, crate::xbios::kbdvecs::RET_STUB_VA as u32);
+
+    // ── The vector cells $000-$40F (TASK/BIOS07, `docs/api/bios/05-setexc.md`
+    //    D3): the m68k vectors and `etv_*`, one cell for every process in
+    //    `bios::vectors`, copied here so the program reads at `4 * num` what
+    //    `Setexc(num, -1)` answers: the OSHEADER's first two LONGs at
+    //    $000/$004 (EmuTOS `vecs_init`, `bios/bios.c:120-136`), the `ret`
+    //    stub in every vector NewTOS does not serve, `etv_xtra` 0. ─────────
+    crate::bios::vectors::write_page0_vectors(tpa);
 
     // ── Cookie jar (classic array form, _cookie-jar.md; EmuTOS
     //    util/cookie.c:26-35) ───────────────────────────────────────────
@@ -2013,8 +2028,9 @@ mod basepage_segment_tests {
     }
 
     /// The defaults the ADR-031 page-0 check compares with
-    /// (`hooks::PAGE0_HOOKS`, the CPU vector cells at 0) are what the loader
-    /// leaves in a fresh page 0 — so a freshly loaded process never warns.
+    /// (`hooks::PAGE0_HOOKS`; the vector cells `$008`–`$408` with their shared
+    /// cell, BIOS07) are what the loader leaves in a fresh page 0 — so a
+    /// freshly loaded process never warns.
     #[test]
     fn the_page_0_hook_defaults_are_what_the_loader_writes() {
         let mut page0 = vec![0u8; RESERVED_LOW_END as usize];
@@ -2023,8 +2039,9 @@ mod basepage_segment_tests {
         for h in super::super::hooks::PAGE0_HOOKS.iter() {
             assert_eq!(rd32(h.addr as usize), h.default, "{:?} at ${:X}", h.hook, h.addr);
         }
-        for n in 2..0x100 {
-            assert_eq!(rd32(4 * n), 0, "vector cell ${:03X}", 4 * n);
+        for n in 2..=crate::bios::vectors::ETV_TERM {
+            let cell = crate::bios::vectors::shared_cell(n);
+            assert_eq!(Some(rd32(4 * n)), cell, "vector cell ${:03X}", 4 * n);
         }
     }
 
@@ -2050,6 +2067,27 @@ mod basepage_segment_tests {
         // on the first stub instruction: `mov x0, #2021`.
         let at = (stub as u64 - mmu::STUB_PAGE_VA) as usize;
         assert_eq!(u32::from_le_bytes(stubs[at..at + 4].try_into().unwrap()), 0xD280_FCA0);
+    }
+
+    /// BIOS07 (D3): page 0 carries the vector cells — `$000`/`$004` are the
+    /// OSHEADER's first two LONGs (EmuTOS `vecs_init`, `bios/bios.c:120-136`),
+    /// every unserved vector and `etv_timer`/`etv_critic`/`etv_term` the `ret`
+    /// stub, `etv_xtra` 0 — each the value `Setexc(num, -1)` answers.
+    #[test]
+    fn page0_carries_the_vector_cells() {
+        let mut page0 = vec![0u8; RESERVED_LOW_END as usize];
+        populate_sysvars(&mut page0, 0x0109_7000);
+        let rd32 = |off: usize| u32::from_le_bytes(page0[off..off + 4].try_into().unwrap());
+        let oh = OSHEADER_VA as usize;
+        assert_eq!(page0[0..8], page0[oh..oh + 8], "$000/$004 = the OSHEADER's first two LONGs");
+        assert_eq!(rd32(4), crate::bios::reset::RESET_STUB_VA as u32, "$004 = reseth");
+        let stub = crate::xbios::kbdvecs::RET_STUB_VA as u32;
+        for num in 2..=0x102usize {
+            assert_eq!(rd32(4 * num), stub, "vector 0x{:x}", num);
+            assert_eq!(i64::from(rd32(4 * num) as i32), crate::bios::vectors::vector(num));
+        }
+        assert_eq!(rd32(0x40C), 0, "etv_xtra");
+        assert_eq!(rd32(0x410), 0, "the first system variable above is untouched");
     }
 
     /// A data segment with no BSS (`memsz == filesz`) gives `p_blen = 0`

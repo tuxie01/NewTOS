@@ -98,7 +98,7 @@ verbatim (length byte first).
 | libc `malloc` | mintlib `__sbrk` → GEMDOS `Malloc` in hunks of 8–32 KiB (larger requests one block each) with the default `_stksize` (`_split_mem`, `sdk/libc/mintlib/unix/sbrk.c:54-66@_split_mem`, `sdk/libc/overlay/mintlib/malloc.c:26-27@MINHUNK`, `sdk/libc/mintlib/unix/sbrk.c:59@Malloc`); with `_stksize < -1`/`-1` the own heap above the image | the pool (`PF_TTRAMMEM` → TT-RAM preferred); every hunk is one BDOS block: at most 8192 blocks per process (`mdlimit=`), no fixed system-wide MD count (MEM05, `docs/COMPATIBILITY.md`) |
 | GEMDOS `Malloc`/`Mxalloc` | the pool block's own address, valid in every process (ARCH03 stage 1, VA = PA; `tos-api/src/gemdos/memory.rs`) | the pool itself — no per-process window or block-table limit any more |
 | kernel structures returned by pointer | published read-only into the window (ADR-023): `Getbpb`, `Getmpb`; screen memory published read/write, uncached: `Physbase`, `Logbase` | see B3 for what is still not published |
-| system variables, OSHEADER, cookie jar | materialised in page 0 of the TPA at the classic addresses (`tos-api/src/bdos/process/loader.rs:1142@populate_sysvars`) | read-only in substance: the cookie mirror is rewritten from the kernel jar on every change (`tos-api/src/bdos/process/loader.rs:1385@refresh_cookie_mirrors`); writes to the mirror do not reach the kernel |
+| system variables, OSHEADER, cookie jar | materialised in page 0 of the TPA at the classic addresses (`tos-api/src/bdos/process/loader.rs:1149@populate_sysvars`) | read-only in substance: the cookie mirror is rewritten from the kernel jar on every change (`tos-api/src/bdos/process/loader.rs:1401@refresh_cookie_mirrors`); writes to the mirror do not reach the kernel |
 
 ---
 
@@ -185,7 +185,7 @@ in slots 0–8 it found only `Z1Z1` (slot 6, value 0), with the value
 
 **Cause**: two independent LP64 effects. (1) An **8-byte read of `$5A0`**
 fuses `_p_cookies` with `ramtop`@`$5A4`: measured `0x3BE00000000005F0`. (2) A
-jar slot is two 32-bit LONGs = 8 bytes (`tos-api/src/bdos/process/loader.rs:1333-1334@wr_long` writes
+jar slot is two 32-bit LONGs = 8 bytes (`tos-api/src/bdos/process/loader.rs:1350-1351@wr_long` writes
 `wr_long(tag); wr_long(value)` per slot), but `struct { long name; long
 value; }` is **16** bytes on LP64, so `cookie++` reads every second slot and
 the `{0, capacity}` terminator reads as `capacity << 32 ≠ 0`.

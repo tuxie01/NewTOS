@@ -8,7 +8,7 @@
 
 use tos_api::bdos::mem::init::stram_range;
 use tos_api::bios::getmpb::{PublicMd, PublicMpb};
-use tos_api::bios::vectors::{ETV_DEFAULT_JUST_RTS, ETV_TIMER};
+use tos_api::bios::vectors::{ETV_TIMER, JUST_RTS};
 
 use crate::{console, kprintln};
 
@@ -88,19 +88,20 @@ pub fn run() {
     check(bios(0x0C, 0, 0) == 0x0C, "Bios(0x0C) out-of-range = func# 0x0C (F2)");
     check(bios(0x20, 0, 0) == 0x20, "Bios(0x20) out-of-range = func# 0x20 (F2)");
 
-    // ── Setexc (0x05): etv_* defaults are non-null (F3) ───────────────
+    // ── Setexc (0x05): etv_* defaults are the `ret` stub (F3, BIOS07) ──
     let etv = bios(0x05, ETV_TIMER as u64, flag_query); // query only
     check(
-        etv == ETV_DEFAULT_JUST_RTS && etv != 0,
+        etv == JUST_RTS && etv != 0,
         "Setexc(etv_timer,-1) non-null default (F3)",
     );
-    // Set/get round-trip on etv_term, then restore its default.
-    const TEST_VEC: u64 = 0x0000_0000_ABCD_1234;
+    // Set/get round-trip on etv_term, then restore its default. A value
+    // below 2 GiB: the cell is a LONG, answered sign-extended (D1).
+    const TEST_VEC: u64 = 0x0000_0000_0BCD_1234;
     let old_term = bios(0x05, 0x102, TEST_VEC);
     let now_term = bios(0x05, 0x102, flag_query);
     bios(0x05, 0x102, old_term as u64); // restore
     check(
-        old_term == ETV_DEFAULT_JUST_RTS && now_term as u64 == TEST_VEC,
+        old_term == JUST_RTS && now_term as u64 == TEST_VEC,
         "Setexc(etv_term) set/get round-trip + old non-null",
     );
 

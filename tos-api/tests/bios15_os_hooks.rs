@@ -22,7 +22,7 @@ use std::sync::{Mutex, MutexGuard, Once};
 
 use tos_api::bdos::process::hooks::{self, Cell, Hook, Kind, Via, Warning};
 use tos_api::bdos::process::{self, mmu, pexec, pterm, standin, superstate, Abi, PROCESS_TABLE};
-use tos_api::bios::vectors::{self, setexc, ETV_CRITIC, ETV_DEFAULT_CRITIC, ETV_DEFAULT_JUST_RTS, ETV_TERM, ETV_TIMER};
+use tos_api::bios::vectors::{self, setexc, ETV_CRITIC, ETV_TERM, ETV_TIMER, JUST_RTS};
 use tos_api::trap::TrapArgs;
 use tos_api::xbios::kbdvecs;
 use tos_types::BasePage;
@@ -42,8 +42,9 @@ fn lock() -> MutexGuard<'static, ()> {
     g
 }
 
-/// A started process with a built root, zeroed page 0 and a fresh
-/// `Kbdvbase` table, the running one.
+/// A started process with a built root, a page 0 that is zero but for the
+/// vector cells the loader copies in (BIOS07), and a fresh `Kbdvbase` table,
+/// the running one.
 struct Proc {
     slot: usize,
     bp: *mut BasePage,
@@ -59,7 +60,9 @@ impl Proc {
         unsafe { mmu::init_slot_tables(slot) }.unwrap();
         // SAFETY: under the lock; the slot's pages belong to this process.
         unsafe {
-            mmu::page0_bytes(slot).unwrap().fill(0);
+            let page0 = mmu::page0_bytes(slot).unwrap();
+            page0.fill(0);
+            vectors::write_page0_vectors(page0);
             let private = mmu::priv_page_bytes(slot).unwrap();
             private.fill(0);
             kbdvecs::write_table(private);
@@ -170,7 +173,7 @@ fn setexc_warns_once_per_unserved_hook_and_process() {
     let _g = lock();
     let a = Proc::new();
     let old_timer = setexc_call(0x100, 0x0001_2340);
-    assert_eq!(old_timer, ETV_DEFAULT_JUST_RTS, "the boot value comes back");
+    assert_eq!(old_timer, JUST_RTS, "the boot value comes back");
     let ws = warnings();
     assert_eq!(not_served(&ws), vec![(a.slot, Hook::EtvTimer, 0x0001_2340, Via::Setexc)]);
     // The same hook again: no second warning. A query never warns.
@@ -192,7 +195,7 @@ fn setexc_warns_once_per_unserved_hook_and_process() {
         ]
     );
     // Restoring a boot value is no installation.
-    setexc_call(0x46, 0);
+    setexc_call(0x46, JUST_RTS as u64);
     assert!(warnings().is_empty());
 
     // A second process warns again for the same hook.
@@ -200,18 +203,21 @@ fn setexc_warns_once_per_unserved_hook_and_process() {
     setexc_call(0x100, 0x0002_0000);
     assert_eq!(not_served(&warnings()), vec![(b.slot, Hook::EtvTimer, 0x0002_0000, Via::Setexc)]);
 
-    // Clean up the shared shadow: both end, their hooks go back.
+    // 0x108 is a system variable in A's own page 0, not a shared cell: no
+    // owner, it ends with A (BIOS07).
+    a.run();
+    assert_eq!(setexc_call(0x108, u64::MAX), 0x0001_3400);
+    assert_eq!(vectors::vector(0x108), 0);
+
+    // Clean up the shared cells: both end, their hooks go back.
     b.pterm();
     drop(b);
     a.pterm();
     drop(a);
-    assert_eq!(vectors::vector(ETV_TIMER), ETV_DEFAULT_JUST_RTS);
-    assert_eq!(vectors::vector(ETV_CRITIC), ETV_DEFAULT_CRITIC);
-    assert_eq!(vectors::vector(ETV_TERM), ETV_DEFAULT_JUST_RTS);
-    assert_eq!(vectors::vector(0x45), 0);
-    // 0x108 is a system variable, not a hook: no owner, put back by hand.
-    assert_eq!(vectors::vector(0x108), 0x0001_3400);
-    setexc_call(0x108, 0);
+    assert_eq!(vectors::vector(ETV_TIMER), JUST_RTS);
+    assert_eq!(vectors::vector(ETV_CRITIC), JUST_RTS);
+    assert_eq!(vectors::vector(ETV_TERM), JUST_RTS);
+    assert_eq!(vectors::vector(0x45), JUST_RTS);
     while hooks::pop().is_some() {}
 }
 
@@ -473,7 +479,7 @@ fn pterm_gives_a_hook_back_only_while_it_is_on_top_of_its_chain() {
     setexc_call(0x101, 0x0001_B000);
     a.pterm();
     drop(a);
-    assert_eq!(vectors::vector(ETV_CRITIC), ETV_DEFAULT_CRITIC);
+    assert_eq!(vectors::vector(ETV_CRITIC), JUST_RTS);
     while hooks::pop().is_some() {}
 
     // Not on top: B (a child, say) chained onto A's hook; A ends first.
@@ -493,7 +499,7 @@ fn pterm_gives_a_hook_back_only_while_it_is_on_top_of_its_chain() {
     b.pterm();
     drop(b);
     assert_eq!(vectors::vector(ETV_CRITIC), 0x0001_B100);
-    setexc_call(0x101, ETV_DEFAULT_CRITIC as u64);
+    setexc_call(0x101, JUST_RTS as u64);
     while hooks::pop().is_some() {}
 
     // Unhooked by the program itself: left alone, no warning.
@@ -509,7 +515,7 @@ fn pterm_gives_a_hook_back_only_while_it_is_on_top_of_its_chain() {
     drop(a);
     c.pterm();
     drop(c);
-    assert_eq!(vectors::vector(ETV_CRITIC), ETV_DEFAULT_CRITIC);
+    assert_eq!(vectors::vector(ETV_CRITIC), JUST_RTS);
     while hooks::pop().is_some() {}
 }
 
@@ -527,8 +533,8 @@ fn after_ptermres_the_hook_stays() {
     p.pterm();
     drop(p);
     assert_eq!(vectors::vector(ETV_TIMER), 0x0001_C000);
-    // Leave the shadow as found.
-    setexc_call(0x100, ETV_DEFAULT_JUST_RTS as u64);
+    // Leave the cell as found.
+    setexc_call(0x100, JUST_RTS as u64);
     while hooks::pop().is_some() {}
 }
 
@@ -551,5 +557,5 @@ fn a_warning_reads_as_one_log_line() {
     assert!(!line.contains('\n'));
     a.pterm();
     drop(a);
-    assert_eq!(vectors::vector(ETV_TIMER), ETV_DEFAULT_JUST_RTS);
+    assert_eq!(vectors::vector(ETV_TIMER), JUST_RTS);
 }

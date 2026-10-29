@@ -23,6 +23,8 @@
 #   make mdprobe-m68k     MDPROBE.PRG, BIOS devices 3 (MIDI) and 4 (IKBD)
 #                         (probes/mdprobe.c)
 #   make mdprobe-newtos   MDPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make sxprobe-m68k     SXPROBE.PRG, the Setexc probe (probes/sxprobe.c)
+#   make sxprobe-newtos   SXPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make host-test        the host-side suite (same as make -C host test)
 #
 # Same core sources for both; only abi/ differs (spec section 2).
@@ -64,12 +66,14 @@ BUILD := build
         dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
         scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
         pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
-        axprobe-m68k axprobe-newtos mdprobe-m68k mdprobe-newtos host-test clean
+        axprobe-m68k axprobe-newtos mdprobe-m68k mdprobe-newtos \
+        sxprobe-m68k sxprobe-newtos host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
      scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
      pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
-     axprobe-m68k axprobe-newtos mdprobe-m68k mdprobe-newtos host-test
+     axprobe-m68k axprobe-newtos mdprobe-m68k mdprobe-newtos \
+     sxprobe-m68k sxprobe-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -190,6 +194,17 @@ $(BUILD)/MDPROBE.PRG: probes/mdprobe.c | $(BUILD)
 mdprobe-newtos: $(BUILD)/MDPROBE.NAP
 $(BUILD)/MDPROBE.NAP: probes/mdprobe.c build-mdprobe-newtos.sh | $(BUILD)
 	./build-mdprobe-newtos.sh $@
+
+# The Setexc probe (TASK/BIOS07): no disk, any oracle profile. Run by
+# probes/run-sxprobe.sh.
+sxprobe-m68k: $(BUILD)/SXPROBE.PRG
+$(BUILD)/SXPROBE.PRG: probes/sxprobe.c | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror probes/sxprobe.c -o $@
+	@$(CROSS_MINT)size $@
+
+sxprobe-newtos: $(BUILD)/SXPROBE.NAP
+$(BUILD)/SXPROBE.NAP: probes/sxprobe.c build-sxprobe-newtos.sh | $(BUILD)
+	./build-sxprobe-newtos.sh $@
 
 host-test:
 	@$(MAKE) --no-print-directory -C host test

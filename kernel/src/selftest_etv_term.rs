@@ -30,8 +30,8 @@
 //! (slot freed, `RUN` null, the post-`Pterm` code did NOT run).
 //!
 //! **B — no handler installed.** A tiny EL0 program calls `Pterm(42)` with the
-//! etv_term slot at its boot-default sentinel. `handle_pterm` treats the
-//! sentinel as "no handler" and terminates directly (no upcall, no fault).
+//! etv_term slot at its boot value, the `ret` stub (`JUST_RTS`). `handle_pterm`
+//! treats it as "no handler" and terminates directly (no upcall, no fault).
 //! Asserts: (c) the process terminated directly.
 //!
 //! ## The EL0 programs
@@ -60,7 +60,7 @@
 //!   Program B (image @ VA 0x1000):
 //!     0x1000  mov  x0, #0x2A      ; rc = 42
 //!     0x1004  mov  x8, #0x4C      ; GEMDOS Pterm
-//!     0x1008  svc  #1             ; sentinel etv_term -> terminate directly
+//!     0x1008  svc  #1             ; boot etv_term -> terminate directly
 //!     ; --- failure fallthrough: only if it did NOT terminate ---
 //!     0x100C  mov  x9, #0x910     ; RESUMED_ADDR
 //!     0x1010  mov  x10, #1
@@ -78,7 +78,7 @@ use core::sync::atomic::Ordering;
 
 use tos_api::bdos::process::loader::load_to_slot;
 use tos_api::bdos::process::{current, free_slot, set_current, slot, State, PROCESS_TABLE};
-use tos_api::bios::vectors::{setexc, ETV_DEFAULT_JUST_RTS, ETV_TERM};
+use tos_api::bios::vectors::{setexc, ETV_TERM, JUST_RTS};
 use tos_api::trap::TrapArgs;
 
 use crate::arch::aarch64::user_entry::{
@@ -208,7 +208,7 @@ struct SubResult {
 
 /// Run one sub-test: load `elf` into `slot`, drop to EL0, read back the
 /// markers + slot state. The etv_term vector must already be in the desired
-/// state (installed by the program for A; left at the sentinel for B).
+/// state (installed by the program for A; left at the boot value for B).
 fn run_subtest(elf: &[u8], slot_idx: usize) -> Option<SubResult> {
     // SAFETY: boot CPU, single-threaded; the slot is dedicated to this test.
     let loaded = match unsafe { load_to_slot(elf, slot_idx) } {
@@ -287,13 +287,13 @@ fn run_subtest(elf: &[u8], slot_idx: usize) -> Option<SubResult> {
     })
 }
 
-/// Reset the etv_term shadow vector back to its boot-default sentinel, via the
-/// real `Setexc(0x102, ETV_DEFAULT_JUST_RTS)` path — undoes an install so a
+/// Reset the etv_term vector back to its boot value, the `ret` stub, via the
+/// real `Setexc(0x102, JUST_RTS)` path — undoes an install so a
 /// later sub-test (or the desktop's app launches) sees "no handler".
 fn reset_etv_term() {
     let mut regs = [0u64; 8];
     regs[0] = ETV_TERM as u64;
-    regs[1] = ETV_DEFAULT_JUST_RTS as u64;
+    regs[1] = JUST_RTS as u64;
     let args = TrapArgs {
         regs,
         func: 0x05, // BIOS Setexc
@@ -339,11 +339,11 @@ pub fn run() {
         }
     }
 
-    // Undo A's install so B sees the boot-default sentinel.
+    // Undo A's install so B sees the boot value.
     reset_etv_term();
 
     // ── Sub-test B: no handler installed → terminate directly ──
-    kprintln!("[etvterm] B: no handler (sentinel), Pterm(42) terminates directly …");
+    kprintln!("[etvterm] B: no handler (boot ret stub), Pterm(42) terminates directly …");
     match run_subtest(&ETV_TERM_ELF_B, SLOT_B) {
         Some(r) => {
             check(
@@ -362,7 +362,7 @@ pub fn run() {
         }
     }
 
-    // Leave the shadow clean for the rest of boot.
+    // Leave etv_term at its boot value for the rest of boot.
     reset_etv_term();
 
     if fails == 0 {

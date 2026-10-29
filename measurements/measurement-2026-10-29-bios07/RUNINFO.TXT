@@ -1,0 +1,128 @@
+measurement-2026-10-29-bios07 -- TASK/BIOS07: Setexc(n, -1) answers from page 0 like EmuTOS
+(BIOS-CORE-004/005/006; user decisions D1-D3 and P3 in docs/api/bios/05-setexc.md "Decisions").
+Before/after on the four tables of the ticket, the audit's Setexc probe lines S01-S08, the new
+permanent probe tosdump/probes/sxprobe.c (P3 measured on both sides before the change), and the
+retests of ADR-031 (hkprobe, BIOS15) and MEM12 (P0PAR) because page 0 changed.
+==========================================================================================
+Developer, 2026-10-29 (host clock CET). Main tree at 40e06519 plus the uncommitted BIOS07 change
+(files in TASK/BIOS07-STATUS-DONE.MD). "before" = the main tree at 40e06519 before any product file
+was edited (the four before-tables and the before probes ran first; only this run directory and
+tosdump/probes/sxprobe.c + its build/run scripts + tools/hatari-oracle.sh existed then, none of them
+in the kernel). Nothing committed, no hardware, no real card.
+
+INPUTS
+  ROM        tools/oracle/etos512de-1a7484ab.img 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+  EmuTOS     1a7484aba1bfba23e2c0899e243b6d8177fe41df
+  Hatari     2.6.1 (tools/oracle/oracle.env), tools/oracle/hatari.cfg
+  QEMU       11.0.2, -M raspi4b, -append serial=on
+  canary     ORACLE.md section 6, measurements/measurement-2026-10-28-oracle-canary/method/canary.sh, run at
+             the end: "canary tt: OK", "canary falcontc: OK" (runs/canary.txt)
+  kernels    (kernel8.img sha256; scratch copies, gitignored, deleted after the run)
+    before        8c4992eb64df37fc4b54440e48fa579a786878299d0652c56ae6e60f02ad780f
+                  40e06519, built by the tosdump runner (cargo xtask build --board rpi4 --release)
+    after         e312bb645f46d97a4782aabe21386e5fbbc26efb7075eb8675d5e087b10e0da9
+                  the BIOS07 tree, built by the tosdump runner; rebuilt at the end after the doc edits:
+                  the same sha256, so no product code changed after the runs
+    after-trace   aa911f6fb470683d25c3ec1080f058c3af902fb8c164aff371dddecd3588310b
+                  the same tree, --features bios-arg-trace (the sxprobe input check)
+    p0par         1ec4fe999fd7855f15ab429a68149f7a906636d1bd23e267decb983316521b4d
+                  a scratch copy of the after tree (kernel/ and tos-api/src checked identical with
+                  diff -r) armed by `tools/inject-arm.py <copy> launch:P0PAR=method/p0.script`
+                  (method/injector-p0par-scratch.diff = the only difference, INJ-ARM-TEMP lines)
+  probes
+    tosdump/probes/sxprobe.c (new, permanent) 81b9ba757561c35169d4939f29891cb4f2185ba8006ec6f454736d7b7b704e9d
+      `make -C tosdump sxprobe-m68k sxprobe-newtos`:
+      SXPROBE.PRG 7e5aa2fcf668c6783ad6638036ab4a2e58797775fc37e0008236444948edf719
+      SXPROBE.NAP d25d177b8cf3e137ddf2921806a59dcc3eedb57ceb7f3dd73a0e30b43d2c5f01
+      (the same two hashes in every runs/sxprobe-*/run.txt); runner tosdump/probes/run-sxprobe.sh
+      (a copy of run-hkprobe.sh); tools/hatari-oracle.sh gained the probe name SXPROBE.PRG (one case
+      line, as HKPROBE.PRG: no table, no disk).
+    BCPROBE.NAP of the BIOS-core audit, measurements/measurement-2026-10-28-bios-core-audit/probe/
+      dd97745cae77abab0f7fb8c5f3464ba823065a7e7050c36f7fad81b9c229735e (its S01-S08 lines; oracle side
+      = that audit's runs/PROBE-EMUTOS-tt and -falcontc, same pinned ROM)
+    HKPROBE (tosdump/probes/hkprobe.c, BIOS15): PRG 7a8243d5..., NAP 6ad43176... (runs/hkprobe-*/run.txt)
+    P0PAR.NAP 3eb86eb6cd8fee9308a395629ff31b81072b753218296e4d2654c80ed2f3bb05 and P0KID.NAP
+      07ec89d8b84a80d9619bb4ac591a0a15e7a75207e39dd750d8bdbaf90899b760 from
+      measurements/measurement-2026-10-27-mem12-acceptance/dumpers/ (the MEM12 acceptance binaries)
+
+METHOD (method/)
+  newtos-tables.sh <scratch> runs before|after   the four tables, `cargo xtask tosdump bios` (TOOL09),
+                                                  each against its tt and falcontc reference
+  run-bcprobe-newtos.sh <scratch> <kernel> <out>  BCPROBE.NAP on raspi4b (card: tools/mkcard.sh)
+  run-p0par.sh <scratch> <kernel> <out>           P0PAR/P0KID on raspi4b with the injector kernel
+  p0.script                                        copy of the MEM12 acceptance run's key script
+  injector-p0par-scratch.diff                      the injector lines of the p0par kernel (scratch only)
+  sxprobe / hkprobe: tosdump/probes/run-sxprobe.sh emutos tt|falcontc <out>, ... newtos <out> <kernel>;
+  tosdump/probes/run-hkprobe.sh newtos <out> <kernel>.
+
+1 P3 FIRST: THE PROBE ON BOTH SIDES BEFORE THE CHANGE (runs/sxprobe-EMUTOS-tt, -falcontc,
+  runs/sxprobe-NEWTOS-before)
+  EmuTOS tt = falcontc byte for byte:
+    C01-C08 Setexc(n,-1) is the LONG at 4*n (n = 2, 0x20, 0x100-0x103, 0x108, 0x168): 1, hi 0
+    Q02 Setexc(0x20,-1L) after setting 0x80000001: ret=80000001 hi=ffffffff
+    Q03 Setexc(0x20,(long)0xFFFFFFFFUL): ret=80000001 hi=ffffffff   -> a query (m68k: the same LONG)
+    Q04 Setexc(0x20,-1L): ret=80000001 hi=ffffffff                  -> nothing was written
+    Q05 cell $80 = 80000001; Q06 put back 1
+  NewTOS before (kernel before):
+    C03-C05 hi=4e750000/43726974/4e750000 (the 64-bit tokens); C07 (memvalid) is the cell: 0
+    Q02 ret=80000001 hi=00000000 (64-bit shadow, no sign extension)
+    Q03 ret=80000001, Q04 ret=ffffffff hi=00000000 -> 0x00000000FFFFFFFF was STORED (a write)
+    Q05 cell $80 = 00000000 (the shadow is not page 0); Q01 old is a TOS address: 0
+  -> P3 measured: EmuTOS tests the LONG, NewTOS tested 64 bits. Changed only after this run.
+
+2 TABLES (runs/before-*, runs/after-*; every runner exit 0, tosdiff --validate accepted)
+                         tt before -> after     falcontc before -> after
+  bios-r1 (147)          39 -> 37               43 -> 41
+  bios-core-r1 (44)      15 -> 2                14 -> 1
+  xbios-chardev-r1 (23)  12 -> 12               12 -> 12
+  xbios-system-r1 (43)    9 -> 9                 9 -> 9
+  Now EQUAL: bios-core-r1 46-57 and 59 (both profiles), bios-r1 53, 54 (both profiles).
+  bios-core-r1 58, 60-62 and bios-r1 55-57 were EQUAL before and are EQUAL after.
+  -> bios-core-r1 46-62 and bios-r1 53-57 EQUAL on tt and falcontc.
+  Still differing, unchanged sets: bios-core-r1 65 (+66 on tt) = Bcostat(8/9), BIOS-CORE-007
+  (TASK/BIOS08); bios-r1, xbios-* the same case numbers as before.
+  Newly differing in any of the eight comparisons: none (case lists per comparison compared).
+
+3 PROBE LINES S01-S08 (runs/bcprobe-NEWTOS-before, -after)
+  after: S01-S08 identical to the audit's PROBE-EMUTOS-tt and PROBE-EMUTOS-falcontc lines
+    (S01-S05 old_ok=1 old_hi=00000000, S06/S07 old_ok=0 as EmuTOS, S08 ret=752019f3).
+  before: as the audit measured (S01-S03 old_hi 4e750000/43726974, S04/S05 old_ok=0, S08 0).
+  The other groups (K, B, BCPROB2.LOG G) are equal before/after; T01 differs only in its loop count.
+
+4 SXPROBE AFTER (runs/sxprobe-NEWTOS-after, runs/sxprobe-NEWTOS-after-trace)
+  SXPROBE.LOG byte-identical to EmuTOS tt and falcontc (also in the trace run).
+  Input check, after-trace BOOT-SERIAL.txt [biostrace] U0 000000-000022: every call arrived as the
+  source gives it; the P3 line
+    [biostrace] 000018 U0  13:0x05 Setexc      w:0x0020 l:0xffffffff=0x00000000ffffffff -> 0xffffffff80000001
+  shows x1 = 0x00000000FFFFFFFF arriving and answered as a query; 000016 the set of 0x80000001
+  (x1 zero-extended), 000017/000019 -1 queries answering 0xffffffff80000001 (D1).
+  Serial: one "[hook] warning ... installed vector 0x20 ($080) = 0x80000001 via Setexc" (ADR-031).
+
+5 RETEST ADR-031 / BIOS15 (runs/hkprobe-NEWTOS-before, -after)
+  HKPROBE.LOG byte-identical before/after (M02-M07, P01/P02, H01/H02 as accepted in BIOS15).
+  Warnings: the same four lines, one per hook; the two Mfpint lines now name the vector value the
+  probe read with Setexc(0x40+n,-1): 0x7e040 (the ret stub) instead of 0x0.
+  Host tests: tos-api/tests/bios15_os_hooks.rs 12/12 (adapted to the new boot values), the new
+  tos-api/tests/bios07_setexc.rs covers the page-0 copy check (a direct write of $408 warns
+  etv_term-direct, the copies equal to their cells do not).
+
+6 RETEST MEM12 (runs/p0par-NEWTOS-after)
+  P0PAR: R 0, w 0xFFFF, S 0, x 0xFFFF, E 0, r 0xFFFF, W 0xFFFF, T 0xFFFF, K 0, L 0 + "own state after
+  L: user OK", . 0 -> "P0PAR: PASS"; desktop up after; the same lines as
+  measurements/measurement-2026-10-27-mem12-acceptance (section 4, p0).
+
+7 BOOT qemu-virt (runs/boot-qemu-virt-after/BOOT-SERIAL.txt): `cargo xtask run --board qemu-virt
+  --release --headless`, "[desk] desktop up (0 drives)", no crash, no PANIC. raspi4b: every run
+  above booted to "desktop up" after its program.
+
+CARDS / IMAGES
+  Every NewTOS card from tools/mkcard.sh (64 MiB, MBR + FAT16), booted as an APFS clone, both deleted
+  after the logs were copied. Manifests: runs/*/card.img.manifest (16). optional_missing line of
+  every manifest, verbatim (all 16 identical):
+    optional_missing none
+  Booted-clone sha256 after each run: runs/*/run.txt ("card after"), the tables in
+  runs/*/tosdump-run.txt. Oracle: Hatari GEMDOS drive C: = a scratch host dir.
+
+NOT VERIFIED
+  Real Raspberry Pi 4. A program that writes a vector cell's page-0 copy directly and then queries
+  it with Setexc (documented deviation, host test only). Setexc(n >= 0x200) on EmuTOS (RAM there).

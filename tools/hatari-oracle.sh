@@ -29,7 +29,9 @@
 #            (give -), profile disk only, always destructive (it rewrites
 #            C:'s boot sector), writes <PROBE>.LOG only;
 #            or HKPROBE.PRG (tosdump/probes/hkprobe.c, TASK/BIOS15): no table,
-#            touches no disk, any profile, writes HKPROBE.LOG only
+#            touches no disk, any profile, writes HKPROBE.LOG only;
+#            or SXPROBE.PRG (tosdump/probes/sxprobe.c, TASK/BIOS07): the same,
+#            writes SXPROBE.LOG only
 #   table    the case table; staged as VDI.TSV / AES.TSV / RASTER.TSV /
 #            BIOS.TSV; - for a probe
 #   out-dir  receives hd/ (the GEMDOS drive: C:, in profile disk D:),
@@ -92,6 +94,7 @@ case $PRG in
     GCPROBE.PRG)  AREA=GCPROBE; PROBE=1 ;;
     PXPROBE.PRG)  AREA=PXPROBE; PROBE=1 ;;
     HKPROBE.PRG)  AREA=HKPROBE; PROBE=1; PROBE_DISK=0 ;;
+    SXPROBE.PRG)  AREA=SXPROBE; PROBE=1; PROBE_DISK=0 ;;
     *) echo "unknown dumper: $PRG" >&2; exit 2 ;;
 esac
 if [ "$PROBE" = 1 ]; then

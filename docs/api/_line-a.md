@@ -85,8 +85,8 @@ ADR-030 "No Line-A emulation" (`docs/MEMORY.md`, Accepted 2026-10-26):
 
 - **No opcode trap.** AArch64 has no `$Axxx` trap, and NewTOS adds no
   substitute (no `svc` class, no undefined-instruction hook). `Setexc(10, …)`
-  (vector `$28`) only stores into the software vector shadow, which nothing
-  dispatches (`tos-api/src/bios/vectors.rs:98-109`). The m68k Line-A trap
+  (vector `$28`) only stores into the vector cell, which nothing
+  dispatches (`tos-api/src/bios/vectors.rs:114@setexc`; TASK/BIOS07). The m68k Line-A trap
   belongs to an m68k emulator, if one is ever built (FR-4).
 - **No LINEA variable block** is exported to programs. The state the block
   would carry stays inside the VDI; programs reach it through the documented

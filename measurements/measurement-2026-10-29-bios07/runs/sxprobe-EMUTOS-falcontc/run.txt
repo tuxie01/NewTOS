@@ -1,0 +1,4 @@
+sxprobe run, side emutos (2026-10-29T21:22:52Z)
+tree      40e06519c432d0db64795c858329912ffa7f3583 2 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    SXPROBE.PRG 7e5aa2fcf668c6783ad6638036ab4a2e58797775fc37e0008236444948edf719 SXPROBE.NAP d25d177b8cf3e137ddf2921806a59dcc3eedb57ceb7f3dd73a0e30b43d2c5f01
+oracle    tools/hatari-oracle.sh falcontc (pinned ROM, tools/oracle/hatari.cfg)

@@ -1,0 +1,4 @@
+probe  dd97745cae77abab0f7fb8c5f3464ba823065a7e7050c36f7fad81b9c229735e BCPROBE.NAP
+kernel 8c4992eb64df37fc4b54440e48fa579a786878299d0652c56ae6e60f02ad780f before-kernel8.img
+card   e07d8ce1b6523da007d804510ebdd9033ea642118add11783bec35300c4c73b7 (tools/mkcard.sh)
+card   after e29fd6dd19ba65c75ea696d1fc081b0ee5fc1db018e16a4bd9c194a9bd2187d0 (the booted clone)

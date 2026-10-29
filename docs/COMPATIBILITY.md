@@ -1197,7 +1197,8 @@ NewTOS never calls it: <reason> (ADR-031)` to the serial log. Where it is
 seen: in `Setexc` (`etv_timer`, `etv_critic`, vectors `< 0x100`); in page 0
 (`hdv_rw`/`hdv_bpb`/`hdv_mediach`, `swv_vec`, `exec_os`, `resvector`,
 `dump_vec`, `vblqueue`, `bell_hook`/`kcl_hook`, and `etv_*` or CPU vector
-cells written directly), read only and compared with the loader's value when
+cells written directly — those compared with the shared `Setexc` cell they
+copy), read only and compared with the loader's value when
 the process leaves the super state, **after every trap it makes in super
 state** (TeraDesk's `force_mediach` hooks `hdv_*` around one `Fopen` and
 restores them before it leaves), when it ends in super state, and after a
@@ -1212,13 +1213,27 @@ EmuTOS itself never calls (`etv_xtra`, `hdv_init`, `hdv_boot`,
 
 **Owner of a hook in a shared cell** (ADR-031 rule 3). The `Setexc` vectors
 up to `etv_xtra` and `vex_butv`/`motv`/`curv`/`timv` are one cell for all
-processes; the process that wrote it owns it. When it ends without
+processes (every page 0 carries a copy of the `Setexc` cells, TASK/BIOS07);
+the process that wrote it owns it. When it ends without
 unhooking, the cell gets its previous value back if it still holds the
 process's hook (top of the XBRA chain); if another hook has been chained on
 top, the cell keeps it and the log gets `[hook] warning: … ended without
 unhooking …`. After `Ptermres` the hook stays, as the code it points at
 stays resident. EmuTOS gives nothing back: a vector a terminated program
 left points into freed memory there.
+
+**`Setexc` and page 0** (TASK/BIOS07, `docs/api/bios/05-setexc.md`
+decisions D1–D3, P3). `Setexc(num, …)` answers from page 0 for every
+`num < 0x200`, as EmuTOS reads `*(LONG *)(4 * num)`: the vectors and `etv_*`
+(`num <= 0x103`) are the shared cells above, the system variables above them
+the calling process's own page-0 cell. A vector NewTOS does not serve, and
+`etv_timer`/`etv_critic`/`etv_term`, start at the `ret` stub (EmuTOS'
+`just_rts`), never at 0; vectors 0/1 hold the OSHEADER's first two LONGs.
+The answer is the 32-bit cell sign-extended; `-1` is recognised in the low
+32 bits. Deviations: `num >= 0x200` answers 0 (EmuTOS reads RAM there); a
+program that writes the page-0 copy of a vector cell directly (super state)
+does not change what `Setexc` answers or what `Pterm` calls — it gets the
+page-0 warning (ADR-031 rule 4).
 
 **`prt_stat`/`prt_vec`** (`$506`/`$50A`) hold a `ret` stub, EmuTOS' `just_rts`
 (`references/emutos/bios/chardev.c:82-83`), not 0; `aux_stat`/`aux_vec`
@@ -1319,7 +1334,7 @@ hands out the LINEA variable block (`references/emutos/bios/bios.c:176`,
 
 * **No opcode trap.** Native AArch64 programs have no `$Axxx` instruction,
   and NewTOS adds no substitute; `Setexc(10, …)` only stores into the vector
-  shadow, which nothing dispatches (`tos-api/src/bios/vectors.rs:98-109`).
+  cell, which nothing dispatches (`tos-api/src/bios/vectors.rs:114@setexc`).
   m68k binaries, and with them the Line-A trap, belong to the later m68k
   emulator (FR-4).
 * **No LINEA variable block.** Screen geometry, mouse position and buttons
@@ -1395,8 +1410,7 @@ bit and lie below 2 GiB. This is the m68k `D0` read as a signed LONG. Known
 deviations, each with its fix ticket (user 2026-10-28;
 `docs/analysis/abi-assumptions-check-2026-10-28.md` §1): `Rsconf`
 zero-extends (TASK/XBIOS06.md), `Gettime` zero-extends (TASK/XBIOS09.md),
-`Setexc(0x100…0x102, -1)` returns 64-bit placeholders instead of handler
-addresses (TASK/BIOS07.md), the pointer form of `Getcookie()` zero-extends
+the pointer form of `Getcookie()` zero-extends
 in the SDK (TASK/SDK06.md). The `Pexec` child exit code is zero-extended on
 purpose, as in EmuTOS (`references/emutos/bdos/proc.c:601`, `:616`).
 

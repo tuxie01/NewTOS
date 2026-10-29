@@ -10,7 +10,7 @@ Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS15-STATUS-DONE.MD)), vom Anwende
   Haken und Belege: ADR-031 und
   `docs/analysis/os-hooks-adr-proposal-2026-10-28.md`.
 - Heute: Warnung nur fuer Accessory-Haken der `Kbdvbase`-Tabelle
-  (`accessory_hook_unwarned` (seit BIOS15 aufgegangen in `tos-api/src/bdos/process/hooks.rs:504@note`)); `vex_butv`/
+  (`accessory_hook_unwarned` (seit BIOS15 aufgegangen in `tos-api/src/bdos/process/hooks.rs:518@note`)); `vex_butv`/
   `vex_motv`/`vex_curv`/`vex_timv` speichern still; `prt_stat`/`prt_vec` sind 0
   statt des `just_rts`-Stubs.
 - Damit werden BIOS-CORE-002 ([BIOS05](BIOS05.md)), XBIOS-CHARDEV-003
@@ -26,7 +26,7 @@ Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS15-STATUS-DONE.MD)), vom Anwende
     `tos-api/src/bdos/process/superstate.rs:38@set_super`, `:66@super_call`
     (EmuTOS-Seite: keine eigene Funktion, Zellen werden direkt beschrieben).
   - `Kbdvbase`-Slots → `tos-api/src/xbios/kbdvecs.rs@kbdvbase` (`--up` 18 / 3);
-    Warnmuster `accessory_hook_unwarned` (seit BIOS15 `tos-api/src/bdos/process/hooks.rs:504@note`).
+    Warnmuster `accessory_hook_unwarned` (seit BIOS15 `tos-api/src/bdos/process/hooks.rs:518@note`).
   - `Initmous` → Arm im XBIOS-Dispatcher `tos-api/src/xbios/mod.rs@dispatch`
     (keine Zeile in `mapping.tsv`); `mfpint` (`--up` 10 / 3) und `xbtimer`
     (7 / 2) **ohne Gegenstueck**.
@@ -34,7 +34,7 @@ Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS15-STATUS-DONE.MD)), vom Anwende
     `:972@vex_motv`, `:977@vex_curv`, `:1025@vex_timv` (VDI-Schicht, ohne
     `mapping.tsv`-Zeilen).
   - `prt_stat`/`prt_vec`-Startwert →
-    `tos-api/src/bdos/process/loader.rs:1281@prt_stat` (`populate_sysvars`).
+    `tos-api/src/bdos/process/loader.rs:1288@prt_stat` (`populate_sysvars`).
   - Besitz bei `Pterm`: `xterm` → `tos-api/src/bdos/process/pterm.rs@terminate`
     (`--up` 299 / 25).
 - Ohne Gegenstueck in `bios`/`bdos` (heutiges `mapping.tsv`): `mfpint`,

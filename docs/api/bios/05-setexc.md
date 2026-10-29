@@ -4,6 +4,7 @@
 > Verified against `bios/bios.c:1070` (`setexc`).
 > [BIOS12] 2026-10-28: Pi binding, edge case 5 and the hook notes corrected
 > from EmuTOS and the audit measurements (`measurements/measurement-2026-10-28-bios-core-audit/RUNINFO.TXT`).
+> [BIOS07] 2026-10-29: Pi binding rewritten for page 0 (D1-D3, P3 built).
 
 ## EmuTOS source
 
@@ -179,7 +180,7 @@ error.
 
 8. **[BIOS12] Return width.** `setexc` returns `LONG` (32 bit) read from a
    32-bit cell (`bios/bios.c:1070-1080`). A 64-bit return of such a value is a
-   NewTOS choice, see "Open decisions".
+   NewTOS choice, see "Decisions" (D1; built by BIOS07: the cell sign-extended).
 
 ---
 
@@ -232,11 +233,9 @@ None. Identical across all EmuTOS builds and TOS versions.
 
 (Empty during Phase 00.)
 
-[BIOS12] stale; see "Pi / BCM2711 binding" for the current state.
-PHASE-06 (history): NewTOS keeps a software "m68k vector shadow" at virtual `0..0x400`
-for m68k binaries; native AArch64 handlers consult the shadow for
-m68k-emulated hooks (etv_term etc.). For native source ports the etv_* hooks
-are reached by name, not by poking `4*num`.
+[BIOS07] Implemented by TASK/BIOS07 (2026-10-29): see "Pi / BCM2711
+binding" below. PHASE-06 (history) planned a software "m68k vector shadow"
+at virtual `0..0x400`; it existed until BIOS07 and is replaced by page 0.
 
 ---
 
@@ -244,44 +243,60 @@ are reached by name, not by poking `4*num`.
 
 > Re-points the hardware reference from the **68000 low-memory vector table**
 > (`4*num` in physical RAM) and the MFP/GLUE interrupt sources to the **AArch64
-> exception model** (`VBAR_EL1` + GIC-400) plus a **software vector shadow**.
+> exception model** (`VBAR_EL1` + GIC-400) plus **page 0 of every process**.
 > The `Setexc` contract (get/set an entry, `-1` = query, always return the
 > previous value) is unchanged; only the backing store is re-pointed here. See
 > `docs/HARDWARE-PROFILE.md` §3.8, §3.9.
 
-### There is no 68k vector page; `Setexc` is a software shadow plus page 0
+### There is no 68k vector page; `Setexc` answers from page 0
 
 AArch64 has **no flat `4*num` vector page**. Exceptions go through `VBAR_EL1`
 (`kernel/src/arch/aarch64/exceptions.rs`) and interrupts come from the
-GIC-400, not from the MFP/GLUE. [BIOS12] corrected: the code today
-(`tos-api/src/bios/vectors.rs:98@setexc`) has **three regimes**, not two:
+GIC-400, not from the MFP/GLUE. Every process has a private page 0 with the
+classic low-memory system area (`docs/COMPATIBILITY.md`, page 0 per process).
+[BIOS07] Since TASK/BIOS07 (decision D3) page 0 carries **every**
+`num < 0x200`, in three regimes (`tos-api/src/bios/vectors.rs:114@setexc`):
 
-| `num` (as `usize` of the `WORD`) | Behaviour today | Source |
+| `num` (the `WORD` as `usize`) | Cell | Source |
 |---|---|---|
-| `< NVEC` (`0x120`) | software shadow `VECTORS[num]`, `AtomicI64`; `-1` queries, any other value stored; old value returned in full 64 bit | `tos-api/src/bios/vectors.rs:21@NVEC`, `tos-api/src/bios/vectors.rs:56@VECTORS`, `tos-api/src/bios/vectors.rs:98@setexc` |
-| `NVEC <= num < 0x200` | peek/poke of the 4-byte cell `4*num` in the calling process's page 0 (kernel alias; without a process, a faulting-safe user access); old value returned **sign-extended** `as i32 as i64` | `tos-api/src/bios/vectors.rs:73@SYSVAR_NUM_LIMIT`, `tos-api/src/bios/vectors.rs:124@old`, `tos-api/src/bios/vectors.rs:131@read_unaligned` |
-| `>= 0x200` | returns `0`, no access (EmuTOS reads/writes RAM there) | `tos-api/src/bios/vectors.rs:98@setexc` (final `0`) |
+| `0 … 0x103` (vectors, `etv_timer`/`etv_critic`/`etv_term`/`etv_xtra`) | **one cell for every process**, 32 bit, as EmuTOS has one vector table; every loaded process's page 0 carries a copy at `4*num`, written at load and again by every write of the cell (`Setexc`, the owner's `Pterm` restore). A query answers the cell | `tos-api/src/bios/vectors.rs:90@VECTORS`, `tos-api/src/bios/vectors.rs:166@store_shared`, `tos-api/src/bios/vectors.rs:181@write_page0_vectors` (called from `tos-api/src/bdos/process/loader.rs:1304@write_page0_vectors`) |
+| `0x104 … 0x1FF` (the system variables `$410`–`$7FC`) | the calling process's own page-0 cell, through the page's kernel alias; with no process running a fault-recovered user access at VA `4*num` | `tos-api/src/bios/vectors.rs:114@setexc` |
+| `>= 0x200`, and a negative `num` | answers `0`, touches nothing (D2) | `tos-api/src/bios/vectors.rs:114@setexc` (final `0`) |
 
-[BIOS12] The earlier row "out-of-range `num` (`>= NVEC`) returns 0" was stale
-since the page-0 branch (B1) and is replaced by the table. Contract status:
+All regimes: the answer is the 32-bit cell **sign-extended** into `x0` (D1,
+`tos-api/src/bios/vectors.rs:101@long`); a write stores the **low 32 bits**
+of `x1`; the query test compares the **low 32 bits** with `-1` (P3, as
+`bios/bios.c:1074` compares the `LONG`), so `0x0000_0000_FFFF_FFFF` queries as
+`-1` does. P3 was measured before it was changed: `tosdump/probes/sxprobe.c`
+Q03/Q04, EmuTOS (tt, falcontc) `Q03 ret=80000001 hi=ffffffff`, `Q04` the
+same (a query); NewTOS before BIOS07 `Q04 ret=ffffffff` (a write)
+(`measurements/measurement-2026-10-29-bios07/RUNINFO.TXT`).
 
-- `NVEC` has no basis in EmuTOS. The justification "etv_* / GEM hooks up to
-  `$047F`" is wrong (item 7 above): `$40C-$47F` are system variables, and the
-  shadow makes `Setexc(0x103..0x11F, -1)` return 0 instead of the variable
-  (BIOS-CORE-006, case 59: EmuTOS `0x752019F3`, NewTOS `0`, measured on both
-  profiles; fix is [BIOS07](../../../TASK/BIOS07.md)). Case 58 (`$40C`) is
-  0 on both.
-- `etv_*` shadow values today are the opaque 64-bit tokens
-  `0x4E75_0000_0000_0000` and `0x4372_6974_0000_0000`
-  (`tos-api/src/bios/vectors.rs:45@ETV_DEFAULT_JUST_RTS`,
-  `tos-api/src/bios/vectors.rs:54@ETV_DEFAULT_CRITIC`), not TOS addresses
-  (measured, Sonde S01-S03; `bios-core-r1` 55-57 PTR_RAM DIFF). CPU vectors
-  that nobody installed read 0 (cases 46-54 DIFF; `bios-r1` 53/54 NONZERO
-  DIFF). EmuTOS returns real addresses for all of them (`bios/bios.c:1073-1074`).
-  **Target** (EmuTOS, not yet implemented): non-zero TOS address < 2 GiB
-  (MEM11 invariant) for every queried vector.
-- Install/restore cycle is equal on both systems (Sonde S04/S05: new value
-  arrives whole, restore returns the previous value).
+### Boot values of the shared cells
+
+| `num` | NewTOS | EmuTOS | Source / status |
+|---|---|---|---|
+| `0` (`$000`) | the OSHEADER's first LONG: `os_entry` (0) and `os_version` | `os_entry`/`os_version` of the ROM | EmuTOS copies the OSHEADER's first two LONGs to address 0 where the hardware does not route the ROM there (`bios/bios.c:120-136`); `tos-api/src/bdos/process/loader.rs:1089@OSHEADER_LONG0` |
+| `1` (`$004`) | `reseth`, the reset stub | `_main` | as above; `tos-api/src/bios/reset.rs:108@RESET_STUB_VA` |
+| `2 … 0xFF` | the shared `ret` stub, EmuTOS' `just_rts` (`JUST_RTS`) | the ROM's exception/interrupt handlers | D3: vectors NewTOS does not serve point to the `just_rts` stub (`tos-api/src/bios/vectors.rs:67@JUST_RTS`) |
+| `0x100` `etv_timer` | `JUST_RTS` | `tikfrk` (`bdos/time.c:167`) | not served, ACCEPTED deviation BIOS-CORE-002 (ADR-031) |
+| `0x101` `etv_critic` | `JUST_RTS` | `default_etv_critic` (`bios/bios.c:361`) | not served (ADR-031) |
+| `0x102` `etv_term` | `JUST_RTS` | `just_rts` (`bios/bios.c:362`) | served (below) |
+| `0x103` `etv_xtra` | `0` | `0` | `bios-core-r1` case 58 |
+
+Every default address is non-null, even, `>= 0x400` and below 2 GiB (the
+MEM11 invariant; the class `PTR_RAM` of `bios-core-r1` 46–57), host test
+`tos-api/tests/bios07_setexc.rs`. The value of a vector NewTOS does not
+serve cannot equal EmuTOS's ROM address; the tables compare it as `PTR_RAM`.
+
+**Page 0 written directly.** A program in the super state may write the copy
+of a shared cell in its own page 0. NewTOS does not act on that copy
+(ADR-031 rule 4): `Setexc(num, -1)` keeps answering the shared cell, `Pterm`
+calls the `etv_term` of the shared cell, and the page-0 check warns about the
+copy (`tos-api/src/bdos/process/hooks.rs:311@check_page0`, compared with the
+shared cell). EmuTOS, with one memory cell, would answer and call the written
+value — a documented deviation for that case only; the next write of the
+cell through `Setexc` overwrites every copy.
 
 ### Canonical hook vector numbers (unchanged from the contract)
 
@@ -298,47 +313,44 @@ one warning per hook and process; never silent.
 
 | Hook | NewTOS | Note |
 |---|---|---|
-| `etv_term` (`0x102`) | **served** | Pterm reads the shadow and delivers the handler as an EL0 upcall unless it is `0` or the non-callable boot token (`kernel/src/arch/aarch64/exceptions.rs:1393@etv`, `:1390@etv`). Corrects the earlier "Pterm does not run etv_term" |
+| `etv_term` (`0x102`) | **served** | Pterm reads the shared cell and delivers the handler as an EL0 upcall unless it is `0` or the boot value `JUST_RTS`, whose call would do nothing (`kernel/src/arch/aarch64/exceptions.rs:1391@etv`, `:1396@JUST_RTS`) |
 | `etv_timer` (`0x100`) | stored, **not served**, warning | BIOS-CORE-002 is an ACCEPTED deviation by ADR-031; measured T01: calls 100 (EmuTOS) / 0 (NewTOS) |
 | `etv_critic` (`0x101`) | stored, **not served**, warning | `Rwabs` has no critical-error retry path |
-| CPU/trap vectors `0..0xFF` | stored in the shadow, never dispatched (reserved for the m68k userland) | the EL1 handlers do not consult them |
-| page-0 hook cells written directly (`hdv_*`, `swv_vec`, `exec_os`, `dump_vec`, `resvector`) | not served; page 0 is only read to warn | ADR-031; they are not `Setexc` vectors |
+| CPU/trap vectors `0..0xFF` | stored, never dispatched (reserved for the m68k userland) | the EL1 handlers do not consult them |
+| page-0 hook cells written directly (`hdv_*`, `swv_vec`, `exec_os`, `dump_vec`, `resvector`; the copies of the vector cells) | not served; page 0 is only read to warn | ADR-031 |
 
-The accessor `vectors::vector(num)` is no longer `#[allow(dead_code)]`: it is
-read for `etv_term` (`tos-api/src/bios/vectors.rs:149@vector`).
+The accessor `vectors::vector(num)` answers a shared cell as `Setexc` does;
+it is read for `etv_term` (`tos-api/src/bios/vectors.rs:191@vector`).
 
-[BIOS15] Built (`tos-api/src/bios/vectors.rs:209@note_write`, the shared
-mechanism `tos-api/src/bdos/process/hooks.rs:504@note`): a `Setexc` write of
+[BIOS15] Built (`tos-api/src/bios/vectors.rs:237@note_write`, the shared
+mechanism `tos-api/src/bdos/process/hooks.rs:518@note`): a `Setexc` write of
 `etv_timer`, `etv_critic` or a vector `< 0x100` other than its boot value
 logs one `[hook] warning` per hook and process; `etv_term` (served),
-`etv_xtra` and the system variables do not warn. A write into a hook entry
-`<= 0x103` makes the calling process its owner: its `Pterm` puts the previous
-value back while the entry still holds its hook, otherwise the entry stays
-and the log says so; after `Ptermres` it stays (ADR-031 rule 3). A write into
-page 0 (`0x120 <= num < 0x200`) runs the page-0 hook check (`bell_hook`
-`0x16B`, `kcl_hook` `0x16C`). The values `Setexc` stores and returns are
-unchanged.
+`etv_xtra` and the system variables do not warn. A write into a shared cell
+(`<= 0x103`) makes the calling process its owner: its `Pterm` puts the
+previous value back while the cell still holds its hook, otherwise the cell
+stays and the log says so; after `Ptermres` it stays (ADR-031 rule 3). A
+write of a system variable (`0x104 <= num < 0x200`, [BIOS07]: before it
+`0x120 <= num`) runs the page-0 hook check (`bell_hook` `0x16B`, `kcl_hook`
+`0x16C`).
 
-### Open decisions (NewTOS choices; no decision taken here)
+### Decisions (user 2026-10-28), implemented by BIOS07
 
-**Decisions (user 2026-10-28):** D1 = **1**, keep sign extension (the rule
-of `tos-api/src/trap.rs:6@TrapArgs`); the deviations from the rule are
-fixed: the `Setexc(0x100…0x102, -1)` placeholders (cases 55–57) return real
-handler addresses with D3. The query test `v == -1` checks the **low 32
-bits** like EmuTOS (`references/emutos/bios/bios.c:1074`) — probe first,
-P3 (no caller affected today). D2 = **1** (return 0, documented
-deviation). D3 = **1** (page 0 backs every `num < 0x200`); vectors NewTOS
-does not serve default to the `just_rts` stub. The options stay below as
-rationale.
+D1 = **1**, keep sign extension (the rule of `tos-api/src/trap.rs:6@TrapArgs`);
+the `Setexc(0x100…0x102, -1)` placeholders (cases 55–57) are gone, the cells
+hold real handler addresses. The query test `v == -1` checks the **low 32
+bits** like EmuTOS (`references/emutos/bios/bios.c:1074`) — P3, probe first:
+done (above). D2 = **1** (return 0, documented deviation). D3 = **1** (page 0
+backs every `num < 0x200`); vectors NewTOS does not serve default to the
+`just_rts` stub. All four are built
+(`measurements/measurement-2026-10-29-bios07/RUNINFO.TXT`). The options
+stay below as rationale.
 
 **D1. Width of the `Setexc` return value.** EmuTOS returns a 32-bit LONG in
-D0 (`bios/bios.c:1070-1080`). NewTOS returns `x0` (64 bit). Today: page-0
-cells are sign-extended (`tos-api/src/bios/vectors.rs:131@read_unaligned`),
-shadow entries are full 64 bit. For a page-0 cell holding a value
-`>= 0x80000000` the caller sees `0xFFFF_FFFF_8xxx_xxxx` (prediction from
-code, per `docs/analysis/lp64-tos-struct-survey-2026-10-28.md` section 2.2 and
-M3; not measured). The standard cells (`_p_cookies` etc.) are < 2 GiB, so
-nothing observable differs today.
+D0 (`bios/bios.c:1070-1080`). NewTOS returns `x0` (64 bit), the 32-bit cell
+sign-extended. For a cell holding a value `>= 0x80000000` the caller sees
+`0xFFFF_FFFF_8xxx_xxxx` (measured: `sxprobe` Q02, both sides). The default
+cells are < 2 GiB, so nothing observable differs for them.
 1. Keep sign extension. Matches m68k `D0` read as a signed LONG and a
    `long` caller on LP64 that compares with `-1`/negative error codes;
    a cell value >= 2 GiB looks negative.
@@ -351,12 +363,9 @@ nothing observable differs today.
 3. Return only the low 32 bit in `w0`, the upper half specified as 0 (same
    as option 2 for the register, but states the width as contract). Makes
    BIOS07's "every address < 2 GiB" the rule instead of a test.
-Consequence for BIOS07 (fix ticket): once all values are TOS addresses
-< 2 GiB the three options coincide on every queried vector, so D1 only matters
-for page-0 cells a program wrote itself.
 
 **D2. Cells at `num >= 0x200`.** EmuTOS reads/writes RAM at `4*num`
-(unchecked). Today NewTOS returns 0 and does nothing.
+(unchecked). NewTOS returns 0 and does nothing.
 1. Keep (safe; documented deviation; the audit excludes these from tables,
    `docs/audits/2026-10-28-bios-core.md` "Setexc(n >= 0x200)").
 2. Read-only peek of the process's mapped memory, write refused.
@@ -368,14 +377,17 @@ between CPU vectors, `etv_*` and variables (one memory cell per `num`).
 1. Page 0 backs all `num < 0x200` (shadow only as a cache for the
    dispatched hooks). Matches `bios-core-r1` 46-62 and the cell semantics of
    `TASK/MEM12.md`; needs page 0 initialised with real handler addresses.
+   (Built: the vector cells stay one cell for every process — ADR-031 rule 3
+   treats them as shared — and page 0 carries their copy.)
 2. Keep the shadow for `0..0xFF` and `0x100-0x102`, route `0x103..0x1FF` to
    page 0 (shrink `NVEC` to `0x103`). Smaller change; the shadow stays
    64-bit for the CPU vectors, so D1 applies to them.
-3. Keep `NVEC = 0x120` (today). Contradicts case 59; listed as the status quo.
+3. Keep `NVEC = 0x120` (the state before BIOS07). Contradicts case 59.
 
-### Gaps vs. the contract (open, fix tickets named)
+### Gaps vs. the contract
 
-- BIOS07: NULL / token / shadow return values (above).
 - BIOS-CORE-002: `etv_timer` not dispatched (ACCEPTED, ADR-031).
-- CPU-exception shadow entries are inert: they do not redirect the AArch64
-  handlers.
+- The vector cells are inert: they do not redirect the AArch64 handlers.
+- A shared cell's page-0 copy written directly is not what `Setexc` answers
+  (above, "Page 0 written directly").
+- `num >= 0x200` answers 0 (D2).

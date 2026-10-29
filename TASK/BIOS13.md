@@ -44,5 +44,7 @@ Dokument- und Regelbefunde, die keiner Funktion gehoeren (alle S4, MEASURED; Bel
   Kommentar zu `ETV_DEFAULT_JUST_RTS` (EmuTOS setzt fuer `etv_timer` `tikfrk`),
   Kommentar zu `NVEC` („GEM hooks to `$047F`“ gibt es nicht, BIOS-CORE-006),
   Doc-Kommentar von `setexc` gegen den Code pruefen — mit [BIOS07](BIOS07.md).
+  *Erledigt mit BIOS07 (2026-10-29):* `ETV_DEFAULT_*` und `NVEC` entfallen,
+  Modul- und `setexc`-Kommentare neu geschrieben.
 - Punkt 7 ist [TOOL16](TOOL16.md).
 

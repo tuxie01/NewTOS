@@ -1,0 +1,38 @@
+K01 Kbshift(-1) ret=00000000 hi=00000000
+K02 Kbshift(0x10) ret=00000000 hi=00000000
+K03 Kbshift(-1) ret=00000010 hi=00000000
+K04 Kbshift(0x1FF) ret=00000010 hi=00000000
+K05 Kbshift(-1) ret=0000001f hi=00000000
+K06 Kbshift(-2) ret=0000001f hi=00000000
+K07 Kbshift(-1) ret=0000001f hi=00000000
+K08 Kbshift(0x7F81) ret=0000001f hi=00000000
+K09 Kbshift(-1) ret=00000001 hi=00000000
+K10 Kbshift(-32768) ret=00000001 hi=00000000
+K11 Kbshift(-1) ret=00000001 hi=00000000
+K12 Kbshift(s0) restore ret=00000001 hi=00000000
+K13 Kbshift(-1) ret=00000000 hi=00000000
+S01 Setexc(0x102,new) old_ok=1 old_hi=00000000 q1_is_new=1 back_is_new=1 q2_is_old=1
+S02 Setexc(0x101,new) old_ok=1 old_hi=00000000 q1_is_new=1 back_is_new=1 q2_is_old=1
+S03 Setexc(0x100,new) old_ok=1 old_hi=00000000 q1_is_new=1 back_is_new=1 q2_is_old=1
+S04 Setexc(0x2,new) old_ok=1 old_hi=00000000 q1_is_new=1 back_is_new=1 q2_is_old=1
+S05 Setexc(0x4,new) old_ok=1 old_hi=00000000 q1_is_new=1 back_is_new=1 q2_is_old=1
+S06 Setexc(0x16A,new) old_ok=0 old_hi=00000000 q1_is_new=1 back_is_new=1 q2_is_old=1
+S07 Setexc(0x108,new) old_ok=0 old_hi=00000000 q1_is_new=1 back_is_new=1 q2_is_old=1
+S08 Setexc(0x108,-1) after restore ret=752019f3 hi=00000000
+T01 etv_timer hook over 400 hz_200 ticks: calls=0 (calls>0: 0) loops=25924
+B01 Bconout(1,'A') AUX ret=00000001 hi=00000000
+B02 Bconout(3,0xFE) MIDI ret=00000001 hi=00000000
+B03 Bconout(4,0x11) IKBD resume ret=00000001 hi=00000000
+B04 Bconout(6,'A') Bconmap 6 ret=00000000 hi=00000000
+B05 Bconout(7,'A') Bconmap 7 ret=00000000 hi=00000000
+B06 Bconout(2,7) BEL ret=00000001 hi=00000000
+B07 Bconout(2,0x141) high byte ret=00000001 hi=00000000
+B08 Bconout(5,0x0A) raw LF ret=00000001 hi=00000000
+B09 Bconin(0) PRT ret=00000000 hi=00000000
+B10 Bconstat(1) AUX ret=00000000 hi=00000000
+B11 Bcostat(3) after Bconout(4) ret=ffffffff hi=ffffffff
+B12 Bcostat(4) after Bconout(3) ret=ffffffff hi=ffffffff
+B13 Tickcal() ret=00000014 hi=00000000
+B14 Tickcal() again ret=00000014 hi=00000000
+B15 Bconout(0,'A') PRT ret=00000000 hi=00000000
+B16 Bcostat(0) PRT ret=00000000 hi=00000000

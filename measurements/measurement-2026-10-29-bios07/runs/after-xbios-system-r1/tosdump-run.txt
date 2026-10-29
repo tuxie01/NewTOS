@@ -1,0 +1,51 @@
+command   cargo xtask tosdump bios tosdump/cases/xbios-system-r1.tsv --reference tosdump/reference/EMUTOS-1a7484ab-XBIOS-system.BIN --reference tosdump/reference/EMUTOS-1a7484ab-XBIOS-system-falcontc.BIN --out measurements/measurement-2026-10-29-bios07/runs/after-xbios-system-r1 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios07/xtask-after
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    40e06519c432d0db64795c858329912ffa7f3583
+dirty     17 path(s) in git status --porcelain
+   M docs/COMPATIBILITY.md
+   M docs/api/_line-a.md
+   M docs/api/bios/05-setexc.md
+   M kernel/src/arch/aarch64/exceptions.rs
+   M kernel/src/selftest_bios.rs
+   M kernel/src/selftest_etv_term.rs
+   M tools/hatari-oracle.sh
+   M tos-api/src/bdos/process/hooks.rs
+   M tos-api/src/bdos/process/loader.rs
+   M tos-api/src/bios/vectors.rs
+   M tos-api/tests/bios15_os_hooks.rs
+   M tosdump/Makefile
+  ?? measurements/measurement-2026-10-29-bios07/
+  ?? tos-api/tests/bios07_setexc.rs
+  ?? tosdump/build-sxprobe-newtos.sh
+  ?? tosdump/probes/run-sxprobe.sh
+  ?? tosdump/probes/sxprobe.c
+harness commit 40e06519c432d0db64795c858329912ffa7f3583
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/xbios-system-r1.tsv sha256 22c32ade8aed0ae5b8eced87ec21de4a14b3e4570bf91f4fe886e3e76b59241d
+table     names the unit token u:0: no; a program path x:<path>: no
+profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+target/   own (9 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (9 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 e312bb645f46d97a4782aabe21386e5fbbc26efb7075eb8675d5e087b10e0da9
+kernel ELF  sha256 8097f3f1a60ecafe8b22c2974b74782236a3335ed9a118e6ce56cab38ffaa25a (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id 40e0
+DUMPBIOS.NAP sha256 096a67cfc747e99977e5a2f9dedda8ec55d555cc77233d77f88f7b84e499015a
+card.img.manifest: image_sha256 23962e818750aa2990204f97caf497bb05a4e3e32ee3fd03d769a1c5fcc4873c
+card.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios07/xtask-after/tosdump-87014/card.img sha256 23962e818750aa2990204f97caf497bb05a4e3e32ee3fd03d769a1c5fcc4873c (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 feae363b2e37a1e64f66eb60ebc3699ab1a1dbd6d1dcac114be4a6b3f2d83e60
+BIOS.BIN 13792 bytes, sha256 9a9ba0a7d379fe984f08967c6a06f58df044b3097b77048c86548cb657d11671
+BIOS.LOG 168 bytes, sha256 6bca7091a9dc7a0a731b5f724c5bf9afc70a30a28f45dba8ed8f34d7878d50ea
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 d9fdc1bb2b1d09f6c8f862be614fb812f29bd3066f55661695edb128ee69238e
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 43 records of 320 bytes, build 40e0, case CRC 3944A677
+tosdiff EMUTOS-1a7484ab-XBIOS-system.BIN vs NEWTOS.BIN: exit 1, 9 of 43 cases differ
+tosdiff EMUTOS-1a7484ab-XBIOS-system-falcontc.BIN vs NEWTOS.BIN: exit 1, 9 of 43 cases differ
+total     30 s
+result    run complete (differences above are findings, not failures)

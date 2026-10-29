@@ -7,9 +7,9 @@ Datum 2026-10-29 · Beleg
 - **Ein Mechanismus (Arbeit 1):** `tos-api/src/bdos/process/hooks.rs` —
   `Hook` (die nicht bedienten Haken der ADR-Tabelle, 256 Vektoren + 24
   benannte), je Prozess-Slot ein Bit-Satz „schon gewarnt“
-  (`tos-api/src/bdos/process/hooks.rs:504@note`), eine Warteschlange von
+  (`tos-api/src/bdos/process/hooks.rs:518@note`), eine Warteschlange von
   `Warning`, die der Kern nach jeder Ausnahme ausgibt
-  (`kernel/src/console.rs:407@report_hook_warnings`, gerufen aus
+  (`kernel/src/console.rs:428@report_hook_warnings`, gerufen aus
   `rust_sync_handler`; tos-api hat kein Protokoll). Zurueckgesetzt mit dem
   Slot (`free_slot` → `hooks::release_slot`). Die Accessory-`kbdvec`-Warnung
   (`accessory_hook_unwarned`) ist darin aufgegangen; der ADR-Verweis in
@@ -19,10 +19,10 @@ Datum 2026-10-29 · Beleg
   NewTOS never calls it: <grund> (ADR-031)`.
 - **Erkennungsstellen:** `Setexc` (`etv_timer`, `etv_critic`, Vektoren
   `< 0x100`, Wert ≠ Startwert; nicht `etv_term`/`etv_xtra`/Systemvariablen;
-  `tos-api/src/bios/vectors.rs:209@note_write`); Seite 0 (`hdv_*`, `swv_vec`,
+  `tos-api/src/bios/vectors.rs:237@note_write`); Seite 0 (`hdv_*`, `swv_vec`,
   `exec_os`, `resvector`, `dump_vec`, `vblqueue`, `bell_hook`, `kcl_hook`,
   direkt geschriebene `etv_*`- und CPU-Vektor-Zellen; nur lesen, Vergleich
-  mit dem Lader-Wert, `tos-api/src/bdos/process/hooks.rs:298@check_page0`)
+  mit dem Lader-Wert, `tos-api/src/bdos/process/hooks.rs:311@check_page0`)
   beim Verlassen des Super-Zustands (`set_super`), beim Ende im
   Super-Zustand (`terminate_inner`), nach einem `Setexc` in Seite 0 **und
   nach jedem Trap im Super-Zustand** (`hooks::after_trap`) — Letzteres steht
@@ -43,7 +43,7 @@ Datum 2026-10-29 · Beleg
   `Pterm`: Zelle haelt noch den Haken → Vorwert zurueck; anderer Haken oben
   → stehen lassen + `[hook] warning: … ended without unhooking …`; schon
   ausgehaengt → nichts. `Ptermres`: bleibt
-  (`tos-api/src/bdos/process/hooks.rs:591@on_terminate`, aus
+  (`tos-api/src/bdos/process/hooks.rs:605@on_terminate`, aus
   `terminate_inner`). Mehr als 16 → Warnung „not tracked“.
 - **`prt_stat`/`prt_vec` (Arbeit 3):** der gemeinsame `ret`-Stub
   (`RET_STUB_VA`, EmuTOS `just_rts`, `bios/chardev.c:82-83`) statt 0

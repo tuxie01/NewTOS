@@ -23,13 +23,14 @@
 //!   `tos-api` has no log of its own: the warnings queue here and the kernel
 //!   prints them after the trap ([`pop`]).
 //! * **Ownership (rule 3).** A hook in a cell every process shares — the
-//!   `Setexc` shadow up to `etv_xtra`, the `vex_*` vectors — belongs to the
-//!   process that installed it ([`record_install`]). When the process ends
-//!   without unhooking ([`on_terminate`]), the previous value goes back only
-//!   if the cell still holds the process's hook (the top of an XBRA chain);
-//!   otherwise the hook stays and the kernel warns. After `Ptermres` the hook
-//!   stays and its owner stays resident. Page 0 and the `Kbdvbase` table are
-//!   per process and end with it; they need no owner.
+//!   `Setexc` vector cells up to `etv_xtra` (every page 0 carries a copy),
+//!   the `vex_*` vectors — belongs to the process that installed it
+//!   ([`record_install`]). When the process ends without unhooking
+//!   ([`on_terminate`]), the previous value goes back only if the cell still
+//!   holds the process's hook (the top of an XBRA chain); otherwise the hook
+//!   stays and the kernel warns. After `Ptermres` the hook stays and its
+//!   owner stays resident. The system variables in page 0 and the `Kbdvbase`
+//!   table are per process and end with it; they need no owner.
 //!
 //! Everything here runs in trap context on the single CPU (the BDOS giant
 //! lock). The one interrupt-time producer, the IKBD decoder, only sets an
@@ -253,7 +254,8 @@ impl fmt::Display for Via {
 
 /// A page-0 hook cell: its address, the hook, and the value the loader leaves
 /// there (`loader::populate_sysvars` on a zeroed page — a host test checks
-/// the two agree).
+/// the two agree). The vector cells `$008`–`$40B` are not in this table: their
+/// copy in page 0 is compared with the shared cell ([`check_page0`]).
 #[derive(Clone, Copy, Debug)]
 pub struct Page0Hook {
     /// m68k address of the LONG.
@@ -268,12 +270,10 @@ pub struct Page0Hook {
 /// callers in `docs/analysis/os-hooks-adr-proposal-2026-10-28.md` §1.1–1.2).
 /// Not here: `etv_xtra` (`$40C`), `hdv_init` (`$46A`), `hdv_boot` (`$47A`),
 /// `prt_stat`/`prt_vec`/`aux_stat`/`aux_vec` (`$506`–`$512`) — EmuTOS never
-/// calls them (rule 1). The CPU vector cells `$008`–`$3FC` are checked as
-/// well ([`check_page0`]); `$000`/`$004` are the reset SSP/PC, no hook.
-pub const PAGE0_HOOKS: [Page0Hook; 13] = [
-    Page0Hook { addr: 0x400, hook: Hook::EtvTimer, default: 0 },
-    Page0Hook { addr: 0x404, hook: Hook::EtvCritic, default: 0 },
-    Page0Hook { addr: 0x408, hook: Hook::EtvTermDirect, default: 0 },
+/// calls them (rule 1). The CPU vector cells `$008`–`$3FC` and `etv_timer`,
+/// `etv_critic`, `etv_term` (`$400`–`$408`) are checked as well
+/// ([`check_page0`]); `$000`/`$004` are the reset SSP/PC, no hook.
+pub const PAGE0_HOOKS: [Page0Hook; 10] = [
     Page0Hook { addr: 0x42A, hook: Hook::Resvector, default: 0 },
     Page0Hook { addr: 0x456, hook: Hook::Vblqueue, default: 0 },
     Page0Hook { addr: 0x46E, hook: Hook::SwvVec, default: 0 },
@@ -290,18 +290,32 @@ pub const PAGE0_HOOKS: [Page0Hook; 13] = [
 /// SSP and PC).
 const FIRST_PAGE0_VECTOR: usize = 2;
 
+/// The hook behind the page-0 copy of shared vector cell `num`
+/// (`FIRST_PAGE0_VECTOR..=0x102`).
+fn page0_vector_hook(num: usize) -> Hook {
+    match num {
+        0x100 => Hook::EtvTimer,
+        0x101 => Hook::EtvCritic,
+        0x102 => Hook::EtvTermDirect,
+        n => Hook::Vector(n as u8),
+    }
+}
+
 /// Compare `slot`'s page-0 hook cells with their defaults and warn about each
 /// one that differs (ADR-031 rule 4: read only, for the warning; the value is
-/// never called or acted on). Called when the process leaves the super state,
-/// after each trap it makes in super state, when it ends in super state, and
-/// after a `Setexc` write into its page 0.
+/// never called or acted on). The vector cells `$008`–`$408` are compared with
+/// the shared cell they copy (`bios::vectors`, TASK/BIOS07): a `Setexc` write
+/// changes both, so only a direct write of the copy differs. Called when the
+/// process leaves the super state, after each trap it makes in super state,
+/// when it ends in super state, and after a `Setexc` write into its page 0.
 pub fn check_page0(slot: usize) {
     let Some(p0) = mmu::page0_kva(slot) else {
         return;
     };
     // SAFETY: `p0` is the kernel alias of the slot's 4-KiB page 0; every cell
-    // read below lies inside it (`addr + 4 <= 0x5B4`). Unaligned-safe reads;
-    // single CPU under the trap.
+    // read below lies inside it (`addr + 4 <= 0x5B4`). Unaligned-safe reads
+    // (the page holds little-endian LONGs, as on every NewTOS target); single
+    // CPU under the trap.
     let rd = |addr: usize| unsafe { (p0.add(addr) as *const u32).read_unaligned() };
     for h in PAGE0_HOOKS.iter() {
         let v = rd(h.addr as usize);
@@ -309,10 +323,10 @@ pub fn check_page0(slot: usize) {
             note(slot, h.hook, u64::from(v), Via::Page0);
         }
     }
-    for n in FIRST_PAGE0_VECTOR..0x100 {
+    for n in FIRST_PAGE0_VECTOR..=crate::bios::vectors::ETV_TERM {
         let v = rd(4 * n);
-        if v != 0 {
-            note(slot, Hook::Vector(n as u8), u64::from(v), Via::Page0);
+        if Some(v) != crate::bios::vectors::shared_cell(n) {
+            note(slot, page0_vector_hook(n), u64::from(v), Via::Page0);
         }
     }
 }
@@ -322,8 +336,8 @@ pub fn check_page0(slot: usize) {
 /// A hook cell every process shares, so it needs an owner.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Cell {
-    /// The `Setexc` shadow entry `num` (`num <= 0x103`: the CPU vectors and
-    /// the `etv_*` hooks).
+    /// The shared `Setexc` cell `num` (`num <= 0x103`: the CPU vectors and
+    /// the `etv_*` hooks; `bios::vectors`, every page-0 copy included).
     Vector(u16),
     /// VDI `vex_butv`.
     VexButv,

@@ -1377,14 +1377,12 @@ fn handle_pterm(frame: &mut ExceptionFrame, func: u16) {
     // is `void (*)(void)` (`include/tosvars.h:112`), so the handler receives
     // NO arguments; termination continues unconditionally after it returns.
     //
-    // The boot-default is a NON-callable sentinel in NewTOS
-    // (`ETV_DEFAULT_JUST_RTS`, a stable opaque token — not a real `just_rts`
-    // code address), so the sentinel (and `0` = never installed) is treated
-    // as "no handler" and we terminate directly. That is behaviourally
-    // identical to EmuTOS calling `just_rts` (a no-op RTS) and also resolves
-    // H1's "boot-default non-callable sentinel" concern: the sentinel is
-    // never jumped to. Only etv_term is wired here (incremental H1 close);
-    // etv_critic (M1) and etv_timer are later cooperative-kernel steps.
+    // The boot value is the shared `ret` stub, EmuTOS' `just_rts`
+    // (`vectors::JUST_RTS`, TASK/BIOS07): calling it would do nothing, so it
+    // (and `0`, a program that stored 0) is treated as "no handler" and we
+    // terminate directly — behaviourally identical to EmuTOS calling
+    // `just_rts` (a no-op RTS). Only etv_term is wired here (incremental H1
+    // close); etv_critic and etv_timer are not served (ADR-031).
     //
     // Guarded on a live process slot: a `Pterm` with no running process
     // (`current() == null`) falls through to the normal path, which reports
@@ -1395,8 +1393,7 @@ fn handle_pterm(frame: &mut ExceptionFrame, func: u16) {
         tos_api::bdos::process::current(),
     )
     .is_some();
-    if has_slot && etv != 0 && etv != tos_api::bios::vectors::ETV_DEFAULT_JUST_RTS
-    {
+    if has_slot && etv != 0 && etv != tos_api::bios::vectors::JUST_RTS {
         // The terminate variant that runs *after* the handler is chosen by
         // `func`: Ptermres (0x31) keeps the process's owned pool blocks
         // resident, Pterm/Pterm0 free them. The handler runs in the

@@ -1,29 +1,39 @@
-//! `Setexc` (BIOS 0x05) and the software m68k "vector shadow".
+//! `Setexc` (BIOS 0x05): the m68k vector cells and the low-memory system
+//! variables, as page-0 cells.
 //!
-//! Spec: [`docs/api/bios/05-setexc.md`]. On m68k, `Setexc(num, vec)` writes
-//! the exception/hook vector at address `4 * num`; that flat vector page
-//! does not exist on AArch64. NewTOS instead keeps a **software shadow**
-//! of the vector table: `Setexc` gets/sets an entry (returning the old
-//! value — the complete `Setexc` contract), and NewTOS' own code paths
-//! call the logical TOS hooks (`etv_term`/`etv_critic`/`etv_timer`) via
-//! [`vector`] when the matching event fires.
+//! Spec: [`docs/api/bios/05-setexc.md`], decisions D1–D3 and P3 (user
+//! 2026-10-28, TASK/BIOS07). EmuTOS `setexc` reads the LONG at `4 * num`,
+//! stores the new LONG unless it is `-1`, and returns the old one
+//! (`references/emutos/bios/bios.c:1070-1080`). NewTOS has no flat vector
+//! page, but every process has a private page 0 that carries the classic
+//! low-memory system area (`bdos::process::loader`), and `Setexc` answers
+//! from there for every `num < 0x200` (D3):
 //!
-//! Native handler addresses are 64-bit, so the shadow stores `i64`. The
-//! m68k CPU vectors (`0..0x3F`) are shadowed for a future m68k userland but
-//! are not dispatched by the native AArch64 exception handlers.
+//! * `num <= 0x103` — the 256 m68k vectors and the `etv_*` hooks — are
+//!   **one cell for every process**, as EmuTOS has one vector table: the
+//!   cell lives here ([`VECTORS`]), 32 bits wide like the LONG, and every
+//!   loaded process's page 0 carries a copy at `4 * num`, written by the
+//!   loader ([`write_page0_vectors`]) and again whenever the cell changes.
+//!   A hook installed in such a cell belongs to the process that wrote it
+//!   (ADR-031 rule 3, [`hooks::record_install`]). Of these hooks NewTOS calls
+//!   only `etv_term` (the kernel's `Pterm` path, [`vector`]); the CPU, trap
+//!   and interrupt vectors and `etv_timer`/`etv_critic` are stored and never
+//!   called (ADR-031).
+//! * `0x104 <= num < 0x200` are the system variables at `$410`–`$7FC`: the
+//!   calling process's own page-0 cell.
+//! * `num >= 0x200` (and a negative `num`) answers 0 and touches nothing (D2,
+//!   a documented deviation: EmuTOS reads and writes RAM there).
+//!
+//! The answer is the 32-bit cell **sign-extended** into `x0` (D1, the rule of
+//! `TrapArgs`); every address a cell holds by default lies below 2 GiB (the
+//! MEM11 invariant). A vector NewTOS does not serve holds the shared `ret`
+//! stub, EmuTOS' `just_rts` ([`JUST_RTS`], D3).
 
 use crate::bdos::process::hooks::{self, Cell, Hook, Via};
 use crate::trap::TrapArgs;
-use core::sync::atomic::{AtomicI64, Ordering};
+use core::sync::atomic::{AtomicU32, Ordering};
 
-/// Shadowed vectors: the 1024-byte m68k vector page (256 LONGs) plus the
-/// system hook vectors just above it (`etv_*` at `$0400`, GEM hooks to
-/// `$047F`) — `0x120` entries total.
-const NVEC: usize = 0x120;
-
-// Canonical TOS hook vector numbers (m68k address / 4). (The `05-setexc.md`
-// edge-case note lists `etv_critic` at 0x108 in error; the system-variable
-// layout puts `etv_timer/critic/term` at `$0400/$0404/$0408`.)
+// Canonical TOS hook vector numbers (m68k address / 4; `tosvars.ld:33-36`).
 
 /// `etv_timer` hook — 20 ms system tick (m68k `$0400`).
 pub const ETV_TIMER: usize = 0x100;
@@ -31,161 +41,180 @@ pub const ETV_TIMER: usize = 0x100;
 pub const ETV_CRITIC: usize = 0x101;
 /// `etv_term` hook — process-terminate hook (m68k `$0408`).
 pub const ETV_TERM: usize = 0x102;
+/// `etv_xtra` (m68k `$040C`): never called, by EmuTOS either
+/// (`references/emutos/tosvars.ld:36`); the last of the shared cells.
+pub const ETV_XTRA: usize = 0x103;
 
-/// Non-null boot default for the no-op TOS hooks. EmuTOS points **both**
-/// `etv_timer` and `etv_term` at the same `just_rts` stub during
-/// `bios_init` (`bios/bios.c:360,362`) — never NULL — so the query idiom
-/// `old = Setexc(num, -1)` always yields a valid address to chain to
-/// (`05-setexc.md` edge case #5). NewTOS shadows both with this one shared
-/// token. The shadow is **not** dispatched — NewTOS invokes the `etv_*`
-/// hooks by name (`05-setexc.md` "Gaps") — so the value is a stable,
-/// opaque sentinel, not a live code address; the high word carries the
-/// m68k `RTS` opcode (`0x4E75`) purely as a self-documenting marker, and
-/// the whole value sits well outside any real kernel VA or m68k vector
-/// address so it can never be confused with an installed handler.
-pub const ETV_DEFAULT_JUST_RTS: i64 = 0x4E75_0000_0000_0000;
+/// Number of shared cells: vectors `0..=0xFF` and `etv_timer` … `etv_xtra`.
+const NSHARED: usize = ETV_XTRA + 1;
 
-/// Non-null boot default for the critical-error hook. EmuTOS uses
-/// `default_etv_critic`, a real passthrough that returns the error code
-/// (`bios/vectors.S:823`), distinct from `just_rts`. NewTOS shadows it
-/// with this distinct opaque sentinel (high word = ASCII `"Crit"`) so a
-/// save/restore chain can tell the critical-error default apart from the
-/// no-op hooks. Same "not dispatched, stable token" caveat as
-/// [`ETV_DEFAULT_JUST_RTS`].
-pub const ETV_DEFAULT_CRITIC: i64 = 0x4372_6974_0000_0000;
+/// Upper bound (exclusive) of the page-0 regime: `num` whose m68k address
+/// `4 * num` lies in the reserved low-memory region `[0x000, 0x800)`. Between
+/// [`NSHARED`] and this, `Setexc` reads and writes the calling process's own
+/// page-0 cell — the `Setexc(0x5A0/4, -1)` cookie-jar idiom (TeraDesk
+/// `library/utility/cookie.c:56`) and `memvalid` (`$420`, `Setexc(0x108)`)
+/// land here.
+const SYSVAR_NUM_LIMIT: usize = 0x200;
 
-static VECTORS: [AtomicI64; NVEC] = {
-    let mut v = [const { AtomicI64::new(0) }; NVEC];
-    // Every entry starts at its boot value, [`default_of`] (F3).
+/// The shared `ret` stub, EmuTOS' `just_rts` (`xbios::kbdvecs::RET_STUB_VA`,
+/// in the stub page every process maps execute-only): the boot value of
+/// every vector NewTOS does not serve and of `etv_term` (D3). EmuTOS boots
+/// `etv_timer`/`etv_term` with `just_rts` and `etv_critic` with
+/// `default_etv_critic` (`bios/bios.c:360-362`); GEMDOS then chains
+/// `tikfrk` into `etv_timer` (`bdos/time.c:167`). NewTOS calls neither
+/// `etv_timer` nor `etv_critic` (ADR-031), so both hold the stub; a program
+/// that chains to the old value branches to a valid entry, never to 0.
+pub const JUST_RTS: i64 = crate::xbios::kbdvecs::RET_STUB_VA as i64;
+
+const _: () = assert!(JUST_RTS > 0 && JUST_RTS < 0x8000_0000);
+
+/// The boot value of shared cell `num`.
+///
+/// * vectors 0 and 1 (`$000`/`$004`): the first two LONGs of the OSHEADER —
+///   EmuTOS copies them there where the hardware does not route the ROM to
+///   address 0 (`references/emutos/bios/bios.c:120-136`): `os_entry` and
+///   `os_version`, then `reseth`, the reset stub;
+/// * vectors `2..=0xFF` and `etv_timer`/`etv_critic`/`etv_term`: [`JUST_RTS`];
+/// * `etv_xtra`: 0, as on EmuTOS (`bios-core-r1` case 58).
+const fn default_of(num: usize) -> u32 {
+    match num {
+        0 => crate::bdos::process::loader::OSHEADER_LONG0,
+        1 => crate::bios::reset::RESET_STUB_VA as u32,
+        ETV_XTRA => 0,
+        _ => JUST_RTS as u32,
+    }
+}
+
+/// The shared cells (`num <= ETV_XTRA`), each a 32-bit LONG like the m68k
+/// cell it stands for.
+static VECTORS: [AtomicU32; NSHARED] = {
+    let mut v = [const { AtomicU32::new(0) }; NSHARED];
     let mut i = 0;
-    while i < NVEC {
-        v[i] = AtomicI64::new(default_of(i));
+    while i < NSHARED {
+        v[i] = AtomicU32::new(default_of(i));
         i += 1;
     }
     v
 };
 
-/// Upper bound (exclusive) on the `Setexc` raw sysvar peek/poke: vectors
-/// whose m68k address `4 * num` lands in the reserved low-memory
-/// system-variable region `[0x000, 0x800)` (i.e. `num < 0x200`). Between
-/// [`NVEC`] and this, `Setexc` reads/writes the calling process's EL0-VA
-/// `4 * num` directly, EmuTOS-faithfully — the `Setexc(0x5A0/4 == 0x168, -1)`
-/// cookie-jar idiom (TeraDesk `library/utility/cookie.c:56`) lands here.
-const SYSVAR_NUM_LIMIT: usize = 0x200;
+/// A 32-bit cell as the LONG result in `x0`: sign-extended (D1).
+const fn long(v: u32) -> i64 {
+    v as i32 as i64
+}
 
-/// `Setexc` (0x05) — get (when `vector == -1`) or set the handler for
-/// exception/hook vector `num`, returning the previous value (EmuTOS
-/// `setexc`, `references/emutos/bios/bios.c:1070-1080`).
+/// `Setexc` (0x05) — get (when `vector` is `-1`) or set the cell for vector
+/// or system variable `num`, returning the previous value (EmuTOS `setexc`,
+/// `references/emutos/bios/bios.c:1070-1080`; the three regimes are the
+/// module doc's).
 ///
-/// Three regimes:
-///  * `num < NVEC` — the software m68k **vector shadow** (get/set the entry,
-///    return the old value); NewTOS dispatches the `etv_*` hooks by name.
-///  * `NVEC <= num < SYSVAR_NUM_LIMIT` — the m68k address `4 * num` lands in
-///    the reserved low-memory **sysvar region**: peek/poke the calling
-///    process's `*(LONG*)(4 * num)`, exactly like EmuTOS' unchecked
-///    `setexc`. That cell is in the process's private page 0 (where
-///    [`crate::bdos::process::loader`]'s `populate_sysvars` wrote
-///    `p_cookies`@0x5A0 etc.) and is reached through the page's **kernel
-///    alias** (ARCH03 stage 3a, as `bios::tick` and `Keytbl` do) — the very
-///    cell the program sees at VA `4 * num`, without a user-mode access that
-///    could fault or depend on the installed `TTBR0`. With no process
-///    running (an in-kernel caller such as the B1 selftest, which installs a
-///    loaded image's `TTBR0` itself) the cell is reached the old way, a
-///    user-mode word access at VA `4 * num` under the installed `TTBR0` —
-///    now the fault-recovered one of [`crate::uaccess`].
-///  * `num >= SYSVAR_NUM_LIMIT` — returns 0. NewTOS deliberately does **not**
-///    emulate the full m68k "poke any address" corruption above the sysvar
-///    region. Writes report OS hooks ([`note_write`], ADR-031).
+/// The query test looks at the low 32 bits, the LONG EmuTOS compares with
+/// `-1` (`bios.c:1074`; P3): `0x0000_0000_FFFF_FFFF` queries as `-1` does
+/// (measured, `tosdump/probes/sxprobe.c` Q03/Q04). A write stores the low 32
+/// bits. A write reports OS hooks ([`note_write`], ADR-031).
 pub fn setexc(args: &TrapArgs) -> i64 {
+    // A negative WORD becomes a huge index and falls through to the final 0.
     let num = args.arg_i16(0) as usize;
-    let vector = args.arg_u64(1) as i64;
+    let new = args.arg_u64(1) as u32;
+    let query = new == u32::MAX;
 
-    // Named/CPU exception-vector shadow.
-    if num < NVEC {
+    if num < NSHARED {
         let old = VECTORS[num].load(Ordering::Relaxed);
-        if vector != -1 {
-            VECTORS[num].store(vector, Ordering::Relaxed);
-            note_write(num, old, vector);
+        if !query {
+            store_shared(num, new);
+            note_write(num, long(old), new);
         }
-        return old;
+        return long(old);
     }
 
-    // Reserved low-memory sysvar region: EmuTOS-faithful raw peek/poke of
-    // the calling process's `*(LONG*)(4 * num)` through the kernel alias of
-    // its page 0, bounded to the sysvar region so it can never corrupt
-    // arbitrary memory.
+    // The system variables: the calling process's own page-0 cell, through
+    // the page's kernel alias (ARCH03 stage 3a, as `bios::tick` and `Keytbl`
+    // do) — the very cell the program sees at VA `4 * num`, without a
+    // user-mode access that could fault or depend on the installed `TTBR0`.
+    // With no process running (an in-kernel caller such as the B1 selftest,
+    // which installs a loaded image's `TTBR0` itself) the cell is reached by
+    // a fault-recovered user-mode access at VA `4 * num` (`uaccess`).
     if num < SYSVAR_NUM_LIMIT {
         let Some(page0) = crate::bdos::process::current_page0_kva() else {
             let va = (num * 4) as u64;
             let Ok(old) = crate::uaccess::get_user_u32(va) else {
                 return i64::from(crate::uaccess::FAULTED);
             };
-            if vector != -1 && crate::uaccess::put_user_u32(va, vector as u32).is_err() {
+            if !query && crate::uaccess::put_user_u32(va, new).is_err() {
                 return i64::from(crate::uaccess::FAULTED);
             }
-            return old as i32 as i64;
+            return long(old);
         };
         // SAFETY: `4 * num + 4 <= 0x800` lies inside the running process's
         // 4-KiB page 0, a static kernel page per slot reached through its
         // kernel alias; the access is unaligned-safe and single-CPU under
         // the trap.
-        let cell = unsafe { page0.add(num * 4) } as *mut u32;
-        let old = unsafe { cell.read_unaligned() } as i32 as i64;
-        if vector != -1 {
-            // SAFETY: as above — the process's own writable sysvar cell.
-            unsafe { cell.write_unaligned(vector as u32) };
-            note_write(num, old, vector);
+        let cell = unsafe { page0.add(num * 4) } as *mut [u8; 4];
+        let old = u32::from_le_bytes(unsafe { cell.read_unaligned() });
+        if !query {
+            // SAFETY: as above — the process's own sysvar cell.
+            unsafe { cell.write_unaligned(new.to_le_bytes()) };
+            note_write(num, long(old), new);
         }
-        return old;
+        return long(old);
     }
 
     0
 }
 
-/// The handler currently installed for hook `num`, or 0 if none. NewTOS'
-/// event paths call this to honour a program-installed `etv_*` hook via the
-/// EL0-upcall mechanism (cooperative-kernel step 2). Consumed by the Pterm
-/// path for **etv_term** (`ETV_TERM`) — the kernel reads the installed
-/// handler and, unless it is the non-callable boot sentinel
-/// [`ETV_DEFAULT_JUST_RTS`], delivers it as an EL0 upcall before terminating
-/// (BIOS finding H1). `etv_critic`/`etv_timer` follow in later steps.
+/// Store `v` into shared cell `num` and into the copy every loaded process's
+/// page 0 carries at `4 * num`.
+fn store_shared(num: usize, v: u32) {
+    VECTORS[num].store(v, Ordering::Relaxed);
+    for slot in 0..crate::bdos::process::MAX_PROCESSES {
+        // SAFETY: shared cells are written only from the trap path (BDOS giant
+        // lock, single CPU); `page_bytes_mut` yields only a loaded slot's page
+        // 0, and `4 * num + 4 <= 0x410` lies inside it.
+        if let Some(page) = unsafe { crate::bdos::process::arena::page_bytes_mut(slot) } {
+            page[4 * num..4 * num + 4].copy_from_slice(&v.to_le_bytes());
+        }
+    }
+}
+
+/// Write the shared cells into a freshly loaded process's page 0 `page0`
+/// (the loader's `populate_sysvars`): the process sees at `4 * num` what
+/// `Setexc(num, -1)` answers.
+pub fn write_page0_vectors(page0: &mut [u8]) {
+    for (num, cell) in VECTORS.iter().enumerate() {
+        page0[4 * num..4 * num + 4].copy_from_slice(&cell.load(Ordering::Relaxed).to_le_bytes());
+    }
+}
+
+/// The value of shared cell `num` as `Setexc(num, -1)` answers it (D1), or 0
+/// for a `num` that is no shared cell. NewTOS' `Pterm` reads `etv_term`
+/// through this and delivers the handler as an EL0 upcall unless it is
+/// [`JUST_RTS`] (whose call would do nothing) or 0 (BIOS finding H1).
 pub fn vector(num: usize) -> i64 {
-    if num < NVEC {
-        VECTORS[num].load(Ordering::Relaxed)
-    } else {
-        0
+    match VECTORS.get(num) {
+        Some(c) => long(c.load(Ordering::Relaxed)),
+        None => 0,
     }
 }
 
-/// Put `v` into shadow entry `num` — the owner's `Pterm` giving a hook entry
-/// its previous value back (ADR-031 rule 3, [`hooks::on_terminate`]). No-op
-/// outside the shadow.
+/// The raw 32-bit value of shared cell `num` — what every page 0 carries at
+/// `4 * num` unless the process wrote its copy itself (the page-0 hook check,
+/// [`hooks::check_page0`]). `None` for a `num` that is no shared cell.
+pub(crate) fn shared_cell(num: usize) -> Option<u32> {
+    VECTORS.get(num).map(|c| c.load(Ordering::Relaxed))
+}
+
+/// Put `v` into shared cell `num` — the owner's `Pterm` giving a hook cell
+/// its previous value back (ADR-031 rule 3, [`hooks::on_terminate`]), every
+/// page-0 copy included. No-op for a `num` that is no shared cell.
 pub(crate) fn set_vector(num: usize, v: i64) {
-    if num < NVEC {
-        VECTORS[num].store(v, Ordering::Relaxed);
+    if num < NSHARED {
+        store_shared(num, v as u32);
     }
 }
 
-/// `etv_xtra` (m68k `$040C`): never called, by EmuTOS either
-/// (`references/emutos/tosvars.ld:36`); the last shadow entry that is a hook.
-pub const ETV_XTRA: usize = 0x103;
-
-/// The boot value of shadow entry `num`: the `etv_*` hooks carry their
-/// non-null defaults, exactly as EmuTOS' `bios_init` seeds them before
-/// GEMDOS/AES run (F3); every other entry is 0 (a CPU-exception vector nobody
-/// installed).
-const fn default_of(num: usize) -> i64 {
-    match num {
-        ETV_TIMER | ETV_TERM => ETV_DEFAULT_JUST_RTS,
-        ETV_CRITIC => ETV_DEFAULT_CRITIC,
-        _ => 0,
-    }
-}
-
-/// The hook behind shadow entry `num` that NewTOS does not call (ADR-031):
+/// The hook behind shared cell `num` that NewTOS does not call (ADR-031):
 /// the CPU, trap and interrupt vectors and `etv_timer`/`etv_critic`. `None`
-/// for `etv_term` (served, `kernel` `handle_pterm`), `etv_xtra` (EmuTOS never
-/// calls it) and the system variables above it.
+/// for `etv_term` (served, `kernel` `handle_pterm`) and `etv_xtra` (EmuTOS
+/// never calls it).
 fn unserved_hook(num: usize) -> Option<Hook> {
     match num {
         0..=0xFF => Some(Hook::Vector(num as u8)),
@@ -195,34 +224,32 @@ fn unserved_hook(num: usize) -> Option<Hook> {
     }
 }
 
-/// The OS-hook half of a `Setexc` write of `vector` into entry `num`, which
-/// held `old` (ADR-031, [`hooks`]), for the running process (none: the kernel,
-/// nothing to report):
+/// The OS-hook half of a `Setexc` write of `new` into cell `num`, which held
+/// `old` (both as `Setexc` answers them), for the running process (none: the
+/// kernel, nothing to report; ADR-031, [`hooks`]):
 ///
-/// * shadow (`num < NVEC`): a hook NewTOS does not call ([`unserved_hook`])
-///   set to anything but its boot value warns once per process (rule 5, "in
-///   `Setexc` itself"); a hook entry (`num <= ETV_XTRA`) — one cell for every
-///   process — records the process as its owner, so its `Pterm` can give the
-///   entry back (rule 3);
-/// * page 0: the page-0 hook check (`bell_hook`/`kcl_hook` are
+/// * shared cell (`num <= ETV_XTRA`): a hook NewTOS does not call
+///   ([`unserved_hook`]) set to anything but its boot value warns once per
+///   process (rule 5, "in `Setexc` itself"); the process becomes the owner of
+///   the cell, so its `Pterm` can give the cell back (rule 3);
+/// * system variable: the page-0 hook check (`bell_hook`/`kcl_hook` are
 ///   `0x16B`/`0x16C`; rule 4).
-fn note_write(num: usize, old: i64, vector: i64) {
+fn note_write(num: usize, old: i64, new: u32) {
     let slot = crate::bdos::process::slot_for(crate::bdos::process::current());
-    if num >= NVEC {
+    if num >= NSHARED {
         if let Some(slot) = slot {
             hooks::check_page0(slot);
         }
         return;
     }
-    if num <= ETV_XTRA {
-        hooks::record_install(slot, Cell::Vector(num as u16), old as u64, vector as u64);
-    }
+    hooks::record_install(slot, Cell::Vector(num as u16), old as u64, long(new) as u64);
     if let (Some(slot), Some(hook)) = (slot, unserved_hook(num)) {
-        if vector != default_of(num) {
-            hooks::note(slot, hook, vector as u64, Via::Setexc);
+        if new != default_of(num) {
+            hooks::note(slot, hook, u64::from(new), Via::Setexc);
         }
     }
 }
+
 
 // ─── `mousexvec` — the extended-mouse scancode vector ──────────────────────
 //

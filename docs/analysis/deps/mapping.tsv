@@ -282,6 +282,7 @@ bconout	bios/bios.c	tos-api/src/bios/chardev.rs	bconout	mapped	Bconout 0x03 (tra
 bconstat	bios/bios.c	tos-api/src/bios/chardev.rs	bconstat	mapped	Bconstat 0x01 (trap entry, line 293)
 bcostat	bios/bios.c	tos-api/src/bios/chardev.rs	bcostat	mapped	Bcostat 0x08 (trap entry, line 430)
 bios_init	bios/bios.c	-	-	unmapped	m68k hardware initialisation sequence; NewTOS boots through the kernel init, not mapped function by function
+bios_init	bios/bios.c	tos-api/src/bios/vectors.rs	default_of	mapped	the etv_timer/etv_critic/etv_term = just_rts/default_etv_critic half: the boot values of the shared Setexc cells, all the shared ret stub (BIOS07 D3; etv_critic and etv_timer not served, ADR-031)
 biosmain	bios/bios.c	-	-	unmapped	the BIOS main sequence; NewTOS boots through the kernel init (kernel/src/lib.rs), not mapped function by function
 bootstrap	bios/bios.c	-	-	design:hardware:natfeats	NatFeats kernel bootstrap (emulators); no NewTOS counterpart
 can_shutdown	bios/bios.c	-	-	unmapped	power-off capability probe (NatFeats/hardware); no NewTOS counterpart found
@@ -294,9 +295,11 @@ mediach	bios/bios.c	tos-api/src/bios/mod.rs	mediach	mapped	Mediach 0x09
 run_auto_program	bios/bios.c	-	-	unmapped	Pexec of one AUTO program; NewTOS runs them from kernel/src/launch.rs run_auto_folder, no per-program function
 setexc	bios/bios.c	tos-api/src/bios/vectors.rs	setexc	mapped	Setexc 0x05
 setexc	bios/bios.c	tos-api/src/bios/vectors.rs	note_write	mapped	the ADR-031 half of a write: warning for an unserved hook, owner record of a hook entry, page-0 hook check (BIOS15; no EmuTOS counterpart)
+setexc	bios/bios.c	tos-api/src/bios/vectors.rs	store_shared	mapped	the store of a vector cell (num <= 0x103): one cell for every process plus its copy in every loaded page 0 (BIOS07 D3)
 shutdown	bios/bios.c	-	-	unmapped	power off (NatFeats/hardware); no NewTOS counterpart found
 tickcal	bios/bios.c	tos-api/src/bios/mod.rs	dispatch	mapped	Tickcal 0x06: a constant in the dispatcher
 vecs_init	bios/bios.c	-	-	design:hardware:m68k-cpu	installs the m68k exception vectors; AArch64 vectors are kernel code (kernel/src/arch)
+vecs_init	bios/bios.c	tos-api/src/bios/vectors.rs	write_page0_vectors	mapped	the copy of the OSHEADER's first two LONGs to $000/$004 (bios.c:120-136): vector cells 0/1 (default_of), written into every page 0 with the other vector cells (BIOS07)
 balloc_stram	bios/biosmem.c	-	-	unmapped	boot-time ST-RAM allocator below membot; no NewTOS counterpart
 bmem_init	bios/biosmem.c	-	-	unmapped	boot-time memory bounds (membot/memtop); NewTOS takes its map from the firmware (kernel/src/bios/machine/layout.rs)
 getmpb	bios/biosmem.c	tos-api/src/bios/getmpb.rs	getmpb	mapped	Getmpb 0x00: mp_mfl/mp_mal written, mp_rover kept (biosmem.c:149-150); themd published read-only to the caller (ADR-023); NULL mpb returns 0 without writing (EmuTOS: bus error, panic; O3 = (a), BIOS06)
@@ -955,7 +958,7 @@ run_cartridge_applications	bios/startup.S	-	-	design:hardware:cartridge-port	m68
 biostrap	bios/vectors.S	tos-api/src/bios/mod.rs	dispatch	mapped	trap #13 dispatcher
 call_etv_critic	bios/vectors.S	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 check_read_byte	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
-default_etv_critic	bios/vectors.S	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); the etv_critic default (handler of the etv_critic vector, called by call_etv_critic); NewTOS keeps only the opaque sentinel ETV_DEFAULT_CRITIC in bios/vectors.rs and does not dispatch etv_critic
+default_etv_critic	bios/vectors.S	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); the etv_critic default (handler of the etv_critic vector, called by call_etv_critic); NewTOS boots etv_critic with the shared ret stub (JUST_RTS, bios/vectors.rs; BIOS07) and does not dispatch etv_critic
 init_exc_vec	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 init_user_vec	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 int_hbl	bios/vectors.S	-	-	design:hardware:video-shifter	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
