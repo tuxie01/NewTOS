@@ -1,6 +1,6 @@
 # XBIOS17 — qemu-virt: `Bconout(1)` verwirft, obwohl der Empfang jetzt arbeitet
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidung 2026-10-29, Fund aus [XBIOS15](XBIOS15.md); Entscheidung offen, erst Bericht
+Status: **GESCHLOSSEN** 2026-10-29 (ACCEPTED-Abweichung, Anwender) · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidung 2026-10-29, Fund aus [XBIOS15](XBIOS15.md); Entscheidung offen, erst Bericht
 
 ## Sachverhalt
 
@@ -35,3 +35,10 @@ Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidu
 ## Abnahme
 
 - Nach Entscheidung; Messfall gegen das Orakel (Hatari `--rs232-out`).
+
+## Anwenderentscheidung 2026-10-29
+
+- ACCEPTED-Abweichung auf qemu-virt: AUX-Ausgabe wird verworfen, die UART ist
+  mit dem Kernel-Log geteilt, qemu-virt ist ein Entwicklungsboard. Eintrag in
+  `docs/COMPATIBILITY.md`; wiedervorlegen, wenn ein Port auf AUX schreibt.
+  Ticket geschlossen.

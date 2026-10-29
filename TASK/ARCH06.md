@@ -79,3 +79,8 @@ Status: **ERLEDIGT** 2026-10-29 ([Quittung](ARCH06-STATUS-DONE.MD)); `_VDO`-Ents
   `setvalue_mch`, `machine_detect`, `machine_init`, `guess_machine_name`,
   `add_cookie_frb`, `total_alt_ram`, `altram_init` (heute `unmapped`). Mit der
   Umsetzung von ARCH06 je Zeile einordnen (`mapped` bzw. `design:` mit Beleg).
+
+## Anwenderentscheidung 2026-10-29 (`_VDO`)
+
+- `_VDO` bleibt weg (`design:hardware:videl`/`video-shifter`). Der Overscan-
+  Absturz in TeraDesk ist ein Portfehler: [SDK07](SDK07.md).

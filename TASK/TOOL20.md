@@ -47,3 +47,7 @@ Status: **ERLEDIGT** 2026-10-29 ([Quittung](TOOL20-STATUS-DONE.MD)); drei Funde 
     Schreibpolitik von EmuTOS oder Zeitpunkt-Artefakt (Orakel 2 s nach dem LOG
     angehalten)? Nicht bewertet.
 
+## Anwenderentscheidung 2026-10-29
+
+- F1 angleichen: [FS23](FS23.md). F2 angleichen, Vorschlag zuerst:
+  [FS24](FS24.md). F3 erst messen (Zeitpunkt?): [FS25](FS25.md).
