@@ -1,0 +1,101 @@
+# K lines: EmuTOS tt (audit run PROBE-EMUTOS-tt) vs NewTOS raspi4b us (this run, XBIOS02). diff -u, display only.
+--- EMUTOS-tt
++++ NEWTOS-us-XBIOS02
+@@ -1,16 +1,16 @@
+-K01 Keytbl(-1,-1,-1) ret=000040ae hi=00000000
++K01 Keytbl(-1,-1,-1) ret=00000768 hi=00000000
+ K01a tosaddr=1
+-K02 keytab ptrs_tosbyte=111111 f7=0000000000000000 w_after_f7=0000 sizeof(ptr)=4
++K02 keytab ptrs_tosbyte=111111 f7=0000000000000000 w_after_f7=0000 sizeof(ptr)=8
+ K02 tables crc norm=32c7513b shft=c73c5dda caps=47f5e93a norm[0x10..0x13]=71776572 shft[0x1E]=41 caps[0x2C]=5a
+ K02 alt pairs len=0,0,0 crc=00000000,00000000,00000000
+ K03 second Keytbl(-1,-1,-1) same=1
+ K04 Keytbl(my_n,-1,-1) same_ptr=1 unshift_is_my=1 shift_is_s0=1 caps_is_c0=1
+ K05 Keytbl(-1,-1,-1) unshift_is_my=1 shift_is_s0=1 caps_is_c0=1
+ K06 Keytbl(-1,my_s,my_c) unshift_is_my=1 shift_is_my=1 caps_is_my=1 alt_tosbyte=1
+-K07 Bioskeys() ret=00e06e8c hi=00000000
++K07 Bioskeys() ret=00000768 hi=00000000
+ K08 after Bioskeys: same_ptr=1 unshift_is_n0=1 shift_is_s0=1 caps_is_c0=1 unshift_is_my=0
+-K09 keytab ptrs_tosbyte=111111 f7=0000000000000000 w_after_f7=0000 sizeof(ptr)=4
++K09 keytab ptrs_tosbyte=111111 f7=0000000000000000 w_after_f7=0000 sizeof(ptr)=8
+ K09 tables crc norm=32c7513b shft=c73c5dda caps=47f5e93a norm[0x10..0x13]=71776572 shft[0x1E]=41 caps[0x2C]=5a
+ K09 alt pairs len=0,0,0 crc=00000000,00000000,00000000
+ K10 Keytbl(n0,s0,c0) restore unshift_is_n0=1 shift_is_s0=1 caps_is_c0=1
+-K11 Bioskeys() final ret=00e06e8c hi=00000000
++K11 Bioskeys() final ret=00000768 hi=00000000
+
+# K lines: NewTOS us before (audit run PROBE-NEWTOS-raspi4b-us) vs after (this run)
+--- NEWTOS-us-before
++++ NEWTOS-us-XBIOS02
+@@ -7,10 +7,10 @@
+ K04 Keytbl(my_n,-1,-1) same_ptr=1 unshift_is_my=1 shift_is_s0=1 caps_is_c0=1
+ K05 Keytbl(-1,-1,-1) unshift_is_my=1 shift_is_s0=1 caps_is_c0=1
+ K06 Keytbl(-1,my_s,my_c) unshift_is_my=1 shift_is_my=1 caps_is_my=1 alt_tosbyte=1
+-K07 Bioskeys() ret=00000018 hi=00000000
+-K08 after Bioskeys: same_ptr=1 unshift_is_n0=0 shift_is_s0=0 caps_is_c0=0 unshift_is_my=1
++K07 Bioskeys() ret=00000768 hi=00000000
++K08 after Bioskeys: same_ptr=1 unshift_is_n0=1 shift_is_s0=1 caps_is_c0=1 unshift_is_my=0
+ K09 keytab ptrs_tosbyte=111111 f7=0000000000000000 w_after_f7=0000 sizeof(ptr)=8
+-K09 tables crc norm=f0369527 shft=359fc63c caps=e1cc5e4c norm[0x10..0x13]=45444746 shft[0x1E]=34 caps[0x2C]=53
++K09 tables crc norm=32c7513b shft=c73c5dda caps=47f5e93a norm[0x10..0x13]=71776572 shft[0x1E]=41 caps[0x2C]=5a
+ K09 alt pairs len=0,0,0 crc=00000000,00000000,00000000
+ K10 Keytbl(n0,s0,c0) restore unshift_is_n0=1 shift_is_s0=1 caps_is_c0=1
+-K11 Bioskeys() final ret=00000018 hi=00000000
++K11 Bioskeys() final ret=00000768 hi=00000000
+
+# everything except the K lines: NewTOS us audit vs this run
+55c55
+< I01 Iorec(0) ret=0000000e hi=00000000
+---
+> I01 Iorec(0) ret=0007d000 hi=00000000
+57,59c57,59
+< I01b IOREC ibuf_tosaddr=0 ibufsiz=0 hd=0 tl=0 low=0 hi=0 sizeof=24
+< I01c out-IOREC obuf_tosaddr=0 obufsiz=0 hd=0 tl=0 low=0 hi=0 ext baud=0 flow=0 ucr=00 datamask=00
+< I02 Iorec(1) ret=0000000e hi=00000000
+---
+> I01b IOREC ibuf_tosaddr=1 ibufsiz=256 hd=0 tl=0 low=64 hi=192 sizeof=24
+> I01c out-IOREC obuf_tosaddr=1 obufsiz=256 hd=0 tl=0 low=64 hi=192 ext baud=1 flow=0 ucr=88 datamask=ff
+> I02 Iorec(1) ret=0007d040 hi=00000000
+61,62c61,62
+< I02b IOREC ibuf_tosaddr=0 ibufsiz=0 hd=0 tl=0 low=0 hi=0 sizeof=24
+< I03 Iorec(2) ret=0000000e hi=00000000
+---
+> I02b IOREC ibuf_tosaddr=1 ibufsiz=256 hd=0 tl=0 low=64 hi=192 sizeof=24
+> I03 Iorec(2) ret=0007d060 hi=00000000
+64,68c64,68
+< I03b IOREC ibuf_tosaddr=0 ibufsiz=0 hd=0 tl=0 low=0 hi=0 sizeof=24
+< I04 Iorec(3) ret=0000000e hi=00000000
+< I05 Iorec(-1) ret=0000000e hi=00000000
+< I06 Iorec(0x7FFF) ret=0000000e hi=00000000
+< I07 Iorec(-32768) ret=0000000e hi=00000000
+---
+> I03b IOREC ibuf_tosaddr=1 ibufsiz=128 hd=0 tl=0 low=32 hi=96 sizeof=24
+> I04 Iorec(3) ret=ffffffff hi=ffffffff
+> I05 Iorec(-1) ret=ffffffff hi=ffffffff
+> I06 Iorec(0x7FFF) ret=ffffffff hi=ffffffff
+> I07 Iorec(-32768) ret=ffffffff hi=ffffffff
+
+# de run vs us run (this run)
+73,74c73,74
+< K02 tables crc norm=32c7513b shft=c73c5dda caps=47f5e93a norm[0x10..0x13]=71776572 shft[0x1E]=41 caps[0x2C]=5a
+< K02 alt pairs len=0,0,0 crc=00000000,00000000,00000000
+---
+> K02 tables crc norm=f269a940 shft=ad90e084 caps=41dc3e75 norm[0x10..0x13]=71776572 shft[0x1E]=41 caps[0x2C]=59
+> K02 alt pairs len=6,6,6 crc=5ef70d22,f8c41189,5ef70d22
+82,83c82,83
+< K09 tables crc norm=32c7513b shft=c73c5dda caps=47f5e93a norm[0x10..0x13]=71776572 shft[0x1E]=41 caps[0x2C]=5a
+< K09 alt pairs len=0,0,0 crc=00000000,00000000,00000000
+---
+> K09 tables crc norm=f269a940 shft=ad90e084 caps=41dc3e75 norm[0x10..0x13]=71776572 shft[0x1E]=41 caps[0x2C]=59
+> K09 alt pairs len=6,6,6 crc=5ef70d22,f8c41189,5ef70d22
+
+# XKPROBE: EmuTOS tt (audit) vs NewTOS (this run)
+4c4
+< X04 mousevec hook calls=2 last_packet=f80000
+---
+> X04 mousevec hook calls=0 last_packet=000000
+# XCKTNL: EmuTOS tt (audit) vs NewTOS (this run)
+2c2
+< N02 Keytbl(NULL,-1,-1) returned ret=000040ae hi=00000000
+---
+> N02 Keytbl(NULL,-1,-1) returned ret=00000768 hi=00000000

@@ -1,0 +1,120 @@
+XBIOS02 -- Bioskeys (XBIOS 0x18) wired: restores the power-up keyboard tables -- 2026-10-29
+=========================================================================================
+Developer run for TASK/XBIOS02.md (audit finding XBIOS-CHARDEV-002, docs/audits/2026-10-28-xbios-chardev.md
+section 2). QEMU raspi4b only, headless, -append serial=on. No hardware, no real card, nothing flashed.
+Not committed (the lead commits).
+
+WHY
+  EmuTOS bioskeys (references/emutos/bios/ikbd.c:136-140) copies the country-default struct keytbl over
+  current_keytbl; NewTOS had no dispatcher arm for 0x18 (function number 0x18 returned, the program's
+  tables stayed in force). Acceptance (ticket): probe K07-K11 and input probe X01/X03 equal to the
+  oracle; no previously equal case of bios-r1, bios-core-r1, xbios-chardev-r1, xbios-system-r1 newly
+  differs; item 3: the keyboard state after the program has ended, measured with XCKTNL.
+
+STATE
+  Tree      main 3bbb8fd3 at the start; the lead committed 6ddd4496 (docs/TASK only, no code) during the
+            run -- the "after" tosdump runs name it as their commit -- plus the uncommitted XBIOS02 change:
+              kernel/src/keymap.rs        DEFAULT power-up layout, install_power_up, restore_default
+              kernel/src/host_env.rs      Host::reset_key_tables -> keymap::restore_default
+              tos-api/src/host.rs         Host::reset_key_tables (default no-op)
+              tos-api/src/xbios/keytbl.rs bioskeys, publish (the common tail of Keytbl/Bioskeys)
+              tos-api/src/xbios/mod.rs    BIOSKEYS arm; id comment corrected (ticket item 2)
+              tos-api/tests/xbios02_bioskeys.rs (host test)
+  EmuTOS    oracle side NOT re-run: the comparison uses the audit's oracle runs of the SAME probe binaries
+            (measurements/measurement-2026-10-28-xbios-chardev-audit/runs/PROBE-EMUTOS-tt, KEYS-EMUTOS-tt,
+            XCKTNL-EMUTOS-tt; EmuTOS 1a7484ab, ROM tools/oracle/etos512de-1a7484ab.img, Hatari 2.6.1 --
+            see that run's RUNINFO.TXT). The tosdump references are the committed
+            tosdump/reference/EMUTOS-1a7484ab-{BIOS,BIOS-core,XBIOS-chardev,XBIOS-system}{,-falcontc}.BIN.
+  QEMU      11.0.2, -M raspi4b, -append serial=on
+  Probes    the audit's binaries, unchanged (measurements/measurement-2026-10-28-xbios-chardev-audit/probe/):
+              546914a2e378a824ead7b27b7192cd9eb61aecd1eeb31f87f8d8e1c23d12d24e  XCPROBE.NAP
+              d5d3f8a027d1ebb6ac48711630064161c5dcd94dcfa85f098b268c899ddfbe05  XCKTNL.NAP
+              6c97048ebea7303fbef2b77d6fa57ff3d661184eddeb7ad43707d68a9904e600  XKPROBE.NAP
+  Kernels   (kernel8.img sha256; each run dir has its kernel8.img.sha256)
+    after         2107c1566ccb15ef1142a9a0d6d0e5bbc36de1de8296fb32352f23feedd5e04a
+                  cargo xtask build --board rpi4 --release of this tree (= the "after" tosdump runs)
+    before        289247a64b3abf4b6b2814eb13251bb0229642af61b7ae00db8932821107f5cb
+                  `git archive 3bbb8fd3` extracted into scratch, built by the tosdump runner (--tree)
+    inj-after     e6e8409400a0da70025523f34830556f9364ed6c1e13d89e489513bacc8d5b5e
+                  APFS clone of this tree (no .git, no target/), tools/inject-arm.py <clone>
+                  launch:XKPROBE=method/xkeys-ikbd.txt launch:XCKTNL=method/xktnl-after-exit-ikbd.txt
+    kw-inj-after  e829c08b52f7df1b56214c24a61e991f7778b55acce7ed655a5768c6882fee27
+                  the same clone + method/keyword-log.py (one serial line per translated key word)
+    kw-inj-before 4a134358b9bd5919e071c20b72f84ab22fb4eafe0779b30a01d1c169f3f64341
+                  the `git archive 3bbb8fd3` tree cloned, same two instruments
+            Diffs of the instrumented clones against their trees: method/scratch-instrument-after.diff,
+            method/scratch-instrument-before.diff (identical instrument lines; INJ-ARM-TEMP and
+            XB02-SCRATCH). inj-after was built before keyword-log.py was applied, so it carries only the
+            INJ-ARM-TEMP part. Clones deleted after the runs.
+
+METHOD (method/)
+  newtos-tables.sh   before|after: the four tables through cargo xtask tosdump (TOOL09) against tt and
+                     falcontc; copied from measurement-2026-10-29-bios06/method (table list changed)
+  compare.sh         per table and reference: differing cases before / after, newly differing; copied from
+                     the same run (commit names and table list changed) -> runs/before-after.txt
+  run-newtos.sh      one probe .NAP: tools/mkcard.sh card (64 MiB, MBR + FAT16) with #Z autorun, booted as
+                     an APFS clone, kernel as argument, optional extra seconds after "desktop up"; copied
+                     from the audit's runner (changes listed in its header). KLINE="#K de" for the de run.
+  xkeys-ikbd.txt     the audit's XKPROBE input (right button down/up, 'a' twice), unchanged but for a
+                     header line
+  xktnl-after-exit-ikbd.txt   item 3: 'a' make/break at +1200 and +1600 ticks after the XCKTNL launch
+                     event -- XCKTNL has ended and the desktop is up by then (serial order: "exited with
+                     rc=0", "armed", "desktop up", the feeds)
+  keyword-log.py     scratch instrument for item 3: kernel/src/ikbd.rs key_word logs
+                     "[xb02] key_word 0x<scancode><ascii>" -- the word the desktop's AES and every console
+                     reader get. (The intended instrument, --features aes-trace, does not link in a release
+                     build of either tree: "kernel image + stack overruns STRAM_OS_RESERVE (membot)" --
+                     reported as a finding, not touched.)
+
+RESULTS
+  Probe K (runs/PROBE-NEWTOS-raspi4b-us/XCPROBE.LOG against the audit's PROBE-EMUTOS-tt; probe-diff.txt)
+    K08 after Bioskeys: same_ptr=1 unshift_is_n0=1 shift_is_s0=1 caps_is_c0=1 unshift_is_my=0
+        -- EQUAL to the oracle (before: unshift_is_n0=0 shift_is_s0=0 caps_is_c0=0 unshift_is_my=1)
+    K09 tables crc norm=32c7513b shft=c73c5dda caps=47f5e93a, alt pairs 0,0,0 -- EQUAL (the defaults)
+    K10 EQUAL (as before)
+    K07/K11 Bioskeys() ret: EmuTOS 0x00E06E8C, NewTOS 0x00000768 (before: 0x00000018). Both are a pointer
+        to a struct keytbl holding the defaults (EmuTOS: get_keytbl()'s ROM struct left in d0 of a void
+        function, obj/ikbd.o; NewTOS: the struct Keytbl returns). Not bit-equal by construction; spec
+        docs/api/xbios/18-bioskeys.md "Return value".
+    K01/K02/K09 differ only as before XBIOS02: the struct address (0x40AE / 0x768) and sizeof(ptr) 4 / 8.
+    de run (runs/PROBE-NEWTOS-raspi4b-de, "#K de"): K02 and K09 both the German tables (norm f269a940,
+    alt pairs 6,6,6) -- Bioskeys restores the boot selection; every other line equals the us run.
+  XCKTNL (runs/XCKTNL-NEWTOS-raspi4b/XCKTNL.LOG): N03 after Bioskeys: unshift_tosbyte=1 -- EQUAL to the
+    oracle (before: 0). N02 differs only in the struct address, as before.
+  Input probe (runs/KEYS-NEWTOS-raspi4b-injector/XKPROBE.LOG, kernel inj-after)
+    X01 after Bioskeys unshift_is_my=0 unshift_is_n0=1          -- EQUAL (before: 1 / 0)
+    X02 k1 Bconin(2) with Keytbl(my_n) ret=001e004b             -- EQUAL (as before)
+    X03 k2 Bconin(2) after Bioskeys ret=001e0061                -- EQUAL (before: 001e004b)
+    X04 mousevec calls=0 -- unchanged, XBIOS-CHARDEV-003 (TASK XBIOS03, ACCEPTED per ADR-031).
+  Item 3, keyboard after the program has ended (runs/XCKTNL-AFTER-EXIT-NEWTOS-{before,after}/BOOT-SERIAL.txt)
+    XCKTNL = Keytbl(NULL,-1,-1), Bioskeys(), exit; then 'a' twice in the desktop:
+      before (kw-inj-before): "[xb02] key_word 0x1e00" twice -- 'a' yields no character: the table taken
+        over from page 0 by Keytbl(NULL) stays in the global translator after the program has ended
+        (the audit's PLAUSIBLE claim, now MEASURED)
+      after  (kw-inj-after):  "[xb02] key_word 0x1e61" twice -- 'a'
+  No regression (runs/before-after.txt; every tosdump run "ended normally after 19 s: desktop up after
+  DUMPBIOS.NAP, rc=0", tosdiff --validate exit 0)
+    table             ref       differing before (3bbb8fd3)            after (XBIOS02)
+    bios-r1           tt        41 cases (53 ... 235)                  identical
+    bios-r1           falcontc  45 cases (53 ... 235)                  identical
+    xbios-chardev-r1  tt, fc    31 43-53                               identical
+    bios-core-r1      tt / fc   15 / 14 cases                          identical
+    xbios-system-r1   tt, fc    68-76                                  identical
+    Newly differing cases in all eight comparisons: none. (Bioskeys is in no table: its return is a
+    pointer, the proposed case needs a pointer-compare class -- audit section 5.)
+
+CARDS / IMAGES
+  Every NewTOS card: tools/mkcard.sh defaults (64 MiB, MBR + FAT16). Manifests: runs/*/card.img.manifest
+  (written by run-newtos.sh or the tosdump runner). optional_missing line of every manifest, verbatim
+  (all fourteen identical):
+    optional_missing none
+  Image sha256: probe runs runs/*/card.img.before.sha256 (as built) and card.img.after.sha256 (the booted
+  APFS clone after the run); tosdump runs in each tosdump-run.txt ("card ... sha256", "card after the run
+  sha256"). All images, clones and scratch kernels were deleted after the runs.
+
+NOT VERIFIED
+  Real Raspberry Pi 4; qemu-virt beyond a debug boot to "desktop up (0 drives)" (the translator code is
+  board-independent); the oracle side was not re-measured (same probe binaries as the audit).
+
+FILES
+  manifest.sha256 covers every file of this run except itself.

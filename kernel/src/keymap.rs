@@ -200,6 +200,19 @@ static ACTIVE: Active = Active { layout: UnsafeCell::new(US) };
 /// default, like [`ACTIVE`].
 static SOURCE: AtomicU8 = AtomicU8::new(KeyboardLayout::BuiltinUs as u8);
 
+/// The power-up layout — NewTOS' counterpart of the table EmuTOS'
+/// `get_keytbl` returns for the current country
+/// (`references/emutos/bios/country.c:195-202`). EmuTOS picks it from the
+/// ROM's country and the NVRAM keyboard byte (`detect_akp`, `:140-163`);
+/// NewTOS from the boot selection ([`init_from_disk`]: `C:\KEYBOARD.KBD`,
+/// else `#K` in `C:\NEWDESK.INF`, else US). Only the boot selection writes
+/// it; XBIOS `Bioskeys` copies it back into [`ACTIVE`] ([`restore_default`]).
+static DEFAULT: Active = Active { layout: UnsafeCell::new(US) };
+
+/// Where [`DEFAULT`] came from (`KeyboardLayout as u8`), so that `Bioskeys`
+/// also restores what `Ssystem(S_NEWTOS_KEYBOARD)` reports.
+static DEFAULT_SOURCE: AtomicU8 = AtomicU8::new(KeyboardLayout::BuiltinUs as u8);
+
 /// Where the active layout came from: a built-in, `C:\KEYBOARD.KBD`, or a
 /// program's `Keytbl` since.
 pub fn source() -> KeyboardLayout {
@@ -218,22 +231,42 @@ fn active() -> &'static Layout {
     unsafe { &*ACTIVE.layout.get() }
 }
 
-/// Install a built-in layout by name (`"us"` / `"de"`); returns whether the
-/// name was recognised.
+/// Install a built-in layout by name (`"us"` / `"de"`) as the power-up
+/// layout; returns whether the name was recognised.
 pub fn select_builtin(name: &[u8]) -> bool {
     let (lay, src) = match name {
         b"us" | b"US" => (US, KeyboardLayout::BuiltinUs),
         b"de" | b"DE" => (DE, KeyboardLayout::BuiltinGerman),
         _ => return false,
     };
-    install(lay);
-    SOURCE.store(src as u8, Ordering::Relaxed);
+    install_power_up(lay, src);
     true
 }
 
-fn install(lay: Layout) {
-    // SAFETY: single-CPU boot context.
-    unsafe { *ACTIVE.layout.get() = lay };
+/// Make `lay` both the active and the power-up layout ([`DEFAULT`]) — the
+/// boot selection, which is what `Bioskeys` later restores.
+fn install_power_up(lay: Layout, src: KeyboardLayout) {
+    // SAFETY: single-CPU boot context; nothing decodes a key while the
+    // layout is selected.
+    unsafe {
+        *ACTIVE.layout.get() = lay;
+        *DEFAULT.layout.get() = lay;
+    }
+    SOURCE.store(src as u8, Ordering::Relaxed);
+    DEFAULT_SOURCE.store(src as u8, Ordering::Relaxed);
+}
+
+/// Put the power-up layout back — the kernel half of XBIOS `Bioskeys`,
+/// EmuTOS `current_keytbl = *get_keytbl();`
+/// (`references/emutos/bios/ikbd.c:136-140`). Every table a program installed
+/// through `Keytbl` is replaced, the three primary tables as well as the AltGr
+/// overrides, and the reported source goes back to the boot selection.
+pub fn restore_default() {
+    // SAFETY: single-CPU cooperative path (the XBIOS trap); the active layout
+    // is not read concurrently with this copy, and `DEFAULT` is only written
+    // by the boot selection.
+    unsafe { *ACTIVE.layout.get() = *DEFAULT.layout.get() };
+    SOURCE.store(DEFAULT_SOURCE.load(Ordering::Relaxed), Ordering::Relaxed);
 }
 
 /// Snapshot the active layout in the XBIOS `Keytbl` shape (EmuTOS
@@ -435,7 +468,6 @@ pub fn load_kbd(blob: &[u8]) -> bool {
             }
         }
     }
-    install(lay);
-    SOURCE.store(KeyboardLayout::File as u8, Ordering::Relaxed);
+    install_power_up(lay, KeyboardLayout::File);
     true
 }

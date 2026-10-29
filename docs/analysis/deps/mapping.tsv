@@ -403,12 +403,12 @@ scroll_down	bios/conout.c	tos-api/src/vdi/escape.rs	scroll_down	mapped	-
 scroll_up	bios/conout.c	tos-api/src/vdi/escape.rs	scroll_up	mapped	-
 detect_akp	bios/country.c	-	-	unmapped	country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
 detect_idt	bios/country.c	-	-	unmapped	country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
-get_country_record	bios/country.c	-	-	unmapped	country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
+get_country_record	bios/country.c	kernel/src/keymap.rs	select_builtin	mapped	country code -> its record (keyboard table); NewTOS: layout name (#K us/de) -> built-in table, unknown keeps the default
 get_current_country_input	bios/country.c	-	-	unmapped	country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
 get_default_country	bios/country.c	-	-	unmapped	country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
 get_fonts	bios/country.c	-	-	unmapped	country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
-get_kbd_index	bios/country.c	-	-	unmapped	country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
-get_keytbl	bios/country.c	-	-	unmapped	country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
+get_kbd_index	bios/country.c	kernel/src/keymap.rs	init_from_disk	mapped	which keyboard table is the country default; NewTOS: the boot selection (KEYBOARD.KBD, #K, else US), not _AKP (COOK02)
+get_keytbl	bios/country.c	kernel/src/keymap.rs	restore_default	mapped	the default keytbl of the current country; NewTOS: the power-up layout DEFAULT recorded by the boot selection, read by restore_default (XBIOS02)
 calibrate_delay	bios/delay.c	-	-	unmapped	busy-loop calibration: no NewTOS counterpart found
 init_delay	bios/delay.c	-	-	unmapped	busy-loop calibration: no NewTOS counterpart found
 run_calibration	bios/delayasm.S	-	-	unmapped	busy-loop calibration: no NewTOS counterpart found
@@ -601,7 +601,8 @@ bconout4	bios/ikbd.c	-	-	design:hardware:ikbd-acia	IKBD output: the IKBD is the 
 bconstat2	bios/ikbd.c	tos-api/src/bios/chardev.rs	bconstat	mapped	Console impl
 bconstat2	bios/ikbd.c	tos-api/src/xbios/iorec.rs	key_pending	mapped	head != tail of the IKBD IOREC (XBIOS01)
 bcostat4	bios/ikbd.c	-	-	design:hardware:ikbd-acia	IKBD output: the IKBD is the absent device on NewTOS (bios/chardev.rs Absent)
-bioskeys	bios/ikbd.c	-	-	unmapped	XBIOS 0x18 Bioskeys is not implemented: NewTOS's XBIOS dispatcher returns the function number (xbios/mod.rs)
+bioskeys	bios/ikbd.c	tos-api/src/xbios/keytbl.rs	bioskeys	mapped	Bioskeys 0x18 (XBIOS02): the remembered Keytbl pointers dropped, the struct rewritten from the default tables
+bioskeys	bios/ikbd.c	kernel/src/keymap.rs	restore_default	mapped	current_keytbl = *get_keytbl(): the power-up layout copied back into the active one (via Host::reset_key_tables)
 convert_scancode	bios/ikbd.c	-	-	unmapped	IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
 do_key_repeat	bios/ikbd.c	kernel/src/ikbd.rs	poll_repeat	mapped	polled, not from timer C
 handle_mouse_mode	bios/ikbd.c	-	-	unmapped	IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
@@ -612,6 +613,7 @@ ikbd_writew	bios/ikbd.c	-	-	design:hardware:ikbd-acia	IKBD 6301/ACIA keyboard dr
 ikbdws	bios/ikbd.c	tos-api/src/xbios/system.rs	ikbdws	mapped	Ikbdws 0x19: no-op
 kb_timerc_int	bios/ikbd.c	-	-	unmapped	IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
 kbd_init	bios/ikbd.c	kernel/src/key_repeat.rs	new	mapped	key-repeat power-up state; the boot conterm value is read by bios/chardev.rs current_conterm
+kbd_init	bios/ikbd.c	kernel/src/keymap.rs	init_from_disk	mapped	its closing bioskeys() (bios/ikbd.c:1106): the power-up keyboard tables, NewTOS' boot selection (KEYBOARD.KBD, #K, else US; COMPATIBILITY.md)
 kbd_int	bios/ikbd.c	kernel/src/ikbd.rs	kbd_int	mapped	the default kbdvec
 kbd_int	bios/ikbd.c	tos-api/src/bios/reset.rs	reset_key	mapped	the reset-key test
 kbd_int	bios/ikbd.c	tos-api/src/bios/vectors.rs	mousexvec	mapped	the mousexvec call

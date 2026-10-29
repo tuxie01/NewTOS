@@ -1,0 +1,3 @@
+N01 before Keytbl(NULL,-1,-1)
+N02 Keytbl(NULL,-1,-1) returned ret=00000768 hi=00000000
+N03 after Bioskeys: unshift_tosbyte=0

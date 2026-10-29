@@ -653,8 +653,11 @@ NVRAM. At boot, after the card is mounted, `keymap::init_from_disk`
 `#K us` or `#K de` line in `C:\NEWDESK.INF` picks one of the two built-in
 tables, which are EmuTOS' `bios/keyb_us.h`/`keyb_de.h` verbatim; otherwise US.
 Translation itself follows EmuTOS' `struct keytbl` and `ascii_cnv`, and XBIOS
-`Keytbl` works as on EmuTOS. **Observable differences:** (1) the two files
-above are read; (2) `_AKP` stays `0` (US) whichever layout is active
+`Keytbl` works as on EmuTOS. XBIOS `Bioskeys` restores this boot selection —
+the NewTOS power-up table in the place of EmuTOS' `get_keytbl()`, which is
+likewise fixed at boot (XBIOS02, `docs/api/xbios/18-bioskeys.md`).
+**Observable differences:** (1) the two files above are read; (2) `_AKP`
+stays `0` (US) whichever layout is active
 (`tos-api/src/cookie.rs:225`), where on EmuTOS its low byte names the active
 keyboard. **Open conflict, reported 2026-10-26, not sanctioned:** EmuDESK's own
 `NEWDESK.INF` already has a `#K` line — the 33 menu-shortcut bytes

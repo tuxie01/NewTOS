@@ -269,6 +269,14 @@ pub trait Host: Sync {
     /// to replace.
     fn set_key_table(&self, _which: KeyTable, _table: &[u8; 128]) {}
 
+    /// Put the power-up keyboard layout back into force — the translator half
+    /// of XBIOS `Bioskeys` (EmuTOS `current_keytbl = *get_keytbl();`,
+    /// `bios/ikbd.c:136-140`): all three primary tables and the AltGr arrays
+    /// return to the layout the machine booted with, undoing every
+    /// [`Host::set_key_table`]. The default is a no-op: a board with no
+    /// keyboard translator has no layout to restore.
+    fn reset_key_tables(&self) {}
+
     /// The CPU core clock the machine is running at, in **Hz**, or `None`
     /// when this board cannot be asked. Backs `Ssystem(S_NEWTOS_CPUCLOCK)`
     /// (`docs/api/gemdos/154-ssystem.md`). Same swappable hardware boundary

@@ -1,0 +1,8 @@
+# tools/inject-arm.py script, armed launch:XCKTNL: <hz_200 ticks after the launch> <IKBD bytes>.
+# XBIOS02 item 3: XCKTNL (Keytbl(NULL,-1,-1), Bioskeys()) has ended long before; the key 'a'
+# (make 0x1E / break 0x9E) goes to the desktop, whose evnt_multi result the aes-trace records.
+# Twice, 2 s apart.
+1200 0x1E
+1210 0x9E
+1600 0x1E
+1610 0x9E

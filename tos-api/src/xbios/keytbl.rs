@@ -1,7 +1,9 @@
-//! XBIOS `Keytbl` (0x10) — the keyboard translation tables.
+//! XBIOS `Keytbl` (0x10) and `Bioskeys` (0x18) — the keyboard translation
+//! tables.
 //!
-//! Spec: `docs/api/xbios/10-keytbl.md`. EmuTOS source: `bios/ikbd.c:122-134`
-//! (`keytbl`), `bios/ikbd.h:57-86` (`struct keytbl`).
+//! Spec: `docs/api/xbios/10-keytbl.md`, `docs/api/xbios/18-bioskeys.md`.
+//! EmuTOS source: `bios/ikbd.c:122-134` (`keytbl`), `bios/ikbd.c:136-140`
+//! (`bioskeys`), `bios/ikbd.h:57-86` (`struct keytbl`).
 //!
 //! ```c
 //! /* bios/ikbd.c:122-134 */
@@ -211,6 +213,42 @@ pub fn keytbl(args: &TrapArgs) -> i64 {
         OVERRIDE[i].store(p, Ordering::Relaxed);
     }
 
+    publish(h)
+}
+
+/// `Bioskeys` (0x18) — restore the power-up keyboard tables
+/// (`bios/ikbd.c:136-140`: `current_keytbl = *get_keytbl();`).
+///
+/// EmuTOS copies the whole country-default `struct keytbl` over
+/// `current_keytbl`, so every pointer a program installed through `Keytbl` is
+/// gone and all eight fields are the defaults again. NewTOS forgets the
+/// remembered caller pointers ([`OVERRIDE`]), so the reported `norm`/`shft`/
+/// `caps` point at the area's own copies again, and has the translator put
+/// its power-up layout back ([`crate::host::Host::reset_key_tables`]) — the
+/// translation, not only the report, returns to the default.
+///
+/// **Return value.** `Bioskeys` is `void`; on EmuTOS `d0` keeps what
+/// `get_keytbl` returned, the address of the country-default `struct keytbl`
+/// (pinned build `obj/ikbd.o`: `jsr _get_keytbl; moveal %d0,%a0`, then only
+/// `%a0` is used; measured `0x00E06E8C`, ROM). NewTOS has no separate default
+/// struct; it answers the address of the `struct keytbl` it has just
+/// rewritten with the default tables — the same image `Keytbl(-1,-1,-1)` now
+/// returns — or 0 on a board without a keyboard translator, as `Keytbl` does.
+pub fn bioskeys() -> i64 {
+    for o in &OVERRIDE {
+        o.store(NO_OVERRIDE, Ordering::Relaxed);
+    }
+    let Some(h) = host() else {
+        return 0;
+    };
+    h.reset_key_tables();
+    publish(h)
+}
+
+/// Lay the `struct keytbl` of the layout now in force into the caller's
+/// address space and return its address (the common tail of `Keytbl` and
+/// `Bioskeys`); 0 when the board has no keyboard translator.
+fn publish(h: &dyn crate::host::Host) -> i64 {
     let Some(tables) = h.key_tables() else {
         return 0;
     };

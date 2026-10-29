@@ -259,6 +259,7 @@ sentinel and the returned pointer are preserved.
   - The AltGr arrays are emitted in EmuTOS' non-`DUAL_KEYBOARD` wire format
     (zero-terminated `(scancode, ascii)` pairs), which is exactly how
     `keymap::Layout` already holds them.
-  - Still **not** wired: `Bioskeys` (`0x18`), which would reset the whole
-    struct from the country tables. Recorded as K-series below.
+  - `Bioskeys` (`0x18`) undoes every set since XBIOS02: the remembered
+    pointers are dropped and the translator's power-up layout is put back
+    (`tos-api/src/xbios/keytbl.rs:237@bioskeys`, `18-bioskeys.md`).
 - **Datasheet.** No peripheral register (software table).

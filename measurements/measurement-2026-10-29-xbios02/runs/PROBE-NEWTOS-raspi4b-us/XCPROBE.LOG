@@ -1,0 +1,99 @@
+R01 Kbrate(-1,-1) ret=00000f02 hi=00000000
+R02 Kbrate(10,5) ret=00000f02 hi=00000000
+R03 Kbrate(-1,-1) ret=00000a05 hi=00000000
+R04 Kbrate(0x1FF,0x1FF) ret=00000a05 hi=00000000
+R05 Kbrate(-1,-1) ret=ffffffff hi=ffffffff
+R06 Kbrate(-2,3) ret=ffffffff hi=ffffffff
+R07 Kbrate(-1,-1) ret=ffffff03 hi=ffffffff
+R08 Kbrate(0x100,-32768) ret=ffffff03 hi=ffffffff
+R09 Kbrate(-1,-1) ret=00000003 hi=00000000
+R10 Kbrate(0,0) ret=00000003 hi=00000000
+R11 Kbrate(-1,-1) ret=00000000 hi=00000000
+R12 Kbrate(r0) restore ret=00000000 hi=00000000
+R13 Kbrate(-1,-1) ret=00000f02 hi=00000000
+S01 Rsconf(-2,..) baud ret=00000001 hi=00000000
+S02 Rsconf(-1 x6) regs ret=88010100 hi=00000000
+S03 Rsconf(-2,2,..) baud, ctrl ignored ret=00000001 hi=00000000
+S04 Rsconf(4,-1..) set 2400 ret=88010100 hi=00000000
+S05 Rsconf(-2,..) ret=00000004 hi=00000000
+S06 Rsconf(16,-1..) out of range ret=88010100 hi=00000000
+S07 Rsconf(-2,..) ret=00000004 hi=00000000
+S08 Rsconf(-3,-1..) ret=88010100 hi=00000000
+S09 Rsconf(-2,..) ret=00000004 hi=00000000
+S10 Rsconf(-1,-1,0x98,..) ucr ret=88010100 hi=00000000
+S11 Rsconf(-1 x6) ret=98010100 hi=00000000
+S12 Rsconf(-1,-1,-1,0,-1,-1) rsr=0 ret=98010100 hi=00000000
+S13 Rsconf(-1 x6) ret=98000100 hi=00000000
+S14 Rsconf(-1,-1,0x188,-1..) ucr high byte ret=98000100 hi=00000000
+S15 Rsconf(-1 x6) ret=88000100 hi=00000000
+S16 Rsconf(b0,-1,ucr0,rsr0,tsr0,-1) restore ret=88000100 hi=00000000
+S17 Rsconf(-1 x6) ret=88010100 hi=00000000
+S18 Rsconf(-2,..) ret=00000001 hi=00000000
+B01 Bconmap(-1) ret=0000002c hi=00000000
+B02 Bconmap(-2) ret=0000002c hi=00000000
+B03 Bconmap(-2) tosaddr=1
+B04 BCONMAP maptab_tosaddr=0 maptabsize=0 mapped_device=0 sizeof(_BCONMAP)=16
+B06 Bconmap(0) ret=0000002c hi=00000000
+B07 Bconmap(1) ret=0000002c hi=00000000
+B08 Bconmap(5) ret=0000002c hi=00000000
+B09 Bconmap(10) ret=0000002c hi=00000000
+B10 Bconmap(-3) ret=0000002c hi=00000000
+B11 Bconmap(0x7FFF) ret=0000002c hi=00000000
+B12 Bconmap(-32768) ret=0000002c hi=00000000
+B13 Bconmap(7) ret=0000002c hi=00000000
+B14 Bconmap(-1) ret=0000002c hi=00000000
+B15 after Bconmap(7): Iorec(0)_changed=0
+B16 Rsconf(-2,..) after Bconmap(7) ret=00000001 hi=00000000
+B17 Bconmap(6) ret=0000002c hi=00000000
+B18 Bconmap(-1) ret=0000002c hi=00000000
+B19 after Bconmap(6): Iorec(0)_is_first=1 Rsconf(-2)_is_first=1
+B20 Bconmap(8) ret=0000002c hi=00000000
+B21 Bconmap(9) ret=0000002c hi=00000000
+B22 Bconmap(-1) ret=0000002c hi=00000000
+B23 Bconmap(d0) restore ret=0000002c hi=00000000
+B24 Bconmap(-1) ret=0000002c hi=00000000
+I01 Iorec(0) ret=0007d000 hi=00000000
+I01a Iorec(0) tosaddr=1
+I01b IOREC ibuf_tosaddr=1 ibufsiz=256 hd=0 tl=0 low=64 hi=192 sizeof=24
+I01c out-IOREC obuf_tosaddr=1 obufsiz=256 hd=0 tl=0 low=64 hi=192 ext baud=1 flow=0 ucr=88 datamask=ff
+I02 Iorec(1) ret=0007d040 hi=00000000
+I02a Iorec(1) tosaddr=1
+I02b IOREC ibuf_tosaddr=1 ibufsiz=256 hd=0 tl=0 low=64 hi=192 sizeof=24
+I03 Iorec(2) ret=0007d060 hi=00000000
+I03a Iorec(2) tosaddr=1
+I03b IOREC ibuf_tosaddr=1 ibufsiz=128 hd=0 tl=0 low=32 hi=96 sizeof=24
+I04 Iorec(3) ret=ffffffff hi=ffffffff
+I05 Iorec(-1) ret=ffffffff hi=ffffffff
+I06 Iorec(0x7FFF) ret=ffffffff hi=ffffffff
+I07 Iorec(-32768) ret=ffffffff hi=ffffffff
+I08 Iorec(1) stable=1
+K01 Keytbl(-1,-1,-1) ret=00000768 hi=00000000
+K01a tosaddr=1
+K02 keytab ptrs_tosbyte=111111 f7=0000000000000000 w_after_f7=0000 sizeof(ptr)=8
+K02 tables crc norm=32c7513b shft=c73c5dda caps=47f5e93a norm[0x10..0x13]=71776572 shft[0x1E]=41 caps[0x2C]=5a
+K02 alt pairs len=0,0,0 crc=00000000,00000000,00000000
+K03 second Keytbl(-1,-1,-1) same=1
+K04 Keytbl(my_n,-1,-1) same_ptr=1 unshift_is_my=1 shift_is_s0=1 caps_is_c0=1
+K05 Keytbl(-1,-1,-1) unshift_is_my=1 shift_is_s0=1 caps_is_c0=1
+K06 Keytbl(-1,my_s,my_c) unshift_is_my=1 shift_is_my=1 caps_is_my=1 alt_tosbyte=1
+K07 Bioskeys() ret=00000768 hi=00000000
+K08 after Bioskeys: same_ptr=1 unshift_is_n0=1 shift_is_s0=1 caps_is_c0=1 unshift_is_my=0
+K09 keytab ptrs_tosbyte=111111 f7=0000000000000000 w_after_f7=0000 sizeof(ptr)=8
+K09 tables crc norm=32c7513b shft=c73c5dda caps=47f5e93a norm[0x10..0x13]=71776572 shft[0x1E]=41 caps[0x2C]=5a
+K09 alt pairs len=0,0,0 crc=00000000,00000000,00000000
+K10 Keytbl(n0,s0,c0) restore unshift_is_n0=1 shift_is_s0=1 caps_is_c0=1
+K11 Bioskeys() final ret=00000768 hi=00000000
+V01 Kbdvbase() ret=0007f010 hi=00000000
+V01a tosaddr=1 second_same=1
+V02 slots_all_tosaddr=1 distinct_values=1 kbstate=0 kbdvec(p[-1])_tosaddr=1 midivec==vkbderr=1
+W01 Ikbdws(0,{0x1C}) ret=00000000 hi=00000000
+W02 Ikbdws(0,{0x88}) ret=00000000 hi=00000000
+W03 Ikbdws(0,{0x16}) ret=00000000 hi=00000000
+W04 hooks after 3x100 ticks: clockvec=0 statvec=0 joyvec=0 st=00000000000000
+V03 vectors restored=1
+M01 Bcostat(3) before ret=00000000 hi=00000000
+M02 Midiws(0,{0xFE}) ret=00000000 hi=00000000
+M03 Midiws(255,256x0xFE) ret=00000000 hi=00000000
+M04 Midiws(255) took_ticks_ge_10=0
+M05 Bcostat(3) after ret=00000000 hi=00000000
+XCPROBE done

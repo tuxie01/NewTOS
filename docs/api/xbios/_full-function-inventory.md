@@ -116,7 +116,7 @@ NewTOS-Verteiler: `tos-api/src/xbios/mod.rs::dispatch` (`:64-138`).
 | 0x15 | `Cursconf` | `:1311` | — | ja | `:73` |
 | 0x16 | `Settime` | `:1312` | — | ja | `:104` |
 | 0x17 | `Gettime` | `:1313` | — | ja | `:108` |
-| 0x18 | `Bioskeys` | `:1314` | — | **Nummer** | `:138` |
+| 0x18 | `Bioskeys` | `:1314` | — | ja (XBIOS02, `18-bioskeys.md`) | `tos-api/src/xbios/keytbl.rs` |
 | 0x19 | `Ikbdws` | `:1315` | — | HW-Adapter (No-op) | `:111` |
 | 0x1A | `Jdisint` | `:1317` | `CONF_WITH_MFP` | **Nummer** | `:138` |
 | 0x1B | `Jenabint` | `:1318` | `CONF_WITH_MFP` | **Nummer** | `:138` |

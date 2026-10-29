@@ -25,11 +25,10 @@ pub mod system;
 use crate::trap::TrapArgs;
 use tos_types::error::EUNDEV;
 
-// XBIOS function ids. Note: Initmous (0x00) and Bioskeys (0x18) are
-// intentionally NOT wired — they need NewTOS keyboard/mouse infrastructure
-// that does not exist yet, so they fall through to the function-number
-// catch-all (honestly unimplemented). See the STOP notes on `dispatch` below.
-// Iorec (0x0E) is wired since XBIOS01 (`iorec`).
+// XBIOS function ids. Initmous (0x00) has no arm: it falls through to the
+// function-number catch-all and is reported as an unserved hook installer
+// (`note_installer`, ADR-031). Iorec (0x0E) is wired since XBIOS01 (`iorec`),
+// Bioskeys (0x18) since XBIOS02 (`keytbl::bioskeys`).
 const PHYSBASE: u16 = 0x02; // screen group (Phase 10)
 const LOGBASE: u16 = 0x03;
 const GETREZ: u16 = 0x04;
@@ -50,6 +49,7 @@ const SCRDMP: u16 = 0x14; // no printer on the Pi → documented no-op
 const CURSCONF: u16 = 0x15;
 const SETTIME: u16 = 0x16; // clock group — shares the GEMDOS wall clock
 const GETTIME: u16 = 0x17;
+const BIOSKEYS: u16 = 0x18; // restore the power-up keyboard tables (XBIOS02)
 const IKBDWS: u16 = 0x19; // IKBD command write — documented no-op (void)
 const GIACCESS: u16 = 0x1C; // PSG group → 0 (no YM2149)
 const OFFGIBIT: u16 = 0x1D;
@@ -102,6 +102,9 @@ pub fn dispatch(args: &TrapArgs) -> i64 {
         // as EmuTOS' desktop does (`desk/deskmain.c:1144-1145`). See
         // `docs/api/xbios/10-keytbl.md`.
         KEYTBL => keytbl::keytbl(args),
+        // Restore the power-up keyboard tables, undoing every `Keytbl`
+        // (`bios/ikbd.c:136-140`). See `docs/api/xbios/18-bioskeys.md`.
+        BIOSKEYS => keytbl::bioskeys(),
         // Device records: 0 RS-232, 1 IKBD (the live console key queue), 2
         // MIDI, otherwise -1 (`bios/xbios.c:336-348`). The records sit in a
         // page every process maps read-write, so `io->ibufhd = io->ibuftl`
@@ -140,7 +143,7 @@ pub fn dispatch(args: &TrapArgs) -> i64 {
         // (not the function number). See `docs/api/xbios/40-blitmode.md`.
         BLITMODE => system::blitmode(),
         // Every other id — an in-range but unimplemented slot (e.g. Initmous
-        // 0x00, Bioskeys 0x18, the MFP 0x1A/0x1B
+        // 0x00, the MFP 0x1A/0x1B
         // (Jdisint/Jenabint) and NVRAM 0x2E slots, Supexec 0x26, the TT-shifter
         // 0x50-0x57 range) **or** an out-of-range id (> LAST_ENTRY 0x57) —
         // returns the function number itself, zero-extended. This is the

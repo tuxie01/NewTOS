@@ -1,6 +1,6 @@
 # XBIOS02 — `Bioskeys` ist nicht verdrahtet: per `Keytbl` installierte Tabelle bleibt aktiv
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](XBIOS02-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`
 
 ## Sachverhalt
 
@@ -44,3 +44,21 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidu
 - Kein vorher gleicher Fall in `bios-r1.tsv`, `bios-core-r1.tsv`, `xbios-chardev-r1.tsv`, `xbios-system-r1.tsv` weicht neu ab.
 - `cargo xtask test` gruen.
 - `docs/STATUS.md` und Spec im selben Commit; `cargo xtask doc-check` der geaenderten Doku 0 Fehler.
+
+## Stand 2026-10-29
+
+- Umgesetzt: `Bioskeys` verdrahtet (`tos-api/src/xbios/mod.rs:107@BIOSKEYS`,
+  `tos-api/src/xbios/keytbl.rs:237@bioskeys`); der Kern haelt die beim Start
+  gewaehlte Tabelle als Ausgangstabelle (`kernel/src/keymap.rs:210@DEFAULT`)
+  und setzt sie zurueck (`kernel/src/keymap.rs:264@restore_default`).
+  Kommentar `tos-api/src/xbios/mod.rs:28-31@PHYSBASE` richtiggestellt (Punkt 2).
+- Sonde K08/K09, XCKTNL N03 und Eingabesonde X01/X03 gleich dem Orakel;
+  K07/K11 (`void`, `d0`): EmuTOS `0x00E06E8C` (Zeiger auf die ROM-Ausgangstabelle,
+  `obj/ikbd.o`), NewTOS `0x768` (Zeiger auf die zurueckgesetzte Struktur) —
+  Zeiger beide, bitgleich nicht moeglich (Spec „Return value“).
+- **Punkt 3 gemessen (vorher PLAUSIBLE):** vor dem Fix liefert `a` im Desktop nach
+  dem Ende von XCKTNL `0x1E00` (Seite-0-Bytes bleiben globale Tabelle), nachher
+  `0x1E61`. Beleg `measurements/measurement-2026-10-29-xbios02/RUNINFO.TXT`.
+- `--down` weiterhin `unmapped`: `get_current_country_input` (liest `_AKP`;
+  NewTOS liest es nicht, COOK02) und `get_default_country` (Land aus dem
+  OS-Header; NewTOS hat keinen). Beide ohne NewTOS-Gegenstueck.

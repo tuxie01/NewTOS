@@ -334,6 +334,10 @@ impl Host for KernelHost {
         crate::keymap::set_table(which, table);
     }
 
+    fn reset_key_tables(&self) {
+        crate::keymap::restore_default();
+    }
+
     #[cfg(feature = "board-rpi4")]
     fn block(&self) -> Option<&dyn tos_api::bios::block::BlockDev> {
         use crate::hal::block::BlockDevice;
