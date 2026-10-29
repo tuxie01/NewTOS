@@ -1,0 +1,92 @@
+DOOM menu freeze on the real Pi 4 -- reproduction attempt in QEMU raspi4b -- 2026-10-29
+=====================================================================================
+Developer diagnosis run (no product change, nothing committed by the developer). No hardware touched.
+
+WHY
+  User report: card written 2026-10-29 (release kernel from 58e35ac8 + freshly built SDK apps): DOOM starts; in DOOM's
+  menu, moving the selection down a few entries freezes the whole system. Not seen with the previous card (kernel
+  KRN1024B.IMG, sha256 prefix fe967851f17c, 2026-10-24; its DOOM.NAP is gone). No serial log.
+
+RESULT
+  NOT REPRODUCED in QEMU raspi4b. 8 runs, 0 freeze, 0 [crash]/[EXC]/PANIC, 0 [hook]/[iorec] line; DOOM keeps rendering
+  after every key sequence (the screendumps after the last key differ frame to frame). The 10-24 kernel with the
+  10-24 DOOM and the 58e35ac8 kernel with either DOOM behave the same under the same injected keys (same menu
+  positions, same moment the menu closes; see SCREENDUMPS). With no failing case there is nothing to bisect.
+
+STATE
+  NewTOS new : 58e35ac8 (tree clean), injector kernels (rpi4 release, tools/inject-arm.py):
+               k-new-inj   (menu.script)  84ac408094cfed42c3bd2f4e70a3454912d9979bb06fd058ccfa264964433eb0
+               k-new-burst (burst.script) f95c19eccfe364a4baa2fbe4b5713c729078c66c056112eb1e21543bafbe56a1
+  NewTOS old : 795066d9 (last kernel commit of 2026-10-24; git worktree in scratch, removed after the run)
+               k-old-inj   (menu.script)  107ea6f3e4e14aedb9faac3679fedd97620f23be2f89abade84ae225eac6e91b
+  DOOM.NAP   : new  = main tree sdk/apps/doom/build/DOOM.NAP  86abca15e09202d8538afb8504f4835fdda2ecc5f33f74f5852570832e1df132
+               old  = built from 795066d9                    bec47b142b520592335083a4561b5e88aaae2a53a2b2af84bce62268728f0ad1
+               stats= 58e35ac8 tree, DOOM_STATS=5             1fe2340b722cf3fd3525d1d24b8c3479f0cf96c4410450de6b6e9e29f7356fa3
+               nokbdvec = 58e35ac8 tree, DOOM_ARGS "-mb","6","-nokbdvec" (built for a Pi check, not run here)
+                                                              af10a51706cb7c9f7b389ba76f6faabd94c9a96bc666fee79848f258db10a95a
+  SYSACC.NAC : sdk/examples/sysacc.c                         812ddd574dda3f854ad5d11274abf6741dea23c8231163a11b49dbdca85602d6
+  Cards      : cards/*.manifest (tools/mkcard.sh; every manifest: optional_missing none). Card sha256 before boot:
+               doom-new 3eee3c5e..., doom-acc bd08fd84..., doom-acc-olddoom 8ac99bd2..., doom-stats dd1b22d7...
+               Each run booted an APFS clone, deleted afterwards (not hashed after the run). Images deleted.
+  QEMU       : raspi4b, -append serial=on (except noser1), headless, QMP screendumps
+  Commands   : method/COMMANDS.TXT
+
+RUNS                         kernel   DOOM    acc  keys            result
+  new1                       new      new     0    menu.script     DOOM alive to the end; key route kbdvec
+  acc1                       new      new     2    menu.script     same
+  oldk-oldd                  10-24    10-24   2    menu.script     same (reference)
+  newk-oldd                  new      10-24   2    menu.script     same
+  oldk-newd                  10-24    new     2    menu.script     DOOM falls back to the AES key route ("TOS 0.00 has
+                                                                   no kbdvec"): the new SDK's Supexec is a kernel trap
+                                                                   (60d3c4fd, MEM12) the 10-24 kernel does not serve as
+                                                                   such -- this pairing is NOT comparable (also on the Pi)
+  stats                      new      stats   0    menu.script     66-68 fps in guest time: DOOM is fast enough in QEMU
+                                                                   to sleep in evnt_timer between tics, like on the Pi
+  burst1                     new      new     2    burst.script    alive
+  noser1                     new      new     2    burst.script    alive; no serial=on (the card default), 26 timed
+                                                                   dumps 4 s apart, all differ after DOOM is up
+                                                                   (screendumps/noser1-md5-every-4s.txt)
+  menu.script : Esc, 7 single Downs 0.5 s apart, the 7th held 3 s (kernel key repeat into the IOREC), Up, held Up, Esc
+  burst.script: Esc, 12 Downs 100 ms apart, 8 Downs 40 ms apart, 10 make+break pairs in one feed step, Down held 2 s,
+                6 Downs interleaved with relative mouse packets, Esc
+
+WHAT QEMU DOES NOT EXERCISE (the real Pi does)
+  - The xHCI/USB-HID path and INPUT01's timer-interrupt capture of USB reports (QEMU raspi4b has no PCIe/VL805; the
+    injector feeds crate::ikbd::feed from the trap-side pump instead, kernel/src/host_env.rs:500@pump_devices).
+  - Real Cortex-A72 caches/TLB/ASID behaviour (MEM12 switches page 0 RO/RW for every kbdvec upcall,
+    tos-api/src/bdos/process/superstate.rs:40@set_super).
+  - The user's real card contents (accessories, desktop) -- here: NEWDESK #Z autostart + two SYSACC.NAC.
+
+WHY A FREEZE WITHOUT SERIAL IS NOT A DIAGNOSIS
+  A kernel panic and every unhandled exception report ONLY on UART0 and then halt the CPU
+  (kernel/src/panic.rs:17@on_panic, kernel/src/arch/aarch64/exceptions.rs:2428@unhandled); on board-rpi4 UART0 is off
+  without `serial=on` (kernel/src/console.rs:51@SERIAL_TX_DEFAULT) and nothing is drawn on screen. The last DOOM frame
+  stays -- indistinguishable from a hang. Also, while DOOM's hook is installed every key byte goes to DOOM's ring
+  (tos-api/src/xbios/kbdvecs.rs:350@route_key), so a stuck DOOM swallows Ctrl+Alt+Del too.
+
+POST-RUN
+  Per-run images and kernels are not kept (sha256 above). Scratch NAPs/kernels stay in the session scratch only.
+
+FOLLOW-UP 2026-10-29 (coordinator: static round-trip trace after the user's new Pi observations)
+  User, real Pi, 58e35ac8 + new DOOM: 1st attempt a short hang in the menu on arrow-down, then DOOM recovered; 2nd
+  attempt a permanent freeze; Ctrl+Alt+Del still rebooted.
+
+  QEMU stress run (scratch-only probe kernel; method/probe-scratch.diff over the 58e35ac8 tree + tools/inject-arm.py,
+  method/stress.script, method/run3.sh). The probe prints [lat] = hz_200 ticks between a key byte entering DOOM's kbdvec
+  ring (kernel/src/ikbd.rs decode_byte -> route_key) and its delivery (exceptions.rs deliver_pending_kbdvec), at every
+  new maximum, every byte >= 4 ticks and every 50th byte (positive control); and [clk] = how far the running program's
+  page-0 _hz_200 lags the kernel counter, checked at every trap-side input pump, printed at >= 10 ticks.
+    k-lat  (probe, no periodic print) 7dd87953e3f3fb6efed04612ed42e28f0f69989d66970f68cc69e7da6c52edcf
+    k-lat2 (probe + every 50th byte) 1b4293aa5df14d7b4274b8a6c3364d6cfd722c2c1da27cd0594cb3170b06b9a3
+    DOOM-stats1.NAP (DOOM_STATS=1, frame count per DOOM second) e30f144c762e7f8acaeb241cab74ed2cbf0807cd46d44217c23b6c81d42f9118
+    cards/doom-s1-acc.img.manifest (283687478b4c...), cards/doom-new-acc.img.manifest (3816f857025f...): optional_missing none
+  stress.script: 20 Downs 20 ms apart while the demo renders; Esc; Down held 6 s (kernel repeat into the IOREC);
+  30 Downs 30 ms apart in the menu; Down held 4 s with Up tapped every 200 ms; Esc. 148 bytes.
+    lat-s1   k-lat  + DOOM-stats1  : no [lat] line; frame rate 64-71 fps per DOOM second throughout the keys
+                                      (dips 57/36 fps are before the first key, at level/demo load)
+    lat-new  k-lat  + shipped DOOM : no [lat] line
+    lat-new2 k-lat2 + shipped DOOM : [lat] at bytes 1, 51, 101: 0 ticks each, max 0 -> every one of the 148 bytes
+                                      was delivered to the hook within the 5-ms tick it was decoded in
+  [clk]: only at boot (hz 3024-3044, accessories/kernel client switching, before DOOM starts); never while DOOM ran.
+  rc 0, crash 0, panic 0, hook 0, iorec 0 in all three. No latency spike, no clock stall: NOT REPRODUCED.
+  Images deleted after the runs.

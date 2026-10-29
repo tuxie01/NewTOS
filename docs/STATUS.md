@@ -56,15 +56,15 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   neues Werkzeug-Ticket kommt hinter den Produkt-Fix, den es verzoegern wuerde,
   ausser der Fix ist ohne das Werkzeug nicht abnehmbar.
   Developer, einer zur Zeit:
-  [XBIOS17](../TASK/XBIOS17.md) (qemu-virt `Bconout(1)`; erst
-  Bericht, P3) →
   die uebrigen Audit-Tickets BIOS04–BIOS14, XBIOS02–XBIOS14 (S2
   zuerst; BIOS05 und XBIOS03 sind ACCEPTED nach ADR-031, XBIOS10 nach ARCH05) →
   [TOOL13](../TASK/TOOL13.md), [TOOL14](../TASK/TOOL14.md),
   [TOOL15](../TASK/TOOL15.md) → [TOOL03](../TASK/TOOL03.md) → DUMPGDOS →
   [FS19](../TASK/FS19.md) → [MEM11](../TASK/MEM11.md) (Erzwingung) →
-  [TOOL01](../TASK/TOOL01.md); [SDK02](../TASK/SDK02.md), [SDK06](../TASK/SDK06.md)
-  (P3) bei Gelegenheit.
+  [TOOL01](../TASK/TOOL01.md) → [FS26](../TASK/FS26.md) (Ordner anlegen
+  ~3 s auf der Pi, erst messen); [SDK02](../TASK/SDK02.md), [SDK06](../TASK/SDK06.md)
+  (P3) bei Gelegenheit. Zurueckgestellt (Anwender 2026-10-29):
+  [DOOM01](../TASK/DOOM01.md) (DOOM-Freeze im Menue, nur auf der Pi).
   Daneben ein Researcher zur Zeit, ohne Produktaenderung: Erhebung zu
   TOOL17-Gruppen B (XHDI/SCSIDRV), C (OS-Pool/DND-Baum), F (Startfunktionen):
   wer nutzt sie (laeuft).
