@@ -39,3 +39,21 @@ wird am Ende des Systemaufrufs in dieselbe Zelle uebernommen, die `Setexc`
 liest und schreibt (wie EmuTOS, `references/emutos/bios/bios.c:1070-1080`);
 Warnung einmal nach ADR-031; nie aufrufen. Abnahme: Sonde beidseitig (MEASURED),
 direkte Schreibung, danach liefert `Setexc(n,-1)` den geschriebenen Wert.
+
+## Lokalisierung (Lead, 2026-10-30)
+
+- Erkennung heute: `tos-api/src/bdos/process/hooks.rs` (`after_trap` →
+  `check_page0`, vergleicht seit BIOS07 die Seite-0-Kopien `$008`–`$408` mit
+  ihrer geteilten Zelle und warnt). Uebernahme in die Zelle:
+  `tos-api/src/bios/vectors.rs` (`store_shared`, `setexc`).
+- EmuTOS: `references/emutos/bios/bios.c:1070-1080` (eine Zelle, kein
+  Schatten); `swv_vec` vorbelegt `references/emutos/bios/bios.c:363`.
+- Wiedertest: BIOS15-Sonde `hkprobe` (Warnungen einmal je Prozess und Zelle),
+  BIOS07-Sonde `sxprobe`, MEM12 (P0PAR), `etv_term`-Upcall
+  (`kernel/src/arch/aarch64/exceptions.rs`, uebersprungen nur bei
+  `JUST_RTS`/0). **Offene Frage vor dem Fix:** `etv_term` ist ein bedienter
+  Haken (per `Setexc` gesetzt wird er beim Prozessende aufgerufen). Ein
+  uebernommener Direktwert in derselben Zelle wuerde damit aufgerufen — die
+  Entscheidung sagt „nie aufrufen“. Developer prueft, welche Zellen bedient
+  sind, und meldet vor der Umsetzung, falls die Uebernahme einen bedienten
+  Haken aufrufbar macht.
