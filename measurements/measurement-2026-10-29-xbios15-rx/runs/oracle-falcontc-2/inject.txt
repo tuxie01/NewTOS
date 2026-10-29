@@ -1,0 +1,2 @@
+serial input: --scc-b-in /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/work/emu-fc-2/serin (fifo); bytes: aZ1
+bytes written at poll 160 (09:46:53)

@@ -1,0 +1,160 @@
+# key lines per run (generated from the run dirs; sha256 = the probe log)
+== oracle-falcontc-1  log sha256 d077356a0d22fb05  bytes written at poll 165 (09:46:04)
+H01 Bconmap(-1) ret=00000007 hi=00000000
+A01 Iorec(0) ret=0000478a hi=00000000
+A01 dev0.in ring: 61 5a 31 (3 entries)
+A05 maptab[1].iorec=0000478a Iorec(0)=0000478a same=1
+A05 mapped.in ring: 61 5a 31 (3 entries)
+A02 ikbd ring: (0 entries)
+A03 Bconstat(1) ret=ffffffff hi=ffffffff
+A04 Bconstat(2) ret=00000000 hi=00000000
+C01 Bconin(1) ret=00000061 hi=00000000
+D01 Bconin(2) not called: Bconstat(2) was 0
+== oracle-falcontc-2  log sha256 d077356a0d22fb05  bytes written at poll 160 (09:46:53)
+H01 Bconmap(-1) ret=00000007 hi=00000000
+A01 Iorec(0) ret=0000478a hi=00000000
+A01 dev0.in ring: 61 5a 31 (3 entries)
+A05 maptab[1].iorec=0000478a Iorec(0)=0000478a same=1
+A05 mapped.in ring: 61 5a 31 (3 entries)
+A02 ikbd ring: (0 entries)
+A03 Bconstat(1) ret=ffffffff hi=ffffffff
+A04 Bconstat(2) ret=00000000 hi=00000000
+C01 Bconin(1) ret=00000061 hi=00000000
+D01 Bconin(2) not called: Bconstat(2) was 0
+== oracle-falcontc-none  log sha256 a1df816d84a059b9  bytes written at poll 165 (09:47:42)
+H01 Bconmap(-1) ret=00000007 hi=00000000
+A01 Iorec(0) ret=0000478a hi=00000000
+A01 dev0.in ring: (0 entries)
+A05 maptab[1].iorec=0000478a Iorec(0)=0000478a same=1
+A05 mapped.in ring: (0 entries)
+A02 ikbd ring: (0 entries)
+A03 Bconstat(1) ret=00000000 hi=00000000
+A04 Bconstat(2) ret=00000000 hi=00000000
+C01 Bconin(1) not called: Bconstat(1) was 0
+D01 Bconin(2) not called: Bconstat(2) was 0
+== oracle-falcontc-trace  log sha256 d077356a0d22fb05  bytes written at poll 164 (09:48:32)
+H01 Bconmap(-1) ret=00000007 hi=00000000
+A01 Iorec(0) ret=0000478a hi=00000000
+A01 dev0.in ring: 61 5a 31 (3 entries)
+A05 maptab[1].iorec=0000478a Iorec(0)=0000478a same=1
+A05 mapped.in ring: 61 5a 31 (3 entries)
+A02 ikbd ring: (0 entries)
+A03 Bconstat(1) ret=ffffffff hi=ffffffff
+A04 Bconstat(2) ret=00000000 hi=00000000
+C01 Bconin(1) ret=00000061 hi=00000000
+D01 Bconin(2) not called: Bconstat(2) was 0
+== oracle-tt-1  log sha256 e11eb7a8510f02f5  bytes written at poll 126 (09:45:38)
+H01 Bconmap(-1) ret=00000006 hi=00000000
+A01 Iorec(0) ret=00004a54 hi=00000000
+A01 dev0.in ring: 61 5a 31 (3 entries)
+A05 maptab[0].iorec=00004a54 Iorec(0)=00004a54 same=1
+A05 mapped.in ring: 61 5a 31 (3 entries)
+A02 ikbd ring: (0 entries)
+A03 Bconstat(1) ret=ffffffff hi=ffffffff
+A04 Bconstat(2) ret=00000000 hi=00000000
+C01 Bconin(1) ret=00000061 hi=00000000
+D01 Bconin(2) not called: Bconstat(2) was 0
+== oracle-tt-2  log sha256 e11eb7a8510f02f5  bytes written at poll 127 (09:46:27)
+H01 Bconmap(-1) ret=00000006 hi=00000000
+A01 Iorec(0) ret=00004a54 hi=00000000
+A01 dev0.in ring: 61 5a 31 (3 entries)
+A05 maptab[0].iorec=00004a54 Iorec(0)=00004a54 same=1
+A05 mapped.in ring: 61 5a 31 (3 entries)
+A02 ikbd ring: (0 entries)
+A03 Bconstat(1) ret=ffffffff hi=ffffffff
+A04 Bconstat(2) ret=00000000 hi=00000000
+C01 Bconin(1) ret=00000061 hi=00000000
+D01 Bconin(2) not called: Bconstat(2) was 0
+== oracle-tt-none  log sha256 e957b6dae5ed1b35  bytes written at poll 128 (09:47:15)
+H01 Bconmap(-1) ret=00000006 hi=00000000
+A01 Iorec(0) ret=00004a54 hi=00000000
+A01 dev0.in ring: (0 entries)
+A05 maptab[0].iorec=00004a54 Iorec(0)=00004a54 same=1
+A05 mapped.in ring: (0 entries)
+A02 ikbd ring: (0 entries)
+A03 Bconstat(1) ret=00000000 hi=00000000
+A04 Bconstat(2) ret=00000000 hi=00000000
+C01 Bconin(1) not called: Bconstat(1) was 0
+D01 Bconin(2) not called: Bconstat(2) was 0
+== oracle-tt-trace  log sha256 e11eb7a8510f02f5  bytes written at poll 128 (09:48:06)
+H01 Bconmap(-1) ret=00000006 hi=00000000
+A01 Iorec(0) ret=00004a54 hi=00000000
+A01 dev0.in ring: 61 5a 31 (3 entries)
+A05 maptab[0].iorec=00004a54 Iorec(0)=00004a54 same=1
+A05 mapped.in ring: 61 5a 31 (3 entries)
+A02 ikbd ring: (0 entries)
+A03 Bconstat(1) ret=ffffffff hi=ffffffff
+A04 Bconstat(2) ret=00000000 hi=00000000
+C01 Bconin(1) ret=00000061 hi=00000000
+D01 Bconin(2) not called: Bconstat(2) was 0
+== newtos-rpi4-1  log sha256 bcee3b6f77aa3e58  sent b'aZ1' at t+15.48s, serial offset 4607
+H01 Bconmap(-1) ret=0000002c hi=00000000
+A01 Iorec(0) ret=0007d000 hi=00000000
+A01 dev0.in ring: (0 entries)
+A05 Bconmap(-2) is no table address: mapped port IOREC not reached
+A02 ikbd ring: (0 entries)
+A03 Bconstat(1) ret=00000000 hi=00000000
+A04 Bconstat(2) ret=00000000 hi=00000000
+C01 Bconin(1) not called: Bconstat(1) was 0
+D01 Bconin(2) not called: Bconstat(2) was 0
+== newtos-rpi4-2  log sha256 bcee3b6f77aa3e58  sent b'aZ1' at t+15.43s, serial offset 4607
+H01 Bconmap(-1) ret=0000002c hi=00000000
+A01 Iorec(0) ret=0007d000 hi=00000000
+A01 dev0.in ring: (0 entries)
+A05 Bconmap(-2) is no table address: mapped port IOREC not reached
+A02 ikbd ring: (0 entries)
+A03 Bconstat(1) ret=00000000 hi=00000000
+A04 Bconstat(2) ret=00000000 hi=00000000
+C01 Bconin(1) not called: Bconstat(1) was 0
+D01 Bconin(2) not called: Bconstat(2) was 0
+== newtos-rpi4-diag  log sha256 bcee3b6f77aa3e58  sent b'aZ1' at t+15.43s, serial offset 4607
+H01 Bconmap(-1) ret=0000002c hi=00000000
+A01 Iorec(0) ret=0007d000 hi=00000000
+A01 dev0.in ring: (0 entries)
+A05 Bconmap(-2) is no table address: mapped port IOREC not reached
+A02 ikbd ring: (0 entries)
+A03 Bconstat(1) ret=00000000 hi=00000000
+A04 Bconstat(2) ret=00000000 hi=00000000
+C01 Bconin(1) not called: Bconstat(1) was 0
+D01 Bconin(2) not called: Bconstat(2) was 0
+== newtos-rpi4-none  log sha256 bcee3b6f77aa3e58  nothing sent (control) at t+15.45s, serial offset 4605
+H01 Bconmap(-1) ret=0000002c hi=00000000
+A01 Iorec(0) ret=0007d000 hi=00000000
+A01 dev0.in ring: (0 entries)
+A05 Bconmap(-2) is no table address: mapped port IOREC not reached
+A02 ikbd ring: (0 entries)
+A03 Bconstat(1) ret=00000000 hi=00000000
+A04 Bconstat(2) ret=00000000 hi=00000000
+C01 Bconin(1) not called: Bconstat(1) was 0
+D01 Bconin(2) not called: Bconstat(2) was 0
+== newtos-virt-1  log sha256 4c0b938f29da9039  sent b'aZ1' at t+3.51s, serial offset 5035
+H01 Bconmap(-1) ret=0000002c hi=00000000
+A01 Iorec(0) ret=0007d000 hi=00000000
+A01 dev0.in ring: (0 entries)
+A05 Bconmap(-2) is no table address: mapped port IOREC not reached
+A02 ikbd ring: 00000061 0000005a 00000031 (3 entries)
+A03 Bconstat(1) ret=00000000 hi=00000000
+A04 Bconstat(2) ret=ffffffff hi=ffffffff
+C01 Bconin(1) not called: Bconstat(1) was 0
+D01 Bconin(2) ret=00000061 hi=00000000
+== newtos-virt-2  log sha256 4c0b938f29da9039  sent b'aZ1' at t+3.53s, serial offset 5036
+H01 Bconmap(-1) ret=0000002c hi=00000000
+A01 Iorec(0) ret=0007d000 hi=00000000
+A01 dev0.in ring: (0 entries)
+A05 Bconmap(-2) is no table address: mapped port IOREC not reached
+A02 ikbd ring: 00000061 0000005a 00000031 (3 entries)
+A03 Bconstat(1) ret=00000000 hi=00000000
+A04 Bconstat(2) ret=ffffffff hi=ffffffff
+C01 Bconin(1) not called: Bconstat(1) was 0
+D01 Bconin(2) ret=00000061 hi=00000000
+== newtos-virt-2-killed  log sha256 e3b0c44298fc1c14  sent b'aZ1' at t+3.51s, serial offset 5037
+== newtos-virt-none  log sha256 bcee3b6f77aa3e58  nothing sent (control) at t+3.51s, serial offset 5035
+H01 Bconmap(-1) ret=0000002c hi=00000000
+A01 Iorec(0) ret=0007d000 hi=00000000
+A01 dev0.in ring: (0 entries)
+A05 Bconmap(-2) is no table address: mapped port IOREC not reached
+A02 ikbd ring: (0 entries)
+A03 Bconstat(1) ret=00000000 hi=00000000
+A04 Bconstat(2) ret=00000000 hi=00000000
+C01 Bconin(1) not called: Bconstat(1) was 0
+D01 Bconin(2) not called: Bconstat(2) was 0

@@ -1,0 +1,144 @@
+measurement-2026-10-29-xbios15-rx -- where a byte received on the serial line lands:
+device 0's IOREC input ring, the ring of the port mapped to AUX, or the keyboard ring of
+Iorec(1) (TASK/XBIOS15, "Arbeit" step 1). Pinned oracle (tt, falcontc) vs NewTOS (qemu-virt,
+raspi4b with serial=on), one probe source for all sides.
+==========================================================================================
+Auditor, 2026-10-29 (host clock CET). Measured tree: NewTOS 2487bbea as `git archive` into the
+session scratchpad (clean by construction; references/ entries symlinked one by one), two
+copies: one for rpi4, one for qemu-virt (temporary audit wiring, below). The main tree was
+not built or measured (a developer worked on FS22 there; HEAD moved to b2eb3e0e / 0d3bb485
+during this run -- docs and GEMDOS changes, none in kernel/src/console.rs,
+tos-api/src/xbios/iorec.rs or tos-api/src/bios/chardev.rs). Instruments from the main tree:
+tools/mkcard.sh, sdk/libc (libc.a d872e765...), the oracle files. Nothing committed, no
+hardware, no real card. Report: docs/audits/2026-10-29-xbios15-serial-rx.md.
+
+INPUTS
+  ROM        tools/oracle/etos512de-1a7484ab.img 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+  EmuTOS     1a7484aba1bfba23e2c0899e243b6d8177fe41df
+  Hatari     2.6.1, binary 953f4e78eea55a8ca12ed6c83de1f045545b8da42a49e00112eaa235dffcd6f6,
+             tools/oracle/hatari.cfg c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46
+  QEMU       11.0.2
+  canary     ORACLE.md section 6, measurements/measurement-2026-10-28-oracle-canary/method/canary.sh:
+             "canary tt: OK", "canary falcontc: OK" (runs/canary.txt)
+  probe      method/serrx.c sha256 71705ba121db97060d073ae5f528f1ceca5f21159835d7bd71824d18d54cf55f,
+             built by method/build-serrx.sh <main tree> <scratch>:
+               SERRX.PRG a6ddac39aebb80f76e34fecc289dd459e72fee30c6bd7b13147d25d88d600aa0 (m68k gcc 7.5.0 + mintlib)
+               SERRX.NAP b7665dc4928c2bf386db94e0a1ecea38c06b990fe7d60bfa74923464c509a9aa (clang aarch64 + sdk/libc)
+  kernels (gitignored, scratch, deleted after the run; every one built in the frozen tree with
+  `cargo xtask build --board <b> --release --features bios-arg-trace`):
+    rpi4-kernel8.img       5e78d74663554aea13a8392d408cdc44daaa34e92c73410ee657ff8c21636e56  2487bbea unmodified
+    rpi4-diag-kernel8.img  10e983130e5f7d41fd7a60ae64018faf308e88a9f6cf37af12c41853d4005b89  + drop marker (below)
+    virt-kernel.img        8b5a3638e800d8f0bbf5b7a3cea6ec303ac9ac9fbc518d0d977fdc5685b277e6  flat binary (llvm-objcopy
+                           -O binary, as `cargo xtask run`), SERRX.NAP embedded as the desktop (below)
+
+TEMPORARY AUDIT WIRING (scratch trees only; both files byte-identical to 2487bbea again
+afterwards, checked against `git show 2487bbea:<file>`; the exact diffs are quoted in the
+report, section "Cleanup")
+  qemu-virt: kernel/embed.rs EMBEDDED = NEWDESK -> file SERRX.NAP. qemu-virt has no drive, so a
+    program can only start as the embedded desktop: the AES starts "NEWDESK", which is the
+    probe ("[shell] sh_ldapp: starting desktop NEWDESK" in SERIAL.txt). After the probe ends
+    the AES starts it again; only the first run (up to the second BEGIN marker) is evaluated.
+  rpi4 diag: kernel/src/console.rs, the not-qemu-virt serial_rx_byte writes
+    "<AUDIT-RX:xx>" straight to the PL011 for every byte it is handed -- proof that the bytes
+    reach the kernel and are dropped there, not lost in QEMU.
+  The probe prints AUDIT:xbios15-serial-rx:BEGIN / :END on the console (present in every
+  SERIAL.txt and Hatari run used).
+
+PROBE (method/serrx.c)
+  B  before: Bconmap(-1); Iorec(0) in/out fields + ring; the IOREC of the port mapped to AUX
+     via Bconmap(-2) -> BCONMAP {maptab, maptabsize, mapped_device} -> maptab[mapped-6].iorec
+     (references/emutos/bios/serport.h:103-116), its input ring (B05; followed only if
+     Bconmap(-2) is a table address); Iorec(1) fields + ring; Bconstat(1), Bconstat(2)
+  M  ready marker: file SERRX.RDY and "SERRX:WAIT" on the console
+  W  400 x Vsync(), no console I/O
+  A  the same as B after the wait (A01/A05/A02/A03/A04)
+  C  Bconin(1) once if Bconstat(1) != 0, then Bconstat(1), Iorec(0)
+  D  Bconin(2) once if Bconstat(2) != 0, then Bconstat(2), Iorec(1)
+  Bytes injected: 0x61 0x5A 0x31 ("aZ1"), 0.3 s after the ready marker.
+
+INJECTION MECHANISM
+  Oracle (method/oracle-serrx.sh, a copy of tools/hatari-oracle.sh's tt/falcontc start, after
+  measurements/measurement-2026-10-29-xbios01/method/oracle-flush.sh; changed: --fast-forward
+  off, the serial options, the end condition). tools/hatari-oracle.sh passes extra args
+  ("$@") but ends on a dumper LOG and runs fast-forward; not used, not edited.
+    tt:       --rs232-in <fifo> --rs232-out <file>    ST-MFP USART; EmuTOS' mapped AUX device
+                                                      on the TT is 6 = maptab[0] = iorec1
+                                                      (bios/serport.c:966,972); measured
+                                                      Bconmap(-1) = 6
+    falcontc: --scc-b-in <fifo> --scc-b-out <file>    SCC channel B ("Modem"); EmuTOS' mapped
+                                                      device on the Falcon is 7 = maptab[1] =
+                                                      iorecB (:966,973-977); measured 7
+    The output option is required: with --rs232-in alone Hatari opened its default output
+    /dev/modem, failed and logged "RS232 input or output file open failed. RS232 support
+    disabled." (first attempt, discarded). The FIFO is held open by a writer started before
+    Hatari; the harness writes the bytes when hd/SERRX.RDY appears. serout.bin stayed empty.
+  NewTOS (method/newtos-serrx.sh + method/qemu-serial-drive.py): serial0 = a TCP chardev
+    (QEMU client, the script listens); the script logs every byte to SERIAL.txt and sends the
+    bytes 0.3 s after it has read "SERRX:WAIT".
+    raspi4b: -M raspi4b -append serial=on -kernel <kernel8.img> -drive <card>,if=sd; card from
+             tools/mkcard.sh <img> <inf> SERRX.NAP=<nap>, NEWDESK.INF "#R 02 / #Z 01 C:\SERRX.NAP@"
+    qemu-virt: -M virt,gic-version=2 -cpu cortex-a72 -m 272M -device ramfb -device qemu-xhci
+             -device usb-kbd -device usb-mouse -kernel <flat image> (the `cargo xtask run`
+             machine)
+
+INPUT CHECK
+  NewTOS: bios-arg-trace lines in every SERIAL.txt; first probe run of newtos-virt-1:
+    Bconmap w:0xffff, Iorec w:0, Bconmap w:0xffff, Bconmap w:0xfffe, Iorec w:0, Iorec w:1,
+    Bconstat w:1, Bconstat w:2, 400 x Vsync, the same eight calls, Bconin w:2, Bconstat w:2,
+    Iorec w:1 -- the probe's calls with its arguments.
+  Oracle: Hatari --trace bios,xbios (runs/oracle-*-trace/trace.txt; the probe's calls, PC
+    outside the ROM, in probe-calls.txt): the same sequence and arguments up to the wait,
+    400 Vsync (Hatari prints them as 1 + 8+16+32+64+128+151 repeats), then the result-driven
+    branch Bconin(0x1), Bconstat(0x1), Iorec(0x0).
+  Both sides received the arguments the probe passed. The branches after A differ because the
+  results differ (Bconstat(1) / Bconstat(2)), by design of the probe.
+
+CARDS / IMAGES
+  NewTOS raspi4b cards: tools/mkcard.sh, one per run, deleted after the run; manifests in
+  runs/newtos-rpi4-*/card.img.manifest (4), sha256 before/after in the same dirs (the probe
+  writes SERRX.RDY and SERRX.LOG to C:). optional_missing, verbatim, all four:
+    optional_missing none
+  qemu-virt: no image (no drive). Oracle: Hatari GEMDOS drive C: = host dir (probe, logs).
+
+RESULTS (runs/summary.txt has the key lines of every run)
+  Oracle tt (runs/oracle-tt-1, -2, -trace: SERRX.LOG identical, sha256 e11eb7a8...):
+    Bconmap(-1) 6; Iorec(0) 0x4A54 = maptab[0].iorec (same=1)
+    A01 dev0.in hd=0 tl=3 ring 61 5a 31; A05 mapped.in = the same record, ring 61 5a 31
+    A02 ikbd hd=0 tl=0, empty; Bconstat(1) -1; Bconstat(2) 0
+    C01 Bconin(1) 0x61; then Bconstat(1) -1, dev0.in hd=1 tl=3 (5a 31 left)
+  Oracle falcontc (runs/oracle-falcontc-1, -2, -trace: identical, d077356a...):
+    Bconmap(-1) 7; Iorec(0) 0x478A = maptab[1].iorec (same=1), maptabsize 3
+    rings, Bconstat and Bconin(1) exactly as on tt (bytes in device 0's ring = the SCC B ring)
+  Oracle controls without bytes (runs/oracle-*-none): every ring empty, Bconstat(1) 0.
+  -> Oracle: serial RX lands in device 0's ring, which IS the ring of the mapped port on both
+     profiles (the same pointer); the keyboard ring stays empty. The ticket's expectation holds.
+
+  NewTOS qemu-virt (runs/newtos-virt-1, -2: identical, 4c0b938f...):
+    Bconmap(-1) 0x2c, Bconmap(-2) 0x2c (the function number: no table, mapped port not reachable)
+    Iorec(0) 0x7D000, A01 dev0.in hd=0 tl=0 empty
+    A02 ikbd hd=0 tl=12 ring 00000061 0000005a 00000031 -- shift 0, scancode 0, ascii
+    Bconstat(1) 0; Bconstat(2) -1; D01 Bconin(2) 0x00000061; then Bconstat(2) -1, ikbd hd=4 tl=12
+  NewTOS qemu-virt control (runs/newtos-virt-none): all rings empty, Bconstat(2) 0.
+  -> qemu-virt: serial RX lands in the KEYBOARD ring as scancode-0 entries; device 0's ring
+     stays empty. The ticket's description holds.
+
+  NewTOS raspi4b serial=on (runs/newtos-rpi4-1, -2, -none: identical, bcee3b6f...; the card's
+  SERRX.LOG == the serial copy): Bconmap 0x2c; dev0.in empty, ikbd empty, Bconstat(1) 0,
+  Bconstat(2) 0 -- injected run equal to the control run.
+  runs/newtos-rpi4-diag (drop marker): "<AUDIT-RX:61><AUDIT-RX:5a><AUDIT-RX:31>" during the
+  Vsync wait (biostrace 000024), probe result identical to the unmodified kernel.
+  -> raspi4b: the bytes reach serial_rx_byte and are dropped; neither ring, AUX reads nothing.
+     The memory rule (serial RX must not enter the keyboard queue there) holds.
+
+  Repeatability: run 1 = run 2 byte for byte for the probe log on every side.
+  Interrupted run: runs/newtos-virt-2-killed -- QEMU got SIGTERM from a foreign process
+  ("terminating on signal 15 from pid 95581") during the Vsync wait; not evaluated, re-run as
+  runs/newtos-virt-2.
+  Development runs (scratch, not evidence): an earlier probe without the B05/A05 Bconmap
+  group gave the same ring results on all sides; it was replaced after the user's binding
+  addition (record Bconmap(-1), dump the mapped port's IOREC) and every run was repeated.
+
+NOT MEASURED
+  A tosdump table (r:extiorec / r:iorec around a Vsync wait): qemu-virt has no drive for a
+  table, and `cargo xtask tosdump` has no serial input; the proposed rows are in the report.
+  Real Pi 4 with a serial cable; a CONF_SERIAL_CONSOLE=1 EmuTOS (not the pin).

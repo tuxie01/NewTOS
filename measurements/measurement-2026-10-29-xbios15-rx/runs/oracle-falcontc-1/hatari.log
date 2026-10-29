@@ -1,0 +1,76 @@
+INFO : Hatari v2.6.1, compiled on:  Aug 15 2025, 14:15:19
+INFO : IPF : capsimage library version release=5 revision=1
+INFO : GEMDOS HDD emulation, C: <-> /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/work/emu-fc-1/hd.
+ERROR: Microphone: SDL_OpenAudioDevice failed.
+INFO : NVRAM not found at '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/work/emu-fc-1/home/hatari.nvram'
+WARN : Bus Error reading at address $20fffff, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fffffc21, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6c4710, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $5d1234, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6d3148, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $d003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+INFO : Strange screen size 16x480 -> aspect corrected by 32x1!
+
+
+
+
+
+                                                         
+                                                         
+                                                         
+                                                         
+                                                         
+                    ________________________________________
+
+                    EmuTOS Version:     20260414 
+                    CPU-Typ:            M68030 
+                    Rechner:            Atari Falcon 
+                    ST-RAM:             4 MB 
+                    Alt-RAM:            16 MB 
+                    GEMDOS-Laufwerke:   ABC 
+                    Boot-Zeit:          2026/10/29 09:45:58 
+                    ________________________________________
+
+                    Halte <Strg> = ohne AUTO/ACC
+                    Halte <Alt> = keine Harddisk
+                    DrUcke 'X' um von Laufwerk X: zu booten
+                    DrUcke <Esc> fUr die Textkonsole
+
+                       FUr Pause <Shift> gedrUckt halten    
+WARN : No GEMDOS dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/work/emu-fc-1/hd/AUTO'
+
+
+AUDIT:xbios15-serial-rx:BEGIN
+SERRX:WAIT
+SERRX|H00 serrx WAITVBL=400 sizeof(long)=4 sizeof(_IOREC)=14
+SERRX|H01 Bconmap(-1) ret=00000007 hi=00000000
+SERRX|B01 Iorec(0) ret=0000478a hi=00000000
+SERRX|B01 dev0.in ibufsiz=256 hd=0 tl=0 low=64 hi=192
+SERRX|B01 dev0.in ring: (0 entries)
+SERRX|B01 dev0.out ibufsiz=256 hd=0 tl=0 low=64 hi=192
+SERRX|B01 dev0.out ring: (0 entries)
+SERRX|B01 dev0 baudrate=1 flowctrl=0 ucr=88 datamask=ff
+SERRX|B05 Bconmap(-1) ret=00000007 hi=00000000
+SERRX|B05 Bconmap(-2) ret=00004a76 hi=00000000
+SERRX|B05 BCONMAP maptabsize=3 mapped_device=7 (Bconmap(-1) 7)
+SERRX|B05 maptab[1].iorec=0000478a Iorec(0)=0000478a same=1
+SERRX|B05 mapped.in ibufsiz=256 hd=0 tl=0 low=64 hi=192
+SERRX|B05 mapped.in ring: (0 entries)
+SERRX|B02 Iorec(1) ret=000030d4 hi=00000000
+SERRX|B02 ikbd ibufsiz=256 hd=0 tl=0 low=64 hi=192
+SERRX|B02 ikbd ring: (0 entries)
+SERRX|B03 Bconstat(1) ret=00000000 hi=00000000
+SERRX|B04 Bconstat(2) ret=00000000 hi=00000000
+SERRX|A01 Iorec(0) ret=0000478a hi=00000000
+SERRX|A01 dev0.in ibufsiz=256 hd=0 tl=3 low=64 hi=192
+SERRX|A01 dev0.in ring: 61 5a 31 (3 entries)
+SERRX|A01 dev0.out ibufsiz=256 hd=0 tl=0 low=64 hi=192
+SERRX|A01 dev0.out ring: (0 entries)
+SERRX|A01 dev0 baudrate=1 flowctrl=0 ucr=88 datamask=ff
+SERRX|A05 Bconmap(-1) ret=00000007 hi=00000000
+SERRX|A05 Bconmap(-2) ret=00004a76 hi=00000000
+SERRX|A05 BCONMAP maptabsize=3 mapped_device=7 (Bconmap(-1) 7)
+SERRX|A05 maptab[1].iorec=0000478a Iorec(0)=0000478a same=1
+SERRX|A05 mapped.in ibufsiz=256 hd=0 tl=3 low=64 hi=192

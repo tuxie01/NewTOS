@@ -1,0 +1,46 @@
+H00 serrx WAITVBL=400 sizeof(long)=4 sizeof(_IOREC)=14
+H01 Bconmap(-1) ret=00000006 hi=00000000
+B01 Iorec(0) ret=00004a54 hi=00000000
+B01 dev0.in ibufsiz=256 hd=0 tl=0 low=64 hi=192
+B01 dev0.in ring: (0 entries)
+B01 dev0.out ibufsiz=256 hd=0 tl=0 low=64 hi=192
+B01 dev0.out ring: (0 entries)
+B01 dev0 baudrate=1 flowctrl=0 ucr=88 datamask=ff
+B05 Bconmap(-1) ret=00000006 hi=00000000
+B05 Bconmap(-2) ret=00004a76 hi=00000000
+B05 BCONMAP maptabsize=4 mapped_device=6 (Bconmap(-1) 6)
+B05 maptab[0].iorec=00004a54 Iorec(0)=00004a54 same=1
+B05 mapped.in ibufsiz=256 hd=0 tl=0 low=64 hi=192
+B05 mapped.in ring: (0 entries)
+B02 Iorec(1) ret=000030d4 hi=00000000
+B02 ikbd ibufsiz=256 hd=0 tl=0 low=64 hi=192
+B02 ikbd ring: (0 entries)
+B03 Bconstat(1) ret=00000000 hi=00000000
+B04 Bconstat(2) ret=00000000 hi=00000000
+A01 Iorec(0) ret=00004a54 hi=00000000
+A01 dev0.in ibufsiz=256 hd=0 tl=3 low=64 hi=192
+A01 dev0.in ring: 61 5a 31 (3 entries)
+A01 dev0.out ibufsiz=256 hd=0 tl=0 low=64 hi=192
+A01 dev0.out ring: (0 entries)
+A01 dev0 baudrate=1 flowctrl=0 ucr=88 datamask=ff
+A05 Bconmap(-1) ret=00000006 hi=00000000
+A05 Bconmap(-2) ret=00004a76 hi=00000000
+A05 BCONMAP maptabsize=4 mapped_device=6 (Bconmap(-1) 6)
+A05 maptab[0].iorec=00004a54 Iorec(0)=00004a54 same=1
+A05 mapped.in ibufsiz=256 hd=0 tl=3 low=64 hi=192
+A05 mapped.in ring: 61 5a 31 (3 entries)
+A02 Iorec(1) ret=000030d4 hi=00000000
+A02 ikbd ibufsiz=256 hd=0 tl=0 low=64 hi=192
+A02 ikbd ring: (0 entries)
+A03 Bconstat(1) ret=ffffffff hi=ffffffff
+A04 Bconstat(2) ret=00000000 hi=00000000
+C01 Bconin(1) ret=00000061 hi=00000000
+C02 Bconstat(1) ret=ffffffff hi=ffffffff
+C03 Iorec(0) ret=00004a54 hi=00000000
+C03 dev0.in ibufsiz=256 hd=1 tl=3 low=64 hi=192
+C03 dev0.in ring: 5a 31 (2 entries)
+C03 dev0.out ibufsiz=256 hd=0 tl=0 low=64 hi=192
+C03 dev0.out ring: (0 entries)
+C03 dev0 baudrate=1 flowctrl=0 ucr=88 datamask=ff
+D01 Bconin(2) not called: Bconstat(2) was 0
+Z99 end

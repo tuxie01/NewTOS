@@ -42,3 +42,25 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Messung zuerst) — A
 - Messfall beidseitig gleich (Geraet-0-Ring gefuellt, Tastaturring leer);
   kein vorher gleicher Fall neu verschieden; Hosttests gruen; beide Boards
   bis zum Desktop; doc-check 0 Fehler; STATUS im selben Commit.
+
+## Stand 2026-10-29 (Schritt 1, Auditor)
+
+- Gemessen (`docs/audits/2026-10-29-xbios15-serial-rx.md`,
+  `measurements/measurement-2026-10-29-xbios15-rx/RUNINFO.TXT`): Orakel tt
+  (`--rs232-in`, Bconmap 6) und falcontc (`--scc-b-in`, Bconmap 7) legen die
+  Bytes in den Ring von Geraet 0 (= Ring des gemappten Ports), Tastaturring
+  leer, `Bconstat(1)` -1, `Bconin(1)` liefert das Byte. NewTOS qemu-virt legt
+  sie mit Scancode 0 in den Tastaturring (`Bconstat(2)` -1), Geraet-0-Ring
+  leer; `Bconmap(-1)` liefert dort noch `0x2c` (XBIOS05). raspi4b verwirft das
+  Byte (ACCEPTED nach E5/AUX „no cable“).
+- Funde: SERRX-001 (S3, Routing in `serial_rx_byte`), -002 (S3, PLAUSIBLE:
+  Scancode-Suche wie `push_ascii_ikbdiorec`, nur mit Zweit-ROM messbar), -003
+  (S4: Begruendung „qemu-virt hat kein anderes Eingabegeraet“ widerlegt, USB-
+  Tastatur vorhanden), -004 (S4: Falcon-Empfangspfad `scc_rx_interrupt_handler`
+  ohne Mapping-Zeile; Lokalisierung oben nennt nur den MFP-Pfad).
+- **Entscheidung noetig vor dem Fix** (Auditor-Hinweis): AUX auf qemu-virt ist
+  heute „Port vorhanden, kein Kabel“ (`Bconstat(1)` 0). Bytes in den Ring von
+  Geraet 0 zu legen, ohne dass `Bconstat(1)`/`Bconin(1)` ihn lesen, waere eine
+  zweite Inkonsistenz. Optionen: AUX-Treiber ueber den Ring von Geraet 0 auf
+  qemu-virt, oder Serienkonsolen-Profil als Abweichung in COMPATIBILITY.
+

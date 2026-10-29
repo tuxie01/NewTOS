@@ -1,0 +1,2 @@
+serial input: --rs232-in /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/work/emu-tt-2/serin (fifo); bytes: aZ1
+bytes written at poll 127 (09:46:27)
