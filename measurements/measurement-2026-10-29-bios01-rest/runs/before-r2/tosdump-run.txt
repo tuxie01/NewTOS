@@ -1,0 +1,44 @@
+command   cargo xtask tosdump bios tosdump/cases/bios-r2.tsv --disk --tree /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/before-tree --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-disk.BIN --out measurements/measurement-2026-10-29-bios01-rest/runs/before-r2 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/xtask
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/before-tree (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    6f38e9b9fe51d2ddd7652ed50117a1448d9e2686
+dirty     0 path(s) in git status --porcelain
+harness commit 6f38e9b9fe51d2ddd7652ed50117a1448d9e2686
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-r2.tsv sha256 071300e43736d1c3371e65d4a0e2b3f4b5e327dcd4d7147763fe0c04e553bc44
+table     names the unit token u:0: no; a program path x:<path>: no
+profile   xtask-tosdump disk (tosdump/profiles.tsv sha256 b90e6687ad5254209e722d6622b3268bffe983fb894c642359ed731703b34e98): unit 26, program extension NAP
+target/   own (0 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (5 artifact dep-info files checked after the build)
+kernel8.img /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/before-tree/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 cc170762812933f915fef480b89229fac81bc86e56ef7e7905235278e46366b1
+kernel ELF  sha256 ee4d5c8bff0a0e39fb560c4752787b5af4da0d970b1091a59498d3154ef41351 (/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/before-tree/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id 6f38
+DUMPBIOS.NAP sha256 08de02a5cf747df230a439a45bc43cbc707994a99057a6228b779dab5c9f1550
+test image built by tools/mktestdisk.sh NEWDESK.INF=<autorun D:\DUMPBIOS.NAP>
+test image sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+D:\DISKUNIT.TXT 26 (the profile's physical unit of C:, for u:0)
+D:\PROGEXT.TXT NAP (the profile's program extension, for x:)
+card.img.manifest: image_sha256 4b692ff1f4214af6934ad3bb77fb62fb417812274166aae2acc068cdb16f79b6
+card.img.manifest: optional_missing none
+test.img.manifest: image_sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+test.img.manifest: optional_missing none
+card      D:\DISKUNIT.TXT read back: as the profile names it
+card      D:\PROGEXT.TXT read back: as the profile names it
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/xtask/tosdump-60791/card.img sha256 4b692ff1f4214af6934ad3bb77fb62fb417812274166aae2acc068cdb16f79b6 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 d2e68388e2f71c5d55090bac986d1d5065848afc44ccc2e7fa614f42f370d5d3
+BIOS.BIN 16352 bytes, sha256 b5e7c495804568049bbdd5a2842e61686c996cf23dc1c7949ca65c09e8a48160
+BIOS.LOG 206 bytes, sha256 f5620188196a25640014225292ac0240badf2fa413d46e7b7a80619a633a8171
+testpart: identical
+fsck_msdos -n testpart-before.img: exit 0
+fsck_msdos -n testpart-after.img: exit 0
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 d20f465d1c4c31da9775714c660c3889af715e825926630de5dabb80bdea292d
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 51 records of 320 bytes, build 6f38, case CRC 09C71B80
+tosdiff EMUTOS-1a7484ab-BIOS-r2-disk.BIN vs NEWTOS.BIN: exit 1, 3 of 51 cases differ
+total     54 s
+result    run complete (differences above are findings, not failures)

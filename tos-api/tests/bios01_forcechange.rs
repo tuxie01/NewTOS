@@ -28,6 +28,8 @@ const EUNDEV: i64 = -15;
 const RW_WRITE: u64 = 1;
 const RW_NOMEDIACH: u64 = 2;
 const RW_NOTRANSLATE: u64 = 8;
+/// The SD card's physical unit for `RW_NOTRANSLATE` (BIOS-STOR-002).
+const SD_UNIT: u64 = 26;
 
 fn bios(func: u64, regs: [u64; 8]) -> i64 {
     tos_api::bios::dispatch(&TrapArgs {
@@ -201,7 +203,7 @@ fn only_a_logical_write_starting_at_sector_0_arms() {
     // not arm: the arming is in the logical branch. Write back what is there.
     let abs = part_lba(0);
     let mut s = h.read_sector(abs);
-    assert_eq!(rwabs(RW_NOTRANSLATE | RW_WRITE, s.as_mut_ptr(), 1, abs as i64, C, 0), 0);
+    assert_eq!(rwabs(RW_NOTRANSLATE | RW_WRITE, s.as_mut_ptr(), 1, abs as i64, SD_UNIT, 0), 0);
     assert_eq!(mediach(C), 0);
     // A logical write starting at sector 1 does not arm.
     let mut s1 = h.read_sector(part_lba(1));
@@ -236,10 +238,18 @@ fn a_getbpb_that_returns_null_clears_it_too() {
     assert_eq!(mediach(C), 2);
     assert_eq!(getbpb(C), 0, "the refused boot sector");
     assert_eq!(mediach(C), 0, "cleared before the boot-sector test (blkdev.c:589-590)");
-    // Restore.
+    // The refused Getbpb left the BPB invalid (recsiz 0, blkdev.c:601,
+    // 736-741): no logical way back (BIOS-STOR-006) ...
     let mut o = orig;
-    assert_eq!(rwabs(RW_WRITE | RW_NOMEDIACH, o.as_mut_ptr(), 1, 0, C, 0), 0);
+    assert_eq!(rwabs(RW_WRITE | RW_NOMEDIACH, o.as_mut_ptr(), 1, 0, C, 0), ESECNF);
+    assert_eq!(h.read_sector(boot), bad);
+    // ... so restore through the physical unit, which never arms.
+    assert_eq!(
+        rwabs(RW_NOTRANSLATE | RW_WRITE, o.as_mut_ptr(), 1, -1, SD_UNIT, boot),
+        0
+    );
     assert_eq!(h.read_sector(boot), orig);
+    assert_eq!(mediach(C), 0);
     assert_ne!(getbpb(C), 0);
 }
 

@@ -515,6 +515,10 @@ typedef char apitest_assert_mpb[(sizeof(MPBX) == 24) ? 1 : -1];
 /* Rwabs r_w flag bits (docs/api/bios/04-rwabs.md, EmuTOS bios/disk.h:53-61). */
 #define RW_READ        0x00
 #define RW_NOTRANSLATE 0x08
+/* With RW_NOTRANSLATE the drive argument is a physical unit: the SD card is
+ * unit 26, EmuTOS' SD/MMC numbering 2 + 8*bus + device (BIOS-STOR-002,
+ * docs/api/bios/04-rwabs.md "Decisions"). */
+#define PHYS_SD_UNIT   26
 
 /* Low-memory system variables this group cross-checks against. */
 #define SV_MEMBOT   0x432UL   /* LONG, bottom of the TPA / ST-RAM pool */
@@ -2058,14 +2062,15 @@ int main(void)
 			r = Lrwabs(RW_READ, guard, 1, 0x7FFFFFFFL, bdrv);
 			ck_eq(G_BBLK, "BB12 Rwabs sector past partition -> ESECNF", r, ESECNF);
 
-			/* Physical mode: `first` is an absolute device sector, no
+			/* Physical mode: the drive argument is the physical unit
+			 * (PHYS_SD_UNIT), `first` an absolute device sector, no
 			 * partition translation, range-checked against the device. */
 			for (i = 0; i < 512; i++) mbr[i] = 0;
-			r = Rwabs(RW_NOTRANSLATE, mbr, 1, 0, bdrv);
+			r = Rwabs(RW_NOTRANSLATE, mbr, 1, 0, PHYS_SD_UNIT);
 			ck_eq(G_BBLK, "BB13 Rwabs physical sector 0 -> E_OK", r, E_OK);
 			ck_bool(G_BBLK, "BB14 physical sector 0 is the MBR (0x55AA)",
 				mbr[510] == 0x55 && mbr[511] == 0xAA);
-			r = Lrwabs(RW_NOTRANSLATE, guard, 1, 0x7FFFFFFFL, bdrv);
+			r = Lrwabs(RW_NOTRANSLATE, guard, 1, 0x7FFFFFFFL, PHYS_SD_UNIT);
 			ck_eq(G_BBLK, "BB15 Rwabs physical past device -> ESECNF", r, ESECNF);
 
 			/* Translation proof: find the MBR entry the kernel's drive
@@ -2090,7 +2095,7 @@ int main(void)
 						"drive is not an MBR primary partition");
 				} else {
 					for (i = 0; i < 512; i++) again[i] = 0;
-					r = Lrwabs(RW_NOTRANSLATE, again, 1, (long)pstart, bdrv);
+					r = Lrwabs(RW_NOTRANSLATE, again, 1, (long)pstart, PHYS_SD_UNIT);
 					ck_bool(G_BBLK, "BB16 physical(part start) == logical sector 0",
 						r == E_OK
 						&& mcmp((const char *)again, (const char *)boot, 512) == 0);

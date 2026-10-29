@@ -1,0 +1,46 @@
+command   cargo xtask tosdump bios tosdump/cases/gemdos-mc-fs22.tsv --testdisk /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/mc/test.img --tree /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/before-tree --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN --out measurements/measurement-2026-10-29-bios01-rest/runs/before-fs22 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/xtask
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/before-tree (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    6f38e9b9fe51d2ddd7652ed50117a1448d9e2686
+dirty     0 path(s) in git status --porcelain
+harness commit 6f38e9b9fe51d2ddd7652ed50117a1448d9e2686
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/gemdos-mc-fs22.tsv sha256 848a572324aa1d686d2c4200be0be4a37a3bc0dc56a38c40c73719d95f4701c4
+table     DESTRUCTIVE: runs on a fresh clone of the test image (the card is built from it for this run)
+table     names the unit token u:0: no; a program path x:<path>: yes
+profile   xtask-tosdump disk (tosdump/profiles.tsv sha256 b90e6687ad5254209e722d6622b3268bffe983fb894c642359ed731703b34e98): unit 26, program extension NAP
+test image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/mc/test.img: fsck_msdos -n on partition 1 clean (fresh)
+target/   own (5 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (5 artifact dep-info files checked after the build)
+kernel8.img /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/before-tree/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 cc170762812933f915fef480b89229fac81bc86e56ef7e7905235278e46366b1
+kernel ELF  sha256 ee4d5c8bff0a0e39fb560c4752787b5af4da0d970b1091a59498d3154ef41351 (/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/before-tree/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id 6f38
+DUMPBIOS.NAP sha256 08de02a5cf747df230a439a45bc43cbc707994a99057a6228b779dab5c9f1550
+test image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/mc/test.img
+test image sha256 54ca78a1b5a8319aac4976a40927f8b806152bcab6c3c5bf568f9915d8fc08ef
+D:\DISKUNIT.TXT 26 (the profile's physical unit of C:, for u:0)
+D:\PROGEXT.TXT NAP (the profile's program extension, for x:)
+card.img.manifest: image_sha256 64e86c2d2d5856510bffe9e07d03a3b3171b7b44af29753bedec8fdd3252d010
+card.img.manifest: optional_missing none
+card      D:\DISKUNIT.TXT read back: as the profile names it
+card      D:\PROGEXT.TXT read back: as the profile names it
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/xtask/tosdump-68688/card.img sha256 64e86c2d2d5856510bffe9e07d03a3b3171b7b44af29753bedec8fdd3252d010 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 72ae026e228a1eda675d4ec62df9846264edcc1dbf4b330aaefc35ded49e6097
+BIOS.BIN 4192 bytes, sha256 42952554577b729478dfe2b88b179204397c7fe591d7f606282b595ecd39b71e
+BIOS.LOG 332 bytes, sha256 7eda10da98188d832e0e6706d22ebd4405c42fa322a80547d1b8a18a36967a65
+testpart: identical
+fsck_msdos -n testpart-before.img: exit 0
+fsck_msdos -n testpart-after.img: exit 0
+testpart after sha256 70a8da64a9c4bb211d17662afce33f944398f4010efd52700a0d5a0ac05cde2d (kept: testpart-after.img)
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 d20f465d1c4c31da9775714c660c3889af715e825926630de5dabb80bdea292d
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 13 records of 320 bytes, build 6f38, case CRC 26353FB1
+tosdiff --check-profile: exit 0 profile check, BIOS.BIN: xtask-tosdump disk (tosdump/profiles.tsv), x: = .NAP, as its LOG BIOS.LOG records
+tosdiff EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN vs NEWTOS.BIN: exit 1, 6 of 13 cases differ
+total     30 s
+result    run complete (differences above are findings, not failures)

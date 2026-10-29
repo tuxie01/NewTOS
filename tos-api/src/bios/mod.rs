@@ -36,10 +36,18 @@ pub mod vectors;
 /// read again — FreeMiNT invalidates its cache when a drive's mapping changes
 /// (`bio_set_lshift`, `bio_free_di`; `docs/analysis/fs09-block-cache-2026-10-07.md`
 /// §2.7).
+///
+/// Then the boot scan of every drive found ([`bpb::scan`], EmuTOS
+/// `pun_info_setup` after `disk_init_all`, `bios/blkdev.c:190-195`): each
+/// drive's BPB slot is built, which is the `recsiz` a logical `Rwabs` tests
+/// (BIOS-STOR-006), and the run-time sector-size limit of `Getbpb` is set
+/// (BIOS-STOR-004).
 pub fn mount() -> usize {
     crate::bdos::fs::fat::log_out_all();
     bcache::invalidate_all();
-    drive::mount()
+    let n = drive::mount();
+    bpb::scan();
+    n
 }
 
 use tos_types::error::{ESECNF, EUNDEV, E_CHNG, E_OK};
@@ -57,11 +65,14 @@ const RW_RW: i16 = 1;
 /// `blkdev.c:473`). It does **not** skip the `forcechange` test
 /// (`blkdev.c:450-451`, ahead of it).
 const RW_NOMEDIACH: i16 = 2;
-/// Bit 3 — physical (untranslated) I/O (`disk.h:59`). When set, the
-/// sector argument is an **absolute device sector**: no partition-relative
-/// translation, and the range check is against the whole device rather than
-/// the partition (`blkdev.c:438,483-490`).
+/// Bit 3 — physical (untranslated) I/O (`disk.h:59`). When set, `drive`
+/// is a **physical unit** ([`drive::SD_UNIT`]) and the sector argument an
+/// **absolute device sector**: no partition-relative translation, and the
+/// range check is against the whole device rather than the partition
+/// (`blkdev.c:438,483-490`).
 const RW_NOTRANSLATE: i16 = 8;
+/// `NUMFLOPPIES` (`bios/disk.h:18`): drives / units 0 and 1 are the floppies.
+const NUMFLOPPIES: u16 = 2;
 
 // BIOS function ids.
 const GETMPB: u16 = 0x00;
@@ -134,29 +145,24 @@ fn kbshift(args: &TrapArgs) -> Long {
 ///
 /// `x0` = r_w (bit 0: 0 read / 1 write; bit 3: `RW_NOTRANSLATE`, physical
 /// I/O), `x1` = buffer, `x2` = count, `x3` = first sector (or `-1` ⇒ use
-/// `x5`), `x4` = drive, `x5` = lfirst.
+/// `x5`), `x4` = drive (physical unit with `RW_NOTRANSLATE`), `x5` = lfirst.
 ///
-/// EmuTOS `blkdev.c:438` splits on `RW_NOTRANSLATE` (bit 3): the common
-/// **logical** path translates a partition-relative sector to an absolute
-/// LBA and range-checks against the partition (`blkdev.c:440-466`); the
-/// **physical** path treats the sector as an absolute device sector, with
-/// no partition translation and a range check against the whole device
-/// (`blkdev.c:483-490`). The device is validated up front in both modes.
+/// EmuTOS `blkdev_rwabs` (`bios/blkdev.c:406-540`), in the order of
+/// `docs/api/bios/04-rwabs.md` (order table): the floppy NULL-buffer feature
+/// first (step 1, BIOS-STOR-007), then the split on `RW_NOTRANSLATE`
+/// (`blkdev.c:438`) — the **logical** path translates a partition-relative
+/// sector of a drive ([`logical_lba`]), the **physical** path takes an
+/// absolute sector of a physical unit ([`physical_lba`], BIOS-STOR-002).
+/// A count of 0 passes every check of either path and then transfers
+/// nothing (the driver is called with a zero count, `bios/sd.c:163-164`).
 ///
-/// The logical path's `forcechange` handshake (BIOS-STOR-001) follows the
-/// order of `blkdev_rwabs` (`docs/api/bios/04-rwabs.md`, order table): an
-/// armed drive fails every logical request with `E_CHNG`, `RW_NOMEDIACH`
-/// included (step 5); a write starting at logical sector 0 arms it (step 6)
-/// and then fails the media-change test itself unless `RW_NOMEDIACH` is set
-/// (step 10) — so it writes nothing and returns `E_CHNG`. The physical path
-/// never arms (the arming is in the logical branch, `blkdev.c:438-453`).
-///
-/// Deviations from EmuTOS that are out of scope for L1 (HW-adapted or
-/// deferred, unchanged here): the retry loop / `etv_critic` chain
-/// (H1/M1), a media-change *probe* behind step 10 (the SD is non-removable,
-/// so [`media_change`] reports only `forcechange`), the `RW_NORETRIES` retry
-/// count (single PIO attempt), and `RW_NOBYTESWAP` (AArch64 is
-/// little-endian). See `docs/api/bios/04-rwabs.md` and
+/// Deviations from EmuTOS that are out of scope here (HW-adapted or
+/// deferred, unchanged): the retry loop / `etv_critic` chain (H1/M1), a
+/// media-change *probe* behind step 10 (the SD is non-removable, so
+/// [`media_change`] reports only `forcechange`), the `RW_NORETRIES` retry
+/// count (single PIO attempt), `RW_NOBYTESWAP` (AArch64 is little-endian),
+/// and the logical-to-physical scaling of step 7 (`blkdev.c:456-458`) — see
+/// [`logical_lba`]. See `docs/api/bios/04-rwabs.md` and
 /// `docs/analysis/bios-audit/bios-findings.md`.
 fn rwabs(args: &TrapArgs) -> Long {
     let r_w = args.arg_i16(0);
@@ -166,71 +172,47 @@ fn rwabs(args: &TrapArgs) -> Long {
     let drive = args.arg_u16(4);
     let lfirst = args.arg_i32(5);
 
-    // Resolve the drive to its partition (start LBA + length). EmuTOS
-    // validates the device up front in both logical (`blkdev.c:440-441`)
-    // and physical (`blkdev.c:484-485`) mode; on the single-block-device Pi
-    // the drive table stands in for `units[]`.
-    let part = match drive::resolve(drive) {
-        Some(p) => p,
-        None => return EUNDEV,
-    };
-    // Through the block cache (FS09): logical and physical requests are both
-    // keyed by the absolute LBA, so the two modes share one coherent copy.
-    let blk = match bcache::device() {
-        Some(b) => b,
-        None => return EUNDEV,
-    };
+    // Step 1 (`blkdev.c:418-428`): the floppy-only handler's undocumented
+    // feature (FastCopy III) — a NULL buffer on unit 0 or 1 sets that drive's
+    // media-change state to `numb` and returns 0, ahead of every drive test
+    // and in either mode (BIOS-STOR-007, decided: match EmuTOS). A: and B: do
+    // not exist on the Pi (the drive table starts at C:, `drive.rs`), so
+    // `Mediach`, `Getbpb` and `Rwabs` of them stay `EUNDEV`/0/`EUNDEV` and the
+    // state set here has no reader — as on an EmuTOS without floppy drives
+    // (audit §1, `EMUTOS-falcon-nofloppy`). A negative `drive` is not
+    // included: that writes outside EmuTOS' `blkdev[]` (spec edge case 11).
+    if drive < NUMFLOPPIES && adr == 0 {
+        return E_OK;
+    }
+    // Step 2 (`blkdev.c:430-431`): `first` is an unsigned 16-bit sector
+    // unless it is -1, which selects the 32-bit `lfirst`.
     let sector = if first == -1 {
         lfirst as u32 as u64
     } else {
         first as u16 as u64
     };
-    let write = r_w & RW_RW != 0;
-    let logical = r_w & RW_NOTRANSLATE == 0;
-    if logical {
-        // Step 5 (`blkdev.c:450-451`): a drive whose logical sector 0 was
-        // written fails every logical request until `Getbpb` — ahead of the
-        // `RW_NOMEDIACH` test, so that flag does not get past it.
-        if drive::forcechange(drive) {
-            return E_CHNG;
-        }
-        // Step 6 (`blkdev.c:452-453`): a write starting at logical sector 0
-        // arms it, before the range and media-change checks of this call.
-        if write && sector == 0 {
-            drive::arm_forcechange(drive);
-        }
-    }
-    // Step 10 (`blkdev.c:473-477`), evaluated here because the count-0
-    // return below needs it too; it is *reported* after the range check.
-    let media_changed =
-        logical && r_w & RW_NOMEDIACH == 0 && media_change(drive) != MEDIANOCHANGE;
-    if numb == 0 {
-        // BIOS-STOR-003 (open, not this change): EmuTOS range-checks a count
-        // of 0 as well (`blkdev.c:461-463`); here it skips the range check.
-        return if media_changed { E_CHNG } else { E_OK };
-    }
-    let lba = if !logical {
-        // Physical: the sector is already an absolute device sector — no
-        // partition translation. Range-check against the device's total
-        // sector count (EmuTOS `blkdev.c:488-490`, which uses `>=` and skips
-        // the check when the unit size is unknown/zero).
-        let total = blk.block_count();
-        if total != 0 && sector + numb as u64 >= total {
-            return ESECNF;
-        }
-        sector
-    } else {
-        // Logical: partition-relative sector → absolute LBA, range-checked
-        // against the partition (EmuTOS `blkdev.c:461-466`, which uses `>`).
-        if sector + numb as u64 > part.count as u64 {
-            return ESECNF;
-        }
-        part.start_lba as u64 + sector
+    // Through the block cache (FS09): logical and physical requests are both
+    // keyed by the absolute LBA, so the two modes share one coherent copy.
+    // No device means no drive and no unit: `EUNDEV` in either mode.
+    let blk = match bcache::device() {
+        Some(b) => b,
+        None => return EUNDEV,
     };
-    if media_changed {
-        // Step 10 reported: the media-change test failed (`blkdev.c:474-477`)
-        // — a write that just armed `forcechange` transfers nothing.
-        return E_CHNG;
+    let write = r_w & RW_RW != 0;
+    let target = if r_w & RW_NOTRANSLATE == 0 {
+        logical_lba(r_w, drive, sector, numb)
+    } else {
+        physical_lba(drive, sector, numb, blk.block_count())
+    };
+    let lba = match target {
+        Ok(lba) => lba,
+        Err(code) => return code,
+    };
+    if numb == 0 {
+        // The transfer loop runs once with a zero count (`blkdev.c:510-528`),
+        // which the SD driver answers 0 without touching the card or the
+        // buffer (`bios/sd.c:163-164`).
+        return E_OK;
     }
     let len = numb * SECTOR;
 
@@ -263,6 +245,68 @@ fn rwabs(args: &TrapArgs) -> Long {
         Ok(()) => E_OK,
         Err(code) => code,
     }
+}
+
+/// The logical path of `blkdev_rwabs` (`bios/blkdev.c:439-481`), steps 3-10
+/// of the order table in `docs/api/bios/04-rwabs.md`: the absolute LBA of
+/// `drive`'s partition-relative `sector`, or the code that ends the call.
+///
+/// * Step 3 (`:440-441`): an absent drive is `EUNDEV`.
+/// * Step 4 (`:443-444`): a drive whose BPB is invalid — the last `Getbpb`
+///   refused its boot sector ([`bpb::recsiz`] 0) — is `ESECNF`, before
+///   anything else (BIOS-STOR-006).
+/// * Steps 5, 6 (`:450-453`, BIOS-STOR-001): an armed `forcechange` fails
+///   every logical request with `E_CHNG`, `RW_NOMEDIACH` included; a write
+///   starting at logical sector 0 arms it, before the range and media-change
+///   checks of this call.
+/// * Step 7 (`:456-458`) is not done: NewTOS addresses the partition in
+///   512-byte sectors whatever the BPB's `recsiz`. Since the boot scan sets
+///   the `Getbpb` limit (BIOS-STOR-004) a larger `recsiz` is logged in only
+///   on a card that had such a partition at boot.
+/// * Step 8 (`:461-463`): the range check against the partition, with `>`,
+///   for every count including 0 (BIOS-STOR-003).
+/// * Step 10 (`:473-477`): unless `RW_NOMEDIACH`, a media change fails the
+///   call with `E_CHNG` — this is how the arming write itself writes nothing.
+fn logical_lba(r_w: i16, drive: u16, sector: u64, numb: usize) -> Result<u64, Long> {
+    let part = drive::resolve(drive).ok_or(EUNDEV)?;
+    if bpb::recsiz(drive) == 0 {
+        return Err(ESECNF);
+    }
+    if drive::forcechange(drive) {
+        return Err(E_CHNG);
+    }
+    if r_w & RW_RW != 0 && sector == 0 {
+        drive::arm_forcechange(drive);
+    }
+    if sector + numb as u64 > part.count as u64 {
+        return Err(ESECNF);
+    }
+    if r_w & RW_NOMEDIACH == 0 && media_change(drive) != MEDIANOCHANGE {
+        return Err(E_CHNG);
+    }
+    Ok(part.start_lba as u64 + sector)
+}
+
+/// The physical path of `blkdev_rwabs` (`bios/blkdev.c:482-504`): `unit` is
+/// a physical unit number, `sector` an absolute sector of it.
+///
+/// * `:484-485`: the SD card is unit [`drive::SD_UNIT`] (26); every other
+///   unit is `EUNDEV` (BIOS-STOR-002, decided 2026-10-28).
+/// * `:488-490`: the range check against the whole device, with `>=`, skipped
+///   when the device reports no size (`total == 0`).
+/// * `:496-503`: `UNIT_CHANGED` is never set — the SD is non-removable
+///   (`docs/api/bios/09-mediach.md`) — so there is no `E_CHNG` here.
+///
+/// The physical path never arms `forcechange` (the arming is in the logical
+/// branch, `blkdev.c:438-453`).
+fn physical_lba(unit: u16, sector: u64, numb: usize, total: u64) -> Result<u64, Long> {
+    if unit != drive::SD_UNIT {
+        return Err(EUNDEV);
+    }
+    if total != 0 && sector + numb as u64 >= total {
+        return Err(ESECNF);
+    }
+    Ok(sector)
 }
 
 /// `Mediach` (0x09) — media-change probe. `drv` is in `x0`

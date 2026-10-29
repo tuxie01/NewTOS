@@ -1,0 +1,20 @@
+test image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/xtask/tosdump-75758/test.img
+test partition LBA 63+130977
+testpart: DIFFERENT; differing sectors (partition-relative): 0
+testpart: still different after normalising root directory time stamps
+fsck_msdos -n testpart-before.img: exit 0
+  ** /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/xtask/tosdump-75758/testpart-before.img
+  ** Phase 1 - Preparing FAT
+  ** Phase 2 - Checking Directories
+  ** Phase 3 - Checking for Orphan Clusters
+  Warning: 1 files, 65342 KiB free (32671 clusters)
+fsck_msdos -n testpart-after.img: exit 202
+  ** /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-29-bios01-rest/runs/after-x006/testpart-after.img
+  Warning: FAT size too small, 32738 entries won't fit into 0 sectors
+  Fix total sectors?
+  : no
+  Warning: Continuing, assuming 4294967294 clusters
+  ** Phase 1 - Preparing FAT
+  Calculated zero cache blocks
+  (a destructive table: its end state is compared with the oracle's, not judged here)
+testpart after sha256 ea645cfc2af367c57f7902b66d8806c14ae9d4ed759c029403ee9f16f20ef818 (kept: testpart-after.img)

@@ -1,0 +1,53 @@
+command   cargo xtask tosdump bios tosdump/cases/bios-r2-x001.tsv --disk --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-x001-disk.BIN --out measurements/measurement-2026-10-29-bios01-rest/runs/after-x001 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/xtask
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    6f38e9b9fe51d2ddd7652ed50117a1448d9e2686
+dirty     7 path(s) in git status --porcelain
+   M kernel/src/selftest_emmc.rs
+   M tos-api/src/bios/bpb.rs
+   M tos-api/src/bios/drive.rs
+   M tos-api/src/bios/mod.rs
+   M tos-api/tests/bios01_forcechange.rs
+  ?? measurements/measurement-2026-10-29-bios01-rest/
+  ?? tos-api/tests/bios01_storage.rs
+harness commit 6f38e9b9fe51d2ddd7652ed50117a1448d9e2686
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-r2-x001.tsv sha256 39352bce63b7ab334f236641d265dce69fd39856b0b47dda8ef4b3502b54fdf0
+table     DESTRUCTIVE: runs on a fresh clone of the test image (the card is built from it for this run)
+table     names the unit token u:0: no; a program path x:<path>: no
+profile   xtask-tosdump disk (tosdump/profiles.tsv sha256 b90e6687ad5254209e722d6622b3268bffe983fb894c642359ed731703b34e98): unit 26, program extension NAP
+target/   own (9 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (9 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 08696e3085ebaef322e0a9e166bdffa3d04a15a861428169bf4e367562fd7b06
+kernel ELF  sha256 de849f5e0e4c8f5c16584fa167597a9c17e06cfd72a7aa1ded501b5071bd7d09 (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id 6f38
+DUMPBIOS.NAP sha256 294f3f66552ba97d22b0de3b532924b296e7aa0bce0d7884953527140d023646
+test image built by tools/mktestdisk.sh NEWDESK.INF=<autorun D:\DUMPBIOS.NAP>
+test image sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+D:\DISKUNIT.TXT 26 (the profile's physical unit of C:, for u:0)
+D:\PROGEXT.TXT NAP (the profile's program extension, for x:)
+card.img.manifest: image_sha256 834e0f5b8f14f2aae4f0acffacb84ca4ab75950a1fa1227cb02b34bdaeaf9d00
+card.img.manifest: optional_missing none
+test.img.manifest: image_sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+test.img.manifest: optional_missing none
+card      D:\DISKUNIT.TXT read back: as the profile names it
+card      D:\PROGEXT.TXT read back: as the profile names it
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/xtask/tosdump-72828/card.img sha256 834e0f5b8f14f2aae4f0acffacb84ca4ab75950a1fa1227cb02b34bdaeaf9d00 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 7de2f07f0762bb57e7618ac9c37d274f22534ee7d8cbd556a6474c5f09165936
+BIOS.BIN 2592 bytes, sha256 b11d2a0a907cf7b22812804811a469b4d1d5ef585b37ceb079bf0d6282bfea48
+BIOS.LOG 253 bytes, sha256 d05970e842b5214aa249e66381b725e5b50eaf8651b4bfb74442c879c6e047f9
+testpart: identical
+fsck_msdos -n testpart-before.img: exit 0
+fsck_msdos -n testpart-after.img: exit 0
+testpart after sha256 84bcadfb750eef7880acf837c31a84b678f25fa4f10aeb0a710b639c9e56f09b (kept: testpart-after.img)
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 d20f465d1c4c31da9775714c660c3889af715e825926630de5dabb80bdea292d
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 8 records of 320 bytes, build 6f38, case CRC 268E6D29
+tosdiff EMUTOS-1a7484ab-BIOS-r2-x001-disk.BIN vs NEWTOS.BIN: exit 0, 0 of 8 cases differ
+total     31 s
+result    run complete (differences above are findings, not failures)

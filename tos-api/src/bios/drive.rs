@@ -13,6 +13,15 @@ const MAX_DRIVES: usize = 16;
 /// First hard-disk drive letter (`C:`); A:/B: are reserved for floppies.
 const FIRST_HD: usize = 2;
 
+/// The physical unit number of the SD card — the `drive` argument of an
+/// `Rwabs` with `RW_NOTRANSLATE` (BIOS-STOR-002, `docs/api/bios/04-rwabs.md`,
+/// "Decisions"). EmuTOS numbers physical units `NUMFLOPPIES + 8*bus + device`
+/// (`GET_UNITNUM`, `references/emutos/bios/disk.h:18,20,30`); the SD/MMC bus is
+/// bus 3 (`SDMMC_BUS`, `bios/machine.h:39-42`) and its driver serves device 0
+/// only (`sd_rw`, `bios/sd.c:160-161`): `2 + 8*3 + 0` = 26. The Pi has one
+/// block device, so this is the only physical unit there is.
+pub const SD_UNIT: u16 = 2 + 8 * 3;
+
 /// A mounted partition: its absolute start sector, length, and MBR type.
 #[derive(Clone, Copy)]
 pub struct Partition {

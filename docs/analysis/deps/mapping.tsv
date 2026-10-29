@@ -305,18 +305,21 @@ blkdev_avail	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS cou
 blkdev_boot	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 blkdev_drvmap	bios/blkdev.c	tos-api/src/bios/mod.rs	drvmap	mapped	behind Drvmap 0x0A (bios.c drvmap returns it): the drive bitmap; NewTOS has no separate block-device layer
 blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	getbpb	mapped	behind hdv_bpb (Getbpb 0x07): NewTOS calls it from the trap directly, no hdv_bpb vector (BIOS-STOR-010)
-blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	bpb_for	mapped	the boot-sector read and the per-drive BPB slot
-blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	parse	mapped	the BPB checks and arithmetic of blkdev.c:641-756, 1:1
-blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	boot_sector	mapped	drive test, the media-state reset (blkdev.c:589-590) and the boot-sector read, shared by bpb_for and geometry
+blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	bpb_for	mapped	the trap's Getbpb: log_in, the parsed BPB
+blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	parse	mapped	the BPB checks and arithmetic of blkdev.c:641-756, 1:1: sector size against pun_info.max_sect_siz (BIOS-STOR-004), tot16 else tot32 (BIOS-STOR-005)
+blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	log_in	mapped	drive test, the media-state reset (blkdev.c:589-590), recsiz = 0 "invalid BPB" (:601), the boot-sector read, parse and the BPB slot on success; shared by bpb_for, geometry and scan (BIOS-STOR-006)
 blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/drive.rs	clear_forcechange	mapped	forcechange = FALSE (blkdev.c:590)
-blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	geometry	mapped	the Getbpb of the BDOS log-in (ckdrv/log_media, bdos/fsdrive.c:96): boot-sector read and reset, no BPB slot
+blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	geometry	mapped	the Getbpb of the BDOS log-in (ckdrv/log_media, bdos/fsdrive.c:96): log_in with the extended geometry
 blkdev_hdv_boot	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
-blkdev_hdv_init	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+blkdev_hdv_init	bios/blkdev.c	tos-api/src/bios/mod.rs	mount	mapped	the partition scan (drive::mount, for disk_init_all) followed by the boot scan (bpb::scan, for pun_info_setup), plus the BDOS log-out and cache drop that go with a new scan; no floppies, bus_init or XHDI drive map
 blkdev_init	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 blkdev_mediach	bios/blkdev.c	tos-api/src/bios/mod.rs	media_change	mapped	behind hdv_mediach (Mediach 0x09; the trap fn mediach forwards to it, no hdv_mediach vector, BIOS-STOR-010) and the direct call of Rwabs step 10: EUNDEV, forcechange -> 2 (BIOS-STOR-001); no probe/latched mediachange, the SD is non-removable
 blkdev_rwabs	bios/blkdev.c	tos-api/src/bios/mod.rs	rwabs	mapped	behind hdv_rw (Rwabs 0x04): NewTOS calls it from the trap directly, no hdv_rw vector (BIOS-STOR-010); forcechange test/arm and media-change test of the logical path (BIOS-STOR-001); no retry/etv_critic chain
 blkdev_rwabs	bios/blkdev.c	tos-api/src/bios/drive.rs	forcechange	mapped	the blkdev[dev].forcechange test (blkdev.c:450-451)
 blkdev_rwabs	bios/blkdev.c	tos-api/src/bios/drive.rs	arm_forcechange	mapped	forcechange = TRUE after a logical write of sector 0 (blkdev.c:452-453)
+blkdev_rwabs	bios/blkdev.c	tos-api/src/bios/mod.rs	logical_lba	mapped	the logical path, steps 3-10 (blkdev.c:439-481): EUNDEV, invalid BPB ESECNF (BIOS-STOR-006), forcechange, range check for every count (BIOS-STOR-003), media-change test; no step-7 scaling
+blkdev_rwabs	bios/blkdev.c	tos-api/src/bios/mod.rs	physical_lba	mapped	the physical path (blkdev.c:482-504): SD = unit 26, every other unit EUNDEV (BIOS-STOR-002), device range with >=; no UNIT_CHANGED (non-removable)
+blkdev_rwabs	bios/blkdev.c	tos-api/src/bios/bpb.rs	recsiz	mapped	blkdev[dev].bpb.recsiz, tested by step 4 (blkdev.c:443-444)
 bootcheck	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 bus_init	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 compute_cksum	bios/blkdev.c	tos-api/src/xbios/floppy.rs	compute_cksum	mapped	-
@@ -325,7 +328,7 @@ getbpb_allowed	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS c
 getiword	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 hd_boot_read	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 next_logical	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
-pun_info_setup	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+pun_info_setup	bios/blkdev.c	tos-api/src/bios/bpb.rs	scan	mapped	the boot scan: Getbpb of every drive at MAX_LOGSEC_SIZE, then max_sect_siz = max(largest recsiz, CONF_LOGSEC_SIZE) (BIOS-STOR-004); no PUN_INFO/pun_ptr, no GETBPB_ALLOWED filter
 bconout2	bios/chardev.c	tos-api/src/bios/chardev.rs	bconout	mapped	Console impl; the VT52 automaton is vdi/escape.rs
 bconout2	bios/chardev.c	tos-api/src/vdi/escape.rs	conout	mapped	Bconout(2) through the VT52 automaton
 bconout5	bios/chardev.c	tos-api/src/vdi/escape.rs	rawout	mapped	Bconout(5)

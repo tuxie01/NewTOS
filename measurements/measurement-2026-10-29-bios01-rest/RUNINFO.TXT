@@ -1,0 +1,118 @@
+measurement-2026-10-29-bios01-rest -- BIOS01 rest: BIOS-STOR-003, -004, -005, -006, -002, -007 fixed and measured
+=====================================================================================================================
+Developer, TASK/BIOS01 (all findings but -001, which is measurement-2026-10-28-bios01-s2), 2026-10-29 (host
+clock CET). Base HEAD 6f38e9b9 (clean when the work began). No hardware, no real card, nothing flashed. Not
+committed.
+
+WHAT / WHY
+  The open findings of the audit docs/audits/2026-10-28-bios-storage.md, each with its confirming tosdiff case
+  from TOOL07/TOOL07b, against the approved spec (BIOS02, docs/api/bios/04-rwabs.md order table and
+  "Decisions", 07-getbpb.md edge cases 8 and 9) and EmuTOS 1a7484ab bios/blkdev.c:
+  003  Rwabs count 0 skipped the range check (blkdev.c:461-463)              bios-r2 68 (R10)
+  007  Rwabs NULL buffer on A:/B: -> EUNDEV instead of 0 (blkdev.c:425-428)  bios-r2 83, 84 (F03, F03b)
+  004  Getbpb accepted sectors > 512 after boot (blkdev.c:122,147-159,642)  bios-r2-x004 40, 42-46
+  005  Getbpb tot16 = tot32 = 0 -> partition length (blkdev.c:730-733)      bios-r2-x005 40 (X06b)
+  006  Rwabs after a failed Getbpb still transferred (blkdev.c:443-444,601) bios-r2-x006 41-44, 46
+  002  RW_NOTRANSLATE took a drive letter, not a physical unit (:484-485)   bios-r2-phys 32-35, 37-43
+
+CHANGE (uncommitted, for the lead)
+  tos-api/src/bios/mod.rs    rwabs: step 1 (NULL buffer, unit 0/1 -> 0, either mode); logical_lba (steps
+                             3-10: EUNDEV, recsiz 0 -> ESECNF, forcechange, range check for every count,
+                             media-change test); physical_lba (unit 26 only, else EUNDEV; device range >=);
+                             count 0 -> 0 after the checks. mount: bpb::scan after drive::mount.
+  tos-api/src/bios/bpb.rs    log_in (was boot_sector): reset, recsiz := 0, read, parse, BPB slot on success
+                             -- shared by the trap (bpb_for), the BDOS log-in (geometry) and the boot scan;
+                             recsiz (the slot's, for Rwabs step 4); scan = pun_info_setup (Getbpb of every
+                             drive at MAX_LOGSEC_SIZE, then MAX_SECT_SIZ = max(largest recsiz, 512)); parse
+                             takes the limit as a parameter and uses tot16 else tot32 (no partition length).
+  tos-api/src/bios/drive.rs  SD_UNIT = 26 (GET_UNITNUM(SDMMC_BUS, 0), bios/disk.h:30, machine.h:42).
+  tos-api/tests/bios01_storage.rs (new, 7 tests), tos-api/tests/bios01_forcechange.rs (physical writes on
+                             unit 26; after the refused Getbpb the restore is ESECNF logically and goes
+                             physically), tos-api/tests/gemdos_fs_bcache.rs (mount leaves MBR + boot sector
+                             in the cache; physical reads on unit 26).
+  kernel/src/selftest_emmc.rs, sdk/apps/apitest/apitest.c: their RW_NOTRANSLATE calls use unit 26.
+  docs/api/bios/04-rwabs.md, 07-getbpb.md (Pi bindings: fixed, anchors), 09-mediach.md, 0b-kbshift.md
+                             (shifted anchors), docs/analysis/deps/mapping.tsv.
+
+METHOD (method/)
+  newtos-runs.sh   every table through cargo xtask tosdump (TOOL09 runner, QEMU raspi4b, -append serial=on):
+                   bios-r2.tsv and bios-r2-{x001,x004,x005,x006,phys}.tsv with --disk (test image by
+                   tools/mktestdisk.sh, card by tools/mkcard.sh MKCARD_TESTDISK), bios-r1.tsv against the tt
+                   and falcontc references, gemdos-mc-{fs20,fs22,paths}.tsv (TOOL20; they carry gcprobe's and
+                   pxprobe's cases) with --testdisk = TOOL20's image built by
+                   measurements/measurement-2026-10-29-tool20/method/mkimage.sh.
+                   BEFORE: `newtos-runs.sh <scratch> runs before <scratch>/before-tree`, the tree a
+                   `git clone --shared` of 6f38e9b9 (0 dirty); AFTER: this tree with the change.
+  compare-cases.sh per table: the differing case numbers before and after, now EQUAL, NEWLY differing
+                   (comm -13), and the test partition's end state (runs/compare-cases.txt).
+
+BUILDS
+  kernel8.img (rpi4 release) before cc170762812933f915fef480b89229fac81bc86e56ef7e7905235278e46366b1 (10 runs),
+  after 08696e3085ebaef322e0a9e166bdffa3d04a15a861428169bf4e367562fd7b06 (all 10 after runs the same kernel).
+  DUMPBIOS.NAP build 6f38 (tosdump/ unchanged): before 08de02a5..., after 294f3f66... -- the bytes differ by
+  the build tree's path the binary embeds (251696 vs 251792 bytes), not by source.
+  Test image (--disk) d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37 (= TOOL07's);
+  TOOL20 image (--testdisk) 54ca78a1b5a8319aac4976a40927f8b806152bcab6c3c5bf568f9915d8fc08ef
+  (runs/mc-test.img.manifest; PXPROBE.NAP d832211c... = TOOL20's, PXPROBE.PRG 7e48e7dd..., the m68k build is
+  not byte-reproducible, TOOL20 RUNINFO).
+  Manifests: runs/<run>/card.img.manifest, runs/<run>/test.img.manifest (the --disk runs) and
+  runs/mc-test.img.manifest -- every one, verbatim:
+    optional_missing none
+
+RESULTS -- tosdiff per table (runs/compare-cases.txt, runs/<before|after>-<t>/tosdiff-*.txt)
+  table              before   after   now EQUAL                         NEWLY differing
+  bios-r2            3/51     0/51    68 (003), 83 84 (007)             none
+  bios-r2-x004       6/10     0/10    40 42 43 44 45 46 (004, -006)     none
+  bios-r2-x005       1/13     0/13    40 (005)                          none
+  bios-r2-x006       5/11     0/11    41 42 43 44 46 (006)              none
+  bios-r2-phys       11/12    0/12    32-35 37-43 (002)                 none
+  bios-r2-x001       0/8      0/8     --                                none
+  bios-r1 tt         41/147   41/147  --                                none (same case list)
+  bios-r1 falcontc   45/147   45/147  --                                none (same case list)
+  gemdos-mc-fs20     0/17     0/17    --                                none
+  gemdos-mc-fs22     6/13     6/13    --                                none (TOOL20 F1, d_fname)
+  gemdos-mc-paths    12/49    12/49   --                                none (TOOL20 F1, F2)
+  The phys LOGs record u:0 = unit 26 (tosdiff --check-profile exit 0); the oracle's is unit 18.
+
+RESULTS -- test partition after the run (testpart after sha256, tosdump-run.txt)
+  table   NewTOS before / after                                              oracle (TOOL07b / BIOS01-S2)
+  x001    84bcadfb... / 84bcadfb... (= the original)                         84bcadfb...
+  x004    a7cf3d2c... / a7cf3d2c... (boot sector bps 1024)                   a7cf3d2c...
+  x005    84bcadfb... / 84bcadfb... (restored)                               84bcadfb...
+  x006    ea645cfc... / ea645cfc... (boot sector spf 0)                      ea645cfc...
+  fs20    def0f691... / def0f691...                                          TOOL20: 1 byte (FS21)
+  fs22    70a8da64... / 70a8da64...                                          TOOL20: identical
+  paths   ba6faab1... / ba6faab1...                                          TOOL20: 1 byte (F3)
+  r2, phys: testpart identical (non-destructive), before and after.
+  The destructive tables end in the oracle's state, before as after: on NewTOS before the fix the patched
+  boot sectors were written with RW_NOMEDIACH already (BIOS-STOR-001), so 004/006 changed answers, not
+  writes. fsck_msdos -n of the test partition after the run: exit 0 for r2, x001, x005, phys, fs22, paths;
+  206 (x004, fs20) and 202 (x006) = the boot sectors those tables write, as on the oracle; identical before
+  and after.
+  Every one of the 20 runs: "ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0" (raspi4b to the
+  desktop). qemu-virt: the debug kernel (f1bd9f6c... flat image) boots headless to "[desk] desktop up
+  (0 drives)" (runs/virt-boot-serial.txt; virt has no SD, bios::mount does not run there).
+
+HOST TESTS
+  cargo xtask test (full): 1840 passed, 0 failed, 1 ignored (baseline 1833/0/1 + 7 new;
+  runs/xtask-test-summary.txt, runs/xtask-test-results.txt). make -C tosdump host-test: exit 0, self-check
+  "40 references, every relational rule holds" (runs/host-test.txt). cargo xtask deps --check-mapping: 1043
+  rows resolve. Builds: rpi4 release and qemu-virt debug, kernel 93 / tos-api 64 warnings = baseline (the
+  clone); cargo clippy -p tos-api 74 = baseline; rpi4 with --features selftest-emmc compiles;
+  sdk/apps/apitest/build-apitest.sh links (not run: APITEST is not on the card).
+
+NOT REPRODUCED / REMAINING (stated in the spec)
+  - Rwabs step 7 (blkdev.c:456-458, logical sectors scaled by recsiz/512): not done; a recsiz above 512 is
+    logged in only on a card that has such a partition at the boot scan (07-getbpb.md, BIOS-STOR-004).
+  - Getbpb's FAT32 exit: EmuTOS has already overwritten clsiz..datrec of the slot (blkdev.c:675-713); NewTOS
+    leaves the eight fields other than recsiz as the last good Getbpb left them (visible only through an old
+    pointer; not measured).
+  - pun_info_setup's GETBPB_ALLOWED filter and the AHDI PUN_INFO / pun_ptr: no NewTOS counterpart.
+
+FILES
+  method/  newtos-runs.sh, compare-cases.sh
+  runs/    before-<t>/, after-<t>/ (cargo xtask tosdump's out-dirs: tosdump-run.txt, tosdiff-*.txt, BIOS.BIN/.LOG,
+           manifests, BOOT-SERIAL.txt, build logs, DUMPBIOS.NAP), compare-cases.txt, mc-test.img.manifest,
+           virt-boot-serial.txt, host-test.txt, xtask-test-summary.txt, xtask-test-results.txt
+  Images, cards, the clone and the end-state partitions are not kept (scratch, deleted after the run);
+  sha256 above. manifest.sha256 covers every file of this run except itself.

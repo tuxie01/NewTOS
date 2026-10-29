@@ -33,7 +33,10 @@ fn setup() -> (std::sync::MutexGuard<'static, ()>, &'static DiskHost) {
     assert_eq!(tos_api::bios::mount(), 1);
     let s = tos_api::bios::bcache::stats().unwrap();
     assert_eq!(s.invalidations, before + 1, "mount empties the cache");
-    assert_eq!(s.used, 1, "then holds only the MBR it just read");
+    // Then it holds what the scan just read: the MBR and C:'s boot sector,
+    // read by the boot scan's Getbpb (`bios::bpb::scan`, EmuTOS
+    // `pun_info_setup`, BIOS01).
+    assert_eq!(s.used, 2, "then holds only the MBR and C:'s boot sector");
     host.clear_log();
     (g, host)
 }
@@ -157,6 +160,7 @@ fn logical_and_physical_rwabs_share_one_copy() {
     let (_g, host) = setup();
     const C: u64 = 2; // drive C:
     const PHYS: u64 = 8; // RW_NOTRANSLATE
+    const SD_UNIT: u64 = 26; // the SD card's physical unit (BIOS-STOR-002)
     let rel = 5u64; // a partition-relative sector (inside the first FAT)
     let abs = part_lba(rel as u32);
     let mut orig = vec![0u8; SECTOR];
@@ -164,12 +168,12 @@ fn logical_and_physical_rwabs_share_one_copy() {
     host.clear_log();
     // The same sector, physically addressed: a hit.
     let mut phys = vec![0u8; SECTOR];
-    assert_eq!(rwabs(PHYS, phys.as_mut_ptr(), 1, abs as i64, C, 0), 0);
+    assert_eq!(rwabs(PHYS, phys.as_mut_ptr(), 1, abs as i64, SD_UNIT, 0), 0);
     assert_eq!(phys, orig);
     assert_eq!(reads(&host.log()), 0, "physical read of a logically cached sector");
     // Physical write of new bytes; a logical read sees them, from the cache.
     let mut new: Vec<u8> = (0..SECTOR).map(|i| (i as u8) ^ 0xC3).collect();
-    assert_eq!(rwabs(PHYS | 1, new.as_mut_ptr(), 1, abs as i64, C, 0), 0);
+    assert_eq!(rwabs(PHYS | 1, new.as_mut_ptr(), 1, abs as i64, SD_UNIT, 0), 0);
     assert_eq!(host.raw(abs), new, "on the card at once");
     host.clear_log();
     let mut back = vec![0u8; SECTOR];
@@ -180,7 +184,7 @@ fn logical_and_physical_rwabs_share_one_copy() {
     assert_eq!(rwabs(1, orig.as_mut_ptr(), 1, rel as i64, C, 0), 0);
     assert_eq!(host.raw(abs), orig);
     let mut again = vec![0u8; SECTOR];
-    assert_eq!(rwabs(PHYS, again.as_mut_ptr(), 1, abs as i64, C, 0), 0);
+    assert_eq!(rwabs(PHYS, again.as_mut_ptr(), 1, abs as i64, SD_UNIT, 0), 0);
     assert_eq!(again, orig);
 }
 

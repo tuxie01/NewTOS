@@ -1,0 +1,28 @@
+test image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/xtask/tosdump-64654/test.img
+test partition LBA 63+130977
+testpart: DIFFERENT; differing sectors (partition-relative): 0
+testpart: still different after normalising root directory time stamps
+fsck_msdos -n testpart-before.img: exit 0
+  ** /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/xtask/tosdump-64654/testpart-before.img
+  ** Phase 1 - Preparing FAT
+  ** Phase 2 - Checking Directories
+  ** Phase 3 - Checking for Orphan Clusters
+  Warning: 1 files, 65342 KiB free (32671 clusters)
+fsck_msdos -n testpart-after.img: exit 206
+  ** /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-29-bios01-rest/runs/before-x004/testpart-after.img
+  ** Phase 1 - Preparing FAT
+  Warning: FAT[0] is incorrect (is 0x0; should be 0xFFF8)
+  Correct?
+  : no
+  Warning: FAT[1] is incorrect (is 0x0; should be 0xFFF8)
+  Correct?
+  : no
+  ** Phase 2 - Checking Directories
+  ** Phase 3 - Checking for Orphan Clusters
+  Warning: Found orphan cluster(s)
+  Fix?
+  : no
+  Warning: Found 3 orphaned clusters
+  Warning: 0 files, 130692 KiB free (32673 clusters)
+  (a destructive table: its end state is compared with the oracle's, not judged here)
+testpart after sha256 a7cf3d2c9a841ba327d14daa6fb41d5c38b10d82a04f39974247f8fcec98e86a (kept: testpart-after.img)

@@ -232,7 +232,7 @@ None (does not command the keyboard controller).
 
 ## NewTOS implementation notes
 
-Wired at BIOS 0x0B. `tos-api/src/bios/mod.rs:120@kbshift` returns the
+Wired at BIOS 0x0B. `tos-api/src/bios/mod.rs:131@kbshift` returns the
 previous shift byte (zero-extended) always, and on `flag >= 0` stores `flag`
 truncated to a byte through `Host::set_keyboard_shift_state`. The byte is
 assembled from five atomics in the IKBD decoder

@@ -1,0 +1,16 @@
+test image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/mc/test.img
+test partition LBA 63+130977
+testpart: identical
+fsck_msdos -n testpart-before.img: exit 0
+  ** /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios01r/xtask/tosdump-68688/testpart-before.img
+  ** Phase 1 - Preparing FAT
+  ** Phase 2 - Checking Directories
+  ** Phase 3 - Checking for Orphan Clusters
+  Warning: 6 files, 65074 KiB free (32537 clusters)
+fsck_msdos -n testpart-after.img: exit 0
+  ** /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-29-bios01-rest/runs/before-fs22/testpart-after.img
+  ** Phase 1 - Preparing FAT
+  ** Phase 2 - Checking Directories
+  ** Phase 3 - Checking for Orphan Clusters
+  Warning: 6 files, 65074 KiB free (32537 clusters)
+testpart after sha256 70a8da64a9c4bb211d17662afce33f944398f4010efd52700a0d5a0ac05cde2d (kept: testpart-after.img)

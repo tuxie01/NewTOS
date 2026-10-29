@@ -279,7 +279,7 @@ report no-change).
 ### `forcechange` / sector-0-write contract vs. the Pi
 
 **[BIOS01] (2) is implemented:** `media_change` returns `2` while the drive's
-`forcechange` is armed (`tos-api/src/bios/mod.rs:300@media_change`); (1), a
+`forcechange` is armed (`tos-api/src/bios/mod.rs:344@media_change`); (1), a
 latched `mediachange`, still does not exist (no probe). The paragraph below is
 the state before BIOS01.
 
@@ -311,7 +311,7 @@ contract**, not a cosmetic one.
   the same drive (`bios/blkdev.c:590`). The "non-removable ⇒ constant 0"
   model of this section holds only while nobody writes sector 0.
 - **[BIOS01]** The `forcechange` half of the pair now exists: `Getbpb` clears
-  it (`tos-api/src/bios/bpb.rs:247@clear_forcechange`); the `mediachange` latch
+  it (`tos-api/src/bios/bpb.rs:274@clear_forcechange`); the `mediachange` latch
   is still absent. Before:
   **Latch/reset pair absent.** With `Mediach`≡0 there is no latch for `Getbpb`
   to clear; the `Getbpb`→`Mediach` reset handshake is a no-op. (Measured:

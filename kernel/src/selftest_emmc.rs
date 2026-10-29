@@ -97,16 +97,19 @@ pub fn run() {
         );
 
         // ── L1: physical-mode Rwabs (RW_NOTRANSLATE, bit 3) ──
-        // Bit 3 set ⇒ the sector argument is an ABSOLUTE device sector with
-        // no partition translation. Reading absolute sector 0 must return
-        // the raw MBR — byte-identical to a direct block read, and (when the
-        // drive starts past sector 0, e.g. C: behind an MBR) different from
-        // the logical read of the drive's own sector 0 above.
+        // Bit 3 set ⇒ `drive` is the physical unit — the SD card is unit 26
+        // (`tos_api::bios::drive::SD_UNIT`, BIOS-STOR-002) — and the sector
+        // argument an ABSOLUTE device sector with no partition translation.
+        // Reading absolute sector 0 must return the raw MBR — byte-identical
+        // to a direct block read, and (when the drive starts past sector 0,
+        // e.g. C: behind an MBR) different from the logical read of the
+        // drive's own sector 0 above.
         const RW_NOTRANSLATE: u64 = 8;
         let mut raw0 = [0u8; 512];
         let mut phys0 = [0u8; 512];
         let raw_ok = emmc::SDCARD.read_blocks(0, &mut raw0).is_ok();
-        let prc = rwabs(RW_NOTRANSLATE, phys0.as_mut_ptr() as u64, 1, 0, drv, 0);
+        let unit = tos_api::bios::drive::SD_UNIT as u64;
+        let prc = rwabs(RW_NOTRANSLATE, phys0.as_mut_ptr() as u64, 1, 0, unit, 0);
         let matches_raw = phys0 == raw0;
         let differs_logical = phys0 != rbuf;
         kprintln!(

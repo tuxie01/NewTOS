@@ -1,0 +1,21 @@
+fs20 EMUTOS-1a7484ab-BIOS-mc-fs20-disk.txt: before 0 [] after 0 [] now-equal [] NEWLY-differing []
+fs20 end state: before def0f69175a786bee319718e614750633728abdad5c4c90d3b735386e611eb21 / testpart: DIFFERENT; differing sectors (partition-relative): 0 1 129 257 813 ; after def0f69175a786bee319718e614750633728abdad5c4c90d3b735386e611eb21 / testpart: DIFFERENT; differing sectors (partition-relative): 0 1 129 257 813
+fs22 EMUTOS-1a7484ab-BIOS-mc-fs22-disk.txt: before 6 [33 37 39 44 46 47 ] after 6 [33 37 39 44 46 47 ] now-equal [] NEWLY-differing []
+fs22 end state: before 70a8da64a9c4bb211d17662afce33f944398f4010efd52700a0d5a0ac05cde2d / testpart: identical ; after 70a8da64a9c4bb211d17662afce33f944398f4010efd52700a0d5a0ac05cde2d / testpart: identical
+paths EMUTOS-1a7484ab-BIOS-mc-paths-disk.txt: before 12 [45 47 48 49 50 51 52 56 58 59 60 67 ] after 12 [45 47 48 49 50 51 52 56 58 59 60 67 ] now-equal [] NEWLY-differing []
+paths end state: before ba6faab1d1df823d3d8469d19016f8a224b86bdb5443b2f83d681b4641228832 / testpart: DIFFERENT; differing sectors (partition-relative): 1 129 257 ; after ba6faab1d1df823d3d8469d19016f8a224b86bdb5443b2f83d681b4641228832 / testpart: DIFFERENT; differing sectors (partition-relative): 1 129 257
+phys EMUTOS-1a7484ab-BIOS-r2-phys-disk.txt: before 11 [32 33 34 35 37 38 39 40 41 42 43 ] after 0 [] now-equal [32 33 34 35 37 38 39 40 41 42 43 ] NEWLY-differing []
+phys end state: before (kept none) / testpart: identical ; after (kept none) / testpart: identical
+r1 EMUTOS-1a7484ab-BIOS-falcontc.txt: before 45 [53 54 66 67 69 70 87 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235 ] after 45 [53 54 66 67 69 70 87 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235 ] now-equal [] NEWLY-differing []
+r1 EMUTOS-1a7484ab-BIOS.txt: before 41 [53 54 66 67 69 70 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235 ] after 41 [53 54 66 67 69 70 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235 ] now-equal [] NEWLY-differing []
+r1 end state: before (kept none) /  ; after (kept none) / 
+r2 EMUTOS-1a7484ab-BIOS-r2-disk.txt: before 3 [68 83 84 ] after 0 [] now-equal [68 83 84 ] NEWLY-differing []
+r2 end state: before (kept none) / testpart: identical ; after (kept none) / testpart: identical
+x001 EMUTOS-1a7484ab-BIOS-r2-x001-disk.txt: before 0 [] after 0 [] now-equal [] NEWLY-differing []
+x001 end state: before 84bcadfb750eef7880acf837c31a84b678f25fa4f10aeb0a710b639c9e56f09b / testpart: identical ; after 84bcadfb750eef7880acf837c31a84b678f25fa4f10aeb0a710b639c9e56f09b / testpart: identical
+x004 EMUTOS-1a7484ab-BIOS-r2-x004-disk.txt: before 6 [40 42 43 44 45 46 ] after 0 [] now-equal [40 42 43 44 45 46 ] NEWLY-differing []
+x004 end state: before a7cf3d2c9a841ba327d14daa6fb41d5c38b10d82a04f39974247f8fcec98e86a / testpart: DIFFERENT; differing sectors (partition-relative): 0 ; after a7cf3d2c9a841ba327d14daa6fb41d5c38b10d82a04f39974247f8fcec98e86a / testpart: DIFFERENT; differing sectors (partition-relative): 0
+x005 EMUTOS-1a7484ab-BIOS-r2-x005-disk.txt: before 1 [40 ] after 0 [] now-equal [40 ] NEWLY-differing []
+x005 end state: before 84bcadfb750eef7880acf837c31a84b678f25fa4f10aeb0a710b639c9e56f09b / testpart: identical ; after 84bcadfb750eef7880acf837c31a84b678f25fa4f10aeb0a710b639c9e56f09b / testpart: identical
+x006 EMUTOS-1a7484ab-BIOS-r2-x006-disk.txt: before 5 [41 42 43 44 46 ] after 0 [] now-equal [41 42 43 44 46 ] NEWLY-differing []
+x006 end state: before ea645cfc2af367c57f7902b66d8806c14ae9d4ed759c029403ee9f16f20ef818 / testpart: DIFFERENT; differing sectors (partition-relative): 0 ; after ea645cfc2af367c57f7902b66d8806c14ae9d4ed759c029403ee9f16f20ef818 / testpart: DIFFERENT; differing sectors (partition-relative): 0

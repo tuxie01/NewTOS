@@ -515,8 +515,13 @@ failed). Return values and error codes are unchanged; `RW_NORETRIES` /
 
 `Rwabs` in **logical** mode maps `(drive, sector)` to
 `part.start_lba + sector` and range-checks `sector + numb <= part.count`
-(`tos-api/src/bios/mod.rs:225@part`; the check sits after the
-`numb == 0` return at `tos-api/src/bios/mod.rs:207@numb` — BIOS-STOR-003).
+for every count, 0 included (`tos-api/src/bios/mod.rs:281@part`, in
+`logical_lba`; **[BIOS01] BIOS-STOR-003 fixed** — the former `numb == 0`
+return ahead of the check is gone, a count of 0 returns 0 only after every
+check, `tos-api/src/bios/mod.rs:211@numb`). Logical sectors are 512 bytes
+whatever the BPB's `recsiz`: step 7 (scaling, `bios/blkdev.c:456-458`) is not
+done — a `recsiz` above 512 is logged in only on a card that had such a
+partition at the boot scan (`07-getbpb.md`, BIOS-STOR-004).
 `part.start_lba`/`part.count` come from the MBR parse in
 `bios/drive.rs` (see `0a-drvmap.md`). Drives are numbered A:=0, B:=1, C:=2, …;
 the SD partitions are assigned from **C:** upward (`tos-api/src/bios/drive.rs:12-13,69`).
@@ -526,9 +531,9 @@ the SD partitions are assigned from **C:** upward (`tos-api/src/bios/drive.rs:12
 | Bit | Constant | On the EMMC SD today |
 |----:|----------|----------------------|
 | 0 | `RW_WRITE` | selects `write_blocks` (CMD24) vs `read_blocks` (CMD17) — `bios/mod.rs:97,102-108` |
-| 1 | `RW_NOMEDIACH` | **[BIOS01] implemented** — skips step 10, the media-change test (`tos-api/src/bios/mod.rs:206@media_change`), but not step 5, the `forcechange` test ahead of it (`tos-api/src/bios/mod.rs:194@forcechange`), as `bios/blkdev.c:450-451,473-477`. The SD is non-removable, so step 10 sees only `forcechange` (`09-mediach.md`). |
+| 1 | `RW_NOMEDIACH` | **[BIOS01] implemented** — skips step 10, the media-change test (`tos-api/src/bios/mod.rs:284@media_change`), but not step 5, the `forcechange` test ahead of it (`tos-api/src/bios/mod.rs:275@forcechange`), as `bios/blkdev.c:450-451,473-477`. The SD is non-removable, so step 10 sees only `forcechange` (`09-mediach.md`). |
 | 2 | `RW_NORETRIES` | **no effect** — the EMMC driver does a single PIO attempt; there is no `RWABS_RETRIES` retry loop and no `etv_critic` chain. Unobservable at `RWABS_RETRIES = 1` (audit §6). |
-| 3 | `RW_NOTRANSLATE` | **[BIOS02, corrected]** the bit **is** honoured: `r_w & RW_NOTRANSLATE` selects an absolute device sector, range-checked against the whole device with `>=` like EmuTOS (`tos-api/src/bios/mod.rs:189@RW_NOTRANSLATE`, `tos-api/src/bios/mod.rs:218@total`). What is **wrong** is the `drive` argument: it is still resolved as a *logical drive letter* (`tos-api/src/bios/mod.rs:173@resolve`) — EmuTOS reads it as a *physical unit number* (`bios/blkdev.c:484-485`). BIOS-STOR-002, decided below (unit 26). |
+| 3 | `RW_NOTRANSLATE` | **[BIOS02, corrected]** the bit **is** honoured: `r_w & RW_NOTRANSLATE` selects an absolute device sector, range-checked against the whole device with `>=` like EmuTOS (`tos-api/src/bios/mod.rs:202@RW_NOTRANSLATE`, `tos-api/src/bios/mod.rs:306@total`). **[BIOS01] BIOS-STOR-002 fixed:** `drive` is the *physical unit number* (`bios/blkdev.c:484-485`) — the SD card is unit 26 (`tos-api/src/bios/drive.rs:23@SD_UNIT`), every other unit `EUNDEV` (`tos-api/src/bios/mod.rs:303@SD_UNIT`, decided below). Before: resolved as a logical drive letter. |
 | 7 | `RW_NOBYTESWAP` | **irrelevant on ARM** — see below. |
 
 - **No byte-swap on ARM.** The Atari byte-swap logic (`RW_NOBYTESWAP`, forced
@@ -539,16 +544,18 @@ the SD partitions are assigned from **C:** upward (`tos-api/src/bios/drive.rs:12
 
 ### Contract behaviours vs. the current code (Step-2 candidates)
 
-- **`adr == NULL` set-mediachange feature:** not implemented — a NULL buffer
-  on A:/B: ends in `EUNDEV` (`tos-api/src/bios/mod.rs:173@resolve`), EmuTOS
-  returns 0 *before* any drive test (`bios/blkdev.c:425-428`). **Measured
-  DIFF, F03/F03b** (EmuTOS 0, NewTOS -15), also on an EmuTOS without floppy
-  drives (audit §1, `EMUTOS-falcon-nofloppy`) — so not a device parameter.
-  **[BIOS02]** Decided below: match EmuTOS (BIOS-STOR-007).
+- **`adr == NULL` set-mediachange feature:** **[BIOS01] implemented**
+  (BIOS-STOR-007) — `drive` 0 or 1 with `adr == NULL` returns 0 before any
+  drive test and in either mode (step 1, `tos-api/src/bios/mod.rs:184@NUMFLOPPIES`).
+  A:/B: never exist on the Pi, so the media-change value EmuTOS stores
+  (`blkdev[dev].mediachange = numb`) has no reader: `Mediach`/`Rwabs` of A:/B:
+  stay `EUNDEV`, `Getbpb` 0 — as on an EmuTOS without floppy drives. Before:
+  `EUNDEV` (F03/F03b: EmuTOS 0, NewTOS -15, also on an EmuTOS without floppy
+  drives, audit §1, `EMUTOS-falcon-nofloppy` — so not a device parameter).
 - **Sector-0 write → `forcechange`:** **[BIOS01] implemented** — steps 5, 6
-  and 10 in the order of the table above (`tos-api/src/bios/mod.rs:194@forcechange`,
-  `tos-api/src/bios/mod.rs:200@arm_forcechange`, `tos-api/src/bios/mod.rs:233@E_CHNG`),
-  the flag per drive in `tos-api/src/bios/drive.rs:152@FORCECHANGE`; W01-W05, X13,
+  and 10 in the order of the table above (`tos-api/src/bios/mod.rs:275@forcechange`,
+  `tos-api/src/bios/mod.rs:279@arm_forcechange`, `tos-api/src/bios/mod.rs:285@E_CHNG`),
+  the flag per drive in `tos-api/src/bios/drive.rs:161@FORCECHANGE`; W01-W05, X13,
   X14 and the closing table `bios-r2-x001.tsv` (a changed sector 0: nothing
   written, end state identical) EQUAL, `measurements/measurement-2026-10-28-bios01-s2/RUNINFO.TXT`.
   Before: **[BIOS02] not implemented, measured
@@ -561,12 +568,12 @@ the SD partitions are assigned from **C:** upward (`tos-api/src/bios/drive.rs:12
   change, so GEMDOS does not re-log the drive (EmuTOS `ckdrv`/`getbcb` ask
   `Mediach`, audit BIOS-STOR-001 — *closed reasoning, not measured*).
 - **`first` unsigned-16 / `first==-1`⇒`lfirst`:** implemented
-  (`tos-api/src/bios/mod.rs:183@lfirst`, the `sector` computation);
+  (`tos-api/src/bios/mod.rs:189@lfirst`, the `sector` computation);
   R03/R04/R18-R20 equal.
-- **`numb == 0` ⇒ `E_OK`, no transfer:** **[BIOS02, wrong]** implemented as an
-  early return *before* the range check (`tos-api/src/bios/mod.rs:207@numb`).
-  EmuTOS checks the range first: R10 (`Rwabs(0,buf,0,-1,2,PSIZE+10)`) is
-  `ESECNF` on EmuTOS, 0 on NewTOS — **measured DIFF**; R09 (in range) equal.
+- **`numb == 0`:** **[BIOS01] fixed (BIOS-STOR-003)** — every check of either
+  path runs, then 0 without a transfer (`tos-api/src/bios/mod.rs:211@numb`);
+  R10 (`Rwabs(0,buf,0,-1,2,PSIZE+10)`) `ESECNF` as on EmuTOS. Before: an early
+  return ahead of the range check, R10 0 (measured DIFF); R09 (in range) equal.
 - **`0x7FFF`-sector chunking:** not needed — transfers loop one 512-byte block
   at a time (`emmc.rs:343-346,353-356`); no signed-WORD count limit.
 - **Error codes:** invalid/unmounted drive → `EUNDEV`; out-of-range sector →
@@ -577,10 +584,14 @@ the SD partitions are assigned from **C:** upward (`tos-api/src/bios/drive.rs:12
   that ran out as `EDRVNR`, and a block outside the card's address space as
   `ESECNF` (`docs/hardware/emmc-sd.md` §5).
   **[BIOS02]** measured equal for R06-R08, R11-R14 (`ESECNF`, `EUNDEV`).
-  The invalid-BPB (`recsiz==0`) `ESECNF` guard is **not** in `Rwabs` here —
-  FAT32/exFAT rejection happens in `Getbpb` (see `07-getbpb.md`), and `Rwabs`
-  does no BPB lookup, so a logical `Rwabs` on a FAT32 partition transfers raw
-  sectors rather than returning `ESECNF`. GAP.
+  **[BIOS01] BIOS-STOR-006 fixed:** the invalid-BPB guard (step 4,
+  `recsiz == 0` → `ESECNF`) is in the logical path
+  (`tos-api/src/bios/mod.rs:272@recsiz`). The `recsiz` is the drive's BPB slot
+  as the last `Getbpb` left it — the trap's, the BDOS log-in's or the boot
+  scan's (`07-getbpb.md`, "Gaps"): 0 after a refused boot sector (FAT32 test,
+  sector size, cluster size, FAT count, unreadable), so a logical `Rwabs` on
+  such a drive answers `ESECNF` until a `Getbpb` succeeds; the physical unit
+  is not affected. Before: no BPB lookup, the raw sectors were transferred.
 - **Buffer pointer:** `adr` is used raw (`bios/mod.rs:99-108`); EL0 user-pointer
   validation is deferred to the process-aware BIOS path (matches EmuTOS's
   no-bounds-check note).
@@ -614,12 +625,21 @@ cases differ). Dumper case number = line of the row in `bios-r2.tsv`.
 through the unit token `u:0` (a literal unit stays refused by the dumper
 guard, `tosdump/core/cases.c:3980@rwabs_value_refusal`), and `recsiz == 0` →
 `ESECNF` after a failed `Getbpb` (BIOS-STOR-006, `x006`).
+**After BIOS01 (2026-10-29,
+`measurements/measurement-2026-10-29-bios01-rest/RUNINFO.TXT`):** R10, F03,
+F03b EQUAL (`bios-r2.tsv` 0 of 51 differ), `bios-r2-phys.tsv` 0 of 12,
+`bios-r2-x004.tsv` 0 of 10, `bios-r2-x005.tsv` 0 of 13, `bios-r2-x006.tsv` 0
+of 11; the end states of the closing tables equal the oracle's.
 **Not measured (stay [source]-only):** arming before a failing range/mediach check,
 negative `numb`, negative `dev` with `buf == NULL`, the physical-mode `>=`
 asymmetry (edge case 8: audit probe P03 only), `etv_critic`, the 0x7FFF
 chunking.
 
 ### Decisions (user 2026-10-28) [BIOS02]
+
+Implemented by BIOS01 (2026-10-29, `measurements/measurement-2026-10-29-bios01-rest/RUNINFO.TXT`):
+002 (`tos-api/src/bios/mod.rs:303@SD_UNIT`), 007
+(`tos-api/src/bios/mod.rs:184@NUMFLOPPIES`), 005 (`07-getbpb.md`).
 
 - **BIOS-STOR-002 — physical unit numbering for `RW_NOTRANSLATE`.** EmuTOS:
   `unit = NUMFLOPPIES (2) + 8*bus + device`
