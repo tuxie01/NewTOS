@@ -903,24 +903,28 @@ fn wt3_prn_entry_is_index_0() {
 // ═══ BIOS / GEMDOS / XBIOS on the absent profile ═════════════════════════
 
 /// The device profile per BIOS device (`docs/api/bios/{01,02,03,08}`): PRN
-/// and 6/7 are absent and answer 0 everywhere; AUX is "port present, no
-/// cable" (`Bconout` 1, `Bcostat` -1, `Bconstat`/`Bconin` 0 without
-/// blocking); MIDI and IKBD accept and discard output and are ready
-/// (BIOS04; `Bconin(3)` waits for the `Iorec(2)` ring, `tests/bios04_midi_ikbd.rs`);
-/// CON is the console; raw-CON writes; handles past the table are 0.
+/// is absent and answers 0 everywhere; AUX is "port present, no cable"
+/// (`Bconout` 1, `Bcostat` -1, `Bconstat`/`Bconin` 0 without blocking), and
+/// handle 6 is the one-entry `Bconmap` table's AUX (BIOS08,
+/// `tests/bios08_bconmap_handles.rs`); MIDI and IKBD accept and discard
+/// output and are ready (BIOS04; `Bconin(3)` waits for the `Iorec(2)` ring,
+/// `tests/bios04_midi_ikbd.rs`); CON is the console; raw-CON writes; handles
+/// past the `Bconmap` table (7 and up) and negative handles are 0.
 #[test]
 fn bios_absent_profile() {
     let (_g, host, _p) = setup();
-    for dev in [0u64, 6, 7, 8, 0xFFFF] {
+    for dev in [0u64, 7, 8, 0xFFFF] {
         assert_eq!(bios(BCONSTAT, dev, 0), 0, "Bconstat({dev})");
         assert_eq!(bios(BCONIN, dev, 0), 0, "Bconin({dev})");
         assert_eq!(bios(BCONOUT, dev, b'x' as u64), 0, "Bconout({dev})");
         assert_eq!(bios(BCOSTAT, dev, 0), 0, "Bcostat({dev})");
     }
-    assert_eq!(bios(BCONSTAT, 1, 0), 0, "Bconstat(1) AUX no cable");
-    assert_eq!(bios(BCONIN, 1, 0), 0, "Bconin(1) AUX non-blocking");
-    assert_eq!(bios(BCONOUT, 1, b'x' as u64), 1, "Bconout(1) AUX accepts");
-    assert_eq!(bios(BCOSTAT, 1, 0), -1, "Bcostat(1) AUX ready");
+    for dev in [1u64, 6] {
+        assert_eq!(bios(BCONSTAT, dev, 0), 0, "Bconstat({dev}) AUX no cable");
+        assert_eq!(bios(BCONIN, dev, 0), 0, "Bconin({dev}) AUX non-blocking");
+        assert_eq!(bios(BCONOUT, dev, b'x' as u64), 1, "Bconout({dev}) AUX accepts");
+        assert_eq!(bios(BCOSTAT, dev, 0), -1, "Bcostat({dev}) AUX ready");
+    }
     assert_eq!(bios(BCONSTAT, 3, 0), 0, "Bconstat(3) MIDI, empty ring");
     assert_eq!(bios(BCONOUT, 3, b'x' as u64), 1, "Bconout(3) MIDI accepts");
     assert_eq!(bios(BCOSTAT, 3, 0), -1, "Bcostat(3) IKBD slot ready");

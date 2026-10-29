@@ -1273,7 +1273,7 @@ ported program that calls `Iorec` (`docs/analysis/iorec-survey-2026-10-28.md`).
 **qemu-virt: AUX output is discarded** — user decision 2026-10-29
 (TASK/XBIOS17.md). Since XBIOS15, AUX *input* on qemu-virt reads device 0's
 IOREC ring, but `Bconout(1)`/`Bcostat(1)` still go to the no-cable driver
-(`tos-api/src/bios/chardev.rs:120@AuxNoCable`): output is dropped. The UART is
+(`tos-api/src/bios/chardev.rs:132@AuxNoCable`): output is dropped. The UART is
 shared with the kernel log (`kernel/src/console.rs:106-111@SerialConsole`), and
 qemu-virt is a development board only; raspi4b keeps AUX as "no cable".
 **Reopen** when a port writes to AUX.
@@ -1310,6 +1310,10 @@ machine** — **ACCEPTED device parameters per profile**:
 | `xbios-bconmap-r1` 18 | `BCONMAP.maptabsize` | 4 (`serport.c:993`) | 3 (`:981`) | 1 (`:965`) | ACCEPTED on both |
 | `xbios-bconmap-r1` 18 | `BCONMAP.mapped_device` | 6 | 7 | 6 | TT EQUAL; Falcon ACCEPTED |
 | (probe only; the dumper's guard refuses 6..9) | `Bconmap(7..9)` | a switch to the SCC / TT-MFP port | `7`, `8`: a switch | 0 | ACCEPTED: no such port |
+| `bios-r1` 70 | `Bcostat(7)` | -1 (SCC B) | -1 (SCC B) | 0 | ACCEPTED: no port 7 (BIOS08) |
+| `bios-core-r1` 65 | `Bcostat(8)` | -1 (TT-MFP) | -1 (SCC A) | 0 | ACCEPTED: no port 8 (BIOS08) |
+| `bios-core-r1` 66 | `Bcostat(9)` | -1 (SCC A) | 0 (3 entries) | 0 | TT ACCEPTED, Falcon EQUAL (BIOS08) |
+| (probe only; the dumper refuses `Bconout(6..9)`) | `Bconout(7,'A')` (audit probe B05) | 1 (SCC B) | 1 (SCC B) | 0 | ACCEPTED: no port 7 (BIOS08) |
 
 Every other `Bconmap` case is EQUAL on both profiles (`bios-r1` 184-186,
 `xbios-chardev-r1` 44-53; the pointers in `xbios-bconmap-r1` 18 by PTR_RAM).
@@ -1318,8 +1322,16 @@ never reads the published table back: a program that writes `maptab`,
 `maptabsize` or `mapped_device` into it changes what it reads, not what
 `Bconmap` does (EmuTOS reads `bconmap_root` live,
 `references/emutos/bios/serport.c:1086-1096`). What EmuTOS writes, NewTOS writes
-too: `Bconmap(6)` stores entry 0 back and sets `mapped_device`. The BIOS
-handles 6..9 are the device table's, not this table's (TASK/BIOS08.md).
+too: `Bconmap(6)` stores entry 0 back and sets `mapped_device`.
+**BIOS handles 6 and up (TASK/BIOS08.md, 2026-10-30):** the BIOS character
+calls take handles `>= 6` from this table, as EmuTOS does
+(`references/emutos/bios/bios.c:923-928,967-972,1000-1005,1152-1157`): handle 6
+= entry 0 = the AUX port, the same answers as handle 1 (`bios-r1` 36
+`Bconstat(6)` and 69 `Bcostat(6)` EQUAL, probe B04 `Bconout(6)` 1 = EmuTOS);
+from 7 up `0`, which is what the same ROM answers on a machine with one
+entry (`map_index >= maptabsize`, `references/emutos/bios/bios.c:925-926`,
+`references/emutos/bios/serport.c:965`). The oracle's further ports make the
+rows above ACCEPTED.
 
 **`_MCH` is `0xFFFFFFFF` ("no Atari hardware")** — ADR-012 amendment
 2026-10-28. The value is EmuTOS' `MCH_NOHARD`

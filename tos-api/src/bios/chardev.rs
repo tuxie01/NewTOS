@@ -8,11 +8,19 @@
 //! `bconout_vec[]` / `bcostat_vec[]`, `bios/bios.c:932,976,1009,1161`,
 //! filled from `bios/chardev.c:30-45`). NewTOS keeps **one** table of
 //! [`CharDevice`] entries indexed by BIOS device number — PRN 0, AUX 1,
-//! CON 2, MIDI 3, IKBD 4, raw-CON 5, 6/7 unused — and every character-device
-//! path goes through it: the BIOS calls here, `Fread`/`Fwrite` on device
-//! handles, the `Ccon*`/`Caux*`/`Cprn*` GEMDOS calls and `Midiws`. A later
+//! CON 2, MIDI 3, IKBD 4, raw-CON 5 — and every character-device path goes
+//! through it: the BIOS calls here, `Fread`/`Fwrite` on device handles, the
+//! `Ccon*`/`Caux*`/`Cprn*` GEMDOS calls and `Midiws`. A later
 //! UART/MIDI/printer driver (`TASK/IO01.md`) replaces only its table entry
 //! ([`install_device`]).
+//!
+//! Handles 6 and up are the `Bconmap` table's (BIOS08; EmuTOS'
+//! `BCONMAP_AVAILABLE` branch, `bios/bios.c:923-928,967-972,1000-1005,
+//! 1152-1157`, which runs before the vector tables): handle `6 + i` is
+//! entry `i` of the table, every handle past it answers `0`. The NewTOS
+//! table has one entry, the AUX port ([`crate::xbios::bconmap`]), so handle
+//! 6 answers as handle 1 — through the same AUX entry, a driver in slot 1
+//! included — and handles 7 and up answer `0` ([`device`]).
 //!
 //! The NewTOS profile has one real character device — the console (PL011 +
 //! framebuffer): keyboard **input** on CON (2) only, screen **output** on
@@ -24,7 +32,7 @@
 //! reference machine, whose MIDI and IKBD ACIAs always exist (BIOS04, user
 //! decision 2026-10-29): output ready and accepted, the byte discarded
 //! ([`MidiPort`], [`IkbdPort`]); MIDI input is the `Iorec(2)` ring, which
-//! `Bconin(3)` waits on, IKBD input is `char_dummy`. PRN and 6/7 are the
+//! `Bconin(3)` waits on, IKBD input is `char_dummy`. PRN is the
 //! documented **absent device** ([`Absent`], EmuTOS' `char_dummy` /
 //! `charout_dummy`, `bios/chardev.c:49-58`): status 0, input 0 without
 //! blocking, output discarded with 0 — rather than blocking on hardware that
@@ -38,7 +46,7 @@ use tos_types::Long;
 
 use crate::host;
 use crate::trap::TrapArgs;
-use crate::xbios::{iorec, kbdvecs};
+use crate::xbios::{bconmap, iorec, kbdvecs};
 
 // ---------------------------------------------------------------------------
 // The device table.
@@ -56,8 +64,12 @@ pub const DEV_MIDI: u16 = 3;
 pub const DEV_IKBD: u16 = 4;
 /// BIOS device number of the raw console (screen without VT52).
 pub const DEV_RAWCON: u16 = 5;
-/// Size of the table (EmuTOS' vectors have 8 slots; `> 7` is no device).
-const NDEV: usize = 8;
+/// Size of the table: devices 0..5. EmuTOS' `bcon*_vec[]` have eight slots,
+/// but with `BCONMAP_AVAILABLE` (the reference build) handles 6 and 7 never
+/// reach them — the `Bconmap` branch takes every handle `>= 6` first
+/// (`bios/bios.c:923-928`) — so the table ends at 5 and [`device`] routes
+/// the rest.
+const NDEV: usize = 6;
 
 /// One BIOS character device — the four routines EmuTOS keeps per handle in
 /// its `bcon*_vec[]` tables. Return values are the BIOS contract
@@ -355,13 +367,12 @@ static DEVICES: [Slot; NDEV] = [
     slot(&MIDI_PORT),    // 3 MIDI
     slot(&IKBD_PORT),    // 4 IKBD
     slot(&RAW_CONSOLE),  // 5 raw CON
-    slot(&ABSENT),       // 6
-    slot(&ABSENT),       // 7
 ];
 
 /// Replace the table entry of BIOS device `dev` with `entry` — the one place a
 /// driver (`TASK/IO01.md`) plugs in. Returns the previous entry, or `None`
-/// (nothing changed) when `dev` is not a table slot (`> 7`).
+/// (nothing changed) when `dev` is not a table slot (`> 5`; handles 6 and up
+/// are the `Bconmap` table's, [`device`]).
 pub fn install_device(
     dev: u16,
     entry: &'static &'static dyn CharDevice,
@@ -374,12 +385,42 @@ pub fn install_device(
     Some(unsafe { &*prev })
 }
 
-/// The entry of BIOS device `dev`, or `None` for a handle past the table
-/// (EmuTOS `bconout`: `handle > 7` → 0, `bios/bios.c:1008-1010`).
-pub fn device(dev: u16) -> Option<&'static dyn CharDevice> {
+/// The entry in table slot `dev` (0..5), or `None` past the table.
+fn slot_entry(dev: u16) -> Option<&'static dyn CharDevice> {
     let cell = DEVICES.get(dev as usize)?;
     // SAFETY: as in `install_device`.
     Some(unsafe { *cell.load(Ordering::Acquire) })
+}
+
+/// The entry a BIOS character call on `handle` reaches, or `None` (the call
+/// answers `0`) — EmuTOS' dispatch in `bconstat`/`bconin`/`bconout`/
+/// `bcostat` (`bios/bios.c:923-933`, `:967-977`, `:1000-1010`,
+/// `:1152-1162`), with `handle` a `WORD`:
+///
+/// 1. the `Bconmap` branch first: `map_index = handle -
+///    BCONMAP_START_HANDLE` in a `WORD`; `>= maptabsize` → `0`; `>= 0` → the
+///    port of table entry `map_index` ([`bconmap::entry_device`]: entry 0 is
+///    the AUX port, device 1's entry — EmuTOS' `maptab[0]` holds the
+///    `bconstat1`.. routines device 1's vectors come from,
+///    `bios/serport.c:98,972,996-1003`);
+/// 2. else `0 <= handle` → table slot `handle` (now `< 6`);
+/// 3. else (negative) → `0`.
+///
+/// With one entry: 6 → the AUX entry, 7 and up → `None`. A negative `handle`
+/// below `-32762` wraps to a large index, past the table like EmuTOS'.
+pub fn device(handle: u16) -> Option<&'static dyn CharDevice> {
+    let h = handle as i16;
+    let map_index = h.wrapping_sub(bconmap::BCONMAP_START_HANDLE);
+    if map_index >= bconmap::MAPTABSIZE {
+        return None;
+    }
+    if map_index >= 0 {
+        return slot_entry(bconmap::entry_device(map_index));
+    }
+    if h < 0 {
+        return None;
+    }
+    slot_entry(handle)
 }
 
 /// `Bconstat` core keyed by BIOS device number.
@@ -399,7 +440,9 @@ pub fn bconout_handle(dev: u16, byte: u8) -> Long {
 /// `bcostat_init[3] = bcostat4` (IKBD) and `bcostat_init[4] = bcostat3`
 /// (MIDI) (`bios/chardev.c:38-42`), unlike `Bconin`/`Bconout`. So
 /// `Bcostat(3)` reads the IKBD entry's status and `Bcostat(4)` the MIDI
-/// entry's (`docs/api/bios/08-bcostat.md`).
+/// entry's (`docs/api/bios/08-bcostat.md`). The swap touches only the
+/// vector-table handles 3/4; a `Bconmap` handle reads its port's own status
+/// (`maptab[i].Bcostat`, `bios/bios.c:1157`) — 6 is AUX's.
 pub fn bcostat_handle(handle: u16) -> Long {
     let dev = match handle {
         DEV_MIDI => DEV_IKBD,
@@ -411,7 +454,7 @@ pub fn bcostat_handle(handle: u16) -> Long {
 
 /// `Bconstat` (0x01) — input-device status of the device's table entry:
 /// `-1` when a byte is ready, else `0` (also the boot-guard / absent-device
-/// value).
+/// value). Handle 6 is the AUX entry, 7 and up `0` ([`device`], BIOS08).
 pub fn bconstat(args: &TrapArgs) -> Long {
     bconstat_handle(args.arg_u16(0))
 }
@@ -510,7 +553,8 @@ pub fn bconin_handle(dev: u16) -> Long {
 /// the ASCII value in bits 0-7 (non-ASCII keys → ASCII 0 + scancode), per
 /// `docs/api/bios/02-bconin.md`. MIDI (3) waits for a byte in the `Iorec(2)`
 /// ring ([`MidiPort`]); IKBD (4) and absent devices return `0` without
-/// blocking.
+/// blocking. Handle 6 reads the AUX entry as handle 1 does (on qemu-virt it
+/// waits), 7 and up return `0` ([`device`], BIOS08).
 pub fn bconin(args: &TrapArgs) -> Long {
     bconin_handle(args.arg_u16(0))
 }
@@ -519,7 +563,8 @@ pub fn bconin(args: &TrapArgs) -> Long {
 /// entry. Console handles write to the screen and return `1` (byte accepted,
 /// `bconout2`/`bconout5`); the no-cable AUX, MIDI and IKBD discard and
 /// return `1` ([`AuxNoCable`], [`MidiPort`], [`IkbdPort`]); absent devices
-/// discard and return `0` (`charout_dummy`).
+/// discard and return `0` (`charout_dummy`). Handle 6 is the AUX entry
+/// (`1`), 7 and up return `0` ([`device`], BIOS08).
 pub fn bconout(args: &TrapArgs) -> Long {
     bconout_handle(args.arg_u16(0), args.arg_u16(1) as u8)
 }
@@ -530,7 +575,8 @@ pub fn bconout(args: &TrapArgs) -> Long {
 /// and 4 ([`IkbdPort`], [`MidiPort`]); raw-CON's slot is `char_dummy`
 /// (`bcostat_init[5]`), so it reports busy (`0`) although `Bconout(5)`
 /// writes — deliberately **not** the same handle set as `Bconout`. Absent
-/// devices and the boot guard: `0`.
+/// devices and the boot guard: `0`. Handle 6 is the AUX entry (`-1`), 7 and
+/// up `0` ([`device`], BIOS08).
 pub fn bcostat(args: &TrapArgs) -> Long {
     bcostat_handle(args.arg_u16(0))
 }

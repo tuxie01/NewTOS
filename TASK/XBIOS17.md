@@ -6,7 +6,7 @@ Status: **GESCHLOSSEN** 2026-10-29 (ACCEPTED-Abweichung, Anwender) · Prioritaet
 
 - Seit XBIOS15 liest AUX auf qemu-virt aus dem Ring von Geraet 0
   (`kernel/src/console.rs@AuxSerial`); `Bconout(1)`/`Bcostat(1)` laufen
-  weiter ueber `AuxNoCable` (`tos-api/src/bios/chardev.rs:120@AuxNoCable`:
+  weiter ueber `AuxNoCable` (`tos-api/src/bios/chardev.rs:132@AuxNoCable`:
   `Bconout` verwirft und meldet 1, `Bcostat` -1).
 - **Bericht des Leads (2026-10-29), keine Entscheidung:**
   - Die UART ist geteilt: `SerialConsole` ist der einzige Sendeweg fuer

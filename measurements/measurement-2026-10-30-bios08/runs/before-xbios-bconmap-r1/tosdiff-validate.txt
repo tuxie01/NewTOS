@@ -1,0 +1,4 @@
+BIOS.BIN: area BIOS, 1 records of 320 bytes, build ----, case CRC DD429BF8
+BIOS.BIN: format 3, pointer 8 bytes, least significant word first
+BIOS.BIN: matches xbios-bconmap-r1.tsv (1 cases)
+BIOS.BIN: accepted

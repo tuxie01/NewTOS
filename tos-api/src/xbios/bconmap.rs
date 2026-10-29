@@ -29,7 +29,8 @@
 //! ([`is_vector`], `crate::bios::crash::RegionKind::BconmapVector`) and the
 //! program ends with `Pterm(-1)` — loud, never a silent wrong call. The
 //! kernel itself never calls through the table either: BIOS handles `>= 6`
-//! are the device table's business (`TASK/BIOS08.md`).
+//! reach the entry's port in the BIOS device table directly
+//! ([`entry_device`], `crate::bios::chardev::device`; BIOS08).
 //!
 //! # The kernel's state is its own
 //!
@@ -91,6 +92,23 @@ pub const BCONMAP_START_HANDLE: i16 = 6;
 pub const MAPTABSIZE: i16 = 1;
 /// The five function slots of an entry, in `MAPTAB` order.
 pub const VECTOR_COUNT: usize = 5;
+
+/// The port behind each entry, as the BIOS device-table slot whose driver
+/// serves it: entry 0 is the AUX port, device 1 (EmuTOS' `maptable_mfp`,
+/// `{bconstat1, bconin1, bcostat1, bconout1, ...}`, `bios/serport.c:98,972`
+/// — the routines device 1's vectors are taken from, `:996-1003`).
+const ENTRY_DEVICES: [u16; MAPTABSIZE as usize] = [crate::bios::chardev::DEV_AUX];
+
+/// The BIOS device-table slot that serves entry `index` (`0 ..
+/// MAPTABSIZE`): what a BIOS character call on handle
+/// `BCONMAP_START_HANDLE + index` reaches — EmuTOS calls
+/// `bconmap_root.maptab[index]`'s routines there (`bios/bios.c:927-928`,
+/// `:971-972`, `:1004-1005`, `:1156-1157`). Fixed per entry, independent of
+/// the mapped device, as EmuTOS' entries are. Panics on an index outside
+/// the table (the caller checks the range first, as EmuTOS does).
+pub fn entry_device(index: i16) -> u16 {
+    ENTRY_DEVICES[index as usize]
+}
 
 /// The device mapped to BIOS device 1 (`bconmap_root.mapped_device`): 6 at
 /// start (`bios/serport.c:966`, not Falcon/ARAnyM), changed only by a valid

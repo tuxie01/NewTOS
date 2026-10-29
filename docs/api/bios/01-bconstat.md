@@ -32,8 +32,10 @@ may touch device state).
 
 **Build configuration affecting this function:**
 - `BCONMAP_AVAILABLE` — inserts the handle-remap stage for handles ≥
-  `BCONMAP_START_HANDLE` (6 on TT/Falcon). Without it, handles 0..7 index
-  `bconstat_vec` directly and anything else returns `0L`.
+  `BCONMAP_START_HANDLE` (6). The reference build has it on every machine,
+  with `maptabsize` 1 unless Falcon/MSTe/ARAnyM (3) or TT (4)
+  (`docs/api/xbios/2c-bconmap.md`, "Build configuration"). Without it,
+  handles 0..7 index `bconstat_vec` directly and anything else returns `0L`.
 - `CONF_WITH_PRINTER_PORT`, `CONF_SERIAL_CONSOLE_POLLING_MODE`,
   `CONF_ATARI_HARDWARE`/`CONF_WITH_MFP` — affect the *handlers* the vector
   points at, not `bconstat` itself (see per-handler notes).
@@ -55,7 +57,10 @@ routines are installed by `chardev_init()` (`bios/chardev.c:63`) from the
 `bconstat_init[]` table: `{char_dummy, bconstat1, bconstat2, bconstat3,
 char_dummy, char_dummy, char_dummy, char_dummy}`. So by default only handles
 1 (AUX/RS-232), 2 (CON/IKBD) and 3 (MIDI) have real status routines; handles
-0, 4, 5, 6, 7 map to `char_dummy` which always returns `0L`.
+0, 4, 5, 6, 7 map to `char_dummy` which always returns `0L`. With
+`BCONMAP_AVAILABLE` (the reference build) slots 6 and 7 are never read:
+handle 6 is `maptab[0].Bconstat` = `bconstat1` (`bios/serport.c:98,972`),
+handles from `6 + maptabsize` up return `0L` (`bios/bios.c:923-928`).
 
 Every default status routine is heavily Atari-hardware gated: `bconstat1`
 reads the MFP/SCC receiver flag; `bconstat2` (`bios/ikbd.c:235`) compares
@@ -99,10 +104,12 @@ Handle meanings (default table, `bios/chardev.c:30`):
 | 2      | CON / IKBD (console input)  | `bconstat2` |
 | 3      | MIDI in                     | `bconstat3` |
 | 4      | (IKBD-in, historical)       | `char_dummy` → 0 |
-| 5..7   | unused / Bconmap            | `char_dummy` → 0 |
+| 5      | raw CON (no input)          | `char_dummy` → 0 |
+| 6 .. 5+`maptabsize` | Bconmap entries (`BCONMAP_AVAILABLE`) | `maptab[handle-6].Bconstat`; entry 0 = `bconstat1` (the MFP port) |
+| from 6+`maptabsize` | past the Bconmap table | `0L` (`bios/bios.c:925-926`) |
 
-No range check beyond `0..7`; validation is `handle >= 0 && handle <= 7`
-(`bios/bios.c:931`).
+Without `BCONMAP_AVAILABLE` handles 6/7 are `char_dummy` slots and the
+validation is `handle >= 0 && handle <= 7` (`bios/bios.c:931`).
 
 ---
 
@@ -223,7 +230,8 @@ returns 0" guard is EmuTOS-specific and invisible to normal applications
 
 ## Configuration / version notes
 
-- `BCONMAP_AVAILABLE` (TT/Falcon) adds the handle-remap stage.
+- `BCONMAP_AVAILABLE` (the reference build, every machine) adds the
+  handle-remap stage.
 - `CONF_SERIAL_CONSOLE_POLLING_MODE` makes `bconstat2` poll RS-232 instead of
   the IKBD queue.
 - Handler availability depends on `CONF_WITH_MFP`/`CONF_WITH_SCC`/
@@ -265,7 +273,21 @@ is `0` unless a program put a byte there through the `Iorec(2)` record — then
 sides, `measurements/measurement-2026-10-29-bios04/RUNINFO.TXT`).
 `Bconstat(4)` stays `char_dummy` → `0` (`bconstat_init[4]`,
 `references/emutos/bios/chardev.c:30-32`). Implementation
-`tos-api/src/bios/chardev.rs:163@MidiPort`, `tos-api/src/bios/chardev.rs:236@IkbdPort`.
+`tos-api/src/bios/chardev.rs:175@MidiPort`, `tos-api/src/bios/chardev.rs:248@IkbdPort`.
+
+**[BIOS08] 2026-10-30 — handles 6 and up are the `Bconmap` table's (EmuTOS'
+one-entry table, `TASK/XBIOS05.md` option 1):** the `Bconmap` branch runs
+before the device table (`references/emutos/bios/bios.c:923-928`). Handle 6
+is entry 0, the AUX port: `Bconstat(6)` answers as `Bconstat(1)`, through the
+same AUX entry (`0` on `board-rpi4`, the serial input ring on
+`board-qemu-virt`). Handles from 7 up answer `0` (`map_index >= maptabsize`,
+`:925-926`), as EmuTOS does on a machine with one entry
+(`references/emutos/bios/serport.c:965`). Implementation
+`tos-api/src/bios/chardev.rs:411@device`,
+`tos-api/src/xbios/bconmap.rs:109@entry_device`; the device table ends at 5.
+Measured: `bios-r1` 36 (`Bconstat(6)`), `bios-core-r1` 20-22
+(`Bconstat(7..9)`) EQUAL (`0` on both sides: the oracle's ports have no
+byte waiting); `measurements/measurement-2026-10-30-bios08/RUNINFO.TXT`.
 
 **Devices 0 (PRN), 1 (AUX), 3 (MIDI):** `Bconstat` → `0` (no byte; for AUX unchanged by option A: EmuTOS `bconstat1` is also 0 on empty iorec, `serport.c:255-258`). Consistency
 with EmuTOS (read this session): dev 0 = `char_dummy` (`bios/chardev.c:31`);
@@ -293,14 +315,16 @@ decided, documented profile until `TASK/IO01.md`.
 | 2 | CON | framebuffer VT52 + **USB-HID keyboard** | console RX ring |
 | 3 | MIDI in | MIDI port entry (BIOS04); no MIDI driver yet | the `Iorec(2)` MIDI ring (`bconstat3`) |
 | 4 | IKBD in (historical) | IKBD port entry (BIOS04), input slot `char_dummy` → always `0` | `char_dummy` |
-| 5..7 | unused / Bconmap | absent → `0` | — |
+| 5 | raw CON | no input → `0` | — |
+| 6 | Bconmap entry 0 = AUX (BIOS08) | the AUX entry, as handle 1 | as handle 1 |
+| 7.. | past the Bconmap table | `0` | — |
 
 - **What "ready" tests on the Pi.** For **CON (handle 2 — the only
   console-input handle)** `bconstat` returns `-1` iff the console RX ring is
   non-empty (`tos-api/src/bios/chardev.rs` `is_console_in` →
   `Host::console_has_input` → `console::rx_has_input`,
   `kernel/src/console.rs`). This is the queue/flag test the contract calls
-  for — never a physical key scan. Absent devices (0/1-as-dummy/5..7) and
+  for — never a physical key scan. Absent devices (0/1-as-dummy/5/7..) and
   the IKBD input slot (**4**) return `0`, the `char_dummy` equivalent; MIDI
   (3) tests the `Iorec(2)` ring (BIOS04).
 

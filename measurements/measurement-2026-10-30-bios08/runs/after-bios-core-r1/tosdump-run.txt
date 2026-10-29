@@ -1,0 +1,64 @@
+command   cargo xtask tosdump bios tosdump/cases/bios-core-r1.tsv --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-core.BIN --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-core-falcontc.BIN --out /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-30-bios08/runs/after-bios-core-r1 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios08/xtask-after
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    60824ec8e31d2fdcc3c0f77ec69998896a8b7339
+dirty     30 path(s) in git status --porcelain
+   M TASK/BIOS04-STATUS-DONE.MD
+   M TASK/BIOS04.md
+   M TASK/BIOS08.md
+   M TASK/BIOS09.md
+   M TASK/BIOS11.md
+   M TASK/MEM12.md
+   M TASK/XBIOS05-STATUS-DONE.MD
+   M TASK/XBIOS17.md
+   M docs/COMPATIBILITY.md
+   M docs/HARDWARE-PROFILE.md
+   M docs/analysis/deps/mapping.tsv
+   M docs/api/bios/01-bconstat.md
+   M docs/api/bios/02-bconin.md
+   M docs/api/bios/03-bconout.md
+   M docs/api/bios/08-bcostat.md
+   M docs/api/bios/_dispatcher.md
+   M docs/api/bios/_full-function-inventory.md
+   M docs/api/bios/_state.md
+   M docs/api/gemdos/file/3f-fread.md
+   M docs/api/xbios/0c-midiws.md
+   M docs/api/xbios/0e-iorec.md
+   M docs/api/xbios/2c-bconmap.md
+   M docs/audits/2026-10-28-bios-core.md
+   M docs/audits/2026-10-29-xbios15-serial-rx.md
+   M sdk/apps/apitest/apitest.c
+   M tos-api/src/bios/chardev.rs
+   M tos-api/src/xbios/bconmap.rs
+  ?? measurements/measurement-2026-10-30-bios08/
+  ?? measurements/measurement-2026-10-30-cook02/
+  ?? tos-api/tests/bios08_bconmap_handles.rs
+harness commit 60824ec8e31d2fdcc3c0f77ec69998896a8b7339
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-core-r1.tsv sha256 db802dc60c30099409f82399b37c42faa3f483d802bbfa7c6694e6d9d633e4dc
+table     names the unit token u:0: no; a program path x:<path>: no
+profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+target/   own (9 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (9 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 93ce480cde8f6d32fc5fe865ad37593c34da7e3c3618c6604f62e39f819f2a2f
+kernel ELF  sha256 58d9de5afda3d08ed284872cdef36a8417091714869902191d2eba5111a32af8 (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id 6082
+DUMPBIOS.NAP sha256 9ecae61f567a1525dfd7c45b4d3feaaa74b6aa6c11a81987b4b7c69cfe59bb92
+card.img.manifest: image_sha256 8a7a5be455df39cec5b6decf3455350da2f64f93157b80bde90d52a97b4c923b
+card.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios08/xtask-after/tosdump-84942/card.img sha256 8a7a5be455df39cec5b6decf3455350da2f64f93157b80bde90d52a97b4c923b (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 529f375fb7986b81b3d9ab533f19649d7b0f0aab53ddd989d2668030982b053d
+BIOS.BIN 14112 bytes, sha256 d7838ef83e189ec42131e0730468de45d122ab7b21d8bac405b4cb9afa1bf530
+BIOS.LOG 168 bytes, sha256 6cbdad52fb79de7849f3ddd0ca69274468844caf0365411224c69c8d97933757
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 d02ad08479af5647f3f1c4d4fa7f47366bc72fa7198c4ddda2da70fcabb6a9a8
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 44 records of 320 bytes, build 6082, case CRC C056A3E0
+tosdiff EMUTOS-1a7484ab-BIOS-core.BIN vs NEWTOS.BIN: exit 1, 2 of 44 cases differ
+tosdiff EMUTOS-1a7484ab-BIOS-core-falcontc.BIN vs NEWTOS.BIN: exit 1, 1 of 44 cases differ
+total     30 s
+result    run complete (differences above are findings, not failures)

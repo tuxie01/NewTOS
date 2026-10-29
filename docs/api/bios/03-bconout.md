@@ -15,7 +15,8 @@
   `bios/chardev.c:91` `bconout2` (screen via `cputc`), `bios/midi.c`
   `bconout3` (MIDI out), `bios/ikbd.c` `bconout4` (IKBD command out),
   `bios/chardev.c:98` `bconout5` (raw screen via `ascii_out`),
-  `bios/chardev.c:55` `charout_dummy` (handles 6,7 → 0).
+  `bios/chardev.c:55` `charout_dummy` (slots 6,7 → 0; with
+  `BCONMAP_AVAILABLE` never reached, the Bconmap table answers handles ≥ 6).
 
 **Headers / type definitions used:**
 - `include/tosvars.h` — `bconout_vec[8]`
@@ -30,7 +31,9 @@
 mutate the VT52/console state (cursor, escape parser) and screen RAM.
 
 **Build configuration affecting this function:**
-- `BCONMAP_AVAILABLE` — handle-remap stage for handles ≥ 6.
+- `BCONMAP_AVAILABLE` — handle-remap stage for handles ≥ 6 (the reference
+  build, every machine: `docs/api/xbios/2c-bconmap.md`, "Build
+  configuration").
 - `CONF_WITH_PRINTER_PORT` — without it, `bconout0`/`bcostat0` are inert.
 - `CONF_SERIAL_CONSOLE` — makes `bconout5` also echo to handle 1.
 
@@ -82,7 +85,7 @@ otherwise (`bios/parport.c:144-172`). This asymmetry is real and observable.
 
 | Position | Name     | Type | Size | Source location   | Notes |
 |----------|----------|------|------|-------------------|-------|
-| arg0     | `handle` | `WORD` | 2  | `bios/bios.c:991` | `0..7` table-indexed |
+| arg0     | `handle` | `WORD` | 2  | `bios/bios.c:991` | `0..5` table-indexed, from 6 the Bconmap table (with `BCONMAP_AVAILABLE`; else `0..7`) |
 | arg1     | `what`   | `WORD` | 2  | `bios/bios.c:991` | byte to output; only low 8 bits used (`bconout5` does `LOBYTE(ch)`, `bios/chardev.c:104`) |
 
 Handle meanings (default `bconout_vec`):
@@ -95,7 +98,10 @@ Handle meanings (default `bconout_vec`):
 | 3      | MIDI out                       | `bconout3` |
 | 4      | IKBD command out               | `bconout4` |
 | 5      | raw screen (no VT52)           | `bconout5` |
-| 6,7    | unused / Bconmap               | `charout_dummy` → 0 |
+| 6 .. 5+`maptabsize` | Bconmap entries (`BCONMAP_AVAILABLE`) | `maptab[handle-6].Bconout`; entry 0 = `bconout1` (`bios/serport.c:98,972`) |
+| from 6+`maptabsize` | past the Bconmap table | `0L` (`bios/bios.c:1001-1003`) |
+
+Without `BCONMAP_AVAILABLE` slots 6/7 are `charout_dummy` → 0.
 
 ---
 
@@ -118,7 +124,8 @@ Handle meanings (default `bconout_vec`):
 | `bconout3` (MIDI) | `1L` | `bios/midi.c` |
 | `bconout4` (IKBD) | `1L` | `bios/ikbd.c` |
 | `bconout5` (raw)  | `1L` | `bios/chardev.c:98-106` |
-| `charout_dummy` (6,7) | `0L` | `bios/chardev.c:55` |
+| `charout_dummy` (6,7 without `BCONMAP_AVAILABLE`) | `0L` | `bios/chardev.c:55` |
+| Bconmap entry 0 (handle 6) | `bconout1`: `1L` | `bios/bios.c:1004-1005`, `bios/serport.c:98` |
 | boot too early / invalid handle | `0L` | `bios/bios.c:997,1008-1010` |
 
 ### Side effects on global state
@@ -141,7 +148,8 @@ Handle meanings (default `bconout_vec`):
 | `CHARDEV_AVAILABLE` clear | `bios/bios.c:997` | `0L` |
 | `handle` outside `0..7` and not in Bconmap range | `bios/bios.c:1008-1010` | `0L` |
 | Handle 0 printer busy / timed out | `bios/parport.c:171` | `0L` |
-| Handles 6,7 (`charout_dummy`) | `bios/chardev.c:55` | `0L` |
+| Bconmap index ≥ `maptabsize` (when `BCONMAP_AVAILABLE`) | `bios/bios.c:1001-1003` | `0L` |
+| Handles 6,7 (`charout_dummy`, without `BCONMAP_AVAILABLE`) | `bios/chardev.c:55` | `0L` |
 
 `bconout0`'s `0L` is a genuine "not sent, retry" signal, distinct from the
 other handlers' guaranteed success — the only handler where the return value
@@ -160,7 +168,9 @@ boot-guard `0L`.
   (no VT52 escape interpretation).
 - **Printer busy:** with the Centronics BUSY line asserted (or
   `!CONF_WITH_PRINTER_PORT`), `Bconout(0, 'A')` returns `0`.
-- **Invalid handle:** `Bconout(6, 'A')` (no Bconmap) returns `0`.
+- **Invalid handle:** `Bconout(6, 'A')` (no Bconmap) returns `0`; with
+  `BCONMAP_AVAILABLE` `Bconout(6, 'A')` is `bconout1` (`1`) and
+  `Bconout(6 + maptabsize, 'A')` returns `0`.
 
 ---
 
@@ -230,7 +240,8 @@ boot-guard `0L`.
 - ~~`CONF_WITH_VT52`~~ — **Korrektur (CON04, 2026-10-22):** dieses Makro gibt es in EmuTOS nicht (keine Fundstelle in `references/emutos`). Der VT52-Parser (`bios/vt52.c`) ist unbedingt kompiliert. Vollstaendige Spec des Automaten, aller Folgen und des Handle-2/5-Unterschieds: [`_vt52.md`](_vt52.md).
 - `CONF_SERIAL_CONSOLE`: `bconout5` also writes handle 1.
 - `CONF_WITH_PRINTER_PORT`: handle 0 active (else `0L`).
-- `BCONMAP_AVAILABLE`: handles ≥ 6 via remap table.
+- `BCONMAP_AVAILABLE`: handles ≥ 6 via remap table (the reference build,
+  every machine).
 
 ---
 
@@ -257,11 +268,29 @@ and `Bconout(4,b)` → `1`, the byte discarded — the oracle build has both ACI
 returns `1L` (`references/emutos/bios/ikbd.c:933-937`). NewTOS has no MIDI or
 IKBD transmitter and no IKBD command interpreter, so the byte has no effect
 (`docs/api/xbios/19-ikbdws.md`). Implementation
-`tos-api/src/bios/chardev.rs:163@MidiPort`,
-`tos-api/src/bios/chardev.rs:236@IkbdPort`. Measured equal to the oracle:
+`tos-api/src/bios/chardev.rs:175@MidiPort`,
+`tos-api/src/bios/chardev.rs:248@IkbdPort`. Measured equal to the oracle:
 `tosdump/probes/mdprobe.c` D06/D07 (the audit probe's B02/B03),
 `measurements/measurement-2026-10-29-bios04/RUNINFO.TXT`. Before, both
 returned `0` (finding BIOS-CORE-001, `docs/audits/2026-10-28-bios-core.md`).
+
+**[BIOS08] 2026-10-30 — handles 6 and up are the `Bconmap` table's (EmuTOS'
+one-entry table, `TASK/XBIOS05.md` option 1):** the `Bconmap` branch runs
+before the device table (`references/emutos/bios/bios.c:1000-1005`). Handle 6
+is entry 0, the AUX port: `Bconout(6,b)` is `Bconout(1,b)`, through the same
+AUX entry (`1`, the byte discarded; a driver in slot 1 gets the byte).
+Handles from 7 up return `0` and send nothing (`map_index >= maptabsize`,
+`:1001-1003`), as EmuTOS does on a machine with one entry
+(`references/emutos/bios/serport.c:965`). Implementation
+`tos-api/src/bios/chardev.rs:411@device`,
+`tos-api/src/xbios/bconmap.rs:109@entry_device`. DUMPBIOS refuses
+`Bconout(6..9)`; measured with the audit probe's B04/B05
+(`Bconout(6/7,'A')`): `1`/`0` on NewTOS, oracle TT and Falcon `1`/`1` —
+`Bconout(7)` is the oracle's SCC B port, which NewTOS does not have (device
+parameter, ACCEPTED,
+`docs/COMPATIBILITY.md` "`Bconmap`: one entry");
+`measurements/measurement-2026-10-30-bios08/RUNINFO.TXT`. Before, both
+returned `0`.
 
 **Devices 0 (PRN), 3 (MIDI):** `Bconout` -> `0`, byte discarded
 (`charout_dummy` semantics, `bios/chardev.c:55-58`). **Device 1 (AUX), option A:** `Bconout(1,b)` -> `1`, byte discarded; EmuTOS `bconout1` with an MFP port returns `1L` (`bios/serport.c:323`; wait loop `:296` on `bcostat1` = ring space, no CTS; `FLOW_CTRL_NONE` default `:89`, `flowctrl` unused). Consistency with EmuTOS: dev 0 without
@@ -271,7 +300,8 @@ changed): without `CONF_WITH_MIDI_ACIA` it loops `while(!bcostat3())` and
 `bcostat3` returns 0 (`bios/midi.c:78-79,86-87`), i.e. **never returns**; the
 table row "`bconout3` (MIDI) -> `1L`" holds only with an ACIA. (Superseded for dev 1:
 the earlier rule followed EmuTOS `bconout1` *without* an RS-232 backend, which returns 0 (`bios/serport.c:326-327`); option A follows the MFP-present return 1 instead.) The `bconout` wrapper also
-returns 0 for a handle > 7 (`bios/bios.c:1008-1010`) and before
+returns 0 for a handle past the Bconmap table (`bios/bios.c:1001-1003`; > 7
+without `BCONMAP_AVAILABLE`, `:1008-1010`) and before
 `CHARDEV_AVAILABLE` (`:997-998`).
 
 ## Pi / BCM2711 binding
@@ -293,7 +323,8 @@ returns 0 for a handle > 7 (`bios/bios.c:1008-1010`) and before
 | 3 | MIDI out | MIDI port entry (BIOS04) → discard | `1` |
 | 4 | IKBD command out | IKBD port entry (BIOS04) → discard | `1` |
 | 5 | raw screen (no VT52) | framebuffer `ascii_out` (`alpha_rawout`), no automaton, no UART echo | `1` |
-| 6,7 | unused / Bconmap | absent → discard | `0` |
+| 6 | Bconmap entry 0 = AUX (BIOS08) | the AUX entry, as handle 1 | `1` (accept+discard) |
+| 7.. | past the Bconmap table | nothing sent | `0` |
 
 - **CON output = framebuffer VT52.** Handle 2 writes via
   `Host::console_write_byte`, which the kernel routes to **both** the

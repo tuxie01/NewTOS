@@ -277,10 +277,18 @@ ultrasatan_get_clock	bios/acsi.c	-	-	design:hardware:acsi	Atari ACSI hard-disk b
 ultrasatan_get_running_firmware	bios/acsi.c	-	-	design:hardware:acsi	Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
 ultrasatan_set_clock	bios/acsi.c	-	-	design:hardware:acsi	Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
 autoexec	bios/bios.c	kernel/src/launch.rs	run_auto_folder	mapped	-
-bconin	bios/bios.c	tos-api/src/bios/chardev.rs	bconin	mapped	Bconin 0x02 (trap entry, line 412)
-bconout	bios/bios.c	tos-api/src/bios/chardev.rs	bconout	mapped	Bconout 0x03 (trap entry, line 421)
-bconstat	bios/bios.c	tos-api/src/bios/chardev.rs	bconstat	mapped	Bconstat 0x01 (trap entry, line 293)
-bcostat	bios/bios.c	tos-api/src/bios/chardev.rs	bcostat	mapped	Bcostat 0x08 (trap entry, line 430)
+bconin	bios/bios.c	tos-api/src/bios/chardev.rs	bconin	mapped	Bconin 0x02 (trap entry, line 558)
+bconin	bios/bios.c	tos-api/src/bios/chardev.rs	device	mapped	the BCONMAP_AVAILABLE branch before the table (bios.c:967-972): map_index = handle - 6 in a WORD, >= maptabsize -> 0, >= 0 -> the entry's port, else table slot 0..5 (BIOS08); Bconin(6) is the AUX entry's trap entry (waits like Bconin(1))
+bconin	bios/bios.c	tos-api/src/xbios/bconmap.rs	entry_device	mapped	maptab[map_index] -> the BIOS device-table slot of the entry's port: entry 0 = AUX, device 1 (maptable_mfp, serport.c:98,972; BIOS08)
+bconout	bios/bios.c	tos-api/src/bios/chardev.rs	bconout	mapped	Bconout 0x03 (trap entry, line 568)
+bconout	bios/bios.c	tos-api/src/bios/chardev.rs	device	mapped	the BCONMAP_AVAILABLE branch before the table (bios.c:1000-1005): map_index = handle - 6 in a WORD, >= maptabsize -> 0, >= 0 -> the entry's port, else table slot 0..5 (BIOS08)
+bconout	bios/bios.c	tos-api/src/xbios/bconmap.rs	entry_device	mapped	maptab[map_index] -> the BIOS device-table slot of the entry's port: entry 0 = AUX, device 1 (maptable_mfp, serport.c:98,972; BIOS08)
+bconstat	bios/bios.c	tos-api/src/bios/chardev.rs	bconstat	mapped	Bconstat 0x01 (trap entry, line 458)
+bconstat	bios/bios.c	tos-api/src/bios/chardev.rs	device	mapped	the BCONMAP_AVAILABLE branch before the table (bios.c:923-928): map_index = handle - 6 in a WORD, >= maptabsize -> 0, >= 0 -> the entry's port, else table slot 0..5 (BIOS08)
+bconstat	bios/bios.c	tos-api/src/xbios/bconmap.rs	entry_device	mapped	maptab[map_index] -> the BIOS device-table slot of the entry's port: entry 0 = AUX, device 1 (maptable_mfp, serport.c:98,972; BIOS08)
+bcostat	bios/bios.c	tos-api/src/bios/chardev.rs	bcostat	mapped	Bcostat 0x08 (trap entry, line 580)
+bcostat	bios/bios.c	tos-api/src/bios/chardev.rs	device	mapped	the BCONMAP_AVAILABLE branch before the table (bios.c:1152-1157): map_index = handle - 6 in a WORD, >= maptabsize -> 0, >= 0 -> the entry's port, else table slot 0..5 (BIOS08); handle 6 is not swapped: the 3/4 swap in bcostat_handle touches only table handles 3 and 4
+bcostat	bios/bios.c	tos-api/src/xbios/bconmap.rs	entry_device	mapped	maptab[map_index] -> the BIOS device-table slot of the entry's port: entry 0 = AUX, device 1 (maptable_mfp, serport.c:98,972; BIOS08)
 bios_init	bios/bios.c	-	-	unmapped	m68k hardware initialisation sequence; NewTOS boots through the kernel init, not mapped function by function
 bios_init	bios/bios.c	tos-api/src/bios/vectors.rs	default_of	mapped	the etv_timer/etv_critic/etv_term = just_rts/default_etv_critic half: the boot values of the shared Setexc cells, all the shared ret stub (BIOS07 D3; etv_critic and etv_timer not served, ADR-031)
 biosmain	bios/bios.c	-	-	unmapped	the BIOS main sequence; NewTOS boots through the kernel init (kernel/src/lib.rs), not mapped function by function

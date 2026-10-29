@@ -127,7 +127,7 @@ nimmt `Ssystem(S_SETCOOKIE)`), mintlib `set_sysvar_to_*` (gebaut, kein Aufrufer)
 
 | Wert | Leser im Kern | Wirkung |
 |---|---|---|
-| `conterm` `0x484` | `tos-api/src/bios/chardev.rs:436@current_conterm` → Tastenwiederholung `kernel/src/ikbd.rs:343@current_conterm`, `Bconin`-Shiftfaltung `chardev.rs:471@current_conterm`, Glocke `tos-api/src/vdi/escape.rs:693@current_conterm` | Bits 1/2/3 wirken |
+| `conterm` `0x484` | `tos-api/src/bios/chardev.rs:479@current_conterm` → Tastenwiederholung `kernel/src/ikbd.rs:343@current_conterm`, `Bconin`-Shiftfaltung `chardev.rs:514@current_conterm`, Glocke `tos-api/src/vdi/escape.rs:693@current_conterm` | Bits 1/2/3 wirken |
 | `kbdvec`, `ikbdsys` | `tos-api/src/xbios/kbdvecs.rs:209@read_slot`, `:212@kbdvec_of`, `:221@current_ikbdsys` | Haken-Upcall, Wiederholstopp |
 | `memvalid`/`memval2`/`memval3` | `tos-api/src/bios/reset.rs:160@entry_kind` | warm/kalt (auf der Pi warm = kalt) |
 | Rueckgabewort `0x760` | `kernel/src/arch/aarch64/exceptions.rs`, `read_userdef_ret_slot` (Stand `a90bcfb0`; seit MEM12 entfernt) | `G_USERDEF`-Ergebnis |

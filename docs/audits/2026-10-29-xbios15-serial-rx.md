@@ -83,7 +83,7 @@ Jeder Lauf zweimal (bytegleich), dazu je Seite ein Kontrolllauf ohne Bytes.
   siehe XBIOS-SERRX-004). Faelle: diese Sonde auf qemu-virt (Methode im Lauf), die
   Ticket-Retests `bios-r1`, `xbios-chardev-r1`, `xbios-ptr-r1`, `xbios-flush-r1`.
 - **Hinweis zum Fix (nicht entschieden):** NewTOS' AUX ist „Port vorhanden, kein Kabel“
-  (`tos-api/src/bios/chardev.rs:121@AuxNoCable`, Bconstat 0, Bconin 0). Ein Byte in den Ring
+  (`tos-api/src/bios/chardev.rs:133@AuxNoCable`, Bconstat 0, Bconin 0). Ein Byte in den Ring
   von Geraet 0 zu legen, ohne dass `Bconstat(1)`/`Bconin(1)` ihn lesen, waere eine zweite
   Inkonsistenz (Ring gefuellt, Bconstat 0). Der Fix braucht eine Entscheidung zu AUX auf
   qemu-virt (Treiber ueber den Ring von Geraet 0, oder dokumentiertes Serienkonsolen-Profil
@@ -215,7 +215,7 @@ anstehendem Byte (es steht nie eines an); EmuTOS mit `CONF_SERIAL_CONSOLE=1` (00
   `docs/COMPATIBILITY.md`, Absatz „`Iorec`: the key queue is the IKBD `IOREC`“, Punkt (3)
   („records of devices 0 (RS-232) and 2 (MIDI) … stay empty — no driver fills them (E5 (a))“),
   und AUX „port present, no cable“ (`docs/api/bios/01-bconstat.md`, „AUX (1) revised
-  2026-10-13“; `tos-api/src/bios/chardev.rs:121@AuxNoCable`). Verhalten wie dokumentiert:
+  2026-10-13“; `tos-api/src/bios/chardev.rs:133@AuxNoCable`). Verhalten wie dokumentiert:
   gemessen leer/0, Drop in `serial_rx_byte` nachgewiesen (`measurements/measurement-2026-10-29-xbios15-rx/runs/newtos-rpi4-diag/SERIAL.txt`:
   `<AUDIT-RX:61><AUDIT-RX:5a><AUDIT-RX:31>`), Lauf mit Bytes = Kontrolllauf.
 - Adressen und `sizeof(_IOREC)` (24 statt 14) unterscheiden sich gemaess Vertrag F1.

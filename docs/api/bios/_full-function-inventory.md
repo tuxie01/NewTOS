@@ -134,6 +134,10 @@ der `bconmap`-Zweig greift vorher. Das ist ein Messfall, kein toter Code.
 
 NewTOS-Seite (`tos-api/src/bios/chardev.rs:31-42`): **Eingabe nur auf Handle 2**,
 **Ausgabe auf 2 und 5**, alles andere 0. Kein `bconmap`-Zweig.
+**[BIOS08] 2026-10-30:** ueberholt — NewTOS hat den `bconmap`-Zweig mit der
+Ein-Eintrag-Tabelle (Handle 6 = AUX, ab 7 → 0;
+`tos-api/src/bios/chardev.rs:411@device`), die Geraetetabelle endet bei 5
+(`docs/api/bios/01-bconstat.md` ff., BIOS08).
 
 → 8 Handles × 4 Funktionen = **32 Werte** + 3 Vorprüfklassen
 (`CHARDEV_AVAILABLE`, `bconmap`-Bereich, negatives Handle).

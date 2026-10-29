@@ -8,23 +8,23 @@ Punkt 1, `docs/api/xbios/0c-midiws.md`
 
 ## Fix
 
-- Geraetetabelle `tos-api/src/bios/chardev.rs:348@DEVICES`: Eintraege 3 und 4 sind
+- Geraetetabelle `tos-api/src/bios/chardev.rs:360@DEVICES`: Eintraege 3 und 4 sind
   nicht mehr `Absent`, sondern
-  - `tos-api/src/bios/chardev.rs:163@MidiPort` — EmuTOS `bconstat3`/`bconin3`/`bcostat3`/
+  - `tos-api/src/bios/chardev.rs:175@MidiPort` — EmuTOS `bconstat3`/`bconin3`/`bcostat3`/
     `bconout3` mit MIDI-ACIA (Referenzbau, `references/emutos/include/config.h:994-996`):
     `Bconout(3)` 1 (Byte verworfen), Ausgabestatus -1; `Bconstat(3)` -1 solange der MIDI-Ring
     von `Iorec(2)` ein Byte haelt, sonst 0; `Bconin(3)` **wartet** auf ein Byte im Ring und
     liefert es null-erweitert (`references/emutos/bios/midi.c:22-95`).
-  - `tos-api/src/bios/chardev.rs:236@IkbdPort` — `bcostat4`/`bconout4`
+  - `tos-api/src/bios/chardev.rs:248@IkbdPort` — `bcostat4`/`bconout4`
     (`references/emutos/bios/ikbd.c:916-937`): Ausgabestatus -1, `Bconout(4)` 1 (verworfen);
     Eingabe `char_dummy`, `Bconstat(4)`/`Bconin(4)` 0.
-- Das Warten `tos-api/src/bios/chardev.rs:209@midi_read` hat den AUX-Stil (XBIOS15/XBIOS18):
+- Das Warten `tos-api/src/bios/chardev.rs:221@midi_read` hat den AUX-Stil (XBIOS15/XBIOS18):
   Eingabe gepumpt (`Host::pump_input`, Unterbrechungen kurz offen), kein Abgeben an andere
   Prozesse, auf dem Trap-Weg weicht es einem `kbdvec`-Haken aus (Neustart, nichts verbraucht).
   Ohne Host 0 (Bootsperre `CHARDEV_AVAILABLE`). Der Ring wird ueber
   `tos-api/src/xbios/iorec.rs:497@pop_midi` und `midi_pending` gelesen; kein Kern-Erzeuger
   fuellt ihn (E5), ein Byte darin hat ein Programm ueber den `Iorec(2)`-Record gelegt.
-- Die `Bcostat`-Vertauschung bleibt in `tos-api/src/bios/chardev.rs:403@bcostat_handle`.
+- Die `Bcostat`-Vertauschung bleibt in `tos-api/src/bios/chardev.rs:446@bcostat_handle`.
 - `Midiws`/`Ikbdws`: beobachtbar unveraendert (`void`, kehren sofort zurueck); nur
   Kommentare in `tos-api/src/xbios/system.rs` und `tos-api/src/xbios/mod.rs`.
 - GEMDOS: unveraendert, `Fread`/`Fwrite` erreichen nur die Geraete 0..2

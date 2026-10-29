@@ -32,7 +32,9 @@
 `ikbdiorec.head` (`bios/ikbd.c:269`).
 
 **Build configuration affecting this function:**
-- `BCONMAP_AVAILABLE` — handle-remap stage for handles ≥ 6.
+- `BCONMAP_AVAILABLE` — handle-remap stage for handles ≥ 6 (the reference
+  build, every machine: `docs/api/xbios/2c-bconmap.md`, "Build
+  configuration").
 - `CONF_SERIAL_CONSOLE_POLLING_MODE` — makes `bconin2` read RS-232 and
   synthesise an IKBD record via `ikbdiorec_from_ascii` (`bios/ikbd.c:255`).
 
@@ -84,7 +86,7 @@ low byte only.
 
 | Position | Name     | Type | Size | Source location   | Notes |
 |----------|----------|------|------|-------------------|-------|
-| arg0     | `handle` | `WORD` | 2  | `bios/bios.c:958` | `0..7` table-indexed; else `0L` |
+| arg0     | `handle` | `WORD` | 2  | `bios/bios.c:958` | `0..5` table-indexed, from 6 the Bconmap table (with `BCONMAP_AVAILABLE`); else `0L` |
 
 Handle meanings (default `bconin_vec`, `bios/chardev.c:34`):
 
@@ -94,7 +96,12 @@ Handle meanings (default `bconin_vec`, `bios/chardev.c:34`):
 | 1      | AUX / RS-232           | `bconin1`       | yes |
 | 2      | CON / IKBD             | `bconin2`       | yes |
 | 3      | MIDI in                | `bconin3`       | yes |
-| 4..7   | unused / Bconmap       | `char_dummy` → 0 | no |
+| 4, 5   | IKBD in / raw CON in   | `char_dummy` → 0 | no |
+| 6 .. 5+`maptabsize` | Bconmap entries (`BCONMAP_AVAILABLE`) | `maptab[handle-6].Bconin`; entry 0 = `bconin1` (`bios/serport.c:98,972`) | yes (entry 0) |
+| from 6+`maptabsize` | past the Bconmap table | `0L` (`bios/bios.c:968-969`) | no |
+
+Without `BCONMAP_AVAILABLE` slots 6/7 are `char_dummy` (no blocking) and
+`0..7` index `bconin_vec`.
 
 ---
 
@@ -157,7 +164,8 @@ device configuration change.
 |-----------|-----------------|----------------|
 | `CHARDEV_AVAILABLE` clear | `bios/bios.c:964` | `0L` |
 | `handle` outside `0..7` and not in Bconmap range | `bios/bios.c:975-977` | `0L` |
-| Handle wired to `char_dummy` (4..7, or 0 via stub) | `bios/chardev.c:50` | `0L` |
+| Bconmap index ≥ `maptabsize` (when `BCONMAP_AVAILABLE`) | `bios/bios.c:968-969` | `0L` |
+| Handle wired to `char_dummy` (4, 5; 6/7 only without `BCONMAP_AVAILABLE`), or 0 via stub | `bios/chardev.c:50` | `0L` |
 
 **No distinct error code.** `0L` is ambiguous: it means "no device" *and* is a
 legitimate result — a genuine NUL byte, or (handle 2) a non-ASCII key whose
@@ -259,7 +267,7 @@ first when the distinction matters.
 
 ## Configuration / version notes
 
-- `BCONMAP_AVAILABLE`.
+- `BCONMAP_AVAILABLE` (the reference build, every machine).
 - `CONF_SERIAL_CONSOLE_POLLING_MODE`: `bconin2` reads RS-232 and synthesises
   the IKBD record.
 
@@ -310,12 +318,31 @@ does with nothing on the MIDI cable; a byte a program put into the ring is
 returned at once. The wait has the AUX wait's style (XBIOS15/XBIOS18): the
 input is pumped meanwhile (`Host::pump_input`), the CPU is not given to another
 process, and on the trap path it gives way to a `kbdvec` hook (restart, nothing
-consumed; `tos-api/src/bios/chardev.rs:209@midi_read`). Before a host is
+consumed; `tos-api/src/bios/chardev.rs:221@midi_read`). Before a host is
 installed it returns `0` (the boot gate). `Bconin(4)` stays `char_dummy` → `0`
 at once. Measured with `tosdump/probes/mdprobe.c` (R03-R05 ring read, W01 still
 waiting after 10 s; equal on both sides,
 `measurements/measurement-2026-10-29-bios04/RUNINFO.TXT`); DUMPBIOS refuses
 `Bconin(3)` (`tosdump/core/cases.c` `CR_BCONIN`: it may wait).
+
+**[BIOS08] 2026-10-30 — handles 6 and up are the `Bconmap` table's (EmuTOS'
+one-entry table, `TASK/XBIOS05.md` option 1):** the `Bconmap` branch runs
+before the device table (`references/emutos/bios/bios.c:967-972`). Handle 6
+is entry 0, the AUX port: `Bconin(6)` is `Bconin(1)`, through the same AUX
+entry and its trap entry — it **waits like `Bconin(1)`**: on
+`board-qemu-virt` for a byte in the serial input ring, giving way to a
+`kbdvec` hook (XBIOS15/XBIOS18); on `board-rpi4` the no-cable entry returns
+`0` at once, as `Bconin(1)` does there. Handles from 7 up return `0` without
+waiting (`map_index >= maptabsize`, `:968-969`), as EmuTOS does on a machine
+with one entry (`references/emutos/bios/serport.c:965`; the oracle's TT has
+further ports there, whose `Bconin` would wait). Implementation
+`tos-api/src/bios/chardev.rs:411@device`,
+`tos-api/src/xbios/bconmap.rs:109@entry_device`. DUMPBIOS refuses
+`Bconin(6..9)` (they may wait). `board-rpi4`: measured with the audit's hang
+probe (`bcprobe.c`, handles 0, 1, 6, 7: all return `0` at once,
+`measurements/measurement-2026-10-30-bios08/RUNINFO.TXT`); that handle 6
+reaches the trap entry of whatever driver sits in slot 1 (the qemu-virt
+wait) is pinned by `tos-api/tests/bios08_bconmap_handles.rs`.
 
 **Devices 0 (PRN), 1 (AUX), 3 (MIDI):** `Bconin` -> `0`, **non-blocking** (AUX: unchanged by option A; a **documented divergence** from a real present port, where `bconin1` blocks forever, `serport.c:260-263`).
 Consistency with EmuTOS: dev 0 `bconin0` returns 0 (`bios/parport.c:123-127`,
@@ -339,7 +366,8 @@ drivers only.
 
 - **Device-handle map:** as in `01-bconstat.md` — **CON (2) alone** reads the
   console key ring fed by the USB-HID keyboard; MIDI (3) waits for its
-  `Iorec(2)` ring (BIOS04, above); PRT (0)/AUX (1)/**IKBD (4)**/5..7 are
+  `Iorec(2)` ring (BIOS04, above); handle 6 reads the AUX entry as handle 1
+  does (BIOS08, above); PRT (0)/AUX (1, `board-rpi4`)/**IKBD (4)**/5/7.. are
   `char_dummy` and return `0` without blocking
   (EmuTOS `bconin_init[4] = char_dummy`,
   `references/emutos/bios/chardev.c:34-36`). An earlier revision of this
@@ -365,7 +393,7 @@ drivers only.
   2026-10-29]** The key ring is the IKBD `IOREC` (`docs/api/xbios/0e-iorec.md`,
   "NewTOS implementation"): its 32-bit entries carry the shift state **of the
   key press** (EmuTOS `bios/ikbd.c:898-909`), and
-  `tos-api/src/bios/chardev.rs:470@pack_console_key` keeps bits 24-31 only when
+  `tos-api/src/bios/chardev.rs:513@pack_console_key` keeps bits 24-31 only when
   the calling process's `conterm` (`$484`) has bit 3 set, else clears them
   (`value &= 0x00ffffff`, `bios/ikbd.c:279-280`). Until XBIOS01 the fold read
   the *current* `Kbshift` state at read time (`shift_fold`, removed) — a Shift

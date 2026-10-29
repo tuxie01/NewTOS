@@ -1,0 +1,7 @@
+DUMPBIOS build ----, record format 3
+pointer 8 bytes, word order 2
+BIOS.TSV: 1 cases, CRC DD429BF8
+layouts: 2
+running 1 cases
+all 1 cases ran
+BIOS.BIN: 1 records, 352 bytes

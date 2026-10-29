@@ -173,8 +173,10 @@ Per-handle remap for handles ≥ `BCONMAP_START_HANDLE` (canonically 6). Used by
 `MAPTAB` entry holds the four function pointers plus IOREC pointers.
 NewTOS scope: deferred; early phases expose only handles 0–5.
 **[XBIOS05]** `bconmap_root` exists since XBIOS05 with one entry (device 6,
-`docs/api/xbios/2c-bconmap.md`); the BIOS handles 6..9 are still the device
-table's, their profile is TASK/BIOS08.
+`docs/api/xbios/2c-bconmap.md`). **[BIOS08]** The BIOS character calls take
+handles `>= 6` from it, as EmuTOS does: 6 = entry 0 = the AUX port (handle 1's
+entry), 7 and up `0`; the device table holds 0..5
+(`docs/api/bios/{01,02,03,08}-*.md`, BIOS08 notes).
 
 ---
 

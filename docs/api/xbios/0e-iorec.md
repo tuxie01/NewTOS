@@ -212,9 +212,9 @@ implementation".
 
 | devno | EmuTOS (Oracle) | NewTOS vor XBIOS01 (2026-10-28) | Ziel-Vertrag (seit XBIOS01 umgesetzt) |
 |---|---|---|---|
-| 0 | `EXT_IOREC *`, 256/256 + Baud/Flow/UCR | nichts: `0x0E`. Dahinter AUX ohne Kabel, `Bconstat(1)=0`, `Bconout(1)` verwirft, `Bcostat(1)=-1` (`tos-api/src/bios/chardev.rs:121@AuxNoCable`, `:229@DEVICES`) | Record vorhanden; `in` leer und bleibt es, `out` ist immer leer (NewTOS verwirft sofort, der Ring kann nie fuellen) — konsistent zum BIOS (E5) |
+| 0 | `EXT_IOREC *`, 256/256 + Baud/Flow/UCR | nichts: `0x0E`. Dahinter AUX ohne Kabel, `Bconstat(1)=0`, `Bconout(1)` verwirft, `Bcostat(1)=-1` (`tos-api/src/bios/chardev.rs:133@AuxNoCable`, `:229@DEVICES`) | Record vorhanden; `in` leer und bleibt es, `out` ist immer leer (NewTOS verwirft sofort, der Ring kann nie fuellen) — konsistent zum BIOS (E5) |
 | 1 | `&ikbdiorec`, 256, 4-Byte-Eintraege | nichts. Die Tastenschlange war `RX_RING` in `kernel/src/console.rs` (mit XBIOS01 entfernt): 128 Eintraege **`u16`** `scancode<<8\|ascii`, ohne Shift-Byte (Wort `kernel/src/ikbd.rs:316@key_word`) | Record mit 64 4-Byte-Eintraegen (E1/E2 entscheiden, ob er die Schlange **ist**) |
-| 2 | `&midiiorec`, 128, 1-Byte | nichts. MIDI ist "absent" (`chardev.rs:348@DEVICES`, Slot 3), `Midiws` verwirft (Audit BIOS-CORE-001) | Record vorhanden, leer, nie gefuellt (E5) |
+| 2 | `&midiiorec`, 128, 1-Byte | nichts. MIDI ist "absent" (`chardev.rs:360@DEVICES`, Slot 3), `Midiws` verwirft (Audit BIOS-CORE-001) | Record vorhanden, leer, nie gefuellt (E5) |
 | sonst | `-1` | `0x0E` | `-1` (gemessen EmuTOS I04-I07) |
 
 `Bconmap` war in NewTOS ebenfalls Funktionsnummer (`0x2c`, bis XBIOS05). **[XBIOS05]** Seit
@@ -320,7 +320,7 @@ repair is warned about once per process tenancy
 (`kernel/src/ikbd.rs:292@entry_from_word`), the key repeat with the repeat's
 shift state (`kernel/src/ikbd.rs:353@entry_from_word`, after `poll` re-converted
 the word when the modifiers changed, `bios/ikbd.c:502-508`). `Bconin(2)` keeps
-bits 24-31 only with `conterm & 8` (`tos-api/src/bios/chardev.rs:470@pack_console_key`,
+bits 24-31 only with `conterm & 8` (`tos-api/src/bios/chardev.rs:513@pack_console_key`,
 `bios/ikbd.c:279-280`); the host reads whole entries
 (`tos-api/src/host.rs:121@console_read_entry_blocking`,
 `kernel/src/host_env.rs:203@console_read_entry_blocking`). Closes BIOS11. Until

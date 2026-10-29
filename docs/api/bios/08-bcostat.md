@@ -27,7 +27,9 @@
 **System variables / globals written:** none in `bcostat`.
 
 **Build configuration affecting this function:**
-- `BCONMAP_AVAILABLE` — handle-remap stage for handles ≥ 6.
+- `BCONMAP_AVAILABLE` — handle-remap stage for handles ≥ 6 (the reference
+  build, every machine: `docs/api/xbios/2c-bconmap.md`, "Build
+  configuration").
 - `CONF_WITH_PRINTER_PORT` — without it, `bcostat0` returns 0 (busy).
 - `CONF_SERIAL_CONSOLE` — makes `bcostat2` delegate to `bcostat(1)`.
 
@@ -78,7 +80,7 @@ channel — programs writing via handle 5 must query readiness with
 
 | Position | Name     | Type | Size | Source location    | Notes |
 |----------|----------|------|------|--------------------|-------|
-| arg0     | `handle` | `WORD` | 2  | `bios/bios.c:1143` | `0..7` table-indexed; else `0L` |
+| arg0     | `handle` | `WORD` | 2  | `bios/bios.c:1143` | `0..5` table-indexed, from 6 the Bconmap table (with `BCONMAP_AVAILABLE`; else `0..7`); else `0L` |
 
 Handle meanings — comment `bios/bios.c:1141` documents `0:PRT 1:AUX 2:CON
 3:MID 4:KEYB`, but note the swap in the actual table:
@@ -90,7 +92,11 @@ Handle meanings — comment `bios/bios.c:1141` documents `0:PRT 1:AUX 2:CON
 | 2      | CON / screen           | `bcostat2` | always `-1` (or `bcostat(1)`) |
 | 3      | **IKBD TX**            | `bcostat4` | **swapped** |
 | 4      | **MIDI TX**            | `bcostat3` | **swapped** |
-| 5..7   | unused / Bconmap       | `char_dummy` → 0 | |
+| 5      | raw screen             | `char_dummy` → 0 | |
+| 6 .. 5+`maptabsize` | Bconmap entries (`BCONMAP_AVAILABLE`) | `maptab[handle-6].Bcostat`; entry 0 = `bcostat1` (`bios/serport.c:98,972`) | not swapped |
+| from 6+`maptabsize` | past the Bconmap table | `0L` (`bios/bios.c:1153-1154`) | |
+
+Without `BCONMAP_AVAILABLE` slots 6/7 are `char_dummy` → 0.
 
 ---
 
@@ -123,7 +129,7 @@ serial/MIDI/IKBD). No writes.
 | `CHARDEV_AVAILABLE` clear | `bios/bios.c:1149` | `0L` |
 | `handle` outside `0..7` and not in Bconmap range | `bios/bios.c:1160-1162` | `0L` |
 | Bconmap index ≥ `maptabsize` | `bios/bios.c:1154` | `0L` |
-| Handle wired to `char_dummy` (5..7) | `bios/chardev.c:50` | `0L` |
+| Handle wired to `char_dummy` (5; 6/7 only without `BCONMAP_AVAILABLE`) | `bios/chardev.c:50` | `0L` |
 | Printer busy or `!CONF_WITH_PRINTER_PORT` (handle 0) | `bios/parport.c:129-141` | `0L` |
 
 No distinct error code — `0L` means both "busy" and "unavailable/invalid".
@@ -199,7 +205,8 @@ No distinct error code — `0L` means both "busy" and "unavailable/invalid".
 
 ## Configuration / version notes
 
-- `BCONMAP_AVAILABLE`, `CONF_SERIAL_CONSOLE`, `CONF_WITH_PRINTER_PORT`.
+- `BCONMAP_AVAILABLE` (the reference build, every machine),
+  `CONF_SERIAL_CONSOLE`, `CONF_WITH_PRINTER_PORT`.
 
 ---
 
@@ -225,9 +232,9 @@ transmit register `bcostat4` (slot 3) and `bcostat3` (slot 4) answer `-1`
 EmuTOS' `bcostat4` answers `-1` "OK (but output will be ignored)" even on a
 build without an IKBD ACIA. NewTOS never has a byte in transmission (output is
 discarded at once), so both entries are always ready
-(`tos-api/src/bios/chardev.rs:163@MidiPort`,
-`tos-api/src/bios/chardev.rs:236@IkbdPort`). The swap stays in
-`tos-api/src/bios/chardev.rs:403@bcostat_handle`; with both entries `-1` it is
+(`tos-api/src/bios/chardev.rs:175@MidiPort`,
+`tos-api/src/bios/chardev.rs:248@IkbdPort`). The swap stays in
+`tos-api/src/bios/chardev.rs:446@bcostat_handle`; with both entries `-1` it is
 not observable through the default entries, a host test pins it with a test
 entry (`tos-api/tests/fs11_device_rw.rs` `bcostat_keeps_the_ikbd_midi_swap`).
 Measured equal to the oracle: `bios-r1` cases 66/67 and `tosdump/probes/mdprobe.c`
@@ -235,6 +242,29 @@ D04/D05/D08/D09 (the audit probe's B11/B12),
 `measurements/measurement-2026-10-29-bios04/RUNINFO.TXT`. Before, both answered
 `0` and a program waiting `while (!Bcostat(4));` hung for good (finding
 BIOS-CORE-001, `docs/audits/2026-10-28-bios-core.md`).
+
+**[BIOS08] 2026-10-30 — handles 6 and up are the `Bconmap` table's (EmuTOS'
+one-entry table, `TASK/XBIOS05.md` option 1):** the `Bconmap` branch runs
+before the device table and its 3/4 swap (`references/emutos/bios/bios.c:1152-1157`).
+Handle 6 is entry 0, the AUX port: `Bcostat(6)` answers as `Bcostat(1)`,
+through the same AUX entry (`-1`). Handles from 7 up answer `0`
+(`map_index >= maptabsize`, `:1153-1154`), as EmuTOS does on a machine with
+one entry (`references/emutos/bios/serport.c:965`). Implementation
+`tos-api/src/bios/chardev.rs:411@device`,
+`tos-api/src/xbios/bconmap.rs:109@entry_device`. Against the oracle:
+
+| Case | Call | Oracle TT | Oracle Falcon | NewTOS (before → after) | Status |
+|---|---|---|---|---|---|
+| `bios-r1` 69 | `Bcostat(6)` | -1 (`bcostat1`) | -1 | 0 → -1 | EQUAL |
+| `bios-r1` 70 | `Bcostat(7)` | -1 (SCC B, `serport.c:993`) | -1 (`:981`) | 0 → 0 | ACCEPTED (no port 7) |
+| `bios-core-r1` 65 | `Bcostat(8)` | -1 (TT-MFP) | -1 (SCC A) | 0 → 0 | ACCEPTED (no port 8) |
+| `bios-core-r1` 66 | `Bcostat(9)` | -1 (SCC A, 4 entries) | 0 (3 entries) | 0 → 0 | TT ACCEPTED, Falcon EQUAL |
+
+A machine with one entry answers 0 for 7..9 under the same ROM
+(`references/emutos/bios/bios.c:1153-1154` with `maptabsize` 1,
+`references/emutos/bios/serport.c:965`): the differences are the port count,
+a device parameter (`docs/COMPATIBILITY.md`, "`Bconmap`: one entry").
+`measurements/measurement-2026-10-30-bios08/RUNINFO.TXT`.
 
 **Devices 0 (PRN), 3, 4 (IKBD-TX/MIDI-TX):** `Bcostat` -> `0` (not ready). **Device 1 (AUX), option A:** `Bcostat(1)` -> **-1** (ready) always; EmuTOS `bcostat1` returns -1 while the out-ring has room (`bios/serport.c:271-283`).
 Consistency with EmuTOS: dev 0 `bcostat0` returns 0 without
@@ -265,7 +295,8 @@ explicitly). `Cauxos`/`Cprnos` call `Bcostat(1)`/`Bcostat(0)` through the same e
 | 3 | **IKBD TX** (swapped) | IKBD port entry (BIOS04) | `-1` (ready) |
 | 4 | **MIDI TX** (swapped) | MIDI port entry (BIOS04) | `-1` (ready) |
 | 5 | raw screen | **`char_dummy` slot** | `0` (busy) |
-| 6,7 | unused / Bconmap | absent | `0` |
+| 6 | Bconmap entry 0 = AUX (BIOS08) | the AUX entry, as handle 1 (not swapped) | `-1` (ready) |
+| 7.. | past the Bconmap table | — | `0` |
 
 - **CON output always ready — handle 2 only.** The framebuffer VT52 console
   never blocks — a glyph is composited synchronously — so **CON (handle 2)**

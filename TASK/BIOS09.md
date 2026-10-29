@@ -7,9 +7,9 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher — Anwenderentscheid
 **BIOS-CORE-008 — S3 — MEASURED.** Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-bios-core-audit/RUNINFO.TXT`.
 
 - `measurements/measurement-2026-10-28-bios-core-audit/runs/HANG-EMUTOS-tt-1`, `-3`, `-6` (`BCHANG.LOG`): Kontrollhandle 0 kehrt zurueck (`H0 after ret=0`, `references/emutos/bios/parport.c:123` `bconin0`), `Bconin(1)`, `(3)`, `(6)` nicht — 20 s Wanduhr bei Fast-Forward, Trace endet im Aufruf. `measurements/measurement-2026-10-28-bios-core-audit/runs/HANG-NEWTOS-raspi4b`: alle vier `after ret=00000000`.
-- Lokalisiert: `tos-api/src/bios/chardev.rs:121@AuxNoCable` (`bconin` → 0), `tos-api/src/bios/chardev.rs:91@Absent`.
+- Lokalisiert: `tos-api/src/bios/chardev.rs:133@AuxNoCable` (`bconin` → 0), `tos-api/src/bios/chardev.rs:103@Absent`.
 - EmuTOS-Stellen: `references/emutos/bios/serport.c:260` `bconin1` (Iorec-Warteschleife), `references/emutos/bios/midi.c:35` `bconin3` (`while(!bconstat3())`).
-- Spec/Entscheidung: `docs/api/gemdos/file/3f-fread.md` FS11 Punkt 1a nennt das Nichtblockieren fuer AUX ausdruecklich „documented divergence“ (auch im Code, `tos-api/src/bios/chardev.rs:116-120@AuxNoCable`); kein COMPATIBILITY-Eintrag.
+- Spec/Entscheidung: `docs/api/gemdos/file/3f-fread.md` FS11 Punkt 1a nennt das Nichtblockieren fuer AUX ausdruecklich „documented divergence“ (auch im Code, `tos-api/src/bios/chardev.rs:128-132@AuxNoCable`); kein COMPATIBILITY-Eintrag.
 - Fehlerbild: Terminal- oder MIDI-Eingabeprogramme lesen einen endlosen Strom von NUL-Bytes statt zu warten.
 
 ## Arbeit

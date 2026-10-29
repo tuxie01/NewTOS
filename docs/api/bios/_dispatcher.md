@@ -146,7 +146,7 @@ the `bios_*` C functions further dispatch through a per-handle table:
 | 3      | MIDI (in `bconin3`, out `bconout3`) (`midi.c`)      |
 | 4      | IKBD (out `bconout4`) (`ikbd.c`)                    |
 | 5      | "raw" console (`bconout5` → `ascii_out` no VT52)    |
-| 6,7    | unused, `char_dummy` / `charout_dummy`              |
+| 6,7    | unused, `char_dummy` / `charout_dummy` — with `BCONMAP_AVAILABLE` (the reference build) never reached: handles ≥ 6 go to the Bconmap table (`bios/bios.c:923-928`; `docs/api/bios/01-bconstat.md`) |
 
 **Important:** the MIDI/IKBD swap applies **only to `bcostat`** (the
 output-status table): `bcostat_vec[3] = bcostat4` (IKBD TX) and

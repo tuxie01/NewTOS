@@ -197,7 +197,8 @@ differ only in the peripheral drivers (`kernel/src/drivers/bcm2711/*` vs.
   **CON (2)** = framebuffer VT52 out + USB-HID keyboard in; **IKBD (4)** =
   aliased to the same console keyboard ring (input); **raw-CON (5)** =
   framebuffer out; **AUX (1)** = PL011 (present, but currently a dummy at the
-  BIOS char-device layer — returns 0); **PRT (0) / MIDI (3) / 6,7** = absent
+  BIOS char-device layer — returns 0); **6** = the AUX entry again (the
+  one-entry `Bconmap` table, BIOS08), **7 and up** → 0; **PRT (0) / MIDI (3)** = absent
   → 0. The MIDI/IKBD `Bcostat` status-slot swap (handle 3↔4) is unobservable
   since both are absent (see `docs/api/bios/08-bcostat.md`). VT52 output today
   covers glyphs + CR/LF/BS/TAB + wrap/scroll; full escape sequences are

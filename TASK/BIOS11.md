@@ -7,7 +7,7 @@ Status: **ERLEDIGT** 2026-10-29 mit [XBIOS01](XBIOS01.md) (`a32921d5`), vom Anwe
 **BIOS-CORE-010 — S3 — MEASURED.** Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-bios-core-audit/RUNINFO.TXT`.
 
 - Tastensonde K16 (`measurements/measurement-2026-10-28-bios-core-audit/runs/KEYS-EMUTOS-tt`, `measurements/measurement-2026-10-28-bios-core-audit/runs/KEYS-NEWTOS-raspi4b-injector`): Shift+b, Shift losgelassen, dann `conterm |= 8` und `Bconin(2)`: EmuTOS `0x02300042`, NewTOS `0x00300042`. Die fuenf Tasten davor (a, Shift+a, F1, Ctrl+c, Return) und alle `Bconstat(2)`-Werte sind gleich (`0x001E0061`, `0x001E0041`, `0x003B0000`, `0x002E0003`, `0x001C000D`).
-- Lokalisiert: `shift_fold` in `tos-api/src/bios/chardev.rs` (seit XBIOS01 entfernt; liest den aktuellen `Kbshift`-Zustand), aufgerufen aus `tos-api/src/bios/chardev.rs:471@pack_console_key`; der Kommentar dort behauptet „stored `shifty` byte“ — es ist der aktuelle.
+- Lokalisiert: `shift_fold` in `tos-api/src/bios/chardev.rs` (seit XBIOS01 entfernt; liest den aktuellen `Kbshift`-Zustand), aufgerufen aus `tos-api/src/bios/chardev.rs:514@pack_console_key`; der Kommentar dort behauptet „stored `shifty` byte“ — es ist der aktuelle.
 - EmuTOS-Stellen: `references/emutos/bios/ikbd.c:900` (Shift-Zustand wird mit dem Tastenwert ins Iorec geschrieben), `:279-280` (beim Lesen nur ausmaskiert).
 - Fehlerbild: Editoren (Shift+Cursor) sehen die Umschalttaste nicht, wenn sie vor dem Lesen losgelassen wurde — bei getippten Zeichen im Puffer der Normalfall. Betrifft auch `Cconin`/`Cnecin`/`Crawcin`/`Crawio` (gleicher Packer).
 - NewTOS-Eingabepruefung: eingespeiste IKBD-Bytes im seriellen Protokoll, BIOS-Argumente nicht (TOOL08 war zur Messzeit offen).

@@ -1,0 +1,123 @@
+measurement-2026-10-30-bios08 -- BIOS handles 6 and up go through the one-entry Bconmap table
+like EmuTOS (TASK/BIOS08, audit finding BIOS-CORE-007): handle 6 = entry 0 = AUX, 7 and up 0
+=====================================================================================================
+Developer, TASK/BIOS08, 2026-10-30 (host clock CET). Tree: main at 60824ec8 (later 57549ee4, see
+KERNELS) plus the uncommitted BIOS08 change (TASK/BIOS08-STATUS-DONE.MD lists the files). QEMU
+raspi4b headless, -append serial=on. No hardware, no real card, nothing flashed. Not committed.
+
+WHAT / WHY
+  Before: BIOS handles 6/7 were the absent device of the NewTOS device table and 8/9 lay past it
+  (tos-api/src/bios/chardev.rs DEVICES, NDEV 8): Bconstat/Bconin/Bcostat/Bconout all 0. EmuTOS
+  runs the BCONMAP_AVAILABLE branch first in all four calls (references/emutos/bios/bios.c:923-928,
+  :967-972, :1000-1005, :1152-1157): map_index = handle - 6 in a WORD, >= maptabsize -> 0, >= 0 ->
+  maptab[map_index]'s routine. Since XBIOS05 NewTOS has EmuTOS' one-entry table (maptabsize 1,
+  entry 0 = the MFP/AUX port, references/emutos/bios/serport.c:962-972). Profile (ticket, lead
+  2026-10-30): handle 6 = maptab[0] = AUX, the same answers as handle 1 (Bconin(6) waits like
+  Bconin(1)); handles 7, 8, 9 and up 0.
+  Change: chardev::device(handle) routes like EmuTOS (Bconmap branch, then table 0..5, negative 0);
+  xbios::bconmap::entry_device gives entry 0's port = device 1 (AUX); the table ends at 5.
+
+INPUTS
+  ROM / Hatari   not run here: the EmuTOS side is the committed references
+                 tosdump/reference/EMUTOS-1a7484ab-{BIOS,BIOS-core,XBIOS-chardev,XBIOS-system,
+                 XBIOS-bconmap}{,-falcontc}.BIN and the audit's probe runs (same source):
+                 measurements/measurement-2026-10-28-bios-core-audit/runs/PROBE-EMUTOS-tt,
+                 .../PROBE-EMUTOS-falcontc, .../HANG-EMUTOS-tt-6
+  QEMU           11.0.2, -M raspi4b, -append serial=on
+  KERNELS (rpi4 release; gitignored/scratch, deleted after the run)
+    before  f37dc352d3524a5096a949ca5afc2d3c4dd661aff4c03327a157e30e0d2f4014
+            `git archive 60824ec8` into scratch, built by the TOOL09 runner (--tree); every before-*
+            table run and both *-before probe runs
+    after   93ce480cde8f6d32fc5fe865ad37593c34da7e3c3618c6604f62e39f819f2a2f  this tree at HEAD
+            60824ec8: after-bios-r1, -bios-core-r1, -xbios-chardev-r1, -xbios-system-r1
+    after   50fef10d8d9add463fdcee5dbe5f79de9ec04d5f60584b84998081332edc1152  the same tree after the
+            lead's docs-only commits c1186e8a/57549ee4 (TASK files; `git diff 60824ec8 57549ee4 --
+            kernel tos-api tos-types tosdump sdk tools programs` empty): after-xbios-bconmap-r1 and
+            both *-after probe runs. The two "after" images differ by the build revision string
+            tos-api/build.rs embeds (NEWTOS_BUILD_REV), not by code.
+  DUMPBIOS.NAP   built by the runner per tree: before 5a440d07..., after 9ecae61f... (HEAD 60824ec8),
+                 a6724c45... (HEAD 57549ee4); tosdump/core unchanged.
+  PROBES         method/bcprobe.c = the audit's probe, copied unchanged
+                 (cmp with measurements/measurement-2026-10-28-bios-core-audit/method/bcprobe.c),
+                 rebuilt for NewTOS against this tree's SDK (method/build-probe.sh):
+                   BCPROBE.NAP 711232ae1250b5077210ba6429ca3546a736aeab6c7be7ebf1daf459a5086d59
+                   BCHANG.NAP  8f31e9aeed312bc74593a8a1e4ab7ffe74189a3625602f01356ccbcf7c76bc21
+                               (HANGLIST=0,1,6,7)
+
+CARDS / IMAGES
+  Every NewTOS card from tools/mkcard.sh (the TOOL09 runner for the tables, method/run-newtos.sh
+  for the probes), one per run, booted as an APFS clone, card and clone deleted after the run.
+  Manifests copied into each run dir (runs/*/card.img.manifest), 14 in all; their
+  optional_missing line, verbatim, all identical:
+    optional_missing none
+  Card sha256 before/after the boot: runs/*/tosdump-run.txt ("card", "card after the run") and
+  runs/BC*/card.img.{before,after}.sha256.
+
+METHOD (method/)
+  newtos-tables.sh before|after <s> <runs> [<tree>]
+                        bios-r1, bios-core-r1, xbios-chardev-r1, xbios-system-r1, xbios-bconmap-r1
+                        through `cargo xtask tosdump bios` (TOOL09), each vs tt and falcontc;
+                        after measurement-2026-10-29-xbios05/method/newtos-tables{,-before}.sh
+  compare.sh <runs>     differing cases before/after, newly differing, now equal ->
+                        runs/before-after.txt (copied from measurement-2026-10-29-bios04, renamed dirs)
+  diffcases.sh <runs>   display: differing case numbers per tosdiff file (copied from xbios05)
+  build-probe.sh, run-newtos.sh
+                        the audit's probe on NewTOS (after the audit's scripts: NAP only, kernel an
+                        argument, APFS clone, C: offset from the MBR)
+  lint.sh <tree> <out>  build both boards (release) + clippy kernel per board (copied from xbios05)
+
+RESULTS
+1. Tables, NewTOS vs oracle, differing cases (runs/before-after.txt; tosdiff per run in
+   runs/before-*/ and runs/after-*/; every NewTOS dump "tosdiff --validate" accepted):
+     table             ref   before (60824ec8)            after (BIOS08)
+     bios-r1           tt    33: 69 70 93 ...             32: 69 gone, rest unchanged
+     bios-r1           fc    38: 69 70 87 ...             37: 69 gone, rest unchanged
+     bios-core-r1      tt    2: 65 66                     2: 65 66
+     bios-core-r1      fc    1: 65                        1: 65
+     xbios-chardev-r1  tt    1: 31                        1: 31
+     xbios-chardev-r1  fc    2: 31 43                     2: 31 43
+     xbios-system-r1   both  9: 68-76                     9: 68-76
+     xbios-bconmap-r1  both  1: 18                        1: 18 (maptabsize/mapped_device, XBIOS05)
+   Newly differing: none (all five tables, both references).
+     bios-r1 69  Bcostat(6)  oracle -1 / -1, NewTOS 0 -> -1          EQUAL now
+     bios-r1 70  Bcostat(7)  oracle -1 / -1, NewTOS 0 -> 0           port count (SCC B), ACCEPTED
+     bios-core-r1 65 Bcostat(8) oracle -1 / -1, NewTOS 0 -> 0        port count (TT-MFP / SCC A)
+     bios-core-r1 66 Bcostat(9) oracle tt -1, falcontc 0; NewTOS 0   tt: port count; falcontc EQUAL
+   Unchanged and EQUAL before and after: bios-r1 36 Bconstat(6) (0; the oracle's port has no byte),
+   37/43/49 handle 10, 38/44/50/71 handle -1; bios-core-r1 20-22 Bconstat(7..9), 23-43 and 67-71
+   past the map / negative.
+   Why 70 and 65/66 are a device parameter: with maptabsize 1 the same ROM answers 0 for 7..9
+   (references/emutos/bios/bios.c:1153-1154, map_index >= maptabsize; maptabsize = 1 on a
+   machine that is neither Falcon/MSTe/ARAnyM nor TT, references/emutos/bios/serport.c:965);
+   the oracle profiles have 4 (TT, :993) and 3 (Falcon, :981) entries.
+
+2. Probe B group (runs/BCPROBE-NEWTOS-raspi4b-{before,after}/BCPROBE.LOG; EmuTOS: the audit's runs)
+     B04 Bconout(6,'A')  before 0, after 1   EmuTOS tt 1, falcontc 1   EQUAL now
+     B05 Bconout(7,'A')  before 0, after 0   EmuTOS tt 1, falcontc 1   port count, ACCEPTED
+   before vs after: only B04 and the T01 loop count (timing) differ; BCPROB2.LOG identical.
+
+3. Bconin on raspi4b (runs/BCHANG-NEWTOS-raspi4b-{before,after}/BCHANG.LOG): handles 0, 1, 6, 7
+   all "after ret=00000000" before and after. Bconin(1) on this board is the no-cable AUX entry
+   (0 at once), so Bconin(6) = Bconin(1) = 0; Bconin(7) 0 past the table. The qemu-virt wait
+   (AuxSerial, XBIOS15/XBIOS18) is not booted here; that handle 6 reaches whatever driver is in
+   slot 1 through its trap entry (wait + give-way) is pinned by tos-api/tests/bios08_bconmap_handles.rs.
+   EmuTOS tt: Bconin(6) blocks (audit HANG-EMUTOS-tt-6) = its bconin1 on the MFP port.
+
+TESTS / LINT
+  cargo xtask test (full)   1888 passed, 0 failed, 1 ignored (runs/xtask-test-summary.txt); base
+                            1881/0/1: +7 tos-api/tests/bios08_bconmap_handles.rs. A first full run
+                            failed in tos-api/tests/fs11_device_rw.rs bios_absent_profile (it pinned
+                            Bconout(6) = 0, the old profile); handle 6 moved to its AUX check, the
+                            second full run is the one recorded.
+  build + clippy (runs/lint-before = the 60824ec8 tree, runs/lint-after = this tree): build both
+                            boards exit 0, 159 warning lines each side (kernel 93, tos-api 64);
+                            clippy kernel 121 / tos-api 74 on both boards both sides; no warning
+                            names chardev.rs or bconmap.rs; clippy tos-api --tests: no warning in
+                            the touched files
+  cargo xtask deps --check-mapping: 1063 rows resolve; deps bconstat/bconin/bconout/bcostat --up
+                            complete
+
+NOT DONE / LIMITS
+  - qemu-virt: built and linted, not booted (Tester): Bconin(6) waiting for a serial byte there.
+  - Real Pi 4: nothing hardware-specific changed; not run.
+  - Run BINs are gitignored; the references are committed.

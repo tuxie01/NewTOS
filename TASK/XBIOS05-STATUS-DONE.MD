@@ -6,7 +6,7 @@ Datum 2026-10-29 · Beleg
 implementation“), Layout `docs/api/structures/bconmap.md` (neu) · Ticket
 [XBIOS05](XBIOS05.md), Anwenderentscheidung 2026-10-28 Option 1
 
-- **`Bconmap`** (`tos-api/src/xbios/bconmap.rs:222@bconmap`, Arm
+- **`Bconmap`** (`tos-api/src/xbios/bconmap.rs:240@bconmap`, Arm
   `tos-api/src/xbios/mod.rs:98@bconmap`; vorher konstant `0x2c` in
   `tos-api/src/xbios/system.rs`): `-1` = 6, `-2` = Zeiger auf
   `BCONMAP {maptab, 1, 6}`, `6` = 6 mit dem Rueckspeichern des Eintrags

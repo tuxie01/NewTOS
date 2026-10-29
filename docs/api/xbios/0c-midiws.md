@@ -182,7 +182,7 @@ bytes (`cnt` unsigned 16 bit) by calling `Bconout(3, byte)` of the **MIDI
 device-table entry** once per byte, results ignored, `void` -- exactly the shape
 of `midiws()` (`bios/midi.c:104-110`, `bconout3(3, *ptr++)`). Since BIOS04
 (2026-10-29) the entry is the MIDI port of the reference machine
-(`tos-api/src/bios/chardev.rs:163@MidiPort`: `Bconout` -> 1, byte discarded,
+(`tos-api/src/bios/chardev.rs:175@MidiPort`: `Bconout` -> 1, byte discarded,
 always ready — deliberate profile, not a stub; before, the absent device with
 `Bconout` -> 0), so the call returns normally and transmits nothing; the
 observable result of `Midiws` (`void`, returns at once) is the same before and
@@ -226,11 +226,11 @@ is the *only* serial peripheral NewTOS drives, and it is reserved as the
 **debug/AUX** channel — it is **not** repurposed as a MIDI transport. So the
 EmuTOS `bconout3` path (BIOS handle 3, MIDI) has **no backing transmitter**:
 since BIOS04 BIOS handle 3 is a MIDI port entry that is always ready and
-discards what it accepts (`tos-api/src/bios/chardev.rs:163@MidiPort`).
+discards what it accepts (`tos-api/src/bios/chardev.rs:175@MidiPort`).
 
 **Behaviour on the Pi** (rewritten 2026-10-29, BIOS04). `Midiws` transmits
 nothing: each byte goes to the MIDI entry of the device table
-(`tos-api/src/bios/chardev.rs:163@MidiPort`), which accepts it (`Bconout(3)` →
+(`tos-api/src/bios/chardev.rs:175@MidiPort`), which accepts it (`Bconout(3)` →
 1) and discards it. The call returns normally (`void`), honouring the
 `bytes − 1` unsigned count contract (it "consumes" `cnt + 1` bytes without
 emitting them). No error is raised. This is **not** EmuTOS' behaviour on a

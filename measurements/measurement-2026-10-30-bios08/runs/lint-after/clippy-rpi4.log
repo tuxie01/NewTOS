@@ -1,0 +1,200 @@
+   Compiling tos-api v0.6.1 (/Volumes/Daten/Development/PiRusTOS/tos-api)
+   Compiling kernel v0.6.1 (/Volumes/Daten/Development/PiRusTOS/kernel)
+tos-api/src/aes/form.rs:319:9: warning: value assigned to `tree` is never read
+tos-api/src/aes/window.rs:2888:9: warning: value assigned to `top` is never read
+tos-api/src/aes/form.rs:122:1: warning: type `aes::Aespb` is more private than the item `aes::form::form_alert`: function `aes::form::form_alert` is reachable at visibility `pub`
+tos-api/src/aes/form.rs:525:1: warning: type `aes::Aespb` is more private than the item `aes::form::form_do`: function `aes::form::form_do` is reachable at visibility `pub`
+tos-api/src/aes/form.rs:824:1: warning: type `aes::Aespb` is more private than the item `aes::form::form_error`: function `aes::form::form_error` is reachable at visibility `pub`
+tos-api/src/aes/form.rs:962:1: warning: type `aes::Aespb` is more private than the item `aes::form::form_center`: function `aes::form::form_center` is reachable at visibility `pub`
+tos-api/src/aes/form.rs:1017:1: warning: type `aes::Aespb` is more private than the item `aes::form::form_dial`: function `aes::form::form_dial` is reachable at visibility `pub`
+tos-api/src/aes/form.rs:1083:1: warning: type `aes::Aespb` is more private than the item `aes::form::form_button`: function `aes::form::form_button` is reachable at visibility `pub`
+tos-api/src/aes/form.rs:1106:1: warning: type `aes::Aespb` is more private than the item `aes::form::form_keybd`: function `aes::form::form_keybd` is reachable at visibility `pub`
+tos-api/src/aes/fsel.rs:511:1: warning: type `aes::Aespb` is more private than the item `aes::fsel::fsel_input`: function `aes::fsel::fsel_input` is reachable at visibility `pub`
+tos-api/src/aes/fsel.rs:518:1: warning: type `aes::Aespb` is more private than the item `aes::fsel::fsel_exinput`: function `aes::fsel::fsel_exinput` is reachable at visibility `pub`
+tos-api/src/aes/menu.rs:345:1: warning: type `aes::Aespb` is more private than the item `aes::menu::menu_bar`: function `aes::menu::menu_bar` is reachable at visibility `pub`
+tos-api/src/aes/menu.rs:1059:1: warning: type `aes::Aespb` is more private than the item `aes::menu::menu_icheck`: function `aes::menu::menu_icheck` is reachable at visibility `pub`
+tos-api/src/aes/menu.rs:1068:1: warning: type `aes::Aespb` is more private than the item `aes::menu::menu_ienable`: function `aes::menu::menu_ienable` is reachable at visibility `pub`
+tos-api/src/aes/menu.rs:1080:1: warning: type `aes::Aespb` is more private than the item `aes::menu::menu_tnormal`: function `aes::menu::menu_tnormal` is reachable at visibility `pub`
+tos-api/src/aes/menu.rs:1090:1: warning: type `aes::Aespb` is more private than the item `aes::menu::menu_text`: function `aes::menu::menu_text` is reachable at visibility `pub`
+tos-api/src/aes/menu.rs:1648:1: warning: type `aes::Aespb` is more private than the item `aes::menu::menu_register`: function `aes::menu::menu_register` is reachable at visibility `pub`
+tos-api/src/aes/menu.rs:1825:1: warning: type `aes::Aespb` is more private than the item `aes::menu::menu_popup`: function `aes::menu::menu_popup` is reachable at visibility `pub`
+tos-api/src/aes/menu.rs:2155:1: warning: type `aes::Aespb` is more private than the item `aes::menu::menu_settings`: function `aes::menu::menu_settings` is reachable at visibility `pub`
+tos-api/src/aes/menu.rs:2436:1: warning: type `aes::Aespb` is more private than the item `aes::menu::menu_attach`: function `aes::menu::menu_attach` is reachable at visibility `pub`
+tos-api/src/aes/menu.rs:2485:1: warning: type `aes::Aespb` is more private than the item `aes::menu::menu_istart`: function `aes::menu::menu_istart` is reachable at visibility `pub`
+tos-api/src/aes/object.rs:1121:1: warning: type `aes::Aespb` is more private than the item `aes::object::objc_draw`: function `aes::object::objc_draw` is reachable at visibility `pub`
+tos-api/src/aes/object.rs:1323:1: warning: type `aes::Aespb` is more private than the item `aes::object::objc_offset`: function `aes::object::objc_offset` is reachable at visibility `pub`
+tos-api/src/aes/object.rs:1347:1: warning: type `aes::Aespb` is more private than the item `aes::object::objc_add`: function `aes::object::objc_add` is reachable at visibility `pub`
+tos-api/src/aes/object.rs:1359:1: warning: type `aes::Aespb` is more private than the item `aes::object::objc_delete`: function `aes::object::objc_delete` is reachable at visibility `pub`
+tos-api/src/aes/object.rs:1373:1: warning: type `aes::Aespb` is more private than the item `aes::object::objc_order`: function `aes::object::objc_order` is reachable at visibility `pub`
+tos-api/src/aes/object.rs:1518:1: warning: type `aes::Aespb` is more private than the item `aes::object::objc_change`: function `aes::object::objc_change` is reachable at visibility `pub`
+tos-api/src/aes/object.rs:1590:1: warning: type `aes::Aespb` is more private than the item `aes::object::objc_sysvar`: function `aes::object::objc_sysvar` is reachable at visibility `pub`
+tos-api/src/aes/object.rs:1788:1: warning: type `aes::Aespb` is more private than the item `aes::object::objc_edit`: function `aes::object::objc_edit` is reachable at visibility `pub`
+tos-api/src/aes/object.rs:2320:1: warning: type `aes::Aespb` is more private than the item `aes::object::objc_find`: function `aes::object::objc_find` is reachable at visibility `pub`
+tos-api/src/aes/resource.rs:2192:1: warning: type `aes::Aespb` is more private than the item `aes::resource::rsrc_load`: function `aes::resource::rsrc_load` is reachable at visibility `pub`
+tos-api/src/aes/resource.rs:2522:1: warning: type `aes::Aespb` is more private than the item `aes::resource::rsrc_free`: function `aes::resource::rsrc_free` is reachable at visibility `pub`
+tos-api/src/aes/resource.rs:2844:1: warning: type `aes::Aespb` is more private than the item `aes::resource::rsrc_gaddr`: function `aes::resource::rsrc_gaddr` is reachable at visibility `pub`
+tos-api/src/aes/resource.rs:2875:1: warning: type `aes::Aespb` is more private than the item `aes::resource::rsrc_saddr`: function `aes::resource::rsrc_saddr` is reachable at visibility `pub`
+tos-api/src/aes/resource.rs:2918:1: warning: type `aes::Aespb` is more private than the item `aes::resource::rsrc_obfix`: function `aes::resource::rsrc_obfix` is reachable at visibility `pub`
+tos-api/src/aes/shell.rs:230:1: warning: type `aes::Aespb` is more private than the item `aes::shell::scrp_read`: function `aes::shell::scrp_read` is reachable at visibility `pub`
+tos-api/src/aes/shell.rs:241:1: warning: type `aes::Aespb` is more private than the item `aes::shell::scrp_write`: function `aes::shell::scrp_write` is reachable at visibility `pub`
+tos-api/src/aes/shell.rs:274:1: warning: type `aes::Aespb` is more private than the item `aes::shell::scrp_clear`: function `aes::shell::scrp_clear` is reachable at visibility `pub`
+tos-api/src/aes/shell.rs:370:1: warning: type `aes::Aespb` is more private than the item `aes::shell::shel_read`: function `aes::shell::shel_read` is reachable at visibility `pub`
+tos-api/src/aes/shell.rs:495:1: warning: type `aes::Aespb` is more private than the item `aes::shell::shel_write`: function `aes::shell::shel_write` is reachable at visibility `pub`
+tos-api/src/aes/shell.rs:987:1: warning: type `aes::Aespb` is more private than the item `aes::shell::shel_get`: function `aes::shell::shel_get` is reachable at visibility `pub`
+tos-api/src/aes/shell.rs:1004:1: warning: type `aes::Aespb` is more private than the item `aes::shell::shel_put`: function `aes::shell::shel_put` is reachable at visibility `pub`
+tos-api/src/aes/shell.rs:1052:1: warning: type `aes::Aespb` is more private than the item `aes::shell::shel_find`: function `aes::shell::shel_find` is reachable at visibility `pub`
+tos-api/src/aes/shell.rs:1164:1: warning: type `aes::Aespb` is more private than the item `aes::shell::shel_envrn`: function `aes::shell::shel_envrn` is reachable at visibility `pub`
+tos-api/src/aes/shell.rs:1235:1: warning: type `aes::Aespb` is more private than the item `aes::shell::shel_rdef`: function `aes::shell::shel_rdef` is reachable at visibility `pub`
+tos-api/src/aes/shell.rs:1254:1: warning: type `aes::Aespb` is more private than the item `aes::shell::shel_wdef`: function `aes::shell::shel_wdef` is reachable at visibility `pub`
+tos-api/src/aes/window.rs:3357:1: warning: type `aes::Aespb` is more private than the item `aes::window::wind_create`: function `aes::window::wind_create` is reachable at visibility `pub`
+tos-api/src/aes/window.rs:3425:1: warning: type `aes::Aespb` is more private than the item `aes::window::wind_open`: function `aes::window::wind_open` is reachable at visibility `pub`
+tos-api/src/aes/window.rs:3554:1: warning: type `aes::Aespb` is more private than the item `aes::window::wind_close`: function `aes::window::wind_close` is reachable at visibility `pub`
+tos-api/src/aes/window.rs:3730:1: warning: type `aes::Aespb` is more private than the item `aes::window::wind_delete`: function `aes::window::wind_delete` is reachable at visibility `pub`
+tos-api/src/aes/window.rs:3743:1: warning: type `aes::Aespb` is more private than the item `aes::window::wind_get`: function `aes::window::wind_get` is reachable at visibility `pub`
+tos-api/src/aes/window.rs:3977:1: warning: type `aes::Aespb` is more private than the item `aes::window::wind_set`: function `aes::window::wind_set` is reachable at visibility `pub`
+tos-api/src/aes/window.rs:4207:1: warning: type `aes::Aespb` is more private than the item `aes::window::wind_find`: function `aes::window::wind_find` is reachable at visibility `pub`
+tos-api/src/aes/window.rs:4278:1: warning: type `aes::Aespb` is more private than the item `aes::window::wind_update`: function `aes::window::wind_update` is reachable at visibility `pub`
+tos-api/src/aes/window.rs:4710:1: warning: type `aes::Aespb` is more private than the item `aes::window::wind_calc`: function `aes::window::wind_calc` is reachable at visibility `pub`
+tos-api/src/aes/window.rs:4727:1: warning: type `aes::Aespb` is more private than the item `aes::window::wind_new`: function `aes::window::wind_new` is reachable at visibility `pub`
+tos-api/src/vdi/mouse.rs:773:1: warning: type `vdi::Vdipb` is more private than the item `vdi::mouse::vsc_form`: function `vdi::mouse::vsc_form` is reachable at visibility `pub`
+tos-api/src/vdi/mouse.rs:816:1: warning: type `vdi::Vdipb` is more private than the item `vdi::mouse::v_show_c`: function `vdi::mouse::v_show_c` is reachable at visibility `pub`
+tos-api/src/vdi/mouse.rs:899:1: warning: type `vdi::Vdipb` is more private than the item `vdi::mouse::vq_mouse`: function `vdi::mouse::vq_mouse` is reachable at visibility `pub`
+tos-api/src/vdi/mouse.rs:967:1: warning: type `vdi::Vdipb` is more private than the item `vdi::mouse::vex_butv`: function `vdi::mouse::vex_butv` is reachable at visibility `pub`
+tos-api/src/vdi/mouse.rs:972:1: warning: type `vdi::Vdipb` is more private than the item `vdi::mouse::vex_motv`: function `vdi::mouse::vex_motv` is reachable at visibility `pub`
+tos-api/src/vdi/mouse.rs:977:1: warning: type `vdi::Vdipb` is more private than the item `vdi::mouse::vex_curv`: function `vdi::mouse::vex_curv` is reachable at visibility `pub`
+tos-api/src/vdi/mouse.rs:1000:1: warning: type `vdi::Vdipb` is more private than the item `vdi::mouse::vex_wheelv`: function `vdi::mouse::vex_wheelv` is reachable at visibility `pub`
+tos-api/src/vdi/mouse.rs:1025:1: warning: type `vdi::Vdipb` is more private than the item `vdi::mouse::vex_timv`: function `vdi::mouse::vex_timv` is reachable at visibility `pub`
+tos-api/src/aes/fsel.rs:586:18: warning: the loop variable `i` is used to index `names`
+tos-api/src/aes/fsel.rs:871:18: warning: the loop variable `i` is only used to index `mask`
+tos-api/src/aes/fsel.rs:923:18: warning: the loop variable `i` is used to index `names`
+tos-api/src/aes/object.rs:2700:1: warning: this function has too many arguments (8/7)
+tos-api/src/aes/object.rs:3193:13: warning: this `if` can be collapsed into the outer `match`
+tos-api/src/aes/object.rs:3315:13: warning: this `if` can be collapsed into the outer `match`
+tos-api/src/aes/object.rs:3589:1: warning: this function has too many arguments (8/7)
+tos-api/src/aes/object.rs:3847:1: warning: this function has too many arguments (8/7)
+tos-api/src/aes/shell.rs:1207:47: warning: needlessly taken reference of both operands
+tos-api/src/bdos/fs/find.rs:410:1: warning: this `impl` can be derived
+warning: `tos-api` (lib) generated 74 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions)
+kernel/src/selftest_objc.rs:79:5: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:86:5: warning: value assigned to `intin` is never read
+kernel/src/selftest_objc.rs:80:5: warning: value assigned to `addrin` is never read
+kernel/src/selftest_objc.rs:119:5: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:120:5: warning: value assigned to `intin` is never read
+kernel/src/selftest_objc.rs:121:5: warning: value assigned to `addrin` is never read
+kernel/src/selftest_objc.rs:190:5: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:194:49: warning: value assigned to `intin` is never read
+kernel/src/selftest_objc.rs:191:5: warning: value assigned to `addrin` is never read
+kernel/src/selftest_objc.rs:243:38: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:246:49: warning: value assigned to `intin` is never read
+kernel/src/selftest_objc.rs:244:5: warning: value assigned to `addrin` is never read
+kernel/src/selftest_objc.rs:285:38: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:292:54: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:293:5: warning: value assigned to `intin` is never read
+kernel/src/selftest_objc.rs:294:5: warning: value assigned to `addrin` is never read
+kernel/src/selftest_objc.rs:335:38: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:341:56: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:349:60: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:397:38: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:402:72: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:403:5: warning: value assigned to `intin` is never read
+kernel/src/selftest_objc.rs:403:19: warning: value assigned to `addrin` is never read
+kernel/src/selftest_objc.rs:425:38: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:426:5: warning: value assigned to `intin` is never read
+kernel/src/selftest_objc.rs:467:54: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:472:72: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:473:19: warning: value assigned to `intin` is never read
+kernel/src/selftest_objc.rs:473:33: warning: value assigned to `addrin` is never read
+kernel/src/selftest_objc.rs:535:54: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:536:5: warning: value assigned to `intin` is never read
+kernel/src/selftest_objc.rs:536:19: warning: value assigned to `addrin` is never read
+kernel/src/selftest_objc.rs:565:55: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:571:73: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:575:73: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:580:73: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:581:70: warning: value assigned to `intin` is never read
+kernel/src/selftest_objc.rs:576:38: warning: value assigned to `addrin` is never read
+kernel/src/selftest_objc.rs:609:22: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:614:40: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:656:57: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:664:61: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:965:39: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:972:56: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:978:41: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:974:77: warning: value assigned to `intin` is never read
+kernel/src/selftest_objc.rs:973:5: warning: value assigned to `addrin` is never read
+kernel/src/selftest_objc.rs:1001:39: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:1010:57: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:1015:56: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:1017:77: warning: value assigned to `intin` is never read
+kernel/src/selftest_objc.rs:1016:5: warning: value assigned to `addrin` is never read
+kernel/src/selftest_objc.rs:1038:39: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:1043:57: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:1047:56: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:1049:78: warning: value assigned to `intin` is never read
+kernel/src/selftest_objc.rs:1048:5: warning: value assigned to `addrin` is never read
+kernel/src/selftest_objc.rs:1073:38: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:1075:5: warning: value assigned to `addrin` is never read
+kernel/src/selftest_objc.rs:1101:51: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:1107:49: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:1109:61: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:1115:64: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:1117:76: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:1123:50: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:1127:50: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:1134:50: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:1117:90: warning: value assigned to `intin` is never read
+kernel/src/selftest_objc.rs:1135:44: warning: value assigned to `addrin` is never read
+kernel/src/selftest_objc.rs:1251:38: warning: value assigned to `control` is never read
+kernel/src/selftest_objc.rs:1253:77: warning: value assigned to `intin` is never read
+kernel/src/selftest_objc.rs:1252:5: warning: value assigned to `addrin` is never read
+kernel/src/arch/aarch64/user_entry.rs:71:4: warning: function `boot_l0_phys` is never used
+kernel/src/dbg_qedtrace.rs:203:7: warning: constant `CYCLES_AFTER_KEY` is never used
+kernel/src/arch/aarch64/mmu.rs:767:23: warning: immediately dereferencing a reference: help: try: `L2`
+kernel/src/arch/aarch64/mmu.rs:769:32: warning: immediately dereferencing a reference: help: try: `L1`
+kernel/src/arch/aarch64/mmu.rs:772:23: warning: immediately dereferencing a reference: help: try: `L2_HIGH`
+kernel/src/drivers/usb/xhci/mod.rs:550:33: warning: immediately dereferencing a reference: help: try: `DMA`
+kernel/src/drivers/usb/xhci/mod.rs:610:37: warning: immediately dereferencing a reference: help: try: `SCRATCH_ARRAY`
+kernel/src/drivers/usb/xhci/mod.rs:612:48: warning: immediately dereferencing a reference: help: try: `SCRATCH_BUFS`
+kernel/src/drivers/usb/xhci/mod.rs:790:34: warning: immediately dereferencing a reference: help: try: `FUNC_DMA[fi]`
+kernel/src/drivers/usb/xhci/mod.rs:897:47: warning: immediately dereferencing a reference: help: try: `FUNC_DMA[fi].intbuf`
+kernel/src/drivers/usb/xhci/mod.rs:996:33: warning: immediately dereferencing a reference: help: try: `DMA`
+kernel/src/drivers/usb/xhci/mod.rs:1023:29: warning: immediately dereferencing a reference: help: try: `DMA`
+kernel/src/drivers/usb/xhci/mod.rs:1047:33: warning: immediately dereferencing a reference: help: try: `DMA`
+kernel/src/drivers/usb/xhci/mod.rs:1126:33: warning: immediately dereferencing a reference: help: try: `DEV`
+kernel/src/drivers/usb/xhci/mod.rs:1170:33: warning: immediately dereferencing a reference: help: try: `DMA`
+kernel/src/drivers/usb/xhci/mod.rs:1202:34: warning: immediately dereferencing a reference: help: try: `DEV`
+kernel/src/drivers/usb/xhci/mod.rs:1319:33: warning: immediately dereferencing a reference: help: try: `DEV`
+kernel/src/drivers/usb/xhci/mod.rs:1328:33: warning: immediately dereferencing a reference: help: try: `DEV`
+kernel/src/drivers/usb/xhci/mod.rs:1359:30: warning: immediately dereferencing a reference: help: try: `DEV`
+kernel/src/drivers/usb/xhci/mod.rs:1376:27: warning: immediately dereferencing a reference: help: try: `DEV`
+kernel/src/drivers/usb/xhci/mod.rs:1411:33: warning: immediately dereferencing a reference: help: try: `DEV`
+kernel/src/drivers/usb/xhci/mod.rs:1476:31: warning: immediately dereferencing a reference: help: try: `DEV`
+kernel/src/drivers/usb/xhci/mod.rs:1769:23: warning: immediately dereferencing a reference: help: try: `DEV`
+kernel/src/drivers/usb/xhci/mod.rs:1799:33: warning: immediately dereferencing a reference: help: try: `DEV`
+kernel/src/drivers/usb/xhci/mod.rs:2365:33: warning: immediately dereferencing a reference: help: try: `DEV`
+kernel/src/drivers/usb/xhci/mod.rs:2442:33: warning: immediately dereferencing a reference: help: try: `DEV`
+kernel/src/drivers/usb/xhci/mod.rs:2457:27: warning: immediately dereferencing a reference: help: try: `DEV`
+kernel/src/drivers/usb/xhci/mod.rs:2597:33: warning: immediately dereferencing a reference: help: try: `DEV`
+kernel/src/drivers/usb/xhci/mod.rs:2606:27: warning: immediately dereferencing a reference: help: try: `DEV`
+kernel/src/selftest_objc.rs:1138:28: warning: the loop variable `i` is used to index `ev`
+kernel/src/arch/aarch64/dtb.rs:316:5: warning: missing documentation for a struct field
+kernel/src/arch/aarch64/dtb.rs:317:5: warning: missing documentation for a struct field
+kernel/src/arch/aarch64/dtb.rs:318:5: warning: missing documentation for a struct field
+kernel/src/drivers/usb/mod.rs:265:5: warning: missing documentation for a variant
+kernel/src/drivers/usb/mod.rs:266:5: warning: missing documentation for a variant
+kernel/src/drivers/usb/mod.rs:267:5: warning: missing documentation for a variant
+kernel/src/drivers/usb/mod.rs:268:5: warning: missing documentation for a variant
+kernel/src/drivers/usb/mod.rs:281:5: warning: missing documentation for a struct field
+kernel/src/drivers/usb/mod.rs:290:5: warning: missing documentation for a struct field
+kernel/src/drivers/usb/mod.rs:291:5: warning: missing documentation for a struct field
+kernel/src/drivers/usb/mod.rs:292:5: warning: missing documentation for a struct field
+kernel/src/drivers/usb/mod.rs:293:5: warning: missing documentation for a struct field
+kernel/src/drivers/usb/mod.rs:294:5: warning: missing documentation for a struct field
+kernel/src/drivers/usb/mod.rs:316:5: warning: missing documentation for a struct field
+kernel/src/drivers/usb/mod.rs:317:5: warning: missing documentation for a struct field
+kernel/src/drivers/usb/xhci/mod.rs:380:5: warning: missing documentation for a struct field
+kernel/src/drivers/usb/xhci/mod.rs:383:5: warning: missing documentation for a struct field
+kernel/src/drivers/usb/xhci/mod.rs:384:5: warning: missing documentation for a struct field
+kernel/src/drivers/usb/xhci/mod.rs:476:1: warning: missing documentation for a struct
+warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 1.81s

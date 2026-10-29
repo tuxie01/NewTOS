@@ -459,19 +459,20 @@ All character-device paths — `Fread`/`Fwrite` on `-1..-3`, on standard handles
 (also `Fdup`/`Fforce`d to devices), `Cconin`/`Cauxin`/`Cprnout`/… and `Bconin`/
 `Bconout`/`Bconstat`/`Bcostat` per BIOS device, and `Midiws` — go through ONE
 device table indexed by BIOS device number (PRN 0, AUX 1, CON 2, MIDI 3, IKBD 4,
-raw-CON 5; 6/7 unused), exactly as EmuTOS routes through its `bconin_vec[]` /
+raw-CON 5; handles 6 and up are the `Bconmap` table's, BIOS08: 6 = AUX's entry,
+7 and up none), exactly as EmuTOS routes through its `bconin_vec[]` /
 `bconout_vec[]` / `bconstat_vec[]` / `bcostat_vec[]` (`bios/bios.c:932,976,1009,1161`).
 GEMDOS contains **no special case for AUX/PRN**: `Fread` calls `Bconin`/`Bconstat`
 of the device (`conin`, `getch`, `conbrk`, `cgets` of `console.c`), `Fwrite` calls
 `Bconout`. A later UART/MIDI/printer driver (`TASK/IO01.md`) replaces only the
 table entry.
 
-**GEMDOS reaches only devices 0..2.** The table has eight entries, but a GEMDOS
+**GEMDOS reaches only devices 0..2.** The table has six entries, but a GEMDOS
 handle resolves only to CON, AUX or PRN: `osif` accepts the device handles
 `-1..-3` and answers `EIHNDL` below `-3`, and `HXFORM` maps them to BIOS
 devices 2, 1, 0 (`references/emutos/bdos/bdosmain.c:589-639`,
 `references/emutos/bdos/console.h:23-25,36`; the standard handles 4/5 default
-to CON, `references/emutos/bdos/console.c:60-67`). MIDI (3), IKBD (4) and 5..7
+to CON, `references/emutos/bdos/console.c:60-67`). MIDI (3), IKBD (4), 5 and 6..
 are reached only through the BIOS calls (and MIDI through `Midiws`); what is
 said about them below describes the BIOS table, not a GEMDOS path — no `Fread`
 or `Fwrite` ever reaches them.
@@ -483,13 +484,14 @@ the reference machine's ACIAs do — `Bconout` → `1` (byte discarded), `Bcosta
 `Bconstat(3)`/`Bconin(3)` read the MIDI ring of `Iorec(2)`, and `Bconin(3)`
 **waits** while it is empty, as EmuTOS' `bconin3`
 (`docs/api/bios/{01,02,03,08}-*.md`, BIOS04 notes;
-`tos-api/src/bios/chardev.rs:163@MidiPort`,
-`tos-api/src/bios/chardev.rs:236@IkbdPort`). Before, both were absent devices
+`tos-api/src/bios/chardev.rs:175@MidiPort`,
+`tos-api/src/bios/chardev.rs:248@IkbdPort`). Before, both were absent devices
 and a program waiting `while (!Bcostat(4));` hung for good (finding
 BIOS-CORE-001, `docs/audits/2026-10-28-bios-core.md`).
 
-Current entries (the documented *absent-device* profile): PRN (0) and 6/7
-(**AUX (1) is no longer absent, see item 1a; MIDI (3) and IKBD (4) are not
+Current entries (the documented *absent-device* profile): PRN (0) (**handles
+6/7 left this profile with BIOS08: 6 is AUX's entry, 7 and up answer `0` past
+the one-entry `Bconmap` table, `docs/api/bios/{01,02,03,08}-*.md`**; **AUX (1) is no longer absent, see item 1a; MIDI (3) and IKBD (4) are not
 absent since BIOS04, above**): `Bconin` → 0 **without blocking**, `Bconstat` → 0,
 `Bcostat` → 0, `Bconout` → 0 (byte discarded). Source of the values — what
 EmuTOS does for the same situation:

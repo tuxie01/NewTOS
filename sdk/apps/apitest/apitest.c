@@ -1851,8 +1851,10 @@ int main(void)
 	 *
 	 * Handle map per docs/api/bios/{01,02,03,08}-*.md "Pi / BCM2711
 	 * binding": CON (2) is the only keyboard input device; CON (2) and
-	 * raw-CON (5) are the screen output devices; PRT (0) and 6/7 are
-	 * absent and follow EmuTOS' char_dummy / charout_dummy slots. AUX (1)
+	 * raw-CON (5) are the screen output devices; PRT (0) is absent and
+	 * follows EmuTOS' char_dummy / charout_dummy slots. Handles 6 and up
+	 * are the one-entry Bconmap table's (TASK/BIOS08, EmuTOS
+	 * references/emutos/bios/bios.c:1000-1005): 6 = AUX, 7 and up -> 0. AUX (1)
 	 * is "port present, no cable" (docs/api/gemdos/file/3f-fread.md item
 	 * 1a): Bconout(1) accepts+discards -> 1, Bcostat(1) -> -1 (EmuTOS
 	 * bconout1/bcostat1 with an MFP port), Bconstat(1) -> 0. MIDI (3) and
@@ -1915,8 +1917,8 @@ int main(void)
 		/* The console-output handles really put their character on the
 		 * screen. All eight calls run back to back, so the marker line
 		 * ends up showing exactly the bytes that reach the screen: "CR" from
-		 * handles 2 and 5, nothing from the three absent devices and nothing
-		 * from AUX, MIDI and IKBD (accept and discard). */
+		 * handles 2 and 5, nothing from PRT and 7 and nothing from AUX (1
+		 * and 6), MIDI and IKBD (accept and discard). */
 		b_reset();
 		b_str("B1    Bconout(0..7) write here -> ");
 		b_emit();
@@ -1936,8 +1938,8 @@ int main(void)
 			ck_eq(G_BCHR, "BC14 Bconout(1,'*') AUX ->1",   o1, 1);
 			ck_eq(G_BCHR, "BC15 Bconout(3,'*') MIDI ->1",  o3, 1);
 			ck_eq(G_BCHR, "BC16 Bconout(4,'*') IKBD ->1",  o4, 1);
-			ck_eq(G_BCHR, "BC17 Bconout(6,'*') dummy ->0", o6, 0);
-			ck_eq(G_BCHR, "BC18 Bconout(7,'*') dummy ->0", o7, 0);
+			ck_eq(G_BCHR, "BC17 Bconout(6,'*') Bconmap 6 = AUX ->1", o6, 1);
+			ck_eq(G_BCHR, "BC18 Bconout(7,'*') past Bconmap ->0", o7, 0);
 		}
 
 		ck_eq(G_BCHR, "BC19 Bcostat(2) CON ->-1",      Bcostat(2), -1);

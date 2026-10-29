@@ -160,7 +160,9 @@ Measured cases (oracle tt / falcontc; NewTOS):
 
 Not in a table (the dumper's guard refuses devices 6..9, they remap AUX on
 the oracle): `Bconmap(6)` returns 6 and keeps device 1 the AUX port;
-`Bconmap(7..9)` return 0 on NewTOS (oracle TT/Falcon: a switch). Host tests:
+`Bconmap(7..9)` return 0 on NewTOS (oracle TT/Falcon: a switch). The BIOS
+handles that follow from the table (BIOS08): `docs/api/bios/08-bcostat.md`
+"NewTOS implementation notes". Host tests:
 `tos-api/tests/xbios05_bconmap.rs`. The probe
 `measurements/measurement-2026-10-29-xbios05/method/xcprobe.c` group B
 (B01-B24) on both systems.
@@ -201,8 +203,11 @@ the oracle): `Bconmap(6)` returns 6 and keeps device 1 the AUX port;
   (`docs/analysis/abi-assumptions-check-2026-10-28.md` §5.4).
 - EmuTOS' own BIOS for handles `>= 6` (`bios/bios.c:924-928`, `:968-972`,
   `:1001-1005`, `:1153-1157`): out of range → `0`, else through the entry.
-  On NewTOS the handles are the device table's (`TASK/BIOS08.md`), not this
-  table's.
+  NewTOS likewise since BIOS08 (2026-10-30): handle 6 reaches entry 0's port,
+  the AUX entry of the BIOS device table
+  (`tos-api/src/xbios/bconmap.rs:109@entry_device`,
+  `tos-api/src/bios/chardev.rs:411@device`); from 7 up the BIOS calls answer
+  `0` (`docs/api/bios/{01,02,03,08}-*.md`, BIOS08 notes).
 
 ---
 
@@ -243,7 +248,7 @@ the oracle): `Bconmap(6)` returns 6 and keeps device 1 the AUX port;
 **Decision (user, 2026-10-28, `TASK/XBIOS05.md` option 1):** the table
 EmuTOS builds on a machine that is neither Falcon nor TT — one entry, the AUX
 port (`bios/serport.c:962-966,972`). Code:
-`tos-api/src/xbios/bconmap.rs:222@bconmap`, dispatch arm
+`tos-api/src/xbios/bconmap.rs:240@bconmap`, dispatch arm
 `tos-api/src/xbios/mod.rs:98@bconmap`.
 
 - **Answers.** `Bconmap(-1)` = 6. `Bconmap(-2)` = the address of the
