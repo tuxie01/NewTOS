@@ -89,12 +89,13 @@ impl Host for KernelHost {
     }
 
     fn pump_input(&self) {
-        // Briefly unmask IRQs so the PL011 RX interrupt (qemu-virt serial
-        // console) can fill the ring — it is masked inside the synchronous
-        // SVC handler. Mirrors the loop body of `console_read_byte_blocking`,
-        // but for a single pass so the AES event loop stays responsive to its
-        // other (timer) conditions. On real Pi-4 the console is the USB-HID
-        // keyboard, drained below via `usb::poll()`.
+        // Briefly unmask IRQs so pending interrupts (timer tick, the
+        // qemu-virt PL011 receive interrupt that fills `Iorec(0)`) are taken
+        // — they are masked inside the synchronous SVC handler. Mirrors the
+        // loop body of `console_read_byte_blocking`, but for a single pass so
+        // the AES event loop stays responsive to its other (timer)
+        // conditions. The console is the USB-HID keyboard on both boards,
+        // drained below via `usb::poll()`.
         let daif: u64;
         // SAFETY: reading DAIF and toggling the IRQ mask are permitted at
         // EL1; we restore the caller's DAIF before returning.
@@ -111,9 +112,10 @@ impl Host for KernelHost {
         }
 
         // Drain USB-HID interrupt transfers (keyboard/mouse) → ikbd::feed,
-        // then the key repeat ([`pump_devices`]). On real Pi-4 this is the
-        // sole console input source; no-op until a HID device is enumerated
-        // (qemu-virt uses the PL011 RX IRQ instead).
+        // then the key repeat ([`pump_devices`]). The sole console input
+        // source on both boards (qemu-virt: `qemu-xhci` + `usb-kbd`; serial
+        // bytes go to AUX there, XBIOS15); no-op until a HID device is
+        // enumerated.
         pump_devices();
         core::hint::spin_loop();
 
@@ -134,11 +136,11 @@ impl Host for KernelHost {
 
     fn console_read_byte_blocking(&self) -> u8 {
         // This runs inside the synchronous SVC handler, where the CPU
-        // took the exception with IRQs masked — so the PL011 RX IRQ
-        // that fills the ringbuffer can never fire and a plain spin
-        // would deadlock. Save DAIF, unmask IRQ (`daifclr #2` clears
-        // the `I` bit), `wfi` until a byte lands in the ringbuffer,
-        // then restore the original mask.
+        // took the exception with IRQs masked — so no interrupt (the
+        // timer tick that wakes the `wfi` below) could fire and a plain
+        // wait would deadlock. Save DAIF, unmask IRQ (`daifclr #2` clears
+        // the `I` bit), poll the keyboard until a byte lands in the
+        // ringbuffer, then restore the original mask.
         let daif: u64;
         // SAFETY: reading DAIF and clearing the IRQ mask are permitted
         // at EL1; we restore DAIF before returning.
@@ -157,11 +159,11 @@ impl Host for KernelHost {
         let byte = loop {
             // Drain USB-HID interrupt transfers, so a *blocking* console
             // read (Cconin/Bconin — e.g. the EmuCON shell) sees the USB
-            // keyboard. On real Pi-4 this is the sole console input source.
+            // keyboard.
             // `pump_input` already does this for the desktop / AES event
             // loops; without it here the USB keyboard reaches the desktop
             // but never a blocking console read. No-op until a HID device
-            // is enumerated (qemu-virt uses the PL011 RX IRQ instead).
+            // is enumerated (on both boards the only console input source).
             // Key auto-repeat after the input ([`pump_devices`]).
             pump_devices();
 
@@ -171,11 +173,12 @@ impl Host for KernelHost {
             // On board-rpi4 the USB-HID keyboard is polled, so spin lightly
             // rather than sleeping (only the UART0 RX IRQ would wake a
             // `wfi`, and CON no longer reads the UART). On other boards
-            // (qemu-virt) `wfi` sleeps until the PL011 RX IRQ.
+            // (qemu-virt) `wfi` sleeps until the next interrupt — the 200 Hz
+            // tick — and the keyboard is polled again.
             #[cfg(feature = "board-rpi4")]
             core::hint::spin_loop();
             #[cfg(not(feature = "board-rpi4"))]
-            // SAFETY: wait for the next interrupt (the RX IRQ wakes us).
+            // SAFETY: wait for the next interrupt (the timer tick wakes us).
             unsafe {
                 core::arch::asm!("wfi", options(nomem, nostack, preserves_flags));
             }
@@ -565,8 +568,8 @@ pub fn irq_input_pump(spsr: u64) {
 /// (`shifty << 24 | scancode << 16 | ascii`) via `rx_pop_entry` — it does
 /// *not* skip scancode-only keys (ASCII 0), so arrow / function keys reach
 /// `Bconin(2)`/`Cconin` and friends. Runs inside the synchronous SVC handler
-/// with IRQs masked, so unmask + `wfi` while waiting (qemu-virt), or spin
-/// (rpi4 polls USB-HID).
+/// with IRQs masked, so unmask + `wfi` while waiting (qemu-virt, woken by
+/// the 200 Hz tick), or spin (rpi4); both poll USB-HID.
 ///
 /// With `give_way`, returns `None` as soon as the running process has bytes
 /// queued for its `kbdvec` hook (KEYS02, `docs/api/xbios/22-kbdvbase.md` B4):
@@ -590,10 +593,9 @@ fn read_key_loop(give_way: bool) -> Option<u32> {
 
     let word = loop {
         // Drain USB-HID interrupt transfers (keyboard) → ikbd::feed →
-        // the key ring. On real Pi-4 this is the sole console input
-        // source; no-op until a HID device is enumerated (qemu-virt
-        // uses the PL011 RX IRQ instead). Key auto-repeat after the input
-        // ([`pump_devices`]).
+        // the key ring — the sole console input source on both boards;
+        // no-op until a HID device is enumerated. Key auto-repeat after
+        // the input ([`pump_devices`]).
         pump_devices();
 
         if let Some(e) = crate::console::rx_pop_entry() {
@@ -603,12 +605,12 @@ fn read_key_loop(give_way: bool) -> Option<u32> {
             break None;
         }
         // rpi4 polls the USB-HID keyboard, so spin lightly (no IRQ
-        // wakes a `wfi` for CON input); qemu-virt `wfi`s until the
-        // PL011 RX IRQ.
+        // wakes a `wfi` for CON input); qemu-virt `wfi`s until the next
+        // interrupt (the 200 Hz tick) and polls again.
         #[cfg(feature = "board-rpi4")]
         core::hint::spin_loop();
         #[cfg(not(feature = "board-rpi4"))]
-        // SAFETY: wait for the next interrupt (the RX IRQ wakes us).
+        // SAFETY: wait for the next interrupt (the timer tick wakes us).
         unsafe {
             core::arch::asm!("wfi", options(nomem, nostack, preserves_flags));
         }

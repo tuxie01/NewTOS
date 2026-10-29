@@ -365,8 +365,11 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   every newly linked test binary waits 12–80 s at its first start, a full run
   about 2 h — so no nightly launchd runs until that is solved
   (`measurements/measurement-2026-10-28-tool04/RUNINFO.TXT`, TOOL04).
-- Integration runs in QEMU via `cargo xtask run --board rpi4|qemu-virt`, driven
-  by the scripts in the run's `measurements/*/method/`.
+- Integration runs in QEMU via `cargo xtask run --board rpi4|qemu-virt`
+  (qemu-virt opens its display window by default: keyboard and mouse are the
+  window's USB devices, the terminal is the serial line = AUX; `--headless`
+  runs without a display; XBIOS15), driven by the scripts in the run's
+  `measurements/*/method/`.
 - Conformance with EmuTOS: tosdump cases against the oracle
   (`docs/analysis/ORACLE.md`).
 - A tosdump case table on NewTOS: `cargo xtask tosdump <dumper> <table.tsv>

@@ -1,0 +1,101 @@
+measurement-2026-10-29-xbios15 -- acceptance of TASK/XBIOS15: on qemu-virt a byte received on
+the serial line goes into the input ring of device 0 (Iorec(0)) and AUX reads it
+(Bconstat(1)/Bconin(1)); raspi4b unchanged (dropped). Plus the ticket's retest tables and a
+qemu-virt desktop run with the USB keyboard.
+==========================================================================================
+Developer, 2026-10-29 (host clock CET). Measured tree: the main tree at 18e8c115 plus the
+uncommitted XBIOS15 change (files listed in TASK/XBIOS15-STATUS-DONE.MD); "before" = `git
+archive 18e8c115`. Kernels for the probe runs were built in a scratch copy of the main tree
+(rsync without .git/target/measurements, references symlinked; kernel/ and tos-api/src
+checked identical to the main tree with diff -r before each build). Nothing committed, no
+hardware, no real card. Oracle side not re-run: the oracle table is the one of
+measurement-2026-10-29-xbios15-rx (docs/audits/2026-10-29-xbios15-serial-rx.md, SERRX-001).
+
+INPUTS
+  probe      method/serrx.c, copied unchanged from measurement-2026-10-29-xbios15-rx/method
+             (sha256 71705ba121db97060d073ae5f528f1ceca5f21159835d7bd71824d18d54cf55f), built by
+             method/build-serrx.sh (copied):
+               SERRX.NAP b7665dc4928c2bf386db94e0a1ecea38c06b990fe7d60bfa74923464c509a9aa
+               -- byte-identical to the audit's probe
+  kernels (scratch, gitignored, deleted after the run):
+    virt-kernel.img       49cacb34b448520fd7b8fff32ceaf829fc6cdd49bcfb1b1f8974d0c277baa15e
+                          qemu-virt, `cargo xtask build --board qemu-virt --release --features
+                          bios-arg-trace`, flat binary (rust-objcopy -O binary, as `cargo xtask
+                          run`), SERRX.NAP embedded as the desktop (method/embed-serrx-scratch.diff)
+    rpi4-kernel8.img      f6db5c21890a83cce58a80f2cb17f2b25fcbcd11f45c4ce369eb6bed886d28b5
+                          rpi4, `--release --features bios-arg-trace`, kernel/embed.rs restored
+    virt-desk-kernel.img  2a266f8e04f8aaa8f6fd905efaf0311c33ae989da3ee40566ea02957bc8e16e8
+                          qemu-virt `--release`, the normal desktop (NEWDESK)
+  QEMU 11.0.2.
+
+METHOD (method/)
+  newtos-serrx.sh, qemu-serial-drive.py   copied unchanged from measurement-2026-10-29-xbios15-rx;
+                                          serial0 as TCP chardev, bytes 'aZ1' 0.3 s after
+                                          "SERRX:WAIT" ('none' = control)
+  embed-serrx-scratch.diff                the temporary probe wiring of the qemu-virt kernel
+  newtos-retest.sh                        bios-r1, xbios-chardev-r1, xbios-ptr-r1 and
+                                          xbios-flush-r1 through `cargo xtask tosdump`, before
+                                          (--tree git archive 18e8c115) and after (this tree),
+                                          each vs tt and falcontc
+  keys-ikbd.txt                           a, b, c for xbios-flush-r1 (copied from
+                                          measurement-2026-10-29-xbios01/method)
+  injector-{before,after}-scratch.diff    `tools/inject-arm.py <copy> launch:DUMPBIOS=keys-ikbd.txt`
+                                          on the before / after copies (no .git, no target/)
+  before-after.sh                         differing cases before/after, newly differing
+  virt-desktop-keys.py                    qemu-virt to the desktop (-display none, QMP), QMP
+                                          send-key Ctrl+Alt+Del to the usb-kbd, screendumps
+
+CARDS / IMAGES
+  raspi4b probe cards: tools/mkcard.sh, one per run, deleted after the run; manifests in
+  runs/newtos-rpi4-*/card.img.manifest (3); tosdump cards by the runner (manifests in each
+  runs/{before,after}-*/card.img.manifest, 8). optional_missing, verbatim, all eleven:
+    optional_missing none
+  card sha256 before/after the probe runs: runs/newtos-rpi4-*/card.img.{before,after}.sha256
+  (the probe writes SERRX.RDY and SERRX.LOG). qemu-virt: no image (no drive).
+
+RESULTS
+1. serrx on qemu-virt (runs/newtos-virt-1, -2: SERRX-serial.LOG identical, sha256
+   ae0d5a59bd2e9298...; control runs/newtos-virt-none):
+     A01 dev0.in hd=0 tl=3 ring 61 5a 31        (before the fix: hd=0 tl=0, empty)
+     A02 ikbd hd=0 tl=0 empty                   (before: tl=12, 00000061 0000005a 00000031)
+     A03 Bconstat(1) -1                         (before: 0)
+     A04 Bconstat(2) 0                          (before: -1)
+     C01 Bconin(1) 0x61; C02 Bconstat(1) -1; C03 dev0.in hd=1 tl=3 (5a 31 left)
+     D01 Bconin(2) not called (Bconstat(2) 0)
+   Control without bytes: every ring empty, Bconstat(1) 0, Bconstat(2) 0.
+   Against the oracle (oracle-tt-1/SERRX.LOG of measurement-2026-10-29-xbios15-rx, the
+   Iorec addresses normalised): the only differing lines are H00 sizeof(long)/sizeof(_IOREC)
+   (LP64 layout, contract F1), the record addresses (reference, F4) and Bconmap(-1)/(-2)
+   (H01, B05, A05: 0x2c, XBIOS05, outside this ticket). Every ring, Bconstat and Bconin line
+   equals the oracle (tt and falcontc show the same values).
+   -> SERRX-001 acceptance table met.
+2. serrx on raspi4b (runs/newtos-rpi4-1, -2, -none: SERRX.LOG identical, sha256
+   bcee3b6f77aa3e58... = the pre-fix runs of measurement-2026-10-29-xbios15-rx): bytes dropped,
+   both rings empty, Bconstat(1) 0, Bconstat(2) 0; injected run = control. Unchanged.
+3. Retest tables (runs/before-after.txt; tosdiff per run in runs/{before,after}-*/):
+   every run "tosdiff --validate" exit 0, every runner exit 0, the injector fed a b c in
+   both flush runs (BOOT-SERIAL.txt "[inj] launch:DUMPBIOS feed ...").
+     table             ref        before (18e8c115)                 after (XBIOS15)
+     bios-r1           tt         41 of 147 differ                  the same 41 cases
+     bios-r1           falcontc   45 of 147                         the same 45
+     xbios-chardev-r1  tt, fc     12 of 23 (31, 43-53)              the same 12
+     xbios-ptr-r1      tt, fc     1 of 9 (34, Getmpb)               the same 1
+     xbios-flush-r1    tt, fc     0 of 207                          0 of 207
+   Newly differing cases in all eight comparisons: none. No table touches the serial line
+   (raspi4b), so equal is the expected result; it shows the rpi4 kernel did not change.
+4. qemu-virt desktop (runs/newtos-virt-desktop): "[usb] HID configured: slot 1 ... (keyboard)",
+   "[desk] desktop up (0 drives)", screendump desktop.png (menu bar, trash, printer, pointer);
+   QMP send-key ctrl-alt-delete (hold 200 ms) -> "[reset] keyboard Ctrl+Alt+Del (Warm)
+   requested" / "[reset] no restart mechanism on this board; ignored": the USB keyboard
+   reaches the IKBD decoder; QEMU still running, after.png = the desktop. raspi4b reaches
+   "[desk] desktop up (1 drives)" in every table run (the runner ends there).
+
+5. `cargo xtask run --headless` (main tree, debug, qemu-virt; runs/xtask-run-headless.txt,
+   QEMU stopped with SIGTERM once "[desk] desktop up (0 drives)" appeared): "launching QEMU
+   without display (--headless)", "keyboard = none (no window); this terminal = serial line
+   (kernel log; typed bytes go to AUX, Bconin(1) / Iorec(0))". `cargo xtask run --window
+   --headless` -> "run: --window and --headless exclude each other".
+
+NOT MEASURED
+  `cargo xtask run` with the cocoa window itself (it opens a GUI window on the host; the
+  window/headless choice is unit-tested, run_shows_window_tests). Real Pi 4.

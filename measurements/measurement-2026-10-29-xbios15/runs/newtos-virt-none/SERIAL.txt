@@ -1,0 +1,652 @@
+RB1
+NewTOS booting on qemu-virt
+Phase 02 reached.
+[mm] DTB at 0x0000000048000000
+[mm] firmware: no VideoCore mailbox on this board — device tree decides
+[mm] device tree: /memory first bank: 0x0000000040000000 + 285212672 bytes (272 MiB)
+[mm] memory map:
+[mm]   DRAM  : 0x0000000040000000..0x0000000051000000 (285212672 bytes) — source: device tree
+[mm]   kernel: 0x0000000040080000..0x000000004032a000 (2793472 bytes)
+[mm]   ST-RAM: 0x0000000040400000..0x0000000040e00000 (10485760 bytes)
+[mm]   TT-RAM: 0x0000000041000000..0x0000000050017000 (251752448 bytes)
+[mm]   OSrsvd: 0x0000000050017000..0x0000000051000000 (16683008 bytes)
+[mm]     heap: 0x0000000050017000..0x0000000050817000 (8388608 bytes)
+[mm]     fb  : 0x0000000050817000..0x0000000051000000 (8294400 bytes)
+[mm]   MMIO 00: 0x0000000008000000..0x0000000008010000
+[mm]   MMIO 01: 0x0000000008010000..0x0000000008020000
+[mm]   MMIO 02: 0x0000000009000000..0x0000000009001000
+[mm]   MMIO 03: 0x0000000010000000..0x000000003eff0000
+[mm] MMU reinstalled (high-half via TTBR1, TTBR0 deferred to Phase 06).
+[mm] frames ST-RAM: total=2560 used=0 free=2560 (10485760 B free)
+[mm] frames TT-RAM: total=61463 used=0 free=61463 (251752448 B free)
+[mm] alloc ST-RAM frame -> 0x0000000040400000
+[mm] alloc TT-RAM frame -> 0x0000000041000000
+[mm] heap after init: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[mm] heap smoke OK
+[mm] heap after smoke: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[fb] ramfb up: 1920x1080
+[mm] MEM05 per-process block limit: 8192 allocated blocks (default)
+[mm] MEM05 MD supply: 117 MDs static, grows by 117 MDs per 4096-byte page from the kernel heap; page budget 512 pages (2048 KiB) for MDs + block records + snapshot + F_KEEP flags
+[mm] memory protection ON: table arena 0x41000000+1422 tables
+[mm] BDOS pools: ST-RAM 0x40400000+10485760 TT-RAM 0x4158e000+245927936
+[mm] user address space: pools mapped VA = PA (124 shared L3 tables, 4-KiB pages, rights per process)
+[mm] BDOS ST-RAM after init: total=10485760 free=10485760 used=0 largest_free=10485760 (free_mds=1 alloc_mds=0)
+[mm] BDOS TT-RAM after init: total=245927936 free=245927936 used=0 largest_free=245927936 (free_mds=1 alloc_mds=0)
+[mm] MEM05 after init: MDs in_use=2 capacity=117 (+0 pages); pages held=0/512 (md=0 recs=0 snap=0 kept=0) peak=0 refused budget=0 heap=0; records=0 snapshot_cap=0 snapshot_short=0; heap used=0 free=8388608 largest=8388608
+[input] keyboard/mouse pump: AES waits and console reads; pointer motion also from the 200 Hz tick while a program runs (input=aes switches that off)
+[bcache] FS09 block read cache: none (no block device on this board)
+[usb] PCIe ECAM at 0x4010000000 (size 0x10000000)
+[usb] xHCI at PCI 00:02.0 → BAR0 0x10000000 (size 0x4000)
+[usb] scratchpad buffers needed: 0
+[usb] dma addrs: dcbaap=0x40e47000 crcr=0x40e470c0 erstba=0x40e472c0 dcbaa0=0x0
+[usb] reg readback: ac64=1 csz=0 dcbaap_hw=0x40e47000
+[usb] xHCI up: 16 slots enabled, 8 root ports
+[usb] root ports powered (PPC=false)
+[usb] port 1: ccs=0 ped=0 pp=1 speed=0
+[usb] port 2: ccs=0 ped=0 pp=1 speed=0
+[usb] port 3: ccs=0 ped=0 pp=1 speed=0
+[usb] port 4: ccs=0 ped=0 pp=1 speed=0
+[usb] port 5: ccs=1 ped=0 pp=1 speed=3
+[usb] port 6: ccs=1 ped=0 pp=1 speed=3
+[usb] port 7: ccs=0 ped=0 pp=1 speed=0
+[usb] port 8: ccs=0 ped=0 pp=1 speed=0
+[usb] device slot 1 (root port 5 route 0x0 speed 3)
+[usb] device descriptor: bLength=18 type=1 bcdUSB=0200 class=0 maxpkt0=64 VID=0627 PID=0001
+[usb] HID iface 0 protocol 1 → int-IN ep 0x81 max 8 interval 7
+[usb] HID configured: slot 1 ep 0x81 dci 3 (keyboard)
+[usb] slot 1 iface 0: report descriptor 63 bytes (declared 63)
+[usb] device slot 2 (root port 6 route 0x0 speed 3)
+[usb] device descriptor: bLength=18 type=1 bcdUSB=0200 class=0 maxpkt0=64 VID=0627 PID=0001
+[usb] HID iface 0 protocol 2 → int-IN ep 0x81 max 4 interval 7
+[usb] HID configured: slot 2 ep 0x81 dci 3 (mouse)
+[usb] slot 2 iface 0: report descriptor 52 bytes (declared 52)
+[usb] enumeration done: 2 devices (2 keyboard/mouse, 0 observed only), 6 commands issued
+[proc] stand-in PDs: initial_basepage 0x401a7000, AES PD 0x401a7100, accdesk 0x401a7300, EmuCON 0x401a7400 (read-only to all)
+[aes] gsx_malloc: screen buffer pa=0x4158e000 len=4147200 (kernel-owned, WF_SCREEN)
+[shell] sh_ldapp: starting desktop NEWDESK (D.s_cmd NEWDESK), sh_nextapp=3, sh_isgem=1
+[launch] EL0: slot 0 entry 0x41986000
+AUDIT:xbios15-serial-rx:BEGIN
+[biostrace] 000000 U0  14:0x2c Bconmap     w:0xffff -> 0x000000000000002c
+[biostrace] 000001 U0  14:0x0e Iorec       w:0x0000 -> 0x000000000007d000
+[biostrace] 000002 U0  14:0x2c Bconmap     w:0xffff -> 0x000000000000002c
+[biostrace] 000003 U0  14:0x2c Bconmap     w:0xfffe -> 0x000000000000002c
+[biostrace] 000004 U0  14:0x0e Iorec       w:0x0000 -> 0x000000000007d000
+[biostrace] 000005 U0  14:0x0e Iorec       w:0x0001 -> 0x000000000007d040
+[biostrace] 000006 U0  13:0x01 Bconstat    w:0x0001 -> 0x0000000000000000
+[biostrace] 000007 U0  13:0x01 Bconstat    w:0x0002 -> 0x0000000000000000
+SERRX:WAIT
+[biostrace] 000008 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000009 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000010 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000011 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000012 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000013 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000014 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000015 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000016 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000017 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000018 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000019 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000020 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000021 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000022 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000023 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000024 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000025 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000026 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000027 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000028 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000029 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000030 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000031 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000032 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000033 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000034 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000035 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000036 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000037 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000038 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000039 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000040 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000041 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000042 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000043 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000044 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000045 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000046 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000047 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000048 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000049 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000050 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000051 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000052 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000053 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000054 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000055 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000056 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000057 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000058 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000059 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000060 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000061 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000062 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000063 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000064 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000065 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000066 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000067 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000068 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000069 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000070 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000071 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000072 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000073 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000074 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000075 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000076 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000077 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000078 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000079 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000080 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000081 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000082 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000083 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000084 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000085 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000086 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000087 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000088 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000089 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000090 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000091 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000092 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000093 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000094 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000095 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000096 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000097 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000098 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000099 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000100 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000101 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000102 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000103 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000104 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000105 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000106 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000107 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000108 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000109 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000110 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000111 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000112 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000113 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000114 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000115 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000116 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000117 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000118 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000119 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000120 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000121 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000122 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000123 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000124 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000125 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000126 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000127 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000128 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000129 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000130 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000131 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000132 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000133 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000134 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000135 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000136 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000137 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000138 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000139 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000140 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000141 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000142 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000143 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000144 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000145 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000146 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000147 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000148 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000149 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000150 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000151 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000152 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000153 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000154 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000155 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000156 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000157 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000158 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000159 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000160 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000161 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000162 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000163 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000164 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000165 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000166 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000167 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000168 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000169 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000170 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000171 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000172 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000173 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000174 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000175 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000176 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000177 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000178 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000179 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000180 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000181 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000182 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000183 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000184 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000185 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000186 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000187 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000188 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000189 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000190 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000191 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000192 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000193 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000194 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000195 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000196 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000197 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000198 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000199 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000200 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000201 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000202 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000203 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000204 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000205 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000206 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000207 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000208 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000209 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000210 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000211 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000212 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000213 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000214 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000215 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000216 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000217 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000218 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000219 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000220 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000221 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000222 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000223 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000224 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000225 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000226 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000227 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000228 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000229 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000230 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000231 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000232 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000233 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000234 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000235 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000236 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000237 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000238 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000239 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000240 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000241 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000242 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000243 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000244 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000245 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000246 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000247 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000248 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000249 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000250 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000251 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000252 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000253 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000254 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000255 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000256 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000257 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000258 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000259 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000260 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000261 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000262 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000263 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000264 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000265 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000266 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000267 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000268 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000269 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000270 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000271 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000272 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000273 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000274 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000275 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000276 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000277 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000278 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000279 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000280 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000281 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000282 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000283 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000284 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000285 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000286 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000287 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000288 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000289 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000290 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000291 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000292 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000293 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000294 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000295 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000296 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000297 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000298 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000299 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000300 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000301 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000302 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000303 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000304 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000305 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000306 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000307 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000308 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000309 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000310 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000311 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000312 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000313 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000314 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000315 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000316 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000317 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000318 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000319 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000320 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000321 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000322 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000323 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000324 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000325 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000326 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000327 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000328 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000329 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000330 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000331 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000332 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000333 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000334 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000335 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000336 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000337 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000338 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000339 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000340 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000341 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000342 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000343 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000344 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000345 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000346 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000347 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000348 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000349 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000350 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000351 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000352 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000353 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000354 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000355 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000356 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000357 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000358 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000359 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000360 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000361 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000362 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000363 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000364 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000365 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000366 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000367 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000368 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000369 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000370 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000371 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000372 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000373 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000374 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000375 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000376 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000377 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000378 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000379 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000380 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000381 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000382 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000383 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000384 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000385 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000386 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000387 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000388 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000389 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000390 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000391 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000392 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000393 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000394 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000395 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000396 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000397 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000398 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000399 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000400 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000401 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000402 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000403 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000404 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000405 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000406 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000407 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000408 U0  14:0x0e Iorec       w:0x0000 -> 0x000000000007d000
+[biostrace] 000409 U0  14:0x2c Bconmap     w:0xffff -> 0x000000000000002c
+[biostrace] 000410 U0  14:0x2c Bconmap     w:0xfffe -> 0x000000000000002c
+[biostrace] 000411 U0  14:0x0e Iorec       w:0x0000 -> 0x000000000007d000
+[biostrace] 000412 U0  14:0x0e Iorec       w:0x0001 -> 0x000000000007d040
+[biostrace] 000413 U0  13:0x01 Bconstat    w:0x0001 -> 0x0000000000000000
+[biostrace] 000414 U0  13:0x01 Bconstat    w:0x0002 -> 0x0000000000000000
+SERRX|H00 serrx WAITVBL=400 sizeof(long)=8 sizeof(_IOREC)=24
+SERRX|H01 Bconmap(-1) ret=0000002c hi=00000000
+SERRX|B01 Iorec(0) ret=0007d000 hi=00000000
+SERRX|B01 dev0.in ibufsiz=256 hd=0 tl=0 low=64 hi=192
+SERRX|B01 dev0.in ring: (0 entries)
+SERRX|B01 dev0.out ibufsiz=256 hd=0 tl=0 low=64 hi=192
+SERRX|B01 dev0.out ring: (0 entries)
+SERRX|B01 dev0 baudrate=1 flowctrl=0 ucr=88 datamask=ff
+SERRX|B05 Bconmap(-1) ret=0000002c hi=00000000
+SERRX|B05 Bconmap(-2) ret=0000002c hi=00000000
+SERRX|B05 Bconmap(-2) is no table address: mapped port IOREC not reached
+SERRX|B02 Iorec(1) ret=0007d040 hi=00000000
+SERRX|B02 ikbd ibufsiz=256 hd=0 tl=0 low=64 hi=192
+SERRX|B02 ikbd ring: (0 entries)
+SERRX|B03 Bconstat(1) ret=00000000 hi=00000000
+SERRX|B04 Bconstat(2) ret=00000000 hi=00000000
+SERRX|A01 Iorec(0) ret=0007d000 hi=00000000
+SERRX|A01 dev0.in ibufsiz=256 hd=0 tl=0 low=64 hi=192
+SERRX|A01 dev0.in ring: (0 entries)
+SERRX|A01 dev0.out ibufsiz=256 hd=0 tl=0 low=64 hi=192
+SERRX|A01 dev0.out ring: (0 entries)
+SERRX|A01 dev0 baudrate=1 flowctrl=0 ucr=88 datamask=ff
+SERRX|A05 Bconmap(-1) ret=0000002c hi=00000000
+SERRX|A05 Bconmap(-2) ret=0000002c hi=00000000
+SERRX|A05 Bconmap(-2) is no table address: mapped port IOREC not reached
+SERRX|A02 Iorec(1) ret=0007d040 hi=00000000
+SERRX|A02 ikbd ibufsiz=256 hd=0 tl=0 low=64 hi=192
+SERRX|A02 ikbd ring: (0 entries)
+SERRX|A03 Bconstat(1) ret=00000000 hi=00000000
+SERRX|A04 Bconstat(2) ret=00000000 hi=00000000
+SERRX|C01 Bconin(1) not called: Bconstat(1) was 0
+SERRX|D01 Bconin(2) not called: Bconstat(2) was 0
+SERRX|Z99 end
+SERRX:END
+AUDIT:xbios15-serial-rx:END
+[launch] returned (program Pterm'd)
+[shell] sh_ldapp: desktop NEWDESK (D.s_cmd NEWDESK) exited with rc=0
+[shell] sh_ldapp: starting desktop NEWDESK (D.s_cmd NEWDESK), sh_nextapp=3, sh_isgem=1
+[launch] EL0: slot 0 entry 0x41986000
+AUDIT:xbios15-serial-rx:BEGIN
+[biostrace] 000415 U0  14:0x2c Bconmap     w:0xffff -> 0x000000000000002c
+[biostrace] 000416 U0  14:0x0e Iorec       w:0x0000 -> 0x000000000007d000
+[biostrace] 000417 U0  14:0x2c Bconmap     w:0xffff -> 0x000000000000002c
+[biostrace] 000418 U0  14:0x2c Bconmap     w:0xfffe -> 0x000000000000002c
+[biostrace] 000419 U0  14:0x0e Iorec       w:0x0000 -> 0x000000000007d000
+[biostrace] 000420 U0  14:0x0e Iorec       w:0x0001 -> 0x000000000007d040
+[biostrace] 000421 U0  13:0x01 Bconstat    w:0x0001 -> 0x0000000000000000
+[biostrace] 000422 U0  13:0x01 Bconstat    w:0x0002 -> 0x0000000000000000
+SERRX:WAIT
+[biostrace] 000423 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000424 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000425 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000426 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000427 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000428 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000429 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000430 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000431 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000432 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000433 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000434 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000435 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000436 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000437 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000438 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000439 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000440 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000441 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000442 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000443 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000444 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000445 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000446 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000447 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000448 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000449 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000450 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000451 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000452 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000453 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000454 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000455 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000456 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000457 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000458 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000459 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000460 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000461 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000462 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000463 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000464 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000465 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000466 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000467 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000468 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000469 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000470 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000471 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000472 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000473 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000474 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000475 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000476 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000477 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000478 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000479 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000480 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000481 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000482 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000483 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000484 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000485 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000486 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000487 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000488 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000489 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000490 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000491 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000492 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000493 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000494 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000495 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000496 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000497 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000498 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000499 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000500 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000501 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000502 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000503 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000504 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000505 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000506 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000507 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000508 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000509 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000510 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000511 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000512 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000513 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000514 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000515 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000516 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000517 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000518 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000519 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000520 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000521 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000522 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000523 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000524 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000525 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000526 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000527 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000528 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000529 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000530 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000531 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000532 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000533 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000534 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000535 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000536 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000537 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000538 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000539 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostrace] 000540 U0  14:0x25 Vsync       - -> 0x0000000000000000
+[biostr

@@ -73,7 +73,7 @@ impl Uart for Pl011 {
             self.reg(UART_LCRH).write_volatile(LCRH_FEN | LCRH_WLEN_8);
             self.reg(UART_CR).write_volatile(CR_UARTEN | CR_TXE | CR_RXE);
             // Start from an empty RX FIFO: on this board a byte left in it
-            // would be delivered as a *keystroke* (serial console profile,
+            // would be delivered as AUX input (`Iorec(0)`'s ring,
             // `console::serial_rx_byte`). Bounded at twice the FIFO depth.
             for _ in 0..64 {
                 if self.reg(UART_FR).read_volatile() & FR_RXFE != 0 {

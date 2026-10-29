@@ -9,12 +9,15 @@
 //! E1): one ring for every consumer, a program can flush it by writing
 //! `head = tail`. It holds 32-bit entries `shifty << 24 | scancode << 16 |
 //! ascii`, the shift state taken at push time (E2); 63 of them, a typing
-//! burst beyond that drops keys as on EmuTOS. Who may fill it is a per-board
-//! decision that mirrors EmuTOS' `CONF_SERIAL_CONSOLE` switch — see
-//! [`serial_rx_byte`]: on real Pi-4 only the IKBD decoder ([`push_rx`], fed
-//! from the USB-HID keyboard); on qemu-virt additionally the PL011 RX IRQ
-//! handler ([`pl011_rx_drain`], serial console — a plain ASCII byte with
-//! scancode 0).
+//! burst beyond that drops keys as on EmuTOS. Only the IKBD decoder fills it
+//! ([`push_rx`], fed from the USB-HID keyboard) — on both boards, as EmuTOS'
+//! default `CONF_SERIAL_CONSOLE = 0` profile of the pinned build.
+//!
+//! A byte received on the serial line never enters the key queue; where it
+//! goes is decided per board in [`serial_rx_byte`]: on qemu-virt into the
+//! input ring of `Iorec(0)` (the RS-232 device, EmuTOS `push_serial_iorec`),
+//! read by the AUX driver [`AuxSerial`] (`Bconstat(1)`/`Bconin(1)`); on real
+//! Pi-4 it is dropped (UART0 is the debug console there).
 //!
 //! The ring is program data: `tos_api::xbios::iorec` checks it before every
 //! use and repairs what a program broke; [`report_iorec_repairs`] prints the
@@ -136,8 +139,10 @@ impl Uart for SerialConsole {
 }
 
 /// Drain the PL011 RX FIFO and acknowledge the RX-side interrupt sources.
-/// Called from the GIC IRQ handler when the PL011 INTID is signalled.
-/// Where the received bytes go is the board's console profile —
+/// Called from the GIC IRQ handler when the PL011 INTID is signalled — the
+/// receive interrupt EmuTOS handles in `mfp_rs232_rx_interrupt_handler`
+/// (`bios/serport.c:350-359`) and, on the Falcon, `scc_rx_interrupt_handler`
+/// (`:647-683`). Where the received bytes go is the board's decision —
 /// [`serial_rx_byte`].
 pub fn pl011_rx_drain() {
     while let Some(b) = CONSOLE.read_byte() {
@@ -146,20 +151,23 @@ pub fn pl011_rx_drain() {
     CONSOLE.clear_rx_interrupt();
 }
 
-/// Route one byte received on the serial line — the board's EmuTOS console
-/// profile decides where it goes.
+/// Route one byte received on the serial line (qemu-virt): into the input
+/// ring of device 0, the record `Iorec(0)` returns — EmuTOS'
+/// `push_serial_iorec` (`bios/serport.c:331-343`), called by the MFP receive
+/// interrupt in the default `CONF_SERIAL_CONSOLE = 0` profile
+/// (`:350-359`; the pinned build has it 0,
+/// `references/emutos/include/config.h:1422-1429`), and the push of the
+/// Falcon's `scc_rx_interrupt_handler` (`:670-678`). A full ring drops the
+/// byte. The byte never enters the key queue: console input on this board is
+/// the USB-HID keyboard (`qemu-xhci` + `usb-kbd`), as on real Pi-4. AUX reads
+/// the ring through [`AuxSerial`] (XBIOS15; oracle table
+/// `docs/audits/2026-10-29-xbios15-serial-rx.md`, SERRX-001).
 ///
-/// qemu-virt has no other console input device, so it is the
-/// `CONF_SERIAL_CONSOLE = 1` profile: *"use exclusively the serial port
-/// input for console input"* (`references/emutos/include/config.h:1422-1429`).
-/// There EmuTOS' RS-232 receive interrupt calls `push_ascii_ikbdiorec`, i.e.
-/// the byte enters the **IKBD** queue (`bios/serport.c:352-357`), which is
-/// exactly what happens here: it becomes a key word with scancode 0.
+/// Called from the IRQ handler: the repair warning of a broken record (if
+/// any) is printed after the next trap ([`check_iorec_after_trap`]).
 #[cfg(feature = "board-qemu-virt")]
 fn serial_rx_byte(b: u8) {
-    #[cfg(feature = "initinfo-diag")]
-    crate::initinfo::diag::note_push(crate::initinfo::diag::PUSH_SRC_SERIAL, b as u16);
-    iorec::push_key(u32::from(b));
+    iorec::push_serial(b);
 }
 
 /// Real Pi-4 has its own screen and its own keyboard (USB-HID), so it is
@@ -169,9 +177,9 @@ fn serial_rx_byte(b: u8) {
 /// into `iorec1`, the **RS-232 device** (BIOS handle 1,
 /// `bios/serport.c:331-343` `push_serial_iorec`), and *never* into the IKBD
 /// queue; `push_ascii_ikbdiorec` is not even compiled (`bios/ikbd.c:175,231`).
-/// NewTOS' device profile declares handle 1 (AUX) a port with no cable —
-/// status 0, input 0 (`tos_api::bios::chardev::AuxNoCable`) — so the byte has
-/// no destination and is dropped here.
+/// NewTOS' device profile declares handle 1 (AUX) a port with no cable on
+/// this board — status 0, input 0 (`tos_api::bios::chardev::AuxNoCable`) —
+/// so the byte has no destination and is dropped here.
 ///
 /// This is not cosmetic. UART0 is the debug console; on this board CON is the
 /// USB-HID keyboard alone (STATUS 2026-07-03 K1, `c6e4bfb`), and that commit
@@ -188,6 +196,93 @@ fn serial_rx_byte(b: u8) {
 fn serial_rx_byte(_b: u8) {
     #[cfg(feature = "initinfo-diag")]
     crate::initinfo::diag::note_serial_drop(_b);
+}
+
+// ---------------------------------------------------------------------------
+// AUX on qemu-virt (XBIOS15).
+// ---------------------------------------------------------------------------
+
+/// AUX (BIOS device 1) on qemu-virt: the serial port whose receive interrupt
+/// fills device 0's input ring ([`serial_rx_byte`]). Input as EmuTOS'
+/// `bconstat1`/`bconin1` over `iorec1` (`bios/serport.c:255-263`):
+/// `Bconstat(1)` is `-1` while the ring holds a byte (`bconstat_iorec`,
+/// `:191-199`), `Bconin(1)` waits for one and returns it zero-extended
+/// (`bconin_iorec` + `get_iorecbuf`, `:171-210`). Output is unchanged from
+/// the "port present, no cable" entry it replaces
+/// ([`tos_api::bios::chardev::AuxNoCable`]): `Bconout(1)` accepts and
+/// discards (`1`), `Bcostat(1)` is ready (`-1`). Installed at boot by
+/// [`install_aux`]; real Pi-4 keeps the no-cable entry.
+#[cfg(feature = "board-qemu-virt")]
+pub struct AuxSerial;
+
+#[cfg(feature = "board-qemu-virt")]
+impl tos_api::bios::chardev::CharDevice for AuxSerial {
+    fn bconstat(&self) -> tos_types::Long {
+        let r = if iorec::serial_pending() { -1 } else { 0 };
+        report_iorec_repairs();
+        r
+    }
+
+    fn bconin(&self) -> tos_types::Long {
+        let b = aux_read_blocking();
+        report_iorec_repairs();
+        tos_types::Long::from(b)
+    }
+
+    fn bconout(&self, byte: u8) -> tos_types::Long {
+        tos_api::bios::chardev::AuxNoCable.bconout(byte)
+    }
+
+    fn bcostat(&self) -> tos_types::Long {
+        tos_api::bios::chardev::AuxNoCable.bcostat()
+    }
+}
+
+/// `bconin_iorec`'s wait (`bios/serport.c:202-210`): the oldest byte of
+/// device 0's input ring, waiting until one arrives. Runs inside the
+/// synchronous SVC handler with IRQs masked, so it unmasks them while it
+/// waits — the receive interrupt is the producer — and `wfi`s between
+/// checks (the next PL011 or timer interrupt wakes it). The keyboard and
+/// mouse keep being pumped meanwhile, as EmuTOS' interrupts keep filling the
+/// key queue while `bconin1` spins.
+#[cfg(feature = "board-qemu-virt")]
+fn aux_read_blocking() -> u8 {
+    let daif: u64;
+    // SAFETY: reading DAIF and clearing the IRQ mask are permitted at EL1;
+    // DAIF is restored before returning.
+    unsafe {
+        core::arch::asm!("mrs {0}, daif", out(reg) daif, options(nomem, nostack, preserves_flags));
+        core::arch::asm!("msr daifclr, #2", options(nomem, nostack, preserves_flags));
+    }
+    let b = loop {
+        if let Some(b) = iorec::pop_serial() {
+            break b;
+        }
+        if let Some(h) = tos_api::host::host() {
+            h.pump_input();
+        }
+        if iorec::serial_pending() {
+            continue;
+        }
+        // SAFETY: wait for the next interrupt (PL011 receive or timer tick).
+        unsafe { core::arch::asm!("wfi", options(nomem, nostack, preserves_flags)) };
+    };
+    // SAFETY: restore the caller's DAIF.
+    unsafe { core::arch::asm!("msr daif, {0}", in(reg) daif, options(nomem, nostack, preserves_flags)) };
+    b
+}
+
+#[cfg(feature = "board-qemu-virt")]
+static AUX_SERIAL: &dyn tos_api::bios::chardev::CharDevice = &AuxSerial;
+
+/// Put the qemu-virt AUX driver ([`AuxSerial`]) into BIOS device slot 1 —
+/// the driver hook of the device table
+/// (`tos_api::bios::chardev::install_device`). Called once at boot, before
+/// the PL011 receive interrupt is enabled.
+#[cfg(feature = "board-qemu-virt")]
+pub fn install_aux() {
+    let prev = tos_api::bios::chardev::install_device(tos_api::bios::chardev::DEV_AUX, &AUX_SERIAL);
+    debug_assert!(prev.is_some(), "DEV_AUX is a device table slot");
 }
 
 /// Push a key **entry** into the IKBD ring from the IKBD decoder —

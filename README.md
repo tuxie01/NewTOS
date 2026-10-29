@@ -111,7 +111,9 @@ the default dev profile is much slower.
 ## Running
 
 ```sh
-# QEMU virt, serial console on stdout
+# QEMU virt with its display window; type into the window (USB keyboard).
+# The terminal is the serial line: kernel log out, typed bytes go to AUX
+# (Bconin(1)), not to the keyboard. --headless runs without a display.
 cargo xtask run --board qemu-virt --release
 
 # QEMU raspi4b with the framebuffer window (the GEM desktop)

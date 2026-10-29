@@ -278,6 +278,18 @@ GEMDOS calls use the **same** per-device entry. A later UART/MIDI/printer driver
 
 **AUX (1) revised 2026-10-13 (option A, user decision, after FS11 acceptance finding 1; see `docs/api/gemdos/file/3f-fread.md` "NewTOS implementation notes" item 1a):** AUX is "port present, no cable" and is **no longer** part of the absent-device profile below: `Bconout(1)` → 1 (accept+discard), `Bcostat(1)` → -1, `Bconstat(1)` → 0, `Bconin(1)` → 0 non-blocking. PRN and MIDI stay absent.
 
+**[XBIOS15] 2026-10-29 — qemu-virt only:** AUX is a serial driver over the input
+ring of device 0 (`Iorec(0)`), filled by the PL011 receive interrupt as EmuTOS'
+`push_serial_iorec` (`bios/serport.c:331-343`): `Bconstat(1)` → `-1` while a byte
+waits, else `0` (`bconstat_iorec`, `:191-199`); `Bconin(1)` **waits** for a byte
+and returns it zero-extended, as EmuTOS' `bconin1` (`:260-263`, `bconin_iorec`
+`:202-210`); `Bconout(1)`/`Bcostat(1)` unchanged (1, discarded / -1).
+Implementation `kernel/src/console.rs:216@AuxSerial`, installed at boot by
+`install_aux`; measured equal to the oracle
+(`docs/audits/2026-10-29-xbios15-serial-rx.md` SERRX-001,
+`measurements/measurement-2026-10-29-xbios15/RUNINFO.TXT`). Real Pi 4 keeps the
+"no cable" entry above (serial input is dropped there).
+
 **Devices 0 (PRN), 1 (AUX), 3 (MIDI):** `Bconin` -> `0`, **non-blocking** (AUX: unchanged by option A; a **documented divergence** from a real present port, where `bconin1` blocks forever, `serport.c:260-263`).
 Consistency with EmuTOS: dev 0 `bconin0` returns 0 (`bios/parport.c:123-127`,
 exact match); dev 1 = dummy Bconmap entry `char_dummy` (`bios/serport.c:96`).
@@ -339,9 +351,13 @@ drivers only.
   of this bullet named one). On `board-rpi4` a byte arriving on UART0 is
   **dropped** rather than queued for CON (`kernel/src/console.rs`
   `serial_rx_byte` under `#[cfg(not(feature = "board-qemu-virt"))]`), because
-  this board is EmuTOS' `CONF_SERIAL_CONSOLE = 0` profile. `board-qemu-virt`
-  is the `CONF_SERIAL_CONSOLE = 1` profile and does push serial bytes into
-  the key ring. **Consequence for testing:** QEMU's `raspi4b` has no emulated
+  this board is EmuTOS' `CONF_SERIAL_CONSOLE = 0` profile. **[XBIOS15]
+  2026-10-29:** `board-qemu-virt` is that profile too — its console keyboard
+  is the USB `usb-kbd`; serial bytes go into device 0's ring and are read
+  through AUX (`Bconin(1)`), never into the key ring. (Before, qemu-virt was
+  declared the `CONF_SERIAL_CONSOLE = 1` profile because it had "no other
+  console input device" — wrong, the USB keyboard was there,
+  `docs/audits/2026-10-29-xbios15-serial-rx.md` SERRX-003.) **Consequence for testing:** QEMU's `raspi4b` has no emulated
   USB-HID keyboard, so `Bconin(2)`/`Cconin` cannot be satisfied there at all
   — the interactive `Bconin` checks are real-hardware-only.
 - **Datasheet.** Keyboard transport = VL805 xHCI (§2); AUX = PL011 UART0

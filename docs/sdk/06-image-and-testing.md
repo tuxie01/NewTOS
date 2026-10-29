@@ -285,7 +285,7 @@ cargo xtask run --board rpi4 --sd /tmp/sd.img --release  # release-profile kerne
 cargo xtask run --board rpi4 --sd /tmp/sd.img --debug    # halted, gdbstub on :1234
 ```
 
-`cmd_run_rpi4` (`tools/xtask/src/main.rs:897@cmd_run_rpi4`) builds the kernel for
+`cmd_run_rpi4` (`tools/xtask/src/main.rs:962@cmd_run_rpi4`) builds the kernel for
 `rpi4`, produces `kernel8.img` beside the kernel ELF,
 `target/aarch64-unknown-none-softfloat/<debug|release>/kernel8.img`, by
 `objcopy -O binary` (`tools/xtask/src/main.rs:636@produce_kernel8_img`; never in the
@@ -369,8 +369,14 @@ always rebuilds).
 ## Running in QEMU (`virt`) with more USB devices
 
 `raspi4b` has the card but no USB; `virt` has the xHCI controller but **no
-drive**. `cargo xtask run` (board `qemu-virt`, the default) attaches a
-`usb-kbd` and a `usb-mouse`; two options add more (USB01 K11,
+drive**. `cargo xtask run` (board `qemu-virt`, the default) opens the display
+window and attaches a `usb-kbd` and a `usb-mouse`: keyboard and mouse input
+come from that window. The terminal is the serial line — the kernel log, and
+what you type there goes to AUX (`Bconstat(1)`/`Bconin(1)`, the input ring of
+`Iorec(0)`), not to the keyboard (TASK/XBIOS15, `run_shows_window` in
+`tools/xtask/src/main.rs`). `--headless` runs without a display (the
+framebuffer can still be captured by QMP screendump); `--window` is accepted
+and is the default. Two options add more USB devices (USB01 K11,
 `qemu_usb_args` in `tools/xtask/src/main.rs`):
 
 ```

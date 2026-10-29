@@ -244,6 +244,18 @@ GEMDOS calls use the **same** per-device entry. A later UART/MIDI/printer driver
 
 **AUX (1) revised 2026-10-13 (option A, user decision, after FS11 acceptance finding 1; see `docs/api/gemdos/file/3f-fread.md` "NewTOS implementation notes" item 1a):** AUX is "port present, no cable" and is **no longer** part of the absent-device profile below: `Bconout(1)` → 1 (accept+discard), `Bcostat(1)` → -1, `Bconstat(1)` → 0, `Bconin(1)` → 0 non-blocking. PRN and MIDI stay absent.
 
+**[XBIOS15] 2026-10-29 — qemu-virt only:** AUX is a serial driver over the input
+ring of device 0 (`Iorec(0)`), filled by the PL011 receive interrupt as EmuTOS'
+`push_serial_iorec` (`bios/serport.c:331-343`): `Bconstat(1)` → `-1` while a byte
+waits, else `0` (`bconstat_iorec`, `:191-199`); `Bconin(1)` **waits** for a byte
+and returns it zero-extended, as EmuTOS' `bconin1` (`:260-263`, `bconin_iorec`
+`:202-210`); `Bconout(1)`/`Bcostat(1)` unchanged (1, discarded / -1).
+Implementation `kernel/src/console.rs:216@AuxSerial`, installed at boot by
+`install_aux`; measured equal to the oracle
+(`docs/audits/2026-10-29-xbios15-serial-rx.md` SERRX-001,
+`measurements/measurement-2026-10-29-xbios15/RUNINFO.TXT`). Real Pi 4 keeps the
+"no cable" entry above (serial input is dropped there).
+
 **Devices 0 (PRN), 1 (AUX), 3 (MIDI):** `Bconstat` → `0` (no byte; for AUX unchanged by option A: EmuTOS `bconstat1` is also 0 on empty iorec, `serport.c:255-258`). Consistency
 with EmuTOS (read this session): dev 0 = `char_dummy` (`bios/chardev.c:31`);
 dev 1 = dummy Bconmap entry `char_dummy` (`bios/serport.c:96`) — EmuTOS' own
@@ -301,6 +313,8 @@ decided, documented profile until `TASK/IO01.md`.
   `Bconstat(1)` returns `0` even though the PL011 exists and could back AUX (value stays 0 under option A, "port present, no cable").
   A minor divergence — the UART is a debug channel, and its bytes currently
   leak into the CON ring instead of a proper AUX record. Recorded as
-  K-series.
+  K-series. **[XBIOS15] 2026-10-29:** no longer — on `board-rpi4` the bytes
+  are dropped, on `board-qemu-virt` they fill device 0's ring and AUX reads
+  them (`Bconstat(1)` -1 while one waits; note above).
 - **Datasheet.** Keyboard transport = VL805 xHCI (§2); AUX = PL011 UART0,
   BCM2711 peripherals datasheet §11.

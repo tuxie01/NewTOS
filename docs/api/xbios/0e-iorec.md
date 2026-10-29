@@ -8,6 +8,9 @@
 > **[XBIOS01] 2026-10-29:** implementiert nach E1-E6 (Abschnitt "NewTOS
 > implementation"); die Abschnitte F1-F3 beschreiben, wo sie "heute" sagen, den
 > Stand **vor** dem Fix (2026-10-28) und bleiben als Begruendung stehen.
+> **[XBIOS15] 2026-10-29:** auf qemu-virt fuellt der serielle Empfang den
+> Eingangsring von Geraet 0, AUX liest ihn (Abschnitt "NewTOS implementation",
+> "XBIOS15"); vorher landeten die Bytes mit Scancode 0 im Tastaturring.
 
 > **Contract vs. reference** — see [`docs/COMPATIBILITY.md`](../../COMPATIBILITY.md).
 > Contract: trap ID/ABI, `devno` -> record mapping, `-1` for an invalid device,
@@ -278,36 +281,37 @@ every process root (`tos-api/src/bdos/process/mmu.rs:830@IOREC_PAGE_IDX`), refus
 pointer into it may be passed to a trap). Layout in the page (reference, F4):
 device 0 `EXT_IOREC` at `+0x00`, IKBD at `+0x40`, MIDI at `+0x60`, the rings at
 `+0x100` (IKBD 256), `+0x200` (MIDI 128), `+0x300`/`+0x400` (RS-232 in/out 256)
-(`tos-api/src/xbios/iorec.rs:113@AUX_RECORD`). Records are written on first use
+(`tos-api/src/xbios/iorec.rs:120@AUX_RECORD`). Records are written on first use
 with the oracle values (E5): `ibufsiz` 256/128/256+256, `low`/`high` 64/192,
 32/96, 64/192, empty, device 0 `baudrate 1`, `flowctrl 0`, `ucr 0x88`, `datamask
 0xff`, `wr5 0xea` (`bios/serport.c:86-89`).
 
-**`Iorec`** (`tos-api/src/xbios/iorec.rs:454@iorec`, wired at
+**`Iorec`** (`tos-api/src/xbios/iorec.rs:547@iorec`, wired at
 `tos-api/src/xbios/mod.rs:107@IOREC`): signed `WORD` selector
 (`:441@record_va`), `0/1/2` -> the record's EL0 address, anything else `-1`.
 
 **E1 — the ring is the queue.** `RX_RING` is gone; every producer and consumer
-goes through the IKBD record: push `tos-api/src/xbios/iorec.rs:369@push_key`
+goes through the IKBD record: push `tos-api/src/xbios/iorec.rs:433@push_key`
 (EmuTOS `push_ikbdiorec`: `tail` first, full -> dropped, 63 entries), pop
 `:374@pop_key` (`head` first, then the entry), `:384@key_pending` (`head !=
 tail`). Kernel side: `kernel/src/console.rs:198@push_rx` (IKBD decoder),
-`serial_rx_byte` (qemu-virt), `rx_pop`/`rx_pop_key`/`rx_pop_entry`
-(`kernel/src/console.rs:231@rx_pop_entry`) for `Fread`/`Cconrs`, the AES and
-`Bconin(2)`. Every operation runs with IRQs masked (the qemu-virt PL011 receive
-interrupt is a second producer).
+`rx_pop`/`rx_pop_key`/`rx_pop_entry` (`kernel/src/console.rs:326@rx_pop_entry`)
+for `Fread`/`Cconrs`, the AES and `Bconin(2)`. Until XBIOS15 `serial_rx_byte`
+(qemu-virt) was a second producer; since then the IKBD decoder is the only one
+on both boards. Every operation runs with IRQs masked (the qemu-virt PL011
+receive interrupt fills device 0's ring, "XBIOS15" below).
 
 **The kernel distrusts the page.** Before every use the record is checked
-(`tos-api/src/xbios/iorec.rs:263@check`): `ibuf`/`ibufsiz` must be the kernel's,
+(`tos-api/src/xbios/iorec.rs:286@check`): `ibuf`/`ibufsiz` must be the kernel's,
 `ibufhd`/`ibuftl` below `ibufsiz` and on the entry step (4 IKBD, 1 MIDI/RS-232).
 A replaced buffer (E4 (a)) gets the kernel buffer back, emptied; bad indices
 empty the ring. The kernel never reads or writes through `ibuf`. After every
-trap all four rings are checked as well (`kernel/src/console.rs:267@check_iorec_after_trap`,
+trap all four rings are checked as well (`kernel/src/console.rs:362@check_iorec_after_trap`,
 called from `kernel/src/arch/aarch64/exceptions.rs:664@check_iorec_after_trap`), so a
 replaced buffer is noticed "at the next trap" even when no key moves. Each
 repair is warned about once per process tenancy
-(`tos-api/src/xbios/iorec.rs:416@take_warnings`, printed by
-`kernel/src/console.rs:275@report_iorec_repairs`, reset at process exit
+(`tos-api/src/xbios/iorec.rs:509@take_warnings`, printed by
+`kernel/src/console.rs:370@report_iorec_repairs`, reset at process exit
 `tos-api/src/bdos/process.rs:1366@release_slot`):
 `[iorec] warning: Iorec(1) IKBD buffer or size replaced by the program ...`.
 
@@ -319,16 +323,40 @@ the word when the modifiers changed, `bios/ikbd.c:502-508`). `Bconin(2)` keeps
 bits 24-31 only with `conterm & 8` (`tos-api/src/bios/chardev.rs:351@pack_console_key`,
 `bios/ikbd.c:279-280`); the host reads whole entries
 (`tos-api/src/host.rs:121@console_read_entry_blocking`,
-`kernel/src/host_env.rs:203@console_read_entry_blocking`). Closes BIOS11. qemu-virt
-serial bytes enter as `ascii` with scancode 0 and shift 0, as before (EmuTOS'
-`push_ascii_ikbdiorec` looks the scancode up in the key tables,
-`bios/ikbd.c:192-231` — not done here, see "Out-of-scope observations").
+`kernel/src/host_env.rs:203@console_read_entry_blocking`). Closes BIOS11. Until
+XBIOS15, qemu-virt serial bytes entered as `ascii` with scancode 0 and shift 0,
+justified as EmuTOS' `CONF_SERIAL_CONSOLE = 1` profile because qemu-virt had "no
+other console input device". That was wrong: the `cargo xtask run` machine has a
+USB keyboard (`qemu-xhci` + `usb-kbd`, configured at boot,
+`docs/audits/2026-10-29-xbios15-serial-rx.md` SERRX-003), and the pinned build is
+`CONF_SERIAL_CONSOLE = 0`. Serial bytes no longer enter this ring ("XBIOS15").
 
 **E3 (a).** Keys still reach the ring only at a trap-side input pump (F3); a
 program that polls `ibuftl` without ever making a trap sees no key.
 
-**E5 (a).** Devices 0 and 2 have their records and stay empty: no producer
-writes them, `Bconstat(1)`/MIDI stay as before.
+**E5 (a).** Devices 0 and 2 have their records. MIDI stays empty: no producer
+writes it. Device 0: see "XBIOS15" — its input ring is filled on qemu-virt and
+stays empty on real Pi 4; its output ring stays empty on both.
+
+**XBIOS15 — serial receive into device 0 (qemu-virt).** The PL011 receive
+interrupt (`kernel/src/console.rs:147@pl011_rx_drain`, EmuTOS
+`mfp_rs232_rx_interrupt_handler`, `bios/serport.c:350-359`; Falcon
+`scc_rx_interrupt_handler`, `:647-683`) hands each byte to
+`kernel/src/console.rs:169@serial_rx_byte`, which pushes it into device 0's
+input ring: `tos-api/src/xbios/iorec.rs:473@push_serial` (`push_serial_iorec`,
+`:331-343`: `tail` first, full -> dropped, 255 bytes; the byte masked with the
+record's `datamask` as the SCC path does, `:671`, 0xff unless a program wrote
+it). AUX (BIOS 1) on qemu-virt is the driver `kernel/src/console.rs:216@AuxSerial`,
+put into the device table at boot (`install_aux`): `Bconstat(1)` = `-1` while
+the ring holds a byte (`bconstat_iorec`, `:191-199`;
+`tos-api/src/xbios/iorec.rs:485@serial_pending`), `Bconin(1)` waits for a byte
+and returns it zero-extended (`bconin_iorec` + `get_iorecbuf`, `:171-210`;
+`tos-api/src/xbios/iorec.rs:479@pop_serial`), output unchanged from the
+"port present, no cable" entry (`Bconout(1)` 1 and discarded, `Bcostat(1)` -1).
+The key ring is not touched. Real Pi 4 is unchanged: the byte is dropped
+(`serial_rx_byte`, not-qemu-virt branch), AUX stays "no cable". Measured equal
+to the oracle table of `docs/audits/2026-10-29-xbios15-serial-rx.md`
+(SERRX-001): `measurements/measurement-2026-10-29-xbios15/RUNINFO.TXT`.
 
 **E6.** The `kbdvec` hook gets the IKBD record in `x1`
 (`kernel/src/arch/aarch64/exceptions.rs:851@IKBD_IOREC_VA`, EmuTOS `a0 =
@@ -489,7 +517,9 @@ werden (EmuTOS `a0`, `bios/aciavecs.S:412`) statt `0`. Ja/nein; haengt an E1.
 - [XBIOS01] qemu-virt: ein serielles Byte kommt als Eintrag mit Scancode 0 und
   Shift 0 in den Ring; EmuTOS' `push_ascii_ikbdiorec` sucht Scancode und Shift
   in den Tastaturtabellen (`bios/ikbd.c:192-231`). Nur qemu-virt
-  (`CONF_SERIAL_CONSOLE`-Profil), unveraendert durch XBIOS01.
+  (`CONF_SERIAL_CONSOLE`-Profil), unveraendert durch XBIOS01. **Gegenstandslos
+  seit XBIOS15:** serielle Bytes gehen in den Ring von Geraet 0, nicht in den
+  Tastaturring.
 - [XBIOS01] `Rsconf` schreibt in EmuTOS `baudrate` und `flowctrl` in den
   Geraet-0-Record und liest `Rsconf(-2)` von dort
   (`references/emutos/bios/serport.c:222-240`, SCC `:780-800`); NewTOS fuehrt

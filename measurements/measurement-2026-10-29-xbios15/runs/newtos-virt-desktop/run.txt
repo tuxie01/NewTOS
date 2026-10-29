@@ -1,0 +1,7 @@
+qemu: qemu-system-aarch64 -M virt,gic-version=2 -cpu cortex-a72 -m 272M -device ramfb -device qemu-xhci -device usb-kbd -device usb-mouse -display none -serial file:/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios15/runs/newtos-virt-desktop/SERIAL.txt -no-reboot -qmp unix:/private/tmp/claude-501/xb15-qmp.sock,server,nowait -kernel /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios15/virt-desk-kernel.img
+desktop up: True
+screendump desktop: {'return': {}}
+send-key ctrl-alt-delete: {'return': {}}
+IKBD decoder saw Ctrl+Alt+Del from the USB keyboard: True
+screendump after: {'return': {}}
+qemu still running: True

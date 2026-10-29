@@ -195,6 +195,12 @@ AUX driver only). Value matches EmuTOS' Bconmap dummy map entry `char_dummy`
 (blocking, `bios/serport.c:260-263`, `bconin_iorec` loop `:202-205`). A later UART
 driver (`TASK/IO01.md`) replaces only the entry.
 
+**[XBIOS15] 2026-10-29 — qemu-virt:** the AUX entry there is the serial driver
+over device 0's input ring (`docs/api/bios/02-bconin.md`, XBIOS15 note):
+`Cauxin()` returns the oldest received byte and **waits** for one when the ring is
+empty, as EmuTOS' `bconin1`. The "port present, no cable" values above hold on
+real Pi 4.
+
 *Spec inconsistency noted, semantics unchanged:* Edge case 1 / D-003 say the AUX
 typeahead buffer is "never used by any GEMDOS path". EmuTOS' `conbrk(h)`
 (`bdos/console.c:206-243`, reached from `conout(1, …)`, e.g. the echo of

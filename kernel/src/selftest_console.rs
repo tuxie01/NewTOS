@@ -3,10 +3,14 @@
 //! (Cconout / Cconws output-side Ctrl-C break, the conbrk subset).
 //!
 //! * **F2** is driven through the real `svc #1` (GEMDOS) trap path:
-//!   both route through the BIOS handle-1 pass-through, the AUX entry
-//!   "port present, no cable" (`docs/api/gemdos/file/3f-fread.md` item 1a):
-//!   `Cauxin` (0x03) returns `0` without blocking (no input), `Cauxout`
-//!   (0x04) accepts and discards the byte and returns `1`. See
+//!   both route through the BIOS handle-1 pass-through. On rpi4 that is
+//!   the AUX entry "port present, no cable"
+//!   (`docs/api/gemdos/file/3f-fread.md` item 1a): `Cauxin` (0x03) returns
+//!   `0` without blocking (no input). On qemu-virt it is the serial AUX
+//!   driver over `Iorec(0)`'s input ring (XBIOS15): a byte queued there
+//!   first is what `Cauxin` returns (it would wait on an empty ring, as
+//!   EmuTOS' `bconin1`). `Cauxout` (0x04) accepts and discards the byte and
+//!   returns `1` on both. See
 //!   `docs/api/gemdos/console/{03-cauxin,04-cauxout}.md`.
 //!
 //! * **F1** exercises the factored [`tos_api::gemdos::console::edit_line`]
@@ -164,8 +168,14 @@ pub fn run() {
         }
     };
 
-    // ── F2: Cauxin / Cauxout pass through to the no-cable AUX entry ───
+    // ── F2: Cauxin / Cauxout pass through to the AUX entry ───────────
+    #[cfg(not(feature = "board-qemu-virt"))]
     check(gemdos(0x03, 0) == 0, "Cauxin() == 0 (AUX no input, F2)");
+    #[cfg(feature = "board-qemu-virt")]
+    {
+        tos_api::xbios::iorec::push_serial(b'Q');
+        check(gemdos(0x03, 0) == i64::from(b'Q'), "Cauxin() == 'Q' from Iorec(0) (XBIOS15, F2)");
+    }
     check(gemdos(0x04, b'Z' as u64) == 1, "Cauxout('Z') == 1 (AUX no cable, F2)");
 
     // ── F1: Ctrl-U kills the line → subsequent input starts at len 0 ──

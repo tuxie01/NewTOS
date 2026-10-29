@@ -9,7 +9,7 @@ Datum 2026-10-29 · Beleg
   benannte), je Prozess-Slot ein Bit-Satz „schon gewarnt“
   (`tos-api/src/bdos/process/hooks.rs:504@note`), eine Warteschlange von
   `Warning`, die der Kern nach jeder Ausnahme ausgibt
-  (`kernel/src/console.rs:312@report_hook_warnings`, gerufen aus
+  (`kernel/src/console.rs:407@report_hook_warnings`, gerufen aus
   `rust_sync_handler`; tos-api hat kein Protokoll). Zurueckgesetzt mit dem
   Slot (`free_slot` → `hooks::release_slot`). Die Accessory-`kbdvec`-Warnung
   (`accessory_hook_unwarned`) ist darin aufgegangen; der ADR-Verweis in

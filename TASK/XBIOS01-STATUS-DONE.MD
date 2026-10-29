@@ -6,7 +6,7 @@ Datum 2026-10-29 · Beleg
 Abschnitt "NewTOS implementation") · Ticket [XBIOS01](XBIOS01.md), mit
 [BIOS11](BIOS11.md)
 
-- **`Iorec`** (`tos-api/src/xbios/iorec.rs:454@iorec`, Arm
+- **`Iorec`** (`tos-api/src/xbios/iorec.rs:547@iorec`, Arm
   `tos-api/src/xbios/mod.rs:107@IOREC`): `0/1/2` liefern Zeiger auf die
   Records, jedes andere Geraet `-1` (vorzeichenbehafteter `WORD`). Der
   Kommentar „intentionally NOT wired“ in `tos-api/src/xbios/mod.rs` ist
@@ -27,7 +27,7 @@ Abschnitt "NewTOS implementation") · Ticket [XBIOS01](XBIOS01.md), mit
   `console_read_entry_blocking`/`_restartable` (Default aus dem Wort mit
   Shift 0).
 - **Misstrauen (E1, E4 (a)):** Pruefung vor jeder Nutzung und nach jedem Trap
-  (`kernel/src/console.rs:267@check_iorec_after_trap`); ersetztes
+  (`kernel/src/console.rs:362@check_iorec_after_trap`); ersetztes
   `buf`/`size` → Kernelpuffer zurueck, Ring leer; Indizes ausserhalb → Ring
   leer; je Reparaturart eine Warnung `[iorec] warning: …` je Prozess
   (Ruecksetzen bei Prozessende). Debug-Asserts nur auf Kernel-Invarianten

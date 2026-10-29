@@ -18,7 +18,9 @@
 //! framebuffer): keyboard **input** on CON (2) only, screen **output** on
 //! CON (2) and raw-CON (5). AUX (1) is a serial port with **no cable**
 //! ([`AuxNoCable`], `3f-fread.md` item 1a): output accepted and discarded,
-//! always ready, no input. PRN, MIDI, IKBD and 6/7 are the documented
+//! always ready, no input — on qemu-virt the kernel replaces it at boot with
+//! a driver that reads the serial input ring of `Iorec(0)` (XBIOS15,
+//! `kernel::console::AuxSerial`). PRN, MIDI, IKBD and 6/7 are the documented
 //! **absent device** ([`Absent`], EmuTOS' `char_dummy` / `charout_dummy`,
 //! `bios/chardev.c:49-58`): status 0, input 0 without blocking, output
 //! discarded with 0 — rather than blocking on hardware that does not exist.
@@ -111,7 +113,8 @@ impl CharDevice for Absent {
 /// `bconin1`, which would wait forever (`serport.c:260-263`). An absent AUX
 /// (`Bconout` 0) made `Fwrite(2, …)` return 0 and mintlib's stderr write
 /// loop retry forever (FS11 acceptance finding 1). A UART driver
-/// (`TASK/IO01.md`) replaces the whole entry.
+/// (`TASK/IO01.md`) replaces the whole entry — on qemu-virt the kernel's
+/// `AuxSerial` does (XBIOS15; it keeps this entry's output side).
 pub struct AuxNoCable;
 
 impl CharDevice for AuxNoCable {

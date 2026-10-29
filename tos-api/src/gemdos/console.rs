@@ -511,11 +511,12 @@ pub fn cconout(args: &TrapArgs) -> Long {
 
 /// `Cauxin()` — pass-through to `Bconin(HXFORM(p_uft[2]))`, exactly as
 /// EmuTOS' `xauxin` (`bdos/console.c:434`): by default `Bconin(1)`, the AUX
-/// entry of the device table. That entry is "port present, no
+/// entry of the device table. On real Pi 4 that entry is "port present, no
 /// cable" (`docs/api/gemdos/console/03-cauxin.md`, FS11 note; `3f-fread.md`
 /// item 1a), so the pass-through returns `0` at once instead of waiting for
-/// a byte that never arrives; a UART driver (`TASK/IO01.md`) replaces the
-/// entry.
+/// a byte that never arrives; on qemu-virt the kernel's serial driver
+/// replaces the entry (XBIOS15) and `Cauxin` returns the next received byte,
+/// waiting for it as EmuTOS' `bconin1`.
 pub fn cauxin(_: &TrapArgs) -> Long {
     chardev::bconin_handle(std_dev(STDAUX))
 }

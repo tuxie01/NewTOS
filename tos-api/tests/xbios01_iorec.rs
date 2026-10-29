@@ -220,6 +220,40 @@ fn the_flush_head_eq_tail_empties_the_queue_bconstat_sees() {
 }
 
 #[test]
+fn serial_bytes_land_in_device_0s_ring_not_in_the_key_queue() {
+    // XBIOS15 / SERRX-001: the oracle shows 'a' 'Z' '1' in Iorec(0)->in as
+    // hd 0 tl 3, the keyboard ring empty, Bconstat(2) 0
+    // (docs/audits/2026-10-29-xbios15-serial-rx.md).
+    let _g = setup();
+    while iorec::pop_serial().is_some() {}
+    let dev0 = xbios(IOREC, 0) as u64;
+    let ikbd = xbios(IOREC, 1) as u64;
+    let (h0, t0) = (rd16(dev0 + 10), rd16(dev0 + 12));
+    for c in *b"aZ1" {
+        assert!(iorec::push_serial(c));
+    }
+    assert_eq!(rd16(dev0 + 12) - rd16(dev0 + 10), 3, "three bytes in device 0's input ring");
+    let ring = rd64(dev0);
+    for (i, c) in b"aZ1".iter().enumerate() {
+        // SAFETY: inside the static IOREC page (the ring of `dev0`).
+        let at = unsafe { *user_cell(ring + ((t0 as u64 + 1 + i as u64) % 256)) };
+        assert_eq!(at, *c);
+    }
+    assert_eq!(rd16(ikbd + 10), rd16(ikbd + 12), "the keyboard ring stays empty");
+    assert_eq!(bios(BCONSTAT, 2), 0);
+    assert!(iorec::serial_pending());
+    assert_eq!(iorec::pop_serial(), Some(b'a'));
+    assert_eq!(rd16(dev0 + 10), (h0 + 1) % 256, "get_iorecbuf advanced head first");
+    assert_eq!(iorec::pop_serial(), Some(b'Z'));
+    assert_eq!(iorec::pop_serial(), Some(b'1'));
+    assert!(!iorec::serial_pending());
+    // Back to the boot state the record test checks (hd = tl = 0), as a
+    // program may write it.
+    wr16(dev0 + 10, 0);
+    wr16(dev0 + 12, 0);
+}
+
+#[test]
 fn bconin_keeps_the_shift_state_of_the_key_press_with_conterm_bit_3() {
     // BIOS11 / K16: Shift+b pressed, Shift released, then conterm |= 8 and
     // Bconin(2): EmuTOS 0x02300042 — the shift state is the one pushed with

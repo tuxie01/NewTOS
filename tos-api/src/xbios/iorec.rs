@@ -26,8 +26,13 @@
 //! is full, the consumer advances `head` first and then reads. The IKBD steps
 //! by 4 — an entry is the 32-bit `shifty << 24 | scancode << 16 | ascii`, the
 //! shift state taken when the key was pushed (E2, `bios/ikbd.c:427-435,900`);
-//! 256 bytes hold 63 keys. MIDI and RS-232 step by 1 and stay empty: NewTOS
-//! has no driver behind them (E5).
+//! 256 bytes hold 63 keys. MIDI and RS-232 step by 1. MIDI stays empty:
+//! NewTOS has no driver behind it (E5). Device 0's input ring is filled on
+//! qemu-virt by the serial receive interrupt ([`push_serial`], EmuTOS
+//! `push_serial_iorec` / the SCC receive handler, XBIOS15) and read by the
+//! board's AUX driver ([`pop_serial`], [`serial_pending`]); on real Pi 4 it
+//! stays empty (serial input is dropped there, E5 (a)). Its output ring
+//! stays empty everywhere: AUX output is discarded at once.
 //!
 //! # The page is program data (E1, E4)
 //!
@@ -51,11 +56,13 @@
 //! # Concurrency
 //!
 //! Every operation runs with IRQs masked: on qemu-virt the PL011 receive
-//! interrupt is a second producer (`kernel::console::serial_rx_byte`),
-//! and the consumer may run with IRQs open (the blocking reads unmask them
-//! while they wait), as EmuTOS' `bconin2` masks around its read
-//! (`bios/ikbd.c:268-276`). The index cells are accessed as 16-bit atomics
-//! (acquire/release), the slots with plain stores ordered by them.
+//! interrupt produces into device 0's input ring
+//! (`kernel::console::serial_rx_byte`) while a consumer may run with IRQs
+//! open (the blocking reads unmask them while they wait), as EmuTOS'
+//! `bconin2` and `get_iorecbuf` mask around their reads
+//! (`bios/ikbd.c:268-276`, `bios/serport.c:171-189`). The index cells are
+//! accessed as 16-bit atomics (acquire/release), the slots with plain stores
+//! ordered by them.
 
 use core::sync::atomic::{AtomicBool, AtomicU16, AtomicU8, Ordering};
 
@@ -168,6 +175,10 @@ const AUX_OUT: RingDesc =
 const RINGS: [RingDesc; 4] = [IKBD, MIDI, AUX_IN, AUX_OUT];
 /// Index of the IKBD ring in [`RINGS`].
 const IKBD_IDX: usize = 0;
+/// Index of device 0's input ring in [`RINGS`].
+const AUX_IN_IDX: usize = 2;
+
+const _: () = assert!(RINGS[IKBD_IDX].rec == IKBD_RECORD && RINGS[AUX_IN_IDX].rec == AUX_RECORD + OFF_IN);
 
 // ---------------------------------------------------------------------------
 // Repairs and their warnings.
@@ -227,6 +238,18 @@ impl Page {
     fn write_u8(&self, off: usize, v: u8) {
         // SAFETY: `off` is inside the page.
         unsafe { self.base.add(off).write_volatile(v) }
+    }
+
+    fn read_u8(&self, off: usize) -> u8 {
+        // SAFETY: `off` is inside the page.
+        unsafe { self.base.add(off).read_volatile() }
+    }
+
+    fn slot_u8(&self, d: &RingDesc, at: u16) -> *mut u8 {
+        debug_assert!(d.step == 1 && at < d.size);
+        // SAFETY: `at` is a validated index of `d`'s byte ring (below `size`),
+        // so the slot lies inside the kernel's buffer.
+        unsafe { self.base.add(d.buf + at as usize) }
     }
 
     fn slot_u32(&self, d: &RingDesc, at: u16) -> *mut u32 {
@@ -295,6 +318,47 @@ impl Page {
         unsafe { self.slot_u32(d, next).write_volatile(entry) };
         self.idx(d.rec + OFF_IBUFTL).store(next, Ordering::Release);
         (true, fault)
+    }
+
+    /// `push_serial_iorec` (`bios/serport.c:331-343`) and the receive half of
+    /// `scc_rx_interrupt_handler` (`:670-678`) into byte ring `i`: the byte
+    /// masked with device 0's `datamask` (the SCC path, `:671`; 0xff unless a
+    /// program wrote the record), `tail` advanced first (`incr_tail`,
+    /// `:146-154`), dropped when the ring is full. `false` when dropped.
+    fn push_byte(&self, i: usize, b: u8) -> (bool, u8) {
+        let (head, tail, fault) = self.check(i);
+        let d = &RINGS[i];
+        let mut next = tail + d.step;
+        if next >= d.size {
+            next = 0;
+        }
+        if next == head {
+            return (false, fault); // full
+        }
+        let data = b & self.read_u8(AUX_RECORD + OFF_DATAMASK);
+        // SAFETY: `next` is a valid slot index (see `slot_u8`).
+        unsafe { self.slot_u8(d, next).write_volatile(data) };
+        self.idx(d.rec + OFF_IBUFTL).store(next, Ordering::Release);
+        (true, fault)
+    }
+
+    /// `get_iorecbuf` (`bios/serport.c:171-189`) on byte ring `i`: `head`
+    /// advanced first, then the byte; `None` when the ring is empty (EmuTOS'
+    /// callers test `bconstat_iorec` first, `:203-209`).
+    fn pop_byte(&self, i: usize) -> (Option<u8>, u8) {
+        let (head, tail, fault) = self.check(i);
+        if head == tail {
+            return (None, fault);
+        }
+        let d = &RINGS[i];
+        let mut next = head + d.step;
+        if next >= d.size {
+            next = 0;
+        }
+        // SAFETY: `next` is a valid slot index (see `slot_u8`).
+        let v = unsafe { self.slot_u8(d, next).read_volatile() };
+        self.idx(d.rec + OFF_IBUFHD).store(next, Ordering::Release);
+        (Some(v), fault)
     }
 
     /// `bconin2`'s dequeue (`bios/ikbd.c:269-273`); `consume = false` peeks.
@@ -393,6 +457,35 @@ pub fn ikbd_indices() -> (u16, u16) {
     with_page(|p| {
         let (head, tail, fault) = p.check(IKBD_IDX);
         ((head, tail), fault)
+    })
+}
+
+// ---------------------------------------------------------------------------
+// Device 0's input ring (RS-232, AUX).
+// ---------------------------------------------------------------------------
+
+/// Queue one byte received on the serial line into device 0's input ring —
+/// EmuTOS `push_serial_iorec` (`bios/serport.c:331-343`, ST/TT MFP) and the
+/// push in `scc_rx_interrupt_handler` (`:647-683`, Falcon SCC B): the ring
+/// `Iorec(0)` returns, the one `bconstat1`/`bconin1` read. `false` when the
+/// ring is full and the byte is dropped, as on EmuTOS. Called from the
+/// receive interrupt (XBIOS15).
+pub fn push_serial(b: u8) -> bool {
+    with_page(|p| p.push_byte(AUX_IN_IDX, b))
+}
+
+/// Dequeue the oldest byte of device 0's input ring (`get_iorecbuf`,
+/// `bios/serport.c:171-189`), `None` when it is empty.
+pub fn pop_serial() -> Option<u8> {
+    with_page(|p| p.pop_byte(AUX_IN_IDX))
+}
+
+/// `bconstat_iorec` (`bios/serport.c:191-199`): a byte waits in device 0's
+/// input ring.
+pub fn serial_pending() -> bool {
+    with_page(|p| {
+        let (head, tail, fault) = p.check(AUX_IN_IDX);
+        (head != tail, fault)
     })
 }
 
@@ -593,6 +686,64 @@ mod tests {
         // Device 0's out ring: bit 3.
         wr16(&mut b, AUX_RECORD + OFF_OUT + OFF_IBUFSIZ, 4096);
         assert_eq!(p.check(3).2, FAULT_BUF << 3);
+    }
+
+    #[test]
+    fn serial_bytes_fill_device_0_in_not_the_key_ring() {
+        // XBIOS15, oracle SERRX-001: 'a' 'Z' '1' land in device 0's input
+        // ring as hd 0 tl 3 with the bytes at 1..=3; the IKBD ring stays empty.
+        let (b, p) = fresh();
+        for c in *b"aZ1" {
+            assert_eq!(p.push_byte(AUX_IN_IDX, c), (true, 0));
+        }
+        assert_eq!(rd16(&b, AUX_RECORD + OFF_IN + OFF_IBUFHD), 0);
+        assert_eq!(rd16(&b, AUX_RECORD + OFF_IN + OFF_IBUFTL), 3);
+        assert_eq!(b.0[AUX_IN_BUF + 1..AUX_IN_BUF + 4], *b"aZ1");
+        assert_eq!(rd16(&b, IKBD_RECORD + OFF_IBUFHD), rd16(&b, IKBD_RECORD + OFF_IBUFTL));
+        assert_eq!(rd16(&b, AUX_RECORD + OFF_OUT + OFF_IBUFTL), 0, "the out ring is untouched");
+        // get_iorecbuf: head first, then the byte (oracle C01: hd 1 tl 3).
+        assert_eq!(p.pop_byte(AUX_IN_IDX), (Some(b'a'), 0));
+        assert_eq!(rd16(&b, AUX_RECORD + OFF_IN + OFF_IBUFHD), 1);
+        assert_eq!(p.pop_byte(AUX_IN_IDX).0, Some(b'Z'));
+        assert_eq!(p.pop_byte(AUX_IN_IDX).0, Some(b'1'));
+        assert_eq!(p.pop_byte(AUX_IN_IDX), (None, 0));
+    }
+
+    #[test]
+    fn the_serial_ring_holds_255_bytes_and_wraps() {
+        let (b, p) = fresh();
+        for k in 0..255u32 {
+            assert!(p.push_byte(AUX_IN_IDX, k as u8).0, "byte {k}");
+        }
+        assert!(!p.push_byte(AUX_IN_IDX, 0xEE).0, "the 256th is dropped (bios/serport.c:337-338)");
+        assert_eq!(rd16(&b, AUX_RECORD + OFF_IN + OFF_IBUFTL), 255);
+        for k in 0..255u32 {
+            assert_eq!(p.pop_byte(AUX_IN_IDX).0, Some(k as u8));
+        }
+        assert!(p.push_byte(AUX_IN_IDX, 0x42).0);
+        assert_eq!(rd16(&b, AUX_RECORD + OFF_IN + OFF_IBUFTL), 0, "wrap to byte 0");
+        assert_eq!(p.pop_byte(AUX_IN_IDX).0, Some(0x42));
+    }
+
+    #[test]
+    fn the_serial_byte_is_masked_with_datamask() {
+        // scc_rx_interrupt_handler: `port->data & extiorec->datamask`
+        // (bios/serport.c:671); 0xff after init (bios/serport.c:89).
+        let (mut b, p) = fresh();
+        assert!(p.push_byte(AUX_IN_IDX, 0xE1).0);
+        b.0[AUX_RECORD + OFF_DATAMASK] = 0x7F;
+        assert!(p.push_byte(AUX_IN_IDX, 0xE1).0);
+        assert_eq!(p.pop_byte(AUX_IN_IDX).0, Some(0xE1));
+        assert_eq!(p.pop_byte(AUX_IN_IDX).0, Some(0x61));
+    }
+
+    #[test]
+    fn a_broken_serial_ring_is_repaired_before_the_push() {
+        let (mut b, p) = fresh();
+        wr16(&mut b, AUX_RECORD + OFF_IN + OFF_IBUFTL, 256);
+        assert_eq!(p.push_byte(AUX_IN_IDX, b'x'), (true, FAULT_INDEX << AUX_IN_IDX));
+        assert_eq!(rd16(&b, AUX_RECORD + OFF_IN + OFF_IBUFTL), 1);
+        assert_eq!(p.pop_byte(AUX_IN_IDX).0, Some(b'x'));
     }
 
     #[test]

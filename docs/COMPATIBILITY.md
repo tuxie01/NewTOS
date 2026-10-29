@@ -1230,8 +1230,13 @@ into a record is not adopted: at its next use, at the latest after the next
 trap, the kernel restores its own buffer, empties the ring and logs one
 `[iorec] warning` per process (E4 (a); EmuTOS adopts it,
 `bios/aciavecs.S:331`); indices outside the ring empty it likewise; (3) the
-records of devices 0 (RS-232) and 2 (MIDI) exist with the oracle's values and
-stay empty — no driver fills them (E5 (a)). The survey behind E3/E4 found no
+records of devices 0 (RS-232) and 2 (MIDI) exist with the oracle's values;
+MIDI stays empty — no driver fills it (E5 (a)). Device 0's input ring is
+filled from the serial line on qemu-virt and read by AUX (`Bconstat(1)`,
+`Bconin(1)`), as EmuTOS' `push_serial_iorec` (TASK/XBIOS15, measured equal
+to the oracle); on real Pi 4 serial input is dropped and the ring stays
+empty (UART0 is the debug console there). Its output ring stays empty on both
+boards: AUX output is discarded at once. The survey behind E3/E4 found no
 ported program that calls `Iorec` (`docs/analysis/iorec-survey-2026-10-28.md`).
 
 **`Bconmap` MAPTAB function pointers are not callable from programs** —

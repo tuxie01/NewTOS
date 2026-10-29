@@ -30,7 +30,7 @@ Jeder Lauf zweimal (bytegleich), dazu je Seite ein Kontrolllauf ohne Bytes.
 
 - **Schwere:** S3 · **Status:** MEASURED · **Route:** Developer
 - **Lokalisierung:** LOCALIZED: `serial_rx_byte`, qemu-virt-Zweig
-  (`kernel/src/console.rs:159@serial_rx_byte`, ruft `tos-api/src/xbios/iorec.rs:369@push_key`).
+  (`kernel/src/console.rs:169@serial_rx_byte`, ruft `tos-api/src/xbios/iorec.rs:433@push_key`).
   Die einzige `--down`-Abhaengigkeit von `push_serial_iorec` ist `incr_tail`, ohne
   NewTOS-Gegenstueck (`docs/analysis/deps/mapping.tsv`); die Zielseite (`push_key`, Ring-
   arithmetik) ist durch `xbios-flush-r1` gleich gemessen
@@ -63,7 +63,7 @@ Jeder Lauf zweimal (bytegleich), dazu je Seite ein Kontrolllauf ohne Bytes.
   `:966-977`, `Iorec(0)` = `rs232iorecptr` `:1003`, `references/emutos/bios/xbios.c:340`.
   Im gepinnten Build ist `CONF_SERIAL_CONSOLE` 0 (`references/emutos/include/config.h:1422-1429`,
   `docs/api/_emutos-config.md`).
-- **NewTOS:** `kernel/src/console.rs:159@serial_rx_byte` legt jedes Byte mit Scancode 0 in den
+- **NewTOS:** `kernel/src/console.rs:169@serial_rx_byte` legt jedes Byte mit Scancode 0 in den
   IKBD-Ring; der Kommentar dort (`kernel/src/console.rs:152-159@serial_rx_byte`) erklaert qemu-virt
   zum `CONF_SERIAL_CONSOLE = 1`-Profil.
 - **Spec-Status:** `docs/api/xbios/0e-iorec.md` (Abschnitt „NewTOS implementation“, E2)
@@ -93,7 +93,7 @@ Jeder Lauf zweimal (bytegleich), dazu je Seite ein Kontrolllauf ohne Bytes.
 
 - **Schwere:** S3 · **Status:** PLAUSIBLE · **Route:** Developer (nur falls das
   Serienkonsolen-Profil bleibt; mit dem Fix von 001 gegenstandslos)
-- **Lokalisierung:** `kernel/src/console.rs:159@serial_rx_byte` (gleiche Stelle wie 001).
+- **Lokalisierung:** `kernel/src/console.rs:169@serial_rx_byte` (gleiche Stelle wie 001).
 - **Gemessen:** NewTOS legt `0x00000061` ab (Scancode 0, Shift 0). **Nicht gemessen:** was
   EmuTOS im Profil `CONF_SERIAL_CONSOLE = 1` ablegt — das gepinnte ROM hat es nicht.
   Quelle: `references/emutos/bios/ikbd.c:192-231` sucht den Scancode in `norm`, dann `shft`

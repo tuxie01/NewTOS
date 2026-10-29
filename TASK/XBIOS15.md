@@ -1,6 +1,6 @@
 # XBIOS15 — qemu-virt: serielle Bytes landen mit Scancode 0 im Tastaturring
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Messung zuerst) — Anwenderentscheidung 2026-10-29, Fund aus [XBIOS01](XBIOS01.md)
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](XBIOS15-STATUS-DONE.MD)); eine Verhaltensaenderung zur Bestaetigung beim Anwender · Prioritaet: **P2** · Typ: Developer (Messung zuerst) — Anwenderentscheidung 2026-10-29, Fund aus [XBIOS01](XBIOS01.md)
 
 ## Sachverhalt
 
@@ -104,3 +104,18 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Messung zuerst) — A
   ausdruecklicher Schalter fuer Laeufe ohne Anzeige bleibt (z. B.
   `--headless`). Lauf-Anleitungen in Doku und README nachziehen (CLAUDE.md,
   `docs/`, Erinnerung „QEMU window view command“).
+
+## Stand 2026-10-29
+
+- Umgesetzt: auf qemu-virt geht serielles RX in den Ring von Geraet 0, ein
+  AUX-Treiber (`kernel/src/console.rs`, `AuxSerial`) liest daraus; Sonde
+  `serrx` gleich dem Orakel (Ring Geraet 0 `61 5a 31`, `Bconstat(1)` -1,
+  `Bconstat(2)` 0, `Bconin(1)` 0x61); raspi4b bytegleich wie vorher (verwirft).
+  `cargo xtask run` auf qemu-virt: Fenster als Standard, `--headless` ohne
+  Anzeige. Beleg `measurements/measurement-2026-10-29-xbios15/RUNINFO.TXT`.
+- **Zur Bestaetigung:** `Bconin(1)`/`Cauxin` warten auf qemu-virt jetzt auf
+  ein Byte wie EmuTOS' `bconin1` (vorher sofort 0). Kein Aufrufer in
+  `programs/`, `sdk/apps`, `sdk/examples` gefunden.
+- Unveraendert: `Bconout(1)` verwirft auf qemu-virt weiter; `Bconmap` liefert
+  `0x2c` (XBIOS05).
+

@@ -1,0 +1,59 @@
+command   cargo xtask tosdump bios tosdump/cases/xbios-chardev-r1.tsv --reference tosdump/reference/EMUTOS-1a7484ab-XBIOS-chardev.BIN --reference tosdump/reference/EMUTOS-1a7484ab-XBIOS-chardev-falcontc.BIN --out /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios15/runs/after-xbios-chardev-r1 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios15/xtask-after
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    18e8c11520d13641599cc91a040a8d0e64c58953
+dirty     27 path(s) in git status --porcelain
+   M README.md
+   M TASK/BIOS15-STATUS-DONE.MD
+   M TASK/MEM12.md
+   M TASK/XBIOS01-STATUS-DONE.MD
+   M docs/COMPATIBILITY.md
+   M docs/analysis/deps/mapping.tsv
+   M docs/api/bios/01-bconstat.md
+   M docs/api/bios/02-bconin.md
+   M docs/api/gemdos/console/03-cauxin.md
+   M docs/api/gemdos/file/3f-fread.md
+   M docs/api/xbios/0e-iorec.md
+   M docs/api/xbios/22-kbdvbase.md
+   M docs/audits/2026-10-29-xbios15-serial-rx.md
+   M docs/sdk/06-image-and-testing.md
+   M kernel/src/console.rs
+   M kernel/src/drivers/gic.rs
+   M kernel/src/drivers/qemu_virt/pl011.rs
+   M kernel/src/host_env.rs
+   M kernel/src/initinfo.rs
+   M kernel/src/lib.rs
+   M kernel/src/selftest_console.rs
+   M tools/xtask/src/main.rs
+   M tos-api/src/bios/chardev.rs
+   M tos-api/src/gemdos/console.rs
+   M tos-api/src/xbios/iorec.rs
+   M tos-api/tests/xbios01_iorec.rs
+  ?? measurements/measurement-2026-10-29-xbios15/
+harness commit 18e8c11520d13641599cc91a040a8d0e64c58953
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/xbios-chardev-r1.tsv sha256 a028a4ab46621d3cbdb52acf8f91b4ccf3380348d22cb47e9dcd767d10efad84
+target/   own (9 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (9 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 fbddacc05e83318a89ed1ccf1e12e00d29f1330d8b4a45cb28c160a9c78a957f
+kernel ELF  sha256 0be1a39ec96b5d02e4b77eebc2cbf728da2de08a2d74f00b0eecc16186bb4001 (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id 18e8
+DUMPBIOS.NAP sha256 e4528888c122a250d3ca59f5084cd4da92a8205405b97e697d5f62b8bdff4814
+card.img.manifest: image_sha256 4953af67415a050326126571c8b557e37132f7b6a8018b13dafa0e07e4df55e5
+card.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios15/xtask-after/tosdump-14707/card.img sha256 4953af67415a050326126571c8b557e37132f7b6a8018b13dafa0e07e4df55e5 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 a6a96b5b9d97057c9348bbb1c6ca866990c7b9956af8c1077b8728cf91e3bd44
+BIOS.BIN 7392 bytes, sha256 1cb4ac1659e9952afef00020739efccefeaa9190b5239144c32decbb9af6fd9d
+BIOS.LOG 167 bytes, sha256 8bee44ab80fd73a1db8866da6f5160083fcd1ebd222053034cd0141dd8ea6c57
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 f0ca20ad222b73b0cfb6367751704707b682281ee596a95a2bcb2f15a7ad3c9b
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 23 records of 320 bytes, build 18e8, case CRC 5C3A5F7A
+tosdiff EMUTOS-1a7484ab-XBIOS-chardev.BIN vs NEWTOS.BIN: exit 1, 12 of 23 cases differ
+tosdiff EMUTOS-1a7484ab-XBIOS-chardev-falcontc.BIN vs NEWTOS.BIN: exit 1, 12 of 23 cases differ
+total     35 s
+result    run complete (differences above are findings, not failures)

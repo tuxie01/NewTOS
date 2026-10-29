@@ -812,13 +812,13 @@ pub mod diag {
     // ── who fills the IKBD queue ──────────────────────────────────────
     //
     // The 2026-09-04 measurement found one key word already queued before
-    // the boot screen was drawn, value `0x0000`. Only two functions can
+    // the boot screen was drawn, value `0x0000`. Then two functions could
     // advance the ring — `console::serial_rx_byte` (PL011 RX IRQ) and
-    // `console::push_rx` (the IKBD decoder) — so tagging every push names
-    // the producer directly instead of leaving it to be inferred.
+    // `console::push_rx` (the IKBD decoder); since XBIOS15 only `push_rx`
+    // does (serial bytes go to `Iorec(0)` on qemu-virt, are dropped on
+    // rpi4). Tagging every push still names the producer directly instead
+    // of leaving it to be inferred.
 
-    /// [`note_push`] source tag: the PL011 serial receive drain.
-    pub const PUSH_SRC_SERIAL: u8 = 1;
     /// [`note_push`] source tag: the IKBD decoder (USB-HID keyboard).
     pub const PUSH_SRC_IKBD: u8 = 2;
     /// The first four words pushed into the IKBD queue, packed
@@ -1003,7 +1003,6 @@ pub mod diag {
                 continue;
             }
             let src = match (v >> 16) as u8 {
-                PUSH_SRC_SERIAL => "ser",
                 PUSH_SRC_IKBD => "kbd",
                 _ => "?",
             };

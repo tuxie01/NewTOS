@@ -1,0 +1,14 @@
+Temporary wiring of the qemu-virt probe kernel (scratch copy of the tree only, never the
+main tree; kernel/embed.rs restored byte-identical before the rpi4 and desktop kernels were
+built in the same copy). The same wiring as measurement-2026-10-29-xbios15-rx (qemu-virt has
+no drive, so the probe can only start as the embedded desktop "NEWDESK"):
+
+--- kernel/embed.rs (main tree)
++++ kernel/embed.rs (scratch copy, probe kernel only)
+@@ -49 +49,2 @@
+-pub const EMBEDDED: &[Embedded] = &[Embedded { name: "NEWDESK", file: "NEWDESK.NAP" }];
++// AUDIT-TEMP(xbios15): the serrx probe is started as the desktop (qemu-virt has no drive)
++pub const EMBEDDED: &[Embedded] = &[Embedded { name: "NEWDESK", file: "SERRX.NAP" }]; // AUDIT-TEMP(xbios15)
+
+plus SERRX.NAP (method/build-serrx.sh) copied into <copy>/target/programs/qemu-virt/
+after `cargo xtask build-programs --board qemu-virt`.

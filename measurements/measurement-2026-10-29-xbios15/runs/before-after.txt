@@ -1,0 +1,32 @@
+bios-r1 vs EMUTOS-1a7484ab-BIOS-falcontc
+  before (18e8c115): 53 54 66 67 69 70 87 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235  (45 of 147 cases differ)
+  after  (XBIOS15):  53 54 66 67 69 70 87 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235  (45 of 147 cases differ)
+  newly differing:  
+bios-r1 vs EMUTOS-1a7484ab-BIOS
+  before (18e8c115): 53 54 66 67 69 70 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235  (41 of 147 cases differ)
+  after  (XBIOS15):  53 54 66 67 69 70 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235  (41 of 147 cases differ)
+  newly differing:  
+xbios-chardev-r1 vs EMUTOS-1a7484ab-XBIOS-chardev-falcontc
+  before (18e8c115): 31 43 44 45 46 47 48 49 50 51 52 53  (12 of 23 cases differ)
+  after  (XBIOS15):  31 43 44 45 46 47 48 49 50 51 52 53  (12 of 23 cases differ)
+  newly differing:  
+xbios-chardev-r1 vs EMUTOS-1a7484ab-XBIOS-chardev
+  before (18e8c115): 31 43 44 45 46 47 48 49 50 51 52 53  (12 of 23 cases differ)
+  after  (XBIOS15):  31 43 44 45 46 47 48 49 50 51 52 53  (12 of 23 cases differ)
+  newly differing:  
+xbios-ptr-r1 vs EMUTOS-1a7484ab-XBIOS-ptr-falcontc
+  before (18e8c115): 34  (1 of 9 cases differ)
+  after  (XBIOS15):  34  (1 of 9 cases differ)
+  newly differing:  
+xbios-ptr-r1 vs EMUTOS-1a7484ab-XBIOS-ptr
+  before (18e8c115): 34  (1 of 9 cases differ)
+  after  (XBIOS15):  34  (1 of 9 cases differ)
+  newly differing:  
+xbios-flush-r1 vs EMUTOS-1a7484ab-XBIOS-flush-falcontc
+  before (18e8c115):  (0 of 207 cases differ)
+  after  (XBIOS15):   (0 of 207 cases differ)
+  newly differing:  
+xbios-flush-r1 vs EMUTOS-1a7484ab-XBIOS-flush
+  before (18e8c115):  (0 of 207 cases differ)
+  after  (XBIOS15):   (0 of 207 cases differ)
+  newly differing:  

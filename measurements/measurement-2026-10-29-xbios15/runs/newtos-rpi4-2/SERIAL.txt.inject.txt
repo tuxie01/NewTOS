@@ -1,0 +1,4 @@
+qemu: qemu-system-aarch64 -M raspi4b -no-reboot -display none -chardev socket,id=s0,host=127.0.0.1,port=57992 -serial chardev:s0 -append serial=on -kernel /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios15/rpi4-kernel8.img -drive file=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios15/card-newtos-rpi4-2.img,if=sd,format=raw
+sent b'aZ1' at t+15.43s, serial offset 4607
+end marker seen
+trigger seen: True

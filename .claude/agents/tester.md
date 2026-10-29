@@ -69,8 +69,10 @@ Use these — they exist for you. Prefer the strongest available for each kind o
 change:
 
 1. **`cargo xtask` harness.** `xtask run` boots QEMU (`-M virt,gic-version=2
-   -display none -serial stdio`); `--board rpi4` for the raspi4b target;
-   `--window`, `--debug`, `--sd` (attaches the SD image); `build-programs`,
+   -serial stdio`, since XBIOS15 with its display window by default — pass
+   `--headless` for display-less runs; the terminal is AUX, keyboard and
+   mouse are the window's USB devices); `--board rpi4` for the raspi4b
+   target; `--window`, `--debug`, `--sd` (attaches the SD image); `build-programs`,
    `gen-font` for artifact regen. Build must be clean for **both** boards
    (`board-qemu-virt` and `board-rpi4`) for every touched crate, plus no new
    `clippy` warnings — paste the result and the delta. Host tests: the full

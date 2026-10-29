@@ -3,7 +3,8 @@
 //! Subcommands (PHASE-01 §D7):
 //!   xtask build --board {rpi4|qemu-virt} [--release]
 //!   xtask build-programs --board {rpi4|qemu-virt}   — programs/ (DESK43 U6b)
-//!   xtask run [--release]                 — qemu-virt in QEMU, serial → stdout
+//!   xtask run [--release] [--headless]    — qemu-virt in QEMU with its window
+//!                                           (keyboard = USB), terminal = AUX
 //!   xtask test [--full|--fast]             — host-side tests (tos-api, tos-types, xtask)
 //!
 //! All commands shell out to `cargo`; this binary holds only the argument
@@ -216,11 +217,20 @@ Commands:
                                    ELF note, ARCH03 E8b) or set them to
                                    <value> (0x... or decimal) in place;
                                    the role of Atari's PRGFLAGS.PRG
-  run [--board {{rpi4|qemu-virt}}] [--release] [--window] [--debug]
-      [--sd <img>] [--features a,b] [--usb-extra] [--usb-dev <spec>]...
+  run [--board {{rpi4|qemu-virt}}] [--release] [--window|--headless]
+      [--debug] [--sd <img>] [--features a,b] [--usb-extra]
+      [--usb-dev <spec>]...
                                    — boot in QEMU (virt by default, or
-                                     raspi4b with --board rpi4); --window
-                                     shows the framebuffer, --debug halts
+                                     raspi4b with --board rpi4); the
+                                     terminal is the serial line (kernel
+                                     log out; on qemu-virt typed bytes go
+                                     to AUX, Bconin(1), not the keyboard);
+                                     qemu-virt opens the display window by
+                                     default — type into it (USB keyboard),
+                                     --headless runs without a display
+                                     (--window is accepted, the default);
+                                     raspi4b runs without a display unless
+                                     --window; --debug halts
                                      at reset with a gdbstub on :1234;
                                      --features adds optional kernel
                                      features (e.g. aes-trace);
@@ -767,8 +777,53 @@ mod qemu_usb_args_tests {
     }
 }
 
+/// Whether `xtask run` shows the display window (XBIOS15, user decision
+/// 2026-10-29, option (b)): `qemu-virt` opens it by default — its keyboard is
+/// the USB `usb-kbd` of that window, while the terminal is the serial line,
+/// i.e. AUX (`Bconin(1)`), no longer the keyboard; `--headless` runs it
+/// without a display. `--window` stays accepted there (the old way to ask
+/// for the window). `raspi4b` keeps its default: no display unless
+/// `--window`; `--headless` names that default. Both flags at once are an
+/// error.
+fn run_shows_window(board: Board, window: bool, headless: bool) -> Result<bool, String> {
+    if window && headless {
+        return Err("run: --window and --headless exclude each other".into());
+    }
+    Ok(match board {
+        Board::QemuVirt => !headless,
+        Board::Rpi4 => window,
+    })
+}
+
+#[cfg(test)]
+mod run_shows_window_tests {
+    use super::{run_shows_window, Board};
+
+    #[test]
+    fn qemu_virt_opens_the_window_unless_headless() {
+        assert_eq!(run_shows_window(Board::QemuVirt, false, false), Ok(true));
+        assert_eq!(run_shows_window(Board::QemuVirt, true, false), Ok(true), "--window is the default");
+        assert_eq!(run_shows_window(Board::QemuVirt, false, true), Ok(false));
+    }
+
+    #[test]
+    fn rpi4_keeps_its_default_without_display() {
+        assert_eq!(run_shows_window(Board::Rpi4, false, false), Ok(false));
+        assert_eq!(run_shows_window(Board::Rpi4, true, false), Ok(true));
+        assert_eq!(run_shows_window(Board::Rpi4, false, true), Ok(false));
+    }
+
+    #[test]
+    fn both_flags_are_refused() {
+        for b in Board::ALL {
+            assert!(run_shows_window(b, true, true).is_err());
+        }
+    }
+}
+
 fn cmd_run(args: &[String]) -> Result<(), String> {
-    let window = args.iter().any(|a| a == "--window");
+    let window_flag = args.iter().any(|a| a == "--window");
+    let headless = args.iter().any(|a| a == "--headless");
     let debug = args.iter().any(|a| a == "--debug");
     // USB01 K11: extra USB devices on qemu-virt (`qemu_usb_args`).
     let usb_extra = args.iter().any(|a| a == "--usb-extra");
@@ -799,7 +854,7 @@ fn cmd_run(args: &[String]) -> Result<(), String> {
                 skip = false;
                 continue;
             }
-            if a == "--window" || a == "--debug" || a == "--usb-extra" {
+            if a == "--window" || a == "--headless" || a == "--debug" || a == "--usb-extra" {
                 continue;
             }
             if a == "--sd" || a == "--usb-dev" {
@@ -816,8 +871,10 @@ fn cmd_run(args: &[String]) -> Result<(), String> {
         if usb_extra || !usb_devs.is_empty() {
             return Err("--usb-extra / --usb-dev: qemu-virt only (raspi4b has no USB controller)".into());
         }
+        let window = run_shows_window(Board::Rpi4, window_flag, headless)?;
         return cmd_run_rpi4(release, window, debug, sd.as_deref(), &opts.features);
     }
+    let window = run_shows_window(Board::QemuVirt, window_flag, headless)?;
     build_kernel(Board::QemuVirt, release, &opts.features)?;
     let elf = kernel_elf_path(release);
 
@@ -845,19 +902,21 @@ fn cmd_run(args: &[String]) -> Result<(), String> {
     //     `kernel/src/mm/layout.rs` board constants. The kernel reads
     //     the actual size from the firmware-supplied DTB at boot
     //     (Phase 03 D8) and adjusts TT-RAM accordingly.
-    //   * `-display none -serial stdio` — bind the PL011 directly to the
-    //     controlling TTY without QEMU's mux chardev (`mon:stdio`),
-    //     which buffers piped stdin and breaks PL011 RX.
+    //   * `-serial stdio` — bind the PL011 directly to the controlling
+    //     TTY without QEMU's mux chardev (`mon:stdio`), which buffers
+    //     piped stdin and breaks PL011 RX. The PL011 is AUX: what is typed
+    //     here lands in `Iorec(0)` / `Bconin(1)` (XBIOS15); the console
+    //     keyboard is the window's `usb-kbd` (`run_shows_window`).
     let mut c = Command::new("qemu-system-aarch64");
     c.args([
         "-M", "virt,gic-version=2",
         "-cpu", "cortex-a72",
         "-m", "272M",
         // `ramfb` gives the otherwise-display-less virt machine a simple
-        // linear framebuffer (configured by the kernel via fw_cfg). It
-        // is inert under `-display none` but its surface can still be
-        // captured with a QMP `screendump`; pass `-display cocoa`
-        // (macOS) to watch it live.
+        // linear framebuffer (configured by the kernel via fw_cfg). It is
+        // shown in the `-display cocoa` window (the default); under
+        // `--headless` (`-display none`) it is inert but its surface can
+        // still be captured with a QMP `screendump`.
         "-device", "ramfb",
     ]);
     // USB host stack (PHASE-16): an xHCI controller on the PCIe bus with a
@@ -865,8 +924,8 @@ fn cmd_run(args: &[String]) -> Result<(), String> {
     // devices on request (USB01 K11).
     c.args(qemu_usb_args(usb_extra, &usb_devs));
     if window {
-        // Native macOS window so the framebuffer is visible. Serial
-        // still goes to this terminal.
+        // Native macOS window: the framebuffer, and the USB keyboard and
+        // mouse take their input from it. Serial stays on this terminal.
         c.args(["-display", "cocoa"]);
     } else {
         c.args(["-display", "none"]);
@@ -883,8 +942,13 @@ fn cmd_run(args: &[String]) -> Result<(), String> {
     }
     println!(
         "xtask: launching QEMU{}{} (Ctrl-C to quit)",
-        if window { " with display window" } else { "" },
+        if window { " with display window" } else { " without display (--headless)" },
         if debug { " [gdbstub :1234, halted]" } else { "" },
+    );
+    println!(
+        "xtask: keyboard = {}; this terminal = serial line (kernel log; typed bytes go to AUX, \
+         Bconin(1) / Iorec(0))",
+        if window { "the USB keyboard of the window (click into it)" } else { "none (no window)" },
     );
     run(c)
 }
