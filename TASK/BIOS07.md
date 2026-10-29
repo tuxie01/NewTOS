@@ -12,6 +12,24 @@ Drei Befunde derselben Funktion und desselben Zweigs (`Setexc` mit `-1` fragt ab
 
 Fehlerbild 004: XBRA-Installer sehen „kein Handler“, Programme mit NULL-als-Fehler brechen ab. Laeufe: `measurements/measurement-2026-10-28-bios-core-audit/runs/NEWTOS-bios-core-r1`, `measurements/measurement-2026-10-28-bios-core-audit/runs/PROBE-EMUTOS-tt`, `measurements/measurement-2026-10-28-bios-core-audit/runs/PROBE-NEWTOS-raspi4b`.
 
+## Lokalisierung (Lead, 2026-10-29)
+
+- `setexc` → `tos-api/src/bios/vectors.rs@setexc` und `@note_write` (`mapped`);
+  `--down`: keine weitere Funktion, vollstaendig.
+- `--up --layers bios,bdos` (Wiedertestmenge): `biostrap` →
+  `tos-api/src/bios/mod.rs@dispatch`; `osinit_before_xmaddalt` →
+  `tos-api/src/bdos/mem/init.rs@init` (Startbelegung der Vektoren);
+  `xterm`/`x0term` → `tos-api/src/bdos/process/pterm.rs@terminate`,
+  `@terminate_zero` (setzen `etv_term` zurueck); `cgets`, `conbrk`, `xconin`
+  (`tos-api/src/gemdos/console.rs`), `kill_program`
+  (`kernel/src/arch/aarch64/exceptions.rs@kill_program`). `unmapped` in diesen
+  Schichten: `bdos_trap2` ([PROC07](PROC07.md)), `bios_init`; dazu aes/vdi-
+  Aufrufer (`retake`, `timer_init`, `timer_exit`) ohne Gegenstueck.
+  Vollstaendig: nein, diese Liste.
+- Zusaetzliche Wiedertests: ADR-031-Warnungen (`hooks.rs`, BIOS15) und
+  MEM12 (Seite 0 nur im Super-Zustand beschreibbar), weil D3 Seite 0 fuer
+  alle `num < 0x200` traegt.
+
 ## Arbeit
 
 1. Je Befund Fix gegen `references/emutos/bios/bios.c:1070-1080`; Hosttests fuer Rueckgabe je Vektorklasse (CPU, `etv_*`, `$103–$11F`).
