@@ -139,6 +139,15 @@ on, no disk inserted) `Drvmap()` = `0xF`, and `Giaccess(0,14)` and both
   `D:\PROGEXT.TXT` (`PRG`), which DUMPBIOS reads for a program path `x:` of
   a `Pexec` case (`docs/TOS-REFERENCE-DUMPER.md` section 6, "GEMDOS after a
   media change"; TOOL20); NewTOS' runner names `NAP`.
+- **Both values come from `tosdump/profiles.tsv`** (row `hatari-oracle
+  disk`; TOOL19), never from a hand-written file: the script writes the two
+  files from the row, reads them back from the drive and records them in
+  `<out-dir>/profile.txt`. A table that names `u:0` or `x:` in a profile
+  without a row (`tt`, `falcontc`) is refused before Hatari starts (exit 2);
+  after the run the dumper's LOG must record the row's values
+  (`tosdiff --check-profile`), otherwise the BIN is not copied to
+  `<out-dir>` and the script exits 1 (`docs/TOS-REFERENCE-DUMPER.md`
+  section 6, "The profile values").
 - **Destructive tables** (`!disk <drive> destructive`, the closing tables)
   run only in this profile: the script refuses them in any other, clones the
   test image for the run as for every disk table, and refuses an image whose

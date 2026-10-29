@@ -687,6 +687,177 @@ else
 	fails=$((fails + 1))
 fi
 
+# --- the profile check (TOOL19) ----------------------------------------
+#
+# A table that names u:0 or x: leaves the unit / the program extension to the
+# run's profile (tosdump/profiles.tsv). The pinned oracle dumps of the two
+# such tables, their LOGs beside them, are accepted; every way the LOG can
+# fail to record the profile's value is refused, by --check-profile and
+# before a comparison or a self-check. Header: pointer width at 20, word
+# order at 22 (format 3).
+REFS="$HERE/../reference"
+TABLES="$HERE/../cases"
+PU_TSV="$TABLES/bios-r2-phys.tsv"
+PX_TSV="$TABLES/gemdos-mc-fs22.tsv"
+PU_REF="$REFS/EMUTOS-1a7484ab-BIOS-r2-phys-disk"
+PX_REF="$REFS/EMUTOS-1a7484ab-BIOS-mc-fs22-disk"
+P="$TMP/profile"
+mkdir -p "$P"
+pcase() {   # pcase <dir> <ref-stem>: a copy of the dump and its LOG
+	mkdir -p "$P/$1"
+	cp "$2.BIN" "$P/$1/BIOS.BIN"
+	cp "$2.LOG" "$P/$1/BIOS.LOG"
+}
+psig() {    # psig <bin> <ptr> <order>: forge the header's machine
+	printf "\\000\\$(printf %o "$2")\\000\\$(printf %o "$3")" |
+	    dd of="$1" bs=1 seek=20 conv=notrunc status=none
+}
+pedit() {   # pedit <log> <sed-expr>
+	sed "$2" "$1" > "$1.new" && mv "$1.new" "$1"
+}
+if [ -f "$PU_REF.BIN" ] && [ -f "$PX_REF.BIN" ]; then
+	# the oracle's own dumps, as pinned
+	pcase ok "$PU_REF"
+	"$TOSDIFF" --check-profile "$PU_TSV" "$P/ok/BIOS.BIN" >"$TMP/p1.out" 2>&1
+	check "profile: the oracle's u:0 dump is accepted" 0 $?
+	grep_out "profile: names the row and the unit" "$TMP/p1.out" \
+	    "hatari-oracle disk (tosdump/profiles.tsv), u:0 = unit 18, as its LOG BIOS.LOG records"
+	pcase okx "$PX_REF"
+	"$TOSDIFF" --check-profile "$PX_TSV" "$P/okx/BIOS.BIN" >"$TMP/p2.out" 2>&1
+	check "profile: the oracle's x: dump is accepted" 0 $?
+	grep_out "profile: names the extension" "$TMP/p2.out" "x: = .PRG"
+
+	# the LOG missing
+	pcase nolog "$PU_REF"; rm "$P/nolog/BIOS.LOG"
+	"$TOSDIFF" --check-profile "$PU_TSV" "$P/nolog/BIOS.BIN" >"$TMP/p3.out" 2>&1
+	check "profile: a u:0 dump without its LOG is refused" 2 $?
+	grep_out "profile: the missing LOG is named" "$TMP/p3.out" "its LOG BIOS.LOG is missing"
+
+	# the unit line missing (DISKUNIT.TXT was not read)
+	pcase nounit "$PU_REF"; pedit "$P/nounit/BIOS.LOG" '/^unit token/d'
+	"$TOSDIFF" --check-profile "$PU_TSV" "$P/nounit/BIOS.BIN" >"$TMP/p4.out" 2>&1
+	check "profile: a LOG without the unit is refused" 2 $?
+	grep_out "profile: no unit recorded" "$TMP/p4.out" "records no unit -- the run's profile named none"
+
+	# a unit that is not the profile's
+	pcase badunit "$PU_REF"; pedit "$P/badunit/BIOS.LOG" 's/physical unit 18/physical unit 26/'
+	"$TOSDIFF" --check-profile "$PU_TSV" "$P/badunit/BIOS.BIN" >"$TMP/p5.out" 2>&1
+	check "profile: a unit that is not the profile's is refused" 2 $?
+	grep_out "profile: both units are named" "$TMP/p5.out" \
+	    "records unit 26 for u:0, the profile hatari-oracle disk (tosdump/profiles.tsv) names 18"
+
+	# the LOG of another run (another table CRC)
+	pcase crc "$PU_REF"; pedit "$P/crc/BIOS.LOG" 's/CRC 514944FD/CRC 514944FE/'
+	"$TOSDIFF" --check-profile "$PU_TSV" "$P/crc/BIOS.BIN" >"$TMP/p6.out" 2>&1
+	check "profile: the LOG of another table is refused" 2 $?
+	grep_out "profile: not this run" "$TMP/p6.out" "not the run of this dump"
+
+	# the dump of the other machine: the row is the header's
+	pcase le "$PU_REF"; psig "$P/le/BIOS.BIN" 8 2
+	pedit "$P/le/BIOS.LOG" 's/^pointer 4 bytes, word order 1/pointer 8 bytes, word order 2/'
+	"$TOSDIFF" --check-profile "$PU_TSV" "$P/le/BIOS.BIN" >"$TMP/p7.out" 2>&1
+	check "profile: an AArch64 dump recording 18 is refused" 2 $?
+	grep_out "profile: the AArch64 row names 26" "$TMP/p7.out" \
+	    "the profile xtask-tosdump disk (tosdump/profiles.tsv) names 26"
+	pedit "$P/le/BIOS.LOG" 's/physical unit 18/physical unit 26/'
+	"$TOSDIFF" --check-profile "$PU_TSV" "$P/le/BIOS.BIN" >"$TMP/p8.out" 2>&1
+	check "profile: an AArch64 dump recording 26 is accepted" 0 $?
+
+	# a LOG whose machine is not the dump's
+	pcase mach "$PU_REF"; psig "$P/mach/BIOS.BIN" 8 2
+	"$TOSDIFF" --check-profile "$PU_TSV" "$P/mach/BIOS.BIN" >"$TMP/p9.out" 2>&1
+	check "profile: a LOG of another machine is refused" 2 $?
+	grep_out "profile: the machine differs" "$TMP/p9.out" "says pointer 4 bytes, word order 1"
+
+	# a machine without a row: no default
+	pcase norow "$PU_REF"; psig "$P/norow/BIOS.BIN" 8 1
+	pedit "$P/norow/BIOS.LOG" 's/^pointer 4 bytes, word order 1/pointer 8 bytes, word order 1/'
+	"$TOSDIFF" --check-profile "$PU_TSV" "$P/norow/BIOS.BIN" >"$TMP/p10.out" 2>&1
+	check "profile: a machine without a profile row is refused" 2 $?
+	grep_out "profile: no default" "$TMP/p10.out" "no default"
+
+	# x: -- the line missing, an extension that is not the profile's
+	pcase noext "$PX_REF"; pedit "$P/noext/BIOS.LOG" '/^program extension/d'
+	"$TOSDIFF" --check-profile "$PX_TSV" "$P/noext/BIOS.BIN" >"$TMP/p11.out" 2>&1
+	check "profile: a LOG without the extension is refused" 2 $?
+	grep_out "profile: no extension recorded" "$TMP/p11.out" "records no program extension -- the run's profile named none"
+	pcase badext "$PX_REF"; pedit "$P/badext/BIOS.LOG" 's/x:<path>\.PRG/x:<path>.NAP/'
+	"$TOSDIFF" --check-profile "$PX_TSV" "$P/badext/BIOS.BIN" >"$TMP/p12.out" 2>&1
+	check "profile: an extension that is not the profile's is refused" 2 $?
+	grep_out "profile: both extensions are named" "$TMP/p12.out" \
+	    "records extension \"NAP\" for x:, the profile hatari-oracle disk (tosdump/profiles.tsv) names PRG"
+
+	# the comparison and the self-check refuse the same dumps
+	"$TOSDIFF" "$PU_TSV" "$P/ok/BIOS.BIN" "$P/le/BIOS.BIN" >"$TMP/p13.out" 2>&1
+	rc=$?
+	if [ $rc -eq 2 ]; then
+		echo "  FAIL profile: two dumps recording their own profiles' units were refused"
+		sed 's/^/  | /' "$TMP/p13.out"
+		fails=$((fails + 1))
+	fi
+	grep_out "profile: the comparison checks side b" "$TMP/p13.out" \
+	    "xtask-tosdump disk (tosdump/profiles.tsv), u:0 = unit 26"
+	"$TOSDIFF" "$PU_TSV" "$P/ok/BIOS.BIN" "$P/badunit/BIOS.BIN" >"$TMP/p14.out" 2>&1
+	check "profile: a comparison with a wrong unit is refused" 2 $?
+	"$TOSDIFF" "$PU_TSV" "$P/nolog/BIOS.BIN" "$P/ok/BIOS.BIN" >"$TMP/p15.out" 2>&1
+	check "profile: a comparison without a LOG is refused" 2 $?
+	"$TOSDIFF" --selfcheck "$PX_TSV" "$P/badext/BIOS.BIN" >"$TMP/p16.out" 2>&1
+	check "profile: a self-check with a wrong extension is refused" 2 $?
+
+	# the unit recorded twice
+	pcase twice "$PU_REF"
+	pedit "$P/twice/BIOS.LOG" '/^unit token/p'
+	"$TOSDIFF" --check-profile "$PU_TSV" "$P/twice/BIOS.BIN" >"$TMP/p18.out" 2>&1
+	check "profile: a LOG recording the unit twice is refused" 2 $?
+	grep_out "profile: twice" "$TMP/p18.out" "records the unit more than once"
+
+	# a table that leaves nothing to the profile needs no LOG
+	if [ -f "$CALLBIN" ]; then
+		"$TOSDIFF" --check-profile "$CALLTSV" "$CALLBIN" >"$TMP/p17.out" 2>&1
+		check "profile: a table without u:0 and x: needs no LOG" 0 $?
+		grep_out "profile: says so" "$TMP/p17.out" "leaves no value to the profile"
+	fi
+else
+	echo "  FAIL pinned u:0 / x: references missing: $PU_REF / $PX_REF"
+	fails=$((fails + 1))
+fi
+
+# --- the profile definition is read strictly (TOOL19) -------------------
+# mkprofiles.awk compiles tosdump/profiles.tsv into tosdiff: a malformed row,
+# a runner/profile pair twice or a machine twice ends the build.
+MKP="$HERE/../host/mkprofiles.awk"
+pdef() {   # pdef <name> <rows...>: a definition file
+	f="$TMP/$1.tsv"; shift
+	: > "$f"
+	for r in "$@"; do printf '%s\n' "$r" >> "$f"; done
+}
+TAB=$(printf '\t')
+pdef pgood "hatari-oracle${TAB}disk${TAB}4${TAB}1${TAB}18${TAB}PRG"
+awk -f "$MKP" "$TMP/pgood.tsv" >"$TMP/pgood.h" 2>"$TMP/pgood.err"
+check "profiles: a well-formed row is compiled" 0 $?
+grep_out "profiles: the row is in the header" "$TMP/pgood.h" '{ "hatari-oracle", "disk", 4, 1, 18, "PRG" },'
+for bad in "unit" "ext" "order" "fields"; do
+	case $bad in
+	unit)   row="r${TAB}p${TAB}4${TAB}1${TAB}40000${TAB}PRG" ;;
+	ext)    row="r${TAB}p${TAB}4${TAB}1${TAB}18${TAB}prg" ;;
+	order)  row="r${TAB}p${TAB}4${TAB}3${TAB}18${TAB}PRG" ;;
+	fields) row="r${TAB}p${TAB}4${TAB}1${TAB}18" ;;
+	esac
+	pdef "pbad-$bad" "$row"
+	awk -f "$MKP" "$TMP/pbad-$bad.tsv" >/dev/null 2>"$TMP/pbad-$bad.err"
+	check "profiles: a row with a bad $bad is refused" 1 $?
+done
+pdef pdup "a${TAB}disk${TAB}4${TAB}1${TAB}18${TAB}PRG" "b${TAB}disk${TAB}4${TAB}1${TAB}26${TAB}NAP"
+awk -f "$MKP" "$TMP/pdup.tsv" >/dev/null 2>"$TMP/pdup.err"
+check "profiles: a machine named twice is refused" 1 $?
+grep_out "profiles: names the machine" "$TMP/pdup.err" "pointer 4, word order 1 twice"
+pdef pdup2 "a${TAB}disk${TAB}4${TAB}1${TAB}18${TAB}PRG" "a${TAB}disk${TAB}8${TAB}2${TAB}26${TAB}NAP"
+awk -f "$MKP" "$TMP/pdup2.tsv" >/dev/null 2>"$TMP/pdup2.err"
+check "profiles: a runner/profile pair twice is refused" 1 $?
+pdef pnone "# only a comment"
+awk -f "$MKP" "$TMP/pnone.tsv" >/dev/null 2>"$TMP/pnone.err"
+check "profiles: an empty definition is refused" 1 $?
+
 if [ "$fails" -eq 0 ]; then
 	echo "  ok"
 	exit 0

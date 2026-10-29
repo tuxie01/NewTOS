@@ -15,7 +15,7 @@ Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL11-STATUS-DONE.MD)) · Prioritae
   dekodiert): `Iorec` → `0x0E`, `Keytbl` → `0x768`, `Bconmap(-2)` → `0x2C`.
   Gekippt hat also kein NewTOS-Commit, sondern die Regel: `ff1da029`
   verlangt statt eines Vielfachen von 4 nur noch eine gerade Adresse
-  (`tosdump/host/tosdiff.c:531@TD_RET_PTR_RAM`). Damit bestanden auch die
+  (`tosdump/host/tosdiff.c:775@TD_RET_PTR_RAM`). Damit bestanden auch die
   Orakel-Werte 109/184 (`0x40AE`, `0x4A76`), die vorher die Regel selbst
   verletzten — beabsichtigt.
 - Nebenwirkung: `0x0E` und `0x2C` sind die XBIOS-Funktionsnummern von

@@ -52,8 +52,14 @@ $(BUILD)/record_le.o: $(CORE)/record.c $(CORE)/record.h $(CORE)/tosdump.h | $(BU
 $(BUILD)/casefile.o: casefile.c casefile.h $(CORE)/record.h | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD)/tosdiff.o: tosdiff.c casefile.h $(CORE)/record.h | $(BUILD)
-	$(CC) $(CFLAGS) -c $< -o $@
+# TOOL19: the run profiles (unit, program extension), the one definition
+# in ../profiles.tsv, compiled into tosdiff; a malformed file ends the build.
+$(BUILD)/profiles.h: ../profiles.tsv mkprofiles.awk | $(BUILD)
+	awk -f mkprofiles.awk ../profiles.tsv > $@.tmp && mv $@.tmp $@
+
+$(BUILD)/tosdiff.o: tosdiff.c casefile.h $(CORE)/record.h $(BUILD)/profiles.h \
+                    | $(BUILD)
+	$(CC) $(CFLAGS) -I$(BUILD) -c $< -o $@
 
 $(BUILD)/tosdiff: $(BUILD)/tosdiff.o $(BUILD)/casefile.o $(BUILD)/record.o \
                   $(BUILD)/cases.o

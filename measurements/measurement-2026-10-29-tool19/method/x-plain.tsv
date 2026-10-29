@@ -1,0 +1,4 @@
+# x-plain.tsv -- TASK/TOOL19 refusal input for tools/hatari-oracle.sh: a table
+# that names a program path x: and is not destructive, so the profile refusal
+# (not the destructive one) answers it. Never run: refused before Hatari starts.
+1:0x4B	w:0,x:C:\PXPROBE,c:child,l:0	EXACT	-	Pexec, a refusal input

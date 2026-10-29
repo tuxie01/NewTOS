@@ -1,0 +1,2 @@
+the table names the unit token u:0: profile tt names no unit and no program extension (no row "hatari-oracle tt" in tosdump/profiles.tsv) -- refused, there is no default
+exit 2

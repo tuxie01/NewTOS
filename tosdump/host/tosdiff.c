@@ -9,6 +9,7 @@
  *
  * usage: tosdiff --validate DUMP.BIN [CASES.TSV]
  *        tosdiff --selfcheck CASES.TSV ORACLE.BIN
+ *        tosdiff --check-profile CASES.TSV DUMP.BIN
  *        tosdiff CASES.TSV A.BIN B.BIN
  *
  * exit: 0 = accepted / no differences, 1 = differences found (a value
@@ -29,6 +30,7 @@
 
 #include "casefile.h"
 #include "cases.h"
+#include "profiles.h"      /* build/profiles.h, from tosdump/profiles.tsv */
 
 struct td_dump {
 	const char       *path;
@@ -235,6 +237,247 @@ static int cmd_validate(const char *dump_path, const char *cases_path)
 		printf("%s: accepted\n", d.label);
 	dump_free(&d);
 	return status;
+}
+
+/* ------------------------------------------------------------------ */
+/* profile check (TOOL19)                                              */
+/* ------------------------------------------------------------------ */
+
+#define LOG_MAX 65536
+
+/* The LOG beside a dump: <name>.BIN -> <name>.LOG.  0 on success. */
+static int log_path_of(const char *bin, char *out, size_t outsz)
+{
+	size_t n = strlen(bin);
+
+	if (n < 4 || bin[n - 4] != '.' ||
+	    (bin[n - 3] != 'B' && bin[n - 3] != 'b') ||
+	    (bin[n - 2] != 'I' && bin[n - 2] != 'i') ||
+	    (bin[n - 1] != 'N' && bin[n - 1] != 'n') || n + 1 > outsz)
+		return -1;
+	memcpy(out, bin, n - 3);
+	memcpy(out + n - 3, "LOG", 4);
+	return 0;
+}
+
+/* Does `line` (len bytes, no line end) start with `prefix`?  The rest. */
+static const char *after(const char *line, size_t len, const char *prefix)
+{
+	size_t p = strlen(prefix);
+
+	return (len >= p && memcmp(line, prefix, p) == 0) ? line + p : NULL;
+}
+
+/*
+ * The dump's LOG records the profile value the table needs, and it is the
+ * value of the profile row of the machine that wrote the dump.  0 = checked
+ * (a line to stdout; nothing when the table needs no value), -1 = refused
+ * (the reason to stderr).
+ */
+static int profile_check(const struct td_casefile *cf, const struct td_dump *d)
+{
+	int need_unit = cf->calls && cf->calls->unit_token;
+	int need_ext  = cf->calls && cf->calls->prog_ext;
+	const struct td_profile *row = NULL;
+	char logp[1024], *buf;
+	FILE *f;
+	size_t n, pos;
+	int i, seen_ptr = 0, seen_crc = 0, n_unit = 0, n_ext = 0;
+	long unit = -1;
+	char ext[8] = "";
+
+	if (!need_unit && !need_ext)
+		return 0;
+	if (!td_header_states_ptr(&d->h)) {
+		fprintf(stderr, "tosdiff: refusing %s: the table leaves %s to the "
+		        "run's profile, and a format %u dump states no pointer "
+		        "width or word order -- no profile row (tosdump/profiles."
+		        "tsv) can be named for it\n", d->label,
+		        need_unit ? "the unit (u:0)" : "the program extension (x:)",
+		        d->h.version);
+		return -1;
+	}
+	for (i = 0; i < TD_PROFILES_N; i++)
+		if (td_profiles[i].ptr_width == d->h.ptr_width &&
+		    td_profiles[i].word_order == d->h.word_order)
+			row = &td_profiles[i];
+	if (!row) {
+		fprintf(stderr, "tosdiff: refusing %s: no profile in tosdump/"
+		        "profiles.tsv names the values for a %u-byte-pointer, %s "
+		        "machine (no default)\n", d->label, d->h.ptr_width,
+		        word_order_name(d->h.word_order));
+		return -1;
+	}
+	if (log_path_of(d->path, logp, sizeof logp) != 0) {
+		fprintf(stderr, "tosdiff: refusing %s: not named <name>.BIN, so "
+		        "its LOG cannot be found -- the table leaves a value to "
+		        "the profile, which only the LOG records\n", d->label);
+		return -1;
+	}
+	f = fopen(logp, "rb");
+	if (!f) {
+		fprintf(stderr, "tosdiff: refusing %s: its LOG %s is missing -- "
+		        "the table leaves a value to the profile, which only the "
+		        "LOG records\n", d->label, basename_of(logp));
+		return -1;
+	}
+	buf = (char *)malloc(LOG_MAX);
+	if (!buf) {
+		fclose(f);
+		fprintf(stderr, "tosdiff: out of memory\n");
+		return -1;
+	}
+	n = fread(buf, 1, LOG_MAX, f);
+	fclose(f);
+
+	for (pos = 0; pos < n; ) {
+		const char *line = buf + pos, *r;
+		size_t len = 0;
+		unsigned long a, b;
+		char tail;
+
+		while (pos + len < n && buf[pos + len] != '\n')
+			len++;
+		pos += len + 1;
+		if (len && line[len - 1] == '\r')
+			len--;
+		/* a copy, NUL-terminated, for sscanf */
+		{
+			char l[256];
+			size_t k = len < sizeof l - 1 ? len : sizeof l - 1;
+
+			memcpy(l, line, k);
+			l[k] = '\0';
+			if (sscanf(l, "pointer %lu bytes, word order %lu%c", &a, &b,
+			           &tail) == 2) {
+				seen_ptr = 1;
+				if (a != d->h.ptr_width || b != d->h.word_order) {
+					fprintf(stderr, "tosdiff: refusing %s: its LOG %s "
+					        "says pointer %lu bytes, word order %lu, the "
+					        "dump %u and %u -- not the run of this dump\n",
+					        d->label, basename_of(logp), a, b,
+					        d->h.ptr_width, d->h.word_order);
+					free(buf);
+					return -1;
+				}
+			}
+			r = strstr(l, " cases, CRC ");
+			if (r && !seen_crc) {
+				seen_crc = 1;
+				if (strtoul(r + 12, NULL, 16) != d->h.case_crc ||
+				    strlen(r + 12) != 8) {
+					fprintf(stderr, "tosdiff: refusing %s: its LOG %s "
+					        "names table CRC %s, the dump %08X -- not the "
+					        "run of this dump\n", d->label,
+					        basename_of(logp), r + 12, d->h.case_crc);
+					free(buf);
+					return -1;
+				}
+			}
+			r = after(l, k, "unit token u:0 = physical unit ");
+			if (r) {
+				char *end;
+
+				n_unit++;
+				unit = strtol(r, &end, 10);
+				if (end == r || strcmp(end, " (DISKUNIT.TXT, the run's "
+				                            "profile)") != 0)
+					unit = -1;
+			}
+			r = after(l, k, "program extension x:<path>.");
+			if (r) {
+				const char *sp = strchr(r, ' ');
+
+				n_ext++;
+				ext[0] = '\0';
+				if (sp && sp - r >= 1 && sp - r <= 3 &&
+				    strcmp(sp, " (PROGEXT.TXT, the run's profile)") == 0) {
+					memcpy(ext, r, (size_t)(sp - r));
+					ext[sp - r] = '\0';
+				}
+			}
+		}
+	}
+	free(buf);
+
+	if (!seen_ptr || !seen_crc) {
+		fprintf(stderr, "tosdiff: refusing %s: its LOG %s states no %s -- "
+		        "not a dumper LOG of this run\n", d->label,
+		        basename_of(logp), !seen_ptr ? "pointer width and word order"
+		                                     : "table CRC");
+		return -1;
+	}
+	if (need_unit && n_unit != 1) {
+		fprintf(stderr, "tosdiff: refusing %s: the table names u:0 and its "
+		        "LOG %s %s\n", d->label, basename_of(logp),
+		        n_unit ? "records the unit more than once"
+		               : "records no unit -- the run's profile named none");
+		return -1;
+	}
+	if (need_unit && unit != row->unit) {
+		fprintf(stderr, "tosdiff: refusing %s: its LOG %s records unit "
+		        "%ld for u:0, the profile %s %s (tosdump/profiles.tsv) "
+		        "names %ld\n", d->label, basename_of(logp), unit,
+		        row->runner, row->profile, row->unit);
+		return -1;
+	}
+	if (need_ext && n_ext != 1) {
+		fprintf(stderr, "tosdiff: refusing %s: the table names x: and its "
+		        "LOG %s %s\n", d->label, basename_of(logp),
+		        n_ext ? "records the program extension more than once"
+		              : "records no program extension -- the run's "
+		                "profile named none");
+		return -1;
+	}
+	if (need_ext && strcmp(ext, row->ext) != 0) {
+		fprintf(stderr, "tosdiff: refusing %s: its LOG %s records "
+		        "extension \"%s\" for x:, the profile %s %s "
+		        "(tosdump/profiles.tsv) names %s\n", d->label,
+		        basename_of(logp), ext, row->runner, row->profile,
+		        row->ext);
+		return -1;
+	}
+	printf("profile check, %s: %s %s (tosdump/profiles.tsv)", d->label,
+	       row->runner, row->profile);
+	if (need_unit)
+		printf(", u:0 = unit %ld", row->unit);
+	if (need_ext)
+		printf(", x: = .%s", row->ext);
+	printf(", as its LOG %s records\n", basename_of(logp));
+	return 0;
+}
+
+static int cmd_check_profile(const char *cases_path, const char *dump_path)
+{
+	struct td_casefile cf;
+	struct td_dump d;
+	const char *why = NULL;
+	int rc;
+
+	if (dump_load(&d, dump_path) != 0)
+		return 2;
+	if (td_casefile_read(&cf, cases_path, d.h.area, &why) != 0) {
+		fprintf(stderr, "tosdiff: %s: %s\n", cases_path,
+		        why ? why : "cannot read");
+		dump_free(&d);
+		return 2;
+	}
+	if (cf.crc != d.h.case_crc) {
+		fprintf(stderr, "tosdiff: refusing: %s carries case table CRC "
+		        "%08X, %s is %08X\n", d.label, d.h.case_crc,
+		        basename_of(cases_path), cf.crc);
+		dump_free(&d);
+		return 2;
+	}
+	if (!(cf.calls && (cf.calls->unit_token || cf.calls->prog_ext))) {
+		printf("profile check, %s: %s leaves no value to the profile\n",
+		       d.label, basename_of(cases_path));
+		dump_free(&d);
+		return 0;
+	}
+	rc = profile_check(&cf, &d);
+	dump_free(&d);
+	return rc == 0 ? 0 : 2;
 }
 
 /* ------------------------------------------------------------------ */
@@ -948,6 +1191,13 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 		goto refuse;
 	}
 
+	/* A value the table leaves to the profile (TOOL19): each side's LOG
+	 * must record its own profile's, or nothing is compared. */
+	if (profile_check(&cf, &a) != 0)
+		goto refuse;
+	if (!single && profile_check(&cf, &b) != 0)
+		goto refuse;
+
 	fields = td_area_fields(a.h.area);
 	if (!fields) {
 		fprintf(stderr, "tosdiff: refusing: no field table for area %u\n",
@@ -1133,12 +1383,15 @@ int main(int argc, char **argv)
 	}
 	if (argc == 4 && strcmp(argv[1], "--selfcheck") == 0)
 		return cmd_compare(argv[2], argv[3], argv[3], 1);
+	if (argc == 4 && strcmp(argv[1], "--check-profile") == 0)
+		return cmd_check_profile(argv[2], argv[3]);
 	if (argc == 4)
 		return cmd_compare(argv[1], argv[2], argv[3], 0);
 
 	fprintf(stderr,
 	        "usage: tosdiff --validate DUMP.BIN [CASES.TSV]\n"
 	        "       tosdiff --selfcheck CASES.TSV ORACLE.BIN\n"
+	        "       tosdiff --check-profile CASES.TSV DUMP.BIN\n"
 	        "       tosdiff CASES.TSV A.BIN B.BIN\n");
 	return 2;
 }

@@ -1,0 +1,2 @@
+tosdiff: refusing BIOS.BIN: its LOG BIOS.LOG is missing -- the table leaves a value to the profile, which only the LOG records
+exit 2

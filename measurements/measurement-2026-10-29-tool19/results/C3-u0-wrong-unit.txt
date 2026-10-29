@@ -1,0 +1,2 @@
+tosdiff: refusing BIOS.BIN: its LOG BIOS.LOG records unit 26 for u:0, the profile hatari-oracle disk (tosdump/profiles.tsv) names 18
+exit 2

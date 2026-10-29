@@ -1,0 +1,5 @@
+runner hatari-oracle, profile disk (tosdump/profiles.tsv sha256 b90e6687ad5254209e722d6622b3268bffe983fb894c642359ed731703b34e98)
+table names the unit token u:0: yes; a program path x:<path>: no
+D:\DISKUNIT.TXT 18 (the profile's physical unit of C:, for u:0), read back
+D:\PROGEXT.TXT PRG (the profile's program extension, for x:), read back
+LOG check (tosdiff --check-profile): profile check, BIOS.BIN: hatari-oracle disk (tosdump/profiles.tsv), u:0 = unit 18, as its LOG BIOS.LOG records

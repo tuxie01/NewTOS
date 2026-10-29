@@ -1,0 +1,53 @@
+command   cargo xtask tosdump bios tosdump/cases/bios-r2-phys.tsv --disk --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-r2-phys-disk.BIN --out measurements/measurement-2026-10-29-tool19/runs/newtos-phys --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool19/xtask
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    b71175ef2d4b1daf4287736bdd20a5a4e077d2d5
+dirty     8 path(s) in git status --porcelain
+   M tools/hatari-oracle.sh
+   M tools/xtask/src/tosdump.rs
+   M tosdump/host/Makefile
+   M tosdump/host/tosdiff.c
+   M tosdump/tests/test_tosdiff.sh
+  ?? measurements/measurement-2026-10-29-tool19/
+  ?? tosdump/host/mkprofiles.awk
+  ?? tosdump/profiles.tsv
+harness commit b71175ef2d4b1daf4287736bdd20a5a4e077d2d5
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-r2-phys.tsv sha256 f2a49911ee5191b98cd30304cebc0164bbba55cdfc9098d0d41abfae3cbcc35c
+table     names the unit token u:0: yes; a program path x:<path>: no
+profile   xtask-tosdump disk (tosdump/profiles.tsv sha256 b90e6687ad5254209e722d6622b3268bffe983fb894c642359ed731703b34e98): unit 26, program extension NAP
+target/   own (9 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (9 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 5184e87ee919480356b773b89c35a32f7ef0daea431ad7aa9d3ff3ac5c6eea47
+kernel ELF  sha256 b11e6d08c8420fc7c9364ea5341c877cb382872615d7d9c1bcf142d72c1e961c (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id b711
+DUMPBIOS.NAP sha256 050c6ee20786d32e7b7f458e1d8aca7bd4696adebbb5460a0f918c6e19f88c97
+test image built by tools/mktestdisk.sh NEWDESK.INF=<autorun D:\DUMPBIOS.NAP>
+test image sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+D:\DISKUNIT.TXT 26 (the profile's physical unit of C:, for u:0)
+D:\PROGEXT.TXT NAP (the profile's program extension, for x:)
+card.img.manifest: image_sha256 75ffd29b0006e312beac61282baec002b859ea0955ca2adf1fca554f1fdedd06
+card.img.manifest: optional_missing none
+test.img.manifest: image_sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+test.img.manifest: optional_missing none
+card      D:\DISKUNIT.TXT read back: as the profile names it
+card      D:\PROGEXT.TXT read back: as the profile names it
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool19/xtask/tosdump-46314/card.img sha256 75ffd29b0006e312beac61282baec002b859ea0955ca2adf1fca554f1fdedd06 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 37d0ade92b852a900c10c47855fc821f94f4e3939bb4b2e2b307778967f73a8c
+BIOS.BIN 3872 bytes, sha256 bbe8e986762af3c2d82dca523bc809abf03d0923c8a7528ef61f105058989628
+BIOS.LOG 273 bytes, sha256 2876e498fc0f12c400048a0ea8bbd1602936480dbcd994173327ff45e84ebd3a
+testpart: identical
+fsck_msdos -n testpart-before.img: exit 0
+fsck_msdos -n testpart-after.img: exit 0
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 63e53e72aa5a5693a5b7f7c8774e546e273fd563f3748838cef9845fbd9d731f
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 12 records of 320 bytes, build b711, case CRC 514944FD
+tosdiff --check-profile: exit 0 profile check, BIOS.BIN: xtask-tosdump disk (tosdump/profiles.tsv), u:0 = unit 26, as its LOG BIOS.LOG records
+tosdiff EMUTOS-1a7484ab-BIOS-r2-phys-disk.BIN vs NEWTOS.BIN: exit 1, 11 of 12 cases differ
+total     32 s
+result    run complete (differences above are findings, not failures)

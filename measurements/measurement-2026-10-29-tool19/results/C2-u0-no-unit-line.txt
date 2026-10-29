@@ -1,0 +1,2 @@
+tosdiff: refusing BIOS.BIN: the table names u:0 and its LOG BIOS.LOG records no unit -- the run's profile named none
+exit 2

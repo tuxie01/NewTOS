@@ -1,0 +1,2 @@
+the table names a program path x:<path>: profile falcontc names no unit and no program extension (no row "hatari-oracle falcontc" in tosdump/profiles.tsv) -- refused, there is no default
+exit 2

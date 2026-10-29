@@ -1,0 +1,16 @@
+DUMPBIOS build b711, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV: 12 cases, CRC 514944FD
+disk table: test drive C:, 0 preludes
+unit token u:0 = physical unit 18 (DISKUNIT.TXT, the run's profile)
+running 12 cases
+all 12 cases ran
+BIOS.BIN: 12 records, 3872 bytes
+before d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool19/test.img
+after  d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool19/D1/disk.img
+runner hatari-oracle, profile disk (tosdump/profiles.tsv sha256 b90e6687ad5254209e722d6622b3268bffe983fb894c642359ed731703b34e98)
+table names the unit token u:0: yes; a program path x:<path>: no
+D:\DISKUNIT.TXT 18 (the profile's physical unit of C:, for u:0), read back
+D:\PROGEXT.TXT PRG (the profile's program extension, for x:), read back
+LOG check (tosdiff --check-profile): profile check, BIOS.BIN: hatari-oracle disk (tosdump/profiles.tsv), u:0 = unit 18, as its LOG BIOS.LOG records
+exit 0

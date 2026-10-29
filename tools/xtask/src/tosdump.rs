@@ -35,10 +35,13 @@
 //!    `--disk`/`--testdisk`: the disk round of TOOL07 — C: is the test image
 //!    (built by `tools/mktestdisk.sh` with the autorun INF, or the given one),
 //!    the dumper and table on D: (`MKCARD_TESTDISK`), and `D:\DISKUNIT.TXT`
-//!    with [`NEWTOS_DISK_UNIT`], the profile's physical unit of C: for
-//!    DUMPBIOS' unit token `u:0`, and `D:\PROGEXT.TXT` with
-//!    [`NEWTOS_PROG_EXT`], the extension of the machine's programs for a
-//!    program path `x:<path>` (TOOL20); afterwards the test
+//!    and `D:\PROGEXT.TXT` from the row `xtask-tosdump disk` of
+//!    [`PROFILES_TSV`]: the profile's physical unit of C: for DUMPBIOS' unit
+//!    token `u:0`, and the extension of the machine's programs for a
+//!    program path `x:<path>` (TOOL20). Both are read back from the card
+//!    before the boot; a table that names `u:0` or `x:` is refused without
+//!    the disk round, and after the run its LOG must record the profile's
+//!    values (`tosdiff --check-profile`; TOOL19, no default); afterwards the test
 //!    partition of the card and of the booted clone are compared (raw, then
 //!    with the root directory's FAT time stamps zeroed) and `fsck_msdos -n`
 //!    runs on both.
@@ -135,20 +138,142 @@ pub struct Opts {
     pub time_limit: u64,
 }
 
-/// The physical unit of the test disk on NewTOS, what DUMPBIOS' unit token
-/// `u:0` passes (`RW_NOTRANSLATE`): the SD card is unit 26
-/// (`docs/api/bios/04-rwabs.md`, "Decisions", BIOS-STOR-002). The profile
-/// names it in `D:\DISKUNIT.TXT`, as `tools/hatari-oracle.sh` profile `disk`
-/// names the oracle's (18) — never a search at run time.
-pub const NEWTOS_DISK_UNIT: u16 = 26;
+/// The run profiles' one definition (TOOL19), relative to the harness tree:
+/// per runner and profile the physical unit of the test disk, what
+/// DUMPBIOS' unit token `u:0` passes (NewTOS' SD card: 26,
+/// `docs/api/bios/04-rwabs.md`, "Decisions"), and the extension of the
+/// machine's programs, what DUMPBIOS appends to a program path `x:<path>`
+/// (NewTOS: `NAP`; TOOL20). `tools/hatari-oracle.sh` reads the oracle's row
+/// from the same file, tosdiff compiles it in. Read at run time, never a
+/// copy here.
+pub const PROFILES_TSV: &str = "tosdump/profiles.tsv";
 
-/// The extension of a NewTOS program, what DUMPBIOS appends to a program
-/// path `x:<path>` (the `Pexec` cases of TOOL20): the profile names it in
-/// `D:\PROGEXT.TXT`, as `tools/hatari-oracle.sh` profile `disk` names the
-/// oracle's (`PRG`) — the program format is the machine's, the table names
-/// the path only (`docs/TOS-REFERENCE-DUMPER.md` section 6, "GEMDOS after
-/// a media change").
-pub const NEWTOS_PROG_EXT: &str = "NAP";
+/// This runner's name and its one profile in [`PROFILES_TSV`]: the disk
+/// round (`--disk`/`--testdisk`). A run without it has no profile values.
+pub const PROFILE_RUNNER: &str = "xtask-tosdump";
+pub const PROFILE_DISK: &str = "disk";
+
+/// One row of [`PROFILES_TSV`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Profile {
+    pub runner: String,
+    pub profile: String,
+    pub ptr_width: u16,
+    pub word_order: u16,
+    /// `D:\DISKUNIT.TXT`, for `u:0`.
+    pub unit: u16,
+    /// `D:\PROGEXT.TXT`, for `x:`.
+    pub ext: String,
+}
+
+impl Profile {
+    /// The bytes of `DISKUNIT.TXT` / `PROGEXT.TXT` as DUMPBIOS reads them.
+    pub fn unit_file(&self) -> Vec<u8> {
+        format!("{}\r\n", self.unit).into_bytes()
+    }
+    pub fn ext_file(&self) -> Vec<u8> {
+        format!("{}\r\n", self.ext).into_bytes()
+    }
+}
+
+/// Parse [`PROFILES_TSV`] as strictly as tosdiff's build does
+/// (`tosdump/host/mkprofiles.awk`): six tab-separated fields per row, a
+/// runner/profile pair once, a pointer width/word order once.
+pub fn parse_profiles(text: &str) -> Result<Vec<Profile>, String> {
+    let mut rows: Vec<Profile> = Vec::new();
+    for (i, raw) in text.lines().enumerate() {
+        let line = raw.trim_end_matches('\r');
+        if line.starts_with('#') || line.trim().is_empty() {
+            continue;
+        }
+        let bad = || format!("{PROFILES_TSV} line {}: not <runner> <profile> <4|8> <1|2> <unit 0..32767> <ext A-Z0-9, 1..3>", i + 1);
+        let f: Vec<&str> = line.split('\t').collect();
+        let name_ok = |s: &str| !s.is_empty() && s.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-');
+        if f.len() != 6 || !name_ok(f[0]) || !name_ok(f[1]) {
+            return Err(bad());
+        }
+        let ptr_width = match f[2] { "4" => 4, "8" => 8, _ => return Err(bad()) };
+        let word_order = match f[3] { "1" => 1, "2" => 2, _ => return Err(bad()) };
+        let unit = f[4]
+            .parse::<u16>()
+            .ok()
+            .filter(|&u| u <= 0x7FFF && f[4].bytes().all(|b| b.is_ascii_digit()))
+            .ok_or_else(bad)?;
+        let ext = f[5];
+        if ext.is_empty() || ext.len() > 3 || !ext.bytes().all(|b| b.is_ascii_uppercase() || b.is_ascii_digit()) {
+            return Err(bad());
+        }
+        if rows.iter().any(|r| r.runner == f[0] && r.profile == f[1]) {
+            return Err(format!("{PROFILES_TSV} line {}: {} {} twice", i + 1, f[0], f[1]));
+        }
+        if rows.iter().any(|r| r.ptr_width == ptr_width && r.word_order == word_order) {
+            return Err(format!("{PROFILES_TSV} line {}: pointer {ptr_width}, word order {word_order} twice", i + 1));
+        }
+        rows.push(Profile {
+            runner: f[0].into(),
+            profile: f[1].into(),
+            ptr_width,
+            word_order,
+            unit,
+            ext: ext.into(),
+        });
+    }
+    if rows.is_empty() {
+        return Err(format!("{PROFILES_TSV}: no profile"));
+    }
+    Ok(rows)
+}
+
+/// The row of `runner`/`profile`, if the definition has one.
+pub fn profile_row(rows: &[Profile], runner: &str, profile: &str) -> Option<Profile> {
+    rows.iter().find(|r| r.runner == runner && r.profile == profile).cloned()
+}
+
+/// What a case table leaves to the run's profile: (the unit token `u:0`, a
+/// program path `x:`). Read more broadly than the dumper's loader
+/// (`tosdump/core/cases.c`): any tab- or comma-separated field of a line
+/// that is not a comment, starting with `u:` / `x:` — so a table the loader
+/// takes as needing a value is never run without it.
+pub fn table_profile_needs(table: &[u8]) -> (bool, bool) {
+    let text = String::from_utf8_lossy(table);
+    let mut unit = false;
+    let mut ext = false;
+    for line in text.lines().filter(|l| !l.trim_start().starts_with('#')) {
+        for field in line.split(['\t', ',']).map(str::trim_start) {
+            unit |= field.starts_with("u:");
+            ext |= field.starts_with("x:");
+        }
+    }
+    (unit, ext)
+}
+
+/// The runner rule for a table that leaves a value to the profile (TOOL19):
+/// only a run with a profile row — the disk round — names one; without it
+/// the table is refused. No default.
+pub fn profile_refusal(needs: (bool, bool), row: Option<&Profile>) -> Option<String> {
+    if row.is_some() || needs == (false, false) {
+        return None;
+    }
+    let what = if needs.0 { "the unit token u:0" } else { "a program path x:<path>" };
+    Some(format!(
+        "the table names {what}: only the disk round names the unit and the program extension \
+         ({PROFILES_TSV}, {PROFILE_RUNNER} {PROFILE_DISK}) -- give --disk or --testdisk <img>; there is no default"
+    ))
+}
+
+/// A profile file as read back from the card (`None`: missing) against the
+/// profile's bytes.
+pub fn profile_file_check(name: &str, found: Option<&[u8]>, want: &[u8]) -> Result<(), String> {
+    match found {
+        None => Err(format!("D:\\{name} is missing on the card -- refused, there is no default")),
+        Some(b) if b != want => Err(format!(
+            "D:\\{name} on the card reads {:?}, the profile names {:?} -- refused",
+            String::from_utf8_lossy(b),
+            String::from_utf8_lossy(want)
+        )),
+        Some(_) => Ok(()),
+    }
+}
 
 /// Default time limit of the QEMU run, seconds (the per-run scripts waited
 /// 240 × 2 s).
@@ -812,6 +937,28 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
     if let Some(m) = destructive_refusal(destructive, &o.disk) {
         bad.push(m);
     }
+    // The profile values (TOOL19): the disk round's row, and a table that
+    // needs one is refused without it.
+    let profiles_path = harness.join(PROFILES_TSV);
+    let needs = fs::read(&o.table).map(|t| table_profile_needs(&t)).unwrap_or((false, false));
+    let mut row = None;
+    match fs::read_to_string(&profiles_path)
+        .map_err(|e| format!("{}: {e}", profiles_path.display()))
+        .and_then(|t| parse_profiles(&t))
+    {
+        Err(e) => bad.push(e),
+        Ok(rows) => {
+            if o.disk != Disk::None {
+                row = profile_row(&rows, PROFILE_RUNNER, PROFILE_DISK);
+                if row.is_none() {
+                    bad.push(format!("{PROFILES_TSV} has no row {PROFILE_RUNNER} {PROFILE_DISK}: the disk round names no unit"));
+                }
+            }
+            if let Some(m) = profile_refusal(needs, row.as_ref()) {
+                bad.push(m);
+            }
+        }
+    }
     if o.out.exists() && fs::read_dir(&o.out).map(|mut d| d.next().is_some()).unwrap_or(true) {
         bad.push(format!("--out {} exists and is not empty (runs are not overwritten)", o.out.display()));
     }
@@ -861,6 +1008,24 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
     rep.line(format!("table     {} sha256 {}", o.table.display(), sha256(&o.table)?));
     if destructive {
         rep.line("table     DESTRUCTIVE: runs on a fresh clone of the test image (the card is built from it for this run)");
+    }
+    let yn = |b: bool| if b { "yes" } else { "no" };
+    rep.line(format!(
+        "table     names the unit token u:0: {}; a program path x:<path>: {}",
+        yn(needs.0),
+        yn(needs.1)
+    ));
+    match &row {
+        Some(r) => rep.line(format!(
+            "profile   {} {} ({} sha256 {}): unit {}, program extension {}",
+            r.runner,
+            r.profile,
+            PROFILES_TSV,
+            sha256(&profiles_path)?,
+            r.unit,
+            r.ext
+        )),
+        None => rep.line("profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)"),
     }
     if let (true, Disk::Image(t)) = (destructive, &o.disk) {
         // A previous destructive run's image would not be fresh: its broken
@@ -981,14 +1146,15 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
     if let Some(t) = &testimg {
         rep.line(format!("test image sha256 {}", sha256(t)?));
         mk.env("MKCARD_TESTDISK", t);
+        let r = row.as_ref().ok_or("the disk round without its profile row")?;
         let unit = run_dir.join("DISKUNIT.TXT");
-        fs::write(&unit, format!("{NEWTOS_DISK_UNIT}\r\n")).map_err(|e| e.to_string())?;
+        fs::write(&unit, r.unit_file()).map_err(|e| e.to_string())?;
         mk.arg(format!("DISKUNIT.TXT={}", unit.display()));
-        rep.line(format!("D:\\DISKUNIT.TXT {NEWTOS_DISK_UNIT} (the profile's physical unit of C:, for u:0)"));
+        rep.line(format!("D:\\DISKUNIT.TXT {} (the profile's physical unit of C:, for u:0)", r.unit));
         let ext = run_dir.join("PROGEXT.TXT");
-        fs::write(&ext, format!("{NEWTOS_PROG_EXT}\r\n")).map_err(|e| e.to_string())?;
+        fs::write(&ext, r.ext_file()).map_err(|e| e.to_string())?;
         mk.arg(format!("PROGEXT.TXT={}", ext.display()));
-        rep.line(format!("D:\\PROGEXT.TXT {NEWTOS_PROG_EXT} (the profile's program extension, for x:)"));
+        rep.line(format!("D:\\PROGEXT.TXT {} (the profile's program extension, for x:)", r.ext));
     }
     let log = out.join("mkcard.log");
     require_ok(run_logged(mk, &log)?, "tools/mkcard.sh", &log)?;
@@ -1003,6 +1169,18 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
     }
     let parts = mbr_partitions(&read_sector0(&card)?).map_err(|e| format!("card: {e}"))?;
     let prog = if testimg.is_some() { parts[1] } else { parts[0] }.ok_or("card: program partition missing")?;
+    if let (Some(_), Some(r)) = (&testimg, &row) {
+        // Read back from the drive DUMPBIOS reads them from (TOOL19).
+        for (name, want) in [("DISKUNIT.TXT", r.unit_file()), ("PROGEXT.TXT", r.ext_file())] {
+            let back = run_dir.join(format!("readback-{name}"));
+            let found = if mcopy_out(&card, prog.start * 512, name, &back) { fs::read(&back).ok() } else { None };
+            if let Err(m) = profile_file_check(name, found.as_deref(), &want) {
+                rep.line(format!("card      {m}"));
+                return Err(format!("tosdump: {m}"));
+            }
+            rep.line(format!("card      D:\\{name} read back: as the profile names it"));
+        }
+    }
     let boot = run_dir.join("run.img");
     let st = Command::new("cp").arg("-c").arg(&card).arg(&boot).status().map_err(|e| e.to_string())?;
     if !st.success() {
@@ -1156,12 +1334,42 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
         if !v.status.success() {
             failures.push("tosdiff --validate refused the dump".into());
         }
+        if needs != (false, false) {
+            // The LOG must record the profile's values (TOOL19).
+            let c = Command::new(&tosdiff)
+                .arg("--check-profile")
+                .arg(&o.table)
+                .arg(&bin)
+                .output()
+                .map_err(|e| e.to_string())?;
+            let text = format!("{}{}", String::from_utf8_lossy(&c.stdout), String::from_utf8_lossy(&c.stderr));
+            fs::write(out.join("tosdiff-check-profile.txt"), &text).map_err(|e| e.to_string())?;
+            rep.line(format!(
+                "tosdiff --check-profile: exit {} {}",
+                c.status.code().unwrap_or(-1),
+                text.lines().next().unwrap_or("").trim()
+            ));
+            if !c.status.success() {
+                failures.push("tosdiff --check-profile refused the dump: its LOG does not record the profile's values".into());
+            }
+        }
         let cmpdir = out.join("cmp");
         fs::create_dir_all(&cmpdir).map_err(|e| e.to_string())?;
         fs::copy(&bin, cmpdir.join("NEWTOS.BIN")).map_err(|e| e.to_string())?;
+        // tosdiff reads each dump's LOG beside it for a table that leaves a
+        // value to the profile (TOOL19).
+        if logf.is_file() {
+            fs::copy(&logf, cmpdir.join("NEWTOS.LOG")).map_err(|e| e.to_string())?;
+        }
         for r in &references {
             let name = r.file_name().unwrap().to_string_lossy().into_owned();
             fs::copy(r, cmpdir.join(&name)).map_err(|e| e.to_string())?;
+            if let Some(stem) = name.strip_suffix(".BIN") {
+                let rlog = r.with_file_name(format!("{stem}.LOG"));
+                if rlog.is_file() {
+                    fs::copy(&rlog, cmpdir.join(format!("{stem}.LOG"))).map_err(|e| e.to_string())?;
+                }
+            }
             let d = Command::new(&tosdiff)
                 .current_dir(&cmpdir)
                 .arg(&o.table)
@@ -1518,5 +1726,85 @@ mod tests {
     fn lexical_normalisation() {
         assert_eq!(absolute(Path::new("/a/b"), Path::new("../c/./d")), Path::new("/a/c/d"));
         assert_eq!(absolute(Path::new("/a"), Path::new("/x/../y")), Path::new("/y"));
+    }
+
+    // ── the profile values (TOOL19) ──
+
+    fn repo_profiles() -> Vec<Profile> {
+        parse_profiles(&fs::read_to_string(repo().join(PROFILES_TSV)).unwrap()).unwrap()
+    }
+
+    #[test]
+    fn the_profile_definition_names_both_disk_rows() {
+        let rows = repo_profiles();
+        let n = profile_row(&rows, PROFILE_RUNNER, PROFILE_DISK).expect("xtask-tosdump disk");
+        assert_eq!((n.ptr_width, n.word_order, n.unit, n.ext.as_str()), (8, 2, 26, "NAP"));
+        assert_eq!(n.unit_file(), b"26\r\n");
+        assert_eq!(n.ext_file(), b"NAP\r\n");
+        let o = profile_row(&rows, "hatari-oracle", "disk").expect("hatari-oracle disk");
+        assert_eq!((o.ptr_width, o.word_order, o.unit, o.ext.as_str()), (4, 1, 18, "PRG"));
+        // no other runner/profile names a value: no default
+        assert_eq!(profile_row(&rows, PROFILE_RUNNER, "tt"), None);
+        assert_eq!(profile_row(&rows, "hatari-oracle", "falcontc"), None);
+    }
+
+    #[test]
+    fn a_malformed_profile_definition_is_refused() {
+        let row = |r: &str| format!("# c\n{r}\n");
+        for bad in [
+            "r\tp\t4\t1\t18",            // five fields
+            "r\tp\t4\t1\t40000\tPRG",    // unit out of range
+            "r\tp\t4\t1\t-1\tPRG",       // not a number
+            "r\tp\t4\t1\t18\tprg",       // lower case
+            "r\tp\t4\t1\t18\tPRGX",      // four characters
+            "r\tp\t4\t1\t18\t",          // no extension
+            "r\tp\t5\t1\t18\tPRG",       // pointer width
+            "r\tp\t4\t3\t18\tPRG",       // word order
+            "R\tp\t4\t1\t18\tPRG",       // runner name
+        ] {
+            assert!(parse_profiles(&row(bad)).is_err(), "{bad:?}");
+        }
+        assert!(parse_profiles("# only a comment\n").is_err());
+        let e = parse_profiles("a\tdisk\t4\t1\t18\tPRG\nb\tdisk\t4\t1\t26\tNAP\n").unwrap_err();
+        assert!(e.contains("pointer 4, word order 1 twice"), "{e}");
+        let e = parse_profiles("a\tdisk\t4\t1\t18\tPRG\na\tdisk\t8\t2\t26\tNAP\n").unwrap_err();
+        assert!(e.contains("a disk twice"), "{e}");
+        assert_eq!(parse_profiles("a\tdisk\t4\t1\t18\tPRG\r\n").unwrap()[0].ext, "PRG");
+    }
+
+    #[test]
+    fn what_a_table_leaves_to_the_profile() {
+        let cases = repo().join("tosdump/cases");
+        let read = |t: &str| table_profile_needs(&fs::read(cases.join(t)).unwrap());
+        assert_eq!(read("bios-r2-phys.tsv"), (true, false));
+        assert_eq!(read("gemdos-mc-fs22.tsv"), (false, true));
+        assert_eq!(read("gemdos-mc-fs20.tsv"), (false, false));
+        assert_eq!(read("bios-r1.tsv"), (false, false));
+        assert_eq!(read("bios-r2.tsv"), (false, false));
+        assert_eq!(table_profile_needs(b"# u:0 and x:C:\\P in a comment\n"), (false, false));
+        assert_eq!(table_profile_needs(b"13:4\tw:8,b:0,w:1,w:0,u:0,l:0\tEXACT\t1:2\tc\n"), (true, false));
+        assert_eq!(table_profile_needs(b"1:0x4B\tw:0,x:C:\\P,c:a,l:0\tEXACT\t-\tc\n"), (false, true));
+    }
+
+    #[test]
+    fn a_table_needing_a_profile_value_is_refused_without_the_disk_round() {
+        let rows = repo_profiles();
+        let disk = profile_row(&rows, PROFILE_RUNNER, PROFILE_DISK);
+        let m = profile_refusal((true, false), None).expect("u:0 without a row");
+        assert!(m.contains("u:0") && m.contains("no default"), "{m}");
+        let m = profile_refusal((false, true), None).expect("x: without a row");
+        assert!(m.contains("x:<path>"), "{m}");
+        assert_eq!(profile_refusal((true, true), disk.as_ref()), None);
+        assert_eq!(profile_refusal((false, false), None), None);
+    }
+
+    #[test]
+    fn a_profile_file_on_the_card_must_be_the_profiles() {
+        let m = profile_file_check("DISKUNIT.TXT", None, b"26\r\n").unwrap_err();
+        assert!(m.contains("missing"), "{m}");
+        let m = profile_file_check("DISKUNIT.TXT", Some(b"18\r\n"), b"26\r\n").unwrap_err();
+        assert!(m.contains("\"18\\r\\n\"") && m.contains("\"26\\r\\n\""), "{m}");
+        assert!(profile_file_check("PROGEXT.TXT", Some(b"NAP"), b"NAP\r\n").is_err());
+        assert!(profile_file_check("PROGEXT.TXT", Some(b"NAP\r\n"), b"NAP\r\n").is_ok());
     }
 }

@@ -1,0 +1,30 @@
+# tosdump/profiles.tsv -- the run profiles that name the two values a case
+# table leaves to the machine (TASK/TOOL19; docs/TOS-REFERENCE-DUMPER.md
+# section 6, "The profile values"):
+#
+#   unit  the physical unit of the test disk, what DUMPBIOS' unit token u:0
+#         passes; written as D:\DISKUNIT.TXT
+#   ext   the extension of the machine's programs, what DUMPBIOS appends to a
+#         program path x:<path>; written as D:\PROGEXT.TXT
+#
+# The one definition. tools/hatari-oracle.sh and cargo xtask tosdump write the
+# two files from their row and record them; tosdiff (compiled in as
+# build/profiles.h) checks a dump's LOG against the row of the machine that
+# wrote it (pointer width and word order of the dump header). Nobody writes
+# the files by hand. A runner/profile pair without a row names neither value:
+# a table that needs one is refused there -- there is no default.
+#
+# Values:
+#   18   EmuTOS' IDE master, 2 + 8*2 (references/emutos bios/disk.h:30), the
+#        test image in tools/hatari-oracle.sh profile disk
+#   26   NewTOS' SD card (docs/api/bios/04-rwabs.md, "Decisions")
+#   PRG  an m68k TOS program; NAP a native NewTOS GEM program
+#
+# Columns, tab separated: runner, its profile name, pointer width (bytes),
+# word order (1 = most significant WORD first, 2 = least significant first),
+# unit (0..32767), extension (1..3 characters A-Z, 0-9). Pointer width and
+# word order identify the row a dump belongs to: no two rows share them.
+#
+# runner	profile	ptr	order	unit	ext
+hatari-oracle	disk	4	1	18	PRG
+xtask-tosdump	disk	8	2	26	NAP

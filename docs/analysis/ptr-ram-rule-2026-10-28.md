@@ -69,7 +69,7 @@ liefern Adressen ohne Struktur.
 
 ## 4. Vorschlag (Option A, empfohlen): Untergrenze `0x400`
 
-Regel in `retclass_violation` (`tosdump/host/tosdiff.c:524@retclass_violation`),
+Regel in `retclass_violation` (`tosdump/host/tosdiff.c:768@retclass_violation`),
 neben der Null- und der Obergrenzenpruefung (`:531@TD_RET_PTR_RAM`):
 
 ```

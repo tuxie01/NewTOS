@@ -1,0 +1,2 @@
+profile check, BIOS.BIN: hatari-oracle disk (tosdump/profiles.tsv), x: = .PRG, as its LOG BIOS.LOG records
+exit 0

@@ -1,0 +1,2 @@
+tosdiff: refusing BIOS.BIN: its LOG BIOS.LOG records extension "NAP" for x:, the profile hatari-oracle disk (tosdump/profiles.tsv) names PRG
+exit 2

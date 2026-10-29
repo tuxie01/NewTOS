@@ -903,8 +903,8 @@ disk". It is the machine's — EmuTOS' IDE master is `2 + 8 × 2` = 18
 (`bios/disk.h:30`), NewTOS' SD card is 26 — so the **run's profile names it**
 and nothing is compiled in (the two builds still differ in byte order only,
 section 2.1): `tools/hatari-oracle.sh` profile `disk` puts `18` into
-`D:\DISKUNIT.TXT`, `cargo xtask tosdump --disk` puts `26` there
-(`NEWTOS_DISK_UNIT`). DUMPBIOS reads `DISKUNIT.TXT` from its current directory
+`D:\DISKUNIT.TXT`, `cargo xtask tosdump --disk` puts `26` there, both from
+their row of `tosdump/profiles.tsv` (below, "The profile values"). DUMPBIOS reads `DISKUNIT.TXT` from its current directory
 only for a table that names `u:0` — one decimal number 0..32767, an optional
 line end — and logs `unit token u:0 = physical unit <n> (DISKUNIT.TXT, the
 run's profile)`; without it the table is not run and no BIN is written
@@ -1114,7 +1114,8 @@ the pool -- never the address:
   `.<ext>`; without it the table is not run and no BIN is written
   (`TD_RUN_CALL_ERR_PROGEXT`). `tools/hatari-oracle.sh` profile `disk` puts
   `PRG` into `D:\PROGEXT.TXT`, `cargo xtask tosdump --disk`/`--testdisk`
-  puts `NAP` there (`NEWTOS_PROG_EXT`).
+  puts `NAP` there, both from their row of `tosdump/profiles.tsv`
+  ("The profile values", below).
 
 The text is printable ASCII without blanks and commas, 1..63 characters (a
 tail 1..124). **Tokens:** `t:<n>` is the value an earlier case returned --
@@ -1145,6 +1146,29 @@ tables), and the accessory loader and the AUTO folder, which run at boot and
 which no user program reaches. References
 `EMUTOS-1a7484ab-BIOS-mc-<fs20|fs22|paths>-disk`,
 `measurements/measurement-2026-10-29-tool20/RUNINFO.TXT`.
+
+### The profile values (added 2026-10-29, TOOL19)
+
+Two values a case table leaves to the machine -- the unit of `u:0`
+(`DISKUNIT.TXT`) and the program extension of `x:` (`PROGEXT.TXT`) -- have
+one definition, `tosdump/profiles.tsv`: per runner and profile the pointer
+width and word order of the machine, the unit and the extension
+(`hatari-oracle disk`: 4, 1, 18, `PRG`; `xtask-tosdump disk`: 8, 2, 26,
+`NAP`). A runner/profile pair without a row names neither value; **there is
+no default** anywhere.
+
+| Who | Writes / records | Refuses |
+|---|---|---|
+| `tools/hatari-oracle.sh` | both files from its row onto D:, read back; `<out-dir>/profile.txt` (row, sha256 of the definition, what the table needs, the values, the LOG check) | a table that names `u:0` or `x:` in a profile without a row (exit 2, before Hatari); a value that does not read back (exit 2); after the run a LOG that does not record the row's value (BIN not copied, exit 1) |
+| `cargo xtask tosdump` | both files from `xtask-tosdump disk` onto D: (`--disk`/`--testdisk` only), read back from the card before the boot; `tosdump-run.txt` (row, sha256, needs, values, read-back, LOG check) | a table that names `u:0` or `x:` without the disk round (nothing built); a file missing on the card or not the row's bytes (before QEMU); after the run a LOG that does not record the row's value (`tosdiff --check-profile`, run failed) |
+| DUMPBIOS | the value it read, in its LOG: `unit token u:0 = physical unit <n> (DISKUNIT.TXT, the run's profile)`, `program extension x:<path>.<EXT> (PROGEXT.TXT, the run's profile)` | a table that needs a file that is missing or malformed (no BIN) |
+| `tosdiff` | -- (the definition is compiled in: `tosdump/host/mkprofiles.awk` turns it into the header `profiles.h` of tosdiff's build directory; a malformed definition ends the build) | for a table that names `u:0` or `x:`, each dump whose LOG (`<name>.LOG` beside `<name>.BIN`) is missing, is not the run of the dump (pointer width, word order, table CRC), or does not record exactly once the value of the row of the dump's machine (header bytes 20-23; a format 2 dump or a machine without a row is refused) -- by `--check-profile CASES.TSV DUMP.BIN`, before a comparison and before a self-check (exit 2) |
+
+The dumper's LOG lines are unchanged by this: the pinned references
+`EMUTOS-1a7484ab-BIOS-r2-phys-disk` and `-BIOS-mc-fs22-disk` already record
+18 and `PRG` and pass the check as they are. `cargo xtask tosdump` copies
+each reference's LOG beside it into the run's comparison directory `cmp` (and the run's as `NEWTOS.LOG`).
+Measured: `measurements/measurement-2026-10-29-tool19/RUNINFO.TXT`.
 
 ### The cookie jar (added 2026-10-29, TOOL18)
 

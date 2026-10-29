@@ -1,0 +1,6 @@
+   Compiling xtask v0.1.0 (/Volumes/Daten/Development/PiRusTOS/tools/xtask)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.25s
+     Running `target/debug/xtask tosdump bios tosdump/cases/bios-r2-phys.tsv --out /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool19/B1 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tool19/xtask`
+xtask: tosdump: 1 problem(s), nothing run:
+  the table names the unit token u:0: only the disk round names the unit and the program extension (tosdump/profiles.tsv, xtask-tosdump disk) -- give --disk or --testdisk <img>; there is no default
+exit 1

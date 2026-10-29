@@ -21,6 +21,8 @@
 #                      "Decisions"; docs/TOS-REFERENCE-DUMPER.md section 6),
 #                      and the extension of its programs, PRG, in
 #                      D:\PROGEXT.TXT for a program path x:<path> (TASK/TOOL20)
+#                      -- both written from the row "hatari-oracle disk" of
+#                      tosdump/profiles.tsv, never by hand (TASK/TOOL19)
 #   dumper   DUMPVDI.PRG, DUMPAES.PRG, DUMPRAST.PRG or DUMPBIOS.PRG (m68k);
 #            or a probe, GCPROBE.PRG (tosdump/probes/gcprobe.c, TASK/FS20)
 #            or PXPROBE.PRG (tosdump/probes/pxprobe.c, TASK/FS22): no table
@@ -31,9 +33,10 @@
 #   table    the case table; staged as VDI.TSV / AES.TSV / RASTER.TSV /
 #            BIOS.TSV; - for a probe
 #   out-dir  receives hd/ (the GEMDOS drive: C:, in profile disk D:),
-#            <AREA>.BIN, <AREA>.LOG and hatari.log; must not exist yet. Profile
-#            disk adds disk.img (the clone after the run; the caller deletes
-#            it) and disk.sha256 (the image before and after the run)
+#            <AREA>.BIN, <AREA>.LOG, hatari.log and profile.txt (the profile
+#            values, below); must not exist yet. Profile disk adds disk.img
+#            (the clone after the run; the caller deletes it) and disk.sha256
+#            (the image before and after the run)
 #   rom      defaults to $ORACLE_ROM from tools/oracle/oracle.env
 #
 # A DESTRUCTIVE table ("!disk <drive> destructive", the disk round's closing
@@ -42,6 +45,16 @@
 # $HATARI_ORACLE_DISK for the run (out-dir must not exist, so the clone is
 # new), and only if that image's partition 1 passes fsck_msdos -n -- an image
 # a previous destructive run broke does not. Anything else is refused (exit 2).
+#
+# THE PROFILE VALUES (TASK/TOOL19). A table that names DUMPBIOS' unit token
+# u:0 or a program path x: leaves the unit / the program extension to the
+# run's profile. Their one definition is tosdump/profiles.tsv (runner
+# hatari-oracle); this script writes D:\DISKUNIT.TXT and D:\PROGEXT.TXT from
+# the profile's row, reads them back from the drive, and records them in
+# <out-dir>/profile.txt. A table that needs a value the profile has no row for
+# is refused before the run (exit 2) -- there is no default. After the run the
+# dumper's LOG must record the profile's value (tosdiff --check-profile);
+# otherwise the BIN is not copied to <out-dir> and the script exits 1.
 #
 # Hermetic on purpose: HOME points at an empty directory so Hatari cannot pick
 # up the user's own configuration, and every setting comes from
@@ -105,6 +118,28 @@ if [ "$DESTRUCTIVE" = 1 ]; then
         echo "destructive table: runs only in profile disk, on a fresh clone of the test image" >&2; exit 2; }
 fi
 
+# The profile values (header above). The definition is read as strictly as
+# tosdiff's build reads it (tosdump/host/mkprofiles.awk).
+PROFILES="$HERE/../tosdump/profiles.tsv"
+[ -f "$PROFILES" ] || { echo "profile definition not found: $PROFILES" >&2; exit 1; }
+awk -f "$HERE/../tosdump/host/mkprofiles.awk" "$PROFILES" > /dev/null ||
+    { echo "profile definition malformed: $PROFILES" >&2; exit 1; }
+PROW=$(awk -F '\t' -v p="$PROFILE" '!/^#/ && $1 == "hatari-oracle" && $2 == p { print $5 " " $6 }' "$PROFILES")
+P_UNIT=${PROW%% *}; P_EXT=${PROW#* }
+# Read more broadly than the dumper's loader: any argument or column that
+# starts with u: / x: on a line that is not a comment.
+NEED_UNIT=0; NEED_EXT=0
+if [ "$PROBE" = 0 ]; then
+    grep -Ev '^[[:space:]]*#' "$TABLE" | tr '\t,' '\n\n' | grep -Eq '^[[:space:]]*u:' && NEED_UNIT=1
+    grep -Ev '^[[:space:]]*#' "$TABLE" | tr '\t,' '\n\n' | grep -Eq '^[[:space:]]*x:' && NEED_EXT=1
+fi
+if [ -z "$PROW" ] && { [ "$NEED_UNIT" = 1 ] || [ "$NEED_EXT" = 1 ]; }; then
+    [ "$NEED_UNIT" = 1 ] && what="the unit token u:0" || what="a program path x:<path>"
+    echo "the table names $what: profile $PROFILE names no unit and no program extension" \
+         "(no row \"hatari-oracle $PROFILE\" in tosdump/profiles.tsv) -- refused, there is no default" >&2
+    exit 2
+fi
+
 DRIVE=C
 case $PROFILE in
     tt)       MACHINE="--machine tt --tos-res ttmed --monitor vga" ;;
@@ -155,10 +190,25 @@ if [ "$PROFILE" = disk ]; then
         echo "destructive table: fresh clone, partition 1 clean (fsck_msdos -n)" >> "$OUT/disk.sha256"
     fi
     set -- --ide-master "$OUT/disk.img" --ide-swap 0=off
-    # the profile's physical unit of C:, for a u:0 case (header above)
-    printf '18\r\n' > "$OUT/hd/DISKUNIT.TXT"
-    # the profile's program extension, for an x: case (TOOL20)
-    printf 'PRG\r\n' > "$OUT/hd/PROGEXT.TXT"
+fi
+# The profile's values, from its row (header above): the physical unit of C:
+# for a u:0 case, the program extension for an x: case (TOOL07, TOOL20).
+{
+    echo "runner hatari-oracle, profile $PROFILE (tosdump/profiles.tsv sha256 $(shasum -a 256 "$PROFILES" | cut -d' ' -f1))"
+    echo "table names the unit token u:0: $([ "$NEED_UNIT" = 1 ] && echo yes || echo no); a program path x:<path>: $([ "$NEED_EXT" = 1 ] && echo yes || echo no)"
+} > "$OUT/profile.txt"
+if [ -n "$PROW" ]; then
+    printf '%s\r\n' "$P_UNIT" > "$OUT/hd/DISKUNIT.TXT"
+    printf '%s\r\n' "$P_EXT" > "$OUT/hd/PROGEXT.TXT"
+    # read back from the drive the dumper reads them from
+    printf '%s\r\n' "$P_UNIT" | cmp -s - "$OUT/hd/DISKUNIT.TXT" &&
+    printf '%s\r\n' "$P_EXT" | cmp -s - "$OUT/hd/PROGEXT.TXT" || {
+        echo "$DRIVE:\\DISKUNIT.TXT / PROGEXT.TXT do not read back as the profile's $P_UNIT / $P_EXT -- refused" >&2
+        rm -rf "$OUT"; exit 2; }
+    echo "$DRIVE:\\DISKUNIT.TXT $P_UNIT (the profile's physical unit of C:, for u:0), read back" >> "$OUT/profile.txt"
+    echo "$DRIVE:\\PROGEXT.TXT $P_EXT (the profile's program extension, for x:), read back" >> "$OUT/profile.txt"
+else
+    echo "no row: no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)" >> "$OUT/profile.txt"
 fi
 
 # shellcheck disable=SC2086  # MACHINE is a word list by design
@@ -191,7 +241,24 @@ fi
 
 [ -s "$OUT/hd/$AREA.LOG" ] || { echo "no $AREA.LOG -- run failed, see $OUT/hatari.log" >&2; exit 1; }
 cp "$OUT/hd/$AREA.LOG" "$OUT/$AREA.LOG"
-[ -f "$OUT/hd/$AREA.BIN" ] && cp "$OUT/hd/$AREA.BIN" "$OUT/$AREA.BIN"
+# The LOG must record the profile's value (header above, TOOL19); a dump
+# whose LOG does not is not handed out.
+REFUSED=0
+if [ -f "$OUT/hd/$AREA.BIN" ] && { [ "$NEED_UNIT" = 1 ] || [ "$NEED_EXT" = 1 ]; }; then
+    make -s -C "$HERE/../tosdump/host" build/tosdiff > "$OUT/make-tosdiff.log" 2>&1 ||
+        { echo "make tosdiff failed, see $OUT/make-tosdiff.log" >&2; exit 1; }
+    if "$HERE/../tosdump/host/build/tosdiff" --check-profile "$TABLE" "$OUT/hd/$AREA.BIN" \
+           > "$OUT/profile-check.txt" 2>&1; then
+        echo "LOG check (tosdiff --check-profile): $(cat "$OUT/profile-check.txt")" >> "$OUT/profile.txt"
+    else
+        echo "LOG check (tosdiff --check-profile): REFUSED, $AREA.BIN not copied: $(cat "$OUT/profile-check.txt")" >> "$OUT/profile.txt"
+        REFUSED=1
+    fi
+    rm -f "$OUT/profile-check.txt" "$OUT/make-tosdiff.log"
+fi
+[ "$REFUSED" = 0 ] && [ -f "$OUT/hd/$AREA.BIN" ] && cp "$OUT/hd/$AREA.BIN" "$OUT/$AREA.BIN"
 rm -rf "$OUT/home"
 cat "$OUT/$AREA.LOG"
 [ "$PROFILE" != disk ] || cat "$OUT/disk.sha256"
+cat "$OUT/profile.txt"
+[ "$REFUSED" = 0 ] || { echo "the dumper's LOG does not record the profile's value -- refused" >&2; exit 1; }

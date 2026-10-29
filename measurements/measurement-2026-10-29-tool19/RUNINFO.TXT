@@ -1,0 +1,87 @@
+measurement-2026-10-29-tool19 -- the profile values DISKUNIT.TXT / PROGEXT.TXT: refused when
+missing or not the profile's, recorded when they are (TASK/TOOL19)
+
+WHAT
+  TASK/TOOL19, user conditions 2026-10-28 for D:\DISKUNIT.TXT (and, per the lead, the same for
+  TOOL20's D:\PROGEXT.TXT): (a) always written from the profile definition, never by hand;
+  (b) the value recorded in RUNINFO/manifest of both runners and in the dumper LOG; (c) the
+  runner refuses a missing or non-matching value, tosdiff compares only runs whose recorded
+  value is their profile's -- no default anywhere.
+
+WHY
+  The unit token u:0 and the program path x: are the two places where a case table leaves a
+  value to the machine. Before this run the values stood in two places of their own
+  (tools/hatari-oracle.sh: printf '18', 'PRG'; tools/xtask/src/tosdump.rs: two constants), and
+  only the dumper refused a missing file; nothing checked a recorded value against the profile.
+
+HOW (tree b71175ef + the uncommitted TOOL19 change; method/refusals.sh <scratch> <run-dir>)
+  The one definition: tosdump/profiles.tsv (sha256 b90e6687ad5254209e722d6622b3268bffe983fb894c642359ed731703b34e98)
+      hatari-oracle  disk  ptr 4  order 1  unit 18  PRG
+      xtask-tosdump  disk  ptr 8  order 2  unit 26  NAP
+  read by tools/hatari-oracle.sh (awk, checked with tosdump/host/mkprofiles.awk first), by
+  cargo xtask tosdump (at run time, from the harness tree) and compiled into tosdiff
+  (tosdump/host/mkprofiles.awk -> profiles.h; malformed = build error).
+  A  tools/hatari-oracle.sh, before Hatari: bios-r2-phys.tsv (u:0) in profile tt;
+     method/x-plain.tsv (x:, not destructive, a refusal input only) in profile falcontc.
+     A1/A2 were re-run by hand after the run with the same commands, because the x: message
+     was reworded ("x::" -> "x:<path>:") in tools/hatari-oracle.sh; results/ holds the re-run.
+  B  cargo xtask tosdump without --disk: bios-r2-phys.tsv (u:0), gemdos-mc-fs22.tsv (x:).
+  C  tosdiff on copies (scratch) of the pinned EMUTOS-1a7484ab-BIOS-r2-phys-disk and
+     -BIOS-mc-fs22-disk dumps with their LOG removed or edited.
+  D  one run per side of bios-r2-phys.tsv with the profile:
+     D1 tools/hatari-oracle.sh disk, DUMPBIOS.PRG built at b711 (inputs.sha256), test image
+        tools/mktestdisk.sh (test.img.manifest; image_sha256 d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37,
+        unchanged after the run: runs/oracle-phys/disk.sha256)
+     D2 cargo xtask tosdump bios bios-r2-phys.tsv --disk --reference <pinned> (QEMU raspi4b),
+        runs/newtos-phys/ (tosdump-run.txt, card.img.manifest, test.img.manifest)
+  Manifests, optional_missing verbatim:
+     test.img.manifest                    optional_missing none
+     runs/newtos-phys/card.img.manifest   optional_missing none
+     runs/newtos-phys/test.img.manifest   optional_missing none
+  Card image (D2) sha256 75ffd29b0006e312beac61282baec002b859ea0955ca2adf1fca554f1fdedd06, after the run
+  (booted APFS clone) 37d0ade92b852a900c10c47855fc821f94f4e3939bb4b2e2b307778967f73a8c (tosdump-run.txt).
+  Images were deleted after the run.
+
+RESULT (results/<name>.txt: output + "exit <n>")
+  Refused -- missing (the profile names no value):
+    A1 oracle, profile tt, u:0 table          exit 2  "profile tt names no unit and no program extension
+                                                       (no row "hatari-oracle tt" ...) -- refused, there is no default"
+    A2 oracle, profile falcontc, x: table     exit 2  same, "a program path x:<path>"
+       no out-dir was created by either.
+    B1 xtask, u:0 table, no --disk            exit 1  "1 problem(s), nothing run: the table names the unit token u:0:
+                                                       only the disk round names ... there is no default"
+    B2 xtask, x: table, no --disk             exit 1  2 problems: destructive, and the x: refusal
+    C1 tosdiff --check-profile, LOG missing   exit 2  "its LOG BIOS.LOG is missing"
+    C2 LOG without the unit line              exit 2  "records no unit -- the run's profile named none"
+    C8 LOG without the extension line         exit 2  "records no program extension"
+    C5 comparison, one LOG missing            exit 2
+  Refused -- not the profile's value:
+    C3 unit 26 in an oracle (m68k) LOG        exit 2  "records unit 26 for u:0, the profile hatari-oracle disk ... names 18"
+    C4 the comparison with that dump          exit 2
+    C7 extension NAP in an oracle LOG         exit 2  "records extension "NAP" for x:, ... names PRG"
+    C9 the self-check of that dump            exit 2
+    (host tests, tosdump/tests/test_tosdiff.sh, add: an AArch64 dump recording 18, a LOG of
+    another machine or table CRC, a machine without a row, a value recorded twice, and a
+    malformed profiles.tsv in five ways -- all refused.)
+  Accepted and recorded:
+    C0/C6 the pinned references as they are   exit 0  unit 18 / .PRG, as their LOGs record
+    D1 oracle profile disk                    exit 0  profile.txt: row, definition sha256, needs (u:0 yes,
+                                                       x: no), D:\DISKUNIT.TXT 18 and D:\PROGEXT.TXT PRG read back,
+                                                       LOG check accepted; LOG "unit token u:0 = physical unit 18"
+    D1b BIN equal to the pinned reference except the build id (header bytes 12-15, b711 vs
+        99ad); LOG equal except the build line (diff exit 1 = that one line).
+        BINs are gitignored: oracle BIOS.BIN sha256 31e90553898ec27ed7b9983dff89e94513d5d99af04fa37e2a17cc65c2b1940c,
+        NewTOS BIOS.BIN sha256 bbe8e986762af3c2d82dca523bc809abf03d0923c8a7528ef61f105058989628.
+    D2 xtask --disk                           exit 0  tosdump-run.txt: "profile xtask-tosdump disk ...: unit 26,
+                                                       program extension NAP", both files "read back: as the profile
+                                                       names it", "tosdiff --check-profile: exit 0 ... u:0 = unit 26";
+                                                       cmp/ holds NEWTOS.LOG and the reference's LOG; the comparison
+                                                       checked both sides (18 / 26) and reports 11 of 12 cases
+                                                       differ -- the same count as every earlier NewTOS run of this
+                                                       table (measurements/measurement-2026-10-28-tool07b), an open
+                                                       finding, not this change.
+  (a) no hand-written copy: git grep over measurements/*/method and tosdump/cases finds no
+      file that writes DISKUNIT.TXT or PROGEXT.TXT or a literal unit/extension for u:0/x:
+      (TOOL07b and TOOL20 methods only name them in comments; the Pexec guard admits x: only).
+  Reference impact: none. The dumper's LOG format is unchanged; the two pinned references
+  that need a value pass the check as committed (selfcheck 40 references green).

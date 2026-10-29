@@ -1,0 +1,2 @@
+tosdiff: refusing BIOS.BIN: the table names x: and its LOG BIOS.LOG records no program extension -- the run's profile named none
+exit 2
