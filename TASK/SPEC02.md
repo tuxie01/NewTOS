@@ -8,6 +8,10 @@ Status: **OFFEN** · Prioritaet: **P3** · Typ: Researcher (Doku) — Fund aus [
 unbeantworteten Funktionen sind seit XBIOS01 und BIOS15 nicht nachgezogen;
 XBIOS02 hat nur die Zeile 0x18 berichtigt.
 
+Dazu veraltete Aussagen (Funde aus BIOS04/BIOS10): `docs/HARDWARE-PROFILE.md`
+(IKBD/AUX/MIDI-Zustand, „`Kbshift` trap not exposed“), `docs/api/bios/_state.md`
+(„`Kbshift` trap not exposed“).
+
 ## Arbeit
 
 Jede Zeile gegen `tos-api/src/xbios/mod.rs` (`dispatch`) und die Quittungen

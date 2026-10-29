@@ -58,7 +58,7 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   Developer, einer zur Zeit:
   die S2-Audit-Tickets [XBIOS02](../TASK/XBIOS02.md) (erledigt 2026-10-29, `7bc047a6`),
   [BIOS04](../TASK/BIOS04.md) (erledigt 2026-10-29, Commit der Quittung) →
-  [FS23](../TASK/FS23.md) (erledigt 2026-10-29, Commit der Quittung), [FS24](../TASK/FS24.md) (Vorschlag zuerst) →
+  [FS23](../TASK/FS23.md) (erledigt 2026-10-29, Commit der Quittung), [FS24](../TASK/FS24.md) (Option B, laeuft) →
   die uebrigen Audit-Tickets [BIOS07](../TASK/BIOS07.md) (erledigt 2026-10-29, Commit der Quittung),
   BIOS08–BIOS14 ([BIOS10](../TASK/BIOS10.md) erledigt 2026-10-29, Commit der Quittung), XBIOS04–XBIOS14 (BIOS05 und XBIOS03
   sind ACCEPTED nach ADR-031, XBIOS10 nach ARCH05) →
@@ -69,7 +69,7 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   ~3 s auf der Pi, erst messen) → [FS25](../TASK/FS25.md) (Messung),
   [PROC07](../TASK/PROC07.md), [COOK02](../TASK/COOK02.md),
   [TOOL22](../TASK/TOOL22.md), [XBIOS19](../TASK/XBIOS19.md), [TOOL23](../TASK/TOOL23.md),
-  [SPEC02](../TASK/SPEC02.md), [TOOL24](../TASK/TOOL24.md), [FS27](../TASK/FS27.md), [TOOL25](../TASK/TOOL25.md) (P3); [BIOS16](../TASK/BIOS16.md) (P2, Entscheidung beim Anwender); [SDK02](../TASK/SDK02.md), [SDK06](../TASK/SDK06.md)
+  [SPEC02](../TASK/SPEC02.md), [TOOL24](../TASK/TOOL24.md), [FS27](../TASK/FS27.md), [TOOL25](../TASK/TOOL25.md) (P3); [BIOS16](../TASK/BIOS16.md) (P2, Entscheidung beim Anwender); [A126](../TASK/A126.md) (P2), [KEYS04](../TASK/KEYS04.md), [INPUT03](../TASK/INPUT03.md) (P3); [SDK02](../TASK/SDK02.md), [SDK06](../TASK/SDK06.md)
   (P3) bei Gelegenheit. Zurueckgestellt (Anwender 2026-10-29):
   [DOOM01](../TASK/DOOM01.md) (DOOM-Freeze im Menue, nur auf der Pi).
   Daneben ein Researcher zur Zeit, ohne Produktaenderung: — (frei).
