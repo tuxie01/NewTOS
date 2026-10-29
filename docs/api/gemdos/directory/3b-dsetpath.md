@@ -56,8 +56,15 @@ updated. Crucially, a drive prefix changes only *that drive's* curdir — it doe
 
 It resolves the path with `findit(p, &s, 1)` (mode 1 = must be a directory);
 failure returns `EPTHNF`. (Because `findit`→`dcrack`→`ckdrv(TRUE)` runs, an
-invalid or unmounted drive prefix, or a media change, is caught here and also
-surfaces as `EPTHNF`.) On success it registers the resolved DND in the global
+invalid or unmounted drive prefix is caught here and also surfaces as `EPTHNF`.
+`ckdrv` asks `Mediach` only for drives in `drvrem` (removable units,
+`bdos/fsdrive.c:106-114`, `bios/disk.c:346-347`); for a fixed disk a pending
+media change is met only when `findit` has to read a directory
+(`dirscan`→`scan`→`getrec`→`getbcb`, `bdos/fsdir.c:1462,1482,1550`,
+`bdos/fsbuf.c:177-188`). A path whose every element is already a cached DND
+child (`bdos/fsdir.c:1455-1473`) touches no disk: `Dsetpath` then succeeds
+without meeting the change, `Mediach` stays 2 — measured, `gemdos-mc-paths`
+case S04, TASK/FS24.) On success it registers the resolved DND in the global
 `dirtbl[]` via `incr_curdir_usage`, which either finds an existing slot pointing
 at the same DND (and bumps its use count) or allocates a free slot. If
 `dirtbl[]` is full, `incr_curdir_usage` returns `EINTRN` and `xchdir` translates
@@ -113,8 +120,11 @@ per-process, per-drive, as an index into the shared reference-counted `dirtbl[]`
 
 ### Side effects on hardware
 
-- Reads directory sectors during `findit` path resolution; a removable-media
-  change detected by `ckdrv` can trigger a re-login.
+- Reads directory sectors during `findit` path resolution only for path
+  elements not yet cached as DND children (`bdos/fsdir.c:1455-1485`); a media
+  change is met there (fixed disk) or in `ckdrv` (removable drive,
+  `bdos/fsdrive.c:106-114`) and triggers the re-login and a restart of the call
+  (`bdos/bdosmain.c:449-487`).
 
 ---
 
