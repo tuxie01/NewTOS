@@ -8,13 +8,14 @@ onto NewTOS. Generated, queried, never drawn by hand.
 |---|---|---|
 | `docs/analysis/deps/edges.tsv` | nodes (`def` rows) and edges | `tools/deps/gen-deps.py` |
 | `docs/analysis/deps/layers.md` | counts, layer matrix, tables, traps, vector slots, everything not resolved | `tools/deps/gen-deps.py` |
-| `docs/analysis/deps/mapping.tsv` | EmuTOS function → NewTOS function (n:m), `bios/` + `bdos/` | by hand, checked |
+| `docs/analysis/deps/mapping.tsv` | EmuTOS function → NewTOS function (n:m) and its class, `bios/` + `bdos/` | by hand, checked |
 
 ```
 tools/deps/gen-deps.py            # rewrite edges.tsv and layers.md
 tools/deps/gen-deps.py --check    # regenerate in a temp dir, compare byte for byte
-cargo xtask deps <fn> --down|--up [--kinds k,..|+k,..|all] [--depth N]
+cargo xtask deps <fn> --down|--up [--kinds k,..|+k,..|all] [--depth N] [--layers l,..]
 cargo xtask deps --check-mapping  # what the mapping test checks, as a report
+cargo xtask deps --coverage       # mapped/design/unmapped per layer
 ```
 
 `--down` lists what `<fn>` needs to be right first, `--up` who is affected
@@ -24,6 +25,8 @@ inside the set (the trap entries and vector calls crossed). Default kinds
 are `direct,table,asm,layer,vector`; `callback` and `data` are opt-in
 (`--kinds +data`): both connect nearly everything — the trap handlers are
 installed by boot code, and `run` is read by hundreds of functions.
+Each function also carries its class (below), and the report ends with the
+coverage of the set and its verdict (see "Coverage and the ratchet").
 
 ## Inputs and reproducibility
 
@@ -280,15 +283,65 @@ Misses and over-reach:
 ## The mapping (`mapping.tsv`)
 
 One row per EmuTOS function × NewTOS function: `emutos_fn emutos_file
-newtos_file newtos_fn note`. `-` `-` plus a note says there is no NewTOS
-counterpart and why. Every row is a reading of both sources — the NewTOS doc
-comment that cites the EmuTOS function, or the code — not a name match. A
-NewTOS function may sit anywhere under `tos-api/src/` or `kernel/src/`
-(the VT52 console is `tos-api/src/vdi/escape.rs`, XBIOS `tos-api/src/xbios/`).
+newtos_file newtos_fn class note`. Every row is a reading of both sources —
+the NewTOS doc comment that cites the EmuTOS function, or the code — not a
+name match. A NewTOS function may sit anywhere under `tos-api/src/` or
+`kernel/src/` (the VT52 console is `tos-api/src/vdi/escape.rs`, XBIOS
+`tos-api/src/xbios/`).
+
+### Classes (TOOL17)
+
+| `class` | newtos columns | meaning |
+|---|---|---|
+| `mapped` | file and `fn` | the counterpart |
+| `design:<evidence>` | `-` `-` | no counterpart on purpose; the note says why |
+| `unmapped` | `-` `-` | no counterpart yet, or none found; the note says what is known |
+
+`<evidence>` is one of:
+
+- `ADR-NNN` — an ADR of `docs/MEMORY.md` that decides it (ADR-017 no
+  runtime resolution change, ADR-030 no Line-A, ADR-031 hooks not served,
+  ADR-012 cookies of absent hardware);
+- `hardware:<device>` — the function drives, probes or sets up Atari
+  hardware the Pi does not have (`scsi`, `floppy`, `dsp56001`,
+  `video-shifter`, `m68k-cpu`, …; lowercase, `a-z 0-9 -`; CLAUDE.md
+  non-goals: no hardware emulation). A TOS API entry (a trap-table slot)
+  is never `hardware:` by itself: the call exists even where the device
+  does not, so a slot without counterpart is `unmapped` until an ADR
+  decides it; so are software helpers that serve only such a slot (the DSP
+  LOD loader);
+- `source:<path>` — another named reason, stated in the repo file
+  `<path>`.
+
+Everything without evidence is `unmapped`, including "no NewTOS function
+found" and counterparts that exist in NewTOS but have no row yet (the AUX
+serial path, the boot sequence). `cargo xtask deps --coverage` lists the
+design rows by evidence.
+
+### Coverage and the ratchet
+
+A definition (`fn` + file, one `def` row) takes the class of its rows:
+`unmapped` if any row is, else `mapped` if any row is, else `design`. A
+definition without a row is `unmapped`: the layers the mapping does not cover
+yet (`vdi`, `aes`, `desk`, `include`) count as unmapped, and so does `ext`
+(no `def` row) inside a query's set. `--coverage` prints the three counts
+and shares per layer.
+
+A `--up`/`--down` report prints the same table for its set, then the
+**touched layers** — the layers of `<fn>`, or the list given with `--layers`
+— and every unmapped function of those layers in the set. The set is
+**complete** only if that list is empty. Ratchet (CLAUDE.md "Testing"):
+every fix adds the rows of the functions it touches; a retest set that is
+not complete names its unmapped functions in the ticket.
+
+### Checks
 
 `cargo xtask test` (`deps::tests::mapping_rows_exist_on_both_sides`) checks:
 the EmuTOS function is a `def` row of `emutos_file`; the NewTOS file exists
 and defines `fn <newtos_fn>`; a `-` row has a reason; every `bios/` and
-`bdos/` function of `edges.tsv` has a row. Regenerating `edges.tsv` after a
-pin move therefore turns the mapping red where it no longer fits — fix the
-rows by reading, `cargo xtask deps --check-mapping` lists them.
+`bdos/` function of `edges.tsv` has a row; the class parses, `mapped` names a
+NewTOS function and `design`/`unmapped` do not, an `ADR-NNN` is a
+`## ADR-NNN:` heading of `docs/MEMORY.md`, a `source:` path exists.
+Regenerating `edges.tsv` after a pin move therefore turns the mapping red
+where it no longer fits — fix the rows by reading, `cargo xtask deps
+--check-mapping` lists them.

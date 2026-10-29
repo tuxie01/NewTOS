@@ -11,8 +11,20 @@
 //!   `detail` = layer, `site` = definition), every other kind an edge.
 //! - [`MAPPING_FILE`], hand-curated: EmuTOS function → NewTOS function, n:m,
 //!   for the functions of EmuTOS `bios/` and `bdos/`. Rows
-//!   `emutos_fn emutos_file newtos_file newtos_fn note`; `-` `-` plus a note
-//!   says there is no counterpart.
+//!   `emutos_fn emutos_file newtos_file newtos_fn class note`; `-` `-`
+//!   says there is no counterpart, the [`Class`] says whether by design
+//!   (with evidence) or not yet (TOOL17).
+//!
+//! # Coverage
+//!
+//! Every EmuTOS definition (`fn` + file, a `def` row) has a class: from its
+//! mapping rows ([`def_class`]), `unmapped` without a row — so the layers
+//! the mapping does not cover yet (`vdi`, `aes`, `desk`, `include`) and
+//! `ext` (no `def` row) count as unmapped. `--coverage` prints the shares
+//! per layer; every `--up`/`--down` report prints them for its set, lists
+//! the unmapped functions of the touched layers (the root's layers, or
+//! `--layers`), and calls the set complete only if there are none (the
+//! ratchet rule, CLAUDE.md "Testing").
 //!
 //! # Direction
 //!
@@ -73,7 +85,84 @@ pub struct MapRow {
     pub emutos_file: String,
     pub newtos_file: String,
     pub newtos_fn: String,
+    /// The `class` column, as written; [`parse_class`] reads it.
+    pub class: String,
     pub note: String,
+}
+
+/// Why a function has no counterpart on purpose (the part after `design:`).
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Evidence {
+    /// `ADR-NNN`: an ADR of `docs/MEMORY.md`.
+    Adr(u16),
+    /// `hardware:<device>`: Atari hardware the Pi does not have.
+    Hardware(String),
+    /// `source:<path>`: another named reason, stated in a repo file.
+    Source(String),
+}
+
+/// The class of a mapping row (TOOL17).
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Class {
+    Mapped,
+    Design(Evidence),
+    Unmapped,
+}
+
+/// The class of a definition, for counting: the evidence dropped.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Cls {
+    Mapped,
+    Design,
+    Unmapped,
+}
+
+impl Cls {
+    pub fn name(self) -> &'static str {
+        match self {
+            Cls::Mapped => "mapped",
+            Cls::Design => "design",
+            Cls::Unmapped => "unmapped",
+        }
+    }
+}
+
+/// Read a `class` cell: `mapped`, `unmapped`, `design:ADR-NNN`,
+/// `design:hardware:<device>` (device: lowercase letters, digits, `-`) or
+/// `design:source:<path>`. Whether the ADR or the path exists is
+/// [`check_mapping`]'s business.
+pub fn parse_class(s: &str) -> Result<Class, String> {
+    match s {
+        "mapped" => return Ok(Class::Mapped),
+        "unmapped" => return Ok(Class::Unmapped),
+        _ => {}
+    }
+    let ev = s
+        .strip_prefix("design:")
+        .ok_or_else(|| format!("class `{s}`: want mapped, unmapped or design:<evidence>"))?;
+    if let Some(n) = ev.strip_prefix("ADR-") {
+        if n.len() == 3 && n.bytes().all(|b| b.is_ascii_digit()) {
+            return Ok(Class::Design(Evidence::Adr(n.parse().unwrap())));
+        }
+        return Err(format!("class `{s}`: want ADR-NNN, three digits"));
+    }
+    if let Some(d) = ev.strip_prefix("hardware:") {
+        let ok = !d.is_empty()
+            && d.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-');
+        return if ok {
+            Ok(Class::Design(Evidence::Hardware(d.into())))
+        } else {
+            Err(format!("class `{s}`: the device is lowercase letters, digits and `-`"))
+        };
+    }
+    if let Some(p) = ev.strip_prefix("source:") {
+        return if p.is_empty() {
+            Err(format!("class `{s}`: source needs a path"))
+        } else {
+            Ok(Class::Design(Evidence::Source(p.into())))
+        };
+    }
+    Err(format!("class `{s}`: evidence is ADR-NNN, hardware:<device> or source:<path>"))
 }
 
 pub fn parse_edges(text: &str) -> Result<Graph, String> {
@@ -113,8 +202,8 @@ pub fn parse_mapping(text: &str) -> Result<Vec<MapRow>, String> {
             continue;
         }
         let f: Vec<&str> = line.split('\t').collect();
-        if f.len() != 5 {
-            return Err(format!("{MAPPING_FILE}:{}: {} columns, want 5", n + 1, f.len()));
+        if f.len() != 6 {
+            return Err(format!("{MAPPING_FILE}:{}: {} columns, want 6", n + 1, f.len()));
         }
         rows.push(MapRow {
             line: n + 1,
@@ -122,7 +211,8 @@ pub fn parse_mapping(text: &str) -> Result<Vec<MapRow>, String> {
             emutos_file: f[1].into(),
             newtos_file: f[2].into(),
             newtos_fn: f[3].into(),
-            note: f[4].into(),
+            class: f[4].into(),
+            note: f[5].into(),
         });
     }
     Ok(rows)
@@ -227,7 +317,158 @@ fn newtos_of(map: &[MapRow], f: &str) -> String {
         .join(" ")
 }
 
-/// The query's report, as printed.
+/// The layer of a function with no `def` row (defined in `util/`, `cli/`,
+/// libgcc, or nowhere).
+pub const EXT_LAYER: &str = "ext";
+
+/// The file of a `def` site (`bios/blkdev.c:123` -> `bios/blkdev.c`).
+fn site_file(site: &str) -> &str {
+    site.split(':').next().unwrap_or("")
+}
+
+/// Two classes of one definition together: unmapped if either is, else
+/// mapped if either is, else design.
+fn combine(a: Cls, b: Cls) -> Cls {
+    if a == Cls::Unmapped || b == Cls::Unmapped {
+        Cls::Unmapped
+    } else if a == Cls::Mapped || b == Cls::Mapped {
+        Cls::Mapped
+    } else {
+        Cls::Design
+    }
+}
+
+/// The class of every definition (`emutos_fn`, `emutos_file`) that has
+/// mapping rows; a class cell that does not parse counts as unmapped.
+pub fn row_classes(map: &[MapRow]) -> BTreeMap<(String, String), Cls> {
+    let mut out: BTreeMap<(String, String), Cls> = BTreeMap::new();
+    for r in map {
+        let c = match parse_class(&r.class) {
+            Ok(Class::Mapped) => Cls::Mapped,
+            Ok(Class::Design(_)) => Cls::Design,
+            Ok(Class::Unmapped) | Err(_) => Cls::Unmapped,
+        };
+        out.entry((r.emutos_fn.clone(), r.emutos_file.clone()))
+            .and_modify(|x| *x = combine(*x, c))
+            .or_insert(c);
+    }
+    out
+}
+
+/// The definitions of `f` as (layer, file, class); a definition without a
+/// mapping row is unmapped, a function without a `def` row is one unmapped
+/// entry of layer [`EXT_LAYER`].
+pub fn def_classes(
+    g: &Graph,
+    rc: &BTreeMap<(String, String), Cls>,
+    f: &str,
+) -> Vec<(String, String, Cls)> {
+    let Some(d) = g.defs.get(f) else {
+        return vec![(EXT_LAYER.into(), String::new(), Cls::Unmapped)];
+    };
+    let mut seen = BTreeSet::new();
+    let mut out = Vec::new();
+    for (layer, site) in d {
+        let file = site_file(site);
+        if seen.insert((layer.clone(), file.to_string())) {
+            let c = rc.get(&(f.to_string(), file.to_string())).copied().unwrap_or(Cls::Unmapped);
+            out.push((layer.clone(), file.to_string(), c));
+        }
+    }
+    out
+}
+
+/// Mapped / design / unmapped definitions of one layer.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Counts {
+    pub mapped: usize,
+    pub design: usize,
+    pub unmapped: usize,
+}
+
+impl Counts {
+    pub fn add(&mut self, c: Cls) {
+        match c {
+            Cls::Mapped => self.mapped += 1,
+            Cls::Design => self.design += 1,
+            Cls::Unmapped => self.unmapped += 1,
+        }
+    }
+    pub fn total(&self) -> usize {
+        self.mapped + self.design + self.unmapped
+    }
+}
+
+/// The table of [`Counts`] per layer, with a total row.
+pub fn format_counts(per_layer: &BTreeMap<String, Counts>) -> String {
+    fn cell(n: usize, of: usize) -> String {
+        let pct = if of == 0 { 0.0 } else { 100.0 * n as f64 / of as f64 };
+        format!("{n:>5} {pct:>5.1}%")
+    }
+    let mut out = format!(
+        "{:<8} {:>5}  {:>12}  {:>12}  {:>12}\n",
+        "layer", "defs", "mapped", "design", "unmapped"
+    );
+    let mut total = Counts::default();
+    let rows = per_layer.iter().map(|(l, c)| (l.as_str(), *c));
+    for (l, c) in rows {
+        total.mapped += c.mapped;
+        total.design += c.design;
+        total.unmapped += c.unmapped;
+        out.push_str(&format!(
+            "{l:<8} {:>5}  {}  {}  {}\n",
+            c.total(),
+            cell(c.mapped, c.total()),
+            cell(c.design, c.total()),
+            cell(c.unmapped, c.total())
+        ));
+    }
+    out.push_str(&format!(
+        "{:<8} {:>5}  {}  {}  {}\n",
+        "total",
+        total.total(),
+        cell(total.mapped, total.total()),
+        cell(total.design, total.total()),
+        cell(total.unmapped, total.total())
+    ));
+    out
+}
+
+/// Every definition of `edges.tsv` counted per layer.
+pub fn coverage(g: &Graph, map: &[MapRow]) -> BTreeMap<String, Counts> {
+    let rc = row_classes(map);
+    let mut out: BTreeMap<String, Counts> = BTreeMap::new();
+    for f in g.defs.keys() {
+        for (layer, _, c) in def_classes(g, &rc, f) {
+            out.entry(layer).or_default().add(c);
+        }
+    }
+    out
+}
+
+/// `--coverage`: the shares per layer, then the design rows by evidence.
+pub fn coverage_report(g: &Graph, map: &[MapRow]) -> String {
+    let mut out = format!(
+        "coverage of {MAPPING_FILE} per layer: every definition of {EDGES_FILE} \
+         (fn + file); no row = unmapped\n"
+    );
+    out.push_str(&format_counts(&coverage(g, map)));
+    let mut ev: BTreeMap<&str, usize> = BTreeMap::new();
+    for r in map {
+        if let Some(e) = r.class.strip_prefix("design:") {
+            *ev.entry(e).or_default() += 1;
+        }
+    }
+    out.push_str(&format!("\ndesign rows by evidence ({}):\n", ev.values().sum::<usize>()));
+    for (e, n) in ev {
+        out.push_str(&format!("{n:>5}  {e}\n"));
+    }
+    out
+}
+
+/// The query's report, as printed. `touched` are the layers whose unmapped
+/// functions decide whether the set is complete; `None` = the layers of
+/// `start`.
 pub fn report(
     g: &Graph,
     map: &[MapRow],
@@ -235,10 +476,12 @@ pub fn report(
     dir: Dir,
     kinds: &BTreeSet<String>,
     max_depth: Option<usize>,
+    touched: Option<&BTreeSet<String>>,
 ) -> Result<String, String> {
     if !g.defs.contains_key(start) && !g.edges.iter().any(|e| e.from == start || e.to == start) {
         return Err(format!("`{start}` is no node of {EDGES_FILE}"));
     }
+    let rc = row_classes(map);
     let set = closure(g, start, dir, kinds, max_depth);
     let dname = if dir == Dir::Down { "down" } else { "up" };
     let mut out = String::new();
@@ -249,7 +492,7 @@ pub fn report(
         max_depth.map(|d| format!(", depth {d}")).unwrap_or_default(),
         set.len() - 1
     ));
-    out.push_str("depth\tfunction\tlayer\treached over\tnewtos\n");
+    out.push_str("depth\tfunction\tlayer\treached over\tnewtos\tclass\n");
     let mut rows: Vec<(&String, &Reached)> = set.iter().collect();
     rows.sort_by(|a, b| (a.1.depth, a.0).cmp(&(b.1.depth, b.0)));
     for (f, r) in rows {
@@ -260,13 +503,15 @@ pub fn report(
                 format!("{} -> {} [{}{}]", e.from, e.to, e.kind, d)
             }
         };
+        let cls = def_classes(g, &rc, f).iter().map(|d| d.2).reduce(combine).unwrap_or(Cls::Unmapped);
         out.push_str(&format!(
-            "{}\t{}\t{}\t{}\t{}\n",
+            "{}\t{}\t{}\t{}\t{}\t{}\n",
             r.depth,
             f,
             layer_of(g, f),
             via,
-            newtos_of(map, f)
+            newtos_of(map, f),
+            cls.name()
         ));
     }
     for k in ["table", "layer", "vector"] {
@@ -279,7 +524,55 @@ pub fn report(
             out.push_str(&format!("{}\t{} -> {}\t{}\n", e.detail, e.from, e.to, e.site));
         }
     }
+    out.push_str(&set_coverage(g, &rc, start, &set, touched));
     Ok(out)
+}
+
+/// The coverage block of a report: counts per layer of the set, the
+/// touched layers, their unmapped definitions, and the verdict.
+fn set_coverage(
+    g: &Graph,
+    rc: &BTreeMap<(String, String), Cls>,
+    start: &str,
+    set: &BTreeMap<String, Reached>,
+    touched: Option<&BTreeSet<String>>,
+) -> String {
+    let (touched, why): (BTreeSet<String>, String) = match touched {
+        Some(t) => (t.clone(), "--layers".into()),
+        None => (
+            def_classes(g, rc, start).into_iter().map(|d| d.0).collect(),
+            format!("the layers of {start}; --layers to choose"),
+        ),
+    };
+    let mut per_layer: BTreeMap<String, Counts> = BTreeMap::new();
+    let mut open: Vec<(String, String, String)> = Vec::new();
+    for f in set.keys() {
+        for (layer, file, c) in def_classes(g, rc, f) {
+            per_layer.entry(layer.clone()).or_default().add(c);
+            if c == Cls::Unmapped && touched.contains(&layer) {
+                open.push((layer, f.clone(), file));
+            }
+        }
+    }
+    open.sort();
+    let tl: Vec<&str> = touched.iter().map(|s| s.as_str()).collect();
+    let mut out = format!("\ncoverage of the set ({} functions, definitions per layer):\n", set.len());
+    out.push_str(&format_counts(&per_layer));
+    out.push_str(&format!("touched layers: {} ({why})\n", tl.join(",")));
+    out.push_str(&format!("unmapped in the touched layers ({}):\n", open.len()));
+    for (layer, f, file) in &open {
+        let file = if file.is_empty() { "-" } else { file.as_str() };
+        out.push_str(&format!("{layer}\t{f}\t{file}\n"));
+    }
+    if open.is_empty() {
+        out.push_str("complete: yes (no unmapped function in the touched layers)\n");
+    } else {
+        out.push_str(&format!(
+            "complete: no ({} unmapped in the touched layers; the ticket lists them)\n",
+            open.len()
+        ));
+    }
+    out
 }
 
 fn parse_kinds(s: &str) -> Result<BTreeSet<String>, String> {
@@ -312,17 +605,25 @@ pub fn cmd(root: &Path, args: &[String]) -> Result<(), String> {
             println!("{b}");
         }
         return if bad.is_empty() {
-            println!("{MAPPING_FILE}: {} rows, all resolve; every bios/ and bdos/ function has a row",
+            println!("{MAPPING_FILE}: {} rows, all resolve, every class is valid; every bios/ and \
+                      bdos/ function has a row",
                      map.len());
             Ok(())
         } else {
             Err(format!("{} mapping problems", bad.len()))
         };
     }
+    if args == ["--coverage"] {
+        let g = parse_edges(&read(root, EDGES_FILE)?)?;
+        let map = parse_mapping(&read(root, MAPPING_FILE)?)?;
+        print!("{}", coverage_report(&g, &map));
+        return Ok(());
+    }
     let mut start: Option<String> = None;
     let mut dir: Option<Dir> = None;
     let mut kinds: BTreeSet<String> = DEFAULT_KINDS.iter().map(|k| k.to_string()).collect();
     let mut depth = None;
+    let mut layers: Option<BTreeSet<String>> = None;
     let mut it = args.iter();
     while let Some(a) = it.next() {
         match a.as_str() {
@@ -333,6 +634,10 @@ pub fn cmd(root: &Path, args: &[String]) -> Result<(), String> {
                 let v = it.next().ok_or("--depth needs a value")?;
                 depth = Some(v.parse::<usize>().map_err(|_| format!("bad --depth `{v}`"))?);
             }
+            "--layers" => {
+                let v = it.next().ok_or("--layers needs a value")?;
+                layers = Some(v.split(',').filter(|l| !l.is_empty()).map(String::from).collect());
+            }
             s if s.starts_with('-') => return Err(format!("deps: unknown option `{s}`")),
             s => {
                 if start.replace(s.to_string()).is_some() {
@@ -341,13 +646,28 @@ pub fn cmd(root: &Path, args: &[String]) -> Result<(), String> {
             }
         }
     }
-    let usage = "usage: cargo xtask deps <fn> --down|--up [--kinds k,..|+k,..|all] [--depth N]\n       \
-                 cargo xtask deps --check-mapping";
+    let usage = "usage: cargo xtask deps <fn> --down|--up [--kinds k,..|+k,..|all] [--depth N] \
+                 [--layers l,..]\n       \
+                 cargo xtask deps --check-mapping\n       \
+                 cargo xtask deps --coverage";
     let start = start.ok_or(usage)?;
     let dir = dir.ok_or(usage)?;
     let g = parse_edges(&read(root, EDGES_FILE)?)?;
     let map = parse_mapping(&read(root, MAPPING_FILE)?)?;
-    print!("{}", report(&g, &map, &start, dir, &kinds, depth)?);
+    if let Some(ls) = &layers {
+        let known: BTreeSet<&str> = g
+            .defs
+            .values()
+            .flatten()
+            .map(|(l, _)| l.as_str())
+            .chain([EXT_LAYER])
+            .collect();
+        if let Some(bad) = ls.iter().find(|l| !known.contains(l.as_str())) {
+            let k: Vec<&str> = known.into_iter().collect();
+            return Err(format!("deps: unknown layer `{bad}` (layers: {})", k.join(",")));
+        }
+    }
+    print!("{}", report(&g, &map, &start, dir, &kinds, depth, layers.as_ref())?);
     Ok(())
 }
 
@@ -378,14 +698,38 @@ fn is_ident_byte(b: u8) -> bool {
 
 /// Every problem of `mapping.tsv` against the graph and the NewTOS tree:
 /// an EmuTOS function that is no `def` row of its file, a NewTOS file or
-/// function that does not exist, a `-` row without a reason, and an EmuTOS
-/// `bios/`/`bdos/` function without a row.
+/// function that does not exist, a `-` row without a reason, an EmuTOS
+/// `bios/`/`bdos/` function without a row, and a bad class: one that does
+/// not parse, `mapped` without a NewTOS function or `design`/`unmapped`
+/// with one, an ADR that `docs/MEMORY.md` does not define, a `source:` path
+/// that does not exist.
 pub fn check_mapping(root: &Path, g: &Graph, map: &[MapRow]) -> Vec<String> {
     let mut bad = Vec::new();
     let mut covered: BTreeSet<(String, String)> = BTreeSet::new();
     let mut texts: BTreeMap<String, Option<String>> = BTreeMap::new();
+    let adrs = fs::read_to_string(root.join(crate::doc_check::MEMORY_FILE))
+        .map(|t| crate::doc_check::adr_headings(&t))
+        .unwrap_or_default();
     for r in map {
         let at = format!("{MAPPING_FILE}:{}", r.line);
+        let none = r.newtos_file == "-" || r.newtos_fn == "-";
+        match parse_class(&r.class) {
+            Err(e) => bad.push(format!("{at}: {e}")),
+            Ok(Class::Mapped) if none => {
+                bad.push(format!("{at}: class mapped, but no NewTOS function (`-`)"))
+            }
+            Ok(Class::Design(_) | Class::Unmapped) if !none => {
+                bad.push(format!("{at}: class {}, but a NewTOS function is named", r.class))
+            }
+            Ok(Class::Design(Evidence::Adr(n))) if !adrs.contains(&n) => bad.push(format!(
+                "{at}: ADR-{n:03} is no `## ADR-{n:03}:` heading of {}",
+                crate::doc_check::MEMORY_FILE
+            )),
+            Ok(Class::Design(Evidence::Source(p))) if !root.join(&p).is_file() => {
+                bad.push(format!("{at}: source {p} does not exist"))
+            }
+            Ok(_) => {}
+        }
         let def_ok = g.defs.get(&r.emutos_fn).is_some_and(|d| {
             d.iter().any(|(_, site)| site.split(':').next() == Some(r.emutos_file.as_str()))
         });
@@ -486,10 +830,10 @@ a\tcb\tcallback\taddress\tbdos/a.c:3
         let g = parse_edges(FIXTURE).unwrap();
         let s = closure(&g, "a", Dir::Up, &kinds(&DEFAULT_KINDS), Some(1));
         assert_eq!(s.keys().collect::<Vec<_>>(), ["a", "d"]);
-        let r = report(&g, &[], "a", Dir::Up, &kinds(&DEFAULT_KINDS), None).unwrap();
+        let r = report(&g, &[], "a", Dir::Up, &kinds(&DEFAULT_KINDS), None, None).unwrap();
         assert!(r.contains("funcs[0x1]\td -> a\tbdos/t.c:5"), "{r}");
         assert!(r.contains("trap #1 0x1 funcs[0x1] via trap1\tc -> d"), "{r}");
-        assert!(report(&g, &[], "nope", Dir::Up, &kinds(&DEFAULT_KINDS), None).is_err());
+        assert!(report(&g, &[], "nope", Dir::Up, &kinds(&DEFAULT_KINDS), None, None).is_err());
     }
 
     #[test]
@@ -622,8 +966,8 @@ a\tcb\tcallback\taddress\tbdos/a.c:3
     fn check_mapping_reports_each_kind_of_problem() {
         let g = parse_edges(FIXTURE).unwrap();
         let m = parse_mapping(
-            "a\tbdos/a.c\ttos-api/src/nope.rs\tx\t-\n\
-             b\tbdos/zz.c\t-\t-\t-\n",
+            "a\tbdos/a.c\ttos-api/src/nope.rs\tx\tmapped\t-\n\
+             b\tbdos/zz.c\t-\t-\tunmapped\t-\n",
         )
         .unwrap();
         let bad = check_mapping(&root(), &g, &m);
@@ -632,5 +976,131 @@ a\tcb\tcallback\taddress\tbdos/a.c:3
         assert!(all.contains("is not defined in bdos/zz.c"), "{all}");
         assert!(all.contains("needs a reason"), "{all}");
         assert!(all.contains("no row for `t`"), "{all}");
+    }
+
+    #[test]
+    fn parse_class_reads_the_three_classes_and_the_evidence_forms() {
+        assert_eq!(parse_class("mapped"), Ok(Class::Mapped));
+        assert_eq!(parse_class("unmapped"), Ok(Class::Unmapped));
+        assert_eq!(parse_class("design:ADR-031"), Ok(Class::Design(Evidence::Adr(31))));
+        assert_eq!(
+            parse_class("design:hardware:dsp56001"),
+            Ok(Class::Design(Evidence::Hardware("dsp56001".into())))
+        );
+        assert_eq!(
+            parse_class("design:source:docs/COMPATIBILITY.md"),
+            Ok(Class::Design(Evidence::Source("docs/COMPATIBILITY.md".into())))
+        );
+        for bad in [
+            "", "-", "Mapped", "design", "design:", "design:ADR-31", "design:ADR-0310",
+            "design:hardware:", "design:hardware:SCSI", "design:hardware:wd 1772",
+            "design:source:", "design:because",
+        ] {
+            assert!(parse_class(bad).is_err(), "`{bad}` parsed");
+        }
+    }
+
+    /// TOOL17: the class must parse, agree with the NewTOS columns, and its
+    /// evidence must exist.
+    #[test]
+    fn check_mapping_reports_each_kind_of_class_problem() {
+        let g = parse_edges(FIXTURE).unwrap();
+        let m = parse_mapping(
+            "a\tbdos/a.c\t-\t-\tmapped\tno fn\n\
+             a\tbdos/a.c\ttos-api/src/xbios/mod.rs\tdispatch\tunmapped\tnamed\n\
+             b\tbdos/b.c\t-\t-\tdesign:ADR-999\tno such ADR\n\
+             b\tbdos/b.c\t-\t-\tdesign:source:docs/no-such-file.md\tmissing\n\
+             t\tbdos/t.c\t-\t-\tdesign:because\tbad evidence\n\
+             t\tbdos/t.c\t-\t-\tdesign:ADR-030\tvalid\n\
+             t\tbdos/t.c\t-\t-\tdesign:source:docs/MEMORY.md\tvalid\n\
+             t\tbdos/t.c\t-\t-\tdesign:hardware:wd1772\tvalid\n",
+        )
+        .unwrap();
+        let bad = check_mapping(&root(), &g, &m);
+        let all = bad.join("\n");
+        assert!(all.contains(":1: class mapped, but no NewTOS function"), "{all}");
+        assert!(all.contains(":2: class unmapped, but a NewTOS function is named"), "{all}");
+        assert!(all.contains(":3: ADR-999 is no `## ADR-999:` heading"), "{all}");
+        assert!(all.contains(":4: source docs/no-such-file.md does not exist"), "{all}");
+        assert!(all.contains(":5: class `design:because`"), "{all}");
+        assert_eq!(bad.len(), 5, "{all}");
+    }
+
+    const COVER_EDGES: &str = "\
+a\t-\tdef\tbios\tbios/a.c:1
+b\t-\tdef\tbios\tbios/b.c:1
+c\t-\tdef\tbios\tbios/c.c:1
+d\t-\tdef\tbdos\tbdos/d.c:1
+v\t-\tdef\tvdi\tvdi/v.c:1
+b\ta\tdirect\t-\tbios/b.c:2
+c\ta\tdirect\t-\tbios/c.c:2
+d\tc\tdirect\t-\tbdos/d.c:2
+v\td\tdirect\t-\tvdi/v.c:2
+x\tv\tdirect\t-\tutil/x.c:2
+";
+    const COVER_MAP: &str = "\
+a\tbios/a.c\ttos-api/src/a.rs\ta\tmapped\t-
+b\tbios/b.c\t-\t-\tdesign:hardware:scsi\thardware
+c\tbios/c.c\ttos-api/src/c.rs\tc\tmapped\thalf
+c\tbios/c.c\t-\t-\tunmapped\tthe other half
+d\tbdos/d.c\ttos-api/src/d.rs\td\tmapped\t-
+";
+
+    /// TOOL17: every definition counts once per layer; a definition with an
+    /// unmapped row is unmapped; layers without rows and `ext` are unmapped.
+    #[test]
+    fn coverage_counts_definitions_per_layer() {
+        let g = parse_edges(COVER_EDGES).unwrap();
+        let m = parse_mapping(COVER_MAP).unwrap();
+        let c = coverage(&g, &m);
+        assert_eq!(c["bios"], Counts { mapped: 1, design: 1, unmapped: 1 });
+        assert_eq!(c["bdos"], Counts { mapped: 1, design: 0, unmapped: 0 });
+        assert_eq!(c["vdi"], Counts { mapped: 0, design: 0, unmapped: 1 });
+        assert!(!c.contains_key(EXT_LAYER), "ext has no definitions to cover");
+        let t = format_counts(&c);
+        assert!(t.contains("bios         3      1  33.3%      1  33.3%      1  33.3%"), "{t}");
+        assert!(t.contains("total        5      2  40.0%      1  20.0%      2  40.0%"), "{t}");
+    }
+
+    /// TOOL17: a set is complete only without unmapped functions in the
+    /// touched layers (default: the root's).
+    #[test]
+    fn report_lists_unmapped_of_the_touched_layers_and_the_verdict() {
+        let g = parse_edges(COVER_EDGES).unwrap();
+        let m = parse_mapping(COVER_MAP).unwrap();
+        let k = kinds(&DEFAULT_KINDS);
+        // --up a: b (design), c (unmapped half), d, v, x (ext)
+        let r = report(&g, &m, "a", Dir::Up, &k, None, None).unwrap();
+        assert!(r.contains("touched layers: bios (the layers of a;"), "{r}");
+        assert!(r.contains("unmapped in the touched layers (1):\nbios\tc\tbios/c.c\n"), "{r}");
+        assert!(r.contains("complete: no (1 unmapped"), "{r}");
+        assert!(r.contains("1\tc\tbios\tc -> a [direct]\t- tos-api/src/c.rs@c\tunmapped\n"), "{r}");
+        assert!(r.contains("1\tb\tbios\tb -> a [direct]\t-\tdesign\n"), "{r}");
+        // touching bdos only: d is mapped -> complete
+        let only: BTreeSet<String> = ["bdos".to_string()].into();
+        let r = report(&g, &m, "a", Dir::Up, &k, None, Some(&only)).unwrap();
+        assert!(r.contains("touched layers: bdos (--layers)"), "{r}");
+        assert!(r.contains("complete: yes"), "{r}");
+        // vdi and ext count as unmapped
+        let both: BTreeSet<String> = ["vdi".to_string(), EXT_LAYER.to_string()].into();
+        let r = report(&g, &m, "a", Dir::Up, &k, None, Some(&both)).unwrap();
+        assert!(r.contains("unmapped in the touched layers (2):\next\tx\t-\nvdi\tv\tvdi/v.c\n"), "{r}");
+        // --down b: b (design) and a (mapped) -> complete
+        let r = report(&g, &m, "b", Dir::Down, &k, None, None).unwrap();
+        assert!(r.contains("complete: yes"), "{r}");
+    }
+
+    /// TOOL17 acceptance: `deps blkdev_rwabs --up` names the unmapped
+    /// functions of the touched layer (bios) and so is not complete.
+    #[test]
+    fn up_blkdev_rwabs_lists_its_unmapped_bios_functions() {
+        let (g, m) = real();
+        let r = report(&g, &m, "blkdev_rwabs", Dir::Up, &kinds(&DEFAULT_KINDS), None, None).unwrap();
+        assert!(r.contains("touched layers: bios (the layers of blkdev_rwabs;"), "{r}");
+        // a not yet mapped boot function is listed, a design one is not
+        assert!(r.contains("\nbios\tblkdev_init\tbios/blkdev.c\n"), "{r}");
+        assert!(r.contains("\tdetect_scsi\tbios\t"), "detect_scsi is in the set: {r}");
+        assert!(!r.contains("\nbios\tdetect_scsi\t"), "design:hardware:scsi listed as unmapped");
+        assert!(r.contains("complete: no"), "{r}");
     }
 }

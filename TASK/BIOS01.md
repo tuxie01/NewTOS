@@ -108,3 +108,9 @@ Regel (CLAUDE.md „Testing“): vor jedem Fix NewTOS-Funktion per
 - Arbeit 4 (GEMDOS-Folge): S1 gefunden — GEMDOS schreibt nach geaendertem
   Bootsektor mit alter Geometrie; dazu bleibt `Mediach` 2 nach GEMDOS-Zugriff
   stehen (fehlende Neuanmeldung). Eigenes Ticket [FS20](FS20.md).
+
+## Retest-Liste nach TOOL17 (2026-10-29)
+
+`cargo xtask deps <wurzel> --up --layers bios,bdos`, vereinigt ueber `blkdev_rwabs`, `blkdev_mediach`, `blkdev_getbpb`; 407 Funktionen:
+`unmapped` 20 statt 51 — `bdos`: `bdos_trap2`; `bios`: `add_cookie_frb`, `altram_init`, `balloc_stram`, `bios_init`, `biosmain`, `blkdev_hdv_init`, `blkdev_init`, `bus_init`, `dsp_loadprog`, `dsp_lodtobinary`, `filesize`, `machine_detect`, `panic`, `pun_info_setup`, `run_auto_program`, `screen_init_address`, `xhdi_handler`, `XHInqDev`, `XHInqDev2`. Die uebrigen frueheren `-`-Eintraege sind jetzt
+`design:` (Hardware bzw. ADR) oder `mapped`.

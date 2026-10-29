@@ -1,6 +1,6 @@
 # XBIOS15 — qemu-virt: serielle Bytes landen mit Scancode 0 im Tastaturring
 
-Status: **ERLEDIGT** 2026-10-29 ([Quittung](XBIOS15-STATUS-DONE.MD)); eine Verhaltensaenderung zur Bestaetigung beim Anwender · Prioritaet: **P2** · Typ: Developer (Messung zuerst) — Anwenderentscheidung 2026-10-29, Fund aus [XBIOS01](XBIOS01.md)
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](XBIOS15-STATUS-DONE.MD)), vom Anwender abgenommen (`532cb52e`, wartendes `Bconin(1)`/`Cauxin` bestaetigt) · Prioritaet: **P2** · Typ: Developer (Messung zuerst) — Anwenderentscheidung 2026-10-29, Fund aus [XBIOS01](XBIOS01.md)
 
 ## Sachverhalt
 
@@ -119,3 +119,8 @@ Status: **ERLEDIGT** 2026-10-29 ([Quittung](XBIOS15-STATUS-DONE.MD)); eine Verha
 - Unveraendert: `Bconout(1)` verwirft auf qemu-virt weiter; `Bconmap` liefert
   `0x2c` (XBIOS05).
 
+## Retest-Liste nach TOOL17 (2026-10-29)
+
+`cargo xtask deps <wurzel> --up --layers bios,bdos`, vereinigt ueber `mfp_rs232_rx_interrupt_handler`, `push_serial_iorec`, `scc_rx_interrupt_handler`; 6:
+`unmapped` 0 — vollstaendig. Die uebrigen frueheren `-`-Eintraege sind jetzt
+`design:` (Hardware bzw. ADR) oder `mapped`.

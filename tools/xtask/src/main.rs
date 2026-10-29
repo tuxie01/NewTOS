@@ -182,15 +182,23 @@ Commands:
                                    (programs/build.sh), built with the
                                    board feature, into
                                    target/programs/<board>/ (DESK43 U6b)
-  deps <fn> --down|--up [--kinds k,..|+k,..|all] [--depth N]
+  deps <fn> --down|--up [--kinds k,..|+k,..|all] [--depth N] [--layers l,..]
                                  — the EmuTOS functions <fn> depends on
                                    (--down) or that depend on it (--up), from
                                    docs/analysis/deps/edges.tsv, with their
-                                   NewTOS counterparts from mapping.tsv;
-                                   default kinds direct,table,asm,layer
+                                   NewTOS counterparts and class from
+                                   mapping.tsv; default kinds
+                                   direct,table,asm,layer,vector; then the
+                                   set's mapped/design/unmapped per layer and
+                                   the unmapped functions of the touched
+                                   layers (default: <fn>'s), complete only
+                                   without any (TOOL17)
   deps --check-mapping           — every mapping.tsv row names an existing
-                                   EmuTOS definition and NewTOS fn, every
-                                   EmuTOS bios/ and bdos/ function has a row
+                                   EmuTOS definition and NewTOS fn and has a
+                                   valid class, every EmuTOS bios/ and bdos/
+                                   function has a row
+  deps --coverage                — mapped/design/unmapped per layer, count
+                                   and share (TOOL17)
   doc-check [--base <rev>] [<file>...]
                                  — every path and file:line cite and every
                                    ADR-NNN id (a docs/MEMORY.md heading)

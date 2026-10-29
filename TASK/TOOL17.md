@@ -1,6 +1,6 @@
 # TOOL17 — `mapping.tsv`: „kein Gegenstueck mit Absicht“ von „noch nicht abgebildet“ trennen; Abdeckung je Schicht
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer (Werkzeug + Zuordnung) — Anwenderentscheidung 2026-10-28
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](TOOL17-STATUS-DONE.MD)); Ermessensfaelle (Gruppe G) zur Bestaetigung beim Anwender · Prioritaet: **P1** · Typ: Developer (Werkzeug + Zuordnung) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt
 

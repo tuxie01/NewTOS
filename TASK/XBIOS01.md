@@ -110,3 +110,9 @@ Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-xbios-char
   Beleg `measurements/measurement-2026-10-29-xbios01/RUNINFO.TXT`. Flush mit
   Tasten im Ring: neue Tabelle `tosdump/cases/xbios-flush-r1.tsv`, beidseitig
   gleich. Schliesst [BIOS11](BIOS11.md).
+
+## Retest-Liste nach TOOL17 (2026-10-29)
+
+`cargo xtask deps <wurzel> --up --layers bios,bdos`, vereinigt ueber `iorec`, `push_ikbdiorec`, `kbd_int`, `bconstat2`, `bconin2`; 375:
+`unmapped` 12 — `add_cookie_frb`, `altram_init`, `balloc_stram`, `bios_init`, `biosmain`, `blkdev_hdv_init`, `blkdev_init`, `bus_init`, `kb_timerc_int`, `machine_detect`, `panic`, `screen_init_address`; `iorec` und `push_ikbdiorec` sind `mapped`. Die uebrigen frueheren `-`-Eintraege sind jetzt
+`design:` (Hardware bzw. ADR) oder `mapped`.

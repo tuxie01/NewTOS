@@ -102,3 +102,8 @@ Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS15-STATUS-DONE.MD)), vom Anwende
   BIOS07; `docs/api/xbios/00-initmous.md` nennt `EINVFN` statt
   Funktionsnummer; `docs/api/xbios/_triage.md` fuehrt `CONF_WITH_MFP` als aus.
 
+## Retest-Liste nach TOOL17 (2026-10-29)
+
+`cargo xtask deps <wurzel> --up --layers bios,bdos`, vereinigt ueber `setexc`, `kbdvbase`, `mfpint`, `xbtimer`, `xterm`; 322:
+`unmapped` 13 — `bdos_trap2`; `add_cookie_frb`, `altram_init`, `balloc_stram`, `bios_init`, `biosmain`, `blkdev_hdv_init`, `blkdev_init`, `bus_init`, `init_serport`, `machine_detect`, `panic`, `screen_init_address`; `kbdvbase` vollstaendig. Die uebrigen frueheren `-`-Eintraege sind jetzt
+`design:` (Hardware bzw. ADR) oder `mapped`.
