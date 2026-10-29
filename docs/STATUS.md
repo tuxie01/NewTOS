@@ -52,32 +52,31 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
 
 **Offen (Stand 2026-10-26, aus der Statuszeile der Tickets ohne DONE-Quittung):**
 
-- **Warteschlange (Anwender 2026-10-28), in dieser Reihenfolge.** Regel: ein
+- **Warteschlange (Anwender 2026-10-29), in dieser Reihenfolge.** Regel: ein
   neues Werkzeug-Ticket kommt hinter den Produkt-Fix, den es verzoegern wuerde,
   ausser der Fix ist ohne das Werkzeug nicht abnehmbar.
-  Developer, einer zur Zeit: [FS22](../TASK/FS22.md)
-  (Neuanmeldung auch fuer kernel-interne Dateipfade, Option B aus FS20) → [BIOS15](../TASK/BIOS15.md)
-  (ADR-031: Haken-Warnungen, Besitz, `prt_*`) → [SDK03](../TASK/SDK03.md)
-  (`sysinfo`) → [SDK05](../TASK/SDK05.md) (cflib-Cookie-Name verdreht, QED
-  `_IDT`; Sonde zuerst) → [SDK04](../TASK/SDK04.md) Fund C6 (TeraDesk `find_cookie`) →
-  [ARCH06](../TASK/ARCH06.md) (`_MCH` = `0xFFFFFFFF`, `_VDO`
-  messen) → [SDK04](../TASK/SDK04.md) Developer-Teil (Typen fester Breite,
-  Fixes nach Messung) → [TOOL17](../TASK/TOOL17.md)
-  (`mapping.tsv`-Klassen, Abdeckung je Schicht; danach BIOS01-Liste neu
-  klassifizieren) → [TOOL18](../TASK/TOOL18.md) (Cookie-Falltabelle, alle
-  drei Profile) → [TOOL19](../TASK/TOOL19.md) (`DISKUNIT.TXT`-Pruefungen) →
-  BIOS01
-  Rest → die uebrigen Audit-Tickets BIOS04–BIOS14, XBIOS02–XBIOS14 (S2
+  Developer, einer zur Zeit: [FS22](../TASK/FS22.md) (Neuanmeldung auch fuer
+  kernel-interne Dateipfade, Option B aus FS20; laeuft) →
+  [BIOS15](../TASK/BIOS15.md) (ADR-031: Haken-Warnungen, Besitz, `prt_*`) →
+  [XBIOS15](../TASK/XBIOS15.md) (serielles RX in den Ring von Geraet 0) →
+  [TOOL17](../TASK/TOOL17.md) (`mapping.tsv`-Klassen, Abdeckung je Schicht;
+  danach die Retest-Listen von BIOS01/FS20/FS22/XBIOS01 neu klassifizieren) →
+  [SDK03](../TASK/SDK03.md) (`sysinfo`) → [SDK05](../TASK/SDK05.md)
+  (cflib-Cookie-Name verdreht, QED `_IDT`; Sonde zuerst) →
+  [SDK04](../TASK/SDK04.md) Fund C6 (TeraDesk `find_cookie`) →
+  [ARCH06](../TASK/ARCH06.md) (`_MCH` = `0xFFFFFFFF`, `_VDO` messen) →
+  [SDK04](../TASK/SDK04.md) Developer-Teil (Typen fester Breite, Fixes nach
+  Messung) → [TOOL18](../TASK/TOOL18.md) (Cookie-Falltabelle, alle drei
+  Profile) → [TOOL19](../TASK/TOOL19.md) (`DISKUNIT.TXT`-Pruefungen) →
+  BIOS01 Rest → die uebrigen Audit-Tickets BIOS04–BIOS14, XBIOS02–XBIOS14 (S2
   zuerst; BIOS05 und XBIOS03 sind ACCEPTED nach ADR-031, XBIOS10 nach ARCH05) →
   [TOOL13](../TASK/TOOL13.md), [TOOL14](../TASK/TOOL14.md),
   [TOOL15](../TASK/TOOL15.md) → [TOOL03](../TASK/TOOL03.md) → DUMPGDOS →
   [FS19](../TASK/FS19.md) → [MEM11](../TASK/MEM11.md) (Erzwingung) →
-  [TOOL01](../TASK/TOOL01.md); [SDK02](../TASK/SDK02.md) (P3) bei Gelegenheit.
-  Daneben ein Auditor bzw. Researcher zur Zeit, in eigenem Arbeitsbaum:
-  `docs/sdk/05-abi-pitfalls.md` Zitate nachziehen → [SDK04](../TASK/SDK04.md)
-  Erweiterung (Byte-Reihenfolge-Annahmen in allen Ports) →
- Vertrag `Getmpb` (BIOS06) →
-  Spec-Tickets der Audits.
+  [TOOL01](../TASK/TOOL01.md); [SDK02](../TASK/SDK02.md), [SDK06](../TASK/SDK06.md)
+  (P3) bei Gelegenheit.
+  Daneben ein Tester bzw. Auditor zur Zeit, ohne Produktaenderung:
+  XBIOS15 Schritt 1 (Orakel-Messung: wohin serielles RX geht; jederzeit).
 - **P1:** [MEM12](../TASK/MEM12.md) — umgesetzt und auf QEMU abgenommen (Seite 0 nur im Super-Zustand beschreibbar); offen nur der Lauf auf der echten Pi.
   [USB01](../TASK/USB01.md) — F1/F2/F3/F8 auf echter Hardware
   bestaetigt (Pi 2026-10-23, zwei Steckpositionen; Ragnars Lauf 2026-10-25,
