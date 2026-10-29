@@ -1,0 +1,13 @@
+run ovs-before 2026-10-29 17:05:07 CET
+f97960f386ce5850c67a7e2a08909d0204420976458aad8643a0e9153b43cc88  kernel8.img (kernel8-trace-ovs.img)
+ab0df5765b29fe213244c25863495414afaeaa6091506faf48c5fbc99ef88562  base card before.img
+t=17.4s -> ovs-before-desk.png {"return": {}}
+t=19.5s -> ovs-before-opts.png {"return": {}}
+t=20.8s -> ovs-before-hover.png {"return": {}}
+t=24.4s -> ovs-before-dlg.png {"return": {}}
+t=25.5s -> ovs-before-ovs.png {"return": {}}
+t=27.3s -> ovs-before-ok.png {"return": {}}
+t=31.5s -> ovs-before-after.png {"return": {}}
+MCHPROBE.LOG: not on the card
+clone after run 1fa05203ae1581bb469dc786bf407f5b95d086bbe2ce918a534a3a593ce73be1 (deleted)
+mdrive rc=0 fsck rc=0 EXC/PANIC: 1 lines: 165

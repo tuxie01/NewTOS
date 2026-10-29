@@ -1,6 +1,6 @@
 # SDK07 — TeraDesk: Overscan-Option ohne Atari-Hardware sperren (Bus Error)
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer (SDK-Overlay) — Anwenderentscheidung 2026-10-29, Fund aus [ARCH06](ARCH06.md)
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](SDK07-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Developer (SDK-Overlay) — Anwenderentscheidung 2026-10-29, Fund aus [ARCH06](ARCH06.md)
 
 ## Sachverhalt
 

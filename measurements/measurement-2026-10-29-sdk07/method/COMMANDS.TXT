@@ -1,0 +1,18 @@
+Commands of this run, in order (repository root; S = the session scratch .../scratchpad/sdk07, never /tmp itself;
+TMPDIR=$S/tmp for every script that calls mktemp). Main tree at 28cd92df plus the uncommitted SDK07 change (file list in
+TASK/SDK07-STATUS-DONE.MD).
+
+1  after:     sdk/apps/build-teradesk.sh ; cp sdk/apps/teradesk/build/dist/* $S/bin/td-after/
+2  before:    method/build-before.sh $S          (build-teradesk.sh with an overlay copy minus video.c + nohard.h)
+3  cards:     method/mkcards.sh $S               (tools/mkcard.sh: before, after; manifests -> cards/)
+4  script:    (cd method && python3 gen.py ovs.spec ovs.script)
+5  kernel:    method/build-trace.sh $S ovs       -> $S/bin/kernel8-trace-ovs.img (inject-arm up:DESKTOP=ovs.script,
+              --features svc-seq-trace,bios-arg-trace, SOURCE_DATE_EPOCH 1792368000)
+6  runs:      method/series.sh $S before ovs ; method/series.sh $S after ovs   -> runs/ovs-before, runs/ovs-after
+7  pixels:    python3 method/pxdiff.py <a.png> <b.png> for every mark pair     -> checks/pxdiff-before-after.txt
+8  tests:     sdk/run-host-tests.sh -> checks/sdk-host-tests.txt ; cargo xtask test -> checks/xtask-test-results.txt
+              (sum of the "test result" lines)
+
+Copied unchanged from measurements/measurement-2026-10-29-arch06/method/: mdrive.py, gen.py, fx.py, run.sh, mktree.sh,
+build-trace.sh, series.sh, z-teradesk.inf, TERADESK.INF. New here: ovs.spec (+ generated ovs.script, ovs.script.marks),
+mkcards.sh, build-before.sh, pxdiff.py.

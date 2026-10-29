@@ -12,7 +12,7 @@
 #
 # Prerequisites: sdk/gemlib/build-gemlib.sh has extracted gemlib-0.44.0 and
 # applied the overlay (the tests compile the overlaid bindings); for
-# aesglobal_fields and td-cookie-host the vendored TeraDesk source
+# aesglobal_fields, td-cookie-host and td-nohard-host the vendored TeraDesk source
 # (sdk/apps/teradesk) must be present. Missing prerequisites SKIP that test with a line saying why; a
 # failing test FAILS the run.
 #
@@ -297,6 +297,15 @@ fi
 "$SDK/overlays/teradesk/tests/cookie-host.sh" > "$WORK/td-cookie-host.log" 2>&1; rc=$?
 [ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/td-cookie-host.log"
 report td-cookie-host $rc "$(tail -1 "$WORK/td-cookie-host.log")"
+
+# td-nohard-host (SDK07): TeraDesk's overscan gate (the overlay nohard.h, patch
+# site SDK07, used by the video.c overlay) is TRUE exactly for _MCH = 0xFFFFFFFF
+# (MCH_NOHARD) read through the overlay find_cookie -- odd and even slot --
+# and FALSE for the Atari _MCH values, a jar without _MCH, an empty and no jar.
+# A gate comparing the long with -1L (ignoring the zero-extension) fails 2 of 15.
+"$SDK/overlays/teradesk/tests/nohard-host.sh" > "$WORK/td-nohard-host.log" 2>&1; rc=$?
+[ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/td-nohard-host.log"
+report td-nohard-host $rc "$(tail -1 "$WORK/td-nohard-host.log")"
 
 # hypview-ref-host (SDK04 S2): HypView's REF reader as the SDK builds it (the
 # overlay hyp/ref.c, patch site SDK04-S2) loads a big-endian REF file --

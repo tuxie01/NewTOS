@@ -1,0 +1,1300 @@
+K   VDI    op=100 v_opnvwk    
+    v_opnvwk work_out[0..10]=[639,479,0,278,278,3,7,0,6,8]
+K   VDI    op=3   v_clrwk     
+K   VDI    op=17  ?           
+K   VDI    op=6   v_pline     
+K   VDI    op=6   v_pline     
+K   VDI    op=6   v_pline     
+K   VDI    op=6   v_pline     
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(110,47)-(121,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(158,47)-(169,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(182,47)-(193,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(194,47)-(205,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(206,47)-(217,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(218,47)-(229,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(230,47)-(241,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(254,47)-(265,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(302,47)-(313,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(326,47)-(337,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(338,47)-(349,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(350,47)-(361,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(362,47)-(373,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(374,47)-(385,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(410,47)-(421,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(422,47)-(433,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(434,47)-(445,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(482,47)-(493,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(494,47)-(505,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(506,47)-(517,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(518,47)-(529,59)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(110,60)-(121,72)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(122,60)-(133,72)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(158,60)-(169,72)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(182,60)-(193,72)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(254,60)-(265,72)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(302,60)-(313,72)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(350,60)-(361,72)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(398,60)-(409,72)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(446,60)-(457,72)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(470,60)-(481,72)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(110,73)-(121,85)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(134,73)-(145,85)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(158,73)-(169,85)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(182,73)-(193,85)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(194,73)-(205,85)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(206,73)-(217,85)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(218,73)-(229,85)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(254,73)-(265,85)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(278,73)-(289,85)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(302,73)-(313,85)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(350,73)-(361,85)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(398,73)-(409,85)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(446,73)-(457,85)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(482,73)-(493,85)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(494,73)-(505,85)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(506,73)-(517,85)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(110,86)-(121,98)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(146,86)-(157,98)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(158,86)-(169,98)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(182,86)-(193,98)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(254,86)-(265,98)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(266,86)-(277,98)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(290,86)-(301,98)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(302,86)-(313,98)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(350,86)-(361,98)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(398,86)-(409,98)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(446,86)-(457,98)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(518,86)-(529,98)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(110,99)-(121,111)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(158,99)-(169,111)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(182,99)-(193,111)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(194,99)-(205,111)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(206,99)-(217,111)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(218,99)-(229,111)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(230,99)-(241,111)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(254,99)-(265,111)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(302,99)-(313,111)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(350,99)-(361,111)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(410,99)-(421,111)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(422,99)-(433,111)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(434,99)-(445,111)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(470,99)-(481,111)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(482,99)-(493,111)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(494,99)-(505,111)
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(506,99)-(517,111)
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+K   VDI    op=8   v_gtext     
+    v_gtext at (320,124) len=35 chars=This ope
+K   VDI    op=17  ?           
+K   VDI    op=6   v_pline     
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+K   VDI    op=8   v_gtext     
+    v_gtext at (312,166) len=9 chars=Version 
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 4 (out 4)
+K   VDI    op=8   v_gtext     
+    v_gtext at (328,166) len=12 chars=NewTOS 0
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+K   VDI    op=8   v_gtext     
+    v_gtext at (312,188) len=7 chars=Built :
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 4 (out 4)
+K   VDI    op=8   v_gtext     
+    v_gtext at (328,188) len=20 chars=2026-10-
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+K   VDI    op=8   v_gtext     
+    v_gtext at (312,210) len=10 chars=CPU type
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 4 (out 4)
+K   VDI    op=8   v_gtext     
+    v_gtext at (328,210) len=24 chars=ARM Cort
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+K   VDI    op=8   v_gtext     
+    v_gtext at (312,232) len=9 chars=Machine 
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 4 (out 4)
+K   VDI    op=8   v_gtext     
+    v_gtext at (328,232) len=24 chars=Raspberr
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+K   VDI    op=8   v_gtext     
+    v_gtext at (312,254) len=8 chars=ST-RAM :
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 4 (out 4)
+K   VDI    op=8   v_gtext     
+    v_gtext at (328,254) len=5 chars=10 MB
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+K   VDI    op=8   v_gtext     
+    v_gtext at (312,276) len=8 chars=TT-RAM :
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 4 (out 4)
+K   VDI    op=8   v_gtext     
+    v_gtext at (328,276) len=6 chars=904 MB
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+K   VDI    op=8   v_gtext     
+    v_gtext at (312,298) len=15 chars=GEMDOS d
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 4 (out 4)
+K   VDI    op=8   v_gtext     
+    v_gtext at (328,298) len=2 chars=C:
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+K   VDI    op=8   v_gtext     
+    v_gtext at (312,320) len=11 chars=Boot tim
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 4 (out 4)
+K   VDI    op=8   v_gtext     
+    v_gtext at (328,320) len=19 chars=1980-01-
+K   VDI    op=17  ?           
+K   VDI    op=6   v_pline     
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+K   VDI    op=8   v_gtext     
+    v_gtext at (320,368) len=31 chars=Hold <Co
+K   VDI    op=25  ?           
+K   VDI    op=23  ?           
+K   VDI    op=114 vr_recfl    
+    vr_recfl rect=(160,390)-(479,405)
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 0 (out 0)
+K   VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+K   VDI    op=8   v_gtext     
+    v_gtext at (320,390) len=33 chars=Hold <Sh
+K   VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+K   VDI    op=39  vst_alignment
+K   VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+K   VDI    op=8   v_gtext     
+    v_gtext at (320,416) len=63 chars=NewTOS i
+K   VDI    op=101 v_clsvwk    
+U0  GEMDOS #1  fn=0x4a Mshrink   -> 0
+U0  GEMDOS #1  fn=0x154           -> -1
+U0  GEMDOS #1  fn=0x119           -> -32
+U0  GEMDOS #1  fn=0x138           -> -32
+U0  GEMDOS #1  fn=0x10f           -> -32
+U0  GEMDOS #1  fn=0x139           -> -32
+U0  GEMDOS #1  fn=0x114           -> -32
+U0  GEMDOS #1  fn=0x104           -> -32
+U0  GEMDOS #1  fn=0x42 Fseek     -> 0
+U0  GEMDOS #1  fn=0x42 Fseek     -> 0
+U0  GEMDOS #1  fn=0x46           -> 0
+U0  GEMDOS #1  fn=0x104           -> -32
+U0  GEMDOS #1  fn=0x42 Fseek     -> 0
+U0  GEMDOS #1  fn=0x42 Fseek     -> 0
+U0  GEMDOS #1  fn=0x104           -> -32
+U0  GEMDOS #1  fn=0x42 Fseek     -> 0
+U0  GEMDOS #1  fn=0x42 Fseek     -> 0
+U0  GEMDOS #1  fn=0x15e           -> -32
+U0  GEMDOS #1  fn=0x48 Malloc    -> 27648000
+U0  BIOS   #13 fn=0x05           -> 0x5f0
+U0  AES    op=10  appl_init    -> 0
+U0  BIOS   #13 fn=0x05           -> 0x5f0
+U0  AES    op=110 rsrc_load    -> 1
+    rsrc_load fname="desktop.rsc"
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=104 wind_get     -> 1
+    wind_get(desk, WF_WORKXYWH): xywh=(0,19,640,461)
+U0  AES    op=77  graf_handle  -> 1
+    graf_handle: handle=1 wchar=8 hchar=16 wbox=19 hbox=19
+U0  VDI    op=100 v_opnvwk    
+    v_opnvwk work_out[0..10]=[639,479,0,278,278,3,7,0,6,8]
+U0  VDI    op=104 ?           
+U0  VDI    op=108 ?           
+U0  VDI    op=16  ?           
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=19  ?           
+U0  VDI    op=102 ?           
+U0  VDI    op=104 ?           
+U0  GEM    #2  sel=18446744073709551614 (unknown selector)
+U0  AES    op=13  appl_find    -> -1
+U0  VDI    op=38  ?           
+U0  VDI    op=107 vst_point   
+U0  VDI    op=117 vqt_width   
+U0  VDI    op=102 ?           
+U0  VDI    op=38  ?           
+U0  VDI    op=21  vst_font    
+U0  VDI    op=107 vst_point   
+U0  VDI    op=117 vqt_width   
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=0) tree=0x1a60150 ROOT(x,y,w,h)=(0,0,640,400)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=10) tree=0x1a626d0 ROOT(x,y,w,h)=(0,0,312,288)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=11) tree=0x1a62950 ROOT(x,y,w,h)=(0,0,288,288)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=3) tree=0x1a60d30 ROOT(x,y,w,h)=(0,0,312,144)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=2) tree=0x1a60c70 ROOT(x,y,w,h)=(0,0,312,144)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=6) tree=0x1a614d0 ROOT(x,y,w,h)=(0,0,312,304)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=1) tree=0x1a60ab0 ROOT(x,y,w,h)=(0,0,312,256)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=4) tree=0x1a60e50 ROOT(x,y,w,h)=(0,0,304,288)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=8) tree=0x1a620b0 ROOT(x,y,w,h)=(0,0,312,208)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=7) tree=0x1a61cf0 ROOT(x,y,w,h)=(0,0,312,288)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=9) tree=0x1a62250 ROOT(x,y,w,h)=(0,0,304,256)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=5) tree=0x1a612b0 ROOT(x,y,w,h)=(0,0,312,320)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=12) tree=0x1a62bf0 ROOT(x,y,w,h)=(0,0,672,400)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=13) tree=0x1a62cf0 ROOT(x,y,w,h)=(0,0,192,128)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=14) tree=0x1a62db0 ROOT(x,y,w,h)=(0,0,304,288)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=15) tree=0x1a63110 ROOT(x,y,w,h)=(0,0,312,320)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=23) tree=0x1a64330 ROOT(x,y,w,h)=(0,0,312,320)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=16) tree=0x1a63530 ROOT(x,y,w,h)=(0,0,312,288)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=17) tree=0x1a63850 ROOT(x,y,w,h)=(0,0,312,272)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=19) tree=0x1a63bd0 ROOT(x,y,w,h)=(0,0,256,288)
+U0  GEMDOS #1  fn=0x48 Malloc    -> 27697152
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=18) tree=0x1a63af0 ROOT(x,y,w,h)=(0,0,264,144)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=20) tree=0x1a63dd0 ROOT(x,y,w,h)=(0,0,312,272)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=21) tree=0x1a63fd0 ROOT(x,y,w,h)=(0,0,240,256)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=22) tree=0x1a641b0 ROOT(x,y,w,h)=(0,0,312,192)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=24) tree=0x1a64930 ROOT(x,y,w,h)=(0,0,312,256)
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=25) tree=0x1a64b30 ROOT(x,y,w,h)=(0,0,224,240)
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  AES    op=41  ?            -> 1
+U0  AES    op=41  ?            -> 1
+U0  AES    op=41  ?            -> 1
+U0  AES    op=44  ?            -> 1
+U0  AES    op=44  ?            -> 1
+U0  AES    op=104 wind_get     -> 1
+    wind_get: handle=0 field=17 -> (-4096,406,24576,9)
+U0  AES    op=44  ?            -> 1
+U0  AES    op=44  ?            -> 1
+U0  AES    op=44  ?            -> 1
+U0  AES    op=104 wind_get     -> 1
+    wind_get(desk, WF_WORKXYWH): xywh=(0,19,640,461)
+U0  AES    op=112 rsrc_gaddr   -> 1
+U0  GEMDOS #1  fn=0x44 Mxalloc   -> 10485760
+U0  GEMDOS #1  fn=0x44 Mxalloc   -> 936976384
+U0  GEMDOS #1  fn=0x44 Mxalloc   -> 27713536
+U0  AES    op=110 rsrc_load    -> 1
+    rsrc_load fname="cicons.rsc"
+U0  AES    op=112 rsrc_gaddr   -> 1
+    rsrc_gaddr(R_TREE idx=0) tree=0x1a8e088 ROOT(x,y,w,h)=(0,0,480,592)
+U0  AES    op=104 wind_get     -> 1
+    wind_get(desk, WF_WORKXYWH): xywh=(0,19,640,461)
+U0  AES    op=124 ?            -> 1
+U0  AES    op=124 ?            -> 0
+U0  GEMDOS #1  fn=0x19 Dgetdrv   -> 2
+U0  GEMDOS #1  fn=0x47 Dgetpath  -> 0
+    Dgetpath buf="\APPS\TERADESK"
+U0  AES    op=104 wind_get     -> 1
+    wind_get(desk, WF_WORKXYWH): xywh=(0,19,640,461)
+U0  AES    op=104 wind_get     -> 1
+    wind_get: handle=0 field=10 -> (0,0,0,0)
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=108 wind_calc    -> 1
+    wind_calc: wtype=1 kind=0x4fff in=(0,19,640,461) out=(1,61,616,396)
+U0  AES    op=108 wind_calc    -> 1
+    wind_calc: wtype=1 kind=0x4fef in=(0,19,640,461) out=(1,42,616,415)
+U0  AES    op=30  menu_bar     -> 1
+U0  AES    op=35  menu_register -> -1
+U0  GEMDOS #1  fn=0x3b Dsetpath  -> 0
+    Dsetpath path="\"
+U0  AES    op=104 wind_get     -> 1
+    wind_get: handle=0 field=10 -> (0,0,0,0)
+U0  GEMDOS #1  fn=0x48 Malloc    -> 28065792
+U0  GEMDOS #1  fn=0x3d Fopen     -> 6
+    Fopen    path="C:\Apps\TERADESK\teradesk.inf"
+U0  GEMDOS #1  fn=0x3f Fread     -> 2048
+U0  XBIOS  #14 fn=0x03           -> 0x3c100000
+U0  XBIOS  #14 fn=0x02           -> 0x3c100000
+U0  VDI    op=102 ?           
+U0  XBIOS  #14 fn=0x04           -> 0x4
+U0  BIOS   #13 fn=0x05           -> 0x5f0
+U0  BIOS   #13 fn=0x05           -> 0x5f0
+U0  XBIOS  #14 fn=0x40           -> 0x0
+U0  XBIOS  #14 fn=0x03           -> 0x3c100000
+U0  XBIOS  #14 fn=0x02           -> 0x3c100000
+U0  AES    op=108 wind_calc    -> 1
+    wind_calc: wtype=1 kind=0x4fff in=(0,19,640,461) out=(1,61,616,396)
+U0  AES    op=108 wind_calc    -> 1
+    wind_calc: wtype=1 kind=0x4fef in=(0,19,640,461) out=(1,42,616,415)
+U0  AES    op=30  menu_bar     -> 1
+U0  AES    op=105 wind_set     -> 1
+U0  AES    op=51  form_dial    -> 1
+U0  AES    op=51  form_dial    -> 1
+U0  AES    op=30  menu_bar     -> 1
+U0  VDI    op=123 v_hide_c    
+    v_hide_c
+U0  VDI    op=122 v_show_c    
+    v_show_c reset=0
+U0  AES    op=78  graf_mouse   -> 1
+U0  AES    op=40  objc_add     -> 1
+U0  AES    op=40  objc_add     -> 1
+U0  AES    op=40  objc_add     -> 1
+U0  AES    op=40  objc_add     -> 1
+U0  AES    op=40  objc_add     -> 1
+U0  AES    op=105 wind_set     -> 1
+U0  AES    op=51  form_dial    -> 1
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(0,19)-(639,479)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=24  ?           
+U0  VDI    op=23  ?           
+U0  VDI    op=25  ?           
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=11  ?           
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(-3840,7)-(0,0)
+U0  AES    op=30  menu_bar     -> 1
+U0  AES    op=104 wind_get     -> 1
+    wind_get: handle=0 field=10 -> (0,0,0,0)
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  AES    op=108 wind_calc    -> 1
+    wind_calc: wtype=1 kind=0x4fff in=(0,19,640,461) out=(1,61,616,396)
+U0  AES    op=108 wind_calc    -> 1
+    wind_calc: wtype=1 kind=0x4fef in=(0,19,640,461) out=(1,42,616,415)
+U0  VDI    op=21  vst_font    
+U0  VDI    op=107 vst_point   
+U0  VDI    op=117 vqt_width   
+U0  GEMDOS #1  fn=0x3f Fread     -> 1010
+U0  VDI    op=21  vst_font    
+U0  VDI    op=107 vst_point   
+U0  VDI    op=117 vqt_width   
+U0  GEMDOS #1  fn=0x3e Fclose    -> 0
+U0  AES    op=78  graf_mouse   -> 1
+U0  AES    op=104 wind_get     -> 1
+    wind_get: handle=0 field=10 -> (0,0,0,0)
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  >> evnt_multi entered (#1)
+U0  AES    op=25  evnt_multi   -> 16
+    evnt_multi: fired=0x0010 mx=300 my=171 btn=0x1 ks=0x0 key=0x0000 clicks=0
+      msg=[10,1,0,7,70,422,336,60]
+U0  XBIOS  #14 fn=0x03           -> 0x3c100000
+U0  XBIOS  #14 fn=0x02           -> 0x3c100000
+U0  VDI    op=102 ?           
+U0  XBIOS  #14 fn=0x04           -> 0x4
+U0  BIOS   #13 fn=0x05           -> 0x5f0
+U0  BIOS   #13 fn=0x05           -> 0x5f0
+U0  XBIOS  #14 fn=0x40           -> 0x0
+U0  AES    op=78  graf_mouse   -> 1
+U0  AES    op=107 wind_update  -> 1
+U0  AES    op=54  form_center  -> 1
+    form_center tree=0x1a63850 ROOT(x,y,w,h)=(164,113,312,272) -> centred=(161,110,318,278)
+      obj[0] type=20 (x,y,w,h)=(164,113,312,272)
+      obj[1] type=2584 (x,y,w,h)=(16,14,280,18)
+      obj[2] type=1304 (x,y,w,h)=(296,0,16,16)
+      obj[3] type=2328 (x,y,w,h)=(16,40,280,88)
+      obj[4] type=1560 (x,y,w,h)=(16,24,104,16)
+      obj[5] type=1560 (x,y,w,h)=(16,40,104,16)
+      obj[6] type=1560 (x,y,w,h)=(16,56,104,16)
+      obj[7] type=1560 (x,y,w,h)=(136,24,128,16)
+U0  AES    op=54  form_center  -> 1
+    form_center tree=0x1a63850 ROOT(x,y,w,h)=(164,113,312,272) -> centred=(161,110,318,278)
+      obj[0] type=20 (x,y,w,h)=(164,113,312,272)
+      obj[1] type=2584 (x,y,w,h)=(16,14,280,18)
+      obj[2] type=1304 (x,y,w,h)=(296,0,16,16)
+      obj[3] type=2328 (x,y,w,h)=(16,40,280,88)
+      obj[4] type=1560 (x,y,w,h)=(16,24,104,16)
+      obj[5] type=1560 (x,y,w,h)=(16,40,104,16)
+      obj[6] type=1560 (x,y,w,h)=(16,56,104,16)
+      obj[7] type=1560 (x,y,w,h)=(136,24,128,16)
+U0  GEMDOS #1  fn=0x48 Malloc    -> 28098560
+U0  AES    op=78  graf_mouse   -> 1
+U0  VDI    op=109 vro_cpyfm   
+U0  AES    op=78  graf_mouse   -> 1
+U0  AES    op=78  graf_mouse   -> 1
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=23  ?           
+U0  VDI    op=25  ?           
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=11  ?           
+U0  VDI    op=17  ?           
+U0  VDI    op=108 ?           
+U0  VDI    op=15  ?           
+U0  VDI    op=16  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=17  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=21  vst_font    
+U0  VDI    op=13  ?           
+U0  VDI    op=39  vst_alignment
+U0  VDI    op=107 vst_point   
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+U0  VDI    op=22  vst_color   
+    vst_color -> 12 (out 12)
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=8   v_gtext     
+    v_gtext at (182,127) len=13 chars=Video Op
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(-22244,417)-(0,0)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=23  ?           
+U0  VDI    op=25  ?           
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=11  ?           
+U0  VDI    op=17  ?           
+U0  VDI    op=108 ?           
+U0  VDI    op=15  ?           
+U0  VDI    op=16  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=17  ?           
+U0  VDI    op=108 ?           
+U0  VDI    op=15  ?           
+U0  VDI    op=16  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=17  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=17  ?           
+U0  VDI    op=108 ?           
+U0  VDI    op=15  ?           
+U0  VDI    op=16  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=17  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=6   v_pline     
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(-24152,417)-(0,0)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=23  ?           
+U0  VDI    op=25  ?           
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=11  ?           
+U0  VDI    op=17  ?           
+U0  VDI    op=108 ?           
+U0  VDI    op=15  ?           
+U0  VDI    op=16  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=17  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=23  ?           
+U0  VDI    op=25  ?           
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=11  ?           
+U0  VDI    op=21  vst_font    
+U0  VDI    op=13  ?           
+U0  VDI    op=39  vst_alignment
+U0  VDI    op=107 vst_point   
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=8   v_gtext     
+    v_gtext at (188,153) len=19 chars=Standard
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(-3840,7)-(0,0)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=121 ?           
+U0  VDI    op=121 ?           
+U0  VDI    op=121 ?           
+U0  VDI    op=21  vst_font    
+U0  VDI    op=13  ?           
+U0  VDI    op=39  vst_alignment
+U0  VDI    op=107 vst_point   
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=8   v_gtext     
+    v_gtext at (216,177) len=6 chars=ST-Low
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(-3840,7)-(0,0)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=121 ?           
+U0  VDI    op=121 ?           
+U0  VDI    op=121 ?           
+U0  VDI    op=21  vst_font    
+U0  VDI    op=13  ?           
+U0  VDI    op=39  vst_alignment
+U0  VDI    op=107 vst_point   
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=8   v_gtext     
+    v_gtext at (216,193) len=9 chars=ST-Mediu
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(-3840,7)-(0,0)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=121 ?           
+U0  VDI    op=121 ?           
+U0  VDI    op=121 ?           
+U0  VDI    op=21  vst_font    
+U0  VDI    op=13  ?           
+U0  VDI    op=39  vst_alignment
+U0  VDI    op=107 vst_point   
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=8   v_gtext     
+    v_gtext at (216,209) len=7 chars=ST-High
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(-3840,7)-(0,0)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=121 ?           
+U0  VDI    op=121 ?           
+U0  VDI    op=121 ?           
+U0  VDI    op=21  vst_font    
+U0  VDI    op=13  ?           
+U0  VDI    op=39  vst_alignment
+U0  VDI    op=107 vst_point   
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=8   v_gtext     
+    v_gtext at (336,177) len=6 chars=TT-Low
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(-3840,7)-(0,0)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=121 ?           
+U0  VDI    op=121 ?           
+U0  VDI    op=121 ?           
+U0  VDI    op=21  vst_font    
+U0  VDI    op=13  ?           
+U0  VDI    op=39  vst_alignment
+U0  VDI    op=107 vst_point   
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=8   v_gtext     
+    v_gtext at (336,193) len=9 chars=TT-Mediu
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(-3840,7)-(0,0)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=121 ?           
+U0  VDI    op=121 ?           
+U0  VDI    op=121 ?           
+U0  VDI    op=21  vst_font    
+U0  VDI    op=13  ?           
+U0  VDI    op=39  vst_alignment
+U0  VDI    op=107 vst_point   
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=8   v_gtext     
+    v_gtext at (336,209) len=7 chars=TT-High
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(-3840,7)-(0,0)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=23  ?           
+U0  VDI    op=25  ?           
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=11  ?           
+U0  VDI    op=17  ?           
+U0  VDI    op=108 ?           
+U0  VDI    op=15  ?           
+U0  VDI    op=16  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=17  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=23  ?           
+U0  VDI    op=25  ?           
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=11  ?           
+U0  VDI    op=21  vst_font    
+U0  VDI    op=13  ?           
+U0  VDI    op=39  vst_alignment
+U0  VDI    op=107 vst_point   
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=8   v_gtext     
+    v_gtext at (188,249) len=7 chars=Options
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(-3840,7)-(0,0)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=23  ?           
+U0  VDI    op=25  ?           
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=11  ?           
+U0  VDI    op=17  ?           
+U0  VDI    op=108 ?           
+U0  VDI    op=15  ?           
+U0  VDI    op=16  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=17  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=21  vst_font    
+U0  VDI    op=13  ?           
+U0  VDI    op=39  vst_alignment
+U0  VDI    op=107 vst_point   
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=8   v_gtext     
+    v_gtext at (220,305) len=12 chars=Save pal
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(305,0)-(0,0)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=23  ?           
+U0  VDI    op=25  ?           
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=11  ?           
+U0  VDI    op=17  ?           
+U0  VDI    op=108 ?           
+U0  VDI    op=15  ?           
+U0  VDI    op=16  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=17  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=21  vst_font    
+U0  VDI    op=13  ?           
+U0  VDI    op=39  vst_alignment
+U0  VDI    op=107 vst_point   
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=8   v_gtext     
+    v_gtext at (220,289) len=12 chars=Blitter 
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(289,0)-(0,0)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=23  ?           
+U0  VDI    op=25  ?           
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=11  ?           
+U0  VDI    op=17  ?           
+U0  VDI    op=108 ?           
+U0  VDI    op=15  ?           
+U0  VDI    op=16  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=17  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=21  vst_font    
+U0  VDI    op=13  ?           
+U0  VDI    op=39  vst_alignment
+U0  VDI    op=107 vst_point   
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=8   v_gtext     
+    v_gtext at (220,273) len=12 chars=Overscan
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(273,0)-(0,0)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=23  ?           
+U0  VDI    op=25  ?           
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=11  ?           
+U0  VDI    op=17  ?           
+U0  VDI    op=108 ?           
+U0  VDI    op=15  ?           
+U0  VDI    op=16  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=6   v_pline     
+U0  VDI    op=21  vst_font    
+U0  VDI    op=13  ?           
+U0  VDI    op=39  vst_alignment
+U0  VDI    op=107 vst_point   
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=8   v_gtext     
+    v_gtext at (404,353) len=6 chars=Cancel
+U0  VDI    op=116 vqt_extent  
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=22  vst_color   
+    vst_color -> 2 (out 2)
+U0  VDI    op=8   v_gtext     
+    v_gtext at (404,353) len=1 chars= 
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(-3840,7)-(0,0)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=23  ?           
+U0  VDI    op=25  ?           
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=11  ?           
+U0  VDI    op=17  ?           
+U0  VDI    op=108 ?           
+U0  VDI    op=15  ?           
+U0  VDI    op=16  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=6   v_pline     
+U0  VDI    op=6   v_pline     
+U0  VDI    op=21  vst_font    
+U0  VDI    op=13  ?           
+U0  VDI    op=39  vst_alignment
+U0  VDI    op=107 vst_point   
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=8   v_gtext     
+    v_gtext at (340,353) len=2 chars=OK
+U0  VDI    op=116 vqt_extent  
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=22  vst_color   
+    vst_color -> 2 (out 2)
+U0  VDI    op=8   v_gtext     
+    v_gtext at (340,353) len=1 chars= 
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(-3840,7)-(0,0)
+U0  AES    op=78  graf_mouse   -> 1
+U0  AES    op=78  graf_mouse   -> 1
+U0  AES    op=42  objc_draw    -> 1
+U0  AES    op=78  graf_mouse   -> 1
+U0  AES    op=107 wind_update  -> 1
+U0  >> evnt_multi entered (#2)
+U0  AES    op=25  evnt_multi   -> 2
+    evnt_multi: fired=0x0002 mx=201 my=281 btn=0x1 ks=0x0 key=0x0000 clicks=1
+U0  AES    op=43  objc_find    -> 13
+U0  >> evnt_multi entered (#3)
+U0  AES    op=25  evnt_multi   -> 1
+    evnt_multi: fired=0x0001 mx=201 my=281 btn=0x0 ks=0x0 key=0x1c0d clicks=0
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=23  ?           
+U0  VDI    op=25  ?           
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=11  ?           
+U0  VDI    op=17  ?           
+U0  VDI    op=108 ?           
+U0  VDI    op=15  ?           
+U0  VDI    op=16  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=6   v_pline     
+U0  VDI    op=6   v_pline     
+U0  VDI    op=21  vst_font    
+U0  VDI    op=13  ?           
+U0  VDI    op=39  vst_alignment
+U0  VDI    op=107 vst_point   
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 3 (out 3)
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=8   v_gtext     
+    v_gtext at (340,353) len=2 chars=OK
+U0  VDI    op=116 vqt_extent  
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=22  vst_color   
+    vst_color -> 2 (out 2)
+U0  VDI    op=8   v_gtext     
+    v_gtext at (340,353) len=1 chars= 
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(-3840,7)-(0,0)
+U0  AES    op=107 wind_update  -> 1
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(161,110)-(478,387)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=23  ?           
+U0  VDI    op=25  ?           
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=11  ?           
+U0  VDI    op=17  ?           
+U0  VDI    op=108 ?           
+U0  VDI    op=15  ?           
+U0  VDI    op=16  ?           
+U0  VDI    op=6   v_pline     
+U0  VDI    op=6   v_pline     
+U0  VDI    op=6   v_pline     
+U0  VDI    op=21  vst_font    
+U0  VDI    op=13  ?           
+U0  VDI    op=39  vst_alignment
+U0  VDI    op=107 vst_point   
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 2 (out 2)
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=8   v_gtext     
+    v_gtext at (340,353) len=2 chars=OK
+U0  VDI    op=116 vqt_extent  
+U0  VDI    op=106 vst_effects 
+U0  VDI    op=22  vst_color   
+    vst_color -> 2 (out 2)
+U0  VDI    op=8   v_gtext     
+    v_gtext at (340,353) len=1 chars= 
+U0  VDI    op=22  vst_color   
+    vst_color -> 1 (out 1)
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(-3840,7)-(0,0)
+U0  AES    op=78  graf_mouse   -> 1
+U0  VDI    op=109 vro_cpyfm   
+U0  AES    op=78  graf_mouse   -> 1
+U0  GEMDOS #1  fn=0x49 Mfree     -> 0
+U0  AES    op=107 wind_update  -> 1
+U0  XBIOS  #14 fn=0x03           -> 0x3c100000
+U0  XBIOS  #14 fn=0x02           -> 0x3c100000
+U0  AES    op=108 wind_calc    -> 1
+    wind_calc: wtype=1 kind=0x4fff in=(0,19,640,461) out=(1,61,616,396)
+U0  AES    op=108 wind_calc    -> 1
+    wind_calc: wtype=1 kind=0x4fef in=(0,19,640,461) out=(1,42,616,415)
+U0  AES    op=30  menu_bar     -> 1
+U0  AES    op=105 wind_set     -> 1
+U0  AES    op=51  form_dial    -> 1
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=1 rect=(0,19)-(639,479)
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=24  ?           
+U0  VDI    op=23  ?           
+U0  VDI    op=25  ?           
+U0  VDI    op=32  vswr_mode   
+    vswr_mode -> 1 (out 1)
+U0  VDI    op=11  ?           
+U0  VDI    op=129 vs_clip     
+    vs_clip flag=0 rect=(-3840,7)-(0,0)
+U0  AES    op=30  menu_bar     -> 1
+U0  VDI    op=123 v_hide_c    
+    v_hide_c
+U0  VDI    op=122 v_show_c    
+    v_show_c reset=0
+U0  AES    op=78  graf_mouse   -> 1
+U0  AES    op=33  ?            -> 1
+U0  AES    op=104 wind_get     -> 1
+    wind_get: handle=0 field=10 -> (0,0,0,0)
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=32  menu_ienable -> 1
+U0  AES    op=31  menu_icheck  -> 1
+U0  >> evnt_multi entered (#4)

@@ -1,0 +1,10 @@
+runs/ovs-before/ovs-before-desk.png vs runs/ovs-after/ovs-after-desk.png: 0 pixels differ
+runs/ovs-before/ovs-before-opts.png vs runs/ovs-after/ovs-after-opts.png: 0 pixels differ
+runs/ovs-before/ovs-before-hover.png vs runs/ovs-after/ovs-after-hover.png: 148 pixels differ, bbox x 221-282 y 275-286
+runs/ovs-before/ovs-before-dlg.png vs runs/ovs-after/ovs-after-dlg.png: 148 pixels differ, bbox x 221-282 y 275-286
+runs/ovs-before/ovs-before-ovs.png vs runs/ovs-after/ovs-after-ovs.png: 197 pixels differ, bbox x 195-282 y 275-286
+runs/ovs-before/ovs-before-ok.png vs runs/ovs-after/ovs-after-ok.png: 111941 pixels differ, bbox x 0-599 y 1-351
+runs/ovs-before/ovs-before-after.png vs runs/ovs-after/ovs-after-after.png: 111821 pixels differ, bbox x 0-599 y 1-351
+runs/ovs-after/ovs-after-dlg.png vs runs/ovs-after/ovs-after-ovs.png: 0 pixels differ
+runs/ovs-before/ovs-before-dlg.png vs runs/ovs-before/ovs-before-ovs.png: 49 pixels differ, bbox x 195-206 y 275-286
+runs/ovs-after/ovs-after-desk.png vs runs/ovs-after/ovs-after-after.png: 194 pixels differ, bbox x 201-329 y 239-296

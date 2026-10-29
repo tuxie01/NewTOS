@@ -21,11 +21,12 @@
 # file's own directory first, header patches cannot work via -I; instead the
 # build compiles from a SHADOW TREE (build/tree/ = symlinks to the vendored
 # files, patch symlinks layered on top), so .c and .h patches apply uniformly
-# and consistently across all translation units. The ten patch files today
+# and consistently across all translation units. The twelve patch files today
 # (each file's header says why): library/utility/nf_ops.c (m68k asm: NatFeats
 # probe -> "absent"); environm.c, window.h, library/xdialog/library.h, icon.c, rsc_load.c,
 # main.c, file.c, library/utility/gettos.c, library/utility/cookie.c (LP64: 32-bit TOS fields/words,
-# struct size and alignment, 8-byte jar slot); tests/ (probes, host tests) is not layered in. Rule: a problem every LP64 port would meet (library, header,
+# struct size and alignment, 8-byte jar slot); video.c + nohard.h (no ACIA overscan
+# switch when _MCH = MCH_NOHARD, SDK07); tests/ (probes, host tests) is not layered in. Rule: a problem every LP64 port would meet (library, header,
 # flag) is fixed ONCE in the SDK (gemlib/libc overlays, newtos-arch, crt0);
 # what only TeraDesk needs is a patch file here, with a header saying why.
 # Do not edit the vendored tree.

@@ -1,0 +1,78 @@
+measurement-2026-10-29-sdk07 -- TASK/SDK07: TeraDesk's Overscan option is disabled when _MCH = 0xFFFFFFFF (MCH_NOHARD),
+so ticking it + OK in the Video options dialog no longer runs Super(0L) + the ACIA write at 0xFFFC00 (the Bus Error of
+measurements/measurement-2026-10-29-arch06/RUNINFO.TXT, RESULT 2). QEMU raspi4b, injector-driven, before/after.
+==========================================================================================
+Developer, 2026-10-29 (host clock CET). Main tree at 28cd92df plus the uncommitted SDK07 change (files in
+TASK/SDK07-STATUS-DONE.MD). Nothing committed, no hardware, no real card, no kernel/tos-api change. Scratch (trees,
+kernel, cards, clones, the "before" build) in the session scratchpad, deleted after the run; sha256 below and in
+runs/*/run.txt. Order of commands: method/COMMANDS.TXT.
+
+PATCH (patch site SDK07, sdk/overlays/teradesk/)
+  nohard.h   newtos_mch_nohard(): find_cookie(C__MCH) (overlay cookie.c, SDK04-C6) and the low 32 bits == 0xFFFFFFFF
+             (find_cookie hands the value out zero-extended). Absent _MCH = hardware present, as upstream assumes.
+  video.c    overlay of the vendored sdk/apps/teradesk/video.c, otherwise byte-identical (CRLF kept):
+             - get_set_video(0), ST/STe branch: NOHARD -> over = -1L (upstream's "no overscan" marker), OVER/Lace probe
+               skipped; voptions() then leaves VOVERSCN disabled (upstream video.c:487-491 unchanged).
+             - get_set_video(1/2), ST/STe branch: the Super(0L) + *0xFFFC00 block (upstream video.c:280-320) also
+               requires !newtos_mch_nohard().
+  sdk/apps/build-teradesk.sh: header comment lists the two new overlay files (no logic change).
+
+INPUTS
+  QEMU       11.0.2, -M raspi4b, -append serial=on
+  kernel     kernel8-trace-ovs.img f97960f386ce5850c67a7e2a08909d0204420976458aad8643a0e9153b43cc88, release rpi4 from a
+             scratch copy of the working tree (method/mktree.sh) with tools/inject-arm.py up:DESKTOP=method/ovs.script,
+             --features svc-seq-trace,bios-arg-trace (method/build-trace.sh, SOURCE_DATE_EPOCH 1792368000). The kernel
+             sources are main's; the same kernel boots both cards.
+  TeraDesk   after:  sdk/apps/build-teradesk.sh (12 overlays incl. video.c + nohard.h)
+                     DESKTOP.NAP 48dbf1c5dcbb98d02ecc1b783cfe4f2e1fff487f3a0d8a7fac19075e834fd742 (353312 bytes)
+             before: method/build-before.sh (same script, overlay copy without video.c + nohard.h, 10 overlays)
+                     DESKTOP.NAP f763e7d94c3d5d32da2b1d4cb942e15435f13542db5cf9463d359620c0bb27fb (353216 bytes)
+                     = byte-identical to the SDK04-C6 binary booted in ARCH06 (its RUNINFO.TXT, INPUTS).
+             resources identical in both: desktop.rsc 409f69a0..., icons.rsc 8d4bc8a2..., cicons.rsc ee7de7f3...
+  cards      tools/mkcard.sh via method/mkcards.sh, 64 MiB MBR+FAT16, NEWDESK.INF = method/z-teradesk.inf (#Z autorun of
+             C:\Apps\TERADESK\DESKTOP.NAP), no AUTO program (_VDO absent -> ST branch, as ARCH06 "novdo"):
+               before ab0df5765b29fe213244c25863495414afaeaa6091506faf48c5fbc99ef88562
+               after  a0a487351664f9a44b604166bc9987df1cd692ad71623344ad4270f638528239
+             manifests: cards/before.img.manifest, cards/after.img.manifest; optional_missing, verbatim, both:
+               optional_missing none
+             Every run boots an APFS clone (cp -c); clone sha256 after the run in runs/*/run.txt; clones and cards
+             deleted. fsck_msdos -n of both clones: rc 0 (runs/*/fsck.txt).
+  script     method/ovs.spec -> ovs.script: the byte stream of ARCH06's vid-novdo.spec (Options -> Video options...,
+             click on the Overscan box at 201,281, Return = OK) with two timing changes: a nop + mark "dlg" 1 s before
+             the click (dialog as opened) and 1.5 s between the click and Return (mark "ovs" = dialog after the click).
+
+RESULT 1 -- before (runs/ovs-before): the ARCH06 crash, reproduced
+  -dlg.png: Overscan enabled, unticked. Click: SVCSEQ.LOG evnt_multi -> objc_find 13 -> objc_change (the box ticks;
+  -ovs.png: the X in the box, 49 px vs -dlg, bbox x 195-206 y 275-286). Return:
+    [crash] slot 0 Bus Error esr=0x92000046 pc=0x1a28c94 far=Some(16776192)
+    Memory violation: hardware memory, write (translation fault, level 2)    Crash at text+00020c94
+  (= ARCH06: same pc, same far 0xFFFC00). -ok.png/-after.png: the panic screen. EXC/PANIC lines: 1.
+  [biostrace] at start-up and dialog open: Setexc(0x5A0/4,-1) x3 (_VDO, OVER, Lace) then Blitmode(-1).
+
+RESULT 2 -- after (runs/ovs-after): option disabled, no hardware write, no crash
+  -dlg.png: Overscan greyed (disabled). vs before-dlg: 148 px differ, bbox x 221-282 y 275-286 = the "Overscan" label
+    only (normal -> greyed text); the rest of the dialog (resolution radios, TT-Medium set, Blitter greyed, Save
+    palette, Colours 64K, OK/Cancel) is pixel-identical. desk/opts screendumps: 0 px differ before/after.
+  Click on the box: SVCSEQ.LOG evnt_multi -> objc_find 13, no objc_change; -ovs.png = -dlg.png (0 px differ).
+  Return (= OK): SVCSEQ.LOG between evnt_multi #3 (the Return) and #4: dialog redraw, Mfree, XBIOS Logbase, Physbase
+    (get_set_video(1)), the desktop regen (menu_ienable/menu_icheck) -- no GEMDOS 0x20 (Super), no Setscreen.
+  [biostrace]: Setexc(0x5A0/4,-1) x2 per get_set_video(0) (_VDO, _MCH; OVER/Lace not probed), Blitmode(-1); on OK
+    Logbase, Physbase only. EXC/PANIC lines: 0. -ok.png = -after.png: the desktop, TeraDesk alive (back in evnt_multi
+    #4); vs -desk.png 194 px = the mouse pointer (parked at 201,281 instead of the start position).
+  All pixel numbers: checks/pxdiff-before-after.txt (method/pxdiff.py).
+
+RESULT 3 -- tests
+  sdk/run-host-tests.sh: 34 passed, 0 failed, 0 skipped (33 + new td-nohard-host: 15 checks, gate TRUE only for
+    _MCH = 0xFFFFFFFF in an odd and an even slot; FALSE for ST/STe/TT/Falcon/ARAnyM _MCH, no _MCH, empty jar, no jar).
+    Counter-check (scratch, not kept): the gate written as `mch == -1L` fails 2 of 15 (the zero-extension).
+    (checks/sdk-host-tests.txt)
+  cargo xtask test: 1842 passed, 0 failed, 1 ignored (checks/xtask-test-results.txt) -- unchanged, no Rust touched.
+
+NOT DONE / OPEN
+  Real Pi 4 (hardware; not a worker's step). The Falcon branch (_VDO injected) is not touched by the patch: there
+  VOVERSCN is governed by VsetMode/VgetMonitor (video.c:514-538) and nothing writes 0xFFFC00. The full regression
+  suite is the Tester's.
+
+FILES  method/ (scripts, spec + generated script, INF files, COMMANDS.TXT), cards/ (manifests), runs/ovs-before,
+  runs/ovs-after (serial.log, SVCSEQ.LOG, screendumps desk/opts/hover/dlg/ovs/ok/after, run.txt, fsck.txt,
+  qemu-stdout.txt), checks/ (pixel diff, test summaries).
