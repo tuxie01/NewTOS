@@ -21,11 +21,11 @@
 # file's own directory first, header patches cannot work via -I; instead the
 # build compiles from a SHADOW TREE (build/tree/ = symlinks to the vendored
 # files, patch symlinks layered on top), so .c and .h patches apply uniformly
-# and consistently across all translation units. The nine patch files today
+# and consistently across all translation units. The ten patch files today
 # (each file's header says why): library/utility/nf_ops.c (m68k asm: NatFeats
-# probe -> "absent"); environm.c, window.h, library/xdialog/library.h, icon.c,
-# rsc_load.c, main.c, file.c, library/utility/gettos.c (LP64: 32-bit TOS
-# fields/words, struct size and alignment). Rule: a problem every LP64 port would meet (library, header,
+# probe -> "absent"); environm.c, window.h, library/xdialog/library.h, icon.c, rsc_load.c,
+# main.c, file.c, library/utility/gettos.c, library/utility/cookie.c (LP64: 32-bit TOS fields/words,
+# struct size and alignment, 8-byte jar slot); tests/ (probes, host tests) is not layered in. Rule: a problem every LP64 port would meet (library, header,
 # flag) is fixed ONCE in the SDK (gemlib/libc overlays, newtos-arch, crt0);
 # what only TeraDesk needs is a patch file here, with a header saying why.
 # Do not edit the vendored tree.
@@ -127,7 +127,7 @@ if [ -d "$OVL" ]; then
         ln -sf "$OVL/$f" "$TREE/$f"
         echo "  overlay: $f (from sdk/overlays/teradesk/, vendored tree untouched)"
         n_ovl=$((n_ovl+1))
-    done < <(cd "$OVL" && find . -type f \( -name '*.c' -o -name '*.h' \))
+    done < <(cd "$OVL" && find . -type f \( -name '*.c' -o -name '*.h' \) ! -path './tests/*') # tests/: probes, not patches (SDK04 C6)
 fi
 echo "shadow tree: $TREE  (overlays applied: $n_ovl)"
 

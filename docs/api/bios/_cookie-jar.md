@@ -274,8 +274,8 @@ construction data structure being read by an LP64 program, and both will hit
 **1. An 8-byte read of `$5A0` is wrong.** `ramtop` sits directly above at
 `$5A4`, so `*(long**)0x5A0` yields `(ramtop << 32) | jar` — measured
 `0x3BE00000000005F0` (`apitest` T05). Only the **four**-byte read is correct;
-that is what `Setexc(0x5A0/4, -1)` returns, which is why TeraDesk's live path
-is unaffected. (Also noted at the write site,
+that is what `Setexc(0x5A0/4, -1)` returns, so TeraDesk's live path gets the
+right jar pointer (its walk still had point 2 until SDK04 C6, below). (Also noted at the write site,
 `tos-api/src/bdos/process/loader.rs`, `$5A4` block.)
 
 **2. A `struct { long name; long value; }` element has the wrong stride.** A
@@ -283,7 +283,7 @@ TOS cookie slot is a pair of **32-bit** LONGs — 8 bytes — and that is what t
 mirror carries. The same declaration is 8 bytes on m68k but **16** on LP64
 (TeraDesk `sdk/apps/teradesk/library/xdialog/library.h:201-205`), so a verbatim `cookie++` walk
 
-  * reads every **second** slot, with a tag and the previous slot's value
+  * reads every **second** slot, with a tag and its own value
     fused into one 8-byte word (`jar[0]` reads as `0x000001004E544F53` —
     `NTOS` with its value 0x100 on top), and
   * **does not recognise the terminator**: the `{0, capacity}` pair reads as
@@ -294,13 +294,17 @@ Measured by `apitest` SX16/SX17: `sizeof` = 16, the ported-stride scan takes
 3 steps from `0x5F0` and stops at `0x620` — past the terminator at `0x610` —
 without finding `NTOS`.
 
-Consequence today: TeraDesk's `find_cookie` (compiled with `-D_TOS_ONLY`, so
+Consequence for TeraDesk: its `find_cookie` (compiled with `-D_TOS_ONLY`, so
 `_MINT_ == 0` and the `Ssystem` branch is not compiled in —
-`sdk/apps/build-teradesk.sh:99`) **never finds a cookie**. It is driven on
-every start (`sdk/apps/teradesk/main.c:1792-1795`, `:1837`) plus `sdk/apps/teradesk/xfilesys.c:1865` and
-`sdk/apps/teradesk/video.c:158`. That is invisible today only because every tag it asks for
-(`MiNT`/`Gnva`/`nAES`/`MagX`/`CT60`/`_FLK`/`_VDO`) is genuinely absent, so
-"not found" is the right answer by accident. **Not fixed here** — the fix is
+`sdk/apps/build-teradesk.sh:102@D_TOS_ONLY`) found a cookie only in an even slot with value 0, and
+then returned the next slot as its value (measured 2026-10-29: 3 of 12 tags agreed with `Getcookie`,
+the three absent ones; `measurements/measurement-2026-10-29-sdk04-c6/RUNINFO.TXT`). It is driven on
+every start (`sdk/overlays/teradesk/main.c:1861@find_cookie`, `CT60`) plus `sdk/apps/teradesk/xfilesys.c:1865` and
+`sdk/apps/teradesk/video.c:158`. That stayed invisible because every tag it asks for
+(`CT60`/`_FLK`/`_VDO`) is genuinely absent, so
+"not found" was the right answer by accident. **Fixed for TeraDesk on 2026-10-29** (TASK/SDK04, C6) by
+the patch `sdk/overlays/teradesk/library/utility/cookie.c`, which walks the slot as two 32-bit
+LONGs: 12 of 12 agree. For other 1:1 ports the general fix remains
 an ABI decision (declare the ported element as a pair of 32-bit LONGs in the
 toolchain overlay, or give the mirror an LP64 form), not a kernel defect.
 

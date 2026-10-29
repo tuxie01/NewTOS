@@ -1,0 +1,3 @@
+cookie.c under test: sdk/overlays/teradesk/library/utility/cookie.c
+cookie-host: 0 of 41 checks failed
+exit 0

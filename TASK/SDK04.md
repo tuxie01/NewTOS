@@ -96,3 +96,13 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (Erhebung) + Develope
     ob ZVIEW auf der Karte diesen Modus nutzt, ist offen.
   - Klasse D: WinDom `vqt_xname`, unerreichbar solange `vq_vgdos()` -2.
 - Vorgeschlagene Sonden S1–S3 im Dokument; Fixes erst nach Messung (Punkt 2).
+
+## Stand 2026-10-29 (Fund C6 erledigt)
+
+- TeraDesk `find_cookie` liest das Jar jetzt in 8-Byte-Eintraegen (benannte
+  Patch-Stelle `sdk/overlays/teradesk/library/utility/cookie.c`); Sonde
+  `TDCOOKIE.NCP` vorher 3/12, nachher 12/12 wie `Getcookie`; TeraDesk startet
+  unveraendert. Quittung [SDK04-C6-STATUS-DONE.MD](SDK04-C6-STATUS-DONE.MD),
+  Beleg `measurements/measurement-2026-10-29-sdk04-c6/RUNINFO.TXT`.
+- Offen in SDK04: Developer-Teil (Typen fester Breite, weitere Fixes nach
+  Messung: hypview `.REF`/`.BGH`, zView `remap_color`).

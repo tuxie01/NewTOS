@@ -162,13 +162,18 @@ LP64 32 — apitest declares its own `MDX`/`MPBX` for it.
 ### B2. The cookie jar at `$5A0`
 
 The classic idiom `for (c = *(COOKIE **)0x5A0; c->tag; c++)` compiles and
-runs — and finds nothing.
+runs — and finds almost nothing.
 
-**Symptom**: `find_cookie` never finds a cookie; a scan walks past the
-terminator into zero fill. Measured by apitest SX16/SX17: `sizeof(ported
+**Symptom**: the scan finds a cookie only if it sits in an **even** slot
+with value **0**, and then returns the next slot as its value; it walks past
+the terminator into zero fill. Measured by apitest SX16/SX17: `sizeof(ported
 COOKIE) = 16`, the stride scan takes 3 steps from `0x5F0` and stops at
 `0x620`, past the terminator at `0x610`
-(`docs/api/bios/_cookie-jar.md:267-304`).
+(`docs/api/bios/_cookie-jar.md:267-309`). Measured on TeraDesk's own
+`find_cookie` (probe `sdk/overlays/teradesk/tests/cookie-probe.c`,
+`measurements/measurement-2026-10-29-sdk04-c6/RUNINFO.TXT`): of nine cookies
+in slots 0–8 it found only `Z1Z1` (slot 6, value 0), with the value
+`0x123456785A325A32` — tag and value of slot 7.
 
 **Cause**: two independent LP64 effects. (1) An **8-byte read of `$5A0`**
 fuses `_p_cookies` with `ramtop`@`$5A4`: measured `0x3BE00000000005F0`. (2) A
@@ -181,11 +186,17 @@ the `{0, capacity}` terminator reads as `capacity << 32 ≠ 0`.
 trap (`sdk/libc/newtos-arch/getcookie.c`), and cflib's `cookie.c` already
 takes that branch under clang (`TASK/X01.md`, correction 2). If the app
 *must* scan the jar itself, read `$5A0` as a **4-byte** value
-(`Setexc(0x5A0/4, -1)` returns exactly that, which is why TeraDesk's live
-path works) and declare the slot as two `__UINT32_TYPE__`. A
-toolchain-level fix (narrowing the ported struct, or an LP64 mirror) is an
-open ABI decision, not done (`_cookie-jar.md:302-304`). Writes into the mirror
-never reach the kernel jar; use `Ssystem(S_SETCOOKIE)`.
+(`Setexc(0x5A0/4, -1)` returns exactly that) **and** declare the slot as two
+`__UINT32_TYPE__` — both halves are needed. TeraDesk's live path
+(`-D_TOS_ONLY`, so `find_cookie` takes the `Setexc` branch) had the first
+and not the second: the pointer was right, the 16-byte `COOKIE` stride still
+made `find_cookie` miss every cookie but an even-slot one with value 0. The
+patch `sdk/overlays/teradesk/library/utility/cookie.c` (patch site SDK04-C6)
+walks the slot as two `uint32_t`; host test `td-cookie-host`
+(`sdk/overlays/teradesk/tests/cookie-host.sh`). A toolchain-level fix
+(narrowing the ported struct, or an LP64 mirror) is an open ABI decision,
+not done (`_cookie-jar.md:307-309`). Writes into the mirror never reach the
+kernel jar; use `Ssystem(S_SETCOOKIE)`.
 
 ### B3. Kernel addresses vs. user addresses
 

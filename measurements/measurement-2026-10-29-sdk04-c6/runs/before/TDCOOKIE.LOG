@@ -1,0 +1,33 @@
+TDCOOKIE SDK04 C6 TeraDesk find_cookie vs Getcookie
+S Z0Z0 Ssystem(S_SETCOOKIE, 0x5A305A30, 0x00000000) = 0
+S Z1Z1 Ssystem(S_SETCOOKIE, 0x5A315A31, 0x00000000) = 0
+S Z2Z2 Ssystem(S_SETCOOKIE, 0x5A325A32, 0x12345678) = 0
+S Z3Z3 Ssystem(S_SETCOOKIE, 0x5A335A33, 0x87654321) = 0
+J jar at 0x5F0 (Setexc(0x5A0/4, -1))
+J slot  0 (even) tag 0x4E544F53 NTOS value 0x00000100
+J slot  1 (odd ) tag 0x5F4D4348 _MCH value 0x00050000
+J slot  2 (even) tag 0x5F494454 _IDT value 0x0000112F
+J slot  3 (odd ) tag 0x5F414B50 _AKP value 0x00000000
+J slot  4 (even) tag 0x45644449 EdDI value 0x00000001
+J slot  5 (odd ) tag 0x5A305A30 Z0Z0 value 0x00000000
+J slot  6 (even) tag 0x5A315A31 Z1Z1 value 0x00000000
+J slot  7 (odd ) tag 0x5A325A32 Z2Z2 value 0x12345678
+J slot  8 (even) tag 0x5A335A33 Z3Z3 value 0x87654321
+J slot  9 (odd ) tag 0x00000000 .... value 0x00000010
+P1  NTOS slot  0 find_cookie found=0 value=0x5A5A5A5A5A5A5A5A | Getcookie found=1 value=0x0000000000000100 -> DIFFER
+P2  _MCH slot  1 find_cookie found=0 value=0x5A5A5A5A5A5A5A5A | Getcookie found=1 value=0x0000000000050000 -> DIFFER
+P3  _IDT slot  2 find_cookie found=0 value=0x5A5A5A5A5A5A5A5A | Getcookie found=1 value=0x000000000000112F -> DIFFER
+P4  _AKP slot  3 find_cookie found=0 value=0x5A5A5A5A5A5A5A5A | Getcookie found=1 value=0x0000000000000000 -> DIFFER
+P5  EdDI slot  4 find_cookie found=0 value=0x5A5A5A5A5A5A5A5A | Getcookie found=1 value=0x0000000000000001 -> DIFFER
+P6  Z0Z0 slot  5 find_cookie found=0 value=0x5A5A5A5A5A5A5A5A | Getcookie found=1 value=0x0000000000000000 -> DIFFER
+P7  Z1Z1 slot  6 find_cookie found=1 value=0x123456785A325A32 | Getcookie found=1 value=0x0000000000000000 -> DIFFER
+P8  Z2Z2 slot  7 find_cookie found=0 value=0x5A5A5A5A5A5A5A5A | Getcookie found=1 value=0x0000000012345678 -> DIFFER
+P9  Z3Z3 slot  8 find_cookie found=0 value=0x5A5A5A5A5A5A5A5A | Getcookie found=1 value=0x0000000087654321 -> DIFFER
+P10 XXXX slot -1 find_cookie found=0 value=0x5A5A5A5A5A5A5A5A | Getcookie found=0 value=0x0000000000000000 -> AGREE
+P11 _VDO slot -1 find_cookie found=0 value=0x5A5A5A5A5A5A5A5A | Getcookie found=0 value=0x0000000000000000 -> AGREE
+P12 CT60 slot -1 find_cookie found=0 value=0x5A5A5A5A5A5A5A5A | Getcookie found=0 value=0x0000000000000000 -> AGREE
+D Z0Z0 Ssystem(S_DELCOOKIE) = 0
+D Z1Z1 Ssystem(S_DELCOOKIE) = 0
+D Z2Z2 Ssystem(S_DELCOOKIE) = 0
+D Z3Z3 Ssystem(S_DELCOOKIE) = 0
+TDCOOKIE: 3/12 agree

@@ -12,8 +12,8 @@
 #
 # Prerequisites: sdk/gemlib/build-gemlib.sh has extracted gemlib-0.44.0 and
 # applied the overlay (the tests compile the overlaid bindings); for
-# aesglobal_fields the vendored TeraDesk source (sdk/apps/teradesk) must be
-# present. Missing prerequisites SKIP that test with a line saying why; a
+# aesglobal_fields and td-cookie-host the vendored TeraDesk source
+# (sdk/apps/teradesk) must be present. Missing prerequisites SKIP that test with a line saying why; a
 # failing test FAILS the run.
 #
 # Usage:  sdk/run-host-tests.sh
@@ -276,6 +276,16 @@ if "$CC" -O1 -g -fsanitize=address,undefined -Wall -Wextra -Werror \
 else
   echo "FAIL  c2p-host (did not build)"; sed 's/^/      /' "$WORK/c2p-host.log"; fail=$((fail+1))
 fi
+
+# td-cookie-host (SDK04 C6): TeraDesk's find_cookie() as the -D_TOS_ONLY build
+# compiles it (the overlay library/utility/cookie.c, patch site SDK04-C6) walks
+# a jar in the kernel's wire format -- 8-byte slots, {0, capacity} terminator --
+# and finds every cookie, odd and even slots, value 0 or not, with the value
+# zero-extended; nothing behind the terminator. With the vendored cookie.c
+# (`COOKIE *` walk, 16 bytes per element on LP64) 30 of 41 checks fail.
+"$SDK/overlays/teradesk/tests/cookie-host.sh" > "$WORK/td-cookie-host.log" 2>&1; rc=$?
+[ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/td-cookie-host.log"
+report td-cookie-host $rc "$(tail -1 "$WORK/td-cookie-host.log")"
 
 # sysacc-cmdline-host (SYSINFO02): the System Info accessory's boot-argument
 # logic (sdk/examples/sysacc-cmdline.h, the header sysacc.c includes) -- the

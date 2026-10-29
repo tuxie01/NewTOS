@@ -1,0 +1,44 @@
+== before DESKTOP.NAP (65fdda2547754799...) find_cookie
+000000000001183c <find_cookie>:
+   1183c:      	mov	x9, x1
+   11840:      	mov	x10, x0
+   11844:      	mov	w0, #0x168              // =360
+   11848:      	mov	w8, #0x5                // =5
+   1184c:      	mov	x1, #-0x1               // =-1
+   11850:      	svc	#0xd
+   11854:      	cbz	x0, 0x1187c <find_cookie+0x40>
+   11858:      	ldr	x8, [x0], #0x10
+   1185c:      	cbz	x8, 0x11868 <find_cookie+0x2c>
+   11860:      	cmp	x8, x10
+   11864:      	b.ne	0x11858 <find_cookie+0x1c>
+   11868:      	cbz	x8, 0x11880 <find_cookie+0x44>
+   1186c:      	cbz	x9, 0x11878 <find_cookie+0x3c>
+   11870:      	ldur	x8, [x0, #-0x8]
+   11874:      	str	x8, [x9]
+   11878:      	mov	w0, #0x1                // =1
+   1187c:      	ret
+   11880:      	mov	w0, wzr
+   11884:      	ret
+
+== after DESKTOP.NAP (f763e7d94c3d5d32...) find_cookie
+000000000001183c <find_cookie>:
+   1183c:      	mov	x9, x1
+   11840:      	mov	x10, x0
+   11844:      	mov	w0, #0x168              // =360
+   11848:      	mov	w8, #0x5                // =5
+   1184c:      	mov	x1, #-0x1               // =-1
+   11850:      	svc	#0xd
+   11854:      	cbz	x0, 0x1187c <find_cookie+0x40>
+   11858:      	ldr	w8, [x0], #0x8
+   1185c:      	cbz	w8, 0x11868 <find_cookie+0x2c>
+   11860:      	cmp	w8, w10
+   11864:      	b.ne	0x11858 <find_cookie+0x1c>
+   11868:      	cbz	w8, 0x11880 <find_cookie+0x44>
+   1186c:      	cbz	x9, 0x11878 <find_cookie+0x3c>
+   11870:      	ldur	w8, [x0, #-0x4]
+   11874:      	str	x8, [x9]
+   11878:      	mov	w0, #0x1                // =1
+   1187c:      	ret
+   11880:      	mov	w0, wzr
+   11884:      	ret
+

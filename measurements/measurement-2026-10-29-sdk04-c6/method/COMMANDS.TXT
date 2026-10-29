@@ -1,0 +1,24 @@
+Commands of this run, in order (repository root; S = the session scratch .../scratchpad/sdk04c6, never /tmp
+itself; TMPDIR=$S/tmp for every script that calls mktemp).
+
+1  kernel:   cargo xtask build --board rpi4 --release; cp target/aarch64-unknown-none-softfloat/release/kernel8.img $S/
+2  before:   (no overlay library/utility/cookie.c yet)
+             sdk/overlays/teradesk/tests/build-cookie-probe.sh $S/before/TDCOOKIE.NCP
+               -> compiles the vendored sdk/apps/teradesk/library/utility/cookie.c
+             sdk/apps/build-teradesk.sh; cp sdk/apps/teradesk/build/dist/* $S/before/
+             method/run-side.sh before $S/before $S/kernel8.img $S <repo>/measurements/measurement-2026-10-29-sdk04-c6
+3  patch:    sdk/overlays/teradesk/library/utility/cookie.c written (patch site SDK04-C6)
+4  after:    sdk/overlays/teradesk/tests/build-cookie-probe.sh $S/after/TDCOOKIE.NCP
+               -> compiles the overlay cookie.c
+             sdk/apps/build-teradesk.sh; cp sdk/apps/teradesk/build/dist/* $S/after/
+             method/run-side.sh after $S/after $S/kernel8.img $S <repo>/measurements/measurement-2026-10-29-sdk04-c6
+5  disasm:   llvm-objdump -d --disassemble-symbols=find_cookie $S/{before,after}/DESKTOP.NAP > runs/find_cookie-disasm.txt
+6  final:    after a comment-only edit of the overlay header (a line range), both after binaries rebuilt into
+             $S/final: TDCOOKIE.NCP and DESKTOP.NAP bit-identical to $S/after (sha256 in RUNINFO.TXT); the
+             vendored-cookie.c probe rebuilt with the explicit second argument, bit-identical to $S/before.
+7  host:     sdk/overlays/teradesk/tests/cookie-host.sh                          > runs/host/cookie-host-overlay.txt
+             COOKIE_SRC=sdk/apps/teradesk/library/utility/cookie.c \
+               sdk/overlays/teradesk/tests/cookie-host.sh                        > runs/host/cookie-host-vendored.txt
+             sdk/run-host-tests.sh   (all SDK host tests, td-cookie-host wired in)
+
+z-teradesk.inf, TERADESK.INF: copies of measurements/measurement-2026-10-27-mem12-acceptance/method/ (unchanged).

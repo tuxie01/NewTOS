@@ -1,0 +1,83 @@
+measurement-2026-10-29-sdk04-c6 -- TASK/SDK04, finding C6 (docs/analysis/lp64-tos-struct-survey-2026-10-28.md):
+which cookies does TeraDesk's find_cookie() find in the $5A0 jar on LP64, before and after the patch
+sdk/overlays/teradesk/library/utility/cookie.c, and does TeraDesk still start to its desktop? QEMU raspi4b.
+==========================================================================================
+Developer, 2026-10-29 (host clock CET). Main tree at 8258ccac plus the uncommitted SDK04-C6 change (files in
+TASK/SDK04-C6-STATUS-DONE.MD). Nothing committed, no hardware, no real card. Scratch (cards, clones,
+binaries) in the session scratchpad, deleted after the run; sha256 below and in runs/*/run.txt.
+
+INPUTS
+  QEMU       11.0.2, -M raspi4b, -append serial=on
+  kernel     `cargo xtask build --board rpi4 --release` of the main tree (no kernel/tos-api change; the same
+             kernel for both sides): kernel8.img b1dd668a86048539ad31ae7a10536aa59e43d1ee95be878b24b785ed7828e672
+  probe      sdk/overlays/teradesk/tests/cookie-probe.c, built with
+             sdk/overlays/teradesk/tests/build-cookie-probe.sh <side>/TDCOOKIE.NCP -- TeraDesk's cookie.c
+             compiled unchanged with build-teradesk.sh's CFLAGS (-D_TOS_ONLY: find_cookie takes its Setexc
+             branch) from a shadow tree built like build-teradesk.sh's, linked with the probe:
+               before TDCOOKIE.NCP 9dec76f508c234fa9aa3b6adaf9a6a3694059abc7bacfe6fd46aac59e0505bc7
+                      cookie.c = vendored sdk/apps/teradesk/library/utility/cookie.c
+                      f179f49fec48b8eb65a9c930eb392350537dec628866d5aeb26c13855b444dfe
+               after  TDCOOKIE.NCP 79a7f76fac3d9c00f2e1b7734a0ac43749d54771e2e84e7a1feebaf4bc4b4abc
+                      cookie.c = overlay sdk/overlays/teradesk/library/utility/cookie.c (patch site SDK04-C6),
+                      final file eb7d35cde2720bf51c43fbb812d269f8e971027f4287e7660798da77deb5211b
+             probe source 9c756ded02cde321b67bd03c4eb134241a854917993b5ae9328ceaaeb5a63be2
+  TeraDesk   sdk/apps/build-teradesk.sh (TeraDesk b5532b8, overlays 9 before / 10 after):
+               before DESKTOP.NAP 65fdda2547754799ea6e5cec488f991e89c544721c49295a24cd2244cd87a6ac
+               after  DESKTOP.NAP f763e7d94c3d5d32da2b1d4cb942e15435f13542db5cf9463d359620c0bb27fb
+               desktop.rsc/icons.rsc/cicons.rsc identical on both sides (runs/*/run.txt)
+             runs/find_cookie-disasm.txt: find_cookie in both DESKTOP.NAP. Before: `ldr x8, [x0], #0x10`
+             (8-byte tag+value word, 16-byte step), value `ldur x8, [x0, #-0x8]` (the next slot); after:
+             `ldr w8, [x0], #0x8`, `cmp w8, w10`, value `ldur w8, [x0, #-0x4]` (32-bit tag, 8-byte step,
+             32-bit value zero-extended).
+  Final sources: the after binaries were built before a comment-only edit of the overlay header (a line
+             range). Rebuilt from the final sources, TDCOOKIE.NCP and DESKTOP.NAP are bit-identical to the
+             ones booted here (sha256 above); the before probe rebuilt with the vendored file named
+             explicitly is bit-identical too (method/COMMANDS.TXT step 6).
+
+METHOD (method/run-side.sh <side> ...; one call per side, before then after; method/COMMANDS.TXT)
+  Card: tools/mkcard.sh with C:\AUTO\TDCOOKIE.NCP, C:\Apps\TERADESK\{DESKTOP.NAP,desktop.rsc,icons.rsc,
+    cicons.rsc,TERADESK.INF} and NEWDESK.INF = method/z-teradesk.inf (#Z autorun of DESKTOP.NAP). Booted as an
+    APFS clone. The AUTO probe runs before the AES:
+      - Ssystem(S_SETCOOKIE) adds Z0Z0=0 (slot 5, odd), Z1Z1=0 (slot 6, even), Z2Z2=0x12345678 (slot 7, odd),
+        Z3Z3=0x87654321 (slot 8, even) behind the five seeded cookies (slots 0..4);
+      - J lines: the jar read as 32-bit pairs from Setexc(0x5A0/4, -1);
+      - P lines: find_cookie(tag, &v) against Getcookie(tag, &v) for the nine tags in the jar and three absent
+        ones (XXXX, _VDO, CT60); both value variables start at 0x5A5A5A5A5A5A5A5A; AGREE = same found and,
+        when found, the same 8-byte value;
+      - the four added cookies are deleted again (S_DELCOOKIE), then the AES autoruns TeraDesk.
+    C:\TDCOOKIE.LOG is read back from the clone with mtools. After 60 s one screendump (HMP, pipe chardev),
+    then QEMU is killed.
+
+RESULTS
+  Probe (runs/<side>/TDCOOKIE.LOG, the same lines in runs/<side>/SERIAL.txt). Jar on both sides:
+    slot 0 NTOS 0x100, 1 _MCH 0x50000, 2 _IDT 0x112F, 3 _AKP 0, 4 EdDI 1, 5 Z0Z0 0, 6 Z1Z1 0,
+    7 Z2Z2 0x12345678, 8 Z3Z3 0x87654321, 9 terminator {0, 0x10}.
+    before: TDCOOKIE: 3/12 agree
+      find_cookie found only Z1Z1 (slot 6: even slot, value 0) -- as the survey predicted -- and returned
+      for it the value 0x123456785A325A32 = tag and value of slot 7 (Getcookie: 0). All other eight cookies
+      in the jar: found=0, value untouched. XXXX, _VDO, CT60: not found on both -> the 3 AGREE lines.
+    after:  TDCOOKIE: 12/12 agree
+      every cookie found with Getcookie's value (Z3Z3 0x0000000087654321, zero-extended as Getcookie
+      returns it); the three absent tags not found, value untouched.
+    S_SETCOOKIE and S_DELCOOKIE returned 0 for all four added cookies on both sides.
+  TeraDesk: started on both sides ([shell] sh_ldapp: starting C:\Apps\TERADESK\DESKTOP.NAP, no return);
+    runs/<side>/teradesk.png show TeraDesk's desktop (menu Desk/File/View/Window/Options, four HARD DISC
+    icons, TRASH). The two PNGs are byte-identical: no visible effect, as expected -- the tags TeraDesk asks
+    for on this build (CT60, _FLK, _VDO) are absent from the jar either way.
+  Serial: crash=0 panic=0 on both sides.
+
+HOST TEST (sdk/overlays/teradesk/tests/cookie-host.sh, wired into sdk/run-host-tests.sh as td-cookie-host)
+  overlay cookie.c:  cookie-host: 0 of 41 checks failed   (runs/host/cookie-host-overlay.txt)
+  vendored cookie.c: cookie-host: 30 of 41 checks failed  (runs/host/cookie-host-vendored.txt) -- the same
+    pattern as on the target: only Z1Z1 found, value 0x123456785A325A32.
+  sdk/run-host-tests.sh: host tests: 30 passed, 0 failed, 0 skipped (29 + td-cookie-host).
+
+CARDS / IMAGES
+  runs/before/card.img.manifest, runs/after/card.img.manifest; optional_missing, verbatim, both:
+    optional_missing none
+  Card and clone sha256 (the clone is written by the probe, TDCOOKIE.LOG):
+    before card b22ba3c0cf5f881ba9abdb8736e9161b3cb33e92c2e0fc535a825dcf545470a1
+           clone after 5d1e3bbb95e5f7155d5304e8efa851d9ba5911fa6eb1875b92da07f24f5df4cf
+    after  card 593c4c54e487b40ab451518057992ce2d0d83aaedb81c5cf4b05b96cc46aef68
+           clone after 1e6ebefde4c9460ec890330f05d7f5686ea78e211441afdb64931d7476dadd10
+  Cards and clones deleted after the run.
