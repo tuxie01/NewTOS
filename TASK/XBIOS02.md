@@ -14,6 +14,24 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidu
 - Fehlerbild: ein Programm installiert eigene Tabellen und stellt mit `Bioskeys()` zurueck. Auf NewTOS bleibt die Tastatur verstellt; `set_key_table` aendert den globalen Uebersetzer (`kernel/src/host_env.rs:330@set_key_table`) — Folge fuer Desktop und Folgeprogramme bis zum Neustart: PLAUSIBLE, nicht gemessen (Fall: XCKTNL, danach im Desktop eine Taste pruefen).
 - Spec: `docs/api/xbios/18-bioskeys.md` „Step-2 — not wired“; die Spec nennt `keymap::select_builtin` als vorhanden.
 
+## Lokalisierung (Lead, 2026-10-29)
+
+- `bioskeys` (`references/emutos/bios/ikbd.c:136-140`) → noch kein Gegenstueck
+  (`mapping.tsv` `unmapped`): Arm fehlt in `tos-api/src/xbios/mod.rs@dispatch`;
+  der Zustand, den es zuruecksetzt, liegt in `tos-api/src/xbios/keytbl.rs@keytbl`
+  (EmuTOS `current_keytbl`, `keytbl` `mapped`).
+- `--down`: `get_keytbl`, `get_kbd_index`, `get_country_record`,
+  `get_current_country_input`, `get_default_country` (`bios/country.c`), alle
+  `unmapped` — Gegenstueck der Ausgangstabelle ist das aktive Layout in
+  `kernel/src/keymap.rs` (`select_builtin` und Umgebung); der Fix traegt die
+  Zeilen ein, die er beruehrt (Ratsche).
+- `--up` (Wiedertestmenge): `xbiostrap` → `tos-api/src/xbios/mod.rs@dispatch`,
+  `biostrap` → `tos-api/src/bios/mod.rs@dispatch`, `kbd_init` →
+  `kernel/src/key_repeat.rs@new` (EmuTOS ruft `bioskeys` beim Start; NewTOS'
+  Startwert der Tabellen pruefen). `unmapped` darin nur `bios_init`, `biosmain`
+  (Start, Kerninit) und `bioskeys` selbst. Vollstaendig: nein, die drei sind hier
+  gelistet.
+
 ## Arbeit
 
 1. Fix gegen `references/emutos/bios/ikbd.c:136-140`; Hosttest: nach `Keytbl(my)`+`Bioskeys()` zeigen alle drei Zeiger wieder auf die Ausgangstabellen.
