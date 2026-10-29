@@ -12,6 +12,19 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidu
 - Folgerung (PLAUSIBLE, nicht gemessen): auch der Tastaturpfad setzt Bit 5/6 auf NewTOS nie — Fall: Tastensonde mit Alt+Clr/Home, danach `Kbshift(-1)` (Real-Pi4-Liste Punkt 2 des Berichts: Home/Insert).
 - Spec: `docs/api/bios/0b-kbshift.md` begruendet das Nicht-Zurueckgeben mit „TT/Falcon-era“ — durch die EmuTOS-Quelle widerlegt ([BIOS12](BIOS12.md)).
 
+## Lokalisierung (Lead, 2026-10-29)
+
+- `kbshift` → `tos-api/src/bios/mod.rs@kbshift` (`mapped`); Zustand in
+  `kernel/src/ikbd.rs@set_shift_state` / `@shift_state`; Tastaturpfad
+  (`kbd_int` → `kernel/src/ikbd.rs@kbd_int`) setzt die Bits. `--down`:
+  vollstaendig.
+- `--up --layers bios,bdos`: `biostrap` → `tos-api/src/bios/mod.rs@dispatch`,
+  `initinfo` → `kernel/src/initinfo.rs@run`; `unmapped` nur `bios_init`,
+  `biosmain` (Start). Ausserhalb der Schichten: VDI `vq_key_s`
+  (`gshift_s`) und AES `chkkbd`/`gsx_kstate` lesen den Zustand — NewTOS-
+  Gegenstuecke im Desktop/AES pruefen (Wiedertest: Shift/Alt-Klicks im Desktop).
+  Vollstaendig: nein, diese Liste.
+
 ## Arbeit
 
 1. Fix gegen `references/emutos/bios/ikbd.c:145-153` und `:876-883`; Hosttests fuer Setzen/Abfragen.
