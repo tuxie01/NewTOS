@@ -93,8 +93,10 @@ pub struct MapRow {
 /// Why a function has no counterpart on purpose (the part after `design:`).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Evidence {
-    /// `ADR-NNN`: an ADR of `docs/MEMORY.md`.
-    Adr(u16),
+    /// `ADR-NNN@<file>:<line>`: the ADR, and where it stands — `line`
+    /// (1-based) of the repo file `file` is the ADR's `## ADR-NNN:` heading
+    /// or lies in its section (TOOL21).
+    Adr { n: u16, file: String, line: usize },
     /// `hardware:<device>`: Atari hardware the Pi does not have.
     Hardware(String),
     /// `source:<path>`: another named reason, stated in a repo file.
@@ -127,10 +129,10 @@ impl Cls {
     }
 }
 
-/// Read a `class` cell: `mapped`, `unmapped`, `design:ADR-NNN`,
+/// Read a `class` cell: `mapped`, `unmapped`, `design:ADR-NNN@<file>:<line>`,
 /// `design:hardware:<device>` (device: lowercase letters, digits, `-`) or
-/// `design:source:<path>`. Whether the ADR or the path exists is
-/// [`check_mapping`]'s business.
+/// `design:source:<path>`. Whether the ADR stands at that line, or the path
+/// exists, is [`check_mapping`]'s business.
 pub fn parse_class(s: &str) -> Result<Class, String> {
     match s {
         "mapped" => return Ok(Class::Mapped),
@@ -140,11 +142,19 @@ pub fn parse_class(s: &str) -> Result<Class, String> {
     let ev = s
         .strip_prefix("design:")
         .ok_or_else(|| format!("class `{s}`: want mapped, unmapped or design:<evidence>"))?;
-    if let Some(n) = ev.strip_prefix("ADR-") {
-        if n.len() == 3 && n.bytes().all(|b| b.is_ascii_digit()) {
-            return Ok(Class::Design(Evidence::Adr(n.parse().unwrap())));
+    if let Some(rest) = ev.strip_prefix("ADR-") {
+        let want = || format!("class `{s}`: want ADR-NNN@<file>:<line>, three digits, line >= 1");
+        let (n, at) = rest.split_once('@').ok_or_else(want)?;
+        let (file, line) = at.rsplit_once(':').ok_or_else(want)?;
+        let digits = |t: &str| !t.is_empty() && t.bytes().all(|b| b.is_ascii_digit());
+        if n.len() != 3 || !digits(n) || file.is_empty() || !digits(line) || line.starts_with('0') {
+            return Err(want());
         }
-        return Err(format!("class `{s}`: want ADR-NNN, three digits"));
+        return Ok(Class::Design(Evidence::Adr {
+            n: n.parse().unwrap(),
+            file: file.into(),
+            line: line.parse().map_err(|_| want())?,
+        }));
     }
     if let Some(d) = ev.strip_prefix("hardware:") {
         let ok = !d.is_empty()
@@ -162,7 +172,46 @@ pub fn parse_class(s: &str) -> Result<Class, String> {
             Ok(Class::Design(Evidence::Source(p.into())))
         };
     }
-    Err(format!("class `{s}`: evidence is ADR-NNN, hardware:<device> or source:<path>"))
+    Err(format!(
+        "class `{s}`: evidence is ADR-NNN@<file>:<line>, hardware:<device> or source:<path>"
+    ))
+}
+
+/// The ADR whose section holds 1-based `line` of `text`: the nearest heading
+/// at or above it (`# ` or `## `, outside fenced code), if that heading is
+/// `## ADR-NNN:`. `None` when the line is past the end, before any heading,
+/// or under a heading that is no ADR.
+pub fn adr_section_at(text: &str, line: usize) -> Option<u16> {
+    let mut adr = None;
+    let mut in_fence = false;
+    let mut seen = 0;
+    for (idx, l) in text.lines().enumerate() {
+        if idx + 1 > line {
+            break;
+        }
+        seen = idx + 1;
+        if l.trim_start().starts_with("```") {
+            in_fence = !in_fence;
+            continue;
+        }
+        if in_fence {
+            continue;
+        }
+        if l.starts_with("# ") {
+            adr = None;
+        } else if let Some(rest) = l.strip_prefix("## ") {
+            let b = rest.as_bytes();
+            adr = (b.len() > 7
+                && b.starts_with(b"ADR-")
+                && b[4..7].iter().all(u8::is_ascii_digit)
+                && b[7] == b':')
+                .then(|| b[4..7].iter().fold(0u16, |n, &c| n * 10 + u16::from(c - b'0')));
+        }
+    }
+    if seen < line {
+        return None;
+    }
+    adr
 }
 
 pub fn parse_edges(text: &str) -> Result<Graph, String> {
@@ -701,15 +750,12 @@ fn is_ident_byte(b: u8) -> bool {
 /// function that does not exist, a `-` row without a reason, an EmuTOS
 /// `bios/`/`bdos/` function without a row, and a bad class: one that does
 /// not parse, `mapped` without a NewTOS function or `design`/`unmapped`
-/// with one, an ADR that `docs/MEMORY.md` does not define, a `source:` path
-/// that does not exist.
+/// with one, an ADR cite whose line is not in that ADR's section of the
+/// cited file, a `source:` path that does not exist.
 pub fn check_mapping(root: &Path, g: &Graph, map: &[MapRow]) -> Vec<String> {
     let mut bad = Vec::new();
     let mut covered: BTreeSet<(String, String)> = BTreeSet::new();
     let mut texts: BTreeMap<String, Option<String>> = BTreeMap::new();
-    let adrs = fs::read_to_string(root.join(crate::doc_check::MEMORY_FILE))
-        .map(|t| crate::doc_check::adr_headings(&t))
-        .unwrap_or_default();
     for r in map {
         let at = format!("{MAPPING_FILE}:{}", r.line);
         let none = r.newtos_file == "-" || r.newtos_fn == "-";
@@ -721,10 +767,24 @@ pub fn check_mapping(root: &Path, g: &Graph, map: &[MapRow]) -> Vec<String> {
             Ok(Class::Design(_) | Class::Unmapped) if !none => {
                 bad.push(format!("{at}: class {}, but a NewTOS function is named", r.class))
             }
-            Ok(Class::Design(Evidence::Adr(n))) if !adrs.contains(&n) => bad.push(format!(
-                "{at}: ADR-{n:03} is no `## ADR-{n:03}:` heading of {}",
-                crate::doc_check::MEMORY_FILE
-            )),
+            Ok(Class::Design(Evidence::Adr { n, file, line })) => {
+                let text = texts
+                    .entry(file.clone())
+                    .or_insert_with(|| fs::read_to_string(root.join(&file)).ok());
+                match text {
+                    None => bad.push(format!("{at}: ADR-{n:03}: {file} does not exist")),
+                    Some(t) => match adr_section_at(t, line) {
+                        Some(m) if m == n => {}
+                        Some(m) => bad.push(format!(
+                            "{at}: {file}:{line} is in ADR-{m:03}, not in ADR-{n:03}"
+                        )),
+                        None => bad.push(format!(
+                            "{at}: {file}:{line} is not in the section of ADR-{n:03} \
+                             (no `## ADR-{n:03}:` heading at or above it)"
+                        )),
+                    },
+                }
+            }
             Ok(Class::Design(Evidence::Source(p))) if !root.join(&p).is_file() => {
                 bad.push(format!("{at}: source {p} does not exist"))
             }
@@ -982,7 +1042,10 @@ a\tcb\tcallback\taddress\tbdos/a.c:3
     fn parse_class_reads_the_three_classes_and_the_evidence_forms() {
         assert_eq!(parse_class("mapped"), Ok(Class::Mapped));
         assert_eq!(parse_class("unmapped"), Ok(Class::Unmapped));
-        assert_eq!(parse_class("design:ADR-031"), Ok(Class::Design(Evidence::Adr(31))));
+        assert_eq!(
+            parse_class("design:ADR-031@docs/MEMORY.md:3041"),
+            Ok(Class::Design(Evidence::Adr { n: 31, file: "docs/MEMORY.md".into(), line: 3041 }))
+        );
         assert_eq!(
             parse_class("design:hardware:dsp56001"),
             Ok(Class::Design(Evidence::Hardware("dsp56001".into())))
@@ -992,7 +1055,10 @@ a\tcb\tcallback\taddress\tbdos/a.c:3
             Ok(Class::Design(Evidence::Source("docs/COMPATIBILITY.md".into())))
         );
         for bad in [
-            "", "-", "Mapped", "design", "design:", "design:ADR-31", "design:ADR-0310",
+            "", "-", "Mapped", "design", "design:", "design:ADR-031", "design:ADR-31@docs/MEMORY.md:1",
+            "design:ADR-0310@docs/MEMORY.md:1", "design:ADR-031@", "design:ADR-031@docs/MEMORY.md",
+            "design:ADR-031@docs/MEMORY.md:", "design:ADR-031@docs/MEMORY.md:0",
+            "design:ADR-031@docs/MEMORY.md:01", "design:ADR-031@:5", "design:ADR-031@docs/MEMORY.md:x",
             "design:hardware:", "design:hardware:SCSI", "design:hardware:wd 1772",
             "design:source:", "design:because",
         ] {
@@ -1008,10 +1074,9 @@ a\tcb\tcallback\taddress\tbdos/a.c:3
         let m = parse_mapping(
             "a\tbdos/a.c\t-\t-\tmapped\tno fn\n\
              a\tbdos/a.c\ttos-api/src/xbios/mod.rs\tdispatch\tunmapped\tnamed\n\
-             b\tbdos/b.c\t-\t-\tdesign:ADR-999\tno such ADR\n\
+             b\tbdos/b.c\t-\t-\tdesign:ADR-999@docs/no-such-file.md:1\tno such file\n\
              b\tbdos/b.c\t-\t-\tdesign:source:docs/no-such-file.md\tmissing\n\
              t\tbdos/t.c\t-\t-\tdesign:because\tbad evidence\n\
-             t\tbdos/t.c\t-\t-\tdesign:ADR-030\tvalid\n\
              t\tbdos/t.c\t-\t-\tdesign:source:docs/MEMORY.md\tvalid\n\
              t\tbdos/t.c\t-\t-\tdesign:hardware:wd1772\tvalid\n",
         )
@@ -1020,10 +1085,75 @@ a\tcb\tcallback\taddress\tbdos/a.c:3
         let all = bad.join("\n");
         assert!(all.contains(":1: class mapped, but no NewTOS function"), "{all}");
         assert!(all.contains(":2: class unmapped, but a NewTOS function is named"), "{all}");
-        assert!(all.contains(":3: ADR-999 is no `## ADR-999:` heading"), "{all}");
+        assert!(all.contains(":3: ADR-999: docs/no-such-file.md does not exist"), "{all}");
         assert!(all.contains(":4: source docs/no-such-file.md does not exist"), "{all}");
         assert!(all.contains(":5: class `design:because`"), "{all}");
         assert_eq!(bad.len(), 5, "{all}");
+    }
+
+    /// TOOL21: the section of an ADR runs from its `## ADR-NNN:` heading to
+    /// the next `#`/`##` heading; `###` and fenced code do not end it.
+    #[test]
+    fn adr_section_at_finds_the_adr_around_a_line() {
+        let t = "# Title\n\
+                 intro\n\
+                 ## ADR-007: Seven\n\
+                 body\n\
+                 ### sub\n\
+                 ```\n\
+                 ## ADR-009: in a fence\n\
+                 ```\n\
+                 still seven\n\
+                 ## Template for new ADRs\n\
+                 tail\n\
+                 ## ADR-012: Twelve\n";
+        assert_eq!(adr_section_at(t, 1), None, "the title");
+        assert_eq!(adr_section_at(t, 2), None, "before any ADR");
+        assert_eq!(adr_section_at(t, 3), Some(7), "the heading itself");
+        for l in 4..=9 {
+            assert_eq!(adr_section_at(t, l), Some(7), "line {l}");
+        }
+        assert_eq!(adr_section_at(t, 10), None, "a heading that is no ADR");
+        assert_eq!(adr_section_at(t, 11), None, "under that heading");
+        assert_eq!(adr_section_at(t, 12), Some(12));
+        assert_eq!(adr_section_at(t, 13), None, "past the end");
+        assert_eq!(adr_section_at(t, 0), None);
+    }
+
+    /// TOOL21: an `ADR-NNN@<file>:<line>` cite is checked against the cited
+    /// file — the heading line and a line inside the section pass, a line in
+    /// another ADR or outside any ADR fails. Lines are read from
+    /// `docs/MEMORY.md` at test time so the test does not move with it.
+    #[test]
+    fn check_mapping_checks_the_adr_line() {
+        let mem = fs::read_to_string(root().join("docs/MEMORY.md")).unwrap();
+        let line_of = |h: &str| mem.lines().position(|l| l.starts_with(h)).unwrap() + 1;
+        let a17 = line_of("## ADR-017:");
+        let a30 = line_of("## ADR-030:");
+        let first_adr = mem.lines().position(|l| l.starts_with("## ADR-")).unwrap() + 1;
+        assert!(first_adr > 1);
+        let g = parse_edges(FIXTURE).unwrap();
+        let rows = [
+            format!("a\tbdos/a.c\t-\t-\tdesign:ADR-017@docs/MEMORY.md:{a17}\theading\n"),
+            format!("a\tbdos/a.c\t-\t-\tdesign:ADR-017@docs/MEMORY.md:{}\tinside\n", a17 + 1),
+            format!("a\tbdos/a.c\t-\t-\tdesign:ADR-030@docs/MEMORY.md:{a30}\theading\n"),
+            format!("b\tbdos/b.c\t-\t-\tdesign:ADR-017@docs/MEMORY.md:{a30}\twrong ADR\n"),
+            format!("b\tbdos/b.c\t-\t-\tdesign:ADR-030@docs/MEMORY.md:{}\tbefore it\n", a30 - 1),
+            format!("t\tbdos/t.c\t-\t-\tdesign:ADR-017@docs/MEMORY.md:{}\tno ADR\n", first_adr - 1),
+            "t\tbdos/t.c\t-\t-\tdesign:ADR-017@docs/MEMORY.md:999999\tpast the end\n".to_string(),
+        ];
+        let m = parse_mapping(&rows.concat()).unwrap();
+        let bad = check_mapping(&root(), &g, &m);
+        let all = bad.join("\n");
+        assert!(all.contains(&format!(":4: docs/MEMORY.md:{a30} is in ADR-030, not in ADR-017")), "{all}");
+        assert!(all.contains(&format!(":5: docs/MEMORY.md:{} is ", a30 - 1)), "{all}");
+        assert!(
+            all.contains(&format!(":6: docs/MEMORY.md:{} is not in the section of ADR-017", first_adr - 1)),
+            "{all}"
+        );
+        assert!(all.contains(":7: docs/MEMORY.md:999999 is not in the section of ADR-017"), "{all}");
+        assert!(!all.contains(":1:") && !all.contains(":2:") && !all.contains(":3:"), "{all}");
+        assert_eq!(bad.len(), 4, "{all}");
     }
 
     const COVER_EDGES: &str = "\

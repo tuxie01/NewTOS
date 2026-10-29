@@ -299,23 +299,34 @@ name match. A NewTOS function may sit anywhere under `tos-api/src/` or
 
 `<evidence>` is one of:
 
-- `ADR-NNN` — an ADR of `docs/MEMORY.md` that decides it (ADR-017 no
-  runtime resolution change, ADR-030 no Line-A, ADR-031 hooks not served,
-  ADR-012 cookies of absent hardware);
+- `ADR-NNN@<file>:<line>` — the ADR that decides it, and where it stands
+  (TOOL21): line `<line>` (1-based) of the repo file `<file>` is the ADR's
+  `## ADR-NNN:` heading or lies in its section, which runs to the next
+  `#`/`##` heading (`###` and fenced code do not end it). In use: ADR-012
+  cookies of absent hardware, ADR-017 no runtime resolution change,
+  ADR-030 no Line-A, ADR-031 hooks not served, all cited at their heading
+  in `docs/MEMORY.md`. When an ADR moves in its file, the check turns red;
+  move the line number with it;
 - `hardware:<device>` — the function drives, probes or sets up Atari
   hardware the Pi does not have (`scsi`, `floppy`, `dsp56001`,
   `video-shifter`, `m68k-cpu`, …; lowercase, `a-z 0-9 -`; CLAUDE.md
   non-goals: no hardware emulation). A TOS API entry (a trap-table slot)
-  is never `hardware:` by itself: the call exists even where the device
-  does not, so a slot without counterpart is `unmapped` until an ADR
-  decides it; so are software helpers that serve only such a slot (the DSP
-  LOD loader);
+  is in general not `hardware:` by itself: the call exists even where the
+  device does not, so a slot without counterpart is `unmapped` until a
+  decision covers it. Decided (user, 2026-10-29, TOOL21): the XBIOS slots
+  of the Falcon DSP (0x60–0x7F, with the DSP LOD loader that serves only
+  them, `dsp56001`), DMA sound (0x80–0x8D, with `devconnect_*`/`sndcmd_*`,
+  `dma-sound`), the TT shifter (0x50–0x57, `video-shifter`) and VIDEL
+  (0x58–0x5F, with `get_videl_mode`/`lookup_videl_mode`, `videl`) are
+  intentional hardware absence and carry `hardware:`;
 - `source:<path>` — another named reason, stated in the repo file
   `<path>`.
 
 Everything without evidence is `unmapped`, including "no NewTOS function
-found" and counterparts that exist in NewTOS but have no row yet (the AUX
-serial path, the boot sequence). `cargo xtask deps --coverage` lists the
+found" and counterparts that exist in NewTOS but have no row yet (the boot
+sequence). The AUX output path (out ring, transmit interrupts), the SCC
+`Rsconf` and the `Bconmap` table stay `unmapped` (TOOL21): NewTOS discards
+AUX output and has no maptable. `cargo xtask deps --coverage` lists the
 design rows by evidence.
 
 ### Coverage and the ratchet
@@ -340,8 +351,8 @@ not complete names its unmapped functions in the ticket.
 the EmuTOS function is a `def` row of `emutos_file`; the NewTOS file exists
 and defines `fn <newtos_fn>`; a `-` row has a reason; every `bios/` and
 `bdos/` function of `edges.tsv` has a row; the class parses, `mapped` names a
-NewTOS function and `design`/`unmapped` do not, an `ADR-NNN` is a
-`## ADR-NNN:` heading of `docs/MEMORY.md`, a `source:` path exists.
+NewTOS function and `design`/`unmapped` do not, an `ADR-NNN@<file>:<line>`
+line lies in that ADR's section of `<file>`, a `source:` path exists.
 Regenerating `edges.tsv` after a pin move therefore turns the mapping red
 where it no longer fits — fix the rows by reading, `cargo xtask deps
 --check-mapping` lists them.

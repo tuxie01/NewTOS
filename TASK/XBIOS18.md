@@ -15,6 +15,17 @@ Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidu
 - Das Warten selbst (kein Abgeben an andere Prozesse) bleibt wie EmuTOS
   (Anwender 2026-10-29, keine Erweiterung von ADR-029).
 
+## Lokalisierung (Lead, 2026-10-29)
+
+- `bconin1` → `kernel/src/console.rs@AuxSerial` (`bconin`, Warten in
+  `aux_read_blocking`); `kbdvec` / `kbd_int` → `kernel/src/ikbd.rs@kbd_int`,
+  Zustellung des Hakens ueber `tos-api/src/xbios/kbdvecs.rs` (KEYS02,
+  `pending_for_running`); Vorbild `kernel/src/host_env.rs:578@read_key_loop`
+  (`give_way`).
+- `--up --layers bios`: `bconin1` 283 Funktionen, vollstaendig (keine
+  `unmapped`); `kbdvec`/`kbd_int` unvollstaendig: `bios_init`, `biosmain`
+  (`unmapped`, Start).
+
 ## Arbeit
 
 0. Lokalisierung (Lead) nach CLAUDE.md „Testing“.

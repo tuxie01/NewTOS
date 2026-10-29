@@ -1,6 +1,6 @@
 # TOOL21 — `mapping.tsv`: ADR-Beleg mit Fundstelle, Gruppe A als Hardware, AUX-Pfad nach XBIOS15
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Werkzeug + Zuordnung) — Anwenderentscheidung 2026-10-29, aus [TOOL17](TOOL17.md)
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](TOOL21-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Developer (Werkzeug + Zuordnung) — Anwenderentscheidung 2026-10-29, aus [TOOL17](TOOL17.md)
 
 ## Sachverhalt
 

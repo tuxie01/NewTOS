@@ -9,7 +9,10 @@
 #   mapped             newtos_file/newtos_fn name the counterpart
 #   design:<evidence>  no counterpart on purpose; newtos_file/newtos_fn `-`,
 #                      the note says why. <evidence> is one of
-#                        ADR-NNN            an ADR of docs/MEMORY.md
+#                        ADR-NNN@<file>:<line>  an ADR and where it stands:
+#                                           <line> of repo file <file> is its
+#                                           `## ADR-NNN:` heading or in its
+#                                           section (TOOL21)
 #                        hardware:<device>  Atari hardware the Pi does not
 #                                           have (lowercase, a-z 0-9 -)
 #                        source:<path>      another named reason; <path> is a
@@ -25,8 +28,8 @@
 # Checked by `cargo xtask test` (deps::tests::mapping_rows_exist_on_both_sides):
 # the EmuTOS function is a def row of emutos_file, the NewTOS file exists
 # and has `fn <newtos_fn>`, every bios/ and bdos/ function has a row, the
-# class is valid and agrees with the newtos columns, an ADR exists, a
-# source path exists.
+# class is valid and agrees with the newtos columns, an ADR cite's line is
+# in that ADR's section of the cited file, a source path exists.
 emutos_fn	emutos_file	newtos_file	newtos_fn	class	note
 freetree	bdos/bdosmain.c	tos-api/src/bdos/fs/curdir.rs	free_drive	mapped	its dirtbl half: the changed drive's current-directory slots emptied (FS20); NewTOS keeps no DND tree (paths are resolved by scanning, bdos/fs/path.rs)
 mark_bcbs_invalid	bdos/bdosmain.c	tos-api/src/bdos/fs/cache.rs	invalidate_drive	mapped	the media-change half (FS20): every buffer of the drive dropped, dirty ones not written back; the hard-error half is the HW03 deviation (cache.rs write_back keeps a failed dirty buffer)
@@ -246,14 +249,14 @@ xmxalloc	bdos/umem.c	tos-api/src/gemdos/memory.rs	mxalloc	mapped	Mxalloc 0x44
 xmxalloc	bdos/umem.c	tos-api/src/bdos/mem/traps.rs	mxalloc	mapped	-
 xsetblk	bdos/umem.c	tos-api/src/gemdos/memory.rs	mshrink	mapped	Mshrink 0x4A
 xsetblk	bdos/umem.c	tos-api/src/bdos/mem/traps.rs	mshrink	mapped	-
-call_mousevec	bios/aciavecs.S	-	-	design:ADR-031	ADR-031: OS hook not served (per-hook table); ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
+call_mousevec	bios/aciavecs.S	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
 ikbdraw	bios/aciavecs.S	tos-api/src/xbios/kbdvecs.rs	route_key	mapped	the jump through kbdvec
-ikbdsys	bios/aciavecs.S	-	-	design:ADR-031	ADR-031: OS hook not served (per-hook table); ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
+ikbdsys	bios/aciavecs.S	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
 init_acia_vecs	bios/aciavecs.S	tos-api/src/xbios/kbdvecs.rs	write_table	mapped	the kbdvecs table defaults (MEM12: the stubs in write_stubs)
 int_acia	bios/aciavecs.S	tos-api/src/xbios/kbdvecs.rs	check_events	mapped	only the ADR-031 warning: the Kbdvbase hooks an IKBD event would call (midisys, ikbdsys, mousevec, statvec, clockvec, joyvec, an accessory's kbdvec) are reported once, never called; no ACIA interrupt (BIOS15)
 kbdvec	bios/aciavecs.S	kernel/src/ikbd.rs	kbd_int	mapped	the default kbdvec
-midisys	bios/aciavecs.S	-	-	design:ADR-031	ADR-031: OS hook not served (per-hook table); ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
-midivec	bios/aciavecs.S	-	-	design:ADR-031	ADR-031: OS hook not served (per-hook table); ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
+midisys	bios/aciavecs.S	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
+midivec	bios/aciavecs.S	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
 acsi_begin	bios/acsi.c	-	-	design:hardware:acsi	Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
 acsi_capacity	bios/acsi.c	-	-	design:hardware:acsi	Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
 acsi_end	bios/acsi.c	-	-	design:hardware:acsi	Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
@@ -331,7 +334,7 @@ chardev_init	bios/chardev.c	tos-api/src/bdos/process/loader.rs	populate_sysvars	
 charout_dummy	bios/chardev.c	tos-api/src/bios/chardev.rs	bconout	mapped	Absent impl (absent device)
 bcd2int	bios/clock.c	-	-	design:hardware:rtc	RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
 clock_init	bios/clock.c	-	-	design:hardware:rtc	RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
-clockvec	bios/clock.c	-	-	design:ADR-031	ADR-031: OS hook not served (per-hook table); RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+clockvec	bios/clock.c	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
 detect_icdrtc	bios/clock.c	-	-	design:hardware:rtc	RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
 detect_megartc	bios/clock.c	-	-	design:hardware:rtc	RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
 detect_monster_rtc	bios/clock.c	-	-	design:hardware:rtc	RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
@@ -428,79 +431,79 @@ process_dos_mbr	bios/disk.c	-	-	unmapped	disk / partition layer detail: no NewTO
 process_gpt	bios/disk.c	-	-	unmapped	disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
 unit_is_byteswapped	bios/disk.c	-	-	design:hardware:ide	disk / partition layer detail: no NewTOS counterpart function found (NewTOS reads MBR partitions in bios/drive.rs mount)
 set_dma_addr	bios/dma.c	-	-	design:hardware:atari-dma	Atari DMA controller: no NewTOS counterpart
-buffoper	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-buffptr	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+buffoper	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+buffptr	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
 detect_dmasound	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-devconnect	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-devconnect_falcon	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-devconnect_ste	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+devconnect	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+devconnect_falcon	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+devconnect_ste	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
 dmasound_init	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-dsptristate	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+dsptristate	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
 falcon_dmasound_init	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-gpio	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+gpio	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
 lmc1992_init	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-locksnd	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-setbuffer	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-setinterrupt	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-setmontracks	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-setsndmode	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-settracks	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-sndcmd_falcon	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-sndcmd_ste	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-sndstatus	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-soundcmd	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-unlocksnd	bios/dmasound.c	-	-	unmapped	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+locksnd	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+setbuffer	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+setinterrupt	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+setmontracks	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+setsndmode	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+settracks	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+sndcmd_falcon	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+sndcmd_ste	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+sndstatus	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+soundcmd	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
+unlocksnd	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
 write_microwire	bios/dmasound.c	-	-	design:hardware:dma-sound	Falcon/STe DMA sound: not implemented in NewTOS (XBIOS 0x80-0x8D fall to the dispatcher's default arm)
-convert_lod	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+convert_lod	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
 detect_dsp	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_available	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_blkbytes	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_blkhandshake	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_blkunpacked	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_blkwords	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_doblock	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_execboot	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_execprog	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_flushsubroutines	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_getprogability	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_getwordsize	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_hf0	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_hf1	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_hf2	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_hf3	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_hstat	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_available	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_blkbytes	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_blkhandshake	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_blkunpacked	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_blkwords	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_doblock	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_execboot	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_execprog	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_flushsubroutines	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_getprogability	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_getwordsize	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_hf0	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_hf1	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_hf2	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_hf3	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_hstat	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
 dsp_init	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
 dsp_inout_handler	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_inqsubrability	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_instream	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_inqsubrability	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_instream	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
 dsp_io_handler	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_iostream	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_loadprog	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_loadsubroutine	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_lock	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_lodtobinary	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_multblocks	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_outstream	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_removeinterrupts	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_requestuniqueability	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_reserve	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_runsubroutine	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_setvectors	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_iostream	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_loadprog	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_loadsubroutine	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_lock	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_lodtobinary	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_multblocks	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_outstream	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_removeinterrupts	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_requestuniqueability	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_reserve	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_runsubroutine	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_setvectors	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
 dsp_sv_handler	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_triggerhc	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-dsp_unlock	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-filesize	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-handle_DATA	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-hex	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-inword	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-iseol	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-load_sub	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_triggerhc	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+dsp_unlock	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+filesize	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+handle_DATA	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+hex	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+inword	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+iseol	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+load_sub	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
 move_block	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-outword	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+outword	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
 send_uservect	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-skipspaces	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-skiptoeol	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
-update_dspvect	bios/dsp.c	-	-	unmapped	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+skipspaces	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+skiptoeol	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
+update_dspvect	bios/dsp.c	-	-	design:hardware:dsp56001	Falcon DSP56001: not implemented in NewTOS (XBIOS 0x60-0x7F fall to the dispatcher's default arm)
 dsp_inout_asm	bios/dsp2.S	-	-	design:hardware:dsp56001	Falcon DSP56001 interrupt glue: not implemented in NewTOS
 dsp_io_asm	bios/dsp2.S	-	-	design:hardware:dsp56001	Falcon DSP56001 interrupt glue: not implemented in NewTOS
 dsp_sv_asm	bios/dsp2.S	-	-	design:hardware:dsp56001	Falcon DSP56001 interrupt glue: not implemented in NewTOS
@@ -635,9 +638,9 @@ kprintf_outc_natfeat	bios/kprint.c	-	-	design:hardware:natfeats	formatted consol
 vcprintf	bios/kprint.c	-	-	unmapped	formatted console/debug print helper: NewTOS formats with core::fmt; no counterpart function
 vkcprintf	bios/kprint.c	-	-	unmapped	formatted console/debug print helper: NewTOS formats with core::fmt; no counterpart function
 vkprintf	bios/kprint.c	-	-	unmapped	formatted console/debug print helper: NewTOS formats with core::fmt; no counterpart function
-int_linea	bios/linea.S	-	-	design:ADR-030	ADR-030: no Line-A emulation; Line-A trap: no NewTOS counterpart
-linea_0	bios/linea.S	-	-	design:ADR-030	ADR-030: no Line-A emulation; Line-A trap: no NewTOS counterpart
-linea_init	bios/lineainit.c	-	-	design:ADR-030	ADR-030: no Line-A emulation; Line-A variable set-up: no NewTOS counterpart function found
+int_linea	bios/linea.S	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A trap: no NewTOS counterpart
+linea_0	bios/linea.S	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A trap: no NewTOS counterpart
+linea_init	bios/lineainit.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A variable set-up: no NewTOS counterpart function found
 set_screen_shift	bios/lineainit.c	-	-	unmapped	Line-A variable set-up: no NewTOS counterpart function found
 add_cookie_frb	bios/machine.c	-	-	unmapped	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
 aranym_machine_detect	bios/machine.c	-	-	design:hardware:natfeats	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
@@ -658,7 +661,7 @@ machine_init	bios/machine.c	-	-	unmapped	Atari hardware detection (_MCH, _VDO, _
 machine_name	bios/machine.c	kernel/src/initinfo.rs	machine_name	mapped	-
 setvalue_fdc	bios/machine.c	-	-	design:hardware:floppy	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
 setvalue_mch	bios/machine.c	-	-	unmapped	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
-setvalue_snd	bios/machine.c	-	-	design:ADR-012	ADR-012: _SND stays absent on NewTOS (no such hardware); Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
+setvalue_snd	bios/machine.c	-	-	design:ADR-012@docs/MEMORY.md:295	ADR-012: _SND stays absent on NewTOS (no such hardware); Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
 setvalue_swi	bios/machine.c	-	-	design:hardware:dip-switches	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
 setvalue_vdo	bios/machine.c	-	-	unmapped	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
 detect_32bit_address_bus	bios/memory.S	-	-	design:hardware:m68k-cpu	m68k RAM sizing: no NewTOS counterpart (memory map from the firmware, kernel/src/bios/machine/layout.rs)
@@ -669,8 +672,8 @@ ttram_detect	bios/memory2.c	-	-	design:hardware:tt-ram	TT-RAM / alt-RAM probing:
 disable_mfp_interrupt	bios/mfp.c	-	-	design:hardware:mfp68901	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
 enable_mfp_interrupt	bios/mfp.c	-	-	design:hardware:mfp68901	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
 init_system_timer	bios/mfp.c	-	-	design:hardware:mfp68901	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
-jdisint	bios/mfp.c	-	-	design:ADR-031	ADR-031: OS hook not served (per-hook table); MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
-jenabint	bios/mfp.c	-	-	design:ADR-031	ADR-031: OS hook not served (per-hook table); MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
+jdisint	bios/mfp.c	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
+jenabint	bios/mfp.c	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
 mfp_init	bios/mfp.c	-	-	design:hardware:mfp68901	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
 mfpint	bios/mfp.c	tos-api/src/xbios/mfp.rs	mfpint	mapped	Mfpint 0x0D without an MFP: the ADR-031 warning (handler never called) and EmuTOS' d0, the interrupt mask register after jenabint, from an image seeded with the oracle's IMRA/IMRB (BIOS15, docs/api/xbios/0d-mfpint.md)
 reset_mfp_regs	bios/mfp.c	-	-	design:hardware:mfp68901	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
@@ -762,18 +765,18 @@ atari_getrez	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and V
 atari_physbase	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 atari_setcolor	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 atari_setphys	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
-atari_setrez	bios/screen.c	-	-	design:ADR-017	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+atari_setrez	bios/screen.c	-	-	design:ADR-017@docs/MEMORY.md:824	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 calc_vram_size	bios/screen.c	-	-	unmapped	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
-check_moderez	bios/screen.c	-	-	design:ADR-017	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+check_moderez	bios/screen.c	-	-	design:ADR-017@docs/MEMORY.md:824	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 detect_monitor_change	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
-egetpalette	bios/screen.c	-	-	unmapped	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
-egetshift	bios/screen.c	-	-	unmapped	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
-esetbank	bios/screen.c	-	-	unmapped	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
-esetcolor	bios/screen.c	-	-	unmapped	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
-esetgray	bios/screen.c	-	-	unmapped	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
-esetpalette	bios/screen.c	-	-	unmapped	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
-esetshift	bios/screen.c	-	-	unmapped	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
-esetsmear	bios/screen.c	-	-	unmapped	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+egetpalette	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+egetshift	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+esetbank	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+esetcolor	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+esetgray	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+esetpalette	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+esetshift	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+esetsmear	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 fixup_ste_palette	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 get_default_palmode	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 get_monitor_type	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
@@ -786,7 +789,7 @@ initialise_ste_palette	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shi
 initialise_tt_palette	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 logbase	bios/screen.c	tos-api/src/xbios/screen.rs	logbase	mapped	Logbase 0x03
 physbase	bios/screen.c	tos-api/src/xbios/screen.rs	physbase	mapped	Physbase 0x02
-rez_changeable	bios/screen.c	-	-	design:ADR-017	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+rez_changeable	bios/screen.c	-	-	design:ADR-017@docs/MEMORY.md:824	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 screen_get_current_mode_info	bios/screen.c	-	-	unmapped	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 screen_init_address	bios/screen.c	-	-	unmapped	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 screen_init_mode	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
@@ -795,10 +798,10 @@ setcolor	bios/screen.c	tos-api/src/xbios/screen.rs	setcolor	mapped	Setcolor 0x07
 setpalette	bios/screen.c	tos-api/src/xbios/screen.rs	setpalette	mapped	Setpalette 0x06
 setphys	bios/screen.c	tos-api/src/host.rs	set_screen_physical	mapped	-
 setscreen	bios/screen.c	tos-api/src/xbios/screen.rs	setscreen	mapped	Setscreen 0x05
-shifter_check_moderez	bios/screen.c	-	-	design:ADR-017	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+shifter_check_moderez	bios/screen.c	-	-	design:ADR-017@docs/MEMORY.md:824	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 shifter_get_current_mode_info	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 shifter_get_monitor_type	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
-shifter_rez_changeable	bios/screen.c	-	-	design:ADR-017	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+shifter_rez_changeable	bios/screen.c	-	-	design:ADR-017@docs/MEMORY.md:824	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 vsync	bios/screen.c	tos-api/src/xbios/system.rs	vsync	mapped	Vsync 0x25
 and_icr_reg	bios/scsi.c	-	-	design:hardware:scsi	SCSI bus driver: no NewTOS counterpart
 and_mode_reg	bios/scsi.c	-	-	design:hardware:scsi	SCSI bus driver: no NewTOS counterpart
@@ -874,40 +877,45 @@ valid_bus	bios/scsidriv.c	-	-	unmapped	SCSIDRV programming interface: not implem
 valid_bus_and_device	bios/scsidriv.c	-	-	unmapped	SCSIDRV programming interface: not implemented in NewTOS
 bconin1	bios/serport.c	kernel/src/console.rs	bconin	mapped	qemu-virt AuxSerial::bconin over device 0 input ring (XBIOS15); rpi4: AUX is the no-cable entry (bios/chardev.rs AuxNoCable, Bconin 0 non-blocking)
 bconinA	bios/serport.c	-	-	design:hardware:scc	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
-bconinB	bios/serport.c	-	-	unmapped	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconinB	bios/serport.c	kernel/src/console.rs	bconin	mapped	Falcon target profile AUX (SCC B, init_bconmap maptable[1]; SERRX-004): bconin_iorec(&iorecB) = qemu-virt AuxSerial::bconin over device 0 input ring (XBIOS15); rpi4: AuxNoCable (0, non-blocking)
 bconinTT	bios/serport.c	-	-	design:hardware:tt-mfp	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
 bconin_iorec	bios/serport.c	kernel/src/console.rs	aux_read_blocking	mapped	the wait for a byte in device 0 input ring, IRQs open, wfi (XBIOS15, qemu-virt)
 bconmap	bios/serport.c	tos-api/src/xbios/system.rs	bconmap	mapped	Bconmap 0x2C
-bconout1	bios/serport.c	-	-	unmapped	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconout1	bios/serport.c	kernel/src/console.rs	bconout	mapped	qemu-virt AuxSerial::bconout, the device 1 output entry; AUX output (XBIOS15): accepted and discarded, always ready (bios/chardev.rs AuxNoCable; qemu-virt kernel/src/console.rs AuxSerial delegates its output to it)
+bconout1	bios/serport.c	tos-api/src/bios/chardev.rs	bconout	mapped	AuxNoCable::bconout: the body (1, byte discarded) and the rpi4 device 1 entry; EmuTOS queues into iorec1.out and transmits
 bconoutA	bios/serport.c	-	-	design:hardware:scc	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
-bconoutB	bios/serport.c	-	-	unmapped	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconoutB	bios/serport.c	kernel/src/console.rs	bconout	mapped	Falcon target profile AUX output (SCC B; SERRX-004): qemu-virt AuxSerial::bconout; AUX output (XBIOS15): accepted and discarded, always ready (bios/chardev.rs AuxNoCable; qemu-virt kernel/src/console.rs AuxSerial delegates its output to it)
+bconoutB	bios/serport.c	tos-api/src/bios/chardev.rs	bconout	mapped	AuxNoCable::bconout: the body (1, byte discarded) and the rpi4 device 1 entry; EmuTOS queues into iorecB.out and transmits
 bconoutTT	bios/serport.c	-	-	design:hardware:tt-mfp	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
 bconstat1	bios/serport.c	kernel/src/console.rs	bconstat	mapped	qemu-virt AuxSerial::bconstat over device 0 input ring (XBIOS15); rpi4: AUX is the no-cable entry (bios/chardev.rs AuxNoCable, 0)
 bconstatA	bios/serport.c	-	-	design:hardware:scc	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
-bconstatB	bios/serport.c	-	-	unmapped	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bconstatB	bios/serport.c	kernel/src/console.rs	bconstat	mapped	Falcon target profile AUX (SCC B; SERRX-004): bconstat_iorec(&iorecB) = qemu-virt AuxSerial::bconstat over device 0 input ring (XBIOS15); rpi4: AuxNoCable (0)
 bconstatTT	bios/serport.c	-	-	design:hardware:tt-mfp	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
 bconstat_iorec	bios/serport.c	tos-api/src/xbios/iorec.rs	serial_pending	mapped	head != tail of device 0 input ring (XBIOS15)
-bcostat1	bios/serport.c	-	-	unmapped	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bcostat1	bios/serport.c	kernel/src/console.rs	bcostat	mapped	qemu-virt AuxSerial::bcostat, the device 1 output status; AUX output (XBIOS15): accepted and discarded, always ready (bios/chardev.rs AuxNoCable; qemu-virt kernel/src/console.rs AuxSerial delegates its output to it)
+bcostat1	bios/serport.c	tos-api/src/bios/chardev.rs	bcostat	mapped	AuxNoCable::bcostat: -1 always (no out ring to fill); the rpi4 device 1 entry
 bcostatA	bios/serport.c	-	-	design:hardware:scc	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
-bcostatB	bios/serport.c	-	-	unmapped	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+bcostatB	bios/serport.c	kernel/src/console.rs	bcostat	mapped	Falcon target profile AUX output status (SCC B; SERRX-004): qemu-virt AuxSerial::bcostat; AUX output (XBIOS15): accepted and discarded, always ready (bios/chardev.rs AuxNoCable; qemu-virt kernel/src/console.rs AuxSerial delegates its output to it)
+bcostatB	bios/serport.c	tos-api/src/bios/chardev.rs	bcostat	mapped	AuxNoCable::bcostat: -1 always (no out ring to fill); the rpi4 device 1 entry
 bcostatTT	bios/serport.c	-	-	design:hardware:tt-mfp	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
 get_iorecbuf	bios/serport.c	tos-api/src/xbios/iorec.rs	pop_serial	mapped	head first, then the byte, IRQs masked (XBIOS15)
 get_iorecbuf	bios/serport.c	tos-api/src/xbios/iorec.rs	pop_byte	mapped	the byte-ring dequeue (Page::pop_byte)
 incr_tail	bios/serport.c	tos-api/src/xbios/iorec.rs	push_byte	mapped	tail + 1, wrap at size (inside Page::push_byte, XBIOS15); the out-ring uses (bcostat1/put_iorecbuf) have no counterpart: AUX output is discarded
-init_bconmap	bios/serport.c	-	-	unmapped	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
-init_serport	bios/serport.c	-	-	unmapped	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+init_bconmap	bios/serport.c	kernel/src/console.rs	install_aux	mapped	the device 1 install (bcon*_vec[1] from the mapped port): qemu-virt AuxSerial into slot 1 (XBIOS15); rpi4 keeps the static AuxNoCable slot (bios/chardev.rs DEVICES)
+init_bconmap	bios/serport.c	-	-	unmapped	the maptable/bconmap_root half: no counterpart; NewTOS Bconmap answers 0x2c (xbios/system.rs bconmap, BCONMAP_AVAILABLE false), EmuTOS Falcon profile builds BCONMAP
+init_serport	bios/serport.c	tos-api/src/xbios/iorec.rs	init	mapped	Page::init: device 0 record = iorec_init (buffer, size, empty, water marks, line bytes; XBIOS01 E5) - the iorec1 half; rsconfptr = rsconf1: the Rsconf shadows start at the same defaults (xbios/system.rs); SCC/TT-MFP halves: no such hardware
 mfp_rs232_rx_interrupt_handler	bios/serport.c	kernel/src/console.rs	pl011_rx_drain	mapped	the receive interrupt: PL011 RX FIFO drained, each byte to serial_rx_byte (XBIOS15)
-mfp_rs232_tx_interrupt_handler	bios/serport.c	-	-	unmapped	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+mfp_rs232_tx_interrupt_handler	bios/serport.c	-	-	unmapped	MFP transmit interrupt (iorec1.out -> udr): no counterpart: NewTOS has no AUX output ring and no transmit interrupt; AUX output is discarded at once (bios/chardev.rs AuxNoCable::bconout, also behind qemu-virt AuxSerial, XBIOS15)
 mfp_tt_rx_interrupt_handler	bios/serport.c	-	-	design:hardware:tt-mfp	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
 mfp_tt_tx_interrupt_handler	bios/serport.c	-	-	design:hardware:tt-mfp	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
 push_serial_iorec	bios/serport.c	kernel/src/console.rs	serial_rx_byte	mapped	routing of a received serial byte: qemu-virt into device 0 input ring, rpi4 dropped (XBIOS15)
 push_serial_iorec	bios/serport.c	tos-api/src/xbios/iorec.rs	push_serial	mapped	the push into device 0 input ring: tail first, full -> dropped (XBIOS15)
-put_iorecbuf	bios/serport.c	-	-	unmapped	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
-rsconf1	bios/serport.c	-	-	unmapped	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+put_iorecbuf	bios/serport.c	-	-	unmapped	the out-ring push of bconout1/bconoutB/bconoutA/bconoutTT: no counterpart: NewTOS has no AUX output ring and no transmit interrupt; AUX output is discarded at once (bios/chardev.rs AuxNoCable::bconout, also behind qemu-virt AuxSerial, XBIOS15)
+rsconf1	bios/serport.c	tos-api/src/xbios/system.rs	rsconf	mapped	Rsconf 0x0F on device 1: rsconf1 -> rsconf_mfp (bios/serport.c:217-249), the contract NewTOS rsconf implements over software shadows (no MFP)
 rsconfA	bios/serport.c	-	-	design:hardware:scc	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
-rsconfB	bios/serport.c	-	-	unmapped	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+rsconfB	bios/serport.c	-	-	unmapped	Falcon target profile Rsconf (SCC B -> rsconf_scc): no counterpart; NewTOS Rsconf (xbios/system.rs rsconf) follows rsconf_mfp (rsconf1), not rsconf_scc
 rsconfTT	bios/serport.c	-	-	design:hardware:tt-mfp	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
-rsconf_dummy	bios/serport.c	-	-	unmapped	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+rsconf_dummy	bios/serport.c	-	-	unmapped	the Rsconf of an unused Bconmap maptable slot: no counterpart, NewTOS has no maptable (Bconmap answers 0x2c, xbios/system.rs bconmap)
 rsconf_mfp	bios/serport.c	-	-	design:hardware:mfp68901	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
 rsconf_scc	bios/serport.c	-	-	design:hardware:scc	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
 scc_es_interrupt_handler	bios/serport.c	-	-	design:hardware:scc	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
@@ -915,7 +923,7 @@ scc_init	bios/serport.c	-	-	design:hardware:scc	MFP/SCC serial drivers: NewTOS h
 scc_rx_interrupt_handler	bios/serport.c	kernel/src/console.rs	pl011_rx_drain	mapped	Falcon target profile receive path (SCC B = AUX): the receive interrupt (XBIOS15, SERRX-004)
 scc_rx_interrupt_handler	bios/serport.c	kernel/src/console.rs	serial_rx_byte	mapped	its push into iorecB.in (:670-678) = device 0 input ring (XBIOS15, SERRX-004)
 scc_rx_interrupt_handler	bios/serport.c	tos-api/src/xbios/iorec.rs	push_serial	mapped	the push with datamask (:671) (XBIOS15, SERRX-004)
-scc_tx_interrupt_handler	bios/serport.c	-	-	unmapped	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
+scc_tx_interrupt_handler	bios/serport.c	-	-	unmapped	SCC transmit interrupt (out ring -> port data): no counterpart: NewTOS has no AUX output ring and no transmit interrupt; AUX output is discarded at once (bios/chardev.rs AuxNoCable::bconout, also behind qemu-virt AuxSerial, XBIOS15)
 write_scc	bios/serport.c	-	-	design:hardware:scc	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
 write_scc_reg0	bios/serport.c	-	-	design:hardware:scc	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
 bell	bios/sound.c	tos-api/src/vdi/escape.rs	bell	mapped	no audio device: the bell is silent
@@ -934,9 +942,9 @@ osxhbootdelay	bios/startup.S	-	-	unmapped	m68k reset entry / OS header: NewTOS b
 realmain	bios/startup.S	-	-	design:hardware:m68k-cpu	m68k reset entry / OS header: NewTOS boots from kernel8.img (kernel/src/arch); no counterpart function
 run_cartridge_applications	bios/startup.S	-	-	design:hardware:cartridge-port	m68k reset entry / OS header: NewTOS boots from kernel8.img (kernel/src/arch); no counterpart function
 biostrap	bios/vectors.S	tos-api/src/bios/mod.rs	dispatch	mapped	trap #13 dispatcher
-call_etv_critic	bios/vectors.S	-	-	design:ADR-031	ADR-031: OS hook not served (per-hook table); m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+call_etv_critic	bios/vectors.S	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 check_read_byte	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
-default_etv_critic	bios/vectors.S	-	-	design:ADR-031	ADR-031: OS hook not served (per-hook table); the etv_critic default (handler of the etv_critic vector, called by call_etv_critic); NewTOS keeps only the opaque sentinel ETV_DEFAULT_CRITIC in bios/vectors.rs and does not dispatch etv_critic
+default_etv_critic	bios/vectors.S	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); the etv_critic default (handler of the etv_critic vector, called by call_etv_critic); NewTOS keeps only the opaque sentinel ETV_DEFAULT_CRITIC in bios/vectors.rs and does not dispatch etv_critic
 init_exc_vec	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 init_user_vec	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 int_hbl	bios/vectors.S	-	-	design:hardware:video-shifter	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
@@ -948,7 +956,7 @@ int_vbl	bios/vectors.S	-	-	unmapped	m68k exception/interrupt vector code: no New
 just_rte	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 keyclick	bios/vectors.S	-	-	design:hardware:ym2149	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 mfp_rs232_rx_interrupt	bios/vectors.S	kernel/src/drivers/gic.rs	rust_irq_handler	mapped	the receive interrupt entry (vectors.S: registers saved, mfp_rs232_rx_interrupt_handler, rte): the PL011 INTID arm of the IRQ entry calls pl011_rx_drain (XBIOS15, TOOL17)
-mfp_rs232_tx_interrupt	bios/vectors.S	-	-	unmapped	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+mfp_rs232_tx_interrupt	bios/vectors.S	-	-	unmapped	MFP transmit interrupt entry (vectors.S: registers saved, mfp_rs232_tx_interrupt_handler, rte): no counterpart: NewTOS has no AUX output ring and no transmit interrupt; AUX output is discarded at once (bios/chardev.rs AuxNoCable::bconout, also behind qemu-virt AuxSerial, XBIOS15)
 mfp_tt_rx_interrupt	bios/vectors.S	-	-	design:hardware:tt-mfp	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 mfp_tt_tx_interrupt	bios/vectors.S	-	-	design:hardware:tt-mfp	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 scca_es_interrupt	bios/vectors.S	-	-	design:hardware:scc	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
@@ -956,7 +964,7 @@ scca_rx_interrupt	bios/vectors.S	-	-	design:hardware:scc	m68k exception/interrup
 scca_tx_interrupt	bios/vectors.S	-	-	design:hardware:scc	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 sccb_es_interrupt	bios/vectors.S	-	-	design:hardware:scc	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 sccb_rx_interrupt	bios/vectors.S	kernel/src/drivers/gic.rs	rust_irq_handler	mapped	the Falcon target profile's receive interrupt entry (SCC B = AUX; vectors.S: registers saved, scc_rx_interrupt_handler(1), rte): the PL011 INTID arm of the IRQ entry calls pl011_rx_drain (XBIOS15 SERRX-004, TOOL17)
-sccb_tx_interrupt	bios/vectors.S	-	-	unmapped	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+sccb_tx_interrupt	bios/vectors.S	-	-	unmapped	SCC B transmit interrupt entry (vectors.S: scc_tx_interrupt_handler(1)): no counterpart: NewTOS has no AUX output ring and no transmit interrupt; AUX output is discarded at once (bios/chardev.rs AuxNoCable::bconout, also behind qemu-virt AuxSerial, XBIOS15)
 supexec	bios/vectors.S	kernel/src/arch/aarch64/exceptions.rs	handle_supexec	mapped	XBIOS 0x26: the callback runs in the super state, an upcall at EL0 since MEM12 S6 (the old `-` row said not implemented; TOOL17)
 xbios_unimpl	bios/vectors.S	tos-api/src/xbios/mod.rs	dispatch	mapped	default arm: the function number
 xbiostrap	bios/vectors.S	tos-api/src/xbios/mod.rs	dispatch	mapped	trap #14 dispatcher
@@ -966,22 +974,22 @@ determine_vctl	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemen
 determine_width	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
 get_videl_bpp	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
 get_videl_height	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
-get_videl_mode	bios/videl.c	-	-	unmapped	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+get_videl_mode	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
 get_videl_width	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
 initialise_falcon_palette	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
-lookup_videl_mode	bios/videl.c	-	-	unmapped	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+lookup_videl_mode	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
 set_videl_vga	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
 use_ste_palette	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
-vfixmode	bios/videl.c	-	-	unmapped	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
-vgetrgb	bios/videl.c	-	-	unmapped	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
-vgetsize	bios/videl.c	-	-	unmapped	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
-videl_check_moderez	bios/videl.c	-	-	design:ADR-017	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+vfixmode	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+vgetrgb	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+vgetsize	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+videl_check_moderez	bios/videl.c	-	-	design:ADR-017@docs/MEMORY.md:824	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
 videl_get_current_mode_info	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
-videl_setrez	bios/videl.c	-	-	design:ADR-017	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
-vmontype	bios/videl.c	-	-	unmapped	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
-vsetmode	bios/videl.c	-	-	unmapped	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
-vsetrgb	bios/videl.c	-	-	unmapped	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
-vsetsync	bios/videl.c	-	-	unmapped	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+videl_setrez	bios/videl.c	-	-	design:ADR-017@docs/MEMORY.md:824	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+vmontype	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+vsetmode	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+vsetrgb	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
+vsetsync	bios/videl.c	-	-	design:hardware:videl	Falcon VIDEL: not implemented in NewTOS (XBIOS 0x58-0x5F fall to the dispatcher's default arm)
 ascii_cr	bios/vt52.c	tos-api/src/vdi/escape.rs	normal_ascii	mapped	cntl_tab entry for CR (0x0d): the 0x0d arm of normal_ascii (no own fn)
 ascii_lf	bios/vt52.c	tos-api/src/vdi/escape.rs	ascii_lf	mapped	-
 blink	bios/vt52.c	tos-api/src/vdi/escape.rs	blink	mapped	-
