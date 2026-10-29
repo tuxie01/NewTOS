@@ -1,0 +1,152 @@
+# gemdos-mc-fs24.tsv -- DUMPBIOS, Dsetpath after a media change: does the
+# call meet it or not (TASK/FS24), against EmuTOS 1a7484ab
+# (docs/analysis/ORACLE.md).
+#
+# gemdos-mc-paths.tsv case 67 (S04): after Dsetpath(C:\SUB) with a change
+# pending, EmuTOS' Mediach(2) is still 2 -- xchdir is findit
+# (bdos/fsdir.c:1113-1151), which finds a folder logged in C:'s DND tree
+# without a disk access (bdos/fsdir.c:1458-1483) and touches the disk only
+# through dirscan, when the parent has no logged child or the name is not
+# among them; a disk access meets the change (getbcb's Mediach on a buffer
+# hit, bdos/fsbuf.c:177-191; the logical Rwabs of a miss returns E_CHNG,
+# bios/blkdev.c:450-451), osif logs C: in again (freetree, mark_bcbs_invalid)
+# and restarts the call (bdos/bdosmain.c:449-487).  scan logs every folder
+# it reads up to and including the entry it stops at (bdos/fsdir.c:1557-1574).
+# The cases (TASK/FS24, "Vorschlag (Researcher, 2026-10-29)"):
+#   part L, S  case 67's setup, lines as gemdos-mc-paths.tsv L01-L17 and
+#              S01-S07: the root and C:\SUB listed, then Dsetpath(C:\SUB)
+#   part V1    a name that is not logged: V1a right after a re-login (no
+#              child logged, no buffer of C:), V1b a name that does not exist
+#              after the root was listed
+#   part V2    the root's first entry is a file (NEWDESK.INF; the order of the
+#              test image's root, measured by gemdos-mc-paths L03-L08): an
+#              Fsfirst for it reads the root's first sector but logs no
+#              folder, then Dsetpath(C:\SUB)
+#   part V3    the root listed (C:\SUB logged), then a file written in C:\SUB
+#              in pieces -- traffic through the sector buffers between the
+#              listing and the change -- then Dsetpath(C:\SUB)
+# Each part starts after a re-login (a Dfree that meets an armed change), so
+# C:'s DND tree holds only its root and no buffer of C: is valid; a part
+# that may leave the change pending ends with a Dfree, which meets it,
+# before the next part's read prelude (a logical Rwabs returns E_CHNG while
+# a change is pending, bios/blkdev.c:450-451).
+#
+# The DTA is buffer 1 (Fsetdta), read through the layout of
+# docs/api/structures/dta.md (d:dta); only Fsetdta and Fsfirst poison it.
+# A path string's bytes are compared as bytes (Dgetpath, 0:16).
+#
+# WHERE IT RUNS, DESTRUCTIVE, the test image of the gemdos-mc tables
+# (measurements/measurement-2026-10-29-tool20/method/mkimage.sh): part V3
+# leaves C:\SUB\FILL.DAT (100 + 9 x 1024 bytes of buffer 0) behind; every
+# change is armed by writing C:'s sector 0 back unchanged.
+#
+# One table per round: a case id is the physical line number and the dump
+# header carries the CRC of this file, so it is frozen once measured.
+!layout	dta	44/44:packed	d_reserved:x21@0/0,d_attrib:b@21/21,d_time:w@22/22,d_date:w@24/24,d_length:L@26/26,d_fname:b14@30/30
+!disk	2	destructive
+
+1:0x1A	b:1	IGNORE	-	P00 Fsetdta(buffer 1): void -- bdos/fsmain.c:403
+
+# ---- part L: case 67's setup, the root and C:\SUB listed (gemdos-mc-paths L01-L17)
++13:4	w:2,b:0,w:1,w:0,w:2,l:0	-	-	L01 sector 0 of C: into buffer 0 (RW_NOMEDIACH)
+13:4	w:3,b:0,w:1,w:0,w:2,l:0	EXACT	-	L01 write it back unchanged, RW_NOMEDIACH: arms -- bios/blkdev.c:450-453, 473-477
+13:9	w:2	EXACT	-	L02 Mediach(2): 2 -- bios/blkdev.c:799-803
+1:0x4E	s:C:\*.*,w:0x10	EXACT	d:dta	L03 Fsfirst(C:\*.*, FA_SUBDIR) after the change -- bdos/fsdir.c:523
+13:9	w:2	EXACT	-	L04 Mediach(2): 0
+1:0x4F	-	EXACT	d:dta	L05 Fsnext -- bdos/fsdir.c:654
+1:0x4F	-	EXACT	d:dta	L06 Fsnext
+1:0x4F	-	EXACT	d:dta	L07 Fsnext
+1:0x4F	-	EXACT	d:dta	L08 Fsnext
+1:0x4F	-	EXACT	d:dta	L09 Fsnext
+1:0x4F	-	EXACT	d:dta	L10 Fsnext: ENMFIL -- bdos/fsdir.c:662-663
++13:4	w:2,b:0,w:1,w:0,w:2,l:0	-	-	L11 sector 0 of C: into buffer 0 (RW_NOMEDIACH)
+13:4	w:3,b:0,w:1,w:0,w:2,l:0	EXACT	-	L11 write it back unchanged: arms
+13:9	w:2	EXACT	-	L12 Mediach(2): 2
+1:0x4E	s:C:\SUB\*.*,w:0x10	EXACT	d:dta	L13 Fsfirst(C:\SUB\*.*, FA_SUBDIR): a folder's listing after the change
+13:9	w:2	EXACT	-	L14 Mediach(2): 0
+1:0x4F	-	EXACT	d:dta	L15 Fsnext
+1:0x4F	-	EXACT	d:dta	L16 Fsnext
+1:0x4F	-	EXACT	d:dta	L17 Fsnext: past the end
+
+# ---- part S: case 67 (gemdos-mc-paths S01-S07), C:\SUB logged by L13
++13:4	w:2,b:0,w:1,w:0,w:2,l:0	-	-	S01 sector 0 of C: into buffer 0 (RW_NOMEDIACH)
+13:4	w:3,b:0,w:1,w:0,w:2,l:0	EXACT	-	S01 write it back unchanged: arms
+13:9	w:2	EXACT	-	S02 Mediach(2): 2
+1:0x3B	s:C:\SUB	EXACT	-	S03 Dsetpath(C:\SUB) after the change -- bdos/fsdir.c:1113
+13:9	w:2	EXACT	-	S04 Mediach(2): EmuTOS 2, the logged DND: no disk access
+1:0x47	b:0,w:3	EXACT	0:16	S05 Dgetpath(C:): "\SUB" -- bdos/fsdir.c:1229
+1:0x36	b:0,w:3	EXACT	0:16.L	S06 Dfree(C:): meets a change still pending: re-login -- bdos/fsfat.c:337
+13:9	w:2	EXACT	-	S07 Mediach(2): 0
+
+# ---- part V1a: Dsetpath right after the re-login of S06 -- no child logged, no buffer of C:
++13:4	w:2,b:0,w:1,w:0,w:2,l:0	-	-	V1a sector 0 of C: into buffer 0 (RW_NOMEDIACH)
+13:4	w:3,b:0,w:1,w:0,w:2,l:0	EXACT	-	V1a write it back unchanged: arms
+13:9	w:2	EXACT	-	V1a Mediach(2): 2
+1:0x3B	s:C:\SUB	EXACT	-	V1a Dsetpath(C:\SUB): dirscan of the root -- bdos/fsdir.c:1458-1462
+13:9	w:2	EXACT	-	V1a Mediach(2): after the Dsetpath
+1:0x47	b:0,w:3	EXACT	0:16	V1a Dgetpath(C:)
+1:0x36	b:0,w:3	EXACT	0:16.L	V1a Dfree(C:): meets a change still pending
+13:9	w:2	EXACT	-	V1a Mediach(2): 0
+
+# ---- part V1b: a name that does not exist, after the root was listed (no change pending)
+1:0x4E	s:C:\*.*,w:0x10	EXACT	d:dta	V1b Fsfirst(C:\*.*, FA_SUBDIR): the root listed, C:\SUB logged -- bdos/fsdir.c:1557-1574
+1:0x4F	-	EXACT	d:dta	V1b Fsnext
+1:0x4F	-	EXACT	d:dta	V1b Fsnext
+1:0x4F	-	EXACT	d:dta	V1b Fsnext
+1:0x4F	-	EXACT	d:dta	V1b Fsnext
+1:0x4F	-	EXACT	d:dta	V1b Fsnext: ENMFIL
++13:4	w:2,b:0,w:1,w:0,w:2,l:0	-	-	V1b sector 0 of C: into buffer 0 (RW_NOMEDIACH)
+13:4	w:3,b:0,w:1,w:0,w:2,l:0	EXACT	-	V1b write it back unchanged: arms
+13:9	w:2	EXACT	-	V1b Mediach(2): 2
+1:0x3B	s:C:\NOSUCH	EXACT	-	V1b Dsetpath(C:\NOSUCH): not among the logged children: dirscan -- bdos/fsdir.c:1473-1483
+13:9	w:2	EXACT	-	V1b Mediach(2): after the Dsetpath
+1:0x47	b:0,w:3	EXACT	0:16	V1b Dgetpath(C:)
+1:0x36	b:0,w:3	EXACT	0:16.L	V1b Dfree(C:): meets a change still pending
+13:9	w:2	EXACT	-	V1b Mediach(2): 0
+
+# ---- part V2: the root's first sector read, but no folder logged
++13:4	w:2,b:0,w:1,w:0,w:2,l:0	-	-	V2 sector 0 of C: into buffer 0 (RW_NOMEDIACH)
+13:4	w:3,b:0,w:1,w:0,w:2,l:0	EXACT	-	V2 write it back unchanged: arms
+1:0x36	b:0,w:3	EXACT	0:16.L	V2 Dfree(C:): meets it: re-login, C:'s DND tree freed -- bdos/bdosmain.c:456-487
+13:9	w:2	EXACT	-	V2 Mediach(2): 0
+1:0x4E	s:C:\NEWDESK.INF,w:0	EXACT	d:dta	V2 Fsfirst(C:\NEWDESK.INF): the root's first entry, a file
++13:4	w:2,b:0,w:1,w:0,w:2,l:0	-	-	V2 sector 0 of C: into buffer 0 (RW_NOMEDIACH)
+13:4	w:3,b:0,w:1,w:0,w:2,l:0	EXACT	-	V2 write it back unchanged: arms
+13:9	w:2	EXACT	-	V2 Mediach(2): 2
+1:0x3B	s:C:\SUB	EXACT	-	V2 Dsetpath(C:\SUB): the root has no logged child: dirscan -- bdos/fsdir.c:1458-1462
+13:9	w:2	EXACT	-	V2 Mediach(2): after the Dsetpath
+1:0x47	b:0,w:3	EXACT	0:16	V2 Dgetpath(C:)
+1:0x36	b:0,w:3	EXACT	0:16.L	V2 Dfree(C:): meets a change still pending
+13:9	w:2	EXACT	-	V2 Mediach(2): 0
+
+# ---- part V3: the root listed, then traffic through the buffers, then the change
++13:4	w:2,b:0,w:1,w:0,w:2,l:0	-	-	V3 sector 0 of C: into buffer 0 (RW_NOMEDIACH)
+13:4	w:3,b:0,w:1,w:0,w:2,l:0	EXACT	-	V3 write it back unchanged: arms
+1:0x36	b:0,w:3	EXACT	0:16.L	V3 Dfree(C:): meets it: re-login
+13:9	w:2	EXACT	-	V3 Mediach(2): 0
+1:0x4E	s:C:\*.*,w:0x10	EXACT	d:dta	V3 Fsfirst(C:\*.*, FA_SUBDIR): the root listed, C:\SUB logged
+1:0x4F	-	EXACT	d:dta	V3 Fsnext
+1:0x4F	-	EXACT	d:dta	V3 Fsnext
+1:0x4F	-	EXACT	d:dta	V3 Fsnext
+1:0x4F	-	EXACT	d:dta	V3 Fsnext
+1:0x4F	-	EXACT	d:dta	V3 Fsnext: ENMFIL
+1:0x3C	s:C:\SUB\FILL.DAT,w:0	HANDLE	-	V3 Fcreate(C:\SUB\FILL.DAT, 0) -- bdos/fsopnclo.c:81
+1:0x40	t:1,l:100,b:0	EXACT	-	V3 Fwrite(handle, 100, buffer 0): a partial first record
+1:0x40	t:1,l:1024,b:0	EXACT	-	V3 Fwrite(handle, 1024): a partial record, a whole one, a partial one -- bdos/fsio.c:528
+1:0x40	t:1,l:1024,b:0	EXACT	-	V3 Fwrite(handle, 1024)
+1:0x40	t:1,l:1024,b:0	EXACT	-	V3 Fwrite(handle, 1024)
+1:0x40	t:1,l:1024,b:0	EXACT	-	V3 Fwrite(handle, 1024)
+1:0x40	t:1,l:1024,b:0	EXACT	-	V3 Fwrite(handle, 1024)
+1:0x40	t:1,l:1024,b:0	EXACT	-	V3 Fwrite(handle, 1024)
+1:0x40	t:1,l:1024,b:0	EXACT	-	V3 Fwrite(handle, 1024)
+1:0x40	t:1,l:1024,b:0	EXACT	-	V3 Fwrite(handle, 1024)
+1:0x40	t:1,l:1024,b:0	EXACT	-	V3 Fwrite(handle, 1024)
+1:0x3E	t:1	EXACT	-	V3 Fclose(handle): 0 -- bdos/fsopnclo.c:426
++13:4	w:2,b:0,w:1,w:0,w:2,l:0	-	-	V3 sector 0 of C: into buffer 0 (RW_NOMEDIACH)
+13:4	w:3,b:0,w:1,w:0,w:2,l:0	EXACT	-	V3 write it back unchanged: arms
+13:9	w:2	EXACT	-	V3 Mediach(2): 2
+1:0x3B	s:C:\SUB	EXACT	-	V3 Dsetpath(C:\SUB): C:\SUB still logged -- bdos/fsdir.c:1473
+13:9	w:2	EXACT	-	V3 Mediach(2): after the Dsetpath
+1:0x47	b:0,w:3	EXACT	0:16	V3 Dgetpath(C:)
+1:0x36	b:0,w:3	EXACT	0:16.L	V3 Dfree(C:): meets a change still pending
+13:9	w:2	EXACT	-	V3 Mediach(2): 0

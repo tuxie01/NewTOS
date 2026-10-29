@@ -410,7 +410,7 @@ sector 0 arms forcechange, the next GEMDOS access meets it, osif logs the
 drive in again and restarts the call (`bdos/bdosmain.c:449-487`;
 `docs/api/gemdos/_state.md` section 4a). Form and rules:
 `docs/TOS-REFERENCE-DUMPER.md` section 6, "GEMDOS after a media change". The
-three tables share one test image (`tools/mktestdisk.sh` with
+tables share one test image (`tools/mktestdisk.sh` with
 `C:\NEWDESK.INF`, `C:\PXPROBE.PRG`, `C:\PXPROBE.NAP`, `C:\DELME.TXT`,
 `C:\SUB\INNER.TXT`; `measurements/measurement-2026-10-29-tool20/RUNINFO.TXT`).
 
@@ -419,6 +419,7 @@ three tables share one test image (`tools/mktestdisk.sh` with
 | `gemdos-mc-fs20.tsv` | 17 (3 preludes) | `55B17174` | gcprobe A01-A09, B01-B08: `Dfree` meets the change; a changed boot sector (512 -> 256 root entries) and the geometry `Dfree` and an `Fcreate`/`Fwrite`/`Fclose` use after it; end state: the changed boot sector and `C:\GCPROBE.DAT` |
 | `gemdos-mc-fs22.tsv` | 13 (2 preludes) | `26353FB1` | pxprobe P01-P07, F01-F07: `Pexec(0)` of the machine's own child on C: after a change (42), the caller's DTA around it, `Fgetdta`; `Fsfirst`/`Fsnext` after a change; end state = the image |
 | `gemdos-mc-paths.tsv` | 49 (6 preludes) | `39FDDD95` | the file selector's listing after a change (`Fsfirst(<dir>\*.*, FA_SUBDIR)` and `Fsnext` to the end, root and a folder, `aes/gemfslib.c:285-310`); `Dsetpath`, `Dgetpath` (EmuTOS checks no media change, `bdos/fsdir.c:1223-1224`), `Dsetdrv`/`Dgetdrv` and `Fdelete` after a change; end state: `C:\DELME.TXT` deleted |
+| `gemdos-mc-fs24.tsv` | 84 (9 preludes) | `81113364` | `TASK/FS24.md`: does `Dsetpath` meet a pending change -- the setup of `gemdos-mc-paths` case 67 (parts L, S), then V1a right after a re-login, V1b a name not among the logged children (`EPTHNF`), V2 the root's first sector read by an `Fsfirst` for a file (no folder logged), V3 the root listed, then 9316 bytes written into `C:\SUB\FILL.DAT` in pieces; each with `Mediach` and `Dgetpath` after it (`measurements/measurement-2026-10-29-fs24/RUNINFO.TXT`); end state: `C:\SUB\FILL.DAT` |
 
 What the guard admits, in a table that says `!disk <drive> destructive`
 only -- each a refusal lifted from "of GEMDOS a BIOS table issues Super only"
@@ -457,4 +458,6 @@ What stays probe-only, with the reason:
   program.
 
 References `tosdump/reference/EMUTOS-1a7484ab-BIOS-mc-<fs20|fs22|paths>-disk`,
-two runs each byte-identical, `measurements/measurement-2026-10-29-tool20/RUNINFO.TXT`.
+two runs each byte-identical, `measurements/measurement-2026-10-29-tool20/RUNINFO.TXT`;
+`EMUTOS-1a7484ab-BIOS-mc-fs24-disk`, two runs byte-identical,
+`measurements/measurement-2026-10-29-fs24/RUNINFO.TXT`.

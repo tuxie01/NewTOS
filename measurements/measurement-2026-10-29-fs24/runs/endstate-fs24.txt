@@ -1,0 +1,57 @@
+original        sha256 842cdc31599b88555600caa8aede0b9fa1f24e0a7f430f289e30f06f6b70026e
+oracle-fs24-1   sha256 9c3891f2cb0d55adf239df8aaae7ca41bb92ad8789b43a23e4f80aafbf847ce3
+oracle-fs24-2   sha256 4ae3007765d4d6eea09a63155280516669d6e1d8590c4ce6b12e2f070d5e54f1
+newtos-fs24     sha256 5f38ba4e3e1facc4f184d60c040ca4f41160f30cc91133e6890f2e2575af3a3d
+original vs oracle-fs24-1, raw: 22 sectors differ
+    sector 1: 6 bytes, first at 0x112 (00 vs 8A)
+    sector 129: 6 bytes, first at 0x112 (00 vs 8A)
+    sector 821: 19 bytes, first at 0x060 (00 vs 46)
+    sector 829: 512 bytes, first at 0x000 (00 vs DE)
+    sector 830: 512 bytes, first at 0x000 (00 vs DE)
+    sector 831: 512 bytes, first at 0x000 (00 vs DE)
+    sector 832: 512 bytes, first at 0x000 (00 vs DE)
+    sector 833: 512 bytes, first at 0x000 (00 vs DE)
+    sector 834: 512 bytes, first at 0x000 (00 vs DE)
+    sector 835: 512 bytes, first at 0x000 (00 vs DE)
+    sector 836: 512 bytes, first at 0x000 (00 vs DE)
+    sector 837: 512 bytes, first at 0x000 (00 vs DE)
+    sector 838: 512 bytes, first at 0x000 (00 vs DE)
+    sector 839: 512 bytes, first at 0x000 (00 vs DE)
+    sector 840: 512 bytes, first at 0x000 (00 vs DE)
+    sector 841: 512 bytes, first at 0x000 (00 vs DE)
+    sector 842: 512 bytes, first at 0x000 (00 vs DE)
+    sector 843: 512 bytes, first at 0x000 (00 vs DE)
+    sector 844: 512 bytes, first at 0x000 (00 vs DE)
+    sector 845: 512 bytes, first at 0x000 (00 vs DE)
+    sector 846: 512 bytes, first at 0x000 (00 vs DE)
+    sector 847: 100 bytes, first at 0x000 (00 vs DE)
+original vs oracle-fs24-1, time stamps zeroed: 22 sectors differ
+    sector 1: 6 bytes, first at 0x112 (00 vs 8A)
+    sector 129: 6 bytes, first at 0x112 (00 vs 8A)
+    sector 821: 15 bytes, first at 0x060 (00 vs 46)
+    sector 829: 512 bytes, first at 0x000 (00 vs DE)
+    sector 830: 512 bytes, first at 0x000 (00 vs DE)
+    sector 831: 512 bytes, first at 0x000 (00 vs DE)
+    sector 832: 512 bytes, first at 0x000 (00 vs DE)
+    sector 833: 512 bytes, first at 0x000 (00 vs DE)
+    sector 834: 512 bytes, first at 0x000 (00 vs DE)
+    sector 835: 512 bytes, first at 0x000 (00 vs DE)
+    sector 836: 512 bytes, first at 0x000 (00 vs DE)
+    sector 837: 512 bytes, first at 0x000 (00 vs DE)
+    sector 838: 512 bytes, first at 0x000 (00 vs DE)
+    sector 839: 512 bytes, first at 0x000 (00 vs DE)
+    sector 840: 512 bytes, first at 0x000 (00 vs DE)
+    sector 841: 512 bytes, first at 0x000 (00 vs DE)
+    sector 842: 512 bytes, first at 0x000 (00 vs DE)
+    sector 843: 512 bytes, first at 0x000 (00 vs DE)
+    sector 844: 512 bytes, first at 0x000 (00 vs DE)
+    sector 845: 512 bytes, first at 0x000 (00 vs DE)
+    sector 846: 512 bytes, first at 0x000 (00 vs DE)
+    sector 847: 100 bytes, first at 0x000 (00 vs DE)
+oracle-fs24-1 vs oracle-fs24-2, raw: 1 sectors differ
+    sector 821: 1 bytes, first at 0x076 (F8 vs FD)
+oracle-fs24-1 vs oracle-fs24-2, time stamps zeroed: IDENTICAL
+oracle-fs24-1 vs newtos-fs24, raw: 1 sectors differ
+    sector 821: 5 bytes, first at 0x06B (20 vs 00)
+oracle-fs24-1 vs newtos-fs24, time stamps zeroed: 1 sectors differ
+    sector 821: 1 bytes, first at 0x06B (20 vs 00)

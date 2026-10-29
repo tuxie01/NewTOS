@@ -1,0 +1,132 @@
+measurement-2026-10-29-fs24 -- FS24 step 1: Dsetpath after a media change, cases V1-V3 against the oracle
+==========================================================================================================
+Developer, TASK/FS24, 2026-10-29 (host clock CET). Base HEAD 6d2bc1d1 (clean tree). No NewTOS product
+code changed (the run measures HEAD). QEMU raspi4b (headless, -append serial=on) and Hatari (pinned oracle).
+No hardware, no real card, nothing flashed. Not committed (the lead commits).
+
+WHAT / WHY
+  TASK/FS24, user decision 2026-10-29: option B (Dsetpath checks its path first in a cache-only "peek"
+  of the sector cache; a missing sector or name falls back to today's path, which meets the change).
+  Order fixed by the user: first measure the researcher's new cases V1-V3 in a NEW table against the
+  oracle (gemdos-mc-paths.tsv is frozen), and stop before the fix if V2 or V3 show a residuum option B
+  cannot match.  Result: they do (RESULT below); the fix was NOT started.
+
+TABLE (new, frozen with its reference)
+  tosdump/cases/gemdos-mc-fs24.tsv   84 cases, 9 preludes, CRC 81113364, sha256 b0d0822f..
+    part L, S  case 67's setup: lines as gemdos-mc-paths.tsv L01-L17, S01-S07 (case ids 52-79;
+               S03 = 75, S04 = 76)
+    V1a 82-89  Dsetpath(C:\SUB) right after a re-login (no child logged, no buffer of C:)
+    V1b 91-105 the root listed (C:\SUB logged), then Dsetpath(C:\NOSUCH)
+    V2 107-120 re-login; Fsfirst(C:\NEWDESK.INF) -- the root's FIRST entry (order measured by
+               gemdos-mc-paths L03-L08: NEWDESK.INF, PXPROBE.PRG, PXPROBE.NAP, DELME.TXT, SUB), so EmuTOS'
+               scan stops before SUB and logs no folder (bdos/fsdir.c:1557-1574); then Dsetpath(C:\SUB)
+    V3 122-152 re-login; the root listed (C:\SUB logged); Fcreate(C:\SUB\FILL.DAT), Fwrite 100 + 9 x 1024
+               bytes, Fclose -- traffic through the sector buffers; then Dsetpath(C:\SUB)
+    every part: arm (Rwabs read + write back of C:'s sector 0, RW_NOMEDIACH), Mediach 2, the call,
+    Mediach, Dgetpath(C:), Dfree (meets a change still pending), Mediach 0.
+  Parse check before the runs (tosdump/core/cases.c td_call_cases_parse, scratch harness): rc 0, 84
+  cases, 9 preludes, CRC 81113364.
+
+METHOD (method/)
+  oracle-runs.sh  test image = measurements/measurement-2026-10-29-tool20/method/mkimage.sh (called, not
+                  copied); DUMPBIOS.PRG build 6d2b (make -C tosdump dumpbios-m68k)
+                  89a07eba7ba0bac49d4191d93ba4200af40a52c3fd0fbc8b3e1cd1749ff28b69; tools/hatari-oracle.sh
+                  disk, two runs, each on its own fresh clone; decoded with TOOL20's decode-mc.py (called).
+  newtos-runs.sh  cargo xtask tosdump bios gemdos-mc-fs24.tsv --testdisk <test.img> --reference
+                  EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN; kernel8.img (rpi4 release, HEAD, no features)
+                  529ce27faa446e05c57a37e301294b37ea2f162a97469b1d2c7c3d5c0f6e4d17, DUMPBIOS.NAP build 6d2b
+                  6e3c2dbf3df4af1f90aea21d41752ee7367f5214d192c285d1b776690d789548; D:\DISKUNIT.TXT 26,
+                  D:\PROGEXT.TXT NAP. "ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0";
+                  tosdiff --validate exit 0.
+  compare-ends.py end state of the test partition (LBA 63 + 130977): original / oracle-1 / oracle-2 /
+                  NewTOS, raw and with the FAT time stamps of the root AND of C:\SUB's directory zeroed
+                  (V3 creates C:\SUB\FILL.DAT, each side stamps it with its own clock).
+  Test image: test.img 6671ff3cbac654cf7a0110dc2fc7a589f5d6558de863fce1e2f7b0f12ee71655
+  (runs/test.img.manifest), PXPROBE.PRG da460efdcf11db8df7d7d39c93544e0f85d4ddc971000a798713e24593f373d7
+  (the m68k build is not byte-reproducible, TOOL20; the length 122863 the DTA cases compare is equal on
+  both sides), PXPROBE.NAP d832211c10d3709393ceb46bc372fca1dad1c8f24f4a40c7b5ba5d918dd8428c (= TOOL20's).
+  Both sides booted clones of this one image.
+
+MANIFESTS (every one verbatim)
+  runs/test.img.manifest:              optional_missing none
+  runs/newtos-fs24/card.img.manifest:  optional_missing none
+
+REFERENCE (tosdump/reference/, copy of runs/oracle-fs24-1)
+  EMUTOS-1a7484ab-BIOS-mc-fs24-disk  BIN b34dcedea83212f5e9f407343be7805e1ffe8db4151c617053ad8f89161084ea
+                                     LOG 1f0c3364a401b4bf551da67f4671ea894fff4cb17ae9fd1b68bf333f63afc1dd
+  oracle-fs24-1 vs oracle-fs24-2: BIN and LOG byte-identical.
+  tosdiff --selfcheck gemdos-mc-fs24.tsv on it: exit 0 (84 cases). make -C tosdump host-test: exit 0
+  (self-check over 41 references; layoutcheck 8 table lines in 32 tables).
+
+RESULT -- the oracle (runs/oracle-fs24-1/decoded.txt) and NewTOS HEAD (runs/newtos-fs24/decoded.txt)
+  case  what                                   oracle        NewTOS HEAD   option B (derived, not built)
+  75    S03 Dsetpath(C:\SUB)                   0             0             0
+  76    S04 Mediach after it                   2             0  DIFF       2
+  77    S05 Dgetpath                           "\SUB"        "\SUB"        "\SUB"
+  85    V1a Dsetpath(C:\SUB)                   0             0             0
+  86    V1a Mediach                            0             0             0
+  87    V1a Dgetpath                           "\SUB"        ""  DIFF      ""  (finding N1, not B's)
+  101   V1b Dsetpath(C:\NOSUCH)                -34 EPTHNF    -34           -34
+  102   V1b Mediach                            0             0             0
+  103   V1b Dgetpath                           ""            ""            ""
+  116   V2 Dsetpath(C:\SUB)                    0             0             0
+  117   V2 Mediach                             0             0             2   NEWLY DIFFERENT
+  118   V2 Dgetpath                            "\SUB"        ""  DIFF      "\SUB"
+  148   V3 Dsetpath(C:\SUB)                    0             0             0
+  149   V3 Mediach                             2             0  DIFF       0   still different
+  150   V3 Dgetpath                            "\SUB"        ""  DIFF      ""  (finding N1)
+  tosdiff: 5 of 84 cases differ on NewTOS HEAD (76 87 118 149 150, runs/newtos-fs24/tosdiff-*.txt);
+  every other case is EQUAL, including all listings, Fcreate/Fwrite/Fclose and every Dfree.
+
+  The oracle confirms the researcher's reading (TASK/FS24 "Vorschlag" points 4-7): a folder logged in
+  the DND tree is found without a disk access (76, 149: Mediach stays 2); a name that is not a logged
+  child sends findit to the disk, the change is met, the call restarts (86, 102, 117: Mediach 0) --
+  point 7b measured for the first time (101: EPTHNF, Mediach 0). V2 shows that an Fsfirst for a file in
+  front of the folder logs nothing (117: 0); V3 that a logged folder survives buffer traffic (149: 2).
+
+  THE RESIDUUM (why the fix was stopped). The "option B" column is derived from NewTOS' code, not
+  measured (no prototype was built, per the user's order):
+  - V2, case 117: NewTOS' Fsfirst(C:\NEWDESK.INF) reads the root's first sector through the data list of
+    the sector cache (tos-api/src/bdos/fs/find.rs:263@scan -> Volume::read_rel_sector -> cache::read);
+    the arming preludes are BIOS Rwabs calls of sector 0 and touch no BDOS cache slot (the only
+    invalidation is the re-login, tos-api/src/gemdos/mod.rs:254@media_change_relog). The peek would find
+    SUB in that cached sector, Dsetpath would not meet the change, Mediach would stay 2 -- the oracle
+    says 0. A case that is EQUAL today would newly differ. (Researcher's residuum (ii).)
+  - V3, case 149: the data list has 8 slots (tos-api/src/bdos/fs/cache.rs:56@SLOTS). After the listing
+    read the root sector, Fcreate reads C:\SUB's directory sector and the ten Fwrites bring ten partial
+    file sectors through the data list (tos-api/src/bdos/fs/fsio.rs:168@partial: 100 bytes into record
+    0, then each 1024-byte write a partial head, one whole record bypassing the cache, a partial tail
+    in a new record) -- eleven newer sectors, so the root sector is evicted. The peek would miss, fall
+    back, meet the change: Mediach 0 -- the oracle says 2. The case stays different. (Residuum (i).)
+  Option B therefore cannot make V2 and V3 EQUAL: the sector cache is not a stand-in for "folder logged".
+
+FINDING N1 (outside the ticket; not fixed) -- cases 87, 118, 150
+  Dsetpath that met the change and restarted returns E_OK, but Dgetpath afterwards reads the root (""),
+  the oracle "\SUB". Derived from the code (Schluss, the symptom is measured): after a re-login
+  curdir::free_drive (tos-api/src/bdos/fs/curdir.rs:332@free_drive) frees the drive's dirtbl slots but
+  leaves the PD's p_curdir byte naming the old slot. The restarted Dsetpath's set_curdir
+  (tos-api/src/bdos/fs/curdir.rs:225@set_curdir) first takes a slot for "\SUB" -- incr picks the first
+  free slot, the same index the stale byte names -- and only then reads the old byte; live(old) is now
+  true, so decr frees the slot just taken, and the directory reads as the root. In S03 (case 77 EQUAL)
+  the byte was 0 before. EmuTOS reads olddir before findit (bdos/fsdir.c:1129, 1134), and ckdrv repairs a
+  stale byte to a fresh root slot first (bdos/fsdrive.c:121-130), so its decrement hits that root slot.
+  Independent of option B: with B, V1a (no cached sector) and V3 (sector evicted) still restart.
+
+END STATE (runs/endstate-fs24.txt, runs/fsck-ends.txt)
+  original vs oracle: the table changed FAT sectors 1 and 129, C:\SUB's directory sector 821, data
+  sectors 829-847 (9316 bytes of FILL.DAT). oracle-1 vs oracle-2: identical with time stamps zeroed.
+  oracle-1 vs NewTOS, time stamps zeroed: 1 byte, sector 821 offset 0x06B = the attribute of
+  C:\SUB\FILL.DAT, oracle 0x20 (FA_ARCHIVE), NewTOS 0x00 -- the known open finding TASK/FS21.
+  fsck_msdos -n: exit 0 on oracle-1, oracle-2 and NewTOS.
+
+NO-REGRESSION
+  No product code changed; the frozen tables fs20, fs22, paths and the canary bios-r1 were not re-run
+  (their last results: measurements/measurement-2026-10-29-fs23/RUNINFO.TXT).
+
+FILES
+  method/  oracle-runs.sh, newtos-runs.sh, compare-ends.py
+  runs/    oracle-fs24-<1|2>/ (BIOS.BIN, BIOS.LOG, disk.sha256, hatari.log, hatari-oracle.stdout,
+           decoded.txt), newtos-fs24/ (cargo xtask tosdump's out-dir, decoded.txt), endstate-fs24.txt,
+           fsck-ends.txt, test.img.manifest
+  Images, cards, kernels and the scratch tree are not kept (scratch, deleted after the run); sha256
+  above and in the runs' files. manifest.sha256 covers every file of this run except itself.

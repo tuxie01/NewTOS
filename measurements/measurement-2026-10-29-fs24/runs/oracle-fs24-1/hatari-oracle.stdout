@@ -1,0 +1,15 @@
+DUMPBIOS build 6d2b, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV: 84 cases, CRC 81113364
+disk table: test drive C:, 9 preludes, destructive (a fresh clone of the test image only)
+layouts: 1
+running 84 cases
+all 84 cases ran
+BIOS.BIN: 84 records, 26912 bytes
+before 6671ff3cbac654cf7a0110dc2fc7a589f5d6558de863fce1e2f7b0f12ee71655 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs24/test.img
+destructive table: fresh clone, partition 1 clean (fsck_msdos -n)
+after  37a7aa09917672f5b53cafb44a35e640a76b2193eafcc7589eb468254571031d /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs24/oracle-fs24-1/disk.img
+runner hatari-oracle, profile disk (tosdump/profiles.tsv sha256 b90e6687ad5254209e722d6622b3268bffe983fb894c642359ed731703b34e98)
+table names the unit token u:0: no; a program path x:<path>: no
+D:\DISKUNIT.TXT 18 (the profile's physical unit of C:, for u:0), read back
+D:\PROGEXT.TXT PRG (the profile's program extension, for x:), read back

@@ -1,0 +1,3 @@
+before 6671ff3cbac654cf7a0110dc2fc7a589f5d6558de863fce1e2f7b0f12ee71655 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs24/test.img
+destructive table: fresh clone, partition 1 clean (fsck_msdos -n)
+after  37a7aa09917672f5b53cafb44a35e640a76b2193eafcc7589eb468254571031d /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs24/oracle-fs24-1/disk.img

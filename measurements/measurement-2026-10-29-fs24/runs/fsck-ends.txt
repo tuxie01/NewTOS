@@ -1,0 +1,3 @@
+oracle-fs24-1.img: fsck_msdos -n exit 0
+oracle-fs24-2.img: fsck_msdos -n exit 0
+newtos-fs24.img: fsck_msdos -n exit 0

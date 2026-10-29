@@ -64,7 +64,16 @@ media change is met only when `findit` has to read a directory
 `bdos/fsbuf.c:177-188`). A path whose every element is already a cached DND
 child (`bdos/fsdir.c:1455-1473`) touches no disk: `Dsetpath` then succeeds
 without meeting the change, `Mediach` stays 2 — measured, `gemdos-mc-paths`
-case S04, TASK/FS24.) On success it registers the resolved DND in the global
+case S04, TASK/FS24. Otherwise `findit` reads the directory and meets the
+change, the call restarts on the logged-in drive and `Mediach` reads 0: right
+after a re-login (no child logged), for a name that is not a logged child
+(`EPTHNF` for a name that does not exist), and for a folder an earlier `scan`
+did not reach — `scan` logs the folders it reads up to and including the
+entry it stops at (`bdos/fsdir.c:1557-1574`), so an `Fsfirst` for a file that
+stands before the folder logs none. A logged folder stays logged across
+buffer traffic: after 9316 bytes written elsewhere, `Dsetpath` still does not
+meet the change — measured, `gemdos-mc-fs24` cases 85-86, 101-102, 116-117,
+148-149, TASK/FS24.) On success it registers the resolved DND in the global
 `dirtbl[]` via `incr_curdir_usage`, which either finds an existing slot pointing
 at the same DND (and bumps its use count) or allocates a free slot. If
 `dirtbl[]` is full, `incr_curdir_usage` returns `EINTRN` and `xchdir` translates

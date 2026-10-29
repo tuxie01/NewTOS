@@ -1,0 +1,17 @@
+test image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs24/test.img
+test partition LBA 63+130977
+testpart: DIFFERENT; differing sectors (partition-relative): 1 129 821 829 830 831 832 833 834 835 836 837 838 839 840 841 842 843 844 845 846 847
+testpart: still different after normalising root directory time stamps
+fsck_msdos -n testpart-before.img: exit 0
+  ** /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs24/xtask/tosdump-48150/testpart-before.img
+  ** Phase 1 - Preparing FAT
+  ** Phase 2 - Checking Directories
+  ** Phase 3 - Checking for Orphan Clusters
+  Warning: 6 files, 65074 KiB free (32537 clusters)
+fsck_msdos -n testpart-after.img: exit 0
+  ** /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-29-fs24/runs/newtos-fs24/testpart-after.img
+  ** Phase 1 - Preparing FAT
+  ** Phase 2 - Checking Directories
+  ** Phase 3 - Checking for Orphan Clusters
+  Warning: 7 files, 65064 KiB free (32532 clusters)
+testpart after sha256 5f38ba4e3e1facc4f184d60c040ca4f41160f30cc91133e6890f2e2575af3a3d (kept: testpart-after.img)
