@@ -61,3 +61,30 @@ wo zu schauen ist:
 - Ursache mit Messung auf der Pi belegt; Fix nur nach Vorlage beim Anwender.
 
 [Gemeinsame Regeln](README.md) gelten.
+
+## Stand des Pi-Laufs vom 2026-10-29 (fuer eine spaetere Bisektion)
+
+Anwender, 2026-10-30: zurueckgestellt bleibt es; hier der Stand der Karte, auf
+der der Menue-Freeze auftrat. Die Karte wurde **nicht** mit `tools/mkcard.sh`
+gebaut, sondern dateiweise aktualisiert (19 Dateien ersetzt) — es gibt daher
+**kein** Kartenmanifest. Festgehalten ist, was ersetzt wurde:
+
+- Kernel: `kernel8.img`, Release-Bau aus `58e35ac8` (Baum sauber), sha256
+  beginnt mit `1da96072c71554b9`; der volle Hash ist nicht aufgezeichnet und
+  beim naechsten Einstecken der Karte aus `kernel8.img` auf BOOT nachzutragen.
+  Vorheriger Kernel als `KRN1024B.IMG` auf der Karte (sha256 beginnt mit
+  `fe967851f17c`, Stand 2026-10-24).
+- `C:\Apps\DOOM\DOOM.NAP`: sha256
+  `86abca15e09202d8538afb8504f4835fdda2ecc5f33f74f5852570832e1df132`
+  (= `measurements/measurement-2026-10-29-doom-freeze/RUNINFO.TXT`, „new“).
+- Weitere ersetzte Dateien (sha256-Praefix, Quelle unveraendert seit dem
+  Kopieren 2026-10-29 17:12): `C:\ACC\SYSACC.NAC` 812ddd574dda3f85,
+  `C:\USBSNAP.NCP` 522c8e9423ffae24, `C:\VT52PI.NAP` d7861cfa087eb349,
+  `C:\Apps\COREMARK\CORE.NCP` 1a93c4679784517e, `COREVAL.NCP` 18728315e8d5317c,
+  `C:\Apps\HYPVIEW\HYP_VIEW.NAP` 12b27a3a85656210, `C:\Apps\PRESENT\PRESENT.NAP`
+  1433062a1ad0d434, `C:\Apps\QED\QED.NAP` a8777bbf7e83fa27,
+  `C:\Apps\TERADESK\DESKTOP.NAP` 48dbf1c5dcbb98d0, `C:\Apps\ZVIEW\ZVIEW.NAP`
+  efb1aebbd303ba57 und die zehn `CODECS/*.NLD`. Die `.rsc`/`.RSC` waren
+  identisch und wurden nicht kopiert.
+- Bisektionsgrenzen: Kern `795066d9` (2026-10-24, kein Freeze gesehen) bis
+  `58e35ac8`; DOOM vom 2026-10-24 (`bec47b14...`) bis `86abca15...`.

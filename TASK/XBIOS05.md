@@ -61,3 +61,9 @@ Status: **ERLEDIGT** 2026-10-29 ([Quittung](XBIOS05-STATUS-DONE.MD)) · Priorita
   = Eintrag 0 = AUX (wie Handle 1), Handles 7..9 (und jedes hoehere) liefern 0 —
   Entscheidung dort.
 
+
+## Entscheidung (Anwender, 2026-10-30)
+
+Bleibt wie gebaut: der Kern liest die veroeffentlichte `Bconmap`-Tabelle nicht
+zurueck; die Abweichung bleibt dokumentiert (`docs/api/xbios/2c-bconmap.md`,
+`docs/COMPATIBILITY.md`).

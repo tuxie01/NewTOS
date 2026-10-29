@@ -1,6 +1,6 @@
 # BIOS16 — Direkt geschriebene Vektorzelle in Seite 0 wird nicht uebernommen
 
-Status: **OFFEN** (Entscheidung beim Anwender) · Prioritaet: **P2** · Typ: Developer — Fund aus [BIOS07](BIOS07.md) (2026-10-29)
+Status: **OFFEN** (entschieden 2026-10-30) · Prioritaet: **P2** · Typ: Developer — Fund aus [BIOS07](BIOS07.md) (2026-10-29)
 
 ## Sachverhalt
 
@@ -31,3 +31,11 @@ richtigstellen.
   wie BIOS15; keine neue Abweichung; Hosttests gruen.
 
 [Gemeinsame Regeln](README.md) gelten.
+
+## Entscheidung (Anwender, 2026-10-30)
+
+Wie vorgeschlagen: der direkt in eine Seite-0-Vektorzelle geschriebene Wert
+wird am Ende des Systemaufrufs in dieselbe Zelle uebernommen, die `Setexc`
+liest und schreibt (wie EmuTOS, `references/emutos/bios/bios.c:1070-1080`);
+Warnung einmal nach ADR-031; nie aufrufen. Abnahme: Sonde beidseitig (MEASURED),
+direkte Schreibung, danach liefert `Setexc(n,-1)` den geschriebenen Wert.
