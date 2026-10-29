@@ -1,0 +1,17 @@
+ 37  1:0x36 ret=0           dfree=32537,32672,512,4                                    A01 Dfree(C:): logs C:
+ 38 13:0x09 ret=0                                                                      A02 Mediach(2): 0 --
+ 40 13:0x04 ret=0                                                                      A04 write it back
+ 41 13:0x09 ret=2                                                                      A05 Mediach(2): 2 --
+ 42  1:0x36 ret=0           dfree=32537,32672,512,4                                    A06 Dfree(C:) meets the
+ 43 13:0x09 ret=0                                                                      A07 Mediach(2): 0, the
+ 44 13:0x07 ret=12884       bpb=512,4,2048,32,128,129,289,32672,1                      A08 Getbpb(2): the image's
+ 45 13:0x09 ret=0                                                                      A09 Mediach(2) after Getbpb
+ 50 13:0x04 ret=0                                                                      B02 write the changed
+ 51 13:0x09 ret=2                                                                      B03 Mediach(2): 2
+ 52  1:0x36 ret=0           dfree=32541,32676,512,4                                    B04 Dfree(C:): the geometry
+ 53 13:0x09 ret=0                                                                      B05 Mediach(2): 0
+ 54  1:0x3C ret=6                                                                      B06 Fcreate(C:\GCPROBE.DAT, 0) --
+ 55  1:0x40 ret=512                                                                    B06 Fwrite(handle, 512, buffer
+ 56  1:0x3E ret=0                                                                      B06 Fclose(handle): 0 --
+ 57 13:0x07 ret=12884       bpb=512,4,2048,16,128,129,273,32676,1                      B07 Getbpb(2): the changed
+ 58 13:0x09 ret=0                                                                      B08 Mediach(2)

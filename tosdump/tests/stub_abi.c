@@ -1,4 +1,5 @@
 /* stub_abi.c -- see stub_abi.h. */
+#include <stdio.h>
 #include <string.h>
 
 #include "stub_abi.h"
@@ -9,12 +10,16 @@ struct td_stub_call td_stub_calls[TD_STUB_MAX_CALLS];
 int                 td_stub_ncalls;
 
 static int iorec_laid;
+static long stub_dta;                  /* TOOL20: the DTA Fsetdta set */
+static long stub_drive = TD_STUB_DRIVE;
 
 void td_stub_reset(void)
 {
 	memset(td_stub_calls, 0, sizeof td_stub_calls);
 	td_stub_ncalls = 0;
 	iorec_laid = 0;
+	stub_dta = 0;
+	stub_drive = TD_STUB_DRIVE;
 }
 
 static struct td_stub_call *log_slot(void)
@@ -352,6 +357,74 @@ static long stub_supexec(long (*fn)(void))
 	return r;
 }
 
+/* GEMDOS (TOOL20, stub_abi.h): one directory entry k into the DTA. */
+static void stub_dta_entry(uint8_t *d, int k)
+{
+	uint16_t time = (uint16_t)(TD_STUB_DTA_TIME + k);
+	uint16_t date = TD_STUB_DTA_DATE;
+	int32_t len = TD_STUB_DTA_LEN + k;
+	char name[14];
+
+	memset(name, 0, sizeof name);
+	snprintf(name, sizeof name, "F%d.TXT", k);
+	d[0]  = (uint8_t)(k + 1);              /* the search state */
+	d[21] = 0x20;
+	memcpy(d + 22, &time, 2);
+	memcpy(d + 24, &date, 2);
+	memcpy(d + 26, &len, 4);
+	memcpy(d + 30, name, strlen(name) + 1);  /* up to the NUL, as packit */
+}
+
+static void stub_str(char *dst, long p)
+{
+	if (p)
+		snprintf(dst, TD_STUB_STR_LEN, "%s", (const char *)p);
+}
+
+static long stub_gemdos(struct td_stub_call *c, int16_t fn, const long *value)
+{
+	switch (fn) {
+	case 0x1A: stub_dta = value[0]; return 0L;
+	case 0x2F: return stub_dta;
+	case 0x4E: {
+		stub_str(c->call_str, value[0]);
+		stub_dta_entry((uint8_t *)stub_dta, 0);
+		return 0L;
+	}
+	case 0x4F: {
+		uint8_t *d = (uint8_t *)stub_dta;
+		int k = d[0];
+
+		if (k < 1 || k >= TD_STUB_DIR_N)
+			return -49L;
+		stub_dta_entry(d, k);
+		return 0L;
+	}
+	case 0x3C: stub_str(c->call_str, value[0]); return TD_STUB_HANDLE;
+	case 0x40: return value[1];
+	case 0x3E: return 0L;
+	case 0x41:
+	case 0x3B: stub_str(c->call_str, value[0]); return 0L;
+	case 0x4B:
+		stub_str(c->call_str, value[1]);
+		stub_str(c->call_str2, value[2]);
+		return TD_STUB_PEXEC_RET;
+	case 0x0E: stub_drive = value[0]; return TD_STUB_DRVMAP;
+	case 0x19: return stub_drive;
+	case 0x36: {
+		int32_t v[4] = { 1, 2, 3, 4 };
+
+		memcpy((void *)value[0], v, sizeof v);
+		return 0L;
+	}
+	case 0x47:
+		memcpy((void *)value[0], TD_STUB_PATH, sizeof TD_STUB_PATH);
+		return 0L;
+	default:
+		return TD_STUB_TRAP_RET(1, fn);
+	}
+}
+
 long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
                  const uint8_t *kind, const long *value)
 {
@@ -366,6 +439,10 @@ long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
 		c->call_kind[i]  = i < (int)nargs ? kind[i] : 0;
 		c->call_value[i] = value[i];
 	}
+
+	/* GEMDOS after a media change (stub_abi.h, TOOL20) */
+	if (trap == 1 && opcode != 0x20)
+		return stub_gemdos(c, opcode, value);
 
 	/* structures behind a pointer (stub_abi.h, TOOL16) */
 	if (trap == 14 && opcode == 0x0E) {

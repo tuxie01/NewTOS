@@ -179,6 +179,20 @@ $(BUILD)/test_runner_ptr: $(BUILD)/test_runner_ptr.o $(CORE_OBJ) \
                           $(BUILD)/stub_abi.o
 	$(CC) $(CFLAGS) $^ -o $@
 
+$(BUILD)/test_cases_gdos.o: $(TESTS)/test_cases_gdos.c $(TESTS)/tdtest.h \
+                           $(CORE)/cases.h | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/test_cases_gdos: $(BUILD)/test_cases_gdos.o $(BUILD)/cases.o \
+                          $(BUILD)/record.o
+	$(CC) $(CFLAGS) $^ -o $@
+
+$(BUILD)/test_runner_gdos.o: $(TESTS)/test_runner_gdos.c $(TESTS)/tdtest.h \
+                             $(TESTS)/stub_abi.h $(CORE)/runner_call.h | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/test_runner_gdos: $(BUILD)/test_runner_gdos.o $(CORE_OBJ) \
+                           $(BUILD)/stub_abi.o
+	$(CC) $(CFLAGS) $^ -o $@
+
 $(BUILD)/emit_record.o: $(TESTS)/emit_record.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/emit_be: $(BUILD)/emit_record.o $(BUILD)/record_be.o
@@ -201,6 +215,7 @@ run-tests: $(BUILD)/test_record $(BUILD)/test_cases $(BUILD)/test_log \
       $(BUILD)/test_cases_call $(BUILD)/test_runner_call \
       $(BUILD)/test_cases_disk $(BUILD)/test_runner_disk \
       $(BUILD)/test_cases_ptr $(BUILD)/test_runner_ptr $(BUILD)/layoutcheck \
+      $(BUILD)/test_cases_gdos $(BUILD)/test_runner_gdos \
       $(BUILD)/test_casefile $(BUILD)/tosdiff $(BUILD)/mkdump \
       $(BUILD)/emit_be $(BUILD)/emit_le
 	@echo "== record format"
@@ -239,6 +254,10 @@ run-tests: $(BUILD)/test_record $(BUILD)/test_cases $(BUILD)/test_log \
 	@$(BUILD)/test_runner_ptr $(BUILD)/stub-ptr.bin $(BUILD)/stub-ptr.tsv
 	@$(BUILD)/tosdiff --validate $(BUILD)/stub-ptr.bin $(BUILD)/stub-ptr.tsv \
 	    | sed 's/^/  /'
+	@echo "== GEMDOS after a media change: :packed, x<n>, arrays, strings, tokens, the DTA, the guard"
+	@$(BUILD)/test_cases_gdos
+	@echo "== GEMDOS after a media change: runner against the stub backend"
+	@$(BUILD)/test_runner_gdos
 	@echo "== layouts: the tables' are the docs/api/ specs'"
 	@sh $(TESTS)/test_layoutcheck.sh $(BUILD)
 	@echo "== case table reader, per area"

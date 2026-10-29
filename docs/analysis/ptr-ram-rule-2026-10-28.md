@@ -60,7 +60,7 @@ liefern Adressen ohne Struktur.
   `0x768`, `Kbdvbase` `0x7F010`, `Bconmap(-2)` `0x2C`; `Setexc(0x168)` `0x5F0`;
   `Getbpb` `0x266024`.
 - `Keytbl` → `0x768` ist eine **gueltige** Antwort: NewTOS legt `struct keytbl` samt
-  Tabellen im Page-0-Bereich des Prozesses an (`tos-api/src/bdos/process/loader.rs:1014@KEYTBL_AREA_VA`,
+  Tabellen im Page-0-Bereich des Prozesses an (`tos-api/src/bdos/process/loader.rs:1032@KEYTBL_AREA_VA`,
   ADR-023 in `docs/MEMORY.md`), und der Audit `docs/audits/2026-10-28-xbios-chardev.md`
   (Sonde K01–K03) bestaetigt die Struktur und die Tabellenbytes als gleich dem
   EmuTOS-(US-)Inhalt. Eine Untergrenze darf `0x768` deshalb nicht ausschliessen.
@@ -138,7 +138,7 @@ klein: unter einer Stunde plus Lauf.
 
 Zu **B** im Einzelnen — der Mechanismus ist da: `r:<len>[.B|.W|.L][@<offset>]`
 nimmt die Bytes hinter der zurueckgegebenen Adresse in die Capture
-(`tosdump/core/cases.c:3343@parse_capture`, nur mit `PTR_RAM` zulaessig;
+(`tosdump/core/cases.c:3546@parse_capture`, nur mit `PTR_RAM` zulaessig;
 `docs/TOS-REFERENCE-DUMPER.md` „Capture through the returned pointer“), nicht
 auf `!disk`-Tabellen beschraenkt. Wiederverwendbar ohne Code, **wenn** das Layout
 auf beiden Seiten gleich ist:
@@ -166,7 +166,7 @@ A schliesst die Luecke jetzt.
 
 ## 6. Befund: der Laeufer folgt dem Zeiger ohne Obergrenze (Defekt-Kandidat, nicht behoben)
 
-`tosdump/core/runner_call.c:491@TD_CALL_CAP_RET` liest hinter dem Rueckgabewert,
+`tosdump/core/runner_call.c:560@TD_CALL_CAP_RET` liest hinter dem Rueckgabewert,
 sobald er `> 0` und gerade ist — **ohne** die Grenzen von `PTR_RAM`. Bei einem
 NewTOS-Wert wie dem 64-Bit-Platzhalter `0x4E75…` (BIOS-CORE-005) oder
 `>= 0x80000000` waere das ein Datenabbruch im EL0-Dumper, der Lauf ginge verloren,

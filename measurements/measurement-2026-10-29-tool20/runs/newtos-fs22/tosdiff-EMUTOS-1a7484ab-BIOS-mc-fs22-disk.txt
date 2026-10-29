@@ -1,0 +1,27 @@
+EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN vs NEWTOS.BIN -- area BIOS, 13 cases from gemdos-mc-fs22.tsv
+
+case 33  trap 1 function 0x4E  P01 Fsfirst(C:\PXPROBE.*, 0): the DTA before the Pexec -- bdos/
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                            = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                            = 0x0000000000000000
+
+case 37  trap 1 function 0x4B  P05 Pexec(0, C:\PXPROBE.<own>, "child"): 42; the caller's DTA a
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                            = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                            = 0x0000000000000000
+
+case 39  trap 1 function 0x2F  P07 Fgetdta(): the DTA behind the pointer it returns, unchanged
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                            = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                            = 0x0000000000000000
+
+case 44  trap 1 function 0x4E  F04 Fsfirst(C:\PXPROBE.*, 0) after the restart -- bdos/bdosmain
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                            = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                            = 0x0000000000000000
+
+case 46  trap 1 function 0x4F  F06 Fsnext: the search the restarted Fsfirst set up -- bdos/fsd
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                            = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                            = 0x0000000000000000
+
+case 47  trap 1 function 0x4F  F07 Fsnext: ENMFIL -- bdos/fsdir.c:662-663
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                            = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                            = 0x0000000000000000
+
+6 of 13 cases differ

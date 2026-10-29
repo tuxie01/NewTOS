@@ -83,11 +83,43 @@ void *td_call_callback(int n)
 	return (void *)call_cb[n];
 }
 
-/* What the last Super(0L) case returned: the argument of the "t:0" case
- * that closes the bracket.  The two calls come from this one call site with
- * the same frame, so on the m68k EmuTOS's x20_sup finds the USP where
- * x20_usr left it (bdos/rwa.S:305-336, "already at old USP"). */
-static long super_token;
+/* The values a "t:<n>" argument passes: what an earlier case returned, the
+ * case the loader marked (td_call_case.keep).
+ *   t:0  the last Super(0L): the argument of the case that closes the
+ *        bracket.  The two calls come from this one call site with the same
+ *        frame, so on the m68k EmuTOS's x20_sup finds the USP where x20_usr
+ *        left it (bdos/rwa.S:305-336, "already at old USP").  A LONG.
+ *   t:1  the open file's Fcreate: the handle Fwrite and Fclose take (TOOL20).
+ *        A WORD, as the binding's handle argument.
+ *   t:2  a Dgetdrv outside the Dsetdrv bracket: the drive Dsetdrv(t:2)
+ *        restores (TOOL20).  A WORD, as Dsetdrv's argument. */
+static long call_token[TD_CALL_TOKENS];
+
+/*
+ * The extension of a program path ("x:", TOOL20): the program format is the
+ * machine's -- the oracle's PRG, NewTOS's NAP -- so the run's PROFILE names
+ * it (PROGEXT.TXT; tools/hatari-oracle.sh profile disk, cargo xtask tosdump
+ * --disk), as it names the disk unit.  Empty: not given.
+ */
+static char prog_ext[TD_CALL_EXT_MAX + 1];
+
+int td_run_call_set_prog_ext(const char *ext)
+{
+	size_t n = strlen(ext), i;
+
+	if (n == 0 || n > TD_CALL_EXT_MAX)
+		return -1;
+	for (i = 0; i < n; i++)
+		if (!((ext[i] >= 'A' && ext[i] <= 'Z') ||
+		      (ext[i] >= '0' && ext[i] <= '9')))
+			return -1;
+	memcpy(prog_ext, ext, n + 1);
+	return 0;
+}
+
+/* "x:<path>" + "." + the profile's extension; one per call (Pexec names
+ * one program). */
+static char prog_path[TD_CALL_STR_MAX + 2 + TD_CALL_EXT_MAX];
 
 void *td_call_buffer(int n)
 {
@@ -173,12 +205,20 @@ static void poison_buffers(const struct td_call_case_table *ct,
 
 	for (n = 0; n < TD_CALL_BUF_N; n++) {
 		uint8_t unit = 1;
+		int read_by_layout = 0;
 
-		if (c->cap_arg >= 0 && c->arg[c->cap_arg].value == n)
+		/* TOOL20: the DTA holds the search state of the last Fsfirst;
+		 * only Fsetdta and Fsfirst lay the poison on it */
+		if (n == c->dta_buf && c->dta_keep)
+			continue;
+		if (c->cap_arg >= 0 && c->arg[c->cap_arg].value == n) {
 			unit = c->cap_unit;
+			read_by_layout = c->cap_layout != 0;
+		}
+		if (c->cap_arg == TD_CALL_CAP_DTA && n == c->dta_buf)
+			read_by_layout = 1;
 		poison_buffer(n, unit);
-		if (c->cap_layout && c->cap_arg >= 0 &&
-		    c->arg[c->cap_arg].value == n)
+		if (read_by_layout)
 			poison_layout((uint8_t *)call_buf[n],
 			              &ct->layouts[c->cap_layout - 1]);
 	}
@@ -328,7 +368,8 @@ long td_run_call_stop_ret(void)
  * says was passed.  An unused register slot carries poison.  Preludes go
  * through here too (f NULL): the same marshalling, nothing recorded.
  */
-static long issue(const struct td_call_case *c, struct td_call_frame *f)
+static long issue(const struct td_call_case_table *ct,
+                  const struct td_call_case *c, struct td_call_frame *f)
 {
 	uint8_t kind[TD_ABI_ARGS_MAX];
 	long value[TD_ABI_ARGS_MAX];
@@ -358,10 +399,29 @@ static long issue(const struct td_call_case *c, struct td_call_frame *f)
 			value[j] = (long)td_call_callback((int)a->value);
 			rec = TD_CALL_CB_TOKEN(a->value);
 			break;
-		case TD_CALL_ARG_TOKEN:  /* what Super(0L) returned */
-			kind[j]  = TD_ABI_ARG_LONG;
-			value[j] = super_token;
+		case TD_CALL_ARG_TOKEN:  /* what an earlier case returned */
+			if (a->value == TD_CALL_TOKEN_SUPER) {
+				kind[j]  = TD_ABI_ARG_LONG;
+				value[j] = call_token[TD_CALL_TOKEN_SUPER];
+			} else {         /* the handle, the drive: WORDs */
+				kind[j]  = TD_ABI_ARG_WORD;
+				value[j] = (long)(int16_t)call_token[a->value];
+			}
 			rec = TD_CALL_SUPER_TOKEN(a->value);
+			break;
+		case TD_CALL_ARG_STR:    /* the table's string, and its token */
+		case TD_CALL_ARG_TAIL:
+			kind[j]  = TD_ABI_ARG_LONG;
+			value[j] = (long)(ct->str_pool + ct->str_off[a->value]);
+			rec = TD_CALL_STR_TOKEN(a->value);
+			break;
+		case TD_CALL_ARG_PROG:   /* the path + the profile's extension */
+			strcpy(prog_path, ct->str_pool + ct->str_off[a->value]);
+			strcat(prog_path, ".");
+			strcat(prog_path, prog_ext);
+			kind[j]  = TD_ABI_ARG_LONG;
+			value[j] = (long)prog_path;
+			rec = TD_CALL_STR_TOKEN(a->value);
 			break;
 		case TD_CALL_ARG_UNIT:   /* the test disk's physical unit */
 			kind[j]  = TD_ABI_ARG_WORD;
@@ -396,6 +456,9 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 	/* a "u:0" with no unit from the profile: nothing is issued */
 	if (ct->unit_token && (disk_unit < 0 || disk_unit > 0x7FFF))
 		return TD_RUN_CALL_ERR_UNIT;
+	/* an "x:" with no program extension from the profile: the same */
+	if (ct->prog_ext && prog_ext[0] == '\0')
+		return TD_RUN_CALL_ERR_PROGEXT;
 
 	for (i = 0; i < ct->count; i++) {
 		const struct td_call_case *c = &ct->cases[i];
@@ -437,7 +500,7 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 				put_field(ct, p, prev_ret);
 				continue;
 			}
-			pr = issue(p, NULL);
+			pr = issue(ct, p, NULL);
 
 			if (pr != 0) {
 				stop_line = p->line;
@@ -447,13 +510,14 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 		}
 
 		/* 3. the call under measurement */
-		ret = issue(c, &run_frame);
+		ret = issue(ct, c, &run_frame);
 		prev_ret = ret;
 
-		/* Super(0L) opened the bracket: keep the token for its t:0 */
-		if (c->trap == 1 && c->opcode == 0x20 && c->nargs == 1 &&
-		    c->arg[0].kind == TD_CALL_ARG_LONG && c->arg[0].value == 0)
-			super_token = ret;
+		/* a return a later "t:<n>" passes: Super(0L)'s token, the
+		 * handle of Fcreate, the drive of Dgetdrv (the loader marks
+		 * the case) */
+		if (c->keep)
+			call_token[c->keep - 1] = ret;
 
 		/* 4. the return register at its native width, as one 64-bit
 		 *    value: on the m68k the high half is the sign extension of
@@ -482,6 +546,11 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 				td_layout_capture(run_frame.capture, ct->layouts, l,
 				                  why ? NULL : td_abi_addr(ret), why,
 				                  abi);
+			} else if (c->cap_arg == TD_CALL_CAP_DTA) {
+				/* TOOL20: the DTA buffer */
+				td_layout_capture(run_frame.capture, ct->layouts, l,
+				                  td_call_buffer((int)c->dta_buf),
+				                  0, abi);
 			} else {
 				td_layout_capture(run_frame.capture, ct->layouts, l,
 				                  td_call_buffer((int)

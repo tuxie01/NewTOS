@@ -1,0 +1,7 @@
+original         f74b5f0bff827af5 fsck exit 0
+oracle-fs20-1    63aef5fb008083e4 fsck exit 206
+newtos-fs20      2ee077e057097b75 fsck exit 206
+oracle-fs22-1    f74b5f0bff827af5 fsck exit 0
+newtos-fs22      f74b5f0bff827af5 fsck exit 0
+oracle-paths-1   e7f004a63c8a41f0 fsck exit 206
+newtos-paths     2f0bddd9aa3ea6be fsck exit 0

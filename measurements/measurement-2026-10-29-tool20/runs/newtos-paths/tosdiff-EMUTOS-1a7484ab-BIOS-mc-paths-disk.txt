@@ -1,0 +1,92 @@
+EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN vs NEWTOS.BIN -- area BIOS, 49 cases from gemdos-mc-paths.tsv
+
+case 45  trap 1 function 0x4E  L03 Fsfirst(C:\*.*, FA_SUBDIR) after the change -- bdos/bdosmai
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+
+case 47  trap 1 function 0x4F  L05 Fsnext -- bdos/fsdir.c:654
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+
+case 48  trap 1 function 0x4F  L06 Fsnext
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+
+case 49  trap 1 function 0x4F  L07 Fsnext
+    dta:d_fname[10]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000050   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+
+case 50  trap 1 function 0x4F  L08 Fsnext
+    dta:d_fname[4]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000045   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[5]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x000000000000002E   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[6]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000054   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[7]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000058   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[8]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000054   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[10]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000050   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+
+case 51  trap 1 function 0x4F  L09 Fsnext
+    dta:d_fname[4]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000045   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[5]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x000000000000002E   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[6]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000054   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[7]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000058   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[8]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000054   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[10]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000050   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+
+case 52  trap 1 function 0x4F  L10 Fsnext: ENMFIL -- bdos/fsdir.c:662-663
+    dta:d_fname[4]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000045   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[5]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x000000000000002E   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[6]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000054   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[7]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000058   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[8]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000054   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[10]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000050   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+
+case 56  trap 1 function 0x4E  L13 Fsfirst(C:\SUB\*.*, FA_SUBDIR): a folder's listing after th
+    dta:d_fname[2]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[3]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[4]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[5]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[6]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[7]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[8]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[9]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[10]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[11]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+
+case 58  trap 1 function 0x4F  L15 Fsnext
+    dta:d_fname[3]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[4]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[5]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[6]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[7]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[8]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[9]           EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[10]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[11]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+
+case 59  trap 1 function 0x4F  L16 Fsnext
+    dta:d_fname[10]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[11]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+
+case 60  trap 1 function 0x4F  L17 Fsnext: past the end
+    dta:d_fname[10]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[11]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[12]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+    dta:d_fname[13]          EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x00000000000000AD   NEWTOS.BIN                             = 0x0000000000000000
+
+case 67  trap 13 function 0x09  S04 Mediach(2): EmuTOS 2, Dsetpath did not meet the change
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000002 (2)   NEWTOS.BIN                             = 0x0000000000000000 (0)
+
+12 of 49 cases differ

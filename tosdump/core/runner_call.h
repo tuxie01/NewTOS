@@ -19,6 +19,9 @@
                                        * the run stopped before its case    */
 #define TD_RUN_CALL_ERR_UNIT    (-3)  /* the table names "u:0" and no unit
                                        * was set: nothing was issued        */
+#define TD_RUN_CALL_ERR_PROGEXT (-4)  /* the table names "x:" and no program
+                                       * extension was set: nothing issued
+                                       * (TOOL20)                           */
 
 int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
                 size_t out_bytes);
@@ -37,6 +40,13 @@ void *td_call_callback(int n);
  * docs/TOS-REFERENCE-DUMPER.md section 6).  Until it is set, a table that
  * names "u:0" is not run (TD_RUN_CALL_ERR_UNIT). */
 void td_run_call_set_disk_unit(int32_t unit);
+
+/* The program extension an "x:<path>" argument gets, 1..3 characters A-Z
+ * and 0-9, named by the run's profile (PROGEXT.TXT, read by dumpbios.c;
+ * TOOL20): the oracle's PRG, NewTOS's NAP.  0, or -1 for a malformed one.
+ * Until it is set, a table that names "x:" is not run
+ * (TD_RUN_CALL_ERR_PROGEXT). */
+int td_run_call_set_prog_ext(const char *ext);
 
 /*
  * A layout capture (TOOL16; cases.h, "Layouts"): write one 64-bit slot per

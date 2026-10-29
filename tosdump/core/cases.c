@@ -2946,9 +2946,35 @@ static int layout_append(struct td_layout *l, const struct td_layout *from,
  * One field "<name>:<type>@<m68k>/<lp64>[:<class>]" of layout `l`.
  * `cursor`/`maxal` are the C layout so far, per ABI.
  */
+/* The names of a layout's opaque "x<n>" fields, which have no slot: only
+ * so that a field name still stands once (TOOL20). */
+#define TD_LAYOUT_OPAQUE_MAX 4
+
+struct layout_opaque {
+	uint8_t n;
+	char    name[TD_LAYOUT_OPAQUE_MAX][TD_LAYOUT_NAME_LEN];
+};
+
+/* "<digits>" -> 1..max, or 0 when it is not one. */
+static uint32_t layout_count(const char *s, size_t len, uint32_t max)
+{
+	uint32_t v = 0;
+	size_t i;
+
+	if (len == 0 || len > 4)
+		return 0;
+	for (i = 0; i < len; i++) {
+		if (s[i] < '0' || s[i] > '9')
+			return 0;
+		v = v * 10u + (uint32_t)(s[i] - '0');
+	}
+	return (v >= 1 && v <= max) ? v : 0;
+}
+
 static int layout_field(struct td_layout *l, const struct td_layout *set,
                         uint8_t n, const char *f, size_t flen,
-                        uint32_t *cursor, uint8_t *maxal, const char **why)
+                        uint32_t *cursor, uint8_t *maxal, int packed,
+                        struct layout_opaque *opq, const char **why)
 {
 	size_t c1, at, c2, i;
 	const char *t;
@@ -2957,6 +2983,8 @@ static int layout_field(struct td_layout *l, const struct td_layout *set,
 	uint8_t align[TD_LAYOUT_ABIS], type = 0;
 	int target = -1, embedded = 0, abi, rc;
 	uint8_t cls = 0xFF;
+	uint32_t count = 1;               /* elements of an array "b14"    */
+	uint32_t opaque = 0;              /* bytes of an opaque "x21"      */
 
 	trim(&f, &flen);
 	for (c1 = 0; c1 < flen && f[c1] != ':'; c1++)
@@ -2979,12 +3007,17 @@ static int layout_field(struct td_layout *l, const struct td_layout *set,
 		/* the field itself, or the head of an embedded or followed
 		 * layout's paths ("in.ibuf", "mp_free->md_start") */
 		if (strncmp(sn, f, c1) == 0 &&
-		    (sn[c1] == '\0' || sn[c1] == '.' ||
+		    (sn[c1] == '\0' || sn[c1] == '.' || sn[c1] == '[' ||
 		     (sn[c1] == '-' && sn[c1 + 1] == '>'))) {
 			*why = "a field name stands twice in one layout";
 			return TD_CASE_ERR_VALUE;
 		}
 	}
+	for (i = 0; i < opq->n; i++)
+		if (span_is(f, c1, opq->name[i])) {
+			*why = "a field name stands twice in one layout";
+			return TD_CASE_ERR_VALUE;
+		}
 
 	t = f + c1 + 1;
 	tlen = at - c1 - 1;
@@ -2997,6 +3030,25 @@ static int layout_field(struct td_layout *l, const struct td_layout *set,
 		case 'p': type = TD_LT_PTR;   break;
 		default:  break;
 		}
+	} else if (tlen > 1 && t[0] == 'x') {
+		/* TOOL20: n opaque bytes -- the system's own part of a
+		 * structure (the DTA's d_reserved): no slot, never compared */
+		opaque = layout_count(t + 1, tlen - 1, TD_CALL_BUF_BYTES);
+		if (!opaque) {
+			*why = "an opaque field is x<n>, n 1..1024 bytes";
+			return TD_CASE_ERR_VALUE;
+		}
+	} else if (tlen > 1 && (t[0] == 'b' || t[0] == 'w' || t[0] == 'L') &&
+	           t[1] >= '0' && t[1] <= '9') {
+		/* TOOL20: an array "<type><n>", one slot per element,
+		 * "<name>[<i>]" (the DTA's d_fname[14]) */
+		count = layout_count(t + 1, tlen - 1, TD_LAYOUT_SLOTS);
+		if (!count) {
+			*why = "an array field is b<n>, w<n> or L<n>, n 1..32";
+			return TD_CASE_ERR_VALUE;
+		}
+		type = t[0] == 'b' ? TD_LT_BYTE
+		     : t[0] == 'w' ? TD_LT_WORD : TD_LT_LONG;
 	} else if (tlen > 2 && t[0] == 'p' && t[1] == '>') {
 		type = TD_LT_PTR;
 		target = layout_lookup(set, n, t + 2, tlen - 2);
@@ -3012,8 +3064,9 @@ static int layout_field(struct td_layout *l, const struct td_layout *set,
 			return TD_CASE_ERR_VALUE;
 		}
 	}
-	if (!type && !embedded) {
-		*why = "a field type is b, w, L, l, p, p><layout> or [<layout>]";
+	if (!type && !embedded && !opaque) {
+		*why = "a field type is b, w, L, l, p, p><layout>, [<layout>], "
+		       "an array b<n>/w<n>/L<n> or opaque x<n>";
 		return TD_CASE_ERR_VALUE;
 	}
 
@@ -3043,25 +3096,43 @@ static int layout_field(struct td_layout *l, const struct td_layout *set,
 			       "carry their own";
 			return TD_CASE_ERR_RETCLASS;
 		}
-	} else if (!embedded) {
+		if (opaque) {
+			*why = "an opaque x<n> takes no class: it is not captured";
+			return TD_CASE_ERR_RETCLASS;
+		}
+	} else if (!embedded && !opaque) {
 		cls = type == TD_LT_PTR ? TD_RET_PTR_RAM : TD_RET_EXACT;
+	}
+	if (packed && off[0] != off[1]) {
+		*why = "a packed layout is the same bytes on both ABIs: the m68k "
+		       "and LP64 offsets of a field are one number";
+		return TD_CASE_ERR_GEOMETRY;
 	}
 
 	/* the C layout: each offset is the one C gives this field after the
-	 * ones before it, on both ABIs */
+	 * ones before it, on both ABIs; in a packed layout (C's
+	 * __attribute__((packed))) every field is aligned on 1 */
 	for (abi = 0; abi < TD_LAYOUT_ABIS; abi++) {
 		uint32_t expect;
 
 		if (embedded) {
 			width[abi] = set[target].size[abi];
 			align[abi] = set[target].align[abi];
+		} else if (opaque) {
+			width[abi] = opaque;
+			align[abi] = 1;
 		} else {
-			width[abi] = td_layout_width(type, abi);
+			width[abi] = count * td_layout_width(type, abi);
 			align[abi] = layout_align(type, abi);
 		}
+		if (packed)
+			align[abi] = 1;
 		expect = (cursor[abi] + align[abi] - 1u) & ~(uint32_t)(align[abi] - 1u);
 		if (off[abi] != expect) {
-			*why = abi == TD_LAYOUT_ABI_M68K
+			*why = packed
+			       ? "an offset of a packed layout is not where C puts "
+			         "the field (no padding, no gaps)"
+			       : abi == TD_LAYOUT_ABI_M68K
 			       ? "an m68k offset is not where C puts the field "
 			         "(everything but a UBYTE WORD aligned, no gaps)"
 			       : "an LP64 offset is not where C puts the field "
@@ -3071,6 +3142,43 @@ static int layout_field(struct td_layout *l, const struct td_layout *set,
 		cursor[abi] = off[abi] + width[abi];
 		if (align[abi] > maxal[abi])
 			maxal[abi] = align[abi];
+	}
+
+	if (opaque) {
+		if (opq->n >= TD_LAYOUT_OPAQUE_MAX) {
+			*why = "more than four opaque fields in one layout";
+			return TD_CASE_ERR_TOO_MANY_VALUES;
+		}
+		memcpy(opq->name[opq->n], f, c1);
+		opq->name[opq->n][c1] = '\0';
+		opq->n++;
+		return 0;
+	}
+	if (count > 1) {
+		uint32_t k;
+
+		if (l->nslots + count > TD_LAYOUT_SLOTS) {
+			*why = "the layout has more fields than the record's 32 slots";
+			return TD_CASE_ERR_TOO_MANY_VALUES;
+		}
+		for (k = 0; k < count; k++) {
+			struct td_layout_slot *s = &l->slot[l->nslots];
+			uint8_t w0 = td_layout_width(type, TD_LAYOUT_ABI_M68K);
+			uint8_t w1 = td_layout_width(type, TD_LAYOUT_ABI_LP64);
+
+			memset(s, 0, sizeof *s);
+			snprintf(s->name, sizeof s->name, "%.*s[%u]", (int)c1, f,
+			         (unsigned)k);
+			s->type   = type;
+			s->cls    = cls;
+			s->parent = -1;
+			s->follow = -1;
+			s->hops   = 0;
+			s->off[0] = (uint16_t)(off[0] + k * w0);
+			s->off[1] = (uint16_t)(off[1] + k * w1);
+			l->nslots++;
+		}
+		return 0;
 	}
 
 	if (embedded) {
@@ -3128,7 +3236,10 @@ int td_layout_parse(struct td_layout *set, uint8_t *n, const char *line,
 	struct td_layout *l;
 	uint32_t size[TD_LAYOUT_ABIS], cursor[TD_LAYOUT_ABIS] = { 0, 0 };
 	uint8_t maxal[TD_LAYOUT_ABIS] = { 1, 1 };
-	int abi, rc;
+	struct layout_opaque opq;
+	const char *sz;
+	size_t szlen, k;
+	int abi, rc, packed = 0;
 
 	if (*n >= TD_LAYOUT_MAX) {
 		*why = "more than eight layouts in one table";
@@ -3153,11 +3264,28 @@ int td_layout_parse(struct td_layout *set, uint8_t *n, const char *line,
 	}
 	memcpy(l->name, s, slen);
 	l->name[slen] = '\0';
-	rc = parse_pair(col[2], col_len[2], TD_CALL_BUF_BYTES, &size[0], &size[1]);
+	/* "<m68k>/<LP64>[:packed]" -- packed (TOOL20): a structure the TOS
+	 * ABI fixes byte for byte, declared __attribute__((packed)) on both
+	 * (the DTA, sdk/libc/mintlib/include/mint/ostruct.h) */
+	sz = col[2];
+	szlen = col_len[2];
+	trim(&sz, &szlen);
+	for (k = 0; k < szlen && sz[k] != ':'; k++)
+		;
+	if (k < szlen) {
+		if (!span_is(sz + k, szlen - k, ":packed")) {
+			*why = "after the sizes a layout takes one word, \":packed\"";
+			return TD_CASE_ERR_DIRECTIVE;
+		}
+		packed = 1;
+		szlen = k;
+	}
+	rc = parse_pair(sz, szlen, TD_CALL_BUF_BYTES, &size[0], &size[1]);
 	if (rc != 0 || size[0] == 0 || size[1] == 0) {
 		*why = "a layout size is <m68k>/<LP64>, 1..1024 bytes each";
 		return TD_CASE_ERR_DIRECTIVE;
 	}
+	opq.n = 0;
 
 	s = col[3];
 	slen = col_len[3];
@@ -3169,7 +3297,7 @@ int td_layout_parse(struct td_layout *set, uint8_t *n, const char *line,
 	for (i = 0, start = 0; ; i++) {
 		if (i == slen || s[i] == ',') {
 			rc = layout_field(l, set, *n, s + start, i - start, cursor,
-			                  maxal, why);
+			                  maxal, packed, &opq, why);
 			if (rc != 0)
 				return rc;
 			if (i == slen)
@@ -3196,7 +3324,54 @@ int td_layout_parse(struct td_layout *set, uint8_t *n, const char *line,
 	return 0;
 }
 
-static int parse_call_args(const char *s, size_t len, struct td_call_case *c,
+/*
+ * "s:<text>", "c:<text>", "x:<path>" (TOOL20): the text into the table's
+ * string pool -- printable ASCII without blanks and commas (the argument
+ * separator), the case is kept.  A command tail is stored as TOS passes one,
+ * its length in the first byte (bdos/proc.c, xexec); a program path without
+ * its extension, which the run's profile names (PROGEXT.TXT).
+ */
+static int add_string(struct td_call_case_table *t, char kind, const char *a,
+                      size_t alen, struct td_call_arg *arg, const char **why)
+{
+	size_t k, need, max = kind == 'c' ? TD_CALL_TAIL_MAX : TD_CALL_STR_MAX;
+	char *d;
+
+	if (alen == 0 || alen > max) {
+		*why = kind == 'c' ? "a command tail c:<text> has 1..124 characters"
+		                   : "a string s:<text> / x:<path> has 1..63 "
+		                     "characters";
+		return TD_CASE_ERR_RANGE;
+	}
+	for (k = 0; k < alen; k++)
+		if (a[k] <= ' ' || a[k] > '~') {
+			*why = "a string argument is printable ASCII without blanks "
+			       "(and without commas, the argument separator)";
+			return TD_CASE_ERR_VALUE;
+		}
+	need = alen + (kind == 'c' ? 2u : 1u);
+	if (t->nstrings >= TD_CALL_STR_N ||
+	    (size_t)t->str_used + need > TD_CALL_STR_POOL) {
+		*why = "more strings than the table's pool holds (TD_CALL_STR_N)";
+		return TD_CASE_ERR_TOO_MANY_VALUES;
+	}
+	d = t->str_pool + t->str_used;
+	if (kind == 'c')
+		*d++ = (char)alen;
+	memcpy(d, a, alen);
+	d[alen] = '\0';
+	t->str_off[t->nstrings] = t->str_used;
+	t->str_used = (uint16_t)(t->str_used + need);
+	arg->kind  = kind == 's' ? TD_CALL_ARG_STR
+	           : kind == 'c' ? TD_CALL_ARG_TAIL : TD_CALL_ARG_PROG;
+	arg->value = t->nstrings++;
+	if (kind == 'x')
+		t->prog_ext = 1;
+	return 0;
+}
+
+static int parse_call_args(struct td_call_case_table *t, const char *s,
+                           size_t len, struct td_call_case *c,
                            const char **why)
 {
 	size_t i = 0, start = 0;
@@ -3225,8 +3400,19 @@ static int parse_call_args(const char *s, size_t len, struct td_call_case *c,
 			arg = &c->arg[c->nargs];
 			if (alen < 3 || a[1] != ':') {
 				*why = "an argument is not w:<v>, l:<v>, b:<n>, f:<n>, "
-				       "t:0 or u:0";
+				       "t:<n>, u:0, s:<text>, c:<text> or x:<path>";
 				return TD_CASE_ERR_VALUE;
+			}
+			if (a[0] == 's' || a[0] == 'c' || a[0] == 'x') {
+				rc = add_string(t, a[0], a + 2, alen - 2, arg, why);
+				if (rc != 0)
+					return rc;
+				c->nargs++;
+				if (i == len)
+					break;
+				start = i + 1;
+				i++;
+				continue;
 			}
 			rc = parse_value32(a + 2, alen - 2, &v);
 			if (rc != 0) {
@@ -3263,8 +3449,12 @@ static int parse_call_args(const char *s, size_t len, struct td_call_case *c,
 				arg->value = v;
 				break;
 			case 't':
-				if (v != 0) {
-					*why = "the Super token is t:0, there is no other";
+				/* 0 the Super token (MEM12), 1 the open file's
+				 * handle, 2 the drive Dgetdrv returned (TOOL20) */
+				if (v < 0 || v >= TD_CALL_TOKENS) {
+					*why = "a token is t:0 (Super), t:1 (the open "
+					       "file) or t:2 (the drive Dgetdrv "
+					       "returned)";
 					return TD_CASE_ERR_RANGE;
 				}
 				arg->kind  = TD_CALL_ARG_TOKEN;
@@ -3282,7 +3472,7 @@ static int parse_call_args(const char *s, size_t len, struct td_call_case *c,
 				break;
 			default:
 				*why = "an argument is not w:<v>, l:<v>, b:<n>, f:<n>, "
-				       "t:0 or u:0";
+				       "t:<n>, u:0, s:<text>, c:<text> or x:<path>";
 				return TD_CASE_ERR_VALUE;
 			}
 			c->nargs++;
@@ -3321,6 +3511,19 @@ static int parse_layout_capture(const struct td_call_case_table *t,
 			return TD_CASE_ERR_CAPTURE;
 		}
 		c->cap_arg = (int8_t)TD_CALL_CAP_RET;
+	} else if (colon == 1 && s[0] == 'd') {
+		/* TOOL20: the DTA, the dumper buffer an Fsetdta case before
+		 * this one named */
+		if (c->dta_buf < 0) {
+			*why = "d:<layout> reads the DTA: an Fsetdta(b:<n>) case "
+			       "stands before it";
+			return TD_CASE_ERR_CAPTURE;
+		}
+		if (l->size[0] > TD_CALL_BUF_BYTES || l->size[1] > TD_CALL_BUF_BYTES) {
+			*why = "the layout is larger than a dumper buffer";
+			return TD_CASE_ERR_CAPTURE;
+		}
+		c->cap_arg = (int8_t)TD_CALL_CAP_DTA;
 	} else {
 		if (parse_small(s, colon, 255, &idx) != 0 || idx >= c->nargs ||
 		    c->arg[idx].kind != TD_CALL_ARG_BUF) {
@@ -3354,8 +3557,8 @@ static int parse_capture(const struct td_call_case_table *t, const char *s,
 	if (len == 1 && s[0] == '-')
 		return 0;
 	*why = "capture is not - or <argindex>:<length>[.B|.W|.L][@<offset>] "
-	       "(r:<length>... through the returned pointer; r:<layout> or "
-	       "<argindex>:<layout> field by field)";
+	       "(r:<length>... through the returned pointer; r:<layout>, "
+	       "<argindex>:<layout> or d:<layout> field by field)";
 	for (colon = 0; colon < len && s[colon] != ':'; colon++)
 		;
 	if (colon == 0 || colon >= len)
@@ -3458,8 +3661,12 @@ enum {
 	/* The disk round (TASK/TOOL07): only in a table that says "!disk";
 	 * outside one these calls are refused as before (call_refusals). */
 	CR_DISK_DRIVE,   /* Getbpb, Mediach: any drive but the floppies A:/B: */
-	CR_RWABS         /* reads; the FastCopy NULL arm on A:/B:; writes     */
+	CR_RWABS,        /* reads; the FastCopy NULL arm on A:/B:; writes     */
 	                 /* back only, on the test drive (td_call_cases_parse)*/
+	/* GEMDOS after a media change (TASK/TOOL20): only in a DESTRUCTIVE
+	 * disk table; the rules need the table's state (the DTA, the open
+	 * file, the drive bracket) and are gdos_refusal's */
+	CR_GDOS
 };
 
 struct call_policy {
@@ -3471,9 +3678,26 @@ struct call_policy {
 };
 
 static const struct call_policy call_policy[] = {
-	/* GEMDOS, trap #1: Super only, the processor-state call answered by
+	/* GEMDOS, trap #1: Super, the processor-state call answered by
 	 * the TRAP #1 front end (bdos/rwa.S:159-184, 280-346); MEM12 */
 	{  1, 0x20, 0x20, "l",      "t",    CR_SUPER     },  /* Super       */
+	/* GEMDOS after a media change, TOOL20: only in a destructive disk
+	 * table (the parse loop), on the test drive (gdos_refusal); the
+	 * binding's widths, bdos/bdosmain.c:179-277 */
+	{  1, 0x0E, 0x0E, "w",      "t",    CR_GDOS      },  /* Dsetdrv     */
+	{  1, 0x19, 0x19, "",       NULL,   CR_GDOS      },  /* Dgetdrv     */
+	{  1, 0x1A, 0x1A, "p",      NULL,   CR_GDOS      },  /* Fsetdta     */
+	{  1, 0x2F, 0x2F, "",       NULL,   CR_GDOS      },  /* Fgetdta     */
+	{  1, 0x36, 0x36, "pw",     NULL,   CR_GDOS      },  /* Dfree       */
+	{  1, 0x3B, 0x3B, "s",      NULL,   CR_GDOS      },  /* Dsetpath    */
+	{  1, 0x3C, 0x3C, "sw",     NULL,   CR_GDOS      },  /* Fcreate     */
+	{  1, 0x3E, 0x3E, "t",      NULL,   CR_GDOS      },  /* Fclose      */
+	{  1, 0x40, 0x40, "tlp",    NULL,   CR_GDOS      },  /* Fwrite      */
+	{  1, 0x41, 0x41, "s",      NULL,   CR_GDOS      },  /* Fdelete     */
+	{  1, 0x47, 0x47, "pw",     NULL,   CR_GDOS      },  /* Dgetpath    */
+	{  1, 0x4B, 0x4B, "wxcl",   NULL,   CR_GDOS      },  /* Pexec       */
+	{  1, 0x4E, 0x4E, "sw",     NULL,   CR_GDOS      },  /* Fsfirst     */
+	{  1, 0x4F, 0x4F, "",       NULL,   CR_GDOS      },  /* Fsnext      */
 	/* BIOS, trap #13 (bios/bios.c:1252-1265) */
 	{ 13,    0,    0, "p",      NULL,   CR_GETMPB    },  /* Getmpb, TOOL16 */
 	{ 13,    1,    1, "w",      NULL,   CR_NONE      },  /* Bconstat    */
@@ -3604,8 +3828,10 @@ static const char *call_refusal_for(int16_t trap, int16_t fn)
 		if (r->trap == trap && r->fn == fn)
 			return r->why;
 	if (trap == 1)
-		return "of GEMDOS a BIOS table issues Super only; the rest waits "
-		       "for DUMPGDOS";
+		return "of GEMDOS a BIOS table issues Super, and a destructive "
+		       "disk table the calls of TOOL20 (COVERAGE-BIOS.md, "
+		       "\"GEMDOS after a media change\"); the rest waits for "
+		       "DUMPGDOS";
 	return "the call is not established as safe on both machines "
 	       "(tosdump/cases/COVERAGE-BIOS.md)";
 }
@@ -3628,6 +3854,9 @@ static int sig_matches(const char *sig, const struct td_call_case *c)
 		case 'f': if (k != TD_CALL_ARG_FUNC) return 0; break;
 		case 't': if (k != TD_CALL_ARG_TOKEN) return 0; break;
 		case 'u': if (k != TD_CALL_ARG_UNIT) return 0; break;
+		case 's': if (k != TD_CALL_ARG_STR) return 0; break;
+		case 'c': if (k != TD_CALL_ARG_TAIL) return 0; break;
+		case 'x': if (k != TD_CALL_ARG_PROG) return 0; break;
 		default:  return 0;
 		}
 	}
@@ -3808,10 +4037,13 @@ static const char *call_value_refusal(const struct call_policy *p,
 		 * (bios/biosmem.c:149-150): a dumper buffer only */
 		return is_buf(c, 0) ? NULL
 		       : "Getmpb writes through its argument: name a b: buffer";
+	case CR_GDOS:
+		return NULL;           /* the parse loop's gdos_refusal */
 	case CR_SUPER:
 		/* the bracket itself (open / close) is the parse loop's */
-		if (c->arg[0].kind == TD_CALL_ARG_TOKEN || is_value(c, 0, 1) ||
-		    is_value(c, 0, 0))
+		if ((c->arg[0].kind == TD_CALL_ARG_TOKEN &&
+		     c->arg[0].value == TD_CALL_TOKEN_SUPER) ||
+		    is_value(c, 0, 1) || is_value(c, 0, 0))
 			return NULL;
 		return "Super: only 1L, 0L and the token t:0 -- any other value is "
 		       "a stack address EmuTOS would run on (bdos/rwa.S:280-301)";
@@ -4159,6 +4391,167 @@ static int parse_put_prelude(const struct td_call_case_table *t,
 	return 0;
 }
 
+/*
+ * GEMDOS after a media change (TASK/TOOL20; docs/TOS-REFERENCE-DUMPER.md
+ * section 6, "GEMDOS after a media change"; ledger tosdump/cases/
+ * COVERAGE-BIOS.md).  What the measurement needs and nothing more, in a
+ * DESTRUCTIVE disk table only, and every rule decided from the table:
+ *
+ *   paths      "s:"/"x:" name the test drive ("C:\..."): nothing outside
+ *              the test image is created, deleted, searched or executed,
+ *              and Dsetpath never moves the dumper's own directory
+ *   the DTA    Fsetdta(b:<n>) makes buffer n the DTA for the rest of the
+ *              table; no other line may name b:<n> (an Rwabs into it would
+ *              overwrite the search state), Fsfirst/Fsnext need it set
+ *   a file     Fcreate(path, 0) opens a bracket that Fclose(t:1) closes;
+ *              Fwrite(t:1, count, b:<n>) writes a dumper buffer inside it,
+ *              count 0..1024; no nesting, Fdelete not while it is open, a
+ *              table that ends with it open is refused
+ *   the drive  Dsetdrv(<test drive>) opens a bracket that Dsetdrv(t:2)
+ *              closes -- t:2 is what a Dgetdrv case before it returned, so
+ *              the dumper's own drive is restored before it writes its
+ *              dump; a table that ends with it open is refused
+ *   Dfree, Dgetpath   a b: buffer and the test drive (+1 convention)
+ *   Pexec      mode 0, "x:" on the test drive, a "c:" tail, env l:0
+ *   Super      no GEMDOS file call inside a Super bracket
+ */
+struct gdos_state {
+	int8_t   dta;             /* the DTA buffer, -1: none set            */
+	uint16_t file_open;       /* line of the open Fcreate, or 0          */
+	uint16_t drive_open;      /* line of the open Dsetdrv, or 0          */
+	uint8_t  drive_kept;      /* a Dgetdrv outside the bracket ran       */
+};
+
+/* Does string argument i name a path on the table's test drive? */
+static int on_test_drive(const struct td_call_case_table *t,
+                         const struct td_call_case *c, int i)
+{
+	const char *str;
+
+	if (i >= (int)c->nargs || (c->arg[i].kind != TD_CALL_ARG_STR &&
+	                           c->arg[i].kind != TD_CALL_ARG_PROG))
+		return 0;
+	str = t->str_pool + t->str_off[c->arg[i].value];
+	return str[0] == (char)('A' + t->disk_drive) && str[1] == ':' &&
+	       str[2] == '\\';
+}
+
+static const char *gdos_refusal(const struct td_call_case_table *t,
+                                const struct td_call_case *c,
+                                const struct gdos_state *g,
+                                uint16_t bracket_open)
+{
+	int32_t a1 = c->nargs > 1 ? c->arg[1].value : 0;
+
+	if (bracket_open)
+		return "GEMDOS file calls not inside a Super bracket";
+	switch (c->opcode) {
+	case 0x0E:                                  /* Dsetdrv */
+		if (c->arg[0].kind == TD_CALL_ARG_TOKEN) {
+			if (c->arg[0].value != TD_CALL_TOKEN_DRIVE)
+				return "Dsetdrv takes the drive token t:2";
+			return g->drive_open ? NULL
+			       : "Dsetdrv(t:2) with no Dsetdrv to the test drive "
+			         "before it";
+		}
+		if (c->arg[0].value != (int32_t)t->disk_drive)
+			return "Dsetdrv: only the test drive \"!disk\" names "
+			       "(t:2 restores the dumper's own)";
+		if (g->drive_open)
+			return "Dsetdrv to the test drive while it is selected: "
+			       "brackets do not nest";
+		if (!g->drive_kept)
+			return "Dsetdrv to the test drive needs a Dgetdrv case "
+			       "before it: t:2, what it returned, restores the "
+			       "dumper's drive";
+		return NULL;
+	case 0x19:                                  /* Dgetdrv */
+	case 0x2F:                                  /* Fgetdta */
+		return NULL;
+	case 0x1A:                                  /* Fsetdta */
+		return is_buf(c, 0) ? NULL
+		       : "Fsetdta: the DTA is a dumper buffer b:<n>";
+	case 0x36:                                  /* Dfree */
+	case 0x47:                                  /* Dgetpath */
+		if (!is_buf(c, 0))
+			return "Dfree/Dgetpath write through their first argument: "
+			       "name a b: buffer";
+		return a1 == (int32_t)t->disk_drive + 1 ? NULL
+		       : "Dfree/Dgetpath: only the test drive, as <drive>+1";
+	case 0x3B:                                  /* Dsetpath */
+	case 0x41:                                  /* Fdelete */
+		if (!on_test_drive(t, c, 0))
+			return "Dsetpath/Fdelete: a path on the test drive, "
+			       "\"<drive>:\\...\"";
+		if (c->opcode == 0x41 && g->file_open)
+			return "Fdelete while a file is open";
+		return NULL;
+	case 0x3C:                                  /* Fcreate */
+		if (!on_test_drive(t, c, 0))
+			return "Fcreate: a path on the test drive, \"<drive>:\\...\"";
+		if (a1 != 0)
+			return "Fcreate: attribute 0 only";
+		return g->file_open ? "Fcreate while a file is open: one at a time"
+		                    : NULL;
+	case 0x3E:                                  /* Fclose */
+	case 0x40:                                  /* Fwrite */
+		if (c->arg[0].value != TD_CALL_TOKEN_HANDLE)
+			return "Fclose/Fwrite take the handle token t:1";
+		if (!g->file_open)
+			return "Fclose/Fwrite with no Fcreate open before them";
+		if (c->opcode == 0x40 &&
+		    (!is_buf(c, 2) || a1 < 0 || a1 > TD_CALL_BUF_BYTES))
+			return "Fwrite: a b: buffer and a count 0..1024";
+		return NULL;
+	case 0x4B:                                  /* Pexec */
+		if (c->arg[0].value != 0)
+			return "Pexec: mode 0 (load and go) only";
+		if (!on_test_drive(t, c, 1))
+			return "Pexec: the program x:<path> on the test drive";
+		if (c->arg[3].value != 0)
+			return "Pexec: env l:0 (inherit)";
+		return NULL;
+	case 0x4E:                                  /* Fsfirst */
+		if (!on_test_drive(t, c, 0))
+			return "Fsfirst: a path on the test drive, \"<drive>:\\...\"";
+		/* fall through */
+	case 0x4F:                                  /* Fsnext */
+		return g->dta >= 0 ? NULL
+		       : "Fsfirst/Fsnext need the DTA set: an Fsetdta(b:<n>) case "
+		         "before them";
+	default:
+		return "not a GEMDOS call of TOOL20";
+	}
+}
+
+/* What a GEMDOS case does to the table's state, once it is admitted. */
+static void gdos_apply(struct td_call_case *c, struct gdos_state *g)
+{
+	switch (c->opcode) {
+	case 0x0E:
+		g->drive_open = c->arg[0].kind == TD_CALL_ARG_TOKEN ? 0 : c->line;
+		break;
+	case 0x19:
+		if (!g->drive_open) {
+			c->keep = 1 + TD_CALL_TOKEN_DRIVE;
+			g->drive_kept = 1;
+		}
+		break;
+	case 0x1A:
+		g->dta = (int8_t)c->arg[0].value;
+		break;
+	case 0x3C:
+		c->keep = 1 + TD_CALL_TOKEN_HANDLE;
+		g->file_open = c->line;
+		break;
+	case 0x3E:
+		g->file_open = 0;
+		break;
+	default:
+		break;
+	}
+}
+
 int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
                         const char *buf, size_t len,
                         struct td_case_error *err)
@@ -4172,6 +4565,7 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 	uint16_t pending = 0;              /* preludes since the last case    */
 	uint16_t last_prelude = 0;         /* line of the newest one          */
 	uint16_t getmpb_line = 0;          /* a Getmpb case stood here (TOOL16) */
+	struct gdos_state g = { -1, 0, 0, 0 };  /* TOOL20                     */
 
 	memset(t, 0, sizeof *t);
 	t->crc  = td_crc32((const uint8_t *)buf, len);
@@ -4282,6 +4676,7 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 		}
 		memset(c, 0, sizeof *c);
 		c->line = line_no;
+		c->dta_buf = g.dta;            /* TOOL20: for a d: capture   */
 
 		/* trap:function */
 		o = col[0];
@@ -4315,7 +4710,7 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 		c->trap   = (int16_t)trap;
 		c->opcode = (int16_t)fn;
 
-		rc = parse_call_args(col[1], col_len[1], c, &why);
+		rc = parse_call_args(t, col[1], col_len[1], c, &why);
 		if (rc == 0 && prelude) {
 			/* a prelude is not recorded: no class, no capture */
 			const char *r = col[2], *k = col[3];
@@ -4346,6 +4741,8 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 		if (p && (p->rule == CR_DISK_DRIVE || p->rule == CR_RWABS) &&
 		    !t->disk)
 			p = NULL;              /* refused outside a disk table */
+		if (p && p->rule == CR_GDOS && !(t->disk && t->destructive))
+			p = NULL;              /* TOOL20: destructive tables only */
 		if (!p) {
 			fail(err, line_no, call_refusal_for(c->trap, c->opcode));
 			return TD_CASE_ERR_UNSAFE_OPCODE;
@@ -4373,6 +4770,16 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 		if (!why && !prelude && p->rule == CR_RWABS &&
 		    (c->arg[0].value & 1))
 			why = write_back_refusal(t, c, pending);
+		if (!why && p->rule == CR_GDOS)
+			why = gdos_refusal(t, c, &g, bracket_open);
+		/* TOOL20: the DTA buffer holds the search state between
+		 * Fsfirst and Fsnext; only Fsetdta names it */
+		if (!why && g.dta >= 0 && !(c->trap == 1 && c->opcode == 0x1A))
+			for (i = 0; i < c->nargs; i++)
+				if (c->arg[i].kind == TD_CALL_ARG_BUF &&
+				    c->arg[i].value == g.dta)
+					why = "the buffer is the DTA (Fsetdta): no other "
+					      "call may name it";
 		if (why) {
 			fail(err, line_no, why);
 			return TD_CASE_ERR_UNSAFE_FIELD;
@@ -4411,6 +4818,7 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 				return TD_CASE_ERR_UNSAFE_STATE;
 			}
 			bracket_open = line_no;
+			c->keep = 1 + TD_CALL_TOKEN_SUPER;
 		} else if (p->rule == CR_SUPER &&
 		           c->arg[0].kind == TD_CALL_ARG_TOKEN) {
 			if (!bracket_open) {
@@ -4432,6 +4840,15 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 			last_prelude = line_no;
 			continue;
 		}
+		/* TOOL20: the DTA buffer is poisoned only by the cases that
+		 * (re)start it, Fsetdta and Fsfirst -- Fsnext reads the search
+		 * state Fsfirst left there, and the cases between them must
+		 * not wipe it */
+		c->dta_keep = g.dta >= 0 &&
+		              !(c->trap == 1 && (c->opcode == 0x1A ||
+		                                 c->opcode == 0x4E));
+		if (p->rule == CR_GDOS)
+			gdos_apply(c, &g);
 		c->prelude_first = (uint16_t)(t->prelude_count - pending);
 		c->prelude_count = pending;
 		pending = 0;
@@ -4440,6 +4857,17 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 	if (pending) {
 		fail(err, last_prelude, "a prelude with no case after it");
 		return TD_CASE_ERR_DANGLING;
+	}
+	if (g.file_open) {
+		fail(err, g.file_open, "Fcreate is never closed: the table ends "
+		                       "with a file open (Fclose(t:1))");
+		return TD_CASE_ERR_UNSAFE_STATE;
+	}
+	if (g.drive_open) {
+		fail(err, g.drive_open, "Dsetdrv to the test drive is never "
+		                        "restored (Dsetdrv(t:2)): the dumper would "
+		                        "write its dump there");
+		return TD_CASE_ERR_UNSAFE_STATE;
 	}
 	if (bracket_open) {
 		fail(err, bracket_open, "Super(0L) is never closed: the run would "

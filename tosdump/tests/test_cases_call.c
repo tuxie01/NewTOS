@@ -163,8 +163,11 @@ static void test_values(void)
 	               TD_CASE_ERR_RANGE, "a LONG past 32 bits");
 	expect_refused("13:11\tw:65536\tEXACT\t-\tKbshift", TD_CASE_ERR_RANGE,
 	               "a WORD past 16 bits");
-	expect_refused("13:11\tx:1\tEXACT\t-\tKbshift", TD_CASE_ERR_VALUE,
+	expect_refused("13:11\tq:1\tEXACT\t-\tKbshift", TD_CASE_ERR_VALUE,
 	               "an unknown argument kind");
+	/* x:, s:, c: are TOOL20's strings: a kind, but no BIOS call's */
+	expect_refused("13:11\tx:1\tEXACT\t-\tKbshift", TD_CASE_ERR_SIGNATURE,
+	               "a string argument where the binding has a WORD");
 	expect_refused("13:11\tw:\tEXACT\t-\tKbshift", TD_CASE_ERR_VALUE,
 	               "an argument without a value");
 	expect_refused("14:0x2E\tw:0,w:0,w:50,b:2\tEXACT.W\t-\tNVMaccess",
@@ -399,8 +402,11 @@ static void test_super_supexec(void)
 	               TD_CASE_ERR_SIGNATURE, "Super's argument is a LONG");
 	expect_refused("1:0x20\t-\tEXACT\t-\tSuper nothing",
 	               TD_CASE_ERR_SIGNATURE, "Super takes one argument");
+	/* t:1 and t:2 are TOOL20's handle and drive: not Super's token */
 	expect_refused("1:0x20\tt:1\tIGNORE\t-\tSuper t:1",
-	               TD_CASE_ERR_RANGE, "there is one token, t:0");
+	               TD_CASE_ERR_UNSAFE_FIELD, "Super's token is t:0");
+	expect_refused("1:0x20\tt:3\tIGNORE\t-\tSuper t:3",
+	               TD_CASE_ERR_RANGE, "there are three tokens, t:0..t:2");
 	expect_refused("14:0x26\tf:3\tEXACT\t-\tSupexec cb3",
 	               TD_CASE_ERR_RANGE, "there are three callbacks");
 	expect_refused("14:0x26\tl:0\tEXACT\t-\tSupexec NULL",

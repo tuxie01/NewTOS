@@ -30,6 +30,32 @@ typedef struct {
 } DTA;
 ```
 
+## Dumper layout (tosdump) [TOOL20]
+
+The layout the reference dumper reads in the DTA after `Fsfirst`/`Fsnext`
+(`docs/TOS-REFERENCE-DUMPER.md` section 6, "Structures behind a pointer" and
+"GEMDOS after a media change"). This block is the **source**: a case table
+carries a copy of the line, and the host test `layoutcheck`
+(`tosdump/host/layoutcheck.c`) refuses a copy that is not this line byte for
+byte. Each field is `<name>:<type>@<m68k offset>/<LP64 offset>[:<class>]`;
+the loader checks every number against C on both ABIs.
+
+- `dta` -- the 44 bytes above on both machines: m68k the `DTA` of
+  `include/bdosdefs.h:48-55`; LP64 the SDK's `_DTA`, declared
+  `__attribute__((packed))` so that `dta_size` stays at 26
+  (`sdk/libc/mintlib/include/mint/ostruct.h:85-92@_DTA`). Hence `:packed`
+  after the sizes: every field at alignment 1, one offset on both ABIs.
+- `d_reserved` is `x21`: 21 opaque bytes, no slot, never compared -- the
+  search state is each system's own (section "`d_reserved[21]`" below).
+- `d_attrib` a `UBYTE`; `d_time`, `d_date` WORDs and `d_length` a LONG, each
+  read in the machine's own byte order (the record stores the value, so the
+  two byte orders compare); `d_fname` `b14`, the 14 name bytes, one slot
+  each (`d_fname[0]` .. `d_fname[13]`). Every field EXACT.
+
+```tosdump-layout
+!layout	dta	44/44:packed	d_reserved:x21@0/0,d_attrib:b@21/21,d_time:w@22/22,d_date:w@24/24,d_length:L@26/26,d_fname:b14@30/30
+```
+
 ## Field semantics
 
 ### `d_reserved[21]` (0x00–0x14)

@@ -1,0 +1,1 @@
+TOOL20: C:\DELME.TXT, the file gemdos-mc-paths.tsv deletes after a media change.

@@ -36,7 +36,9 @@
 //!    (built by `tools/mktestdisk.sh` with the autorun INF, or the given one),
 //!    the dumper and table on D: (`MKCARD_TESTDISK`), and `D:\DISKUNIT.TXT`
 //!    with [`NEWTOS_DISK_UNIT`], the profile's physical unit of C: for
-//!    DUMPBIOS' unit token `u:0`; afterwards the test
+//!    DUMPBIOS' unit token `u:0`, and `D:\PROGEXT.TXT` with
+//!    [`NEWTOS_PROG_EXT`], the extension of the machine's programs for a
+//!    program path `x:<path>` (TOOL20); afterwards the test
 //!    partition of the card and of the booted clone are compared (raw, then
 //!    with the root directory's FAT time stamps zeroed) and `fsck_msdos -n`
 //!    runs on both.
@@ -139,6 +141,14 @@ pub struct Opts {
 /// names it in `D:\DISKUNIT.TXT`, as `tools/hatari-oracle.sh` profile `disk`
 /// names the oracle's (18) — never a search at run time.
 pub const NEWTOS_DISK_UNIT: u16 = 26;
+
+/// The extension of a NewTOS program, what DUMPBIOS appends to a program
+/// path `x:<path>` (the `Pexec` cases of TOOL20): the profile names it in
+/// `D:\PROGEXT.TXT`, as `tools/hatari-oracle.sh` profile `disk` names the
+/// oracle's (`PRG`) — the program format is the machine's, the table names
+/// the path only (`docs/TOS-REFERENCE-DUMPER.md` section 6, "GEMDOS after
+/// a media change").
+pub const NEWTOS_PROG_EXT: &str = "NAP";
 
 /// Default time limit of the QEMU run, seconds (the per-run scripts waited
 /// 240 × 2 s).
@@ -975,6 +985,10 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
         fs::write(&unit, format!("{NEWTOS_DISK_UNIT}\r\n")).map_err(|e| e.to_string())?;
         mk.arg(format!("DISKUNIT.TXT={}", unit.display()));
         rep.line(format!("D:\\DISKUNIT.TXT {NEWTOS_DISK_UNIT} (the profile's physical unit of C:, for u:0)"));
+        let ext = run_dir.join("PROGEXT.TXT");
+        fs::write(&ext, format!("{NEWTOS_PROG_EXT}\r\n")).map_err(|e| e.to_string())?;
+        mk.arg(format!("PROGEXT.TXT={}", ext.display()));
+        rep.line(format!("D:\\PROGEXT.TXT {NEWTOS_PROG_EXT} (the profile's program extension, for x:)"));
     }
     let log = out.join("mkcard.log");
     require_ok(run_logged(mk, &log)?, "tools/mkcard.sh", &log)?;

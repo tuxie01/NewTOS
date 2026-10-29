@@ -784,6 +784,21 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
  * t:0 closes it, no nesting, and a table that ends with it open is refused
  * (TD_CASE_ERR_UNSAFE_STATE) -- MEM12, docs/TOS-REFERENCE-DUMPER.md section
  * 6, "Super and Supexec in a BIOS-area table".
+ *
+ * GEMDOS after a media change (TASK/TOOL20; the same spec, section 6,
+ * "GEMDOS after a media change"): a DESTRUCTIVE disk table may also issue
+ * Dsetdrv, Dgetdrv, Fsetdta, Fgetdta, Dfree, Dsetpath, Fcreate, Fclose,
+ * Fwrite, Fdelete, Dgetpath, Pexec, Fsfirst and Fsnext, under the rules of
+ * gdos_refusal (cases.c): paths on the test drive, a file bracket
+ * Fcreate ... Fclose(t:1), a drive bracket Dsetdrv(test drive) ...
+ * Dsetdrv(t:2), the DTA a dumper buffer no other line names.  Arguments
+ * for them:
+ *   s:<text>   a string (a path), c:<text> a command tail (length byte
+ *              first), x:<path> a program path the run's profile completes
+ *              with ".<ext>" (PROGEXT.TXT) -- the table's string pool,
+ *              recorded as TD_CALL_STR_TOKEN(index)
+ *   t:1, t:2   the handle Fcreate returned, the drive Dgetdrv returned
+ * and the capture "d:<layout>": the DTA buffer, field by field.
  */
 #define TD_CALL_CASE_COLUMNS 5
 
@@ -796,6 +811,32 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
 #define TD_CALL_ARG_UNIT     6     /* "u:0", the test disk's physical unit */
 #define TD_CALL_ARG_SET      7     /* a +set pair: (offset << 8) | byte    */
 #define TD_CALL_ARG_PUT      8     /* a +put field: its slot in the layout */
+/* TOOL20, the GEMDOS calls of a destructive disk table: value = the
+ * string's index in the table's pool (td_call_case_table.str_off) */
+#define TD_CALL_ARG_STR      9     /* "s:<text>", a NUL-terminated string  */
+#define TD_CALL_ARG_TAIL    10     /* "c:<text>", a command tail: length
+                                    * byte, text, NUL                      */
+#define TD_CALL_ARG_PROG    11     /* "x:<path>", a program path; the run's
+                                    * profile adds ".<ext>" (PROGEXT.TXT)  */
+
+/* "t:<n>": a value an earlier case of the table returned (runner_call.c
+ * keeps it).  n 0 is MEM12's Super token (a LONG); n 1 and 2 are TOOL20's,
+ * passed as WORDs like the binding's argument they stand for. */
+#define TD_CALL_TOKEN_SUPER  0     /* what Super(0L) returned             */
+#define TD_CALL_TOKEN_HANDLE 1     /* what the open file's Fcreate returned */
+#define TD_CALL_TOKEN_DRIVE  2     /* what Dgetdrv returned outside the
+                                    * Dsetdrv bracket                     */
+#define TD_CALL_TOKENS       3
+
+/* The string pool of a call table (TOOL20): the "s:", "c:" and "x:"
+ * arguments, at most TD_CALL_STR_N of them, TD_CALL_STR_MAX characters
+ * each (a command tail TD_CALL_TAIL_MAX), stored once in the table. */
+#define TD_CALL_STR_N       32
+#define TD_CALL_STR_POOL  1536
+#define TD_CALL_STR_MAX     63
+#define TD_CALL_TAIL_MAX   124
+/* The program extension a profile names for "x:": 1..3 characters. */
+#define TD_CALL_EXT_MAX      3
 
 /* The trap field of a "+set" prelude: it issues no trap. */
 #define TD_CALL_TRAP_SET     0
@@ -820,6 +861,12 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
  *           p  a pointer            4 / 8, sign-extended (the ret rule)
  *           p><layout>  a pointer the runner FOLLOWS into <layout>
  *           [<layout>]  <layout> embedded at this offset
+ *           b<n> w<n> L<n>  an array of n (1..32), one slot per element
+ *                       "<name>[i]" (TOOL20)
+ *           x<n>        n opaque bytes: no slot, never compared (TOOL20)
+ *   size    "<m68k>/<LP64>", or "<m68k>/<LP64>:packed" for a structure
+ *           declared __attribute__((packed)) on both ABIs (TOOL20): every
+ *           field aligned on 1 and at one offset on both ABIs (the DTA)
  *   class   EXACT, IGNORE, NONZERO, HANDLE, PTR_RAM -- how tosdiff compares
  *           the field (the retclass rules, on the 64-bit slot).  Default:
  *           PTR_RAM for p, EXACT for everything else; none on [..].
@@ -836,6 +883,7 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
  *
  * Capture:  r:<layout>   through the returned pointer (retclass PTR_RAM)
  *           <n>:<layout> the b: buffer argument n
+ *           d:<layout>   the DTA buffer (TOOL20)
  * The record's capture holds one 64-bit slot per field (tosdump.h,
  * TD_LAYOUT_SLOT_BYTES).  The runner follows a pointer -- the returned one,
  * or a p> field -- only when td_layout_follow_refusal (record.h) admits it;
@@ -910,6 +958,9 @@ struct td_call_arg {
 /* The capture reads through the address the call RETURNED ("r:" in the
  * capture column, disk tables), not through a buffer argument. */
 #define TD_CALL_CAP_RET     (-2)
+/* The capture reads the dumper buffer the table made the DTA ("d:<layout>",
+ * TOOL20): the case's dta_buf. */
+#define TD_CALL_CAP_DTA     (-3)
 
 /* Preludes of a disk table ("+" lines, "!disk" only): Rwabs reads into a
  * dumper buffer, issued after the case's poison and before its call; in a
@@ -933,6 +984,13 @@ struct td_call_case {
 	uint8_t  cap_unit;                 /* 1, 2, 4                         */
 	uint16_t cap_off;                  /* bytes into the buffer           */
 	uint16_t cap_len;                  /* bytes, <= TD_CALL_CAPTURE_LEN   */
+	int8_t   dta_buf;                  /* the DTA buffer at this case, or
+	                                    * -1: none set (TOOL20)          */
+	uint8_t  dta_keep;                 /* 1: the case does not poison the
+	                                    * DTA buffer -- only Fsetdta and
+	                                    * Fsfirst do (TOOL20)            */
+	uint8_t  keep;                     /* 0, or 1 + the token (t:<n>) its
+	                                    * return becomes                 */
 	char     comment[TD_COMMENT_LEN];
 };
 
@@ -946,6 +1004,11 @@ struct td_call_case_table {
 	uint8_t             unit_token;    /* 1: some case names "u:0"        */
 	uint8_t             writes;        /* 1: "!write return" (TOOL16)     */
 	uint8_t             nlayouts;      /* "!layout" lines (TOOL16)        */
+	uint8_t             prog_ext;      /* 1: some case names "x:" (TOOL20) */
+	uint8_t             nstrings;      /* "s:"/"c:"/"x:" strings (TOOL20)  */
+	uint16_t            str_used;      /* bytes of str_pool in use        */
+	uint16_t            str_off[TD_CALL_STR_N];
+	char                str_pool[TD_CALL_STR_POOL];
 	struct td_layout    layouts[TD_LAYOUT_MAX];
 	uint16_t            prelude_count;
 	struct td_call_case cases[TD_MAX_CASES];

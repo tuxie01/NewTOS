@@ -1,0 +1,58 @@
+# gemdos-mc-fs20.tsv -- DUMPBIOS, GEMDOS meets a media change (TASK/TOOL20):
+# the cases of the probe tosdump/probes/gcprobe.c (TASK/FS20) as a case
+# table, against EmuTOS 1a7484ab (docs/analysis/ORACLE.md).
+#
+# EmuTOS, read from the source (docs/api/gemdos/_state.md section 4a): a
+# logical write of sector 0 arms forcechange (bios/blkdev.c:450-453,
+# 473-477); the next GEMDOS access to the drive meets it -- getbcb's Mediach
+# on a buffer hit (bdos/fsbuf.c:179-190) or E_CHNG from the Rwabs of a miss
+# (bdos/fs.h:60-68) -- and osif logs the drive in again with the NEW boot
+# sector and restarts the call (bdos/bdosmain.c:449-487); that Getbpb clears
+# forcechange (bios/blkdev.c:589-590).
+#
+# WHERE IT RUNS: the oracle's profile disk (HATARI_ORACLE_DISK=<test.img>
+# tools/hatari-oracle.sh disk DUMPBIOS.PRG <table> <out>) and NewTOS through
+# cargo xtask tosdump bios <table> --testdisk <test.img>.  The test image is
+# the one of the three gemdos-mc tables: tools/mktestdisk.sh with
+# C:\NEWDESK.INF (#Z autorun of D:\DUMPBIOS.NAP), C:\PXPROBE.PRG,
+# C:\PXPROBE.NAP, C:\DELME.TXT and C:\SUB\INNER.TXT
+# (measurements/measurement-2026-10-29-tool20/RUNINFO.TXT).
+#
+# DESTRUCTIVE ("!disk 2 destructive"; docs/TOS-REFERENCE-DUMPER.md section
+# 6, "The closing tables" and "GEMDOS after a media change"): part B leaves
+# a changed boot sector (512 -> 256 root entries) and a new file
+# C:\GCPROBE.DAT behind.  It runs on a fresh clone of the test image only;
+# both sides must end in the same test partition (root-directory time stamps
+# zeroed: each side stamps the new file with its own clock).
+#   Fcreate opens the file, t:1 is its handle, Fclose(t:1) closes it.  The
+#   512 bytes Fwrite writes are buffer 0 as the poison left it (DE AD ...):
+#   where they land in the image shows the geometry of the write (gcprobe's
+#   marker; EmuTOS: the file's first cluster in the new geometry).
+#
+# One table per round: a case id is the physical line number and the dump
+# header carries the CRC of this file, so it is frozen once measured.
+!disk	2	destructive
+
+# ---- part A: re-login after the handshake, the boot sector unchanged
+1:0x36	b:0,w:3	EXACT	0:16.L	A01 Dfree(C:): logs C: in, the image's geometry -- bdos/fsfat.c:337
+13:9	w:2	EXACT	-	A02 Mediach(2): 0 -- bios/blkdev.c:783-820
++13:4	w:2,b:0,w:1,w:0,w:2,l:0	-	-	A03 sector 0 of C: into buffer 0 (RW_NOMEDIACH)
+13:4	w:3,b:0,w:1,w:0,w:2,l:0	EXACT	-	A04 write it back unchanged, RW_NOMEDIACH: arms forcechange -- bios/blkdev.c:450-453, 473-477
+13:9	w:2	EXACT	-	A05 Mediach(2): 2 -- bios/blkdev.c:799-803
+1:0x36	b:0,w:3	EXACT	0:16.L	A06 Dfree(C:) meets the change: re-login, restart -- bdos/bdosmain.c:449-487
+13:9	w:2	EXACT	-	A07 Mediach(2): 0, the re-login's Getbpb cleared it -- bios/blkdev.c:589-590
+13:7	w:2	PTR_RAM	r:18.W	A08 Getbpb(2): the image's BPB -- bios/blkdev.c:569-777
+13:9	w:2	EXACT	-	A09 Mediach(2) after Getbpb
+
+# ---- part B: the boot sector changed, root entries 512 -> 256
++13:4	w:2,b:0,w:1,w:0,w:2,l:0	-	-	B01 sector 0 of C: into buffer 0 (RW_NOMEDIACH)
++set	0x11=0x00,0x12=0x01	root entries 0x0200 -> 0x0100: rdlen 32 -> 16, datrec 289 -> 273, numcl 32672 -> 32676
+13:4	w:3,b:0,w:1,w:0,w:2,l:0	EXACT	-	B02 write the changed boot sector, RW_NOMEDIACH: arms -- bios/blkdev.c:450-453, 473-477
+13:9	w:2	EXACT	-	B03 Mediach(2): 2
+1:0x36	b:0,w:3	EXACT	0:16.L	B04 Dfree(C:): the geometry GEMDOS uses now (total 32676) -- bdos/bdosmain.c:449-487
+13:9	w:2	EXACT	-	B05 Mediach(2): 0
+1:0x3C	s:C:\GCPROBE.DAT,w:0	HANDLE	-	B06 Fcreate(C:\GCPROBE.DAT, 0) -- bdos/fsopnclo.c:81
+1:0x40	t:1,l:512,b:0	EXACT	-	B06 Fwrite(handle, 512, buffer 0): 512 -- bdos/fsio.c:528
+1:0x3E	t:1	EXACT	-	B06 Fclose(handle): 0 -- bdos/fsopnclo.c:426
+13:7	w:2	PTR_RAM	r:18.W	B07 Getbpb(2): the changed BPB -- bios/blkdev.c:569-777
+13:9	w:2	EXACT	-	B08 Mediach(2)

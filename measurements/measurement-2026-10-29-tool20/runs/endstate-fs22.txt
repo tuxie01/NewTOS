@@ -1,0 +1,5 @@
+end state of gemdos-mc-fs22.tsv (test partition, LBA 63 + 130977)
+original vs oracle-1: IDENTICAL (f74b5f0bff827af5)
+oracle-1 vs oracle-2: IDENTICAL (f74b5f0bff827af5)
+original vs newtos: IDENTICAL (f74b5f0bff827af5)
+oracle-1 vs newtos (THE RULE): IDENTICAL (f74b5f0bff827af5)

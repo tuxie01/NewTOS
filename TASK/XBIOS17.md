@@ -15,7 +15,7 @@ Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidu
     auf die UART wuerde sich mit dem Kernel-Log mischen.
   - Was es beruehren koennte: Laeufe, die das serielle Log nach Markern
     durchsuchen — `cargo xtask tosdump` (`scan_serial`,
-    `tools/xtask/src/tosdump.rs:392@scan_serial`, „desktop up“, Panik-Zeilen),
+    `tools/xtask/src/tosdump.rs:402@scan_serial`, „desktop up“, Panik-Zeilen),
     die Sondenskripte unter `tosdump/probes/` und Messlaeufe mit
     `-serial file:`. Diese laufen auf raspi4b; dort ist AUX „kein Kabel“ und
     bliebe es. Auf qemu-virt lesen `virtrun.py`-artige Laeufe das Log per

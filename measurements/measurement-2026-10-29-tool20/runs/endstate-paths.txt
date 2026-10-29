@@ -1,0 +1,18 @@
+end state of gemdos-mc-paths.tsv (test partition, LBA 63 + 130977)
+original vs oracle-1: DIFFERENT (f74b5f0bff827af5 vs e7f004a63c8a41f0), 4 bytes; still different after zeroing the root directory time stamps
+  differing bytes after the normalisation: 4
+  sector 1 offset 0x10C: FF 00
+  sector 1 offset 0x10D: FF 00
+  sector 129 offset 0x10C: FF 00
+  sector 129 offset 0x10D: FF 00
+oracle-1 vs oracle-2: IDENTICAL (e7f004a63c8a41f0)
+original vs newtos: DIFFERENT (f74b5f0bff827af5 vs 2f0bddd9aa3ea6be), 5 bytes; still different after zeroing the root directory time stamps
+  differing bytes after the normalisation: 5
+  sector 1 offset 0x10C: FF 00
+  sector 1 offset 0x10D: FF 00
+  sector 129 offset 0x10C: FF 00
+  sector 129 offset 0x10D: FF 00
+  sector 257 offset 0x080: 44 E5
+oracle-1 vs newtos (THE RULE): DIFFERENT (e7f004a63c8a41f0 vs 2f0bddd9aa3ea6be), 1 bytes; still different after zeroing the root directory time stamps
+  differing bytes after the normalisation: 1
+  sector 257 offset 0x080: 44 E5

@@ -1,0 +1,47 @@
+# gemdos-mc-fs22.tsv -- DUMPBIOS, Pexec and Fsfirst meet a media change
+# (TASK/TOOL20): the cases of the probe tosdump/probes/pxprobe.c (TASK/FS22)
+# as a case table, against EmuTOS 1a7484ab (docs/analysis/ORACLE.md).
+#
+# EmuTOS, read from the source (docs/api/gemdos/_state.md section 4a): once a
+# logical write of sector 0 has armed forcechange, the next GEMDOS access to
+# the drive meets it and osif logs the drive in again and restarts the call
+# (bdos/bdosmain.c:449-487).  Pexec is such a call: its ixsfirst
+# (bdos/proc.c:258) meets the change, the restarted xexec loads the program.
+# ixsfirst takes no DTA (bdos/proc.c:258, bdos/fsdir.c:452-477): the caller's
+# DTA stays as it was.
+#
+# The child: x:C:\PXPROBE -- the run's profile adds the extension of the
+# machine's programs (PROGEXT.TXT: the oracle PRG, NewTOS NAP), so each side
+# starts its own build of tosdump/probes/pxprobe.c, and both builds lie on
+# the test image; with the command tail "child" it returns 42 and does
+# nothing else.  The DTA is buffer 1 (Fsetdta), read through the layout of
+# docs/api/structures/dta.md (d:dta); its 21 reserved bytes are each
+# system's own and not captured.  The DTA buffer is poisoned only by Fsetdta
+# and Fsfirst, so the cases after a search see what it left there.
+#
+# WHERE IT RUNS, DESTRUCTIVE, the test image: as gemdos-mc-fs20.tsv.  The
+# boot sector is written back unchanged, so the test partition must come out
+# as it went in, on both sides.
+#
+# One table per round: a case id is the physical line number and the dump
+# header carries the CRC of this file, so it is frozen once measured.
+!layout	dta	44/44:packed	d_reserved:x21@0/0,d_attrib:b@21/21,d_time:w@22/22,d_date:w@24/24,d_length:L@26/26,d_fname:b14@30/30
+!disk	2	destructive
+
+1:0x1A	b:1	IGNORE	-	P00 Fsetdta(buffer 1): void -- bdos/fsmain.c:403
+# ---- part P: Pexec meets the change
+1:0x4E	s:C:\PXPROBE.*,w:0	EXACT	d:dta	P01 Fsfirst(C:\PXPROBE.*, 0): the DTA before the Pexec -- bdos/fsdir.c:523
++13:4	w:2,b:0,w:1,w:0,w:2,l:0	-	-	P02 sector 0 of C: into buffer 0 (RW_NOMEDIACH)
+13:4	w:3,b:0,w:1,w:0,w:2,l:0	EXACT	-	P03 write it back unchanged, RW_NOMEDIACH: arms -- bios/blkdev.c:450-453, 473-477
+13:9	w:2	EXACT	-	P04 Mediach(2): 2 -- bios/blkdev.c:799-803
+1:0x4B	w:0,x:C:\PXPROBE,c:child,l:0	EXACT	d:dta	P05 Pexec(0, C:\PXPROBE.<own>, "child"): 42; the caller's DTA after it -- bdos/proc.c:179, 258
+13:9	w:2	EXACT	-	P06 Mediach(2): 0, the restart's Getbpb cleared it -- bios/blkdev.c:589-590
+1:0x2F	-	PTR_RAM	r:dta	P07 Fgetdta(): the DTA behind the pointer it returns, unchanged -- bdos/fsmain.c:394
+# ---- part F: Fsfirst meets the change
++13:4	w:2,b:0,w:1,w:0,w:2,l:0	-	-	F01 sector 0 of C: into buffer 0 (RW_NOMEDIACH)
+13:4	w:3,b:0,w:1,w:0,w:2,l:0	EXACT	-	F02 write it back unchanged, RW_NOMEDIACH: arms
+13:9	w:2	EXACT	-	F03 Mediach(2): 2
+1:0x4E	s:C:\PXPROBE.*,w:0	EXACT	d:dta	F04 Fsfirst(C:\PXPROBE.*, 0) after the restart -- bdos/bdosmain.c:449-487, bdos/fsdir.c:523
+13:9	w:2	EXACT	-	F05 Mediach(2): 0
+1:0x4F	-	EXACT	d:dta	F06 Fsnext: the search the restarted Fsfirst set up -- bdos/fsdir.c:654
+1:0x4F	-	EXACT	d:dta	F07 Fsnext: ENMFIL -- bdos/fsdir.c:662-663

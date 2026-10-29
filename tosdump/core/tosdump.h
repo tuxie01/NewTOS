@@ -372,6 +372,13 @@
  * never the unit number, which is the machine's (oracle 18, NewTOS 26). */
 #define TD_CALL_UNIT_TOKEN(n)  ((uint32_t)0xB0F40000uL + (uint32_t)(n))
 
+/* A string argument ("s:", "c:", "x:" -- the GEMDOS calls of TOOL20, docs/
+ * TOS-REFERENCE-DUMPER.md section 6, "GEMDOS after a media change"): the
+ * record carries this token with the string's index in the table's pool,
+ * never the address.  A "t:<n>" token is TD_CALL_SUPER_TOKEN(n) for every
+ * n: "the value case <n> of the token list returned". */
+#define TD_CALL_STR_TOKEN(n)   ((uint32_t)0xB0F60000uL + (uint32_t)(n))
+
 /* The width of the return value a retclass judges, in bytes: the return
  * type of the EmuTOS handler (LONG, WORD, UBYTE).  d0 above that type is
  * not defined by the m68k calling convention. */

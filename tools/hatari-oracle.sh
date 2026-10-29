@@ -18,7 +18,9 @@
 #                      The profile names C:'s physical unit, IDE master
 #                      2 + 8*2 = 18 (bios/disk.h:30), in D:\DISKUNIT.TXT for
 #                      DUMPBIOS' unit token u:0 (docs/api/bios/04-rwabs.md
-#                      "Decisions"; docs/TOS-REFERENCE-DUMPER.md section 6)
+#                      "Decisions"; docs/TOS-REFERENCE-DUMPER.md section 6),
+#                      and the extension of its programs, PRG, in
+#                      D:\PROGEXT.TXT for a program path x:<path> (TASK/TOOL20)
 #   dumper   DUMPVDI.PRG, DUMPAES.PRG, DUMPRAST.PRG or DUMPBIOS.PRG (m68k);
 #            or a probe, GCPROBE.PRG (tosdump/probes/gcprobe.c, TASK/FS20)
 #            or PXPROBE.PRG (tosdump/probes/pxprobe.c, TASK/FS22): no table
@@ -155,6 +157,8 @@ if [ "$PROFILE" = disk ]; then
     set -- --ide-master "$OUT/disk.img" --ide-swap 0=off
     # the profile's physical unit of C:, for a u:0 case (header above)
     printf '18\r\n' > "$OUT/hd/DISKUNIT.TXT"
+    # the profile's program extension, for an x: case (TOOL20)
+    printf 'PRG\r\n' > "$OUT/hd/PROGEXT.TXT"
 fi
 
 # shellcheck disable=SC2086  # MACHINE is a word list by design

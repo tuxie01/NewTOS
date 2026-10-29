@@ -1,0 +1,130 @@
+measurement-2026-10-29-tool20 -- TOOL20: the probe cases of FS20/FS22 and the further FS22 paths as tosdiff tables
+==================================================================================================================
+Developer, TASK/TOOL20, 2026-10-29 (host clock CET). Base HEAD 1d1e856f; the lead committed 20747b7f (docs
+only) while the work was done, so the dumpers carry build id 2074 and the runs name 20747b7f + the
+uncommitted TOOL20 change. No NewTOS product code changed (`git diff --stat HEAD -- kernel tos-api tos-types
+programs sdk` empty). No hardware, no real card, nothing flashed. Not committed.
+
+WHAT / WHY
+  FS20 and FS22 were accepted by probe (tosdump/probes/gcprobe.c, pxprobe.c); the probe rule asks for a
+  follow-up that brings their cases to tosdiff (TASK/TOOL20.md). FS22's "Nachtrag Lead 2026-10-29" adds the
+  further paths FS22 put under the restart (file selector listing, accessory loader, AUTO folder, the AES
+  shell's Dsetpath/Dgetpath/Dsetdrv/Fdelete), measured after a media change only by host test so far.
+  Result: three new DUMPBIOS tables, destructive disk tables, with the GEMDOS calls they need admitted by
+  the guard in destructive disk tables only (docs/TOS-REFERENCE-DUMPER.md section 6, "GEMDOS after a
+  media change"; ledger tosdump/cases/COVERAGE-BIOS.md, same title).
+
+TABLES (frozen with these references)
+  tosdump/cases/gemdos-mc-fs20.tsv   17 cases, 3 preludes, CRC 55B17174   gcprobe A01-A09, B01-B08
+  tosdump/cases/gemdos-mc-fs22.tsv   13 cases, 2 preludes, CRC 26353FB1   pxprobe P00-P07, F01-F07
+  tosdump/cases/gemdos-mc-paths.tsv  49 cases, 6 preludes, CRC 39FDDD95   FS22 paths: listing (L), Dsetpath
+                                                                          (S), Dgetpath (G), Dsetdrv/Dgetdrv
+                                                                          (D), Fdelete (F) after a change
+  DTA layout: docs/api/structures/dta.md, new tosdump-layout block (dta 44/44:packed, d_reserved x21 not
+  captured, d_fname b14); layoutcheck binds the tables' copies to it.
+
+METHOD (method/; the tools are permanent in tosdump/ and tools/)
+  mkimage.sh     the shared test image: tools/mktestdisk.sh with C:\NEWDESK.INF = method/newdesk-d.inf
+                 (#R 02 / #Z 01 D:\DUMPBIOS.NAP@, the bytes of measurement-2026-10-28-tool07, sha256
+                 c779a308..), C:\PXPROBE.PRG and C:\PXPROBE.NAP (make -C tosdump pxprobe-m68k
+                 pxprobe-newtos), C:\DELME.TXT = method/delme.txt, C:\SUB\INNER.TXT = method/inner.txt.
+                 PXPROBE.PRG e2dd6f46374adfbcdbd05fc6f6f2d11d00df9163b3a2ad5c35f07dc3bc4b7e88 (the m68k build
+                 is not byte-reproducible: FS22's was 8fd783dc..), PXPROBE.NAP
+                 d832211c10d3709393ceb46bc372fca1dad1c8f24f4a40c7b5ba5d918dd8428c (= FS22's).
+                 test.img c0ed26d2e3782697988c017a8c3d7b042c3777373c0dd03eedb1abf733936549, test partition
+                 f74b5f0bff827af5.. (runs/test.img.manifest). Manifests, every one verbatim:
+                   runs/test.img.manifest:          optional_missing none
+                   runs/newtos-fs20/card.img.manifest:  optional_missing none
+                   runs/newtos-fs22/card.img.manifest:  optional_missing none
+                   runs/newtos-paths/card.img.manifest: optional_missing none
+  oracle-runs.sh tools/hatari-oracle.sh disk (pinned ROM, tools/oracle/hatari.cfg), two runs per table, each
+                 on its own fresh clone; DUMPBIOS.PRG build 2074
+                 06b0d61d5fd38f8a2b038b0e5b9f51014f438cf648651235f3a8aca0bacfc734; D:\PROGEXT.TXT PRG.
+  newtos-runs.sh cargo xtask tosdump bios <table> --testdisk <test.img> --reference <oracle-1 BIN>, QEMU
+                 raspi4b, -append serial=on, kernel8.img (release, this tree, no features)
+                 9d1fe03a197709e118b27647e0f8b5f77b9c4af79c90a6797d7393afcfce0877, DUMPBIOS.NAP build 2074
+                 75f13fec27ce48d0a2648dfc4f8877216489908ebc35dd8bca9b42745c7da039; D:\DISKUNIT.TXT 26,
+                 D:\PROGEXT.TXT NAP. All three runs: "ended normally after 19 s: desktop up after
+                 DUMPBIOS.NAP, rc=0".
+  compare-ends.py the end-state rule of a destructive table on the test partition (LBA 63 + 130977), raw
+                 and with the root directory's time stamps zeroed (each side stamps a created file with
+                 its own clock; cargo xtask tosdump's normalisation).
+  decode-mc.py   one line per record, the DTA / Dgetpath / Dfree / BPB captures decoded (runs/*/decoded.txt).
+  canary-ptr.sh  no-regression of the dumper change on a frozen table (below).
+
+REFERENCES (tosdump/reference/, copies of runs/oracle-<t>-1)
+  EMUTOS-1a7484ab-BIOS-mc-fs20-disk   BIN bc8b67cceaea19210a01b47ce7b610bdcfbe8466c8a72166b9c03defd3fca079
+                                      LOG 1ae96f7a540d81117779fe34bc11a1e16a4eae4f87152f484132db79c0ca1587
+  EMUTOS-1a7484ab-BIOS-mc-fs22-disk   BIN cb243b2985b06b58999083a75967296e2f5f892ed320a79a16d485374b763bc7
+                                      LOG 34ff785fea28b1c683d94c27470e2f0839eb359a665d4590d53ac9610e2bc154
+  EMUTOS-1a7484ab-BIOS-mc-paths-disk  BIN 2a98ea06475e45fc10c88408684755358afdf18016fb207d20d4c11437f30401
+                                      LOG 307ab52f00ecb03765a5d53b05eb91aad9460afebc554f8a336df125651b495b
+  oracle-<t>-1 vs oracle-<t>-2: BIN and LOG byte-identical for all three tables.
+  tosdiff --selfcheck: all three pass (make -C tosdump host-test: 37 references).
+  The oracle's values equal the probes' logs (measurement-2026-10-28-fs20, -2026-10-29-fs22): A07 Mediach
+  0, B04 Dfree total 32676, B06 Fcreate 6 / Fwrite 512 / Fclose 0; P05 Pexec 42, P06 Mediach 0, P07 and F04
+  the DTA of PXPROBE.PRG (attr 20, time 6000, date 5d51, len 122863), F06 PXPROBE.NAP, F07 -49.
+
+RESULTS NewTOS vs oracle (runs/newtos-<t>/tosdiff-*.txt, runs/endstate-<t>.txt)
+  table   records                end state (test partition vs oracle-1)
+  fs20    0 of 17 differ         1 byte after zeroing root time stamps: sector 257 offset 0x0CB, the
+                                 attribute of GCPROBE.DAT, oracle 0x20 (FA_ARCHIVE), NewTOS 0x00 --
+                                 the open finding TASK/FS21 (as measured by FS20)
+  fs22    6 of 13 differ         IDENTICAL (and = the image: the boot sector was written back unchanged)
+  paths  12 of 49 differ         1 byte: sector 257 offset 0x080, the first byte of C:\DELME.TXT's entry,
+                                 oracle 0x44 ('D'), NewTOS 0xE5 (erased)
+  FINDINGS (not fixed; the tables measure them):
+  F1 d_fname past the NUL (fs22 cases 33, 37, 39, 44, 46, 47: slots 12-13; paths cases 45, 47-52, 56,
+     58-60): NewTOS writes all 14 bytes of d_fname, zero-filled after the name (makbuf,
+     tos-api/src/bdos/fs/find.rs:462@makbuf); EmuTOS's packit writes the name and its NUL and leaves the
+     rest of the 14 bytes as they were (bdos/fsdir.c:1297-1324, makbuf :1851-1862) -- the poison before a
+     Fsfirst, a longer earlier name's tail before an Fsnext ("PXPROBE.PRG" then "DELME.TXT" leaves
+     "...E.TXT" bytes behind the NUL). Visible to a program that reads d_fname past its NUL.
+  F2 Dsetpath after a media change (paths case 67, S04): EmuTOS Mediach(2) = 2 after Dsetpath(C:\SUB) --
+     its Dsetpath did not meet the change (the folder had been listed in part L just before); NewTOS 0 --
+     its Dsetpath met the change and logged C: in again. Every other call of the table agrees, including
+     G03/G04 (Dgetpath after a change: neither meets it) and D04-D08 (Dsetdrv/Dgetdrv: neither meets it).
+  F3 end state of paths: the oracle's partition after the run still has C:\DELME.TXT's directory entry
+     un-erased while its cluster is freed in both FATs (fsck_msdos -n exit 206, runs/fsck-ends.txt);
+     NewTOS erased the entry (0xE5) and is fsck-clean. EmuTOS's ixdel writes the erase marker through the
+     directory's OFD (bdos/fsopnclo.c:685-692); the sector is evidently still a dirty buffer when Hatari is
+     stopped (2 s after the dumper's final LOG, tools/hatari-oracle.sh), in both oracle runs alike.
+     Whether that is EmuTOS's write-back policy (a contract question) or only the capture point of the
+     oracle's end state is open -- routed to the lead, not judged here.
+  Retclasses that are not EXACT (Getbpb PTR_RAM, Fgetdta PTR_RAM, Fsetdta IGNORE: EmuTOS returns d0 as
+  xsetdta's void left it) differ in value as expected and pass on both sides.
+  fsck_msdos -n of the end states (runs/fsck-ends.txt): fs20 206 on both (the changed geometry), fs22 0 on
+  both, paths 206 on the oracle (F3) and 0 on NewTOS.
+
+WHAT STAYED PROBE-ONLY (and why; docs/TOS-REFERENCE-DUMPER.md section 6)
+  - pxprobe P07 "the DTA unchanged across the Pexec, all 44 bytes": the 21 reserved bytes are each
+    system's own and are not captured (x21); the identity Fgetdta() == &dta is an address. The table
+    records the public fields after the Pexec (P05, d:dta) and behind Fgetdta's pointer (P07, r:dta).
+  - gcprobe's text marker: the table writes buffer 0 as the poison left it (DE AD ...); where it lands is
+    the end-state comparison.
+  - the input traces (gcprobe-trace-check.py, pxprobe-trace-check.py): tools/biostrace-check.py reads
+    neither +set nor string arguments, and GEMDOS calls are not traced.
+  - the accessory loader and the AUTO folder: they run at boot; no user program reaches them after a
+    media change, so there is no case. The AES shell's own Dsetpath/Dgetpath/Dsetdrv/Fdelete (dos_call)
+    are kernel calls; the table measures the same GEMDOS calls from a program.
+
+NO-REGRESSION OF THE DUMPER (runs/canary-*.txt)
+  canary-disk (measurements/measurement-2026-10-28-tool07b/method/canary-disk.sh, run as it is): DUMPBIOS
+  b81d from this tree, bios-r2.tsv on the oracle: BIN+LOG sha256 as pinned, image unchanged.
+  canary-ptr (method/canary-ptr.sh): DUMPBIOS c0f9 from this tree, xbios-ptr-r1.tsv on the oracle's tt
+  profile: BIN+LOG byte-identical to EMUTOS-1a7484ab-XBIOS-ptr (layouts, +put, Super bracket, Getmpb).
+
+HOST TESTS
+  make -C tosdump host-test: exit 0, incl. the new test_cases_gdos (layout grammar, strings, tokens, guard,
+  DTA) and test_runner_gdos (stub backend), layoutcheck (5 spec layouts, 7 table lines in 30 tables) and
+  the self-check over 37 references. cargo xtask test (full): 1821 passed, 0 failed, 1 ignored (= baseline).
+
+FILES
+  method/  mkimage.sh, oracle-runs.sh, newtos-runs.sh, compare-ends.py, decode-mc.py, canary-ptr.sh,
+           newdesk-d.inf, delme.txt, inner.txt
+  runs/    oracle-<fs20|fs22|paths>-<1|2>/ (BIOS.BIN, BIOS.LOG, disk.sha256, hatari.log,
+           hatari-oracle.stdout, decoded.txt), newtos-<fs20|fs22|paths>/ (cargo xtask tosdump's out-dir,
+           decoded.txt), endstate-<t>.txt, fsck-ends.txt, canary-disk.txt, canary-ptr.txt,
+           test.img.manifest
+  Images, cards, kernels and scratch trees are not kept (scratch, deleted); sha256 above and in the
+  runs' files. manifest.sha256 covers every file of this run except itself.

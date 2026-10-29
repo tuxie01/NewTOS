@@ -8,7 +8,7 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwende
   (`tools/mktestdisk.sh:65@mformat`); `tools/oracle/oracle.env` sagt „nothing below
   may come from $PATH“. Die sha256-Pruefung des Abbilds faengt eine andere
   Version nur nachtraeglich ab (TOOL06-Quittung).
-- `tools/hatari-oracle.sh:107@ORACLE_HATARI` setzt `--fast-forward on` fest.
+- `tools/hatari-oracle.sh:165-168@ORACLE_HATARI` setzt `--fast-forward on` fest.
 
 ## Arbeit
 

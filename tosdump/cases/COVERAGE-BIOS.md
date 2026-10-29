@@ -27,6 +27,10 @@ handler cited is the function the slot reaches (`DBG_BIOS`/`DBG_XBIOS` are
 - **pointer round** -- measured by `xbios-ptr-r1.tsv` only, under the rule
   that table states (section "Structures behind a pointer" at the end);
   refused in every other table.
+- **GEMDOS media-change round** -- the GEMDOS calls of `gemdos-mc-*.tsv`
+  (TOOL20), in a destructive `!disk` table only, under the rules of the
+  section "GEMDOS after a media change" at the end; refused in every other
+  table. Their cases go to `DUMPGDOS` once that exists.
 - **excluded** -- never in an unattended table: writes media, resets or
   reboots a real TOS, installs vectors or interrupt handlers, or reprograms
   hardware the run depends on (the screen, AUX = NewTOS' serial console).
@@ -395,3 +399,62 @@ scripts in `measurements/measurement-2026-10-29-xbios01/method/`. 207 cases,
 
 References: `tosdump/reference/EMUTOS-1a7484ab-XBIOS-flush` (TT) and
 `-XBIOS-flush-falcontc`, two runs each byte-identical.
+
+## GEMDOS after a media change -- `gemdos-mc-*.tsv` (TOOL20, 2026-10-29)
+
+What the permanent probes `tosdump/probes/gcprobe.c` (FS20) and
+`tosdump/probes/pxprobe.c` (FS22) measure, and the further FS22 paths after a
+media change as far as a user program reaches them (`TASK/FS22.md`,
+"Nachtrag Lead 2026-10-29"), as case tables of `DUMPBIOS`: a logical write of
+sector 0 arms forcechange, the next GEMDOS access meets it, osif logs the
+drive in again and restarts the call (`bdos/bdosmain.c:449-487`;
+`docs/api/gemdos/_state.md` section 4a). Form and rules:
+`docs/TOS-REFERENCE-DUMPER.md` section 6, "GEMDOS after a media change". The
+three tables share one test image (`tools/mktestdisk.sh` with
+`C:\NEWDESK.INF`, `C:\PXPROBE.PRG`, `C:\PXPROBE.NAP`, `C:\DELME.TXT`,
+`C:\SUB\INNER.TXT`; `measurements/measurement-2026-10-29-tool20/RUNINFO.TXT`).
+
+| Table | Cases | CRC | What |
+|---|---|---|---|
+| `gemdos-mc-fs20.tsv` | 17 (3 preludes) | `55B17174` | gcprobe A01-A09, B01-B08: `Dfree` meets the change; a changed boot sector (512 -> 256 root entries) and the geometry `Dfree` and an `Fcreate`/`Fwrite`/`Fclose` use after it; end state: the changed boot sector and `C:\GCPROBE.DAT` |
+| `gemdos-mc-fs22.tsv` | 13 (2 preludes) | `26353FB1` | pxprobe P01-P07, F01-F07: `Pexec(0)` of the machine's own child on C: after a change (42), the caller's DTA around it, `Fgetdta`; `Fsfirst`/`Fsnext` after a change; end state = the image |
+| `gemdos-mc-paths.tsv` | 49 (6 preludes) | `39FDDD95` | the file selector's listing after a change (`Fsfirst(<dir>\*.*, FA_SUBDIR)` and `Fsnext` to the end, root and a folder, `aes/gemfslib.c:285-310`); `Dsetpath`, `Dgetpath` (EmuTOS checks no media change, `bdos/fsdir.c:1223-1224`), `Dsetdrv`/`Dgetdrv` and `Fdelete` after a change; end state: `C:\DELME.TXT` deleted |
+
+What the guard admits, in a table that says `!disk <drive> destructive`
+only -- each a refusal lifted from "of GEMDOS a BIOS table issues Super only"
+(`call_policy`, `gdos_refusal`, `tosdump/core/cases.c`):
+
+| Call | Admitted as | Why safe |
+|---|---|---|
+| `Dgetdrv` (0x19), `Fgetdta` (0x2F) | no argument | queries (`bdos/fsmain.c:394-397`, `:438-441`) |
+| `Fsetdta` (0x1A) | a `b:` buffer, which is the DTA from then on; no other line may name it | it stores a pointer (`bdos/fsmain.c:403-406`); the DTA is a dumper buffer, and nothing else writes into the search state |
+| `Fsfirst` (0x4E), `Fsnext` (0x4F) | `s:` a path on the test drive, any attribute; the DTA set | they read a directory of the test image and write 44 bytes into the DTA buffer |
+| `Dfree` (0x36), `Dgetpath` (0x47) | a `b:` buffer (not the DTA), the test drive as `<drive>+1` | they write 16 bytes / at most `LEN_ZPATH` (114) into a 1024-byte buffer (`bdos/fsfat.c:337`, `bdos/fsdir.c:1229`) |
+| `Dsetpath` (0x3B) | `s:` a path on the test drive | it moves C:'s current directory only, never the dumper's (D:) |
+| `Fcreate` (0x3C), `Fwrite` (0x40), `Fclose` (0x3E) | `Fcreate(s:<path on the test drive>, 0)` opens a bracket, `Fclose(t:1)` closes it; `Fwrite(t:1, l:0..1024, b:<n>)` inside it; one file at a time, a table that ends with it open is refused | they create one file on the test image, a clone made for the run; the write writes a dumper buffer |
+| `Fdelete` (0x41) | `s:` a path on the test drive, no file open | it deletes on the test image only (`bdos/fsopnclo.c:623`) |
+| `Dsetdrv` (0x0E) | `w:<test drive>` opens a bracket that `Dsetdrv(t:2)` closes -- t:2 is what a `Dgetdrv` before it returned; a table that ends with it open is refused | the dumper writes its BIN and LOG to its current drive; the bracket gives it back before the end (`bdos/fsmain.c:420-426`) |
+| `Pexec` (0x4B) | mode 0, `x:` a program path on the test drive (the run's profile adds `.PRG` / `.NAP`), a `c:` command tail, env `l:0` | it runs the probe build on the test image, which with the tail `child` returns 42 and does nothing else (`tosdump/probes/pxprobe.c`) |
+| any of them | not inside a `Super` bracket, never as a prelude | the file calls run in user state, as a program makes them |
+
+What stays probe-only, with the reason:
+
+- pxprobe P07 "the DTA is unchanged across the `Pexec`, all 44 bytes": the 21
+  reserved bytes are each system's own (`docs/api/structures/dta.md`), so a
+  record carries only the public fields (`d_reserved` is `x21`, not
+  captured); the identity `Fgetdta() == &dta` is an address, which a record
+  never carries. The table measures the public fields after the `Pexec` and
+  behind `Fgetdta`'s pointer.
+- gcprobe B06's marker: the table writes buffer 0 as the poison left it
+  (`DE AD`), not the text marker; where it lands is the end-state comparison.
+- The input trace of the BIOS calls (`gcprobe-trace-check.py`,
+  `pxprobe-trace-check.py`): `tools/biostrace-check.py` reads neither `+set`
+  nor the string arguments, and GEMDOS calls are not traced.
+- The accessory loader and the AUTO folder: they run at boot, before any
+  program; no user program reaches them after a media change. The AES
+  shell's own `Dsetpath`/`Dgetpath`/`Dsetdrv`/`Fdelete` (`dos_call`) are the
+  kernel's, not a program's: the tables measure the same GEMDOS calls from a
+  program.
+
+References `tosdump/reference/EMUTOS-1a7484ab-BIOS-mc-<fs20|fs22|paths>-disk`,
+two runs each byte-identical, `measurements/measurement-2026-10-29-tool20/RUNINFO.TXT`.

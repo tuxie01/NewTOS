@@ -1,0 +1,13 @@
+ 31  1:0x1A ret=0                                                                      P00 Fsetdta(buffer 1): void
+ 33  1:0x4E ret=0           attr=20 time=6000 date=5d51 len=122863 name=PXPROBE.PRG    P01 Fsfirst(C:\PXPROBE.*, 0): the
+ 35 13:0x04 ret=0                                                                      P03 write it back
+ 36 13:0x09 ret=2                                                                      P04 Mediach(2): 2 --
+ 37  1:0x4B ret=42          attr=20 time=6000 date=5d51 len=122863 name=PXPROBE.PRG    P05 Pexec(0, C:\PXPROBE.<own>, "child"):
+ 38 13:0x09 ret=0                                                                      P06 Mediach(2): 0, the
+ 39  1:0x2F ret=27686444    attr=20 time=6000 date=5d51 len=122863 name=PXPROBE.PRG    P07 Fgetdta(): the DTA
+ 42 13:0x04 ret=0                                                                      F02 write it back
+ 43 13:0x09 ret=2                                                                      F03 Mediach(2): 2
+ 44  1:0x4E ret=0           attr=20 time=6000 date=5d51 len=122863 name=PXPROBE.PRG    F04 Fsfirst(C:\PXPROBE.*, 0) after
+ 45 13:0x09 ret=0                                                                      F05 Mediach(2): 0
+ 46  1:0x4F ret=0           attr=20 time=6000 date=5d51 len=145024 name=PXPROBE.NAP    F06 Fsnext: the search
+ 47  1:0x4F ret=-49         attr=20 time=6000 date=5d51 len=145024 name=PXPROBE.NAP    F07 Fsnext: ENMFIL --

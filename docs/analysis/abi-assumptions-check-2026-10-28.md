@@ -76,7 +76,7 @@ Gescannt: `tos-api/src/bios/mod.rs`, `tos-api/src/xbios/mod.rs`, `xbios/system.r
 |---|---|---|
 | `Getbpb` | `tos-api/src/bios/bpb.rs:296@getbpb` (`-> i64`); EL0: Benutzeradresse `user_va as i64` (`:317`), EL1-Aufrufer: Kernel-VA `kva as i64` (`:309`) | Benutzeradresse < 2 GiB **[DERIVED]** (I2). **MEASURED** `sx=1` fuer `Getbpb(2)`: `measurements/measurement-2026-10-28-bios-storage-audit/runs/NEWTOS-raspi4b/BSTPROBE.LOG:3` („sx = the native register is the sign-extended LONG“, `measurements/measurement-2026-10-28-bios-storage-audit/RUNINFO.TXT:54`) |
 | `Getmpb` | `tos-api/src/bios/getmpb.rs:84@getmpb` (`-> Long`) | gibt 0 zurueck; der Zeiger geht in den MPB, nicht ins Register |
-| `Kbdvbase` | `tos-api/src/xbios/kbdvecs.rs:198@kbdvbase` | volles 64-Bit-`u64 as i64`; `USER_VA_BASE = 0` (`tos-api/src/bdos/process/loader.rs:200@USER_VA_BASE`) |
+| `Kbdvbase` | `tos-api/src/xbios/kbdvecs.rs:198@kbdvbase` | volles 64-Bit-`u64 as i64`; `USER_VA_BASE = 0` (`tos-api/src/bdos/process/loader.rs:207@USER_VA_BASE`) |
 | `Keytbl` | `tos-api/src/xbios/keytbl.rs:185@keytbl` | wie oben |
 | `Physbase`/`Logbase` | `tos-api/src/xbios/screen.rs:121@physbase`, `:133@logbase` (`caller_view(..) as i64`) | wie oben |
 | `Setexc`, Seite-0-Zellen (`num < 0x200`) | `tos-api/src/bios/vectors.rs:131@read_unaligned` (`as i32 as i64`) | **vorzeichenerweitert**, also regelkonform; Schreibseite schneidet auf 32 Bit: `:121@put_user_u32`, `:134@write_unaligned` (`vector as u32`) |
@@ -407,7 +407,7 @@ Muster: `Bconmap|MAPTAB|maptab|BCONMAP` (gross/klein) ueber `sdk/apps`, `sdk/ove
   in Vanilla-Conquer, die das Muster `maptab` ohne Gross-/Kleinunterscheidung traf).
 - Treffer nur in Definitionen: `sdk/libc/overlay/include/mint/ostruct.h:527-530@Bconmap` (`BMAP_MAPTAB = -2`),
   `sdk/libc/overlay/include/mint/ostruct.h:679-698@_BCONMAP` (`_MAPTAB`, `_BCONMAP`), `sdk/libc/overlay/include/mint/osbind.h:760@Bconmap` (Binder);
-  `tosdump/core/cases.c:3446@CR_BCONMAP`, `tosdump/core/cases.c:3511@CR_BCONMAP`, `tosdump/core/cases.c:3766@CR_BCONMAP` (Dumper-Aufrufpolitik, kein Programm).
+  `tosdump/core/cases.c:3649@CR_BCONMAP`, `tosdump/core/cases.c:3735@CR_BCONMAP`, `tosdump/core/cases.c:3995@CR_BCONMAP` (Dumper-Aufrufpolitik, kein Programm).
 - Es gibt kein portiertes Terminalprogramm (keines unter `sdk/apps/`, keines auf der Standard-Abbildung).
   `Applications/thing-neo-codeSVN-r62`, `Applications/z-tools`, `Applications/qed` etc. enthalten kein
   `Bconmap`.

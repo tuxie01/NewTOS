@@ -199,7 +199,7 @@ und die Erhebung dieses Tickets: einziger Leser von `md_start`/`md_length` ist
 ruft `Getmpb(BAD)` nur mit ungueltigem Zeiger (kein Lesen des MD, nicht im
 Standard-Image); `tosdump` misst `Getmpb` seit TOOL16 nur in
 `tosdump/cases/xbios-ptr-r1.tsv` (in einer `Super`-Klammer, als letzten
-Aufruf; `tosdump/core/cases.c:3478@CR_GETMPB`,
+Aufruf; `tosdump/core/cases.c:3702@CR_GETMPB`,
 `tosdump/cases/COVERAGE-BIOS.md:58@Getmpb`), MPB und MD feldweise mit dem
 Layout aus `docs/api/structures/md.md` ("Dumper layout"). Kein
 portiertes Programm unter `sdk/apps/`, `sdk/overlays/`, `sdk/examples/`,

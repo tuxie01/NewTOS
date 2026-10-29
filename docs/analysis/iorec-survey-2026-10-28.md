@@ -29,7 +29,7 @@ durchsucht: `references/freemint` (Vorgabe).
 | `Applications/mintlib-src/mintlib-0.60.1/include/mint/osbind.h:1219`, `ostruct.h` (Struct "Structure returned by Iorec") | Upstream-Original | nur Deklaration | gelesen |
 | `sdk/libc/mintlib/syscall/syscalls.master:578` | Syscall-Liste | nur Deklaration | gelesen |
 | `sdk/examples/kbdvec.c:143@hook`, `sdk/apps/doom/doomgeneric_gem_kbdvec.c:48@kbdvec_hook` | Parameter `iorec` des kbdvec-Hooks, immer 0 | andere (kein Iorec-Aufruf, kein Ringzugriff) | gelesen |
-| `tosdump/core/cases.c:3495@Iorec` | Funktionstabelle `0x0E` fuer Dump | andere (misst Rueckgabe, liest keinen Ring) | gelesen |
+| `tosdump/core/cases.c:3719@Iorec` | Funktionstabelle `0x0E` fuer Dump | andere (misst Rueckgabe, liest keinen Ring) | gelesen |
 
 Aufrufer (Klasse "liest Ring trap-frei", "liest einmal", "nur Flush"): **keine**.
 Dass `ostruct.h` ein Feld `_IOREC *iorec` enthaelt (Zeiger-Member in `ostruct.h`), ist Teil von

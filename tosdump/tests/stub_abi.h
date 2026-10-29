@@ -245,6 +245,38 @@
 #define TD_STUB_MD_START       0x1000L
 #define TD_STUB_MD_LENGTH      0x3000L
 
+/* GEMDOS after a media change (TASK/TOOL20) -- trap 1, every function but
+ * Super, answered before the generic buffer fill (which they do not get):
+ *   - Fsetdta (0x1A) keeps the DTA address and answers 0; Fgetdta (0x2F)
+ *     answers it;
+ *   - Fsfirst (0x4E) writes entry 0 of a directory of TD_STUB_DIR_N entries
+ *     into the DTA, in the packed TOS layout and machine order: attribute
+ *     0x20 at 21, time TD_STUB_DTA_TIME + k at 22, date TD_STUB_DTA_DATE at
+ *     24, length TD_STUB_DTA_LEN + k at 26, "F<k>.TXT" at 30 -- and keeps
+ *     the next index in the DTA's byte 0, its search state; Fsnext (0x4F)
+ *     reads that byte and writes the next entry, ENMFIL (-49) past the last
+ *     or when byte 0 is no index (a DTA poisoned between the two calls ends
+ *     the search at once, which is what a test checks);
+ *   - Fcreate (0x3C) answers TD_STUB_HANDLE, Fwrite (0x40) its count,
+ *     Fclose (0x3E), Fdelete (0x41), Dsetpath (0x3B) 0, Pexec (0x4B)
+ *     TD_STUB_PEXEC_RET; Dsetdrv (0x0E) keeps its drive and answers
+ *     TD_STUB_DRVMAP, Dgetdrv (0x19) answers the kept drive (TD_STUB_DRIVE
+ *     after td_stub_reset); Dfree (0x36) writes the LONGs 1, 2, 3, 4 through
+ *     its buffer, Dgetpath (0x47) the string TD_STUB_PATH;
+ *   - the string a call names (Fsfirst, Fcreate, Fdelete, Dsetpath: the
+ *     first argument; Pexec: the program, then the tail) goes into
+ *     call_str / call_str2 of the log. */
+#define TD_STUB_DIR_N          3
+#define TD_STUB_DTA_TIME       0x6000
+#define TD_STUB_DTA_DATE       0x5D51
+#define TD_STUB_DTA_LEN        100
+#define TD_STUB_HANDLE         6L
+#define TD_STUB_PEXEC_RET      42L
+#define TD_STUB_DRIVE          3L
+#define TD_STUB_DRVMAP         0x0CL
+#define TD_STUB_PATH           "\\SUB"
+#define TD_STUB_STR_LEN        40
+
 struct td_stub_call {
 	int16_t kind;
 	int16_t opcode;
@@ -272,6 +304,9 @@ struct td_stub_call {
 	long    call_value[TD_CALL_ARGS_N];
 	/* Call side, Rwabs writes only: the buffer's first bytes as handed in. */
 	uint8_t call_written[TD_STUB_WRITTEN_N];
+	/* Call side, GEMDOS (TOOL20): the strings the call named. */
+	char    call_str[TD_STUB_STR_LEN];
+	char    call_str2[TD_STUB_STR_LEN];
 };
 
 extern struct td_stub_call td_stub_calls[TD_STUB_MAX_CALLS];

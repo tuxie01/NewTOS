@@ -5,8 +5,8 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwende
 ## Sachverhalt
 
 - TOOL07 loest das Einheiten-Token `u:0` ueber `D:\DISKUNIT.TXT` auf, die die
-  Profildefinition schreibt (`tools/hatari-oracle.sh:150@DISKUNIT`: 18;
-  `tools/xtask/src/tosdump.rs:974@DISKUNIT`: 26). DUMPBIOS laeuft eine Tabelle
+  Profildefinition schreibt (`tools/hatari-oracle.sh:159@DISKUNIT`: 18;
+  `tools/xtask/src/tosdump.rs:984@DISKUNIT`: 26). DUMPBIOS laeuft eine Tabelle
   mit `u:0` nicht, wenn die Datei fehlt (`tosdump/core/dumpbios.c:51@unit_path`).
 - Anwender 2026-10-28: in Ordnung, **wenn** (a) die Datei immer aus der
   Profildefinition erzeugt wird, nie von Hand; (b) ihr Inhalt im RUNINFO steht;

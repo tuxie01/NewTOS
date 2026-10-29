@@ -135,6 +135,10 @@ on, no disk inserted) `Drvmap()` = `0xF`, and `Giaccess(0,14)` and both
   DUMPBIOS reads for the unit token `u:0` of an `Rwabs(RW_NOTRANSLATE)` case
   (`docs/api/bios/04-rwabs.md`, "Decisions"; `docs/TOS-REFERENCE-DUMPER.md`
   section 6, "The closing tables"); NewTOS' runner names 26, the SD card.
+- **The program extension is PRG.** The profile names it in
+  `D:\PROGEXT.TXT` (`PRG`), which DUMPBIOS reads for a program path `x:` of
+  a `Pexec` case (`docs/TOS-REFERENCE-DUMPER.md` section 6, "GEMDOS after a
+  media change"; TOOL20); NewTOS' runner names `NAP`.
 - **Destructive tables** (`!disk <drive> destructive`, the closing tables)
   run only in this profile: the script refuses them in any other, clones the
   test image for the run as for every disk table, and refuses an image whose

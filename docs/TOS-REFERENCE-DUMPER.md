@@ -261,7 +261,7 @@ the comparison needs:
 |---|---|---|
 | 0 | 2 | case id (physical line number in the case table) |
 | 2 | 2 | opcode = the function number (`Getrez` = 4) |
-| 4 | 32 | the 8 arguments as passed, one LONG each: a WORD sign-extended, a LONG as is, a buffer argument as its token `0xB0FF0000 + n` (never its address, which differs per machine by construction — the AES `addr_in` rule, section 6), a callback argument as `0xB0FC0000 + n`, the `Super` token argument as `0xB0F50000` (both section 6, "Super and Supexec"), the unit token `u:0` as `0xB0F40000` (section 6, "The closing tables"), an unused slot `0xDEADDEAD` |
+| 4 | 32 | the 8 arguments as passed, one LONG each: a WORD sign-extended, a LONG as is, a buffer argument as its token `0xB0FF0000 + n` (never its address, which differs per machine by construction — the AES `addr_in` rule, section 6), a callback argument as `0xB0FC0000 + n`, the `Super` token argument as `0xB0F50000` (both section 6, "Super and Supexec"), the unit token `u:0` as `0xB0F40000` (section 6, "The closing tables"), a token `t:<n>` as `0xB0F50000 + n` and a string argument `s:`/`c:`/`x:` as `0xB0F60000 + n`, `n` its index in the table's string pool (both section 6, "GEMDOS after a media change"), an unused slot `0xDEADDEAD` |
 | 36 | 4 | return value, **low** 32 bits of the return register (`d0` / `x0`) |
 | 40 | 256 | capture (section 6, `capture` column); what no capture wrote stays `0xDEAD` |
 | 296 | 4 | return value, **high** 32 bits of the return register: `x0` bits 63..32 on AArch64; on the m68k, whose `d0` has no high half, the sign extension of the low half — the value C's `(int64_t)(long)` gives on both targets, so the comparator always reads the return as the 64-bit value `ret_hi:ret` |
@@ -582,7 +582,9 @@ for `Getrez`. One table holds the BIOS and the XBIOS (section 7), and the same
 function number means different calls on the two traps. A BIOS-area table
 accepts traps 13 and 14, and trap 1 for function `0x20` (`Super`) only — the
 processor-state call, see "Super and Supexec" below; GEMDOS proper waits for
-`DUMPGDOS`. The trap lands in the record (section 3).
+`DUMPGDOS`, except the calls a destructive disk table may make after a media
+change ("GEMDOS after a media change" below, TOOL20). The trap lands in the
+record (section 3).
 
 **`args`** is `-` or up to eight comma separated arguments, in the order of the
 binding, each with its width, because the m68k stack frame is laid by width
@@ -779,7 +781,8 @@ value: `EXACT`.
 
 **Guard.** `Supexec` is admitted with exactly one argument and only an `f:`
 one (signature letter `f`); `Super` with `l:1`, `l:0` or `t:0` under the
-bracket rule. Nothing else in GEMDOS is admitted.
+bracket rule. Nothing else in GEMDOS is admitted -- outside a destructive disk
+table, which admits the calls of "GEMDOS after a media change" (below).
 
 ### The disk round (added 2026-10-28, TOOL07)
 
@@ -952,6 +955,14 @@ field:  <fname>:<type>@<offset m68k>/<offset LP64>[:<class>]
 | `p` | a pointer | 4 / 8 | sign-extended (the `ret_hi` rule, section 3) |
 | `p><layout>` | a pointer the runner **follows** into `<layout>` | 4 / 8 | as `p`; `<layout>`'s fields follow it |
 | `[<layout>]` | `<layout>` embedded at this offset | its sizes | its fields, under `<fname>.` |
+| `b<n>`, `w<n>`, `L<n>` | an array of `n` (1..32) of that type (TOOL20) | `n` × the type's | one slot per element, `<fname>[0]` .. `<fname>[n-1]` |
+| `x<n>` | `n` (1..1024) opaque bytes, the system's own part of a structure (TOOL20) | `n` / `n` | none: no slot, never compared, no class |
+
+A size `<m68k>/<LP64>:packed` (TOOL20) declares a structure C lays out with
+`__attribute__((packed))` on both ABIs, because the TOS ABI fixes its bytes:
+every field is aligned on 1, every field has one offset on both ABIs (the
+loader refuses two), the size is the end of the last field. The DTA is one
+(`docs/api/structures/dta.md`): its LONG `d_length` lies at 26 on both.
 
 `class` is how `tosdiff` judges the field: `EXACT`, `IGNORE`, `NONZERO`,
 `HANDLE`, `PTR_RAM` -- the retclass rules (above) on the field's 64-bit
@@ -1054,6 +1065,87 @@ on the oracle's `tt` and `falcontc` profiles and through `cargo xtask
 tosdump` like a round-1 table. References `EMUTOS-1a7484ab-XBIOS-ptr` (TT)
 and `-XBIOS-ptr-falcontc`, `measurements/measurement-2026-10-29-tool16/RUNINFO.TXT`.
 
+### GEMDOS after a media change (added 2026-10-29, TOOL20)
+
+The probes `tosdump/probes/gcprobe.c` (FS20) and `pxprobe.c` (FS22) measure
+GEMDOS calls that meet a media change: a logical write of sector 0 arms
+forcechange, the next GEMDOS access meets it, osif logs the drive in again
+and restarts the call (`bdos/bdosmain.c:449-487`; `docs/api/gemdos/_state.md`
+section 4a). Until `DUMPGDOS` exists, their cases -- and the further FS22
+paths a user program reaches -- are `DUMPBIOS` tables:
+`tosdump/cases/gemdos-mc-fs20.tsv`, `-fs22.tsv`, `-paths.tsv` (header area 1;
+ledger `tosdump/cases/COVERAGE-BIOS.md`, "GEMDOS after a media change"). They
+are destructive disk tables (`!disk 2 destructive`), run like the closing
+tables on a fresh clone of their test image, and their end states are
+compared the same way, with the root directory's time stamps zeroed (each
+side stamps a file it creates with its own clock). What came with them, in
+a destructive disk table only:
+
+**The GEMDOS calls.** `Dsetdrv` (0x0E), `Dgetdrv` (0x19), `Fsetdta` (0x1A),
+`Fgetdta` (0x2F), `Dfree` (0x36), `Dsetpath` (0x3B), `Fcreate` (0x3C),
+`Fclose` (0x3E), `Fwrite` (0x40), `Fdelete` (0x41), `Dgetpath` (0x47),
+`Pexec` (0x4B), `Fsfirst` (0x4E), `Fsnext` (0x4F), with the binding's widths
+(`bdos/bdosmain.c:179-277`; `call_policy` and `gdos_refusal`,
+`tosdump/core/cases.c`). Outside a destructive disk table each stays refused
+as before; inside one, every rule is decided from the table:
+
+| Rule | What it keeps |
+|---|---|
+| a path (`s:`, `x:`) names the test drive, `"<drive>:\..."` | nothing outside the test image is created, deleted, searched or executed; `Dsetpath` never moves the dumper's own directory |
+| `Fcreate(path, 0)` opens a bracket, `Fclose(t:1)` closes it; `Fwrite(t:1, l:0..1024, b:<n>)` inside it; one file, no `Fdelete` while it is open; a table ending with it open is refused | the handle is the one the table opened |
+| `Dsetdrv(w:<test drive>)` opens a bracket, `Dsetdrv(t:2)` closes it -- t:2 is what a `Dgetdrv` case before it returned; a table ending with it open is refused | the dumper writes its dump to its own drive again |
+| `Dfree`, `Dgetpath`: a `b:` buffer and the test drive as `<drive>+1` | they write into a dumper buffer |
+| `Pexec`: mode 0, `x:` the program, a `c:` tail, env `l:0` | the child is the probe build on the test image |
+| `Fsetdta(b:<n>)` makes buffer `n` the DTA; no other line names it; `Fsfirst`/`Fsnext` need it set | the search state stays where the call put it |
+| none inside a `Super` bracket, none as a prelude | the calls run in user state, as a program makes them |
+
+**Three argument kinds** (`parse_call_args`, `tosdump/core/cases.c`), kept in
+the table's string pool and recorded as `0xB0F60000 + n`, `n` their index in
+the pool -- never the address:
+
+- `s:<text>` -- a NUL-terminated string (a path);
+- `c:<text>` -- a command tail, stored as TOS passes one: its length in the
+  first byte, then the text (`Pexec`);
+- `x:<path>` -- a program path without its extension. The program format is
+  the machine's -- the oracle's `PRG`, NewTOS's `NAP` -- so the **run's
+  profile** names the extension, as it names the disk unit: DUMPBIOS reads
+  `PROGEXT.TXT` from its current directory only for a table that names `x:`
+  (1..3 characters `A-Z`, `0-9`, an optional line end), logs it, and appends
+  `.<ext>`; without it the table is not run and no BIN is written
+  (`TD_RUN_CALL_ERR_PROGEXT`). `tools/hatari-oracle.sh` profile `disk` puts
+  `PRG` into `D:\PROGEXT.TXT`, `cargo xtask tosdump --disk`/`--testdisk`
+  puts `NAP` there (`NEWTOS_PROG_EXT`).
+
+The text is printable ASCII without blanks and commas, 1..63 characters (a
+tail 1..124). **Tokens:** `t:<n>` is the value an earlier case returned --
+`t:0` the `Super` token (a LONG, MEM12), `t:1` the handle of the open file's
+`Fcreate`, `t:2` the drive a `Dgetdrv` outside the `Dsetdrv` bracket returned
+(both WORDs, as the binding's argument they stand for); recorded as
+`0xB0F50000 + n`.
+
+**The DTA.** `d:<layout>` in the capture column reads the DTA buffer field by
+field (`docs/api/structures/dta.md`, layout `dta`): the public fields
+`d_attrib`, `d_time`, `d_date`, `d_length` and the 14 bytes of `d_fname`, in
+the machine's own byte order; the 21 reserved bytes are `x21` and not
+captured. The runner poisons the DTA buffer only before `Fsetdta` and
+`Fsfirst` -- `Fsnext` continues the search from the state `Fsfirst` left
+there, and a case between them (a `Mediach`, a `Pexec`) must not wipe it; so
+a capture after `Pexec` or behind `Fgetdta`'s pointer (`r:dta`) shows what the
+last search left.
+
+**A logical `Rwabs` returns `E_CHNG` while a change is pending**
+(`bios/blkdev.c:450-451`), and a read prelude that does not return 0 stops the
+run (above). A table part whose call may leave the change pending therefore
+ends with a call that meets it (`Dfree`) before the next part's prelude.
+
+What stays probe-only: the DTA's reserved bytes across a `Pexec` (each
+system's own), the identity `Fgetdta() == &dta` (an address), the input trace
+of the probes' BIOS calls (`tools/biostrace-check.py` does not read these
+tables), and the accessory loader and the AUTO folder, which run at boot and
+which no user program reaches. References
+`EMUTOS-1a7484ab-BIOS-mc-<fs20|fs22|paths>-disk`,
+`measurements/measurement-2026-10-29-tool20/RUNINFO.TXT`.
+
 ### Input check on NewTOS: the BIOS/XBIOS argument tracer (added 2026-10-28, TOOL08)
 
 A result comparison counts only if the arguments that **arrived** match the
@@ -1125,8 +1217,8 @@ One program per area, sharing `tosdump/core/` and one `tosdump/abi/` backend:
 |---|---|---|
 | `DUMPVDI` | VDI | build this first |
 | `DUMPAES` | AES | after VDI is clean |
-| `DUMPBIOS` | BIOS + XBIOS | `retclass` and `capture` since 2026-10-27; table `tosdump/cases/bios-r1.tsv`, ledger `tosdump/cases/COVERAGE-BIOS.md`, references `EMUTOS-1a7484ab-BIOS` (TT) and `-BIOS-falcontc`, first comparison `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`. Second table `tosdump/cases/super-r1.tsv` (`Super`/`Supexec`, section 6), references `EMUTOS-1a7484ab-SUPER` (TT) and `-SUPER-falcontc`. Disk table `tosdump/cases/bios-r2.tsv` (section 6, "The disk round"), reference `EMUTOS-1a7484ab-BIOS-r2-disk` (profile `disk`), first comparison `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`; the closing tables `bios-r2-phys.tsv`, `-x004.tsv`, `-x005.tsv`, `-x006.tsv` (section 6, "The closing tables"), references `EMUTOS-1a7484ab-BIOS-r2-<phys\|x004\|x005\|x006>-disk`, `measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT`. Structures behind a pointer (section 6, "Structures behind a pointer"): `tosdump/cases/xbios-ptr-r1.tsv` (`Iorec`, the flush, `Getmpb`), references `EMUTOS-1a7484ab-XBIOS-ptr` (TT) and `-XBIOS-ptr-falcontc`, `measurements/measurement-2026-10-29-tool16/RUNINFO.TXT` |
-| `DUMPGDOS` | GEMDOS | needs `retclass` and `capture`. Until it exists, GEMDOS behaviour that needs a measurement is a **probe**: a C program of `tosdump/probes/` with a text log, built for both sides from one source and run by its own script — `gcprobe.c` (media change, TASK/FS20; `make -C tosdump gcprobe-m68k gcprobe-newtos`, `tosdump/probes/run-gcprobe.sh`) and `pxprobe.c` (`Pexec` and `Fsfirst` after a media change, TASK/FS22; `make -C tosdump pxprobe-m68k pxprobe-newtos`, `tosdump/probes/run-pxprobe.sh`), oracle side through `tools/hatari-oracle.sh` profile `disk`. Their cases move to DUMPGDOS when that exists |
+| `DUMPBIOS` | BIOS + XBIOS | `retclass` and `capture` since 2026-10-27; table `tosdump/cases/bios-r1.tsv`, ledger `tosdump/cases/COVERAGE-BIOS.md`, references `EMUTOS-1a7484ab-BIOS` (TT) and `-BIOS-falcontc`, first comparison `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`. Second table `tosdump/cases/super-r1.tsv` (`Super`/`Supexec`, section 6), references `EMUTOS-1a7484ab-SUPER` (TT) and `-SUPER-falcontc`. Disk table `tosdump/cases/bios-r2.tsv` (section 6, "The disk round"), reference `EMUTOS-1a7484ab-BIOS-r2-disk` (profile `disk`), first comparison `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`; the closing tables `bios-r2-phys.tsv`, `-x004.tsv`, `-x005.tsv`, `-x006.tsv` (section 6, "The closing tables"), references `EMUTOS-1a7484ab-BIOS-r2-<phys\|x004\|x005\|x006>-disk`, `measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT`. Structures behind a pointer (section 6, "Structures behind a pointer"): `tosdump/cases/xbios-ptr-r1.tsv` (`Iorec`, the flush, `Getmpb`), references `EMUTOS-1a7484ab-XBIOS-ptr` (TT) and `-XBIOS-ptr-falcontc`, `measurements/measurement-2026-10-29-tool16/RUNINFO.TXT`. GEMDOS after a media change (section 6, TOOL20): `tosdump/cases/gemdos-mc-fs20.tsv`, `-fs22.tsv`, `-paths.tsv`, references `EMUTOS-1a7484ab-BIOS-mc-<fs20\|fs22\|paths>-disk`, `measurements/measurement-2026-10-29-tool20/RUNINFO.TXT` |
+| `DUMPGDOS` | GEMDOS | needs `retclass` and `capture`. Until it exists, GEMDOS behaviour that needs a measurement is a **probe**: a C program of `tosdump/probes/` with a text log, built for both sides from one source and run by its own script — `gcprobe.c` (media change, TASK/FS20; `make -C tosdump gcprobe-m68k gcprobe-newtos`, `tosdump/probes/run-gcprobe.sh`) and `pxprobe.c` (`Pexec` and `Fsfirst` after a media change, TASK/FS22; `make -C tosdump pxprobe-m68k pxprobe-newtos`, `tosdump/probes/run-pxprobe.sh`), oracle side through `tools/hatari-oracle.sh` profile `disk`. Since TOOL20 their cases are also `DUMPBIOS` tables (`gemdos-mc-*.tsv`, section 6, "GEMDOS after a media change"); the probes stay for what the tables cannot express (listed there) until their cases move to DUMPGDOS |
 
 Each writes exactly one output file, named `<AREA>.BIN`, into the current
 directory. Buffer records in RAM and write once at the end. Do not write
