@@ -207,7 +207,8 @@ fn serial_rx_byte(_b: u8) {
 /// `bconstat1`/`bconin1` over `iorec1` (`bios/serport.c:255-263`):
 /// `Bconstat(1)` is `-1` while the ring holds a byte (`bconstat_iorec`,
 /// `:191-199`), `Bconin(1)` waits for one and returns it zero-extended
-/// (`bconin_iorec` + `get_iorecbuf`, `:171-210`). Output is unchanged from
+/// (`bconin_iorec` + `get_iorecbuf`, `:171-210`); on the trap path the wait
+/// gives way to a `kbdvec` hook ([`aux_read_blocking`], XBIOS18). Output is unchanged from
 /// the "port present, no cable" entry it replaces
 /// ([`tos_api::bios::chardev::AuxNoCable`]): `Bconout(1)` accepts and
 /// discards (`1`), `Bcostat(1)` is ready (`-1`). Installed at boot by
@@ -224,9 +225,16 @@ impl tos_api::bios::chardev::CharDevice for AuxSerial {
     }
 
     fn bconin(&self) -> tos_types::Long {
-        let b = aux_read_blocking();
+        // Never gives way: `aux_read_blocking(false)` only returns with a byte.
+        let b = aux_read_blocking(false).unwrap_or(0);
         report_iorec_repairs();
         tos_types::Long::from(b)
+    }
+
+    fn bconin_restartable(&self) -> Option<tos_types::Long> {
+        let b = aux_read_blocking(true);
+        report_iorec_repairs();
+        b.map(tos_types::Long::from)
     }
 
     fn bconout(&self, byte: u8) -> tos_types::Long {
@@ -245,8 +253,18 @@ impl tos_api::bios::chardev::CharDevice for AuxSerial {
 /// checks (the next PL011 or timer interrupt wakes it). The keyboard and
 /// mouse keep being pumped meanwhile, as EmuTOS' interrupts keep filling the
 /// key queue while `bconin1` spins.
+///
+/// With `give_way` (the trap entry, [`AuxSerial`]'s `bconin_restartable`),
+/// returns `None` as soon as the running process has bytes queued for its
+/// `kbdvec` hook (XBIOS18; KEYS02, `docs/api/xbios/22-kbdvbase.md` C3 "O1"):
+/// EmuTOS' IKBD interrupt jumps through `kbdvec` while `bconin1` spins
+/// (`bios/aciavecs.S:407-414`), NewTOS delivers the bytes on the way back to
+/// EL0 — the caller requests a restart, the hook runs, and the `svc` waits
+/// again. Nothing is consumed before the byte arrives, so the restart has no
+/// side effect. The same rule as the console wait
+/// (`crate::host_env`'s `read_key_loop`).
 #[cfg(feature = "board-qemu-virt")]
-fn aux_read_blocking() -> u8 {
+fn aux_read_blocking(give_way: bool) -> Option<u8> {
     let daif: u64;
     // SAFETY: reading DAIF and clearing the IRQ mask are permitted at EL1;
     // DAIF is restored before returning.
@@ -256,13 +274,16 @@ fn aux_read_blocking() -> u8 {
     }
     let b = loop {
         if let Some(b) = iorec::pop_serial() {
-            break b;
+            break Some(b);
         }
         if let Some(h) = tos_api::host::host() {
             h.pump_input();
         }
         if iorec::serial_pending() {
             continue;
+        }
+        if give_way && tos_api::xbios::kbdvecs::pending_for_running() {
+            break None;
         }
         // SAFETY: wait for the next interrupt (PL011 receive or timer tick).
         unsafe { core::arch::asm!("wfi", options(nomem, nostack, preserves_flags)) };

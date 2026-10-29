@@ -1,0 +1,136 @@
+measurement-2026-10-29-xbios18 -- TASK/XBIOS18: a program that has hooked kbdvec and waits in
+Bconin(1) -- is the hook called while it waits (EmuTOS) or only after the serial byte that ends
+the wait (NewTOS qemu-virt before the fix)? Probe, before/after on qemu-virt, the oracle on tt and
+falcontc, the no-cable answer on raspi4b, and the regression runs of the ticket.
+==========================================================================================
+Developer, 2026-10-29 (host clock CET). Main tree at daa2973e plus the uncommitted XBIOS18 change
+(files in TASK/XBIOS18-STATUS-DONE.MD). "before" = `git archive daa2973e` into the scratchpad,
+"after" = an rsync of the main tree (without .git, target/, measurements/, references/) into the
+scratchpad, kernel/ and tos-api/src checked identical to the main tree with diff -r. Probe kernels
+for qemu-virt were built in those copies (temporary wiring below). Nothing committed, no
+hardware, no real card.
+
+INPUTS
+  ROM        tools/oracle/etos512de-1a7484ab.img 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+  EmuTOS     1a7484aba1bfba23e2c0899e243b6d8177fe41df
+  Hatari     2.6.1 (tools/oracle/oracle.env), tools/oracle/hatari.cfg
+  QEMU       11.0.2
+  canary     ORACLE.md section 6, measurements/measurement-2026-10-28-oracle-canary/method/canary.sh:
+             "canary tt: OK", "canary falcontc: OK" (runs/canary.txt)
+  probe      tosdump/probes/axprobe.c   f4d11e3751547bdd1c35667e59216268be4a6ea9e1740243f7930a6275dd18a4
+             (permanent, this ticket), built by `make -C tosdump axprobe-m68k axprobe-newtos`:
+               AXPROBE.PRG 483f0df481a4e07f591a2a5ca17bcf54ee9aeec9e4122af266c2688fbd65e921
+               AXPROBE.NAP eb474b37672f2aebce4aaa1ef2c77c31fbe7693e965e672c39b37719beda305d
+             (the same two hashes in every runs/*/run.txt)
+  harness    tosdump/probes/run-axprobe.sh  77234734d5df03f3726eb0810006e664acaf3c51f130d60a8dfd452d45df7d59
+             tosdump/probes/axprobe-drive.py 01dfc15b51101a6edbaaae18b60e71e52bfa2ee925ccccffcd4f76610b1b5272
+             (final versions. oracle-tt-1 ran before two harness-only edits: `disown` of the FIFO
+             holder -- it silenced a "Killed: 9" job message -- and the "booted" hash line of the
+             raspi4b arm; neither touches what is injected or recorded)
+  kernels (scratch, gitignored, deleted after the run):
+    before-virt-kernel.img  111b804004e5fca93ac2ab02a826d5132df988095ddff2ec90409d5190aaa227
+                            daa2973e, qemu-virt `cargo xtask build --board qemu-virt --release`,
+                            llvm-objcopy -O binary, AXPROBE.NAP embedded as the desktop
+    after-virt-kernel.img   a03872122d632bf00d77e565fca3a7e95e8efa7dedd61ac9424da20754568c21
+                            the same with the XBIOS18 change (rebuilt from the final tree after
+                            the last doc-comment edits: the same sha256)
+    rpi4-kernel8.img        a3376c7754120402f853c3455c4cadde2e2d4aa5fc9dd48f80b592202cc054bb
+                            after tree, `cargo xtask build --board rpi4 --release`, kernel/embed.rs
+                            unmodified. The before tree, built the same way at a path of the same
+                            length, gives the byte-identical kernel8.img (a3376c77...): the change
+                            is `cfg(feature = "board-qemu-virt")` only.
+    serrx kernels           see REGRESSIONS 4.
+  run-axprobe.sh checks for every qemu-virt run that the image carries AXPROBE.NAP byte for byte
+  ("embedded ... True" in runs/newtos-virt-*/run.txt).
+
+TEMPORARY WIRING (scratch copies only): method/embed-probe-scratch.diff -- qemu-virt has no drive,
+  so the probe can only start as the embedded desktop "NEWDESK" (the wiring of
+  measurement-2026-10-29-xbios15). After the probe ends the AES starts it again; only the first
+  run (up to the first AXPROBE:END) is evaluated.
+
+PROBE (tosdump/probes/axprobe.c; header comment = the full description)
+  Kbdvbase(); in super state (Supexec) the kbdvec slot (Kbdvbase()[-1]) gets the probe's hook, a
+  few lines of assembly per CPU: count the call, record the byte and _hz_200, chain to the old
+  vector with the byte unchanged (m68k: d0/a0 untouched, push+rts as
+  sdk/apps/doom/doomgeneric_gem_kbdvec.c; AArch64: x0/x1 untouched, tail call `br`, integer
+  registers only). Bconstat(1)/(2) before; ready marker (C:\AXPROBE.RDY where there is a drive,
+  "AXPROBE:WAIT" on the console); t0 = _hz_200; Bconin(1); t1 = _hz_200; one more second of
+  Vsync(); hook put back. Compared lines:
+    X01 Bconin(1) result          X02 hook calls in total
+    X03 hook calls with _hz_200 >= 20 ticks (0.1 s) before Bconin(1) returned = DURING the wait
+    X04 the hook's bytes          X05 Bconin(1) waited >= 200 ticks
+    X06/X07 Bconstat(2), Bconin(2) (the key the chained default put into the BIOS queue)
+    X08 hook put back
+  I lines: raw tick distances, informational (emulator timing).
+
+INJECTION (run-axprobe.sh; the same timeline on every side)
+  WAIT marker + 0.3 s: key 'a' down, 0.1 s, up (ST scancode 0x1E: make 1E, break 9E);
+  key + 2 s: the byte 'Q' (0x51) on the serial line.
+  Oracle: Hatari as tools/hatari-oracle.sh starts profile tt / falcontc, but --fast-forward off
+    (wall-clock injection), the key through --cmd-fifo "hatari-event keydown/keyup 30" (the
+    method of measurement-2026-10-29-xbios01/method/oracle-flush.sh), the byte through a FIFO on
+    the port EmuTOS maps to AUX: tt --rs232-in (Bconmap 6), falcontc --scc-b-in (Bconmap 7), with
+    the matching output option (measurement-2026-10-29-xbios15-rx). Key at AXPROBE.RDY + 0.3 s.
+    Times in runs/oracle-*/inject.txt.
+  NewTOS qemu-virt: the `cargo xtask run` machine headless; serial0 and the QMP monitor on TCP
+    sockets the driver listens on (axprobe-drive.py); the key = QMP send-key "a" (hold-time 100)
+    to the usb-kbd, the byte on serial0 (AUX, XBIOS15). Times in runs/newtos-virt-*/drive.txt
+    (key at WAIT + 0.31 s, byte at key + 2.02 s in all four runs).
+  NewTOS raspi4b: the same driver; card from tools/mkcard.sh (C:\AXPROBE.NAP, NEWDESK.INF
+    "#R 02 / #Z 01 C:\AXPROBE.NAP@"), APFS clone booted with -append serial=on.
+
+CARDS / IMAGES
+  runs/newtos-rpi4-after/card.img.manifest and the three table runs' card.img.manifest
+  (runs/after-*/card.img.manifest). optional_missing, verbatim, all four:
+    optional_missing none
+  The raspi4b probe run writes AXPROBE.RDY/AXPROBE.LOG to the booted clone: card before
+  3e1d0b11..., clone after b2ef9d36... (runs/newtos-rpi4-after/run.txt). qemu-virt: no image.
+  Oracle: Hatari GEMDOS drive C: = a scratch host dir.
+
+RESULTS (runs/summary.txt: the compared lines and the I lines of every run)
+  Oracle tt (runs/oracle-tt-1, -2) and falcontc (runs/oracle-falcontc-1, -2): identical compared
+    lines (sha256 of the non-I lines a91e3eace2556c21 in all four):
+      X01 Bconin(1) 0x51; X02 2 calls; X03 2 during the wait; X04 1e 9e; X05 1;
+      X06 Bconstat(2) -1; X07 Bconin(2) 0x001E0061; X08 1
+      I02: make 417..421 ticks, break 395..398 ticks before Bconin(1) returned -- the hook ran
+      when the key was pressed, ~2 s before the serial byte.
+  NewTOS qemu-virt BEFORE (daa2973e; runs/newtos-virt-before-1, -2, identical, 3d5aebcffae9a3b8):
+      X03 0 during the wait -- every other compared line equal to the oracle;
+      I02: both calls 0 ticks before Bconin(1) returned: the hook bytes waited for the serial
+      byte. The ticket's description holds.
+  NewTOS qemu-virt AFTER (runs/newtos-virt-after-1, -2): compared lines identical to the oracle
+      (a91e3eace2556c21); I02 403/383 and 404/384 ticks before Bconin(1) returned.
+      -> the probe is equal on both sides; the acceptance line "hook calls before the serial
+         byte" is met.
+  NewTOS raspi4b (runs/newtos-rpi4-after): AUX has no cable there (AuxNoCable): X01 Bconin(1) 0,
+      X05 0 (I01: 0 ticks), the hook is put back before the key comes, X02 0; and QEMU raspi4b
+      has no USB keyboard (the send-key reaches nothing, X06 0). Not a comparison with the
+      oracle: it documents the no-cable answer. Kept out of the acceptance (ticket brief).
+
+REGRESSIONS (the ticket's "no previously equal case newly differs")
+  1. bios-r1 (runs/after-bios-r1): tt 41 of 147 differ, falcontc 45 of 147 -- the same case sets
+     as measurement-2026-10-29-xbios15/runs/after-bios-r1.
+  2. xbios-chardev-r1 (runs/after-xbios-chardev-r1): 12 of 23 on both (31, 43-53), the same set.
+  3. xbios-flush-r1 (runs/after-xbios-flush-r1, IKBD injector in a scratch copy,
+     method/injector-after-scratch.diff = `tools/inject-arm.py <copy>
+     launch:DUMPBIOS=method/keys-ikbd.txt`, the XBIOS15 patch; "[inj] launch:DUMPBIOS feed" in
+     BOOT-SERIAL.txt): 0 of 207 on both.
+     All three via method/newtos-tables.sh (`cargo xtask tosdump`, raspi4b, rpi4 release kernel of
+     the main tree); every runner exit 0, every tosdiff --validate "accepted". These tables run on
+     raspi4b, whose kernel the change does not touch (byte-identical kernel8.img before/after,
+     INPUTS); a before run would boot the same image.
+  4. serrx (XBIOS15's probe, qemu-virt; method/serrx.c, build-serrx.sh, newtos-serrx.sh,
+     qemu-serial-drive.py copied unchanged from measurement-2026-10-29-xbios15[-rx]/method;
+     SERRX.NAP b7665dc4... = the audit's probe byte for byte):
+       before-serrx-virt-kernel.img 49cacb34b448520fd7b8fff32ceaf829fc6cdd49bcfb1b1f8974d0c277baa15e
+         (= XBIOS15's virt-kernel.img byte for byte: qemu-virt unchanged since XBIOS15)
+       after-serrx-virt-kernel.img  ff90755eaea6b639119f52d89c73f465b72f08020fc528d9c0de0b2594639f9b
+       both `--release --features bios-arg-trace`, SERRX.NAP embedded (method/embed-probe-scratch.diff)
+     runs/serrx-virt-before, -after: SERRX-serial.LOG identical, sha256 ae0d5a59bd2e9298... = the
+     accepted XBIOS15 result (measurement-2026-10-29-xbios15/runs/newtos-virt-1).
+  Newly differing: none.
+
+NOT MEASURED
+  Real Pi 4 (AUX has no cable there; nothing waits). A hook that does not chain (EmuTOS-like:
+  the BIOS queue stays empty) -- the restart path is the same. Fread(AUX, 1) through the probe
+  (host-tested path: tos-api/tests/xbios18_aux_gives_way.rs covers Bconin(1) and Cauxin).

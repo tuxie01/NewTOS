@@ -690,7 +690,8 @@ it would); (3) a TSR that installs a hook for later programs (`Ptermres`) cannot
 work; (4) the hook is not called from an interrupt but as an EL0 upcall at the
 running process's next return from a syscall, one byte per upcall in arrival
 order; blocking key waits (`evnt_*`, `Cconin`/`Cnecin`/`Crawcin`/`Bconin(2)`)
-give way and are re-executed after the hook ran. Spec:
+and, on qemu-virt, the AUX wait (`Bconin(1)`/`Cauxin`, XBIOS18) give way and are
+re-executed after the hook ran. Spec:
 `docs/api/xbios/22-kbdvbase.md` Teil B/C; tests
 `tos-api/tests/xbios_kbdvecs.rs`; measurement
 `measurements/measurement-2026-10-04-keys02/`.

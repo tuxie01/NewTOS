@@ -1,0 +1,90 @@
+# XBIOS18 summary: the compared lines (X01-X08) per run; I lines = raw ticks, informational
+== oracle-tt-1 (compared lines sha256 a91e3eace2556c21)
+X01 Bconin(1) ret=00000051 hi=00000000
+X02 hook calls in total: 2
+X03 hook calls during the wait (>= 20 ticks before Bconin(1) returned): 2
+X04 hook bytes: 1e 9e
+X05 Bconin(1) waited >= 200 ticks: 1
+I01 Bconin(1) waited 488 ticks
+I02 hook call 0 byte 1e at Bconin(1) return - 420 ticks
+I02 hook call 1 byte 9e at Bconin(1) return - 397 ticks
+== oracle-tt-2 (compared lines sha256 a91e3eace2556c21)
+X01 Bconin(1) ret=00000051 hi=00000000
+X02 hook calls in total: 2
+X03 hook calls during the wait (>= 20 ticks before Bconin(1) returned): 2
+X04 hook bytes: 1e 9e
+X05 Bconin(1) waited >= 200 ticks: 1
+I01 Bconin(1) waited 500 ticks
+I02 hook call 0 byte 1e at Bconin(1) return - 421 ticks
+I02 hook call 1 byte 9e at Bconin(1) return - 398 ticks
+== oracle-falcontc-1 (compared lines sha256 a91e3eace2556c21)
+X01 Bconin(1) ret=00000051 hi=00000000
+X02 hook calls in total: 2
+X03 hook calls during the wait (>= 20 ticks before Bconin(1) returned): 2
+X04 hook bytes: 1e 9e
+X05 Bconin(1) waited >= 200 ticks: 1
+I01 Bconin(1) waited 482 ticks
+I02 hook call 0 byte 1e at Bconin(1) return - 417 ticks
+I02 hook call 1 byte 9e at Bconin(1) return - 395 ticks
+== oracle-falcontc-2 (compared lines sha256 a91e3eace2556c21)
+X01 Bconin(1) ret=00000051 hi=00000000
+X02 hook calls in total: 2
+X03 hook calls during the wait (>= 20 ticks before Bconin(1) returned): 2
+X04 hook bytes: 1e 9e
+X05 Bconin(1) waited >= 200 ticks: 1
+I01 Bconin(1) waited 492 ticks
+I02 hook call 0 byte 1e at Bconin(1) return - 420 ticks
+I02 hook call 1 byte 9e at Bconin(1) return - 397 ticks
+== newtos-virt-before-1 (compared lines sha256 3d5aebcffae9a3b8)
+X01 Bconin(1) ret=00000051 hi=00000000
+X02 hook calls in total: 2
+X03 hook calls during the wait (>= 20 ticks before Bconin(1) returned): 0
+X04 hook bytes: 1e 9e
+X05 Bconin(1) waited >= 200 ticks: 1
+I01 Bconin(1) waited 467 ticks
+I02 hook call 0 byte 1e at Bconin(1) return - 0 ticks
+I02 hook call 1 byte 9e at Bconin(1) return - 0 ticks
+== newtos-virt-before-2 (compared lines sha256 3d5aebcffae9a3b8)
+X01 Bconin(1) ret=00000051 hi=00000000
+X02 hook calls in total: 2
+X03 hook calls during the wait (>= 20 ticks before Bconin(1) returned): 0
+X04 hook bytes: 1e 9e
+X05 Bconin(1) waited >= 200 ticks: 1
+I01 Bconin(1) waited 467 ticks
+I02 hook call 0 byte 1e at Bconin(1) return - 0 ticks
+I02 hook call 1 byte 9e at Bconin(1) return - 0 ticks
+== newtos-virt-after-1 (compared lines sha256 a91e3eace2556c21)
+X01 Bconin(1) ret=00000051 hi=00000000
+X02 hook calls in total: 2
+X03 hook calls during the wait (>= 20 ticks before Bconin(1) returned): 2
+X04 hook bytes: 1e 9e
+X05 Bconin(1) waited >= 200 ticks: 1
+I01 Bconin(1) waited 468 ticks
+I02 hook call 0 byte 1e at Bconin(1) return - 403 ticks
+I02 hook call 1 byte 9e at Bconin(1) return - 383 ticks
+== newtos-virt-after-2 (compared lines sha256 a91e3eace2556c21)
+X01 Bconin(1) ret=00000051 hi=00000000
+X02 hook calls in total: 2
+X03 hook calls during the wait (>= 20 ticks before Bconin(1) returned): 2
+X04 hook bytes: 1e 9e
+X05 Bconin(1) waited >= 200 ticks: 1
+I01 Bconin(1) waited 469 ticks
+I02 hook call 0 byte 1e at Bconin(1) return - 404 ticks
+I02 hook call 1 byte 9e at Bconin(1) return - 384 ticks
+== newtos-rpi4-after (compared lines sha256 f2de9d4e55d247e8)
+X01 Bconin(1) ret=00000000 hi=00000000
+X02 hook calls in total: 0
+X03 hook calls during the wait (>= 20 ticks before Bconin(1) returned): 0
+X04 hook bytes:
+X05 Bconin(1) waited >= 200 ticks: 0
+I01 Bconin(1) waited 0 ticks
+== serrx-virt-before / -after: SERRX-serial.LOG sha256
+ae0d5a59bd2e9298181136966408455674a7a571681f80c1e25d62eca8e64258  serrx-virt-after/SERRX-serial.LOG
+ae0d5a59bd2e9298181136966408455674a7a571681f80c1e25d62eca8e64258  serrx-virt-before/SERRX-serial.LOG
+== tables (cargo xtask tosdump, raspi4b, after)
+after-bios-r1/tosdiff-EMUTOS-1a7484ab-BIOS-falcontc.txt: 45 of 147 cases differ
+after-bios-r1/tosdiff-EMUTOS-1a7484ab-BIOS.txt: 41 of 147 cases differ
+after-xbios-chardev-r1/tosdiff-EMUTOS-1a7484ab-XBIOS-chardev-falcontc.txt: 12 of 23 cases differ
+after-xbios-chardev-r1/tosdiff-EMUTOS-1a7484ab-XBIOS-chardev.txt: 12 of 23 cases differ
+after-xbios-flush-r1/tosdiff-EMUTOS-1a7484ab-XBIOS-flush-falcontc.txt: 0 of 207 cases differ
+after-xbios-flush-r1/tosdiff-EMUTOS-1a7484ab-XBIOS-flush.txt: 0 of 207 cases differ

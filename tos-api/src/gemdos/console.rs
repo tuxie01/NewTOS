@@ -516,7 +516,8 @@ pub fn cconout(args: &TrapArgs) -> Long {
 /// item 1a), so the pass-through returns `0` at once instead of waiting for
 /// a byte that never arrives; on qemu-virt the kernel's serial driver
 /// replaces the entry (XBIOS15) and `Cauxin` returns the next received byte,
-/// waiting for it as EmuTOS' `bconin1`.
+/// waiting for it as EmuTOS' `bconin1` — a wait that gives way to a `kbdvec`
+/// hook with queued bytes, the trap restarting after the hook ran (XBIOS18).
 pub fn cauxin(_: &TrapArgs) -> Long {
     chardev::bconin_handle(std_dev(STDAUX))
 }

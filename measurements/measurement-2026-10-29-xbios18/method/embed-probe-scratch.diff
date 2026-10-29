@@ -1,0 +1,25 @@
+Temporary wiring of the qemu-virt probe kernels (scratch copies of the tree only, never the
+main tree): qemu-virt has no drive, so a probe can only start as the embedded desktop
+"NEWDESK" (the wiring of measurement-2026-10-29-xbios15/method/embed-serrx-scratch.diff).
+After each probe kernel kernel/embed.rs was copied back from the main tree before the next
+build in the same copy.
+
+axprobe kernels (before = `git archive daa2973e`, after = rsync of the main tree with the
+XBIOS18 change; tosdump/build/AXPROBE.NAP copied to <copy>/target/programs/qemu-virt/,
+then `cargo xtask build --board qemu-virt --release`, then llvm-objcopy -O binary):
+
+--- kernel/embed.rs (main tree)
++++ kernel/embed.rs (scratch copy, probe kernel only)
+@@ -49 +49 @@
+-pub const EMBEDDED: &[Embedded] = &[Embedded { name: "NEWDESK", file: "NEWDESK.NAP" }];
++pub const EMBEDDED: &[Embedded] = &[Embedded { name: "NEWDESK", file: "AXPROBE.NAP" }]; // XBIOS18-TEMP: probe as the desktop
+
+serrx kernels (same copies; SERRX.NAP from method/build-serrx.sh copied to
+<copy>/target/programs/qemu-virt/, `cargo xtask build --board qemu-virt --release
+--features bios-arg-trace`, llvm-objcopy -O binary):
+
+--- kernel/embed.rs (main tree)
++++ kernel/embed.rs (scratch copy, probe kernel only)
+@@ -49 +49 @@
+-pub const EMBEDDED: &[Embedded] = &[Embedded { name: "NEWDESK", file: "NEWDESK.NAP" }];
++pub const EMBEDDED: &[Embedded] = &[Embedded { name: "NEWDESK", file: "SERRX.NAP" }]; // XBIOS18-TEMP: serrx probe as the desktop

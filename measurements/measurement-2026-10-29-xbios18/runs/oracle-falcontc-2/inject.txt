@@ -1,0 +1,2 @@
+key 'a' (keydown/keyup 30) at poll 162 (13:24:05)
+serial 'Q' via --scc-b-in (13:24:08)

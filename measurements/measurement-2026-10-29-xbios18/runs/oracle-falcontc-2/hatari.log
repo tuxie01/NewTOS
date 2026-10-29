@@ -1,0 +1,63 @@
+INFO : Hatari v2.6.1, compiled on:  Aug 15 2025, 14:15:19
+INFO : IPF : capsimage library version release=5 revision=1
+INFO : GEMDOS HDD emulation, C: <-> /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios18/tmp/axprobe.R0nr3e/hd.
+ERROR: Microphone: SDL_OpenAudioDevice failed.
+INFO : NVRAM not found at '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios18/tmp/axprobe.R0nr3e/home/hatari.nvram'
+WARN : Bus Error reading at address $20fffff, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fffffc21, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6c4710, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $5d1234, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6d3148, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $d003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+INFO : Strange screen size 16x480 -> aspect corrected by 32x1!
+
+
+
+
+
+                                                         
+                                                         
+                                                         
+                                                         
+                                                         
+                    ________________________________________
+
+                    EmuTOS Version:     20260414 
+                    CPU-Typ:            M68030 
+                    Rechner:            Atari Falcon 
+                    ST-RAM:             4 MB 
+                    Alt-RAM:            16 MB 
+                    GEMDOS-Laufwerke:   ABC 
+                    Boot-Zeit:          2026/10/29 13:24:00 
+                    ________________________________________
+
+                    Halte <Strg> = ohne AUTO/ACC
+                    Halte <Alt> = keine Harddisk
+                    DrUcke 'X' um von Laufwerk X: zu booten
+                    DrUcke <Esc> fUr die Textkonsole
+
+                       FUr Pause <Shift> gedrUckt halten    
+WARN : No GEMDOS dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios18/tmp/axprobe.R0nr3e/hd/AUTO'
+
+
+AXPROBE:WAIT
+AXPROBE:BEGIN
+AXPROBE|AXPROBE TASK/XBIOS18
+AXPROBE|H01 kbdvec held a vector before the hook: 1
+AXPROBE|B01 Bconstat(1) ret=00000000 hi=00000000
+AXPROBE|B02 Bconstat(2) ret=00000000 hi=00000000
+AXPROBE|X01 Bconin(1) ret=00000051 hi=00000000
+AXPROBE|X02 hook calls in total: 2
+AXPROBE|X03 hook calls during the wait (>= 20 ticks before Bconin(1) returned): 2
+AXPROBE|X04 hook bytes: 1e 9e
+AXPROBE|X05 Bconin(1) waited >= 200 ticks: 1
+AXPROBE|X06 Bconstat(2) ret=ffffffff hi=ffffffff
+AXPROBE|X07 Bconin(2) ret=001e0061 hi=00000000
+AXPROBE|X08 hook put back: 1
+AXPROBE|I01 Bconin(1) waited 492 ticks
+AXPROBE|I02 hook call 0 byte 1e at Bconin(1) return - 420 ticks
+AXPROBE|I02 hook call 1 byte 9e at Bconin(1) return - 397 ticks
+AXPROBE|Z99 end
+AXPROBE:END

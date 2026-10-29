@@ -584,6 +584,16 @@ enthaelt sie, ein Umnummerieren braeche nichts.
   Timer und `Bconin(2)` liefern die vom Haken verkettete Taste; zwei Breaks im
   selben Poll erreichen den Haken beide, in Reihenfolge, das zweite ueber die
   `Psigreturn`-Kette (`measurements/measurement-2026-10-04-keys02/`).
+  **[XBIOS18] 2026-10-29:** ebenso das Warten von `Bconin(1)` (auch `Cauxin`
+  und ein Ein-Byte-`Fread` auf AUX) auf qemu-virt, wo AUX ein Treiber ist
+  (XBIOS15): `AuxSerial::bconin_restartable` liefert bei wartenden Ring-Bytes
+  `None` (`kernel/src/console.rs:267@aux_read_blocking`), der Trap startet nach
+  dem Haken neu. Vorher bekam der Haken seine Bytes erst mit dem naechsten
+  seriellen Byte; EmuTOS ruft ihn aus dem IKBD-Interrupt, waehrend `bconin1`
+  wartet (`bios/aciavecs.S:407-414`, `bios/serport.c:202-210`). Gemessen mit
+  `tosdump/probes/axprobe.c` gegen tt und falcontc
+  (`measurements/measurement-2026-10-29-xbios18/RUNINFO.TXT`). Auf echter Pi 4
+  wartet `Bconin(1)` nicht (kein Kabel), dort gibt es nichts auszuweichen.
 * **Grenzen (dokumentiert, nicht gebaut):** `Cconrs`, konsolen-`Fread` und
   `v_string` (Anfragemodus) lesen weiter ohne Ausweichen — sie haben vor dem
   Ende bereits Wirkung (Echo, Puffer); ein Programm, das bei eingehaengtem und

@@ -1,0 +1,8 @@
+qemu: qemu-system-aarch64 -M virt,gic-version=2 -cpu cortex-a72 -m 272M -device ramfb -device qemu-xhci -device usb-kbd -device usb-mouse -display none -chardev socket,id=s0,host=127.0.0.1,port=58209 -serial chardev:s0 -chardev socket,id=q0,host=127.0.0.1,port=58210 -mon chardev=q0,mode=control -no-reboot -kernel /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios18/after-virt-kernel.img
+qmp greeting: {"QMP": {"version": {"qemu": {"micro": 2, "minor": 0, "major": 11}, "package": ""}, "capabilities": ["oob"]}}
+qmp_capabilities: {'return': {}}
+AXPROBE:WAIT seen at t+3.21s, serial offset 4414
+send-key a at t+3.52s (WAIT+0.31s): {'return': {}}
+serial b'Q' at t+5.53s (key+2.02s), serial offset 4416
+end marker seen
+wait seen: True, key sent: True, serial sent: True

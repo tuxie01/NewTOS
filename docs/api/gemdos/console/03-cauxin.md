@@ -199,7 +199,9 @@ driver (`TASK/IO01.md`) replaces only the entry.
 over device 0's input ring (`docs/api/bios/02-bconin.md`, XBIOS15 note):
 `Cauxin()` returns the oldest received byte and **waits** for one when the ring is
 empty, as EmuTOS' `bconin1`. The "port present, no cable" values above hold on
-real Pi 4.
+real Pi 4. **[XBIOS18]:** the wait gives way to a `kbdvec` hook with queued
+bytes and is re-executed after the hook ran (`docs/api/bios/02-bconin.md`,
+XBIOS18 note).
 
 *Spec inconsistency noted, semantics unchanged:* Edge case 1 / D-003 say the AUX
 typeahead buffer is "never used by any GEMDOS path". EmuTOS' `conbrk(h)`

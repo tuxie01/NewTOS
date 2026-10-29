@@ -876,10 +876,12 @@ scsidriv_init	bios/scsidriv.c	-	-	unmapped	SCSIDRV programming interface: not im
 valid_bus	bios/scsidriv.c	-	-	unmapped	SCSIDRV programming interface: not implemented in NewTOS
 valid_bus_and_device	bios/scsidriv.c	-	-	unmapped	SCSIDRV programming interface: not implemented in NewTOS
 bconin1	bios/serport.c	kernel/src/console.rs	bconin	mapped	qemu-virt AuxSerial::bconin over device 0 input ring (XBIOS15); rpi4: AUX is the no-cable entry (bios/chardev.rs AuxNoCable, Bconin 0 non-blocking)
+bconin1	bios/serport.c	kernel/src/console.rs	bconin_restartable	mapped	the trap entry (Bconin(1), Cauxin, one-byte Fread on AUX): qemu-virt AuxSerial waits like bconin, but gives way to a kbdvec hook with queued bytes and the trap restarts (XBIOS18; EmuTOS calls the hook from the IKBD interrupt during the wait, bios/aciavecs.S:407-414)
 bconinA	bios/serport.c	-	-	design:hardware:scc	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
 bconinB	bios/serport.c	kernel/src/console.rs	bconin	mapped	Falcon target profile AUX (SCC B, init_bconmap maptable[1]; SERRX-004): bconin_iorec(&iorecB) = qemu-virt AuxSerial::bconin over device 0 input ring (XBIOS15); rpi4: AuxNoCable (0, non-blocking)
+bconinB	bios/serport.c	kernel/src/console.rs	bconin_restartable	mapped	the trap entry (Bconin(1), Cauxin, one-byte Fread on AUX): qemu-virt AuxSerial waits like bconin, but gives way to a kbdvec hook with queued bytes and the trap restarts (XBIOS18; EmuTOS calls the hook from the IKBD interrupt during the wait, bios/aciavecs.S:407-414)
 bconinTT	bios/serport.c	-	-	design:hardware:tt-mfp	MFP/SCC serial drivers: NewTOS has one PL011 port; AUX is the no-cable entry (bios/chardev.rs AuxNoCable)
-bconin_iorec	bios/serport.c	kernel/src/console.rs	aux_read_blocking	mapped	the wait for a byte in device 0 input ring, IRQs open, wfi (XBIOS15, qemu-virt)
+bconin_iorec	bios/serport.c	kernel/src/console.rs	aux_read_blocking	mapped	the wait for a byte in device 0 input ring, IRQs open, wfi (XBIOS15, qemu-virt); on the trap path it gives way when the running process has kbdvec hook bytes queued, the trap restarts after the hook ran (XBIOS18)
 bconmap	bios/serport.c	tos-api/src/xbios/system.rs	bconmap	mapped	Bconmap 0x2C
 bconout1	bios/serport.c	kernel/src/console.rs	bconout	mapped	qemu-virt AuxSerial::bconout, the device 1 output entry; AUX output (XBIOS15): accepted and discarded, always ready (bios/chardev.rs AuxNoCable; qemu-virt kernel/src/console.rs AuxSerial delegates its output to it)
 bconout1	bios/serport.c	tos-api/src/bios/chardev.rs	bconout	mapped	AuxNoCable::bconout: the body (1, byte discarded) and the rpi4 device 1 entry; EmuTOS queues into iorec1.out and transmits

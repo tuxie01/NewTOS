@@ -1,0 +1,16 @@
+AXPROBE TASK/XBIOS18
+H01 kbdvec held a vector before the hook: 1
+B01 Bconstat(1) ret=00000000 hi=00000000
+B02 Bconstat(2) ret=00000000 hi=00000000
+X01 Bconin(1) ret=00000051 hi=00000000
+X02 hook calls in total: 2
+X03 hook calls during the wait (>= 20 ticks before Bconin(1) returned): 2
+X04 hook bytes: 1e 9e
+X05 Bconin(1) waited >= 200 ticks: 1
+X06 Bconstat(2) ret=ffffffff hi=ffffffff
+X07 Bconin(2) ret=001e0061 hi=00000000
+X08 hook put back: 1
+I01 Bconin(1) waited 492 ticks
+I02 hook call 0 byte 1e at Bconin(1) return - 420 ticks
+I02 hook call 1 byte 9e at Bconin(1) return - 397 ticks
+Z99 end

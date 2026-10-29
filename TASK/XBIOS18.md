@@ -1,13 +1,13 @@
 # XBIOS18 — `give_way` fehlt im AUX-Warten: `kbdvec`-Bytes verzoegert, solange ein Prozess auf AUX wartet
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidung 2026-10-29, Fund aus [XBIOS15](XBIOS15.md)
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](XBIOS18-STATUS-DONE.MD)) · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidung 2026-10-29, Fund aus [XBIOS15](XBIOS15.md)
 
 ## Sachverhalt
 
 - `Bconin(2)` bricht sein Warten ab, wenn der laufende Prozess Bytes fuer
   seinen `kbdvec`-Haken in der Schlange hat, und laesst den Trap neu starten
   (`kernel/src/host_env.rs:578@read_key_loop`, `give_way`; KEYS02).
-- Das AUX-Warten auf qemu-virt (`kernel/src/console.rs:249@aux_read_blocking`,
+- Das AUX-Warten auf qemu-virt (`kernel/src/console.rs:267@aux_read_blocking`,
   XBIOS15) tut das nicht: der Haken eines Prozesses, der in `Bconin(1)`/
   `Cauxin` wartet, bekommt seine Tastenbytes erst, wenn ein serielles Byte
   ankommt. EmuTOS ruft den Haken aus dem Interrupt sofort. Nicht gemessen;

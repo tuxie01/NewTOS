@@ -1,0 +1,2 @@
+key 'a' (keydown/keyup 30) at poll 124 (13:18:57)
+serial 'Q' via --rs232-in (13:19:00)

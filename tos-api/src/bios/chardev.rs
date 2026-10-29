@@ -364,7 +364,8 @@ pub fn pack_console_key(entry: u32) -> Long {
 /// [`CharDevice::bconin_restartable`]. For CON (2) it blocks and returns the
 /// packed console LONG (IKBD scancode in bits 16-23, ASCII in bits 0-7) — or,
 /// when a `kbdvec` hook has bytes waiting, requests a restart (KEYS02) and
-/// returns `0`, which the trap handler discards. An absent device returns `0`
+/// returns `0`, which the trap handler discards; the qemu-virt AUX driver's
+/// wait gives way the same way (XBIOS18). An absent device returns `0`
 /// immediately.
 ///
 /// Shared with the GEMDOS pass-throughs (`Cauxin` = `Bconin(1)`, EmuTOS

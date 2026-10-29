@@ -1,0 +1,8 @@
+DUMPBIOS build ----, record format 3
+pointer 8 bytes, word order 2
+BIOS.TSV: 207 cases, CRC 965AE625
+layouts: 1, writes through returned pointers (+put)
+running 207 cases
+all 207 cases ran
++put line 230: written
+BIOS.BIN: 207 records, 66272 bytes

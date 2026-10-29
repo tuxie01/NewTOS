@@ -17,6 +17,9 @@
 #   make pxprobe-newtos   PXPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make hkprobe-m68k     HKPROBE.PRG, the OS-hook probe (probes/hkprobe.c)
 #   make hkprobe-newtos   HKPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make axprobe-m68k     AXPROBE.PRG, a kbdvec hook during Bconin(1)
+#                         (probes/axprobe.c)
+#   make axprobe-newtos   AXPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make host-test        the host-side suite (same as make -C host test)
 #
 # Same core sources for both; only abi/ differs (spec section 2).
@@ -57,11 +60,13 @@ BUILD := build
 .PHONY: all dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
         dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
         scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
-        pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos host-test clean
+        pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
+        axprobe-m68k axprobe-newtos host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
      scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
-     pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos host-test
+     pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
+     axprobe-m68k axprobe-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -159,6 +164,17 @@ $(BUILD)/HKPROBE.PRG: probes/hkprobe.c | $(BUILD)
 hkprobe-newtos: $(BUILD)/HKPROBE.NAP
 $(BUILD)/HKPROBE.NAP: probes/hkprobe.c build-hkprobe-newtos.sh | $(BUILD)
 	./build-hkprobe-newtos.sh $@
+
+# The kbdvec-hook-during-Bconin(1) probe (TASK/XBIOS18): no disk; needs a key
+# and a serial byte injected while it waits. Run by probes/run-axprobe.sh.
+axprobe-m68k: $(BUILD)/AXPROBE.PRG
+$(BUILD)/AXPROBE.PRG: probes/axprobe.c | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror probes/axprobe.c -o $@
+	@$(CROSS_MINT)size $@
+
+axprobe-newtos: $(BUILD)/AXPROBE.NAP
+$(BUILD)/AXPROBE.NAP: probes/axprobe.c build-axprobe-newtos.sh | $(BUILD)
+	./build-axprobe-newtos.sh $@
 
 host-test:
 	@$(MAKE) --no-print-directory -C host test

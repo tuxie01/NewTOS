@@ -1,0 +1,40 @@
+H00 serrx WAITVBL=400 sizeof(long)=8 sizeof(_IOREC)=24
+H01 Bconmap(-1) ret=0000002c hi=00000000
+B01 Iorec(0) ret=0007d000 hi=00000000
+B01 dev0.in ibufsiz=256 hd=0 tl=0 low=64 hi=192
+B01 dev0.in ring: (0 entries)
+B01 dev0.out ibufsiz=256 hd=0 tl=0 low=64 hi=192
+B01 dev0.out ring: (0 entries)
+B01 dev0 baudrate=1 flowctrl=0 ucr=88 datamask=ff
+B05 Bconmap(-1) ret=0000002c hi=00000000
+B05 Bconmap(-2) ret=0000002c hi=00000000
+B05 Bconmap(-2) is no table address: mapped port IOREC not reached
+B02 Iorec(1) ret=0007d040 hi=00000000
+B02 ikbd ibufsiz=256 hd=0 tl=0 low=64 hi=192
+B02 ikbd ring: (0 entries)
+B03 Bconstat(1) ret=00000000 hi=00000000
+B04 Bconstat(2) ret=00000000 hi=00000000
+A01 Iorec(0) ret=0007d000 hi=00000000
+A01 dev0.in ibufsiz=256 hd=0 tl=3 low=64 hi=192
+A01 dev0.in ring: 61 5a 31 (3 entries)
+A01 dev0.out ibufsiz=256 hd=0 tl=0 low=64 hi=192
+A01 dev0.out ring: (0 entries)
+A01 dev0 baudrate=1 flowctrl=0 ucr=88 datamask=ff
+A05 Bconmap(-1) ret=0000002c hi=00000000
+A05 Bconmap(-2) ret=0000002c hi=00000000
+A05 Bconmap(-2) is no table address: mapped port IOREC not reached
+A02 Iorec(1) ret=0007d040 hi=00000000
+A02 ikbd ibufsiz=256 hd=0 tl=0 low=64 hi=192
+A02 ikbd ring: (0 entries)
+A03 Bconstat(1) ret=ffffffff hi=ffffffff
+A04 Bconstat(2) ret=00000000 hi=00000000
+C01 Bconin(1) ret=00000061 hi=00000000
+C02 Bconstat(1) ret=ffffffff hi=ffffffff
+C03 Iorec(0) ret=0007d000 hi=00000000
+C03 dev0.in ibufsiz=256 hd=1 tl=3 low=64 hi=192
+C03 dev0.in ring: 5a 31 (2 entries)
+C03 dev0.out ibufsiz=256 hd=0 tl=0 low=64 hi=192
+C03 dev0.out ring: (0 entries)
+C03 dev0 baudrate=1 flowctrl=0 ucr=88 datamask=ff
+D01 Bconin(2) not called: Bconstat(2) was 0
+Z99 end

@@ -289,6 +289,15 @@ Implementation `kernel/src/console.rs:216@AuxSerial`, installed at boot by
 (`docs/audits/2026-10-29-xbios15-serial-rx.md` SERRX-001,
 `measurements/measurement-2026-10-29-xbios15/RUNINFO.TXT`). Real Pi 4 keeps the
 "no cable" entry above (serial input is dropped there).
+**[XBIOS18] 2026-10-29:** the wait gives way to a `kbdvec` hook as the CON wait
+does (KEYS02, `docs/api/xbios/22-kbdvbase.md` C3 "O1"): when the running
+process has bytes queued for its hook, the trap entry
+(`AuxSerial::bconin_restartable`, `kernel/src/console.rs:267@aux_read_blocking`)
+returns without a byte, the trap restarts after the hook ran and waits again —
+so the hook is called while `Bconin(1)` waits, as EmuTOS' IKBD interrupt calls
+it during `bconin1`'s spin (`bios/aciavecs.S:407-414`). Measured equal to the
+oracle with `tosdump/probes/axprobe.c`
+(`measurements/measurement-2026-10-29-xbios18/RUNINFO.TXT`).
 
 **Devices 0 (PRN), 1 (AUX), 3 (MIDI):** `Bconin` -> `0`, **non-blocking** (AUX: unchanged by option A; a **documented divergence** from a real present port, where `bconin1` blocks forever, `serport.c:260-263`).
 Consistency with EmuTOS: dev 0 `bconin0` returns 0 (`bios/parport.c:123-127`,

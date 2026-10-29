@@ -1,0 +1,5 @@
+axprobe run, side newtos-virt (2026-10-29T12:22:09Z)
+tree      daa2973ea9ced5972a0d1583c40bc942ac1917ec 4 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    AXPROBE.PRG 483f0df481a4e07f591a2a5ca17bcf54ee9aeec9e4122af266c2688fbd65e921 AXPROBE.NAP eb474b37672f2aebce4aaa1ef2c77c31fbe7693e965e672c39b37719beda305d
+kernel    a03872122d632bf00d77e565fca3a7e95e8efa7dedd61ac9424da20754568c21 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios18/after-virt-kernel.img
+embedded  AXPROBE.NAP byte for byte in the image: True

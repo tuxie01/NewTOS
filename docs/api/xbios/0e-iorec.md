@@ -306,12 +306,12 @@ receive interrupt fills device 0's ring, "XBIOS15" below).
 `ibufhd`/`ibuftl` below `ibufsiz` and on the entry step (4 IKBD, 1 MIDI/RS-232).
 A replaced buffer (E4 (a)) gets the kernel buffer back, emptied; bad indices
 empty the ring. The kernel never reads or writes through `ibuf`. After every
-trap all four rings are checked as well (`kernel/src/console.rs:362@check_iorec_after_trap`,
+trap all four rings are checked as well (`kernel/src/console.rs:383@check_iorec_after_trap`,
 called from `kernel/src/arch/aarch64/exceptions.rs:664@check_iorec_after_trap`), so a
 replaced buffer is noticed "at the next trap" even when no key moves. Each
 repair is warned about once per process tenancy
 (`tos-api/src/xbios/iorec.rs:509@take_warnings`, printed by
-`kernel/src/console.rs:370@report_iorec_repairs`, reset at process exit
+`kernel/src/console.rs:391@report_iorec_repairs`, reset at process exit
 `tos-api/src/bdos/process.rs:1366@release_slot`):
 `[iorec] warning: Iorec(1) IKBD buffer or size replaced by the program ...`.
 

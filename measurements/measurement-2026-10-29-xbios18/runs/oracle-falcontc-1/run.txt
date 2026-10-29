@@ -1,0 +1,4 @@
+axprobe run, side emutos (2026-10-29T12:19:09Z)
+tree      daa2973ea9ced5972a0d1583c40bc942ac1917ec 3 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    AXPROBE.PRG 483f0df481a4e07f591a2a5ca17bcf54ee9aeec9e4122af266c2688fbd65e921 AXPROBE.NAP eb474b37672f2aebce4aaa1ef2c77c31fbe7693e965e672c39b37719beda305d
+oracle    /Volumes/Daten/hatari-2.6.1_macos/Hatari.app/Contents/MacOS/Hatari, ROM /Volumes/Daten/Development/PiRusTOS/tools/oracle/etos512de-1a7484ab.img (323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c), profile falcontc, serial --scc-b-in
