@@ -1,6 +1,6 @@
 # BIOS01 — BIOS-Speicher an EmuTOS angleichen (Befunde des Audits 2026-10-28)
 
-Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS01-STATUS-DONE.MD), S2: [BIOS01-S2-STATUS-DONE.MD](BIOS01-S2-STATUS-DONE.MD)); 004-Laufzeitgrenze zur Bestaetigung beim Anwender · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28 · haengt an [TOOL07](TOOL07.md); Spec [BIOS02](BIOS02.md) freigegeben
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS01-STATUS-DONE.MD), S2: [BIOS01-S2-STATUS-DONE.MD](BIOS01-S2-STATUS-DONE.MD)); 004-Laufzeitgrenze vom Anwender bestaetigt 2026-10-29 · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28 · haengt an [TOOL07](TOOL07.md); Spec [BIOS02](BIOS02.md) freigegeben
 
 ## Sachverhalt
 

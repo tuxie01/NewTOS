@@ -3120,6 +3120,92 @@ stays silent: TeraDesk's `force_mediach` puts `hdv_*` back before it leaves
 the super state. Implementation: `tos-api/src/bdos/process/hooks.rs`
 (TASK/BIOS15.md, `measurements/measurement-2026-10-29-bios15/RUNINFO.TXT`).
 
+## ADR-032: XHDI and the SCSI driver API are not provided
+
+**Date:** 2026-10-29
+**Status:** **Accepted** (2026-10-29, user decision on TASK/TOOL17 group B).
+**Phase:** cross-cutting (BIOS block devices, cookie jar, SDK).
+
+### Context
+
+EmuTOS offers two program interfaces to the hard-disk layer: XHDI (the
+`XHDI` cookie with a callable entry, `XHGetVersion`, `XHInqDev2`, …) and the
+SCSI driver API (`SCSI` cookie, Steffen Engel's interface). The pinned
+make-512 build has both on: `CONF_WITH_XHDI` and `CONF_WITH_SCSI_DRIVER`
+default to `!CONF_WITH_EXTERNAL_DISK_DRIVER`
+(`references/emutos/include/config.h:1684-1692`), which is 0 there; the
+oracle's cookie jar carries `XHDI 0x00E0F702` and `SCSI 0x000050B6`
+(`measurements/measurement-2026-10-29-tool18/RUNINFO.TXT`).
+
+Survey (`docs/analysis/tool17-groups-bcf-survey-2026-10-29.md`, group B):
+the only program in the tree that uses either is Thing, present only as
+source under `Applications/`, with no build recipe and on no card. No
+library, SDK example or NewTOS program calls them. NewTOS has one block
+device (the SD card) behind its own BIOS layer and no SCSI bus.
+
+### Decision
+
+1. NewTOS provides **neither XHDI nor the SCSI driver API**: no `XHDI` and no
+   `SCSI` cookie, no entry points. The 38 EmuTOS functions behind them are
+   `design:ADR-032` in `docs/analysis/deps/mapping.tsv`.
+2. The cookie-jar differences `XHDI` and `SCSI` against the oracle are
+   ACCEPTED with this ADR as evidence (`docs/COMPATIBILITY.md`, "Cookie jar
+   vs. the oracle").
+3. **Reopen** when a port needs XHDI or SCSIDRV (e.g. Thing, a partitioning
+   tool, a disk cache); the amendment then names the program as evidence.
+
+### Consequences
+
+- A program probing the cookies finds them absent and must take its
+  no-XHDI path; one that calls through them without probing is a port bug.
+- No measurement case: there is nothing to call.
+
+## ADR-033: No DND tree and no OS memory pool in GEMDOS
+
+**Date:** 2026-10-29
+**Status:** **Accepted** (2026-10-29, user decision on TASK/TOOL17 group C).
+**Phase:** GEMDOS (file system, memory).
+
+### Context
+
+EmuTOS' BDOS keeps two internal structures programs never see directly:
+
+- **DND tree** — directory nodes cached per drive (`makdnd`, `getdnd`,
+  `snipdnd`, `freednd`, `free_available_dnds`, `process_dnd_tree`,
+  `makofd`, `dopath`; `references/emutos/bdos/fsdir.c`), freed on a media
+  change by `freetree`.
+- **OS memory pool** — a fixed pool for the BDOS' own blocks (`getosm`,
+  `osmem_init`, `xmgetblk`, `xmfreblk`;
+  `references/emutos/bdos/osmem.c:92-100`, `:281-321`).
+
+NewTOS replaced both without a decision record: current directories are
+canonical path strings resolved by scanning (`tos-api/src/bdos/fs/curdir.rs`,
+"NewTOS has no DND cache", `free_drive` is all of `freetree`;
+`tos-api/src/bdos/fs/path.rs`, `tos-api/src/bdos/fs/dir.rs`), and memory
+descriptors come from `mdpool` (ADR-025). Survey:
+`docs/analysis/tool17-groups-bcf-survey-2026-10-29.md`, group C — no program
+uses these functions; only their effects are visible.
+
+### Decision
+
+1. NewTOS has **no DND tree**: a directory is named by its path and found
+   by scanning the FAT directory chain; a current directory is a path
+   string per drive and process.
+2. NewTOS has **no OS memory pool**: BDOS-internal blocks are ordinary kernel
+   allocations; memory descriptors follow ADR-025.
+3. The functions above are `design:ADR-033` in `mapping.tsv` (`dopath` maps
+   to the stored path string where the mapping says so).
+
+### Consequences
+
+- `docs/COMPATIBILITY.md` gains an entry: the classic **OS-pool exhaustion**
+  and the **folder limit** that follow from EmuTOS' fixed pool (e.g. "too
+  many folders" after deep trees) are not reproduced on NewTOS.
+- Behaviour that depends on DND identity rather than path (a current
+  directory surviving a rename of a parent) may differ; each such case is
+  measured before it is accepted (e.g. TASK/FS24, `Dsetpath` after a media
+  change).
+
 ## Template for new ADRs
 
 ```markdown

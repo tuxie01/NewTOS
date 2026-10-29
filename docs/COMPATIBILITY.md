@@ -903,6 +903,18 @@ in hunks that keep doubling up to 16 MiB instead of stopping at 32 KiB
 so a large heap needs tens of blocks, not thousands; a program calling
 `_mallocChunkSize()` is unaffected.
 
+**No DND tree, no OS memory pool** — user decision, 2026-10-29 (TOOL17
+group C, `docs/MEMORY.md` ADR-033). EmuTOS caches directory nodes per drive
+(`references/emutos/bdos/fsdir.c`) and draws them, file structures and MDs
+from its fixed OS pool (`references/emutos/bdos/osmem.c:92-100`). NewTOS names
+a directory by its path and keeps the current directory as a path string per
+drive and process (`tos-api/src/bdos/fs/curdir.rs`); BDOS-internal blocks
+are ordinary kernel allocations. **Observable differences:** OS-pool
+exhaustion and the folder limit that follows from it ("too many folders"
+after deep trees) do not occur; behaviour that depends on a directory node's
+identity rather than its path may differ and is measured case by case
+before it is accepted (e.g. TASK/FS24).
+
 **Dragging several desktop icons processes all of them** — user decision,
 2026-10-17 (DESK48, option b). EmuTOS' `fun_file2any` calls
 `desk_clear(DESKWH)` inside the `win_isel` loop of
@@ -1289,8 +1301,8 @@ falcontc and disk are byte-identical, so their columns are one.
 | 53 | `_IDT` | `0x0000112E` | `0x0000112E` | `0x0000112F` | OPEN | oracle = `COUNTRY=de` (`.`); NewTOS `/`, bring-up policy |
 | 54 | `_FDC` | `0x01415443` | `0x01415443` | absent | ACCEPTED | ADR-012: no floppy controller |
 | 55 | `__NF` | absent | absent | absent | EQUAL | — |
-| 56 | `XHDI` | `0x00E0F702` | `0x00E0F702` | absent | OPEN | ACCEPTED once the drafted ADR "XHDI and the SCSI driver API are not provided" is approved |
-| 57 | `SCSI` | `0x000050B6` | `0x000050B6` | absent | OPEN | ACCEPTED once the same drafted ADR is approved |
+| 56 | `XHDI` | `0x00E0F702` | `0x00E0F702` | absent | ACCEPTED | ADR-032: no XHDI, no SCSI driver API |
+| 57 | `SCSI` | `0x000050B6` | `0x000050B6` | absent | ACCEPTED | ADR-032 |
 | 58, 61-64 | `_5MS _CF_ _MCF _NET NVDI` | absent | absent | absent | EQUAL | — |
 | 67 | `NTOS` | absent | absent | `0x00000100` | ACCEPTED | ADR-012 (+ amendment 2026-10-28): NewTOS identity |
 | 68 | `EdDI` | absent | absent | `0x00000001` | ACCEPTED | "The VDI speaks EdDI" (this file): marker, spec E2 |
