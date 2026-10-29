@@ -1,21 +1,28 @@
-//! Board-selected console alias and shared RX ringbuffer.
+//! Board-selected console alias and the console key queue.
 //!
 //! `CONSOLE` resolves to the PL011 driver instance for the active board so
 //! callers can `use kernel::console::CONSOLE;` without per-board `cfg`s.
 //!
-//! The RX ringbuffer is the **IKBD queue** — EmuTOS' `ikbdiorec`
-//! (`bios/ikbd.c:157-173`), the queue `bconstat2`/`bconin2` read. It holds
-//! key **words** (`scancode << 8 | ascii`) and is consumed by the TOS-API
-//! host (`host_env.rs`). Who may fill it is a per-board decision that
-//! mirrors EmuTOS' `CONF_SERIAL_CONSOLE` switch — see [`serial_rx_byte`]:
-//! on real Pi-4 only the IKBD decoder ([`push_rx`], fed from the USB-HID
-//! keyboard); on qemu-virt additionally the PL011 RX IRQ handler
-//! ([`pl011_rx_drain`], serial console — a plain ASCII byte with scancode
-//! 0). PHASE-02 D5 keeps the buffer small (128 entries); a typing burst
-//! that overflows simply drops keys — the GEMDOS console functions are
-//! stateless w.r.t. lost input.
+//! The key queue is the **IKBD IOREC ring** — EmuTOS' `ikbdiorec`
+//! (`bios/ikbd.c:157-173`), the queue `bconstat2`/`bconin2` read — and lives
+//! in the IOREC page `Iorec(1)` returns (`tos_api::xbios::iorec`, XBIOS01
+//! E1): one ring for every consumer, a program can flush it by writing
+//! `head = tail`. It holds 32-bit entries `shifty << 24 | scancode << 16 |
+//! ascii`, the shift state taken at push time (E2); 63 of them, a typing
+//! burst beyond that drops keys as on EmuTOS. Who may fill it is a per-board
+//! decision that mirrors EmuTOS' `CONF_SERIAL_CONSOLE` switch — see
+//! [`serial_rx_byte`]: on real Pi-4 only the IKBD decoder ([`push_rx`], fed
+//! from the USB-HID keyboard); on qemu-virt additionally the PL011 RX IRQ
+//! handler ([`pl011_rx_drain`], serial console — a plain ASCII byte with
+//! scancode 0).
+//!
+//! The ring is program data: `tos_api::xbios::iorec` checks it before every
+//! use and repairs what a program broke; [`report_iorec_repairs`] prints the
+//! warning for each repair, once per process.
 
-use core::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use core::sync::atomic::{AtomicBool, Ordering};
+
+use tos_api::xbios::iorec;
 
 use crate::hal::uart::Uart;
 
@@ -128,92 +135,6 @@ impl Uart for SerialConsole {
     }
 }
 
-// ---------------------------------------------------------------------------
-// RX ringbuffer (single producer = IRQ handler, single consumer = host).
-// ---------------------------------------------------------------------------
-
-const RX_CAPACITY: usize = 128;
-
-/// SPSC byte ringbuffer. Producer (IRQ handler) advances `head`; consumer
-/// (Host calls) advances `tail`. Indices wrap modulo `usize`; the
-/// difference `head - tail` (wrapping) gives the live byte count.
-struct RxRing {
-    buf: [core::cell::UnsafeCell<u16>; RX_CAPACITY],
-    head: AtomicUsize,
-    tail: AtomicUsize,
-}
-
-// SAFETY: SPSC discipline + atomic indices make `RxRing` safe to share
-// between the IRQ handler and threaded code at EL1.
-unsafe impl Sync for RxRing {}
-
-impl RxRing {
-    const fn new() -> Self {
-        Self {
-            // Inline const block avoids the
-            // `clippy::declare_interior_mutable_const` lint that fires
-            // on a named `const Z: UnsafeCell<u8>`. The two forms are
-            // semantically identical — each array slot is its own
-            // freshly-evaluated cell.
-            buf: [const { core::cell::UnsafeCell::new(0u16) }; RX_CAPACITY],
-            head: AtomicUsize::new(0),
-            tail: AtomicUsize::new(0),
-        }
-    }
-
-    fn push(&self, word: u16) {
-        let head = self.head.load(Ordering::Relaxed);
-        let tail = self.tail.load(Ordering::Acquire);
-        if head.wrapping_sub(tail) >= RX_CAPACITY {
-            return; // overflow: drop key; no flow control in Phase 02.
-        }
-        let idx = head % RX_CAPACITY;
-        // SAFETY: SPSC — only the IRQ handler writes; consumer reads
-        // strictly behind `tail`, so this slot is uniquely owned here.
-        unsafe { *self.buf[idx].get() = word };
-        self.head.store(head.wrapping_add(1), Ordering::Release);
-    }
-
-    fn pop(&self) -> Option<u16> {
-        let tail = self.tail.load(Ordering::Relaxed);
-        let head = self.head.load(Ordering::Acquire);
-        if head == tail {
-            return None;
-        }
-        let idx = tail % RX_CAPACITY;
-        // SAFETY: SPSC — slot < head, producer has finished writing.
-        let w = unsafe { *self.buf[idx].get() };
-        self.tail.store(tail.wrapping_add(1), Ordering::Release);
-        Some(w)
-    }
-
-    fn is_empty(&self) -> bool {
-        self.head.load(Ordering::Acquire) == self.tail.load(Ordering::Acquire)
-    }
-
-    /// Non-destructive read of the oldest queued word (at `tail`) without
-    /// advancing `tail`. Consumer-side only — the producer owns `head` and
-    /// never touches `tail` — so it is race-free against the IRQ producer:
-    /// if `head != tail` the slot at `tail` was fully written (the producer
-    /// stores the slot before advancing `head` with `Release`, and we load
-    /// `head` with `Acquire`).
-    fn peek(&self) -> Option<u16> {
-        let tail = self.tail.load(Ordering::Relaxed);
-        let head = self.head.load(Ordering::Acquire);
-        if head == tail {
-            return None;
-        }
-        let idx = tail % RX_CAPACITY;
-        // SAFETY: SPSC — slot < head, producer has finished writing it; we
-        // only read the slot and never advance `tail`, so no consumer state
-        // changes and the producer can keep filling ahead of `head`.
-        let w = unsafe { *self.buf[idx].get() };
-        Some(w)
-    }
-}
-
-static RX_RING: RxRing = RxRing::new();
-
 /// Drain the PL011 RX FIFO and acknowledge the RX-side interrupt sources.
 /// Called from the GIC IRQ handler when the PL011 INTID is signalled.
 /// Where the received bytes go is the board's console profile —
@@ -238,7 +159,7 @@ pub fn pl011_rx_drain() {
 fn serial_rx_byte(b: u8) {
     #[cfg(feature = "initinfo-diag")]
     crate::initinfo::diag::note_push(crate::initinfo::diag::PUSH_SRC_SERIAL, b as u16);
-    RX_RING.push(b as u16);
+    iorec::push_key(u32::from(b));
 }
 
 /// Real Pi-4 has its own screen and its own keyboard (USB-HID), so it is
@@ -269,61 +190,111 @@ fn serial_rx_byte(_b: u8) {
     crate::initinfo::diag::note_serial_drop(_b);
 }
 
-/// Push a key **word** into the RX ringbuffer from the IKBD decoder:
-/// `scancode << 8 | ascii` (ascii 0 for keys with no character, e.g. the
-/// arrow / function keys). ASCII readers (`rx_pop`) take the low byte;
-/// the AES event manager reads the whole word via [`rx_pop_key`].
-pub fn push_rx(word: u16) {
+/// Push a key **entry** into the IKBD ring from the IKBD decoder —
+/// `shifty << 24 | scancode << 16 | ascii` (ascii 0 for keys with no
+/// character, e.g. the arrow / function keys; `shifty` the shift state when
+/// the key went down, EmuTOS `kb_last.k.shifty`, `bios/ikbd.c:898-909`). A
+/// full ring drops it (`push_ikbdiorec`, `bios/ikbd.c:167-170`).
+pub fn push_rx(entry: u32) {
     #[cfg(feature = "initinfo-diag")]
-    crate::initinfo::diag::note_push(crate::initinfo::diag::PUSH_SRC_IKBD, word);
-    RX_RING.push(word);
+    crate::initinfo::diag::note_push(crate::initinfo::diag::PUSH_SRC_IKBD, iorec::word_from_entry(entry));
+    iorec::push_key(entry);
+    report_iorec_repairs();
 }
 
-/// Pop one **ASCII** byte from the RX ringbuffer for the console
-/// byte-stream readers (`Cconrs` line input, `Fread` from CON, VDI
-/// `v_locator`) — scancode-only keys (arrows etc., ascii 0) are skipped,
-/// exactly as when they were never queued. The scancode-returning char
-/// reads (`Bconin(2)`/`Cconin`/`Cnecin`/`Crawcin`) instead pop the whole
-/// key word via [`rx_pop_key`] to preserve the high-word scancode.
+/// Pop one **ASCII** byte from the key ring for the console byte-stream
+/// readers (`Cconrs` line input, `Fread` from CON, VDI `v_locator`) —
+/// scancode-only keys (arrows etc., ascii 0) are skipped, exactly as when they
+/// were never queued. The scancode-returning char reads
+/// (`Bconin(2)`/`Cconin`/`Cnecin`/`Crawcin`) instead pop the whole entry via
+/// [`rx_pop_entry`].
 pub fn rx_pop() -> Option<u8> {
-    loop {
-        let ascii = (RX_RING.pop()? & 0xff) as u8;
+    let r = loop {
+        let Some(e) = iorec::pop_key() else { break None };
+        let ascii = (e & 0xff) as u8;
         if ascii != 0 {
-            return Some(ascii);
+            break Some(ascii);
         }
-    }
+    };
+    report_iorec_repairs();
+    r
 }
 
 /// Pop one whole key word (`scancode << 8 | ascii`) for the AES event
 /// manager, so it can deliver scancodes (arrow / function keys) to apps.
 pub fn rx_pop_key() -> Option<u16> {
-    RX_RING.pop()
+    rx_pop_entry().map(iorec::word_from_entry)
+}
+
+/// Pop one whole ring entry (`shifty << 24 | scancode << 16 | ascii`) for
+/// `Bconin(2)` and the GEMDOS single-key reads.
+pub fn rx_pop_entry() -> Option<u32> {
+    let r = iorec::pop_key();
+    report_iorec_repairs();
+    r
 }
 
 /// Non-destructively peek the oldest queued key word (`scancode << 8 |
 /// ascii`) — the front element a subsequent [`rx_pop_key`] would return —
-/// without consuming it. Backs the GEMDOS output-side break check
-/// (`Cconout`/`Cconws` conbrk): it inspects the pending key for Ctrl-C
-/// without disturbing normal type-ahead. Consumer-side, race-free against
-/// the IRQ producer (see [`RxRing::peek`]).
+/// without consuming it. Backs `Host::console_peek_key`.
 pub fn rx_peek_key() -> Option<u16> {
-    RX_RING.peek()
+    let r = iorec::peek_key().map(iorec::word_from_entry);
+    report_iorec_repairs();
+    r
 }
 
-/// `true` if the RX ringbuffer holds at least one byte.
+/// `true` if the key ring holds at least one key (`bconstat2`).
 pub fn rx_has_input() -> bool {
-    !RX_RING.is_empty()
+    let r = iorec::key_pending();
+    report_iorec_repairs();
+    r
 }
 
-/// The RX ringbuffer's raw producer/consumer indices — `(head, tail)`.
+/// The key ring's `(head, tail)` byte indices.
 ///
 /// Diagnostic accessor for the `initinfo-diag` build: the boot-screen wait
 /// loop's "a key is waiting" test is `head != tail`, so the two raw indices
-/// say both *whether* something was queued and *how much* ever arrived.
+/// say both *whether* something was queued and *where* the ring stands.
 #[cfg(feature = "initinfo-diag")]
 pub fn rx_indices() -> (usize, usize) {
-    (
-        RX_RING.head.load(Ordering::Acquire),
-        RX_RING.tail.load(Ordering::Acquire),
-    )
+    let (head, tail) = iorec::ikbd_indices();
+    (usize::from(head), usize::from(tail))
+}
+
+/// After a trap (XBIOS01 E4, "at the next trap"): check every IOREC record —
+/// so a replaced buffer is noticed even when no key moves — and warn about
+/// what was repaired.
+pub fn check_iorec_after_trap() {
+    iorec::check_records();
+    report_iorec_repairs();
+}
+
+/// Print one warning per IOREC repair not yet reported for the running
+/// process (`tos_api::xbios::iorec::take_warnings`): a program's change to
+/// the records is never undone silently (`docs/api/xbios/0e-iorec.md` E4).
+pub fn report_iorec_repairs() {
+    use tos_api::bdos::process::{current, slot_for};
+    let slot = slot_for(current());
+    let bits = iorec::take_warnings(slot);
+    if bits == 0 {
+        return;
+    }
+    for (i, name) in iorec::RING_NAMES.iter().enumerate() {
+        if bits & (iorec::FAULT_BUF << i) != 0 {
+            crate::kprintln!(
+                "[iorec] warning: {} buffer or size replaced by the program (slot {:?}); \
+                 NewTOS keeps its own buffer, restored and emptied (docs/api/xbios/0e-iorec.md E4)",
+                name,
+                slot
+            );
+        }
+        if bits & (iorec::FAULT_INDEX << i) != 0 {
+            crate::kprintln!(
+                "[iorec] warning: {} head/tail outside the ring (slot {:?}); ring emptied \
+                 (docs/api/xbios/0e-iorec.md E1)",
+                name,
+                slot
+            );
+        }
+    }
 }

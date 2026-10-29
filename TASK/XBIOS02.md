@@ -11,13 +11,13 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidu
 - XCKTNL (`measurements/measurement-2026-10-28-xbios-chardev-audit/runs/XCKTNL-NEWTOS-raspi4b`, `measurements/measurement-2026-10-28-xbios-chardev-audit/runs/XCKTNL-EMUTOS-tt`): nach `Keytbl(NULL,-1,-1)` und `Bioskeys()` zeigt `norm` auf EmuTOS wieder auf eine Tabelle, auf NewTOS ist er NULL (128 Byte aus Seite 0 als Tabelle uebernommen, `tos-api/src/xbios/keytbl.rs:210@set_key_table`).
 - Lokalisiert: `tos-api/src/xbios/mod.rs:65-138@dispatch` (kein `Bioskeys`-Arm, Rueckgabe `0x18`).
 - EmuTOS-Stelle: `references/emutos/bios/ikbd.c:136-140`.
-- Fehlerbild: ein Programm installiert eigene Tabellen und stellt mit `Bioskeys()` zurueck. Auf NewTOS bleibt die Tastatur verstellt; `set_key_table` aendert den globalen Uebersetzer (`kernel/src/host_env.rs:322@set_key_table`) — Folge fuer Desktop und Folgeprogramme bis zum Neustart: PLAUSIBLE, nicht gemessen (Fall: XCKTNL, danach im Desktop eine Taste pruefen).
+- Fehlerbild: ein Programm installiert eigene Tabellen und stellt mit `Bioskeys()` zurueck. Auf NewTOS bleibt die Tastatur verstellt; `set_key_table` aendert den globalen Uebersetzer (`kernel/src/host_env.rs:330@set_key_table`) — Folge fuer Desktop und Folgeprogramme bis zum Neustart: PLAUSIBLE, nicht gemessen (Fall: XCKTNL, danach im Desktop eine Taste pruefen).
 - Spec: `docs/api/xbios/18-bioskeys.md` „Step-2 — not wired“; die Spec nennt `keymap::select_builtin` als vorhanden.
 
 ## Arbeit
 
 1. Fix gegen `references/emutos/bios/ikbd.c:136-140`; Hosttest: nach `Keytbl(my)`+`Bioskeys()` zeigen alle drei Zeiger wieder auf die Ausgangstabellen.
-2. Kommentar `tos-api/src/xbios/mod.rs:26@PHYSBASE` richtigstellen (gemeinsam mit [XBIOS01](XBIOS01.md)).
+2. Kommentar `tos-api/src/xbios/mod.rs:26-31@PHYSBASE` richtigstellen (gemeinsam mit [XBIOS01](XBIOS01.md)).
 3. Den PLAUSIBLE-Teil (Zustand nach Programmende) mit XCKTNL messen und im Ticket vermerken.
 
 ## Abnahme

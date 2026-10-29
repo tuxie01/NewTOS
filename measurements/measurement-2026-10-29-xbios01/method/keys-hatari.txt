@@ -1,0 +1,9 @@
+# The three key strokes of xbios-flush-r1.tsv for the oracle, Hatari --cmd-fifo
+# commands, one per 0.05 s once the dumper's LOG says "running N cases".
+# ST scancodes: a 0x1E=30, b 0x30=48, c 0x2E=46.
+hatari-event keydown 30
+hatari-event keyup 30
+hatari-event keydown 48
+hatari-event keyup 48
+hatari-event keydown 46
+hatari-event keyup 46

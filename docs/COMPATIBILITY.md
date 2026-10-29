@@ -676,7 +676,7 @@ installed and the next key jumps into freed memory (spec A8). NewTOS keeps the
 table in each process's own **private read-write page** (`0x7F000`, since
 MEM12; `Kbdvbase()` returns `0x7F010`, measured:
 `measurements/measurement-2026-10-28-xbios-chardev-audit/runs/PROBE-NEWTOS-raspi4b/XCPROBE.LOG`
-V01; `tos-api/src/bdos/process/mmu.rs:247@PRIV_PAGE_VA`) and returns that
+V01; `tos-api/src/bdos/process/mmu.rs:259@PRIV_PAGE_VA`) and returns that
 process's EL0 VA. **Reason:** a
 hook is code of its process (the same rule as `vex_wheelv`); the table goes
 away with the process, so a dangling hook cannot exist, and `free_slot` drops
@@ -729,19 +729,19 @@ writes a system variable after `Super()` or from a `Supexec` callback, and a
 user-mode access is a bus error. NewTOS maps that onto the page tables: a
 process has a **super state**, off at load, which `Super(0L)`/`Supexec` turn
 on (`tos-api/src/bdos/process/superstate.rs:66@super_call`,
-`kernel/src/arch/aarch64/exceptions.rs:1838@handle_super`,
+`kernel/src/arch/aarch64/exceptions.rs:1846@handle_super`,
 `:1857@handle_supexec`). In super state page 0 is EL0 read-write, in user
 state EL0 read-only, never executable
-(`tos-api/src/bdos/process/mmu.rs:733@set_page0_writable`, with the TLB
+(`tos-api/src/bdos/process/mmu.rs:769@set_page0_writable`, with the TLB
 maintenance ARM ARM `RGPPYH` requires); a write in user state ends the
 program with "Bus Error" and the report line "page-0 system-variable memory"
-(`kernel/src/arch/aarch64/exceptions.rs:1446@kill_crashed_program`). The
+(`kernel/src/arch/aarch64/exceptions.rs:1454@kill_crashed_program`). The
 super state grants **nothing else**: the code still runs at EL0, memory
 protection is unchanged. The EL0 stubs (upcall trampoline, `G_USERDEF`
 callout, `kbdvec` stubs, OSHEADER reset stub) moved to one shared stub page
 at `0x7E000`, EL0 execute-only; what a program may write — the `Kbdvbase`
 table, the `G_USERDEF` `PARMBLK` — to its private read-write page at
-`0x7F000` (`tos-api/src/bdos/process/mmu.rs:244@STUB_PAGE_VA`). The `kbdvec`
+`0x7F000` (`tos-api/src/bdos/process/mmu.rs:256@STUB_PAGE_VA`). The `kbdvec`
 hook runs in super state, as EmuTOS calls it from the IKBD interrupt in
 supervisor mode. The kernel reads page 0 only as documented input:
 `conterm` (bits 0–3) and the `memvalid` magics of the reset entry.
@@ -1153,6 +1153,25 @@ not take over a drive (NewTOS GEMDOS uses the block layer directly);
 TeraDesk's `force_mediach` has no effect; `etv_timer` and the `Kbdvbase`
 mouse/status/clock/joystick hooks are never called (accepted deviations
 BIOS-CORE-002, XBIOS-CHARDEV-003).
+
+**`Iorec`: the key queue is the IKBD `IOREC`, in a page every process may
+write; three named limits** — user decisions E1-E6 of 2026-10-28, TASK/XBIOS01
+(`docs/api/xbios/0e-iorec.md`, "Entscheidungen" and "NewTOS implementation").
+As on EmuTOS the record `Iorec(1)` returns **is** the console key queue: a
+program flushes the keyboard with `io->ibufhd = io->ibuftl`, entries are the
+32-bit `shifty<<24|scancode<<16|ascii` with the shift state of the key press.
+The records are laid out as the SDK's LP64 `_IOREC` (24 bytes, device 0 56), not
+the 14-byte m68k form (native vs m68k struct variants, below).
+**Observable differences:** (1) keys reach the ring only at a trap-side input
+pump — a program that polls `ibuftl` and never makes a trap sees no key (E3 (a);
+EmuTOS fills it from the ACIA interrupt); (2) a buffer or size a program writes
+into a record is not adopted: at its next use, at the latest after the next
+trap, the kernel restores its own buffer, empties the ring and logs one
+`[iorec] warning` per process (E4 (a); EmuTOS adopts it,
+`bios/aciavecs.S:331`); indices outside the ring empty it likewise; (3) the
+records of devices 0 (RS-232) and 2 (MIDI) exist with the oracle's values and
+stay empty — no driver fills them (E5 (a)). The survey behind E3/E4 found no
+ported program that calls `Iorec` (`docs/analysis/iorec-survey-2026-10-28.md`).
 
 **`Bconmap` MAPTAB function pointers are not callable from programs** —
 user decision 2026-10-28 (TASK/XBIOS05.md). EmuTOS calls the six pointers of

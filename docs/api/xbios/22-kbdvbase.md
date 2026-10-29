@@ -379,7 +379,7 @@ Die Ersetzung fuer `d0`/`a0`. Alle Haken sind **AAPCS64-Funktionen**
 
 | Vektor | x0 (ersetzt d0 / Stack-Arg) | x1 (ersetzt a0) | Quelle EmuTOS |
 |---|---|---|---|
-| `kbdvec` | Scancode in Bit 0-7, **Bit 7 = Break**, obere Bits 0 | Zeiger auf IKBD-`IOREC` oder 0 (D2a) | `ikbdraw` `:407-414` |
+| `kbdvec` | Scancode in Bit 0-7, **Bit 7 = Break**, obere Bits 0 | Zeiger auf den IKBD-`IOREC` (D2a, seit XBIOS01) | `ikbdraw` `:407-414` |
 | `midivec`, `vkbderr`, `vmiderr` | Byte | 0 | `:302-304, :393-397` |
 | `statvec`, `mousevec`, `clockvec`, `joyvec` | Zeiger auf Paket (ersetzt Stack-Argument UND a0), Layout wie A4 | gleicher Zeiger | `kbd_jump_vec` `:527-533` |
 | `midisys`, `ikbdsys` | — | — | siehe B6 |
@@ -388,10 +388,12 @@ Die Ersetzung fuer `d0`/`a0`. Alle Haken sind **AAPCS64-Funktionen**
 Haken nach AAPCS64; der Kernel sichert **alle** Register des unterbrochenen
 Kontexts (`deliver_upcall`), der Haken darf also jedes Register veraendern —
 strikt mehr Spielraum als `d2-d7/a2-a6` unter EmuTOS (`:250-259`).
-D2a: `IOREC`-Zeiger. `Iorec` (0x0E) ist zurueckgestellt
-(`docs/api/xbios/0e-iorec.md`, "decision deferred"); NewTOS' Tastenschlange ist
-`console::push_rx`, kein `IOREC`. Vorschlag: `x1 = 0`, dokumentiert; ein
-Programm, das `a0` als iorec nutzt, geht nur mit implementiertem `Iorec(1)`.
+D2a: `IOREC`-Zeiger. **[XBIOS01, 2026-10-29, E6]** `x1` = der IKBD-`IOREC`
+(dieselbe Adresse wie `Iorec(1)`, `tos-api/src/xbios/iorec.rs:135@IKBD_IOREC_VA`,
+gesetzt in `kernel/src/arch/aarch64/exceptions.rs:851@IKBD_IOREC_VA`), wie EmuTOS
+`a0 = &ikbdiorec` (`bios/aciavecs.S:412`); die Tastenschlange **ist** seit
+XBIOS01 dieser Ring (`docs/api/xbios/0e-iorec.md`). Vorher: `x1 = 0`, weil
+`Iorec` nicht verdrahtet und die Schlange `console::push_rx` kein `IOREC` war.
 Die Paketpuffer (`statvec` usw.) liegen in der ersten Seite (neuer Bereich
 hinter der Tabelle, oder `PARMBLK`-aehnlich) und werden vor dem Aufruf
 vom Kernel beschrieben.
@@ -669,6 +671,7 @@ Hosttests `tos-api/tests/xbios_kbdvecs.rs` (10), `kernel/src/key_repeat.rs`
   hat (B4) — beim Bau pruefen. **Geklaert 2026-10-04 (C3):** am Rueckweg ja, aber
   eine *blockierende* Warte kehrte nicht zurueck; jetzt weicht sie aus.
 * **O2.** `IOREC`-Form fuer `x1` (D2a) haengt an der Entscheidung ueber `Iorec`.
+  **Geklaert 2026-10-29 (XBIOS01, E6):** `x1` = `Iorec(1)`, LP64-`_IOREC`.
 * **O3.** TT TOS 3.06 hat `kbdvec`: nur abgeleitet (A7). Eine Messung am
   Hatari-TT (`hatari-produces-tt-references`) koennte es bestaetigen — hier nicht
   ausgefuehrt.

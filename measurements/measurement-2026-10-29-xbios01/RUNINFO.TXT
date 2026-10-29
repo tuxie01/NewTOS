@@ -1,0 +1,125 @@
+measurement-2026-10-29-xbios01 -- Iorec wired, the IKBD IOREC is the console key queue
+(TASK/XBIOS01, closes TASK/BIOS11): the acceptance tables before/after, the flush with keys
+in the ring on both sides, the probes XCIOFL / I01-I08 / K11-K16, AES and Fread retests
+=====================================================================================================
+Developer, TASK/XBIOS01, 2026-10-29 (host clock CET). Tree: main at 00b7c9cd (the lead
+committed docs-only 7dc40b74 and 5407d869 on top while this ran; no code in them) plus the
+uncommitted XBIOS01 change (TASK/XBIOS01-STATUS-DONE.MD lists the files). No hardware, no real
+card, nothing flashed. Not committed.
+
+WHAT / WHY
+  Iorec returned its function number 0x0E for every device; the classic flush
+  io->ibufhd = io->ibuftl ended in a page-0 bus error (XBIOS-CHARDEV-001, S1). Implemented
+  per the user decisions E1-E6 (docs/api/xbios/0e-iorec.md, "Entscheidungen", and the new
+  section "NewTOS implementation"): one shared page 0x7D000, EL0 RW, with the three records
+  (LP64 _IOREC, device 0 EXT_IOREC 56 bytes, oracle values); the IKBD record replaces
+  RX_RING for every producer and consumer; 32-bit entries with the shift state at push time
+  (BIOS11); the kernel checks the record before every use and after every trap, repairs and
+  warns once per process; kbdvec hook x1 = Iorec(1).
+
+INPUTS
+  ROM        tools/oracle/etos512de-1a7484ab.img (ORACLE_ROM_SHA256, checked by the scripts)
+  Hatari     2.6.1, binary 953f4e78eea55a8ca12ed6c83de1f045545b8da42a49e00112eaa235dffcd6f6,
+             tools/oracle/hatari.cfg c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46
+  QEMU       11.0.2, -M raspi4b, -append serial=on
+  table      tosdump/cases/xbios-flush-r1.tsv (new) db1e0fe4e3a6dad1ec4f8e7c086719e60b65aa323eec97e73af7aaf4ab44d6fa,
+             CRC 965AE625, 207 cases, 1 prelude
+  dumper m68k  tosdump/build/DUMPBIOS.PRG (make -C tosdump dumpbios-m68k, build c0f9, source
+             unchanged since TOOL16) d6fe21a96ba2fa8bb0dce5f6870c06ea619c5c231a5be9ca2a76cc6cc80bf415
+  NewTOS kernels (rpi4 release; gitignored, scratch, deleted after the run):
+    after, tables      d46765668fcd1390... (runs/newtos-*/tosdump-run.txt, built by the runner)
+    before, tables     f5d6da65ad225bc0... (git archive 00b7c9cd in scratch, --tree)
+    probes XCIOFL/XCPROBE  941acf6c573326c8c64b16e86cfddb654862af7d2b939feafa9a31e573692952
+    injector, flush    893723a3d2cde2e8... (launch:DUMPBIOS, method/keys-ikbd.txt)
+    injector, KPROBE   ff9d093a8f275386f414ede4d1f8211241dfb0fb57fc3ee26084fb2e6d7d4801
+    injector, FRPROBE  b1959b0f8fe8d0cdb72217fd92755bf7c9c4c7c4c9cee83dbe0bcb5f53e7095c
+    injector, AES      149e06dfe481384639b5f19b19214b4e86f8e06ca50be29c808b9459aea43b02
+  Injector kernels: an APFS clone of the tree in scratch (its .git removed, target/ rebuilt
+  fresh in the clone), patched by tools/inject-arm.py; patches method/injector-scratch.diff
+  (flush), injector-kprobe-scratch.diff, injector-fread-scratch.diff, injector-aes-scratch.diff
+  (INJ-ARM-TEMP lines only). Clone deleted after the run.
+  Probes: XCIOFL.NAP f2b57e97..., XCPROBE.NAP deabdfc2... (method/build-xcprobe.sh, xcprobe.c
+  copied unchanged from measurement-2026-10-28-xbios-chardev-audit/method; its XKPROBE line
+  fails here, xkprobe.c not copied, not used); KPROBE.NAP 78d748c9... (method/build-kprobe.sh,
+  kprobe.c copied unchanged from measurement-2026-10-28-bios-core-audit/method); FRPROBE.NAP
+  cb6270aa... (method/frprobe.c, new).
+
+CARDS / IMAGES
+  Every NewTOS card from tools/mkcard.sh (runner, method/run-newtos*.sh, method/aes-run.sh),
+  booted as an APFS clone or a per-run file and deleted afterwards. Manifests copied into
+  each run dir (runs/*/card.img.manifest, screendumps/*.card.img.manifest), 17 in all; their
+  optional_missing line, verbatim, all identical:
+    optional_missing none
+
+METHOD (method/)
+  newtos-tables.sh <scratch> <runs>          five frozen tables on NewTOS (after): xbios-ptr-r1,
+                                             bios-r1, xbios-chardev-r1, bios-core-r1, xbios-system-r1,
+                                             each vs its tt and falcontc reference (cargo xtask tosdump)
+  newtos-tables-before.sh <head> <s> <runs>  the same five on `git archive 00b7c9cd` (--tree)
+  oracle-flush.sh / oracle-flush-runs.sh     xbios-flush-r1.tsv on the oracle, tt and falcontc,
+                                             twice each: tools/hatari-oracle.sh's start plus
+                                             --cmd-fifo and --fast-forward off; keys-hatari.txt
+                                             (keydown/keyup a, b, c; 0.05 s apart) once BIOS.LOG
+                                             says "running 207 cases"
+  newtos-flush.sh <inj-tree> <s> <runs>      the table on NewTOS with the injector kernel
+                                             (keys-ikbd.txt: a, b, c 200 ticks after arming)
+  build-xcprobe.sh, run-newtos.sh            XCIOFL / XCPROBE (copied, see INPUTS)
+  build-kprobe.sh, run-newtos-kprobe.sh,     the BIOS11 key probe with the injector
+  keys-kprobe-ikbd.txt                       (bios-core audit's script and keys, copied)
+  build-frprobe.sh, run-newtos-frprobe.sh,   Fread(0, 32) on CON with a, b, Return injected
+  frprobe.c, keys-fread-ikbd.txt
+  aes-run.sh, aes-newdesk.inf,               desktop with the C: icon; injector clicks the icon,
+  keys-aes-ikbd.txt                          Ctrl+I (Show info), Return in the dialog; QMP shots
+  listslots.py                               display only: the IOREC slots of a record
+
+RESULTS
+1. Acceptance tables, NewTOS vs oracle, differing cases (runs/before-after.txt; tosdiff per
+   run in runs/newtos-*/ and runs/before-*/, every run "tosdiff --validate" accepted):
+     table             ref        before (00b7c9cd)                after (XBIOS01)
+     xbios-ptr-r1      tt, fc     24 25 26 28 31 34                34 (Getmpb, BIOS06)
+     bios-r1           tt         ... 98 99 100 101 102 ...        98-102 gone, rest unchanged
+     bios-r1           falcontc   ... 98 99 100 101 102 ...        98-102 gone, rest unchanged
+     xbios-chardev-r1  tt, fc     21-27 31 43-53                   31 43-53
+     bios-core-r1      tt / fc    15 / 14 cases                    identical
+     xbios-system-r1   tt, fc     68-76                            identical
+   Newly differing cases in all ten comparisons: none. xbios-ptr-r1 24-31 now EQUAL
+   (Iorec(0) 0x7D000, (1) 0x7D040, (2) 0x7D060; records as the oracle's; "+put line 29:
+   written"; Bconstat(2) 0; read back head == tail).
+2. Flush with keys in the ring, tosdump/cases/xbios-flush-r1.tsv:
+   Oracle: runs/oracle-flush-{tt,falcontc}-{1,2}; run 1 = run 2 byte for byte on both
+   profiles; tt BIN = falcontc BIN (512f86c4...), tosdiff tt vs falcontc 0 of 207;
+   selfcheck passes. Keys sent at poll 131 (tt) / 169 (falcontc) of 0.1 s.
+   Case 23 Bconstat(2) 0; 225/226/228 -1; 229 Iorec(1) head 0 tail 12; +put written;
+   231 Bconstat(2) 0; 232 head 12 tail 12.
+   Installed as tosdump/reference/EMUTOS-1a7484ab-XBIOS-flush{,-falcontc}.{BIN,LOG}
+   (BIN 512f86c45a300228bc6e70aefc7ecc32839fb4314c2699398dec0a2e72bd73a4,
+    LOG 582dfa4d4aafd2af5cc0892ad4d9b922de2e7099131a304fdd26dcb5d82418d1, both profiles).
+   NewTOS: runs/newtos-xbios-flush-r1: 0 of 207 differ against tt and falcontc; the
+   injector fed the six bytes at hz_200 3699 (+669 after arming), in case 225's pump;
+   same values as the oracle (ibuf 0x7D100 PTR_RAM).
+   Development run (scratch, not evidence): with the bytes due at +0 the injector fed them
+   at the first pump after the launch -- the conbrk check of the dumper's start-up output --
+   and conbrk moved them into the BDOS typeahead: case 228 0, case 229 head 12 tail 12
+   (2 of 207 differ). EmuTOS does the same with keys typed during console output; the
+   script was moved to +200 ticks so the keys arrive during the Vsync wait, as on Hatari.
+3. Probes on NewTOS (EmuTOS logs: measurement-2026-10-28-xbios-chardev-audit/runs/
+   XCIOFL-EMUTOS-tt, PROBE-EMUTOS-tt):
+   XCIOFL  runs/XCIOFL-NEWTOS-raspi4b/XCIOFL.LOG: "F02 after write hd=0 tl=0", no bus error
+           (EmuTOS: same F02 line; before: page-0 bus error, far 0x18).
+   I01-I08 runs/PROBE-NEWTOS-raspi4b/XCPROBE.LOG: equal to EmuTOS line for line except the
+           addresses (0x7D000/0x7D040/0x7D060 vs 0x4A54/0x30D4/0x30E2) and sizeof 24 vs 14
+           (LP64, contract F1); I04-I07 -1 with hi=ffffffff on both.
+   K11-K16 runs/KEYS-NEWTOS-raspi4b-injector/KPROBE.LOG: K16 conterm|8 Shift+b 0x02300042
+           = EmuTOS (bios-core audit KEYS-EMUTOS-tt); before 0x00300042. K11-K15, K20 equal;
+           K01 timing differs (injector ticks vs Hatari), as in the audit.
+4. Retests: Fread(0,32) on CON with a, b, Return injected: 2 bytes 61 62, Bconstat(2) 0
+   afterwards (runs/FREAD-NEWTOS-raspi4b-injector; NewTOS-only retest, not an oracle
+   comparison). AES: desktop up with menu bar (screendumps/plain.shot1.png); injector click
+   on C:, Ctrl+I opens "DISK INFORMATION" (screendumps/aes-key.shot1.png), Return closes it
+   (aes-key.shot2.png); serial: desktop up, crash 0, panic 0, no [iorec] warning.
+   No "[iorec] warning" in any NewTOS serial log of this run.
+
+NOT VERIFIED
+  Real Raspberry Pi 4 (USB keyboard, K16 with a real Shift); qemu-virt board boot (built
+  only); a program that replaces buf/size or writes bad indices under EL0 (host tests only);
+  key auto-repeat entries in the ring (host logic only); Fread on CON against the oracle.

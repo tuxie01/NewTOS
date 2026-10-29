@@ -1,0 +1,21 @@
+# tools/inject-arm.py script, armed launch:KPROBE: <hz_200 ticks after the
+# launch> <IKBD bytes> (make = scancode, break = scancode|0x80).  Same six key
+# strokes as keys-hatari.txt: a, Shift+a, F1, Ctrl+c, Return, Shift+b.
+400 0x1E
+404 0x9E
+408 0x2A
+412 0x1E
+416 0x9E
+420 0xAA
+424 0x3B
+428 0xBB
+432 0x1D
+436 0x2E
+440 0xAE
+444 0x9D
+448 0x1C
+452 0x9C
+456 0x2A
+460 0x30
+464 0xB0
+468 0xAA

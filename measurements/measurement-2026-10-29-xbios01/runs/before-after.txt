@@ -1,0 +1,40 @@
+xbios-ptr-r1 vs EMUTOS-1a7484ab-XBIOS-ptr-falcontc
+  before (00b7c9cd): 24 25 26 28 31 34 
+  after  (XBIOS01):  34 
+  newly differing:   
+xbios-ptr-r1 vs EMUTOS-1a7484ab-XBIOS-ptr
+  before (00b7c9cd): 24 25 26 28 31 34 
+  after  (XBIOS01):  34 
+  newly differing:   
+bios-r1 vs EMUTOS-1a7484ab-BIOS-falcontc
+  before (00b7c9cd): 53 54 66 67 69 70 87 93 94 98 99 100 101 102 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235 
+  after  (XBIOS01):  53 54 66 67 69 70 87 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235 
+  newly differing:   
+bios-r1 vs EMUTOS-1a7484ab-BIOS
+  before (00b7c9cd): 53 54 66 67 69 70 93 94 98 99 100 101 102 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235 
+  after  (XBIOS01):  53 54 66 67 69 70 93 94 105 128 129 178 179 183 184 185 186 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235 
+  newly differing:   
+xbios-chardev-r1 vs EMUTOS-1a7484ab-XBIOS-chardev-falcontc
+  before (00b7c9cd): 21 22 23 24 25 26 27 31 43 44 45 46 47 48 49 50 51 52 53 
+  after  (XBIOS01):  31 43 44 45 46 47 48 49 50 51 52 53 
+  newly differing:   
+xbios-chardev-r1 vs EMUTOS-1a7484ab-XBIOS-chardev
+  before (00b7c9cd): 21 22 23 24 25 26 27 31 43 44 45 46 47 48 49 50 51 52 53 
+  after  (XBIOS01):  31 43 44 45 46 47 48 49 50 51 52 53 
+  newly differing:   
+bios-core-r1 vs EMUTOS-1a7484ab-BIOS-core-falcontc
+  before (00b7c9cd): 46 47 48 49 50 51 52 53 54 55 56 57 59 65 
+  after  (XBIOS01):  46 47 48 49 50 51 52 53 54 55 56 57 59 65 
+  newly differing:   
+bios-core-r1 vs EMUTOS-1a7484ab-BIOS-core
+  before (00b7c9cd): 46 47 48 49 50 51 52 53 54 55 56 57 59 65 66 
+  after  (XBIOS01):  46 47 48 49 50 51 52 53 54 55 56 57 59 65 66 
+  newly differing:   
+xbios-system-r1 vs EMUTOS-1a7484ab-XBIOS-system-falcontc
+  before (00b7c9cd): 68 69 70 71 72 73 74 75 76 
+  after  (XBIOS01):  68 69 70 71 72 73 74 75 76 
+  newly differing:   
+xbios-system-r1 vs EMUTOS-1a7484ab-XBIOS-system
+  before (00b7c9cd): 68 69 70 71 72 73 74 75 76 
+  after  (XBIOS01):  68 69 70 71 72 73 74 75 76 
+  newly differing:   

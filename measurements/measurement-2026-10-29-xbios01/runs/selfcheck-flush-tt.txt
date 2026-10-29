@@ -1,0 +1,3 @@
+self-check BIOS.BIN -- area BIOS, 207 cases from xbios-flush-r1.tsv
+
+self-check, BIOS.BIN: the oracle passes every relational rule (207 cases)

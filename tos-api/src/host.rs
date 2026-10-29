@@ -111,6 +111,24 @@ pub trait Host: Sync {
         Some(self.console_read_key_blocking())
     }
 
+    /// [`Host::console_read_key_blocking`] returning the whole IKBD ring
+    /// **entry** `shifty << 24 | scancode << 16 | ascii`, the shift state
+    /// taken when the key was pushed (XBIOS01 E2, EmuTOS `bios/ikbd.c:900`) —
+    /// what `Bconin(2)` returns before `conterm` bit 3 is applied
+    /// (`bios/ikbd.c:279-280`). The default widens the key word with shift
+    /// state 0; the kernel host reads the IOREC ring
+    /// (`crate::xbios::iorec`).
+    fn console_read_entry_blocking(&self) -> u32 {
+        crate::xbios::iorec::entry_from_word(self.console_read_key_blocking(), 0)
+    }
+
+    /// [`Host::console_read_key_restartable`] returning the ring entry, as
+    /// [`Host::console_read_entry_blocking`].
+    fn console_read_entry_restartable(&self) -> Option<u32> {
+        self.console_read_key_restartable()
+            .map(|w| crate::xbios::iorec::entry_from_word(w, 0))
+    }
+
     /// Run the default `kbdvec` — EmuTOS `kbd_int(scancode)`
     /// (`bios/ikbd.c:725-910`), entered through `_kbdvec`
     /// (`bios/aciavecs.S:372-376`) — for one IKBD key byte (bit 7 = break):

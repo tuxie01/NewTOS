@@ -198,6 +198,14 @@ report malloc-host $rc "mintlib tree absent or host not LP64"
 [ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/lp64-limits.log"
 report lp64-limits $rc "mintlib tree absent"
 
+# iorec-layout (XBIOS01): the SDK's _IOREC and the device-0 record built from
+# it have the LP64 offsets the kernel lays the Iorec records out at
+# (docs/api/xbios/0e-iorec.md F1) -- all _Static_assert, compiled for the
+# target like lp64-limits.
+"$SDK/libc/tests/iorec-layout.sh" > "$WORK/iorec-layout.log" 2>&1; rc=$?
+[ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/iorec-layout.log"
+report iorec-layout $rc "mintlib tree absent"
+
 # libc-link (SDK01 A): against the built libc.a, tmpfile/mkstemp/glob/
 # wordexp/getlogin/sem_open (pwdgrp/), ttyname/ctermid (__sys_fstat),
 # gets/getwd/siggetmask (.stabs overlays) and the nf_* family (newtos-arch/

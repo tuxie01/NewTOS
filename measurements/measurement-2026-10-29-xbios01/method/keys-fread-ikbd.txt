@@ -1,0 +1,3 @@
+# tools/inject-arm.py script, armed launch:FRPROBE: a, b, Return (make, break),
+# 1 s after arming (the probe is then waiting in Fread on CON).
+200 0x1E 0x9E 0x30 0xB0 0x1C 0x9C

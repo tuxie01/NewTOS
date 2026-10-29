@@ -298,7 +298,7 @@ one warning per hook and process; never silent.
 
 | Hook | NewTOS | Note |
 |---|---|---|
-| `etv_term` (`0x102`) | **served** | Pterm reads the shadow and delivers the handler as an EL0 upcall unless it is `0` or the non-callable boot token (`kernel/src/arch/aarch64/exceptions.rs:1385@etv`, `:1390@etv`). Corrects the earlier "Pterm does not run etv_term" |
+| `etv_term` (`0x102`) | **served** | Pterm reads the shadow and delivers the handler as an EL0 upcall unless it is `0` or the non-callable boot token (`kernel/src/arch/aarch64/exceptions.rs:1393@etv`, `:1390@etv`). Corrects the earlier "Pterm does not run etv_term" |
 | `etv_timer` (`0x100`) | stored, **not served**, warning | BIOS-CORE-002 is an ACCEPTED deviation by ADR-031; measured T01: calls 100 (EmuTOS) / 0 (NewTOS) |
 | `etv_critic` (`0x101`) | stored, **not served**, warning | `Rwabs` has no critical-error retry path |
 | CPU/trap vectors `0..0xFF` | stored in the shadow, never dispatched (reserved for the m68k userland) | the EL1 handlers do not consult them |

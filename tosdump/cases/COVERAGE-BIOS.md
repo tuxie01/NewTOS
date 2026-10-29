@@ -371,3 +371,27 @@ Why each new form is safe:
 References: `tosdump/reference/EMUTOS-1a7484ab-XBIOS-ptr` (TT) and
 `-XBIOS-ptr-falcontc`, two runs each byte-identical,
 `measurements/measurement-2026-10-29-tool16/RUNINFO.TXT`.
+
+## The flush with keys in the ring -- `xbios-flush-r1.tsv` (XBIOS01, 2026-10-29)
+
+`xbios-ptr-r1.tsv` flushes an empty ring. This table has three keys (a, b, c)
+in the IKBD ring before the flush: they are typed from outside while the table
+waits in 200 `Vsync()` cases (`Bconin(2)` waits for input and stays refused) --
+on the oracle through Hatari's `--cmd-fifo` (`hatari-event keydown/keyup`,
+`--fast-forward off`), on NewTOS through the scratch IKBD injector
+(`tools/inject-arm.py`, `launch:DUMPBIOS`), so it is **not** a plain
+`tools/hatari-oracle.sh` / `cargo xtask tosdump` table: method and key
+scripts in `measurements/measurement-2026-10-29-xbios01/method/`. 207 cases,
+1 prelude, CRC `965AE625`.
+
+| Line | Call | What |
+|---|---|---|
+| 23 | `Bconstat(2)` EXACT | 0 before the keys (on NewTOS the input pump that arms the injector) |
+| 25-224 | `Vsync()` x 200, IGNORE | the wait (about 3 s of frames) |
+| 225, 226 | `Bconstat(2)` IGNORE | input pumps: the NewTOS injector feeds the keys here |
+| 228 | `Bconstat(2)` EXACT | -1: keys waiting -- the precondition |
+| 229 | `Iorec(1)` `r:iorec` | head 0, tail 12: three 4-byte entries |
+| +230, 231, 232 | `+put ibufhd=ibuftl`, `Bconstat(2)`, `Iorec(1)` | the flush, `Bconstat(2)` 0, head == tail == 12 |
+
+References: `tosdump/reference/EMUTOS-1a7484ab-XBIOS-flush` (TT) and
+`-XBIOS-flush-falcontc`, two runs each byte-identical.

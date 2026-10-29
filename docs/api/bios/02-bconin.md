@@ -321,11 +321,18 @@ drivers only.
   (`tos-api/src/bios/chardev.rs`). So non-ASCII keys are visible to `Bconin(2)`
   and ASCII keys carry their scancode. The earlier K2 finding ("scancode
   dropped") no longer holds. Shift-state folding into bits 24-31 (the
-  `conterm & 8` behaviour) **is** implemented as well: `chardev::shift_fold`
-  reads the calling process's `conterm` (`$484`) with an unprivileged load and
-  ORs `(kbshift & 0xFF) << 24` into the result only when bit 3 is set, so the
-  boot default `conterm = 7` yields bits 24-31 = 0. (An earlier revision of
-  this bullet said the fold was missing.) Measured by `APITEST` check BC28.
+  `conterm & 8` behaviour) **is** implemented as well. **[XBIOS01/BIOS11,
+  2026-10-29]** The key ring is the IKBD `IOREC` (`docs/api/xbios/0e-iorec.md`,
+  "NewTOS implementation"): its 32-bit entries carry the shift state **of the
+  key press** (EmuTOS `bios/ikbd.c:898-909`), and
+  `tos-api/src/bios/chardev.rs:351@pack_console_key` keeps bits 24-31 only when
+  the calling process's `conterm` (`$484`) has bit 3 set, else clears them
+  (`value &= 0x00ffffff`, `bios/ikbd.c:279-280`). Until XBIOS01 the fold read
+  the *current* `Kbshift` state at read time (`shift_fold`, removed) — a Shift
+  released before the read was lost (BIOS11, probe K16: now `0x02300042` as
+  EmuTOS). The boot default `conterm = 7` yields bits 24-31 = 0. (An earlier
+  revision of this bullet said the fold was missing.) Measured by `APITEST`
+  check BC28 and `measurements/measurement-2026-10-29-xbios01/RUNINFO.TXT`.
 - **CON input is USB-HID, not the UART — K1 is closed on `board-rpi4`.** The
   blocking read drains USB-HID only (`crate::drivers::usb::poll` in
   `kernel/src/host_env.rs`); there is no `pl011_rx_poll` (an earlier revision

@@ -280,11 +280,16 @@ fn decode_key(raw: u8) {
             CAPS.fetch_xor(true, Ordering::Relaxed);
         }
         _ if make => {
-            // Queue every make key as a word `scancode << 8 | ascii`; keys
-            // with no character (arrows, function keys) carry ascii 0 so the
-            // AES still sees the scancode (GEMDOS console readers skip them).
+            // Queue every make key as the IOREC entry `shifty << 24 |
+            // scancode << 16 | ascii` with the shift state of this moment
+            // (EmuTOS `kb_last.k.shifty = shifty` then
+            // `push_ikbdiorec(kb_last.key)`, `bios/ikbd.c:898-909`; XBIOS01
+            // E2). Keys with no character (arrows, function keys) carry ascii
+            // 0 so the AES still sees the scancode (GEMDOS console readers
+            // skip them).
             let word = key_word(code);
-            console::push_rx(word);
+            let shifty = shift_state();
+            console::push_rx(tos_api::xbios::iorec::entry_from_word(word, shifty));
             // It becomes the repeating key, armed with the current initial
             // delay (EmuTOS `kbd_int` `:875,891,898-903`).
             let (initial, _) = tos_api::xbios::system::kb_rate();
@@ -293,7 +298,7 @@ fn decode_key(raw: u8) {
             REPEAT.lock().make(
                 code,
                 word,
-                shift_state(),
+                shifty,
                 initial,
                 tos_api::bios::tick::hz_200(),
                 tos_api::xbios::kbdvecs::current_ikbdsys(),
@@ -321,8 +326,10 @@ fn key_word(code: u8) -> u16 {
 static REPEAT: SpinMutex<KeyRepeat> = SpinMutex::new(KeyRepeat::new());
 
 /// Run the key auto-repeat for this poll: credit the 50 Hz steps `_hz_200`
-/// crossed since the previous call and queue the repeating key's word if a
-/// repeat fell due — at most one per call.
+/// crossed since the previous call and queue the repeating key's entry if a
+/// repeat fell due — at most one per call. The entry carries the shift state
+/// of the repeat (`kb_last.k.shifty`, refreshed when the modifiers changed,
+/// `bios/ikbd.c:502-508`, pushed at `:524`).
 ///
 /// EmuTOS runs this (`do_key_repeat`, `bios/ikbd.c:451-528`) from the
 /// timer-C interrupt. NewTOS runs it **polled**, and the caller must invoke it
@@ -341,7 +348,9 @@ pub fn poll_repeat() {
         .lock()
         .poll(now, conterm, shifty, repeat, ikbdsys, key_word);
     if let Some(word) = word {
-        console::push_rx(word);
+        // `poll` reconverted `word` under `shifty` if the modifiers changed,
+        // so `shifty` is the repeat's `kb_last.k.shifty`.
+        console::push_rx(tos_api::xbios::iorec::entry_from_word(word, shifty));
     }
 }
 

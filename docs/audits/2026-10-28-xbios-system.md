@@ -74,7 +74,7 @@ herstellen kann.
 
 **`Gettime` liefert den gepackten LONG nullerweitert in `x0`: ab Jahr 2044 (Bit 31 gesetzt) ist das Ergebnis fuer ein LP64-Programm positiv, der TOS-LONG aber negativ.**
 
-- LOCALIZED: `tos-api/src/xbios/mod.rs:108@GETTIME` (`xbios_gettime() as i64`
+- LOCALIZED: `tos-api/src/xbios/mod.rs:116@GETTIME` (`xbios_gettime() as i64`
   auf einem `u32`).
 - Fall: Sonde `xshi.c` H01, `Settime(0x8CCF6000)` (2050-06-15 12:00:00):
   `measurements/measurement-2026-10-28-xbios-system-audit/runs/HIGH-NEWTOS-raspi4b/XSHI.LOG`
@@ -88,7 +88,7 @@ herstellen kann.
   siehe XBIOS-SYS-007).
 - Spec: `docs/api/xbios/17-gettime.md` sagt „LONG result **sign-extended** into
   `x0`“, ebenso der Bindungsvertrag in `sdk/libc/mintlib/include/mint/osbind.h`
-  („a sign-extended TOS LONG“); der Kommentar `tos-api/src/xbios/mod.rs:101-103@SETTIME`
+  („a sign-extended TOS LONG“); der Kommentar `tos-api/src/xbios/mod.rs:109-111@SETTIME`
   sagt „zero-extended“. Gleiche Klasse wie XBIOS-CHARDEV-006 (`Rsconf`).
 - Fehlerbild: `long t = Gettime(); if (t < 0) …` oder ein Vergleich mit einem
   aus `Tgetdate`/`Tgettime` gebauten LONG faellt ab 2044 anders aus.
@@ -183,7 +183,7 @@ Route: Researcher.
    unvalidated (they only roll the clock forward)“ — gemessen normalisiert
    (T10–T14, XBIOS-SYS-001); ebenso der Kommentar `tos-api/src/gemdos/time.rs:211@hour`
    „(EmuTOS parity)“.
-2. `tos-api/src/xbios/mod.rs:101-103@SETTIME` „Gettime returns the packed LONG
+2. `tos-api/src/xbios/mod.rs:109-111@SETTIME` „Gettime returns the packed LONG
    (zero-extended)“ gegen `docs/api/xbios/17-gettime.md` „sign-extended“
    (XBIOS-SYS-002).
 3. `docs/api/xbios/_triage.md:80` „`CONF_WITH_NVRAM` off“ und

@@ -1,0 +1,232 @@
+# xbios-flush-r1.tsv -- DUMPBIOS, the keyboard flush io->ibufhd = io->ibuftl
+# through Iorec(1)'s pointer WITH KEYS IN THE RING (TASK/XBIOS01, acceptance
+# "Flush mit nicht-leerem Ring"), against EmuTOS 1a7484ab (references/emutos,
+# docs/analysis/ORACLE.md).  xbios-ptr-r1.tsv's flush ran on an empty ring:
+# it shows only that the write is taken.  Here three keys (a, b, c) are in
+# the IKBD ring before the flush, and Bconstat(2) must say so (-1) and then 0.
+#
+# NOT a plain table run: the keys come from outside the dumper.  Oracle:
+# Hatari --cmd-fifo, "hatari-event keydown/keyup <ST scancode>" once the
+# dumper's LOG says "running N cases", --fast-forward off (real-time VBLs);
+# NewTOS: the scratch IKBD injector (tools/inject-arm.py, launch:DUMPBIOS),
+# which feeds at a trap-side input pump -- here the Bconstat(2) calls.  Method
+# and the exact key scripts: measurements/measurement-2026-10-29-xbios01/method/.
+# Bconin(2) waits for input and is refused by the loader, so the Vsync run
+# below is the wait: about 3 s of frames for the Hatari keys to arrive.  The
+# precondition case (Bconstat(2) = -1, Iorec(1) head 0 / tail 12) proves the
+# keys were there; a run where they were not shows it as a difference.
+#
+# Frozen once measured (the CRC of this file is in the dump header).
+!layout	iorec	14/24	ibuf:p@0/0,ibufsiz:w@4/8,ibufhd:w@6/10,ibuftl:w@8/12,ibuflow:w@10/14,ibufhi:w@12/16
+!write	return
+# ---- the ring before any key: empty (bios/ikbd.c:242-246); on NewTOS this pump arms the injector
+13:1	w:2	EXACT	-	Bconstat(2) before the keys: 0 -- bios/ikbd.c:242-246
+# ---- the wait: three keys a, b, c arrive (Hatari fifo; NewTOS injector at the next pump)
+14:0x25	-	IGNORE	-	Vsync() wait 1/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 2/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 3/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 4/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 5/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 6/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 7/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 8/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 9/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 10/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 11/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 12/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 13/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 14/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 15/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 16/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 17/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 18/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 19/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 20/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 21/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 22/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 23/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 24/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 25/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 26/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 27/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 28/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 29/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 30/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 31/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 32/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 33/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 34/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 35/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 36/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 37/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 38/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 39/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 40/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 41/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 42/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 43/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 44/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 45/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 46/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 47/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 48/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 49/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 50/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 51/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 52/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 53/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 54/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 55/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 56/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 57/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 58/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 59/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 60/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 61/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 62/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 63/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 64/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 65/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 66/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 67/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 68/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 69/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 70/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 71/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 72/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 73/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 74/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 75/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 76/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 77/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 78/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 79/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 80/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 81/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 82/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 83/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 84/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 85/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 86/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 87/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 88/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 89/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 90/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 91/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 92/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 93/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 94/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 95/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 96/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 97/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 98/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 99/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 100/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 101/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 102/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 103/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 104/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 105/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 106/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 107/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 108/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 109/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 110/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 111/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 112/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 113/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 114/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 115/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 116/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 117/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 118/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 119/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 120/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 121/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 122/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 123/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 124/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 125/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 126/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 127/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 128/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 129/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 130/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 131/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 132/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 133/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 134/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 135/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 136/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 137/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 138/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 139/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 140/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 141/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 142/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 143/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 144/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 145/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 146/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 147/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 148/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 149/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 150/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 151/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 152/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 153/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 154/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 155/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 156/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 157/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 158/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 159/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 160/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 161/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 162/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 163/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 164/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 165/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 166/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 167/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 168/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 169/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 170/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 171/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 172/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 173/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 174/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 175/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 176/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 177/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 178/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 179/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 180/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 181/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 182/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 183/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 184/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 185/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 186/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 187/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 188/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 189/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 190/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 191/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 192/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 193/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 194/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 195/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 196/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 197/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 198/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 199/200 -- bios/screen.c:1205
+14:0x25	-	IGNORE	-	Vsync() wait 200/200 -- bios/screen.c:1205
+13:1	w:2	IGNORE	-	Bconstat(2): NewTOS input pump, the injector feeds the keys here
+13:1	w:2	IGNORE	-	Bconstat(2): a second pump (an injector armed only at the first)
+# ---- precondition: keys waiting
+13:1	w:2	EXACT	-	Bconstat(2) = -1: keys in the ring before the flush -- bios/ikbd.c:242-246
+14:0x0E	w:1	PTR_RAM	r:iorec	Iorec(1) before the flush: head 0, tail 12 (three 4-byte entries) -- bios/ikbd.c:157-173
++put	ibufhd=ibuftl	the flush: head = tail (XBIOS01 E1)
+13:1	w:2	EXACT	-	Bconstat(2) after the flush: 0 -- bios/ikbd.c:242-246
+14:0x0E	w:1	PTR_RAM	r:iorec	Iorec(1) after the flush: head == tail == 12

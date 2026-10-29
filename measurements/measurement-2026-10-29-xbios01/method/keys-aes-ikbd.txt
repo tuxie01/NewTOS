@@ -1,0 +1,12 @@
+# tools/inject-arm.py script, armed `desktop`: <hz_200 ticks after arming> <IKBD bytes>.
+# XBIOS01 AES retest: the pointer to the screen corner (three relative packets of
+# -128/-128, clamped at 0,0), then +38/+40 onto the C: icon, a left click (wire
+# header 0xFA = left down, 0xF8 = up), Ctrl+I (File > Show info, the drive's info
+# dialog, EmuTOS default shortcut 'I', deskmain.c:273), and Return in the dialog
+# (form_do: the default exit button).
+200 0xF8 0x80 0x80 0xF8 0x80 0x80 0xF8 0x80 0x80
+210 0xF8 0x26 0x28
+230 0xFA 0x00 0x00
+240 0xF8 0x00 0x00
+400 0x1D 0x17 0x97 0x9D
+1400 0x1C 0x9C

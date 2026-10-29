@@ -147,13 +147,13 @@ impl CharDevice for Console {
     }
     fn bconin(&self) -> Long {
         match host::host() {
-            Some(h) => pack_console_key(h.console_read_key_blocking()),
+            Some(h) => pack_console_key(h.console_read_entry_blocking()),
             None => 0,
         }
     }
     fn bconin_restartable(&self) -> Option<Long> {
         match host::host() {
-            Some(h) => h.console_read_key_restartable().map(pack_console_key),
+            Some(h) => h.console_read_entry_restartable().map(pack_console_key),
             None => Some(0),
         }
     }
@@ -333,59 +333,28 @@ pub fn current_conterm() -> u8 {
 /// The `conterm` bits the kernel reads (S10): 0..3.
 const CONTERM_DOCUMENTED: u8 = 0x0F;
 
-/// Pack an IKBD key word (`scancode << 8 | ascii`) into the console
-/// `Bconin`/`Cconin` return LONG: bits 0-7 = ASCII (0 for non-ASCII keys),
-/// bits 8-15 = 0, bits 16-23 = IKBD scancode. Bits 24-31 carry the keyboard
-/// shift state **iff** the calling process's `conterm` has bit 3 set
-/// (`conterm & 8`), else they are 0.
+/// The console `Bconin`/`Cconin` return LONG of an IKBD ring entry
+/// (`shifty << 24 | scancode << 16 | ascii`, XBIOS01 E2): bits 0-7 ASCII (0
+/// for non-ASCII keys), bits 16-23 the IKBD scancode, bits 24-31 the shift
+/// state **at the time the key was pushed** — kept only when the calling
+/// process's `conterm` has bit 3 set, else cleared.
 ///
-/// This mirrors EmuTOS `bconin2` (`references/emutos/bios/bios.c:948-956`
-/// documents the return format; `bios/ikbd.c:279-280` is the fold), which
-/// keeps the IOREC's stored shift byte (bits 24-31, from `kb_last.k.shifty`,
-/// `bios/ikbd.c:900`) only when `conterm & 8` and otherwise masks it out
-/// (`value &= 0x00ffffff`). The default `conterm = 7` (bit 3 clear) leaves
-/// bits 24-31 at 0, byte-identical to a no-fold pack. Every NewTOS caller of
-/// this function is a CON-input path (`Bconin(2)`, `Cconin`/`Cnecin`/
-/// `Crawcin`/`Crawio` — all of which route through `bconin2` under EmuTOS),
-/// so folding here matches EmuTOS for each. See `docs/api/bios/02-bconin.md`,
-/// `docs/api/bios/0b-kbshift.md`, `docs/api/gemdos/console/01-cconin.md`.
-pub fn pack_console_key(word: u16) -> Long {
-    let ascii = (word & 0xFF) as Long;
-    let scancode = (word >> 8) as Long;
-    (scancode << 16) | ascii | shift_fold()
-}
-
-/// The `conterm & 8` keyboard-shift-state contribution to bits 24-31 of a
-/// console `Bconin`/`Cconin` return LONG (EmuTOS `bconin2`,
-/// `bios/ikbd.c:279-280`). Returns `(kbshift & 0xFF) << 24` when the caller's
-/// `conterm` bit 3 is set, else `0`.
-///
-/// Applied only while an EL0 application is the running process
-/// ([`crate::bdos::process::current`] non-null): its `$484` (written by the
-/// loader's `populate_sysvars`) is read through the **kernel alias of its
-/// page 0** ([`current_conterm`], ARCH03 stage 3a) — the same cell the
-/// program sees at VA `$484`, reached without a user-mode load, so the read
-/// can neither fault nor depend on which `TTBR0` is installed. With **no
-/// active user context** — boot, EmuCON, or an EL1 selftest, all of
-/// which run with `RUN == null` and no per-process low-memory area — the
-/// fold is skipped. Gating on `RUN` (a stable atomic) rather than
-/// `SPSR_EL1` keeps the check correct across `console_read_key_blocking`'s
-/// IRQ/`wfi` wait (qemu-virt), which clobbers the saved-PSTATE register but
-/// never touches `RUN`.
-#[inline]
-fn shift_fold() -> Long {
-    // No active user context (RUN == null) → no per-process $484; skip.
-    if crate::bdos::process::current().is_null() {
-        return 0;
-    }
-    let conterm = current_conterm();
-    if conterm & CONTERM_SHIFT_FOLD == 0 {
-        return 0; // classic default (conterm = 7): bits 24-31 = 0
-    }
-    // conterm & 8: fold NewTOS's `Kbshift` (BIOS fn 11) state into bits
-    // 24-31, matching EmuTOS's stored `shifty` byte (`bios/ikbd.c:900,279`).
-    let shift = host::host().map_or(0u8, |h| h.keyboard_shift_state());
-    ((shift as u32) << 24) as Long
+/// EmuTOS `bconin2` (`references/emutos/bios/ikbd.c:269-283`): the IOREC entry
+/// carries `kb_last.k.shifty` from the push (`bios/ikbd.c:898-909`), and
+/// `if (!(conterm & 8)) value &= 0x00ffffffL` (`:279-280`). Before XBIOS01
+/// NewTOS folded the *current* `Kbshift` state in at read time — BIOS11: a
+/// Shift released before the read was lost. With no process running (boot,
+/// EmuCON, an EL1 selftest) [`current_conterm`] is the boot value 7 (bit 3
+/// clear). Every caller is a CON-input path (`Bconin(2)`,
+/// `Cconin`/`Cnecin`/`Crawcin`/`Crawio` — all `bconin2` under EmuTOS). See
+/// `docs/api/bios/02-bconin.md`, `docs/api/gemdos/console/01-cconin.md`.
+pub fn pack_console_key(entry: u32) -> Long {
+    let v = if current_conterm() & CONTERM_SHIFT_FOLD != 0 {
+        entry
+    } else {
+        entry & 0x00FF_FFFF
+    };
+    v as Long
 }
 
 /// `Bconin` core keyed by BIOS device number, as the trap entry: the entry's

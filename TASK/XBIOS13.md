@@ -7,7 +7,7 @@ Status: **OFFEN** · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheid
 **XBIOS-SYS-006 (Punkte 1, 2, 3, 5) — S4 — MEASURED (Doku widerspricht Messung oder Code).** Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-xbios-system-audit/RUNINFO.TXT`. Dateigruppe `docs/api/xbios/`:
 
 1. `docs/api/xbios/16-settime.md` (Pi binding): „Hour/minute/second pass through unvalidated“ — gemessen normalisiert (T10–T14, [XBIOS08](XBIOS08.md)); ebenso der Code-Kommentar `tos-api/src/gemdos/time.rs:211@hour` „(EmuTOS parity)“ (Code-Kommentar: Developer).
-2. `tos-api/src/xbios/mod.rs:101-103@SETTIME` „Gettime returns the packed LONG (zero-extended)“ gegen `docs/api/xbios/17-gettime.md` „sign-extended“ ([XBIOS09](XBIOS09.md)).
+2. `tos-api/src/xbios/mod.rs:109-111@SETTIME` „Gettime returns the packed LONG (zero-extended)“ gegen `docs/api/xbios/17-gettime.md` „sign-extended“ ([XBIOS09](XBIOS09.md)).
 3. `docs/api/xbios/_triage.md:80` „`CONF_WITH_NVRAM` off“ und `docs/api/xbios/_dispatcher.md:171` („NVRAM (0x2E) entries are `xbios_unimpl` in the profile“) gegen `docs/api/xbios/_full-function-inventory.md` (=1 im Referenzbau) ([XBIOS10](XBIOS10.md)).
 4. `docs/api/xbios/17-gettime.md` „fallback = 1980-01-01 if the clock was never set“ — ohne die Saat aus `KERNEL8.IMG` ([XBIOS12](XBIOS12.md)).
 

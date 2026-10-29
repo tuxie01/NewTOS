@@ -20,7 +20,10 @@
 //!   trampoline and the other EL0 stubs): EL0 execute-only;
 //! * the **private read-write page** at [`PRIV_PAGE_VA`], each process its
 //!   own (the KEYS02 `Kbdvbase` table, the `G_USERDEF` `PARMBLK`): EL0
-//!   read-write, never executable.
+//!   read-write, never executable;
+//! * the **IOREC page** at [`IOREC_PAGE_VA`], one page for all (the
+//!   `Iorec` records and their rings, XBIOS01 E1): EL0 read-write, never
+//!   executable.
 //!
 //! FreeMiNT keeps "one of these per process" over one logical address space
 //! (`references/freemint/sys/arch/mprot030.c:18,76-80`); stage 1 is its
@@ -235,6 +238,15 @@ static mut STUB_PAGE: Page0 = Page0([0; 4096]);
 /// executable.
 static mut PRIV_PAGE: [Page0; MAX_PROCESSES] = [const { Page0([0; 4096]) }; MAX_PROCESSES];
 
+/// The one **IOREC page** (XBIOS01, `docs/api/xbios/0e-iorec.md` E1): the
+/// records `Iorec(0/1/2)` returns and their ring buffers, the IKBD ring being
+/// the live console key queue. Global like EmuTOS' `ikbdiorec`
+/// (`bios/aciavecs.S:107`), so one page serves all; every slot maps it at
+/// [`IOREC_PAGE_VA`], EL0 read-write (a program flushes the queue by writing
+/// `head = tail`), never executable. Its content is program data: the kernel
+/// validates it on every use (`crate::xbios::iorec`).
+static mut IOREC_PAGE: Page0 = Page0([0; 4096]);
+
 /// EL0 VA of the shared stub page. Inside the slot-private `[0, 2 MiB)` L3,
 /// below the Pi kernel's load address (`0x80000`, `link-rpi4.ld`; there is
 /// only the pre-MMU boot stack below it, never a published kernel object)
@@ -246,10 +258,23 @@ pub const STUB_PAGE_VA: u64 = 0x7E000;
 /// EL0 VA of the slot's private read-write page (see [`STUB_PAGE_VA`]).
 pub const PRIV_PAGE_VA: u64 = 0x7F000;
 
+/// EL0 VA of the shared IOREC page (see [`STUB_PAGE_VA`] for why this range
+/// is free). Below 4 GiB and even, as `Iorec`'s returned pointer must be
+/// (`docs/api/xbios/0e-iorec.md`, "Trap interface").
+pub const IOREC_PAGE_VA: u64 = 0x7D000;
+
+/// First VA of the special pages in the slot-private `[0, 2 MiB)` L3 — the
+/// IOREC, stub and private read-write pages, `[SPECIAL_PAGES_VA,
+/// PRIV_PAGE_VA + PAGE_SIZE)`.
+const SPECIAL_PAGES_VA: u64 = IOREC_PAGE_VA;
+
 const STUB_PAGE_IDX: usize = (STUB_PAGE_VA / PAGE_SIZE) as usize;
 const PRIV_PAGE_IDX: usize = (PRIV_PAGE_VA / PAGE_SIZE) as usize;
+const IOREC_PAGE_IDX: usize = (IOREC_PAGE_VA / PAGE_SIZE) as usize;
 const _: () = assert!(STUB_PAGE_IDX > 0 && PRIV_PAGE_IDX > 0 && STUB_PAGE_IDX < 512 && PRIV_PAGE_IDX < 512);
+const _: () = assert!(IOREC_PAGE_IDX > 0 && IOREC_PAGE_IDX < 512);
 const _: () = assert!(PRIV_PAGE_VA == STUB_PAGE_VA + PAGE_SIZE);
+const _: () = assert!(STUB_PAGE_VA == IOREC_PAGE_VA + PAGE_SIZE);
 const _: () = assert!(PRIV_PAGE_VA + PAGE_SIZE <= 0x80000);
 
 /// The shared L2 **templates**, one per GiB, that every slot's own L2s copy
@@ -586,8 +611,8 @@ pub enum MapError {
     UnalignedPa,
     /// VA is outside the range the call may map: for [`map_page`] the
     /// slot-private `[0, 2 MiB)`, for [`map_shared`] `[0x1000,
-    /// USER_VA_LIMIT)` without the stub and private pages
-    /// (`[STUB_PAGE_VA, PRIV_PAGE_VA + 0x1000)`).
+    /// USER_VA_LIMIT)` without the IOREC, stub and private pages
+    /// (`[IOREC_PAGE_VA, PRIV_PAGE_VA + 0x1000)`).
     VaOutOfRange,
     /// A page or block is already mapped there with different attributes.
     /// Stage 1 never changes a valid entry (that would need a TLB
@@ -679,6 +704,12 @@ pub fn priv_page_kva(slot: usize) -> Option<*mut u8> {
     Some(unsafe { base.add(slot) } as *mut u8)
 }
 
+/// Kernel VA of the shared IOREC page ([`IOREC_PAGE_VA`]).
+pub fn iorec_page_kva() -> *mut u8 {
+    // Raw address of a `static mut`: no reference is formed.
+    (&raw mut IOREC_PAGE) as *mut u8
+}
+
 /// [`priv_page_kva`] as a mutable byte page.
 ///
 /// # Safety
@@ -691,9 +722,10 @@ pub unsafe fn priv_page_bytes(slot: usize) -> Option<&'static mut [u8; 4096]> {
     Some(unsafe { &mut *(p as *mut [u8; 4096]) })
 }
 
-/// The kernel alias of a user VA in one of `slot`'s **private** pages —
-/// page 0 or the private read-write page — or `None` for any other VA (those
-/// are VA = PA). The stub page is not listed: no program may read it.
+/// The kernel alias of a user VA in one of `slot`'s pages that are not
+/// VA = PA — page 0, the private read-write page or the shared IOREC page —
+/// or `None` for any other VA (those are VA = PA). The stub page is not
+/// listed: no program may read it.
 pub fn private_page_alias(slot: usize, va: u64) -> Option<u64> {
     if va < PAGE_SIZE {
         return page0_kva(slot).map(|p| p as u64 + va);
@@ -701,14 +733,18 @@ pub fn private_page_alias(slot: usize, va: u64) -> Option<u64> {
     if (PRIV_PAGE_VA..PRIV_PAGE_VA + PAGE_SIZE).contains(&va) {
         return priv_page_kva(slot).map(|p| p as u64 + (va - PRIV_PAGE_VA));
     }
+    if (IOREC_PAGE_VA..IOREC_PAGE_VA + PAGE_SIZE).contains(&va) {
+        return Some(iorec_page_kva() as u64 + (va - IOREC_PAGE_VA));
+    }
     None
 }
 
-/// Is `va` in one of the slot-private pages (page 0, the stub page, the
-/// private read-write page)? Such a page is not contiguous with what lies
-/// around it, so a user range may not run across its end.
+/// Is `va` in one of the special pages of the slot-private `[0, 2 MiB)`
+/// (page 0, the IOREC page, the stub page, the private read-write page)?
+/// Such a page is not contiguous with what lies around it, so a user range
+/// may not run across its end.
 pub fn in_private_page(va: u64) -> bool {
-    va < PAGE_SIZE || (STUB_PAGE_VA..PRIV_PAGE_VA + PAGE_SIZE).contains(&va)
+    va < PAGE_SIZE || (SPECIAL_PAGES_VA..PRIV_PAGE_VA + PAGE_SIZE).contains(&va)
 }
 
 /// Make page 0 of `slot` EL0-writable (`on`, the **super state**) or
@@ -750,7 +786,8 @@ pub unsafe fn set_page0_writable(slot: usize, on: bool) {
 /// 0 (`UserRoNx` — user state; [`set_page0_writable`] widens it in super
 /// state), `L3[1..]` = the `[0, 2 MiB)` template, except the stub page
 /// (`UserExecOnly`) and the slot's private read-write page (`UserRwNx`) —
-/// MEM12, `docs/api/_super-state.md`. Private L3 tables
+/// MEM12, `docs/api/_super-state.md` — and the shared IOREC page
+/// (`UserRwNx`, XBIOS01). Private L3 tables
 /// a previous tenant of the slot held go back to the arena first.
 /// Idempotent; the page-0 *contents* are not touched (the loader writes them).
 ///
@@ -790,6 +827,7 @@ pub unsafe fn init_slot_tables(slot: usize) -> Result<(), MapError> {
     t.l3.0[STUB_PAGE_IDX] = va_to_pa(stub_page_kva() as u64) | PageFlags::UserExecOnly.descriptor_bits();
     let priv_pa = va_to_pa(priv_page_kva(slot).ok_or(MapError::InvalidSlot)? as u64);
     t.l3.0[PRIV_PAGE_IDX] = priv_pa | PageFlags::UserRwNx.descriptor_bits();
+    t.l3.0[IOREC_PAGE_IDX] = va_to_pa(iorec_page_kva() as u64) | PageFlags::UserRwNx.descriptor_bits();
     Ok(())
 }
 
@@ -958,9 +996,9 @@ pub unsafe fn map_shared(va: u64, len: u64, flags: PageFlags, allow_blocks: bool
     if va < PAGE_SIZE || end > USER_VA_LIMIT {
         return Err(MapError::VaOutOfRange);
     }
-    // The stub page and the private read-write page are each slot's own
-    // (MEM12); a VA = PA publication there would shadow them.
-    if va < PRIV_PAGE_VA + PAGE_SIZE && end > STUB_PAGE_VA {
+    // The IOREC, stub and private read-write pages are each slot's own
+    // entries (MEM12, XBIOS01); a VA = PA publication there would shadow them.
+    if va < PRIV_PAGE_VA + PAGE_SIZE && end > SPECIAL_PAGES_VA {
         return Err(MapError::VaOutOfRange);
     }
     let page_bits = flags.descriptor_bits();

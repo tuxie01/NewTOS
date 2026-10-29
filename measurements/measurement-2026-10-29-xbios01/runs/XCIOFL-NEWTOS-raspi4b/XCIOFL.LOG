@@ -1,0 +1,2 @@
+F01 Iorec(1) ret=0007d040 hi=00000000 tosaddr=1 -- before user-mode write
+F02 after write hd=0 tl=0

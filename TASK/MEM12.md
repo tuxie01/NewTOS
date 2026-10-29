@@ -83,8 +83,8 @@ Accessories, NEWDESK, QED, PRESENT, zView, DUMPVDI, VDIDRAW, ARGVTEST an
 
 | Stub | VA | Wer springt hin |
 |---|---|---|
-| Upcall-Trampolin | `0x700` | Kern setzt `lr` darauf (`kernel/src/arch/aarch64/exceptions.rs:1825@TRAMPOLINE_VA`) |
-| AES-`G_USERDEF`-Stub | `0x714` | Kern als Upcall-Handler (`exceptions.rs:895@USERDEF_TRAMPOLINE_VA`); gemessen in TeraDesk (`pc=0x724`) |
+| Upcall-Trampolin | `0x700` | Kern setzt `lr` darauf (`kernel/src/arch/aarch64/exceptions.rs:1833@TRAMPOLINE_VA`) |
+| AES-`G_USERDEF`-Stub | `0x714` | Kern als Upcall-Handler (`exceptions.rs:903@USERDEF_TRAMPOLINE_VA`); gemessen in TeraDesk (`pc=0x724`) |
 | `just_rts` / `kbdvec_default` | `0xA00` / `0xA08` | Werte der `Kbdvbase`-Tabelle; DOOM kettet an den alten `kbdvec` (`sdk/apps/doom/doomgeneric_gem_kbdvec.c:57@kbdvec_old`) |
 | Reset-Stub | `0xA40` | OSHEADER `reseth`/`os_res1`; TeraDesk "Reboot" (`sdk/overlays/teradesk/main.c:2120,2142@rv`) |
 
@@ -104,7 +104,7 @@ gelingt. Im Usermodus loest die Hardware einen Busfehler aus, EmuTOS beendet
 das Programm (`any_vec` → `dopanic` → `kill_program`, `bios/vectors.S:152-153`,
 `bios/kprint.c:302`, `:587-594`, `bios/panicasm.S:96-99`). NewTOS mit Seite 0
 nur lesbar: Berechtigungsfehler bei EL0 → `kill_crashed_program`
-(`kernel/src/arch/aarch64/exceptions.rs:1446@kill_crashed_program`):
+(`kernel/src/arch/aarch64/exceptions.rs:1454@kill_crashed_program`):
 Absturzbericht, Taste, `Pterm(-1)`, der Kern laeuft weiter (gemessen, s. u.).
 Ein Systemaufruf mit Ausgabepuffer in Seite 0 endet ebenso: `uaccess` prueft
 mit den Rechten des Aufrufers (`tos-api/src/uaccess.rs:453@user_kptr`).
@@ -127,7 +127,7 @@ nimmt `Ssystem(S_SETCOOKIE)`), mintlib `set_sysvar_to_*` (gebaut, kein Aufrufer)
 
 | Wert | Leser im Kern | Wirkung |
 |---|---|---|
-| `conterm` `0x484` | `tos-api/src/bios/chardev.rs:317@current_conterm` → Tastenwiederholung `kernel/src/ikbd.rs:336@current_conterm`, `Bconin`-Shiftfaltung `chardev.rs:381@current_conterm`, Glocke `tos-api/src/vdi/escape.rs:693@current_conterm` | Bits 1/2/3 wirken |
+| `conterm` `0x484` | `tos-api/src/bios/chardev.rs:317@current_conterm` → Tastenwiederholung `kernel/src/ikbd.rs:343@current_conterm`, `Bconin`-Shiftfaltung `chardev.rs:352@current_conterm`, Glocke `tos-api/src/vdi/escape.rs:693@current_conterm` | Bits 1/2/3 wirken |
 | `kbdvec`, `ikbdsys` | `tos-api/src/xbios/kbdvecs.rs:209@read_slot`, `:212@kbdvec_of`, `:221@current_ikbdsys` | Haken-Upcall, Wiederholstopp |
 | `memvalid`/`memval2`/`memval3` | `tos-api/src/bios/reset.rs:160@entry_kind` | warm/kalt (auf der Pi warm = kalt) |
 | Rueckgabewort `0x760` | `kernel/src/arch/aarch64/exceptions.rs`, `read_userdef_ret_slot` (Stand `a90bcfb0`; seit MEM12 entfernt) | `G_USERDEF`-Ergebnis |

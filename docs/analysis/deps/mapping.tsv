@@ -564,10 +564,11 @@ wait_for_not_BSY	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS c
 wait_for_not_BSY_and_DRDY	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
 wait_for_not_BSY_not_DRQ	bios/ide.c	-	-	no counterpart: IDE/ATA disk driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
 bconin2	bios/ikbd.c	tos-api/src/bios/chardev.rs	bconin	Console impl
-bconin2	bios/ikbd.c	tos-api/src/bios/chardev.rs	pack_console_key	-
-bconin2	bios/ikbd.c	tos-api/src/bios/chardev.rs	shift_fold	-
+bconin2	bios/ikbd.c	tos-api/src/bios/chardev.rs	pack_console_key	the conterm bit 3 mask of the ring entry (XBIOS01 E2, closes BIOS11)
+bconin2	bios/ikbd.c	tos-api/src/xbios/iorec.rs	pop_key	the dequeue: head first, then the 4-byte entry (XBIOS01)
 bconout4	bios/ikbd.c	-	-	no counterpart: IKBD output: the IKBD is the absent device on NewTOS (bios/chardev.rs Absent)
 bconstat2	bios/ikbd.c	tos-api/src/bios/chardev.rs	bconstat	Console impl
+bconstat2	bios/ikbd.c	tos-api/src/xbios/iorec.rs	key_pending	head != tail of the IKBD IOREC (XBIOS01)
 bcostat4	bios/ikbd.c	-	-	no counterpart: IKBD output: the IKBD is the absent device on NewTOS (bios/chardev.rs Absent)
 bioskeys	bios/ikbd.c	-	-	no counterpart: XBIOS 0x18 Bioskeys is not implemented: NewTOS's XBIOS dispatcher returns the function number (xbios/mod.rs)
 convert_scancode	bios/ikbd.c	-	-	no counterpart: IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
@@ -586,7 +587,8 @@ kbd_int	bios/ikbd.c	tos-api/src/bios/vectors.rs	mousexvec	the mousexvec call
 kbrate	bios/ikbd.c	tos-api/src/xbios/system.rs	kbrate	Kbrate 0x23
 kbshift	bios/ikbd.c	tos-api/src/bios/mod.rs	kbshift	Kbshift 0x0B
 keytbl	bios/ikbd.c	tos-api/src/xbios/keytbl.rs	keytbl	Keytbl 0x10
-push_ikbdiorec	bios/ikbd.c	-	-	no counterpart: IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
+push_ikbdiorec	bios/ikbd.c	tos-api/src/xbios/iorec.rs	push_key	the IKBD IOREC ring in the shared IOREC page; the record checked first (XBIOS01 E1/E2)
+push_ikbdiorec	bios/ikbd.c	kernel/src/console.rs	push_rx	the kernel entry point of the decoder (kernel/src/ikbd.rs decode_key, poll_repeat)
 cprint_asctime	bios/initinfo.c	-	-	no counterpart: boot-screen helper: no NewTOS counterpart function found (the boot screen is kernel/src/initinfo.rs)
 cprint_devices	bios/initinfo.c	-	-	no counterpart: boot-screen helper: no NewTOS counterpart function found (the boot screen is kernel/src/initinfo.rs)
 cprintf_bytesize	bios/initinfo.c	kernel/src/initinfo.rs	size_str	-
@@ -1002,7 +1004,8 @@ set_fg	bios/vt52.c	tos-api/src/vdi/escape.rs	esc_ch1	bw_tab entry ESC b: the b'b
 vt52_init	bios/vt52.c	tos-api/src/vdi/escape.rs	init	-
 vt52_init	bios/vt52.c	kernel/src/fbcon.rs	init	-
 blitmode	bios/xbios.c	tos-api/src/xbios/system.rs	blitmode	Blitmode 0x40
-iorec	bios/xbios.c	-	-	no counterpart: XBIOS 0x0E Iorec is not implemented: NewTOS's XBIOS dispatcher returns the function number (xbios/mod.rs)
+iorec	bios/xbios.c	tos-api/src/xbios/iorec.rs	iorec	XBIOS 0x0E: the records in the shared IOREC page, -1 for any other device (XBIOS01)
+iorec	bios/xbios.c	tos-api/src/xbios/iorec.rs	record_va	the signed-WORD device selector
 kbdvbase	bios/xbios.c	tos-api/src/xbios/kbdvecs.rs	kbdvbase	Kbdvbase 0x22
 random	bios/xbios.c	tos-api/src/xbios/system.rs	random	Random 0x11
 rsconf	bios/xbios.c	tos-api/src/xbios/system.rs	rsconf	Rsconf 0x0F

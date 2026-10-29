@@ -508,7 +508,7 @@ fn probe_user_write(va: u64) -> Result<(), UserFault> {
 
 #[cfg(all(target_arch = "aarch64", target_os = "none"))]
 #[inline]
-fn irq_mask() -> u64 {
+pub(crate) fn irq_mask() -> u64 {
     let daif: u64;
     // SAFETY: reads DAIF and masks IRQs at EL1; restored by `irq_restore`.
     unsafe {
@@ -520,7 +520,7 @@ fn irq_mask() -> u64 {
 
 #[cfg(all(target_arch = "aarch64", target_os = "none"))]
 #[inline]
-fn irq_restore(daif: u64) {
+pub(crate) fn irq_restore(daif: u64) {
     // SAFETY: restores the DAIF value `irq_mask` read.
     unsafe {
         core::arch::asm!("msr daif, {d}", d = in(reg) daif, options(nomem, nostack, preserves_flags));
@@ -529,13 +529,13 @@ fn irq_restore(daif: u64) {
 
 #[cfg(not(all(target_arch = "aarch64", target_os = "none")))]
 #[inline]
-fn irq_mask() -> u64 {
+pub(crate) fn irq_mask() -> u64 {
     0
 }
 
 #[cfg(not(all(target_arch = "aarch64", target_os = "none")))]
 #[inline]
-fn irq_restore(_daif: u64) {}
+pub(crate) fn irq_restore(_daif: u64) {}
 
 #[inline]
 fn status(rc: u64) -> Result<(), UserFault> {

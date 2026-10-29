@@ -193,11 +193,19 @@ impl Host for KernelHost {
     }
 
     fn console_read_key_blocking(&self) -> u16 {
+        tos_api::xbios::iorec::word_from_entry(self.console_read_entry_blocking())
+    }
+
+    fn console_read_key_restartable(&self) -> Option<u16> {
+        self.console_read_entry_restartable().map(tos_api::xbios::iorec::word_from_entry)
+    }
+
+    fn console_read_entry_blocking(&self) -> u32 {
         // Never gives way: `read_key_loop(false)` only returns with a key.
         read_key_loop(false).unwrap_or(0)
     }
 
-    fn console_read_key_restartable(&self) -> Option<u16> {
+    fn console_read_entry_restartable(&self) -> Option<u32> {
         read_key_loop(true)
     }
 
@@ -552,10 +560,10 @@ pub fn irq_input_pump(spsr: u64) {
     }
 }
 
-/// The blocking key-word read shared by [`Host::console_read_key_blocking`]
-/// and [`Host::console_read_key_restartable`]: pops the whole key word
-/// (`scancode << 8 | ascii`) via `rx_pop_key` — it does *not* skip
-/// scancode-only keys (ASCII 0), so arrow / function keys reach
+/// The blocking key read shared by [`Host::console_read_entry_blocking`]
+/// and [`Host::console_read_entry_restartable`]: pops the whole IOREC entry
+/// (`shifty << 24 | scancode << 16 | ascii`) via `rx_pop_entry` — it does
+/// *not* skip scancode-only keys (ASCII 0), so arrow / function keys reach
 /// `Bconin(2)`/`Cconin` and friends. Runs inside the synchronous SVC handler
 /// with IRQs masked, so unmask + `wfi` while waiting (qemu-virt), or spin
 /// (rpi4 polls USB-HID).
@@ -564,7 +572,7 @@ pub fn irq_input_pump(spsr: u64) {
 /// queued for its `kbdvec` hook (KEYS02, `docs/api/xbios/22-kbdvbase.md` B4):
 /// those are delivered on the way back to EL0, so the caller must let the trap
 /// restart instead of waiting for a key the hook itself may have to produce.
-fn read_key_loop(give_way: bool) -> Option<u16> {
+fn read_key_loop(give_way: bool) -> Option<u32> {
     let daif: u64;
     // SAFETY: reading DAIF and clearing the IRQ mask are permitted
     // at EL1; we restore DAIF before returning.
@@ -588,8 +596,8 @@ fn read_key_loop(give_way: bool) -> Option<u16> {
         // ([`pump_devices`]).
         pump_devices();
 
-        if let Some(w) = crate::console::rx_pop_key() {
-            break Some(w);
+        if let Some(e) = crate::console::rx_pop_entry() {
+            break Some(e);
         }
         if give_way && tos_api::xbios::kbdvecs::pending_for_running() {
             break None;

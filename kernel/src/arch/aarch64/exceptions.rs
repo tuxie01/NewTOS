@@ -658,6 +658,11 @@ fn sync_handler(frame: &mut ExceptionFrame) {
     // system does nothing, so a GEMDOS-only tail would never tick.
     tos_api::gemdos::trace::flush_if_requested();
 
+    // XBIOS01 E4: the IOREC records are program data in a page every process
+    // may write; a replaced buffer or broken indices are repaired and warned
+    // about "at the next trap" (`docs/api/xbios/0e-iorec.md`, Entscheidungen).
+    crate::console::check_iorec_after_trap();
+
     // KEYS02: a single-key blocking read (`Cconin`/`Cnecin`/`Crawcin`/
     // `Bconin(2)`) gave way because this process's `kbdvec` hook has bytes
     // queued (`Host::console_read_key_restartable`). Its `result` is a
@@ -840,7 +845,10 @@ fn deliver_pending_kbdvec(frame: &mut ExceptionFrame) -> bool {
             frame,
             UpcallDesc {
                 handler_va: handler,
-                args: [u64::from(byte), 0, 0, 0],
+                // x1 = the IKBD IOREC, as EmuTOS' `ikbdraw` passes
+                // `a0 = &ikbdiorec` (`bios/aciavecs.S:407-414`; XBIOS01 E6,
+                // `docs/api/xbios/22-kbdvbase.md` D2a).
+                args: [u64::from(byte), tos_api::xbios::iorec::IKBD_IOREC_VA, 0, 0],
                 mask_bit: UPCALL_MASK_KBDVEC,
                 disposition: Disposition::ResumeSuper { prev_super },
             },

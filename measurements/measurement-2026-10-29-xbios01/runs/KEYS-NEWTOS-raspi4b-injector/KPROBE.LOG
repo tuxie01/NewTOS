@@ -1,0 +1,10 @@
+K00 conterm=07 Bconstat(2)=00000000 Kbshift=00000000
+K01 first Bconstat(2)!=0 after 400 ticks (24883 polls): ret=ffffffff
+K02 Kbshift(-1) before reading=00000000
+K11 Bconstat=ffffffff Bconin(2)=001e0061
+K12 Bconstat=ffffffff Bconin(2)=001e0041
+K13 Bconstat=ffffffff Bconin(2)=003b0000
+K14 Bconstat=ffffffff Bconin(2)=002e0003
+K15 Bconstat=ffffffff Bconin(2)=001c000d
+K16 conterm|8 Bconstat=ffffffff Bconin(2)=02300042
+K20 after: Bconstat(2)=00000000

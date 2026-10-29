@@ -1361,6 +1361,9 @@ pub fn free_slot(idx: usize) {
     // hook lived in the address space that is going away; its table in the
     // private page is rewritten for the next tenant (the stubs are shared).
     crate::xbios::kbdvecs::release_slot(idx);
+    // The next tenant of the slot gets its own IOREC repair warnings (XBIOS01
+    // E4); the shared IOREC page itself outlives every process.
+    crate::xbios::iorec::release_slot(idx);
     // State last so that any concurrent reader sees `Free` only once
     // every other field is observably reset.
     p.state.store(State::Free as u8, Ordering::Release);

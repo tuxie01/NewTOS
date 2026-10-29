@@ -1,0 +1,8 @@
+DUMPBIOS build ----, record format 3
+pointer 8 bytes, word order 2
+BIOS.TSV: 9 cases, CRC 87DF757E
+layouts: 4, writes through returned pointers (+put)
+running 9 cases
+all 9 cases ran
++put line 29: not written, the pointer is below 0x400
+BIOS.BIN: 9 records, 2912 bytes

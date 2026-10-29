@@ -60,7 +60,7 @@ pub fn run() {
 
     // ── Bconstat / Bconin (CON=2): no regress on the real console ─────
     check(bios(0x01, 2, 0) == 0, "Bconstat(CON) no input = 0");
-    console::push_rx(b'Z' as u16);
+    console::push_rx(u32::from(b'Z'));
     check(bios(0x01, 2, 0) == -1, "Bconstat(CON) with input = -1");
     check(bios(0x02, 2, 0) == 0x5A, "Bconin(CON) returns 'Z' = 0x5A");
 

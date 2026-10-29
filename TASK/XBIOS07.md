@@ -7,7 +7,7 @@ Status: **OFFEN** · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheid
 **XBIOS-CHARDEV-007 — S4 — MEASURED (Doku widerspricht Messung oder Code).** Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-xbios-chardev-audit/RUNINFO.TXT`. Dateigruppe `docs/api/xbios/` plus `docs/COMPATIBILITY.md`:
 
 1. `docs/api/xbios/0e-iorec.md` und `docs/api/xbios/18-bioskeys.md` (Pi binding): „returns `EINVFN`“ — gemessen die Funktionsnummer (`0x0E`, `0x18`).
-2. `tos-api/src/xbios/mod.rs:26@PHYSBASE`: `Iorec`/`Bioskeys` „need NewTOS keyboard/mouse infrastructure that does not exist yet“ — fuer `Bioskeys` nennt die eigene Spec `keymap::select_builtin` als vorhanden (Code-Kommentar: Developer, siehe [XBIOS01](XBIOS01.md)/[XBIOS02](XBIOS02.md)).
+2. `tos-api/src/xbios/mod.rs:26-31@PHYSBASE`: `Iorec`/`Bioskeys` „need NewTOS keyboard/mouse infrastructure that does not exist yet“ — fuer `Bioskeys` nennt die eigene Spec `keymap::select_builtin` als vorhanden (Code-Kommentar: Developer, siehe [XBIOS01](XBIOS01.md)/[XBIOS02](XBIOS02.md)).
 3. `docs/COMPATIBILITY.md`, Abschnitt „The IKBD vector table is per process“: „NewTOS keeps the table in each process's own page 0 (`0x9A0` …)“ — gemessen `0x7F010` (private RW-Seite seit MEM12, wie der MEM12-Absatz weiter unten richtig sagt).
 4. `docs/api/xbios/2c-bconmap.md`: „single-serial build“ — der gepinnte Referenzbau hat `BCONMAP_AVAILABLE` ([XBIOS05](XBIOS05.md)).
 5. `docs/api/xbios/0f-rsconf.md` „zero-extended“ gegen das Trap-ABI ([XBIOS06](XBIOS06.md)).

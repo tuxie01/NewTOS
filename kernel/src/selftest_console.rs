@@ -225,7 +225,7 @@ pub fn run() {
     // (b) Normal key pending → moved into the BDOS typeahead, no terminate,
     //     byte written; the next Cnecin returns it.
     reset_input();
-    console::push_rx(b'A' as u16); // normal key (ascii 0x41)
+    console::push_rx(u32::from(b'A')); // normal key (ascii 0x41)
     let _ = cconout(&args1(b'Y' as u64));
     check(
         take_pending_terminate().is_none()

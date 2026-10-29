@@ -161,9 +161,18 @@ r->head = r->tail = 0;
 
 ## NewTOS implementation notes
 
-(Empty during Phase 00.)
+**[XBIOS01, 2026-10-29]** `Iorec(0/1/2)` returns records in one page mapped
+read-write into every process (`0x7D000`), laid out as the LP64 `_IOREC` of the
+"Dumper layout" block above (24 bytes; device 0 56); the IKBD record is the live
+console key queue, 4-byte entries, 63 keys. The kernel never trusts the page:
+it checks `ibuf`/`ibufsiz`/`ibufhd`/`ibuftl` before every use and repairs and
+warns once per process. Details, decisions E1-E6 and cites:
+`docs/api/xbios/0e-iorec.md`, "NewTOS implementation"; code
+`tos-api/src/xbios/iorec.rs`.
 
-**Concurrency note for PHASE-02 / PHASE-07**: AArch64 requires explicit
+**Concurrency note for PHASE-02 / PHASE-07** (XBIOS01: the kernel side uses
+acquire/release 16-bit atomics on `head`/`tail` and masks IRQs around each ring
+operation, `tos-api/src/xbios/iorec.rs`): AArch64 requires explicit
 memory ordering. The producer (interrupt handler) must use
 release-store on `tail`; the consumer must use acquire-load. Plain
 `volatile` (as in EmuTOS) is **insufficient** on weakly-ordered

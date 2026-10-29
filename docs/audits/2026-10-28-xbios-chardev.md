@@ -55,7 +55,7 @@ BIOS-Kern-Audit DIFF sind (BIOS-CORE-001). Die Kanten von `rsconf` ueber
 
 - LOCALIZED: `tos-api/src/xbios/mod.rs:65-138@dispatch` (Sammelzweig
   `other => other as i64`, kein `Iorec`-Arm; Absicht im Kommentar
-  `tos-api/src/xbios/mod.rs:26@PHYSBASE`). `deps iorec --down` leer.
+  `tos-api/src/xbios/mod.rs:26-31@PHYSBASE`). `deps iorec --down` leer.
   Beobachtet ueber `Iorec`.
 - Faelle: `bios-r1` 101/102, `xbios-chardev-r1` 24–27 — EXACT-DIFF, EmuTOS
   `-1`, NewTOS `0x0E`, beide Profile
@@ -114,7 +114,7 @@ BIOS-Kern-Audit DIFF sind (BIOS-CORE-001). Die Kanten von `rsconf` ueber
 - Fehlerbild: ein Programm installiert eigene Tabellen und stellt beim Ende
   mit `Bioskeys()` zurueck (das dokumentierte Verfahren). Auf NewTOS bleibt
   die Tastatur verstellt; weil `set_key_table` den globalen Uebersetzer
-  aendert (`kernel/src/host_env.rs:322@set_key_table`), auch fuer den Desktop
+  aendert (`kernel/src/host_env.rs:330@set_key_table`), auch fuer den Desktop
   und alle folgenden Programme bis zum Neustart (diese Folge nach
   Programmende: PLAUSIBLE, Fall: XCKTNL, dann nach Programmende eine Taste
   im Desktop pruefen).
@@ -242,7 +242,7 @@ Route: Researcher.
 1. `docs/api/xbios/0e-iorec.md` (Pi binding) und `docs/api/xbios/18-bioskeys.md`
    (Pi binding): „returns `EINVFN`“ — gemessen: die Funktionsnummer (`0x0E`,
    `0x18`).
-2. `tos-api/src/xbios/mod.rs:26@PHYSBASE`: `Iorec`/`Bioskeys` „need NewTOS
+2. `tos-api/src/xbios/mod.rs:26-31@PHYSBASE`: `Iorec`/`Bioskeys` „need NewTOS
    keyboard/mouse infrastructure that does not exist yet“ — fuer `Bioskeys`
    nennt die eigene Spec `keymap::select_builtin` als vorhanden.
 3. `docs/COMPATIBILITY.md`, Abschnitt „The IKBD vector table is per process“:

@@ -213,7 +213,7 @@ gilt fuer das, was gebaut wird, ueber die Build-Skripte
   lesen 0 und werden nie ausgewertet.
 - **Upcall-Primitive** (ADR-029): `deliver_upcall` biegt den Rahmen auf einen
   EL0-Handler um, Rueckkehr ueber `Psigreturn`, Zustellung am Syscall-Ruecksprung
-  (`kernel/src/arch/aarch64/exceptions.rs:1772@deliver_upcall`,
+  (`kernel/src/arch/aarch64/exceptions.rs:1780@deliver_upcall`,
   `docs/analysis/coop-kernel/10-upcall-signal-design.md` §7.1); Maskenbits
   `UPCALL_MASK_ETV_TERM`/`_AES_USERDEF`/`_VEX_WHEEL`/`_KBDVEC`
   (`tos-api/src/bdos/process.rs:676@UPCALL_MASK_ETV_TERM`,
@@ -221,7 +221,7 @@ gilt fuer das, was gebaut wird, ueber die Build-Skripte
   `:698@UPCALL_MASK_KBDVEC`); Disposition-Varianten `Resume`,
   `Terminate`, `UserdefReturn`, `SupexecReturn`, `ResumeSuper`
   (`tos-api/src/bdos/process.rs:1212@post_upcall`-Nachbarschaft, Typ `Disposition` oberhalb von `UPCALL_MASK_ETV_TERM`). Verschachtelungsgrenze
-  `MAX_UPCALL_NEST`, bei Ueberlauf `Pterm(-998)` (`exceptions.rs:1772@deliver_upcall`).
+  `MAX_UPCALL_NEST`, bei Ueberlauf `Pterm(-998)` (`exceptions.rs:1780@deliver_upcall`).
   **Kein** IRQ-Zustellweg: der Lower-EL-IRQ-Vektor fuehrt nicht zu einem
   Zustell-Check (Design §7.3 „OFFEN/Vorbedingung“, Stand des Dokuments; der
   heutige Code ist nicht erneut darauf geprueft) — [O].
@@ -231,11 +231,11 @@ gilt fuer das, was gebaut wird, ueber die Build-Skripte
 | Haken | Adresse vorhanden? | gelesen / geschrieben / gerufen | Zitat |
 |---|---|---|---|
 | H01 `etv_timer` | Schatten-Slot `0x100`, Platzhalter-Startwert | `Setexc` setzt/liest; **nie gerufen** (kein Aufrufer von `vector(ETV_TIMER)`); 200-Hz-Zaehler `bios::tick::advance` ruft keinen Haken | `tos-api/src/bios/vectors.rs:149@vector`, `tos-api/src/bios/tick.rs:78@advance`; Audit BIOS-CORE-002 (gemessen: Orakel `calls=100`, NewTOS `calls=0`, `TASK/BIOS05.md`) |
-| H02 `etv_critic` | Schatten-Slot `0x101`, Platzhalter | gesetzt/gelesen, **nie gerufen**; NewTOS hat in `Rwabs` keinen Wiederholungs-/Critic-Pfad | `tos-api/src/bios/mod.rs:148@rwabs` (Doc-Kommentar „retry loop / etv_critic chain … out of scope“); `kernel/src/arch/aarch64/exceptions.rs:1385@etv` (Kommentar darueber: „etv_critic (M1) and etv_timer are later cooperative-kernel steps“) |
-| H03 `etv_term` | Schatten-Slot `0x102` | **gerufen**: Pterm/Ptermres rufen einen echten Handler als EL0-Upcall vor dem Abbau (`Disposition::Terminate`); Platzhalter/0 = kein Handler | `kernel/src/arch/aarch64/exceptions.rs:1385@etv`, `:1341@handle_pterm` |
+| H02 `etv_critic` | Schatten-Slot `0x101`, Platzhalter | gesetzt/gelesen, **nie gerufen**; NewTOS hat in `Rwabs` keinen Wiederholungs-/Critic-Pfad | `tos-api/src/bios/mod.rs:148@rwabs` (Doc-Kommentar „retry loop / etv_critic chain … out of scope“); `kernel/src/arch/aarch64/exceptions.rs:1393@etv` (Kommentar darueber: „etv_critic (M1) and etv_timer are later cooperative-kernel steps“) |
+| H03 `etv_term` | Schatten-Slot `0x102` | **gerufen**: Pterm/Ptermres rufen einen echten Handler als EL0-Upcall vor dem Abbau (`Disposition::Terminate`); Platzhalter/0 = kein Handler | `kernel/src/arch/aarch64/exceptions.rs:1393@etv`, `:1341@handle_pterm` |
 | H04 `etv_xtra` | Schatten-Slot `0x103` (`< NVEC`) | gesetzt/gelesen, nie gerufen (EmuTOS ruft ihn auch nicht) | `tos-api/src/bios/vectors.rs:21@NVEC` |
 | H05/H06 `bell_hook`/`kcl_hook` | Seite-0-Zelle (Nr. `0x16B`/`0x16C` ueber `Setexc`-Zellen-Regime) | beschreibbar, **nie gelesen**; NewTOS erzeugt weder Klingel noch Tastenklick | `tos-api/src/bios/vectors.rs:98@setexc` (Zellen-Zweig); `/usr/bin/grep -i "bell_hook\|kcl_hook" kernel tos-api/src`: keine Treffer — [D] |
-| H07–H09 `hdv_rw/bpb/mediach` | Zellen **nicht befuellt** (0), im Super-Zustand beschreibbar | geschrieben von TeraDesk, **nie gelesen**. GEMDOS ruft die Blockschicht **direkt** (`bcache::device`), nicht ueber BIOS-Vektoren; die BIOS-Traps `Rwabs`/`Getbpb`/`Mediach` sind feste Funktionen | `tos-api/src/bios/mod.rs:148@rwabs`, `:237@mediach`; `tos-api/src/bios/bpb.rs:284@getbpb`; `tos-api/src/bdos/fs/cache.rs:184@block` (GEMDOS-Puffer); in `tos-api/src/bdos` kein `mediach`/`Getbpb`-Aufruf (`/usr/bin/grep -i mediach tos-api/src/bdos`: kein Treffer) — [D]; Doc `tos-api/src/bios/bcache.rs:11@GEMDOS` („under every access“) |
+| H07–H09 `hdv_rw/bpb/mediach` | Zellen **nicht befuellt** (0), im Super-Zustand beschreibbar | geschrieben von TeraDesk, **nie gelesen**. GEMDOS ruft die Blockschicht **direkt** (`bcache::device`), nicht ueber BIOS-Vektoren; die BIOS-Traps `Rwabs`/`Getbpb`/`Mediach` sind feste Funktionen | `tos-api/src/bios/mod.rs:148@rwabs`, `:237@mediach`; `tos-api/src/bios/bpb.rs:284@getbpb`; `tos-api/src/bdos/fs/cache.rs:175@block` (GEMDOS-Puffer); in `tos-api/src/bdos` kein `mediach`/`Getbpb`-Aufruf (`/usr/bin/grep -i mediach tos-api/src/bdos`: kein Treffer) — [D]; Doc `tos-api/src/bios/bcache.rs:11@GEMDOS` („under every access“) |
 | H10/H11 `hdv_init`/`hdv_boot` | Zellen nicht befuellt | nicht gelesen (EmuTOS ruft sie auch nicht ueber den Vektor) | — |
 | H12 `swv_vec` | Zelle nicht befuellt | nicht gelesen; es gibt keinen Monitorwechsel (`CONF_WITH_ATARI_VIDEO`-Pfad) | — |
 | H13 `exec_os` | Zelle nicht befuellt | nicht gelesen; NewTOS startet die Shell ueber seinen eigenen Bootpfad (`OSHEADER.os_magic` = 0, `loader.rs:1124@populate_sysvars`-Kommentar „os_magic … left 0“) | `tos-api/src/bdos/process/loader.rs:1163@os_magic` |
@@ -251,12 +251,12 @@ gilt fuer das, was gebaut wird, ueber die Build-Skripte
 | K11 `mousexvec` | Slot `Kbdvbase()-16` mit `ret`-Stub (EL0-Spiegel); der **lebende** Vektor ist eine Kernel-interne Zelle fuer die VDI | der EL0-Slot wird nie gerufen | `tos-api/src/bios/vectors.rs:185@MOUSEXVEC` (Modulkommentar), `:197@mousexvec` |
 | V01/V02 CPU-/Trap-/MFP-Vektoren | Schatten-Slots `0..0x11F` | gesetzt/gelesen, **nie dispatcht** (AArch64 hat keine m68k-Ausnahmen; Modulkopf) | `tos-api/src/bios/vectors.rs:12@AArch64` (Modulkommentar), `:98@setexc` |
 | X01 `Initmous` | nicht verdrahtet | Rueckgabe = Funktionsnummer (Katch-all) | `tos-api/src/xbios/mod.rs:26@Initmous`, `:129@Initmous` |
-| X02 `Mfpint`/`Xbtimer`/`Jdisint`/`Jenabint` | nicht verdrahtet | Rueckgabe = Funktionsnummer | `tos-api/src/xbios/mod.rs:129@Initmous` (Kommentar nennt `0x0D/0x1A/0x1B/0x1F`) |
+| X02 `Mfpint`/`Xbtimer`/`Jdisint`/`Jenabint` | nicht verdrahtet | Rueckgabe = Funktionsnummer | `tos-api/src/xbios/mod.rs:137@Initmous` (Kommentar nennt `0x0D/0x1A/0x1B/0x1F`) |
 | D01 `vex_butv/motv/curv` | Slot (`USER_BUT` …) | gespeichert/zurueckgegeben, **nie ausgefuehrt**, ohne Log | `tos-api/src/vdi/mouse.rs:937@vex_butv` (Kommentar „stored and returned, never executed“), `:919@swap_vector` |
 | D02 `vex_timv` | Slot `TIM_ADDR` | wie D01; Rueckgabe `TICKCAL_MS` = 20 | `tos-api/src/vdi/mouse.rs:992@vex_timv` |
 | D03 `vex_wheelv` | Slot + Art (`NONE`/`AES`/`EL0`) | **gerufen** als `post_upcall` mit `UPCALL_MASK_VEX_WHEEL` | `tos-api/src/vdi/mouse.rs:967@vex_wheelv`, `:571@call_user_wheel` |
 | — `G_USERDEF` | — | gerufen (synchroner Upcall, `UserdefReturn`) | `kernel/src/arch/aarch64/exceptions.rs:888@deliver_userdef_upcall` |
-| — `Supexec` | — | gerufen, Rueckgabewert wird `x0` | `kernel/src/arch/aarch64/exceptions.rs:1871@handle_supexec` |
+| — `Supexec` | — | gerufen, Rueckgabewert wird `x0` | `kernel/src/arch/aarch64/exceptions.rs:1879@handle_supexec` |
 
 **Die Luecke in der Disziplin „nie still“ heute:** H01, H02, H04–H09,
 K02–K10 (EL0-Spiegel), D01–D02 laufen ohne jede Meldung ins Leere
@@ -326,7 +326,7 @@ was“. Optionen:
 | `Setexc`-Haken (H01–H06, V01/V02) | direkt im `Setexc`-Aufruf (`vector != -1`, Wert ≠ Startwert) |
 | Seite-0-Zellen (H07–H18) | Vergleich der Haken-Zellen mit ihrem Startwert beim **Verlassen des Super-Zustands** (`Super(old)`, `Supexec`-Ruecksprung) und bei `Pterm`; moeglich, weil Seite 0 nur im Super-Zustand beschreibbar ist (`docs/api/_super-state.md` S2). Der Kernel **liest** die Zellen nur zum Vergleich, nutzt den Wert nicht |
 | `Kbdvbase`-Slots (K02–K11) | beim ersten Ereignis, das den Haken riefe (wie die Accessory-Warnung), oder beim `Pterm` des Besitzers |
-| `Initmous`/`Mfpint`/`Xbtimer`/`Jdisint` | im Aufruf selbst (heute stiller Katch-all, `tos-api/src/xbios/mod.rs:129@Initmous`) |
+| `Initmous`/`Mfpint`/`Xbtimer`/`Jdisint` | im Aufruf selbst (heute stiller Katch-all, `tos-api/src/xbios/mod.rs:137@Initmous`) |
 | `vex_butv/motv/curv/timv` | im Aufruf (neuer Wert ≠ `just_rts`-Token) |
 
 Meldungsform (Vorschlag): `[hook] warning: slot <n> (<programm>) installed
@@ -379,7 +379,7 @@ X, **C** wirkt nicht (Grund + Folge + Warnung).
 
 | Haken | Beleg (genutzt von) | Empfehlung | Optionen / Semantik X | Aufwand | Sicherheit | Messfall |
 |---|---|---|---|---|---|---|
-| H03 `etv_term` | Doom (nur m68k-Zweig), EmuTOS-Pterm | **A (bleibt)** | wie H1 gebaut; ADR nimmt ihn mit auf (Besitzregel: Haken zeitlich an den Besitzer binden, bei `Ptermres` offen, Q3) | 0 | Upcall mit Rechten des Terminierenden (`exceptions.rs:1385@etv`) | NewTOS-Sonde: Pterm mit Handler, der einen Zaehler setzt; Orakel-Gegenstueck fehlt (Audit: „nicht gemessen“) → in Aufwand aufnehmen |
+| H03 `etv_term` | Doom (nur m68k-Zweig), EmuTOS-Pterm | **A (bleibt)** | wie H1 gebaut; ADR nimmt ihn mit auf (Besitzregel: Haken zeitlich an den Besitzer binden, bei `Ptermres` offen, Q3) | 0 | Upcall mit Rechten des Terminierenden (`exceptions.rs:1393@etv`) | NewTOS-Sonde: Pterm mit Handler, der einen Zaehler setzt; Orakel-Gegenstueck fehlt (Audit: „nicht gemessen“) → in Aufwand aufnehmen |
 | K01 `kbdvec` | Doom, `KBDVEC`, `P0KID` | **A (bleibt)** | wie KEYS02 | 0 | wie gebaut; Super-Zustand fuer den Handler (S11) | vorhanden: KEYS02-Messung `sdk/examples/kbdvec.c`; `bios-r1` 136 und `xbios-chardev-r1` 37 EQUAL |
 | D03 `vex_wheelv` | kein Programm im Bestand | **A (bleibt)** | wie gebaut | 0 | `post_upcall` mit `UPCALL_MASK_VEX_WHEEL` | `tos-api/tests/vdi_vex_wheelv.rs` |
 | G_USERDEF, Supexec | AES-Programme / TeraDesk, HypView, WinDom | **A (bleibt)** | — | 0 | — | vorhanden |
@@ -461,7 +461,7 @@ X, **C** wirkt nicht (Grund + Folge + Warnung).
   verfolgt.
 - Das Doc-Kommentar-Kopf von `tos-api/src/xbios/mod.rs:26@Initmous` nennt `Supexec`
   als „nicht verdrahtet“, `handle_supexec` im Kernel bedient es seit MEM12
-  (`kernel/src/arch/aarch64/exceptions.rs:1871@handle_supexec`) — veralteter
+  (`kernel/src/arch/aarch64/exceptions.rs:1879@handle_supexec`) — veralteter
   Kommentar.
 - AES-`G_PROGDEF`/`ub_code` ist der dritte Hook-Typ mit Programmcode im
   Kernpfad (bedient, `UPCALL_MASK_AES_USERDEF`); in diesem ADR nur als

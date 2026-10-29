@@ -15,6 +15,7 @@
 //! defined contract value instead (floppy → `EUNDEV`, PSG → `0`, etc.).
 
 pub mod floppy;
+pub mod iorec;
 pub mod kbdvecs;
 pub mod keytbl;
 pub mod screen;
@@ -23,10 +24,11 @@ pub mod system;
 use crate::trap::TrapArgs;
 use tos_types::error::EUNDEV;
 
-// XBIOS function ids. Note: Initmous (0x00), Iorec (0x0E) and Bioskeys (0x18)
-// are intentionally NOT wired — they need NewTOS keyboard/mouse infrastructure
+// XBIOS function ids. Note: Initmous (0x00) and Bioskeys (0x18) are
+// intentionally NOT wired — they need NewTOS keyboard/mouse infrastructure
 // that does not exist yet, so they fall through to the function-number
 // catch-all (honestly unimplemented). See the STOP notes on `dispatch` below.
+// Iorec (0x0E) is wired since XBIOS01 (`iorec`).
 const PHYSBASE: u16 = 0x02; // screen group (Phase 10)
 const LOGBASE: u16 = 0x03;
 const GETREZ: u16 = 0x04;
@@ -37,6 +39,7 @@ const FLOPRD: u16 = 0x08; // floppy/DMA group → EUNDEV (no controller)
 const FLOPWR: u16 = 0x09;
 const FLOPFMT: u16 = 0x0A;
 const MIDIWS: u16 = 0x0C; // MIDI entry of the BIOS device table (absent: bytes dropped)
+const IOREC: u16 = 0x0E; // the IOREC page: records + the live IKBD key ring (XBIOS01)
 const RSCONF: u16 = 0x0F; // RS-232 config (PL011 thin adapter)
 const KEYTBL: u16 = 0x10; // keyboard translation tables
 const RANDOM: u16 = 0x11; // system group (Phase 11)
@@ -97,6 +100,11 @@ pub fn dispatch(args: &TrapArgs) -> i64 {
         // as EmuTOS' desktop does (`desk/deskmain.c:1144-1145`). See
         // `docs/api/xbios/10-keytbl.md`.
         KEYTBL => keytbl::keytbl(args),
+        // Device records: 0 RS-232, 1 IKBD (the live console key queue), 2
+        // MIDI, otherwise -1 (`bios/xbios.c:336-348`). The records sit in a
+        // page every process maps read-write, so `io->ibufhd = io->ibuftl`
+        // flushes the keyboard as on TOS. See `docs/api/xbios/0e-iorec.md`.
+        IOREC => iorec::iorec(args),
         RANDOM => system::random(),
         // Clock group: Settime/Gettime read/write the same wall clock as
         // GEMDOS Tgetdate/Tgettime (no separate RTC on NewTOS). Settime
@@ -127,7 +135,7 @@ pub fn dispatch(args: &TrapArgs) -> i64 {
         // (not the function number). See `docs/api/xbios/40-blitmode.md`.
         BLITMODE => system::blitmode(),
         // Every other id — an in-range but unimplemented slot (e.g. Initmous
-        // 0x00, Iorec 0x0E, Bioskeys 0x18, the MFP 0x0D/0x1A/0x1B/
+        // 0x00, Bioskeys 0x18, the MFP 0x0D/0x1A/0x1B/
         // 0x1F and NVRAM 0x2E slots, Supexec 0x26, the TT-shifter
         // 0x50-0x57 range) **or** an out-of-range id (> LAST_ENTRY 0x57) —
         // returns the function number itself, zero-extended. This is the

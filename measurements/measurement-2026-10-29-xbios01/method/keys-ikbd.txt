@@ -1,0 +1,10 @@
+# tools/inject-arm.py script for xbios-flush-r1.tsv, armed launch:DUMPBIOS:
+# <hz_200 ticks after arming> <IKBD bytes>, make = scancode, break = scancode|0x80.
+# The same three strokes as keys-hatari.txt (a, b, c). The injector arms at the
+# first trap-side input pump after the launch and feeds every due byte at a
+# later one. The bytes are due 200 ticks (1 s) after arming: the first pump is
+# the conbrk check of the dumper's start-up console output, and keys fed there
+# go into the BDOS typeahead (conbrk, bdos/console.c) -- a development run with
+# offset 0 showed exactly that (ring head = tail = 12 before the flush). With
+# 1 s the next pump is the table's Bconstat(2) after the ~3 s Vsync wait.
+200 0x1E 0x9E 0x30 0xB0 0x2E 0xAE

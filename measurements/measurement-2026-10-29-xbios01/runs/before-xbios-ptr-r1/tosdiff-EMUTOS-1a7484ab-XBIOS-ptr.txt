@@ -1,0 +1,62 @@
+EMUTOS-1a7484ab-XBIOS-ptr.BIN vs NEWTOS.BIN -- area BIOS, 9 cases from xbios-ptr-r1.tsv
+
+case 24  trap 14 function 0x0E  Iorec(0) RS-232 EXT_IOREC -- bios/xbios.c:339-340
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x000000000000000E, below 0x400
+    extiorec:in.ibuf         PTR_RAM NEWTOS.BIN                    = not read, the pointer is below 0x400
+    extiorec:in.ibufsiz      EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000100   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    extiorec:in.ibufhd       EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000000   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    extiorec:in.ibuftl       EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000000   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    extiorec:in.ibuflow      EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000040   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    extiorec:in.ibufhi       EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x00000000000000C0   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    extiorec:out.ibuf        PTR_RAM NEWTOS.BIN                    = not read, the pointer is below 0x400
+    extiorec:out.ibufsiz     EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000100   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    extiorec:out.ibufhd      EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000000   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    extiorec:out.ibuftl      EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000000   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    extiorec:out.ibuflow     EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000040   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    extiorec:out.ibufhi      EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x00000000000000C0   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    extiorec:baudrate        EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000001   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    extiorec:flowctrl        EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000000   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    extiorec:ucr             EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000088   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    extiorec:datamask        EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x00000000000000FF   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+
+case 25  trap 14 function 0x0E  Iorec(1) IKBD IOREC -- bios/xbios.c:341-342
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x000000000000000E, below 0x400
+    iorec:ibuf               PTR_RAM NEWTOS.BIN                    = not read, the pointer is below 0x400
+    iorec:ibufsiz            EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000100   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    iorec:ibufhd             EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000000   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    iorec:ibuftl             EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000000   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    iorec:ibuflow            EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000040   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    iorec:ibufhi             EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x00000000000000C0   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+
+case 26  trap 14 function 0x0E  Iorec(2) MIDI IOREC -- bios/xbios.c:343-344
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x000000000000000E, below 0x400
+    iorec:ibuf               PTR_RAM NEWTOS.BIN                    = not read, the pointer is below 0x400
+    iorec:ibufsiz            EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000080   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    iorec:ibufhd             EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000000   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    iorec:ibuftl             EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000000   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    iorec:ibuflow            EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000020   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    iorec:ibufhi             EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000060   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+
+case 28  trap 14 function 0x0E  Iorec(1): the pointer the flush writes through
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x000000000000000E, below 0x400
+    iorec:ibuf               PTR_RAM NEWTOS.BIN                    = not read, the pointer is below 0x400
+    iorec:ibufsiz            EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000100   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    iorec:ibufhd             EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000000   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    iorec:ibuftl             EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000000   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    iorec:ibuflow            EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000040   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    iorec:ibufhi             EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x00000000000000C0   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+
+case 31  trap 14 function 0x0E  Iorec(1) read back after the flush: head == tail
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x000000000000000E, below 0x400
+    iorec:ibuf               PTR_RAM NEWTOS.BIN                    = not read, the pointer is below 0x400
+    iorec:ibufsiz            EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000100   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    iorec:ibufhd             EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000000   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    iorec:ibuftl             EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000000   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    iorec:ibuflow            EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x0000000000000040   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+    iorec:ibufhi             EXACT   EMUTOS-1a7484ab-XBIOS-ptr.BIN = 0x00000000000000C0   NEWTOS.BIN                    = not read (the pointer is below 0x400)
+
+case 34  trap 13 function 0x00  Getmpb(buffer 0): MPB, the MD via mp_free -- bios/biosmem.c:144
+    mpb:mp_free->md_start    PTR_RAM NEWTOS.BIN                    = 0x00A0000000400000, not < 0x80000000
+    mpb:mp_free->md_length   NONZERO NEWTOS.BIN                    = 0x0000000000000000, is zero
+
+6 of 9 cases differ

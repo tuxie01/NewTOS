@@ -5,13 +5,22 @@
 > 0x0E of `xbios_vecs[]` (`bios/xbios.c:1304`).
 > **[XBIOS01] 2026-10-28:** NewTOS-Vertrag des IOREC-Abbilds ergaenzt (Abschnitt
 > "NewTOS-Vertrag"), Status und die falsche `EINVFN`-Aussage korrigiert.
+> **[XBIOS01] 2026-10-29:** implementiert nach E1-E6 (Abschnitt "NewTOS
+> implementation"); die Abschnitte F1-F3 beschreiben, wo sie "heute" sagen, den
+> Stand **vor** dem Fix (2026-10-28) und bleiben als Begruendung stehen.
 
 > **Contract vs. reference** — see [`docs/COMPATIBILITY.md`](../../COMPATIBILITY.md).
 > Contract: trap ID/ABI, `devno` -> record mapping, `-1` for an invalid device,
 > the field layout and ring semantics a program reads/writes. Reference: the
 > ACIA/UART drivers behind each record, the concrete addresses.
 
-## Status: **Vertrag entschieden 2026-10-28 (E1-E6, Ende dieses Dokuments)**
+## Status: **Implementiert 2026-10-29 (XBIOS01, E1-E6)** — Vertrag entschieden 2026-10-28
+
+Seit XBIOS01: `Iorec(0/1/2)` liefert Zeiger auf die Records in der gemeinsamen
+IOREC-Seite, jedes andere Geraet `-1`; der IKBD-Record **ist** die
+Tastenschlange aller Verbraucher (Abschnitt "NewTOS implementation"). Der
+folgende Absatz ist der Befund vor dem Fix.
+
 
 [XBIOS01] Vorher stand hier "decision deferred" und "returns `EINVFN`". Beides
 ist falsch: `Iorec` ist in NewTOS nicht verdrahtet; der Sammelzweig
@@ -183,22 +192,25 @@ zurueckgegebene Zeiger `0x0E` in Seite 0 liegt
 (`measurements/measurement-2026-10-28-xbios-chardev-audit/runs/XCIOFL-NEWTOS-raspi4b/BOOT-SERIAL.txt`).
 Damit der Flush im Benutzerzustand **schreibbar** ist, muss `ibufhd`/`ibuftl`
 (und `buf`, sofern E4) in einer EL0-lesbaren **und -schreibbaren**, nicht
-ausfuehrbaren Seite liegen. Heute gibt es genau eine solche Seite: die
-prozessprivate RW-Seite bei `0x7F000` (`tos-api/src/bdos/process/mmu.rs:247@PRIV_PAGE_VA`,
+ausfuehrbaren Seite liegen. Vor XBIOS01 gab es genau eine solche Seite: die
+prozessprivate RW-Seite bei `0x7F000` (`tos-api/src/bdos/process/mmu.rs:259@PRIV_PAGE_VA`,
 Modul-Kopf `tos-api/src/bdos/process/mmu.rs:21@PRIV_PAGE_VA`), belegt mit der `Kbdvbase`-Tabelle (`0x00-0x5F`,
 `tos-api/src/bdos/process/loader.rs:1033@KBDVECS_AREA_SIZE`) und dem
 `PARMBLK`-Scratch ab `+0x100` (`loader.rs:1004@PARMBLK_SCRATCH_VA`, 40 Byte).
 Frei bleiben ab `+0x128` rund 3,7 KiB; ein Satz Records mit Puffern
 (IKBD 24+256, MIDI 24+128, AUX 56+256+256 = 1000 Byte) passt dort hinein
 (Rechnung aus den oben zitierten Groessen). Ob es dorthin gehoert, haengt an
-E1 (die Seite ist je Prozess; EmuTOS' Ring ist global).
+E1 (die Seite ist je Prozess; EmuTOS' Ring ist global). **Entschieden (E1):**
+eine eigene, gemeinsame Seite bei `0x7D000`
+(`tos-api/src/bdos/process/mmu.rs:264@IOREC_PAGE_VA`), siehe "NewTOS
+implementation".
 
 ### F2 — Welche Geraete, und was steht heute dahinter (Frage 2)
 
-| devno | EmuTOS (Oracle) | NewTOS heute | Ziel-Vertrag |
+| devno | EmuTOS (Oracle) | NewTOS vor XBIOS01 (2026-10-28) | Ziel-Vertrag (seit XBIOS01 umgesetzt) |
 |---|---|---|---|
 | 0 | `EXT_IOREC *`, 256/256 + Baud/Flow/UCR | nichts: `0x0E`. Dahinter AUX ohne Kabel, `Bconstat(1)=0`, `Bconout(1)` verwirft, `Bcostat(1)=-1` (`tos-api/src/bios/chardev.rs:115@AuxNoCable`, `:229@DEVICES`) | Record vorhanden; `in` leer und bleibt es, `out` ist immer leer (NewTOS verwirft sofort, der Ring kann nie fuellen) — konsistent zum BIOS (E5) |
-| 1 | `&ikbdiorec`, 256, 4-Byte-Eintraege | nichts. Die Tastenschlange ist `RX_RING`: 128 Eintraege **`u16`** `scancode<<8\|ascii`, ohne Shift-Byte (`kernel/src/console.rs:135@RX_CAPACITY`, `:215@RX_RING`, `:276@push_rx`; Wort `kernel/src/ikbd.rs:311@key_word`) | Record mit 64 4-Byte-Eintraegen (E1/E2 entscheiden, ob er die Schlange **ist**) |
+| 1 | `&ikbdiorec`, 256, 4-Byte-Eintraege | nichts. Die Tastenschlange war `RX_RING` in `kernel/src/console.rs` (mit XBIOS01 entfernt): 128 Eintraege **`u16`** `scancode<<8\|ascii`, ohne Shift-Byte (Wort `kernel/src/ikbd.rs:316@key_word`) | Record mit 64 4-Byte-Eintraegen (E1/E2 entscheiden, ob er die Schlange **ist**) |
 | 2 | `&midiiorec`, 128, 1-Byte | nichts. MIDI ist "absent" (`chardev.rs:229@DEVICES`, Slot 3), `Midiws` verwirft (Audit BIOS-CORE-001) | Record vorhanden, leer, nie gefuellt (E5) |
 | sonst | `-1` | `0x0E` | `-1` (gemessen EmuTOS I04-I07) |
 
@@ -222,7 +234,7 @@ Programme verwenden — und was ein reiner **Spiegel** nicht erfuellt:
 2. **Lesen zeigt die Wahrheit:** ein Programm, das `head != tail` pollt oder
    die Eintraege direkt liest, sieht dieselben Tasten wie `Bconin`.
 
-NewTOS' Schlange `RX_RING` wird auch vom AES-Ereignismanager (Wortform
+NewTOS' Schlange `RX_RING` (vor XBIOS01) wurde auch vom AES-Ereignismanager (Wortform
 `rx_pop_key`, `kernel/src/host_env.rs`) und den `Fread`-Pfaden verbraucht; ein
 Spiegel muesste also bei **jedem** dieser Verbraucher synchronisieren. Dazu die
 **Zustellung** (Folgerung aus dem Quelltext, der Kommentar steht an
@@ -230,18 +242,19 @@ Spiegel muesste also bei **jedem** dieser Verbraucher synchronisieren. Dazu die
 Schlange nur, wenn eine Pump laeuft; die Pump rufen die Traps (`Bconstat`,
 blockierendes Lesen, AES-Idle) und der 200-Hz-Timer. **Der Timer decodiert nur
 Zeigerbewegung; Tasten und Wiederholung bleiben bei der Trap-Pump**
-(`kernel/src/host_env.rs:505@pump_devices_irq`, `kernel/src/ikbd.rs:334@poll_repeat`).
+(`kernel/src/host_env.rs:513@pump_devices_irq`, `kernel/src/ikbd.rs:341@poll_repeat`).
 Ein Programm, das den IOREC im Benutzerzustand pollt **ohne je einen Trap zu
 machen**, sieht also nie eine Taste, egal ob Spiegel oder lebender Ring (E3).
 Das ist der Unterschied zu EmuTOS, wo der ACIA-Interrupt asynchron fuellt.
 
-**Eintragsbreite.** `RX_RING` haelt 16-Bit-Woerter ohne `shifty`; der EmuTOS-
+**Eintragsbreite.** `RX_RING` hielt (vor XBIOS01) 16-Bit-Woerter ohne `shifty`; der EmuTOS-
 Eintrag ist 32 Bit mit `shifty` aus dem Zeitpunkt des Push (`bios/ikbd.c:900-909`).
-NewTOS faltet den **aktuellen** Shift-Zustand erst beim Lesen ein
-(`tos-api/src/bios/chardev.rs:352@pack_console_key`). Ein Eintrag im IOREC muss
+NewTOS faltete den **aktuellen** Shift-Zustand erst beim Lesen ein (`shift_fold`
+in `tos-api/src/bios/chardev.rs`, mit XBIOS01 entfernt). Ein Eintrag im IOREC muss
 das 32-Bit-Wort sein (Vertrag nach `bios/ikbd.c:427-435`); der Shift-Zustand
-zum Push-Zeitpunkt ist an der Push-Stelle verfuegbar (`kernel/src/ikbd.rs:287@push_rx`,
-`shift_state()` direkt daneben) — **gelesen, nicht gebaut**.
+zum Push-Zeitpunkt ist an der Push-Stelle verfuegbar (`kernel/src/ikbd.rs:292@push_rx`,
+`shift_state()` direkt daneben) — **gelesen, nicht gebaut** (Stand 2026-10-28;
+umgesetzt in XBIOS01).
 
 **Der Kernel misstraut dem beschreibbaren Record** (Folgerung aus S10 in
 `docs/api/_super-state.md`: "the kernel reads page 0 only as input it documents,
@@ -256,6 +269,79 @@ Adressen der Records (`0x4A54` usw.), die Aufteilung `iorec_init`/`.bss`,
 `wr5`, der Zeiger-Umweg ueber `rs232iorecptr`. NewTOS darf sie anders legen,
 solange F1-F3 gelten.
 
+## NewTOS implementation [XBIOS01, 2026-10-29]
+
+**Where.** One page, `0x7D000` (`tos-api/src/bdos/process/mmu.rs:264@IOREC_PAGE_VA`),
+a kernel static (`:248@IOREC_PAGE`), entered EL0 read-write, never executable in
+every process root (`tos-api/src/bdos/process/mmu.rs:830@IOREC_PAGE_IDX`), refused to
+`map_shared`, its user VA resolved by `private_page_alias` to the shared page (so a
+pointer into it may be passed to a trap). Layout in the page (reference, F4):
+device 0 `EXT_IOREC` at `+0x00`, IKBD at `+0x40`, MIDI at `+0x60`, the rings at
+`+0x100` (IKBD 256), `+0x200` (MIDI 128), `+0x300`/`+0x400` (RS-232 in/out 256)
+(`tos-api/src/xbios/iorec.rs:113@AUX_RECORD`). Records are written on first use
+with the oracle values (E5): `ibufsiz` 256/128/256+256, `low`/`high` 64/192,
+32/96, 64/192, empty, device 0 `baudrate 1`, `flowctrl 0`, `ucr 0x88`, `datamask
+0xff`, `wr5 0xea` (`bios/serport.c:86-89`).
+
+**`Iorec`** (`tos-api/src/xbios/iorec.rs:454@iorec`, wired at
+`tos-api/src/xbios/mod.rs:107@IOREC`): signed `WORD` selector
+(`:441@record_va`), `0/1/2` -> the record's EL0 address, anything else `-1`.
+
+**E1 — the ring is the queue.** `RX_RING` is gone; every producer and consumer
+goes through the IKBD record: push `tos-api/src/xbios/iorec.rs:369@push_key`
+(EmuTOS `push_ikbdiorec`: `tail` first, full -> dropped, 63 entries), pop
+`:374@pop_key` (`head` first, then the entry), `:384@key_pending` (`head !=
+tail`). Kernel side: `kernel/src/console.rs:198@push_rx` (IKBD decoder),
+`serial_rx_byte` (qemu-virt), `rx_pop`/`rx_pop_key`/`rx_pop_entry`
+(`kernel/src/console.rs:231@rx_pop_entry`) for `Fread`/`Cconrs`, the AES and
+`Bconin(2)`. Every operation runs with IRQs masked (the qemu-virt PL011 receive
+interrupt is a second producer).
+
+**The kernel distrusts the page.** Before every use the record is checked
+(`tos-api/src/xbios/iorec.rs:263@check`): `ibuf`/`ibufsiz` must be the kernel's,
+`ibufhd`/`ibuftl` below `ibufsiz` and on the entry step (4 IKBD, 1 MIDI/RS-232).
+A replaced buffer (E4 (a)) gets the kernel buffer back, emptied; bad indices
+empty the ring. The kernel never reads or writes through `ibuf`. After every
+trap all four rings are checked as well (`kernel/src/console.rs:267@check_iorec_after_trap`,
+called from `kernel/src/arch/aarch64/exceptions.rs:664@check_iorec_after_trap`), so a
+replaced buffer is noticed "at the next trap" even when no key moves. Each
+repair is warned about once per process tenancy
+(`tos-api/src/xbios/iorec.rs:416@take_warnings`, printed by
+`kernel/src/console.rs:275@report_iorec_repairs`, reset at process exit
+`tos-api/src/bdos/process.rs:1366@release_slot`):
+`[iorec] warning: Iorec(1) IKBD buffer or size replaced by the program ...`.
+
+**E2 — 32-bit entries, shift at push time.** The decoder pushes
+`shifty<<24|scancode<<16|ascii` with the shift state of the make
+(`kernel/src/ikbd.rs:292@entry_from_word`), the key repeat with the repeat's
+shift state (`kernel/src/ikbd.rs:353@entry_from_word`, after `poll` re-converted
+the word when the modifiers changed, `bios/ikbd.c:502-508`). `Bconin(2)` keeps
+bits 24-31 only with `conterm & 8` (`tos-api/src/bios/chardev.rs:351@pack_console_key`,
+`bios/ikbd.c:279-280`); the host reads whole entries
+(`tos-api/src/host.rs:121@console_read_entry_blocking`,
+`kernel/src/host_env.rs:203@console_read_entry_blocking`). Closes BIOS11. qemu-virt
+serial bytes enter as `ascii` with scancode 0 and shift 0, as before (EmuTOS'
+`push_ascii_ikbdiorec` looks the scancode up in the key tables,
+`bios/ikbd.c:192-231` — not done here, see "Out-of-scope observations").
+
+**E3 (a).** Keys still reach the ring only at a trap-side input pump (F3); a
+program that polls `ibuftl` without ever making a trap sees no key.
+
+**E5 (a).** Devices 0 and 2 have their records and stay empty: no producer
+writes them, `Bconstat(1)`/MIDI stay as before.
+
+**E6.** The `kbdvec` hook gets the IKBD record in `x1`
+(`kernel/src/arch/aarch64/exceptions.rs:851@IKBD_IOREC_VA`, EmuTOS `a0 =
+&ikbdiorec`, `bios/aciavecs.S:412`).
+
+**Tests.** Unit tests `tos-api/src/xbios/iorec.rs` (ring order, 63 entries,
+wrap, flush, bad indices, replaced buffer, selector, warn-once); integration
+`tos-api/tests/xbios01_iorec.rs` (dispatcher `Iorec`, records, mapping,
+flush -> `Bconstat(2) == 0`, BIOS11 `0x02300042`, `conterm` mask); SDK layout
+`sdk/libc/tests/iorec-layout.c` (`_Static_assert` of `_IOREC` and the device-0
+record against F1, in `sdk/run-host-tests.sh`). Measured:
+`measurements/measurement-2026-10-29-xbios01/RUNINFO.TXT`.
+
 ---
 
 ## Verification criteria (Abnahme)
@@ -267,16 +353,23 @@ solange F1-F3 gelten.
 - `Iorec(3)`, `(-1)`, `(0x7FFF)`, `(-32768)`: `-1`. Faelle `bios-r1` 101/102,
   `xbios-chardev-r1` 24-27.
 - Flush: `io->ibufhd = io->ibuftl` im Benutzerzustand laeuft durch (XCIOFL);
-  danach `Bconstat(2) == 0` (**noch nicht gemessen** — eine Sonde "Taste
+  danach `Bconstat(2) == 0` (**[XBIOS01] gemessen 2026-10-29 mit drei Tasten im
+  Ring, `tosdump/cases/xbios-flush-r1.tsv`, beidseitig EQUAL, siehe
+  `measurements/measurement-2026-10-29-xbios01/RUNINFO.TXT`**; vorher: noch nicht gemessen — eine Sonde "Taste
   einspeisen, flushen, `Bconstat(2)`" fehlt; sie braucht Eingabe-Trace wie die
   X-Sonden, TASK/TOOL08).
-- Inhalt durch den Zeiger: erst nach TASK/TOOL16 per tosdiff.
+- Inhalt durch den Zeiger: erst nach TASK/TOOL16 per tosdiff. **[XBIOS01]**
+  `xbios-ptr-r1` Faelle 24-31 EQUAL gegen tt und falcontc.
 - **[Anwender 2026-10-28]** Layout: Pruefung zur Uebersetzungszeit
   (`offsetof`/`sizeof` des SDK-`_IOREC` und der Geraet-0-Struktur) gegen die
   Offsets dieser Spec — heute sind die LP64-Offsets nur abgeleitet.
+  **[XBIOS01]** `sdk/libc/tests/iorec-layout.c` (`_Static_assert`, Ziel
+  aarch64), gruen; die Kernel-Seite haelt dieselben Offsets als Konstanten
+  (`tos-api/src/xbios/iorec.rs`, `OFF_*`).
 - **[Anwender 2026-10-28]** Flush als gemessener Fall auf beiden Seiten:
   `io->ibufhd = io->ibuftl` schreiben, danach `Bconstat(2) == 0`. Braucht
-  „durch den Rueckgabezeiger schreiben“ in TASK/TOOL16.
+  „durch den Rueckgabezeiger schreiben“ in TASK/TOOL16. **[XBIOS01]** siehe
+  Flush oben.
 
 ---
 
@@ -359,7 +452,7 @@ EmuTOS-gleich). Empfehlung der Quelle: 32-Bit; die Wahl bleibt beim Anwender.
 **E3 — Zustellung ohne Trap:** (a) hinnehmen und dokumentieren: ein Programm,
 das den Ring pollt und nie einen Trap macht, haengt (heutiger Zustand der
 Pump; reale Programme rufen meist `Bconstat`/AES/Vsync-artig); (b) die
-200-Hz-Timer-Pump (`kernel/src/host_env.rs:505@pump_devices_irq`) so erweitern,
+200-Hz-Timer-Pump (`kernel/src/host_env.rs:513@pump_devices_irq`) so erweitern,
 dass sie auch Tastenbytes und Wiederholung in den Ring schreibt — das ist ein
 Eingriff in das INPUT01-Gate (`crate::input_gate`), dessen Grund die heutige
 Zeiger-Beschraenkung ist. Folge (a): einige Direktpoller laufen nie; Folge (b):
@@ -391,4 +484,16 @@ werden (EmuTOS `a0`, `bios/aciavecs.S:412`) statt `0`. Ja/nein; haengt an E1.
 - `docs/api/structures/iorec.md`: "WORD-sized entries" falsch (4-Byte-IKBD-Eintraege).
 - `docs/api/xbios/_state.md §3`: `EXT_IOREC` "24 bytes" falsch (33 Byte Felder, 34 auf m68k).
 - `Bconin(2)` faltet `shifty` beim Lesen, EmuTOS beim Push (`pack_console_key`);
-  schon heute eine Abweichung, unabhaengig von `Iorec`.
+  schon heute eine Abweichung, unabhaengig von `Iorec`. **Erledigt mit XBIOS01
+  (E2, BIOS11).**
+- [XBIOS01] qemu-virt: ein serielles Byte kommt als Eintrag mit Scancode 0 und
+  Shift 0 in den Ring; EmuTOS' `push_ascii_ikbdiorec` sucht Scancode und Shift
+  in den Tastaturtabellen (`bios/ikbd.c:192-231`). Nur qemu-virt
+  (`CONF_SERIAL_CONSOLE`-Profil), unveraendert durch XBIOS01.
+- [XBIOS01] `Rsconf` schreibt in EmuTOS `baudrate` und `flowctrl` in den
+  Geraet-0-Record und liest `Rsconf(-2)` von dort
+  (`references/emutos/bios/serport.c:222-240`, SCC `:780-800`); NewTOS fuehrt
+  die Werte in eigenen Zellen (`tos-api/src/xbios/system.rs:263@rsconf`), der
+  Record bleibt bei `baudrate 1`/`flowctrl 0`. Nach `Rsconf(speed)` liest ein
+  Programm in `Iorec(0)` also den alten Wert. Nicht gemessen, ausserhalb dieses
+  Auftrags (gehoert zu `Rsconf`, XBIOS-CHARDEV).

@@ -7,7 +7,7 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidu
 **BIOS-CORE-009 — S3 — MEASURED.** Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-bios-core-audit/RUNINFO.TXT`.
 
 - Sonde K04/K05 `Kbshift(0x1FF)` → danach `Kbshift(-1)`: EmuTOS `0xFF`, NewTOS `0x1F`; K08/K09 `0x7F81` → `0x81` / `0x01` (`measurements/measurement-2026-10-28-bios-core-audit/runs/PROBE-EMUTOS-tt`, `measurements/measurement-2026-10-28-bios-core-audit/runs/PROBE-NEWTOS-raspi4b`). Gleich: Rueckgabe = alter Wert, Abschneiden auf ein Byte, negative Flags fragen nur ab (K06, K10), Wiederherstellung (K12/K13). `bios-r1` 77 (`-1`) EQUAL.
-- Lokalisiert: `kernel/src/ikbd.rs:380@set_shift_state` (nur Bits 0–4), `kernel/src/ikbd.rs:353@shift_state`.
+- Lokalisiert: `kernel/src/ikbd.rs:389@set_shift_state` (nur Bits 0–4), `kernel/src/ikbd.rs:362@shift_state`.
 - EmuTOS-Stellen: `references/emutos/bios/ikbd.c:145-153` (`shifty` ist `UBYTE`); `MODE_HOME`/`MODE_INSERT` setzt der Tastaturtreiber auf jeder Maschine (`references/emutos/bios/ikbd.c:876-883`, ohne Maschinenschalter).
 - Folgerung (PLAUSIBLE, nicht gemessen): auch der Tastaturpfad setzt Bit 5/6 auf NewTOS nie — Fall: Tastensonde mit Alt+Clr/Home, danach `Kbshift(-1)` (Real-Pi4-Liste Punkt 2 des Berichts: Home/Insert).
 - Spec: `docs/api/bios/0b-kbshift.md` begruendet das Nicht-Zurueckgeben mit „TT/Falcon-era“ — durch die EmuTOS-Quelle widerlegt ([BIOS12](BIOS12.md)).
