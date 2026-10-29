@@ -37,3 +37,16 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher (Profil „ein Port, 
 - Neue Orakelzeile `Bconmap(-2)` mit Mitschnitt 8 Byte (`BCONMAP`) + 24 Byte
   (erstes `MAPTAB`), in einer neuen Tabelle (bestehende sind eingefroren).
 - Lokalisierung (Lead) vor Beginn nach CLAUDE.md „Testing“.
+
+## Lokalisierung (Lead, 2026-10-29)
+
+- `bconmap` → `tos-api/src/xbios/system.rs@bconmap` (`mapped`); `--down`
+  vollstaendig. `--up`: `xbiostrap` → `tos-api/src/xbios/mod.rs@dispatch`,
+  `biostrap` → `tos-api/src/bios/mod.rs@dispatch`; vollstaendig.
+- Mitbetroffen (Wiedertest): `Iorec(0)` (`tos-api/src/xbios/iorec.rs`, haengt in
+  EmuTOS am gemappten Port), `Rsconf` (`tos-api/src/xbios/system.rs`), die
+  BIOS-Geraetetabelle `tos-api/src/bios/chardev.rs@DEVICES` (Handles 6–9 —
+  deren Profil ist [BIOS08](BIOS08.md), nicht dieses Ticket).
+- Spec zuerst: `docs/api/xbios/2c-bconmap.md` auf die Entscheidung (Option 1)
+  umstellen; Falcon-Faelle (7) und die nicht aufrufbaren `MAPTAB`-Zeiger in
+  `docs/COMPATIBILITY.md`.
