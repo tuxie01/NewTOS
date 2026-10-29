@@ -75,7 +75,7 @@ Gescannt: `tos-api/src/bios/mod.rs`, `tos-api/src/xbios/mod.rs`, `xbios/system.r
 | Ergebnis | Stelle | Anmerkung |
 |---|---|---|
 | `Getbpb` | `tos-api/src/bios/bpb.rs:296@getbpb` (`-> i64`); EL0: Benutzeradresse `user_va as i64` (`:317`), EL1-Aufrufer: Kernel-VA `kva as i64` (`:309`) | Benutzeradresse < 2 GiB **[DERIVED]** (I2). **MEASURED** `sx=1` fuer `Getbpb(2)`: `measurements/measurement-2026-10-28-bios-storage-audit/runs/NEWTOS-raspi4b/BSTPROBE.LOG:3` („sx = the native register is the sign-extended LONG“, `measurements/measurement-2026-10-28-bios-storage-audit/RUNINFO.TXT:54`) |
-| `Getmpb` | `tos-api/src/bios/getmpb.rs:84@getmpb` (`-> Long`) | gibt 0 zurueck; der Zeiger geht in den MPB, nicht ins Register |
+| `Getmpb` | `tos-api/src/bios/getmpb.rs:151@getmpb` (`-> Long`) | gibt 0 zurueck; der Zeiger geht in den MPB, nicht ins Register |
 | `Kbdvbase` | `tos-api/src/xbios/kbdvecs.rs:198@kbdvbase` | volles 64-Bit-`u64 as i64`; `USER_VA_BASE = 0` (`tos-api/src/bdos/process/loader.rs:207@USER_VA_BASE`) |
 | `Keytbl` | `tos-api/src/xbios/keytbl.rs:185@keytbl` | wie oben |
 | `Physbase`/`Logbase` | `tos-api/src/xbios/screen.rs:121@physbase`, `:133@logbase` (`caller_view(..) as i64`) | wie oben |
@@ -180,7 +180,7 @@ benutzt, **D** = gespeichert und nur zurueckgeschrieben, **E** = Ergebnis verwor
 | D | `Applications/Vanilla-Conquer-Atari-ST/tiberiandawn/atarilib/ikbd.cpp:436`, `:453` | `PrevIKBDVector = Setexc(IKBD_VECTOR_NUMBER, ISR)`, `if (PrevIKBDVector) Setexc(..., PrevIKBDVector)`; nirgends aufgerufen oder verkettet (nur `:42`, `:436`, `:452-456`) |
 | D | `Applications/Vanilla-Conquer-Atari-ST/tiberiandawn/atarilib/st_slow_hbl.cpp:36`, `:49` | `Old_Hbl = Setexc(HBL_VECTOR_NUM, ISR)` und Rueckschreiben; nicht aufgerufen |
 | E | `sdk/overlays/teradesk/main.c:1754-1756@Setexc` (Vorlage `sdk/apps/teradesk/main.c:1730-1732@Setexc`) | `(void) Setexc(0x070, loopcpu)` u. a.; Ergebnis verworfen (Funktion `lobo`, `!ct60`-Zweig des Abschaltens) |
-| F | `sdk/apps/apitest/apitest.c:2235-2255@SETEXC` (Makro `sdk/apps/apitest/apitest.c:532@SETEXC`) | als `long` durchgereicht: `q1 != 0` (Zeile 2239), `q1 == q2` (2240), `prev == old` (2245), `back == old` (2252), Hex-Vergleich mit `RD_U32(SV_PCOOKIES)` (2255). Kein Vergleich mit `-1` auf der Rueckgabe |
+| F | `sdk/apps/apitest/apitest.c:2235-2255@SETEXC` (Makro `sdk/apps/apitest/apitest.c:520@SETEXC`) | als `long` durchgereicht: `q1 != 0` (Zeile 2239), `q1 == q2` (2240), `prev == old` (2245), `back == old` (2252), Hex-Vergleich mit `RD_U32(SV_PCOOKIES)` (2255). Kein Vergleich mit `-1` auf der Rueckgabe |
 | — | `sdk/apps/doom/doomgeneric_gem_kbdvec.h:63@Setexc` | nur Kommentar |
 
 Ergebnis: **Kein** Treffer vergleicht die Rueckgabe mit `-1` (A) oder testet sie auf `< 0` (B). Die
@@ -269,7 +269,7 @@ HighWire (nicht gebaut):
 | LDG | `sdk/ldg/overlay/src/devel/ldgutil.c:86-91@Getcookie` | `long v` | Zeiger-/Praesenz | `LDGM` u. a. | ja |
 | WinDom | `sdk/windom/overlay/src/set_cookie.c:75@Getcookie`; `sdk/windom/overlay/src/objc_str3d.c:67@get_cookie` | `long old` / `NULL` | Praesenz, Wert zum Wiederherstellen | beliebig / `MagX` | nicht auf Standard-Abbildung |
 | Desktop (Rust) | `programs/desktop/src/redraw.rs:145@dos_getcookie` | `Option<u32>` | `rc as u32` | `_IDT` | ja (NEWDESK) |
-| `apitest` | `sdk/apps/apitest/apitest.c:1746@SSYSTEM`, `sdk/apps/apitest/apitest.c:1756@ss_rc` | `ss_val` | `ck_eq`/`ck_hex` | `NTOS` | Abnahmekarte |
+| `apitest` | `sdk/apps/apitest/apitest.c:1734@SSYSTEM`, `sdk/apps/apitest/apitest.c:1744@ss_rc` | `ss_val` | `ck_eq`/`ck_hex` | `NTOS` | Abnahmekarte |
 
 **Ergebnis:** Kein gefundener Aufrufer vergleicht einen Cookie-Wert numerisch so, dass sich
 Vorzeichen- und Nullerweiterung unterscheiden.

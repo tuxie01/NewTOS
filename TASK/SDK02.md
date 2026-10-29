@@ -23,7 +23,7 @@ Status: **OFFEN** (Punkt 1 erledigt 2026-10-28) · Prioritaet: **P3** · Typ: De
    dieselbe Quelle
    (`measurements/measurement-2026-10-28-bios-storage-audit/method/bstprobe.c`);
    `bios-r2.tsv` ebenso. Kein SDK-Programm und keine portierte Quelle nutzt
-   die Header-Konstanten; `sdk/apps/apitest/apitest.c:517@RW_NOTRANSLATE`
+   die Header-Konstanten; `sdk/apps/apitest/apitest.c:505@RW_NOTRANSLATE`
    definiert die Maske 8 selbst.
 2. Upstream-Werte behalten; im Overlay einen Kommentar „bit numbers, use
    `(1 << RW_x)`“ an die Stelle setzen (benannte Patch-Stelle, Upstream

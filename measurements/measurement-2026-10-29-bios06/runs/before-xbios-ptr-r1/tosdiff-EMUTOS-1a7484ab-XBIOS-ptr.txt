@@ -1,0 +1,7 @@
+EMUTOS-1a7484ab-XBIOS-ptr.BIN vs NEWTOS.BIN -- area BIOS, 9 cases from xbios-ptr-r1.tsv
+
+case 34  trap 13 function 0x00  Getmpb(buffer 0): MPB, the MD via mp_free -- bios/biosmem.c:144
+    mpb:mp_free->md_start    PTR_RAM NEWTOS.BIN                    = 0x00A0000000400000, not < 0x80000000
+    mpb:mp_free->md_length   NONZERO NEWTOS.BIN                    = 0x0000000000000000, is zero
+
+1 of 9 cases differ

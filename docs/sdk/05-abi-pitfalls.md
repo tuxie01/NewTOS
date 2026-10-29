@@ -156,7 +156,7 @@ Three of them are read by a built application today
 Three of them are not a defect but the decided LP64 contract, and the header
 pins it with `_Static_assert` so a change on either side is seen: `_MD`/`_MPB`
 (32/24 bytes, user decision O1 = A, `docs/api/bios/00-getmpb.md` V1/V4; the
-kernel follows in TASK/BIOS06), `_KBDVECS` (8-byte slots,
+kernel delivers it since TASK/BIOS06, apitest reads it), `_KBDVECS` (8-byte slots,
 `docs/api/xbios/22-kbdvbase.md` B1) and `_IOREC` (24 bytes,
 `docs/api/xbios/0e-iorec.md` F1; checked by `sdk/libc/tests/iorec-layout.sh`).
 `HDINFO` (behind `pun_ptr`) has no layout in `docs/api` yet and stays unpinned.
@@ -250,7 +250,7 @@ this entry used to say "never dereference a pointer from `Kbdvbase`" and
 KEYS02 and ARCH03.) A returned pointer that might still be a kernel address
 (the symptom above) is told by its range: every user address is below 2 GiB
 (A2, plan invariant I2) — apitest's `el0_readable()`
-(`sdk/apps/apitest/apitest.c:589@el0_readable`, bound `NEWTOS_USER_VA_TOP`)
+(`sdk/apps/apitest/apitest.c:577@el0_readable`, bound `NEWTOS_USER_VA_TOP`)
 checks exactly that and reports instead of faulting. When
 writing to the screen through `Physbase`, the pixel format is the
 framebuffer's own **XRGB8888**, not bit-planes (`sdk/examples/physbase.c:21@XRGB8888`),

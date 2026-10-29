@@ -14,10 +14,13 @@ answer — `getmpb` is a real, in-range handler (`bios_vecs[0]`).
 
 > **[BIOS06] 2026-10-28:** Abschnitt "NewTOS-Vertrag" ergaenzt (Layout,
 > Inhalt, Pruefung, Abnahme) und "Offene Entscheidungen" (O1-O4). Stand:
-> **Vertrag entschieden 2026-10-28 (O1 = A, O2 = (a), O3 = (a) bis zur Orakelmessung, O4 bestaetigt)** — bis dahin ist
-> nichts davon umgesetzt. Quellen: `references/emutos/bios/biosmem.c:134-151`
-> (gelesen), Kern und SDK-Header (gelesen, Zitate unten), Sonde G00-G06
-> (gemessen).
+> **Vertrag entschieden 2026-10-28 (O1 = A, O2 = (a), O3 = (a) bis zur Orakelmessung, O4 bestaetigt)**;
+> **umgesetzt 2026-10-29** (eigener oeffentlicher Deskriptor im Kern,
+> V1/V4), `Getmpb(NULL)` auf dem Orakel gemessen (V3, O3). Quellen:
+> `references/emutos/bios/biosmem.c:134-151` (gelesen), Kern und SDK-Header
+> (gelesen, Zitate unten), Sonde G00-G06 und tosdiff-Fall 34 von
+> `tosdump/cases/xbios-ptr-r1.tsv` (gemessen,
+> `measurements/measurement-2026-10-29-bios06/RUNINFO.TXT`).
 
 ---
 
@@ -35,7 +38,7 @@ answer — `getmpb` is a real, in-range handler (`bios_vecs[0]`).
 PD *m_own` (`references/emutos/include/bdosdefs.h:108-115`), 16 Byte, Offsets
 0/4/8/12; `MPB` = drei `MD *` (`include/bdosdefs.h:120-126`), 12 Byte.
 
-**Heute im Kern (gelesen):** `tos_types::MD` = `m_link` (8, Offset 0),
+**Bis BIOS06 im Kern veroeffentlicht (gelesen):** `tos_types::MD` = `m_link` (8, Offset 0),
 `m_start: Long` (4, Offset 8), `m_length: Long` (4, Offset 12), `m_own` (8,
 Offset 16), 24 Byte (`tos-types/src/memory.rs:61@MD`, Tabelle ebd. Modulkopf;
 Pruefung `:76`). `MPB` = drei Zeiger, 24 Byte (`tos-types/src/memory.rs:101@MPB`,
@@ -58,14 +61,15 @@ erwartet LP64. Das Programm liest `md_start` = `m_start | m_length << 32` und
 `md_length` = Fuellbytes: gemessen `md_start = 0x00A00000_00400000`,
 `md_length = 0` (G03), Rohbytes G05 `00 00 00 00 00 40 00 00 00 A0 00 ...`
 sind das Kern-Layout mit den richtigen Werten 0x00400000 / 0x00A00000.
-`sdk/apps/apitest/apitest.c:493@MDX` deklariert das Kern-Layout selbst und
-prueft `sizeof == 24` (`:507@apitest_assert_mdx`).
+`sdk/apps/apitest/apitest.c` deklarierte das Kern-Layout bis BIOS06 selbst
+(`MDX`/`MPBX`, `sizeof == 24`); seit BIOS06 nimmt es `_MD`/`_MPB` aus dem
+Header (`sdk/apps/apitest/apitest.c:2164@_MPB`).
 
 **Welche Seite bricht den Vertrag (Folgerung aus COMPATIBILITY:1227):** wenn
 der Vertrag "Felder gleich, Zeigerbreite folgt der ABI" lautet, ist das
 **Kern-Mischformat** die Abweichung: der Kern hat sein internes
 BDOS-`MD` (Felder als `Long`) fuer die Veroeffentlichung wiederverwendet
-(`tos-api/src/bios/getmpb.rs:35@ThemdPage`: `md: MD`), ohne dass dieses
+(bis BIOS06 `ThemdPage { md: MD }` in `tos-api/src/bios/getmpb.rs`), ohne dass dieses
 Layout je als oeffentlicher Vertrag entschieden wurde. Der unveraenderte
 Upstream-Header ist dann die Vertragsseite. Das ist die Folgerung aus der
 Regel; die Wahl selbst ist **O1** unten.
@@ -89,6 +93,17 @@ Programmvertrag (Pools `pmd`/`pmdalt` werden nie veroeffentlicht,
 `THEMD` ist nur in `getmpb.rs` benannt — gelesen, `grep THEMD` ueber
 `tos-api`/`kernel`: keine weitere Fundstelle).
 
+**Umsetzung (BIOS06, 2026-10-29, gelesen):** der Kern veroeffentlicht einen
+eigenen Deskriptor `PublicMd` (`tos-api/src/bios/getmpb.rs:40@PublicMd`,
+vier 8-Byte-Felder `md_next`/`md_start`/`md_length`/`md_owner`) und rechnet
+die Feldoffsets des Aufruferblocks aus `PublicMpb`
+(`tos-api/src/bios/getmpb.rs:58@PublicMpb`); `THEMD` haelt einen
+`PublicMd` (`tos-api/src/bios/getmpb.rs:90@ThemdPage`). Das interne
+`tos_types::MD` ist unveraendert. Gemessen: Sonde G03-G05 `md_start =
+0x00400000 = membot`, `md_length = 0x00A00000`, `start+length = memtop`;
+tosdiff-Fall 34 gleich gegen tt und falcontc
+(`measurements/measurement-2026-10-29-bios06/RUNINFO.TXT`).
+
 ### V2 — Inhalt, Lebensdauer, Schreibzugriff (Frage 2)
 
 **EmuTOS (gelesen):** `getmpb` fuellt das eine statische `themd` mit
@@ -110,11 +125,12 @@ seedet `pmd`/`pmdalt` aus der Speicherkarte
 (`tos-api/src/bdos/mem/init.rs:192@STRAM_START`; `docs/api/bios/00-getmpb.md`
 "Pi / BCM2711 binding"), `Getmpb` wird von GEMDOS nie gerufen. `getmpb` ist
 ein **Bericht**: `(start, end) = stram_range()`
-(`tos-api/src/bios/getmpb.rs:89@getmpb`; `stram_range` liefert die einmal
+(`tos-api/src/bios/getmpb.rs:156@stram_range`; `stram_range` liefert die einmal
 beim Pool-Seeding gesetzten Werte, einzige Schreibstelle
 `tos-api/src/bdos/mem/init.rs:192@STRAM_START`), schreibt in den statischen `THEMD`
-`m_link = NULL`, `m_start = start`, `m_length = end - start`, `m_own = NULL`
-(`tos-api/src/bios/getmpb.rs:94-99@m_length`). Daraus folgt der Vertrag:
+`md_next = NULL`, `md_start = start`, `md_length = end - start`, `md_owner = NULL`
+(`tos-api/src/bios/getmpb.rs:127-134@describe`, geschrieben
+`tos-api/src/bios/getmpb.rs:164@describe`). Daraus folgt der Vertrag:
 
 1. **Inhalt = Schnappschuss des Anfangsumfangs des ST-RAM-Pools**
    (`[membot, memtop)` zur Bootzeit), **nicht** die lebende Freiliste. Ein
@@ -133,7 +149,7 @@ beim Pool-Seeding gesetzten Werte, einzige Schreibstelle
    `docs/api/bios/00-getmpb.md` "NewTOS implementation notes" bereits
    so festgelegt: Verhaltensrichtung "harmlos").
 3. **Schreibbarkeit:** der Deskriptor ist fuer das Programm **nur lesbar**
-   (FreeMiNT `PROT_PR`, `tos-api/src/bios/getmpb.rs:112@expose`; `UserRoNx`,
+   (FreeMiNT `PROT_PR`, `tos-api/src/bios/getmpb.rs:177@expose`; `UserRoNx`,
    `tos-api/src/bdos/process/usermem.rs:245@flags`). Ein Schreiben ist ein
    Speicherfehler, wie auf EmuTOS (`themd` in geschuetztem Speicher). Der
    **Lesezugriff im Benutzerzustand** ist auf NewTOS erlaubt; auf EmuTOS
@@ -141,13 +157,13 @@ beim Pool-Seeding gesetzten Werte, einzige Schreibstelle
    BIOS-CORE-003 "Messnebenbefund") — ein Programm, das den MD wie ein
    TOS-Programm in `Supexec` liest, funktioniert auf beiden Seiten.
 4. **Die Seite:** der `THEMD` besitzt eine eigene 4-KiB-Seite
-   (`tos-api/src/bios/getmpb.rs:35@ThemdPage`, Pruefung `tos-api/src/bios/getmpb.rs:48@ThemdPage`); die Veroeffentlichung ist
+   (`tos-api/src/bios/getmpb.rs:90@ThemdPage`, Pruefung `tos-api/src/bios/getmpb.rs:99@ThemdPage`); die Veroeffentlichung ist
    je Prozess idempotent (`tos-api/src/bdos/process/usermem.rs:204@expose`). Scheitert sie, bleibt
-   `mp_mfl = NULL` (leere Freiliste, `tos-api/src/bios/getmpb.rs:109-114@expose`).
+   `mp_mfl = NULL` (leere Freiliste, `tos-api/src/bios/getmpb.rs:172-179@expose`).
 5. **Rueckgabewert:** keiner (EmuTOS `void`); der Kern liefert `0`.
 6. **Caller-Puffer:** geschrieben werden **nur** `mp_mfl` (Offset 0) und
    `mp_mal` (Offset 8), je 8 Byte, in dieser Reihenfolge
-   (`tos-api/src/bios/getmpb.rs:125-128@put_u64`); `mp_rover` (Offset 16) wird nicht angefasst
+   (`tos-api/src/bios/getmpb.rs:188-191@put_u64`); `mp_rover` (Offset 16) wird nicht angefasst
    (wie `bios/biosmem.c:149-150`). Gemessen: G02 `mp_rover_kept=1`,
    `mp_used_null=1` auf beiden Seiten. Der Puffer muss mindestens 16 Byte
    schreibbar sein, nicht die vollen 24.
@@ -155,14 +171,28 @@ beim Pool-Seeding gesetzten Werte, einzige Schreibstelle
 ### V3 — Was der Kern prueft (Frage 3, MEM12)
 
 - **gelesen:** `mpb == 0` -> der Aufruf endet still mit `0`, ohne zu schreiben
-  (`tos-api/src/bios/getmpb.rs:86@getmpb`). EmuTOS prueft nichts und schreibt auf Adresse 0
+  (`tos-api/src/bios/getmpb.rs:153@mpb`). EmuTOS prueft nichts und schreibt auf Adresse 0
   (`bios/biosmem.c:149`, kein Guard). Ob NULL still bleiben oder fehlen soll
   ist **O3**.
+- **gemessen (O3, 2026-10-29):** EmuTOS am Orakel, Profile tt und falcontc,
+  `Getmpb(0L)` aus einem Benutzerprogramm: die erste Speicherung
+  `mpb->mp_mfl = &themd` (`bios/biosmem.c:149`; im ROM `getmpb+0x2C`,
+  `move.l a1,(a0)` mit `a0 = 0`, `a1 = $48E`) loest einen **Busfehler im
+  Supervisorzustand** aus ("Bus error writing at address $0", PC
+  `$E027E6`); EmuTOS meldet `Panic: Bus Error ... addr=00000000` und wartet
+  auf eine Taste — das Programm kehrt nicht zurueck, das System steht.
+  `themd` ist zu dem Zeitpunkt schon neu geschrieben (`:144-147` laufen
+  vorher). NewTOS: `Getmpb(0L)` liefert `0`, Adresse 0 und 4 unveraendert,
+  das Programm laeuft weiter (Sonde N00-N03,
+  `measurements/measurement-2026-10-29-bios06/RUNINFO.TXT`). Nach der
+  Anwenderentscheidung O3 = (a) bleibt der stille Erfolg, bis der Anwender
+  anders entscheidet; die Abweichung ist nur fuer fehlerhafte Programme
+  beobachtbar.
 - **gelesen:** die Schreibzugriffe laufen ueber `args.space.put_u64`
-  (`tos-api/src/bios/getmpb.rs:127@put_u64`), also mit den Rechten des Aufrufers
+  (`tos-api/src/bios/getmpb.rs:190@put_u64`), also mit den Rechten des Aufrufers
   (`tos-api/src/uaccess.rs:352@put_u64`; ARCH03 3a). Ist `mp_mfl` oder `mp_mal`
   nicht schreibbar, endet der Aufruf mit `uaccess::FAULTED`
-  (`tos-api/src/bios/getmpb.rs:130@FAULTED`, `tos-api/src/uaccess.rs:55@FAULTED`); die Kommentare im
+  (`tos-api/src/bios/getmpb.rs:191@FAULTED`, `tos-api/src/uaccess.rs:55@FAULTED`); die Kommentare im
   Quelltext nennen "ends the call and the program" (nicht in diesem Lauf
   verfolgt: wie der Dispatcher `FAULTED` in einen Programmabbruch uebersetzt
   — `docs/api/_super-state.md` S-Abschnitt ist die Stelle, falls noetig).
@@ -184,18 +214,21 @@ Wenn O1 = A: in `ostruct.h` (SDK-Overlay), `#if defined(__LP64__)`:
 `md_start == 8`, `md_length == 16`, `md_owner == 24`, `sizeof(_MPB) == 24`,
 `offsetof(_MPB, mp_free) == 0`, `mp_used == 8`, `mp_rover == 16`; im Kern die
 gleichen Zahlen als `const _: () = assert!(offset_of!(..) == ..)` an dem
-oeffentlichen Deskriptor (und `size_of`). `apitest.c:493@MDX` entfaellt dann
+oeffentlichen Deskriptor (und `size_of`). `MDX` in `sdk/apps/apitest/apitest.c` entfaellt dann
 (der Test nimmt `_MD` aus dem Header). Bei O1 = B/C waeren es die Zahlen der
-gewaehlten Variante (siehe unten). **Heute nirgends vorhanden** (gelesen:
-`ostruct.h` hat keine `_Static_assert`; der Kern prueft nur
-`size_of::<MD>() == 2*usize+8`, `tos-types/src/memory.rs:76@size_of`, das das Mischformat sogar
-festschreibt).
+gewaehlten Variante (siehe unten). **Stand 2026-10-29 (gelesen):** SDK
+seit SDK04 (`sdk/libc/overlay/include/mint/ostruct.h:312-320@_Static_assert`),
+Kern seit BIOS06 an `PublicMd`/`PublicMpb`
+(`tos-api/src/bios/getmpb.rs:69-78@offset_of`); `apitest` nimmt `_MD`/`_MPB`
+aus dem Header. Die Pruefung `size_of::<MD>() == 2*usize+8`
+(`tos-types/src/memory.rs:76@size_of`) gilt nur noch dem internen BDOS-`MD`.
 
 ### V5 — Nutzer (Erhebung)
 
 Siehe `docs/analysis/lp64-tos-struct-survey-2026-10-28.md` (Zeile "MD/MPB")
 und die Erhebung dieses Tickets: einziger Leser von `md_start`/`md_length` ist
-`sdk/apps/apitest/apitest.c:2176@MDX` (B3, BS03-BS10). `sdk/examples/uakid.c`
+`sdk/apps/apitest/apitest.c:2164@_MPB` (B3, BS03-BS10; bis BIOS06 ueber das
+eigene `MDX`). `sdk/examples/uakid.c`
 ruft `Getmpb(BAD)` nur mit ungueltigem Zeiger (kein Lesen des MD, nicht im
 Standard-Image); `tosdump` misst `Getmpb` seit TOOL16 nur in
 `tosdump/cases/xbios-ptr-r1.tsv` (in einer `Super`-Klammer, als letzten
@@ -248,16 +281,17 @@ EmuTOS-gleich in dem, was ein Programm per `Getmpb` bekommt) — keine
 Aenderung; (b) die lebende Freiliste/Allokationsliste des BDOS-Pools
 veroeffentlichen. **Achtung:** `docs/COMPATIBILITY.md:820` behauptet, ein
 Programm finde per `Getmpb` die Bloecke eines TSR auf der Allokationsliste —
-der Code (`mp_mal = 0`, ein MD) tut das nicht (gelesen, `tos-api/src/bios/getmpb.rs:128@put_u64`).
+der Code (`mp_mal = 0`, ein MD) tut das nicht (gelesen, `tos-api/src/bios/getmpb.rs:190@put_u64`).
 Entweder muss COMPATIBILITY korrigiert werden (a) oder (b) gebaut werden (grosse
 Aufgabe: BDOS-MDs sind Kern-intern, Seitenrechte, Konsistenz unter dem
 Giant-Lock). EmuTOS zeigt nach dem Start ebenfalls nur den einen
 Anfangs-MD (`themd`), nicht den lebenden Zustand eines Programms (Folgerung
 aus `bios/biosmem.c:144-147`).
 
-**O3 — `mpb == NULL`:** (a) stiller Erfolg ohne Schreiben (heute, `tos-api/src/bios/getmpb.rs:86@getmpb`);
+**O3 — `mpb == NULL`:** (a) stiller Erfolg ohne Schreiben (heute, `tos-api/src/bios/getmpb.rs:153@mpb`);
 (b) der Aufruf fehlschlagen lassen wie ein nicht schreibbarer Puffer
-(`FAULTED`). EmuTOS: undefiniert (schreibt auf Adresse 0). Beobachtbar nur
+(`FAULTED`). EmuTOS: schreibt auf Adresse 0, gemessen 2026-10-29 ein
+Busfehler im Supervisorzustand mit `Panic` (V3). Beobachtbar nur
 fuer fehlerhafte Programme; (b) ist die strengere Richtung.
 
 **O4 — Abnahme der Inhalte:** Ticket BIOS06 verlangt tosdiff erst nach
@@ -345,7 +379,7 @@ region.
 
 | Position | Name  | Type    | Size | Source location      | Notes |
 |----------|-------|---------|------|----------------------|-------|
-| arg0     | `mpb` | `MPB *` | 4/8  | `bios/biosmem.c:134` | caller-owned, writable 12-byte (m68k) MPB. **Not validated**: `NULL` is dereferenced. |
+| arg0     | `mpb` | `MPB *` | 4/8  | `bios/biosmem.c:134` | caller-owned, writable 12-byte (m68k) MPB. **Not validated**: `NULL` is dereferenced (measured 2026-10-29: bus error in supervisor state, EmuTOS panics; NewTOS-Vertrag V3). |
 
 `getmpb` performs no input validation whatsoever.
 
@@ -398,7 +432,10 @@ None.
 | (none — the function cannot fail) | `bios/biosmem.c:134` | n/a |
 
 `getmpb` has no error path. A `NULL` or non-writable `mpb` faults; EmuTOS
-does not guard it.
+does not guard it. Measured on the oracle (2026-10-29, tt and falcontc):
+`Getmpb(NULL)` from a user program ends in "Panic: Bus Error" at the
+`mp_mfl` store (`bios/biosmem.c:149`); NewTOS returns `0` without writing
+(user decision O3 = (a), NewTOS-Vertrag V3).
 
 **Error paths not in Compendium:** none (Compendium also documents no error).
 
@@ -553,3 +590,10 @@ to `bdos::mem::init::init`. GEMDOS never calls `Getmpb` to learn the free region
   on QEMU `raspi4b`: `mp_mfl = 0x00402000`, `APITEST` BS03..BS10 all PASS
   (`m_link == NULL`, `m_own == NULL`, `m_start == membot $432 == 0x400000`,
   `m_length == memtop-membot == 0xA00000`).
+- **The published MD had the kernel's 24-byte BDOS layout — MEASURED
+  2026-10-28 (BIOS-CORE-003), CLOSED 2026-10-29 (BIOS06).** An LP64 program
+  reading through the SDK's `_MD` got `md_start = 0x00A00000_00400000`,
+  `md_length = 0`. Now the kernel publishes its own descriptor in the SDK
+  header's layout (NewTOS-Vertrag V1, O1 = A); tosdiff case 34 of
+  `tosdump/cases/xbios-ptr-r1.tsv` is equal against both oracle profiles
+  (`measurements/measurement-2026-10-29-bios06/RUNINFO.TXT`).

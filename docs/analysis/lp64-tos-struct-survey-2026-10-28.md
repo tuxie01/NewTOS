@@ -70,8 +70,8 @@ Gemeinsamer Mechanismus, **gemessen [R]** fuer genau diese Schleifenform:
 `struct { long a; long b; }` ist auf LP64 16 Byte, der Slot 8 Byte; `p++` ueberspringt
 jeden zweiten Slot, und das Wort `p->a` fasst acht Byte = `tag | value << 32`. Der
 Abschluss `{0, Kapazitaet}` liest sich als `Kapazitaet << 32 != 0`
-(`sdk/apps/apitest/apitest.c:1800@SX16`, Messung
-`sdk/apps/apitest/apitest.c:1844@SX17`: `sizeof(ported COOKIE)=16`, Scan nimmt 3
+(`sdk/apps/apitest/apitest.c:1788@SX16`, Messung
+`sdk/apps/apitest/apitest.c:1832@SX17`: `sizeof(ported COOKIE)=16`, Scan nimmt 3
 Schritte und endet bei `0x620`, hinter dem Abschluss bei `0x610`,
 `docs/sdk/05-abi-pitfalls.md` B2). Das Seed-Jar hat in dieser Reihenfolge
 `NTOS`, `_MCH`, `_IDT`, `_AKP`, `EdDI`, Abschluss (`tos-api/src/cookie.rs:221@seed_defaults`,
@@ -145,7 +145,7 @@ Alle gefundenen Zugriffe benutzen `_DTA` aus dem Overlay
 `:838@dta_size`), cflib (`sdk/cflib/cflib-21/scclear.c:37@DTA`,
 `sdk/cflib/cflib-21/rpl_stat.c:150@_DTA`), mintlib `dirent`/`stat` (`opendir.c`,
 `readdir.c`, `quickstat.c`, `do_stat.c` — gelesen: alle `_DTA`), QED (`sdk/apps/qed/src/global.h:27@DTA`),
-apitest (`sdk/apps/apitest/apitest.c:1081@dta_size`). **Kein** Port deklariert ein eigenes
+apitest (`sdk/apps/apitest/apitest.c:1069@dta_size`). **Kein** Port deklariert ein eigenes
 DTA-Layout. HighWire `sdk/apps/highwire/src/cache.c:926@Fgetdta` nimmt `DTA` der
 mintlib-Header (nicht gebaut). `Fsfirst` wird nirgends mit `long`-Feldzugriff auf den
 Puffer gelesen. Der Rust-Port liest `d_fname` als die letzten 14 Byte der 44
@@ -157,8 +157,8 @@ Puffer gelesen. Der Rust-Port liest `d_fname` als die letzten 14 Byte der 44
 |---|---|---|
 | `_KEYTAB` (`Keytbl`) | **richtig**: der Kern schreibt jedes Zeigerfeld in der Breite des Aufrufers. Nutzer TeraDesk, cflib (`nkcc`), HypView, DOOM lesen `->unshift` | `tos-api/src/xbios/keytbl.rs:122@put_ptr`; `sdk/apps/teradesk/library/xdialog/xdevent.c:76@Keytbl`; `sdk/apps/doom/doomgeneric_gem.c:1930@Keytbl`; `sdk/overlays/hypview/dl_init.c:245@Keytbl`; cflib hat eine eigene 3-Zeiger-Struktur `sdk/cflib/cflib-21/intern.h:78@KEYTAB`, nur Felder 0..2 |
 | `_KBDVECS` (`Kbdvbase`) | LP64-Tabelle mit 8-Byte-Slots **ist die Entscheidung**; die Leser sind darauf ausgelegt: DOOM `kbdslot_t = unsigned long` mit Zeigerbreiten-Pruefung `sdk/apps/doom/doomgeneric_gem_kbdvec.h:38@kbdslot_t`, `sdk/examples/kbdvec.c:167@xbios0`, `sdk/examples/p0kid.c:146@Kbdvbase`. Wer die m68k-4-Byte-Tabelle erwartet, bricht; so ein Port ist **nicht** gefunden | `docs/api/xbios/22-kbdvbase.md` Teil B1/C1; `tos-api/src/bdos/process/loader.rs:1030@KBDVECS_AREA_VA` |
-| `_IOREC`, `_MAPTAB`, `_BCONMAP`, `_PBDEF`, `META_INFO_*` | LP64-Layout ist entschieden (IOREC) bzw. unverdrahtet; **kein** Port ruft `Iorec`, `Bconmap`, `Prtblk`, `Metainit` | `sdk/libc/overlay/include/mint/ostruct.h:583@_IOREC`; `docs/api/xbios/0e-iorec.md:140-150`; 0 Aufrufer in den durchsuchten Baeumen [R] |
-| `MD`/`MPB` (`Getmpb`) | Kern-`MD` = 24 Byte; **nur apitest** liest, mit eigener 24-Byte-Deklaration und Groessenpruefung | `sdk/apps/apitest/apitest.c:493@MDX`, `:504@MPBX` |
+| `_IOREC`, `_MAPTAB`, `_BCONMAP`, `_PBDEF`, `META_INFO_*` | LP64-Layout ist entschieden (IOREC) bzw. unverdrahtet; **kein** Port ruft `Iorec`, `Bconmap`, `Prtblk`, `Metainit` | `sdk/libc/overlay/include/mint/ostruct.h:599@_IOREC`; `docs/api/xbios/0e-iorec.md:140-150`; 0 Aufrufer in den durchsuchten Baeumen [R] |
+| `MD`/`MPB` (`Getmpb`) | Kern-`MD` = 24 Byte; **nur apitest** liest, mit eigener 24-Byte-Deklaration und Groessenpruefung | `MDX`/`MPBX` in `sdk/apps/apitest/apitest.c` (bis BIOS06) |
 | `BPB` (`Getbpb`) | neun `UWORD`, breitenneutral; apitest `BPB18`, fsbench `unsigned short *` | `sdk/apps/apitest/apitest.c:482@BPB18`; `sdk/examples/fsbench.c:636@bpbp` |
 | `_DISKINFO` (`Dfree`) | behoben (4x `__UINT32_TYPE__`, packed, asserts); TeraDesk benutzt es (`sdk/apps/teradesk/library/utility/malloc.c:44@_DISKINFO`, `sdk/apps/teradesk/showinfo.c:709@diskinfo`) | `sdk/libc/overlay/include/mint/ostruct.h:47@_DISKINFO`; `:53@sizeof` |
 | `XATTR` (`Fxattr`) | `Fxattr` ist auf NewTOS `EINVFN`, die mintlib-Wege fallen auf `Fsfirst` zurueck | `sdk/libc/newtos-arch/do_stat.c:7@Fxattr` |
@@ -267,8 +267,8 @@ Welche Struktur braucht einen SDK-Typ fester Breite, wo existiert schon einer:
 | `_DTA` | nein, vorhanden | `sdk/libc/overlay/include/mint/ostruct.h:92@_DTA` (+Asserts `:102@sizeof`) | — |
 | `_DISKINFO` | nein, vorhanden | `sdk/libc/overlay/include/mint/ostruct.h:47@_DISKINFO` | — |
 | `_KEYTAB` | nein | Kern passt sich der Aufruferbreite an (`tos-api/src/xbios/keytbl.rs:122@put_ptr`) | — |
-| `_IOREC`, `_KBDVECS`, `_MAPTAB`, `_BCONMAP` | nein (**Vertrag ist LP64-Layout**) | `sdk/libc/overlay/include/mint/ostruct.h:583@_IOREC`, `:609@_KBDVECS` | Nur `_Static_assert` auf die entschiedene Groesse/Offsets (24 Byte `_IOREC`, `docs/api/xbios/0e-iorec.md:140-150`) ergaenzen, damit eine Aenderung des Kerns den Header mitzieht |
-| `MD`/`MPB` | ja (Pruefung), niedrige Prioritaet | nur apitest-lokal `sdk/apps/apitest/apitest.c:493@MDX` | Typ + Asserts (Kern-24-Byte) in den SDK-Kopf heben; heute kein Port |
+| `_IOREC`, `_KBDVECS`, `_MAPTAB`, `_BCONMAP` | nein (**Vertrag ist LP64-Layout**) | `sdk/libc/overlay/include/mint/ostruct.h:599@_IOREC`, `:609@_KBDVECS` | Nur `_Static_assert` auf die entschiedene Groesse/Offsets (24 Byte `_IOREC`, `docs/api/xbios/0e-iorec.md:140-150`) ergaenzen, damit eine Aenderung des Kerns den Header mitzieht |
+| `MD`/`MPB` | ja (Pruefung), niedrige Prioritaet | nur apitest-lokal `MDX` in `sdk/apps/apitest/apitest.c` (bis BIOS06) | Typ + Asserts (Kern-24-Byte) in den SDK-Kopf heben; heute kein Port |
 | `BPB` | nein | breitenneutral | optional: Typ mit Offsetpruefung `docs/api/structures/bpb.md:18-26` |
 | **Cookie-Wert beim Lesen** | Regel | `Getcookie` null-erweitert (`sdk/libc/newtos-arch/getcookie.c:33@Getcookie`) | Dokumentieren, ggf. `uint32_t`-Variante; nur wichtig bei Bit 31 gesetzt (2.1, Querschnitt) |
 

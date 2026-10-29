@@ -1,0 +1,7 @@
+G00 sizeof(_MD)=32 sizeof(XMPB)=24 membot=00400000 memtop=00e00000
+G01 Getmpb(&mpb) ret=00000000 hi=00000000 (void: recorded, not compared)
+G02 mp_free_ok=1 mp_free_hi=00000000 mp_used_null=1 mp_rover_kept=1
+G03 md_next_null=1 md_owner_null=1 md_start=00000000/00400000 md_length=00000000/00a00000
+G04 start_ok=1 length_pos=1 end_le_2G=1 start_is_membot=1 end_is_memtop=1
+G05 raw=000000000000000000004000000000000000a000000000000000000000000000
+G06 second Getmpb: same_free=1 same_start=1

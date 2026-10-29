@@ -485,27 +485,11 @@ typedef struct {
 #define B_1FAT 0x02
 
 /*
- * MD / MPB as the NewTOS kernel writes them. The Atari field ORDER is kept,
- * but the sizes are AArch64-natural: 8-byte pointers, 4-byte LONGs
- * (tos-types/src/memory.rs -- MD is 24 bytes, MPB is 3 pointers = 24). A C
- * `long` is 8 bytes here, so m_start / m_length must be `unsigned int`.
+ * Getmpb fills the header's _MPB and points mp_free at an _MD
+ * (mint/ostruct.h): under LP64 32 and 24 bytes, pinned there by
+ * _Static_assert (SDK04) and in the kernel (BIOS06,
+ * docs/api/bios/00-getmpb.md V1).
  */
-typedef struct MDX {
-	struct MDX   *m_link;    /* +0,  8 */
-	unsigned int  m_start;   /* +8,  4 */
-	unsigned int  m_length;  /* +12, 4 */
-	void         *m_own;     /* +16, 8 */
-} MDX;
-
-typedef struct {
-	MDX *mp_mfl;             /* +0,  free list head      */
-	MDX *mp_mal;             /* +8,  allocated list head */
-	MDX *mp_rover;           /* +16, roving pointer      */
-} MPBX;
-
-/* Layout drift here would silently invalidate every Getmpb check below. */
-typedef char apitest_assert_mdx[(sizeof(MDX)  == 24) ? 1 : -1];
-typedef char apitest_assert_mpb[(sizeof(MPBX) == 24) ? 1 : -1];
 
 /* TOS error codes the BIOS contract names (tos-types::error). */
 #define E_OK    0L
@@ -2177,8 +2161,8 @@ int main(void)
 	 * docs/api/bios/{06,00,05,0b}-*.md. */
 	before("B3 BIOS system calls (Tickcal/Getmpb/Setexc/Kbshift)");
 	{
-		static MPBX mpb;
-		MDX *md;
+		static _MPB mpb;
+		_MD *md;
 		unsigned int t0, t1;
 		unsigned long spins;
 		long q1, q2, old, prev, back;
@@ -2194,26 +2178,26 @@ int main(void)
 			t1 = RD_U32(SV_HZ200);
 		ck_bool(G_BSYS, "BS02 _hz_200 $4BA advances", t1 != t0);
 
-		/* Getmpb: mp_mfl / mp_mal written, mp_rover left alone. */
-		mpb.mp_mfl   = (MDX *)0x1111UL;
-		mpb.mp_mal   = (MDX *)0x2222UL;
-		mpb.mp_rover = (MDX *)0xDEADUL;
+		/* Getmpb: mp_free / mp_used written, mp_rover left alone. */
+		mpb.mp_free  = (_MD *)0x1111UL;
+		mpb.mp_used  = (_MD *)0x2222UL;
+		mpb.mp_rover = (_MD *)0xDEADUL;
 		Getmpb(&mpb);
-		md = mpb.mp_mfl;
+		md = mpb.mp_free;
 		b_reset();
-		b_str("B3    Getmpb: mp_mfl=");
+		b_str("B3    Getmpb: mp_free=");
 		b_hex((unsigned long)(void *)md, 8);
-		b_str(" mp_mal=");
-		b_hex((unsigned long)(void *)mpb.mp_mal, 2);
+		b_str(" mp_used=");
+		b_hex((unsigned long)(void *)mpb.mp_used, 2);
 		b_nl();
 		b_emit();
 		ck_bool(G_BSYS, "BS03 Getmpb leaves mp_rover untouched",
-			mpb.mp_rover == (MDX *)0xDEADUL);
-		ck_bool(G_BSYS, "BS04 Getmpb mp_mal == NULL", mpb.mp_mal == 0);
-		ck_bool(G_BSYS, "BS05 Getmpb mp_mfl != NULL", md != 0);
+			mpb.mp_rover == (_MD *)0xDEADUL);
+		ck_bool(G_BSYS, "BS04 Getmpb mp_used == NULL", mpb.mp_used == 0);
+		ck_bool(G_BSYS, "BS05 Getmpb mp_free != NULL", md != 0);
 		/* Same reasoning as Getbpb: the contract is that the caller walks
 		 * the free list, which requires a readable pointer. */
-		ck_bool(G_BSYS, "BS06 Getmpb mp_mfl is EL0-readable",
+		ck_bool(G_BSYS, "BS06 Getmpb mp_free is EL0-readable",
 			md != 0 && el0_readable((unsigned long)(void *)md));
 		if (md == 0 || !el0_readable((unsigned long)(void *)md)) {
 			ck_skip(G_BSYS, "BS07..BS10 MD fields",
@@ -2221,12 +2205,12 @@ int main(void)
 		} else {
 			unsigned int membot = RD_U32(SV_MEMBOT);
 			unsigned int memtop = RD_U32(SV_MEMTOP);
-			ck_bool(G_BSYS, "BS07 MD m_link == NULL", md->m_link == 0);
-			ck_bool(G_BSYS, "BS08 MD m_own == NULL",  md->m_own  == 0);
-			ck_hex(G_BSYS, "BS09 MD m_start == membot $432",
-			       (unsigned long)md->m_start, (unsigned long)membot);
-			ck_hex(G_BSYS, "BS10 MD m_length == memtop-membot",
-			       (unsigned long)md->m_length,
+			ck_bool(G_BSYS, "BS07 MD md_next == NULL", md->md_next == 0);
+			ck_bool(G_BSYS, "BS08 MD md_owner == NULL", md->md_owner == 0);
+			ck_hex(G_BSYS, "BS09 MD md_start == membot $432",
+			       (unsigned long)md->md_start, (unsigned long)membot);
+			ck_hex(G_BSYS, "BS10 MD md_length == memtop-membot",
+			       (unsigned long)md->md_length,
 			       (unsigned long)(memtop - membot));
 		}
 

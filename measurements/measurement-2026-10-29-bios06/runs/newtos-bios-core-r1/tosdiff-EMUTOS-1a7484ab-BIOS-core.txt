@@ -1,0 +1,48 @@
+EMUTOS-1a7484ab-BIOS-core.BIN vs NEWTOS.BIN -- area BIOS, 44 cases from bios-core-r1.tsv
+
+case 46  trap 13 function 0x05  Setexc(0x2,-1) bus error -- bios/bios.c:1073-1074
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x0000000000000000, is null
+
+case 47  trap 13 function 0x05  Setexc(0x3,-1) address error -- bios/bios.c:1073-1074
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x0000000000000000, is null
+
+case 48  trap 13 function 0x05  Setexc(0x4,-1) illegal instruction -- bios/bios.c:1073-1074
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x0000000000000000, is null
+
+case 49  trap 13 function 0x05  Setexc(0x1C,-1) level-4 autovector (VBL) -- bios/bios.c:1073-10
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x0000000000000000, is null
+
+case 50  trap 13 function 0x05  Setexc(0x21,-1) trap #1 -- bios/bios.c:1073-1074
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x0000000000000000, is null
+
+case 51  trap 13 function 0x05  Setexc(0x22,-1) trap #2 -- bios/bios.c:1073-1074
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x0000000000000000, is null
+
+case 52  trap 13 function 0x05  Setexc(0x2D,-1) trap #13 -- bios/bios.c:1073-1074
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x0000000000000000, is null
+
+case 53  trap 13 function 0x05  Setexc(0x2E,-1) trap #14 -- bios/bios.c:1073-1074
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x0000000000000000, is null
+
+case 54  trap 13 function 0x05  Setexc(0x45,-1) MFP timer C -- bios/bios.c:1073-1074
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x0000000000000000, is null
+
+case 55  trap 13 function 0x05  Setexc(0x100,-1) etv_timer -- bios/bios.c:1073-1074
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x4E75000000000000, not < 0x80000000
+
+case 56  trap 13 function 0x05  Setexc(0x101,-1) etv_critic -- bios/bios.c:1073-1074
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x4372697400000000, not < 0x80000000
+
+case 57  trap 13 function 0x05  Setexc(0x102,-1) etv_term -- bios/bios.c:1073-1074
+    ret                      PTR_RAM NEWTOS.BIN                    = 0x4E75000000000000, not < 0x80000000
+
+case 59  trap 13 function 0x05  Setexc(0x108,-1) memvalid $420 -- bios/bios.c:1073-1074
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-core.BIN = 0x00000000752019F3 (1965038067)   NEWTOS.BIN                    = 0x0000000000000000 (0)
+
+case 65  trap 13 function 0x08  Bcostat(8) Bconmap 8 -- bios/bios.c:1152-1156
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-core.BIN = 0xFFFFFFFFFFFFFFFF (-1)   NEWTOS.BIN                    = 0x0000000000000000 (0)
+
+case 66  trap 13 function 0x08  Bcostat(9) Bconmap 9 (TT: 4 ports; profile) -- bios/bios.c:1152
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-core.BIN = 0xFFFFFFFFFFFFFFFF (-1)   NEWTOS.BIN                    = 0x0000000000000000 (0)
+
+15 of 44 cases differ

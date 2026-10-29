@@ -299,7 +299,8 @@ tickcal	bios/bios.c	tos-api/src/bios/mod.rs	dispatch	mapped	Tickcal 0x06: a cons
 vecs_init	bios/bios.c	-	-	design:hardware:m68k-cpu	installs the m68k exception vectors; AArch64 vectors are kernel code (kernel/src/arch)
 balloc_stram	bios/biosmem.c	-	-	unmapped	boot-time ST-RAM allocator below membot; no NewTOS counterpart
 bmem_init	bios/biosmem.c	-	-	unmapped	boot-time memory bounds (membot/memtop); NewTOS takes its map from the firmware (kernel/src/bios/machine/layout.rs)
-getmpb	bios/biosmem.c	tos-api/src/bios/getmpb.rs	getmpb	mapped	Getmpb 0x00
+getmpb	bios/biosmem.c	tos-api/src/bios/getmpb.rs	getmpb	mapped	Getmpb 0x00: mp_mfl/mp_mal written, mp_rover kept (biosmem.c:149-150); themd published read-only to the caller (ADR-023); NULL mpb returns 0 without writing (EmuTOS: bus error, panic; O3 = (a), BIOS06)
+getmpb	bios/biosmem.c	tos-api/src/bios/getmpb.rs	describe	mapped	themd = [membot, memtop) (biosmem.c:144-147) as a static boot snapshot, in the program-visible LP64 layout PublicMd (_MD, 32 bytes; BIOS06 O1 = A), not the internal BDOS MD
 add_partition	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 blkdev_avail	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 blkdev_boot	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)

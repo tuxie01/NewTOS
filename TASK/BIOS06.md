@@ -1,15 +1,15 @@
 # BIOS06 — `Getmpb`: Kern und SDK-Header sind sich ueber das `MD`-Layout nicht einig
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (Vertrag festlegen), danach Developer oder SDK — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS06-STATUS-DONE.MD)); O3 gemessen (EmuTOS: Busfehler + Panic), stiller Erfolg bleibt bis zur Anwenderentscheidung · Prioritaet: **P1** · Typ: Researcher (Vertrag festlegen), danach Developer oder SDK — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
 
 ## Sachverhalt
 
 **BIOS-CORE-003 — S2 — MEASURED — NOT LOCALIZED.** Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-bios-core-audit/RUNINFO.TXT`.
 
-- Kern: `tos-types/src/memory.rs:61@MD` (`m_start`/`m_length` je 4 Byte an Offset 8/12, 24 Byte). SDK: `sdk/libc/overlay/include/mint/ostruct.h:293@_md` (`long md_start`/`md_length`, unter LP64 je 8 Byte an 8/16, 32 Byte). Welche Seite den Vertrag bricht, ist eine Vertragsfrage (COMPATIBILITY „Native vs m68k struct variants“; EmuTOS' `m_start` ist ein Zeiger `UBYTE *`). Beobachtet ueber `Getmpb` (`tos-api/src/bios/getmpb.rs:84@getmpb`).
+- Kern: `tos-types/src/memory.rs:61@MD` (`m_start`/`m_length` je 4 Byte an Offset 8/12, 24 Byte). SDK: `sdk/libc/overlay/include/mint/ostruct.h:293@_md` (`long md_start`/`md_length`, unter LP64 je 8 Byte an 8/16, 32 Byte). Welche Seite den Vertrag bricht, ist eine Vertragsfrage (COMPATIBILITY „Native vs m68k struct variants“; EmuTOS' `m_start` ist ein Zeiger `UBYTE *`). Beobachtet ueber `Getmpb` (`tos-api/src/bios/getmpb.rs:151@getmpb`).
 - Sonde G00–G06 (`measurements/measurement-2026-10-28-bios-core-audit/runs/PROBE-EMUTOS-tt`, `measurements/measurement-2026-10-28-bios-core-audit/runs/PROBE-NEWTOS-raspi4b`): EmuTOS `md_start = 0x00023BA0 = _membot`, `md_length = 0x003B6B60`, `start+length = _memtop`; NewTOS durch `_MD`: `md_start = 0x00A00000_00400000`, `md_length = 0`; Rohbytes G05 zeigen das Kern-Layout mit richtigen Werten (0x00400000, 0x00A00000). Gleich: `mp_mfl` eine TOS-Adresse, `mp_mal = NULL`, `mp_rover` unberuehrt, `m_link`/`m_own` NULL, zweiter Aufruf gleicher Zeiger.
 - Nebenbefund: EmuTOS' `themd` liegt bei `$48E` in geschuetztem Speicher (Usermodus-Lesen = Busfehler, Sonde liest per `Supexec`); NewTOS erlaubt den Usermodus-Lesezugriff — harmlose Richtung.
-- `sdk/apps/apitest/apitest.c:493@MDX` umgeht die Diskrepanz mit eigenem Kern-Layout.
+- `MDX` in `sdk/apps/apitest/apitest.c` (bis BIOS06) umgeht die Diskrepanz mit eigenem Kern-Layout.
 - EmuTOS-Stelle: `references/emutos/bios/biosmem.c:134-151`.
 - Fehlerbild: jedes SDK-Programm, das `Getmpb` ruft und `mp_free->md_length` liest (Speicher-Infoprogramme), liest 0 und eine unsinnige Startadresse.
 
@@ -69,7 +69,7 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Researcher (Vertrag festlegen), 
 ## Lokalisierung (Lead, 2026-10-29)
 
 - `getmpb` → `tos-api/src/bios/getmpb.rs@getmpb` (`mapped`); veroeffentlichter
-  Deskriptor heute `tos-api/src/bios/getmpb.rs:35@ThemdPage` (internes
+  Deskriptor bis BIOS06 `ThemdPage` in `tos-api/src/bios/getmpb.rs` (internes
   24-Byte-BDOS-`MD`). `--up --layers bios,bdos`: 7 Funktionen, `unmapped` nur
   `bios_init`, `biosmain` (Start).
 - Messfaelle: `tosdump/cases/xbios-ptr-r1.tsv` Fall 34 (TOOL16, Layout aus

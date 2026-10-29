@@ -1,0 +1,4 @@
+N00 before: long@0=00000000 long@4=00000000
+N01 calling Getmpb(NULL)
+N02 Getmpb(NULL) returned ret=00000000 hi=00000000
+N03 after: long@0=00000000 long@4=00000000

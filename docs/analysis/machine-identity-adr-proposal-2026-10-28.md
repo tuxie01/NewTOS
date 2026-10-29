@@ -388,7 +388,7 @@ Pin (Abschnitt 1.1).
 **Randbefunde ausserhalb des Auftrags (je eine Zeile):**
 - HighWire (`sdk/apps/highwire/src/romvdi.c:36-52@getcookie`) und TeraDesks `COOKIE` laufen
   das Jar mit `long`-Paaren; bei LP64 ist die Schrittweite 16 statt 8 Byte
-  (`sdk/apps/apitest/apitest.c:1840@SX16` belegt den 8-Byte-Takt; „SX17“ den Fehlgriff) —
+  (`sdk/apps/apitest/apitest.c:1828@SX16` belegt den 8-Byte-Takt; „SX17“ den Fehlgriff) —
   ob HighWires `EdDI`-Suche damit scheitert, ist ungeprueft.
 - `docs/api/bios/_cookie-jar.md:136` nennt `0x00050000` „NewTOS-specific“; nach Abschnitt 4
   ist das belegt falsch.

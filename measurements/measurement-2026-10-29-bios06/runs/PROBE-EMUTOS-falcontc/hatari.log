@@ -1,0 +1,62 @@
+INFO : Hatari v2.6.1, compiled on:  Aug 15 2025, 14:15:19
+INFO : IPF : capsimage library version release=5 revision=1
+INFO : GEMDOS HDD emulation, C: <-> /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-29-bios06/runs/PROBE-EMUTOS-falcontc/hd.
+ERROR: Microphone: SDL_OpenAudioDevice failed.
+INFO : NVRAM not found at '/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-29-bios06/runs/PROBE-EMUTOS-falcontc/home/hatari.nvram'
+WARN : Bus Error reading at address $20fffff, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fffffc21, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6c4710, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $5d1234, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6d3148, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $d003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+INFO : Strange screen size 16x480 -> aspect corrected by 32x1!
+INFO : OS clock ticks / second: 100
+
+
+
+
+
+                                                         
+                                                         
+                                                         
+                                                         
+                                                         
+                    ________________________________________
+
+                    EmuTOS Version:     20260414 
+                    CPU-Typ:            M68030 
+                    Rechner:            Atari Falcon 
+                    ST-RAM:             4 MB 
+                    Alt-RAM:            16 MB 
+                    GEMDOS-Laufwerke:   ABC 
+                    Boot-Zeit:          2026/10/29 16:40:44 
+                    ________________________________________
+
+                    Halte <Strg> = ohne AUTO/ACC
+                    Halte <Alt> = keine Harddisk
+                    DrUcke 'X' um von Laufwerk X: zu booten
+                    DrUcke <Esc> fUr die Textkonsole
+
+                       FUr Pause <Shift> gedrUckt halten    
+WARN : No GEMDOS dir '/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-29-bios06/runs/PROBE-EMUTOS-falcontc/hd/AUTO'
+
+
+WARN : Bus Error writing at address $0, PC=$e027e6 addr_e3=e027e6 op_e3=2089
+
+
+Panic: Bus Error
+fw=b008 ir=0000 ssr=0065
+addr=00000000 sr=2300 pc=00e027e6
+
+D0-3: 00023ba0 00382360 01041bd4 01028542
+D4-7: 00023ba0 00000001 0102bfc4 01029af4
+A0-3: 00000000 0000048e 01041bd4 01028582
+A4-7: 01028478 01053a80 01053a8c 010539dc
+ USP: 01053a3a
+
+basepage=01028224
+text=01028324 data=01041578 bss=01041ba8
+
+*** Taste um fortzufahren ***

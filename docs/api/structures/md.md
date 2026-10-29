@@ -53,15 +53,17 @@ externally.
 ## NewTOS: oeffentliches Layout von `MD`/`MPB` [BIOS06]
 
 > **Entschieden 2026-10-28: O1 = A** (`docs/api/bios/00-getmpb.md`,
-> „Entscheidungen“). Noch nicht umgesetzt (TASK/BIOS06.md).
+> „Entscheidungen“). **Umgesetzt 2026-10-29** (BIOS06): der Kern
+> veroeffentlicht einen eigenen Deskriptor im SDK-Layout.
 
-Drei Layouts existieren heute nebeneinander (gelesen):
+Die Layouts (gelesen):
 
 | Layout | `MD` | `MPB` | Quelle |
 |---|---|---|---|
 | EmuTOS m68k | 16 Byte (0/4/8/12) | 12 Byte | `references/emutos/include/bdosdefs.h:108-125` |
-| Kern (BDOS-intern, von `Getmpb` mitveroeffentlicht) | 24 Byte (Zeiger 8 @0, `m_start` 4 @8, `m_length` 4 @12, Zeiger 8 @16) | 24 Byte | `tos-types/src/memory.rs:61@MD`, `:101@MPB` |
-| SDK-Header unter LP64 (`long` = 8) | 32 Byte (0/8/16/24, alle 8) — abgeleitet, gemessen `sizeof=32` | 24 Byte (0/8/16) | `sdk/libc/overlay/include/mint/ostruct.h:293@_md`, `:305@_MPB` |
+| Kern, BDOS-intern (bis BIOS06 auch von `Getmpb` veroeffentlicht) | 24 Byte (Zeiger 8 @0, `m_start` 4 @8, `m_length` 4 @12, Zeiger 8 @16) | 24 Byte | `tos-types/src/memory.rs:61@MD`, `:101@MPB` |
+| SDK-Header unter LP64 (`long` = 8) | 32 Byte (0/8/16/24, alle 8) — gemessen `sizeof=32`, `_Static_assert` seit SDK04 | 24 Byte (0/8/16) | `sdk/libc/overlay/include/mint/ostruct.h:293@_md`, `:305@_MPB`, `:312-320@_Static_assert` |
+| Kern, oeffentlich (`Getmpb`, seit BIOS06) = SDK-Header | 32 Byte (0/8/16/24, alle 8) | 24 Byte (0/8/16) | `tos-api/src/bios/getmpb.rs:40@PublicMd`, `:58@PublicMpb`, Pruefung `:69-78@offset_of` |
 
 ### Dumper layout (tosdump) [TOOL16]
 
@@ -93,11 +95,12 @@ C on both ABIs.
 ```
 
 Das Kern-24-Byte-`MD` ist ein **internes** BDOS-Layout. Was ein Programm ueber
-`Getmpb` sieht, ist der Vertrag aus `docs/api/bios/00-getmpb.md` (V1);
-der Vorschlag dort ist das LP64-Header-Layout (32/24 Byte). Pool-`MD`s
+`Getmpb` sieht, ist der Vertrag aus `docs/api/bios/00-getmpb.md` (V1):
+das LP64-Header-Layout (32/24 Byte), seit BIOS06 vom Kern als eigener
+Deskriptor `PublicMd` geliefert. Pool-`MD`s
 (`pmd`/`pmdalt`, Allokationslisten) werden keinem Programm veroeffentlicht
-(abgeleitet: einzige Veroeffentlichung eines `MD` an ein Programm ist
-`tos-api/src/bios/getmpb.rs:35@ThemdPage`).
+(abgeleitet: einzige Veroeffentlichung eines Deskriptors an ein Programm ist
+`tos-api/src/bios/getmpb.rs:90@ThemdPage`).
 
 ## Allocator semantics
 

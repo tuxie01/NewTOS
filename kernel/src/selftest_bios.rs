@@ -7,8 +7,8 @@
 //! non-blocking handle-4 (IKBD) input slot.
 
 use tos_api::bdos::mem::init::stram_range;
+use tos_api::bios::getmpb::{PublicMd, PublicMpb};
 use tos_api::bios::vectors::{ETV_DEFAULT_JUST_RTS, ETV_TIMER};
-use tos_types::MPB;
 
 use crate::{console, kprintln};
 
@@ -105,19 +105,25 @@ pub fn run() {
     );
 
     // ── Getmpb (0x00): fills the caller's MPB (F4) ────────────────────
+    // The block and descriptor have the program-visible layout
+    // (`docs/api/bios/00-getmpb.md` V1, BIOS06), not the BDOS-internal MD.
     let (st_start, st_end) = stram_range();
-    let mut mpb = MPB::empty();
-    let rover_sentinel = 0xDEAD_BEEFusize as *mut tos_types::MD;
-    mpb.mp_rover = rover_sentinel; // must be preserved (spec §Outputs)
-    bios(0x00, (&mut mpb as *mut MPB) as u64, 0);
-    let mfl = mpb.mp_mfl;
+    const ROVER_SENTINEL: u64 = 0xDEAD_BEEF;
+    let mut mpb = PublicMpb { mp_free: 0x1111, mp_used: 0x2222, mp_rover: ROVER_SENTINEL };
+    bios(0x00, (&mut mpb as *mut PublicMpb) as u64, 0);
+    let mfl = mpb.mp_free as *const PublicMd;
     let mpb_ok = !mfl.is_null()
-        && mpb.mp_mal.is_null()
-        && mpb.mp_rover == rover_sentinel
-        // SAFETY: `getmpb` pointed mp_mfl at its static `themd`.
-        && unsafe { (*mfl).m_start } == st_start
-        && unsafe { (*mfl).m_length } == st_end - st_start
-        && unsafe { (*mfl).m_link }.is_null();
+        && mpb.mp_used == 0
+        && mpb.mp_rover == ROVER_SENTINEL
+        // SAFETY: an EL1 caller gets the kernel VA of `getmpb`'s static
+        // descriptor in mp_free.
+        && unsafe { *mfl }
+            == PublicMd {
+                md_next: 0,
+                md_start: i64::from(st_start),
+                md_length: i64::from(st_end) - i64::from(st_start),
+                md_owner: 0,
+            };
     check(mpb_ok, "Getmpb fills MPB from ST-RAM extent (F4)");
 
     if fails == 0 {

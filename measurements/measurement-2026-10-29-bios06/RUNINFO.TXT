@@ -1,0 +1,141 @@
+measurement-2026-10-29-bios06 -- Getmpb publishes the LP64 _MD/_MPB (O1 = A), Getmpb(NULL) on the
+oracle (O3), probe G00-G06 and tosdiff case 34 of xbios-ptr-r1 against tt and falcontc
+=====================================================================================================
+Developer, TASK/BIOS06 (decisions O1 = A, O2 = (a), O3 = (a) "measure EmuTOS first", O4), 2026-10-29
+~16:25-17:20 (host clock CET). Tree: main 90f409ab at the start; the lead committed 1ea9763b (docs/TASK
+only, no code) during the run -- the "after" runs name it as their commit, plus the uncommitted BIOS06
+changes listed under CHANGED. No hardware, no real card, nothing flashed. Not committed.
+
+WHAT / WHY
+  BIOS-CORE-003: the kernel published its BDOS-internal 24-byte MD through Getmpb; a program reading
+  through the SDK's LP64 _MD (32 bytes) got md_start = m_start | m_length << 32 and md_length = 0.
+  Contract (docs/api/bios/00-getmpb.md "NewTOS-Vertrag [BIOS06]", V1-V5): the header's layout, one
+  static snapshot [membot, memtop), only mp_mfl/mp_mal written. Before the change, O3: what EmuTOS
+  does with Getmpb(NULL).
+
+CHANGED (uncommitted, for the lead)
+  tos-api/src/bios/getmpb.rs   PublicMd (_MD, 32 bytes) / PublicMpb (_MPB, 24 bytes), offset_of/size_of
+                               const asserts with the spec's numbers, THEMD holds a PublicMd, describe()
+                               fills it, the caller's block offsets from PublicMpb; 2 host unit tests.
+                               NULL mpb unchanged (returns 0, writes nothing; O3 = (a)).
+  kernel/src/selftest_bios.rs  the (unwired) Getmpb selftest reads PublicMpb/PublicMd, not tos_types::MD
+  sdk/apps/apitest/apitest.c   MDX/MPBX removed; B3 uses the header's _MD/_MPB (fields md_*/mp_*)
+  docs/api/bios/00-getmpb.md, docs/api/structures/md.md   implemented, O3 measurement, cites
+  docs/analysis/deps/mapping.tsv   getmpb rows (getmpb, describe)
+  anchor renumbering / removed-symbol cites only: docs/sdk/05-abi-pitfalls.md, docs/audits/2026-10-28-
+  bios-core.md, docs/analysis/{abi-assumptions-check,lp64-tos-struct-survey,machine-identity-adr-
+  proposal}-2026-10-28.md, TASK/BIOS06.md, TASK/SDK02.md
+
+INPUTS
+  ROM       tools/oracle/etos512de-1a7484ab.img 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+  Hatari    2.6.1, binary 953f4e78eea55a8ca12ed6c83de1f045545b8da42a49e00112eaa235dffcd6f6
+  cfg       tools/oracle/hatari.cfg c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46 (never
+            --saveconfig)
+  probe     method/gnprobe.c, method/build.sh <repo> <scratch> (m68k-atari-mint-gcc 7.5.0 + mintlib;
+            clang aarch64 + sdk/libc, the overlay ostruct.h with the SDK04 _MD/_MPB asserts):
+            probe/GNPROBE.PRG 038889975b285845bda2876bf5cc64c4185266a8765d5f2dc04a4379ee7837f4
+            probe/GNPROBE.NAP 60c03261ea1a2129e52f8eee2f1ae820443b21a8dac36ac8ad70cb089dfcdcd7
+  kernel    cargo xtask build --board rpi4 --release of this tree:
+            kernel8.img d0d195278f4a925ddd74cf873a0bf17aee4259c6cfc25acd236da41a318b5c7d (the same image
+            the "after" tosdump runs built, runs/newtos-*/tosdump-run.txt)
+  before    git archive 90f409ab extracted into scratch, measured with --tree: kernel8.img
+            ab68fd8d56146e129ed1497434745ecc2209002a411bab599aabc8878f5e7287
+  tables    tosdump/cases/{xbios-ptr-r1,bios-r1,xbios-chardev-r1,bios-core-r1,xbios-system-r1}.tsv,
+            references tosdump/reference/EMUTOS-1a7484ab-{XBIOS-ptr,BIOS,XBIOS-chardev,BIOS-core,
+            XBIOS-system}{,-falcontc}.BIN (unchanged)
+
+METHOD (method/)
+  gnprobe.c             group G = G00-G06 of measurement-2026-10-28-bios-core-audit/method/bcprobe.c
+                        (copied; one change: the sysvars are read as 32-bit int -- bcprobe's `long` read
+                        8 bytes under LP64, _membot plus _memtop, so its G04 start_is_membot/
+                        end_is_memtop were 0 on NewTOS whatever the descriptor held); group N =
+                        Getmpb(0L): N00 longs at 0 and 4 (Supexec), N01 written to disk BEFORE the
+                        call, N02 return, N03 longs at 0 and 4 again.
+  build.sh              both binaries
+  run-emutos.sh         tt / falcontc as tools/hatari-oracle.sh starts a program, plus
+                        --trace bios,gemdos,cpu_exception (scratch; sha256 in runs/PROBE-EMUTOS-*/
+                        trace-full.sha256; trace-excerpt.txt = its GEMDOS/BIOS/XBIOS lines from the
+                        probe's Pexec to the first bus-error exception, by awk)
+  run-newtos.sh         tools/mkcard.sh card with C:\GNPROBE.NAP and #Z autorun, QEMU raspi4b boots an
+                        APFS clone; card and clone deleted after (sha256 kept)
+  newtos-tables.sh      before|after: the five tables through cargo xtask tosdump (TOOL09), each
+                        against tt and falcontc. The run passed "runs" from the run directory; the script
+                        cd'd to the repository root first, so the ten directories landed in <repo>/runs/
+                        and were moved into runs/ afterwards (mv, contents unchanged; the "--out runs/..."
+                        in their tosdump-run.txt is that path). The script now resolves <runs-dir> first.
+  compare.sh            per table and reference: differing cases before / after, newly differing
+  listslots.py          display only: the 7 slots of case 34
+  Development runs (scratch, not evidence): the first probe build read address 0 through a constant
+  null pointer, which gcc -O2 compiled to TRAP #7 ("Panic: Exception number 39" on EmuTOS); the
+  address now comes from a volatile object. The second build had the `long` sysvar read (above).
+
+O3 -- Getmpb(NULL) ON THE ORACLE (runs/PROBE-EMUTOS-tt, -falcontc; identical on both profiles)
+  N00 before: long@0=602e0206 long@4=00e00030;  N01 written;  N02/N03 never written.
+  Hatari: "Bus Error writing at address $0, PC=$e027e6"; EmuTOS: "Panic: Bus Error / addr=00000000
+  sr=2300 pc=00e027e6 ... A0=00000000 A1=0000048e ... *** Taste um fortzufahren ***" (hatari.log).
+  trace-excerpt.txt: "BIOS 0x00 Getmpb(0x0)", then the bus error, then exception 2 (vector 8).
+  PC $E027E6 = _getmpb ($E027BA, references/emutos-oracle/1a7484ab/emutos.map) + 0x2C =
+  "move.l a1,(a0)" (obj/biosmem.o) = mpb->mp_mfl = &themd, bios/biosmem.c:149: the first store into
+  the caller's block, in supervisor state, faults; EmuTOS panics and waits for a key -- the program
+  does not return, the system stands. (themd itself was already rewritten by :144-147.)
+  NewTOS (runs/PROBE-NEWTOS-raspi4b): N02 ret=00000000, N03 longs at 0 and 4 unchanged (0/0), the
+  program ran on ("GNPROBE done", desktop up). O3 = (a) stays per the user decision; reported.
+
+PROBE G00-G06 (runs/PROBE-*; LP64 _MD 32 / _MPB 24 on NewTOS, 16/12 on the m68k)
+  line  EmuTOS tt (falcontc where it differs)               NewTOS raspi4b (after)
+  G00   membot 00023ba0 memtop 003da700 (003a5f00)          membot 00400000 memtop 00e00000
+  G01   ret 00023ba0 (void, not compared)                    ret 00000000
+  G02   mp_free_ok=1 mp_used_null=1 mp_rover_kept=1          same
+  G03   next/owner NULL, start 00023ba0, length 003b6b60     next/owner NULL, start 00400000,
+        (00382360)                                           length 00a00000 (hi words 0)
+  G04   start_ok=1 length_pos=1 end_le_2G=1                  same: all five 1
+        start_is_membot=1 end_is_memtop=1
+  G05   raw = the 16-byte m68k MD                            raw = 0 / 0x400000 / 0xA00000 / 0, 8 each
+  G06   same_free=1 same_start=1                             same
+  Equal in every relation the probe states (values differ only by machine: membot/memtop).
+  Before (measurement-2026-10-28-bios-core-audit/runs/PROBE-NEWTOS-raspi4b): G03 md_start
+  00a00000/00400000, md_length 0, G04 all 0.
+
+TOSDIFF -- case 34 Getmpb (runs/newtos-xbios-ptr-r1, slots via method/listslots.py)
+            mp_free   md_next md_start            md_length           md_owner mp_used mp_rover
+  oracle tt 0x48E     0       0x23BA0             0x3B6B60            0        0       DEADDEAD poison
+  falcontc  0x48E     0       0x23BA0             0x382360            0        0       DEADDEAD poison
+  before    0x26E000  0       0x00A00000_00400000 0                   0        0       DEADDEAD poison
+  after     0x26E000  0       0x400000            0xA00000            0        0       DEADDEAD poison
+  before: DIFF (md_start PTR_RAM "not < 0x80000000", md_length NONZERO "is zero") against both;
+  after:  "0 of 9 cases differ" against tt and against falcontc.
+
+NO REGRESSION (runs/before-after.txt; tosdiff --validate exit 0 on every run, every run ended
+"desktop up after DUMPBIOS.NAP, rc=0")
+  table             ref        differing before (90f409ab)          after (BIOS06)
+  xbios-ptr-r1      tt, fc     34                                   none
+  bios-r1           tt         41 cases (53 ... 235)                identical
+  bios-r1           falcontc   45 cases (53 ... 235)                identical
+  xbios-chardev-r1  tt, fc     31 43-53                             identical
+  bios-core-r1      tt / fc    15 / 14 cases                        identical
+  xbios-system-r1   tt, fc     68-76                                identical
+  Newly differing cases in all ten comparisons: none.
+
+CARDS / IMAGES
+  Every NewTOS card: tools/mkcard.sh defaults (64 MiB, MBR + FAT16). Manifests: runs/PROBE-NEWTOS-
+  raspi4b/card.img.manifest and runs/{before,newtos}-*/card.img.manifest (written by the runner).
+  optional_missing line of every manifest, verbatim (all eleven identical):
+    optional_missing none
+  Image sha256 before/after: runs/PROBE-NEWTOS-raspi4b/card.img.{before,after}.sha256, the runner's
+  in each tosdump-run.txt ("card ... sha256", "card after the run sha256"). All images were APFS
+  clones in scratch and are deleted. No EmuTOS disk image (Hatari GEMDOS drive C:).
+
+BOTH BOARDS
+  rpi4: every NewTOS run above boots the rpi4 release kernel to the desktop (QEMU raspi4b).
+  qemu-virt: cargo xtask build --board qemu-virt (debug), the ELF objcopied to scratch
+  (bc2a2407152c72abaa4b53289d0a95b8d6c8f35bdfa2fd3603362be3b0b230d7), QEMU virt headless 45 s
+  (the xtask run machine line): "[desk] desktop up (0 drives)", no panic. Serial log not kept.
+
+NOT VERIFIED
+  Real Raspberry Pi 4. NewTOS-side argument arrival of Getmpb(NULL) (no BIOS argument trace for the
+  probe; the return 0 and the untouched words at 0/4 are consistent with the NULL guard). APITEST
+  (B3, BS03-BS10) was built (links, 0 compiler warnings) but not run. The kernel's
+  selftest_bios is compiled but wired into no boot path.
+
+FILES
+  manifest.sha256 covers every file of this run except itself.

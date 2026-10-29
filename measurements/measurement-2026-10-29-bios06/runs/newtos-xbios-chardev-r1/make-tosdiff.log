@@ -1,0 +1,5 @@
+awk -f mkprofiles.awk ../profiles.tsv > build/profiles.h.tmp && mv build/profiles.h.tmp build/profiles.h
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -Ibuild -c tosdiff.c -o build/tosdiff.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c casefile.c -o build/casefile.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests -c ../core/cases.c -o build/cases.o
+cc -std=c99 -O1 -g -Wall -Wextra -Werror -Wno-unused-parameter -I../core -I../host -I../tests build/tosdiff.o build/casefile.o build/record.o build/cases.o -o build/tosdiff
