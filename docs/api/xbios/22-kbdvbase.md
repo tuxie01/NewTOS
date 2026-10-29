@@ -617,6 +617,12 @@ Abweichung von EmuTOS in `docs/COMPATIBILITY.md` (Sanctioned deviations).
 eingehaengter Programm-Haken wird **nicht gerufen** (Maus laeuft weiter
 kernelintern ueber `vdi::feed_relative`, `mousexvec` ueber
 `bios::vectors::mousexvec`). Eintrag unter `docs/STATUS.md` "Blocked" (Lead).
+**[BIOS15] ADR-031:** nicht gerufen bleibt (XBIOS-CHARDEV-003 ACCEPTED), aber
+nicht still: das erste Eingabeereignis, das den Slot bei EmuTOS riefe
+(`ikbdsys`/`midisys` jedes IKBD-Byte, `mousevec` Mauspaket, `statvec`,
+`clockvec`, `joyvec` ihr Paket), schreibt eine Warnung je Haken und Prozess
+(`tos-api/src/xbios/kbdvecs.rs:447@check_events`). `midivec`, `vkbderr`,
+`vmiderr`: ihr Ereignis (MIDI-Byte, Ueberlauf) tritt nie ein, keine Warnung.
 
 ## C7. Belege
 
@@ -742,5 +748,7 @@ sein laufendes `Pexec`-Kind. Gleich, welcher Prozess beim Poll die CPU hat:
 **D9 freigegeben (Anwender 2026-10-27):** Empfaenger = `emutos_run()`.
 Setzt ein Accessory je einen `kbdvec`-Haken (sein Slot haelt nicht mehr die
 Vorgabe), schreibt der Kern einmal je Accessory eine Warnung ins Protokoll —
-die Abweichung soll nie still zuschlagen. Der Haken laeuft im
+die Abweichung soll nie still zuschlagen. [BIOS15] Seit ADR-031 beim
+ersten Tastenbyte, das der Haken bei EmuTOS bekaeme (der gemeinsame
+Mechanismus, `check_events`), nicht mehr bei jedem Syscall-Ruecksprung. Der Haken laeuft im
 Supervisor-Zustand (`docs/api/_super-state.md` S11, O1 = ja).

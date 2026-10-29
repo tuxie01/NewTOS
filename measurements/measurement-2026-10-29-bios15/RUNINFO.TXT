@@ -1,0 +1,84 @@
+BIOS15 -- ADR-031 "OS hooks installed by programs": warnings, ownership, prt_* default, Mfpint/Xbtimer d0 -- 2026-10-29
+=========================================================================================================================
+Developer run for TASK/BIOS15.md. Not committed by the developer (the lead commits). No hardware, no real card.
+
+WHY
+  TASK/BIOS15: hooks NewTOS does not call warn once per hook and process; the installing process owns a hook in a shared
+  cell; prt_stat/prt_vec = just_rts. User scope addition 2026-10-29: Mfpint/Xbtimer stay "not served, warn once" AND
+  return what the oracle returns (measured here).
+
+STATE
+  NewTOS before : 0d3bb485 (git archive, scratch tree), kernel8.img 229e268b04e74f13b65abfa3dee9a09599b7e486d3d881d89d569223592649a6
+  NewTOS after  : 0d3bb485 + the uncommitted BIOS15 working tree, kernel8.img (rpi4 release)
+                  a99711dafa0e4732b6bc25ce6fea78b787e9e6f53e76bd2644eba45611bdc20a
+  Injector kernel (TeraDesk/DOOM only): the after tree + tools/inject-arm.py (method/injector-scratch.diff),
+                  kernel8.img fc0973a80d78fdb3aabb91b3ddf00fbf247cc3a130c335d5867d91e4423d9cd2
+  EmuTOS        : 1a7484ab, ROM tools/oracle/etos512de-1a7484ab.img (pinned sha256 checked by tools/hatari-oracle.sh),
+                  Hatari 2.6.1, tools/oracle/hatari.cfg
+  QEMU          : raspi4b, -append serial=on; qemu-virt via cargo xtask run
+  Commands      : method/COMMANDS.TXT
+
+1 THE PROBE (tosdump/probes/hkprobe.c, permanent; HKPROBE.PRG m68k / HKPROBE.NAP AArch64, same source; runs: hkprobe/)
+  Part M = Mfpint/Xbtimer d0; part P = prt_stat/prt_vec; part H = two hooks NewTOS does not call (hdv_mediach in super
+  state around an Fopen, etv_timer via Setexc for 40 _hz_200 ticks), both put back.
+  sha256 of the probes in every hkprobe/*/run.txt.
+
+                                   EmuTOS tt   EmuTOS falcontc   NewTOS before   NewTOS after
+  M01 IMRA / IMRB                  14 / 60     14 / 60           n/a (no MFP)    n/a (no MFP)
+  M02 Mfpint(5, timer C vector)    0x60        0x60              0x0d            0x60
+  M03 Mfpint(0x15, same)           0x60        0x60              0x0d            0x60
+  M04 Mfpint(12, RS-232 rx vector) 0x14        0x14              0x0d            0x14
+  M05 Xbtimer(2, 0x50, 192, vec)   0x60        0x60              0x1f            0x60
+  M06 Xbtimer(4, 0x1234, 0, 0)     0x1234      0x1234            0x1f            0x1234
+  M07 Xbtimer(-1, 0x8001, 0, 0)    0x8001      0x8001            0x1f            0x8001
+  (all with hi = 0: zero-extended)
+  P01 prt_stat != 0, == prt_vec    1 / 1       1 / 1             0 / 1           1 / 1
+  P02 call through both            0x12345678  0x12345678        not called      0x12345678
+  H01 hdv_mediach calls            0 (Fopen -33; the GEMDOS drive is Hatari's)  0                0
+  H02 etv_timer calls / 40 ticks   10          10                0               0
+  EmuTOS tt run twice: HKPROBE.LOG byte-identical (hkprobe/EMUTOS-tt-repeat); tt = falcontc byte for byte.
+  NewTOS after = EmuTOS on M02-M07, P01, P02. H02 is the accepted deviation BIOS-CORE-002 (ADR-031).
+  The d0 values match the disassembly of the pinned build (references/emutos-oracle/1a7484ab/obj/mfp.o): jenabint's
+  last `orb` leaves the interrupt mask register in d0; xbtimer's early return leaves `control` (docs/api/xbios/0d-mfpint.md).
+
+  NewTOS after, serial (hkprobe/NEWTOS-after/BOOT-SERIAL.txt), exactly one line per hook:
+    [hook] warning: slot 0 (PD 0x01a07000) installed vector 0x45 ($114) = 0x0 via Mfpint; ...
+    [hook] warning: slot 0 (PD 0x01a07000) installed vector 0x4c ($130) = 0x0 via Mfpint; ...
+    [hook] warning: slot 0 (PD 0x01a07000) installed hdv_mediach = 0x1a084d4 via page 0; ...
+    [hook] warning: slot 0 (PD 0x01a07000) installed etv_timer = 0x1a084ec via Setexc; ...
+  (M03 and M05 reach vector 0x45 again: no second line. The vectors are 0 because NewTOS' Setexc shadow holds 0 for an
+  MFP vector -- BIOS07.) Before: no [hook] line. Both runs "desktop up" after the probe, 0 crash.
+
+2 RETEST TABLES (cargo xtask tosdump, QEMU raspi4b; tosdump/before = HEAD tree, tosdump/after = BIOS15 tree)
+                       tt before/after   falcontc before/after
+  bios-core-r1         15/44  15/44      14/44  14/44
+  xbios-chardev-r1     12/23  12/23      12/23  12/23
+  xbios-system-r1       9/43   9/43       9/43   9/43
+  super-r1              0/9    0/9        0/9    0/9
+  The tosdiff case lists before and after are identical for every table and profile (the tosdiff-*.txt files compared
+  without the BIN/build/sha lines). No [hook] line and no crash in any after run (none of the tables installs a hook:
+  Setexc only with -1). Every card manifest: optional_missing none.
+
+3 TERADESK (injector kernel, cards/td.img.manifest, serial/td-serial.log, screendumps/td-*)
+  #Z TeraDesk, armed up:DESKTOP: open C:, Shift+Esc twice (force_mediach: Super(0L), hdv_* hooked, Fopen, restored,
+  Super(stack)), Ctrl+Q -> Reboot. Serial: at start no [hook] line; at the first Shift+Esc exactly three lines --
+  hdv_bpb, hdv_rw, hdv_mediach "via page 0" (seen at the Fopen trap in super state; the cells are restored before
+  TeraDesk leaves the super state); the second Shift+Esc no line; Reboot -> "[reset] OSHEADER reset entry (Cold)
+  requested", "PM watchdog full reset" (QEMU -no-reboot exits; mdrive rc 1 = QMP closed by the reset, as in
+  measurements/measurement-2026-10-27-mem12-acceptance/RUNINFO.TXT). crash 0, PANIC 0. Screendumps open, shesc1,
+  shesc2, quit-dialog: the desktop and the Quit dialog as in the MEM12 acceptance run.
+  Not driven: "Shutdown" (lobo: Setexc(0x70) -> one vector 0x1c line expected, Setexc(0x114) none, then the
+  designed endless loop) -- see TASK/BIOS15-STATUS-DONE.MD.
+
+4 DOOM (injector kernel, cards/doom.img.manifest, serial/doom-serial.log, screendumps/doom-*)
+  "DOOM: keys via kbdvec -- TOS 4.04, Kbdvbase 0007f010, kbdvec was 0007e048"; F10 through the hook opens the quit
+  prompt (doom-f10.png), 'y' quits, "exited with rc=0", desktop up. No [hook] line (kbdvec is served). crash 0.
+
+5 QEMU-VIRT (serial/virt-boot-serial.log, cargo build output included): "[desk] desktop up (0 drives)", 0 crash.
+
+6 HOST (not in this directory; numbers in TASK/BIOS15-STATUS-DONE.MD)
+  cargo xtask test 1808/0/1; make -C tosdump host-test green; sdk/run-host-tests.sh 27/0/0.
+
+POST-RUN
+  checks/post-run.sha256: the booted td/doom clones after their runs (deleted afterwards). The hkprobe NewTOS cards:
+  run.txt "card after". Per-run images and kernels are not kept (sha256 above).

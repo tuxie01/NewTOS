@@ -29,7 +29,9 @@ pub fn is_super(slot: usize) -> bool {
 /// Enter (`on`) or leave the super state of `slot`: record it and switch the
 /// slot's page 0 between EL0 read-write and read-only, with the TLB
 /// maintenance [`mmu::set_page0_writable`] documents. A no-op when the state
-/// does not change.
+/// does not change. Leaving it compares the page-0 hook cells the process
+/// could write with their defaults, for the ADR-031 warning
+/// ([`super::hooks::check_page0`]; read only, nothing is called).
 ///
 /// # Safety
 ///
@@ -45,6 +47,9 @@ pub unsafe fn set_super(slot: usize, on: bool) {
     }
     // SAFETY: caller contract.
     unsafe { mmu::set_page0_writable(slot, on) };
+    if !on {
+        super::hooks::check_page0(slot);
+    }
 }
 
 /// `Super(stack)` for the process in `slot` (S3–S5, ABI S12): `sp_el0` is

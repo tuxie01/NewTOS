@@ -232,7 +232,7 @@ call_mousevec	bios/aciavecs.S	-	-	no counterpart: ACIA interrupt / MIDI packet p
 ikbdraw	bios/aciavecs.S	tos-api/src/xbios/kbdvecs.rs	route_key	the jump through kbdvec
 ikbdsys	bios/aciavecs.S	-	-	no counterpart: ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
 init_acia_vecs	bios/aciavecs.S	tos-api/src/xbios/kbdvecs.rs	write_table	the kbdvecs table defaults (MEM12: the stubs in write_stubs)
-int_acia	bios/aciavecs.S	-	-	no counterpart: ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
+int_acia	bios/aciavecs.S	tos-api/src/xbios/kbdvecs.rs	check_events	only the ADR-031 warning: the Kbdvbase hooks an IKBD event would call (midisys, ikbdsys, mousevec, statvec, clockvec, joyvec, an accessory's kbdvec) are reported once, never called; no ACIA interrupt (BIOS15)
 kbdvec	bios/aciavecs.S	kernel/src/ikbd.rs	kbd_int	the default kbdvec
 midisys	bios/aciavecs.S	-	-	no counterpart: ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
 midivec	bios/aciavecs.S	-	-	no counterpart: ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
@@ -271,6 +271,7 @@ lrwabs	bios/bios.c	tos-api/src/bios/mod.rs	rwabs	Rwabs 0x04
 mediach	bios/bios.c	tos-api/src/bios/mod.rs	mediach	Mediach 0x09
 run_auto_program	bios/bios.c	-	-	no counterpart: Pexec of one AUTO program; NewTOS runs them from kernel/src/launch.rs run_auto_folder, no per-program function
 setexc	bios/bios.c	tos-api/src/bios/vectors.rs	setexc	Setexc 0x05
+setexc	bios/bios.c	tos-api/src/bios/vectors.rs	note_write	the ADR-031 half of a write: warning for an unserved hook, owner record of a hook entry, page-0 hook check (BIOS15; no EmuTOS counterpart)
 shutdown	bios/bios.c	-	-	no counterpart: power off (NatFeats/hardware); no NewTOS counterpart found
 tickcal	bios/bios.c	tos-api/src/bios/mod.rs	dispatch	Tickcal 0x06: a constant in the dispatcher
 vecs_init	bios/bios.c	-	-	no counterpart: installs the m68k exception vectors; AArch64 vectors are kernel code (kernel/src/arch)
@@ -308,7 +309,7 @@ bconout2	bios/chardev.c	tos-api/src/vdi/escape.rs	conout	Bconout(2) through the 
 bconout5	bios/chardev.c	tos-api/src/vdi/escape.rs	rawout	Bconout(5)
 bcostat2	bios/chardev.c	tos-api/src/bios/chardev.rs	bcostat	Console impl
 char_dummy	bios/chardev.c	tos-api/src/bios/chardev.rs	bconstat	Absent impl (absent device)
-chardev_init	bios/chardev.c	-	-	no counterpart: NewTOS's device table is a static (bios/chardev.rs), no init function
+chardev_init	bios/chardev.c	tos-api/src/bdos/process/loader.rs	populate_sysvars	the prt_stat/prt_vec = just_rts half (the shared ret stub, BIOS15); NewTOS's device table is a static (bios/chardev.rs), aux_stat/aux_vec stay 0
 charout_dummy	bios/chardev.c	tos-api/src/bios/chardev.rs	bconout	Absent impl (absent device)
 bcd2int	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
 clock_init	bios/clock.c	-	-	no counterpart: RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
@@ -647,26 +648,26 @@ meminit	bios/memory.S	kernel/src/bios/machine/layout.rs	discover	analogue: memor
 altram_init	bios/memory2.c	-	-	no counterpart: TT-RAM / alt-RAM probing: no NewTOS counterpart (memory map from the firmware, kernel/src/bios/machine/layout.rs)
 detect_ttram_size	bios/memory2.c	-	-	no counterpart: TT-RAM / alt-RAM probing: no NewTOS counterpart (memory map from the firmware, kernel/src/bios/machine/layout.rs)
 ttram_detect	bios/memory2.c	-	-	no counterpart: TT-RAM / alt-RAM probing: no NewTOS counterpart (memory map from the firmware, kernel/src/bios/machine/layout.rs)
-disable_mfp_interrupt	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
-enable_mfp_interrupt	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
-init_system_timer	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
-jdisint	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
-jenabint	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
-mfp_init	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
-mfpint	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
-reset_mfp_regs	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
-setup_timer	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
-timeout_gpip	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
-tt_mfp_init	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
-tt_mfpint	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
-xbtimer	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Mfpint/Jdisint/Jenabint/Xbtimer fall to the dispatcher's default arm)
+disable_mfp_interrupt	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
+enable_mfp_interrupt	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
+init_system_timer	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
+jdisint	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
+jenabint	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
+mfp_init	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
+mfpint	bios/mfp.c	tos-api/src/xbios/mfp.rs	mfpint	Mfpint 0x0D without an MFP: the ADR-031 warning (handler never called) and EmuTOS' d0, the interrupt mask register after jenabint, from an image seeded with the oracle's IMRA/IMRB (BIOS15, docs/api/xbios/0d-mfpint.md)
+reset_mfp_regs	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
+setup_timer	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
+timeout_gpip	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
+tt_mfp_init	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
+tt_mfpint	bios/mfp.c	-	-	no counterpart: MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
+xbtimer	bios/mfp.c	tos-api/src/xbios/mfp.rs	xbtimer	Xbtimer 0x1F without an MFP: timer 0-3 as mfpint(timer_num[timer]) (warning + mask register), another timer answers control (EmuTOS' d0; BIOS15)
 bconin3	bios/midi.c	-	-	no counterpart: MIDI ACIA: MIDI is the absent device on NewTOS (bios/chardev.rs Absent)
 bconout3	bios/midi.c	tos-api/src/xbios/system.rs	midiws	MIDI output goes to the absent device
 bconstat3	bios/midi.c	-	-	no counterpart: MIDI ACIA: MIDI is the absent device on NewTOS (bios/chardev.rs Absent)
 bcostat3	bios/midi.c	-	-	no counterpart: MIDI ACIA: MIDI is the absent device on NewTOS (bios/chardev.rs Absent)
 midi_init	bios/midi.c	-	-	no counterpart: MIDI ACIA: MIDI is the absent device on NewTOS (bios/chardev.rs Absent)
 midiws	bios/midi.c	tos-api/src/xbios/system.rs	midiws	Midiws 0x0C
-Initmous	bios/mouse.c	-	-	no counterpart: XBIOS 0x00 Initmous is not implemented: NewTOS's XBIOS dispatcher returns the function number (xbios/mod.rs)
+Initmous	bios/mouse.c	tos-api/src/xbios/mod.rs	note_installer	only the ADR-031 warning for a mousevec install (types 1/2/4, vec != NULL; BIOS15); the call itself is not implemented, the dispatcher answers the function number
 detect_native_features	bios/natfeat.S	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
 natfeat_cookie	bios/natfeat.S	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart
 xhdi_vec	bios/natfeat.S	-	-	no counterpart: emulator NatFeats interface (ARAnyM/Hatari): no NewTOS counterpart

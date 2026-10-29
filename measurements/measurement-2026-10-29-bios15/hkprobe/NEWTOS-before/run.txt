@@ -1,0 +1,7 @@
+hkprobe run, side newtos (2026-10-29T09:37:08Z)
+tree      add8083588bbc12f9ad7249caa327410557e6f57 17 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    HKPROBE.PRG 7a8243d51b08f8ae2abbe15d78e29de8720581752f5ec8e4c434be52d7f4876e HKPROBE.NAP 6ad431768935ae9b57ebb55a9d050665f433cdc788803bd8b15c7c98dab8a88f
+kernel    229e268b04e74f13b65abfa3dee9a09599b7e486d3d881d89d569223592649a6 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios15/kernel8-head.img
+card      89011fc778ebcc6c7905fbd93ff06b01dc55a7a3aee5f8daf46f9a670d0e5d7c (tools/mkcard.sh, C:\HKPROBE.NAP, #Z autorun)
+qemu      done
+card      after 6f7271d1fb9d69cf5bbc8559211d5ef16f7182dc41f1e1832b4f5be3fa2a9fbf (the booted clone)

@@ -15,6 +15,8 @@
 #   make pxprobe-m68k     PXPROBE.PRG, the Pexec/Fsfirst media-change probe
 #                         (probes/pxprobe.c)
 #   make pxprobe-newtos   PXPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make hkprobe-m68k     HKPROBE.PRG, the OS-hook probe (probes/hkprobe.c)
+#   make hkprobe-newtos   HKPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make host-test        the host-side suite (same as make -C host test)
 #
 # Same core sources for both; only abi/ differs (spec section 2).
@@ -55,11 +57,11 @@ BUILD := build
 .PHONY: all dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
         dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
         scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
-        pxprobe-m68k pxprobe-newtos host-test clean
+        pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
      scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
-     pxprobe-m68k pxprobe-newtos host-test
+     pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -146,6 +148,17 @@ $(BUILD)/PXPROBE.PRG: probes/pxprobe.c | $(BUILD)
 pxprobe-newtos: $(BUILD)/PXPROBE.NAP
 $(BUILD)/PXPROBE.NAP: probes/pxprobe.c build-pxprobe-newtos.sh | $(BUILD)
 	./build-pxprobe-newtos.sh $@
+
+# The OS-hook probe (TASK/BIOS15): no disk, any oracle profile. Run by
+# probes/run-hkprobe.sh.
+hkprobe-m68k: $(BUILD)/HKPROBE.PRG
+$(BUILD)/HKPROBE.PRG: probes/hkprobe.c | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror probes/hkprobe.c -o $@
+	@$(CROSS_MINT)size $@
+
+hkprobe-newtos: $(BUILD)/HKPROBE.NAP
+$(BUILD)/HKPROBE.NAP: probes/hkprobe.c build-hkprobe-newtos.sh | $(BUILD)
+	./build-hkprobe-newtos.sh $@
 
 host-test:
 	@$(MAKE) --no-print-directory -C host test

@@ -307,6 +307,18 @@ one warning per hook and process; never silent.
 The accessor `vectors::vector(num)` is no longer `#[allow(dead_code)]`: it is
 read for `etv_term` (`tos-api/src/bios/vectors.rs:149@vector`).
 
+[BIOS15] Built (`tos-api/src/bios/vectors.rs:209@note_write`, the shared
+mechanism `tos-api/src/bdos/process/hooks.rs:504@note`): a `Setexc` write of
+`etv_timer`, `etv_critic` or a vector `< 0x100` other than its boot value
+logs one `[hook] warning` per hook and process; `etv_term` (served),
+`etv_xtra` and the system variables do not warn. A write into a hook entry
+`<= 0x103` makes the calling process its owner: its `Pterm` puts the previous
+value back while the entry still holds its hook, otherwise the entry stays
+and the log says so; after `Ptermres` it stays (ADR-031 rule 3). A write into
+page 0 (`0x120 <= num < 0x200`) runs the page-0 hook check (`bell_hook`
+`0x16B`, `kcl_hook` `0x16C`). The values `Setexc` stores and returns are
+unchanged.
+
 ### Open decisions (NewTOS choices; no decision taken here)
 
 **Decisions (user 2026-10-28):** D1 = **1**, keep sign extension (the rule

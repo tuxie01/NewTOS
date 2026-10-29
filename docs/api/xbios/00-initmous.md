@@ -262,6 +262,11 @@ still reset `mousevec` to a no-op.
   "install `newvec`" and "reset to `just_rts`" contract steps are not
   implemented. The mouse *works* (cursor moves) via the direct path; the
   `Initmous` *API contract* does not. Recorded as K-series below.
+- **[BIOS15] ADR-031:** `Initmous(1|2|4, param, vec)` with `vec != NULL` —
+  the calls that install `mousevec` on EmuTOS (`bios/mouse.c:105-117`) —
+  writes one `[hook] warning` per process (`Hook::Mousevec`, the key the
+  `Kbdvbase` slot shares); the answer stays the dispatcher's function number
+  (`tos-api/src/xbios/mod.rs:169@note_installer`).
 - **Y direction.** The USB `+dy = down` convention is passed straight
   through (`kernel/src/drivers/usb/hid_decode.rs:143`); `ikbd.rs`/`feed_relative` add the signed delta so
   `+dy` increases `GCURY` (downward), matching the EmuTOS relative mode with

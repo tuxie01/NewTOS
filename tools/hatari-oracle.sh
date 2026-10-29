@@ -23,7 +23,9 @@
 #            or a probe, GCPROBE.PRG (tosdump/probes/gcprobe.c, TASK/FS20)
 #            or PXPROBE.PRG (tosdump/probes/pxprobe.c, TASK/FS22): no table
 #            (give -), profile disk only, always destructive (it rewrites
-#            C:'s boot sector), writes <PROBE>.LOG only
+#            C:'s boot sector), writes <PROBE>.LOG only;
+#            or HKPROBE.PRG (tosdump/probes/hkprobe.c, TASK/BIOS15): no table,
+#            touches no disk, any profile, writes HKPROBE.LOG only
 #   table    the case table; staged as VDI.TSV / AES.TSV / RASTER.TSV /
 #            BIOS.TSV; - for a probe
 #   out-dir  receives hd/ (the GEMDOS drive: C:, in profile disk D:),
@@ -66,6 +68,7 @@ ROM=${5:-$ORACLE_ROM}
 
 PRG=$(basename "$DUMPER" | tr '[:lower:]' '[:upper:]')
 PROBE=0
+PROBE_DISK=1   # a probe writes C:'s boot sector unless it says otherwise
 case $PRG in
     DUMPVDI.PRG)  AREA=VDI ;;
     DUMPAES.PRG)  AREA=AES ;;
@@ -73,6 +76,7 @@ case $PRG in
     DUMPBIOS.PRG) AREA=BIOS ;;
     GCPROBE.PRG)  AREA=GCPROBE; PROBE=1 ;;
     PXPROBE.PRG)  AREA=PXPROBE; PROBE=1 ;;
+    HKPROBE.PRG)  AREA=HKPROBE; PROBE=1; PROBE_DISK=0 ;;
     *) echo "unknown dumper: $PRG" >&2; exit 2 ;;
 esac
 if [ "$PROBE" = 1 ]; then
@@ -87,8 +91,9 @@ fi
 
 # Read more broadly than the dumper's loader (any whitespace separates), so a
 # table the loader takes as destructive is never run as an ordinary one.
-# A probe rewrites C:'s boot sector: destructive by itself.
-DESTRUCTIVE=$PROBE
+# A disk probe rewrites C:'s boot sector: destructive by itself.
+DESTRUCTIVE=0
+[ "$PROBE" = 1 ] && [ "$PROBE_DISK" = 1 ] && DESTRUCTIVE=1
 if [ "$PROBE" = 0 ] &&
    grep -Eq '^[[:space:]]*!disk[[:space:]]+[^[:space:]]+[[:space:]]+destructive[[:space:]]*$' "$TABLE"; then
     DESTRUCTIVE=1

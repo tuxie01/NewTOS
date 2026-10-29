@@ -1,0 +1,23 @@
+Commands of this run, in order (repository root, S = the session scratch .../scratchpad/bios15; never /tmp itself).
+
+1  HEAD tree for "before":  git archive 0d3bb485 | tar -x -C $S/head  (then a throwaway `git init` + commit inside
+   $S/head so cargo xtask doc-check / tosdump can run there; the project's git state is untouched)
+2  tables before:  method/run-tables.sh measurements/.../tosdump/before $S/head $S/tmp   (run in the scratch, copied here)
+   tables after:   method/run-tables.sh measurements/.../tosdump/after  <repo>  $S/tmp
+3  probe, oracle:  HKPROBE_SCRATCH=$S/tmp tosdump/probes/run-hkprobe.sh emutos tt       hkprobe/EMUTOS-tt
+                   HKPROBE_SCRATCH=$S/tmp tosdump/probes/run-hkprobe.sh emutos falcontc hkprobe/EMUTOS-falcontc
+                   HKPROBE_SCRATCH=$S/tmp tosdump/probes/run-hkprobe.sh emutos tt       hkprobe/EMUTOS-tt-repeat
+   probe, NewTOS:  HKPROBE_SCRATCH=$S/tmp tosdump/probes/run-hkprobe.sh newtos hkprobe/NEWTOS-after  $S/kernel8-after.img
+                   HKPROBE_SCRATCH=$S/tmp tosdump/probes/run-hkprobe.sh newtos hkprobe/NEWTOS-before $S/kernel8-head.img
+4  injector kernel: rsync of the working tree to $S/inj (without target/, .git, references/, Applications/, measurements/),
+   python3 tools/inject-arm.py $S/inj --tag inj up:DESKTOP=method/td.script launch:DOOM=method/doom.script
+   (diff: method/injector-scratch.diff), (cd $S/inj && cargo xtask build --board rpi4 --release) -> $S/kernel8-inj.img
+5  cards:          method/mkcards.sh $S                       (td, doom; manifests in cards/)
+6  TeraDesk:       method/run-inj.sh $S/kernel8-inj.img $S td td '\(\+716\)@1=2:open.png' '\(\+1072\)@1=2:shesc1.png' \
+                     '\(\+1416\)@1=2:shesc2.png' '\(\+1760\)@1=0.7:quit-dialog.png' '\(\+2220\)@1=4:-'
+   DOOM:           method/run-inj.sh $S/kernel8-inj.img $S doom doom '\(\+3010\)@1=1.5:f10.png' 'exited with rc@1=1:-' \
+                     'desktop up@1=3:desk.png'
+7  qemu-virt:      cargo xtask run --board qemu-virt --release (stopped after "desktop up") > serial/virt-boot-serial.log
+
+td.script/.spec, doom.script/.spec, z-teradesk.inf, z-doom.inf, TERADESK.INF, mdrive.py, gen.py: copies of
+measurements/measurement-2026-10-27-mem12-acceptance/method/ (unchanged).

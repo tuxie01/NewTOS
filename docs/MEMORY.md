@@ -3067,7 +3067,9 @@ which is served.
 
 1. **Rule: never silent.** A hook NewTOS does not serve is reported: one
    warning in the log **per hook per process** (the accessory model,
-   `accessory_hook_unwarned`, `tos-api/src/xbios/kbdvecs.rs:322@accessory_hook_unwarned`).
+   `accessory_hook_unwarned`; since TASK/BIOS15 the one mechanism for every
+   hook, the accessory `kbdvec` included:
+   `tos-api/src/bdos/process/hooks.rs:504@note`).
    Hooks that EmuTOS itself never calls (`etv_xtra`, `hdv_init`,
    `hdv_boot`, `prt_stat`/`prt_vec`, `aux_stat`/`aux_vec`) get no warning.
 2. **Per-hook table:**

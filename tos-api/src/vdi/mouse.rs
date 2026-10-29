@@ -12,6 +12,7 @@ use core::cell::UnsafeCell;
 use core::sync::atomic::{AtomicI16, AtomicU16, AtomicU64, AtomicU8, AtomicUsize, Ordering};
 
 use super::backend::{ClipRect, RasterBackend};
+use crate::bdos::process::hooks::{self, Cell, Hook, Via};
 use super::vwk::validate_color_index;
 use super::Vdipb;
 
@@ -916,10 +917,37 @@ pub fn vq_mouse(pb: &Vdipb) {
 /// landed two WORDs short of where an LP64 `vex_*(new, &old)` reads it, so
 /// `old` came back as garbage. The kernel's own VDI client already uses the
 /// LP64 slot-1 offset (`kernel/src/vdi_client.rs:226`).
-fn swap_vector(pb: &Vdipb, slot: &AtomicU64) {
+fn swap_vector(pb: &Vdipb, slot: &AtomicU64) -> (u64, u64) {
     let new = pb.contrl_ptr(0);
     let prev = slot.swap(new, Ordering::Relaxed);
     pb.set_contrl_ptr(1, prev);
+    (prev, new)
+}
+
+/// The OS-hook half of `vex_butv`/`vex_motv`/`vex_curv`/`vex_timv` (ADR-031):
+/// the calling process owns the vector it installed, so its `Pterm` can give
+/// the previous one back (rule 3), and a vector other than the default warns
+/// once per process — the VDI stores it but never calls it (rules 1, 5).
+fn exchange_hook(cell: Cell, hook: Hook, prev: u64, new: u64, default: u64) {
+    let slot = crate::bdos::process::slot_for(crate::bdos::process::current());
+    hooks::record_install(slot, cell, prev, new);
+    if let Some(slot) = slot {
+        if new != default {
+            hooks::note(slot, hook, new, Via::Vex);
+        }
+    }
+}
+
+/// The vector behind a VDI hook cell, for its owner's `Pterm`
+/// ([`hooks::on_terminate`]); `None` for a cell that is no VDI vector.
+pub(crate) fn vex_cell(cell: Cell) -> Option<&'static AtomicU64> {
+    match cell {
+        Cell::VexButv => Some(&USER_BUT),
+        Cell::VexMotv => Some(&USER_MOT),
+        Cell::VexCurv => Some(&USER_CUR),
+        Cell::VexTimv => Some(&TIM_ADDR),
+        Cell::Vector(_) => None,
+    }
 }
 
 /// Opcode 125 — `vex_butv`: install the button-change vector.
@@ -933,17 +961,22 @@ fn swap_vector(pb: &Vdipb, slot: &AtomicU64) {
 /// cannot carry, and the delivery contract for that is not designed. Since
 /// nothing is ever run or dereferenced through these slots, per-process
 /// rights change nothing for them. `docs/api/vdi/input/_mouse.md`, NewTOS
-/// implementation notes.
+/// implementation notes. ADR-031: not silent — a vector other than the
+/// default warns once per process, and the installing process owns it
+/// ([`exchange_hook`]).
 pub fn vex_butv(pb: &Vdipb) {
-    swap_vector(pb, &USER_BUT);
+    let (prev, new) = swap_vector(pb, &USER_BUT);
+    exchange_hook(Cell::VexButv, Hook::VexButv, prev, new, just_rts_va());
 }
 /// Opcode 126 — `vex_motv`: install the mouse-move vector.
 pub fn vex_motv(pb: &Vdipb) {
-    swap_vector(pb, &USER_MOT);
+    let (prev, new) = swap_vector(pb, &USER_MOT);
+    exchange_hook(Cell::VexMotv, Hook::VexMotv, prev, new, just_rts_va());
 }
 /// Opcode 127 — `vex_curv`: install the cursor-draw vector.
 pub fn vex_curv(pb: &Vdipb) {
-    swap_vector(pb, &USER_CUR);
+    let (prev, new) = swap_vector(pb, &USER_CUR);
+    exchange_hook(Cell::VexCurv, Hook::VexCurv, prev, new, mov_cur as *const () as u64);
 }
 
 /// Opcode 134 — `vex_wheelv`: install the mouse-wheel vector (EmuTOS
@@ -990,7 +1023,8 @@ pub fn vex_wheelv(pb: &Vdipb) {
 /// Opcode 118 — `vex_timv`: install the timer-tick vector and return the
 /// tick period in ms (`Tickcal`).
 pub fn vex_timv(pb: &Vdipb) {
-    swap_vector(pb, &TIM_ADDR);
+    let (prev, new) = swap_vector(pb, &TIM_ADDR);
+    exchange_hook(Cell::VexTimv, Hook::VexTimv, prev, new, just_rts_va());
     pb.set_intout(0, TICKCAL_MS);
     pb.set_contrl(4, 1);
 }

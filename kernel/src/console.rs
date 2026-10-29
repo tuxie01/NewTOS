@@ -298,3 +298,33 @@ pub fn report_iorec_repairs() {
         }
     }
 }
+
+/// ADR-031 (`docs/MEMORY.md`): the hook checks after a trap — the `Kbdvbase`
+/// slots the input since the last trap would have called, the page-0 cells of
+/// a process in super state (`tos_api::bdos::process::hooks::after_trap`) —
+/// then one serial line per OS hook a program installed that NewTOS does not
+/// call (once per hook and process), or that its end left installed. `tos-api`
+/// queues them; the log is the kernel's. Called by
+/// `arch::aarch64::exceptions::rust_sync_handler` after every exception, with
+/// `trap_or_el0` = it was a trap or a fault of an EL0 program; nothing runs
+/// after the kernel's own recoverable aborts (`uaccess` fix-ups, MMIO probes),
+/// which arrive in the middle of a trap.
+pub fn report_hook_warnings(trap_or_el0: bool) {
+    use tos_api::bdos::process::hooks;
+    if !trap_or_el0 {
+        return;
+    }
+    hooks::after_trap();
+    let mut printed = false;
+    while let Some(w) = hooks::pop() {
+        crate::kprintln!("{}", w);
+        printed = true;
+    }
+    // Only a full queue drops a warning, and a full queue was just printed.
+    if printed {
+        let lost = hooks::dropped();
+        if lost != 0 {
+            crate::kprintln!("[hook] warning: {} further hook warning(s) lost (queue full)", lost);
+        }
+    }
+}

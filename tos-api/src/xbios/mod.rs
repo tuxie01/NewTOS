@@ -18,6 +18,7 @@ pub mod floppy;
 pub mod iorec;
 pub mod kbdvecs;
 pub mod keytbl;
+pub mod mfp;
 pub mod screen;
 pub mod system;
 
@@ -66,6 +67,7 @@ const BLITMODE: u16 = 0x40;
 
 /// XBIOS Trap-14 dispatcher. Returns the value to load into `x0`.
 pub fn dispatch(args: &TrapArgs) -> i64 {
+    note_installer(args);
     match args.func_id() {
         PHYSBASE => screen::physbase(),
         LOGBASE => screen::logbase(),
@@ -128,6 +130,9 @@ pub fn dispatch(args: &TrapArgs) -> i64 {
         // (Setprt entry).
         SETPRT => system::setprt(args),
         KBDVBASE => kbdvecs::kbdvbase(),
+        // MFP vector installers: warned (ADR-031), EmuTOS' d0 (`mfp`, BIOS15).
+        MFPINT => mfp::mfpint(args),
+        XBTIMER => mfp::xbtimer(args),
         // Keyboard auto-repeat timing get/set. See `docs/api/xbios/23-kbrate.md`.
         KBRATE => system::kbrate(args),
         VSYNC => system::vsync(),
@@ -135,8 +140,8 @@ pub fn dispatch(args: &TrapArgs) -> i64 {
         // (not the function number). See `docs/api/xbios/40-blitmode.md`.
         BLITMODE => system::blitmode(),
         // Every other id — an in-range but unimplemented slot (e.g. Initmous
-        // 0x00, Bioskeys 0x18, the MFP 0x0D/0x1A/0x1B/
-        // 0x1F and NVRAM 0x2E slots, Supexec 0x26, the TT-shifter
+        // 0x00, Bioskeys 0x18, the MFP 0x1A/0x1B
+        // (Jdisint/Jenabint) and NVRAM 0x2E slots, Supexec 0x26, the TT-shifter
         // 0x50-0x57 range) **or** an out-of-range id (> LAST_ENTRY 0x57) —
         // returns the function number itself, zero-extended. This is the
         // documented Atari-TOS behaviour for both the `xbios_unimpl` padded
@@ -144,5 +149,29 @@ pub fn dispatch(args: &TrapArgs) -> i64 {
         // §3`, D-008), identical to the BIOS trampoline (`bios/mod.rs`). A
         // caller testing `result < 0` sees "not an error".
         other => other as i64,
+    }
+}
+
+// Hook installers (ADR-031): `Initmous` is answered by the function-number
+// arm of `dispatch` but reported first (`note_installer`); `Mfpint` and
+// `Xbtimer` have their own arms (`mfp`, TASK/BIOS15).
+const INITMOUS: u16 = 0x00;
+const MFPINT: u16 = 0x0D;
+const XBTIMER: u16 = 0x1F;
+
+/// `Initmous` installs a hook NewTOS never calls (ADR-031 rule 5, "in the
+/// call itself"): warn once per process. The call itself stays what it was —
+/// the dispatcher's function-number arm. `Initmous(type, param, vec)` installs
+/// `vec` as `kbdvecs.mousevec` for a valid `type` (1, 2, 4) and a non-null
+/// `vec` (`references/emutos/bios/mouse.c:105-117`); type 0 and errors
+/// install `just_rts` (`:118-120`), no program hook. (`Mfpint`, `Xbtimer`:
+/// [`mfp`].)
+fn note_installer(args: &TrapArgs) {
+    use crate::bdos::process::hooks::{note_running, Hook, Via};
+    if args.func_id() == INITMOUS {
+        let vec = args.arg_u64(2);
+        if matches!(args.arg_i16(0), 1 | 2 | 4) && vec != 0 {
+            note_running(Hook::Mousevec, vec, Via::Initmous);
+        }
     }
 }

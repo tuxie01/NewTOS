@@ -385,6 +385,12 @@ by `tick_int`, which also chains the old system timer vector
   channel (and an IRQ-timed delivery decision) that has not been designed;
   it is not invented here. Open, for the lead: a program that relies on
   `vex_butv`/`motv`/`curv`/`timv` callbacks sees none (as before 3a).
+- **[BIOS15] ADR-031: not called, never silent.** Installing a
+  `vex_butv`/`motv`/`curv`/`timv` vector other than the VDI's default writes
+  one `[hook] warning` per vector and process; the installing process owns the
+  vector, and its `Pterm` puts the previous one back while the slot still
+  holds its vector (`tos-api/src/vdi/mouse.rs:931@exchange_hook`). The
+  values stored and returned are unchanged.
 - `vsc_form` installs the 37-WORD MFORM into the NewTOS `RasterBackend`
   sprite (`tos-api/src/vdi/mouse.rs`); the interleaved `Mcdb` layout is an
   EmuTOS detail — NewTOS may store the sprite however it likes, as long as

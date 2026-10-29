@@ -46,6 +46,7 @@ use tos_types::BasePage;
 pub mod arena;
 pub mod asid;
 pub mod elf;
+pub mod hooks;
 pub mod loader;
 pub mod memprot;
 pub mod mmu;
@@ -1364,6 +1365,10 @@ pub fn free_slot(idx: usize) {
     // The next tenant of the slot gets its own IOREC repair warnings (XBIOS01
     // E4); the shared IOREC page itself outlives every process.
     crate::xbios::iorec::release_slot(idx);
+    // The next tenant warns afresh about the OS hooks it installs and owns
+    // none of the shared hook cells (ADR-031; the owner records were settled
+    // at termination, `hooks::on_terminate`).
+    hooks::release_slot(idx);
     // State last so that any concurrent reader sees `Free` only once
     // every other field is observably reset.
     p.state.store(State::Free as u8, Ordering::Release);

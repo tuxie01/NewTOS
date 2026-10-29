@@ -1,0 +1,4 @@
+hkprobe run, side emutos (2026-10-29T09:34:09Z)
+tree      add8083588bbc12f9ad7249caa327410557e6f57 17 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    HKPROBE.PRG 7a8243d51b08f8ae2abbe15d78e29de8720581752f5ec8e4c434be52d7f4876e HKPROBE.NAP 6ad431768935ae9b57ebb55a9d050665f433cdc788803bd8b15c7c98dab8a88f
+oracle    tools/hatari-oracle.sh falcontc (pinned ROM, tools/oracle/hatari.cfg)

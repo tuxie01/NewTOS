@@ -1,0 +1,13 @@
+HKPROBE TASK/BIOS15
+M01 imra/imrb n/a (no MFP)
+M02 Mfpint(5,timerC) ret=0000000d hi=00000000
+M03 Mfpint(0x15,timerC) ret=0000000d hi=00000000
+M04 Mfpint(12,rs232rx) ret=0000000d hi=00000000
+M05 Xbtimer(2,0x50,192,timerC) ret=0000001f hi=00000000
+M06 Xbtimer(4,0x1234,0,0) ret=0000001f hi=00000000
+M07 Xbtimer(-1,0x8001,0,0) ret=0000001f hi=00000000
+P01 prt_stat nonzero=0 equal=1
+P02 not called (a cell is 0)
+H01 hdv_mediach calls=0 (Fopen -33)
+H02 etv_timer calls=0 over 40 ticks
+end

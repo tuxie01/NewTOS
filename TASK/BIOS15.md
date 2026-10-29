@@ -1,6 +1,6 @@
 # BIOS15 — ADR-031 umsetzen: nicht bediente OS-Haken melden, Besitz, `prt_*`-Standard
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28 (ADR-031, aus [BIOS03](BIOS03.md))
+Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS15-STATUS-DONE.MD)); eine Erkennungsstelle zur Bestaetigung beim Anwender · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28 (ADR-031, aus [BIOS03](BIOS03.md))
 
 ## Sachverhalt
 
@@ -10,7 +10,7 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidu
   Haken und Belege: ADR-031 und
   `docs/analysis/os-hooks-adr-proposal-2026-10-28.md`.
 - Heute: Warnung nur fuer Accessory-Haken der `Kbdvbase`-Tabelle
-  (`tos-api/src/xbios/kbdvecs.rs:322@accessory_hook_unwarned`); `vex_butv`/
+  (`accessory_hook_unwarned` (seit BIOS15 aufgegangen in `tos-api/src/bdos/process/hooks.rs:504@note`)); `vex_butv`/
   `vex_motv`/`vex_curv`/`vex_timv` speichern still; `prt_stat`/`prt_vec` sind 0
   statt des `just_rts`-Stubs.
 - Damit werden BIOS-CORE-002 ([BIOS05](BIOS05.md)), XBIOS-CHARDEV-003
@@ -26,12 +26,12 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidu
     `tos-api/src/bdos/process/superstate.rs:38@set_super`, `:66@super_call`
     (EmuTOS-Seite: keine eigene Funktion, Zellen werden direkt beschrieben).
   - `Kbdvbase`-Slots → `tos-api/src/xbios/kbdvecs.rs@kbdvbase` (`--up` 18 / 3);
-    Warnmuster `tos-api/src/xbios/kbdvecs.rs:330@accessory_hook_unwarned`.
+    Warnmuster `accessory_hook_unwarned` (seit BIOS15 `tos-api/src/bdos/process/hooks.rs:504@note`).
   - `Initmous` → Arm im XBIOS-Dispatcher `tos-api/src/xbios/mod.rs@dispatch`
     (keine Zeile in `mapping.tsv`); `mfpint` (`--up` 10 / 3) und `xbtimer`
     (7 / 2) **ohne Gegenstueck**.
-  - `vex_butv`/`motv`/`curv`/`timv` → `tos-api/src/vdi/mouse.rs:937@vex_butv`,
-    `:941@vex_motv`, `:945@vex_curv`, `:992@vex_timv` (VDI-Schicht, ohne
+  - `vex_butv`/`motv`/`curv`/`timv` → `tos-api/src/vdi/mouse.rs:967@vex_butv`,
+    `:972@vex_motv`, `:977@vex_curv`, `:1025@vex_timv` (VDI-Schicht, ohne
     `mapping.tsv`-Zeilen).
   - `prt_stat`/`prt_vec`-Startwert →
     `tos-api/src/bdos/process/loader.rs:1281@prt_stat` (`populate_sysvars`).
@@ -76,3 +76,29 @@ Status: **OFFEN** · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidu
   eine Warnung.
 - `docs/COMPATIBILITY.md` „OS hooks“ stimmt mit dem Verhalten; doc-check 0
   Fehler; `docs/STATUS.md` im selben Commit.
+
+## Anwender 2026-10-29 (Umfang)
+
+- `Mfpint` und `Xbtimer`: nicht bedient, einmal warnen (ADR-031), **und** der
+  Rueckgabewert wie das Orakel — gemessen (tt, falcontc), Fall per Tabelle
+  oder dauerhafte Sonde.
+
+## Stand 2026-10-29
+
+- Umgesetzt (`tos-api/src/bdos/process/hooks.rs`): eine Warnung je Haken und
+  Prozess, Besitzregel bei `Pterm`/`Ptermres`, `prt_stat`/`prt_vec` auf den
+  `ret`-Stub (gemessen gleich EmuTOS), `Mfpint`/`Xbtimer` liefern den
+  Rueckgabewert des Orakels (IMRB 0x60 / IMRA 0x14, `Xbtimer` mit ungueltigem
+  Timer `control`; Spec `docs/api/xbios/0d-mfpint.md`). Sonde `hkprobe`
+  dauerhaft unter `tosdump/probes/`. Beleg
+  `measurements/measurement-2026-10-29-bios15/RUNINFO.TXT`.
+- **Zur Bestaetigung (Anwender):** zusaetzliche Erkennungsstelle „nach jedem
+  Trap im Super-Zustand“ fuer Seite-0-Zellen. ADR-031 Regel 4 nennt nur das
+  Verlassen des Super-Zustands; ohne die Zusatzstelle bliebe TeraDesks
+  `force_mediach` still, weil es `hdv_*` vor dem Verlassen zuruecksetzt.
+  Gelesen wird weiterhin nur zum Warnen.
+- Offen notiert: `Jdisint`/`Jenabint` liefern weiter ihre Funktionsnummer;
+  `Setexc(0x40+n, -1)` liefert fuer MFP-Vektoren 0 (EmuTOS die Adresse) —
+  BIOS07; `docs/api/xbios/00-initmous.md` nennt `EINVFN` statt
+  Funktionsnummer; `docs/api/xbios/_triage.md` fuehrt `CONF_WITH_MFP` als aus.
+

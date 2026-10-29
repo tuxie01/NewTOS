@@ -12,6 +12,7 @@
 //! m68k CPU vectors (`0..0x3F`) are shadowed for a future m68k userland but
 //! are not dispatched by the native AArch64 exception handlers.
 
+use crate::bdos::process::hooks::{self, Cell, Hook, Via};
 use crate::trap::TrapArgs;
 use core::sync::atomic::{AtomicI64, Ordering};
 
@@ -55,12 +56,12 @@ pub const ETV_DEFAULT_CRITIC: i64 = 0x4372_6974_0000_0000;
 
 static VECTORS: [AtomicI64; NVEC] = {
     let mut v = [const { AtomicI64::new(0) }; NVEC];
-    // Seed the etv_* hook slots with their non-null boot defaults, exactly
-    // as EmuTOS' `bios_init` does before GEMDOS/AES run (F3). All other
-    // slots stay 0 (a CPU-exception vector nobody installed).
-    v[ETV_TIMER] = AtomicI64::new(ETV_DEFAULT_JUST_RTS);
-    v[ETV_CRITIC] = AtomicI64::new(ETV_DEFAULT_CRITIC);
-    v[ETV_TERM] = AtomicI64::new(ETV_DEFAULT_JUST_RTS);
+    // Every entry starts at its boot value, [`default_of`] (F3).
+    let mut i = 0;
+    while i < NVEC {
+        v[i] = AtomicI64::new(default_of(i));
+        i += 1;
+    }
     v
 };
 
@@ -94,7 +95,7 @@ const SYSVAR_NUM_LIMIT: usize = 0x200;
 ///    now the fault-recovered one of [`crate::uaccess`].
 ///  * `num >= SYSVAR_NUM_LIMIT` — returns 0. NewTOS deliberately does **not**
 ///    emulate the full m68k "poke any address" corruption above the sysvar
-///    region.
+///    region. Writes report OS hooks ([`note_write`], ADR-031).
 pub fn setexc(args: &TrapArgs) -> i64 {
     let num = args.arg_i16(0) as usize;
     let vector = args.arg_u64(1) as i64;
@@ -104,6 +105,7 @@ pub fn setexc(args: &TrapArgs) -> i64 {
         let old = VECTORS[num].load(Ordering::Relaxed);
         if vector != -1 {
             VECTORS[num].store(vector, Ordering::Relaxed);
+            note_write(num, old, vector);
         }
         return old;
     }
@@ -132,6 +134,7 @@ pub fn setexc(args: &TrapArgs) -> i64 {
         if vector != -1 {
             // SAFETY: as above — the process's own writable sysvar cell.
             unsafe { cell.write_unaligned(vector as u32) };
+            note_write(num, old, vector);
         }
         return old;
     }
@@ -151,6 +154,73 @@ pub fn vector(num: usize) -> i64 {
         VECTORS[num].load(Ordering::Relaxed)
     } else {
         0
+    }
+}
+
+/// Put `v` into shadow entry `num` — the owner's `Pterm` giving a hook entry
+/// its previous value back (ADR-031 rule 3, [`hooks::on_terminate`]). No-op
+/// outside the shadow.
+pub(crate) fn set_vector(num: usize, v: i64) {
+    if num < NVEC {
+        VECTORS[num].store(v, Ordering::Relaxed);
+    }
+}
+
+/// `etv_xtra` (m68k `$040C`): never called, by EmuTOS either
+/// (`references/emutos/tosvars.ld:36`); the last shadow entry that is a hook.
+pub const ETV_XTRA: usize = 0x103;
+
+/// The boot value of shadow entry `num`: the `etv_*` hooks carry their
+/// non-null defaults, exactly as EmuTOS' `bios_init` seeds them before
+/// GEMDOS/AES run (F3); every other entry is 0 (a CPU-exception vector nobody
+/// installed).
+const fn default_of(num: usize) -> i64 {
+    match num {
+        ETV_TIMER | ETV_TERM => ETV_DEFAULT_JUST_RTS,
+        ETV_CRITIC => ETV_DEFAULT_CRITIC,
+        _ => 0,
+    }
+}
+
+/// The hook behind shadow entry `num` that NewTOS does not call (ADR-031):
+/// the CPU, trap and interrupt vectors and `etv_timer`/`etv_critic`. `None`
+/// for `etv_term` (served, `kernel` `handle_pterm`), `etv_xtra` (EmuTOS never
+/// calls it) and the system variables above it.
+fn unserved_hook(num: usize) -> Option<Hook> {
+    match num {
+        0..=0xFF => Some(Hook::Vector(num as u8)),
+        ETV_TIMER => Some(Hook::EtvTimer),
+        ETV_CRITIC => Some(Hook::EtvCritic),
+        _ => None,
+    }
+}
+
+/// The OS-hook half of a `Setexc` write of `vector` into entry `num`, which
+/// held `old` (ADR-031, [`hooks`]), for the running process (none: the kernel,
+/// nothing to report):
+///
+/// * shadow (`num < NVEC`): a hook NewTOS does not call ([`unserved_hook`])
+///   set to anything but its boot value warns once per process (rule 5, "in
+///   `Setexc` itself"); a hook entry (`num <= ETV_XTRA`) — one cell for every
+///   process — records the process as its owner, so its `Pterm` can give the
+///   entry back (rule 3);
+/// * page 0: the page-0 hook check (`bell_hook`/`kcl_hook` are
+///   `0x16B`/`0x16C`; rule 4).
+fn note_write(num: usize, old: i64, vector: i64) {
+    let slot = crate::bdos::process::slot_for(crate::bdos::process::current());
+    if num >= NVEC {
+        if let Some(slot) = slot {
+            hooks::check_page0(slot);
+        }
+        return;
+    }
+    if num <= ETV_XTRA {
+        hooks::record_install(slot, Cell::Vector(num as u16), old as u64, vector as u64);
+    }
+    if let (Some(slot), Some(hook)) = (slot, unserved_hook(num)) {
+        if vector != default_of(num) {
+            hooks::note(slot, hook, vector as u64, Via::Setexc);
+        }
     }
 }
 

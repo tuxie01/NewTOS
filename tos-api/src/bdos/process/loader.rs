@@ -1280,12 +1280,13 @@ fn populate_sysvars(tpa: &mut [u8], pd: u64) {
     wr_long(tpa, 0x5A8, RAMVALID_MAGIC);
     // prt_stat ($506) / prt_vec ($50A): printer status/output redirection
     // vectors. EmuTOS points them at `just_rts` (a no-op RTS stub) in
-    // `chardev_init` (`_boot-init.md` §7c). NewTOS has no printer device and
-    // no m68k vector page to install, so they stay 0 (no redirection =
-    // printer absent) — HW-absence, like the OSHEADER's m68k-only
-    // `os_entry` instruction left 0 above.
-    wr_long(tpa, 0x506, 0);
-    wr_long(tpa, 0x50A, 0);
+    // `chardev_init` (`references/emutos/bios/chardev.c:82-83`) and never
+    // calls them (ADR-031). NewTOS gives them the same: the shared `ret` stub,
+    // EmuTOS' `just_rts` (`xbios::kbdvecs::RET_STUB_VA`, in the stub page every
+    // process maps execute-only), so a program that chains to the old value
+    // branches to a valid entry, not to 0 (ADR-031 table, TASK/BIOS15).
+    wr_long(tpa, 0x506, crate::xbios::kbdvecs::RET_STUB_VA as u32);
+    wr_long(tpa, 0x50A, crate::xbios::kbdvecs::RET_STUB_VA as u32);
 
     // ── Cookie jar (classic array form, _cookie-jar.md; EmuTOS
     //    util/cookie.c:26-35) ───────────────────────────────────────────
@@ -1991,6 +1992,40 @@ mod basepage_segment_tests {
         let cell = rd32(sysbase + 0x28) as usize;
         assert_eq!(cell as u64, OS_RUN_CELL_VA);
         assert_eq!(u64::from_le_bytes(page0[cell..cell + 8].try_into().unwrap()), 0x0109_7000);
+    }
+
+    /// BIOS15 (ADR-031): `prt_stat` ($506) and `prt_vec` ($50A) hold the
+    /// shared `ret` stub, EmuTOS' `just_rts` (`bios/chardev.c:82-83`), not 0
+    /// — a program that chains to the old value branches to a valid entry.
+    /// The stub is a single `ret` where the stub page holds it.
+    #[test]
+    fn prt_stat_and_prt_vec_default_to_the_just_rts_stub() {
+        let mut page0 = vec![0u8; RESERVED_LOW_END as usize];
+        populate_sysvars(&mut page0, 0x0109_7000);
+        let rd32 = |off: usize| u32::from_le_bytes(page0[off..off + 4].try_into().unwrap());
+        let stub = crate::xbios::kbdvecs::RET_STUB_VA;
+        assert_eq!(rd32(0x506) as u64, stub, "prt_stat");
+        assert_eq!(rd32(0x50A) as u64, stub, "prt_vec");
+        let mut stubs = vec![0u8; mmu::PAGE_SIZE as usize];
+        crate::xbios::kbdvecs::write_stubs(&mut stubs);
+        let at = (stub - mmu::STUB_PAGE_VA) as usize;
+        assert_eq!(u32::from_le_bytes(stubs[at..at + 4].try_into().unwrap()), 0xD65F_03C0, "ret");
+    }
+
+    /// The defaults the ADR-031 page-0 check compares with
+    /// (`hooks::PAGE0_HOOKS`, the CPU vector cells at 0) are what the loader
+    /// leaves in a fresh page 0 — so a freshly loaded process never warns.
+    #[test]
+    fn the_page_0_hook_defaults_are_what_the_loader_writes() {
+        let mut page0 = vec![0u8; RESERVED_LOW_END as usize];
+        populate_sysvars(&mut page0, 0x0109_7000);
+        let rd32 = |off: usize| u32::from_le_bytes(page0[off..off + 4].try_into().unwrap());
+        for h in super::super::hooks::PAGE0_HOOKS.iter() {
+            assert_eq!(rd32(h.addr as usize), h.default, "{:?} at ${:X}", h.hook, h.addr);
+        }
+        for n in 2..0x100 {
+            assert_eq!(rd32(4 * n), 0, "vector cell ${:03X}", 4 * n);
+        }
     }
 
     /// RST01: `reseth` (+0x04) and `os_res1` (+0x10) both hold the reset

@@ -544,20 +544,40 @@ fn keys_go_to_the_innermost_started_process_not_the_running_accessory() {
     forget_accessory();
 }
 
+/// The slots warned about for an accessory `kbdvec` (ADR-031): the input
+/// events since the last check, as the kernel runs it after a trap.
+fn accessory_hook_warnings() -> Vec<usize> {
+    use tos_api::bdos::process::hooks::{self, Hook, Kind, Via};
+    kbdvecs::check_events();
+    std::iter::from_fn(hooks::pop)
+        .filter(|w| w.kind == Kind::NotServed(Hook::AccessoryKbdvec, Via::Kbdvbase))
+        .map(|w| w.slot)
+        .collect()
+}
+
 #[test]
 fn an_accessory_hook_is_reported_once() {
+    use tos_api::bdos::process::hooks;
     let _g = lock();
     rig();
-    let p = Page0::loaded();
+    let mut p = Page0::loaded();
     run(&p);
     let a = Page0(Box::new([0; 32]));
     run_accessory(&a);
-    assert!(!kbdvecs::accessory_hook_unwarned(ACC), "default in place: nothing to report");
+    hooks::release_slot(ACC);
+    while hooks::pop().is_some() {}
+    kbdvecs::saw_event(kbdvecs::EV_KEY);
+    assert!(accessory_hook_warnings().is_empty(), "default in place: nothing to report");
     acc_set_kbdvec(HOOK);
-    assert!(kbdvecs::accessory_hook_unwarned(ACC), "first time: report");
-    assert!(!kbdvecs::accessory_hook_unwarned(ACC), "once per tenancy");
-    assert!(!kbdvecs::accessory_hook_unwarned(SLOT), "a program is no accessory");
-    kbdvecs::release_slot(ACC);
-    assert!(kbdvecs::accessory_hook_unwarned(ACC), "a new tenant is reported again");
+    p.set_slot(OFF_KBDVEC, HOOK);
+    assert!(accessory_hook_warnings().is_empty(), "no key since: nothing would have called it");
+    kbdvecs::saw_event(kbdvecs::EV_KEY);
+    assert_eq!(accessory_hook_warnings(), vec![ACC], "first key: report, the program's own hook is served");
+    kbdvecs::saw_event(kbdvecs::EV_KEY);
+    assert!(accessory_hook_warnings().is_empty(), "once per tenancy");
+    hooks::release_slot(ACC);
+    kbdvecs::saw_event(kbdvecs::EV_KEY);
+    assert_eq!(accessory_hook_warnings(), vec![ACC], "a new tenant is reported again");
+    p.set_slot(OFF_KBDVEC, KBDVEC_DEFAULT_VA);
     forget_accessory();
 }

@@ -208,7 +208,9 @@ pub fn probe_read32(va: u64) -> Option<u32> {
 /// `frame.gpr[0]` so the assembly stub returns the value in `x0`.
 #[unsafe(no_mangle)]
 pub extern "C" fn rust_sync_handler(frame: &mut ExceptionFrame) {
+    let trap_or_el0 = esr_ec(frame.esr) == EC_SVC_AARCH64 || frame.spsr & 0xF == 0;
     sync_handler(frame);
+    crate::console::report_hook_warnings(trap_or_el0); // ADR-031 OS hooks
     // ARCH03 3b: whatever the call changed in memory ownership is in the
     // page tables before the caller (or whoever runs next) continues. A
     // no-op with protection off or nothing pending.
@@ -817,14 +819,12 @@ fn deliver_pending_kbdvec(frame: &mut ExceptionFrame) -> bool {
     let Some(slot) = slot_for(current()) else {
         return false;
     };
-    // D9 (MEM12): an accessory's hook is never called — say so, once.
-    if kbdvecs::accessory_hook_unwarned(slot) {
-        crate::kprintln!(
-            "[kbdvec] warning: desk accessory in slot {} installed a kbdvec hook; it is never called \
-             (keys go to the innermost started program, docs/api/xbios/22-kbdvbase.md Teil D, D9)",
-            slot
-        );
-    }
+    // D9 (MEM12): an accessory's own `kbdvec` hook is never called. It is not
+    // reported here, at the accessory's syscall return, but at the first key
+    // it would have received on EmuTOS, where the hook is global — once per
+    // hook and process like every OS hook NewTOS does not call (ADR-031,
+    // `tos_api::xbios::kbdvecs::check_events`; the line is printed by
+    // `crate::console::report_hook_warnings`).
     if PROCESS_TABLE[slot].upcall_mask.load(Ordering::Acquire) & UPCALL_MASK_KBDVEC != 0 {
         return false;
     }

@@ -105,7 +105,7 @@ NewTOS-Verteiler: `tos-api/src/xbios/mod.rs::dispatch` (`:64-138`).
 | 0x09 | `Flopwr` | `:1295` | — | HW-Adapter `EUNDEV` | `:80` |
 | 0x0A | `Flopfmt` | `:1296` | — | HW-Adapter `EUNDEV` | `:80` |
 | 0x0C | `Midiws` | `:1298` | — | HW-Adapter (No-op) | `:89` |
-| 0x0D | `Mfpint` | `:1300` | `CONF_WITH_MFP` | **Nummer** | `:138` |
+| 0x0D | `Mfpint` | `:1300` | `CONF_WITH_MFP` | Warnung + EmuTOS-`d0` (BIOS15, `0d-mfpint.md`) | `tos-api/src/xbios/mfp.rs` |
 | 0x0E | `Iorec` | `:1304` | — | **Nummer** | `:138` |
 | 0x0F | `Rsconf` | `:1305` | — | ja (PL011-Adapter) | `:93` |
 | 0x10 | `Keytbl` | `:1306` | — | ja | `:99` |
@@ -123,7 +123,7 @@ NewTOS-Verteiler: `tos-api/src/xbios/mod.rs::dispatch` (`:64-138`).
 | 0x1C | `Giaccess` | `:1323` | — | HW-Adapter `0` | `:114` |
 | 0x1D | `Offgibit` | `:1324` | — | HW-Adapter (No-op) | `:115` |
 | 0x1E | `Ongibit` | `:1325` | — | HW-Adapter (No-op) | `:116` |
-| 0x1F | `Xbtimer` | `:1327` | `CONF_WITH_MFP` | **Nummer** | `:138` |
+| 0x1F | `Xbtimer` | `:1327` | `CONF_WITH_MFP` | Warnung + EmuTOS-`d0` (BIOS15, `0d-mfpint.md`) | `tos-api/src/xbios/mfp.rs` |
 | 0x20 | `Dosound` | `:1331` | — | HW-Adapter `0` | `:117` |
 | 0x21 | `Setprt` | `:1333` | `CONF_WITH_PRINTER_PORT` | ja (reine Software) | `:121` |
 | 0x22 | `Kbdvbase` | `:1337` | — | ja (Tabelle mit Nullvektoren) | `:109` |

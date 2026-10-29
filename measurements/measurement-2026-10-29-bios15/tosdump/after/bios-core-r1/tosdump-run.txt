@@ -1,0 +1,63 @@
+command   cargo xtask tosdump bios tosdump/cases/bios-core-r1.tsv --out measurements/measurement-2026-10-29-bios15/tosdump/after/bios-core-r1 --tree /Volumes/Daten/Development/PiRusTOS --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios15/tmp --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-core.BIN --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-core-falcontc.BIN
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    add8083588bbc12f9ad7249caa327410557e6f57
+dirty     31 path(s) in git status --porcelain
+   M TASK/BIOS15.md
+   M docs/COMPATIBILITY.md
+   M docs/MEMORY.md
+   M docs/analysis/deps/mapping.tsv
+   M docs/api/bios/05-setexc.md
+   M docs/api/vdi/input/_mouse.md
+   M docs/api/xbios/00-initmous.md
+   M docs/api/xbios/0e-iorec.md
+   M docs/api/xbios/22-kbdvbase.md
+   M kernel/src/arch/aarch64/exceptions.rs
+   M kernel/src/console.rs
+   M kernel/src/ikbd.rs
+   M tools/hatari-oracle.sh
+   M tos-api/src/bdos/process.rs
+   M tos-api/src/bdos/process/loader.rs
+   M tos-api/src/bdos/process/pterm.rs
+   M tos-api/src/bdos/process/superstate.rs
+   M tos-api/src/bios/vectors.rs
+   M tos-api/src/vdi/mouse.rs
+   M tos-api/src/xbios/kbdvecs.rs
+   M tos-api/src/xbios/mod.rs
+   M tos-api/tests/xbios_kbdvecs.rs
+   M tosdump/Makefile
+  ?? docs/api/xbios/0d-mfpint.md
+  ?? measurements/measurement-2026-10-29-bios15/
+  ?? tos-api/src/bdos/process/hooks.rs
+  ?? tos-api/src/xbios/mfp.rs
+  ?? tos-api/tests/bios15_os_hooks.rs
+  ?? tosdump/build-hkprobe-newtos.sh
+  ?? tosdump/probes/hkprobe.c
+  ?? tosdump/probes/run-hkprobe.sh
+harness commit add8083588bbc12f9ad7249caa327410557e6f57
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-core-r1.tsv sha256 db802dc60c30099409f82399b37c42faa3f483d802bbfa7c6694e6d9d633e4dc
+target/   own (9 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (9 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 a99711dafa0e4732b6bc25ce6fea78b787e9e6f53e76bd2644eba45611bdc20a
+kernel ELF  sha256 d667cfd17bf62c705d444a97d9ea32e0fea65a6f8e0a2de2857430a95df57202 (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id add8
+DUMPBIOS.NAP sha256 22f61ccb65a5fffc2d5287a1ae9bed574ba679fcf85c7bd9f222f8e40b0d6da5
+card.img.manifest: image_sha256 0b68cc9a1a3790b6b1419a6d3b4f5c599628e9c5497c87a58c36418845408659
+card.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios15/tmp/tosdump-56164/card.img sha256 0b68cc9a1a3790b6b1419a6d3b4f5c599628e9c5497c87a58c36418845408659 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 0cf98bdc450adc646deed7071109cf2ae15fc3804675d737e6ef362f303e4a25
+BIOS.BIN 14112 bytes, sha256 05d5e9f33758e909af31e0f3b7533f0afe28dcb3ebfb8eb8ccd0349b35539bb5
+BIOS.LOG 168 bytes, sha256 965be4ccfc5cc8f1a13b560232edba80bb6fc2793a40d7fed8492d429676a2dd
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 e036a254a98ee5b325f9513628a7c8903ac6843ccabb5294ce3c26f98ed8ba83
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 44 records of 320 bytes, build add8, case CRC C056A3E0
+tosdiff EMUTOS-1a7484ab-BIOS-core.BIN vs NEWTOS.BIN: exit 1, 15 of 44 cases differ
+tosdiff EMUTOS-1a7484ab-BIOS-core-falcontc.BIN vs NEWTOS.BIN: exit 1, 14 of 44 cases differ
+total     35 s
+result    run complete (differences above are findings, not failures)

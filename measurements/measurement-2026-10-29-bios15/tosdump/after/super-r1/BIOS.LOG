@@ -1,0 +1,6 @@
+DUMPBIOS build add8, record format 3
+pointer 8 bytes, word order 2
+BIOS.TSV: 9 cases, CRC 3D9C560E
+running 9 cases
+all 9 cases ran
+BIOS.BIN: 9 records, 2912 bytes

@@ -47,15 +47,15 @@
 //! started process's** — EmuTOS's `run` without the accessories
 //! (`process::emutos_run`, D9, MEM12), whichever process has the CPU when the
 //! byte is polled; an accessory's table is never consulted, and a hook an
-//! accessory installs is reported once ([`accessory_hook_unwarned`]). While
+//! accessory installs is reported once ([`check_events`]). While
 //! that table's `kbdvec` is still [`KBDVEC_DEFAULT_VA`] — or no started
 //! process lives — the decoder runs directly, exactly as before KEYS02.
 //! Otherwise the byte goes into that process's 64-entry ring (D3/D3a, overflow drops the newest byte) and the
 //! kernel delivers it to the hook as an EL0 upcall (`x0` = scancode, `x1` = 0,
 //! D2/D2a) at the next syscall return, one byte per upcall, in order. The other
-//! eight slots and `mousexvec` exist with their defaults, but a program hook
-//! installed there is **not called** — a documented gap (`docs/STATUS.md`
-//! "Blocked"), not a hidden one. `ikbdsys` is never called either (NewTOS has
+//! eight slots and `mousexvec` exist with their defaults; a program hook there
+//! is **not called** (ADR-031), the first event that would call it warns once
+//! ([`check_events`]). `ikbdsys` is never called either (NewTOS has
 //! no ACIA interrupt, D4); only its value is read, for the repeat stop.
 
 use core::cell::UnsafeCell;
@@ -66,6 +66,7 @@ use crate::bdos::process::loader::{
     USER_VA_BASE,
 };
 use crate::bdos::process::mmu::{PRIV_PAGE_VA, STUB_PAGE_VA};
+use crate::bdos::process::hooks::{self, Hook, Via};
 use crate::bdos::process::{current, slot_for, MAX_PROCESSES, PROCESS_TABLE};
 
 // ─── Layout ──────────────────────────────────────────────────────────────
@@ -314,29 +315,26 @@ pub fn release_slot(slot: usize) {
         r.len.store(0, Ordering::Release);
         r.head.store(0, Ordering::Release);
     }
-    if let Some(w) = ACC_WARNED.get(slot) {
-        w.store(false, Ordering::Release);
-    }
 }
 
-/// One flag per slot: the warning of [`accessory_hook_unwarned`] was given.
-static ACC_WARNED: [AtomicBool; MAX_PROCESSES] = [const { AtomicBool::new(false) }; MAX_PROCESSES];
+// ─── Input events (ADR-031, the hooks section at the end) ────────────────
 
-/// `true` exactly once per accessory tenancy of `slot`: when `slot` is a desk
-/// accessory whose `kbdvec` slot no longer holds the default — it installed a
-/// hook that, by D9, is never called (on EmuTOS an accessory's hook is
-/// global). The kernel then logs a warning, so the deviation never bites
-/// silently (user decision 2026-10-27, TASK/MEM12).
-pub fn accessory_hook_unwarned(slot: usize) -> bool {
-    if !crate::bdos::process::is_accessory(slot) {
-        return false;
-    }
-    match kbdvec_of(slot) {
-        Some(v) if v != KBDVEC_DEFAULT_VA => {}
-        _ => return false,
-    }
-    ACC_WARNED.get(slot).is_some_and(|w| !w.swap(true, Ordering::AcqRel))
-}
+/// Input event bit: an IKBD byte arrived — EmuTOS' ACIA interrupt calls
+/// `midisys` and `ikbdsys` for it (`bios/aciavecs.S:262-269`).
+pub const EV_BYTE: u8 = 0x01;
+/// Input event bit: a key byte — `ikbdraw` jumps through `kbdvec`
+/// (`bios/aciavecs.S:407-414`); on EmuTOS an accessory's `kbdvec` is the
+/// global one (D9).
+pub const EV_KEY: u8 = 0x02;
+/// Input event bit: a relative or absolute mouse packet → `mousevec`
+/// (`bios/aciavecs.S:488-491`).
+pub const EV_MOUSE: u8 = 0x04;
+/// Input event bit: a status packet → `statvec` (`bios/aciavecs.S:484-486`).
+pub const EV_STATUS: u8 = 0x08;
+/// Input event bit: a time-of-day packet → `clockvec` (`bios/aciavecs.S:493-495`).
+pub const EV_CLOCK: u8 = 0x10;
+/// Input event bit: a joystick packet → `joyvec` (`bios/aciavecs.S:513-525`).
+pub const EV_JOY: u8 = 0x20;
 
 /// Decide where the key byte `byte` (`< 0xF6`, bit 7 = break) goes — EmuTOS
 /// `ikbdraw`'s jump through `kbdvec` (`aciavecs.S:407-414`).
@@ -388,4 +386,87 @@ pub fn request_restart() {
 /// Consume a [`request_restart`].
 pub fn take_restart() -> bool {
     RESTART.swap(false, Ordering::AcqRel)
+}
+
+
+// ─── Hooks that are never called (ADR-031) ───────────────────────────────
+
+/// Offset of `statvec`, the fourth slot (`aciavecs.S:134`).
+pub const OFF_STATVEC: u64 = OFF_KBDVBASE + 8 * 3;
+/// Offset of `mousevec`, the fifth slot (`aciavecs.S:135`).
+pub const OFF_MOUSEVEC: u64 = OFF_KBDVBASE + 8 * 4;
+/// Offset of `clockvec`, the sixth slot (`aciavecs.S:136`).
+pub const OFF_CLOCKVEC: u64 = OFF_KBDVBASE + 8 * 5;
+/// Offset of `joyvec`, the seventh slot (`aciavecs.S:137`).
+pub const OFF_JOYVEC: u64 = OFF_KBDVBASE + 8 * 6;
+/// Offset of `midisys`, the eighth slot (`aciavecs.S:138`).
+pub const OFF_MIDISYS: u64 = OFF_KBDVBASE + 8 * 7;
+
+/// The event of an IKBD packet with header `header` (`>= 0xF6`): the vector
+/// EmuTOS calls for the complete packet (`ikbdraw`'s action table,
+/// `bios/aciavecs.S:476-525`).
+pub const fn packet_event(header: u8) -> u8 {
+    match header {
+        0xF6 => EV_STATUS,
+        0xF7..=0xFB => EV_MOUSE,
+        0xFC => EV_CLOCK,
+        _ => EV_JOY,
+    }
+}
+
+/// The input events since the last [`check_events`]. Set by the IKBD decoder,
+/// which may run in the timer interrupt (pointer motion), so only this atomic
+/// is touched there.
+static EVENTS: AtomicU8 = AtomicU8::new(0);
+
+/// The IKBD decoder saw events `bits` (`EV_*`). Interrupt-safe.
+pub fn saw_event(bits: u8) {
+    EVENTS.fetch_or(bits, Ordering::AcqRel);
+}
+
+/// The table slots each event would call on EmuTOS, with their hook. `kbdvec`
+/// is not here: it is served (`route_key`), except in an accessory's table.
+const EVENT_SLOTS: [(u8, u64, Hook); 6] = [
+    (EV_BYTE, OFF_MIDISYS, Hook::Midisys),
+    (EV_BYTE, OFF_IKBDSYS, Hook::Ikbdsys),
+    (EV_MOUSE, OFF_MOUSEVEC, Hook::Mousevec),
+    (EV_STATUS, OFF_STATVEC, Hook::Statvec),
+    (EV_CLOCK, OFF_CLOCKVEC, Hook::Clockvec),
+    (EV_JOY, OFF_JOYVEC, Hook::Joyvec),
+];
+
+/// Warn about the `Kbdvbase` hooks the input events since the last call would
+/// have called on EmuTOS and NewTOS does not (ADR-031 rule 5, "at the first
+/// event that would call them"; once per hook and process, [`hooks::note`]).
+/// The tables looked at are the one that receives the input ([`hook_owner`],
+/// D9) and every desk accessory's — on EmuTOS there is one global table, so
+/// an accessory's hook would be called too; for an accessory that includes
+/// its `kbdvec`. `midivec`, `vkbderr` and `vmiderr` are absent: their events
+/// (MIDI bytes, receiver overruns) never happen on NewTOS, as on an EmuTOS
+/// machine that receives none. Trap context (from [`hooks::after_trap`]).
+pub fn check_events() {
+    let ev = EVENTS.swap(0, Ordering::AcqRel);
+    if ev == 0 {
+        return;
+    }
+    let owner = hook_owner();
+    for slot in 0..MAX_PROCESSES {
+        let accessory = crate::bdos::process::is_accessory(slot);
+        if Some(slot) != owner && !accessory {
+            continue;
+        }
+        for &(bit, off, hook) in EVENT_SLOTS.iter() {
+            if ev & bit == 0 {
+                continue;
+            }
+            if let Some(v) = read_slot(slot, off).filter(|&v| v != default_of(off)) {
+                hooks::note(slot, hook, v, Via::Kbdvbase);
+            }
+        }
+        if accessory && ev & EV_KEY != 0 {
+            if let Some(v) = kbdvec_of(slot).filter(|&v| v != KBDVEC_DEFAULT_VA) {
+                hooks::note(slot, Hook::AccessoryKbdvec, v, Via::Kbdvbase);
+            }
+        }
+    }
 }

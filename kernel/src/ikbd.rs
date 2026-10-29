@@ -155,6 +155,7 @@ fn decode_held() {
 
 /// Decode one IKBD byte.
 fn decode_byte(byte: u8) {
+    tos_api::xbios::kbdvecs::saw_event(tos_api::xbios::kbdvecs::EV_BYTE); // ADR-031, IRQ-safe
     // Mid relative-mouse packet → collect dx, then dy, then dispatch.
     match MS_STEP.load(Ordering::Relaxed) {
         1 => {
@@ -180,6 +181,7 @@ fn decode_byte(byte: u8) {
     }
     // A packet header (>= 0xF6) starts a run of data bytes.
     if byte >= 0xF6 {
+        tos_api::xbios::kbdvecs::saw_event(tos_api::xbios::kbdvecs::packet_event(byte));
         // Relative-mouse report (0xF8..0xFB): the low 2 header bits are
         // the buttons (IKBD wire: bit 0 = right, bit 1 = left). Swap into
         // VDI convention (bit 0 = left, bit 1 = right) and collect the two
@@ -194,6 +196,7 @@ fn decode_byte(byte: u8) {
         PKT_REMAINING.store(packet_data_len(byte), Ordering::Relaxed);
         return;
     }
+    tos_api::xbios::kbdvecs::saw_event(tos_api::xbios::kbdvecs::EV_KEY);
     // Otherwise it is a key scancode (bit 7 = break). EmuTOS `ikbdraw` jumps
     // through `kbdvec` here (`bios/aciavecs.S:407-414`): the running
     // process's hook gets the byte if it installed one (queued for EL0 upcall

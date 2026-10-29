@@ -321,6 +321,15 @@ unsafe fn terminate_inner(reserve: bool, follow_parent: bool) -> Result<PtermRes
         (0, None)
     };
 
+    // OS hooks (ADR-031): a process that ends in super state leaves it here,
+    // so its page-0 hook cells are compared one last time (rule 4); then the
+    // hooks it installed in shared cells are settled — given back when still
+    // on top of their chain, kept after `Ptermres` (rule 3).
+    if super::superstate::is_super(slot_idx) {
+        super::hooks::check_page0(slot_idx);
+    }
+    super::hooks::on_terminate(slot_idx, reserve);
+
     // AES resource lists: drop the dying process's entries (A39, R6). EmuTOS
     // needs no such step — its resource state is the three words in the
     // application's own `AESGLOBAL`, which die with the TPA, and the blob is

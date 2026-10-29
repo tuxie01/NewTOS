@@ -1163,19 +1163,57 @@ automaton.
   `bell_hook` ($5AC).
 
 **OS hooks installed by programs: most are not served, never silently** —
-user decision 2026-10-28, ADR-031 (`docs/MEMORY.md`). On TOS a program can
+user decision 2026-10-28, ADR-031 (`docs/MEMORY.md`); built by TASK/BIOS15
+(`tos-api/src/bdos/process/hooks.rs`). On TOS a program can
 hang code into OS vectors that the OS later calls (`etv_*`, `hdv_*`,
 `Kbdvbase`, `vex_*`, trap/CPU vectors, …;
 `docs/analysis/os-hooks-adr-proposal-2026-10-28.md`). NewTOS serves
-`kbdvec`, `etv_term`, `vex_wheelv`, `Supexec` and `G_USERDEF`; every other
-hook is stored but not called, and the first installation per hook and
-process writes one warning to the log.
+`kbdvec`, `etv_term` (installed through `Setexc(0x102)`), `vex_wheelv`,
+`Supexec` and `G_USERDEF`; every other hook is stored (by `Initmous`,
+`Mfpint`, `Xbtimer` not even that) but never called. `Mfpint` and `Xbtimer`
+answer what EmuTOS leaves in `d0` — the MFP interrupt mask register after the
+call, or `Xbtimer`'s `control` for a timer outside 0–3 — from an image of the
+two mask registers as the oracle has them while a program runs (IMRA 0x14,
+IMRB 0x60; user decision 2026-10-29, `docs/api/xbios/0d-mfpint.md`);
+`Initmous` still answers its function number. The first installation per hook and process writes one line
+`[hook] warning: slot <n> (PD …) installed <hook> = <value> via <where>;
+NewTOS never calls it: <reason> (ADR-031)` to the serial log. Where it is
+seen: in `Setexc` (`etv_timer`, `etv_critic`, vectors `< 0x100`); in page 0
+(`hdv_rw`/`hdv_bpb`/`hdv_mediach`, `swv_vec`, `exec_os`, `resvector`,
+`dump_vec`, `vblqueue`, `bell_hook`/`kcl_hook`, and `etv_*` or CPU vector
+cells written directly), read only and compared with the loader's value when
+the process leaves the super state, **after every trap it makes in super
+state** (TeraDesk's `force_mediach` hooks `hdv_*` around one `Fopen` and
+restores them before it leaves), when it ends in super state, and after a
+`Setexc` into page 0; for the `Kbdvbase` slots `mousevec`, `statvec`,
+`clockvec`, `joyvec`, `midisys`, `ikbdsys` — and a desk accessory's
+`kbdvec` — at the first input event that would call them on EmuTOS; for
+`Initmous` (types 1, 2, 4 with a vector), `Mfpint`, `Xbtimer` and
+`vex_butv`/`vex_motv`/`vex_curv`/`vex_timv` in the call. No warning for hooks
+EmuTOS itself never calls (`etv_xtra`, `hdv_init`, `hdv_boot`,
+`prt_stat`/`prt_vec`, `aux_stat`/`aux_vec`), nor for `midivec`, `vkbderr`,
+`vmiderr`, whose events (MIDI bytes, receiver overruns) never occur.
+
+**Owner of a hook in a shared cell** (ADR-031 rule 3). The `Setexc` vectors
+up to `etv_xtra` and `vex_butv`/`motv`/`curv`/`timv` are one cell for all
+processes; the process that wrote it owns it. When it ends without
+unhooking, the cell gets its previous value back if it still holds the
+process's hook (top of the XBRA chain); if another hook has been chained on
+top, the cell keeps it and the log gets `[hook] warning: … ended without
+unhooking …`. After `Ptermres` the hook stays, as the code it points at
+stays resident. EmuTOS gives nothing back: a vector a terminated program
+left points into freed memory there.
+
+**`prt_stat`/`prt_vec`** (`$506`/`$50A`) hold a `ret` stub, EmuTOS' `just_rts`
+(`references/emutos/bios/chardev.c:82-83`), not 0; `aux_stat`/`aux_vec`
+are still 0.
 
 **Observable difference:** a RAM disk or disk cache hooked into `hdv_*` does
 not take over a drive (NewTOS GEMDOS uses the block layer directly);
 TeraDesk's `force_mediach` has no effect; `etv_timer` and the `Kbdvbase`
 mouse/status/clock/joystick hooks are never called (accepted deviations
-BIOS-CORE-002, XBIOS-CHARDEV-003).
+BIOS-CORE-002, XBIOS-CHARDEV-003); a hook a terminated program left in a
+shared cell is gone when nothing was chained on top of it.
 
 **`Iorec`: the key queue is the IKBD `IOREC`, in a page every process may
 write; three named limits** — user decisions E1-E6 of 2026-10-28, TASK/XBIOS01
