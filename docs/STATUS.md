@@ -55,6 +55,22 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
 - **Warteschlange (Anwender 2026-10-29), in dieser Reihenfolge.** Regel: ein
   neues Werkzeug-Ticket kommt hinter den Produkt-Fix, den es verzoegern wuerde,
   ausser der Fix ist ohne das Werkzeug nicht abnehmbar.
+  **Vor-Start-Pruefung je Ticket (Anwender 2026-10-30):** Produkt-Ticket —
+  ist ein Programm auf der Karte oder ein in diesem Repo geplanter Port
+  betroffen? Werkzeug-Ticket — blockiert es die Abnahme eines Produkt-Fixes?
+  Sonst parken, mit Grund hier.
+  **Geparkt 2026-10-31 (Anwender) nach dieser Pruefung:**
+  [TOOL13](../TASK/TOOL13.md) (kein anstehender Fix bringt ein Debug-Feature;
+  Regel bisher von Hand belegt), [TOOL14](../TASK/TOOL14.md) (Sonden laufen
+  ohne Trace-Betriebsart), [TOOL15](../TASK/TOOL15.md) (Echtzeit-Sonden
+  schalten fast-forward selbst ab; mtools-Version faengt die sha256-Pruefung),
+  [TOOL03](../TASK/TOOL03.md) (nur fuer DUMPGDOS/FS19 noetig), DUMPGDOS (kein
+  Ticket; GEMDOS-Faelle laufen ueber Sonden und `gemdos-mc-*`),
+  [FS19](../TASK/FS19.md) (nur Programme mit DTA in unabgebildetem Speicher),
+  [MEM11](../TASK/MEM11.md) (heute nicht erreichbar; ein Hosttest haelt die
+  Speicheraufteilung unter 2 GiB fest, damit eine Aenderung laut scheitert),
+  [TOOL01](../TASK/TOOL01.md) (blockiert keine Abnahme),
+  [FS25](../TASK/FS25.md) (Frage nur ans Orakel).
   Developer, einer zur Zeit:
   die S2-Audit-Tickets [XBIOS02](../TASK/XBIOS02.md) (erledigt 2026-10-29, `7bc047a6`),
   [BIOS04](../TASK/BIOS04.md) (erledigt 2026-10-29, Commit der Quittung) →
@@ -62,11 +78,9 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   die uebrigen Audit-Tickets [BIOS07](../TASK/BIOS07.md) (erledigt 2026-10-29, Commit der Quittung),
   BIOS08–BIOS14 ([BIOS10](../TASK/BIOS10.md) erledigt 2026-10-29, Commit der Quittung; [BIOS08](../TASK/BIOS08.md) erledigt 2026-10-30, Commit der Quittung), XBIOS04–XBIOS14 ([XBIOS05](../TASK/XBIOS05.md) erledigt 2026-10-29, Commit der Quittung; BIOS05 und XBIOS03
   sind ACCEPTED nach ADR-031, XBIOS10 nach ARCH05) →
-  [TOOL13](../TASK/TOOL13.md), [TOOL14](../TASK/TOOL14.md),
-  [TOOL15](../TASK/TOOL15.md) → [TOOL03](../TASK/TOOL03.md) → DUMPGDOS →
-  [FS19](../TASK/FS19.md) → [MEM11](../TASK/MEM11.md) (Erzwingung) →
-  [TOOL01](../TASK/TOOL01.md) → [FS26](../TASK/FS26.md) (Ordner anlegen
-  ~3 s auf der Pi, erst messen) → [FS25](../TASK/FS25.md) (Messung),
+  [FS26](../TASK/FS26.md) (Ordner anlegen ~3 s auf der Pi; Schichtmessung in
+  QEMU zuerst, Pi-Messung ins Testszenario; Anwender 2026-10-31) →
+  [MEM11](../TASK/MEM11.md)-Hosttest (Speicheraufteilung < 2 GiB) → [FS29](../TASK/FS29.md) (P3),
   [PROC07](../TASK/PROC07.md), [COOK02](../TASK/COOK02.md) (geparkt; Punkt 3 `_IDT` = Orakel umgesetzt 2026-10-30, Commit der Quittung),
   [TOOL22](../TASK/TOOL22.md), [XBIOS19](../TASK/XBIOS19.md), [TOOL23](../TASK/TOOL23.md),
   [SPEC02](../TASK/SPEC02.md), [TOOL24](../TASK/TOOL24.md), [FS27](../TASK/FS27.md), [TOOL25](../TASK/TOOL25.md) (P3); [BIOS16](../TASK/BIOS16.md) (erledigt 2026-10-30, `9c4c29c5`) → [BIOS17](../TASK/BIOS17.md) (erledigt 2026-10-30, Commit der Quittung) → [BIOS09](../TASK/BIOS09.md) (umgesetzt 2026-10-30, Commit der Quittung; offen der Pi-Schritt in der MEM12-Prueffolge, Punkt 10) → [XBIOS04](../TASK/XBIOS04.md) (umgesetzt 2026-10-30, Commit der Quittung) → [SDK08](../TASK/SDK08.md) (erledigt 2026-10-30, Commit der Quittung) → [A126](../TASK/A126.md) (umgesetzt 2026-10-30, Commit dieser Zeile) → [TOOL29](../TASK/TOOL29.md) (umgesetzt 2026-10-30, Commit dieser Zeile; Hook-Installation durch den Lead) → [FS28](../TASK/FS28.md) (Anwender 2026-10-30; geparkt bis ein Port sie braucht, weil kein Programm der Karte betroffen ist: [XBIOS06](../TASK/XBIOS06.md)-Fix, [XBIOS08](../TASK/XBIOS08.md), [XBIOS09](../TASK/XBIOS09.md), [XBIOS10](../TASK/XBIOS10.md)) → [FS28](../TASK/FS28.md) (erledigt 2026-10-30, Commit dieser Zeile), [A126](../TASK/A126.md); [TOOL26](../TASK/TOOL26.md) (P3); [FS28](../TASK/FS28.md), [A126](../TASK/A126.md) (P2), [KEYS04](../TASK/KEYS04.md), [INPUT03](../TASK/INPUT03.md) (P3); [SDK02](../TASK/SDK02.md), [SDK06](../TASK/SDK06.md)

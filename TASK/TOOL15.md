@@ -1,6 +1,6 @@
 # TOOL15 — Orakel: mtools pinnen, `--fast-forward` als Profilparameter
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: blockiert keine Abnahme) · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt
 

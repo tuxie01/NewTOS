@@ -1,6 +1,6 @@
 # MEM11 — Anwenderadressen < 2 GiB nur zufaellig: die Abbildungsgrenze erlaubt 4 GiB
 
-Status: **OFFEN** (Debug-Pruefung erledigt 2026-10-26, auf Kerninvarianten eingegrenzt 2026-10-26, Erzwingung offen) · Prioritaet: **P2** · Typ: Kernfehler (Vertragsgrenze nicht erzwungen) — Anwenderbefund 2026-10-26
+Status: **GEPARKT** 2026-10-31 (Anwender: heute nicht erreichbar; offen nur ein Hosttest, der die Speicheraufteilung unter 2 GiB festhaelt) · Prioritaet: **P2** · Typ: Kernfehler (Vertragsgrenze nicht erzwungen) — Anwenderbefund 2026-10-26
 
 Prioritaet P2 wie die uebrigen Defekte der Reihe (MEM01–MEM05): der Vertrag
 ist verletzbar, aber heute fuehrt kein gefundener Weg tatsaechlich eine
@@ -208,3 +208,11 @@ ohne Schreibversuch, EmuTOS hat diese Abfrage nicht.
 Abhaengigkeiten: — (ADR-028; [ARCH03](ARCH03.md) liefert die Abbildung)
 
 [Gemeinsame Regeln](README.md) gelten.
+
+## Anwenderentscheidung 2026-10-31
+
+Erzwingung geparkt (heute nicht erreichbar). Dazu ein Hosttest, der zusichert,
+dass die Speicheraufteilung alle Anwenderadressen unter 2 GiB haelt — eine
+Aenderung der Aufteilung soll laut scheitern, statt die Luecke still wieder
+zu oeffnen.
+

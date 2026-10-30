@@ -350,6 +350,14 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   and dated snapshots, and still reports the old backlog (2026-10-27: 752
   failures, mostly undated `docs/analysis/`, `docs/INVENTORY.md` and
   `docs/hardware/`; `docs/api/` and `docs/sdk/` are clean).
+- A checked-in pre-commit hook (`tools/git-hooks/pre-commit`, installed once
+  with `cargo xtask install-hooks`, which sets `core.hooksPath`) runs
+  `cargo xtask doc-check --staged` on what the commit records: the staged
+  docs, and for a commit that stages code, every doc citing the changed
+  files. It rejects the commit only for errors the commit introduces; the
+  legacy backlog (TASK/SPEC03.md) never blocks (TASK/TOOL29.md). Agents must
+  not bypass it: `tools/hooks/no-verify-guard.sh` blocks the bypass flags and
+  any `core.hooksPath` other than `tools/git-hooks`.
 - A line cite into NewTOS code (git-tracked files under `kernel/`, `tos-api/`,
   `tos-types/`, `programs/`, `tools/`, `tosdump/`, `sdk/`, `boot/`,
   `keyboards/`) carries a symbol anchor, `<path>:<line>@<symbol>`: doc-check

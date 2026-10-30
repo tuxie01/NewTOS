@@ -1,6 +1,6 @@
 # TOOL14 — Trace-Betriebsart fuer `tools/hatari-oracle.sh` (Eingabepruefung EmuTOS-Seite)
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28, Vorschlag aus [TOOL08](TOOL08.md)
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: Sonden laufen ohne Trace-Betriebsart) · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28, Vorschlag aus [TOOL08](TOOL08.md)
 
 ## Sachverhalt
 

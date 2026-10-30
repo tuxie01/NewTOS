@@ -1,6 +1,6 @@
 # TOOL13 — xtask-Pruefung: Debug-Feature aus = Kernel bytegleich bis auf `panic::Location`
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28, aus [TOOL08](TOOL08.md)
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: kein anstehender Fix bringt ein Debug-Feature) · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28, aus [TOOL08](TOOL08.md)
 
 ## Sachverhalt
 

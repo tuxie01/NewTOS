@@ -1,6 +1,6 @@
 # TOOL03 — Reproduzierbare Messabbilder: gleiche Eingaben, gleiche sha256
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Werkzeug (Reproduzierbarkeit) — Anwenderentscheidung 2026-10-27
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: nur fuer DUMPGDOS/FS19 noetig) · Prioritaet: **P2** · Typ: Werkzeug (Reproduzierbarkeit) — Anwenderentscheidung 2026-10-27
 
 ## Sachverhalt
 

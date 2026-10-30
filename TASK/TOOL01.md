@@ -1,6 +1,6 @@
 # TOOL01 — `cargo xtask doctor`: Hostwerkzeuge gegen gepinnte Erwartungen pruefen
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Werkzeug (Reproduzierbarkeit) — Anwenderentscheidung 2026-10-27
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: blockiert keine Abnahme) · Prioritaet: **P2** · Typ: Werkzeug (Reproduzierbarkeit) — Anwenderentscheidung 2026-10-27
 
 ## Sachverhalt
 
