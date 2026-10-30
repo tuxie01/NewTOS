@@ -264,7 +264,10 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   A run copies the `<image>.manifest` of every image it boots (built by
   `tools/make-sd-image.sh` or `tools/mkcard.sh`, both through
   `tools/sd-manifest.sh`) into the run directory; `RUNINFO.TXT` cites it and
-  quotes its `optional_missing` lines verbatim (`none` included). New runs
+  quotes its `optional_missing` lines verbatim (`none` included). Every
+  `RUNINFO.TXT` also names the host clang (`host_clang` line of the manifest,
+  or `clang --version` line 1 for a run without an image) until TASK/TOOL28
+  writes it automatically (user 2026-10-30). New runs
   call `tools/mkcard.sh` and keep only that call in the run's method/ dir, not a copy.
   A run that writes to a booted image also records its sha256 after the run.
 - **Runs are immutable once committed.** Never edit files inside an existing
