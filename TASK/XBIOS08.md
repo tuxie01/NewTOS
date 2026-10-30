@@ -1,6 +1,6 @@
 # XBIOS08 — `Settime` normalisiert bzw. klemmt unmoegliche Felder statt sie roh zu uebernehmen
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (rohe Felder halten wie EmuTOS) oder Researcher (Abweichung in COMPATIBILITY, Spec korrigieren) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md`
+Status: **GEPARKT** 2026-10-30 (Anwender: bis ein Port es braucht) · Prioritaet: **P2** · Typ: Developer (rohe Felder halten wie EmuTOS) oder Researcher (Abweichung in COMPATIBILITY, Spec korrigieren) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md`
 
 ## Sachverhalt
 
@@ -34,3 +34,8 @@ Gueltige Werte (T01–T08: Tag-, Monats-, Jahreswechsel, Schaltjahr 2000, 2100, 
 - Kein vorher gleicher Fall in `bios-r1.tsv`, `bios-core-r1.tsv`, `xbios-chardev-r1.tsv`, `xbios-system-r1.tsv` weicht neu ab.
 - `cargo xtask test` gruen.
 - `docs/STATUS.md` und Spec im selben Commit; `cargo xtask doc-check` der geaenderten Doku 0 Fehler.
+
+## Geparkt (Anwender, 2026-10-30)
+
+Kein Programm auf der Karte ist betroffen (Pruefung des Leads 2026-10-30);
+wieder aufnehmen, wenn ein Port es braucht.

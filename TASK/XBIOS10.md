@@ -1,6 +1,6 @@
 # XBIOS10 — `NVMaccess` ist nicht verdrahtet: jede Operation liefert `0x2E`
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28: kein NVRAM, Antwort wie EmuTOS ohne NVRAM-Chip — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md`
+Status: **GEPARKT** 2026-10-30 (Anwender: bis ein Port es braucht) · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28: kein NVRAM, Antwort wie EmuTOS ohne NVRAM-Chip — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md`
 
 ## Sachverhalt
 
@@ -39,3 +39,8 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidu
   Kanarienvogel wie TOOL06 (`docs/analysis/ORACLE.md`), bestehende Profile
   unveraendert — Teil dieses Tickets, weil die Abnahme es braucht.
 - Lokalisierung (Lead) vor Beginn nach CLAUDE.md „Testing“.
+
+## Geparkt (Anwender, 2026-10-30)
+
+Kein Programm auf der Karte ist betroffen (Pruefung des Leads 2026-10-30);
+wieder aufnehmen, wenn ein Port es braucht.

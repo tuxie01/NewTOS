@@ -1,6 +1,6 @@
 # XBIOS09 — `Gettime`: gepackter LONG nullerweitert; ab Jahr 2044 positiv statt negativ
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md`
+Status: **GEPARKT** 2026-10-30 (Anwender: bis ein Port es braucht) · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md`
 
 ## Sachverhalt
 
@@ -28,3 +28,8 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidu
 - Vorzeichenerweiterung gemaess Regel (`docs/COMPATIBILITY.md`, „LONG
   results in `x0`“): `Gettime` erweitert heute mit Nullen
   (`tos-api/src/xbios/mod.rs:119@GETTIME`).
+
+## Geparkt (Anwender, 2026-10-30)
+
+Kein Programm auf der Karte ist betroffen (Pruefung des Leads 2026-10-30);
+wieder aufnehmen, wenn ein Port es braucht.
