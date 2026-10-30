@@ -363,5 +363,10 @@ Silizium; QEMU verdeckt fehlende Invalidierungen oft.
 9. **Sonde K16 mit physischer Umschalttaste:** erwartet ein Wert der Klasse
    `0x02300042` (Shift-Bit im oberen Byte gesetzt, Shift zum Zeitpunkt des
    Tastendrucks; QEMU-Wert aus dem XBIOS01-Lauf).
-10. Ergebnis mit Seriellprotokoll und Fotos in einem Lauf unter
+10. **AUX wartet ohne Kabel** (aus BIOS09, Anwender 2026-10-30; kein
+   UART-Adapter angesteckt): Sonde aus `TASK/BIOS09.md` starten. `Bconin(1)`
+   kehrt nicht zurueck (auch nicht einmal mit `0`, siehe die GPIO-15-Falle im
+   Ticket), der `kbdvec`-Haken der Sonde zaehlt bei Tastendruck weiter,
+   Strg+Alt+Entf startet neu.
+11. Ergebnis mit Seriellprotokoll und Fotos in einem Lauf unter
    `measurements/` und in `docs/HW-TEST-LOG.md`.

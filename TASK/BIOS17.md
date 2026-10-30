@@ -28,3 +28,7 @@ Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidu
   unveraendert; `cargo xtask test` gruen; doc-check 0.
 
 [Gemeinsame Regeln](README.md) gelten.
+
+## Anwenderentscheidung 2026-10-30
+
+Die Abweichung vom Ticket ("Hosttests unveraendert") ist genehmigt: die Testprozesse fuellen Seite 0 wie der echte Lader (`PAGE0_HOOKS`-Vorgaben), keine Zusicherung geaendert.
