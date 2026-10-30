@@ -1,6 +1,6 @@
 # XBIOS06 — `Rsconf(-1 x6)`: TSR-Byte ohne Bit 7, obere 32 Bit null statt vorzeichenerweitert
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Erweiterung) + Researcher (Spec gegen ABI, Geraeteprofil der Registerbytes) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`
+Status: **OFFEN** (entschieden 2026-10-30: Option a, Messung zuerst) · Prioritaet: **P2** · Typ: Developer (Erweiterung) + Researcher (Spec gegen ABI, Geraeteprofil der Registerbytes) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`
 
 ## Sachverhalt
 
@@ -32,9 +32,10 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Erweiterung) + Resear
   `tos-api/src/xbios/system.rs` (heute „zero-extended“, passend zum heutigen
   Code) werden **mit diesem Fix** geaendert, nicht vorher.
 - TSR-Byte, Schluss des Anwenders geprueft: EmuTOS nutzt TSR Bit 7 selbst als
-  „Sender leer“ — `Bcostat` liefert `-1`, wenn `tsr & 0x80`
-  (`references/emutos/bios/serport.c:277`), gesendet wird bei leerem Ring und
-  gesetztem Bit (`:314`, TT-MFP `:433`); `Rsconf` liefert das alte TSR im Byte
+  „Sender leer“ — gesendet wird bei leerem Ring und gesetztem Bit (`:314`,
+  TT-MFP `:433`). **Berichtigt 2026-10-30:** `Bcostat` antwortet im Referenzbau
+  aus dem Ausgabering (`references/emutos/bios/serport.c:278-281`); die Abfrage
+  `tsr & 0x80` gibt es nur im Debug-Bau mit `RS232_DEBUG_PRINT` (`:275-276`); `Rsconf` liefert das alte TSR im Byte
   15–8 (`:229`). Gemessen: TT `0x81`, NewTOS `0x01`; Falcon (SCC) `0x00`.
   Abgeleitet: ein Programm, das auf Bit 7 wartet, wartet auf NewTOS ewig. Kein
   portierter Nutzer von `Rsconf` gefunden
@@ -67,5 +68,29 @@ vorzeichenerweitert, heute nullerweitert, getrennt markiert).
 - Optionen (a) TT/MFP mit TSR `0x81`, (b) Falcon/SCC, (c) eigene Bytes +
   COMPATIBILITY; Empfehlung des Researchers (a), passend zur Bconmap-Tabelle
   (Geraet 6, MFP; XBIOS05). Offene Fragen in der Analyse Abschnitt "Offene
-  Fragen". Entscheidung des Anwenders steht aus.
+  Fragen". Entscheidung des Anwenders siehe unten.
+
+## Entscheidung (Anwender, 2026-10-30)
+
+1. **Option (a) TT/MFP**, passend zu XBIOS05 (Geraet 6). Rueckgabe
+   vorzeichenerweitert auf 64 Bit nach dem ABI (`tos-api/src/trap.rs:6@TrapArgs`).
+   Abweichung gegen Falcon **ACCEPTED** mit Eintrag in `docs/COMPATIBILITY.md`.
+2. **Erst messen, dann fixen:** neue dauerhafte Sonde `rsprobe.c` (neu, unter `tosdump/probes/`)
+   (Muster `mdprobe`, beide Seiten gegen das Orakel, Eingabespur
+   `bios-arg-trace`): TSR `0x00`/`0x08`/`0xFF` und P16 (woher antwortet
+   `Rsconf(-2)`: Record oder Schatten). **Bericht vor dem Fix.**
+3. `Rsconf` schreibt nur `baudrate` und `flowctrl` in `Iorec(0)` (MFP-Weg),
+   nicht `ucr`/`datamask`.
+4. Folgeticket [TOOL27](TOOL27.md): `rsprobe`-Faelle nach tosdiff, sobald die
+   Rsconf-Sperre in `tosdump/core/cases.c:4050-4055@CR_RSCONF` es zulaesst.
+5. Ticket-Text zu `Bcostat` berichtigt (oben).
+
+## Arbeit, Schritt 1 (Developer, nur Sonde und Messung)
+
+- `rsprobe.c` + Bau-/Laufskripte nach `mdprobe` (`tosdump/Makefile`,
+  `tosdump/build-mdprobe-newtos.sh`, `tosdump/probes/run-mdprobe.sh`);
+  Fallentwurf in `docs/analysis/xbios06-rsconf-profile-2026-10-30.md`
+  (P00–P17, S19–S21).
+- Laeufe: Orakel tt und falcontc, NewTOS raspi4b (mit `bios-arg-trace`).
+- Kein Produktcode. Ergebnis als Messlauf; danach Entscheidungsvorlage.
 
