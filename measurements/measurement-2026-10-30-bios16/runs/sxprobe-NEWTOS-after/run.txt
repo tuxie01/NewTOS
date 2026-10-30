@@ -1,0 +1,7 @@
+sxprobe run, side newtos (2026-10-30T00:02:09Z)
+tree      b27569f9f1a53f9e8569a332f28ce0d0c1cc7bab 10 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    SXPROBE.PRG 7e5aa2fcf668c6783ad6638036ab4a2e58797775fc37e0008236444948edf719 SXPROBE.NAP d25d177b8cf3e137ddf2921806a59dcc3eedb57ceb7f3dd73a0e30b43d2c5f01
+kernel    bce6dbec536ac6ae71a08a6f84b393f0c716754954cb64b64bc8fb51c82f6ae6 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios16/kernel-after.img
+card      7593d85f56c2ca6ca195f3ec533ed5107356bf16c204e91b71719ea323718c48 (tools/mkcard.sh, C:\SXPROBE.NAP, #Z autorun)
+qemu      done
+card      after 2fe7d3f6a5080ffca89078270e87a7fc7a1e83329ae8d54cd4ecac208dd4a632 (the booted clone)

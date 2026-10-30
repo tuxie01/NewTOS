@@ -1,0 +1,4 @@
+BIOS.BIN: area BIOS, 9 records of 320 bytes, build b275, case CRC 3D9C560E
+BIOS.BIN: format 3, pointer 8 bytes, least significant word first
+BIOS.BIN: matches super-r1.tsv (9 cases)
+BIOS.BIN: accepted

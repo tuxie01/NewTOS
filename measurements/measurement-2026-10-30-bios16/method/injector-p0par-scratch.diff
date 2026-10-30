@@ -1,0 +1,193 @@
+diff -ru kernel/src/host_env.rs /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios16/inj-tree/kernel/src/host_env.rs
+--- kernel/src/host_env.rs	2026-10-29 21:04:01
++++ /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios16/inj-tree/kernel/src/host_env.rs	2026-10-30 01:04:16
+@@ -507,6 +507,7 @@
+     };
+     if !crate::ikbd::release_held() {
+         crate::drivers::usb::poll();
++        inj_arm::step(); // INJ-ARM-TEMP
+     }
+     crate::ikbd::poll_repeat();
+ }
+@@ -703,3 +704,170 @@
+ pub fn install() {
+     tos_api::host::install_host(&KERNEL_HOST_REF);
+ }
++
++// INJ-ARM-TEMP BEGIN -- tools/inject-arm.py: scripted IKBD bytes armed on a program
++// identity (T10). Scratch only.
++/// Scratch IKBD injector armed on program-identity events (tools/inject-arm.py).
++pub mod inj_arm {
++    use core::sync::atomic::{AtomicBool, AtomicU32, AtomicUsize, Ordering};
++
++    struct Arm {
++        trig: &'static str,
++        /// 0 = desktop up, 1 = launch:NAME, 2 = up:NAME.
++        kind: u8,
++        name: [u8; 8],
++        script: &'static [(u32, u8)],
++    }
++    const S0: &[(u32, u8)] = &[(1500, 0x39), (1510, 0xb9), (1930, 0x39), (1940, 0xb9), (2360, 0x39), (2370, 0xb9), (2790, 0x39), (2800, 0xb9), (3220, 0x39), (3230, 0xb9), (3650, 0x39), (3660, 0xb9), (4080, 0x39), (4090, 0xb9)];
++    static ARMS: [Arm; 1] = [
++        Arm { trig: "launch:P0PAR", kind: 1, name: *b"P0PAR   ", script: S0 },
++    ];
++    /// Per arm: 0 = waiting, 1 = event seen (arms at the next tick), 2 = armed.
++    static STATE: [AtomicU32; 1] = [const { AtomicU32::new(0) }; 1];
++    static T0: [AtomicU32; 1] = [const { AtomicU32::new(0) }; 1];
++    static NEXT: [AtomicUsize; 1] = [const { AtomicUsize::new(0) }; 1];
++
++    /// The shell child the injector last saw (`usize::MAX` = none), its name.
++    static SEEN_SLOT: AtomicUsize = AtomicUsize::new(usize::MAX);
++    static mut SEEN_NAME: [u8; 8] = [b' '; 8];
++    /// `up:` -- the child's `appl_init` seen, its next `evnt_multi` is "up".
++    static CHILD_INIT: AtomicBool = AtomicBool::new(false);
++
++    /// `p_nameit` of `D.s_cmd`'s base name (aes/gempd.c:77-86).
++    fn child_name() -> [u8; 8] {
++        let mut cmd = [0u8; 128];
++        let len = tos_api::aes::shell::s_cmd(&mut cmd).min(cmd.len());
++        let cmd = &cmd[..len];
++        let start = cmd.iter().rposition(|&c| c == b'\\' || c == b':').map_or(0, |i| i + 1);
++        let mut out = [b' '; 8];
++        for (o, &c) in out.iter_mut().zip(cmd[start..].iter().take_while(|&&c| c != 0 && c != b'.')) {
++            *o = c;
++        }
++        out
++    }
++
++    /// Track the launcher's published child; a new one fires `launch:` arms.
++    fn track_child() -> Option<usize> {
++        let cur = crate::launch::shell_child_slot();
++        let seen = SEEN_SLOT.load(Ordering::Relaxed);
++        match cur {
++            None => {
++                if seen != usize::MAX {
++                    SEEN_SLOT.store(usize::MAX, Ordering::Relaxed);
++                    CHILD_INIT.store(false, Ordering::Relaxed);
++                }
++            }
++            Some(slot) if slot != seen => {
++                launched(slot);
++            }
++            Some(_) => {}
++        }
++        cur
++    }
++
++    /// The launcher published a shell child in `slot` -- the launch event
++    /// (hook in launch.rs right after the publication, T16; also the poll's
++    /// fallback in `track_child`). A child reusing the previous one's slot is
++    /// a new child all the same.
++    pub fn launched(slot: usize) {
++        SEEN_SLOT.store(slot, Ordering::Relaxed);
++        CHILD_INIT.store(false, Ordering::Relaxed);
++        let name = child_name();
++        // SAFETY: single CPU; written only here, read by `event`.
++        unsafe { SEEN_NAME = name };
++        event(1, &name);
++    }
++
++    /// An identity event of `kind` for the program `name`: every waiting arm
++    /// of that kind (and name) is armed at the next tick.
++    fn event(kind: u8, name: &[u8; 8]) {
++        for (i, a) in ARMS.iter().enumerate() {
++            if a.kind == kind && (kind == 0 || &a.name == name) {
++                let _ = STATE[i].compare_exchange(0, 1, Ordering::AcqRel, Ordering::Relaxed);
++            }
++        }
++    }
++
++    /// The kernel's "[desk] desktop up" (shell_loop.rs, at the line).
++    pub fn desktop_up() {
++        event(0, &[b' '; 8]);
++    }
++
++    /// Every GEM trap (top of `observe_desktop_gem_call`): the shell child's
++    /// first `evnt_multi` after its `appl_init` fires the `up:` arms. Reads
++    /// `control[0]` the way that function does.
++    pub fn gem_call(args: &tos_api::trap::TrapArgs) {
++        use tos_api::bdos::process::{current_abi, Abi};
++        let Some(child) = track_child() else { return };
++        if !args.space.is_user()
++            || tos_api::bdos::process::sched::running_slot() != child
++            || args.regs[0] != 200
++            || args.regs[1] == 0
++        {
++            return;
++        }
++        let control = match current_abi() {
++            Abi::Lp64 => args.space.get_u64(args.regs[1]),
++            Abi::Ilp32 => args.space.get_u32(args.regs[1]).map(u64::from),
++        };
++        let Ok(control) = control else { return };
++        if control == 0 {
++            return;
++        }
++        let Ok(op) = args.space.get_u16(control) else { return };
++        match op {
++            10 => CHILD_INIT.store(true, Ordering::Relaxed),
++            25 if CHILD_INIT.swap(false, Ordering::Relaxed) => {
++                // SAFETY: single CPU; see `launched`.
++                let name = unsafe { SEEN_NAME };
++                event(2, &name);
++            }
++            _ => {}
++        }
++    }
++
++    /// One injector tick (from `pump_devices`).
++    pub fn step() {
++        track_child();
++        let now = tos_api::bios::tick::hz_200();
++        for (i, a) in ARMS.iter().enumerate() {
++            match STATE[i].load(Ordering::Acquire) {
++                1 => {
++                    T0[i].store(now.max(1), Ordering::Relaxed);
++                    STATE[i].store(2, Ordering::Release);
++                    let slot = crate::launch::shell_child_slot();
++                    // SAFETY: single CPU; see `launched`.
++                    let name = unsafe { SEEN_NAME };
++                    crate::kprintln!(
++                        "[inj] {} armed at hz_200 {} (slot {:?} name {})",
++                        a.trig,
++                        now,
++                        slot,
++                        core::str::from_utf8(&name).unwrap_or("?").trim_end()
++                    );
++                }
++                2 => {
++                    let t0 = T0[i].load(Ordering::Relaxed);
++                    loop {
++                        let k = NEXT[i].load(Ordering::Relaxed);
++                        let Some(&(at, b)) = a.script.get(k) else { break };
++                        if now.wrapping_sub(t0) < at {
++                            break;
++                        }
++                        crate::kprintln!(
++                            "[inj] {} feed {:#04x} at hz_200 {} (+{})",
++                            a.trig,
++                            b,
++                            now,
++                            now.wrapping_sub(t0)
++                        );
++                        crate::ikbd::feed(b);
++                        NEXT[i].store(k + 1, Ordering::Relaxed);
++                    }
++                }
++                _ => {}
++            }
++        }
++    }
++}
++// INJ-ARM-TEMP END
+diff -ru kernel/src/launch.rs /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios16/inj-tree/kernel/src/launch.rs
+--- kernel/src/launch.rs	2026-10-18 04:49:41
++++ /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/bios16/inj-tree/kernel/src/launch.rs	2026-10-30 01:04:16
+@@ -258,6 +258,7 @@
+     set_current(process::pd_of(child.slot));
+     // The child's identity, for the kernel's observers (DESK43 U9-0c).
+     SHELL_CHILD_SLOT.store(child.slot, Ordering::Release);
++    crate::host_env::inj_arm::launched(child.slot); // INJ-ARM-TEMP
+     kprintln!("[launch] EL0: slot {} entry 0x{:x}", child.slot, child.entry_va);
+ 
+     // SAFETY: single-CPU; `parent_frame` captures this kernel resume point,

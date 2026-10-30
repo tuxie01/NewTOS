@@ -12,10 +12,11 @@
 //! * **Never silent (rules 1, 4, 5).** The first installation of a hook NewTOS
 //!   does not call writes one warning per hook and process ([`note`]). The
 //!   detection points feed it: `Setexc` (`bios::vectors`), the page-0 cells
-//!   ([`check_page0`] — read only, never called — when a process leaves the
-//!   super state, at every trap it makes in super state, and when it ends in
-//!   super state), the `Kbdvbase` slots at the first event that would call
-//!   them (`xbios::kbdvecs::check_events`), and `Initmous`, `Mfpint`,
+//!   ([`check_page0`] — never called — when a process leaves the super state,
+//!   before and after every trap it makes in super state, and when it ends in
+//!   super state; a vector cell `$008`–`$407` written there directly becomes
+//!   the shared cell, TASK/BIOS16), the `Kbdvbase` slots at the first event
+//!   that would call them (`xbios::kbdvecs::check_events`), and `Initmous`, `Mfpint`,
 //!   `Xbtimer` and the `vex_*` calls in the call itself. Hooks EmuTOS itself
 //!   never calls (`etv_xtra`, `hdv_init`, `hdv_boot`, `prt_*`, `aux_*`) have
 //!   no warning. The model is the former accessory `kbdvec` warning: a flag
@@ -25,7 +26,8 @@
 //! * **Ownership (rule 3).** A hook in a cell every process shares — the
 //!   `Setexc` vector cells up to `etv_xtra` (every page 0 carries a copy),
 //!   the `vex_*` vectors — belongs to the process that installed it
-//!   ([`record_install`]). When the process ends without unhooking
+//!   ([`record_install`]), through `Setexc` or, for `$008`–`$407`, by a
+//!   direct write of its page-0 copy. When the process ends without unhooking
 //!   ([`on_terminate`]), the previous value goes back only if the cell still
 //!   holds the process's hook (the top of an XBRA chain); otherwise the hook
 //!   stays and the kernel warns. After `Ptermres` the hook stays and its
@@ -290,24 +292,18 @@ pub const PAGE0_HOOKS: [Page0Hook; 10] = [
 /// SSP and PC).
 const FIRST_PAGE0_VECTOR: usize = 2;
 
-/// The hook behind the page-0 copy of shared vector cell `num`
-/// (`FIRST_PAGE0_VECTOR..=0x102`).
-fn page0_vector_hook(num: usize) -> Hook {
-    match num {
-        0x100 => Hook::EtvTimer,
-        0x101 => Hook::EtvCritic,
-        0x102 => Hook::EtvTermDirect,
-        n => Hook::Vector(n as u8),
-    }
-}
-
 /// Compare `slot`'s page-0 hook cells with their defaults and warn about each
-/// one that differs (ADR-031 rule 4: read only, for the warning; the value is
-/// never called or acted on). The vector cells `$008`–`$408` are compared with
-/// the shared cell they copy (`bios::vectors`, TASK/BIOS07): a `Setexc` write
-/// changes both, so only a direct write of the copy differs. Called when the
-/// process leaves the super state, after each trap it makes in super state,
-/// when it ends in super state, and after a `Setexc` write into its page 0.
+/// one that differs (ADR-031 rule 4: for the warning; the value is never
+/// called). The vector cells `$008`–`$408` are compared with the shared cell
+/// they copy (`bios::vectors`, TASK/BIOS07): a `Setexc` write changes both,
+/// so only a direct write of the copy differs. Such a write of `$008`–`$407`
+/// — cells NewTOS only stores — becomes the shared cell, as on EmuTOS a direct
+/// write is the vector (`bios::vectors::adopt_page0_write`, TASK/BIOS16
+/// option B: owned and warned like a `Setexc` write). `etv_term` (`$408`) is
+/// not taken over — NewTOS calls it, and only through `Setexc` — and warns.
+/// Called before and after each trap the process makes in super state
+/// ([`before_trap`], [`after_trap`]), when it leaves the super state, when it
+/// ends in super state, and after a `Setexc` write into its page 0.
 pub fn check_page0(slot: usize) {
     let Some(p0) = mmu::page0_kva(slot) else {
         return;
@@ -325,8 +321,14 @@ pub fn check_page0(slot: usize) {
     }
     for n in FIRST_PAGE0_VECTOR..=crate::bios::vectors::ETV_TERM {
         let v = rd(4 * n);
-        if Some(v) != crate::bios::vectors::shared_cell(n) {
-            note(slot, page0_vector_hook(n), u64::from(v), Via::Page0);
+        if Some(v) == crate::bios::vectors::shared_cell(n) {
+            continue;
+        }
+        if crate::bios::vectors::adopts_page0_write(n) {
+            crate::bios::vectors::adopt_page0_write(slot, n, v);
+        } else {
+            // `etv_term`, the only cell of the range not taken over.
+            note(slot, Hook::EtvTermDirect, u64::from(v), Via::Page0);
         }
     }
 }
@@ -635,6 +637,20 @@ pub fn release_slot(slot: usize) {
         s.warned[slot] = [0; WORDS];
         s.own[slot] = [None; OWN_CAP];
     });
+}
+
+/// The check the kernel runs before every trap: the page-0 cells of a process
+/// that is in super state (it may have written one directly since its last
+/// system call). A vector cell `$008`–`$407` written so becomes the shared
+/// cell before the call is served, so the call — `Setexc(n, -1)`, a `Pexec`
+/// copying the cells into a child, its own `Pterm` — sees the written value,
+/// as on EmuTOS (TASK/BIOS16).
+pub fn before_trap() {
+    if let Some(slot) = slot_for(super::current()) {
+        if super::superstate::is_super(slot) {
+            check_page0(slot);
+        }
+    }
 }
 
 /// The checks the kernel runs after every trap: the `Kbdvbase` slots an

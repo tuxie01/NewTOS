@@ -264,6 +264,14 @@ fn a_page_0_hook_warns_when_the_process_leaves_the_super_state() {
     b.poke(0x47E, 0x0002_5000);
     b.super_off();
     assert_eq!(not_served(&warnings()), vec![(b.slot, Hook::HdvMediach, 0x0002_5000, Via::Page0)]);
+    // The VBL vector written directly became the shared cell, owned by A
+    // (TASK/BIOS16): its Pterm gives the cell back.
+    assert_eq!(vectors::vector(0x1C), 0x0001_5100);
+    drop(b);
+    a.pterm();
+    drop(a);
+    assert_eq!(vectors::vector(0x1C), JUST_RTS);
+    while hooks::pop().is_some() {}
 }
 
 #[test]

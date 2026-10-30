@@ -513,10 +513,10 @@ typedef struct {
 
 /*
  * `Setexc` as a plain LONG-returning call. mintlib's Setexc() macro casts its
- * result to `void (*)(void)`; the NewTOS vector shadow holds 64-bit values and
- * a check wants the number, so go through the header's own trap helper. Same
- * trap, same function id, same argument registers -- only the result cast
- * differs.
+ * result to `void (*)(void)`; a check wants the number (the 32-bit cell,
+ * sign-extended into the 64-bit register, docs/api/bios/05-setexc.md D1), so
+ * go through the header's own trap helper. Same trap, same function id, same
+ * argument registers -- only the result cast differs.
  */
 #define SETEXC(num, vec) \
 	((long)trap_13_wwl((short)(0x05), (short)(num), (long)(vec)))

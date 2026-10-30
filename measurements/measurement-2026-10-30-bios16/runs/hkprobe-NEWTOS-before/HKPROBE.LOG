@@ -1,0 +1,13 @@
+HKPROBE TASK/BIOS15
+M01 imra/imrb n/a (no MFP)
+M02 Mfpint(5,timerC) ret=00000060 hi=00000000
+M03 Mfpint(0x15,timerC) ret=00000060 hi=00000000
+M04 Mfpint(12,rs232rx) ret=00000014 hi=00000000
+M05 Xbtimer(2,0x50,192,timerC) ret=00000060 hi=00000000
+M06 Xbtimer(4,0x1234,0,0) ret=00001234 hi=00000000
+M07 Xbtimer(-1,0x8001,0,0) ret=00008001 hi=00000000
+P01 prt_stat nonzero=1 equal=1
+P02 call prt_stat+prt_vec ret=12345678 hi=00000000
+H01 hdv_mediach calls=0 (Fopen -33)
+H02 etv_timer calls=0 over 40 ticks
+end

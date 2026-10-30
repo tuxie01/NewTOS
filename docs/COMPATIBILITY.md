@@ -1212,10 +1212,11 @@ seen: in `Setexc` (`etv_timer`, `etv_critic`, vectors `< 0x100`); in page 0
 (`hdv_rw`/`hdv_bpb`/`hdv_mediach`, `swv_vec`, `exec_os`, `resvector`,
 `dump_vec`, `vblqueue`, `bell_hook`/`kcl_hook`, and `etv_*` or CPU vector
 cells written directly — those compared with the shared `Setexc` cell they
-copy), read only and compared with the loader's value when
-the process leaves the super state, **after every trap it makes in super
-state** (TeraDesk's `force_mediach` hooks `hdv_*` around one `Fopen` and
-restores them before it leaves), when it ends in super state, and after a
+copy, and `$008`–`$407` then taken over as the cell, TASK/BIOS16, below),
+compared with the loader's value **before** (TASK/BIOS16) and **after
+every trap it makes in super state** (TeraDesk's `force_mediach` hooks
+`hdv_*` around one `Fopen` and restores them before it leaves), when the
+process leaves the super state, when it ends in super state, and after a
 `Setexc` into page 0; for the `Kbdvbase` slots `mousevec`, `statvec`,
 `clockvec`, `joyvec`, `midisys`, `ikbdsys` — and a desk accessory's
 `kbdvec` — at the first input event that would call them on EmuTOS; for
@@ -1228,7 +1229,8 @@ EmuTOS itself never calls (`etv_xtra`, `hdv_init`, `hdv_boot`,
 **Owner of a hook in a shared cell** (ADR-031 rule 3). The `Setexc` vectors
 up to `etv_xtra` and `vex_butv`/`motv`/`curv`/`timv` are one cell for all
 processes (every page 0 carries a copy of the `Setexc` cells, TASK/BIOS07);
-the process that wrote it owns it. When it ends without
+the process that wrote it — through `Setexc`, or for `$008`–`$407` straight
+into page 0 (TASK/BIOS16) — owns it. When it ends without
 unhooking, the cell gets its previous value back if it still holds the
 process's hook (top of the XBRA chain); if another hook has been chained on
 top, the cell keeps it and the log gets `[hook] warning: … ended without
@@ -1244,10 +1246,27 @@ the calling process's own page-0 cell. A vector NewTOS does not serve, and
 `etv_timer`/`etv_critic`/`etv_term`, start at the `ret` stub (EmuTOS'
 `just_rts`), never at 0; vectors 0/1 hold the OSHEADER's first two LONGs.
 The answer is the 32-bit cell sign-extended; `-1` is recognised in the low
-32 bits. Deviations: `num >= 0x200` answers 0 (EmuTOS reads RAM there); a
-program that writes the page-0 copy of a vector cell directly (super state)
-does not change what `Setexc` answers or what `Pterm` calls — it gets the
-page-0 warning (ADR-031 rule 4).
+32 bits. Deviation: `num >= 0x200` answers 0 (EmuTOS reads RAM there).
+
+**A vector cell written directly in page 0** (TASK/BIOS16, option B, user
+decision 2026-10-30; `docs/api/bios/05-setexc.md` "Page 0 written
+directly"). On EmuTOS a direct write of `*(long *)(4 * num)` in supervisor
+mode IS the vector. On NewTOS a program in super state that writes its
+page-0 copy of `$008`–`$407` (vectors 2…0xFF, `etv_timer`, `etv_critic`, the
+cells NewTOS only stores) changes the shared cell at the edges of its next
+system call (before it is served, after it, on leaving the super state, at
+its end): `Setexc(num, -1)` answers the written value, as on EmuTOS
+(measured, `tosdump/probes/vwprobe.c` W01–W04, S01). It gets the page-0
+warning once per hook (ADR-031); nothing is ever called through it.
+**Observable differences:** (1) the writer owns the value like a `Setexc`
+write — its `Pterm` puts the previous value back while the cell still holds
+the written one (ADR-031 rule 3; `Ptermres` keeps it); EmuTOS gives nothing
+back, the vector keeps the terminated program's value (`vwprobe` T02); (2)
+`etv_term` (`$408`) is not taken over: `Setexc(0x102, -1)` answers, and
+`Pterm` calls, the value set through `Setexc`, the direct write only warns —
+EmuTOS calls the written value (`references/emutos/bdos/proc.c:607-608`;
+`vwprobe` E01); (3) vectors 0/1 and `etv_xtra` (`$40C`) written directly are
+not looked at. Evidence: `measurements/measurement-2026-10-30-bios16/RUNINFO.TXT`.
 
 **`prt_stat`/`prt_vec`** (`$506`/`$50A`) hold a `ret` stub, EmuTOS' `just_rts`
 (`references/emutos/bios/chardev.c:82-83`), not 0; `aux_stat`/`aux_vec`

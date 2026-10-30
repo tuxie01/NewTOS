@@ -1,0 +1,16 @@
+SXPROBE TASK/BIOS07
+C01 Setexc(0x002,-1) is the cell: 1 (hi=00000000)
+C02 Setexc(0x020,-1) is the cell: 1 (hi=00000000)
+C03 Setexc(0x100,-1) is the cell: 1 (hi=00000000)
+C04 Setexc(0x101,-1) is the cell: 1 (hi=00000000)
+C05 Setexc(0x102,-1) is the cell: 1 (hi=00000000)
+C06 Setexc(0x103,-1) is the cell: 1 (hi=00000000)
+C07 Setexc(0x108,-1) is the cell: 1 (hi=00000000)
+C08 Setexc(0x168,-1) is the cell: 1 (hi=00000000)
+Q01 Setexc(0x20,0x80000001) old is a TOS address: 1
+Q02 Setexc(0x20,-1L) ret=80000001 hi=ffffffff
+Q03 Setexc(0x20,(long)0xFFFFFFFFUL) ret=80000001 hi=ffffffff
+Q04 Setexc(0x20,-1L) ret=80000001 hi=ffffffff
+Q05 cell $80 in super state ret=80000001
+Q06 put back: 1
+end

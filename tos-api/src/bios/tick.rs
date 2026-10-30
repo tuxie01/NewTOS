@@ -50,9 +50,9 @@
 //!     program runs at EL0, `kernel::input_gate`) moves the pointer only:
 //!     key bytes stay held for the trap-side pump, and the repeat with them.
 //!   - `dosound` (no YM2149) and the `etv_timer` dispatch (`bios::vectors`
-//!     shadows the vector but never invokes it) have no NewTOS counterpart
-//!     yet. Tracked as a gap in `docs/api/bios/_state.md`, not silently
-//!     absorbed.
+//!     holds the shared cell but never calls it; ADR-031, BIOS-CORE-002
+//!     ACCEPTED) have no NewTOS counterpart (`dosound`: not yet). Tracked as a gap in
+//!     `docs/api/bios/_state.md`, not silently absorbed.
 
 use core::sync::atomic::{AtomicU32, Ordering};
 

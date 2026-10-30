@@ -14,6 +14,10 @@
 //!   cell lives here ([`VECTORS`]), 32 bits wide like the LONG, and every
 //!   loaded process's page 0 carries a copy at `4 * num`, written by the
 //!   loader ([`write_page0_vectors`]) and again whenever the cell changes.
+//!   A program in super state that writes its copy of `$008`–`$407` directly
+//!   changes the cell, as on EmuTOS: the page-0 check takes the value over
+//!   at the edges of the next system call ([`adopt_page0_write`],
+//!   TASK/BIOS16); `etv_term` (`$408`) changes only through `Setexc`.
 //!   A hook installed in such a cell belongs to the process that wrote it
 //!   (ADR-031 rule 3, [`hooks::record_install`]). Of these hooks NewTOS calls
 //!   only `etv_term` (the kernel's `Pterm` path, [`vector`]); the CPU, trap
@@ -228,10 +232,7 @@ fn unserved_hook(num: usize) -> Option<Hook> {
 /// `old` (both as `Setexc` answers them), for the running process (none: the
 /// kernel, nothing to report; ADR-031, [`hooks`]):
 ///
-/// * shared cell (`num <= ETV_XTRA`): a hook NewTOS does not call
-///   ([`unserved_hook`]) set to anything but its boot value warns once per
-///   process (rule 5, "in `Setexc` itself"); the process becomes the owner of
-///   the cell, so its `Pterm` can give the cell back (rule 3);
+/// * shared cell (`num <= ETV_XTRA`): [`note_shared_write`];
 /// * system variable: the page-0 hook check (`bell_hook`/`kcl_hook` are
 ///   `0x16B`/`0x16C`; rule 4).
 fn note_write(num: usize, old: i64, new: u32) {
@@ -242,12 +243,56 @@ fn note_write(num: usize, old: i64, new: u32) {
         }
         return;
     }
+    note_shared_write(slot, num, old, new, Via::Setexc);
+}
+
+/// The OS-hook half of a write of `new` into shared cell `num`, which held
+/// `old` (as `Setexc` answers it), by process `slot` (none: the kernel,
+/// nothing to report), seen via `via` (`Setexc`, or page 0 for an adopted
+/// direct write, [`adopt_page0_write`]): the process becomes the owner of the
+/// cell, so its `Pterm` can give the cell back (ADR-031 rule 3); a hook
+/// NewTOS does not call ([`unserved_hook`]) set to anything but its boot value
+/// warns once per process (rules 1, 5).
+fn note_shared_write(slot: Option<usize>, num: usize, old: i64, new: u32, via: Via) {
     hooks::record_install(slot, Cell::Vector(num as u16), old as u64, long(new) as u64);
     if let (Some(slot), Some(hook)) = (slot, unserved_hook(num)) {
         if new != default_of(num) {
-            hooks::note(slot, hook, u64::from(new), Via::Setexc);
+            hooks::note(slot, hook, u64::from(new), via);
         }
     }
+}
+
+/// Is shared cell `num` one whose page-0 copy, written directly by a program
+/// in super state, becomes the cell ([`adopt_page0_write`])? The vectors
+/// `2..=0xFF` and `etv_timer`/`etv_critic` (`$008`–`$407`), the cells NewTOS
+/// only stores (TASK/BIOS16, option B). Not `etv_term` (`$408`): NewTOS calls
+/// it at `Pterm`, and only a value installed through `Setexc(0x102)` is
+/// called (ADR-031: page 0 is never acted on to call something). Not vectors
+/// 0/1 (the OSHEADER's LONGs) nor `etv_xtra` (`$40C`): outside the page-0
+/// check until measured (user decision 2026-10-30).
+pub(crate) const fn adopts_page0_write(num: usize) -> bool {
+    num >= 2 && num < ETV_TERM
+}
+
+/// Process `slot` wrote `v` straight into its page-0 copy of shared cell
+/// `num` (super state; found by the page-0 check, [`hooks::check_page0`], at
+/// the edges of a system call): take it over as the cell, as EmuTOS has one
+/// memory cell that a direct write changes (`references/emutos/bios/bios.c:1070-1080`;
+/// TASK/BIOS16). Every page-0 copy gets the value, `Setexc(num, -1)` answers
+/// it; the process owns it like a `Setexc` write (its `Pterm` puts the
+/// previous value back while the cell still holds it, `Ptermres` keeps it),
+/// and an unserved hook warns once. Nothing is ever called through it. No-op
+/// for a `num` that [`adopts_page0_write`] excludes.
+pub(crate) fn adopt_page0_write(slot: usize, num: usize, v: u32) {
+    if !adopts_page0_write(num) {
+        return;
+    }
+    let old = VECTORS[num].load(Ordering::Relaxed);
+    if old == v {
+        return;
+    }
+    store_shared(num, v);
+    note_shared_write(Some(slot), num, long(old), v, Via::Page0);
 }
 
 

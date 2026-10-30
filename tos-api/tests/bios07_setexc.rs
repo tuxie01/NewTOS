@@ -240,10 +240,12 @@ fn page_0_carries_every_shared_cell_in_every_process() {
 }
 
 #[test]
-fn a_direct_write_of_a_copy_does_not_change_the_shared_cell() {
+fn a_direct_write_of_the_etv_term_copy_does_not_change_the_shared_cell() {
     let _g = lock();
     let a = Proc::new();
-    // ADR-031 rule 4: page 0 is read only for the warning, never acted on.
+    // ADR-031: NewTOS calls etv_term, and only what Setexc installed. (The
+    // copies of $008-$407 written directly become the cell since TASK/BIOS16,
+    // tests/bios16_page0_write.rs.)
     a.poke(0x408, 0x0001_3000);
     assert_eq!(query(ETV_TERM as u64), JUST_RTS);
     assert_eq!(vectors::vector(ETV_TERM), JUST_RTS);

@@ -209,6 +209,7 @@ pub fn probe_read32(va: u64) -> Option<u32> {
 #[unsafe(no_mangle)]
 pub extern "C" fn rust_sync_handler(frame: &mut ExceptionFrame) {
     let trap_or_el0 = esr_ec(frame.esr) == EC_SVC_AARCH64 || frame.spsr & 0xF == 0;
+    crate::console::check_hooks_before_trap(trap_or_el0); // ADR-031, TASK/BIOS16
     sync_handler(frame);
     crate::console::report_hook_warnings(trap_or_el0); // ADR-031 OS hooks
     // ARCH03 3b: whatever the call changed in memory ownership is in the

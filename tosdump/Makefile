@@ -25,6 +25,8 @@
 #   make mdprobe-newtos   MDPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make sxprobe-m68k     SXPROBE.PRG, the Setexc probe (probes/sxprobe.c)
 #   make sxprobe-newtos   SXPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make vwprobe-m68k     VWPROBE.PRG, the page-0 vector-write probe (probes/vwprobe.c)
+#   make vwprobe-newtos   VWPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make ksprobe-m68k     KSPROBE.PRG, the Kbshift probe (probes/ksprobe.c)
 #   make ksprobe-newtos   KSPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make host-test        the host-side suite (same as make -C host test)
@@ -70,13 +72,15 @@ BUILD := build
         pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
         axprobe-m68k axprobe-newtos mdprobe-m68k mdprobe-newtos \
         sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
+        vwprobe-m68k vwprobe-newtos \
         host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
      scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
      pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
      axprobe-m68k axprobe-newtos mdprobe-m68k mdprobe-newtos \
-     sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos host-test
+     sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
+     vwprobe-m68k vwprobe-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -208,6 +212,17 @@ $(BUILD)/SXPROBE.PRG: probes/sxprobe.c | $(BUILD)
 sxprobe-newtos: $(BUILD)/SXPROBE.NAP
 $(BUILD)/SXPROBE.NAP: probes/sxprobe.c build-sxprobe-newtos.sh | $(BUILD)
 	./build-sxprobe-newtos.sh $@
+
+# The page-0 vector-write probe (TASK/BIOS16): no disk, any oracle profile.
+# Run by probes/run-vwprobe.sh.
+vwprobe-m68k: $(BUILD)/VWPROBE.PRG
+$(BUILD)/VWPROBE.PRG: probes/vwprobe.c | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror probes/vwprobe.c -o $@
+	@$(CROSS_MINT)size $@
+
+vwprobe-newtos: $(BUILD)/VWPROBE.NAP
+$(BUILD)/VWPROBE.NAP: probes/vwprobe.c build-vwprobe-newtos.sh | $(BUILD)
+	./build-vwprobe-newtos.sh $@
 
 # The Kbshift probe (TASK/BIOS10): no disk, key strokes injected. Run by
 # probes/run-ksprobe.sh.

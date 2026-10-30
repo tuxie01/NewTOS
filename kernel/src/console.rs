@@ -444,3 +444,17 @@ pub fn report_hook_warnings(trap_or_el0: bool) {
         }
     }
 }
+
+/// ADR-031 / TASK/BIOS16: the hook check before a trap is served — a vector
+/// cell `$008`–`$407` a process in super state wrote straight into its page 0
+/// since its last call becomes the shared cell first, so the call
+/// (`Setexc(n, -1)`, a `Pexec`, its `Pterm`) sees the written value as on
+/// EmuTOS (`tos_api::bdos::process::hooks::before_trap`). Called by
+/// `arch::aarch64::exceptions::rust_sync_handler` before every exception, with
+/// `trap_or_el0` as for [`report_hook_warnings`]; the warnings it queues are
+/// printed by that after the call.
+pub fn check_hooks_before_trap(trap_or_el0: bool) {
+    if trap_or_el0 {
+        tos_api::bdos::process::hooks::before_trap();
+    }
+}
