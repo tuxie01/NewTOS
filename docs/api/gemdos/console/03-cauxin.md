@@ -198,10 +198,16 @@ driver (`TASK/IO01.md`) replaces only the entry.
 **[XBIOS15] 2026-10-29 — qemu-virt:** the AUX entry there is the serial driver
 over device 0's input ring (`docs/api/bios/02-bconin.md`, XBIOS15 note):
 `Cauxin()` returns the oldest received byte and **waits** for one when the ring is
-empty, as EmuTOS' `bconin1`. The "port present, no cable" values above hold on
-real Pi 4. **[XBIOS18]:** the wait gives way to a `kbdvec` hook with queued
+empty, as EmuTOS' `bconin1`. The "port present, no cable" values above held on
+real Pi 4 until BIOS09. **[XBIOS18]:** the wait gives way to a `kbdvec` hook with queued
 bytes and is re-executed after the hook ran (`docs/api/bios/02-bconin.md`,
 XBIOS18 note).
+
+**[BIOS09] 2026-10-30 — real Pi 4 too (user decision):** the same driver sits
+in the AUX entry on `board-rpi4`; `Cauxin()` waits for a received byte on both
+boards, with or without a cable (`docs/api/bios/02-bconin.md`, BIOS09 note).
+The non-blocking `0` above is only the device-table default the host tests
+see; the divergence it documented is revoked.
 
 *Spec inconsistency noted, semantics unchanged:* Edge case 1 / D-003 say the AUX
 typeahead buffer is "never used by any GEMDOS path". EmuTOS' `conbrk(h)`

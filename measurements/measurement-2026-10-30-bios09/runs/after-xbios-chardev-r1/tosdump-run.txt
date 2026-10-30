@@ -1,0 +1,60 @@
+command   cargo xtask tosdump bios tosdump/cases/xbios-chardev-r1.tsv --reference tosdump/reference/EMUTOS-1a7484ab-XBIOS-chardev.BIN --reference tosdump/reference/EMUTOS-1a7484ab-XBIOS-chardev-falcontc.BIN --out measurements/measurement-2026-10-30-bios09/runs/after-xbios-chardev-r1 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tab/xtask-after
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    f065a705063b7939352f695d6e8e17496ee90def
+dirty     26 path(s) in git status --porcelain
+   M docs/COMPATIBILITY.md
+   M docs/analysis/deps/mapping.tsv
+   M docs/api/bios/01-bconstat.md
+   M docs/api/bios/02-bconin.md
+   M docs/api/desktop/_hw-test-checklist.md
+   M docs/api/gemdos/console/03-cauxin.md
+   M docs/api/gemdos/console/12-cauxis.md
+   M docs/api/gemdos/file/3f-fread.md
+   M docs/api/xbios/0e-iorec.md
+   M docs/api/xbios/22-kbdvbase.md
+   M docs/api/xbios/2c-bconmap.md
+   M kernel/src/console.rs
+   M kernel/src/drivers/gic.rs
+   M kernel/src/initinfo.rs
+   M kernel/src/lib.rs
+   M kernel/src/selftest_console.rs
+   M tos-api/src/bios/chardev.rs
+   M tos-api/src/gemdos/console.rs
+   M tos-api/src/xbios/iorec.rs
+   M tos-api/tests/xbios_kbdvecs.rs
+   M tosdump/Makefile
+  ?? measurements/measurement-2026-10-30-bios09/
+  ?? tosdump/build-awprobe-newtos.sh
+  ?? tosdump/probes/awprobe-drive.py
+  ?? tosdump/probes/awprobe.c
+  ?? tosdump/probes/run-awprobe.sh
+harness commit f065a705063b7939352f695d6e8e17496ee90def
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/xbios-chardev-r1.tsv sha256 a028a4ab46621d3cbdb52acf8f91b4ccf3380348d22cb47e9dcd767d10efad84
+table     names the unit token u:0: no; a program path x:<path>: no
+profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+target/   own (9 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (9 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 71754052af02fd655c0e74a0d52c401e1da11aa2733245c9f7c4ed84075fa73f
+kernel ELF  sha256 e7b8281565a36433df2259c9fec1295a37e03d1a7a5bd7e29f4ef05e757a3c41 (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id f065
+DUMPBIOS.NAP sha256 3f77689336cc976473ad9a364aa1bedd59ce03aedb0f63999a8b96de25715840
+card.img.manifest: image_sha256 ecae5043a3b529b97451936015458ac413677f8ae6ff3a6eb0969c7d3a8baa30
+card.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tab/xtask-after/tosdump-88790/card.img sha256 ecae5043a3b529b97451936015458ac413677f8ae6ff3a6eb0969c7d3a8baa30 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 1661e971d05b4bdfb9ac273fcc4936082464e5c404d294354e0e0ce01be39dd0
+BIOS.BIN 7392 bytes, sha256 e97e25d662f450dbd258d81c50505d4f92d3fcce3bd2a27d34b386a2a3d1468b
+BIOS.LOG 167 bytes, sha256 172778a57147664cb6f471747c5505e58598e038295f9f1da571998b038c3329
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 d02ad08479af5647f3f1c4d4fa7f47366bc72fa7198c4ddda2da70fcabb6a9a8
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 23 records of 320 bytes, build f065, case CRC 5C3A5F7A
+tosdiff EMUTOS-1a7484ab-XBIOS-chardev.BIN vs NEWTOS.BIN: exit 1, 1 of 23 cases differ
+tosdiff EMUTOS-1a7484ab-XBIOS-chardev-falcontc.BIN vs NEWTOS.BIN: exit 1, 2 of 23 cases differ
+total     35 s
+result    run complete (differences above are findings, not failures)

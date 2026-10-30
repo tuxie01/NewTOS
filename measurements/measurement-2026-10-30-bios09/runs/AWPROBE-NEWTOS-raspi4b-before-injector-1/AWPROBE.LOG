@@ -1,0 +1,1269 @@
+AWPROBE TASK/BIOS09 -- Bconin(1) waits; keys: the kbdvec hook prints each byte; Ctrl+Alt+Del ends
+H01 kbdvec held a vector before the hook: 1
+W1 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R1 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W2 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R2 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W3 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R3 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W4 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R4 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W5 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R5 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W6 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R6 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W7 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R7 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W8 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R8 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W9 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R9 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W10 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R10 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W11 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R11 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W12 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R12 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W13 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R13 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W14 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R14 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W15 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R15 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W16 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R16 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W17 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R17 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W18 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R18 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W19 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R19 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W20 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R20 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W21 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R21 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W22 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R22 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W23 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R23 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W24 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R24 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W25 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R25 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W26 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R26 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W27 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R27 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W28 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R28 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W29 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R29 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W30 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R30 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W31 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R31 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W32 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R32 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W33 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R33 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W34 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R34 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W35 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R35 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W36 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R36 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W37 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R37 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W38 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R38 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W39 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R39 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W40 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R40 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W41 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R41 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W42 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R42 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W43 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R43 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W44 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R44 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W45 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R45 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W46 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R46 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W47 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R47 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W48 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R48 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W49 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R49 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W50 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R50 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W51 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R51 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W52 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R52 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W53 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R53 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W54 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R54 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W55 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R55 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W56 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R56 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W57 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R57 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W58 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R58 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W59 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R59 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W60 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R60 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W61 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R61 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W62 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R62 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W63 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R63 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W64 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R64 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W65 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R65 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W66 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R66 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W67 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R67 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W68 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R68 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W69 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R69 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W70 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R70 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W71 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R71 Bconin(1) ret=00000000 hi=00000000 after 1 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W72 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R72 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W73 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R73 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W74 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R74 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W75 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R75 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W76 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R76 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W77 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R77 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W78 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R78 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W79 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R79 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W80 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R80 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W81 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R81 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W82 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R82 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W83 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R83 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W84 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R84 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W85 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R85 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W86 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R86 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W87 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R87 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W88 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R88 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W89 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R89 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W90 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R90 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W91 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R91 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W92 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R92 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W93 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R93 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W94 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R94 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W95 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R95 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W96 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R96 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W97 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R97 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W98 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R98 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W99 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R99 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W100 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R100 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W101 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R101 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W102 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R102 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W103 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R103 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W104 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R104 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W105 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R105 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W106 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R106 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W107 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R107 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W108 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R108 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W109 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R109 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W110 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R110 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W111 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R111 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W112 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R112 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W113 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R113 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W114 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R114 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W115 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R115 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W116 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R116 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W117 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R117 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W118 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R118 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W119 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R119 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W120 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R120 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W121 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R121 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W122 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R122 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W123 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R123 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W124 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R124 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W125 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R125 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W126 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R126 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W127 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R127 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W128 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R128 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W129 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R129 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W130 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R130 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W131 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R131 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W132 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R132 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W133 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R133 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W134 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R134 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W135 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R135 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W136 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R136 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W137 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R137 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W138 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R138 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W139 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R139 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W140 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R140 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W141 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R141 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W142 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R142 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W143 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R143 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W144 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R144 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W145 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R145 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W146 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R146 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W147 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R147 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W148 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R148 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W149 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R149 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W150 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R150 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W151 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R151 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W152 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R152 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W153 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R153 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W154 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R154 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W155 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R155 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W156 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R156 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W157 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R157 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W158 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R158 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W159 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R159 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W160 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R160 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W161 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R161 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W162 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R162 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W163 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R163 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W164 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R164 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W165 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R165 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W166 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R166 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W167 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R167 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W168 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R168 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W169 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R169 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W170 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R170 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W171 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R171 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W172 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R172 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W173 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R173 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W174 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R174 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W175 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R175 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W176 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R176 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W177 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R177 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W178 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R178 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W179 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R179 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W180 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R180 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W181 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R181 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W182 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R182 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W183 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R183 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W184 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R184 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W185 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R185 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W186 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R186 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W187 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R187 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W188 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R188 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W189 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R189 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W190 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R190 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W191 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R191 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W192 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R192 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W193 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R193 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W194 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R194 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W195 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R195 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W196 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R196 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W197 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R197 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W198 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R198 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W199 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R199 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W200 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R200 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W201 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R201 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W202 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R202 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W203 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R203 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W204 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R204 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W205 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R205 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W206 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R206 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W207 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R207 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W208 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R208 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W209 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R209 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W210 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R210 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W211 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R211 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W212 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R212 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W213 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R213 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W214 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R214 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W215 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+ 1eR215 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W216 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+R216 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+W217 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+R217 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+W218 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+R218 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+W219 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+R219 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+W220 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+R220 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+W221 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+R221 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+W222 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+R222 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+W223 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+R223 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+W224 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+R224 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+W225 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+R225 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+W226 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+R226 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+W227 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+R227 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+W228 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+R228 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+W229 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+R229 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+ 9eW230 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+R230 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W231 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R231 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W232 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R232 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W233 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R233 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W234 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R234 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W235 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R235 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W236 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R236 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W237 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R237 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W238 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R238 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W239 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R239 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W240 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R240 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W241 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R241 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W242 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R242 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W243 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R243 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W244 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R244 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W245 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R245 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W246 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R246 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W247 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R247 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W248 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R248 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W249 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R249 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W250 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R250 Bconin(1) ret=00000000 hi=00000000 after 1 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W251 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R251 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W252 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R252 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W253 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R253 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W254 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R254 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W255 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R255 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W256 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R256 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W257 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R257 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W258 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R258 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W259 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R259 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W260 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R260 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W261 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R261 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W262 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R262 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W263 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R263 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W264 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R264 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W265 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R265 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W266 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R266 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W267 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R267 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W268 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R268 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W269 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R269 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W270 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R270 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W271 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R271 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W272 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R272 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W273 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R273 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W274 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R274 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W275 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R275 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W276 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R276 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W277 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R277 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W278 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R278 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W279 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R279 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W280 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R280 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W281 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R281 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W282 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R282 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W283 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R283 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W284 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R284 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+W285 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R285 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+ 30W286 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+R286 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+W287 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+R287 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+W288 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+R288 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+W289 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+R289 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+W290 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+R290 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+W291 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+R291 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+W292 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+R292 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+W293 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+R293 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+W294 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+R294 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+W295 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+R295 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+W296 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+R296 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+W297 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+R297 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+W298 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+R298 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+ b0W299 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+R299 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W300 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R300 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W301 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R301 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W302 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R302 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W303 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R303 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W304 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R304 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W305 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R305 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W306 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R306 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W307 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R307 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W308 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R308 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W309 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R309 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W310 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R310 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W311 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R311 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W312 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R312 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W313 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R313 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W314 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R314 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W315 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R315 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W316 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R316 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W317 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R317 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W318 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R318 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W319 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R319 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W320 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R320 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W321 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R321 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W322 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R322 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W323 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R323 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W324 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R324 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W325 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R325 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W326 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R326 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W327 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R327 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W328 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R328 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W329 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R329 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W330 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R330 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W331 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R331 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W332 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R332 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W333 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R333 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W334 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R334 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W335 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R335 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W336 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R336 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W337 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R337 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W338 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R338 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W339 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R339 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W340 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R340 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W341 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R341 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W342 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R342 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W343 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R343 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W344 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R344 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W345 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R345 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W346 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R346 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W347 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R347 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W348 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R348 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W349 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R349 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W350 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R350 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W351 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R351 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W352 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R352 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W353 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R353 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W354 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R354 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W355 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R355 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W356 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R356 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W357 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R357 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W358 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R358 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W359 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R359 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W360 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R360 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W361 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R361 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W362 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R362 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W363 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R363 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W364 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R364 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W365 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R365 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W366 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R366 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W367 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R367 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W368 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R368 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W369 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R369 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W370 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R370 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W371 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R371 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W372 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R372 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W373 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R373 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W374 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R374 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W375 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R375 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W376 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R376 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W377 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R377 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W378 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R378 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W379 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R379 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W380 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R380 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W381 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R381 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W382 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R382 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W383 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R383 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W384 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R384 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W385 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R385 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W386 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R386 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W387 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R387 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W388 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R388 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W389 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R389 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W390 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R390 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W391 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R391 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W392 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R392 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W393 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R393 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W394 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R394 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W395 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R395 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W396 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R396 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W397 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R397 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W398 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R398 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W399 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R399 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W400 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R400 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W401 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R401 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W402 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R402 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W403 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R403 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W404 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R404 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W405 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R405 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W406 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R406 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W407 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R407 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W408 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R408 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W409 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R409 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W410 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R410 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W411 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R411 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W412 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R412 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W413 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R413 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W414 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R414 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W415 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R415 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W416 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R416 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W417 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R417 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W418 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R418 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W419 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R419 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W420 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R420 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W421 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R421 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W422 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R422 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W423 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R423 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W424 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R424 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W425 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R425 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W426 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R426 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W427 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R427 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W428 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R428 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W429 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R429 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W430 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R430 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W431 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R431 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W432 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R432 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W433 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R433 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W434 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R434 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W435 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R435 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W436 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R436 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W437 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R437 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W438 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R438 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W439 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R439 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W440 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R440 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W441 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R441 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W442 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R442 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W443 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R443 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W444 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R444 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W445 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R445 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W446 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R446 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W447 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R447 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W448 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R448 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W449 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R449 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W450 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R450 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W451 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R451 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W452 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R452 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W453 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R453 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W454 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R454 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W455 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R455 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W456 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R456 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W457 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R457 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W458 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R458 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W459 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R459 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W460 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R460 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W461 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R461 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W462 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R462 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W463 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R463 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W464 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R464 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W465 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R465 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W466 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R466 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W467 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R467 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W468 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R468 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W469 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R469 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W470 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R470 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W471 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R471 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W472 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R472 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W473 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R473 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W474 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R474 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W475 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R475 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W476 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R476 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W477 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R477 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W478 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R478 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W479 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R479 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W480 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R480 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W481 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R481 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W482 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R482 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W483 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R483 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W484 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R484 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W485 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R485 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W486 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R486 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W487 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R487 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W488 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R488 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W489 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R489 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W490 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R490 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W491 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R491 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W492 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R492 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W493 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R493 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W494 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R494 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W495 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R495 Bconin(1) ret=00000000 hi=00000000 after 1 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W496 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R496 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W497 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R497 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W498 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R498 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W499 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R499 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W500 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R500 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W501 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R501 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W502 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R502 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W503 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R503 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W504 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R504 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W505 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R505 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W506 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R506 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W507 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R507 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W508 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R508 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W509 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R509 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W510 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R510 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W511 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R511 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W512 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R512 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W513 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R513 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W514 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R514 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W515 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R515 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W516 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R516 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W517 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R517 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W518 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R518 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W519 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R519 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W520 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R520 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W521 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R521 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W522 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R522 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W523 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R523 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W524 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R524 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W525 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R525 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W526 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R526 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W527 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R527 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W528 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R528 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W529 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R529 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W530 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R530 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W531 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R531 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W532 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R532 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W533 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R533 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W534 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R534 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W535 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R535 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W536 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R536 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W537 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R537 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W538 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R538 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W539 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R539 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W540 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R540 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W541 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R541 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W542 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R542 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W543 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R543 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W544 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R544 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W545 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R545 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W546 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R546 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W547 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R547 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W548 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R548 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W549 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R549 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W550 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R550 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W551 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R551 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W552 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R552 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W553 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R553 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W554 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R554 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W555 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R555 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W556 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R556 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W557 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R557 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W558 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R558 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W559 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R559 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W560 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R560 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W561 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R561 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W562 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R562 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W563 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R563 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W564 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R564 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W565 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R565 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W566 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R566 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W567 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R567 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W568 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R568 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W569 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R569 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W570 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R570 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W571 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R571 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W572 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R572 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W573 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R573 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W574 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R574 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W575 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R575 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W576 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R576 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W577 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R577 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W578 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R578 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W579 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R579 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W580 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R580 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W581 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R581 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W582 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R582 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W583 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R583 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W584 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R584 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W585 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R585 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W586 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R586 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W587 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R587 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W588 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R588 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W589 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R589 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W590 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R590 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W591 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R591 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W592 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R592 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W593 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R593 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W594 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R594 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W595 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R595 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W596 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R596 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W597 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R597 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W598 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R598 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W599 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R599 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W600 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R600 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W601 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R601 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W602 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R602 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W603 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R603 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W604 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R604 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W605 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R605 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W606 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R606 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W607 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R607 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W608 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R608 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W609 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R609 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W610 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R610 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W611 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R611 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W612 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R612 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W613 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R613 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W614 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R614 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W615 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R615 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W616 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R616 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W617 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R617 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W618 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R618 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W619 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R619 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W620 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R620 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W621 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R621 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W622 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R622 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W623 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R623 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W624 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R624 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W625 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R625 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W626 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R626 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W627 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R627 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W628 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R628 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W629 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R629 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W630 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R630 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W631 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R631 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W632 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R632 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W633 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+R633 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+W634 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)

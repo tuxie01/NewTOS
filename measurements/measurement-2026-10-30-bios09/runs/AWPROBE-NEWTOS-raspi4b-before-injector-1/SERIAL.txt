@@ -1,0 +1,1964 @@
+RB2
+NewTOS booting on rpi4
+[serial] output on: boot arguments contain `serial=on`
+Phase 02 reached.
+[mm] DTB at 0x0000000000000100
+[mm] firmware: ARM memory bank 0: 0x0000000000000000 + 1006632960 bytes (960 MiB)
+[mm] firmware: VC memory: 0x000000003c000000 + 67108864 bytes (64 MiB)
+[mm] device tree: no usable /memory node (blob invalid or absent)
+[clock] ARM 700 -> 700 MHz (max 700, measured ?, SoC 25.0 C)
+[mm] memory map:
+[mm]   DRAM  : 0x0000000000000000..0x000000003c000000 (1006632960 bytes) — source: firmware
+[mm]   kernel: 0x0000000000080000..0x0000000000365000 (3035136 bytes)
+[mm]   ST-RAM: 0x0000000000400000..0x0000000000e00000 (10485760 bytes)
+[mm]   TT-RAM: 0x0000000001000000..0x0000000039800000 (947912704 bytes)
+[mm]   OSrsvd: 0x0000000039800000..0x000000003c000000 (41943040 bytes)
+[mm]     bcach: 0x0000000039800000..0x000000003b800000 (33554432 bytes)
+[mm]     heap: 0x000000003b800000..0x000000003c000000 (8388608 bytes)
+[mm]   MMIO 00: 0x00000000fd500000..0x00000000fd510000
+[mm]   MMIO 01: 0x00000000fe000000..0x00000000ff000000
+[mm]   MMIO 02: 0x00000000ff800000..0x0000000100000000
+[mm] MMU reinstalled (high-half via TTBR1, TTBR0 deferred to Phase 06).
+[mm] frames ST-RAM: total=2560 used=0 free=2560 (10485760 B free)
+[mm] frames TT-RAM: total=231424 used=0 free=231424 (947912704 B free)
+[mm] alloc ST-RAM frame -> 0x0000000000400000
+[mm] alloc TT-RAM frame -> 0x0000000001000000
+[mm] heap after init: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[mm] heap smoke OK
+[mm] heap after smoke: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[fb] VideoCore display geometry detected: 640x480
+[fb] alpha mode = 2
+[fb] 640x480 pitch 2560 virtual height 960 -> 2 screen page(s), 2400 KiB
+[fb] VideoCore fb up: 640x480 stride 640px
+[mm] MEM05 per-process block limit: 8192 allocated blocks (default)
+[mm] MEM05 MD supply: 117 MDs static, grows by 117 MDs per 4096-byte page from the kernel heap; page budget 512 pages (2048 KiB) for MDs + block records + snapshot + F_KEEP flags
+[mm] memory protection ON: table arena 0x01000000+2415 tables
+[mm] BDOS pools: ST-RAM 0x00400000+10485760 TT-RAM 0x0196f000+938020864
+[mm] user address space: pools mapped VA = PA (453 shared L3 tables, 4-KiB pages, rights per process)
+[mm] BDOS ST-RAM after init: total=10485760 free=10485760 used=0 largest_free=10485760 (free_mds=1 alloc_mds=0)
+[mm] BDOS TT-RAM after init: total=938020864 free=938020864 used=0 largest_free=938020864 (free_mds=1 alloc_mds=0)
+[mm] MEM05 after init: MDs in_use=2 capacity=117 (+0 pages); pages held=0/512 (md=0 recs=0 snap=0 kept=0) peak=0 refused budget=0 heap=0; records=0 snapshot_cap=0 snapshot_short=0; heap used=0 free=8388608 largest=8388608
+[input] keyboard/mouse pump: AES waits and console reads; pointer motion also from the 200 Hz tick while a program runs (input=aes switches that off)
+[bcache] FS09 block read cache: 32768 KiB at 0x39800000 (asked 32768 KiB, default), 61680 sectors of 512 B, linear-read share 5 % (default), write-through
+[emmc] SD card on controller @ 0xffff0000fe300000
+[emmc] M1 SLOTISR_VER=0x24020000 (SDHCI spec 0x02) CAPABILITIES=0x052134b4 (base 52 MHz)
+[emmc] M1 CONTROL0=0x00000f02 CONTROL1=0x000e0207 div=2 -> SDCLK ~13000000 Hz
+[emmc] M1 mailbox clock rate: EMMC(1)=50000000 Hz EMMC2(12)=700000000 Hz
+[emmc] FS08 mode: multi-block (CMD18/CMD25 + Auto CMD12) — bus 4-bit (ACMD6 ok, SCR SD_BUS_WIDTHS=0x5), CONTROL0[1] Data Transfer Width=1
+[emmc] M1 during identification: 2 error(s), 0 timeout(s), 2 recovery(ies) CTO=2
+[clock] no kernel8.img FAT date on C: — clock stays at 1980-01-01
+[pcie] RC not present (no response at RC_BASE); USB disabled
+[proc] stand-in PDs: initial_basepage 0x001e1000, AES PD 0x001e1100, accdesk 0x001e1300, EmuCON 0x001e1400 (read-only to all)
+[aes] gsx_malloc: screen buffer pa=0x0196f000 len=614400 (kernel-owned, WF_SCREEN)
+[shell] sh_ldapp: starting C:\AWPROBE.NAP, sh_nextapp=2, sh_isgem=1
+[launch] EL0: slot 0 entry 0x1a08000
+[inj] launch:AWPROBE armed at hz_200 3019 (slot Some(0) name AWPROBE)
+AWPROBE|AWPROBE TASK/BIOS09 -- Bconin(1) waits; keys: the kbdvec hook prints each byte; Ctrl+Alt+Del ends
+AWPROBE|H01 kbdvec held a vector before the hook: 1
+AWPROBE:WAIT
+AWPROBE|W1 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R1 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W2 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R2 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W3 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R3 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W4 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R4 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W5 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R5 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W6 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R6 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W7 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R7 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W8 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R8 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W9 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R9 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W10 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R10 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W11 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R11 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W12 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R12 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W13 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R13 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W14 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R14 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W15 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R15 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W16 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R16 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W17 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R17 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W18 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R18 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W19 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R19 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W20 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R20 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W21 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R21 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W22 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R22 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W23 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R23 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W24 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R24 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W25 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R25 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W26 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R26 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W27 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R27 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W28 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R28 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W29 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R29 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W30 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R30 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W31 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R31 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W32 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R32 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W33 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R33 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W34 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R34 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W35 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R35 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W36 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R36 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W37 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R37 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W38 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R38 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W39 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R39 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W40 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R40 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W41 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R41 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W42 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R42 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W43 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R43 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W44 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R44 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W45 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R45 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W46 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R46 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W47 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R47 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W48 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R48 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W49 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R49 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W50 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R50 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W51 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R51 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W52 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R52 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W53 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R53 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W54 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R54 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W55 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R55 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W56 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R56 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W57 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R57 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W58 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R58 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W59 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R59 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W60 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R60 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W61 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R61 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W62 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R62 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W63 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R63 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W64 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R64 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W65 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R65 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W66 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R66 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W67 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R67 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W68 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R68 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W69 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R69 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W70 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R70 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W71 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R71 Bconin(1) ret=00000000 hi=00000000 after 1 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W72 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R72 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W73 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R73 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W74 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R74 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W75 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R75 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W76 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R76 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W77 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R77 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W78 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R78 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W79 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R79 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W80 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R80 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W81 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R81 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W82 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R82 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W83 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R83 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W84 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R84 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W85 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R85 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W86 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R86 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W87 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R87 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W88 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R88 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W89 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R89 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W90 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R90 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W91 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R91 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W92 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R92 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W93 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R93 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W94 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R94 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W95 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R95 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W96 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R96 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W97 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R97 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W98 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R98 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W99 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R99 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W100 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R100 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W101 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R101 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W102 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R102 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W103 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R103 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W104 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R104 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W105 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R105 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W106 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R106 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W107 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R107 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W108 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R108 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W109 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R109 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W110 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R110 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W111 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R111 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W112 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R112 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W113 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R113 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W114 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R114 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W115 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R115 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W116 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R116 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W117 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R117 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W118 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R118 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W119 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R119 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W120 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R120 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W121 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R121 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W122 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R122 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W123 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R123 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W124 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R124 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W125 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R125 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W126 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R126 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W127 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R127 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W128 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R128 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W129 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R129 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W130 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R130 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W131 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R131 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W132 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R132 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W133 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R133 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W134 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R134 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W135 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R135 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W136 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R136 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W137 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R137 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W138 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R138 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W139 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R139 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W140 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R140 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W141 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R141 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W142 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R142 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W143 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R143 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W144 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R144 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W145 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R145 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W146 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R146 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W147 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R147 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W148 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R148 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W149 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R149 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W150 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R150 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W151 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R151 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W152 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R152 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W153 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R153 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W154 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R154 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W155 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R155 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W156 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R156 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W157 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R157 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W158 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R158 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W159 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R159 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W160 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R160 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W161 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R161 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W162 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R162 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W163 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R163 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W164 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R164 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W165 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R165 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W166 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R166 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W167 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R167 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W168 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R168 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W169 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R169 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W170 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R170 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W171 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R171 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W172 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R172 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W173 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R173 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W174 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R174 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W175 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R175 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W176 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R176 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W177 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R177 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W178 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R178 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W179 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R179 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W180 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R180 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W181 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R181 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W182 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R182 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W183 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R183 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W184 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R184 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W185 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R185 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W186 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R186 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W187 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R187 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W188 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R188 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W189 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R189 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W190 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R190 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W191 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R191 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W192 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R192 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W193 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R193 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W194 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R194 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W195 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R195 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W196 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R196 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W197 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R197 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W198 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R198 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W199 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R199 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W200 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R200 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W201 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R201 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W202 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R202 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W203 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R203 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W204 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R204 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W205 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R205 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W206 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R206 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W207 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R207 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W208 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R208 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W209 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R209 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W210 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R210 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W211 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R211 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W212 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R212 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W213 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R213 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W214 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+AWPROBE|R214 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W215 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+
+[inj] launch:AWPROBE feed 0x1e at hz_200 3619 (+600)
+AWPROBE| 1eR215 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+AWPROBE|W216 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+
+AWPROBE|R216 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+AWPROBE|W217 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+
+AWPROBE|R217 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+AWPROBE|W218 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+
+AWPROBE|R218 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+AWPROBE|W219 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+
+AWPROBE|R219 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+AWPROBE|W220 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+
+AWPROBE|R220 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+AWPROBE|W221 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+
+AWPROBE|R221 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+AWPROBE|W222 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+
+AWPROBE|R222 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+AWPROBE|W223 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+
+AWPROBE|R223 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+AWPROBE|W224 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+
+AWPROBE|R224 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+AWPROBE|W225 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+
+AWPROBE|R225 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+AWPROBE|W226 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+
+AWPROBE|R226 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+AWPROBE|W227 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+
+AWPROBE|R227 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+AWPROBE|W228 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+
+AWPROBE|R228 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+AWPROBE|W229 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+
+AWPROBE|R229 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 1
+[inj] launch:AWPROBE feed 0x9e at hz_200 3659 (+640)
+AWPROBE| 9eW230 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 1)
+
+AWPROBE|R230 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W231 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R231 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W232 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R232 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W233 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R233 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W234 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R234 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W235 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R235 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W236 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R236 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W237 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R237 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W238 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R238 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W239 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R239 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W240 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R240 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W241 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R241 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W242 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R242 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W243 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R243 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W244 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R244 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W245 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R245 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W246 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R246 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W247 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R247 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W248 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R248 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W249 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R249 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W250 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R250 Bconin(1) ret=00000000 hi=00000000 after 1 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W251 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R251 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W252 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R252 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W253 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R253 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W254 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R254 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W255 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R255 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W256 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R256 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W257 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R257 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W258 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R258 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W259 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R259 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W260 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R260 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W261 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R261 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W262 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R262 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W263 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R263 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W264 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R264 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W265 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R265 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W266 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R266 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W267 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R267 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W268 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R268 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W269 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R269 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W270 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R270 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W271 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R271 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W272 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R272 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W273 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R273 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W274 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R274 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W275 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R275 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W276 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R276 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W277 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R277 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W278 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R278 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W279 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R279 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W280 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R280 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W281 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R281 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W282 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R282 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W283 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R283 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W284 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R284 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+AWPROBE|W285 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R285 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 2
+[inj] launch:AWPROBE feed 0x30 at hz_200 3820 (+801)
+AWPROBE| 30W286 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 2)
+
+AWPROBE|R286 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+AWPROBE|W287 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+
+AWPROBE|R287 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+AWPROBE|W288 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+
+AWPROBE|R288 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+AWPROBE|W289 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+
+AWPROBE|R289 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+AWPROBE|W290 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+
+AWPROBE|R290 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+AWPROBE|W291 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+
+AWPROBE|R291 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+AWPROBE|W292 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+
+AWPROBE|R292 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+AWPROBE|W293 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+
+AWPROBE|R293 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+AWPROBE|W294 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+
+AWPROBE|R294 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+AWPROBE|W295 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+
+AWPROBE|R295 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+AWPROBE|W296 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+
+AWPROBE|R296 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+AWPROBE|W297 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+
+AWPROBE|R297 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+AWPROBE|W298 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+
+AWPROBE|R298 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 3
+[inj] launch:AWPROBE feed 0xb0 at hz_200 3859 (+840)
+AWPROBE| b0W299 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 3)
+
+AWPROBE|R299 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W300 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R300 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W301 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R301 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W302 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R302 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W303 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R303 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W304 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R304 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W305 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R305 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W306 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R306 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W307 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R307 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W308 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R308 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W309 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R309 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W310 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R310 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W311 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R311 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W312 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R312 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W313 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R313 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W314 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R314 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W315 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R315 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W316 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R316 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W317 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R317 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W318 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R318 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W319 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R319 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W320 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R320 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W321 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R321 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W322 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R322 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W323 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R323 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W324 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R324 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W325 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R325 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W326 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R326 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W327 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R327 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W328 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R328 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W329 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R329 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W330 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R330 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W331 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R331 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W332 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R332 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W333 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R333 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W334 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R334 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W335 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R335 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W336 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R336 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W337 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R337 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W338 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R338 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W339 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R339 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W340 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R340 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W341 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R341 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W342 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R342 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W343 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R343 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W344 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R344 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W345 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R345 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W346 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R346 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W347 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R347 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W348 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R348 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W349 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R349 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W350 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R350 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W351 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R351 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W352 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R352 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W353 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R353 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W354 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R354 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W355 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R355 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W356 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R356 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W357 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R357 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W358 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R358 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W359 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R359 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W360 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R360 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W361 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R361 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W362 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R362 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W363 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R363 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W364 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R364 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W365 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R365 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W366 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R366 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W367 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R367 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W368 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R368 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W369 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R369 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W370 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R370 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W371 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R371 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W372 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R372 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W373 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R373 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W374 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R374 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W375 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R375 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W376 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R376 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W377 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R377 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W378 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R378 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W379 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R379 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W380 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R380 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W381 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R381 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W382 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R382 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W383 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R383 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W384 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R384 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W385 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R385 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W386 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R386 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W387 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R387 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W388 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R388 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W389 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R389 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W390 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R390 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W391 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R391 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W392 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R392 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W393 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R393 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W394 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R394 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W395 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R395 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W396 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R396 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W397 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R397 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W398 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R398 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W399 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R399 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W400 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R400 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W401 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R401 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W402 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R402 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W403 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R403 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W404 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R404 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W405 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R405 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W406 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R406 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W407 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R407 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W408 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R408 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W409 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R409 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W410 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R410 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W411 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R411 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W412 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R412 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W413 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R413 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W414 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R414 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W415 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R415 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W416 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R416 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W417 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R417 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W418 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R418 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W419 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R419 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W420 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R420 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W421 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R421 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W422 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R422 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W423 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R423 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W424 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R424 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W425 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R425 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W426 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R426 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W427 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R427 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W428 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R428 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W429 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R429 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W430 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R430 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W431 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R431 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W432 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R432 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W433 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R433 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W434 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R434 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W435 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R435 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W436 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R436 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W437 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R437 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W438 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R438 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W439 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R439 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W440 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R440 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W441 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R441 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W442 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R442 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W443 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R443 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W444 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R444 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W445 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R445 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W446 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R446 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W447 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R447 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W448 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R448 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W449 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R449 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W450 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R450 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W451 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R451 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W452 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R452 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W453 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R453 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W454 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R454 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W455 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R455 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W456 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R456 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W457 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R457 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W458 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R458 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W459 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R459 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W460 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R460 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W461 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R461 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W462 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R462 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W463 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R463 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W464 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R464 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W465 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R465 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W466 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R466 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W467 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R467 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W468 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R468 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W469 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R469 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W470 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R470 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W471 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R471 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W472 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R472 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W473 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R473 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W474 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R474 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W475 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R475 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W476 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R476 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W477 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R477 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W478 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R478 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W479 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R479 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W480 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R480 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W481 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R481 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W482 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R482 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W483 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R483 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W484 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R484 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W485 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R485 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W486 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R486 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W487 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R487 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W488 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R488 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W489 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R489 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W490 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R490 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W491 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R491 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W492 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R492 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W493 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R493 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W494 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R494 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W495 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R495 Bconin(1) ret=00000000 hi=00000000 after 1 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W496 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R496 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W497 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R497 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W498 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R498 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W499 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R499 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W500 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R500 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W501 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R501 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W502 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R502 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W503 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R503 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W504 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R504 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W505 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R505 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W506 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R506 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W507 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R507 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W508 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R508 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W509 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R509 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W510 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R510 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W511 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R511 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W512 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R512 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W513 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R513 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W514 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R514 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W515 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R515 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W516 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R516 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W517 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R517 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W518 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R518 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W519 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R519 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W520 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R520 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W521 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R521 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W522 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R522 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W523 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R523 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W524 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R524 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W525 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R525 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W526 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R526 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W527 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R527 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W528 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R528 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W529 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R529 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W530 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R530 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W531 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R531 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W532 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R532 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W533 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R533 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W534 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R534 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W535 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R535 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W536 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R536 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W537 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R537 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W538 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R538 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W539 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R539 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W540 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R540 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W541 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R541 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W542 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R542 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W543 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R543 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W544 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R544 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W545 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R545 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W546 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R546 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W547 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R547 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W548 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R548 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W549 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R549 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W550 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R550 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W551 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R551 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W552 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R552 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W553 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R553 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W554 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R554 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W555 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R555 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W556 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R556 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W557 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R557 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W558 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R558 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W559 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R559 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W560 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R560 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W561 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R561 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W562 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R562 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W563 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R563 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W564 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R564 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W565 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R565 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W566 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R566 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W567 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R567 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W568 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R568 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W569 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R569 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W570 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R570 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W571 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R571 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W572 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R572 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W573 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R573 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W574 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R574 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W575 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R575 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W576 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R576 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W577 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R577 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W578 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R578 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W579 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R579 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W580 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R580 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W581 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R581 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W582 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R582 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W583 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R583 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W584 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R584 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W585 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R585 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W586 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R586 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W587 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R587 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W588 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R588 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W589 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R589 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W590 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R590 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W591 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R591 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W592 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R592 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W593 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R593 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W594 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R594 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W595 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R595 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W596 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R596 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W597 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R597 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W598 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R598 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W599 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R599 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W600 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R600 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W601 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R601 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W602 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R602 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W603 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R603 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W604 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R604 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W605 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R605 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W606 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R606 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W607 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R607 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W608 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R608 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W609 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R609 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W610 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R610 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W611 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R611 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W612 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R612 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W613 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R613 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W614 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R614 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W615 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R615 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W616 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R616 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W617 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R617 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W618 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R618 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W619 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R619 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W620 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R620 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W621 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R621 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W622 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R622 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W623 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R623 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W624 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R624 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W625 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R625 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W626 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R626 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W627 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R627 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W628 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R628 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W629 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R629 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W630 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R630 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W631 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R631 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W632 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R632 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W633 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AWPROBE|R633 Bconin(1) ret=00000000 hi=00000000 after 0 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 4
+AWPROBE|W634 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 4)
+
+AW

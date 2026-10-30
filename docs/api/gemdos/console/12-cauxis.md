@@ -178,3 +178,9 @@ FS11 / IO01 prep (2026-10-13, user decision 1): see `docs/api/gemdos/file/3f-fre
 `Cauxis()` = `constat(1)` → `Bconstat(1)` of the AUX entry = **0** (no byte). **Unchanged by the 2026-10-13 option-A revision** (AUX = "port present, no cable", see `docs/api/gemdos/file/3f-fread.md` "NewTOS implementation notes" item 1a): EmuTOS `bconstat1` also returns 0 on an empty iorec (`bios/serport.c:255-258`, `:191-200`). The BDOS typeahead check in `constat` has nothing to find (no cable → no input, so `conbrk(1)` never fills the AUX typeahead; NewTOS has the typeahead since TASK/CON01, 2026-10-18). See the D-003 note in `03-cauxin.md`
 (spec said the AUX typeahead is never populated; `conbrk(1)` can populate it in
 EmuTOS).
+
+**[XBIOS15] 2026-10-29 (qemu-virt), [BIOS09] 2026-10-30 (real Pi 4):** the AUX
+entry is the kernel's serial driver over device 0's input ring on both boards;
+`Bconstat(1)`, and so `Cauxis()`, is `-1` while a received byte waits, else `0`
+(`docs/api/bios/01-bconstat.md`, XBIOS15 and BIOS09 notes). The **0** above is
+the empty-ring answer and the device-table default the host tests see.

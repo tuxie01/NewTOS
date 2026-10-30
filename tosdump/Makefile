@@ -20,6 +20,8 @@
 #   make axprobe-m68k     AXPROBE.PRG, a kbdvec hook during Bconin(1)
 #                         (probes/axprobe.c)
 #   make axprobe-newtos   AXPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make awprobe-newtos   AWPROBE.NAP, Bconin(1) waits on the Pi, the kbdvec
+#                         hook keeps firing (probes/awprobe.c; NewTOS only)
 #   make mdprobe-m68k     MDPROBE.PRG, BIOS devices 3 (MIDI) and 4 (IKBD)
 #                         (probes/mdprobe.c)
 #   make mdprobe-newtos   MDPROBE.NAP, the same probe for NewTOS (AArch64)
@@ -70,7 +72,7 @@ BUILD := build
         dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
         scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
         pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
-        axprobe-m68k axprobe-newtos mdprobe-m68k mdprobe-newtos \
+        axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
         sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
         vwprobe-m68k vwprobe-newtos \
         host-test clean
@@ -78,7 +80,7 @@ all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
      scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
      pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
-     axprobe-m68k axprobe-newtos mdprobe-m68k mdprobe-newtos \
+     axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
      sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
      vwprobe-m68k vwprobe-newtos host-test
 
@@ -190,6 +192,12 @@ $(BUILD)/AXPROBE.PRG: probes/axprobe.c | $(BUILD)
 axprobe-newtos: $(BUILD)/AXPROBE.NAP
 $(BUILD)/AXPROBE.NAP: probes/axprobe.c build-axprobe-newtos.sh | $(BUILD)
 	./build-axprobe-newtos.sh $@
+
+# The Bconin(1)-waits probe for the real-Pi step (TASK/BIOS09): NewTOS only,
+# waits in Bconin(1) for good without a cable. Run by probes/run-awprobe.sh.
+awprobe-newtos: $(BUILD)/AWPROBE.NAP
+$(BUILD)/AWPROBE.NAP: probes/awprobe.c build-awprobe-newtos.sh | $(BUILD)
+	./build-awprobe-newtos.sh $@
 
 # The MIDI/IKBD device probe (TASK/BIOS04): no disk; ends waiting in
 # Bconin(3). Run by probes/run-mdprobe.sh.

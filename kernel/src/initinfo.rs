@@ -816,8 +816,7 @@ pub mod diag {
     // the boot screen was drawn, value `0x0000`. Then two functions could
     // advance the ring — `console::serial_rx_byte` (PL011 RX IRQ) and
     // `console::push_rx` (the IKBD decoder); since XBIOS15 only `push_rx`
-    // does (serial bytes go to `Iorec(0)` on qemu-virt, are dropped on
-    // rpi4). Tagging every push still names the producer directly instead
+    // does (serial bytes go to `Iorec(0)`, on rpi4 since BIOS09). Tagging every push still names the producer directly instead
     // of leaving it to be inferred.
 
     /// [`note_push`] source tag: the IKBD decoder (USB-HID keyboard).
@@ -827,13 +826,12 @@ pub mod diag {
     pub static PUSH_LOG: [AtomicU32; 4] = [const { AtomicU32::new(0) }; 4];
     /// Total number of pushes into the IKBD queue (may exceed [`PUSH_LOG`]).
     pub static PUSH_N: AtomicU32 = AtomicU32::new(0);
-    /// Serial bytes the board's console profile discarded instead of queueing
-    /// them as keys (real Pi-4: UART0 is debug-only, CON is the USB-HID
-    /// keyboard). Counts every spurious character the floating RXD0 line
-    /// clocks in during a whole boot.
-    pub static SERIAL_DROPPED: AtomicU32 = AtomicU32::new(0);
-    /// The first discarded serial byte, `+1` (0 = none). See
-    /// [`SERIAL_DROPPED`].
+    /// Serial bytes the PL011 receive interrupt delivered (they go to the AUX
+    /// ring of `Iorec(0)`, never to the key queue; BIOS09). Counts every
+    /// spurious character the floating RXD0 line clocks in during a whole
+    /// boot.
+    pub static SERIAL_RX: AtomicU32 = AtomicU32::new(0);
+    /// The first received serial byte, `+1` (0 = none). See [`SERIAL_RX`].
     pub static SERIAL_FIRST: AtomicU32 = AtomicU32::new(0);
     /// Bytes the UART init flush found already in the RX FIFO — i.e. left
     /// there by the firmware or clocked in during the GPIO ALT0 switch,
@@ -851,9 +849,9 @@ pub mod diag {
         }
     }
 
-    /// Record one serial byte dropped by the board's console profile.
-    pub fn note_serial_drop(b: u8) {
-        if SERIAL_DROPPED.fetch_add(1, Relaxed) == 0 {
+    /// Record one serial byte delivered by the PL011 receive interrupt.
+    pub fn note_serial_rx(b: u8) {
+        if SERIAL_RX.fetch_add(1, Relaxed) == 0 {
             SERIAL_FIRST.store(b as u32 + 1, Relaxed);
         }
     }
@@ -1058,8 +1056,8 @@ pub mod diag {
                 d(&UART_GIC) & 1, (d(&UART_GIC) >> 1) & 1,
                 (uart_gic() >> 32) & 0xFFFF, uart_gic() & 3),
             format!("IKBD queue pushes/log    : {} / {}", PUSH_N.load(Relaxed), plog),
-            format!("serial RX dropped/first  : {} / {}",
-                SERIAL_DROPPED.load(Relaxed), opt_byte(&SERIAL_FIRST)),
+            format!("serial RX bytes/first    : {} / {}",
+                SERIAL_RX.load(Relaxed), opt_byte(&SERIAL_FIRST)),
             format!("UART init flush cnt/1st  : {} / {}",
                 UART_FLUSHED.load(Relaxed), opt_byte(&UART_FLUSH_FIRST)),
             format!("CNTPCT now / CNTFRQ now : {cnt_now} / {frq}"),

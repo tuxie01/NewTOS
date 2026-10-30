@@ -302,7 +302,8 @@ port (`bios/serport.c:962-966,972`). Code:
 
 **Peripheral / driver.** The Pi has one TOS-visible serial port — **PL011
 UART0** (`kernel/src/drivers/bcm2711/pl011.rs`) behind BIOS device 1 (AUX;
-on raspi4b the "no cable" entry, on qemu-virt the serial line, XBIOS15). It
+the serial input ring on both boards: qemu-virt since XBIOS15, raspi4b since
+BIOS09; output discarded, the "no cable" side). It
 is entry 0 of the table, device 6. There is no SCC and no second MFP, so the
 table has no further entries — the shape EmuTOS gives a machine without them.
 

@@ -364,9 +364,11 @@ Silizium; QEMU verdeckt fehlende Invalidierungen oft.
    `0x02300042` (Shift-Bit im oberen Byte gesetzt, Shift zum Zeitpunkt des
    Tastendrucks; QEMU-Wert aus dem XBIOS01-Lauf).
 10. **AUX wartet ohne Kabel** (aus BIOS09, Anwender 2026-10-30; kein
-   UART-Adapter angesteckt): Sonde aus `TASK/BIOS09.md` starten. `Bconin(1)`
-   kehrt nicht zurueck (auch nicht einmal mit `0`, siehe die GPIO-15-Falle im
-   Ticket), der `kbdvec`-Haken der Sonde zaehlt bei Tastendruck weiter,
-   Strg+Alt+Entf startet neu.
+   UART-Adapter angesteckt): `AWPROBE.NAP` (`tosdump/probes/awprobe.c`,
+   gebaut mit `tosdump/build-awprobe-newtos.sh`) starten. `Bconin(1)` kehrt
+   nicht zurueck; der `kbdvec`-Haken der Sonde zeigt bei Tastendruck weiter
+   Bytes; Strg+Alt+Entf startet neu. Kehrt die erste Runde einmal mit `0`
+   zurueck und wartet die zweite, ist das die GPIO-15-Falle aus
+   `TASK/BIOS09.md` (eigener Befund, kein Fehlschlag des Wartens).
 11. Ergebnis mit Seriellprotokoll und Fotos in einem Lauf unter
    `measurements/` und in `docs/HW-TEST-LOG.md`.

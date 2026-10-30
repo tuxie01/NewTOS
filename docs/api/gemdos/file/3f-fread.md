@@ -519,14 +519,29 @@ Trigger: FS11 acceptance finding 1 (`measurements/measurement-2026-10-13-libc-ma
 |---|---|---|
 | `Bconout(1,b)` | accepts, discards, returns **1** | `bconout1` returns `1L`, `bios/serport.c:323` (MFP, interrupt path `:306-323`; debug-print variant `:305`; coldfire `:301` also 1) |
 | `Bcostat(1)` | **-1** (ready) always | `bcostat1` returns `-1L` unless the out-ring is full (`bios/serport.c:271-283`, `:282`); NewTOS discards at once so the ring never fills |
-| `Bconstat(1)` | **0** (unchanged) | EmuTOS `bconstat1` → `bconstat_iorec` returns 0 on empty iorec (`serport.c:255-258`, `:191-200`): same value |
-| `Bconin(1)` | **0, non-blocking** (unchanged) | **Documented divergence from a real port:** EmuTOS `bconin1` blocks forever on an empty iorec (`serport.c:260-263`, loop `:202-205`); NewTOS stays non-blocking so programs do not hang |
+| `Bconstat(1)` | **0** (table default; on both boards `-1` while a received byte waits, see BIOS09 below) | EmuTOS `bconstat1` → `bconstat_iorec` returns 0 on empty iorec (`serport.c:255-258`, `:191-200`): same value |
+| `Bconin(1)` | **0, non-blocking** — **table default only** (host tests, before the kernel installs its driver); on both boards it **waits**, see BIOS09 below | EmuTOS `bconin1` blocks forever on an empty iorec (`serport.c:260-263`, loop `:202-205`). The earlier "documented divergence" (non-blocking so programs do not hang) is **revoked** by BIOS09 (user decision 2026-10-30) |
 
 **[XBIOS15] 2026-10-29 — qemu-virt:** AUX there is a serial driver over device 0's
 input ring (`docs/api/bios/02-bconin.md`, XBIOS15 note): `Bconstat(1)` is `-1` while a
 received byte waits, `Bconin(1)` waits for a byte as EmuTOS' `bconin1`, so
-`Fread` on AUX reads received bytes and waits for the rest (R17 holds on real Pi 4
-only). `Bconout(1)`/`Bcostat(1)` are the values in this table on both boards.
+`Fread` on AUX reads received bytes and waits for the rest.
+`Bconout(1)`/`Bcostat(1)` are the values in this table on both boards.
+
+**[BIOS09] 2026-10-30 — real Pi 4 too (user decision, option (a)):** the kernel
+installs the same driver on `board-rpi4` (`kernel/src/console.rs:192@AuxSerial`,
+`:231@aux_read_blocking`, `:254@install_aux`; the receive interrupt puts every
+byte into device 0's input ring, `:170@serial_rx_byte`). `Bconin(1)` — and with
+it `Bconin(6)` (Bconmap's AUX entry, BIOS08), `Cauxin` and `Fread` on AUX —
+waits for a byte as EmuTOS' `bconin1`, with or without a cable; while it waits
+no other process runs, only the waiting process's own `kbdvec` hook (restart,
+XBIOS18; `docs/api/xbios/22-kbdvbase.md` C3 "O1"), and Ctrl+Alt+Del stays
+effective. The non-blocking `Bconin(1)` = 0 and R17/R18/R24 below remain only
+the device-table default the host tests see; no COMPATIBILITY entry. Known
+effect on the Pi without an adapter: the floating RXD0 line (GPIO 15, no pull)
+clocks in one spurious `0x00` at boot, so the first `Bconin(1)` of such a boot
+can return `0` once instead of waiting (`TASK/BIOS09.md`; a pull on the pin is a
+hardware change and not part of BIOS09).
 
 No-handshake argument (*cited*): `bconout1` waits only on `bcostat1` (`serport.c:296`), which tests ring space, not CTS; `iorec_init` sets `FLOW_CTRL_NONE` (`serport.c:89`, `serport.h:46`); `flowctrl` is never read by any tx/rx path (only assigned `serport.c:238,793`; `serport.h:61` comment "TODO, flow control"). So EmuTOS software does not block on CTS with no cable. (*Inferred*, not read: whether the MFP hardware gates its transmitter on CTS is hardware behaviour outside the software; the contract here is the returned value.) Not modelled: ring back-pressure, `rsconf`/baud/UCR state; a later UART driver (`TASK/IO01.md`) replaces the whole entry. PRN (0) stays absent, unchanged; MIDI (3) is not absent since BIOS04 (item 1).
 

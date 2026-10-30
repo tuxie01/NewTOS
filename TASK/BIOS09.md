@@ -1,6 +1,6 @@
 # BIOS09 — `Bconin` auf AUX, MIDI und Bconmap-Ports kehrt sofort mit 0 zurueck
 
-Status: **OFFEN** (entschieden 2026-10-30, Developer) · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
+Status: **UMGESETZT** 2026-10-30, Pi-Messung offen (`TASK/MEM12.md` Prueffolge Punkt 10) · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
 
 ## Sachverhalt
 
@@ -39,7 +39,7 @@ Wartezeit ab, der Haken laeuft, der Trap startet neu. So auch EmuTOS (IKBD-
 Interrupt springt waehrend `bconin1` durch `kbdvec`,
 `references/emutos/bios/aciavecs.S:407-414`). Strg+Alt+Entf bleibt wirksam.
 
-## Empfangspfad auf rpi4 (Lead, 2026-10-30) — vorhanden, Bytes werden verworfen
+## Empfangspfad auf rpi4 (Lead, 2026-10-30, Stand `f065a705` vor dem Fix; Zeilen nachgezogen) — vorhanden, Bytes wurden verworfen
 
 - RX-Interrupt wird auf beiden Boards eingeschaltet, unabhaengig von
   `serial=on` (der Schalter gilt nur fuer TX):
@@ -47,12 +47,12 @@ Interrupt springt waehrend `bconin1` durch `kbdvec`,
   `kernel/src/drivers/bcm2711/pl011.rs:186@enable_rx_interrupt` (RXIM+RTIM).
 - IRQ-Eintrag: `kernel/src/drivers/gic.rs:210@pl011_rx_drain` →
   `kernel/src/console.rs:146@pl011_rx_drain`.
-- Endpunkt rpi4: `kernel/src/console.rs:196@serial_rx_byte` verwirft das Byte
+- Endpunkt rpi4: `kernel/src/console.rs:181@serial_rx_byte` verwirft das Byte
   (nur `initinfo-diag` zaehlt es). qemu-virt: `kernel/src/console.rs:169@serial_rx_byte`
   → `iorec::push_serial`.
-- Lesen: `kernel/src/console.rs:217@AuxSerial`, Warten
-  `kernel/src/console.rs:272@aux_read_blocking`, Einbau
-  `kernel/src/console.rs:304@install_aux` (Aufruf
+- Lesen: `kernel/src/console.rs:194@AuxSerial`, Warten
+  `kernel/src/console.rs:231@aux_read_blocking`, Einbau
+  `kernel/src/console.rs:254@install_aux` (Aufruf
   `kernel/src/lib.rs:367@install_aux`) — alle `#[cfg(feature = "board-qemu-virt")]`.
 - Laut `docs/MEMORY.md` QUIRK-002-Korrektur und Messung 2026-09-04 wird die
   PL011-RX-IRQ auf der echten Pi zugestellt.
@@ -105,4 +105,22 @@ Interrupt springt waehrend `bconin1` durch `kbdvec`,
   feuert weiter.
 - Kein vorher gleicher Fall in `bios-r1.tsv`, `bios-core-r1.tsv`,
   `xbios-chardev-r1.tsv`, `xbios-system-r1.tsv` weicht neu ab (raspi4b).
+
+## Stand 2026-10-30
+
+- Umgesetzt: AUX-Treiber auf beiden Boards (`kernel/src/console.rs@AuxSerial`,
+  `kernel/src/lib.rs@install_aux`), Warteschleife nach
+  `tos-api/src/bios/chardev.rs@aux_read` verschoben (Hosttest
+  `tos-api/tests/xbios_kbdvecs.rs@aux_wait_reads_the_ring_and_gives_way_only_to_the_hook`).
+- Hosttests 1894/0/1; vier Tabellen vorher/nachher ohne neue Abweichung;
+  Haengesonde `BCHANG.LOG` byte-gleich `HANG-EMUTOS-tt-1`/`-6`.
+  Beleg `measurements/measurement-2026-10-30-bios09/RUNINFO.TXT`.
+- Sonde `tosdump/probes/awprobe.c` in QEMU raspi4b: Haken feuert waehrend
+  `Bconin(1)`, Strg+Alt+Entf wirkt.
+- Offen: echte Pi (MEM12 Punkt 10); GPIO-15-Falle (Anwenderentscheidung);
+  apitest BC03 erwartet `Bconstat(1) == 0`, mit der Falle auf der Pi ohne
+  Adapter evtl. `-1`; qemu-virt-Lauf `tosdump/probes/run-axprobe.sh newtos-virt`
+  nach dem Umzug der Schleife nicht wiederholt (Boot bis Desktop ja).
+- `tosdump/probes/run-axprobe.sh` Kopf "newtos-rpi4 … returns 0 at once"
+  ist veraltet (SPEC02).
 

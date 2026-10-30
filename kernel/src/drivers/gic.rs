@@ -208,8 +208,8 @@ pub extern "C" fn rust_irq_handler(frame: &mut crate::arch::aarch64::exceptions:
 
     let tick = intid == crate::drivers::timer::TIMER_INTID;
     if intid == BOARD_PL011_INTID {
-        // Drain the PL011 RX FIFO; `serial_rx_byte` routes each byte
-        // (qemu-virt: `Iorec(0)`'s input ring, rpi4: dropped).
+        // Drain the PL011 RX FIFO; `serial_rx_byte` puts each byte into
+        // `Iorec(0)`'s input ring, the one AUX reads (both boards; BIOS09).
         crate::console::pl011_rx_drain();
     } else if tick {
         // 200 Hz system tick — re-arm and advance `_hz_200`.

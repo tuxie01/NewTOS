@@ -30,12 +30,12 @@
 //! fills the MIDI ring: NewTOS has no MIDI driver behind it (E5); the BIOS
 //! MIDI entry reads it ([`midi_pending`], [`pop_midi`], `Bconstat(3)`/
 //! `Bconin(3)`, BIOS04), so a byte a program puts there is what `Bconin(3)`
-//! returns, as on EmuTOS. Device 0's input ring is filled on
-//! qemu-virt by the serial receive interrupt ([`push_serial`], EmuTOS
-//! `push_serial_iorec` / the SCC receive handler, XBIOS15) and read by the
-//! board's AUX driver ([`pop_serial`], [`serial_pending`]); on real Pi 4 it
-//! stays empty (serial input is dropped there, E5 (a)). Its output ring
-//! stays empty everywhere: AUX output is discarded at once.
+//! returns, as on EmuTOS. Device 0's input ring is filled on both boards
+//! by the serial receive interrupt ([`push_serial`], EmuTOS
+//! `push_serial_iorec` / the SCC receive handler; XBIOS15 qemu-virt, BIOS09
+//! rpi4) and read by the kernel's AUX driver ([`pop_serial`],
+//! [`serial_pending`]). Its output ring stays empty everywhere: AUX output
+//! is discarded at once.
 //!
 //! # The page is program data (E1, E4)
 //!
@@ -58,7 +58,7 @@
 //!
 //! # Concurrency
 //!
-//! Every operation runs with IRQs masked: on qemu-virt the PL011 receive
+//! Every operation runs with IRQs masked: the PL011 receive
 //! interrupt produces into device 0's input ring
 //! (`kernel::console::serial_rx_byte`) while a consumer may run with IRQs
 //! open (the blocking reads unmask them while they wait), as EmuTOS'
@@ -515,7 +515,7 @@ pub fn midi_pending() -> bool {
 /// push in `scc_rx_interrupt_handler` (`:647-683`, Falcon SCC B): the ring
 /// `Iorec(0)` returns, the one `bconstat1`/`bconin1` read. `false` when the
 /// ring is full and the byte is dropped, as on EmuTOS. Called from the
-/// receive interrupt (XBIOS15).
+/// receive interrupt on both boards (XBIOS15, BIOS09).
 pub fn push_serial(b: u8) -> bool {
     with_page(|p| p.push_byte(AUX_IN_IDX, b))
 }

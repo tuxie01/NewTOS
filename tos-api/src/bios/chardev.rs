@@ -26,9 +26,9 @@
 //! framebuffer): keyboard **input** on CON (2) only, screen **output** on
 //! CON (2) and raw-CON (5). AUX (1) is a serial port with **no cable**
 //! ([`AuxNoCable`], `3f-fread.md` item 1a): output accepted and discarded,
-//! always ready, no input — on qemu-virt the kernel replaces it at boot with
-//! a driver that reads the serial input ring of `Iorec(0)` (XBIOS15,
-//! `kernel::console::AuxSerial`). MIDI (3) and IKBD (4) answer as on the
+//! always ready, no input — on both boards the kernel replaces it at boot
+//! with a driver that waits on the serial input ring of `Iorec(0)` (XBIOS15,
+//! BIOS09, `kernel::console::AuxSerial`). MIDI (3) and IKBD (4) answer as on the
 //! reference machine, whose MIDI and IKBD ACIAs always exist (BIOS04, user
 //! decision 2026-10-29): output ready and accepted, the byte discarded
 //! ([`MidiPort`], [`IkbdPort`]); MIDI input is the `Iorec(2)` ring, which
@@ -125,14 +125,14 @@ impl CharDevice for Absent {
 /// EmuTOS' `bconout1` with an MFP port queues the byte and returns `1`
 /// (`bios/serport.c:289-330`, no CTS wait — `flowctrl` is never read) and
 /// `bcostat1` is `-1` while the out-ring has room (`serport.c:271-283`);
-/// NewTOS discards at once, so the "ring" never fills. With no cable no byte
-/// ever arrives: `bconstat1` on an empty iorec is `0` (`serport.c:255-258`).
-/// `Bconin` returns `0` **without blocking** — a documented divergence from
-/// `bconin1`, which would wait forever (`serport.c:260-263`). An absent AUX
+/// NewTOS discards at once, so the "ring" never fills. An absent AUX
 /// (`Bconout` 0) made `Fwrite(2, …)` return 0 and mintlib's stderr write
-/// loop retry forever (FS11 acceptance finding 1). A UART driver
-/// (`TASK/IO01.md`) replaces the whole entry — on qemu-virt the kernel's
-/// `AuxSerial` does (XBIOS15; it keeps this entry's output side).
+/// loop retry forever (FS11 acceptance finding 1). The input side here
+/// (`Bconstat` 0, `Bconin` 0 without blocking) is only the table default the
+/// host tests see: at boot the kernel's `AuxSerial` (a UART driver,
+/// `TASK/IO01.md`) replaces the whole entry on both boards, keeps this output
+/// side, and its `Bconin(1)` waits for a byte as `bconin1` does
+/// (`serport.c:260-263`; XBIOS15, BIOS09).
 pub struct AuxNoCable;
 
 impl CharDevice for AuxNoCable {
@@ -163,7 +163,7 @@ impl CharDevice for AuxNoCable {
 ///   zero-extended (`bconin3`, `:35-62`) — with no MIDI driver that is
 ///   forever, as on EmuTOS with nothing on the MIDI cable. The wait keeps
 ///   the input pumped and, on the trap path, gives way to a `kbdvec` hook,
-///   like the AUX wait on qemu-virt (XBIOS15/XBIOS18, [`midi_read`]).
+///   like the AUX wait (XBIOS15/XBIOS18/BIOS09, [`midi_read`]).
 /// - Output status: `-1` (`bcostat3` with an empty ACIA transmit register,
 ///   `:66-81`); [`bcostat_handle`]'s swap makes it the answer of
 ///   `Bcostat(4)`.
@@ -526,8 +526,8 @@ pub fn pack_console_key(entry: u32) -> Long {
 /// [`CharDevice::bconin_restartable`]. For CON (2) it blocks and returns the
 /// packed console LONG (IKBD scancode in bits 16-23, ASCII in bits 0-7) — or,
 /// when a `kbdvec` hook has bytes waiting, requests a restart (KEYS02) and
-/// returns `0`, which the trap handler discards; the qemu-virt AUX driver's
-/// wait gives way the same way (XBIOS18), and so does the MIDI wait
+/// returns `0`, which the trap handler discards; the kernel's AUX driver's
+/// wait gives way the same way (XBIOS18, BIOS09), and so does the MIDI wait
 /// ([`MidiPort`], BIOS04). An absent device returns `0` immediately.
 ///
 /// Shared with the GEMDOS pass-throughs (`Cauxin` = `Bconin(1)`, EmuTOS
@@ -553,8 +553,8 @@ pub fn bconin_handle(dev: u16) -> Long {
 /// the ASCII value in bits 0-7 (non-ASCII keys → ASCII 0 + scancode), per
 /// `docs/api/bios/02-bconin.md`. MIDI (3) waits for a byte in the `Iorec(2)`
 /// ring ([`MidiPort`]); IKBD (4) and absent devices return `0` without
-/// blocking. Handle 6 reads the AUX entry as handle 1 does (on qemu-virt it
-/// waits), 7 and up return `0` ([`device`], BIOS08).
+/// blocking. Handle 6 reads the AUX entry as handle 1 does (it waits with
+/// the kernel's driver, BIOS09), 7 and up return `0` ([`device`], BIOS08).
 pub fn bconin(args: &TrapArgs) -> Long {
     bconin_handle(args.arg_u16(0))
 }
@@ -579,4 +579,43 @@ pub fn bconout(args: &TrapArgs) -> Long {
 /// up `0` ([`device`], BIOS08).
 pub fn bcostat(args: &TrapArgs) -> Long {
     bcostat_handle(args.arg_u16(0))
+}
+
+/// `bconin1`'s wait and read (`bios/serport.c:260-263` → `bconin_iorec`,
+/// `:202-210`, and `get_iorecbuf`, `:171-189`): the oldest byte of device
+/// 0's input ring ([`iorec::pop_serial`]), waiting until one arrives. The
+/// loop of the kernel's AUX driver on both boards (`kernel::console`'s
+/// `AuxSerial`; XBIOS15, BIOS09), here so the host tests run the same code.
+///
+/// Each pass pumps the host's input ([`host::Host::pump_input`]: keyboard
+/// and mouse keep being decoded, as EmuTOS' interrupts keep running while
+/// `bconin1` spins). When nothing is queued it calls `idle` — the kernel
+/// passes a `wfi` with IRQs open, so the next PL011 receive or timer
+/// interrupt wakes it; the receive interrupt is the ring's producer. It
+/// never gives the CPU to another process (user 2026-10-29/2026-10-30).
+///
+/// With `give_way` (the trap entry, `bconin_restartable`) it returns `None`
+/// as soon as the running process has bytes queued for its `kbdvec` hook
+/// ([`kbdvecs::pending_for_running`]; XBIOS18, `docs/api/xbios/22-kbdvbase.md`
+/// C3 "O1"): EmuTOS' IKBD interrupt jumps through `kbdvec` while `bconin1`
+/// spins (`bios/aciavecs.S:407-414`), NewTOS delivers the bytes on the way
+/// back to EL0 — the caller requests a restart, the hook runs, and the `svc`
+/// waits again. Nothing is consumed before the byte arrives, so the restart
+/// has no side effect. Without `give_way` it only returns with a byte.
+pub fn aux_read(give_way: bool, mut idle: impl FnMut()) -> Option<u8> {
+    loop {
+        if let Some(b) = iorec::pop_serial() {
+            return Some(b);
+        }
+        if let Some(h) = host::host() {
+            h.pump_input();
+        }
+        if iorec::serial_pending() {
+            continue;
+        }
+        if give_way && kbdvecs::pending_for_running() {
+            return None;
+        }
+        idle();
+    }
 }

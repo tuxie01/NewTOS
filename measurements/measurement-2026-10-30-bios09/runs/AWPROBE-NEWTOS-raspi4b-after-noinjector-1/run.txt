@@ -1,0 +1,7 @@
+awprobe run (2026-10-30T11:27:53Z)
+tree      f065a705063b7939352f695d6e8e17496ee90def 12 dirty paths in kernel tos-api tos-types tosdump/probes
+probe     AWPROBE.NAP e5d9954293fde76e9f85740b6e84e071ce8d194943ac27cc18d67415110fcee4
+kernel    71754052af02fd655c0e74a0d52c401e1da11aa2733245c9f7c4ed84075fa73f /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/after-kernel8.img
+serial    'Q' 3 s after AWPROBE:WAIT
+card      c5ad54161a91697062e3926bd33f387e470ef2953de850e6d64413f6b2df1a6e (tools/mkcard.sh, C:\AWPROBE.NAP, #Z autorun)
+booted    84d6140c0cb6eecaa525325ecb8ac4f4a73a6ade98f759e5e18ac0492fc96d63 (the clone after the run)

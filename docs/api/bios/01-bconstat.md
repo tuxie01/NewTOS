@@ -258,11 +258,21 @@ ring of device 0 (`Iorec(0)`), filled by the PL011 receive interrupt as EmuTOS'
 waits, else `0` (`bconstat_iorec`, `:191-199`); `Bconin(1)` **waits** for a byte
 and returns it zero-extended, as EmuTOS' `bconin1` (`:260-263`, `bconin_iorec`
 `:202-210`); `Bconout(1)`/`Bcostat(1)` unchanged (1, discarded / -1).
-Implementation `kernel/src/console.rs:216@AuxSerial`, installed at boot by
+Implementation `kernel/src/console.rs:192@AuxSerial`, installed at boot by
 `install_aux`; measured equal to the oracle
 (`docs/audits/2026-10-29-xbios15-serial-rx.md` SERRX-001,
-`measurements/measurement-2026-10-29-xbios15/RUNINFO.TXT`). Real Pi 4 keeps the
-"no cable" entry above (serial input is dropped there).
+`measurements/measurement-2026-10-29-xbios15/RUNINFO.TXT`). Real Pi 4 kept the
+"no cable" entry above (serial input was dropped there) until BIOS09.
+
+**[BIOS09] 2026-10-30 — real Pi 4 too (user decision, option (a)):** the
+kernel installs the same AUX driver on `board-rpi4`
+(`kernel/src/console.rs:254@install_aux`); every received byte goes into
+device 0's input ring (`kernel/src/console.rs:170@serial_rx_byte`), so
+`Bconstat(1)` (and `Bconstat(6)`, BIOS08) is `-1` while one waits, else `0`,
+on both boards. The "no cable" input values above (`Bconstat(1)` always `0`)
+remain only the device-table default the host tests see. Without an adapter
+the floating RXD0 line can put one spurious `0x00` into the ring at boot
+(`TASK/BIOS09.md`); `Bconstat(1)` then answers `-1` until it is read.
 
 **[BIOS04] 2026-10-29 — MIDI (3) and IKBD (4), user decision "like the
 oracle":** `Bconstat(3)` is EmuTOS' `bconstat3` over the MIDI ring of
@@ -279,8 +289,8 @@ sides, `measurements/measurement-2026-10-29-bios04/RUNINFO.TXT`).
 one-entry table, `TASK/XBIOS05.md` option 1):** the `Bconmap` branch runs
 before the device table (`references/emutos/bios/bios.c:923-928`). Handle 6
 is entry 0, the AUX port: `Bconstat(6)` answers as `Bconstat(1)`, through the
-same AUX entry (`0` on `board-rpi4`, the serial input ring on
-`board-qemu-virt`). Handles from 7 up answer `0` (`map_index >= maptabsize`,
+same AUX entry (the serial input ring on both boards since BIOS09; before,
+`0` on `board-rpi4`). Handles from 7 up answer `0` (`map_index >= maptabsize`,
 `:925-926`), as EmuTOS does on a machine with one entry
 (`references/emutos/bios/serport.c:965`). Implementation
 `tos-api/src/bios/chardev.rs:411@device`,
@@ -351,6 +361,7 @@ decided, documented profile until `TASK/IO01.md`.
   leak into the CON ring instead of a proper AUX record. Recorded as
   K-series. **[XBIOS15] 2026-10-29:** no longer — on `board-rpi4` the bytes
   are dropped, on `board-qemu-virt` they fill device 0's ring and AUX reads
-  them (`Bconstat(1)` -1 while one waits; note above).
+  them (`Bconstat(1)` -1 while one waits; note above). **[BIOS09]
+  2026-10-30:** on `board-rpi4` too.
 - **Datasheet.** Keyboard transport = VL805 xHCI (§2); AUX = PL011 UART0,
   BCM2711 peripherals datasheet §11.

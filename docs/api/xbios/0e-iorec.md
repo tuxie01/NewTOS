@@ -212,7 +212,7 @@ implementation".
 
 | devno | EmuTOS (Oracle) | NewTOS vor XBIOS01 (2026-10-28) | Ziel-Vertrag (seit XBIOS01 umgesetzt) |
 |---|---|---|---|
-| 0 | `EXT_IOREC *`, 256/256 + Baud/Flow/UCR | nichts: `0x0E`. Dahinter AUX ohne Kabel, `Bconstat(1)=0`, `Bconout(1)` verwirft, `Bcostat(1)=-1` (`tos-api/src/bios/chardev.rs:133@AuxNoCable`, `:229@DEVICES`) | Record vorhanden; `in` leer und bleibt es, `out` ist immer leer (NewTOS verwirft sofort, der Ring kann nie fuellen) — konsistent zum BIOS (E5) |
+| 0 | `EXT_IOREC *`, 256/256 + Baud/Flow/UCR | nichts: `0x0E`. Dahinter AUX ohne Kabel, `Bconstat(1)=0`, `Bconout(1)` verwirft, `Bcostat(1)=-1` (`tos-api/src/bios/chardev.rs:133@AuxNoCable`, `:229@DEVICES`) | Record vorhanden; `in` leer und bleibt es, `out` ist immer leer (NewTOS verwirft sofort, der Ring kann nie fuellen) — konsistent zum BIOS (E5). **Seit XBIOS15 (qemu-virt) und BIOS09 (Pi 4)** fuellt der serielle Empfang `in`, AUX liest es |
 | 1 | `&ikbdiorec`, 256, 4-Byte-Eintraege | nichts. Die Tastenschlange war `RX_RING` in `kernel/src/console.rs` (mit XBIOS01 entfernt): 128 Eintraege **`u16`** `scancode<<8\|ascii`, ohne Shift-Byte (Wort `kernel/src/ikbd.rs:316@key_word`) | Record mit 64 4-Byte-Eintraegen (E1/E2 entscheiden, ob er die Schlange **ist**) |
 | 2 | `&midiiorec`, 128, 1-Byte | nichts. MIDI ist "absent" (`chardev.rs:360@DEVICES`, Slot 3), `Midiws` verwirft (Audit BIOS-CORE-001) | Record vorhanden, leer, nie gefuellt (E5) |
 | sonst | `-1` | `0x0E` | `-1` (gemessen EmuTOS I04-I07) |
@@ -294,8 +294,8 @@ with the oracle values (E5): `ibufsiz` 256/128/256+256, `low`/`high` 64/192,
 goes through the IKBD record: push `tos-api/src/xbios/iorec.rs:459@push_key`
 (EmuTOS `push_ikbdiorec`: `tail` first, full -> dropped, 63 entries), pop
 `:374@pop_key` (`head` first, then the entry), `:384@key_pending` (`head !=
-tail`). Kernel side: `kernel/src/console.rs:198@push_rx` (IKBD decoder),
-`rx_pop`/`rx_pop_key`/`rx_pop_entry` (`kernel/src/console.rs:326@rx_pop_entry`)
+tail`). Kernel side: `kernel/src/console.rs:264@push_rx` (IKBD decoder),
+`rx_pop`/`rx_pop_key`/`rx_pop_entry` (`kernel/src/console.rs:297@rx_pop_entry`)
 for `Fread`/`Cconrs`, the AES and `Bconin(2)`. Until XBIOS15 `serial_rx_byte`
 (qemu-virt) was a second producer; since then the IKBD decoder is the only one
 on both boards. Every operation runs with IRQs masked (the qemu-virt PL011
@@ -306,12 +306,12 @@ receive interrupt fills device 0's ring, "XBIOS15" below).
 `ibufhd`/`ibuftl` below `ibufsiz` and on the entry step (4 IKBD, 1 MIDI/RS-232).
 A replaced buffer (E4 (a)) gets the kernel buffer back, emptied; bad indices
 empty the ring. The kernel never reads or writes through `ibuf`. After every
-trap all four rings are checked as well (`kernel/src/console.rs:383@check_iorec_after_trap`,
+trap all four rings are checked as well (`kernel/src/console.rs:333@check_iorec_after_trap`,
 called from `kernel/src/arch/aarch64/exceptions.rs:664@check_iorec_after_trap`), so a
 replaced buffer is noticed "at the next trap" even when no key moves. Each
 repair is warned about once per process tenancy
 (`tos-api/src/xbios/iorec.rs:555@take_warnings`, printed by
-`kernel/src/console.rs:391@report_iorec_repairs`, reset at process exit
+`kernel/src/console.rs:341@report_iorec_repairs`, reset at process exit
 `tos-api/src/bdos/process.rs:1366@release_slot`):
 `[iorec] warning: Iorec(1) IKBD buffer or size replaced by the program ...`.
 
@@ -339,8 +339,8 @@ writes it. Since BIOS04 (2026-10-29) the BIOS MIDI entry reads this ring as
 EmuTOS' `bconstat3`/`bconin3` read `midiiorec` (`references/emutos/bios/midi.c:22-62`):
 a byte a program puts into it is what `Bconin(3)` returns, and `Bconin(3)`
 waits while it is empty (`docs/api/bios/02-bconin.md`, BIOS04 note;
-`tos-api/src/xbios/iorec.rs:497@pop_midi`). Device 0: see "XBIOS15" — its input ring is filled on qemu-virt and
-stays empty on real Pi 4; its output ring stays empty on both.
+`tos-api/src/xbios/iorec.rs:497@pop_midi`). Device 0: see "XBIOS15" — its input ring is filled by the
+serial receive interrupt on both boards (real Pi 4 since BIOS09); its output ring stays empty on both.
 
 **XBIOS15 — serial receive into device 0 (qemu-virt).** The PL011 receive
 interrupt (`kernel/src/console.rs:147@pl011_rx_drain`, EmuTOS
@@ -350,17 +350,24 @@ interrupt (`kernel/src/console.rs:147@pl011_rx_drain`, EmuTOS
 input ring: `tos-api/src/xbios/iorec.rs:519@push_serial` (`push_serial_iorec`,
 `:331-343`: `tail` first, full -> dropped, 255 bytes; the byte masked with the
 record's `datamask` as the SCC path does, `:671`, 0xff unless a program wrote
-it). AUX (BIOS 1) on qemu-virt is the driver `kernel/src/console.rs:216@AuxSerial`,
+it). AUX (BIOS 1) on qemu-virt is the driver `kernel/src/console.rs:192@AuxSerial`,
 put into the device table at boot (`install_aux`): `Bconstat(1)` = `-1` while
 the ring holds a byte (`bconstat_iorec`, `:191-199`;
 `tos-api/src/xbios/iorec.rs:531@serial_pending`), `Bconin(1)` waits for a byte
 and returns it zero-extended (`bconin_iorec` + `get_iorecbuf`, `:171-210`;
 `tos-api/src/xbios/iorec.rs:525@pop_serial`), output unchanged from the
 "port present, no cable" entry (`Bconout(1)` 1 and discarded, `Bcostat(1)` -1).
-The key ring is not touched. Real Pi 4 is unchanged: the byte is dropped
-(`serial_rx_byte`, not-qemu-virt branch), AUX stays "no cable". Measured equal
+The key ring is not touched. Real Pi 4 was unchanged then: the byte was dropped
+(`serial_rx_byte`, not-qemu-virt branch), AUX stayed "no cable". Measured equal
 to the oracle table of `docs/audits/2026-10-29-xbios15-serial-rx.md`
 (SERRX-001): `measurements/measurement-2026-10-29-xbios15/RUNINFO.TXT`.
+
+**BIOS09 (2026-10-30) — real Pi 4 too.** `serial_rx_byte` has one body for both
+boards (the not-qemu-virt branch is gone) and the kernel installs the AUX driver
+on `board-rpi4` as well (`kernel/src/console.rs:254@install_aux`): received
+bytes fill device 0's input ring there, `Bconstat(1)`/`Bconin(1)` read it as
+above (user decision, `TASK/BIOS09.md`). Without an adapter the floating RXD0
+line can put one spurious `0x00` into the ring at boot.
 
 **E6.** The `kbdvec` hook gets the IKBD record in `x1`
 (`kernel/src/arch/aarch64/exceptions.rs:851@IKBD_IOREC_VA`, EmuTOS `a0 =

@@ -1,0 +1,10 @@
+# ticks after the launch of AWPROBE (200 Hz) -> IKBD bytes (tools/inject-arm.py)
+# 'a' make/break and 'b' make/break while the probe waits in Bconin(1)
+600 0x1e
+640 0x9e
+800 0x30
+840 0xb0
+# Ctrl+Alt+Del (Ctrl make, Alt make, Delete make) during the second wait
+2000 0x1d
+2010 0x38
+2020 0x53

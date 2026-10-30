@@ -1,0 +1,60 @@
+command   cargo xtask tosdump bios tosdump/cases/bios-core-r1.tsv --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-core.BIN --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-core-falcontc.BIN --out measurements/measurement-2026-10-30-bios09/runs/after-bios-core-r1 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tab/xtask-after
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    f065a705063b7939352f695d6e8e17496ee90def
+dirty     26 path(s) in git status --porcelain
+   M docs/COMPATIBILITY.md
+   M docs/analysis/deps/mapping.tsv
+   M docs/api/bios/01-bconstat.md
+   M docs/api/bios/02-bconin.md
+   M docs/api/desktop/_hw-test-checklist.md
+   M docs/api/gemdos/console/03-cauxin.md
+   M docs/api/gemdos/console/12-cauxis.md
+   M docs/api/gemdos/file/3f-fread.md
+   M docs/api/xbios/0e-iorec.md
+   M docs/api/xbios/22-kbdvbase.md
+   M docs/api/xbios/2c-bconmap.md
+   M kernel/src/console.rs
+   M kernel/src/drivers/gic.rs
+   M kernel/src/initinfo.rs
+   M kernel/src/lib.rs
+   M kernel/src/selftest_console.rs
+   M tos-api/src/bios/chardev.rs
+   M tos-api/src/gemdos/console.rs
+   M tos-api/src/xbios/iorec.rs
+   M tos-api/tests/xbios_kbdvecs.rs
+   M tosdump/Makefile
+  ?? measurements/measurement-2026-10-30-bios09/
+  ?? tosdump/build-awprobe-newtos.sh
+  ?? tosdump/probes/awprobe-drive.py
+  ?? tosdump/probes/awprobe.c
+  ?? tosdump/probes/run-awprobe.sh
+harness commit f065a705063b7939352f695d6e8e17496ee90def
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-core-r1.tsv sha256 db802dc60c30099409f82399b37c42faa3f483d802bbfa7c6694e6d9d633e4dc
+table     names the unit token u:0: no; a program path x:<path>: no
+profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+target/   own (9 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (9 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 71754052af02fd655c0e74a0d52c401e1da11aa2733245c9f7c4ed84075fa73f
+kernel ELF  sha256 e7b8281565a36433df2259c9fec1295a37e03d1a7a5bd7e29f4ef05e757a3c41 (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id f065
+DUMPBIOS.NAP sha256 3f77689336cc976473ad9a364aa1bedd59ce03aedb0f63999a8b96de25715840
+card.img.manifest: image_sha256 23aa6eeefd14dc99c9b46fb072d8e54fe5c39ab813a373136e2d1896ca58e016
+card.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tab/xtask-after/tosdump-87592/card.img sha256 23aa6eeefd14dc99c9b46fb072d8e54fe5c39ab813a373136e2d1896ca58e016 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 af3897f60f1fa20152773767c07c2e3b215a0788eae8ca425542f212ada86342
+BIOS.BIN 14112 bytes, sha256 4f21658aacd71c07191bd58ddeff1a47dd9d017f5b39015fd72242078df9889a
+BIOS.LOG 168 bytes, sha256 a11e13554afd78f7b13ea3a3b309d17e390ce07719b6ce6a8ab4a52d10479768
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 d02ad08479af5647f3f1c4d4fa7f47366bc72fa7198c4ddda2da70fcabb6a9a8
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 44 records of 320 bytes, build f065, case CRC C056A3E0
+tosdiff EMUTOS-1a7484ab-BIOS-core.BIN vs NEWTOS.BIN: exit 1, 2 of 44 cases differ
+tosdiff EMUTOS-1a7484ab-BIOS-core-falcontc.BIN vs NEWTOS.BIN: exit 1, 1 of 44 cases differ
+total     30 s
+result    run complete (differences above are findings, not failures)

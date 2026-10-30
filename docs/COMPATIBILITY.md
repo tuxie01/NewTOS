@@ -1296,10 +1296,10 @@ trap, the kernel restores its own buffer, empties the ring and logs one
 `bios/aciavecs.S:331`); indices outside the ring empty it likewise; (3) the
 records of devices 0 (RS-232) and 2 (MIDI) exist with the oracle's values;
 MIDI stays empty — no driver fills it (E5 (a)). Device 0's input ring is
-filled from the serial line on qemu-virt and read by AUX (`Bconstat(1)`,
-`Bconin(1)`), as EmuTOS' `push_serial_iorec` (TASK/XBIOS15, measured equal
-to the oracle); on real Pi 4 serial input is dropped and the ring stays
-empty (UART0 is the debug console there). Its output ring stays empty on both
+filled from the serial line and read by AUX (`Bconstat(1)`, `Bconin(1)`,
+which waits as `bconin1`), as EmuTOS' `push_serial_iorec` — on qemu-virt
+since TASK/XBIOS15 (measured equal to the oracle), on real Pi 4 since
+TASK/BIOS09 (2026-10-30; before, serial input was dropped there). Its output ring stays empty on both
 boards: AUX output is discarded at once. The survey behind E3/E4 found no
 ported program that calls `Iorec` (`docs/analysis/iorec-survey-2026-10-28.md`).
 
@@ -1308,7 +1308,9 @@ ported program that calls `Iorec` (`docs/analysis/iorec-survey-2026-10-28.md`).
 IOREC ring, but `Bconout(1)`/`Bcostat(1)` still go to the no-cable driver
 (`tos-api/src/bios/chardev.rs:132@AuxNoCable`): output is dropped. The UART is
 shared with the kernel log (`kernel/src/console.rs:106-111@SerialConsole`), and
-qemu-virt is a development board only; raspi4b keeps AUX as "no cable".
+qemu-virt is a development board only. raspi4b reads AUX input from the ring
+too since BIOS09 (2026-10-30); its AUX output stays the "no cable" discard
+(`docs/api/gemdos/file/3f-fread.md` item 1a).
 **Reopen** when a port writes to AUX.
 
 **`Bconmap` MAPTAB function pointers are not callable from programs** —

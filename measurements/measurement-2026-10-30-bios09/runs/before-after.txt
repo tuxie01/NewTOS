@@ -1,0 +1,40 @@
+bios-r1 vs EMUTOS-1a7484ab-BIOS-falcontc
+  before (f065a705): 70 87 93 94 105 128 129 178 179 183 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235 
+  after  (BIOS09):   70 87 93 94 105 128 129 178 179 183 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235 
+  newly differing:   
+  now equal:         
+bios-r1 vs EMUTOS-1a7484ab-BIOS
+  before (f065a705): 70 93 94 105 128 129 178 179 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235 
+  after  (BIOS09):   70 93 94 105 128 129 178 179 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235 
+  newly differing:   
+  now equal:         
+bios-core-r1 vs EMUTOS-1a7484ab-BIOS-core-falcontc
+  before (f065a705): 65 
+  after  (BIOS09):   65 
+  newly differing:   
+  now equal:         
+bios-core-r1 vs EMUTOS-1a7484ab-BIOS-core
+  before (f065a705): 65 66 
+  after  (BIOS09):   65 66 
+  newly differing:   
+  now equal:         
+xbios-chardev-r1 vs EMUTOS-1a7484ab-XBIOS-chardev-falcontc
+  before (f065a705): 31 43 
+  after  (BIOS09):   31 43 
+  newly differing:   
+  now equal:         
+xbios-chardev-r1 vs EMUTOS-1a7484ab-XBIOS-chardev
+  before (f065a705): 31 
+  after  (BIOS09):   31 
+  newly differing:   
+  now equal:         
+xbios-system-r1 vs EMUTOS-1a7484ab-XBIOS-system-falcontc
+  before (f065a705): 68 69 70 71 72 73 74 75 76 
+  after  (BIOS09):   68 69 70 71 72 73 74 75 76 
+  newly differing:   
+  now equal:         
+xbios-system-r1 vs EMUTOS-1a7484ab-XBIOS-system
+  before (f065a705): 68 69 70 71 72 73 74 75 76 
+  after  (BIOS09):   68 69 70 71 72 73 74 75 76 
+  newly differing:   
+  now equal:         

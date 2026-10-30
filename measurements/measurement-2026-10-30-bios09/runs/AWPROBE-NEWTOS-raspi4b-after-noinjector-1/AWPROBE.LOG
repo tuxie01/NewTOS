@@ -1,0 +1,5 @@
+AWPROBE TASK/BIOS09 -- Bconin(1) waits; keys: the kbdvec hook prints each byte; Ctrl+Alt+Del ends
+H01 kbdvec held a vector before the hook: 1
+W1 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)
+R1 Bconin(1) ret=00000051 hi=00000000 after 601 ticks, hook calls during the wait: 0 (the last -1 ticks before the return), total 0
+W2 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)

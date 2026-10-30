@@ -11,19 +11,23 @@
 //! `Kbdvbase` returns, the decision "default `kbdvec` → decode directly /
 //! program hook → queue for upcall" (`route_key`), the queue's order and
 //! overflow rule, its drain at process exit, `Ssystem(S_NEWTOS_KBDVEC)`, the
-//! give-way of a blocking AES wait, of a blocking key read and of the MIDI
-//! wait (`Bconin(3)`, BIOS04) when hook bytes are waiting. The EL0 upcall delivery itself (trap frame, `Psigreturn`
-//! chain) is kernel code and is measured in QEMU
+//! give-way of a blocking AES wait, of a blocking key read, of the MIDI wait
+//! (`Bconin(3)`, BIOS04) and of the AUX wait (`Bconin(1)`/`(6)`/`Cauxin` over
+//! device 0's input ring, BIOS09) when hook bytes are waiting. The EL0 upcall
+//! delivery itself (trap frame, `Psigreturn` chain) is kernel code and is
+//! measured in QEMU
 //! (`measurements/measurement-2026-10-04-keys02/`).
 
-use std::sync::atomic::{AtomicBool, AtomicU16, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU16, AtomicU32, Ordering};
 use std::sync::{Mutex, MutexGuard, Once};
 
 use tos_api::bdos::process::loader::KBDVECS_AREA_VA;
 use tos_api::bdos::process::mmu::{PRIV_PAGE_VA, STUB_PAGE_VA};
 use tos_api::bdos::process::{free_slot, sched, set_current, State, PROCESS_TABLE};
+use tos_api::bios::chardev::{self, CharDevice};
 use tos_api::host::Host;
 use tos_api::trap::{TrapArgs, TrapClass};
+use tos_api::xbios::iorec;
 use tos_api::xbios::kbdvecs::{
     self, KBDVEC_DEFAULT_VA, OFF_DRVSTAT, OFF_IKBDSYS, OFF_KBDLENGTH, OFF_KBDVBASE, OFF_KBDVEC,
     OFF_MOUSEXVEC, RET_STUB_VA, RING_LEN, S_NEWTOS_KBDVEC,
@@ -546,6 +550,139 @@ fn midi_wait_gives_way_without_side_effects() {
     assert!(!kbdvecs::take_restart());
     assert_eq!(bios(BCONSTAT, 3), 0);
     no_process();
+}
+
+// ─── BIOS09: the AUX wait over device 0's input ring ─────────────────────
+
+/// `idle` calls of the AUX wait ([`chardev::aux_read`]) — the kernel's `wfi`.
+static AUX_IDLES: AtomicU32 = AtomicU32::new(0);
+/// The byte the "receive interrupt" delivers during the next idle (0 =
+/// none: the wait would sleep forever, the test fails instead).
+static AUX_IRQ_BYTE: AtomicU16 = AtomicU16::new(0);
+
+/// The stand-in for the kernel's `wfi` with IRQs open: the PL011 receive
+/// interrupt pushes the scheduled byte into device 0's input ring.
+fn aux_idle() {
+    AUX_IDLES.fetch_add(1, Ordering::AcqRel);
+    let b = AUX_IRQ_BYTE.swap(0, Ordering::AcqRel);
+    assert!(b != 0, "the AUX wait went to sleep with no byte coming");
+    assert!(iorec::push_serial(b as u8));
+}
+
+/// The AUX entry the kernel installs on both boards (`kernel::console`'s
+/// `AuxSerial`; XBIOS15 qemu-virt, BIOS09 rpi4) with the host's idle in
+/// place of its `wfi`: the same ring, the same wait ([`chardev::aux_read`]),
+/// the no-cable entry's output side.
+struct RingAux;
+
+impl CharDevice for RingAux {
+    fn bconstat(&self) -> i32 {
+        if iorec::serial_pending() {
+            -1
+        } else {
+            0
+        }
+    }
+    fn bconin(&self) -> i32 {
+        chardev::aux_read(false, aux_idle).map(i32::from).unwrap_or(0)
+    }
+    fn bconin_restartable(&self) -> Option<i32> {
+        chardev::aux_read(true, aux_idle).map(i32::from)
+    }
+    fn bconout(&self, byte: u8) -> i32 {
+        chardev::AuxNoCable.bconout(byte)
+    }
+    fn bcostat(&self) -> i32 {
+        chardev::AuxNoCable.bcostat()
+    }
+}
+
+static RING_AUX: &dyn CharDevice = &RingAux;
+
+/// BIOS09 (user decision 2026-10-30): `Bconin(1)` waits for a byte in device
+/// 0's input ring as EmuTOS' `bconin1` (`bios/serport.c:255-263`), on real
+/// Pi-4 as on qemu-virt — `Bconin(6)` (Bconmap's AUX entry, BIOS08) and
+/// `Cauxin` (`xauxin` = `Bconin(1)`, `bdos/console.c:432-435`) with it. The
+/// wait gives way only to the waiting process's `kbdvec` hook (XBIOS18):
+/// queued hook bytes, or one arriving in the wait's own input pump, end it
+/// with a restart request and nothing consumed; with the hook queue empty it
+/// sleeps until the receive interrupt delivers a byte and returns it
+/// zero-extended. The non-restartable read (`bconin`) never gives way.
+#[test]
+fn aux_wait_reads_the_ring_and_gives_way_only_to_the_hook() {
+    use tos_api::bios::chardev::{install_device, DEV_AUX};
+    let _g = lock();
+    rig();
+    let prev = install_device(DEV_AUX, &RING_AUX).expect("DEV_AUX is a device table slot");
+    while iorec::pop_serial().is_some() {}
+    AUX_IDLES.store(0, Ordering::Release);
+    AUX_IRQ_BYTE.store(0, Ordering::Release);
+    let mut p = Page0::loaded();
+    p.set_slot(OFF_KBDVEC, HOOK);
+    run(&p);
+    const BCONSTAT: u16 = 0x01;
+    const BCONIN: u16 = 0x02;
+    const CAUXIN: u16 = 0x03;
+
+    // Nothing received: no input status on handle 1 or 6.
+    assert_eq!(bios(BCONSTAT, 1), 0);
+    assert_eq!(bios(BCONSTAT, 6), 0);
+
+    // (a) Hook bytes queued before the wait: Bconin(1), Bconin(6) and Cauxin
+    // ask for the restart at once — no sleep, the hook byte still queued.
+    kbdvecs::route_key(UP);
+    assert_eq!(bios(BCONIN, 1), 0, "the placeholder the trap handler discards");
+    assert!(kbdvecs::take_restart(), "Bconin(1) must request the restart");
+    assert_eq!(bios(BCONIN, 6), 0);
+    assert!(kbdvecs::take_restart(), "Bconin(6) must request the restart");
+    assert_eq!(gemdos(CAUXIN, 0, 0, 0), 0);
+    assert!(kbdvecs::take_restart(), "Cauxin must request the restart");
+    assert_eq!(AUX_IDLES.load(Ordering::Acquire), 0, "gave way without sleeping");
+    assert_eq!(drain(SLOT), vec![UP], "the hook byte is still queued");
+
+    // (b) A hook byte arriving in the wait's own input pump ends it too.
+    PUMP_FEEDS.store(u16::from(UP | BRK), Ordering::Release);
+    assert_eq!(bios(BCONIN, 1), 0);
+    assert!(kbdvecs::take_restart(), "a hook byte from the pump ends the wait");
+    assert_eq!(drain(SLOT), vec![UP | BRK]);
+    assert_eq!(AUX_IDLES.load(Ordering::Acquire), 0);
+
+    // (c) The re-executed call, hook queue empty: it sleeps until the receive
+    // interrupt delivers 'Q' and returns it zero-extended, no restart.
+    AUX_IRQ_BYTE.store(u16::from(b'Q'), Ordering::Release);
+    assert_eq!(bios(BCONIN, 1), 0x51);
+    assert!(!kbdvecs::take_restart());
+    assert_eq!(AUX_IDLES.load(Ordering::Acquire), 1, "it waited once");
+    assert_eq!(bios(BCONSTAT, 1), 0, "the byte was consumed");
+
+    // (d) Bytes already in the ring: status -1 on handles 1 and 6, read in
+    // order through Bconin(6), Cauxin and Bconin(1) without sleeping.
+    for c in *b"\x00ab" {
+        assert!(iorec::push_serial(c));
+    }
+    assert_eq!(bios(BCONSTAT, 1), -1);
+    assert_eq!(bios(BCONSTAT, 6), -1);
+    assert_eq!(bios(BCONIN, 6), 0, "a received 0x00 is a byte like any other");
+    assert_eq!(gemdos(CAUXIN, 0, 0, 0), i32::from(b'a'));
+    assert_eq!(bios(BCONIN, 1), i32::from(b'b'));
+    assert!(!kbdvecs::take_restart());
+    assert_eq!(bios(BCONSTAT, 1), 0);
+    assert_eq!(AUX_IDLES.load(Ordering::Acquire), 1, "no further sleep");
+
+    // (e) The non-restartable read never gives way: with a hook byte queued
+    // it still waits for the serial byte; the hook byte stays queued.
+    kbdvecs::route_key(RIGHT);
+    AUX_IRQ_BYTE.store(u16::from(b'z'), Ordering::Release);
+    assert_eq!(RingAux.bconin(), i32::from(b'z'));
+    assert!(!kbdvecs::take_restart());
+    assert_eq!(drain(SLOT), vec![RIGHT]);
+
+    // Output side unchanged: accepted and discarded, always ready.
+    assert_eq!(bios(0x03, 1), 1);
+    assert_eq!(bios(0x08, 1), -1);
+
+    no_process();
+    install_device(DEV_AUX, prev);
 }
 
 // ─── D9: whose table gets the key (MEM12) ────────────────────────────────

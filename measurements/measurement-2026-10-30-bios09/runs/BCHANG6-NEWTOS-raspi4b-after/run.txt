@@ -1,0 +1,1 @@
+QEMU killed 30 s after the first "desktop up"

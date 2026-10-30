@@ -1,0 +1,5 @@
+qemu: qemu-system-aarch64 -M raspi4b -no-reboot -display none -chardev socket,id=s0,host=127.0.0.1,port=60489 -serial chardev:s0 -append serial=on -kernel /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/after-kernel8.img -drive file=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/tmp/awprobe.mCR208/boot.img,if=sd,format=raw
+AWPROBE:WAIT seen at t+15.13s, serial offset 4148
+serial b'Q' at t+18.13s (WAIT+3.00s), serial offset 4218
+second wait seen
+wait seen: True, serial sent: True, second wait seen: True

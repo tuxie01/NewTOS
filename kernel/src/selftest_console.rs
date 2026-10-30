@@ -169,13 +169,10 @@ pub fn run() {
     };
 
     // ── F2: Cauxin / Cauxout pass through to the AUX entry ───────────
-    #[cfg(not(feature = "board-qemu-virt"))]
-    check(gemdos(0x03, 0) == 0, "Cauxin() == 0 (AUX no input, F2)");
-    #[cfg(feature = "board-qemu-virt")]
-    {
-        tos_api::xbios::iorec::push_serial(b'Q');
-        check(gemdos(0x03, 0) == i64::from(b'Q'), "Cauxin() == 'Q' from Iorec(0) (XBIOS15, F2)");
-    }
+    // Cauxin waits for a byte on both boards (XBIOS15, BIOS09): one is
+    // queued first.
+    tos_api::xbios::iorec::push_serial(b'Q');
+    check(gemdos(0x03, 0) == i64::from(b'Q'), "Cauxin() == 'Q' from Iorec(0) (XBIOS15/BIOS09, F2)");
     check(gemdos(0x04, b'Z' as u64) == 1, "Cauxout('Z') == 1 (AUX no cable, F2)");
 
     // ── F1: Ctrl-U kills the line → subsequent input starts at len 0 ──

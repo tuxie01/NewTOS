@@ -292,20 +292,38 @@ ring of device 0 (`Iorec(0)`), filled by the PL011 receive interrupt as EmuTOS'
 waits, else `0` (`bconstat_iorec`, `:191-199`); `Bconin(1)` **waits** for a byte
 and returns it zero-extended, as EmuTOS' `bconin1` (`:260-263`, `bconin_iorec`
 `:202-210`); `Bconout(1)`/`Bcostat(1)` unchanged (1, discarded / -1).
-Implementation `kernel/src/console.rs:216@AuxSerial`, installed at boot by
+Implementation `kernel/src/console.rs:192@AuxSerial`, installed at boot by
 `install_aux`; measured equal to the oracle
 (`docs/audits/2026-10-29-xbios15-serial-rx.md` SERRX-001,
-`measurements/measurement-2026-10-29-xbios15/RUNINFO.TXT`). Real Pi 4 keeps the
-"no cable" entry above (serial input is dropped there).
+`measurements/measurement-2026-10-29-xbios15/RUNINFO.TXT`). Real Pi 4 kept the
+"no cable" entry above (serial input was dropped there) until BIOS09, below.
 **[XBIOS18] 2026-10-29:** the wait gives way to a `kbdvec` hook as the CON wait
 does (KEYS02, `docs/api/xbios/22-kbdvbase.md` C3 "O1"): when the running
 process has bytes queued for its hook, the trap entry
-(`AuxSerial::bconin_restartable`, `kernel/src/console.rs:267@aux_read_blocking`)
+(`AuxSerial::bconin_restartable`, `kernel/src/console.rs:231@aux_read_blocking`)
 returns without a byte, the trap restarts after the hook ran and waits again —
 so the hook is called while `Bconin(1)` waits, as EmuTOS' IKBD interrupt calls
 it during `bconin1`'s spin (`bios/aciavecs.S:407-414`). Measured equal to the
 oracle with `tosdump/probes/axprobe.c`
 (`measurements/measurement-2026-10-29-xbios18/RUNINFO.TXT`).
+**[BIOS09] 2026-10-30 — real Pi 4 too (user decision, option (a); finding
+BIOS-CORE-008):** the kernel installs the same driver on `board-rpi4`
+(`kernel/src/console.rs:254@install_aux`, every received byte into device 0's
+ring, `kernel/src/console.rs:170@serial_rx_byte`). `Bconin(1)` — and with it
+`Bconin(6)` (BIOS08), `Cauxin` and `Fread` on AUX — **waits** for a byte as
+EmuTOS' `bconin1`, with or without a cable; the "no cable" `Bconin(1)` = 0
+non-blocking above is revoked for both boards and stays only the device-table
+default the host tests see (no COMPATIBILITY entry). While it waits no other
+process runs; only the waiting process's own `kbdvec` hook runs (restart,
+XBIOS18), and Ctrl+Alt+Del stays effective (it is decoded behind `kbdvec`, as
+EmuTOS' `kbd_int`). The wait loop is
+`tos-api/src/bios/chardev.rs:605@aux_read` (the kernel adds the `wfi`), pinned
+on the host by `tos-api/tests/xbios_kbdvecs.rs`
+(`aux_wait_reads_the_ring_and_gives_way_only_to_the_hook`). Without an adapter
+the floating RXD0 line can put one spurious `0x00` into the ring at boot, so
+the first `Bconin(1)` of such a boot can return `0` once (`TASK/BIOS09.md`; a
+pull on GPIO 15 is a hardware change outside BIOS09). Real-Pi check: probe
+`tosdump/probes/awprobe.c` (MEM12 check list).
 
 **[BIOS04] 2026-10-29 — MIDI (3) waits, IKBD (4) answers 0 (user decision "like
 the oracle"; supersedes the device-3 part of the next paragraph):**
@@ -331,8 +349,8 @@ before the device table (`references/emutos/bios/bios.c:967-972`). Handle 6
 is entry 0, the AUX port: `Bconin(6)` is `Bconin(1)`, through the same AUX
 entry and its trap entry — it **waits like `Bconin(1)`**: on
 `board-qemu-virt` for a byte in the serial input ring, giving way to a
-`kbdvec` hook (XBIOS15/XBIOS18); on `board-rpi4` the no-cable entry returns
-`0` at once, as `Bconin(1)` does there. Handles from 7 up return `0` without
+`kbdvec` hook (XBIOS15/XBIOS18); on `board-rpi4` the no-cable entry returned
+`0` at once, as `Bconin(1)` did there — since BIOS09 it waits there too. Handles from 7 up return `0` without
 waiting (`map_index >= maptabsize`, `:968-969`), as EmuTOS does on a machine
 with one entry (`references/emutos/bios/serport.c:965`; the oracle's TT has
 further ports there, whose `Bconin` would wait). Implementation
@@ -354,7 +372,10 @@ semantics not changed): `bconin1` blocks until a byte arrives
 NewTOS never blocks on an absent device. Consequence: `Bconin(1)` can be tested
 without hang risk (the 2026-09-05 APITEST note in `docs/STATUS.md` skipped it for
 that reason). Table rows above marked "blocking: yes" for 1/3 describe the real
-drivers only.
+drivers only. **Superseded:** for 3 by BIOS04 (`Bconin(3)` waits), for 1 by
+XBIOS15 (qemu-virt) and BIOS09 (real Pi 4, 2026-10-30) — `Bconin(1)` waits on
+both boards (notes above); the non-blocking AUX answer is only the table
+default the host tests see.
 
 ## Pi / BCM2711 binding
 

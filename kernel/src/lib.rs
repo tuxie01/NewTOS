@@ -361,9 +361,9 @@ extern "C" fn kernel_main_rust(dtb_phys: usize, entry_el: u64) -> ! {
     // its own decision, not with the version string.
     tos_api::cookie::seed_defaults(0x0000_0100);
 
-    // qemu-virt: AUX (BIOS 1) reads the serial receive ring of `Iorec(0)`
-    // (XBIOS15) — in the device table before the receive interrupt is on.
-    #[cfg(feature = "board-qemu-virt")]
+    // AUX (BIOS 1) reads the serial receive ring of `Iorec(0)` on both boards
+    // (XBIOS15 qemu-virt, BIOS09 rpi4) — in the device table before the
+    // receive interrupt is on.
     console::install_aux();
 
     // Bring up the GIC, enable the PL011 RX interrupt, and unmask IRQs.

@@ -1,0 +1,106 @@
+measurement-2026-10-30-bios09 -- Bconin(1)/Bconin(6) wait on board-rpi4 like EmuTOS bconin1
+(TASK/BIOS09, audit finding BIOS-CORE-008; user decision 2026-10-30, option (a))
+=====================================================================================================
+Developer, TASK/BIOS09, 2026-10-30 (host clock CET). Tree: main at f065a705 plus the uncommitted
+BIOS09 change. QEMU raspi4b headless, -append serial=on. No hardware, no real card, nothing
+flashed. Not committed.
+
+WHAT / WHY
+  Before: on board-rpi4 AUX (BIOS 1, and handle 6 through Bconmap, BIOS08) was the "port present,
+  no cable" entry: Bconin(1) returned 0 at once (tos-api/src/bios/chardev.rs AuxNoCable), every
+  serial byte the PL011 receive interrupt delivered was dropped (kernel/src/console.rs
+  serial_rx_byte, not-qemu-virt branch). EmuTOS' bconin1 waits on its iorec
+  (references/emutos/bios/serport.c:255-263, bconin_iorec :202-210); the audit's hang probe
+  showed it (measurements/measurement-2026-10-28-bios-core-audit/runs/HANG-EMUTOS-tt-1, -6).
+  Change: the qemu-virt AUX driver of XBIOS15/XBIOS18 (AuxSerial, aux_read_blocking, install_aux,
+  routing into Iorec(0)'s input ring in serial_rx_byte) runs on both boards; the wait loop moved
+  to tos-api (bios::chardev::aux_read, host-tested), the kernel keeps the DAIF/wfi around it.
+  No hardware register change.
+
+INPUTS
+  ROM / Hatari   not run here: the EmuTOS side is the committed references
+                 tosdump/reference/EMUTOS-1a7484ab-{BIOS,BIOS-core,XBIOS-chardev,XBIOS-system}
+                 {,-falcontc}.BIN and the audit's HANG runs (same probe source, same pinned ROM).
+  QEMU           11.0.2, -M raspi4b, -append serial=on
+  KERNELS (rpi4 release; gitignored/scratch, deleted after the run)
+    before   9cf300e60a559ecbb1d48ad2b6f459e541999b84853c4e48f70a0fb323f7c535
+             `git archive f065a705` into scratch, built by the TOOL09 runner (--tree): before-*
+    after    71754052af02fd655c0e74a0d52c401e1da11aa2733245c9f7c4ed84075fa73f  this tree with
+             BIOS09, built by the runner: after-*, BCHANG*-after, AWPROBE-*-after-noinjector-1
+    after+injector   3b64caa7407827d160f04ec10449ba6636cb3b805a52d2a98ae13dc551dfc68b
+             this tree copied to scratch + tools/inject-arm.py launch:AWPROBE
+             (method/build-injector-kernel.sh, keys method/awprobe-keys.txt):
+             AWPROBE-*-after-injector-1, -2
+    before+injector  939ab78849a39ddc90df10eeaf04314acbe1e073400917aa3147fdaf7b168940
+             `git archive f065a705` + the same injector arm: AWPROBE-*-before-injector-1
+  DUMPBIOS.NAP   built by the runner per tree: before a684e28b..., after 3f776893...
+                 (the after tree's tosdump/core is unchanged; the NAPs differ by the SDK build)
+  PROBES
+    AWPROBE.NAP  e5d9954293fde76e9f85740b6e84e071ce8d194943ac27cc18d67415110fcee4
+                 tosdump/probes/awprobe.c (new, permanent; `make -C tosdump awprobe-newtos`)
+    BCHANG1.NAP  655a30d5f9b43277cf70360e72c57c95edda669ae8264e1faf9e920b94a7d369 (HANGLIST=0,1)
+    BCHANG6.NAP  23e4b8252f2cadc3c641e53f9763b04ef3a13421596ee65755016c964545524b (HANGLIST=0,6)
+                 method/bcprobe.c = the audit's probe, copied unchanged (cmp equal with
+                 measurements/measurement-2026-10-28-bios-core-audit/method/bcprobe.c),
+                 method/build-hang.sh
+
+CARDS / IMAGES
+  Every card from tools/mkcard.sh (the TOOL09 runner for the tables, method/run-hang.sh for
+  BCHANG, tosdump/probes/run-awprobe.sh for AWPROBE), one per run, booted as an APFS clone,
+  card and clone deleted after the run. Manifests copied into each run dir
+  (runs/*/card.img.manifest), 14 in all; their optional_missing line, verbatim, all identical:
+    optional_missing none
+  Card sha256 before/after the boot: runs/*/tosdump-run.txt, runs/BCHANG*/card.img.{before,after}
+  .sha256, runs/AWPROBE*/run.txt ("card", "booted").
+
+METHOD (method/)
+  newtos-tables.sh before|after <s> <runs> [<tree>]
+                        bios-r1, bios-core-r1, xbios-chardev-r1, xbios-system-r1 through
+                        `cargo xtask tosdump bios` (TOOL09), each vs tt and falcontc (copied from
+                        measurement-2026-10-30-bios08, xbios-bconmap-r1 dropped)
+  compare.sh <runs>     differing cases before/after per table and reference -> runs/before-after.txt
+  build-hang.sh, run-hang.sh   the audit's hang probe per handle (0,1 and 0,6), QEMU killed 30 s
+                        after the first "desktop up" (the oracle runs: 20 s), BCHANG.LOG read
+                        from the booted clone with mtools
+  build-injector-kernel.sh <src> <scratch-tree>, awprobe-keys.txt
+                        kernel with the scratch IKBD injector armed on launch:AWPROBE:
+                        'a' make/break at +600/+640 ticks, 'b' at +800/+840, Ctrl+Alt+Del
+                        (1d 38 53) at +2000..+2020
+  AWPROBE runs: tosdump/probes/run-awprobe.sh <out> <kernel8.img> <delay>; serial byte 'Q'
+                        <delay> s after "AWPROBE:WAIT" (5 s with the injector, 3 s without,
+                        1 s before the fix)
+
+RESULTS
+  1. Tables (runs/before-after.txt): no newly differing case in any table, vs either reference;
+     no case newly equal. Differing cases, before = after:
+       bios-r1          tt 32 of 147, falcontc 37 of 147
+       bios-core-r1     tt 2 of 44 (65 66), falcontc 1 of 44 (65)
+       xbios-chardev-r1 tt 1 of 23 (31), falcontc 2 of 23 (31 43)
+       xbios-system-r1  tt 9 of 43 (68-76), falcontc 9 of 43 (68-76)
+     The tables do not call Bconin(1) (DUMPBIOS refuses it, tosdump/core/cases.c CR_BCONIN);
+     Bconstat(1)/Bconstat(6) answer 0 as before (QEMU sends no serial byte).
+  2. Hang probe, after (runs/BCHANG1-..., BCHANG6-...): "H0 after" present, "H1 after" /
+     "H6 after" absent -- Bconin(1) and Bconin(6) block. BCHANG.LOG byte-equal (diff) to the
+     oracle's HANG-EMUTOS-tt-1 and HANG-EMUTOS-tt-6. Before (BIOS08's run
+     measurements/measurement-2026-10-30-bios08/runs/BCHANG-NEWTOS-raspi4b-after): every "after"
+     present, ret 0.
+  3. AWPROBE after + injector (2 runs, AWPROBE.LOG identical):
+       W1 Bconstat(1)=0, waiting in Bconin(1)
+       the hook printed " 1e 9e 30 b0" while Bconin(1) waited (SERIAL.txt, after each
+       "[inj] ... feed" line)
+       R1 Bconin(1) ret=00000051 after 1002 ticks, hook calls during the wait: 4 (the last 163
+          ticks before the return)
+       W2 waiting again; the hook printed " 1d 38 53", then
+       "[reset] keyboard Ctrl+Alt+Del (Warm) requested", "[reset] PM watchdog full reset",
+       the serial socket closed (QEMU ended, -no-reboot; drive.txt "serial closed").
+     AWPROBE after, no injector: R1 'Q' after 601 ticks (3 s), 0 hook calls; W2 waits.
+     AWPROBE before + injector (f065a705): R1/R2/... Bconin(1) ret=00000000 after 0 ticks, an
+     endless loop (1269 lines in the run's window) -- the finding, as the audit measured it.
+  4. Not measurable in QEMU: the floating RXD0 line of the real Pi (QEMU's PL011 gets no spurious
+     byte; Bconstat(1) was 0 at W1 in every run). Real-Pi step: MEM12 check list point 10 with
+     tosdump/probes/awprobe.c.
+
+HOST TESTS / BUILD (not part of the run directory, reported in the hand-off)
+  cargo xtask test 1894/0/1 (baseline 1893/0/1 + tos-api/tests/xbios_kbdvecs.rs
+  aux_wait_reads_the_ring_and_gives_way_only_to_the_hook). Both boards build (debug and release),
+  rustc warnings 93 kernel / 64 tos-api, clippy 121 / 74 on both boards = before.

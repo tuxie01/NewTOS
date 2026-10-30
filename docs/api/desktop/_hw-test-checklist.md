@@ -534,7 +534,8 @@ carried are still open and still belong here:**
   (`Vsync` → `Setscreen(page0, page0)` → `graf_mouse(M_ON)` → `v_clsvwk` →
   `appl_exit`) is what has to leave the screen usable.
 
-Neither can run in QEMU `raspi4b`: it has no input path at all — a serial
-byte is deliberately dropped on this board (`kernel/src/console.rs:163`, CON
-is the USB-HID keyboard). Pick a replacement full-screen application (QED and
+Neither can run in QEMU `raspi4b`: it has no keyboard or mouse path — a
+serial byte never reaches the key queue on this board (since BIOS09 it goes to
+AUX, `Iorec(0)`; `kernel/src/console.rs:170@serial_rx_byte`), CON is the
+USB-HID keyboard. Pick a replacement full-screen application (QED and
 TeraDesk are in the tree) or rebuild the demo from its new home.

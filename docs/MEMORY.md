@@ -3393,7 +3393,8 @@ STATUS log row of 2026-09-04 ("Eine Phantomtaste lag seit jeher …", now in
 `docs/archive/status-log-2026-10-26.md`). The kernel was changed on that
 basis: `pl011_rx_drain` runs from the GIC IRQ handler and
 `serial_rx_byte` drops the byte on rpi4 (`kernel/src/console.rs:217-275`,
-`44361630`). A second diagnostic boot the same day (`initinfo-diag` build,
+`44361630`). Since TASK/BIOS09 (2026-10-30) the byte goes into AUX's
+receive ring on both boards, as on qemu-virt since XBIOS15. A second diagnostic boot the same day (`initinfo-diag` build,
 `5583602c`) counted one `0x00` byte in the UART init flush — that result is
 recorded only in the lead's notes, not in a measurement run. **What
 remains true** is the trap: `GICD_IGROUPR` is RAZ from Non-secure state, so

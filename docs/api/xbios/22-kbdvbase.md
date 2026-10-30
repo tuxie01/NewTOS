@@ -587,13 +587,17 @@ enthaelt sie, ein Umnummerieren braeche nichts.
   **[XBIOS18] 2026-10-29:** ebenso das Warten von `Bconin(1)` (auch `Cauxin`
   und ein Ein-Byte-`Fread` auf AUX) auf qemu-virt, wo AUX ein Treiber ist
   (XBIOS15): `AuxSerial::bconin_restartable` liefert bei wartenden Ring-Bytes
-  `None` (`kernel/src/console.rs:267@aux_read_blocking`), der Trap startet nach
+  `None` (`kernel/src/console.rs:231@aux_read_blocking`), der Trap startet nach
   dem Haken neu. Vorher bekam der Haken seine Bytes erst mit dem naechsten
   seriellen Byte; EmuTOS ruft ihn aus dem IKBD-Interrupt, waehrend `bconin1`
   wartet (`bios/aciavecs.S:407-414`, `bios/serport.c:202-210`). Gemessen mit
   `tosdump/probes/axprobe.c` gegen tt und falcontc
   (`measurements/measurement-2026-10-29-xbios18/RUNINFO.TXT`). Auf echter Pi 4
-  wartet `Bconin(1)` nicht (kein Kabel), dort gibt es nichts auszuweichen.
+  wartete `Bconin(1)` damals nicht (kein Kabel). **[BIOS09] 2026-10-30:** dort
+  jetzt ebenso — derselbe Treiber auf beiden Boards, dieselbe Schleife
+  (`tos-api/src/bios/chardev.rs:605@aux_read`); waehrend des Wartens laeuft
+  kein anderer Prozess, nur der Haken des wartenden. Pi-Schritt mit
+  `tosdump/probes/awprobe.c` (MEM12-Prueffolge).
 * **Grenzen (dokumentiert, nicht gebaut):** `Cconrs`, konsolen-`Fread` und
   `v_string` (Anfragemodus) lesen weiter ohne Ausweichen — sie haben vor dem
   Ende bereits Wirkung (Echo, Puffer); ein Programm, das bei eingehaengtem und
