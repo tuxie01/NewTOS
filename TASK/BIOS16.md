@@ -76,3 +76,11 @@ direkte Schreibung, danach liefert `Setexc(n,-1)` den geschriebenen Wert.
   liefert den geschriebenen Wert; nach `Pterm` auf NewTOS der alte Wert
   zurueck — dass das Zurueckschreiben vom Orakel abweicht, wird dokumentiert.
   Keine neue Abweichung in `bios-core-r1`, `super-r1`, `sxprobe`, `hkprobe`.
+
+## Nachentscheidungen (Anwender, 2026-10-30)
+
+- Bestaetigt: die Uebernahme wird fuer einen Prozess im Super-Zustand
+  zusaetzlich **vor** jedem Systemaufruf geprueft (nicht nur am Ende).
+- `swv_vec` und die Umbenennung `RESET_STUB_VA` → `RESET_ENTRY_VA`:
+  [BIOS17](BIOS17.md). ADR-031-Nachtrag (Uebernahme = erlaubte Reaktion, nie
+  Aufruf): Text beim Anwender. tosdiff-Folgeticket: [TOOL26](TOOL26.md).
