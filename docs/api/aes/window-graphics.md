@@ -1681,7 +1681,10 @@ only with `CONF_WITH_GRAF_MOUSE_EXTENSION` (default **1**, AES 3.20+).
 the **instantaneous** input state (no wait): `int_out[1]`=mouse x (`xrat`),
 `[2]`=mouse y (`yrat`), `[3]`=button state (`button`), `[4]`=keyboard shift
 state (`kstate`). These are the same live input mirrors the event manager reads
-([`_state.md`](./_state.md) §6).
+([`_state.md`](./_state.md) §6). `kstate` is `gsx_kstate()` = `Kbshift(-1) &
+0x000f` (`aes/gemgsxif.c:432-436`, `vdi/vdi_input.c:183-187`): bits 0-3 only —
+CapsLock + Alt reads `K_ALT` (0x08) — see [`event.md`](./event.md)
+"`kstate` carries bits 0-3 only" (A126).
 
 ---
 
@@ -1884,7 +1887,7 @@ byte of any buffer the caller passed (TASK/A42).
   `graf_mouse(255, mform)` the caller's shape; `graf_mouse(256)` hides it
   (`gemgrlib.c:424-454`).
 - **`graf_mkstate`** returns the live `xrat/yrat/button/kstate`
-  (`gemgrlib.c:460-463`).
+  (`gemgrlib.c:460-463`); `kstate` has bits 0-3 only (A126).
 - **`graf_slidebox`** returns a value in `0..1000` (or `0` for a zero-range
   track) (`gemgrlib.c:409-412`).
 - **Active-title cue:** the topped window's `W_NAME` `te_color` is `0x11a1`

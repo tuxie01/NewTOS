@@ -1,0 +1,8 @@
+ksprobe run, side newtos (2026-10-30T20:16:54Z)
+tree      0a07db388303f8e1e8134c7a931dc2ac747dceb5 8 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    KSPROBE.PRG 3bfa2a0713d159f2e43cebca9740930847be6df7ae827b36757cae37e9ffcec2 KSPROBE.NAP d24f12c9df1a43a768425ff8f0c61127598c577317c07a0ee856e0faeb9e5aeb
+keys      c13d88abd7726dc112d5ea525c6b6dd0ab32584d85d985b50e54512d2afe0268 tosdump/probes/ksprobe-keys.txt
+kernel    9c2ecff8957c8e3bb36cfae2896f82837c0feaed858e47da961168efb2365f4d /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/a126/kernel8-ks-a126.img
+card      c169c233de8bfc838ac5a15cc4ba87e2c99ec6cee0750b42e8b8cef583684d80 (tools/mkcard.sh, C:\KSPROBE.NAP, #Z autorun)
+qemu      done
+card      after c3c4bb7ca124ffaf62a719451e1775a313f615db98685a92449b37e8e0a10a76 (the booted clone)

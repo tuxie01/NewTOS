@@ -1100,3 +1100,14 @@ XHReserve	bios/xhdi.c	-	-	unmapped	XHDI driver interface: not implemented in New
 XHStop	bios/xhdi.c	-	-	unmapped	XHDI driver interface: not implemented in NewTOS
 init_XHDI_drvmap	bios/xhdi.c	-	-	unmapped	XHDI driver interface: not implemented in NewTOS
 xhdi_handler	bios/xhdi.c	-	-	unmapped	XHDI driver interface: not implemented in NewTOS
+ev_rets	aes/gemevlib.c	tos-api/src/aes/event.rs	fill_rets	mapped	the return block of evnt_button/evnt_mouse/evnt_multi; rets[3] = kstate through gsxif::gsx_kstate, bits 0-3 (A126)
+ev_rets	aes/gemevlib.c	tos-api/src/aes/input.rs	ev_rets	mapped	the mouse half: pr_xrat/pr_yrat/pr_button when mtrans > 1, else the live state; clears mtrans
+gr_mkstate	aes/gemgrlib.c	tos-api/src/aes/graf.rs	graf_mkstate	mapped	graf_mkstate 79; *pkstat = kstate through gsxif::gsx_kstate, bits 0-3 (A126)
+gsx_kstate	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_kstate	mapped	the AES's one keyboard-state source: Kbshift(-1) & 0x0f, the value vq_key_s gives, read without a trap into the VDI (A126)
+gsx_kstate	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	kstate_of	mapped	the same for a caller that holds the host (menu_popup's tracking loop, A126)
+handle_popup	aes/gemmnext.c	tos-api/src/aes/menu.rs	popup_shown	mapped	the tracking loop; keystate = rets[3] at the selecting press through gsxif::kstate_of, bits 0-3 (A126)
+gshift_s	vdi/vdi_input.c	tos-api/src/vdi/inquiry.rs	vq_key_s	mapped	inline: Kbshift(-1) & 0x000f (AUD-V1-007)
+vdi_vq_key_s	vdi/vdi_input.c	tos-api/src/vdi/inquiry.rs	vq_key_s	mapped	VDI 128; INTOUT[0] = gshift_s()
+gsx2	aes/gsx2.c	tos-api/src/aes/gsxif.rs	trap	mapped	the VDI trap on the AES's arrays: crate::vdi::dispatch with a kernel-space LP64 block
+gsx_ncode	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	ncode	mapped	opcode, PTSIN/INTIN counts, contrl[6] = gl_handle, then the trap
+gsx_0code	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	ncode	mapped	gsx_ncode(code, 0, 0); gsx_kstate does not go through it in NewTOS (gsxif.rs gsx_kstate, A126)

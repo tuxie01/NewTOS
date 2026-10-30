@@ -436,7 +436,8 @@ the background (`popup_blit`), runs the
 tracking loop (`handle_popup`), and restores the background. On a pick,
 fills `*mdata`: `mn_tree`/`mn_menu` copied from the input (**no submenus
 from popups — restriction #1 below**), `mn_item` = the chosen object
-number, `mn_scroll` copied, `mn_keystate` = the shift state at selection;
+number, `mn_scroll` copied, `mn_keystate` = the shift state at selection
+(`rets[3]` = `kstate`, bits 0-3 only: `Kbshift(-1) & 0x000f`, A126);
 returns `1`. On no pick, sets `mdata->mn_keystate = 0` **and nothing else**
 — the `else` branch is that one statement (`gemmnext.c:345-349`); `mn_tree`,
 `mn_menu`, `mn_item` and `mn_scroll` of the output block keep whatever the

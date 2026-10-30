@@ -1,0 +1,107 @@
+measurement-2026-10-30-a126 -- TASK/A126: the AES reports the keyboard state with bits 0-3 only,
+like EmuTOS (gsx_kstate -> VDI vq_key_s -> gshift_s = Kbshift(-1) & 0x000f). The new permanent
+probe tosdump/probes/akprobe.c on both sides (oracle tt, falcontc; NewTOS raspi4b before / after,
+injector + bios-arg-trace), the Kbshift probe ksprobe on the A126 tree, the oracle canary.
+==========================================================================================
+Developer, 2026-10-30 (host clock CET). Main tree at 58b3f286 (oracle runs) / 0a07db38 (NewTOS
+runs; the commit in between is docs/task only) plus the uncommitted A126 change. Nothing
+committed, no hardware, no real card.
+
+WHAT CHANGED (product)
+  tos-api/src/aes/gsxif.rs  gsx_kstate / kstate_of: the AES's one keyboard-state source,
+                            Host::keyboard_shift_state() & 0x0f (EmuTOS aes/gemgsxif.c:432-436,
+                            vdi/vdi_input.c:110-113,183-187)
+  tos-api/src/aes/event.rs  fill_rets (EV_KS of evnt_button / evnt_mouse / evnt_multi) through it
+  tos-api/src/aes/graf.rs   graf_mkstate int_out[4] through it
+  tos-api/src/aes/menu.rs   popup_shown's keystate (menu_popup mn_keystate) through kstate_of
+  BIOS Kbshift and the VDI unchanged.
+
+INPUTS
+  ROM        tools/oracle/etos512de-1a7484ab.img 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+             (run-akprobe.sh checks it against tools/oracle/oracle.env before every oracle run)
+  Hatari     2.6.1 (tools/oracle/oracle.env), tools/oracle/hatari.cfg, --fast-forward off
+  QEMU       11.0.2, -M raspi4b, -append serial=on
+  canary     docs/analysis/ORACLE.md section 6, run after the probe runs (runs/canary.txt):
+               canary tt: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all)
+               canary falcontc: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all-falcontc)
+  probe      tosdump/probes/akprobe.c 25ed5cd66adb3813409c94b1fa2a21f2da01b1c44e0bb11b783a2f27297d0597
+             `make -C tosdump akprobe-m68k akprobe-newtos`:
+               AKPROBE.PRG 2d18ad942f39125c2aa0530a0ffeb126245b911a6bf84922d014fd9bcdee8093
+               AKPROBE.NAP 8bfa9ef92cf11429ed1dac02dfb6850bbf30e5f4d10e019146b2f4d2fdbb7864
+             (the same two hashes in every runs/*/run.txt of the akprobe runs)
+             keys tosdump/probes/akprobe-keys.txt 919715d65a15e1fccd31816078bc31f847a064b13421e135bb300be282dbfb45
+             runner tosdump/probes/run-akprobe.sh 4a1ab2bec854a2cade0986a0e26824966aea1d31a6d52c2bce8b2f1877d1ee8d
+             NewTOS build tosdump/build-akprobe-newtos.sh 03154a90fb4bb127bf90da9d4e8c0277320f83087caaac18cb2225096ea11e68
+  kernels    (kernel8.img sha256; scratch, gitignored, deleted after the run)
+    after      852dd4e2d2d8e031afad0d320da0517843a4aa7d4984fbb39fbb4a9b53c8571c
+               `run-akprobe.sh kernel . <out> bios-arg-trace`: a scratch copy of the A126 tree armed
+               by `tools/inject-arm.py <copy> launch:AKPROBE=tosdump/probes/akprobe-keys.txt`
+               (14 bytes), rpi4 release, --features bios-arg-trace
+    before     3c34458babd8b7be2bd29cd75727aa7b7fde7c49ac00c93d73ef71b65c6b8679
+               the same, with tos-api/src/aes/{event,graf,gsxif,menu}.rs taken from HEAD 0a07db38
+               (i.e. without A126); method/akprobe-runs.sh step 3
+    ksprobe    9c2ecff8957c8e3bb36cfae2896f82837c0feaed858e47da961168efb2365f4d
+               `run-ksprobe.sh kernel . <out>` on the A126 tree (no features)
+  cards      tools/mkcard.sh via the run scripts; manifests runs/<run>/card.img.manifest. Their
+             optional_missing lines, verbatim:
+               runs/newtos-raspi4b/card.img.manifest:        optional_missing none
+               runs/newtos-raspi4b-before/card.img.manifest: optional_missing none
+               runs/ksprobe-newtos-a126/card.img.manifest:   optional_missing none
+             card / booted-clone sha256: runs/<run>/run.txt ("card", "card after").
+
+METHOD
+  method/akprobe-runs.sh   the commands as run, in order (scratch = the session scratchpad)
+
+THE PROBE (tosdump/probes/akprobe.c, header comment = full description)
+  GEM program, same source on both sides; AES calls through the tosdump ABI backends
+  (td_abi_aes), BIOS/GEMDOS through mintlib. Input (akprobe-keys.txt): CapsLock make+break,
+  Alt make (held), right button down/up, 'a' make+break, Alt break, CapsLock make+break. Oracle:
+  Hatari --cmd-fifo keydown/keyup/rightdown/rightup, 0.3 s after C:\AKPROBE.RDY, tick gaps as
+  wall-clock pauses (runs/emutos-*/inject.txt); NewTOS: the IKBD injector from the launch of
+  AKPROBE (runs/newtos-*/BOOT-SERIAL.txt "[inj]" lines). Lines compared: all but I-lines.
+
+RESULTS
+1 ORACLE: runs/emutos-tt/AKPROBE.LOG == runs/emutos-falcontc/AKPROBE.LOG (every line).
+    G00 Kbshift(-1)=00 graf_mkstate ks=0000
+    S01 Kbshift(-1)=18 graf_mkstate ks=0008
+    E01 evnt_multi(MU_BUTTON|MU_TIMER) ev=0002 ks=0008
+    B01 evnt_button(1,2,0) ret=0001 ks=0008
+    K01 evnt_multi(MU_KEYBD|MU_TIMER) ev=0001 ks=0008 sc=1e
+    S02 Kbshift(-1)=00 graf_mkstate ks=0000
+    P01 Kbshift(f0) now=f0 graf_mkstate ks=0000 evnt_multi ev=0020 ks=0000 evnt_button ret=0001 ks=0000
+    P02 Kbshift(ff) now=ff graf_mkstate ks=000f evnt_multi ev=0020 ks=000f evnt_button ret=0001 ks=000f
+    P03 Kbshift(00) restore now=00 graf_mkstate ks=0000
+  CapsLock + Alt held -> K_ALT (0x08) in graf_mkstate, evnt_multi MU_BUTTON, evnt_button,
+  evnt_multi MU_KEYBD; a program-set 0xf0 -> 0, 0xff -> 0x0f.
+
+2 NEWTOS BEFORE (runs/newtos-raspi4b-before): differs from the oracle in S01, E01, B01, K01
+  (ks=0018), P01 (ks=00f0 three times), P02 (ks=00ff three times): the whole byte. G00, S02,
+  P03, the events, ret, sc and the I-lines equal.
+
+3 NEWTOS AFTER (runs/newtos-raspi4b): identical to runs/emutos-tt/AKPROBE.LOG, every line
+  (I-lines included).
+  Input check (bios-arg-trace, BOOT-SERIAL.txt "[biostrace]", 253 Kbshift calls): the values
+  Kbshift(-1) returned run 00 -> 10 (CapsLock) -> 18 (CapsLock + Alt) -> 10 (Alt up) -> 00
+  (CapsLock off), then the program's Kbshift(0x00f0) -> 0x00, Kbshift(0x00ff) -> 0xf0,
+  Kbshift(0x0000) -> 0xff; the "[inj]" lines show the 14 bytes fed at +600 ... +1460 ticks
+  after the launch of AKPROBE.
+
+4 NO NEW DIVERGENCE, Kbshift probe (runs/ksprobe-newtos-a126): KSPROBE.LOG identical to
+  measurements/measurement-2026-10-29-bios10/runs/ksprobe-NEWTOS-after/KSPROBE.LOG except I00
+  (calibration, side-specific). Its known difference to the oracle (Q/A lines, H04: no keyboard
+  mouse emulation, BIOS10 RUNINFO section 4) is unchanged. No case table was touched; the AES
+  tables call graf_mkstate only with OUT_LEN 1 (aes-r1.tsv case 218).
+
+5 HOST TESTS: cargo xtask test 1899 / 0 / 1 (baseline 1895 / 0 / 1; +3
+  tos-api/tests/aes_a126_kstate_mask.rs, +1 popup_keystate_carries_only_the_four_modifier_bits
+  in tos-api/src/aes/menu.rs).
+
+FOLLOW-UP
+  The probe is MEASURED, not a tosdiff case: a follow-up ticket moves it to tosdiff
+  (CLAUDE.md "Testing"). Not in this run: the real Pi 4, qemu-virt (USB keyboard).
+
+Scratch (kernels, images, the before-tree) deleted after the run; no QEMU or Hatari left running.
+
+host_clang (CLAUDE.md rule of 2026-10-30, added by the lead before commit;
+same line in every card.img.manifest of this run):
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)

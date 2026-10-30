@@ -2007,7 +2007,8 @@ fn wait_button_up(h: &dyn crate::host::Host) {
 /// the picked item or `NIL`, and the keyboard shift state at the press —
 /// `handle_popup`'s `keystate = rets[3]` after the `ev_multi` that returned
 /// the button (`:268-272`, `ev_rets`'s `rets[3] = kstate`, `gemevlib.c:56`),
-/// read here from the host as `graf_mkstate`/`ev_rets` do.
+/// read here from `h` through [`gsxif::kstate_of`], as `graf_mkstate`/
+/// `ev_rets` read it (bits 0-3 only, A126).
 fn popup_shown(
     tree: *mut Object,
     box_obj: i16,
@@ -2049,7 +2050,7 @@ fn popup_shown(
             // `keystate = rets[3]` of the `ev_multi` that returned `MU_BUTTON`
             // (`gemmnext.c:272`): the shift state at the press, not at the
             // release the wait below consumes.
-            keystate = h.keyboard_shift_state() as i16;
+            keystate = gsxif::kstate_of(h);
             break;
         }
         h.pump_input();
@@ -2993,6 +2994,41 @@ mod popup_wait_tests {
         );
         assert_eq!(host.keyboard_shift_state(), 0, "the state at return is 0: the value was sampled at the press");
         assert_eq!(crate::vdi::mouse_buttons() & 1, 0, "returned with the button up");
+    }
+
+    /// A126: the press comes with CapsLock (0x10), Insert-with-Alt (0x40),
+    /// a program-set bit 7 (0x80) and Alt (0x08) in the BIOS shift byte —
+    /// 0xd8. `mn_keystate` is `rets[3]` = `kstate`, which EmuTOS takes from
+    /// `gsx_kstate` → `vq_key_s` → `gshift_s` = `Kbshift(-1) & 0x000f`
+    /// (`aes/gemgsxif.c:432-436`, `vdi/vdi_input.c:110-113,183-187`): 0x08.
+    #[test]
+    fn popup_keystate_carries_only_the_four_modifier_bits() {
+        let _g = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+        let host = ScriptHost::new();
+        park_at(&host, 320, 240);
+        let (px, py) = crate::vdi::mouse_position();
+        let tree = popup_tree(px, py);
+        let tp = tree as *const Object;
+
+        host.arm_pkts(&[
+            btn(0),
+            Pkt { dx: 0, dy: 0, buttons: 1, shift: 0xd8 }, // the press
+            Pkt { dx: 0, dy: 0, buttons: 1, shift: 0xd8 },
+            btn(0), // the release
+            btn(0),
+            btn(0),
+        ]);
+        crate::vdi::cursor_hide(&RASTER);
+        let (bx, by, bw, bh) = sr_rect(ObjTree::new(tp), 0, &RASTER);
+        let saved = gsxif::bb_save(&RASTER, bx, by, bw, bh).expect("the heap fallback saves the rectangle");
+        let (picked, keystate) = popup_shown(tree, 0, &RASTER, &host, saved);
+
+        assert_eq!(picked, 2, "the item under the pointer at the press");
+        assert_eq!(
+            keystate, 0x08,
+            "mn_keystate = kstate = Kbshift(-1) & 0x0f (gshift_s, vdi/vdi_input.c:183-187): \
+             Alt only, not CapsLock/MODE_INSERT/bit 7"
+        );
     }
 
     // ── A88 point 3: clamp_ypos ────────────────────────────────────────────

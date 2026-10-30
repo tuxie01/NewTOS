@@ -1,0 +1,26 @@
+# akprobe-keys.txt -- the input of tosdump/probes/akprobe.c (TASK/A126), one source for
+# both sides of tosdump/probes/run-akprobe.sh:
+#   NewTOS  the tools/inject-arm.py script, armed launch:AKPROBE: <hz_200 ticks after the
+#           launch> <IKBD byte> [<byte> ...] (make = scancode, break = scancode | 0x80;
+#           a relative mouse packet 0xF8|buttons dx dy, IKBD bit 0 = right button)
+#   EmuTOS  the same input as Hatari --cmd-fifo events: a key byte as "hatari-event
+#           keydown|keyup <scancode>", the packet 0xF9 0x00 0x00 as "hatari-event
+#           rightdown", 0xF8 0x00 0x00 as "hatari-event rightup"; the tick differences
+#           as wall-clock pauses (1 tick = 5 ms), the first line 0.3 s after
+#           C:\AKPROBE.RDY appears
+# Scancodes (bios/ikbd.c:48-54): CapsLock 0x3A, Alt 0x38, a 0x1E. CapsLock toggles
+# MODE_CAPS on its make (:800-804, :844-849).
+# CapsLock on, Alt held: the probe's S01 reads Kbshift 0x18
+600 0x3A
+620 0xBA
+660 0x38
+# right button down and up, Alt still held: E01 (press), B01 (release)
+900 0xF9 0x00 0x00
+1000 0xF8 0x00 0x00
+# 'a' with Alt held: K01
+1200 0x1E
+1220 0x9E
+# Alt up, CapsLock off: S02 reads Kbshift 0x00
+1400 0xB8
+1440 0x3A
+1460 0xBA

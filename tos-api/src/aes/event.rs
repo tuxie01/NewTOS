@@ -264,7 +264,8 @@ fn menu_intercept() -> bool {
 /// before the last button transition when more than one transition was
 /// published since the previous event return, else the live state
 /// ([`super::input::ev_rets`], which also clears the count) — and `EV_KS` the
-/// live keyboard shift state.
+/// keyboard state `rets[3] = kstate` (`:56`): Shift/Control/Alternate only,
+/// bits 0-3, through [`super::gsxif::gsx_kstate`] (A126).
 ///
 /// A click whose release falls inside the double-click window therefore
 /// reports `EV_MB` = the pressed button, not the released one: the window's
@@ -275,13 +276,7 @@ fn fill_rets(pb: &Aespb) {
     pb.set_intout(1, mx); // EV_MX
     pb.set_intout(2, my); // EV_MY
     pb.set_intout(3, mb as i16); // EV_MB
-    pb.set_intout(4, shift_state()); // EV_KS
-}
-
-/// Current keyboard shift-state bitmask (`Kbshift` encoding), or 0 with
-/// no host.
-fn shift_state() -> i16 {
-    host().map(|h| h.keyboard_shift_state()).unwrap_or(0) as i16
+    pb.set_intout(4, super::gsxif::gsx_kstate()); // EV_KS
 }
 
 /// `evnt_button` (21) — EmuTOS `ev_button` (`aes/gemevlib.c:84-94`): block

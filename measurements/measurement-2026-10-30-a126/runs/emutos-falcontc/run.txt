@@ -1,0 +1,5 @@
+akprobe run, side emutos (2026-10-30T20:11:35Z)
+tree      58b3f286d3e5f54f0c4e565f8b5bee5d20bb1b60 8 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    AKPROBE.PRG 2d18ad942f39125c2aa0530a0ffeb126245b911a6bf84922d014fd9bcdee8093 AKPROBE.NAP 8bfa9ef92cf11429ed1dac02dfb6850bbf30e5f4d10e019146b2f4d2fdbb7864
+keys      919715d65a15e1fccd31816078bc31f847a064b13421e135bb300be282dbfb45 tosdump/probes/akprobe-keys.txt
+oracle    /Volumes/Daten/hatari-2.6.1_macos/Hatari.app/Contents/MacOS/Hatari, ROM /Volumes/Daten/Development/PiRusTOS/tools/oracle/etos512de-1a7484ab.img (323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c), profile falcontc

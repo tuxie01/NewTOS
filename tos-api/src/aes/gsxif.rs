@@ -1,5 +1,6 @@
-//! The AES's VDI workstation (`gl_handle`) and its one screen-save buffer —
-//! the two pieces of EmuTOS `aes/gemgsxif.c` NewTOS keeps.
+//! The AES's VDI workstation (`gl_handle`), its keyboard-state source
+//! ([`gsx_kstate`], A126) and its one screen-save buffer — the pieces of
+//! EmuTOS `aes/gemgsxif.c` NewTOS keeps.
 //!
 //! # The workstation
 //!
@@ -254,6 +255,42 @@ pub fn gsx_graphic(tographic: bool) {
     }
     let mut g = Gsx::new();
     g.ncode_sub(ESCAPE_FUNCTION, if tographic { 2 } else { 3 });
+}
+
+// ── the keyboard state: `gsx_kstate` ─────────────────────────────────────
+
+/// The bits of the BIOS shift byte the AES hands to a program: right Shift,
+/// left Shift, Control, Alternate (`K_RSHIFT`/`K_LSHIFT`/`K_CTRL`/`K_ALT`).
+/// EmuTOS' `gshift_s` is `Kbshift(-1) & 0x000f` (`vdi/vdi_input.c:183-187`);
+/// CapsLock (bit 4), `MODE_HOME`/`MODE_INSERT` (bits 5-6) and a
+/// program-stored bit 7 never reach the AES (A126).
+const KSTATE_MASK: u8 = 0x0f;
+
+/// EmuTOS `gsx_kstate` (`aes/gemgsxif.c:432-436`) — the AES's one source of
+/// the keyboard state: `gsx_0code(KEY_STATE)` is the VDI's `vq_key_s` on
+/// `gl_handle` (`vdi/vdi_input.c:110-113`), whose answer is `gshift_s()` =
+/// `Kbshift(-1) & 0x000f` (`:183-187`). `chkkbd` stores it into `kstate`
+/// (`aes/gemdisp.c:165,175` → `kchange`, `aes/geminput.c:288-293`), and every
+/// value the AES reports reads that global: `ev_rets`' `rets[3]`
+/// (`aes/gemevlib.c:56`: `evnt_button`, `evnt_mouse`, `evnt_multi`),
+/// `gr_mkstate` (`aes/gemgrlib.c:463`: `graf_mkstate`) and `handle_popup`'s
+/// `keystate = rets[3]` (`aes/gemmnext.c:272`: `menu_popup`'s
+/// `mn_keystate`).
+///
+/// NewTOS reads the byte `vq_key_s` reads (`Host::keyboard_shift_state`,
+/// the BIOS `Kbshift(-1)` byte) and applies the same mask, without a trap
+/// into its own VDI: the VDI answers nothing before a workstation is open
+/// or without a raster backend, and the AES's state report must not depend
+/// on either. The value equals `vq_key_s`'s (`crate::vdi::inquiry`).
+/// 0 without a host, as `keyboard_shift_state`'s keyboard-less default.
+pub(super) fn gsx_kstate() -> i16 {
+    crate::host::host().map_or(0, kstate_of)
+}
+
+/// [`gsx_kstate`] for a caller that already holds the host (`menu_popup`'s
+/// tracking loop is handed one).
+pub(super) fn kstate_of(h: &dyn crate::host::Host) -> i16 {
+    (h.keyboard_shift_state() & KSTATE_MASK) as i16
 }
 
 // ── the screen-save buffer ────────────────────────────────────────────────

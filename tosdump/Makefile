@@ -34,6 +34,8 @@
 #   make rsprobe-m68k     RSPROBE.PRG, Rsconf and the Iorec(0) record
 #                         (probes/rsprobe.c)
 #   make rsprobe-newtos   RSPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make akprobe-m68k     AKPROBE.PRG, the AES keyboard state (probes/akprobe.c)
+#   make akprobe-newtos   AKPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make host-test        the host-side suite (same as make -C host test)
 #
 # Same core sources for both; only abi/ differs (spec section 2).
@@ -78,14 +80,15 @@ BUILD := build
         axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
         sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
         vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
-        host-test clean
+        akprobe-m68k akprobe-newtos host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
      scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
      pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
      axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
      sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
-     vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos host-test
+     vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
+     akprobe-m68k akprobe-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -256,6 +259,18 @@ $(BUILD)/RSPROBE.PRG: probes/rsprobe.c | $(BUILD)
 rsprobe-newtos: $(BUILD)/RSPROBE.NAP
 $(BUILD)/RSPROBE.NAP: probes/rsprobe.c build-rsprobe-newtos.sh | $(BUILD)
 	./build-rsprobe-newtos.sh $@
+
+# The AES keyboard-state probe (TASK/A126): no disk, keys and a mouse button
+# injected. An AES client: the AES calls go through the ABI backends.
+# Run by probes/run-akprobe.sh.
+akprobe-m68k: $(BUILD)/AKPROBE.PRG
+$(BUILD)/AKPROBE.PRG: probes/akprobe.c abi/m68k_trap.c core/abi.h | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror -Icore probes/akprobe.c abi/m68k_trap.c -o $@
+	@$(CROSS_MINT)size $@
+
+akprobe-newtos: $(BUILD)/AKPROBE.NAP
+$(BUILD)/AKPROBE.NAP: probes/akprobe.c abi/newtos_svc.c core/abi.h build-akprobe-newtos.sh | $(BUILD)
+	./build-akprobe-newtos.sh $@
 
 host-test:
 	@$(MAKE) --no-print-directory -C host test

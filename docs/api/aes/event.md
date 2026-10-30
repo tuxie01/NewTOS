@@ -130,7 +130,7 @@ by the single-event waits, which fill `int_out[1..4]` via `&EV_MX`):
 | 1 | `EV_MX` | mouse x |
 | 2 | `EV_MY` | mouse y |
 | 3 | `EV_MB` | mouse button state (bit set = down) |
-| 4 | `EV_KS` | keyboard shift state (as from `vq_key_s()`/`gsx_kstate`) |
+| 4 | `EV_KS` | keyboard state `kstate` = `gsx_kstate()` = VDI `vq_key_s` = `Kbshift(-1) & 0x000f`: bits 0-3 only (right/left Shift, Control, Alternate); CapsLock and bits 5-7 never reach it (`aes/gemgsxif.c:432-436`, `vdi/vdi_input.c:110-113,183-187`; A126) |
 | 5 | `EV_KRET` | key code: **scancode in the high byte, ASCII in the low byte** (only if `MU_KEYBD` fired and a char was ready) |
 | 6 | `EV_BRET` | mouse-button click count (only if `MU_BUTTON` fired) |
 
@@ -275,6 +275,23 @@ and the delivered `msg[0] == AC_CLOSE` it also sets `AP_ACCLOSE`.
 `ev_rets` reports the transition-time snapshot (`pr_xrat`/`pr_yrat`/`pr_button`)
 when a button transition is pending (`mtrans > 1`), otherwise the live
 `xrat`/`yrat`/`button`; `EV_KS` is always the live `kstate` (`gemevlib.c:42-58`).
+
+**`kstate` carries bits 0-3 only (A126).** The AES's one source of the keyboard
+state is `gsx_kstate` (`aes/gemgsxif.c:432-436`): `gsx_0code(KEY_STATE)`, the
+VDI's `vq_key_s` (`vdi/vdi_input.c:110-113`), whose answer is `gshift_s()` =
+`Kbshift(-1) & 0x000f` (`:183-187`). `chkkbd` stores it into `kstate` whenever
+it changed (`aes/gemdisp.c:165,172-175` → `kchange`, `aes/geminput.c:288-293`);
+`chkkbd` runs in every `schedule`, i.e. in the dispatch after every AES call
+(`aes/gemsuper.c:455-466`). So `EV_KS` (and `graf_mkstate`'s `kstate`,
+`menu_popup`'s `mn_keystate`) is `K_RSHIFT|K_LSHIFT|K_CTRL|K_ALT` at most: with
+CapsLock on and Alt held it is `K_ALT` (0x08), not 0x18; `MODE_HOME`/
+`MODE_INSERT` (0x20/0x40) and a program-stored bit 7, which BIOS `Kbshift`
+keeps, never appear. Measured on the pinned oracle, tt and falcontc:
+`tosdump/probes/akprobe.c`
+(`measurements/measurement-2026-10-30-a126/RUNINFO.TXT`).
+NewTOS: every AES site that reports the state reads it through one helper,
+`tos-api/src/aes/gsxif.rs:286@gsx_kstate` (`tos-api/src/aes/gsxif.rs:292@kstate_of` for the pop-up's host),
+which reads the BIOS shift byte `vq_key_s` reads and applies the same mask.
 
 ### Wake conditions and dispatch — contract (A112, 2026-10-17; re-extracted from source)
 

@@ -159,7 +159,7 @@ what a program observes is the values the `evnt_*` calls report, not the globals
 |--------|-------|---------|---------|
 | `xrat`, `yrat` | `geminput.h:16` | live mouse x, y | `ev_rets`, `in_mrect` |
 | `button` | `geminput.h:16` | live mouse-button state | `ev_rets`, `ev_mouse`, `evnt_multi` quick-check |
-| `kstate` | `geminput.h:16` | keyboard shift state (`EV_KS`) | `ev_rets` |
+| `kstate` | `geminput.h:16` | keyboard shift state (`EV_KS`): `gsx_kstate()` = `Kbshift(-1) & 0x000f`, bits 0-3 only, set by `chkkbd`/`kchange` (`gemdisp.c:165-176`, `geminput.c:288-293`; A126) | `ev_rets`, `gr_mkstate` |
 | `mclick` | `geminput.h:16` | last button click count (`EV_BRET`) | `evnt_multi`/`evnt_button` |
 | `mtrans` | `geminput.h:16` | pending button-transition flag (>1 ⇒ use the `pr_*` snapshot) | `ev_rets` |
 | `pr_xrat`/`pr_yrat`/`pr_button`/`pr_mclick` | `geminput.h:17` | transition-time snapshot of the above | `ev_rets`, `evnt_multi` |

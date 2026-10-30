@@ -1,0 +1,12 @@
+G00 Kbshift(-1)=00 graf_mkstate ks=0000
+S01 Kbshift(-1)=18 graf_mkstate ks=0018
+E01 evnt_multi(MU_BUTTON|MU_TIMER) ev=0002 ks=0018
+I01 E01 mb=0002 bret=0001
+B01 evnt_button(1,2,0) ret=0001 ks=0018
+K01 evnt_multi(MU_KEYBD|MU_TIMER) ev=0001 ks=0018 sc=1e
+I02 K01 asc=00
+S02 Kbshift(-1)=00 graf_mkstate ks=0000
+P01 Kbshift(f0) now=f0 graf_mkstate ks=00f0 evnt_multi ev=0020 ks=00f0 evnt_button ret=0001 ks=00f0
+P02 Kbshift(ff) now=ff graf_mkstate ks=00ff evnt_multi ev=0020 ks=00ff evnt_button ret=0001 ks=00ff
+P03 Kbshift(00) restore now=00 graf_mkstate ks=0000
+Z99 end

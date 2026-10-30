@@ -677,13 +677,15 @@ fn set_user_form(pb: &Aespb, backend: &dyn RasterBackend) {
 }
 
 /// `graf_mkstate` (79) — poll the instantaneous mouse position
-/// (`int_out[1..2]`), button mask (`int_out[3]`) and keyboard shift state
-/// (`int_out[4]`). Does not wait.
+/// (`int_out[1..2]`), button mask (`int_out[3]`) and keyboard state
+/// (`int_out[4]`). Does not wait. The keyboard state is `gr_mkstate`'s
+/// `*pkstat = kstate` (`aes/gemgrlib.c:463`): Shift/Control/Alternate only,
+/// bits 0-3, through [`super::gsxif::gsx_kstate`] (A126).
 pub fn graf_mkstate(pb: &Aespb) {
     let (mx, my) = crate::vdi::mouse_position();
     pb.set_intout(1, mx);
     pb.set_intout(2, my);
     pb.set_intout(3, crate::vdi::mouse_buttons() as i16);
-    pb.set_intout(4, host().map(|h| h.keyboard_shift_state()).unwrap_or(0) as i16);
+    pb.set_intout(4, super::gsxif::gsx_kstate());
     pb.set_ret(1);
 }

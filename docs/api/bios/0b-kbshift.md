@@ -297,14 +297,15 @@ equal the oracle (tt = falcontc); `bios-r1` 77 (`-1`) EQUAL.
   are queued as keys (with `0x28`/`0x48` etc. in bits 24-31) instead of
   becoming mouse buttons. Measured: `ksprobe` Q lines, NewTOS 8 queued keys,
   oracle 2.
-- **AES key state not masked.** NewTOS' AES readers (`graf_mkstate`,
-  `evnt_*` `EV_KS`, the popup key state) return the whole byte
-  (`tos-api/src/aes/graf.rs:687@graf_mkstate`,
-  `tos-api/src/aes/event.rs:284@shift_state`); EmuTOS' AES reports
-  `shifty & 0x0f` through VDI `vq_key_s` (above). CapsLock already leaked
-  before BIOS10; bits 5-7 now can too (Alt+Clr/Home held, or a program's
-  `Kbshift` store). VDI `vq_key_s` masks to `0x0f` as EmuTOS
-  (`tos-api/src/vdi/inquiry.rs:208@vq_key_s`).
+- **AES key state not masked** -- resolved by [A126](../../../TASK/A126.md)
+  (2026-10-30): every AES reader (`graf_mkstate`, `evnt_*` `EV_KS`, the
+  popup's `mn_keystate`) now takes the state from one helper,
+  `tos-api/src/aes/gsxif.rs:286@gsx_kstate`, which reports `shifty & 0x0f` as
+  EmuTOS' AES does through VDI `vq_key_s` (above); measured equal to the
+  oracle with CapsLock + Alt held and with a program-set `0xf0`/`0xff`
+  (`tosdump/probes/akprobe.c`,
+  `measurements/measurement-2026-10-30-a126/RUNINFO.TXT`). VDI `vq_key_s`
+  masks to `0x0f` as before (`tos-api/src/vdi/inquiry.rs:208@vq_key_s`).
 - **The byte follows the input pump.** EmuTOS updates `shifty` in the IKBD
   interrupt; NewTOS decodes key bytes only in the trap-side input pump, and
   `Bconstat(2)` pumps only while the keyboard queue is empty
