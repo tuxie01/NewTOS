@@ -1279,6 +1279,32 @@ mouse/status/clock/joystick hooks are never called (accepted deviations
 BIOS-CORE-002, XBIOS-CHARDEV-003); a hook a terminated program left in a
 shared cell is gone when nothing was chained on top of it.
 
+**IKBD commands are not interpreted, no response packets** — user decision
+2026-10-30, TASK/XBIOS04 option 1
+(`docs/analysis/xbios04-ikbdws-scope-2026-10-30.md`). On EmuTOS `Ikbdws(cnt,
+ptr)` and `Bconout(4, c)` send the bytes through the IKBD ACIA to the 6301
+(`references/emutos/bios/ikbd.c:948-954`, `:933-937`): the controller switches
+mouse or joystick mode, stops or resumes its output, sets or reads its clock,
+and answers queries with packets the OS hands to `statvec` (`0xF6`), `clockvec`
+(`0xFC`) or `joyvec` (`0xFD`) (`references/emutos/bios/aciavecs.S:484-531`).
+NewTOS has no IKBD controller — keyboard and mouse come from USB HID and are
+put into IKBD form by `kernel/src/ikbd.rs` — and no command interpreter:
+`Ikbdws` answers `0` (`void`) and `Bconout(4, c)` answers `1`, the bytes are
+dropped (`docs/api/xbios/19-ikbdws.md`, `docs/api/bios/03-bconout.md`). The
+three hooks would not be called anyway (ADR-031, TASK/XBIOS03, finding
+XBIOS-CHARDEV-003, above). Never silent: the first IKBD bytes of a process,
+through either call, write one line `[hook] warning: slot <n> (PD …) sent IKBD
+command bytes via Ikbdws|Bconout(4); IKBD commands ignored: …` to the serial
+log — one warning per process for both calls together
+(`tos-api/src/bdos/process/hooks.rs:724@note_ikbd_ignored`). **Observable
+difference:** a program that waits for the IKBD clock (`0x1C`), a status reply
+(`0x87`–`0x9A`) or a joystick packet (`0x16`) runs into its own timeout;
+mouse off (`0x12`), pause output (`0x13`), the mouse mode commands and the
+IKBD reset (`0x80 0x01`) have no effect. Measured by the audit probe W01–W04
+(`measurements/measurement-2026-10-28-xbios-chardev-audit/RUNINFO.TXT`:
+EmuTOS calls each hook once, NewTOS never) — **ACCEPTED** with this entry. No
+program on the standard card calls `Ikbdws` (scope note, section 2).
+
 **`Iorec`: the key queue is the IKBD `IOREC`, in a page every process may
 write; three named limits** — user decisions E1-E6 of 2026-10-28, TASK/XBIOS01
 (`docs/api/xbios/0e-iorec.md`, "Entscheidungen" and "NewTOS implementation").

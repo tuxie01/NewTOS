@@ -10,6 +10,9 @@
 //! second process. Then the ownership rule (rule 3): restored when still on
 //! top of the chain, kept with a warning when another hook chains on top,
 //! untouched after the process unhooked itself, kept after `Ptermres`.
+//! And the one warning in the same queue that is no hook (TASK/XBIOS04): IKBD
+//! command bytes through `Ikbdws` or `Bconout(4)` warn once per process,
+//! one key for both paths, and the calls answer as before.
 //!
 //! The warnings are read where the kernel reads them (`hooks::pop`), after the
 //! checks the kernel runs after every trap (`hooks::after_trap`).
@@ -20,7 +23,7 @@ mod harness;
 use std::sync::atomic::Ordering;
 use std::sync::{Mutex, MutexGuard, Once};
 
-use tos_api::bdos::process::hooks::{self, Cell, Hook, Kind, Via, Warning};
+use tos_api::bdos::process::hooks::{self, Cell, Hook, IkbdPath, Kind, Via, Warning};
 use tos_api::bdos::process::{self, mmu, pexec, pterm, standin, superstate, Abi, PROCESS_TABLE};
 use tos_api::bios::vectors::{self, setexc, ETV_CRITIC, ETV_TERM, ETV_TIMER, JUST_RTS};
 use tos_api::trap::TrapArgs;
@@ -408,6 +411,88 @@ fn initmous_mfpint_xbtimer_warn_in_the_call_and_answer_as_emutos() {
     let b = Proc::new();
     assert_eq!(xbios_call(0x0D, [13, 0x0002_9300, 0, 0]), 0x34);
     assert_eq!(not_served(&warnings()), vec![(b.slot, Hook::Vector(0x4D), 0x0002_9300, Via::Mfpint)]);
+}
+
+// ─── IKBD commands (TASK/XBIOS04) ─────────────────────────────────────────
+
+const IKBDWS: u64 = 0x19;
+const BCONOUT: u64 = 0x03;
+const DEV_IKBD: u64 = 4;
+
+fn bios_call(func: u64, regs: [u64; 4]) -> i64 {
+    let r = [regs[0], regs[1], regs[2], regs[3], 0, 0, 0, 0];
+    tos_api::bios::dispatch(&TrapArgs::kernel(r, func, 13))
+}
+
+/// `Ikbdws(0, {byte})`: one byte (`cnt` = bytes − 1).
+fn ikbdws(byte: &u8) -> i64 {
+    xbios_call(IKBDWS, [0, byte as *const u8 as u64, 0, 0])
+}
+
+/// The "IKBD commands ignored" warnings among `ws`, as (slot, path).
+fn ikbd_ignored(ws: &[Warning]) -> Vec<(usize, IkbdPath)> {
+    ws.iter()
+        .filter_map(|w| match w.kind {
+            Kind::IkbdIgnored(path) => Some((w.slot, path)),
+            _ => None,
+        })
+        .collect()
+}
+
+#[test]
+fn ikbd_commands_warn_once_per_process_for_ikbdws_and_bconout_4() {
+    let _g = lock();
+    let a = Proc::new();
+    let a_slot = a.slot;
+    // Ikbdws(0, {0x1C}) is `void` (0), Bconout(4, c) accepts (1), as before;
+    // the first of them warns, once.
+    assert_eq!(ikbdws(&0x1C), 0);
+    let ws = warnings();
+    assert_eq!(ws.len(), 1, "{ws:?}");
+    assert_eq!(ikbd_ignored(&ws), vec![(a_slot, IkbdPath::Ikbdws)]);
+    let line = ws[0].to_string();
+    assert!(
+        line.starts_with(&format!(
+            "[hook] warning: slot {} (PD 0x{:08x}) sent IKBD command bytes via Ikbdws; IKBD commands ignored:",
+            a_slot,
+            a.pd() as u64
+        )),
+        "{line}"
+    );
+    assert!(!line.contains('\n'));
+    // Again through both paths: one key, no second warning.
+    assert_eq!(ikbdws(&0x88), 0);
+    assert_eq!(bios_call(BCONOUT, [DEV_IKBD, 0x12, 0, 0]), 1);
+    assert_eq!(bios_call(BCONOUT, [DEV_IKBD, 0x08, 0, 0]), 1);
+    assert!(warnings().is_empty(), "once per process");
+    // A second process warns again, here first through Bconout(4).
+    let b = Proc::new();
+    assert_eq!(bios_call(BCONOUT, [DEV_IKBD, 0x16, 0, 0]), 1);
+    assert_eq!(ikbdws(&0x16), 0);
+    assert_eq!(ikbd_ignored(&warnings()), vec![(b.slot, IkbdPath::Bconout)]);
+    // Back on the first: still nothing.
+    a.run();
+    assert_eq!(ikbdws(&0x1C), 0);
+    assert!(warnings().is_empty());
+    // The first ends; the next tenant of its slot warns afresh.
+    a.pterm();
+    drop(a);
+    while hooks::pop().is_some() {}
+    let c = Proc::new();
+    assert_eq!(c.slot, a_slot, "the lowest free slot is reused");
+    assert_eq!(bios_call(BCONOUT, [DEV_IKBD, 0x80, 0, 0]), 1);
+    assert_eq!(ikbd_ignored(&warnings()), vec![(a_slot, IkbdPath::Bconout)]);
+    // Other devices never warn; neither does a call with no process running.
+    let d = Proc::new();
+    assert_eq!(bios_call(BCONOUT, [3, 0x12, 0, 0]), 1, "MIDI accepts as well");
+    assert!(warnings().is_empty());
+    process::set_current(core::ptr::null_mut());
+    assert_eq!(ikbdws(&0x12), 0);
+    assert_eq!(bios_call(BCONOUT, [DEV_IKBD, 0x12, 0, 0]), 1);
+    assert!(warnings().is_empty());
+    drop(d);
+    drop(c);
+    drop(b);
 }
 
 // ─── vex_* (rule 5) and their owner (rule 3) ─────────────────────────────

@@ -311,7 +311,7 @@ registers do not exist on the PL011.
   (`tos-api/src/xbios/mod.rs:65-138@dispatch`, `system::rsconf`): baud
   set/query (`-2`), `-1` keep, out-of-range handling and UCR/RSR set/readback
   agree with the oracle (audit probe S01-S18); only the TSR byte (`0x81` TT
-  vs `0x01` NewTOS shadow, `tos-api/src/xbios/system.rs:232@RS_TSR`) and the
+  vs `0x01` NewTOS shadow, `tos-api/src/xbios/system.rs:239@RS_TSR`) and the
   upper 32 bits differ (XBIOS-CHARDEV-006, **pending XBIOS06**). The
   "synthesizes plausible bytes" statements in the table above describe the
   intent; the measured result is as stated here.

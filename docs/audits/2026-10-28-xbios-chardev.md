@@ -214,7 +214,7 @@ BIOS-Kern-Audit DIFF sind (BIOS-CORE-001). Die Kanten von `rsconf` ueber
 
 **`Rsconf(-1 x6)`: TSR-Byte ohne Bit 7 und die oberen 32 Bit null statt vorzeichenerweitert.**
 
-- LOCALIZED: `tos-api/src/xbios/system.rs:232@RS_TSR` (Schatten `0x01`) und
+- LOCALIZED: `tos-api/src/xbios/system.rs:239@RS_TSR` (Schatten `0x01`) und
   `tos-api/src/xbios/system.rs:247-279@rsconf` (`old as i64`, nullerweitert).
 - Faelle: `bios-r1` 105, `xbios-chardev-r1` 31 — EXACT-DIFF: TT
   `0xFFFFFFFF_88018100`, Falcon `0xFFFFFFFF_88000000` (SCC), NewTOS

@@ -122,8 +122,8 @@ pub fn dispatch(args: &TrapArgs) -> i64 {
             0
         }
         GETTIME => crate::gemdos::time::xbios_gettime() as i64,
-        // IKBD command write: no ACIA transport → documented no-op (void).
-        // See `docs/api/xbios/19-ikbdws.md`.
+        // IKBD command write: no ACIA transport → documented no-op (void),
+        // warned once per process (XBIOS04). `docs/api/xbios/19-ikbdws.md`.
         IKBDWS => system::ikbdws(),
         // YM2149 PSG group: no sound chip → plausible-zero / no-op values
         // (not the function-number pattern). See `docs/api/xbios/_psg-group.md`.

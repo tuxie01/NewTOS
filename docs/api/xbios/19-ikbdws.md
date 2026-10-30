@@ -25,8 +25,9 @@
 data register only).
 
 **Build configuration affecting this function:**
-- `CONF_WITH_IKBD_ACIA` — the transport. On NewTOS the bytes are interpreted
-  by the IKBD-command layer of the USB-HID translator.
+- `CONF_WITH_IKBD_ACIA` — the transport. NewTOS has neither the ACIA nor an
+  IKBD-command interpreter: the bytes are dropped (TASK/XBIOS04, "NewTOS
+  implementation notes").
 
 ---
 
@@ -169,9 +170,28 @@ No validation: a bogus `cnt` (e.g. `0xFFFF`) simply sends 65536 bytes.
 
 (Empty during Phase 00.)
 
-PHASE-07: NewTOS parses the IKBD command bytes and applies them to the
-USB-HID translator (mouse mode, clock, etc.); the `bytes-1` unsigned count is
-honoured.
+**[XBIOS04] 2026-10-30 — no interpreter, one warning per process (user
+decision, option 1 of `docs/analysis/xbios04-ikbdws-scope-2026-10-30.md`).**
+`Ikbdws(cnt, ptr)` returns `0` (the contract's `void`) and drops the bytes; it
+neither reads `ptr` nor uses `cnt`. No IKBD command takes effect (mouse modes,
+mouse off `0x12`, pause/resume `0x13`/`0x11`, reset `0x80 0x01`, clock set
+`0x1B`) and no response packet is made (status `0xF6`, clock `0xFC`, joystick
+`0xFD`); the hooks those packets go to, `statvec`/`clockvec`/`joyvec`, are not
+called on NewTOS anyway (ADR-031, TASK/XBIOS03). Never silent (ADR-031 rule
+1): the first call in a process writes one serial line
+`[hook] warning: slot <n> (PD …) sent IKBD command bytes via Ikbdws; IKBD
+commands ignored: …`; `Bconout(4, c)` shares the warning key, so a process
+warns once for both calls together, whichever comes first
+(`docs/api/bios/03-bconout.md`). A new process warns again. Deviation recorded
+in `docs/COMPATIBILITY.md` ("IKBD commands are not interpreted"); the audit
+probe W01–W04 (`measurements/measurement-2026-10-28-xbios-chardev-audit/RUNINFO.TXT`,
+EmuTOS calls each hook once, NewTOS never) is ACCEPTED with it.
+Implementation `tos-api/src/xbios/system.rs:142@ikbdws`,
+`tos-api/src/bdos/process/hooks.rs:724@note_ikbd_ignored`; host test
+`tos-api/tests/bios15_os_hooks.rs`
+(`ikbd_commands_warn_once_per_process_for_ikbdws_and_bconout_4`). A packet
+decoder fix that any later interpreter needs first: TASK/INPUT04 (`0xF6`
+length).
 
 ## Pi / BCM2711 binding
 
@@ -185,15 +205,16 @@ honoured.
 
 - **No wire to write to.** On the Pi the keyboard/mouse arrive as USB-HID
   reports (`kernel/src/drivers/usb/hid.rs`); there is no IKBD 6301 and no
-  ACIA data register. A NewTOS `Ikbdws` would have to *parse* the raw IKBD
-  command string (mouse mode/scale, Y-origin, button reaction, clock set,
+  ACIA data register. An interpreter (not built, XBIOS04) would have to
+  *parse* the raw IKBD command string (mouse mode/scale, Y-origin, button reaction, clock set,
   LED/repeat) and apply the effects to the USB→IKBD translator and the
   cursor accumulator — the same interpretation `Initmous` (`00-initmous.md`)
   needs. The transport is instantaneous (no TX-ready poll, no blocking).
-- **Step-2 — not wired.** `Ikbdws` (XBIOS `0x19`) is **not in the NewTOS
-  XBIOS dispatcher** (`tos-api/src/xbios/mod.rs`), so it returns `EINVFN`.
-  The IKBD-command interpreter it depends on does not exist yet (nor does
-  `Initmous`, which is the higher-level user of the same command set).
-  Recorded as K-series below.
+- **Wired as the documented `void` no-op.** `Ikbdws` (XBIOS `0x19`) has its
+  own arm in the XBIOS dispatcher (`tos-api/src/xbios/mod.rs:127@IKBDWS`):
+  `0`, the bytes dropped, one warning per process (XBIOS04, "NewTOS
+  implementation notes"). There is no IKBD-command interpreter, by decision
+  (`docs/COMPATIBILITY.md`), and no `Initmous`, the higher-level user of the
+  same command set (it answers its function number, ADR-031).
 - **Datasheet.** No peripheral register (the synthesised transport has no
   hardware backing).

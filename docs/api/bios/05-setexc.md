@@ -336,7 +336,7 @@ The accessor `vectors::vector(num)` answers a shared cell as `Setexc` does;
 it is read for `etv_term` (`tos-api/src/bios/vectors.rs:195@vector`).
 
 [BIOS15] Built (`tos-api/src/bios/vectors.rs:238@note_write`, the shared
-mechanism `tos-api/src/bdos/process/hooks.rs:527@note`): a `Setexc` write of
+mechanism `tos-api/src/bdos/process/hooks.rs:540@note`): a `Setexc` write of
 `etv_timer`, `etv_critic` or a vector `< 0x100` other than its boot value
 logs one `[hook] warning` per hook and process; `etv_term` (served),
 `etv_xtra` and the system variables do not warn. A write into a shared cell

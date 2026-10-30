@@ -44,6 +44,7 @@ use core::sync::atomic::{AtomicPtr, Ordering};
 
 use tos_types::Long;
 
+use crate::bdos::process::hooks::{self, IkbdPath};
 use crate::host;
 use crate::trap::TrapArgs;
 use crate::xbios::{bconmap, iorec, kbdvecs};
@@ -240,11 +241,11 @@ fn midi_read(give_way: bool) -> Option<Long> {
 /// (`bios/ikbd.c:916-930`, `-1` with an empty ACIA transmit register, and
 /// `-1` "OK (but output will be ignored)" on a build without one) and
 /// `bconout4` (`:933-937`, `ikbd_writeb` and `1`). NewTOS has no IKBD
-/// transmitter and no IKBD command interpreter (`docs/api/xbios/19-ikbdws.md`),
-/// so the byte has no effect. Input is `char_dummy` (`bconstat_init[4]`,
-/// `bconin_init[4]`, `bios/chardev.c:30-36`): `Bconstat(4)` and `Bconin(4)`
-/// are `0` at once. [`bcostat_handle`]'s swap makes the output status the
-/// answer of `Bcostat(3)`.
+/// transmitter and no IKBD command interpreter (`docs/api/xbios/19-ikbdws.md`):
+/// the byte has no effect; the first of a process warns once, with `Ikbdws`
+/// (XBIOS04). Input is `char_dummy` (`bconstat_init[4]`, `bconin_init[4]`,
+/// `bios/chardev.c:30-36`): `Bconstat(4)` and `Bconin(4)` are `0` at once.
+/// [`bcostat_handle`]'s swap makes the output status the answer of `Bcostat(3)`.
 pub struct IkbdPort;
 
 impl CharDevice for IkbdPort {
@@ -255,6 +256,7 @@ impl CharDevice for IkbdPort {
         0
     }
     fn bconout(&self, _byte: u8) -> Long {
+        hooks::note_ikbd_ignored(IkbdPath::Bconout);
         1
     }
     fn bcostat(&self) -> Long {

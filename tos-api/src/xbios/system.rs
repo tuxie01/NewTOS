@@ -6,6 +6,7 @@
 
 use core::sync::atomic::{AtomicU16, AtomicU32, Ordering};
 
+use crate::bdos::process::hooks::{self, IkbdPath};
 use crate::host;
 use crate::trap::TrapArgs;
 
@@ -134,11 +135,12 @@ pub fn dosound() -> i64 {
 /// `void` no-op (→ 0), not the
 /// generic function-number catch-all. A full implementation would *parse*
 /// the IKBD command bytes and re-apply them to the USB→IKBD translator; that
-/// interpreter does not exist yet (`docs/api/xbios/19-ikbdws.md` §Pi
-/// binding), but the observable contract of `Ikbdws` itself is `void` — a
-/// caller cannot read back anything the dropped bytes would have changed
-/// through this call.
+/// interpreter does not exist (user decision 2026-10-30, TASK/XBIOS04
+/// option 1, `docs/COMPATIBILITY.md` "IKBD commands"): no mode changes, no
+/// response packets. Never silent (ADR-031): the first IKBD bytes of a
+/// process, through here or `Bconout(4)`, write one warning.
 pub fn ikbdws() -> i64 {
+    hooks::note_ikbd_ignored(IkbdPath::Ikbdws);
     0
 }
 

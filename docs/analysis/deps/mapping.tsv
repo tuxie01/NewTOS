@@ -611,7 +611,8 @@ wait_for_not_BSY_not_DRQ	bios/ide.c	-	-	design:hardware:ide	IDE/ATA disk driver:
 bconin2	bios/ikbd.c	tos-api/src/bios/chardev.rs	bconin	mapped	Console impl
 bconin2	bios/ikbd.c	tos-api/src/bios/chardev.rs	pack_console_key	mapped	the conterm bit 3 mask of the ring entry (XBIOS01 E2, closes BIOS11)
 bconin2	bios/ikbd.c	tos-api/src/xbios/iorec.rs	pop_key	mapped	the dequeue: head first, then the 4-byte entry (XBIOS01)
-bconout4	bios/ikbd.c	tos-api/src/bios/chardev.rs	bconout	mapped	IkbdPort::bconout: accepts and discards, returns 1 (BIOS04; no IKBD transmitter, no IKBD command interpreter)
+bconout4	bios/ikbd.c	tos-api/src/bios/chardev.rs	bconout	mapped	IkbdPort::bconout: accepts and discards, returns 1 (BIOS04; no IKBD transmitter, no IKBD command interpreter, XBIOS04 option 1)
+bconout4	bios/ikbd.c	tos-api/src/bdos/process/hooks.rs	note_ikbd_ignored	mapped	the never-silent half (ADR-031): "IKBD commands ignored" once per process, one warning key with Ikbdws (XBIOS04; no EmuTOS counterpart)
 bconstat2	bios/ikbd.c	tos-api/src/bios/chardev.rs	bconstat	mapped	Console impl
 bconstat2	bios/ikbd.c	tos-api/src/xbios/iorec.rs	key_pending	mapped	head != tail of the IKBD IOREC (XBIOS01)
 bcostat4	bios/ikbd.c	tos-api/src/bios/chardev.rs	bcostat	mapped	IkbdPort::bcostat: -1, always ready (BIOS04); Bcostat(3) reads it through the 3/4 swap (bcostat_handle)
@@ -624,7 +625,8 @@ ikbd_readb	bios/ikbd.c	-	-	design:hardware:ikbd-acia	IKBD 6301/ACIA keyboard dri
 ikbd_reset	bios/ikbd.c	-	-	design:hardware:ikbd-acia	IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
 ikbd_writeb	bios/ikbd.c	-	-	design:hardware:ikbd-acia	IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
 ikbd_writew	bios/ikbd.c	-	-	design:hardware:ikbd-acia	IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
-ikbdws	bios/ikbd.c	tos-api/src/xbios/system.rs	ikbdws	mapped	Ikbdws 0x19: no-op
+ikbdws	bios/ikbd.c	tos-api/src/xbios/system.rs	ikbdws	mapped	Ikbdws 0x19: void no-op, returns 0, bytes dropped (XBIOS04 option 1: no IKBD command interpreter, no response packets; docs/COMPATIBILITY.md)
+ikbdws	bios/ikbd.c	tos-api/src/bdos/process/hooks.rs	note_ikbd_ignored	mapped	the never-silent half (ADR-031): "IKBD commands ignored" once per process, one warning key with Bconout(4) (XBIOS04; no EmuTOS counterpart)
 kb_timerc_int	bios/ikbd.c	-	-	unmapped	IKBD 6301/ACIA keyboard driver: NewTOS reads keyboard and mouse from USB HID (kernel/src/ikbd.rs decodes the IKBD-format bytes); no counterpart function found
 kbd_init	bios/ikbd.c	kernel/src/key_repeat.rs	new	mapped	key-repeat power-up state; the boot conterm value is read by bios/chardev.rs current_conterm
 kbd_init	bios/ikbd.c	kernel/src/keymap.rs	init_from_disk	mapped	its closing bioskeys() (bios/ikbd.c:1106): the power-up keyboard tables, NewTOS' boot selection (KEYBOARD.KBD, #K, else US; COMPATIBILITY.md)

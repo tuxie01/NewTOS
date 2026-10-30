@@ -22,7 +22,10 @@
 //!   no warning. The model is the former accessory `kbdvec` warning: a flag
 //!   per process slot, given back when the slot is freed ([`release_slot`]).
 //!   `tos-api` has no log of its own: the warnings queue here and the kernel
-//!   prints them after the trap ([`pop`]).
+//!   prints them after the trap ([`pop`]). The same queue carries one
+//!   warning that is not about a hook: IKBD command bytes sent through
+//!   `Ikbdws` or `Bconout(4)`, which NewTOS ignores ([`note_ikbd_ignored`],
+//!   TASK/XBIOS04) — one key for both paths, once per process.
 //! * **Ownership (rule 3).** A hook in a cell every process shares — the
 //!   `Setexc` vector cells up to `etv_xtra` (every page 0 carries a copy),
 //!   the `vex_*` vectors — belongs to the process that installed it
@@ -136,8 +139,8 @@ const NAMED: [Hook; 24] = [
     Hook::VexTimv,
 ];
 
-/// Number of warning keys: the 256 vectors, then [`NAMED`].
-const NKEYS: usize = 256 + NAMED.len();
+/// Number of warning keys: the 256 vectors, [`NAMED`], then [`IKBD_KEY`].
+const NKEYS: usize = IKBD_KEY + 1;
 /// Words of the per-process "warned" bit set.
 const WORDS: usize = NKEYS.div_ceil(64);
 
@@ -416,6 +419,10 @@ pub enum Kind {
     /// More than [`OWN_CAP`] hooks of one process: `Cell` (= `value`) has no
     /// owner record and stays installed when the process ends.
     Untracked(Cell),
+    /// The process sent IKBD command bytes, first through the path given;
+    /// NewTOS has no IKBD controller and does not interpret them
+    /// (TASK/XBIOS04). `value` is 0.
+    IkbdIgnored(IkbdPath),
 }
 
 /// One warning for the log.
@@ -456,6 +463,12 @@ impl fmt::Display for Warning {
                 "installed {} = 0x{:x}; more than {} hooks of one program are not tracked, \
                  this one stays installed after the program ends (ADR-031 rule 3)",
                 cell, self.value, OWN_CAP
+            ),
+            Kind::IkbdIgnored(path) => write!(
+                f,
+                "sent IKBD command bytes via {}; IKBD commands ignored: NewTOS has no IKBD \
+                 controller, so no mode changes and no response packets (TASK/XBIOS04, ADR-031)",
+                path
             ),
         }
     }
@@ -525,20 +538,7 @@ impl State {
 /// once per hook and process (ADR-031 rule 1). Out-of-range slots are
 /// ignored: a hook the kernel itself installs is NewTOS's own.
 pub fn note(slot: usize, hook: Hook, value: u64, via: Via) {
-    if slot >= MAX_PROCESSES {
-        return;
-    }
-    let pd = pd_of(slot) as u64;
-    let key = hook.key();
-    with(|s| {
-        let word = &mut s.warned[slot][key / 64];
-        let bit = 1u64 << (key % 64);
-        if *word & bit != 0 {
-            return;
-        }
-        *word |= bit;
-        s.push(Warning { slot, pd, kind: Kind::NotServed(hook, via), value, other: 0 });
-    });
+    warn_once(slot, hook.key(), Kind::NotServed(hook, via), value);
 }
 
 /// [`note`] for the running process; nothing when no process runs (an
@@ -674,6 +674,59 @@ pub fn after_trap() {
     }
 }
 
+// ─── IKBD commands (TASK/XBIOS04) ────────────────────────────────────────
+
+/// The warning key of "IKBD commands ignored" ([`note_ikbd_ignored`]), after
+/// the hooks: one key for `Ikbdws` and `Bconout(4)`.
+const IKBD_KEY: usize = 256 + NAMED.len();
+
+/// Where a program sent IKBD command bytes ([`Kind::IkbdIgnored`]).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum IkbdPath {
+    /// `Ikbdws` (XBIOS 0x19).
+    Ikbdws,
+    /// `Bconout(4, c)` (BIOS 0x03 on the IKBD device).
+    Bconout,
+}
+
+impl fmt::Display for IkbdPath {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            IkbdPath::Ikbdws => "Ikbdws",
+            IkbdPath::Bconout => "Bconout(4)",
+        })
+    }
+}
+
+/// Queue the warning `kind` for process `slot` unless key `key` already
+/// warned in this tenancy. Out-of-range slots are ignored.
+fn warn_once(slot: usize, key: usize, kind: Kind, value: u64) {
+    if slot >= MAX_PROCESSES {
+        return;
+    }
+    let pd = pd_of(slot) as u64;
+    with(|s| {
+        let word = &mut s.warned[slot][key / 64];
+        let bit = 1u64 << (key % 64);
+        if *word & bit != 0 {
+            return;
+        }
+        *word |= bit;
+        s.push(Warning { slot, pd, kind, value, other: 0 });
+    });
+}
+
+/// Warn that the running process sent IKBD command bytes through `path`,
+/// which NewTOS ignores (TASK/XBIOS04, user decision 2026-10-30: `Ikbdws`
+/// and `Bconout(4)` keep their answers, ADR-031 "never silent"). One key
+/// for both paths: once per process, whichever comes first. Nothing when no
+/// process runs (an in-kernel caller).
+pub fn note_ikbd_ignored(path: IkbdPath) {
+    if let Some(slot) = slot_for(super::current()) {
+        warn_once(slot, IKBD_KEY, Kind::IkbdIgnored(path), 0);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -691,6 +744,7 @@ mod tests {
             assert!(k < WORDS * 64 && !seen[k], "{:?}", h);
             seen[k] = true;
         }
+        assert!(IKBD_KEY < WORDS * 64 && !seen[IKBD_KEY]);
     }
 
     #[test]

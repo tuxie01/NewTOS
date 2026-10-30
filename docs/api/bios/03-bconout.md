@@ -191,7 +191,8 @@ boot-guard `0L`.
 
 4. **Handle 4 is a keyboard-controller command channel**, not user text —
    `bconout4` sends bytes to the IKBD. The higher-level API is `Ikbdws`
-   (XBIOS 0x19).
+   (XBIOS 0x19). NewTOS does not interpret them (XBIOS04, "NewTOS
+   implementation notes").
 
 5. **Printer output can block for a long time.** `bconout0` waits up to
    `LONG_TIMEOUT` for BUSY to clear, polling `bconin2()` for ctrl-C to abort
@@ -274,6 +275,22 @@ IKBD transmitter and no IKBD command interpreter, so the byte has no effect
 `measurements/measurement-2026-10-29-bios04/RUNINFO.TXT`. Before, both
 returned `0` (finding BIOS-CORE-001, `docs/audits/2026-10-28-bios-core.md`).
 
+**[XBIOS04] 2026-10-30 — IKBD (4): the byte is ignored, with one warning
+per process (user decision, TASK/XBIOS04 option 1).** `Bconout(4, c)` still
+answers `1` and drops `c`: NewTOS has no IKBD-command interpreter, so no
+command takes effect and no response packet is made
+(`docs/api/xbios/19-ikbdws.md`, `docs/COMPATIBILITY.md` "IKBD commands are
+not interpreted"). Never silent (ADR-031 rule 1): the first IKBD byte of a
+process writes one serial line `[hook] warning: slot <n> (PD …) sent IKBD
+command bytes via Bconout(4); IKBD commands ignored: …`. The warning key is
+the one `Ikbdws` uses, so a process warns once for both calls together; a new
+process warns again. Only the IKBD entry warns (a driver installed in slot 4
+would replace it, `install_device`); MIDI (3) does not. Implementation
+`tos-api/src/bios/chardev.rs:259@bconout` (`IkbdPort`),
+`tos-api/src/bdos/process/hooks.rs:724@note_ikbd_ignored`; host test
+`tos-api/tests/bios15_os_hooks.rs`
+(`ikbd_commands_warn_once_per_process_for_ikbdws_and_bconout_4`).
+
 **[BIOS08] 2026-10-30 — handles 6 and up are the `Bconmap` table's (EmuTOS'
 one-entry table, `TASK/XBIOS05.md` option 1):** the `Bconmap` branch runs
 before the device table (`references/emutos/bios/bios.c:1000-1005`). Handle 6
@@ -347,6 +364,8 @@ without `BCONMAP_AVAILABLE`, `:1008-1010`) and before
   `1L`-on-CON: an absent device returns `0`, an honest "not sent".
 - **MIDI/IKBD-out (handles 3/4), BIOS04.** Return `1` and discard: the
   reference machine always has both ACIAs, so its programs see "sent"; on
-  the Pi there is no MIDI ACIA and no IKBD command channel behind it.
+  the Pi there is no MIDI ACIA and no IKBD command channel behind it. The
+  first IKBD byte of a process writes the "IKBD commands ignored" warning
+  (XBIOS04).
 - **Datasheet.** Framebuffer transport = VideoCore mailbox (§1.3); AUX =
   PL011 UART0 (datasheet §11).

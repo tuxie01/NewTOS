@@ -1,13 +1,13 @@
 # XBIOS04 — `Ikbdws` ist ein No-op: IKBD-Kommandos erzeugen keine Antwortpakete
 
-Status: **OFFEN** (entschieden 2026-10-30: Option 1 + Warnung) · Prioritaet: **P2** · Typ: Developer (nach Researcher-Note) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`
+Status: **ERLEDIGT** 2026-10-30 (Option 1 + Warnung; W01–W04 ACCEPTED) · Prioritaet: **P2** · Typ: Developer (nach Researcher-Note) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`
 
 ## Sachverhalt
 
 **XBIOS-CHARDEV-004 — S3 — MEASURED — NOT LOCALIZED.** Beleg: Bericht Abschnitt 2, Lauf `measurements/measurement-2026-10-28-xbios-chardev-audit/RUNINFO.TXT`.
 
 - Sonde W01–W04: `Ikbdws(0,{0x1C})` (Uhr abfragen), `{0x88}` (Mausmodus erfragen), `{0x16}` (Joystick abfragen) — EmuTOS ruft je den Haken einmal, NewTOS nie (`measurements/measurement-2026-10-28-xbios-chardev-audit/runs/PROBE-EMUTOS-tt`, `measurements/measurement-2026-10-28-xbios-chardev-audit/runs/PROBE-NEWTOS-raspi4b`). Rueckgabe `void` (EmuTOS `d0` = 2, NewTOS 0; nicht verglichen).
-- Vermutete Wurzel (nicht lokalisiert): `tos-api/src/xbios/system.rs:136@ikbdws` (gibt 0 zurueck, ignoriert beide Argumente). Die `--down`-Abhaengigkeit `bcostat4` ist DIFF (BIOS-CORE-001, [BIOS04](BIOS04.md)): `bios-r1` 67 muss erst gleich sein.
+- Vermutete Wurzel (nicht lokalisiert): `tos-api/src/xbios/system.rs:142@ikbdws` (gibt 0 zurueck, ignoriert beide Argumente). Die `--down`-Abhaengigkeit `bcostat4` ist DIFF (BIOS-CORE-001, [BIOS04](BIOS04.md)): `bios-r1` 67 muss erst gleich sein.
 - EmuTOS-Stelle: `references/emutos/bios/ikbd.c:948-954`.
 - Spec: `docs/api/xbios/19-ikbdws.md` (No-op, Interpreter „does not exist yet“). IKBD-Uhr und Joystick fallen unter die Hardware-Nicht-Ziele; Mausmodus-Kommandos (0x08/0x09/0x0A/0x12) betreffen beobachtbares Verhalten, nicht gemessen (Bericht Abschnitt 6).
 - Fehlerbild: Uhr per `0x1C` lesen und auf das Paket warten haengt; Maus per `0x12` abschalten wirkt nicht.
@@ -86,4 +86,19 @@ Grundlage: `docs/analysis/xbios04-ikbdws-scope-2026-10-30.md`.
 - Kein vorher gleicher Fall in `bios-r1.tsv`, `bios-core-r1.tsv`,
   `xbios-chardev-r1.tsv`, `xbios-system-r1.tsv` weicht neu ab.
 - W01–W04 ACCEPTED mit COMPATIBILITY-Eintrag.
+
+## Stand 2026-10-30
+
+- Umgesetzt: Warnung "IKBD commands ignored" einmal je Prozess, ein Schluessel
+  fuer beide Wege (`tos-api/src/bdos/process/hooks.rs@note_ikbd_ignored`,
+  gerufen aus `tos-api/src/xbios/system.rs@ikbdws` und
+  `tos-api/src/bios/chardev.rs@IkbdPort`). Rueckgaben unveraendert (0 / 1).
+  COMPATIBILITY-Eintrag "IKBD commands are not interpreted, no response
+  packets".
+- Hosttest `tos-api/tests/bios15_os_hooks.rs@ikbd_commands_warn_once_per_process_for_ikbdws_and_bconout_4`;
+  `cargo xtask test` 1895/0/1.
+- Vier Tabellen vorher/nachher unveraendert; MDPROBE D07 byte-gleich BIOS04,
+  Warnzeile einmal. Beleg `measurements/measurement-2026-10-30-xbios04/RUNINFO.TXT`.
+- Offen (Anwender): ADR-031 nennt die IKBD-Warnung nicht; Bezug nur ueber
+  dieses Ticket und COMPATIBILITY.
 

@@ -1,0 +1,96 @@
+measurement-2026-10-30-xbios04 -- Ikbdws and Bconout(4) keep their answers and warn "IKBD commands
+ignored" once per process (TASK/XBIOS04, audit finding XBIOS-CHARDEV-004; user decision 2026-10-30,
+option 1 + warning)
+=====================================================================================================
+Developer, TASK/XBIOS04, 2026-10-30 (host clock CET). Tree: main at 9f71ded8 plus the uncommitted
+XBIOS04 change. QEMU raspi4b headless, -append serial=on; one qemu-virt boot check. No hardware, no
+real card, nothing flashed. Not committed.
+
+WHAT / WHY
+  Before: Ikbdws (XBIOS 0x19) returned 0 and Bconout(4,c) returned 1, both silently: the bytes were
+  dropped, no IKBD command took effect, no response packet came (audit probe W01-W04: EmuTOS calls
+  statvec/clockvec/joyvec once each, NewTOS never;
+  measurements/measurement-2026-10-28-xbios-chardev-audit/RUNINFO.TXT).
+  Decision (TASK/XBIOS04 "Entscheidung"): no interpreter; the deviation goes into
+  docs/COMPATIBILITY.md ("IKBD commands are not interpreted"), W01-W04 ACCEPTED; never silent
+  (ADR-031): one warning per process for both calls together.
+  Change: tos-api/src/bdos/process/hooks.rs gets a warning key after the hooks (IKBD_KEY,
+  note_ikbd_ignored, Kind::IkbdIgnored) in the same per-process bit set and queue as the ADR-031 hook
+  warnings; tos-api/src/xbios/system.rs ikbdws and tos-api/src/bios/chardev.rs IkbdPort::bconout
+  call it. Answers unchanged (0 and 1). The kernel prints the queue after every trap as before:
+    [hook] warning: slot <n> (PD 0x...) sent IKBD command bytes via Ikbdws|Bconout(4); IKBD commands
+    ignored: NewTOS has no IKBD controller, so no mode changes and no response packets
+    (TASK/XBIOS04, ADR-031)
+
+INPUTS
+  ROM / Hatari   not run here: the EmuTOS side is the committed references
+                 tosdump/reference/EMUTOS-1a7484ab-{BIOS,BIOS-core,XBIOS-chardev,XBIOS-system}
+                 {,-falcontc}.BIN; for MDPROBE the BIOS04 run's oracle logs
+                 (measurements/measurement-2026-10-29-bios04/runs/MDPROBE-EMUTOS-tt, -falcontc).
+  QEMU           11.0.2, -M raspi4b, -append serial=on (tables, MDPROBE); -M virt (boot check)
+  KERNELS (gitignored/scratch, deleted after the run)
+    before   rpi4 release kernel8.img 5ec767198a14bfa1df1512e3fe1edef74cdedc5a9c6141519f28b0405402e824
+             `git archive 9f71ded8` into scratch, built by the TOOL09 runner (--tree): before-*
+    after    rpi4 release kernel8.img 885b76c09751e82774914b05e87dfe960d6f642494dceb787b291d6099e6f209
+             this tree with XBIOS04, built by the runner: after-*; the same file (copied to scratch
+             before the qemu-virt build) for MDPROBE-NEWTOS-raspi4b-after
+    after    qemu-virt release kernel.img bd12ba48536854034947e6c7fe1a3279a43df4db7b2d32ad7699d1a25b073318
+             fresh build through `cargo xtask run --board qemu-virt --release --headless`
+  DUMPBIOS.NAP   built by the runner per tree: before 9c0bf022..., after 06180ee0...
+                 (tosdump/core is unchanged; the NAPs differ by the SDK build per tree)
+  TABLES         tosdump/cases/bios-r1.tsv 231f2dfe..., bios-core-r1.tsv db802dc6...,
+                 xbios-chardev-r1.tsv a028a4ab..., xbios-system-r1.tsv 22c32ade... (unchanged)
+  PROBE          tosdump/probes/mdprobe.c (BIOS04, permanent), MDPROBE.NAP
+                 d5f7c8d79333e2b07078e3882ce9103b51036de5e2d8275c74dcddd8416248c7
+
+CARDS / IMAGES
+  Every raspi4b card from tools/mkcard.sh (the TOOL09 runner for the tables,
+  tosdump/probes/run-mdprobe.sh for MDPROBE), one per run, booted as an APFS clone, card and clone
+  deleted after the run. Manifests copied into each run dir (runs/*/card.img.manifest), 9 in all;
+  their optional_missing line, verbatim, all identical:
+    optional_missing none
+  Card sha256 before/after the boot: runs/*/tosdump-run.txt ("card", "card after the run"),
+  runs/MDPROBE-NEWTOS-raspi4b-after/run.txt ("card", "card after").
+  qemu-virt boots no image: the board has no block device ("[bcache] ... no block device on this
+  board"); the --sd card of method/boot-virt.sh was not attached.
+
+METHOD (method/)
+  newtos-tables.sh before|after <s> <runs> [<tree>]
+                        bios-r1, bios-core-r1, xbios-chardev-r1, xbios-system-r1 through
+                        `cargo xtask tosdump bios` (TOOL09), each vs tt and falcontc (copied from
+                        measurement-2026-10-30-bios09, header and commit names changed)
+  compare.sh <runs>     differing cases before/after per table and reference -> runs/before-after.txt
+  MDPROBE               tosdump/probes/run-mdprobe.sh newtos <out> <after kernel8.img> (unchanged
+                        permanent runner; HOLD 10 s default) -> runs/MDPROBE-NEWTOS-raspi4b-after
+  boot-virt.sh <log>    the qemu-virt boot check -> runs/BOOT-NEWTOS-qemu-virt-after/SERIAL.txt (the
+                        QEMU part of the log, from "xtask: launching QEMU")
+
+RESULTS
+  1. Tables (runs/before-after.txt): no newly differing case in any table, vs either reference;
+     no case newly equal. Differing cases, before = after:
+       bios-r1          tt 32 of 147, falcontc 37 of 147
+       bios-core-r1     tt 2 of 44 (65 66), falcontc 1 of 44 (65)
+       xbios-chardev-r1 tt 1 of 23 (31), falcontc 2 of 23 (31 43)
+       xbios-system-r1  tt 9 of 43 (68-76), falcontc 9 of 43 (68-76)
+     No table case calls Ikbdws or Bconout(4) (DUMPBIOS lists Ikbdws as excluded); every run ended
+     with "desktop up after DUMPBIOS.NAP, rc=0" -- the after kernel boots to the desktop on raspi4b.
+  2. MDPROBE after (runs/MDPROBE-NEWTOS-raspi4b-after): MDPROBE.LOG byte-equal (cmp) to the BIOS04
+     run's measurements/measurement-2026-10-29-bios04/runs/MDPROBE-NEWTOS-after/MDPROBE.LOG, which
+     equals the oracle there; D07 Bconout(4,0x11) ret=00000001 as before. BOOT-SERIAL.txt holds the
+     warning exactly once, for the probe's slot, after its one Bconout(4):
+       [hook] warning: slot 0 (PD 0x01a07000) sent IKBD command bytes via Bconout(4); IKBD commands
+       ignored: NewTOS has no IKBD controller, so no mode changes and no response packets
+       (TASK/XBIOS04, ADR-031)
+     W01 Bconin(3) still waiting 10 s after "W01 before", as in BIOS04.
+  3. qemu-virt (runs/BOOT-NEWTOS-qemu-virt-after/SERIAL.txt): "[desk] desktop up (0 drives)" 11 s
+     after the start (the embedded NEWDESK; the board has no drives).
+  4. Not measured in QEMU: the Ikbdws path of the warning (no case or probe on the card calls
+     Ikbdws); covered by the host test below, which drives both paths through the XBIOS and BIOS
+     dispatchers.
+
+HOST TESTS / BUILD (not part of the run directory, reported in the hand-off)
+  cargo xtask test 1895/0/1 (baseline 1894/0/1 + tos-api/tests/bios15_os_hooks.rs
+  ikbd_commands_warn_once_per_process_for_ikbdws_and_bconout_4). Both boards build (release),
+  rustc warnings 93 kernel / 64 tos-api, clippy 121 / 74 on both boards = before (`git archive
+  9f71ded8`), the per-file warning set identical; clippy -p tos-api --tests: no warning in the touched
+  files.
