@@ -1420,7 +1420,7 @@ falcontc and disk are byte-identical, so their columns are one.
 | 49 | `_SND` | `0x00000003` | `0x0000001F` | absent | ACCEPTED | ADR-012: no PSG / DMA sound |
 | 50 | `_FRB` | `0x00013350` | `0x00013350` | absent | ACCEPTED | user decision 2026-10-29: no ACSI/SCSI DMA, so no bounce buffer (`bios/machine.c:478`) |
 | 51 | `_FLK` | absent | absent | absent | EQUAL | ADR-012 amendment 2026-10-26: not set |
-| 52 | `_AKP` | `0x00000100` | `0x00000100` | `0x00000000` | OPEN | oracle = `COUNTRY=de` ROM; NewTOS keeps US (keyboard-layout entry above, difference 2) |
+| 52 | `_AKP` | `0x00000100` | `0x00000100` | `0x00000000` | ACCEPTED | user decision 2026-10-30 (TASK/COOK02.md): the oracle's low byte 0 is Hatari's default NVRAM keyboard byte (EmuTOS byte 7), not a property of the `de` ROM — measured with four Hatari NVRAM variants (`0x0100`, `0x0101`, `0x0100`, `0x0102`; `measurements/measurement-2026-10-30-cook02/RUNINFO.TXT`, `docs/analysis/cook02-country-facts-2026-10-30.md` §3); the high byte 1 is the ROM header country. NewTOS has no NVRAM and stays `0` until a machine-wide country setting exists (COOK02, parked) |
 | 53 | `_IDT` | `0x0000112E` | `0x0000112E` | `0x0000112F` | OPEN | oracle = `COUNTRY=de` (`.`); NewTOS `/`, bring-up policy |
 | 54 | `_FDC` | `0x01415443` | `0x01415443` | absent | ACCEPTED | ADR-012: no floppy controller |
 | 55 | `__NF` | absent | absent | absent | EQUAL | — |

@@ -31,6 +31,12 @@ lives in `docs/api/` and is what later phases implement against.
 measurement against the pinned EmuTOS oracle — tosdump cases run in Hatari
 and on NewTOS, compared with tosdiff (`docs/analysis/ORACLE.md`).
 
+**Warning — two EmuTOS trees:** `references/emutos` is the pinned source,
+but its *generated* files (`include/i18nconf.h`, `bios/ctables.h`) belong to
+a `COUNTRY=us` build. Values of the oracle ROM (`COUNTRY=de`) are in the
+oracle's own build tree `references/emutos-oracle/1a7484ab` (user 2026-10-30,
+`docs/analysis/cook02-country-facts-2026-10-30.md`).
+
 **FreeMiNT** (`references/freemint/`) is the sanctioned source for
 FreeMiNT-compatible extensions and for kernel memory management (ADR-027).
 

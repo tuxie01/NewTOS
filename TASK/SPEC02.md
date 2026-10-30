@@ -17,6 +17,14 @@ Dazu (Fund BIOS17): der Ort `0xA40` des Reset-Einstiegs in
 `docs/api/gemdos/154-ssystem.md` ist seit MEM12 veraltet (Stub-Seite
 `0x7E000` + `0x80`); Kommentar `kernel/src/reset.rs` „page-0 reset entry“.
 
+Dazu (Fund COOK02, `docs/analysis/cook02-country-facts-2026-10-30.md`
+"Out-of-scope observations"): `_AKP` als "low word = language id" bzw.
+"keyboard language" ist ungenau — EmuTOS: Bits 15..8 Anzeige (Sprache,
+Zeichensatz), Bits 7..0 Tastatur (`references/emutos/bios/country.c:96-113`,
+`:162`). Stellen: `tos-api/src/cookie.rs:30@AKP`,
+`tos-api/src/i18n.rs:38@current_lang`, `docs/api/bios/_cookie-jar.md`
+(Zeile 56), `docs/api/gemdos/154-ssystem.md` (Zeile 647).
+
 ## Arbeit
 
 Jede Zeile gegen `tos-api/src/xbios/mod.rs` (`dispatch`) und die Quittungen
