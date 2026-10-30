@@ -31,6 +31,9 @@
 #   make vwprobe-newtos   VWPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make ksprobe-m68k     KSPROBE.PRG, the Kbshift probe (probes/ksprobe.c)
 #   make ksprobe-newtos   KSPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make rsprobe-m68k     RSPROBE.PRG, Rsconf and the Iorec(0) record
+#                         (probes/rsprobe.c)
+#   make rsprobe-newtos   RSPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make host-test        the host-side suite (same as make -C host test)
 #
 # Same core sources for both; only abi/ differs (spec section 2).
@@ -74,7 +77,7 @@ BUILD := build
         pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
         axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
         sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
-        vwprobe-m68k vwprobe-newtos \
+        vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
         host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
@@ -82,7 +85,7 @@ all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
      axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
      sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
-     vwprobe-m68k vwprobe-newtos host-test
+     vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -242,6 +245,17 @@ $(BUILD)/KSPROBE.PRG: probes/ksprobe.c | $(BUILD)
 ksprobe-newtos: $(BUILD)/KSPROBE.NAP
 $(BUILD)/KSPROBE.NAP: probes/ksprobe.c build-ksprobe-newtos.sh | $(BUILD)
 	./build-ksprobe-newtos.sh $@
+
+# The Rsconf / Iorec(0) probe (TASK/XBIOS06): no disk, any oracle profile;
+# terminates. Run by probes/run-rsprobe.sh.
+rsprobe-m68k: $(BUILD)/RSPROBE.PRG
+$(BUILD)/RSPROBE.PRG: probes/rsprobe.c | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror probes/rsprobe.c -o $@
+	@$(CROSS_MINT)size $@
+
+rsprobe-newtos: $(BUILD)/RSPROBE.NAP
+$(BUILD)/RSPROBE.NAP: probes/rsprobe.c build-rsprobe-newtos.sh | $(BUILD)
+	./build-rsprobe-newtos.sh $@
 
 host-test:
 	@$(MAKE) --no-print-directory -C host test

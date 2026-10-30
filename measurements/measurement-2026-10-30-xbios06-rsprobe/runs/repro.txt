@@ -1,0 +1,53 @@
+== EMUTOS-tt: RSPROBE.LOG run 1 vs run 2
+identical
+== EMUTOS-falcontc: RSPROBE.LOG run 1 vs run 2
+identical
+== NEWTOS-raspi4b-trace: RSPROBE.LOG run 1 vs run 2
+identical
+== EMUTOS-tt: hatari.log run 1 vs run 2
+3,4c3,4
+< INFO : GEMDOS HDD emulation, C: <-> /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios06-dev/rsprobe.nz8plX/hd.
+< INFO : NVRAM not found at '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios06-dev/rsprobe.nz8plX/home/hatari.nvram'
+---
+> INFO : GEMDOS HDD emulation, C: <-> /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios06-dev/rsprobe.rhi0zP/hd.
+> INFO : NVRAM not found at '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios06-dev/rsprobe.rhi0zP/home/hatari.nvram'
+68c68
+<                     Boot-Zeit:          2026/10/30 16:01:58 
+---
+>                     Boot-Zeit:          2026/10/30 16:02:44 
+91c91
+< WARN : No GEMDOS dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios06-dev/rsprobe.nz8plX/hd/AUTO'
+---
+> WARN : No GEMDOS dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios06-dev/rsprobe.rhi0zP/hd/AUTO'
+== EMUTOS-falcontc: hatari.log run 1 vs run 2
+3c3
+< INFO : GEMDOS HDD emulation, C: <-> /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios06-dev/rsprobe.mFpTQG/hd.
+---
+> INFO : GEMDOS HDD emulation, C: <-> /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios06-dev/rsprobe.QBZBQG/hd.
+5c5
+< INFO : NVRAM not found at '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios06-dev/rsprobe.mFpTQG/home/hatari.nvram'
+---
+> INFO : NVRAM not found at '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios06-dev/rsprobe.QBZBQG/home/hatari.nvram'
+64c64
+<                     Boot-Zeit:          2026/10/30 16:02:06 
+---
+>                     Boot-Zeit:          2026/10/30 16:02:52 
+87c87
+< WARN : No GEMDOS dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios06-dev/rsprobe.mFpTQG/hd/AUTO'
+---
+> WARN : No GEMDOS dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios06-dev/rsprobe.QBZBQG/hd/AUTO'
+== NEWTOS-raspi4b-trace: BOOT-SERIAL.txt run 1 vs run 2
+identical
+== NEWTOS-raspi4b-trace: card.img.manifest run 1 vs run 2
+2,3c2,3
+< image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios06-dev/rsprobe.vC7SOY/card.img
+< image_sha256 96c638bc9e8667842740732aecf69d8c2d30d27bc6a923d1491cf134ea426d19
+---
+> image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios06-dev/rsprobe.vIYzUr/card.img
+> image_sha256 653a07f74799e36ed00eee2f9685cc12b1dd6a236ec86c96103af1906d589bce
+5c5
+< created 2026-10-30T15:02:16Z
+---
+> created 2026-10-30T15:03:02Z
+== compare.py on run 2 vs run 1
+identical

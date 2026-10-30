@@ -1,0 +1,70 @@
+line  NT!=tt                 NT!=fc                     tt!=fc                
+RSPROBE -                      -                          -                     
+L00   text                   text                       -                     
+P00   ret,hi,g,ghi           ret,hi,g,ghi               ret,g                 
+S19   ret,hi,g,ghi           ret,hi,g,ghi               ret,g                 
+S19r  ret,hi,g,ghi           ret,hi,g,ghi               ret,g                 
+S20   ret,hi,g,ghi           ret,hi,g,ghi,iw            ret,g,iw              
+S20r  ret,hi,g,ghi           ret,hi,g,ghi               ret,g                 
+S21   ret,hi,ghi             ret,hi,g,ghi,iw            ret,g,iw              
+S21r  hi,g,ghi               ret,hi,g,ghi               ret,g                 
+P01   ret,hi,g,ghi,ib        ret,hi,g,ghi,ib            ret,g                 
+P02   ret,hi,g,ghi           ret,hi,g,ghi               ret,g                 
+P03   ret,hi,g,ghi,ib        ret,hi,g,ghi,ib            ret,g                 
+P04   ret,hi,g,ghi,ib        ret,hi,g,ghi,ib            ret,g                 
+P05   ret,hi,g,ghi,ib        ret,hi,g,ghi,ib            ret,g                 
+P06   ret,hi,g,ghi,ib        ret,hi,g,ghi,ib            ret,g                 
+P07   ret,hi,g,ghi,ib        ret,hi,g,ghi,ib            ret,g                 
+P08   ret,hi,g,ghi,ib,if     ret,hi,g,ghi,ib,if         ret,g                 
+P09   ret,hi,g,ghi,ib,if     ret,hi,g,ghi,ib,if         ret,g                 
+P10   ret,hi,g,ghi,ib,if     ret,hi,g,ghi,ib,if         ret,g                 
+P11a  ret,hi,g,ghi,ib,if     ret,hi,g,ghi,ib,if         ret,g                 
+P11b  ret,hi,g,ghi,ib,if     ret,hi,g,ghi,ib,if         ret,g                 
+P12   ret,hi,g,ghi,ib,if     ret,hi,g,ghi,ib,if,iu      ret,g,iu              
+P13   ret,hi,g,ib,if         ret,hi,g,ib,if,iu,idm,iw   ret,g,iu,idm,iw       
+P14   ret,g,ib,if            ret,g,ib,if,iu,idm,iw      ret,g,iu,idm,iw       
+P15   ret,g,ib,if            ret,g,ib,if,iu,idm,iw      ret,g,iu,idm,iw       
+P16   ret,q,g,if             ret,q,g,if,iu,idm,iw       g,iu,idm,iw           
+P17   ret,g,ghi,ib           ret,g,ghi,ib               ret,g                 
+P17args text                   text                       text                  
+P18   text                   text                       -                     
+Z01   ret,hi,g,ghi           ret,hi,g,ghi               ret,g                 
+Z02   -                      -                          -                     
+Z99   -                      -                          -                     
+
+values (tt / falcontc / NewTOS), fields that differ on any side:
+L00   tt: L00 sizeof(long)=4 sizeof(_IOREC)=14 base=28 two_iorec=28 ok=1
+      fc: L00 sizeof(long)=4 sizeof(_IOREC)=14 base=28 two_iorec=28 ok=1
+      nt: L00 sizeof(long)=8 sizeof(_IOREC)=24 base=48 two_iorec=48 ok=1
+P00   ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000
+S19   ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=88018000/88000000/88010000  ghi=ffffffff/ffffffff/00000000
+S19r  ret=88018000/88000000/88010000  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000
+S20   ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=88018800/88000800/88010800  ghi=ffffffff/ffffffff/00000000  iw=ea/fa/ea
+S20r  ret=88018800/88000800/88010800  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000
+S21   ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=8801ff00/88000800/8801ff00  ghi=ffffffff/ffffffff/00000000  iw=ea/fa/ea
+S21r  ret=8801ff00/88000800/8801ff00  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000
+P01   ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000  ib=00/00/01
+P02   ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000
+P03   ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000  ib=04/04/01
+P04   ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000  ib=0f/0f/01
+P05   ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000  ib=0f/0f/01
+P06   ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000  ib=0f/0f/01
+P07   ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000  ib=0f/0f/01
+P08   ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000  ib=0f/0f/01  if=01/01/00
+P09   ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000  ib=0f/0f/01  if=02/02/00
+P10   ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000  ib=0f/0f/01  if=03/03/00
+P11a  ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000  ib=0f/0f/01  if=03/03/00
+P11b  ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000  ib=0f/0f/01  if=03/03/00
+P12   ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=98018100/98000000/98010100  ghi=ffffffff/ffffffff/00000000  ib=04/04/01  if=02/02/00  iu=88/98/88
+P13   ret=98018100/98000000/98010100  hi=ffffffff/ffffffff/00000000  g=28018100/28000000/28010100  ib=04/04/01  if=02/02/00  iu=88/28/88  idm=ff/7f/ff  iw=ea/aa/ea
+P14   ret=28018100/28000000/28010100  g=48018100/48000000/48010100  ib=04/04/01  if=02/02/00  iu=88/48/88  idm=ff/3f/ff  iw=ea/ca/ea
+P15   ret=48018100/48000000/48010100  g=68018100/68000000/68010100  ib=04/04/01  if=02/02/00  iu=88/68/88  idm=ff/1f/ff  iw=ea/8a/ea
+P16   ret=00000007/00000007/00000004  q=00000007/00000007/00000004  g=68018100/68000000/68010100  if=02/02/00  iu=88/68/88  idm=ff/1f/ff  iw=ea/8a/ea
+P17   ret=68018100/68000000/68010100  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000  ib=01/01/07
+P17args tt: P17 args baud0=1 flow0=0 ucr0=88 rsr0=01 tsr0=81
+      fc: P17 args baud0=1 flow0=0 ucr0=88 rsr0=00 tsr0=00
+      nt: P17 args baud0=1 flow0=0 ucr0=88 rsr0=01 tsr0=01
+P18   tt: P18 record restore needed=0
+      fc: P18 record restore needed=0
+      nt: P18 record restore needed=1
+Z01   ret=88018100/88000000/88010100  hi=ffffffff/ffffffff/00000000  g=88018100/88000000/88010100  ghi=ffffffff/ffffffff/00000000

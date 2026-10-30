@@ -1,0 +1,32 @@
+RSPROBE TASK/XBIOS06
+L00 sizeof(long)=4 sizeof(_IOREC)=14 base=28 two_iorec=28 ok=1
+P00 Rsconf(-1,-1,-1,-1,-1,-1) initial ret=88018100 hi=ffffffff q=00000001 qhi=00000000 g=88018100 ghi=ffffffff ib=01 if=00 iu=88 idm=ff iw=ea
+S19 Rsconf(-1,-1,-1,-1,0x00,-1) tsr ret=88018100 hi=ffffffff q=00000001 qhi=00000000 g=88018000 ghi=ffffffff ib=01 if=00 iu=88 idm=ff iw=ea
+S19r Rsconf(-1,-1,-1,-1,tsr0,-1) restore ret=88018000 hi=ffffffff q=00000001 qhi=00000000 g=88018100 ghi=ffffffff ib=01 if=00 iu=88 idm=ff iw=ea
+S20 Rsconf(-1,-1,-1,-1,0x08,-1) tsr ret=88018100 hi=ffffffff q=00000001 qhi=00000000 g=88018800 ghi=ffffffff ib=01 if=00 iu=88 idm=ff iw=ea
+S20r Rsconf(-1,-1,-1,-1,tsr0,-1) restore ret=88018800 hi=ffffffff q=00000001 qhi=00000000 g=88018100 ghi=ffffffff ib=01 if=00 iu=88 idm=ff iw=ea
+S21 Rsconf(-1,-1,-1,-1,0xFF,-1) tsr ret=88018100 hi=ffffffff q=00000001 qhi=00000000 g=8801ff00 ghi=ffffffff ib=01 if=00 iu=88 idm=ff iw=ea
+S21r Rsconf(-1,-1,-1,-1,tsr0,-1) restore ret=8801ff00 hi=ffffffff q=00000001 qhi=00000000 g=88018100 ghi=ffffffff ib=01 if=00 iu=88 idm=ff iw=ea
+P01 Rsconf(0,-1,-1,-1,-1,-1) baud ret=88018100 hi=ffffffff q=00000000 qhi=00000000 g=88018100 ghi=ffffffff ib=00 if=00 iu=88 idm=ff iw=ea
+P02 Rsconf(1,-1,-1,-1,-1,-1) baud ret=88018100 hi=ffffffff q=00000001 qhi=00000000 g=88018100 ghi=ffffffff ib=01 if=00 iu=88 idm=ff iw=ea
+P03 Rsconf(4,-1,-1,-1,-1,-1) baud ret=88018100 hi=ffffffff q=00000004 qhi=00000000 g=88018100 ghi=ffffffff ib=04 if=00 iu=88 idm=ff iw=ea
+P04 Rsconf(15,-1,-1,-1,-1,-1) baud ret=88018100 hi=ffffffff q=0000000f qhi=00000000 g=88018100 ghi=ffffffff ib=0f if=00 iu=88 idm=ff iw=ea
+P05 Rsconf(16,-1,-1,-1,-1,-1) baud out ret=88018100 hi=ffffffff q=0000000f qhi=00000000 g=88018100 ghi=ffffffff ib=0f if=00 iu=88 idm=ff iw=ea
+P06 Rsconf(-3,-1,-1,-1,-1,-1) baud out ret=88018100 hi=ffffffff q=0000000f qhi=00000000 g=88018100 ghi=ffffffff ib=0f if=00 iu=88 idm=ff iw=ea
+P07 Rsconf(-1,0,-1,-1,-1,-1) flow ret=88018100 hi=ffffffff q=0000000f qhi=00000000 g=88018100 ghi=ffffffff ib=0f if=00 iu=88 idm=ff iw=ea
+P08 Rsconf(-1,1,-1,-1,-1,-1) flow ret=88018100 hi=ffffffff q=0000000f qhi=00000000 g=88018100 ghi=ffffffff ib=0f if=01 iu=88 idm=ff iw=ea
+P09 Rsconf(-1,2,-1,-1,-1,-1) flow ret=88018100 hi=ffffffff q=0000000f qhi=00000000 g=88018100 ghi=ffffffff ib=0f if=02 iu=88 idm=ff iw=ea
+P10 Rsconf(-1,3,-1,-1,-1,-1) flow ret=88018100 hi=ffffffff q=0000000f qhi=00000000 g=88018100 ghi=ffffffff ib=0f if=03 iu=88 idm=ff iw=ea
+P11a Rsconf(-1,4,-1,-1,-1,-1) flow out ret=88018100 hi=ffffffff q=0000000f qhi=00000000 g=88018100 ghi=ffffffff ib=0f if=03 iu=88 idm=ff iw=ea
+P11b Rsconf(-1,-2,-1,-1,-1,-1) flow out ret=88018100 hi=ffffffff q=0000000f qhi=00000000 g=88018100 ghi=ffffffff ib=0f if=03 iu=88 idm=ff iw=ea
+P12 Rsconf(4,2,0x98,-1,-1,-1) ret=88018100 hi=ffffffff q=00000004 qhi=00000000 g=98018100 ghi=ffffffff ib=04 if=02 iu=88 idm=ff iw=ea
+P13 Rsconf(-1,-1,0x28,-1,-1,-1) ucr ret=98018100 hi=ffffffff q=00000004 qhi=00000000 g=28018100 ghi=00000000 ib=04 if=02 iu=88 idm=ff iw=ea
+P14 Rsconf(-1,-1,0x48,-1,-1,-1) ucr ret=28018100 hi=00000000 q=00000004 qhi=00000000 g=48018100 ghi=00000000 ib=04 if=02 iu=88 idm=ff iw=ea
+P15 Rsconf(-1,-1,0x68,-1,-1,-1) ucr ret=48018100 hi=00000000 q=00000004 qhi=00000000 g=68018100 ghi=00000000 ib=04 if=02 iu=88 idm=ff iw=ea
+P16 record baudrate:=7; Rsconf(-2,-1,-1,-1,-1,-1) ret=00000007 hi=00000000 q=00000007 qhi=00000000 g=68018100 ghi=00000000 ib=07 if=02 iu=88 idm=ff iw=ea
+P17 Rsconf(baud0,flow0,ucr0,rsr0,tsr0,-1) restore ret=68018100 hi=00000000 q=00000001 qhi=00000000 g=88018100 ghi=ffffffff ib=01 if=00 iu=88 idm=ff iw=ea
+P17 args baud0=1 flow0=0 ucr0=88 rsr0=01 tsr0=81
+P18 record restore needed=0
+Z01 Rsconf(-1,-1,-1,-1,-1,-1) final ret=88018100 hi=ffffffff q=00000001 qhi=00000000 g=88018100 ghi=ffffffff ib=01 if=00 iu=88 idm=ff iw=ea
+Z02 final equals initial=1
+Z99 end

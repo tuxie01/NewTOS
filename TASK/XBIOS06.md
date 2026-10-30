@@ -94,3 +94,21 @@ vorzeichenerweitert, heute nullerweitert, getrennt markiert).
 - Laeufe: Orakel tt und falcontc, NewTOS raspi4b (mit `bios-arg-trace`).
 - Kein Produktcode. Ergebnis als Messlauf; danach Entscheidungsvorlage.
 
+## Messung Schritt 1 (2026-10-30)
+
+Sonde `tosdump/probes/rsprobe.c`, Lauf
+`measurements/measurement-2026-10-30-xbios06-rsprobe/RUNINFO.TXT` (je Seite
+zweimal, Logs byte-gleich; NewTOS mit `bios-arg-trace`, Spur geprueft).
+
+- Obere Haelfte: tt/falcontc `ffffffff` bei gesetztem Bit 31, NewTOS immer 0.
+- TSR zuruecklesen: tt (Hatari-MFP) gelesen = geschrieben `| 0x80`
+  (00→80, 08→88, FF→FF); falcontc nur Bit 3; NewTOS gelesen = geschrieben.
+- P16: tt und falcontc antworten `Rsconf(-2)` aus dem `Iorec(0)`-Record (7),
+  NewTOS aus dem Schatten `RS_BAUD` (4).
+- Record: tt schreibt nur `baudrate` (0..15) und `flowctrl` (0..3); falcontc
+  zusaetzlich `ucr`, `datamask`, `wr5`; NewTOS schreibt kein Feld.
+- Hinweis: in der Analyse §3.2 sind die Bit-Etiketten fuer ucr `0x28`/`0x68`
+  vertauscht (gemessen: `0x28` → 7 Bit, `0x68` → 5 Bit; datierter Snapshot,
+  nicht geaendert).
+- Fix-Entscheidung des Anwenders steht aus.
+

@@ -1,0 +1,6 @@
+rsprobe run, side emutos (2026-10-30T15:01:51Z)
+tree      21843f1ba6e55276f9a92b856799062424964cfd 2 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    RSPROBE.PRG 464e63cf84270fe9d5e6c06d2d0aeec482b3428d5cf52f70c68720c8b80e9c71 RSPROBE.NAP 7c5da7de0f6c251cc5d72a4c219ef9b574f83206d0379f54742d6534b795efd6
+oracle    /Volumes/Daten/hatari-2.6.1_macos/Hatari.app/Contents/MacOS/Hatari, ROM /Volumes/Daten/Development/PiRusTOS/tools/oracle/etos512de-1a7484ab.img (323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c), profile tt, cfg /Volumes/Daten/Development/PiRusTOS/tools/oracle/hatari.cfg (c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46)
+hatari    end-seen; stopped (SIGKILL)
+end       Z99 reached; Z02 final equals initial=1

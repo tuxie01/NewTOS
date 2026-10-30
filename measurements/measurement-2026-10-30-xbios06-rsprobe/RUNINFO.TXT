@@ -1,0 +1,162 @@
+XBIOS06 step 1 -- rsprobe: Rsconf and the Iorec(0) record on the oracle (tt, falcontc) and NewTOS -- 2026-10-30
+==============================================================================================================
+Developer run for TASK/XBIOS06.md, "Arbeit, Schritt 1" (probe and measurement only, no product code),
+user decision 2026-10-30 point 2 ("Erst messen, dann fixen"). Case design: docs/analysis/xbios06-rsconf-profile-2026-10-30.md
+section 3.2 (P00-P17, S19-S21). QEMU raspi4b (headless, -append serial=on) and the pinned oracle on Hatari.
+No hardware, no real card, nothing flashed. Not committed (the lead commits).
+
+WHY
+  The owner's open questions before the fix (analysis section 4, ticket decision point 2):
+    1. TSR semantics on the oracle when the program writes tsr 0x00 / 0x08 / 0xFF (S19-S21): what does
+       Rsconf(-1 x6) read back?
+    2. P16: where does Rsconf(-2) answer from -- the Iorec(0) record or a shadow? (The probe writes the
+       record's baudrate, then asks.)
+    3. Which Iorec(0) fields does EmuTOS write on tt vs falcontc after Rsconf (baud/flow in and out of
+       range, ucr variants)?
+    4. Every line where NewTOS differs.
+  Why a probe and not a tosdump table: DUMPBIOS refuses every Rsconf with a baud rate set
+  (tosdump/core/cases.c:4050-4055@CR_RSCONF); the follow-up that moves the cases to tosdiff is TASK/TOOL27.
+
+STATE
+  Tree      main 21843f1b (21843f1ba6e55276f9a92b856799062424964cfd), product code unchanged. Uncommitted,
+            all new or tosdump-only:
+              tosdump/probes/rsprobe.c, tosdump/probes/run-rsprobe.sh, tosdump/build-rsprobe-newtos.sh (new)
+              tosdump/Makefile (rsprobe-m68k, rsprobe-newtos)
+            (run.txt "2 dirty paths" = the two new files under tosdump/probes.)
+  EmuTOS    1a7484aba1bfba23e2c0899e243b6d8177fe41df, ROM tools/oracle/etos512de-1a7484ab.img sha256
+            323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c (checked by the runner),
+            Hatari 2.6.1 (tools/oracle/oracle.env), cfg tools/oracle/hatari.cfg sha256
+            c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46
+  QEMU      11.0.2, -M raspi4b, -append serial=on
+  Kernel    kernel8.img sha256 9da4c9e910aec011ddeadfefd4f7a8b4d3a39bbea71762d0eed3afc30740b626
+            cargo xtask build --board rpi4 --release --features bios-arg-trace of this tree, copied to the
+            scratch before the runs (both NewTOS runs booted this file; deleted afterwards)
+  Probes    probe/RSPROBE.PRG 464e63cf84270fe9d5e6c06d2d0aeec482b3428d5cf52f70c68720c8b80e9c71
+            probe/RSPROBE.NAP 7c5da7de0f6c251cc5d72a4c219ef9b574f83206d0379f54742d6534b795efd6
+            (make -C tosdump rsprobe-m68k rsprobe-newtos; every run used these two, see run.txt)
+
+METHOD (method/)
+  run-all.sh       the six runs: tosdump/probes/run-rsprobe.sh twice per side (emutos tt, emutos falcontc,
+                   newtos <kernel8.img>), RSPROBE_SCRATCH set to the session scratchpad
+  trace-check.py   the input check on NewTOS: the [biostrace] lines of caller U0 in BOOT-SERIAL.txt against
+                   the call sequence the probe source gives (Iorec(0), then per step line the step call,
+                   Rsconf(-2 ..), Rsconf(-1 x6)); each argument's low 16 bits and each 64-bit result
+                   against the log. Negative-tested by hand (a changed argument and a changed return in a
+                   copy of the log each give FAIL); not kept.
+  compare.py       field-by-field comparison of the three sides -> runs/compare.txt
+  Probe            tosdump/probes/rsprobe.c (permanent, committed with this run, CLAUDE.md "Testing" probe
+                   rule), one source for both sides, mintlib osbind.h bindings. Line layout and step order:
+                   the probe's header comment. Iorec(0)'s five UBYTEs are read in user mode at the offsets
+                   of the tosdump-layout block in docs/api/structures/iorec.md (m68k 28..32, LP64 48..52);
+                   line L00 checks the offset base against 2*sizeof(_IOREC) (ok=1 on all sides). The
+                   probe's record writes (P16 baudrate := 7, P18 restore) run in a Supexec callback, as
+                   mdprobe's ring feed does.
+  Runner           tosdump/probes/run-rsprobe.sh (committed, not copied here), the run-mdprobe.sh pattern
+                   without the HOLD wait (the probe terminates): Hatari stops once RSPROBE.LOG holds
+                   "Z99 end"; QEMU once the shell prints "RSPROBE.NAP' exited with rc". NewTOS card:
+                   tools/mkcard.sh (C:\RSPROBE.NAP, NEWDESK.INF "#R 02" + "#Z 01 C:\RSPROBE.NAP@"), booted
+                   as an APFS clone.
+  hi on m68k: the probe prints the high half of (long long)(long)r -- on m68k the sign extension of d0
+  (m68k has no 64-bit register); on NewTOS the high half of x0. Same convention as mdprobe/xcprobe.
+
+RESULTS
+  Reproducibility (runs/repro.txt): RSPROBE.LOG run 1 = run 2 byte for byte on every side; NewTOS
+  BOOT-SERIAL.txt run 1 = run 2 byte for byte. hatari.log differs only in the scratch path and the
+  "Boot-Zeit" line; card.img.manifest only in image path, image_sha256 and created (the card image hash
+  differs per mkcard call; the hashed files C:\NEWDESK.INF and C:\RSPROBE.NAP are equal). compare.py on
+  the run-2 logs = runs/compare.txt. Every run ended with "Z02 final equals initial=1".
+  Input check (runs/trace-check-1.txt, -2.txt): RESULT OK, 79 calls (Iorec 1 + Rsconf 78), 2 Supexec
+  lines (P16 write, P18 restore), no other [biostrace] line.
+
+  Per line (values tt / falcontc / NewTOS; ret = the step call's low 32 bits, hi its high half;
+  g = Rsconf(-1 x6) afterwards; q = Rsconf(-2) afterwards; ib/if/iu/idm/iw = Iorec(0) baudrate,
+  flowctrl, ucr, datamask, wr5). Full field table: runs/compare.txt; raw lines: runs/*/RSPROBE.LOG.
+
+  line  call                         ret tt/fc/NT                   g tt/fc/NT                     record tt / fc / NT (ib if iu idm iw)          differs
+  P00   Rsconf(-1 x6) initial        88018100/88000000/88010100     same as ret                    01 00 88 ff ea / same / same                   NT: TSR, hi
+  S19   tsr=0x00                     88018100/88000000/88010100     88018000/88000000/88010000     unchanged on all                               NT: TSR, hi
+  S19r  tsr=tsr0 (81/00/01)          88018000/88000000/88010000     88018100/88000000/88010100     unchanged                                      NT: TSR, hi
+  S20   tsr=0x08                     88018100/88000000/88010100     88018800/88000800/88010800     fc iw ea->fa; tt, NT unchanged                 NT: TSR, hi; vs fc also iw
+  S20r  tsr=tsr0                     88018800/88000800/88010800     88018100/88000000/88010100     fc iw back to ea                               NT: TSR, hi
+  S21   tsr=0xFF                     88018100/88000000/88010100     8801ff00/88000800/8801ff00     fc iw fa                                       NT vs tt: ret TSR, hi (g EQUAL); vs fc: TSR, hi, iw
+  S21r  tsr=tsr0                     8801ff00/88000800/8801ff00     88018100/88000000/88010100     fc iw ea                                       NT vs tt: hi, g TSR (ret EQUAL)
+  P01   baud 0                       88018100/88000000/88010100     = ret                          ib 00 / 00 / 01                                NT: TSR, hi, ib
+  P02   baud 1                       "                              = ret                          ib 01 / 01 / 01                                NT: TSR, hi
+  P03   baud 4                       "                              = ret                          ib 04 / 04 / 01                                NT: TSR, hi, ib
+  P04   baud 15                      "                              = ret                          ib 0f / 0f / 01                                NT: TSR, hi, ib
+  P05   baud 16 (out)                "                              = ret                          ib 0f / 0f / 01 (kept)                         NT: TSR, hi, ib
+  P06   baud -3 (out)                "                              = ret                          ib 0f / 0f / 01 (kept)                         NT: TSR, hi, ib
+  P07   flow 0                       "                              = ret                          if 00 / 00 / 00                                NT: TSR, hi, ib
+  P08   flow 1                       "                              = ret                          if 01 / 01 / 00                                NT: TSR, hi, ib, if
+  P09   flow 2                       "                              = ret                          if 02 / 02 / 00                                NT: TSR, hi, ib, if
+  P10   flow 3                       "                              = ret                          if 03 / 03 / 00                                NT: TSR, hi, ib, if
+  P11a  flow 4 (out)                 "                              = ret                          if 03 / 03 / 00 (kept)                         NT: TSR, hi, ib, if
+  P11b  flow -2 (out)                "                              = ret                          if 03 / 03 / 00 (kept)                         NT: TSR, hi, ib, if
+  P12   baud 4, flow 2, ucr 0x98     88018100/88000000/88010100     98018100/98000000/98010100     ib 04/04/01 if 02/02/00 iu 88/98/88            NT: TSR, hi, ib, if; vs fc also iu
+  P13   ucr 0x28                     98018100/98000000/98010100     28018100/28000000/28010100     iu 88/28/88 idm ff/7f/ff iw ea/aa/ea           NT: TSR, hi (ret), ib, if; vs fc also iu idm iw
+  P14   ucr 0x48                     28018100/28000000/28010100     48018100/48000000/48010100     iu 88/48/88 idm ff/3f/ff iw ea/ca/ea           NT: TSR, ib, if; vs fc also iu idm iw
+  P15   ucr 0x68                     48018100/48000000/48010100     68018100/68000000/68010100     iu 88/68/88 idm ff/1f/ff iw ea/8a/ea           NT: TSR, ib, if; vs fc also iu idm iw
+  P16   record ib:=7; Rsconf(-2)     00000007/00000007/00000004     68018100/68000000/68010100     ib 07/07/07                                    NT: ret 4 (q 4), TSR, if; vs fc also iu idm iw
+  P17   restore (1,0,88,rsr0,tsr0)   68018100/68000000/68010100     88018100/88000000/88010100     ib 01/01/07, rest = P00                        NT: TSR, hi (g), ib
+  P18   record restore needed        0 / 0 / 1                                                                                                    NT
+  Z01   Rsconf(-1 x6) final          88018100/88000000/88010100     = ret                          = P00 on all                                   NT: TSR, hi
+  ("TSR" = the byte 15-8 of the value; "hi" = the high half: tt/fc ffffffff whenever bit 31 is set
+  (UCR >= 0x80), NewTOS 00000000 on every line. The RSR byte 23-16 differs only against falcontc: tt 01,
+  fc 00, NewTOS 01. Lines EQUAL across all three: none besides the header, Z02, Z99. tt vs falcontc
+  differ on every line in ret/g (RSR, TSR bytes) and from P12 on in iu/idm/iw.)
+
+ANSWERS (measured [M]; derived, not read or measured directly [D])
+  1. TSR on the oracle, Rsconf(-1 x6) read-back after a write:
+       tt:        0x00 -> 0x80, 0x08 -> 0x88, 0xFF -> 0xFF, restore 0x81 -> 0x81 [M]
+                  [D] every measured value fits "read = written | 0x80"; bit 7 read 1 in every read on tt,
+                  bits 0-6 read as written in all four writes. Hatari's MFP model, not a real MC68901.
+       falcontc:  0x00 -> 0x00, 0x08 -> 0x08, 0xFF -> 0x08, restore 0x00 -> 0x00; wr5 bit 4 follows tsr
+                  bit 3 (ea -> fa -> ea) [M] -- as rsconf_scc reads (references/emutos/bios/serport.c:788-790,
+                  846-859)
+       NewTOS:    0x00 -> 0x00, 0x08 -> 0x08, 0xFF -> 0xFF, restore 0x01 -> 0x01 (read = written) [M]
+  2. P16, Rsconf(-2) after the program set Iorec(0)->baudrate to 7 (shadow/hardware at baud 4):
+       tt 7, falcontc 7 (the record; references/emutos/bios/serport.c:222-223, :779-780) [M]
+       NewTOS 4 (its shadow RS_BAUD, tos-api/src/xbios/system.rs:263@RS_BAUD) [M]
+  3. Iorec(0) fields EmuTOS writes in Rsconf:
+       tt:        baudrate (only 0..15: 16 and -3 keep it), flowctrl (only 0..3: 4 and -2 keep it); ucr,
+                  datamask, wr5 stay 88/ff/ea through every ucr write (P12-P15) [M]
+                  (references/emutos/bios/serport.c:231-232, :237-238)
+       falcontc:  baudrate and flowctrl with the same ranges; plus ucr (= the written ucr), datamask
+                  (0x28 -> 7f, 0x48 -> 3f, 0x68 -> 1f, 0x98/0x88 -> ff), wr5 (bits/char: aa, ca, 8a; break
+                  bit 4 from tsr bit 3) [M] (references/emutos/bios/serport.c:792-793, :798-800, :811-832,
+                  :846-859)
+       NewTOS:    none -- the record stays 01 00 88 ff ea through every Rsconf (P01-P15); only the
+                  program's own write (P16) changes it, and P17's Rsconf(1,..) does not set it back [M]
+  4. NewTOS differs on every step line (table above): against tt in the TSR byte (01 vs 81) and the high
+     half, plus Iorec(0) baudrate from P01 on (except where the value is 01) and flowctrl from P08 on,
+     plus P16 (answer 4 vs 7) and P18 (restore needed). Against falcontc: the same high half, record
+     baudrate/flowctrl and P16/P18 lines; the RSR byte (01 vs 00); the TSR byte (NewTOS reads back what
+     was written, falcontc only bit 3: 01 vs 00, FF vs 08); wr5 at S20/S21; and from P12 on
+     ucr/datamask/wr5 of the record.
+     Where NewTOS equals tt: every ucr/rsr byte of ret/g; the TSR byte of S21's read-back and S21r's
+     return (0xFF on both); every Rsconf(-2) answer q except P16; baud/flow range checks as seen through q.
+
+OPEN POINTS (not decided here)
+  - The case design's labels for P13-P15 (analysis 3.2: 0x68 "7 Bit", 0x48 "6 Bit", 0x28 "5 Bit") are
+    swapped for 0x68 and 0x28: falcontc measured 0x28 -> datamask 7f, 0x68 -> 1f, as
+    references/emutos/bios/serport.c:812-830 reads ((ucr>>5)&3: 1 = 7 bits, 3 = 5 bits). The probe labels
+    them by value only. The analysis is a dated snapshot; not edited.
+  - Oracle-side argument trace (Hatari --trace) not run; the oracle side is checked only by the
+    deterministic log.
+  - NewTOS ran only with the bios-arg-trace kernel (both runs); no run with a kernel without the feature.
+
+CARDS / IMAGES
+  NewTOS cards: tools/mkcard.sh defaults (64 MiB, MBR + FAT16), one per NewTOS run; manifests
+  runs/RSPROBE-NEWTOS-raspi4b-trace-1/card.img.manifest and runs/RSPROBE-NEWTOS-raspi4b-trace-2/card.img.manifest.
+  optional_missing line of both manifests, verbatim:
+    optional_missing none
+  Image sha256 before/after boot: run.txt of each NewTOS run ("card", "card after"). The oracle runs
+  boot no image (GEMDOS-drive directory). All images, clones, the scratch kernel copy and the scratch
+  directories were deleted after the runs.
+
+NOT VERIFIED
+  Real Raspberry Pi 4. qemu-virt (the probe concerns tos-api code only; no product change). A real TT
+  MFP / Falcon SCC (the oracle is Hatari).
+
+FILES
+  manifest.sha256 covers every file of this run except itself.

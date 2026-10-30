@@ -1,0 +1,2 @@
+calls checked 79 (Iorec 1 + Rsconf 78); Supexec lines 2; other [biostrace] lines 0
+RESULT OK

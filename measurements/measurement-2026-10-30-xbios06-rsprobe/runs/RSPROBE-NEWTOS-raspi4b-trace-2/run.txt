@@ -1,0 +1,8 @@
+rsprobe run, side newtos (2026-10-30T15:02:54Z)
+tree      21843f1ba6e55276f9a92b856799062424964cfd 2 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    RSPROBE.PRG 464e63cf84270fe9d5e6c06d2d0aeec482b3428d5cf52f70c68720c8b80e9c71 RSPROBE.NAP 7c5da7de0f6c251cc5d72a4c219ef9b574f83206d0379f54742d6534b795efd6
+kernel    9da4c9e910aec011ddeadfefd4f7a8b4d3a39bbea71762d0eed3afc30740b626 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/xbios06-dev/kernel8-trace.img
+card      653a07f74799e36ed00eee2f9685cc12b1dd6a236ec86c96103af1906d589bce (tools/mkcard.sh, C:\RSPROBE.NAP, #Z autorun)
+qemu      probe-exited; stopped
+card      after 29182242bf18495c0fca02bc40854a5d8a45a931552aad5054f2830d7c11396a (the booted clone)
+end       Z99 reached; Z02 final equals initial=1
