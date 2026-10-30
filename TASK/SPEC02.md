@@ -25,6 +25,9 @@ Zeichensatz), Bits 7..0 Tastatur (`references/emutos/bios/country.c:96-113`,
 `tos-api/src/i18n.rs:38@current_lang`, `docs/api/bios/_cookie-jar.md`
 (Zeile 56), `docs/api/gemdos/154-ssystem.md` (Zeile 647).
 
+Dazu (Lead 2026-10-30, aus COOK02): Kommentar `tos-api/src/cookie.rs:219-220@seed_defaults`
+"`_VDO` is open until ARCH06" ist veraltet (ARCH06 entschieden 2026-10-29).
+
 ## Arbeit
 
 Jede Zeile gegen `tos-api/src/xbios/mod.rs` (`dispatch`) und die Quittungen

@@ -1,6 +1,6 @@
 # BIOS09 — `Bconin` auf AUX, MIDI und Bconmap-Ports kehrt sofort mit 0 zurueck
 
-Status: **UMGESETZT** 2026-10-30, Pi-Messung offen (`TASK/MEM12.md` Prueffolge Punkt 10) · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
+Status: **UMGESETZT** 2026-10-30, Pi-Messung im spaeteren Testszenario (MEM12-Schritt entfernt, Anwender 2026-10-30) · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
 
 ## Sachverhalt
 

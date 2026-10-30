@@ -1,6 +1,6 @@
 # MEM12 — EL0 darf Seite 0 beschreiben
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Kernfehler (Schutzgrenze fehlt) — Anwenderentscheidung 2026-10-26
+Status: **ERLEDIGT** 2026-10-30 ([Quittung](MEM12-STATUS-DONE.MD); Pi-Lauf des Anwenders 2026-10-29, Kern `58e35ac8`) · Prioritaet: **P1** · Typ: Kernfehler (Schutzgrenze fehlt) — Anwenderentscheidung 2026-10-26
 
 ## Sachverhalt
 
@@ -363,17 +363,17 @@ Silizium; QEMU verdeckt fehlende Invalidierungen oft.
 9. **Sonde K16 mit physischer Umschalttaste:** erwartet ein Wert der Klasse
    `0x02300042` (Shift-Bit im oberen Byte gesetzt, Shift zum Zeitpunkt des
    Tastendrucks; QEMU-Wert aus dem XBIOS01-Lauf).
-10. **AUX wartet ohne Kabel** (aus BIOS09, Anwender 2026-10-30; kein
-   UART-Adapter angesteckt): `AWPROBE.NAP` (`tosdump/probes/awprobe.c`,
-   gebaut mit `tosdump/build-awprobe-newtos.sh`) starten. `Bconin(1)` kehrt
-   nicht zurueck; der `kbdvec`-Haken der Sonde zeigt bei Tastendruck weiter
-   Bytes; Strg+Alt+Entf startet neu. Kehrt die erste Runde einmal mit `0`
-   zurueck und wartet die zweite, ist das die GPIO-15-Falle aus
-   `TASK/BIOS09.md` (eigener Befund, kein Fehlschlag des Wartens).
-11. **Unechtes Byte auf RXD0** (aus UART01, Anwender 2026-10-30; kein
-   UART-Adapter angesteckt): eigener Diagnose-Kern aus `TASK/UART01.md`
-   Arbeit 1 (nicht der Abnahme-Kern dieser Folge). Booten, die Anzeige des
-   ersten Empfangsbytes ablesen: Wert, `UARTDR`-Bits 8–11 (FE/PE/BE/OE),
-   `RIS`; Foto.
-12. Ergebnis mit Seriellprotokoll und Fotos in einem Lauf unter
+10. Ergebnis mit Seriellprotokoll und Fotos in einem Lauf unter
    `measurements/` und in `docs/HW-TEST-LOG.md`.
+
+## Abschluss (Anwender, 2026-10-30)
+
+- MEM12 ist abgeschlossen mit Verweis auf den Pi-Lauf des Anwenders vom
+  2026-10-29 (Release-Kern `58e35ac8`, enthaelt MEM12): Desktop, Programme und
+  Tastatur liefen im Alltag; dabei fiel der DOOM-Freeze auf ([DOOM01](DOOM01.md)).
+- Die Prueffolge oben ist nicht formal durchlaufen. `P0PAR` (TLB-Pflege beim
+  Umschalten von Seite 0) wandert als erster Diagnoseschritt nach
+  [DOOM01](DOOM01.md) und in das spaetere Testszenario fuer die Tester.
+- Die Schritte 10/11 (AUX-Warten aus BIOS09, RXD0 aus UART01) sind entfernt;
+  beide Themen sind geparkt bzw. gehen in das Testszenario.
+

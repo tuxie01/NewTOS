@@ -1,6 +1,6 @@
 # XBIOS06 — `Rsconf(-1 x6)`: TSR-Byte ohne Bit 7, obere 32 Bit null statt vorzeichenerweitert
 
-Status: **OFFEN** (entschieden 2026-10-30: Option a, Messung zuerst) · Prioritaet: **P2** · Typ: Developer (Erweiterung) + Researcher (Spec gegen ABI, Geraeteprofil der Registerbytes) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`
+Status: **GEPARKT** 2026-10-30 (Anwender: wieder aufnehmen mit MIDI/[IO01](IO01.md); Fix geparkt; Messung `measurements/measurement-2026-10-30-xbios06-rsprobe/RUNINFO.TXT` bleibt Beleg) · Prioritaet: **P2** · Typ: Developer (Erweiterung) + Researcher (Spec gegen ABI, Geraeteprofil der Registerbytes) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`
 
 ## Sachverhalt
 
@@ -112,3 +112,7 @@ zweimal, Logs byte-gleich; NewTOS mit `bios-arg-trace`, Spur geprueft).
   nicht geaendert).
 - Fix-Entscheidung des Anwenders steht aus.
 
+## Geparkt (Anwender, 2026-10-30)
+
+Kein Programm auf der Karte nutzt AUX oder `Rsconf`; wieder aufnehmen mit
+MIDI ([IO01](IO01.md)). Messungen bleiben als Beleg.

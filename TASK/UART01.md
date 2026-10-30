@@ -1,6 +1,6 @@
 # UART01 — Unechtes `0x00` auf offener RXD0-Leitung (GPIO 15) landet im AUX-Ring
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Messung zuerst (Pi), danach Developer — Anwenderentscheidung 2026-10-30, Folge von [BIOS09](BIOS09.md)
+Status: **GEPARKT** 2026-10-30 (Anwender: wieder aufnehmen mit MIDI/[IO01](IO01.md); geparkt) · Prioritaet: **P2** · Typ: Messung zuerst (Pi), danach Developer — Anwenderentscheidung 2026-10-30, Folge von [BIOS09](BIOS09.md)
 
 Abhaengigkeiten: [BIOS09](BIOS09.md) (seit dort erreicht das Byte den AUX-Ring); Richtung [IO01](IO01.md) (weitere UARTs, MIDI)
 
@@ -54,3 +54,8 @@ Abhaengigkeiten: [BIOS09](BIOS09.md) (seit dort erreicht das Byte den AUX-Ring);
   gleich `0` auf der Pi ohne Adapter.
 
 [Gemeinsame Regeln](README.md) gelten.
+
+## Geparkt (Anwender, 2026-10-30)
+
+Kein Programm auf der Karte nutzt AUX oder `Rsconf`; wieder aufnehmen mit
+MIDI ([IO01](IO01.md)). Messungen bleiben als Beleg.

@@ -1,6 +1,6 @@
 # TOOL27 — `rsprobe`-Faelle nach tosdiff
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-30, Folgeticket von [XBIOS06](XBIOS06.md) (Sondenregel, CLAUDE.md "Testing")
+Status: **GEPARKT** 2026-10-30 (Anwender: wieder aufnehmen mit MIDI/[IO01](IO01.md); geparkt) · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-30, Folgeticket von [XBIOS06](XBIOS06.md) (Sondenregel, CLAUDE.md "Testing")
 
 ## Sachverhalt
 
@@ -23,3 +23,8 @@ Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Anwende
 - Neue Tabelle laeuft auf beiden Seiten; Ergebnis gleich der `rsprobe`-Messung.
 
 [Gemeinsame Regeln](README.md) gelten.
+
+## Geparkt (Anwender, 2026-10-30)
+
+Kein Programm auf der Karte nutzt AUX oder `Rsconf`; wieder aufnehmen mit
+MIDI ([IO01](IO01.md)). Messungen bleiben als Beleg.

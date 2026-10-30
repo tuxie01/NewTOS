@@ -46,6 +46,10 @@ wo zu schauen ist:
 
 ## Arbeit
 
+0. Pi, zuerst (Anwender 2026-10-30, aus MEM12): `P0PAR.NAP` + `P0KID.NAP`
+   (`sdk/examples/p0par.c`, `sdk/examples/p0kid.c`) laufen lassen — prueft die
+   TLB-Pflege beim Umschalten von Seite 0 auf echtem Silizium; ein `WRONG` bei
+   Fall `S` oder `T` waere ein TLB-Fehler (Prueffolge in `TASK/MEM12.md`).
 1. Pi: beim Freeze zuerst Leertaste, 3 s warten, dann Strg+Alt+Entf.
    Desktop kommt = K5, nichts = K6. Dazu `cmdline.txt` auf `asid=on` pruefen.
 2. Pi: `DOOM-old.NAP` (DOOM vom 2026-10-24, altes SDK) auf dem neuen Kern und

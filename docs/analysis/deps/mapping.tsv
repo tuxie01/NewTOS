@@ -416,7 +416,7 @@ next_cell	bios/conout.c	-	-	unmapped	VT52 cell helper: no NewTOS counterpart fun
 scroll_down	bios/conout.c	tos-api/src/vdi/escape.rs	scroll_down	mapped	-
 scroll_up	bios/conout.c	tos-api/src/vdi/escape.rs	scroll_up	mapped	-
 detect_akp	bios/country.c	-	-	unmapped	country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
-detect_idt	bios/country.c	-	-	unmapped	country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
+detect_idt	bios/country.c	tos-api/src/cookie.rs	seed_defaults	mapped	_IDT seeded as the fixed value 0x112E, equal to the oracle (COOK02, user 2026-10-30); no NVRAM or country setting
 get_country_record	bios/country.c	kernel/src/keymap.rs	select_builtin	mapped	country code -> its record (keyboard table); NewTOS: layout name (#K us/de) -> built-in table, unknown keeps the default
 get_current_country_input	bios/country.c	-	-	unmapped	country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
 get_default_country	bios/country.c	-	-	unmapped	country/keyboard-layout selection: no NewTOS counterpart function found (keyboard tables: xbios/keytbl.rs)
