@@ -19,12 +19,12 @@
 //! there restarts the machine; TeraDesk's "Reboot" does exactly that
 //! (`sdk/apps/teradesk/main.c:2096,2118`). On NewTOS a program runs at EL0
 //! and cannot restart anything itself, so both fields point at a small
-//! **reset stub** in the shared stub page (`mmu::STUB_PAGE_VA`, MEM12;
-//! [`RESET_STUB_VA`], [`write_stub`]): it calls the NewTOS-own
+//! **reset entry** in the shared stub page (`mmu::STUB_PAGE_VA`, MEM12;
+//! [`RESET_ENTRY_VA`], [`write_stub`]): it calls the NewTOS-own
 //! `Ssystem(S_NEWTOS_RESET, 0, 0)` ([`S_NEWTOS_RESET`] = 2021, the 2000+ block
 //! of `docs/api/gemdos/154-ssystem.md`, like `S_NEWTOS_KBDVEC`'s stub), and
 //! the kernel restarts the machine. The stub page is mapped EL0
-//! execute-only in every memory-protection mode, so the stub is reachable
+//! execute-only in every memory-protection mode, so the entry is reachable
 //! with protection off, on and strict, and its address is below 4 GiB, so it
 //! fits the 32-bit fields. Warm or cold follows the `memvalid` magics in the
 //! caller's page 0, as on the Atari (`entry_kind`): a program clears them in
@@ -97,20 +97,20 @@ pub const fn reset_key(scancode: u8, shifty: u8) -> Option<ResetKind> {
 
 // ─── The OSHEADER reset entry ────────────────────────────────────────────
 
-/// `Ssystem` mode the reset stub issues — NewTOS-own block 2000+
+/// `Ssystem` mode the reset entry issues — NewTOS-own block 2000+
 /// (`docs/api/gemdos/154-ssystem.md`): restart the machine. NewTOS-internal,
 /// like `S_NEWTOS_KBDVEC` (2002); a program reaches it through the OSHEADER
 /// reset entry, not by number.
 pub const S_NEWTOS_RESET: u16 = 2021;
 
-/// EL0 VA of the reset stub — the value of OSHEADER `reseth` (+0x04) and
+/// EL0 VA of the reset entry — the value of OSHEADER `reseth` (+0x04) and
 /// `os_res1` (+0x10).
-pub const RESET_STUB_VA: u64 = USER_VA_BASE + RESET_STUB_AREA_VA;
+pub const RESET_ENTRY_VA: u64 = USER_VA_BASE + RESET_STUB_AREA_VA;
 
-/// The reset stub. Entered by a jump or a call with no arguments (EmuTOS
+/// The reset entry. Entered by a jump or a call with no arguments (EmuTOS
 /// `_main` takes none), it issues `Ssystem(2021, 0, 0)`. That call does not
 /// return on a machine that can restart; where it does (a board without a
-/// restart mechanism), the stub returns `ERROR` to its caller instead of
+/// restart mechanism), the entry returns `ERROR` to its caller instead of
 /// running into whatever follows it.
 ///
 /// ```text
@@ -125,7 +125,7 @@ pub const RESET_STUB_VA: u64 = USER_VA_BASE + RESET_STUB_AREA_VA;
 /// `movz`: `0xD280_0000 | imm16 << 5 | Rd` (ARM ARM C6.2 MOVZ, 64-bit, hw=0);
 /// the `mov x8`/`svc`/`ret` words are the ones the `kbdvec_default` stub uses
 /// (`xbios::kbdvecs`).
-const RESET_STUB_CODE: [u32; 6] = [
+const RESET_ENTRY_CODE: [u32; 6] = [
     0xD280_FCA0,
     0xD280_0001,
     0xD280_0002,
@@ -134,20 +134,20 @@ const RESET_STUB_CODE: [u32; 6] = [
     0xD65F_03C0,
 ];
 
-// The stub fits its area, and the 2021 baked into the first `mov` is
-// S_NEWTOS_RESET; the stub address fits the 32-bit OSHEADER fields.
-const _: () = assert!(4 * RESET_STUB_CODE.len() as u64 <= RESET_STUB_AREA_SIZE);
-const _: () = assert!((RESET_STUB_CODE[0] >> 5) & 0xFFFF == S_NEWTOS_RESET as u32);
-const _: () = assert!(RESET_STUB_CODE[0] & 0x1F == 0); // Rd = x0
-const _: () = assert!(RESET_STUB_VA <= u32::MAX as u64);
+// The entry fits its area, and the 2021 baked into the first `mov` is
+// S_NEWTOS_RESET; the entry address fits the 32-bit OSHEADER fields.
+const _: () = assert!(4 * RESET_ENTRY_CODE.len() as u64 <= RESET_STUB_AREA_SIZE);
+const _: () = assert!((RESET_ENTRY_CODE[0] >> 5) & 0xFFFF == S_NEWTOS_RESET as u32);
+const _: () = assert!(RESET_ENTRY_CODE[0] & 0x1F == 0); // Rd = x0
+const _: () = assert!(RESET_ENTRY_VA <= u32::MAX as u64);
 
-/// Write the reset stub into the shared stub page `page` (the kernel alias
+/// Write the reset entry into the shared stub page `page` (the kernel alias
 /// of the whole page). Called once by `loader::ensure_stub_page`, next to the
 /// other stubs, before the code-cache maintenance.
 pub fn write_stub(page: &mut [u8]) {
     let at = (RESET_STUB_AREA_VA - STUB_PAGE_VA) as usize;
     page[at..at + RESET_STUB_AREA_SIZE as usize].fill(0);
-    write_stub_code(page, RESET_STUB_VA, &RESET_STUB_CODE);
+    write_stub_code(page, RESET_ENTRY_VA, &RESET_ENTRY_CODE);
 }
 
 /// `memvalid` / `memval2` / `memval3` and their magics (EmuTOS `memchk`,

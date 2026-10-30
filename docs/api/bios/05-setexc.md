@@ -261,7 +261,7 @@ classic low-memory system area (`docs/COMPATIBILITY.md`, page 0 per process).
 
 | `num` (the `WORD` as `usize`) | Cell | Source |
 |---|---|---|
-| `0 … 0x103` (vectors, `etv_timer`/`etv_critic`/`etv_term`/`etv_xtra`) | **one cell for every process**, 32 bit, as EmuTOS has one vector table; every loaded process's page 0 carries a copy at `4*num`, written at load and again by every write of the cell (`Setexc`, the owner's `Pterm` restore). A query answers the cell | `tos-api/src/bios/vectors.rs:94@VECTORS`, `tos-api/src/bios/vectors.rs:170@store_shared`, `tos-api/src/bios/vectors.rs:185@write_page0_vectors` (called from `tos-api/src/bdos/process/loader.rs:1304@write_page0_vectors`) |
+| `0 … 0x103` (vectors, `etv_timer`/`etv_critic`/`etv_term`/`etv_xtra`) | **one cell for every process**, 32 bit, as EmuTOS has one vector table; every loaded process's page 0 carries a copy at `4*num`, written at load and again by every write of the cell (`Setexc`, the owner's `Pterm` restore). A query answers the cell | `tos-api/src/bios/vectors.rs:94@VECTORS`, `tos-api/src/bios/vectors.rs:170@store_shared`, `tos-api/src/bios/vectors.rs:185@write_page0_vectors` (called from `tos-api/src/bdos/process/loader.rs:1312@write_page0_vectors`) |
 | `0x104 … 0x1FF` (the system variables `$410`–`$7FC`) | the calling process's own page-0 cell, through the page's kernel alias; with no process running a fault-recovered user access at VA `4*num` | `tos-api/src/bios/vectors.rs:118@setexc` |
 | `>= 0x200`, and a negative `num` | answers `0`, touches nothing (D2) | `tos-api/src/bios/vectors.rs:118@setexc` (final `0`) |
 
@@ -279,7 +279,7 @@ same (a query); NewTOS before BIOS07 `Q04 ret=ffffffff` (a write)
 | `num` | NewTOS | EmuTOS | Source / status |
 |---|---|---|---|
 | `0` (`$000`) | the OSHEADER's first LONG: `os_entry` (0) and `os_version` | `os_entry`/`os_version` of the ROM | EmuTOS copies the OSHEADER's first two LONGs to address 0 where the hardware does not route the ROM there (`bios/bios.c:120-136`); `tos-api/src/bdos/process/loader.rs:1089@OSHEADER_LONG0` |
-| `1` (`$004`) | `reseth`, the reset stub | `_main` | as above; `tos-api/src/bios/reset.rs:108@RESET_STUB_VA` |
+| `1` (`$004`) | `reseth`, the reset entry | `_main` | as above; `tos-api/src/bios/reset.rs:108@RESET_ENTRY_VA` |
 | `2 … 0xFF` | the shared `ret` stub, EmuTOS' `just_rts` (`JUST_RTS`) | the ROM's exception/interrupt handlers | D3: vectors NewTOS does not serve point to the `just_rts` stub (`tos-api/src/bios/vectors.rs:71@JUST_RTS`) |
 | `0x100` `etv_timer` | `JUST_RTS` | `tikfrk` (`bdos/time.c:167`) | not served, ACCEPTED deviation BIOS-CORE-002 (ADR-031) |
 | `0x101` `etv_critic` | `JUST_RTS` | `default_etv_critic` (`bios/bios.c:361`) | not served (ADR-031) |
@@ -299,7 +299,7 @@ vector: one memory cell, `setexc` reads and writes it
 
 | Cell | What a direct write does on NewTOS | EmuTOS |
 |---|---|---|
-| `$008`–`$407` (vectors `2…0xFF`, `etv_timer`, `etv_critic`: cells NewTOS only stores) | **becomes the shared cell** at the edges of the program's next system call — before it is served and after it, when the program leaves the super state, when it ends in it (`tos-api/src/bdos/process/hooks.rs:648@before_trap`, `:307@check_page0`, `tos-api/src/bios/vectors.rs:286@adopt_page0_write`). Every page 0 carries the value, `Setexc(num, -1)` answers it. The writer owns it like a `Setexc` write (ADR-031 rule 3): its `Pterm` puts the previous value back while the cell still holds the written one; a hook chained on top keeps it, with a warning; `Ptermres` keeps it. An unserved hook warns once per process (`via page 0`); nothing is called | the cell; `Pterm` gives nothing back |
+| `$008`–`$407` (vectors `2…0xFF`, `etv_timer`, `etv_critic`: cells NewTOS only stores) | **becomes the shared cell** at the edges of the program's next system call — before it is served and after it, when the program leaves the super state, when it ends in it (`tos-api/src/bdos/process/hooks.rs:655@before_trap`, `:307@check_page0`, `tos-api/src/bios/vectors.rs:286@adopt_page0_write`). Every page 0 carries the value, `Setexc(num, -1)` answers it. The writer owns it like a `Setexc` write (ADR-031 rule 3): its `Pterm` puts the previous value back while the cell still holds the written one; a hook chained on top keeps it, with a warning; `Ptermres` keeps it. An unserved hook warns once per process (`via page 0`); nothing is called | the cell; `Pterm` gives nothing back |
 | `$408` (`etv_term`, served: `Pterm` calls it) | **not taken over**: the page-0 check warns (`etv_term ($408, written directly)`), `Setexc(0x102, -1)` answers and `Pterm` calls the value set through `Setexc`; the next `Setexc(0x102, …)` overwrites the copy | `xterm` calls the written value (`bdos/proc.c:607-608`) |
 | `$000`/`$004` (vectors 0/1, the OSHEADER's LONGs), `$40C` (`etv_xtra`) | not looked at, not taken over (outside the page-0 check until measured) | the cell |
 
@@ -336,7 +336,7 @@ The accessor `vectors::vector(num)` answers a shared cell as `Setexc` does;
 it is read for `etv_term` (`tos-api/src/bios/vectors.rs:195@vector`).
 
 [BIOS15] Built (`tos-api/src/bios/vectors.rs:238@note_write`, the shared
-mechanism `tos-api/src/bdos/process/hooks.rs:520@note`): a `Setexc` write of
+mechanism `tos-api/src/bdos/process/hooks.rs:527@note`): a `Setexc` write of
 `etv_timer`, `etv_critic` or a vector `< 0x100` other than its boot value
 logs one `[hook] warning` per hook and process; `etv_term` (served),
 `etv_xtra` and the system variables do not warn. A write into a shared cell

@@ -1,0 +1,77 @@
+measurement-2026-10-30-bios17 -- TASK/BIOS17: swv_vec ($46E) preset with the NewTOS reset entry, the
+value of OSHEADER reseth, as EmuTOS bios_init leaves it (references/emutos/bios/bios.c:552); rename
+RESET_STUB_VA/RESET_STUB_CODE -> RESET_ENTRY_VA/RESET_ENTRY_CODE (no behaviour change). Probes vwprobe
+(V01 the acceptance line), sxprobe, hkprobe, MEM12 P0PAR; qemu-virt smoke boot.
+==========================================================================================
+Developer, 2026-10-30 (host clock CET). Main tree at f2652440 plus the uncommitted BIOS17 change
+(files in TASK/BIOS17-STATUS-DONE.MD). "before" = f2652440 itself: `git archive HEAD` unpacked in the
+scratch (before-tree), its kernel built there. Nothing committed, no hardware, no real card.
+
+INPUTS
+  ROM / EmuTOS / Hatari  not run again: the oracle side is the BIOS16 run (same pinned oracle, same
+             probe binaries, VWPROBE.LOG byte-identical over tt, falcontc, tt second run):
+             measurements/measurement-2026-10-30-bios16/runs/vwprobe-EMUTOS-tt, -falcontc, -tt-2;
+             SXPROBE oracle: measurements/measurement-2026-10-29-bios07/runs/sxprobe-EMUTOS-tt, -falcontc
+  QEMU       -M raspi4b, -append serial=on (probes, P0PAR); qemu-virt via cargo xtask run --headless
+  kernels    rpi4 release kernel8.img sha256 (runs/kernels.sha256); scratch copies, deleted after the run
+    before        bc15a3db1cfe1c73357abb03535a28538ea9d670ce7845690d1244666687e9b7  (f2652440, before-tree)
+    rename-only   bc15a3db1cfe1c73357abb03535a28538ea9d670ce7845690d1244666687e9b7  (before-tree + only the
+                  rename, see method/run-all.sh step 1) -- byte-identical to before
+    after         7303a0fa9a480afdc3503ba682ff2ca4262842d1a1932eada9340273c4148ebb  (this tree)
+    p0par         f0855ec5262b5834102411e5a2317c41f20df6d9f1534a74408e3145ff76f0a3  (scratch copy of this tree
+                  armed by `tools/inject-arm.py <copy> launch:P0PAR=method/p0.script`;
+                  method/injector-p0par-scratch.diff = the only difference; tos-api/src identical, diff -r)
+  probes     VWPROBE.PRG 2a458b31..., VWPROBE.NAP 3986ce5a... (= BIOS16 run; every runs/vwprobe-*/run.txt);
+             SXPROBE, HKPROBE as built by their runners from tosdump/probes (unchanged sources);
+             P0PAR.NAP / P0KID.NAP from measurements/measurement-2026-10-27-mem12-acceptance/dumpers/
+
+METHOD (method/)
+  run-all.sh      the scratch driver, as run: 1 before + rename-only builds, 2 after build and
+                  vwprobe/sxprobe/hkprobe after, 3 P0PAR (injector copy), 4 qemu-virt boot
+  run-before.sh   vwprobe/sxprobe/hkprobe with the before kernel (run after run-all.sh)
+  lint.sh         both boards release build + clippy kernel per board (copied from the BIOS16 run)
+  run-p0par.sh, p0.script   MEM12 P0PAR (copied from the BIOS16 run)
+  probes: tosdump/probes/run-<probe>.sh newtos <out> <kernel8.img>
+
+1 RENAME = NO BEHAVIOUR CHANGE
+  The before-tree with only the rename (the BIOS17 versions of tos-api/src/bios/reset.rs,
+  bios/vectors.rs, bdos/process/mmu.rs, gemdos/ssystem.rs, host.rs, kernel/src/reset.rs -- rename
+  and comment wording only -- and loader.rs by `sed s/RESET_STUB_VA/RESET_ENTRY_VA/; s/reset
+  stub/reset entry/`) builds a kernel8.img byte-identical to the before kernel (bc15a3db... both).
+
+2 VWPROBE (runs/vwprobe-NEWTOS-before, -after)
+  before -> after: one line differs, V01
+    before  V01 swv_vec ($46E): is-reseth=0 is-prt_vec(just_rts)=0 is-0=1
+    after   V01 swv_vec ($46E): is-reseth=1 is-prt_vec(just_rts)=0 is-0=0
+  after against the oracle (BIOS16 vwprobe-EMUTOS-tt and -falcontc): V01 now EQUAL (the oracle line
+  is the same, is-reseth=1). Remaining difference, the two BIOS16 lines, unchanged and documented in
+  docs/COMPATIBILITY.md ("A vector cell written directly in page 0"):
+    E01  is-written=0 is-old=1  (oracle is-written=1 is-old=0)   $408 not taken over
+    T02  is-childs=0 is-old=1   (oracle is-childs=1 is-old=0)    Pterm gives the old value back
+  [hook] lines before = after (six lines; none for swv_vec).
+
+3 RETESTS
+  sxprobe (runs/sxprobe-NEWTOS-before, -after): SXPROBE.LOG before = after = the oracle tt and
+    falcontc (BIOS07 run); [hook] lines before = after.
+  hkprobe (runs/hkprobe-NEWTOS-before, -after): HKPROBE.LOG before = after = BIOS16 after; [hook]
+    lines before = after = BIOS16 after.
+  MEM12 P0PAR (runs/p0par-NEWTOS-after): "P0PAR: PASS"; the P0PAR/[hook]/exit lines identical to
+    measurements/measurement-2026-10-30-bios16/runs/p0par-NEWTOS-after.
+  qemu-virt (runs/boot-qemu-virt-after/BOOT-SERIAL.txt): "[desk] desktop up (0 drives)", no PANIC.
+    raspi4b: every run above booted to "desktop up" (qemu done in every run.txt).
+  Build/lint (runs/lint-after): both boards build; rustc kernel 93 / tos-api 64 (159 warning lines
+    per board), clippy kernel 121 / tos-api 74 on both boards = the BIOS16 numbers; the clippy
+    warning set per file equals measurements/measurement-2026-10-30-bios16/runs/lint-after (line
+    numbers aside; the code under lint there is HEAD's). None names hooks.rs, loader.rs or reset.rs.
+  Host tests: cargo xtask test 1893 / 0 / 1 (base 1892/0/1; +1
+    bdos::process::loader::basepage_segment_tests::swv_vec_is_reseth_the_reset_entry).
+
+CARDS / IMAGES
+  Every NewTOS card from tools/mkcard.sh (through the runners), booted as an APFS clone, both deleted
+  after the logs were copied. Manifests: runs/*/card.img.manifest (7).
+  optional_missing line of every manifest, verbatim (all 7 identical):
+    optional_missing none
+  Booted-clone sha256 after each run: runs/*/run.txt ("card after", "card   after").
+
+NOT VERIFIED
+  Real Raspberry Pi 4. The oracle side was not run again (BIOS16's runs, same pin, same probe).

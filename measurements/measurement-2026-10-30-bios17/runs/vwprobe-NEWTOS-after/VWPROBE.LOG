@@ -1,0 +1,12 @@
+VWPROBE TASK/BIOS16
+W01 n=0x002 wrote 00abc008: Setexc(n,-1) in super state ret=00abc008 is-written=1 | written back: is-old=1
+W02 n=0x020 wrote 00abc080: Setexc(n,-1) in super state ret=00abc080 is-written=1 | written back: is-old=1
+W03 n=0x0FF wrote 00abc3fc: Setexc(n,-1) in super state ret=00abc3fc is-written=1 | written back: is-old=1
+W04 n=0x101 wrote 00abc404: Setexc(n,-1) in super state ret=00abc404 is-written=1 | written back: is-old=1
+S01 Supexec wrote $080=00abc180: Setexc(0x20,-1) in user state ret=00abc180 is-written=1 | written back: is-old=1
+E01 n=0x102 wrote 00abc408: Setexc(n,-1) in super state is-written=0 is-old=1 | written back: is-old=1
+T01 child wrote $080=00abc280, its Setexc(0x20,-1) is-written: Pexec ret=1 (1 = yes)
+T02 after the child's Pterm Setexc(0x20,-1): is-childs=0 is-old=1
+T03 put back: 1
+V01 swv_vec ($46E): is-reseth=1 is-prt_vec(just_rts)=0 is-0=0
+end

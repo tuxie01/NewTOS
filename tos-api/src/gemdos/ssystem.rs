@@ -14,7 +14,7 @@
 //! 2003–2020 ([`S_NEWTOS_CPUMEAS`] … [`S_NEWTOS_KVERSION`], SYSINFO01, and
 //! [`S_NEWTOS_INPUTMODE`], KEYOWNER): the effective settings the kernel runs
 //! with — and [`S_NEWTOS_RESET`] (2021), the kernel entry of the OSHEADER
-//! reset stub (RST01, `docs/api/bios/_reset-warm-cold.md`) — and
+//! reset entry (RST01, `docs/api/bios/_reset-warm-cold.md`) — and
 //! [`S_NEWTOS_USBSNAP`] (2022), the USB snapshot (USB01 step 2,
 //! `docs/api/usb/usb-snapshot.md`). 2000 is free: FreeMiNT's own header
 //! reserves 0–29, 100, `0x54f8`, 900–999 and 1000–**1999**
@@ -47,7 +47,7 @@ pub const S_NEWTOS_CPUTEMP: u16 = 2001;
 /// one IKBD key byte — what the `kbdvec_default` stub in every process's page
 /// 0 calls (KEYS02). Defined next to the stub in [`crate::xbios::kbdvecs`].
 pub const S_NEWTOS_KBDVEC: u16 = crate::xbios::kbdvecs::S_NEWTOS_KBDVEC;
-/// NewTOS-own subfunction: restart the machine — what the reset stub behind
+/// NewTOS-own subfunction: restart the machine — what the reset entry behind
 /// OSHEADER `reseth`/`os_res1` calls (TASK/RST01). Defined next to the stub
 /// in [`crate::bios::reset`].
 pub const S_NEWTOS_RESET: u16 = crate::bios::reset::S_NEWTOS_RESET;

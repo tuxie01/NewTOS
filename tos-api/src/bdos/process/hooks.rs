@@ -278,7 +278,10 @@ pub struct Page0Hook {
 pub const PAGE0_HOOKS: [Page0Hook; 10] = [
     Page0Hook { addr: 0x42A, hook: Hook::Resvector, default: 0 },
     Page0Hook { addr: 0x456, hook: Hook::Vblqueue, default: 0 },
-    Page0Hook { addr: 0x46E, hook: Hook::SwvVec, default: 0 },
+    // EmuTOS `bios_init` ends with `swv_vec = os_header.reseth`
+    // (`references/emutos/bios/bios.c:552`); NewTOS's `reseth` is the reset
+    // entry (TASK/BIOS17).
+    Page0Hook { addr: 0x46E, hook: Hook::SwvVec, default: RESET_ENTRY },
     Page0Hook { addr: 0x472, hook: Hook::HdvBpb, default: 0 },
     Page0Hook { addr: 0x476, hook: Hook::HdvRw, default: 0 },
     Page0Hook { addr: 0x47E, hook: Hook::HdvMediach, default: 0 },
@@ -287,6 +290,10 @@ pub const PAGE0_HOOKS: [Page0Hook; 10] = [
     Page0Hook { addr: 0x5AC, hook: Hook::BellHook, default: 0 },
     Page0Hook { addr: 0x5B0, hook: Hook::KclHook, default: 0 },
 ];
+
+/// `swv_vec`'s default: the reset entry, OSHEADER `reseth` (fits 32 bits,
+/// `bios::reset`).
+const RESET_ENTRY: u32 = crate::bios::reset::RESET_ENTRY_VA as u32;
 
 /// First CPU vector whose page-0 cell is a hook (vectors 0/1 are the reset
 /// SSP and PC).

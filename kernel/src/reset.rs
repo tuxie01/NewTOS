@@ -12,7 +12,7 @@
 //! * Ctrl+Alt+Del / Ctrl+Alt+RShift+Del in the default `kbdvec`
 //!   ([`crate::ikbd`], EmuTOS `kbd_int`, `bios/ikbd.c:734-747`);
 //! * the OSHEADER reset entries `reseth` (+0x04) / `os_res1` (+0x10), through
-//!   the page-0 reset stub and `Ssystem(S_NEWTOS_RESET)`
+//!   the page-0 reset entry and `Ssystem(S_NEWTOS_RESET)`
 //!   (`tos_api::bios::reset`, `Host::system_restart`).
 
 use tos_api::bios::reset::ResetKind;

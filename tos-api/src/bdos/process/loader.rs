@@ -662,7 +662,7 @@ unsafe fn install_slot(
     // The process's private page 0: the classic TOS low-memory system area
     // (sysvars + OSHEADER + cookie jar + the `os_run` cell), the upcall and
     // `G_USERDEF` trampolines and the KEYS02 vector table (B1 / Option 1,
-    // plan E3), and the RST01 reset stub. A 1:1-ported TOS app reads `_sysbase`@0x4F2 /
+    // plan E3), and the RST01 reset entry. A 1:1-ported TOS app reads `_sysbase`@0x4F2 /
     // `_p_cookies`@0x5A0 / the OSHEADER directly (e.g. TeraDesk
     // `main.c:56`), so these must be a real, populated instance in the
     // app's own address space.
@@ -995,7 +995,7 @@ const _: () = assert!(OS_RUN_CELL_VA >= 0x5B4 && OS_RUN_CELL_VA + 8 <= OSHEADER_
 // code that used to sit in its gap lives in the one shared **stub page**
 // (`mmu::STUB_PAGE_VA`, EL0 execute-only), and what a program may write in
 // the per-slot **private read-write page** (`mmu::PRIV_PAGE_VA`). All VAs
-// stay below 4 GiB: the reset stub's address goes into 32-bit OSHEADER
+// stay below 4 GiB: the reset entry's address goes into 32-bit OSHEADER
 // fields.
 
 /// EL0 VA of the upcall trampoline (cooperative-kernel building block 1,
@@ -1058,7 +1058,7 @@ pub const KBDVEC_STUB_AREA_VA: u64 = mmu::STUB_PAGE_VA + 0x40;
 /// Size of the [`KBDVEC_STUB_AREA_VA`] region, in bytes.
 pub const KBDVEC_STUB_AREA_SIZE: u64 = 0x40;
 
-/// EL0 VA of the **reset stub** (TASK/RST01): the code OSHEADER `reseth`
+/// EL0 VA of the **reset entry** (TASK/RST01): the code OSHEADER `reseth`
 /// (+0x04) and `os_res1` (+0x10) point at — EmuTOS stores `_main` in both
 /// (`bios/startup.S:82-83,92-93`). It calls `Ssystem(S_NEWTOS_RESET)`; see
 /// [`crate::bios::reset`]. In the stub page.
@@ -1159,9 +1159,9 @@ fn populate_sysvars(tpa: &mut [u8], pd: u64) {
     // os_version (+0x02):
     wr_word(tpa, oh + 0x02, OS_VERSION);
     // reseth (+0x04): EmuTOS `.dc.l _main` (startup.S:82-83), the full
-    // restart. NewTOS: the reset stub (stub page), which ends in the restart
+    // restart. NewTOS: the reset entry (stub page), which ends in the restart
     // (`bios::reset`, `Ssystem(S_NEWTOS_RESET)`; TASK/RST01).
-    wr_long(tpa, oh + 0x04, crate::bios::reset::RESET_STUB_VA as u32);
+    wr_long(tpa, oh + 0x04, crate::bios::reset::RESET_ENTRY_VA as u32);
     // os_beg (+0x08): "base address of the operating system"
     // (`biosdefs.h:51`). EmuTOS stores the OS-image self-pointer
     // `_os_header` (startup.S:88-89), which is the very same address
@@ -1183,8 +1183,8 @@ fn populate_sysvars(tpa: &mut [u8], pd: u64) {
     // os_rsvl (+0x10): EmuTOS `os_res1: .dc.l _main` (startup.S:92-93) —
     // the same restart entry as `reseth`, not 0 (osheader.md §os_rsvl,
     // corrected 2026-10-17). TeraDesk's "Reboot" jumps through it
-    // (`main.c:2096`). NewTOS: the reset stub, as for `reseth`.
-    wr_long(tpa, oh + 0x10, crate::bios::reset::RESET_STUB_VA as u32);
+    // (`main.c:2096`). NewTOS: the reset entry, as for `reseth`.
+    wr_long(tpa, oh + 0x10, crate::bios::reset::RESET_ENTRY_VA as u32);
     // os_magic (+0x14): pointer to the GEM_MUPB — populated only once GEM/AES
     // is reimplemented into a per-process GEM_MUPB (osheader.md §os_magic);
     // its `gm_init` (AES entry) has no faithful native EL0-VA value yet, so
@@ -1232,6 +1232,14 @@ fn populate_sysvars(tpa: &mut [u8], pd: u64) {
     // drive map (drive.rs FIRST_HD == C: == 2).
     let bootdev = crate::bdos::fs::drive::boot_drive();
     wr_word(tpa, 0x446, bootdev);
+    // swv_vec ($46E): the monitor-change vector. EmuTOS `bios_init` sets it
+    // to `just_rts` (`references/emutos/bios/bios.c:363`) and, unconditionally
+    // at its end, to `os_header.reseth` (`bios.c:552`, "reset system on
+    // monitor change"), so a running program reads `reseth` (measured,
+    // `measurements/measurement-2026-10-30-bios16/RUNINFO.TXT` V01). NewTOS:
+    // the reset entry, the value of OSHEADER `reseth` above. There is no
+    // monitor change, so NewTOS never calls it (ADR-031; TASK/BIOS17).
+    wr_long(tpa, 0x46E, crate::bios::reset::RESET_ENTRY_VA as u32);
     // cmdload ($482): load COMMAND.PRG instead of the ROM shell when != 0;
     // boot-config flag, default 0 (ROM-shell path, EmuTOS `bios.c:850` gate,
     // `_boot-init.md` §7c). NewTOS has no COMMAND.PRG override, so 0.
@@ -1436,7 +1444,7 @@ static STUB_PAGE_READY: core::sync::atomic::AtomicBool = core::sync::atomic::Ato
 
 /// Write every EL0 stub into the shared stub page (`mmu::STUB_PAGE_VA`,
 /// MEM12) — the upcall trampoline, the `G_USERDEF` callout stub, the KEYS02
-/// `kbdvec` stubs and the RST01 reset stub — once, the first time a process
+/// `kbdvec` stubs and the RST01 reset entry — once, the first time a process
 /// is installed, then make them visible to instruction fetch (clean D-cache
 /// to PoU, invalidate I-cache: QEMU is cache-less, the A72 is not). The page
 /// is EL0 execute-only; no process can change it.
@@ -2046,8 +2054,8 @@ mod basepage_segment_tests {
     }
 
     /// RST01: `reseth` (+0x04) and `os_res1` (+0x10) both hold the reset
-    /// stub's address, as EmuTOS stores `_main` in both
-    /// (`bios/startup.S:82-83,92-93`), and the stub is in the stub page where
+    /// entry's address, as EmuTOS stores `_main` in both
+    /// (`bios/startup.S:82-83,92-93`), and the entry is in the stub page where
     /// the loader writes it (MEM12). `os_entry` stays 0 (no AArch64 branch
     /// fits it).
     #[test]
@@ -2058,15 +2066,35 @@ mod basepage_segment_tests {
         crate::bios::reset::write_stub(&mut stubs);
         let rd32 = |off: usize| u32::from_le_bytes(page0[off..off + 4].try_into().unwrap());
         let oh = rd32(0x4F2) as usize;
-        let stub = crate::bios::reset::RESET_STUB_VA as u32;
+        let stub = crate::bios::reset::RESET_ENTRY_VA as u32;
         assert_eq!(rd32(oh + 0x04), stub, "reseth");
         assert_eq!(rd32(oh + 0x10), stub, "os_res1");
         assert_eq!(rd32(oh) & 0xFFFF, 0, "os_entry");
         assert_eq!(rd32(oh) >> 16, OS_VERSION as u32, "os_version untouched");
         // TeraDesk's LP64-fixed read `*(uint32_t *)(os_start + 0x10)` lands
-        // on the first stub instruction: `mov x0, #2021`.
+        // on the entry's first instruction: `mov x0, #2021`.
         let at = (stub as u64 - mmu::STUB_PAGE_VA) as usize;
         assert_eq!(u32::from_le_bytes(stubs[at..at + 4].try_into().unwrap()), 0xD280_FCA0);
+    }
+
+    /// BIOS17: `swv_vec` ($46E) holds OSHEADER `reseth`, the reset entry, as
+    /// EmuTOS `bios_init` leaves it (`swv_vec = os_header.reseth`,
+    /// `bios/bios.c:552`; measured V01) — not 0, not `just_rts` — and it is
+    /// the default the ADR-031 page-0 check compares with, so a fresh process
+    /// does not warn about it.
+    #[test]
+    fn swv_vec_is_reseth_the_reset_entry() {
+        let mut page0 = vec![0u8; RESERVED_LOW_END as usize];
+        populate_sysvars(&mut page0, 0x0109_7000);
+        let rd32 = |off: usize| u32::from_le_bytes(page0[off..off + 4].try_into().unwrap());
+        let reseth = rd32(rd32(0x4F2) as usize + 0x04);
+        assert_eq!(rd32(0x46E), reseth, "swv_vec = reseth");
+        assert_eq!(reseth, crate::bios::reset::RESET_ENTRY_VA as u32);
+        assert_ne!(rd32(0x46E) as u64, crate::xbios::kbdvecs::RET_STUB_VA, "not just_rts");
+        use super::super::hooks::{Hook, PAGE0_HOOKS};
+        let h = PAGE0_HOOKS.iter().find(|h| h.addr == 0x46E).expect("swv_vec in PAGE0_HOOKS");
+        assert_eq!(h.hook, Hook::SwvVec);
+        assert_eq!(h.default, reseth, "the page-0 check's default");
     }
 
     /// BIOS07 (D3): page 0 carries the vector cells — `$000`/`$004` are the
@@ -2080,7 +2108,7 @@ mod basepage_segment_tests {
         let rd32 = |off: usize| u32::from_le_bytes(page0[off..off + 4].try_into().unwrap());
         let oh = OSHEADER_VA as usize;
         assert_eq!(page0[0..8], page0[oh..oh + 8], "$000/$004 = the OSHEADER's first two LONGs");
-        assert_eq!(rd32(4), crate::bios::reset::RESET_STUB_VA as u32, "$004 = reseth");
+        assert_eq!(rd32(4), crate::bios::reset::RESET_ENTRY_VA as u32, "$004 = reseth");
         let stub = crate::xbios::kbdvecs::RET_STUB_VA as u32;
         for num in 2..=0x102usize {
             assert_eq!(rd32(4 * num), stub, "vector 0x{:x}", num);

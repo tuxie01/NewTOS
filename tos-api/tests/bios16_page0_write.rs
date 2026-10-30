@@ -39,7 +39,7 @@ fn lock() -> MutexGuard<'static, ()> {
 }
 
 /// A loaded, running process whose page 0 holds what the loader puts at the
-/// vector cells and zeros elsewhere.
+/// vector cells and the page-0 hook cells, and zeros elsewhere.
 struct Proc {
     slot: usize,
     bp: *mut BasePage,
@@ -58,6 +58,12 @@ impl Proc {
             let page0 = mmu::page0_bytes(slot).unwrap();
             page0.fill(0);
             vectors::write_page0_vectors(page0);
+            // The page-0 hook cells hold the loader's values (TASK/BIOS17:
+            // `swv_vec` is the reset entry, not 0).
+            for h in hooks::PAGE0_HOOKS.iter() {
+                let at = h.addr as usize;
+                page0[at..at + 4].copy_from_slice(&h.default.to_le_bytes());
+            }
         }
         p.set_state(process::State::Running);
         p.parent_frame.elr().store(1, Ordering::Release);

@@ -275,11 +275,14 @@ OSHEADER-Einsprung (3), `memvalid*`/`resvalid`/`resvector`-Konvention (1.3).
   (`kernel/src/drivers/bcm2711/pm.rs`, `docs/hardware/pm-watchdog-reset.md`).
   `board-qemu-virt` hat keinen Mechanismus: Meldung, keine Wirkung.
 * **OSHEADER:** `reseth` (+0x04) und `os_res1` (+0x10) zeigen auf einen
-  Reset-Stub in Seite 0 (`0xA40`), der `Ssystem(S_NEWTOS_RESET = 2021, 0, 0)`
+  Reset-Einstieg in Seite 0 (`0xA40`), der `Ssystem(S_NEWTOS_RESET = 2021, 0, 0)`
   ruft (NewTOS-intern, `docs/api/gemdos/154-ssystem.md`). Warm/kalt nach den
   Magics der Seite 0 des Aufrufers (`memchk`-Regel, §1.3). `os_entry` (+0x00)
   bleibt 0: ein AArch64-Befehl mit `os_version` in den oberen 16 Bit liegt im
   SVE-Kodierraum, kein Sprung moeglich (`tos-api/src/bios/reset.rs`).
+  `swv_vec` (`$46E`) haelt denselben Wert wie `reseth`, wie EmuTOS
+  (`bios/bios.c:552`; BIOS17, `tos-api/src/bdos/process/loader.rs:1242@RESET_ENTRY_VA`);
+  NewTOS ruft ihn nie (kein Monitorwechsel, ADR-031).
 * **TeraDesk:** LP64-Breiten in `sdk/overlays/teradesk/main.c` (Entscheidung 4).
 * **„Taste nach dem Neustart noch gehalten“ (§2.1):** Der Watchdog-Neustart
   setzt den ganzen SoC zurueck; Firmware und Kern starten neu, der Decoder

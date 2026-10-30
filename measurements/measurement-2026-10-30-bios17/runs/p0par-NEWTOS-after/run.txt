@@ -1,0 +1,4 @@
+probes 3eb86eb6cd8fee9308a395629ff31b81072b753218296e4d2654c80ed2f3bb05 P0PAR.NAP, 07ec89d8b84a80d9619bb4ac591a0a15e7a75207e39dd750d8bdbaf90899b760 P0KID.NAP
+kernel f0855ec5262b5834102411e5a2317c41f20df6d9f1534a74408e3145ff76f0a3 (injector copy)
+card   1c052abb63fc0cae645c3da8be97ed85bee3ca0bb4d44fd8eb0f3fa83d9d2c96 (tools/mkcard.sh)
+card   after 1c052abb63fc0cae645c3da8be97ed85bee3ca0bb4d44fd8eb0f3fa83d9d2c96 (the booted clone)

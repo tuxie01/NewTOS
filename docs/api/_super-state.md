@@ -98,7 +98,7 @@ with super state **on**; when the callback returns, the state in force at
 the `Supexec` call is restored and `Supexec` returns the callback's `x0`
 (64 bits, as the callback left it). The callback gets no arguments (EmuTOS
 `jmp (a0)`). Different from EmuTOS, the callback **may** make system calls
-(the OSHEADER reset stub, which TeraDesk's "Reboot" reaches through
+(the OSHEADER reset entry, which TeraDesk's "Reboot" reaches through
 `Supexec(rv)`, is one); nested `Supexec` is allowed. A `Super` toggle inside
 the callback holds until the callback returns, then the entry state is
 restored (EmuTOS: a callback that leaves supervisor mode crashes in the

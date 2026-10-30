@@ -9,7 +9,7 @@ use std::sync::{Mutex, Once};
 
 use tos_api::bios::reset::{
     reset_key, write_stub, ResetKind, KEY_DELETE, MODE_ALT, MODE_CTRL, MODE_LSHIFT, MODE_RSHIFT,
-    RESET_STUB_VA, S_NEWTOS_RESET,
+    RESET_ENTRY_VA, S_NEWTOS_RESET,
 };
 use tos_api::host::Host;
 use tos_api::trap::{TrapArgs, TrapClass};
@@ -77,18 +77,18 @@ fn only_the_delete_make_code_restarts() {
     }
 }
 
-/// The stub the loader writes at `RESET_STUB_VA`: `Ssystem(2021, 0, 0)`
+/// The reset entry the loader writes at `RESET_ENTRY_VA`: `Ssystem(2021, 0, 0)`
 /// (`svc #1`, `x8 = 0x154`), then `ret` — in the shared stub page since
 /// MEM12 (`mmu::STUB_PAGE_VA`, EL0 execute-only).
 #[test]
 fn the_reset_stub_calls_ssystem_2021() {
     use tos_api::bdos::process::mmu::{PAGE_SIZE, STUB_PAGE_VA};
     assert_eq!(S_NEWTOS_RESET, 2021);
-    assert!((STUB_PAGE_VA..STUB_PAGE_VA + PAGE_SIZE).contains(&RESET_STUB_VA));
-    assert!(RESET_STUB_VA <= u32::MAX as u64, "fits the 32-bit OSHEADER fields");
+    assert!((STUB_PAGE_VA..STUB_PAGE_VA + PAGE_SIZE).contains(&RESET_ENTRY_VA));
+    assert!(RESET_ENTRY_VA <= u32::MAX as u64, "fits the 32-bit OSHEADER fields");
     let mut page = vec![0xEEu8; 0x1000];
     write_stub(&mut page);
-    let at = (RESET_STUB_VA - STUB_PAGE_VA) as usize;
+    let at = (RESET_ENTRY_VA - STUB_PAGE_VA) as usize;
     let words: Vec<u32> = (0..6)
         .map(|i| u32::from_le_bytes(page[at + 4 * i..at + 4 * i + 4].try_into().unwrap()))
         .collect();
@@ -150,7 +150,7 @@ const ERROR: i32 = -1;
 const EINVAL: i32 = -25;
 
 /// A host that cannot restart is asked, returns, and the call says `ERROR`
-/// (the stub then `ret`s to its caller). A kernel caller has no page-0
+/// (the reset entry then `ret`s to its caller). A kernel caller has no page-0
 /// magics to read, so the request is a cold one.
 #[test]
 fn a_host_without_restart_answers_error() {

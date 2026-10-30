@@ -742,7 +742,7 @@ program with "Bus Error" and the report line "page-0 system-variable memory"
 (`kernel/src/arch/aarch64/exceptions.rs:1454@kill_crashed_program`). The
 super state grants **nothing else**: the code still runs at EL0, memory
 protection is unchanged. The EL0 stubs (upcall trampoline, `G_USERDEF`
-callout, `kbdvec` stubs, OSHEADER reset stub) moved to one shared stub page
+callout, `kbdvec` stubs, OSHEADER reset entry) moved to one shared stub page
 at `0x7E000`, EL0 execute-only; what a program may write — the `Kbdvbase`
 table, the `G_USERDEF` `PARMBLK` — to its private read-write page at
 `0x7F000` (`tos-api/src/bdos/process/mmu.rs:256@STUB_PAGE_VA`). The `kbdvec`

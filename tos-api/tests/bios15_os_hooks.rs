@@ -43,8 +43,8 @@ fn lock() -> MutexGuard<'static, ()> {
 }
 
 /// A started process with a built root, a page 0 that is zero but for the
-/// vector cells the loader copies in (BIOS07), and a fresh `Kbdvbase` table,
-/// the running one.
+/// vector cells the loader copies in (BIOS07) and the page-0 hook cells'
+/// loader values (BIOS17), and a fresh `Kbdvbase` table, the running one.
 struct Proc {
     slot: usize,
     bp: *mut BasePage,
@@ -63,6 +63,12 @@ impl Proc {
             let page0 = mmu::page0_bytes(slot).unwrap();
             page0.fill(0);
             vectors::write_page0_vectors(page0);
+            // The page-0 hook cells hold the loader's values (TASK/BIOS17:
+            // `swv_vec` is the reset entry, not 0).
+            for h in hooks::PAGE0_HOOKS.iter() {
+                let at = h.addr as usize;
+                page0[at..at + 4].copy_from_slice(&h.default.to_le_bytes());
+            }
             let private = mmu::priv_page_bytes(slot).unwrap();
             private.fill(0);
             kbdvecs::write_table(private);

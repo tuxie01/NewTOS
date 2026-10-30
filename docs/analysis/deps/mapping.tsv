@@ -291,6 +291,7 @@ bcostat	bios/bios.c	tos-api/src/bios/chardev.rs	device	mapped	the BCONMAP_AVAILA
 bcostat	bios/bios.c	tos-api/src/xbios/bconmap.rs	entry_device	mapped	maptab[map_index] -> the BIOS device-table slot of the entry's port: entry 0 = AUX, device 1 (maptable_mfp, serport.c:98,972; BIOS08)
 bios_init	bios/bios.c	-	-	unmapped	m68k hardware initialisation sequence; NewTOS boots through the kernel init, not mapped function by function
 bios_init	bios/bios.c	tos-api/src/bios/vectors.rs	default_of	mapped	the etv_timer/etv_critic/etv_term = just_rts/default_etv_critic half: the boot values of the shared Setexc cells, all the shared ret stub (BIOS07 D3; etv_critic and etv_timer not served, ADR-031)
+bios_init	bios/bios.c	tos-api/src/bdos/process/loader.rs	populate_sysvars	mapped	the swv_vec = os_header.reseth half (bios.c:552, after just_rts at :363): every page 0 gets the reset entry, OSHEADER reseth (BIOS17); never called, no monitor change (ADR-031)
 biosmain	bios/bios.c	-	-	unmapped	the BIOS main sequence; NewTOS boots through the kernel init (kernel/src/lib.rs), not mapped function by function
 bootstrap	bios/bios.c	-	-	design:hardware:natfeats	NatFeats kernel bootstrap (emulators); no NewTOS counterpart
 can_shutdown	bios/bios.c	-	-	unmapped	power-off capability probe (NatFeats/hardware); no NewTOS counterpart found

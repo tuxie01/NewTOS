@@ -23,7 +23,7 @@
 > that knows them is kernel-only (2000/2001), the kernel entry of the
 > default `kbdvec` stub (2002, KEYS02), and the effective system settings a
 > system-information tool shows (2003–2020, SYSINFO01 / KEYOWNER), and the
-kernel entry of the OSHEADER reset stub (2021, RST01), and the USB snapshot (2022, USB01). These are *not* FreeMiNT modes and are
+kernel entry of the OSHEADER reset entry (2021, RST01), and the USB snapshot (2022, USB01). These are *not* FreeMiNT modes and are
 > marked as ours wherever they appear; 2000+ is a range FreeMiNT leaves free.
 
 > **Contract vs. reference** — see [`docs/COMPATIBILITY.md`](../../COMPATIBILITY.md).
@@ -172,7 +172,7 @@ NewTOS identity, but that is a separate decision.
 | `S_NEWTOS_SERIAL` | 2018 | console | serial console output on / off |
 | `S_NEWTOS_KVERSION` | 2019 | kernel | kernel version + build stamp, **string** into the caller's buffer |
 | `S_NEWTOS_INPUTMODE` | 2020 | input | where the keyboard/mouse pump runs (timer pump / `input=aes`) — KEYOWNER |
-| `S_NEWTOS_RESET` | 2021 | kernel | restart the machine — the kernel entry of the OSHEADER reset stub (RST01), see below |
+| `S_NEWTOS_RESET` | 2021 | kernel | restart the machine — the kernel entry of the OSHEADER reset entry (RST01), see below |
 
 ### NewTOS-own mode 2022 — the USB snapshot (USB01 step 2)
 
@@ -234,12 +234,12 @@ Tests: `tos-api/tests/xbios_kbdvecs.rs` (`ssystem_kbdvec_runs_the_default_decode
 Ssystem(2021, 0, 0)
 ```
 
-**NewTOS-internal**, like 2002: the kernel entry of the **reset stub** every
+**NewTOS-internal**, like 2002: the kernel entry of the **reset entry** every
 process finds in its page 0 at `0xA40`, the address OSHEADER `reseth` (+0x04)
 and `os_res1` (+0x10) hold. EmuTOS stores `_main` — the full restart — in both
 fields (`bios/startup.S:82-83,92-93`); a program that jumps there restarts the
 machine (`docs/api/bios/_reset-warm-cold.md` §3). An EL0 program cannot do that
-itself, so the stub asks the kernel. A program reaches it by jumping through
+itself, so the reset entry asks the kernel. A program reaches it by jumping through
 the OSHEADER field (TeraDesk's "Reboot", `sdk/apps/teradesk/main.c:2096,2118`), not by number.
 
 Warm or cold follows EmuTOS `memchk` (`bios/memory.S:125-140`): warm while
@@ -258,7 +258,7 @@ written (decision 3, as EmuTOS).
 |--------|-----------|
 | — | does not return: the machine restarts (`board-rpi4`) |
 | `EINVAL` (-25) | `arg1 != 0` or `arg2 != 0`; nothing happened |
-| `ERROR` (-1) | the host has no restart mechanism (`board-qemu-virt`, a hostless build); the stub returns it to its caller |
+| `ERROR` (-1) | the host has no restart mechanism (`board-qemu-virt`, a hostless build); the reset entry returns it to its caller |
 
 Code: `tos-api/src/bios/reset.rs`, `kernel/src/reset.rs`. Tests:
 `tos-api/tests/bios_reset.rs`.

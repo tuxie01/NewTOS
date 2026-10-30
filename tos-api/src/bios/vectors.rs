@@ -77,13 +77,13 @@ const _: () = assert!(JUST_RTS > 0 && JUST_RTS < 0x8000_0000);
 /// * vectors 0 and 1 (`$000`/`$004`): the first two LONGs of the OSHEADER —
 ///   EmuTOS copies them there where the hardware does not route the ROM to
 ///   address 0 (`references/emutos/bios/bios.c:120-136`): `os_entry` and
-///   `os_version`, then `reseth`, the reset stub;
+///   `os_version`, then `reseth`, the reset entry;
 /// * vectors `2..=0xFF` and `etv_timer`/`etv_critic`/`etv_term`: [`JUST_RTS`];
 /// * `etv_xtra`: 0, as on EmuTOS (`bios-core-r1` case 58).
 const fn default_of(num: usize) -> u32 {
     match num {
         0 => crate::bdos::process::loader::OSHEADER_LONG0,
-        1 => crate::bios::reset::RESET_STUB_VA as u32,
+        1 => crate::bios::reset::RESET_ENTRY_VA as u32,
         ETV_XTRA => 0,
         _ => JUST_RTS as u32,
     }

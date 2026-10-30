@@ -17,7 +17,7 @@ use std::sync::atomic::Ordering;
 use std::sync::{Mutex, MutexGuard, Once};
 
 use tos_api::bdos::process::{self, hooks, mmu, pexec, PROCESS_TABLE};
-use tos_api::bios::reset::RESET_STUB_VA;
+use tos_api::bios::reset::RESET_ENTRY_VA;
 use tos_api::bios::vectors::{self, setexc, ETV_CRITIC, ETV_TERM, ETV_TIMER, ETV_XTRA, JUST_RTS};
 use tos_api::trap::TrapArgs;
 use tos_types::BasePage;
@@ -37,7 +37,8 @@ fn lock() -> MutexGuard<'static, ()> {
 }
 
 /// A loaded, running process whose page 0 holds what the loader puts at the
-/// vector cells (`write_page0_vectors`) and zeros elsewhere.
+/// vector cells (`write_page0_vectors`) and the page-0 hook cells
+/// (`hooks::PAGE0_HOOKS`), and zeros elsewhere.
 struct Proc {
     slot: usize,
     bp: *mut BasePage,
@@ -56,6 +57,12 @@ impl Proc {
             let page0 = mmu::page0_bytes(slot).unwrap();
             page0.fill(0);
             vectors::write_page0_vectors(page0);
+            // The page-0 hook cells hold the loader's values (TASK/BIOS17:
+            // `swv_vec` is the reset entry, not 0).
+            for h in hooks::PAGE0_HOOKS.iter() {
+                let at = h.addr as usize;
+                page0[at..at + 4].copy_from_slice(&h.default.to_le_bytes());
+            }
         }
         p.set_state(process::State::Running);
         p.parent_frame.elr().store(1, Ordering::Release);
@@ -125,8 +132,8 @@ fn cpu_vectors_answer_the_ret_stub_not_null() {
         assert_eq!(query(num), JUST_RTS, "vector 0x{:x}", num);
     }
     // Vectors 0/1: the OSHEADER's first two LONGs (bios.c:120-136):
-    // os_entry 0 | os_version, then reseth = the reset stub.
-    assert_eq!(query(1), RESET_STUB_VA as i64);
+    // os_entry 0 | os_version, then reseth = the reset entry.
+    assert_eq!(query(1), RESET_ENTRY_VA as i64);
     assert_eq!(query(0) & 0xFFFF, 0, "os_entry");
     assert_ne!(query(0) >> 16, 0, "os_version");
 }
@@ -181,7 +188,7 @@ fn beyond_the_low_memory_region_answers_0_and_writes_nothing() {
         assert_eq!(query(num), 0, "0x{:x}", num);
     }
     // The negative WORDs did not wrap into a cell.
-    assert_eq!(query(1), RESET_STUB_VA as i64);
+    assert_eq!(query(1), RESET_ENTRY_VA as i64);
     for num in 2..0x103u64 {
         assert_eq!(query(num), JUST_RTS, "0x{:x}", num);
     }

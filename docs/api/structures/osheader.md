@@ -116,10 +116,15 @@ the same target as `os_entry` (`bra.s _main`, `:78-79`) and `os_res1`
 monitor change (`bios/bios.c:552`, called at `bios/screen.c:1329`).
 See `docs/api/bios/_reset-warm-cold.md` §3.
 
-**NewTOS (RST01, 2026-10-17):** the EL0 VA of the page-0 reset stub (`0xA40`),
+**NewTOS (RST01, 2026-10-17):** the EL0 VA of the page-0 reset entry (`0xA40`),
 which calls `Ssystem(S_NEWTOS_RESET)` and ends in the restart
 (`tos-api/src/bios/reset.rs`); the same value as `os_rsvl` (+0x10). `os_entry`
-(+0x00) stays 0 — see `_reset-warm-cold.md` §6.
+(+0x00) stays 0 — see `_reset-warm-cold.md` §6. **`swv_vec` (`$46E`, BIOS17,
+2026-10-30):** holds the same value, as EmuTOS sets `swv_vec = os_header.reseth`
+(`bios/bios.c:552`; measured `measurements/measurement-2026-10-30-bios16/RUNINFO.TXT`
+V01); written by `tos-api/src/bdos/process/loader.rs:1242@RESET_ENTRY_VA`, the default of the
+page-0 hook check (`tos-api/src/bdos/process/hooks.rs:284@SwvVec`). NewTOS never
+calls it (no monitor change, ADR-031).
 
 ### `os_beg` (0x08)
 

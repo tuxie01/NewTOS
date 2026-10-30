@@ -227,7 +227,7 @@ static mut PAGE0: [Page0; MAX_PROCESSES] = [const { Page0([0; 4096]) }; MAX_PROC
 
 /// The one **stub page** (MEM12, `docs/api/_super-state.md`): the EL0 code
 /// the kernel and the programs jump to — upcall trampoline, `G_USERDEF`
-/// callout stub, the KEYS02 `kbdvec` stubs, the OSHEADER reset stub. Its
+/// callout stub, the KEYS02 `kbdvec` stubs, the OSHEADER reset entry. Its
 /// content is the same for every process, so one page serves all; every slot
 /// maps it at [`STUB_PAGE_VA`], EL0 execute-only.
 static mut STUB_PAGE: Page0 = Page0([0; 4096]);
