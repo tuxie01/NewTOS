@@ -119,8 +119,10 @@ Interrupt springt waehrend `bconin1` durch `kbdvec`,
   `Bconin(1)`, Strg+Alt+Entf wirkt.
 - Offen: echte Pi (MEM12 Punkt 10); GPIO-15-Falle (Anwenderentscheidung);
   apitest BC03 erwartet `Bconstat(1) == 0`, mit der Falle auf der Pi ohne
-  Adapter evtl. `-1`; qemu-virt-Lauf `tosdump/probes/run-axprobe.sh newtos-virt`
-  nach dem Umzug der Schleife nicht wiederholt (Boot bis Desktop ja).
+  Adapter evtl. `-1` (beides jetzt [UART01](UART01.md)).
+- qemu-virt nach dem Umzug der Schleife: `tosdump/probes/run-axprobe.sh newtos-virt`
+  dreimal, X01–X08 gleich XBIOS18 und dem Orakel; Beleg
+  `measurements/measurement-2026-10-30-bios09-axprobe-virt/RUNINFO.TXT`.
 - `tosdump/probes/run-axprobe.sh` Kopf "newtos-rpi4 … returns 0 at once"
   ist veraltet (SPEC02).
 

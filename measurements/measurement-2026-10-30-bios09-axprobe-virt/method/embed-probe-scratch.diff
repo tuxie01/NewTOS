@@ -1,0 +1,20 @@
+--- /Volumes/Daten/Development/PiRusTOS/kernel/embed.rs	2026-10-14 22:14:28
++++ kernel/embed.rs	2026-10-30 14:44:02
+@@ -46,7 +46,7 @@
+ /// The programs embedded in every kernel image: the desktop program (DESK43
+ /// U9, decision D3; see the module documentation). The registry name is
+ /// `tos_api::aes::shell`'s `DEF_DESKTOP`.
+-pub const EMBEDDED: &[Embedded] = &[Embedded { name: "NEWDESK", file: "NEWDESK.NAP" }];
++pub const EMBEDDED: &[Embedded] = &[Embedded { name: "NEWDESK", file: "AXPROBE.NAP" }]; // BIOS09-TEMP: probe as the desktop
+ 
+ /// The directory `cargo xtask build-programs --board <board>` writes the
+ /// programs of one board into: `<workspace>/target/programs/<board>/`.
+@@ -117,7 +117,7 @@
+     #[test]
+     fn missing_blob_is_a_hard_error_naming_file_and_command() {
+         let dir = scratch("missing");
+-        let list = [Embedded { name: "NEWDESK", file: "NEWDESK.NAP" }];
++        let list = [Embedded { name: "NEWDESK", file: "AXPROBE.NAP" }]; // BIOS09-TEMP: probe as the desktop
+         let err = generate(&list, &dir, "qemu-virt").unwrap_err();
+         assert!(err.contains(&dir.join("NEWDESK.NAP").display().to_string()), "{err}");
+         assert!(err.contains("cargo xtask build-programs --board qemu-virt"), "{err}");
