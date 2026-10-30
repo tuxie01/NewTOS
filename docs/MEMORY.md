@@ -3136,6 +3136,20 @@ compared with the shared cell, not with their defaults. Implementation:
 `tos-api/src/bdos/process/hooks.rs`, `tos-api/src/bios/vectors.rs`
 (TASK/BIOS16.md, `measurements/measurement-2026-10-30-bios16/RUNINFO.TXT`).
 
+*Addendum 2026-10-30 (user decision on TASK/XBIOS04).* One more warning, not
+tied to a hook. NewTOS has no IKBD controller, so the bytes a program sends
+with `Ikbdws` (XBIOS 25) or `Bconout(4,c)` are dropped: no mode change, no
+response packet (`statvec`/`clockvec`/`joyvec` stay uncalled, see the table
+of this ADR and TASK/XBIOS03.md). Following "never silent", the first such
+byte of a process writes one warning, "IKBD commands ignored", shared by both
+paths and reset when the slot is released, through the same per-process
+warning queue as the hook warnings. The return values are unchanged
+(`Ikbdws` 0, `Bconout(4)` 1). Implementation:
+`tos-api/src/bdos/process/hooks.rs` (`note_ikbd_ignored`),
+`tos-api/src/xbios/system.rs`, `tos-api/src/bios/chardev.rs`
+(TASK/XBIOS04.md, `measurements/measurement-2026-10-30-xbios04/RUNINFO.TXT`);
+COMPATIBILITY entry "IKBD commands are not interpreted, no response packets".
+
 ## ADR-032: XHDI and the SCSI driver API are not provided
 
 **Date:** 2026-10-29
