@@ -8,7 +8,7 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Erweiterung) + Resear
 
 - Faelle: `bios-r1` 105, `xbios-chardev-r1` 31 — EXACT-DIFF: TT `0xFFFFFFFF_88018100`, Falcon `0xFFFFFFFF_88000000` (SCC), NewTOS `0x00000000_88010100` (`measurements/measurement-2026-10-28-xbios-chardev-audit/runs/NEWTOS-xbios-chardev-r1/tosdiff-newtos-vs-emutos.txt`).
 - Sonde S01–S18: Baud setzen/abfragen, `-1` behaelt, `16`/`-3` ausserhalb, UCR/RSR setzen und zuruecklesen, Maskierung, Wiederherstellung sind gleich; nur das TSR-Byte (`81` gegen `01`) und die obere Haelfte weichen ab (`measurements/measurement-2026-10-28-xbios-chardev-audit/runs/PROBE-EMUTOS-tt`, `measurements/measurement-2026-10-28-xbios-chardev-audit/runs/PROBE-NEWTOS-raspi4b`).
-- Lokalisiert: `tos-api/src/xbios/system.rs:232@RS_TSR` (Schatten `0x01`) und `tos-api/src/xbios/system.rs:247-279@rsconf` (`old as i64`, nullerweitert).
+- Lokalisiert: `tos-api/src/xbios/system.rs:239@RS_TSR` (Schatten `0x01`) und `tos-api/src/xbios/system.rs:254-286@rsconf` (`old as i64`, nullerweitert).
 - EmuTOS-Stelle: `references/emutos/bios/serport.c:217-249` (`rsconf_mfp` liest die MFP-Register; TSR Bit 7 = „Puffer leer“).
 - Spec: `docs/api/xbios/0f-rsconf.md` sagt „zero-extended into `x0`“ — widerspricht `tos-api/src/trap.rs` („sign-extended `i64`“) und `docs/TOS-REFERENCE-DUMPER.md` §3 (`ret_hi`). Die Registerbytes sind Geraeteparameter (TT ≠ Falcon); ohne COMPATIBILITY-Eintrag DIFF.
 - Fehlerbild: LP64-Programm, das `long r = Rsconf(-1,…)` als negativ erwartet, oder das TSR-Bit „Sender leer“ abfragt.
@@ -51,3 +51,21 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Erweiterung) + Resear
   CLAUDE.md „Testing“): `Rsconf(speed, flow, …)`, danach Feld-Dump von
   `Iorec(0)` (Layout aus `docs/api/structures/iorec.md`, TOOL16-Capture),
   `baudrate`/`flowctrl` gleich dem Orakel.
+
+## Researcher 2026-10-30
+
+`docs/analysis/xbios06-rsconf-profile-2026-10-30.md`; Spec
+`docs/api/xbios/0f-rsconf.md` gegen das Trap-ABI korrigiert (Vertrag
+vorzeichenerweitert, heute nullerweitert, getrennt markiert).
+
+- **Korrektur oben (Lead geprueft):** `Bcostat(1)` = `-1` bei `tsr & 0x80`
+  gilt nur im Bau mit `RS232_DEBUG_PRINT`
+  (`references/emutos/bios/serport.c:275-276`); im Referenzbau antwortet
+  `bcostat1` aus dem Ausgabering (`:278-281`). TSR Bit 7 steht nur in
+  `bconout1`/`bconoutTT` (`:314`, `:433`).
+- Gegen Falcon weichen zwei Bytes ab (RSR und TSR), nicht nur TSR.
+- Optionen (a) TT/MFP mit TSR `0x81`, (b) Falcon/SCC, (c) eigene Bytes +
+  COMPATIBILITY; Empfehlung des Researchers (a), passend zur Bconmap-Tabelle
+  (Geraet 6, MFP; XBIOS05). Offene Fragen in der Analyse Abschnitt "Offene
+  Fragen". Entscheidung des Anwenders steht aus.
+

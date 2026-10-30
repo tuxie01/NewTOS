@@ -1,8 +1,12 @@
 # `Rsconf` (XBIOS 0x0F)
 
 > Phase 00 spec (full-contract template). Source: EmuTOS @ `1a7484ab`.
-> Verified against `bios/xbios.c:376` (`rsconf` wrapper) and the default
-> handler `bios/serport.c:217` (`rsconf_mfp`, installed as `rsconf1`).
+> Verified against `bios/xbios.c:376` (`rsconf` wrapper) and the handlers
+> `bios/serport.c:217` (`rsconf_mfp`: `rsconf1` / `rsconfTT`),
+> `bios/serport.c:775` (`rsconf_scc`: `rsconfA` / `rsconfB`) and
+> `bios/serport.c:945` (`rsconf_dummy`). Re-validated 2026-10-30 (XBIOS06):
+> ABI sign-extension, per-machine handler selection, the Iorec(0) writes.
+> Decision analysis: `docs/analysis/xbios06-rsconf-profile-2026-10-30.md`.
 
 > **Contract vs. reference** — see [`docs/COMPATIBILITY.md`](../../COMPATIBILITY.md).
 > Contract: trap ID/ABI, the `-1` "don't change" per parameter, the
@@ -17,12 +21,28 @@
 scr)`, which forwards to `(*rsconfptr)(…)`. Slot 0x0F of `xbios_vecs[]`
 (`bios/xbios.c:1305`).
 
-**Installed handler / vector:** `rsconfptr` (`bios/serport.c:74`), default
-`rsconf1 = rsconf_mfp` (`bios/serport.c:217-249`, set `:1018`); `Bconmap`
-can retarget it to a SCC/TT-MFP handler.
+**Installed handler / vector:** `rsconfptr` (`bios/serport.c:74`). Which
+handler it points at depends on the machine (`init_bconmap`,
+`bios/serport.c:951-1004`, applies when `BCONMAP_AVAILABLE`,
+`bios/serport.h:18`):
+
+| Machine | `mapped_device` | Entry the vector is copied from | `Rsconf` handler | Port |
+|---|---|---|---|---|
+| plain ST/STE (`maptabsize` 1) | 6 (`:966`) | `maptable[0]` = `maptable_mfp` (`:98`, `:972`) | `rsconf1` -> `rsconf_mfp(MFP_BASE,&iorec1,..)` (`:386-389`) | MFP |
+| TT | 6 | `maptable[0]` (`:972`, `:990-994`) | `rsconf1` (MFP); TT-MFP = device 8 (`rsconfTT`, `:488-490`) | MFP |
+| Falcon, MSTe, ARAnyM | **7** (`:966`) | `maptable[1]` = `maptable_port_b` (`:975-979`, `:997-1003`) | `rsconfB` -> `rsconf_scc(&scc->portB,&iorecB,..)` (`:872-876`) | **SCC B** |
+
+(`rsconfptr = maptabptr->Rsconf` at `:1002`; before `init_bconmap` runs,
+`init_serport` sets `rsconfptr = rsconf1`, `:1019`.) A `Bconmap` switch
+re-copies the vector (`:1114-1121`). `rsconf_dummy` (`:945-948`) returns 0 and
+backs the unused `maptable` slots (`:956-960`).
 
 **Helpers called:**
-- `bios/serport.c:217` — `rsconf_mfp()` — the MFP USART implementation.
+- `bios/serport.c:217` — `rsconf_mfp()` — the MFP USART implementation
+  (ST MFP and TT second MFP).
+- `bios/serport.c:775` — `rsconf_scc()` — the SCC implementation (Falcon
+  port B, Falcon/TT port A).
+- `bios/serport.c:945` — `rsconf_dummy()` — returns 0.
 
 **Headers / type definitions used:**
 - `bios/serport.h:23-38` — the 16 baud constants (`B19200`..`B50`).
@@ -30,7 +50,16 @@ can retarget it to a SCC/TT-MFP handler.
 - `bios/serport.h:57-65` — `EXT_IOREC` (`.baudrate` read by the query form).
 
 **System variables / globals read/written:**
-- `rs232iorecptr->baudrate` (read on the query path), the MFP UART registers.
+- `iorec->baudrate` (read on the query path; the record is the handler's own
+  `iorec1`/`iorecB`/`iorecA`/`iorecTT`, which is what `Iorec(0)` returns while
+  that port is mapped, `bios/xbios.c:339-340`).
+- Writes to that record (the **EXT_IOREC** after the two `IOREC`s,
+  `bios/serport.h:57-65`): MFP handler: `baudrate` (`:232`, only when
+  `0 <= baud <= 15`) and `flowctrl` (`:238`, only when `0 <= ctrl <= 3`);
+  SCC handler additionally `ucr` (`:811`), `datamask` (`:830`), `wr5`
+  (`:832`, `:857`) (see "Side effects"). The MFP handler does **not** write
+  `iorec->ucr`.
+- The MFP UART registers (MFP handler) / SCC WR3,4,5,12,13 (SCC handler).
 
 **Build configuration affecting this function:**
 - `CONF_WITH_MFP` / `CONF_WITH_SCC` / `CONF_WITH_TT_MFP` — which handler is
@@ -76,19 +105,34 @@ low 16 bits after a `baud`-only call, but the canonical query is `baud == -2`.
     0: function_id (word) = 0x000F
   ```
 - **Total parameter bytes:** 14 (W × 6).
-- **Native (AArch64) ABI:** ID `0x0F` in `x8`; args in `x0..x5`; the result
-  in `x0` is a **sign-extended `i64`** like every trap result
+- **Native (AArch64) ABI:** ID `0x0F` in `x8`; args in `x0..x5`. **Contract:**
+  the `ULONG` result is a 32-bit `d0` on the m68k and arrives in `x0` as a
+  **sign-extended `i64`**, like every LONG trap result
   (`tos-api/src/trap.rs:6@TrapArgs`: "return value in `x0` (sign-extended
-  `i64`)"; dumper rule `docs/TOS-REFERENCE-DUMPER.md` §3 `ret_hi`).
-  **[XBIOS07] correction:** earlier text said "zero-extended". The EmuTOS
-  handler returns a 32-bit `ULONG` in `d0` (`bios/serport.c:219-229`); the
-  oracle's `Rsconf(-1 x6)` therefore reads `0xFFFFFFFF_88018100` (TT) /
-  `0xFFFFFFFF_88000000` (Falcon, SCC), i.e. bit 31 of `ucr<<24` is extended
-  (`bios-r1` 105, `xbios-chardev-r1` 31). NewTOS today returns
-  `0x00000000_88010100` (`tos-api/src/xbios/system.rs:247-279@rsconf`,
-  `old as i64`) — **pending XBIOS06**. The register bytes themselves are
-  device parameters (TT != Falcon), whether NewTOS adopts the TT bytes
-  (TSR bit 7 "buffer empty" set) is the XBIOS06 profile decision.
+  `i64`)"; `docs/COMPATIBILITY.md` "LONG results in `x0`: sign-extended";
+  dumper rule `docs/TOS-REFERENCE-DUMPER.md` section 3 `ret_hi`). Because the
+  packed return puts the old UCR in bits 31..24, **every UCR with bit 7 set
+  (the power-up value is `0x88`) makes the result negative**:
+  `0x88xxxxxx` -> `0xFFFFFFFF_88xxxxxx`. The `-2` query returns a small
+  non-negative baud code (`0x00000000_0000000n`), unaffected.
+  - **Oracle (measured):** `Rsconf(-1 x6)` = `0xFFFFFFFF_88018100` (TT, MFP),
+    `0xFFFFFFFF_88000000` (Falcon, SCC B) (`tosdump/cases/bios-r1.tsv:105@Rsconf`,
+    `tosdump/cases/xbios-chardev-r1.tsv:31@Rsconf`; probe S02 in
+    `measurements/measurement-2026-10-28-xbios-chardev-audit/runs/PROBE-EMUTOS-tt/XCPROBE.LOG`
+    and `measurements/measurement-2026-10-28-xbios-chardev-audit/runs/PROBE-EMUTOS-falcontc/XCPROBE.LOG`).
+  - **NewTOS today (deviates from the contract, pending XBIOS06):** the result
+    is **zero-extended**: `tos-api/src/xbios/system.rs:286@old`
+    (`old as i64`, `old: u32`) gives `0x00000000_88010100`
+    (`measurements/measurement-2026-10-28-xbios-chardev-audit/runs/PROBE-NEWTOS-raspi4b/XCPROBE.LOG`,
+    S02). The code comments at `tos-api/src/xbios/system.rs:253@rsconf` and
+    `:285` say "zero-extended" and describe today's code, not the contract;
+    they change with the developer fix.
+  - **Correction history:** the text before XBIOS07 said "zero-extended" as
+    the contract; that was wrong (XBIOS07). XBIOS06 (2026-10-30) removes the
+    last ambiguity: contract = sign-extended, implementation = zero-extended
+    until fixed.
+  - **Which register bytes** the oracle returns is a per-machine device
+    parameter (next section), separate from the extension rule.
 
   | m68k stack | AArch64 reg | Name    | Type / size |
   |------------|-------------|---------|-------------|
@@ -106,7 +150,7 @@ low 16 bits after a `baud`-only call, but the canonical query is `baud == -2`.
 | Position | Name    | Type   | Size | Source location      | Notes |
 |----------|---------|--------|------|----------------------|-------|
 | arg0     | `speed` | `WORD` | 2    | `bios/serport.c:222` | baud index 0..15; `-1` keep; **`-2` query** |
-| arg1     | `ctrl`  | `WORD` | 2    | `bios/serport.c:...` | flow mode 0..3; `-1` keep |
+| arg1     | `ctrl`  | `WORD` | 2    | `bios/serport.c:237-238` (MFP), `:792-793` (SCC) | flow mode 0..3; `-1` keep |
 | arg2..5  | `ucr`/`rsr`/`tsr`/`scr` | `WORD` | 2 | `bios/serport.c:239-246` | MFP 68901 regs; each applied only if `>= 0` |
 
 ### Baud index (`bios/serport.h:23-38`)
@@ -135,17 +179,50 @@ low 16 bits after a `baud`-only call, but the canonical query is `baud == -2`.
 
 - **Register:** D0 / `x0`
 - **Type:** ULONG
-- **Encoding (MFP handler):** `(old_ucr << 24) | (old_rsr << 16) |
-  (old_tsr << 8)` — **`scr` byte not included** (`bios/serport.c:229`). On the
-  **`baud == -2` query** it returns the current baud code
-  (`rs232iorecptr->baudrate`) instead (`bios/serport.c:222-223`). The SCC
-  handler packs a different subset.
-- **Source location:** `bios/serport.c:222-223,229`.
+- **Encoding (MFP handler: ST MFP, TT second MFP):** `(old_ucr << 24) |
+  (old_rsr << 16) | (old_tsr << 8)` — the three bytes are the **live MFP
+  hardware registers** read before any write; **`scr` byte not included**
+  (`bios/serport.c:229`). Measured on TT (power-up after `init_serport`'s
+  `Rsconf(B9600,0,0x88,1,1,0)`, `:1066`): UCR `0x88`, RSR `0x01`, TSR `0x81`
+  -> `0x88018100` (`tosdump/cases/xbios-chardev-r1.tsv:31@Rsconf`, probe S02).
+  *Inferred, not in EmuTOS source:* TSR bit 7 is the MFP 68901's "buffer
+  empty" flag, set by the chip, not by the `tsr=1` write; EmuTOS itself reads
+  it as "transmitter empty" in `bconout1`/`bconoutTT` (`:314`, `:433`) and,
+  only in `RS232_DEBUG_PRINT` builds, in `bcostat1` (`:277`). In the normal
+  build (`RS232_DEBUG_PRINT` 0, `include/config.h:1963-1968`) `bcostat1`
+  answers from the output ring (`:279-282`), not from TSR.
+- **Encoding (SCC handler: Falcon port B, device 7; Falcon/TT port A):**
+  `(iorec->ucr << 24)` plus `0x0800` if the shadow `wr5` bit 4 (break) is set
+  (`bios/serport.c:788-790`); RSR and SCR bytes are **0**, the only TSR bit is
+  bit 3 (comment cites the "TT030 TOS Release notes"; code is the authority).
+  The UCR byte is the *remembered* last-written value (`iorec->ucr`,
+  power-up `0x88`, `bios/serport.c:89`), not hardware. Measured on Falcon:
+  `0x88000000`. TSR bit 7 is never set.
+- **`rsconf_dummy`:** `0` (`bios/serport.c:947`).
+- **`baud == -2` query** (all handlers, tested first): returns
+  `iorec->baudrate` (`bios/serport.c:222-223`, `:779-780`) — a baud code, not
+  packed.
+- **Extension:** 32-bit `ULONG`; on AArch64 sign-extended into `x0`
+  (see "Native ABI" above).
+- **Source location:** `bios/serport.c:222-223,229` (MFP),
+  `:779-790` (SCC), `:947` (dummy).
 
 ### Side effects on global state / hardware
 
-- Programs the MFP USART registers for the parameters that are `>= 0`; updates
-  `rs232iorecptr->baudrate`/`flowctrl` shadows.
+- Programs the MFP USART registers for the parameters that are `>= 0`
+  (SCC: WR12/13 for the baud, WR3/4/5 for `ucr`, WR5 break for `tsr`).
+- **Writes the record `Iorec(0)` returns** (observable by a program that
+  reads it): MFP handler `baudrate` (`:231-232`, `0 <= baud <= 15`) and
+  `flowctrl` (`:237-238`, `0 <= ctrl <= 3`); SCC handler `flowctrl`
+  (`:792-793`), `baudrate` (`:800`), and for `ucr >= 0` `ucr` (`:811`),
+  `datamask` (`:830`), `wr5` (`:832`). Field offsets: see
+  `docs/api/structures/iorec.md` (`extiorec`: `baudrate` m68k 28 / LP64 48,
+  `flowctrl` 29 / 49, `ucr` 30 / 50, `datamask` 31 / 51).
+- **NewTOS today:** the shadows `RS_*` are private statics
+  (`tos-api/src/xbios/system.rs:235@RS_BAUD`..`:239@RS_TSR`); the record at
+  `Iorec(0)` is **not** updated (it keeps the power-up line
+  `tos-api/src/xbios/iorec.rs:154@AUX_LINE`) — a gap, XBIOS06 sub-point
+  2026-10-29, probe design in the analysis.
 
 ---
 
@@ -155,8 +232,9 @@ low 16 bits after a `baud`-only call, but the canonical query is `baud == -2`.
 |-----------|-----------------|----------------|
 | (no error return) | — | — |
 
-Out-of-range values are passed to hardware without validation; a `-1`-only
-call cannot fail.
+`baud` outside 0..15 and `ctrl` outside 0..3 are skipped
+(`bios/serport.c:231,237`); `ucr`/`rsr`/`tsr`/`scr` `>= 0` are written as is
+(truncated to the register's byte). A `-1`-only call cannot fail.
 
 ---
 
@@ -187,6 +265,18 @@ call cannot fail.
    disturbing the framing registers.
 
 ---
+
+4. **The `Rsconf` answer depends on the port `Bconmap` maps to device 1.**
+   Same call, same ROM: TT `0x88018100` (MFP), Falcon `0x88000000` (SCC B)
+   (`bios/serport.c:966,972,975-979`). The bytes are device parameters, not
+   an EmuTOS inconsistency (XBIOS06).
+5. **The MFP return carries hardware state, the SCC return remembered state.**
+   MFP: live `ucr`/`rsr`/`tsr` registers (`:229`); SCC: `iorec->ucr` shadow,
+   RSR/SCR 0, TSR only bit 3 (`:788-790`).
+6. **`ctrl` is validated against 0..3 and `baud` against 0..15** in both
+   handlers (`:231,237`; `:792,797`); out-of-range values are skipped, not
+   passed to hardware. (The earlier sentence "Out-of-range values are passed
+   to hardware without validation" applies to `ucr`/`rsr`/`tsr`/`scr` only.)
 
 ## Dependencies
 
@@ -224,16 +314,27 @@ call cannot fail.
 
 ## Configuration / version notes
 
-- `CONF_WITH_MFP` handler by default; `CONF_WITH_SCC`/`CONF_WITH_TT_MFP` swap
-  a different handler with a different return packing.
+- `rsconf_mfp` needs `CONF_WITH_MFP_RS232 || CONF_WITH_TT_MFP`
+  (`bios/serport.c:213`); `rsconf_scc` needs `CONF_WITH_SCC`; `rsconf1` returns
+  0 without `CONF_WITH_MFP_RS232` (`:391`). `BCONMAP_AVAILABLE` =
+  `CONF_WITH_SCC || CONF_WITH_TT_MFP` (`bios/serport.h:18`). The reference
+  build (make 512, `docs/api/_emutos-config.md`) compiles all three; the
+  handler chosen at run time is by machine (table under "Installed handler").
 
 ---
 
 ## NewTOS implementation notes
 
-(Empty during Phase 00.)
+**XBIOS06 status (2026-10-30), facts only:** NewTOS keeps private shadows
+(`tos-api/src/xbios/system.rs:235@RS_BAUD`, `:237@RS_UCR`, `:238@RS_RSR`,
+`:239@RS_TSR`), does not touch the PL011 in `rsconf`
+(`tos-api/src/xbios/system.rs:254@rsconf`), does not write the `Iorec(0)`
+record, returns zero-extended, and starts with the register image
+`0x88010100` (TSR `0x01`). The register-byte profile (TT-like `0x81`,
+Falcon-like `0x00`, or own) is an open owner decision; see
+`docs/analysis/xbios06-rsconf-profile-2026-10-30.md`.
 
-PHASE-07: NewTOS implements `Rsconf` against the PL011 UART — the baud index
+PHASE-07 (historic intent, not a measured statement about today's code): NewTOS implements `Rsconf` against the PL011 UART — the baud index
 maps to IBRD/FBRD divisors; flow bits map to CR.RTSEn/CTSEn. The MFP register
 arguments are ignored on input, and the ULONG return synthesises plausible
 UCR/RSR/TSR bytes; the `-2` query returns the current baud index.
