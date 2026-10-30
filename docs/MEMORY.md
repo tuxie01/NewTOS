@@ -3120,6 +3120,22 @@ stays silent: TeraDesk's `force_mediach` puts `hdv_*` back before it leaves
 the super state. Implementation: `tos-api/src/bdos/process/hooks.rs`
 (TASK/BIOS15.md, `measurements/measurement-2026-10-29-bios15/RUNINFO.TXT`).
 
+*Addendum 2026-10-30 (user decision on TASK/BIOS16).* Rule 4 gains one
+permitted reaction. A value a process writes directly into a page-0 vector
+cell `$008`–`$407` is **adopted** into the shared cell that `Setexc` reads and
+writes, as on EmuTOS where the write is the vector
+(`references/emutos/bios/bios.c:1070-1080`). Adoption is a store, never a
+call: the cell stays unserved unless the table of this ADR serves it. The
+adopted value is owned by the writing process under rule 3 (restored at
+`Pterm` when the cell still holds it, kept at `Ptermres`). It is checked after
+every trap and, for a process in the super state, also before every trap, so
+the first `Setexc(n,-1)` after the write already sees it. `$408` (`etv_term`)
+is excluded: it is served, so a directly written value is never adopted and
+can never be called; it warns as before. Since TASK/BIOS07 the cells are
+compared with the shared cell, not with their defaults. Implementation:
+`tos-api/src/bdos/process/hooks.rs`, `tos-api/src/bios/vectors.rs`
+(TASK/BIOS16.md, `measurements/measurement-2026-10-30-bios16/RUNINFO.TXT`).
+
 ## ADR-032: XHDI and the SCSI driver API are not provided
 
 **Date:** 2026-10-29
