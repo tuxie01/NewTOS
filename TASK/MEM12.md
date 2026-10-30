@@ -370,5 +370,10 @@ Silizium; QEMU verdeckt fehlende Invalidierungen oft.
    Bytes; Strg+Alt+Entf startet neu. Kehrt die erste Runde einmal mit `0`
    zurueck und wartet die zweite, ist das die GPIO-15-Falle aus
    `TASK/BIOS09.md` (eigener Befund, kein Fehlschlag des Wartens).
-11. Ergebnis mit Seriellprotokoll und Fotos in einem Lauf unter
+11. **Unechtes Byte auf RXD0** (aus UART01, Anwender 2026-10-30; kein
+   UART-Adapter angesteckt): eigener Diagnose-Kern aus `TASK/UART01.md`
+   Arbeit 1 (nicht der Abnahme-Kern dieser Folge). Booten, die Anzeige des
+   ersten Empfangsbytes ablesen: Wert, `UARTDR`-Bits 8–11 (FE/PE/BE/OE),
+   `RIS`; Foto.
+12. Ergebnis mit Seriellprotokoll und Fotos in einem Lauf unter
    `measurements/` und in `docs/HW-TEST-LOG.md`.

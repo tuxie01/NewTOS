@@ -12,6 +12,26 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher (Umfang entscheiden),
 - Spec: `docs/api/xbios/19-ikbdws.md` (No-op, Interpreter „does not exist yet“). IKBD-Uhr und Joystick fallen unter die Hardware-Nicht-Ziele; Mausmodus-Kommandos (0x08/0x09/0x0A/0x12) betreffen beobachtbares Verhalten, nicht gemessen (Bericht Abschnitt 6).
 - Fehlerbild: Uhr per `0x1C` lesen und auf das Paket warten haengt; Maus per `0x12` abschalten wirkt nicht.
 
+## Lokalisierung (Lead, 2026-10-30)
+
+- `ikbdws` (`references/emutos/bios/ikbd.c:948-954`) → `tos-api/src/xbios/system.rs@ikbdws`
+  (`mapping.tsv` `mapped`, "no-op").
+- `--down`: `ikbd_writeb` (`design:hardware:ikbd-acia`, Byte an den 6301
+  ueber die ACIA; NewTOS hat keinen IKBD-Controller, Tastatur/Maus kommen per
+  USB-HID und werden in `kernel/src/ikbd.rs` ins IKBD-Format gebracht),
+  `bcostat4` → `tos-api/src/bios/chardev.rs@bcostat` (`mapped`; seit
+  [BIOS04](BIOS04.md) erledigt, Vorbedingung `bios-r1` 67 erfuellt — beim
+  Researcher pruefen). Vollstaendig: ja.
+- `--up` (Wiedertestmenge, Schicht bios): `xbiostrap`, `biostrap`,
+  `clock_init`, `time_init`, `gettime`, `settime`, `igetdt`, `isetdt`,
+  `igetregs`, `isetregs`, `xsetdate`, `xsettime`, `osinit_after_xmaddalt`,
+  `memdone`, `initinfo`, `osif`, `enter`. `unmapped` darin: `bios_init`,
+  `biosmain` (Start, Kerninit) und `cprint_asctime` (`bios/initinfo.c`,
+  Startbildschirm). Vollstaendig: nein, die drei sind hier gelistet.
+  (EmuTOS liest die IKBD-Uhr ueber `Ikbdws(0x1C)` in `clock.c`; NewTOS' Uhr
+  kommt nicht vom IKBD — der Researcher prueft, ob ein Interpreter diesen
+  Pfad beruehrt.)
+
 ## Arbeit
 
 1. Researcher: Umfang festlegen — COMPATIBILITY-Eintrag (No-op) oder Interpreter fuer die beobachtbaren Kommandos; Mausmodus-Kommandos mit einem Fall messen (Bericht Abschnitt 6, offen).
