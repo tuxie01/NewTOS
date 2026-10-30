@@ -12,7 +12,14 @@
 #      sdk/libc/build/compile-commands.txt (written by build-libc.sh);
 #      libm.a and the builtins: the flags of build-libm.sh /
 #      build-compiler-rt.sh, as sdk/compiler-rt/tests/rt-host.sh does -- and
-#      must be byte-identical to the shipped member.
+#      must be byte-identical to the shipped member, except for the compiler
+#      identification: a member that differs only in `.comment' (clang's
+#      version string; archives built by an earlier clang release, TASK/SDK08)
+#      counts as identical once `.comment' is removed from both objects, as in
+#      rt-host.sh; code, data, relocations and symbols stay byte-compared. The
+#      line prints the host clang and the clang the shipped members name; a
+#      counter-check flips one byte in the code of a rebuilt member, which must
+#      be reported as differing.
 #   3. The same commands with -ffixed-x18 (macOS does not preserve x18; see
 #      rt-host.c) build the objects that are linked, with ldbl-elf.c, into the
 #      program the host runs: newtos.ld with the data segment on a 16 KiB page.
@@ -45,12 +52,41 @@ for f in "$CMDS" "$SDK/compiler-rt/build/srcs.txt" "$CRT_TOP/lib/builtins" "$OL_
 done
 . "$SDK/toolchain.sh"   # LLVM tools: PATH / LLVM packages first, pinned Rust sysroot as fallback (SDK01 I, K)
 NM="$(newtos_tool llvm-nm)"; AR="$(newtos_tool llvm-ar)"; LLD="$(newtos_tool ld.lld)"; OBJDUMP="$(newtos_tool llvm-objdump)"
-for t in "$NM" "$AR" "$LLD" "$OBJDUMP"; do [ -x "$t" ] || { echo "skip: $t missing"; exit 77; }; done
+OBJCOPY="$(newtos_tool llvm-objcopy)"; READOBJ="$(newtos_tool llvm-readobj)"
+for t in "$NM" "$AR" "$LLD" "$OBJDUMP" "$OBJCOPY" "$READOBJ"; do [ -x "$t" ] || { echo "skip: $t missing"; exit 77; }; done
 RES="$("$CLANG" -print-resource-dir)/include"
 
 WORK=$(mktemp -d "${TMPDIR:-/tmp}/ldbl-host.XXXXXX") || exit 1
 trap 'rm -rf "$WORK"' EXIT
 fail=0
+
+# parity <shipped> <rebuilt>: "same" when byte-identical; "ident" when they
+# differ only in the compiler identification -- byte-identical once `.comment'
+# (clang's "... clang version ..." string) is removed from both and their
+# symbol tables still agree (removing .comment also drops the symbols defined
+# in it, AArch64's `$d' mapping symbol); else "differ".
+# (The same function as in sdk/compiler-rt/tests/rt-host.sh.)
+parity() {
+  cmp -s "$1" "$2" && { echo same; return; }
+  "$OBJCOPY" --remove-section=.comment "$1" "$WORK/pa.o" &&
+  "$OBJCOPY" --remove-section=.comment "$2" "$WORK/pb.o" &&
+  cmp -s "$WORK/pa.o" "$WORK/pb.o" || { echo differ; return; }
+  [ "$("$READOBJ" --symbols "$1" | grep -v '^File: ')" = "$("$READOBJ" --symbols "$2" | grep -v '^File: ')" ] &&
+    echo ident || echo differ
+}
+# flip_code <object>: invert the byte in the middle of its first non-empty
+# executable section; prints that section's name (nothing if there is none).
+flip_code() {
+  local nm off size pos b
+  read -r nm off size < <("$READOBJ" --sections "$1" | awk '
+    /Section \{/ {x = 0} /^ *Name:/ {nm = $2} /SHF_EXECINSTR/ {x = 1}
+    /^ *Offset:/ {off = $2} /^ *Size:/ {if (x && $2 + 0 > 0) {print nm, off, $2; exit}}')
+  [ -n "${size:-}" ] || return 1
+  pos=$(( off + size / 2 ))
+  b=$(od -An -tu1 -j "$pos" -N1 "$1" | tr -d ' ')
+  printf "$(printf '\\%03o' $(( b ^ 0xff )))" | dd of="$1" bs=1 seek="$pos" conv=notrunc 2>/dev/null
+  echo "$nm"
+}
 
 # --- 1. the newtos-cc link --------------------------------------------------------
 "$SDK/bin/newtos-cc" -lm -ffixed-x18 -c "$HERE/ldbl-elf.c" -o "$WORK/elf.o" || { echo "FAIL: ldbl-elf.c does not compile"; exit 1; }
@@ -70,7 +106,7 @@ OL_FLAGS=(-target aarch64-unknown-none-elf -ffreestanding -nostdlib -O2 -fPIE -f
           -std=c99 -fno-strict-aliasing -D__BSD_VISIBLE
           -I"$OL_TOP" -I"$OL_TOP/include" -I"$OL_TOP/aarch64" -I"$OL_TOP/src" -I"$OL_TOP/ld128" -I"$MINT" -isystem "$RES")
 mkdir -p "$WORK/ship" "$WORK/same" "$WORK/x18"
-nsame=0; ndiff=0; nmem=0
+nsame=0; nident=0; ndiff=0; nmem=0; probe=
 while IFS= read -r am; do
   arch="${am%%(*}"; mem="${am#*(}"; mem="${mem%)}"
   nmem=$((nmem+1))
@@ -96,10 +132,29 @@ while IFS= read -r am; do
         { echo "FAIL: rebuild of builtins($mem)"; fail=1; continue; } ;;
     *) echo "FAIL: member of an unexpected archive: $am"; fail=1; continue ;;
   esac
-  if cmp -s "$WORK/same/$mem" "$WORK/ship/$mem"; then nsame=$((nsame+1)); else ndiff=$((ndiff+1)); echo "FAIL: rebuild of $am differs from the shipped member"; fi
+  case $(parity "$WORK/ship/$mem" "$WORK/same/$mem") in
+    same)  nsame=$((nsame+1)) ;;
+    ident) nident=$((nident+1)); [ -n "$probe" ] || probe="$mem" ;;
+    *)     ndiff=$((ndiff+1)); echo "FAIL: rebuild of $am differs from the shipped member (not only in .comment)" ;;
+  esac
 done < "$WORK/members.txt"
-echo "2  rebuild parity: $nsame of $nmem linked archive members byte-identical, $ndiff differ"
-[ "$ndiff" -eq 0 ] && [ "$nsame" -eq "$nmem" ] || fail=1
+echo "2  rebuild parity: $nsame of $nmem linked archive members byte-identical, $nident identical but for the compiler identification (.comment), $ndiff differ"
+[ "$ndiff" -eq 0 ] && [ $((nsame + nident)) -eq "$nmem" ] || fail=1
+echo "   host clang: $("$CLANG" --version | head -1)"
+"$READOBJ" -p .comment "$WORK"/ship/*.o 2>/dev/null |
+  sed -n 's/^ *\[ *[0-9a-f]*\] //p' | sort | uniq -c |
+  while read -r n s; do echo "   shipped members built by: $s ($n members)"; done
+# counter-check: one byte of code changed in a copy of a rebuilt member (the
+# first one that differs from the shipped member only in .comment, else the
+# first linked member) must still be reported as a difference
+probe=${probe:-$(head -1 "$WORK/members.txt" | sed 's/^.*(//; s/)$//')}
+cp "$WORK/same/$probe" "$WORK/flip.o"
+sec=$(flip_code "$WORK/flip.o") || { echo "FAIL: counter-check found no code section in $probe"; fail=1; }
+if [ -n "$sec" ]; then
+  r=$(parity "$WORK/ship/$probe" "$WORK/flip.o")
+  echo "   counter-check: one byte of $sec in $probe inverted -> $r (expected: differ)"
+  [ "$r" = differ ] || { echo "FAIL: the parity check misses a changed code byte"; fail=1; }
+fi
 n18=$("$OBJDUMP" -d "$WORK"/x18/*.o "$WORK/elf.o" | grep -E '^ +[0-9a-f]+:' | grep -cE '\b[xw]18\b')
 [ "$n18" -eq 0 ] || { echo "FAIL: the -ffixed-x18 objects still use x18 ($n18 instructions)"; fail=1; }
 

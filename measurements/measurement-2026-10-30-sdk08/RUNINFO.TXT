@@ -1,0 +1,110 @@
+measurement-2026-10-30-sdk08 -- SDK08: the SDK rebuild-parity tests ignore exactly the compiler
+identification (.comment) after the host clang update
+=====================================================================================================
+Developer, TASK/SDK08 ("Vorgabe (Anwender, 2026-10-30)"), 2026-10-30 (host clock CET).
+Tree: main at ebda3d72 plus the uncommitted SDK08 change. Host tests only: no QEMU, no image
+booted, no hardware, nothing flashed. Not committed.
+
+HOST COMPILER
+  host clang      Apple clang version 21.0.0 (clang-2100.4.1.1)   (`clang --version`, line 1;
+                  Target arm64-apple-darwin27.0.0, Xcode toolchain)
+  shipped members Apple clang version 21.0.0 (clang-2100.3.34.2)  (their .comment; local build
+                  products, gitignored: sdk/compiler-rt/libclang_rt.builtins.a 151 members,
+                  sdk/libm/libm.a 256, sdk/libc/libc.a 642 of which 638 carry a .comment)
+  LLVM tools      llvm-objcopy / llvm-readobj / llvm-ar, LLVM 22.1.2-rust-1.97.0-nightly (the pinned
+                  Rust sysroot, found by sdk/toolchain.sh)
+  python3         3.15.0 (only for method/elfsecdiff.py, the analysis below)
+  The shipped archives were NOT rebuilt or replaced.
+
+WHAT / WHY
+  Before: sdk/run-host-tests.sh 33 passed, 2 failed, 0 skipped. rt-host and ldbl-host failed only in
+  their step 2 (rebuild parity, `cmp -s` of each rebuilt member against the shipped one):
+    rt-host    2  rebuild parity: 0 of 407 shipped members byte-identical, 407 differ
+    ldbl-host  2  rebuild parity: 1 of 202 linked archive members byte-identical, 201 differ
+  All functional checks in both were green (rt-host 1950316 checks, ldbl-oracle 66405 checks,
+  0 failed). results/before-run-host-tests.txt.
+
+1. CAUSE, SECTION BY SECTION (method/section-diff.sh + method/elfsecdiff.py)
+  Every member of all three archives (1049) rebuilt with the current clang and the flags of the
+  parity tests (builtins/libm: the flags in rt-host.sh; libc: its line in
+  sdk/libc/build/compile-commands.txt), then compared to the shipped member as ELF64: ELF header
+  without e_shoff, the section list, every section header without sh_offset, every section's
+  contents. results/section-diff.txt, one line per member:
+    crt   151  diff .comment[hdr],.comment
+    libm  256  diff .comment[hdr],.comment
+    libc  638  diff .comment[hdr],.comment
+    libc    4  BYTEIDENT (arch__proc.o, arch__setjmp.o, arch__setstack.o, arch__vfork.o: assembler
+               sources, no .comment)
+  No member differs in any other section (.text, .rodata*, .data, .rela.*, .symtab, .strtab,
+  .llvm_addrsig, .note.GNU-stack) or in the ELF header. The .comment contents are the version
+  string ("... (clang-2100.3.34.2)" shipped, "... (clang-2100.4.1.1)" rebuilt; one byte shorter,
+  hence the size in its header and every later file offset). The string "clang" occurs only inside
+  .comment (twice in that one string, all 1045 rebuilt objects with a .comment). The cause stated
+  in TASK/SDK08 is confirmed; there is no code or data finding.
+
+2. CHANGE (sdk/compiler-rt/tests/rt-host.sh, sdk/libc/tests/ldbl-host.sh)
+  Step 2 compares with parity(): byte-identical -> "same"; otherwise both objects are copied
+  through `llvm-objcopy --remove-section=.comment` and the copies must be byte-identical AND the
+  two original symbol tables (`llvm-readobj --symbols`) must agree -> "ident"; else "differ"
+  (FAIL). The symbol check exists because removing .comment also drops the symbols defined in it
+  (AArch64's `$d' mapping symbol at .comment+0); without it the per-section counter-check below
+  found one inverted symbol-table byte not reported (libc/arch__cmdargs.o, that `$d' symbol's
+  st_value) -- fixed before this run. The step passes when nothing differs and same + ident = all.
+  The step prints the host clang and the clang named by the shipped members, and runs a built-in
+  counter-check.
+
+  After:
+    rt-host    2  rebuild parity: 0 of 407 shipped members byte-identical, 407 identical but for
+                  the compiler identification (.comment), 0 differ
+                  host clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+                  shipped members built by: Apple clang version 21.0.0 (clang-2100.3.34.2)
+                  (407 members)
+                  counter-check: one byte of .text in lib_builtins_multf3.o inverted -> differ
+                  (expected: differ)
+    ldbl-host  2  rebuild parity: 1 of 202 linked archive members byte-identical, 201 identical
+                  but for the compiler identification (.comment), 0 differ
+                  host clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+                  shipped members built by: Apple clang version 21.0.0 (clang-2100.3.34.2)
+                  (201 members)
+                  counter-check: one byte of .text in lib_builtins_aarch64_fp_mode.o inverted ->
+                  differ (expected: differ)
+  results/rt-host-after.txt, results/ldbl-host-after.txt.
+
+3. COUNTER-CHECK
+  a) built into both tests (every run): a copy of a rebuilt member gets the byte in the middle of
+     its first non-empty executable section inverted; parity() against the shipped member must
+     say "differ", else FAIL. Result above: differ in both.
+  b) per section (method/counter-check.sh, run once here): for four members -- builtins
+     lib_builtins_multf3.o, libm ld128__e_powl.o, libc stdio__printf_fp.o, libc arch__cmdargs.o
+     (has .data/.rela.data) -- one byte in the middle of EVERY non-empty section of a copy of the
+     rebuild is inverted, one section at a time, and the parity() function taken from rt-host.sh
+     itself judges it. Expected "ident" for .comment only, "differ" for everything else.
+     Result: 30 of 30 as expected, rc=0 (results/counter-check.txt): .text, .rela.text, .rodata*,
+     .data, .rela.data, .strtab, .symtab, .llvm_addrsig -> differ; .comment -> ident. (The two
+     llvm-objcopy "invalid symbol index" messages are the inverted .rela.text bytes; objcopy
+     refuses them, which parity() counts as differ.)
+  Reproduce: method/section-diff.sh <workdir> > section-diff.txt, then
+  method/counter-check.sh <workdir> crt/lib_builtins_multf3.o libm/ld128__e_powl.o
+  libc/stdio__printf_fp.o libc/arch__cmdargs.o (TMPDIR for its scratch).
+
+4. MANIFEST (tools/sd-manifest.sh)
+  `write` adds one line after `created`: `host_clang <first line of $CLANG --version>` ($CLANG,
+  default clang -- what the SDK build scripts use), or `host_clang not found`. Format stays v1;
+  the readers select lines by key (tools/xtask/src/tosdump.rs:888@manifest_lines takes only
+  image_sha256 / optional_missing; the probe scripts copy the file). Smoke test in scratch (a
+  1 KiB dummy image, one file): the line reads
+  `host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)`; with CLANG=/nonexistent
+  `host_clang not found`. docs/sdk/06-image-and-testing.md documents the line and asks a run's
+  RUNINFO.TXT to state it with the optional_missing lines. No image was built in this run, so
+  there is no manifest to copy here (optional_missing: not applicable).
+
+RESULTS
+  sdk/run-host-tests.sh   before 33 passed, 2 failed, 0 skipped
+                          after  35 passed, 0 failed, 0 skipped   (results/after-run-host-tests.txt)
+  cargo xtask test        1895 passed, 0 failed, 1 ignored (unchanged; no Rust code touched)
+
+FILES
+  method/section-diff.sh     rebuild of all archive members + per-section comparison
+  method/elfsecdiff.py       the ELF64 section comparator used by it
+  method/counter-check.sh    per-section counter-check through rt-host.sh's parity()
+  results/                   the logs quoted above (scratch paths shown as <scratch>)

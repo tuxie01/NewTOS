@@ -13,7 +13,14 @@
 #      from libc.a (newtos-arch/softfloat.c, first archive wins).
 #   2. Rebuild parity: every member of the shipped libclang_rt.builtins.a and
 #      libm.a is recompiled here from the same source with the flags of
-#      build-compiler-rt.sh / build-libm.sh and must be byte-identical.
+#      build-compiler-rt.sh / build-libm.sh and must be byte-identical --
+#      except for the compiler identification: clang writes its version string
+#      into `.comment' and nowhere else, so a member that differs only there
+#      (archives built by an earlier clang release, TASK/SDK08) counts as
+#      identical once `.comment' is removed from both objects; code, data,
+#      relocations and symbols stay byte-compared. The line prints the host
+#      clang and the clang the shipped members name. A counter-check flips one
+#      byte in the code of a rebuilt member, which must be reported as differing.
 #   3. The same rebuild with -ffixed-x18 (macOS clobbers x18; rt-host.c
 #      "x18") is linked with rt-elf.c into a program whose data segment sits
 #      on a 16 KiB page (newtos.ld + one ALIGN), and rt-host.c runs that
@@ -42,13 +49,40 @@ for f in "$SDK/compiler-rt/build/srcs.txt" "$SDK/libm/build/srcs.txt" "$SDK/libm
 done
 . "$SDK/toolchain.sh"   # LLVM tools: PATH / LLVM packages first, pinned Rust sysroot as fallback (SDK01 I, K)
 NM="$(newtos_tool llvm-nm)"; AR="$(newtos_tool llvm-ar)"; LLD="$(newtos_tool ld.lld)"
-OBJDUMP="$(newtos_tool llvm-objdump)"
-for t in "$NM" "$AR" "$LLD" "$OBJDUMP"; do [ -x "$t" ] || { echo "skip: $t missing"; exit 77; }; done
+OBJDUMP="$(newtos_tool llvm-objdump)"; OBJCOPY="$(newtos_tool llvm-objcopy)"; READOBJ="$(newtos_tool llvm-readobj)"
+for t in "$NM" "$AR" "$LLD" "$OBJDUMP" "$OBJCOPY" "$READOBJ"; do [ -x "$t" ] || { echo "skip: $t missing"; exit 77; }; done
 RES="$("$CLANG" -print-resource-dir)/include"
 
 WORK=$(mktemp -d "${TMPDIR:-/tmp}/rt-host.XXXXXX") || exit 1
 trap 'rm -rf "$WORK"' EXIT
 fail=0
+
+# parity <shipped> <rebuilt>: "same" when byte-identical; "ident" when they
+# differ only in the compiler identification -- byte-identical once `.comment'
+# (clang's "... clang version ..." string) is removed from both and their
+# symbol tables still agree (removing .comment also drops the symbols defined
+# in it, AArch64's `$d' mapping symbol); else "differ".
+parity() {
+  cmp -s "$1" "$2" && { echo same; return; }
+  "$OBJCOPY" --remove-section=.comment "$1" "$WORK/pa.o" &&
+  "$OBJCOPY" --remove-section=.comment "$2" "$WORK/pb.o" &&
+  cmp -s "$WORK/pa.o" "$WORK/pb.o" || { echo differ; return; }
+  [ "$("$READOBJ" --symbols "$1" | grep -v '^File: ')" = "$("$READOBJ" --symbols "$2" | grep -v '^File: ')" ] &&
+    echo ident || echo differ
+}
+# flip_code <object>: invert the byte in the middle of its first non-empty
+# executable section; prints that section's name (nothing if there is none).
+flip_code() {
+  local nm off size pos b
+  read -r nm off size < <("$READOBJ" --sections "$1" | awk '
+    /Section \{/ {x = 0} /^ *Name:/ {nm = $2} /SHF_EXECINSTR/ {x = 1}
+    /^ *Offset:/ {off = $2} /^ *Size:/ {if (x && $2 + 0 > 0) {print nm, off, $2; exit}}')
+  [ -n "${size:-}" ] || return 1
+  pos=$(( off + size / 2 ))
+  b=$(od -An -tu1 -j "$pos" -N1 "$1" | tr -d ' ')
+  printf "$(printf '\\%03o' $(( b ^ 0xff )))" | dd of="$1" bs=1 seek="$pos" conv=notrunc 2>/dev/null
+  echo "$nm"
+}
 
 # --- 1. the newtos-cc link ------------------------------------------------------
 "$SDK/bin/newtos-cc" -lm -c "$HERE/rt-elf.c" -o "$WORK/rt-elf.o" || { echo "FAIL: rt-elf.c does not compile"; exit 1; }
@@ -81,17 +115,25 @@ OL_FLAGS=(-target aarch64-unknown-none-elf -ffreestanding -nostdlib -O2 -fPIE -f
 mkdir -p "$WORK/ship/crt" "$WORK/ship/libm" "$WORK/same" "$WORK/x18/crt" "$WORK/x18/libm" "$WORK/olh"
 (cd "$WORK/ship/crt" && "$AR" x "$SDK/compiler-rt/libclang_rt.builtins.a") || exit 1
 (cd "$WORK/ship/libm" && "$AR" x "$SDK/libm/libm.a") || exit 1
-nsame=0; ndiff=0
+nsame=0; nident=0; ndiff=0
 while IFS= read -r c; do
   o="$(printf '%s' "${c%.c}" | tr '/' '_').o"
   "$CLANG" "${CRT_FLAGS[@]}" -c "$CRT_TOP/$c" -o "$WORK/same/$o" || { echo "FAIL: $c does not compile"; exit 1; }
-  if cmp -s "$WORK/same/$o" "$WORK/ship/crt/$o"; then nsame=$((nsame+1)); else ndiff=$((ndiff+1)); echo "FAIL: rebuild of $c differs from the shipped member"; fi
+  case $(parity "$WORK/ship/crt/$o" "$WORK/same/$o") in
+    same)  nsame=$((nsame+1)) ;;
+    ident) nident=$((nident+1)) ;;
+    *)     ndiff=$((ndiff+1)); echo "FAIL: rebuild of $c differs from the shipped member (not only in .comment)" ;;
+  esac
   "$CLANG" "${CRT_FLAGS[@]}" -ffixed-x18 -c "$CRT_TOP/$c" -o "$WORK/x18/crt/$o" || exit 1
 done < "$SDK/compiler-rt/build/srcs.txt"
 while IFS= read -r c; do
   d="${c%%/*}"; o="${d}__$(basename "${c%.c}").o"
   "$CLANG" "${OL_FLAGS[@]}" -c "$OL_TOP/$c" -o "$WORK/same/$o" 2>/dev/null || { echo "FAIL: $c does not compile"; exit 1; }
-  if cmp -s "$WORK/same/$o" "$WORK/ship/libm/$o"; then nsame=$((nsame+1)); else ndiff=$((ndiff+1)); echo "FAIL: rebuild of $c differs from the shipped member"; fi
+  case $(parity "$WORK/ship/libm/$o" "$WORK/same/$o") in
+    same)  nsame=$((nsame+1)) ;;
+    ident) nident=$((nident+1)) ;;
+    *)     ndiff=$((ndiff+1)); echo "FAIL: rebuild of $c differs from the shipped member (not only in .comment)" ;;
+  esac
   "$CLANG" "${OL_FLAGS[@]}" -ffixed-x18 -c "$OL_TOP/$c" -o "$WORK/x18/libm/$o" 2>/dev/null || exit 1
   # the `long double' members (build/srcs-ld.txt, TASK/SDK01 J) have no host
   # counterpart: OpenLibm's Darwin configuration does not build them, the
@@ -105,8 +147,21 @@ while IFS= read -r c; do
     -c "$OL_TOP/$c" -o "$WORK/olh/$o" 2>/dev/null || { echo "FAIL: host build of $c"; exit 1; }
 done < "$SDK/libm/build/srcs.txt"
 n_ship=$(( $(ls "$WORK/ship/crt" | grep -c '\.o$') + $(ls "$WORK/ship/libm" | grep -c '\.o$') ))
-echo "2  rebuild parity: $nsame of $n_ship shipped members byte-identical, $ndiff differ"
-[ "$ndiff" -eq 0 ] && [ "$nsame" -eq "$n_ship" ] || fail=1
+echo "2  rebuild parity: $nsame of $n_ship shipped members byte-identical, $nident identical but for the compiler identification (.comment), $ndiff differ"
+[ "$ndiff" -eq 0 ] && [ $((nsame + nident)) -eq "$n_ship" ] || fail=1
+echo "   host clang: $("$CLANG" --version | head -1)"
+"$READOBJ" -p .comment "$WORK"/ship/crt/*.o "$WORK"/ship/libm/*.o 2>/dev/null |
+  sed -n 's/^ *\[ *[0-9a-f]*\] //p' | sort | uniq -c |
+  while read -r n s; do echo "   shipped members built by: $s ($n members)"; done
+# counter-check: one byte of code changed in a copy of a rebuilt member must
+# still be reported as a difference
+cp "$WORK/same/lib_builtins_multf3.o" "$WORK/flip.o"
+sec=$(flip_code "$WORK/flip.o") || { echo "FAIL: counter-check found no code section in lib_builtins_multf3.o"; fail=1; }
+if [ -n "$sec" ]; then
+  r=$(parity "$WORK/ship/crt/lib_builtins_multf3.o" "$WORK/flip.o")
+  echo "   counter-check: one byte of $sec in lib_builtins_multf3.o inverted -> $r (expected: differ)"
+  [ "$r" = differ ] || { echo "FAIL: the parity check misses a changed code byte"; fail=1; }
+fi
 n18=$("$OBJDUMP" -d "$WORK"/x18/crt/*.o "$WORK"/x18/libm/*.o | grep -E '^ +[0-9a-f]+:' | grep -cE '\b[xw]18\b')
 [ "$n18" -eq 0 ] || { echo "FAIL: the -ffixed-x18 rebuild still uses x18 ($n18 instructions)"; fail=1; }
 "$AR" cr "$WORK/x18-builtins.a" "$WORK"/x18/crt/*.o && "$AR" cr "$WORK/x18-libm.a" "$WORK"/x18/libm/*.o || exit 1

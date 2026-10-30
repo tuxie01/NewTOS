@@ -1,0 +1,757 @@
+host: arm64 Darwin; cc: Apple clang version 21.0.0 (clang-2100.4.1.1)
+
+PASS  obspec_bits
+PASS  evnt_timer_words
+PASS  wind_set_addrin
+PASS  intin_long_words
+PASS  ptr_word_count
+PASS  aesglobal_fields
+PASS  setjmp-host
+PASS  cmdargs-host
+PASS  gmp-host
+PASS  spawn-host
+PASS  system-host
+PASS  quickstat-host
+PASS  fstat-host
+PASS  stat-host
+PASS  waith-host
+PASS  malloc-host
+PASS  sysinfo-host
+PASS  lp64-limits
+PASS  iorec-layout
+PASS  bconmap-layout
+PASS  sysvars-layout
+PASS  libc-link
+      1  newtos-cc -lm: RT.NCP linked (129584 bytes), undefined symbols: 0
+      FAIL: rebuild of lib/builtins/addtf3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/comparetf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/divtc3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/divtf3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/extenddftf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/extendhftf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/extendsftf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixtfdi.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixtfsi.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixtfti.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixunstfdi.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixunstfsi.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixunstfti.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floatditf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floatsitf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floattitf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floatunditf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floatunsitf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floatuntitf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/multc3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/multf3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/powitf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/subtf3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/trunctfdf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/trunctfhf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/trunctfsf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/absvdi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/absvsi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/absvti2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/adddf3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/addsf3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/addvdi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/addvsi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/addvti3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/apple_versioning.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/ashldi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/ashlti3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/ashrdi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/ashrti3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/bswapdi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/bswapsi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/clzdi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/clzsi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/clzti2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/cmpdi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/cmpti2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/comparedf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/comparesf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/ctzdi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/ctzsi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/ctzti2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/divdc3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/divdf3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/divdi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/divmoddi4.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/divmodsi4.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/divmodti4.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/divsc3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/divsf3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/divsi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/divti3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/extendsfdf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/extendhfsf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/extendhfdf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/ffsdi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/ffssi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/ffsti2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixdfdi.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixdfsi.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixdfti.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixsfdi.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixsfsi.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixsfti.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixunsdfdi.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixunsdfsi.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixunsdfti.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixunssfdi.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixunssfsi.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/fixunssfti.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floatdidf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floatdisf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floatsidf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floatsisf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floattidf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floattisf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floatundidf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floatundisf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floatunsidf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floatunsisf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floatuntidf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/floatuntisf.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/int_util.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/lshrdi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/lshrti3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/moddi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/modsi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/modti3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/muldc3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/muldf3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/muldi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/mulodi4.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/mulosi4.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/muloti4.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/mulsc3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/mulsf3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/multi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/mulvdi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/mulvsi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/mulvti3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/negdf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/negdi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/negsf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/negti2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/negvdi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/negvsi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/negvti2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/os_version_check.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/paritydi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/paritysi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/parityti2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/popcountdi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/popcountsi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/popcountti2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/powidf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/powisf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/subdf3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/subsf3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/subvdi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/subvsi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/subvti3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/trampoline_setup.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/truncdfhf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/truncdfsf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/truncsfhf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/ucmpdi2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/ucmpti2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/udivdi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/udivmoddi4.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/udivmodsi4.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/udivmodti4.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/udivsi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/udivti3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/umoddi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/umodsi3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/umodti3.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/extendbfsf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/truncdfbf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/truncxfbf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/truncsfbf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/trunctfbf2.c differs from the shipped member
+      FAIL: rebuild of lib/builtins/aarch64/fp_mode.c differs from the shipped member
+      FAIL: rebuild of src/common.c differs from the shipped member
+      FAIL: rebuild of src/e_acos.c differs from the shipped member
+      FAIL: rebuild of src/e_acosf.c differs from the shipped member
+      FAIL: rebuild of src/e_acosh.c differs from the shipped member
+      FAIL: rebuild of src/e_acoshf.c differs from the shipped member
+      FAIL: rebuild of src/e_asin.c differs from the shipped member
+      FAIL: rebuild of src/e_asinf.c differs from the shipped member
+      FAIL: rebuild of src/e_atan2.c differs from the shipped member
+      FAIL: rebuild of src/e_atan2f.c differs from the shipped member
+      FAIL: rebuild of src/e_atanh.c differs from the shipped member
+      FAIL: rebuild of src/e_atanhf.c differs from the shipped member
+      FAIL: rebuild of src/e_cosh.c differs from the shipped member
+      FAIL: rebuild of src/e_coshf.c differs from the shipped member
+      FAIL: rebuild of src/e_exp.c differs from the shipped member
+      FAIL: rebuild of src/e_expf.c differs from the shipped member
+      FAIL: rebuild of src/e_fmod.c differs from the shipped member
+      FAIL: rebuild of src/e_fmodf.c differs from the shipped member
+      FAIL: rebuild of src/e_hypot.c differs from the shipped member
+      FAIL: rebuild of src/e_hypotf.c differs from the shipped member
+      FAIL: rebuild of src/e_j0.c differs from the shipped member
+      FAIL: rebuild of src/e_j0f.c differs from the shipped member
+      FAIL: rebuild of src/e_j1.c differs from the shipped member
+      FAIL: rebuild of src/e_j1f.c differs from the shipped member
+      FAIL: rebuild of src/e_jn.c differs from the shipped member
+      FAIL: rebuild of src/e_jnf.c differs from the shipped member
+      FAIL: rebuild of src/e_lgamma.c differs from the shipped member
+      FAIL: rebuild of src/e_lgamma_r.c differs from the shipped member
+      FAIL: rebuild of src/e_lgammaf.c differs from the shipped member
+      FAIL: rebuild of src/e_lgammaf_r.c differs from the shipped member
+      FAIL: rebuild of src/e_log.c differs from the shipped member
+      FAIL: rebuild of src/e_log10.c differs from the shipped member
+      FAIL: rebuild of src/e_log10f.c differs from the shipped member
+      FAIL: rebuild of src/e_log2.c differs from the shipped member
+      FAIL: rebuild of src/e_log2f.c differs from the shipped member
+      FAIL: rebuild of src/e_logf.c differs from the shipped member
+      FAIL: rebuild of src/e_pow.c differs from the shipped member
+      FAIL: rebuild of src/e_powf.c differs from the shipped member
+      FAIL: rebuild of src/e_remainder.c differs from the shipped member
+      FAIL: rebuild of src/e_remainderf.c differs from the shipped member
+      FAIL: rebuild of src/e_rem_pio2.c differs from the shipped member
+      FAIL: rebuild of src/e_rem_pio2f.c differs from the shipped member
+      FAIL: rebuild of src/e_sinh.c differs from the shipped member
+      FAIL: rebuild of src/e_sinhf.c differs from the shipped member
+      FAIL: rebuild of src/e_sqrt.c differs from the shipped member
+      FAIL: rebuild of src/e_sqrtf.c differs from the shipped member
+      FAIL: rebuild of src/k_cos.c differs from the shipped member
+      FAIL: rebuild of src/k_exp.c differs from the shipped member
+      FAIL: rebuild of src/k_expf.c differs from the shipped member
+      FAIL: rebuild of src/k_rem_pio2.c differs from the shipped member
+      FAIL: rebuild of src/k_sin.c differs from the shipped member
+      FAIL: rebuild of src/k_tan.c differs from the shipped member
+      FAIL: rebuild of src/k_cosf.c differs from the shipped member
+      FAIL: rebuild of src/k_sinf.c differs from the shipped member
+      FAIL: rebuild of src/k_tanf.c differs from the shipped member
+      FAIL: rebuild of src/s_asinh.c differs from the shipped member
+      FAIL: rebuild of src/s_asinhf.c differs from the shipped member
+      FAIL: rebuild of src/s_atan.c differs from the shipped member
+      FAIL: rebuild of src/s_atanf.c differs from the shipped member
+      FAIL: rebuild of src/s_carg.c differs from the shipped member
+      FAIL: rebuild of src/s_cargf.c differs from the shipped member
+      FAIL: rebuild of src/s_cbrt.c differs from the shipped member
+      FAIL: rebuild of src/s_cbrtf.c differs from the shipped member
+      FAIL: rebuild of src/s_ceil.c differs from the shipped member
+      FAIL: rebuild of src/s_ceilf.c differs from the shipped member
+      FAIL: rebuild of src/s_copysign.c differs from the shipped member
+      FAIL: rebuild of src/s_copysignf.c differs from the shipped member
+      FAIL: rebuild of src/s_cos.c differs from the shipped member
+      FAIL: rebuild of src/s_cosf.c differs from the shipped member
+      FAIL: rebuild of src/s_csqrt.c differs from the shipped member
+      FAIL: rebuild of src/s_csqrtf.c differs from the shipped member
+      FAIL: rebuild of src/s_erf.c differs from the shipped member
+      FAIL: rebuild of src/s_erff.c differs from the shipped member
+      FAIL: rebuild of src/s_exp2.c differs from the shipped member
+      FAIL: rebuild of src/s_exp2f.c differs from the shipped member
+      FAIL: rebuild of src/s_expm1.c differs from the shipped member
+      FAIL: rebuild of src/s_expm1f.c differs from the shipped member
+      FAIL: rebuild of src/s_fabs.c differs from the shipped member
+      FAIL: rebuild of src/s_fabsf.c differs from the shipped member
+      FAIL: rebuild of src/s_fdim.c differs from the shipped member
+      FAIL: rebuild of src/s_floor.c differs from the shipped member
+      FAIL: rebuild of src/s_floorf.c differs from the shipped member
+      FAIL: rebuild of src/s_fmax.c differs from the shipped member
+      FAIL: rebuild of src/s_fmaxf.c differs from the shipped member
+      FAIL: rebuild of src/s_fmin.c differs from the shipped member
+      FAIL: rebuild of src/s_fminf.c differs from the shipped member
+      FAIL: rebuild of src/s_fpclassify.c differs from the shipped member
+      FAIL: rebuild of src/s_frexp.c differs from the shipped member
+      FAIL: rebuild of src/s_frexpf.c differs from the shipped member
+      FAIL: rebuild of src/s_ilogb.c differs from the shipped member
+      FAIL: rebuild of src/s_ilogbf.c differs from the shipped member
+      FAIL: rebuild of src/s_isinf.c differs from the shipped member
+      FAIL: rebuild of src/s_isfinite.c differs from the shipped member
+      FAIL: rebuild of src/s_isnormal.c differs from the shipped member
+      FAIL: rebuild of src/s_isnan.c differs from the shipped member
+      FAIL: rebuild of src/s_log1p.c differs from the shipped member
+      FAIL: rebuild of src/s_log1pf.c differs from the shipped member
+      FAIL: rebuild of src/s_logb.c differs from the shipped member
+      FAIL: rebuild of src/s_logbf.c differs from the shipped member
+      FAIL: rebuild of src/s_modf.c differs from the shipped member
+      FAIL: rebuild of src/s_modff.c differs from the shipped member
+      FAIL: rebuild of src/s_nextafter.c differs from the shipped member
+      FAIL: rebuild of src/s_nextafterf.c differs from the shipped member
+      FAIL: rebuild of src/s_nexttowardf.c differs from the shipped member
+      FAIL: rebuild of src/s_remquo.c differs from the shipped member
+      FAIL: rebuild of src/s_remquof.c differs from the shipped member
+      FAIL: rebuild of src/s_rint.c differs from the shipped member
+      FAIL: rebuild of src/s_rintf.c differs from the shipped member
+      FAIL: rebuild of src/s_round.c differs from the shipped member
+      FAIL: rebuild of src/s_roundf.c differs from the shipped member
+      FAIL: rebuild of src/s_scalbln.c differs from the shipped member
+      FAIL: rebuild of src/s_scalbn.c differs from the shipped member
+      FAIL: rebuild of src/s_scalbnf.c differs from the shipped member
+      FAIL: rebuild of src/s_signbit.c differs from the shipped member
+      FAIL: rebuild of src/s_signgam.c differs from the shipped member
+      FAIL: rebuild of src/s_sin.c differs from the shipped member
+      FAIL: rebuild of src/s_sincos.c differs from the shipped member
+      FAIL: rebuild of src/s_sinf.c differs from the shipped member
+      FAIL: rebuild of src/s_sincosf.c differs from the shipped member
+      FAIL: rebuild of src/s_tan.c differs from the shipped member
+      FAIL: rebuild of src/s_tanf.c differs from the shipped member
+      FAIL: rebuild of src/s_tanh.c differs from the shipped member
+      FAIL: rebuild of src/s_tanhf.c differs from the shipped member
+      FAIL: rebuild of src/s_tgammaf.c differs from the shipped member
+      FAIL: rebuild of src/s_trunc.c differs from the shipped member
+      FAIL: rebuild of src/s_truncf.c differs from the shipped member
+      FAIL: rebuild of src/s_cpow.c differs from the shipped member
+      FAIL: rebuild of src/s_cpowf.c differs from the shipped member
+      FAIL: rebuild of src/w_cabs.c differs from the shipped member
+      FAIL: rebuild of src/w_cabsf.c differs from the shipped member
+      FAIL: rebuild of src/s_fma.c differs from the shipped member
+      FAIL: rebuild of src/s_fmaf.c differs from the shipped member
+      FAIL: rebuild of src/s_lrint.c differs from the shipped member
+      FAIL: rebuild of src/s_lrintf.c differs from the shipped member
+      FAIL: rebuild of src/s_lround.c differs from the shipped member
+      FAIL: rebuild of src/s_lroundf.c differs from the shipped member
+      FAIL: rebuild of src/s_llrint.c differs from the shipped member
+      FAIL: rebuild of src/s_llrintf.c differs from the shipped member
+      FAIL: rebuild of src/s_llround.c differs from the shipped member
+      FAIL: rebuild of src/s_llroundf.c differs from the shipped member
+      FAIL: rebuild of src/s_nearbyint.c differs from the shipped member
+      FAIL: rebuild of src/s_nan.c differs from the shipped member
+      FAIL: rebuild of src/s_copysignl.c differs from the shipped member
+      FAIL: rebuild of src/s_fabsl.c differs from the shipped member
+      FAIL: rebuild of src/s_llrintl.c differs from the shipped member
+      FAIL: rebuild of src/s_lrintl.c differs from the shipped member
+      FAIL: rebuild of src/s_modfl.c differs from the shipped member
+      FAIL: rebuild of src/e_acosl.c differs from the shipped member
+      FAIL: rebuild of src/e_asinl.c differs from the shipped member
+      FAIL: rebuild of src/e_atan2l.c differs from the shipped member
+      FAIL: rebuild of src/e_fmodl.c differs from the shipped member
+      FAIL: rebuild of src/s_fmaxl.c differs from the shipped member
+      FAIL: rebuild of src/s_fminl.c differs from the shipped member
+      FAIL: rebuild of src/s_ilogbl.c differs from the shipped member
+      FAIL: rebuild of src/e_hypotl.c differs from the shipped member
+      FAIL: rebuild of src/e_lgammal.c differs from the shipped member
+      FAIL: rebuild of src/e_remainderl.c differs from the shipped member
+      FAIL: rebuild of src/e_sqrtl.c differs from the shipped member
+      FAIL: rebuild of src/s_atanl.c differs from the shipped member
+      FAIL: rebuild of src/s_ceill.c differs from the shipped member
+      FAIL: rebuild of src/s_cosl.c differs from the shipped member
+      FAIL: rebuild of src/s_cprojl.c differs from the shipped member
+      FAIL: rebuild of src/s_csqrtl.c differs from the shipped member
+      FAIL: rebuild of src/s_floorl.c differs from the shipped member
+      FAIL: rebuild of src/s_fmal.c differs from the shipped member
+      FAIL: rebuild of src/s_frexpl.c differs from the shipped member
+      FAIL: rebuild of src/s_logbl.c differs from the shipped member
+      FAIL: rebuild of src/s_nexttoward.c differs from the shipped member
+      FAIL: rebuild of src/s_remquol.c differs from the shipped member
+      FAIL: rebuild of src/s_roundl.c differs from the shipped member
+      FAIL: rebuild of src/s_lroundl.c differs from the shipped member
+      FAIL: rebuild of src/s_llroundl.c differs from the shipped member
+      FAIL: rebuild of src/s_cpowl.c differs from the shipped member
+      FAIL: rebuild of src/s_cargl.c differs from the shipped member
+      FAIL: rebuild of src/s_sinl.c differs from the shipped member
+      FAIL: rebuild of src/s_sincosl.c differs from the shipped member
+      FAIL: rebuild of src/s_tanl.c differs from the shipped member
+      FAIL: rebuild of src/s_truncl.c differs from the shipped member
+      FAIL: rebuild of src/w_cabsl.c differs from the shipped member
+      FAIL: rebuild of src/s_nextafterl.c differs from the shipped member
+      FAIL: rebuild of src/s_rintl.c differs from the shipped member
+      FAIL: rebuild of src/s_scalbnl.c differs from the shipped member
+      FAIL: rebuild of src/polevll.c differs from the shipped member
+      FAIL: rebuild of src/s_casinl.c differs from the shipped member
+      FAIL: rebuild of src/s_ctanl.c differs from the shipped member
+      FAIL: rebuild of src/s_cimagl.c differs from the shipped member
+      FAIL: rebuild of src/s_conjl.c differs from the shipped member
+      FAIL: rebuild of src/s_creall.c differs from the shipped member
+      FAIL: rebuild of src/s_cacoshl.c differs from the shipped member
+      FAIL: rebuild of src/s_catanhl.c differs from the shipped member
+      FAIL: rebuild of src/s_casinhl.c differs from the shipped member
+      FAIL: rebuild of src/s_catanl.c differs from the shipped member
+      FAIL: rebuild of src/s_csinl.c differs from the shipped member
+      FAIL: rebuild of src/s_cacosl.c differs from the shipped member
+      FAIL: rebuild of src/s_cexpl.c differs from the shipped member
+      FAIL: rebuild of src/s_csinhl.c differs from the shipped member
+      FAIL: rebuild of src/s_ccoshl.c differs from the shipped member
+      FAIL: rebuild of src/s_clogl.c differs from the shipped member
+      FAIL: rebuild of src/s_ctanhl.c differs from the shipped member
+      FAIL: rebuild of src/s_ccosl.c differs from the shipped member
+      FAIL: rebuild of src/s_cbrtl.c differs from the shipped member
+      FAIL: rebuild of src/s_ccosh.c differs from the shipped member
+      FAIL: rebuild of src/s_ccoshf.c differs from the shipped member
+      FAIL: rebuild of src/s_cexp.c differs from the shipped member
+      FAIL: rebuild of src/s_cexpf.c differs from the shipped member
+      FAIL: rebuild of src/s_cimag.c differs from the shipped member
+      FAIL: rebuild of src/s_cimagf.c differs from the shipped member
+      FAIL: rebuild of src/s_conj.c differs from the shipped member
+      FAIL: rebuild of src/s_conjf.c differs from the shipped member
+      FAIL: rebuild of src/s_cproj.c differs from the shipped member
+      FAIL: rebuild of src/s_cprojf.c differs from the shipped member
+      FAIL: rebuild of src/s_creal.c differs from the shipped member
+      FAIL: rebuild of src/s_crealf.c differs from the shipped member
+      FAIL: rebuild of src/s_csinh.c differs from the shipped member
+      FAIL: rebuild of src/s_csinhf.c differs from the shipped member
+      FAIL: rebuild of src/s_ctanh.c differs from the shipped member
+      FAIL: rebuild of src/s_ctanhf.c differs from the shipped member
+      FAIL: rebuild of src/s_cacos.c differs from the shipped member
+      FAIL: rebuild of src/s_cacosf.c differs from the shipped member
+      FAIL: rebuild of src/s_cacosh.c differs from the shipped member
+      FAIL: rebuild of src/s_cacoshf.c differs from the shipped member
+      FAIL: rebuild of src/s_casin.c differs from the shipped member
+      FAIL: rebuild of src/s_casinf.c differs from the shipped member
+      FAIL: rebuild of src/s_casinh.c differs from the shipped member
+      FAIL: rebuild of src/s_casinhf.c differs from the shipped member
+      FAIL: rebuild of src/s_catan.c differs from the shipped member
+      FAIL: rebuild of src/s_catanf.c differs from the shipped member
+      FAIL: rebuild of src/s_catanh.c differs from the shipped member
+      FAIL: rebuild of src/s_catanhf.c differs from the shipped member
+      FAIL: rebuild of src/s_clog.c differs from the shipped member
+      FAIL: rebuild of src/s_clogf.c differs from the shipped member
+      FAIL: rebuild of aarch64/fenv.c differs from the shipped member
+      FAIL: rebuild of bsdsrc/b_exp.c differs from the shipped member
+      FAIL: rebuild of bsdsrc/b_log.c differs from the shipped member
+      FAIL: rebuild of bsdsrc/b_tgamma.c differs from the shipped member
+      FAIL: rebuild of ld128/invtrig.c differs from the shipped member
+      FAIL: rebuild of ld128/e_acoshl.c differs from the shipped member
+      FAIL: rebuild of ld128/e_powl.c differs from the shipped member
+      FAIL: rebuild of ld128/k_tanl.c differs from the shipped member
+      FAIL: rebuild of ld128/s_exp2l.c differs from the shipped member
+      FAIL: rebuild of ld128/e_atanhl.c differs from the shipped member
+      FAIL: rebuild of ld128/e_lgammal_r.c differs from the shipped member
+      FAIL: rebuild of ld128/e_sinhl.c differs from the shipped member
+      FAIL: rebuild of ld128/s_asinhl.c differs from the shipped member
+      FAIL: rebuild of ld128/s_expm1l.c differs from the shipped member
+      FAIL: rebuild of ld128/e_coshl.c differs from the shipped member
+      FAIL: rebuild of ld128/e_log10l.c differs from the shipped member
+      FAIL: rebuild of ld128/e_tgammal.c differs from the shipped member
+      FAIL: rebuild of ld128/e_expl.c differs from the shipped member
+      FAIL: rebuild of ld128/e_log2l.c differs from the shipped member
+      FAIL: rebuild of ld128/k_cosl.c differs from the shipped member
+      FAIL: rebuild of ld128/s_log1pl.c differs from the shipped member
+      FAIL: rebuild of ld128/s_tanhl.c differs from the shipped member
+      FAIL: rebuild of ld128/e_logl.c differs from the shipped member
+      FAIL: rebuild of ld128/k_sinl.c differs from the shipped member
+      FAIL: rebuild of ld128/s_erfl.c differs from the shipped member
+      FAIL: rebuild of ld128/s_nanl.c differs from the shipped member
+      2  rebuild parity: 0 of 407 shipped members byte-identical, 407 differ
+      3  -ffixed-x18 rebuild: 0 x18 instructions expected, found 0; test program linked with host.ld
+      loaded <scratch>/tmp/rt-host.lycr4M/RT-x18.elf: 131072 bytes at 0x1002e0000, 113 relative relocations, rt_table at +0x1c240
+      T  binary128 +: 200000 random pairs, 0 mismatches
+      T  binary128 -: 200000 random pairs, 0 mismatches
+      T  binary128 *: 200000 random pairs, 0 mismatches
+      T  binary128 /: 200000 random pairs, 0 mismatches
+      T  binary128 exact patterns (1/3, 1+2^-112, ties to even) and FPCR rounding modes checked
+      C  binary128 comparisons: 200000 pairs (incl. NaN, +-0, equal), 0 mismatches
+      V  conversions float/double/int64/uint64/int32 <-> binary128: 200000 rounds, 0 mismatches
+      X  __muldc3/__divdc3/__mulsc3/__divsc3 + clang's lowering vs host complex * /: 100000 operand sets, 0 mismatches
+      X  Annex G infinities, __multc3, __powitf2, long double a*b+c checked
+      M  remainder, remainderf, fdim, fdimf bit-exact vs system libm and host OpenLibm, nexttowardf vs system libm: 200000 pairs, 0 mismatches
+      M  powf: 200000 pairs, 0 differ from host OpenLibm, worst 1 ulp from the system libm (0 beyond 1 ulp)
+      M  casin cacos casinh cacosh catanh (+f), cpowf bit-exact vs host OpenLibm: 50289 arguments (incl. 289 special pairs), 0 mismatches
+      rt-host: 1950316 checks, 0 failed
+FAIL  rt-host (rc=1)
+      1  newtos-cc -lm: LDBL.NCP linked (251696 bytes), undefined symbols: 0
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/compiler-rt/libclang_rt.builtins.a(lib_builtins_aarch64_fp_mode.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/compiler-rt/libclang_rt.builtins.a(lib_builtins_addtf3.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/compiler-rt/libclang_rt.builtins.a(lib_builtins_comparetf2.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/compiler-rt/libclang_rt.builtins.a(lib_builtins_divtf3.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/compiler-rt/libclang_rt.builtins.a(lib_builtins_extendsftf2.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/compiler-rt/libclang_rt.builtins.a(lib_builtins_fixtfdi.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/compiler-rt/libclang_rt.builtins.a(lib_builtins_fixtfsi.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/compiler-rt/libclang_rt.builtins.a(lib_builtins_floatsitf.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/compiler-rt/libclang_rt.builtins.a(lib_builtins_multf3.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/compiler-rt/libclang_rt.builtins.a(lib_builtins_subtf3.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/compiler-rt/libclang_rt.builtins.a(lib_builtins_trunctfdf2.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/compiler-rt/libclang_rt.builtins.a(lib_builtins_trunctfsf2.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(arch__access.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(arch__cmdargs.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(arch__do_fstat.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(arch__do_stat.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(arch__getcookie.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(arch__getsysvar.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(arch__heapinit.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(arch__ioctl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(arch__memops.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(arch__softfloat.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__dbl2mpn.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__ldbl2mpn.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__mp_clz_tab.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__mpn-add_n.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__mpn-addmul_1.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__mpn-cmp.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__mpn-divrem.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__mpn-lshift.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__mpn-mul_1.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__mpn-mul_n.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__mpn-mul.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__mpn-rshift.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__mpn-sub_n.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__mpn-submul_1.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__mpn2dbl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__mpn2flt.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(gmp__mpn2ldbl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__abort.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__assert.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__calloc.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__console.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__ctype.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__enoent.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__errno.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__getenv.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__globals.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__heapbase.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__inistack.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__inode.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__isatty.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__isctty.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__libc_fatal.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__ltoa.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__main.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__malloc.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__program-name.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__quickstat.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__realloc.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__s_finitel.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__s_isinf.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__s_isnan.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__stksiz.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__toxxx.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__uidgid.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__unixtime.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(mintlib__unx2dos.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(misc__qefgcvt_r.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(misc__qefgcvt.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(posix__raise.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(signal__initsig.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__binmode.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__defmode.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__fclose.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__fcloseall.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__fflush.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__fileno.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__fwrite.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__internals.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__itoa-digits.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__lockfile.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__printf_fp.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__printf_fphex.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__reg-printf.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__setvbuf.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__snprintf.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__sprintf.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__sscanf.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__stdio_init.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__stdio-globals.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__sysd-stdio.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__ungetc.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__vfprintf.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__vfscanf.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__vsnprintf.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__vsprintf.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdio__vsscanf.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdlib__atexit.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdlib__atoi.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdlib__exit.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdlib__fpioconst.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdlib__strtod.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdlib__strtof.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdlib__strtol.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdlib__strtold.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdlib__strtoll.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdlib__strtoul.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(stdlib__strtoull.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__memchr.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__memcmp.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__mempcpy.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__strcasecmp.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__strcat.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__strchr.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__strcmp.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__strcpy.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__strerror_r.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__strerror.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__strlen.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__strncasecmp.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__strncat.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__strncmp.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__strncpy.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__strnlen.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__strrchr.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(string__strrev.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(time__clock.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(tz__localtime.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__chmod.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__close.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__dup2.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__fstat.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__getegid.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__geteuid.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__getgid.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__getpagesize.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__getpid.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__gettimeofday.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__getuid.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__kill.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__lseek.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__open.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__read.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__sbrk.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__sysctl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__time.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libc/libc.a(unix__write.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(ld128__e_coshl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(ld128__e_expl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(ld128__e_log10l.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(ld128__e_log2l.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(ld128__e_logl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(ld128__e_powl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(ld128__e_sinhl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(ld128__invtrig.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(ld128__k_cosl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(ld128__k_sinl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(ld128__k_tanl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(ld128__s_exp2l.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(ld128__s_expm1l.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(ld128__s_log1pl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(ld128__s_tanhl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__e_fmodl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__e_hypotl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__e_remainderl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__e_sqrt.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__e_sqrtl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__k_rem_pio2.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__polevll.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_atanl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_cbrtl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_ceill.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_copysign.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_copysignf.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_copysignl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_cosl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_fabsl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_floor.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_floorl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_fmal.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_frexpl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_ilogbl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_isfinite.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_isinf.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_isnan.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_isnormal.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_logbl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_modfl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_nextafterl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_remquol.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_rintl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_roundl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_scalbln.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_scalbn.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_scalbnf.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_scalbnl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_signbit.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_sinl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_tanl.o) differs from the shipped member
+      FAIL: rebuild of /Volumes/Daten/Development/PiRusTOS/sdk/libm/libm.a(src__s_truncl.o) differs from the shipped member
+      2  rebuild parity: 1 of 202 linked archive members byte-identical, 201 differ
+      3  -ffixed-x18 rebuild of the 202 members: 0 x18 instructions; test program linked with host.ld
+      A add                       3000 checks      0 failed
+      A div                       3000 checks      0 failed
+      A mul                       3000 checks      0 failed
+      A sub                       3000 checks      0 failed
+      C classify                  1284 checks      0 failed
+      D %.16e                      799 checks      0 failed
+      D inf/nan                     10 checks      0 failed
+      D sscanf %lf                 799 checks      0 failed
+      D strtod                     799 checks      0 failed
+      M atanl                      150 checks      0 failed
+      M cbrtl                      150 checks      0 failed
+      M cbrtl special                1 checks      0 failed
+      M ceill                     1600 checks      0 failed
+      M copysignl                 1600 checks      0 failed
+      M coshl                      150 checks      0 failed
+      M cosl                       150 checks      0 failed
+      M exp2l                      150 checks      0 failed
+      M exp2l special                1 checks      0 failed
+      M expl                       150 checks      0 failed
+      M expl special                 2 checks      0 failed
+      M expm1l                     150 checks      0 failed
+      M fabsl                     1600 checks      0 failed
+      M floorl                    1600 checks      0 failed
+      M fmal                      1600 checks      0 failed
+      M fmodl                     1600 checks      0 failed
+      M frexpl                    1600 checks      0 failed
+      M hypotl                     150 checks      0 failed
+      M ilogbl                    1598 checks      0 failed
+      M ldexpl                    1200 checks      0 failed
+      M log10l                     150 checks      0 failed
+      M log10l special               1 checks      0 failed
+      M log1pl                     150 checks      0 failed
+      M log2l                      150 checks      0 failed
+      M log2l special                1 checks      0 failed
+      M logbl                     1598 checks      0 failed
+      M logl                       150 checks      0 failed
+      M logl special                 2 checks      0 failed
+      M modfl                     1600 checks      0 failed
+      M nextafterl                3200 checks      0 failed
+      M powl                       150 checks      0 failed
+      M remainderl                1600 checks      0 failed
+      M remquol                   1600 checks      0 failed
+      M rintl                     1600 checks      0 failed
+      M roundl                    1600 checks      0 failed
+      M scalbln                    400 checks      0 failed
+      M scalblnf                   400 checks      0 failed
+      M scalblnl                  1202 checks      0 failed
+      M scalbnl                   1200 checks      0 failed
+      M sinhl                      150 checks      0 failed
+      M sinl                       150 checks      0 failed
+      M sqrtl (<= 1 ulp)           808 checks      0 failed
+      M sqrtl special                1 checks      0 failed
+      M tanhl                      150 checks      0 failed
+      M tanl                       150 checks      0 failed
+      M truncl                    1600 checks      0 failed
+      P %.35Le                    3221 checks      0 failed
+      P %.pLE                      400 checks      0 failed
+      P %.pLf                      621 checks      0 failed
+      P %.pLg                      400 checks      0 failed
+      P %La                       3221 checks      0 failed
+      P %Lf                          4 checks      0 failed
+      Q qecvt                      410 checks      0 failed
+      Q qecvt_r                    410 checks      0 failed
+      Q qfcvt_r                    410 checks      0 failed
+      Q qgcvt                      410 checks      0 failed
+      R strtold(%.35Le)           3219 checks      0 failed
+      S sscanf %L                  600 checks      0 failed
+      S strtold                   1519 checks      0 failed
+      S strtold consumed           904 checks      0 failed
+        ulp  atanl      max 0.626 ulp over 150 arguments (bound 2.0)
+        ulp  cbrtl      max 0.631 ulp over 150 arguments (bound 2.0)
+        ulp  coshl      max 1.409 ulp over 150 arguments (bound 2.0)
+        ulp  cosl       max 0.542 ulp over 150 arguments (bound 2.0)
+        ulp  exp2l      max 0.498 ulp over 150 arguments (bound 2.0)
+        ulp  expl       max 1.680 ulp over 150 arguments (bound 2.0)
+        ulp  expm1l     max 0.587 ulp over 150 arguments (bound 2.0)
+        ulp  hypotl     max 1.000 ulp over 150 arguments (bound 2.0)
+        ulp  log10l     max 0.544 ulp over 150 arguments (bound 2.0)
+        ulp  log1pl     max 0.503 ulp over 150 arguments (bound 2.0)
+        ulp  log2l      max 0.491 ulp over 150 arguments (bound 2.0)
+        ulp  logl       max 0.502 ulp over 150 arguments (bound 2.0)
+        ulp  powl       max 0.656 ulp over 150 arguments (bound 2.0)
+        ulp  sinhl      max 1.433 ulp over 150 arguments (bound 2.0)
+        ulp  sinl       max 1.119 ulp over 150 arguments (bound 2.0)
+        ulp  tanhl      max 1.112 ulp over 150 arguments (bound 2.0)
+        ulp  tanl       max 1.061 ulp over 150 arguments (bound 2.0)
+      info sqrtl correctly rounded (upstream: no FE_INEXACT from __divtf3)           808 cases,   202 differ
+      info strtold consumes all of "infinity" (upstream: "inf" matched first)          1 cases,     1 differ
+      info strtold halfway inputs, exact rounding (upstream BZ#3479-class)           904 cases,   276 differ
+      ldbl-oracle: 66405 checks, 0 failed (seed 20261021)
+FAIL  ldbl-host (rc=1)
+PASS  cookie-host
+PASS  c2p-host
+PASS  td-cookie-host
+PASS  td-nohard-host
+PASS  hypview-ref-host
+PASS  sysacc-cmdline-host
+PASS  custom-font-host
+PASS  zview-color-host
+PASS  libtest-host
+PASS  libshare-host
+PASS  newtos-cc-host
+
+host tests: 33 passed, 2 failed, 0 skipped

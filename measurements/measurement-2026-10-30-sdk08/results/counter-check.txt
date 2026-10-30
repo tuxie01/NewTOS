@@ -1,0 +1,36 @@
+crt/lib_builtins_multf3.o: unchanged copy -> ident
+  .strtab          byte   1468 of    105 inverted -> differ (expected differ) ok
+  .text            byte    598 of   1068 inverted -> differ (expected differ) ok
+  .rela.text       byte   1392 of     48 inverted -> differ (expected differ) ok
+  .rodata.cst16    byte   1144 of     16 inverted -> differ (expected differ) ok
+  .comment         byte   1175 of     47 inverted -> ident  (expected ident ) ok
+  .symtab          byte   1284 of    168 inverted -> differ (expected differ) ok
+libm/ld128__e_powl.o: unchanged copy -> ident
+~/.rustup/toolchains/nightly-2026-04-15-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/llvm-objcopy: error: invalid symbol index: 253
+  .strtab          byte  10066 of    245 inverted -> differ (expected differ) ok
+  .text            byte   1648 of   3168 inverted -> differ (expected differ) ok
+  .rela.text       byte   7292 of   5304 inverted -> differ (expected differ) ok
+  .rodata.cst16    byte   3520 of    576 inverted -> differ (expected differ) ok
+  .rodata.cst32    byte   3888 of    160 inverted -> differ (expected differ) ok
+  .comment         byte   3991 of     47 inverted -> ident  (expected ident ) ok
+  .symtab          byte   4328 of    624 inverted -> differ (expected differ) ok
+libc/stdio__printf_fp.o: unchanged copy -> ident
+~/.rustup/toolchains/nightly-2026-04-15-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/llvm-objcopy: error: invalid symbol index: 231
+  .strtab          byte   9828 of    389 inverted -> differ (expected differ) ok
+  .text            byte   3296 of   6464 inverted -> differ (expected differ) ok
+  .rela.text       byte   8516 of   2232 inverted -> differ (expected differ) ok
+  .rodata.cst16    byte   6536 of     16 inverted -> differ (expected differ) ok
+  .rodata.str1.1   byte   6552 of     16 inverted -> differ (expected differ) ok
+  .comment         byte   6583 of     47 inverted -> ident  (expected ident ) ok
+  .llvm_addrsig    byte   9633 of      2 inverted -> differ (expected differ) ok
+  .symtab          byte   7004 of    792 inverted -> differ (expected differ) ok
+libc/arch__cmdargs.o: unchanged copy -> ident
+  .strtab          byte   2556 of    262 inverted -> differ (expected differ) ok
+  .text            byte    734 of   1340 inverted -> differ (expected differ) ok
+  .rela.text       byte   2136 of    480 inverted -> differ (expected differ) ok
+  .data            byte   1424 of     32 inverted -> differ (expected differ) ok
+  .rela.data       byte   2400 of     48 inverted -> differ (expected differ) ok
+  .rodata.str1.1   byte   1440 of      1 inverted -> differ (expected differ) ok
+  .comment         byte   1464 of     47 inverted -> ident  (expected ident ) ok
+  .llvm_addrsig    byte   2424 of      1 inverted -> differ (expected differ) ok
+  .symtab          byte   1692 of    408 inverted -> differ (expected differ) ok

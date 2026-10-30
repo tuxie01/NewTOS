@@ -1,6 +1,6 @@
 # SDK08 — SDK-Paritaetstests scheitern nach dem clang-Update
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Werkzeug/SDK) — Anwenderentscheidung 2026-10-30, Fund aus [COOK02](COOK02.md) (`_IDT`-Lauf)
+Status: **ERLEDIGT** 2026-10-30 ([Quittung](SDK08-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Developer (Werkzeug/SDK) — Anwenderentscheidung 2026-10-30, Fund aus [COOK02](COOK02.md) (`_IDT`-Lauf)
 
 ## Sachverhalt
 

@@ -1,0 +1,20 @@
+1  newtos-cc -lm: RT.NCP linked (129584 bytes), undefined symbols: 0
+2  rebuild parity: 0 of 407 shipped members byte-identical, 407 identical but for the compiler identification (.comment), 0 differ
+   host clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+   shipped members built by: Apple clang version 21.0.0 (clang-2100.3.34.2) (407 members)
+   counter-check: one byte of .text in lib_builtins_multf3.o inverted -> differ (expected: differ)
+3  -ffixed-x18 rebuild: 0 x18 instructions expected, found 0; test program linked with host.ld
+loaded <scratch>/tmp/rt-host.WLKVHh/RT-x18.elf: 131072 bytes at 0x100f78000, 113 relative relocations, rt_table at +0x1c240
+T  binary128 +: 200000 random pairs, 0 mismatches
+T  binary128 -: 200000 random pairs, 0 mismatches
+T  binary128 *: 200000 random pairs, 0 mismatches
+T  binary128 /: 200000 random pairs, 0 mismatches
+T  binary128 exact patterns (1/3, 1+2^-112, ties to even) and FPCR rounding modes checked
+C  binary128 comparisons: 200000 pairs (incl. NaN, +-0, equal), 0 mismatches
+V  conversions float/double/int64/uint64/int32 <-> binary128: 200000 rounds, 0 mismatches
+X  __muldc3/__divdc3/__mulsc3/__divsc3 + clang's lowering vs host complex * /: 100000 operand sets, 0 mismatches
+X  Annex G infinities, __multc3, __powitf2, long double a*b+c checked
+M  remainder, remainderf, fdim, fdimf bit-exact vs system libm and host OpenLibm, nexttowardf vs system libm: 200000 pairs, 0 mismatches
+M  powf: 200000 pairs, 0 differ from host OpenLibm, worst 1 ulp from the system libm (0 beyond 1 ulp)
+M  casin cacos casinh cacosh catanh (+f), cpowf bit-exact vs host OpenLibm: 50289 arguments (incl. 289 special pairs), 0 mismatches
+rt-host: 1950316 checks, 0 failed

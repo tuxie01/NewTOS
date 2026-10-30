@@ -37,6 +37,10 @@
 #   image_sha256 <sha256 of the image file>
 #   size_mib <n>
 #   created <UTC time, YYYY-MM-DDThh:mm:ssZ>
+#   host_clang <first line of `$CLANG --version`> / host_clang not found
+#                          (the clang the SDK build scripts use -- $CLANG,
+#                          default clang -- when the manifest is written;
+#                          TASK/SDK08)
 #   switch SD_X=<v>        (zero or more) / switch n/a
 #   optional_missing none  / optional_missing <text> (one or more)
 #   # file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
@@ -99,6 +103,11 @@ cmd_write() {
     echo "image_sha256 $(shasum -a 256 "$img" | awk '{print $1}')"
     echo "size_mib ${size_mib}"
     echo "created $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    if command -v "${CLANG:-clang}" >/dev/null 2>&1; then
+      echo "host_clang $("${CLANG:-clang}" --version 2>/dev/null | head -1)"
+    else
+      echo "host_clang not found"
+    fi
     if [ "$switches" = env ]; then
       # Every SD_* switch set in the environment (they change what is on the card).
       env | LC_ALL=C sort | sed -n 's/^\(SD_[A-Za-z0-9_]*=\)/switch \1/p'

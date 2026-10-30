@@ -1,0 +1,96 @@
+1  newtos-cc -lm: LDBL.NCP linked (251696 bytes), undefined symbols: 0
+2  rebuild parity: 1 of 202 linked archive members byte-identical, 201 identical but for the compiler identification (.comment), 0 differ
+   host clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+   shipped members built by: Apple clang version 21.0.0 (clang-2100.3.34.2) (201 members)
+   counter-check: one byte of .text in lib_builtins_aarch64_fp_mode.o inverted -> differ (expected: differ)
+3  -ffixed-x18 rebuild of the 202 members: 0 x18 instructions; test program linked with host.ld
+A add                       3000 checks      0 failed
+A div                       3000 checks      0 failed
+A mul                       3000 checks      0 failed
+A sub                       3000 checks      0 failed
+C classify                  1284 checks      0 failed
+D %.16e                      799 checks      0 failed
+D inf/nan                     10 checks      0 failed
+D sscanf %lf                 799 checks      0 failed
+D strtod                     799 checks      0 failed
+M atanl                      150 checks      0 failed
+M cbrtl                      150 checks      0 failed
+M cbrtl special                1 checks      0 failed
+M ceill                     1600 checks      0 failed
+M copysignl                 1600 checks      0 failed
+M coshl                      150 checks      0 failed
+M cosl                       150 checks      0 failed
+M exp2l                      150 checks      0 failed
+M exp2l special                1 checks      0 failed
+M expl                       150 checks      0 failed
+M expl special                 2 checks      0 failed
+M expm1l                     150 checks      0 failed
+M fabsl                     1600 checks      0 failed
+M floorl                    1600 checks      0 failed
+M fmal                      1600 checks      0 failed
+M fmodl                     1600 checks      0 failed
+M frexpl                    1600 checks      0 failed
+M hypotl                     150 checks      0 failed
+M ilogbl                    1598 checks      0 failed
+M ldexpl                    1200 checks      0 failed
+M log10l                     150 checks      0 failed
+M log10l special               1 checks      0 failed
+M log1pl                     150 checks      0 failed
+M log2l                      150 checks      0 failed
+M log2l special                1 checks      0 failed
+M logbl                     1598 checks      0 failed
+M logl                       150 checks      0 failed
+M logl special                 2 checks      0 failed
+M modfl                     1600 checks      0 failed
+M nextafterl                3200 checks      0 failed
+M powl                       150 checks      0 failed
+M remainderl                1600 checks      0 failed
+M remquol                   1600 checks      0 failed
+M rintl                     1600 checks      0 failed
+M roundl                    1600 checks      0 failed
+M scalbln                    400 checks      0 failed
+M scalblnf                   400 checks      0 failed
+M scalblnl                  1202 checks      0 failed
+M scalbnl                   1200 checks      0 failed
+M sinhl                      150 checks      0 failed
+M sinl                       150 checks      0 failed
+M sqrtl (<= 1 ulp)           808 checks      0 failed
+M sqrtl special                1 checks      0 failed
+M tanhl                      150 checks      0 failed
+M tanl                       150 checks      0 failed
+M truncl                    1600 checks      0 failed
+P %.35Le                    3221 checks      0 failed
+P %.pLE                      400 checks      0 failed
+P %.pLf                      621 checks      0 failed
+P %.pLg                      400 checks      0 failed
+P %La                       3221 checks      0 failed
+P %Lf                          4 checks      0 failed
+Q qecvt                      410 checks      0 failed
+Q qecvt_r                    410 checks      0 failed
+Q qfcvt_r                    410 checks      0 failed
+Q qgcvt                      410 checks      0 failed
+R strtold(%.35Le)           3219 checks      0 failed
+S sscanf %L                  600 checks      0 failed
+S strtold                   1519 checks      0 failed
+S strtold consumed           904 checks      0 failed
+  ulp  atanl      max 0.626 ulp over 150 arguments (bound 2.0)
+  ulp  cbrtl      max 0.631 ulp over 150 arguments (bound 2.0)
+  ulp  coshl      max 1.409 ulp over 150 arguments (bound 2.0)
+  ulp  cosl       max 0.542 ulp over 150 arguments (bound 2.0)
+  ulp  exp2l      max 0.498 ulp over 150 arguments (bound 2.0)
+  ulp  expl       max 1.680 ulp over 150 arguments (bound 2.0)
+  ulp  expm1l     max 0.587 ulp over 150 arguments (bound 2.0)
+  ulp  hypotl     max 1.000 ulp over 150 arguments (bound 2.0)
+  ulp  log10l     max 0.544 ulp over 150 arguments (bound 2.0)
+  ulp  log1pl     max 0.503 ulp over 150 arguments (bound 2.0)
+  ulp  log2l      max 0.491 ulp over 150 arguments (bound 2.0)
+  ulp  logl       max 0.502 ulp over 150 arguments (bound 2.0)
+  ulp  powl       max 0.656 ulp over 150 arguments (bound 2.0)
+  ulp  sinhl      max 1.433 ulp over 150 arguments (bound 2.0)
+  ulp  sinl       max 1.119 ulp over 150 arguments (bound 2.0)
+  ulp  tanhl      max 1.112 ulp over 150 arguments (bound 2.0)
+  ulp  tanl       max 1.061 ulp over 150 arguments (bound 2.0)
+info sqrtl correctly rounded (upstream: no FE_INEXACT from __divtf3)           808 cases,   202 differ
+info strtold consumes all of "infinity" (upstream: "inf" matched first)          1 cases,     1 differ
+info strtold halfway inputs, exact rounding (upstream BZ#3479-class)           904 cases,   276 differ
+ldbl-oracle: 66405 checks, 0 failed (seed 20261021)

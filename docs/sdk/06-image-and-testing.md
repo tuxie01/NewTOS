@@ -79,11 +79,18 @@ image /tmp/sd.img
 image_sha256 <sha256 of the image file>
 size_mib 64
 created 2026-10-26T20:35:13Z
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
 switch SD_COREMARK_AUTO=1                       (one line per SD_* variable set)
 optional_missing none                           (or one line per missing part)
 metadata C:\.Spotlight-V100 (macOS volume metadata, not hashed)
 file <sha256> <bytes> C:\Apps\TERADESK\cicons.rsc  (one line per file, C: and D:)
 ```
+
+`host_clang` is the first line of `$CLANG --version` (default `clang`, the
+compiler the SDK build scripts use) when the manifest is written, or
+`host_clang not found` (TASK/SDK08). It records the host compiler at image
+time; a program on the card built earlier names its own compiler in its
+`.comment` section.
 
 `metadata` lines name macOS volume directories that came back after the
 script removed them; they are unreadable and not TOS content, so they are
@@ -132,8 +139,9 @@ under `measurements/` copies the `<image>.manifest` of each image it boots —
 from `tools/make-sd-image.sh` or from `tools/mkcard.sh` — into its run
 directory (for example next to its method scripts, one copy per image when
 it builds several) and its `RUNINFO.TXT` cites that copy and states the
-`optional_missing` lines verbatim — "none" included. A run that changes the
-card afterwards (an `mcopy`'d program, a `#Z` line in `NEWDESK.INF`) records
+`optional_missing` lines verbatim — "none" included — and the `host_clang`
+line (TASK/SDK08). A run that changes the card afterwards (an `mcopy`'d
+program, a `#Z` line in `NEWDESK.INF`) records
 those changes in `RUNINFO.TXT` itself; the manifest describes the image as
 the tool left it. An image the run boots as an APFS clone of a manifested
 image is described by the original's manifest **as the clone stood before
@@ -285,10 +293,10 @@ cargo xtask run --board rpi4 --sd /tmp/sd.img --release  # release-profile kerne
 cargo xtask run --board rpi4 --sd /tmp/sd.img --debug    # halted, gdbstub on :1234
 ```
 
-`cmd_run_rpi4` (`tools/xtask/src/main.rs:962@cmd_run_rpi4`) builds the kernel for
+`cmd_run_rpi4` (`tools/xtask/src/main.rs:970@cmd_run_rpi4`) builds the kernel for
 `rpi4`, produces `kernel8.img` beside the kernel ELF,
 `target/aarch64-unknown-none-softfloat/<debug|release>/kernel8.img`, by
-`objcopy -O binary` (`tools/xtask/src/main.rs:636@produce_kernel8_img`; never in the
+`objcopy -O binary` (`tools/xtask/src/main.rs:644@produce_kernel8_img`; never in the
 repository root since TOOL10 — `cargo xtask build --board rpi4` prints the
 path as its last line), and runs
 
