@@ -8,7 +8,7 @@ Status: **GEPARKT** 2026-10-30 (Anwender: bis ein Port es braucht) · Prioritaet
 
 - Faelle: `bios-r1` 189–194 und `xbios-system-r1` 68–76, alle EXACT-DIFF (EmuTOS `0x0000` bzw. `0xFFFB`, NewTOS `0x002E`; beim Lesen bleibt der Puffer vergiftet) (`measurements/measurement-2026-10-28-xbios-system-audit/runs/NEWTOS-bios-r1/tosdiff-newtos-vs-emutos.txt`, `measurements/measurement-2026-10-28-xbios-system-audit/runs/NEWTOS-xbios-system-r1/tosdiff-newtos-vs-emutos.txt`; falcontc dieselben Fall-IDs).
 - Eingabepruefung: EmuTOS — 9 Aufrufe ohne Argumente im Trace (`measurements/measurement-2026-10-28-xbios-system-audit/runs/TRACE-EMUTOS-xs/trace-program.txt`), Ergebnisse passen zu den Armen der Tabelle (Lesen 0, Bereichs-/Op-Fehler -5); NewTOS — die Antwort haengt von keinem Argument ab.
-- Lokalisiert: `tos-api/src/xbios/mod.rs:138@other` (Auffangarm).
+- Lokalisiert: `tos-api/src/xbios/mod.rs:148@other` (Auffangarm).
 - EmuTOS-Stelle: `references/emutos/bios/nvram.c:155-214`. Auffaellig, nicht gemessen: `0x2E` ist EmuTOS' Antwort auf einer Maschine ohne NVRAM (`references/emutos/bios/nvram.c:161-162`, `!has_nvram`); ein gepinntes Profil ohne NVRAM gibt es nicht.
 - Spec widerspruechlich: `docs/api/xbios/_triage.md:80` („`CONF_WITH_NVRAM` off“) gegen `docs/api/xbios/_full-function-inventory.md` (`make 512`: `CONF_WITH_NVRAM` = 1); `docs/COMPATIBILITY.md` nur im Tastaturabschnitt „NewTOS has no NVRAM“.
 - Fehlerbild: Falcon-/TT-Kontrollfelder sehen „kein NVRAM“ und fallen zurueck; Daten gehen nicht verloren.
