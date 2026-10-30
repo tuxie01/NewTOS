@@ -930,7 +930,11 @@ logs the drive in again. Measured with `tosdump/cases/gemdos-mc-fs24.tsv`
 V3 (case 149: the folder survived buffer traffic in EmuTOS's DND tree) differ;
 a peek into NewTOS's sector cache (option B) would have made V2 (case 117,
 folder never logged) newly differ and left V3 different, so no folder cache is
-built. No known program depends on it.
+built. No known program depends on it. After the re-login NewTOS' `Dgetpath`
+always returns the path `Dsetpath` set (TASK/FS28); EmuTOS may return the root
+depending on which current-directory slot is free when `ckdrv` repairs the
+byte (`references/emutos/bdos/fsdrive.c:121-130`, `fsdir.c:1129-1179`) —
+derived from the source, not measured; parked (user decision 2026-10-30).
 
 **Dragging several desktop icons processes all of them** — user decision,
 2026-10-17 (DESK48, option b). EmuTOS' `fun_file2any` calls
