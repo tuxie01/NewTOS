@@ -108,6 +108,17 @@ cargo xtask test
 Use `--release` for anything that goes onto real hardware or is measured;
 the default dev profile is much slower.
 
+Before the first commit, once per clone:
+
+```sh
+# git runs tools/git-hooks/pre-commit (core.hooksPath = tools/git-hooks)
+cargo xtask install-hooks
+```
+
+The pre-commit hook runs `cargo xtask doc-check --staged`: it rejects a
+commit whose staged docs have a cite that does not resolve, or whose staged
+code breaks a cite in another doc. `git commit --no-verify` skips it.
+
 ## Running
 
 ```sh

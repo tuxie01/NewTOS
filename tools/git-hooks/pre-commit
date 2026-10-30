@@ -1,0 +1,54 @@
+#!/bin/sh
+#
+# pre-commit -- doc-check on what this commit records (TOOL29).
+#
+# Installed by `cargo xtask install-hooks` (core.hooksPath = tools/git-hooks).
+# Runs `cargo xtask doc-check --staged` (tools/xtask/src/doc_check.rs,
+# "Staged"), which reads the index, not the working tree:
+#   - every staged doc (CLAUDE.md, docs/**/*.md without docs/archive/ and
+#     dated snapshots, TASK/*.md and *.MD, measurements/**/RUNINFO.TXT):
+#     a failure on a line new since HEAD (a broken cite, an unknown ADR, an
+#     unanchored line cite into NewTOS code), or on an unchanged line whose
+#     cite resolves at HEAD;
+#   - every other doc of that set: a cite naming a staged path (a moved
+#     anchor, a shortened, renamed or deleted file, a removed ADR) that
+#     resolves at HEAD and fails in the index.
+# Only failures the commit introduces count; legacy ones (failing at HEAD
+# too) never block (owner decision 2026-10-30, TASK/SPEC03.md).
+# Any failure, or a doc-check that cannot run, rejects the commit: `git
+# commit` itself exits non-zero, however the command line chains or pipes
+# around it.
+#
+# Bypass for one commit: git commit --no-verify (git's own switch; there is
+# no other). Agents cannot use it: the PreToolUse hook
+# tools/hooks/no-verify-guard.sh (.claude/settings.json) blocks it.
+
+set -u
+
+top=$(git rev-parse --show-toplevel) || exit 1
+cd "$top" || exit 1
+
+# The pathspecs below are globs whatever the caller's environment says.
+unset GIT_LITERAL_PATHSPECS GIT_GLOB_PATHSPECS GIT_NOGLOB_PATHSPECS GIT_ICASE_PATHSPECS
+
+# Cheap pre-filter: no staged doc and no staged path under the trees the
+# docs cite by line (NEWTOS_CODE_ROOTS in doc_check.rs), deletions
+# included -> no cargo run. Exit 0 = no such path; 1 = some; anything else
+# (no HEAD, ...) falls through and doc-check reports it.
+git diff --cached --quiet --no-renames HEAD -- \
+    CLAUDE.md docs/ TASK/ 'measurements/*RUNINFO.TXT' \
+    kernel/ tos-api/ tos-types/ programs/ tools/ tosdump/ sdk/ boot/ keyboards/ 2>/dev/null
+[ $? -eq 0 ] && exit 0
+
+if ! command -v cargo >/dev/null 2>&1; then
+    echo "pre-commit: cargo not in PATH; cannot run doc-check on the staged docs." >&2
+    echo "pre-commit: commit rejected (git commit --no-verify bypasses the check)." >&2
+    exit 1
+fi
+
+if cargo -q xtask doc-check --staged; then
+    exit 0
+fi
+echo "pre-commit: doc-check failed on the staged docs or on cites this commit breaks (above);" >&2
+echo "pre-commit: commit rejected. Fix the cites and stage the fix; git commit --no-verify bypasses the check." >&2
+exit 1

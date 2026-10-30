@@ -1,0 +1,144 @@
+measurement-2026-10-30-tool29 -- TASK/TOOL29: doc-check as a git pre-commit hook. The hook
+(tools/git-hooks/pre-commit -> `cargo xtask doc-check --staged`) driven through seven commit cases
+in a throwaway clone, timed; plus the runtime of the full variant (no cite pre-filter).
+==========================================================================================
+Developer, 2026-10-30 (host clock CET). Main tree at eee1bffd plus the uncommitted TOOL29 change.
+Nothing committed in the main repository, its git config untouched (the hook is NOT installed
+there). No hardware, no QEMU, no image booted, so no image manifest; optional_missing: n/a (no
+image).
+
+HOST
+  macOS 27.0.1, git 2.54.0 (Apple Git-157), cargo 1.97.0-nightly (eb94155a9 2026-04-09),
+  rustc 1.97.0-nightly (a5c825cd8 2026-04-14)
+  host clang: Apple clang version 21.0.0 (clang-2100.4.1.1)   (not used by this run)
+
+WHAT CHANGED
+  `tools/git-hooks/pre-commit`      the hook: pre-filter (no staged doc and no staged path under
+                                    the NewTOS code roots -> exit 0 without cargo), then
+                                    `cargo -q xtask doc-check --staged`; any failure -> exit 1
+  `tools/xtask/src/doc_check.rs`    `--staged`: `is_commit_doc` (selection), `staged_docs`,
+                                    `Resolver::use_tree` (the index, or the base commit, stands in
+                                    for the working tree where they differ), `check` (staged docs
+                                    whole), `introduced` (other docs: cites this commit breaks)
+  `tools/xtask/src/git_hooks.rs`    `cargo xtask install-hooks`: core.hooksPath = tools/git-hooks,
+                                    refuses to shadow another hooksPath or active .git/hooks
+  `tools/xtask/src/main.rs`         dispatch + usage; the 14 new lines shift three anchors, fixed in
+                                    `docs/sdk/06-image-and-testing.md` and `TASK/MEM12.md` (the
+                                    hook's own case 5 finds exactly that kind of break)
+
+  sha256 of the files under test (copied into the clone by run.sh):
+    cd32beae141d5017cff41c7125f915b1b20fdfc58d6785d4f220777c977a5aa8  tools/xtask/src/doc_check.rs
+    bcfe70859da65037faf82815a9f85bd1c1ed86f6518c765c6967739f9acf5533  tools/xtask/src/main.rs
+    76960259ca7bb27152d6d9f715dfacc32e2536c0450af88684f4077b69de7b3c  tools/xtask/src/git_hooks.rs
+    c8e2824f0398b4a1a819b9437af9864c086fc942c6116b8921d52e12899cffdf  tools/git-hooks/pre-commit
+    bd793be56f19a54863219b598c1caa34054a49f4c9eeea7348fa6d446bc02add  TASK/MEM12.md
+    b0b8eba476587ef6c1a70d831a4e5aea6fb81e6ab3dd100fc218d279ddb8a101  docs/sdk/06-image-and-testing.md
+    5e43768bf6f9b2e5e0e6a251a9a9728b6b34bab0799c8b4284dff269de00cfb5  method/run.sh
+
+HOW
+  `method/run.sh <repo> <scratch> [variant-a]`: `git clone --shared` of the repository into the
+  session scratchpad (the repository's git state stays untouched), symlinks for the gitignored
+  reference trees (EmuTOS at the pin, FreeMiNT, the oracle build), the change copied in and
+  committed there as the base, `cargo xtask install-hooks`, then the cases; each `git commit`
+  timed with bash `time` (wall clock, hook included). The clone was deleted afterwards.
+  `variant-a` removes the cite pre-filter of `introduced` in the clone's copy (every cite of every
+  doc the commit leaves alone is resolved, a failing one again at HEAD) and runs cases 4b and 5.
+
+RESULT (output/run-variant-b.log, output/run-variant-a.log)
+  case                                                          expected   got        wall
+  1  staged TASK/TOOL29.md with main.rs:99999@main              rejected   exit 1     0.658 s
+  3  `cargo -q xtask doc-check TASK/TOOL29.md | tail -1 &&      rejected   chain      0.755 s
+     git commit` with the same broken staged line                          exit 1
+  2  the reference fixed (`main.rs:<fn main>@main`)             passes     exit 0     0.642 s
+  6a partial staging: staged copy broken, working copy clean    rejected   exit 1     0.684 s
+  6b partial staging: staged copy clean, working copy broken    passes     exit 0     0.647 s
+  6c `git commit -a` (temporary index, GIT_INDEX_FILE) with     rejected   exit 1     0.633 s
+     the broken working copy
+  4a no doc, no code (README.md): pre-filter, no cargo run      passes     exit 0     0.074 s
+  4b code only, a comment appended to                           passes     exit 0     0.558 s
+     tos-api/src/bios/chardev.rs (no cited line moves)
+  5  code only, 20 lines inserted after line 1 of chardev.rs:   rejected   exit 1     0.572 s
+     no doc staged; 63 anchored cites in unstaged docs
+     (TASK receipts and others) reported "resolves at HEAD;
+     this commit breaks it"
+  HEAD after every rejected case is the previous commit (logged).
+
+  Variant comparison for the code-commit check (owner correction 2026-10-30):
+    b  cites pre-filtered by name (last path component = a component of a changed path):
+       case 4b 0.558 s (207 cites resolved), case 5 0.572 s (63 broken)
+    a  no pre-filter, every cite of the 1635 untouched docs resolved:
+       case 4b 1.815 s (36818 cites), case 5 1.727 s (63 broken -- the same set)
+    For scale: a plain `doc-check` over the same 1632-file set, one tree, in the main repository:
+    3.3 s wall, 2766 failures (backlog).
+  Chosen: b. Same findings, about a third of the time. The pre-filter is a superset: a cite's
+  outcome depends only on paths whose last component equals the cite's last component (a moved
+  anchor, a shortened file, a deleted or renamed file, a new file making a bare name ambiguous,
+  a directory emptied: its name is a component of the deleted path).
+
+  Plain doc-check unchanged: the default run and the 1632-file run in the clone, old xtask (HEAD)
+  vs new, differ only in the three anchors the new main.rs lines shift (fixed, see above).
+
+  Host tests (`cargo xtask test`, full): 1904 passed / 0 failed / 1 ignored (baseline 1899/0/1;
+  +5: doc_check commit_docs, staged_checks_the_index_not_the_working_tree,
+  staged_code_breaking_an_untouched_doc_is_caught; git_hooks decision,
+  the_checked_in_hooks_are_executable).
+
+==========================================================================================
+SECOND RUN, 2026-10-30, after the lead review (run dir not yet committed, so appended here).
+The section above describes the first run; where they differ, this one is current.
+==========================================================================================
+WHY
+  Owner decision 2026-10-30 (`TASK/SPEC03.md`, "Abgrenzung"): the hook rejects ONLY errors a
+  commit introduces; legacy errors never block. The first design checked staged docs whole, so
+  touching a ticket or receipt with old backlog (174 of 573 tickets, 239 of 371 receipts in the
+  main tree) would have blocked the commit.
+
+WHAT CHANGED SINCE THE FIRST RUN
+  `tools/xtask/src/doc_check.rs` `check`: under --staged a failure in a staged doc counts only
+    if it stands on a line new since HEAD (a broken cite, an unknown ADR, an unanchored line cite
+    into NewTOS code; a doc the commit adds is all new lines), or on an unchanged line whose cite
+    resolves at HEAD (ADR cite: whose ADR HEAD has); checked with a second resolver on the HEAD
+    tree (`Resolver::use_tree(&Tree::Rev)`). Everything else is legacy: counted in the summary
+    ("N legacy failures ignored"), never fatal. Docs the commit leaves alone: unchanged rule.
+  New host test `staged_docs_count_only_what_the_commit_introduces`.
+  `tools/git-hooks/pre-commit` header text; `tools/xtask/src/main.rs` usage text (2 more lines,
+    the three anchors in `docs/sdk/06-image-and-testing.md` and `TASK/MEM12.md` set to the exact
+    lines again).
+  `docs/archive/` and dated snapshots stay outside the set: rows rotated into the archive arrive
+    as new lines and would have to meet today's anchor rule (STATUS rows carry unanchored line
+    cites), and neither is maintained when code moves.
+
+  sha256 of the files under test in this run:
+    759654508e8bfa9dafd2226743297118193d874ff3f124b20e5520519b537b4b  tools/xtask/src/doc_check.rs
+    b0d43d925ce9be761f750e5a7ebbe427b98b749e13bd0b9e9e1d5c28c5bf479d  tools/xtask/src/main.rs
+    76960259ca7bb27152d6d9f715dfacc32e2536c0450af88684f4077b69de7b3c  tools/xtask/src/git_hooks.rs
+    8b4b7e68fdaa1194883dead65c08d9ae991534e2163d15c8bafeedc570c0bd5f  tools/git-hooks/pre-commit
+    4e380dbbd5d0a758c39bd353167cc8ec15a78949287dce0b3272a92b2f2e1aa6  TASK/MEM12.md
+    8c52f86fbcc5ec0c39b8c384243d23e9c75b76d0ae7f4681a66b54a16f6a424c  docs/sdk/06-image-and-testing.md
+    e0b9565f69762c7535492c31222004c66ec6b39459357eb6673775ae4fca1290  method/run.sh
+  (method/run.sh now also drives cases 7 and 8; the first run's logs were made by its earlier
+  text, without them.)
+
+RESULT (output/run2-variant-b.log, output/run2-variant-a.log; fresh clone, main tree eee1bffd)
+  case                                                          expected   got        wall
+  1  staged TASK/TOOL29.md with main.rs:99999@main              rejected   exit 1     0.780 s
+  3  doc-check ... | tail -1 && git commit, same broken line    rejected   chain 1    0.888 s
+  2  the reference fixed                                        passes     exit 0     0.777 s
+  6a partial staging: staged copy broken, working copy clean    rejected   exit 1     0.853 s
+  6b partial staging: staged copy clean, working copy broken    passes     exit 0     0.782 s
+  6c git commit -a with the broken working copy                 rejected   exit 1     0.772 s
+  7  TASK/X03.md (2 legacy failures at HEAD, plain doc-check)   passes     exit 0     0.795 s
+     plus an unrelated clean line: "0 failures, 2 legacy
+     failures ignored"
+  8  the same doc plus a line citing main.rs:99996@main         rejected   exit 1     0.772 s
+     ("1 failures, 2 legacy failures ignored")
+  4a README.md only: pre-filter, no cargo run                   passes     exit 0     0.077 s
+  4b code only, comment appended to chardev.rs                  passes     exit 0     0.559 s
+  5  code only, 20 lines inserted into chardev.rs, no doc       rejected   exit 1     0.571 s
+     staged: 63 cites "resolves at HEAD; this commit breaks it"
+  Variant a (no cite pre-filter): 4b 1.796 s, 5 1.696 s with the same 63; b stays chosen.
+  A staged doc now costs about 0.15 s more than in the first run (the HEAD-tree resolver).
+
+  Host tests (`cargo xtask test`, full): 1905 passed / 0 failed / 1 ignored (baseline 1899/0/1,
+  +6). Clippy xtask unchanged (bin 1, test 8 warnings, none in the touched files).
+  The clone was deleted afterwards.

@@ -1,0 +1,111 @@
+clone HEAD: f48b7eb9 base: TOOL29 change under test  (repo HEAD eee1bffd)
+install-hooks: core.hooksPath = tools/git-hooks (pre-commit)
+core.hooksPath = tools/git-hooks
+
+=== 1: a staged doc with a broken line reference -> rejected
+TASK/TOOL29.md:28: tools/xtask/src/main.rs:99999@main: line 99999 beyond end (1274 lines) of tools/xtask/src/main.rs
+doc-check --staged: 1 files, 3 path cites and 0 ADR cites checked, 1 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+doc-check --staged: 1634 docs the commit leaves alone, 12 of their cites name one of the 1 changed paths, 0 broken by this commit
+xtask: doc-check: 1 failures (see above)
+pre-commit: doc-check failed on the staged docs or on cites this commit breaks (above);
+pre-commit: commit rejected. Fix the cites and stage the fix; git commit --no-verify bypasses the check.
+    wall 0.780 s
+    git commit exit 1
+    HEAD now: base: TOOL29 change under test
+
+=== 3: chained like 'doc-check ... | tail -1 && git commit' -> still rejected
+    $ cargo -q xtask doc-check TASK/TOOL29.md | tail -1 && git commit -q -m "case 3"
+xtask: doc-check: 1 failures (see above)
+TASK/TOOL29.md:28: tools/xtask/src/main.rs:99999@main: line 99999 beyond end (1274 lines) of tools/xtask/src/main.rs
+doc-check --staged: 1 files, 3 path cites and 0 ADR cites checked, 1 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+doc-check --staged: 1634 docs the commit leaves alone, 12 of their cites name one of the 1 changed paths, 0 broken by this commit
+xtask: doc-check: 1 failures (see above)
+pre-commit: doc-check failed on the staged docs or on cites this commit breaks (above);
+pre-commit: commit rejected. Fix the cites and stage the fix; git commit --no-verify bypasses the check.
+    wall 0.888 s
+    chain exit 1
+    HEAD now: base: TOOL29 change under test
+
+=== 2: the same doc with the reference fixed -> passes
+doc-check --staged: 1 files, 3 path cites and 0 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 1 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+doc-check --staged: 1634 docs the commit leaves alone, 12 of their cites name one of the 1 changed paths, 0 broken by this commit
+    wall 0.777 s
+    git commit exit 0
+    HEAD now: case 2
+
+=== 6a: partial staging, staged copy broken, working copy clean -> rejected
+TASK/TOOL29.md:28: tools/xtask/src/main.rs:99998@main: line 99998 beyond end (1274 lines) of tools/xtask/src/main.rs
+doc-check --staged: 1 files, 3 path cites and 0 ADR cites checked, 1 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+doc-check --staged: 1634 docs the commit leaves alone, 12 of their cites name one of the 1 changed paths, 0 broken by this commit
+xtask: doc-check: 1 failures (see above)
+pre-commit: doc-check failed on the staged docs or on cites this commit breaks (above);
+pre-commit: commit rejected. Fix the cites and stage the fix; git commit --no-verify bypasses the check.
+    wall 0.853 s
+    git commit exit 1
+    HEAD now: case 2
+
+=== 6b: partial staging, staged copy clean, working copy broken -> passes
+doc-check --staged: 1 files, 4 path cites and 0 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 2 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+doc-check --staged: 1634 docs the commit leaves alone, 12 of their cites name one of the 1 changed paths, 0 broken by this commit
+    wall 0.782 s
+    git commit exit 0
+    HEAD now: case 6b
+
+=== 6c: git commit -a picks up the broken working copy -> rejected (hook reads GIT_INDEX_FILE)
+TASK/TOOL29.md:30: tools/xtask/src/main.rs:99997@main: line 99997 beyond end (1274 lines) of tools/xtask/src/main.rs
+doc-check --staged: 1 files, 5 path cites and 0 ADR cites checked, 1 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 2 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+doc-check --staged: 1634 docs the commit leaves alone, 12 of their cites name one of the 1 changed paths, 0 broken by this commit
+xtask: doc-check: 1 failures (see above)
+pre-commit: doc-check failed on the staged docs or on cites this commit breaks (above);
+pre-commit: commit rejected. Fix the cites and stage the fix; git commit --no-verify bypasses the check.
+    wall 0.772 s
+    git commit exit 1
+    HEAD now: case 6b
+
+=== 7: a staged doc with legacy errors (TASK/X03.md) plus an unrelated clean edit -> passes
+    legacy before the edit (plain doc-check, working tree):
+      TASK/X03.md:10: kernel/src/desk/inf.rs: missing
+      TASK/X03.md:38: kernel/src/desk/inf.rs: missing
+      doc-check: 1 files, 12 path cites and 1 ADR cites checked, 2 failures, 0 skipped (reference tree missing); 1 anchored line cites, 2 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+      xtask: doc-check: 2 failures (see above)
+doc-check --staged: 1 files, 12 path cites and 1 ADR cites checked, 0 failures, 2 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 1 anchored line cites, 2 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+doc-check --staged: 1634 docs the commit leaves alone, 18 of their cites name one of the 1 changed paths, 0 broken by this commit
+    wall 0.795 s
+    git commit exit 0
+    HEAD now: case 7
+
+=== 8: the same doc with a newly broken cite -> rejected
+TASK/X03.md:92: tools/xtask/src/main.rs:99996@main: line 99996 beyond end (1274 lines) of tools/xtask/src/main.rs
+doc-check --staged: 1 files, 13 path cites and 1 ADR cites checked, 1 failures, 2 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 1 anchored line cites, 2 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+doc-check --staged: 1634 docs the commit leaves alone, 18 of their cites name one of the 1 changed paths, 0 broken by this commit
+xtask: doc-check: 1 failures (see above)
+pre-commit: doc-check failed on the staged docs or on cites this commit breaks (above);
+pre-commit: commit rejected. Fix the cites and stage the fix; git commit --no-verify bypasses the check.
+    wall 0.772 s
+    git commit exit 1
+    HEAD now: case 7
+
+=== 4a: a commit without docs or code (README.md) -> passes, no cargo run
+    wall 0.077 s
+    git commit exit 0
+    HEAD now: case 4a
+
+=== 4b: a code-only commit that moves no cited line (comment at the end of tos-api/src/bios/chardev.rs) -> passes
+doc-check --staged: no staged docs to check
+doc-check --staged: 1635 docs the commit leaves alone, 207 of their cites name one of the 1 changed paths, 0 broken by this commit
+    wall 0.559 s
+    git commit exit 0
+    HEAD now: case 4b
+
+=== 5: a staged code change shifting lines under anchored cites in docs that are NOT staged -> rejected
+    wall 0.571 s
+    broken cites reported: 63
+    doc-check --staged: no staged docs to check
+    TASK/BIOS04-STATUS-DONE.MD:11: tos-api/src/bios/chardev.rs:360@DEVICES: tos-api/src/bios/chardev.rs: @DEVICES not within ±5 of line 360; nearest occurrence: line 385 (resolves at HEAD; this commit breaks it)
+    TASK/BIOS04-STATUS-DONE.MD:13: tos-api/src/bios/chardev.rs:175@MidiPort: tos-api/src/bios/chardev.rs: @MidiPort not within ±5 of line 175; nearest occurrence: line 196 (resolves at HEAD; this commit breaks it)
+    ...
+    xtask: doc-check: 63 failures (see above)
+    pre-commit: doc-check failed on the staged docs or on cites this commit breaks (above);
+    pre-commit: commit rejected. Fix the cites and stage the fix; git commit --no-verify bypasses the check.
+    git commit exit 1
+    HEAD now: case 4b

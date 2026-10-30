@@ -1,0 +1,23 @@
+clone HEAD: 95706493 base: TOOL29 change under test  (repo HEAD eee1bffd)
+install-hooks: core.hooksPath = tools/git-hooks (pre-commit)
+core.hooksPath = tools/git-hooks
+
+=== 4b: a code-only commit that moves no cited line (comment at the end of tos-api/src/bios/chardev.rs) -> passes
+doc-check --staged: no staged docs to check
+doc-check --staged: 1635 docs the commit leaves alone, 36818 of their cites name one of the 1 changed paths, 0 broken by this commit
+    wall 1.796 s
+    git commit exit 0
+    HEAD now: case 4b
+
+=== 5: a staged code change shifting lines under anchored cites in docs that are NOT staged -> rejected
+    wall 1.696 s
+    broken cites reported: 63
+    doc-check --staged: no staged docs to check
+    TASK/BIOS04-STATUS-DONE.MD:11: tos-api/src/bios/chardev.rs:360@DEVICES: tos-api/src/bios/chardev.rs: @DEVICES not within ±5 of line 360; nearest occurrence: line 385 (resolves at HEAD; this commit breaks it)
+    TASK/BIOS04-STATUS-DONE.MD:13: tos-api/src/bios/chardev.rs:175@MidiPort: tos-api/src/bios/chardev.rs: @MidiPort not within ±5 of line 175; nearest occurrence: line 196 (resolves at HEAD; this commit breaks it)
+    ...
+    xtask: doc-check: 63 failures (see above)
+    pre-commit: doc-check failed on the staged docs or on cites this commit breaks (above);
+    pre-commit: commit rejected. Fix the cites and stage the fix; git commit --no-verify bypasses the check.
+    git commit exit 1
+    HEAD now: case 4b

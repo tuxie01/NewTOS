@@ -1,4 +1,4 @@
-//! `xtask doc-check [--base <rev>] [<file>...]` — every path and `file:line`
+//! `xtask doc-check [--staged] [--base <rev>] [<file>...]` — every path and `file:line`
 //! cite and every ADR id in the living docs (`CLAUDE.md` and every Markdown
 //! file under `docs/` except `docs/archive/`) must resolve, every anchor must
 //! hold, and a new line cite into NewTOS code must carry one.
@@ -108,6 +108,30 @@
 //! [`ARCHIVE_DIR`] and dated snapshots (`*-YYYY-MM-DD.md`,
 //! [`is_dated_snapshot`]): both are history, never evidence. A file named on
 //! the command line is always checked, dated or archived.
+//!
+//! # Staged (`--staged`, the pre-commit hook)
+//!
+//! `--staged` checks what a commit would record, not the working tree
+//! (TOOL29; `tools/git-hooks/pre-commit` runs it). Without file arguments
+//! it checks the staged docs: the files `git diff --cached <base>` lists,
+//! deletions left out, that [`is_commit_doc`] accepts. Named files must be
+//! in the index. The index (`GIT_INDEX_FILE` if git set it, as for
+//! `git commit -a` or `git commit <path>`) stands in for the working tree
+//! wherever the two differ ([`Resolver::use_index`]): a tracked file whose
+//! working copy differs from its staged copy (`git diff --name-only`) is
+//! read from the index, the checked docs and cite targets alike; an index
+//! path exists with exactly its case, directories included. Paths outside
+//! the index (`references/`, build products, untracked files) resolve on
+//! disk as before. New lines are the added lines of
+//! `git diff --cached -U0 <base> -- <doc>` (a doc the commit adds: all).
+//!
+//! Only failures the commit introduces count (owner decision 2026-10-30,
+//! `TASK/SPEC03.md`): in a staged doc, a failure on a new line (a broken
+//! cite, an unknown ADR, an unanchored line cite into NewTOS code), or one
+//! on an unchanged line whose cite resolves at `<base>` (an ADR cite: whose
+//! ADR `<base>` has); in every other doc of the set, a cite naming a changed
+//! path that resolves at `<base>` and fails in the index. A failure that
+//! `<base>` has too is legacy: counted in the summary, never fatal.
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fs;
@@ -700,6 +724,28 @@ pub fn is_default_doc(rel: &Path) -> bool {
         && !is_dated_snapshot(rel)
 }
 
+/// Where the tickets and their receipts live, relative to the workspace root.
+pub const TASK_DIR: &str = "TASK";
+/// Where the measurement runs live, relative to the workspace root.
+pub const MEASUREMENTS_DIR: &str = "measurements";
+/// The file name of a run's description.
+pub const RUNINFO: &str = "RUNINFO.TXT";
+
+/// A workspace-relative path is a doc `--staged` checks when it is staged:
+/// [`DEFAULT_FILES`] and the default docs walk ([`is_default_doc`]), a
+/// ticket or receipt under [`TASK_DIR`] (`*.md`, `*.MD`), a run's
+/// [`RUNINFO`] under [`MEASUREMENTS_DIR`]. The archive and dated snapshots
+/// stay out as in the default set: rows rotated into the archive arrive as
+/// new lines and would have to meet today's anchor rule, and neither is
+/// maintained when code moves (history, never evidence).
+pub fn is_commit_doc(rel: &Path) -> bool {
+    let ext = rel.extension().and_then(|e| e.to_str());
+    DEFAULT_FILES.iter().any(|f| rel == Path::new(f))
+        || is_default_doc(rel)
+        || (rel.starts_with(TASK_DIR) && matches!(ext, Some("md" | "MD")))
+        || (rel.starts_with(MEASUREMENTS_DIR) && rel.file_name().is_some_and(|n| n == RUNINFO))
+}
+
 /// The files checked when none are given: [`DEFAULT_FILES`], then the
 /// Markdown files under [`DOCS_DIR`] (sorted), archive and dated snapshots
 /// excluded.
@@ -748,6 +794,18 @@ pub fn env_value(text: &str, var: &str) -> Option<String> {
         .filter(|v| !v.is_empty())
 }
 
+/// `git -C <repo>` for a repository other than the workspace's (a reference
+/// checkout): without the `GIT_*` variables git exports to a hook, which
+/// point at the workspace's repository and index (githooks(5)).
+fn foreign_git(repo: &Path) -> Command {
+    let mut c = Command::new("git");
+    for v in ["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY"] {
+        c.env_remove(v);
+    }
+    c.arg("-C").arg(repo);
+    c
+}
+
 /// A git checkout's tree at one commit: its files and directories (relative
 /// to the checkout) and a per-file content cache.
 struct PinTree {
@@ -764,12 +822,7 @@ impl PinTree {
         if !repo.join(".git").exists() {
             return None;
         }
-        let out = Command::new("git")
-            .arg("-C")
-            .arg(repo)
-            .args(["ls-tree", "-r", "-z", "--name-only", commit])
-            .output()
-            .ok()?;
+        let out = foreign_git(repo).args(["ls-tree", "-r", "-z", "--name-only", commit]).output().ok()?;
         if !out.status.success() {
             return None;
         }
@@ -810,9 +863,7 @@ impl PinTree {
     /// The file's content at the commit (`git show`), cached.
     fn blob(&mut self, rel: &str) -> Result<Rc<[u8]>, String> {
         if !self.blobs.contains_key(rel) {
-            let out = Command::new("git")
-                .arg("-C")
-                .arg(&self.repo)
+            let out = foreign_git(&self.repo)
                 .arg("show")
                 .arg(format!("{}:{rel}", self.commit))
                 .output()
@@ -831,6 +882,41 @@ fn under_emutos(rel: &Path) -> Option<String> {
     rel.strip_prefix(EMUTOS_ROOT).ok().map(|p| p.to_string_lossy().into_owned())
 }
 
+/// Which tree a [`Resolver`] reads tracked files from where it differs
+/// from the working tree.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Tree {
+    /// The index (`--staged`; `GIT_INDEX_FILE` if git set it).
+    Index,
+    /// A commit, the base of `--staged` (what the commit would change).
+    Rev(String),
+}
+
+/// A [`Tree`] where it differs from the working tree.
+struct TreeView {
+    /// The `git show` prefix of a path: `:` or `<rev>:`.
+    show: String,
+    /// Tracked files whose working copy differs from the tree (modified or
+    /// deleted on disk).
+    dirty: BTreeSet<PathBuf>,
+    /// The directories of the tree's files.
+    dirs: BTreeSet<PathBuf>,
+    /// Files on disk the tree lacks although the other side of the commit
+    /// has them: the staged deletions (index) or additions (base).
+    gone: BTreeSet<PathBuf>,
+    /// Tree content of dirty files, cached.
+    blobs: HashMap<PathBuf, Rc<[u8]>>,
+}
+
+/// How a [`TreeView`] decides a path outside [`EMUTOS_ROOT`].
+enum ViewKind {
+    File,
+    Dir,
+    Missing,
+    /// Not in the tree: the disk decides.
+    Disk,
+}
+
 /// Resolves cites against one workspace. Caches directory listings (for the
 /// exact-case test), the basename index (built on first bare cite) and the
 /// EmuTOS tree at the pin (loaded on first resolve).
@@ -847,6 +933,9 @@ pub struct Resolver {
     /// The pinned build tree, workspace-relative ([`EMUTOS_BUILD_ROOT`]);
     /// set by [`Self::load_emutos`].
     emutos_build: PathBuf,
+    /// `Some` = `--staged`: a tree stands in for the working tree
+    /// ([`Self::use_tree`]).
+    view: Option<TreeView>,
 }
 
 impl Resolver {
@@ -859,7 +948,84 @@ impl Resolver {
             emutos_commit: None,
             emutos: None,
             emutos_build: PathBuf::new(),
+            view: None,
         }
+    }
+
+    /// From now on `tree` stands in for the working tree wherever they
+    /// differ (`--staged`): its paths exist with exactly their case (their
+    /// directories too), a file whose working copy differs from it is read
+    /// from it, a file the other side of the commit against `base` has and
+    /// it lacks is missing. Paths outside both resolve on disk.
+    pub fn use_tree(&mut self, tree: &Tree, base: &str) -> Result<(), String> {
+        let (show, dirty, gone) = match tree {
+            Tree::Index => {
+                self.tracked()?;
+                let dirty = git(&self.root, &["diff", "--name-only", "--no-renames", "-z", "--"])?;
+                let gone =
+                    git(&self.root, &["diff", "--cached", "--name-only", "--no-renames", "--diff-filter=D", "-z", base, "--"])?;
+                (":".to_string(), dirty, gone)
+            }
+            Tree::Rev(rev) => {
+                let files = git(&self.root, &["ls-tree", "-r", "-z", "--name-only", "--full-tree", rev])?;
+                self.tracked = Some(nul_paths(&files).collect());
+                self.basenames = None;
+                let dirty = git(&self.root, &["diff", "--name-only", "--no-renames", "-z", rev, "--"])?;
+                let gone =
+                    git(&self.root, &["diff", "--cached", "--name-only", "--no-renames", "--diff-filter=A", "-z", rev, "--"])?;
+                (format!("{rev}:"), dirty, gone)
+            }
+        };
+        let mut dirs = BTreeSet::new();
+        for f in self.tracked.as_ref().unwrap() {
+            let mut cur = f.parent();
+            while let Some(d) = cur.filter(|d| !d.as_os_str().is_empty()) {
+                if !dirs.insert(d.to_path_buf()) {
+                    break;
+                }
+                cur = d.parent();
+            }
+        }
+        self.view = Some(TreeView {
+            show,
+            dirty: nul_paths(&dirty).collect(),
+            dirs,
+            gone: nul_paths(&gone).collect(),
+            blobs: HashMap::new(),
+        });
+        Ok(())
+    }
+
+    /// How the view decides workspace-relative `rel` outside
+    /// [`EMUTOS_ROOT`]; without a view the disk decides.
+    fn view_kind(&self, rel: &Path) -> ViewKind {
+        let Some(v) = self.view.as_ref() else { return ViewKind::Disk };
+        if self.tracked.as_ref().is_some_and(|t| t.contains(rel)) {
+            ViewKind::File
+        } else if v.dirs.contains(rel) {
+            ViewKind::Dir
+        } else if v.gone.contains(rel) {
+            ViewKind::Missing
+        } else {
+            ViewKind::Disk
+        }
+    }
+
+    /// The content of workspace-relative `rel` outside [`EMUTOS_ROOT`]: from
+    /// the view's tree if its working copy differs, else on disk.
+    fn workspace_file(&mut self, rel: &Path) -> Result<Rc<[u8]>, String> {
+        if let Some(v) = self.view.as_mut() {
+            if v.dirty.contains(rel) {
+                if !v.blobs.contains_key(rel) {
+                    let spec = format!("{}{}", v.show, rel.to_string_lossy());
+                    let blob = git(&self.root, &["show", &spec])?;
+                    v.blobs.insert(rel.to_path_buf(), blob.into());
+                }
+                return Ok(Rc::clone(&v.blobs[rel]));
+            }
+        }
+        let full = self.root.join(rel);
+        fs::read(&full).map(Rc::from).map_err(|e| format!("doc-check: {}: {e}", full.display()))
     }
 
     /// Resolves EmuTOS cites at `commit` instead of the [`ORACLE_ENV`] pin.
@@ -875,9 +1041,8 @@ impl Resolver {
         let commit = match &self.emutos_commit {
             Some(c) => c.clone(),
             None => {
-                let env = fs::read_to_string(self.root.join(ORACLE_ENV))
-                    .map_err(|e| format!("doc-check: {ORACLE_ENV}: {e}"))?;
-                env_value(&env, EMUTOS_PIN_VAR).ok_or_else(|| format!("doc-check: {ORACLE_ENV}: no {EMUTOS_PIN_VAR}"))?
+                let env = self.workspace_file(Path::new(ORACLE_ENV))?;
+                env_value(&String::from_utf8_lossy(&env), EMUTOS_PIN_VAR).ok_or_else(|| format!("doc-check: {ORACLE_ENV}: no {EMUTOS_PIN_VAR}"))?
             }
         };
         self.emutos = Some(PinTree::load(&self.root.join(EMUTOS_ROOT), &commit));
@@ -933,7 +1098,15 @@ impl Resolver {
                 }
                 self.emutos_build.join(sub)
             }
-            None => rel.to_path_buf(),
+            None => {
+                match self.view_kind(rel) {
+                    ViewKind::File => return (!want_dir).then(|| rel.to_path_buf()),
+                    ViewKind::Dir => return Some(rel.to_path_buf()),
+                    ViewKind::Missing => return None,
+                    ViewKind::Disk => {}
+                }
+                rel.to_path_buf()
+            }
         };
         (self.exists_exact(&root, &rel) && (!want_dir || root.join(&rel).is_dir())).then_some(rel)
     }
@@ -941,7 +1114,11 @@ impl Resolver {
     fn is_dir(&self, rel: &Path) -> bool {
         match under_emutos(rel) {
             Some(sub) => self.pin_tree().and_then(|t| t.kind(&sub)) == Some(true),
-            None => self.root.join(rel).is_dir(),
+            None => match self.view_kind(rel) {
+                ViewKind::File | ViewKind::Missing => false,
+                ViewKind::Dir => true,
+                ViewKind::Disk => self.root.join(rel).is_dir(),
+            },
         }
     }
 
@@ -953,10 +1130,7 @@ impl Resolver {
                 Some(t) => t.blob(&sub),
                 None => Err(format!("doc-check: {}: EmuTOS pin not loaded", rel.display())),
             },
-            None => {
-                let full = self.root.join(rel);
-                fs::read(&full).map(Rc::from).map_err(|e| format!("doc-check: {}: {e}", full.display()))
-            }
+            None => self.workspace_file(rel),
         }
     }
 
@@ -1261,30 +1435,45 @@ fn git(root: &Path, args: &[&str]) -> Result<Vec<u8>, String> {
     Ok(out.stdout)
 }
 
+/// The paths of NUL-separated `git … -z` output.
+fn nul_paths(out: &[u8]) -> impl Iterator<Item = PathBuf> + '_ {
+    out.split(|&b| b == 0).filter(|s| !s.is_empty()).map(|s| PathBuf::from(String::from_utf8_lossy(s).into_owned()))
+}
+
+/// `git diff`, with `--cached` (index against the revision) when `staged`,
+/// else the working tree against it.
+fn diff_args<'a>(staged: bool, rest: &[&'a str]) -> Vec<&'a str> {
+    let mut v = vec!["diff"];
+    if staged {
+        v.push("--cached");
+    }
+    v.extend_from_slice(rest);
+    v
+}
+
 /// [`NewLines`] of each of `files` relative to `base`: untracked files are
 /// all new, files `git diff <base>` lists get their added lines, the rest
-/// none. The working tree counts, staged or not.
+/// none. The working tree counts, staged or not; with `staged` the index
+/// does (`git diff --cached`).
 fn new_lines(
     root: &Path,
     base: &str,
     files: &[PathBuf],
     tracked: &BTreeSet<PathBuf>,
+    staged: bool,
 ) -> Result<HashMap<PathBuf, NewLines>, String> {
-    git(root, &["rev-parse", "--verify", "--quiet", &format!("{base}^{{commit}}")])
-        .map_err(|_| format!("doc-check: --base {base}: no such commit"))?;
-    let names = git(root, &["diff", "--name-only", "--no-renames", "-z", base, "--"])?;
-    let changed: BTreeSet<PathBuf> = names
-        .split(|&b| b == 0)
-        .filter(|s| !s.is_empty())
-        .map(|s| PathBuf::from(String::from_utf8_lossy(s).into_owned()))
-        .collect();
+    let names = git(root, &diff_args(staged, &["--name-only", "--no-renames", "-z", base, "--"]))?;
+    let changed: BTreeSet<PathBuf> = nul_paths(&names).collect();
     let mut out = HashMap::new();
     for f in files {
         let nl = if !tracked.contains(f) {
             NewLines::All
         } else if changed.contains(f) {
             let path = f.to_string_lossy();
-            let diff = git(root, &["diff", "-U0", "--no-color", "--no-ext-diff", "--no-renames", base, "--", &path])?;
+            let diff = git(
+                root,
+                &diff_args(staged, &["-U0", "--no-color", "--no-ext-diff", "--no-renames", base, "--", &path]),
+            )?;
             NewLines::Only(added_lines(&String::from_utf8_lossy(&diff)))
         } else {
             NewLines::Only(BTreeSet::new())
@@ -1294,14 +1483,52 @@ fn new_lines(
     Ok(out)
 }
 
-/// `cargo xtask doc-check [--base <rev>] [<file>...]`.
+/// The docs a commit would record: the files the index changes against
+/// `base` (`git diff --cached`), deletions left out, that [`is_commit_doc`]
+/// accepts; sorted.
+fn staged_docs(root: &Path, base: &str) -> Result<Vec<PathBuf>, String> {
+    let names = git(root, &["diff", "--cached", "--name-only", "--no-renames", "--diff-filter=d", "-z", base, "--"])?;
+    let mut v: Vec<PathBuf> = nul_paths(&names).filter(|p| is_commit_doc(p)).collect();
+    v.sort();
+    Ok(v)
+}
+
+/// Named file `a` (relative to `cwd` or absolute) as a workspace-relative
+/// path. With `staged` the file may be absent on disk (deleted from the
+/// working tree, still staged): then its directory must exist.
+fn workspace_rel(root: &Path, cwd: &Path, a: &str, staged: bool) -> Result<PathBuf, String> {
+    let abs = if Path::new(a).is_absolute() { PathBuf::from(a) } else { cwd.join(a) };
+    let abs = match fs::canonicalize(&abs) {
+        Ok(p) => p,
+        Err(e) => match (staged, abs.parent(), abs.file_name()) {
+            (true, Some(dir), Some(name)) => {
+                fs::canonicalize(dir).map_err(|e| format!("doc-check: {a}: {e}"))?.join(name)
+            }
+            _ => return Err(format!("doc-check: {a}: {e}")),
+        },
+    };
+    let canon_root = fs::canonicalize(root).map_err(|e| format!("doc-check: {e}"))?;
+    abs.strip_prefix(&canon_root)
+        .map(Path::to_path_buf)
+        .map_err(|_| format!("doc-check: {a}: not inside the workspace"))
+}
+
+/// `cargo xtask doc-check [--staged] [--base <rev>] [<file>...]`.
 pub fn cmd(root: &Path, args: &[String]) -> Result<(), String> {
     let cwd = std::env::current_dir().map_err(|e| format!("doc-check: {e}"))?;
     let mut base = "HEAD".to_string();
+    let mut staged = false;
     let mut named = Vec::new();
     let mut it = args.iter();
+    let mut options = true;
     while let Some(a) = it.next() {
-        if a == "--base" {
+        if !options {
+            named.push(a);
+        } else if a == "--" {
+            options = false;
+        } else if a == "--staged" {
+            staged = true;
+        } else if a == "--base" {
             base = it.next().ok_or("doc-check: --base needs a revision")?.clone();
         } else if let Some(b) = a.strip_prefix("--base=") {
             base = b.to_string();
@@ -1311,42 +1538,82 @@ pub fn cmd(root: &Path, args: &[String]) -> Result<(), String> {
             named.push(a);
         }
     }
-    let files: Vec<PathBuf> = if named.is_empty() {
-        default_files(root)
+    git(root, &["rev-parse", "--verify", "--quiet", &format!("{base}^{{commit}}")])
+        .map_err(|_| format!("doc-check: --base {base}: no such commit"))?;
+    let files: Vec<PathBuf> = if !named.is_empty() {
+        named.iter().map(|a| workspace_rel(root, &cwd, a, staged)).collect::<Result<_, _>>()?
+    } else if staged {
+        staged_docs(root, &base)?
     } else {
-        let mut v = Vec::new();
-        for a in named {
-            // Given relative to the caller's directory, kept workspace-relative.
-            let abs = if Path::new(a).is_absolute() { PathBuf::from(a) } else { cwd.join(a) };
-            let abs = fs::canonicalize(&abs).map_err(|e| format!("doc-check: {a}: {e}"))?;
-            let canon_root = fs::canonicalize(root).map_err(|e| format!("doc-check: {e}"))?;
-            let rel = abs
-                .strip_prefix(&canon_root)
-                .map_err(|_| format!("doc-check: {a}: not inside the workspace"))?;
-            v.push(rel.to_path_buf());
-        }
-        v
+        default_files(root)
     };
+    let failed = check(root, &base, &files, staged)?;
+    if failed == 0 {
+        Ok(())
+    } else {
+        Err(format!("doc-check: {failed} failures (see above)"))
+    }
+}
 
-    let memory = fs::read_to_string(root.join(MEMORY_FILE)).map_err(|e| format!("doc-check: {MEMORY_FILE}: {e}"))?;
-    let adrs = adr_headings(&memory);
+/// Checks `files` (workspace-relative), prints each failure and a summary,
+/// and returns the number of failures. `staged`: the `--staged` view (see
+/// the module doc); every file must be in the index, and only failures the
+/// commit introduces count: one on a line new since `base`, or one on an
+/// unchanged line whose cite resolves at `base` (an ADR cite: whose ADR
+/// `base` has). The others are legacy, counted in the summary only.
+fn check(root: &Path, base: &str, files: &[PathBuf], staged: bool) -> Result<usize, String> {
+    let mode = if staged { "doc-check --staged" } else { "doc-check" };
     let mut resolver = Resolver::new(root);
     let tracked = resolver.tracked()?.clone();
-    let fresh = new_lines(root, &base, &files, &tracked)?;
+    if staged {
+        if let Some(f) = files.iter().find(|f| !tracked.contains(*f)) {
+            return Err(format!("{mode}: {}: not in the index", f.display()));
+        }
+        if files.is_empty() {
+            println!("{mode}: no staged docs to check");
+            return introduced(root, base);
+        }
+        resolver.use_tree(&Tree::Index, base)?;
+    }
+    let memory = resolver.workspace_file(Path::new(MEMORY_FILE))?;
+    let adrs = adr_headings(&String::from_utf8_lossy(&memory));
+    let fresh = new_lines(root, base, files, &tracked, staged)?;
+    // `--staged`: the base commit's view, for failures on unchanged lines.
+    let mut then = if staged {
+        let mut r = Resolver::new(root);
+        r.use_tree(&Tree::Rev(base.to_string()), base)?;
+        let memory = r.workspace_file(Path::new(MEMORY_FILE))?;
+        Some((r, adr_headings(&String::from_utf8_lossy(&memory))))
+    } else {
+        None
+    };
     let (mut checked, mut failed, mut skipped, mut adr_checked) = (0usize, 0usize, 0usize, 0usize);
-    let (mut anchored, mut old_unanchored) = (0usize, 0usize);
-    for f in &files {
-        let text = fs::read_to_string(root.join(f)).map_err(|e| format!("doc-check: {}: {e}", f.display()))?;
-        for (line, n) in scan_adr_ids(&text) {
+    let (mut anchored, mut old_unanchored, mut legacy) = (0usize, 0usize, 0usize);
+    for f in files {
+        let bytes = resolver.workspace_file(f)?;
+        let text = std::str::from_utf8(&bytes).map_err(|e| format!("doc-check: {}: {e}", f.display()))?;
+        let is_new = |line: usize| fresh.get(f).is_some_and(|n| n.contains(line));
+        for (line, n) in scan_adr_ids(text) {
             adr_checked += 1;
             if !adrs.contains(&n) {
+                if then.as_ref().is_some_and(|(_, old)| !is_new(line) && !old.contains(&n)) {
+                    legacy += 1;
+                    continue;
+                }
                 failed += 1;
                 println!("{}:{line}: ADR-{n:03}: no such ADR in {MEMORY_FILE}", f.display());
             }
         }
-        for cite in scan(&text) {
+        for cite in scan(text) {
             checked += 1;
-            match resolver.resolve_hit(f, &cite)? {
+            let outcome = resolver.resolve_hit(f, &cite)?;
+            if let ((Outcome::Fail(_), _), Some((r, _))) = (&outcome, then.as_mut()) {
+                if !is_new(cite.line) && r.resolve_hit(f, &cite)?.0 != Outcome::Ok {
+                    legacy += 1;
+                    continue;
+                }
+            }
+            match outcome {
                 (Outcome::Ok, hit) => {
                     let code = hit.is_some_and(|h| is_newtos_code(&h, &tracked));
                     let new = fresh.get(f).is_some_and(|n| n.contains(cite.line));
@@ -1369,22 +1636,100 @@ pub fn cmd(root: &Path, args: &[String]) -> Result<(), String> {
                 (Outcome::Skipped, _) => skipped += 1,
                 (Outcome::Fail(reason), _) => {
                     failed += 1;
-                    println!("{}:{}: {}: {reason}", f.display(), cite.line, cite.text);
+                    let why = if staged && !is_new(cite.line) {
+                        format!("{reason} (resolves at {base}; this commit breaks it)")
+                    } else {
+                        reason
+                    };
+                    println!("{}:{}: {}: {why}", f.display(), cite.line, cite.text);
+                }
+            }
+        }
+    }
+    let legacy_note = if staged {
+        format!(", {legacy} legacy failures ignored (on lines unchanged since {base}, failing there too)")
+    } else {
+        String::new()
+    };
+    println!(
+        "{mode}: {} files, {checked} path cites and {adr_checked} ADR cites checked, {failed} failures{legacy_note}, \
+         {skipped} skipped (reference tree missing); {anchored} anchored line cites, {old_unanchored} unanchored \
+         line cites into NewTOS code on lines unchanged since {base} (fixed when touched)",
+        files.len()
+    );
+    if staged {
+        failed += introduced(root, base)?;
+    }
+    Ok(failed)
+}
+
+/// `--staged`, the docs the commit leaves alone ([`is_commit_doc`], in the
+/// index, not changed against `base`): prints and counts each cite that
+/// resolves at `base` and fails in the index — a failure the commit
+/// introduces (a staged code change moved an anchored symbol, shortened,
+/// renamed or removed a file; a removed ADR heading). A cite failing at
+/// `base` already is backlog and not counted. Only a cite whose last path
+/// component names a changed path or one of its directories is resolved:
+/// no other can change.
+fn introduced(root: &Path, base: &str) -> Result<usize, String> {
+    let names = git(root, &["diff", "--cached", "--name-only", "--no-renames", "-z", base, "--"])?;
+    let changed: BTreeSet<PathBuf> = nul_paths(&names).collect();
+    if changed.is_empty() {
+        return Ok(0);
+    }
+    let mut components: BTreeSet<String> = BTreeSet::new();
+    for c in &changed {
+        components.extend(c.iter().map(|n| n.to_string_lossy().into_owned()));
+    }
+    let mut now = Resolver::new(root);
+    now.use_tree(&Tree::Index, base)?;
+    let mut then = Resolver::new(root);
+    then.use_tree(&Tree::Rev(base.to_string()), base)?;
+    let docs: Vec<PathBuf> =
+        now.tracked()?.iter().filter(|d| is_commit_doc(d) && !changed.contains(*d)).cloned().collect();
+    let lost_adrs: BTreeSet<u16> = if changed.contains(Path::new(MEMORY_FILE)) {
+        let old = adr_headings(&String::from_utf8_lossy(&then.workspace_file(Path::new(MEMORY_FILE))?));
+        let new = adr_headings(&String::from_utf8_lossy(&now.workspace_file(Path::new(MEMORY_FILE))?));
+        old.difference(&new).copied().collect()
+    } else {
+        BTreeSet::new()
+    };
+    let (mut resolved, mut broken) = (0usize, 0usize);
+    for d in &docs {
+        let bytes = now.workspace_file(d)?;
+        let text = String::from_utf8_lossy(&bytes);
+        for (line, n) in scan_adr_ids(&text) {
+            if lost_adrs.contains(&n) {
+                broken += 1;
+                println!("{}:{line}: ADR-{n:03}: no such ADR in {MEMORY_FILE} any more; this commit removes it", d.display());
+            }
+        }
+        for cite in scan(&text) {
+            let last = cite.path.trim_end_matches('/').rsplit('/').next().unwrap_or("");
+            if !components.contains(last) {
+                continue;
+            }
+            resolved += 1;
+            if let (Outcome::Fail(reason), _) = now.resolve_hit(d, &cite)? {
+                if then.resolve_hit(d, &cite)?.0 == Outcome::Ok {
+                    broken += 1;
+                    println!(
+                        "{}:{}: {}: {reason} (resolves at {base}; this commit breaks it)",
+                        d.display(),
+                        cite.line,
+                        cite.text
+                    );
                 }
             }
         }
     }
     println!(
-        "doc-check: {} files, {checked} path cites and {adr_checked} ADR cites checked, {failed} failures, \
-         {skipped} skipped (reference tree missing); {anchored} anchored line cites, {old_unanchored} unanchored \
-         line cites into NewTOS code on lines unchanged since {base} (fixed when touched)",
-        files.len()
+        "doc-check --staged: {} docs the commit leaves alone, {resolved} of their cites name one of the {} \
+         changed paths, {broken} broken by this commit",
+        docs.len(),
+        changed.len()
     );
-    if failed == 0 {
-        Ok(())
-    } else {
-        Err(format!("doc-check: {failed} failures (see above)"))
-    }
+    Ok(broken)
 }
 
 #[cfg(test)]
@@ -1787,6 +2132,257 @@ x `a/b.rs:3` y ``c/d.rs`` z `unclosed/e.rs
         }
         assert!(files.iter().all(|f| !f.starts_with(ARCHIVE_DIR)));
         assert!(files[1..].iter().all(|f| is_default_doc(f)));
+    }
+
+    #[test]
+    fn commit_docs() {
+        for yes in [
+            "CLAUDE.md",
+            "docs/STATUS.md",
+            "docs/api/bios/_cookie-jar.md",
+            "docs/with space.md",
+            "TASK/TOOL29.md",
+            "TASK/A01-STATUS-DONE.MD",
+            "measurements/measurement-2026-10-30-tool29/RUNINFO.TXT",
+            "measurements/m/verify/RUNINFO.TXT",
+        ] {
+            assert!(is_commit_doc(Path::new(yes)), "{yes}");
+        }
+        for no in [
+            "docs/archive/status-log-2026-10-26.md",
+            "docs/analysis/handover-2026-10-21.md",
+            "docs/commit-map.txt",
+            "TASK/A1.json",
+            "TASK/A1.evidence",
+            "measurements/m/notes.md",
+            "measurements/m/serial/RUNINFO.TXT.bak",
+            "README.md",
+            "phases/PHASE-00.md",
+            "kernel/src/main.rs",
+            "sub/CLAUDE.md",
+        ] {
+            assert!(!is_commit_doc(Path::new(no)), "{no}");
+        }
+    }
+
+    /// A scratch git repository under the workspace's `target/`, removed on
+    /// drop.
+    struct TempRepo(PathBuf);
+
+    impl TempRepo {
+        fn new(name: &str) -> TempRepo {
+            let dir = root().join("target").join(format!("xtask-test-{name}-{}", std::process::id()));
+            let _ = fs::remove_dir_all(&dir);
+            fs::create_dir_all(&dir).unwrap();
+            let r = TempRepo(fs::canonicalize(&dir).unwrap());
+            r.git(&["init", "-q"]);
+            r
+        }
+
+        fn git(&self, args: &[&str]) {
+            let mut c = Command::new("git");
+            for v in ["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE"] {
+                c.env_remove(v);
+            }
+            let out = c
+                .args(["-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false"])
+                .args(["-c", "core.hooksPath=/dev/null"])
+                .args(args)
+                .current_dir(&self.0)
+                .output()
+                .unwrap();
+            assert!(out.status.success(), "git {args:?}: {}", String::from_utf8_lossy(&out.stderr));
+        }
+
+        fn write(&self, rel: &str, text: &str) {
+            let p = self.0.join(rel);
+            fs::create_dir_all(p.parent().unwrap()).unwrap();
+            fs::write(p, text).unwrap();
+        }
+
+        /// The failures of `check`, `--staged` or not; `files` empty under
+        /// `--staged` = the staged docs.
+        fn failures(&self, staged: bool, files: &[&str]) -> usize {
+            let files: Vec<PathBuf> = if files.is_empty() && staged {
+                staged_docs(&self.0, "HEAD").unwrap()
+            } else {
+                files.iter().map(PathBuf::from).collect()
+            };
+            check(&self.0, "HEAD", &files, staged).unwrap()
+        }
+    }
+
+    impl Drop for TempRepo {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+
+    /// `foo` on line `at` of a 30-line source.
+    fn source_with_foo_at(at: usize) -> String {
+        (1..=30).map(|n| if n == at { "fn foo() {}\n".to_string() } else { "\n".to_string() }).collect()
+    }
+
+    #[test]
+    fn staged_checks_the_index_not_the_working_tree() {
+        let r = TempRepo::new("doc-check-staged");
+        r.write(MEMORY_FILE, "# Memory\n\n## ADR-001: one\n");
+        r.write(ORACLE_ENV, &format!("{EMUTOS_PIN_VAR}={}\n", "0".repeat(40)));
+        r.write("kernel/src/a.rs", &source_with_foo_at(5));
+        r.write("docs/X.md", "# X\n");
+        r.write("docs/Gone.md", "# Gone\n");
+        r.git(&["add", "-A"]);
+        r.git(&["commit", "-q", "-m", "base"]);
+
+        // Nothing staged: nothing to check.
+        assert_eq!(staged_docs(&r.0, "HEAD").unwrap(), Vec::<PathBuf>::new());
+        assert_eq!(r.failures(true, &[]), 0);
+
+        // The staged doc is clean, its working copy is not (partial
+        // staging): --staged checks the staged copy.
+        r.write("docs/X.md", "# X\n`kernel/src/a.rs:5@foo`\n");
+        r.git(&["add", "docs/X.md"]);
+        r.write("docs/X.md", "# X\n`kernel/src/a.rs:5@foo`\n`kernel/src/a.rs:99@foo`\n");
+        assert_eq!(staged_docs(&r.0, "HEAD").unwrap(), vec![PathBuf::from("docs/X.md")]);
+        assert_eq!(r.failures(true, &[]), 0);
+        assert_eq!(r.failures(false, &["docs/X.md"]), 1, "the working copy has the broken cite");
+        // And the other way round.
+        r.write("docs/X.md", "# X\n`kernel/src/a.rs:99@foo`\n");
+        r.git(&["add", "docs/X.md"]);
+        r.write("docs/X.md", "# X\n`kernel/src/a.rs:5@foo`\n");
+        assert_eq!(r.failures(true, &[]), 1);
+        assert_eq!(r.failures(false, &["docs/X.md"]), 0);
+
+        // A cite target resolves at its staged copy: foo moved in the
+        // working tree only (another task's uncommitted edit).
+        r.write("docs/X.md", "# X\n`kernel/src/a.rs:5@foo`\n");
+        r.git(&["add", "docs/X.md"]);
+        r.write("kernel/src/a.rs", &source_with_foo_at(25));
+        assert_eq!(r.failures(true, &[]), 0);
+        assert_eq!(r.failures(false, &["docs/X.md"]), 1);
+        // ... and a target deleted from the working tree but still staged.
+        fs::remove_file(r.0.join("kernel/src/a.rs")).unwrap();
+        assert_eq!(r.failures(true, &[]), 0);
+        r.write("kernel/src/a.rs", &source_with_foo_at(5));
+
+        // The anchor rule counts the staged new lines: an unanchored cite
+        // into NewTOS code on a staged line fails, on an unstaged one not.
+        r.write("TASK/T1.md", "# T1\n`kernel/src/a.rs:5`\n");
+        r.git(&["add", "TASK/T1.md"]);
+        assert_eq!(r.failures(true, &[]), 1);
+        r.write("TASK/T1.md", "# T1\n`kernel/src/a.rs:5@foo`\n");
+        r.git(&["add", "TASK/T1.md"]);
+        r.write("TASK/T1.md", "# T1\n`kernel/src/a.rs:5@foo`\n`kernel/src/a.rs:5`\n");
+        assert_eq!(r.failures(true, &[]), 0);
+        r.write("TASK/T1.md", "# T1\n`kernel/src/a.rs:5@foo`\n");
+
+        // Selection: the archive and dated snapshots stay out, a staged
+        // deletion is no doc to check, a name with a space is one, and so is
+        // a run's RUNINFO.TXT.
+        r.write("docs/archive/old.md", "`kernel/src/none.rs`\n");
+        r.write("docs/analysis/x-2026-10-30.md", "`kernel/src/none.rs`\n");
+        r.write("docs/with space.md", "`kernel/src/a.rs:5@foo`\n");
+        r.write("measurements/m/RUNINFO.TXT", "see `kernel/src/a.rs:6@foo`\n");
+        r.git(&["add", "-A"]);
+        r.git(&["rm", "-q", "docs/Gone.md"]);
+        assert_eq!(
+            staged_docs(&r.0, "HEAD").unwrap(),
+            ["TASK/T1.md", "docs/X.md", "docs/with space.md", "measurements/m/RUNINFO.TXT"]
+                .map(PathBuf::from)
+                .to_vec()
+        );
+        assert_eq!(r.failures(true, &[]), 0);
+        r.write("docs/with space.md", "`kernel/src/a.rs:50@foo`\n");
+        r.git(&["add", "docs/with space.md"]);
+        assert_eq!(r.failures(true, &[]), 1);
+
+        // A named file must be in the index under --staged.
+        r.write("docs/Untracked.md", "# U\n");
+        assert!(check(&r.0, "HEAD", &[PathBuf::from("docs/Untracked.md")], true)
+            .is_err_and(|e| e.contains("not in the index")));
+    }
+
+    #[test]
+    fn staged_docs_count_only_what_the_commit_introduces() {
+        let r = TempRepo::new("doc-check-legacy");
+        r.write(MEMORY_FILE, "# Memory\n\n## ADR-001: one\n");
+        r.write(ORACLE_ENV, &format!("{EMUTOS_PIN_VAR}={}\n", "0".repeat(40)));
+        r.write("kernel/src/a.rs", &source_with_foo_at(5));
+        // Legacy at HEAD: a cite beyond the end, an unanchored line cite, an
+        // unknown ADR.
+        let legacy = "# T\n`kernel/src/a.rs:99@foo`\n`kernel/src/a.rs:5`\nADR-009\n`kernel/src/a.rs:5@foo`\n";
+        r.write("TASK/T1.md", legacy);
+        r.git(&["add", "-A"]);
+        r.git(&["commit", "-q", "-m", "base"]);
+
+        // An unrelated clean edit: the legacy does not block.
+        r.write("TASK/T1.md", &format!("{legacy}Status: done\n"));
+        r.git(&["add", "TASK/T1.md"]);
+        assert_eq!(r.failures(true, &[]), 0);
+        // Without --staged the file still shows its legacy failures.
+        assert_eq!(r.failures(false, &["TASK/T1.md"]), 2, "beyond end + ADR; the unanchored one is old");
+
+        // A broken cite on a new line: rejected.
+        r.write("TASK/T1.md", &format!("{legacy}See `kernel/src/a.rs:40@foo`\n"));
+        r.git(&["add", "TASK/T1.md"]);
+        assert_eq!(r.failures(true, &[]), 1);
+        // So is an unknown ADR or an unanchored line cite on a new line.
+        r.write("TASK/T1.md", &format!("{legacy}ADR-008 `kernel/src/a.rs:6`\n"));
+        r.git(&["add", "TASK/T1.md"]);
+        assert_eq!(r.failures(true, &[]), 2);
+
+        // An unchanged line of a staged doc that the commit's code change
+        // breaks: rejected, like in a doc the commit leaves alone.
+        r.write("TASK/T1.md", &format!("{legacy}Status: done\n"));
+        r.write("kernel/src/a.rs", &source_with_foo_at(20));
+        r.git(&["add", "TASK/T1.md", "kernel/src/a.rs"]);
+        assert_eq!(r.failures(true, &[]), 1);
+
+        // A doc added in this commit: every line is new, its errors count.
+        r.git(&["reset", "-q", "kernel/src/a.rs"]);
+        r.write("TASK/T2.md", "`kernel/src/a.rs:99@foo`\n");
+        r.git(&["add", "TASK/T2.md"]);
+        assert_eq!(r.failures(true, &[]), 1);
+    }
+
+    #[test]
+    fn staged_code_breaking_an_untouched_doc_is_caught() {
+        let r = TempRepo::new("doc-check-introduced");
+        r.write(MEMORY_FILE, "# Memory\n\n## ADR-001: one\n\n## ADR-002: two\n");
+        r.write(ORACLE_ENV, &format!("{EMUTOS_PIN_VAR}={}\n", "0".repeat(40)));
+        r.write("kernel/src/a.rs", &source_with_foo_at(5));
+        r.write("kernel/src/b.rs", &source_with_foo_at(5));
+        // Clean cites into a.rs and b.rs, a bare one, and backlog: a cite
+        // into a.rs already broken at HEAD.
+        r.write("docs/X.md", "`kernel/src/a.rs:5@foo` `a.rs:6@foo` `kernel/src/a.rs:99`\n");
+        r.write("TASK/T1.md", "`kernel/src/b.rs:5@foo` [b](../kernel/src/b.rs) ADR-002\n");
+        r.git(&["add", "-A"]);
+        r.git(&["commit", "-q", "-m", "base"]);
+
+        // Backlog alone does not reject a code commit.
+        r.write("kernel/src/a.rs", &(source_with_foo_at(5) + "\n"));
+        r.git(&["add", "kernel/src/a.rs"]);
+        assert_eq!(r.failures(true, &[]), 0);
+
+        // A staged move of foo breaks both a.rs cites of the unstaged doc.
+        r.write("kernel/src/a.rs", &source_with_foo_at(20));
+        r.git(&["add", "kernel/src/a.rs"]);
+        assert_eq!(r.failures(true, &[]), 2);
+        // The same move only in the working tree: not this commit's.
+        r.git(&["reset", "-q", "kernel/src/a.rs"]);
+        assert_eq!(r.failures(true, &[]), 0);
+
+        // A staged deletion breaks the link to b.rs. (The span cite into it
+        // is skipped here: it could also live under the absent reference
+        // trees.)
+        r.git(&["rm", "-q", "--cached", "kernel/src/b.rs"]);
+        assert_eq!(r.failures(true, &[]), 1);
+        r.git(&["add", "kernel/src/b.rs"]);
+
+        // A removed ADR heading breaks its cites.
+        r.write(MEMORY_FILE, "# Memory\n\n## ADR-001: one\n");
+        r.git(&["add", MEMORY_FILE]);
+        assert_eq!(r.failures(true, &[]), 1);
     }
 
     #[test]
