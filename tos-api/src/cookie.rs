@@ -218,12 +218,12 @@ pub fn del(tag: u32) -> bool {
 /// present; the Atari-hardware cookies (`_VDO`/`_SND`/`_FDC`/`_FPU`/`_CPU`)
 /// are deliberately omitted (ADR-012 amendment 2026-10-28; `_VDO` is open
 /// until TASK/ARCH06's measurement is decided). `_MCH` is fixed by that
-/// amendment ([`MCH_NOHARD`]) and `EdDI` by spec decision E2
-/// ([`EDDI_MARKER`]); `_IDT` and `_AKP` are bring-up policy.
+/// amendment ([`MCH_NOHARD`]), `EdDI` by spec decision E2 ([`EDDI_MARKER`]),
+/// `_IDT` (= the oracle's) and `_AKP` (stays 0) by user decision TASK/COOK02.
 pub fn seed_defaults(version: u32) {
     set(NTOS, version); // NewTOS identity + version
     set(MCH, MCH_NOHARD); // machine id: EmuTOS MCH_NOHARD, no Atari hardware
-    set(IDT, 0x0000_112F); // date/time: '/' sep, DD-MM-YY, 24-hour
+    set(IDT, 0x0000_112E); // '.' sep, DD-MM-YY, 24 h = oracle; NEWDESK's date sep (COOK02)
     set(AKP, 0x0000_0000); // keyboard language: US
     set(EDDI, EDDI_MARKER); // VDI answers vq_scrninfo; marker, no dispatcher (E2)
 }

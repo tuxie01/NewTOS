@@ -412,7 +412,7 @@ Seeded by `tos_api::cookie::seed_defaults` (`kernel/src/lib.rs`):
 |--------|--------------|---------|
 | `NTOS` | `0x00000100` | NewTOS identity + version 0x100 |
 | `_MCH` | `0xFFFFFFFF` | machine id — EmuTOS `MCH_NOHARD`, "no ST-compatible hardware" (ADR-012 amendment 2026-10-28; until TASK/ARCH06 `0x00050000`, the ARAnyM id) |
-| `_IDT` | `0x0000112F` | date/time format: `/` separator, DD-MM-YY, 24-hour |
+| `_IDT` | `0x0000112E` | date/time format: `.` separator, DD-MM-YY, 24-hour — the pinned oracle's value (user decision 2026-10-30, TASK/COOK02; until then `0x0000112F`, `/`) |
 | `_AKP` | `0x00000000` | keyboard/language: US |
 
 Seeded by `seed_defaults` (`tos-api/src/cookie.rs:223-229@seed_defaults`) with **no hardware

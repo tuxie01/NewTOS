@@ -1140,8 +1140,8 @@ als `desk::dosbind::dos_getcookie` (seit DESK43 U6b `newtos_gem::gemdos::dos_get
 `x0` zurueckkommt und kein Zeiger durch den Trap geht — die Zeigerform schreibt
 mit einem unprivilegierten `sttr` und faellt auf einer Kernadresse.
 Gemessen und festgenagelt: `tos-api/tests/gemdos_ssystem_idt_cookie.rs`
-(`_IDT = 0x0000112F`), und auf dem Brett
-`[desk13] _IDT = 0x112f via Ssystem(S_GETCOOKIE)`.
+(heute `_IDT = 0x0000112E`, seit COOK02), und auf dem Brett, damals noch mit
+`0x112F`: `[desk13] _IDT = 0x112f via Ssystem(S_GETCOOKIE)`.
 
 `G.g_idt` (`deskbind.h:183`) wird aufgefrischt, wo EmuTOS es auffrischt — in
 `do_wredraw` (`desksupp.c:219`) — und zusaetzlich einmal beim Desktopstart,
@@ -1172,6 +1172,11 @@ Textansicht `23/09/26 18:55` und der Show-Info-Kasten `23/09/2026 18:55` —
 gemessen, `measurements/measurement-2026-09-23-desk13/screendumps/c-text.png` und
 `e-showinfo.png`. Vorher waren es `09-23-26` und `09/23/2026`, also zwei
 verschiedene Antworten auf dieselbe Frage.
+
+Nachtrag COOK02 (Anwenderentscheidung 2026-10-30, `TASK/COOK02.md`): `_IDT` ist
+jetzt `0x112E` (24H, DMY, `.`), gleich dem Orakel. Nach derselben Regel druckt
+die Textansicht dann `23.09.26 18:55` und der Show-Info-Kasten
+`23.09.2026 18:55` — abgeleitet aus `DateFmt::rendered`, nicht neu gemessen.
 
 ### Nachtrag zur DESK02-Tabelle oben
 

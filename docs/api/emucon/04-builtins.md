@@ -427,7 +427,8 @@ Uhrzeitformat = Bit 12 (`0` = 12 h mit `am`/`pm`, sonst 24 h mit `"  "`,
 1980 + `date>>9`, Monat `(date>>5)&0x0f`, Tag `date&0x1f`), dann
 `"  %02d:%02d:%02d%s  "` (Stunde `time>>11`, Minute `(time>>5)&0x3f`,
 Sekunde `(time&0x1f)<<1`). 12 h: Stunde ≥ 13 → -12, Stunde 0 → 12.
-NewTOS setzt `_IDT = 0x112F` (`tos-api/src/cookie.rs:224`): `/`, DMY, 24 h.
+NewTOS setzt `_IDT = 0x112E` (`tos-api/src/cookie.rs:226@IDT`; seit COOK02, vorher
+`0x112F`): `.`, DMY, 24 h.
 
 ## 5. Pruefauftrag
 

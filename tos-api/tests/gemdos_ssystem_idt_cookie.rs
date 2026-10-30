@@ -21,15 +21,18 @@
 //! 1. the call answers with the cookie **value in `x0`** when `arg2` is 0
 //!    (the desktop cannot use the pointer form: `s_getcookie` stores through an
 //!    unprivileged `sttr`, which faults on a kernel address); and
-//! 2. the seeded `_IDT` is `0x0000112F` — `docs/api/bios/_cookie-jar.md:137`,
+//! 2. the seeded `_IDT` is `0x0000112E` — `docs/api/bios/_cookie-jar.md:137`,
 //!    `tos-api/src/cookie.rs` `seed_defaults` — i.e. **24-hour, day-before-
-//!    month, `/` separator**.
+//!    month, `.` separator**, the pinned oracle's value (`tosdump/cases/jar-r1.tsv`
+//!    case 53; user decision 2026-10-30, `TASK/COOK02.md`).
 //!
 //! Point 2 is the ground truth behind DESK13's date decision: `_IDT` says DMY
-//! and `/`, and the desktop's text view used to print MDY with a dash. The
-//! resolution rule now lives in exactly one place
+//! (and, since COOK02, `.`), and the desktop's text view used to print MDY with
+//! a dash. The resolution rule now lives in exactly one place
 //! (`programs/desktop/src/model.rs`'s `DateFmt::rendered`/`TimeFmt::rendered`), and
-//! it reads the word this test pins.
+//! it reads the word this test pins: with the date preference "Standard"
+//! (`DateFmt::Idt`) NEWDESK takes the separator from `_IDT`, so its file list
+//! shows `.` like EmuTOS on the oracle.
 
 use std::sync::{Mutex, Once};
 
@@ -108,12 +111,12 @@ fn the_desktop_reads_idt_through_ssystem_and_gets_the_seeded_word() {
     rig();
 
     let idt = dos_getcookie(IDT_TAG).expect("_IDT is seeded at boot");
-    assert_eq!(idt, 0x0000_112F, "docs/api/bios/_cookie-jar.md:137");
+    assert_eq!(idt, 0x0000_112E, "docs/api/bios/_cookie-jar.md:137");
 
     // The three fields the desktop's `Default` buttons defer to.
     assert_eq!(idt & IDT_TMASK, IDT_24H, "_IDT says 24-hour");
     assert_eq!(idt & IDT_DMASK, IDT_BIT_DM, "_IDT says day before month (DDMMYY)");
-    assert_eq!((idt & IDT_SMASK) as u8, b'/', "_IDT's separator is '/'");
+    assert_eq!((idt & IDT_SMASK) as u8, b'.', "_IDT's separator is '.'");
 }
 
 #[test]

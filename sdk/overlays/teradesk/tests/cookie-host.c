@@ -70,7 +70,7 @@ struct ck { const char *name; uint32_t tag, value; };
 static const struct ck in_jar[] = {
 	{ "NTOS", 0x4E544F53u, 0x00000100u },   /* slot 0 even */
 	{ "_MCH", 0x5F4D4348u, 0x00050000u },   /* slot 1 odd  */
-	{ "_IDT", 0x5F494454u, 0x0000112Fu },   /* slot 2 even */
+	{ "_IDT", 0x5F494454u, 0x0000112Eu },   /* slot 2 even */
 	{ "_AKP", 0x5F414B50u, 0x00000000u },   /* slot 3 odd, value 0 */
 	{ "EdDI", 0x45644449u, 0x00000001u },   /* slot 4 even */
 	{ "Z0Z0", 0x5A305A30u, 0x00000000u },   /* slot 5 odd, value 0 */

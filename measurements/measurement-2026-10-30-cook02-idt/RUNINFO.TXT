@@ -1,0 +1,88 @@
+measurement-2026-10-30-cook02-idt -- COOK02 point 3: NewTOS seeds _IDT = 0x112E ('.', DD-MM-YY,
+24 h), the pinned oracle's value
+=====================================================================================================
+Developer, TASK/COOK02 ("Anwenderentscheidung 2026-10-30", point 3), 2026-10-30 (host clock CET).
+Tree: main at a8d875a7 plus the uncommitted COOK02 _IDT change. QEMU raspi4b headless, -append
+serial=on (through the TOOL09 runner); one qemu-virt boot check. No hardware, no real card, nothing
+flashed. Not committed.
+
+WHAT / WHY
+  Before: tos-api/src/cookie.rs:226@IDT seeded _IDT = 0x0000112F ('/' separator, DD-MM-YY, 24 h),
+  commented as "bring-up policy". The oracle (EmuTOS 1a7484ab, COUNTRY=de, Hatari NVRAM) has
+  0x0000112E ('.'); jar-r1 case 53 was OPEN in docs/COMPATIBILITY.md
+  (docs/analysis/cook02-country-facts-2026-10-30.md section 4: the separator byte is the only
+  difference).
+  Decision (TASK/COOK02.md, user 2026-10-30, point 3): NEWDESK takes its date separator from _IDT
+  when the date preference is "Standard" (programs/desktop/src/model.rs:194-201@rendered, like
+  EmuTOS references/emutos/desk/deskinf.c:140-145), so NewTOS seeds the oracle's 0x112E.
+  Change: one value in seed_defaults (and its comments); _AKP untouched (stays 0, case 52 ACCEPTED).
+  Host test tos-api/tests/gemdos_ssystem_idt_cookie.rs now asserts 0x0000112E and separator '.';
+  the synthetic jars of sdk/cflib/tests/cookie-host.c and sdk/overlays/teradesk/tests/cookie-host.c
+  carry the new value.
+
+INPUTS
+  ROM / Hatari   not run here: the EmuTOS side is the committed references
+                 tosdump/reference/EMUTOS-1a7484ab-BIOS-jar{,-falcontc,-disk}.BIN (TOOL18; the three
+                 named in docs/COMPATIBILITY.md "Cookie jar vs. the oracle"),
+                 EMUTOS-1a7484ab-BIOS{,-falcontc}.BIN, EMUTOS-1a7484ab-XBIOS-system{,-falcontc}.BIN
+  QEMU           -M raspi4b, -append serial=on (tables); -M virt (boot check)
+  TABLES         tosdump/cases/jar-r1.tsv     7b56cf55a2a5e2168330a3c71664bac137afd4eb08c5f28ad54425309d202c2d
+                 tosdump/cases/bios-r1.tsv    231f2dfe73e5a80628167b216a66fe6475992b9b3a692b9025a92e8d6f3b2bf8
+                 tosdump/cases/xbios-system-r1.tsv
+                                              22c32ade8aed0ae5b8eced87ec21de4a14b3e4570bf91f4fe886e3e76b59241d
+                 (all unchanged)
+  KERNELS (gitignored/scratch)
+    before   rpi4 release kernel8.img 40c86f45783c95243f08b932436eb37018041ed5fcccbce43bfeb6beeb14bebb
+             `git archive a8d875a7` extracted into scratch, built by the TOOL09 runner (--tree);
+             DUMPBIOS.NAP 71b904be78a306a02566a1fba5f625678df496d9fa57632be8e462174911470f
+    after    rpi4 release kernel8.img 3fa112d936a8182318ce21c0ebdf5a468ce99676cd7ba96f22d025918e6068af
+             this tree with the COOK02 change, built by the runner (a later
+             `cargo xtask build --board rpi4 --release` gives the same file);
+             DUMPBIOS.NAP 9a5865c7923370d02b28e6718d408045e254c3c9d4ef472ed1c51fd701e21a91
+             (tosdump/core unchanged; the NAPs differ by the SDK build per tree)
+    after    qemu-virt release kernel.img b3772764aefe3444e4f7a55e79db0c5fd11fcde5a837f0f8c779d84ef168988c
+             fresh build through `cargo xtask run --board qemu-virt --release --headless`
+
+CARDS / IMAGES
+  Every raspi4b card from tools/mkcard.sh (inside the TOOL09 runner), one per run, booted as an APFS
+  clone, card and clone deleted after the run. Manifests copied into each run dir
+  (runs/<before|after>-<table>/card.img.manifest), 6 in all; their optional_missing line, verbatim,
+  all identical:
+    optional_missing none
+  Card sha256 before/after the boot: runs/*/tosdump-run.txt ("card", "card after the run").
+  qemu-virt boots no image (the board has no block device; the embedded NEWDESK).
+
+METHOD (method/)
+  newtos-tables.sh before|after <s> <runs> [<tree>]
+                        jar-r1 vs the three jar references, bios-r1 and xbios-system-r1 vs tt and
+                        falcontc, through `cargo xtask tosdump bios` (TOOL09)
+  compare.sh <runs>     differing cases before/after per table and reference -> runs/before-after.txt
+  decode                runs/<side>-jar-r1/decoded.txt by the TOOL18 decoder, run as it is:
+                        python3 -I measurements/measurement-2026-10-29-tool18/method/decode-jar.py
+                        <BIOS.BIN> tosdump/cases/jar-r1.tsv
+  boot-virt.sh <log>    the qemu-virt boot check -> runs/BOOT-NEWTOS-qemu-virt-after/SERIAL.txt (the
+                        QEMU part of the log, from "xtask: launching QEMU")
+
+RESULTS
+  1. jar-r1 (runs/before-after.txt, runs/<side>-jar-r1/decoded.txt):
+       case 53 jar:_IDT   before 0x0000112F   after 0x0000112E   = oracle tt, falcontc, disk
+       before 15 of 22 differ against each of the three references, after 14 of 22; the one case that
+       became equal is 53, no case newly differs. decoded.txt before vs after: only the _IDT line (and
+       the dumper's build id, ---- vs a8d8) differ.
+  2. No-regression tables (runs/before-after.txt): no newly differing case, no case newly equal.
+       bios-r1          tt 32 of 147, falcontc 37 of 147 (before = after, same case numbers)
+       xbios-system-r1  tt 9 of 43 (68-76), falcontc 9 of 43 (68-76) (before = after)
+  3. Every raspi4b run ended with "desktop up after DUMPBIOS.NAP, rc=0" -- the after kernel boots to
+     the desktop on raspi4b (runs/after-*/BOOT-SERIAL.txt: "[desk] desktop up (1 drives)").
+  4. qemu-virt (runs/BOOT-NEWTOS-qemu-virt-after/SERIAL.txt): "[desk] desktop up (0 drives)" within 10 s of
+     starting `cargo xtask run` (build cached); QEMU stopped by the script, none left running.
+  Not measured: the desktop's rendered date with the new separator (NEWDESK text view / Show Info
+  with the "Standard" preference); derived from DateFmt::rendered, left to the Tester.
+
+FILES
+  method/  newtos-tables.sh, compare.sh, boot-virt.sh
+  runs/    <before|after>-<jar-r1|bios-r1|xbios-system-r1>/ (the runner's out-dir; jar-r1 also
+           decoded.txt), before-after.txt, BOOT-NEWTOS-qemu-virt-after/SERIAL.txt
+  Kernels, cards, the before tree and scratch were in the session scratchpad and are deleted; sha256
+  above. BIOS.BIN files under runs/ are gitignored (*.bin). manifest.sha256 covers every file of this
+  run except itself.

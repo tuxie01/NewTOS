@@ -1,0 +1,49 @@
+EMUTOS-1a7484ab-BIOS-jar.BIN vs NEWTOS.BIN -- area BIOS, 22 cases from jar-r1.tsv
+
+case 41  jar *  the jar: count and tag order -- bios/machine.c:665-798
+    jar                      EXACT   EMUTOS-1a7484ab-BIOS-jar.BIN = 12: _CPU _VDO _FPU _MCH _SWI _SND _FRB _AKP _IDT _FDC XHDI SCSI
+                                     NEWTOS.BIN                   = 5: NTOS _MCH _IDT _AKP EdDI
+
+case 44  jar _CPU  _CPU processor, mcpu -- bios/machine.c:673
+    cookie                   EXACT   EMUTOS-1a7484ab-BIOS-jar.BIN = 0x0000001E   NEWTOS.BIN                   = absent
+
+case 45  jar _VDO  _VDO video shifter -- bios/machine.c:684-685
+    cookie                   EXACT   EMUTOS-1a7484ab-BIOS-jar.BIN = 0x00020000   NEWTOS.BIN                   = absent
+
+case 46  jar _FPU  _FPU fputype -- bios/machine.c:689
+    cookie                   EXACT   EMUTOS-1a7484ab-BIOS-jar.BIN = 0x00060000   NEWTOS.BIN                   = absent
+
+case 47  jar _MCH  _MCH machine, setvalue_mch -- bios/machine.c:693-694
+    cookie                   EXACT   EMUTOS-1a7484ab-BIOS-jar.BIN = 0x00020000   NEWTOS.BIN                   = 0xFFFFFFFF
+
+case 48  jar _SWI  _SWI dip switches, has_dip_switches -- bios/machine.c:702-706
+    cookie                   EXACT   EMUTOS-1a7484ab-BIOS-jar.BIN = 0x000000BF   NEWTOS.BIN                   = absent
+
+case 49  jar _SND  _SND sound bitmap -- bios/machine.c:718-719
+    cookie                   EXACT   EMUTOS-1a7484ab-BIOS-jar.BIN = 0x00000003   NEWTOS.BIN                   = absent
+
+case 50  jar _FRB  _FRB 64k ST-RAM buffer, with alt RAM -- bios/machine.c:478
+    cookie                   PTR_RAM NEWTOS.BIN                   = not in the jar
+
+case 52  jar _AKP  _AKP keyboard/language, NVRAM or country -- bios/machine.c:741-
+    cookie                   EXACT   EMUTOS-1a7484ab-BIOS-jar.BIN = 0x00000100   NEWTOS.BIN                   = 0x00000000
+
+case 53  jar _IDT  _IDT date/time format -- bios/machine.c:760-761
+    cookie                   EXACT   EMUTOS-1a7484ab-BIOS-jar.BIN = 0x0000112E   NEWTOS.BIN                   = 0x0000112F
+
+case 54  jar _FDC  _FDC floppy controller -- bios/machine.c:774-775
+    cookie                   EXACT   EMUTOS-1a7484ab-BIOS-jar.BIN = 0x01415443   NEWTOS.BIN                   = absent
+
+case 56  jar XHDI  XHDI handler entry (ROM code) -- bios/machine.c:785-787
+    cookie                   NONZERO NEWTOS.BIN                   = not in the jar
+
+case 57  jar SCSI  SCSI scsidriv_root -- bios/machine.c:789-791
+    cookie                   PTR_RAM NEWTOS.BIN                   = not in the jar
+
+case 67  jar NTOS  NTOS NewTOS identity -- ADR-012, docs/MEMORY.md
+    cookie                   ABSENT NEWTOS.BIN                   = 0x00000100, present
+
+case 68  jar EdDI  EdDI marker, spec E2 -- docs/api/vdi/eddi-vq_scrninfo.md
+    cookie                   ABSENT NEWTOS.BIN                   = 0x00000001, present
+
+15 of 22 cases differ

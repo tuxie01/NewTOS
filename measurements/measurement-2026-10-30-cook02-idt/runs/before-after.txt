@@ -1,0 +1,35 @@
+jar-r1 vs EMUTOS-1a7484ab-BIOS-jar-disk
+  before (a8d875a7): 41 44 45 46 47 48 49 50 52 53 54 56 57 67 68 
+  after  (COOK02):  41 44 45 46 47 48 49 50 52 54 56 57 67 68 
+  newly differing:   
+  now equal:         53 
+jar-r1 vs EMUTOS-1a7484ab-BIOS-jar-falcontc
+  before (a8d875a7): 41 44 45 46 47 48 49 50 52 53 54 56 57 67 68 
+  after  (COOK02):  41 44 45 46 47 48 49 50 52 54 56 57 67 68 
+  newly differing:   
+  now equal:         53 
+jar-r1 vs EMUTOS-1a7484ab-BIOS-jar
+  before (a8d875a7): 41 44 45 46 47 48 49 50 52 53 54 56 57 67 68 
+  after  (COOK02):  41 44 45 46 47 48 49 50 52 54 56 57 67 68 
+  newly differing:   
+  now equal:         53 
+bios-r1 vs EMUTOS-1a7484ab-BIOS-falcontc
+  before (a8d875a7): 70 87 93 94 105 128 129 178 179 183 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235 
+  after  (COOK02):  70 87 93 94 105 128 129 178 179 183 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235 
+  newly differing:   
+  now equal:         
+bios-r1 vs EMUTOS-1a7484ab-BIOS
+  before (a8d875a7): 70 93 94 105 128 129 178 179 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235 
+  after  (COOK02):  70 93 94 105 128 129 178 179 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235 
+  newly differing:   
+  now equal:         
+xbios-system-r1 vs EMUTOS-1a7484ab-XBIOS-system-falcontc
+  before (a8d875a7): 68 69 70 71 72 73 74 75 76 
+  after  (COOK02):  68 69 70 71 72 73 74 75 76 
+  newly differing:   
+  now equal:         
+xbios-system-r1 vs EMUTOS-1a7484ab-XBIOS-system
+  before (a8d875a7): 68 69 70 71 72 73 74 75 76 
+  after  (COOK02):  68 69 70 71 72 73 74 75 76 
+  newly differing:   
+  now equal:         

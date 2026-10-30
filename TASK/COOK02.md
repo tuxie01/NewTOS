@@ -45,3 +45,11 @@ Status: **GEPARKT** 2026-10-30 (Anwender; wieder aufnehmen, wenn ein Port es bra
 4. Nebenbefunde (ungenaue Texte "low word = language") nach [SPEC02](SPEC02.md);
    Warnung zu `references/emutos` in `CLAUDE.md`.
 
+## Stand 2026-10-30 (Punkt 3 umgesetzt)
+
+`_IDT` = `0x0000112E` (`tos-api/src/cookie.rs:226@IDT`); `jar-r1` Fall 53 gleich
+allen drei Orakel-Referenzen, sonst keine Aenderung in `jar-r1`, `bios-r1`,
+`xbios-system-r1`. Beleg `measurements/measurement-2026-10-30-cook02-idt/RUNINFO.TXT`.
+Hosttests 1895/0/1. Das sichtbare Datum im Desktop ist nicht gemessen
+(abgeleitet aus `programs/desktop/src/model.rs:194@rendered`).
+

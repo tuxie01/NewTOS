@@ -34,7 +34,7 @@ struct jar_entry { unsigned long tag; long value; };
 static const struct jar_entry jar[] = {
 	{ 0x4E544F53UL, 0x00000100L },  /* NTOS */
 	{ 0x5F4D4348UL, 0xFFFFFFFFL },  /* _MCH: MCH_NOHARD, zero-extended as Getcookie returns it */
-	{ 0x5F494454UL, 0x0000112FL },  /* _IDT */
+	{ 0x5F494454UL, 0x0000112EL },  /* _IDT */
 	{ 0x5F414B50UL, 0x00000000L },  /* _AKP */
 	{ 0x45644449UL, 0x00000001L },  /* EdDI */
 };
@@ -120,7 +120,7 @@ int main(void)
 
 	case_found("NTOS", 0x4E544F53UL, 0x00000100L);
 	case_found("_MCH", 0x5F4D4348UL, 0xFFFFFFFFL);
-	case_found("_IDT", 0x5F494454UL, 0x0000112FL);
+	case_found("_IDT", 0x5F494454UL, 0x0000112EL);
 	case_found("_AKP", 0x5F414B50UL, 0x00000000L);
 	case_found("EdDI", 0x45644449UL, 0x00000001L);
 

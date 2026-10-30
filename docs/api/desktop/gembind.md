@@ -339,9 +339,11 @@ so the value comes back in `x0`: the pointer form stores through an
 unprivileged `sttr` (`tos-api/src/gemdos/ssystem.rs`), which faults on a kernel
 address, and is therefore closed to a kernel-context caller. The consequence is
 that a cookie whose value has bit 31 set cannot be told from the error return —
-nominal for `_IDT` (`0x0000112F`), and stated at the binding.
+nominal for `_IDT` (`0x0000112E` since COOK02, before that `0x0000112F`), and
+stated at the binding.
 
-Pinned by `tos-api/tests/gemdos_ssystem_idt_cookie.rs`; measured on the board as
+Pinned by `tos-api/tests/gemdos_ssystem_idt_cookie.rs`; measured on the board,
+with the value before COOK02, as
 `[desk13] _IDT = 0x112f via Ssystem(S_GETCOOKIE)`
 (`measurements/measurement-2026-09-23-desk13/serial/`).
 
