@@ -1,6 +1,6 @@
 # XBIOS04 — `Ikbdws` ist ein No-op: IKBD-Kommandos erzeugen keine Antwortpakete
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher (Umfang entscheiden), danach Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`
+Status: **OFFEN** (entschieden 2026-10-30: Option 1 + Warnung) · Prioritaet: **P2** · Typ: Developer (nach Researcher-Note) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`
 
 ## Sachverhalt
 
@@ -43,3 +43,47 @@ Status: **OFFEN** · Prioritaet: **P2** · Typ: Researcher (Umfang entscheiden),
 - Kein vorher gleicher Fall in `bios-r1.tsv`, `bios-core-r1.tsv`, `xbios-chardev-r1.tsv`, `xbios-system-r1.tsv` weicht neu ab.
 - `cargo xtask test` gruen.
 - `docs/STATUS.md` und Spec im selben Commit; `cargo xtask doc-check` der geaenderten Doku 0 Fehler.
+
+## Entscheidung (Anwender, 2026-10-30)
+
+Grundlage: `docs/analysis/xbios04-ikbdws-scope-2026-10-30.md`.
+
+1. **Option 1:** `Ikbdws` bleibt No-op. Eintrag in `docs/COMPATIBILITY.md`:
+   IKBD-Kommandos werden nicht interpretiert, es gibt keine Antwortpakete;
+   `statvec`/`clockvec`/`joyvec` werden nach ADR-031 / [XBIOS03](XBIOS03.md)
+   nicht gerufen. W01–W04 **ACCEPTED**.
+2. **Warnung einmal je Prozess** fuer `Ikbdws` und `Bconout(4,c)` — dieselbe
+   Warnung "IKBD commands ignored" (ADR-031 "never silent"), ueber die
+   Warnschlange von `tos-api/src/bdos/process/hooks.rs@note`.
+3. Neues Ticket [INPUT04](INPUT04.md) (P3): Paketlaenge 0xF6 im Dekoder; vor
+   jedem Interpreter oder Antwortpaket zu beheben.
+
+## Lokalisierung Bconout(4) (Lead, 2026-10-30)
+
+- `bconout4` (`references/emutos/bios/ikbd.c`) → `tos-api/src/bios/chardev.rs@bconout`
+  (`IkbdPort`, `mapping.tsv` `mapped`, verwirft und liefert 1, BIOS04).
+- `--down`: `ikbd_writeb` (`design:hardware:ikbd-acia`), `bcostat4` `mapped`.
+  Vollstaendig: ja.
+- `--up` (Schichten bios/bdos): `bconout`, `biostrap`, `xauxout`, `xprtout`,
+  `xconout`, `xconws`, `xconrs`, `xconin`, `xnecin`, `xrawio`, `conout`,
+  `conin`, `cookdout`, `cgets`, `conbrk`, `backsp`, `enter`, `newline`,
+  `prt_line`, `tabout`, `osif`. `unmapped`: keine. Vollstaendig: ja.
+
+## Arbeit (Developer, nach Entscheidung)
+
+1. Warnung "IKBD commands ignored" einmal je Prozess aus `ikbdws` und aus
+   `IkbdPort::bconout` (`Bconout(4,c)`), gleicher Warnschluessel fuer beide.
+   Verhalten sonst unveraendert (`Ikbdws` → 0, `Bconout(4)` → 1).
+2. `docs/COMPATIBILITY.md`-Eintrag (Punkt 1), Spec `docs/api/xbios/19-ikbdws.md`
+   und `docs/api/bios/03-bconout.md` (IKBD-Teil) nachziehen; ADR-031-Bezug.
+3. Hosttest: Warnung genau einmal je Prozess fuer beide Wege, kein zweites Mal
+   nach weiterem Aufruf; neuer Prozess warnt wieder.
+4. `mapping.tsv` Zeilen `ikbdws`, `bconout4` nachziehen (Ratsche).
+
+## Abnahme (Anwender, 2026-10-30)
+
+- Hosttest gruen.
+- Kein vorher gleicher Fall in `bios-r1.tsv`, `bios-core-r1.tsv`,
+  `xbios-chardev-r1.tsv`, `xbios-system-r1.tsv` weicht neu ab.
+- W01–W04 ACCEPTED mit COMPATIBILITY-Eintrag.
+
