@@ -121,6 +121,7 @@ snipdnd	bdos/fsdir.c	-	-	unmapped	EmuTOS caches directory nodes (DND tree) in OS
 unpackit	bdos/fsdir.c	tos-api/src/bdos/fs/dir.rs	fcb_name	mapped	NAME.EXT to the 11-byte name
 update_fcb	bdos/fsdir.c	tos-api/src/bdos/fs/file.rs	flush_ofd	mapped	write an open file's directory entry back
 xchdir	bdos/fsdir.c	tos-api/src/bdos/fs/dirops.rs	dsetpath	mapped	Dsetpath 0x3B
+xchdir	bdos/fsdir.c	tos-api/src/bdos/fs/curdir.rs	set_curdir	mapped	its dirtbl half: olddir judged before the new slot is taken, a stale byte (slot freed by freetree) is the root ckdrv repairs it to and drops nothing (FS28)
 xchmod	bdos/fsdir.c	tos-api/src/bdos/fs/file.rs	fattrib	mapped	Fattrib 0x43
 xgetdir	bdos/fsdir.c	tos-api/src/bdos/fs/dirops.rs	dgetpath	mapped	Dgetpath 0x47
 xgsdtof	bdos/fsdir.c	tos-api/src/bdos/fs/file.rs	fdatime	mapped	Fdatime 0x57

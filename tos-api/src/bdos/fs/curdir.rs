@@ -216,16 +216,24 @@ fn decr(idx: u8) {
     s.uses = s.uses.saturating_sub(1);
 }
 
-/// `Dsetpath`'s store (`bdos/fsdir.c:1140-1151`): make `path` (canonical
-/// `\A\B`, empty = root) the current directory of `drive` in `run`'s PD — a
-/// use of the new slot first, then the old one dropped. `false` (and `run`
-/// unchanged) for a drive beyond `p_curdir[]`, a path longer than
-/// [`PATH_MAX`] - 1, or a full table (EmuTOS's `EINTRN`, which `xchdir` turns
-/// into `EPTHNF`).
+/// `Dsetpath`'s store (`bdos/fsdir.c:1129-1151`): make `path` (canonical
+/// `\A\B`, empty = root) the current directory of `drive` in `run`'s PD — the
+/// old slot noted first, a use of the new slot taken, then the old dropped.
+/// The old byte is judged **before** the new slot is taken (`olddir` read
+/// before `findit`, `:1129-1134`): a stale byte (its slot freed by
+/// [`free_drive`]) is the root `ckdrv` repairs it to (`bdos/fsdrive.c:121-130`)
+/// and drops nothing, even when `incr` reuses that index (TASK/FS28).
+/// `false` (and `run` unchanged) for a drive beyond `p_curdir[]`, a path
+/// longer than [`PATH_MAX`] - 1, or a full table (EmuTOS's `EINTRN`, which
+/// `xchdir` turns into `EPTHNF`).
 pub fn set_curdir(drive: u16, path: &str) -> bool {
     if drive as usize >= NUMCURDIR || path.len() >= PATH_MAX {
         return false;
     }
+    let pd = run_pd();
+    // SAFETY: as in `current_drive`; a byte load from that PD.
+    let old = unsafe { (*pd).p_curdir[drive as usize] };
+    let old_live = live(old, drive).is_some();
     let new = if path.is_empty() {
         0
     } else {
@@ -234,14 +242,9 @@ pub fn set_curdir(drive: u16, path: &str) -> bool {
             None => return false,
         }
     };
-    let pd = run_pd();
     // SAFETY: as in `current_drive`; a byte store into that PD.
-    let old = unsafe {
-        let old = (*pd).p_curdir[drive as usize];
-        (*pd).p_curdir[drive as usize] = new;
-        old
-    };
-    if live(old, drive).is_some() {
+    unsafe { (*pd).p_curdir[drive as usize] = new };
+    if old_live {
         decr(old);
     }
     true

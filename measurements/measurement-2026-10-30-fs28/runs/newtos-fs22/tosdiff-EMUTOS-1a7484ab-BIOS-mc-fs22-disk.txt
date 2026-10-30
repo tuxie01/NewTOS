@@ -1,0 +1,5 @@
+profile check, EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN: hatari-oracle disk (tosdump/profiles.tsv), x: = .PRG, as its LOG EMUTOS-1a7484ab-BIOS-mc-fs22-disk.LOG records
+profile check, NEWTOS.BIN: xtask-tosdump disk (tosdump/profiles.tsv), x: = .NAP, as its LOG NEWTOS.LOG records
+EMUTOS-1a7484ab-BIOS-mc-fs22-disk.BIN vs NEWTOS.BIN -- area BIOS, 13 cases from gemdos-mc-fs22.tsv
+
+0 of 13 cases differ

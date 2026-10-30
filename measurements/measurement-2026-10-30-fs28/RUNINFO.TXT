@@ -1,0 +1,117 @@
+measurement-2026-10-30-fs28 -- FS28: Dsetpath after a re-login sets the path (gemdos-mc-fs24 87, 118, 150)
+=========================================================================================================
+Developer, TASK/FS28, 2026-10-30 (host clock CET). Base HEAD ec9e260f (clean tree). QEMU raspi4b
+(headless, -append serial=on, via cargo xtask tosdump) and qemu-virt (headless boot). No hardware, no
+real card, nothing flashed. Not committed (the lead commits).
+
+WHAT / WHY
+  TASK/FS24 finding N1 (measurements/measurement-2026-10-29-fs24/RUNINFO.TXT): after a media change,
+  Dsetpath(C:\SUB) meets the change, C: is logged in again, the call restarts and returns E_OK, but
+  the next Dgetpath answers "" (the root); the oracle answers "\SUB" (gemdos-mc-fs24 cases 87, 118,
+  150).
+
+CAUSE (proven by host test against HEAD, see HOST TESTS)
+  set_curdir (tos-api/src/bdos/fs/curdir.rs:229@set_curdir, HEAD :225) took the slot for the new
+  path first (incr: the first free slot) and only then judged the PD's old byte with live(). After a
+  re-login free_drive (tos-api/src/bdos/fs/curdir.rs:335@free_drive) has emptied the slot the byte
+  names but left the byte; incr hands out that same index again, live(old) is now true, decr frees
+  the slot just taken, and curdir() reads the byte as the root. The same holds for any stale byte
+  (not only after a restart): the HEAD run of the fs20 test binary also failed the existing test
+  current_directories_on_the_changed_drive_become_the_root once a new test had left a stale byte.
+  EmuTOS xchdir reads olddir before findit (references/emutos/bdos/fsdir.c:1129, :1134); findit's
+  ckdrv repairs a byte whose slot has no DND to a root slot, the first free one
+  (references/emutos/bdos/fsdrive.c:121-130, references/emutos/bdos/fsdir.c:1176-1179), so the final
+  decr_curdir_usage(olddir) hits that root slot, not the new directory's.
+
+CHANGE
+  set_curdir reads the old byte and judges it live BEFORE incr; a stale byte is the root (NewTOS gives
+  the root no slot) and drops nothing. Order otherwise as xchdir: take the new use, store, drop the old.
+  Tree: ec9e260f plus the uncommitted FS28 change:
+    tos-api/src/bdos/fs/curdir.rs          set_curdir (body and doc comment)
+    tos-api/tests/fs20_media_change.rs     two new host tests (fs28_*)
+    docs/api/gemdos/directory/3b-dsetpath.md, docs/analysis/deps/mapping.tsv (xchdir -> set_curdir),
+    docs/STATUS.md, docs/archive/status-log-2026-10-26.md, TASK/FS28.md, TASK/FS28-STATUS-DONE.MD
+
+METHOD (method/)
+  test image  measurements/measurement-2026-10-29-tool20/method/mkimage.sh (called, not copied) into
+              scratch: test.img 23682ed1ec9a23eb2d25c199fb2e47de34d5f5d797cead6f8cb600b6db4d7c0c
+              (runs/test.img.manifest); PXPROBE.PRG c22042555a48645b968e162e06cb564adcd2c506ebbb47d2f81267bda52addbf
+              (the m68k build is not byte-reproducible, TOOL20), PXPROBE.NAP
+              d832211c10d3709393ceb46bc372fca1dad1c8f24f4a40c7b5ba5d918dd8428c (= TOOL20's).
+              Before and after booted clones of this one image.
+  newtos-runs.sh before|after: cargo xtask tosdump bios for gemdos-mc-fs20/-fs22/-paths/-fs24.tsv
+              (--testdisk, references EMUTOS-1a7484ab-BIOS-mc-<t>-disk.BIN) and bios-r1.tsv (tt +
+              falcontc references, no disk). before = `git archive ec9e260f` extracted into scratch,
+              passed as --tree; after = this tree. fs24 decoded with TOOL20's decode-mc.py.
+  compare.sh  differing cases per table and reference before/after; NewTOS test partitions after
+              the run, before vs after (sha256) -> runs/before-after.txt
+  boot-qemu-virt.sh  fresh qemu-virt release build of this tree, headless boot to "desktop up".
+  Kernels (kernel8.img sha256, rpi4 release, no features, built by the runner)
+    before  27cce6e01dd246d62dbca3fe0d6bff81f22c89a30d06fd62e5864f00ad363efc (DUMPBIOS.NAP build ----,
+            0450374bc0a958abb54d262572a764dcbdc034e962835e00fc45ae13eb2e4640)
+    after   2a1e1a00fffc132530182b7e6a3e17b181575382b06ced3806ad1f4716a0448d (DUMPBIOS.NAP build ec9e,
+            b562983f6b5d8ef86a7d44a94208787d6b23dbe5eb6abecac19027b0a78675b9)
+    qemu-virt (after, release ELF) 0ca164313cc1865ae8a76d6ebc2f3b64872eaf1867efdf305aab51145f5e0607
+  Every tosdump run: "ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0"; tosdiff
+  --validate exit 0 (and --check-profile exit 0 where the runner runs it) (runs/*/tosdump-run.txt).
+
+MANIFESTS (every one verbatim)
+  runs/test.img.manifest:                optional_missing none
+  runs/before-fs20/card.img.manifest:    optional_missing none
+  runs/before-fs22/card.img.manifest:    optional_missing none
+  runs/before-paths/card.img.manifest:   optional_missing none
+  runs/before-fs24/card.img.manifest:    optional_missing none
+  runs/before-bios-r1/card.img.manifest: optional_missing none
+  runs/newtos-fs20/card.img.manifest:    optional_missing none
+  runs/newtos-fs22/card.img.manifest:    optional_missing none
+  runs/newtos-paths/card.img.manifest:   optional_missing none
+  runs/newtos-fs24/card.img.manifest:    optional_missing none
+  runs/newtos-bios-r1/card.img.manifest: optional_missing none
+  host_clang (same line in every manifest above):
+    host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+
+RESULTS (runs/before-after.txt)
+  table     reference                              before (ec9e260f)          after (FS28)
+  fs20      EMUTOS-1a7484ab-BIOS-mc-fs20-disk       0 of 17                    0
+  fs22      EMUTOS-1a7484ab-BIOS-mc-fs22-disk       0 of 13                    0
+  paths     EMUTOS-1a7484ab-BIOS-mc-paths-disk      1 of 49 (67)               1 (67)
+  fs24      EMUTOS-1a7484ab-BIOS-mc-fs24-disk       5 of 84 (76 87 118 149 150) 2 (76 149) -- 87 118 150 EQUAL
+  bios-r1   EMUTOS-1a7484ab-BIOS (tt)              32 of 147                  32, same cases
+  bios-r1   EMUTOS-1a7484ab-BIOS-falcontc          37 of 147                  37, same cases
+  Newly differing cases in all six comparisons: none.
+  fs24 decoded (runs/<before|newtos>-fs24/decoded.txt): 87, 118, 150 Dgetpath(C:) before path='',
+  after path='\\SUB' (the decoder's escape of "\SUB"), as the oracle; 85/116/148 Dsetpath 0 and
+  86/117/149 Mediach unchanged.
+  Remaining: paths 67 and fs24 76, 149 = Mediach after a Dsetpath whose folder is logged in EmuTOS'
+  DND tree (oracle 2, NewTOS 0) -- TASK/FS24, ACCEPTED under ADR-033 (user 2026-10-30), not this ticket.
+  NewTOS test partition after the run, before vs after (sha256): fs20, fs22, paths, fs24 identical.
+  fsck_msdos -n of the after end states (runs/fsck-ends.txt): fs20 206 (the table changes the
+  geometry, as in TOOL20 and FS23, both sides), fs22 0, paths 0, fs24 0.
+
+HOST TESTS
+  tos-api/tests/fs20_media_change.rs: fs28_dsetpath_that_meets_the_change_sets_the_path (V1a: Dsetpath
+  with the change pending, Mediach 0 after, Dgetpath "\SUB", one use of the \SUB slot) and
+  fs28_dsetpath_after_a_relogin_by_another_call_sets_the_path (re-login by Dfree, stale byte reads as
+  the root, then Dsetpath + Dgetpath "\SUB"). Against HEAD set_curdir both fail (Dgetpath "") and so
+  does the existing current_directories_on_the_changed_drive_become_the_root (stale byte left by the
+  new tests); with the change the binary passes 8/8.
+  cargo xtask test (full): 1907 passed, 0 failed, 1 ignored (baseline 1905/0/1, +2).
+
+BOOT
+  raspi4b: every tosdump run above booted the rpi4 release kernel to "desktop up".
+  qemu-virt (runs/boot-qemu-virt-after/BOOT-SERIAL.txt): "[desk] desktop up (0 drives)", no PANIC.
+
+BUILD / CLIPPY
+  cargo xtask build --board rpi4 / --board qemu-virt (debug): exit 0 both; tos-api 64, kernel 93 build
+  warnings both boards.
+  cargo clippy -p kernel --features board-rpi4 / board-qemu-virt: tos-api 74, kernel 121 warnings on
+  both boards (= FS23's counts); no hit in curdir.rs. cargo clippy -p tos-api --test
+  fs20_media_change: no hit in the test.
+
+FILES
+  method/  newtos-runs.sh, compare.sh, boot-qemu-virt.sh
+  runs/    before-<fs20|fs22|paths|fs24|bios-r1>/, newtos-<...>/ (cargo xtask tosdump's out-dirs: BIN,
+           LOG, manifests, tosdiff-*.txt, testpart-compare.txt, build logs; fs24 decoded.txt),
+           before-after.txt, fsck-ends.txt, test.img.manifest, boot-qemu-virt-after/
+  Images, cards, kernels and the scratch tree are not kept (scratch, deleted after the run); sha256
+  above and in the runs' files. manifest.sha256 covers every file of this run except itself.

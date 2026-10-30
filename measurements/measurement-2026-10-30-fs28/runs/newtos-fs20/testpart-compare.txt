@@ -1,0 +1,581 @@
+test image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs28/test.img
+test partition LBA 63+130977
+testpart: DIFFERENT; differing sectors (partition-relative): 0 1 129 257 813
+testpart: still different after normalising root directory time stamps
+fsck_msdos -n testpart-before.img: exit 0
+  ** /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs28/xtask-after/tosdump-90656/testpart-before.img
+  ** Phase 1 - Preparing FAT
+  ** Phase 2 - Checking Directories
+  ** Phase 3 - Checking for Orphan Clusters
+  Warning: 6 files, 65074 KiB free (32537 clusters)
+fsck_msdos -n testpart-after.img: exit 206
+  ** /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-30-fs28/runs/newtos-fs20/testpart-after.img
+  ** Phase 1 - Preparing FAT
+  ** Phase 2 - Checking Directories
+  Warning: Item /SUB does not appear to be a subdirectory
+  Correct?
+  : no
+  Warning: /SUB/c starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/c: Cluster chain starting at 26984 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/c is 1663988838, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/.c starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/.c: Cluster chain starting at 29440 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/.c is 1734964063, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/nbit.c starts with free cluster
+  Remove?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/pioconst..c starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/pioconst..c: Cluster chain starting at 30756 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/pioconst..c is 1835363584, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/x starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/x: Cluster chain starting at 25636 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/x is 1920234240, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/errlist_.int starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/errlist_.int: Cluster chain starting at 29549 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/errlist_.int is 1962963815, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/nknown_e.rro starts with free cluster
+  Remove?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/umstr starts with free cluster
+  Remove?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/x starts with cross-linked cluster (120)
+  Truncate?
+  : no
+  Warning: /SUB/x: Cluster chain starting at 120 is cross-linked at cluster 120
+  Truncate?
+  : no
+  Warning: size of /SUB/x is 1929405476, should at most be 0
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/trnlen.c. starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/trnlen.c.: Cluster chain starting at 29300 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/trnlen.c. is 779511154, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/ptr starts with free cluster
+  Remove?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/it starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/it: Cluster chain starting at 29696 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/it is 1869348973, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/r starts with free cluster
+  Remove?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/time1 starts with cross-linked cluster (25636)
+  Remove?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/offset starts with cross-linked cluster (29300)
+  Remove?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/year_len.gth starts with free cluster
+  Remove?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/hs starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/hs: Cluster chain starting at 25455 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/hs is 604005166, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/x starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/x: Cluster chain starting at 30065 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/x is 1936417641, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/tat.c starts with cross-linked cluster (99)
+  Truncate?
+  : no
+  Warning: /SUB/tat.c: Cluster chain starting at 99 is cross-linked at cluster 99
+  Truncate?
+  : no
+  Warning: size of /SUB/tat.c is 604010532, should at most be 0
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/asecmp.c. starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/asecmp.c.: Cluster chain starting at 29551 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/asecmp.c. is 6499941, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/c starts with cross-linked cluster (100)
+  Truncate?
+  : no
+  Warning: /SUB/c: Cluster chain starting at 100 is cross-linked at cluster 100
+  Truncate?
+  : no
+  Warning: size of /SUB/c is 1728078884, should at most be 0
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/eteuid.c. starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/eteuid.c.: Cluster chain starting at 26463 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/eteuid.c. is 1969583205, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/id starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/id: Cluster chain starting at 26670 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/id is 1600484961, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/_getpid starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/_getpid: Cluster chain starting at 11884 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/_getpid is 2015625315, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/e_Fopen starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/e_Fopen: Cluster chain starting at 26880 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/e_Fopen is 1819566959, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/day.have._Tg starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/day.have._Tg: Cluster chain starting at 27747 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/day.have._Tg is 778789743, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/t starts with free cluster
+  Remove?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/ibc_argv. starts with cross-linked cluster (110)
+  Remove?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/mp starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/mp: Cluster chain starting at 28782 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/mp is 1953393010, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/f starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/f: Cluster chain starting at 29281 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/f is 1700750707, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/nv_args starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/nv_args: Cluster chain starting at 28255 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/nv_args is 6647137, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/strrchr starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/strrchr: Cluster chain starting at 29535 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/strrchr is 1953656680, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/_name starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/_name: Cluster chain starting at 24431 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/_name is 1635021670, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/t starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/t: Cluster chain starting at 25695 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/t is 1953718127, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/at starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/at: Cluster chain starting at 25966 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/at is 1936684151, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/_initial._st starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/_initial._st: Cluster chain starting at 24933 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/_initial._st is 1935762032, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/le starts with free cluster
+  Truncate?
+  : no
+  Warning: /SUB/le: Cluster chain starting at 27999 ends with cluster marked free
+  Truncate?
+  : no
+  Warning: size of /SUB/le is 1633644144, should at most be 2048
+  Truncate?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  Warning: /SUB/ddmul_1 starts with free cluster
+  Remove?
+  : no
+  Warning: /SUB has entries after end of directory
+  Truncate?
+  : no
+  Extend?
+  : no
+  ** Phase 3 - Checking for Orphan Clusters
+  Warning: Found orphan cluster(s)
+  Fix?
+  : no
+  Warning: Found 1 orphaned clusters
+  Warning: 33 files, 65032 KiB free (32516 clusters)
+  (a destructive table: its end state is compared with the oracle's, not judged here)
+testpart after sha256 8cb39e6a802c04d0ffdd4b0c459145f6a487f4bdf0c99b50a8ec09f36da7dac7 (kept: testpart-after.img)

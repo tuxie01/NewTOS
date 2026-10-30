@@ -80,6 +80,16 @@ at the same DND (and bumps its use count) or allocates a free slot. If
 it to `EPTHNF`. It stores the new slot index into `run->p_curdir[dlog]`, then
 decrements the old slot (if any). The current directory is thus stored
 per-process, per-drive, as an index into the shared reference-counted `dirtbl[]`.
+The old index is read **before** `findit` (`bdos/fsdir.c:1129-1134`). In a call
+restarted after a media change it names a slot `freetree` emptied; `findit`'s
+`ckdrv` then repairs the byte to a root slot, the first free one
+(`bdos/fsdrive.c:121-130`, `bdos/fsdir.c:1176-1179`) — the stale index itself
+when it is the lowest free — and the final decrement drops that root slot, not
+the one just taken for the new directory: the restarted `Dsetpath` sets the
+path, `Dgetpath` answers it — measured, `gemdos-mc-fs24` cases 87, 118, 150
+(`\SUB`), TASK/FS24, TASK/FS28. (Derived, not measured: when a lower slot is
+free, the root takes it, the new directory can take the stale index, and the
+decrement frees it again — `Dgetpath` would then answer the root.)
 
 ---
 
@@ -261,6 +271,12 @@ and EmuCON's `cd` changes the EmuCON PD's (`../process/_run-ownership-curdir.md`
 `Dsetpath` changed its parent's (measured, `measurements/measurement-2026-10-17-proc03/`).
 Built per PD (`tos-api/src/bdos/fs/curdir.rs`, `../process/_run-ownership-curdir.md`
 §6.5; accessories still act on their own PD until B5 is decided).
+
+**2026-10-30 (TASK/FS28):** `set_curdir` judges the old byte before it takes
+the new slot (`tos-api/src/bdos/fs/curdir.rs:229@set_curdir`); before, a byte
+left stale by a re-login (`free_drive`) named the index `incr` handed out again,
+read as live, and its decrement freed the new slot, so `Dgetpath` answered the
+root after `E_OK` (`gemdos-mc-fs24` cases 87, 118, 150).
 
 PHASE-05: preserve the per-process/per-drive current-directory model and the
 "prefix ≠ current drive" semantics. The `dirtbl[]` reference-counting is a free

@@ -1,0 +1,30 @@
+EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN vs NEWTOS.BIN -- area BIOS, 84 cases from gemdos-mc-fs24.tsv
+
+case 76  trap 13 function 0x09  S04 Mediach(2): EmuTOS 2, the logged DND: no disk access
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x0000000000000002 (2)   NEWTOS.BIN                            = 0x0000000000000000 (0)
+
+case 87  trap 1 function 0x47  V1a Dgetpath(C:)
+    capture[0]             EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x5C   NEWTOS.BIN                            = 0x00
+    capture[1]             EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x53   NEWTOS.BIN                            = 0xAD
+    capture[2]             EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x55   NEWTOS.BIN                            = 0xDE
+    capture[3]             EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x42   NEWTOS.BIN                            = 0xAD
+    capture[4]             EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x00   NEWTOS.BIN                            = 0xDE
+
+case 118  trap 1 function 0x47  V2 Dgetpath(C:)
+    capture[0]             EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x5C   NEWTOS.BIN                            = 0x00
+    capture[1]             EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x53   NEWTOS.BIN                            = 0xAD
+    capture[2]             EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x55   NEWTOS.BIN                            = 0xDE
+    capture[3]             EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x42   NEWTOS.BIN                            = 0xAD
+    capture[4]             EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x00   NEWTOS.BIN                            = 0xDE
+
+case 149  trap 13 function 0x09  V3 Mediach(2): after the Dsetpath
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x0000000000000002 (2)   NEWTOS.BIN                            = 0x0000000000000000 (0)
+
+case 150  trap 1 function 0x47  V3 Dgetpath(C:)
+    capture[0]             EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x5C   NEWTOS.BIN                            = 0x00
+    capture[1]             EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x53   NEWTOS.BIN                            = 0xAD
+    capture[2]             EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x55   NEWTOS.BIN                            = 0xDE
+    capture[3]             EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x42   NEWTOS.BIN                            = 0xAD
+    capture[4]             EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x00   NEWTOS.BIN                            = 0xDE
+
+5 of 84 cases differ

@@ -1,0 +1,35 @@
+fs20 vs EMUTOS-1a7484ab-BIOS-mc-fs20-disk
+  before (HEAD): 0 differ: 
+  after  (FS28): 0 differ: 
+  newly differing: 
+  now equal:       
+fs22 vs EMUTOS-1a7484ab-BIOS-mc-fs22-disk
+  before (HEAD): 0 differ: 
+  after  (FS28): 0 differ: 
+  newly differing: 
+  now equal:       
+paths vs EMUTOS-1a7484ab-BIOS-mc-paths-disk
+  before (HEAD): 1 differ: 67 
+  after  (FS28): 1 differ: 67 
+  newly differing: 
+  now equal:       
+fs24 vs EMUTOS-1a7484ab-BIOS-mc-fs24-disk
+  before (HEAD): 5 differ: 76 87 118 149 150 
+  after  (FS28): 2 differ: 76 149 
+  newly differing: 
+  now equal:       87 118 150 
+bios-r1 vs EMUTOS-1a7484ab-BIOS-falcontc
+  before (HEAD): 37 differ: 70 87 93 94 105 128 129 178 179 183 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235 
+  after  (FS28): 37 differ: 70 87 93 94 105 128 129 178 179 183 189 190 191 192 193 194 211 212 213 214 215 218 219 220 221 222 223 224 225 226 227 230 231 232 233 234 235 
+  newly differing: 
+  now equal:       
+bios-r1 vs EMUTOS-1a7484ab-BIOS
+  before (HEAD): 32 differ: 70 93 94 105 128 129 178 179 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235 
+  after  (FS28): 32 differ: 70 93 94 105 128 129 178 179 189 190 191 192 193 194 200 201 202 203 204 205 206 207 208 215 219 220 230 231 232 233 234 235 
+  newly differing: 
+  now equal:       
+test partition after the run, NewTOS before vs after (sha256)
+  fs20  before 8cb39e6a802c04d0ffdd4b0c459145f6a487f4bdf0c99b50a8ec09f36da7dac7  after 8cb39e6a802c04d0ffdd4b0c459145f6a487f4bdf0c99b50a8ec09f36da7dac7  identical
+  fs22  before 9ca09b28706c8deaab407814154261f3af0c265883abc7e8f25974f740cddbe4  after 9ca09b28706c8deaab407814154261f3af0c265883abc7e8f25974f740cddbe4  identical
+  paths  before a026be69c7403026b836fd8d983c8bbd01d0c95ddeec33698621a592d760368e  after a026be69c7403026b836fd8d983c8bbd01d0c95ddeec33698621a592d760368e  identical
+  fs24  before 81999efe048a8aaef28f9badf3df9b27c50ac61e467473a33fde338d5345431e  after 81999efe048a8aaef28f9badf3df9b27c50ac61e467473a33fde338d5345431e  identical

@@ -20,6 +20,7 @@ mod fatvol;
 use std::sync::Once;
 
 use fatvol::*;
+use tos_api::bdos::fs::curdir;
 use tos_api::bdos::process::{self, standin};
 use tos_api::trap::{TrapArgs, TrapClass};
 
@@ -167,6 +168,54 @@ fn current_directories_on_the_changed_drive_become_the_root() {
     let mut path = [0xAAu8; 128];
     assert_eq!(gemdos2(DGETPATH, path.as_mut_ptr() as u64, 3), E_OK);
     assert_eq!(path[0], 0, "C:'s directory is the root after the re-login");
+}
+
+// ── TASK/FS28: Dsetpath that meets the change keeps the path it set ──
+
+/// `Dgetpath(C:)` as bytes up to the NUL.
+fn dgetpath_c() -> Vec<u8> {
+    let mut path = [0xAAu8; 128];
+    assert_eq!(gemdos2(DGETPATH, path.as_mut_ptr() as u64, 3), E_OK);
+    let n = path.iter().position(|&b| b == 0).expect("NUL-terminated");
+    path[..n].to_vec()
+}
+
+/// gemdos-mc-fs24 V1a (cases 82-89): `Dsetpath(C:\SUB)` with the change
+/// pending meets it, C: is logged in again (`freetree` empties the slot the
+/// PD byte names), the call restarts and sets `\SUB`. EmuTOS `xchdir` reads
+/// `olddir` before `findit` (`bdos/fsdir.c:1129-1134`), whose `ckdrv` has
+/// repaired the stale byte to a root slot (`bdos/fsdrive.c:121-130`), so the
+/// final `decr_curdir_usage(olddir)` cannot drop the slot just taken for
+/// `\SUB`; the oracle's Dgetpath answers `\SUB` (case 87).
+#[test]
+fn fs28_dsetpath_that_meets_the_change_sets_the_path() {
+    let (_g, _h) = settled();
+    let sub = cpath("C:\\SUB");
+    assert_eq!(gemdos1(DSETPATH, sub.as_ptr() as u64), E_OK);
+    assert_eq!(dgetpath_c(), b"\\SUB");
+
+    arm_forcechange();
+    assert_eq!(gemdos1(DSETPATH, sub.as_ptr() as u64), E_OK, "V1a Dsetpath(C:\\SUB)");
+    assert_eq!(mediach(C), 0, "the Dsetpath met the change (case 86)");
+    assert_eq!(dgetpath_c(), b"\\SUB", "case 87: the path the call set");
+    assert_eq!(curdir::uses_of(2, "\\SUB"), 1, "one PD names the \\SUB slot");
+}
+
+/// The same after a re-login by another call (the PD byte stale when
+/// Dsetpath starts): a byte that names no live slot is the root and has no
+/// use to drop.
+#[test]
+fn fs28_dsetpath_after_a_relogin_by_another_call_sets_the_path() {
+    let (_g, _h) = settled();
+    let sub = cpath("C:\\SUB");
+    assert_eq!(gemdos1(DSETPATH, sub.as_ptr() as u64), E_OK);
+
+    arm_forcechange();
+    assert_eq!(dfree().0, E_OK, "the access that re-logs C:");
+    assert_eq!(dgetpath_c(), b"", "the stale byte reads as the root");
+    assert_eq!(gemdos1(DSETPATH, sub.as_ptr() as u64), E_OK);
+    assert_eq!(dgetpath_c(), b"\\SUB");
+    assert_eq!(curdir::uses_of(2, "\\SUB"), 1, "one PD names the \\SUB slot");
 }
 
 // ── mark_bcbs_invalid: the drive's buffers are read again ──

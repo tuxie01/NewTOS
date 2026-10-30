@@ -1,0 +1,3 @@
+EMUTOS-1a7484ab-BIOS-mc-fs20-disk.BIN vs NEWTOS.BIN -- area BIOS, 17 cases from gemdos-mc-fs20.tsv
+
+0 of 17 cases differ
