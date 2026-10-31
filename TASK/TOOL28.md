@@ -1,6 +1,6 @@
 # TOOL28 — `host_clang` und `optional_missing` automatisch ins RUNINFO
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-30, Folge von [SDK08](SDK08.md)
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: Handregel in CLAUDE.md deckt es ab) · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-30, Folge von [SDK08](SDK08.md)
 
 ## Sachverhalt
 

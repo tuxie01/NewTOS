@@ -1,6 +1,6 @@
 # TOOL26 — DUMPBIOS: Fallart „Speicher im Super-Zustand schreiben“ (Sonde `vwprobe` nach tosdiff)
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Pflicht-Folgeticket nach CLAUDE.md „Testing“ (Sonde als Abnahme), aus [BIOS16](BIOS16.md)
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: zugehoeriger Fix (BIOS16) per Sonde abgenommen) · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Pflicht-Folgeticket nach CLAUDE.md „Testing“ (Sonde als Abnahme), aus [BIOS16](BIOS16.md)
 
 ## Sachverhalt
 

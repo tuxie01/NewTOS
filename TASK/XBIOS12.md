@@ -1,6 +1,6 @@
 # XBIOS12 — Startuhr ohne RTC: 1980-01-01 bzw. FAT-Datum von `KERNEL8.IMG`, EmuTOS Baudatum des ROMs
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md` · Bezug: [RTC01](RTC01.md)
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: von RTC01 abgeloest; kein Nutzer von XBIOS Gettime gefunden) · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md` · Bezug: [RTC01](RTC01.md)
 
 ## Sachverhalt
 

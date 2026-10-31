@@ -1,6 +1,6 @@
 # XBIOS19 — `Bioskeys` liefert einen Zeiger auf die Ausgangsstruktur, nicht auf die aktuelle
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidung 2026-10-29 („wenn es in EmuTOS so ist“), Nachlauf aus [XBIOS02](XBIOS02.md)
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Programm ruft Bioskeys) · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidung 2026-10-29 („wenn es in EmuTOS so ist“), Nachlauf aus [XBIOS02](XBIOS02.md)
 
 ## Sachverhalt
 

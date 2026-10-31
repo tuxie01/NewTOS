@@ -1,6 +1,6 @@
 # INPUT03 — Tastatur-Mausemulation (Alt+Pfeile, Alt+Clr/Home, Alt+Insert) fehlt
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer — Fund O1 aus [BIOS10](BIOS10.md) (2026-10-29)
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Programm braucht die Maus-Tastatur-Emulation) · Prioritaet: **P3** · Typ: Developer — Fund O1 aus [BIOS10](BIOS10.md) (2026-10-29)
 
 ## Sachverhalt
 

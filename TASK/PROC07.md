@@ -1,6 +1,6 @@
 # PROC07 — `trap #2` mit `d0.w = 0` beendet den Prozess wie `Pterm0`
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidung 2026-10-29 (Empfehlung des Leads: wie EmuTOS), aus [TOOL17](TOOL17.md) Gruppe F
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: undokumentierte CP/M-Reliquie; gemlib sendet nur Opcodes != 0) · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidung 2026-10-29 (Empfehlung des Leads: wie EmuTOS), aus [TOOL17](TOOL17.md) Gruppe F
 
 ## Sachverhalt
 

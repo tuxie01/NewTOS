@@ -1,6 +1,6 @@
 # TOOL24 — `gemdos-trace`: DTA-Erfassung nach FS23 an Regel C1 anpassen
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Fund aus [FS23](FS23.md) (2026-10-29)
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: Debug-Feature, blockiert nichts) · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Fund aus [FS23](FS23.md) (2026-10-29)
 
 ## Sachverhalt
 

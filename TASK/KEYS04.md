@@ -1,6 +1,6 @@
 # KEYS04 — `Kbshift(-1)` sieht ein veraltetes Byte, solange niemand pumpt
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer (erst messen) — Fund O3 aus [BIOS10](BIOS10.md) (2026-10-29)
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Kartenprogramm pollt Kbshift (nur apitest)) · Prioritaet: **P3** · Typ: Developer (erst messen) — Fund O3 aus [BIOS10](BIOS10.md) (2026-10-29)
 
 ## Sachverhalt
 

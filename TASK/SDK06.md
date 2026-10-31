@@ -1,6 +1,6 @@
 # SDK06 — `Getcookie()` Zeigerform: Wert vorzeichenerweitert wie die Regel
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer (SDK) — Anwenderentscheidung 2026-10-28
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Programm liest einen Cookie mit gesetztem Bit 31) · Prioritaet: **P3** · Typ: Developer (SDK) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt
 

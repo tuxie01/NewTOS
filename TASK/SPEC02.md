@@ -1,6 +1,6 @@
 # SPEC02 — XBIOS-Inventar: Summen und Liste der unbeantworteten Funktionen veraltet
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Researcher (Doku) — Fund aus [XBIOS02](XBIOS02.md) (2026-10-29)
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: reine Nachpflege; offene Arbeit liest die Stellen nicht) · Prioritaet: **P3** · Typ: Researcher (Doku) — Fund aus [XBIOS02](XBIOS02.md) (2026-10-29)
 
 ## Sachverhalt
 

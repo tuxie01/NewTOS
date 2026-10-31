@@ -1,6 +1,6 @@
 # XBIOS13 — Spec `docs/api/xbios/` (`Settime`, `Gettime`, NVRAM) widerspricht Messung und Code
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md`
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: reine Spec-Pflege) · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md`
 
 ## Sachverhalt
 

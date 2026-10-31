@@ -1,6 +1,6 @@
 # BIOS14 — `cargo xtask deps`: fehlende Kanten BIOS-Eintritt → Geraetehandler, `rsconf`, `bconmap`, `kbdvbase`
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Researcher (Track B / Werkzeugbefund) — Anwenderentscheidung 2026-10-28, aus den Audits `docs/audits/2026-10-28-bios-core.md` und `docs/audits/2026-10-28-xbios-chardev.md`
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: Werkzeugluecke; blockiert keinen offenen Fix) · Prioritaet: **P3** · Typ: Researcher (Track B / Werkzeugbefund) — Anwenderentscheidung 2026-10-28, aus den Audits `docs/audits/2026-10-28-bios-core.md` und `docs/audits/2026-10-28-xbios-chardev.md`
 
 ## Sachverhalt
 

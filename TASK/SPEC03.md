@@ -1,6 +1,6 @@
 # SPEC03 — Altlast der Doku-Fehler abbauen (doc-check ohne Dateiliste)
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Researcher (Doku), stapelweise — Anwenderentscheidung 2026-10-30
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: reine Aufraeumarbeit; der Hook blockiert die Altlast nicht) · Prioritaet: **P3** · Typ: Researcher (Doku), stapelweise — Anwenderentscheidung 2026-10-30
 
 ## Sachverhalt
 

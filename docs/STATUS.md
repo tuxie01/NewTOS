@@ -71,6 +71,32 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   Speicheraufteilung unter 2 GiB fest, damit eine Aenderung laut scheitert),
   [TOOL01](../TASK/TOOL01.md) (blockiert keine Abnahme),
   [FS25](../TASK/FS25.md) (Frage nur ans Orakel).
+  Ebenfalls geparkt 2026-10-31 (P3-Durchsicht):
+  [BIOS13](../TASK/BIOS13.md) (reine Doku-/Ledger-Pflege; kein Programm, kein offener Fix),
+  [BIOS14](../TASK/BIOS14.md) (Werkzeugluecke; blockiert keinen offenen Fix),
+  [XBIOS07](../TASK/XBIOS07.md) (Doku-Korrektur ohne Nutzer),
+  [XBIOS11](../TASK/XBIOS11.md) (kein Kartenprogramm haengt am Seed-Ursprung (einziger Nutzer TeraDesk-Formatieren)),
+  [XBIOS12](../TASK/XBIOS12.md) (von RTC01 abgeloest; kein Nutzer von XBIOS Gettime gefunden),
+  [XBIOS13](../TASK/XBIOS13.md) (reine Spec-Pflege),
+  [XBIOS14](../TASK/XBIOS14.md) (Orakelgrenze; blockiert keinen Fix),
+  [XBIOS16](../TASK/XBIOS16.md) (kein Programm ruft Jdisint/Jenabint/Mfpint),
+  [XBIOS19](../TASK/XBIOS19.md) (kein Programm ruft Bioskeys),
+  [KEYS04](../TASK/KEYS04.md) (kein Kartenprogramm pollt Kbshift (nur apitest)),
+  [INPUT03](../TASK/INPUT03.md) (kein Programm braucht die Maus-Tastatur-Emulation),
+  [PROC07](../TASK/PROC07.md) (undokumentierte CP/M-Reliquie; gemlib sendet nur Opcodes != 0),
+  [FS27](../TASK/FS27.md) (nur beschaedigte Medien),
+  [SPEC02](../TASK/SPEC02.md) (reine Nachpflege; offene Arbeit liest die Stellen nicht),
+  [SPEC03](../TASK/SPEC03.md) (reine Aufraeumarbeit; der Hook blockiert die Altlast nicht),
+  [TOOL22](../TASK/TOOL22.md) (Tabellenpflege, haengt an PROC07),
+  [TOOL23](../TASK/TOOL23.md) (Debug-Feature; wieder aufnehmen, wenn ein AES-Fix den Mitschnitt braucht),
+  [TOOL24](../TASK/TOOL24.md) (Debug-Feature, blockiert nichts),
+  [TOOL25](../TASK/TOOL25.md) (zugehoeriger Fix (BIOS07) per Sonde abgenommen),
+  [TOOL26](../TASK/TOOL26.md) (zugehoeriger Fix (BIOS16) per Sonde abgenommen),
+  [TOOL28](../TASK/TOOL28.md) (Handregel in CLAUDE.md deckt es ab),
+  [TOOL30](../TASK/TOOL30.md) (zugehoeriger Fix (A126) per Sonde abgenommen),
+  [SDK02](../TASK/SDK02.md) (kein Nutzer der Konstanten),
+  [SDK06](../TASK/SDK06.md) (kein Programm liest einen Cookie mit gesetztem Bit 31).
+  Bleibt: [FS21](../TASK/FS21.md) (P2: TeraDesk zeigt und nutzt das Archivbit, `sdk/apps/teradesk/dir.c:1864`, `sdk/apps/teradesk/copy.c:1617`). Wartet auf Anwender: [BIOS12](../TASK/BIOS12.md) (D1–D3 `Setexc`, D1 `Kbshift`).
   Developer, einer zur Zeit:
   die S2-Audit-Tickets [XBIOS02](../TASK/XBIOS02.md) (erledigt 2026-10-29, `7bc047a6`),
   [BIOS04](../TASK/BIOS04.md) (erledigt 2026-10-29, Commit der Quittung) →

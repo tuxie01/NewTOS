@@ -1,6 +1,6 @@
 # TOOL30 — `akprobe`-Faelle nach tosdiff
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Pflicht-Folgeticket der Sondenregel (CLAUDE.md "Testing") aus [A126](A126.md)
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: zugehoeriger Fix (A126) per Sonde abgenommen) · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Pflicht-Folgeticket der Sondenregel (CLAUDE.md "Testing") aus [A126](A126.md)
 
 ## Sachverhalt
 

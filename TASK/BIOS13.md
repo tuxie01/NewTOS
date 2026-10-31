@@ -1,6 +1,6 @@
 # BIOS13 — Querdokumente der drei Audits: COMPATIBILITY, MEM12, Ledger, Vergleichsregel, ERRATA, Waechter
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus den Audits `docs/audits/2026-10-28-bios-core.md`, `docs/audits/2026-10-28-xbios-chardev.md`, `docs/audits/2026-10-28-xbios-system.md`
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: reine Doku-/Ledger-Pflege; kein Programm, kein offener Fix) · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus den Audits `docs/audits/2026-10-28-bios-core.md`, `docs/audits/2026-10-28-xbios-chardev.md`, `docs/audits/2026-10-28-xbios-system.md`
 
 ## Sachverhalt
 

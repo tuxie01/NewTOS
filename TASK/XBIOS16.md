@@ -1,6 +1,6 @@
 # XBIOS16 — `Jdisint`/`Jenabint`: Rueckgabewert gegen das Orakel messen
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer (Messung zuerst) — Anwenderentscheidung 2026-10-29, Nebenbefund aus [BIOS15](BIOS15.md)
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Programm ruft Jdisint/Jenabint/Mfpint) · Prioritaet: **P3** · Typ: Developer (Messung zuerst) — Anwenderentscheidung 2026-10-29, Nebenbefund aus [BIOS15](BIOS15.md)
 
 ## Sachverhalt
 

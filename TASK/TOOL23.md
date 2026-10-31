@@ -1,6 +1,6 @@
 # TOOL23 — Release-Bau mit `--features aes-trace` linkt nicht
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Fund aus [XBIOS02](XBIOS02.md) (2026-10-29)
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: Debug-Feature; wieder aufnehmen, wenn ein AES-Fix den Mitschnitt braucht) · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Fund aus [XBIOS02](XBIOS02.md) (2026-10-29)
 
 ## Sachverhalt
 

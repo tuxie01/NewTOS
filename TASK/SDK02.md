@@ -1,6 +1,6 @@
 # SDK02 — `RW_*` in mintlibs `ostruct.h` sind Bitnummern: Kommentar und Bau-Pruefung
 
-Status: **OFFEN** (Punkt 1 erledigt 2026-10-28) · Prioritaet: **P3** · Typ: Developer (SDK) — Anwenderentscheidung 2026-10-28 (korrigiert am selben Tag), Nebenbefund aus [BIOS02](BIOS02.md)
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Nutzer der Konstanten) · Prioritaet: **P3** · Typ: Developer (SDK) — Anwenderentscheidung 2026-10-28 (korrigiert am selben Tag), Nebenbefund aus [BIOS02](BIOS02.md)
 
 ## Sachverhalt
 

@@ -1,6 +1,6 @@
 # XBIOS07 — Spec und Doku der Zeichengeraete/Tastatur widersprechen Messung und Code
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: Doku-Korrektur ohne Nutzer) · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`
 
 ## Sachverhalt
 

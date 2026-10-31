@@ -1,6 +1,6 @@
 # XBIOS14 — Orakelgrenze: Hatari nimmt keinen Schreibzugriff auf die RTC an, `Gettime` nach `Settime` ist nicht vergleichbar
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md`
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: Orakelgrenze; blockiert keinen Fix) · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md`
 
 ## Sachverhalt
 

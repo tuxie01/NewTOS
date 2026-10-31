@@ -1,6 +1,6 @@
 # TOOL22 — `mapping.tsv`: TOOL17-Gruppen B, C, F einordnen
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer (Doku/Werkzeugdaten) — Anwenderentscheidung 2026-10-29 (Empfehlungen des Leads uebernommen), aus [TOOL17](TOOL17.md)
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: Tabellenpflege, haengt an PROC07) · Prioritaet: **P3** · Typ: Developer (Doku/Werkzeugdaten) — Anwenderentscheidung 2026-10-29 (Empfehlungen des Leads uebernommen), aus [TOOL17](TOOL17.md)
 
 ## Sachverhalt
 

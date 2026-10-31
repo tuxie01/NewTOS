@@ -1,6 +1,6 @@
 # TOOL25 — `Setexc`-Abfrage mit Wert `0x00000000FFFFFFFF` als tosdiff-Fall
 
-Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Pflicht-Folgeticket nach CLAUDE.md „Testing“ (Sonde als Abnahme), aus [BIOS07](BIOS07.md) P3
+Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: zugehoeriger Fix (BIOS07) per Sonde abgenommen) · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Pflicht-Folgeticket nach CLAUDE.md „Testing“ (Sonde als Abnahme), aus [BIOS07](BIOS07.md) P3
 
 ## Sachverhalt
 
