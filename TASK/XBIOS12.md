@@ -1,6 +1,6 @@
 # XBIOS12 — Startuhr ohne RTC: 1980-01-01 bzw. FAT-Datum von `KERNEL8.IMG`, EmuTOS Baudatum des ROMs
 
-Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: von RTC01 abgeloest; kein Nutzer von XBIOS Gettime gefunden) · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md` · Bezug: [RTC01](RTC01.md)
+Status: **OFFEN** (wieder aufgenommen 2026-10-31, Anwender) · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md` · Bezug: [RTC01](RTC01.md)
 
 ## Sachverhalt
 
@@ -19,3 +19,14 @@ Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: von RTC01 abgeloes
 
 - Entscheidung dokumentiert; ohne Orakelprofil ist die Abnahme eine Pruefung der Doku gegen `kernel/src/lib.rs:1324@seed_clock_from_kernel_file` und `references/emutos/bios/clock.c:1319`.
 - Kein vorher gleicher tosdump-Fall weicht neu ab; `cargo xtask test` gruen; `cargo xtask doc-check` der geaenderten Doku 0 Fehler.
+
+## Anwenderentscheidung 2026-10-31 (wieder aufgenommen)
+
+Der Startwert ist fuer jedes Programm sichtbar: GEMDOS `Tgettime`/`Tgetdate`
+(ueber `time()` der mintlib, `sdk/libc/mintlib/unix/gettimeofday.c:51-52`)
+und XBIOS `Gettime` haben dieselbe Quelle. Klein (P3): ohne RTC startet die
+Uhr mit dem **Baudatum des Kerns** (wie EmuTOS das Baudatum seines ROMs,
+`references/emutos/bios/clock.c:1319`), statt mit 1980-01-01 bzw. dem
+FAT-Datum von `KERNEL8.IMG`, bis [RTC01](RTC01.md) kommt. Abnahme:
+Hosttest + Boot zeigt das Baudatum.
+

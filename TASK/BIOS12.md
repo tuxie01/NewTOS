@@ -1,6 +1,6 @@
 # BIOS12 — Spec `docs/api/bios/` (`Setexc`, `Kbshift`) widerspricht Code und EmuTOS-Quelle
 
-Status: **SPEC BERICHTIGT** 2026-10-28, Entscheidungen beim Anwender (D1–D3 `Setexc`, D1 `Kbshift`) · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
+Status: **ERLEDIGT** 2026-10-31 ([Quittung](BIOS12-STATUS-DONE.MD)) · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
 
 ## Sachverhalt
 

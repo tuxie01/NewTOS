@@ -1,6 +1,6 @@
 # TICK01 — `_hz_200` ($4BA) nur in der Seite 0 des laufenden Prozesses
 
-Status: **OFFEN** (Vor-Start-Pruefung beim Anwender) · Prioritaet: **P3** · Typ: Developer — Fund F1 aus [PITEST01](PITEST01.md) Teil 1 (2026-10-31)
+Status: **GEPARKT** 2026-10-31 (Anwender: wieder aufnehmen, wenn die Tester Fehlerbild K6 aus DOOM01 sehen) · Prioritaet: **P3** · Typ: Developer — Fund F1 aus [PITEST01](PITEST01.md) Teil 1 (2026-10-31)
 
 ## Sachverhalt (gemessen)
 

@@ -94,7 +94,7 @@ A0–A6, B1–B2).
   `config.txt` einen anderen `kernel=` oder `os_prefix=` setzt (Raspberry-Pi-Doku, Optionen `kernel`/`os_prefix`,
   Quelle in der RUNINFO).
 - **Liste:** `measurements/measurement-2026-10-31-pitest01-part2/method/pitest01-card.list` (Sonden in `C:\`,
-  `DCPROBE` als `C:\AUTO\DCPROBE.NCP`, Alltagsprogramme unter `C:\Apps\<APP>\` wie auf der Alltagskarte laut
+  `DCPROBE` als `C:\AUTO\DCPROBE.NCP`, Alltagsprogramme unter `C:\Apps\<APP>\` wie auf der Karte laut
   ihrer letzten lokalen Sicherung vom 2026-10-08). Neubau aller Programme:
   `measurements/measurement-2026-10-31-pitest01-part2/method/build-card-programs.sh`.
 - **Probe nur gegen ein Scratch-Abbild** (`measurements/measurement-2026-10-31-pitest01-part2/RUNINFO.TXT`):
@@ -120,5 +120,21 @@ tools/sync-card.sh sync "${C[@]}" --active kernelb.img --run-dir $R/card-b --wri
 ```
 
 - Offen: echte Karte und echte Pi; HypView braucht auf der Karte eine `.HYP` und `HYP_VIEW.CFG` (A4), die
-  Alltagskarte hatte am 2026-10-08 kein HypView; `cmdline.txt` fehlte dort (fuer Phase B neu anlegen mit
+  Karte hatte am 2026-10-08 kein HypView; `cmdline.txt` fehlte dort (fuer Phase B neu anlegen mit
   `serial=on`); die Pfade der Liste gegen den Trockenlauf pruefen.
+
+## Anwenderentscheidungen 2026-10-31 (nach Teil 2)
+
+- Es gibt **eine** Karte, die Testkarte; eine "Alltagskarte" gibt es nicht
+  (Wortlaut hier und im Ablaufblatt berichtigt). Den vorhandenen
+  `kernel8.img` vor dem Schreiben sichern.
+- HypView mit `HYP_VIEW.CFG` und einer `.HYP`-Datei kommt auf die Karte (A4).
+- `cmdline.txt` wechselt mit dem Kern beim Uebergang A→B: Phase A ohne,
+  Phase B mit `serial=on` (`--allow-boot-config` nur dafuer). Begruendung des
+  Leads: `serial=on` schaltet die UART-Ausgabe ein, und `write_byte` wartet
+  auf freien Platz im Sende-FIFO (`kernel/src/drivers/bcm2711/pl011.rs:165-171@write_byte`),
+  der sich mit der Baudrate leert, auch ohne Adapter — Phase A wuerde dadurch
+  langsamer (A0-Bootzeit, FS26 T3); aus dem Code abgeleitet, nicht gemessen.
+- Volume-Namen vor dem Trockenlauf per `diskutil list`; die Ausgabe des
+  Trockenlaufs geht vor `--write` an den Anwender.
+

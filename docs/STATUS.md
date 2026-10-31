@@ -76,7 +76,7 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   [BIOS14](../TASK/BIOS14.md) (Werkzeugluecke; blockiert keinen offenen Fix),
   [XBIOS07](../TASK/XBIOS07.md) (Doku-Korrektur ohne Nutzer),
   [XBIOS11](../TASK/XBIOS11.md) (kein Kartenprogramm haengt am Seed-Ursprung (einziger Nutzer TeraDesk-Formatieren)),
-  [XBIOS12](../TASK/XBIOS12.md) (von RTC01 abgeloest; kein Nutzer von XBIOS Gettime gefunden),
+  
   [XBIOS13](../TASK/XBIOS13.md) (reine Spec-Pflege),
   [XBIOS14](../TASK/XBIOS14.md) (Orakelgrenze; blockiert keinen Fix),
   [XBIOS16](../TASK/XBIOS16.md) (kein Programm ruft Jdisint/Jenabint/Mfpint),
@@ -96,7 +96,7 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   [TOOL30](../TASK/TOOL30.md) (zugehoeriger Fix (A126) per Sonde abgenommen),
   [SDK02](../TASK/SDK02.md) (kein Nutzer der Konstanten),
   [SDK06](../TASK/SDK06.md) (kein Programm liest einen Cookie mit gesetztem Bit 31).
-  [FS21](../TASK/FS21.md) (P2, Archivbit beim `Fclose`; umgesetzt 2026-10-31, Commit dieser Zeile). Wartet auf Anwender: [BIOS12](../TASK/BIOS12.md) (D1–D3 `Setexc`, D1 `Kbshift`).
+  [FS21](../TASK/FS21.md) (P2, Archivbit beim `Fclose`; umgesetzt 2026-10-31, Commit dieser Zeile). Wartet auf Anwender: [BIOS12](../TASK/BIOS12.md) erledigt 2026-10-31 (Quittung). Wieder aufgenommen 2026-10-31: [XBIOS12](../TASK/XBIOS12.md) (Startuhr = Baudatum des Kerns bis RTC01). Geparkt: [TICK01](../TASK/TICK01.md) (bis Tester K6 aus DOOM01 sehen).
   [PITEST01](../TASK/PITEST01.md) (P2, Testkarte und Ablauf fuer die Tester an der echten Pi): Teil 1 umgesetzt 2026-10-31 (Debug-Feature `crash-nowait`, `P0REP.NAP`, `HZPROBE.NAP`), Teil 2 umgesetzt 2026-10-31 (Kartenabgleich `tools/sync-card.sh`, Ablaufblatt `docs/analysis/tester-run-sheet-2026-10-31.md`; Commit dieser Zeile); offen: Karte fuellen (erst nach Bestaetigung des Anwenders) und der Lauf an der echten Pi.
   Developer, einer zur Zeit:
   die S2-Audit-Tickets [XBIOS02](../TASK/XBIOS02.md) (erledigt 2026-10-29, `7bc047a6`),

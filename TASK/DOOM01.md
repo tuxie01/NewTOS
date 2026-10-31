@@ -92,3 +92,11 @@ gebaut, sondern dateiweise aktualisiert (19 Dateien ersetzt) — es gibt daher
   identisch und wurden nicht kopiert.
 - Bisektionsgrenzen: Kern `795066d9` (2026-10-24, kein Freeze gesehen) bis
   `58e35ac8`; DOOM vom 2026-10-24 (`bec47b14...`) bis `86abca15...`.
+
+## Querverweis (2026-10-31)
+
+[TICK01](TICK01.md) (gemessen): `$4BA` wird nur in die Seite 0 des laufenden
+Prozesses geschrieben; ein Prozess, der nicht lief, liest bis zu seinem
+naechsten Tick einen veralteten Wert. Geparkt — wieder aufnehmen, wenn die
+Tester Fehlerbild K6 ("DOOMs `_hz_200` steht") sehen.
+
