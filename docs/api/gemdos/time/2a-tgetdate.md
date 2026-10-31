@@ -244,23 +244,26 @@ a date/time torn across a midnight tick (see `2c-tgettime.md`).
 There is no RTC and no `current_date` cache advanced by a timer ISR. NewTOS
 computes `now = BASE_SECS + CNTPCT/CNTFRQ`
 (`tos-api/src/gemdos/time.rs:25-45`), decomposes it, and packs the date
-(`tgetdate`, `time.rs:136-138`; `pack_date`, `time.rs:117-119`). `BASE_SECS`
-defaults to `0` ⇒ the system boots reading **1980-01-01** until set via
-`Tsetdate` / XBIOS `Settime`.
+(`tos-api/src/gemdos/time.rs:141@tgetdate`, `tos-api/src/gemdos/time.rs:122@pack_date`). At boot
+`time_init` (`tos-api/src/gemdos/time.rs:247@time_init`, EmuTOS `time_init`,
+`bdos/time.c:160`) sets the clock to `DEFAULT_DATETIME`, the kernel's build
+date (the OSHEADER's `os_dosdate`) at 00:00:00, as EmuTOS does with no RTC
+(`bios/ikbd.h:95`, `bios/clock.c:1319`; TASK/XBIOS12); it reads that until
+set via `Tsetdate` / XBIOS `Settime`.
 
 | Atari reference | Pi-4 model today |
 |-----------------|------------------|
 | `current_date` cache read (no I/O) | `pack_date(decompose(BASE_SECS + CNTPCT/CNTFRQ))` — computed, no cache |
 | Cache seeded from RTC at boot, advanced by `tikfrk` on midnight | epoch advances continuously with the generic-timer count; no midnight-rollover handler needed |
-| Boot default = `DEFAULT_DATETIME` (OS build date) | boot default = **1980-01-01** (`BASE_SECS = 0`) |
+| Boot default = `DEFAULT_DATETIME` (OS build date) | boot default = `DEFAULT_DATETIME` (kernel build date, 00:00:00) |
 
 Leap rule: EmuTOS's simplified "every 4th year" (`time.rs:47-51`), exact over
 1980..2099. Same packed encoding as the DTA and FAT directory entries.
 
 ### Gaps vs. the contract (Step-2 candidates)
 
-- **No RTC / no persistence** — boot default is 1980-01-01, not the build date;
-  the clock resets each power-up (shared item with `Settime`/`Gettime`).
+- **No RTC / no persistence** — the clock starts at the build date on every
+  power-up (shared item with `Settime`/`Gettime`; TASK/RTC01 adds an RTC).
 - **No torn-read accessor** — `Tgetdate` and `Tgettime` are two separate reads
   of `now_secs()`; a reader can still observe a date/time split across a
   midnight second. An atomic combined snapshot is the recommended Step-2 add.

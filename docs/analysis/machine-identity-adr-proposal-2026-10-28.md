@@ -25,12 +25,12 @@ tragen den Symbolanker.
 
 `seed_defaults` setzt genau fuenf Cookies, sonst setzt nichts im Kernel einen
 (`/usr/bin/grep` ueber `kernel/src`, `tos-api/src`, `programs`: einziger Aufruf
-`kernel/src/lib.rs:362@seed_defaults`; Selbsttest erwartet fuenf,
+`kernel/src/lib.rs:373@seed_defaults`; Selbsttest erwartet fuenf,
 `kernel/src/selftest_cookie.rs:63@Seeded`):
 
 | Cookie | NewTOS-Wert | Stelle | Orakel `tt` | Orakel `falcontc` | Orakel `disk` |
 |---|---|---|---|---|---|
-| `NTOS` | `0x00000100` (Version) | `tos-api/src/cookie.rs:222@NTOS`, Wert `kernel/src/lib.rs:362@seed_defaults` | fehlt [D] (EmuTOS kennt ihn nicht, `include/cookie.h:21-39`) | fehlt [D] | fehlt [D] |
+| `NTOS` | `0x00000100` (Version) | `tos-api/src/cookie.rs:222@NTOS`, Wert `kernel/src/lib.rs:373@seed_defaults` | fehlt [D] (EmuTOS kennt ihn nicht, `include/cookie.h:21-39`) | fehlt [D] | fehlt [D] |
 | `_MCH` | `0x00050000` | `tos-api/src/cookie.rs:223@MCH` | `0x00020000` (MCH_TT) | `0x00030000` (MCH_FALCON) | nicht gemessen; Falcon-Maschine (`ORACLE.md` §2) -> `0x00030000` [D] |
 | `_IDT` | `0x0000112F` | `tos-api/src/cookie.rs:224@IDT` | `0x0000112E` | `0x0000112E` | nicht gemessen |
 | `_AKP` | `0x00000000` | `tos-api/src/cookie.rs:225@AKP` | `0x00000100` | `0x00000100` | nicht gemessen |

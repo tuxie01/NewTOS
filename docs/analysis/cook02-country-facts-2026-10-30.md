@@ -295,7 +295,7 @@ READ (the grep results), the consequence is DERIVED.
   VideoCore for the "Get command line" tag (`0x0005_0001`,
   `kernel/src/drivers/bcm2711/mailbox.rs:523@PROPTAG_GET_COMMAND_LINE`) via
   `kernel/src/drivers/bcm2711/mailbox.rs:556@with_command_line` (the doc comment names circle
-  `references/circle/lib/koptions.cpp:52-61` as the source). `kernel/src/lib.rs:1240@boot_switch`
+  `references/circle/lib/koptions.cpp:52-61` as the source). `kernel/src/lib.rs:1247@boot_switch`
   hands the string to a decider closure; on QEMU `raspi4b` the same tag
   answers `-append`; on QEMU `virt` the string is `/chosen/bootargs` of the
   DTB (a 256-byte buffer). READ (`kernel/src/bootargs.rs:5@Get`, lines 5-8,
@@ -315,9 +315,9 @@ READ (the grep results), the consequence is DERIVED.
   398, 1053-1055, 1139-1141, 1194). READ. That a `country=xx` string
   value would need a new accessor is DERIVED.
 - The decider runs at boot while the boot tables still reach the DTB
-  (`kernel/src/lib.rs:1236-1240@boot_switch`), i.e. **before** the filesystem is mounted;
-  `keymap::init_from_disk()` runs later, once `C:` exists (`kernel/src/lib.rs:409@init_from_disk`,
-  `kernel/src/keymap.rs:367@init_from_disk`). `seed_defaults` runs at `kernel/src/lib.rs:362@seed_defaults`.
+  (`kernel/src/lib.rs:1243-1247@boot_switch`), i.e. **before** the filesystem is mounted;
+  `keymap::init_from_disk()` runs later, once `C:` exists (`kernel/src/lib.rs:420@init_from_disk`,
+  `kernel/src/keymap.rs:367@init_from_disk`). `seed_defaults` runs at `kernel/src/lib.rs:373@seed_defaults`.
   The relative order of those three calls in `lib.rs` was read from the line
   numbers only, not from the control flow between them. READ (lines) /
   order is DERIVED from line order.

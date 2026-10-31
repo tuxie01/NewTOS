@@ -1471,6 +1471,26 @@ instead. No ported program is affected
 (`docs/analysis/line-a-readers-2026-10-26.md`). EmuDESK's two readers are
 rebuilt in NEWDESK through VDI values ([DESK69](../TASK/DESK69.md)).
 
+**No RTC: the clock starts at the build date on every boot** — user decision
+2026-10-31 ([XBIOS12](../TASK/XBIOS12.md)), until [RTC01](../TASK/RTC01.md)
+adds a battery clock. The start value itself is EmuTOS's: with no RTC
+answering, the clock is `DEFAULT_DATETIME = MAKE_ULONG(os_header.os_dosdate,
+0)`, the OS build date at 00:00:00 (`references/emutos/bios/ikbd.h:95`; the
+unset IKBD clock is set to it, `references/emutos/bios/clock.c:1211`, a build
+without one returns it, `references/emutos/bios/clock.c:1319`), and GEMDOS
+seeds its clock from `Gettime()` at boot (`references/emutos/bdos/time.c:160`).
+NewTOS does the same with its own build date, the OSHEADER's `os_dosdate`
+(`tos-api/src/gemdos/time.rs:237@DEFAULT_DATETIME`,
+`tos-api/src/gemdos/time.rs:247@time_init`), and runs on from there with the
+generic timer, as the IKBD clock runs on. The one clock serves XBIOS
+`Gettime`/`Settime` and GEMDOS `Tgetdate`/`Tgettime`/`Tsetdate`/`Tsettime`.
+Until 2026-10-31 the start value was 1980-01-01, or the FAT date of
+`C:\KERNEL8.IMG` on the Pi board; that seed is gone (EmuTOS has no such
+source). **Observable difference** from the reference machines, which all
+have an RTC (the Falcon's NVRAM; Hatari passes the host clock): a value set
+with `Settime`/`Tsetdate`/`Tsettime` does not survive a restart, and each
+boot starts again at the build date.
+
 ## EmuTOS is the reference, not the template
 
 CLAUDE.md Rule 1 says EmuTOS source *is* the spec. Through this charter that

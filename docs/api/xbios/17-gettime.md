@@ -206,7 +206,7 @@ a pure read (no side effects), matching the contract.
 | Atari reference | Pi-4 model today |
 |-----------------|------------------|
 | Reads whichever RTC the machine has | reads `BASE_SECS + monotonic` (no RTC) |
-| No-RTC fallback = `DEFAULT_DATETIME` (build date, midnight) | fallback = **1980-01-01 00:00** if the clock was never set (`BASE_SECS = 0` default), advancing by the monotonic delta |
+| No-RTC fallback = `DEFAULT_DATETIME` (build date, midnight) | the same: `time_init` starts the clock at `DEFAULT_DATETIME` at boot, then it advances by the monotonic delta (like the IKBD clock, `bios/clock.c:1211`) |
 | `Gettime`/`Tgettime` can diverge (RTC drifts from the GEMDOS cache) | **cannot diverge** — both read the *same* `BASE_SECS`+monotonic clock; there is no separate cache to drift |
 
 ### Note: no cache/RTC split
@@ -216,7 +216,25 @@ On EmuTOS `Gettime` reads the RTC while `Tgettime` reads a GEMDOS cache that the
 (`BASE_SECS` + generic-timer delta), so `Gettime`, `Tgetdate`, and `Tgettime`
 are always consistent — a benign simplification of the contract.
 
+### Boot value: the build date at 00:00:00 (TASK/XBIOS12)
+
+`DEFAULT_DATETIME` (`tos-api/src/gemdos/time.rs:237@DEFAULT_DATETIME`) is
+`(OS_DOSDATE << 16) | 0`: the kernel's build date GEMDOS-packed, the same
+`crate::build::OS_DOSDATE` the loader writes into the OSHEADER's `os_dosdate`
+(+0x1E), time 00:00:00 — EmuTOS's `MAKE_ULONG(os_header.os_dosdate, 0)`
+(`bios/ikbd.h:95`). The build date comes from `tos-api/build.rs` (the build
+day in UTC, pinned by `SOURCE_DATE_EPOCH` when set, so a reproducible build
+stays reproducible). The kernel calls `time_init`
+(`tos-api/src/gemdos/time.rs:247@time_init`, EmuTOS `time_init`,
+`bdos/time.c:160-165`) once at boot, right after the host is installed, and
+logs `[clock] no RTC: clock starts at the build date YYYY-MM-DD 00:00:00`
+(`kernel/src/lib.rs:1310@log_boot_clock`). So `Gettime()` right after boot
+reads `os_dosdate << 16` plus the seconds since that call. Until 2026-10-31
+the boot value was 1980-01-01, or on the Pi board the FAT date of
+`C:\KERNEL8.IMG`; EmuTOS has no such source, and it is gone.
+
 ### Gaps vs. the contract (Step-2 candidates)
 
-- **No RTC read; boot default is 1980-01-01** rather than the OS build date.
-  Persistence is the same Step-2/PHASE-07 item as `Settime` (an RTC backend).
+- **No RTC read, no persistence** — every boot starts at the build date.
+  Persistence is the same item as `Settime` (an RTC backend, TASK/RTC01;
+  `docs/COMPATIBILITY.md`, "No RTC").

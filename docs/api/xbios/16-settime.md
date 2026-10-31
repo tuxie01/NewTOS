@@ -222,7 +222,7 @@ generic-timer delta: `now = BASE_SECS + CNTPCT/CNTFRQ`
 |-----------------|------------------|
 | `current_time`/`current_date` cache written first | `BASE_SECS` recomputed (the single shared clock) |
 | RTC backend (NVRAM/MegaRTC/…/IKBD) written for persistence | **none** — no RTC hardware, nothing persisted |
-| Time survives power-off (RTC build) | resets to the boot default (1980-01-01 if never set) each power-up |
+| Time survives power-off (RTC build) | resets to the boot default (`DEFAULT_DATETIME`, the build date at 00:00:00) each power-up |
 
 ### Validation deviation (documented)
 

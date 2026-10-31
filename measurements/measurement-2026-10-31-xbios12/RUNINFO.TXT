@@ -1,0 +1,63 @@
+measurement-2026-10-31-xbios12 -- TASK/XBIOS12: without an RTC the clock starts at the kernel's build date, 00:00:00
+(EmuTOS DEFAULT_DATETIME = MAKE_ULONG(os_header.os_dosdate, 0), references/emutos/bios/ikbd.h:95). Developer, 2026-10-31.
+Tree = HEAD f55fb491 + the uncommitted XBIOS12 change set (tos-api/src/gemdos/time.rs, kernel/src/lib.rs,
+tos-api/tests/xbios12_default_datetime.rs, specs, this run). QEMU only; no hardware, no card.
+
+RESULT IN ONE LINE: both boards (QEMU raspi4b, QEMU virt), fresh build per board, print right after the clock start
+`[clock] no RTC: clock starts at the build date 2026-10-31 00:00:00 (Gettime 0x5d5f0000, os_dosdate 0x5d5f)` for an
+unpinned build on 2026-10-31, and `... 2026-08-29 00:00:00 (Gettime 0x5d1d0000, os_dosdate 0x5d1d)` for a build with
+SOURCE_DATE_EPOCH=1788004800 (2026-08-29 12:00 UTC; 0x5d1d = 23837, the OS_DOSDATE of references/emutos/obj/header.h for
+2026-08-29); a second build of the same tree with the same SOURCE_DATE_EPOCH gives byte-identical kernel images on both
+boards; both boots reach `[desk] desktop up`.
+
+1 WHAT CHANGED (code)
+  tos-api/src/gemdos/time.rs  DEFAULT_DATETIME = (crate::build::OS_DOSDATE as u32) << 16 -- the build date from tos-api/build.rs
+                              (SOURCE_DATE_EPOCH when set, else the build day in UTC), the same constant the loader writes into
+                              the OSHEADER's os_dosdate (+0x1E, tos-api/src/bdos/process/loader.rs:1101@OS_DOSDATE); time 0.
+                              time_init() = xbios_settime(DEFAULT_DATETIME): EmuTOS time_init (references/emutos/bdos/time.c:160)
+                              seeds GEMDOS from Gettime(), which with no RTC is DEFAULT_DATETIME
+                              (references/emutos/bios/clock.c:1211 IKBD clock set to it when unset, :1319 returned directly).
+  kernel/src/lib.rs           kernel_main_rust calls time_init() right after host_env::install() (the seed takes the generic
+                              timer's count as zero), on both boards, and logs the clock as Gettime reads it (log_boot_clock).
+                              seed_clock_from_kernel_file (FAT date of C:\KERNEL8.IMG, board-rpi4 only) removed: EmuTOS has no
+                              such source.
+  One source for all readers: XBIOS Gettime (tos-api/src/xbios/mod.rs GETTIME -> gemdos::time::xbios_gettime) and GEMDOS
+  Tgetdate/Tgettime (gemdos::time::tgetdate/tgettime) all read now_secs() = BASE_SECS + monotonic; time_init sets BASE_SECS.
+
+2 METHOD (method/)
+  method/boot.sh <board> <outdir> [SOURCE_DATE_EPOCH]   fresh `cargo xtask build --board <board>` (debug), llvm-objcopy -O binary,
+      boot headless in QEMU without SD card for 25 s, kill QEMU, keep the serial log. raspi4b: -append serial=on (SER01).
+  method/repro.sh <outdir> <SOURCE_DATE_EPOCH>          per board: touch (mtime only) tos-api/build.rs, tos-api/src/gemdos/time.rs,
+      kernel/src/lib.rs so cargo recompiles tos-api (build script reruns) and kernel; rebuild, objcopy, cmp with boot.sh's image.
+  Calls (outdir = session scratch, deleted after the run):
+      boot.sh rpi4 <s>/today; boot.sh qemu-virt <s>/today
+      boot.sh rpi4 <s>/pinned 1788004800; boot.sh qemu-virt <s>/pinned 1788004800
+      repro.sh <s>/pinned 1788004800
+  Tools: rustc 1.97.0-nightly (a5c825cd8 2026-04-14), QEMU emulator version 11.0.2,
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1).
+  No SD image was booted (the clock line comes before the card is read), so there is no image manifest:
+  optional_missing -- not applicable, no <image>.manifest (no image built or booted by this run).
+
+3 RESULTS (serial/)
+  serial/today-rpi4.txt        `[clock] no RTC: clock starts at the build date 2026-10-31 00:00:00 (Gettime 0x5d5f0000, os_dosdate 0x5d5f)`
+  serial/today-qemu-virt.txt   same line
+  serial/pinned-rpi4.txt       `[clock] no RTC: clock starts at the build date 2026-08-29 00:00:00 (Gettime 0x5d1d0000, os_dosdate 0x5d1d)`
+  serial/pinned-qemu-virt.txt  same line
+  0x5d5f = (2026-1980)<<9 | 10<<5 | 31; 0x5d1d = (2026-1980)<<9 | 8<<5 | 29 = 23837. Both boots continue to `[desk] desktop up`.
+  The raspi4b log has no `[clock] no kernel8.img FAT date` line any more (the removed seed).
+
+  Kernel images (gitignored, sha256 of the llvm-objcopy raw binary):
+    today  rpi4       d783e586df649e18a7abe084040285b1a24868d809ee6e291b110d2d11df4e8b
+    today  qemu-virt  21d71209fd85fcc6afd2f81f1f0ec9a3d77188dd7d8748c62196ca439619a91d
+    pinned rpi4       3a4d48ff9c456eb9c738fede1d4a7c1563ab7a636e73b94cf4284fb386fe4122  (rebuild: same, cmp identical)
+    pinned qemu-virt  7f48b78f9e83f69c9387cd9d964bac32e79cf787f9420a0a082a31dae4e19f78  (rebuild: same, cmp identical)
+
+4 REPRODUCIBILITY
+  Same tree + same SOURCE_DATE_EPOCH -> identical bytes on both boards (section 3, both crates really recompiled: repro.sh
+  reports 2 `Compiling` lines per board). Without SOURCE_DATE_EPOCH the date is the build day (UTC) as before XBIOS12
+  (OS_DATE/os_dosdate and the boot-screen stamp already depended on it); XBIOS12 adds no new input.
+
+5 HOST TESTS
+  cargo xtask test (full): 1922 passed / 0 failed / 1 ignored (basis 1918/0/1; +2 unit tests in tos-api/src/gemdos/time.rs,
+  +2 in tos-api/tests/xbios12_default_datetime.rs: the seed is OS_DOSDATE<<16 | 0 and, after time_init with 7 s of uptime,
+  Gettime/Tgetdate/Tgettime read the build date at 00:00:00 through the dispatchers, 61 s later 00:01:00).

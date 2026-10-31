@@ -231,7 +231,7 @@ enter	bdos/rwa.S	tos-api/src/gemdos/mod.rs	dispatch	mapped	trap #1 entry; the AA
 gouser	bdos/rwa.S	-	-	design:hardware:m68k-cpu	m68k return-to-user tail of the trap #1 handler; NewTOS returns through the kernel SVC path (kernel/src/arch), no function in the mapping
 termuser	bdos/rwa.S	-	-	design:hardware:m68k-cpu	m68k process-termination stack switch (bdos/rwa.S); NewTOS terminates through pterm.rs and the kernel SVC path
 tikfrk	bdos/time.c	tos-api/src/gemdos/time.rs	now_secs	mapped	analogue: NewTOS derives the time from the monotonic timer, no 2-second tick fork
-time_init	bdos/time.c	-	-	unmapped	reads the clock chip (Gettime) and hooks tikfrk into etv_timer; NewTOS has no RTC, its clock is a settable base plus the monotonic timer (gemdos/time.rs)
+time_init	bdos/time.c	tos-api/src/gemdos/time.rs	time_init	mapped	seeds the clock from Gettime(); NewTOS has no RTC, so DEFAULT_DATETIME = build date 00:00:00 (bios/ikbd.h:95, XBIOS12); the tikfrk hook has no counterpart, the clock runs on the generic timer
 xgetdate	bdos/time.c	tos-api/src/gemdos/time.rs	tgetdate	mapped	Tgetdate 0x2A
 xgettime	bdos/time.c	tos-api/src/gemdos/time.rs	tgettime	mapped	Tgettime 0x2C
 xsetdate	bdos/time.c	tos-api/src/gemdos/time.rs	tsetdate	mapped	Tsetdate 0x2B

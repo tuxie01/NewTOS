@@ -4,8 +4,10 @@ Status: **OFFEN** (after the Atari meeting) · Priority: P3 · Type: new hardwar
 
 ## Background
 
-NewTOS has no RTC. The boot clock is seeded from the FAT timestamp of
-`C:\KERNEL8.IMG` (`kernel/src/lib.rs:1200-1220`), then advanced by the ARM
+NewTOS has no RTC. The boot clock starts at the kernel's build date,
+00:00:00, like EmuTOS's `DEFAULT_DATETIME` (since 2026-10-31, TASK/XBIOS12;
+`tos-api/src/gemdos/time.rs:247@time_init`; before that the FAT timestamp of
+`C:\KERNEL8.IMG`), then advanced by the ARM
 generic timer; `docs/HARDWARE-PROFILE.md:53` records "none on-board". The
 code already anticipates swapping the clock *source* without touching the
 TOS API (`Tgetdate`/`Tgettime`/`Tsetdate`/`Tsettime`, XBIOS `Gettime`/`Settime`).
@@ -29,7 +31,7 @@ wrong time). Setting the clock from the System Info accessory comes later.
 2. DS3231 read/write of the time-keeping registers — from the DS3231
    datasheet (to be acquired into `references/datasheets/`; not there yet).
 3. Boot: seed the wall clock from the DS3231 if present; otherwise keep the
-   current kernel-image fallback. Never block or panic boot.
+   build-date start (`DEFAULT_DATETIME`, TASK/XBIOS12). Never block or panic boot.
 4. `Settime`/`Tsettime`/`Tsetdate` write back to the DS3231, following
    EmuTOS `bios/clock.c` / `bios/nvram.c` (how EmuTOS seeds the boot clock and
    writes back) — cite file:line.

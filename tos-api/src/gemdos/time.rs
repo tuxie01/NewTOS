@@ -8,7 +8,11 @@
 //! (`CNTPCT_EL0 / CNTFRQ_EL0`). `Tsetdate` / `Tsettime` recompute the
 //! base so the clock reads the requested value; `Tgetdate` /
 //! `Tgettime` add the monotonic delta back and pack to the FAT-style
-//! WORD encodings.
+//! WORD encodings. XBIOS `Settime` / `Gettime` use the same clock.
+//!
+//! At boot [`time_init`] starts the clock at [`DEFAULT_DATETIME`], the
+//! kernel's build date at 00:00:00 — EmuTOS's clock value when no RTC
+//! answers (`bios/ikbd.h:95`, `bios/clock.c:1211`, `bios/clock.c:1319`).
 //!
 //! Calendar math uses EmuTOS's simplified leap rule (`bdos/time.c`):
 //! every 4th year is a leap year — the 100/400 Gregorian exceptions
@@ -23,9 +27,10 @@ use tos_types::error::{ERROR, E_OK};
 use tos_types::Long;
 
 /// Wall-clock seconds since 1980-01-01 00:00:00 corresponding to
-/// monotonic boot time 0. `now = BASE_SECS + monotonic`. Default `0`
-/// ⇒ the system boots reading 1980-01-01 (the classic no-RTC default);
-/// programs set it via `Tsetdate` / `Tsettime`.
+/// monotonic boot time 0. `now = BASE_SECS + monotonic`. `0` until
+/// [`time_init`] seeds it at boot (EmuTOS's `current_date`/`current_time`
+/// are zero until its `time_init` too); programs set it via `Tsetdate` /
+/// `Tsettime` / `Settime`.
 static BASE_SECS: AtomicU64 = AtomicU64::new(0);
 
 const SECS_PER_DAY: u64 = 86_400;
@@ -222,4 +227,59 @@ pub fn xbios_settime(packed: u32) {
 pub fn xbios_gettime() -> u32 {
     let dt = decompose(now_secs());
     ((pack_date(&dt) as u32) << 16) | pack_time(&dt) as u32
+}
+
+/// The clock value when no RTC answers: the OS build date at 00:00:00,
+/// EmuTOS `DEFAULT_DATETIME = MAKE_ULONG(os_header.os_dosdate, 0)`
+/// (`bios/ikbd.h:95`). The date WORD is [`crate::build::OS_DOSDATE`], the
+/// value the loader writes into the OSHEADER's `os_dosdate` (+0x1E), so the
+/// clock and the header carry one build date (`SOURCE_DATE_EPOCH` pins it).
+pub const DEFAULT_DATETIME: u32 = (crate::build::OS_DOSDATE as u32) << 16;
+
+/// Boot-time clock start — EmuTOS `time_init` (`bdos/time.c:160-165`), which
+/// seeds GEMDOS's clock from `Gettime()`. With no RTC that is
+/// [`DEFAULT_DATETIME`]: the IKBD clock is set to it when it powers up
+/// unset (`bios/clock.c:1211`), and a build without one returns it directly
+/// (`bios/clock.c:1319`). NewTOS has no RTC (TASK/RTC01 adds one), so the
+/// clock reads the build date at 00:00:00 at this call and runs on from
+/// there with the generic timer. Call once at boot, after the host is
+/// installed (the monotonic count is taken here).
+pub fn time_init() {
+    xbios_settime(DEFAULT_DATETIME);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// `DEFAULT_DATETIME` is the build date GEMDOS-packed in the high word
+    /// and midnight (`0`) in the low word, like `MAKE_ULONG(os_dosdate, 0)`.
+    #[test]
+    fn default_datetime_is_the_build_date_at_midnight() {
+        use crate::build::{BUILD_DAY, BUILD_MONTH, BUILD_YEAR};
+        assert_eq!(DEFAULT_DATETIME & 0xFFFF, 0, "time word is 00:00:00");
+        let date = (DEFAULT_DATETIME >> 16) as u16;
+        assert_eq!(date, crate::build::OS_DOSDATE);
+        assert_eq!(1980 + (date >> 9), BUILD_YEAR);
+        assert_eq!((date >> 5) & 0x0F, BUILD_MONTH as u16);
+        assert_eq!(date & 0x1F, BUILD_DAY as u16);
+    }
+
+    /// The packed value round-trips through the seconds clock: composing
+    /// the build date at 00:00:00 and decomposing it gives the same WORDs.
+    #[test]
+    fn default_datetime_round_trips_through_the_clock_math() {
+        let date = (DEFAULT_DATETIME >> 16) as u16;
+        let secs = compose(
+            1980 + (date >> 9) as u32,
+            ((date >> 5) & 0x0F) as u32,
+            (date & 0x1F) as u32,
+            0,
+            0,
+            0,
+        );
+        let dt = decompose(secs);
+        assert_eq!(pack_date(&dt), date);
+        assert_eq!(pack_time(&dt), 0);
+    }
 }

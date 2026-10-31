@@ -358,6 +358,13 @@ extern "C" fn kernel_main_rust(dtb_phys: usize, entry_el: u64) -> ! {
     arch::aarch64::exceptions::init();
     host_env::install();
 
+    // XBIOS12: start the wall clock — EmuTOS `time_init` (`bdos/time.c:160`).
+    // No RTC (TASK/RTC01), so it starts at the build date, 00:00:00, like
+    // EmuTOS's `DEFAULT_DATETIME` (`bios/ikbd.h:95`). After the host install:
+    // the seed takes the generic timer's count as its zero.
+    tos_api::gemdos::time::time_init();
+    log_boot_clock();
+
     // Seed the NewTOS cookie jar (system-feature registry, read via the
     // Ssystem trap). `NTOS` = 0x0000_0100, set at NewTOS 0.1.0 and left as is
     // when the product version became 0.5 (2026-10-09): a cookie value is
@@ -411,10 +418,6 @@ extern "C" fn kernel_main_rust(dtb_phys: usize, entry_el: u64) -> ! {
         // Select the keyboard layout from the card (KEYBOARD.KBD override or
         // the #K line in NEWDESK.INF), before the console/desktop reads keys.
         keymap::init_from_disk();
-        // Seed the wall clock from the running kernel image's FAT timestamp
-        // (no battery RTC yet). Must run after `mount()` so `C:` is readable
-        // and before `initinfo::run()` so the boot screen shows the date.
-        seed_clock_from_kernel_file();
 
         // Self-test build only (`--features selftest-emmc`): the Phase-09
         // microSD/FAT/GEMDOS-file checks, with hard assertions on the
@@ -1299,44 +1302,14 @@ pub(crate) fn print_mem05_stats(label: &str) {
     );
 }
 
-/// Seed the wall clock from `C:\KERNEL8.IMG`'s FAT directory timestamp at
-/// boot — the HW-adapted boot clock-init for a machine with no RTC.
-///
-/// NewTOS has no battery-backed RTC. As documented in
-/// `tos-api/src/gemdos/time.rs`, the wall clock is a settable `BASE_SECS`
-/// epoch plus the ARM generic-timer monotonic delta; the default base of
-/// `0` boots the system reading 1980-01-01, so every OS-created file
-/// (logs) is stamped 1980-01-01 and builds are indistinguishable.
-///
-/// EmuTOS seeds its boot clock from the NVRAM / IKBD RTC. We have neither,
-/// so — until an SPI RTC lands — we use the FAT date/time of the running
-/// kernel image as a coarse stopgap source: it tells you *which kernel
-/// build/flash produced a file*. The TOS API (`Tgetdate`/`Tgettime`/
-/// `Settime`) is unchanged; only the clock *source* is HW-adapted, and it
-/// will be swapped for the SPI RTC without touching the API.
-///
-/// The FAT directory date/time WORDs are bit-identical to the GEMDOS
-/// packed encoding, so the pair feeds straight into `xbios_settime`
-/// (`packed = (date << 16) | time`) with no conversion. A missing file or
-/// a zero FAT date (FAT `0` = "no date") leaves the 1980-01-01 default
-/// untouched. This never panics and never blocks boot.
-#[cfg(feature = "board-rpi4")]
-fn seed_clock_from_kernel_file() {
-    use tos_api::bdos::fs::find::{list_dir_ex, DirInfo};
-
-    // `list_dir_ex` upper-cases the mask into the 11-byte FCB pattern
-    // `KERNEL8 IMG`, matching the FAT 8.3 short name of the boot image.
-    let mut ents = [DirInfo::default(); 1];
-    let n = list_dir_ex("C:\\KERNEL8.IMG", &mut ents);
-    if n == 0 || ents[0].date == 0 {
-        kprintln!("[clock] no kernel8.img FAT date on C: — clock stays at 1980-01-01");
-        return;
-    }
-
-    let (date, time) = (ents[0].date, ents[0].time);
-    let packed = ((date as u32) << 16) | time as u32;
-    tos_api::gemdos::time::xbios_settime(packed);
-
+/// XBIOS12: one boot line with the wall clock as `Gettime` reads it right
+/// after [`tos_api::gemdos::time::time_init`] — the build date at 00:00:00
+/// (EmuTOS `DEFAULT_DATETIME`, `bios/ikbd.h:95`) until an RTC exists
+/// (TASK/RTC01). Read through the clock, not from the constant, so the line
+/// shows what programs get.
+fn log_boot_clock() {
+    let packed = tos_api::gemdos::time::xbios_gettime();
+    let (date, time) = ((packed >> 16) as u16, packed as u16);
     let year = 1980 + (date >> 9);
     let month = (date >> 5) & 0x0F;
     let day = date & 0x1F;
@@ -1344,6 +1317,7 @@ fn seed_clock_from_kernel_file() {
     let min = (time >> 5) & 0x3F;
     let sec = (time & 0x1F) * 2;
     kprintln!(
-        "[clock] seeded from kernel8.img: {year:04}-{month:02}-{day:02} {hour:02}:{min:02}:{sec:02}"
+        "[clock] no RTC: clock starts at the build date {year:04}-{month:02}-{day:02} {hour:02}:{min:02}:{sec:02} (Gettime 0x{packed:08x}, os_dosdate 0x{:04x})",
+        tos_api::build::OS_DOSDATE,
     );
 }

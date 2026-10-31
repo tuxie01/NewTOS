@@ -43,7 +43,7 @@ Interrupt springt waehrend `bconin1` durch `kbdvec`,
 
 - RX-Interrupt wird auf beiden Boards eingeschaltet, unabhaengig von
   `serial=on` (der Schalter gilt nur fuer TX):
-  `kernel/src/lib.rs:371@enable_rx_interrupt`,
+  `kernel/src/lib.rs:382@enable_rx_interrupt`,
   `kernel/src/drivers/bcm2711/pl011.rs:186@enable_rx_interrupt` (RXIM+RTIM).
 - IRQ-Eintrag: `kernel/src/drivers/gic.rs:210@pl011_rx_drain` →
   `kernel/src/console.rs:146@pl011_rx_drain`.
@@ -53,7 +53,7 @@ Interrupt springt waehrend `bconin1` durch `kbdvec`,
 - Lesen: `kernel/src/console.rs:194@AuxSerial`, Warten
   `kernel/src/console.rs:231@aux_read_blocking`, Einbau
   `kernel/src/console.rs:254@install_aux` (Aufruf
-  `kernel/src/lib.rs:367@install_aux`) — alle `#[cfg(feature = "board-qemu-virt")]`.
+  `kernel/src/lib.rs:378@install_aux`) — alle `#[cfg(feature = "board-qemu-virt")]`.
 - Laut `docs/MEMORY.md` QUIRK-002-Korrektur und Messung 2026-09-04 wird die
   PL011-RX-IRQ auf der echten Pi zugestellt.
 - **Bekannte Falle:** ohne Adapter ist GPIO 15 (RXD0) ein Eingang **ohne

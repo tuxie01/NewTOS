@@ -126,7 +126,7 @@ anyway), with `Setcookie(tag, value)` to add/update. No user mapping, no
 ### The Pi cookie set (seeded at boot)
 
 `tos_api::cookie::seed_defaults(version)` (`tos-api/src/cookie.rs:223-229@seed_defaults`),
-called from `kernel/src/lib.rs:362@seed_defaults` with `version = 0x0000_0100`, seeds a
+called from `kernel/src/lib.rs:373@seed_defaults` with `version = 0x0000_0100`, seeds a
 kernel-owned fixed array (`JAR_CAP = 32`, `tos-api/src/cookie.rs:20@JAR_CAP`) — **no** hardware
 probing:
 
