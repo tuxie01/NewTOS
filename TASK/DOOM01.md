@@ -162,3 +162,13 @@ Der Freeze braucht also X-Shot im Accessory-Slot (Kandidaten:
 uns nie gebaut. Offen: ob ein Accessory, das auf Tasten wartet, bei EmuTOS
 waehrend eines laufenden Programms ueberhaupt geweckt wird, und ob ein
 Neubau von X-Shot etwas aendert.
+
+## X-Shot neu gebaut (2026-10-31, Anwender, ohne Mitschrift)
+
+X-Shot-Quelle `https://github.com/ragnar76/X-Shot` Commit `5ed45575a54f3b1d56c6cc5fd4a1645d6bc26151`
+(dessen dist/newtos/xshot.nac = die alte Kartendatei `766627b7...`), mit dem
+heutigen SDK gebaut (`sdk/bin/newtos-cc -Wall -nac -DXSHOT_VERSION='"1.0.1"'`),
+sha256 `f7607bb141675eb656b3836b817e14d8be8dc2cd042c4c109ae7cad5dd294af9`, als
+`C:\ACC\XSHOT.NAC` auf der Karte; Release-Kern, `cmdline.txt` leer:
+**Freeze bleibt.** Das alte Kompilat ist nicht die Ursache; gesucht wird im
+Kern (Zusammenspiel DOOM + auf Tasten wartendes Accessory ohne Timer).
