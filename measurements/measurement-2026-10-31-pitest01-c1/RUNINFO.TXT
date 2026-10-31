@@ -1,0 +1,56 @@
+RUNINFO -- PITEST01 separation run C1: release kernel with serial=on (2026-10-31)
+
+WHAT
+  DOOM01 did not freeze in phase B (kernelb with fs-io-trace, serial=on,
+  measurements/measurement-2026-10-31-pitest01-phase-b/RUNINFO.TXT), where
+  every traced call costs ~16.6 ms of UART output. C1 keeps the phase-A
+  kernel and adds only serial=on, so the timing stays close to phase A.
+  Owner go 2026-10-31 ("ja ok koennen wir machen").
+
+CARD CHANGE (lead)
+  On the card after phase B (disk4, BOOT = C:), one file changed:
+  cp C:\kernela.img C:\kernel8.img; sync; diskutil unmount force disk4s1;
+  diskutil mount disk4s1; then sha256:
+    kernel8.img = kernela.img e0fe680b25402385df6079029dc0ea8dacaa4c1abc3cc36298b680c7a3580ad4
+    (release, no features, commit 6796787c;
+    measurements/measurement-2026-10-31-pitest01-card/RUNINFO.TXT)
+    kernelb.img bc543d4871ef7eec... unchanged; cmdline.txt "serial=on" unchanged.
+
+INPUT
+  serial/screenlog-c1.txt -- the user's `screen -L` capture ("screenlog.0 2",
+  420652 bytes, 19829 lines,
+  sha256 a212fd44b7e3a48c71f7eaf2ee6a556fe0b8afa8137f40eeddd33f5322915b19).
+
+RESULTS (keyword search: "[shell] sh_ldapp", "[crash]", "[reset]", "panic")
+  One boot (firmware XHCI-STOP line 10). Programs, in order:
+    DOOM.NAP      line 3114, exit rc=0 line 4402 -- no freeze (user)
+    DOOMNOKB.NAP  line 4749, exit rc=0 line 5345
+    ZVIEW.NAP     line 6660 -- CRASH, see below; exit rc=65535 line 6691
+    ZVIEW.NAP     line 7010, exit rc=0 line 12149 (loads 10 children)
+    HYP_VIEW.NAP  line 13912, exit rc=0 line 15879
+    QED.NAP       line 16682, exit rc=0 line 17321
+    HYP_VIEW.NAP  line 18404, exit rc=0 line 19223
+  No panic, no [reset] line.
+
+  zView crash (lines 6666-6689): after zView had started two child
+  programs ("[exec] preparing program (slot 3)" twice), slot 2 (zView)
+    "[crash] slot 2 Bus Error esr=0x82000007 pc=0x1cb497c far=Some(30099836)"
+    "Memory violation: private memory, execute (translation fault, level 3)"
+    basepage=01c85000 text=01c86000 data=01ce6fe0 bss=01cec230
+    "Crash at text+0002e97c"; X30 = 0x1cb4964 (24 bytes before pc).
+  The faulting address lies inside zView's own text segment: an instruction
+  fetch from the program's own code page found no level-3 translation. The
+  second zView start (same build, 10 child loads) ran and exited normally.
+
+FINDINGS FOR TRIAGE (not fixed)
+  C1-1 DOOM01: no freeze with the phase-A kernel plus serial=on. Between
+       phase A (froze) and C1 the only intended difference is serial=on.
+       Control proposed: phase A repeated (cmdline.txt empty), DOOM.NAP only.
+  C1-2 zView: intermittent instruction abort (translation fault, level 3)
+       inside its own text right after Pexec of child programs.
+  HypView has no menu bar by design: sdk/apps/hypview/dl_user.h sets
+       USE_MENU NO (upstream); its menu is the toolbar's TO_MENU popup.
+       Phase-A finding P2 "no menu bar" is therefore no defect.
+
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing: not applicable (card changed by hand, no image built)
