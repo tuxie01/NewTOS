@@ -1,6 +1,6 @@
 # MEM11 — Anwenderadressen < 2 GiB nur zufaellig: die Abbildungsgrenze erlaubt 4 GiB
 
-Status: **GEPARKT** 2026-10-31 (Anwender: heute nicht erreichbar; offen nur ein Hosttest, der die Speicheraufteilung unter 2 GiB festhaelt) · Prioritaet: **P2** · Typ: Kernfehler (Vertragsgrenze nicht erzwungen) — Anwenderbefund 2026-10-26
+Status: **GEPARKT** 2026-10-31 (Anwender: heute nicht erreichbar; der Hosttest, der die Speicheraufteilung unter 2 GiB festhaelt, ist umgesetzt 2026-10-31, siehe *Stand*) · Prioritaet: **P2** · Typ: Kernfehler (Vertragsgrenze nicht erzwungen) — Anwenderbefund 2026-10-26
 
 Prioritaet P2 wie die uebrigen Defekte der Reihe (MEM01–MEM05): der Vertrag
 ist verletzbar, aber heute fuehrt kein gefundener Weg tatsaechlich eine
@@ -216,3 +216,58 @@ dass die Speicheraufteilung alle Anwenderadressen unter 2 GiB haelt — eine
 Aenderung der Aufteilung soll laut scheitern, statt die Luecke still wieder
 zu oeffnen.
 
+## Stand 2026-10-31: Aufteilung unter 2 GiB festgehalten
+
+Umgesetzt nach der Anwenderentscheidung oben; keine Laufzeitaenderung, die
+Erzwingung bleibt geparkt. Grenze ist ueberall dieselbe Konstante
+`USER_PTR_END` (`tos-api/src/bdos/process/usermem.rs:57@USER_PTR_END`),
+keine Kopie der Zahl.
+
+Kern, zur Uebersetzungszeit auf beiden Boards (der Kern laesst sich auf dem
+Host nicht binden):
+
+- `TOS_MD_MAX_END <= USER_PTR_END`
+  (`kernel/src/bios/machine/layout.rs:376@TOS_MD_MAX_END`).
+- Die DRAM-Kappung von `discover` steht jetzt in einer `const fn`
+  (`kernel/src/bios/machine/layout.rs:364@ttram_cap_end_for`, aus `discover`
+  gerufen `kernel/src/bios/machine/layout.rs:561@ttram_cap_end_for`, gleiche
+  Rechnung wie vorher); `ttram_cap_end_for(board::DRAM_START +
+  STRAM_SLOT_SIZE) <= USER_PTR_END`
+  (`kernel/src/bios/machine/layout.rs:380@ttram_cap_end_for`). Damit sind
+  `POOL_MAX_BYTES`, `TOS_MD_MAX_END`, `STRAM_SLOT_SIZE` und
+  `board::DRAM_START` gemeinsam gepinnt; alles, was aus DRAM an Programme
+  geht (beide Pools, alles, was `usermem::expose` veroeffentlicht: Kernabbild,
+  `.dma`, Kern-Heap, Blockcache, qemu-virt-Bildschirmspeicher), liegt unter
+  dieser Kappung. Faellt auf qemu-virt auch, wenn jemand das `min` mit
+  `TOS_MD_MAX_END` entfernt (`0x4100_0000 + 1 GiB`).
+- Pi-Bildschirmspeicher: `BUS_TO_PHYS < USER_PTR_END`
+  (`kernel/src/drivers/bcm2711/framebuffer.rs:72@BUS_TO_PHYS`); das Ende des
+  Speichers begrenzt der VideoCore-Anteil unter 1 GiB (BCM2711 §1.2.3), nicht
+  der Code.
+
+Host, `tos-api/tests/mem11_layout_below_2gib.rs` (3 Tests):
+
+- `limit_is_the_positive_long_range`
+  (`tos-api/tests/mem11_layout_below_2gib.rs:44@limit_is_the_positive_long_range`):
+  `USER_PTR_END == Long::MAX + 1`, `USER_VA_LIMIT >= USER_PTR_END`.
+- `fixed_user_pages_and_pointers_lie_below_2gib`
+  (`tos-api/tests/mem11_layout_below_2gib.rs:52@fixed_user_pages_and_pointers_lie_below_2gib`):
+  Seite 0, IOREC-, Stub- und private Seite (`IOREC_PAGE_VA`, `STUB_PAGE_VA`,
+  `PRIV_PAGE_VA`), die Bereiche `Keytbl`, `Kbdvbase`, `kbdvec`-Stubs,
+  Reset-Stub und die herausgegebenen Zeiger (`Iorec` aller drei Geraete,
+  `Bconmap`, `ret`-/`kbdvec`-Stub, Reset-Einstieg, Upcall- und
+  `G_USERDEF`-Trampolin, `PARMBLK`-Puffer, `os_run`-Zelle).
+- `pool_seed_refuses_a_pool_reaching_2gib`
+  (`tos-api/tests/mem11_layout_below_2gib.rs:97@pool_seed_refuses_a_pool_reaching_2gib`):
+  `bdos::mem::init` nimmt einen Pool bis `USER_PTR_END - 0x1000` (= heutiges
+  `TOS_MD_MAX_END`) an und lehnt einen bis `USER_PTR_END` mit
+  `AddressOutOfRange` ab (`seed_md`,
+  `tos-api/src/bdos/mem/init.rs:226@seed_md`).
+
+Gegenproben (Abschrift, danach von Hand zurueckgestellt): `TOS_MD_MAX_END =
+0x8000_1000` → Kernbau scheitert auf rpi4 (eine Zusicherung) und qemu-virt
+(beide): `evaluation panicked: MEM11: TOS_MD_MAX_END lets a pool reach
+0x8000_0000` bzw. `MEM11: the managed DRAM can reach 0x8000_0000`. Die
+`checked_add`-Pruefung in `seed_md` entfernt → `pool_seed_refuses_a_pool_reaching_2gib`
+FAILED. Hosttests 1910/0/1 (+3); Clippy Kern 121 / tos-api 74 auf beiden
+Boards wie Basis.

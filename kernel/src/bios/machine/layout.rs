@@ -349,6 +349,41 @@ compile_error!("kernel/mm/layout: enable exactly one board feature");
 compile_error!("kernel/mm/layout: features board-qemu-virt and board-rpi4 are mutually exclusive");
 
 // ─────────────────────────────────────────────────────────────────────
+// User addresses below 2 GiB (TASK/MEM11, user decision 2026-10-31)
+// ─────────────────────────────────────────────────────────────────────
+
+/// Exclusive end of the DRAM [`discover`] manages, for a TT-RAM slot that
+/// starts at `ttram_start`: the lower of the two ceilings above a truthful
+/// "there is more RAM" answer — the frame bitmap ([`POOL_MAX_BYTES`]) and the
+/// TOS memory-descriptor ABI ([`TOS_MD_MAX_END`]).
+///
+/// Every address the kernel can hand a program from DRAM lies below it: both
+/// pools, and everything `usermem::expose` can publish (the kernel image and
+/// its statics, `.dma`, the kernel heap, the block cache and — on
+/// `board-qemu-virt` — the framebuffer all lie inside the capped `dram`).
+const fn ttram_cap_end_for(ttram_start: u64) -> u64 {
+    let by_bitmap = ttram_start.saturating_add(POOL_MAX_BYTES);
+    if by_bitmap < TOS_MD_MAX_END { by_bitmap } else { TOS_MD_MAX_END }
+}
+
+// The 2-GiB contract is held by placement only — the user tables could map
+// up to 4 GiB (`tos-api` `bdos::process::mmu::USER_VA_LIMIT`), and the
+// enforcement at the mapping boundary is parked (TASK/MEM11). A layout
+// change that would let a user address reach `USER_PTR_END` (a TOS address is
+// a signed 32-bit `LONG`; at or above `0x8000_0000` it reads as a negative
+// error code) must fail the build on both boards instead of reopening the gap
+// silently. The host-side half: `tos-api/tests/mem11_layout_below_2gib.rs`.
+const _: () = assert!(
+    TOS_MD_MAX_END <= tos_api::bdos::process::usermem::USER_PTR_END,
+    "MEM11: TOS_MD_MAX_END lets a pool reach 0x8000_0000"
+);
+const _: () = assert!(
+    ttram_cap_end_for(board::DRAM_START + STRAM_SLOT_SIZE)
+        <= tos_api::bdos::process::usermem::USER_PTR_END,
+    "MEM11: the managed DRAM can reach 0x8000_0000"
+);
+
+// ─────────────────────────────────────────────────────────────────────
 // Linker-provided kernel image symbols
 // ─────────────────────────────────────────────────────────────────────
 
@@ -523,8 +558,7 @@ pub fn discover(dtb_phys: Option<usize>, fw: Option<DramReport>, block_cache_byt
     // unmanaged, instead of aborting in `frames::init` or
     // `bdos::mem::init`.
     let ttram_start = dram.start + STRAM_SLOT_SIZE;
-    let ttram_cap_end =
-        ttram_start.saturating_add(POOL_MAX_BYTES).min(TOS_MD_MAX_END);
+    let ttram_cap_end = ttram_cap_end_for(ttram_start);
     let dram_unmanaged = dram.end.saturating_sub(ttram_cap_end);
     if dram_unmanaged > 0 {
         dram = PhysRange::new(dram.start, ttram_cap_end);

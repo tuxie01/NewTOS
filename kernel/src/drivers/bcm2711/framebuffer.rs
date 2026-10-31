@@ -63,6 +63,16 @@ const ALPHA_MODE_IGNORED: u32 = 2;
 /// the top 2 bits select the cache alias (hardware ref §4).
 const BUS_TO_PHYS: u32 = 0x3FFF_FFFF;
 
+// TASK/MEM11 (user decision 2026-10-31): `Physbase`/`Logbase` publish the
+// screen memory at this physical address, so it must stay a positive `LONG`.
+// The mask keeps the base below 1 GiB, and the store lies in the VideoCore's
+// share of SDRAM, which ends at `0x4000_0000` (BCM2711 ARM Peripherals
+// §1.2.3; `bios::machine::layout`, `board-rpi4`).
+const _: () = assert!(
+    (BUS_TO_PHYS as u64) < tos_api::bdos::process::usermem::USER_PTR_END,
+    "MEM11: a masked VideoCore address can reach 0x8000_0000"
+);
+
 /// Property message buffer, 16-byte aligned (mailbox requirement). Sized
 /// generously (36 words) to hold the seven-tag allocate sequence (34 words
 /// incl. the end tag) plus 16-byte padding.
