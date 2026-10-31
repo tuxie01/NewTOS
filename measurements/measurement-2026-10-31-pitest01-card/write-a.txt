@@ -1,0 +1,197 @@
+card disk8
+volume C BOOT MS-DOS_FAT16 disk8s1 boot
+  new      C:\P0PAR.NAP <- sdk/examples/build/P0PAR.NAP
+  new      C:\P0KID.NAP <- sdk/examples/build/P0KID.NAP
+  new      C:\P0REP.NAP <- sdk/examples/build/P0REP.NAP
+  new      C:\HZPROBE.NAP <- tosdump/build/HZPROBE.NAP
+  new      C:\AWPROBE.NAP <- tosdump/build/AWPROBE.NAP
+  new      C:\AUTO\DCPROBE.NCP <- tosdump/build/DCPROBE.NAP
+  changed  C:\Apps\QED\QED.NAP <- sdk/apps/qed/build/QED.NAP
+  same     C:\Apps\QED\qed.rsc <- sdk/apps/qed/build/qed.rsc
+  changed  C:\Apps\TERADESK\DESKTOP.NAP <- sdk/apps/teradesk/build/dist/DESKTOP.NAP
+  same     C:\Apps\TERADESK\desktop.rsc <- sdk/apps/teradesk/build/dist/desktop.rsc
+  same     C:\Apps\TERADESK\icons.rsc <- sdk/apps/teradesk/build/dist/icons.rsc
+  same     C:\Apps\TERADESK\cicons.rsc <- sdk/apps/teradesk/build/dist/cicons.rsc
+  changed  C:\Apps\HYPVIEW\HYP_VIEW.NAP <- sdk/apps/hypview/build/HYP_VIEW.NAP
+  same     C:\Apps\HYPVIEW\hyp_view.rsc <- sdk/apps/hypview/build/hyp_view.rsc
+  new      C:\Apps\HYPVIEW\HYP_VIEW.CFG <- measurements/measurement-2026-10-31-pitest01-part3/method/HYP_VIEW.CFG
+  same     C:\Apps\ZVIEW\ZVIEW.HYP <- sdk/zview/z-tools-04805b7/zview/_dist/doc/zView.hyp
+  same     C:\Apps\DOOM\DOOM.NAP <- sdk/apps/doom/build/DOOM.NAP
+  same     C:\Apps\ZVIEW\CODECS\BMP.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/BMP.NLD
+  same     C:\Apps\ZVIEW\CODECS\DEGAS.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/DEGAS.NLD
+  same     C:\Apps\ZVIEW\CODECS\EUREKA.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/EUREKA.NLD
+  same     C:\Apps\ZVIEW\CODECS\GIF.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/GIF.NLD
+  same     C:\Apps\ZVIEW\CODECS\GODPAINT.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/GODPAINT.NLD
+  same     C:\Apps\ZVIEW\CODECS\IMG.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/IMG.NLD
+  same     C:\Apps\ZVIEW\CODECS\JPG.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/JPG.NLD
+  same     C:\Apps\ZVIEW\CODECS\NEO.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/NEO.NLD
+  same     C:\Apps\ZVIEW\CODECS\PNG.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/PNG.NLD
+  same     C:\Apps\ZVIEW\CODECS\TGA.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/TGA.NLD
+  same     C:\Apps\ZVIEW\ICONS\FILE.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/FILE.GOD
+  same     C:\Apps\ZVIEW\ICONS\FOLDER.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/FOLDER.GOD
+  same     C:\Apps\ZVIEW\ICONS\IMAGE.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/IMAGE.GOD
+  same     C:\Apps\ZVIEW\ICONS\PDF.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/PDF.GOD
+  same     C:\Apps\ZVIEW\ICONS\PRG.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/PRG.GOD
+  same     C:\Apps\ZVIEW\ICONS\SMALL.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/SMALL.GOD
+  same     C:\Apps\ZVIEW\ZVIEW.NAP <- sdk/zview/build/dist/ZVIEW/ZVIEW.NAP
+  same     C:\Apps\ZVIEW\ZVIEW.RSC <- sdk/zview/build/dist/ZVIEW/ZVIEW.RSC
+  new      C:\Apps\ZVIEW\SAMPLES\T.GIF <- sdk/zview/build/samples/IMAGES/T.GIF
+  new      C:\Apps\ZVIEW\SAMPLES\T.GOD <- sdk/zview/build/samples/IMAGES/T.GOD
+  new      C:\Apps\ZVIEW\SAMPLES\T.JPG <- sdk/zview/build/samples/IMAGES/T.JPG
+  new      C:\Apps\ZVIEW\SAMPLES\T.NEO <- sdk/zview/build/samples/IMAGES/T.NEO
+  new      C:\Apps\ZVIEW\SAMPLES\T.PC1 <- sdk/zview/build/samples/IMAGES/T.PC1
+  new      C:\Apps\ZVIEW\SAMPLES\T.PI1 <- sdk/zview/build/samples/IMAGES/T.PI1
+  new      C:\Apps\ZVIEW\SAMPLES\T.RAW <- sdk/zview/build/samples/IMAGES/T.RAW
+  new      C:\Apps\ZVIEW\SAMPLES\T1.IMG <- sdk/zview/build/samples/IMAGES/T1.IMG
+  new      C:\Apps\ZVIEW\SAMPLES\T24.BMP <- sdk/zview/build/samples/IMAGES/T24.BMP
+  new      C:\Apps\ZVIEW\SAMPLES\T24.TGA <- sdk/zview/build/samples/IMAGES/T24.TGA
+  new      C:\Apps\ZVIEW\SAMPLES\T4.IMG <- sdk/zview/build/samples/IMAGES/T4.IMG
+  new      C:\Apps\ZVIEW\SAMPLES\T8.BMP <- sdk/zview/build/samples/IMAGES/T8.BMP
+  new      C:\Apps\ZVIEW\SAMPLES\TPAL.PNG <- sdk/zview/build/samples/IMAGES/TPAL.PNG
+  new      C:\Apps\ZVIEW\SAMPLES\TRGB.PNG <- sdk/zview/build/samples/IMAGES/TRGB.PNG
+  new      C:\Apps\ZVIEW\SAMPLES\TRLE.TGA <- sdk/zview/build/samples/IMAGES/TRLE.TGA
+  new      C:\kernelb.img <- measurements/measurement-2026-10-31-pitest01-card/kernels/kernelb.img
+  new      C:\kernela.img <- measurements/measurement-2026-10-31-pitest01-card/kernels/kernela.img
+  changed  C:\kernel8.img <- measurements/measurement-2026-10-31-pitest01-card/kernels/kernela.img
+  same     C:\cmdline.txt <- measurements/measurement-2026-10-31-pitest01-part3/method/cmdline-a.txt
+  extra    C:\._KERN1016.IMG (on the card, not in the list; left untouched)
+  extra    C:\._KERN1017.IMG (on the card, not in the list; left untouched)
+  extra    C:\._KERN1018.IMG (on the card, not in the list; left untouched)
+  extra    C:\._KERN17B.IMG (on the card, not in the list; left untouched)
+  extra    C:\._KERN18B.IMG (on the card, not in the list; left untouched)
+  extra    C:\._KERN18C.IMG (on the card, not in the list; left untouched)
+  extra    C:\ACC\SYSACC.NAC (on the card, not in the list; left untouched)
+  extra    C:\ACC\XSHOT.NAC (on the card, not in the list; left untouched)
+  extra    C:\AREA0001.PNG (on the card, not in the list; left untouched)
+  extra    C:\AUTO\FSBENCH.NC (on the card, not in the list; left untouched)
+  extra    C:\Apps\._HYPVIEW (on the card, not in the list; left untouched)
+  extra    C:\Apps\BALL\BALL.NAP (on the card, not in the list; left untouched)
+  extra    C:\Apps\COREMARK\CORE.NCP (on the card, not in the list; left untouched)
+  extra    C:\Apps\COREMARK\COREVAL.NCP (on the card, not in the list; left untouched)
+  extra    C:\Apps\DOOM\DOOM.NTP (on the card, not in the list; left untouched)
+  extra    C:\Apps\DOOM\DOOM1.WAD (on the card, not in the list; left untouched)
+  extra    C:\Apps\PRESENT\DESKTOP.PNG (on the card, not in the list; left untouched)
+  extra    C:\Apps\PRESENT\PI4.PNG (on the card, not in the list; left untouched)
+  extra    C:\Apps\PRESENT\PRESENT.NAP (on the card, not in the list; left untouched)
+  extra    C:\Apps\PRESENT\SLIDES.TXT (on the card, not in the list; left untouched)
+  extra    C:\Apps\PRESENT\ZVIEW.PNG (on the card, not in the list; left untouched)
+  extra    C:\Apps\QED\CONFIG.TXT (on the card, not in the list; left untouched)
+  extra    C:\Apps\QED\QED.HYP (on the card, not in the list; left untouched)
+  extra    C:\Apps\TERADESK\._DESKTOP.BAK (on the card, not in the list; left untouched)
+  extra    C:\Apps\TERADESK\._DESKTOP.NAP (on the card, not in the list; left untouched)
+  extra    C:\Apps\TERADESK\DESKTOP.BAK (on the card, not in the list; left untouched)
+  extra    C:\Apps\TERADESK\TERADESK.HYP (on the card, not in the list; left untouched)
+  extra    C:\Apps\TERADESK\TERADESK.INF (on the card, not in the list; left untouched)
+  extra    C:\Apps\ZVIEW\ZVIEW.INF (on the card, not in the list; left untouched)
+  extra    C:\BALL.CFG (on the card, not in the list; left untouched)
+  extra    C:\BALL.LOG (on the card, not in the list; left untouched)
+  extra    C:\BALL.NTX (on the card, not in the list; left untouched)
+  extra    C:\Bilder\IMG_4410.jpeg (on the card, not in the list; left untouched)
+  extra    C:\Bilder\IMG_4831.jpeg (on the card, not in the list; left untouched)
+  extra    C:\Bilder\unnamed.png (on the card, not in the list; left untouched)
+  extra    C:\CLIPBRD\SCRAP.TXT (on the card, not in the list; left untouched)
+  extra    C:\CMDLINE.BAK (on the card, not in the list; left untouched)
+  extra    C:\FSBENCH1.LOG (on the card, not in the list; left untouched)
+  extra    C:\FSBENCH2.LOG (on the card, not in the list; left untouched)
+  extra    C:\FSBENCH3.LOG (on the card, not in the list; left untouched)
+  extra    C:\GEMSYS\RSC\GEM.RSC (on the card, not in the list; left untouched)
+  extra    C:\GEMSYS\RSC\qed.rsc (on the card, not in the list; left untouched)
+  extra    C:\KERN1008.IMG (on the card, not in the list; left untouched)
+  extra    C:\KERN1009.IMG (on the card, not in the list; left untouched)
+  extra    C:\KERN1016.IMG (on the card, not in the list; left untouched)
+  extra    C:\KERN1017.IMG (on the card, not in the list; left untouched)
+  extra    C:\KERN1018.IMG (on the card, not in the list; left untouched)
+  extra    C:\KERN1022.IMG (on the card, not in the list; left untouched)
+  extra    C:\KERN1023.IMG (on the card, not in the list; left untouched)
+  extra    C:\KERN1024.IMG (on the card, not in the list; left untouched)
+  extra    C:\KERN17B.IMG (on the card, not in the list; left untouched)
+  extra    C:\KERN18B.IMG (on the card, not in the list; left untouched)
+  extra    C:\KERN18C.IMG (on the card, not in the list; left untouched)
+  extra    C:\KERNOFAM.IMG (on the card, not in the list; left untouched)
+  extra    C:\KEYBOARD.KBD (on the card, not in the list; left untouched)
+  extra    C:\KRN1024B.IMG (on the card, not in the list; left untouched)
+  extra    C:\MAUS1.LOG (on the card, not in the list; left untouched)
+  extra    C:\MAUS2.LOG (on the card, not in the list; left untouched)
+  extra    C:\MAUS3.LOG (on the card, not in the list; left untouched)
+  extra    C:\NEWDESK.INF (on the card, not in the list; left untouched)
+  extra    C:\SNAP1.LOG (on the card, not in the list; left untouched)
+  extra    C:\SNAP2.LOG (on the card, not in the list; left untouched)
+  extra    C:\TERADESK.INF (on the card, not in the list; left untouched)
+  extra    C:\USB\05AC020C.T01 (on the card, not in the list; left untouched)
+  extra    C:\USB\05AC020C.TXT (on the card, not in the list; left untouched)
+  extra    C:\USB\1E7D2CEE.T01 (on the card, not in the list; left untouched)
+  extra    C:\USB\1E7D2CEE.TXT (on the card, not in the list; left untouched)
+  extra    C:\USBDIAG.LOG (on the card, not in the list; left untouched)
+  extra    C:\USBSNAP.NCP (on the card, not in the list; left untouched)
+  extra    C:\VT52PI.NAP (on the card, not in the list; left untouched)
+  extra    C:\bcm2711-rpi-4-b.dtb (on the card, not in the list; left untouched)
+  extra    C:\config.txt (on the card, not in the list; left untouched)
+  extra    C:\fixup4.dat (on the card, not in the list; left untouched)
+  extra    C:\start4.elf (on the card, not in the list; left untouched)
+sync-card: warning: 74 file(s) on the card are not in the list (extra, left untouched)
+boot_config_kernel kernel=kernel8.img
+boot_cmdline empty (no options)
+summary: 24 new, 4 changed, 26 same, 74 extra, 0 optional missing, 0 error(s)
+  saved    C:\Apps\QED\QED.NAP -> /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-31-pitest01-card/card-a/card-before/C/Apps/QED/QED.NAP
+  saved    C:\Apps\TERADESK\DESKTOP.NAP -> /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-31-pitest01-card/card-a/card-before/C/Apps/TERADESK/DESKTOP.NAP
+  saved    C:\Apps\HYPVIEW\HYP_VIEW.NAP -> /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-31-pitest01-card/card-a/card-before/C/Apps/HYPVIEW/HYP_VIEW.NAP
+  saved    C:\kernel8.img -> /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-31-pitest01-card/card-a/card-before/C/kernel8.img
+  saved    C:\cmdline.txt -> /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-31-pitest01-card/card-a/card-before/C/cmdline.txt
+  saved    C:\config.txt -> /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-10-31-pitest01-card/card-a/card-before/C/config.txt
+  wrote    C:\P0PAR.NAP
+  wrote    C:\P0KID.NAP
+  wrote    C:\P0REP.NAP
+  wrote    C:\HZPROBE.NAP
+  wrote    C:\AWPROBE.NAP
+  wrote    C:\AUTO\DCPROBE.NCP
+  wrote    C:\Apps\QED\QED.NAP
+  wrote    C:\Apps\TERADESK\DESKTOP.NAP
+  wrote    C:\Apps\HYPVIEW\HYP_VIEW.NAP
+  wrote    C:\Apps\HYPVIEW\HYP_VIEW.CFG
+  wrote    C:\Apps\ZVIEW\SAMPLES\T.GIF
+  wrote    C:\Apps\ZVIEW\SAMPLES\T.GOD
+  wrote    C:\Apps\ZVIEW\SAMPLES\T.JPG
+  wrote    C:\Apps\ZVIEW\SAMPLES\T.NEO
+  wrote    C:\Apps\ZVIEW\SAMPLES\T.PC1
+  wrote    C:\Apps\ZVIEW\SAMPLES\T.PI1
+  wrote    C:\Apps\ZVIEW\SAMPLES\T.RAW
+  wrote    C:\Apps\ZVIEW\SAMPLES\T1.IMG
+  wrote    C:\Apps\ZVIEW\SAMPLES\T24.BMP
+  wrote    C:\Apps\ZVIEW\SAMPLES\T24.TGA
+  wrote    C:\Apps\ZVIEW\SAMPLES\T4.IMG
+  wrote    C:\Apps\ZVIEW\SAMPLES\T8.BMP
+  wrote    C:\Apps\ZVIEW\SAMPLES\TPAL.PNG
+  wrote    C:\Apps\ZVIEW\SAMPLES\TRGB.PNG
+  wrote    C:\Apps\ZVIEW\SAMPLES\TRLE.TGA
+  wrote    C:\kernelb.img
+  wrote    C:\kernela.img
+  wrote    C:\kernel8.img
+  removed  C:\._AWPROBE.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\._HZPROBE.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\._P0KID.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\._P0PAR.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\._P0REP.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\._kernel8.img (AppleDouble file macOS made for a file written here)
+  removed  C:\._kernela.img (AppleDouble file macOS made for a file written here)
+  removed  C:\._kernelb.img (AppleDouble file macOS made for a file written here)
+  removed  C:\AUTO\._DCPROBE.NCP (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\HYPVIEW\._HYP_VIEW.CFG (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\HYPVIEW\._HYP_VIEW.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\QED\._QED.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\ZVIEW\._SAMPLES (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\ZVIEW\SAMPLES\._T.GIF (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\ZVIEW\SAMPLES\._T.GOD (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\ZVIEW\SAMPLES\._T.JPG (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\ZVIEW\SAMPLES\._T.NEO (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\ZVIEW\SAMPLES\._T.PC1 (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\ZVIEW\SAMPLES\._T.PI1 (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\ZVIEW\SAMPLES\._T.RAW (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\ZVIEW\SAMPLES\._T1.IMG (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\ZVIEW\SAMPLES\._T24.BMP (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\ZVIEW\SAMPLES\._T24.TGA (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\ZVIEW\SAMPLES\._T4.IMG (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\ZVIEW\SAMPLES\._T8.BMP (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\ZVIEW\SAMPLES\._TPAL.PNG (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\ZVIEW\SAMPLES\._TRGB.PNG (AppleDouble file macOS made for a file written here)
+  removed  C:\Apps\ZVIEW\SAMPLES\._TRLE.TGA (AppleDouble file macOS made for a file written here)
+sync-card: cannot unmount /Volumes/BOOT (a Finder window or an open file?) -- the files are NOT verified

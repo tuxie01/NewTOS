@@ -74,8 +74,9 @@ gebaut, sondern dateiweise aktualisiert (19 Dateien ersetzt) — es gibt daher
 **kein** Kartenmanifest. Festgehalten ist, was ersetzt wurde:
 
 - Kernel: `kernel8.img`, Release-Bau aus `58e35ac8` (Baum sauber), sha256
-  beginnt mit `1da96072c71554b9`; der volle Hash ist nicht aufgezeichnet und
-  beim naechsten Einstecken der Karte aus `kernel8.img` auf BOOT nachzutragen.
+  `1da96072c71554b9d61d8a1400baad2b415ed051660a5e29baab6be2be018884` (nachgetragen
+  2026-10-31 aus der Kartensicherung,
+  `measurements/measurement-2026-10-31-pitest01-card/RUNINFO.TXT` F2).
   Vorheriger Kernel als `KRN1024B.IMG` auf der Karte (sha256 beginnt mit
   `fe967851f17c`, Stand 2026-10-24).
 - `C:\Apps\DOOM\DOOM.NAP`: sha256

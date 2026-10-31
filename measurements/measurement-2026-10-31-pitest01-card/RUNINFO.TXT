@@ -1,0 +1,62 @@
+RUNINFO -- PITEST01: test card filled for phase A (2026-10-31)
+
+WHAT
+  The one test card (Pi 4, disk8: BOOT = C:, NEWTOS1-3 = D:-F:) was filled
+  for phase A of the tester run (TASK/PITEST01.md,
+  docs/analysis/tester-run-sheet-2026-10-31.md) on the user's instruction
+  "Karte steckt in /Volumes/BOOT, bitte kopiere alles notwendige auf die
+  Karte, altbestaende koennen geloescht werden" (2026-10-31).
+
+SOURCE STATE
+  commit 6796787ce21d7dac7a3e50202589ba21349431e1 (clean; tree_dirty=yes in
+  kernels/KERNELS.TXT only because this run directory was untracked;
+  kernel_inputs_dirty=no)
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  programs: measurements/measurement-2026-10-31-pitest01-part3/method/build-card-programs.sh
+            -> logs/ ("ALL-OK")
+  kernels:  tools/sync-card.sh kernels -> kernels/KERNELS.TXT
+            kernela.img e0fe680b25402385df6079029dc0ea8dacaa4c1abc3cc36298b680c7a3580ad4 (release, no features)
+            kernelb.img bc543d4871ef7eecb138ace62b218a7c2009b0babbe8cdcdaf224b46e8ab25e2 (crash-nowait,fs-io-trace)
+
+STEPS
+  0. Full backup of all four partitions before any write:
+     sd-card-backup-20261031/ (gitignored; BOOT 95 files, NEWTOS1 47 files,
+     NEWTOS2/3 empty; SHA256SUMS = 142 entries; file counts card = backup).
+  1. Dry run (dryrun-a.txt): list of 54 files, no #Z line in NEWDESK.INF.
+  2. --write phase A (write-a.txt): files copied; card-a/card-before/ holds the
+     replaced files and kernel8.img, cmdline.txt, config.txt as before.
+     The script's own remount failed ("cannot unmount /Volumes/BOOT"):
+     macOS Spotlight (mds) holds the FAT volume; no Finder window was open,
+     `mdutil -i off` reported "unknown indexing state". So the script wrote
+     no card manifest and no C:\CARDMAN.TXT.
+  3. Legacy files deleted on the user's word, list delete-list.txt (51 on
+     BOOT, D:\APPS, D:\FSBENCH, D:\TEST*; one read-only file needed
+     `chflags nouchg`). Kept: firmware, config.txt, cmdline.txt, NEWDESK.INF,
+     TERADESK.INF, KEYBOARD.KBD, GEMSYS, ACC (environment of the DOOM01
+     freeze), Bilder, CLIPBRD, app data (DOOM1.WAD, QED CONFIG.TXT/QED.HYP,
+     TERADESK.HYP/.INF, ZVIEW.INF).
+  4. Verification: `sync`, `diskutil unmount force` + `diskutil mount
+     disk8s1` by hand (fresh mount, no cached pages), then the script's
+     comparison (verify-a.txt): "0 new, 0 changed, 54 same, 21 extra,
+     0 optional missing, 0 error(s)" -- every listed file on the card equals
+     the build output by sha256. The script's own second remount failed again
+     for the same Spotlight reason (exit 1 at that step only).
+     Card after the run: kernel8.img = kernela.img (e0fe680b25402385...),
+     kernelb.img bc543d4871ef7eec..., CMDLINE.TXT empty (no options).
+
+FINDINGS
+  F1 sync-card.sh cannot remount a card that Spotlight indexes; the lead
+     worked around it by hand. Candidate fix: mark the card volumes
+     non-indexable or retry/force after `sync` (owner decision).
+  F2 The replaced kernel8.img (card-a/card-before/C/kernel8.img) is the
+     DOOM01 freeze kernel: sha256
+     1da96072c71554b9d61d8a1400baad2b415ed051660a5e29baab6be2be018884
+     (prefix 1da96072c71554b9 recorded in TASK/DOOM01.md), file date
+     2026-10-29 17:13.
+
+OPEN
+  Phase B (kernelb.img + cmdline-b.txt) is switched by the tester sheet or by
+  a second sync-card run; not done here.
+
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing: not applicable (no image was built; the card manifest was not written, see step 2)
