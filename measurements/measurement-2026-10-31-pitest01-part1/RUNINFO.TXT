@@ -1,0 +1,77 @@
+measurement-2026-10-31-pitest01-part1 -- TASK/PITEST01 Part 1: the debug feature crash-nowait (phase-B kernel), the P0PAR
+repeat run P0REP.NAP (sdk/examples/p0rep.c) and the _hz_200 probe HZPROBE.NAP (tosdump/probes/hzprobe.c), in QEMU raspi4b.
+Developer, 2026-10-31. Tree = HEAD c7e0775e + the uncommitted PITEST01 change set. QEMU only; no hardware, no real card.
+
+RESULT IN ONE LINE: crash-nowait kernel + P0REP: 1000 rounds x 11 cases + 1000 own-state checks = "P0PAR-REP: PASS 12000/12000",
+5000 crash reports, no key, no injector; P0REP stops itself on the release kernel ("STOP", rc 2); HZPROBE PASS on the release
+and on the crash-nowait kernel (6000/6000 ticks in 30 s, max step 1); feature off = kernel byte-identical to HEAD on both
+boards (release and dev); host tests 1918/0/1; one finding (F1, $4BA stale in a parent right after its child, see 5).
+
+1 KERNELS (rpi4 release, from the working tree; `cargo xtask build --board rpi4 --release [--features crash-nowait]`)
+  plain     fa49e4d53abc7acb869cd9e5fb7a7e1d78a9f3083594c0869b5a0ce8f3a30906  (no feature)
+  nowait    3c9b292648a3a7c86673f49530821407ed1bf7a657997f526d1b7691dd64cade  (--features crash-nowait)
+  inj-v1    9440a177b39c7c2e196a298b04529961605ace6dbfc6e3ef20cfdeb580323a5f  plain + tools/inject-arm.py launch:P0REP=method/p0rep-stop-v1.script
+  inj-v2    ea03274224eb49a4ff1ec2b588edb792e5e73c138094832dc799ba814ad1281e  plain + tools/inject-arm.py launch:P0REP=method/p0rep-stop-v2.script
+  (the injector kernels: a scratch copy of the tree, `git ls-files -co --exclude-standard` without measurements/, armed, then
+  built there; never the shared tree). Kernel binaries are not kept.
+
+2 FEATURE IDENTITY (method/feature-identity.sh = the FS26 method with feature crash-nowait; checks/)
+  base = git archive HEAD, aftr = working tree, same path length, no .git, SOURCE_DATE_EPOCH=1793404800; rpi4 and qemu-virt,
+  release and dev: aftr == base byte for byte, all four pairs (sha256 in checks/feature-identity.txt; locdiff.py of
+  measurement-2026-10-28-tool08: "0 differing bytes in 0 words; unexplained: 0", checks/locdiff-*.txt) -- not even a
+  panic::Location field moves (no panic site behind the insertion in crash.rs). Feature on: rpi4 and qemu-virt, release and
+  dev, build OK. Warnings: rustc kernel 93 / tos-api 64 and clippy kernel 121 / tos-api 74 on base, aftr and feature-on, both
+  boards (= the baseline). The identity run used the tree before the later sdk/ and tosdump/ edits; none of them is a kernel
+  input (kernel/, tos-api/, tos-types/, programs/ unchanged since).
+  Phase-B combination: `cargo xtask build --board rpi4 --release --features crash-nowait,fs-io-trace` builds (rustc 93/64);
+  not booted.
+
+3 P0REP (method/run-p0rep.sh: tools/mkcard.sh card with C:\P0REP.NAP, C:\P0KID.NAP, NEWDESK.INF "#Z 01 C:\P0REP.NAP@",
+  APFS clone, -append serial=on, QMP screendump at "round 100"; P0REP built from sdk/examples/p0rep.c, P0KID from p0kid.c)
+  runs/p0rep-nowait-v2  nowait kernel, P0REP dc1a56e4...: P0PAR.LOG "P0PAR-REP: PASS 12000/12000 (1000 rounds)", every case
+                        1000 ok / 0 wrong, L-own-state 1000/0, baseline 7 ticks, next-tick timeouts 0; time of one run
+                        (Pexec to return) mean 6-7 ticks for R S E K L ., 23 for the five fault cases (the report on screen
+                        and serial line), max 9-33 ticks. Serial: 5000 "[crash] slot 1 crash-nowait, terminating with
+                        Pterm(-1)", no "Press any key", "exited with rc=0"; QEMU 869 s. round100.png: crash reports scrolling.
+                        SERIAL.txt gzip -9 -n (full text sha256 fcdb540dcb33748ae8f44be7dda1e01171f45634448e8ea5f760d6e96ea82025).
+  runs/p0rep-release-inj-v2  inj-v2 kernel (no feature), two space keys at +7.5 s and +15 s after the launch: case w waits at
+                        "*** Press any key to continue ***", "P0PAR-REP: NOTE -- case w took 1481 ticks, baseline 9", case x
+                        waits, "P0PAR-REP: STOP -- case x took 1490 ticks, baseline 9: the crash report waits for a key --
+                        not the crash-nowait kernel", "exited with rc=2". No P0PAR.LOG (written after round 1 only).
+  v1 (superseded, kept as evidence for F1): P0REP 76b08bda... read $4BA directly around each Pexec.
+  runs/p0rep-nowait-v1  PASS 12000/12000, but "max-ticks" 1503-3889 and means 4-22: not run times (F1).
+  runs/p0rep-release-inj-v1  one key at +7.5 s: case w waited 7.5 s, P0REP measured less than its threshold of 4*B+200 ticks
+                        and went on into case x, which waited for good (QEMU stopped at 90 s). Same SERIAL text as v2 for the
+                        nowait runs (identical sha256: the output carries no time).
+
+4 HZPROBE (tosdump/probes/run-hzprobe.sh: card with C:\HZPROBE.NAP, "#Z 01 C:\HZPROBE.NAP@", 30 s default)
+  HZPROBE.NAP 36b45fe8ac8b900ce97982161164f4d95e92b12808fca2f69ce0679be7aab926 (the later comment-only edit of hzprobe.c
+  rebuilds to the same sha256).
+  runs/hzprobe-release  plain kernel: Tgettime 00:00:16 -> 00:00:46 = 30 s, 15 edges; ticks 6000 of 6000; every 2-s interval
+                        400 ticks; 375902 passes = Super toggles, bad tokens 0, bad Super(1L) 0; user 2965 steps, super 3035
+                        steps, max step 1 in both, backwards 0: "HZPROBE: PASS ticks=6000/6000 maxstep=1".
+  runs/hzprobe-nowait   nowait kernel: 6000 of 6000; 2-s intervals 399-401; 367650 passes; max step 1; PASS.
+  Host test of the PASS rule: tosdump/tests/test_hzprobe.c (make -C tosdump host-test, logs/tosdump-host-test.txt: "== HZPROBE
+  ... ok"; counter-check: the P1 limit set to 3 makes it fail at test_hzprobe.c:73, restored).
+
+5 FINDING F1 (not fixed; product code untouched, for the lead)
+  NewTOS writes the 200-Hz counter only into the page 0 of the RUNNING process, on each tick (tos-api/src/bios/tick.rs
+  `publish`; besides that only the loader seeds it). A parent that gets control back after Pexec still reads at $4BA the value
+  of its own last tick, from before the child ran, until its next tick (at most 5 ms); a process that runs for less than a
+  tick between two children is never refreshed in between. On EmuTOS _hz_200 is one global cell. Measured: P0REP v1 timed
+  each child with direct $4BA reads and saw no time for a 7.5-s key wait (runs/p0rep-release-inj-v1) and random "max"
+  values (runs/p0rep-nowait-v1). P0REP v2 waits for the next tick around each Pexec (hz200_next_tick). HZPROBE starts no
+  child, so F1 is outside its scope (stated in its header).
+
+6 HOST
+  cargo xtask test (full): 184 result lines, 1918 passed, 0 failed, 1 ignored, exit 0 (logs/xtask-test-summary.txt).
+  make -C tosdump host-test: exit 0, every group "ok", new group "HZPROBE" ok (logs/tosdump-host-test.txt).
+
+7 CARDS (tools/mkcard.sh, defaults; manifest of every booted image in runs/<run>/card.img.manifest). host_clang line of every
+  manifest: host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  optional_missing line of every manifest, verbatim:
+optional_missing none
+  Card sha256 before / after each run (the booted APFS clone): runs/<run>/run.txt. All images deleted after the run.
+
+NOT COVERED: real Pi 4 (that is the point of the test card, PITEST01 Part 2); the crash-nowait + fs-io-trace kernel booted;
+qemu-virt boot of the feature kernel (built only).

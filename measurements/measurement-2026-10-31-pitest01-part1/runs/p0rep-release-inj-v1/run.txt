@@ -1,0 +1,7 @@
+p0rep run (2026-10-31T02:52:37Z)
+tree      c7e0775ec8e1f6a436b820b2aff80a6b1f11f5a9 + working tree
+programs  P0REP.NAP 76b08bda6c94d9db4e946982d5a279ccb8b162934a77e05d015df964932c5f0a P0KID.NAP 07ec89d8b84a80d9619bb4ac591a0a15e7a75207e39dd750d8bdbaf90899b760
+card      a93880b45fef756a99733af6267aeed68877a4fd4acecc3ea944be4bdf0b9b10 (tools/mkcard.sh, defaults)
+kernel    9440a177b39c7c2e196a298b04529961605ace6dbfc6e3ef20cfdeb580323a5f /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/pitest1/k/inj-plain-kernel8.img
+qemu      timeout after 90 s; stopped
+card      after a93880b45fef756a99733af6267aeed68877a4fd4acecc3ea944be4bdf0b9b10 (the booted clone)

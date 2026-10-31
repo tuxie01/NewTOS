@@ -65,6 +65,15 @@ bios-arg-trace = []
 # --features fs-io-trace`, QEMU with `-append serial=on`. The device hook is
 # the rpi4 block device; on qemu-virt (no card) only the call lines appear.
 fs-io-trace = []
+# Unattended crash path (TASK/PITEST01): a program that faults still gets the
+# full crash report on screen and serial line, then is terminated with
+# Pterm(-1) at once -- no "Press any key" prompt, no key wait
+# (`kernel/src/arch/aarch64/crash.rs` `report_and_wait`). For the real-Pi test
+# kernel only (phase B: the P0PAR repeat run P0REP.NAP, thousands of crash
+# reports without a tester at the keyboard). Off by default; the normal build
+# waits for a key like EmuTOS `dopanic`. `cargo xtask build --board rpi4
+# --release --features crash-nowait` (combinable with `fs-io-trace`).
+crash-nowait = []
 # microSD / FAT / GEMDOS-file self-test build (board-rpi4 / QEMU raspi4b):
 # runs `selftest_emmc::run()` right after the card is mounted at boot -- the
 # Phase-09 block-device, FAT, Fopen/Fsfirst/Dsetpath, Fattrib/Frename/Fdatime

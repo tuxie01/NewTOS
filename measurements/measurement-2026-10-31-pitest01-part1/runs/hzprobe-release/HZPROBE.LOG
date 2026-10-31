@@ -1,0 +1,10 @@
+HZPROBE (TASK/PITEST01) 30 s requested
+reference  Tgettime 00:00:16 -> 00:00:46 = 30 s, edges 15
+ticks      6000 of 6000 expected (200/s), diff 0, tolerance 60 (1 %)
+interval   ticks per 2-s interval min 400 max 400 (nominal 400)
+passes     375902, Super toggles 375902, bad tokens 0, bad Super(1L) 0
+user       reads 24057728 steps 2965 maxstep 1 hist 1:2965 2:0 3-10:0 >10:0
+super      reads 24057728 steps 3035 maxstep 1 hist 1:3035 2:0 3-10:0 >10:0
+backwards  0
+rules      P1 maxstep<=2  P2 ticks within 1 %  P3 no step back  P4 counts in both states  P5 Super tokens
+HZPROBE: PASS ticks=6000/6000 maxstep=1

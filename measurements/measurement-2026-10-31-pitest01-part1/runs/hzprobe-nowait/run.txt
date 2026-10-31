@@ -1,0 +1,7 @@
+hzprobe run (2026-10-31T02:38:48Z)
+tree      c7e0775ec8e1f6a436b820b2aff80a6b1f11f5a9 5 dirty paths in kernel tos-api tos-types tosdump/probes
+probe     HZPROBE.NAP 36b45fe8ac8b900ce97982161164f4d95e92b12808fca2f69ce0679be7aab926
+card      36c3a0d9112ffebeb4242ab3360195978b4248e7168770be0f1db570c28de565 (tools/mkcard.sh, defaults)
+kernel    3c9b292648a3a7c86673f49530821407ed1bf7a657997f526d1b7691dd64cade /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/pitest1/k/nowait-kernel8.img
+qemu      done; stopped
+card      after 214fc18f84cda7e1f2f8775b4a9612ccc4562ea7fce67316f626709c143f027e (the booted clone)

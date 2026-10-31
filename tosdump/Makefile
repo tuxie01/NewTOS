@@ -38,6 +38,8 @@
 #   make akprobe-newtos   AKPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make dcprobe-m68k     DCPROBE.PRG, what one Dcreate costs (probes/dcprobe.c)
 #   make dcprobe-newtos   DCPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make hzprobe-newtos   HZPROBE.NAP, _hz_200 in user state while Super
+#                         toggles (probes/hzprobe.c; NewTOS only)
 #   make host-test        the host-side suite (same as make -C host test)
 #
 # Same core sources for both; only abi/ differs (spec section 2).
@@ -82,7 +84,7 @@ BUILD := build
         axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
         sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
         vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
-        akprobe-m68k akprobe-newtos dcprobe-m68k dcprobe-newtos host-test clean
+        akprobe-m68k akprobe-newtos dcprobe-m68k dcprobe-newtos hzprobe-newtos host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
      scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
@@ -90,7 +92,7 @@ all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
      sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
      vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
-     akprobe-m68k akprobe-newtos dcprobe-m68k dcprobe-newtos host-test
+     akprobe-m68k akprobe-newtos dcprobe-m68k dcprobe-newtos hzprobe-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -284,6 +286,12 @@ $(BUILD)/DCPROBE.PRG: probes/dcprobe.c | $(BUILD)
 dcprobe-newtos: $(BUILD)/DCPROBE.NAP
 $(BUILD)/DCPROBE.NAP: probes/dcprobe.c build-dcprobe-newtos.sh | $(BUILD)
 	./build-dcprobe-newtos.sh $@
+
+# The _hz_200 user-state probe for the real-Pi step A2 (TASK/PITEST01): NewTOS
+# only (TOS faults a user-state page-0 read). Run by probes/run-hzprobe.sh.
+hzprobe-newtos: $(BUILD)/HZPROBE.NAP
+$(BUILD)/HZPROBE.NAP: probes/hzprobe.c build-hzprobe-newtos.sh | $(BUILD)
+	./build-hzprobe-newtos.sh $@
 
 host-test:
 	@$(MAKE) --no-print-directory -C host test

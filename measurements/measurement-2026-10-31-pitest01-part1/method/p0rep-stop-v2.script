@@ -1,0 +1,7 @@
+# P0REP on the release kernel (TASK/PITEST01): one space key (make/break)
+# 7.5 s and one 15 s after the launch of P0REP -- they answer the crash
+# prompts of the first two fault cases (w, x) of round 1.
+1500 0x39
+1510 0xB9
+3000 0x39
+3010 0xB9

@@ -1,0 +1,7 @@
+hzprobe run (2026-10-31T02:37:55Z)
+tree      c7e0775ec8e1f6a436b820b2aff80a6b1f11f5a9 5 dirty paths in kernel tos-api tos-types tosdump/probes
+probe     HZPROBE.NAP 36b45fe8ac8b900ce97982161164f4d95e92b12808fca2f69ce0679be7aab926
+card      200cdb5027328b8c1deaeb18b971d770295f794e3083c37c9b863a34b199f6a0 (tools/mkcard.sh, defaults)
+kernel    fa49e4d53abc7acb869cd9e5fb7a7e1d78a9f3083594c0869b5a0ce8f3a30906 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/pitest1/k/plain-kernel8.img
+qemu      done; stopped
+card      after 5fdb68cb259b0b4fb301d67896b4b0370d363414cf9a7ec8762a9caf657ba421 (the booted clone)

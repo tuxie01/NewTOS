@@ -206,6 +206,11 @@ $(BUILD)/test_jar.o: $(TESTS)/test_jar.c $(TESTS)/tdtest.h \
 $(BUILD)/test_jar: $(BUILD)/test_jar.o $(CORE_OBJ) $(BUILD)/stub_abi.o
 	$(CC) $(CFLAGS) $^ -o $@
 
+# PITEST01: the pure part of the _hz_200 probe (probes/hzprobe-rules.h).
+$(BUILD)/test_hzprobe: $(TESTS)/test_hzprobe.c $(TESTS)/tdtest.h \
+                       ../probes/hzprobe-rules.h | $(BUILD)
+	$(CC) $(CFLAGS) $< -o $@
+
 $(BUILD)/emit_record.o: $(TESTS)/emit_record.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/emit_be: $(BUILD)/emit_record.o $(BUILD)/record_be.o
@@ -230,7 +235,7 @@ run-tests: $(BUILD)/test_record $(BUILD)/test_cases $(BUILD)/test_log \
       $(BUILD)/test_cases_ptr $(BUILD)/test_runner_ptr $(BUILD)/layoutcheck \
       $(BUILD)/test_cases_gdos $(BUILD)/test_runner_gdos $(BUILD)/test_jar \
       $(BUILD)/test_casefile $(BUILD)/tosdiff $(BUILD)/mkdump \
-      $(BUILD)/emit_be $(BUILD)/emit_le
+      $(BUILD)/emit_be $(BUILD)/emit_le $(BUILD)/test_hzprobe
 	@echo "== record format"
 	@$(BUILD)/test_record
 	@echo "== case table"
@@ -275,6 +280,8 @@ run-tests: $(BUILD)/test_record $(BUILD)/test_cases $(BUILD)/test_log \
 	@$(BUILD)/test_jar $(BUILD)/stub-jar.bin $(BUILD)/stub-jar.tsv
 	@$(BUILD)/tosdiff --validate $(BUILD)/stub-jar.bin $(BUILD)/stub-jar.tsv \
 	    | sed 's/^/  /'
+	@echo "== HZPROBE: Tgettime arithmetic, step bookkeeping, the PASS rule"
+	@$(BUILD)/test_hzprobe
 	@echo "== layouts: the tables' are the docs/api/ specs'"
 	@sh $(TESTS)/test_layoutcheck.sh $(BUILD)
 	@echo "== case table reader, per area"

@@ -578,7 +578,7 @@ prints scrolls text over its own window.
 (`kernel/src/shell_loop.rs:309@sh_chgrf`, `kernel/src/shell_loop.rs:377@sh_toalpha`: arrow, mouse off,
 `gsx_graphic(FALSE)` = clear + text cursor) and no pause when it ends — the
 only "Press any key" wait is the crash screen's
-(`kernel/src/arch/aarch64/crash.rs:77@report_and_wait`), so a text tool that wants its
+(`kernel/src/arch/aarch64/crash.rs:82@report_and_wait`), so a text tool that wants its
 output read waits for a key itself (`Cnecin()`); a `.NAP` runs on the GEM screen with no
 console handoff. (Corrected by TASK/SDK04: this entry used to promise a
 "press any key" pause for every `.NCP`; no such code exists.) `AUTO` programs run **before** the AES; their output is

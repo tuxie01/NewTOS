@@ -137,3 +137,13 @@ Ein zufaellig bestehender Lauf beweist wenig. Optionen:
 Empfehlung des Leads: (c) — die Testkarte hat ohnehin einen zweiten Kern
 (Phase B); das Feature kommt dort mit hinein, der Release-Kern bleibt
 unberuehrt. A1 in Phase B dann als Dauerlauf (z. B. 1000 Wiederholungen je Fall).
+
+## Umsetzung (Nachtrag 2026-10-31, PITEST01 Teil 1)
+
+Dieser Entwurf bleibt als Schnappschuss stehen; was daraus gebaut wurde, steht
+in [PITEST01](../../TASK/PITEST01.md) ("Stand Teil 1"): das Debug-Feature
+`crash-nowait` fuer den Phase-B-Kern, die P0PAR-Wiederholung `P0REP.NAP`
+(`sdk/examples/p0rep.c`, schreibt `C:\P0PAR.LOG`, nur mit dem
+`crash-nowait`-Kern) und die Sonde `HZPROBE.NAP` (`tosdump/probes/hzprobe.c`,
+schreibt `C:\HZPROBE.LOG`) fuer A2. QEMU-Lauf:
+`measurements/measurement-2026-10-31-pitest01-part1/RUNINFO.TXT`.

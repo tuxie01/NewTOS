@@ -1,0 +1,7 @@
+p0rep run (2026-10-31T02:57:27Z)
+tree      c7e0775ec8e1f6a436b820b2aff80a6b1f11f5a9 + working tree
+programs  P0REP.NAP dc1a56e4f186867562939f7271f9c910fba71c981e2c3c560eadd678dfd89403 P0KID.NAP 07ec89d8b84a80d9619bb4ac591a0a15e7a75207e39dd750d8bdbaf90899b760
+card      642cc87f4ec9329371afce6b47c5dc8e2ac7615cc7340d52464a67c924b1c9d4 (tools/mkcard.sh, defaults)
+kernel    3c9b292648a3a7c86673f49530821407ed1bf7a657997f526d1b7691dd64cade /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/pitest1/k/nowait-kernel8.img
+qemu      done after 869 s; stopped
+card      after e03882e39c4202479c80db5d1325e9115fca5dba740360618831bcd4304cb215 (the booted clone)

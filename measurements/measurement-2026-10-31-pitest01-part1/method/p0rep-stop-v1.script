@@ -1,0 +1,4 @@
+# one space key (make/break) 7.5 s after the launch of P0REP: answers the
+# first crash prompt of the release kernel
+1500 0x39
+1510 0xB9

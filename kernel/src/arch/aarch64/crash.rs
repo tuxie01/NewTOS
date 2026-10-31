@@ -74,6 +74,11 @@ pub fn current_program() -> Option<ProgramInfo> {
 /// interrupt. Here those bytes are handed to the default decoder
 /// ([`crate::ikbd::kbd_int`], what every hook chains to) so the prompt can be
 /// answered.
+///
+/// With the debug feature `crash-nowait` (TASK/PITEST01) it returns after
+/// eating the pending keys, without the prompt and without the wait; the
+/// caller then terminates the program at once.
+#[cfg_attr(feature = "crash-nowait", allow(unreachable_code))]
 pub fn report_and_wait(report: &CrashReport<'_>, slot: usize) {
     use fmt::Write as _;
 
@@ -96,6 +101,11 @@ pub fn report_and_wait(report: &CrashReport<'_>, slot: usize) {
     drain_hook_bytes(slot);
     while h.console_try_read_key().is_some() {
         drain_hook_bytes(slot);
+    }
+    #[cfg(feature = "crash-nowait")]
+    {
+        crate::kprintln!("[crash] slot {} crash-nowait, terminating with Pterm(-1)", slot);
+        return;
     }
     // `cprintf(_("\n*** Press any key to continue ***"));`
     let _ = w.write_str("\n");

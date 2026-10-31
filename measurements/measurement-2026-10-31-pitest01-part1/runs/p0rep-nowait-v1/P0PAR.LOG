@@ -1,0 +1,15 @@
+P0PAR-REP rounds=1000 done=1000 final
+case want ok wrong first-wrong-round first-wrong-rc max-ticks mean-ticks
+R    0x00000000 1000 0 - - 1587 9
+w    0x0000FFFF 1000 0 - - 2567 22
+S    0x00000000 1000 0 - - 3450 16
+x    0x0000FFFF 1000 0 - - 2128 11
+E    0x00000000 1000 0 - - 1503 4
+r    0x0000FFFF 1000 0 - - 2146 22
+W    0x0000FFFF 1000 0 - - 1690 15
+T    0x0000FFFF 1000 0 - - 2649 15
+K    0x00000000 1000 0 - - 2240 7
+L    0x00000000 1000 0 - - 3889 13
+.    0x00000000 1000 0 - - 1887 4
+L-own-state ok=1000 wrong=0
+P0PAR-REP: PASS 12000/12000 (1000 rounds)
