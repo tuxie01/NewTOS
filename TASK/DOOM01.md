@@ -101,3 +101,15 @@ Prozesses geschrieben; ein Prozess, der nicht lief, liest bis zu seinem
 naechsten Tick einen veralteten Wert. Geparkt — wieder aufnehmen, wenn die
 Tester Fehlerbild K6 ("DOOMs `_hz_200` steht") sehen.
 
+## Echte Pi, PITEST01 Phase A (2026-10-31)
+
+Reproduziert mit dem Release-Kern aus `6796787c` (kernela.img
+`e0fe680b25402385...`, `measurements/measurement-2026-10-31-pitest01-card/RUNINFO.TXT`)
+und dem neu gebauten DOOM: Demo laeuft; Hauptmenue aufrufen und scrollen ->
+Freeze; Strg+Alt+Entf startet neu (Anwender). P0PAR lief vorher ohne Befund
+durch, HZPROBE (`_hz_200` im Anwender- und Super-Zustand) bestand
+(`measurements/measurement-2026-10-31-pitest01-phase-a/RUNINFO.TXT`).
+Vermutung des Anwenders: der `kbdvec`-Haken in DOOM selbst — offen, nicht
+belegt. Naechste Trennschritte: Freeze in Phase B mit seriellem Protokoll
+(sieht der Kern noch Aufrufe von DOOM?) und Gegenprobe `DOOM-nokbdvec.NAP`.
+

@@ -184,3 +184,13 @@ Sicherungen: `$R/card-a/card-before/C/` (Kartenstand vor Phase A, u. a. der bish
 - Offen: echte Karte und echte Pi; `asid=on` steht in keiner der beiden `cmdline`-Dateien (Kern-Vorgabe
   aus; das Szenario laesst es nur notieren) — soll es hinein, in beide Dateien; ob HypView eine `.HYP` auf
   NewTOS oeffnet und Links folgt, zeigt erst A4 (oder vorher ein QEMU-Lauf des Testers).
+
+## Berichtigung zum Phase-A-Lauf (2026-10-31)
+
+`measurements/measurement-2026-10-31-pitest01-phase-a/RUNINFO.TXT` nennt unter
+A3 und Befund P1 einen eingefrorenen zweiten P0PAR-Lauf. Das war eine
+Fehllesung des Leads: Der Anwender stellt klar, P0PAR lief wie gelistet durch;
+die Fotos stammen aus einem normalen Lauf (Register als Beleg). Der Freeze
+unter A3 betrifft DOOM: Demo laeuft, im Hauptmenue beim Scrollen Freeze,
+Strg+Alt+Entf wirkt ([DOOM01](DOOM01.md)). Befund P1 entfaellt.
+
