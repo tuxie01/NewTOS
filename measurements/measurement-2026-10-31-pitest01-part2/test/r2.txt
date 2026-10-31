@@ -1,0 +1,2 @@
+sync-card: C: (/Volumes/PT2D) is disk10s2, but the kernel maps the first MBR partition (s1) to C:
+exit 1

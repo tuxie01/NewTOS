@@ -79,3 +79,46 @@ A0–A6, B1–B2).
   7,5-s-Tastenwarten keine Zeit vergehen (RUNINFO Abschnitt 5). EmuTOS hat
   eine globale Zelle. P0REP liest deshalb erst am naechsten Tick.
 - Offen: Teil 2 (Kartenabgleich-Skript, Ablaufblatt); die echte Pi.
+
+## Stand Teil 2 (2026-10-31, umgesetzt, nicht committet)
+
+- **`tools/sync-card.sh`** (Shell wie `tools/mkcard.sh`/`tools/sd-manifest.sh`, kein xtask-Code): gleicht die
+  Build-Ausgabe auf eine **bestehende** Pi-Karte ab. `kernels` baut die beiden Kerne und schreibt `KERNELS.TXT`
+  (sha256, Features, Commit, Dirty-Flags); `sync` ist ohne `--write` ein Trockenlauf (neu/geaendert/gleich je
+  Datei per sha256, Fremddateien als Warnung), mit `--write` Kopie, Unmount/Mount, Rueckleseprobe jeder Datei,
+  Manifest nach `<run>/card.manifest` und `C:\CARDMAN.TXT`; `verify` prueft nur. Formatiert nie, loescht nie
+  (ausser den AppleDouble-Dateien, die macOS beim eigenen Schreiben anlegt), schreibt nie Firmware, verweigert
+  falsche Datentraeger (Name, Mountpunkt, FAT, Firmware-Dateien, `C:` = Partition 1).
+- **Kernwechsel per Dateitausch:** auf der Karte `kernela.img` (Release) und `kernelb.img` (`crash-nowait`,
+  `fs-io-trace`), `kernel8.img` = der aktive. `config.txt` bleibt unberuehrt; das Skript verweigert, wenn
+  `config.txt` einen anderen `kernel=` oder `os_prefix=` setzt (Raspberry-Pi-Doku, Optionen `kernel`/`os_prefix`,
+  Quelle in der RUNINFO).
+- **Liste:** `measurements/measurement-2026-10-31-pitest01-part2/method/pitest01-card.list` (Sonden in `C:\`,
+  `DCPROBE` als `C:\AUTO\DCPROBE.NCP`, Alltagsprogramme unter `C:\Apps\<APP>\` wie auf der Alltagskarte laut
+  ihrer letzten lokalen Sicherung vom 2026-10-08). Neubau aller Programme:
+  `measurements/measurement-2026-10-31-pitest01-part2/method/build-card-programs.sh`.
+- **Probe nur gegen ein Scratch-Abbild** (`measurements/measurement-2026-10-31-pitest01-part2/RUNINFO.TXT`):
+  5 Verweigerungen, Trockenlauf schreibt nichts, Schreiben + Rueckleseprobe 51/51, im **abgehaengten** Abbild
+  verfaelschtes Byte von `verify` erkannt (exit 1) und repariert, Phasenwechsel, `fsck_msdos` sauber.
+- **Ablaufblatt:** `docs/analysis/tester-run-sheet-2026-10-31.md` (eine Seite, Phasen A/B, P0REP nur in B).
+
+**Befehl fuer den Lead** (erst nach Commit und mit Bestaetigung des Anwenders; `R` = neuer Laufordner):
+
+```sh
+R=measurements/measurement-YYYY-MM-DD-pitest01-card   # Datum einsetzen
+L=measurements/measurement-2026-10-31-pitest01-part2/method/pitest01-card.list
+measurements/measurement-2026-10-31-pitest01-part2/method/build-card-programs.sh $R/logs   # "ALL-OK"
+tools/sync-card.sh kernels $R/kernels kernelb.img=crash-nowait,fs-io-trace kernela.img=none
+diskutil list     # Mountpunkt + Name der Startpartition (= C:) ablesen, nicht raten
+B=/Volumes/BOOT   # <- abgelesener Mountpunkt; Name unten = abgelesener Datentraegername
+C=(--list "$L" --boot "$B" BOOT --drive C "$B" BOOT --kernels "$R/kernels")
+tools/sync-card.sh sync "${C[@]}" --active kernela.img                          # 1. Trockenlauf lesen
+tools/sync-card.sh sync "${C[@]}" --active kernela.img --run-dir $R/card-a --write   # 2. Phase A
+grep -n "#Z" "$B/NEWDESK.INF"      # muss leer bleiben (kein Autostart)
+# Wechsel A->B (nach dem Kopieren von C:):
+tools/sync-card.sh sync "${C[@]}" --active kernelb.img --run-dir $R/card-b --write
+```
+
+- Offen: echte Karte und echte Pi; HypView braucht auf der Karte eine `.HYP` und `HYP_VIEW.CFG` (A4), die
+  Alltagskarte hatte am 2026-10-08 kein HypView; `cmdline.txt` fehlte dort (fuer Phase B neu anlegen mit
+  `serial=on`); die Pfade der Liste gegen den Trockenlauf pruefen.

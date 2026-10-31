@@ -1,0 +1,20 @@
+card disk10
+volume C PT2BOOT MS-DOS_FAT16 disk10s1 boot
+error: C:\start4.elf: firmware file, never written
+  extra    C:\._FOREIGN (on the card, not in the list; left untouched)
+  extra    C:\APPS\QED\QED.NAP (on the card, not in the list; left untouched)
+  extra    C:\APPS\QED\QED.RSC (on the card, not in the list; left untouched)
+  extra    C:\DOOM\DOOM1.WAD (on the card, not in the list; left untouched)
+  extra    C:\NEWDESK.INF (on the card, not in the list; left untouched)
+  extra    C:\bcm2711-rpi-4-b.dtb (on the card, not in the list; left untouched)
+  extra    C:\cmdline.txt (on the card, not in the list; left untouched)
+  extra    C:\config.txt (on the card, not in the list; left untouched)
+  extra    C:\fixup4.dat (on the card, not in the list; left untouched)
+  extra    C:\kernel8.img (on the card, not in the list; left untouched)
+  extra    C:\start4.elf (on the card, not in the list; left untouched)
+sync-card: warning: 11 file(s) on the card are not in the list (extra, left untouched)
+boot_config_kernel kernel=kernel8.img
+boot_cmdline asid=on
+summary: 0 new, 0 changed, 0 same, 11 extra, 0 optional missing, 1 error(s)
+sync-card: 1 error(s); nothing written
+exit 1

@@ -1,0 +1,179 @@
+card disk10
+volume C PT2BOOT MS-DOS_FAT16 disk10s1 boot
+volume D PT2D MS-DOS_FAT16 disk10s2
+  new      C:\P0PAR.NAP <- sdk/examples/build/P0PAR.NAP
+  new      C:\P0KID.NAP <- sdk/examples/build/P0KID.NAP
+  new      C:\P0REP.NAP <- sdk/examples/build/P0REP.NAP
+  new      C:\HZPROBE.NAP <- tosdump/build/HZPROBE.NAP
+  new      C:\AWPROBE.NAP <- tosdump/build/AWPROBE.NAP
+  new      C:\AUTO\DCPROBE.NCP <- tosdump/build/DCPROBE.NAP
+  changed  C:\Apps\QED\QED.NAP <- sdk/apps/qed/build/QED.NAP
+  same     C:\Apps\QED\qed.rsc <- sdk/apps/qed/build/qed.rsc
+  new      C:\Apps\TERADESK\DESKTOP.NAP <- sdk/apps/teradesk/build/dist/DESKTOP.NAP
+  new      C:\Apps\TERADESK\desktop.rsc <- sdk/apps/teradesk/build/dist/desktop.rsc
+  new      C:\Apps\TERADESK\icons.rsc <- sdk/apps/teradesk/build/dist/icons.rsc
+  new      C:\Apps\TERADESK\cicons.rsc <- sdk/apps/teradesk/build/dist/cicons.rsc
+  new      C:\Apps\HYPVIEW\HYP_VIEW.NAP <- sdk/apps/hypview/build/HYP_VIEW.NAP
+  new      C:\Apps\HYPVIEW\hyp_view.rsc <- sdk/apps/hypview/build/hyp_view.rsc
+  new      C:\Apps\DOOM\DOOM.NAP <- sdk/apps/doom/build/DOOM.NAP
+  new      C:\Apps\ZVIEW\CODECS\BMP.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/BMP.NLD
+  new      C:\Apps\ZVIEW\CODECS\DEGAS.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/DEGAS.NLD
+  new      C:\Apps\ZVIEW\CODECS\EUREKA.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/EUREKA.NLD
+  new      C:\Apps\ZVIEW\CODECS\GIF.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/GIF.NLD
+  new      C:\Apps\ZVIEW\CODECS\GODPAINT.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/GODPAINT.NLD
+  new      C:\Apps\ZVIEW\CODECS\IMG.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/IMG.NLD
+  new      C:\Apps\ZVIEW\CODECS\JPG.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/JPG.NLD
+  new      C:\Apps\ZVIEW\CODECS\NEO.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/NEO.NLD
+  new      C:\Apps\ZVIEW\CODECS\PNG.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/PNG.NLD
+  new      C:\Apps\ZVIEW\CODECS\TGA.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/TGA.NLD
+  new      C:\Apps\ZVIEW\ICONS\FILE.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/FILE.GOD
+  new      C:\Apps\ZVIEW\ICONS\FOLDER.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/FOLDER.GOD
+  new      C:\Apps\ZVIEW\ICONS\IMAGE.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/IMAGE.GOD
+  new      C:\Apps\ZVIEW\ICONS\PDF.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/PDF.GOD
+  new      C:\Apps\ZVIEW\ICONS\PRG.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/PRG.GOD
+  new      C:\Apps\ZVIEW\ICONS\SMALL.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/SMALL.GOD
+  new      C:\Apps\ZVIEW\ZVIEW.NAP <- sdk/zview/build/dist/ZVIEW/ZVIEW.NAP
+  new      C:\Apps\ZVIEW\ZVIEW.RSC <- sdk/zview/build/dist/ZVIEW/ZVIEW.RSC
+  new      C:\Apps\ZVIEW\SAMPLES\T.GIF <- sdk/zview/build/samples/IMAGES/T.GIF
+  new      C:\Apps\ZVIEW\SAMPLES\T.GOD <- sdk/zview/build/samples/IMAGES/T.GOD
+  new      C:\Apps\ZVIEW\SAMPLES\T.JPG <- sdk/zview/build/samples/IMAGES/T.JPG
+  new      C:\Apps\ZVIEW\SAMPLES\T.NEO <- sdk/zview/build/samples/IMAGES/T.NEO
+  new      C:\Apps\ZVIEW\SAMPLES\T.PC1 <- sdk/zview/build/samples/IMAGES/T.PC1
+  new      C:\Apps\ZVIEW\SAMPLES\T.PI1 <- sdk/zview/build/samples/IMAGES/T.PI1
+  new      C:\Apps\ZVIEW\SAMPLES\T.RAW <- sdk/zview/build/samples/IMAGES/T.RAW
+  new      C:\Apps\ZVIEW\SAMPLES\T1.IMG <- sdk/zview/build/samples/IMAGES/T1.IMG
+  new      C:\Apps\ZVIEW\SAMPLES\T24.BMP <- sdk/zview/build/samples/IMAGES/T24.BMP
+  new      C:\Apps\ZVIEW\SAMPLES\T24.TGA <- sdk/zview/build/samples/IMAGES/T24.TGA
+  new      C:\Apps\ZVIEW\SAMPLES\T4.IMG <- sdk/zview/build/samples/IMAGES/T4.IMG
+  new      C:\Apps\ZVIEW\SAMPLES\T8.BMP <- sdk/zview/build/samples/IMAGES/T8.BMP
+  new      C:\Apps\ZVIEW\SAMPLES\TPAL.PNG <- sdk/zview/build/samples/IMAGES/TPAL.PNG
+  new      C:\Apps\ZVIEW\SAMPLES\TRGB.PNG <- sdk/zview/build/samples/IMAGES/TRGB.PNG
+  new      C:\Apps\ZVIEW\SAMPLES\TRLE.TGA <- sdk/zview/build/samples/IMAGES/TRLE.TGA
+  new      C:\kernelb.img <- /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/pitest2/kernels/kernelb.img
+  new      C:\kernela.img <- /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/pitest2/kernels/kernela.img
+  changed  C:\kernel8.img <- /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/pitest2/kernels/kernela.img
+  extra    C:\._FOREIGN (on the card, not in the list; left untouched)
+  extra    C:\DOOM\DOOM1.WAD (on the card, not in the list; left untouched)
+  extra    C:\NEWDESK.INF (on the card, not in the list; left untouched)
+  extra    C:\bcm2711-rpi-4-b.dtb (on the card, not in the list; left untouched)
+  extra    C:\cmdline.txt (on the card, not in the list; left untouched)
+  extra    C:\config.txt (on the card, not in the list; left untouched)
+  extra    C:\fixup4.dat (on the card, not in the list; left untouched)
+  extra    C:\start4.elf (on the card, not in the list; left untouched)
+  extra    D:\NOTES.TXT (on the card, not in the list; left untouched)
+sync-card: warning: 9 file(s) on the card are not in the list (extra, left untouched)
+boot_config_kernel kernel=kernel8.img
+boot_cmdline asid=on
+summary: 48 new, 2 changed, 1 same, 9 extra, 0 optional missing, 0 error(s)
+  wrote    C:\P0PAR.NAP
+  wrote    C:\P0KID.NAP
+  wrote    C:\P0REP.NAP
+  wrote    C:\HZPROBE.NAP
+  wrote    C:\AWPROBE.NAP
+  wrote    C:\AUTO\DCPROBE.NCP
+  wrote    C:\Apps\QED\QED.NAP
+  wrote    C:\Apps\TERADESK\DESKTOP.NAP
+  wrote    C:\Apps\TERADESK\desktop.rsc
+  wrote    C:\Apps\TERADESK\icons.rsc
+  wrote    C:\Apps\TERADESK\cicons.rsc
+  wrote    C:\Apps\HYPVIEW\HYP_VIEW.NAP
+  wrote    C:\Apps\HYPVIEW\hyp_view.rsc
+  wrote    C:\Apps\DOOM\DOOM.NAP
+  wrote    C:\Apps\ZVIEW\CODECS\BMP.NLD
+  wrote    C:\Apps\ZVIEW\CODECS\DEGAS.NLD
+  wrote    C:\Apps\ZVIEW\CODECS\EUREKA.NLD
+  wrote    C:\Apps\ZVIEW\CODECS\GIF.NLD
+  wrote    C:\Apps\ZVIEW\CODECS\GODPAINT.NLD
+  wrote    C:\Apps\ZVIEW\CODECS\IMG.NLD
+  wrote    C:\Apps\ZVIEW\CODECS\JPG.NLD
+  wrote    C:\Apps\ZVIEW\CODECS\NEO.NLD
+  wrote    C:\Apps\ZVIEW\CODECS\PNG.NLD
+  wrote    C:\Apps\ZVIEW\CODECS\TGA.NLD
+  wrote    C:\Apps\ZVIEW\ICONS\FILE.GOD
+  wrote    C:\Apps\ZVIEW\ICONS\FOLDER.GOD
+  wrote    C:\Apps\ZVIEW\ICONS\IMAGE.GOD
+  wrote    C:\Apps\ZVIEW\ICONS\PDF.GOD
+  wrote    C:\Apps\ZVIEW\ICONS\PRG.GOD
+  wrote    C:\Apps\ZVIEW\ICONS\SMALL.GOD
+  wrote    C:\Apps\ZVIEW\ZVIEW.NAP
+  wrote    C:\Apps\ZVIEW\ZVIEW.RSC
+  wrote    C:\Apps\ZVIEW\SAMPLES\T.GIF
+  wrote    C:\Apps\ZVIEW\SAMPLES\T.GOD
+  wrote    C:\Apps\ZVIEW\SAMPLES\T.JPG
+  wrote    C:\Apps\ZVIEW\SAMPLES\T.NEO
+  wrote    C:\Apps\ZVIEW\SAMPLES\T.PC1
+  wrote    C:\Apps\ZVIEW\SAMPLES\T.PI1
+  wrote    C:\Apps\ZVIEW\SAMPLES\T.RAW
+  wrote    C:\Apps\ZVIEW\SAMPLES\T1.IMG
+  wrote    C:\Apps\ZVIEW\SAMPLES\T24.BMP
+  wrote    C:\Apps\ZVIEW\SAMPLES\T24.TGA
+  wrote    C:\Apps\ZVIEW\SAMPLES\T4.IMG
+  wrote    C:\Apps\ZVIEW\SAMPLES\T8.BMP
+  wrote    C:\Apps\ZVIEW\SAMPLES\TPAL.PNG
+  wrote    C:\Apps\ZVIEW\SAMPLES\TRGB.PNG
+  wrote    C:\Apps\ZVIEW\SAMPLES\TRLE.TGA
+  wrote    C:\kernelb.img
+  wrote    C:\kernela.img
+  wrote    C:\kernel8.img
+  removed  C:\._AUTO (AppleDouble file macOS made for a file written here)
+  removed  C:\._AWPROBE.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\._HZPROBE.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\._P0KID.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\._P0PAR.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\._P0REP.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\._kernel8.img (AppleDouble file macOS made for a file written here)
+  removed  C:\._kernela.img (AppleDouble file macOS made for a file written here)
+  removed  C:\._kernelb.img (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\._DOOM (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\._HYPVIEW (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\._TERADESK (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\._ZVIEW (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\DOOM\._DOOM.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\HYPVIEW\._HYP_VIEW.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\HYPVIEW\._hyp_view.rsc (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\QED\._QED.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\TERADESK\._DESKTOP.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\TERADESK\._cicons.rsc (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\TERADESK\._desktop.rsc (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\TERADESK\._icons.rsc (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\._CODECS (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\._ICONS (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\._SAMPLES (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\._ZVIEW.NAP (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\._ZVIEW.RSC (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\CODECS\._BMP.NLD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\CODECS\._DEGAS.NLD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\CODECS\._EUREKA.NLD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\CODECS\._GIF.NLD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\CODECS\._GODPAINT.NLD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\CODECS\._IMG.NLD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\CODECS\._JPG.NLD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\CODECS\._NEO.NLD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\CODECS\._PNG.NLD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\CODECS\._TGA.NLD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\ICONS\._FILE.GOD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\ICONS\._FOLDER.GOD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\ICONS\._IMAGE.GOD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\ICONS\._PDF.GOD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\ICONS\._PRG.GOD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\ICONS\._SMALL.GOD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\SAMPLES\._T.GIF (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\SAMPLES\._T.GOD (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\SAMPLES\._T.JPG (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\SAMPLES\._T.NEO (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\SAMPLES\._T.PC1 (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\SAMPLES\._T.PI1 (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\SAMPLES\._T.RAW (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\SAMPLES\._T1.IMG (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\SAMPLES\._T24.BMP (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\SAMPLES\._T24.TGA (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\SAMPLES\._T4.IMG (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\SAMPLES\._T8.BMP (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\SAMPLES\._TPAL.PNG (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\SAMPLES\._TRGB.PNG (AppleDouble file macOS made for a file written here)
+  removed  C:\APPS\ZVIEW\SAMPLES\._TRLE.TGA (AppleDouble file macOS made for a file written here)
+  removed  C:\AUTO\._DCPROBE.NCP (AppleDouble file macOS made for a file written here)
+  removed  C:\._CARDMAN.TXT (AppleDouble file macOS made for a file written here)
+written and verified: 50 file(s) copied, 51 listed file(s) equal the build output (read after remount)
+manifest: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/pitest2/t1/run-s2/card.manifest = C:\CARDMAN.TXT (d44c6cf635378efb1c5ee66b170948cd95f98ccc215488f5f98521a8675b6432)
+exit 0

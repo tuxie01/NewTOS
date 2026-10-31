@@ -1,0 +1,84 @@
+# NewTOS card manifest v1 -- written by tools/sync-card.sh
+card disk10
+volume C PT2BOOT MS-DOS_FAT16 disk10s1 boot
+volume D PT2D MS-DOS_FAT16 disk10s2
+created 2026-10-31T03:39:39Z
+tree_commit 7d29d89afebd9545ee831cfb747daa9efa245990 tree_dirty=yes
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+list measurements/measurement-2026-10-31-pitest01-part2/method/pitest01-card.list 7a2af1023be525ae7790b73b4baf8eca5523015e51f245f1ebd8cfb173426f9d
+kernels /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/pitest2/kernels 7d29d89afebd9545ee831cfb747daa9efa245990 tree_dirty=yes kernel_inputs_dirty=no
+kernel kernelb.img a4591e1d42071abf706edbd585bd6268180d05e98eec33d17ec3081bfda9e8b2 features=crash-nowait,fs-io-trace board=rpi4 profile=release cmd=cargo xtask build --board rpi4 --release --features crash-nowait,fs-io-trace
+kernel kernela.img fb8664d5aee64bbede78781be3ada46555b66bd9baa903a8ee29de7fe3e8a659 features=none board=rpi4 profile=release cmd=cargo xtask build --board rpi4 --release
+kernel_active kernela.img -> kernel8.img
+boot_config_kernel kernel=kernel8.img
+boot_cmdline asid=on
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path> (listed, read back after remount) / replaced <old sha256> <path> /
+# extra <sha256> <bytes> <path> (not in the list, untouched) / metadata <path> (macOS, not hashed)
+file 3eb86eb6cd8fee9308a395629ff31b81072b753218296e4d2654c80ed2f3bb05 6672 C:\P0PAR.NAP
+file 07ec89d8b84a80d9619bb4ac591a0a15e7a75207e39dd750d8bdbaf90899b760 7128 C:\P0KID.NAP
+file dc1a56e4f186867562939f7271f9c910fba71c981e2c3c560eadd678dfd89403 20400 C:\P0REP.NAP
+file 36b45fe8ac8b900ce97982161164f4d95e92b12808fca2f69ce0679be7aab926 146584 C:\HZPROBE.NAP
+file e5d9954293fde76e9f85740b6e84e071ce8d194943ac27cc18d67415110fcee4 144896 C:\AWPROBE.NAP
+file 3c3cd0371f23c3f4bf5aa6c24e0e10f261e899c34884132e0a4ae5b4d200db77 146432 C:\AUTO\DCPROBE.NCP
+file 50fdd681f7d7d993ae085d7b654971b029bd96befd04c9acf016c940d4336369 544280 C:\Apps\QED\QED.NAP
+file 30ac6bf24a28ce2c95fab6a7c663bf29f40de9ad9ee1dd6b80ec36c146264a79 41378 C:\Apps\QED\qed.rsc
+file 9f5af3b056e691e4215a59c4b40cc036f5c7491adf7c7350ea57af9bbac2d175 353312 C:\Apps\TERADESK\DESKTOP.NAP
+file 409f69a09bf1d1d869bdf9e712510413917cc2355b05b3ba937e60366b0b0e08 39278 C:\Apps\TERADESK\desktop.rsc
+file 8d4bc8a2b8ca8e6890f318677a0445dd26b476b4cd0bf6ee4fc103a0f4f22e75 13284 C:\Apps\TERADESK\icons.rsc
+file ee7de7f37985aba9856ccbe01fb852bec47e6ff9d200644ea3aced15231f6241 63650 C:\Apps\TERADESK\cicons.rsc
+file 5c41481bca222b7248efd8b251bdd51f08d9862bb021e4268d88359f885bcf5f 280352 C:\Apps\HYPVIEW\HYP_VIEW.NAP
+file 54589e1c59da47f45a5b6529ded425908c8f6f28d4d5a9e7bcab7e47a8540caa 27747 C:\Apps\HYPVIEW\hyp_view.rsc
+file 86abca15e09202d8538afb8504f4835fdda2ecc5f33f74f5852570832e1df132 790816 C:\Apps\DOOM\DOOM.NAP
+file 0e8cabececf22d5e78ec2c4f9dbe0d8c37dc6e08438c056a94786b637e958ff5 90968 C:\Apps\ZVIEW\CODECS\BMP.NLD
+file a0161f3e04bbb1b503095b87f4909b90ca3279af3e327dac16ec7ce6a2a95cfe 90824 C:\Apps\ZVIEW\CODECS\DEGAS.NLD
+file 9448814bc121f323e52f59787602a09873714b1c9725836cd646f5d3a3586c09 90984 C:\Apps\ZVIEW\CODECS\EUREKA.NLD
+file f06b5fc9a8df4e567a6fdeca9ab293eef67f6bcf284dc0a045d05b766e4741ef 104776 C:\Apps\ZVIEW\CODECS\GIF.NLD
+file 2e6be5598b88b5a2ae71f77e8eced961a24578c76a085d8f63190ce880571f66 89488 C:\Apps\ZVIEW\CODECS\GODPAINT.NLD
+file 04ad6cdb2e4d922d28db419de910db51c8ac6090fdc8cc63da36c56638aeaa8a 94616 C:\Apps\ZVIEW\CODECS\IMG.NLD
+file fd820ce59d88400cb181ccc7c6a3a7a24fab7fc1fe1d2de337c14522c520be72 715128 C:\Apps\ZVIEW\CODECS\JPG.NLD
+file e2b004a6ff8299e7f7d1b41d84375c2d737f24d086bc2ad48f9cb169f56e7f4f 89600 C:\Apps\ZVIEW\CODECS\NEO.NLD
+file 5bade7471dad3e81ead4404f0b9e3f29eb867445dcfa7458abf5ecdb6a52ef24 408432 C:\Apps\ZVIEW\CODECS\PNG.NLD
+file b949ed4bcf64e3c697082729f6bfa486333e76cffeca9ab50e908ca12bf2557a 90264 C:\Apps\ZVIEW\CODECS\TGA.NLD
+file f1cc3a809aa25195ae486d56422d3772ab411574447e85667905f10a637561f3 2054 C:\Apps\ZVIEW\ICONS\FILE.GOD
+file bda81600aedc7e5376f8ce4e5ced208a0e2e91853ba2aaea6209e17d8176e813 2054 C:\Apps\ZVIEW\ICONS\FOLDER.GOD
+file cc139b6a3e35e1c895766534c06432f265d9ffe383b89b24d75c1b20a7ef0ca9 2054 C:\Apps\ZVIEW\ICONS\IMAGE.GOD
+file de7c636f2a14193d1abbcf47a5b1b79acaecb371d549a44a25691e5017cc9a47 2054 C:\Apps\ZVIEW\ICONS\PDF.GOD
+file 71594ffeadf23678c68ec05e9767091522e95c3317d91d5ae9b889760f931f34 2054 C:\Apps\ZVIEW\ICONS\PRG.GOD
+file 75dd26b3c7403a8e4f1c964901a9d83c69c636848c5010b8952e385c2ef6c5d1 14342 C:\Apps\ZVIEW\ICONS\SMALL.GOD
+file efb1aebbd303ba57551951f4b0b430a953c79bf4e3b2361b6436a4780d20e5ce 522592 C:\Apps\ZVIEW\ZVIEW.NAP
+file 7252fc16fb320c6a8dc778f1a226c5ce7d2763b351a0fb1c4f63c193b09a635b 21606 C:\Apps\ZVIEW\ZVIEW.RSC
+file 793d200a60168726da49190a760b1e5a9feb98834c6f480d5bb1e3780014488d 1187 C:\Apps\ZVIEW\SAMPLES\T.GIF
+file 1e26ff2a5875f32c304786bcea506e858689b6faeabf6604670a7d55b4327b8a 6150 C:\Apps\ZVIEW\SAMPLES\T.GOD
+file 334f8d112c2f19572b65c1ede9b04b50039fbd10c7f7aefe6113c89c2af8a79c 1727 C:\Apps\ZVIEW\SAMPLES\T.JPG
+file e31a755ccdde7231f7c254bafd11ea0b936f97ea8a8226fb89d3c6cc971992cd 32128 C:\Apps\ZVIEW\SAMPLES\T.NEO
+file 4ea17713cf93277019fa8ca7500cdf0d53b7c7a4d83fe80695bec19165158fc6 21338 C:\Apps\ZVIEW\SAMPLES\T.PC1
+file 5276f836813230905b5cf672c2b257947a1ee8d585b774740f32f5ae4379d401 32034 C:\Apps\ZVIEW\SAMPLES\T.PI1
+file 3aec68f332eaa84e365a27c8ff03c1a8b8660a47cbaa1d73603ef3c4e46702eb 6148 C:\Apps\ZVIEW\SAMPLES\T.RAW
+file 55de2f72f9f1cadfb8fb6137c5a34a0b7fe6c4debe64753bb0abb1119eb390f2 496 C:\Apps\ZVIEW\SAMPLES\T1.IMG
+file 969657ff47c569c8e53ff61190fb6f6cc3ef032e434bcd7f9b76453df9330c6a 9270 C:\Apps\ZVIEW\SAMPLES\T24.BMP
+file 93624450caeb5a6bc81fccfd51edfb121f6e4e16dc291bf78ebb72319c6d1b12 9234 C:\Apps\ZVIEW\SAMPLES\T24.TGA
+file 365d49f0702b8aefdfc4516a10c87fb2078f9c882126adfff277855299ff071c 2038 C:\Apps\ZVIEW\SAMPLES\T4.IMG
+file a160535c866fd43f4f5c81fe4a56084f019d8229c4720f9eba4b0641b925b692 4150 C:\Apps\ZVIEW\SAMPLES\T8.BMP
+file 01ec0ad6be0d262df965d53316e29904ddd1d39d6a766439fa907d8421dba400 998 C:\Apps\ZVIEW\SAMPLES\TPAL.PNG
+file f1983e24bab68e5b67d6c1ec49538bc1cdcb843ae6540972ebfe0947e2364079 254 C:\Apps\ZVIEW\SAMPLES\TRGB.PNG
+file cb0e58c88eb4367d5037e84b1a129624f4c6cdc802cd4105d35f855c9df33ea1 3954 C:\Apps\ZVIEW\SAMPLES\TRLE.TGA
+file a4591e1d42071abf706edbd585bd6268180d05e98eec33d17ec3081bfda9e8b2 1460392 C:\kernelb.img
+file fb8664d5aee64bbede78781be3ada46555b66bd9baa903a8ee29de7fe3e8a659 1452200 C:\kernela.img
+file fb8664d5aee64bbede78781be3ada46555b66bd9baa903a8ee29de7fe3e8a659 1452200 C:\kernel8.img
+replaced d46502d3e39b3f91bd4d7b3f7d74283213a8a68e2baaf81ca1904ac9a54d3152 C:\Apps\QED\QED.NAP (content before this sync)
+replaced 660d9babfe4ee5a0485b60fd9d7c7cf7e7b445a47dc66247015750afee68ab31 C:\kernel8.img (content before this sync)
+extra 57bed8315d85a48a729d3fc833d4b82027012c67fa5723a1d2b6078bb43249ea 9 C:\._FOREIGN
+extra 6001cc1a81817c8c47dba4822e526a38ae534be80d52e3b9e7bafd9b2c38438b 4096 C:\DOOM\DOOM1.WAD
+extra ed663d2b921308b1194fd2d5efd9a9997ba88b9c3450cbc57d74d54e21dc5353 7 C:\NEWDESK.INF
+extra 4d4939a504d9fcddf7053033362833f93176059db113022ac206151163dbe86e 52000 C:\bcm2711-rpi-4-b.dtb
+extra 818f144f53d7de92bd4f9c93d28a00a366020b5b6c936901d9e3daa5243b1a8d 8 C:\cmdline.txt
+extra 99736bd98554cd0358371a6e2397475f657b8f3b98ecc057bd616c570b1f89b0 2844 C:\config.txt
+extra dd83a1313ba607f732367310baa1637b3b8973b86d999fc23ec0c8d29c72d8a2 5399 C:\fixup4.dat
+extra 5b4b18b144b05b8698f48ab7abf23aa236ed5aa374046196ca982e0543eb0e89 2253056 C:\start4.elf
+extra 4e8aae49cfdc2104ed02fe9cddc8ebce52741322e6f9d9462546fec6fa41cbfa 14 D:\NOTES.TXT
+metadata C:\.Spotlight-V100 (macOS volume metadata, not hashed)
+metadata C:\.fseventsd (macOS volume metadata, not hashed)
+metadata D:\.Spotlight-V100 (macOS volume metadata, not hashed)
+metadata D:\.fseventsd (macOS volume metadata, not hashed)

@@ -1,0 +1,28 @@
+image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/pitest2/t1/card.img attached at /dev/disk10
+r1 ok (rc=1)
+r2 ok (rc=1)
+r3 ok (rc=1)
+r4 ok (rc=1)
+r5 ok (rc=1)
+s1 ok (rc=0)
+s1 card unchanged ok
+s2 ok (rc=0)
+s1 lists D:\NOTES.TXT as extra ok
+s2 C:\CARDMAN.TXT = run-dir card.manifest ok
+s2 no AppleDouble left, ._FOREIGN kept ok
+s3 ok (rc=0)
+s3 all same ok
+flipped image byte 4008992 (inside C:\P0REP.NAP)
+c1 ok (rc=1)
+c2 ok (rc=0)
+c2 shows P0REP changed ok
+c3 ok (rc=0)
+c4 ok (rc=0)
+c5 ok (rc=1)
+c6 ok (rc=0)
+p1 ok (rc=0)
+p1 no AppleDouble left, ._FOREIGN kept ok
+p2 ok (rc=1)
+f1 fsck ok
+image sha256 after the runs: bddc20192eb08ab38dcf8e57d007aa2058f258390bdf9df7862ebe5dc7c6d54f
+FAILS=0

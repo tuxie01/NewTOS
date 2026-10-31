@@ -1,0 +1,13 @@
+libc rc=0
+libm rc=0
+zview rc=0
+qed rc=0
+teradesk rc=0
+hypview rc=0
+doom rc=0
+probes rc=0
+p0par rc=0
+p0kid rc=0
+p0rep rc=0
+ALL-OK
+ measurements/measurement-2026-10-31-pitest01-part2/logs  22,85s user 13,24s system 86% cpu 41,927 total

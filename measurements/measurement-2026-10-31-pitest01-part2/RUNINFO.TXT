@@ -1,0 +1,88 @@
+measurement-2026-10-31-pitest01-part2 -- TASK/PITEST01 Part 2: tools/sync-card.sh (bring build output onto an EXISTING Pi card,
+sha256 read-back check, card manifest), tested ONLY against a scratch disk image; the tester run sheet
+docs/analysis/tester-run-sheet-2026-10-31.md. Developer, 2026-10-31. Tree = HEAD 7d29d89a + the uncommitted Part-2 change set
+(tools/sync-card.sh, this run, the run sheet, TASK/PITEST01.md, docs/STATUS.md). No hardware, no real card, no /Volumes of a card.
+
+RESULT IN ONE LINE: scratch card (MBR, s1 FAT16 = boot partition and C:, s2 FAT16 = D:): 5 refusals as intended, dry run
+writes nothing, --write copies 50 files + verifies all 51 listed files after an unmount/remount, a byte flipped in the RAW image
+of the detached card is caught by `verify` (MISMATCH, exit 1) and shown as `changed` by the dry run, a byte changed through the
+mounted file system is caught too, both repaired by --write; phase switch to the second kernel verified; fsck_msdos -n clean on
+both partitions; FAILS=0 (test/test-summary.txt).
+
+1 TOOL (tools/sync-card.sh; bash 3.2, macOS diskutil/plutil/shasum)
+  kernels <out-dir> <card-name>=<features> ...   builds rpi4 release kernels (`cargo xtask build --board rpi4 --release
+                     [--features ...]`), copies each under its card name, writes KERNELS.TXT (sha256, features, commit, tree_dirty,
+                     kernel_inputs_dirty, host_rustc); refuses if the tree changes during the builds.
+  sync ... [--write] dry run by default (new / changed / same per file by sha256, extra files listed as a warning, missing
+                     sources); --write: copy (temporary 8.3 name, then rename), save replaced boot-partition *.img into
+                     <run-dir>/card-before/, remove only the AppleDouble ._ files that appeared while writing, sync, unmount +
+                     remount every volume, re-read every listed file, compare with the build output; manifest to
+                     <run-dir>/card.manifest and C:\CARDMAN.TXT (read back the same way). Never formats, never deletes a listed or
+                     foreign file, never writes firmware files; config.txt / cmdline.txt only with --allow-boot-config.
+  verify ...         read-only: remount, compare every listed file.
+  Guards: mount point + volume name + msdos given per volume, all on one removable/external whole disk that is not the
+  startup disk, boot partition carries start4.elf + fixup4.dat + config.txt, C: = slice s1 and drive letters in slice order,
+  8.3 names, no duplicate destination, with --kernels config.txt must load kernel8.img (no other kernel=, no os_prefix=).
+  Kernel switch: file swap of kernel8.img; config.txt stays untouched. Source for "the firmware loads the file named by
+  kernel=" and for os_prefix: Raspberry Pi documentation, github.com/raspberrypi/documentation @ 7376533ab86e (master on
+  2026-10-31), documentation/asciidoc/computers/config_txt/boot.adoc lines 20-22 (`kernel`), 30 (`arm_64bit`), 105-113
+  (`os_prefix`); local copy references/rpi4-boot/config-txt-boot.adoc (gitignored, sha256
+  see 6). Repo config: boot/rpi4/config.txt line 9 `kernel=kernel8.img`.
+
+2 CARD LIST (method/pitest01-card.list): P0PAR/P0KID/P0REP.NAP, HZPROBE.NAP, AWPROBE.NAP in C:\, DCPROBE as C:\AUTO\DCPROBE.NCP;
+  QED, TeraDesk, HypView, DOOM, zView (+ optional SAMPLES) under C:\Apps\<APP>\ as on the daily card's last local backup
+  (sd-card-backup-20261008-ofam/BOOT, untracked; read only); the card's own data files are not listed. 51 card files incl. the
+  three kernel entries (kernela.img, kernelb.img, kernel8.img).
+  Rebuild of every listed program: method/build-card-programs.sh logs/ -> "ALL-OK" (logs/build-card-programs.txt, 42 s).
+  HZPROBE.NAP 36b45fe8ac8b900c... and P0REP.NAP dc1a56e4f1868675... equal the Part-1 builds byte for byte.
+
+3 KERNELS (tools/sync-card.sh kernels <scratch>/kernels kernelb.img=crash-nowait,fs-io-trace kernela.img=none; test/KERNELS.TXT)
+  commit 7d29d89afebd9545ee831cfb747daa9efa245990 tree_dirty=yes kernel_inputs_dirty=no (only the Part-2 files were dirty)
+  kernela.img fb8664d5aee64bbede78781be3ada46555b66bd9baa903a8ee29de7fe3e8a659 features=none
+  kernelb.img a4591e1d42071abf706edbd585bd6268180d05e98eec33d17ec3081bfda9e8b2 features=crash-nowait,fs-io-trace
+  Not booted here (scratch test of the sync path only). Kernel binaries not kept.
+
+4 SCRATCH-IMAGE TEST (method/test-sync-card.sh <scratch> <kernels> <out>; outputs in test/, one file per step, exit status last)
+  Card: 160 MiB raw image, hdiutil-attached, diskutil MBR: s1 FAT16 "PT2BOOT" 96 MiB (fake start4.elf / fixup4.dat / .dtb of
+  random bytes, boot/rpi4/config.txt, cmdline.txt "asid=on", an "old" kernel8.img, an old C:\APPS\QED\QED.NAP, the current
+  qed.rsc as QED.RSC, NEWDESK.INF, DOOM\DOOM1.WAD, a foreign C:\._FOREIGN), s2 FAT16 "PT2D" (D:\NOTES.TXT). Mounted by macOS
+  at /Volumes/PT2BOOT and /Volumes/PT2D (the test's own image; no other volume was touched).
+  r1 wrong label           refused: "volume name is 'PT2BOOT', expected 'BOOT'"
+  r2 C: on s2              refused: "C: (/Volumes/PT2D) is disk10s2, but the kernel maps the first MBR partition (s1) to C:"
+  r3 boot without firmware refused: "boot partition /Volumes/PT2D has no start4.elf"
+  r4 config.txt kernel=kernel7.img  refused: "config.txt names another kernel than kernel8.img (kernel=kernel7.img)"
+  r5 list names start4.elf refused: "C:\start4.elf: firmware file, never written"
+  s1 dry run               48 new, 2 changed (QED.NAP, kernel8.img), 1 same (qed.rsc under another case), 9 extra incl.
+                           D:\NOTES.TXT; card file list + sha256 before/after equal (s1-card-before/after.sha256)
+  s2 --write               "written and verified: 50 file(s) copied, 51 listed file(s) equal the build output (read after
+                           remount)"; 59 AppleDouble files macOS created while writing removed (incl. ._CARDMAN.TXT), ._FOREIGN kept; card-before/
+                           holds the old kernel8.img; C:\CARDMAN.TXT == run-dir card.manifest; manifest keys checked
+                           (host_clang, tree_commit, both kernel lines with features, kernel_active, optional_missing,
+                           volumes, replaced kernel8.img, extra D:\NOTES.TXT) -- test/s2-card.manifest
+  s3 dry run               0 new, 0 changed, 51 same
+  c0                       card detached; one byte inside C:\P0REP.NAP flipped in the raw image file (offset in c0-corrupt.txt)
+  c1 verify                MISMATCH C:\P0REP.NAP: card e5e4aa87..., build output dc1a56e4...; "VERIFY FAILED", exit 1
+  c2 dry run               "changed  C:\P0REP.NAP"
+  c3 --write               repaired, verified (test/c3-card.manifest); c4 verify: 51 equal, exit 0
+  c5 verify                byte changed through the mounted FS in C:\AUTO\DCPROBE.NCP: MISMATCH, exit 1; c6 --write repairs
+  p1 --active kernelb.img  phase switch: kernel8.img changed -> verified = kernelb.img sha; old kernel8.img (= kernela) in
+                           card-before/ (p1-card-before.sha256); test/p1-card.manifest
+  p2                       same run dir again: refused ("card.manifest exists")
+  f1 fsck_msdos -n         both partitions "exit 0"
+  Image sha256 after the runs: test/image.txt. Image detached and deleted.
+  Earlier iterations of the same test found and fixed in the tool: AppleDouble files created by macOS beside every written
+  file/folder (now removed after the copy, foreign ones kept); extras of a volume without listed files were not reported
+  (awk NR==FNR with an empty first file). The test outputs in test/ are from the final run of the final tool and list.
+
+5 NOT COVERED
+  The real card and the real Pi (on the owner's word only; TASK/PITEST01 "Stand Teil 2" has the command); the two kernels
+  booted; the real card's actual mount points / labels (the dry run on the card shows them; the tool refuses mismatches);
+  cargo xtask test not run (no Rust crate touched; baseline 1918/0/1 from Part 1).
+
+6 HOST
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  host_rustc rustc 1.97.0-nightly (a5c825cd8 2026-04-14)
+  bash 3.2.57 (/bin/bash), macOS diskutil / hdiutil / fsck_msdos.
+  references/rpi4-boot/config-txt-boot.adoc sha256 d0348cc8df9e117c037ff5b68e5e9cf04001d46993ff6c9a701269bf075655ce
+  optional_missing line of every manifest in test/, verbatim:
+optional_missing none

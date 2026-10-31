@@ -1,0 +1,33 @@
+# pitest01-card.list -- what tools/sync-card.sh puts onto the PITEST01 tester card (TASK/PITEST01,
+# docs/analysis/tester-scenario-draft-2026-10-31.md, run sheet docs/analysis/tester-run-sheet-2026-10-31.md).
+#
+# One line per file: <destination on the card> | <source, repository-relative> | <command that builds the source>
+#   destination  C:\... (TOS drive, 8.3 names) or BOOT:... (firmware boot partition; on the Pi card BOOT is C:)
+#                ending in \ with a source ending in / = every file below that folder
+#   ?            in front of the destination = optional (a missing source is an `optional_missing` line, not an error)
+# The two kernels are not in this list: `tools/sync-card.sh kernels` builds them, `--kernels` adds them.
+# Only program files from the rebuild and their resources: the card's own data files (NEWDESK.INF,
+# TERADESK.INF, HYP_VIEW.CFG, *.HYP, DOOM1.WAD if present, pictures) are not listed and stay untouched.
+
+# --- probes of the scenario --------------------------------------------------------------------------
+C:\P0PAR.NAP          | sdk/examples/build/P0PAR.NAP | sdk/build.sh sdk/examples/p0par.c sdk/examples/build/P0PAR.NAP
+C:\P0KID.NAP          | sdk/examples/build/P0KID.NAP | sdk/build.sh sdk/examples/p0kid.c sdk/examples/build/P0KID.NAP
+C:\P0REP.NAP          | sdk/examples/build/P0REP.NAP | sdk/build.sh sdk/examples/p0rep.c sdk/examples/build/P0REP.NAP
+C:\HZPROBE.NAP        | tosdump/build/HZPROBE.NAP    | make -C tosdump hzprobe-newtos
+C:\AWPROBE.NAP        | tosdump/build/AWPROBE.NAP    | make -C tosdump awprobe-newtos
+C:\AUTO\DCPROBE.NCP   | tosdump/build/DCPROBE.NAP    | make -C tosdump dcprobe-newtos
+
+# --- everyday programs, at the paths of the daily card as of its last backup (sd-card-backup-20261008-ofam/BOOT,
+# --- local and untracked: C:\Apps\<APP>\; HypView was not on it yet and follows the same pattern). Check them in
+# --- the dry run: a program the card keeps elsewhere shows up as `new` here and as `extra` there.
+C:\Apps\QED\QED.NAP              | sdk/apps/qed/build/QED.NAP                    | sdk/apps/build-qed.sh
+C:\Apps\QED\qed.rsc              | sdk/apps/qed/build/qed.rsc                    | sdk/apps/build-qed.sh
+C:\Apps\TERADESK\DESKTOP.NAP     | sdk/apps/teradesk/build/dist/DESKTOP.NAP      | sdk/apps/build-teradesk.sh
+C:\Apps\TERADESK\desktop.rsc     | sdk/apps/teradesk/build/dist/desktop.rsc      | sdk/apps/build-teradesk.sh
+C:\Apps\TERADESK\icons.rsc       | sdk/apps/teradesk/build/dist/icons.rsc        | sdk/apps/build-teradesk.sh
+C:\Apps\TERADESK\cicons.rsc      | sdk/apps/teradesk/build/dist/cicons.rsc       | sdk/apps/build-teradesk.sh
+C:\Apps\HYPVIEW\HYP_VIEW.NAP     | sdk/apps/hypview/build/HYP_VIEW.NAP           | sdk/apps/build-hypview.sh
+C:\Apps\HYPVIEW\hyp_view.rsc     | sdk/apps/hypview/build/hyp_view.rsc           | sdk/apps/build-hypview.sh
+C:\Apps\DOOM\DOOM.NAP            | sdk/apps/doom/build/DOOM.NAP                  | sdk/apps/build-doom.sh
+C:\Apps\ZVIEW\                   | sdk/zview/build/dist/ZVIEW/                   | sdk/zview/build-zview.sh
+?C:\Apps\ZVIEW\SAMPLES\          | sdk/zview/build/samples/IMAGES/               | sdk/zview/build-zview.sh (samples are optional there)

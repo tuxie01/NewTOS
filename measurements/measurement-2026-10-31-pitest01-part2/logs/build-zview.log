@@ -1,0 +1,65 @@
+clang : Apple clang version 21.0.0 (clang-2100.4.1.1)
+
+  overlay: zview/av_prot.c
+  overlay: zview/custom_font.c
+  overlay: zview/main.c
+  overlay: zview/plugins.c
+  overlay: zview/plugins/degas/degasldg.c
+  overlay: zview/plugins/eureka/rawldg.c
+  overlay: zview/plugins/godpaint/godldg.c
+  overlay: zview/plugins/img/imgldg.c
+  overlay: zview/plugins/img/xp32.c
+  overlay: zview/plugins/jpg/jpgdsp.c
+  overlay: zview/plugins/jpg/jpgldg.c
+  overlay: zview/plugins/neochrome/neoldg.c
+  overlay: zview/winimg.c
+  overlay: zview/zvdi/color.c
+shadow tree: /Volumes/Daten/Development/PiRusTOS/sdk/zview/build/tree (overlays: 14)
+  skip (PDF module): zview/pdf_load.c
+  skip (PDF module): zview/winpdf.c
+zView: compiled 53 files (Makefile OBJ minus pdf_load.o winpdf.o, plus ztask/gmem.c)
+LINK OK -> ZVIEW.NAP (522592 bytes, SharedObject (0x3), undefined symbols: 0)
+  _stksize at 0x667a0: 65536 -> 524288
+LINK OK -> BMP.NLD (90968 bytes, SharedObject (0x3), undefined symbols: 0)
+  allocator: libshare only (calloc.o chdir.o libshare.o malloc.o realloc.o sbrk.o ); none of libc.a's mintlib__malloc.o mintlib__calloc.o mintlib__realloc.o mintlib__posix_memalign.o unix__sbrk.o
+LINK OK -> DEGAS.NLD (90824 bytes, SharedObject (0x3), undefined symbols: 0)
+  allocator: libshare only (calloc.o chdir.o libshare.o malloc.o realloc.o sbrk.o ); none of libc.a's mintlib__malloc.o mintlib__calloc.o mintlib__realloc.o mintlib__posix_memalign.o unix__sbrk.o
+LINK OK -> EUREKA.NLD (90984 bytes, SharedObject (0x3), undefined symbols: 0)
+  allocator: libshare only (calloc.o chdir.o libshare.o malloc.o realloc.o sbrk.o ); none of libc.a's mintlib__malloc.o mintlib__calloc.o mintlib__realloc.o mintlib__posix_memalign.o unix__sbrk.o
+LINK OK -> GODPAINT.NLD (89488 bytes, SharedObject (0x3), undefined symbols: 0)
+  allocator: libshare only (calloc.o chdir.o libshare.o malloc.o realloc.o sbrk.o ); none of libc.a's mintlib__malloc.o mintlib__calloc.o mintlib__realloc.o mintlib__posix_memalign.o unix__sbrk.o
+LINK OK -> IMG.NLD (94616 bytes, SharedObject (0x3), undefined symbols: 0)
+  allocator: libshare only (calloc.o chdir.o libshare.o malloc.o realloc.o sbrk.o ); none of libc.a's mintlib__malloc.o mintlib__calloc.o mintlib__realloc.o mintlib__posix_memalign.o unix__sbrk.o
+LINK OK -> NEO.NLD (89600 bytes, SharedObject (0x3), undefined symbols: 0)
+  allocator: libshare only (calloc.o chdir.o libshare.o malloc.o realloc.o sbrk.o ); none of libc.a's mintlib__malloc.o mintlib__calloc.o mintlib__realloc.o mintlib__posix_memalign.o unix__sbrk.o
+LINK OK -> TGA.NLD (90264 bytes, SharedObject (0x3), undefined symbols: 0)
+  allocator: libshare only (calloc.o chdir.o libshare.o malloc.o realloc.o sbrk.o ); none of libc.a's mintlib__malloc.o mintlib__calloc.o mintlib__realloc.o mintlib__posix_memalign.o unix__sbrk.o
+LINK OK -> GIF.NLD (104776 bytes, SharedObject (0x3), undefined symbols: 0)
+  allocator: libshare only (calloc.o chdir.o libshare.o malloc.o realloc.o sbrk.o ); none of libc.a's mintlib__malloc.o mintlib__calloc.o mintlib__realloc.o mintlib__posix_memalign.o unix__sbrk.o
+LINK OK -> PNG.NLD (408432 bytes, SharedObject (0x3), undefined symbols: 0)
+  allocator: libshare only (calloc.o chdir.o libshare.o malloc.o realloc.o sbrk.o ); none of libc.a's mintlib__malloc.o mintlib__calloc.o mintlib__realloc.o mintlib__posix_memalign.o unix__sbrk.o
+LINK OK -> JPG.NLD (715128 bytes, SharedObject (0x3), undefined symbols: 0)
+  allocator: libshare only (calloc.o chdir.o libshare.o malloc.o realloc.o sbrk.o ); none of libc.a's mintlib__malloc.o mintlib__calloc.o mintlib__realloc.o mintlib__posix_memalign.o unix__sbrk.o
+codecs: 10 built (tiff not built: libtiff + liblzma are not in the SDK)
+converted /Volumes/Daten/Development/PiRusTOS/sdk/zview/build/tree/zview/zview.rsc -> /Volumes/Daten/Development/PiRusTOS/sdk/zview/build/dist/ZVIEW/ZVIEW.RSC: 15 trees, 246 objects, 41 tedinfo, 2 bitblk, 0 iconblk, 9 ciconblk, 15 cicon, 44 frstr, 0 frimg (21606 bytes, RSHDR vrsn 4) [LP64/32B-OBJECT, NRSC v13]
+samples -> /Volumes/Daten/Development/PiRusTOS/sdk/zview/build/samples/IMAGES (15 files)
+warnings: 11 files (list: /Volumes/Daten/Development/PiRusTOS/sdk/zview/build/warnings.txt)
+dist -> /Volumes/Daten/Development/PiRusTOS/sdk/zview/build/dist/ZVIEW
+    ZVIEW/CODECS/BMP.NLD
+    ZVIEW/CODECS/DEGAS.NLD
+    ZVIEW/CODECS/EUREKA.NLD
+    ZVIEW/CODECS/GIF.NLD
+    ZVIEW/CODECS/GODPAINT.NLD
+    ZVIEW/CODECS/IMG.NLD
+    ZVIEW/CODECS/JPG.NLD
+    ZVIEW/CODECS/NEO.NLD
+    ZVIEW/CODECS/PNG.NLD
+    ZVIEW/CODECS/TGA.NLD
+    ZVIEW/ICONS/FILE.GOD
+    ZVIEW/ICONS/FOLDER.GOD
+    ZVIEW/ICONS/IMAGE.GOD
+    ZVIEW/ICONS/PDF.GOD
+    ZVIEW/ICONS/PRG.GOD
+    ZVIEW/ICONS/SMALL.GOD
+    ZVIEW/ZVIEW.NAP
+    ZVIEW/ZVIEW.RSC
