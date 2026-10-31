@@ -1,0 +1,2 @@
+sync-card: /Volumes/PT3BOOT: volume name is 'PT3BOOT', expected 'BOOT'
+exit 1

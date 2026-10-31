@@ -1,0 +1,71 @@
+card disk10
+volume C PT3BOOT MS-DOS_FAT16 disk10s1 boot
+volume D PT3D MS-DOS_FAT16 disk10s2
+  same     C:\P0PAR.NAP <- sdk/examples/build/P0PAR.NAP
+  same     C:\P0KID.NAP <- sdk/examples/build/P0KID.NAP
+  changed  C:\P0REP.NAP <- sdk/examples/build/P0REP.NAP
+  same     C:\HZPROBE.NAP <- tosdump/build/HZPROBE.NAP
+  same     C:\AWPROBE.NAP <- tosdump/build/AWPROBE.NAP
+  same     C:\AUTO\DCPROBE.NCP <- tosdump/build/DCPROBE.NAP
+  same     C:\Apps\QED\QED.NAP <- sdk/apps/qed/build/QED.NAP
+  same     C:\Apps\QED\qed.rsc <- sdk/apps/qed/build/qed.rsc
+  same     C:\Apps\TERADESK\DESKTOP.NAP <- sdk/apps/teradesk/build/dist/DESKTOP.NAP
+  same     C:\Apps\TERADESK\desktop.rsc <- sdk/apps/teradesk/build/dist/desktop.rsc
+  same     C:\Apps\TERADESK\icons.rsc <- sdk/apps/teradesk/build/dist/icons.rsc
+  same     C:\Apps\TERADESK\cicons.rsc <- sdk/apps/teradesk/build/dist/cicons.rsc
+  same     C:\Apps\HYPVIEW\HYP_VIEW.NAP <- sdk/apps/hypview/build/HYP_VIEW.NAP
+  same     C:\Apps\HYPVIEW\hyp_view.rsc <- sdk/apps/hypview/build/hyp_view.rsc
+  same     C:\Apps\HYPVIEW\HYP_VIEW.CFG <- measurements/measurement-2026-10-31-pitest01-part3/method/HYP_VIEW.CFG
+  same     C:\Apps\ZVIEW\ZVIEW.HYP <- sdk/zview/z-tools-04805b7/zview/_dist/doc/zView.hyp
+  same     C:\Apps\DOOM\DOOM.NAP <- sdk/apps/doom/build/DOOM.NAP
+  same     C:\Apps\ZVIEW\CODECS\BMP.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/BMP.NLD
+  same     C:\Apps\ZVIEW\CODECS\DEGAS.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/DEGAS.NLD
+  same     C:\Apps\ZVIEW\CODECS\EUREKA.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/EUREKA.NLD
+  same     C:\Apps\ZVIEW\CODECS\GIF.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/GIF.NLD
+  same     C:\Apps\ZVIEW\CODECS\GODPAINT.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/GODPAINT.NLD
+  same     C:\Apps\ZVIEW\CODECS\IMG.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/IMG.NLD
+  same     C:\Apps\ZVIEW\CODECS\JPG.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/JPG.NLD
+  same     C:\Apps\ZVIEW\CODECS\NEO.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/NEO.NLD
+  same     C:\Apps\ZVIEW\CODECS\PNG.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/PNG.NLD
+  same     C:\Apps\ZVIEW\CODECS\TGA.NLD <- sdk/zview/build/dist/ZVIEW/CODECS/TGA.NLD
+  same     C:\Apps\ZVIEW\ICONS\FILE.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/FILE.GOD
+  same     C:\Apps\ZVIEW\ICONS\FOLDER.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/FOLDER.GOD
+  same     C:\Apps\ZVIEW\ICONS\IMAGE.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/IMAGE.GOD
+  same     C:\Apps\ZVIEW\ICONS\PDF.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/PDF.GOD
+  same     C:\Apps\ZVIEW\ICONS\PRG.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/PRG.GOD
+  same     C:\Apps\ZVIEW\ICONS\SMALL.GOD <- sdk/zview/build/dist/ZVIEW/ICONS/SMALL.GOD
+  same     C:\Apps\ZVIEW\ZVIEW.NAP <- sdk/zview/build/dist/ZVIEW/ZVIEW.NAP
+  same     C:\Apps\ZVIEW\ZVIEW.RSC <- sdk/zview/build/dist/ZVIEW/ZVIEW.RSC
+  same     C:\Apps\ZVIEW\SAMPLES\T.GIF <- sdk/zview/build/samples/IMAGES/T.GIF
+  same     C:\Apps\ZVIEW\SAMPLES\T.GOD <- sdk/zview/build/samples/IMAGES/T.GOD
+  same     C:\Apps\ZVIEW\SAMPLES\T.JPG <- sdk/zview/build/samples/IMAGES/T.JPG
+  same     C:\Apps\ZVIEW\SAMPLES\T.NEO <- sdk/zview/build/samples/IMAGES/T.NEO
+  same     C:\Apps\ZVIEW\SAMPLES\T.PC1 <- sdk/zview/build/samples/IMAGES/T.PC1
+  same     C:\Apps\ZVIEW\SAMPLES\T.PI1 <- sdk/zview/build/samples/IMAGES/T.PI1
+  same     C:\Apps\ZVIEW\SAMPLES\T.RAW <- sdk/zview/build/samples/IMAGES/T.RAW
+  same     C:\Apps\ZVIEW\SAMPLES\T1.IMG <- sdk/zview/build/samples/IMAGES/T1.IMG
+  same     C:\Apps\ZVIEW\SAMPLES\T24.BMP <- sdk/zview/build/samples/IMAGES/T24.BMP
+  same     C:\Apps\ZVIEW\SAMPLES\T24.TGA <- sdk/zview/build/samples/IMAGES/T24.TGA
+  same     C:\Apps\ZVIEW\SAMPLES\T4.IMG <- sdk/zview/build/samples/IMAGES/T4.IMG
+  same     C:\Apps\ZVIEW\SAMPLES\T8.BMP <- sdk/zview/build/samples/IMAGES/T8.BMP
+  same     C:\Apps\ZVIEW\SAMPLES\TPAL.PNG <- sdk/zview/build/samples/IMAGES/TPAL.PNG
+  same     C:\Apps\ZVIEW\SAMPLES\TRGB.PNG <- sdk/zview/build/samples/IMAGES/TRGB.PNG
+  same     C:\Apps\ZVIEW\SAMPLES\TRLE.TGA <- sdk/zview/build/samples/IMAGES/TRLE.TGA
+  same     C:\kernelb.img <- /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/pitest3/kernels/kernelb.img
+  same     C:\kernela.img <- /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/pitest3/kernels/kernela.img
+  same     C:\kernel8.img <- /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/pitest3/kernels/kernela.img
+  same     C:\cmdline.txt <- measurements/measurement-2026-10-31-pitest01-part3/method/cmdline-a.txt
+  extra    C:\._FOREIGN (on the card, not in the list; left untouched)
+  extra    C:\DOOM\DOOM1.WAD (on the card, not in the list; left untouched)
+  extra    C:\NEWDESK.INF (on the card, not in the list; left untouched)
+  extra    C:\bcm2711-rpi-4-b.dtb (on the card, not in the list; left untouched)
+  extra    C:\config.txt (on the card, not in the list; left untouched)
+  extra    C:\fixup4.dat (on the card, not in the list; left untouched)
+  extra    C:\start4.elf (on the card, not in the list; left untouched)
+  extra    D:\NOTES.TXT (on the card, not in the list; left untouched)
+sync-card: warning: 8 file(s) on the card are not in the list (extra, left untouched)
+boot_config_kernel kernel=kernel8.img
+boot_cmdline empty (no options)
+summary: 0 new, 1 changed, 53 same, 8 extra, 0 optional missing, 0 error(s)
+dry run: nothing written (add --write to copy 1 file(s))
+exit 0

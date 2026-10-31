@@ -1,0 +1,124 @@
+measurement-2026-10-31-pitest01-part3 -- TASK/PITEST01 Part 3 (owner decisions after Part 2): one card only (wording),
+backups before writing, HypView configuration + one .HYP on the card, cmdline.txt switched together with the kernel
+(phase A without, phase B with serial=on). tools/sync-card.sh extended, tested ONLY against a scratch disk image.
+Developer, 2026-10-31. Tree = HEAD db112d1e + the uncommitted Part-3 change set (tools/sync-card.sh, this run,
+docs/analysis/tester-run-sheet-2026-10-31.md, TASK/PITEST01.md, docs/STATUS.md). No hardware, no real card, no
+/Volumes of a card. Part 2's run (measurements/measurement-2026-10-31-pitest01-part2/) is unchanged; its list and
+scripts were copied here and changed here.
+
+RESULT IN ONE LINE: scratch card (MBR, s1 FAT16 "PT3BOOT" = boot partition and C:, s2 FAT16 "PT3D" = D:): 9 refusals
+as intended (Part 2's 5 + 4 new: --cmdline without --allow-boot-config even with --write and the card unchanged,
+config.txt cmdline=other.txt, an active kernel without --cmdline, --cmdline for an unknown kernel), dry run writes
+nothing, phase A --write copies 53 files and verifies all 54 listed files after a remount with cmdline.txt =
+method/cmdline-a.txt, the card's old kernel8.img / cmdline.txt ("asid=on") / config.txt / replaced QED.NAP land
+in card-before/C/ equal to the card before; phase B writes kernelb.img + method/cmdline-b.txt (serial=on) and
+saves kernela.img + cmdline-a.txt; a card without cmdline.txt gets it as `new` (boot_cmdline_before absent);
+a run dir with card-before/ is refused; Part 2's corruption cases still caught; fsck_msdos -n clean on both
+partitions; FAILS=0 (test/test-summary.txt).
+
+1 CHANGES TO tools/sync-card.sh (sha256 after: see 6)
+  --cmdline <card-name> <file>  repeatable, with --kernels: the file of the --active kernel becomes cmdline.txt of
+                     the boot partition, as a plan entry like every listed file (dry run new/changed/same,
+                     copy via temporary name, read back after remount, `file` line). Needs --allow-boot-config
+                     (the existing refusal for cmdline.txt entries). Once any --cmdline is given, the active kernel
+                     must have one (a kernel switch never keeps the other kernel's command line). A --cmdline for a
+                     kernel not in KERNELS.TXT is refused, as is a config.txt `cmdline=` naming another file than
+                     cmdline.txt.
+  Backups:           --write first copies every card file it will replace (all volumes) and kernel8.img,
+                     cmdline.txt, config.txt of the boot partition (even if unchanged) to
+                     <run-dir>/card-before/<volume>/<path>, each checked by sha256 against the card; only then the
+                     first file is written. Part 2 saved only replaced *.img files, during the copy loop. --write
+                     into a run dir that already has card-before/ is refused (an earlier backup is never
+                     overwritten).
+  Manifest keys:     new `cmdline <card-name> <file> <sha256>`, `cmdline_active <card-name> -> cmdline.txt`,
+                     `boot_cmdline_before <...>`, `saved <sha256> <path> -> card-before/<volume>/<path>`;
+                     `boot_cmdline` is now the state AFTER the sync (Part 2: before) and distinguishes
+                     `empty (no options)` from `absent`; boot_config_kernel also lists cmdline= lines.
+  Unchanged:         every Part-2 refusal, the AppleDouble handling, the read-back verification, `kernels`.
+
+2 CMDLINE SOURCES (method/cmdline-a.txt = one empty line, no option; method/cmdline-b.txt = "serial=on")
+  The firmware reads the kernel command line from the file config.txt names with `cmdline`, default cmdline.txt on
+  the boot partition: Raspberry Pi documentation @ 7376533ab86e, documentation/asciidoc/computers/config_txt/
+  boot.adoc, option `cmdline`; local copy references/rpi4-boot/config-txt-boot.adoc lines 16-18 (sha256 in 6);
+  os_prefix also applies to cmdline.txt (same file, line 107; already refused by the tool). boot/rpi4/config.txt
+  has no cmdline= line. The kernel fetches the text via the mailbox (kernel/src/bootargs.rs:3-6@with_command_line)
+  and switches the UART output on only with the token serial=on (kernel/src/bootargs.rs:22@SERIAL_ON).
+  Nothing else is required on the card's command line: docs/HW-TEST-LOG.md section 3 ("No cmdline.txt is required
+  for a bare-metal kernel"); the card had no cmdline.txt in its last local backup (2026-10-08, TASK/PITEST01 Part 2).
+  asid=on is in neither file (kernel default off, bootargs.rs ASID_ON); the scenario only records it -- open point.
+
+3 CARD LIST (method/pitest01-card.list, copy of Part 2's, changed): wording "daily card" -> test card; two new
+  entries for A4:
+    C:\Apps\HYPVIEW\HYP_VIEW.CFG  <- method/HYP_VIEW.CFG, one line DEFAULT=C:\Apps\ZVIEW\ZVIEW.HYP (CRLF), same form as
+                                     measurements/measurement-2026-10-27-mem12-acceptance/method/HYP_VIEW.CFG.
+                                     HypView opens HYP_VIEW.CFG by its bare name (sdk/apps/hypview/config.c:32,
+                                     dl_cfgrd.c:110-113 after $HOME), i.e. in its program folder when started from
+                                     the desktop (MEM12 card hv).
+    C:\Apps\ZVIEW\ZVIEW.HYP       <- sdk/zview/z-tools-04805b7/zview/_dist/doc/zView.hyp, zView's own help from the
+                                     pinned zView source (sdk/zview/z-tools-04805b7.tar.xz sha256 ce9d7d88...,
+                                     sdk/zview/zview-sources.sha256; extracted by sdk/zview/build-zview.sh); magic
+                                     HDOC, 247856 bytes, sha256 90a11ec9d36f2fe2b88a2477a65bd61f13210a768fee0110dd402cc35385f14a.
+                                     Beside zView: the owner's card rule puts every app's .HYP into its program
+                                     folder. Other .HYP files in the tree (all vendored, untracked):
+                                     sdk/cflib/cflib-21/bin/cflib.hyp, sdk/windom/windom-1.21.3/doc/windom.hyp.
+  No .HYP has been opened by HypView on NewTOS yet (MEM12 RUNINFO "NOT COVERED: ... HypView .HYP documents").
+  54 card files incl. the three kernel entries and cmdline.txt. method/build-card-programs.sh is Part 2's
+  unchanged: rebuild logs/ -> "ALL-OK" (logs/build-card-programs.txt, 42 s). P0REP.NAP dc1a56e4..., HZPROBE.NAP
+  36b45fe8... equal Part 1/2; HYP_VIEW.NAP 5c41481b...
+
+4 KERNELS (tools/sync-card.sh kernels <scratch>/kernels kernelb.img=crash-nowait,fs-io-trace kernela.img=none; test/KERNELS.TXT)
+  commit db112d1ebe6dc8845a435cc370bcd19e42774d6c tree_dirty=yes kernel_inputs_dirty=no
+  kernela.img 4eed2f59b68781fd57df5bce25beb6e0b5debcdf3a2cb4318d8190c1668de534 features=none
+  kernelb.img 7f07e3cb7842b545cecff60d30ee00f9ebd2cda9a0dd1ef15db0d9470ef55dbd features=crash-nowait,fs-io-trace
+  Not booted here (scratch test of the sync path only). Kernel binaries not kept.
+
+5 SCRATCH-IMAGE TEST (method/test-sync-card.sh <scratch> <kernels> <out>, run with TMPDIR in the session scratchpad;
+  outputs in test/, one file per step, exit status last; test/test-summary.txt = the console)
+  Card: as Part 2 (160 MiB raw image, hdiutil, fake firmware of random bytes, boot/rpi4/config.txt, cmdline.txt
+  "asid=on", an old kernel8.img, an old APPS\QED\QED.NAP, NEWDESK.INF, DOOM\DOOM1.WAD, a foreign ._FOREIGN, D:\NOTES.TXT),
+  labels PT3BOOT/PT3D at /Volumes/PT3BOOT, /Volumes/PT3D. No other volume was touched. Every sync call carries
+  --cmdline kernela.img method/cmdline-a.txt --cmdline kernelb.img method/cmdline-b.txt --allow-boot-config unless
+  the step tests their absence.
+  r1-r5  Part 2's refusals (label, C: on s2, no firmware, config.txt kernel=kernel7.img, firmware in the list)
+  r6     no --allow-boot-config, with --write:  refused "C:\cmdline.txt: boot configuration, needs --allow-boot-config";
+         card file list + sha256 before/after equal (r6-card-*.sha256); no card-before/ created
+  r7     config.txt + "cmdline=other.txt":       refused "config.txt reads the command line from another file"
+  r8     --active kernelb.img, only kernela has --cmdline: refused "--active kernelb.img has no --cmdline <file>"
+  r9     --cmdline kernelc.img:                  refused "--cmdline kernelc.img: no such kernel"
+  s1     dry run: 50 new, 3 changed (QED.NAP, kernel8.img, cmdline.txt <- .../cmdline-a.txt), 1 same, 8 extra;
+         HYP_VIEW.CFG and ZVIEW.HYP new; card unchanged (s1-card-before/after.sha256)
+  s2     phase A --write: "53 file(s) copied, 54 listed file(s) equal the build output (read after remount)";
+         card cmdline.txt == cmdline-a.txt, kernel8.img == kernela.img; card-before/C/ = kernel8.img (old card kernel),
+         cmdline.txt ("asid=on"), config.txt, Apps/QED/QED.NAP (old), each sha256 == the card before s2
+         (s2-card-before.sha256); manifest keys checked incl. cmdline x2, cmdline_active kernela.img,
+         boot_cmdline "empty (no options)", boot_cmdline_before "asid=on", replaced + saved lines, file lines of
+         cmdline.txt, HYP_VIEW.CFG, ZVIEW.HYP (s2-card.manifest); C:\CARDMAN.TXT == manifest; no AppleDouble left,
+         ._FOREIGN kept
+  s3     dry run: all same
+  c0-c6  Part 2's corruption cases (raw-image byte flip in P0REP.NAP while detached; byte change through the FS in
+         DCPROBE.NCP): verify fails (exit 1), dry run shows changed, --write repairs, verify passes
+  p1     phase B --active kernelb.img --write: kernel8.img == kernelb.img, cmdline.txt == cmdline-b.txt (serial=on);
+         card-before/C/kernel8.img == kernela.img, card-before/C/cmdline.txt == cmdline-a.txt (p1-card-before.sha256);
+         manifest kernel_active kernelb.img, cmdline_active kernelb.img, boot_cmdline serial=on,
+         boot_cmdline_before "empty (no options)", replaced kernel8.img + cmdline.txt (p1-card.manifest)
+  p2     same run dir again: refused (card.manifest exists)
+  p3     run dir holding only card-before/: refused ("card-before exists")
+  a1     cmdline.txt deleted, back to kernela: cmdline.txt `new`, == cmdline-a.txt, boot_cmdline_before absent, no
+         cmdline backup, card-before/C/kernel8.img == kernelb.img (a1-card.manifest); a2 verify passes
+  f1     fsck_msdos -n both partitions: exit 0
+  Image sha256 after the runs: test/image.txt. Image detached and deleted, scratch removed. All checks passed on the
+  first run of the final tool and test.
+
+6 HOST
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  host_rustc rustc 1.97.0-nightly (a5c825cd8 2026-04-14)
+  bash 3.2.57 (/bin/bash), macOS diskutil / hdiutil / fsck_msdos.
+  tools/sync-card.sh sha256 59da78edc541fcc0dc3afa8c1be56d4bfb1a484af6115584c333f092b05e5054 (as tested)
+  references/rpi4-boot/config-txt-boot.adoc sha256 d0348cc8df9e117c037ff5b68e5e9cf04001d46993ff6c9a701269bf075655ce
+  optional_missing line of every manifest in test/, verbatim:
+optional_missing none
+
+7 NOT COVERED
+  The real card and the real Pi (on the owner's word only; TASK/PITEST01 "Stand Teil 3" has the command); the two
+  kernels booted; the card's real mount points / labels; HypView opening ZVIEW.HYP and following a link (A4 on the
+  Pi, or a QEMU run by the tester before); cargo xtask test not run (no Rust crate touched).

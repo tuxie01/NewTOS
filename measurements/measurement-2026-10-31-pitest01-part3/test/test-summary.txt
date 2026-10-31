@@ -1,0 +1,61 @@
+image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/pitest3/t1/card.img attached at /dev/disk10
+r1 ok (rc=1)
+r2 ok (rc=1)
+r3 ok (rc=1)
+r4 ok (rc=1)
+r5 ok (rc=1)
+r6 ok (rc=1)
+r6 card unchanged ok
+r6 names the switch ok
+r6 no card-before ok
+r7 ok (rc=1)
+r7 names cmdline= ok
+r8 ok (rc=1)
+r8 names the missing cmdline ok
+r9 ok (rc=1)
+r9 names the unknown kernel ok
+s1 ok (rc=0)
+s1 card unchanged ok
+s1 cmdline.txt changed ok
+s1 HYP_VIEW.CFG new ok
+s1 ZVIEW.HYP new ok
+s2 ok (rc=0)
+s2 backup kernel8.img = old card kernel ok
+s2 backup cmdline.txt = old card cmdline (asid=on) ok
+s2 backup config.txt = card config ok
+s2 backup APPS/QED/QED.NAP = old card QED ok
+s2 card cmdline.txt = cmdline-a.txt ok
+s2 card kernel8.img = kernela.img ok
+s1 lists D:\NOTES.TXT as extra ok
+s2 C:\CARDMAN.TXT = run-dir card.manifest ok
+s2 no AppleDouble left, ._FOREIGN kept ok
+s3 ok (rc=0)
+s3 all same ok
+flipped image byte 4008992 (inside C:\P0REP.NAP)
+c1 ok (rc=1)
+c2 ok (rc=0)
+c2 shows P0REP changed ok
+c3 ok (rc=0)
+c4 ok (rc=0)
+c5 ok (rc=1)
+c6 ok (rc=0)
+p1 ok (rc=0)
+p1 card cmdline.txt = cmdline-b.txt (serial=on) ok
+p1 card kernel8.img = kernelb.img ok
+p1 backup kernel8.img = kernela.img ok
+p1 backup cmdline.txt = cmdline-a.txt ok
+p1 no AppleDouble left, ._FOREIGN kept ok
+p2 ok (rc=1)
+p3 ok (rc=1)
+p3 names card-before ok
+a1 ok (rc=0)
+a1 cmdline.txt was new ok
+a1 card cmdline.txt = cmdline-a.txt ok
+a1 manifest before = absent ok
+a1 no cmdline backup ok
+a1 backup kernel8.img = kernelb.img ok
+a2 ok (rc=0)
+a1 no AppleDouble left, ._FOREIGN kept ok
+f1 fsck ok
+image sha256 after the runs: c3aa7d8b344864e0222875b57121a9b3a463958c1843a4b64b292833ae1735cf
+FAILS=0

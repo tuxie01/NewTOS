@@ -28,10 +28,13 @@
 #       changed / same (sha256 of the build output against the card), the
 #       files on the card that are not in the list (extra, left untouched),
 #       and missing sources; writes nothing anywhere.
-#       With --write: copies new and changed files (each to a temporary
-#       8.3 name in the target folder, then renamed), saves the card's
-#       previous *.img files of the boot partition into
-#       <run-dir>/card-before/, removes the AppleDouble files (`._<name>`)
+#       With --write: first saves into <run-dir>/card-before/<volume>/
+#       every card file this sync will replace, and the boot partition's
+#       kernel8.img, cmdline.txt and config.txt as they are (even when
+#       unchanged), each checked by sha256 -- a failed backup stops before
+#       anything is written; then copies new and changed files (each to a
+#       temporary 8.3 name in the target folder, then renamed), removes the
+#       AppleDouble files (`._<name>`)
 #       macOS created beside what it wrote (only those that were not on the
 #       card before), syncs, unmounts and remounts every volume
 #       (so the check reads the card, not the Mac's cache), re-reads every
@@ -58,11 +61,21 @@
 #                             card names, plus kernel8.img = the active one
 #   --active <card-name>      which of them becomes kernel8.img (required
 #                             with --kernels)
+#   --cmdline <card-name> <file>
+#                             repeatable, with --kernels: when <card-name>
+#                             is the --active kernel, <file> becomes
+#                             cmdline.txt of the boot partition (checked by
+#                             sha256 like every listed file). Once any
+#                             --cmdline is given, the active kernel must
+#                             have one (a kernel switch never keeps the
+#                             other kernel's command line). Needs
+#                             --allow-boot-config.
 #   --run-dir <dir>           where --write puts card.manifest, card.list,
 #                             card-before/ (required with --write; refused
-#                             if <dir>/card.manifest exists)
+#                             if <dir>/card.manifest or <dir>/card-before
+#                             exists)
 #   --allow-boot-config       permit config.txt / cmdline.txt entries in
-#                             the list (refused without it)
+#                             the list and --cmdline (refused without it)
 #
 # List file: one line per file, `#` comments and blank lines ignored:
 #   <destination> | <source> | <build command shown when the source is missing>
@@ -86,7 +99,13 @@
 # config.txt `kernel=` naming another file than kernel8.img or any
 # `os_prefix=` (the firmware would then load another file: Raspberry Pi
 # documentation @ 7376533a, documentation/asciidoc/computers/config_txt/
-# boot.adoc, options `kernel` and `os_prefix`). The Pi 4 firmware files
+# boot.adoc, options `kernel` and `os_prefix`); with --cmdline, a
+# config.txt `cmdline=` naming another file than cmdline.txt (same page,
+# option `cmdline`: the file the firmware reads the command line from,
+# default cmdline.txt; the kernel fetches that text over the mailbox,
+# kernel/src/bootargs.rs:3-6@with_command_line) or a --cmdline for a kernel that is
+# not in KERNELS.TXT; --write into a run directory that already holds
+# card-before/. The Pi 4 firmware files
 # checked on the boot partition are the minimum of docs/HW-TEST-LOG.md
 # section 3 (start4.elf, fixup4.dat) plus config.txt.
 #
@@ -101,12 +120,16 @@
 #   kernels <dir> commit <sha> tree_dirty=.. kernel_inputs_dirty=..   (with --kernels)
 #   kernel <card-name> <sha256> features=<...> ...                    (one per kernel)
 #   kernel_active <card-name> -> kernel8.img
-#   boot_config_kernel <kernel= / os_prefix= lines of config.txt, or none>
-#   boot_cmdline <cmdline.txt content> / boot_cmdline absent
+#   cmdline <card-name> <file> <sha256>                               (one per --cmdline)
+#   cmdline_active <card-name> -> cmdline.txt                         (with --cmdline)
+#   boot_config_kernel <kernel= / os_prefix= / cmdline= lines of config.txt, or none>
+#   boot_cmdline <cmdline.txt content after this sync> / empty (no options) / absent
+#   boot_cmdline_before <the same before this sync>                   (--write only)
 #   switch n/a
 #   optional_missing none / optional_missing <text> (one or more)
 #   file <sha256> <bytes> <path>        listed file, read back after remount
 #   replaced <old sha256> <path>        content before this sync
+#   saved <sha256> <path> -> card-before/<volume>/<path>   backup made before writing
 #   extra <sha256> <bytes> <path>       on the card, not in the list, untouched
 #   metadata <path>                     macOS volume metadata, not hashed
 #
@@ -401,6 +424,7 @@ build_plan() {
     esac
   done < "$LIST"
   if [ -n "$KERNELS" ]; then add_kernels; fi
+  [ "$CL_N" = 0 ] || add_cmdline
   [ "${#OPTIONAL_MISSING[@]}" -eq 0 ] || for f in "${OPTIONAL_MISSING[@]}"; do echo "optional missing: $f"; done
 }
 
@@ -422,14 +446,49 @@ add_kernels() {
   [ "$found" = 1 ] || plan_error "--active $ACTIVE is none of the kernels in $kt"
 }
 
+# --cmdline <card-name> <file>: the active kernel's file becomes cmdline.txt
+# of the boot partition (add_entry refuses it without --allow-boot-config).
+add_cmdline() {
+  local kt="$KERNELS/KERNELS.TXT" i=0 bi found=0 nm
+  bi=$(boot_index)
+  while [ "$i" -lt "$CL_N" ]; do
+    nm=$(lower "${CL_NAME[$i]}")
+    if ! awk -v n="$nm" '$1 == "kernel" && tolower($2) == n { f = 1 } END { exit !f }' "$kt"; then
+      plan_error "--cmdline ${CL_NAME[$i]}: no such kernel in $kt"
+    elif [ ! -f "${CL_FILE[$i]}" ]; then
+      plan_error "--cmdline ${CL_NAME[$i]}: file ${CL_FILE[$i]} not found"
+    elif [ "$nm" = "$(lower "$ACTIVE")" ]; then
+      add_entry "$bi" cmdline.txt "${CL_FILE[$i]}" "$(disp_of cmdline.txt "$(vname "$bi"):\\")"
+      found=1
+    fi
+    i=$((i + 1))
+  done
+  [ "$found" = 1 ] || plan_error "--active $ACTIVE has no --cmdline <file>: the card would keep the command line of another kernel"
+}
+
+# One line about cmdline.txt of the boot partition as it is now: <key> <content> / empty (no options) / absent.
+cmdline_line() {   # <key>
+  local m c
+  m="${V_MNT[$(boot_index)]}"
+  if [ ! -f "$m/cmdline.txt" ]; then echo "$1 absent"; return; fi
+  c=$(tr -d '\r' < "$m/cmdline.txt" | paste -sd ' ' -); c=$(trim "$c")
+  if [ -z "$c" ]; then echo "$1 empty (no options)"; else echo "$1 $c"; fi
+}
+
 # config.txt / cmdline.txt of the boot partition (read only).
 read_boot_config() {
   local bi m
   bi=$(boot_index); m="${V_MNT[$bi]}"
-  BOOT_KERNEL_LINES=$(tr -d '\r' < "$m/config.txt" | grep -i -E '^[[:space:]]*(kernel|os_prefix)[[:space:]]*=' |
+  BOOT_KERNEL_LINES=$(tr -d '\r' < "$m/config.txt" | grep -i -E '^[[:space:]]*(kernel|os_prefix|cmdline)[[:space:]]*=' |
                       sed 's/[[:space:]]*$//' | paste -sd ';' - || true)
-  if [ -f "$m/cmdline.txt" ]; then BOOT_CMDLINE=$(tr -d '\r' < "$m/cmdline.txt" | paste -sd ' ' -)
-  else BOOT_CMDLINE=""; fi
+  BOOT_CMDLINE_BEFORE=$(cmdline_line boot_cmdline_before)
+  if [ "$CL_N" != 0 ]; then
+    local cl
+    cl=$(tr -d '\r' < "$m/config.txt" | grep -i -E '^[[:space:]]*cmdline[[:space:]]*=' |
+         sed -E 's/^[^=]*=[[:space:]]*//; s/[[:space:]]*$//' |
+         tr '[:upper:]' '[:lower:]' | grep -v -x -E '/?cmdline\.txt' || true)
+    [ -z "$cl" ] || plan_error "config.txt reads the command line from another file ($BOOT_KERNEL_LINES): the installed cmdline.txt would not be used"
+  fi
   if [ -n "$KERNELS" ]; then
     # Whole-output tests, no `grep -q` inside a pipefail pipeline (an early
     # exit there can turn a hit into SIGPIPE).
@@ -494,7 +553,7 @@ print_plan() {
   nextra=$(wc -l < "$TMPD/extra" | tr -d ' ')
   [ "$nextra" = 0 ] || warn "$nextra file(s) on the card are not in the list (extra, left untouched)"
   echo "boot_config_kernel ${BOOT_KERNEL_LINES:-none}"
-  if [ -n "$BOOT_CMDLINE" ]; then echo "boot_cmdline $BOOT_CMDLINE"; else echo "boot_cmdline absent"; fi
+  cmdline_line boot_cmdline
   echo "summary: $nnew new, $nch changed, $nsame same, $nextra extra, ${#OPTIONAL_MISSING[@]} optional missing, $PLAN_ERRORS error(s)"
   N_TODO=$((nnew + nch))
 }
@@ -538,20 +597,41 @@ clean_dotunder() {  # <vol index>: remove the ._* files that appeared since snap
   done
 }
 
+# Before the first write: copy every file this sync replaces, and kernel8.img,
+# cmdline.txt and config.txt of the boot partition as they are, to
+# <run-dir>/card-before/<volume>/<path>; each copy is checked by sha256.
+save_one() {   # <vol index> <rel> <expected sha256>
+  local vi="$1" rel="$2" want="$3" bk disp
+  bk="$RUN_DIR/card-before/$(vname "$vi")/$rel"
+  [ ! -e "$bk" ] || return 0
+  disp=$(disp_of "$rel" "$(vname "$vi"):\\")
+  mkdir -p "$(dirname "$bk")"
+  cp -X "${V_MNT[$vi]}/$rel" "$bk"
+  [ "$(sha "$bk")" = "$want" ] || die "backup of $disp is not the card's file; nothing written"
+  echo "saved $want $disp -> card-before/$(vname "$vi")/$rel" >> "$TMPD/saved"
+  echo "  saved    $disp -> $bk"
+}
+backup_files() {
+  local vi rel src disp ssha st csha bi
+  mkdir -p "$RUN_DIR/card-before"; : > "$TMPD/saved"
+  while IFS=$'\t' read -r vi rel src disp ssha st csha; do
+    [ "$st" = changed ] || continue
+    save_one "$vi" "$rel" "$csha"
+  done < "$TMPD/status"
+  bi=$(boot_index)
+  for rel in kernel8.img cmdline.txt config.txt; do
+    [ -f "${V_MNT[$bi]}/$rel" ] || continue
+    save_one "$bi" "$rel" "$(sha "${V_MNT[$bi]}/$rel")"
+  done
+}
+
 write_files() {
-  local vi rel src disp ssha st csha f dir tmp n=0 bk
-  mkdir -p "$RUN_DIR/card-before"
+  local vi rel src disp ssha st csha f dir tmp n=0
   while IFS=$'\t' read -r vi rel src disp ssha st csha; do
     [ "$st" != same ] || continue
     f="${V_MNT[$vi]}/$rel"; dir=$(dirname "$f")
     if [ "$st" = changed ]; then
       echo "replaced $csha $disp (content before this sync)" >> "$TMPD/replaced"
-      case "$(lower "$rel")" in
-        *.img) if [ "${V_BOOT[$vi]}" = 1 ]; then
-                 bk="$RUN_DIR/card-before/$(vname "$vi")-$(printf '%s' "$rel" | tr '/' '_')"
-                 cp -X "$f" "$bk"; [ "$(sha "$bk")" = "$csha" ] || die "backup of $disp is not the card's file"
-               fi ;;
-      esac
     fi
     mkdir -p "$dir"
     n=$((n + 1)); tmp="$dir/$(printf 'SYN%05d.TMP' "$n")"
@@ -575,8 +655,15 @@ assemble_manifest() {   # <output file>
       grep '^kernel ' "$KERNELS/KERNELS.TXT"
       echo "kernel_active $ACTIVE -> kernel8.img"
     fi
+    k=0
+    while [ "$k" -lt "$CL_N" ]; do
+      echo "cmdline ${CL_NAME[$k]} $(relsrc "${CL_FILE[$k]}") $(sha "${CL_FILE[$k]}")"
+      k=$((k + 1))
+    done
+    [ "$CL_N" = 0 ] || echo "cmdline_active $ACTIVE -> cmdline.txt"
     echo "boot_config_kernel ${BOOT_KERNEL_LINES:-none}"
-    if [ -n "$BOOT_CMDLINE" ]; then echo "boot_cmdline $BOOT_CMDLINE"; else echo "boot_cmdline absent"; fi
+    cmdline_line boot_cmdline
+    echo "$BOOT_CMDLINE_BEFORE"
     echo "switch n/a"
     if [ "${#OPTIONAL_MISSING[@]}" -eq 0 ]; then
       echo "optional_missing none"
@@ -584,9 +671,11 @@ assemble_manifest() {   # <output file>
       for k in "${OPTIONAL_MISSING[@]}"; do echo "optional_missing $k"; done
     fi
     echo "# file <sha256> <bytes> <path> (listed, read back after remount) / replaced <old sha256> <path> /"
+    echo "# saved <sha256> <path> -> <backup in the run directory> (made before writing) /"
     echo "# extra <sha256> <bytes> <path> (not in the list, untouched) / metadata <path> (macOS, not hashed)"
     cat "$TMPD/readback"
     [ ! -f "$TMPD/replaced" ] || cat "$TMPD/replaced"
+    [ ! -f "$TMPD/saved" ] || cat "$TMPD/saved"
     while IFS=$'\t' read -r vi rel; do
       f="${V_MNT[$vi]}/$rel"
       printf 'extra %s %s %s\n' "$(sha "$f")" "$(size "$f")" "$(disp_of "$rel" "$(vname "$vi"):\\")"
@@ -600,6 +689,7 @@ cmd_card() {   # <sync|verify> <args>
   local mode="$1" a l i
   shift
   LIST=""; KERNELS=""; ACTIVE=""; RUN_DIR=""; ALLOW_BOOT_CONFIG=0; WRITE=0
+  CL_NAME=(); CL_FILE=(); CL_N=0
   local nboot=0
   while [ "$#" -gt 0 ]; do
     a="$1"
@@ -611,6 +701,13 @@ cmd_card() {   # <sync|verify> <args>
                  add_volume "$l" "$3" "$4" 0; shift 4 ;;
       --kernels) [ "$#" -ge 2 ] || usage; KERNELS="$(cd "$2" 2>/dev/null && pwd)" || die "kernels dir $2 not found"; shift 2 ;;
       --active)  [ "$#" -ge 2 ] || usage; ACTIVE="$2"; shift 2 ;;
+      --cmdline) [ "$#" -ge 3 ] || usage
+                 i=0; while [ "$i" -lt "$CL_N" ]; do
+                   [ "$(lower "${CL_NAME[$i]}")" != "$(lower "$2")" ] || die "--cmdline $2 given twice"; i=$((i + 1))
+                 done
+                 CL_NAME[$CL_N]="$2"
+                 case "$3" in /*) CL_FILE[$CL_N]="$3" ;; *) CL_FILE[$CL_N]="$(pwd)/$3" ;; esac
+                 CL_N=$((CL_N + 1)); shift 3 ;;
       --run-dir) [ "$#" -ge 2 ] || usage; RUN_DIR="$2"; shift 2 ;;
       --allow-boot-config) ALLOW_BOOT_CONFIG=1; shift ;;
       --write)   [ "$mode" = sync ] || usage; WRITE=1; shift ;;
@@ -621,9 +718,11 @@ cmd_card() {   # <sync|verify> <args>
   [ "$nboot" = 1 ] || die "exactly one --boot <mount> <label> is required"
   if [ -n "$KERNELS" ] && [ -z "$ACTIVE" ]; then die "--kernels needs --active <card-name>"; fi
   if [ -z "$KERNELS" ] && [ -n "$ACTIVE" ]; then die "--active needs --kernels <dir>"; fi
+  if [ -z "$KERNELS" ] && [ "$CL_N" != 0 ]; then die "--cmdline needs --kernels <dir> and --active"; fi
   if [ "$WRITE" = 1 ]; then
     [ -n "$RUN_DIR" ] || die "--write needs --run-dir <dir>"
     [ ! -e "$RUN_DIR/card.manifest" ] || die "$RUN_DIR/card.manifest exists; give a new run directory"
+    [ ! -e "$RUN_DIR/card-before" ] || die "$RUN_DIR/card-before exists (backups of an earlier write); give a new run directory"
   fi
   case "$LIST" in /*) ;; *) LIST="$(pwd)/$LIST" ;; esac
 
@@ -656,6 +755,7 @@ cmd_card() {   # <sync|verify> <args>
   else
     cp "$LIST" "$RUN_DIR/card.list"
   fi
+  backup_files
   i=0; while [ "$i" -lt "$NV" ]; do snapshot_dotunder "$i"; i=$((i + 1)); done
   write_files
   sync

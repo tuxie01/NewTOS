@@ -1,0 +1,8 @@
+clang : Apple clang version 21.0.0 (clang-2100.4.1.1)
+lld   : /Users/ingouhlemann/.rustup/toolchains/nightly-2026-04-15-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/rust-lld
+
++ clang -target aarch64-unknown-none-elf -ffreestanding -nostdlib -O2 -fno-stack-protector -fPIE -fno-builtin -Wall -Wextra -I/Volumes/Daten/Development/PiRusTOS/sdk/include  -c /Volumes/Daten/Development/PiRusTOS/sdk/crt0.S -o crt0.o
++ clang -target aarch64-unknown-none-elf -ffreestanding -nostdlib -O2 -fno-stack-protector -fPIE -fno-builtin -Wall -Wextra -I/Volumes/Daten/Development/PiRusTOS/sdk/include -c sdk/examples/p0kid.c -o app.o
++ /Users/ingouhlemann/.rustup/toolchains/nightly-2026-04-15-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/rust-lld -flavor gnu -T /Volumes/Daten/Development/PiRusTOS/sdk/newtos.ld -pie --no-dynamic-linker -z text -z max-page-size=0x1000 --build-id=none crt0.o app.o -o sdk/examples/build/P0KID.NAP
+
+wrote sdk/examples/build/P0KID.NAP (7128 bytes)

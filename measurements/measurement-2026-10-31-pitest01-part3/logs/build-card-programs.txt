@@ -1,0 +1,13 @@
+libc rc=0
+libm rc=0
+zview rc=0
+qed rc=0
+teradesk rc=0
+hypview rc=0
+doom rc=0
+probes rc=0
+p0par rc=0
+p0kid rc=0
+p0rep rc=0
+ALL-OK
+(method/build-card-programs.sh logs, 2026-10-31, 42 s; stdout copied from the terminal: tee could not open this file before the script created logs/)

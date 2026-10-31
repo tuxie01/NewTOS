@@ -1,0 +1,47 @@
+/Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/dl_dhst.c:39:21: warning: argument 'msg' of type 'short[8]' with mismatched bound [-Warray-parameter]
+   39 | void DhstFree(short msg[8]);
+      |                     ^
+/Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/diallib.h:425:21: note: previously declared as 'short[]' here
+  425 | void DhstFree(short msg[]);
+      |                     ^
+1 warning generated.
+/Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/dl_drag.c:35:21: warning: argument 'msg' of type 'short[8]' with mismatched bound [-Warray-parameter]
+   35 | void DragDrop(short msg[8]);
+      |                     ^
+/Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/diallib.h:388:21: note: previously declared as 'short[]' here
+  388 | void DragDrop(short msg[]);
+      |                     ^
+1 warning generated.
+/Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/dl_items.c:267:16: warning: cast to 'short *' from smaller integer type 'int' [-Wint-to-pointer-cast]
+  267 |                 stack_list = (short *)((hi << 16) | lo);
+      |                              ^~~~~~~~~~~~~~~~~~~~~~~~~~
+1 warning generated.
+/Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/dl_win.c:497:17: warning: use of unary operator that may be intended as compound assignment (-=)
+  497 |                                         redraw.g_w =- rel_x;
+      |                                                    ^~
+/Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/dl_win.c:514:17: warning: use of unary operator that may be intended as compound assignment (-=)
+  514 |                                         redraw.g_h =- rel_y;
+      |                                                    ^~
+/Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/dl_win.c:1146:16: warning: equality comparison with extraneous parentheses [-Wparentheses-equality]
+ 1146 |                 if((ptr->type==WIN_WINDOW))
+      |                     ~~~~~~~~~^~~~~~~~~~~~
+/Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/dl_win.c:1146:16: note: remove extraneous parentheses around the comparison to silence this warning
+ 1146 |                 if((ptr->type==WIN_WINDOW))
+      |                    ~         ^           ~
+/Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/dl_win.c:1146:16: note: use '=' to turn this equality comparison into an assignment
+ 1146 |                 if((ptr->type==WIN_WINDOW))
+      |                              ^~
+      |                              =
+3 warnings generated.
+/Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/hyp/cursor.c:172:10: warning: explicitly assigning value of variable of type 'char *' to itself [-Wself-assign]
+  172 |                                         src = src;
+      |                                         ~~~ ^ ~~~
+1 warning generated.
+/Volumes/Daten/Development/PiRusTOS/sdk/overlays/hypview/hyp/prepare.c:603:14: warning: variable 'real_height' set but not used [-Wunused-but-set-variable]
+  603 |         long real_height = 0;
+      |              ^
+1 warning generated.
+compiled 57 files (4 from sdk/overlays/hypview)
+-rwxr-xr-x@ 1 ingouhlemann  staff  280352 31 Okt. 09:53 /Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/build/HYP_VIEW.NAP
+converted /Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/hyp_view.rsc -> /Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/build/hyp_view.rsc: 7 trees, 91 objects, 14 tedinfo, 0 bitblk, 0 iconblk, 15 ciconblk, 29 cicon, 7 frstr, 0 frimg (27747 bytes, RSHDR vrsn 4) [LP64/32B-OBJECT, NRSC v13]
+-rw-r--r--@ 1 ingouhlemann  staff  27747 31 Okt. 09:53 /Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/build/hyp_view.rsc

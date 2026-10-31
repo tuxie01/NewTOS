@@ -1,0 +1,12 @@
+** /dev/rdisk10s1
+** Phase 1 - Preparing FAT
+** Phase 2 - Checking Directories
+** Phase 3 - Checking for Orphan Clusters
+Warning: 81 files, 81584 KiB free (40792 clusters)
+exit 0
+** /dev/rdisk10s2
+** Phase 1 - Preparing FAT
+** Phase 2 - Checking Directories
+** Phase 3 - Checking for Orphan Clusters
+Warning: 5 files, 69856 KiB free (34928 clusters)
+exit 0

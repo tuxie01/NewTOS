@@ -1,0 +1,24 @@
+./build-hzprobe-newtos.sh build/HZPROBE.NAP
+clang : Apple clang version 21.0.0 (clang-2100.4.1.1)
+lld   : /Users/ingouhlemann/.rustup/toolchains/nightly-2026-04-15-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/rust-lld
+
+  CC  probes/hzprobe.c
+
+LINK OK -> build/HZPROBE.NAP (146584 bytes)
+undefined symbols in the final image (goal 0): 0
+./build-awprobe-newtos.sh build/AWPROBE.NAP
+clang : Apple clang version 21.0.0 (clang-2100.4.1.1)
+lld   : /Users/ingouhlemann/.rustup/toolchains/nightly-2026-04-15-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/rust-lld
+
+  CC  probes/awprobe.c
+
+LINK OK -> build/AWPROBE.NAP (144896 bytes)
+undefined symbols in the final image (goal 0): 0
+./build-dcprobe-newtos.sh build/DCPROBE.NAP
+clang : Apple clang version 21.0.0 (clang-2100.4.1.1)
+lld   : /Users/ingouhlemann/.rustup/toolchains/nightly-2026-04-15-aarch64-apple-darwin/lib/rustlib/aarch64-apple-darwin/bin/rust-lld
+
+  CC  probes/dcprobe.c
+
+LINK OK -> build/DCPROBE.NAP (146432 bytes)
+undefined symbols in the final image (goal 0): 0

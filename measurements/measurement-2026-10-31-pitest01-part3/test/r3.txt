@@ -1,0 +1,2 @@
+sync-card: boot partition /Volumes/PT3D has no start4.elf: not a Pi 4 firmware boot partition
+exit 1

@@ -1,0 +1,2 @@
+sync-card: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/pitest3/t1/run-p3/card-before exists (backups of an earlier write); give a new run directory
+exit 1

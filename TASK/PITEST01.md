@@ -102,22 +102,7 @@ A0–A6, B1–B2).
   verfaelschtes Byte von `verify` erkannt (exit 1) und repariert, Phasenwechsel, `fsck_msdos` sauber.
 - **Ablaufblatt:** `docs/analysis/tester-run-sheet-2026-10-31.md` (eine Seite, Phasen A/B, P0REP nur in B).
 
-**Befehl fuer den Lead** (erst nach Commit und mit Bestaetigung des Anwenders; `R` = neuer Laufordner):
-
-```sh
-R=measurements/measurement-YYYY-MM-DD-pitest01-card   # Datum einsetzen
-L=measurements/measurement-2026-10-31-pitest01-part2/method/pitest01-card.list
-measurements/measurement-2026-10-31-pitest01-part2/method/build-card-programs.sh $R/logs   # "ALL-OK"
-tools/sync-card.sh kernels $R/kernels kernelb.img=crash-nowait,fs-io-trace kernela.img=none
-diskutil list     # Mountpunkt + Name der Startpartition (= C:) ablesen, nicht raten
-B=/Volumes/BOOT   # <- abgelesener Mountpunkt; Name unten = abgelesener Datentraegername
-C=(--list "$L" --boot "$B" BOOT --drive C "$B" BOOT --kernels "$R/kernels")
-tools/sync-card.sh sync "${C[@]}" --active kernela.img                          # 1. Trockenlauf lesen
-tools/sync-card.sh sync "${C[@]}" --active kernela.img --run-dir $R/card-a --write   # 2. Phase A
-grep -n "#Z" "$B/NEWDESK.INF"      # muss leer bleiben (kein Autostart)
-# Wechsel A->B (nach dem Kopieren von C:):
-tools/sync-card.sh sync "${C[@]}" --active kernelb.img --run-dir $R/card-b --write
-```
+**Befehl fuer den Lead:** ersetzt durch den Befehl in "Stand Teil 3" (neue Liste, `cmdline.txt` je Kern).
 
 - Offen: echte Karte und echte Pi; HypView braucht auf der Karte eine `.HYP` und `HYP_VIEW.CFG` (A4), die
   Karte hatte am 2026-10-08 kein HypView; `cmdline.txt` fehlte dort (fuer Phase B neu anlegen mit
@@ -138,3 +123,64 @@ tools/sync-card.sh sync "${C[@]}" --active kernelb.img --run-dir $R/card-b --wri
 - Volume-Namen vor dem Trockenlauf per `diskutil list`; die Ausgabe des
   Trockenlaufs geht vor `--write` an den Anwender.
 
+## Stand Teil 3 (2026-10-31, umgesetzt, nicht committet)
+
+Umsetzung der Anwenderentscheidungen nach Teil 2; neuer Laufordner, Teil 2 bleibt unveraendert
+(`measurements/measurement-2026-10-31-pitest01-part3/RUNINFO.TXT`).
+
+- **Eine Karte:** Wortlaut der Liste berichtigt (Testkarte statt "daily card"); Skript und Ablaufblatt
+  hatten keine Alltagskarte mehr.
+- **Sicherung vor dem Schreiben** (`tools/sync-card.sh`): `--write` kopiert vor der ersten Schreiboperation
+  jede Datei, die es ersetzt, und `kernel8.img`, `cmdline.txt`, `config.txt` der Startpartition (auch wenn
+  unveraendert) nach `<run>/card-before/<Laufwerk>/<Pfad>`, jede per sha256 gegen die Karte geprueft; eine
+  fehlgeschlagene Sicherung bricht ab, bevor etwas geschrieben ist. Manifestzeilen `saved`. Ein Laufordner
+  mit `<run>/card-before/` wird verweigert (keine Sicherung wird ueberschrieben).
+- **HypView (A4):** `C:\Apps\HYPVIEW\HYP_VIEW.CFG` (`DEFAULT=C:\Apps\ZVIEW\ZVIEW.HYP`, Methodendatei des
+  Laufs) und `C:\Apps\ZVIEW\ZVIEW.HYP` = `zView.hyp` aus der gepinnten zView-Quelle
+  (`sdk/zview/z-tools-04805b7.tar.xz`, `sdk/zview/zview-sources.sha256`; HDOC, 247 856 Bytes, sha256
+  `90a11ec9…`), neben zView nach der Kartenregel des Anwenders ("hyp-Dateien ins Programmverzeichnis").
+  Eine `.HYP` ist auf NewTOS noch nie geoeffnet worden (MEM12 "NOT COVERED: HypView .HYP documents").
+- **`cmdline.txt` je Kern:** neue Option `--cmdline <Kern> <Datei>` (wiederholbar, nur mit
+  `--allow-boot-config`): die Datei des `--active`-Kerns wird `cmdline.txt` der Startpartition, per sha256
+  zurueckgelesen wie jede Datei; Manifest `cmdline`, `cmdline_active`, `boot_cmdline` (nach dem Schreiben),
+  `boot_cmdline_before`. Verweigert: `--cmdline` ohne `--allow-boot-config`, ein aktiver Kern ohne
+  `--cmdline`, ein `--cmdline` fuer einen Kern, der nicht in `KERNELS.TXT` steht, und ein `cmdline=` in
+  `config.txt`, das eine andere Datei nennt (die Firmware liest die Kommandozeile aus der dort genannten
+  Datei, Vorgabe `cmdline.txt`: `references/rpi4-boot/config-txt-boot.adoc:16-18`; der Kern holt sie per
+  Mailbox, `kernel/src/bootargs.rs:3-6@with_command_line`). Quellen des Laufs:
+  `measurements/measurement-2026-10-31-pitest01-part3/method/cmdline-a.txt` (eine Leerzeile, keine Option: `docs/HW-TEST-LOG.md` Abschnitt 3 "No
+  `cmdline.txt` is required"), `measurements/measurement-2026-10-31-pitest01-part3/method/cmdline-b.txt` (`serial=on`, `kernel/src/bootargs.rs:22@SERIAL_ON`).
+- **Probe nur gegen ein Scratch-Abbild** (`measurements/measurement-2026-10-31-pitest01-part3/method/test-sync-card.sh`, Ausgaben im Laufordner unter test): alle Faelle
+  von Teil 2 plus `--cmdline` ohne `--allow-boot-config` (verweigert, auch mit `--write`, Karte
+  unveraendert), `cmdline=other.txt` (verweigert), aktiver Kern ohne `--cmdline` und unbekannter Kern
+  (verweigert), Phase A schreibt `cmdline-a`, Phase B `cmdline-b`, Sicherungen von `kernel8.img`,
+  `cmdline.txt`, `config.txt` und dem ersetzten `QED.NAP` in `<run>/card-before/` gleich der Karte vorher, Karte
+  ohne `cmdline.txt` (neu, `boot_cmdline_before absent`), Laufordner mit `<run>/card-before/` verweigert;
+  `fsck_msdos` sauber; `FAILS=0`.
+
+**Befehl fuer den Lead** (erst nach Commit; Trockenlauf-Ausgabe vor `--write` an den Anwender; `R` = neuer
+Laufordner):
+
+```sh
+R=measurements/measurement-YYYY-MM-DD-pitest01-card   # Datum einsetzen
+M=measurements/measurement-2026-10-31-pitest01-part3/method
+$M/build-card-programs.sh $R/logs                     # "ALL-OK"
+tools/sync-card.sh kernels $R/kernels kernelb.img=crash-nowait,fs-io-trace kernela.img=none
+diskutil list     # Mountpunkt + Name der Startpartition (= C:) ablesen, nicht raten
+B=/Volumes/BOOT   # <- abgelesener Mountpunkt; Name unten = abgelesener Datentraegername
+C=(--list $M/pitest01-card.list --boot "$B" BOOT --drive C "$B" BOOT --kernels "$R/kernels"
+   --cmdline kernela.img $M/cmdline-a.txt --cmdline kernelb.img $M/cmdline-b.txt --allow-boot-config)
+tools/sync-card.sh sync "${C[@]}" --active kernela.img                              # 1. Trockenlauf -> Anwender
+tools/sync-card.sh sync "${C[@]}" --active kernela.img --run-dir $R/card-a --write  # 2. Phase A
+grep -n "#Z" "$B/NEWDESK.INF"      # muss leer bleiben (kein Autostart)
+# Wechsel A->B (nach dem Kopieren von C:): kernel8.img UND cmdline.txt
+tools/sync-card.sh sync "${C[@]}" --active kernelb.img                              # Trockenlauf
+tools/sync-card.sh sync "${C[@]}" --active kernelb.img --run-dir $R/card-b --write
+```
+
+Sicherungen: `$R/card-a/card-before/C/` (Kartenstand vor Phase A, u. a. der bisherige `kernel8.img`),
+`$R/card-b/card-before/C/` (Phase-A-Kern und -`cmdline.txt`).
+
+- Offen: echte Karte und echte Pi; `asid=on` steht in keiner der beiden `cmdline`-Dateien (Kern-Vorgabe
+  aus; das Szenario laesst es nur notieren) — soll es hinein, in beide Dateien; ob HypView eine `.HYP` auf
+  NewTOS oeffnet und Links folgt, zeigt erst A4 (oder vorher ein QEMU-Lauf des Testers).
