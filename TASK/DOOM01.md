@@ -113,3 +113,12 @@ Vermutung des Anwenders: der `kbdvec`-Haken in DOOM selbst — offen, nicht
 belegt. Naechste Trennschritte: Freeze in Phase B mit seriellem Protokoll
 (sieht der Kern noch Aufrufe von DOOM?) und Gegenprobe `DOOM-nokbdvec.NAP`.
 
+Gegenprobe vorbereitet (2026-10-31): `C:\Apps\DOOM\DOOMNOKB.NAP` = DOOM mit
+`DOOM_ARGS "-mb","6","-nokbdvec"` (Tasten ueber die AES statt ueber den
+`kbdvec`-Haken; `sdk/apps/build-doom.sh`), gebaut aus `32352665`, sha256
+`af10a51706cb7c9f7b389ba76f6faabd94c9a96bc666fee79848f258db10a95a` — bytegleich
+mit der nokbdvec-Variante vom 2026-10-29
+(`measurements/measurement-2026-10-29-doom-freeze/RUNINFO.TXT`). Auf der Karte
+nach Remount per sha256 geprueft; daneben `DOOM.NAP` `86abca15...` (die
+Freeze-Variante), Kern Phase B `kernelb.img` `bc543d48...`, `serial=on`.
+
