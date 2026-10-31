@@ -134,3 +134,16 @@ der Lauf hat also ein ganz anderes Zeitverhalten. Die Hook-Vermutung ist damit
 weder belegt noch widerlegt. Vorgeschlagene Trennung (Entscheid Owner): C1
 `kernela.img` + `serial=on`, C2 `kernelb.img` ohne `serial=on`, je nur
 `DOOM.NAP`.
+
+## Trennlaeufe C1 und Kontrolle (2026-10-31)
+
+- C1: Release-Kern `e0fe680b...` + `serial=on` — kein Freeze, `DOOM.NAP` und
+  `DOOMNOKB.NAP` enden mit rc=0
+  (`measurements/measurement-2026-10-31-pitest01-c1/RUNINFO.TXT`).
+- Kontrolle (Anwender, ohne Mitschrift): derselbe Kern, `cmdline.txt` leer —
+  Freeze beim zweiten Druck auf Pfeil-runter im Menue.
+- Damit ist `serial=on` der Schalter. Laut Code schaltet er nur das Senden
+  ein (`kernel/src/console.rs:91@configure_serial_tx`, `SerialConsole`
+  "the switch is TX-only"): Unterschied sind also die UART-Schreibzugriffe
+  selbst (Zeit, Device-Speicherzugriffe), nicht ein anderer Codepfad im
+  Programm. Ursache offen; Ursachenforschung vor jedem Fix.
