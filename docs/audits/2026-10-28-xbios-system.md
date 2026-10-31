@@ -163,7 +163,7 @@ herstellen kann.
 - NOT LOCALIZED (nicht gegen das Orakel gemessen). NewTOS-Seite gemessen:
   `[clock] no kernel8.img FAT date on C: — clock stays at 1980-01-01` und T00
   `1980-01-01 00:00:14` (`measurements/measurement-2026-10-28-xbios-system-audit/runs/PROBE-NEWTOS-raspi4b/BOOT-SERIAL.txt`, `XSPROBE.LOG`);
-  Quelle `kernel/src/lib.rs:1315@seed_clock_from_kernel_file`.
+  Quelle `kernel/src/lib.rs:1324@seed_clock_from_kernel_file`.
 - EmuTOS: `DEFAULT_DATETIME` = `MAKE_ULONG(os_header.os_dosdate, 0)`
   (`references/emutos/bios/ikbd.h:95`), Rueckfall in `references/emutos/bios/clock.c:1319`
   und Initialisierung der IKBD-Uhr `references/emutos/bios/clock.c:1211`.
@@ -325,7 +325,7 @@ deshalb Datum–Zeit–Datum bis zur Gleichheit.
   an/aus, Blinkrate am HDMI-Bild (COMPATIBILITY Q5: 1/60 s je Einheit auf
   `_hz_200`).
 - Startuhr auf der echten Karte: Saat aus dem FAT-Datum von `KERNEL8.IMG`
-  (`kernel/src/lib.rs:1315@seed_clock_from_kernel_file`), `Gettime` direkt nach dem
+  (`kernel/src/lib.rs:1324@seed_clock_from_kernel_file`), `Gettime` direkt nach dem
   Start.
 
 ## 8. Akzeptable Abweichungen

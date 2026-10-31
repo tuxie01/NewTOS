@@ -118,7 +118,7 @@ exactly in super state.
 **S9 — a page-0 write in user state** is a permission fault at EL0: crash
 report with "Bus Error", key, `Pterm(-1)` — EmuTOS's bus-error path
 (`any_vec` → `dopanic` → `kill_program`), the kernel survives
-(`kernel/src/arch/aarch64/exceptions.rs:1454@kill_crashed_program`). The
+(`kernel/src/arch/aarch64/exceptions.rs:1471@kill_crashed_program`). The
 report names the area "system variables (page 0)".
 
 **S10 — the kernel reads page 0 only as input it documents, validated.**

@@ -90,6 +90,10 @@ pub mod dbg_qedtrace;
 /// `bios-arg-trace` only).
 #[cfg(feature = "bios-arg-trace")]
 pub mod dbg_biostrace;
+/// File-system I/O tracer to the serial console (FS26; feature `fs-io-trace`
+/// only).
+#[cfg(feature = "fs-io-trace")]
+pub mod dbg_fsio;
 
 // ---------------------------------------------------------------------------
 // kprintf! / kprintln! (Phase 03 D7) — formatter macros into the boot

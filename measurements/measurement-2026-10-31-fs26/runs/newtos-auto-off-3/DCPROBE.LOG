@@ -1,0 +1,27 @@
+DCPROBE TASK/FS26 side=newtos
+B01 bpb recsiz=512 clsiz=16 clsizb=8192 rdlen=32 fsiz=256 fatrec=257 datrec=545 numcl=65501 bflags=1
+L01 Fsfirst(C:\*.*) ret=0
+R01 Rwabs(0,1,lrec=1048560) ret=0 ticks=1 acc=n/a (kernel fs-io-trace)
+R02 Rwabs(1,1,lrec=1048560) ret=0 ticks=0 acc=n/a (kernel fs-io-trace)
+R03 Rwabs(1,1,lrec=1048560) ret=0 ticks=0 acc=n/a (kernel fs-io-trace)
+R04 Rwabs(1,1,lrec=1048560) ret=0 ticks=0 acc=n/a (kernel fs-io-trace)
+R05 Rwabs(1,1,lrec=1048560) ret=0 ticks=0 acc=n/a (kernel fs-io-trace)
+R06 Rwabs(1,1,lrec=1048560) ret=0 ticks=0 acc=n/a (kernel fs-io-trace)
+R07 Rwabs(1,1,lrec=1048560) ret=0 ticks=0 acc=n/a (kernel fs-io-trace)
+R08 Rwabs(1,1,lrec=1048560) ret=0 ticks=0 acc=n/a (kernel fs-io-trace)
+R09 Rwabs(1,1,lrec=1048560) ret=0 ticks=1 acc=n/a (kernel fs-io-trace)
+R10 8 writes ticks=1 (with logging)
+D01 Dcreate(C:\FS26D1) ret=0 ticks=0 acc=n/a (kernel fs-io-trace)
+D02 Dcreate(C:\FS26D2) ret=0 ticks=1 acc=n/a (kernel fs-io-trace)
+D03 Dcreate(C:\FS26D3) ret=0 ticks=0 acc=n/a (kernel fs-io-trace)
+D04 Dcreate(C:\FS26D4) ret=0 ticks=0 acc=n/a (kernel fs-io-trace)
+D05 Dcreate(C:\FS26D5) ret=0 ticks=1 acc=n/a (kernel fs-io-trace)
+D10 5 Dcreate ticks=2 (with logging)
+N01 Dcreate(C:\FS26D1\SUB) ret=0 ticks=0 acc=n/a (kernel fs-io-trace)
+X01 Ddelete(C:\FS26D1\SUB) ret=0 ticks=0 acc=n/a (kernel fs-io-trace)
+X02 Ddelete(C:\FS26D5) ret=0 ticks=0 acc=n/a (kernel fs-io-trace)
+X03 Ddelete(C:\FS26D4) ret=0 ticks=0 acc=n/a (kernel fs-io-trace)
+X04 Ddelete(C:\FS26D3) ret=0 ticks=0 acc=n/a (kernel fs-io-trace)
+X05 Ddelete(C:\FS26D2) ret=0 ticks=0 acc=n/a (kernel fs-io-trace)
+X06 Ddelete(C:\FS26D1) ret=0 ticks=1 acc=n/a (kernel fs-io-trace)
+end

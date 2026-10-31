@@ -56,6 +56,15 @@ svc-seq-trace = []
 # --features bios-arg-trace`, QEMU with `-append serial=on`. Checker:
 # `tools/biostrace-check.py`.
 bios-arg-trace = []
+# File-system I/O tracer (TASK/FS26): one serial-console line per GEMDOS and
+# AES call (and per other call that reached the card) with its duration, the
+# device requests below the FS09 block cache (each with LBA, sectors and
+# time), the block-cache and BDOS-buffer counters and the FAT lookups of the
+# call (`kernel/src/dbg_fsio.rs`). Writes no drive. Off by default (the module
+# and its hooks are compiled out); `cargo xtask build --board rpi4 --release
+# --features fs-io-trace`, QEMU with `-append serial=on`. The device hook is
+# the rpi4 block device; on qemu-virt (no card) only the call lines appear.
+fs-io-trace = []
 # microSD / FAT / GEMDOS-file self-test build (board-rpi4 / QEMU raspi4b):
 # runs `selftest_emmc::run()` right after the card is mounted at boot -- the
 # Phase-09 block-device, FAT, Fopen/Fsfirst/Dsetpath, Fattrib/Frename/Fdatime

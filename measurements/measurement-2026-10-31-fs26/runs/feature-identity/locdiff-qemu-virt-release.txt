@@ -1,0 +1,22 @@
+@0xb0408 kernel/src/lib.rs: line 1252 -> 1256 (+4) col 35
+@0xb0910 kernel/src/lib.rs: line 1002 -> 1006 (+4) col 14
+@0xb13a0 kernel/src/lib.rs: line 978 -> 982 (+4) col 14
+@0xb1420 kernel/src/lib.rs: line 1034 -> 1038 (+4) col 19
+@0xb1458 kernel/src/lib.rs: line 1014 -> 1018 (+4) col 14
+@0xb14f0 kernel/src/lib.rs: line 855 -> 859 (+4) col 35
+@0x1104b0 kernel/src/arch/aarch64/exceptions.rs: line 1296 -> 1315 (+19) col 19
+@0x1104c8 kernel/src/arch/aarch64/exceptions.rs: line 1317 -> 1336 (+19) col 5
+@0x1104e0 kernel/src/arch/aarch64/exceptions.rs: line 2271 -> 2290 (+19) col 15
+@0x110510 kernel/src/arch/aarch64/exceptions.rs: line 2214 -> 2233 (+19) col 23
+@0x110528 kernel/src/arch/aarch64/exceptions.rs: line 2212 -> 2231 (+19) col 43
+@0x110540 kernel/src/arch/aarch64/exceptions.rs: line 2184 -> 2203 (+19) col 31
+@0x1105b0 kernel/src/arch/aarch64/exceptions.rs: line 1793 -> 1812 (+19) col 14
+@0x110648 kernel/src/arch/aarch64/exceptions.rs: line 1621 -> 1640 (+19) col 15
+@0x110660 kernel/src/arch/aarch64/exceptions.rs: line 1666 -> 1685 (+19) col 16
+@0x110678 kernel/src/arch/aarch64/exceptions.rs: line 1669 -> 1688 (+19) col 24
+@0x110690 kernel/src/arch/aarch64/exceptions.rs: line 1695 -> 1714 (+19) col 18
+@0x1106d0 kernel/src/arch/aarch64/exceptions.rs: line 1929 -> 1948 (+19) col 14
+@0x1106e8 kernel/src/arch/aarch64/exceptions.rs: line 1938 -> 1957 (+19) col 36
+@0x1107d0 kernel/src/arch/aarch64/exceptions.rs: line 829 -> 848 (+19) col 8
+@0x1107e8 kernel/src/arch/aarch64/exceptions.rs: line 1145 -> 1164 (+19) col 15
+21 differing bytes in 21 words; unexplained: 0; base 0xffff000040080000

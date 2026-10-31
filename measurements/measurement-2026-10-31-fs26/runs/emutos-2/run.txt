@@ -1,0 +1,5 @@
+dcprobe run, side emutos (gem) (2026-10-31T00:13:39Z)
+tree      daf2fb6ecb9c32d6a85d56796027dc16a8f11ef2 7 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    DCPROBE.PRG fcbc774b39c814914e4f0c476744eef6bdf12c67f1e1d9e546a7ef0b7b07ecfc DCPROBE.NAP 3c3cd0371f23c3f4bf5aa6c24e0e10f261e899c34884132e0a4ae5b4d200db77
+card      62daa0f2f09552cd95c1a1cf4d124e5c555b1a30c592372c72482aa5d6785aa8 (tools/mkcard.sh, MKCARD_SIZE_MIB=512, mode gem)
+oracle    tools/hatari-oracle.sh disk (pinned ROM, tools/oracle/hatari.cfg)

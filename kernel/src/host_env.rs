@@ -679,15 +679,27 @@ impl tos_api::bios::block::BlockDev for KernelBlock {
     }
     fn read_blocks(&self, lba: u64, buf: &mut [u8]) -> Result<(), tos_types::Long> {
         use crate::hal::block::BlockDevice;
-        crate::drivers::bcm2711::emmc::SDCARD
+        #[cfg(feature = "fs-io-trace")]
+        let t0 = crate::dbg_fsio::ticks();
+        let r = crate::drivers::bcm2711::emmc::SDCARD
             .read_blocks(lba, buf)
-            .map_err(|e| block_error_code(e, false))
+            .map_err(|e| block_error_code(e, false));
+        // File-system I/O tracer (FS26): every request that reaches the card.
+        #[cfg(feature = "fs-io-trace")]
+        crate::dbg_fsio::device(false, lba, (buf.len() / 512) as u32, t0, r.is_ok());
+        r
     }
     fn write_blocks(&self, lba: u64, buf: &[u8]) -> Result<(), tos_types::Long> {
         use crate::hal::block::BlockDevice;
-        crate::drivers::bcm2711::emmc::SDCARD
+        #[cfg(feature = "fs-io-trace")]
+        let t0 = crate::dbg_fsio::ticks();
+        let r = crate::drivers::bcm2711::emmc::SDCARD
             .write_blocks(lba, buf)
-            .map_err(|e| block_error_code(e, true))
+            .map_err(|e| block_error_code(e, true));
+        // File-system I/O tracer (FS26): every request that reaches the card.
+        #[cfg(feature = "fs-io-trace")]
+        crate::dbg_fsio::device(true, lba, (buf.len() / 512) as u32, t0, r.is_ok());
+        r
     }
 }
 

@@ -1,0 +1,6 @@
+desktop New folder run (2026-10-31T00:18:02Z)
+tree      scratch copy of daf2fb6ecb9c32d6a85d56796027dc16a8f11ef2 + working-tree changes, injector armed on 'desktop' (newfolder.script)
+kernel    f24ce1b75c344b750171a40d13682a2e555066bbfa9d74e10121be1c35ef3770 (rpi4 release, --features fs-io-trace, injector)
+card      dc5a6adabc072f648ce0d5b8db6ba16c2f1596bb2e9ec9e6b27dbc814998cdb5 (tools/mkcard.sh MKCARD_SIZE_MIB=512, NEWDESK-W.INF)
+qemu      done; stopped
+fsck      C: after the run: fsck_msdos -n exit 0

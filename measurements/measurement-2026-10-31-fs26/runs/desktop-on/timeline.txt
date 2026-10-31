@@ -1,0 +1,14 @@
+New folder #1: Dcreate path="C:\fs26a"
+  open          wall     4.22 ms  ovh    1.91 ms  net     2.31 ms  calls {'aes': 5}  dev reads 0 writes 0
+  close         wall     6.06 ms  ovh    3.88 ms  net     2.18 ms  calls {'aes': 9, 'gemdos': 1}  dev reads 0 writes 0
+  dcreate       wall     4.51 ms  ovh    0.00 ms  net     4.51 ms  calls {'gemdos': 1}  dev reads 1 writes 19
+  rescan        wall    13.14 ms  ovh   12.74 ms  net     0.40 ms  calls {'aes': 1, 'gemdos': 29}  dev reads 0 writes 0
+  redraw        wall    29.64 ms  ovh   25.32 ms  net     4.32 ms  calls {'aes': 67, 'gemdos': 1}  dev reads 0 writes 0
+  Return->idle  wall    53.34 ms  ovh   42.31 ms  net    11.03 ms  calls {'aes': 77, 'gemdos': 32}  dev reads 1 writes 19
+New folder #2: Dcreate path="C:\fs26b" (idle = end of the last call; the waiting evnt_multi never returned)
+  open          wall     2.92 ms  ovh    1.90 ms  net     1.02 ms  calls {'aes': 5}  dev reads 0 writes 0
+  close         wall     5.74 ms  ovh    3.88 ms  net     1.86 ms  calls {'aes': 9, 'gemdos': 1}  dev reads 0 writes 0
+  dcreate       wall     2.42 ms  ovh    0.00 ms  net     2.42 ms  calls {'gemdos': 1}  dev reads 0 writes 19
+  rescan        wall    13.09 ms  ovh   12.76 ms  net     0.33 ms  calls {'aes': 1, 'gemdos': 30}  dev reads 0 writes 0
+  redraw        wall    28.89 ms  ovh   25.15 ms  net     3.74 ms  calls {'aes': 67, 'gemdos': 1}  dev reads 0 writes 0
+  Return->idle  wall    50.14 ms  ovh   42.15 ms  net     7.99 ms  calls {'aes': 77, 'gemdos': 33}  dev reads 0 writes 19

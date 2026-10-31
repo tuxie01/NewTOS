@@ -1,0 +1,9 @@
+dcprobe run, side newtos (auto) (2026-10-31T00:21:04Z)
+tree      daf2fb6ecb9c32d6a85d56796027dc16a8f11ef2 7 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    DCPROBE.PRG fcbc774b39c814914e4f0c476744eef6bdf12c67f1e1d9e546a7ef0b7b07ecfc DCPROBE.NAP 3c3cd0371f23c3f4bf5aa6c24e0e10f261e899c34884132e0a4ae5b4d200db77
+card      cdef13ff39ec396e262795cce26c2bb2b3beecbc4445692548441d403f63f549 (tools/mkcard.sh, MKCARD_SIZE_MIB=512, mode auto)
+kernel    e866887542a0ba6be9f1c1917458e9a00bf14a3096f3f9b1ed770ca7c1542a37 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs26/kf/kernel-on.img
+qemu      done; stopped
+card      after 9728be0eff3ec9b1bc759f27c167802bf15f208ffa5c20f1cc981a41612c94ae (the booted clone)
+log       C:\DCPROBE.LOG
+fsck      C: after the run: fsck_msdos -n exit 0

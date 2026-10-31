@@ -326,7 +326,7 @@ one warning per hook and process; never silent.
 
 | Hook | NewTOS | Note |
 |---|---|---|
-| `etv_term` (`0x102`) | **served** | Pterm reads the shared cell and delivers the handler as an EL0 upcall unless it is `0` or the boot value `JUST_RTS`, whose call would do nothing (`kernel/src/arch/aarch64/exceptions.rs:1392@etv`, `:1397@JUST_RTS`) |
+| `etv_term` (`0x102`) | **served** | Pterm reads the shared cell and delivers the handler as an EL0 upcall unless it is `0` or the boot value `JUST_RTS`, whose call would do nothing (`kernel/src/arch/aarch64/exceptions.rs:1411@etv`, `:1397@JUST_RTS`) |
 | `etv_timer` (`0x100`) | stored, **not served**, warning | BIOS-CORE-002 is an ACCEPTED deviation by ADR-031; measured T01: calls 100 (EmuTOS) / 0 (NewTOS) |
 | `etv_critic` (`0x101`) | stored, **not served**, warning | `Rwabs` has no critical-error retry path |
 | CPU/trap vectors `0..0xFF` | stored, never dispatched (reserved for the m68k userland) | the EL1 handlers do not consult them |

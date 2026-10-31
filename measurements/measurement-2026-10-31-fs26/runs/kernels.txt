@@ -1,0 +1,6 @@
+on : warning: `tos-api` (lib) generated 64 warnings
+on : warning: `kernel` (lib) generated 93 warnings
+off: warning: `tos-api` (lib) generated 64 warnings
+off: warning: `kernel` (lib) generated 93 warnings
+e9184dccffea5291fcc9f362470fdc358d50f536b69362fbc180a8192bc7c519  kernel-on.img
+f21ca9c342531f91286929338811126059452140bb8832950bc72bc9985a0139  kernel-off.img

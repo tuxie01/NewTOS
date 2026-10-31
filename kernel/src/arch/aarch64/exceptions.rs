@@ -502,6 +502,9 @@ fn sync_handler(frame: &mut ExceptionFrame) {
     // descriptor, delivered as an EL0 callout after the match below.
     let mut pending_stall: Option<tos_api::aes::thread::UserdefStall> = None;
 
+    // File-system I/O tracer (FS26): the call's start time and counters.
+    #[cfg(feature = "fs-io-trace")]
+    crate::dbg_fsio::begin(class, &args);
     // Result is the full 64-bit `x0` value: GEMDOS returns a sign-
     // extended `Long`, but BIOS `Getbpb` returns a native 64-bit pointer.
     let result: i64 = match class {
@@ -581,6 +584,22 @@ fn sync_handler(frame: &mut ExceptionFrame) {
         // XBIOS (Trap 14): screen group (Physbase/Logbase/Getrez/...).
         TrapClass::Xbios => tos_api::xbios::dispatch(&args),
     };
+
+    // File-system I/O tracer (FS26): one line per GEMDOS/AES call (and per
+    // other call that reached the card), here where every dispatch ends.
+    #[cfg(feature = "fs-io-trace")]
+    crate::dbg_fsio::end(
+        class,
+        &args,
+        result,
+        if pending_stall.is_some() {
+            Some("stall")
+        } else if pending_switch.as_ref().is_some_and(|sw| !sw.completed) {
+            Some("yield")
+        } else {
+            None
+        },
+    );
 
     // Mid-syscall cooperative yield (S2 restartable block, design §4.3 + §8.2
     // sub-step 3): a blocking `evnt_*` wait found a runnable peer and returned

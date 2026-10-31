@@ -6,7 +6,7 @@ Status: **ERLEDIGT** 2026-10-29 ([Quittung](TOOL19-STATUS-DONE.MD)) · Prioritae
 
 - TOOL07 loest das Einheiten-Token `u:0` ueber `D:\DISKUNIT.TXT` auf, die die
   Profildefinition schreibt (seit TOOL19 aus `tosdump/profiles.tsv`:
-  `tools/hatari-oracle.sh:201@DISKUNIT`: 18;
+  `tools/hatari-oracle.sh:209@DISKUNIT`: 18;
   `tools/xtask/src/tosdump.rs:1150@DISKUNIT`: 26). DUMPBIOS laeuft eine Tabelle
   mit `u:0` nicht, wenn die Datei fehlt (`tosdump/core/dumpbios.c:51@unit_path`).
 - Anwender 2026-10-28: in Ordnung, **wenn** (a) die Datei immer aus der

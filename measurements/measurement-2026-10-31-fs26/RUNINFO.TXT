@@ -1,0 +1,201 @@
+measurement-2026-10-31-fs26 -- FS26: where the time of the desktop's "New folder" goes (QEMU + oracle)
+=====================================================================================================
+Developer, TASK/FS26, 2026-10-31 (host clock CET). Base HEAD daf2fb6e (clean tree at the start).
+QEMU raspi4b (headless, -append serial=on) and the pinned oracle (Hatari 2.6.1, EmuTOS 1a7484ab,
+profile disk). MEASUREMENT ONLY: no product behaviour changed. No hardware, no real card, nothing
+flashed. Not committed (the lead commits).
+
+WHAT / WHY
+  User finding (real Pi 4, kernel 58e35ac8, not measured): File > New folder in the desktop takes
+  about three seconds until something happens. User decision 2026-10-31: layer-by-layer measurement
+  in QEMU first, report before any fix; Pi timing comes later from the tester scenario.
+  Practice (memory "measure layer by layer, isolated"): raw block -> BIOS -> GEMDOS (AUTO program
+  before the AES) -> GEMDOS inside a GEM program -> desktop end to end, each on its own; then the
+  same Dcreate counted on the oracle. A difference in the NUMBER of accesses is the first candidate;
+  QEMU has no SD programming time, so per-access time is not judged here.
+
+INSTRUMENTS (new, both stay)
+  tosdump/probes/dcprobe.c   permanent probe, same C source both sides (mintlib bindings):
+       B01 Getbpb(2); L01 Fsfirst(C:\*.*) (log-in);
+       Part R  Rwabs on C: itself: the last record of the partition read once, written back
+               unchanged 8 times (1 sector each) -- the unit cost of a single-sector write;
+       Part D  Dcreate C:\FS26D1..5 (root parent), N01 Dcreate C:\FS26D1\SUB (non-root parent),
+       Part X  Ddelete of all six (C: is left as found; fsck_msdos -n after every NewTOS run).
+       Each call timed with _hz_200 (5 ms; Supexec on both sides). On EmuTOS the probe chains
+       hdv_rw ($476) for exactly the measured call and lists every Rwabs the BDOS makes (BDOS Rwabs
+       -> trap #13 -> lrwabs -> protect_wlwwwl(hdv_rw, ...), references/emutos/bios/bios.c:1045-1048,
+       references/emutos/util/miscasm.S:252-270, references/emutos/bdos/fs.h:60-77). NewTOS calls
+       no hdv_rw (ADR-031): there the kernel feature below lists the device requests.
+       Built by make -C tosdump dcprobe-m68k / dcprobe-newtos (tosdump/build-dcprobe-newtos.sh);
+       tools/hatari-oracle.sh knows DCPROBE.PRG (profile disk, destructive like every disk probe).
+  tosdump/probes/run-dcprobe.sh  one side per call: emutos | newtos auto|gem <kernel>. Card for
+       both sides: tools/mkcard.sh MKCARD_SIZE_MIB=512 (diskutil FAT16, the size class of the real
+       card's 500-MB partitions) with C:\ROOTF01..24.BIN (1 KiB each, a boot-partition-like root)
+       and C:\BALLAST.BIN (16 MiB); auto = C:\AUTO\DCPROBE.NCP (before the AES), gem =
+       C:\DCPROBE.NAP via the desktop's #Z autorun; emutos = the gem card as Hatari IDE master C:.
+  kernel feature fs-io-trace (kernel/src/dbg_fsio.rs, hooks in kernel/src/arch/aarch64/exceptions.rs
+       sync_handler and the rpi4 KernelBlock in kernel/src/host_env.rs): one serial line per GEMDOS
+       and AES call (and per other call that reached the card) with entry time, duration, the
+       device requests below the FS09 block cache (R/W, LBA, sectors, us each), FS09 block-cache
+       hit/miss sectors, BDOS buffer hits/misses per list, FAT lookups, the not-printed calls
+       since the previous line and the tracer's own print cost (ovh). Off by default; with it off
+       the kernel is byte-identical to HEAD except panic::Location line fields (RESULT 6).
+
+GEOMETRY (both sides, B01 of every DCPROBE.LOG)
+  BPB recsiz 512, clsiz 16 (8 KiB clusters), rdlen 32, fsiz 256, fatrec 257, datrec 545,
+  numcl 65501, FAT16. Partition starts at LBA 1 (NewTOS device LBA = record + 1). The image
+  diskutil writes leaves cluster 2 and a few others near the start free (macOS metadata that
+  mkcard.sh removes), so findfree finds the first free cluster in FAT sector 0 on both sides.
+
+RESULTS
+  All NewTOS numbers are QEMU raspi4b on this Mac (no SD programming time); "measured" = from the
+  run's files, "derived" = computed or carried over from another run, named as such.
+
+  RESULT 1 -- the oracle counts (measured; runs/emutos-1, emutos-2, identical apart from ticks)
+    Every EmuTOS BDOS access is ONE sector (Rwabs count 1). Per call:
+      D01..D05 Dcreate in the root    44/43/43/43/44 Rwabs = 24/23/23/23/24 reads + 20 writes
+      N01 Dcreate C:\FS26D1\SUB       39 Rwabs = 19 reads + 20 writes
+      X01..X06 Ddelete                3..6 Rwabs = 0..3 reads + 3 writes
+      R02..R09 (the probe's Rwabs)    1 write each (the hook sees the probe's own call: self-check)
+    The 20 writes of one root Dcreate (D02, records partition-relative):
+      513 (the new entry, ixcreat's partial close, references/emutos/bdos/fsopnclo.c:198), 562..576 (dirinit zeroes the
+      cluster: each record READ first, then written back as the next one is fetched -- getrec with
+      NUMBUFS 2, references/emutos/bdos/fsdir.c:1257-1287), 257 and 1 (the FAT sector, both copies),
+      513 again and 561 (the cluster's first record with "." and "..", xmkdir's ixclose,
+      references/emutos/bdos/fsdir.c:279). The reads: root records 514..518 and 513 (the name scans),
+      FAT record 257 (findfree), the 15 cluster records before they are zeroed, 561, 513.
+
+  RESULT 2 -- NewTOS counts, layers (a) AUTO and (b) GEM (measured; runs/newtos-auto-on,
+              newtos-gem-on, BOOT-SERIAL.txt [fsio] lines)
+    At the device (the rpi4 KernelBlock, below the FS09 block cache), per call:
+      Dcreate root, 1st after boot   1 read (FAT sector, LBA 258) + 19 writes
+      Dcreate root, 2nd..5th         0 reads + 19 writes
+      Dcreate C:\FS26D1\SUB          0 reads + 19 writes
+      Ddelete                        0 reads + 3 writes (FAT both copies + the directory sector)
+      every request one sector (n=1). AUTO and GEM: the same numbers, call for call.
+    The 19 writes of D02 in issue order (LBA = record + 1): 562..570 (nine cluster sectors, pushed
+      out of the 8-slot data list while the cluster is zeroed), 258 and 2 (FAT, both copies),
+      571, 572, 514 (directory), 577, 576, 575, 574, 573 (flush, slot order -- descending).
+    Above it (BDOS buffer lists): 22-23 misses per Dcreate (fat 0-1, data 22); the FS09 block cache
+      served the 6 reads among them from RAM (bc hit=6), the 16-17 others are whole-sector writes
+      that read nothing (cache::write, fill=false).
+    => NewTOS issues FEWER device accesses than EmuTOS issues Rwabs: 19 W + 0..1 R against
+       20 W + 23..24 R. The write count is the same within one (EmuTOS writes the directory sector
+       twice). The first candidate of the ticket -- more accesses -- is refuted.
+
+  RESULT 3 -- NewTOS time per layer (measured, QEMU)
+    raw block (Part R, Rwabs of 1 sector, [fsio] dev us): read 0.76 / 2.25 ms (the one read),
+      write 0.58 ms first, then 0.09-0.13 ms each.
+    (a) Dcreate, AUTO, fs-io-trace: dur 2.08-3.30 ms (6 calls); device writes 2.02-2.28 ms of it
+        (85-97 %). Ddelete 0.37-0.80 ms.
+    (b) Dcreate, GEM program: dur 2.35-2.95 ms; device writes 1.75-2.39 ms of it.
+    (a)/(b) without the tracer (runs/newtos-*-off-1..3, DCPROBE.LOG, _hz_200 = 5 ms): every
+        Dcreate 0 or 1 tick; five in a row 2-3 ticks (10-15 ms, including the probe's logging);
+        8 Rwabs writes 0-1 tick. Same in all six runs.
+    (c) desktop New folder, end to end (runs/desktop-on/timeline.txt, method/timeline.py; the
+        tracer prints ~0.37 ms per line, its total is subtracted as ovh):
+                         #1 (fs26a)          #2 (fs26b)
+        open dialog      net 2.31 ms         net 1.02 ms     (Ctrl-N seen -> form_do entry; no I/O)
+        close dialog     net 2.18 ms         net 1.86 ms     (Return seen -> Dcreate entry; no I/O)
+        Dcreate          4.51 ms             2.42 ms         (1 R + 19 W / 0 R + 19 W)
+        rescan           net 0.40 ms         net 0.33 ms     (Fsetdta, Fsfirst + 28/29 Fsnext;
+                                                              0 device accesses)
+        redraw           net 4.32 ms         net 3.74 ms     (67 AES calls; no I/O)
+        Return -> idle   wall 53.3 / net 11.0 ms   wall 50.1 / net 8.0 ms
+      The Dcreate is the ONLY call of the whole path that reaches the card. No Dfree, no FAT scan,
+      no INF write. Screendump runs/desktop-on/after.png: both folders in the C:\ window;
+      runs/desktop-on/c-root-after.txt lists them; fsck_msdos -n exit 0.
+
+  RESULT 4 -- candidates for the ~3 s on the Pi, ranked
+    1. The card's write latency times 19 single-sector writes per Dcreate (DERIVED). In QEMU the
+       device writes are 85-97 % of the Dcreate and the Dcreate is the only I/O of the desktop path
+       (measured), so on the Pi the path costs about 19 x (one single-sector write) plus a
+       CPU/redraw rest. Per-write cost on the real card is not known for this kernel: FS04 measured
+       on the Pi up to 170 ms for one cold sector, 63 ms peak per write sector and first-touch
+       costs of 0.5-2 s per partition (docs/api/hw/emmc-audit.md; TASK/FS04.md "Gemessen auf der
+       Pi"); after the FS04 fix a small copy (~a dozen writes) took 467 ms. 19 writes at 150 ms
+       each would be the 3 s; at 10-20 ms each it would be 0.2-0.4 s.
+    2. The write pattern (DERIVED, part of 1): the 16 sectors of the new cluster go to the card as
+       16 separate CMD24 (9 at eviction, the rest at the flush in descending slot order), never as
+       one CMD25; the FAT sector twice and the directory sector once. Whether a card pays per
+       command or per erase block for this is a property of the card's controller. EmuTOS has the
+       same number of single-sector writes (RESULT 1), so this is not a deviation from EmuTOS --
+       merging them would be a NewTOS improvement (unobservable through the API), a user decision.
+    3. Redraw at 1920x1080 with the framebuffer cache maintenance (DERIVED, carried over from FS04:
+       ~110 ms per full-screen redraw on the Pi, TASK/GUI06): New folder redraws the area under the
+       dialog and the one window, so at most ~0.1-0.25 s. Not seconds.
+    Excluded (measured): more accesses than EmuTOS (RESULT 1/2); a FAT scan (findfree reads one FAT
+    sector, from the block cache after the first); the desktop's rescan (0 device accesses); the
+    dialog (no I/O, ~1-2 ms); AUTO against GEM (same counts, same times).
+    Caveat: on this image the first free cluster lies in FAT sector 0 (GEOMETRY above). On a card
+    whose first free cluster lies deep, findfree16 walks more FAT sectors -- reads, served by the
+    FS09 block cache after their first touch (fat.rs findfree16, cache.rs).
+
+  RESULT 5 -- for the Pi tester scenario (what to take)
+    T1  kernel `cargo xtask build --board rpi4 --release --features fs-io-trace`, serial console,
+        cmdline serial=on; a TEST card with C:\AUTO\DCPROBE.NCP (tosdump/build/DCPROBE.NAP renamed;
+        the probe writes the last record of C: back unchanged and creates/removes C:\FS26D1..5).
+        Take from the serial log: every `gemdos 0x39` line (dur= and dev w=19/19/<us>) and its 19
+        `W lba= us=` lines; the eight `bios 0x04` write lines of Part R (us= of one single-sector
+        write). That separates "card latency" (sum of the W us close to dur) from everything else.
+    T2  the same kernel, then the desktop by hand: open C:, File > New folder (or Ctrl-N), a name,
+        Return; three times in a row. Feed the serial log to
+        measurements/measurement-2026-10-31-fs26/method/timeline.py: open / close / Dcreate /
+        rescan / redraw per action. The first action after boot may carry a first-touch cost
+        (FS04); note which of the three is slow.
+    T3  the release kernel WITHOUT the feature (the user's build): DCPROBE.LOG D01..D05 ticks
+        (x 5 ms) = the clean Dcreate time, and a stopwatch on New folder -- the numbers the fix
+        must move.
+    Decision: sum of W us ~ observed seconds -> candidate 1/2 (the fix goes to the write path:
+    fewer or merged writes); Dcreate small but redraw large -> GUI06; neither -> the trace names
+    the call.
+
+  RESULT 6 -- the instrument (measured)
+    Feature off = HEAD (runs/feature-identity/, method/feature-identity.sh): rpi4/qemu-virt x
+    release/dev built from `git archive HEAD` and from the working tree, same SOURCE_DATE_EPOCH;
+    the only differing words are line fields of core::panic::Location (exceptions.rs +19,
+    lib.rs +4), 0 unexplained (locdiff-*.txt, exit 0 all four). Re-run after the last source edit
+    (comment order in exceptions.rs, one-line hooks in host_env.rs, the device hook's duration
+    taken inside dbg_fsio::device): all eight binaries byte-identical to the first run, the four
+    locdiff files identical (runs/feature-identity/feature-identity-rerun.log). Feature on builds
+    on rpi4 and qemu-virt (kernel 93, tos-api 64 build warnings, as without the feature).
+    Kernels of the runs (runs/kernels.txt): on e9184dcc..., off f21ca9c3... (rpi4 release); the
+    desktop run's kernel f24ce1b7... (scratch tree with the injector, feature on, final source).
+    The runs above used the feature-on kernel of the first source (e9184dcc...); the final source
+    (feature on, rpi4 release, e866887542a0...) was run once more: runs/newtos-auto-on-final --
+    the same counts call for call (Dcreate 1/0 R + 19 W, dur 1.99-3.20 ms), fsck_msdos -n exit 0.
+
+  MANIFESTS (every one verbatim)
+    runs/emutos-1/card.img.manifest:           optional_missing none
+    runs/emutos-2/card.img.manifest:           optional_missing none
+    runs/newtos-auto-on/card.img.manifest:     optional_missing none
+    runs/newtos-gem-on/card.img.manifest:      optional_missing none
+    runs/newtos-auto-off-1/card.img.manifest:  optional_missing none
+    runs/newtos-auto-off-2/card.img.manifest:  optional_missing none
+    runs/newtos-auto-off-3/card.img.manifest:  optional_missing none
+    runs/newtos-gem-off-1/card.img.manifest:   optional_missing none
+    runs/newtos-gem-off-2/card.img.manifest:   optional_missing none
+    runs/newtos-gem-off-3/card.img.manifest:   optional_missing none
+    runs/desktop-on/card.img.manifest:         optional_missing none
+    runs/newtos-auto-on-final/card.img.manifest: optional_missing none
+    host_clang (same line in every manifest above):
+      host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+    Card sha256 before/after: each run's run.txt (card / card after); emutos-*/disk.sha256.
+
+FILES
+  method/  runs.sh (every run below, in order), run-desktop.sh, newfolder.script, NEWDESK-W.INF,
+           timeline.py, feature-identity.sh; the probe runner is tosdump/probes/run-dcprobe.sh
+           (called, not copied) and calls tools/mkcard.sh itself.
+  runs/    emutos-1, emutos-2            DCPROBE.LOG, run.txt, card.img.manifest, hatari.log, disk.sha256
+           newtos-{auto,gem}-on          DCPROBE.LOG, BOOT-SERIAL.txt ([fsio] lines), run.txt,
+                                         card.img.manifest, fsck-after.txt
+           newtos-{auto,gem}-off-1..3    the same, feature off
+           newtos-auto-on-final          the same, feature on, final source (one extra call of
+                                         run-dcprobe.sh newtos auto, after runs.sh)
+           desktop-on                    BOOT-SERIAL.txt, timeline.txt, after.png, c-root-after.txt,
+                                         card.img.manifest, fsck-after.txt, inject-arm.txt, run.txt
+           feature-identity              locdiff-*.txt, bins.sha256, feature-on-warnings.txt, log
+           kernels.txt
+  Images, cards, kernels and the scratch trees are not kept (session scratchpad, deleted after the
+  run); their sha256 are in the run.txt files. manifest.sha256 covers every file of this run except
+  itself.

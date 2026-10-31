@@ -307,7 +307,7 @@ receive interrupt fills device 0's ring, "XBIOS15" below).
 A replaced buffer (E4 (a)) gets the kernel buffer back, emptied; bad indices
 empty the ring. The kernel never reads or writes through `ibuf`. After every
 trap all four rings are checked as well (`kernel/src/console.rs:333@check_iorec_after_trap`,
-called from `kernel/src/arch/aarch64/exceptions.rs:664@check_iorec_after_trap`), so a
+called from `kernel/src/arch/aarch64/exceptions.rs:686@check_iorec_after_trap`), so a
 replaced buffer is noticed "at the next trap" even when no key moves. Each
 repair is warned about once per process tenancy
 (`tos-api/src/xbios/iorec.rs:555@take_warnings`, printed by
@@ -370,7 +370,7 @@ above (user decision, `TASK/BIOS09.md`). Without an adapter the floating RXD0
 line can put one spurious `0x00` into the ring at boot.
 
 **E6.** The `kbdvec` hook gets the IKBD record in `x1`
-(`kernel/src/arch/aarch64/exceptions.rs:851@IKBD_IOREC_VA`, EmuTOS `a0 =
+(`kernel/src/arch/aarch64/exceptions.rs:871@IKBD_IOREC_VA`, EmuTOS `a0 =
 &ikbdiorec`, `bios/aciavecs.S:412`).
 
 **Tests.** Unit tests `tos-api/src/xbios/iorec.rs` (ring order, 63 entries,
