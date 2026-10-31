@@ -147,3 +147,18 @@ weder belegt noch widerlegt. Vorgeschlagene Trennung (Entscheid Owner): C1
   "the switch is TX-only"): Unterschied sind also die UART-Schreibzugriffe
   selbst (Zeit, Device-Speicherzugriffe), nicht ein anderer Codepfad im
   Programm. Ursache offen; Ursachenforschung vor jedem Fix.
+
+## M1: ohne X-Shot (2026-10-31, Anwender, ohne Mitschrift)
+
+Release-Kern `e0fe680b...`, `cmdline.txt` leer (wie Phase A und Kontrolle):
+- beide Accessories umbenannt (`XSHOT.NA_`, `SYSACC.NA_`): kein Freeze;
+- nur `C:\ACC\XSHOT.NAC` umbenannt, `SYSACC.NAC` geladen: kein Freeze.
+
+Der Freeze braucht also X-Shot im Accessory-Slot (Kandidaten:
+`docs/analysis/doom01-root-cause-2026-10-31.md`). X-Shot wartet in
+`evnt_multi(MU_MESAG|MU_BUTTON|MU_KEYBD)` ohne Timer (TASK/A117.md). Die
+`.NAC` auf der Karte stammt nicht aus diesem Repo: Datei vom 2026-10-24,
+119744 Bytes, aus dem X-Shot-Repo (dort dist/newtos/xshot.nac, GitHub #14), sha256 `766627b79f6e38b9...`; von
+uns nie gebaut. Offen: ob ein Accessory, das auf Tasten wartet, bei EmuTOS
+waehrend eines laufenden Programms ueberhaupt geweckt wird, und ob ein
+Neubau von X-Shot etwas aendert.
