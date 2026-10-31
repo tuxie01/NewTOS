@@ -1,0 +1,2 @@
+AWPROBE TASK/BIOS09 -- Bconin(1) waits; keys: the kbdvec hook prints each byte; Ctrl+Alt+Del ends
+H01 kbdvec held a vector before the hook: 1

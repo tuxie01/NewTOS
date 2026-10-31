@@ -1,0 +1,68 @@
+RUNINFO -- PITEST01 phase A on the real Pi 4, and the switch to phase B (2026-10-31)
+
+WHAT
+  Phase A of the tester run (docs/analysis/tester-run-sheet-2026-10-31.md),
+  executed by the user on the real Pi 4 with the card filled in
+  measurements/measurement-2026-10-31-pitest01-card/RUNINFO.TXT
+  (kernel8.img = kernela.img e0fe680b25402385..., release, commit 6796787c;
+  cmdline.txt empty; no UART adapter). Then the card was switched to phase B.
+
+INPUTS FROM THE CARD (copied after phase A)
+  phase-a-results/HZPROBE.LOG, AWPROBE.LOG, DCPROBE.LOG (verbatim from C:\)
+  Full copy of C: after phase A: sd-card-backup-20261031-after-a/ (gitignored).
+  Photos from the user: phase-a-results/*.jpg
+
+RESULTS (user notes + logs + photos)
+  A0 boot      Desktop about 15 s after power-on (user). PASS.
+               Clock: the probe logs carry times 00:00-00:05 on 2026-10-31
+               (HZPROBE.LOG "Tgettime 00:05:20 -> 00:05:50"; card file times
+               31 Okt. 00:00-00:05): the clock starts at the build date 00:00
+               (TASK/XBIOS12) -- confirmed on the Pi.
+  A1 P0PAR     First run, photos a1-p0par-case-w.jpg / a1-p0par-case-x.jpg:
+               R OK; w faults (write $484, "page-0 system-variable memory,
+               write (permission fault, level 3)", esr 9200004f) rc FFFF OK;
+               S OK; x faults (execute at 0x700, esr 8200000f). The end of the
+               run ("P0PAR: PASS") is not on a photo; the user did not tick PASS.
+  A2 HZPROBE   PASS (HZPROBE.LOG): ticks 6000/6000, 400 per 2-s interval,
+               maxstep 1 in user and super state, 0 backwards, 4341718 Super
+               toggles. The screen showed only the start line; the summary is
+               erased by the desktop redraw at exit (photo a2-hzprobe-start.jpg).
+  A3 DOOM      Step 1 (P0PAR again): FROZE; Ctrl+Alt+Del reset the system
+               (user). Photo p0par-case-w-last.jpg shows a P0PAR run at case
+               w's crash report, "Press any key to continue", mouse pointer
+               visible -- whether this is the frozen run and whether keys or
+               the mouse still worked is NOT yet confirmed by the user.
+               DOOM itself not run.
+  A4 programs  Desktop, TeraDesk (incl. archive bit "a", TASK/FS21), QED: OK.
+               HypView: no menu bar; shows its default help page, not the zView
+               help named in HYP_VIEW.CFG (the CFG on the card is
+               "DEFAULT=C:\Apps\ZVIEW\ZVIEW.HYP" CRLF; C:\Apps\ZVIEW\ZVIEW.HYP
+               present). zView: opens and zooms; with several images open only
+               one could be closed and zView could not be quit (user).
+  A5 AWPROBE   PASS (photo a5-awprobe.jpg): Bconin(1) waits, the kbdvec hook
+               prints make/break pairs (24 a4, 2e 2f ...), Ctrl+Alt+Del
+               restarts. Round 1 did NOT return 0 (no RXD0 byte, UART01 not
+               seen). AWPROBE.LOG holds only the header lines (the run ended
+               by Ctrl+Alt+Del).
+  A6 New folder Too fast for a stopwatch (user). DCPROBE.LOG (release kernel):
+               Dcreate 7-9 ticks each (35-45 ms), 5 Dcreate 38 ticks with
+               logging; single-sector Rwabs 0-2 ticks. The ~3 s of TASK/FS26
+               did not occur on this state.
+
+SWITCH TO PHASE B
+  dryrun-b.txt: only kernel8.img (<- kernelb.img) and cmdline.txt
+  (<- cmdline-b.txt, "serial=on") change. write-b.txt: written; card-b/
+  card-before/C/ holds the previous kernel8.img, cmdline.txt, config.txt.
+  The script's remount failed again (Spotlight, see the card run F1); the lead
+  ran sync + `diskutil unmount force` + mount, then compared (verify-b.txt):
+  "0 new, 0 changed, 54 same, 24 extra, 0 error(s)" (the 3 extra are the
+  phase-A logs). kernel8.img sha256 bc543d4871ef7eec... = kernelb.img;
+  CMDLINE.TXT = "serial=on".
+
+FINDINGS FOR TRIAGE (not fixed)
+  P1 P0PAR second run froze, Ctrl+Alt+Del works (details pending).
+  P2 HypView ignores DEFAULT= of HYP_VIEW.CFG / no menu bar.
+  P3 zView: several windows, only one closes, program cannot be quit.
+
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing: not applicable (card filled by tools/sync-card.sh, no image built)
