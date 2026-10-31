@@ -1,0 +1,17 @@
+DUMPBIOS build 6439, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV: 13 cases, CRC 26353FB1
+disk table: test drive C:, 2 preludes, destructive (a fresh clone of the test image only)
+layouts: 1
+program extension x:<path>.PRG (PROGEXT.TXT, the run's profile)
+running 13 cases
+all 13 cases ran
+BIOS.BIN: 13 records, 4192 bytes
+before 5892692e1deec09940dd1bbdbd60df39b1bdd1b58c2b8857a686f81fb923e926 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs21/test.img
+destructive table: fresh clone, partition 1 clean (fsck_msdos -n)
+after  5892692e1deec09940dd1bbdbd60df39b1bdd1b58c2b8857a686f81fb923e926 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/45e8e806-7ba7-4edc-ace3-d4dd625a7f8d/scratchpad/fs21/oracle-fs22-1/disk.img
+runner hatari-oracle, profile disk (tosdump/profiles.tsv sha256 b90e6687ad5254209e722d6622b3268bffe983fb894c642359ed731703b34e98)
+table names the unit token u:0: no; a program path x:<path>: yes
+D:\DISKUNIT.TXT 18 (the profile's physical unit of C:, for u:0), read back
+D:\PROGEXT.TXT PRG (the profile's program extension, for x:), read back
+LOG check (tosdiff --check-profile): profile check, BIOS.BIN: hatari-oracle disk (tosdump/profiles.tsv), x: = .PRG, as its LOG BIOS.LOG records

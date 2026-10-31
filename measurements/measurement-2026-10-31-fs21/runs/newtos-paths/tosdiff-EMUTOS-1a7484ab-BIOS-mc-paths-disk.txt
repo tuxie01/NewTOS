@@ -1,0 +1,6 @@
+EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN vs NEWTOS.BIN -- area BIOS, 49 cases from gemdos-mc-paths.tsv
+
+case 67  trap 13 function 0x09  S04 Mediach(2): EmuTOS 2, Dsetpath did not meet the change
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-mc-paths-disk.BIN = 0x0000000000000002 (2)   NEWTOS.BIN                             = 0x0000000000000000 (0)
+
+1 of 49 cases differ

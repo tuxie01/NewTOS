@@ -1,0 +1,8 @@
+DUMPBIOS build 6439, record format 3
+pointer 8 bytes, word order 2
+BIOS.TSV: 84 cases, CRC 81113364
+disk table: test drive C:, 9 preludes, destructive (a fresh clone of the test image only)
+layouts: 1
+running 84 cases
+all 84 cases ran
+BIOS.BIN: 84 records, 26912 bytes

@@ -277,3 +277,8 @@ handled elsewhere).
 PHASE-05: backed by the FAT16/32 driver on Pi SD/USB storage. The
 "RO-attribute but RW-handle" and "silent overwrite" behaviours are contract;
 directory-grow strategy is a free NewTOS choice.
+
+TASK/FS21 (2026-10-31): the new OFD starts dirty, as EmuTOS marks the new
+DFD `O_DIRTY` (`bdos/fsopnclo.c:206`), so its `Fclose` sets `FA_ARCHIVE` in
+the entry even when nothing was written (`3e-fclose.md` edge case 8;
+`tos-api/src/bdos/fs/file.rs:341@fcreate`).

@@ -605,7 +605,7 @@ cluster 3 in partition sector 277, the new geometry's (`datrec` 273).
   `tos-api/src/gemdos/mod.rs:201@restartable`): after a run that met a
   change, steps 1-7 (`tos-api/src/gemdos/mod.rs:254@media_change_relog`) and
   the call once more: `offree` =
-  `tos-api/src/bdos/fs/file.rs:1326@free_drive_files`, `freetree`'s
+  `tos-api/src/bdos/fs/file.rs:1350@free_drive_files`, `freetree`'s
   `dirtbl` half = `tos-api/src/bdos/fs/curdir.rs:332@free_drive` (NewTOS keeps
   no DND tree), the DMD = `tos-api/src/bdos/fs/fat.rs:108@log_out`,
   `mark_bcbs_invalid` = `tos-api/src/bdos/fs/cache.rs:292@invalidate_drive`,

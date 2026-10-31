@@ -21,7 +21,7 @@ Datum 2026-10-29 · Beleg
   `tos-api/src/bdos/fs/cache.rs:292@invalidate_drive`. `osif` =
   `tos-api/src/gemdos/mod.rs:150@dispatch_inner` (Neustart) mit
   `tos-api/src/gemdos/mod.rs:254@media_change_relog`; `offree` =
-  `tos-api/src/bdos/fs/file.rs:1326@free_drive_files`, `freetree`s
+  `tos-api/src/bdos/fs/file.rs:1350@free_drive_files`, `freetree`s
   `dirtbl`-Teil = `tos-api/src/bdos/fs/curdir.rs:332@free_drive`, Abmelden
   `tos-api/src/bdos/fs/fat.rs:108@log_out`; `Volume` traegt sein Laufwerk.
   `mapping.tsv`: Zeile fuer `mark_bcbs_invalid` (Ratsche), dazu `offree`,

@@ -1,0 +1,10 @@
+oracle-fs20-1 fsck_msdos -n exit 206
+before-fs20 fsck_msdos -n exit 206
+newtos-fs20 fsck_msdos -n exit 206
+oracle-fs22-1 fsck_msdos -n exit 0
+newtos-fs22 fsck_msdos -n exit 0
+oracle-paths-1 fsck_msdos -n exit 206
+newtos-paths fsck_msdos -n exit 0
+oracle-fs24-1 fsck_msdos -n exit 0
+before-fs24 fsck_msdos -n exit 0
+newtos-fs24 fsck_msdos -n exit 0

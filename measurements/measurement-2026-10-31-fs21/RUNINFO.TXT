@@ -1,0 +1,156 @@
+measurement-2026-10-31-fs21 -- FS21: Fclose of a changed file sets FA_ARCHIVE as EmuTOS does
+=============================================================================================
+Developer, TASK/FS21, 2026-10-31 (host clock CET). Base HEAD 64399d5f (clean tree at the start).
+QEMU raspi4b (headless, -append serial=on), qemu-virt (headless boot) and Hatari (pinned oracle).
+No hardware, no real card, nothing flashed. Not committed (the lead commits).
+
+WHAT / WHY
+  Finding of FS20 (measurements/measurement-2026-10-28-fs20/RUNINFO.TXT), seen again in TOOL20 and
+  FS24: after Fcreate/Fwrite/Fclose the file's directory entry has attribute 0x20 (FA_ARCHIVE) on the
+  oracle, 0x00 on NewTOS. TeraDesk shows and uses the bit (sdk/apps/teradesk/dir.c:1864,
+  sdk/apps/teradesk/copy.c:1617).
+
+THE EMUTOS RULE (read from the source; spec docs/api/gemdos/file/3e-fclose.md edge case 8)
+  ixclose rewrites the entry only when the DFD is O_DIRTY (references/emutos/bdos/fsopnclo.c:530); it
+  reads the attribute the entry has at that moment (:537), copies time/date, start cluster and length
+  from the DFD (:538-540), ORs FA_ARCHIVE in for a file (:544-545; a folder closed CL_DIR gets length 0
+  and no bit, :542-543) and writes the byte back (:547-548). O_DIRTY is set by Fcreate
+  (references/emutos/bdos/fsopnclo.c:206), a write that grows the file (addit,
+  references/emutos/bdos/fsio.c:42-46) or gives it its first cluster (nextcl,
+  references/emutos/bdos/fsfat.c:279-282), an Fdatime set (references/emutos/bdos/fsdir.c:698) and the
+  cross-directory Frename of a file (references/emutos/bdos/fsdir.c:1066, NewTOS had that already).
+  Not dirty: open, read, seek, a write inside the length, Fdatime get. Fattrib writes the entry directly
+  (references/emutos/bdos/fsdir.c:424-432); a later close ORs into that value.
+
+CHANGE (tree: 64399d5f plus the uncommitted FS21 change)
+  tos-api/src/bdos/fs/file.rs       flush_ofd ORs FA_ARCHIVE into the entry's current attribute (doc
+                                    comment: the rule); fcreate opens its OFD dirty; fdatime (set) marks
+                                    the OFD dirty
+  tos-api/tests/fs21_close_archive.rs  8 host tests
+  docs/api/gemdos/file/3e-fclose.md (side effects, edge case 8, NewTOS note), 3c-fcreate.md and
+  57-fdatime.md (NewTOS notes), docs/analysis/deps/mapping.tsv (ixclose -> flush_ofd),
+  docs/api/gemdos/_state.md and TASK/FS20-STATUS-DONE.MD (moved anchor
+  tos-api/src/bdos/fs/file.rs:1350@free_drive_files), docs/STATUS.md,
+  docs/archive/status-log-2026-10-26.md
+
+METHOD (method/)
+  gcprobe-runs.sh  the FS20 probe through tosdump/probes/run-gcprobe.sh: once on the oracle, once on
+                   NewTOS after (this tree) and before (HEAD); gcprobe-compare.py, gcprobe-trace-check.py.
+                   Kernels: cargo xtask build --board rpi4 --release --features bios-arg-trace
+                     after  901c72ccefe1168934837b5af6021ba69448937c003121911b035a5e2ca1440b (this tree)
+                     before 2068e98cd03ca0e6b00daaa2b1f5aa846501003fc3ac87ad46e67994af72ffa3
+                            (`git archive 64399d5f` extracted into scratch)
+                   GCPROBE.PRG bec2f2bad2e03c80a64153fff8380f313d5233d0563402f7c777c151a1f22cdb,
+                   GCPROBE.NAP 8f74934aef2b666520fc1598fef39409a310764079f602cf2a512d42329c042c (both = FS20's),
+                   test.img 7c1b91c8e16014b8bbf4d40483070df5ba0069fe6e75c9cb01a2d809963d2496 (= FS20's),
+                   card e54aba13bdc4798fda3aa19b087f45d521c6d7f8b3b40664918c597d21ee6959 (= FS20's).
+  tables-runs.sh   calls, does not copy: measurements/measurement-2026-10-29-tool20/method/mkimage.sh (the
+                   test image, test.img 5892692e1deec09940dd1bbdbd60df39b1bdd1b58c2b8857a686f81fb923e926,
+                   PXPROBE.PRG d61ebfe9.. -- not byte-reproducible, TOOL20 --, PXPROBE.NAP d832211c.. = TOOL20's);
+                   measurements/measurement-2026-10-30-fs28/method/newtos-runs.sh after|before (cargo xtask
+                   tosdump bios gemdos-mc-fs20/-fs22/-paths/-fs24 --testdisk, references
+                   EMUTOS-1a7484ab-BIOS-mc-<t>-disk.BIN, plus the canary bios-r1 against tt and falcontc;
+                   before = --tree of the `git archive 64399d5f` copy); the oracle end states:
+                   measurements/measurement-2026-10-29-tool20/method/oracle-runs.sh (fs20, fs22, paths) and
+                   measurements/measurement-2026-10-29-fs24/method/oracle-runs.sh (fs24), one run each,
+                   DUMPBIOS.PRG build 6439 cb4826291fa7d4041ae493de75aa241fe6077b28fffbfbddc426cbe3b3c6226a.
+                   NewTOS kernels (rpi4 release, no features, built by the runner):
+                     after  9209472ab1c38f1abc29fc0913d8ed414e9aad71798a2a07785d403b43bf3a76 (DUMPBIOS.NAP build
+                            6439, 653030aa056fe3b3bca57223b3ac8081749f71c9bffeab835224dbd6e675c1a3)
+                     before a459a4f4eeb5d17935ee578fd7011e9222f7496845f0416c36dea3d3ce903219 (DUMPBIOS.NAP build
+                            ----, b30033847e9f8ac63b5057d5b5c05a85f08b6ec41f2245aecdf837f9e40677e7)
+  compare.sh       differing cases per table and reference, before vs after (tosdiff-*.txt), then
+  compare-ends.py  the end state of the test partition after each gemdos-mc table: original / oracle /
+                   NewTOS before / after, raw and with the time stamps of the root directory and of
+                   C:\SUB's first cluster zeroed (each side stamps a created file with its own clock); the
+                   geometry is read from each image's own boot sector (fs20 changes it).
+  boot-qemu-virt   measurements/measurement-2026-10-30-fs28/method/boot-qemu-virt.sh (called): fresh
+                   qemu-virt release build of this tree, headless boot to "desktop up".
+                   qemu-virt release ELF 95b36d9fb99a79823ab45487310739eb9ee9858283fa1cc5683e4cafcf7dced2.
+
+MANIFESTS (every one verbatim)
+  runs/gc-emutos/test.img.manifest:            optional_missing none
+  runs/gc-newtos-after/test.img.manifest:      optional_missing none
+  runs/gc-newtos-after/card.img.manifest:      optional_missing none
+  runs/gc-newtos-before/test.img.manifest:     optional_missing none
+  runs/gc-newtos-before/card.img.manifest:     optional_missing none
+  runs/test.img.manifest:                      optional_missing none
+  runs/newtos-fs20/card.img.manifest:          optional_missing none
+  runs/newtos-fs22/card.img.manifest:          optional_missing none
+  runs/newtos-paths/card.img.manifest:         optional_missing none
+  runs/newtos-fs24/card.img.manifest:          optional_missing none
+  runs/newtos-bios-r1/card.img.manifest:       optional_missing none
+  runs/before-fs20/card.img.manifest:          optional_missing none
+  runs/before-fs22/card.img.manifest:          optional_missing none
+  runs/before-paths/card.img.manifest:         optional_missing none
+  runs/before-fs24/card.img.manifest:          optional_missing none
+  runs/before-bios-r1/card.img.manifest:       optional_missing none
+  host_clang (same line in every manifest above):
+    host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+
+RESULT 1 -- the FS20 probe (runs/compare-after.txt, runs/compare-before.txt)
+  GCPROBE.LOG: before and after identical to the oracle's (A05-B08 as in FS20).
+  Test partition vs the oracle, root-directory time stamps zeroed:
+    before  DIFFERENT: sector 257 offset 0x04B (GCPROBE.DAT's attribute) oracle 0x20, NewTOS 0x00
+            (= FS20's finding; partition after 36b5a14f.. = FS20's "after")
+    after   IDENTICAL -- VERDICT: equal to the reference
+  Input trace (runs/trace-check-after.txt, -before.txt): every argument and result as the probe passes
+  and logs, no kernel Rwabs/Getbpb/Mediach, exit 0 both.
+  fsck_msdos -n of the three partitions after the probe: exit 0 (runs/gc-*/fsck-after.txt).
+
+RESULT 2 -- tosdiff, NewTOS before (HEAD) vs after (FS21) (runs/before-after.txt)
+  table     reference                              before            after
+  fs20      EMUTOS-1a7484ab-BIOS-mc-fs20-disk       0 of 17           0
+  fs22      EMUTOS-1a7484ab-BIOS-mc-fs22-disk       0 of 13           0
+  paths     EMUTOS-1a7484ab-BIOS-mc-paths-disk      1 of 49 (67)      1 (67)
+  fs24      EMUTOS-1a7484ab-BIOS-mc-fs24-disk       2 of 84 (76 149)  2 (76 149)
+  bios-r1   EMUTOS-1a7484ab-BIOS (tt)              32 of 147         32, same cases
+  bios-r1   EMUTOS-1a7484ab-BIOS-falcontc          37 of 147         37, same cases
+  Newly differing cases: none in all six comparisons. (The records do not capture the attribute: no case
+  reads the directory after the close; the end state does.) Every run "ended normally after 19 s:
+  desktop up after DUMPBIOS.NAP, rc=0"; tosdiff --validate exit 0.
+
+RESULT 3 -- end states vs the oracle (runs/endstate.txt), time stamps zeroed
+  fs20   before: 1 byte, sector 257 0x0CB (GCPROBE.DAT's attribute) oracle 20 / NewTOS 00;
+         after: IDENTICAL
+  fs24   before: 1 byte, sector 821 0x06B (C:\SUB\FILL.DAT's attribute) oracle 20 / NewTOS 00;
+         after: IDENTICAL
+  fs22   oracle = before = after = the original image (nothing written)
+  paths  before = after (identical images); 1 byte to the oracle, sector 257 0x080 (C:\DELME.TXT's
+         first byte, oracle 44 'D', NewTOS E5) -- TOOL20 finding F3, unchanged, not this ticket
+  before vs after: exactly the attribute byte in fs20 and fs24, nothing else in any table.
+  The "original vs oracle-fs20-1, time stamps zeroed" rows list sectors 805-808 and 821 as well: the
+  table changes the root size, so C:\SUB's cluster sits at another sector by each image's own boot
+  sector and the normaliser zeroes different bytes in the two -- an artefact of that informational row
+  only; every row against the oracle compares images of the same geometry.
+  fsck_msdos -n (runs/fsck-ends.txt): fs20 206 on oracle, before and after (the changed geometry, as in
+  TOOL20/FS23/FS28), fs22 0, paths 206 on the oracle (F3) and 0 on NewTOS, fs24 0 on all.
+
+HOST TESTS
+  tos-api/tests/fs21_close_archive.rs, 8 tests: written file -> 0x20; Fcreate+Fclose without a write ->
+  0x20; Fcreate(FA_RO) + write -> 0x21; open+close, open+read+close, Fdatime get -> unchanged (0x00);
+  write inside the length -> unchanged; write that grows the file -> 0x20; Fdatime set on a read-only
+  open -> 0x20; Fattrib(FA_RO) while open, then close -> 0x21. Against HEAD's file.rs all 8 fail (the
+  negative ones in their setup, which expects the bit after the first close); with the change 8/8.
+  cargo xtask test (full): 1918 passed, 0 failed, 1 ignored (baseline 1910/0/1, +8).
+
+BOOT
+  raspi4b: every tosdump and gcprobe run above booted the rpi4 release kernel to "desktop up".
+  qemu-virt (runs/boot-qemu-virt-after/BOOT-SERIAL.txt): "[desk] desktop up (0 drives)", no PANIC.
+
+BUILD / CLIPPY
+  cargo xtask build --board rpi4 / --board qemu-virt (debug): exit 0 both; tos-api 64, kernel 93 build
+  warnings both boards (= baseline). cargo clippy -p kernel --features board-rpi4 / board-qemu-virt:
+  tos-api 74, kernel 121 on both boards (= baseline), no hit in file.rs; cargo clippy -p tos-api --test
+  fs21_close_archive: no hit in the test. cargo xtask deps --check-mapping: 1082 rows resolve.
+
+FILES
+  method/  gcprobe-runs.sh, tables-runs.sh, compare.sh, compare-ends.py
+  runs/    gc-emutos, gc-newtos-after, gc-newtos-before (GCPROBE.LOG, run.txt, manifests, hatari.log +
+           disk.sha256 or BOOT-SERIAL.txt, fsck-after.txt), compare-after.txt, compare-before.txt,
+           trace-check-after.txt, trace-check-before.txt; newtos-<t>/, before-<t>/ (cargo xtask
+           tosdump's out-dirs) for fs20, fs22, paths, fs24, bios-r1; oracle-<t>-1/ (BIOS.BIN, BIOS.LOG,
+           disk.sha256, hatari.log, hatari-oracle.stdout, decoded.txt); before-after.txt, endstate.txt,
+           fsck-ends.txt, test.img.manifest, boot-qemu-virt-after/
+  Images, cards, kernels and the scratch tree are not kept (scratch, deleted after the run); sha256
+  above and in the runs' files. manifest.sha256 covers every file of this run except itself.

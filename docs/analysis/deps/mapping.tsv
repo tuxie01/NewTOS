@@ -173,6 +173,7 @@ xsetdta	bdos/fsmain.c	tos-api/src/bdos/fs/find.rs	fsetdta	mapped	Fsetdta 0x1A
 contains_illegal_characters	bdos/fsopnclo.c	tos-api/src/bdos/fs/path.rs	contains_illegal_characters	mapped	-
 ixclose	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	ixclose	mapped	-
 ixclose	bdos/fsopnclo.c	tos-api/src/bdos/fs/cache.rs	flush	mapped	the write-back loop at its end
+ixclose	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	flush_ofd	mapped	the O_DIRTY entry rewrite: cluster, length, attribute | FA_ARCHIVE (FS21)
 ixcreat	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	fcreate	mapped	-
 ixcreat	bdos/fsopnclo.c	tos-api/src/bdos/fs/dirops.rs	dcreate	mapped	the folder case
 ixdel	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	ixdel	mapped	-

@@ -1,0 +1,9 @@
+DUMPBIOS build 6439, record format 3
+pointer 8 bytes, word order 2
+BIOS.TSV: 13 cases, CRC 26353FB1
+disk table: test drive C:, 2 preludes, destructive (a fresh clone of the test image only)
+layouts: 1
+program extension x:<path>.NAP (PROGEXT.TXT, the run's profile)
+running 13 cases
+all 13 cases ran
+BIOS.BIN: 13 records, 4192 bytes

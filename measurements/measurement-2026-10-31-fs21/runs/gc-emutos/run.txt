@@ -1,0 +1,7 @@
+gcprobe run, side emutos (2026-10-31T02:00:12Z)
+tree      64399d5f3078031d98933ec429640b6658ca6da4 2 dirty paths in kernel tos-api tos-types tosdump/probes
+test.img  7c1b91c8e16014b8bbf4d40483070df5ba0069fe6e75c9cb01a2d809963d2496 (tools/mktestdisk.sh NEWDESK.INF=#R 02/#Z 01 D:\GCPROBE.NAP@)
+testpart  before a173d32ac0bd71f22aee8ac7250496f028a0706ba3f7eff3d84f17d36086e3dd
+probe     GCPROBE.PRG bec2f2bad2e03c80a64153fff8380f313d5233d0563402f7c777c151a1f22cdb
+oracle    tools/hatari-oracle.sh disk (pinned ROM, tools/oracle/hatari.cfg)
+testpart  after  e1d34124cb08909709768fa34a50a895c4fe916f4ef410579ef6c26ed3c032e6

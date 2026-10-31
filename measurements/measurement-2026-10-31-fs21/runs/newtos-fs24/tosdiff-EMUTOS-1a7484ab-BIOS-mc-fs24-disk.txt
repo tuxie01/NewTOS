@@ -1,0 +1,9 @@
+EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN vs NEWTOS.BIN -- area BIOS, 84 cases from gemdos-mc-fs24.tsv
+
+case 76  trap 13 function 0x09  S04 Mediach(2): EmuTOS 2, the logged DND: no disk access
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x0000000000000002 (2)   NEWTOS.BIN                            = 0x0000000000000000 (0)
+
+case 149  trap 13 function 0x09  V3 Mediach(2): after the Dsetpath
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-mc-fs24-disk.BIN = 0x0000000000000002 (2)   NEWTOS.BIN                            = 0x0000000000000000 (0)
+
+2 of 84 cases differ

@@ -415,8 +415,13 @@ pub fn fcreate(args: &TrapArgs) -> Long {
         return code;
     }
 
+    // The new OFD starts dirty (`getofd(f2)->o_dfd->o_flag |= O_DIRTY`,
+    // `bdos/fsopnclo.c:206`): its `Fclose` rewrites the entry and sets
+    // `FA_ARCHIVE` even when nothing was written (TASK/FS21).
+    let mut s = Stream::new(vol, 0, 0);
+    s.dirty = true;
     open_handle(Ofd {
-        s: Stream::new(vol, 0, 0),
+        s,
         drive,
         dir_start: parent,
         dir_slot,
@@ -713,10 +718,25 @@ pub(super) fn ixdel(vol: &Volume, dir_start: u32, slot: u32) -> Result<(), Long>
     Ok(())
 }
 
-/// Flush an open file's directory entry (size + start cluster).
+/// Write a dirty file OFD's directory entry back — the `O_DIRTY` half of
+/// EmuTOS `ixclose(fd, 0)` (`bdos/fsopnclo.c:530-550`): start cluster and
+/// length from the OFD, and `FA_ARCHIVE` OR-ed into the attribute byte the
+/// entry has *now* (`attr = fcb->f_attrib; … attr |= FA_ARCHIVE`, `:537`,
+/// `:544-545`), so an `Fattrib` made while the file was open is kept and the
+/// bit comes back even if it cleared it. Every OFD here is a file: folders
+/// are never opened through this table (`Fopen`'s `FA_NORM` scan), so the
+/// `CL_DIR` branch (length 0, no archive bit, `:542-543`) has no caller.
+/// Time and date are not copied: NewTOS keeps no `o_td`; `Fcreate` and
+/// `Fdatime` write them into the entry directly.
+///
+/// The OFD is dirty after `Fcreate` (`fsopnclo.c:206`), a write that grows
+/// the file or gives it its first cluster (`fsio.c:42-46`, `fsfat.c:279-282`)
+/// and an `Fdatime` set (`fsdir.c:698`); a file only opened, read, sought or
+/// overwritten inside its length keeps its attribute (TASK/FS21).
 fn flush_ofd(ofd: &Ofd) {
     let mut e = [0u8; 32];
     if dir::read_slot(&ofd.s.vol, ofd.dir_start, ofd.dir_slot, &mut e) {
+        e[0x0B] |= FA_ARCHIVE;
         e[0x1A..0x1C].copy_from_slice(&((ofd.s.strtcl & 0xFFFF) as u16).to_le_bytes());
         e[0x1C..0x20].copy_from_slice(&ofd.s.fileln.to_le_bytes());
         dir::write_slot(&ofd.s.vol, ofd.dir_start, ofd.dir_slot, &e);
@@ -1159,6 +1179,10 @@ pub fn fdatime(args: &TrapArgs) -> Long {
             return crate::uaccess::FAULTED;
         }
         dir::write_slot(&ofd.s.vol, ofd.dir_start, ofd.dir_slot, &e);
+        // `dfd->o_flag |= O_DIRTY` (`bdos/fsdir.c:698`): the `Fclose` of a
+        // file whose time was set rewrites its entry and sets `FA_ARCHIVE`
+        // (TASK/FS21).
+        ofd.s.dirty = true;
         if let Err(code) = super::cache::flush() {
             return code;
         }

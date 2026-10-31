@@ -113,7 +113,8 @@ before the underlying OFD is actually released.
 - `sft[].f_use` decremented; at zero the slot is cleared and the OFD/DFD freed
   (`sftdel`, `bdos/fsopnclo.c:492-493`).
 - `ixclose` writes the directory entry (date/time/start/length, archive bit)
-  and flushes all dirty buffer-cache blocks.
+  **only if the file is `O_DIRTY`** (edge case 8), and flushes all dirty
+  buffer-cache blocks.
 
 ### Side effects on hardware
 
@@ -190,6 +191,29 @@ missing from `d_files`, and the negative-handle no-op (`E_OK` for `h < 0`).
    the on-disk `f_fileln` is forced to 0 (`bdos/fsopnclo.c:542-543`); regular
    files get the archive bit set instead.
 
+8. **`FA_ARCHIVE` is set only for a changed file, OR-ed into the entry's
+   current attribute** [FS21]. The directory-entry rewrite runs only when the
+   DFD is `O_DIRTY` (`bdos/fsopnclo.c:530`); it reads the attribute byte the
+   entry has *now* (`attr = fcb->f_attrib`, `:537`), copies time/date, start
+   cluster and length from the DFD (`:538-540`), OR-s in `FA_ARCHIVE` for a
+   file (`:544-545`) and writes the byte back (`:547-548`). `O_DIRTY` is set
+   by:
+   - `Fcreate` — the new DFD (`bdos/fsopnclo.c:206`): `Fcreate` + `Fclose`
+     with no write sets the bit;
+   - a write that grows the file (`addit`, `bdos/fsio.c:42-46`) or gives it
+     its first cluster (`nextcl`, `bdos/fsfat.c:279-282`);
+   - an `Fdatime` set (`bdos/fsdir.c:698`), even on a file opened read-only;
+   - a cross-directory `Frename` of a file (`bdos/fsdir.c:1066`, then
+     `xclose` of the new handle, `:1072`).
+   Not dirty, so the attribute is left as it is: a file only opened, read,
+   sought, or written *inside* its length, and an `Fdatime` get. An `Fattrib`
+   made while the file is open changes the entry directly
+   (`bdos/fsdir.c:424-432`); the later close OR-s into that value, so a
+   cleared archive bit comes back and a set `FA_RO` stays. Folders are closed
+   with `CL_DIR` and get no bit (edge case 7). Measured: the FS20 probe's
+   `GCPROBE.DAT` (Fcreate, 512-byte Fwrite, Fclose) ends with attribute
+   `0x20` on the oracle (`measurements/measurement-2026-10-28-fs20/RUNINFO.TXT`).
+
 ---
 
 ## Dependencies
@@ -250,3 +274,17 @@ is the result) and `f_use - 1`, `sftdel` at zero (the OFD goes with the last
 entry that points at it). Before PROC02 every close released the slot at
 once, so a handle `Fforce`d onto a standard handle died with the first
 `Fclose` (PORT10: `Fwrite(1)` → `EIHNDL` after `system("… >file")`).
+
+TASK/FS21 (2026-10-31): the archive bit. Before FS21 NewTOS' close wrote
+cluster and length only, so every file it wrote ended with attribute `0x00`
+where the oracle has `0x20` (FS20 probe, `gemdos-mc-fs20`/`-fs24` end
+states). Now `flush_ofd`
+(`tos-api/src/bdos/fs/file.rs:736@flush_ofd`), called by `ixclose` for a
+dirty OFD, OR-s `FA_ARCHIVE` into the attribute the entry has at close
+(edge case 8); `fcreate` opens its OFD dirty and an `Fdatime` set marks it
+dirty, as `O_DIRTY` in EmuTOS. NewTOS keeps no `o_td`: `Fcreate` and
+`Fdatime` write time/date into the entry directly, so the close does not copy
+them. An OFD whose file was deleted while open writes nothing (PROC04
+point 5); the pre-flush in `ixdel` of an OFD no longer listed sets the bit
+on the entry it then erases, as that OFD's later EmuTOS close would. Host
+test `tos-api/tests/fs21_close_archive.rs`.

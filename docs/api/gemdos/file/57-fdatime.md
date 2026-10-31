@@ -216,3 +216,10 @@ keep the fix.
 PHASE-05: the byte-swap is preserved as an ABI requirement — TOS programs pass
 and expect big-endian `DOSTIME`. On the little-endian AArch64 host, `swpcopyw`
 becomes an explicit swap so the observable buffer bytes match m68k order.
+
+TASK/FS21 (2026-10-31): NewTOS writes a set time/date into the directory
+entry at once (it keeps no `o_td`) and, as EmuTOS' `O_DIRTY`
+(`bdos/fsdir.c:698`), marks the OFD dirty, so the `Fclose` rewrites the entry
+and sets `FA_ARCHIVE` (`3e-fclose.md` edge case 8;
+`tos-api/src/bdos/fs/file.rs:1148@fdatime`). A file deleted while open is
+unchanged (PROC04 point 5).

@@ -1,0 +1,49 @@
+ 39  1:0x1A ret=14802864                                                               P00 Fsetdta(buffer 1): void
+ 43 13:0x04 ret=0                                                                      L01 write it back
+ 44 13:0x09 ret=2                                                                      L02 Mediach(2): 2 --
+ 45  1:0x4E ret=0           attr=20 time=6000 date=5d51 len=31 name=NEWDESK.INF        L03 Fsfirst(C:\*.*, FA_SUBDIR) after
+ 46 13:0x09 ret=0                                                                      L04 Mediach(2): 0
+ 47  1:0x4F ret=0           attr=20 time=6000 date=5d51 len=122863 name=PXPROBE.PRG    L05 Fsnext -- bdos/fsdir.c:654
+ 48  1:0x4F ret=0           attr=20 time=6000 date=5d51 len=145024 name=PXPROBE.NAP    L06 Fsnext
+ 49  1:0x4F ret=0           attr=20 time=6000 date=5d51 len=82 name=DELME.TXT          L07 Fsnext
+ 50  1:0x4F ret=0           attr=10 time=6000 date=5d51 len=0 name=SUB                 L08 Fsnext
+ 51  1:0x4F ret=-49         attr=10 time=6000 date=5d51 len=0 name=SUB                 L09 Fsnext
+ 52  1:0x4F ret=-49         attr=10 time=6000 date=5d51 len=0 name=SUB                 L10 Fsnext: ENMFIL --
+ 54 13:0x04 ret=0                                                                      L11 write it back
+ 55 13:0x09 ret=2                                                                      L12 Mediach(2): 2
+ 56  1:0x4E ret=0           attr=10 time=6000 date=5d51 len=0 name=.                   L13 Fsfirst(C:\SUB\*.*, FA_SUBDIR): a
+ 57 13:0x09 ret=0                                                                      L14 Mediach(2): 0
+ 58  1:0x4F ret=0           attr=10 time=6000 date=5d51 len=0 name=..                  L15 Fsnext
+ 59  1:0x4F ret=0           attr=20 time=6000 date=5d51 len=98 name=INNER.TXT          L16 Fsnext
+ 60  1:0x4F ret=-49         attr=20 time=6000 date=5d51 len=98 name=INNER.TXT          L17 Fsnext: past the
+ 64 13:0x04 ret=0                                                                      S01 write it back
+ 65 13:0x09 ret=2                                                                      S02 Mediach(2): 2
+ 66  1:0x3B ret=0                                                                      S03 Dsetpath(C:\SUB) after the
+ 67 13:0x09 ret=2                                                                      S04 Mediach(2): EmuTOS 2,
+ 68  1:0x47 ret=0           path='\\SUB'                                               S05 Dgetpath(C:): "\SUB" --
+ 69  1:0x36 ret=0           dfree=32537,32672,512,4                                    S06 Dfree(C:): meets a
+ 70 13:0x09 ret=0                                                                      S07 Mediach(2): 0
+ 73  1:0x3B ret=0                                                                      G00 Dsetpath(C:\SUB), no change
+ 75 13:0x04 ret=0                                                                      G01 write it back
+ 76 13:0x09 ret=2                                                                      G02 Mediach(2): 2
+ 77  1:0x47 ret=0           path='\\SUB'                                               G03 Dgetpath(C:) after the
+ 78 13:0x09 ret=2                                                                      G04 Mediach(2): EmuTOS 2,
+ 79  1:0x36 ret=0           dfree=32537,32672,512,4                                    G05 Dfree(C:) meets it:
+ 80 13:0x09 ret=0                                                                      G06 Mediach(2): 0
+ 81  1:0x47 ret=0           path=''                                                    G07 Dgetpath(C:) after the
+ 84  1:0x19 ret=3                                                                      D01 Dgetdrv: the dumper's
+ 86 13:0x04 ret=0                                                                      D02 write it back
+ 87 13:0x09 ret=2                                                                      D03 Mediach(2): 2
+ 88  1:0x0E ret=12                                                                     D04 Dsetdrv(C:): Drvmap --
+ 89 13:0x09 ret=2                                                                      D05 Mediach(2): EmuTOS 2,
+ 90  1:0x19 ret=2                                                                      D06 Dgetdrv: 2
+ 91  1:0x0E ret=12                                                                     D07 Dsetdrv(the dumper's drive):
+ 92 13:0x09 ret=2                                                                      D08 Mediach(2)
+ 93  1:0x19 ret=3                                                                      D09 Dgetdrv: the dumper's
+ 94  1:0x36 ret=0           dfree=32537,32672,512,4                                    D10 Dfree(C:): meets a
+ 95 13:0x09 ret=0                                                                      D11 Mediach(2): 0
+ 99 13:0x04 ret=0                                                                      F01 write it back
+100 13:0x09 ret=2                                                                      F02 Mediach(2): 2
+101  1:0x41 ret=0                                                                      F03 Fdelete(C:\DELME.TXT) after the
+102 13:0x09 ret=0                                                                      F04 Mediach(2): 0
+103  1:0x4E ret=-33         attr=AD time=DEAD date=DEAD len=-559030611 name=(poison)   F05 Fsfirst(C:\DELME.TXT): gone, EFILNF
