@@ -194,3 +194,9 @@ die Fotos stammen aus einem normalen Lauf (Register als Beleg). Der Freeze
 unter A3 betrifft DOOM: Demo laeuft, im Hauptmenue beim Scrollen Freeze,
 Strg+Alt+Entf wirkt ([DOOM01](DOOM01.md)). Befund P1 entfaellt.
 
+
+## Nachtrag zum Phase-B-Lauf (2026-10-31)
+
+Befund B3 in `measurements/measurement-2026-10-31-pitest01-phase-b/RUNINFO.TXT`
+(erster Boot endet nach etwa 67 s ohne `[reset]`-Zeile) ist geklaert: Der
+Anwender hat die Pi mehrmals von Hand neu gestartet. Kein Befund.
