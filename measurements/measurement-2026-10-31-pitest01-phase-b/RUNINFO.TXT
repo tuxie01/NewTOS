@@ -1,0 +1,68 @@
+RUNINFO -- PITEST01 phase B on the real Pi 4, serial log (2026-10-31)
+
+WHAT
+  Phase B of the tester run (docs/analysis/tester-run-sheet-2026-10-31.md),
+  executed by the user on the real Pi 4 with the card switched in
+  measurements/measurement-2026-10-31-pitest01-phase-a/RUNINFO.TXT:
+  kernel8.img = kernelb.img bc543d4871ef7eecb138ace62b218a7c2009b0babbe8cdcdaf224b46e8ab25e2
+  (features crash-nowait, fs-io-trace; commit 6796787c), cmdline.txt
+  "serial=on". DOOM variants on the card: C:\Apps\DOOM\DOOM.NAP (86abca15...,
+  the phase-A freeze variant) and DOOMNOKB.NAP (af10a517..., -nokbdvec;
+  TASK/DOOM01.md).
+
+INPUTS
+  serial/screenlog.0.xz -- the user's `screen -L` capture, 115200 8N1,
+  Waveshare FT232RNL on GPIO 14/15 (docs/HW-TEST-LOG.md), xz -9 of
+  screenlog.0 (14057928 bytes, 188191 lines,
+  sha256 da363cd6d2e0dcf27431e0b95cb958922c70821869db4162f54a6004e3906d6f).
+  No time stamps in the capture; user times: DOOM.NAP 18:36, DOOMNOKB.NAP 18:39.
+  card-logs/P0PAR.LOG -- copied from C:\ after the run.
+
+METHOD
+  Keyword search over the capture (LC_ALL=C grep -a): firmware "XHCI-STOP"
+  (one per boot), "[shell] sh_ldapp" (program start/exit), "[crash]",
+  "[reset]", "[fsio] ... path=", "P0PAR-REP", "panic", "WRONG", "STOP".
+
+RESULTS
+  Boots       3 (capture lines 22, 722, 9578). Boot 1 ends after about 67 s
+              of kernel time in an AES yield loop, with no [reset] line --
+              cause not in the log (user to say: power cycle?).
+  DOOM.NAP    started line 2948, exited rc=0 line 9412; no [crash] line.
+              User: keyboard works, menu scrolls, a game starts -- the
+              phase-A freeze did NOT occur. Then Ctrl+Alt+Del (line 9567).
+  DOOMNOKB    started line 10982, exited rc=0 line 18698; no [crash] line;
+              no freeze (user).
+  P0REP       started line 19835, exited rc=0 line 184030.
+              "P0PAR-REP: PASS 12000/12000 (1000 rounds)"; 5000 crash
+              reports (5 faulting cases x 1000), each followed by
+              "crash-nowait, terminating with Pterm(-1)"; no WRONG, no STOP.
+              P0PAR.LOG: every case 1000 ok 0 wrong; faulting cases
+              70-72 ticks, others 11-12; next-tick-timeouts=0; L-own-state
+              ok=1000.
+  HypView     started line 184997, exited rc=0 line 185524. It opens
+              "HYP_VIEW.CFG" (ret=6) and then "C:\Apps\ZVIEW\ZVIEW.HYP"
+              four times (ret=6 each): the DEFAULT= entry IS read and the
+              file IS found. Finding P2 of phase A is therefore not a
+              path/file problem.
+  zView       started line 186107; aborted by the user with Ctrl+Alt+Del
+              (line 188190) because the traced run was too slow.
+  Crashes outside P0REP: none.
+
+TIMING CAVEAT
+  Every traced call prints one [fsio] line over the 115200-baud UART; the
+  trace's own overhead field averages ovh=16568 us over 39832 lines. Phase B
+  thus runs every AES/GEMDOS call about 16.6 ms slower than phase A. The
+  DOOM freeze not reproducing here may be a timing effect of the trace
+  output, of serial=on, or of the kernelb features -- not separated by this
+  run.
+
+FINDINGS FOR TRIAGE (not fixed)
+  B1 DOOM01 freeze absent with kernelb + serial=on (both DOOM variants).
+     Separation proposed: C1 kernela + serial=on, C2 kernelb without
+     serial=on, DOOM.NAP only (owner decision).
+  B2 HypView reads HYP_VIEW.CFG and opens ZVIEW.HYP, yet shows its default
+     page / no menu bar (phase A P2) -- look at what it does after the open.
+  B3 Boot 1 ended after ~67 s without a reset line (pending user note).
+
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing: not applicable (card filled by tools/sync-card.sh, no image built)

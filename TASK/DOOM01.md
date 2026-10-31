@@ -122,3 +122,15 @@ mit der nokbdvec-Variante vom 2026-10-29
 nach Remount per sha256 geprueft; daneben `DOOM.NAP` `86abca15...` (die
 Freeze-Variante), Kern Phase B `kernelb.img` `bc543d48...`, `serial=on`.
 
+
+## Echte Pi, PITEST01 Phase B (2026-10-31)
+
+Mit `kernelb.img` (`crash-nowait`, `fs-io-trace`) und `serial=on` friert
+weder `DOOM.NAP` noch `DOOMNOKB.NAP` ein: Tastatur geht, Menue scrollt, Spiel
+startet, beide enden mit rc=0, kein `[crash]`
+(`measurements/measurement-2026-10-31-pitest01-phase-b/RUNINFO.TXT`). Jede
+protokollierte AES/GEMDOS-Zeile kostet dort im Mittel 16,6 ms UART-Ausgabe —
+der Lauf hat also ein ganz anderes Zeitverhalten. Die Hook-Vermutung ist damit
+weder belegt noch widerlegt. Vorgeschlagene Trennung (Entscheid Owner): C1
+`kernela.img` + `serial=on`, C2 `kernelb.img` ohne `serial=on`, je nur
+`DOOM.NAP`.
