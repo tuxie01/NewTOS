@@ -27,6 +27,20 @@ aes-trace = []
 # does not exist, so it costs neither code nor BSS. See the module docs for the
 # capture table, the caller-memory rules and the re-entrancy design.
 gemdos-trace = []
+# Crash diagnosis readers (TASK/PROC08): `bdos::process::mmu::diag` (a
+# checked software walk of a user VA through a slot's tables) and
+# `bdos::process::memprot::diag` (the rights model's view of one page), used
+# by the kernel feature `crash-walk`. Off by default: with this off both
+# modules do not exist. The host tests switch it on through the
+# dev-dependency below (`tests/proc08_crash_walk.rs`).
+crash-walk = []
 
 [dependencies]
 tos-types = { path = "../tos-types" }
+
+[dev-dependencies]
+# The crate itself with `crash-walk` on, so the host tests reach the crash
+# diagnosis readers (TASK/PROC08). Dev-dependency features are unified only
+# into test builds (resolver 2): the kernel's build of this crate does not
+# get the feature.
+tos-api = { path = ".", features = ["crash-walk"] }

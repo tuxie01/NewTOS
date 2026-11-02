@@ -1901,3 +1901,258 @@ pub unsafe fn switch_ttbr0_kernel(l0_pa: u64) {
         );
     }
 }
+
+// ─── Crash diagnosis (debug feature `crash-walk`, TASK/PROC08) ───────
+//
+// At the end of the file on purpose: with the feature off the module does
+// not exist, and nothing above moves (the kernel's code and data bytes stay
+// those of the build without it, CLAUDE.md "Testing").
+
+/// A **checked** software walk of a user VA through a slot's tables, for the
+/// crash diagnosis of the debug feature `crash-walk` (TASK/PROC08): every
+/// level's table, entry index and descriptor, where the walk stops, and what
+/// kind of table each pointer named. Unlike [`translate`] it follows a table
+/// pointer only after checking that it names one of the tables this module
+/// owns (a slot's static tables, the shared templates and tables, a page of
+/// the arena), so a corrupted descriptor ends the walk instead of the
+/// diagnosis. Reads only; no allocation.
+#[cfg(feature = "crash-walk")]
+pub mod diag {
+    use super::*;
+
+    /// What a table address is, as far as this module knows.
+    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    pub enum TableKind {
+        /// Slot `0`'s L0 (root).
+        SlotL0(usize),
+        /// Slot `0`'s L1.
+        SlotL1(usize),
+        /// Slot `0`'s own L2 of GiB `1`.
+        SlotL2(usize, usize),
+        /// Slot `0`'s L3 of `[0, 2 MiB)` (page 0, the stub pages).
+        SlotL3Zero(usize),
+        /// The shared L2 template of GiB `0`.
+        SharedL2(usize),
+        /// The shared `[0, 2 MiB)` L3 template.
+        SharedL3Zero,
+        /// Table `0` of the static shared-L3 set.
+        SharedL3Static(usize),
+        /// Arena table `idx`; `used` = its bit in the arena bitmap is set.
+        Arena {
+            /// Index into the arena.
+            idx: usize,
+            /// The table's bit in the arena bitmap is set.
+            used: bool,
+        },
+        /// None of ours: the walk does not follow it.
+        Unknown,
+    }
+
+    /// One level of a walk: the table read, the entry index and the
+    /// descriptor found there.
+    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    pub struct Step {
+        /// Table address (physical, as the descriptor / `TTBR0_EL1` names it).
+        pub table_pa: u64,
+        /// What that table is.
+        pub kind: TableKind,
+        /// The entry read (0..512).
+        pub index: usize,
+        /// The descriptor found there.
+        pub desc: u64,
+    }
+
+    /// Where a walk ended.
+    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    pub enum Outcome {
+        /// The slot index is out of range.
+        BadSlot,
+        /// The VA lies above what the user tables cover ([`USER_VA_LIMIT`]).
+        OutOfRange,
+        /// A leaf at `level` (2 = 2-MiB block, 3 = page) maps the VA to `oa`.
+        Leaf {
+            /// 2 or 3.
+            level: u8,
+            /// Output address of `va`.
+            oa: u64,
+        },
+        /// The descriptor at `level` is invalid (bit 0 clear).
+        Invalid {
+            /// 0..=3.
+            level: u8,
+        },
+        /// The descriptor at `level` is valid but not a table where a table
+        /// must stand (level 0 or 1; NewTOS writes no blocks there).
+        NotTable {
+            /// 0 or 1.
+            level: u8,
+        },
+        /// The descriptor at `level` names a table this module does not own
+        /// (or a misaligned one); the walk stops before reading it.
+        BadTable {
+            /// The level whose table could not be read.
+            level: u8,
+            /// The table address the walk refused to follow.
+            pa: u64,
+        },
+    }
+
+    /// The result of [`walk`]: up to four steps (`steps[..n]`) and the end.
+    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    pub struct Walk {
+        /// The slot whose tables were walked.
+        pub slot: usize,
+        /// The VA walked.
+        pub va: u64,
+        /// The root the walk started from ([`l0_pa_for`]).
+        pub root_pa: u64,
+        /// Levels 0..=3; `None` past the end of the walk.
+        pub steps: [Option<Step>; 4],
+        /// Where the walk ended.
+        pub outcome: Outcome,
+        /// The shared L2 template's entry for the VA's 2-MiB region — equal
+        /// to the slot's L2 entry unless the slot has a private L3 there.
+        pub l2_template: Option<u64>,
+        /// Other slots whose L2 entry for the region names the same L3 table
+        /// as the walked one (bit per slot; the walked slot left out), and
+        /// whether the shared template names it (then the slot walks the
+        /// region's shared L3). A private L3 is named by its slot alone:
+        /// both empty.
+        pub l3_also_slots: u32,
+        /// See [`Self::l3_also_slots`].
+        pub l3_also_template: bool,
+    }
+
+    /// Classify a table address (physical, from a descriptor or
+    /// `TTBR0_EL1`). Only addresses that land exactly on one of our tables
+    /// are named; anything else is [`TableKind::Unknown`].
+    pub fn table_kind(pa: u64) -> TableKind {
+        if pa & (PAGE_SIZE - 1) != 0 {
+            return TableKind::Unknown;
+        }
+        // The kernel alias, by the arithmetic `table_at` uses.
+        let kva = pa.wrapping_add(VA_OFFSET);
+        let page = PAGE_SIZE as usize;
+        let slots = (&raw const __USER_TABLES) as u64;
+        let slot_size = core::mem::size_of::<SlotTables>() as u64;
+        if kva >= slots && kva < slots + slot_size * MAX_PROCESSES as u64 {
+            let s = ((kva - slots) / slot_size) as usize;
+            let t = ((kva - slots) % slot_size) as usize / page;
+            // `#[repr(C)]` order: l0, l1, l2[0..GIB_COUNT], l3.
+            return match t {
+                0 => TableKind::SlotL0(s),
+                1 => TableKind::SlotL1(s),
+                t if t < 2 + GIB_COUNT => TableKind::SlotL2(s, t - 2),
+                t if t == 2 + GIB_COUNT => TableKind::SlotL3Zero(s),
+                _ => TableKind::Unknown,
+            };
+        }
+        let l2 = (&raw const SHARED_L2) as u64;
+        if kva >= l2 && kva < l2 + (GIB_COUNT * page) as u64 {
+            return TableKind::SharedL2(((kva - l2) / PAGE_SIZE) as usize);
+        }
+        if kva == (&raw const SHARED_L3_0) as u64 {
+            return TableKind::SharedL3Zero;
+        }
+        let l3 = (&raw const SHARED_L3) as u64;
+        if kva >= l3 && kva < l3 + (SHARED_L3_COUNT * page) as u64 {
+            return TableKind::SharedL3Static(((kva - l3) / PAGE_SIZE) as usize);
+        }
+        let base = ARENA_KVA.load(Ordering::Relaxed);
+        let count = ARENA_COUNT.load(Ordering::Relaxed) as u64;
+        if base != 0 && kva >= base && kva < base + count * PAGE_SIZE {
+            let idx = ((kva - base) / PAGE_SIZE) as usize;
+            let used = ARENA_BITS[idx / 64].load(Ordering::Relaxed) & (1u64 << (idx % 64)) != 0;
+            return TableKind::Arena { idx, used };
+        }
+        TableKind::Unknown
+    }
+
+    /// The slot whose root `l0_pa` is (a `TTBR0_EL1` value: the ASID in
+    /// [63:48] is ignored), if any.
+    pub fn slot_of_root(l0_pa: u64) -> Option<usize> {
+        slot_of_l0(l0_pa)
+    }
+
+    /// Walk `va` through `slot`'s tables, checking every table pointer
+    /// before it is read (see the module docs). The level indices are those
+    /// of [`translate`]: L0 index 0 (every user VA is below
+    /// [`USER_VA_LIMIT`]), then VA bits [38:30], [29:21], [20:12].
+    pub fn walk(slot: usize, va: u64) -> Walk {
+        let mut w = Walk {
+            slot,
+            va,
+            root_pa: l0_pa_for(slot),
+            steps: [None; 4],
+            outcome: Outcome::BadSlot,
+            l2_template: None,
+            l3_also_slots: 0,
+            l3_also_template: false,
+        };
+        if slot >= MAX_PROCESSES {
+            return w;
+        }
+        if va >= USER_VA_LIMIT {
+            w.outcome = Outcome::OutOfRange;
+            return w;
+        }
+        let gib = (va / L2_SPAN) as usize;
+        let l2_idx = ((va % L2_SPAN) / L3_SPAN) as usize;
+        // SAFETY: a read of a static template entry (indices in range); the
+        // crash path runs under the BDOS lock.
+        w.l2_template = Some(unsafe { core::ptr::read_volatile(&raw const shared_l2(gib).0[l2_idx]) });
+        let indices = [0usize, gib, l2_idx, ((va >> 12) & 0x1FF) as usize];
+        let mut table_pa = w.root_pa;
+        for level in 0..4u8 {
+            let kind = table_kind(table_pa);
+            if kind == TableKind::Unknown {
+                w.outcome = Outcome::BadTable { level, pa: table_pa };
+                return w;
+            }
+            let index = indices[level as usize];
+            // SAFETY: `table_pa` names one of our 4-KiB tables (checked just
+            // above), `index < 512`; a volatile read only.
+            let desc = unsafe { core::ptr::read_volatile(table_at(table_pa).cast::<u64>().add(index)) };
+            w.steps[level as usize] = Some(Step { table_pa, kind, index, desc });
+            if desc & D_VALID == 0 {
+                w.outcome = Outcome::Invalid { level };
+                return w;
+            }
+            match level {
+                3 => {
+                    w.outcome = Outcome::Leaf { level, oa: (desc & OA_MASK) | (va & (PAGE_SIZE - 1)) };
+                    return w;
+                }
+                2 if desc & D_TABLE == 0 => {
+                    w.outcome = Outcome::Leaf {
+                        level,
+                        oa: (desc & OA_MASK & !(L3_SPAN - 1)) | (va & (L3_SPAN - 1)),
+                    };
+                    return w;
+                }
+                0 | 1 if desc & D_TABLE == 0 => {
+                    w.outcome = Outcome::NotTable { level };
+                    return w;
+                }
+                _ => {}
+            }
+            table_pa = desc & !(PAGE_SIZE - 1);
+            if level == 2 {
+                // Who else names this L3 for the region?
+                for s in 0..MAX_PROCESSES {
+                    if s == slot {
+                        continue;
+                    }
+                    // SAFETY: a read of a static slot table entry.
+                    let e = unsafe { core::ptr::read_volatile(&raw const slot_tables(s).l2[gib].0[l2_idx]) };
+                    if e & (D_VALID | D_TABLE) == D_VALID | D_TABLE && e & !(PAGE_SIZE - 1) == table_pa {
+                        w.l3_also_slots |= 1 << s;
+                    }
+                }
+                let t = w.l2_template.unwrap_or(0);
+                w.l3_also_template = t & (D_VALID | D_TABLE) == D_VALID | D_TABLE && t & !(PAGE_SIZE - 1) == table_pa;
+            }
+        }
+        w
+    }
+}

@@ -1,0 +1,6 @@
+run 2026-11-02T16:47:29Z
+kernel    051cbeacbe0c379462389afe3335aca16fbf7cf4695c548552b919650a6a88e9 /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+append    serial=on memprot=verify
+card      20ce977c79bac30661e5169473b24d119044c5ed9c4c590a68e0611e6ee3e0d0 (APFS clone of base.img)
+qemu      stop-pattern after 18 s; stopped
+card      after 20ce977c79bac30661e5169473b24d119044c5ed9c4c590a68e0611e6ee3e0d0 (the booted clone)

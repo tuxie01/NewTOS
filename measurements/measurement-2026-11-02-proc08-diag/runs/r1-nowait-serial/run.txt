@@ -1,0 +1,6 @@
+run 2026-11-02T16:46:08Z
+kernel    b206266d32b313a52ca0b48d97c62faf454f647b821b490d7a65e94f5285bd97 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/proc08-diag/k1-walk-nowait.img
+append    serial=on
+card      20ce977c79bac30661e5169473b24d119044c5ed9c4c590a68e0611e6ee3e0d0 (APFS clone of base.img)
+qemu      stop-pattern after 18 s; stopped
+card      after 20ce977c79bac30661e5169473b24d119044c5ed9c4c590a68e0611e6ee3e0d0 (the booted clone)

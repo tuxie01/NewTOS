@@ -74,6 +74,18 @@ fs-io-trace = []
 # waits for a key like EmuTOS `dopanic`. `cargo xtask build --board rpi4
 # --release --features crash-nowait` (combinable with `fs-io-trace`).
 crash-nowait = []
+# Crash diagnosis (TASK/PROC08): when a program crashes, extra serial lines
+# `[crashwalk] ...` right after the `[crash]` line -- `TTBR0_EL1` (with ASID)
+# against the root NewTOS expects for the faulting slot, a checked software
+# walk of the fault address (and of the PC's page) through that slot's tables
+# with the descriptor at every level, an `AT S1E0R` probe of what the MMU
+# answers now, and the memory-protection model's view of the page
+# (`kernel/src/arch/aarch64/crash_walk.rs`). Serial line only, no allocation;
+# the report itself and the crash behaviour are unchanged. Off by default
+# (the module and its hook are compiled out); `cargo xtask build --board rpi4
+# --release --features crash-walk`, run with `serial=on` (combinable with
+# `crash-nowait`).
+crash-walk = ["tos-api/crash-walk"]
 # microSD / FAT / GEMDOS-file self-test build (board-rpi4 / QEMU raspi4b):
 # runs `selftest_emmc::run()` right after the card is mounted at boot -- the
 # Phase-09 block-device, FAT, Fopen/Fsfirst/Dsetpath, Fattrib/Frename/Fdatime

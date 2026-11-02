@@ -88,6 +88,7 @@ dependencies = [
 name = "tos-api"
 version = "0.6.1"
 dependencies = [
+ "tos-api",
  "tos-types",
 ]
 

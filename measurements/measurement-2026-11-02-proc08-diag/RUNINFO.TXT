@@ -1,0 +1,92 @@
+measurement-2026-11-02-proc08-diag -- TASK/PROC08: the crash-diagnosis debug feature `crash-walk` (user decision
+2026-11-02: feature first, then one real-Pi run by the user with `serial=on memprot=verify`), its byte-identity proof
+and its QEMU raspi4b verification. Developer, 2026-11-02. Tree = HEAD 80be9d68 + the uncommitted PROC08 change set.
+QEMU only; no hardware, no real card.
+
+RESULT IN ONE LINE: feature off = kernel byte-identical to HEAD (rpi4 and qemu-virt, release and dev, locdiff 0 bytes);
+feature on: for every provoked EL0 fault the [crashwalk] lines give the slot's root, a software walk that agrees with
+the hardware probe and with the fault syndrome, and the rights model's view -- unmapped cases (free pool page: INVALID
+at L3, fst 0x07; GiB 2: INVALID at L2, fst 0x06) and mapped cases (page 0, the PC's page: mapped L3, AT ok); 0 verify
+mismatches; host tests 1929/0/1; warnings at the baseline.
+
+1 THE FEATURE (see TASK/PROC08.md "Stand Debug-Feature" for the meaning of each line)
+  kernel feature `crash-walk` = ["tos-api/crash-walk"], off by default.
+  kernel/src/arch/aarch64/crash_walk.rs (new, cfg'd): report() -- AT S1E0R + PAR_EL1 for the fault address (and the PC's
+    page for an EL0 crash), TTBR0_EL1 vs l0_pa_for(slot) and Process::l0_pa, software walk(s), model view, summary.
+    Hook: kernel/src/arch/aarch64/crash.rs report_and_wait, right after the [crash] line (cfg'd); module declared at
+    the end of kernel/src/arch/aarch64/mod.rs.
+  tos-api/src/bdos/process/mmu.rs `diag` (cfg'd, appended at the end): checked walk (every table pointer checked
+    against the slot statics, shared templates/tables and the arena before it is read), table kinds incl. the arena
+    bitmap bit, slot_of_root.
+  tos-api/src/bdos/process/memprot.rs `diag` (cfg'd, appended at the end): page_view -- block, mode, owner cookies,
+    owners, inherit, live/group/temp, holds, the descriptor the model expects (verify's algorithm), private needed/has,
+    shortfalls, pending; pool-list walks bounded.
+  tos-api/Cargo.toml: feature `crash-walk`, and a dev-dependency of the crate on itself with that feature (host tests
+    only; resolver 2 does not unify dev-dependency features into the kernel build -- proven by section 2). Cargo.lock
+    records that self-dependency.
+  tos-api/tests/proc08_crash_walk.rs (new): 7 host tests (owned page valid + model equal; other slot invalid in the
+    shared table; freed page invalid + its private table shown as a FREE arena page; Pexec(4) thread via the memory
+    space; invalid L2 / out of range / bad slot / page 0; corrupt L2 entry -> BAD TABLE, not read; TTBR0 with ASID ->
+    slot).
+  ARM ARM DDI 0487 M.d (references/arm-arm/DDI0487M_d_a-profile_architecture_reference_manual.pdf), cited in the module
+    head: AT S1E0R C5.4.5 (C5-1179); AT result from TLB or walk IMPLEMENTATION DEFINED RNPZWX (D8-7733); faults to PAR,
+    not raised, RNHWXL (D8-7842); isb before reading PAR_EL1 IJTYVP (D8-7734); PAR_EL1 64-bit F=0 (D24-9519), F=1
+    S/PTW/FST (D24-9525, D24-9526), MRS encoding (D24-9528); TTBR0_EL1 ASID [63:48], BADDR [47:1] (D24-10043).
+
+2 FEATURE IDENTITY (method/feature-identity.sh = the PITEST01 part-1 method with FEATURE=crash-walk; checks/)
+  base = git archive HEAD, aftr = working tree (git ls-files -co --exclude-standard, no measurements/), same path
+  length, no .git, SOURCE_DATE_EPOCH=1793404800; rpi4 and qemu-virt, release and dev: aftr == base byte for byte, all
+  four pairs (sha256 in checks/feature-identity.txt; measurements/measurement-2026-10-28-tool08/method/locdiff.py:
+  "0 differing bytes in 0 words; unexplained: 0", checks/locdiff-*.txt). Feature on: rpi4 and qemu-virt, release and
+  dev, build OK.
+  Warnings: rustc kernel 93 / tos-api 64 (aarch64 build, feature on); clippy kernel 121 / tos-api 74 on base, aftr and
+  feature-on, both boards = the baseline; none in the touched files. Host check of tos-api with the feature: 64.
+
+3 KERNELS (rpi4 release, working tree)
+  k1  b206266d32b313a52ca0b48d97c62faf454f647b821b490d7a65e94f5285bd97  --features crash-walk,crash-nowait (QEMU only,
+      scratch copy, not kept)
+  pi  051cbeacbe0c379462389afe3335aca16fbf7cf4695c548552b919650a6a88e9  --features crash-walk = THE KERNEL FOR THE PI RUN,
+      target/aarch64-unknown-none-softfloat/release/kernel8.img (copied nowhere; ELF `kernel` sha256
+      b1e21c712ce5a433525fa8f7a903e684429f446d529cacbbbab0c90431eb16de). A rebuild after the commit changes the build
+      stamp and so the sha256.
+
+4 CARD + PROBE
+  method/cwkid.c (one fault per run: j jump to a freed pool page, d read it, g read 0x90000000, w write $484, x call
+  $700, . clean exit; prints the address first), method/cwpar.c (Pexec(0) of C:\CWKID.NAP per case, default "jdgwx.",
+  prints rc). method/make-card.sh: sdk/build.sh for both, tools/mkcard.sh with NEWDESK.INF "#R 02 / #Z 01
+  C:\CWPAR.NAP@" -> ONE base image; card.img.manifest (this directory). Programs: CWPAR.NAP 37a5b591..., CWKID.NAP
+  18afa910...; image_sha256 20ce977c79bac30661e5169473b24d119044c5ed9c4c590a68e0611e6ee3e0d0.
+  host_clang line of the manifest: host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  optional_missing line of the manifest, verbatim:
+optional_missing none
+  method/run-cw.sh: per run an APFS clone (cp -c) of the base image, QEMU 11.0.2 `-M raspi4b -display none -append
+  "<args>"`, serial to runs/<run>/SERIAL.txt, stop on a pattern; clone sha256 before/after in runs/<run>/run.txt
+  (unchanged in all three), clone deleted. Base image and scratch kernels deleted after the runs.
+
+5 RUNS (runs/)
+  r1-nowait-serial    k1, `serial=on`: all five fault cases rc 0x0000FFFF, '.' rc 0, "CWPAR: done".
+                      j  far=pc=0x1a2c000 (freed): walk s1.L0 -> s1.L1 -> s1.L2g0[13] -> L3[44]=0 in arena#454 used
+                         (slot 1's private L3, named by no other slot) -> INVALID at L3; AT par 0x80f = fault fst 0x07
+                         (translation L3) = the IFSC of esr 0x82000007; model: pool, block none, expect 0 -> summary
+                         model=invalid table=invalid at=fault table==model yes.
+                      d  same far, data abort esr 0x92000007: same far lines; pc line: L3[27]=0x0020000001a1b743 mapped,
+                         AT ok pa=0x1a1b1b0, model block 0x1a1a000-0x1a2c000 (CWKID's TPA) mode P owners 0x2 holds yes
+                         expect = the table descriptor -> model=valid table=valid at=ok table==model yes.
+                      g  far 0x90000000: L1[2] -> s1.L2g2[128]=0 -> INVALID at L2; AT fst 0x06 (translation L2) = DFSC
+                         of esr 0x92000006; model pool=no (n/a).
+                      w  far 0x484: s1.L3z[0]=0x00600000002777c3 (AP=11 RO, UXN, PXN) mapped, AT S1E0R ok (a read is
+                         allowed), esr DFSC 0x0f permission L3; model n/a (page 0 is not memprot's).
+                      x  far=pc 0x700: same page mapped, AT ok, esr IFSC 0x0f (UXN).
+                      Roots: ttbr0 0x2e6000 asid 0 = slot 1 = l0_pa_for(1) = Process::l0_pa -> same, every case.
+  r2-nowait-verify    k1, `serial=on memprot=verify`: same lines; [memprot] verify: 39 checks, 12032535 pages compared,
+                      0 mismatches; no VERIFY MISMATCH line.
+  r3-pikernel-verify  the Pi kernel, `serial=on memprot=verify`: case j, the [crashwalk] lines as in r1, then the
+                      unchanged report and "*** Press any key to continue ***" (no crash-nowait; QEMU stopped there).
+
+6 HOST
+  cargo xtask test (full): 186 result lines, 1929 passed, 0 failed, 1 ignored, exit 0 (the 7 new tests included).
+
+NOT COVERED: the real Pi 4 (the user's run); a case "table valid, hardware fault" (candidate B) -- QEMU models no A72
+TLB or walk cache, so the B lines were exercised only as their mapped/ok form; a crash whose TTBR0 holds another slot's
+root (second walk line) -- not provoked; the uaccess crash path (src=el1-uaccess) -- covered by the same hook, not
+provoked; qemu-virt boot of the feature kernel (built only).

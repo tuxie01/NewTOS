@@ -47,3 +47,9 @@ pub fn delay_ms(ms: u64) {
         core::hint::spin_loop();
     }
 }
+
+// Debug feature `crash-walk` (TASK/PROC08). Declared at the end of the file
+// so that with the feature off nothing above moves (panic-location lines
+// included; CLAUDE.md "Testing", debug features).
+#[cfg(feature = "crash-walk")]
+pub mod crash_walk;

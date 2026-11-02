@@ -90,6 +90,10 @@ pub fn report_and_wait(report: &CrashReport<'_>, slot: usize) {
         report.pc,
         report.far,
     );
+    // Debug feature `crash-walk` (TASK/PROC08): the page-table diagnosis,
+    // serial line only, before anything else runs.
+    #[cfg(feature = "crash-walk")]
+    super::crash_walk::report(slot, report);
     let mut w = ConsoleWriter;
     let _ = tos_api::bios::crash::write_report(&mut w, report);
 

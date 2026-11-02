@@ -1,0 +1,13 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh
+image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/proc08-diag/card/base.img
+image_sha256 20ce977c79bac30661e5169473b24d119044c5ed9c4c590a68e0611e6ee3e0d0
+size_mib 64
+created 2026-11-02T16:45:37Z
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+metadata C:\.Spotlight-V100 (macOS volume metadata, not hashed)
+file 18afa910f92c9c9b8060996ab36e5c521d95393ef005de2a6985cd7893b5ec2d 6728 C:\CWKID.NAP
+file 37a5b591aced4ce61e38a3205d61eb97d36bfe358b7e076f65c07ff2e7dbfe32 6840 C:\CWPAR.NAP
+file 90b6d69506df4367fc200e558440fe1cfe6da14952594fefda0a9ab0447bb455 28 C:\NEWDESK.INF

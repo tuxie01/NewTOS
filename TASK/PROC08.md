@@ -82,4 +82,63 @@ Bericht `docs/analysis/proc08-root-cause-2026-11-02.md`, QEMU-Lauf
   (Software-Walk von `far`, `TTBR0_EL1` gegen die Slot-Wurzel, L2-Eintrag).
   Entscheidung beim Anwender.
 
+## Stand Debug-Feature (2026-11-02, Developer; Anwenderentscheid 2026-11-02)
+
+Zuerst eine Absturzdiagnose als Debug-Feature, dann ein Pi-Lauf durch den
+Anwender. Lauf und Nachweise:
+`measurements/measurement-2026-11-02-proc08-diag/RUNINFO.TXT`.
+
+- **Feature:** `crash-walk` (Kern, `kernel/Cargo.toml`; reicht
+  `tos-api/crash-walk` durch). Standard aus. Ohne Feature sind Code und
+  Daten des Kerns bytegleich mit dem Stand ohne Änderung (rpi4 und
+  qemu-virt, release und dev, locdiff „0 differing bytes“).
+- **Was es tut:** Nach der `[crash]`-Zeile eines Programmabsturzes
+  (`kernel/src/arch/aarch64/crash.rs:96@crash_walk`) schreibt
+  `kernel/src/arch/aarch64/crash_walk.rs:114@report` Zeilen `[crashwalk] …`
+  auf die serielle Leitung (nicht auf den Bildschirm), vor dem Bericht und
+  vor dem Tastenwarten. Der Bericht selbst und das Verhalten bleiben gleich.
+  Für die Fehleradresse und, bei einem EL0-Absturz, für die Seite des PC
+  (wenn sie eine andere ist): `AT S1E0R` + `PAR_EL1` (was die MMU jetzt
+  antwortet; ARM ARM DDI 0487 M.d C5.4.5, D8.2.13, D24.2.141 — Zitate im
+  Modulkopf), `TTBR0_EL1` gegen die erwartete Wurzel, ein geprüfter
+  Software-Walk durch die Tabellen des Slots
+  (`tos-api/src/bdos/process/mmu.rs:2081@walk`: jeder Tabellenzeiger wird
+  vor dem Lesen gegen die eigenen Tabellen geprüft) und die Sicht des
+  Rechtemodells auf die Seite
+  (`tos-api/src/bdos/process/memprot.rs:2103@page_view`, gerechnet wie
+  `memprot=verify`, aus Blocklisten, Blockeinträgen und Prozesstabelle).
+  Keine Allokation.
+- **Bauen (Pi-Kern):** `cargo xtask build --board rpi4 --release --features
+  crash-walk` → `target/aarch64-unknown-none-softfloat/release/kernel8.img`
+  (sha256 im RUNINFO). Mit `crash-nowait` kombinierbar; für den Pi-Lauf
+  **ohne** `crash-nowait` (der Bericht wartet auf eine Taste wie bisher).
+- **Kommandozeile (`cmdline.txt`) für den Pi-Lauf:** `serial=on memprot=verify`.
+  Ablauf wie im Absturzlauf C1 (DOOM, DOOMNOKB, dann zView, mehrere
+  zView-Starts in einem Boot); die serielle Mitschrift ist das Ergebnis.
+
+### Was jede Zeile für A und B bedeutet
+
+Bei PROC08 ist ein Befehlsabbruch zu erwarten (`esr=0x82000007`, `far` =
+`pc`): dann gibt es nur die `far`-Zeilen.
+
+| Zeile | Inhalt | Lesart |
+|---|---|---|
+| `[crashwalk] slot S src=el0 esr=… pc=… far=…` | Kopf | `S` = Slot des abgestürzten Prozesses (bei PROC08 zView). |
+| `[crashwalk] ttbr0=… asid=… root=slot K; slot S expects … records … -> same` | aktive Wurzel gegen erwartete (`l0_pa_for`) und eingetragene (`Process::l0_pa`) | `DIFFERENT` oder `root` ≠ `slot S`: falsche Wurzel aktiv — weder A noch B, die im Bericht nur schwach widerlegte Erklärung. `same`: Wurzel richtig. |
+| `[crashwalk] far va=… walk slot S root …: L0[i]=…(s2.L0) … L3[j]=…(arena#N used) -> …` | Software-Walk: Deskriptor und Tabellenart je Stufe | `-> mapped L3`: im Speicher ist die Seite abgebildet → spricht für **B**. `-> INVALID at L3`: in den Tabellen nicht abgebildet → **A** (welcher Teil: Modellzeilen). `arena#N FREE` oder `BAD TABLE`: der Slot zeigt auf eine freigegebene oder fremde Tabelle — Fehler der Tabellenpflege (A-Seite, nicht Hardware). Steht `root` auf einem anderen Slot, folgt eine zweite Walk-Zeile durch dessen Tabellen. |
+| `[crashwalk] far l2 template=… l3 also named by slots=0x… template=yes/no` | wer die L3-Tabelle des 2-MiB-Bereichs sonst noch benennt | Private L3: `slots=0x0 template=no` erwartet. Ein weiterer Slot benennt dieselbe Tabelle: doppelt vergebene Arena-Tabelle (Tabellenpflege, A-Seite). `template=yes`: der Slot läuft im Bereich über die gemeinsame Tabelle (kein Eigentum dort). |
+| `[crashwalk] far AT S1E0R par=…: ok pa=… / fault fst=0x07 (translation L3)` | was die MMU **jetzt** für die Adresse antwortet (TLB oder Walk, IMPLEMENTATION DEFINED, `RNPZWX`) | Walk `mapped` + `ok`: Speicher und MMU stimmen jetzt überein, zur Fehlerzeit sah die Hardware anderes → **B** (vorübergehend). Walk `mapped` + `fault`: die MMU antwortet noch mit dem alten Zustand, obwohl im Speicher ein gültiger Eintrag steht → **B** (veralteter TLB-/Walk-Cache-Eintrag). Walk `INVALID` + `fault`: Hardware und Tabellen einig → nicht B. |
+| `[crashwalk] far model slot S: pool=… block … mode=… own=… further=… owners=… inherit=…` | Block der Seite, Modus, Eigentümer-Cookies, die Slots dahinter | Bei PROC08 muss die Code-Seite in zViews TPA-Block liegen und `owners` zViews Slot enthalten. Fehlt er, obwohl `own` zViews Basepage ist: Eigentümerauflösung falsch (A im Modell). |
+| `[crashwalk] far model slot S: live=… slot_live=… slot_kva=… space=… group=… temp=… holds=… expect=… shared=… private needed=… has=… shortfalls=… pending=…` | was das Modell dem Slot für die Seite gibt | `holds=yes`, `expect` gültig, Walk `INVALID`: Tabelle weicht vom Modell ab → A im fortschreibenden Teil (`memprot=verify` meldet dann auch `VERIFY MISMATCH`). `holds=no`/`expect=0x0` für die eigene Code-Seite: A im Modell (verify sieht das nicht). `pending=yes`: zur Fehlerzeit lagen Änderungen noch nicht in den Tabellen. `shortfalls>0`: Arena erschöpft (widerlegt, aber hier sichtbar). |
+| `[crashwalk] far summary: model=… table=… at=… table==model …` | die drei Antworten nebeneinander | `valid/valid/ok` oder `valid/valid/fault` → **B**. `valid/invalid/…` → **A**, Tabellenpflege. `invalid/invalid/fault` → **A**, Modell. `table==model NO` = L3-Deskriptor ≠ Modell. |
+
+Gemessen in QEMU raspi4b (`serial=on` und `serial=on memprot=verify`):
+nicht abgebildete Fälle (Sprung auf und Lesen von frisch freigegebenem
+Pool-Speicher → `INVALID at L3`, `fst=0x07`; Lesen in GiB 2 → `INVALID at
+L2`, `fst=0x06`) und abgebildete (Schreiben/Ausführen auf Seite 0 und die
+PC-Seite → `mapped L3`, `AT ok`), jeweils mit der Ausnahme-Kennung der
+`[crash]`-Zeile übereinstimmend; 0 Abweichungen im verify-Lauf. Einen Fall
+„Tabelle gültig, Hardware Fehler“ (B) kann QEMU nicht erzeugen; das ist der
+Zweck des Pi-Laufs.
+
 [Gemeinsame Regeln](README.md) gelten.

@@ -2004,3 +2004,204 @@ pub fn region_kind(far: u64) -> Option<crate::bios::crash::RegionKind> {
         }
     }
 }
+
+// ─── Crash diagnosis (debug feature `crash-walk`, TASK/PROC08) ───────
+//
+// At the end of the file on purpose: with the feature off the module does
+// not exist and nothing above moves (CLAUDE.md "Testing", debug features).
+
+/// The rights model's view of one page for one slot, for the crash
+/// diagnosis of the debug feature `crash-walk` (TASK/PROC08): the block the
+/// page lies in, its mode, owner cookies and inherited slots, which live
+/// slots those cookies resolve to, the slot's memory space, and the leaf
+/// descriptor the model gives the slot there — computed the way the
+/// verification mode does ([`verify_now`]: [`live_slot_of`],
+/// [`group_masks`], [`v_has_rights`]), directly from the pool lists, the
+/// block records and the process table, not from the tables. Reads only; no
+/// allocation; the pool-list walks are bounded.
+#[cfg(feature = "crash-walk")]
+pub mod diag {
+    use super::*;
+
+    /// Pool-list entries one walk follows at most (a corrupted list must
+    /// not hang the crash path).
+    const MAX_LIST_STEPS: usize = 1 << 20;
+
+    /// The allocated block a page lies in.
+    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    pub struct BlockView {
+        /// First byte of the block.
+        pub start: u64,
+        /// One past its last byte.
+        pub end: u64,
+        /// From the block record; `None` = no record (verify then takes
+        /// `PROT_P`).
+        pub mode: Option<ProtMode>,
+        /// Slots that inherited access at their start (E5; bit per slot).
+        pub inherit: u32,
+        /// `m_own` (a PD pointer, user address).
+        pub own: u64,
+        /// The further owners (PD pointers; `0` = unused place).
+        pub further: [u64; MAX_FURTHER_OWNERS],
+        /// Live slots behind those cookies (bit per slot).
+        pub owners: u32,
+    }
+
+    /// See the module docs.
+    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    pub struct PageView {
+        /// Memory protection on (otherwise nothing below is meaningful).
+        pub enabled: bool,
+        /// The page lies in a pool (memprot's memory); otherwise its
+        /// descriptor is not the model's (publications, page 0, hardware).
+        pub in_pool: bool,
+        /// The pool lists could be walked to their end.
+        pub lists_ok: bool,
+        /// The allocated block the page lies in, if any.
+        pub block: Option<BlockView>,
+        /// Live slots (with a root; bit per slot).
+        pub live: u32,
+        /// The slot itself is live.
+        pub slot_live: bool,
+        /// The slot's basepage (kernel alias) — what owner cookies are
+        /// matched against.
+        pub slot_kva: u64,
+        /// The PD of the slot's memory space (its own, or its `Pexec(4)`
+        /// caller's).
+        pub space_root: u64,
+        /// The slots of the slot's memory space (bit per slot).
+        pub group: u32,
+        /// The slot's E10 grants (bit per slot).
+        pub temp: u32,
+        /// The slot holds owner rights on the block.
+        pub holds: bool,
+        /// The leaf descriptor the model gives the slot for the page, and
+        /// the non-owner (shared-table) one. `None` outside the pools.
+        pub expected: Option<u64>,
+        /// See [`Self::expected`].
+        pub expected_shared: Option<u64>,
+        /// The model wants a private L3 for the slot in the page's 2-MiB
+        /// region (some block there differs for owners and the slot holds
+        /// it); `None` if the lists could not be walked.
+        pub needs_private: Option<bool>,
+        /// The tables give the slot a private L3 there.
+        pub has_private: bool,
+        /// Arena shortfalls of the slot since boot.
+        pub shortfalls: usize,
+        /// Changes not yet entered in the tables (dirty ranges or rebuilds
+        /// pending) — after the end-of-trap sync this is expected `false`.
+        pub pending: bool,
+    }
+
+    /// The model's view of the page at `va` for `slot` (see the module
+    /// docs).
+    ///
+    /// # Safety
+    ///
+    /// BDOS giant lock held (the crash path: the trap of the faulting
+    /// program, single CPU).
+    pub unsafe fn page_view(slot: usize, va: u64) -> PageView {
+        let mut v = PageView {
+            enabled: enabled(),
+            in_pool: false,
+            lists_ok: true,
+            block: None,
+            live: 0,
+            slot_live: false,
+            slot_kva: 0,
+            space_root: 0,
+            group: 0,
+            temp: 0,
+            holds: false,
+            expected: None,
+            expected_shared: None,
+            needs_private: None,
+            has_private: false,
+            shortfalls: 0,
+            pending: false,
+        };
+        if slot >= MAX_PROCESSES || !v.enabled || !is_initialised() {
+            return v;
+        }
+        let groups = group_masks();
+        for s in 0..MAX_PROCESSES {
+            if live(s) {
+                v.live |= 1 << s;
+            }
+        }
+        v.slot_live = v.live & (1 << slot) != 0;
+        v.slot_kva = PROCESS_TABLE[slot].basepage_kva.load(Ordering::Acquire) as u64;
+        v.space_root = space_root(slot);
+        v.group = groups[slot];
+        v.temp = TEMP[slot].load(Ordering::Relaxed);
+        v.shortfalls = table_shortfalls_of(slot);
+        // SAFETY: lock held.
+        v.pending = unsafe { (*DIRTY.0.get()).1 } != 0 || REBUILD.load(Ordering::Relaxed) != 0;
+        let region = va & !(REGION_SPAN - 1);
+        // SAFETY: lock held.
+        v.has_private = unsafe { mmu::slot_private_l3(slot, region) }.is_some();
+        v.in_pool = in_pool(va);
+        let page = va & !(mmu::PAGE_SIZE - 1);
+        let mut needs = false;
+        for mp in [pmd(), pmdalt()] {
+            // SAFETY: lock held; read-only list walk, bounded below.
+            let mut m = unsafe { (*mp).mp_mal };
+            let mut steps = 0usize;
+            while !m.is_null() {
+                steps += 1;
+                if steps > MAX_LIST_STEPS {
+                    v.lists_ok = false;
+                    break;
+                }
+                // SAFETY: list invariant.
+                let (start, len, own, next) =
+                    unsafe { ((*m).m_start as u32 as u64, (*m).m_length as u32 as u64, (*m).m_own, (*m).m_link) };
+                let end = start + len;
+                if len > 0 && start < region + REGION_SPAN && end > region {
+                    // SAFETY: lock held.
+                    let further = unsafe { crate::bdos::mem::region::further_owners(start as Long) };
+                    // SAFETY: lock held.
+                    let rec = rec_of(unsafe { recs() }, start).map(|r| (r.mode, r.inherit));
+                    let mut owners = 0u32;
+                    for &o in core::iter::once(&own).chain(further.iter()) {
+                        if let Some(s) = live_slot_of(o) {
+                            owners |= 1 << s;
+                        }
+                    }
+                    let b = VBlk { mode: rec.map_or(ProtMode::P, |r| r.0), owners, inherit: rec.map_or(0, |r| r.1) };
+                    let holds = v_has_rights(slot, &b, &groups);
+                    if owner_differs(b.mode) && holds {
+                        needs = true;
+                    }
+                    if page >= start && page < end {
+                        v.holds = holds;
+                        v.block = Some(BlockView {
+                            start,
+                            end,
+                            mode: rec.map(|r| r.0),
+                            inherit: b.inherit,
+                            own: own as u64,
+                            further: further.map(|p| p as u64),
+                            owners,
+                        });
+                        if v.in_pool {
+                            let blks = [b];
+                            v.expected = Some(v_desc(page, 1, &blks, Some((slot, &groups))));
+                            v.expected_shared = Some(v_desc(page, 1, &blks, None));
+                        }
+                    }
+                }
+                m = next;
+            }
+        }
+        if v.in_pool && v.block.is_none() && v.lists_ok {
+            // Free pool memory: nobody's (I8).
+            v.expected = Some(0);
+            v.expected_shared = Some(0);
+        }
+        if v.lists_ok {
+            v.needs_private = Some(needs);
+        }
+        v
+    }
+}
