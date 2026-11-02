@@ -61,4 +61,25 @@ Kinder startet, kann es treffen.
 2. Developer erst nach Entscheid des Anwenders; Abnahme: Wiederholungslauf
    mit vielen `Pexec` 3+4 (Sonde oder zView) in QEMU und auf der echten Pi.
 
+## Stand 2026-11-02 (Schritt 1 erledigt, Ursache nicht belegt)
+
+Bericht `docs/analysis/proc08-root-cause-2026-11-02.md`, QEMU-Lauf
+`measurements/measurement-2026-11-02-proc08/RUNINFO.TXT`.
+
+- Gemessen (C1-Log): Die Code-Seite war vor dem zweiten `Pexec(4)`
+  abgebildet (vorige Befehle in derselben Seite), danach nicht; kein
+  Prozesswechsel dazwischen; keine Arena- oder Snapshot-Meldung.
+- Widerlegt: Arena erschoepft, Snapshot zu kurz, Prozesswechsel im
+  Rueckweg; falsche Wurzel nur schwach widerlegt.
+- Kandidaten, keiner belegt: A — `memprot` entzieht dem Eltern-Slot die
+  Seite (Modellfehler waere fuer `memprot=verify` unsichtbar); B — Tabellen
+  richtig, Cortex-A72 sieht sie anders (TLB/Walk-Cache/Reihenfolge; Kind-Slot
+  wird freigegeben, solange seine Wurzel in `TTBR0_EL1` steht).
+- QEMU raspi4b: 3 Versuche, 810 Modulstarts, 0 Fehler (QEMU modelliert
+  A72-TLB und Walk-Cache nicht).
+- Vorschlag des Researchers: Pi-Lauf mit `serial=on memprot=verify`; trennt
+  das nicht, Debug-Feature (Standard aus) fuer eine Absturzdiagnose
+  (Software-Walk von `far`, `TTBR0_EL1` gegen die Slot-Wurzel, L2-Eintrag).
+  Entscheidung beim Anwender.
+
 [Gemeinsame Regeln](README.md) gelten.
