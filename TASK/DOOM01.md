@@ -1,6 +1,6 @@
 # DOOM01 — DOOM friert auf der Pi im Hauptmenue ein (Pfeiltasten)
 
-Status: **IN DIAGNOSE** (Pi-Laeufe mit dem Anwender 2026-10-31; vorher zurueckgestellt 2026-10-29) · Prioritaet: **P2** · Typ: Diagnose zuerst (Pi), danach Developer — Anwenderbefund Pi-Runde 2026-10-29
+Status: **ZURUECKGESTELLT** 2026-11-02 (Anwender: erst [PROC08](PROC08.md); der naechste Schritt unten bleibt der Wiedereinstieg; vorher in Diagnose mit Pi-Laeufen 2026-10-31, zurueckgestellt 2026-10-29) · Prioritaet: **P2** · Typ: Diagnose zuerst (Pi), danach Developer — Anwenderbefund Pi-Runde 2026-10-29
 
 Abhaengigkeiten: —
 

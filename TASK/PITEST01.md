@@ -1,6 +1,6 @@
 # PITEST01 — Testkarte und Ablauf fuer die Tester (echte Pi 4)
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Developer (Sonden, Debug-Feature, Werkzeug) — Anwenderentscheidung 2026-10-31
+Status: **ERLEDIGT** 2026-11-02 (Quittung [PITEST01-STATUS-DONE.MD](PITEST01-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Developer (Sonden, Debug-Feature, Werkzeug) — Anwenderentscheidung 2026-10-31
 
 Grundlage: `docs/analysis/tester-scenario-draft-2026-10-31.md` (Entwurf, Schritte
 A0–A6, B1–B2).
@@ -227,3 +227,13 @@ geaendert, 2026-10-31):
   (vom Anwender umbenannt, wird nicht geladen).
 - `C:\Apps\DOOM\DOOM.NAP` `86abca15...`, `DOOMNOKB.NAP` `af10a517...`.
 - Kopie der Karte vor Phase A: `sd-card-backup-20261031/` (gitignored).
+
+## Abschluss (Anwender 2026-11-02)
+
+- HypView: die Startseite ist die zView-Hilfe, weil `HYP_VIEW.CFG` sie so
+  einstellt. Erwartet, kein Befund.
+- zView, Phase-A-Fund P3 (mehrere Fenster, nur eines schliesst, Programm
+  laesst sich nicht beenden): vom Anwender nicht nachvollziehbar. Kein Ticket;
+  tritt es wieder auf, eigenes Ticket mit Ablauf.
+- Offen aus den Laeufen bleiben nur die eigenen Tickets [DOOM01](DOOM01.md)
+  (zurueckgestellt) und [PROC08](PROC08.md).
