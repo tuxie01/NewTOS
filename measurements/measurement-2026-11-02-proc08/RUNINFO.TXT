@@ -1,0 +1,52 @@
+RUNINFO -- PROC08 reproduction attempts in QEMU raspi4b (2026-11-02)
+
+WHAT
+  TASK/PROC08 step 1: try to reproduce the instruction abort in zView's
+  parent after Pexec(4) (esr 0x82000007, translation fault level 3, seen once
+  on the Pi in measurements/measurement-2026-10-31-pitest01-c1/). At most three
+  attempts; all three negative. Report: docs/analysis/proc08-root-cause-2026-11-02.md.
+
+SETUP
+  commit 468b3b53 (no kernel/tos-api change since 6796787c, the Pi kernel of C1:
+  git diff --stat 6796787c..HEAD -- kernel tos-api tos-types sdk programs is empty)
+  kernel: cargo xtask build --board rpi4 --release; kernel8.img sha256
+    f3954b67420eb8639629a64afb467e15f3e7867629b4ad85edae3f4d2a67c1b3
+    (the C1 card carried e0fe680b..., same sources, other build path)
+  card: tools/make-sd-image.sh <scratch>/base.img 64 -> base.img.manifest (this
+    directory; image_sha256 de2f83d9...; "optional missing: none" -- the image
+    script printed `optional missing: none`; manifest line verbatim:
+    `optional_missing none`)
+  QEMU 11.0.2, `-M raspi4b -display none -append serial=on[ memprot=verify]`,
+  one QEMU at a time, per run an APFS clone (cp -c) of base.img, deleted after.
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  No SD card, no Pi, no TT touched. Scratch: session scratchpad .../proc08
+  (peak ~120 MB), not the repository.
+
+ATTEMPTS (method/run.sh, method/runq.sh)
+  a1 zView autorun (#Z C:\ZVIEW\ZVIEW.NAP), `serial=on memprot=verify`, 90 s:
+     10 module starts (Pexec 3+4), 0 crash, 0 "VERIFY MISMATCH" over 155
+     checks / 50.9 M pages compared (serial/a1-zview-verify.log).
+  a2 C:\LDGTEST.NCP autorun (69 checks of libldg: open, close, reload, two open at
+     once), `memprot=verify`: ALL PASS, 0 mismatch (serial/a2-ldgtest.log).
+  a4 scratch probe method/ldgloop.c (ldgtest.c with main() replaced by 400
+     iterations of ldg_open x2 / ldg_close x2, built by method/build.sh, a copy of
+     sdk/ldg/build-ldg-demo.sh; LDGLOOP.NCP sha256 a7ed7507...): 800 module
+     starts, bad=0, free block back to start value, 0 crash
+     (serial/a4-ldgloop-condensed.log: ldgtest PASS/info and [exec] lines left out).
+  a3 (state check, not a reproduction attempt) zView autorun, plain release
+     `serial=on`, QMP stop + pmemsave at t=40 s and 80 s (method/sample.py), analysis
+     method/analyze.py -> checks/analysis-a3.txt: page-table arena
+     invariants hold (see below). Raw dumps (14 MB each) deleted.
+
+RESULT
+  No reproduction. 0 crash / 0 exception / 0 "arena exhausted" line in a1-a4.
+  checks/analysis-a3.txt (arena 2415 tables, 460 bits used = 454 shared L3 + 6
+  private; slots 0,1,2 hold 2 private tables each): no table referenced by two
+  slot entries, none referenced but marked free, none marked used but
+  unreferenced.
+  Not reproduced is NOT a statement that the Pi defect is absent: QEMU does not
+  model the A72 TLB, walk caches or caches (user, TASK/DOOM01 "Richtung").
+
+NOT DONE (outside the three attempts)
+  DOOM / DOOMNOKB before zView (DOOM1.WAD only exists on the backups); keyboard
+  injection to drive several zView starts in one boot.

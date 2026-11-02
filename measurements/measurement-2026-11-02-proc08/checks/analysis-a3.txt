@@ -1,0 +1,14 @@
+== sample 0 (a3, t=40 s)
+arena used bits: 460  shared L3: 454  private tables referenced: 6
+tables referenced by >1 slot entries: 0 []
+referenced but marked FREE: 0 []
+marked used but unreferenced (leak): 0 []
+private ref'd == shared L3: 0
+private tables per slot: {0: 2, 1: 2, 2: 2}
+== sample 1 (a3, t=80 s)
+arena used bits: 460  shared L3: 454  private tables referenced: 6
+tables referenced by >1 slot entries: 0 []
+referenced but marked FREE: 0 []
+marked used but unreferenced (leak): 0 []
+private ref'd == shared L3: 0
+private tables per slot: {0: 2, 1: 2, 2: 2}
