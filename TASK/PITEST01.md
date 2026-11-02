@@ -200,3 +200,30 @@ Strg+Alt+Entf wirkt ([DOOM01](DOOM01.md)). Befund P1 entfaellt.
 Befund B3 in `measurements/measurement-2026-10-31-pitest01-phase-b/RUNINFO.TXT`
 (erster Boot endet nach etwa 67 s ohne `[reset]`-Zeile) ist geklaert: Der
 Anwender hat die Pi mehrmals von Hand neu gestartet. Kein Befund.
+
+## Stand nach den Pi-Laeufen (2026-11-02)
+
+Laeufe: Phase A, Phase B, C1 (Belege siehe `docs/STATUS.md`, PITEST01-Zeile),
+dazu Anwenderlaeufe ohne Mitschrift fuer [DOOM01](DOOM01.md) (Kontrolle, M1,
+X-Shot-Neubau).
+
+Ergebnisse ausser DOOM01:
+- P0REP auf der Pi: `PASS 12000/12000` (Phase B); HZPROBE, AWPROBE PASS (A).
+- HypView: liest `HYP_VIEW.CFG` und oeffnet `ZVIEW.HYP` (Phase B);
+  keine Menueleiste ist upstream so (`sdk/apps/hypview/dl_user.h`
+  `USE_MENU NO`) — Phase-A-Fund P2 "keine Menueleiste" ist kein Defekt.
+  Offen nur, ob die angezeigte Startseite die zView-Hilfe ist (Anwender fragen).
+- zView: ein Absturz nach `Pexec(4)` eines Moduls -> [PROC08](PROC08.md).
+  Phase-A-Fund P3 (mehrere Fenster, nur eines schliesst, Programm laesst
+  sich nicht beenden) ist ohne Ticket und nicht neu geprueft.
+
+Kartenstand nach dem letzten Lauf (vom Lead geschrieben bzw. vom Anwender
+geaendert, 2026-10-31):
+- `kernel8.img` = `kernela.img` `e0fe680b...` (Release); `kernelb.img`
+  `bc543d48...` liegt daneben.
+- `cmdline.txt` leer (Anwender).
+- `C:\ACC\SYSACC.NAC` (`812ddd57...`), `C:\ACC\XSHOT.NAC` = X-Shot neu gebaut
+  `f7607bb1...` (DOOM01), `C:\ACC\XSHOT.NA` = altes X-Shot `766627b7...`
+  (vom Anwender umbenannt, wird nicht geladen).
+- `C:\Apps\DOOM\DOOM.NAP` `86abca15...`, `DOOMNOKB.NAP` `af10a517...`.
+- Kopie der Karte vor Phase A: `sd-card-backup-20261031/` (gitignored).

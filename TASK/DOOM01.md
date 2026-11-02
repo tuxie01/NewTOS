@@ -1,6 +1,6 @@
 # DOOM01 — DOOM friert auf der Pi im Hauptmenue ein (Pfeiltasten)
 
-Status: **ZURUECKGESTELLT** (Anwender 2026-10-29) · Prioritaet: **P2** · Typ: Diagnose zuerst (Pi), danach Developer — Anwenderbefund Pi-Runde 2026-10-29
+Status: **IN DIAGNOSE** (Pi-Laeufe mit dem Anwender 2026-10-31; vorher zurueckgestellt 2026-10-29) · Prioritaet: **P2** · Typ: Diagnose zuerst (Pi), danach Developer — Anwenderbefund Pi-Runde 2026-10-29
 
 Abhaengigkeiten: —
 
@@ -172,3 +172,42 @@ sha256 `f7607bb141675eb656b3836b817e14d8be8dc2cd042c4c109ae7cad5dd294af9`, als
 `C:\ACC\XSHOT.NAC` auf der Karte; Release-Kern, `cmdline.txt` leer:
 **Freeze bleibt.** Das alte Kompilat ist nicht die Ursache; gesucht wird im
 Kern (Zusammenspiel DOOM + auf Tasten wartendes Accessory ohne Timer).
+
+## Stand 2026-11-02 und naechster Schritt
+
+Belegt (echte Pi, Release-Kern `e0fe680b...`):
+
+| Lauf | `serial=on` | Accessories | Freeze |
+|---|---|---|---|
+| Phase A, Kontrolle | nein | SYSACC + X-Shot (alt) | ja |
+| C1 | ja | SYSACC + X-Shot (alt) | nein |
+| M1 | nein | keine | nein |
+| M1 | nein | nur SYSACC | nein |
+| Neubau | nein | SYSACC + X-Shot (neu gebaut) | ja |
+
+Phase B (Debug-Kern, `serial=on`): kein Freeze.
+
+Unterschied der Accessories: SYSACC wartet im Ruhezustand mit `evnt_mesag`
+(`sdk/examples/sysacc.c`, Kopfkommentar), X-Shot mit
+`evnt_multi(EV_MESAG|EV_BUTTON|EV_KEYBD)` ohne Timer (X-Shot-Quelle xshot.c,
+Zeile 1476 auf Commit `5ed45575`). In C1 wechselt der Kern waehrend DOOM 309-mal
+je Richtung zwischen X-Shot (Slot 1) und DOOM (Slot 2); die einzige
+Kernausgabe dort sind die `[sched]`-Zeilen dieser Wechsel.
+
+Offene Frage (nicht belegt): Die Tasten gehen seit [KEYOWNER](KEYOWNER.md)
+(erledigt 2026-10-08, nur QEMU) an den Eigentuemer wie EmuTOS `gl_mowner`.
+Laut Researcher-Bericht (`docs/analysis/doom01-root-cause-2026-10-31.md`)
+weckt NewTOS ein auf `MU_KEYBD` wartendes Accessory trotzdem bei jeder
+Eingabe (Folgerung aus dem Code, nicht gezaehlt). Ob EmuTOS ein Accessory
+weckt, dem die Tastatur nicht gehoert, ist nicht geprueft.
+
+Naechster Schritt (vorgeschlagen, Start auf Wort des Anwenders): Researcher
+unter diesem Ticket —
+1. EmuTOS-Quelle: wer wird geweckt, wenn ein Programm laeuft und ein
+   Accessory ohne Fenster auf `MU_KEYBD` wartet; Vergleich mit NewTOS.
+2. QEMU raspi4b ohne serielle Ausgabe: DOOM + X-Shot oder ein Test-Accessory,
+   das nur auf `MU_KEYBD` wartet, Tasten per Injektor (die QEMU-Laeufe vom
+   2026-10-29 hatten zwei SYSACC, nie X-Shot); hoechstens drei Versuche.
+3. Bericht vor jedem Fix. Bestaetigt sich das Wecken als EmuTOS-Abweichung:
+   eigenes Ticket (Nachfolger KEYOWNER).
+Danach [PROC08](PROC08.md) (ein Agent zur Zeit).
