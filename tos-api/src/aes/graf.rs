@@ -21,7 +21,9 @@ use super::object::{self, Object, ObjTree};
 use super::Aespb;
 use crate::host::host;
 use crate::vdi::backend::{ClipRect, Pel, RasterBackend, WriteMode};
-use tos_types::aes::{ARROW, M_OFF, M_ON, M_PREVIOUS, M_RESTORE, M_SAVE, OUTLN_CROSS, USER_DEF};
+use tos_types::aes::{
+    ADJ3DSTD, ARROW, FL3DOBJ, M_OFF, M_ON, M_PREVIOUS, M_RESTORE, M_SAVE, OUTLN_CROSS, USER_DEF,
+};
 
 const WHITE: Pel = 0;
 const BLACK: Pel = 1;
@@ -435,83 +437,127 @@ pub(crate) fn watchbox_t(t: ObjTree, obj: i16, instate: u16, outstate: u16) -> b
 }
 
 /// `graf_slidebox` (76) — slide child `obj` within `parent` along one axis
-/// (`isvert`=`int_in[2]`); returns the position 0–1000.
+/// (`isvert`=`int_in[2]`); returns the position 0–1000 in `int_out[0]`.
+///
+/// EmuTOS `gemsuper.c:284-285`: `ret = gr_slidebox(GR_TREE, GR_PARENT, GR_OBJ,
+/// GR_ISVERT)`. The tree at `addr_in[0]` is the **application's**, so it is
+/// read through the caller-ABI accessor ([`ObjTree::new`]); the AES's own
+/// kernel-built trees call [`gr_slidebox`] with [`ObjTree::lp64`] instead.
+///
+/// A null tree or a negative index is refused before anything is taken
+/// (NewTOS guard; EmuTOS would dereference it). The dispatcher waited for the
+/// window-tree lock for every call this guard lets through, because
+/// `gr_dragbox` takes `wm_update(BEG_UPDATE)` (`aes/gemgrlib.c:250`, A128).
 pub fn graf_slidebox(pb: &Aespb) {
     let tree = pb.addrin(0) as *mut Object;
     let parent = pb.intin(0);
     let obj = pb.intin(1);
     let isvert = pb.intin(2) != 0;
-    if tree.is_null() || parent < 0 || obj < 0 {
+    if !slidebox_takes_lock(tree as u64, parent, obj) {
         pb.set_ret(0);
         return;
     }
-    let mut pos = 0i16;
-    // App-provided tree at `addr_in[0]`: read/write `parent`/`obj` through the
-    // caller-ABI `ObjTree` accessor so an ILP32 app's 24-byte OBJECT records are
-    // addressed at their own field offsets, not the native LP64 ones. For an
-    // LP64/kernel caller `current_abi()` is `Lp64`, so the offsets are
-    // byte-identical to the previous `*mut Object` access. `abs_rect`/`draw_obj`
-    // build their own ABI-aware accessor internally.
-    let t = ObjTree::new(tree as *const Object);
-    // `travel` = parent − child extent (EmuTOS `divis = c.g_h - t.g_h`);
-    // `c0` = the elevator's start position relative to the parent.
-    let (travel, c0) = if isvert {
-        (t.height(parent) - t.height(obj), t.y(obj))
-    } else {
-        (t.width(parent) - t.width(obj), t.x(obj))
-    };
-    if let Some(h) = host() {
-        let (prx, pry, _, _) = object::abs_rect(tree as *const Object, parent);
-        // Grip offset: how far the mouse sat from the elevator's top-left
-        // at grab time, held constant for the whole drag so the elevator
-        // does not snap its leading edge to the cursor. EmuTOS `gr_dragbox`
-        // takes it via `gr_clamp(sx+1, sy+1, 0, 0, &off)` → `off =
-        // max(mouse − elev, 0)` (gemgrlib.c:253-260). `travel` can be
-        // negative for a malformed slider; `.max(0)` keeps `clamp` sound.
-        let (m0x, m0y) = crate::vdi::mouse_position();
-        let grip = if isvert {
-            (m0y - (pry + c0)).max(0)
-        } else {
-            (m0x - (prx + c0)).max(0)
-        };
-        let hi = travel.max(0);
-        loop {
-            let (mx, my) = crate::vdi::mouse_position();
-            // New elevator position (relative to the parent) = mouse − grip
-            // − parent origin, constrained to the track [0, travel].
-            let rel = if isvert {
-                (my - grip - pry).clamp(0, hi)
-            } else {
-                (mx - grip - prx).clamp(0, hi)
-            };
-            if isvert {
-                t.set_y(obj, rel);
-            } else {
-                t.set_x(obj, rel);
-            }
-            if let Some(backend) = h.raster() {
-                object::draw_obj(tree as *const Object, parent, 8, backend);
-            }
-            // Position 0..1000, rounded away from zero — EmuTOS D-098
-            // "slider creep" fix: `mul_div_round(divnd, 1000, divis)`
-            // (gemgrlib.c:410), not a truncating divide.
-            pos = if travel > 0 {
-                mul_div_round(rel as i32, 1000, travel as i32) as i16
-            } else {
-                0
-            };
-            if !mouse_down() {
-                break;
-            }
-            h.pump_input();
-        }
-    }
     // EmuTOS `gr_slidebox` returns the position 0..1000 as its function return
     // value, which the dispatcher (`gemsuper.c:284-285`) stores in `int_out[0]`
-    // (= RET_CODE). The standard AES binding reads `int_out[0]`, so writing the
-    // position anywhere else makes every caller read a constant. Match EmuTOS:
-    // position → `int_out[0]`, nothing in `int_out[1]`.
-    pb.set_ret(pos);
+    // (= RET_CODE). The standard AES binding reads `int_out[0]`.
+    pb.set_ret(gr_slidebox(ObjTree::new(tree as *const Object), parent, obj, isvert));
+}
+
+/// Whether a `graf_slidebox` call gets past the refusal in [`graf_slidebox`]
+/// and so reaches `gr_dragbox`'s `wm_update(BEG_UPDATE)` — the predicate the
+/// dispatcher's lock wait uses for opcode 76 (`crysbind`).
+pub(super) fn slidebox_takes_lock(tree: u64, parent: i16, obj: i16) -> bool {
+    tree != 0 && parent >= 0 && obj >= 0
+}
+
+/// The elevator outline `gr_slidebox` drags, before the drag: `t` =
+/// `ob_relxywh(tree, obj)` and the `CONF_WITH_3D_OBJECTS` adjustment
+/// (`aes/gemgrlib.c:366-386`). A 3D child (`FL3DOBJ`) is drawn `ADJ3DSTD`
+/// larger on every side, so the outline grows by `2*ADJ3DSTD`; when the
+/// parent is **not** 3D the outline also moves up/left by `ADJ3DSTD` and
+/// `xy_adjust` is set, which [`slidebox_value`] undoes on the result.
+/// Returns `(x, y, w, h, xy_adjust)`, `x`/`y` relative to the parent.
+pub(crate) fn slidebox_outline(
+    rel: (i16, i16, i16, i16),
+    obj_flags: u16,
+    parent_flags: u16,
+) -> (i16, i16, i16, i16, bool) {
+    let (mut x, mut y, mut w, mut h) = rel;
+    let mut xy_adjust = false;
+    if obj_flags & FL3DOBJ != 0 {
+        w += 2 * ADJ3DSTD;
+        h += 2 * ADJ3DSTD;
+        if parent_flags & FL3DOBJ == 0 {
+            x -= ADJ3DSTD;
+            y -= ADJ3DSTD;
+            xy_adjust = true;
+        }
+    }
+    (x, y, w, h, xy_adjust)
+}
+
+/// The value `gr_slidebox` returns for the outline's final **absolute** origin
+/// `(tx, ty)` and size `(tw, th)` inside the parent's `ob_actxywh` rect `c`
+/// (`aes/gemgrlib.c:391-412`): `divnd` = the outline's offset into `c` along
+/// the axis, `divis` = `c` minus the outline extent; with `xy_adjust` a
+/// non-zero `divnd` gets `ADJ3DSTD` back (the outline's 3D top edge → the
+/// object's position), then `divnd` is capped at `divis`; the result is
+/// `mul_div_round(divnd, 1000, divis)`, `0` for `divis == 0`.
+pub(crate) fn slidebox_value(
+    isvert: bool,
+    t: (i16, i16, i16, i16),
+    c: (i16, i16, i16, i16),
+    xy_adjust: bool,
+) -> i16 {
+    let (mut divnd, divis) = if isvert {
+        (t.1 - c.1, c.3 - t.3)
+    } else {
+        (t.0 - c.0, c.2 - t.2)
+    };
+    if xy_adjust && divnd != 0 {
+        divnd += ADJ3DSTD;
+    }
+    if divnd > divis {
+        divnd = divis;
+    }
+    if divis != 0 {
+        mul_div_round(divnd as i32, 1000, divis as i32) as i16
+    } else {
+        0
+    }
+}
+
+/// EmuTOS `gr_slidebox(tree, parent, obj, isvert)` (`aes/gemgrlib.c:358-413`)
+/// through the caller-supplied [`ObjTree`] accessor (`new` for an app tree,
+/// `lp64` for a kernel-built one such as the file selector — the same split
+/// as [`watchbox_t`]).
+///
+/// `c` is the parent's `ob_actxywh` rect, the outline is the child's relative
+/// rect with the 3D adjustment ([`slidebox_outline`]); `gr_dragbox` then drags
+/// an **XOR outline** of that size with the pointer, grab offset kept,
+/// constrained to `c` on both axes (`rc_constrain`), until the button comes
+/// up ([`super::window::gr_dragbox`]). The object itself is not moved and
+/// nothing is redrawn: the caller applies the returned position. The result
+/// is [`slidebox_value`] of the outline's final origin.
+///
+/// Without a host there is no input to drag with; the outline then stays at
+/// its start and the value is that of the start position.
+pub(crate) fn gr_slidebox(t: ObjTree, parent: i16, obj: i16, isvert: bool) -> i16 {
+    let c = object::ob_actxywh_t(t, parent);
+    let (rx, ry, w, h, xy_adjust) = slidebox_outline(
+        (t.x(obj), t.y(obj), t.width(obj), t.height(obj)),
+        t.flags(obj),
+        t.flags(parent),
+    );
+    let (sx, sy) = (rx + c.0, ry + c.1);
+    let (fx, fy) = match (host(), host().and_then(|hh| hh.raster())) {
+        (Some(hh), Some(backend)) => {
+            let pc = tos_types::aes::Grect { x: c.0, y: c.1, w: c.2, h: c.3 };
+            super::window::gr_dragbox(hh, w, h, sx, sy, pc, backend)
+        }
+        _ => (sx, sy),
+    };
+    slidebox_value(isvert, (fx, fy, w, h), c, xy_adjust)
 }
 
 // ── the system-font metrics and the gadget box height ────────────────────
@@ -688,4 +734,71 @@ pub fn graf_mkstate(pb: &Aespb) {
     pb.set_intout(3, crate::vdi::mouse_buttons() as i16);
     pb.set_intout(4, super::gsxif::gsx_kstate());
     pb.set_ret(1);
+}
+
+#[cfg(test)]
+mod tests {
+    //! A128 — the arithmetic of `gr_slidebox` (`aes/gemgrlib.c:358-413`):
+    //! the 3D outline adjustment and the 0..1000 value. The drag itself (the
+    //! XOR outline through `gr_dragbox`) is covered by the integration test
+    //! `tests/aes_a128_slidebox.rs`, which needs a host.
+
+    use super::*;
+    use tos_types::aes::{FL3DACT, FL3DBAK, FL3DIND};
+
+    /// `mul_div_round` rounds half away from zero (`util/miscasm.S:151-160`).
+    #[test]
+    fn mul_div_round_rounds_away_from_zero() {
+        assert_eq!(mul_div_round(500, 21, 1000), 11);
+        assert_eq!(mul_div_round(46, 1000, 92), 500);
+        assert_eq!(mul_div_round(1, 1000, 3), 333);
+        assert_eq!(mul_div_round(2, 1000, 3), 667);
+        assert_eq!(mul_div_round(-500, 21, 1000), -11);
+        assert_eq!(mul_div_round(7, 9, 0), 0);
+    }
+
+    /// `:368-386`: a 3D child grows by `2*ADJ3DSTD`; in a non-3D parent it
+    /// also moves up/left by `ADJ3DSTD` and sets `xy_adjust`; in a 3D parent
+    /// it only grows; a non-3D child is untouched. `FL3DBAK` has no
+    /// `FL3DOBJ` bit and counts as non-3D.
+    #[test]
+    fn slidebox_outline_applies_the_3d_adjustment() {
+        let r = (2, 30, 20, 16);
+        assert_eq!(slidebox_outline(r, FL3DACT, 0), (0, 28, 24, 20, true));
+        assert_eq!(slidebox_outline(r, FL3DIND, FL3DBAK), (0, 28, 24, 20, true));
+        assert_eq!(slidebox_outline(r, FL3DACT, FL3DIND), (2, 30, 24, 20, false));
+        assert_eq!(slidebox_outline(r, 0, 0), (2, 30, 20, 16, false));
+        assert_eq!(slidebox_outline(r, FL3DBAK, 0), (2, 30, 20, 16, false));
+    }
+
+    /// `:391-412`: `divnd`/`divis` along the axis; `xy_adjust` adds
+    /// `ADJ3DSTD` to a non-zero `divnd`, which is then capped at `divis`.
+    #[test]
+    fn slidebox_value_matches_gr_slidebox() {
+        let c = (100, 50, 24, 132);
+        // non-3D child at rel y 46, h 36: 46*1000/96 = 479.2 → 479.
+        assert_eq!(slidebox_value(true, (100, 96, 24, 36), c, false), 479);
+        // 3D outline (h 40) at rel y 44, xy_adjust: (44+2)*1000/92 = 500.
+        assert_eq!(slidebox_value(true, (100, 94, 24, 40), c, true), 500);
+        // at the top: divnd 0 gets no adjustment.
+        assert_eq!(slidebox_value(true, (100, 50, 24, 40), c, true), 0);
+        // at the bottom: 92 + 2 = 94 capped at divis 92 → 1000.
+        assert_eq!(slidebox_value(true, (100, 142, 24, 40), c, true), 1000);
+        // divis 0: no travel → 0.
+        assert_eq!(slidebox_value(true, (100, 50, 24, 132), c, true), 0);
+        // horizontal: x axis, width.
+        let ch = (10, 0, 200, 20);
+        assert_eq!(slidebox_value(false, (60, 0, 40, 20), ch, false), 313);
+        assert_eq!(slidebox_value(false, (58, 0, 44, 20), ch, true), 321);
+    }
+
+    /// The lock predicate behind opcode 76 in `crysbind` equals the
+    /// refusal in `graf_slidebox`.
+    #[test]
+    fn slidebox_takes_lock_only_for_a_call_it_does_not_refuse() {
+        assert!(slidebox_takes_lock(0x1000, 0, 1));
+        assert!(!slidebox_takes_lock(0, 0, 1));
+        assert!(!slidebox_takes_lock(0x1000, -1, 1));
+        assert!(!slidebox_takes_lock(0x1000, 0, -1));
+    }
 }

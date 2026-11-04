@@ -23,7 +23,7 @@ use crate::bdos::process::{current_abi, usermem, Abi};
 use crate::host::host;
 use crate::vdi::backend::{ClipRect, MonoBits, MonoSrc, PatternFill, Pel, RasterBackend, Rect, WriteMode};
 use tos_types::aes::{
-    ACTBUTCOL, AD3DVALUE, ADJ3DOUT, ADJ3DSTD, BACKGRCOL, CHECKED, CROSSED, DEFAULT, DISABLED,
+    ACTBUTCOL, AD3DVALUE, ADJ3DOUT, ADJ3DSHA, ADJ3DSTD, BACKGRCOL, CHECKED, CROSSED, DEFAULT, DISABLED,
     ED_CHAR, ED_INIT, ED_START, EXIT, FL3DACT, FL3DBAK, FL3DIND, FL3DMASK, FL3DOBJ, G_BOX,
     G_BOXCHAR, G_BOXTEXT, G_BUTTON, G_CICON, G_FBOXTEXT, G_FTEXT, G_IBOX, G_ICON, G_IMAGE,
     G_STRING, G_TEXT, G_TITLE, G_USERDEF, HIDETREE, INDBUTCOL, INDIRECT, IP_HOLLOW, IP_SOLID,
@@ -2369,6 +2369,40 @@ pub(crate) fn abs_rect(tree: *const Object, obj: i16) -> (i16, i16, i16, i16) {
 pub(crate) fn abs_rect_t(t: ObjTree, obj: i16) -> (i16, i16, i16, i16) {
     let (x, y) = abs_offset(t, obj);
     (x, y, t.width(obj), t.height(obj))
+}
+
+/// EmuTOS `ob_actxywh` (`aes/gemoblib.c:313-343`, `CONF_WITH_3D_OBJECTS`):
+/// the absolute rectangle of `obj` **as drawn** — for an `FL3DOBJ` object
+/// (`FL3DIND`/`FL3DACT`) grown by `ADJ3DSTD` on every side, by `ADJ3DOUT`
+/// more when `OUTLINED` (`gr_inside(pt, adjust)` with a negative `adjust`), and for a `SHADOWED` one
+/// with a negative (outside) border widened by `border * ADJ3DSHA` to the
+/// right and bottom (`:331-336`; `border` is `ob_sst`'s thickness word,
+/// [`ObjTree::sst_th`]). A non-3D object gets its plain [`abs_rect_t`].
+///
+/// Not the same as [`abs_rect_t`], which is EmuTOS `ob_offset` + the raw
+/// size; `gr_slidebox` (`gemgrlib.c:365`) and the file selector's slider
+/// click (`gemfslib.c:777`) read this one.
+pub(crate) fn ob_actxywh_t(t: ObjTree, obj: i16) -> (i16, i16, i16, i16) {
+    let (mut x, mut y, mut w, mut h) = abs_rect_t(t, obj);
+    if t.flags(obj) & FL3DOBJ != 0 {
+        let state = t.state(obj);
+        let mut adjust = -ADJ3DSTD;
+        if state & OUTLINED != 0 {
+            adjust -= ADJ3DOUT;
+        }
+        // `gr_inside(pt, adjust)` (`aes/gemgraf.c:535-541`): x/y += th, w/h -= 2*th.
+        x += adjust;
+        y += adjust;
+        w -= 2 * adjust;
+        h -= 2 * adjust;
+        let border = t.sst_th(obj);
+        if state & SHADOWED != 0 && border < 0 {
+            let a = border * ADJ3DSHA;
+            w -= a;
+            h -= a;
+        }
+    }
+    (x, y, w, h)
 }
 
 /// First child of `parent` whose absolute rectangle contains `(mx, my)`,

@@ -1,0 +1,17 @@
+# a128 virt run qwheel: real USB path. Open the file selector from the desktop
+# (Options -> Read .INF file..., programs/desktop inf.rs app_read_inf ->
+# fsel_exinput), then turn the wheel over the list, outside it (drive buttons)
+# and over the slider track, then Cancel. Pointer scale measured in run qcal
+# (1 rel unit = 1 px). No drive on virt: the list is empty, so the evidence for
+# "counted / dropped" is the [a128] serial trace; the screens show the dialog
+# stays intact and nothing else reacts.
+at(14); shot("boot")
+move(-3000, -3000); move(190, 8); at(16); shot("options")
+move(0, 164); at(17); shot("readinf-item")
+click(); at(20); shot("fsel-open")
+move(718, 408); at(22); shot("over-list")
+wheel(+1, 3); at(24); shot("after-wheel-list")
+move(150, -9); at(26); shot("over-drives")
+wheel(+1, 3); at(28); shot("after-wheel-outside")
+move(-60, 30); at(30); shot("over-track")
+wheel(-1, 2); at(32); shot("after-wheel-track")

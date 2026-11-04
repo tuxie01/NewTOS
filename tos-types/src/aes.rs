@@ -286,6 +286,9 @@ pub const AD3DVALUE: i16 = 6;
 pub const ADJ3DSTD: i16 = 2;
 /// `ADJ3DOUT` — extra extent of an `OUTLINED` 3D object (`obdefs.h:137`).
 pub const ADJ3DOUT: i16 = 3;
+/// `ADJ3DSHA` — per-pixel-of-border extent of a `SHADOWED` 3D object's drop
+/// shadow (`obdefs.h:138`), applied by `ob_actxywh` (`gemoblib.c:331-336`).
+pub const ADJ3DSHA: i16 = 2;
 
 // ── objc_edit kinds (`obdefs.h:248-251`, EmuTOS spells them `EDSTART`…) ─
 

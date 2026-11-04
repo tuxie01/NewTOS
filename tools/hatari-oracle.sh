@@ -32,6 +32,7 @@
 #            touches no disk, any profile, writes HKPROBE.LOG only;
 #            or SXPROBE.PRG / VWPROBE.PRG (tosdump/probes/sxprobe.c, vwprobe.c;
 #            TASK/BIOS07, BIOS16): the same, each writes its <PROBE>.LOG only;
+#            or SBPROBE.PRG (tosdump/probes/sbprobe.c, TASK/A128): the same;
 #            or DCPROBE.PRG (tosdump/probes/dcprobe.c, TASK/FS26): no table,
 #            profile disk only (it creates and removes folders on C:),
 #            writes DCPROBE.LOG only
@@ -99,6 +100,7 @@ case $PRG in
     HKPROBE.PRG)  AREA=HKPROBE; PROBE=1; PROBE_DISK=0 ;;
     SXPROBE.PRG)  AREA=SXPROBE; PROBE=1; PROBE_DISK=0 ;;
     VWPROBE.PRG)  AREA=VWPROBE; PROBE=1; PROBE_DISK=0 ;;
+    SBPROBE.PRG)  AREA=SBPROBE; PROBE=1; PROBE_DISK=0 ;;
     DCPROBE.PRG)  AREA=DCPROBE; PROBE=1 ;;
     *) echo "unknown dumper: $PRG" >&2; exit 2 ;;
 esac

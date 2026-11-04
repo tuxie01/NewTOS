@@ -1491,6 +1491,21 @@ have an RTC (the Falcon's NVRAM; Hatari passes the host clock): a value set
 with `Settime`/`Tsetdate`/`Tsettime` does not survive a restart, and each
 boot starts again at the build date.
 
+**Das Mausrad scrollt die Dateiliste der Dateiauswahl** — Anwenderwunsch
+2026-11-04 (*"ueberall anders funktioniert es, nur in der Fileselektor box
+nicht"*), [A128](../TASK/A128.md). EmuTOS' `wheel_change` sendet nichts
+(`references/emutos/aes/geminput.c:411-420`, auskommentiert); NewTOS sendet
+`WM_ARROWED` an das Fenster unter dem Zeiger ([GUI04](../TASK/GUI04.md)). Solange
+`fsel_input`/`fsel_exinput` offen sind, verbraucht die Dateiauswahl die
+Raststufen und scrollt die Liste um 1 Zeile je Raststufe, wenn der Zeiger
+ueber der Liste oder der Schieberleiste steht; anderswo wird die Raststufe
+verworfen. Es geht **keine** `WM_ARROWED`-Nachricht an ein Fenster dahinter.
+Kein Programm kann es beobachten, ausser durch ein ausbleibendes `WM_ARROWED`
+waehrend der Auswahl; die Rueckgaben von `fsel_*`, Pfad und Name sind
+unveraendert. Andere `form_do`-Dialoge: unveraendert. Spec:
+`docs/api/aes/resource-fileselector.md` (A128); Code:
+`tos-api/src/aes/input.rs:944@WheelClaim`.
+
 ## EmuTOS is the reference, not the template
 
 CLAUDE.md Rule 1 says EmuTOS source *is* the spec. Through this charter that

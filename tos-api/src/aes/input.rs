@@ -930,6 +930,105 @@ pub(super) fn pending_transition() -> Option<(u8, i16)> {
 
 // ── the mouse wheel (CONF_WITH_EXTENDED_MOUSE) ─────────────────────────────
 
+/// The file selector's hold on the mouse wheel (A128, design B4 of
+/// `docs/api/aes/resource-fileselector.md`; no EmuTOS counterpart — EmuTOS'
+/// `wheel_change` sends nothing at all, `aes/geminput.c:411-420`).
+///
+/// While `claimed`, [`wheel_change`] hands every detent to [`Self::feed`]
+/// instead of posting `WM_ARROWED`: a detent with the pointer inside one of
+/// the two `regions` (the file list `FILEBOX` and the slider track `FSVSLID`,
+/// absolute screen rects) is **added** to `pending` — several detents between
+/// two passes of the selector's loop are summed, not merged — and any other
+/// detent is dropped. The selector takes the sum once per pass
+/// ([`fsel_wheel_take`]) and scrolls by it, one row per detent.
+pub(crate) struct WheelClaim {
+    claimed: AtomicBool,
+    /// `(x, y, w, h)` packed as four `i16` (x in the low bits), per region.
+    regions: [AtomicU64; 2],
+    pending: AtomicI32,
+}
+
+impl WheelClaim {
+    pub(crate) const fn new() -> Self {
+        WheelClaim {
+            claimed: AtomicBool::new(false),
+            regions: [AtomicU64::new(0), AtomicU64::new(0)],
+            pending: AtomicI32::new(0),
+        }
+    }
+
+    fn pack(r: (i16, i16, i16, i16)) -> u64 {
+        (r.0 as u16 as u64) | ((r.1 as u16 as u64) << 16) | ((r.2 as u16 as u64) << 32) | ((r.3 as u16 as u64) << 48)
+    }
+
+    fn unpack(v: u64) -> (i16, i16, i16, i16) {
+        (v as u16 as i16, (v >> 16) as u16 as i16, (v >> 32) as u16 as i16, (v >> 48) as u16 as i16)
+    }
+
+    /// Start holding the wheel for the two `regions`; any old sum is dropped.
+    pub(crate) fn claim(&self, regions: [(i16, i16, i16, i16); 2]) {
+        for (slot, r) in self.regions.iter().zip(regions) {
+            slot.store(Self::pack(r), Ordering::Relaxed);
+        }
+        self.pending.store(0, Ordering::Relaxed);
+        self.claimed.store(true, Ordering::Relaxed);
+    }
+
+    /// Stop holding the wheel; a sum not yet taken is dropped.
+    pub(crate) fn release(&self) {
+        self.claimed.store(false, Ordering::Relaxed);
+        self.pending.store(0, Ordering::Relaxed);
+    }
+
+    /// Whether `(x, y)` lies in one of the regions (`inside`, half-open).
+    pub(crate) fn hit(&self, x: i16, y: i16) -> bool {
+        self.regions.iter().any(|r| {
+            let (rx, ry, rw, rh) = Self::unpack(r.load(Ordering::Relaxed));
+            x >= rx && x < rx + rw && y >= ry && y < ry + rh
+        })
+    }
+
+    /// One wheel event of `amount` detents (signed: negative = up) with the
+    /// pointer at `(x, y)`. `false` = not claimed, the caller goes on with the
+    /// ordinary `WM_ARROWED` path; `true` = consumed (counted when over a
+    /// region, dropped otherwise).
+    pub(crate) fn feed(&self, x: i16, y: i16, amount: i16) -> bool {
+        if !self.claimed.load(Ordering::Relaxed) {
+            return false;
+        }
+        if amount != 0 && self.hit(x, y) {
+            let old = self.pending.load(Ordering::Relaxed);
+            self.pending.store(old.saturating_add(amount as i32), Ordering::Relaxed);
+        }
+        true
+    }
+
+    /// Take the summed detents since the last take (and clear them).
+    pub(crate) fn take(&self) -> i32 {
+        self.pending.swap(0, Ordering::Relaxed)
+    }
+}
+
+/// The one [`WheelClaim`] — held by the file selector's modal loop.
+static FSEL_WHEEL: WheelClaim = WheelClaim::new();
+
+/// The file selector starts holding the wheel over `list` and `track`
+/// (absolute rects of `FILEBOX` and `FSVSLID`) — [`WheelClaim::claim`].
+pub(crate) fn fsel_wheel_claim(list: (i16, i16, i16, i16), track: (i16, i16, i16, i16)) {
+    FSEL_WHEEL.claim([list, track]);
+}
+
+/// The file selector's modal loop has ended — [`WheelClaim::release`].
+pub(crate) fn fsel_wheel_release() {
+    FSEL_WHEEL.release();
+}
+
+/// The detents summed for the file selector since its last take —
+/// [`WheelClaim::take`].
+pub(crate) fn fsel_wheel_take() -> i32 {
+    FSEL_WHEEL.take()
+}
+
 /// EmuTOS `wheel_change(wheel_number, wheel_amount)` (`aes/geminput.c:394-
 /// 420`) — the AES's end of the wheel chain, reached through the VDI's
 /// `user_wheel` vector ([`crate::vdi::mouse::install_aes_wheel`],
@@ -1005,9 +1104,23 @@ pub(super) fn pending_transition() -> Option<(u8, i16)> {
 /// The menu guard is EmuTOS's, unchanged: while the Control Manager owns the
 /// mouse (`gl_mowner == ctl_pd`, i.e. a menu is being tracked) the wheel is
 /// ignored.
+///
+/// ## While the file selector runs (A128, sanctioned deviation)
+///
+/// Between [`fsel_wheel_claim`] and [`fsel_wheel_release`] — the modal loop of
+/// `fsel_input`/`fsel_exinput` — the detent goes to the file selector instead:
+/// counted into its pending sum when the pointer (`xrat`/`yrat`) is over the
+/// file list or the slider track, discarded anywhere else, and **never**
+/// posted as `WM_ARROWED` to a window behind the dialog
+/// (`docs/api/aes/resource-fileselector.md` "A128", decisions 1-3;
+/// `docs/COMPATIBILITY.md`). Other `form_do` dialogs are not affected.
 pub(crate) fn wheel_change(_wheel_number: i16, wheel_amount: i16) {
     // `if (gl_mowner == ctl_pd) return;` (`aes/geminput.c:400-402`)
     if !GL_MOWNER_APP.load(Ordering::Relaxed) {
+        return;
+    }
+    // A128: the file selector holds the wheel — count or discard, never send.
+    if FSEL_WHEEL.feed(XRAT.load(Ordering::Relaxed), YRAT.load(Ordering::Relaxed), wheel_amount) {
         return;
     }
     // `if (wheel_amount > 0) WA_DNLINE; else if (< 0) WA_UPLINE; else return;`
@@ -1036,5 +1149,60 @@ pub(crate) fn wheel_change(_wheel_number: i16, wheel_amount: i16) {
     // message to the live descriptor of `owner`.
     unsafe {
         super::pd::post_msg(owner, msg);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    //! A128 — the file selector's hold on the wheel ([`WheelClaim`]), on a
+    //! local instance so the test does not share the process-wide one.
+
+    use super::*;
+
+    const LIST: (i16, i16, i16, i16) = (100, 200, 154, 176);
+    const TRACK: (i16, i16, i16, i16) = (255, 222, 24, 132);
+
+    /// Unclaimed: `feed` declines, the ordinary `WM_ARROWED` path runs.
+    #[test]
+    fn unclaimed_wheel_goes_the_ordinary_way() {
+        let w = WheelClaim::new();
+        assert!(!w.feed(120, 250, 1));
+        assert_eq!(w.take(), 0);
+    }
+
+    /// Claimed: detents over the list or the track are summed (not merged),
+    /// one per detent, signed; detents anywhere else are consumed and
+    /// dropped; `take` clears the sum (decisions 2 and 3).
+    #[test]
+    fn claimed_wheel_sums_detents_over_list_and_track_and_drops_the_rest() {
+        let w = WheelClaim::new();
+        w.claim([LIST, TRACK]);
+        assert!(w.feed(120, 250, 1), "over the list");
+        assert!(w.feed(120, 250, 1));
+        assert!(w.feed(260, 300, 1), "over the track");
+        assert!(w.feed(10, 10, 1), "outside: consumed");
+        assert!(w.feed(254, 250, -1), "the gap between list and track: consumed, dropped");
+        assert_eq!(w.take(), 3);
+        assert_eq!(w.take(), 0, "take clears");
+        assert!(w.feed(120, 250, -1));
+        assert!(w.feed(120, 250, -1));
+        assert_eq!(w.take(), -2);
+        // Edges are half-open like `inside`.
+        assert!(w.hit(100, 200) && w.hit(253, 375));
+        assert!(!w.hit(254, 250) && !w.hit(120, 376) && !w.hit(99, 250));
+    }
+
+    /// Releasing drops a sum not yet taken and hands the wheel back; a new
+    /// claim starts from zero.
+    #[test]
+    fn release_drops_the_sum_and_unclaims() {
+        let w = WheelClaim::new();
+        w.claim([LIST, TRACK]);
+        w.feed(120, 250, 1);
+        w.release();
+        assert_eq!(w.take(), 0);
+        assert!(!w.feed(120, 250, 1));
+        w.claim([LIST, TRACK]);
+        assert_eq!(w.take(), 0);
     }
 }

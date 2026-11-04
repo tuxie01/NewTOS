@@ -33,7 +33,7 @@
 
 use super::form::{fm_dial, gl_rcenter};
 use super::object::{self, Object, ObjTree, TedInfo};
-use super::graf::gl_hbox;
+use super::graf::{gl_hbox, mul_div_round};
 use super::{resource, Aespb};
 use crate::host::host;
 use crate::uaccess::{Space, UserFault};
@@ -619,7 +619,16 @@ fn run(pb: &Aespb, label: u64) {
     // it is the same. The dispatcher waited for the lock before the dialog
     // was drawn ([`super::window::update_block`]).
     super::window::fm_own(true);
+    // A128 (sanctioned deviation, `docs/COMPATIBILITY.md`): for the life of
+    // the modal loop the selector holds the mouse wheel — detents over the
+    // file list or the slider track scroll it, all others are dropped, and
+    // none becomes a `WM_ARROWED` for a window behind the dialog.
+    {
+        let t = ObjTree::lp64(tree as *const Object);
+        super::input::fsel_wheel_claim(object::abs_rect_t(t, FILEBOX), object::abs_rect_t(t, FSVSLID));
+    }
     let button = modal(tree, backend);
+    super::input::fsel_wheel_release();
     super::window::fm_own(false);
 
     // Write the (possibly updated) path + selection back to the caller.
@@ -767,50 +776,109 @@ fn fs_format(tree: *mut Object) {
 }
 
 /// Size and position the slider thumb (FSVELEV) for the current scroll state
-/// — the second half of EmuTOS `fs_format` (`gemfslib.c:383-396`).
-///
-/// The `CONF_WITH_3D_OBJECTS` block at the end (`:388-391`) is the counterpart
-/// of [`fs_start`]'s FSVELEV adjustment: `fs_start` narrows the thumb by the
-/// bevel horizontally, this insets it vertically (`y += ADJ3DSTD`,
-/// `h -= 2*ADJ3DSTD`). Without it a full-track thumb would be drawn two pixels
-/// above and below its track, since a 3D object renders `ADJ3DSTD` larger on
-/// every side. EmuTOS notes the assumption the subtraction rests on: twice the
-/// adjustment is smaller than the `gl_hbox` floor the height is clamped to.
+/// — the second half of EmuTOS `fs_format` (`gemfslib.c:390-406`), computed by
+/// [`elevator_geometry`].
 fn size_elevator(tree: *mut Object) {
     // SAFETY: single-CPU AES; valid tree.
     unsafe {
         let count = *SYS.count.get();
+        let top = *SYS.top.get();
         let track_h = (*tree.add(FSVSLID as usize)).ob_height;
-        let mut y = 0i16;
-        let mut h = track_h;
-        if count > NM_NAMES {
-            h = (track_h * NM_NAMES as i16 / count as i16).max(gl_hbox());
-            y = (track_h - h) * *SYS.top.get() as i16 / (count - NM_NAMES) as i16;
-        }
+        let (y, h) = elevator_geometry(count, top, track_h, gl_hbox());
         let thumb = &mut *tree.add(FSVELEV as usize);
-        thumb.ob_y = y + ADJ3DSTD;
-        thumb.ob_height = h - 2 * ADJ3DSTD;
+        thumb.ob_y = y;
+        thumb.ob_height = h;
     }
 }
 
-/// Scroll the list by `delta` rows (clamped); reformat if it moved.
-fn scroll(tree: *mut Object, delta: i32) {
+/// The thumb's `(ob_y, ob_height)` for `count` entries scrolled to `top` in a
+/// track `track_h` high — EmuTOS `fs_format` (`gemfslib.c:390-406`):
+///
+/// ```c
+/// th = h = obj->ob_height;                        /* FSVSLID */
+/// if (count > NM_NAMES) {
+///     h = mul_div_round(NM_NAMES, h, count);
+///     h = max(gl_hbox, h);                        /* min size elevator */
+///     y = mul_div_round(currtop, th-h, count-NM_NAMES);
+/// }
+/// y += ADJ3DSTD; h -= 2 * ADJ3DSTD;               /* CONF_WITH_3D_OBJECTS */
+/// ```
+///
+/// Both divisions round away from zero ([`mul_div_round`], A128 decision 5).
+/// The 3D tail is the counterpart of [`fs_start`]'s horizontal FSVELEV
+/// narrowing: a 3D object renders `ADJ3DSTD` larger on every side, so without
+/// it a full-track thumb would be drawn two pixels above and below its track.
+/// EmuTOS notes the assumption the subtraction rests on: twice the adjustment
+/// is smaller than the `gl_hbox` floor.
+fn elevator_geometry(count: usize, top: usize, track_h: i16, hbox: i16) -> (i16, i16) {
+    let mut y = 0i16;
+    let mut h = track_h;
+    if count > NM_NAMES {
+        h = mul_div_round(NM_NAMES as i32, track_h as i32, count as i32) as i16;
+        h = h.max(hbox);
+        y = mul_div_round(top as i32, (track_h - h) as i32, (count - NM_NAMES) as i32) as i16;
+    }
+    (y + ADJ3DSTD, h - 2 * ADJ3DSTD)
+}
+
+/// The top index after scrolling `delta` rows from `curr` — EmuTOS
+/// `fs_nscroll`'s `|delta|` calls of `fs_1scroll` (`gemfslib.c:345-355,
+/// 433-434`). Each step moves one row and is pulled back into `0 …
+/// count-NM_NAMES`; a list that fits (`count <= NM_NAMES`) never moves. The
+/// iterated single steps and one clamp of `curr + delta` give the same end
+/// value (checked against the iterated form in the tests).
+fn nscroll_top(curr: usize, count: usize, delta: i32) -> usize {
+    if count <= NM_NAMES {
+        return curr;
+    }
+    let maxtop = (count - NM_NAMES) as i64;
+    (curr as i64 + delta as i64).clamp(0, maxtop) as usize
+}
+
+/// Scroll the list by `delta` rows (clamped, [`nscroll_top`]); if the top
+/// moved, reformat and redraw the list and the slider ([`fs_format`]) and
+/// return `true` — the caller then drops its selection, as `fs_nscroll`
+/// does with `fs_sel(*psel, NORMAL); *psel = 0` (`gemfslib.c:441-442`;
+/// `fs_format` puts every slot back to `NORMAL`).
+fn scroll(tree: *mut Object, delta: i32) -> bool {
     // SAFETY: single-CPU AES.
     let moved = unsafe {
-        let count = *SYS.count.get();
-        if count <= NM_NAMES {
-            false
-        } else {
-            let maxtop = (count - NM_NAMES) as i32;
-            let old = *SYS.top.get();
-            let new = (old as i32 + delta).clamp(0, maxtop) as usize;
-            *SYS.top.get() = new;
-            new != old
-        }
+        let old = *SYS.top.get();
+        let new = nscroll_top(old, *SYS.count.get(), delta);
+        *SYS.top.get() = new;
+        new != old
     };
     if moved {
         fs_format(tree);
     }
+    moved
+}
+
+/// A press on the slider track `FSVSLID` (`gemfslib.c:776-788`): `pt` is the
+/// thumb's `ob_actxywh` rect (3D-grown, [`object::ob_actxywh_t`]). Outside it
+/// the list pages by `NM_NAMES` rows — up when the press is at or above the
+/// thumb's top edge (`my <= pt.g_y`), down otherwise — and `Some(delta)` is
+/// returned; inside it the press falls through to the thumb drag (`None`).
+fn slider_click(mx: i16, my: i16, pt: (i16, i16, i16, i16)) -> Option<i32> {
+    let (x, y, w, h) = pt;
+    let inside = mx >= x && mx < x + w && my >= y && my < y + h;
+    if inside {
+        None
+    } else if my <= y {
+        Some(-(NM_NAMES as i32))
+    } else {
+        Some(NM_NAMES as i32)
+    }
+}
+
+/// The scroll `delta` for a thumb drag that ended at `value` (0..1000, from
+/// `gr_slidebox`) — `gemfslib.c:793-799`: target row `mul_div_round(value,
+/// count-NM_NAMES, 1000)`, `value = curr - target`, `value >= 0` → up by
+/// `value`, else down by `-value`; i.e. `delta = target - curr`, which
+/// [`nscroll_top`] then clamps (and ignores for a list that fits).
+fn drag_delta(curr: usize, count: usize, value: i16) -> i32 {
+    let target = mul_div_round(value as i32, count as i32 - NM_NAMES as i32, 1000);
+    target - curr as i32
 }
 
 /// Navigate the directory path into a sub-directory `name` from the list
@@ -1052,6 +1120,14 @@ fn modal(tree: *mut Object, backend: &dyn RasterBackend) -> i16 {
     };
 
     loop {
+        // A128: the wheel detents summed since the last pass, one row each
+        // (`input::WheelClaim`); like an arrow click, a move drops the
+        // selection (`fs_nscroll`, `gemfslib.c:441-442`).
+        let wheel = super::input::fsel_wheel_take();
+        if wheel != 0 && scroll(tree, wheel) {
+            cur_sel = -1;
+        }
+
         // Keyboard: route to the focused editable field.
         if let Some(w) = h.console_try_read_key() {
             // `fs_input` runs the dialog through `fm_do` (`aes/gemfslib.c:718`),
@@ -1098,10 +1174,41 @@ fn modal(tree: *mut Object, backend: &dyn RasterBackend) -> i16 {
                 }
             } else if hit == FSCANCEL {
                 return 0;
-            } else if hit == FUPAROW {
-                scroll(tree, -1);
-            } else if hit == FDNAROW {
-                scroll(tree, 1);
+            } else if hit == FUPAROW || hit == FDNAROW {
+                // `value = 1` (`gemfslib.c:772-775`) → `fs_nscroll`, which
+                // drops the selection when the list moved (`:441-442`).
+                if scroll(tree, if hit == FUPAROW { -1 } else { 1 }) {
+                    cur_sel = -1;
+                }
+            } else if hit == FSVSLID || hit == FSVELEV {
+                // `FSVSLID`: a press beside the thumb pages by `NM_NAMES`
+                // (`gemfslib.c:776-787`); on the thumb it falls through to the
+                // `FSVELEV` drag (`:788-799`).
+                let page = if hit == FSVSLID {
+                    slider_click(mx, my, object::ob_actxywh_t(t, FSVELEV))
+                } else {
+                    None
+                };
+                let delta = match page {
+                    Some(d) => d,
+                    None => {
+                        // `fm_own(TRUE); value = gr_slidebox(tree, FSVSLID,
+                        // FSVELEV, TRUE); fm_own(FALSE);` (`:790-792`) — the
+                        // XOR outline drag through the kernel tree's LP64
+                        // accessor.
+                        super::window::fm_own(true);
+                        let value = super::graf::gr_slidebox(t, FSVSLID, FSVELEV, true);
+                        super::window::fm_own(false);
+                        // Decision 3: detents turned during the drag are dropped.
+                        let _ = super::input::fsel_wheel_take();
+                        // SAFETY: single-CPU AES.
+                        let (top, count) = unsafe { (*SYS.top.get(), *SYS.count.get()) };
+                        drag_delta(top, count, value)
+                    }
+                };
+                if scroll(tree, delta) {
+                    cur_sel = -1;
+                }
             } else if hit == FCLSBOX {
                 // EmuTOS FCLSBOX (gemfslib.c:839-848): walk one directory level
                 // up, unless already at the drive root ("X:\"). This is the
@@ -1399,6 +1506,144 @@ mod tests {
         assert_eq!(&back[..10], b"SAMPLE.PRG");
         unfmt_str(b"TEST", &mut back);
         assert_eq!(&back[..4], b"TEST");
+    }
+
+    // ─── A128: slider, paging, drag conversion, thumb geometry ──────────
+
+    /// EmuTOS `fs_1scroll` (`aes/gemfslib.c:345-355`), literally — the model
+    /// [`nscroll_top`] must agree with when iterated as `fs_nscroll` does.
+    fn fs_1scroll(curr: i32, count: i32, up: bool) -> i32 {
+        let mut newcurr = if up { curr - 1 } else { curr + 1 };
+        if newcurr < 0 {
+            newcurr += 1;
+        }
+        if count - newcurr < NM_NAMES as i32 {
+            newcurr -= 1;
+        }
+        if count > NM_NAMES as i32 { newcurr } else { curr }
+    }
+
+    /// `fs_nscroll`'s `n` single steps (`gemfslib.c:433-434`) end where one
+    /// clamp of `curr + delta` to `0..=count-9` ends, for every reachable
+    /// `curr`, short and long lists, and steps past either end (a page near
+    /// the end stops at the end).
+    #[test]
+    fn nscroll_top_equals_iterated_fs_1scroll() {
+        for count in 0..40usize {
+            let maxtop = count.saturating_sub(NM_NAMES);
+            for curr in 0..=maxtop {
+                for delta in -45i32..=45 {
+                    let mut m = curr as i32;
+                    for _ in 0..delta.unsigned_abs() {
+                        m = fs_1scroll(m, count as i32, delta < 0);
+                    }
+                    assert_eq!(
+                        nscroll_top(curr, count, delta) as i32,
+                        m,
+                        "count {count} curr {curr} delta {delta}"
+                    );
+                }
+            }
+        }
+    }
+
+    /// `fs_format`'s thumb (`gemfslib.c:390-406`) with `mul_div_round`
+    /// (A128 decision 5): `count = 30`, track 132, `gl_hbox` 19 — `h =
+    /// round(9*132/30 = 39.6) = 40` (truncation gave 39), `y` from
+    /// `round(top * 92 / 21)` (top 10: 43.8 → 44, truncation 43); then the 3D
+    /// tail `y += 2, h -= 4`.
+    #[test]
+    fn elevator_geometry_rounds_like_fs_format() {
+        assert_eq!(elevator_geometry(30, 0, 132, 19), (2, 36));
+        assert_eq!(elevator_geometry(30, 10, 132, 19), (46, 36));
+        assert_eq!(elevator_geometry(30, 21, 132, 19), (94, 36));
+        // A list that fits: the thumb fills the track (y = 0, h = th), 3D inset.
+        assert_eq!(elevator_geometry(9, 0, 132, 19), (2, 128));
+        assert_eq!(elevator_geometry(0, 0, 132, 19), (2, 128));
+        // The `gl_hbox` floor: round(9*132/2000 = 0.59) = 1 → 19.
+        assert_eq!(elevator_geometry(2000, 0, 132, 19), (2, 15));
+        // 2000 entries, top 1000: round(1000 * 113 / 1991) = round(56.75) = 57.
+        assert_eq!(elevator_geometry(2000, 1000, 132, 19), (59, 15));
+        // 10 entries: h = round(118.8) = 119, top 1 → y = 13.
+        assert_eq!(elevator_geometry(10, 1, 132, 19), (15, 115));
+    }
+
+    /// `FSVSLID` (`gemfslib.c:776-788`): outside the thumb's `ob_actxywh`
+    /// rect the list pages by `NM_NAMES` — up at or above the top edge
+    /// (`my <= pt.g_y`), down below — inside it the press is a drag.
+    #[test]
+    fn slider_click_pages_outside_the_thumb_and_drags_inside() {
+        let pt = (100, 200, 24, 40);
+        assert_eq!(slider_click(110, 150, pt), Some(-9), "above the thumb");
+        assert_eq!(slider_click(110, 199, pt), Some(-9), "one pixel above");
+        assert_eq!(slider_click(110, 200, pt), None, "on the top edge = inside");
+        assert_eq!(slider_click(110, 239, pt), None, "on the bottom row");
+        assert_eq!(slider_click(110, 240, pt), Some(9), "just below");
+        assert_eq!(slider_click(130, 200, pt), Some(-9), "right of it at the top edge: my <= g_y");
+        assert_eq!(slider_click(130, 220, pt), Some(9), "right of it, lower");
+    }
+
+    /// The drag conversion (`gemfslib.c:793-799`): target row =
+    /// `mul_div_round(value, count-9, 1000)`, the scroll is `target - curr`;
+    /// a list that fits never moves (the clamp in [`nscroll_top`]).
+    #[test]
+    fn drag_delta_converts_the_slidebox_value_to_rows() {
+        assert_eq!(drag_delta(0, 30, 1000), 21);
+        assert_eq!(drag_delta(0, 30, 0), 0);
+        // 500 * 21 / 1000 = 10.5 → 11 (away from zero).
+        assert_eq!(drag_delta(0, 30, 500), 11);
+        assert_eq!(drag_delta(15, 30, 500), -4);
+        assert_eq!(drag_delta(21, 30, 0), -21);
+        // count <= 9: the delta may be anything, the top stays.
+        assert_eq!(nscroll_top(0, 5, drag_delta(0, 5, 1000)), 0);
+        assert_eq!(nscroll_top(0, 9, drag_delta(0, 9, 700)), 0);
+    }
+
+    /// The thumb drag on the real `FSELECTR` geometry, without moving the
+    /// pointer (the outline stays where `gr_slidebox` started it): FSVELEV is
+    /// `FL3DACT` in a non-3D track, so the outline is the thumb grown by
+    /// `ADJ3DSTD` and moved up/left by it, and the value gets `ADJ3DSTD`
+    /// back (`gemgrlib.c:368-386,402-407`). For 30 entries at top 10 the
+    /// thumb sits at `y = 44` (+2 = `ob_y` 46): value `round(46*1000/92) =
+    /// 500`, target `round(10.5) = 11` — EmuTOS scrolls one row down on a
+    /// click on the thumb that does not move it. At top 0 nothing moves.
+    #[test]
+    fn thumb_press_without_motion_follows_gr_slidebox_on_the_fselectr_tree() {
+        let (_buf, tree) = fresh_tree();
+        fs_start(tree);
+        let t = ObjTree::lp64(tree as *const Object);
+        for (top, want_value, want_delta) in [(0usize, 0i16, 0i32), (10, 500, 1), (21, 1000, 0)] {
+            let (y, h) = elevator_geometry(30, top, t.height(FSVSLID), 19);
+            // SAFETY: valid tree.
+            unsafe {
+                (*tree.add(FSVELEV as usize)).ob_y = y;
+                (*tree.add(FSVELEV as usize)).ob_height = h;
+            }
+            let (rx, ry, w, hh, adj) = super::super::graf::slidebox_outline(
+                (t.x(FSVELEV), t.y(FSVELEV), t.width(FSVELEV), t.height(FSVELEV)),
+                t.flags(FSVELEV),
+                t.flags(FSVSLID),
+            );
+            assert!(adj, "FL3DACT thumb in a non-3D track: xy_adjust");
+            assert_eq!((rx, w, hh), (0, 24, h + 4), "outline = the drawn thumb");
+            let c = object::ob_actxywh_t(t, FSVSLID);
+            assert_eq!(c, object::abs_rect_t(t, FSVSLID), "the track is not 3D");
+            let v = super::super::graf::slidebox_value(true, (c.0 + rx, c.1 + ry, w, hh), c, adj);
+            assert_eq!(v, want_value, "top {top}");
+            assert_eq!(drag_delta(top, 30, v), want_delta, "top {top}");
+        }
+    }
+
+    /// The thumb is `FL3DACT`, neither `OUTLINED` nor `SHADOWED`, so its
+    /// `ob_actxywh` (`gemoblib.c:313-336`) is its rect grown by `ADJ3DSTD`
+    /// on every side — the rect the `FSVSLID` page test reads (`:777`).
+    #[test]
+    fn thumb_actxywh_is_the_rect_grown_by_adj3dstd() {
+        let (_buf, tree) = fresh_tree();
+        fs_start(tree);
+        let t = ObjTree::lp64(tree as *const Object);
+        let (x, y, w, h) = object::abs_rect_t(t, FSVELEV);
+        assert_eq!(object::ob_actxywh_t(t, FSVELEV), (x - 2, y - 2, w + 4, h + 4));
     }
 
     /// EmuTOS `fs_format` (`aes/gemfslib.c:365-376`): each visible slot's raw

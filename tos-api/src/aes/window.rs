@@ -4489,7 +4489,7 @@ pub(super) fn update_block() -> Option<crate::bdos::process::sched::Switch> {
 ///
 /// Reached after [`update_block`] (an opcode — `wind_update`, the
 /// `fm_own(TRUE)` opcodes, and the AES's own takers behind opcodes 19, 70,
-/// 71, 90, 91 and [`opcode_takes_lock`]'s four, A118) or from inside the AES
+/// 71, 76 (A128), 90, 91 and [`opcode_takes_lock`]'s four, A118) or from inside the AES
 /// with the lock already the caller's (an `fm_own(TRUE)` nested in a dialog,
 /// the Control Manager's own drags), so the take succeeds. The exceptions are
 /// takers that cannot give the CPU away — a host-less unit test, and the
@@ -5422,7 +5422,11 @@ fn rc_constrain(pc: Grect, pt: &mut Grect) {
 /// no `WM_REDRAW` asked its owner for it either, so every drag step left the
 /// moving window's leading edge behind: the comb of one-pixel vertical lines,
 /// one per pointer step, reported from a real Pi 4.
-fn gr_dragbox(
+///
+/// Shared with [`super::graf::gr_slidebox`], which drags its (3D-adjusted)
+/// elevator outline through this same routine, as EmuTOS `gr_slidebox` calls
+/// `gr_dragbox` (`aes/gemgrlib.c:388-389`, A128).
+pub(super) fn gr_dragbox(
     h: &'static dyn Host,
     w: i16,
     hgt: i16,

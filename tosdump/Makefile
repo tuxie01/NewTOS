@@ -36,6 +36,8 @@
 #   make rsprobe-newtos   RSPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make akprobe-m68k     AKPROBE.PRG, the AES keyboard state (probes/akprobe.c)
 #   make akprobe-newtos   AKPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make sbprobe-m68k     SBPROBE.PRG, graf_slidebox without a drag (probes/sbprobe.c)
+#   make sbprobe-newtos   SBPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make dcprobe-m68k     DCPROBE.PRG, what one Dcreate costs (probes/dcprobe.c)
 #   make dcprobe-newtos   DCPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make hzprobe-newtos   HZPROBE.NAP, _hz_200 in user state while Super
@@ -84,7 +86,7 @@ BUILD := build
         axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
         sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
         vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
-        akprobe-m68k akprobe-newtos dcprobe-m68k dcprobe-newtos hzprobe-newtos host-test clean
+        akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos dcprobe-m68k dcprobe-newtos hzprobe-newtos host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
      scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
@@ -92,7 +94,7 @@ all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
      sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
      vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
-     akprobe-m68k akprobe-newtos dcprobe-m68k dcprobe-newtos hzprobe-newtos host-test
+     akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos dcprobe-m68k dcprobe-newtos hzprobe-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -275,6 +277,18 @@ $(BUILD)/AKPROBE.PRG: probes/akprobe.c abi/m68k_trap.c core/abi.h | $(BUILD)
 akprobe-newtos: $(BUILD)/AKPROBE.NAP
 $(BUILD)/AKPROBE.NAP: probes/akprobe.c abi/newtos_svc.c core/abi.h build-akprobe-newtos.sh | $(BUILD)
 	./build-akprobe-newtos.sh $@
+
+# The graf_slidebox probe (TASK/A128): no disk, no input -- the call is made
+# with the button up, so gr_dragbox returns at once. An AES client: the AES
+# calls go through the ABI backends. Run by probes/run-sbprobe.sh.
+sbprobe-m68k: $(BUILD)/SBPROBE.PRG
+$(BUILD)/SBPROBE.PRG: probes/sbprobe.c abi/m68k_trap.c core/abi.h | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror -Icore probes/sbprobe.c abi/m68k_trap.c -o $@
+	@$(CROSS_MINT)size $@
+
+sbprobe-newtos: $(BUILD)/SBPROBE.NAP
+$(BUILD)/SBPROBE.NAP: probes/sbprobe.c abi/newtos_svc.c core/abi.h build-sbprobe-newtos.sh | $(BUILD)
+	./build-sbprobe-newtos.sh $@
 
 # The Dcreate cost probe (TASK/FS26): profile disk (C: = an IDE image), counts
 # EmuTOS' sector accesses through hdv_rw. Run by probes/run-dcprobe.sh.

@@ -1,0 +1,7 @@
+# virt calibration: park top-left, hover the menu titles.
+at(14); shot("boot")
+move(-3000, -3000); at(16); shot("park")
+move(60, 8); at(17); shot("t60")
+move(60, 0); at(18); shot("t120")
+move(60, 0); at(19); shot("t180")
+move(60, 0); at(20); shot("t240")

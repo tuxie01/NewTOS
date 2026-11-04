@@ -867,13 +867,16 @@ fn crysbind(pb: &Aespb) -> Option<crate::bdos::process::sched::Switch> {
     // The same wait for the AES's other takers (A118): `ap_exit`'s own
     // `wm_update(BEG_UPDATE)` (`aes/gemaplib.c:253`); `gr_rubwind`/
     // `gr_dragbox` behind `graf_rubberbox`/`graf_dragbox`
-    // (`aes/gemgrlib.c:205,250`); `fs_input`'s `fm_do` (`aes/gemfslib.c:718`,
+    // (`aes/gemgrlib.c:205,250`) and behind `graf_slidebox`'s `gr_slidebox`
+    // (`:388`, A128; for a call `graf_slidebox` does not refuse first);
+    // `fs_input`'s `fm_do` (`aes/gemfslib.c:718`,
     // after the NULL-path refusal, `:630-631`); and `wm_open`/`wm_close`/
     // `wm_delete`/`wm_set` for a call they do not refuse first
     // ([`window::opcode_takes_lock`]).
     let takes_screen = match opcode {
         19 | 36 | 50 | 52 | 70 | 71 => true,
         53 => pb.intin(0) <= 63,
+        76 => graf::slidebox_takes_lock(pb.addrin(0), pb.intin(0), pb.intin(1)),
         90 | 91 => pb.addrin(0) != 0,
         101 | 102 | 103 | 105 => window::opcode_takes_lock(opcode, pb),
         _ => false,
