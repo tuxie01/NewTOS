@@ -1,6 +1,6 @@
 # REL07 — Release NewTOS 0.7 (Alpha) fuer die Tester
 
-Status: **OFFEN** (veroeffentlicht 2026-11-04; offen nur Schritt 6, Tester informieren) · Prioritaet: **P1** · Typ: Release — Anwenderentscheidung 2026-11-04
+Status: **ERLEDIGT** 2026-11-04 ([Quittung](REL07-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Release — Anwenderentscheidung 2026-11-04
 
 ## Anlass
 
@@ -150,5 +150,12 @@ GitHub-Pre-Release "NewTOS 0.7 (Alpha)"
 6602464 Byte, sha256 `a51913942d7c8f10427e5cf5e8ce001fc4514f744a98265457e5245a8ecbbbba`;
 nach dem Hochladen heruntergeladen und pruefsummengleich. Release-Text EN+DE
 wie 0.6.1 aufgebaut, aus `docs/release/v0.7/`.
+
+## Stand Schritt 6 (Tester informiert, 2026-11-04)
+
+Nach Freigabe des Anwenders gepostet: #3 an ragnar76 (0.7, Funkempfaenger,
+Bitte um erneuten Menue-Test fuer [A127](A127.md)), #8 an wosch163 (Rad der
+Kabelmaeuse folgt mit [USB03](USB03.md)); #9 mit Antwort geschlossen
+(Anwender: der Lead schliesst, nicht der Tester).
 
 [Gemeinsame Regeln](README.md) gelten.
