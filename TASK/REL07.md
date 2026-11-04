@@ -1,6 +1,6 @@
 # REL07 — Release NewTOS 0.7 (Alpha) fuer die Tester
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Release — Anwenderentscheidung 2026-11-04
+Status: **OFFEN** (veroeffentlicht 2026-11-04; offen nur Schritt 6, Tester informieren) · Prioritaet: **P1** · Typ: Release — Anwenderentscheidung 2026-11-04
 
 ## Anlass
 
@@ -141,5 +141,14 @@ Anwenderkarte: *„soweit passt alles, die Version wird auch richtig
 reported“* (`docs/HW-TEST-LOG.md`). Naechster Schritt: Veroeffentlichen erst
 nach ausdruecklichem Go (Push, Tag `v0.7`, Pre-Release mit ZIP), dann Texte an
 die Tester zur Freigabe.
+
+## Stand Schritt 5 (veroeffentlicht 2026-11-04, Anwender-Go)
+
+`main` gepusht (`282bf336..154f69e2`), Tag `v0.7` (annotiert) auf `d7711c42`,
+GitHub-Pre-Release "NewTOS 0.7 (Alpha)"
+(https://github.com/tuxie01/NewTOS/releases/tag/v0.7) mit `NewTOS-0.7.zip`,
+6602464 Byte, sha256 `a51913942d7c8f10427e5cf5e8ce001fc4514f744a98265457e5245a8ecbbbba`;
+nach dem Hochladen heruntergeladen und pruefsummengleich. Release-Text EN+DE
+wie 0.6.1 aufgebaut, aus `docs/release/v0.7/`.
 
 [Gemeinsame Regeln](README.md) gelten.
