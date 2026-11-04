@@ -1,6 +1,6 @@
 # PROC08 — Rueckkehr aus `Pexec(4)` findet die Code-Seite des Elternprozesses nicht
 
-Status: **OFFEN — wieder aufgetreten 2026-11-04, Befund Kandidat B** (Foto des Schirmberichts, `measurements/measurement-2026-11-04-proc08-recur/RUNINFO.TXT`; vorher wartend seit 2026-11-04; angelegt 2026-10-31) · Prioritaet: **P1** · Typ: Kernfehler — Ursachenforschung zuerst, Fix erst nach Vorlage der Ursache — Fund C1-2 aus [PITEST01](PITEST01.md), Lauf C1
+Status: **ZURUECKGESTELLT — to be tested** 2026-11-04 (Anwender: Fix `01eb7709` auf der Karte, 60 zView-Starts ohne Absturz; nicht schliessen, im Alltag und bei den Testern weiter beobachten; Kartenkern mit `crash-walk` samt Leiter) · Prioritaet: **P1** · Typ: Kernfehler — Ursachenforschung zuerst, Fix erst nach Vorlage der Ursache — Fund C1-2 aus [PITEST01](PITEST01.md), Lauf C1
 
 Vor-Start-Pruefung: Produkt-Ticket, Kartenprogramm betroffen (zView laedt
 seine Bildformat-Module so); jedes Programm, das per `Pexec` 3+4 Module oder
@@ -408,5 +408,15 @@ ein datierter Stand und bleibt unverändert.
 - **Ohne Feature** ist der Kern bytegleich mit HEAD (rpi4 und qemu-virt,
   release und dev, locdiff 0 Bytes). Abnahme der Aussage bleibt die Pi: der
   nächste PROC08-Absturz mit diesem Kern zeigt die Leiterzeile auf dem Foto.
+
+## Stand 2026-11-04 — Pi mit Fix (Anwender)
+
+Kern `d8ab0c47…` (Fix `01eb7709` + `crash-walk`, ohne Leiter;
+`measurements/measurement-2026-11-04-proc08-fix-card/RUNINFO.TXT`). Vor dem Fix
+(Kern `6407f17c…`) trat der Absturz beim Anwender mehrmals hintereinander auf.
+Mit dem Fix: 20 zView-Starts, Neustart, 20 Starts, Accessories geoeffnet,
+20 Starts — kein Absturz; die Pi startet mit der geaenderten Stage-2-Stelle
+normal. Anwender: nicht schliessen, als "to be tested" zurueckstellen; das
+Release 0.7 ([REL07](REL07.md)) traegt `crash-walk` mit Leiter zu den Testern.
 
 [Gemeinsame Regeln](README.md) gelten.
