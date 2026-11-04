@@ -1795,3 +1795,307 @@ as success — an empty list, not an error (`gemfslib.c:330-336,733-754`).
   file selector's own `GEM.RSC`) run against a real resource tree → high
   value for compatibility, even though the on-disk byte format itself is
   NewTOS-native rather than the classic Atari one.
+
+---
+
+## A128 — Schieber (FSVSLID/FSVELEV) und Mausrad der Dateiauswahl
+
+> **ENTWURF / DRAFT — wartet auf Freigabe durch den Anwender (TASK/A128
+> Schritt 1).** Nichts hiervon ist umgesetzt. Quelle Teil A: EmuTOS @ `1a7484ab`
+> (`aes/gemfslib.c`, `aes/gemgrlib.c`, `aes/gemfmlib.c`, `util/miscasm.S`).
+> Teil B ist eine NewTOS-Ergaenzung ohne EmuTOS-Vorbild; XaAES nur als
+> Gegenprobe. Gelesen = mit `file:line` belegt; Schluss = "(Schluss)" markiert.
+
+### A. Schieber, wie EmuTOS ihn behandelt
+
+Die Dialogschleife `fs_input` ruft `fm_do(tree, FSSELECT)` (`gemfslib.c:718`),
+liest danach die Mausposition `gsx_mxmy(&mx, &my)` (`:719`) und verzweigt auf das
+Objekt, das `fm_do` meldet (`:760`). `FSVSLID` und `FSVELEV` sind im Baum
+`TOUCHEXIT` (`aes/gem_rsc.c:403-413`), `fm_do` kehrt also schon beim Tastendruck
+zurueck. Unten: `NM_NAMES = F9NAME-F1NAME+1 = 9` Zeilen (`gemfslib.c:37`);
+`count` = Zahl der Eintraege, `curr` = Index des obersten sichtbaren Eintrags.
+
+**A1. Klick in die Leiste ausserhalb des Daumens (`FSVSLID`)** — `:776-788`
+
+1. `ob_actxywh(tree, FSVELEV, &pt)` holt das absolute Rechteck des Daumens
+   (`:777`). Das ist das Rechteck des Objekts **ohne** 3D-Zugabe (`ob_actxywh`
+   kennt `ADJ3DSTD` nicht; Schluss — `ob_actxywh` selbst nicht gelesen).
+2. `!inside(mx, my, &pt)` (`:782`): Klick ausserhalb des Daumens →
+   `touchob = (my <= pt.g_y) ? FUPAROW : FDNAROW` (`:784`) und
+   `value = NM_NAMES` (`:785`). Klick auf oder ueber der Daumenoberkante
+   blaettert hoch, darunter runter; `my` ist die Position beim Rueckkehren von
+   `fm_do`, nicht beim Druck (`:719`).
+3. Klick **im** Daumen faellt durch (`FALLTHROUGH`, `:788`) in den
+   `FSVELEV`-Fall (A2). Da der Daumen als 3D-Objekt zwei Pixel groesser
+   gezeichnet wird als sein Rechteck (`gemfslib.c:101-104`, `gemgrlib.c:375-378`),
+   gilt ein Klick auf den 2-Pixel-Rand des Daumens als "ausserhalb" (Schluss
+   aus `:777` + `:782`).
+
+**A2. Ziehen am Daumen (`FSVELEV`)** — `:789-801`
+
+```
+fm_own(TRUE);                                        /* :790 */
+value = gr_slidebox(tree, FSVSLID, FSVELEV, TRUE);   /* :791, 0..1000 */
+fm_own(FALSE);                                       /* :792 */
+value = curr - mul_div_round(value, count-NM_NAMES, 1000);   /* :793 */
+if (value >= 0) touchob = FUPAROW;                   /* :794-795 */
+else { touchob = FDNAROW; value = -value; }          /* :796-799 */
+```
+
+* `fm_own(TRUE)` (`gemfmlib.c:82-95`): `wm_update(BEG_UPDATE)`; beim ersten
+  Eintritt (`ml_ocnt == 0`) Menuebaum parken (`gl_mntree = NULL`), Maus-Besitzer
+  und Kontrollrechteck merken, `ct_chgown(rlr, &gl_rscreen)` — der Aufrufer
+  besitzt die Maus ueber den ganzen Schirm; `ml_ocnt++`. `fm_own(FALSE)`
+  (`:97-106`) macht es rueckgaengig.
+* `gr_slidebox` (`gemgrlib.c:358-413`):
+  * `c` = absolutes Rechteck des Elternobjekts (`:365`), `t` = relatives
+    Rechteck des Kindes (`:366`).
+  * `CONF_WITH_3D_OBJECTS` (`:368-386`): hat das Kind `FL3DOBJ`, wird `t.g_w`
+    und `t.g_h` um `2*ADJ3DSTD` vergroessert; hat das Elternobjekt **kein**
+    `FL3DOBJ`, wird zusaetzlich `t.g_x`/`t.g_y` um `ADJ3DSTD` verkleinert und
+    `xy_adjust = TRUE` gesetzt. Fuer die Dateiauswahl: `FSVELEV` hat `FL3DACT`
+    (`gemfslib.c:102`, enthaelt das `FL3DOBJ`-Bit, `include/obdefs.h:92,96`),
+    `FSVSLID` bekommt kein 3D-Flag (`:95-99` aendert nur Mass und Muster) →
+    beide Anpassungen greifen.
+  * `gr_dragbox(t.g_w, t.g_h, t.g_x + c.g_x, t.g_y + c.g_y, &c, &t.g_x, &t.g_y)`
+    (`:388-389`): zieht eine **XOR-Rahmenlinie** (`gr_setup(BLACK)`, `gr_wait`)
+    in Groesse des (3D-vergroesserten) Daumens, mit der Maus, begrenzt auf `c`
+    (`rc_constrain` im Zugzyklus von `gr_dragbox`, `rc_constrain` selbst nicht gelesen), bis die Taste losgelassen wird. Das
+    Objekt selbst wird **nicht** bewegt und nichts gezeichnet. Greifpunkt:
+    `offx/offy = max(rat - (sx+1) + 1, 0)` ueber `gr_clamp(sx+1, sy+1, 0, 0, …)`
+    (`gr_clamp` `:83-88`, Aufruf in `gr_dragbox`), d.h. der Abstand
+    Maus↔Rahmenecke zum Zeitpunkt des Aufrufs bleibt erhalten; `gr_dragbox`
+    klammert den Zug mit `wm_update(BEG_UPDATE/END_UPDATE)`.
+  * Ergebnis: vertikal `divnd = t.g_y - c.g_y`, `divis = c.g_h - t.g_h`
+    (`:391-395`); danach (3D) `if (xy_adjust && divnd) divnd += ADJ3DSTD;
+    if (divnd > divis) divnd = divis;` (`:402-407`); Rueckgabe
+    `divis ? mul_div_round(divnd, 1000, divis) : 0` (`:409-412`).
+    Der `+ADJ3DSTD`-Aufschlag macht aus der Rahmenposition (Rahmen hat die
+    3D-Oberkante) wieder die Objektposition (Schluss).
+* `mul_div_round(a, b, c)` = `(a*b/c)` **von Null weg gerundet**, gerechnet als
+  `((a*b*2/c) ± 1) / 2` (`util/miscasm.S:151-160`; nur die Beschreibung gelesen,
+  der Rumpf nur fuer ColdFire — NewTOS' `mul_div_round`
+  (`tos-api/src/aes/graf.rs:127@mul_div_round`) implementiert dieselbe Formel).
+* Umrechnung in Zeilen (`:793`): Zielindex = `mul_div_round(pos, count-9, 1000)`;
+  `value = curr - Ziel`. `value >= 0` heisst "hoch um `value`" (`FUPAROW`),
+  sonst "runter um `-value`" (`FDNAROW`). Bei `count <= 9` ist `count-9 <= 0`;
+  die Schleife aendert dann nichts (siehe A3, `fs_1scroll` `:354`).
+
+**A3. Ausfuehrung des Blaetterns (beide Faelle)** — `:908-910`, `:345-355`, `:424-478`
+
+* Nach der Auswertung `if (value) curr = fs_nscroll(tree, &sel, curr, count,
+  touchob, value);` (`gemfslib.c:909-910`). Der Pfeil-Fall setzt `value = 1`
+  (`:772-775`), Seitenklick `value = 9` (A1), Ziehen `|curr - Ziel|` (A2).
+* `fs_nscroll` ruft `fs_1scroll` `n`-mal (`:433-434`). `fs_1scroll`
+  (`:345-355`): `newcurr = curr ∓ 1` (`FUPAROW` = minus); `newcurr < 0` →
+  `++`; `count - newcurr < NM_NAMES` → `--`; Ergebnis nur wenn
+  `count > NM_NAMES`, sonst `curr`. Damit **Klammerung auf `0 … count-9`**
+  nach jedem Einzelschritt; ein Seitenklick nahe dem Ende stoesst an, ohne zu
+  ueberlaufen.
+* Hat sich `curr` geaendert (`:437-438`): Auswahl aufheben —
+  `fs_sel(*psel, NORMAL); *psel = 0` (`:441-442`) — , `fs_format(tree, curr,
+  count)` (`:443`), dann Neuzeichnen: bei `|Delta| < 9` Blit der verbleibenden
+  Zeilen (`bb_screen`, `:450-461`) und Zeichnen der frei gewordenen Zeilen von
+  `FILEBOX` sowie des Schiebers `FSVSLID` mit `MAX_DEPTH` (`:468-474`); bei
+  `|Delta| >= 9` die ganze Liste. Das Blitten ist reine Darstellung
+  (Implementierungsdetail); sichtbar vertraglich sind: Auswahl-Hervorhebung
+  verschwindet beim Blaettern, Liste und Daumen werden neu gezeichnet.
+* Geometrie des Daumens in `fs_format` (`:390-406`): `th = h = ob_height(FSVSLID)`;
+  falls `count > 9`: `h = mul_div_round(9, th, count)`, `h = max(gl_hbox, h)`,
+  `y = mul_div_round(curr, th-h, count-9)` (`:394-399`); `count <= 9`: Daumen
+  fuellt die Leiste (`y=0, h=th`). 3D: `y += ADJ3DSTD; h -= 2*ADJ3DSTD`
+  (`:400-403`); `FSVELEV.ob_y = y`, `.ob_height = h` (`:404-406`).
+  Die Leiste hat nach `fs_start` die Hoehe 132 px im NewTOS-Baum
+  (`tos-api/src/aes/fsel.rs:1263@fs_start_applies_every_geometry_adjustment_of_the_3d_pass`).
+
+**Vertrag vs. Interna.** Beobachtbar (Vertrag): Seitenklick = 9 Zeilen mit
+Klammerung; Ziehposition → Zielindex nach `mul_div_round(pos, count-9, 1000)`;
+Daumenhoehe/-lage nach A3 (Rundung!); Auswahl wird beim Blaettern geloescht;
+Klick auf den Rand des Daumens gilt als Seitenklick. Intern (frei): Blit,
+Zeichenreihenfolge, `fm_own`-Mechanik, solange die Maus dem Aufrufer gehoert.
+
+### A-NewTOS. Was NewTOS heute tut
+
+Eigene Schleife `modal` (`tos-api/src/aes/fsel.rs:1022@modal`), kein `fm_do`;
+der Aufruf ist von `fm_own(true/false)` umschlossen
+(`tos-api/src/aes/fsel.rs:621@fm_own`, `tos-api/src/aes/window.rs:4643@fm_own`).
+Trefferpruefung `hit_test_t`, dann Verzweigung: nur `FUPAROW` und `FDNAROW`
+(`tos-api/src/aes/fsel.rs:1101@FUPAROW`) rufen `scroll(tree, ∓1)`.
+
+| EmuTOS | NewTOS | Befund |
+|---|---|---|
+| `FSVSLID` ausserhalb Daumen → 9 Zeilen | kein Zweig | **fehlt** |
+| `FSVELEV` → `fm_own`+`gr_slidebox`+Umrechnung | kein Zweig | **fehlt** |
+| `fs_nscroll` Klammerung `0..count-9` | `scroll()` (`fsel.rs:797@scroll`) klammert `old+delta` auf `0..count-9` | Ergebnis gleich (Schluss: iteriertes `fs_1scroll` und einmalige Klammerung liefern fuer `count>9` denselben Endwert); `scroll(±9)` und `scroll(Ziel-top)` genuegen |
+| Auswahl loeschen beim Blaettern (`:441-442`) | `scroll()` fasst `cur_sel` nicht an; `fs_format` setzt zwar alle `ob_state` auf NORMAL (`fsel.rs:736@fs_format`), `cur_sel` bleibt aber veraltet | **Abweichung** (auch bei den Pfeilen) |
+| Daumen `mul_div_round` (`:396,398`) | `size_elevator` (`fsel.rs:779@size_elevator`) rechnet `track_h*9/count` und `(track_h-h)*top/(count-9)` **abgerundet** | **Abweichung**: z.B. `count=30`, Leiste 132: EmuTOS `h = round(1188/30) = round(39.6) = 40`, NewTOS `39` (nachgerechnet aus den Formeln, nicht gemessen) |
+| `gr_slidebox` | `graf_slidebox` (`tos-api/src/aes/graf.rs:439@graf_slidebox`) existiert | Abweichungen unten |
+
+**`graf_slidebox` gegenueber `gr_slidebox`** (alle vier aendern die Zugmathematik
+oder das Bild, sobald es fuer die Dateiauswahl benutzt wird):
+
+1. **Keine 3D-Anpassung** (`gemgrlib.c:368-386,402-407` fehlt). NewTOS rechnet
+   `travel = height(parent) - height(obj)` und `c0 = y(obj)` mit dem
+   Objektrechteck (`graf.rs:439@graf_slidebox`, Zeilen `let (travel, c0)`). Beim
+   Dateiauswahl-Daumen (Objekt `h-4` hoch, `ob_y = y+2`) ist `travel` um 4 px zu
+   gross (`th-h+4` statt `th-h`) und der Greifpunkt um 2 px verschoben. Folge:
+   der Daumen laesst sich 2 px ueber die Leistenoberkante und 2 px unter die
+   Unterkante ziehen, der Wert 0/1000 wird nur dort erreicht, und die Zuordnung
+   `pos = rel/travel` ist gegenueber EmuTOS um ca. 2 px / `th-h` (etwa 2 %
+   bei `th-h = 92`) versetzt (Schluss; Zahlen aus den oben genannten Massen).
+2. **Bild:** NewTOS bewegt das **echte Objekt** (`t.set_y`) und zeichnet das
+   Elternobjekt in jedem Schritt neu (`object::draw_obj`); EmuTOS zieht nur eine
+   XOR-Rahmenlinie und laesst das Objekt unberuehrt (`gr_dragbox`). Folge fuer
+   die Dateiauswahl: nach dem Loslassen steht `ob_y` des Daumens auf der
+   Ziehposition; aendert sich `top` nicht (z.B. am Anschlag), bleibt der Daumen
+   falsch stehen, bis `size_elevator` + Neuzeichnen ihn zuruecksetzen.
+   Das gilt auch fuer jeden App-Aufruf von `graf_slidebox`.
+3. **Zugriffsbreite:** `graf_slidebox` liest den Baum ueber `ObjTree::new`
+   (ABI des laufenden Programms). Der FSELECTR-Baum ist kernelgebaut und immer
+   LP64 (`tos-api/src/aes/fsel.rs:607@fm_dial`, Kommentar "LP64"). Eine Variante mit uebergebenem
+   `ObjTree` (wie `watchbox_t`, `graf.rs:416@watchbox_t`) wird gebraucht;
+   solange nur LP64-Programme laufen, ist die Luecke ruhend.
+4. **Greifpunkt:** gleiche Formel (`off = max(mouse - elev, 0)`), aber mit dem
+   rohen Objektursprung; EmuTOS uebergibt den 3D-korrigierten (`-2`).
+   Nicht geprueft: ob `rc_constrain` (EmuTOS) und `clamp(0, hi)` (NewTOS) an den
+   Raendern gleich begrenzen (`rc_constrain` nicht gelesen) → **braucht tiefere
+   Analyse**, falls es auf Pixel ankommt.
+
+**Zu bauen (Vorschlag, Entwickler):** (a) in `modal` Zweige `FSVSLID`
+(Seitenklick/Daumen) und `FSVELEV` nach A1/A2; (b) `graf_slidebox` fuer 3D
+angleichen und ein `…_t`-Gegenstueck mit `ObjTree` anbieten; (c) `size_elevator`
+mit `mul_div_round`; (d) Auswahl beim Blaettern loeschen. Das Ziel `top`
+darf direkt `clamp(mul_div_round(pos, count-9, 1000), 0, count-9)` gesetzt
+werden (A3).
+
+### B. Mausrad in der Dateiauswahl (NewTOS-Ergaenzung)
+
+**B1. EmuTOS.** `wheel_change` ist implementiert, das Senden aber auskommentiert
+(`aes/geminput.c:395-424`, Kommentar `:411-417` nennt `forker()`/`rlr = -1`); das
+Rad bewirkt nirgends etwas. Es gibt also **kein EmuTOS-Verhalten**, das die
+Dateiauswahl erben koennte.
+
+**B2. Was NewTOS heute tut (Pfad gelesen, nicht gemessen).**
+
+1. VDI-Radvektor → `call_user_wheel`
+   (`tos-api/src/vdi/mouse.rs:572@call_user_wheel`), fuer den AES-Vektor
+   `aes_wheel` → `wheel_change`
+   (`tos-api/src/aes/input.rs:1008@wheel_change`).
+2. `wheel_change`: ignoriert, solange ein Menue die Maus hat
+   (`GL_MOWNER_APP` falsch); Betrag 0 ignoriert; Vorzeichen → `WA_DNLINE`/
+   `WA_UPLINE` (die **Groesse** von `wheel_amount` wird nicht benutzt, ein Rad-
+   Ereignis = eine Zeile); `wm_find(xrat, yrat)`
+   (`tos-api/src/aes/window.rs:5650@wm_find`) liefert das oberste offene Fenster
+   unter dem Zeiger, sonst `DESKWH` oder `-1`; `owner_of_window` → `post_msg`
+   mit `WM_ARROWED` (`tos-api/src/aes/input.rs:1008@wheel_change`, Rumpf).
+3. Waehrend die Dateiauswahl offen ist: `modal` ruft in jeder Runde
+   `h.pump_input()` (`fsel.rs:1184@pump_input`), dort laeuft die Radauslieferung.
+   `fm_own(true)` gibt dem Aufrufer die Maus und parkt nur das Menue; es setzt
+   **kein** Merkmal, das `wheel_change` auswertet (`GL_MOWNER_APP` bleibt wahr,
+   `tos-api/src/aes/window.rs:4643@fm_own`). Die Dateiauswahl ist kein Fenster; `wm_find` kennt sie
+   nicht.
+4. Folge (Schluss aus dem Code): liegt der Zeiger ueber einem Fenster hinter der
+   Auswahl, bekommt dessen Besitzer `WM_ARROWED`; der Besitzer ist meist der in
+   `fsel_input` blockierte Aufrufer und liest die Nachricht erst nach dem
+   Schliessen (die Fenster-Nachrichtenschlange verschmilzt `WM_ARROWED`-Reihen,
+   `aes/gemqueue.c:63-67`) — das Fenster scrollt dann **nach** der Auswahl. Ueber
+   dem Desktop geht die Nachricht an den Desktop-Besitzer, ausserhalb jedes
+   Fensters (`-1`) wird sie verworfen. In der Auswahl selbst passiert nichts.
+   Nicht gemessen; die Anwenderbeobachtung ("Rad wirkt in der Auswahl nicht",
+   TASK/A128) ist mit diesem Pfad vereinbar.
+5. Andere `form_do`-Dialoge: dasselbe Verhalten (kein Sonderfall im Code).
+
+**B3. XaAES (nur Gegenprobe).** Die Dateiauswahl ist dort ein Fenster mit
+Scroll-Listenobjekt `FS_LIST` (`references/freemint/xaaes/src.km/xa_fsel.c:3653-3660`).
+`XA_wheel_event` (`k_mouse.c:707-780`) schickt das Rad an den Besitzer des
+Fensters unter dem Zeiger bzw. an den Halter der Maus-/Update-Sperre;
+`cXA_wheel_event` (`c_mouse.c:529-620`): liegt der Zeiger im Topfenster ueber
+einem `G_SLIST`, wird die Liste direkt gescrollt (`whlarrowed(list->wi, WA,
+amount * |clicks|, md)`, `:593-` Zweig `slist`); Schrittweite
+`cfg.ver_wheel_amount` (Vorgabe 1, Bereich 1-20; `xaaes/src.km/init.c:300`, `cnf_xaaes.c:140`,
+`c_mouse.c:440`); **Shift = eine Seite**, Alt dreht die Richtung. Anderswo im
+Dialog gilt der Fenster-Radmodus. Dort bleibt das Rad also **im** modalen Fenster.
+
+**B4. Entwurf 1 (empfohlen): Auswahl konsumiert das Rad.**
+Die Dateiauswahl meldet sich waehrend `modal` bei `wheel_change` als Empfaenger
+an (ein Merkmal + atomarer Zaehler im AES, nur fuer die Dauer von `modal`).
+`wheel_change` zaehlt dann Raststufen in den Zaehler und sendet **kein**
+`WM_ARROWED`. `modal` entnimmt den Zaehler pro Runde und ruft `scroll(tree,
+±n)` (dieselbe Funktion wie die Pfeile → Klammerung, Neuzeichnen, Daumen).
+* Wirkungsbereich: Zeiger irgendwo in der Auswahl **oder** nur ueber Liste +
+  Leiste (siehe Frage 3). Ueber Laufwerkstasten/Pfadfeld: kein Scrollen
+  (nur verwerfen) bzw. scrollen — Frage 3.
+* Ausserhalb der Auswahl: verwerfen (der Aufrufer besitzt die Maus, der
+  Dialog ist modal; kein `WM_ARROWED` an Fenster dahinter).
+* Beim Ziehen am Daumen: Raststufen verwerfen.
+* Schrittweite: 1 Zeile pro Raststufe (wie die Pfeile; = XaAES-Vorgabe) oder
+  3 Zeilen (Frage 2). Mehrere Raststufen zwischen zwei Runden werden
+  **aufsummiert** (anders als `doq`, das verschmilzt).
+* Andere `form_do`-Dialoge **unveraendert** (B2 Punkt 5 bleibt).
+* Kosten: ein Merkmal im AES (`input.rs`), ein Zweig in `modal`; ein Hosttest
+  (Raststufen → `top`), ein Injektor-Beleg.
+
+**B5. Entwurf 2: das Rad gehoert jedem modalen Formular.**
+`wheel_change` prueft den `fm_own`-Zaehler (`MCTRL_CNT > 0`,
+`tos-api/src/aes/window.rs:4643@fm_own`) und sendet bei laufendem modalen Dialog nichts an
+Fenster dahinter; Verbraucher meldet sich an (Dateiauswahl) oder das Rad wird
+verworfen. Vorteil: auch `form_do`/`form_alert` leaken nicht mehr an Fenster
+dahinter; Kosten: aendert das Verhalten **aller** Dialoge (heute
+Rad-an-Fenster-dahinter), also eine eigene Entscheidung; groesserer
+Pruefaufwand (jeder Dialog, jede App mit `form_do` + eigenem Radmodus).
+
+**B6. Eintrag fuer `docs/COMPATIBILITY.md` (Text, nicht eingetragen)** — unter
+"Sanctioned deviations, one by one":
+
+> **Das Mausrad scrollt die Dateiliste der Dateiauswahl** — Anwenderwunsch
+> 2026-11-04 (*"ueberall anders funktioniert es, nur in der Fileselektor box
+> nicht"*), TASK/A128. EmuTOS' `wheel_change` sendet nichts
+> (`references/emutos/aes/geminput.c:411-420`, auskommentiert); NewTOS sendet
+> `WM_ARROWED` an das Fenster unter dem Zeiger (TASK/GUI04). Solange
+> `fsel_input`/`fsel_exinput` offen sind, verbraucht die Dateiauswahl die
+> Raststufen und scrollt die Liste um \<N> Zeile(n) je Raststufe; es geht
+> **keine** `WM_ARROWED`-Nachricht an ein Fenster dahinter. Kein Programm kann
+> es beobachten, ausser durch ein ausbleibendes `WM_ARROWED` waehrend der
+> Auswahl; die Rueckgaben von `fsel_*`, Pfad und Name sind unveraendert. Andere
+> `form_do`-Dialoge: unveraendert. Spec: `docs/api/aes/resource-fileselector.md`
+> (A128).
+
+### Offene Fragen an den Anwender
+
+1. **Wie soll das Rad an die Auswahl gehen?** (a) Entwurf 1: nur die
+   Dateiauswahl konsumiert das Rad, andere Dialoge bleiben wie sie sind
+   (**Empfehlung**; kleinster Eingriff, kein Verhalten anderer Dialoge
+   geaendert). (b) Entwurf 2: alle modalen Formulare schlucken das Rad (konsistent,
+   aber aendert `form_do`-Dialoge und braucht mehr Pruefung).
+2. **Schrittweite je Raststufe?** (a) 1 Zeile (**Empfehlung**; wie die
+   Pfeile und XaAES-Vorgabe; bei 9 sichtbaren Zeilen traege, aber
+   vorhersehbar), (b) 3 Zeilen (zuegiger, in EmuTOS/XaAES nicht vorgegeben),
+   (c) einstellbar (mehr Code, braucht eine Einstellung). Shift = Seite wie
+   XaAES: **nicht in v1** (Umsetzung braucht den Umschaltstatus in
+   `wheel_change`, nicht geprueft).
+3. **Wo wirkt das Rad?** (a) Zeiger irgendwo in der Auswahl **und** ausserhalb
+   (alles verbraucht; **Empfehlung**, weil die Auswahl modal ist und der
+   Aufrufer die Maus besitzt), (b) nur ueber Liste und Leiste, sonst verwerfen
+   (XaAES-Naehe; ueber Laufwerkstasten tut das Rad nichts), (c) nur ueber
+   Liste/Leiste, sonst alter Weg (Leck an Fenster dahinter bleibt).
+4. **`graf_slidebox` fuer alle Programme EmuTOS-gleich machen** (3D-Angleichung
+   und XOR-Rahmen statt echtem Objekt)? (a) Ja (**Empfehlung**: Abweichung 1-2
+   oben sind Befunde gegen EmuTOS; ein tosdump-Fall gegen das Orakel kann sie
+   klaeren; aendert das Bild fuer Apps, die `graf_slidebox` nutzen), (b) nur ein
+   Dateiauswahl-eigener Pfad (kleiner, laesst die Abweichung in `graf_slidebox`
+   stehen, widerspricht "EmuTOS 1:1").
+5. **Daumenhoehe/-lage mit `mul_div_round`** (A3, `size_elevator`) in
+   dieselbe Aenderung? (**Ja** empfohlen; eine Zeile je Formel; sichtbar
+   um 1 px.)
+6. **Auswahl beim Blaettern loeschen** (`cur_sel` zuruecksetzen wie
+   `fs_nscroll:441-442`) in dieselbe Aenderung? (**Ja** empfohlen; betrifft
+   auch die Pfeile, sichtbar nicht, aber `cur_sel` wird sonst veraltet.)
+7. **Freigabe des COMPATIBILITY-Eintrags (B6)** mit dem gewaehlten \<N>?
+
+### Out-of-scope-Beobachtungen
+
+* Die Pfeile `FUPAROW`/`FDNAROW` wiederholen in NewTOS bei gehaltener Taste
+  nicht (nur ein `scroll` je Druck, `fsel.rs:1101@FUPAROW`); ob EmuTOS' `fm_do`
+  hier wiederholt, wurde nicht untersucht.
+* `wheel_change` benutzt die Groesse von `wheel_amount` nicht (eine Zeile je
+  Ereignis); fuer Fenster ausserhalb der Auswahl nicht untersucht.
