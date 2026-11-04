@@ -99,4 +99,19 @@ bereitstellen.
   "NewTOS 0.7", zView und QED per `#Z`, zViews Dateiauswahl per Injektor. Die echte Pi bleibt
   Schritt 4.
 
+## Entscheidungen nach Schritt 2 (Anwender 2026-11-04)
+
+- About-Box bei fehlgeschlagenem `Ssystem(2019)`: Wert **leer** (wie umgesetzt,
+  EmuTOS `inf_disk`-Muster).
+- **Ball faellt aus dem Paket** (Quelle ausserhalb des Repos, unversioniert):
+  `APPS\BALL\BALL.NAP`, `BALL.CFG`, `BALL.NTX` entfallen; Texte und
+  Paketskript entsprechend.
+- Rueckmeldekanal in allen Texten einheitlich: **GitHub Issues** (Bug-Report-
+  Vorlage), keine Mailingliste.
+- Release-Texte: Lead entwirft (Researcher sammelt die testerrelevanten
+  Aenderungen seit `v0.6.1`), Anwender gibt frei.
+- Firmware, `NEWDESK.INF` (Auslieferungsstand, nicht die persoenliche der
+  Anwenderkarte), `ZVIEW.INF`, `QED\CONFIG.TXT`, `DOOM1.WAD`, HYP-Dateien,
+  `GEM.RSC` wie in 0.6.1 (keine Einwaende).
+
 [Gemeinsame Regeln](README.md) gelten.
