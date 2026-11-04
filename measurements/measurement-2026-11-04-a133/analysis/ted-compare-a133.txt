@@ -1,0 +1,4 @@
+a133 vs EmuTOS, tedprobe ROOT rect +/-4 (448x184 at 12,44 on both screens):
+region 448x184, differing pixels: 0
+columns with diffs: []
+rows with diffs: []

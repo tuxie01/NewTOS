@@ -1,0 +1,7 @@
+A133 vs EmuTOS, FILEAREA 181x199 at the A129 origins (NewTOS 823,476 / Hatari 183,176):
+region 181x199, differing pixels: 0
+columns with diffs: []
+rows with diffs: []
+
+region 181x199, differing pixels: 0
+EmuTOS black pixels in the text cells x=88..111 y=3..18: 104, not black in NewTOS: 0

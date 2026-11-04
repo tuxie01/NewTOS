@@ -357,6 +357,35 @@ c. **`G_BUTTON`'s interior colour is independent of (b) and is set entirely
 > `FL3DBAK` button is a 3D object (`CONF_WITH_3D_OBJECTS` background flag)
 > that nonetheless stays hollow white. See `_discrepancies.md` D-103.
 
+> **Ergänzung bei der Umsetzung (A133): text writing mode of the TEDINFO
+> family.** Item 3 named the colour word but not the mode its text is
+> written in. `tmode` starts as `MD_REPLACE` (`gemoblib.c:554`) and is
+> overwritten by the crack of `te_color` (`:568`; bit 7 set → `MD_REPLACE`,
+> clear → `MD_TRANS`, `gemgraf.c:621`). Two switches then force `MD_TRANS`:
+> the 3D hollow-white case (`if (tmode == MD_REPLACE) tmode = MD_TRANS;`,
+> `gemoblib.c:586-588`, for all four kinds — the reason is given at
+> `:573-578`: replace-mode text would paint white cells over the
+> `backgrcol` fill), and a SELECTED object that changes colour
+> (`changecol && (state & SELECTED)`, `:702-706`, together with the
+> complemented text colour). `gsx_attr(TRUE, tmode, tcol)` (`:709`) sets
+> that mode as the VDI writing mode (`gemgraf.c:209-214`) right before
+> `gr_gtext` (`:757`) → `gsx_tblt`, a `v_gtext` (`gemgraf.c:522-528`).
+> In `MD_REPLACE` the VDI text blit writes every pixel of each character
+> cell: the glyph's set bits in the text colour, its clear bits in VDI pen
+> 0 (`bgcol = palette[0]`, `vdi/vdi_textblit.c:766,776-786` and
+> `:1044,1051`; the planar loop writes 0 into every plane where the glyph
+> is clear, `:882-899`) — the cells of the drawn characters only, not the
+> rest of the object box. In `MD_TRANS` only the set bits are written
+> (`:787-797`, `:901`). So a TEDINFO text whose colour word has bit 7 set,
+> outside the two switches, shows white character cells over its own fill
+> or the parent's ground — e.g. the file selector's `FTITLE` (`0x11A1`,
+> pattern turned to `IP_4PATT`, not hollow:
+> [`resource-fileselector.md`](./resource-fileselector.md)). The same
+> `gsx_attr` line also covers `G_BOXCHAR` with the mode of its own colour
+> word (`gemoblib.c:614,722-731`); the `G_STRING`/`G_TITLE`/`G_BUTTON`
+> block always writes `MD_TRANS` (`:816`), and so do the CHECKED mark
+> (`:905`) and the icon label and character (`gr_gicon`, `gemgraf.c:798`).
+
 4. **`G_STRING`/`G_TITLE`/`G_BUTTON`**: draw the plain text centred (button)
    or left-aligned, vertically centred (`gemoblib.c:801-862`).
 

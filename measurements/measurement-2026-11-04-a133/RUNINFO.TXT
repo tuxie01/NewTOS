@@ -1,0 +1,82 @@
+measurement-2026-11-04-a133 -- A133: TEDINFO text in the writing mode of its colour word; file box and a TEDINFO dialog vs the oracle
+========================================================================================================================================
+Developer, TASK/A133, 2026-11-04. No commit, no real Pi, no real card.
+Tree: HEAD be3c06a9 + the uncommitted A133 change (tos-api/src/aes/object.rs built at sha256 cea05250..., see
+serial/sha256.txt; afterwards only a doc-comment cite was corrected (vdi_textblit.c ":879-897" -> ":882-899"),
+final file 803ad491..., code unchanged). Base = `git archive HEAD` (be3c06a9, without A133) built in the scratchpad.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (all three card manifests).
+card-fsprobe.img.manifest: optional_missing none
+card-tedprobe.img.manifest: optional_missing none
+card-boot.img.manifest: optional_missing none
+QEMU 11.0.2 raspi4b (-append serial=on, bcm2835-fb 1920x1080), Hatari 2.6.1 + pinned EmuTOS oracle ROM, falcontc
+profile (tools/oracle/oracle.env; ROM sha checked by the A129 run-hatari-fsel.sh).
+
+RESULT IN ONE LINE
+  File box: 0 differing pixels against the oracle (A132: 140, all in the "*.*" cells). TEDINFO dialog (this run's
+  probe, 17 objects, all four TEDINFO kinds in both modes, 3D, SELECTED, SMALL font): 0 differing pixels against the
+  oracle (base: 1916). Desktop boot screen: base and A133 byte-identical at 30 s and 45 s.
+
+WHAT RAN
+  method/run-a133.sh <scratch> (one call). It calls the A129 scripts in
+  measurements/measurement-2026-11-04-a129-measure/method/ (build-fsprobe.sh, build-fsprobe-m68k.sh,
+  mkcard-call.sh, run.sh, run-hatari-fsel.sh, cmp.py, dump.py) and the A132 crop.py / residual.py unchanged;
+  new here are only tedprobe.c, build-tedprobe.sh (the A129 link recipes with this source) and pixdiff.py.
+  0. Kernels: A133 = cargo xtask build --board rpi4 --release in the working tree; base = the same build of
+     `git archive HEAD` in <scratch>/base-src.
+  1. File box: A129 FSPROBE (sha 12dd7b45..., as in A129/A132) on the A133 kernel, screendump at 55 s ->
+     screendumps/a133-fs-55.png; oracle FSPROBE.PRG -> hatari/fsel/shots/grab0001.png (sha 03b11f8d..., byte-identical
+     to the A129/A132 grab). cmp.py + residual.py over FILEAREA 181x199 at the A129 origins (NewTOS 823,476 /
+     Hatari 183,176) -> analysis/fsel-compare.txt; dump.py of FTITLE -> analysis/fsel-ftitle-dumps.txt; crops
+     analysis/fsel-ftitle-newtos-top-hatari-bottom-x8.png, analysis/fsel-filearea-newtos-top-hatari-bottom-x3.png.
+  2. TEDINFO dialog: method/tedprobe.c (a GEM program; one fixed OBJECT tree at the absolute position (16,48),
+     objc_draw, held 120 s; on the card under the A129 name FSPROBE.NAP so mkcard-call.sh autoruns it). Same
+     source on the oracle (TEDPROBE.PRG). Runs: A133 kernel -> screendumps/a133-ted-55.png, base kernel ->
+     screendumps/base-ted-55.png, oracle -> hatari/ted/shots/grab0001.png (the oracle grab has the screen at (0,0)).
+     cmp.py over the root rect +/-4 (448x184 at 12,44, same coordinates on both screens) ->
+     analysis/ted-compare-a133.txt, analysis/ted-compare-base.txt; crops analysis/ted-{a133,base}-top-hatari-bottom-x2.png;
+     character maps analysis/ted-dumps.txt.
+     The tree (see the head of tedprobe.c): ROOT G_BOX 50 % checker; column A MD_REPLACE (0x11A1) and column B
+     MD_TRANS (0x1121) G_TEXT / G_BOXTEXT / G_FTEXT / G_FBOXTEXT; column C FL3DBAK hollow-white MD_REPLACE G_TEXT and
+     G_BOXTEXT (0x1180, the 3D switch to MD_TRANS), FL3DBAK hollow-white MD_TRANS G_FBOXTEXT, the FTITLE look
+     (G_BOXTEXT FL3DBAK 0x11C1, th -1, "*.*"); G_BOXTEXT FL3DIND SELECTED 0x11A1; G_TEXT SELECTED 0x11A1 (trailing
+     XOR); G_BOXTEXT SMALL font in both modes.
+     Why a probe and not a desktop dialog: none of EmuDESK's MD_REPLACE TEDINFOs reaches the screen in replace mode
+     (all five, desk/desk_rsc.c tedinfo 27/28/30/32/34 = 4480, are FL3DBAK hollow white and so switch to MD_TRANS,
+     aes/gemoblib.c:582-588), and the AES's own resource has only FTITLE with bit 7 (aes/gem_rsc.c:27-80); opening
+     a desktop dialog would also need clicks on both sides. The probe draws through the same objc_draw on both.
+  3. Regression: tools/mkcard.sh card with NEWDESK.INF "#R 02 / #M 00 00 00 FF C HARD DISK C@ @ / #W ... C:\*.*@ /
+     #T ..." and C:\README.TXT, no autorun; base and A133 kernel, screendumps at 30 s and 45 s ->
+     screendumps/{base,a133}-boot-{30,45}.png (desktop with menu bar, drive icon and an open C:\ window, looked at);
+     method/pixdiff.py (exact RGB) -> analysis/regression-diff.txt.
+
+RESULTS
+  File box (analysis/fsel-compare.txt): region 181x199, differing pixels 0 (A129 before A132: 192, A132: 140, all
+  in the three "*.*" cells). EmuTOS's 104 glyph pixels in the cells are black in NewTOS; the cells are now white
+  under the glyphs, as in EmuTOS. Pixel-identical; no remaining pixel.
+  TEDINFO dialog (analysis/ted-compare-*.txt): A133 vs oracle 0 differing pixels in 448x184; base vs oracle 1916.
+  The same 1916 pixels are the exact base-vs-A133 diff (analysis/regression-diff.txt, bbox x=33..399 y=58..187);
+  attributed to the probe's objects by a one-off look in the scratchpad (not a method script): column A MD_REPLACE
+  G_TEXT 433, G_BOXTEXT 227, G_FTEXT 405, G_FBOXTEXT 201, SMALL G_BOXTEXT 77 and the FTITLE look 140 (= A132's
+  140) -- base black (checker / pattern 2), A133 white (pen-0 cell); the non-3D SELECTED G_TEXT 433 -- base white,
+  A133 black (its white MD_REPLACE cells inverted by the trailing XOR). Unchanged: every MD_TRANS text (column B),
+  the three 3D hollow-white cases of column C (switched to MD_TRANS) and the FL3DIND SELECTED G_BOXTEXT
+  (changecol -> MD_TRANS).
+  Desktop boot (analysis/regression-diff.txt): 0 differing pixels at 30 s and at 45 s (all four PNGs share sha
+  b2796862...). The boot screen has no MD_REPLACE TEDINFO text, so no change was expected.
+  The comparison is cmp.py's luminance classes (B <64, two greys, W >=240), as in A129/A132, because Hatari's
+  RGB565 white is (255,251,255); base vs A133 is the exact RGB pixdiff.py.
+
+NOT MEASURED
+  The real Pi's display. G_BOXCHAR with bit 7 set (same gsx_attr line in EmuTOS, gemoblib.c:614,709) is not part
+  of A133 and is still written transparently by NewTOS; the probe has no G_BOXCHAR.
+
+FILES
+  method/      run-a133.sh (the one call), tedprobe.c, build-tedprobe.sh, pixdiff.py
+  card-fsprobe.img.manifest, card-tedprobe.img.manifest, card-boot.img.manifest
+  serial/      a133-fs.log, a133-ted.log, base-ted.log, a133-boot.log, base-boot.log, *.img-after.sha256,
+               sha256.txt (kernels, probes, cards, object.rs as built, HEAD)
+  screendumps/ a133-fs-55.png, a133-ted-55.png, base-ted-55.png, {a133,base}-boot-{30,45}.png (NewTOS 1920x1080)
+  hatari/      fsel/ and ted/: shots/grab0001.png (EmuTOS), serial/hatari.log
+  analysis/    fsel-compare.txt, fsel-ftitle-dumps.txt, fsel-*-x8/x3.png, ted-compare-{a133,base}.txt,
+               ted-{a133,base}-top-hatari-bottom-x2.png, ted-dumps.txt, regression-diff.txt
+  Kernels, probes and images are not kept (session scratchpad).

@@ -3092,8 +3092,10 @@ fn just_draw(t: ObjTree, obj: i16, x: i16, y: i16, clip: ClipRect, backend: &dyn
             deco_th = th;
             effect_icol = icol;
             // Text colour, complemented when selected *and* the object changes
-            // colour (EmuTOS gemoblib.c:699-706; the `tmode = MD_TRANS` half
-            // has no counterpart — `gsx_tblt` here always writes transparently).
+            // colour (EmuTOS gemoblib.c:699-706). The G_BOXCHAR glyph is still
+            // written transparently: A133 gave the colour word's writing mode
+            // (`gsx_attr(TRUE, tmode, tcol)`, `:709`) to the TEDINFO family
+            // only, the G_BOXCHAR half of that line has no counterpart yet.
             let ink = if selected && changecol { xor_color(backend, tcol) } else { tcol };
             if ob_type == G_BOXCHAR {
                 // A G_BOXCHAR is a TEDINFO-family draw: EmuTOS copies `t`,
@@ -3113,6 +3115,7 @@ fn just_draw(t: ObjTree, obj: i16, x: i16, y: i16, clip: ClipRect, backend: &dyn
                         w - 2 * inset,
                         h - 2 * inset,
                         ink,
+                        WriteMode::Transparent,
                         clip,
                     );
                 }
@@ -3137,7 +3140,7 @@ fn just_draw(t: ObjTree, obj: i16, x: i16, y: i16, clip: ClipRect, backend: &dyn
                     tmpx -= 1;
                     tmpy -= 1;
                 }
-                gsx_tblt(backend, AesFont::Ibm, tmpx, tmpy, s, label, clip);
+                gsx_tblt(backend, AesFont::Ibm, tmpx, tmpy, s, label, WriteMode::Transparent, clip);
             }
         }
         G_STRING => {
@@ -3156,7 +3159,7 @@ fn just_draw(t: ObjTree, obj: i16, x: i16, y: i16, clip: ClipRect, backend: &dyn
                 // *pixels* to the right, no vertical centring — over the
                 // string's leading blank, in the IBM font
                 // (`gsx_tblt(IBM, t.g_x+2, t.g_y, 1)`, gemoblib.c:903-908).
-                gsx_tblt(backend, AesFont::Ibm, x + 2, y, &[0x08], ink, clip);
+                gsx_tblt(backend, AesFont::Ibm, x + 2, y, &[0x08], ink, WriteMode::Transparent, clip);
             }
             let s = read_cstr(t, ob_spec);
             if ob_state & DISABLED != 0 && s.len() > 3 && is_dashes(s) {
@@ -3193,7 +3196,7 @@ fn just_draw(t: ObjTree, obj: i16, x: i16, y: i16, clip: ClipRect, backend: &dyn
                 // its resource string (GEM uses two leading spaces), not a
                 // code-added indent.
                 let tmpy = y + (h - crate::vdi::font::CELL_H) / 2;
-                gsx_tblt(backend, AesFont::Ibm, x, tmpy, s, ink, clip);
+                gsx_tblt(backend, AesFont::Ibm, x, tmpy, s, ink, WriteMode::Transparent, clip);
             }
         }
         G_TITLE => {
@@ -3218,7 +3221,7 @@ fn just_draw(t: ObjTree, obj: i16, x: i16, y: i16, clip: ClipRect, backend: &dyn
             // Same string block as G_STRING: IBM font, `t.g_x`, vertically
             // centred on `gl_hchar` (gemoblib.c:817-845).
             let tmpy = y + (h - crate::vdi::font::CELL_H) / 2;
-            gsx_tblt(backend, AesFont::Ibm, x, tmpy, s, BLACK, clip);
+            gsx_tblt(backend, AesFont::Ibm, x, tmpy, s, BLACK, WriteMode::Transparent, clip);
         }
         G_TEXT | G_BOXTEXT | G_FTEXT | G_FBOXTEXT => {
             // The TEDINFO interior is read at the tree's ABI width, so an ILP32
@@ -3231,7 +3234,7 @@ fn just_draw(t: ObjTree, obj: i16, x: i16, y: i16, clip: ClipRect, backend: &dyn
                 let ted = &ted;
                 // Crack the TEDINFO colour word (EmuTOS `gr_crack`): border,
                 // text, inside pattern, inside colour.
-                let (bcol, tcol, mut ipat, mut icol, mode_replace) = gr_crack(ted.te_color as u16);
+                let (bcol, tcol, mut ipat, mut icol, mut mode_replace) = gr_crack(ted.te_color as u16);
                 let mut is_box = ob_type == G_BOXTEXT || ob_type == G_FBOXTEXT;
                 // The TEDINFO thickness, for every 3D kind alike (A67, text
                 // half): EmuTOS `just_draw` never zeroes a thickness for 3D —
@@ -3264,15 +3267,20 @@ fn just_draw(t: ObjTree, obj: i16, x: i16, y: i16, clip: ClipRect, backend: &dyn
                 // stays visible. A G_BOXTEXT/G_FBOXTEXT is never promoted and
                 // keeps its thickness (`:589-598` zero `th` only inside the
                 // `obtype == G_TEXT` / `G_FTEXT` arms) — a TRANSPARENT one is
-                // filled `backgrcol` *and* keeps its border. (EmuTOS's
-                // `tmode = MD_TRANS` switch in the same block has no
-                // counterpart: `gsx_tblt` here always writes transparently.)
+                // filled `backgrcol` *and* keeps its border. The same gate
+                // turns the writing mode to MD_TRANS for all four kinds
+                // (`tmode = MD_TRANS`, `:588`, A133): the solid `backgrcol`
+                // fill must show between the glyphs, where MD_REPLACE would
+                // paint the cells white (the comment at `:573-578`).
                 if d3 != 0 && ipat == IP_HOLLOW && icol == WHITE {
                     ipat = IP_SOLID;
                     icol = BACKGR_COL.load(Ordering::Relaxed) as Pel;
-                    if mode_replace && !is_box {
-                        is_box = true;
-                        th = 0;
+                    if mode_replace {
+                        mode_replace = false;
+                        if !is_box {
+                            is_box = true;
+                            th = 0;
+                        }
                     }
                 }
                 // SELECTED interior swap, only when the object changes colour
@@ -3317,12 +3325,22 @@ fn just_draw(t: ObjTree, obj: i16, x: i16, y: i16, clip: ClipRect, backend: &dyn
                     raw
                 };
                 // Text colour from te_color, complemented when SELECTED *and*
-                // the object changes colour (EmuTOS gemoblib.c:699-706; the
-                // `tmode = MD_TRANS` half has no counterpart, `gsx_tblt` always
-                // writes transparently). Otherwise the text stays `tcol` and,
-                // for a non-FL3DOBJ object, the trailing XOR inverts it with
-                // its ground.
+                // the object changes colour, which also writes it MD_TRANS
+                // (EmuTOS gemoblib.c:699-706). Otherwise the text stays `tcol`
+                // and, for a non-FL3DOBJ object, the trailing XOR inverts it
+                // with its ground.
                 let ink = if selected && changecol { xor_color(backend, tcol) } else { tcol };
+                // The writing mode (A133): EmuTOS sets the cracked `tmode` —
+                // colour-word bit 7, `gr_crack` `gemgraf.c:621`, after the 3D
+                // and SELECTED switches above — with `gsx_attr(TRUE, tmode,
+                // tcol)` (`gemoblib.c:709`) right before `gr_gtext` (`:757`).
+                // In MD_REPLACE the VDI paints each character cell's clear
+                // pixels in pen 0 (see `gsx_tblt`).
+                let tmode = if mode_replace && !(selected && changecol) {
+                    WriteMode::Replace
+                } else {
+                    WriteMode::Transparent
+                };
                 // EmuTOS: `rc_copy(&t,&c); gr_inside(&c, tmpth);` then the 3D
                 // `movetext` nudge, then `gr_gtext(te_just, te_font, te_ptext,
                 // &c)` (gemoblib.c:735-757) — so the text sits inside a
@@ -3339,6 +3357,7 @@ fn just_draw(t: ObjTree, obj: i16, x: i16, y: i16, clip: ClipRect, backend: &dyn
                     w - 2 * inset,
                     h - 2 * inset,
                     ink,
+                    tmode,
                     clip,
                 );
             }
@@ -3696,6 +3715,17 @@ fn ted_movetext(movetext: bool, selected: bool, x: i16, y: i16) -> (i16, i16) {
 /// default (left / baseline) applies and the glyph's first raster row lands
 /// at `baseline - top` = `y`. Drawing cell-top-anchored is therefore the same
 /// pixels, without a baseline round trip.
+///
+/// `mode` is the VDI writing mode the caller set with `gsx_attr(TRUE, mode,
+/// tcol)` (`gemgraf.c:201-214`): `Transparent` (`MD_TRANS`) leaves the pixels
+/// between the strokes alone; `Replace` (`MD_REPLACE`) also paints every
+/// clear pixel of each character cell in VDI pen 0, the VDI's replace-mode
+/// text background (`bgcol = palette[0]`, `vdi/vdi_textblit.c:766,1044`; the
+/// planar loop writes 0 into every plane outside the glyph, `:882-899`) — the
+/// cells only, not the rest of the box. Only the TEDINFO text of `just_draw`
+/// takes its mode from the colour word (A133); every other caller writes
+/// `MD_TRANS`.
+#[allow(clippy::too_many_arguments)]
 fn gsx_tblt(
     backend: &dyn RasterBackend,
     fnt: AesFont,
@@ -3703,6 +3733,7 @@ fn gsx_tblt(
     y: i16,
     text: &[u8],
     fg: Pel,
+    mode: WriteMode,
     clip: ClipRect,
 ) {
     let cw = fnt.cell_w();
@@ -3710,7 +3741,7 @@ fn gsx_tblt(
         let gx = x + i as i16 * cw;
         match fnt {
             AesFont::Ibm => {
-                backend.draw_glyph(gx, y, crate::vdi::font::glyph(c as u16), fg, WriteMode::Transparent, clip)
+                backend.draw_glyph(gx, y, crate::vdi::font::glyph(c as u16), fg, mode, clip)
             }
             AesFont::Small => backend.draw_glyph_sized(
                 gx,
@@ -3719,7 +3750,7 @@ fn gsx_tblt(
                 crate::vdi::font::SMALL_CELL_W,
                 crate::vdi::font::SMALL_CELL_H,
                 fg,
-                WriteMode::Transparent,
+                mode,
                 clip,
             ),
         }
@@ -3727,7 +3758,8 @@ fn gsx_tblt(
 }
 
 /// `gr_gtext` (EmuTOS `gemgraf.c:595-605`) — justify `text` inside the box
-/// `(x, y, w, h)` and blit it in `fnt`. Inlines its two helpers:
+/// `(x, y, w, h)` and blit it in `fnt` with the writing mode `mode` (the one
+/// the caller's `gsx_attr` set, see [`gsx_tblt`]). Inlines its two helpers:
 ///
 /// * `gsx_tcalc` (`gemgraf.c:480-497`) clamps the text extent to the box
 ///   (`textw = min(w, len*cw)`, `texth = min(h, ch)`) and then drops **whole
@@ -3754,6 +3786,7 @@ fn gr_gtext(
     w: i16,
     h: i16,
     fg: Pel,
+    mode: WriteMode,
     clip: ClipRect,
 ) {
     let cw = fnt.cell_w();
@@ -3789,7 +3822,7 @@ fn gr_gtext(
         }
     }
 
-    gsx_tblt(backend, fnt, tx, ty, &text[..numchs as usize], fg, clip);
+    gsx_tblt(backend, fnt, tx, ty, &text[..numchs as usize], fg, mode, clip);
 }
 
 /// EmuTOS `is_dashes` (`gemoblib.c:455-464`): every character of the string
@@ -3992,6 +4025,7 @@ fn draw_icon(
             oy + ib.ib_yicon + ib.ib_ychar,
             &[c],
             fg,
+            WriteMode::Transparent,
             clip,
         );
     }
@@ -4033,6 +4067,7 @@ fn draw_icon(
                 ib.ib_wtext,
                 ib.ib_htext,
                 fg,
+                WriteMode::Transparent,
                 clip,
             );
         }
