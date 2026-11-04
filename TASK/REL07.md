@@ -23,11 +23,17 @@ bereitstellen.
 
 ## Arbeit
 
-1. **Version:** `0.6.1` -> `0.7` in `kernel/Cargo.toml`, `tos-api/Cargo.toml`,
-   `tos-types/Cargo.toml`, `kernel/src/initinfo.rs@VERSION_STRING`,
-   `kernel/src/shell.rs` (`ver`), `programs/desktop/src/inf.rs@VERSION_STRING`;
-   Lock-Dateien nachziehen; Specs, die den Text zeigen (`docs/api/desktop/`),
-   anpassen. TOS-sichtbare Versionen (`_TOS`, `NTOS`-Cookie) bleiben.
+1. **Version aus einer Quelle** (Anwender 2026-11-04: "mach es richtig"):
+   die Nummer steht einmal in der Workspace-`Cargo.toml`
+   (`[workspace.package] version = "0.7.0"`, die Crates erben sie);
+   `kernel/src/initinfo.rs@VERSION_STRING` wird daraus gebildet
+   (`concat!("NewTOS ", ...)`, Anzeige "NewTOS 0.7"); der `ver`-Befehl in
+   `kernel/src/shell.rs` nutzt `VERSION_STRING`; der Desktop liest die Version
+   zur Laufzeit ueber `Ssystem(2019)` (`S_NEWTOS_KVERSION`) statt seiner Kopie
+   `programs/desktop/src/inf.rs@VERSION_STRING` (Weg a: About zeigt den Kern,
+   der wirklich laeuft). Specs, die den Text zeigen (`docs/api/desktop/`),
+   anpassen. TOS-sichtbare Versionen (`_TOS`, `NTOS`-Cookie, `Sversion`)
+   bleiben. Eigener Developer-Auftrag.
 2. **Paket** wie `v0.6.1` (`NewTOS-0.6.1.zip`): Ordner NewTOS-0.7 mit
    dem Kartenordner KARTE (Firmware `start4.elf`, `fixup4.dat`, `bcm2711-rpi-4-b.dtb`,
    `config.txt`, `LICENCE.broadcom` daneben; `kernel8.img`; `NEWDESK.INF`,
@@ -35,7 +41,7 @@ bereitstellen.
    DOOM, BALL, ZVIEW mit Codecs und Icons, QED, COREMARK, TERADESK, HYPVIEW),
    dazu README/LIESMICH/TESTING/TESTANLEITUNG/FEEDBACK(-EN). Jede Datei aus dem
    Stand des Release-Commits gebaut bzw. benannt; Liste mit sha256 in einem
-   Messlauf. Was gegenueber 0.6.1 dazukommt oder wegfaellt, nennt der Anwender.
+   Messlauf. Umfang wie 0.6.1 (Anwender hat nichts geaendert, 2026-11-04). Eigener Auftrag nach Schritt 1.
 3. **Texte** im neuen Ordner docs/release/v0.7 (Englisch und Deutsch wie 0.6.1):
    Neuerungen seit 0.6.1, bekannte Grenzen, Bitte um Foto bei Absturz.
 4. **Abnahme** auf der Pi des Anwenders aus dem ZIP-Inhalt: Bootschirm und
