@@ -1,0 +1,60 @@
+RUNINFO -- PROC08: real-Pi run with the crash-walk kernel (prepared 2026-11-04)
+
+WHAT
+  One real-Pi run for TASK/PROC08 ("Stand Debug-Feature"): repeat the
+  C1 crash path (zView module loads via Pexec 3+4) with the crash-walk
+  diagnosis on and the rights model checked (memprot=verify), serial on.
+  User decision 2026-11-02 (feature first, then one Pi run).
+
+SOURCE STATE
+  commit 371c50fdc37cd695152e6c14136fbc574dcf457a (kernel inputs clean;
+  kernels/KERNELS.TXT says tree_dirty=yes only because this run directory
+  was untracked)
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  kernel: kernels/kernelc.img (gitignored), built by
+    tools/sync-card.sh kernels <run>/kernels kernelc.img=crash-walk
+    = cargo xtask build --board rpi4 --release --features crash-walk
+    sha256 e0c957d1f2a37cb84f2a092ad544cf40f5a6622e4725133f0bfe61f12a00faa5
+  optional_missing: not applicable (no image was built; files copied by hand)
+
+CARD (disk4: BOOT = C:, NEWTOS1-3 = D:-F:)
+  Check before writing, read-only (card-check/):
+    inventory.txt     sha256 of every file on all four partitions (87)
+    compare-list.txt  against the PITEST01 list and today's build output:
+                      48 same, 0 differ; the 2 "missing" are renamed on
+                      purpose by the user: C:\AUTO\DCPROBE.NC (parked) and
+                      C:\Apps\HYPVIEW\HYP_VIEW.CF (user 2026-11-04: renamed
+                      so HypView loads no default file)
+    dryrun.txt        sync-card dry run (not used for writing)
+  Written on the user's word 2026-11-04 ("wenn was geaendert wird, wird es
+  auf die Karte kopiert" -- plain copy, no sync script, no backup):
+    cp -X kernels/kernelc.img  -> C:\kernel8.img
+    cp -X method/cmdline-c.txt -> C:\cmdline.txt  ("serial=on memprot=verify")
+  Read back after `diskutil unmount force` + `diskutil mount disk4s1`:
+    kernel8.img e0c957d1f2a37cb8... = kernelc.img; CMDLINE.TXT as above.
+  Unchanged: kernela.img e0fe680b25402385... (release, fallback),
+    kernelb.img bc543d4871ef7eec..., ACC\SYSACC.NAC 812ddd57...,
+    ACC\XSHOT.NAC f7607bb1... (new build; C1 had the old 766627b7..., now
+    parked as XSHOT.NA), DOOM.NAP, DOOMNOKB.NAP af10a517..., zView.
+    Two AppleDouble files from an earlier hand copy (._cmdline.txt,
+    ._kernel8.img on C:) left in place.
+
+PI RUN 1 (user, 2026-11-04, capture ended 08:35)
+  serial/screenlog-full.txt  the user's `screen -L` file "screenlog.0 3" as
+    handed over (sha256 493b373c711183b677c3eee92427a14f32b583b49f38a8e530935e7837d2993d);
+    lines 1-19829 are the earlier C1 capture (byte-identical with
+    measurements/measurement-2026-10-31-pitest01-c1/serial/screenlog-c1.txt),
+    screen appended this run from line 19830.
+  serial/screenlog-proc08.txt  this run only (= screenlog-full.txt from line 19830).
+  Boot: firmware read cmdline 'serial=on memprot=verify' (line 51);
+    "[mm] memory protection ON (verify: ...)" (line 93).
+  Sequence: NEWDESK -> DOOM (rc=0; DOOMNOKB not run) -> NEWDESK -> zView
+    (line 5288): 10 children via Pexec ("[exec] launching", slot 3), no crash.
+    zView still running when the capture ended (6187 "[sched] switch" lines,
+    slot 1 X-Shot <-> slot 2 zView); no zView exit in the log.
+  memprot verify: 167 checks, 42846211 pages compared, 0 mismatches,
+    0 tolerated shortfalls (last line before the capture end).
+  No "[crash]" and no "[crashwalk]" line in this run.
+  Reading: the C1 crash (2nd module start of the first zView after DOOM +
+    DOOMNOKB) did not recur in 10 module starts; one clean zView start does
+    not exclude it (C1: 1 event in 12 starts), and verify shifts timing.
