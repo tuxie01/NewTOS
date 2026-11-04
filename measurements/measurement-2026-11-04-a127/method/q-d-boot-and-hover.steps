@@ -1,0 +1,4 @@
+at(14); shot("boot")
+move(0,-300); at(16); shot("bar")
+move(-235,0); at(18); shot("file")
+move(0,235); at(20); shot("item")

@@ -1,0 +1,71 @@
+measurement-2026-11-04-a127 -- A127: menu entries need several clicks / highlight stays black (Ragnar, GitHub #3)
+===================================================================================================
+Researcher, TASK/A127, 2026-11-04 (host clock CET). Base HEAD aaa36a63 (clean tree at the start).
+QEMU only: raspi4b (headless, -append serial=on, scripted IKBD injector) and virt (xHCI + usb-mouse
+over QMP). MEASUREMENT ONLY: no product file changed (the kernels are built from a scratch COPY of
+the tree, tools/inject-arm.py patches the copy). No real Pi, no real card, no GitHub. Not committed.
+Analysis: docs/analysis/a127-root-cause-2026-11-04.md.
+
+WHAT / WHY
+  External tester ragnar76 (real Pi 4, kernel 19ff79f6): menu entries (^N, new folder) need 3-4
+  clicks; an entry's black highlight stays black after leaving and re-entering the menu. Not
+  observed by us. Question: can we reproduce it in QEMU, and which divergence from EmuTOS's mn_do
+  could produce it?
+
+IMAGE
+  base.img = tools/make-sd-image.sh <scratch>/base.img 128 (standard QEMU image, 86 files), then
+  C:\NEWDESK.INF replaced by method/NEWDESK-W.INF (window on C:\*.* at start; so "New folder" is
+  enabled) with mcopy. base.img.manifest (copied here) is that of the make-sd-image.sh output
+  BEFORE the NEWDESK.INF swap (image_sha256 5b4cb2e9...); the image used: sha256
+  132711cd251e43fd287142c8ffd7551d45dc35bc759ba3db5bd13548fa1f9e82. Per run an APFS clone
+  (cp -c), deleted after; its sha256 after the run: serial/<run>.img-after.sha256.
+  base.img.manifest:      optional_missing none
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  The virt runs (E, F) use no card: "desktop up (0 drives)" (serial/qE.log).
+
+KERNELS (sha256, serial/<run>.kernel.sha256 for A, B, C)
+  runA  5d0e8d87892b818b6ef1378f52d5c7f709a4fcc3d760484057723847162f47b0  rpi4 release + injector
+  runB  00905357c00d4a60515885612846b3905bb56df5e2b319888894b4829e44c9cb  rpi4 release + injector
+  runC  cceec42a882ee74377b2510a15167731d87569b16a76b2bed94e5322c62a8ea9  rpi4 release + injector
+  runD/E/F  d14686eca2c11359faba7c6fe0c8b5ef470efb08fd05fef302e63bff8aab52df  virt release (flat
+        image from rust-objcopy on the ELF built with CARGO_TARGET_DIR=<scratch>/tgt-virt), NO injector
+  Injector = tools/inject-arm.py trigger `desktop` (armed on "[desk] desktop up"); scripts in method/.
+
+RUNS (attempts at reproduction: three classes; A-C are one attempt class "injector, raspi4b",
+      then E-F "real USB path, virt"; D and cal were set-up / calibration)
+  cal/cal2  calibration of the pointer geometry (screen 640x480, "File" at x 72-104, items 16 px).
+            Their screendumps were scratch only (not kept).
+  A  raspi4b, 640x480. Hover File -> New folder, leave right, re-enter, ONE click (press 100 ms).
+     Result: highlight follows, leaves, returns; the one click opens "Name of new folder:"
+     (screendumps/runA-24.png, runA-20.png hover state).
+  B  raspi4b, same phases 3 s apart, 26 screendumps (runB-17..42). Result: leaving the box removes
+     the item highlight, re-entering sets it, leaving below/right keeps the box open
+     (EmuTOS OUTSIDE_STATE); NO stuck black highlight.
+  C  raspi4b. Onto "New folder", then press+release delivered in ONE injector step (same tick)
+     3 times (+1600/+2200/+2800), then one press-100ms-release (+3400/+3420).
+     serial/runC.log: "feed 0xfa ... 0xf8" all at hz_200 4688 (+1600). Result: the three same-tick
+     clicks do NOTHING, the menu stays open (screendumps/runC-30.png ... runC-32.png); the fourth,
+     normal click opens the dialog (runC-33.png).
+     INTERPRETATION: shows that menu::track samples buttons per pump pass and loses a press+release
+     that falls into one pass (EmuTOS: event-driven). It is NOT shown that real USB reports can do
+     this: usb::poll decodes ONE report per pass (see analysis section 4).
+  D  virt: boot + move pointer (set-up; coordinates scaled for 1920x1080). qD-*.png.
+  E  virt, REAL USB path (QMP input-send-event -> usb-mouse -> usb::poll -> hid -> ikbd::feed),
+     1920x1080 16 bpp. Without a window only "Execute EmuCON" is enabled. Click with hold times
+     10/20/40/80/150 ms, 3 s apart. Result: the FIRST click (10 ms) already executes EmuCON
+     (screendumps/qE-click0-hold10ms.png); the later ones land in EmuCON/desktop. Clicks NOT lost.
+  F  virt, real USB path: hover item, leave right/below/left, re-enter. Result: highlight follows;
+     no stuck highlight (screendumps/qF-*.png).
+  REPRODUCED: no, on the path that matches the real Pi. Only artificially (C, two reports in one pass).
+  CAVEATS: QEMU has no Pi timing, no SD (virt), usb-mouse report cadence is QEMU's, not a 1 kHz
+  receiver's; 5 ms injector grid. "New folder" itself (Dcreate) was not clicked through to the end.
+
+FILES
+  method/  run.sh (raspi4b run: clone, QMP screendumps), build-kernel.sh (restore + inject-arm +
+           build in the scratch tree), runscript.sh (build + run one script), run-virt.sh +
+           qmp_usb_clicks.py + q-*.steps (virt runs), s-*.script (injector scripts), NEWDESK-W.INF,
+           contact.py (contact sheets, only for looking).
+  serial/  <run>.log serial logs, <run>.kernel.sha256, <run>.img-after.sha256, qE/qF .qmp.txt
+  screendumps/  PNGs named <run>-<wall second or state>.png
+  base.img.manifest  see IMAGE. Images, kernels and the scratch tree are not kept (session
+           scratchpad, deleted after the run).

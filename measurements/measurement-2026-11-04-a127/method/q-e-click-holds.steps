@@ -1,0 +1,6 @@
+# qemu-virt, 1920x1080, real USB path. No window -> only "Execute EmuCON" is enabled.
+at(14); move(0,-700); move(-1100,0); move(85,0); at(16); shot("file")
+move(0,235); at(18); shot("item")
+for i, hold in enumerate((0.01, 0.02, 0.04, 0.08, 0.15)):
+    click(hold); at(20 + 3*i + 1.5); shot(f"click{i}-hold{int(hold*1000)}ms")
+    at(20 + 3*(i+1))

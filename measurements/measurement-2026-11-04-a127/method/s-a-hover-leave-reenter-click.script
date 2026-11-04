@@ -1,0 +1,23 @@
+# a127 run A: window open (NEWDESK-W.INF) so "New folder" is enabled.
+# park bottom-left, right to x=85, up into the bar over "File" (opens the drop-down)
+400 0xF8 0x81 0x7F
+401 0xF8 0x81 0x7F
+402 0xF8 0x81 0x7F
+403 0xF8 0x81 0x7F
+420 0xF8 85 0
+440 0xF8 0 0x81
+441 0xF8 0 0x81
+442 0xF8 0 0x81
+443 0xF8 0 0x81
+# P1 +600: down onto "New folder" (y=91)
+600 0xF8 0 91
+# P2 +800: out of the box to the right (x 85 -> 300, no man's land)
+800 0xF8 127 0
+801 0xF8 88 0
+# P3 +1100: back in (x 300 -> 150, same row)
+1100 0xF8 0x81 0
+1101 0xF8 0x81 0
+1102 0xF8 22 0
+# P4 +1300: click (press, 100 ms, release)
+1300 0xFA 0 0
+1320 0xF8 0 0
