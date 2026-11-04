@@ -223,4 +223,37 @@ MMU arbeitet mit veraltetem Uebersetzungszustand; Kandidat A ist fuer diesen
 Fall widerlegt. Naechster Schritt: Mechanismus von B belegen (welcher
 Zustand ist veraltet, an welcher Stelle fehlt die Pflege), Bericht vor jedem Fix.
 
+## Stand 2026-11-04 (Mechanismus B)
+
+Bericht `docs/analysis/proc08-candidate-b-2026-11-04.md` (Researcher, nur Lesen; kein Fix).
+Anwenderaussage 2026-11-04: der Absturz trat im **ersten** zView-Start nach dem Einschalten
+auf, ohne DOOM davor; DOOM ist keine Vorbedingung.
+
+- Gelesen: ein Übersetzungsfehler wird nie zwischengespeichert (ARM ARM `RXCLRD`); der Walker
+  hat auf Stufe 3 einen Deskriptor `0` gelesen, also muss er über einen **veralteten
+  Zwischeneintrag** (der A72 hat Walk-Caches, TRM 5.6, ASID-zugeordnet) in eine andere
+  L3 geführt worden sein oder den Speicherinhalt nicht gesehen haben. Der `AT` fällt nur
+  Mikrosekunden nach dem Abruf (nicht „lange danach“): ein zeitlich begrenzter Effekt ist
+  nicht ausgeschlossen.
+- **Rang 1 (Schluss, Auslöser nicht gefunden):** ein Eintrag der Wurzel des Kindes (Slot 3)
+  überlebt den Rückweg. Fenster: `finish_terminate` gibt die privaten Tabellen des Kindes frei,
+  **während dessen Wurzel in `TTBR0_EL1` steht** (`kernel/src/arch/aarch64/exceptions.rs:1745@release_slot`,
+  der Unwind-Zweig tut es umgekehrt, `:1620@restore_boot_ttbr0`), und `restore_boot_ttbr0`
+  schreibt `TTBR0_EL1` und führt `tlbi vmalle1` **ohne `isb` dazwischen** aus
+  (`kernel/src/arch/aarch64/user_entry.rs:124-132@tlbi`; ARM ARM `IRBMTM` D8-7700, `IBLDZX`
+  D8-7875; der Kern macht es an anderer Stelle richtig, `kernel/src/arch/aarch64/mmu.rs:183@size_asids`).
+  Danach folgt vor dem `eret` kein unbedingtes `tlbi` mehr. Ein dort nachgeladener Zwischeneintrag
+  „Region → gemeinsame L3“ erklärt Stufe-3-Fehler auf der ersten Seite des Elternprozesses und
+  warum nur der Rückweg auffällt. Der Zugriff, der im Fenster nachlädt, ist **nicht gefunden**.
+- Rang 2: Walker sieht `arena#361[180]` nicht (Cache-Sicht); Rang 3: A72-Eigenheit
+  (SDEN liegt nicht unter `references/`); Rang 4: nur vorübergehend.
+- **Nächster Schritt (Entscheidung beim Anwender):** Leiter im Absturzbericht (Debug-Feature,
+  Standard aus): zweiter `AT`, `AT` auf Nachbarseiten, dann `dc civac`, `tlbi vaale1is`,
+  `tlbi vaae1is`, `tlbi vmalle1is`, nach jedem Schritt `AT`; eine Schirmzeile
+  „fixed-by …“. Erwartete Ausgaben je Kandidat in Abschnitt 9.1 des Berichts. Optional
+  Breadcrumbs im Rückweg (Abschnitt 9.2).
+- Fix-Skizze für Rang 1 (nicht umgesetzt): in `finish_terminate` `restore_boot_ttbr0` vor
+  `release_slot`; in `restore_boot_ttbr0` und `switch_ttbr0_kernel` ein `isb` zwischen `msr`
+  und `tlbi`. Abnahme nur auf der Pi (QEMU ohne Walk-Cache).
+
 [Gemeinsame Regeln](README.md) gelten.
