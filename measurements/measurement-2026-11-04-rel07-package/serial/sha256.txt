@@ -1,0 +1,6 @@
+ee332e47c1ebb8d383db772fd51b9cc8ec44ba6cea0a29f2dd6b8b0ae733f74d  <scratch>/smoke/kernel-inj.img
+998e8925dd3ce4e7d43c707371bb779b440d3794cbec41fc2a1f8d8fce202fd7  <scratch>/smoke/card-karte.img
+60486afe2b1aef4f6132ef256a340b318399a84d99c5529e7509518d56f0af71  <scratch>/smoke/card-qed.img
+f43e5b07699db54a11c6e758899a1a24e9eeef11b6f8576156391d6e41de1b15  <scratch>/smoke/card-zview.img
+895e294db2e24512efbd8875792c0c78d5f11993b72d395efde70243e4aebdbb  <scratch>/rel07/NewTOS-0.7.zip
+814a2c8b8e40294bca7ec2b518c7400691ccbd7edaf5078b1e9d0fbfaaf31912  <scratch>/rel061/NewTOS-0.6.1.zip

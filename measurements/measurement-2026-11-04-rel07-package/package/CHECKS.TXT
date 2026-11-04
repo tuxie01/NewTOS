@@ -1,0 +1,13 @@
+PASS name list equals NewTOS-0.6.1 (apart from the version, case-sensitive)
+PASS no AppleDouble/.DS_Store/__MACOSX entries
+PASS kernel8.img carries "NewTOS 0.7"
+PASS kernel8.img carries build rev (797e0078)
+PASS kernel8.img crash-walk report matches KERNEL_FEATURES
+PASS every TOS-visible name on KARTE is 8.3
+DRAFT release texts carry 14 TODO-REL marker line(s) (ALLOW_TODO=1) -- not a release
+PASS FILES.TSV lists every file of the ZIP
+version 0.7  commit 797e00785b402c0749da54af16c197a676c1ea35  tree_dirty_build=no  tree_dirty_docs=yes
+kernel_features crash-walk
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+zip 895e294db2e24512efbd8875792c0c78d5f11993b72d395efde70243e4aebdbb 6681311 <scratch>/rel07/NewTOS-0.7.zip
+entries 74

@@ -75,4 +75,28 @@ bereitstellen.
 - Beleg: `measurements/measurement-2026-11-04-rel07-version/RUNINFO.TXT` (Bootschirm, About,
   `ver`, About mit EINVFN-Kern). `cargo xtask test` 1958/0/1.
 
+## Stand Schritt 2 (Developer, 2026-11-04, nicht committet)
+
+- **Paket-Entwurf** `NewTOS-0.7.zip` aus `797e0078` (nur im Scratch, nicht im Repo; Pfad und
+  sha256 `895e294d…` im Messlauf). Gleiche 74 Namen wie `NewTOS-0.6.1.zip` (bis auf den
+  Ordnernamen), keine `._`/`.DS_Store`, `kernel8.img` = `--release --features crash-walk` mit
+  "NewTOS 0.7" und "(797e0078)". 25 Dateien neu gebaut und anders als 0.6.1 (Kern, alle
+  Programme ausser SYSACC, die zView-Codecs, `GEM.RSC`, die Texte), 33 gleich.
+- **Herkunft** jeder Datei (Build-Schritt oder "aus 0.6.1 uebernommen") in
+  `measurements/measurement-2026-11-04-rel07-package/RUNINFO.TXT`. Ohne Quelle im Repo und
+  daher aus 0.6.1 uebernommen: Firmware (die einzige andere lokale Kopie ist aelter),
+  `LICENCE.broadcom`, `NEWDESK.INF`, `ZVIEW.INF`, `QED\CONFIG.TXT`, `DOOM1.WAD`, `QED.HYP`,
+  `TERADESK.HYP`. Ball wird aus einer Kopie von `/Volumes/Daten/Development/ball-demo`
+  gebaut (ausserhalb des Repos, ohne Versionskontrolle).
+- **Werkzeug:** `measurements/measurement-2026-11-04-rel07-package/method/package-release.sh`
+  (`<version> <work-dir> <vorheriges Release>`), baut alles, prueft Namen, Stempel, 8.3,
+  AppleDouble. Es lehnt Texte mit `TODO-REL`-Zeilen ab; der jetzige Entwurf lief mit
+  `ALLOW_TODO=1`.
+- **Texte** `docs/release/v0.7/`: die Texte von 0.6.1 mit Versionsnummer und Tag `v0.7`;
+  14 Zeilen `TODO-REL07:` markieren, was Schritt 3 inhaltlich schreiben muss. Nach Schritt 3
+  das ZIP mit demselben Werkzeug neu bauen (ohne `ALLOW_TODO`).
+- **Rauchtest** QEMU raspi4b: Bootschirm "NewTOS 0.7", Desktop mit Laufwerk C:, About
+  "NewTOS 0.7", zView und QED per `#Z`, zViews Dateiauswahl per Injektor. Die echte Pi bleibt
+  Schritt 4.
+
 [Gemeinsame Regeln](README.md) gelten.

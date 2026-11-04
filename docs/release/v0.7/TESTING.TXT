@@ -1,0 +1,32 @@
+NewTOS 0.7 - How to test
+========================
+
+(Deutsch: siehe TESTANLEITUNG.TXT)
+
+Simple: use NewTOS the way you would use an Atari. There is no checklist.
+Most bugs show up during normal work and trying things out - that is
+exactly what we need.
+
+Some ideas if you don't know where to start:
+
+- Work with the desktop: windows, folders, copy, rename and delete files,
+  settings, "Save desktop".
+- Try the programs: QED (write texts), zView (look at your own pictures),
+  Doom, TeraDesk, CoreMark, Ball, HypView (open QED.HYP).
+- Open the accessory from the Desk menu while something else runs.
+- Restart with Ctrl+Alt+Del.
+- Everything you know from a real Atari: does it look the same, does it
+  behave the same?
+
+TODO-REL07: add the 0.7 test focus (file selector scroll bar and mouse wheel, wireless receiver, menu bar clicks for A127).
+What we are especially interested in:
+
+TODO-REL07: the 0.7 crash report has a diagnosis block below the registers - adjust the description.
+- Crash report (text with "pc=" and registers): please take a PHOTO, then
+  press a key.
+- Hangs: what did you do just before?
+- Anything that looks or feels different from an Atari with TOS 4 /
+  EmuTOS - small things too.
+
+Report with FEEDBACK-EN.TXT, as a GitHub issue or on the mailing list.
+Thank you!

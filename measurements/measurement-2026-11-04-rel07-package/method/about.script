@@ -1,0 +1,21 @@
+# REL07 step 2 smoke test: the About box on the release card (tools/inject-arm.py,
+# trigger `desktop`), 200 Hz ticks after "[desk] desktop up". Relative IKBD mouse
+# packets 0xF8|buttons dx dy; keys are IKBD make codes, break = make|0x80.
+# Geometry at 640x480 from measurement-2026-11-04-rel07-version/method/about-ver.script
+# (Desk title (22,8), "Desktop info..." (60,28)).
+# park at (0,0)
+600 0xF8 0x81 0x81
+601 0xF8 0x81 0x81
+602 0xF8 0x81 0x81
+603 0xF8 0x81 0x81
+604 0xF8 0x81 0x81
+605 0xF8 0x81 0x81
+# hover the Desk title (22,8)
+700 0xF8 22 8
+# down to "Desktop info..." (60,28), click
+900 0xF8 38 20
+1000 0xFA 0 0
+1020 0xF8 0 0
+# About open: dumps. Return = the default OK button.
+2400 0x1C
+2410 0x9C

@@ -1,0 +1,180 @@
+NewTOS 0.7 — Alpha-Testversion
+==============================
+
+(English: see README.TXT)
+
+NewTOS ist das Atari-TOS (GEMDOS, BIOS, XBIOS, VDI, AES) als eigenes
+Betriebssystem fuer den Raspberry Pi 4 — kein Emulator. Atari-Programme
+werden aus ihren Quellen fuer ARM neu uebersetzt und laufen nativ.
+Vorbild und Messlatte ist EmuTOS (Falcon/TOS-4-Profil).
+
+Das ist eine ALPHA-Version. Sie ist zum Ausprobieren und Fehlerfinden da,
+nicht fuer den Alltag. Bitte eine eigene SD-Karte verwenden — nichts
+darauf, das du noch brauchst.
+
+
+1. Was du brauchst
+------------------
+
+- Raspberry Pi 4 Model B (RAM-Groesse bitte im Feedback angeben)
+- Monitor an HDMI 0 (die Buchse neben dem USB-C-Strom), Full HD
+TODO-REL07: USB-Eingabe: Funkempfaenger mit der Maus auf dem zweiten Interface gehen seit 0.7 (USB01 F3, GitHub #3) - hier erwaehnen?
+- USB-Tastatur und USB-Maus (deutsche oder US-Belegung)
+- eine microSD-Karte, die du komplett loeschen darfst (2 GB reichen)
+- ein Netzteil fuer den Pi 4
+
+
+2. Installation
+---------------
+
+WICHTIG — so muss die Karte aussehen:
+
+- Partitionstabelle: MBR (nicht GPT).
+- Erste Partition: FAT16, HOECHSTENS 2 GB. Darauf kommt NewTOS (Laufwerk C:).
+- FAT32 und exFAT erkennt NewTOS noch nicht. Der Raspberry Pi Imager und
+  das normale Formatieren unter Windows/macOS erzeugen FAT32 oder exFAT —
+  das funktioniert NICHT.
+- Die Grenze von 2 GB ist hart: FAT16 mit mehr als 2 GB braucht 64-KB-
+  Cluster (Windows erlaubt das bis 4 GB), NewTOS nimmt hoechstens
+  32-KB-Cluster an — wie das Atari-TOS.
+- Optional: weitere Partitionen (primaer oder logisch), ebenfalls FAT16
+  bis 2 GB, erscheinen als Laufwerke D:, E:, ... bis P:. Der Rest der
+  Karte darf einfach frei bleiben.
+
+macOS (Terminal, DISK durch die Karte ersetzen, z. B. disk4 —
+mit "diskutil list" pruefen, sonst loeschst du die falsche Platte):
+
+    diskutil partitionDisk /dev/DISK 2 MBR "MS-DOS FAT16" NEWTOS 2G "Free Space" FREI R
+
+Windows (Eingabeaufforderung als Administrator; N = Nummer der Karte aus
+"list disk" — genau pruefen, "clean" loescht die ganze Platte!):
+
+    diskpart
+    list disk
+    select disk N
+    clean
+    convert mbr
+    create partition primary size=2000
+    format fs=fat quick label=NEWTOS
+    assign
+    exit
+
+Linux (sdX = die Karte, mit "lsblk" pruefen):
+
+    sudo parted /dev/sdX --script mklabel msdos mkpart primary fat16 1MiB 2000MiB
+    sudo mkfs.fat -F 16 -n NEWTOS /dev/sdX1
+
+Dann den INHALT dieses ZIP-Ordners "KARTE" auf die Partition kopieren
+(die Dateien muessen direkt im Wurzelverzeichnis liegen, nicht in einem
+Unterordner), Karte auswerfen, in den Pi stecken, einschalten.
+
+Nach einigen Sekunden erscheint der Startbildschirm, danach der Desktop.
+
+Tastatur: Voreingestellt ist die deutsche Belegung (Datei KEYBOARD.KBD).
+Fuer eine US-Tastatur KEYBOARD.KBD von der Karte loeschen.
+
+
+3. Was drauf ist
+----------------
+
+    kernel8.img, config.txt,        NewTOS selbst und die Startdateien
+    start4.elf, fixup4.dat,         der Raspberry-Pi-Firmware
+    bcm2711-rpi-4-b.dtb
+    ACC\SYSACC.NAC                  Accessory "NewTOS System Information"
+                                    (Desk-Menue)
+    APPS\TERADESK\DESKTOP.NAP       TeraDesk (alternativer Desktop)
+    APPS\QED\QED.NAP                QED (Texteditor)
+    APPS\ZVIEW\ZVIEW.NAP            zView (Bildbetrachter, 10 Formate)
+    APPS\DOOM\DOOM.NAP              Doom (Shareware-Episode)
+    APPS\COREMARK\CORE.NCP          CoreMark (CPU-Benchmark, Textprogramm)
+    APPS\BALL\BALL.NAP              Ball (Grafik-Demo)
+TODO-REL07: HypView ist in 0.7 nicht mehr neu - "neu" streichen.
+    APPS\HYPVIEW\HYP_VIEW.NAP       HypView (Hypertext-Betrachter, neu)
+
+Die Hilfetexte von QED, zView und TeraDesk liegen als .HYP-Datei im
+jeweiligen Programmordner (z. B. APPS\QED\QED.HYP) und lassen sich mit
+HypView oeffnen.
+
+Programmendungen: .NAP = GEM-Programm, .NCP = Textprogramm,
+.NTP = Textprogramm mit Parametern, .NAC = Accessory. Die Atari-Endungen
+.PRG/.TOS/.TTP/.ACC bleiben fuer echte 68000-Programme reserviert —
+die laufen in dieser Version noch NICHT.
+
+
+TODO-REL07: davor "Neu in 0.7" einfuegen (siehe TASK/REL07 Anlass); entscheiden, ob "Neu in 0.6.1" und "Neu in 0.6" bleiben, schrumpfen oder entfallen.
+4. Neu in 0.6.1
+---------------
+
+- Fehler behoben (GitHub #1): Ein Popup in einem Accessory-Dialog liess
+  das Fenster dahinter ueber den Dialog zeichnen. Bildschirmsperre und
+  Mausklicks verhalten sich jetzt wie bei EmuTOS.
+- Fehler behoben: Eine geoeffnete Datei umzubenennen konnte ihren Inhalt
+  verlieren.
+- Eine geoeffnete Datei zu loeschen verhaelt sich jetzt wie bei EmuTOS.
+- Neu: HypView, dazu die Hilfetexte von QED, zView und TeraDesk.
+  Bilder in Hypertexten und Verweise in andere Dateien gehen noch nicht.
+- Fuer Entwickler: SDK mit Anleitung zum Portieren eigener Programme
+  (im Quelltext unter docs/sdk/).
+
+
+Neu in 0.6 (seit 0.5, Atari-Treffen, Oktober 2026)
+--------------------------------------------------
+
+- Der Desktop laeuft als normales Programm; faellt er aus, startet die
+  Konsole (EmuCON) statt eines Absturzes.
+- Accessories haben eigene Kennungen (ap_id 2, 3, ...) und koennen mit
+  Programmen Nachrichten tauschen; Timer und Nachrichten wecken Programme
+  und Accessories jetzt richtig.
+- Neustart: Ctrl+Alt+Del (warm) und Ctrl+Alt+rechte Shift+Del (kalt)
+  starten den Pi neu. TeraDesk "Reboot" funktioniert.
+- Rechte und linke Shift-Taste werden getrennt erkannt.
+- Jedes Programm hat sein eigenes aktuelles Laufwerk und Verzeichnis.
+- 75 gleichzeitig offene Dateien (vorher 16).
+- Ausgabeumlenkung fuer Textprogramme (">" und "<").
+- Hintergrund-Dialog mit Vorschau wie EmuTOS.
+- Viele Korrekturen im Desktop (Markierungen, Neuzeichnen, Ziehen auf
+  Verknuepfungen).
+
+
+5. Bekannte Einschraenkungen
+----------------------------
+
+TODO-REL07: jede Einschraenkung unten gegen 0.7 pruefen (noch wahr? neue, z. B. Rad der Kabelmaeuse, USB03 / GitHub #8).
+- Keine 68000-Programme (.PRG/.TOS/.TTP/.ACC) — nur fuer NewTOS neu
+  uebersetzte Programme laufen.
+- Nur ein Programm gleichzeitig (plus Desktop und Accessories), wie
+  beim Atari ohne MiNT.
+- Kein Ton, kein Netzwerk, keine Uhr mit Batterie (Datum/Uhrzeit beim
+  Start stammen vom Kernel-File).
+- Nur FAT16; nur Raspberry Pi 4.
+- Drucken und serielle Schnittstelle fehlen.
+- "Shutdown" in TeraDesk haelt den Pi absichtlich an (wie das Original):
+  danach Strom aus und wieder an.
+- Ein Programm, das in einer Endlosschleife haengt, laesst sich nicht
+  per Ctrl+Alt+Del beenden — dann Strom aus und wieder an.
+TODO-REL07: der Absturzbericht von 0.7 traegt einen Diagnoseblock (crash-walk) - erwaehnen und um ein Foto des ganzen Bildschirms bitten.
+- Stuerzt ein Programm ab, erscheint ein Absturzbericht; nach einer
+  Taste geht es zurueck zum Desktop. Davon bitte ein Foto machen!
+
+
+6. Rueckmeldung
+---------------
+
+Einfach ausprobieren (Anregungen in TESTANLEITUNG.TXT) und FEEDBACK.TXT
+ausfuellen: als Antwort an die Mailingliste oder als Issue auf GitHub.
+Jede Rueckmeldung hilft, auch "alles lief".
+
+
+7. Lizenz und Quellen
+---------------------
+
+NewTOS steht unter der GNU GPL v2 oder spaeter. Die enthaltenen Programme
+stehen unter ihren eigenen Lizenzen (TeraDesk, QED, zView, HypView, Doom: GPL).
+Die vollstaendigen Quelltexte (NewTOS, SDK und die Anpassungen der
+Programme) liegen auf https://github.com/tuxie01/NewTOS, Tag v0.7.
+Die Raspberry-Pi-Firmware (start4.elf, fixup4.dat, .dtb) stammt von der
+Raspberry Pi Foundation und steht unter deren Lizenz (LICENCE.broadcom,
+liegt dem ZIP bei). DOOM1.WAD ist die frei weitergebbare Shareware-
+Episode von id Software.
+
+Projekt und Fehlermeldungen: https://github.com/tuxie01/NewTOS

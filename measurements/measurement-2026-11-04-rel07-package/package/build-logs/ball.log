@@ -1,0 +1,17 @@
+== env NEWTOS_SDK=/Volumes/Daten/Development/PiRusTOS/sdk <scratch>/rel07/ball-src/build-ball.sh <scratch>/rel07/build/BALL.NAP
+clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+abi  : LP64 (8-byte long/pointer, ELF64 AArch64)
+src  : ball.c + ball-tex.c + plat-newtos.c
+out  : <scratch>/rel07/build/BALL.NAP
+
+  CC  ball.c
+  CC  ball-tex.c
+  CC  plat-newtos.c
+
+LINK OK -> <scratch>/rel07/build/BALL.NAP (170288 bytes)
+    Class: 64-bit (0x2)
+    DataEncoding: LittleEndian (0x1)
+  Type: SharedObject (0x3)
+  Machine: EM_AARCH64 (0xB7)
+  Entry: 0x1000
+undefined symbols in the final image (goal 0): 0

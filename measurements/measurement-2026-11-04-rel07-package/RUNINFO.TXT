@@ -1,0 +1,261 @@
+measurement-2026-11-04-rel07-package -- REL07 step 2: the NewTOS 0.7 release package
+=====================================================================================
+Developer, TASK/REL07 step 2 ("Paket"), 2026-11-04 (host clock CET). HEAD 797e0078
+(797e00785b402c0749da54af16c197a676c1ea35), tree clean except the new, uncommitted
+docs/release/v0.7/ and this run directory. No commit, no tag, no GitHub, no SD card, no Pi.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+
+WHAT / WHY
+  Build NewTOS-0.7.zip with the same layout and scope as NewTOS-0.6.1.zip (the v0.6.1 GitHub
+  asset, sha256 814a2c8b8e40294bca7ec2b518c7400691ccbd7edaf5078b1e9d0fbfaaf31912 = the value
+  in docs/archive/status-log-2026-10-26.md), every build product rebuilt from HEAD, and prove
+  that the card folder boots in QEMU raspi4b. The ZIP is a DRAFT: the six texts carry
+  `TODO-REL07:` lines where their content needs the 0.7 update (REL07 step 3).
+
+  ZIP (scratch, not committed):
+    /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/rel07/NewTOS-0.7.zip
+    sha256 895e294db2e24512efbd8875792c0c78d5f11993b72d395efde70243e4aebdbb, 6681311 bytes,
+    74 entries (0.6.1: 74). Two runs of the script from fresh work dirs gave the same ZIP
+    sha256 (all stamps = the commit time, zip -X); a run on another day differs in
+    kernel8.img only (its build stamp / boot clock is the build date, tos-api/build.rs).
+
+HOW 0.6.1 WAS MADE (git history + hashes)
+  34b53a63 version text 0.6.1, 26193203 docs/release/v0.6.1/, tag v0.6.1 on d5e9424c. No
+  packaging script exists in the repo: per docs/archive/status-log-2026-10-26.md the 0.6
+  package was assembled by hand "aus den Pi-getesteten Dateien der Karte", 0.6.1 = 0.6 +
+  kernel eaba7c5e + HypView/HYP + texts. The hashes confirm it: firmware, NEWDESK.INF,
+  ZVIEW.INF, CONFIG.TXT, DOOM1.WAD, BALL.*, GEM.RSC equal the user's card backups
+  (sd-card-backup-20261031/BOOT, gitignored); QED.HYP = qed/doc/qed.hyp and TERADESK.HYP =
+  teradesk/DOC/TERADESK.HYP of the user's FreeMiNT 1.19-c55 distribution (CF backup
+  2026-08-17); ZVIEW.HYP = zview/_dist/doc/zView.hyp of the pinned zView source; the texts =
+  docs/release/v0.6.1/ byte for byte; TERADESK.INF = the heredoc of tools/make-sd-image.sh;
+  KEYBOARD.KBD = keyboards/german.kbd. 0.6.1's DOOM.NAP and DOOM.NTP are the same bytes.
+
+METHOD
+  method/package-release.sh 0.7 <work> <unpacked NewTOS-0.6.1>   (ALLOW_TODO=1: draft texts)
+    reusable release tool; header = usage. It refuses a tree dirty outside docs/ TASK/
+    measurements/, runs every build (cargo xtask build --board rpi4 --release --features
+    crash-walk; sdk/build.sh sysacc.c; build-zview, build-qed, build-teradesk,
+    build-coremark, build-doom, build-hypview; the ball demo from a COPY of
+    /Volumes/Daten/Development/ball-demo built against this sdk/, so nothing is written
+    there), refuses any product older than its start, checks that the builds left the
+    repository unchanged, assembles NewTOS-0.7/ from an explicit table (destination,
+    source, origin label), normalises stamps/permissions, zips (zip -X -r), and checks:
+    name list = 0.6.1's (case-sensitive, version aside), no ._/.DS_Store/__MACOSX, kernel
+    carries "NewTOS 0.7" + "(797e0078)" + the crash-walk report, every TOS-visible name
+    8.3 (firmware dtb excepted), FILES.TSV covers every file, TODO markers (refused
+    without ALLOW_TODO=1). Its CHECKS.TXT: package/CHECKS.TXT (all PASS, one DRAFT line).
+  method/mkcard-call.sh, build-inj-kernel.sh, about.script, zview-fsel.script, run.sh,
+    qmpshot.py (the last two copied unchanged from measurement-2026-11-04-rel07-version).
+
+RESULT -- PACKAGE
+  package/unzip-l-0.7.txt vs package/unzip-l-0.6.1.txt: identical names apart from the
+  folder NewTOS-0.6.1 -> NewTOS-0.7 (incl. the empty KARTE/CLIPBRD/, lower-case
+  config.txt, kernel8.img, qed.rsc, desktop.rsc, icons.rsc, cicons.rsc, hyp_view.rsc as in
+  0.6.1). No AppleDouble/.DS_Store. kernel8.img: "NewTOS 0.7", "2026-11-04 (797e0078)",
+  [crashwalk] strings present.
+  Differences to 0.6.1 (content): 25 files changed, 33 the same (column vs0.6.1 below).
+    changed: kernel8.img; GEM.RSC (0.6.1 shipped an older 4991-byte NRSC; now the 5047-byte
+      blob the kernel embeds, tos-api/src/aes/gem_fsel.nrsc, unchanged since before v0.6.1);
+      DOOM.NAP/.NTP; BALL.NAP; ZVIEW.NAP + the 10 codecs; QED.NAP; CORE/COREVAL.NCP;
+      DESKTOP.NAP; HYP_VIEW.NAP; the six texts (version + TODO-REL07 lines).
+    same: firmware, LICENCE.broadcom, config.txt, NEWDESK.INF, both TERADESK.INF,
+      KEYBOARD.KBD, BALL.CFG/NTX, all .rsc/.RSC, SYSACC.NAC (rebuilt, byte-identical),
+      ZVIEW.INF/.HYP, QED.HYP, CONFIG.TXT, TERADESK.HYP, the zView icons, DOOM1.WAD.
+
+FILE LIST (path below NewTOS-0.7/, sha256, bytes, vs 0.6.1, source; = package/FILES.TSV)
+  KARTE/start4.elf
+      77260733037721d20209325b01b1fbc167f0bef387c18888b07bd57e06e7ce26  2303680 vs0.6.1=same    <- 0.6.1 ZIP (carried): Raspberry Pi firmware
+  KARTE/fixup4.dat
+      80fde48a87ec7ee94e150680b754db53e9800887694e58299c65630c952b5fd9     5498 vs0.6.1=same    <- 0.6.1 ZIP (carried): Raspberry Pi firmware
+  KARTE/bcm2711-rpi-4-b.dtb
+      75761b73c284e26623e4d1624bff13e67bce2ae620880efd81d6571a3739fcfb    56407 vs0.6.1=same    <- 0.6.1 ZIP (carried): Raspberry Pi firmware
+  LICENCE.broadcom
+      c7283ff51f863d93a275c66e3b4cb08021a5dd4d8c1e7acc47d872fbe52d3d6b     1594 vs0.6.1=same    <- 0.6.1 ZIP (carried): Raspberry Pi firmware licence
+  KARTE/config.txt
+      99736bd98554cd0358371a6e2397475f657b8f3b98ecc057bd616c570b1f89b0     2844 vs0.6.1=same    <- HEAD boot/rpi4/config.txt
+  KARTE/kernel8.img
+      8ff8b8bb1288bd15036de7beb1496f3d155472705649a5bd3145e12f87bff5bb  1484960 vs0.6.1=changed <- HEAD cargo xtask build --board rpi4 --release --features crash-walk
+  KARTE/NEWDESK.INF
+      8ae4d27dcddf45ae364344f25014d5856523b3be482fc7c31732c4a045a0e9dc      675 vs0.6.1=same    <- 0.6.1 ZIP (carried): tester desktop configuration
+  KARTE/TERADESK.INF
+      f659c896166de17c45111839a556b151c7839f0383a63117905d459520bd30e5     3058 vs0.6.1=same    <- HEAD tools/make-sd-image.sh (TERADESK.INF heredoc)
+  KARTE/KEYBOARD.KBD
+      697066cb49277ab5cf98375d04bc9e9b76cbf4a679c04cdc23b4e46dafbde799      409 vs0.6.1=same    <- HEAD keyboards/german.kbd (= tools/mkkbd.py de)
+  KARTE/BALL.CFG
+      1f8deb54b47eeaf7b052dc454c9ad5e2f5615b59db56eb260f6a74400a566f84     3089 vs0.6.1=same    <- ball-demo /Volumes/Daten/Development/ball-demo/BALL.CFG (outside the repository)
+  KARTE/BALL.NTX
+      b4719b9293cf28eb2bd69d590929c17e95c6e985d3beefbe32b012a64fbbc41e    32792 vs0.6.1=same    <- ball-demo /Volumes/Daten/Development/ball-demo/BALL.NTX (outside the repository)
+  KARTE/GEMSYS/RSC/GEM.RSC
+      2d1b1b22e9779c151160063115d1e204ad2059d0cd56668d94597b3eca94f4de     5047 vs0.6.1=changed <- HEAD tos-api/src/aes/gem_fsel.nrsc (= tools/mkrsc.py convert references/emutos/aes/gem.rsc)
+  KARTE/GEMSYS/RSC/qed.rsc
+      30ac6bf24a28ce2c95fab6a7c663bf29f40de9ad9ee1dd6b80ec36c146264a79    41378 vs0.6.1=same    <- HEAD sdk/apps/build-qed.sh
+  KARTE/ACC/SYSACC.NAC
+      812ddd574dda3f854ad5d11274abf6741dea23c8231163a11b49dbdca85602d6    38688 vs0.6.1=same    <- HEAD sdk/build.sh sdk/examples/sysacc.c
+  KARTE/APPS/DOOM/DOOM.NAP
+      86abca15e09202d8538afb8504f4835fdda2ecc5f33f74f5852570832e1df132   790816 vs0.6.1=changed <- HEAD sdk/apps/build-doom.sh
+  KARTE/APPS/DOOM/DOOM.NTP
+      86abca15e09202d8538afb8504f4835fdda2ecc5f33f74f5852570832e1df132   790816 vs0.6.1=changed <- HEAD sdk/apps/build-doom.sh (same program as DOOM.NAP, .NTP = asks for parameters)
+  KARTE/APPS/DOOM/DOOM1.WAD
+      1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771  4196020 vs0.6.1=same    <- 0.6.1 ZIP (carried): id Software shareware WAD
+  KARTE/APPS/BALL/BALL.NAP
+      28ce92c9597636a096ea16db12695e8aa19de8c2054b60e3f587e7baa03f6a74   170288 vs0.6.1=changed <- ball-demo build-ball.sh, built from a copy against HEAD sdk
+  KARTE/APPS/ZVIEW/ZVIEW.NAP
+      efb1aebbd303ba57551951f4b0b430a953c79bf4e3b2361b6436a4780d20e5ce   522592 vs0.6.1=changed <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/ZVIEW.RSC
+      7252fc16fb320c6a8dc778f1a226c5ce7d2763b351a0fb1c4f63c193b09a635b    21606 vs0.6.1=same    <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/ZVIEW.INF
+      dbc32da47a6516d52a0803f98c2fd163c44d09edc145d17bc4851c04e3ed7d72      328 vs0.6.1=same    <- 0.6.1 ZIP (carried): zView settings
+  KARTE/APPS/ZVIEW/ZVIEW.HYP
+      90a11ec9d36f2fe2b88a2477a65bd61f13210a768fee0110dd402cc35385f14a   247856 vs0.6.1=same    <- HEAD sdk/zview/z-tools-04805b7.tar.xz zview/_dist/doc/zView.hyp
+  KARTE/APPS/QED/QED.NAP
+      274986f02cecb77c49a9ed523008473b25e16b672452cb641b1b08e0e73fd56f   544280 vs0.6.1=changed <- HEAD sdk/apps/build-qed.sh
+  KARTE/APPS/QED/qed.rsc
+      30ac6bf24a28ce2c95fab6a7c663bf29f40de9ad9ee1dd6b80ec36c146264a79    41378 vs0.6.1=same    <- HEAD sdk/apps/build-qed.sh
+  KARTE/APPS/QED/CONFIG.TXT
+      e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855        0 vs0.6.1=same    <- 0.6.1 ZIP (carried): empty file
+  KARTE/APPS/QED/QED.HYP
+      dab1d3cbcb34379ff600bde885c68dfd53fc61e3db6005eddb5eb56c517e0d82    43102 vs0.6.1=same    <- 0.6.1 ZIP (carried): QED hypertext (FreeMiNT 1.19 distribution)
+  KARTE/APPS/COREMARK/CORE.NCP
+      32af6694574ff9b1d6febb91e1bb6cf3c84edf1b4785271693c9a85e8d756ada   158176 vs0.6.1=changed <- HEAD sdk/apps/build-coremark.sh
+  KARTE/APPS/COREMARK/COREVAL.NCP
+      7c8fe26816dd41308843ea7756028b60ca14b30c0b32336bb6d7f29be8786b18   158176 vs0.6.1=changed <- HEAD sdk/apps/build-coremark.sh
+  KARTE/APPS/TERADESK/DESKTOP.NAP
+      91ffefe3bc449a0a15ac2107e7f93188ac157cf299e113bcfccadeb74903b495   353312 vs0.6.1=changed <- HEAD sdk/apps/build-teradesk.sh
+  KARTE/APPS/TERADESK/desktop.rsc
+      409f69a09bf1d1d869bdf9e712510413917cc2355b05b3ba937e60366b0b0e08    39278 vs0.6.1=same    <- HEAD sdk/apps/build-teradesk.sh
+  KARTE/APPS/TERADESK/icons.rsc
+      8d4bc8a2b8ca8e6890f318677a0445dd26b476b4cd0bf6ee4fc103a0f4f22e75    13284 vs0.6.1=same    <- HEAD sdk/apps/build-teradesk.sh
+  KARTE/APPS/TERADESK/cicons.rsc
+      ee7de7f37985aba9856ccbe01fb852bec47e6ff9d200644ea3aced15231f6241    63650 vs0.6.1=same    <- HEAD sdk/apps/build-teradesk.sh
+  KARTE/APPS/TERADESK/TERADESK.INF
+      f659c896166de17c45111839a556b151c7839f0383a63117905d459520bd30e5     3058 vs0.6.1=same    <- HEAD tools/make-sd-image.sh (TERADESK.INF heredoc)
+  KARTE/APPS/TERADESK/TERADESK.HYP
+      5fbd9faef249466af04d08ec5c763d1a34560d7a949adb848f938c33c855ab62    77176 vs0.6.1=same    <- 0.6.1 ZIP (carried): TeraDesk hypertext (FreeMiNT 1.19 distribution)
+  KARTE/APPS/HYPVIEW/HYP_VIEW.NAP
+      99e097e0dfae18c36b67ba8d2843c0fbc740c939521c6db884b561ad011737cc   280352 vs0.6.1=changed <- HEAD sdk/apps/build-hypview.sh
+  KARTE/APPS/HYPVIEW/hyp_view.rsc
+      54589e1c59da47f45a5b6529ded425908c8f6f28d4d5a9e7bcab7e47a8540caa    27747 vs0.6.1=same    <- HEAD sdk/apps/build-hypview.sh
+  KARTE/APPS/ZVIEW/CODECS/BMP.NLD
+      0e8cabececf22d5e78ec2c4f9dbe0d8c37dc6e08438c056a94786b637e958ff5    90968 vs0.6.1=changed <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/DEGAS.NLD
+      a0161f3e04bbb1b503095b87f4909b90ca3279af3e327dac16ec7ce6a2a95cfe    90824 vs0.6.1=changed <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/EUREKA.NLD
+      9448814bc121f323e52f59787602a09873714b1c9725836cd646f5d3a3586c09    90984 vs0.6.1=changed <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/GIF.NLD
+      f06b5fc9a8df4e567a6fdeca9ab293eef67f6bcf284dc0a045d05b766e4741ef   104776 vs0.6.1=changed <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/GODPAINT.NLD
+      2e6be5598b88b5a2ae71f77e8eced961a24578c76a085d8f63190ce880571f66    89488 vs0.6.1=changed <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/IMG.NLD
+      04ad6cdb2e4d922d28db419de910db51c8ac6090fdc8cc63da36c56638aeaa8a    94616 vs0.6.1=changed <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/JPG.NLD
+      fd820ce59d88400cb181ccc7c6a3a7a24fab7fc1fe1d2de337c14522c520be72   715128 vs0.6.1=changed <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/NEO.NLD
+      e2b004a6ff8299e7f7d1b41d84375c2d737f24d086bc2ad48f9cb169f56e7f4f    89600 vs0.6.1=changed <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/PNG.NLD
+      5bade7471dad3e81ead4404f0b9e3f29eb867445dcfa7458abf5ecdb6a52ef24   408432 vs0.6.1=changed <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/TGA.NLD
+      b949ed4bcf64e3c697082729f6bfa486333e76cffeca9ab50e908ca12bf2557a    90264 vs0.6.1=changed <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/ICONS/FILE.GOD
+      f1cc3a809aa25195ae486d56422d3772ab411574447e85667905f10a637561f3     2054 vs0.6.1=same    <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/ICONS/FOLDER.GOD
+      bda81600aedc7e5376f8ce4e5ced208a0e2e91853ba2aaea6209e17d8176e813     2054 vs0.6.1=same    <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/ICONS/IMAGE.GOD
+      cc139b6a3e35e1c895766534c06432f265d9ffe383b89b24d75c1b20a7ef0ca9     2054 vs0.6.1=same    <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/ICONS/PDF.GOD
+      de7c636f2a14193d1abbcf47a5b1b79acaecb371d549a44a25691e5017cc9a47     2054 vs0.6.1=same    <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/ICONS/PRG.GOD
+      71594ffeadf23678c68ec05e9767091522e95c3317d91d5ae9b889760f931f34     2054 vs0.6.1=same    <- HEAD sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/ICONS/SMALL.GOD
+      75dd26b3c7403a8e4f1c964901a9d83c69c636848c5010b8952e385c2ef6c5d1    14342 vs0.6.1=same    <- HEAD sdk/zview/build-zview.sh
+  README.TXT
+      f4ae3f3463fd484ab52c9b4f9e42e444285f5cfba35f6dfe8f1278540eccb9d6     7192 vs0.6.1=changed <- HEAD docs/release/v0.7/README.TXT (working tree, uncommitted)
+  LIESMICH.TXT
+      c062765d29b296a1394a7aade810337bcf5f533b035910283c5c62262df8d56b     7656 vs0.6.1=changed <- HEAD docs/release/v0.7/LIESMICH.TXT (working tree, uncommitted)
+  TESTING.TXT
+      0ed61da6cf58e536b087379b79deff86ef29268b7432cc5081c97b68dd75b0d7     1292 vs0.6.1=changed <- HEAD docs/release/v0.7/TESTING.TXT (working tree, uncommitted)
+  TESTANLEITUNG.TXT
+      92b906c2b8165516231d93dd0299e197afaf70e48d5f5d3a5ffdd792f7b9cb59     1380 vs0.6.1=changed <- HEAD docs/release/v0.7/TESTANLEITUNG.TXT (working tree, uncommitted)
+  FEEDBACK.TXT
+      2fa40f486a247a588baf9558f5408c47486d139f92f12966cdd1946ba6fe4aae     1033 vs0.6.1=changed <- HEAD docs/release/v0.7/FEEDBACK.TXT (working tree, uncommitted)
+  FEEDBACK-EN.TXT
+      e87e9de94311090e4a378268b69a62df7a9e1837716f429ec9a2091d84421203      987 vs0.6.1=changed <- HEAD docs/release/v0.7/FEEDBACK-EN.TXT (working tree, uncommitted)
+
+  Ball demo sources (outside the repo, not version-controlled; package/ball-src.sha256):
+    84f01f1b64cb44c0b709b9a65fa8c423f0c1e751f1f6cfe51745242fea26422a  build-ball.sh
+    f8590ef3556d4786acbb34638c07e00cc74d2296cde8b3de1bcef4dc5872215d  ball.c
+    790e0b0d23493e42acf149e342c8c73d49e16ef388eb2047337806eff534f032  ball-tex.c
+    4490c5a64c8e339b27941d8eb616b297c1f1446034792904ea16549e7c24862c  plat-newtos.c
+    0ec96b8c9bfa9bead008d6c3d19f36456d51aead69f66f7403a27dfd56c387ad  ball.h
+    9a576f0e081c706f5f47dc10753507483055f6ff2f42eafcd03b6ea4ab11ff8a  ball-tex.h
+    b4719b9293cf28eb2bd69d590929c17e95c6e985d3beefbe32b012a64fbbc41e  BALL.NTX
+    1f8deb54b47eeaf7b052dc454c9ad5e2f5615b59db56eb260f6a74400a566f84  BALL.CFG
+
+SOURCE QUESTIONS (for the lead/user; nothing swapped silently)
+  1. Firmware: start4.elf/fixup4.dat/dtb are carried from 0.6.1 (= the user's card since
+     2026-06-18, VC_BUILD_ID_TIME Feb 11 2026). The only other local copy (Circle's boot/,
+     iCloud gem-box) is OLDER (Apr 30 2025). No newer source found; not changed.
+  2. Carried data without a repo source: NEWDESK.INF (tester desktop: DISK C, QED shortcut,
+     #R 02), ZVIEW.INF (a saved zView config with browser_w=1920/h=1061), QED\CONFIG.TXT
+     (empty), DOOM1.WAD, QED.HYP, TERADESK.HYP, LICENCE.broadcom. Taken from the 0.6.1 ZIP.
+     The user's current card has a different, personal NEWDESK.INF (4 drives, 3 shortcuts);
+     not used.
+  3. BALL.NAP is built from the ball-demo directory outside the repo (not under git); the
+     0.6.1 BALL.NAP (134912 B) came from the card, today's build is 170288 B.
+  4. GEM.RSC on the card overrides the kernel's embedded file-selector resource
+     (tos-api/src/aes/fsel.rs load_fselectr). Shipping it equal to the embedded blob keeps
+     the 0.6.1 file list; dropping it would change nothing visible but the list.
+  5. kernel8.img's "Built" date is also the boot clock (no RTC). The script does not set
+     SOURCE_DATE_EPOCH, so a rebuild on the release day stamps that day.
+
+SMOKE TEST (QEMU raspi4b, headless, -append serial=on; method/run.sh; per-run APFS clone
+  of the card (cp -c), deleted after the run; every clone's sha256 unchanged after its run,
+  serial/*.img-after.sha256)
+  Cards: method/mkcard-call.sh -> tools/mkcard.sh (not make-sd-image: its partition step
+  adds the QEMU test programs), label NEWTOS, MKCARD_DIRS=CLIPBRD, every KARTE file as a
+  dest=file pair. Manifests cards/card-*.img.manifest; all three:
+    optional_missing none
+  card-karte.img = exactly KARTE (51 files: names + sha256 equal to FILES.TSV, checked);
+  card-zview.img / card-qed.img = the same plus ONE line in NEWDESK.INF after #R:
+  "#Z 01 C:\APPS\ZVIEW\ZVIEW.NAP@" / "#Z 01 C:\APPS\QED\QED.NAP@" (cards/newdesk-*.inf;
+  the rest of the file is the shipped one). The cards carry a C:\.Spotlight-V100 metadata
+  folder macOS recreated after mkcard's cleanup (manifest `metadata` line); not in the ZIP.
+  Kernels: release = KARTE/kernel8.img from the ZIP (8ff8b8bb...); injector =
+  method/build-inj-kernel.sh (HEAD + crash-walk + tools/inject-arm.py, arms desktop=
+  about.script and up:ZVIEW=zview-fsel.script) sha256 ee332e47..., stamp rev "(unknown)"
+  (scratch copy without .git), used only where input is needed (raspi4b has no USB input).
+  Runs and kept screendumps (looked at, each):
+    karte  (release kernel, card-karte)
+      karte-8.png    boot screen: "Version : NewTOS 0.7", "Built : 2026-11-04 (797e0078)",
+                     Raspberry Pi 4, ST-RAM 10 MB, TT-RAM 904 MB, drives C:
+      karte-22.png   desktop: menu Desk/File/View/Options, DISK C, QED.NAP shortcut,
+                     TRASH, PRINTER (the shipped NEWDESK.INF); serial "[desk] desktop up
+                     (1 drives)", "[acc] loaded C:\ACC\SYSACC.NAC"
+    zview  (release kernel, card-zview)
+      zview-30.png   zView up full-screen with its menu bar zView/File/Edit/View/Help
+    qed    (release kernel, card-qed)
+      qed-30.png     QED up with its German menu bar (qed/Datei/Bearbeiten/.../Shell)
+    inj-about (injector kernel, card-karte)
+      inj-about-24.png  About box: "Version  NewTOS 0.7", "Machine  Raspberry Pi 4 (BCM2711)"
+      inj-about-32.png  About closed by Return, desktop restored
+    inj-zview (injector kernel, card-zview; ^O at +400 ticks after zView's first evnt_multi)
+      inj-zview-24.png  zView's "Choose a file..." file selector on C:\*.*: ACC, APPS,
+                        CLIPBRD, GEMSYS, BALL.CFG, BALL.NTX, BCM271~3.DTB, CONFIG.TXT,
+                        FIXUP4.DAT, scroll bar with thumb, drive C selected
+  Serial logs: serial/{karte,zview,qed,inj-about,inj-zview}.log -- no crash, no exception.
+
+  Not driven: HypView, SYSACC dialog, TeraDesk, Doom, CoreMark, Ball (not asked for the
+  smoke test); real Pi = REL07 step 4.
+
+FILES
+  method/        package-release.sh (the release tool), mkcard-call.sh, build-inj-kernel.sh,
+                 about.script, zview-fsel.script, run.sh, qmpshot.py
+  package/       FILES.TSV, CHECKS.TXT, ball-src.sha256, unzip-l-0.7.txt, unzip-l-0.6.1.txt,
+                 build-logs/ (one log per build step)
+  cards/         card-{karte,zview,qed}.img.manifest, newdesk-{zview,qed}.inf
+  serial/        the five serial logs, *.img-after.sha256, sha256.txt (cards, injector
+                 kernel, both ZIPs)
+  screendumps/   the seven PNGs listed above
+  Not kept: the ZIP and the unpacked folder (scratch path above), card images, injector
+  kernel and its scratch tree (scratch, deleted after the run); scratch paths in the copied
+  logs are written as <scratch>.

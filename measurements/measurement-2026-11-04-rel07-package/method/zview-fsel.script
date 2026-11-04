@@ -1,0 +1,7 @@
+# REL07 step 2 smoke test: zView's File > Open (tools/inject-arm.py, trigger
+# up:ZVIEW = zView's first evnt_multi after appl_init), by its menu shortcut
+# ^O (shown in ZVIEW.RSC as "Open File...   ^O"): Control 0x1D, O 0x18.
+400 0x1D
+410 0x18
+420 0x98
+430 0x9D
