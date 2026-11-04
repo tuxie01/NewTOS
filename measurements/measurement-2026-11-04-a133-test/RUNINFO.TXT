@@ -1,0 +1,54 @@
+measurement-2026-11-04-a133-test -- independent verification of be3c06a9 (A132) and fd6c7e3f (A133), base 3b1fd066
+===================================================================================================================
+Tester, 2026-11-04. No product code changed, no commit, no card, no Pi. Tree clean at HEAD fd6c7e3f (git status clean at
+start). Head/base are `git archive` exports in the session scratchpad (head-src, base-src). QEMU 11.0.2 raspi4b
+(-append serial=on, bcm2835-fb WxH), one QEMU at a time, per-run APFS clone (A129 run.sh / run-keep.sh), Hatari 2.6.1 +
+pinned oracle ROM (through the A133 script). host_clang Apple clang version 21.0.0 (clang-2100.4.1.1).
+Image manifests (copied, one per card; optional_missing verbatim): every card-*.img.manifest here says
+  optional_missing none
+(card-fsprobe/tedprobe/boot = the A133 re-run cards, card-r133-* the same files from my run, card-al/lg/karte/qed/zview).
+
+1. cargo xtask test (full, working tree): 1970 passed / 0 failed / 1 ignored  (serial/xtask-test-head.log)
+   Warnings: 127 "warning" lines at head. Same command on the base export: the 127 warning lines are identical (diff empty);
+   the base export's test COUNT is not usable (1949/9/0: nine xtask tests need .git/references, absent in a git-archive
+   export); the count delta comes from the tickets: 1965/0/1 after A132, 1970/0/1 after A133 (+5), matched by my run.
+2. Fresh release builds (git archive of fd6c7e3f, own target; `cargo clean` between boards):
+   rpi4: ok, kernel8.img sha 797821c2...; qemu-virt: ok (ELF only, xtask makes no kernel8.img for that board).
+   Warnings head vs base (3b1fd066 export): kernel (lib) 93 / tos-api (lib) 64 on both boards, both trees -> no delta.
+   (clippy was not asked for and not run.)
+3. A133 pixel comparison: method/run-a133-rerun.sh = the developer's run-a133.sh with step 0 replaced by my kernels
+   (all other steps unchanged; it calls the A129 scripts). Results: analysis/fsel-compare.txt: file box 181x199 differing
+   pixels 0, EmuTOS glyph pixels not black in NewTOS 0; analysis/ted-compare-a133.txt: 0 of 448x184 (base: 1916,
+   ted-compare-base.txt); analysis/regression-diff.txt: desktop boot base vs head 0 at 30 s and 45 s. Crops looked at:
+   analysis/fsel-ftitle-newtos-top-hatari-bottom-x8.png (identical "*.*" cell, white cell, same glyphs),
+   analysis/ted-a133-top-hatari-bottom-x2.png (all 17 objects equal to the oracle, replace cells white, SELECTED text inverted).
+4. Regression head vs base on raspi4b, 1920x1080 and 640x480 (method/matrix.sh, one call; method/cluster.py exact RGB
+   diff with clusters; analysis/cluster-all.txt, crops in analysis/clusters/). Same card, same inputs on both sides:
+     boot (open C:\ window, drive icon)      boot-30, boot-45  : 0 / 0 pixels at both resolutions
+     form_alert probe (own FSPROBE=alert)   alert-45          : 0 at both resolutions
+     tester's KARTE desktop card            karte-45          : 0 at both
+     zView start (autorun)                  zview-60          : 0 at both
+     QED start (autorun)                    qed-60            : 0 at both
+     injector "about" script (desktop arm)  about-40/50       : 0 at both (640: the real About box; 1920: the relative
+                                                                mouse path lands on Options > icon type, an alert "Please
+                                                                select icon type." -- still an alert/dialog, 0 diff)
+     file selector (A129 FSPROBE, C:\LIST)  fs-55             : 192 at both, ONE cluster each = the FTITLE cell
+                                                                (1920: x=911..934 y=479..494; 640: x=271..294 y=179..194):
+                                                                140 px black->white (cell background, A133) + 52 px
+                                                                white->black (glyphs "*.*", A132). = the A129 192.
+     zView File>Open (zview-fsel script)    zfsel-60/75       : 192 at both, the same single FTITLE cluster
+   Every changed pixel is in the FTITLE mask cell; nothing else changed anywhere. Unexplained pixels: none.
+   (fedit-* in matrix.sh: not a valid test -- the matrix kernel also carries the desktop arm, whose script fired during
+    the autorun boot and put an alert on screen; both sides 0 diff, ignored. Point 5 below used dedicated kernels.)
+5. A132 behaviour (head only, 640x480, dedicated injector kernels via method/build-inj.sh, launch:FSPROBE):
+   5a method/fsel-edit.script: click into the directory field, Backspace, type T X T, Return ->
+      analysis/point5a-edit-640-t19-t22-t25.png: title "*.*" before, "*.TXT" after, directory field "C:\LIST\*.TXT", dialog stays.
+      (First attempt without the click typed into the Selection field and Return closed the dialog: test script error, not product.)
+   5b method/fsprobe-long.c (path C:\ZZZ*.TXT*.TXT*.TXT, 18 chars) + fsel-folder.script: title shows the long mask on open;
+      double-click folder SUBA -> directory field "C:\SUBA\ZZZ*.TXT*.TXT*.TXT", title still the long mask;
+      closer click -> back to "C:\ZZZ*.TXT*.TXT*.TXT", title the long mask
+      (analysis/point5b-folder-640-t19-t22-t27.png).
+NOT VERIFIED: real Pi display, QEMU-only; qemu-virt was only built, not booted; base-side point 5 not run (base has no mask in
+the title). G_BOXCHAR (A135) not in scope.
+FILES: method/ (matrix.sh, cluster.py, run-a133-rerun.sh, run-keep.sh, build-inj.sh, probes, scripts), serial/ (logs,
+  sha256.txt = kernels/probes/cards), screendumps/, analysis/, hatari/, card-*.manifest. Kernels/images not kept (scratchpad).

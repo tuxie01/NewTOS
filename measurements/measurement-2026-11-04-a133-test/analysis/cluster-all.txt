@@ -1,0 +1,58 @@
+== 1920 boot-30
+1920x1080 differing pixels: 0
+== 1920 boot-45
+1920x1080 differing pixels: 0
+== 1920 fs-55
+1920x1080 differing pixels: 192
+cluster 1: x=911..934 y=479..494 px=192  [(((0, 0, 0), (255, 255, 255)), 140), (((255, 255, 255), (0, 0, 0)), 52)]
+== 1920 alert-45
+1920x1080 differing pixels: 0
+== 1920 karte-45
+1920x1080 differing pixels: 0
+== 1920 zview-60
+1920x1080 differing pixels: 0
+== 1920 qed-60
+1920x1080 differing pixels: 0
+== 1920 about-40
+1920x1080 differing pixels: 0
+== 1920 about-50
+1920x1080 differing pixels: 0
+== 1920 zfsel-60
+1920x1080 differing pixels: 192
+cluster 1: x=911..934 y=479..494 px=192  [(((0, 0, 0), (255, 255, 255)), 140), (((255, 255, 255), (0, 0, 0)), 52)]
+== 1920 zfsel-75
+1920x1080 differing pixels: 192
+cluster 1: x=911..934 y=479..494 px=192  [(((0, 0, 0), (255, 255, 255)), 140), (((255, 255, 255), (0, 0, 0)), 52)]
+== 1920 fedit-40
+1920x1080 differing pixels: 0
+== 1920 fedit-55
+1920x1080 differing pixels: 0
+== 640 boot-30
+640x480 differing pixels: 0
+== 640 boot-45
+640x480 differing pixels: 0
+== 640 fs-55
+640x480 differing pixels: 192
+cluster 1: x=271..294 y=179..194 px=192  [(((0, 0, 0), (255, 255, 255)), 140), (((255, 255, 255), (0, 0, 0)), 52)]
+== 640 alert-45
+640x480 differing pixels: 0
+== 640 karte-45
+640x480 differing pixels: 0
+== 640 zview-60
+640x480 differing pixels: 0
+== 640 qed-60
+640x480 differing pixels: 0
+== 640 about-40
+640x480 differing pixels: 0
+== 640 about-50
+640x480 differing pixels: 0
+== 640 zfsel-60
+640x480 differing pixels: 192
+cluster 1: x=271..294 y=179..194 px=192  [(((0, 0, 0), (255, 255, 255)), 140), (((255, 255, 255), (0, 0, 0)), 52)]
+== 640 zfsel-75
+640x480 differing pixels: 192
+cluster 1: x=271..294 y=179..194 px=192  [(((0, 0, 0), (255, 255, 255)), 140), (((255, 255, 255), (0, 0, 0)), 52)]
+== 640 fedit-40
+640x480 differing pixels: 0
+== 640 fedit-55
+640x480 differing pixels: 0

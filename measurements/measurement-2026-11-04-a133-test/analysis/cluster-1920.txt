@@ -1,0 +1,19 @@
+== 1920 boot-30
+1920x1080 differing pixels: 0
+== 1920 boot-45
+1920x1080 differing pixels: 0
+== 1920 fs-55
+1920x1080 differing pixels: 192
+cluster 1: x=911..934 y=479..494 px=192  [(((np.int64(0), np.int64(0), np.int64(0)), (np.int64(255), np.int64(255), np.int64(255))), 140), (((np.int64(255), np.int64(255), np.int64(255)), (np.int64(0), np.int64(0), np.int64(0))), 52)]
+== 1920 alert-45
+1920x1080 differing pixels: 0
+== 1920 karte-45
+1920x1080 differing pixels: 0
+== 1920 zview-60
+1920x1080 differing pixels: 0
+== 1920 qed-60
+1920x1080 differing pixels: 0
+== 1920 about-40
+1920x1080 differing pixels: 0
+== 1920 about-50
+1920x1080 differing pixels: 0

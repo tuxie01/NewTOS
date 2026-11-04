@@ -1,0 +1,17 @@
+797821c251b66426076eb34d055c7992cfc37e8f5fecd8231614a691844a86e9  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/t3/k-head-rpi4.img
+3baf1a09839abb2959401c34f91f156df5fb19ae805b934459d9bc354021189d  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/t3/k-base-rpi4.img
+0e070ebb8c7d7840dd62d101b3558f00a98308b04c3686cea929d01fd830167b  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/t3/k-head-virt.elf
+16a14c692128f7e0e3c59069f20d1e8abe288b2abd8318a9c9a65a9644198a99  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/t3/ki-base.img
+d5667ec7d512660c4218e7d003493a44843f96e0e4b95c26aba859ee3fc8d081  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/t3/ki-head-edit.img
+6eafed9e735cc2c6123f39c71aedf7e1e2763ac063c483b0f9a2074f2fedb542  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/t3/ki-head-folder.img
+4fdc6e193b45be4565c48aa10ccda4b80075c0f13a61d1b02fabf8333fe6cfbf  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/t3/ki-head.img
+d07eee66a8240412b13701813c3139c5e3424ed2aa317feb567a97bd3d3fddea  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/t3/al/FSPROBE.NAP
+b5083d760c3d5fe2513fbcb55054a6690369a2dce79385ca3c69dd2d64a2a8c5  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/t3/lg/FSPROBE.NAP
+12dd7b457d0ed17f461744f4f5acb958daf0d9678efb6c5bee94f991a7614b73  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/t3/r133/fs/FSPROBE.NAP
+58c94e3f0db8685c7c9c03919ab7b928f8269effdae7a85dd6649b3d871e1c07  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/t3/karte/card-karte.img
+c5aa60754b704ffe14aa96ad9562f4be9b27879f5d0873265c71997617477bbf  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/t3/karte/card-qed.img
+561f1ed0bb11d690199b3a576271c61c6a1b3b651e5351d5b8b7d27dc30aa5b2  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/t3/karte/card-zview.img
+45335a833e31da5ca68ef95f60aa5e7515c3c195237ba1e29b4f42ab36d6a819  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/t3/lg/card.img
+0b2b02c1798c8097c5fafc84ed22d73e317f9d020cc16f4fa5ee618050c365c9  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/t3/al/card.img
+20abf16f0994eb3c23760c665ffb63fa254cdd2a9a1df723a8a2b2ebc5c4bd8a  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/t3/base-src/target/aarch64-unknown-none-softfloat/release/kernel
+head fd6c7e3f base 3b1fd066 (git archive exports)
