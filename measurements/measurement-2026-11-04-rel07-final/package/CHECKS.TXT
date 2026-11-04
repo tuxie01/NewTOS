@@ -1,0 +1,19 @@
+PASS NAMES_REMOVED/NAMES_ADDED declared against NewTOS-0.6.1
+PASS name list = NewTOS-0.6.1 minus [KARTE/APPS/BALL KARTE/BALL.CFG KARTE/BALL.NTX] plus [] (apart from the version, case-sensitive)
+PASS no AppleDouble/.DS_Store/__MACOSX entries
+PASS kernel8.img carries "NewTOS 0.7"
+PASS kernel8.img carries build rev (d7711c42)
+PASS kernel8.img crash-walk report matches KERNEL_FEATURES
+PASS every TOS-visible name on KARTE is 8.3
+PASS packaged release texts free of TODO-REL markers
+PASS FILES.TSV lists every file of the ZIP
+PASS ZIP unpacks byte-identical to NewTOS-0.7/
+version 0.7  commit d7711c42f894cefded081b2da52dc278f9c17c58  tree_dirty_build=no  tree_dirty_docs=yes
+packager tools/release/package-release.sh 75b99e591af3c25a1a4b4a94a5db3792b2555524a50a65901b6638547f72e087 (uncommitted)
+previous zip 814a2c8b8e40294bca7ec2b518c7400691ccbd7edaf5078b1e9d0fbfaaf31912 <scratch>/rel061/NewTOS-0.6.1.zip
+names_removed KARTE/APPS/BALL KARTE/BALL.CFG KARTE/BALL.NTX
+names_added none
+kernel_features crash-walk
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+zip a51913942d7c8f10427e5cf5e8ce001fc4514f744a98265457e5245a8ecbbbba 6602464 <scratch>/rel07-final/NewTOS-0.7.zip
+entries 70

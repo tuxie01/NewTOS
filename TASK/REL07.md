@@ -114,4 +114,24 @@ bereitstellen.
   Anwenderkarte), `ZVIEW.INF`, `QED\CONFIG.TXT`, `DOOM1.WAD`, HYP-Dateien,
   `GEM.RSC` wie in 0.6.1 (keine Einwaende).
 
+## Stand Schritt 2b (finales Paket) (Developer, 2026-11-04, nicht committet)
+
+- **Werkzeug** `tools/release/package-release.sh` (neu, aus dem Skript des Entwurfslaufs):
+  Ball entfernt; Texte aus `docs/release/v<version>/`, jedes `TODO-REL` wird vor dem ersten
+  Bau abgelehnt, ohne Override (`ALLOW_TODO` gestrichen); `docs/release/` muss committet
+  sein. Neue Parameter: das vorige Release als ZIP (oder Ordner) und
+  `NAMES_REMOVED`/`NAMES_ADDED`, damit die Namenslisten-Pruefung gegen das vorige Release
+  streng bleibt. Neu geprueft: das ZIP entpackt sich bytegleich zum Ordner. Kopf =
+  Aufruf, Zusicherungen, Datei hinzufuegen/entfernen.
+- **Paket** `NewTOS-0.7.zip` aus `d7711c42` (nur im Scratch, daneben der entpackte Ordner):
+  sha256 `a5191394…`, 6602464 Byte, 70 Eintraege (55 Dateien). Gegenueber dem Entwurf: die
+  vier Ball-Eintraege fehlen (Ordner `APPS\BALL`, `BALL.NAP`, `BALL.CFG`, `BALL.NTX`),
+  `kernel8.img` traegt "(d7711c42)", die sechs Texte sind die freigegebenen (bytegleich
+  `HEAD`); alles andere bytegleich. Alle Pruefungen PASS.
+- **Rauchtest** QEMU raspi4b aus genau KARTE: Bootschirm "NewTOS 0.7" / "(d7711c42)",
+  Desktop mit Laufwerk C:, zView per `#Z` vollflaechig mit Menue. Die echte Pi bleibt
+  Schritt 4.
+- Beleg: `measurements/measurement-2026-11-04-rel07-final/RUNINFO.TXT` (Dateiliste mit
+  sha256 und Herkunft, Unterschiede zum Entwurf und zu 0.6.1).
+
 [Gemeinsame Regeln](README.md) gelten.
