@@ -119,8 +119,6 @@ die laufen in dieser Version noch NICHT.
   laeuft weiter.
 - Textprogramme: VT52-Bildschirmsteuerung (Cursor, Loeschen, Invers)
   funktioniert.
-- Ohne Uhr mit Batterie beginnt das Datum beim Baudatum des Kerns statt
-  1980.
 - Viele kleinere Korrekturen, gemessen an EmuTOS (BIOS, XBIOS, GEMDOS,
   AES), z. B. das Archiv-Bit nach dem Schreiben einer Datei, die
   Neuanmeldung eines Laufwerks nach Kartenwechsel, Fenstersperre und

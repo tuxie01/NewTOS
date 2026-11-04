@@ -114,8 +114,6 @@ in this release.
 - A program that touches address 0 now ends with a bus error as on an
   Atari, instead of silently running on; NewTOS itself keeps running.
 - Console programs: VT52 screen control (cursor, clear, inverse) works.
-- Without a battery clock the date starts at the build date of the
-  kernel instead of 1980.
 - Many smaller corrections measured against EmuTOS (BIOS, XBIOS, GEMDOS,
   AES), e.g. the archive bit after writing a file, drive re-login after a
   card change, window locking and menu messages.
