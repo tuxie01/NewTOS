@@ -1,0 +1,10 @@
+run 2026-11-04T14:59:32Z
+kernel    f2fdbcd5864d8ba82250acd84195d5ad7258a5aefd7ae142b05054220c478057 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/k-pi.img
+append    "serial=on"
+cases     x
+display   1920x1080 (-global bcm2835-fb.xres/yres)
+card      180f74d73975965b856789c0f21b48913163300c4df9f398510fea64e88a26cf (APFS clone of base.img, C:\CWCASE.TXT = "x")
+qemu      screendumps after 45 s and 50 s; stopped
+screen    a1aabbc4dc22fe8c8788e37a182ca6c996a30206f7b869067343925591c1dbe4 l3-x-1080-serial.png
+screen    a1aabbc4dc22fe8c8788e37a182ca6c996a30206f7b869067343925591c1dbe4 l3-x-1080-serial-5s.png
+card      after 180f74d73975965b856789c0f21b48913163300c4df9f398510fea64e88a26cf (the booted clone)

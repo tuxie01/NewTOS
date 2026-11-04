@@ -1,0 +1,13 @@
+measurement-2026-11-04-proc08-ladder-test -- independent Tester run of commit 1452cc15 (TASK/PROC08 "Stand Leiter",
+crash-walk ladder), base 233e404e. QEMU only; no card, no Pi. host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+HOW: checks/xtask-test.txt (cargo xtask test: 1958 passed, 0 failed, 1 ignored, exit 0);
+     checks/feature-identity.txt + locdiff-*.txt (measurement-2026-11-02-proc08-diag/method/feature-identity.sh unchanged:
+     4 raw binaries base==aftr byte-identical, locdiff 0 differing bytes; feature-on builds OK; clippy 121/74 on all sides);
+     method/all-runs.sh = copy of the developer's (measurement-2026-11-04-proc08-ladder) run on a fresh release rpi4
+     --features crash-walk kernel8.img sha256 f2fdbcd5864d8ba82250acd84195d5ad7258a5aefd7ae142b05054220c478057;
+     qemu-virt --features crash-walk release kernel (objcopy of ELF, sha256 0fef95cc...698e), QEMU -M virt headless + QMP
+     screendump after 40 s (serial/qemu-virt-SERIAL.txt, screendumps/qemu-virt-desktop.png).
+RESULT: j: screen "ladder: L1 F3 sp ok priv ok far F3 dsb F3 dc F3 vaale1 F3 vaae1 F3 vmalle1 F3 => none" below the summary,
+  prompt still on screen; serial=on line identical in content; x: "ladder: not run, AT ok" (screen + serial); qemu-virt
+  boots to "[desk] desktop up (0 drives)", desktop visible, 0 panic/exception lines.
+manifest (base.img.manifest): optional_missing none ; image_sha256 bb7a88c9248a1201f893d593a863e628de968b1fa3c0a58d8536f4dfc689f7b5
