@@ -1,0 +1,33 @@
+RUNINFO -- independent verification of commit 01eb7709 (PROC08 fix) vs base 24437ff0 (= 01eb7709~1), 2026-11-04, Tester
+
+WHAT/WHY  Does the fix build, boot and keep the Pexec/Pterm paths working on QEMU raspi4b and qemu-virt? QEMU has no
+          A72 walk cache, so this is a regression net, NOT acceptance of the fix (acceptance = real Pi).
+HOW       method/runs.sh (run-rpi4.sh, run-virt.sh, qmp.py). Kernels: release, built fresh per board
+          (touch kernel/src/main.rs, cargo xtask build --board <b> --release [--features crash-walk]); head from the shared
+          tree (clean at 01eb7709), base from `git archive 24437ff0` in scratch. sha256: kernels.sha256.
+          Image: tools/make-sd-image.sh base.img 64, manifest base.img.manifest (here), image_sha256 68f73a40...
+          manifest lines verbatim: `optional_missing none`; `host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)`.
+          Per run APFS clone (cp -c), deleted after. LDGLOOP.NCP = same binary as the developer's run (sha256 a7ed7507...).
+          QEMU 11.0.2, one at a time. bootargs `serial=on memprot=verify` (+ asid=on in one run).
+RESULTS (serial/, screendumps/)
+  1 cargo xtask test (head): 1952 passed / 0 failed / 1 ignored (serial/xtask-test-head.log). 127 warning lines.
+    Base test run in a `git archive` copy: 127 warning lines (same), but 9 failures there (doc_check x4, rsc_* x5) = missing
+    .git / gitignored assets in the archive copy, not a regression; count comparison pass/fail therefore not usable.
+  2 builds rc=0, 159 warning lines each: head rpi4, rpi4+crash-walk, qemu-virt, qemu-virt+crash-walk; base: same 4 = 159.
+  3 raspi4b release: h-zview (10 module starts, 0 crash/panic/mismatch, zView menu bar), h-ldgloop (800 "[exec] preparing",
+    "ldgloop: done bad=0 free-ok", "exited with rc=0", desktop up, 1634 verify lines, only the header line lacks
+    "0 mismatches", 0 VERIFY MISMATCH, 0 crash), h-zview-asid (10 starts, 0 crash, zView menu bar),
+    h-cw-boot (crash-walk build reaches "[desk] desktop up (1 drives)").
+    Head-vs-base serial diff: b-boot/h-boot and b-cw-boot/h-cw-boot byte-identical (diff empty).
+    Screendump pixel diff (decoded IDAT compared): b-boot=h-boot, b-cw-boot=h-cw-boot identical (640x480).
+  4 qemu-virt: b-virt-boot/h-virt-boot serial diff empty, screendump identical (1920x1080), desktop up (0 drives), viewed.
+  5 h-argvtest: desktop autorun (#Z) of GEM program C:\ARGVTEST.NAP: started, output, "exited with rc=0", desktop up again;
+    both accessories (SYSACC.NAC, SYSACC2.NAC) load in every raspi4b boot ("[acc] all accessories have issued their
+    message wait"), no wedge, no crash. NOT driven: interactive desktop double-click/exit of an AES-using app (no input path
+    on raspi4b), the base side of runs h-zview/ldgloop/asid/argvtest (only boot compared head vs base).
+  6 diff read (git show 01eb7709 -- kernel tos-api): matches the "Stand Fix" table for all 4 sites.
+    Observations: stage-2 install now writes ttbr0 before ttbr1 (as documented in the table); finish_terminate with
+    parent_l0_pa==0 leaves the empty root (resume to EL1, documented); release_slot now sits between restore and
+    install_ttbr0. Nothing flagged as wrong.
+CAVEAT   My kernel sha256 differ from the developer's RUNINFO (rpi4 328e59f9 vs 607aa961): rebuilt on committed tree,
+         not compared further. Real-Pi acceptance remains open.

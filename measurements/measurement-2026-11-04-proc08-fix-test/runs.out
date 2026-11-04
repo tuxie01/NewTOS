@@ -1,0 +1,31 @@
+{"return": {}}
+qemu-system-aarch64: terminating on signal 15 from pid 12857 (<unknown process>)
+end h-boot after ~60s
+{"return": {}}
+qemu-system-aarch64: terminating on signal 15 from pid 12964 (<unknown process>)
+end b-boot after ~60s
+{"return": {}}
+qemu-system-aarch64: terminating on signal 15 from pid 13028 (<unknown process>)
+end h-zview after ~120s
+done-regex at ~195s
+{"return": {}}
+qemu-system-aarch64: terminating on signal 15 from pid 13242 (<unknown process>)
+end h-ldgloop after ~195s
+{"return": {}}
+qemu-system-aarch64: terminating on signal 15 from pid 13431 (<unknown process>)
+end h-zview-asid after ~120s
+{"return": {}}
+qemu-system-aarch64: terminating on signal 15 from pid 13549 (<unknown process>)
+end h-cw-boot after ~60s
+{"return": {}}
+qemu-system-aarch64: terminating on signal 15 from pid 13765 (<unknown process>)
+end b-cw-boot after ~60s
+{"return": {}}
+qemu-system-aarch64: terminating on signal 15 from pid 13831 (<unknown process>)
+end h-argvtest after ~60s
+{"return": {}}
+qemu-system-aarch64: terminating on signal 15 from pid 13896 (<unknown process>)
+end h-virt-boot after 60s
+{"return": {}}
+qemu-system-aarch64: terminating on signal 15 from pid 13986 (<unknown process>)
+end b-virt-boot after 60s
