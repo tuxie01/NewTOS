@@ -1819,7 +1819,7 @@ zurueck. Unten: `NM_NAMES = F9NAME-F1NAME+1 = 9` Zeilen (`gemfslib.c:37`);
 **A1. Klick in die Leiste ausserhalb des Daumens (`FSVSLID`)** — `:776-788`
 
 1. `ob_actxywh(tree, FSVELEV, &pt)` holt das absolute Rechteck des Daumens
-   (`:777`). **Korrektur bei der Umsetzung (2026-11-04):** `ob_actxywh` kennt
+   (`:777`). **Korrektur bei der Umsetzung (2026-11-04; vom Anwender bestaetigt 2026-11-04, weil EmuTOS-konform):** `ob_actxywh` kennt
    die 3D-Zugabe sehr wohl — fuer ein `FL3DOBJ`-Objekt waechst das Rechteck um
    `ADJ3DSTD` je Seite (`OUTLINED`: um `ADJ3DOUT` mehr; `SHADOWED` mit
    negativem Rand: rechts/unten um `border*ADJ3DSHA`),
