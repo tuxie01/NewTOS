@@ -1,6 +1,6 @@
 # USB01 — USB-Maus: nur Boot-Protokoll, Steckkombinationen, Diagnosewerkzeug
 
-Status: **OFFEN** · Prioritaet: **P1** · Typ: Treiberluecke + offene Defekte — Anwender 2026-10-22 („die Maus ist wichtig“)
+Status: **ERLEDIGT** 2026-11-04 ([Quittung](USB01-STATUS-DONE.MD); Anwender 2026-11-04: Rest auf USB03, A127, USB04 und das Testszenario verteilt) · Prioritaet: **P1** · Typ: Treiberluecke + offene Defekte — Anwender 2026-10-22 („die Maus ist wichtig“)
 
 ## Sachverhalt
 
@@ -188,3 +188,28 @@ hiess: Funktastaturen nicht getestet.
 Offen daraus: Rad der Kabelmaus B100 -> [USB03](USB03.md) (#8); die Maus der
 DW 9000 schickt nur 3 Bytes, „Rad: ja“ ist damit nicht belegt (Rueckfrage);
 „Menueleiste verhaelt sich seltsam“ ohne Einzelheiten (Rueckfrage in #3).
+
+## Abschluss (Lead-Abgleich, Anwender-Freigabe 2026-11-04)
+
+Ragnars Antworten in GitHub #3 vom 2026-10-26 (nicht mehr in diesem Ticket
+nachgetragen gewesen):
+
+* **Rad der Cherry DW 9000:** scrollt; bei der Aufnahme hatte er das Rad nicht
+  benutzt (deshalb nur 3-Byte-Berichte in `snapshots/CHERRY`). Frage erledigt.
+* **„Menueleiste verhaelt sich seltsam“:** Menueeintraege (Beispiel ^N, neuer
+  Ordner) wirken erst nach 3–4 Klicks; der schwarze Hintergrund eines Eintrags
+  bleibt stehen, wenn man das Menue verlaesst und wieder hineingeht. Kein
+  USB-Befund, sondern AES: neues Ticket [A127](A127.md).
+
+Verteilung der offenen Reste:
+
+* **Mehr als 15 Befehle am VL805:** Code mit F1 behoben (`7e7fbafa`); auf
+  Hardware gemessen bisher hoechstens 13 Befehle (eigene Pi) und 12 (Ragnar,
+  `measurements/measurement-2026-10-23-usb01-ragnar/RUNINFO.TXT`). Nur noch
+  Hardware-Nachweis: geht ins Testszenario fuer die Tester (kein eigenes
+  Pi-Ticket).
+* **Report-only-Maeuse** (Rad der B100, RPi-Maus, Logitech-Kabelmaeuse; GitHub
+  #8): [USB03](USB03.md), auf P1 gehoben, dazu Taste 3 aus F5.
+* **F5 (Rest), F6 Hotplug, F7 absolute Zeiger, F9 Port-Reset mit Wiederholung**
+  (`docs/api/usb/hid-mouse-protocols.md` §6): Sammelticket [USB04](USB04.md),
+  P3, nach 1.0.

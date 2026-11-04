@@ -1,6 +1,6 @@
 # USB03 — Mausrad von Kabelmaeusen, die es nur im Report-Protokoll schicken (B100, GitHub #8)
 
-Status: **OFFEN** · Prioritaet: **P2** · Typ: Treiberluecke — aus Ragnars USB-Test 2 (2026-10-25)
+Status: **OFFEN** · Prioritaet: **P1** (Anwender 2026-11-04, vorher P2; der USB-Rest aus [USB01](USB01.md)) · Typ: Treiberluecke — aus Ragnars USB-Test 2 (2026-10-25)
 
 ## Befund
 
@@ -20,5 +20,11 @@ Report-Protokoll betreiben und Tasten/X/Y/Rad ueber einen Deskriptor-Leser
 dekodieren; Rueckfall auf Boot-Protokoll, wenn der Deskriptor nicht lesbar ist.
 Hosttests gegen die echten Deskriptoren und Berichte aus den Messlaeufen.
 Abnahme: echte Pi (B100).
+
+Dazu (Anwender 2026-11-04, aus F5 in `docs/api/usb/hid-mouse-protocols.md` §6):
+**Taste 3** (Bit 2 des Maus-Berichts) auf den IKBD-Zusatzscancode, den
+`docs/api/usb/hid-mouse.md` dafuer vorsieht; heute wertet
+`kernel/src/drivers/usb/hid_decode.rs` nur Bit 0/1 aus. Geht schon mit dem
+Boot-Bericht. Tasten 4/5 und horizontales Rad bleiben in [USB04](USB04.md).
 
 [Gemeinsame Regeln](README.md) gelten.
