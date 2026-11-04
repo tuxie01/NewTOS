@@ -1800,8 +1800,9 @@ as success — an empty list, not an error (`gemfslib.c:330-336,733-754`).
 
 ## A128 — Schieber (FSVSLID/FSVELEV) und Mausrad der Dateiauswahl
 
-> **ENTWURF / DRAFT — wartet auf Freigabe durch den Anwender (TASK/A128
-> Schritt 1).** Nichts hiervon ist umgesetzt. Quelle Teil A: EmuTOS @ `1a7484ab`
+> **FREIGEGEBEN 2026-11-04** (Anwender; Entscheidungen unten unter
+> "Entscheidungen (Anwender 2026-11-04)", sie gehen den Abschnitten A/B vor).
+> Bei Freigabe war nichts hiervon umgesetzt. Quelle Teil A: EmuTOS @ `1a7484ab`
 > (`aes/gemfslib.c`, `aes/gemgrlib.c`, `aes/gemfmlib.c`, `util/miscasm.S`).
 > Teil B ist eine NewTOS-Ergaenzung ohne EmuTOS-Vorbild; XaAES nur als
 > Gegenprobe. Gelesen = mit `file:line` belegt; Schluss = "(Schluss)" markiert.
@@ -2053,8 +2054,9 @@ Pruefaufwand (jeder Dialog, jede App mit `form_do` + eigenem Radmodus).
 > (`references/emutos/aes/geminput.c:411-420`, auskommentiert); NewTOS sendet
 > `WM_ARROWED` an das Fenster unter dem Zeiger (TASK/GUI04). Solange
 > `fsel_input`/`fsel_exinput` offen sind, verbraucht die Dateiauswahl die
-> Raststufen und scrollt die Liste um \<N> Zeile(n) je Raststufe; es geht
-> **keine** `WM_ARROWED`-Nachricht an ein Fenster dahinter. Kein Programm kann
+> Raststufen und scrollt die Liste um 1 Zeile je Raststufe, wenn der Zeiger
+> ueber der Liste oder der Schieberleiste steht; anderswo wird die Raststufe
+> verworfen. Es geht **keine** `WM_ARROWED`-Nachricht an ein Fenster dahinter. Kein Programm kann
 > es beobachten, ausser durch ein ausbleibendes `WM_ARROWED` waehrend der
 > Auswahl; die Rueckgaben von `fsel_*`, Pfad und Name sind unveraendert. Andere
 > `form_do`-Dialoge: unveraendert. Spec: `docs/api/aes/resource-fileselector.md`
@@ -2091,6 +2093,20 @@ Pruefaufwand (jeder Dialog, jede App mit `form_do` + eigenem Radmodus).
    `fs_nscroll:441-442`) in dieselbe Aenderung? (**Ja** empfohlen; betrifft
    auch die Pfeile, sichtbar nicht, aber `cur_sel` wird sonst veraltet.)
 7. **Freigabe des COMPATIBILITY-Eintrags (B6)** mit dem gewaehlten \<N>?
+
+### Entscheidungen (Anwender 2026-11-04)
+
+1. Entwurf 1 (B4): nur die Dateiauswahl nimmt das Rad, andere Dialoge bleiben
+   unveraendert (Anwender: "wir brauchen das rad nur bei dem fileselektor").
+2. Schrittweite **1 Zeile** je Raststufe; Shift = Seite nicht in v1.
+3. Wirkung **nur ueber Liste und Schieberleiste**; sonst wird die Raststufe
+   verworfen (Option 3b), auch dann geht nichts an ein Fenster dahinter.
+4. `graf_slidebox` fuer alle Programme wie EmuTOS (3D-Angleichung,
+   XOR-Rahmen statt echtem Objekt, LP64-Baumzugriff `_t`, Greifpunkt);
+   Beleg per tosdump-Fall gegen das Orakel.
+5. Daumenhoehe/-lage mit `mul_div_round` wie `fs_format`.
+6. Auswahl beim Blaettern zuruecksetzen wie `fs_nscroll`.
+7. COMPATIBILITY-Eintrag B6 freigegeben mit N = 1 und Regel 3.
 
 ### Out-of-scope-Beobachtungen
 
