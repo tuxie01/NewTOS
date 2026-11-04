@@ -1,0 +1,22 @@
+RUNINFO -- A129 evidence: dark edge strips in the file selector's patterned boxes, real Pi 4 (2026-11-04)
+
+WHAT
+  The user's photos of the file selector (fsel_exinput, opened from zView
+  "File > Open") on the real Pi 4, HDMI 1920x1080, test card kernel
+  6407f17c... (measurements/measurement-2026-11-04-a128-proc08-card/RUNINFO.TXT,
+  build from c70a3e4b, host_clang Apple clang version 21.0.0
+  (clang-2100.4.1.1); optional_missing: not applicable, no image built).
+  photo/ holds the user's photos unchanged:
+    fsel-overview.jpg          whole list box with title bar and slider track
+    ftitle-left-closeup.jpg    left end of the title bar next to the closer
+    ftitle-right-closeup.jpg   right end of the title bar
+    slider-track-closeup.jpg   slider track between thumb and down arrow
+  User 2026-11-04: in the grey 50 % pattern of the slider track there are
+  darker strips at the left and right edge, and darker bars at the left and
+  right end of the title bar; "das sind echte pixel" (seen on the screen, not
+  a camera artefact).
+
+STATUS
+  Photos only; no pixel dump exists (no screen dump while the modal selector
+  holds the menu bar). Pixel measurement and the EmuTOS reference are
+  TASK/A129 step 1.
