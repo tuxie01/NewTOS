@@ -1,0 +1,62 @@
+measurement-2026-11-04-a129-measure -- A129 steps 1+2: dark edge strips of the file selector's patterned boxes, measured
+==========================================================================================================================
+Researcher, TASK/A129, 2026-11-04. Measurement only: no product code, no fix, no commit, no real Pi, no real card.
+Tree: HEAD 4cbc6af9 (code = c70a3e4b, the user's Pi kernel; diff c70a3e4b..HEAD in kernel/tos-api = PROC08/REL07 only)
+and bcffca60 (the tree before A128). Both built as scratch copies (git archive, `cargo xtask build --board rpi4
+--release`), the shared tree untouched. host_clang Apple clang version 21.0.0 (clang-2100.4.1.1);
+card.img.manifest (copied): optional_missing none. QEMU 11.0.2, Hatari 2.6.1 (tools/oracle/oracle.env).
+
+RESULT IN ONE LINE
+  Reproduced at the Pi's mode (1920x1080, 32 bpp XRGB): the black outline column plus the 50 % checker is there --
+  and it is byte-for-byte what the pinned EmuTOS draws (Hatari Falcon truecolor); A128 did not introduce it
+  (pre-A128 render identical at the edges). No pixel in FTITLE/FSVSLID deviates from EmuTOS.
+
+WHAT RAN
+  1. NewTOS head and pre, QEMU raspi4b -global bcm2835-fb.xres=1920 yres=1080, -append serial=on, card = the A128
+     card recipe (method/mkcard-call.sh: C:\FSPROBE.NAP opens fsel_exinput on C:\LIST\*.*, 30 files, NEWDESK.INF
+     #Z autorun; no injector -- the dialog is open from the start with thumb at the top, track visible).
+     method/run.sh <kernel> <card> <tag> <out> <scratch> 1920x1080 55 -> screendumps/{head,pre}-55.png
+     (also -40 for head). Mode: kernel/src/drivers/bcm2711/framebuffer.rs:243@set depth asks DEPTH_BPP (32);
+     size = whatever the VideoCore reports (real Pi: config.txt hdmi_group=2 hdmi_mode=82 = 1920x1080, boot/rpi4/
+     config.txt; QEMU: bcm2835-fb xres/yres). Serial: serial/{head,pre}.log.
+  2. EmuTOS oracle: method/build-fsprobe-m68k.sh builds the SAME fsprobe.c as FSPROBE.PRG (tosdump m68k recipe);
+     method/run-hatari-fsel.sh = the falcontc profile of tools/hatari-oracle.sh (pinned ROM sha checked, pinned
+     hatari.cfg, EMUDESK.INF "#E 1A E0 00 1C 60", Falcon, VGA) + --cmd-fifo "hatari-shortcut screenshot" while the
+     selector is up -> hatari/shots/grab0001.png (644x516 grab incl. border; dialog origin offset (183,176) vs
+     NewTOS (823,476)). ROM is COUNTRY=de (German labels, irrelevant for the pixels).
+  3. Analysis (method/dump.py character maps, method/cmp.py class-wise compare, B <64 / grey / W >=240 so Hatari's
+     RGB565 rounding does not count): analysis/pixel-dumps.txt, analysis/compare.txt,
+     analysis/crop-newtos-left-hatari-right-x8.png.
+
+PIXEL FACTS (NewTOS head, absolute screen coords; EmuTOS the same relative to its origin)
+  FSVSLID track: black column x=978 and x=1003 (the 1-px OUTSIDE border, ob_spec thickness byte 0xFF = -1), black rows
+  y=560 (top) and y=652..653 (bottom + the down arrow's own top); inside x=979..1002, y=561..651 the IP_4PATT
+  checker, black where (x+y) is even. EmuTOS: x=338 / 363, y=260 / 3 rows below, same checker, same (x+y)-even
+  parity relative to the origin. FTITLE: outline top y=476, bottom y=497, left x=842 (the closer box's right edge)
+  and right x=1003 black; checker inside, black where (x+y) is even; col 1003 solid black on every row, col 1002 pure
+  checker.
+  So next to each outline column the checker has black pixels in every second row: border + adjacent checker pixels =
+  a 2-px strip of 75 % black against the 50 % mean, left and right (top/bottom rows get it from the border row).
+  That is the "dark strip"; there is no extra/odd column anywhere.
+COMPARE
+  FILEAREA 181x199 px, head vs EmuTOS: 192 differing pixels, ALL in x=88..111 (relative), y=3..18: the "*.*" text in
+  FTITLE that EmuTOS draws and NewTOS does not (see out-of-scope note in TASK/A129.md). Everything else -- outline,
+  checker phase, closer, arrows, thumb (with the list at top 0), box edges -- identical.
+  pre (bcffca60) vs head, whole 1920x1080 screen: the only differing pixels lie in (979,558)-(1003,561) = the thumb's
+  lower end (A128 changed the thumb geometry); FTITLE and the track's left/right edges are identical.
+NOT MEASURED
+  The real Pi's display. QEMU cannot show cache-coherence or monitor/scaler effects; the dump is the framebuffer
+  content as the CPU wrote it. Whether the user's strips are exactly this outline+checker or something wider on the
+  real display stays open (TASK/A129.md "Stand 2026-11-04 (Messung)").
+
+CAVEAT
+  Hatari's grab is the emulated VGA screen at 640x480 (1:1 pixels, 16-bit truecolor); NewTOS's at 1920x1080. The
+  selector's pixel geometry is the same because both use the 8x16 cell font in this layout.
+
+FILES
+  method/ fsprobe.c (A128's, title "A129 PROBE"), build-fsprobe.sh, build-fsprobe-m68k.sh, mkcard-call.sh, run.sh,
+          run-hatari-fsel.sh, qmpshot.py, dump.py, cmp.py
+  serial/ head.log, pre.log, *.img-after.sha256, sha256.txt (kernels, probe, card, every screendump)
+  screendumps/ head-40, head-55, pre-55 (NewTOS 1920x1080)   hatari/shots/grab0001.png (EmuTOS)
+  analysis/ pixel-dumps.txt, compare.txt, crop-newtos-left-hatari-right-x8.png
+  Images, kernels, scratch trees are not kept (session scratchpad).

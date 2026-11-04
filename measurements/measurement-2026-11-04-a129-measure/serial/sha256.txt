@@ -1,0 +1,9 @@
+3baf1a09839abb2959401c34f91f156df5fb19ae805b934459d9bc354021189d  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/a129/head/target/aarch64-unknown-none-softfloat/release/kernel8.img
+65198bb188e844ed60c8a302b66828d4b85d93f2b201400aa764ce193047b05d  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/a129/pre/target/aarch64-unknown-none-softfloat/release/kernel8.img
+12dd7b457d0ed17f461744f4f5acb958daf0d9678efb6c5bee94f991a7614b73  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/a129/card/FSPROBE.NAP
+3ba564c704bd1a4d98ace9bac91b350e21affd412bc2b36f1addf2430206c90e  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/a129/FSPROBE.PRG
+6b808e98c109ba21157292ebc879fe3e3cc75e51319b5157d7617dad2569e8e8  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/a129/card/card.img
+5b45b180e25667e187fca5309b8329aa7b0d45a2a4c807c4fe8f5bc7f60b30ef  screendumps/head-40.png
+5b45b180e25667e187fca5309b8329aa7b0d45a2a4c807c4fe8f5bc7f60b30ef  screendumps/head-55.png
+37b8ff538136bdbcf088e54662debb07587e213404c882049c028434afcb23d4  screendumps/pre-55.png
+03b11f8d23f41dd263d2992f2462a3488a204c1b4906fbbf76de55783643cfd1  hatari/shots/grab0001.png
