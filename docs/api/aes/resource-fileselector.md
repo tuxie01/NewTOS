@@ -688,6 +688,48 @@ drives the directory filter (`wildcmp`, `:300`); subdirectories always show
 the final directory+mask (`locstr`) and `pisel` with the chosen filename
 (unformatted, dot restored, `:914-916`).
 
+**The mask in the file-box title `FTITLE` (Ergaenzung bei der Umsetzung
+(A132), 2026-11-04).** The caption over the file list shows the current
+wildcard mask; NewTOS showed nothing there until A132
+(`measurements/measurement-2026-11-04-a129-measure/RUNINFO.TXT`).
+
+- *The object.* `FTITLE` is a `G_BOXTEXT` on `rs_tedinfo[2]`: `te_ptext`
+  `0L`, empty template and validation string, `IBM`, `TE_CNTR`, colour
+  `4513` (`0x11A1`), thickness `-1`, `te_txtlen = te_tmplen = 1`
+  (`aes/gem_rsc.c:37-40,379-383`; `fs_start` turns the pattern to
+  `IP_4PATT`, `gemfslib.c:81-82`). A `G_BOXTEXT` draws `te_ptext` itself
+  through `gr_gtext` (`gemoblib.c:732-757`), which counts the string
+  (`gsx_tcalc`, `gemgraf.c:480-497`) and keeps only the characters that fit
+  the box; `te_txtlen` is not read on this path. The colour word's bit 7 is
+  set, so the text is written in `MD_REPLACE` (`gr_crack`, `gemgraf.c:621`;
+  `gsx_attr(TRUE, tmode, tcol)`, `gemoblib.c:709`): the character cells are
+  white under black glyphs, not the pattern.
+- *The buffer.* `mask` is the third `LEN_FSPATH` slot of `fs_input`'s work
+  area (`gemfslib.c:664-668`), alive for the whole call; `te_ptext` points
+  at it (`:675-678`), so every change of the buffer is what the next draw
+  of `FTITLE` shows.
+- *`set_mask(mask, path)`* (`:524-532`): `fs_pspec` finds the part after
+  the last `\` (`fs_back`, `:199-222`, inserts a `\` after a leading `X:`
+  first, so `C:*.C` becomes `C:\*.C`; `fs_pspec`, `:229-236`); an empty
+  part gets `*.*` appended **to the path itself** (`set_all_files`,
+  `util/miscutil.c:52-55`), so `pipath` comes back with it; then
+  `strlcpy(mask, pend, LEN_ZPATH)` — up to 113 characters, deliberately not
+  the 12 of a file name (comment `:518-522`; `LEN_ZPATH` = 114,
+  `include/sysconf.h:51`).
+- *When it changes.* On entry: `set_mask(mask, locstr)` then `te_ptext =
+  mask` (`:677-678`). Every new listing: `set_mask(mask, locstr)` from the
+  new path (`:889-892`); at the top of the next pass the path's own spec
+  part is overwritten with `mask` (`:724-726`), and `fs_newdir` repoints
+  `te_ptext` at it and redraws `FTITLE`, `FILEBOX`, `SCRLBAR` after a
+  successful read (`:502-508`, `gl_fsobj` `:49`). The paths into a new
+  listing: an edited `FSDIRECT` taken by OK or by the loop's change check
+  (`:762-767,873-880`) — the mask becomes the edited path's spec part; a
+  folder click (`:829-837`) and the closer (`:839-848`) rebuild the path as
+  prefix + `strcpy(pstr, mask)` — the mask stays; a drive button builds
+  `X:\<mask>` (`:863`) — the mask **stays** across a drive change, it is
+  not reset to `*.*`; the error retry (`:733-754`) falls back to the
+  previous path or `X:\<mask>`, and `:892` re-reads the mask from it.
+
 **The exit button (contract).** `*pbutton = inf_what(tree, FSOK)`
 (`gemfslib.c:922`, `util/optimize.c:157-172`): **1** if the OK button was
 selected, **0** if Cancel (the object after OK), **−1** otherwise; the routine
@@ -1913,7 +1955,7 @@ else { touchob = FDNAROW; value = -value; }          /* :796-799 */
   fuellt die Leiste (`y=0, h=th`). 3D: `y += ADJ3DSTD; h -= 2*ADJ3DSTD`
   (`:400-403`); `FSVELEV.ob_y = y`, `.ob_height = h` (`:404-406`).
   Die Leiste hat nach `fs_start` die Hoehe 132 px im NewTOS-Baum
-  (`tos-api/src/aes/fsel.rs:1370@fs_start_applies_every_geometry_adjustment_of_the_3d_pass`).
+  (`tos-api/src/aes/fsel.rs:1486@fs_start_applies_every_geometry_adjustment_of_the_3d_pass`).
 
 **Vertrag vs. Interna.** Beobachtbar (Vertrag): Seitenklick = 9 Zeilen mit
 Klammerung; Ziehposition → Zielindex nach `mul_div_round(pos, count-9, 1000)`;
@@ -1926,19 +1968,19 @@ Zeichenreihenfolge, `fm_own`-Mechanik, solange die Maus dem Aufrufer gehoert.
 Stand vor der Umsetzung; was jetzt gilt, steht unter "Umsetzung (2026-11-04)".
 Die Zeilenzitate zeigen auf den heutigen Code.
 
-Eigene Schleife `modal` (`tos-api/src/aes/fsel.rs:1090@modal`), kein `fm_do`;
+Eigene Schleife `modal` (`tos-api/src/aes/fsel.rs:1206@modal`), kein `fm_do`;
 der Aufruf ist von `fm_own(true/false)` umschlossen
-(`tos-api/src/aes/fsel.rs:621@fm_own`, `tos-api/src/aes/window.rs:4643@fm_own`).
+(`tos-api/src/aes/fsel.rs:711@fm_own`, `tos-api/src/aes/window.rs:4643@fm_own`).
 Trefferpruefung `hit_test_t`, dann Verzweigung: nur `FUPAROW` und `FDNAROW`
-(`tos-api/src/aes/fsel.rs:1177@FUPAROW`) riefen `scroll(tree, ∓1)`.
+(`tos-api/src/aes/fsel.rs:1293@FUPAROW`) riefen `scroll(tree, ∓1)`.
 
 | EmuTOS | NewTOS | Befund |
 |---|---|---|
 | `FSVSLID` ausserhalb Daumen → 9 Zeilen | kein Zweig | **fehlt** |
 | `FSVELEV` → `fm_own`+`gr_slidebox`+Umrechnung | kein Zweig | **fehlt** |
-| `fs_nscroll` Klammerung `0..count-9` | `scroll()` (`tos-api/src/aes/fsel.rs:843@scroll`) klammert `old+delta` auf `0..count-9` | Ergebnis gleich (Schluss: iteriertes `fs_1scroll` und einmalige Klammerung liefern fuer `count>9` denselben Endwert); `scroll(±9)` und `scroll(Ziel-top)` genuegen |
-| Auswahl loeschen beim Blaettern (`:441-442`) | `scroll()` fasst `cur_sel` nicht an; `fs_format` setzt zwar alle `ob_state` auf NORMAL (`fsel.rs:745@fs_format`), `cur_sel` bleibt aber veraltet | **Abweichung** (auch bei den Pfeilen) |
-| Daumen `mul_div_round` (`:396,398`) | `size_elevator` (`fsel.rs:781@size_elevator`) rechnet `track_h*9/count` und `(track_h-h)*top/(count-9)` **abgerundet** | **Abweichung**: z.B. `count=30`, Leiste 132: EmuTOS `h = round(1188/30) = round(39.6) = 40`, NewTOS `39` (nachgerechnet aus den Formeln, nicht gemessen) |
+| `fs_nscroll` Klammerung `0..count-9` | `scroll()` (`tos-api/src/aes/fsel.rs:951@scroll`) klammert `old+delta` auf `0..count-9` | Ergebnis gleich (Schluss: iteriertes `fs_1scroll` und einmalige Klammerung liefern fuer `count>9` denselben Endwert); `scroll(±9)` und `scroll(Ziel-top)` genuegen |
+| Auswahl loeschen beim Blaettern (`:441-442`) | `scroll()` fasst `cur_sel` nicht an; `fs_format` setzt zwar alle `ob_state` auf NORMAL (`fsel.rs:853@fs_format`), `cur_sel` bleibt aber veraltet | **Abweichung** (auch bei den Pfeilen) |
+| Daumen `mul_div_round` (`:396,398`) | `size_elevator` (`fsel.rs:889@size_elevator`) rechnet `track_h*9/count` und `(track_h-h)*top/(count-9)` **abgerundet** | **Abweichung**: z.B. `count=30`, Leiste 132: EmuTOS `h = round(1188/30) = round(39.6) = 40`, NewTOS `39` (nachgerechnet aus den Formeln, nicht gemessen) |
 | `gr_slidebox` | `graf_slidebox` (`tos-api/src/aes/graf.rs:451@graf_slidebox`) existierte | Abweichungen unten (behoben, siehe Umsetzung) |
 
 **`graf_slidebox` gegenueber `gr_slidebox`** (alle vier aendern die Zugmathematik
@@ -1962,7 +2004,7 @@ oder das Bild, sobald es fuer die Dateiauswahl benutzt wird):
    Das gilt auch fuer jeden App-Aufruf von `graf_slidebox`.
 3. **Zugriffsbreite:** `graf_slidebox` liest den Baum ueber `ObjTree::new`
    (ABI des laufenden Programms). Der FSELECTR-Baum ist kernelgebaut und immer
-   LP64 (`tos-api/src/aes/fsel.rs:607@fm_dial`, Kommentar "LP64"). Eine Variante mit uebergebenem
+   LP64 (`tos-api/src/aes/fsel.rs:697@fm_dial`, Kommentar "LP64"). Eine Variante mit uebergebenem
    `ObjTree` (wie `watchbox_t`, `graf.rs:418@watchbox_t`) wird gebraucht;
    solange nur LP64-Programme laufen, ist die Luecke ruhend.
 4. **Greifpunkt:** gleiche Formel (`off = max(mouse - elev, 0)`), aber mit dem
@@ -2000,7 +2042,7 @@ Umsetzung gilt fuer die Dateiauswahl "Umsetzung" unten).**
    unter dem Zeiger, sonst `DESKWH` oder `-1`; `owner_of_window` → `post_msg`
    mit `WM_ARROWED` (`tos-api/src/aes/input.rs:1117@wheel_change`, Rumpf).
 3. Waehrend die Dateiauswahl offen ist: `modal` ruft in jeder Runde
-   `h.pump_input()` (`fsel.rs:1291@pump_input`), dort laeuft die Radauslieferung.
+   `h.pump_input()` (`fsel.rs:1407@pump_input`), dort laeuft die Radauslieferung.
    `fm_own(true)` gibt dem Aufrufer die Maus und parkt nur das Menue; es setzt
    **kein** Merkmal, das `wheel_change` auswertet (`GL_MOWNER_APP` bleibt wahr,
    `tos-api/src/aes/window.rs:4643@fm_own`). Die Dateiauswahl ist kein Fenster; `wm_find` kennt sie
@@ -2138,18 +2180,18 @@ Umgesetzt nach den Entscheidungen; Hosttests und Messlauf
   Orakelbeleg: `tosdump/probes/sbprobe.c`, 13 Faelle ohne Ziehen (Taste oben,
   `gr_stilldn` kehrt sofort zurueck), EmuTOS und NewTOS gleich.
 * **Dateiauswahl:** Seitenklick nach A1 mit dem gewachsenen Daumenrechteck
-  (`tos-api/src/aes/fsel.rs:862@slider_click`), Ziehen zwischen
+  (`tos-api/src/aes/fsel.rs:970@slider_click`), Ziehen zwischen
   `fm_own(TRUE/FALSE)` mit `gr_slidebox` und Umrechnung
-  (`tos-api/src/aes/fsel.rs:879@drag_delta`), Klammerung
-  (`tos-api/src/aes/fsel.rs:830@nscroll_top`, Hosttest gegen das iterierte
+  (`tos-api/src/aes/fsel.rs:987@drag_delta`), Klammerung
+  (`tos-api/src/aes/fsel.rs:938@nscroll_top`, Hosttest gegen das iterierte
   `fs_1scroll`), Daumen mit `mul_div_round`
-  (`tos-api/src/aes/fsel.rs:813@elevator_geometry`), Auswahl faellt beim
+  (`tos-api/src/aes/fsel.rs:921@elevator_geometry`), Auswahl faellt beim
   Blaettern weg (Pfeile, Leiste, Daumen, Rad), das Auswahlfeld behaelt den
   Namen (EmuTOS setzt nur `sel` zurueck).
 * **Rad:** `WheelClaim` (`tos-api/src/aes/input.rs:995@feed`), angemeldet fuer
   die Dauer von `modal` mit den Rechtecken von `FILEBOX` und `FSVSLID`
-  (`tos-api/src/aes/fsel.rs:628@fsel_wheel_claim`), Entnahme einmal pro
-  Runde (`tos-api/src/aes/fsel.rs:1126@fsel_wheel_take`), nach einem
+  (`tos-api/src/aes/fsel.rs:718@fsel_wheel_claim`), Entnahme einmal pro
+  Runde (`tos-api/src/aes/fsel.rs:1242@fsel_wheel_take`), nach einem
   Daumenzug verworfen. Der Treffer wird je Raststufe an `xrat`/`yrat` zum
   Zeitpunkt der Raststufe geprueft.
 
@@ -2174,7 +2216,7 @@ Festgestellt bei der Umsetzung:
 ### Out-of-scope-Beobachtungen
 
 * Die Pfeile `FUPAROW`/`FDNAROW` wiederholen in NewTOS bei gehaltener Taste
-  nicht (nur ein `scroll` je Druck, `fsel.rs:1177@FUPAROW`); ob EmuTOS' `fm_do`
+  nicht (nur ein `scroll` je Druck, `fsel.rs:1293@FUPAROW`); ob EmuTOS' `fm_do`
   hier wiederholt, wurde nicht untersucht.
 * `wheel_change` benutzt die Groesse von `wheel_amount` nicht (eine Zeile je
   Ereignis); fuer Fenster ausserhalb der Auswahl nicht untersucht.

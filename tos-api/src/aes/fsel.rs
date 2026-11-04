@@ -30,6 +30,9 @@
 //! or editing the `FSDIRECT` path + Enter. `fsel_exinput` shows the caller's
 //! custom dialog title (`FS_TITLE = addr_in[2]`), else the default
 //! "ITEM SELECTOR", centred in the FSTITLE caption (`gemfslib.c:691-693`).
+//! The file box's own caption `FTITLE` shows the current wildcard mask
+//! ([`set_mask`], EmuTOS `fs_input`/`fs_newdir`, `gemfslib.c:502-508,675-678`;
+//! A132).
 
 use super::form::{fm_dial, gl_rcenter};
 use super::object::{self, Object, ObjTree, TedInfo};
@@ -76,6 +79,12 @@ const ITEMSLCT: usize = 14;
 
 const MAX_DEPTH: i16 = 16;
 
+/// EmuTOS `LEN_ZPATH` (`include/sysconf.h:51`): the size of the mask buffer.
+/// `set_mask` copies the mask with `strlcpy(mask, pend, LEN_ZPATH)` — on
+/// purpose not the 12 bytes of a file name, so a long mask the user typed is
+/// kept for display and comparison (`gemfslib.c:518-531`).
+const LEN_ZPATH: usize = 114;
+
 const GEM_CAP: usize = 8 * 1024;
 
 /// The AES's own file-selector resource (EmuTOS `gem.rsc`), converted to the
@@ -121,6 +130,7 @@ struct Sys {
     dir: UnsafeCell<[u8; 96]>,     // FSDIRECT path text
     sel: UnsafeCell<[u8; 16]>,     // FSSELECT filename text
     title: UnsafeCell<[u8; 64]>,   // FSTITLE custom-title text (fsel_exinput)
+    mask: UnsafeCell<[u8; LEN_ZPATH]>, // FTITLE text: the current mask (`set_mask`)
     names: UnsafeCell<[[u8; 16]; NM_NAMES]>, // visible slot text
     all: UnsafeCell<[[u8; 16]; MAX_LIST]>,   // full directory listing
     all_attr: UnsafeCell<[u8; MAX_LIST]>,    // per-entry attribute byte
@@ -135,6 +145,7 @@ static SYS: Sys = Sys {
     dir: UnsafeCell::new([0u8; 96]),
     sel: UnsafeCell::new([0u8; 16]),
     title: UnsafeCell::new([0u8; 64]),
+    mask: UnsafeCell::new([0u8; LEN_ZPATH]),
     names: UnsafeCell::new([[0u8; 16]; NM_NAMES]),
     all: UnsafeCell::new([[0u8; 16]; MAX_LIST]),
     all_attr: UnsafeCell::new([0u8; MAX_LIST]),
@@ -457,10 +468,11 @@ fn unfmt_str(instr: &[u8], out: &mut [u8]) {
 ///
 /// `cap` is the caller's buffer size; a field is only repointed when the buffer
 /// can hold the `te_txtlen` the resource declares, because every writer bounds
-/// itself by `te_txtlen` (`ins_char`, EmuTOS `gemobed.c:117`). All three
-/// call sites satisfy this (96/16/16 against 39/12/13), so the guard never
-/// fires — it is here so a future resource change cannot silently turn into an
-/// out-of-bounds write. The `te_txtlen` override that used to stand here was
+/// itself by `te_txtlen` (`ins_char`, EmuTOS `gemobed.c:117`). All four
+/// call sites satisfy this (96/16/16 against 39/12/13; the `FTITLE` mask,
+/// [`LEN_ZPATH`] against the resource's 1, a `G_BOXTEXT` nobody edits), so
+/// the guard never fires — it is here so a future resource change cannot
+/// silently turn into an out-of-bounds write. The `te_txtlen` override that used to stand here was
 /// the A37 work-around: it is no longer needed now that the converted blob
 /// reserves the declared length behind `te_ptext`
 /// (`tests/aes_rsrc_tedinfo_reserve.rs`) — but our buffers, not the blob's, are
@@ -477,6 +489,79 @@ fn set_ted(tree: *mut Object, idx: i16, ptr: *mut u8, cap: usize) {
             t.te_ptext = ptr as u64;
         }
     }
+}
+
+/// `strlen` of a NUL-terminated buffer (the whole buffer if it has no NUL).
+fn cstrlen(b: &[u8]) -> usize {
+    b.iter().position(|&c| c == 0).unwrap_or(b.len())
+}
+
+/// Insert `c` at `pos` of the NUL-terminated string in `buf`, shifting the
+/// rest right; a string that already fills the buffer loses its last
+/// character, and the result stays NUL-terminated — EmuTOS `ins_char`
+/// (`aes/gemobed.c:117-130`) with `tot_len` = the buffer size.
+fn insert_char(buf: &mut [u8], pos: usize, c: u8) {
+    let len = cstrlen(buf);
+    let new_len = (len + 1).min(buf.len() - 1);
+    for i in (pos + 1..new_len).rev() {
+        buf[i] = buf[i - 1];
+    }
+    if pos < new_len {
+        buf[pos] = c;
+    }
+    buf[new_len] = 0;
+}
+
+/// Index of the file-specification part (the mask) of the path in `path` —
+/// EmuTOS `fs_pspec` over `fs_back` (`gemfslib.c:199-236`): scan back from
+/// the end for the last `\`, never testing the first character; a `:` at
+/// index 1 (`X:` at the start) stops the scan and gets a `\` inserted after
+/// it, so `C:*.C` becomes `C:\*.C`. The part starts after the `\` found, or
+/// at the start of the string when there is none.
+fn fs_pspec(path: &mut [u8]) -> usize {
+    let at = |p: &[u8], i: usize| p.get(i).copied().unwrap_or(0);
+    let mut p = cstrlen(path);
+    while p != 0 {
+        if at(path, p) == b'\\' {
+            break;
+        }
+        if at(path, p) == b':' && p == 1 {
+            p += 1;
+            insert_char(path, p, b'\\');
+            break;
+        }
+        p -= 1;
+    }
+    if at(path, p) == b'\\' { p + 1 } else { p }
+}
+
+/// EmuTOS `set_mask(mask, path)` (`gemfslib.c:524-532`): the mask is the
+/// path's specification part ([`fs_pspec`]); an empty one becomes `*.*`,
+/// appended **to the path** as well (`set_all_files`, `util/miscutil.c:52-55`)
+/// — so it is listed, shown and written back to the caller. The copy is
+/// `strlcpy(mask, pend, LEN_ZPATH)`: as much as `mask` holds, NUL-terminated.
+fn set_mask_in(path: &mut [u8], mask: &mut [u8]) {
+    let pend = fs_pspec(path);
+    if cstrlen(&path[pend.min(path.len())..]) == 0 {
+        let room = path.len().saturating_sub(1);
+        for (i, &c) in b"*.*".iter().enumerate() {
+            if pend + i < room {
+                path[pend + i] = c;
+                path[pend + i + 1] = 0;
+            }
+        }
+    }
+    mask.fill(0);
+    let spec = &path[pend.min(path.len())..];
+    let n = cstrlen(spec).min(mask.len() - 1);
+    mask[..n].copy_from_slice(&spec[..n]);
+}
+
+/// [`set_mask_in`] on the selector's own buffers: `SYS.dir` (the path the
+/// `FSDIRECT` field shows) and `SYS.mask` (the `FTITLE` text).
+fn set_mask() {
+    // SAFETY: single-CPU AES; `dir` and `mask` are distinct cells.
+    unsafe { set_mask_in(&mut *SYS.dir.get(), &mut *SYS.mask.get()) }
 }
 
 /// Copy the caller's NUL-terminated string at `src` (in `space`, the
@@ -580,6 +665,11 @@ fn run(pb: &Aespb, label: u64) {
             }
             fmt_str(&plain, &mut *SYS.sel.get());
         }
+        // "set_mask(mask, locstr); tedinfo->te_ptext = mask;" — save the
+        // caller's mask and point the file box's title line at it
+        // (gemfslib.c:675-678).
+        set_mask();
+        set_ted(tree, FTITLE, (*SYS.mask.get()).as_mut_ptr(), LEN_ZPATH);
         set_ted(tree, FSDIRECT, (*SYS.dir.get()).as_mut_ptr(), 96);
         set_ted(tree, FSSELECT, (*SYS.sel.get()).as_mut_ptr(), 16);
         let names = &mut *SYS.names.get();
@@ -661,7 +751,17 @@ fn run(pb: &Aespb, label: u64) {
 ///
 /// `list_dir` writes directly into the static `SYS` arrays (no large stack
 /// buffer), so `MAX_LIST` can be raised without risking the kernel stack.
+///
+/// Every new listing comes through here — the entry, an edited `FSDIRECT`
+/// taken by Enter/OK, a folder, the closer, a drive button — so this is where
+/// EmuTOS's per-listing mask handling sits: `set_mask(mask, locstr)` on the
+/// new path (`gemfslib.c:889-892`; on entry `:677`, repeated here without
+/// effect), and after the read `fs_newdir`'s repointing of `FTITLE`'s
+/// `te_ptext` at the mask plus its redraw (`:502-508`). EmuTOS's
+/// `strcpy(fs_pspec(locstr), mask)` at the top of the pass (`:724-726`) puts
+/// back what `set_mask` just copied out, so it has nothing to do here.
 fn relist(tree: *mut Object) {
+    set_mask();
     // SAFETY: single-CPU AES; `dir` and `all`/`all_attr` are distinct cells.
     let n = unsafe {
         let dir = &*SYS.dir.get();
@@ -678,6 +778,14 @@ fn relist(tree: *mut Object) {
         *SYS.top.get() = 0;
     }
     fs_format(tree);
+    // "update FTITLE with ptr to mask", then redraw it (`gemfslib.c:502-508`;
+    // `fs_format` above already redrew FILEBOX and the slider).
+    // SAFETY: single-CPU AES; `mask` lives in the static `SYS`.
+    unsafe { set_ted(tree, FTITLE, (*SYS.mask.get()).as_mut_ptr(), LEN_ZPATH) };
+    if let Some(backend) = host().and_then(|h| h.raster()) {
+        // LP64 accessor for the kernel-built FSELECTR tree (see `run`).
+        object::draw_obj_t(ObjTree::lp64(tree as *const Object), FTITLE, MAX_DEPTH, backend);
+    }
 }
 
 /// Sort the first `n` directory entries in place — folders before files,
@@ -884,66 +992,67 @@ fn drag_delta(curr: usize, count: usize, value: i16) -> i32 {
 /// Navigate the directory path into a sub-directory `name` from the list
 /// (EmuTOS fsel folder handling): insert the folder name before the mask.
 /// `.` is a no-op; `..` walks one level up (never past the drive root).
+/// The path is rebuilt with the current mask `SYS.mask`, as EmuTOS's folder
+/// and closer arms end in `strcpy(pstr, mask)` (`gemfslib.c:835,846`).
 fn nav_into_folder(name: &[u8]) {
+    // SAFETY: single-CPU AES; `dir` and `mask` are distinct cells.
+    unsafe { nav_into_folder_in(&mut *SYS.dir.get(), &*SYS.mask.get(), name) }
+}
+
+/// [`nav_into_folder`] on explicit buffers: `dir` (path + mask) becomes the
+/// new directory prefix followed by `mask`, the whole mask, not only the 15
+/// characters this used to carry over from the old path (A132).
+fn nav_into_folder_in(dir: &mut [u8; 96], mask: &[u8], name: &[u8]) {
     let nlen = name.iter().position(|&b| b == 0).unwrap_or(name.len());
     let nm = &name[..nlen];
     if nm == b"." {
         return;
     }
-    // SAFETY: single-CPU AES.
-    unsafe {
-        let dir = &mut *SYS.dir.get();
-        let dlen = dir.iter().position(|&b| b == 0).unwrap_or(dir.len());
-        // Split into the directory prefix (up to & incl. the last '\') and
-        // the mask (the final path component).
-        let mask_start = match dir[..dlen].iter().rposition(|&b| b == b'\\') {
-            Some(p) => p + 1,
-            None => dlen,
-        };
-        let mut mask = [0u8; 16];
-        let mk = (dlen - mask_start).min(15);
-        mask[..mk].copy_from_slice(&dir[mask_start..mask_start + mk]);
+    let dlen = dir.iter().position(|&b| b == 0).unwrap_or(dir.len());
+    // Split off the directory prefix (up to & incl. the last '\'); the
+    // final path component is replaced by `mask` below.
+    let mask_start = match dir[..dlen].iter().rposition(|&b| b == b'\\') {
+        Some(p) => p + 1,
+        None => dlen,
+    };
+    let mk = cstrlen(mask);
 
-        let mut prefix = [0u8; 96];
-        prefix[..mask_start].copy_from_slice(&dir[..mask_start]);
-        let mut plen = mask_start;
+    let mut prefix = [0u8; 96];
+    prefix[..mask_start].copy_from_slice(&dir[..mask_start]);
+    let mut plen = mask_start;
 
-        if nm == b".." {
-            // Walk up: drop the trailing '\', then back to the previous '\',
-            // but never before the drive root ("X:\").
-            if plen >= 1 && prefix[plen - 1] == b'\\' {
-                plen -= 1;
-            }
-            let root = if plen >= 2 && prefix[1] == b':' { 3 } else { 0 };
-            while plen > root && prefix[plen - 1] != b'\\' {
-                plen -= 1;
-            }
-        } else {
-            // Walk down: append the folder name + '\'.
-            for &c in nm {
-                if plen < 95 {
-                    prefix[plen] = c;
-                    plen += 1;
-                }
-            }
+    if nm == b".." {
+        // Walk up: drop the trailing '\', then back to the previous '\',
+        // but never before the drive root ("X:\").
+        if plen >= 1 && prefix[plen - 1] == b'\\' {
+            plen -= 1;
+        }
+        let root = if plen >= 2 && prefix[1] == b':' { 3 } else { 0 };
+        while plen > root && prefix[plen - 1] != b'\\' {
+            plen -= 1;
+        }
+    } else {
+        // Walk down: append the folder name + '\'.
+        for &c in nm {
             if plen < 95 {
-                prefix[plen] = b'\\';
+                prefix[plen] = c;
                 plen += 1;
             }
         }
+        if plen < 95 {
+            prefix[plen] = b'\\';
+            plen += 1;
+        }
+    }
 
-        // Rebuild dir = prefix + mask.
-        *dir = [0; 96];
-        dir[..plen].copy_from_slice(&prefix[..plen]);
-        let mut w = plen;
-        for i in 0..mk {
-            if mask[i] == 0 {
-                break;
-            }
-            if w < 95 {
-                dir[w] = mask[i];
-                w += 1;
-            }
+    // Rebuild dir = prefix + mask.
+    *dir = [0; 96];
+    dir[..plen].copy_from_slice(&prefix[..plen]);
+    let mut w = plen;
+    for &c in &mask[..mk] {
+        if w < 95 {
+            dir[w] = c;
+            w += 1;
         }
     }
 }
@@ -960,14 +1069,21 @@ fn path_differs(listed: &[u8; 96]) -> bool {
     dlen != llen || dir[..dlen] != listed[..llen]
 }
 
-/// Set the directory buffer to `X:\*.*` for a clicked drive letter.
+/// Set the directory buffer to `X:\<mask>` for a clicked drive letter —
+/// EmuTOS `sprintf(locstr,"%c:\\%s",'A'+drive,mask)` (`gemfslib.c:863`): the
+/// current mask goes with the drive change, it is not reset to `*.*`.
 fn set_drive(ch: u8) {
-    // SAFETY: single-CPU AES.
-    unsafe {
-        let dir = &mut *SYS.dir.get();
-        *dir = [0; 96];
-        dir[..6].copy_from_slice(&[ch, b':', b'\\', b'*', b'.', b'*']);
-    }
+    // SAFETY: single-CPU AES; `dir` and `mask` are distinct cells.
+    unsafe { drive_path_in(&mut *SYS.dir.get(), &*SYS.mask.get(), ch) }
+}
+
+/// [`set_drive`] on explicit buffers: `dir` = `ch`, `:\`, then as much of
+/// `mask` as fits, NUL-terminated.
+fn drive_path_in(dir: &mut [u8; 96], mask: &[u8], ch: u8) {
+    *dir = [0; 96];
+    dir[..3].copy_from_slice(&[ch, b':', b'\\']);
+    let n = cstrlen(mask).min(dir.len() - 1 - 3);
+    dir[3..3 + n].copy_from_slice(&mask[..n]);
 }
 
 /// Draw the file selector on `C:\*.*` **without** the modal loop — for a
@@ -1675,5 +1791,107 @@ mod tests {
         assert_eq!(&names[1][..5], b"\x07APPS", "folder slot");
         assert_eq!(names[1][5], 0, "folder slot NUL");
         assert_eq!(&names[2][..2], b" \0", "empty slot is one blank");
+    }
+
+    // ─── A132: the mask in the file box's title line ───────────────────
+
+    /// A path buffer the size of `SYS.dir` holding `s`.
+    fn path(s: &[u8]) -> [u8; 96] {
+        let mut b = [0u8; 96];
+        b[..s.len()].copy_from_slice(s);
+        b
+    }
+
+    /// The NUL-terminated string at the start of `b`.
+    fn text(b: &[u8]) -> &[u8] {
+        &b[..cstrlen(b)]
+    }
+
+    /// `FTITLE` in EmuTOS's `gem.rsc` (`aes/gem_rsc.c:37-40,379-383`): a
+    /// `G_BOXTEXT`, centred, `te_txtlen` 1, no text of its own — it shows
+    /// whatever `te_ptext` points at. `set_ted` repoints it at a
+    /// `LEN_ZPATH` mask buffer (the `te_txtlen` guard lets it through), and
+    /// the draw reads the string from there.
+    #[test]
+    fn ftitle_is_a_centred_boxtext_that_shows_the_mask_buffer() {
+        let (_buf, tree) = fresh_tree();
+        fs_start(tree);
+        // SAFETY: valid tree.
+        assert_eq!(unsafe { (*tree.add(FTITLE as usize)).ob_type }, tos_types::aes::G_BOXTEXT);
+        assert_eq!(ted(tree, FTITLE).te_txtlen, 1, "FTITLE te_txtlen");
+        assert_eq!(ted(tree, FTITLE).te_just, tos_types::aes::TE_CNTR, "FTITLE te_just");
+        assert_eq!(cstr(ted(tree, FTITLE).te_ptext), b"", "the resource carries no title text");
+
+        let mut mask = [0u8; LEN_ZPATH];
+        let mut dir = path(b"C:\\LIST\\*.TXT");
+        set_mask_in(&mut dir, &mut mask);
+        set_ted(tree, FTITLE, mask.as_mut_ptr(), LEN_ZPATH);
+        assert_eq!(ted(tree, FTITLE).te_ptext, mask.as_ptr() as u64, "te_ptext = mask");
+        assert_eq!(cstr(ted(tree, FTITLE).te_ptext), b"*.TXT");
+    }
+
+    /// EmuTOS `set_mask` (`gemfslib.c:524-532`) over `fs_pspec`/`fs_back`
+    /// (`:199-236`): the part after the last `\`; an empty one becomes `*.*`
+    /// in the path too; `X:` at the start gets its `\`; a path without any
+    /// separator is all mask; a long mask is kept whole (`LEN_ZPATH`, not a
+    /// file name's 12).
+    #[test]
+    fn set_mask_takes_the_specification_part_of_the_path() {
+        let long = b"C:\\ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.*";
+        let cases: &[(&[u8], &[u8], &[u8])] = &[
+            (b"C:\\LIST\\*.TXT", b"C:\\LIST\\*.TXT", b"*.TXT"),
+            (b"C:\\*.*", b"C:\\*.*", b"*.*"),
+            (b"C:\\FOO\\", b"C:\\FOO\\*.*", b"*.*"),
+            (b"C:\\", b"C:\\*.*", b"*.*"),
+            (b"C:*.C", b"C:\\*.C", b"*.C"),
+            (b"C:", b"C:\\*.*", b"*.*"),
+            (b"*.PRG", b"*.PRG", b"*.PRG"),
+            (b"\\*.ACC", b"\\*.ACC", b"*.ACC"),
+            (long, long, &long[3..]),
+        ];
+        for (p, want_path, want_mask) in cases {
+            let mut dir = path(p);
+            let mut mask = [0xAAu8; LEN_ZPATH];
+            set_mask_in(&mut dir, &mut mask);
+            let shown = core::str::from_utf8(p).unwrap();
+            assert_eq!(text(&dir), *want_path, "path after set_mask({shown})");
+            assert_eq!(text(&mask), *want_mask, "mask of {shown}");
+            assert!(mask[cstrlen(&mask)..].iter().all(|&b| b == 0), "mask NUL-filled ({shown})");
+            // A second pass (every listing runs it) changes nothing.
+            let (d1, m1) = (dir, mask);
+            set_mask_in(&mut dir, &mut mask);
+            assert_eq!((dir, mask), (d1, m1), "set_mask is idempotent ({shown})");
+        }
+    }
+
+    /// The drive button (`gemfslib.c:863`): `X:\<mask>` — the mask the title
+    /// shows survives the drive change, then `set_mask` reads it back.
+    #[test]
+    fn a_drive_change_keeps_the_mask() {
+        let mut dir = path(b"C:\\LIST\\*.TXT");
+        let mut mask = [0u8; LEN_ZPATH];
+        set_mask_in(&mut dir, &mut mask);
+        drive_path_in(&mut dir, &mask, b'D');
+        assert_eq!(text(&dir), b"D:\\*.TXT");
+        set_mask_in(&mut dir, &mut mask);
+        assert_eq!(text(&mask), b"*.TXT", "title after the drive change");
+    }
+
+    /// The folder and closer arms (`gemfslib.c:829-848`) end in
+    /// `strcpy(pstr, mask)`: the new path carries the whole current mask,
+    /// also one longer than the 15 characters the path rebuild used to keep.
+    #[test]
+    fn folder_and_closer_keep_the_whole_mask() {
+        let mut dir = path(b"C:\\LIST\\ABCDEFGHIJKLMNOP.*");
+        let mut mask = [0u8; LEN_ZPATH];
+        set_mask_in(&mut dir, &mut mask);
+        assert_eq!(text(&mask), b"ABCDEFGHIJKLMNOP.*");
+
+        nav_into_folder_in(&mut dir, &mask, b"SUB\0");
+        assert_eq!(text(&dir), b"C:\\LIST\\SUB\\ABCDEFGHIJKLMNOP.*", "into a folder");
+        nav_into_folder_in(&mut dir, &mask, b"..");
+        assert_eq!(text(&dir), b"C:\\LIST\\ABCDEFGHIJKLMNOP.*", "closer: one level up");
+        set_mask_in(&mut dir, &mut mask);
+        assert_eq!(text(&mask), b"ABCDEFGHIJKLMNOP.*", "title after the closer");
     }
 }

@@ -1,0 +1,3 @@
+region 181x199, differing pixels: 140
+  NewTOS B / EmuTOS W: 140 px, bbox x=88..111 y=3..18, (x+y)%2 in [1]
+EmuTOS black pixels in the text cells x=88..111 y=3..18: 104, not black in NewTOS: 0

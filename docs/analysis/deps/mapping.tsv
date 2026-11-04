@@ -1129,5 +1129,14 @@ fs_format	aes/gemfslib.c	tos-api/src/aes/fsel.rs	size_elevator	mapped	writes ele
 fs_input	aes/gemfslib.c	tos-api/src/aes/fsel.rs	modal	mapped	the dialog loop (own loop, no fm_do): arrows, FSVSLID paging, FSVELEV drag between fm_own(TRUE/FALSE), list, drives, FCLSBOX, OK/Cancel; plus the wheel (A128, sanctioned deviation, docs/COMPATIBILITY.md)
 fs_input	aes/gemfslib.c	tos-api/src/aes/fsel.rs	slider_click	mapped	the FSVSLID arm: outside the thumb's ob_actxywh rect page by NM_NAMES, my <= pt.g_y = up (gemfslib.c:776-788, A128)
 fs_input	aes/gemfslib.c	tos-api/src/aes/fsel.rs	drag_delta	mapped	the FSVELEV conversion value -> rows, gemfslib.c:793-799 (A128)
+fs_input	aes/gemfslib.c	tos-api/src/aes/fsel.rs	run	mapped	entry and exit: empty path -> X:\*.*, set_mask and FTITLE te_ptext = mask (gemfslib.c:675-678), the field buffers, write-back of path and name (A132)
+fs_input	aes/gemfslib.c	tos-api/src/aes/fsel.rs	set_drive	mapped	the drive-button arm: X:\<mask>, the mask kept (gemfslib.c:863, A132)
+fs_input	aes/gemfslib.c	tos-api/src/aes/fsel.rs	nav_into_folder	mapped	the folder and FCLSBOX arms: new prefix + strcpy(pstr, mask) (gemfslib.c:829-848, A132)
+fs_newdir	aes/gemfslib.c	tos-api/src/aes/fsel.rs	relist	mapped	set_mask for the new path (gemfslib.c:889-892), the read, fs_format, FTITLE te_ptext = mask and its redraw (:502-508, A132); no error/retry branch
+set_mask	aes/gemfslib.c	tos-api/src/aes/fsel.rs	set_mask_in	mapped	fs_pspec, *.* appended to the path when the spec part is empty (set_all_files), strlcpy into the LEN_ZPATH mask (A132)
+set_mask	aes/gemfslib.c	tos-api/src/aes/fsel.rs	set_mask	mapped	set_mask_in on SYS.dir / SYS.mask (A132)
+fs_pspec	aes/gemfslib.c	tos-api/src/aes/fsel.rs	fs_pspec	mapped	with fs_back folded in: index of the spec part after the last backslash (A132)
+fs_back	aes/gemfslib.c	tos-api/src/aes/fsel.rs	fs_pspec	mapped	the backward scan and the backslash inserted after a leading X: (A132); the FCLSBOX use is at_drive_root/nav_into_folder_in
+ins_char	aes/gemobed.c	tos-api/src/aes/fsel.rs	insert_char	mapped	only the call in fs_back (tot_len = the buffer size, A132)
 wheel_change	aes/geminput.c	tos-api/src/aes/input.rs	wheel_change	mapped	NewTOS sends the WM_ARROWED EmuTOS leaves commented out (GUI04); while the file selector holds the wheel the detent goes to it instead (A128)
 wheel_change	aes/geminput.c	tos-api/src/aes/input.rs	feed	mapped	WheelClaim::feed: the file selector's hold, count over list/track, drop elsewhere, never WM_ARROWED (A128, no EmuTOS counterpart)

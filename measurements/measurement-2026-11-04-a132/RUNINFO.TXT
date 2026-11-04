@@ -1,0 +1,61 @@
+measurement-2026-11-04-a132 -- A132: the file selector's FTITLE shows the mask; the A129 file-box comparison re-run
+=====================================================================================================================
+Developer, TASK/A132, 2026-11-04. No commit, no real Pi, no real card.
+Tree: HEAD 3b1fd066 + the uncommitted A132 change (tos-api/src/aes/fsel.rs, built at sha256 446993c2..., see
+serial/sha256.txt; afterwards only a doc-comment line was re-wrapped, final file 5025b6f3..., code unchanged).
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (card.img.manifest).
+card.img.manifest (copied from tools/mkcard.sh): optional_missing none
+QEMU 11.0.2, Hatari 2.6.1 (tools/oracle/oracle.env), pinned EmuTOS oracle ROM (checked by run-hatari-fsel.sh).
+
+RESULT IN ONE LINE
+  The mask is now in the title: "*.*" at the same place, in the same glyphs as EmuTOS (every EmuTOS glyph pixel is
+  black in NewTOS). 140 pixels of the file box still differ, all of them the 50 % checker showing through inside
+  the three character cells, which EmuTOS paints white: EmuTOS writes this text in MD_REPLACE, NewTOS's AES text
+  output is always transparent. Not pixel-identical; the remaining cause is outside A132 (see CAUSE).
+
+WHAT RAN
+  method/run-a132.sh <scratch> (one call; every step but the kernel build calls the A129 scripts in
+  measurements/measurement-2026-11-04-a129-measure/method/, which were not copied or edited):
+  1. cargo xtask build --board rpi4 --release in the working tree -> kernel8.img (sha in serial/sha256.txt).
+  2. A129 build-fsprobe.sh + mkcard-call.sh: FSPROBE.NAP (same sha as A129, 12dd7b45...), card with C:\LIST\F01..F30.TXT,
+     NEWDESK.INF #Z autorun; the probe opens fsel_exinput on C:\LIST\*.*.
+  3. A129 run.sh: QEMU raspi4b, -append serial=on, bcm2835-fb 1920x1080, per-run APFS clone, QMP screendump at 55 s
+     -> screendumps/a132-55.png; serial/a132.log; serial/a132.img-after.sha256.
+  4. A129 build-fsprobe-m68k.sh + run-hatari-fsel.sh (falcontc profile, wait 20 s) -> hatari/shots/grab0001.png,
+     hatari/serial/hatari.log. The grab is byte-identical to A129's (sha 03b11f8d...).
+  5. A129 cmp.py over FILEAREA 181x199 at the A129 origins (NewTOS 823,476 / Hatari 183,176) -> analysis/compare.txt;
+     A129 dump.py of FTITLE -> analysis/ftitle-dumps.txt; method/crop.py -> analysis/ftitle-newtos-top-hatari-bottom-x8.png,
+     analysis/filearea-newtos-top-hatari-bottom-x3.png.
+  6. After run-a132.sh, by hand from the run directory:
+     ../../.venv/bin/python3 -I method/residual.py screendumps/a132-55.png 823 476 hatari/shots/grab0001.png 183 176 181 199
+     -> analysis/residual.txt.
+
+COMPARE (FILEAREA 181x199, relative to the FTITLE outline's top-left)
+  A129 (before A132): 192 differing pixels, x=88..111 y=3..18: the "*.*" EmuTOS draws and NewTOS did not.
+  A132:               140 differing pixels, same box x=88..111 y=3..18 (the three 8x16 character cells), and only
+                      there; every one is black in NewTOS and white in EmuTOS, all on the checker's black phase
+                      ((x+y) odd). The 104 black glyph pixels EmuTOS draws in those cells are all black in NewTOS
+                      (analysis/residual.txt) -- text, font, position and centring agree. Outline, checker, closer,
+                      arrows, thumb, list: identical, as in A129. Looked at: both crops in analysis/.
+CAUSE OF THE 140
+  FTITLE's TEDINFO colour word is 0x11A1 (aes/gem_rsc.c:37-40 in references/emutos), bit 7 set = MD_REPLACE
+  (gr_crack, references/emutos/aes/gemgraf.c:621); just_draw passes it on (gsx_attr(TRUE, tmode, tcol),
+  aes/gemoblib.c:709; the 3D switch to MD_TRANS at :582-599 needs a hollow white interior, FTITLE has IP_4PATT),
+  and the VDI's replace-mode text fills each cell's background with white. NewTOS's AES text path writes every
+  glyph WriteMode::Transparent (tos-api/src/aes/object.rs gsx_tblt; its own comment says the tmode switch has no
+  counterpart). Fixing that is a change to the shared object text draw, every TEDINFO text with bit 7 set -- not
+  part of A132 (named in TASK/A132.md "Stand Umsetzung").
+
+NOT MEASURED
+  The real Pi's display. Mask changes after an edit / folder / closer / drive change are not in this screendump
+  (the probe only opens the dialog); they are host tests (tos-api/tests/aes_a132_fsel_title_mask.rs, pixel level
+  through the AES trap; tos-api/src/aes/fsel.rs tests for set_mask, drive change, folder/closer).
+
+FILES
+  method/  run-a132.sh (the one call), crop.py, residual.py
+  card.img.manifest
+  serial/  a132.log, a132.img-after.sha256, sha256.txt (kernel, probe NAP/PRG, card, fsel.rs, both screens)
+  screendumps/ a132-55.png (NewTOS 1920x1080)   hatari/shots/grab0001.png (EmuTOS), hatari/serial/hatari.log
+  analysis/ compare.txt, residual.txt, ftitle-dumps.txt, ftitle-newtos-top-hatari-bottom-x8.png,
+            filearea-newtos-top-hatari-bottom-x3.png
+  Kernel, probes and image are not kept (session scratchpad).
