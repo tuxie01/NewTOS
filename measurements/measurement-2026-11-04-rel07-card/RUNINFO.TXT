@@ -1,0 +1,26 @@
+RUNINFO -- user's test card gets the NewTOS 0.7 release kernel (2026-11-04)
+
+WHAT
+  User 2026-11-04: test the 0.7 release kernel on the Pi before anything is
+  pushed or published (TASK/REL07 step 4). Only kernel8.img is replaced on
+  the user's own card; the release ZIP's other files are not copied.
+
+SOURCE
+  kernel8.img taken unchanged from the final release package built by
+  tools/release/package-release.sh (TASK/REL07 "Stand Schritt 2b",
+  measurements/measurement-2026-11-04-rel07-final/), which built it as
+  cargo xtask build --board rpi4 --release --features crash-walk at
+  d7711c42; build stamp "NewTOS 0.7", "2026-11-04 (d7711c42)"; crash-walk
+  with the ladder.
+  sha256 8ec56ee7b5749216c8f94b5e0ac980755d35828c05ebab3c5d612e72a85c5fd2
+  (identical inside NewTOS-0.7.zip). host_clang Apple clang version 21.0.0
+  (clang-2100.4.1.1). optional_missing: not applicable (no image built;
+  one file copied by hand).
+
+CARD (disk4s1 = BOOT = C:)
+  Before: kernel8.img d8ab0c470a60c691... (measurements/measurement-2026-11-04-proc08-fix-card/).
+  Written on the user's word (cp -X, no script, no backup; the replaced
+  kernel is reproducible from e75e8397): -> C:\kernel8.img.
+  Read back after diskutil unmount force + mount disk4s1: 8ec56ee7b5749216...;
+  cmdline.txt = 0x0a (unchanged); kernela.img e0fe680b... unchanged
+  (fallback); the two old ._ files (2026-10-31) unchanged.
