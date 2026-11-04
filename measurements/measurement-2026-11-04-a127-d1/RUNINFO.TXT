@@ -1,0 +1,92 @@
+measurement-2026-11-04-a127-d1 -- A127 D1: the menu tracker takes the left button as events
+==========================================================================================
+Developer, TASK/A127 (divergence D1 only), 2026-11-04 (host clock CET). Base HEAD 4d44a616 plus
+the uncommitted D1 change in the working tree (tos-api/src/aes/menu.rs track/track_owned,
+tos-api/src/aes/input.rs post_button/mn_button_arm/mn_button_take/mn_button_cancel). QEMU only:
+raspi4b (headless, -append serial=on, scripted IKBD injector) and virt (xHCI + usb-mouse over
+QMP). No real Pi, no real card, not committed. QEMU 11.0.2.
+
+WHAT / WHY
+  A127 run C (measurements/measurement-2026-11-04-a127/RUNINFO.TXT) showed that a press+release
+  decoded in one pump pass was lost by menu::track (it sampled vdi::mouse_buttons() once per
+  pass; EmuTOS mn_do waits for button events, aes/gemmnlib.c:356,369-376). D1 makes each round
+  of the tracker arm a button wait that post_button completes with the first published
+  transition it accepts (docs/api/aes/menu.md "Mouse ownership over the track", point 9).
+  This run repeats A127 runs C, A, B (injector, raspi4b) and E, F (real USB path, virt) on the
+  D1 kernel: C must act on the first fast click; A, B, E, F must behave as before.
+
+CARD (raspi4b runs)
+  tools/mkcard.sh with the A127 run's NEWDESK-W.INF (window on C:\*.* at start, so "New folder"
+  is enabled), MKCARD_SIZE_MIB=128; call in method/run-d1.sh (stage setup). Its manifest:
+  base.img.manifest (copied here), image_sha256 f074d923c0b0590fa272f711f9ebdeeb62a4c70557893d81ffd8ca6cf38bd6f5.
+  base.img.manifest:      optional_missing none
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  Difference to the A127 run: that run used tools/make-sd-image.sh (86 files) + the same INF, so
+  its C:\ window lists 42 items; this card holds only NEWDESK.INF (window: 1 item). The menu,
+  its geometry and the injector coordinates are the same.
+  Per run an APFS clone (cp -c, in the A127 run.sh), deleted after; sha256 after the run
+  (first 16 hex): serial/run{A,B,C}.img-after.sha256 = f074d923c0b0590f = the card unchanged.
+  The virt runs use no card ("desktop up (0 drives)", serial/qE.log).
+
+KERNELS (sha256)
+  runA  04727f1473e416866be239b1026078d06144ba86f1e3ba927c75ade0b4fa77b4  rpi4 release + injector
+  runB  692b86dba4b899a00945c882b06159fb9e382ebf69ea61e14832f903aee51274  rpi4 release + injector
+  runC  b23bc11ac581989c4061acfb2e609f05039e6565f011d965d84a0db8fb1d841f  rpi4 release + injector
+  qE/qF ea610f4e6b8b6590eb68c600cf7d46850979659565b1f90e664484303122fa78  virt release, flat image
+        (rust-objcopy -O binary), NO injector (the three inject-arm.py files restored first)
+  All built from a scratch copy (rsync) of the working tree with the D1 change; the injector
+  kernels by the A127 run's method/build-kernel.sh (tools/inject-arm.py, trigger `desktop`).
+
+METHOD (method/run-d1.sh <scratch> <stage>; only calls)
+  setup     rsync of the working tree to <scratch>/tree, cc tools/qmpshot.c, tools/mkcard.sh
+  rpi4 C|A|B  A127 method/build-kernel.sh with A127 method/s-c-fast-clicks.script,
+            s-a-hover-leave-reenter-click.script, s-b-slow-phases.script; then A127 method/run.sh
+            (screendumps every wall second: C 16-40, A 16-36, B 16-44)
+  virt      cargo xtask build --board qemu-virt --release (CARGO_TARGET_DIR in scratch), then
+            A127 method/run-virt.sh with A127 method/q-e-click-holds.steps and
+            q-f-hover-leave-reenter.steps (qmp_usb_clicks.py)
+  The A127 scripts are called in place (measurements/measurement-2026-11-04-a127/method), not
+  copied. Order: setup, C, A, B, virt; one QEMU at a time.
+
+RESULTS (screendumps looked at one by one)
+  C  injector armed at hz_200 3044; three press+release pairs each in ONE injector step
+     (serial/runC.log: feed 0xfa ... 0xf8 at hz_200 4644 (+1600), 5244, 5844), then a 100 ms
+     click (+3400/+3420).
+     runC-22, runC-23: File open, "New folder... ^N" highlighted, pointer on it.
+     runC-24: the dialog "Name of new folder:" -- the FIRST same-step click acted (A127 run C:
+     the first three did nothing, the dialog came only with the fourth click, a127 runC-33).
+     runC-25 .. runC-40: the dialog stays; the later clicks land outside it (modal form_do).
+     RESULT: the D1 defect is gone on the path that reproduced it.
+  A  hover File -> New folder (runA-20: highlighted), out to the right (runA-21: the box stays
+     down, no item highlighted, pointer at the window), back in (runA-22: New folder highlighted
+     again), one 100 ms click at +1300 (runA-23: dialog "Name of new folder:"). Same sequence as
+     the A127 run A (dialog after one click).
+  B  slow phases 3 s apart: runB-24 New folder highlighted; runB-27 out right, box down, no
+     highlight; runB-28 back in at x 68, New folder highlighted again; runB-30 down to y 171,
+     "Set file mask..." highlighted under the pointer; runB-33 out
+     below the box, box down, no highlight; runB-36 back in on "Execute EmuCON", highlighted.
+     No stuck highlight anywhere. Menu behaviour identical to the A127 run B (a127 runB-36 shows
+     the same item highlighted; only the window contents differ, see CARD).
+  E  virt, real USB path (QMP -> usb-mouse -> usb::poll -> hid -> ikbd::feed), 1920x1080:
+     qE-item: "Execute EmuCON" highlighted; qE-click0-hold10ms: EmuCON is running after the
+     FIRST click (10 ms hold). All 7 qE-*.png are byte-identical to the A127 run's qE-*.png.
+  F  virt, real USB path: hover, leave right/below/left, re-enter: the highlight follows the
+     pointer, none stays (qF-out-right: no highlight, box down; qF-re-enter: highlighted;
+     qF-re-enter3: pointer below the box, no highlight). All 8 qF-*.png are byte-identical to
+     the A127 run's qF-*.png.
+
+CAVEATS
+  QEMU has no Pi timing; 5 ms injector grid. Behaviour change that comes with D1 and is
+  EmuTOS's: while a multi-click wait is pending (gl_bpend, e.g. the desktop's double-click
+  wait), a press on a menu item opens the double-click window (b_click, aes/geminput.c:133-140)
+  and the menu acts when the window publishes it (default 220 ms, at once on a move of more
+  than 2 px) -- before D1 the tracker acted on the raw level at once. Visible in run C/A only
+  as "dialog in the next screendump". Not checked on the real Pi.
+
+FILES
+  method/run-d1.sh   the calls (see METHOD)
+  serial/            run{A,B,C}.log, run{A,B,C}.kernel.sha256, run{A,B,C}.img-after.sha256,
+                     base.img.sha256, qE/qF .log and .qmp.txt, qvirt.kernel.sha256
+  screendumps/       runA-16..36, runB-16..44, runC-16..40 (wall second), qE-*, qF-*
+  base.img.manifest  the card's manifest (see CARD). Images, kernels and the scratch tree are
+                     not kept (session scratchpad).

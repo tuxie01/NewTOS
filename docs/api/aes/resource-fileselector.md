@@ -2188,7 +2188,7 @@ Umgesetzt nach den Entscheidungen; Hosttests und Messlauf
   (`tos-api/src/aes/fsel.rs:921@elevator_geometry`), Auswahl faellt beim
   Blaettern weg (Pfeile, Leiste, Daumen, Rad), das Auswahlfeld behaelt den
   Namen (EmuTOS setzt nur `sel` zurueck).
-* **Rad:** `WheelClaim` (`tos-api/src/aes/input.rs:995@feed`), angemeldet fuer
+* **Rad:** `WheelClaim` (`tos-api/src/aes/input.rs:1085@feed`), angemeldet fuer
   die Dauer von `modal` mit den Rechtecken von `FILEBOX` und `FSVSLID`
   (`tos-api/src/aes/fsel.rs:718@fsel_wheel_claim`), Entnahme einmal pro
   Runde (`tos-api/src/aes/fsel.rs:1242@fsel_wheel_take`), nach einem

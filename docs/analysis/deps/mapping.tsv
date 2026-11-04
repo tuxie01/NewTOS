@@ -1144,3 +1144,9 @@ just_draw	aes/gemoblib.c	tos-api/src/aes/object.rs	just_draw	mapped	per-type dra
 gsx_attr	aes/gemgraf.c	tos-api/src/aes/object.rs	gsx_tblt	mapped	only the text writing mode is carried: the WriteMode argument of gsx_tblt/gr_gtext; the colours are passed per call (A133)
 gr_gtext	aes/gemgraf.c	tos-api/src/aes/object.rs	gr_gtext	mapped	gsx_tcalc and gr_just inlined, writing mode passed through (A133)
 gsx_tblt	aes/gemgraf.c	tos-api/src/aes/object.rs	gsx_tblt	mapped	cell-top anchored glyph blit; MD_REPLACE paints each cell clear pixel VDI pen 0 (A133)
+mn_do	aes/gemmnlib.c	tos-api/src/aes/menu.rs	track	mapped	the ct_mouse(TRUE/FALSE) bracket; on the way out the last round's button wait is taken off (acancel) and ev_consume publishes and consumes what is pending (A127 D1)
+mn_do	aes/gemmnlib.c	tos-api/src/aes/menu.rs	track_owned	mapped	the state loop: hit-test per round (INTITLE/INITEM/OUTSIDE/SUBMENU), buparm per state (initial 0x00010101, INITEM from button, INTITLE ^= 1), the button event handled in the state its round was armed in (A127 D1)
+post_button	aes/geminput.c	tos-api/src/aes/input.rs	post_button	mapped	the owner's c_bsleep walk over the per-identity button waits; while gl_ctmown also the menu track's wait, completed by the first accepted transition (A127 D1)
+ev_multi	aes/gemevlib.c	tos-api/src/aes/input.rs	mn_button_arm	mapped	only the button half of mn_do's round: forker (b_delay_poll), quick check mtrans>1 && pr_button then button, else iasync(MU_BUTTON) parked (A127 D1); the application's evnt_multi is event.rs, no row here yet
+mwait	aes/gemasync.c	tos-api/src/aes/input.rs	mn_button_take	mapped	only mn_do's MU_BUTTON: the parked track wait completed by post_button, after the window countdown (A127 D1)
+acancel	aes/gemasync.c	tos-api/src/aes/input.rs	mn_button_cancel	mapped	only mn_do's MU_BUTTON: the track wait taken off at the round's return (A127 D1); the application's button wait is input.rs acancel

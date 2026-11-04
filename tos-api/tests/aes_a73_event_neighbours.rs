@@ -711,6 +711,16 @@ fn arm_gap(host: &ScriptHost) {
 /// re-arms with the pointer already inside the rectangle and `amouse` fires
 /// it at once — the `MU_M1` arrives one call later, not together with the
 /// message.
+///
+/// The press is held **past the double-click window** (A127 D1): the track
+/// acts on the published press, as `mn_do`'s `ev_multi` does, and while any
+/// multi-click wait is pending (`gl_bpend` — this binary's earlier cases park
+/// TeraDesk's `0x0102` waits and `acancel` never takes the count back) the
+/// press opens the window instead of being published (`b_click`,
+/// `aes/geminput.c:133-140`). A release inside the window would be published
+/// together with the press when it closes (`b_delay`, `:155-171`), the track
+/// would select with the button up and the case would be 1b's. Held past it,
+/// the press is published while still down, whatever `gl_bpend` stands at.
 #[test]
 fn m1_armed_before_press_track_is_not_delivered_with_mn_selected() {
     let _guard = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
@@ -721,7 +731,16 @@ fn m1_armed_before_press_track_is_not_delivered_with_mn_selected() {
 
     arm_gap(host);
     glide_y(host, ON_OPEN.1 - ON_FILE.1, 0);
-    click(host);
+    // Press, held for 500 pumps = 500 ms of the harness clock, beyond the
+    // longest window (450 ms, `gl_dcrates[0]`, `aes/gemevlib.c:33`), then
+    // release and idle.
+    for _ in 0..500 {
+        host.push(Packet { dx: 0, dy: 0, buttons: 1 });
+    }
+    host.push(Packet { dx: 0, dy: 0, buttons: 0 });
+    for _ in 0..8 {
+        host.push(Packet { dx: 0, dy: 0, buttons: 0 });
+    }
 
     let (fired, bret, mx, my, msg) = evnt_multi_with_m1(&mut pb, BELOW_BAR, None);
     eprintln!("1a: fired={fired:#06x} bret={bret} at=({mx},{my}) msg={msg:?}");
@@ -743,7 +762,9 @@ fn m1_armed_before_press_track_is_not_delivered_with_mn_selected() {
     // The next arm sees the pointer inside the rectangle: `amouse` completes it
     // immediately (`geminput.c:575-576`), ownership-blind. Release first so the
     // long-press exception does not add MU_BUTTON.
-    drain(host, &mut pb);
+    while !host.script.lock().unwrap().is_empty() {
+        drain(host, &mut pb);
+    }
     assert_eq!(tos_api::vdi::mouse_buttons() & 1, 0, "the release must have been pumped");
     let (fired2, _, _, _, msg2) = evnt_multi_with_m1(&mut pb, BELOW_BAR, Some(0));
     eprintln!("1a next call: fired={fired2:#06x} msg={msg2:?}");

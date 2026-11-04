@@ -407,21 +407,30 @@ pub fn menu_bar(pb: &Aespb) {
 /// logic. Entered (from `evnt_multi`) as soon as the cursor is over the bar
 /// with the buttons up. Follows the mouse: the title under the cursor opens
 /// its drop-down (`menu_sub`), items highlight on hover, a left-button
-/// **edge** over an item is the selection. Leaving the title *and* the open
+/// **event** over an item is the selection. Leaving the title *and* the open
 /// box does **not** close it — EmuTOS `mn_do`'s `OUTSIDE_STATE`
 /// (`aes/gemmnlib.c:293-305,415-443`) keeps the box down and the title
 /// hilited until the pointer re-enters (tracking resumes) or a button
-/// transition falls outside (the cancel; A73). Returns `Some((title,
+/// event falls outside (the cancel; A73). Returns `Some((title,
 /// item))` or `None` (cancelled).
 ///
-/// **Which edge selects.** EmuTOS `mn_do` derives its button wait in
-/// `INITEM_STATE` from the live button each time round: `buparm = (button &
+/// **Which event selects.** EmuTOS `mn_do` derives its button wait in
+/// `INITEM_STATE` from the AES `button` each time round: `buparm = (button &
 /// 0x0001) ? 0x00010100L : 0x00010101L;` (`aes/gemmnlib.c:314`) — button up
 /// on the item → wait for the **press**; already down (the user pressed on
 /// the title, or in the bar, and dragged onto the item) → wait for the
 /// **release**. Either transition breaks the loop (`:369-376`) and the item
-/// is returned. In the title itself a press only flips the wait
-/// (`buparm ^= 1`, `:375`), so edges over a title select nothing.
+/// is returned. In the title itself a button event only flips the wait
+/// (`buparm ^= 1`, `:375`), so events over a title select nothing.
+///
+/// **Events, not samples (A127 D1).** Each round's wait is `ev_multi`'s
+/// (`:356`): a quick check on the published state, else a wait parked for
+/// `post_button` to complete with the first transition it accepts
+/// ([`input::mn_button_arm`](super::input::mn_button_arm),
+/// [`input::mn_button_take`](super::input::mn_button_take)). A press and its
+/// release published in the same pump therefore act like a slow click; a
+/// press a button-delay window holds back acts when the window publishes it
+/// (`aes/geminput.c:133-171`), as in EmuTOS.
 ///
 /// **Mouse ownership.** The whole loop runs under `ct_mouse(TRUE)` …
 /// `ct_mouse(FALSE)` (`gemmnlib.c:277,513`): while it tracks, the press that
@@ -460,13 +469,41 @@ pub fn track(tree: *mut Object, backend: &dyn RasterBackend) -> Option<(i16, i16
     // cancelling event (`aes/gemmnlib.c:597-690`), still under
     // `ct_mouse(TRUE)`; every one of its returns ran `ev_rets`
     // (`aes/gemevlib.c:268`), so the transitions of the track are consumed and
-    // none of them is reported by the application's next event. A press the
-    // track acted on while a button-delay window held it back is published
-    // here, before the bracket closes, to the Control Manager
-    // (`input::ev_consume`).
+    // none of them is reported by the application's next event. The track
+    // acts only on published transitions (A127 D1), so a button-delay window
+    // still open here was opened by a press after the round that ended the
+    // track; it is closed and published here, before the bracket closes, to
+    // the Control Manager (`input::ev_consume`). The last round's wait is
+    // taken off (`acancel`, `aes/gemevlib.c:264`).
+    super::input::mn_button_cancel();
     super::input::ev_consume();
     super::input::ct_mouse(false);
     r
+}
+
+/// `mn_do`'s initial button wait and the one `INITEM_STATE` sets with the
+/// button up: one click, left button, **down** (`buparm = 0x00010101L`,
+/// `aes/gemmnlib.c:272,314`).
+const MN_BUPARM_DOWN: u32 = 0x0001_0101;
+/// The `INITEM_STATE` wait with the button held: one click, left button,
+/// **up** (`0x00010100L`, `aes/gemmnlib.c:314`).
+const MN_BUPARM_UP: u32 = 0x0001_0100;
+
+/// `mn_do`'s `menu_state` (`aes/gemmnlib.c:269,284-326`): which waits a
+/// round arms and what its button event does (`:369-376`).
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum MnState {
+    /// `START_STATE` — no title entered yet; a button event is ignored.
+    Start,
+    /// `INTITLE_STATE` — over a title; a button event flips `buparm`.
+    InTitle,
+    /// `INITEM_STATE` — in the open box; a button event selects.
+    InItem,
+    /// `OUTSIDE_STATE` — no man's land with a box down; a button event
+    /// cancels (or selects a retained submenu parent).
+    Outside,
+    /// `SUBMENU_STATE` — in the open submenu; a button event selects there.
+    Submenu,
 }
 
 /// The body of [`track`], run with the Control Manager holding the mouse.
@@ -490,256 +527,320 @@ fn track_owned(tree: *mut Object, backend: &dyn RasterBackend) -> Option<(i16, i
     let mut sub_box = NIL;
     let mut sub_item = NIL;
     // Hover model (GEM): the menu opens as the cursor enters a title; an item
-    // is chosen on a left-button *edge* over it (press if the button was up
-    // on entering the item, release if it was already held — `gemmnlib.c:314`);
-    // an edge with the pointer outside title, box and submenu cancels
-    // (`OUTSIDE_STATE`, below).
-    let mut was_down = crate::vdi::mouse_buttons() & 0x01 != 0;
+    // is chosen by a left-button **event** over it — the press if the button
+    // was up on entering the item, the release if it was already held
+    // (`gemmnlib.c:314`); the same event with the pointer outside title, box
+    // and submenu cancels (`OUTSIDE_STATE`, below). The event is a published
+    // transition of the AES `button` that completes the round's wait
+    // ([`input::mn_button_arm`](super::input::mn_button_arm)), never a sample
+    // of the level: a press and its release inside one pump still end the
+    // wait on the press (A127 D1; `docs/api/aes/menu.md` "Mouse ownership
+    // over the track", point 9).
+    //
+    // `buparm` — the button wait each `ev_multi` round asks for
+    // (`gemmnlib.c:272`: one click, left button, down); recomputed on
+    // entering `INITEM_STATE` (`:314`), flipped by a button event in
+    // `INTITLE_STATE` (`:375`), carried over unchanged by the other states.
+    let mut buparm: u32 = MN_BUPARM_DOWN;
+    // The state the current round's wait is armed for (`menu_state`).
+    let mut state = MnState::Start;
+    // `START_STATE` + `MU_BUTTON` → `continue` (`gemmnlib.c:371-372`): the
+    // next round waits again without hit-testing the pointer.
+    let mut hit_test = true;
     // Where the previous pass left `mn_do`'s state machine: in the submenu box
     // (`SUBMENU_STATE`) or in no man's land (`OUTSIDE_STATE`). Both are what
-    // the `:437-438` retention keys on (below).
-    let mut was_in_sub = false;
-    let mut was_outside = false;
+    // the `:437-438` retention keys on (below), and the button event of the
+    // round armed in that state is handled in its terms.
+    let mut in_sub_box = false;
+    let mut outside = false;
 
     loop {
-        let (mx, my) = crate::vdi::mouse_position();
-        let down = crate::vdi::mouse_buttons() & 0x01 != 0;
+        if hit_test {
+            let was_in_sub = in_sub_box;
+            let was_outside = outside;
+            let (mx, my) = crate::vdi::mouse_position();
 
-        // Title under the cursor (children of THEACTIVE).
-        let t = object::child_at_t(mt, THEACTIVE, mx, my);
-        if t != NIL && t != cur_title {
-            if cur_title != NIL {
-                if sub_tree != 0 {
-                    close_submenu(sub_t(sub_tree), sub_box, sub_item, backend);
-                    sub_tree = 0;
-                    sub_box = NIL;
-                    sub_item = NIL;
-                }
-                // Clear the previously-hovered item's SELECTED bit before pulling
-                // the box up, matching EmuTOS `mn_do` (gemmnlib.c:459
-                // `menu_select(tree, last_item, cur_item, FALSE)` →
-                // `do_chg(tree, last_item, SELECTED, FALSE, TRUE, TRUE)`). Without
-                // this the bit persists in the app's gl_mntree, so the menu reopens
-                // pre-highlighted and two items invert at once. `do_chg` runs with
-                // chkdisabled=TRUE, and a DISABLED item was never given SELECTED
-                // (`rehilite` guards on DISABLED, gemmnlib.c:471 does the same), so
-                // guard the clear identically to avoid the spurious redraw
-                // `set_state_bit` (dodraw=true) would emit on a disabled item.
-                if cur_item != NIL && (mt.state(cur_item) & DISABLED) == 0 {
-                    object::set_state_bit_t(mt, cur_item, SELECTED, false);
-                }
-                close_box(mt, cur_title, cur_box, backend);
-                cur_item = NIL;
-            }
-            cur_title = t;
-            cur_box = open_box(mt, t, backend);
-        }
-
-        if cur_box != NIL {
-            // The submenu box overlaps the parent box's right edge, so check
-            // the submenu first (EmuTOS gives `SUBMENU_STATE` priority).
-            let in_sub = sub_tree != 0 && point_in(sub_t(sub_tree), sub_box, mx, my);
-            if in_sub {
-                // Track the highlight *inside* the submenu; the parent item
-                // stays selected (cur_item is untouched). `cur_submenu =
-                // ob_find(smtree, smroot, 1, x, y)` (`gemmnlib.c:417`) answers
-                // the box **itself** for a point inside it that no child
-                // covers — its border/gap (`ob_find` returns the last object
-                // found, `gemoblib.c:1034-1113`) — and `mn_do` then treats
-                // `smroot` like any submenu item: `SUBMENU_STATE` (`:418-422`),
-                // hilited by `menu_select(smtree, cur_submenu, …)` (`:474-475`,
-                // the box's interior XOR, `ob_change`) and, on a press,
-                // returned as `*pitem` (`:494-496`; A103 (1)).
-                let hit = object::child_at_t(sub_t(sub_tree), sub_box, mx, my);
-                let sit = if hit == NIL { sub_box } else { hit };
-                if sit != sub_item {
-                    rehilite(sub_t(sub_tree), sub_item, sit, backend);
-                    sub_item = sit;
-                }
-            } else {
-                // Not over the submenu: drop any submenu-item highlight but
-                // keep the submenu open while we are still on its parent item.
-                if sub_item != NIL {
-                    rehilite(sub_t(sub_tree), sub_item, NIL, backend);
-                    sub_item = NIL;
-                }
-                let it = object::child_at_t(mt, cur_box, mx, my);
-                // Out of the *submenu* into no man's land — no title, no item
-                // — `mn_do` keeps the parent: `if (menu_state == SUBMENU_STATE)
-                // cur_item = last_item;` (`gemmnlib.c:437-438`), so
-                // `item_changed` is false and neither `undisplay_submenu` nor
-                // the parent's un-hilite runs (`:452-459`); only the submenu
-                // item was un-hilited above (`:446-448`). The state is then
-                // `OUTSIDE_STATE`, which no event leaves until re-entry or a
-                // button (`:293-305`) — so the retention holds for as long as
-                // the pointer stays outside. Out of the parent *item* into no
-                // man's land (`INITEM_STATE` → outside) is the plain change
-                // below: `cur_item = NIL`, submenu closed, parent un-hilited.
-                let keeps_parent = it == NIL && t == NIL && sub_tree != 0 && (was_in_sub || was_outside);
-                if it != cur_item && !keeps_parent {
-                    // Item changed: close the old item's submenu, move the
-                    // parent highlight, then open the new item's submenu.
+            // Title under the cursor (children of THEACTIVE).
+            let t = object::child_at_t(mt, THEACTIVE, mx, my);
+            if t != NIL && t != cur_title {
+                if cur_title != NIL {
                     if sub_tree != 0 {
                         close_submenu(sub_t(sub_tree), sub_box, sub_item, backend);
                         sub_tree = 0;
                         sub_box = NIL;
                         sub_item = NIL;
                     }
-                    rehilite(mt, cur_item, it, backend);
-                    cur_item = it;
-                    // `display_submenu` runs only inside `if (menu_select(tree,
-                    // cur_item, last_item, TRUE))` (`gemmnlib.c:470-475`), and
-                    // `menu_select` → `do_chg(…, chkdisabled = TRUE)` refuses a
-                    // DISABLED item (`:158-160`): a disabled item with a
-                    // submenu attached neither hilites nor opens it (A103 (2)).
-                    if it != NIL && (mt.state(it) & DISABLED) == 0 {
-                        if let Some((st, sb)) = open_submenu(mt, it, backend) {
-                            sub_tree = st;
-                            sub_box = sb;
+                    // Clear the previously-hovered item's SELECTED bit before pulling
+                    // the box up, matching EmuTOS `mn_do` (gemmnlib.c:459
+                    // `menu_select(tree, last_item, cur_item, FALSE)` →
+                    // `do_chg(tree, last_item, SELECTED, FALSE, TRUE, TRUE)`). Without
+                    // this the bit persists in the app's gl_mntree, so the menu reopens
+                    // pre-highlighted and two items invert at once. `do_chg` runs with
+                    // chkdisabled=TRUE, and a DISABLED item was never given SELECTED
+                    // (`rehilite` guards on DISABLED, gemmnlib.c:471 does the same), so
+                    // guard the clear identically to avoid the spurious redraw
+                    // `set_state_bit` (dodraw=true) would emit on a disabled item.
+                    if cur_item != NIL && (mt.state(cur_item) & DISABLED) == 0 {
+                        object::set_state_bit_t(mt, cur_item, SELECTED, false);
+                    }
+                    close_box(mt, cur_title, cur_box, backend);
+                    cur_item = NIL;
+                }
+                cur_title = t;
+                cur_box = open_box(mt, t, backend);
+            }
+
+            if cur_box != NIL {
+                // The submenu box overlaps the parent box's right edge, so check
+                // the submenu first (EmuTOS gives `SUBMENU_STATE` priority).
+                let in_sub = sub_tree != 0 && point_in(sub_t(sub_tree), sub_box, mx, my);
+                if in_sub {
+                    // Track the highlight *inside* the submenu; the parent item
+                    // stays selected (cur_item is untouched). `cur_submenu =
+                    // ob_find(smtree, smroot, 1, x, y)` (`gemmnlib.c:417`) answers
+                    // the box **itself** for a point inside it that no child
+                    // covers — its border/gap (`ob_find` returns the last object
+                    // found, `gemoblib.c:1034-1113`) — and `mn_do` then treats
+                    // `smroot` like any submenu item: `SUBMENU_STATE` (`:418-422`),
+                    // hilited by `menu_select(smtree, cur_submenu, …)` (`:474-475`,
+                    // the box's interior XOR, `ob_change`) and, on a press,
+                    // returned as `*pitem` (`:494-496`; A103 (1)).
+                    let hit = object::child_at_t(sub_t(sub_tree), sub_box, mx, my);
+                    let sit = if hit == NIL { sub_box } else { hit };
+                    if sit != sub_item {
+                        rehilite(sub_t(sub_tree), sub_item, sit, backend);
+                        sub_item = sit;
+                    }
+                } else {
+                    // Not over the submenu: drop any submenu-item highlight but
+                    // keep the submenu open while we are still on its parent item.
+                    if sub_item != NIL {
+                        rehilite(sub_t(sub_tree), sub_item, NIL, backend);
+                        sub_item = NIL;
+                    }
+                    let it = object::child_at_t(mt, cur_box, mx, my);
+                    // Out of the *submenu* into no man's land — no title, no item
+                    // — `mn_do` keeps the parent: `if (menu_state == SUBMENU_STATE)
+                    // cur_item = last_item;` (`gemmnlib.c:437-438`), so
+                    // `item_changed` is false and neither `undisplay_submenu` nor
+                    // the parent's un-hilite runs (`:452-459`); only the submenu
+                    // item was un-hilited above (`:446-448`). The state is then
+                    // `OUTSIDE_STATE`, which no event leaves until re-entry or a
+                    // button (`:293-305`) — so the retention holds for as long as
+                    // the pointer stays outside. Out of the parent *item* into no
+                    // man's land (`INITEM_STATE` → outside) is the plain change
+                    // below: `cur_item = NIL`, submenu closed, parent un-hilited.
+                    let keeps_parent = it == NIL && t == NIL && sub_tree != 0 && (was_in_sub || was_outside);
+                    if it != cur_item && !keeps_parent {
+                        // Item changed: close the old item's submenu, move the
+                        // parent highlight, then open the new item's submenu.
+                        if sub_tree != 0 {
+                            close_submenu(sub_t(sub_tree), sub_box, sub_item, backend);
+                            sub_tree = 0;
+                            sub_box = NIL;
                             sub_item = NIL;
+                        }
+                        rehilite(mt, cur_item, it, backend);
+                        cur_item = it;
+                        // `display_submenu` runs only inside `if (menu_select(tree,
+                        // cur_item, last_item, TRUE))` (`gemmnlib.c:470-475`), and
+                        // `menu_select` → `do_chg(…, chkdisabled = TRUE)` refuses a
+                        // DISABLED item (`:158-160`): a disabled item with a
+                        // submenu attached neither hilites nor opens it (A103 (2)).
+                        if it != NIL && (mt.state(it) & DISABLED) == 0 {
+                            if let Some((st, sb)) = open_submenu(mt, it, backend) {
+                                sub_tree = st;
+                                sub_box = sb;
+                                sub_item = NIL;
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // Where the pointer is, in `mn_do`'s terms (`aes/gemmnlib.c:398-443`):
-        // over a title (`ob_find(tree, THEACTIVE, …)`), in the open box
-        // (`ob_find(tree, cur_menu, …)`), in the open submenu, or — none of
-        // these — in "no man's land", `OUTSIDE_STATE`. `THEBAR` (the bar row)
-        // only matters while no box has been dropped yet (`START_STATE`).
-        let in_bar = my < gl_hbox();
-        let in_box = cur_box != NIL && point_in(mt, cur_box, mx, my);
-        let in_sub_box = sub_tree != 0 && point_in(sub_t(sub_tree), sub_box, mx, my);
-        let outside = cur_title != NIL && t == NIL && !in_box && !in_sub_box;
+            // Where the pointer is, in `mn_do`'s terms (`aes/gemmnlib.c:398-443`):
+            // over a title (`ob_find(tree, THEACTIVE, …)`), in the open box
+            // (`ob_find(tree, cur_menu, …)`), in the open submenu, or — none of
+            // these — in "no man's land", `OUTSIDE_STATE`. `THEBAR` (the bar row)
+            // only matters while no box has been dropped yet (`START_STATE`).
+            let in_bar = my < gl_hbox();
+            let in_box = cur_box != NIL && point_in(mt, cur_box, mx, my);
+            in_sub_box = sub_tree != 0 && point_in(sub_t(sub_tree), sub_box, mx, my);
+            outside = cur_title != NIL && t == NIL && !in_box && !in_sub_box;
 
-        // Left-button edge over an item → the selection. `INITEM_STATE` waits
-        // for whichever transition the live button allows (`gemmnlib.c:314`),
-        // so a press with the button up and a release with it held both end
-        // the track here; over a title (`cur_item == NIL`) an edge does
-        // nothing, as `INTITLE_STATE`'s `buparm ^= 1` does nothing visible.
-        // In `OUTSIDE_STATE` the same transition **cancels**: `MU_BUTTON` in
-        // any state but `START`/`INTITLE` breaks the loop (`:369-374`), and
-        // the cleanup pulls the box up and un-hilites the title without a
-        // selection (`cur_item == NIL`, `:482-511`) — `mn_do` returns FALSE.
-        // That press is consumed here, under `gl_ctmown`, exactly like a
-        // selecting one (`docs/api/aes/menu.md` "Mouse ownership over the
-        // track", point 5).
-        if down != was_down {
-            if sub_tree != 0 && sub_item != NIL {
-                if sub_tree == tree as u64 {
-                    // Submenu selection in the same tree: the item index is valid
-                    // in the caller's tree (round-trips as MN_SELECTED msg[4]).
-                    // `sub_item` is the submenu's root box when the press lands
-                    // on its border/gap — `*pitem = cur_submenu` with
-                    // `cur_submenu == smroot` (`gemmnlib.c:417,494-496`; the
-                    // return is gated on the *parent* item being enabled,
-                    // `:493`, which it is: a DISABLED parent never opened it).
-                    crate::vdi::cursor_hide(backend);
-                    object::set_state_bit_t(sub_t(sub_tree), sub_item, SELECTED, false);
-                    close_submenu(sub_t(sub_tree), sub_box, NIL, backend);
-                    erase_box_inner(cur_box, backend);
-                    // The parent item's SELECTED bit is cleared by the same
-                    // `do_chg(tree, cur_item, SELECTED, FALSE, FALSE, TRUE)`
-                    // that gates the return (`gemmnlib.c:493`) — no draw, the
-                    // box's pixels are already back (A103 (1)).
-                    let st = mt.state(cur_item);
-                    object::change_t(mt, cur_item, st & !SELECTED, false);
-                    crate::vdi::cursor_show(backend);
-                    return Some((cur_title, sub_item));
+            if cur_title == NIL {
+                // `START_STATE`: no box dropped yet. The pointer wandering the bar
+                // row off any title keeps waiting (`MU_M1` enter `THEACTIVE`);
+                // leaving `THEBAR` (`MU_M2`) ends the track — `cur_menu == NIL` →
+                // `cur_title = NIL` → `done` (`gemmnlib.c:286-292,404-411`).
+                if !in_bar {
+                    return None;
                 }
-                // A submenu in a separate tree: its selection needs the
-                // `msg[5..7]` tree-pointer return path (deferred, see the doc
-                // of [`track`]); the press is not acted on.
-            } else if cur_item != NIL && !in_sub_box {
-                // `INITEM_STATE` — on the item, its submenu showing or not —
-                // or `OUTSIDE_STATE` reached from the submenu with the parent
-                // retained (`gemmnlib.c:437-438`): `MU_BUTTON` breaks the loop
-                // (`:373-374`) and the cleanup undisplays the submenu
-                // (`:486-490`), restores the box (`:491`) and, the item
-                // enabled and `menu_state != SUBMENU_STATE`, returns
-                // `(cur_title, cur_item)` (`:492-500`) — the parent item when
-                // a submenu was showing.
+            } else if outside {
+                // No man's land with a box down. EmuTOS does **not** pull the box
+                // up: `OUTSIDE_STATE` (`gemmnlib.c:415-443`) keeps the title
+                // hilited and the box on screen — the title is unchanged, so the
+                // `menu_select`/`menu_sr(FALSE)` pair at `:463-464` is skipped —
+                // and only the item under the pointer was un-hilited (the
+                // `item_changed` guard at `:459`, done by the box block above).
+                // The next round waits for `MU_BUTTON | M1` (re-enter `THEACTIVE`)
+                // `| M2` (re-enter `cur_menu`) `| M3` (re-enter the submenu)
+                // (`:293-305`): re-entry resumes the tracking above, a button
+                // event is the cancel handled after the round's wait, below.
                 //
-                // A DISABLED item is never delivered as a selection: the return
-                // is gated on `do_chg(tree, cur_item, SELECTED, FALSE, FALSE,
-                // TRUE)` (`:493`), which refuses a DISABLED object
-                // (`:159-160`), so `done` stays FALSE and mn_do returns 0 — the
-                // menu ABORTS, un-hiliting the title (`:510`) after pulling the
-                // box up (`:491`): the no-selection cancel path.
-                if (mt.state(cur_item) & DISABLED) != 0 {
+                // The one exception is a DISABLED title (`:429-434`): `cur_title
+                // = NIL; done = TRUE;` — `mn_do` ends with no selection and, since
+                // `menu_down` never dropped a box for it (`do_chg(…, chkdisabled)`
+                // at `:158-160,469`; [`open_box`] answers `NIL` for it, A89),
+                // there is nothing to restore — `close_box` with `cur_box == NIL`
+                // only brackets the cursor. (With `cur_menu == NIL` EmuTOS ends
+                // even earlier, `:406-411`; same outcome.)
+                if (mt.state(cur_title) & DISABLED) != 0 {
                     if sub_tree != 0 {
                         close_submenu(sub_t(sub_tree), sub_box, sub_item, backend);
                     }
                     close_box(mt, cur_title, cur_box, backend);
                     return None;
                 }
-                // Undisplay the submenu first (its save holds the box's pixels
-                // in the overlap, the box's save the desktop), then clear the
-                // item's highlight bit and restore the screen under the box,
-                // cursor hidden so nothing smears. The title stays highlighted:
-                // the app un-highlights it via menu_tnormal after acting on
-                // MN_SELECTED.
-                crate::vdi::cursor_hide(backend);
-                if sub_tree != 0 {
-                    close_submenu(sub_t(sub_tree), sub_box, NIL, backend);
-                }
-                object::set_state_bit_t(mt, cur_item, SELECTED, false);
-                erase_box_inner(cur_box, backend);
-                crate::vdi::cursor_show(backend);
-                return Some((cur_title, cur_item));
+            }
+
+            // The state the next round waits in (`gemmnlib.c:398-443`): over a
+            // title `INTITLE_STATE`, in the open submenu `SUBMENU_STATE`, in the
+            // open box `INITEM_STATE`, elsewhere with a box down `OUTSIDE_STATE`;
+            // no title entered yet is still `START_STATE`.
+            state = if cur_title == NIL {
+                MnState::Start
+            } else if t != NIL {
+                MnState::InTitle
+            } else if in_sub_box {
+                MnState::Submenu
             } else if outside {
-                // `OUTSIDE_STATE` + `MU_BUTTON` → break → cleanup without a
-                // selection (`gemmnlib.c:373-374,482-511`): `menu_sr(FALSE)`,
-                // `do_chg(tree, cur_title, SELECTED, FALSE, …)`, return FALSE.
-                if sub_tree != 0 {
-                    close_submenu(sub_t(sub_tree), sub_box, sub_item, backend);
-                }
-                close_box(mt, cur_title, cur_box, backend);
-                return None;
-            }
+                MnState::Outside
+            } else {
+                MnState::InItem
+            };
         }
+        hit_test = true;
 
-        if cur_title == NIL {
-            // `START_STATE`: no box dropped yet. The pointer wandering the bar
-            // row off any title keeps waiting (`MU_M1` enter `THEACTIVE`);
-            // leaving `THEBAR` (`MU_M2`) ends the track — `cur_menu == NIL` →
-            // `cur_title = NIL` → `done` (`gemmnlib.c:286-292,404-411`).
-            if !in_bar {
-                return None;
-            }
-        } else if outside {
-            // No man's land with a box down. EmuTOS does **not** pull the box
-            // up: `OUTSIDE_STATE` (`gemmnlib.c:415-443`) keeps the title
-            // hilited and the box on screen — the title is unchanged, so the
-            // `menu_select`/`menu_sr(FALSE)` pair at `:463-464` is skipped —
-            // and only the item under the pointer was un-hilited (the
-            // `item_changed` guard at `:459`, done by the box block above).
-            // The next round waits for `MU_BUTTON | M1` (re-enter `THEACTIVE`)
-            // `| M2` (re-enter `cur_menu`) `| M3` (re-enter the submenu)
-            // (`:293-305`): re-entry resumes the tracking above, a button
-            // transition is the cancel handled in the edge block above.
-            //
-            // The one exception is a DISABLED title (`:429-434`): `cur_title
-            // = NIL; done = TRUE;` — `mn_do` ends with no selection and, since
-            // `menu_down` never dropped a box for it (`do_chg(…, chkdisabled)`
-            // at `:158-160,469`; [`open_box`] answers `NIL` for it, A89),
-            // there is nothing to restore — `close_box` with `cur_box == NIL`
-            // only brackets the cursor. (With `cur_menu == NIL` EmuTOS ends
-            // even earlier, `:406-411`; same outcome.)
-            if (mt.state(cur_title) & DISABLED) != 0 {
-                if sub_tree != 0 {
-                    close_submenu(sub_t(sub_tree), sub_box, sub_item, backend);
-                }
-                close_box(mt, cur_title, cur_box, backend);
-                return None;
-            }
+        // One `ev_multi` round, its button half (`gemmnlib.c:286-356`). On
+        // entering `INITEM_STATE` the wait is derived from the AES `button`
+        // (`:314`): up → wait for the press, held → wait for the release.
+        if state == MnState::InItem {
+            buparm = if super::input::button() & 0x01 != 0 { MN_BUPARM_UP } else { MN_BUPARM_DOWN };
         }
-
-        was_down = down;
-        was_in_sub = in_sub_box;
-        was_outside = outside;
+        // The quick check, else the parked wait (`aes/gemevlib.c:185-239`);
+        // `pump_input` is the interrupt + `forker()` that publishes the
+        // transitions completing it (`post_button`, `aes/geminput.c:463-483`).
+        let quick = super::input::mn_button_arm(buparm);
         h.pump_input();
+        if !(quick || super::input::mn_button_take()) {
+            // A rectangle event, or nothing yet: hit-test again.
+            continue;
+        }
+        // `MU_BUTTON`: the round returned through `ev_rets` (`aes/gemevlib.c:
+        // 268`), which ends the transitions it returned on.
+        super::input::mn_button_cancel();
+        let _ = super::input::ev_rets();
+        match state {
+            // "the user is just holding the button down in the bar, and we
+            // stay in the loop, doing nothing" (`gemmnlib.c:359-372`).
+            MnState::Start => {
+                hit_test = false;
+                continue;
+            }
+            // Flip the wanted transition and go on hit-testing (`:373-375`);
+            // over a title it does nothing visible.
+            MnState::InTitle => {
+                buparm ^= 0x0000_0001;
+                continue;
+            }
+            // Any other state: `break` out of the state loop into the cleanup
+            // (`:373-374,482-513`), below.
+            MnState::InItem | MnState::Outside | MnState::Submenu => {}
+        }
+
+        // The button event over an item → the selection, handled in the
+        // state the round was armed in, before the pointer is looked at again
+        // (`gemmnlib.c:369-376`). A press with the button up and a release with
+        // it held both end the track here (`INITEM_STATE`, `:314`). In
+        // `OUTSIDE_STATE` the same event **cancels**: `MU_BUTTON` in any state
+        // but `START`/`INTITLE` breaks the loop (`:369-374`), and the cleanup
+        // pulls the box up and un-hilites the title without a selection
+        // (`cur_item == NIL`, `:482-511`) — `mn_do` returns FALSE. That press
+        // is consumed here, under `gl_ctmown`, exactly like a selecting one
+        // (`docs/api/aes/menu.md` "Mouse ownership over the track", point 5).
+        if sub_tree != 0 && sub_item != NIL {
+            if sub_tree == tree as u64 {
+                // Submenu selection in the same tree: the item index is valid
+                // in the caller's tree (round-trips as MN_SELECTED msg[4]).
+                // `sub_item` is the submenu's root box when the press lands
+                // on its border/gap — `*pitem = cur_submenu` with
+                // `cur_submenu == smroot` (`gemmnlib.c:417,494-496`; the
+                // return is gated on the *parent* item being enabled,
+                // `:493`, which it is: a DISABLED parent never opened it).
+                crate::vdi::cursor_hide(backend);
+                object::set_state_bit_t(sub_t(sub_tree), sub_item, SELECTED, false);
+                close_submenu(sub_t(sub_tree), sub_box, NIL, backend);
+                erase_box_inner(cur_box, backend);
+                // The parent item's SELECTED bit is cleared by the same
+                // `do_chg(tree, cur_item, SELECTED, FALSE, FALSE, TRUE)`
+                // that gates the return (`gemmnlib.c:493`) — no draw, the
+                // box's pixels are already back (A103 (1)).
+                let st = mt.state(cur_item);
+                object::change_t(mt, cur_item, st & !SELECTED, false);
+                crate::vdi::cursor_show(backend);
+                return Some((cur_title, sub_item));
+            }
+            // A submenu in a separate tree: its selection needs the
+            // `msg[5..7]` tree-pointer return path (deferred, see the doc
+            // of [`track`]); the press is not acted on.
+        } else if cur_item != NIL && !in_sub_box {
+            // `INITEM_STATE` — on the item, its submenu showing or not —
+            // or `OUTSIDE_STATE` reached from the submenu with the parent
+            // retained (`gemmnlib.c:437-438`): `MU_BUTTON` breaks the loop
+            // (`:373-374`) and the cleanup undisplays the submenu
+            // (`:486-490`), restores the box (`:491`) and, the item
+            // enabled and `menu_state != SUBMENU_STATE`, returns
+            // `(cur_title, cur_item)` (`:492-500`) — the parent item when
+            // a submenu was showing.
+            //
+            // A DISABLED item is never delivered as a selection: the return
+            // is gated on `do_chg(tree, cur_item, SELECTED, FALSE, FALSE,
+            // TRUE)` (`:493`), which refuses a DISABLED object
+            // (`:159-160`), so `done` stays FALSE and mn_do returns 0 — the
+            // menu ABORTS, un-hiliting the title (`:510`) after pulling the
+            // box up (`:491`): the no-selection cancel path.
+            if (mt.state(cur_item) & DISABLED) != 0 {
+                if sub_tree != 0 {
+                    close_submenu(sub_t(sub_tree), sub_box, sub_item, backend);
+                }
+                close_box(mt, cur_title, cur_box, backend);
+                return None;
+            }
+            // Undisplay the submenu first (its save holds the box's pixels
+            // in the overlap, the box's save the desktop), then clear the
+            // item's highlight bit and restore the screen under the box,
+            // cursor hidden so nothing smears. The title stays highlighted:
+            // the app un-highlights it via menu_tnormal after acting on
+            // MN_SELECTED.
+            crate::vdi::cursor_hide(backend);
+            if sub_tree != 0 {
+                close_submenu(sub_t(sub_tree), sub_box, NIL, backend);
+            }
+            object::set_state_bit_t(mt, cur_item, SELECTED, false);
+            erase_box_inner(cur_box, backend);
+            crate::vdi::cursor_show(backend);
+            return Some((cur_title, cur_item));
+        } else if outside {
+            // `OUTSIDE_STATE` + `MU_BUTTON` → break → cleanup without a
+            // selection (`gemmnlib.c:373-374,482-511`): `menu_sr(FALSE)`,
+            // `do_chg(tree, cur_title, SELECTED, FALSE, …)`, return FALSE.
+            if sub_tree != 0 {
+                close_submenu(sub_t(sub_tree), sub_box, sub_item, backend);
+            }
+            close_box(mt, cur_title, cur_box, backend);
+            return None;
+        }
     }
 }
 

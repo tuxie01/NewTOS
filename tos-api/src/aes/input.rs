@@ -255,6 +255,18 @@ const BW_ARMED: i32 = -2;
 /// [`ctl_press_take`]; dropped by [`ev_consume`] and [`reinit`].
 static CTL_PRESS: AtomicBool = AtomicBool::new(false);
 
+/// The drop-down track's button wait — the `iasync(MU_BUTTON, buparm)` that
+/// each round of `mn_do`'s `ev_multi` parks on `ctl_pd`'s `c_bsleep` list
+/// when its quick checks found nothing (`aes/gemmnlib.c:356`,
+/// `aes/gemevlib.c:238-239`), completed by [`post_button`] with the first
+/// published transition that satisfies it, exactly like an application's
+/// [`BWAIT`] slot: [`BW_IDLE`] = none, [`BW_ARMED`] = parked, `>= 0` =
+/// completed with that click count. Armed by [`mn_button_arm`], collected by
+/// [`mn_button_take`], taken off by [`mn_button_cancel`] (A127 D1).
+static MN_WAIT: AtomicI32 = AtomicI32::new(BW_IDLE);
+/// The parked track wait's `buparm` (`combine_cms` layout, as [`BWAIT_PARM`]).
+static MN_WAIT_PARM: AtomicU32 = AtomicU32::new(0);
+
 /// EmuTOS `gl_btrue` — the true (physical) button state as `b_click` last saw
 /// it (`aes/geminput.c:144-145`). Equal to [`BUTTON`] except while a
 /// button-delay window is open (the changes inside it are not published until
@@ -320,6 +332,7 @@ pub(super) fn reinit() {
         w.store(BW_IDLE, Ordering::Relaxed);
     }
     CTL_PRESS.store(false, Ordering::Relaxed);
+    MN_WAIT.store(BW_IDLE, Ordering::Relaxed);
     GL_BTRUE.store(0, Ordering::Relaxed);
     GL_BDESIRED.store(0, Ordering::Relaxed);
     GL_BCLICK.store(0, Ordering::Relaxed);
@@ -510,6 +523,25 @@ fn bchange(new: u8, clicks: i16, x: i16, y: i16) {
 /// scheduler's input class, as `evremove` → `azombie` makes the process
 /// runnable.
 fn post_button(new: u8, numclicks: i16) {
+    // A menu-bar track is running (`gl_ctmown`): its `mn_do` wait sits on
+    // `ctl_pd`'s list, which is the owner's list for the whole track — the
+    // track begins with the mouse handed to `ctl_pd` and `gl_ctmown` freezes
+    // it there (`aes/geminput.c:334-335,388-389`; `aes/gemctrl.c:395`). The
+    // wait is completed by the first published transition it accepts,
+    // `downorup(new, e->e_parm)` → `evremove(e, min(numclicks, clicks))`
+    // (`aes/geminput.c:463-483`), so a press and its release published in the
+    // same pump still end the wait on the press (A127 D1). Not gated on
+    // `GL_MOWNER_APP`: NewTOS's inline Control Manager enters the track on
+    // the pointer's position, so the track must see its own transitions even
+    // where `mchange`'s hand-over has not happened yet (A127, Stand D1).
+    if GL_CTMOWN.load(Ordering::Relaxed) && MN_WAIT.load(Ordering::Relaxed) == BW_ARMED {
+        let p = MN_WAIT_PARM.load(Ordering::Relaxed);
+        let bflgclks = (p >> 16) as u16 as i16;
+        if downorup(new, bflgclks, (p >> 8) as u8, p as u8) {
+            let clicks = i16::from(bflgclks as u8);
+            MN_WAIT.store(i32::from(if numclicks > clicks { clicks } else { numclicks }), Ordering::Relaxed);
+        }
+    }
     if !GL_MOWNER_APP.load(Ordering::Relaxed) {
         // The owner is `ctl_pd`. Outside a menu track (whose own `mn_do` waits
         // are the ones parked then, `aes/gemmnlib.c:597`) that is the Control
@@ -862,8 +894,10 @@ pub(super) fn acancel(idx: usize) {
 ///
 /// Those EmuTOS waits block on the *published* `button`, so while a
 /// button-delay window is open they cannot return before it has closed and
-/// published the gesture to the mouse owner of that moment. Ours act on the
-/// raw VDI level as soon as it changes; so a window still open at this point
+/// published the gesture to the mouse owner of that moment. Ours — all but
+/// the menu-bar track, which waits for the published transition like
+/// `mn_do` ([`mn_button_arm`], A127 D1) — act on the raw VDI level as soon
+/// as it changes; so a window still open at this point
 /// is closed here — `b_delay(gl_bdely)`, the same forced close `mchange`
 /// applies (`aes/geminput.c:365-368`) — and its transitions are published
 /// under the current owner (the Control Manager inside a menu track or a
@@ -888,6 +922,62 @@ pub(super) fn ev_consume() {
 /// `ctlmgr`'s `ev_multi` (`aes/gemctrl.c:456-470`).
 pub(super) fn ctl_press_take() -> bool {
     CTL_PRESS.swap(false, Ordering::Relaxed)
+}
+
+/// The button half of one round of `mn_do`'s `ev_multi(…, buparm, …)`
+/// (`aes/gemmnlib.c:356`) at its entry: the quick check on the recorded
+/// state, `(mtrans > 1) && downorup(pr_button, buparm)`, then on the AES
+/// `button`, `downorup(button, buparm)` (`aes/gemevlib.c:188-198`; the same
+/// level test `abutton` makes, `aes/geminput.c:549-551`). `true` = the round
+/// returns `MU_BUTTON` at once and nothing is parked; otherwise the wait is
+/// parked ([`MN_WAIT`]) for [`post_button`] to complete and `false` is
+/// returned. `buparm` is EmuTOS's LONG: the clicks WORD in the high half,
+/// mask and state in the low half (`0x00010101L` = one click, left, down;
+/// `0x00010100L` = one click, left, up — `aes/gemmnlib.c:272,314`).
+///
+/// The quick check is `ctl_pd`'s (`rlr == gl_mowner` in EmuTOS,
+/// `aes/gemevlib.c:185`), and `ctl_pd` owns the mouse for the whole track
+/// there; like the completion in [`post_button`] it is not gated on the
+/// owner here (see there).
+pub(super) fn mn_button_arm(buparm: u32) -> bool {
+    // The previous round's wait was taken off when that round returned
+    // (`acancel`, `aes/gemevlib.c:264`); then `forker()` at this entry
+    // publishes what is pending (`:170`) — here the window countdown.
+    MN_WAIT.store(BW_IDLE, Ordering::Relaxed);
+    b_delay_poll();
+    let bflgclks = (buparm >> 16) as u16 as i16;
+    let (mask, state) = ((buparm >> 8) as u8, buparm as u8);
+    let quick = pending_transition().is_some_and(|(prb, _)| downorup(prb, bflgclks, mask, state))
+        || downorup(BUTTON.load(Ordering::Relaxed), bflgclks, mask, state);
+    if quick {
+        MN_WAIT.store(BW_IDLE, Ordering::Relaxed);
+        return true;
+    }
+    MN_WAIT_PARM.store(buparm, Ordering::Relaxed);
+    MN_WAIT.store(BW_ARMED, Ordering::Relaxed);
+    false
+}
+
+/// Has the parked track wait been completed? `mwait` returning `MU_BUTTON`
+/// (`aes/gemevlib.c:261`). The countdown of an open button-delay window is
+/// brought up to date first — the AES timer tick `mn_do` sleeps through
+/// (`b_delay(1)`, `aes/gemdosif.S:406-408`) — so a press it held back is
+/// published, and completes the wait, once the window has closed. A completed
+/// wait is collected (the slot goes idle); a still-parked one stays.
+pub(super) fn mn_button_take() -> bool {
+    b_delay_poll();
+    if MN_WAIT.load(Ordering::Relaxed) >= 0 {
+        MN_WAIT.store(BW_IDLE, Ordering::Relaxed);
+        return true;
+    }
+    false
+}
+
+/// `acancel(MU_BUTTON)` for the track wait (`aes/gemevlib.c:264`;
+/// `aes/gemasync.c:217-243`): take it off, satisfied or not — the round that
+/// armed it is over.
+pub(super) fn mn_button_cancel() {
+    MN_WAIT.store(BW_IDLE, Ordering::Relaxed);
 }
 
 /// EmuTOS `ev_rets` (`aes/gemevlib.c:42-58`), the mouse half: the pointer

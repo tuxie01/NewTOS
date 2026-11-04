@@ -785,8 +785,10 @@ message.
    clears `gl_ctmown` (`gemctrl.c:410-417`).
 3. **Selection fires on a press or a release, depending on how the button
    already stands when the cursor arrives on the item.** Entering
-   `INITEM_STATE`, `mn_do` computes its wait predicate from the *live* button
-   state: `buparm = (button & 0x0001) ? 0x00010100L : 0x00010101L;`
+   `INITEM_STATE`, `mn_do` computes its wait predicate from the AES's
+   `button` — the state the AES has published (`bchange`,
+   `aes/geminput.c:342`), not the raw mouse byte (point 9):
+   `buparm = (button & 0x0001) ? 0x00010100L : 0x00010101L;`
    (`aes/gemmnlib.c:314`, `CONF_WITH_MENU_EXTENSION` build; the non-extension
    variant mirrors this at `gemmnlib.c:568`). If the button is **up** when the
    item is entered, `mn_do` waits for a **press** to select it; if the button
@@ -894,6 +896,56 @@ message.
    `menu_select` → `do_chg(…, chkdisabled = TRUE)` refuses a DISABLED object
    (`:158-160`): a DISABLED item with a submenu attached is neither hilited
    nor given its submenu, and a press on it is the cancel (`:493`).
+9. **The button reaches the track as an event, not as a sample (Korrektur
+   bei der Umsetzung (A127 D1), 2026-11-04).** Every round of the state loop
+   is one `ev_multi(mnu_flags, …, buparm, …)` with `MU_BUTTON` always among
+   `mnu_flags` (`aes/gemmnlib.c:282,356`). Its button half is the Event
+   Manager's: at the call's entry `forker()` publishes what the interrupt
+   queued (`aes/gemevlib.c:169-170`), then the quick check tries the state
+   recorded before the last transition — `(mtrans > 1) &&
+   downorup(pr_button, buparm)` — and then the published `button`
+   (`:185-198`); with neither, the wait is parked, `iasync(MU_BUTTON,
+   buparm)` (`:238-239`), on `ctl_pd`'s list, and `post_button(gl_mowner =
+   ctl_pd, …)` completes it with the **first published transition it
+   accepts** (`aes/geminput.c:344,463-483`); every return ends in `ev_rets`,
+   `mtrans = 0` (`aes/gemevlib.c:268`, `:42-58`). So a press and its release
+   that arrive between two rounds still end a wait for the press, and a
+   release followed by a new press still ends a wait for the release — the
+   level after them, the same as before, is not what is tested. Per state
+   (the `buparm` each round asks for, `:284-326`, and what its `MU_BUTTON`
+   does, `:369-376`):
+
+   | State | `buparm` of the round | `MU_BUTTON` |
+   |---|---|---|
+   | `START_STATE` | as left: initially `0x00010101L` = one click, left, **down** (`:272`) | `continue` — wait again, no hit-test (`:371-372`) |
+   | `INTITLE_STATE` | as left (`:317-320`) | `buparm ^= 1`, then the hit-test (`:375`) — nothing visible |
+   | `INITEM_STATE` | from `button`: up → `0x00010101L` (press), held → `0x00010100L` (release) (`:314`) | `break` → select `cur_item` (`:373-374,482-500`) |
+   | `OUTSIDE_STATE` | as left (`:293-305`) | `break` → cancel, or select a retained submenu parent (`:437-438,482-511`) |
+   | `SUBMENU_STATE` | as left (`:321-325`) | `break` → select `cur_submenu` (`:494-496`) |
+
+   The button event is handled in the state the round was armed in, before
+   the pointer is hit-tested again (`:369-376` precede `:378-443`).
+   **Button-delay window:** while any process waits for more than one click
+   (`gl_bpend`), a press opens the window instead of being published
+   (`b_click`, `aes/geminput.c:133-140`), and it reaches `mn_do`'s wait only
+   when the window closes and publishes it (`b_delay`, `:155-171`; earlier
+   if the pointer moves more than 2 pixels, `mchange`, `:365-368`) — a
+   selection on the press then waits for the window, a release inside the
+   window is published with it.
+
+   *NewTOS:* `menu::track` arms each round's wait before its `pump_input`
+   (the interrupt + `forker()`), collects it after
+   (`tos-api/src/aes/input.rs:942@mn_button_arm`,
+   `tos-api/src/aes/input.rs:967@mn_button_take`; completion in
+   `post_button`, `tos-api/src/aes/input.rs:525@post_button`), and keeps
+   EmuTOS's `buparm` and per-state actions (`tos-api/src/aes/menu.rs:487@MN_BUPARM_DOWN`).
+   The completion is not gated on `gl_mowner`: NewTOS's inline Control
+   Manager enters the track on the pointer's position, not only after
+   `mchange`'s hand-over, and the track must still see its own events
+   (`TASK/A127.md`, "Stand D1"). Before A127 D1 the track compared the raw
+   level `vdi::mouse_buttons()` once per pass and lost a press and release
+   that fell between two passes (`measurements/measurement-2026-11-04-a127/RUNINFO.TXT`,
+   run C).
 
 **Net effect and the contract it produces.** For the whole bracket from step 1
 through the end of step 5 above, the only process `gl_mowner` ever names is
