@@ -1,0 +1,58 @@
+RUNINFO -- PROC08 recurred on the real Pi 4, crash-walk screen report photographed (2026-11-04)
+
+WHAT
+  The user hit the PROC08 crash during everyday use of the test card and
+  photographed the crash screen (TASK/PROC08 "Stand Schirmbericht").
+  photo/crash-screen.jpg is the user's photo, unchanged.
+
+KERNEL / CARD
+  C:\kernel8.img sha256 6407f17c246d34f57495c7c80a303b25bb47a0d423938aaf371622faf4a491ac
+  (rpi4 release --features crash-walk from c70a3e4b,
+  measurements/measurement-2026-11-04-a128-proc08-card/RUNINFO.TXT);
+  cmdline.txt empty (serial off, memprot default). host_clang of that build:
+  Apple clang version 21.0.0 (clang-2100.4.1.1). optional_missing: not
+  applicable (no image built; card maintained by hand).
+  What the user did before the crash: zView running (menu bar "zView File
+  Edit View Help" on the photo); details to be asked.
+
+TRANSCRIPT OF THE SCREEN (from the photo; leading characters cut off by the
+screen edge are restored from the report format)
+  Panic: Bus Error
+  esr=82000007
+  addr=000000001cb497c sr=20000000 pc=000000001cb497c
+  Memory violation: private memory, execute (translation fault, level 3)
+  X0-3:   0000000000000000 0000000000000000 000000001d9a000 0000000000000000
+  X4-7:   0000000000000000 000000001d7c2e0 0000000000000010 000000000000000f
+  X8-11:  000000000000004b 0000000000000000 0000000000400009 000000001d9801a
+  X12-15: 000000001ce0dae 0000000000000000 0000000000000000 000000001ce9a40
+  X16-19: 000000001d7bf58 000000001d7bb08 0000000000000000 000000001d8bc92
+  X20-23: 0000000000000000 000000001d9a000 000000001d98000 000000001d98000
+  X24-27: 0000000000400009 000000001d8bc92 000000001cf1000 000000001cf1558
+  X28-30: 000000001cf1000 000000001d7c6f0 000000001cb4964
+  USP:    000000001d7c1d0
+  basepage=01c85000
+  text=01c86000 data=01ce6fe0 bss=01cec230
+  Crash at text+0002e97c
+
+  crash-walk slot 2 el0: ttbr0 2f0000 asid 0 = slot 2, exp 2f0000 rec 2f0000 same
+  far 1cb497c s2: L0[0]=2f1003 s2.L0  L1[0]=2f2003 s2.L1  L2[14]=1169003 s2.L2g0
+    L3[180]=20000001cb4743 arena#361 used -> mapped L3 oa=1cb497c  also 0 tpl no
+    AT S1E0R par=80f: FAULT translation L3 fst=07 s=0 ptw=0
+    model: pool yes block 1c85000-1d7d000 mode P own 1c85000 owners 4 inh 0
+    model: holds yes expect 20000001cb4743 shared 0 pend no
+    model: priv need yes has yes short 0 live 7 group 4 temp 0 space 1c85000
+    => model=valid table=valid at=fault table==model yes
+  *** Press any key to continue ***
+  (Hex digit counts of the register lines as they appear on the photo.)
+
+READING (legend: TASK/PROC08 "Was jede Schirmzeile fuer A und B bedeutet")
+  Same fault as run C1 (measurements/measurement-2026-10-31-pitest01-c1/):
+  same pc 1cb497c = zView text+2e97c (ldg_load, first instruction after
+  the Pexec(4) svc), same X30 1cb4964, same basepage 01c85000.
+  Root correct (ttbr0 = slot 2 = expected = recorded). The slot's tables map
+  the page (L3[180] valid, oa = far, EL0-executable), the model agrees
+  (holds yes, expect = descriptor, pend no), but the MMU's own walk
+  (AT S1E0R) faults at level 3 at report time:
+  model=valid table=valid at=fault -> candidate B (the hardware works from
+  stale translation state, not from the tables in memory). Candidate A
+  (model or table maintenance drops the page) is refuted for this instance.
