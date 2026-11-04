@@ -80,11 +80,12 @@ crash-nowait = []
 # walk of the fault address (and of the PC's page) through that slot's tables
 # with the descriptor at every level, an `AT S1E0R` probe of what the MMU
 # answers now, and the memory-protection model's view of the page
-# (`kernel/src/arch/aarch64/crash_walk.rs`). Serial line only, no allocation;
-# the report itself and the crash behaviour are unchanged. Off by default
-# (the module and its hook are compiled out); `cargo xtask build --board rpi4
-# --release --features crash-walk`, run with `serial=on` (combinable with
-# `crash-nowait`).
+# (`kernel/src/arch/aarch64/crash_walk.rs`), and the same diagnosis as a
+# compact block on the screen crash report, after the report text and before
+# the key prompt (readable without `serial=on`). No allocation; the report
+# text and the crash behaviour are unchanged. Off by default (the module and
+# its hook are compiled out); `cargo xtask build --board rpi4 --release
+# --features crash-walk` (combinable with `crash-nowait`).
 crash-walk = ["tos-api/crash-walk"]
 # microSD / FAT / GEMDOS-file self-test build (board-rpi4 / QEMU raspi4b):
 # runs `selftest_emmc::run()` right after the card is mounted at boot -- the

@@ -1,0 +1,10 @@
+run 2026-11-04T08:00:59Z
+kernel    6f4704bf9d34201ae89ea36a2baf513b059d245fce68e56ea3434012bb58f0ea /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/proc08-screen/k-pi.img
+append    ""
+cases     j
+display   1920x1080 (-global bcm2835-fb.xres/yres)
+card      35e047623b783a5e116a3434db29ef03e0990fb3a524a62e2c9e9678f1b91860 (APFS clone of base.img, C:\CWCASE.TXT = "j")
+qemu      screendumps after 45 s and 50 s; stopped
+screen    59385876d1ad68bf7db8eb4cef815da03fa5b2de606f1fdd76c0760eec54a085 s1-j-1080.png
+screen    59385876d1ad68bf7db8eb4cef815da03fa5b2de606f1fdd76c0760eec54a085 s1-j-1080-5s.png
+card      after 35e047623b783a5e116a3434db29ef03e0990fb3a524a62e2c9e9678f1b91860 (the booted clone)

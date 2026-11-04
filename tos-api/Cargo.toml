@@ -29,9 +29,10 @@ aes-trace = []
 gemdos-trace = []
 # Crash diagnosis readers (TASK/PROC08): `bdos::process::mmu::diag` (a
 # checked software walk of a user VA through a slot's tables) and
-# `bdos::process::memprot::diag` (the rights model's view of one page), used
-# by the kernel feature `crash-walk`. Off by default: with this off both
-# modules do not exist. The host tests switch it on through the
+# `bdos::process::memprot::diag` (the rights model's view of one page), and
+# `bdos::process::crash_diag` (the collected diagnosis and its serial and
+# screen renderings), used by the kernel feature `crash-walk`. Off by
+# default: with this off these modules do not exist. The host tests switch it on through the
 # dev-dependency below (`tests/proc08_crash_walk.rs`).
 crash-walk = []
 

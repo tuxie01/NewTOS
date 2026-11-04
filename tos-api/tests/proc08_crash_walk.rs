@@ -274,3 +274,299 @@ fn a_ttbr0_value_maps_back_to_its_slot() {
     assert_eq!(slot_of_root(root | (5u64 << 48)), Some(a.slot), "the ASID is ignored");
     assert_eq!(slot_of_root(0x0123_4000), None);
 }
+
+// ─── The rendered diagnosis: serial lines and the screen block ──────────
+//
+// `bdos::process::crash_diag` collects the readers' answers once and renders
+// them twice. The serial lines must stay those of the first PROC08 run; the
+// screen block must fit the console and carry the same answers.
+
+use tos_api::bdos::process::crash_diag::{
+    self, collect, probe_addresses, write_screen, write_serial, CrashDiag, HwProbe, ProbeDiag, RootOwner,
+};
+use tos_api::bdos::process::memprot::diag::{BlockView, PageView};
+use tos_api::bdos::process::mmu::diag::{Step, Walk};
+use tos_api::bios::crash::{CrashKind, CrashReport};
+use tos_types::ProtMode;
+
+/// The walk of case `d` of the first PROC08 run: slot 1, root 0x2e6000,
+/// its own L0/L1/L2 and the private arena table 454 at L3, entry `l3_index`.
+fn d_walk(va: u64, l3_index: usize, l3_desc: u64, outcome: Outcome) -> Walk {
+    let step = |table_pa, kind, index, desc| Some(Step { table_pa, kind, index, desc });
+    Walk {
+        slot: 1,
+        va,
+        root_pa: 0x2e6000,
+        steps: [
+            step(0x2e6000, TableKind::SlotL0(1), 0, 0x2e7003),
+            step(0x2e7000, TableKind::SlotL1(1), 0, 0x2e8003),
+            step(0x2e8000, TableKind::SlotL2(1, 0), 13, 0x11c6003),
+            step(0x11c6000, TableKind::Arena { idx: 454, used: true }, l3_index, l3_desc),
+        ],
+        outcome,
+        l2_template: Some(0x1006003),
+        l3_also_slots: 0,
+        l3_also_template: false,
+    }
+}
+
+fn d_view(block: Option<BlockView>, holds: bool, expected: u64) -> PageView {
+    PageView {
+        enabled: true,
+        in_pool: true,
+        lists_ok: true,
+        block,
+        live: 0x3,
+        slot_live: true,
+        slot_kva: 0xffff_0000_01a1_a000,
+        space_root: 0x1a1a000,
+        group: 0x2,
+        temp: 0,
+        holds,
+        expected: Some(expected),
+        expected_shared: Some(0),
+        needs_private: Some(true),
+        has_private: true,
+        shortfalls: 0,
+        pending: false,
+    }
+}
+
+/// Case `d` of `measurements/measurement-2026-11-02-proc08-diag/runs/r1-nowait-serial/SERIAL.txt`
+/// (lines 92-106): a data read of a freed pool page (far, not mapped) from
+/// the program's own text page (pc, mapped).
+fn case_d() -> CrashDiag {
+    let far = ProbeDiag {
+        hw: HwProbe { label: "far", va: 0x1a2c000, par: 0x80f },
+        walk: d_walk(0x1a2c000, 44, 0, Outcome::Invalid { level: 3 }),
+        other: None,
+        view: d_view(None, false, 0),
+    };
+    let block = BlockView {
+        start: 0x1a1a000,
+        end: 0x1a2c000,
+        mode: Some(ProtMode::P),
+        inherit: 0,
+        own: 0x1a1a000,
+        further: [0; 4],
+        owners: 0x2,
+    };
+    let pc = ProbeDiag {
+        hw: HwProbe { label: "pc", va: 0x1a1b1b0, par: 0xff00_0000_01a1_bb80 },
+        walk: d_walk(0x1a1b1b0, 27, 0x0020_0000_01a1_b743, Outcome::Leaf { level: 3, oa: 0x1a1b1b0 }),
+        other: None,
+        view: d_view(Some(block), true, 0x0020_0000_01a1_b743),
+    };
+    CrashDiag {
+        slot: 1,
+        el0: true,
+        esr: 0x9200_0007,
+        pc: 0x1a1b1b0,
+        far: Some(0x1a2c000),
+        ttbr0: 0x2e6000,
+        root: RootOwner::Slot(1),
+        expected: 0x2e6000,
+        recorded: 0x2e6000,
+        probes: [Some(far), Some(pc)],
+    }
+}
+
+/// The serial lines of case `d`, verbatim from the run (lines 93-106).
+const CASE_D_SERIAL: &str = "\
+[crashwalk] slot 1 src=el0 esr=0x92000007 pc=0x1a1b1b0 far=0x1a2c000
+[crashwalk] ttbr0=0x00000000002e6000 asid=0 root=slot 1; slot 1 expects 0x2e6000 records 0x2e6000 -> same
+[crashwalk] far va=0x1a2c000 walk slot 1 root 0x2e6000: L0[0]=0x00000000002e7003(s1.L0) L1[0]=0x00000000002e8003(s1.L1) L2[13]=0x00000000011c6003(s1.L2g0) L3[44]=0x0000000000000000(arena#454 used) -> INVALID at L3
+[crashwalk] far l2 template=0x0000000001006003 l3 also named by slots=0x0 template=no
+[crashwalk] far AT S1E0R par=0x000000000000080f: fault fst=0x07 (translation L3) s=0 ptw=0
+[crashwalk] far model slot 1: pool=yes block none
+[crashwalk] far model slot 1: live=0x3 slot_live=yes slot_kva=0xffff000001a1a000 space=0x1a1a000 group=0x2 temp=0x0 holds=no expect=0x0000000000000000 shared=0x0000000000000000 private needed=yes has=yes shortfalls=0 pending=no
+[crashwalk] far summary: model=invalid table=invalid at=fault table==model yes
+[crashwalk] pc va=0x1a1b1b0 walk slot 1 root 0x2e6000: L0[0]=0x00000000002e7003(s1.L0) L1[0]=0x00000000002e8003(s1.L1) L2[13]=0x00000000011c6003(s1.L2g0) L3[27]=0x0020000001a1b743(arena#454 used) -> mapped L3 oa=0x1a1b1b0
+[crashwalk] pc l2 template=0x0000000001006003 l3 also named by slots=0x0 template=no
+[crashwalk] pc AT S1E0R par=0xff00000001a1bb80: ok pa=0x1a1b1b0
+[crashwalk] pc model slot 1: pool=yes block 0x1a1a000-0x1a2c000 mode=P own=0x1a1a000 further=0x0,0x0,0x0,0x0 owners=0x2 inherit=0x0
+[crashwalk] pc model slot 1: live=0x3 slot_live=yes slot_kva=0xffff000001a1a000 space=0x1a1a000 group=0x2 temp=0x0 holds=yes expect=0x0020000001a1b743 shared=0x0000000000000000 private needed=yes has=yes shortfalls=0 pending=no
+[crashwalk] pc summary: model=valid table=valid at=ok table==model yes
+";
+
+#[test]
+fn the_serial_lines_are_those_of_the_first_run() {
+    let mut s = String::new();
+    write_serial(&mut s, &case_d()).unwrap();
+    assert_eq!(s, CASE_D_SERIAL);
+}
+
+#[test]
+fn the_screen_block_carries_the_same_answers_in_short_lines() {
+    let mut s = String::new();
+    write_screen(&mut s, &case_d()).unwrap();
+    let want = "\
+\n\
+crash-walk slot 1 el0: ttbr0 2e6000 asid 0 = slot 1, exp 2e6000 rec 2e6000 same\n\
+far 1a2c000 s1: L0[0]=2e7003 s1.L0  L1[0]=2e8003 s1.L1  L2[13]=11c6003 s1.L2g0\n  \
+L3[44]=0 arena#454 used -> INVALID at L3  also 0 tpl no\n  \
+AT S1E0R par=80f: FAULT translation L3 fst=07 s=0 ptw=0\n  \
+model: pool yes, no block\n  \
+model: holds no expect 0 shared 0 pend no\n  \
+model: priv need yes has yes short 0 live 3 group 2 temp 0 space 1a1a000\n  \
+=> model=invalid table=invalid at=fault table==model yes\n\
+pc 1a1b1b0 s1: L0[0]=2e7003 s1.L0  L1[0]=2e8003 s1.L1  L2[13]=11c6003 s1.L2g0\n  \
+L3[27]=20000001a1b743 arena#454 used -> mapped L3 oa=1a1b1b0  also 0 tpl no\n  \
+AT S1E0R par=ff00000001a1bb80: ok pa=1a1b1b0\n  \
+model: pool yes block 1a1a000-1a2c000 mode P own 1a1a000 owners 2 inh 0\n  \
+model: holds yes expect 20000001a1b743 shared 0 pend no\n  \
+model: priv need yes has yes short 0 live 3 group 2 temp 0 space 1a1a000\n  \
+=> model=valid table=valid at=ok table==model yes\n";
+    assert_eq!(s, want);
+    // A blank line, the header, seven lines per address.
+    assert_eq!(s.lines().count(), 2 + 2 * 7);
+    for l in s.lines() {
+        assert!(l.len() <= 80, "{} columns: {l}", l.len());
+        assert!(l.bytes().all(|b| (0x20..0x7f).contains(&b)), "printable ASCII only: {l:?}");
+    }
+}
+
+#[test]
+fn the_screen_block_shows_a_foreign_root_and_memprot_off() {
+    // TTBR0 holds slot 3's root (the weakly refuted "wrong root" case): a
+    // second walk through slot 3's tables follows, the header says
+    // DIFFERENT. Memory protection off: one model line.
+    let mut d = case_d();
+    d.ttbr0 = 0x2f0000 | (7u64 << 48);
+    d.root = RootOwner::Slot(3);
+    let mut far = d.probes[0].unwrap();
+    let mut other = far.walk;
+    other.slot = 3;
+    other.root_pa = 0x2f0000;
+    far.other = Some(other);
+    far.view.enabled = false;
+    d.probes = [Some(far), None];
+    let mut s = String::new();
+    write_screen(&mut s, &d).unwrap();
+    let lines: Vec<&str> = s.lines().collect();
+    assert_eq!(lines[1], "crash-walk slot 1 el0: ttbr0 2f0000 asid 7 = slot 3, exp 2e6000 rec 2e6000 DIFFERENT");
+    assert!(lines[2].starts_with("far 1a2c000 s1: L0[0]="), "{}", lines[2]);
+    assert!(lines[4].starts_with("far 1a2c000 s3: L0[0]="), "{}", lines[4]);
+    assert_eq!(lines[6], "  AT S1E0R par=80f: FAULT translation L3 fst=07 s=0 ptw=0");
+    assert_eq!(lines[7], "  model: memprot off");
+    assert_eq!(lines[8], "  => model=n/a table=invalid at=fault table==model n/a");
+    assert_eq!(lines.len(), 9);
+    // The serial lines carry the second walk too.
+    let mut ser = String::new();
+    write_serial(&mut ser, &d).unwrap();
+    assert!(ser.contains("root=slot 3; slot 1 expects 0x2e6000 records 0x2e6000 -> DIFFERENT\n"));
+    assert!(ser.contains("[crashwalk] far va=0x1a2c000 walk slot 3 root 0x2f0000:"));
+    assert!(ser.contains("[crashwalk] far model slot 1: memprot off\n"));
+}
+
+#[test]
+fn the_screen_block_names_where_a_short_walk_stopped() {
+    // Case `g` of the run: GiB 2, the walk ends at L2; no L3 step.
+    let mut d = case_d();
+    let mut far = d.probes[0].unwrap();
+    far.hw = HwProbe { label: "far", va: 0x9000_0000, par: 0x80d };
+    far.walk.va = 0x9000_0000;
+    far.walk.steps[1] = Some(Step { table_pa: 0x2e7000, kind: TableKind::SlotL1(1), index: 2, desc: 0x2ea003 });
+    far.walk.steps[2] = Some(Step { table_pa: 0x2ea000, kind: TableKind::SlotL2(1, 2), index: 128, desc: 0 });
+    far.walk.steps[3] = None;
+    far.walk.outcome = Outcome::Invalid { level: 2 };
+    far.walk.l2_template = Some(0);
+    far.view.in_pool = false;
+    far.view.expected = None;
+    far.view.expected_shared = None;
+    d.probes[0] = Some(far);
+    let mut s = String::new();
+    write_screen(&mut s, &d).unwrap();
+    let lines: Vec<&str> = s.lines().collect();
+    assert_eq!(lines[2], "far 90000000 s1: L0[0]=2e7003 s1.L0  L1[2]=2ea003 s1.L1  L2[128]=0 s1.L2g2");
+    assert_eq!(lines[3], "  -> INVALID at L2  also 0 tpl no");
+    assert_eq!(lines[4], "  AT S1E0R par=80d: FAULT translation L2 fst=06 s=0 ptw=0");
+    assert_eq!(lines[5], "  model: pool no, no block");
+    assert_eq!(lines[6], "  model: holds no expect n/a shared n/a pend no");
+    assert_eq!(lines[8], "  => model=n/a table=invalid at=fault table==model n/a");
+}
+
+fn report<'a>(regs: &'a [u64; 31], pc: u64, far: Option<u64>, pstate: u64) -> CrashReport<'a> {
+    CrashReport {
+        kind: CrashKind::BusError,
+        esr: 0x9200_0007,
+        far,
+        pc,
+        pstate,
+        regs,
+        usp: 0,
+        program: None,
+        violation: None,
+    }
+}
+
+#[test]
+fn the_probed_addresses_are_far_and_a_different_pc_page_from_el0() {
+    let regs = [0u64; 31];
+    // Instruction abort: far = pc, one probe.
+    assert_eq!(probe_addresses(&report(&regs, 0x1a2c000, Some(0x1a2c000), 0)), [Some(("far", 0x1a2c000)), None]);
+    // Same page, other offset: one probe.
+    assert_eq!(probe_addresses(&report(&regs, 0x1a2c010, Some(0x1a2cff8), 0)), [Some(("far", 0x1a2cff8)), None]);
+    // Data abort from another page: both.
+    assert_eq!(
+        probe_addresses(&report(&regs, 0x1a1b1b0, Some(0x1a2c000), 0)),
+        [Some(("far", 0x1a2c000)), Some(("pc", 0x1a1b1b0))]
+    );
+    // A kernel user access (EL1h): the PC is the kernel's, not probed.
+    assert_eq!(probe_addresses(&report(&regs, 0xffff_0000_0008_0000, Some(0x1000), 0x5)), [Some(("far", 0x1000)), None]);
+    // No fault address from EL0: the PC alone.
+    assert_eq!(probe_addresses(&report(&regs, 0x1a1b1b0, None, 0)), [None, Some(("pc", 0x1a1b1b0))]);
+}
+
+#[test]
+fn collect_renders_the_readers_answers_once_for_both_outputs() {
+    let _g = lock();
+    let a = Proc::new();
+    let b = Proc::new();
+    let blk = a.alloc(0x1000, MX_TTRAM);
+    let regs = [0u64; 31];
+    let r = report(&regs, blk + 0x10, Some(blk + 0x10), 0);
+    let hw = [Some(HwProbe { label: "far", va: blk + 0x10, par: blk }), None];
+
+    // TTBR0 holds the slot's own root. A host "physical" table address is
+    // the wrapped host address and reaches into bits [63:48] (TTBR0's ASID
+    // field), so the BADDR comparison (`roots_same`) cannot hold on the
+    // host; the ASID and `same`/`DIFFERENT` are covered by the rendering
+    // tests above.
+    let root = mmu::l0_pa_for(a.slot);
+    // SAFETY: under the lock.
+    let d = unsafe { collect(a.slot, &r, root, hw, 0) };
+    assert_eq!(d.root, RootOwner::Slot(a.slot));
+    assert_eq!((d.expected, d.recorded), (root, root));
+    let p = d.probes[0].expect("the far probe");
+    assert_eq!(p.walk, walk(a.slot, blk + 0x10));
+    // SAFETY: under the lock.
+    assert_eq!(p.view, unsafe { page_view(a.slot, blk + 0x10) });
+    assert_eq!(p.other, None);
+    assert_eq!(d.probes[1], None);
+    let s = crash_diag::summary(&p);
+    assert_eq!((s.model, s.table, s.at, s.same), ("valid", "valid", "ok", "yes"));
+    let mut scr = String::new();
+    write_screen(&mut scr, &d).unwrap();
+    assert!(scr.contains(&format!(" = slot {}, exp {root:x} rec {root:x} ", a.slot)), "{scr}");
+    assert!(scr.contains(&format!("-> mapped L3 oa={:x}", blk + 0x10)), "{scr}");
+    assert!(scr.contains("  => model=valid table=valid at=ok table==model yes\n"), "{scr}");
+
+    // TTBR0 holds b's root: a second walk through b's tables, which do not
+    // map a's page.
+    // SAFETY: under the lock.
+    let d = unsafe { collect(a.slot, &r, mmu::l0_pa_for(b.slot), hw, 0) };
+    assert_eq!(d.root, RootOwner::Slot(b.slot));
+    let other = d.probes[0].unwrap().other.expect("b's walk");
+    assert_eq!(other.slot, b.slot);
+    assert_eq!(other.outcome, Outcome::Invalid { level: 3 });
+    // The empty root and a stranger.
+    // SAFETY: under the lock.
+    let d = unsafe { collect(a.slot, &r, 0x0123_4000, hw, 0x0123_4000) };
+    assert_eq!(d.root, RootOwner::Empty);
+    // SAFETY: under the lock.
+    let d = unsafe { collect(a.slot, &r, 0x0123_4000, hw, 0) };
+    assert_eq!(d.root, RootOwner::Unknown);
+    // SAFETY: under the lock.
+    unsafe { assert_eq!(traps::mfree(blk as Long), 0) };
+}

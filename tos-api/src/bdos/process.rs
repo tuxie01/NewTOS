@@ -1445,3 +1445,9 @@ mod fp_context_tests {
         }
     }
 }
+
+// Debug feature `crash-walk` (TASK/PROC08): the crash diagnosis as data and
+// its serial and screen renderings. Declared at the end of the file so that
+// with the feature off nothing above moves (CLAUDE.md "Testing").
+#[cfg(feature = "crash-walk")]
+pub mod crash_diag;

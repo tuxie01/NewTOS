@@ -91,11 +91,13 @@ pub fn report_and_wait(report: &CrashReport<'_>, slot: usize) {
         report.far,
     );
     // Debug feature `crash-walk` (TASK/PROC08): the page-table diagnosis,
-    // serial line only, before anything else runs.
+    // collected before anything else runs; serial now, screen after the text.
     #[cfg(feature = "crash-walk")]
-    super::crash_walk::report(slot, report);
+    let walk = super::crash_walk::report(slot, report);
     let mut w = ConsoleWriter;
     let _ = tos_api::bios::crash::write_report(&mut w, report);
+    #[cfg(feature = "crash-walk")]
+    super::crash_walk::screen(&mut w, &walk);
 
     let Some(h) = tos_api::host::host() else {
         // No console input at all: nothing could answer the prompt.

@@ -1,0 +1,113 @@
+measurement-2026-11-04-proc08-screen -- TASK/PROC08: the crash-walk diagnosis as a block on the SCREEN crash report
+(user decision 2026-11-04: the card runs a crash-walk kernel as its everyday kernel with an empty cmdline.txt, serial
+off; when the crash happens the user photographs the screen). Developer, 2026-11-04. Tree = HEAD 961f08ef (code = 371c50fd)
++ the uncommitted change set below. QEMU only; no hardware, no real card.
+
+RESULT IN ONE LINE: with `crash-walk` on, the screen crash report ends in a 9-line block (16 with a second address)
+between the report text and "*** Press any key to continue ***", rendered from the same collected data as the serial
+lines; it appears with an empty command line (serial off), is complete and legible at 1920x1080 in all five fault
+cases, and the serial lines are unchanged (host test against the 2026-11-02 run, and the serial=on run here); feature
+off = kernel byte-identical to HEAD (rpi4 and qemu-virt, release and dev, locdiff 0 bytes); host tests 1935/0/1; warnings at the baseline.
+
+1 THE CHANGE
+  tos-api/src/bdos/process/crash_diag.rs (new, cfg crash-walk, declared at the end of tos-api/src/bdos/process.rs):
+    CrashDiag (ttbr0, root owner, expected/recorded root, per probe: AT/PAR, walk, walk through the TTBR0 slot if
+    another, page view), probe_addresses, collect (reads only), summary, write_serial (the [crashwalk] lines, moved
+    here from the kernel, text unchanged), write_screen (the block).
+  kernel/src/arch/aarch64/crash_walk.rs: report() reads TTBR0_EL1 and AT S1E0R first (as before), then
+    crash_diag::collect, prints the serial lines through the UART writer, returns the CrashDiag; screen() renders the
+    block into the console writer.
+  kernel/src/arch/aarch64/crash.rs report_and_wait: `let walk = crash_walk::report(..)` before the report text,
+    `crash_walk::screen(&mut w, &walk)` after it, both cfg'd; the prompt follows as before.
+  kernel/Cargo.toml, tos-api/Cargo.toml: feature comments only.
+  tos-api/tests/proc08_crash_walk.rs: +6 tests (serial lines == r1 case d of the 2026-11-02 run byte for byte; screen
+    block golden text for that case, <= 80 columns, printable ASCII; foreign TTBR0 root -> second walk + DIFFERENT;
+    memprot off -> one model line; walk ending at L2; probe_addresses; collect against the real pool/tables = the
+    readers' answers, root owner slot/other/empty/unknown).
+
+2 SCREEN BLOCK (the text of s2-d-1080, from the serial=on run s6 where the console mirrors it, lines 95-109 of
+  runs/s6-d-1080-serial/SERIAL.txt; identical screendump hash to s2):
+
+crash-walk slot 1 el0: ttbr0 2e9000 asid 0 = slot 1, exp 2e9000 rec 2e9000 same
+far 1d8b000 s1: L0[0]=2ea003 s1.L0  L1[0]=2eb003 s1.L1  L2[14]=11c6003 s1.L2g0
+  L3[395]=0 arena#454 used -> INVALID at L3  also 0 tpl no
+  AT S1E0R par=80f: FAULT translation L3 fst=07 s=0 ptw=0
+  model: pool yes, no block
+  model: holds no expect 0 shared 0 pend no
+  model: priv need yes has yes short 0 live 3 group 2 temp 0 space 1d79000
+  => model=invalid table=invalid at=fault table==model yes
+pc 1d7a1b0 s1: L0[0]=2ea003 s1.L0  L1[0]=2eb003 s1.L1  L2[14]=11c6003 s1.L2g0
+  L3[378]=20000001d7a743 arena#454 used -> mapped L3 oa=1d7a1b0  also 0 tpl no
+  AT S1E0R par=ff00000001d7ab80: ok pa=1d7a1b0
+  model: pool yes block 1d79000-1d8b000 mode P own 1d79000 owners 2 inh 0
+  model: holds yes expect 20000001d7a743 shared 0 pend no
+  model: priv need yes has yes short 0 live 3 group 2 temp 0 space 1d79000
+  => model=valid table=valid at=ok table==model yes
+
+  The reading of every line: TASK/PROC08.md "Stand Schirmbericht".
+
+3 FEATURE IDENTITY (measurements/measurement-2026-11-02-proc08-diag/method/feature-identity.sh, called unchanged:
+  base = git archive HEAD, aftr = working tree, same path length, no .git, SOURCE_DATE_EPOCH=1793404800; rpi4 and
+  qemu-virt, release and dev; locdiff of measurements/measurement-2026-10-28-tool08/method/locdiff.py; output in
+  checks/feature-identity.txt):
+  all four pairs aftr == base byte for byte (raw-binary sha256 in checks/feature-identity.txt, equal to the four
+  base/aftr values of the 2026-11-02 run); locdiff "0 differing bytes in 0 words; unexplained: 0" for rpi4-release,
+  rpi4-dev, qemu-virt-release, qemu-virt-dev (checks/locdiff-*.txt). Feature on: rpi4 and qemu-virt, release and dev,
+  build OK.
+  Warnings (aarch64 build and clippy, feature on, both boards; scratch copy of HEAD vs the working tree):
+    before: rustc kernel 93 / tos-api 64, clippy kernel 121 / tos-api 74
+    after:  rustc kernel 93 / tos-api 64, clippy kernel 121 / tos-api 74; none in the touched files
+    (cargo clippy -p tos-api --test proc08_crash_walk: no warning in proc08_crash_walk.rs or crash_diag.rs).
+
+4 KERNEL (rpi4 release, working tree): cargo xtask build --board rpi4 --release --features crash-walk
+  target/aarch64-unknown-none-softfloat/release/kernel8.img
+  sha256 6f4704bf9d34201ae89ea36a2baf513b059d245fce68e56ea3434012bb58f0ea (ELF `kernel` 5720938e3196d547832776ed56df39d249b4f16ef1fc0efa8f7bfff46150e3a8)
+  = the kernel of every run below (a scratch copy k-pi.img, deleted). Copied nowhere. Without crash-nowait: the report
+  waits for a key. A rebuild changes the build stamp and so the sha256.
+
+5 CARD + PROBES
+  method/cwone.c: reads the case letters from C:\CWCASE.TXT, starts C:\CWKID.NAP once per letter (Pexec 0) -- the
+    probe measurements/measurement-2026-11-02-proc08-diag/method/cwkid.c (built from there, not copied; same sha256
+    as in that run, 18afa910...): j jump to a freed pool page, d read it, g read 0x90000000, w write $484, x call $700.
+  method/make-card.sh: sdk/build.sh for both, tools/mkcard.sh with NEWDESK.INF "#R 02 / #Z 01 C:\CWONE.NAP@" and
+    CWCASE.TXT "j" -> ONE base image; card.img.manifest (this directory). CWONE.NAP 150b082b..., CWKID.NAP 18afa910...;
+    image_sha256 875362f9cbda6ef19c6aacc6f1fdc9bb63ad494353babd7a042e329082225d1b.
+  host_clang line of the manifest: host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  optional_missing line of the manifest, verbatim:
+optional_missing none
+  method/run-shot.sh (driven by method/all-runs.sh): per run an APFS clone (cp -c) of the base image, C:\CWCASE.TXT in
+    the clone overwritten with the case (mcopy, partition at LBA 63), QEMU 11.0.2 `-M raspi4b -display none -global
+    bcm2835-fb.xres=W -global bcm2835-fb.yres=H -append "<args>"`, QMP screendump (PNG) after 45 s and again 5 s
+    later, serial to runs/<run>/SERIAL.txt; clone sha256 before/after in runs/<run>/run.txt (after = before in every
+    run: the kernel wrote nothing), clone deleted. Base image deleted after the runs. (The header comment of
+    run-shot.sh was rewrapped after the runs; no code change.)
+
+6 RUNS (runs/<run>/run.txt, screendumps/<run>.png and <run>-5s.png; both dumps of every run have the same sha256,
+  i.e. the crash screen stood still at the prompt)
+  s1-j-1080          "" (serial off; SERIAL.txt 0 bytes), 1920x1080, j: instruction abort, freed page. Report + block
+                     (9 lines) + prompt, all on screen. far only (far = pc): INVALID at L3, AT fst 07, model no block,
+                     summary invalid/invalid/fault.
+  s2-d-1080          "", 1920x1080, d: data abort from the text page. 16-line block (far + pc), all on screen, nothing
+                     scrolled (the program's "CWONE: start" line is still in row 0). pc: mapped L3, AT ok, block =
+                     CWKID's TPA, owners 2, holds yes, expect = table, summary valid/valid/ok.
+  s3-g-1080          "", 1920x1080, g: far 0x90000000 -> "-> INVALID at L2" on its own L3 line, AT fst 06, model pool
+                     no / n/a; pc lines as in s2.
+  s4-w-1080          "", 1920x1080, w: far 0x484 page 0 mapped L3 (s1.L3z, AP RO), AT S1E0R ok (a read is allowed;
+                     the write was the permission fault), model n/a; pc lines.
+  s5-x-1080          "", 1920x1080, x: instruction abort at 0x700, far only: mapped L3, AT ok (esr IFSC 0x0f = UXN).
+  s6-d-1080-serial   "serial=on", 1920x1080, d: the [crashwalk] lines are on the serial line as before (SERIAL.txt
+                     lines 60-73, same form as the 2026-11-02 run), followed by the report and the screen block
+                     mirrored by the console (lines 95-109) with the same values; screendump identical to s2.
+  s7-j-640           "", 640x480 (QEMU's default, 80x30): j fits exactly -- "Panic: Bus Error" in row 1, prompt in
+                     the last row.
+  s8-d-640           "", 640x480: the 16-line block does NOT fit with the report at 80x30: the top 7 report lines
+                     (Panic .. X0-3) scroll off. Not the target (the Pi runs 1920x1080, 240x67); recorded as a limit.
+
+7 HOST
+  cargo xtask test (full): 186 result lines, 1935 passed, 0 failed, 1 ignored, exit 0 (2026-11-02: 1929; +6 new
+  tests in tos-api/tests/proc08_crash_walk.rs, now 13).
+
+NOT COVERED: the real Pi 4 (photo legibility on the user's monitor); a case "table valid, hardware fault" (candidate B)
+-- QEMU models no A72 TLB or walk cache; a crash with another slot's root in TTBR0 (second walk line pair) -- host-
+tested only; the uaccess path (src el1-uaccess) -- same hook, not provoked; qemu-virt boot of the feature kernel
+(built only); a photo instead of a screendump.
