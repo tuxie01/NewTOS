@@ -1,0 +1,26 @@
+RUNINFO -- card kernel with A128 (file selector slider + wheel) and the crash-walk screen report (2026-11-04)
+
+WHAT
+  User 2026-11-04: put the current kernel on the test card so the A128
+  slider/wheel can be tried in everyday use (TASK/A128 step 3, real Pi in the
+  tester scenario), keeping the PROC08 setup: crash-walk kernel, serial off,
+  photo of the crash screen if PROC08 recurs (TASK/PROC08 "Stand Schirmbericht").
+
+SOURCE STATE
+  commit c70a3e4b (clean tree before this run directory)
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  kernel: kernels/kernel8.img (gitignored), cargo xtask build --board rpi4
+    --release --features crash-walk; build stamp "2026-11-04 (c70a3e4b)"
+    sha256 6407f17c246d34f57495c7c80a303b25bb47a0d423938aaf371622faf4a491ac
+  optional_missing: not applicable (no image was built; one file copied by hand)
+
+CARD (disk4s1 = BOOT = C:)
+  Before: kernel8.img 89a5546b30ce2e09... (measurements/measurement-2026-11-04-proc08-card/),
+    cmdline.txt = 0x0a.
+  Written by hand on the user's word (cp -X, no script, no backup; the
+  replaced kernel is reproducible from 5abcc20c):
+    kernels/kernel8.img -> C:\kernel8.img
+  Read back after diskutil unmount force + mount disk4s1:
+    kernel8.img 6407f17c246d34f5...; cmdline.txt = 0x0a (unchanged).
+  Unchanged: kernela.img e0fe680b... (release fallback), everything else; the
+    two old ._ files on C: (._cmdline.txt, ._kernel8.img, dated 2026-10-31).
