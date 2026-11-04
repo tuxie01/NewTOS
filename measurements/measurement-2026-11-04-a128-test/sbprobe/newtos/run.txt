@@ -1,0 +1,7 @@
+sbprobe run, side newtos (2026-11-04T12:32:16Z)
+tree      df2c7501360d39db33d2076e1c34115b9a73b736 0 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    SBPROBE.PRG 66c03f8d497490bbf769471c2aef6d65a557e1e81886656f3c20797d75ced27d SBPROBE.NAP b260327c3589bc7729fac6c73a78521be814432cbba6fbaa87e8846e65d8823c
+kernel    5408a42d31d47025b793581edc35dbe01f5a85a6ddfe23b46378f39e9f1a629b /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/head-rpi4.img
+card      df9a390b1cef7b8610bab70b31224f53ccc2e0d26ca55c75b53d89b56d46cc42 (tools/mkcard.sh, C:\SBPROBE.NAP, #Z autorun)
+qemu      done
+card      after f22e8754d9eb13b2d87205585c2831d775e7515cb068ead63eb0fececb455542 (the booted clone)

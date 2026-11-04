@@ -1,0 +1,24 @@
+measurement-2026-11-04-a128-test -- independent verification of df2c7501 (TASK/A128) against base bcffca60
+Tester, 2026-11-04. QEMU only (raspi4b + virt) + pinned Hatari oracle. No real Pi, no card, no product edits, no commit.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+Image manifests: sd.img.manifest (tools/make-sd-image.sh, boot compare) and card.img.manifest (mkcard.sh, scenario):
+  optional_missing none   (both; sbprobe/newtos/card.img.manifest too)
+HOW / RESULT
+ 1 cargo xtask test: 1952 passed / 0 failed / 1 ignored (serial/cargo-xtask-test.log). Warnings: cargo check --tests
+   and cargo clippy (tos-api, tos-types) on a git-archive copy of base vs head: warning sets identical
+   (serial/warnings-*, clippy-*); kernel release builds both boards: 159 warning lines each, base = head.
+ 2 Fresh release builds per board (head in repo, base in scratch copy): rpi4 + qemu-virt all exit 0.
+   raspi4b boot (sd.img, 20 s/40 s): serial base vs head differ only in kernel size/PD addresses; "desktop up (1 drives)",
+   no exception/panic; desktop screendumps PNG-identical (pixel diff none) at both times. virt (q-wheel.steps, Options ->
+   Read .INF -> fsel_exinput, 10 shots): base vs head pixel-identical in all 10; "desktop up (0 drives)".
+ 3 Developer scenario reproduced: method/build-kernel.sh (scratch tree) gives kernel sha da0dc66f... = the developer's
+   kernel-main.img (same source + instrumentation). run.sh + s-main.script on raspi4b: serial/main.log [a128] lines equal
+   the developer's (page 9, drag value 880 / delta 9, wheel counted/dropped, summed take of 3, selection cleared).
+   Screendumps main-16..55 viewed: pages F01-09 -> F10-18; mid-drag outline with thumb unmoved; list F19-27 after release;
+   wheel up 3 -> F16-24; outside the list no change; track wheel -> F18-26; click selects F21; arrow clears highlight, field keeps F21;
+   last-row detent no move; cancel returns to desktop. virt: wheel path covered by the head/base identity run only
+   (no drive on virt -> empty list; no [a128] trace kernel built for virt here).
+ 4 tosdump/probes/run-sbprobe.sh emutos tt / newtos: diff of non-I lines IDENTICAL, 13/13 C-lines (sbprobe/).
+ 5 gemoblib.c:313-336 ob_actxywh grows FL3DOBJ by ADJ3DSTD (+ADJ3DOUT, shadow); gemfslib.c:777 hit-tests FSVELEV with it;
+   object.rs ob_actxywh_t implements this, fsel.rs slider_click gets ob_actxywh_t(t, FSVELEV); host test thumb_actxywh_... passes.
+Hashes: serial/sha256.txt. Scratch images deleted.
