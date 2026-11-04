@@ -1,0 +1,24 @@
+measurement-2026-11-04-a127-d1-test -- independent Tester run of commit bae52dbd (A127 D1), base 4d44a616
+==========================================================================================================
+Tester, 2026-11-04. QEMU 11.0.2 only (raspi4b headless -append serial=on + scripted IKBD injector; virt xHCI/usb-mouse over QMP).
+No real Pi, no card, no product-code change, nothing committed. host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1).
+Head and base were built from `git archive` copies in the session scratchpad (head, base; pristine kernel files in head-src, base-src).
+The temporary dbg patch (method/dbg-patch.py: hz_200 + result of menu::track printed by pump_input) exists ONLY in those scratch copies.
+
+IMAGES (manifests copied; per run an APFS clone, cp -c, deleted after; sha256 after: serial/run*.img-after.sha256)
+  base.img.manifest  tools/mkcard.sh + A127 NEWDESK-W.INF, 128 MiB      optional_missing none
+  qed.img.manifest   tools/mkcard.sh + method/qed.INF (#Z autorun C:\APPS\QED\QED.NAP) + sdk/apps/qed/build/QED.NAP, qed.rsc
+                     (as found in the tree, sha256 in the manifest)       optional_missing none
+
+1 HOST TESTS  analysis/hosttest-{1,2,3}.txt: `cargo xtask test` x3 on the repo tree at bae52dbd: 1974 passed / 0 failed / 1 ignored each time,
+  127 `^warning` lines each. Base: analysis/base-hosttest-scratch.txt (scratch copy of base lacks .git/references, so 9 xtask doc_check/rsc
+  tests fail there for that reason; tos-api+tos-types part = 1961+9 failures-of-xtask => base tos-api total 1970 consistent), 127 warning lines.
+2 BUILDS  analysis/build-head-{rpi4,qemu-virt}.txt: `cargo xtask build --board <b> --release`, target removed before each board: both exit 0.
+3 QEMU    method/run-test.sh, run-virt-test.sh (call the A127 scripts in place). Head: runC (first same-step click opens "Name of new folder:"
+  at wall 25 s; base control runC-base: dialog only at 33 s = the 4th click), runA (dialog after one click), runB (8 distinct states, identical to
+  base and to the developer's), virt qE/qF (byte-identical to developer's, EmuCON starts on the first 10 ms click; no stuck highlight).
+4 REGRESSION  head vs base, same script, same card: method/gen-r1.py -> r1.script (desktop: Desk/View/Options/File hover, click-select, drag-release
+  on an item, click outside = cancel, double-click on an icon, click after it), r2.script (dbl-click then File>New folder at +290 ms and +30 ms,
+  dialog Cancel, ^N), q2.script (QED: click-select, drag-release, cancel, ^N). Pixel md5 of every screendump equals base except one transitional
+  r1 shot (r1-head-34 menu still open for the 210 ms window; head-36 equal to base); all end states equal.
+  Delay (dbg print, hz_200 = 5 ms): press -> track end head +40..42 ticks (200-210 ms), base 0-1; release (drag-select) 0 on both.
