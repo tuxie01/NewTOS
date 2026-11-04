@@ -18,8 +18,8 @@ darauf, das du noch brauchst.
 
 - Raspberry Pi 4 Model B (RAM-Groesse bitte im Feedback angeben)
 - Monitor an HDMI 0 (die Buchse neben dem USB-C-Strom), Full HD
-TODO-REL07: USB-Eingabe: Funkempfaenger mit der Maus auf dem zweiten Interface gehen seit 0.7 (USB01 F3, GitHub #3) - hier erwaehnen?
-- USB-Tastatur und USB-Maus (deutsche oder US-Belegung)
+- USB-Tastatur und USB-Maus (deutsche oder US-Belegung); Funk-Sets mit
+  einem USB-Empfaenger fuer Tastatur und Maus gehen auch
 - eine microSD-Karte, die du komplett loeschen darfst (2 GB reichen)
 - ein Netzteil fuer den Pi 4
 
@@ -87,9 +87,7 @@ Fuer eine US-Tastatur KEYBOARD.KBD von der Karte loeschen.
     APPS\ZVIEW\ZVIEW.NAP            zView (Bildbetrachter, 10 Formate)
     APPS\DOOM\DOOM.NAP              Doom (Shareware-Episode)
     APPS\COREMARK\CORE.NCP          CoreMark (CPU-Benchmark, Textprogramm)
-    APPS\BALL\BALL.NAP              Ball (Grafik-Demo)
-TODO-REL07: HypView ist in 0.7 nicht mehr neu - "neu" streichen.
-    APPS\HYPVIEW\HYP_VIEW.NAP       HypView (Hypertext-Betrachter, neu)
+    APPS\HYPVIEW\HYP_VIEW.NAP       HypView (Hypertext-Betrachter)
 
 Die Hilfetexte von QED, zView und TeraDesk liegen als .HYP-Datei im
 jeweiligen Programmordner (z. B. APPS\QED\QED.HYP) und lassen sich mit
@@ -101,68 +99,74 @@ Programmendungen: .NAP = GEM-Programm, .NCP = Textprogramm,
 die laufen in dieser Version noch NICHT.
 
 
-TODO-REL07: davor "Neu in 0.7" einfuegen (siehe TASK/REL07 Anlass); entscheiden, ob "Neu in 0.6.1" und "Neu in 0.6" bleiben, schrumpfen oder entfallen.
-4. Neu in 0.6.1
----------------
+4. Neu in 0.7
+-------------
 
-- Fehler behoben (GitHub #1): Ein Popup in einem Accessory-Dialog liess
-  das Fenster dahinter ueber den Dialog zeichnen. Bildschirmsperre und
-  Mausklicks verhalten sich jetzt wie bei EmuTOS.
-- Fehler behoben: Eine geoeffnete Datei umzubenennen konnte ihren Inhalt
-  verlieren.
-- Eine geoeffnete Datei zu loeschen verhaelt sich jetzt wie bei EmuTOS.
-- Neu: HypView, dazu die Hilfetexte von QED, zView und TeraDesk.
-  Bilder in Hypertexten und Verweise in andere Dateien gehen noch nicht.
-- Fuer Entwickler: SDK mit Anleitung zum Portieren eigener Programme
-  (im Quelltext unter docs/sdk/).
+- Absturz behoben: zView (und jedes Programm, das Hilfsmodule startet)
+  konnte direkt nach der Rueckkehr aus einem Modul abstuerzen -
+  "Memory violation ... execute (translation fault, level 3)". Die
+  Ursache lag in der Seitentabellen-Pflege des Kerns auf der echten Pi.
+  Hier 60 zView-Starts hintereinander ohne Absturz; falls er bei dir
+  trotzdem auftritt, bitte ein Foto schicken (siehe 5.).
+- Dateiauswahl: Der Schieber geht (in die Leiste klicken blaettert,
+  Schieber ziehen), und das Mausrad scrollt die Liste (GitHub #9).
+- USB: Funkempfaenger fuer Tastatur und Maus (z. B. Logitech Unifying,
+  Rii X8, Cherry DW 9000, MX Ergo) liefern jetzt eine funktionierende
+  Maus (GitHub #3). Eine Grenze, durch die bei groesseren USB-Aufbauten
+  (Hubs mit mehreren Geraeten) Geraete fehlen konnten, ist weg.
+- Ein Programm, das auf Adresse 0 zugreift, endet jetzt wie auf dem
+  Atari mit einem Busfehler, statt still weiterzulaufen; NewTOS selbst
+  laeuft weiter.
+- Textprogramme: VT52-Bildschirmsteuerung (Cursor, Loeschen, Invers)
+  funktioniert.
+- Ohne Uhr mit Batterie beginnt das Datum beim Baudatum des Kerns statt
+  1980.
+- Viele kleinere Korrekturen, gemessen an EmuTOS (BIOS, XBIOS, GEMDOS,
+  AES), z. B. das Archiv-Bit nach dem Schreiben einer Datei, die
+  Neuanmeldung eines Laufwerks nach Kartenwechsel, Fenstersperre und
+  Menue-Nachrichten.
+- TeraDesk: keine Overscan-Einstellung mehr (keine Atari-Hardware).
+- Die Ball-Demo ist nicht mehr dabei.
 
-
-Neu in 0.6 (seit 0.5, Atari-Treffen, Oktober 2026)
---------------------------------------------------
-
-- Der Desktop laeuft als normales Programm; faellt er aus, startet die
-  Konsole (EmuCON) statt eines Absturzes.
-- Accessories haben eigene Kennungen (ap_id 2, 3, ...) und koennen mit
-  Programmen Nachrichten tauschen; Timer und Nachrichten wecken Programme
-  und Accessories jetzt richtig.
-- Neustart: Ctrl+Alt+Del (warm) und Ctrl+Alt+rechte Shift+Del (kalt)
-  starten den Pi neu. TeraDesk "Reboot" funktioniert.
-- Rechte und linke Shift-Taste werden getrennt erkannt.
-- Jedes Programm hat sein eigenes aktuelles Laufwerk und Verzeichnis.
-- 75 gleichzeitig offene Dateien (vorher 16).
-- Ausgabeumlenkung fuer Textprogramme (">" und "<").
-- Hintergrund-Dialog mit Vorschau wie EmuTOS.
-- Viele Korrekturen im Desktop (Markierungen, Neuzeichnen, Ziehen auf
-  Verknuepfungen).
+Fruehere Versionen: siehe https://github.com/tuxie01/NewTOS/releases
 
 
 5. Bekannte Einschraenkungen
 ----------------------------
 
-TODO-REL07: jede Einschraenkung unten gegen 0.7 pruefen (noch wahr? neue, z. B. Rad der Kabelmaeuse, USB03 / GitHub #8).
 - Keine 68000-Programme (.PRG/.TOS/.TTP/.ACC) — nur fuer NewTOS neu
   uebersetzte Programme laufen.
 - Nur ein Programm gleichzeitig (plus Desktop und Accessories), wie
   beim Atari ohne MiNT.
-- Kein Ton, kein Netzwerk, keine Uhr mit Batterie (Datum/Uhrzeit beim
-  Start stammen vom Kernel-File).
+- Kein Ton, kein Netzwerk, keine Uhr mit Batterie (nach dem Einschalten
+  beginnt das Datum beim Baudatum des Kerns).
 - Nur FAT16; nur Raspberry Pi 4.
 - Drucken und serielle Schnittstelle fehlen.
 - "Shutdown" in TeraDesk haelt den Pi absichtlich an (wie das Original):
   danach Strom aus und wieder an.
 - Ein Programm, das in einer Endlosschleife haengt, laesst sich nicht
   per Ctrl+Alt+Del beenden — dann Strom aus und wieder an.
-TODO-REL07: der Absturzbericht von 0.7 traegt einen Diagnoseblock (crash-walk) - erwaehnen und um ein Foto des ganzen Bildschirms bitten.
+- Mausrad mancher Kabelmaeuse (Logitech B100, Raspberry-Pi-Maus): scrollt
+  noch nicht; die mittlere Taste wird noch nicht genutzt (GitHub #8).
+- Menues: Ein Tester muss Menueeintraege mehrmals anklicken und sieht die
+  schwarze Markierung stehen bleiben; wir koennen es noch nicht
+  nachstellen - ein kurzes Video hilft.
+- Doom kann im Menue haengen bleiben, wenn das Accessory X-Shot
+  installiert ist.
 - Stuerzt ein Programm ab, erscheint ein Absturzbericht; nach einer
-  Taste geht es zurueck zum Desktop. Davon bitte ein Foto machen!
+  Taste geht es zurueck zum Desktop. In 0.7 endet der Bericht mit einem
+  Diagnoseblock (Zeilen mit "crash-walk", "model" und "ladder"). Bitte
+  ein Foto vom GANZEN Bildschirm machen, bevor du eine Taste drueckst!
 
 
 6. Rueckmeldung
 ---------------
 
-Einfach ausprobieren (Anregungen in TESTANLEITUNG.TXT) und FEEDBACK.TXT
-ausfuellen: als Antwort an die Mailingliste oder als Issue auf GitHub.
-Jede Rueckmeldung hilft, auch "alles lief".
+Einfach ausprobieren (Anregungen in TESTANLEITUNG.TXT) und auf GitHub
+melden: https://github.com/tuxie01/NewTOS/issues -> New issue -> Bug
+report (Deutsch oder Englisch). FEEDBACK.TXT nennt, was uns hilft. Fotos
+von Absturzberichten bitte anhaengen. Jede Rueckmeldung hilft, auch
+"alles lief".
 
 
 7. Lizenz und Quellen

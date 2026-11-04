@@ -4,9 +4,8 @@ NewTOS 0.7 - Feedback
 (Deutsch: siehe FEEDBACK.TXT)
 
 Please fill in and send as a GitHub issue
-(https://github.com/tuxie01/NewTOS/issues) or as a reply on the mailing
-list. Photos of the screen are welcome as attachments. Leave out what you
-don't know.
+(https://github.com/tuxie01/NewTOS/issues -> New issue). Photos of the
+screen are welcome as attachments. Leave out what you don't know.
 
 
 1. Your setup

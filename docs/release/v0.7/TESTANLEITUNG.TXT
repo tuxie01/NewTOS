@@ -10,20 +10,29 @@ Ein paar Anregungen, falls du nicht weisst, wo du anfangen sollst:
 - Mit dem Desktop arbeiten: Fenster, Ordner, Dateien kopieren, umbenennen,
   loeschen, Einstellungen, "Desktop sichern".
 - Die Programme ausprobieren: QED (Texte schreiben), zView (eigene Bilder
-  ansehen), Doom, TeraDesk, CoreMark, Ball, HypView (QED.HYP oeffnen).
+  ansehen), Doom, TeraDesk, CoreMark, HypView (QED.HYP oeffnen).
 - Das Accessory im Desk-Menue oeffnen, waehrend etwas anderes laeuft.
 - Neustart mit Ctrl+Alt+Del.
 - Alles, was dir vom echten Atari vertraut ist: sieht es gleich aus,
   verhaelt es sich gleich?
 
-TODO-REL07: Testschwerpunkte von 0.7 ergaenzen (Dateiauswahl mit Schieber und Mausrad, Funkempfaenger, Menueleisten-Klicks fuer A127).
+Neu in 0.7, bitte ausprobieren:
+
+- Dateiauswahl (z. B. zView "Oeffnen"): Schieber (in die Leiste klicken,
+  ziehen) und Mausrad in einem Ordner mit vielen Dateien.
+- Funk-Sets aus Tastatur und Maus mit einem USB-Empfaenger.
+- zView mehrmals hintereinander starten, auch direkt nach dem Einschalten.
+- Menues: reagiert jeder Eintrag auf den ersten Klick? Wenn nicht, hilft
+  ein kurzes Video sehr.
+
 Was uns besonders interessiert:
 
-TODO-REL07: der Absturzbericht von 0.7 hat unter den Registern einen Diagnoseblock - Beschreibung anpassen.
-- Absturzbericht (Text mit "pc=" und Registern): bitte ein FOTO machen,
-  dann eine Taste druecken.
+- Absturzbericht (Text mit "pc=", Registern und einem Diagnoseblock am
+  Ende): bitte ein FOTO vom ganzen Bildschirm machen, dann eine Taste
+  druecken.
 - Haenger: was hast du kurz vorher gemacht?
 - Alles, was anders aussieht oder sich anders anfuehlt als auf einem
   Atari mit TOS 4 / EmuTOS — auch Kleinigkeiten.
 
-Rueckmeldung mit FEEDBACK.TXT an die Mailingliste. Danke!
+Rueckmeldung als Issue auf GitHub (https://github.com/tuxie01/NewTOS/issues
+-> New issue -> Bug report); FEEDBACK.TXT nennt, was uns hilft. Danke!

@@ -1,9 +1,9 @@
 NewTOS 0.7 — Rueckmeldung
 =========================
 
-Bitte ausfuellen und als Antwort an die Mailingliste schicken (Text
-direkt in die Mail kopieren genuegt). Fotos vom Bildschirm gern als
-Anhang. Was du nicht weisst, einfach leer lassen.
+Bitte ausfuellen und als Issue auf GitHub schicken
+(https://github.com/tuxie01/NewTOS/issues -> New issue). Fotos vom
+Bildschirm gern als Anhang. Was du nicht weisst, einfach leer lassen.
 
 
 1. Dein Aufbau

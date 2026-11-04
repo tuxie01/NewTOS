@@ -17,8 +17,8 @@ daily use. Please use a spare SD card with nothing on it you still need.
 
 - Raspberry Pi 4 Model B (please tell us its RAM size in your feedback)
 - A monitor on HDMI 0 (the socket next to the USB-C power), Full HD
-TODO-REL07: USB input: wireless receivers with the mouse on a second interface work since 0.7 (USB01 F3, GitHub #3) - mention here?
-- A USB keyboard and a USB mouse (German or US layout)
+- A USB keyboard and a USB mouse (German or US layout); wireless sets
+  with one USB receiver for keyboard and mouse work too
 - A microSD card you may wipe completely (2 GB is enough)
 - A power supply for the Pi 4
 
@@ -86,9 +86,7 @@ keyboard, delete KEYBOARD.KBD from the card.
     APPS\ZVIEW\ZVIEW.NAP            zView (image viewer, 10 formats)
     APPS\DOOM\DOOM.NAP              Doom (shareware episode)
     APPS\COREMARK\CORE.NCP          CoreMark (CPU benchmark, console)
-    APPS\BALL\BALL.NAP              Ball (graphics demo)
-TODO-REL07: HypView is not new any more in 0.7 - drop "new".
-    APPS\HYPVIEW\HYP_VIEW.NAP       HypView (hypertext viewer, new)
+    APPS\HYPVIEW\HYP_VIEW.NAP       HypView (hypertext viewer)
 
 The help texts of QED, zView and TeraDesk are .HYP files in each
 program's folder (e.g. APPS\QED\QED.HYP) and open in HypView.
@@ -99,67 +97,67 @@ console program taking parameters, .NAC = accessory. The Atari extensions
 in this release.
 
 
-TODO-REL07: insert "New in 0.7" before this section (see TASK/REL07 Anlass); decide whether "New in 0.6.1" and "New in 0.6" stay, shrink or go.
-4. New in 0.6.1
----------------
+4. New in 0.7
+-------------
 
-- Bug fixed (GitHub #1): a popup in an accessory dialog let the window
-  behind it draw over the dialog. Screen locking and mouse clicks now
-  behave as in EmuTOS.
-- Bug fixed: renaming an open file could lose its contents.
-- Deleting an open file now behaves as in EmuTOS.
-- New: HypView, with the help texts of QED, zView and TeraDesk. Pictures
-  in hypertexts and links into other files do not work yet.
-- For developers: an SDK with a guide to porting your own programs
-  (in the sources under docs/sdk/).
+- Crash fixed: zView (and any program that starts helper modules) could
+  crash right after a module returned - "Memory violation ... execute
+  (translation fault, level 3)". The cause was in the kernel's page-table
+  handling on the real Pi. 60 zView starts in a row without a crash here;
+  if you still see it, please send a photo (see 5.).
+- File selector: the slider works (click into the bar to page, drag the
+  slider), and the mouse wheel scrolls the list (GitHub #9).
+- USB: wireless receivers that carry keyboard and mouse (e.g. Logitech
+  Unifying, Rii X8, Cherry DW 9000, MX Ergo) now give a working mouse
+  (GitHub #3). A limit that could drop devices in larger USB setups
+  (hubs with several devices) is gone.
+- A program that touches address 0 now ends with a bus error as on an
+  Atari, instead of silently running on; NewTOS itself keeps running.
+- Console programs: VT52 screen control (cursor, clear, inverse) works.
+- Without a battery clock the date starts at the build date of the
+  kernel instead of 1980.
+- Many smaller corrections measured against EmuTOS (BIOS, XBIOS, GEMDOS,
+  AES), e.g. the archive bit after writing a file, drive re-login after a
+  card change, window locking and menu messages.
+- TeraDesk: no more overscan setting (no Atari hardware).
+- The Ball demo is no longer included.
 
-
-New in 0.6 (since 0.5, Atari meeting, October 2026)
----------------------------------------------------
-
-- The desktop runs as an ordinary program; if it fails, the console
-  (EmuCON) starts instead of a crash.
-- Accessories have their own ids (ap_id 2, 3, ...) and can exchange
-  messages with programs; timers and messages now wake programs and
-  accessories correctly.
-- Restart: Ctrl+Alt+Del (warm) and Ctrl+Alt+right Shift+Del (cold) reboot
-  the Pi. TeraDesk "Reboot" works.
-- Left and right Shift are told apart.
-- Every program has its own current drive and directory.
-- 75 files open at once (was 16).
-- Output redirection for console programs (">" and "<"); Ctrl-S/Ctrl-Q
-  pause the console output.
-- Background dialog with preview, as in EmuTOS.
-- Many desktop fixes (selection, redraw, dropping onto shortcuts).
+Earlier releases: see https://github.com/tuxie01/NewTOS/releases
 
 
 5. Known limitations
 --------------------
 
-TODO-REL07: check every limitation below against 0.7 (still true? new ones, e.g. the wheel of wired mice, USB03 / GitHub #8).
 - No 68000 programs (.PRG/.TOS/.TTP/.ACC) - only programs recompiled for
   NewTOS run.
 - One program at a time (plus desktop and accessories), like an Atari
   without MiNT.
-- No sound, no network, no battery clock (date/time at boot come from the
-  kernel file).
+- No sound, no network, no battery clock (after switching on, the date
+  starts at the kernel's build date).
 - FAT16 only; Raspberry Pi 4 only.
 - No printing, no serial port.
 - "Shutdown" in TeraDesk halts the Pi on purpose (like the original):
   switch the power off and on afterwards.
 - A program stuck in an endless loop cannot be ended with Ctrl+Alt+Del -
   switch the power off and on.
-TODO-REL07: the 0.7 crash report carries a diagnosis block (crash-walk) - say so and ask for a photo of the whole screen.
+- Mouse wheel of some wired mice (Logitech B100, Raspberry Pi mouse):
+  does not scroll yet; the middle button is not used yet (GitHub #8).
+- Menus: one tester needs several clicks on a menu entry and sees the
+  black highlight stay; we cannot reproduce it yet - a short video helps.
+- Doom can freeze in its menu when the X-Shot accessory is installed.
 - When a program crashes, a crash report appears; a key takes you back
-  to the desktop. Please take a photo of it!
+  to the desktop. In 0.7 the report ends with a diagnosis block (lines
+  starting with "crash-walk", "model" and "ladder"). Please take a photo
+  of the WHOLE screen before pressing a key!
 
 
 6. Feedback
 -----------
 
-Just try it (ideas in TESTING.TXT) and fill in FEEDBACK-EN.TXT: as an issue
-on GitHub (https://github.com/tuxie01/NewTOS/issues) or as a reply on the
-mailing list. Every report helps, including "everything worked".
+Just try it (ideas in TESTING.TXT) and report on GitHub:
+https://github.com/tuxie01/NewTOS/issues -> New issue -> Bug report
+(English or German). FEEDBACK-EN.TXT lists what helps us. Attach photos of
+crash reports. Every report helps, including "everything worked".
 
 
 7. Licence and sources
