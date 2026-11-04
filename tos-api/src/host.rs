@@ -360,7 +360,7 @@ pub trait Host: Sync {
     }
 
     /// The OS name and version as the boot screen prints it
-    /// (`"NewTOS 0.6.1"`), or `None` (hostless). `Ssystem(S_NEWTOS_KVERSION)`
+    /// (`"NewTOS 0.7"`), or `None` (hostless). `Ssystem(S_NEWTOS_KVERSION)`
     /// appends the build stamp ([`crate::build::BUILD_STAMP`]).
     fn os_version(&self) -> Option<&'static str> {
         None

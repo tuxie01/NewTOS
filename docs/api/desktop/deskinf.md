@@ -1290,7 +1290,7 @@ rows 3, 6, 8 and 13 empty, and row 15 as the gap above the OK button):
 ```
                     - NewTOS -
 
-        Version    NewTOS 0.6.1
+        Version    NewTOS 0.7
         Machine    Raspberry Pi 4 (BCM2711)
 
      NewTOS is an independent project -
@@ -1317,7 +1317,12 @@ Everything but the `Version`/`Machine` pair block is centred; the pair block is
 notice stay in `crate::initinfo` because the **boot
 screen prints them too** — that is EmuTOS's own arrangement, `desk_xlate_fix`
 pointing `DEVERSN->ob_spec` at the BIOS `version[]` the boot screen prints
-(`deskmain.c:1880`). The six credit lines are **local to the dialog**, for the
+(`deskmain.c:1880`). *(Superseded twice: since DESK43 U4 the desktop keeps
+same-text copies of machine name and notice, see `deskmain.md` "The tree";
+since REL07 (2026-11-04) the version has one source, the root `Cargo.toml`'s
+workspace version, and the About box reads it from the running kernel through
+`Ssystem(S_NEWTOS_KVERSION)` — `programs/desktop/src/inf.rs` `kernel_version_line`.
+The drawing above shows the version text as of REL07.)* The six credit lines are **local to the dialog**, for the
 same reason EmuTOS keeps them local: `bios/initinfo.c` prints none of the
 `'GPLed'` chain, only `desk_rsc.c`'s `ADDINFO` carries it.
 

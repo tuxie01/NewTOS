@@ -10,7 +10,7 @@ Status: **ERLEDIGT** 2026-10-29 ([Quittung](ARCH06-STATUS-DONE.MD)); `_VDO`-Ents
 - Kopien des Wertes (Liste aus
   `docs/analysis/machine-identity-adr-proposal-2026-10-28.md`, Abschnitt 6):
   `tos-api/src/cookie.rs:223@MCH`, `kernel/src/selftest_cookie.rs:65@MCH`,
-  `kernel/src/initinfo.rs:127@_MCH`, `programs/desktop/src/inf.rs:2597@_MCH`,
+  `kernel/src/initinfo.rs:176@_MCH`, `programs/desktop/src/inf.rs:2632@_MCH`,
   `docs/api/desktop/deskmain.md`, `docs/HARDWARE-PROFILE.md`,
   `TASK/COOK01.md`, `TASK/X03.md` (Tickets: Nachtrag, nicht umschreiben).
 - `_CPU`, `_FPU`, `_SND`, `_FDC` bleiben weg. `_VDO`: TeraDesk liest `_VDO`

@@ -120,7 +120,12 @@ fn execute(line: &mut [u8; LINE_MAX], n: usize) -> bool {
         b"" => {}
         b"exit" | b"quit" => return true,
         b"help" => cmd_help(),
-        b"ver" => puts(b"NewTOS 0.6.1 - clean-room TOS for AArch64\r\n"),
+        b"ver" => {
+            // The boot screen's `Version` text, from the one version source
+            // (REL07, `initinfo::VERSION_STRING`).
+            puts(crate::initinfo::VERSION_STRING.as_bytes());
+            puts(b" - clean-room TOS for AArch64\r\n");
+        }
         b"cls" => crate::fbcon::clear_and_home(),
         b"pwd" => cmd_pwd(),
         b"cd" => cmd_cd(line, arg_start, n),

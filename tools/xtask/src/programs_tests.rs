@@ -215,10 +215,15 @@ fn sources(dir: &Path) -> Vec<(PathBuf, String)> {
     out
 }
 
-/// Review §6 (X03 row): the desktop's version, notice and per-board machine
-/// strings equal the boot screen's. Found by name in the desktop source
-/// (the `desktop` crate since U8b, `kernel/src/desk/` before — the rule of
+/// Review §6 (X03 row): the desktop's notice and per-board machine strings
+/// equal the boot screen's. Found by name in the desktop source (the
+/// `desktop` crate since U8b, `kernel/src/desk/` before — the rule of
 /// `emutos_consts::desktop_src`).
+///
+/// The version is the exception since REL07: the desktop holds **no** copy of
+/// it and asks the running kernel (`Ssystem(S_NEWTOS_KVERSION)` through
+/// `newtos_gem::gemdos::dos_kversion`), so a `const VERSION_STRING` in the
+/// desktop would be a second source again.
 #[test]
 fn desktop_and_boot_screen_strings_agree() {
     let root = root();
@@ -226,7 +231,18 @@ fn desktop_and_boot_screen_strings_agree() {
     let desk_dir = emutos_consts::desktop_src(&root).expect("desktop source");
     let desk = sources(&desk_dir);
 
-    for name in ["VERSION_STRING", "INDEPENDENCE_NOTICE"] {
+    let copies: Vec<String> = desk
+        .iter()
+        .filter(|(_, t)| t.contains("const VERSION_STRING"))
+        .map(|(p, _)| p.display().to_string())
+        .collect();
+    assert!(copies.is_empty(), "desktop: no const VERSION_STRING expected (REL07), found in {copies:?}");
+    assert!(
+        desk.iter().any(|(_, t)| t.contains("dos_kversion(")),
+        "desktop: the About box's version must come from dos_kversion (Ssystem 2019, REL07)"
+    );
+
+    for name in ["INDEPENDENCE_NOTICE"] {
         let b = const_str(&boot, name).unwrap_or_else(|| panic!("initinfo.rs: no const {name}"));
         let found: Vec<(String, String)> = desk
             .iter()

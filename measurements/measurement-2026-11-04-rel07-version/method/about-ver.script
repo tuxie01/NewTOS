@@ -1,0 +1,39 @@
+# REL07 injector script (tools/inject-arm.py, trigger `desktop`), 200 Hz ticks
+# after "[desk] desktop up". Relative IKBD mouse packets 0xF8|buttons dx dy
+# (left button 0x02 -> 0xFA); keys are IKBD make codes, break = make|0x80.
+# Geometry at 640x480 from measurement-2026-09-20-a99/method/desk-about2.actions
+# (Desk title (22,8), "Desktop info..." (60,28)); the File menu's
+# "Execute EmuCON" is the 14th row of its drop-down: (120,236), checked on the
+# dump with the File menu open.
+# park at (0,0)
+600 0xF8 0x81 0x81
+601 0xF8 0x81 0x81
+602 0xF8 0x81 0x81
+603 0xF8 0x81 0x81
+604 0xF8 0x81 0x81
+605 0xF8 0x81 0x81
+# hover the Desk title (22,8)
+700 0xF8 22 8
+# down to "Desktop info..." (60,28), click
+900 0xF8 38 20
+1000 0xFA 0 0
+1020 0xF8 0 0
+# About open: dumps. Return = the default OK button.
+2400 0x1C
+2410 0x9C
+# hover the File title (80,8): (60,28) -> (80,8)
+2800 0xF8 20 0xEC
+# down the drop-down to "Execute EmuCON" (120,236)
+3600 0xF8 40 114
+3601 0xF8 0 114
+4000 0xFA 0 0
+4020 0xF8 0 0
+# EmuCON: type "ver" Return
+5000 0x2F
+5010 0xAF
+5040 0x12
+5050 0x92
+5080 0x13
+5090 0x93
+5120 0x1C
+5130 0x9C

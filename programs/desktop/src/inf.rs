@@ -2349,8 +2349,13 @@ const LINE_MAX: usize = 72;
 impl Line {
     /// Copy `s` (truncated to [`LINE_MAX`]) into a NUL-terminated buffer.
     fn new(s: &str) -> Self {
+        Self::from_bytes(s.as_bytes())
+    }
+    /// [`Line::new`] for bytes that come from the system rather than from a
+    /// Rust literal (the kernel's version text): the AES draws bytes, so no
+    /// UTF-8 check stands between them and the dialog.
+    fn from_bytes(src: &[u8]) -> Self {
         let mut buf = [0u8; LINE_MAX + 1];
-        let src = s.as_bytes();
         let len = src.len().min(LINE_MAX);
         buf[..len].copy_from_slice(&src[..len]);
         Self { buf, len }
@@ -2383,7 +2388,7 @@ impl Line {
 /// | row | line | source |
 /// |-----|------|--------|
 /// | 0 | `- NewTOS -` | `ADDINFO`'s `- EmuTOS -` title (`desk_rsc.c:785-789`) |
-/// | 2 | `Version  …` | [`VERSION_STRING`] (`DELABEL`/`DEVERSN`) |
+/// | 2 | `Version  …` | the running kernel, [`kernel_version_line`] (`DELABEL`/`DEVERSN`) |
 /// | 3 | `Machine  …` | [`MACHINE_NAME`] — a per-board build constant (X03) |
 /// | 5-6 | the independence notice | [`INDEPENDENCE_NOTICE`] |
 /// | 8-9 | the EmuTOS credit | [`CREDIT_REIMPL`] / [`CREDIT_EMUTOS`] |
@@ -2397,18 +2402,19 @@ impl Line {
 /// `ADDINFO` counterpart; it was dropped (user decision), which brings the
 /// content closer to `ADDINFO`'s.
 ///
-/// **Two readers, two copies — on purpose, since DESK43 U4 (the machine line
-/// since X03).** The version, the machine line and the independence notice
-/// are also printed by the boot screen. They *were* read from `kernel::initinfo`, on the argument that
-/// EmuTOS shares one source (`desk_xlate_fix` points `DEVERSN->ob_spec` at the
-/// BIOS `version[]` the boot screen prints, `deskmain.c:1880`). That argument
-/// holds only while the desktop is linked with the BIOS, which is EmuTOS's
-/// situation and stops being ours: the desktop crate will not have `kernel` in
-/// its dependency graph. The strings are therefore the desktop's own
-/// (see the block at [`VERSION_STRING`]), and `initinfo`'s copies say the same
-/// at their definition. The six credit lines were always local, and for a
-/// reason that is unchanged — EmuTOS keeps its `'GPLed'` chain in
-/// `desk_rsc.c` alone and `bios/initinfo.c` prints none of it.
+/// **The version comes from the running kernel; the machine line and the
+/// independence notice are copies.** All three are also printed by the boot
+/// screen. EmuTOS shares one source (`desk_xlate_fix` points `DEVERSN->ob_spec`
+/// at the BIOS `version[]` the boot screen prints, `deskmain.c:1880`), which
+/// works because its desktop is linked with the BIOS; ours has no `kernel` in
+/// its dependency graph. The version is therefore asked of the kernel at run
+/// time through `Ssystem(S_NEWTOS_KVERSION)` (REL07, [`kernel_version_line`]) —
+/// the nearest NewTOS equivalent of the shared symbol: the box names the kernel
+/// that actually runs. The machine line (X03) and the notice (DESK43 U4) stay
+/// the desktop's own copies (see the block above [`INDEPENDENCE_NOTICE`]), and
+/// `initinfo`'s say the same at their definition. The six credit lines were
+/// always local, and for a reason that is unchanged — EmuTOS keeps its
+/// `'GPLed'` chain in `desk_rsc.c` alone and `bios/initinfo.c` prints none of it.
 ///
 /// **Three named deviations.**
 ///
@@ -2449,7 +2455,7 @@ pub(super) fn do_aboutdesk() {
 
     let title = Line::new("- NewTOS -");
     let ver_lbl = Line::new("Version");
-    let ver_val = Line::new(VERSION_STRING);
+    let ver_val = kernel_version_line();
     let mac_lbl = Line::new("Machine");
     // The per-board build constant (X03); see `MACHINE_NAME` for why it is
     // not a syscall and not a kernel symbol.
@@ -2546,6 +2552,42 @@ pub(super) fn do_aboutdesk() {
     }
 }
 
+/// The About box's `Version` value — `ADDINFO`'s `DEVERSN`
+/// (`desk_rsc.c:808-813`), which EmuTOS points at the BIOS `version[]` the boot
+/// screen prints (`deskmain.c:1880`). NewTOS asks the running kernel instead
+/// (REL07): `Ssystem(S_NEWTOS_KVERSION)` answers the boot screen's `Version`
+/// text, a space and the build stamp (`docs/api/gemdos/154-ssystem.md`, mode
+/// 2019), and this keeps the text before the stamp — so the box shows exactly
+/// the boot screen's `Version` line (`NewTOS 0.7`), and, like EmuTOS's
+/// `ADDINFO`, no build date (see [`do_aboutdesk`]).
+///
+/// **The stamp is the last two space-separated fields** (`YYYY-MM-DD (rev)`,
+/// 154-ssystem.md). A string with fewer than three fields carries no stamp
+/// to cut and is shown whole.
+///
+/// **If the call fails** (`EINVFN` from a kernel without mode 2019, `ERROR`
+/// from one without a version), the value is **empty**: the `Version` label
+/// stands alone. That is EmuTOS's own rule for a dialog value GEMDOS does not
+/// deliver — `inf_disk` shows an empty volume label when `dos_label` fails
+/// (`deskinf.c:682-683`); EmuTOS's About box itself cannot fail, its string is
+/// a ROM symbol.
+fn kernel_version_line() -> Line {
+    // The kernel's text is shorter than 64 bytes (154-ssystem.md); 96 is the
+    // kernel's own assembly buffer, so nothing is cut here that it would send.
+    let mut buf = [0u8; 96];
+    let Ok(n) = newtos_gem::gemdos::dos_kversion(&mut buf) else {
+        return Line::from_bytes(b"");
+    };
+    let text = &buf[..n];
+    // Cut at the second-last space: what precedes the two stamp fields.
+    let version = text
+        .iter()
+        .rposition(|&b| b == b' ')
+        .and_then(|last| text[..last].iter().rposition(|&b| b == b' '))
+        .map_or(text, |cut| &text[..cut]);
+    Line::from_bytes(version)
+}
+
 /// `ADDINFO`'s ROOT `ob_spec` — `135424L` = `(2 << 16) | 0x1100`
 /// (`desk_rsc.c:774-777`): the same colour word as [`BOX_SPEC`], but a
 /// **two**-pixel inner border. `ADDINFO` is the only `desk_rsc.c` tree with it.
@@ -2553,35 +2595,28 @@ const ADDINFO_BOX_SPEC: u64 = (2 << 16) | 0x1100;
 
 // ── The About box's text ────────────────────────────────────────────────────
 //
-// **All of it is the desktop's own** (DESK43 U4, 2026-09-26). EmuTOS's
-// `ADDINFO` carries every line as a literal in `desk_rsc.c:772-873` except
-// `DEVERSN`, whose `ob_spec` `desk_xlate_fix` re-points at the BIOS `version[]`
-// symbol (`deskmain.c:1880`) — a shared *symbol*, which costs EmuTOS nothing
-// because its desktop is linked into the same ROM as its BIOS. Ours will not
-// be: `programs/desktop` has neither `kernel` nor `tos-api` in its dependency
-// graph (`docs/analysis/desktop-userspace-plan-v2.md` §6.4, measure 1), so a
-// `kernel::initinfo::…` here is a link the move has to break, and breaking it
-// means the string lives on this side. `kernel::initinfo`'s own copies stay for
-// the boot screen and say so at their definition.
-
-/// The NewTOS version, as the About box's `Version` row prints it —
-/// `ADDINFO`'s `DEVERSN` (`desk_rsc.c:808-813`, patched at `deskmain.c:1880`).
-///
-/// **Deliberately the same text as `kernel::initinfo::VERSION_STRING`, and
-/// deliberately a second copy of it.** See the block comment above for why the
-/// shared symbol cannot survive the move. The `NTOS` cookie carries a
-/// *number* (`0x0000_0100`, `tos-api/src/cookie.rs:142`) with no defined
-/// rendering, and `Sversion` reports the GEMDOS version, not the OS name.
-/// Since SYSINFO01, `Ssystem(S_NEWTOS_KVERSION)` (2019,
-/// `docs/api/gemdos/154-ssystem.md`) hands programs this string followed by
-/// the build stamp; this desktop does not ask for it (it is compiled with the
-/// kernel), a separately built one could.
-const VERSION_STRING: &str = "NewTOS 0.6.1";
+// **All of it is the desktop's own except the version** (DESK43 U4,
+// 2026-09-26; the version since REL07, 2026-11-04). EmuTOS's `ADDINFO`
+// carries every line as a literal in `desk_rsc.c:772-873` except `DEVERSN`,
+// whose `ob_spec` `desk_xlate_fix` re-points at the BIOS `version[]` symbol
+// (`deskmain.c:1880`) — a shared *symbol*, which costs EmuTOS nothing because
+// its desktop is linked into the same ROM as its BIOS. Ours is not:
+// `programs/desktop` has neither `kernel` nor `tos-api` in its dependency
+// graph (`docs/analysis/desktop-userspace-plan-v2.md` §6.4, measure 1). The
+// version therefore comes from the running kernel at run time
+// ([`kernel_version_line`], `Ssystem(S_NEWTOS_KVERSION)`) — one source, the
+// root `Cargo.toml`'s workspace version, rendered by
+// `kernel::initinfo::VERSION_STRING`. The NewTOS strings below have no syscall
+// source and stay same-text copies of `kernel::initinfo`'s, which say so at
+// their definition. Neither the `NTOS` cookie (a *number*, `0x0000_0100`,
+// `tos-api/src/cookie.rs:142`, with no defined rendering) nor `Sversion` (the
+// GEMDOS version) names the OS version.
 
 /// The project's independence notice — the NewTOS counterpart of the
 /// GPL/attribution block `ADDINFO` puts below its copyright
 /// (`desk_rsc.c:810-868`). Same text as
-/// `kernel::initinfo::INDEPENDENCE_NOTICE`, same reason as above.
+/// `kernel::initinfo::INDEPENDENCE_NOTICE`, a copy for the reason in the
+/// block comment above.
 const INDEPENDENCE_NOTICE: &str =
     "NewTOS is an independent project - not original Atari software.";
 

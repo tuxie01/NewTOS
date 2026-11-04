@@ -371,6 +371,16 @@ still `E_OK`. The string is the OS name and version followed by the build stamp,
 as *Version* and *Built* (`kernel/src/initinfo.rs` `VERSION_STRING`,
 `tos_api::build::BUILD_STAMP`). It is shorter than 64 bytes.
 
+**Form:** `<version> <YYYY-MM-DD> (<rev>)` — the version text, one space, the
+build stamp. The stamp is always the **last two space-separated fields** (the
+date has no space, `<rev>` is the short git revision or `unknown`,
+`tos-api/build.rs`), so a reader recovers the boot screen's *Version* text by
+cutting the string at its second-last space; the version text itself may hold
+spaces (`NewTOS 0.7`). The version follows the root `Cargo.toml`'s workspace
+version (REL07): `x.y` for a fix level 0, `x.y.z` otherwise. The desktop's
+About box shows the part before the stamp (`programs/desktop/src/inf.rs`
+`kernel_version_line`).
+
 | Return | Condition |
 |--------|-----------|
 | `E_OK` (0) | copied (or `len <= 0`: nothing to copy) |

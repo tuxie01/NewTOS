@@ -61,6 +61,10 @@ use tos_types::{Long, MX_STRAM, MX_TTRAM};
 /// `S_GETCOOKIE` (FreeMiNT `sys/mint/ssystem.h`) — `Ssystem` subfunction 8.
 const S_GETCOOKIE: i16 = 8;
 
+/// `S_NEWTOS_KVERSION` — `Ssystem` subfunction 2019, NewTOS's own
+/// (`docs/api/gemdos/154-ssystem.md`, SYSINFO01).
+const S_NEWTOS_KVERSION: i16 = 2019;
+
 /// `FA_VOL` (`include/bdosdefs.h:39`) — the volume-label attribute,
 /// [`dos_label`]'s `Fsfirst` mask.
 pub const FA_VOL: u8 = 0x08;
@@ -453,4 +457,30 @@ pub fn pterm(rc: i16) -> ! {
 pub fn dos_getcookie(tag: u32) -> Option<u32> {
     let rc = dos_trap(SSYSTEM, sx(S_GETCOOKIE as i64), sx(tag as i32 as i64), 0);
     (rc >= 0).then_some(rc as u32)
+}
+
+/// The running kernel's version string — `Ssystem(S_NEWTOS_KVERSION, buf,
+/// len)` (`docs/api/gemdos/154-ssystem.md`, mode 2019): the OS name and
+/// version followed by the build stamp, `"NewTOS 0.7 2026-11-04 (1452cc15)"`.
+///
+/// The kernel copies at most `buf.len() - 1` characters and always a NUL
+/// (FreeMiNT's `S_KNAME` rule). `Ok(n)` is the length before that NUL;
+/// `Err(rc)` the call's negative return — `EINVFN` from a kernel without the
+/// mode (EmuTOS has no `Ssystem` at all; a NewTOS kernel before SYSINFO01 has
+/// no 2019), `ERROR` from one that reports no version. An empty `buf` is not
+/// sent to the kernel (`len = 0` would write nothing): `Ok(0)`.
+///
+/// The buffer is the caller's, so it is a user address from an EL0 program;
+/// the kernel writes it with the caller's rights (`TrapArgs::space`).
+// NEWTOS: no EmuTOS counterpart (`Ssystem` is a FreeMiNT call; 2019 is NewTOS's).
+pub fn dos_kversion(buf: &mut [u8]) -> Result<usize, Long> {
+    if buf.is_empty() {
+        return Ok(0);
+    }
+    let len = buf.len().min(i32::MAX as usize);
+    let rc = dos_trap(SSYSTEM, sx(S_NEWTOS_KVERSION as i64), buf.as_mut_ptr() as u64, sx(len as i64));
+    if rc < 0 {
+        return Err(rc);
+    }
+    Ok(buf[..len].iter().position(|&b| b == 0).unwrap_or(len))
 }

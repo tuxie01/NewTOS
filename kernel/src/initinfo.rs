@@ -74,27 +74,76 @@ const INFO_LENGTH: i16 = 40;
 
 // ── The two strings the desktop's About box also shows ──────────────────────
 //
-// **They are duplicated there, since DESK43 U4 (2026-09-26), and that is the
-// intended arrangement.** The older note here claimed the desktop reads these
-// very constants because "EmuTOS keeps the same single source". EmuTOS does —
-// `desk_xlate_fix` re-points `DEVERSN->ob_spec` at the BIOS `version[]` symbol
-// (`desk/deskmain.c:1880`) — but it can, because its desktop is linked into
-// the same ROM image as its BIOS. NewTOS's will not be: `programs/desktop` is
-// to have neither `kernel` nor `tos-api` in its dependency graph
-// (`docs/analysis/desktop-userspace-plan-v2.md` §6.4, measure 1), so the shared
-// symbol is exactly the kind of link that move removes. The desktop's copies
-// live at `programs/desktop/src/inf.rs`, next to the About box's other literals,
-// and name this comment. Editing one means editing both (the `NTOS` cookie is
-// a number, `tos-api/src/cookie.rs:142`; `Sversion` is the GEMDOS version).
-// Programs get `VERSION_STRING` + the build stamp through
-// `Ssystem(S_NEWTOS_KVERSION)` (2019, SYSINFO01, via `Host::os_version`).
-// The former authorship line ("Adapted by ...") is gone from both readers:
-// the boot screen and the About box dropped it on 2026-10-09 (user decision).
+// **The version has one source; the independence notice has two copies.**
+// EmuTOS shares one symbol between both readers — `desk_xlate_fix` re-points
+// `DEVERSN->ob_spec` at the BIOS `version[]` symbol (`desk/deskmain.c:1880`) —
+// because its desktop is linked into the same ROM image as its BIOS. NewTOS's
+// is not: `programs/desktop` has neither `kernel` nor `tos-api` in its
+// dependency graph (`docs/analysis/desktop-userspace-plan-v2.md` §6.4,
+// measure 1). So:
+//
+// * The **version** (REL07, 2026-11-04) is the workspace's
+//   `[workspace.package] version` in the root `Cargo.toml`, rendered into
+//   [`VERSION_STRING`] at compile time. The desktop holds no copy: its About
+//   box asks the running kernel through `Ssystem(S_NEWTOS_KVERSION)` (2019,
+//   SYSINFO01, via `Host::os_version`), which answers this string followed by
+//   the build stamp, and shows the part before the stamp. Until REL07 the
+//   desktop carried a same-text literal (DESK43 U4, 2026-09-26).
+// * The **independence notice** is still duplicated, by name, at
+//   `programs/desktop/src/inf.rs`; editing one means editing both (checked by
+//   the xtask host test `desktop_and_boot_screen_strings_agree`).
+//
+// Neither is a TOS-visible version: the `NTOS` cookie is a number
+// (`tos-api/src/cookie.rs:142`), `Sversion` is the GEMDOS version, the
+// OSHEADER says TOS 4.04. The former authorship line ("Adapted by ...") is
+// gone from both readers: the boot screen and the About box dropped it on
+// 2026-10-09 (user decision).
 
-/// The NewTOS version string, as the boot screen's `Version` line prints it.
-/// The desktop's About box shows the same text from its own constant — see the
-/// block comment above.
-pub(crate) const VERSION_STRING: &str = "NewTOS 0.6.1";
+/// The NewTOS version string, as the boot screen's `Version` line prints it:
+/// `"NewTOS "` + the workspace package version (root `Cargo.toml`,
+/// `[workspace.package] version`, which this crate inherits).
+///
+/// **Display rule** — EmuTOS's own (`references/emutos/version.mk:22-39`:
+/// `FIX_VERSION = 0` gives `MAJOR.MINOR`, any other fix level
+/// `MAJOR.MINOR.FIX`): `0.7.0` is shown as `NewTOS 0.7`, `0.7.1` as
+/// `NewTOS 0.7.1`. A pre-release suffix (`0.8.0-rc1`) has no place in that
+/// rule and fails the build (below) instead of being dropped silently.
+///
+/// The desktop's About box shows the same text, read from the running kernel
+/// through `Ssystem(S_NEWTOS_KVERSION)` — see the block comment above.
+pub(crate) const VERSION_STRING: &str = if str_eq(env!("CARGO_PKG_VERSION_PATCH"), "0") {
+    concat!("NewTOS ", env!("CARGO_PKG_VERSION_MAJOR"), ".", env!("CARGO_PKG_VERSION_MINOR"))
+} else {
+    concat!(
+        "NewTOS ",
+        env!("CARGO_PKG_VERSION_MAJOR"),
+        ".",
+        env!("CARGO_PKG_VERSION_MINOR"),
+        ".",
+        env!("CARGO_PKG_VERSION_PATCH")
+    )
+};
+
+const _: () = assert!(
+    env!("CARGO_PKG_VERSION_PRE").is_empty(),
+    "VERSION_STRING: the display rule has no pre-release form; set a plain MAJOR.MINOR.PATCH"
+);
+
+/// `a == b` for `&str` in a `const` context (`PartialEq` is not `const`).
+const fn str_eq(a: &str, b: &str) -> bool {
+    let (a, b) = (a.as_bytes(), b.as_bytes());
+    if a.len() != b.len() {
+        return false;
+    }
+    let mut i = 0;
+    while i < a.len() {
+        if a[i] != b[i] {
+            return false;
+        }
+        i += 1;
+    }
+    true
+}
 
 /// The project's independence notice, as the boot screen's footer carries it.
 /// This is the NewTOS counterpart of the GPL/attribution block EmuTOS puts in

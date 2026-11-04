@@ -53,4 +53,26 @@ bereitstellen.
    Menueleiste fuer [A127](A127.md)), wosch163 in #8 (Rad der Kabelmaeuse
    bleibt offen, [USB03](USB03.md)).
 
+## Stand Schritt 1 (Developer, 2026-11-04, nicht committet)
+
+- **Eine Quelle:** `[workspace.package] version = "0.7.0"` in der Wurzel-`Cargo.toml`;
+  `kernel`, `tos-api`, `tos-types` erben sie (`version.workspace = true`), `Cargo.lock` und
+  `programs/Cargo.lock` (tos-types) zeigen 0.7.0. `tools/xtask` behaelt 0.1.0: ein Host-Werkzeug,
+  das nicht ausgeliefert wird.
+- **Anzeigeregel** = EmuTOS' eigene (`references/emutos/version.mk:22-39`): Fix-Stand 0 →
+  `x.y`, sonst `x.y.z`; `0.7.0` erscheint als „NewTOS 0.7". Ein Pre-Release-Suffix bricht den
+  Bau ab (const-Assert), statt still zu verschwinden.
+  `kernel/src/initinfo.rs@VERSION_STRING` wird zur Uebersetzungszeit aus
+  `CARGO_PKG_VERSION_MAJOR/MINOR/PATCH` gebildet; `ver` (`kernel/src/shell.rs`) nutzt es.
+- **Desktop:** Kopie `VERSION_STRING` entfernt; About liest `Ssystem(2019)` ueber die neue
+  Bindung `programs/newtos-gem/src/gemdos.rs@dos_kversion` und zeigt den Text vor dem
+  Baustempel (die letzten zwei Felder, jetzt in `docs/api/gemdos/154-ssystem.md`
+  festgeschrieben). **Fehlschlag** (`EINVFN`/`ERROR`): Wert leer, das Label steht allein —
+  EmuTOS' Regel fuer einen Dialogwert, den GEMDOS nicht liefert (`deskinf.c:682-683`,
+  `inf_disk`). Vom Developer gewaehlt; Bestaetigung durch Lead/Anwender offen.
+- TOS-sichtbare Versionen unveraendert (`_TOS`/OSHEADER 4.04, `NTOS`-Cookie 0x0100,
+  `Sversion`): im Diff nicht beruehrt.
+- Beleg: `measurements/measurement-2026-11-04-rel07-version/RUNINFO.TXT` (Bootschirm, About,
+  `ver`, About mit EINVFN-Kern). `cargo xtask test` 1958/0/1.
+
 [Gemeinsame Regeln](README.md) gelten.

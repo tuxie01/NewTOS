@@ -13,6 +13,13 @@ exclude = ["programs"]
 default-members = ["kernel"]
 
 [workspace.package]
+# The NewTOS product version, in one place (REL07): kernel, tos-api and
+# tos-types inherit it; the boot screen, the kernel shell's `ver` and, through
+# `Ssystem(S_NEWTOS_KVERSION)`, the desktop's About box show it
+# (`kernel/src/initinfo.rs` `VERSION_STRING`). It is not a TOS-visible
+# version: `_TOS`/OSHEADER, the `NTOS` cookie and `Sversion` do not move with
+# it. tools/xtask, a host build tool that does not ship, keeps its own.
+version = "0.7.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 authors = ["NewTOS / PiRusTOS contributors"]

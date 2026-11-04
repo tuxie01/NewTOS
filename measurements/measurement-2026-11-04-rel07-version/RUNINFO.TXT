@@ -1,0 +1,78 @@
+measurement-2026-11-04-rel07-version -- REL07 step 1: the version from one source (0.7)
+=======================================================================================
+Developer, TASK/REL07 step 1, 2026-11-04 (host clock CET). Base HEAD 500b7b60 plus the
+uncommitted REL07 step-1 change set (root Cargo.toml [workspace.package] version = "0.7.0";
+kernel/tos-api/tos-types version.workspace = true; kernel/src/initinfo.rs VERSION_STRING built
+from CARGO_PKG_VERSION_*; kernel/src/shell.rs `ver`; programs/newtos-gem dos_kversion;
+programs/desktop/src/inf.rs kernel_version_line). QEMU raspi4b only. No real Pi, no card,
+no GitHub. Not committed.
+
+WHAT / WHY
+  Show that the three readers of the product version print the same text from the one source:
+  1. the boot screen's Version line            expected "NewTOS 0.7"
+  2. the desktop's About box (Desk > Desktop info...), read at run time through
+     Ssystem(S_NEWTOS_KVERSION) = 2019, the build stamp cut off   expected "NewTOS 0.7"
+  3. the kernel console's `ver` (File > Execute EmuCON)  expected "NewTOS 0.7 - clean-room TOS
+     for AArch64"
+  and, in a second run, the About box's failure path: a scratch kernel that answers 2019 with
+  EINVFN (a kernel without the mode) -> the Version value is empty, the label stands alone
+  (EmuTOS's rule for a dialog value GEMDOS does not deliver, deskinf.c:682-683).
+
+INJECTOR
+  tools/inject-arm.py, trigger `desktop`, script method/about-ver.script (hand-written; Desk
+  title (22,8) and "Desktop info..." (60,28) from measurement-2026-09-20-a99, the File menu's
+  "Execute EmuCON" row at (120,236), confirmed on screendumps/main-30.png / main-35.png).
+  Patched into a SCRATCH copy of the working tree only (method/build-kernel.sh: tracked +
+  untracked-not-ignored files, references/ linked). The scratch copy has no .git, so the
+  build stamp's revision reads "(unknown)" (tos-api/build.rs falls back to it); the date and
+  the version are the real ones.
+
+CARD
+  method/mkcard-call.sh -> tools/mkcard.sh, NEWDESK.INF = "#R 02" only (plain desktop, no
+  autorun, no drive icons). Manifest: card.img.manifest
+    optional_missing none
+    host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  card sha256 8ed18b07...; per run an APFS clone (cp -c), deleted after the run; both clones
+  unchanged after their run (serial/main.img-after.sha256, serial/einvfn.img-after.sha256).
+  All sha256: serial/sha256.txt.
+
+KERNELS (rpi4 release, scratch copy, not kept)
+  kernel-inj.img     36b77480...  REL07 change set + injector
+  kernel-einvfn.img  47aea0b5...  the same + method/einvfn-patch.py (2019 -> EINVFN)
+
+RUNS (method/run.sh, QEMU raspi4b -display none -append serial=on, QMP screendumps at wall
+seconds after the QEMU start)
+  main     screendumps 1..70, kept:
+             main-10.png  boot screen: "Version : NewTOS 0.7", "Built : 2026-11-04 (unknown)"
+             main-17.png  desktop up
+             main-22.png  About box open: "Version  NewTOS 0.7", "Machine  Raspberry Pi 4
+                          (BCM2711)" -- the same text as the boot screen's Version line
+             main-29.png  About closed by Return (the default OK button), desktop restored
+             main-30.png  File menu open (geometry check for "Execute EmuCON")
+             main-35.png  pointer on "Execute EmuCON", item highlighted
+             main-42.png  EmuCON after `ver`: "NewTOS 0.7 - clean-room TOS for AArch64"
+           serial/main.log: "[desk] desktop up (1 drives)", the [inj] feeds, the desktop's
+           Pterm rc=0 into EMUCON, and the console's echo of `ver`:
+             "NewTOS 0.7 - clean-room TOS for AArch64"
+  einvfn   screendumps at 10 and 22, kept:
+             einvfn-22.png  About box with the Version label and no value; the rest of the box
+                            unchanged
+           serial/einvfn.log
+
+RESULT
+  All three readers show "NewTOS 0.7"; the About box's failure path shows the empty value as
+  specified (docs/api/desktop/deskmain.md "The version (REL07, 2026-11-04)").
+  The strings of kernel-inj.img (and of the shared tree's rpi4 release kernel8.img) contain "NewTOS 0.7" once (initinfo's
+  VERSION_STRING) and no "NewTOS 0.6"; the embedded desktop holds no version text any more.
+
+CAVEATS
+  QEMU only; the real-Pi acceptance is REL07 step 4. The scratch build's revision is
+  "(unknown)" (no .git in the copy), not a defect of the change.
+
+FILES
+  method/   build-kernel.sh, mkcard-call.sh, about-ver.script, einvfn-patch.py, run.sh and
+            qmpshot.py (copied from measurement-2026-11-04-a128/method, unchanged)
+  serial/   main.log, einvfn.log, main.img-after.sha256, einvfn.img-after.sha256, sha256.txt
+  screendumps/  as listed above
+  card.img.manifest
+  Images, kernels and the scratch tree are not kept (session scratchpad, deleted after the run).

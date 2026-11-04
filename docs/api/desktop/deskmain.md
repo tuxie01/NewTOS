@@ -1320,14 +1320,14 @@ replaces the **content**:
 |---|---|---|---|
 | 0 | `G_BOX` | the box | sized to its text, see below |
 | 1 | `G_STRING` | `- NewTOS -` | (title, centred) |
-| 2/3 | `G_STRING` ×2 | `Version` + `NewTOS 0.6.1` | `desk::inf::VERSION_STRING` |
+| 2/3 | `G_STRING` ×2 | `Version` + `NewTOS 0.7` | the running kernel: `desk::inf::kernel_version_line` (`Ssystem(S_NEWTOS_KVERSION)`, REL07) |
 | 4/5 | `G_STRING` ×2 | `Machine` + the board name | `desk::inf::MACHINE_NAME` (per-board build constant, X03) |
 | 6/7 | `G_STRING` ×2 | the independence notice, split at its dash | `desk::inf::INDEPENDENCE_NOTICE` |
 | 8/9 | `G_STRING` ×2 | the EmuTOS credit | `desk::inf::CREDIT_REIMPL` / `CREDIT_EMUTOS` |
 | 10–13 | `G_STRING` ×4 | the `'GPLed'` chain | `desk::inf::CREDIT_GPL` / `CREDIT_DRI` / `CREDIT_CALDERA` / `CREDIT_LINEO` |
 | 14 | `G_BUTTON` | ` OK ` (`SELECTABLE\|DEFAULT\|EXIT\|LASTOB`) | = `DEOK` (EmuTOS 16; no logos here) |
 
-The three strings are **the desktop's own constants in `programs/desktop/src/inf.rs`**;
+Machine line and notice are **the desktop's own constants in `programs/desktop/src/inf.rs`**;
 `kernel/src/initinfo.rs` keeps same-text copies for the boot screen. Until
 DESK43 U4 (version, notice, and the authorship line dropped on 2026-10-09) and X03 (machine line) the box read the
 `initinfo` symbols, on the argument that EmuTOS shares one source —
@@ -1335,6 +1335,27 @@ DESK43 U4 (version, notice, and the authorship line dropped on 2026-10-09) and X
 boot screen also prints (`deskmain.c:1880`). That holds only while the desktop
 is linked with the BIOS; NewTOS's desktop is to leave the kernel's dependency
 graph, so the shared symbol is a link that move removes.
+
+**The version (REL07, 2026-11-04).** From DESK43 U4 to REL07 the version was a
+third same-text copy. Now it has one source: the root `Cargo.toml`'s
+`[workspace.package] version` (kernel, tos-api and tos-types inherit it),
+rendered at compile time into `kernel/src/initinfo.rs` `VERSION_STRING` by
+EmuTOS's display rule (`references/emutos/version.mk:22-39`: `x.y` for a fix
+level 0, `x.y.z` otherwise — `0.7.0` shows as `NewTOS 0.7`). The About box asks
+the running kernel through `Ssystem(S_NEWTOS_KVERSION)` (2019,
+`docs/api/gemdos/154-ssystem.md`), which answers that text, a space and the
+build stamp `YYYY-MM-DD (rev)`; the box keeps the text before the stamp's two
+fields, so its `Version` row is exactly the boot screen's `Version` line and,
+like `ADDINFO`, carries no build date (deviation 3 below). This is the nearest
+NewTOS form of EmuTOS's shared `version[]`: the box names the kernel that is
+actually running, not the one the desktop was built with.
+
+*If the call fails* — `EINVFN` from a kernel without mode 2019 (a NewTOS kernel
+older than SYSINFO01), `ERROR` from one without a version — the value is
+**empty** and the `Version` label stands alone. That is EmuTOS's own rule for a
+dialog value GEMDOS does not deliver: `inf_disk` blanks the volume label when
+`dos_label` fails (`deskinf.c:682-683`). EmuTOS's About box itself has no
+failure case; its string is a ROM symbol.
 
 The machine line has no syscall source: `_MCH` is one fixed value on both
 boards, `0xFFFFFFFF` = EmuTOS `MCH_NOHARD`, "no Atari hardware" (ADR-012
