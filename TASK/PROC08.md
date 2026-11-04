@@ -94,7 +94,7 @@ Anwender. Lauf und Nachweise:
   qemu-virt, release und dev, locdiff „0 differing bytes“).
 - **Was es tut:** Nach der `[crash]`-Zeile eines Programmabsturzes
   (`kernel/src/arch/aarch64/crash.rs:96@crash_walk`) schreibt
-  `kernel/src/arch/aarch64/crash_walk.rs:94@report` Zeilen `[crashwalk] …`
+  `kernel/src/arch/aarch64/crash_walk.rs:138@report` Zeilen `[crashwalk] …`
   auf die serielle Leitung (nicht auf den Bildschirm), vor dem Bericht und
   vor dem Tastenwarten. Der Bericht selbst und das Verhalten bleiben gleich.
   Für die Fehleradresse und, bei einem EL0-Absturz, für die Seite des PC
@@ -102,7 +102,7 @@ Anwender. Lauf und Nachweise:
   antwortet; ARM ARM DDI 0487 M.d C5.4.5, D8.2.13, D24.2.141 — Zitate im
   Modulkopf), `TTBR0_EL1` gegen die erwartete Wurzel, ein geprüfter
   Software-Walk durch die Tabellen des Slots
-  (`tos-api/src/bdos/process/mmu.rs:2090@walk`: jeder Tabellenzeiger wird
+  (`tos-api/src/bdos/process/mmu.rs:2097@walk`: jeder Tabellenzeiger wird
   vor dem Lesen gegen die eigenen Tabellen geprüft) und die Sicht des
   Rechtemodells auf die Seite
   (`tos-api/src/bdos/process/memprot.rs:2103@page_view`, gerechnet wie
@@ -151,13 +151,13 @@ auch im Absturzbericht auf dem Schirm, unabhängig von `serial=on`. Lauf:
 `measurements/measurement-2026-11-04-proc08-screen/RUNINFO.TXT`.
 
 - **Einmal erheben, zweimal ausgeben:**
-  `kernel/src/arch/aarch64/crash_walk.rs:94@report` liest zuerst
+  `kernel/src/arch/aarch64/crash_walk.rs:138@report` liest zuerst
   `TTBR0_EL1` und die `AT S1E0R`-Proben, dann sammelt
-  `tos-api/src/bdos/process/crash_diag.rs:152@collect` Walk(s) und
+  `tos-api/src/bdos/process/crash_diag.rs:175@collect` Walk(s) und
   Modellsicht in einen `CrashDiag`. Daraus entstehen die seriellen Zeilen
-  (`tos-api/src/bdos/process/crash_diag.rs:302@write_serial`, Text
+  (`tos-api/src/bdos/process/crash_diag.rs:574@write_serial`, Text
   unverändert; Host-Test gegen die Zeilen des Laufs vom 2026-11-02) und der
-  Schirmblock (`tos-api/src/bdos/process/crash_diag.rs:446@write_screen`),
+  Schirmblock (`tos-api/src/bdos/process/crash_diag.rs:722@write_screen`),
   den `kernel/src/arch/aarch64/crash.rs:100@screen` nach dem Berichtstext
   und vor „Press any key" ausgibt. Kein zweiter Walk.
 - **Bauen:** wie oben, `cargo xtask build --board rpi4 --release --features
@@ -207,6 +207,26 @@ oben); hier nur die Lesart in Kurzform.
 | `  model: holds … expect D shared D' pend …` | Rechte des Slots, Deskriptor laut Modell (Eigentümer / Nichteigentümer), ausstehende Änderungen | `holds yes`, `expect` gültig, Walk `INVALID` → A im fortschreibenden Teil. `holds no`/`expect 0` für die eigene Code-Seite → A im Modell. `pend yes`: zur Fehlerzeit lagen Änderungen noch nicht in den Tabellen. |
 | `  model: priv need … has … short N live X group G temp T space B` | private L3 nötig/vorhanden, Arena-Engpässe, lebende Slots, Speicherraum des Slots (Pexec(4)) | `short` > 0: Arena erschöpft (widerlegt, hier sichtbar). `need yes has no`: private Tabelle fehlt. |
 | `  => model=… table=… at=… table==model …` | die drei Antworten nebeneinander | `valid/valid/ok` oder `valid/valid/fault` → **B**. `valid/invalid/…` → **A**, Tabellenpflege. `invalid/invalid/fault` → **A**, Modell. `table==model NO`: L3-Deskriptor ≠ Modell. |
+| `  ladder: L1 r sp r priv r far r dsb r dc r vaale1 r vaae1 r vmalle1 r => …` (seit „Stand Leiter“; nur unter der ersten Adresse) | die Leiter: nach jedem Schritt `AT S1E0R` auf die Fehleradresse, Abbruch beim ersten Erfolg; `r` = `ok`, `F<n>` (Übersetzungsfehler Stufe n) oder `x<fst>` (anderer Fehler, FST hex). `sp` = Seite von `SP_EL0` (die `USP`-Zeile des Berichts), `priv` = private Seite `7f000`, `far` = die Fehleradresse danach | Ende siehe Lesetabelle unten. `sp F3` mit `priv ok`: die ganze 2-MiB-Region der Fehleradresse ist betroffen, L0/L1 und die L2-Tabelle sind gesund — nur wenn `USP` in derselben 2-MiB-Region liegt wie `far` (Adressen vergleichen). `ladder: not run, AT ok`: der erste `AT` gelang, nichts lief. |
+
+Lesetabelle der Leiter (aus `docs/analysis/proc08-candidate-b-2026-11-04.md`
+Abschnitt 9.1, Tabelle „Erwartete Ausgabe je Kandidat“; R1–R4 wie dort
+Abschnitt 7). Gilt für Walk `-> mapped L3` (Summary `valid/valid/fault`), also
+den Fall B:
+
+| Ende | Kandidat | Lesart |
+|---|---|---|
+| `=> repeat` | **R4** nur zeitlich | der zweite `AT` ohne jede Maßnahme gelang: der Zustand hielt nur Mikrosekunden |
+| `=> fixed-by sp+priv` | — | nicht in der Erwartungstabelle: die `AT`s auf die Nachbarseiten haben die Übersetzung der Fehleradresse geändert. Kein Kandidat zugeordnet; an den Lead |
+| `=> fixed-by dsb` | — | nicht in der Erwartungstabelle (Barriere allein, Kontrolle). Kein Kandidat zugeordnet; an den Lead |
+| `=> fixed-by dc` | **R2** Speichersicht | der Walker las den Deskriptor erst nach `dc civac` der Deskriptorzeilen richtig |
+| `=> fixed-by vaale1` | — Widerspruch | nur Endstufe invalidiert; ein Blatt kann keinen Übersetzungsfehler erzeugen (`RXCLRD`, D8-7852) — stellt die Lesart des Fehlers selbst in Frage |
+| `=> fixed-by vaae1` | **R1** veralteter Zwischeneintrag | alle Ebenen für die Adresse (`RZSXRQ`, D8-7869), nachdem die Endstufe allein nicht half; Eintrag auf L0/L1- oder L2-Ebene nicht unterscheidbar |
+| `=> fixed-by vmalle1` | **R3** A72-Eigenheit | erst das Invalidieren von allem half, `vaae1` nicht |
+| `=> none` | — | nichts half: Grundannahme falsch, tiefer analysieren (z. B. TCR/Regime) |
+
+Bei Walk `-> INVALID` (Tabelle bildet nicht ab, nicht B) ist `=> none` die
+erwartete Antwort: Hardware und Tabelle sind sich einig.
 
 ## Stand 2026-11-04 — wieder aufgetreten, Kandidat B
 
@@ -310,5 +330,83 @@ QUIRK-001 (gleiche VA in Eltern und Kind) gibt es seit ARCH03 nicht mehr
 
 Ergebnisse siehe RUNINFO. Abnahme bleibt die Pi (QEMU hat keinen Walk-Cache und
 kann den Fehler weder zeigen noch seine Abwesenheit belegen).
+
+## Stand Leiter (2026-11-04, Developer)
+
+Stufe 1 aus Abschnitt 9.1 von `docs/analysis/proc08-candidate-b-2026-11-04.md`
+(keine Breadcrumbs, keine Stufe 3), im bestehenden Debug-Feature `crash-walk`.
+Der Fix `01eb7709` ist unberührt. Lauf:
+`measurements/measurement-2026-11-04-proc08-ladder/RUNINFO.TXT`.
+
+- **Ablauf:** `kernel/src/arch/aarch64/crash_walk.rs:138@report` liest wie
+  bisher zuerst `TTBR0_EL1` und die `AT`-Proben, dann `collect` (nur Lesen),
+  dann die Leiter (`kernel/src/arch/aarch64/crash_walk.rs:152@run_ladder`),
+  dann die seriellen Zeilen. Die Leiter läuft auf der ersten untersuchten
+  Adresse (`far`; ohne Fehleradresse `pc`) und nur, wenn deren erster `AT`
+  fehlschlug; nach jedem Schritt `AT S1E0R` auf die Adresse (`at; isb; mrs
+  par_el1`), Abbruch beim ersten Erfolg. Die Schritte wirken aufeinander auf
+  (nichts wird zurückgenommen).
+- **Aufteilung:** Reihenfolge, Abbruch, Ende und beide Zeilen in tos-api
+  (`tos-api/src/bdos/process/crash_diag.rs:343@run_ladder`,
+  `tos-api/src/bdos/process/crash_diag.rs:222@Rung`,
+  `tos-api/src/bdos/process/crash_diag.rs:325@end`,
+  `tos-api/src/bdos/process/crash_diag.rs:405@screen_ladder`,
+  `tos-api/src/bdos/process/crash_diag.rs:432@serial_ladder`), die Befehle im
+  Kern über die Schnittstelle `tos-api/src/bdos/process/crash_diag.rs:269@LadderHw`
+  (`kernel/src/arch/aarch64/crash_walk.rs:171@maintain`). Die Kernadressen der
+  Deskriptoren, die der Software-Walk las:
+  `tos-api/src/bdos/process/mmu.rs:2089@entry_kva`.
+
+Schritte und Barrieren (Quellen lokal gelesen: ARM ARM DDI 0487 M.d,
+`references/arm-arm/DDI0487M_d_a-profile_architecture_reference_manual.pdf`;
+Cortex-A72-TRM 100095_0003_06; Volltext auch im Modulkopf von `crash_walk.rs`):
+
+| # | Name | Folge vor dem `AT` | Regel |
+|---|---|---|---|
+| L1 | `L1` | — (zweiter `AT`) | — |
+| L2 | `sp+priv` | `AT S1E0R` auf `SP_EL0` (die `USP` des Berichts) und auf `7f000` (`PRIV_PAGE_VA`) | — |
+| L3 | `dsb` | `dsb ish; isb` | Kontrolle: der Barrierenteil von L5–L7 allein |
+| L4 | `dc` | `dc civac, <Zeile>` je gelesenem Deskriptor (bis 8: Walk des Slots und ggf. der Wurzel in `TTBR0_EL1`), dann `dsb ish` | C5.3.21 (C5-1128, VA ohne Ausrichtungsvorgabe); Cache-Wartung erst nach `DSB` (Zugriffsart Lesen+Schreiben) fertig, D7.5.9.15 (D7-7667); `DSB` schließt alle vorigen Cache-Wartungen ab, kein späterer Befehl wirkt vorher, B2.6.9 (B2-302/303) |
+| L5 | `vaale1` | `tlbi vaale1is, Xt; dsb ish; isb` | VAAL = nur Endstufe, alle ASIDs: `RJXKNN` (D8-7869) |
+| L6 | `vaae1` | `tlbi vaae1is, Xt; dsb ish; isb` | VAA = alle Stufen, alle ASIDs: `RZSXRQ` (D8-7869) |
+| L7 | `vmalle1` | `tlbi vmalle1is; dsb ish; isb` | VMALL = alles der EL1&0-Stufe 1: `RPMNQC` (D8-7867) |
+
+Für alle TLBI: `IS` = alle TLBs der Inner-Shareable-Domäne (`IDMCXY`, D8-7863);
+`Xt` = `(va >> 12)` auf 44 Bit (`IZVNJG`, D8-7863/7864: [43:0] = VA[55:12],
+[63:48] RES0 ohne ASID-Argument, [47:44] RES0 ohne FEAT_TTL — optional ab
+Armv8.3, A2-128; der A72 implementiert Armv8-A, TRM 1.2.1, S. 1-15); fertig erst
+nach `DSB` und einem Context-Synchronization-Event, weil der A72 kein FEAT_ETS2
+hat (`IBLDZX`, D8-7875; `ID_AA64MMFR1_EL1` RES0, TRM Tabelle 10-10, S. 10-364);
+`ISB` ist ein solches Ereignis (Glossar „Context Synchronization event“, S. 17126).
+
+**Berichtigung zur Analyse 9.1:** dort steht für `vaale1` die Regel `RDRCZZ`; das
+ist VAL (mit ASID, D8-7868/7869). `tlbi vaale1is` ist VAAL, Regel `RJXKNN`
+(D8-7869). An der Lesart ändert das nichts (beide: nur Endstufe). Die Analyse ist
+ein datierter Stand und bleibt unverändert.
+
+- **Zeilen:** seriell nach der `summary`-Zeile der Adresse
+  `[crashwalk] far ladder va=0x…: usp=0x… priv=0x7f000 lines=0x…,…; L1 par=0x… sp+priv sp=0x… priv=0x… far par=0x… dsb par=0x… … => fixed-by …`
+  (jedes `PAR_EL1` voll); auf dem Schirm nach der Zeile `  => model=…`
+  `  ladder: L1 F3 sp F3 priv ok far F3 dsb F3 dc F3 vaale1 F3 vaae1 ok => fixed-by vaae1`.
+  Enden: `=> fixed-by <Schritt>`, `=> repeat` (L1 gelang), `=> none`; gelang
+  schon der erste `AT`: `ladder: not run, AT ok`. Lesart: Legende und
+  Lesetabelle unter „Stand Schirmbericht“. Breite: 86 Spalten für die erwartete
+  PROC08-Antwort, höchstens 107 (Host-Test); bei 1920×1080 sind es 240, bei
+  640×480 (80 Spalten) wird die Zeile umbrochen — dort passte der Block schon
+  vorher nur knapp (Lauf „Stand Schirmbericht“, s7/s8).
+- **QEMU raspi4b** (1920×1080, leere Kommandozeile und `serial=on`): Fall `j`
+  (Sprung auf eine freigegebene Pool-Seite, Befehlsabbruch wie PROC08) zeigt
+  `ladder: L1 F3 sp ok priv ok far F3 dsb F3 dc F3 vaale1 F3 vaae1 F3 vmalle1 F3 => none`
+  — erwartet: dort bildet die Tabelle die Seite **nicht** ab (Walk `INVALID`),
+  Hardware und Tabelle sind sich einig, kein Schritt kann helfen. Fall `x`
+  (Ausführen auf `$700`, `AT` gelingt) zeigt `ladder: not run, AT ok`. Den
+  PROC08-Fall (Tabelle gültig, `AT` Fehler) kann QEMU nicht erzeugen: es
+  modelliert weder TLB noch Walk-Cache des A72 (F7); die Zweige `fixed-by …`
+  und `repeat` sind nur host-getestet
+  (`tos-api/tests/proc08_crash_walk.rs:711@the_ladder_ends_name_the_candidates`,
+  `tos-api/tests/proc08_crash_walk.rs:765@the_ladder_lines_on_screen_and_serial`).
+- **Ohne Feature** ist der Kern bytegleich mit HEAD (rpi4 und qemu-virt,
+  release und dev, locdiff 0 Bytes). Abnahme der Aussage bleibt die Pi: der
+  nächste PROC08-Absturz mit diesem Kern zeigt die Leiterzeile auf dem Foto.
 
 [Gemeinsame Regeln](README.md) gelten.

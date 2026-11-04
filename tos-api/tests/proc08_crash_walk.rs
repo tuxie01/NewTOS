@@ -368,6 +368,7 @@ fn case_d() -> CrashDiag {
         expected: 0x2e6000,
         recorded: 0x2e6000,
         probes: [Some(far), Some(pc)],
+        ladder: None,
     }
 }
 
@@ -569,4 +570,293 @@ fn collect_renders_the_readers_answers_once_for_both_outputs() {
     assert_eq!(d.root, RootOwner::Unknown);
     // SAFETY: under the lock.
     unsafe { assert_eq!(traps::mfree(blk as Long), 0) };
+}
+
+// ─── The ladder (TASK/PROC08 "Stand Leiter") ────────────────────────────
+//
+// The kernel runs the instructions (`LadderHw`); the order, the stop at the
+// first success, the end and both lines are tos-api's. A scripted hardware
+// answers `AT` on the faulting address from a list, one answer per rung,
+// and logs every call.
+
+use tos_api::bdos::process::crash_diag::{run_ladder, Ladder, LadderEnd, LadderHw, Rung, RUNGS};
+use tos_api::bdos::process::mmu::diag::entry_kva;
+
+/// `PAR_EL1` of a translation fault at level 3 (the PROC08 photo).
+const F3: u64 = 0x80f;
+/// A successful `PAR_EL1` for the PROC08 page.
+const OK: u64 = 0xff00_0000_01cb_4b80;
+/// The PROC08 fault address (zView, text+0x2e97c) and a stack pointer.
+const VA: u64 = 0x1cb_497c;
+const USP: u64 = 0x1d7_cf80;
+
+struct Script {
+    /// Answers for `AT` on `VA`, in order; the last one repeats.
+    far: Vec<u64>,
+    sp: u64,
+    private: u64,
+    log: Vec<String>,
+}
+
+impl Script {
+    fn new(far: &[u64], sp: u64, private: u64) -> Script {
+        Script { far: far.to_vec(), sp, private, log: Vec::new() }
+    }
+}
+
+impl LadderHw for Script {
+    fn at_s1e0r(&mut self, va: u64) -> u64 {
+        self.log.push(format!("at {va:x}"));
+        match va {
+            VA => {
+                if self.far.len() > 1 {
+                    self.far.remove(0)
+                } else {
+                    self.far[0]
+                }
+            }
+            USP => self.sp,
+            mmu::PRIV_PAGE_VA => self.private,
+            _ => panic!("AT on an unexpected address {va:x}"),
+        }
+    }
+
+    fn maintain(&mut self, rung: Rung, va: u64, lines: &[u64]) {
+        assert_eq!(va, VA);
+        self.log.push(format!("{} {}", rung.name(), lines.len()));
+    }
+}
+
+/// The PROC08 photo as a `CrashDiag`: an instruction abort (far = pc) in
+/// slot 2, root right, the page mapped in arena table 361, `AT` fault L3.
+fn proc08_photo() -> CrashDiag {
+    let step = |table_pa, kind, index, desc| Some(Step { table_pa, kind, index, desc });
+    let walk = Walk {
+        slot: 2,
+        va: VA,
+        root_pa: 0x2f0000,
+        steps: [
+            step(0x2f0000, TableKind::SlotL0(2), 0, 0x2f1003),
+            step(0x2f1000, TableKind::SlotL1(2), 0, 0x2f2003),
+            step(0x2f2000, TableKind::SlotL2(2, 0), 14, 0x1169003),
+            step(0x1169000, TableKind::Arena { idx: 361, used: true }, 180, 0x0020_0000_01cb_4743),
+        ],
+        outcome: Outcome::Leaf { level: 3, oa: VA },
+        l2_template: Some(0x1006003),
+        l3_also_slots: 0,
+        l3_also_template: false,
+    };
+    let mut d = case_d();
+    d.slot = 2;
+    d.esr = 0x8200_0007;
+    d.pc = VA;
+    d.far = Some(VA);
+    d.probes = [
+        Some(ProbeDiag {
+            hw: HwProbe { label: "far", va: VA, par: F3 },
+            walk,
+            other: None,
+            view: d_view(None, true, 0x0020_0000_01cb_4743),
+        }),
+        None,
+    ];
+    d
+}
+
+fn ladder_of(far: &[u64], sp: u64, private: u64) -> (Ladder, Vec<String>) {
+    let mut hw = Script::new(far, sp, private);
+    let l = run_ladder(&mut hw, &proc08_photo(), USP).expect("a probed address");
+    (l, hw.log)
+}
+
+fn lines_of(l: &Ladder) -> (String, String) {
+    let mut d = proc08_photo();
+    d.ladder = Some(*l);
+    let mut scr = String::new();
+    write_screen(&mut scr, &d).unwrap();
+    let mut ser = String::new();
+    write_serial(&mut ser, &d).unwrap();
+    let pick = |s: &str, key: &str| s.lines().find(|x| x.contains(key)).expect("a ladder line").to_string();
+    (pick(&scr, "ladder:"), pick(&ser, "ladder va="))
+}
+
+#[test]
+fn the_ladder_runs_its_rungs_in_order_and_stops_at_the_first_success() {
+    // R1 of the analysis: only the all-level TLBI on the address helps.
+    let (l, log) = ladder_of(&[F3, F3, F3, F3, F3, OK], F3, OK);
+    assert_eq!(
+        log,
+        [
+            "at 1cb497c", // L1
+            "at 1d7cf80",
+            "at 7f000",
+            "at 1cb497c", // L2
+            "dsb 4",
+            "at 1cb497c",
+            "dc 4",
+            "at 1cb497c",
+            "vaale1 4",
+            "at 1cb497c",
+            "vaae1 4",
+            "at 1cb497c",
+        ]
+    );
+    assert_eq!(l.end(), LadderEnd::FixedBy(Rung::Vaae1is));
+    assert_eq!(l.after, [Some(F3), Some(F3), Some(F3), Some(F3), Some(F3), Some(OK), None]);
+    assert_eq!((l.sp_par, l.priv_par), (Some(F3), Some(OK)));
+    assert_eq!((l.label, l.va, l.start, l.sp), ("far", VA, F3, USP));
+}
+
+#[test]
+fn the_ladder_ends_name_the_candidates() {
+    // The expected outputs of the analysis, section 9.1.
+    let end = |far: &[u64]| ladder_of(far, F3, OK).0.end();
+    assert_eq!(end(&[OK]), LadderEnd::Repeat, "R4: transient");
+    assert_eq!(end(&[F3, OK]), LadderEnd::FixedBy(Rung::Neighbours));
+    assert_eq!(end(&[F3, F3, OK]), LadderEnd::FixedBy(Rung::Barrier));
+    assert_eq!(end(&[F3, F3, F3, OK]), LadderEnd::FixedBy(Rung::CleanLines), "R2");
+    assert_eq!(end(&[F3, F3, F3, F3, OK]), LadderEnd::FixedBy(Rung::Vaale1is), "the contradiction (RXCLRD)");
+    assert_eq!(end(&[F3, F3, F3, F3, F3, OK]), LadderEnd::FixedBy(Rung::Vaae1is), "R1");
+    assert_eq!(end(&[F3, F3, F3, F3, F3, F3, OK]), LadderEnd::FixedBy(Rung::Vmalle1is), "R3");
+    let (l, log) = ladder_of(&[F3], F3, OK);
+    assert_eq!(l.end(), LadderEnd::None);
+    assert_eq!(l.after, [Some(F3); 7], "every rung ran");
+    assert_eq!(log.iter().filter(|x| x.starts_with("at 1cb497c")).count(), RUNGS.len());
+    assert_eq!(log.last().map(String::as_str), Some("at 1cb497c"));
+}
+
+#[test]
+fn the_ladder_does_not_run_when_the_first_at_succeeded() {
+    let mut d = proc08_photo();
+    let mut p = d.probes[0].unwrap();
+    p.hw.par = OK;
+    d.probes[0] = Some(p);
+    let mut hw = Script::new(&[F3], F3, F3);
+    let l = run_ladder(&mut hw, &d, USP).unwrap();
+    assert!(hw.log.is_empty(), "no instruction: {:?}", hw.log);
+    assert_eq!(l.end(), LadderEnd::NotRun);
+    assert_eq!(l.after, [None; 7]);
+    // No probed address: no ladder.
+    d.probes = [None, None];
+    assert_eq!(run_ladder(&mut hw, &d, USP), None);
+}
+
+#[test]
+fn the_ladder_cleans_the_lines_of_every_walk_it_read() {
+    let mut d = proc08_photo();
+    let mut p = d.probes[0].unwrap();
+    let mut other = p.walk;
+    other.slot = 3;
+    other.steps[3] = None; // stopped at L2
+    p.other = Some(other);
+    d.probes[0] = Some(p);
+    let mut hw = Script::new(&[F3, F3, F3, OK], F3, OK);
+    let l = run_ladder(&mut hw, &d, USP).unwrap();
+    assert_eq!(l.n_lines, 7);
+    let want: Vec<u64> = p.walk.steps.iter().chain(other.steps.iter()).flatten().map(entry_kva).collect();
+    assert_eq!(&l.lines[..7], &want[..]);
+    assert!(hw.log.contains(&"dc 7".to_string()));
+    // The address of a descriptor: its table's kernel alias plus 8 per entry.
+    let s = p.walk.steps[3].unwrap();
+    assert_eq!(entry_kva(&s) - entry_kva(&Step { index: 0, ..s }), 180 * 8);
+}
+
+#[test]
+fn the_ladder_lines_on_screen_and_serial() {
+    // R1.
+    let (l, _) = ladder_of(&[F3, F3, F3, F3, F3, OK], F3, OK);
+    let (scr, ser) = lines_of(&l);
+    assert_eq!(scr, "  ladder: L1 F3 sp F3 priv ok far F3 dsb F3 dc F3 vaale1 F3 vaae1 ok => fixed-by vaae1");
+    let k = |i: usize| entry_kva(&proc08_photo().probes[0].unwrap().walk.steps[i].unwrap());
+    assert_eq!(
+        ser,
+        format!(
+            "[crashwalk] far ladder va=0x1cb497c: usp=0x1d7cf80 priv=0x7f000 lines=0x{:x},0x{:x},0x{:x},0x{:x}; \
+             L1 par=0x000000000000080f sp+priv sp=0x000000000000080f priv=0xff00000001cb4b80 far par=0x000000000000080f \
+             dsb par=0x000000000000080f dc par=0x000000000000080f vaale1 par=0x000000000000080f \
+             vaae1 par=0xff00000001cb4b80 => fixed-by vaae1",
+            k(0),
+            k(1),
+            k(2),
+            k(3)
+        )
+    );
+    // R4, R2, R3, none, not run.
+    assert_eq!(lines_of(&ladder_of(&[OK], F3, OK).0).0, "  ladder: L1 ok => repeat");
+    assert_eq!(
+        lines_of(&ladder_of(&[F3, F3, F3, OK], F3, OK).0).0,
+        "  ladder: L1 F3 sp F3 priv ok far F3 dsb F3 dc ok => fixed-by dc"
+    );
+    assert_eq!(
+        lines_of(&ladder_of(&[F3, F3, F3, F3, F3, F3, OK], F3, OK).0).0,
+        "  ladder: L1 F3 sp F3 priv ok far F3 dsb F3 dc F3 vaale1 F3 vaae1 F3 vmalle1 ok => fixed-by vmalle1"
+    );
+    let (none, none_ser) = lines_of(&ladder_of(&[F3], F3, OK).0);
+    assert_eq!(none, "  ladder: L1 F3 sp F3 priv ok far F3 dsb F3 dc F3 vaale1 F3 vaae1 F3 vmalle1 F3 => none");
+    assert!(none_ser.ends_with(" vmalle1 par=0x000000000000080f => none"), "{none_ser}");
+    assert_eq!(lines_of(&ladder_of(&[F3, OK], F3, OK).0).0, "  ladder: L1 F3 sp F3 priv ok far ok => fixed-by sp+priv");
+    // A fault other than translation shows its FST: a permission fault L3
+    // (FST 0b001111) on the stack page.
+    assert_eq!(
+        lines_of(&ladder_of(&[F3, OK], 0x81f, OK).0).0,
+        "  ladder: L1 F3 sp x0f priv ok far ok => fixed-by sp+priv"
+    );
+    let mut ok = ladder_of(&[F3], F3, OK).0;
+    ok.start = OK;
+    ok.after = [None; 7];
+    let (scr, ser) = lines_of(&ok);
+    assert_eq!(scr, "  ladder: not run, AT ok");
+    assert_eq!(ser, "[crashwalk] far ladder va=0x1cb497c: not run, AT ok par=0xff00000001cb4b80");
+}
+
+#[test]
+fn the_ladder_line_sits_under_the_first_address_and_fits_the_pi_screen() {
+    // Case d with a ladder on far: one line more, right after far's summary,
+    // before the pc lines; the serial line likewise.
+    let mut d = case_d();
+    let mut hw = Script::new(&[F3], F3, OK);
+    let far = d.probes[0].unwrap();
+    let mut l = run_ladder(&mut hw, &proc08_photo(), USP).unwrap();
+    l.va = far.hw.va;
+    d.ladder = Some(l);
+    let mut s = String::new();
+    write_screen(&mut s, &d).unwrap();
+    let lines: Vec<&str> = s.lines().collect();
+    assert_eq!(lines.len(), 2 + 2 * 7 + 1);
+    assert!(lines[8].starts_with("  => model=invalid"), "{}", lines[8]);
+    assert!(lines[9].starts_with("  ladder: L1 F3 "), "{}", lines[9]);
+    assert!(lines[10].starts_with("pc 1a1b1b0 s1:"), "{}", lines[10]);
+    for l in &lines {
+        // 240 columns at 1920x1080; the ladder line with every rung and the
+        // widest results stays far below.
+        assert!(l.len() <= if l.contains("ladder:") { 107 } else { 80 }, "{} columns: {l}", l.len());
+        assert!(l.bytes().all(|b| (0x20..0x7f).contains(&b)), "printable ASCII only: {l:?}");
+    }
+    // The other lines are those without a ladder.
+    let mut plain = String::new();
+    d.ladder = None;
+    write_screen(&mut plain, &d).unwrap();
+    let without: Vec<&str> = lines.iter().copied().filter(|l| !l.contains("ladder:")).collect();
+    assert_eq!(without, plain.lines().collect::<Vec<_>>());
+    let mut ser = String::new();
+    d.ladder = Some(l);
+    write_serial(&mut ser, &d).unwrap();
+    let sl: Vec<&str> = ser.lines().collect();
+    assert!(sl[7].starts_with("[crashwalk] far summary:"), "{}", sl[7]);
+    assert!(sl[8].starts_with("[crashwalk] far ladder va=0x1a2c000: usp="), "{}", sl[8]);
+    assert!(sl[9].starts_with("[crashwalk] pc va="), "{}", sl[9]);
+    // The widest screen line: every rung ran, every result before the last
+    // a three-character `x..`, the last rung fixed it. 107 of the 240
+    // columns at 1920x1080.
+    let mut wide = l;
+    wide.start = 0x81f;
+    wide.sp_par = Some(0x81f);
+    wide.priv_par = Some(0x81f);
+    wide.after = [Some(0x81f), Some(0x81f), Some(0x81f), Some(0x81f), Some(0x81f), Some(0x81f), Some(OK)];
+    let (w, _) = lines_of(&wide);
+    assert_eq!(
+        w,
+        "  ladder: L1 x0f sp x0f priv x0f far x0f dsb x0f dc x0f vaale1 x0f vaae1 x0f vmalle1 ok => fixed-by vmalle1"
+    );
+    assert_eq!(w.len(), 107);
 }

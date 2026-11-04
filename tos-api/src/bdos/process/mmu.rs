@@ -2083,6 +2083,13 @@ pub mod diag {
         slot_of_l0(l0_pa)
     }
 
+    /// The kernel address of the descriptor `step` read — the address the
+    /// walk read it through (`table_at`), for cache maintenance by VA on
+    /// its line (the crash ladder, `crash_diag::run_ladder`).
+    pub fn entry_kva(step: &Step) -> u64 {
+        (table_at(step.table_pa) as u64).wrapping_add(step.index as u64 * 8)
+    }
+
     /// Walk `va` through `slot`'s tables, checking every table pointer
     /// before it is read (see the module docs). The level indices are those
     /// of [`translate`]: L0 index 0 (every user VA is below

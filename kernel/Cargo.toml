@@ -82,7 +82,10 @@ crash-nowait = []
 # answers now, and the memory-protection model's view of the page
 # (`kernel/src/arch/aarch64/crash_walk.rs`), and the same diagnosis as a
 # compact block on the screen crash report, after the report text and before
-# the key prompt (readable without `serial=on`). No allocation; the report
+# the key prompt (readable without `serial=on`). After the collection, when
+# the first `AT` failed, a ladder of barrier, cache and TLB maintenance steps,
+# each followed by `AT` again, and one more line with the step that fixed the
+# translation (TASK/PROC08 "Stand Leiter"). No allocation; the report
 # text and the crash behaviour are unchanged. Off by default (the module and
 # its hook are compiled out); `cargo xtask build --board rpi4 --release
 # --features crash-walk` (combinable with `crash-nowait`).

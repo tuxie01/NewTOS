@@ -1,0 +1,107 @@
+measurement-2026-11-04-proc08-ladder -- TASK/PROC08 "Stand Leiter": the crash ladder (stage 1 of
+docs/analysis/proc08-candidate-b-2026-11-04.md section 9.1, no breadcrumbs, no stage 3) in the existing debug
+feature `crash-walk`. Developer, 2026-11-04. Tree = HEAD 233e404e + the uncommitted change set below. QEMU only;
+no hardware, no real card. The PROC08 fix (01eb7709) is untouched.
+
+RESULT IN ONE LINE: with `crash-walk` on, after the collection and when the first AT on the faulting address failed,
+the kernel runs L1 AT again / L2 AT on SP_EL0 and on 7f000 / L3 dsb / L4 dc civac of the walked descriptors / L5 tlbi
+vaale1is / L6 tlbi vaae1is / L7 tlbi vmalle1is, each followed by AT S1E0R, stops at the first success, and reports it
+in one serial and one screen line (`=> fixed-by <rung>` / `=> repeat` / `=> none`, or `not run, AT ok`); QEMU raspi4b
+at 1920x1080 shows the line on screen (case j: `=> none`, table INVALID; case x: `not run, AT ok`); feature off =
+kernel byte-identical to HEAD (rpi4 and qemu-virt, release and dev, locdiff 0 bytes); host tests 1958/0/1 (baseline
+1952/0/1, +6); warnings at the baseline.
+
+1 THE CHANGE
+  tos-api/src/bdos/process/crash_diag.rs (cfg crash-walk): Rung, RUNGS, LadderHw (the kernel half), Ladder,
+    LadderEnd, Ladder::end, run_ladder (order, stop at first success, descriptor lines of the walk(s)),
+    screen_ladder / serial_ladder; CrashDiag.ladder (collect sets None); write_serial / write_screen print the
+    ladder line after the summary line of the first probed address; module docs.
+  tos-api/src/bdos/process/mmu.rs (inside `pub mod diag`, cfg crash-walk): entry_kva (kernel address of a walked
+    descriptor, the address the walk read it through).
+  kernel/src/arch/aarch64/crash_walk.rs: report() runs crash_diag::run_ladder(&mut Ladder, &diag, report.usp)
+    after collect and before write_serial; struct Ladder implements LadderHw with the instructions; module docs
+    with every barrier sequence and its ARM ARM / TRM cite.
+  kernel/Cargo.toml: feature comment only (edited after the identity copy below was taken; a comment).
+  tos-api/tests/proc08_crash_walk.rs: case_d gets `ladder: None`; +6 tests (scripted LadderHw: order and stop,
+    every end incl. the expected outputs of analysis 9.1, not run when AT ok / no probe, dc lines of both walks,
+    exact screen and serial lines, placement under the first address and widths <= 107 columns).
+  TASK/PROC08.md: ladder row + reading table in the legend of "Stand Schirmbericht"; new section "Stand Leiter";
+    five line cites into the moved code updated to their new lines.
+
+2 BARRIERS (sources read locally, references/arm-arm/; full text in the module docs of crash_walk.rs)
+  L3  dsb ish; isb                                  control: the barrier part of L5-L7 alone
+  L4  dc civac, <line> (each walked descriptor); dsb ish
+                                                    C5.3.21 C5-1128; D7.5.9.15 D7-7667 (complete only after a DSB
+                                                    with access type loads+stores); B2.6.9 B2-302/303
+  L5  tlbi vaale1is, Xt; dsb ish; isb               VAAL RJXKNN D8-7869
+  L6  tlbi vaae1is, Xt; dsb ish; isb                VAA  RZSXRQ D8-7869
+  L7  tlbi vmalle1is; dsb ish; isb                  VMALL RPMNQC D8-7867
+  all TLBI: IS = Inner Shareable domain (IDMCXY D8-7863); Xt = (va >> 12) & (2^44-1) (IZVNJG D8-7863/7864;
+  [47:44] RES0 without FEAT_TTL, optional from Armv8.3 A2-128, A72 = Armv8-A TRM 1.2.1 p.1-15); complete after
+  DSB + context synchronization event without FEAT_ETS2 (IBLDZX D8-7875; A72 ID_AA64MMFR1_EL1 RES0, TRM Table
+  10-10 p.10-364); ISB is such an event (Glossary p.17126).
+  Correction to analysis 9.1: it cites RDRCZZ for vaale1; RDRCZZ is VAL (with ASID); VAAL is RJXKNN.
+  Disassembly of the rpi4 release feature kernel: `tlbi vaae1is, x0; dsb ish; isb` and `tlbi vaale1is, x0` and
+  the `dc civac` sequence in crash_walk::report (llvm-objdump).
+
+3 FEATURE IDENTITY + WARNINGS (method/identity-and-warnings.sh: calls
+  measurements/measurement-2026-11-02-proc08-diag/method/feature-identity.sh unchanged, then feature-on clippy of
+  base; output checks/feature-identity.txt, checks/locdiff-*.txt)
+  base = git archive HEAD 233e404e, aftr = working tree (before the kernel/Cargo.toml comment edit), same path
+  length, SOURCE_DATE_EPOCH=1793404800. Raw binaries base == aftr byte for byte for rpi4-release (0246b2ff...),
+  rpi4-dev (adb04bc9...), qemu-virt-release (152f08dc...), qemu-virt-dev (813cf461...); locdiff "0 differing bytes
+  in 0 words; unexplained: 0" for all four. Feature on: rpi4 and qemu-virt, release and dev, build OK.
+  clippy (kernel lib / tos-api lib warnings), both boards, --release:
+    feature off: base 121 / 74, aftr 121 / 74
+    feature on:  base 121 / 74, aftr 121 / 74
+  none in the touched files; cargo clippy -p tos-api --test proc08_crash_walk: no warning in the test file.
+
+4 KERNEL (rpi4 release, working tree): cargo xtask build --board rpi4 --release --features crash-walk
+  target/aarch64-unknown-none-softfloat/release/kernel8.img
+  sha256 61e09afed778e92a44b6a1c0f80eb76a69bb30325ad36a918060283882cf8361 (ELF `kernel`
+  4d7e0a2677501037b6ebf47bfa891c717ea17c111744e33c731efc10d1b3f88d) = the kernel of every run below (scratch copy
+  k-pi.img, deleted). Copied nowhere. Without crash-nowait.
+
+5 CARD
+  method/all-runs.sh calls measurements/measurement-2026-11-04-proc08-screen/method/make-card.sh (CWONE.NAP +
+  CWKID.NAP via sdk/build.sh, ONE base image via tools/mkcard.sh, NEWDESK.INF "#Z 01 C:\CWONE.NAP@") and
+  .../run-shot.sh per run (APFS clone cp -c, C:\CWCASE.TXT in the clone, QEMU 11.0.2 -M raspi4b -display none
+  -global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080 -append "<args>", QMP screendump after 45 s and 5 s
+  later, clone deleted). Base image deleted after the runs.
+  CWONE.NAP 150b082b..., CWKID.NAP 18afa910... (same as the screen run); image_sha256
+  e772d421569c094fe5991cfdab502b6b3ddf22e5f42cbc4fdbc8a043b0c8adc1; manifest: base.img.manifest (this directory).
+  host_clang line of the manifest: host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  optional_missing line of the manifest, verbatim:
+optional_missing none
+  Card clones: sha256 after = before in every run (serial/<run>/run.txt): the kernel wrote nothing.
+
+6 RUNS (serial/<run>/{run.txt,qmp.txt,SERIAL.txt}, screendumps/<run>.png and <run>-5s.png; both dumps of each run
+  have the same sha256: the crash screen stood still at the prompt)
+  l1-j-1080          "" (serial off; SERIAL.txt 0 bytes), case j: jump to a freed pool page (instruction abort,
+                     far = pc, esr 82000007). Screen (checked by eye): report, 9-line block, then
+                     "  ladder: L1 F3 sp ok priv ok far F3 dsb F3 dc F3 vaale1 F3 vaae1 F3 vmalle1 F3 => none",
+                     then the prompt; everything on screen, the prompt in row 32 of 67.
+                     screendump 13666b10447bc73008ae62a24368c018aaab7467888ac9f0529f25d04632518d
+  l2-j-1080-serial   "serial=on", case j. Serial line 68:
+                     [crashwalk] far ladder va=0x1d8b000: usp=0x1d8a430 priv=0x7f000 lines=0xffff0000002eb000,
+                     0xffff0000002ec000,0xffff0000002ed070,0xffff0000011c6c58; L1 par=0x000000000000080f sp+priv
+                     sp=0xff00000001d8ab80 priv=0xff0000000028cb80 far par=0x000000000000080f dsb par=0x...080f
+                     dc par=0x...080f vaale1 par=0x...080f vaae1 par=0x...080f vmalle1 par=0x...080f => none
+                     (one line in the file); the four lines are L0[0], L1[0], L2[14] (+0x70), L3[395] (+0xc58) of
+                     the walk. Screen mirror line 97 = the screen line of l1; screendump identical to l1.
+  l3-x-1080-serial   "serial=on", case x: execute at $700 (permission fault, UXN; AT S1E0R ok). Serial line 68
+                     "[crashwalk] far ladder va=0x700: not run, AT ok par=0xff0000000027cb80"; screen
+                     "  ladder: not run, AT ok" (checked by eye).
+                     screendump a1aabbc4dc22fe8c8788e37a182ca6c996a30206f7b869067343925591c1dbe4
+  Why `none` in j: the freed page is INVALID in the table (walk `-> INVALID at L3`, model no block), so hardware and
+  table agree and no maintenance can map it -- the expected answer. QEMU cannot produce the PROC08 case (table
+  valid, AT fault): it models neither the A72 TLB nor its walk cache (TASK/PROC08 F7), so the `fixed-by` and
+  `repeat` ends are host-tested only.
+
+7 HOST
+  cargo xtask test (full): 187 result lines, 1958 passed, 0 failed, 1 ignored, exit 0 (checks/xtask-test.txt; result
+  lines only). Baseline 1952/0/1; +6 tests in tos-api/tests/proc08_crash_walk.rs (now 19).
+
+NOT COVERED: the real Pi 4 (the ladder's purpose: a PROC08 crash with this kernel, photo of the line); qemu-virt boot
+of the feature kernel (built only); 640x480 (the ladder line is wider than 80 columns there and wraps; the block
+did not fit at 80x30 before either, screen run s8).

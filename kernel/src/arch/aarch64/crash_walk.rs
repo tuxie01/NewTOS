@@ -8,7 +8,7 @@
 //! while the hardware reported the fault, or not?
 //!
 //! For each address four views, taken in this order before anything else
-//! runs:
+//! runs (then the ladder, below):
 //!
 //! 1. **hardware now** — `AT S1E0R` with the faulting root still in
 //!    `TTBR0_EL1`, result from `PAR_EL1` (below);
@@ -56,8 +56,52 @@
 //!   `op0=0b11 op1=0b000 CRn=0b0111 CRm=0b0100 op2=0b000` (D24-9528).
 //! * `TTBR0_EL1`, 64-bit format: `ASID` in bits [63:48], `BADDR` in
 //!   [47:1] (D24.2.208, D24-10043).
+//!
+//! ## The ladder (TASK/PROC08 "Stand Leiter")
+//!
+//! After the collection — the walk only reads, the ladder changes the
+//! TLB — and only when the first `AT` on the faulting address failed,
+//! [`report`] runs the rungs of [`crash_diag::RUNGS`] through
+//! [`crash_diag::run_ladder`]; each is followed by `AT S1E0R` on that
+//! address (`at; isb; mrs par_el1`, above) and the ladder stops at the
+//! first success. The decision and the lines are tos-api's; the
+//! instructions are here ([`Ladder`]). Barriers, ARM ARM DDI 0487 M.d:
+//!
+//! * L1 (`AT` again) and L2 (`AT` on the page of `SP_EL0` and on the
+//!   private page `PRIV_PAGE_VA`, then on the address): no maintenance.
+//! * L3 `dsb ish; isb` — the barrier part of L5–L7 alone, as the control.
+//! * L4 `dc civac, <line>` for every descriptor the walk(s) read (kernel
+//!   address of the entry; "No alignment restrictions apply to this VA",
+//!   C5.3.21, C5-1128), then `dsb ish`. A data cache maintenance
+//!   instruction "is only guaranteed to be complete, and its effects
+//!   visible to other observers, following a DSB instruction executed by
+//!   the PE", a DSB of access type loads and stores (D7.5.9.15, D7-7667);
+//!   such a DSB completes every cache maintenance instruction before it,
+//!   and no later instruction performs any part of its function until it
+//!   completes (B2.6.9, B2-302/303) — so the following `AT` walks after the
+//!   clean. Clean *and* invalidate: a dirty line is written back first,
+//!   nothing is lost.
+//! * L5 `tlbi vaale1is, <Xt>` — VAAL: stage 1 entries of the final lookup
+//!   level for the address, global and any ASID (`RJXKNN`, D8-7869);
+//!   L6 `tlbi vaae1is, <Xt>` — VAA: entries from **any** lookup level for
+//!   the address, global and any ASID (`RZSXRQ`, D8-7869);
+//!   L7 `tlbi vmalle1is` — VMALL: all stage 1 entries of the EL1&0 regime
+//!   from any lookup level (`RPMNQC`, D8-7867). `IS`: all TLBs in the
+//!   Inner Shareable domain (`IDMCXY`, D8-7863). `<Xt>` for VAA/VAAL:
+//!   bits [63:48] RES0 (no ASID argument), [47:44] RES0 without FEAT_TTL
+//!   (optional from Armv8.3, A2-128; the A72 implements Armv8-A, TRM 1.2.1,
+//!   S. 1-15), [43:0] = VA[55:12] (`IZVNJG`, D8-7863/7864): `(va >> 12)`
+//!   masked to 44 bits. Each followed by `dsb ish; isb`: without FEAT_ETS2
+//!   (A72: `ID_AA64MMFR1_EL1` RES0, TRM Table 10-10, S. 10-364) a TLB
+//!   maintenance instruction "is guaranteed to be complete after the
+//!   execution of DSB by that PE, followed by a Context synchronization
+//!   event" (`IBLDZX`, D8-7875); an `ISB` is one (Glossary, "Context
+//!   Synchronization event", S. 17126).
+//!
+//! Nothing runs between the rungs (no output, no allocation); the
+//! exception entry masked IRQs.
 
-use tos_api::bdos::process::crash_diag::{self, CrashDiag, HwProbe};
+use tos_api::bdos::process::crash_diag::{self, CrashDiag, HwProbe, LadderHw, Rung};
 use tos_api::bios::crash::CrashReport;
 
 /// `TTBR0_EL1` as it is now — in the crash path still the faulting root.
@@ -103,9 +147,63 @@ pub fn report(slot: usize, report: &CrashReport<'_>) -> CrashDiag {
     }
     // SAFETY: the crash path runs in the trap of the faulting program,
     // under the BDOS lock; the collection only reads.
-    let diag = unsafe { crash_diag::collect(slot, report, ttbr0, hw, crate::arch::aarch64::mmu::empty_l0_pa()) };
+    let mut diag = unsafe { crash_diag::collect(slot, report, ttbr0, hw, crate::arch::aarch64::mmu::empty_l0_pa()) };
+    // Then the ladder, which changes the TLB (module docs).
+    diag.ladder = crash_diag::run_ladder(&mut Ladder, &diag, report.usp);
     let _ = crash_diag::write_serial(&mut crate::hal::uart::UartWriter(&crate::console::CONSOLE), &diag);
     diag
+}
+
+/// `TLBI` operand of the VA forms without ASID: VA[55:12] in bits [43:0],
+/// bits [63:44] zero (module docs, `IZVNJG`).
+fn tlbi_va_operand(va: u64) -> u64 {
+    (va >> 12) & ((1 << 44) - 1)
+}
+
+/// The instructions of the ladder (module docs: barriers and cites).
+struct Ladder;
+
+impl LadderHw for Ladder {
+    fn at_s1e0r(&mut self, va: u64) -> u64 {
+        at_s1e0r(va)
+    }
+
+    fn maintain(&mut self, rung: Rung, va: u64, lines: &[u64]) {
+        let x = tlbi_va_operand(va);
+        match rung {
+            Rung::Again | Rung::Neighbours => {}
+            // SAFETY: EL1; barriers only.
+            Rung::Barrier => unsafe {
+                core::arch::asm!("dsb ish", "isb", options(nostack, preserves_flags));
+            },
+            Rung::CleanLines => {
+                for &line in lines {
+                    // SAFETY: EL1; `line` is a kernel address through which
+                    // the walk has just read a descriptor (mapped); clean
+                    // before invalidate, so no data is lost.
+                    unsafe {
+                        core::arch::asm!("dc civac, {a}", a = in(reg) line, options(nostack, preserves_flags));
+                    }
+                }
+                // SAFETY: EL1; a barrier only.
+                unsafe { core::arch::asm!("dsb ish", options(nostack, preserves_flags)) };
+            }
+            // SAFETY (the three TLBIs): EL1; they drop cached translations
+            // only, every later access walks the tables again, and the crash
+            // path does not change them.
+            Rung::Vaale1is => unsafe {
+                core::arch::asm!("tlbi vaale1is, {x}", "dsb ish", "isb", x = in(reg) x, options(nostack, preserves_flags));
+            },
+            // SAFETY: as above.
+            Rung::Vaae1is => unsafe {
+                core::arch::asm!("tlbi vaae1is, {x}", "dsb ish", "isb", x = in(reg) x, options(nostack, preserves_flags));
+            },
+            // SAFETY: as above.
+            Rung::Vmalle1is => unsafe {
+                core::arch::asm!("tlbi vmalle1is", "dsb ish", "isb", options(nostack, preserves_flags));
+            },
+        }
+    }
 }
 
 /// The screen block for `diag` into the console writer `w` of the report.

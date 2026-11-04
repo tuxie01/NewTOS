@@ -25,7 +25,8 @@
 //! (L0–L2, then L3 and where the walk ended; two more for the root in
 //! `TTBR0_EL1` when that is another slot's), the hardware answer, the rights
 //! model on three lines (one when memory protection is off) and the
-//! summary:
+//! summary; under the first address one more line, the ladder
+//! ([`run_ladder`]; not in this example, which predates it):
 //!
 //! ```text
 //! crash-walk slot 1 el0: ttbr0 2e6000 asid 0 = slot 1, exp 2e6000 rec 2e6000 same
@@ -39,7 +40,26 @@
 //! ```
 //!
 //! For realistic values every line stays within 80 columns (the console at
-//! 640×480); the Pi's 1920×1080 console has 240.
+//! 640×480), except the ladder line: 86 columns for the expected PROC08
+//! answer (`fixed-by vaae1`), at most 107; the Pi's 1920×1080 console has
+//! 240.
+//!
+//! ## The ladder
+//!
+//! When the first `AT` on the faulting address failed, the kernel runs a
+//! ladder of maintenance steps after the collection, each followed by
+//! `AT S1E0R` on that address, and stops at the first success
+//! ([`run_ladder`], the steps [`RUNGS`]; the instructions and their
+//! barriers are the kernel's, [`LadderHw`]). One line on each output:
+//!
+//! ```text
+//!   ladder: L1 F3 sp F3 priv ok far F3 dsb F3 dc F3 vaale1 F3 vaae1 ok => fixed-by vaae1
+//! ```
+//!
+//! ends in `=> fixed-by <rung>`, `=> repeat` (the second `AT` alone
+//! succeeded) or `=> none`; `ladder: not run, AT ok` when the first `AT`
+//! succeeded. The reading (which end points to which candidate):
+//! TASK/PROC08 "Stand Leiter".
 
 use core::fmt::{self, Write};
 use core::sync::atomic::Ordering;
@@ -119,6 +139,9 @@ pub struct CrashDiag {
     pub recorded: u64,
     /// `far`, then `pc` (see [`probe_addresses`]).
     pub probes: [Option<ProbeDiag>; 2],
+    /// The ladder on the first probed address ([`run_ladder`]); `None`
+    /// until the kernel ran it, or when no address was probed.
+    pub ladder: Option<Ladder>,
 }
 
 /// The fault came from EL0: `SPSR_EL1.M[3:0]` = `EL0t`.
@@ -184,7 +207,256 @@ pub unsafe fn collect(
         expected: mmu::l0_pa_for(slot),
         recorded: PROCESS_TABLE.get(slot).map_or(0, |p| p.l0_pa.load(Ordering::Acquire)),
         probes,
+        ladder: None,
     }
+}
+
+// ─── The ladder ─────────────────────────────────────────────────────────
+
+/// One rung of the crash ladder (TASK/PROC08 "Stand Leiter";
+/// `docs/analysis/proc08-candidate-b-2026-11-04.md` section 9.1), in the
+/// order [`RUNGS`] runs them. Every rung is followed by `AT S1E0R` on the
+/// faulting address; the ladder stops at the first rung after which that
+/// translation succeeds. The rungs accumulate: nothing is undone.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum Rung {
+    /// L1: the same `AT` again, nothing before it (does the fault hold?).
+    Again,
+    /// L2: `AT` on the page of `SP_EL0` and on the slot's private page
+    /// ([`mmu::PRIV_PAGE_VA`]) first (the whole 2-MiB region, or the page?).
+    Neighbours,
+    /// L3: `dsb ish; isb` alone (the control for the TLBI rungs).
+    Barrier,
+    /// L4: `dc civac` on every descriptor the software walk(s) read, then
+    /// `dsb ish` (the walker's view of memory).
+    CleanLines,
+    /// L5: `tlbi vaale1is` on the address (final level only), `dsb ish; isb`.
+    Vaale1is,
+    /// L6: `tlbi vaae1is` on the address (every level, any ASID),
+    /// `dsb ish; isb`.
+    Vaae1is,
+    /// L7: `tlbi vmalle1is` (everything of the EL1&0 regime), `dsb ish; isb`.
+    Vmalle1is,
+}
+
+/// The rungs in the order they run.
+pub const RUNGS: [Rung; 7] = [
+    Rung::Again,
+    Rung::Neighbours,
+    Rung::Barrier,
+    Rung::CleanLines,
+    Rung::Vaale1is,
+    Rung::Vaae1is,
+    Rung::Vmalle1is,
+];
+
+impl Rung {
+    /// The rung's name in the ladder lines and after `fixed-by`.
+    pub fn name(self) -> &'static str {
+        match self {
+            Rung::Again => "L1",
+            Rung::Neighbours => "sp+priv",
+            Rung::Barrier => "dsb",
+            Rung::CleanLines => "dc",
+            Rung::Vaale1is => "vaale1",
+            Rung::Vaae1is => "vaae1",
+            Rung::Vmalle1is => "vmalle1",
+        }
+    }
+}
+
+/// The kernel half of the ladder: the instructions (`kernel/src/arch/aarch64/crash_walk.rs`).
+pub trait LadderHw {
+    /// `AT S1E0R` on `va`, then `PAR_EL1`.
+    fn at_s1e0r(&mut self, va: u64) -> u64;
+    /// The maintenance of `rung` for the faulting address `va`, with its
+    /// barriers; `lines` are the kernel addresses of the descriptors the
+    /// walk read ([`Rung::CleanLines`]). Called for every rung except
+    /// [`Rung::Again`] and [`Rung::Neighbours`], whose `AT`s
+    /// [`run_ladder`] issues itself.
+    fn maintain(&mut self, rung: Rung, va: u64, lines: &[u64]);
+}
+
+/// At most two walks (the slot's and the one through the root in
+/// `TTBR0_EL1`) of four levels.
+pub const LADDER_LINES: usize = 8;
+
+/// The ladder's record: what ran and what the hardware answered.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct Ladder {
+    /// The probe it ran on (`"far"`, or `"pc"` without a fault address).
+    pub label: &'static str,
+    /// The faulting address.
+    pub va: u64,
+    /// `PAR_EL1` of the probe before the ladder (the first `AT`). A
+    /// successful one: the ladder did not run.
+    pub start: u64,
+    /// `SP_EL0` of the program (the report's `USP`), probed in L2.
+    pub sp: u64,
+    /// `PAR_EL1` of `AT S1E0R` on [`Self::sp`] in L2.
+    pub sp_par: Option<u64>,
+    /// `PAR_EL1` of `AT S1E0R` on [`mmu::PRIV_PAGE_VA`] in L2.
+    pub priv_par: Option<u64>,
+    /// Kernel addresses of the descriptors the walk(s) read (L4),
+    /// `lines[..n_lines]`.
+    pub lines: [u64; LADDER_LINES],
+    /// See [`Self::lines`].
+    pub n_lines: usize,
+    /// `PAR_EL1` of `AT S1E0R` on [`Self::va`] after each rung, in
+    /// [`RUNGS`] order; `None` = the rung did not run.
+    pub after: [Option<u64>; RUNGS.len()],
+}
+
+/// How the ladder ended.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum LadderEnd {
+    /// The first `AT` already succeeded: nothing to fix, nothing ran.
+    NotRun,
+    /// L1, the repeated `AT` with nothing before it, succeeded.
+    Repeat,
+    /// The `AT` after this rung was the first to succeed.
+    FixedBy(Rung),
+    /// No rung helped.
+    None,
+}
+
+impl Ladder {
+    /// See [`LadderEnd`].
+    pub fn end(&self) -> LadderEnd {
+        if self.start & PAR_F == 0 {
+            return LadderEnd::NotRun;
+        }
+        for (&rung, par) in RUNGS.iter().zip(self.after) {
+            if par.is_some_and(|p| p & PAR_F == 0) {
+                return if rung == Rung::Again { LadderEnd::Repeat } else { LadderEnd::FixedBy(rung) };
+            }
+        }
+        LadderEnd::None
+    }
+}
+
+/// Run the ladder on the first probed address of `d` through `hw`; `usp`
+/// is the program's `SP_EL0`. Runs after [`collect`] (the walk only reads,
+/// the ladder changes the TLB) and only when that address's first `AT`
+/// failed; stops at the first rung after which `AT` succeeds. `None` when
+/// `d` probed no address.
+pub fn run_ladder<H: LadderHw>(hw: &mut H, d: &CrashDiag, usp: u64) -> Option<Ladder> {
+    let p = d.probes.iter().flatten().next()?;
+    let mut l = Ladder {
+        label: p.hw.label,
+        va: p.hw.va,
+        start: p.hw.par,
+        sp: usp,
+        sp_par: None,
+        priv_par: None,
+        lines: [0; LADDER_LINES],
+        n_lines: 0,
+        after: [None; RUNGS.len()],
+    };
+    for s in p.walk.steps.iter().chain(p.other.iter().flat_map(|o| o.steps.iter())).flatten() {
+        l.lines[l.n_lines] = walkdiag::entry_kva(s);
+        l.n_lines += 1;
+    }
+    if l.start & PAR_F == 0 {
+        return Some(l);
+    }
+    for (i, &rung) in RUNGS.iter().enumerate() {
+        match rung {
+            Rung::Again => {}
+            Rung::Neighbours => {
+                l.sp_par = Some(hw.at_s1e0r(usp));
+                l.priv_par = Some(hw.at_s1e0r(mmu::PRIV_PAGE_VA));
+            }
+            _ => hw.maintain(rung, l.va, &l.lines[..l.n_lines]),
+        }
+        let par = hw.at_s1e0r(l.va);
+        l.after[i] = Some(par);
+        if par & PAR_F == 0 {
+            break;
+        }
+    }
+    Some(l)
+}
+
+/// A ladder result in the short screen form: `ok`, `F<level>` for a
+/// translation fault, `x<fst>` for any other fault.
+fn write_ladder_par<W: Write>(w: &mut W, par: u64) -> fmt::Result {
+    if par & PAR_F == 0 {
+        return w.write_str("ok");
+    }
+    let f = par_fault(par);
+    if f.fst >> 2 == 0b0001 {
+        write!(w, "F{}", f.level)
+    } else {
+        write!(w, "x{:02x}", f.fst)
+    }
+}
+
+fn write_ladder_end<W: Write>(w: &mut W, end: LadderEnd) -> fmt::Result {
+    match end {
+        LadderEnd::NotRun => Ok(()),
+        LadderEnd::Repeat => w.write_str("=> repeat"),
+        LadderEnd::FixedBy(r) => write!(w, "=> fixed-by {}", r.name()),
+        LadderEnd::None => w.write_str("=> none"),
+    }
+}
+
+/// The screen line of the ladder (with its leading indent and `\n`).
+fn screen_ladder<W: Write>(w: &mut W, l: &Ladder) -> fmt::Result {
+    if l.end() == LadderEnd::NotRun {
+        return w.write_str("  ladder: not run, AT ok\n");
+    }
+    w.write_str("  ladder:")?;
+    for (&rung, par) in RUNGS.iter().zip(l.after) {
+        let Some(par) = par else { break };
+        if rung == Rung::Neighbours {
+            for (name, p) in [("sp", l.sp_par), ("priv", l.priv_par)] {
+                write!(w, " {name} ")?;
+                match p {
+                    Some(p) => write_ladder_par(w, p)?,
+                    None => w.write_str("-")?,
+                }
+            }
+            w.write_str(" far ")?;
+        } else {
+            write!(w, " {} ", rung.name())?;
+        }
+        write_ladder_par(w, par)?;
+    }
+    w.write_str(" ")?;
+    write_ladder_end(w, l.end())?;
+    w.write_str("\n")
+}
+
+/// The serial line of the ladder: every `PAR_EL1` in full.
+fn serial_ladder<W: Write>(w: &mut W, l: &Ladder) -> fmt::Result {
+    write!(w, "[crashwalk] {} ladder va=0x{:x}: ", l.label, l.va)?;
+    if l.end() == LadderEnd::NotRun {
+        return writeln!(w, "not run, AT ok par=0x{:016x}", l.start);
+    }
+    write!(w, "usp=0x{:x} priv=0x{:x} lines=", l.sp, mmu::PRIV_PAGE_VA)?;
+    for (i, a) in l.lines[..l.n_lines].iter().enumerate() {
+        write!(w, "{}0x{:x}", if i == 0 { "" } else { "," }, a)?;
+    }
+    if l.n_lines == 0 {
+        w.write_str("none")?;
+    }
+    w.write_str(";")?;
+    for (&rung, par) in RUNGS.iter().zip(l.after) {
+        let Some(par) = par else { break };
+        write!(w, " {}", rung.name())?;
+        if rung == Rung::Neighbours {
+            for (name, p) in [("sp", l.sp_par), ("priv", l.priv_par)] {
+                write!(w, " {name}=")?;
+                serial_opt(w, p)?;
+            }
+            w.write_str(" far")?;
+        }
+        write!(w, " par=0x{par:016x}")?;
+    }
+    w.write_str(" ")?;
+    write_ladder_end(w, l.end())?;
+    w.write_str("\n")
 }
 
 impl CrashDiag {
@@ -326,7 +598,7 @@ pub fn write_serial<W: Write>(w: &mut W, d: &CrashDiag) -> fmt::Result {
         d.recorded,
         if d.roots_same() { "same" } else { "DIFFERENT" },
     )?;
-    for p in d.probes.iter().flatten() {
+    for (i, p) in d.probes.iter().flatten().enumerate() {
         let label = p.hw.label;
         serial_walk(w, label, &p.walk)?;
         if let Some(o) = &p.other {
@@ -340,6 +612,10 @@ pub fn write_serial<W: Write>(w: &mut W, d: &CrashDiag) -> fmt::Result {
             "[crashwalk] {} summary: model={} table={} at={} table==model {}",
             label, s.model, s.table, s.at, s.same,
         )?;
+        // The ladder ran on the first probed address.
+        if let (0, Some(l)) = (i, &d.ladder) {
+            serial_ladder(w, l)?;
+        }
     }
     Ok(())
 }
@@ -464,7 +740,7 @@ pub fn write_screen<W: Write>(w: &mut W, d: &CrashDiag) -> fmt::Result {
         d.recorded,
         if d.roots_same() { "same" } else { "DIFFERENT" },
     )?;
-    for p in d.probes.iter().flatten() {
+    for (i, p) in d.probes.iter().flatten().enumerate() {
         let label = p.hw.label;
         screen_walk(w, label, &p.walk)?;
         if let Some(o) = &p.other {
@@ -480,6 +756,9 @@ pub fn write_screen<W: Write>(w: &mut W, d: &CrashDiag) -> fmt::Result {
         screen_view(w, &p.view)?;
         let s = summary(p);
         writeln!(w, "  => model={} table={} at={} table==model {}", s.model, s.table, s.at, s.same)?;
+        if let (0, Some(l)) = (i, &d.ladder) {
+            screen_ladder(w, l)?;
+        }
     }
     Ok(())
 }
