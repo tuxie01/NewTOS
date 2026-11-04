@@ -1,0 +1,111 @@
+RUNINFO -- PROC08 fix (rank 1): child's tables freed only after TTBR0 left them,
+isb between msr ttbr0_el1 and tlbi; QEMU check of both boards (2026-11-04)
+
+WHAT
+  TASK/PROC08 "Stand Fix": the fix sketched in section 10 of
+  docs/analysis/proc08-candidate-b-2026-11-04.md (rank 1), user decision
+  2026-11-04; product code, no feature gate. The crash ladder (section 9.1)
+  is NOT part of this step (user: separate task later).
+  Changes (method/fix.diff, sha256 8e53be22..., the uncommitted diff of
+  kernel/ and tos-api/ on top of 24437ff0):
+    - kernel/src/arch/aarch64/exceptions.rs finish_terminate: restore_boot_ttbr0
+      before release_slot (as the unwind branch already did); after the release
+      only install_ttbr0 of the parent root. Stale QUIRK-001 comment replaced.
+    - kernel/src/arch/aarch64/user_entry.rs restore_boot_ttbr0 (ASIDs off):
+      dsb ishst; msr ttbr0_el1; isb; tlbi vmalle1; dsb ish; isb
+    - tos-api/src/bdos/process/mmu.rs switch_ttbr0_kernel (ASIDs off): same.
+    - kernel/src/arch/aarch64/mmu.rs install_stage2_ttbr1 (boot): msr ttbr0_el1
+      (empty root); isb; then msr ttbr1_el1; tlbi vmalle1; dsb ish; isb.
+  Rules (read locally, ARM ARM DDI 0487 M.d, Cortex-A72 TRM 100095_0003_06):
+  IRBMTM D8-7700, IBLDZX/ICPZSM D8-7875, RSQBCS/IRCGCH/RXCLRD D8-7852,
+  TRM 5.6 p. 5-282 (walk caches), TRM Table 10-10 p. 10-364
+  (ID_AA64MMFR1_EL1 RES0 -> no FEAT_ETS2).
+
+WHY QEMU CANNOT ACCEPT THE FIX
+  QEMU models neither the A72 TLB nor its intermediate walk caches; it never
+  showed PROC08 (measurements/measurement-2026-11-02-proc08/RUNINFO.TXT, 810
+  module starts, 0 crash). These runs show only that the changed switch
+  sequences do not break or wedge anything: boot, Pexec 3+4 children and
+  their return to the parent, memprot=verify consistent. Acceptance is a run
+  on the real Pi.
+
+SETUP
+  tree: 24437ff0 + method/fix.diff (uncommitted).
+  kernels (release, no extra features; built with `cargo xtask build --board
+  <b> --release`, rebuilt from the final tree afterwards with identical sha256):
+    rpi4      kernel8.img  sha256 607aa961e7e257f2bcf925596b96633afbe4667cb370f6e8ed923d6a3cf8bf33
+    qemu-virt kernel.img (flat, llvm-objcopy -O binary, as `cargo xtask run`)
+                           sha256 fd84746adbbc9db5fcb20438104f0e04c0c91770cd83ef2578fc101f266d7f0f
+  image: method/mkimage.sh (tools/make-sd-image.sh <scratch>/base.img 64), manifest
+    base.img.manifest (this directory), image_sha256 61d511b8...; manifest line
+    verbatim: `optional_missing none`; host_clang (manifest line verbatim):
+    `host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)`.
+    Per raspi4b run an APFS clone (cp -c) with NEWDESK.INF #Z set to the
+    autorun program (template measurements/measurement-2026-10-07-zview04/
+    method/newdesk-template.inf) and C:\LDGLOOP.NCP (the probe of
+    measurements/measurement-2026-11-02-proc08/method/ldgloop.c, same binary,
+    sha256 a7ed75071900b8853dc4c25219b5029daf81f594649031d395fcd2a93124dd87);
+    the clone is deleted after the run. No image written after a run is kept.
+  QEMU 11.0.2, one QEMU at a time. raspi4b: -M raspi4b -no-reboot -display none
+    -append "<bootargs>" (method/run-rpi4.sh). qemu-virt: the `cargo xtask run
+    --board qemu-virt --headless` machine (virt,gic-version=2, cortex-a72, 272M,
+    ramfb, qemu-xhci + usb-kbd + usb-mouse), -append "<bootargs>"
+    (method/run-virt.sh). Screendumps by QMP (method/qmp.py).
+  Order of the runs: method/runs.sh. Scratch only in the session scratchpad.
+  No SD card, no Pi.
+
+RESULTS
+  r1 raspi4b, zView autorun (#Z C:\ZVIEW\ZVIEW.NAP), `serial=on memprot=verify`, 120 s
+     serial/r1-zview.log: 10 module starts ("[exec] preparing program (slot 3)"
+     x10, Pexec 3+4 of the codecs), every child returned (zView reaches its
+     event loop: screendumps/r1-zview.png shows zView's menu bar
+     "zView File Edit View Help"), 0 [crash], 0 panic, 0 VERIFY MISMATCH
+     (last verify line: 155 checks, 50916664 pages, 0 mismatches). No wedge.
+  r2 raspi4b, ldgloop probe (#Z C:\LDGLOOP.NCP), `serial=on memprot=verify`
+     800 module starts (800 "[exec] preparing" lines in the full log), probe
+     verdict "ldgloop: done bad=0 free-ok", "'C:\LDGLOOP.NCP' exited with rc=0",
+     then the desktop again ("[desk] desktop up (1 drives)",
+     screendumps/r2-ldgloop.png). 0 [crash], 0 panic, 0 exception lines;
+     1633 "[memprot] verify:" lines, all "0 mismatches, 0 tolerated
+     shortfalls" (last: 11233 checks, 3726500650 pages). Done after ~200 s.
+     serial/r2-ldgloop-condensed.log = the full log without the "ldgtest: PASS"
+     / "ldgtest: info" lines, the "[exec] preparing/launching" lines and all
+     verify lines but the first and the last (full log sha256 1b0ef666...,
+     not kept, 695 KB).
+  r3 raspi4b, zView autorun, `serial=on memprot=verify asid=on`, 120 s
+     (the ASID branch of the switch, untouched, and finish_terminate's new
+     order with ASIDs on): "[mm] ASIDs ON: 16-bit", 10 module starts, 0 crash,
+     0 panic, 0 mismatch (serial/r3-zview-asid.log, screendumps/r3-zview-asid.png
+     = zView menu bar).
+  r4 qemu-virt, `serial=on memprot=verify`, 60 s: boot through the changed
+     install_stage2_ttbr1 ("[mm] MMU reinstalled"), kernel launch of NEWDESK
+     into EL0 ("[launch] EL0: slot 0", install_ttbr0 from the empty root),
+     "[desk] desktop up (0 drives)", 0 crash, 0 panic (serial/r4-virt-boot.log;
+     screendumps/r4-virt-boot.png: NEWDESK at 1920x1080, menu bar
+     "Desk File View Options", Trash and Printer icons).
+     NOT DONE on qemu-virt: zView and the ldgloop probe. The virt machine has
+     no drive (docs/sdk/06-image-and-testing.md, "Running in QEMU (virt)"),
+     and the only embedded program is NEWDESK (kernel/embed.rs), which
+     starts no Pexec child; so no EL0 Pexec parent/child round trip can run
+     on this board. The return path with a parent root (install_ttbr0 after
+     release_slot) is exercised on raspi4b only (r1-r3, 820 module starts).
+
+QUIRK-001 (docs/MEMORY.md)
+  The finish_terminate comment called a kprintln! between restore_boot_ttbr0
+  and install_ttbr0 load-bearing. That print was removed in c31f4637
+  (2026-06-19, "feat: run programs from the file system ..."; git log -S),
+  and the Pexec/Pterm round trip has run in QEMU raspi4b without it since
+  (e.g. 810 module starts in measurements/measurement-2026-11-02-proc08/). The
+  same-VA cause named in QUIRK-001 is gone since ARCH03 (ADR-028). The comment
+  is corrected. With this fix release_slot sits between restore and install;
+  r1-r3 (820 module starts, both ASID modes) ran without a wedge. The prints in
+  handle_pexec / apply_switch are unchanged.
+
+BUILD / TESTS (same tree)
+  cargo xtask build --release, rpi4 and qemu-virt, with and without
+  --features crash-walk: all rc=0, 159 warning lines each (baseline without
+  the fix, rpi4 and qemu-virt release: 159).
+  cargo clippy --features board-rpi4 / board-qemu-virt (kernel/): tos-api 74,
+  kernel 121 warnings; baseline without the fix: 74 / 121. No hit in the
+  changed lines.
+  cargo xtask test (full): 1952 passed / 0 failed / 1 ignored.

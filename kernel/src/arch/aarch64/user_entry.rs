@@ -119,11 +119,30 @@ pub unsafe fn restore_boot_ttbr0() {
         }
         return;
     }
+    // ASIDs off: every root runs with ASID 0, so whatever the TLB and the
+    // A72's intermediate table walk caches hold of the departing root would
+    // match under the next one (Cortex-A72 TRM 100095_0003_06 §5.6, p. 5-282:
+    // cached intermediate entries are tied to an ASID; with one shared ASID
+    // "you must invalidate the TLB to deallocate the translation table
+    // memory"). The `isb` between `msr` and `tlbi` is required (TASK/PROC08):
+    // a direct write to TTBR0_EL1 is "not required to be observed by indirect
+    // reads until completion of a Context synchronization event" (ARM ARM
+    // DDI 0487 M.d `IRBMTM`, D8-7700), so without it a walk issued after the
+    // `tlbi` may still start from the departing root and cache an
+    // intermediate entry the `tlbi` no longer removes — any entry that does
+    // not fault "is permitted to be cached … as the result of an explicit or
+    // speculative access" (`RSQBCS`, D8-7852). The `tlbi` is complete only
+    // after `dsb` and a Context synchronization event (`IBLDZX`, D8-7875;
+    // the A72 has no FEAT_ETS2: its ID_AA64MMFR1_EL1 is RES0, TRM Table
+    // 10-10, p. 10-364), and until then speculative accesses may use
+    // the old translation information (`ICPZSM`, D8-7875): hence the closing
+    // `dsb ish; isb`. Same shape as `mmu::size_asids` (`RVNRFW`).
     // SAFETY: writing TTBR0_EL1 + TLBI is permitted at EL1.
     unsafe {
         core::arch::asm!(
             "dsb ishst",
             "msr ttbr0_el1, {ttbr0}",
+            "isb",
             "tlbi vmalle1",
             "dsb ish",
             "isb",

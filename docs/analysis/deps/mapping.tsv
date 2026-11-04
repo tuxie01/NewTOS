@@ -225,6 +225,7 @@ xexec	bdos/proc.c	tos-api/src/bdos/process/pexec.rs	dispatch	mapped	Pexec 0x4B
 xexec	bdos/proc.c	tos-api/src/bdos/process/pexec.rs	load	mapped	the load modes (0, 3) under osif's restart after a media change (FS22)
 xexec	bdos/proc.c	tos-api/src/bdos/process/pexec.rs	load_once	mapped	one run of the load modes; its failure path is xexec's setjmp clean-up (proc.c:319-332): env + TPA freed by the loader, the slot released, no file handle (FS22)
 xterm	bdos/proc.c	tos-api/src/bdos/process/pterm.rs	terminate	mapped	Pterm 0x4C
+xterm	bdos/proc.c	kernel/src/arch/aarch64/exceptions.rs	finish_terminate	mapped	the resume half: run = run->p_parent (proc.c:608), parent frame, slot release, parent root (PROC08)
 xtermres	bdos/proc.c	tos-api/src/bdos/process/pterm.rs	terminate_resident	mapped	Ptermres 0x31
 bdos_trap2	bdos/rwa.S	-	-	unmapped	trap #2 with d0 = 0 as Pterm0 (CP/M-68K relic, bdos/rwa.S); no NewTOS counterpart found
 enter	bdos/rwa.S	tos-api/src/gemdos/mod.rs	dispatch	mapped	trap #1 entry; the AArch64 SVC entry itself is kernel code (kernel/src/arch)

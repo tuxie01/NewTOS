@@ -802,18 +802,21 @@ pub unsafe fn map_device_high(pa: u64, len: u64) {
 /// Sequence (per ARM ARM K11.5 "MMU programming"):
 /// 1. `dsb ishst` — publish the populated `L0`/`L1`/`L2` writes
 ///    that [`build`] just performed.
-/// 2. `msr ttbr1_el1, <new_l0_pa>` — install the new high-half root.
-/// 3. `tlbi vmalle1` — drop any stale Stage-1 translations.
-/// 4. `dsb ish` — gate the TLBI.
-/// 5. `isb` — refetch instructions under the new translation regime.
+/// 2. `msr ttbr0_el1, <empty>; isb` — drop the boot identity low half
+///    (the empty root, [`EMPTY_L0`]) and make that effective before the
+///    invalidation (TASK/PROC08; comment in the body).
+/// 3. `msr ttbr1_el1, <new_l0_pa>` — install the new high-half root.
+/// 4. `tlbi vmalle1` — drop any stale Stage-1 translations.
+/// 5. `dsb ish` — gate the TLBI.
+/// 6. `isb` — refetch instructions under the new translation regime.
 ///
 /// `MAIR_EL1` / `TCR_EL1` / `SCTLR_EL1` are **deliberately
 /// untouched**: Stage 1 already programmed them with the values
 /// Stage 2 wants, and rewriting `TCR_EL1` mid-flight would introduce
 /// a race window where the running PC's high-half VA is unmapped.
 ///
-/// `TTBR0_EL1` is also untouched (see comment at end of function);
-/// Phase 06 takes over the low-half on the first `Pexec`.
+/// `TTBR0_EL1` is left on the empty root (see comment at end of
+/// function); Phase 06 takes over the low-half on the first `Pexec`.
 ///
 /// # Safety
 ///
@@ -840,11 +843,24 @@ unsafe fn install_stage2_ttbr1() {
     // Stage-2 high-half install + low-half drop + TLB sync. Writing TTBR0
     // only affects low-half translation; the PC runs in the high-half
     // (TTBR1), so this is race-free.
+    //
+    // The empty TTBR0 is made effective (`isb`) before the `tlbi`
+    // (TASK/PROC08): a TTBR0_EL1 write is not observed by translation
+    // before a Context synchronization event (ARM ARM DDI 0487 M.d
+    // `IRBMTM`, D8-7700), so without it a speculative walk after the `tlbi`
+    // could still start from the boot identity root and cache its 1-GiB UXN
+    // blocks (`RSQBCS`, D8-7852) — the very entries this switch drops, and
+    // nothing invalidates them before the first kernel launch's
+    // `install_ttbr0` (no TLBI). The `tlbi` completes after `dsb` + Context
+    // synchronization event (`IBLDZX`, D8-7875). The kernel keeps running
+    // on the boot TTBR1 across that first `isb`; the TTBR1 write follows
+    // in the old order (`msr` then `tlbi`), unchanged.
     unsafe {
         core::arch::asm!(
             "dsb ishst",
-            "msr ttbr1_el1, {ttbr1}",
             "msr ttbr0_el1, {ttbr0}",
+            "isb",
+            "msr ttbr1_el1, {ttbr1}",
             "tlbi vmalle1",
             "dsb ish",
             "isb",

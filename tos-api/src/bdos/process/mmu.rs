@@ -1887,12 +1887,21 @@ pub unsafe fn switch_ttbr0_kernel(l0_pa: u64) {
         unsafe { install_tagged(l0_pa) };
         return;
     }
-    // SAFETY: writing TTBR0_EL1 + TLBI is permitted at EL1; the
-    // DSB pair brackets the invalidate per ARM ARM B5.2.
+    // `isb` between `msr` and `tlbi` (TASK/PROC08): the TTBR0_EL1 write is
+    // not observed by translation before a Context synchronization event
+    // (ARM ARM DDI 0487 M.d `IRBMTM`, D8-7700), so a walk after the `tlbi`
+    // could still start from the old root and cache an intermediate entry
+    // the `tlbi` misses (`RSQBCS`, D8-7852; Cortex-A72 TRM §5.6, p. 5-282).
+    // The `tlbi` completes after `dsb` + Context synchronization event
+    // (`IBLDZX`, D8-7875; no FEAT_ETS2 on the A72, whose ID_AA64MMFR1_EL1 is
+    // RES0, TRM Table 10-10); before that, speculative
+    // accesses may use the old translation information (`ICPZSM`, D8-7875).
+    // SAFETY: writing TTBR0_EL1 + TLBI is permitted at EL1.
     unsafe {
         core::arch::asm!(
             "dsb ishst",
             "msr ttbr0_el1, {ttbr0}",
+            "isb",
             "tlbi vmalle1",
             "dsb ish",
             "isb",

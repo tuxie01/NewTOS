@@ -43,7 +43,7 @@ Kinder startet, kann es treffen.
 - Kernstellen, an denen der Elternprozess nach dem Ende des Kindes wieder
   eingeschaltet wird bzw. das Kind startet (Ausgangspunkt, nicht Befund):
   `kernel/src/arch/aarch64/exceptions.rs:1781@install_ttbr0`,
-  `kernel/src/arch/aarch64/exceptions.rs:2160@handle_pexec`,
+  `kernel/src/arch/aarch64/exceptions.rs:2172@handle_pexec`,
   `kernel/src/arch/aarch64/exceptions.rs:2416@install_ttbr0`,
   `tos-api/src/bdos/process/mmu.rs:1688@install_ttbr0`.
 - [PROC01](PROC01.md) (Pexec-Modi), [MEM12](MEM12.md) (Seite-0-Schutz,
@@ -102,7 +102,7 @@ Anwender. Lauf und Nachweise:
   antwortet; ARM ARM DDI 0487 M.d C5.4.5, D8.2.13, D24.2.141 — Zitate im
   Modulkopf), `TTBR0_EL1` gegen die erwartete Wurzel, ein geprüfter
   Software-Walk durch die Tabellen des Slots
-  (`tos-api/src/bdos/process/mmu.rs:2081@walk`: jeder Tabellenzeiger wird
+  (`tos-api/src/bdos/process/mmu.rs:2090@walk`: jeder Tabellenzeiger wird
   vor dem Lesen gegen die eigenen Tabellen geprüft) und die Sicht des
   Rechtemodells auf die Seite
   (`tos-api/src/bdos/process/memprot.rs:2103@page_view`, gerechnet wie
@@ -255,5 +255,60 @@ auf, ohne DOOM davor; DOOM ist keine Vorbedingung.
 - Fix-Skizze für Rang 1 (nicht umgesetzt): in `finish_terminate` `restore_boot_ttbr0` vor
   `release_slot`; in `restore_boot_ttbr0` und `switch_ttbr0_kernel` ein `isb` zwischen `msr`
   und `tlbi`. Abnahme nur auf der Pi (QEMU ohne Walk-Cache).
+
+## Stand Fix (2026-11-04, Developer; Anwenderentscheid 2026-11-04)
+
+Umgesetzt ist nur der Fix für Rang 1 (Abschnitt 10 des Berichts), Produktcode,
+nicht an ein Feature gebunden. Die Leiter (Abschnitt 9.1) ist auf Anwenderwunsch
+**nicht** Teil dieses Schritts (eigene Aufgabe später). Lauf:
+`measurements/measurement-2026-11-04-proc08-fix/RUNINFO.TXT`.
+
+Zwei Regeln, an jeder Stelle geprüft (Quellen lokal gelesen, ARM ARM DDI 0487 M.d,
+Cortex-A72-TRM 100095_0003_06):
+
+- **R-a (Tabellen erst frei, wenn keine Wurzel sie mehr erreicht):** solange
+  `TTBR0_EL1` eine Wurzel nennt, darf der Walker deren Zwischeneinträge jederzeit,
+  auch spekulativ, zwischenspeichern (`RSQBCS`, `IRCGCH`, D8-7852); mit ASID aus
+  tragen alle Wurzeln ASID 0, und TRM §5.6 (S. 5-282) beschreibt genau den Fehler
+  „Tabelle freigegeben und neu belegt, über einen gespeicherten Zwischeneintrag
+  erreicht“ und verlangt das Invalidieren, bevor Tabellenspeicher freigegeben wird.
+- **R-b (`isb` zwischen `msr ttbr0_el1` und `tlbi`):** ein TTBR-Schreiben wirkt
+  für die Übersetzung erst nach einem Context-Synchronization-Event (`IRBMTM`,
+  D8-7700); ein TLBI ist erst nach `dsb` + CSE fertig (`IBLDZX`, D8-7875; der A72
+  hat kein FEAT_ETS2, `ID_AA64MMFR1_EL1` ist RES0, TRM Tabelle 10-10, S. 10-364),
+  bis dahin dürfen spekulative Zugriffe alte Übersetzungsdaten benutzen (`ICPZSM`,
+  D8-7875). Ohne `isb` kann ein Walk nach dem `tlbi` noch von der alten Wurzel
+  ausgehen und einen Eintrag hinterlassen, den nichts mehr entfernt.
+
+Geänderte Stellen:
+
+| Stelle | Änderung | Regel |
+|---|---|---|
+| `kernel/src/arch/aarch64/exceptions.rs:1766@restore_boot_ttbr0` (`finish_terminate`) | `restore_boot_ttbr0` **vor** `release_slot` (`kernel/src/arch/aarch64/exceptions.rs:1771@release_slot`), wie der Unwind-Zweig (`kernel/src/arch/aarch64/exceptions.rs:1622@restore_boot_ttbr0`); danach nur noch `install_ttbr0` der Eltern-Wurzel (`kernel/src/arch/aarch64/exceptions.rs:1794@install_ttbr0`) | R-a |
+| `kernel/src/arch/aarch64/user_entry.rs:144@ttbr0` (`restore_boot_ttbr0`, ASID aus) | `dsb ishst; msr ttbr0_el1; isb; tlbi vmalle1; dsb ish; isb` | R-b |
+| `tos-api/src/bdos/process/mmu.rs:1903@ttbr0` (`switch_ttbr0_kernel`, ASID aus) | dieselbe Folge | R-b |
+| `kernel/src/arch/aarch64/mmu.rs:861@ttbr0` (`install_stage2_ttbr1`, Boot) | erst `msr ttbr0_el1, leer; isb`, dann `msr ttbr1_el1` und `tlbi vmalle1; dsb ish; isb` wie bisher | R-b (sonst könnte die Boot-Identität mit ihren UXN-1-GiB-Blöcken nach dem `tlbi` neu geladen werden; bis zum ersten `install_ttbr0` des Starters invalidiert nichts mehr) |
+
+Geprüft, ohne Änderung:
+
+| Stelle | Befund |
+|---|---|
+| `tos-api/src/bdos/process/mmu.rs:1565@rollover_flush` | hat schon `msr; isb; tlbi vmalle1is; dsb ish; isb` (R-b erfüllt) |
+| `tos-api/src/bdos/process/mmu.rs:1688@install_ttbr0`, `tos-api/src/bdos/process/mmu.rs:1528@install_tagged`, `kernel/src/arch/aarch64/user_entry.rs:114@ttbr0` (`restore_boot_ttbr0`, ASID an) | kein `tlbi` nach dem `msr`: R-b greift nicht. `install_ttbr0` verlässt die leere Wurzel, die keinen gültigen Eintrag hat (Fehlereinträge werden nie gespeichert, `RXCLRD`, D8-7852) |
+| `kernel/src/arch/aarch64/boot.rs:393@ttbr0_el1` | MMU noch aus (`SCTLR_EL1.M` erst danach): Einträge werden nur bei eingeschalteter Übersetzung gespeichert (`RSQBCS`, `IRCGCH`); `isb` vor dem Einschalten vorhanden |
+| `exceptions.rs` `handle_pexec`, `apply_switch`, `restore_kernel_park` | `restore_boot_ttbr0` (jetzt mit `isb`), kein Tabellenfreigeben unter der alten Wurzel |
+| Pexec-Ladefehler und `release_unstarted_of`/`_at` (`free_slot` in `pexec.rs`), `accs.rs` | geben Slots frei, deren Wurzel seit `init_slot_tables` nie in `TTBR0_EL1` stand (Zustand `Loaded` bzw. Kernpfad mit leerer Wurzel); die Einträge des Vormieters fielen beim letzten Wurzelwechsel (R-b) |
+| `drop_private` / `make_private` (`replace_bbm`) | Break-before-make mit `tlbi` vor dem Freigeben (R-a erfüllt) |
+
+QUIRK-001: Das `kprintln!` zwischen `restore_boot_ttbr0` und `install_ttbr0`, das
+der alte Kommentar in `finish_terminate` „load-bearing“ nannte, steht seit
+`c31f4637` (2026-06-19) nicht mehr im Code; der Pexec/Pterm-Rückweg lief seitdem in
+QEMU raspi4b ohne es (u. a. 810 Modulstarts im Lauf
+`measurements/measurement-2026-11-02-proc08/RUNINFO.TXT`). Die Ursache aus
+QUIRK-001 (gleiche VA in Eltern und Kind) gibt es seit ARCH03 nicht mehr
+(ADR-028). Der Kommentar ist berichtigt.
+
+Ergebnisse siehe RUNINFO. Abnahme bleibt die Pi (QEMU hat keinen Walk-Cache und
+kann den Fehler weder zeigen noch seine Abwesenheit belegen).
 
 [Gemeinsame Regeln](README.md) gelten.

@@ -83,7 +83,7 @@ Accessories, NEWDESK, QED, PRESENT, zView, DUMPVDI, VDIDRAW, ARGVTEST an
 
 | Stub | VA | Wer springt hin |
 |---|---|---|
-| Upcall-Trampolin | `0x700` | Kern setzt `lr` darauf (`kernel/src/arch/aarch64/exceptions.rs:1850@TRAMPOLINE_VA`) |
+| Upcall-Trampolin | `0x700` | Kern setzt `lr` darauf (`kernel/src/arch/aarch64/exceptions.rs:1862@TRAMPOLINE_VA`) |
 | AES-`G_USERDEF`-Stub | `0x714` | Kern als Upcall-Handler (`exceptions.rs:923@USERDEF_TRAMPOLINE_VA`); gemessen in TeraDesk (`pc=0x724`) |
 | `just_rts` / `kbdvec_default` | `0xA00` / `0xA08` | Werte der `Kbdvbase`-Tabelle; DOOM kettet an den alten `kbdvec` (`sdk/apps/doom/doomgeneric_gem_kbdvec.c:57@kbdvec_old`) |
 | Reset-Stub | `0xA40` | OSHEADER `reseth`/`os_res1`; TeraDesk "Reboot" (`sdk/overlays/teradesk/main.c:2120,2142@rv`) |
