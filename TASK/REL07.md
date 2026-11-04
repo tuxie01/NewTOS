@@ -134,4 +134,12 @@ bereitstellen.
 - Beleg: `measurements/measurement-2026-11-04-rel07-final/RUNINFO.TXT` (Dateiliste mit
   sha256 und Herkunft, Unterschiede zum Entwurf und zu 0.6.1).
 
+## Stand Schritt 4 (Abnahme, Anwender 2026-11-04)
+
+Release-Kern `8ec56ee7…` (aus `NewTOS-0.7.zip`, Stand `d7711c42`) auf der
+Anwenderkarte: *„soweit passt alles, die Version wird auch richtig
+reported“* (`docs/HW-TEST-LOG.md`). Naechster Schritt: Veroeffentlichen erst
+nach ausdruecklichem Go (Push, Tag `v0.7`, Pre-Release mit ZIP), dann Texte an
+die Tester zur Freigabe.
+
 [Gemeinsame Regeln](README.md) gelten.
