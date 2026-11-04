@@ -1,0 +1,28 @@
+RUNINFO -- card kernel with the PROC08 fix and the crash-walk screen report (2026-11-04)
+
+WHAT
+  User 2026-11-04: put the PROC08 fix (01eb7709, Tester PASS
+  measurements/measurement-2026-11-04-proc08-fix-test/RUNINFO.TXT) on the test
+  card for the real-Pi acceptance: everyday use of zView without the crash
+  recurring. The crash-walk screen report stays in, serial stays off, so a
+  recurrence is still photographed.
+
+SOURCE STATE
+  commit e75e8397 (clean tree before this run directory)
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  kernel: kernels/kernel8.img (gitignored), cargo xtask build --board rpi4
+    --release --features crash-walk; build stamp "2026-11-04 (e75e8397)"
+    sha256 d8ab0c470a60c6913fadd95d36086eba0eb88dbc13a1cabc8c59ea885291ceca
+  optional_missing: not applicable (no image was built; one file copied by hand)
+
+CARD (disk4s1 = BOOT = C:)
+  Before: kernel8.img 6407f17c246d34f5... (measurements/measurement-2026-11-04-a128-proc08-card/),
+    cmdline.txt = 0x0a.
+  Written by hand on the user's word (cp -X, no script, no backup; the
+  replaced kernel is reproducible from c70a3e4b):
+    kernels/kernel8.img -> C:\kernel8.img
+  Read back after diskutil unmount force + mount disk4s1:
+    kernel8.img d8ab0c470a60c691...; cmdline.txt = 0x0a (unchanged).
+  Unchanged: kernela.img e0fe680b... (release fallback, boots if the changed
+    stage-2 boot install fails), everything else; the two old ._ files on C:
+    (dated 2026-10-31).
