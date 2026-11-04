@@ -1,0 +1,29 @@
+RUNINFO -- PROC08: everyday card kernel with the on-screen crash-walk report (2026-11-04)
+
+WHAT
+  User decision 2026-11-04 (TASK/PROC08.md, status "wartet auf
+  Wiederauftreten"): the test card runs a crash-walk kernel with serial
+  output off; when the PROC08 crash recurs during normal testing, the user
+  photographs the crash screen (diagnosis block, see PROC08 "Stand
+  Schirmbericht").
+
+SOURCE STATE
+  commit 5abcc20c (clean tree before this run directory)
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  kernel: kernels/kernel8.img (gitignored), cargo xtask build --board rpi4
+    --release --features crash-walk
+    sha256 89a5546b30ce2e097bfb9a0d948d69fbb3d5455677cd45736bb5274a43621f8f
+  Same code as the kernel in measurements/measurement-2026-11-04-proc08-screen/
+  (6f4704bf..., built before the commit; the build stamp differs).
+  optional_missing: not applicable (no image was built; files copied by hand)
+
+CARD (disk4s1 = BOOT = C:)
+  Before: kernel8.img e0c957d1... (crash-walk without screen block),
+    CMDLINE.TXT "serial=on memprot=verify".
+  Written by hand on the user's word (cp -X, no script, no backup):
+    kernels/kernel8.img -> C:\kernel8.img
+    C:\cmdline.txt = one newline (no options: serial off, memprot default)
+  Read back after diskutil unmount force + mount disk4s1:
+    kernel8.img 89a5546b30ce2e09... ; CMDLINE.TXT = 0x0a.
+  Unchanged: kernela.img e0fe680b... (release fallback), kernelb.img,
+    ACC (SYSACC + new X-Shot), programs, the two old ._ files on C:.
