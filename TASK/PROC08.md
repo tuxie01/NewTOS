@@ -1,6 +1,6 @@
 # PROC08 — Rueckkehr aus `Pexec(4)` findet die Code-Seite des Elternprozesses nicht
 
-Status: **WARTET AUF WIEDERAUFTRETEN** 2026-11-04 (Anwender: Kartenkern mit `crash-walk`, serielle Ausgabe aus; bei einem Absturz Foto des Schirmberichts, siehe "Stand Schirmbericht"; angelegt 2026-10-31) · Prioritaet: **P1** · Typ: Kernfehler — Ursachenforschung zuerst, Fix erst nach Vorlage der Ursache — Fund C1-2 aus [PITEST01](PITEST01.md), Lauf C1
+Status: **OFFEN — wieder aufgetreten 2026-11-04, Befund Kandidat B** (Foto des Schirmberichts, `measurements/measurement-2026-11-04-proc08-recur/RUNINFO.TXT`; vorher wartend seit 2026-11-04; angelegt 2026-10-31) · Prioritaet: **P1** · Typ: Kernfehler — Ursachenforschung zuerst, Fix erst nach Vorlage der Ursache — Fund C1-2 aus [PITEST01](PITEST01.md), Lauf C1
 
 Vor-Start-Pruefung: Produkt-Ticket, Kartenprogramm betroffen (zView laedt
 seine Bildformat-Module so); jedes Programm, das per `Pexec` 3+4 Module oder
@@ -207,5 +207,20 @@ oben); hier nur die Lesart in Kurzform.
 | `  model: holds … expect D shared D' pend …` | Rechte des Slots, Deskriptor laut Modell (Eigentümer / Nichteigentümer), ausstehende Änderungen | `holds yes`, `expect` gültig, Walk `INVALID` → A im fortschreibenden Teil. `holds no`/`expect 0` für die eigene Code-Seite → A im Modell. `pend yes`: zur Fehlerzeit lagen Änderungen noch nicht in den Tabellen. |
 | `  model: priv need … has … short N live X group G temp T space B` | private L3 nötig/vorhanden, Arena-Engpässe, lebende Slots, Speicherraum des Slots (Pexec(4)) | `short` > 0: Arena erschöpft (widerlegt, hier sichtbar). `need yes has no`: private Tabelle fehlt. |
 | `  => model=… table=… at=… table==model …` | die drei Antworten nebeneinander | `valid/valid/ok` oder `valid/valid/fault` → **B**. `valid/invalid/…` → **A**, Tabellenpflege. `invalid/invalid/fault` → **A**, Modell. `table==model NO`: L3-Deskriptor ≠ Modell. |
+
+## Stand 2026-11-04 — wieder aufgetreten, Kandidat B
+
+Auf der Karte (Kern `6407f17c…` mit `crash-walk`, serielle Ausgabe aus) beim
+Alltagstest erneut abgestuerzt; Foto und Abschrift:
+`measurements/measurement-2026-11-04-proc08-recur/RUNINFO.TXT`. Gleiche Stelle wie C1
+(pc `1cb497c` = zView text+`2e97c`, erster Befehl nach `Pexec(4)` in
+`ldg_load`, X30 `1cb4964`, basepage `01c85000`). Schirmblock:
+`=> model=valid table=valid at=fault table==model yes`. Wurzel richtig
+(`ttbr0 2f0000 = slot 2, exp/rec gleich`), L3[180] bildet die Seite ab
+(`20000001cb4743`, EL0-ausfuehrbar), Modell stimmt (`holds yes`, `pend no`),
+aber `AT S1E0R` faellt auf Stufe 3. Nach der Lesart oben: **Kandidat B**, die
+MMU arbeitet mit veraltetem Uebersetzungszustand; Kandidat A ist fuer diesen
+Fall widerlegt. Naechster Schritt: Mechanismus von B belegen (welcher
+Zustand ist veraltet, an welcher Stelle fehlt die Pflege), Bericht vor jedem Fix.
 
 [Gemeinsame Regeln](README.md) gelten.
