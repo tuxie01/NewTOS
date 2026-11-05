@@ -1,0 +1,192 @@
+measurement-2026-11-05-a130 -- TASK/A130, GitHub #2 ("Redraw im Slider", ragnar76, confirmed by wosch163):
+what the screen shows while the user presses and drags in a window's scroll bars (track and elevator)
+and after the release, and which messages the application gets -- pinned EmuTOS oracle vs NewTOS head,
+the same probe, the same pointer packets, compared by pixels and by the logged messages.
+==========================================================================================================
+Auditor, 2026-11-05 (host clock CET). Main tree at eae13cec (clean at the start; the only changes are the
+untracked probe files below and this run directory). No product code changed, no SD card, no Pi,
+nothing committed. Report: docs/audits/2026-11-05-a130-slider.md.
+
+WHY
+  #2: a window grown until the elevator fills its track; a press "in the empty slider" and a drag show a
+  pattern like the desktop background (photo in the issue: horizontal bands of the track's dither inside
+  the white elevator column). TASK/TOOL33.md candidates 24 (EmuTOS hctl_window drags an XOR outline via
+  gr_slidebox, gemctrl.c:305; NewTOS drag_elevator repaints the real elevator live) and 27 (thumb_geom caps
+  the elevator length) -- read, not measured. Both treated as hypotheses.
+
+PROBE  tosdump/probes/slprobe.c (+ run-slprobe.sh, slprobe-qmpshots.py, slprobe-mouse.txt, slprobe-shots.txt;
+  new, untracked). A sibling of mgprobe.c: same etv_timer mouse feeder on EmuTOS, same tools/inject-arm.py
+  arming (launch:SLPROBE) on NewTOS, same tosdump ABI backends, same screenshot mechanics (run-slprobe.sh is
+  run-mgprobe.sh with the names changed, SLPROBE_MOUSE/SLPROBE_SHOTS overrides, and a 800 s NewTOS limit).
+  One window, kind 0x0FEF (all gadgets but INFO, no WF_NAME string), border 80,60,400,320 (work
+  81,83,376,274 on both sides). WM_REDRAW: rectangle list clipped to the damage, objc_draw of a white G_BOX.
+  A press in the WORK area selects a configuration by column (x 120 = size 1000, 220 = 300, 310 = -1 the
+  minimum, 420 = quit) and sets WF_VSLSIZ = WF_HSLSIZ = size, WF_VSLIDE = WF_HSLIDE = 500 (re-applied in
+  full on every such press). Replies: WM_VSLID/WM_HSLID -> wind_set(WF_?SLIDE, msg[4]); WM_ARROWED -> the
+  position +-250 (page) / +-50 (line), clamped 1..1000, wind_set. Every message is logged with its 8 words;
+  a run of equal WM_ARROWED is logged as one R line plus one X line with the count.
+  Wait: evnt_multi(MU_BUTTON|MU_MESAG, 2, 1, 1) (the desktop's, as mgprobe.c).
+GEOMETRY (exploration run on the oracle, method/gen-explore.py, output in scratch only):
+  vertical bar x 458..478, track y ~105..334; horizontal bar y 358..378, track x ~103..434
+  elevators: size 1000 V y 106..333, H x 104..431; size 300 V y 186..253, H x 219..317;
+             size -1 V y 211..228, H x 259..276. NewTOS draws them at the same pixels at rest (all
+             "before" shots equal, below).
+INPUT (method/gen-slprobe-input.py, v3 = tosdump/probes/slprobe-mouse.txt / slprobe-shots.txt, case table
+  method/slprobe-cases.tsv): per size (1000, 300, -1) and axis (V, H):
+    dragslow  config click; pointer onto the elevator centre; shot "before"; PRESS; 4 shots held still
+              (held0..3, 30 ticks apart); +8 px steps (shots slow16, slow32); beyond the far end
+              (V y 470 / H x 630, 4 px / 2 ticks), shot; beyond the near end (30), shot; sideways off
+              the bar, shot; back to centre+40, shot; RELEASE; shots released, after0, after1
+    dragfast  config click; onto the elevator; shot "before"; 100 ticks still; PRESS; 100 ticks still;
+              40 px per 5 ms to beyond the far end, to beyond the near end, back to centre+30; shots
+              heldfast0..2; RELEASE; shot released
+    pagelo/hi config click; pointer into the empty track beside the elevator (V y 140 / 300, H x 150 / 390;
+              size 1000: only "hi", at the track's last row y 334 / column x 433); shot before; PRESS;
+              shots held1 (+40 ticks), held2 (+160); RELEASE (200 ticks after the press); shot released
+  2210 packets, 155 shots, 105 s. v1 and v2 differ only in the fast drag (below).
+  Flicker input (method/gen-flicker-input.py -> flicker-mouse.txt, flicker-shots-emutos.txt,
+  flicker-shots-newtos.txt): PRESS on the elevator, 100 ticks still, then the pointer moves OFF the bar into
+  the work area with the button held (the drag goes on; the elevator area holds no pointer); 2 s of samples:
+  EmuTOS every 40 ticks (10 samples), NewTOS every 10 ticks (40 QMP dumps); holds h1 size 1000 V, h2 size
+  1000 H, h3 size 300 V, h4 size -1 V; idle samples (button up) of each size as the control.
+SCREENSHOTS  EmuTOS: Hatari debugger breakpoint on the probe's shot counter (exact emulated tick, as
+  mgprobe); the copy loop of run-slprobe.sh polls every 20 ms, so shots must be >= 30 ticks apart (a first
+  attempt with 2-tick bursts lost shots and shifted names -- deleted, not kept). NewTOS: QMP screendump at
+  <tick>/200 s after the injector's "armed" line (shots/qmpshots.txt: every dump <= 0.02 s after plan).
+  Both PNGs 640x480; compare.py maps every pixel to the nearest of W/B/grey(102)/green.
+
+INPUTS
+  ROM        tools/oracle/etos512de-1a7484ab.img 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+             (checked by run-slprobe.sh against tools/oracle/oracle.env before every oracle run)
+  EmuTOS     1a7484aba1bfba23e2c0899e243b6d8177fe41df
+  Hatari     2.6.1 (/Volumes/Daten/hatari-2.6.1_macos), tools/oracle/hatari.cfg, profile tt
+             (--machine tt --tos-res ttmed --monitor vga), --fast-forward off
+  canary     docs/analysis/ORACLE.md section 6, before the runs (runs/canary.txt):
+               canary tt: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all)
+               canary falcontc: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all-falcontc)
+  NewTOS     eae13cecd656be498249c9c9e3b969af24afd770 (main HEAD), `git archive` + tools/inject-arm.py
+             launch:SLPROBE=<mouse file>, cargo xtask build --board rpi4 --release (scratch):
+               kernel-head-v1.img       fec11eb7b0aadadf9ad625db86e02ac61e04727a575d1691247809cc5b9908e4
+               kernel-head-v2.img       b669d13e2a2df9bb9511760643bcabdf1bc7ad06b85f041bd57fcb215f211a71
+               kernel-head-v3.img       a3d325e6ab714d98d4900220e117884c9991164faebe5935864678bc63a96dc4
+               kernel-head-flicker2.img ab23bb9155adb86154214dbf451ef1df2dea4243c21848e5eefe11576a71e78e
+  QEMU       11.0.2, -M raspi4b, -append serial=on, APFS clone (cp -c) of the card per run, deleted after
+  host clang Apple clang version 21.0.0 (clang-2100.4.1.1) (also every card manifest's host_clang line)
+  cards      tools/mkcard.sh via run-slprobe.sh newtos (C:\SLPROBE.NAP, C:\NEWDESK.INF "#R 02" /
+             "#E 1B E0 00 00 60" / "#Z 01 C:\SLPROBE.NAP@"); manifest per run runs/newtos-*/card.img.manifest;
+             card + booted-clone sha256 in runs/newtos-*/run.txt. optional_missing, verbatim:
+               runs/newtos-head-flicker-v2-1/card.img.manifest:optional_missing none
+               runs/newtos-head-v1-1/card.img.manifest:optional_missing none
+               runs/newtos-head-v1-2/card.img.manifest:optional_missing none
+               runs/newtos-head-v2-1/card.img.manifest:optional_missing none
+               runs/newtos-head-v3-1/card.img.manifest:optional_missing none
+               runs/newtos-head-v3-2/card.img.manifest:optional_missing none
+  probe      slprobe.c a1fea652c24ce3a4f75ee0a6cc579bc4d251534b8f626fa39c1b178e91794fe5 in every kept run;
+             SLPROBE.NAP ee11a5501ffd943e... in every NewTOS run; SLPROBE.PRG per build (symbol table).
+  inputs     v1 method/slprobe-mouse-v1.txt (bbf649dc...), v2 method/slprobe-mouse-v2.txt (ab68ecc7...),
+             v3 tosdump/probes/slprobe-mouse.txt (c72e6fde...); flicker v1 method/flicker-mouse-v1.txt
+             (60d4142c...), flicker v2 method/flicker-mouse.txt (18b6056c...). Sha256 per run in run.txt.
+
+RUNS (method/all-runs.sh; every NewTOS run alone on the host)
+  emutos-tt-v1-1/-2, newtos-head-v1-1/-2   input v1 (fast drag pressed 2 ticks after the move; NewTOS's probe
+                                           was still writing its log after the config click)
+  emutos-tt-v2-1, newtos-head-v2-1         input v2 (idle before the fast-drag press, but the fast moves start
+                                           20 ticks after the press -- inside the double-click wait)
+  emutos-tt-flicker-v1-1                   flicker v1 (EmuTOS only; moved off the bar 40 ticks after the
+                                           press: H2 became a work-area press, see below) -- superseded
+  emutos-tt-flicker-v2-1, newtos-head-flicker-v2-1   flicker v2
+  newtos-head-v3-1/-2, emutos-tt-v3-1/-2   input v3 = the reference input of this run
+  v1/v2 finding: both systems pick the gadget only after the double-click wait (b_delay, ~44 ticks at the
+  default evnt_dclick rate) at the pointer position of that moment: in v2 a press on the elevator followed
+  by fast moves 20 ticks later became a page click for sizes 300/-1 on BOTH sides (EmuTOS v2: WM_ARROWED
+  for all 4; NewTOS v2: 3 of 4, the 4th -- size 300 H -- a drag, WM_HSLID 455: a timing race at the edge
+  of the wait, not pursued); size 1000 stays an elevator drag (the elevator covers the track). v3 holds
+  100 ticks still after the press. The v1/v2 runs are kept as the record of that.
+
+REPEATABILITY
+  EmuTOS: v1-1 = v1-2, v3-1 = v3-2 byte for byte (all PNGs; logs without tick stamps).
+  NewTOS: messages identical between the two runs of v1 and of v3 (analysis/msgtable-v3-1.txt =
+  msgtable-v3-2.txt, also the repeat counts). Screens: identical between runs EXCEPT exactly the shots
+  taken while an elevator drag is held (v3: 61 shots, all "dragslow held1..back40" / "dragfast heldfast*");
+  every before/page/released/after shot is byte-identical across NewTOS runs. The varying shots are the
+  flicker below.
+
+RESULTS -- messages (analysis/msgtable-v3-1.txt; the first message of each gesture, (+n) = further equal
+  WM_ARROWED while the button was held)
+  size 1000 V/H dragslow, dragfast     E WM_VSLID/WM_HSLID 1000            N 0
+  size 1000 V page (y 334)             E WA_DNPAGE, first one while held, +533 while held
+                                       N WA_DNPAGE once, after the release
+  size 1000 H page (x 433)             E WM_HSLID 0 (x 433 is the elevator's 3D-grown rim: an elevator drag)
+                                       N WM_ARROWED WA_RTPAGE once
+  size 300  V slow/fast  E 753 / 691   N 745 / 683;   H slow/fast  E 675 / 632   N 670 / 627
+  size -1   V slow/fast  E 697 / 649   N 690 / 643;   H slow/fast  E 631 / 599   N 626 / 594
+  size 300 and -1, all 8 page presses  E first WM_ARROWED while held, +538..+557 while held (the probe's
+                                       replies run the elevator to the end of the track during the hold)
+                                       N one WM_ARROWED, posted after the release
+  msg[5..7] of WM_?SLID: 60,400,320 on both sides (WS_CURR y,w,h).
+  Flicker run, pointer moved off the bar while held, constant y: size 300 E 506 N 497; size -1 E 507 N 500;
+  size 1000 V/H E 0/0, N 0/0.
+
+RESULTS -- screens (analysis/cmp-v3-1, cmp-v3-2: compare.txt + diff-<shot>.png; phases per gesture in
+  analysis/phasetable-v3.txt; counts outside the baseline mask, max over the two runs)
+  Baseline (window at rest): 1525 px differ already before any input and are masked: drop shadow and
+    outer border x 480-481 / y 380-381 light grey (189) on NewTOS where EmuTOS draws black, and 85 px at
+    x 343..362, y 4..15 outside the window. The scroll bars are not in the mask.
+  EQUAL (0 px) in every gesture: "before", "held0" (20 ticks after the press = still inside the double-
+    click wait, nothing drawn yet on either side), size 1000 "released"/"after" (V and H), size 1000 V
+    page (held and released: the full elevator does not move).
+  DIFFERENT while an elevator drag is held (all sizes, both axes, slow and fast, beyond both ends,
+    sideways): 66..1880 px, bbox inside the bar (V x 457..479, H y 357..382):
+      E: the elevator stays where it was, drawn SELECTED, with a dotted XOR outline of it that follows
+         the pointer inside the track and stops at the track ends (gr_slidebox -> gr_dragbox).
+      N: no outline; the real elevator follows the pointer (clamped at the track ends), and in the
+         captured frames the track's dither pattern shows through the elevator in horizontal bands, or
+         the elevator is half drawn; the frame varies from run to run.
+  DIFFERENT after the release, sizes 300/-1 (all drags): 67..114 px -- the elevator 1-2 px apart, from
+    the different WM_?SLID values above (the probe sets what it receives).
+  DIFFERENT during and after page presses, sizes 300/-1: held2/released 196..764 px -- E has run the
+    elevator to the track end (repeated WM_ARROWED), N still shows it at 500 while held and one page
+    step (250/750) after the release.
+  DIFFERENT size 1000 H page at x 433: 693 px while held (E elevator drag outline, N nothing), 0 after.
+  The pattern of #2 on NewTOS -- REPRODUCED: window with WF_VSLSIZ (or WF_HSLSIZ) 1000; press on the
+    elevator (anywhere in it -- with size 1000 that is the whole "empty" track); hold, moving or not:
+    bands of the track pattern inside the elevator for as long as the button is down; gone at the
+    release. Shots v3 03..11, 16..18 (V), 26..34, 39..41 (H); analysis/cmp-v3-1/diff-03-003-1000-V-
+    dragslow-held1.png. Also at sizes 300 and -1 (smaller exposure).
+  Flicker run (analysis/flicker-v2/*.txt, black pixels inside the elevator interior, pointer away):
+      hold         EmuTOS samples with black   NewTOS samples with black (max px)
+      h1 1000 V    0 / 10                      34 / 40 (161)
+      h2 1000 H    0 / 10                      15 / 40 (644)
+      h3 300 V     0 / 10                      29 / 40 (44)
+      h4 -1 V      0 / 10                       7 / 40 (17)
+      idle (up)    0 / 6                        0 / 24
+    analysis/flicker-v2/sheet-h1-1000-V.png: EmuTOS e05 | NewTOS n00..n07 -- the bands of the #2 photo.
+    (emutos-tt-flicker-v1-1: H2 there became a work-area press -- moved off the bar 40 ticks after the
+    press, inside the double-click wait -- the sample counts of v1 are not used.)
+
+CAUSE (code read after the measurement, localization)
+  NewTOS tos-api/src/aes/window.rs drag_elevator (:5516): a loop that calls draw_vslider/draw_hslider
+  (track G_BOX with its 0x1111 pattern, then the elevator on top, :5550-5560) on EVERY pass, then
+  host.pump_input() (:5567), which is one non-blocking pass (kernel/src/host_env.rs:91 pump_input, no
+  wait) -- so the track pattern is repainted and covered again continuously while the button is held,
+  moving or not; any reader of the framebuffer (HDMI scan-out, QEMU's display update) catches the pattern
+  between the two fills. Its value: travel = track_len - thumb_len, mul_div_round(rel, 1000, travel)
+  (:5523, :5541), 0 when travel = 0. EmuTOS aes/gemctrl.c:295-306: ob_change(elevator, SELECTED), then
+  gr_slidebox (aes/gemgrlib.c:358-413) -> gr_dragbox (:241-267) -> gr_wait (:169-191): XOR outline drawn
+  once, wait for a mouse change (gr_stilldn), erase, redraw -- nothing is repainted while the pointer
+  stands still; the value uses the 3D-grown outline (divis = c.g_h - t.g_h, the ADJ3DSTD correction).
+  Page: EmuTOS gemctrl.c:262-285 + handle_arrow_msg :111-139 (send while held); NewTOS hctl_window arrow
+  arm (:5897-5935): one WM_ARROWED after wait_release. Hit test: EmuTOS ob_find via ob_actxywh
+  (gemoblib.c:1049-1080, :313-335: an FL3D object answers for its grown rect); NewTOS gadget_at
+  (window.rs:5144, :5166) tests the un-grown elevator rect.
+
+FILES
+  method/   gen-explore.py, gen-slprobe-input.py (v3), gen-slprobe-input-v1.py, -v2.py,
+            slprobe-mouse-v1/-v2.txt, slprobe-shots-v1/-v2.txt, slprobe-cases*.tsv, gen-flicker-input.py,
+            flicker-mouse*.txt, flicker-shots-*.txt, compare.py, phasetable.py, msgtable.py, flicker.py,
+            flicker-sheet.py, all-runs.sh
+  runs/     canary.txt; <side>-<run>/ run.txt, SLPROBE.LOG, shots/NN-<shot>.png, hatari.log or
+            BOOT-SERIAL.txt + card.img.manifest + shots/qmpshots.txt
+  analysis/ cmp-v1-1, cmp-v2-1, cmp-v3-1, cmp-v3-2 (compare.txt + diff-*.png), msgtable-v3-1/-2.txt,
+            phasetable-v3.txt, flicker-v2/ (per-run metric + 3 sheets)
+  Kernels, cards, clones, the scratch trees and Hatari's scratch: session scratchpad, deleted after.

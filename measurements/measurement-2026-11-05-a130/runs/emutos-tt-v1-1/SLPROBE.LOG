@@ -1,0 +1,2825 @@
+H00 graf_handle 8 16 19 19
+C00 wind_create(0fef)=1
+O00 wind_open=1
+G00 curr 80,60,400,320
+G01 work 81,83,376,274
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+S00 script steps 2210 shots 149
+A00 shot counter at 01091014
+G02 go after 11 polls
+T00 t=2853
+R001 t=2853 which=0010 mx=319 my=239 bs=0 br=-25774 msg=20,0,0,1,80,60,402,322
+D001.0 list 81,83,376,274 draw 81,83,376,274
+R002 t=3645 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R003 t=5075 which=0010 mx=468 my=260 bs=0 br=1 msg=26,1,0,1,1000,60,400,320
+V003 wind_set(VSLIDE,1000)=1
+R004 t=5297 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R005 t=5300 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R006 t=5301 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R007 t=5302 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R008 t=5304 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R009 t=5305 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R010 t=5306 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R011 t=5307 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R012 t=5308 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R013 t=5607 which=0010 mx=468 my=250 bs=0 br=1 msg=26,1,0,1,1000,60,400,320
+V013 wind_set(VSLIDE,1000)=1
+R014 t=5729 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R015 t=5732 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R016 t=5733 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R017 t=5734 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R018 t=5736 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R019 t=5737 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R020 t=5738 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R021 t=5739 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R022 t=5740 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R023 t=5985 which=0010 mx=468 my=334 bs=1 br=1 msg=24,1,0,1,1,0,0,0
+V023 wind_set(VSLIDE,750)=1
+X557 533 more equal WM_ARROWED, last t=6145 msg[1]=0, position now v 1000 h 500
+R557 t=6269 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R558 t=6272 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R559 t=6274 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R560 t=6275 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R561 t=6276 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R562 t=6277 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R563 t=6278 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R564 t=6279 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R565 t=6280 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R566 t=7898 which=0010 mx=308 my=368 bs=0 br=1 msg=25,1,0,1,1000,60,400,320
+V566 wind_set(HSLIDE,1000)=1
+R567 t=8121 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R568 t=8123 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R569 t=8124 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R570 t=8125 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R571 t=8126 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R572 t=8127 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R573 t=8128 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R574 t=8129 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R575 t=8130 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R576 t=8132 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R577 t=8438 which=0010 mx=298 my=368 bs=0 br=1 msg=25,1,0,1,0,60,400,320
+V577 wind_set(HSLIDE,0)=1
+R578 t=8601 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R579 t=8978 which=0010 mx=433 my=368 bs=0 br=1 msg=25,1,0,1,0,60,400,320
+V579 wind_set(HSLIDE,0)=1
+R580 t=9097 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R581 t=9101 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R582 t=9103 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R583 t=9104 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R584 t=9105 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R585 t=9106 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R586 t=9107 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R587 t=9108 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R588 t=10570 which=0010 mx=468 my=260 bs=0 br=1 msg=26,1,0,1,753,60,400,320
+V588 wind_set(VSLIDE,753)=1
+R589 t=10789 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R590 t=10792 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R591 t=10793 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R592 t=10794 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R593 t=10795 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R594 t=10796 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R595 t=10797 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R596 t=10798 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R597 t=10799 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R598 t=10800 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R599 t=11098 which=0010 mx=468 my=250 bs=0 br=1 msg=26,1,0,1,691,60,400,320
+V599 wind_set(VSLIDE,691)=1
+R600 t=11221 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R601 t=11224 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R602 t=11225 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R603 t=11226 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R604 t=11227 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R605 t=11228 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R606 t=11229 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R607 t=11230 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R608 t=11231 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R609 t=11232 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R610 t=11473 which=0010 mx=468 my=140 bs=1 br=1 msg=24,1,0,1,0,0,0,0
+V610 wind_set(VSLIDE,250)=1
+X1162 551 more equal WM_ARROWED, last t=11637 msg[1]=0, position now v 1 h 500
+R1162 t=11757 which=0002 mx=220 my=200 bs=0 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1163 t=11760 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1164 t=11761 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1165 t=11762 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1166 t=11763 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1167 t=11764 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1168 t=11765 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1169 t=11766 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1170 t=11767 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1171 t=11768 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1172 t=12013 which=0010 mx=468 my=300 bs=1 br=1 msg=24,1,0,1,1,0,0,0
+V1172 wind_set(VSLIDE,750)=1
+X1711 538 more equal WM_ARROWED, last t=12173 msg[1]=0, position now v 1000 h 500
+R1711 t=12297 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1712 t=12300 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1713 t=12301 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1714 t=12302 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1715 t=12303 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1716 t=12304 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1717 t=12305 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1718 t=12306 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1719 t=12307 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1720 t=12308 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1721 t=13926 which=0010 mx=308 my=368 bs=0 br=1 msg=25,1,0,1,675,60,400,320
+V1721 wind_set(HSLIDE,675)=1
+R1722 t=14149 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1723 t=14151 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1724 t=14152 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1725 t=14153 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1726 t=14154 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1727 t=14155 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1728 t=14156 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1729 t=14157 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1730 t=14158 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1731 t=14159 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1732 t=14160 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1733 t=14466 which=0010 mx=298 my=368 bs=0 br=1 msg=25,1,0,1,632,60,400,320
+V1733 wind_set(HSLIDE,632)=1
+R1734 t=14585 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1735 t=14587 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1736 t=14588 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1737 t=14589 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1738 t=14590 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1739 t=14591 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1740 t=14592 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1741 t=14593 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1742 t=14594 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1743 t=14595 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1744 t=14597 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R1745 t=14841 which=0010 mx=150 my=368 bs=1 br=1 msg=24,1,0,1,4,0,0,0
+V1745 wind_set(HSLIDE,250)=1
+X2289 543 more equal WM_ARROWED, last t=15001 msg[1]=0, position now v 500 h 1
+R2289 t=15125 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R2290 t=15127 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R2291 t=15128 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R2292 t=15129 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R2293 t=15130 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R2294 t=15131 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R2295 t=15132 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R2296 t=15133 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R2297 t=15135 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R2298 t=15136 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R2299 t=15377 which=0010 mx=390 my=368 bs=1 br=1 msg=24,1,0,1,5,0,0,0
+V2299 wind_set(HSLIDE,750)=1
+X2857 557 more equal WM_ARROWED, last t=15541 msg[1]=0, position now v 500 h 1000
+R2857 t=15661 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2858 t=15665 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2859 t=15666 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2860 t=15668 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2861 t=15669 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2862 t=15670 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2863 t=15671 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2864 t=15672 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2865 t=17134 which=0010 mx=468 my=259 bs=0 br=1 msg=26,1,0,1,697,60,400,320
+V2865 wind_set(VSLIDE,697)=1
+R2866 t=17353 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2867 t=17355 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2868 t=17356 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2869 t=17357 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2870 t=17359 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2871 t=17360 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2872 t=17361 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2873 t=17362 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2874 t=17363 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2875 t=17364 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2876 t=17662 which=0010 mx=468 my=249 bs=0 br=1 msg=26,1,0,1,649,60,400,320
+V2876 wind_set(VSLIDE,649)=1
+R2877 t=17785 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2878 t=17787 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2879 t=17788 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2880 t=17789 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2881 t=17790 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2882 t=17792 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2883 t=17793 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2884 t=17794 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2885 t=17795 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2886 t=17796 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R2887 t=18037 which=0010 mx=468 my=140 bs=1 br=1 msg=24,1,0,1,0,0,0,0
+V2887 wind_set(VSLIDE,250)=1
+X3441 553 more equal WM_ARROWED, last t=18201 msg[1]=0, position now v 1 h 500
+R3441 t=18321 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3442 t=18323 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3443 t=18325 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3444 t=18326 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3445 t=18327 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3446 t=18328 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3447 t=18329 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3448 t=18330 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3449 t=18331 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3450 t=18332 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3451 t=18577 which=0010 mx=468 my=300 bs=1 br=1 msg=24,1,0,1,1,0,0,0
+V3451 wind_set(VSLIDE,750)=1
+X3991 539 more equal WM_ARROWED, last t=18737 msg[1]=0, position now v 1000 h 500
+R3991 t=18861 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3992 t=18864 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3993 t=18865 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3994 t=18866 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3995 t=18867 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3996 t=18868 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3997 t=18869 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3998 t=18870 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R3999 t=18871 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4000 t=18872 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4001 t=20490 which=0010 mx=308 my=368 bs=0 br=1 msg=25,1,0,1,631,60,400,320
+V4001 wind_set(HSLIDE,631)=1
+R4002 t=20713 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4003 t=20715 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4004 t=20716 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4005 t=20717 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4006 t=20718 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4007 t=20719 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4008 t=20720 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4009 t=20721 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4010 t=20722 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4011 t=20723 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4012 t=20724 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4013 t=21030 which=0010 mx=298 my=368 bs=0 br=1 msg=25,1,0,1,599,60,400,320
+V4013 wind_set(HSLIDE,599)=1
+R4014 t=21149 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4015 t=21151 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4016 t=21152 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4017 t=21153 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4018 t=21154 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4019 t=21155 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4020 t=21156 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4021 t=21157 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4022 t=21158 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4023 t=21159 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4024 t=21160 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4025 t=21405 which=0010 mx=150 my=368 bs=1 br=1 msg=24,1,0,1,4,0,0,0
+V4025 wind_set(HSLIDE,250)=1
+X4569 543 more equal WM_ARROWED, last t=21565 msg[1]=0, position now v 500 h 1
+R4569 t=21689 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4570 t=21691 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4571 t=21692 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4572 t=21693 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4573 t=21694 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4574 t=21695 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4575 t=21696 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4576 t=21697 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4577 t=21698 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4578 t=21699 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4579 t=21700 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R4580 t=21941 which=0010 mx=390 my=368 bs=1 br=1 msg=24,1,0,1,5,0,0,0
+V4580 wind_set(HSLIDE,750)=1
+X5138 557 more equal WM_ARROWED, last t=22105 msg[1]=0, position now v 500 h 1000
+R5138 t=22225 which=0002 mx=420 my=200 bs=1 br=1
+J000 t=3453 +600 pkt=f8 81 7f
+J001 t=3457 +604 pkt=f8 81 7f
+J002 t=3457 +604 pkt=f8 81 7f
+J003 t=3457 +604 pkt=f8 81 7f
+J004 t=3457 +604 pkt=f8 81 7f
+J005 t=3461 +608 pkt=f8 81 7f
+J006 t=3473 +620 pkt=f8 7f d9
+J007 t=3477 +624 pkt=f8 7f 00
+J008 t=3477 +624 pkt=f8 7f 00
+J009 t=3477 +624 pkt=f8 7f 00
+J010 t=3477 +624 pkt=f8 34 00
+J011 t=3601 +748 pkt=f8 81 81
+J012 t=3601 +748 pkt=f8 81 8f
+J013 t=3601 +748 pkt=f8 81 00
+J014 t=3601 +748 pkt=f8 c5 00
+J015 t=3605 +752 pkt=fa 00 00
+J016 t=3613 +760 pkt=f8 00 00
+J017 t=3737 +884 pkt=f8 7f 14
+J018 t=3737 +884 pkt=f8 7f 00
+J019 t=3737 +884 pkt=f8 5e 00
+J020 t=3817 +964 pkt=fa 00 00
+J021 t=3981 +1128 pkt=fa 00 08
+J022 t=4021 +1168 pkt=fa 00 08
+J023 t=4101 +1248 pkt=fa 00 08
+J024 t=4141 +1288 pkt=fa 00 08
+J025 t=4225 +1372 pkt=fa 00 04
+J026 t=4225 +1372 pkt=fa 00 04
+J027 t=4229 +1376 pkt=fa 00 04
+J028 t=4229 +1376 pkt=fa 00 04
+J029 t=4233 +1380 pkt=fa 00 04
+J030 t=4233 +1380 pkt=fa 00 04
+J031 t=4237 +1384 pkt=fa 00 04
+J032 t=4237 +1384 pkt=fa 00 04
+J033 t=4241 +1388 pkt=fa 00 04
+J034 t=4241 +1388 pkt=fa 00 04
+J035 t=4245 +1392 pkt=fa 00 04
+J036 t=4245 +1392 pkt=fa 00 04
+J037 t=4249 +1396 pkt=fa 00 04
+J038 t=4249 +1396 pkt=fa 00 04
+J039 t=4253 +1400 pkt=fa 00 04
+J040 t=4253 +1400 pkt=fa 00 04
+J041 t=4257 +1404 pkt=fa 00 04
+J042 t=4257 +1404 pkt=fa 00 04
+J043 t=4261 +1408 pkt=fa 00 04
+J044 t=4261 +1408 pkt=fa 00 04
+J045 t=4265 +1412 pkt=fa 00 04
+J046 t=4265 +1412 pkt=fa 00 04
+J047 t=4269 +1416 pkt=fa 00 04
+J048 t=4269 +1416 pkt=fa 00 04
+J049 t=4273 +1420 pkt=fa 00 04
+J050 t=4273 +1420 pkt=fa 00 04
+J051 t=4277 +1424 pkt=fa 00 04
+J052 t=4277 +1424 pkt=fa 00 04
+J053 t=4281 +1428 pkt=fa 00 04
+J054 t=4281 +1428 pkt=fa 00 04
+J055 t=4285 +1432 pkt=fa 00 04
+J056 t=4285 +1432 pkt=fa 00 04
+J057 t=4289 +1436 pkt=fa 00 04
+J058 t=4289 +1436 pkt=fa 00 04
+J059 t=4293 +1440 pkt=fa 00 04
+J060 t=4293 +1440 pkt=fa 00 04
+J061 t=4297 +1444 pkt=fa 00 04
+J062 t=4297 +1444 pkt=fa 00 04
+J063 t=4301 +1448 pkt=fa 00 04
+J064 t=4301 +1448 pkt=fa 00 04
+J065 t=4305 +1452 pkt=fa 00 04
+J066 t=4305 +1452 pkt=fa 00 04
+J067 t=4309 +1456 pkt=fa 00 04
+J068 t=4309 +1456 pkt=fa 00 04
+J069 t=4313 +1460 pkt=fa 00 04
+J070 t=4313 +1460 pkt=fa 00 04
+J071 t=4317 +1464 pkt=fa 00 04
+J072 t=4317 +1464 pkt=fa 00 04
+J073 t=4321 +1468 pkt=fa 00 04
+J074 t=4321 +1468 pkt=fa 00 04
+J075 t=4325 +1472 pkt=fa 00 04
+J076 t=4325 +1472 pkt=fa 00 04
+J077 t=4329 +1476 pkt=fa 00 04
+J078 t=4329 +1476 pkt=fa 00 04
+J079 t=4333 +1480 pkt=fa 00 02
+J080 t=4413 +1560 pkt=fa 00 fc
+J081 t=4417 +1564 pkt=fa 00 fc
+J082 t=4417 +1564 pkt=fa 00 fc
+J083 t=4421 +1568 pkt=fa 00 fc
+J084 t=4421 +1568 pkt=fa 00 fc
+J085 t=4425 +1572 pkt=fa 00 fc
+J086 t=4425 +1572 pkt=fa 00 fc
+J087 t=4429 +1576 pkt=fa 00 fc
+J088 t=4429 +1576 pkt=fa 00 fc
+J089 t=4433 +1580 pkt=fa 00 fc
+J090 t=4433 +1580 pkt=fa 00 fc
+J091 t=4437 +1584 pkt=fa 00 fc
+J092 t=4437 +1584 pkt=fa 00 fc
+J093 t=4441 +1588 pkt=fa 00 fc
+J094 t=4441 +1588 pkt=fa 00 fc
+J095 t=4445 +1592 pkt=fa 00 fc
+J096 t=4445 +1592 pkt=fa 00 fc
+J097 t=4449 +1596 pkt=fa 00 fc
+J098 t=4449 +1596 pkt=fa 00 fc
+J099 t=4453 +1600 pkt=fa 00 fc
+J100 t=4453 +1600 pkt=fa 00 fc
+J101 t=4457 +1604 pkt=fa 00 fc
+J102 t=4457 +1604 pkt=fa 00 fc
+J103 t=4461 +1608 pkt=fa 00 fc
+J104 t=4461 +1608 pkt=fa 00 fc
+J105 t=4465 +1612 pkt=fa 00 fc
+J106 t=4465 +1612 pkt=fa 00 fc
+J107 t=4469 +1616 pkt=fa 00 fc
+J108 t=4469 +1616 pkt=fa 00 fc
+J109 t=4473 +1620 pkt=fa 00 fc
+J110 t=4473 +1620 pkt=fa 00 fc
+J111 t=4477 +1624 pkt=fa 00 fc
+J112 t=4477 +1624 pkt=fa 00 fc
+J113 t=4481 +1628 pkt=fa 00 fc
+J114 t=4481 +1628 pkt=fa 00 fc
+J115 t=4485 +1632 pkt=fa 00 fc
+J116 t=4485 +1632 pkt=fa 00 fc
+J117 t=4489 +1636 pkt=fa 00 fc
+J118 t=4489 +1636 pkt=fa 00 fc
+J119 t=4493 +1640 pkt=fa 00 fc
+J120 t=4493 +1640 pkt=fa 00 fc
+J121 t=4497 +1644 pkt=fa 00 fc
+J122 t=4497 +1644 pkt=fa 00 fc
+J123 t=4501 +1648 pkt=fa 00 fc
+J124 t=4501 +1648 pkt=fa 00 fc
+J125 t=4505 +1652 pkt=fa 00 fc
+J126 t=4505 +1652 pkt=fa 00 fc
+J127 t=4509 +1656 pkt=fa 00 fc
+J128 t=4509 +1656 pkt=fa 00 fc
+J129 t=4513 +1660 pkt=fa 00 fc
+J130 t=4513 +1660 pkt=fa 00 fc
+J131 t=4517 +1664 pkt=fa 00 fc
+J132 t=4517 +1664 pkt=fa 00 fc
+J133 t=4521 +1668 pkt=fa 00 fc
+J134 t=4521 +1668 pkt=fa 00 fc
+J135 t=4525 +1672 pkt=fa 00 fc
+J136 t=4525 +1672 pkt=fa 00 fc
+J137 t=4529 +1676 pkt=fa 00 fc
+J138 t=4529 +1676 pkt=fa 00 fc
+J139 t=4533 +1680 pkt=fa 00 fc
+J140 t=4533 +1680 pkt=fa 00 fc
+J141 t=4537 +1684 pkt=fa 00 fc
+J142 t=4537 +1684 pkt=fa 00 fc
+J143 t=4541 +1688 pkt=fa 00 fc
+J144 t=4541 +1688 pkt=fa 00 fc
+J145 t=4545 +1692 pkt=fa 00 fc
+J146 t=4545 +1692 pkt=fa 00 fc
+J147 t=4549 +1696 pkt=fa 00 fc
+J148 t=4549 +1696 pkt=fa 00 fc
+J149 t=4553 +1700 pkt=fa 00 fc
+J150 t=4553 +1700 pkt=fa 00 fc
+J151 t=4557 +1704 pkt=fa 00 fc
+J152 t=4557 +1704 pkt=fa 00 fc
+J153 t=4561 +1708 pkt=fa 00 fc
+J154 t=4561 +1708 pkt=fa 00 fc
+J155 t=4565 +1712 pkt=fa 00 fc
+J156 t=4565 +1712 pkt=fa 00 fc
+J157 t=4569 +1716 pkt=fa 00 fc
+J158 t=4569 +1716 pkt=fa 00 fc
+J159 t=4573 +1720 pkt=fa 00 fc
+J160 t=4573 +1720 pkt=fa 00 fc
+J161 t=4577 +1724 pkt=fa 00 fc
+J162 t=4577 +1724 pkt=fa 00 fc
+J163 t=4581 +1728 pkt=fa 00 fc
+J164 t=4581 +1728 pkt=fa 00 fc
+J165 t=4585 +1732 pkt=fa 00 fc
+J166 t=4585 +1732 pkt=fa 00 fc
+J167 t=4589 +1736 pkt=fa 00 fc
+J168 t=4589 +1736 pkt=fa 00 fc
+J169 t=4593 +1740 pkt=fa 00 fc
+J170 t=4593 +1740 pkt=fa 00 fc
+J171 t=4597 +1744 pkt=fa 00 fc
+J172 t=4597 +1744 pkt=fa 00 fc
+J173 t=4601 +1748 pkt=fa 00 fc
+J174 t=4601 +1748 pkt=fa 00 fc
+J175 t=4605 +1752 pkt=fa 00 fc
+J176 t=4605 +1752 pkt=fa 00 fc
+J177 t=4609 +1756 pkt=fa 00 fc
+J178 t=4609 +1756 pkt=fa 00 fc
+J179 t=4613 +1760 pkt=fa 00 fc
+J180 t=4613 +1760 pkt=fa 00 fc
+J181 t=4617 +1764 pkt=fa 00 fc
+J182 t=4617 +1764 pkt=fa 00 fc
+J183 t=4621 +1768 pkt=fa 00 fc
+J184 t=4621 +1768 pkt=fa 00 fc
+J185 t=4625 +1772 pkt=fa 00 fc
+J186 t=4625 +1772 pkt=fa 00 fc
+J187 t=4629 +1776 pkt=fa 00 fc
+J188 t=4629 +1776 pkt=fa 00 fc
+J189 t=4633 +1780 pkt=fa 00 fc
+J190 t=4713 +1860 pkt=fa fc 00
+J191 t=4717 +1864 pkt=fa fc 00
+J192 t=4717 +1864 pkt=fa fc 00
+J193 t=4721 +1868 pkt=fa fc 00
+J194 t=4721 +1868 pkt=fa fc 00
+J195 t=4725 +1872 pkt=fa fc 00
+J196 t=4725 +1872 pkt=fa fc 00
+J197 t=4729 +1876 pkt=fa fc 00
+J198 t=4729 +1876 pkt=fa fc 00
+J199 t=4733 +1880 pkt=fa fc 00
+J200 t=4733 +1880 pkt=fa fc 00
+J201 t=4737 +1884 pkt=fa fc 00
+J202 t=4737 +1884 pkt=fa fc 00
+J203 t=4741 +1888 pkt=fa fc 00
+J204 t=4741 +1888 pkt=fa fc 00
+J205 t=4745 +1892 pkt=fa fc 00
+J206 t=4745 +1892 pkt=fa fc 00
+J207 t=4749 +1896 pkt=fa fc 00
+J208 t=4749 +1896 pkt=fa fc 00
+J209 t=4753 +1900 pkt=fa fc 00
+J210 t=4753 +1900 pkt=fa fc 00
+J211 t=4757 +1904 pkt=fa fc 00
+J212 t=4757 +1904 pkt=fa fc 00
+J213 t=4761 +1908 pkt=fa fc 00
+J214 t=4761 +1908 pkt=fa fc 00
+J215 t=4765 +1912 pkt=fa fc 00
+J216 t=4765 +1912 pkt=fa fc 00
+J217 t=4769 +1916 pkt=fa fc 00
+J218 t=4769 +1916 pkt=fa fc 00
+J219 t=4773 +1920 pkt=fa fc 00
+J220 t=4773 +1920 pkt=fa fc 00
+J221 t=4777 +1924 pkt=fa fc 00
+J222 t=4777 +1924 pkt=fa fc 00
+J223 t=4781 +1928 pkt=fa fc 00
+J224 t=4781 +1928 pkt=fa fc 00
+J225 t=4785 +1932 pkt=fa fc 00
+J226 t=4785 +1932 pkt=fa fc 00
+J227 t=4789 +1936 pkt=fa fc 00
+J228 t=4789 +1936 pkt=fa fc 00
+J229 t=4793 +1940 pkt=fa fc 00
+J230 t=4793 +1940 pkt=fa fc 00
+J231 t=4797 +1944 pkt=fa fc 00
+J232 t=4877 +2024 pkt=fa 04 04
+J233 t=4881 +2028 pkt=fa 04 04
+J234 t=4881 +2028 pkt=fa 04 04
+J235 t=4885 +2032 pkt=fa 04 04
+J236 t=4885 +2032 pkt=fa 04 04
+J237 t=4889 +2036 pkt=fa 04 04
+J238 t=4889 +2036 pkt=fa 04 04
+J239 t=4893 +2040 pkt=fa 04 04
+J240 t=4893 +2040 pkt=fa 04 04
+J241 t=4897 +2044 pkt=fa 04 04
+J242 t=4897 +2044 pkt=fa 04 04
+J243 t=4901 +2048 pkt=fa 04 04
+J244 t=4901 +2048 pkt=fa 04 04
+J245 t=4905 +2052 pkt=fa 04 04
+J246 t=4905 +2052 pkt=fa 04 04
+J247 t=4909 +2056 pkt=fa 04 04
+J248 t=4909 +2056 pkt=fa 04 04
+J249 t=4913 +2060 pkt=fa 04 04
+J250 t=4913 +2060 pkt=fa 04 04
+J251 t=4917 +2064 pkt=fa 04 04
+J252 t=4917 +2064 pkt=fa 04 04
+J253 t=4921 +2068 pkt=fa 04 04
+J254 t=4921 +2068 pkt=fa 04 04
+J255 t=4925 +2072 pkt=fa 04 04
+J256 t=4925 +2072 pkt=fa 04 04
+J257 t=4929 +2076 pkt=fa 04 04
+J258 t=4929 +2076 pkt=fa 04 04
+J259 t=4933 +2080 pkt=fa 04 04
+J260 t=4933 +2080 pkt=fa 04 04
+J261 t=4937 +2084 pkt=fa 04 04
+J262 t=4937 +2084 pkt=fa 04 04
+J263 t=4941 +2088 pkt=fa 04 04
+J264 t=4941 +2088 pkt=fa 04 04
+J265 t=4945 +2092 pkt=fa 04 04
+J266 t=4945 +2092 pkt=fa 04 04
+J267 t=4949 +2096 pkt=fa 04 04
+J268 t=4949 +2096 pkt=fa 04 04
+J269 t=4953 +2100 pkt=fa 04 04
+J270 t=4953 +2100 pkt=fa 04 04
+J271 t=4957 +2104 pkt=fa 04 04
+J272 t=4957 +2104 pkt=fa 04 04
+J273 t=4961 +2108 pkt=fa 04 04
+J274 t=4961 +2108 pkt=fa 00 04
+J275 t=4965 +2112 pkt=fa 00 04
+J276 t=4965 +2112 pkt=fa 00 04
+J277 t=4969 +2116 pkt=fa 00 04
+J278 t=4969 +2116 pkt=fa 00 04
+J279 t=4973 +2120 pkt=fa 00 04
+J280 t=4973 +2120 pkt=fa 00 04
+J281 t=4977 +2124 pkt=fa 00 04
+J282 t=4977 +2124 pkt=fa 00 04
+J283 t=4981 +2128 pkt=fa 00 04
+J284 t=4981 +2128 pkt=fa 00 04
+J285 t=4985 +2132 pkt=fa 00 04
+J286 t=4985 +2132 pkt=fa 00 04
+J287 t=4989 +2136 pkt=fa 00 04
+J288 t=4989 +2136 pkt=fa 00 04
+J289 t=4993 +2140 pkt=fa 00 02
+J290 t=5073 +2220 pkt=f8 00 00
+J291 t=5293 +2440 pkt=f8 81 c4
+J292 t=5297 +2444 pkt=f8 81 00
+J293 t=5297 +2444 pkt=f8 a2 00
+J294 t=5297 +2444 pkt=fa 00 00
+J295 t=5309 +2456 pkt=f8 00 00
+J296 t=5429 +2576 pkt=f8 7f 14
+J297 t=5429 +2576 pkt=f8 7f 00
+J298 t=5433 +2580 pkt=f8 5e 00
+J299 t=5433 +2580 pkt=fa 00 00
+J300 t=5453 +2600 pkt=fa 00 28
+J301 t=5453 +2600 pkt=fa 00 28
+J302 t=5457 +2604 pkt=fa 00 28
+J303 t=5457 +2604 pkt=fa 00 28
+J304 t=5457 +2604 pkt=fa 00 28
+J305 t=5457 +2604 pkt=fa 00 14
+J306 t=5461 +2608 pkt=fa 00 d8
+J307 t=5461 +2608 pkt=fa 00 d8
+J308 t=5461 +2608 pkt=fa 00 d8
+J309 t=5461 +2608 pkt=fa 00 d8
+J310 t=5465 +2612 pkt=fa 00 d8
+J311 t=5465 +2612 pkt=fa 00 d8
+J312 t=5465 +2612 pkt=fa 00 d8
+J313 t=5465 +2612 pkt=fa 00 d8
+J314 t=5469 +2616 pkt=fa 00 d8
+J315 t=5469 +2616 pkt=fa 00 d8
+J316 t=5469 +2616 pkt=fa 00 28
+J317 t=5469 +2616 pkt=fa 00 28
+J318 t=5473 +2620 pkt=fa 00 28
+J319 t=5473 +2620 pkt=fa 00 28
+J320 t=5473 +2620 pkt=fa 00 28
+J321 t=5473 +2620 pkt=fa 00 0a
+J322 t=5605 +2752 pkt=f8 00 00
+J323 t=5725 +2872 pkt=f8 81 ce
+J324 t=5729 +2876 pkt=f8 81 00
+J325 t=5729 +2876 pkt=f8 a2 00
+J326 t=5729 +2876 pkt=fa 00 00
+J327 t=5741 +2888 pkt=f8 00 00
+J328 t=5861 +3008 pkt=f8 7f 7f
+J329 t=5861 +3008 pkt=f8 7f 07
+J330 t=5865 +3012 pkt=f8 5e 00
+J331 t=5945 +3092 pkt=fa 00 00
+J332 t=6145 +3292 pkt=f8 00 00
+J333 t=6265 +3412 pkt=f8 81 81
+J334 t=6269 +3416 pkt=f8 81 f9
+J335 t=6269 +3416 pkt=f8 a2 00
+J336 t=6269 +3416 pkt=fa 00 00
+J337 t=6281 +3428 pkt=f8 00 00
+J338 t=6401 +3548 pkt=f8 7f 7f
+J339 t=6401 +3548 pkt=f8 15 29
+J340 t=6485 +3632 pkt=fa 00 00
+J341 t=6645 +3792 pkt=fa 08 00
+J342 t=6685 +3832 pkt=fa 08 00
+J343 t=6765 +3912 pkt=fa 08 00
+J344 t=6809 +3956 pkt=fa 08 00
+J345 t=6889 +4036 pkt=fa 04 00
+J346 t=6889 +4036 pkt=fa 04 00
+J347 t=6893 +4040 pkt=fa 04 00
+J348 t=6893 +4040 pkt=fa 04 00
+J349 t=6897 +4044 pkt=fa 04 00
+J350 t=6897 +4044 pkt=fa 04 00
+J351 t=6901 +4048 pkt=fa 04 00
+J352 t=6901 +4048 pkt=fa 04 00
+J353 t=6905 +4052 pkt=fa 04 00
+J354 t=6905 +4052 pkt=fa 04 00
+J355 t=6909 +4056 pkt=fa 04 00
+J356 t=6909 +4056 pkt=fa 04 00
+J357 t=6913 +4060 pkt=fa 04 00
+J358 t=6913 +4060 pkt=fa 04 00
+J359 t=6917 +4064 pkt=fa 04 00
+J360 t=6917 +4064 pkt=fa 04 00
+J361 t=6921 +4068 pkt=fa 04 00
+J362 t=6921 +4068 pkt=fa 04 00
+J363 t=6925 +4072 pkt=fa 04 00
+J364 t=6925 +4072 pkt=fa 04 00
+J365 t=6929 +4076 pkt=fa 04 00
+J366 t=6929 +4076 pkt=fa 04 00
+J367 t=6933 +4080 pkt=fa 04 00
+J368 t=6933 +4080 pkt=fa 04 00
+J369 t=6937 +4084 pkt=fa 04 00
+J370 t=6937 +4084 pkt=fa 04 00
+J371 t=6941 +4088 pkt=fa 04 00
+J372 t=6941 +4088 pkt=fa 04 00
+J373 t=6945 +4092 pkt=fa 04 00
+J374 t=6945 +4092 pkt=fa 04 00
+J375 t=6949 +4096 pkt=fa 04 00
+J376 t=6949 +4096 pkt=fa 04 00
+J377 t=6953 +4100 pkt=fa 04 00
+J378 t=6953 +4100 pkt=fa 04 00
+J379 t=6957 +4104 pkt=fa 04 00
+J380 t=6957 +4104 pkt=fa 04 00
+J381 t=6961 +4108 pkt=fa 04 00
+J382 t=6961 +4108 pkt=fa 04 00
+J383 t=6965 +4112 pkt=fa 04 00
+J384 t=6965 +4112 pkt=fa 04 00
+J385 t=6969 +4116 pkt=fa 04 00
+J386 t=6969 +4116 pkt=fa 04 00
+J387 t=6973 +4120 pkt=fa 04 00
+J388 t=6973 +4120 pkt=fa 04 00
+J389 t=6977 +4124 pkt=fa 04 00
+J390 t=6977 +4124 pkt=fa 04 00
+J391 t=6981 +4128 pkt=fa 04 00
+J392 t=6981 +4128 pkt=fa 04 00
+J393 t=6985 +4132 pkt=fa 04 00
+J394 t=6985 +4132 pkt=fa 04 00
+J395 t=6989 +4136 pkt=fa 04 00
+J396 t=6989 +4136 pkt=fa 04 00
+J397 t=6993 +4140 pkt=fa 04 00
+J398 t=6993 +4140 pkt=fa 04 00
+J399 t=6997 +4144 pkt=fa 04 00
+J400 t=6997 +4144 pkt=fa 04 00
+J401 t=7001 +4148 pkt=fa 04 00
+J402 t=7001 +4148 pkt=fa 04 00
+J403 t=7005 +4152 pkt=fa 04 00
+J404 t=7005 +4152 pkt=fa 04 00
+J405 t=7009 +4156 pkt=fa 04 00
+J406 t=7009 +4156 pkt=fa 04 00
+J407 t=7013 +4160 pkt=fa 04 00
+J408 t=7013 +4160 pkt=fa 04 00
+J409 t=7017 +4164 pkt=fa 04 00
+J410 t=7017 +4164 pkt=fa 04 00
+J411 t=7021 +4168 pkt=fa 04 00
+J412 t=7021 +4168 pkt=fa 04 00
+J413 t=7025 +4172 pkt=fa 04 00
+J414 t=7025 +4172 pkt=fa 04 00
+J415 t=7029 +4176 pkt=fa 04 00
+J416 t=7029 +4176 pkt=fa 04 00
+J417 t=7033 +4180 pkt=fa 04 00
+J418 t=7033 +4180 pkt=fa 04 00
+J419 t=7037 +4184 pkt=fa 04 00
+J420 t=7037 +4184 pkt=fa 04 00
+J421 t=7041 +4188 pkt=fa 04 00
+J422 t=7041 +4188 pkt=fa 04 00
+J423 t=7045 +4192 pkt=fa 04 00
+J424 t=7045 +4192 pkt=fa 04 00
+J425 t=7049 +4196 pkt=fa 04 00
+J426 t=7049 +4196 pkt=fa 04 00
+J427 t=7053 +4200 pkt=fa 02 00
+J428 t=7133 +4280 pkt=fa fc 00
+J429 t=7137 +4284 pkt=fa fc 00
+J430 t=7137 +4284 pkt=fa fc 00
+J431 t=7141 +4288 pkt=fa fc 00
+J432 t=7141 +4288 pkt=fa fc 00
+J433 t=7145 +4292 pkt=fa fc 00
+J434 t=7145 +4292 pkt=fa fc 00
+J435 t=7149 +4296 pkt=fa fc 00
+J436 t=7149 +4296 pkt=fa fc 00
+J437 t=7153 +4300 pkt=fa fc 00
+J438 t=7153 +4300 pkt=fa fc 00
+J439 t=7157 +4304 pkt=fa fc 00
+J440 t=7157 +4304 pkt=fa fc 00
+J441 t=7161 +4308 pkt=fa fc 00
+J442 t=7161 +4308 pkt=fa fc 00
+J443 t=7165 +4312 pkt=fa fc 00
+J444 t=7165 +4312 pkt=fa fc 00
+J445 t=7169 +4316 pkt=fa fc 00
+J446 t=7169 +4316 pkt=fa fc 00
+J447 t=7173 +4320 pkt=fa fc 00
+J448 t=7173 +4320 pkt=fa fc 00
+J449 t=7177 +4324 pkt=fa fc 00
+J450 t=7177 +4324 pkt=fa fc 00
+J451 t=7181 +4328 pkt=fa fc 00
+J452 t=7181 +4328 pkt=fa fc 00
+J453 t=7185 +4332 pkt=fa fc 00
+J454 t=7185 +4332 pkt=fa fc 00
+J455 t=7189 +4336 pkt=fa fc 00
+J456 t=7189 +4336 pkt=fa fc 00
+J457 t=7193 +4340 pkt=fa fc 00
+J458 t=7193 +4340 pkt=fa fc 00
+J459 t=7197 +4344 pkt=fa fc 00
+J460 t=7197 +4344 pkt=fa fc 00
+J461 t=7201 +4348 pkt=fa fc 00
+J462 t=7201 +4348 pkt=fa fc 00
+J463 t=7205 +4352 pkt=fa fc 00
+J464 t=7205 +4352 pkt=fa fc 00
+J465 t=7209 +4356 pkt=fa fc 00
+J466 t=7209 +4356 pkt=fa fc 00
+J467 t=7213 +4360 pkt=fa fc 00
+J468 t=7213 +4360 pkt=fa fc 00
+J469 t=7217 +4364 pkt=fa fc 00
+J470 t=7217 +4364 pkt=fa fc 00
+J471 t=7221 +4368 pkt=fa fc 00
+J472 t=7221 +4368 pkt=fa fc 00
+J473 t=7225 +4372 pkt=fa fc 00
+J474 t=7225 +4372 pkt=fa fc 00
+J475 t=7229 +4376 pkt=fa fc 00
+J476 t=7229 +4376 pkt=fa fc 00
+J477 t=7233 +4380 pkt=fa fc 00
+J478 t=7233 +4380 pkt=fa fc 00
+J479 t=7237 +4384 pkt=fa fc 00
+J480 t=7237 +4384 pkt=fa fc 00
+J481 t=7241 +4388 pkt=fa fc 00
+J482 t=7241 +4388 pkt=fa fc 00
+J483 t=7245 +4392 pkt=fa fc 00
+J484 t=7245 +4392 pkt=fa fc 00
+J485 t=7249 +4396 pkt=fa fc 00
+J486 t=7249 +4396 pkt=fa fc 00
+J487 t=7253 +4400 pkt=fa fc 00
+J488 t=7253 +4400 pkt=fa fc 00
+J489 t=7257 +4404 pkt=fa fc 00
+J490 t=7257 +4404 pkt=fa fc 00
+J491 t=7261 +4408 pkt=fa fc 00
+J492 t=7261 +4408 pkt=fa fc 00
+J493 t=7265 +4412 pkt=fa fc 00
+J494 t=7265 +4412 pkt=fa fc 00
+J495 t=7269 +4416 pkt=fa fc 00
+J496 t=7269 +4416 pkt=fa fc 00
+J497 t=7273 +4420 pkt=fa fc 00
+J498 t=7273 +4420 pkt=fa fc 00
+J499 t=7277 +4424 pkt=fa fc 00
+J500 t=7277 +4424 pkt=fa fc 00
+J501 t=7281 +4428 pkt=fa fc 00
+J502 t=7281 +4428 pkt=fa fc 00
+J503 t=7285 +4432 pkt=fa fc 00
+J504 t=7285 +4432 pkt=fa fc 00
+J505 t=7289 +4436 pkt=fa fc 00
+J506 t=7289 +4436 pkt=fa fc 00
+J507 t=7293 +4440 pkt=fa fc 00
+J508 t=7293 +4440 pkt=fa fc 00
+J509 t=7297 +4444 pkt=fa fc 00
+J510 t=7297 +4444 pkt=fa fc 00
+J511 t=7301 +4448 pkt=fa fc 00
+J512 t=7301 +4448 pkt=fa fc 00
+J513 t=7305 +4452 pkt=fa fc 00
+J514 t=7305 +4452 pkt=fa fc 00
+J515 t=7309 +4456 pkt=fa fc 00
+J516 t=7309 +4456 pkt=fa fc 00
+J517 t=7313 +4460 pkt=fa fc 00
+J518 t=7313 +4460 pkt=fa fc 00
+J519 t=7317 +4464 pkt=fa fc 00
+J520 t=7317 +4464 pkt=fa fc 00
+J521 t=7321 +4468 pkt=fa fc 00
+J522 t=7321 +4468 pkt=fa fc 00
+J523 t=7325 +4472 pkt=fa fc 00
+J524 t=7325 +4472 pkt=fa fc 00
+J525 t=7329 +4476 pkt=fa fc 00
+J526 t=7329 +4476 pkt=fa fc 00
+J527 t=7333 +4480 pkt=fa fc 00
+J528 t=7333 +4480 pkt=fa fc 00
+J529 t=7337 +4484 pkt=fa fc 00
+J530 t=7337 +4484 pkt=fa fc 00
+J531 t=7341 +4488 pkt=fa fc 00
+J532 t=7341 +4488 pkt=fa fc 00
+J533 t=7345 +4492 pkt=fa fc 00
+J534 t=7345 +4492 pkt=fa fc 00
+J535 t=7349 +4496 pkt=fa fc 00
+J536 t=7349 +4496 pkt=fa fc 00
+J537 t=7353 +4500 pkt=fa fc 00
+J538 t=7353 +4500 pkt=fa fc 00
+J539 t=7357 +4504 pkt=fa fc 00
+J540 t=7357 +4504 pkt=fa fc 00
+J541 t=7361 +4508 pkt=fa fc 00
+J542 t=7361 +4508 pkt=fa fc 00
+J543 t=7365 +4512 pkt=fa fc 00
+J544 t=7365 +4512 pkt=fa fc 00
+J545 t=7369 +4516 pkt=fa fc 00
+J546 t=7369 +4516 pkt=fa fc 00
+J547 t=7373 +4520 pkt=fa fc 00
+J548 t=7373 +4520 pkt=fa fc 00
+J549 t=7377 +4524 pkt=fa fc 00
+J550 t=7377 +4524 pkt=fa fc 00
+J551 t=7381 +4528 pkt=fa fc 00
+J552 t=7381 +4528 pkt=fa fc 00
+J553 t=7385 +4532 pkt=fa fc 00
+J554 t=7385 +4532 pkt=fa fc 00
+J555 t=7389 +4536 pkt=fa fc 00
+J556 t=7389 +4536 pkt=fa fc 00
+J557 t=7393 +4540 pkt=fa fc 00
+J558 t=7393 +4540 pkt=fa fc 00
+J559 t=7397 +4544 pkt=fa fc 00
+J560 t=7397 +4544 pkt=fa fc 00
+J561 t=7401 +4548 pkt=fa fc 00
+J562 t=7401 +4548 pkt=fa fc 00
+J563 t=7405 +4552 pkt=fa fc 00
+J564 t=7405 +4552 pkt=fa fc 00
+J565 t=7409 +4556 pkt=fa fc 00
+J566 t=7409 +4556 pkt=fa fc 00
+J567 t=7413 +4560 pkt=fa fc 00
+J568 t=7413 +4560 pkt=fa fc 00
+J569 t=7417 +4564 pkt=fa fc 00
+J570 t=7417 +4564 pkt=fa fc 00
+J571 t=7421 +4568 pkt=fa fc 00
+J572 t=7421 +4568 pkt=fa fc 00
+J573 t=7425 +4572 pkt=fa fc 00
+J574 t=7425 +4572 pkt=fa fc 00
+J575 t=7429 +4576 pkt=fa fc 00
+J576 t=7429 +4576 pkt=fa fc 00
+J577 t=7433 +4580 pkt=fa fc 00
+J578 t=7513 +4660 pkt=fa 00 fc
+J579 t=7517 +4664 pkt=fa 00 fc
+J580 t=7517 +4664 pkt=fa 00 fc
+J581 t=7521 +4668 pkt=fa 00 fc
+J582 t=7521 +4668 pkt=fa 00 fc
+J583 t=7525 +4672 pkt=fa 00 fc
+J584 t=7525 +4672 pkt=fa 00 fc
+J585 t=7529 +4676 pkt=fa 00 fc
+J586 t=7529 +4676 pkt=fa 00 fc
+J587 t=7533 +4680 pkt=fa 00 fc
+J588 t=7533 +4680 pkt=fa 00 fc
+J589 t=7537 +4684 pkt=fa 00 fc
+J590 t=7537 +4684 pkt=fa 00 fc
+J591 t=7541 +4688 pkt=fa 00 fc
+J592 t=7541 +4688 pkt=fa 00 fc
+J593 t=7545 +4692 pkt=fa 00 fc
+J594 t=7545 +4692 pkt=fa 00 fc
+J595 t=7549 +4696 pkt=fa 00 fc
+J596 t=7549 +4696 pkt=fa 00 fc
+J597 t=7553 +4700 pkt=fa 00 fc
+J598 t=7553 +4700 pkt=fa 00 fc
+J599 t=7557 +4704 pkt=fa 00 fc
+J600 t=7557 +4704 pkt=fa 00 fc
+J601 t=7561 +4708 pkt=fa 00 fc
+J602 t=7561 +4708 pkt=fa 00 fc
+J603 t=7565 +4712 pkt=fa 00 fc
+J604 t=7565 +4712 pkt=fa 00 fc
+J605 t=7569 +4716 pkt=fa 00 fc
+J606 t=7569 +4716 pkt=fa 00 fc
+J607 t=7573 +4720 pkt=fa 00 fc
+J608 t=7573 +4720 pkt=fa 00 fc
+J609 t=7577 +4724 pkt=fa 00 fc
+J610 t=7577 +4724 pkt=fa 00 fc
+J611 t=7581 +4728 pkt=fa 00 fc
+J612 t=7581 +4728 pkt=fa 00 fc
+J613 t=7585 +4732 pkt=fa 00 fc
+J614 t=7585 +4732 pkt=fa 00 fc
+J615 t=7589 +4736 pkt=fa 00 fc
+J616 t=7589 +4736 pkt=fa 00 fc
+J617 t=7593 +4740 pkt=fa 00 fc
+J618 t=7593 +4740 pkt=fa 00 fc
+J619 t=7597 +4744 pkt=fa 00 fc
+J620 t=7677 +4824 pkt=fa 04 04
+J621 t=7681 +4828 pkt=fa 04 04
+J622 t=7681 +4828 pkt=fa 04 04
+J623 t=7685 +4832 pkt=fa 04 04
+J624 t=7685 +4832 pkt=fa 04 04
+J625 t=7689 +4836 pkt=fa 04 04
+J626 t=7689 +4836 pkt=fa 04 04
+J627 t=7693 +4840 pkt=fa 04 04
+J628 t=7693 +4840 pkt=fa 04 04
+J629 t=7697 +4844 pkt=fa 04 04
+J630 t=7697 +4844 pkt=fa 04 04
+J631 t=7701 +4848 pkt=fa 04 04
+J632 t=7701 +4848 pkt=fa 04 04
+J633 t=7705 +4852 pkt=fa 04 04
+J634 t=7705 +4852 pkt=fa 04 04
+J635 t=7709 +4856 pkt=fa 04 04
+J636 t=7709 +4856 pkt=fa 04 04
+J637 t=7713 +4860 pkt=fa 04 04
+J638 t=7713 +4860 pkt=fa 04 04
+J639 t=7717 +4864 pkt=fa 04 04
+J640 t=7717 +4864 pkt=fa 04 04
+J641 t=7721 +4868 pkt=fa 04 04
+J642 t=7721 +4868 pkt=fa 04 04
+J643 t=7725 +4872 pkt=fa 04 04
+J644 t=7725 +4872 pkt=fa 04 04
+J645 t=7729 +4876 pkt=fa 04 04
+J646 t=7729 +4876 pkt=fa 04 04
+J647 t=7733 +4880 pkt=fa 04 04
+J648 t=7733 +4880 pkt=fa 04 04
+J649 t=7737 +4884 pkt=fa 04 04
+J650 t=7737 +4884 pkt=fa 04 04
+J651 t=7741 +4888 pkt=fa 04 04
+J652 t=7741 +4888 pkt=fa 04 04
+J653 t=7745 +4892 pkt=fa 04 04
+J654 t=7745 +4892 pkt=fa 04 04
+J655 t=7749 +4896 pkt=fa 04 04
+J656 t=7749 +4896 pkt=fa 04 04
+J657 t=7753 +4900 pkt=fa 04 04
+J658 t=7753 +4900 pkt=fa 04 04
+J659 t=7757 +4904 pkt=fa 04 04
+J660 t=7757 +4904 pkt=fa 04 04
+J661 t=7761 +4908 pkt=fa 04 04
+J662 t=7761 +4908 pkt=fa 04 00
+J663 t=7765 +4912 pkt=fa 04 00
+J664 t=7765 +4912 pkt=fa 04 00
+J665 t=7769 +4916 pkt=fa 04 00
+J666 t=7769 +4916 pkt=fa 04 00
+J667 t=7773 +4920 pkt=fa 04 00
+J668 t=7773 +4920 pkt=fa 04 00
+J669 t=7777 +4924 pkt=fa 04 00
+J670 t=7777 +4924 pkt=fa 04 00
+J671 t=7781 +4928 pkt=fa 04 00
+J672 t=7781 +4928 pkt=fa 04 00
+J673 t=7785 +4932 pkt=fa 04 00
+J674 t=7785 +4932 pkt=fa 04 00
+J675 t=7789 +4936 pkt=fa 04 00
+J676 t=7789 +4936 pkt=fa 04 00
+J677 t=7793 +4940 pkt=fa 04 00
+J678 t=7793 +4940 pkt=fa 04 00
+J679 t=7797 +4944 pkt=fa 04 00
+J680 t=7797 +4944 pkt=fa 04 00
+J681 t=7801 +4948 pkt=fa 04 00
+J682 t=7801 +4948 pkt=fa 04 00
+J683 t=7805 +4952 pkt=fa 04 00
+J684 t=7805 +4952 pkt=fa 04 00
+J685 t=7809 +4956 pkt=fa 04 00
+J686 t=7809 +4956 pkt=fa 04 00
+J687 t=7813 +4960 pkt=fa 04 00
+J688 t=7813 +4960 pkt=fa 04 00
+J689 t=7817 +4964 pkt=fa 02 00
+J690 t=7897 +5044 pkt=f8 00 00
+J691 t=8121 +5268 pkt=f8 81 81
+J692 t=8121 +5268 pkt=f8 c3 d7
+J693 t=8121 +5268 pkt=fa 00 00
+J694 t=8133 +5280 pkt=f8 00 00
+J695 t=8253 +5400 pkt=f8 7f 7f
+J696 t=8253 +5400 pkt=f8 15 29
+J697 t=8257 +5404 pkt=fa 00 00
+J698 t=8277 +5424 pkt=fa 28 00
+J699 t=8277 +5424 pkt=fa 28 00
+J700 t=8277 +5424 pkt=fa 28 00
+J701 t=8281 +5428 pkt=fa 28 00
+J702 t=8281 +5428 pkt=fa 28 00
+J703 t=8281 +5428 pkt=fa 28 00
+J704 t=8281 +5428 pkt=fa 28 00
+J705 t=8285 +5432 pkt=fa 28 00
+J706 t=8285 +5432 pkt=fa 0c 00
+J707 t=8285 +5432 pkt=fa d8 00
+J708 t=8285 +5432 pkt=fa d8 00
+J709 t=8289 +5436 pkt=fa d8 00
+J710 t=8289 +5436 pkt=fa d8 00
+J711 t=8289 +5436 pkt=fa d8 00
+J712 t=8289 +5436 pkt=fa d8 00
+J713 t=8293 +5440 pkt=fa d8 00
+J714 t=8293 +5440 pkt=fa d8 00
+J715 t=8293 +5440 pkt=fa d8 00
+J716 t=8293 +5440 pkt=fa d8 00
+J717 t=8297 +5444 pkt=fa d8 00
+J718 t=8297 +5444 pkt=fa d8 00
+J719 t=8297 +5444 pkt=fa d8 00
+J720 t=8297 +5444 pkt=fa d8 00
+J721 t=8301 +5448 pkt=fa 28 00
+J722 t=8301 +5448 pkt=fa 28 00
+J723 t=8301 +5448 pkt=fa 28 00
+J724 t=8301 +5448 pkt=fa 28 00
+J725 t=8305 +5452 pkt=fa 28 00
+J726 t=8305 +5452 pkt=fa 28 00
+J727 t=8305 +5452 pkt=fa 12 00
+J728 t=8437 +5584 pkt=f8 00 00
+J729 t=8557 +5704 pkt=f8 81 81
+J730 t=8557 +5704 pkt=f8 cd d7
+J731 t=8561 +5708 pkt=fa 00 00
+J732 t=8569 +5716 pkt=f8 00 00
+J733 t=8693 +5840 pkt=f8 7f 7f
+J734 t=8693 +5840 pkt=f8 7f 29
+J735 t=8693 +5840 pkt=f8 3b 00
+J736 t=8773 +5920 pkt=fa 00 00
+J737 t=8977 +6124 pkt=f8 00 00
+J738 t=9097 +6244 pkt=f8 81 81
+J739 t=9097 +6244 pkt=f8 aa d7
+J740 t=9097 +6244 pkt=fa 00 00
+J741 t=9109 +6256 pkt=f8 00 00
+J742 t=9229 +6376 pkt=f8 7f 14
+J743 t=9233 +6380 pkt=f8 79 00
+J744 t=9313 +6460 pkt=fa 00 00
+J745 t=9473 +6620 pkt=fa 00 08
+J746 t=9513 +6660 pkt=fa 00 08
+J747 t=9597 +6744 pkt=fa 00 08
+J748 t=9637 +6784 pkt=fa 00 08
+J749 t=9717 +6864 pkt=fa 00 04
+J750 t=9721 +6868 pkt=fa 00 04
+J751 t=9721 +6868 pkt=fa 00 04
+J752 t=9725 +6872 pkt=fa 00 04
+J753 t=9725 +6872 pkt=fa 00 04
+J754 t=9729 +6876 pkt=fa 00 04
+J755 t=9729 +6876 pkt=fa 00 04
+J756 t=9733 +6880 pkt=fa 00 04
+J757 t=9733 +6880 pkt=fa 00 04
+J758 t=9737 +6884 pkt=fa 00 04
+J759 t=9737 +6884 pkt=fa 00 04
+J760 t=9741 +6888 pkt=fa 00 04
+J761 t=9741 +6888 pkt=fa 00 04
+J762 t=9745 +6892 pkt=fa 00 04
+J763 t=9745 +6892 pkt=fa 00 04
+J764 t=9749 +6896 pkt=fa 00 04
+J765 t=9749 +6896 pkt=fa 00 04
+J766 t=9753 +6900 pkt=fa 00 04
+J767 t=9753 +6900 pkt=fa 00 04
+J768 t=9757 +6904 pkt=fa 00 04
+J769 t=9757 +6904 pkt=fa 00 04
+J770 t=9761 +6908 pkt=fa 00 04
+J771 t=9761 +6908 pkt=fa 00 04
+J772 t=9765 +6912 pkt=fa 00 04
+J773 t=9765 +6912 pkt=fa 00 04
+J774 t=9769 +6916 pkt=fa 00 04
+J775 t=9769 +6916 pkt=fa 00 04
+J776 t=9773 +6920 pkt=fa 00 04
+J777 t=9773 +6920 pkt=fa 00 04
+J778 t=9777 +6924 pkt=fa 00 04
+J779 t=9777 +6924 pkt=fa 00 04
+J780 t=9781 +6928 pkt=fa 00 04
+J781 t=9781 +6928 pkt=fa 00 04
+J782 t=9785 +6932 pkt=fa 00 04
+J783 t=9785 +6932 pkt=fa 00 04
+J784 t=9789 +6936 pkt=fa 00 04
+J785 t=9789 +6936 pkt=fa 00 04
+J786 t=9793 +6940 pkt=fa 00 04
+J787 t=9793 +6940 pkt=fa 00 04
+J788 t=9797 +6944 pkt=fa 00 04
+J789 t=9797 +6944 pkt=fa 00 04
+J790 t=9801 +6948 pkt=fa 00 04
+J791 t=9801 +6948 pkt=fa 00 04
+J792 t=9805 +6952 pkt=fa 00 04
+J793 t=9805 +6952 pkt=fa 00 04
+J794 t=9809 +6956 pkt=fa 00 04
+J795 t=9809 +6956 pkt=fa 00 04
+J796 t=9813 +6960 pkt=fa 00 04
+J797 t=9813 +6960 pkt=fa 00 04
+J798 t=9817 +6964 pkt=fa 00 04
+J799 t=9817 +6964 pkt=fa 00 04
+J800 t=9821 +6968 pkt=fa 00 04
+J801 t=9821 +6968 pkt=fa 00 04
+J802 t=9825 +6972 pkt=fa 00 04
+J803 t=9825 +6972 pkt=fa 00 02
+J804 t=9909 +7056 pkt=fa 00 fc
+J805 t=9909 +7056 pkt=fa 00 fc
+J806 t=9913 +7060 pkt=fa 00 fc
+J807 t=9913 +7060 pkt=fa 00 fc
+J808 t=9917 +7064 pkt=fa 00 fc
+J809 t=9917 +7064 pkt=fa 00 fc
+J810 t=9921 +7068 pkt=fa 00 fc
+J811 t=9921 +7068 pkt=fa 00 fc
+J812 t=9925 +7072 pkt=fa 00 fc
+J813 t=9925 +7072 pkt=fa 00 fc
+J814 t=9929 +7076 pkt=fa 00 fc
+J815 t=9929 +7076 pkt=fa 00 fc
+J816 t=9933 +7080 pkt=fa 00 fc
+J817 t=9933 +7080 pkt=fa 00 fc
+J818 t=9937 +7084 pkt=fa 00 fc
+J819 t=9937 +7084 pkt=fa 00 fc
+J820 t=9941 +7088 pkt=fa 00 fc
+J821 t=9941 +7088 pkt=fa 00 fc
+J822 t=9945 +7092 pkt=fa 00 fc
+J823 t=9945 +7092 pkt=fa 00 fc
+J824 t=9949 +7096 pkt=fa 00 fc
+J825 t=9949 +7096 pkt=fa 00 fc
+J826 t=9953 +7100 pkt=fa 00 fc
+J827 t=9953 +7100 pkt=fa 00 fc
+J828 t=9957 +7104 pkt=fa 00 fc
+J829 t=9957 +7104 pkt=fa 00 fc
+J830 t=9961 +7108 pkt=fa 00 fc
+J831 t=9961 +7108 pkt=fa 00 fc
+J832 t=9965 +7112 pkt=fa 00 fc
+J833 t=9965 +7112 pkt=fa 00 fc
+J834 t=9969 +7116 pkt=fa 00 fc
+J835 t=9969 +7116 pkt=fa 00 fc
+J836 t=9973 +7120 pkt=fa 00 fc
+J837 t=9973 +7120 pkt=fa 00 fc
+J838 t=9977 +7124 pkt=fa 00 fc
+J839 t=9977 +7124 pkt=fa 00 fc
+J840 t=9981 +7128 pkt=fa 00 fc
+J841 t=9981 +7128 pkt=fa 00 fc
+J842 t=9985 +7132 pkt=fa 00 fc
+J843 t=9985 +7132 pkt=fa 00 fc
+J844 t=9989 +7136 pkt=fa 00 fc
+J845 t=9989 +7136 pkt=fa 00 fc
+J846 t=9993 +7140 pkt=fa 00 fc
+J847 t=9993 +7140 pkt=fa 00 fc
+J848 t=9997 +7144 pkt=fa 00 fc
+J849 t=9997 +7144 pkt=fa 00 fc
+J850 t=10001 +7148 pkt=fa 00 fc
+J851 t=10001 +7148 pkt=fa 00 fc
+J852 t=10005 +7152 pkt=fa 00 fc
+J853 t=10005 +7152 pkt=fa 00 fc
+J854 t=10009 +7156 pkt=fa 00 fc
+J855 t=10009 +7156 pkt=fa 00 fc
+J856 t=10013 +7160 pkt=fa 00 fc
+J857 t=10013 +7160 pkt=fa 00 fc
+J858 t=10017 +7164 pkt=fa 00 fc
+J859 t=10017 +7164 pkt=fa 00 fc
+J860 t=10021 +7168 pkt=fa 00 fc
+J861 t=10021 +7168 pkt=fa 00 fc
+J862 t=10025 +7172 pkt=fa 00 fc
+J863 t=10025 +7172 pkt=fa 00 fc
+J864 t=10029 +7176 pkt=fa 00 fc
+J865 t=10029 +7176 pkt=fa 00 fc
+J866 t=10033 +7180 pkt=fa 00 fc
+J867 t=10033 +7180 pkt=fa 00 fc
+J868 t=10037 +7184 pkt=fa 00 fc
+J869 t=10037 +7184 pkt=fa 00 fc
+J870 t=10041 +7188 pkt=fa 00 fc
+J871 t=10041 +7188 pkt=fa 00 fc
+J872 t=10045 +7192 pkt=fa 00 fc
+J873 t=10045 +7192 pkt=fa 00 fc
+J874 t=10049 +7196 pkt=fa 00 fc
+J875 t=10049 +7196 pkt=fa 00 fc
+J876 t=10053 +7200 pkt=fa 00 fc
+J877 t=10053 +7200 pkt=fa 00 fc
+J878 t=10057 +7204 pkt=fa 00 fc
+J879 t=10057 +7204 pkt=fa 00 fc
+J880 t=10061 +7208 pkt=fa 00 fc
+J881 t=10061 +7208 pkt=fa 00 fc
+J882 t=10065 +7212 pkt=fa 00 fc
+J883 t=10065 +7212 pkt=fa 00 fc
+J884 t=10069 +7216 pkt=fa 00 fc
+J885 t=10069 +7216 pkt=fa 00 fc
+J886 t=10073 +7220 pkt=fa 00 fc
+J887 t=10073 +7220 pkt=fa 00 fc
+J888 t=10077 +7224 pkt=fa 00 fc
+J889 t=10077 +7224 pkt=fa 00 fc
+J890 t=10081 +7228 pkt=fa 00 fc
+J891 t=10081 +7228 pkt=fa 00 fc
+J892 t=10085 +7232 pkt=fa 00 fc
+J893 t=10085 +7232 pkt=fa 00 fc
+J894 t=10089 +7236 pkt=fa 00 fc
+J895 t=10089 +7236 pkt=fa 00 fc
+J896 t=10093 +7240 pkt=fa 00 fc
+J897 t=10093 +7240 pkt=fa 00 fc
+J898 t=10097 +7244 pkt=fa 00 fc
+J899 t=10097 +7244 pkt=fa 00 fc
+J900 t=10101 +7248 pkt=fa 00 fc
+J901 t=10101 +7248 pkt=fa 00 fc
+J902 t=10105 +7252 pkt=fa 00 fc
+J903 t=10105 +7252 pkt=fa 00 fc
+J904 t=10109 +7256 pkt=fa 00 fc
+J905 t=10109 +7256 pkt=fa 00 fc
+J906 t=10113 +7260 pkt=fa 00 fc
+J907 t=10113 +7260 pkt=fa 00 fc
+J908 t=10117 +7264 pkt=fa 00 fc
+J909 t=10117 +7264 pkt=fa 00 fc
+J910 t=10121 +7268 pkt=fa 00 fc
+J911 t=10121 +7268 pkt=fa 00 fc
+J912 t=10125 +7272 pkt=fa 00 fc
+J913 t=10125 +7272 pkt=fa 00 fc
+J914 t=10209 +7356 pkt=fa fc 00
+J915 t=10209 +7356 pkt=fa fc 00
+J916 t=10213 +7360 pkt=fa fc 00
+J917 t=10213 +7360 pkt=fa fc 00
+J918 t=10217 +7364 pkt=fa fc 00
+J919 t=10217 +7364 pkt=fa fc 00
+J920 t=10221 +7368 pkt=fa fc 00
+J921 t=10221 +7368 pkt=fa fc 00
+J922 t=10225 +7372 pkt=fa fc 00
+J923 t=10225 +7372 pkt=fa fc 00
+J924 t=10229 +7376 pkt=fa fc 00
+J925 t=10229 +7376 pkt=fa fc 00
+J926 t=10233 +7380 pkt=fa fc 00
+J927 t=10233 +7380 pkt=fa fc 00
+J928 t=10237 +7384 pkt=fa fc 00
+J929 t=10237 +7384 pkt=fa fc 00
+J930 t=10241 +7388 pkt=fa fc 00
+J931 t=10241 +7388 pkt=fa fc 00
+J932 t=10245 +7392 pkt=fa fc 00
+J933 t=10245 +7392 pkt=fa fc 00
+J934 t=10249 +7396 pkt=fa fc 00
+J935 t=10249 +7396 pkt=fa fc 00
+J936 t=10253 +7400 pkt=fa fc 00
+J937 t=10253 +7400 pkt=fa fc 00
+J938 t=10257 +7404 pkt=fa fc 00
+J939 t=10257 +7404 pkt=fa fc 00
+J940 t=10261 +7408 pkt=fa fc 00
+J941 t=10261 +7408 pkt=fa fc 00
+J942 t=10265 +7412 pkt=fa fc 00
+J943 t=10265 +7412 pkt=fa fc 00
+J944 t=10269 +7416 pkt=fa fc 00
+J945 t=10269 +7416 pkt=fa fc 00
+J946 t=10273 +7420 pkt=fa fc 00
+J947 t=10273 +7420 pkt=fa fc 00
+J948 t=10277 +7424 pkt=fa fc 00
+J949 t=10277 +7424 pkt=fa fc 00
+J950 t=10281 +7428 pkt=fa fc 00
+J951 t=10281 +7428 pkt=fa fc 00
+J952 t=10285 +7432 pkt=fa fc 00
+J953 t=10285 +7432 pkt=fa fc 00
+J954 t=10289 +7436 pkt=fa fc 00
+J955 t=10289 +7436 pkt=fa fc 00
+J956 t=10373 +7520 pkt=fa 04 04
+J957 t=10373 +7520 pkt=fa 04 04
+J958 t=10377 +7524 pkt=fa 04 04
+J959 t=10377 +7524 pkt=fa 04 04
+J960 t=10381 +7528 pkt=fa 04 04
+J961 t=10381 +7528 pkt=fa 04 04
+J962 t=10385 +7532 pkt=fa 04 04
+J963 t=10385 +7532 pkt=fa 04 04
+J964 t=10389 +7536 pkt=fa 04 04
+J965 t=10389 +7536 pkt=fa 04 04
+J966 t=10393 +7540 pkt=fa 04 04
+J967 t=10393 +7540 pkt=fa 04 04
+J968 t=10397 +7544 pkt=fa 04 04
+J969 t=10397 +7544 pkt=fa 04 04
+J970 t=10401 +7548 pkt=fa 04 04
+J971 t=10401 +7548 pkt=fa 04 04
+J972 t=10405 +7552 pkt=fa 04 04
+J973 t=10405 +7552 pkt=fa 04 04
+J974 t=10409 +7556 pkt=fa 04 04
+J975 t=10409 +7556 pkt=fa 04 04
+J976 t=10413 +7560 pkt=fa 04 04
+J977 t=10413 +7560 pkt=fa 04 04
+J978 t=10417 +7564 pkt=fa 04 04
+J979 t=10417 +7564 pkt=fa 04 04
+J980 t=10421 +7568 pkt=fa 04 04
+J981 t=10421 +7568 pkt=fa 04 04
+J982 t=10425 +7572 pkt=fa 04 04
+J983 t=10425 +7572 pkt=fa 04 04
+J984 t=10429 +7576 pkt=fa 04 04
+J985 t=10429 +7576 pkt=fa 04 04
+J986 t=10433 +7580 pkt=fa 04 04
+J987 t=10433 +7580 pkt=fa 04 04
+J988 t=10437 +7584 pkt=fa 04 04
+J989 t=10437 +7584 pkt=fa 04 04
+J990 t=10441 +7588 pkt=fa 04 04
+J991 t=10441 +7588 pkt=fa 04 04
+J992 t=10445 +7592 pkt=fa 04 04
+J993 t=10445 +7592 pkt=fa 04 04
+J994 t=10449 +7596 pkt=fa 04 04
+J995 t=10449 +7596 pkt=fa 04 04
+J996 t=10453 +7600 pkt=fa 04 04
+J997 t=10453 +7600 pkt=fa 04 04
+J998 t=10457 +7604 pkt=fa 00 04
+J999 t=10457 +7604 pkt=fa 00 04
+J1000 t=10461 +7608 pkt=fa 00 04
+J1001 t=10461 +7608 pkt=fa 00 04
+J1002 t=10465 +7612 pkt=fa 00 04
+J1003 t=10465 +7612 pkt=fa 00 04
+J1004 t=10469 +7616 pkt=fa 00 04
+J1005 t=10469 +7616 pkt=fa 00 04
+J1006 t=10473 +7620 pkt=fa 00 04
+J1007 t=10473 +7620 pkt=fa 00 04
+J1008 t=10477 +7624 pkt=fa 00 04
+J1009 t=10477 +7624 pkt=fa 00 04
+J1010 t=10481 +7628 pkt=fa 00 04
+J1011 t=10481 +7628 pkt=fa 00 04
+J1012 t=10485 +7632 pkt=fa 00 04
+J1013 t=10485 +7632 pkt=fa 00 02
+J1014 t=10569 +7716 pkt=f8 00 00
+J1015 t=10789 +7936 pkt=f8 81 c4
+J1016 t=10789 +7936 pkt=f8 87 00
+J1017 t=10789 +7936 pkt=fa 00 00
+J1018 t=10801 +7948 pkt=f8 00 00
+J1019 t=10921 +8068 pkt=f8 7f 14
+J1020 t=10925 +8072 pkt=f8 79 00
+J1021 t=10925 +8072 pkt=fa 00 00
+J1022 t=10945 +8092 pkt=fa 00 28
+J1023 t=10945 +8092 pkt=fa 00 28
+J1024 t=10949 +8096 pkt=fa 00 28
+J1025 t=10949 +8096 pkt=fa 00 28
+J1026 t=10949 +8096 pkt=fa 00 28
+J1027 t=10949 +8096 pkt=fa 00 14
+J1028 t=10953 +8100 pkt=fa 00 d8
+J1029 t=10953 +8100 pkt=fa 00 d8
+J1030 t=10953 +8100 pkt=fa 00 d8
+J1031 t=10953 +8100 pkt=fa 00 d8
+J1032 t=10957 +8104 pkt=fa 00 d8
+J1033 t=10957 +8104 pkt=fa 00 d8
+J1034 t=10957 +8104 pkt=fa 00 d8
+J1035 t=10957 +8104 pkt=fa 00 d8
+J1036 t=10961 +8108 pkt=fa 00 d8
+J1037 t=10961 +8108 pkt=fa 00 d8
+J1038 t=10961 +8108 pkt=fa 00 28
+J1039 t=10961 +8108 pkt=fa 00 28
+J1040 t=10965 +8112 pkt=fa 00 28
+J1041 t=10965 +8112 pkt=fa 00 28
+J1042 t=10965 +8112 pkt=fa 00 28
+J1043 t=10965 +8112 pkt=fa 00 0a
+J1044 t=11097 +8244 pkt=f8 00 00
+J1045 t=11217 +8364 pkt=f8 81 ce
+J1046 t=11221 +8368 pkt=f8 87 00
+J1047 t=11221 +8368 pkt=fa 00 00
+J1048 t=11233 +8380 pkt=f8 00 00
+J1049 t=11353 +8500 pkt=f8 7f c4
+J1050 t=11353 +8500 pkt=f8 79 00
+J1051 t=11433 +8580 pkt=fa 00 00
+J1052 t=11637 +8784 pkt=f8 00 00
+J1053 t=11757 +8904 pkt=f8 81 3c
+J1054 t=11757 +8904 pkt=f8 87 00
+J1055 t=11757 +8904 pkt=fa 00 00
+J1056 t=11769 +8916 pkt=f8 00 00
+J1057 t=11889 +9036 pkt=f8 7f 64
+J1058 t=11893 +9040 pkt=f8 79 00
+J1059 t=11973 +9120 pkt=fa 00 00
+J1060 t=12173 +9320 pkt=f8 00 00
+J1061 t=12293 +9440 pkt=f8 81 9c
+J1062 t=12297 +9444 pkt=f8 87 00
+J1063 t=12297 +9444 pkt=fa 00 00
+J1064 t=12309 +9456 pkt=f8 00 00
+J1065 t=12429 +9576 pkt=f8 30 7f
+J1066 t=12429 +9576 pkt=f8 00 29
+J1067 t=12509 +9656 pkt=fa 00 00
+J1068 t=12673 +9820 pkt=fa 08 00
+J1069 t=12713 +9860 pkt=fa 08 00
+J1070 t=12793 +9940 pkt=fa 08 00
+J1071 t=12833 +9980 pkt=fa 08 00
+J1072 t=12917 +10064 pkt=fa 04 00
+J1073 t=12917 +10064 pkt=fa 04 00
+J1074 t=12921 +10068 pkt=fa 04 00
+J1075 t=12921 +10068 pkt=fa 04 00
+J1076 t=12925 +10072 pkt=fa 04 00
+J1077 t=12925 +10072 pkt=fa 04 00
+J1078 t=12929 +10076 pkt=fa 04 00
+J1079 t=12929 +10076 pkt=fa 04 00
+J1080 t=12933 +10080 pkt=fa 04 00
+J1081 t=12933 +10080 pkt=fa 04 00
+J1082 t=12937 +10084 pkt=fa 04 00
+J1083 t=12937 +10084 pkt=fa 04 00
+J1084 t=12941 +10088 pkt=fa 04 00
+J1085 t=12941 +10088 pkt=fa 04 00
+J1086 t=12945 +10092 pkt=fa 04 00
+J1087 t=12945 +10092 pkt=fa 04 00
+J1088 t=12949 +10096 pkt=fa 04 00
+J1089 t=12949 +10096 pkt=fa 04 00
+J1090 t=12953 +10100 pkt=fa 04 00
+J1091 t=12953 +10100 pkt=fa 04 00
+J1092 t=12957 +10104 pkt=fa 04 00
+J1093 t=12957 +10104 pkt=fa 04 00
+J1094 t=12961 +10108 pkt=fa 04 00
+J1095 t=12961 +10108 pkt=fa 04 00
+J1096 t=12965 +10112 pkt=fa 04 00
+J1097 t=12965 +10112 pkt=fa 04 00
+J1098 t=12969 +10116 pkt=fa 04 00
+J1099 t=12969 +10116 pkt=fa 04 00
+J1100 t=12973 +10120 pkt=fa 04 00
+J1101 t=12973 +10120 pkt=fa 04 00
+J1102 t=12977 +10124 pkt=fa 04 00
+J1103 t=12977 +10124 pkt=fa 04 00
+J1104 t=12981 +10128 pkt=fa 04 00
+J1105 t=12981 +10128 pkt=fa 04 00
+J1106 t=12985 +10132 pkt=fa 04 00
+J1107 t=12985 +10132 pkt=fa 04 00
+J1108 t=12989 +10136 pkt=fa 04 00
+J1109 t=12989 +10136 pkt=fa 04 00
+J1110 t=12993 +10140 pkt=fa 04 00
+J1111 t=12993 +10140 pkt=fa 04 00
+J1112 t=12997 +10144 pkt=fa 04 00
+J1113 t=12997 +10144 pkt=fa 04 00
+J1114 t=13001 +10148 pkt=fa 04 00
+J1115 t=13001 +10148 pkt=fa 04 00
+J1116 t=13005 +10152 pkt=fa 04 00
+J1117 t=13005 +10152 pkt=fa 04 00
+J1118 t=13009 +10156 pkt=fa 04 00
+J1119 t=13009 +10156 pkt=fa 04 00
+J1120 t=13013 +10160 pkt=fa 04 00
+J1121 t=13013 +10160 pkt=fa 04 00
+J1122 t=13017 +10164 pkt=fa 04 00
+J1123 t=13017 +10164 pkt=fa 04 00
+J1124 t=13021 +10168 pkt=fa 04 00
+J1125 t=13021 +10168 pkt=fa 04 00
+J1126 t=13025 +10172 pkt=fa 04 00
+J1127 t=13025 +10172 pkt=fa 04 00
+J1128 t=13029 +10176 pkt=fa 04 00
+J1129 t=13029 +10176 pkt=fa 04 00
+J1130 t=13033 +10180 pkt=fa 04 00
+J1131 t=13033 +10180 pkt=fa 04 00
+J1132 t=13037 +10184 pkt=fa 04 00
+J1133 t=13037 +10184 pkt=fa 04 00
+J1134 t=13041 +10188 pkt=fa 04 00
+J1135 t=13041 +10188 pkt=fa 04 00
+J1136 t=13045 +10192 pkt=fa 04 00
+J1137 t=13045 +10192 pkt=fa 04 00
+J1138 t=13049 +10196 pkt=fa 04 00
+J1139 t=13049 +10196 pkt=fa 04 00
+J1140 t=13053 +10200 pkt=fa 04 00
+J1141 t=13053 +10200 pkt=fa 04 00
+J1142 t=13057 +10204 pkt=fa 04 00
+J1143 t=13057 +10204 pkt=fa 04 00
+J1144 t=13061 +10208 pkt=fa 04 00
+J1145 t=13061 +10208 pkt=fa 04 00
+J1146 t=13065 +10212 pkt=fa 04 00
+J1147 t=13065 +10212 pkt=fa 04 00
+J1148 t=13069 +10216 pkt=fa 04 00
+J1149 t=13069 +10216 pkt=fa 04 00
+J1150 t=13073 +10220 pkt=fa 04 00
+J1151 t=13073 +10220 pkt=fa 04 00
+J1152 t=13077 +10224 pkt=fa 04 00
+J1153 t=13077 +10224 pkt=fa 04 00
+J1154 t=13081 +10228 pkt=fa 02 00
+J1155 t=13161 +10308 pkt=fa fc 00
+J1156 t=13165 +10312 pkt=fa fc 00
+J1157 t=13165 +10312 pkt=fa fc 00
+J1158 t=13169 +10316 pkt=fa fc 00
+J1159 t=13169 +10316 pkt=fa fc 00
+J1160 t=13173 +10320 pkt=fa fc 00
+J1161 t=13173 +10320 pkt=fa fc 00
+J1162 t=13177 +10324 pkt=fa fc 00
+J1163 t=13177 +10324 pkt=fa fc 00
+J1164 t=13181 +10328 pkt=fa fc 00
+J1165 t=13181 +10328 pkt=fa fc 00
+J1166 t=13185 +10332 pkt=fa fc 00
+J1167 t=13185 +10332 pkt=fa fc 00
+J1168 t=13189 +10336 pkt=fa fc 00
+J1169 t=13189 +10336 pkt=fa fc 00
+J1170 t=13193 +10340 pkt=fa fc 00
+J1171 t=13193 +10340 pkt=fa fc 00
+J1172 t=13197 +10344 pkt=fa fc 00
+J1173 t=13197 +10344 pkt=fa fc 00
+J1174 t=13201 +10348 pkt=fa fc 00
+J1175 t=13201 +10348 pkt=fa fc 00
+J1176 t=13205 +10352 pkt=fa fc 00
+J1177 t=13205 +10352 pkt=fa fc 00
+J1178 t=13209 +10356 pkt=fa fc 00
+J1179 t=13209 +10356 pkt=fa fc 00
+J1180 t=13213 +10360 pkt=fa fc 00
+J1181 t=13213 +10360 pkt=fa fc 00
+J1182 t=13217 +10364 pkt=fa fc 00
+J1183 t=13217 +10364 pkt=fa fc 00
+J1184 t=13221 +10368 pkt=fa fc 00
+J1185 t=13221 +10368 pkt=fa fc 00
+J1186 t=13225 +10372 pkt=fa fc 00
+J1187 t=13225 +10372 pkt=fa fc 00
+J1188 t=13229 +10376 pkt=fa fc 00
+J1189 t=13229 +10376 pkt=fa fc 00
+J1190 t=13233 +10380 pkt=fa fc 00
+J1191 t=13233 +10380 pkt=fa fc 00
+J1192 t=13237 +10384 pkt=fa fc 00
+J1193 t=13237 +10384 pkt=fa fc 00
+J1194 t=13241 +10388 pkt=fa fc 00
+J1195 t=13241 +10388 pkt=fa fc 00
+J1196 t=13245 +10392 pkt=fa fc 00
+J1197 t=13245 +10392 pkt=fa fc 00
+J1198 t=13249 +10396 pkt=fa fc 00
+J1199 t=13249 +10396 pkt=fa fc 00
+J1200 t=13253 +10400 pkt=fa fc 00
+J1201 t=13253 +10400 pkt=fa fc 00
+J1202 t=13257 +10404 pkt=fa fc 00
+J1203 t=13257 +10404 pkt=fa fc 00
+J1204 t=13261 +10408 pkt=fa fc 00
+J1205 t=13261 +10408 pkt=fa fc 00
+J1206 t=13265 +10412 pkt=fa fc 00
+J1207 t=13265 +10412 pkt=fa fc 00
+J1208 t=13269 +10416 pkt=fa fc 00
+J1209 t=13269 +10416 pkt=fa fc 00
+J1210 t=13273 +10420 pkt=fa fc 00
+J1211 t=13273 +10420 pkt=fa fc 00
+J1212 t=13277 +10424 pkt=fa fc 00
+J1213 t=13277 +10424 pkt=fa fc 00
+J1214 t=13281 +10428 pkt=fa fc 00
+J1215 t=13281 +10428 pkt=fa fc 00
+J1216 t=13285 +10432 pkt=fa fc 00
+J1217 t=13285 +10432 pkt=fa fc 00
+J1218 t=13289 +10436 pkt=fa fc 00
+J1219 t=13289 +10436 pkt=fa fc 00
+J1220 t=13293 +10440 pkt=fa fc 00
+J1221 t=13293 +10440 pkt=fa fc 00
+J1222 t=13297 +10444 pkt=fa fc 00
+J1223 t=13297 +10444 pkt=fa fc 00
+J1224 t=13301 +10448 pkt=fa fc 00
+J1225 t=13301 +10448 pkt=fa fc 00
+J1226 t=13305 +10452 pkt=fa fc 00
+J1227 t=13305 +10452 pkt=fa fc 00
+J1228 t=13309 +10456 pkt=fa fc 00
+J1229 t=13309 +10456 pkt=fa fc 00
+J1230 t=13313 +10460 pkt=fa fc 00
+J1231 t=13313 +10460 pkt=fa fc 00
+J1232 t=13317 +10464 pkt=fa fc 00
+J1233 t=13317 +10464 pkt=fa fc 00
+J1234 t=13321 +10468 pkt=fa fc 00
+J1235 t=13321 +10468 pkt=fa fc 00
+J1236 t=13325 +10472 pkt=fa fc 00
+J1237 t=13325 +10472 pkt=fa fc 00
+J1238 t=13329 +10476 pkt=fa fc 00
+J1239 t=13329 +10476 pkt=fa fc 00
+J1240 t=13333 +10480 pkt=fa fc 00
+J1241 t=13333 +10480 pkt=fa fc 00
+J1242 t=13337 +10484 pkt=fa fc 00
+J1243 t=13337 +10484 pkt=fa fc 00
+J1244 t=13341 +10488 pkt=fa fc 00
+J1245 t=13341 +10488 pkt=fa fc 00
+J1246 t=13345 +10492 pkt=fa fc 00
+J1247 t=13345 +10492 pkt=fa fc 00
+J1248 t=13349 +10496 pkt=fa fc 00
+J1249 t=13349 +10496 pkt=fa fc 00
+J1250 t=13353 +10500 pkt=fa fc 00
+J1251 t=13353 +10500 pkt=fa fc 00
+J1252 t=13357 +10504 pkt=fa fc 00
+J1253 t=13357 +10504 pkt=fa fc 00
+J1254 t=13361 +10508 pkt=fa fc 00
+J1255 t=13361 +10508 pkt=fa fc 00
+J1256 t=13365 +10512 pkt=fa fc 00
+J1257 t=13365 +10512 pkt=fa fc 00
+J1258 t=13369 +10516 pkt=fa fc 00
+J1259 t=13369 +10516 pkt=fa fc 00
+J1260 t=13373 +10520 pkt=fa fc 00
+J1261 t=13373 +10520 pkt=fa fc 00
+J1262 t=13377 +10524 pkt=fa fc 00
+J1263 t=13377 +10524 pkt=fa fc 00
+J1264 t=13381 +10528 pkt=fa fc 00
+J1265 t=13381 +10528 pkt=fa fc 00
+J1266 t=13385 +10532 pkt=fa fc 00
+J1267 t=13385 +10532 pkt=fa fc 00
+J1268 t=13389 +10536 pkt=fa fc 00
+J1269 t=13389 +10536 pkt=fa fc 00
+J1270 t=13393 +10540 pkt=fa fc 00
+J1271 t=13393 +10540 pkt=fa fc 00
+J1272 t=13397 +10544 pkt=fa fc 00
+J1273 t=13397 +10544 pkt=fa fc 00
+J1274 t=13401 +10548 pkt=fa fc 00
+J1275 t=13401 +10548 pkt=fa fc 00
+J1276 t=13405 +10552 pkt=fa fc 00
+J1277 t=13405 +10552 pkt=fa fc 00
+J1278 t=13409 +10556 pkt=fa fc 00
+J1279 t=13409 +10556 pkt=fa fc 00
+J1280 t=13413 +10560 pkt=fa fc 00
+J1281 t=13413 +10560 pkt=fa fc 00
+J1282 t=13417 +10564 pkt=fa fc 00
+J1283 t=13417 +10564 pkt=fa fc 00
+J1284 t=13421 +10568 pkt=fa fc 00
+J1285 t=13421 +10568 pkt=fa fc 00
+J1286 t=13425 +10572 pkt=fa fc 00
+J1287 t=13425 +10572 pkt=fa fc 00
+J1288 t=13429 +10576 pkt=fa fc 00
+J1289 t=13429 +10576 pkt=fa fc 00
+J1290 t=13433 +10580 pkt=fa fc 00
+J1291 t=13433 +10580 pkt=fa fc 00
+J1292 t=13437 +10584 pkt=fa fc 00
+J1293 t=13437 +10584 pkt=fa fc 00
+J1294 t=13441 +10588 pkt=fa fc 00
+J1295 t=13441 +10588 pkt=fa fc 00
+J1296 t=13445 +10592 pkt=fa fc 00
+J1297 t=13445 +10592 pkt=fa fc 00
+J1298 t=13449 +10596 pkt=fa fc 00
+J1299 t=13449 +10596 pkt=fa fc 00
+J1300 t=13453 +10600 pkt=fa fc 00
+J1301 t=13453 +10600 pkt=fa fc 00
+J1302 t=13457 +10604 pkt=fa fc 00
+J1303 t=13457 +10604 pkt=fa fc 00
+J1304 t=13461 +10608 pkt=fa fc 00
+J1305 t=13541 +10688 pkt=fa 00 fc
+J1306 t=13545 +10692 pkt=fa 00 fc
+J1307 t=13545 +10692 pkt=fa 00 fc
+J1308 t=13549 +10696 pkt=fa 00 fc
+J1309 t=13549 +10696 pkt=fa 00 fc
+J1310 t=13553 +10700 pkt=fa 00 fc
+J1311 t=13553 +10700 pkt=fa 00 fc
+J1312 t=13557 +10704 pkt=fa 00 fc
+J1313 t=13557 +10704 pkt=fa 00 fc
+J1314 t=13561 +10708 pkt=fa 00 fc
+J1315 t=13561 +10708 pkt=fa 00 fc
+J1316 t=13565 +10712 pkt=fa 00 fc
+J1317 t=13565 +10712 pkt=fa 00 fc
+J1318 t=13569 +10716 pkt=fa 00 fc
+J1319 t=13569 +10716 pkt=fa 00 fc
+J1320 t=13573 +10720 pkt=fa 00 fc
+J1321 t=13573 +10720 pkt=fa 00 fc
+J1322 t=13577 +10724 pkt=fa 00 fc
+J1323 t=13577 +10724 pkt=fa 00 fc
+J1324 t=13581 +10728 pkt=fa 00 fc
+J1325 t=13581 +10728 pkt=fa 00 fc
+J1326 t=13585 +10732 pkt=fa 00 fc
+J1327 t=13585 +10732 pkt=fa 00 fc
+J1328 t=13589 +10736 pkt=fa 00 fc
+J1329 t=13589 +10736 pkt=fa 00 fc
+J1330 t=13593 +10740 pkt=fa 00 fc
+J1331 t=13593 +10740 pkt=fa 00 fc
+J1332 t=13597 +10744 pkt=fa 00 fc
+J1333 t=13597 +10744 pkt=fa 00 fc
+J1334 t=13601 +10748 pkt=fa 00 fc
+J1335 t=13601 +10748 pkt=fa 00 fc
+J1336 t=13605 +10752 pkt=fa 00 fc
+J1337 t=13605 +10752 pkt=fa 00 fc
+J1338 t=13609 +10756 pkt=fa 00 fc
+J1339 t=13609 +10756 pkt=fa 00 fc
+J1340 t=13613 +10760 pkt=fa 00 fc
+J1341 t=13613 +10760 pkt=fa 00 fc
+J1342 t=13617 +10764 pkt=fa 00 fc
+J1343 t=13617 +10764 pkt=fa 00 fc
+J1344 t=13621 +10768 pkt=fa 00 fc
+J1345 t=13621 +10768 pkt=fa 00 fc
+J1346 t=13625 +10772 pkt=fa 00 fc
+J1347 t=13705 +10852 pkt=fa 04 04
+J1348 t=13709 +10856 pkt=fa 04 04
+J1349 t=13709 +10856 pkt=fa 04 04
+J1350 t=13713 +10860 pkt=fa 04 04
+J1351 t=13713 +10860 pkt=fa 04 04
+J1352 t=13717 +10864 pkt=fa 04 04
+J1353 t=13717 +10864 pkt=fa 04 04
+J1354 t=13721 +10868 pkt=fa 04 04
+J1355 t=13721 +10868 pkt=fa 04 04
+J1356 t=13725 +10872 pkt=fa 04 04
+J1357 t=13725 +10872 pkt=fa 04 04
+J1358 t=13729 +10876 pkt=fa 04 04
+J1359 t=13729 +10876 pkt=fa 04 04
+J1360 t=13733 +10880 pkt=fa 04 04
+J1361 t=13733 +10880 pkt=fa 04 04
+J1362 t=13737 +10884 pkt=fa 04 04
+J1363 t=13737 +10884 pkt=fa 04 04
+J1364 t=13741 +10888 pkt=fa 04 04
+J1365 t=13741 +10888 pkt=fa 04 04
+J1366 t=13745 +10892 pkt=fa 04 04
+J1367 t=13745 +10892 pkt=fa 04 04
+J1368 t=13749 +10896 pkt=fa 04 04
+J1369 t=13749 +10896 pkt=fa 04 04
+J1370 t=13753 +10900 pkt=fa 04 04
+J1371 t=13753 +10900 pkt=fa 04 04
+J1372 t=13757 +10904 pkt=fa 04 04
+J1373 t=13757 +10904 pkt=fa 04 04
+J1374 t=13761 +10908 pkt=fa 04 04
+J1375 t=13761 +10908 pkt=fa 04 04
+J1376 t=13765 +10912 pkt=fa 04 04
+J1377 t=13765 +10912 pkt=fa 04 04
+J1378 t=13769 +10916 pkt=fa 04 04
+J1379 t=13769 +10916 pkt=fa 04 04
+J1380 t=13773 +10920 pkt=fa 04 04
+J1381 t=13773 +10920 pkt=fa 04 04
+J1382 t=13777 +10924 pkt=fa 04 04
+J1383 t=13777 +10924 pkt=fa 04 04
+J1384 t=13781 +10928 pkt=fa 04 04
+J1385 t=13781 +10928 pkt=fa 04 04
+J1386 t=13785 +10932 pkt=fa 04 04
+J1387 t=13785 +10932 pkt=fa 04 04
+J1388 t=13789 +10936 pkt=fa 04 04
+J1389 t=13789 +10936 pkt=fa 04 00
+J1390 t=13793 +10940 pkt=fa 04 00
+J1391 t=13793 +10940 pkt=fa 04 00
+J1392 t=13797 +10944 pkt=fa 04 00
+J1393 t=13797 +10944 pkt=fa 04 00
+J1394 t=13801 +10948 pkt=fa 04 00
+J1395 t=13801 +10948 pkt=fa 04 00
+J1396 t=13805 +10952 pkt=fa 04 00
+J1397 t=13805 +10952 pkt=fa 04 00
+J1398 t=13809 +10956 pkt=fa 04 00
+J1399 t=13809 +10956 pkt=fa 04 00
+J1400 t=13813 +10960 pkt=fa 04 00
+J1401 t=13813 +10960 pkt=fa 04 00
+J1402 t=13817 +10964 pkt=fa 04 00
+J1403 t=13817 +10964 pkt=fa 04 00
+J1404 t=13821 +10968 pkt=fa 04 00
+J1405 t=13821 +10968 pkt=fa 04 00
+J1406 t=13825 +10972 pkt=fa 04 00
+J1407 t=13825 +10972 pkt=fa 04 00
+J1408 t=13829 +10976 pkt=fa 04 00
+J1409 t=13829 +10976 pkt=fa 04 00
+J1410 t=13833 +10980 pkt=fa 04 00
+J1411 t=13833 +10980 pkt=fa 04 00
+J1412 t=13837 +10984 pkt=fa 04 00
+J1413 t=13837 +10984 pkt=fa 04 00
+J1414 t=13841 +10988 pkt=fa 04 00
+J1415 t=13841 +10988 pkt=fa 04 00
+J1416 t=13845 +10992 pkt=fa 02 00
+J1417 t=13925 +11072 pkt=f8 00 00
+J1418 t=14145 +11292 pkt=f8 a8 81
+J1419 t=14149 +11296 pkt=f8 00 d7
+J1420 t=14149 +11296 pkt=fa 00 00
+J1421 t=14161 +11308 pkt=f8 00 00
+J1422 t=14281 +11428 pkt=f8 30 7f
+J1423 t=14281 +11428 pkt=f8 00 29
+J1424 t=14281 +11428 pkt=fa 00 00
+J1425 t=14305 +11452 pkt=fa 28 00
+J1426 t=14305 +11452 pkt=fa 28 00
+J1427 t=14305 +11452 pkt=fa 28 00
+J1428 t=14305 +11452 pkt=fa 28 00
+J1429 t=14309 +11456 pkt=fa 28 00
+J1430 t=14309 +11456 pkt=fa 28 00
+J1431 t=14309 +11456 pkt=fa 28 00
+J1432 t=14309 +11456 pkt=fa 28 00
+J1433 t=14313 +11460 pkt=fa 0c 00
+J1434 t=14313 +11460 pkt=fa d8 00
+J1435 t=14313 +11460 pkt=fa d8 00
+J1436 t=14313 +11460 pkt=fa d8 00
+J1437 t=14317 +11464 pkt=fa d8 00
+J1438 t=14317 +11464 pkt=fa d8 00
+J1439 t=14317 +11464 pkt=fa d8 00
+J1440 t=14317 +11464 pkt=fa d8 00
+J1441 t=14321 +11468 pkt=fa d8 00
+J1442 t=14321 +11468 pkt=fa d8 00
+J1443 t=14321 +11468 pkt=fa d8 00
+J1444 t=14321 +11468 pkt=fa d8 00
+J1445 t=14325 +11472 pkt=fa d8 00
+J1446 t=14325 +11472 pkt=fa d8 00
+J1447 t=14325 +11472 pkt=fa d8 00
+J1448 t=14325 +11472 pkt=fa 28 00
+J1449 t=14329 +11476 pkt=fa 28 00
+J1450 t=14329 +11476 pkt=fa 28 00
+J1451 t=14329 +11476 pkt=fa 28 00
+J1452 t=14329 +11476 pkt=fa 28 00
+J1453 t=14333 +11480 pkt=fa 28 00
+J1454 t=14333 +11480 pkt=fa 12 00
+J1455 t=14465 +11612 pkt=f8 00 00
+J1456 t=14585 +11732 pkt=f8 b2 81
+J1457 t=14585 +11732 pkt=f8 00 d7
+J1458 t=14585 +11732 pkt=fa 00 00
+J1459 t=14597 +11744 pkt=f8 00 00
+J1460 t=14717 +11864 pkt=f8 ba 7f
+J1461 t=14721 +11868 pkt=f8 00 29
+J1462 t=14801 +11948 pkt=fa 00 00
+J1463 t=15001 +12148 pkt=f8 00 00
+J1464 t=15121 +12268 pkt=f8 46 81
+J1465 t=15125 +12272 pkt=f8 00 d7
+J1466 t=15125 +12272 pkt=fa 00 00
+J1467 t=15137 +12284 pkt=f8 00 00
+J1468 t=15257 +12404 pkt=f8 7f 7f
+J1469 t=15257 +12404 pkt=f8 2b 29
+J1470 t=15337 +12484 pkt=fa 00 00
+J1471 t=15541 +12688 pkt=f8 00 00
+J1472 t=15661 +12808 pkt=f8 b0 81
+J1473 t=15661 +12808 pkt=f8 00 d7
+J1474 t=15661 +12808 pkt=fa 00 00
+J1475 t=15673 +12820 pkt=f8 00 00
+J1476 t=15793 +12940 pkt=f8 7f 13
+J1477 t=15797 +12944 pkt=f8 1f 00
+J1478 t=15877 +13024 pkt=fa 00 00
+J1479 t=16037 +13184 pkt=fa 00 08
+J1480 t=16077 +13224 pkt=fa 00 08
+J1481 t=16161 +13308 pkt=fa 00 08
+J1482 t=16201 +13348 pkt=fa 00 08
+J1483 t=16281 +13428 pkt=fa 00 04
+J1484 t=16285 +13432 pkt=fa 00 04
+J1485 t=16285 +13432 pkt=fa 00 04
+J1486 t=16289 +13436 pkt=fa 00 04
+J1487 t=16289 +13436 pkt=fa 00 04
+J1488 t=16293 +13440 pkt=fa 00 04
+J1489 t=16293 +13440 pkt=fa 00 04
+J1490 t=16297 +13444 pkt=fa 00 04
+J1491 t=16297 +13444 pkt=fa 00 04
+J1492 t=16301 +13448 pkt=fa 00 04
+J1493 t=16301 +13448 pkt=fa 00 04
+J1494 t=16305 +13452 pkt=fa 00 04
+J1495 t=16305 +13452 pkt=fa 00 04
+J1496 t=16309 +13456 pkt=fa 00 04
+J1497 t=16309 +13456 pkt=fa 00 04
+J1498 t=16313 +13460 pkt=fa 00 04
+J1499 t=16313 +13460 pkt=fa 00 04
+J1500 t=16317 +13464 pkt=fa 00 04
+J1501 t=16317 +13464 pkt=fa 00 04
+J1502 t=16321 +13468 pkt=fa 00 04
+J1503 t=16321 +13468 pkt=fa 00 04
+J1504 t=16325 +13472 pkt=fa 00 04
+J1505 t=16325 +13472 pkt=fa 00 04
+J1506 t=16329 +13476 pkt=fa 00 04
+J1507 t=16329 +13476 pkt=fa 00 04
+J1508 t=16333 +13480 pkt=fa 00 04
+J1509 t=16333 +13480 pkt=fa 00 04
+J1510 t=16337 +13484 pkt=fa 00 04
+J1511 t=16337 +13484 pkt=fa 00 04
+J1512 t=16341 +13488 pkt=fa 00 04
+J1513 t=16341 +13488 pkt=fa 00 04
+J1514 t=16345 +13492 pkt=fa 00 04
+J1515 t=16345 +13492 pkt=fa 00 04
+J1516 t=16349 +13496 pkt=fa 00 04
+J1517 t=16349 +13496 pkt=fa 00 04
+J1518 t=16353 +13500 pkt=fa 00 04
+J1519 t=16353 +13500 pkt=fa 00 04
+J1520 t=16357 +13504 pkt=fa 00 04
+J1521 t=16357 +13504 pkt=fa 00 04
+J1522 t=16361 +13508 pkt=fa 00 04
+J1523 t=16361 +13508 pkt=fa 00 04
+J1524 t=16365 +13512 pkt=fa 00 04
+J1525 t=16365 +13512 pkt=fa 00 04
+J1526 t=16369 +13516 pkt=fa 00 04
+J1527 t=16369 +13516 pkt=fa 00 04
+J1528 t=16373 +13520 pkt=fa 00 04
+J1529 t=16373 +13520 pkt=fa 00 04
+J1530 t=16377 +13524 pkt=fa 00 04
+J1531 t=16377 +13524 pkt=fa 00 04
+J1532 t=16381 +13528 pkt=fa 00 04
+J1533 t=16381 +13528 pkt=fa 00 04
+J1534 t=16385 +13532 pkt=fa 00 04
+J1535 t=16385 +13532 pkt=fa 00 04
+J1536 t=16389 +13536 pkt=fa 00 04
+J1537 t=16389 +13536 pkt=fa 00 03
+J1538 t=16473 +13620 pkt=fa 00 fc
+J1539 t=16473 +13620 pkt=fa 00 fc
+J1540 t=16477 +13624 pkt=fa 00 fc
+J1541 t=16477 +13624 pkt=fa 00 fc
+J1542 t=16481 +13628 pkt=fa 00 fc
+J1543 t=16481 +13628 pkt=fa 00 fc
+J1544 t=16485 +13632 pkt=fa 00 fc
+J1545 t=16485 +13632 pkt=fa 00 fc
+J1546 t=16489 +13636 pkt=fa 00 fc
+J1547 t=16489 +13636 pkt=fa 00 fc
+J1548 t=16493 +13640 pkt=fa 00 fc
+J1549 t=16493 +13640 pkt=fa 00 fc
+J1550 t=16497 +13644 pkt=fa 00 fc
+J1551 t=16497 +13644 pkt=fa 00 fc
+J1552 t=16501 +13648 pkt=fa 00 fc
+J1553 t=16501 +13648 pkt=fa 00 fc
+J1554 t=16505 +13652 pkt=fa 00 fc
+J1555 t=16505 +13652 pkt=fa 00 fc
+J1556 t=16509 +13656 pkt=fa 00 fc
+J1557 t=16509 +13656 pkt=fa 00 fc
+J1558 t=16513 +13660 pkt=fa 00 fc
+J1559 t=16513 +13660 pkt=fa 00 fc
+J1560 t=16517 +13664 pkt=fa 00 fc
+J1561 t=16517 +13664 pkt=fa 00 fc
+J1562 t=16521 +13668 pkt=fa 00 fc
+J1563 t=16521 +13668 pkt=fa 00 fc
+J1564 t=16525 +13672 pkt=fa 00 fc
+J1565 t=16525 +13672 pkt=fa 00 fc
+J1566 t=16529 +13676 pkt=fa 00 fc
+J1567 t=16529 +13676 pkt=fa 00 fc
+J1568 t=16533 +13680 pkt=fa 00 fc
+J1569 t=16533 +13680 pkt=fa 00 fc
+J1570 t=16537 +13684 pkt=fa 00 fc
+J1571 t=16537 +13684 pkt=fa 00 fc
+J1572 t=16541 +13688 pkt=fa 00 fc
+J1573 t=16541 +13688 pkt=fa 00 fc
+J1574 t=16545 +13692 pkt=fa 00 fc
+J1575 t=16545 +13692 pkt=fa 00 fc
+J1576 t=16549 +13696 pkt=fa 00 fc
+J1577 t=16549 +13696 pkt=fa 00 fc
+J1578 t=16553 +13700 pkt=fa 00 fc
+J1579 t=16553 +13700 pkt=fa 00 fc
+J1580 t=16557 +13704 pkt=fa 00 fc
+J1581 t=16557 +13704 pkt=fa 00 fc
+J1582 t=16561 +13708 pkt=fa 00 fc
+J1583 t=16561 +13708 pkt=fa 00 fc
+J1584 t=16565 +13712 pkt=fa 00 fc
+J1585 t=16565 +13712 pkt=fa 00 fc
+J1586 t=16569 +13716 pkt=fa 00 fc
+J1587 t=16569 +13716 pkt=fa 00 fc
+J1588 t=16573 +13720 pkt=fa 00 fc
+J1589 t=16573 +13720 pkt=fa 00 fc
+J1590 t=16577 +13724 pkt=fa 00 fc
+J1591 t=16577 +13724 pkt=fa 00 fc
+J1592 t=16581 +13728 pkt=fa 00 fc
+J1593 t=16581 +13728 pkt=fa 00 fc
+J1594 t=16585 +13732 pkt=fa 00 fc
+J1595 t=16585 +13732 pkt=fa 00 fc
+J1596 t=16589 +13736 pkt=fa 00 fc
+J1597 t=16589 +13736 pkt=fa 00 fc
+J1598 t=16593 +13740 pkt=fa 00 fc
+J1599 t=16593 +13740 pkt=fa 00 fc
+J1600 t=16597 +13744 pkt=fa 00 fc
+J1601 t=16597 +13744 pkt=fa 00 fc
+J1602 t=16601 +13748 pkt=fa 00 fc
+J1603 t=16601 +13748 pkt=fa 00 fc
+J1604 t=16605 +13752 pkt=fa 00 fc
+J1605 t=16605 +13752 pkt=fa 00 fc
+J1606 t=16609 +13756 pkt=fa 00 fc
+J1607 t=16609 +13756 pkt=fa 00 fc
+J1608 t=16613 +13760 pkt=fa 00 fc
+J1609 t=16613 +13760 pkt=fa 00 fc
+J1610 t=16617 +13764 pkt=fa 00 fc
+J1611 t=16617 +13764 pkt=fa 00 fc
+J1612 t=16621 +13768 pkt=fa 00 fc
+J1613 t=16621 +13768 pkt=fa 00 fc
+J1614 t=16625 +13772 pkt=fa 00 fc
+J1615 t=16625 +13772 pkt=fa 00 fc
+J1616 t=16629 +13776 pkt=fa 00 fc
+J1617 t=16629 +13776 pkt=fa 00 fc
+J1618 t=16633 +13780 pkt=fa 00 fc
+J1619 t=16633 +13780 pkt=fa 00 fc
+J1620 t=16637 +13784 pkt=fa 00 fc
+J1621 t=16637 +13784 pkt=fa 00 fc
+J1622 t=16641 +13788 pkt=fa 00 fc
+J1623 t=16641 +13788 pkt=fa 00 fc
+J1624 t=16645 +13792 pkt=fa 00 fc
+J1625 t=16645 +13792 pkt=fa 00 fc
+J1626 t=16649 +13796 pkt=fa 00 fc
+J1627 t=16649 +13796 pkt=fa 00 fc
+J1628 t=16653 +13800 pkt=fa 00 fc
+J1629 t=16653 +13800 pkt=fa 00 fc
+J1630 t=16657 +13804 pkt=fa 00 fc
+J1631 t=16657 +13804 pkt=fa 00 fc
+J1632 t=16661 +13808 pkt=fa 00 fc
+J1633 t=16661 +13808 pkt=fa 00 fc
+J1634 t=16665 +13812 pkt=fa 00 fc
+J1635 t=16665 +13812 pkt=fa 00 fc
+J1636 t=16669 +13816 pkt=fa 00 fc
+J1637 t=16669 +13816 pkt=fa 00 fc
+J1638 t=16673 +13820 pkt=fa 00 fc
+J1639 t=16673 +13820 pkt=fa 00 fc
+J1640 t=16677 +13824 pkt=fa 00 fc
+J1641 t=16677 +13824 pkt=fa 00 fc
+J1642 t=16681 +13828 pkt=fa 00 fc
+J1643 t=16681 +13828 pkt=fa 00 fc
+J1644 t=16685 +13832 pkt=fa 00 fc
+J1645 t=16685 +13832 pkt=fa 00 fc
+J1646 t=16689 +13836 pkt=fa 00 fc
+J1647 t=16689 +13836 pkt=fa 00 fc
+J1648 t=16773 +13920 pkt=fa fc 00
+J1649 t=16773 +13920 pkt=fa fc 00
+J1650 t=16777 +13924 pkt=fa fc 00
+J1651 t=16777 +13924 pkt=fa fc 00
+J1652 t=16781 +13928 pkt=fa fc 00
+J1653 t=16781 +13928 pkt=fa fc 00
+J1654 t=16785 +13932 pkt=fa fc 00
+J1655 t=16785 +13932 pkt=fa fc 00
+J1656 t=16789 +13936 pkt=fa fc 00
+J1657 t=16789 +13936 pkt=fa fc 00
+J1658 t=16793 +13940 pkt=fa fc 00
+J1659 t=16793 +13940 pkt=fa fc 00
+J1660 t=16797 +13944 pkt=fa fc 00
+J1661 t=16797 +13944 pkt=fa fc 00
+J1662 t=16801 +13948 pkt=fa fc 00
+J1663 t=16801 +13948 pkt=fa fc 00
+J1664 t=16805 +13952 pkt=fa fc 00
+J1665 t=16805 +13952 pkt=fa fc 00
+J1666 t=16809 +13956 pkt=fa fc 00
+J1667 t=16809 +13956 pkt=fa fc 00
+J1668 t=16813 +13960 pkt=fa fc 00
+J1669 t=16813 +13960 pkt=fa fc 00
+J1670 t=16817 +13964 pkt=fa fc 00
+J1671 t=16817 +13964 pkt=fa fc 00
+J1672 t=16821 +13968 pkt=fa fc 00
+J1673 t=16821 +13968 pkt=fa fc 00
+J1674 t=16825 +13972 pkt=fa fc 00
+J1675 t=16825 +13972 pkt=fa fc 00
+J1676 t=16829 +13976 pkt=fa fc 00
+J1677 t=16829 +13976 pkt=fa fc 00
+J1678 t=16833 +13980 pkt=fa fc 00
+J1679 t=16833 +13980 pkt=fa fc 00
+J1680 t=16837 +13984 pkt=fa fc 00
+J1681 t=16837 +13984 pkt=fa fc 00
+J1682 t=16841 +13988 pkt=fa fc 00
+J1683 t=16841 +13988 pkt=fa fc 00
+J1684 t=16845 +13992 pkt=fa fc 00
+J1685 t=16845 +13992 pkt=fa fc 00
+J1686 t=16849 +13996 pkt=fa fc 00
+J1687 t=16849 +13996 pkt=fa fc 00
+J1688 t=16853 +14000 pkt=fa fc 00
+J1689 t=16853 +14000 pkt=fa fc 00
+J1690 t=16937 +14084 pkt=fa 04 04
+J1691 t=16937 +14084 pkt=fa 04 04
+J1692 t=16941 +14088 pkt=fa 04 04
+J1693 t=16941 +14088 pkt=fa 04 04
+J1694 t=16945 +14092 pkt=fa 04 04
+J1695 t=16945 +14092 pkt=fa 04 04
+J1696 t=16949 +14096 pkt=fa 04 04
+J1697 t=16949 +14096 pkt=fa 04 04
+J1698 t=16953 +14100 pkt=fa 04 04
+J1699 t=16953 +14100 pkt=fa 04 04
+J1700 t=16957 +14104 pkt=fa 04 04
+J1701 t=16957 +14104 pkt=fa 04 04
+J1702 t=16961 +14108 pkt=fa 04 04
+J1703 t=16961 +14108 pkt=fa 04 04
+J1704 t=16965 +14112 pkt=fa 04 04
+J1705 t=16965 +14112 pkt=fa 04 04
+J1706 t=16969 +14116 pkt=fa 04 04
+J1707 t=16969 +14116 pkt=fa 04 04
+J1708 t=16973 +14120 pkt=fa 04 04
+J1709 t=16973 +14120 pkt=fa 04 04
+J1710 t=16977 +14124 pkt=fa 04 04
+J1711 t=16977 +14124 pkt=fa 04 04
+J1712 t=16981 +14128 pkt=fa 04 04
+J1713 t=16981 +14128 pkt=fa 04 04
+J1714 t=16985 +14132 pkt=fa 04 04
+J1715 t=16985 +14132 pkt=fa 04 04
+J1716 t=16989 +14136 pkt=fa 04 04
+J1717 t=16989 +14136 pkt=fa 04 04
+J1718 t=16993 +14140 pkt=fa 04 04
+J1719 t=16993 +14140 pkt=fa 04 04
+J1720 t=16997 +14144 pkt=fa 04 04
+J1721 t=16997 +14144 pkt=fa 04 04
+J1722 t=17001 +14148 pkt=fa 04 04
+J1723 t=17001 +14148 pkt=fa 04 04
+J1724 t=17005 +14152 pkt=fa 04 04
+J1725 t=17005 +14152 pkt=fa 04 04
+J1726 t=17009 +14156 pkt=fa 04 04
+J1727 t=17009 +14156 pkt=fa 04 04
+J1728 t=17013 +14160 pkt=fa 04 04
+J1729 t=17013 +14160 pkt=fa 04 04
+J1730 t=17017 +14164 pkt=fa 04 04
+J1731 t=17017 +14164 pkt=fa 04 04
+J1732 t=17021 +14168 pkt=fa 00 04
+J1733 t=17021 +14168 pkt=fa 00 04
+J1734 t=17025 +14172 pkt=fa 00 04
+J1735 t=17025 +14172 pkt=fa 00 04
+J1736 t=17029 +14176 pkt=fa 00 04
+J1737 t=17029 +14176 pkt=fa 00 04
+J1738 t=17033 +14180 pkt=fa 00 04
+J1739 t=17033 +14180 pkt=fa 00 04
+J1740 t=17037 +14184 pkt=fa 00 04
+J1741 t=17037 +14184 pkt=fa 00 04
+J1742 t=17041 +14188 pkt=fa 00 04
+J1743 t=17041 +14188 pkt=fa 00 04
+J1744 t=17045 +14192 pkt=fa 00 04
+J1745 t=17045 +14192 pkt=fa 00 04
+J1746 t=17049 +14196 pkt=fa 00 04
+J1747 t=17049 +14196 pkt=fa 00 01
+J1748 t=17133 +14280 pkt=f8 00 00
+J1749 t=17353 +14500 pkt=f8 81 c5
+J1750 t=17353 +14500 pkt=f8 e1 00
+J1751 t=17353 +14500 pkt=fa 00 00
+J1752 t=17365 +14512 pkt=f8 00 00
+J1753 t=17485 +14632 pkt=f8 7f 13
+J1754 t=17489 +14636 pkt=f8 1f 00
+J1755 t=17489 +14636 pkt=fa 00 00
+J1756 t=17509 +14656 pkt=fa 00 28
+J1757 t=17509 +14656 pkt=fa 00 28
+J1758 t=17513 +14660 pkt=fa 00 28
+J1759 t=17513 +14660 pkt=fa 00 28
+J1760 t=17513 +14660 pkt=fa 00 28
+J1761 t=17513 +14660 pkt=fa 00 15
+J1762 t=17517 +14664 pkt=fa 00 d8
+J1763 t=17517 +14664 pkt=fa 00 d8
+J1764 t=17517 +14664 pkt=fa 00 d8
+J1765 t=17517 +14664 pkt=fa 00 d8
+J1766 t=17521 +14668 pkt=fa 00 d8
+J1767 t=17521 +14668 pkt=fa 00 d8
+J1768 t=17521 +14668 pkt=fa 00 d8
+J1769 t=17521 +14668 pkt=fa 00 d8
+J1770 t=17525 +14672 pkt=fa 00 d8
+J1771 t=17525 +14672 pkt=fa 00 d8
+J1772 t=17525 +14672 pkt=fa 00 28
+J1773 t=17525 +14672 pkt=fa 00 28
+J1774 t=17529 +14676 pkt=fa 00 28
+J1775 t=17529 +14676 pkt=fa 00 28
+J1776 t=17529 +14676 pkt=fa 00 28
+J1777 t=17529 +14676 pkt=fa 00 09
+J1778 t=17661 +14808 pkt=f8 00 00
+J1779 t=17781 +14928 pkt=f8 81 cf
+J1780 t=17785 +14932 pkt=f8 e1 00
+J1781 t=17785 +14932 pkt=fa 00 00
+J1782 t=17797 +14944 pkt=f8 00 00
+J1783 t=17917 +15064 pkt=f8 7f c4
+J1784 t=17917 +15064 pkt=f8 1f 00
+J1785 t=17997 +15144 pkt=fa 00 00
+J1786 t=18201 +15348 pkt=f8 00 00
+J1787 t=18321 +15468 pkt=f8 81 3c
+J1788 t=18321 +15468 pkt=f8 e1 00
+J1789 t=18321 +15468 pkt=fa 00 00
+J1790 t=18333 +15480 pkt=f8 00 00
+J1791 t=18453 +15600 pkt=f8 7f 64
+J1792 t=18457 +15604 pkt=f8 1f 00
+J1793 t=18537 +15684 pkt=fa 00 00
+J1794 t=18737 +15884 pkt=f8 00 00
+J1795 t=18857 +16004 pkt=f8 81 9c
+J1796 t=18861 +16008 pkt=f8 e1 00
+J1797 t=18861 +16008 pkt=fa 00 00
+J1798 t=18873 +16020 pkt=f8 00 00
+J1799 t=18993 +16140 pkt=f8 d6 7f
+J1800 t=18993 +16140 pkt=f8 00 29
+J1801 t=19073 +16220 pkt=fa 00 00
+J1802 t=19237 +16384 pkt=fa 08 00
+J1803 t=19277 +16424 pkt=fa 08 00
+J1804 t=19357 +16504 pkt=fa 08 00
+J1805 t=19397 +16544 pkt=fa 08 00
+J1806 t=19481 +16628 pkt=fa 04 00
+J1807 t=19481 +16628 pkt=fa 04 00
+J1808 t=19485 +16632 pkt=fa 04 00
+J1809 t=19485 +16632 pkt=fa 04 00
+J1810 t=19489 +16636 pkt=fa 04 00
+J1811 t=19489 +16636 pkt=fa 04 00
+J1812 t=19493 +16640 pkt=fa 04 00
+J1813 t=19493 +16640 pkt=fa 04 00
+J1814 t=19497 +16644 pkt=fa 04 00
+J1815 t=19497 +16644 pkt=fa 04 00
+J1816 t=19501 +16648 pkt=fa 04 00
+J1817 t=19501 +16648 pkt=fa 04 00
+J1818 t=19505 +16652 pkt=fa 04 00
+J1819 t=19505 +16652 pkt=fa 04 00
+J1820 t=19509 +16656 pkt=fa 04 00
+J1821 t=19509 +16656 pkt=fa 04 00
+J1822 t=19513 +16660 pkt=fa 04 00
+J1823 t=19513 +16660 pkt=fa 04 00
+J1824 t=19517 +16664 pkt=fa 04 00
+J1825 t=19517 +16664 pkt=fa 04 00
+J1826 t=19521 +16668 pkt=fa 04 00
+J1827 t=19521 +16668 pkt=fa 04 00
+J1828 t=19525 +16672 pkt=fa 04 00
+J1829 t=19525 +16672 pkt=fa 04 00
+J1830 t=19529 +16676 pkt=fa 04 00
+J1831 t=19529 +16676 pkt=fa 04 00
+J1832 t=19533 +16680 pkt=fa 04 00
+J1833 t=19533 +16680 pkt=fa 04 00
+J1834 t=19537 +16684 pkt=fa 04 00
+J1835 t=19537 +16684 pkt=fa 04 00
+J1836 t=19541 +16688 pkt=fa 04 00
+J1837 t=19541 +16688 pkt=fa 04 00
+J1838 t=19545 +16692 pkt=fa 04 00
+J1839 t=19545 +16692 pkt=fa 04 00
+J1840 t=19549 +16696 pkt=fa 04 00
+J1841 t=19549 +16696 pkt=fa 04 00
+J1842 t=19553 +16700 pkt=fa 04 00
+J1843 t=19553 +16700 pkt=fa 04 00
+J1844 t=19557 +16704 pkt=fa 04 00
+J1845 t=19557 +16704 pkt=fa 04 00
+J1846 t=19561 +16708 pkt=fa 04 00
+J1847 t=19561 +16708 pkt=fa 04 00
+J1848 t=19565 +16712 pkt=fa 04 00
+J1849 t=19565 +16712 pkt=fa 04 00
+J1850 t=19569 +16716 pkt=fa 04 00
+J1851 t=19569 +16716 pkt=fa 04 00
+J1852 t=19573 +16720 pkt=fa 04 00
+J1853 t=19573 +16720 pkt=fa 04 00
+J1854 t=19577 +16724 pkt=fa 04 00
+J1855 t=19577 +16724 pkt=fa 04 00
+J1856 t=19581 +16728 pkt=fa 04 00
+J1857 t=19581 +16728 pkt=fa 04 00
+J1858 t=19585 +16732 pkt=fa 04 00
+J1859 t=19585 +16732 pkt=fa 04 00
+J1860 t=19589 +16736 pkt=fa 04 00
+J1861 t=19589 +16736 pkt=fa 04 00
+J1862 t=19593 +16740 pkt=fa 04 00
+J1863 t=19593 +16740 pkt=fa 04 00
+J1864 t=19597 +16744 pkt=fa 04 00
+J1865 t=19597 +16744 pkt=fa 04 00
+J1866 t=19601 +16748 pkt=fa 04 00
+J1867 t=19601 +16748 pkt=fa 04 00
+J1868 t=19605 +16752 pkt=fa 04 00
+J1869 t=19605 +16752 pkt=fa 04 00
+J1870 t=19609 +16756 pkt=fa 04 00
+J1871 t=19609 +16756 pkt=fa 04 00
+J1872 t=19613 +16760 pkt=fa 04 00
+J1873 t=19613 +16760 pkt=fa 04 00
+J1874 t=19617 +16764 pkt=fa 04 00
+J1875 t=19617 +16764 pkt=fa 04 00
+J1876 t=19621 +16768 pkt=fa 04 00
+J1877 t=19621 +16768 pkt=fa 04 00
+J1878 t=19625 +16772 pkt=fa 04 00
+J1879 t=19625 +16772 pkt=fa 04 00
+J1880 t=19629 +16776 pkt=fa 04 00
+J1881 t=19629 +16776 pkt=fa 04 00
+J1882 t=19633 +16780 pkt=fa 04 00
+J1883 t=19633 +16780 pkt=fa 04 00
+J1884 t=19637 +16784 pkt=fa 04 00
+J1885 t=19637 +16784 pkt=fa 04 00
+J1886 t=19641 +16788 pkt=fa 04 00
+J1887 t=19641 +16788 pkt=fa 04 00
+J1888 t=19645 +16792 pkt=fa 02 00
+J1889 t=19725 +16872 pkt=fa fc 00
+J1890 t=19729 +16876 pkt=fa fc 00
+J1891 t=19729 +16876 pkt=fa fc 00
+J1892 t=19733 +16880 pkt=fa fc 00
+J1893 t=19733 +16880 pkt=fa fc 00
+J1894 t=19737 +16884 pkt=fa fc 00
+J1895 t=19737 +16884 pkt=fa fc 00
+J1896 t=19741 +16888 pkt=fa fc 00
+J1897 t=19741 +16888 pkt=fa fc 00
+J1898 t=19745 +16892 pkt=fa fc 00
+J1899 t=19745 +16892 pkt=fa fc 00
+J1900 t=19749 +16896 pkt=fa fc 00
+J1901 t=19749 +16896 pkt=fa fc 00
+J1902 t=19753 +16900 pkt=fa fc 00
+J1903 t=19753 +16900 pkt=fa fc 00
+J1904 t=19757 +16904 pkt=fa fc 00
+J1905 t=19757 +16904 pkt=fa fc 00
+J1906 t=19761 +16908 pkt=fa fc 00
+J1907 t=19761 +16908 pkt=fa fc 00
+J1908 t=19765 +16912 pkt=fa fc 00
+J1909 t=19765 +16912 pkt=fa fc 00
+J1910 t=19769 +16916 pkt=fa fc 00
+J1911 t=19769 +16916 pkt=fa fc 00
+J1912 t=19773 +16920 pkt=fa fc 00
+J1913 t=19773 +16920 pkt=fa fc 00
+J1914 t=19777 +16924 pkt=fa fc 00
+J1915 t=19777 +16924 pkt=fa fc 00
+J1916 t=19781 +16928 pkt=fa fc 00
+J1917 t=19781 +16928 pkt=fa fc 00
+J1918 t=19785 +16932 pkt=fa fc 00
+J1919 t=19785 +16932 pkt=fa fc 00
+J1920 t=19789 +16936 pkt=fa fc 00
+J1921 t=19789 +16936 pkt=fa fc 00
+J1922 t=19793 +16940 pkt=fa fc 00
+J1923 t=19793 +16940 pkt=fa fc 00
+J1924 t=19797 +16944 pkt=fa fc 00
+J1925 t=19797 +16944 pkt=fa fc 00
+J1926 t=19801 +16948 pkt=fa fc 00
+J1927 t=19801 +16948 pkt=fa fc 00
+J1928 t=19805 +16952 pkt=fa fc 00
+J1929 t=19805 +16952 pkt=fa fc 00
+J1930 t=19809 +16956 pkt=fa fc 00
+J1931 t=19809 +16956 pkt=fa fc 00
+J1932 t=19813 +16960 pkt=fa fc 00
+J1933 t=19813 +16960 pkt=fa fc 00
+J1934 t=19817 +16964 pkt=fa fc 00
+J1935 t=19817 +16964 pkt=fa fc 00
+J1936 t=19821 +16968 pkt=fa fc 00
+J1937 t=19821 +16968 pkt=fa fc 00
+J1938 t=19825 +16972 pkt=fa fc 00
+J1939 t=19825 +16972 pkt=fa fc 00
+J1940 t=19829 +16976 pkt=fa fc 00
+J1941 t=19829 +16976 pkt=fa fc 00
+J1942 t=19833 +16980 pkt=fa fc 00
+J1943 t=19833 +16980 pkt=fa fc 00
+J1944 t=19837 +16984 pkt=fa fc 00
+J1945 t=19837 +16984 pkt=fa fc 00
+J1946 t=19841 +16988 pkt=fa fc 00
+J1947 t=19841 +16988 pkt=fa fc 00
+J1948 t=19845 +16992 pkt=fa fc 00
+J1949 t=19845 +16992 pkt=fa fc 00
+J1950 t=19849 +16996 pkt=fa fc 00
+J1951 t=19849 +16996 pkt=fa fc 00
+J1952 t=19853 +17000 pkt=fa fc 00
+J1953 t=19853 +17000 pkt=fa fc 00
+J1954 t=19857 +17004 pkt=fa fc 00
+J1955 t=19857 +17004 pkt=fa fc 00
+J1956 t=19861 +17008 pkt=fa fc 00
+J1957 t=19861 +17008 pkt=fa fc 00
+J1958 t=19865 +17012 pkt=fa fc 00
+J1959 t=19865 +17012 pkt=fa fc 00
+J1960 t=19869 +17016 pkt=fa fc 00
+J1961 t=19869 +17016 pkt=fa fc 00
+J1962 t=19873 +17020 pkt=fa fc 00
+J1963 t=19873 +17020 pkt=fa fc 00
+J1964 t=19877 +17024 pkt=fa fc 00
+J1965 t=19877 +17024 pkt=fa fc 00
+J1966 t=19881 +17028 pkt=fa fc 00
+J1967 t=19881 +17028 pkt=fa fc 00
+J1968 t=19885 +17032 pkt=fa fc 00
+J1969 t=19885 +17032 pkt=fa fc 00
+J1970 t=19889 +17036 pkt=fa fc 00
+J1971 t=19889 +17036 pkt=fa fc 00
+J1972 t=19893 +17040 pkt=fa fc 00
+J1973 t=19893 +17040 pkt=fa fc 00
+J1974 t=19897 +17044 pkt=fa fc 00
+J1975 t=19897 +17044 pkt=fa fc 00
+J1976 t=19901 +17048 pkt=fa fc 00
+J1977 t=19901 +17048 pkt=fa fc 00
+J1978 t=19905 +17052 pkt=fa fc 00
+J1979 t=19905 +17052 pkt=fa fc 00
+J1980 t=19909 +17056 pkt=fa fc 00
+J1981 t=19909 +17056 pkt=fa fc 00
+J1982 t=19913 +17060 pkt=fa fc 00
+J1983 t=19913 +17060 pkt=fa fc 00
+J1984 t=19917 +17064 pkt=fa fc 00
+J1985 t=19917 +17064 pkt=fa fc 00
+J1986 t=19921 +17068 pkt=fa fc 00
+J1987 t=19921 +17068 pkt=fa fc 00
+J1988 t=19925 +17072 pkt=fa fc 00
+J1989 t=19925 +17072 pkt=fa fc 00
+J1990 t=19929 +17076 pkt=fa fc 00
+J1991 t=19929 +17076 pkt=fa fc 00
+J1992 t=19933 +17080 pkt=fa fc 00
+J1993 t=19933 +17080 pkt=fa fc 00
+J1994 t=19937 +17084 pkt=fa fc 00
+J1995 t=19937 +17084 pkt=fa fc 00
+J1996 t=19941 +17088 pkt=fa fc 00
+J1997 t=19941 +17088 pkt=fa fc 00
+J1998 t=19945 +17092 pkt=fa fc 00
+J1999 t=19945 +17092 pkt=fa fc 00
+J2000 t=19949 +17096 pkt=fa fc 00
+J2001 t=19949 +17096 pkt=fa fc 00
+J2002 t=19953 +17100 pkt=fa fc 00
+J2003 t=19953 +17100 pkt=fa fc 00
+J2004 t=19957 +17104 pkt=fa fc 00
+J2005 t=19957 +17104 pkt=fa fc 00
+J2006 t=19961 +17108 pkt=fa fc 00
+J2007 t=19961 +17108 pkt=fa fc 00
+J2008 t=19965 +17112 pkt=fa fc 00
+J2009 t=19965 +17112 pkt=fa fc 00
+J2010 t=19969 +17116 pkt=fa fc 00
+J2011 t=19969 +17116 pkt=fa fc 00
+J2012 t=19973 +17120 pkt=fa fc 00
+J2013 t=19973 +17120 pkt=fa fc 00
+J2014 t=19977 +17124 pkt=fa fc 00
+J2015 t=19977 +17124 pkt=fa fc 00
+J2016 t=19981 +17128 pkt=fa fc 00
+J2017 t=19981 +17128 pkt=fa fc 00
+J2018 t=19985 +17132 pkt=fa fc 00
+J2019 t=19985 +17132 pkt=fa fc 00
+J2020 t=19989 +17136 pkt=fa fc 00
+J2021 t=19989 +17136 pkt=fa fc 00
+J2022 t=19993 +17140 pkt=fa fc 00
+J2023 t=19993 +17140 pkt=fa fc 00
+J2024 t=19997 +17144 pkt=fa fc 00
+J2025 t=19997 +17144 pkt=fa fc 00
+J2026 t=20001 +17148 pkt=fa fc 00
+J2027 t=20001 +17148 pkt=fa fc 00
+J2028 t=20005 +17152 pkt=fa fc 00
+J2029 t=20005 +17152 pkt=fa fc 00
+J2030 t=20009 +17156 pkt=fa fc 00
+J2031 t=20009 +17156 pkt=fa fc 00
+J2032 t=20013 +17160 pkt=fa fc 00
+J2033 t=20013 +17160 pkt=fa fc 00
+J2034 t=20017 +17164 pkt=fa fc 00
+J2035 t=20017 +17164 pkt=fa fc 00
+J2036 t=20021 +17168 pkt=fa fc 00
+J2037 t=20021 +17168 pkt=fa fc 00
+J2038 t=20025 +17172 pkt=fa fc 00
+J2039 t=20105 +17252 pkt=fa 00 fc
+J2040 t=20109 +17256 pkt=fa 00 fc
+J2041 t=20109 +17256 pkt=fa 00 fc
+J2042 t=20113 +17260 pkt=fa 00 fc
+J2043 t=20113 +17260 pkt=fa 00 fc
+J2044 t=20117 +17264 pkt=fa 00 fc
+J2045 t=20117 +17264 pkt=fa 00 fc
+J2046 t=20121 +17268 pkt=fa 00 fc
+J2047 t=20121 +17268 pkt=fa 00 fc
+J2048 t=20125 +17272 pkt=fa 00 fc
+J2049 t=20125 +17272 pkt=fa 00 fc
+J2050 t=20129 +17276 pkt=fa 00 fc
+J2051 t=20129 +17276 pkt=fa 00 fc
+J2052 t=20133 +17280 pkt=fa 00 fc
+J2053 t=20133 +17280 pkt=fa 00 fc
+J2054 t=20137 +17284 pkt=fa 00 fc
+J2055 t=20137 +17284 pkt=fa 00 fc
+J2056 t=20141 +17288 pkt=fa 00 fc
+J2057 t=20141 +17288 pkt=fa 00 fc
+J2058 t=20145 +17292 pkt=fa 00 fc
+J2059 t=20145 +17292 pkt=fa 00 fc
+J2060 t=20149 +17296 pkt=fa 00 fc
+J2061 t=20149 +17296 pkt=fa 00 fc
+J2062 t=20153 +17300 pkt=fa 00 fc
+J2063 t=20153 +17300 pkt=fa 00 fc
+J2064 t=20157 +17304 pkt=fa 00 fc
+J2065 t=20157 +17304 pkt=fa 00 fc
+J2066 t=20161 +17308 pkt=fa 00 fc
+J2067 t=20161 +17308 pkt=fa 00 fc
+J2068 t=20165 +17312 pkt=fa 00 fc
+J2069 t=20165 +17312 pkt=fa 00 fc
+J2070 t=20169 +17316 pkt=fa 00 fc
+J2071 t=20169 +17316 pkt=fa 00 fc
+J2072 t=20173 +17320 pkt=fa 00 fc
+J2073 t=20173 +17320 pkt=fa 00 fc
+J2074 t=20177 +17324 pkt=fa 00 fc
+J2075 t=20177 +17324 pkt=fa 00 fc
+J2076 t=20181 +17328 pkt=fa 00 fc
+J2077 t=20181 +17328 pkt=fa 00 fc
+J2078 t=20185 +17332 pkt=fa 00 fc
+J2079 t=20185 +17332 pkt=fa 00 fc
+J2080 t=20189 +17336 pkt=fa 00 fc
+J2081 t=20269 +17416 pkt=fa 04 04
+J2082 t=20273 +17420 pkt=fa 04 04
+J2083 t=20273 +17420 pkt=fa 04 04
+J2084 t=20277 +17424 pkt=fa 04 04
+J2085 t=20277 +17424 pkt=fa 04 04
+J2086 t=20281 +17428 pkt=fa 04 04
+J2087 t=20281 +17428 pkt=fa 04 04
+J2088 t=20285 +17432 pkt=fa 04 04
+J2089 t=20285 +17432 pkt=fa 04 04
+J2090 t=20289 +17436 pkt=fa 04 04
+J2091 t=20289 +17436 pkt=fa 04 04
+J2092 t=20293 +17440 pkt=fa 04 04
+J2093 t=20293 +17440 pkt=fa 04 04
+J2094 t=20297 +17444 pkt=fa 04 04
+J2095 t=20297 +17444 pkt=fa 04 04
+J2096 t=20301 +17448 pkt=fa 04 04
+J2097 t=20301 +17448 pkt=fa 04 04
+J2098 t=20305 +17452 pkt=fa 04 04
+J2099 t=20305 +17452 pkt=fa 04 04
+J2100 t=20309 +17456 pkt=fa 04 04
+J2101 t=20309 +17456 pkt=fa 04 04
+J2102 t=20313 +17460 pkt=fa 04 04
+J2103 t=20313 +17460 pkt=fa 04 04
+J2104 t=20317 +17464 pkt=fa 04 04
+J2105 t=20317 +17464 pkt=fa 04 04
+J2106 t=20321 +17468 pkt=fa 04 04
+J2107 t=20321 +17468 pkt=fa 04 04
+J2108 t=20325 +17472 pkt=fa 04 04
+J2109 t=20325 +17472 pkt=fa 04 04
+J2110 t=20329 +17476 pkt=fa 04 04
+J2111 t=20329 +17476 pkt=fa 04 04
+J2112 t=20333 +17480 pkt=fa 04 04
+J2113 t=20333 +17480 pkt=fa 04 04
+J2114 t=20337 +17484 pkt=fa 04 04
+J2115 t=20337 +17484 pkt=fa 04 04
+J2116 t=20341 +17488 pkt=fa 04 04
+J2117 t=20341 +17488 pkt=fa 04 04
+J2118 t=20345 +17492 pkt=fa 04 04
+J2119 t=20345 +17492 pkt=fa 04 04
+J2120 t=20349 +17496 pkt=fa 04 04
+J2121 t=20349 +17496 pkt=fa 04 04
+J2122 t=20353 +17500 pkt=fa 04 04
+J2123 t=20353 +17500 pkt=fa 04 00
+J2124 t=20357 +17504 pkt=fa 04 00
+J2125 t=20357 +17504 pkt=fa 04 00
+J2126 t=20361 +17508 pkt=fa 04 00
+J2127 t=20361 +17508 pkt=fa 04 00
+J2128 t=20365 +17512 pkt=fa 04 00
+J2129 t=20365 +17512 pkt=fa 04 00
+J2130 t=20369 +17516 pkt=fa 04 00
+J2131 t=20369 +17516 pkt=fa 04 00
+J2132 t=20373 +17520 pkt=fa 04 00
+J2133 t=20373 +17520 pkt=fa 04 00
+J2134 t=20377 +17524 pkt=fa 04 00
+J2135 t=20377 +17524 pkt=fa 04 00
+J2136 t=20381 +17528 pkt=fa 04 00
+J2137 t=20381 +17528 pkt=fa 04 00
+J2138 t=20385 +17532 pkt=fa 04 00
+J2139 t=20385 +17532 pkt=fa 04 00
+J2140 t=20389 +17536 pkt=fa 04 00
+J2141 t=20389 +17536 pkt=fa 04 00
+J2142 t=20393 +17540 pkt=fa 04 00
+J2143 t=20393 +17540 pkt=fa 04 00
+J2144 t=20397 +17544 pkt=fa 04 00
+J2145 t=20397 +17544 pkt=fa 04 00
+J2146 t=20401 +17548 pkt=fa 04 00
+J2147 t=20401 +17548 pkt=fa 04 00
+J2148 t=20405 +17552 pkt=fa 04 00
+J2149 t=20405 +17552 pkt=fa 04 00
+J2150 t=20409 +17556 pkt=fa 02 00
+J2151 t=20489 +17636 pkt=f8 00 00
+J2152 t=20709 +17856 pkt=f8 02 81
+J2153 t=20713 +17860 pkt=f8 00 d7
+J2154 t=20713 +17860 pkt=fa 00 00
+J2155 t=20725 +17872 pkt=f8 00 00
+J2156 t=20845 +17992 pkt=f8 d6 7f
+J2157 t=20845 +17992 pkt=f8 00 29
+J2158 t=20845 +17992 pkt=fa 00 00
+J2159 t=20869 +18016 pkt=fa 28 00
+J2160 t=20869 +18016 pkt=fa 28 00
+J2161 t=20869 +18016 pkt=fa 28 00
+J2162 t=20869 +18016 pkt=fa 28 00
+J2163 t=20873 +18020 pkt=fa 28 00
+J2164 t=20873 +18020 pkt=fa 28 00
+J2165 t=20873 +18020 pkt=fa 28 00
+J2166 t=20873 +18020 pkt=fa 28 00
+J2167 t=20877 +18024 pkt=fa 0c 00
+J2168 t=20877 +18024 pkt=fa d8 00
+J2169 t=20877 +18024 pkt=fa d8 00
+J2170 t=20877 +18024 pkt=fa d8 00
+J2171 t=20881 +18028 pkt=fa d8 00
+J2172 t=20881 +18028 pkt=fa d8 00
+J2173 t=20881 +18028 pkt=fa d8 00
+J2174 t=20881 +18028 pkt=fa d8 00
+J2175 t=20885 +18032 pkt=fa d8 00
+J2176 t=20885 +18032 pkt=fa d8 00
+J2177 t=20885 +18032 pkt=fa d8 00
+J2178 t=20885 +18032 pkt=fa d8 00
+J2179 t=20889 +18036 pkt=fa d8 00
+J2180 t=20889 +18036 pkt=fa d8 00
+J2181 t=20889 +18036 pkt=fa d8 00
+J2182 t=20889 +18036 pkt=fa 28 00
+J2183 t=20893 +18040 pkt=fa 28 00
+J2184 t=20893 +18040 pkt=fa 28 00
+J2185 t=20893 +18040 pkt=fa 28 00
+J2186 t=20893 +18040 pkt=fa 28 00
+J2187 t=20897 +18044 pkt=fa 28 00
+J2188 t=20897 +18044 pkt=fa 12 00
+J2189 t=21029 +18176 pkt=f8 00 00
+J2190 t=21149 +18296 pkt=f8 0c 81
+J2191 t=21149 +18296 pkt=f8 00 d7
+J2192 t=21149 +18296 pkt=fa 00 00
+J2193 t=21161 +18308 pkt=f8 00 00
+J2194 t=21281 +18428 pkt=f8 81 7f
+J2195 t=21285 +18432 pkt=f8 df 29
+J2196 t=21365 +18512 pkt=fa 00 00
+J2197 t=21565 +18712 pkt=f8 00 00
+J2198 t=21685 +18832 pkt=f8 7f 81
+J2199 t=21689 +18836 pkt=f8 21 d7
+J2200 t=21689 +18836 pkt=fa 00 00
+J2201 t=21701 +18848 pkt=f8 00 00
+J2202 t=21821 +18968 pkt=f8 50 7f
+J2203 t=21821 +18968 pkt=f8 00 29
+J2204 t=21901 +19048 pkt=fa 00 00
+J2205 t=22105 +19252 pkt=f8 00 00
+J2206 t=22225 +19372 pkt=f8 1e 81
+J2207 t=22225 +19372 pkt=f8 00 d7
+J2208 t=22225 +19372 pkt=fa 00 00
+K000 t=3581 +728 (sched +725)
+K001 t=3797 +944 (sched +944)
+K002 t=3841 +988 (sched +985)
+K003 t=3869 +1016 (sched +1015)
+K004 t=3901 +1048 (sched +1045)
+K005 t=3929 +1076 (sched +1075)
+K006 t=4081 +1228 (sched +1227)
+K007 t=4205 +1352 (sched +1349)
+K008 t=4393 +1540 (sched +1539)
+K009 t=4693 +1840 (sched +1839)
+K010 t=4857 +2004 (sched +2003)
+K011 t=5053 +2200 (sched +2199)
+K012 t=5173 +2320 (sched +2320)
+K013 t=5213 +2360 (sched +2360)
+K014 t=5245 +2392 (sched +2390)
+K015 t=5497 +2644 (sched +2641)
+K016 t=5525 +2672 (sched +2671)
+K017 t=5557 +2704 (sched +2701)
+K018 t=5705 +2852 (sched +2852)
+K019 t=5925 +3072 (sched +3070)
+K020 t=5985 +3132 (sched +3131)
+K021 t=6125 +3272 (sched +3271)
+K022 t=6245 +3392 (sched +3392)
+K023 t=6465 +3612 (sched +3609)
+K024 t=6505 +3652 (sched +3650)
+K025 t=6533 +3680 (sched +3680)
+K026 t=6565 +3712 (sched +3710)
+K027 t=6593 +3740 (sched +3740)
+K028 t=6745 +3892 (sched +3892)
+K029 t=6869 +4016 (sched +4014)
+K030 t=7113 +4260 (sched +4260)
+K031 t=7493 +4640 (sched +4640)
+K032 t=7657 +4804 (sched +4804)
+K033 t=7877 +5024 (sched +5024)
+K034 t=8001 +5148 (sched +5145)
+K035 t=8041 +5188 (sched +5185)
+K036 t=8069 +5216 (sched +5215)
+K037 t=8325 +5472 (sched +5472)
+K038 t=8357 +5504 (sched +5502)
+K039 t=8385 +5532 (sched +5532)
+K040 t=8537 +5684 (sched +5683)
+K041 t=8753 +5900 (sched +5900)
+K042 t=8817 +5964 (sched +5961)
+K043 t=8957 +6104 (sched +6101)
+K044 t=9077 +6224 (sched +6222)
+K045 t=9293 +6440 (sched +6438)
+K046 t=9333 +6480 (sched +6479)
+K047 t=9365 +6512 (sched +6509)
+K048 t=9393 +6540 (sched +6539)
+K049 t=9425 +6572 (sched +6569)
+K050 t=9577 +6724 (sched +6721)
+K051 t=9697 +6844 (sched +6843)
+K052 t=9889 +7036 (sched +7033)
+K053 t=10189 +7336 (sched +7333)
+K054 t=10353 +7500 (sched +7497)
+K055 t=10549 +7696 (sched +7693)
+K056 t=10669 +7816 (sched +7814)
+K057 t=10709 +7856 (sched +7854)
+K058 t=10737 +7884 (sched +7884)
+K059 t=10989 +8136 (sched +8133)
+K060 t=11017 +8164 (sched +8163)
+K061 t=11049 +8196 (sched +8193)
+K062 t=11197 +8344 (sched +8344)
+K063 t=11413 +8560 (sched +8560)
+K064 t=11477 +8624 (sched +8621)
+K065 t=11617 +8764 (sched +8761)
+K066 t=11737 +8884 (sched +8882)
+K067 t=11953 +9100 (sched +9098)
+K068 t=12013 +9160 (sched +9159)
+K069 t=12153 +9300 (sched +9299)
+K070 t=12273 +9420 (sched +9420)
+K071 t=12489 +9636 (sched +9636)
+K072 t=12533 +9680 (sched +9677)
+K073 t=12561 +9708 (sched +9707)
+K074 t=12593 +9740 (sched +9737)
+K075 t=12621 +9768 (sched +9767)
+K076 t=12773 +9920 (sched +9919)
+K077 t=12897 +10044 (sched +10041)
+K078 t=13141 +10288 (sched +10287)
+K079 t=13521 +10668 (sched +10667)
+K080 t=13685 +10832 (sched +10831)
+K081 t=13905 +11052 (sched +11051)
+K082 t=14025 +11172 (sched +11172)
+K083 t=14065 +11212 (sched +11212)
+K084 t=14097 +11244 (sched +11242)
+K085 t=14353 +11500 (sched +11499)
+K086 t=14385 +11532 (sched +11529)
+K087 t=14413 +11560 (sched +11559)
+K088 t=14565 +11712 (sched +11710)
+K089 t=14781 +11928 (sched +11926)
+K090 t=14841 +11988 (sched +11987)
+K091 t=14981 +12128 (sched +12127)
+K092 t=15101 +12248 (sched +12248)
+K093 t=15317 +12464 (sched +12464)
+K094 t=15381 +12528 (sched +12525)
+K095 t=15521 +12668 (sched +12665)
+K096 t=15641 +12788 (sched +12786)
+K097 t=15857 +13004 (sched +13002)
+K098 t=15897 +13044 (sched +13043)
+K099 t=15929 +13076 (sched +13073)
+K100 t=15957 +13104 (sched +13103)
+K101 t=15989 +13136 (sched +13133)
+K102 t=16141 +13288 (sched +13285)
+K103 t=16261 +13408 (sched +13407)
+K104 t=16453 +13600 (sched +13597)
+K105 t=16753 +13900 (sched +13897)
+K106 t=16917 +14064 (sched +14061)
+K107 t=17113 +14260 (sched +14257)
+K108 t=17233 +14380 (sched +14378)
+K109 t=17273 +14420 (sched +14418)
+K110 t=17301 +14448 (sched +14448)
+K111 t=17553 +14700 (sched +14697)
+K112 t=17581 +14728 (sched +14727)
+K113 t=17613 +14760 (sched +14757)
+K114 t=17761 +14908 (sched +14908)
+K115 t=17977 +15124 (sched +15124)
+K116 t=18041 +15188 (sched +15185)
+K117 t=18181 +15328 (sched +15325)
+K118 t=18301 +15448 (sched +15446)
+K119 t=18517 +15664 (sched +15662)
+K120 t=18577 +15724 (sched +15723)
+K121 t=18717 +15864 (sched +15863)
+K122 t=18837 +15984 (sched +15984)
+K123 t=19053 +16200 (sched +16200)
+K124 t=19097 +16244 (sched +16241)
+K125 t=19125 +16272 (sched +16271)
+K126 t=19157 +16304 (sched +16301)
+K127 t=19185 +16332 (sched +16331)
+K128 t=19337 +16484 (sched +16483)
+K129 t=19461 +16608 (sched +16605)
+K130 t=19705 +16852 (sched +16851)
+K131 t=20085 +17232 (sched +17231)
+K132 t=20249 +17396 (sched +17395)
+K133 t=20469 +17616 (sched +17615)
+K134 t=20589 +17736 (sched +17736)
+K135 t=20629 +17776 (sched +17776)
+K136 t=20661 +17808 (sched +17806)
+K137 t=20917 +18064 (sched +18063)
+K138 t=20949 +18096 (sched +18093)
+K139 t=20977 +18124 (sched +18123)
+K140 t=21129 +18276 (sched +18274)
+K141 t=21345 +18492 (sched +18490)
+K142 t=21405 +18552 (sched +18551)
+K143 t=21545 +18692 (sched +18691)
+K144 t=21665 +18812 (sched +18812)
+K145 t=21881 +19028 (sched +19028)
+K146 t=21945 +19092 (sched +19089)
+K147 t=22085 +19232 (sched +19229)
+K148 t=22205 +19352 (sched +19350)
+Z99 end quit=1

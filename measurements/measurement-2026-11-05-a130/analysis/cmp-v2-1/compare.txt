@@ -1,0 +1,157 @@
+baseline mask: 1525 px from 00-000-1000---start-rest.png
+shot | diff px outside the mask: VBAR HBAR WIN ALL | WIN diff bbox
+00-000-1000---start-rest                 |     0     0      0      0 | -
+01-001-1000-V-dragslow-before            |     0     0      0      0 | -
+02-002-1000-V-dragslow-held0             |     0     0      0      0 | -
+03-003-1000-V-dragslow-held1             |   740     0    740    740 | (457, 106, 479, 333)
+04-004-1000-V-dragslow-held2             |   816     0    816    816 | (457, 106, 479, 349)
+05-005-1000-V-dragslow-held3             |   811     0    811    811 | (457, 106, 479, 333)
+06-006-1000-V-dragslow-slow16            |   801     0    801    801 | (457, 86, 479, 334)
+07-007-1000-V-dragslow-slow32            |   732     0    732    732 | (457, 107, 479, 334)
+08-008-1000-V-dragslow-beyondfar         |   749     0    749    797 | (457, 107, 479, 334)
+09-009-1000-V-dragslow-beyondnear        |   491     0    491    493 | (457, 106, 479, 333)
+10-010-1000-V-dragslow-sideways          |   764     0    764    832 | (457, 89, 479, 333)
+100-100-300-H-pagehi-released            |     0   505    505    505 | (277, 358, 433, 378)
+101-101-min-V-dragslow-before            |     0     0      0      0 | -
+102-102-min-V-dragslow-held0             |     0     0      0      0 | -
+103-103-min-V-dragslow-held1             |   123     0    123    123 | (457, 211, 479, 233)
+104-104-min-V-dragslow-held2             |   120     0    120    120 | (457, 211, 479, 233)
+105-105-min-V-dragslow-held3             |   128     0    128    128 | (457, 211, 479, 351)
+106-106-min-V-dragslow-slow16            |   292     0    292    292 | (457, 94, 479, 249)
+107-107-min-V-dragslow-slow32            |   262     0    262    262 | (457, 211, 479, 260)
+108-108-min-V-dragslow-beyondfar         |   293     0    293    341 | (457, 95, 479, 334)
+109-109-min-V-dragslow-beyondnear        |   250     0    250    319 | (457, 99, 479, 339)
+11-011-1000-V-dragslow-back40            |   815     0    815    815 | (457, 90, 479, 334)
+110-110-min-V-dragslow-sideways          |   177     0    177    205 | (457, 106, 479, 228)
+111-111-min-V-dragslow-back40            |   216     0    216    216 | (457, 211, 479, 268)
+112-112-min-V-dragslow-released          |    89     0     89     89 | (458, 250, 478, 269)
+113-113-min-V-dragslow-after0            |    89     0     89     89 | (458, 250, 478, 269)
+114-114-min-V-dragslow-after1            |    89     0     89     89 | (458, 250, 478, 269)
+115-115-min-V-dragfast-before            |     0     0      0      0 | -
+116-116-min-V-dragfast-heldfast0         |   217     0    217    217 | (458, 211, 478, 333)
+117-117-min-V-dragfast-heldfast1         |   217     0    217    217 | (458, 211, 478, 333)
+118-118-min-V-dragfast-heldfast2         |   217     0    217    217 | (458, 211, 478, 333)
+119-119-min-V-dragfast-released          |   214     0    214    214 | (458, 263, 478, 333)
+12-012-1000-V-dragslow-released          |     0     0      0      0 | -
+120-120-min-V-pagelo-before              |     0     0      0      0 | -
+121-121-min-V-pagelo-held1               |   193     0    193    193 | (458, 142, 478, 228)
+122-122-min-V-pagelo-held2               |   196     0    196    196 | (458, 107, 478, 228)
+123-123-min-V-pagelo-released            |   201     0    201    201 | (458, 107, 478, 175)
+124-124-min-V-pagehi-before              |     0     0      0      0 | -
+125-125-min-V-pagehi-held1               |     0     0      0      0 | -
+126-126-min-V-pagehi-held2               |   217     0    217    217 | (458, 211, 478, 333)
+127-127-min-V-pagehi-released            |   217     0    217    217 | (458, 263, 478, 333)
+128-128-min-H-dragslow-before            |     0     0      0      0 | -
+129-129-min-H-dragslow-held0             |     0     0      0      0 | -
+13-013-1000-V-dragslow-after0            |     0     0      0      0 | -
+130-130-min-H-dragslow-held1             |     0   127    130    131 | (258, 357, 276, 382)
+131-131-min-H-dragslow-held2             |     0   176    179    180 | (258, 357, 455, 382)
+132-132-min-H-dragslow-held3             |     0   117    120    121 | (258, 357, 276, 382)
+133-133-min-H-dragslow-slow16            |     0   276    279    280 | (92, 357, 455, 382)
+134-134-min-H-dragslow-slow32            |     0   229    232    233 | (259, 357, 309, 382)
+135-135-min-H-dragslow-beyondfar         |     0   310    310    379 | (101, 357, 455, 379)
+136-136-min-H-dragslow-beyondnear        |     0   178    178    247 | (103, 357, 276, 379)
+137-137-min-H-dragslow-sideways          |     0   249    249    318 | (101, 357, 276, 379)
+138-138-min-H-dragslow-back40            |     0   323    326    327 | (90, 357, 455, 382)
+139-139-min-H-dragslow-released          |     0   111    111    111 | (298, 358, 317, 378)
+14-014-1000-V-dragslow-after1            |     0     0      0      0 | -
+140-140-min-H-dragslow-after0            |     0   111    111    111 | (298, 358, 317, 378)
+141-141-min-H-dragslow-after1            |     0   111    111    111 | (298, 358, 317, 378)
+142-142-min-H-dragfast-before            |     0     0      0      0 | -
+143-143-min-H-dragfast-heldfast0         |     0   217    217    217 | (259, 358, 433, 378)
+144-144-min-H-dragfast-heldfast1         |     0   217    217    217 | (259, 358, 433, 378)
+145-145-min-H-dragfast-heldfast2         |     0   217    217    217 | (259, 358, 433, 378)
+146-146-min-H-dragfast-released          |     0   217    217    217 | (337, 358, 433, 378)
+147-147-min-H-pagelo-before              |     0     0      0      0 | -
+148-148-min-H-pagelo-held1               |     0     0      0      0 | -
+149-149-min-H-pagelo-held2               |     0   196    196    196 | (105, 358, 276, 378)
+15-015-1000-V-dragfast-before            |     0     0      0      0 | -
+150-150-min-H-pagelo-released            |     0   196    196    196 | (105, 358, 198, 378)
+151-151-min-H-pagehi-before              |     0     0      0      0 | -
+152-152-min-H-pagehi-held1               |     0   212    212    212 | (259, 358, 354, 378)
+153-153-min-H-pagehi-held2               |     0   217    217    217 | (259, 358, 433, 378)
+154-154-min-H-pagehi-released            |     0   217    217    217 | (337, 358, 433, 378)
+16-016-1000-V-dragfast-heldfast0         |   737     0    737    737 | (457, 106, 479, 333)
+17-017-1000-V-dragfast-heldfast1         |   504     0    504    504 | (457, 106, 479, 333)
+18-018-1000-V-dragfast-heldfast2         |   831     0    831    831 | (457, 106, 479, 333)
+19-019-1000-V-dragfast-released          |     0     0      0      0 | -
+20-020-1000-V-pagehi-before              |     0     0      0      0 | -
+21-021-1000-V-pagehi-held1               |     0     0      0      0 | -
+22-022-1000-V-pagehi-held2               |     0     0      0      0 | -
+23-023-1000-V-pagehi-released            |     0     0      0      0 | -
+24-024-1000-H-dragslow-before            |     0     0      0      0 | -
+25-025-1000-H-dragslow-held0             |     0     0      0      0 | -
+26-026-1000-H-dragslow-held1             |     0  1652   1655   1656 | (103, 357, 433, 382)
+27-027-1000-H-dragslow-held2             |     0   763    766    767 | (103, 357, 433, 382)
+28-028-1000-H-dragslow-held3             |     0  1205   1208   1209 | (103, 357, 433, 382)
+29-029-1000-H-dragslow-slow16            |     0  1876   1879   1880 | (104, 357, 434, 382)
+30-030-1000-H-dragslow-slow32            |     0   681    681    681 | (104, 357, 434, 379)
+31-031-1000-H-dragslow-beyondfar         |     0  1858   1858   1927 | (104, 357, 434, 379)
+32-032-1000-H-dragslow-beyondnear        |     0   699    699    768 | (103, 357, 433, 379)
+33-033-1000-H-dragslow-sideways          |     0   701    701    761 | (103, 357, 455, 379)
+34-034-1000-H-dragslow-back40            |     0  1356   1359   1360 | (104, 357, 434, 382)
+35-035-1000-H-dragslow-released          |     0     0      0      0 | -
+36-036-1000-H-dragslow-after0            |     0     0      0      0 | -
+37-037-1000-H-dragslow-after1            |     0     0      0      0 | -
+38-038-1000-H-dragfast-before            |     0     0      0      0 | -
+39-039-1000-H-dragfast-heldfast0         |     0   765    768    769 | (103, 357, 433, 382)
+40-040-1000-H-dragfast-heldfast1         |     0  1421   1424   1425 | (103, 357, 433, 382)
+41-041-1000-H-dragfast-heldfast2         |     0   755    758    759 | (101, 357, 455, 382)
+42-042-1000-H-dragfast-released          |     0     0      0      0 | -
+43-043-1000-H-pagehi-before              |     0     0      0      0 | -
+44-044-1000-H-pagehi-held1               |     0   693    693    693 | (103, 357, 433, 379)
+45-045-1000-H-pagehi-held2               |     0   693    693    693 | (103, 357, 433, 379)
+46-046-1000-H-pagehi-released            |     0     0      0      0 | -
+47-047-300-V-dragslow-before             |     0     0      0      0 | -
+48-048-300-V-dragslow-held0              |     0     0      0      0 | -
+49-049-300-V-dragslow-held1              |   287     0    287    287 | (457, 186, 479, 252)
+50-050-300-V-dragslow-held2              |   167     0    167    167 | (457, 186, 479, 252)
+51-051-300-V-dragslow-held3              |   311     0    311    311 | (457, 186, 479, 355)
+52-052-300-V-dragslow-slow16             |   450     0    450    450 | (457, 99, 479, 336)
+53-053-300-V-dragslow-slow32             |   507     0    507    507 | (457, 186, 479, 353)
+54-054-300-V-dragslow-beyondfar          |   717     0    717    765 | (457, 186, 479, 334)
+55-055-300-V-dragslow-beyondnear         |   587     0    587    656 | (457, 93, 479, 355)
+56-056-300-V-dragslow-sideways           |   568     0    568    583 | (457, 85, 479, 341)
+57-057-300-V-dragslow-back40             |   618     0    618    618 | (457, 96, 479, 352)
+58-058-300-V-dragslow-released           |   114     0    114    114 | (458, 225, 478, 293)
+59-059-300-V-dragslow-after0             |   114     0    114    114 | (458, 225, 478, 293)
+60-060-300-V-dragslow-after1             |   114     0    114    114 | (458, 225, 478, 293)
+61-061-300-V-dragfast-before             |     0     0      0      0 | -
+62-062-300-V-dragfast-heldfast0          |   553     0    553    553 | (458, 186, 478, 333)
+63-063-300-V-dragfast-heldfast1          |   553     0    553    553 | (458, 186, 478, 333)
+64-064-300-V-dragfast-heldfast2          |   553     0    553    553 | (458, 186, 478, 333)
+65-065-300-V-dragfast-released           |   387     0    387    387 | (458, 226, 478, 333)
+66-066-300-V-pagelo-before               |     0     0      0      0 | -
+67-067-300-V-pagelo-held1                |   313     0    313    313 | (458, 142, 478, 252)
+68-068-300-V-pagelo-held2                |   536     0    536    536 | (458, 107, 478, 252)
+69-069-300-V-pagelo-released             |   362     0    362    362 | (458, 107, 478, 212)
+70-070-300-V-pagehi-before               |     0     0      0      0 | -
+71-071-300-V-pagehi-held1                |     0     0      0      0 | -
+72-072-300-V-pagehi-held2                |   547     0    547    547 | (458, 186, 478, 333)
+73-073-300-V-pagehi-released             |   384     0    384    384 | (458, 226, 478, 333)
+74-074-300-H-dragslow-before             |     0     0      0      0 | -
+75-075-300-H-dragslow-held0              |     0     0      0      0 | -
+76-076-300-H-dragslow-held1              |     0   279    282    283 | (219, 357, 316, 382)
+77-077-300-H-dragslow-held2              |     0   578    581    582 | (219, 357, 316, 382)
+78-078-300-H-dragslow-held3              |     0   267    270    271 | (219, 357, 316, 382)
+79-079-300-H-dragslow-slow16             |     0   553    556    557 | (219, 357, 332, 382)
+80-080-300-H-dragslow-slow32             |     0   604    607    608 | (219, 357, 348, 382)
+81-081-300-H-dragslow-beyondfar          |     0  1016   1016   1085 | (88, 357, 455, 379)
+82-082-300-H-dragslow-beyondnear         |     0   912    912    917 | (103, 357, 316, 379)
+83-083-300-H-dragslow-sideways           |     0   987    987   1056 | (82, 357, 316, 379)
+84-084-300-H-dragslow-back40             |     0   630    633    634 | (101, 357, 455, 382)
+85-085-300-H-dragslow-released           |     0    94     94     94 | (259, 358, 357, 378)
+86-086-300-H-dragslow-after0             |     0    94     94     94 | (259, 358, 357, 378)
+87-087-300-H-dragslow-after1             |     0    94     94     94 | (259, 358, 357, 378)
+88-088-300-H-dragfast-before             |     0     0      0      0 | -
+89-089-300-H-dragfast-heldfast0          |     0   768    771    772 | (209, 358, 433, 382)
+90-090-300-H-dragfast-heldfast1          |     0   439    442    443 | (209, 358, 433, 382)
+91-091-300-H-dragfast-heldfast2          |     0   637    640    641 | (209, 358, 433, 382)
+92-092-300-H-dragfast-released           |     0   758    758    758 | (209, 358, 433, 378)
+93-093-300-H-pagelo-before               |     0     0      0      0 | -
+94-094-300-H-pagelo-held1                |     0     0      0      0 | -
+95-095-300-H-pagelo-held2                |     0   743    743    743 | (105, 358, 316, 378)
+96-096-300-H-pagelo-released             |     0   482    482    482 | (105, 358, 258, 378)
+97-097-300-H-pagehi-before               |     0     0      0      0 | -
+98-098-300-H-pagehi-held1                |     0   764    764    764 | (219, 358, 433, 378)
+99-099-300-H-pagehi-held2                |     0   764    764    764 | (219, 358, 433, 378)

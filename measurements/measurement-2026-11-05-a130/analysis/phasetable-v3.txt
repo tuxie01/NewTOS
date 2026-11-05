@@ -1,0 +1,23 @@
+1000 - start     rest==
+1000 V dragslow  before== held0== held1=775 held2=491 held3=491 slow16=831 slow32=814 beyondfar=794 beyondnear=914 sideways=831 back40=809 released== after0== after1==
+300  H pagehi    released=505 before== held1=710 held2=764
+min  V dragslow  before== held0== held1=123 held2=66 held3=81 slow16=293 slow32=325 beyondfar=340 beyondnear=314 sideways=251 back40=262 released=89 after0=89 after1=89
+min  V dragfast  before== heldfast0=283 heldfast1=219 heldfast2=258 released=67
+min  V pagelo    before== held1=50 held2=196 released=201
+min  V pagehi    before== held1== held2=217 released=217
+min  H dragslow  before== held0== held1=159 held2=174 held3=127 slow16=231 slow32=218 beyondfar=366 beyondnear=273 sideways=316 back40=329 released=111 after0=111 after1=111
+min  H dragfast  before== heldfast0=262 heldfast1=323 heldfast2=318 released=110
+min  H pagelo    before== held1== held2=196 released=196
+1000 V dragfast  before== heldfast0=723 heldfast1=739 heldfast2=483 released==
+min  H pagehi    before== held1=92 held2=217 released=217
+1000 V pagehi    before== held1== held2== released==
+1000 H dragslow  before== held0== held1=1350 held2=1300 held3=1811 slow16=1796 slow32=1880 beyondfar=751 beyondnear=787 sideways=782 back40=671 released== after0== after1==
+1000 H dragfast  before== heldfast0=744 heldfast1=1562 heldfast2=1536 released==
+1000 H pagehi    before== held1=693 held2=693 released==
+300  V dragslow  before== held0== held1=279 held2=167 held3=167 slow16=427 slow32=542 beyondfar=731 beyondnear=755 sideways=660 back40=605 released=114 after0=114 after1=114
+300  V dragfast  before== heldfast0=451 heldfast1=517 heldfast2=459 released=114
+300  V pagelo    before== held1=378 held2=536 released=362
+300  V pagehi    before== held1== held2=547 released=384
+300  H dragslow  before== held0== held1=227 held2=601 held3=602 slow16=527 slow32=607 beyondfar=1075 beyondnear=1008 sideways=1036 back40=635 released=94 after0=94 after1=94
+300  H dragfast  before== heldfast0=611 heldfast1=560 heldfast2=501 released=94
+300  H pagelo    before== held1== held2=743 released=482

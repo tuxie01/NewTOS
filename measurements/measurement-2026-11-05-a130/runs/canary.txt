@@ -1,0 +1,4 @@
+   text	   data	    bss	    dec	    hex	filename
+ 171420	   1588	 684116	 857124	  d1424	/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/a130/canary-20261105-143005/dumpers/19b7/DUMPVDI.PRG
+canary tt: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all)
+canary falcontc: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all-falcontc)

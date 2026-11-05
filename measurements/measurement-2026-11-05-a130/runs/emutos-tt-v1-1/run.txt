@@ -1,0 +1,8 @@
+slprobe run, side emutos (2026-11-05T13:40:02Z)
+tree      eae13cecd656be498249c9c9e3b969af24afd770 6 dirty paths in the tree
+source    slprobe.c a1fea652c24ce3a4f75ee0a6cc579bc4d251534b8f626fa39c1b178e91794fe5 slprobe-mouse.txt bbf649dc880c664b28bd420bcf7894fbbb62d0f6d249674989e510a660343ba3 slprobe-shots.txt 782acf2a6bd92dd1a80d034414138ae0c3f6b613c1453cae27e350e4fe6f4e5c
+probes    SLPROBE.PRG db650557291d63d9315a7efcd3cf7d3b3aa948f8ad6e8406e5cbddca8f46ce77 SLPROBE.NAP ee11a5501ffd943e2bb8245473d767048eb6e6ed8297a8f7699f1665a927600d
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+oracle    /Volumes/Daten/hatari-2.6.1_macos/Hatari.app/Contents/MacOS/Hatari, ROM /Volumes/Daten/Development/PiRusTOS/tools/oracle/etos512de-1a7484ab.img (323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c), profile tt
+breakpoint ($01091014).l ! ($01091014).l :trace :file shot.ini
+hatari    done, 149 shots of 149

@@ -1,0 +1,54 @@
+idle1000-e00           black     0
+idle1000-e01           black     0
+h1-1000-V-e00          black     0
+h1-1000-V-e01          black     0
+h1-1000-V-e02          black     0
+h1-1000-V-e03          black     0
+h1-1000-V-e04          black     0
+h1-1000-V-e05          black     0
+h1-1000-V-e06          black     0
+h1-1000-V-e07          black     0
+h1-1000-V-e08          black     0
+h1-1000-V-e09          black     0
+h2-1000-H-e00          black   493
+h2-1000-H-e01          black   493
+h2-1000-H-e02          black   493
+h2-1000-H-e03          black   493
+h2-1000-H-e04          black   493
+h2-1000-H-e05          black   493
+h2-1000-H-e06          black   493
+h2-1000-H-e07          black   493
+h2-1000-H-e08          black   493
+h2-1000-H-e09          black   493
+idle300-e00            black     0
+idle300-e01            black     0
+h3-300-V-e00           black     0
+h3-300-V-e01           black     0
+h3-300-V-e02           black     0
+h3-300-V-e03           black     0
+h3-300-V-e04           black     0
+h3-300-V-e05           black     0
+h3-300-V-e06           black     0
+h3-300-V-e07           black     0
+h3-300-V-e08           black     0
+h3-300-V-e09           black     0
+idlemin-e00            black     0
+idlemin-e01            black     0
+h4-min-V-e00           black     0
+h4-min-V-e01           black     0
+h4-min-V-e02           black     0
+h4-min-V-e03           black     0
+h4-min-V-e04           black     0
+h4-min-V-e05           black     0
+h4-min-V-e06           black     0
+h4-min-V-e07           black     0
+h4-min-V-e08           black     0
+h4-min-V-e09           black     0
+hold        samples  with-black  max-black
+idle1000           2           0          0
+h1-1000-V         10           0          0
+h2-1000-H         10          10        493
+idle300            2           0          0
+h3-300-V          10           0          0
+idlemin            2           0          0
+h4-min-V          10           0          0

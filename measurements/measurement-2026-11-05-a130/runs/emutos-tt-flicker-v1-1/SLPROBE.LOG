@@ -1,0 +1,1155 @@
+H00 graf_handle 8 16 19 19
+C00 wind_create(0fef)=1
+O00 wind_open=1
+G00 curr 80,60,400,320
+G01 work 81,83,376,274
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+S00 script steps 119 shots 46
+A00 shot counter at 01091014
+G02 go after 11 polls
+T00 t=2813
+R001 t=2813 which=0010 mx=319 my=239 bs=0 br=-25774 msg=20,0,0,1,80,60,402,322
+D001.0 list 81,83,376,274 draw 81,83,376,274
+R002 t=4267 which=0010 mx=300 my=220 bs=0 br=-25774 msg=26,1,0,1,0,60,400,320
+V002 wind_set(VSLIDE,0)=1
+R003 t=4509 which=0002 mx=268 my=352 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R004 t=4514 which=0002 mx=268 my=336 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R005 t=4515 which=0002 mx=268 my=336 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R006 t=4516 which=0002 mx=268 my=336 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R007 t=4517 which=0002 mx=268 my=320 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R008 t=4519 which=0002 mx=268 my=320 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R009 t=4520 which=0002 mx=268 my=320 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R010 t=4521 which=0002 mx=268 my=304 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R011 t=4522 which=0002 mx=268 my=304 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R012 t=4523 which=0002 mx=268 my=304 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R013 t=4524 which=0002 mx=268 my=304 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R014 t=4525 which=0002 mx=268 my=288 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R015 t=4526 which=0002 mx=268 my=288 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R016 t=4527 which=0002 mx=268 my=288 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R017 t=4529 which=0002 mx=268 my=288 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R018 t=4530 which=0002 mx=268 my=272 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R019 t=4531 which=0002 mx=268 my=272 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R020 t=4532 which=0002 mx=268 my=272 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R021 t=4533 which=0002 mx=268 my=256 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R022 t=4534 which=0002 mx=268 my=256 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R023 t=4535 which=0002 mx=268 my=256 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R024 t=4536 which=0002 mx=268 my=256 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R025 t=4537 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R026 t=4539 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R027 t=4540 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R028 t=4541 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R029 t=4542 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R030 t=4543 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R031 t=4544 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R032 t=4545 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R033 t=4546 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R034 t=4547 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R035 t=4548 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R036 t=4549 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R037 t=4550 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R038 t=4552 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R039 t=4553 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R040 t=4554 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R041 t=4555 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R042 t=4556 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R043 t=4557 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R044 t=4558 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R045 t=4559 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R046 t=4560 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R047 t=4561 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R048 t=4562 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R049 t=4563 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R050 t=4565 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R051 t=4566 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R052 t=4567 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R053 t=4568 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R054 t=4569 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R055 t=4570 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R056 t=4571 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R057 t=4572 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R058 t=4573 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R059 t=4574 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R060 t=4575 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R061 t=4576 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R062 t=4578 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R063 t=4579 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R064 t=4580 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R065 t=4581 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R066 t=4582 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R067 t=4583 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R068 t=4584 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R069 t=4585 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R070 t=4586 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R071 t=4587 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R072 t=4588 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R073 t=4589 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R074 t=4591 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R075 t=4592 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R076 t=4593 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R077 t=4594 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R078 t=4595 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R079 t=4596 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R080 t=4597 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R081 t=4598 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R082 t=4599 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R083 t=4600 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R084 t=4601 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R085 t=4602 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R086 t=4603 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R087 t=4605 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R088 t=4606 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R089 t=4607 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R090 t=4608 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R091 t=4609 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R092 t=4610 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R093 t=4611 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R094 t=4612 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R095 t=4613 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R096 t=4614 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R097 t=4615 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R098 t=4617 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R099 t=4618 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R100 t=4619 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R101 t=4620 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R102 t=4621 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R103 t=4622 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R104 t=4623 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R105 t=4624 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R106 t=4625 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R107 t=4626 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R108 t=4627 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R109 t=4628 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R110 t=4629 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R111 t=4631 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R112 t=4632 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R113 t=4633 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R114 t=4634 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R115 t=4635 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R116 t=4636 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R117 t=4637 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R118 t=4638 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R119 t=4639 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R120 t=4640 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R121 t=4641 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R122 t=4642 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R123 t=4643 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R124 t=4645 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R125 t=4646 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R126 t=4647 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R127 t=4648 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R128 t=4649 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R129 t=4650 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R130 t=4651 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R131 t=4652 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R132 t=4653 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R133 t=4654 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R134 t=4655 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R135 t=4656 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R136 t=4658 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R137 t=4659 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R138 t=4660 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R139 t=4661 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R140 t=4662 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R141 t=4663 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R142 t=4664 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R143 t=4665 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R144 t=4666 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R145 t=4667 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R146 t=4668 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R147 t=4669 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R148 t=4670 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R149 t=4672 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R150 t=4673 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R151 t=4674 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R152 t=4675 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R153 t=4676 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R154 t=4677 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R155 t=4678 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R156 t=4679 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R157 t=4680 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R158 t=4681 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R159 t=4682 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R160 t=4683 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R161 t=4685 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R162 t=4686 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R163 t=4687 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R164 t=4688 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R165 t=4689 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R166 t=4690 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R167 t=4691 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R168 t=4692 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R169 t=4693 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R170 t=4694 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R171 t=4695 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R172 t=4696 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R173 t=4697 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R174 t=4699 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R175 t=4700 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R176 t=4701 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R177 t=4702 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R178 t=4703 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R179 t=4704 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R180 t=4705 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R181 t=4706 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R182 t=4707 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R183 t=4708 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R184 t=4709 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R185 t=4710 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R186 t=4711 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R187 t=4713 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R188 t=4714 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R189 t=4715 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R190 t=4716 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R191 t=4717 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R192 t=4718 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R193 t=4719 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R194 t=4720 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R195 t=4721 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R196 t=4722 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R197 t=4723 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R198 t=4724 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R199 t=4726 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R200 t=4727 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R201 t=4728 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R202 t=4729 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R203 t=4730 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R204 t=4731 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R205 t=4732 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R206 t=4733 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R207 t=4734 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R208 t=4735 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R209 t=4736 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R210 t=4737 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R211 t=4738 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R212 t=4740 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R213 t=4741 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R214 t=4742 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R215 t=4743 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R216 t=4744 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R217 t=4745 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R218 t=4746 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R219 t=4747 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R220 t=4748 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R221 t=4749 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R222 t=4750 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R223 t=4751 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R224 t=4752 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R225 t=4754 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R226 t=4755 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R227 t=4756 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R228 t=4757 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R229 t=4758 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R230 t=4759 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R231 t=4760 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R232 t=4761 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R233 t=4762 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R234 t=4763 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R235 t=4764 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R236 t=4765 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R237 t=4767 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R238 t=4768 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R239 t=4769 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R240 t=4770 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R241 t=4771 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R242 t=4772 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R243 t=4773 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R244 t=4774 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R245 t=4775 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R246 t=4776 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R247 t=4777 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R248 t=4778 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R249 t=4779 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R250 t=4781 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R251 t=4782 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R252 t=4783 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R253 t=4784 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R254 t=4785 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R255 t=4786 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R256 t=4787 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R257 t=4788 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R258 t=4789 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R259 t=4790 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R260 t=4791 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R261 t=4792 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R262 t=4793 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R263 t=4795 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R264 t=4796 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R265 t=4797 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R266 t=4798 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R267 t=4799 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R268 t=4800 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R269 t=4801 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R270 t=4802 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R271 t=4803 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R272 t=4804 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R273 t=4805 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R274 t=4806 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R275 t=4807 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R276 t=4809 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R277 t=4810 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R278 t=4811 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R279 t=4812 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R280 t=4813 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R281 t=4814 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R282 t=4815 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R283 t=4816 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R284 t=4817 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R285 t=4818 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R286 t=4819 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R287 t=4820 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R288 t=4822 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R289 t=4823 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R290 t=4824 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R291 t=4825 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R292 t=4826 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R293 t=4827 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R294 t=4828 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R295 t=4829 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R296 t=4830 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R297 t=4831 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R298 t=4832 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R299 t=4833 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R300 t=4834 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R301 t=4836 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R302 t=4837 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R303 t=4838 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R304 t=4839 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R305 t=4840 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R306 t=4841 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R307 t=4842 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R308 t=4843 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R309 t=4844 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R310 t=4845 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R311 t=4846 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R312 t=4847 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R313 t=4849 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R314 t=4850 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R315 t=4851 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R316 t=4852 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R317 t=4853 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R318 t=4854 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R319 t=4855 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R320 t=4856 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R321 t=4857 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R322 t=4858 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R323 t=4859 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R324 t=4860 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R325 t=4861 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R326 t=4863 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R327 t=4864 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R328 t=4865 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R329 t=4866 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R330 t=4867 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R331 t=4868 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R332 t=4869 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R333 t=4870 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R334 t=4871 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R335 t=4872 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R336 t=4873 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R337 t=4874 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R338 t=4875 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R339 t=4877 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R340 t=4878 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R341 t=4879 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R342 t=4880 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R343 t=4881 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R344 t=4882 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R345 t=4883 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R346 t=4884 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R347 t=4885 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R348 t=4886 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R349 t=4887 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R350 t=4888 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R351 t=4889 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R352 t=4891 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R353 t=4892 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R354 t=4893 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R355 t=4894 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R356 t=4895 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R357 t=4896 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R358 t=4897 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R359 t=4898 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R360 t=4899 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R361 t=4900 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R362 t=4901 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R363 t=4902 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R364 t=4904 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R365 t=4905 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R366 t=4906 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R367 t=4907 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R368 t=4908 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R369 t=4909 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R370 t=4910 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R371 t=4911 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R372 t=4912 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R373 t=4913 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R374 t=4914 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R375 t=4915 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R376 t=4916 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R377 t=4918 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R378 t=4919 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R379 t=4920 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R380 t=4921 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R381 t=4922 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R382 t=4923 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R383 t=4924 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R384 t=4925 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R385 t=4926 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R386 t=4927 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R387 t=4928 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R388 t=4929 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R389 t=4931 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R390 t=4932 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R391 t=4933 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R392 t=4934 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R393 t=4935 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R394 t=4936 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R395 t=4937 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R396 t=4938 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R397 t=4939 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R398 t=4940 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R399 t=4941 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R400 t=4942 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R401 t=4943 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R402 t=4945 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R403 t=4946 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R404 t=4947 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R405 t=4948 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R406 t=4949 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R407 t=4950 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R408 t=4951 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R409 t=4952 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R410 t=4953 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R411 t=4954 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R412 t=4955 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R413 t=4956 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R414 t=4957 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R415 t=4959 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R416 t=4960 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R417 t=4961 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R418 t=4962 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R419 t=4963 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R420 t=4964 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R421 t=4965 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R422 t=4966 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R423 t=4967 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R424 t=4968 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R425 t=4969 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R426 t=4970 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R427 t=4971 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R428 t=4973 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R429 t=4974 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R430 t=4975 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R431 t=4976 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R432 t=4977 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R433 t=4978 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R434 t=4979 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R435 t=4980 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R436 t=4981 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R437 t=4982 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R438 t=4983 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R439 t=4984 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R440 t=4986 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R441 t=4987 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R442 t=4988 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R443 t=4989 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R444 t=4990 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R445 t=4991 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R446 t=4992 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R447 t=4993 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R448 t=4994 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R449 t=4995 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R450 t=4996 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R451 t=4997 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R452 t=4998 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R453 t=5000 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R454 t=5001 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R455 t=5002 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R456 t=5003 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R457 t=5004 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R458 t=5005 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R459 t=5006 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R460 t=5007 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R461 t=5008 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R462 t=5009 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R463 t=5010 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R464 t=5011 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R465 t=5013 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R466 t=5014 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R467 t=5015 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R468 t=5016 which=0002 mx=268 my=250 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R469 t=5221 which=0002 mx=220 my=200 bs=0 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R470 t=5222 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R471 t=5223 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R472 t=5224 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R473 t=5225 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R474 t=5226 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R475 t=5227 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R476 t=5228 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R477 t=5229 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R478 t=5230 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R479 t=5232 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R480 t=6142 which=0010 mx=300 my=220 bs=0 br=1 msg=26,1,0,1,506,60,400,320
+V480 wind_set(VSLIDE,506)=1
+R481 t=6341 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R482 t=6346 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R483 t=6347 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R484 t=6348 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R485 t=6349 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R486 t=6350 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R487 t=6351 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R488 t=6352 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R489 t=7262 which=0010 mx=300 my=219 bs=0 br=1 msg=26,1,0,1,507,60,400,320
+V489 wind_set(VSLIDE,507)=1
+R490 t=7505 which=0002 mx=420 my=200 bs=1 br=1
+J000 t=3413 +600 pkt=f8 81 7f
+J001 t=3417 +604 pkt=f8 81 7f
+J002 t=3417 +604 pkt=f8 81 7f
+J003 t=3417 +604 pkt=f8 81 7f
+J004 t=3417 +604 pkt=f8 81 7f
+J005 t=3421 +608 pkt=f8 81 7f
+J006 t=3433 +620 pkt=f8 7f d9
+J007 t=3437 +624 pkt=f8 7f 00
+J008 t=3437 +624 pkt=f8 7f 00
+J009 t=3437 +624 pkt=f8 7f 00
+J010 t=3437 +624 pkt=f8 34 00
+J011 t=3701 +888 pkt=f8 a4 81
+J012 t=3701 +888 pkt=f8 00 a3
+J013 t=3701 +888 pkt=fa 00 00
+J014 t=3741 +928 pkt=fa f8 00
+J015 t=3745 +932 pkt=fa f8 00
+J016 t=3745 +932 pkt=fa f8 00
+J017 t=3749 +936 pkt=fa f8 00
+J018 t=3749 +936 pkt=fa f8 00
+J019 t=3753 +940 pkt=fa f8 00
+J020 t=3753 +940 pkt=fa f8 00
+J021 t=3757 +944 pkt=fa f8 00
+J022 t=3757 +944 pkt=fa f8 00
+J023 t=3761 +948 pkt=fa f8 00
+J024 t=3761 +948 pkt=fa f8 00
+J025 t=3765 +952 pkt=fa f8 00
+J026 t=3765 +952 pkt=fa f8 00
+J027 t=3769 +956 pkt=fa f8 00
+J028 t=3769 +956 pkt=fa f8 00
+J029 t=3773 +960 pkt=fa f8 00
+J030 t=3773 +960 pkt=fa f8 00
+J031 t=3777 +964 pkt=fa f8 00
+J032 t=3777 +964 pkt=fa f8 00
+J033 t=3781 +968 pkt=fa f8 00
+J034 t=3781 +968 pkt=fa f8 00
+J035 t=4265 +1452 pkt=f8 00 00
+J036 t=4465 +1652 pkt=f8 e0 7f
+J037 t=4465 +1652 pkt=f8 00 15
+J038 t=4469 +1656 pkt=fa 00 00
+J039 t=4509 +1696 pkt=fa 00 f8
+J040 t=4509 +1696 pkt=fa 00 f8
+J041 t=4513 +1700 pkt=fa 00 f8
+J042 t=4513 +1700 pkt=fa 00 f8
+J043 t=4517 +1704 pkt=fa 00 f8
+J044 t=4517 +1704 pkt=fa 00 f8
+J045 t=4521 +1708 pkt=fa 00 f8
+J046 t=4521 +1708 pkt=fa 00 f8
+J047 t=4525 +1712 pkt=fa 00 f8
+J048 t=4525 +1712 pkt=fa 00 f8
+J049 t=4529 +1716 pkt=fa 00 f8
+J050 t=4529 +1716 pkt=fa 00 f8
+J051 t=4533 +1720 pkt=fa 00 f8
+J052 t=4533 +1720 pkt=fa 00 f8
+J053 t=4537 +1724 pkt=fa 00 fa
+J054 t=5017 +2204 pkt=f8 00 00
+J055 t=5221 +2408 pkt=f8 d0 ce
+J056 t=5221 +2408 pkt=fa 00 00
+J057 t=5233 +2420 pkt=f8 00 00
+J058 t=5353 +2540 pkt=f8 7f 7f
+J059 t=5353 +2540 pkt=f8 7f 71
+J060 t=5353 +2540 pkt=f8 56 00
+J061 t=5577 +2764 pkt=f8 a4 81
+J062 t=5577 +2764 pkt=f8 00 a3
+J063 t=5577 +2764 pkt=fa 00 00
+J064 t=5617 +2804 pkt=fa f8 00
+J065 t=5621 +2808 pkt=fa f8 00
+J066 t=5621 +2808 pkt=fa f8 00
+J067 t=5625 +2812 pkt=fa f8 00
+J068 t=5625 +2812 pkt=fa f8 00
+J069 t=5629 +2816 pkt=fa f8 00
+J070 t=5629 +2816 pkt=fa f8 00
+J071 t=5633 +2820 pkt=fa f8 00
+J072 t=5633 +2820 pkt=fa f8 00
+J073 t=5637 +2824 pkt=fa f8 00
+J074 t=5637 +2824 pkt=fa f8 00
+J075 t=5641 +2828 pkt=fa f8 00
+J076 t=5641 +2828 pkt=fa f8 00
+J077 t=5645 +2832 pkt=fa f8 00
+J078 t=5645 +2832 pkt=fa f8 00
+J079 t=5649 +2836 pkt=fa f8 00
+J080 t=5649 +2836 pkt=fa f8 00
+J081 t=5653 +2840 pkt=fa f8 00
+J082 t=5653 +2840 pkt=fa f8 00
+J083 t=5657 +2844 pkt=fa f8 00
+J084 t=5657 +2844 pkt=fa f8 00
+J085 t=6141 +3328 pkt=f8 00 00
+J086 t=6341 +3528 pkt=f8 0a ec
+J087 t=6341 +3528 pkt=fa 00 00
+J088 t=6353 +3540 pkt=f8 00 00
+J089 t=6473 +3660 pkt=f8 7f 7f
+J090 t=6477 +3664 pkt=f8 7b 71
+J091 t=6697 +3884 pkt=f8 a4 81
+J092 t=6697 +3884 pkt=f8 00 a2
+J093 t=6697 +3884 pkt=fa 00 00
+J094 t=6741 +3928 pkt=fa f8 00
+J095 t=6741 +3928 pkt=fa f8 00
+J096 t=6745 +3932 pkt=fa f8 00
+J097 t=6745 +3932 pkt=fa f8 00
+J098 t=6749 +3936 pkt=fa f8 00
+J099 t=6749 +3936 pkt=fa f8 00
+J100 t=6753 +3940 pkt=fa f8 00
+J101 t=6753 +3940 pkt=fa f8 00
+J102 t=6757 +3944 pkt=fa f8 00
+J103 t=6757 +3944 pkt=fa f8 00
+J104 t=6761 +3948 pkt=fa f8 00
+J105 t=6761 +3948 pkt=fa f8 00
+J106 t=6765 +3952 pkt=fa f8 00
+J107 t=6765 +3952 pkt=fa f8 00
+J108 t=6769 +3956 pkt=fa f8 00
+J109 t=6769 +3956 pkt=fa f8 00
+J110 t=6773 +3960 pkt=fa f8 00
+J111 t=6773 +3960 pkt=fa f8 00
+J112 t=6777 +3964 pkt=fa f8 00
+J113 t=6777 +3964 pkt=fa f8 00
+J114 t=6781 +3968 pkt=fa f8 00
+J115 t=7261 +4448 pkt=f8 00 00
+J116 t=7461 +4648 pkt=f8 78 ed
+J117 t=7465 +4652 pkt=fa 00 00
+J118 t=7473 +4660 pkt=f8 00 00
+K000 t=3581 +768 (sched +765)
+K001 t=3621 +808 (sched +805)
+K002 t=3825 +1012 (sched +1010)
+K003 t=3865 +1052 (sched +1050)
+K004 t=3905 +1092 (sched +1090)
+K005 t=3945 +1132 (sched +1130)
+K006 t=3985 +1172 (sched +1170)
+K007 t=4025 +1212 (sched +1210)
+K008 t=4065 +1252 (sched +1250)
+K009 t=4105 +1292 (sched +1290)
+K010 t=4145 +1332 (sched +1330)
+K011 t=4185 +1372 (sched +1370)
+K012 t=4577 +1764 (sched +1764)
+K013 t=4617 +1804 (sched +1804)
+K014 t=4657 +1844 (sched +1844)
+K015 t=4697 +1884 (sched +1884)
+K016 t=4737 +1924 (sched +1924)
+K017 t=4777 +1964 (sched +1964)
+K018 t=4817 +2004 (sched +2004)
+K019 t=4857 +2044 (sched +2044)
+K020 t=4897 +2084 (sched +2084)
+K021 t=4937 +2124 (sched +2124)
+K022 t=5457 +2644 (sched +2641)
+K023 t=5497 +2684 (sched +2681)
+K024 t=5701 +2888 (sched +2886)
+K025 t=5741 +2928 (sched +2926)
+K026 t=5781 +2968 (sched +2966)
+K027 t=5821 +3008 (sched +3006)
+K028 t=5861 +3048 (sched +3046)
+K029 t=5901 +3088 (sched +3086)
+K030 t=5941 +3128 (sched +3126)
+K031 t=5981 +3168 (sched +3166)
+K032 t=6021 +3208 (sched +3206)
+K033 t=6061 +3248 (sched +3246)
+K034 t=6577 +3764 (sched +3762)
+K035 t=6617 +3804 (sched +3802)
+K036 t=6821 +4008 (sched +4007)
+K037 t=6861 +4048 (sched +4047)
+K038 t=6901 +4088 (sched +4087)
+K039 t=6941 +4128 (sched +4127)
+K040 t=6981 +4168 (sched +4167)
+K041 t=7021 +4208 (sched +4207)
+K042 t=7061 +4248 (sched +4247)
+K043 t=7101 +4288 (sched +4287)
+K044 t=7141 +4328 (sched +4327)
+K045 t=7181 +4368 (sched +4367)
+Z99 end quit=1
