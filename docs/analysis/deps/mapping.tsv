@@ -1150,6 +1150,133 @@ post_button	aes/geminput.c	tos-api/src/aes/input.rs	post_button	mapped	the owner
 ev_multi	aes/gemevlib.c	tos-api/src/aes/input.rs	mn_button_arm	mapped	only the button half of mn_do's round: forker (b_delay_poll), quick check mtrans>1 && pr_button then button, else iasync(MU_BUTTON) parked (A127 D1); the application's evnt_multi is event.rs, no row here yet
 mwait	aes/gemasync.c	tos-api/src/aes/input.rs	mn_button_take	mapped	only mn_do's MU_BUTTON: the parked track wait completed by post_button, after the window countdown (A127 D1)
 acancel	aes/gemasync.c	tos-api/src/aes/input.rs	mn_button_cancel	mapped	only mn_do's MU_BUTTON: the track wait taken off at the round's return (A127 D1); the application's button wait is input.rs acancel
+gsx_gclip	aes/gemgraf.c	-	-	unmapped	no counterpart: NewTOS keeps no AES-side copy of the VDI clip (gl_clip); every draw call takes its ClipRect as a parameter (object.rs just_draw, graf.rs gsx_xbox)
+gsx_chkclip	aes/gemgraf.c	-	-	unmapped	no counterpart: no clip test in just_draw (gemoblib.c:533-541 trivial reject); inference from the absence: a G_USERDEF routine is also called for an object outside the clip
+gsx_sclip	aes/gemgraf.c	tos-api/src/aes/object.rs	clip_from_intin	mapped	only the convention that a zero-sized clip means no clip (full screen) for objc_draw/objc_change; there is no VDI clip state set (vs_clip) by the AES
+gsx_xline	aes/gemgraf.c	tos-api/src/aes/graf.rs	gsx_xline	mapped	per-segment user line style hztltbl/verttbl by start-point parity, XOR black via backend.draw_line; vsl_udsty(0xffff) restore not needed (style is a per-call argument)
+gsx_pline	aes/gemgraf.c	-	-	unmapped	no counterpart and no caller in aes/ at the pin: defined, never called
+gsx_cline	aes/gemgraf.c	tos-api/src/vdi/backend.rs	draw_line	mapped	one backend.draw_line; the gsx_moff/gsx_mon bracket is the caller's (hide_cursor_for_draw around the whole object draw / edit call, object.rs)
+gsx_bxpts	aes/gemgraf.c	tos-api/src/aes/graf.rs	gsx_bxpts	mapped	the five corner points of the box, clockwise from top-left
+gsx_box	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_border	mapped	gr_box's per-ring 5-point polyline; NewTOS fills the same 1-px rings as four fill_rect strips per thickness step (draw_border, called by draw_signed_border)
+gsx_xbox	aes/gemgraf.c	tos-api/src/aes/graf.rs	gsx_xbox	mapped	gsx_bxpts + gsx_xline; shared by gr_rubwind/gr_dragbox/slidebox (window.rs, graf.rs)
+gsx_xcbox	aes/gemgraf.c	-	-	unmapped	no counterpart: the corner-only XOR box of gr_xor(clipped=TRUE) in the grow/shrink animation is not drawn; graf.rs animate draws full outlines
+gsx_blt	aes/gemgraf.c	tos-api/src/aes/object.rs	blit_plane_kernel	mapped	the mono-source path (fgcolor != -1: vrt_cpyfm MD_TRANS) as backend.blit_mono for icons and images; the screen-to-screen path (fgcolor == -1) is bb_screen
+gsx_blt	aes/gemgraf.c	tos-api/src/aes/window.rs	bb_screen	mapped	the screen-to-screen S_ONLY copy (backend.copy_rect) with the gsx_moff/gsx_mon bracket
+bb_screen	aes/gemgraf.c	tos-api/src/aes/window.rs	bb_screen	mapped	gsx_blt(NULL, ..., S_ONLY, -1, -1) for w_move; the file selector's list scroll blit (gemfslib.c:461) is not reproduced (see fs_nscroll)
+gsx_trans	aes/gemgraf.c	-	-	unmapped	no counterpart: NewTOS blits standard-form mono data directly (blit_plane, backend.blit_mono); there is no in-place device-form transform of BITBLK data (geminit.c:692 caller)
+gsx_start	aes/gemgraf.c	tos-api/src/aes/gsxif.rs	gsx_init	mapped	its VDI calls only: gsx_textsize, the two vst_height calls, vsl_type/vsl_width/vsl_udsty; the globals gl_width..gl_rmenu are derived in graf.rs gl_width/gl_wchar/gl_hchar/gl_hbox (gl_wbox is the constant window::GL_WBOX, not max(gl_wchar+4, gl_hbox*ws_hpixel/ws_wpixel))
+bb_fill	aes/gemgraf.c	tos-api/src/aes/object.rs	gr_rect	mapped	gr_rect's fill (MD_REPLACE FIS_HOLLOW/SOLID/PATTERN via backend.fill_rect/fill_pattern); the other bb_fill uses (shadow, DISABLED dither, XOR select) are inlined in just_draw and change_clip_t
+bb_fill	aes/gemgraf.c	tos-api/src/aes/object.rs	just_draw	mapped	the SHADOWED strips, the DISABLED 50 % dither and the SELECTED XOR fill, each a direct backend.fill_rect/fill_pattern
+ch_width	aes/gemgraf.c	tos-api/src/aes/object.rs	cell_w	mapped	IBM/SMALL cell width (AesFont::cell_w)
+ch_height	aes/gemgraf.c	tos-api/src/aes/object.rs	cell_h	mapped	IBM/SMALL cell height (AesFont::cell_h)
+gsx_tcalc	aes/gemgraf.c	tos-api/src/aes/object.rs	gr_gtext	mapped	inlined: textw = min(w, n*cw), texth = min(h, ch), whole characters dropped; pxl_rect repeats it for the template
+gr_inside	aes/gemgraf.c	tos-api/src/aes/object.rs	ob_actxywh_t	mapped	only the 3D grow of ob_actxywh; everywhere else the x+th/w-2*th arithmetic is inlined at the call site (just_draw, draw_3d_outline callers)
+gr_rect	aes/gemgraf.c	tos-api/src/aes/object.rs	gr_rect	mapped	HOLLOW = opaque white REPLACE fill, SOLID flat icol, else icol-on-white pattern (IP_PATTERNS)
+gr_just	aes/gemgraf.c	tos-api/src/aes/object.rs	gr_gtext	mapped	inlined: vertical (h+1)/2 centring and TE_CNTR/TE_RIGHT shift
+gr_just	aes/gemgraf.c	tos-api/src/aes/object.rs	pxl_rect	mapped	the same justification on the TEDINFO template for the edit cursor (gemobed.c:181)
+gr_crack	aes/gemgraf.c	tos-api/src/aes/object.rs	gr_crack	mapped	border/text/pattern/inside colour and the replace bit of a colour word
+gr_gblt	aes/gemgraf.c	tos-api/src/aes/object.rs	blit_plane_kernel	mapped	MD_TRANS mono blit of mask/data in fg (backend.blit_mono); blit_plane resolves the owner's mapping first
+gr_gblt	aes/gemgraf.c	tos-api/src/aes/object.rs	blit_plane	mapped	the owner-mapped variant used for the icon mask and data
+gr_colourblit	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_icon	mapped	the colour-icon image blit; blit_device_mem is called with S_AND_D unconditionally, EmuTOS uses S_OR_D and S_AND_D only above 8 planes (gemgraf.c:662-667)
+dither_mask	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_icon	mapped	the 0x5555/0xAAAA row dither of the mask for a selected colour icon without sel_data, then the BLACK MD_TRANS blit
+gr_gicon	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_icon	mapped	mono and colour icon; the WHITEBAK-with-white-background skip of mask and label background is applied only on the colour arm, not on the mono arm (gemgraf.c:735-748)
+gr_box	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_signed_border	mapped	th>0 inner rings, th<0 |th|+1 rings ending on the rect edge (gemgraf.c:813-832)
+gr_box	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_border	mapped	the ring strips themselves; the OUTLINED and SHADOW boxes of just_draw call it directly
+gsx_mcalc	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_mcalc	mapped	size of the menu/alert screen buffer: NewTOS = bb_save_words of the whole screen *4; EmuTOS = MENU_BUFFER_SIZE*gl_wchar*gl_hchar*gl_nplanes/8 (gemgsxif.c:98-105)
+gsx_malloc	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_malloc	mapped	one page-rounded MX_PREFTTRAM block before the first process, kept for the boot; EmuTOS dos_alloc_anyram
+gsx_mfree	aes/gemgsxif.c	-	-	unmapped	no counterpart: the buffer is never freed (kept for the whole boot, gsxif.rs gsx_malloc)
+gsx_mret	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_mret	mapped	kva/pa/len of the buffer (gl_tmp.fd_addr, gl_mlen)
+gsx_1code	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	code1	mapped	intin[0] = value, then ncode(code, 0, 1)
+screen_rez	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_init	mapped	inlined as the constant FALCON_REZ+2 (the Falcon030/TOS4 profile, HAS_VIDEL true)
+gsx_wsopen	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_init	mapped	work_in[0]=rez+2, [1..9]=1, [10]=2, OPEN_WORKSTATION; no VsetMode(-1) in intout[45]; gl_graphic set
+gsx_wsclose	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_wsclose	mapped	CLOSE_WORKSTATION on gl_handle at session end
+gsx_wsclear	aes/gemgsxif.c	-	-	unmapped	no counterpart found: no CLEAR_WORKSTATION (v_clrwk) call in tos-api/src/aes or kernel/src/shell_loop.rs; EmuTOS calls it on a resolution change (geminit.c:794)
+ratinit	aes/gemgsxif.c	kernel/src/shell_loop.rs	ratinit	mapped	vdi::cursor_show_reset = SHOW_CUR(reset 0); the AES-side gl_moff = 0 is the VDI's own HIDE_COUNT reset
+ratexit	aes/gemgsxif.c	kernel/src/shell_loop.rs	sh_toalpha	mapped	the cursor hide of sh_toalpha (ratexit() = gsx_moff())
+gsx_setmb	aes/gemgsxif.c	tos-api/src/aes/mod.rs	user_but	mapped	no vector installation: the VDI mouse feed calls the AES handler directly (user_but = far_bcha's b_click)
+gsx_setmb	aes/gemgsxif.c	tos-api/src/aes/mod.rs	user_mot	mapped	the motion half (far_mcha's mchange)
+gsx_resetmb	aes/gemgsxif.c	-	-	unmapped	no counterpart found: the old vectors are never restored (gsx_graphic(false) only issues the v_enter_cur escape); whether the VDI mouse feed keeps calling the AES handlers in alpha mode was not read
+aestrap_intercepted	aes/gemgsxif.c	-	-	unmapped	no counterpart: NVDI/trap-2 interception check guarding vex_wheelv; NewTOS installs the wheel vector unconditionally (init.rs install_wheel_vector); no ADR
+gsx_init	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_init	mapped	gsx_wsopen + gsx_start; gsx_setmb, MOUSE_STATE seed and vex_wheelv are elsewhere (user_but/user_mot, input.rs, install_wheel_vector)
+gsx_graphic	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_graphic	mapped	v_exit_cur (contrl[5]=2) / v_enter_cur (3) on a change of gl_graphic; setmb/resetmb half missing (see gsx_resetmb)
+bb_set	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	bb_save	mapped	save half: VDI bb_save into the screen buffer (height cut to the buffer, CLIPPED counter instead of KINFO) or a heap/pool copy; the 16-pixel word alignment is vdi::bb_save's
+bb_set	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	restore	mapped	restore half: Saved::restore via vdi::bb_restore
+bb_save	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	bb_save	mapped	bb_set(TRUE, r)
+bb_restore	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	restore	mapped	bb_set(FALSE, r): Saved::restore
+gsx_tick	aes/gemgsxif.c	tos-api/src/aes/input.rs	now_tick	mapped	only the tick length: the host clock in gl_ticktime (20 ms) periods; no vex_timv tick routine is installed
+gsx_mfset	aes/gemgsxif.c	tos-api/src/aes/graf.rs	set_user_form	mapped	graf_mouse USER_DEF: MFORM read from the caller and set via vdi::mouse::set_form; presets via vdi::mouse::set_preset; the gl_ctmown/gl_prevmouse bookkeeping of gsx_mfset was not compared here
+gsx_mfset	aes/gemgsxif.c	tos-api/src/vdi/mouse.rs	set_form	mapped	the VDI cursor-form set (SET_CUR_FORM)
+gsx_mxmy	aes/gemgsxif.c	-	-	unmapped	no counterpart function: xrat/yrat are the statics XRAT/YRAT in input.rs, read in place
+gsx_moff	aes/gemgsxif.c	tos-api/src/vdi/mouse.rs	hide	mapped	counted hide: NewTOS increments the VDI HIDE_COUNT on every nested call, EmuTOS only on the first (gl_moff gates the VDI call)
+gsx_mon	aes/gemgsxif.c	tos-api/src/vdi/mouse.rs	show	mapped	counted show, redraws when the count reaches 0
+gsx_char	aes/gemgsxif.c	tos-api/src/aes/mod.rs	chkkbd	mapped	only the SET_INPUT_MODE(4, 2) write; the STRING_INPUT key read is not routed through the VDI (keys stay in the IKBD ring)
+gsx_setmousexy	aes/gemgsxif.c	-	-	unmapped	no counterpart: its only caller appl_tplay (gemaplib.c:176) and the replay path at geminput.c:381 are not implemented (tos-api/src/aes/appl.rs appl_tplay just returns 1)
+gsx_nplanes	aes/gemgsxif.c	tos-api/src/vdi/backend.rs	planes	mapped	backend.planes(); EXTENDED_INQUIRE(1) is not issued by the AES
+gsx_textsize	aes/gemgsxif.c	tos-api/src/aes/graf.rs	gl_wchar	mapped	ptsout[2] of vqt_attributes: the system-font cell width (graf.rs reads the font ring, not the trap)
+gsx_textsize	aes/gemgsxif.c	tos-api/src/aes/graf.rs	gl_hchar	mapped	ptsout[3]: the cell height
+gsx_fix_screen	aes/gemgsxif.c	-	-	unmapped	no counterpart: no FDB is built; the backend works on the screen directly (vdi::bb_save, backend.blit_mono, backend.copy_rect)
+gsx_fix	aes/gemgsxif.c	-	-	unmapped	no counterpart: no FDB is built for a raster form; blit_plane/blit_plane_kernel take address, stride and rect
+v_opnwk	aes/gemgsxif.c	tos-api/src/vdi/workstation.rs	v_opnwk	mapped	the VDI handler reached through gsx_init's ncode(OPEN_WORKSTATION); no AES-side work_out copy (gl_ws): ws_chminh is read from ptsout[1]
+v_pline	aes/gemgsxif.c	tos-api/src/vdi/backend.rs	draw_line	mapped	the AES draws lines by backend.draw_line directly, not through the VDI trap
+vs_clip	aes/gemgsxif.c	-	-	unmapped	no counterpart: no VDI clip is set by the AES (clip is a per-call ClipRect); see gsx_sclip
+vst_height	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	vst_height	mapped	Gsx::vst_height: ptsin[0]=0, ptsin[1]=h, SET_CHAR_HEIGHT; only gsx_init uses it (gsx_tblt's font switch is the AesFont glyph choice)
+vr_recfl	aes/gemgsxif.c	tos-api/src/vdi/backend.rs	fill_rect	mapped	the AES fills rectangles by backend.fill_rect/fill_pattern directly
+vro_cpyfm	aes/gemgsxif.c	tos-api/src/vdi/raster.rs	bb_save	mapped	the screen-save use: vdi::bb_save into the buffer
+vro_cpyfm	aes/gemgsxif.c	tos-api/src/vdi/raster.rs	bb_restore	mapped	the screen-restore use
+vro_cpyfm	aes/gemgsxif.c	tos-api/src/vdi/raster.rs	blit_device_mem	mapped	the colour-icon use (gr_colourblit)
+vrt_cpyfm	aes/gemgsxif.c	tos-api/src/vdi/backend.rs	blit_mono	mapped	MD_TRANS mono blit of icon/image rasters
+vrn_trnfm	aes/gemgsxif.c	-	-	unmapped	no counterpart: no device-form transform of mono data (see gsx_trans)
+vsl_width	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_init	mapped	the one call, vsl_width(1) in gsx_init's gsx_start part (ncode SET_LINE_WIDTH)
+vex_wheelv	aes/gemgsxif.c	tos-api/src/vdi/mouse.rs	install_aes_wheel	mapped	the AES's aes_wheel installed as the wheel vector; called from init.rs install_wheel_vector
+ob_getsp	aes/gemobed.c	tos-api/src/aes/object.rs	tedinfo_read_abi	mapped	TEDINFO of the object read at the tree's ABI width, INDIRECT resolved by ObjTree::spec
+ob_center	aes/gemobed.c	tos-api/src/aes/form.rs	ob_center	mapped	tree ROOT centred below the menu bar, outer rect grown by OUTLINED 3 and 2*|th| for SHADOWED; shared by form_center and the file selector
+ins_char	aes/gemobed.c	tos-api/src/aes/object.rs	ins_char	mapped	insert with truncation at te_txtlen; pos clamped at 0 (EmuTOS edits a scratch copy)
+scan_to_end	aes/gemobed.c	tos-api/src/aes/object.rs	scan_to_end	mapped	count '_' up to the typed template character
+find_pos	aes/gemobed.c	tos-api/src/aes/object.rs	find_pos	mapped	raw index -> template column; an exhausted template maps 1:1 past its end
+pxl_rect	aes/gemobed.c	tos-api/src/aes/object.rs	pxl_rect	mapped	cursor cell: justify the template in the object rect; NewTOS uses abs_offset and the nominal ob_width/ob_height, EmuTOS ob_actxywh (3D-grown for FL3DOBJ, gemobed.c:180)
+curfld	aes/gemobed.c	tos-api/src/aes/object.rs	curfld	mapped	dist!=0: redraw the field clipped to the columns; else the XOR caret line from y-3, height+6
+instr	aes/gemobed.c	tos-api/src/aes/object.rs	instr	mapped	character in an enumerated/range ('x..z') set
+check	aes/gemobed.c	tos-api/src/aes/object.rs	check	mapped	validation code per te_pvalid character; an empty te_pvalid accepts any character in NewTOS (valid_code returns 0), EmuTOS check() of '\0' returns FALSE (gemobed.c:236-240,272-274)
+ob_stfn	aes/gemobed.c	tos-api/src/aes/object.rs	edit_field_t	mapped	inlined: start = find_pos(idx), finish = find_pos(strlen)
+ob_delit	aes/gemobed.c	tos-api/src/aes/object.rs	delete_at	mapped	edit_char's BACKSPACE/DELETE arms: shift left, return redraw/no-redraw
+ob_edit	aes/gemobed.c	tos-api/src/aes/object.rs	edit_field_t	mapped	EDINIT/EDCHAR/EDEND with the cursor off/on pairs and the changed-span redraw; EDSTART/obj<=0 is handled in objc_edit
+ob_edit	aes/gemobed.c	tos-api/src/aes/object.rs	edit_char	mapped	the EDCHAR switch: keys are told apart by the scan byte and the ASCII byte separately (0x08, 0x7F, 0x1B with any scan code), EmuTOS compares the whole word with BACKSPACE 0x0e08, DELETE 0x537f, ESCAPE 0x011b (scancode.h)
+ob_edit	aes/gemobed.c	tos-api/src/aes/object.rs	objc_edit	mapped	the trap entry: EDSTART or obj<=0 returns TRUE with the index unchanged
+get_par	aes/gemobjop.c	tos-api/src/aes/object.rs	parent_of	mapped	walk ob_next until a node whose ob_tail is the object; NIL for ROOT and for a chain that ends in NIL (EmuTOS would run on)
+ob_sst	aes/gemobjop.c	tos-api/src/aes/object.rs	sst_th	mapped	the signed border thickness per type (G_TITLE 1, TEDINFO te_thickness, box byte 2 of the spec, G_BUTTON -1/-2/-3); type, flags, state and spec come from the ObjTree accessors
+everyobj	aes/gemobjop.c	tos-api/src/aes/object.rs	draw_tree	mapped	the depth-limited walk with HIDETREE stop and per-object origin; the other EmuTOS callers (newrect, mkrect) are window rectangle code, not this function
+xor_color	aes/gemoblib.c	tos-api/src/aes/object.rs	xor_color	mapped	vdi4comp/vdi16comp tables, WHITE beyond 15 or ws_ncolors
+xor_is_ok	aes/gemoblib.c	tos-api/src/aes/object.rs	xor_is_ok	mapped	B/W test per type; change_clip_t and just_draw use it
+draw_3d_outline	aes/gemoblib.c	tos-api/src/aes/object.rs	draw_3d_outline	mapped	3+3 nested lines 1..3 px outside the rect: grey bottom/right, grey outer and white two inner top/left; same point order and colours
+add_3d_effect	aes/gemoblib.c	tos-api/src/aes/object.rs	add_3d_effect	mapped	two 2-segment lines, WHITE/BLACK and LBLACK/LWHITE with the icol/ws_ncolors fallback; MD_REPLACE solid
+ob_offset	aes/gemoblib.c	tos-api/src/aes/object.rs	abs_offset	mapped	sum of x/y up the get_par chain
+ob_relxywh	aes/gemoblib.c	tos-api/src/aes/object.rs	x	mapped	the relative rect as the ObjTree accessors x/y/width/height (no GRECT copy)
+ob_relxywh	aes/gemoblib.c	tos-api/src/aes/object.rs	width	mapped	same
+ob_setxywh	aes/gemoblib.c	tos-api/src/aes/object.rs	set_x	mapped	the writers set_x/set_y/set_width/set_height (no GRECT copy)
+ob_setxywh	aes/gemoblib.c	tos-api/src/aes/object.rs	set_width	mapped	same accessors
+ob_format	aes/gemoblib.c	tos-api/src/aes/object.rs	ob_format	mapped	template merge for FTEXT/FBOXTEXT, '_' consumes raw characters, '@' = empty, TE_RIGHT fills backwards
+call_usercode	aes/gemoblib.c	tos-api/src/aes/object.rs	ob_user	mapped	the USERBLK call: the owner's EL0 routine or a kernel callback, PARMBLK on the caller's side
+ob_user	aes/gemoblib.c	tos-api/src/aes/object.rs	ob_user	mapped	PARMBLK build (tree, obj, states, rect, clip) and the call; its return value becomes the object state in just_draw
+is_dashes	aes/gemoblib.c	tos-api/src/aes/object.rs	is_dashes	mapped	all '-'; the len>3 gate is the caller's
+just_draw	aes/gemoblib.c	tos-api/src/aes/object.rs	draw_tree	mapped	the HIDETREE and spec == -1 rejects, then just_draw per object
+just_draw	aes/gemoblib.c	tos-api/src/aes/object.rs	draw_icon	mapped	the G_ICON/G_CICON arm (gr_gicon)
+just_draw	aes/gemoblib.c	tos-api/src/aes/object.rs	draw_3d_outline	mapped	the OUTLINED + FL3DBAK arm
+just_draw	aes/gemoblib.c	tos-api/src/aes/object.rs	add_3d_effect	mapped	the closing bevel for FL3DOBJ, with effect_th and icol
+ob_draw	aes/gemoblib.c	tos-api/src/aes/object.rs	render_tree_t	mapped	the objc_draw body: clip from int_in[2..5], cursor bracket, draw_tree from the object's parent origin; the other callers go through draw_obj_t/draw_obj_clip_t/draw_root
+ob_draw	aes/gemoblib.c	tos-api/src/aes/object.rs	objc_draw	mapped	the trap entry
+get_prev	aes/gemoblib.c	tos-api/src/aes/object.rs	get_prev	mapped	previous sibling or NIL; stops on NIL as well
+ob_find	aes/gemoblib.c	tos-api/src/aes/object.rs	find_hit	mapped	topmost match among children, FL3DOBJ hit rect grown by ADJ3DSTD(+ADJ3DOUT) except SHADOWED, HIDETREE skipped; children keep the nominal origin, EmuTOS passes the 3D-grown rect origin of the parent down (gemoblib.c:1066-1096)
+ob_find	aes/gemoblib.c	tos-api/src/aes/object.rs	hit_test_t	mapped	the shared entry for the AES's own hit tests
+ob_find	aes/gemoblib.c	tos-api/src/aes/object.rs	objc_find	mapped	the trap entry
+ob_add	aes/gemoblib.c	tos-api/src/aes/object.rs	ob_add	mapped	append child, head/tail fixed
+ob_delete	aes/gemoblib.c	tos-api/src/aes/object.rs	ob_delete	mapped	unlink, head/tail fixed; ROOT refused
+ob_order	aes/gemoblib.c	tos-api/src/aes/object.rs	ob_order	mapped	relink at new_pos; NewTOS clamps a position past the end of the list and an empty parent, EmuTOS walks on
+ob_change	aes/gemoblib.c	tos-api/src/aes/object.rs	change_clip_t	mapped	state write; redraw: G_USERDEF routine call, G_ICON redraw, XOR toggle when xor_is_ok, G_IMAGE deselect XOR + redraw; cursor bracket
+ob_change	aes/gemoblib.c	tos-api/src/aes/object.rs	change_t	mapped	the whole-screen-clip entry used by the Form and Menu Managers
+ob_change	aes/gemoblib.c	tos-api/src/aes/object.rs	objc_change	mapped	the trap entry with the caller's clip rect
+init_3d	aes/gemoblib.c	tos-api/src/aes/object.rs	init_3d	mapped	txtmove/colchange defaults and the three colours (WHITE up to LWHITE colours, else LWHITE)
+ob_sysvar	aes/gemoblib.c	tos-api/src/aes/object.rs	objc_sysvar	mapped	get/set of the 3D variables; INDBUTCOL/ACTBUTCOL/BACKGRCOL refuse in1 >= ncolors; GET leaves int_out[2] at 0 for the colour variables (EmuTOS leaves it untouched)
+ob_fs	aes/gemoblib.c	tos-api/src/aes/form.rs	ob_fs	mapped	(state, flags) of an object
 GSX_ENTRY	vdi/vdi_asm.S	tos-api/src/vdi/mod.rs	dispatch_in	mapped	VDI front end: parameter block and CONTRL read, opcode dispatch, flip_y as the return value; the PTSIN local copy and the CONTRL[1] clamp to MAX_VERTICES are not done here (v_pline and v_fillarea clamp privately)
 call_user_but	vdi/vdi_asm.S	tos-api/src/aes/mod.rs	user_but	mapped	the button vector call: NewTOS calls the AES handler directly; a vex_butv-installed vector is stored and never called (ADR-031)
 call_user_wheel	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	call_user_wheel	mapped	wheel vector call (AES handler directly, EL0 handler as upcall)
