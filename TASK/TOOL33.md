@@ -23,8 +23,18 @@ Funktionen je Datei: `gemgsxif.c` 43, `gemwmlib.c` 39, `gemgraf.c` 30,
 
 Wie [TOOL32](TOOL32.md): jede `aes/`-Funktion bekommt eine Zeile (Format und
 Klassen `tools/deps/README.md`), vorhandene Zeilen werden geprueft, beim
-Lesen gefundene Abweichungen nur gemeldet. Zuschnitt in Auftraege zu je
-etwa 100 Funktionen, je ein frischer Researcher; wird nach TOOL32 festgelegt.
+Lesen gefundene Abweichungen nur gemeldet. Vier Auftraege nacheinander, je ein
+frischer Researcher, von unten nach oben (2026-11-05):
+
+1. **Grafik und Objekte:** `gemgsxif.c`, `gemgraf.c`, `gemoblib.c`, `gemobed.c`,
+   `gemobjop.c`, `gsx2.c` (112).
+2. **Fenster, Formulare, Dateiauswahl:** `gemwmlib.c`, `gemgrlib.c`, `gemwrect.c`,
+   `gemfmlib.c`, `gemfmalt.c`, `gemfslib.c` (95).
+3. **Menue, Ressourcen, Shell:** `gemmnlib.c`, `gemmnext.c`, `gemrslib.c`, `gemshlib.c`,
+   `gem_rsc.c`, `gemsclib.c` (88).
+4. **Ereignisse, Prozesse, Start:** `geminput.c`, `geminit.c`, `gemdosif.S`, `gemctrl.c`,
+   `gemevlib.c`, `gemevlib.h`, `gemasync.c`, `gempd.c`, `gemdisp.c`, `gemaplib.c`,
+   `gemflag.c`, `gemasm.S`, `gemsuper.c`, `gemstart.S`, `gemqueue.c`, `aesvars.h` (123).
 Danach (Lead): `"aes/"` in `MAPPED_DIRS`, `cargo xtask test` gruen.
 
 ## Abnahme
