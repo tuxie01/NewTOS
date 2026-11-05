@@ -1150,3 +1150,126 @@ post_button	aes/geminput.c	tos-api/src/aes/input.rs	post_button	mapped	the owner
 ev_multi	aes/gemevlib.c	tos-api/src/aes/input.rs	mn_button_arm	mapped	only the button half of mn_do's round: forker (b_delay_poll), quick check mtrans>1 && pr_button then button, else iasync(MU_BUTTON) parked (A127 D1); the application's evnt_multi is event.rs, no row here yet
 mwait	aes/gemasync.c	tos-api/src/aes/input.rs	mn_button_take	mapped	only mn_do's MU_BUTTON: the parked track wait completed by post_button, after the window countdown (A127 D1)
 acancel	aes/gemasync.c	tos-api/src/aes/input.rs	mn_button_cancel	mapped	only mn_do's MU_BUTTON: the track wait taken off at the round's return (A127 D1); the application's button wait is input.rs acancel
+GSX_ENTRY	vdi/vdi_asm.S	tos-api/src/vdi/mod.rs	dispatch_in	mapped	VDI front end: parameter block and CONTRL read, opcode dispatch, flip_y as the return value; the PTSIN local copy and the CONTRL[1] clamp to MAX_VERTICES are not done here (v_pline and v_fillarea clamp privately)
+call_user_but	vdi/vdi_asm.S	tos-api/src/aes/mod.rs	user_but	mapped	the button vector call: NewTOS calls the AES handler directly; a vex_butv-installed vector is stored and never called (ADR-031)
+call_user_wheel	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	call_user_wheel	mapped	wheel vector call (AES handler directly, EL0 handler as upcall)
+mouse_int	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	feed_relative	mapped	relative mouse packet: button merge, user_but, clipped position, user_mot, cursor move
+mouse_int	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	update_ms_stat	mapped	the cur_ms_stat bookkeeping of mouse_int
+mov_cur	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	set_state	mapped	cursor move and redraw; NewTOS draws inline here, EmuTOS defers the draw to vb_draw on VBL; mouse.rs mov_cur is only the vex_curv address sentinel
+vditrap	vdi/vdi_asm.S	kernel/src/arch/aarch64/exceptions.rs	sync_handler	mapped	the GEM trap arm: selector 115 = VDI; -1 answers 0 (documented deviation: no jsr-able address); other selectors (-2, vq_gdos) leave x0 untouched
+wheel_int	vdi/vdi_asm.S	-	-	design:hardware:ikbd-acia	decodes the IKBD status packet 05 00.. of a wheel; NewTOS has no IKBD packets (a wheel arrives as HID scancodes in mouse.rs mousex_handler -> call_user_wheel)
+fast_bit_blt	vdi/vdi_blit.S	-	-	unmapped	m68k planar BitBlt for v_planes<=8 (cpy_raster); the NewTOS workstation is always 16 planes (ADR-024) and its copy paths are raster.rs; no planar blit function exists
+bub_sort	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	the ascending sort of the crossings is an inline insertion sort in fill_polygon
+clc_flit	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	scan-line polygon fill, even-odd, perimeter pixels included
+clipbox	vdi/vdi_fill.c	kernel/src/vdi_backend.rs	fill_pattern	mapped	rectangle clipping is done inside the backend (rect intersect clip intersect screen); vr_recfl passes vwk.clip_rect()
+contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	seed fill; NewTOS uses a seed stack with a per-call visited bitmap instead of EmuTOS' seed-collision queue (contour.rs module doc)
+crunch_queue	vdi/vdi_fill.c	-	-	unmapped	seed-queue housekeeping; NewTOS has no queue (seed stack + visited bitmap in contour.rs)
+end_pts	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	the span extension and seed verdict are the probe/matches closures and the left/right walk in v_contourfill (palette branch via read_pixel)
+end_pts16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	truecolor branch: probe compares 16-bit screen words with OVERLAY_BIT masked on the screen side
+get_color	vdi/vdi_fill.c	-	-	design:ADR-024@docs/MEMORY.md:2156	composes a pixel colour from the bit-planes (planar path); NewTOS has no bit-planes (ADR-024); the palette branch of contour.rs uses RasterBackend::read_pixel instead
+get_pix	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; linea pixel read: no NewTOS counterpart
+get_seed	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	seed creation is the seed pushes in the loop of v_contourfill (no collision removal, visited bitmap instead)
+no_abort	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; default of the Line-A SEEDABORT variable: no NewTOS counterpart
+pixelread	vdi/vdi_fill.c	tos-api/src/vdi/inquiry.rs	v_get_pixel	mapped	truecolor: the raw 16-bit screen word via device_to_rgb565(get_device_pixel); out-of-screen reads 0-word, EmuTOS reads memory unchecked
+pixelread	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	the seed-colour read (intin0 < 0) in v_contourfill
+polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	the interior fill incl. the y-extent clip of polygon
+polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	polyline	mapped	the closed perimeter (LN_MASK 0xffff, fill colour) when fill_per; drawn by v_fillarea, gdp curve/rbox and the wide-line helper
+polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	polygon	mapped	polygon under the wide-line attribute environment (solid pattern, line colour, perimeter on)
+put_pix	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; linea pixel write: no NewTOS counterpart
+search_to_left	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	the left walk of the span (xl loop); planar word scanning has no counterpart
+search_to_left16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	the left walk of the span (xl loop), truecolor words
+search_to_right	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	the right walk of the span (xr loop); planar word scanning has no counterpart
+search_to_right16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	the right walk of the span (xr loop), truecolor words
+st_fl_ptr	vdi/vdi_fill.c	tos-api/src/vdi/fill_patterns.rs	select	mapped	pattern/mask choice; NewTOS derives it at draw time from fill_style/fill_index instead of caching patptr/patmsk in the Vwk
+vdi_v_contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	opcode 103
+vdi_v_fillarea	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	v_fillarea	mapped	opcode 9 (HAVE_BEZIER is 0)
+vdi_v_get_pixel	vdi/vdi_fill.c	tos-api/src/vdi/inquiry.rs	v_get_pixel	mapped	opcode 105
+vdi_vqf_attributes	vdi/vdi_fill.c	tos-api/src/vdi/inquiry.rs	vqf_attributes	mapped	opcode 37
+vdi_vr_recfl	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	vr_recfl	mapped	opcode 114
+vdi_vsf_color	vdi/vdi_fill.c	tos-api/src/vdi/attributes.rs	vsf_color	mapped	opcode 25; MAP_COL folded to identity
+vdi_vsf_interior	vdi/vdi_fill.c	tos-api/src/vdi/attributes.rs	vsf_interior	mapped	opcode 23
+vdi_vsf_perimeter	vdi/vdi_fill.c	tos-api/src/vdi/attributes.rs	vsf_perimeter	mapped	opcode 104
+vdi_vsf_style	vdi/vdi_fill.c	tos-api/src/vdi/attributes.rs	vsf_style	mapped	opcode 24
+vdi_vsf_udpat	vdi/vdi_fill.c	tos-api/src/vdi/attributes.rs	vsf_udpat	mapped	opcode 112; NewTOS stores only the first 16 words of a multi-plane pattern
+Icos	vdi/vdi_gdp.c	tos-api/src/vdi/trig.rs	icos	mapped	-
+Isin	vdi/vdi_gdp.c	tos-api/src/vdi/trig.rs	isin	mapped	-
+clc_arc	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	curve	mapped	point generation and the open/closed dispatch (polyline + arrows, wideline, polygon)
+clc_nsteps	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	clc_nsteps	mapped	-
+clc_pts	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	clc_pts	mapped	-
+gdp_curve	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	curve	mapped	radii, angles, step count; the early exit when the clip excludes the whole curve is not carried
+gdp_rbox	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	rbox	mapped	-
+vdi_v_gdp	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	v_gdp	mapped	opcode 11; GDP 13 (bezier) is not compiled (HAVE_BEZIER 0)
+get_start_addr16	vdi/vdi_inline.h	kernel/src/vdi_backend.rs	get_device_pixel	mapped	screen address of a pixel: NewTOS addresses the 32-bpp framebuffer inside the backend (get_device_pixel/put_device_pixel), no 16-bit address is exposed
+get_start_addr16	vdi/vdi_inline.h	kernel/src/vdi_backend.rs	put_device_pixel	mapped	see get_device_pixel
+Vwk2Attrib	vdi/vdi_line.c	tos-api/src/vdi/gdp.rs	fill_of	mapped	builds the fill descriptor (colour, pattern, write mode) from the Vwk; NewTOS has no VwkAttrib (clip is always passed separately)
+abline	vdi/vdi_line.c	kernel/src/vdi_backend.rs	abline	mapped	one segment with dash-mask threading; vertical lines, clipping and the Bresenham form differ (see draw_line16, clip_line)
+arrow	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	arrow	mapped	-
+cir_dda	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	cir_dda	mapped	only the xsize == ysize path (square pixels); no q_circle cache by line_cw
+clip_code	vdi/vdi_line.c	-	-	unmapped	outcode helper of clip_line; NewTOS clips lines per pixel in abline and has no outcodes
+clip_line	vdi/vdi_line.c	kernel/src/vdi_backend.rs	abline	mapped	NewTOS does not recompute the endpoints (mul_div_round): abline tests every plotted pixel against the clip rectangle
+do_circ	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	do_circ	mapped	-
+draw_arrow	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	draw_arrow	mapped	-
+draw_line	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2156	planar Bresenham for v_planes<=8; NewTOS has no bit-planes (ADR-024), the 16-bit line is kernel abline
+draw_line16	vdi/vdi_line.c	kernel/src/vdi_backend.rs	abline	mapped	non-horizontal, non-vertical segments; NewTOS uses an error-term Bresenham, EmuTOS eps/e1/e2
+draw_rect	vdi/vdi_line.c	kernel/src/vdi_backend.rs	fill_pattern	mapped	VDI wrapper: vr_recfl and the span fills call RasterBackend::fill_pattern
+draw_rect_common	vdi/vdi_line.c	kernel/src/vdi_backend.rs	fill_pattern	mapped	horizontal runs with a pattern; horizontal dashed lines go through the horizontal path of abline
+draw_rect_setup	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2156	left/right word masks for the planar and blitter paths; the 16-bit path needs no masks (ADR-024)
+horzline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	horzspan	mapped	solid horizontal span in the line colour for do_circ
+hwblit_rect_common	vdi/vdi_line.c	-	-	design:hardware:blitter	Atari BLiTTER rectangle fill (CONF_WITH_BLITTER); the Pi has no blitter
+hwblit_rect_nonstd	vdi/vdi_line.c	-	-	design:hardware:blitter	BLiTTER fill for non-standard patterns; the Pi has no blitter
+hwblit_vertical_line	vdi/vdi_line.c	-	-	design:hardware:blitter	BLiTTER vertical line (CONF_WITH_VDI_VERTLINE); the Pi has no blitter
+lineA2Attrib	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; copies Line-A variables into VwkAttrib: no NewTOS counterpart
+linea_color	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; composes the colour from COLBIT0-3: no NewTOS counterpart
+linea_fill	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 0xF: no NewTOS counterpart
+linea_hline	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 4: no NewTOS counterpart
+linea_line	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 3: no NewTOS counterpart
+linea_polygon	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 6: no NewTOS counterpart
+linea_rect	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 5: no NewTOS counterpart
+perp_off	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	perp_off	mapped	-
+polyline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	polyline	mapped	segment loop with LSTLIN on the last segment; the per-segment clip_line is not done (abline clips)
+quad_xform	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	quad_xform	mapped	-
+r_fa_attr	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	wideline	mapped	NewTOS keeps no Vwk state to restore: colour, solid pattern and ends are arguments of wideline/polygon
+s_fa_attr	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	wideline	mapped	fill colour = line colour, solid pattern, squared ends, perimeter on, LN_MASK solid are passed as arguments to polygon
+set_LN_MASK	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	line_mask	mapped	the persistent LN_MASK global is a mask value threaded through polyline
+swblit_rect_common	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2156	planar software rectangle fill; NewTOS has no bit-planes (ADR-024), the 16-bit fill is kernel fill_pattern
+swblit_rect_common16	vdi/vdi_line.c	kernel/src/vdi_backend.rs	fill_pattern	mapped	16-bit pattern fill through the active pseudo-palette; multifill patterns render monochrome as in EmuTOS
+swblit_vertical_line16	vdi/vdi_line.c	kernel/src/vdi_backend.rs	abline	mapped	vertical line in 16-bit mode; NewTOS applies the XOR LSTLIN shortening to it, EmuTOS does not
+vdi_v_pline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	v_pline	mapped	opcode 6 (HAVE_BEZIER is 0)
+vdi_vql_attributes	vdi/vdi_line.c	tos-api/src/vdi/inquiry.rs	vql_attributes	mapped	opcode 35
+vdi_vsl_color	vdi/vdi_line.c	tos-api/src/vdi/attributes.rs	vsl_color	mapped	opcode 17; MAP_COL folded to identity
+vdi_vsl_ends	vdi/vdi_line.c	tos-api/src/vdi/attributes.rs	vsl_ends	mapped	opcode 108
+vdi_vsl_type	vdi/vdi_line.c	tos-api/src/vdi/attributes.rs	vsl_type	mapped	opcode 15
+vdi_vsl_udsty	vdi/vdi_line.c	tos-api/src/vdi/attributes.rs	vsl_udsty	mapped	opcode 113
+vdi_vsl_width	vdi/vdi_line.c	tos-api/src/vdi/attributes.rs	vsl_width	mapped	opcode 16
+vertical_line	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2156	planar vertical line for v_planes<=8; NewTOS has no bit-planes (ADR-024), the 16-bit one is kernel abline
+wideline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	wideline	mapped	-
+vdi_v_pmarker	vdi/vdi_marker.c	tos-api/src/vdi/primitives.rs	v_pmarker	mapped	opcode 7; markers are drawn with polyline directly (EmuTOS goes through vdi_v_pline); count not clamped to MAX_VERTICES
+vdi_vqm_attributes	vdi/vdi_marker.c	tos-api/src/vdi/inquiry.rs	vqm_attributes	mapped	opcode 36
+vdi_vsm_color	vdi/vdi_marker.c	tos-api/src/vdi/attributes.rs	vsm_color	mapped	opcode 20; MAP_COL folded to identity
+vdi_vsm_height	vdi/vdi_marker.c	tos-api/src/vdi/attributes.rs	vsm_height	mapped	opcode 19
+vdi_vsm_type	vdi/vdi_marker.c	tos-api/src/vdi/attributes.rs	vsm_type	mapped	opcode 18
+bit_blt	vdi/vdi_raster.c	-	-	unmapped	C planar BitBlt (v_planes<=8, blitter configs); no planar copy exists in NewTOS (ADR-024)
+cpy_raster	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vro_cpyfm	mapped	opaque copy: mode check, plane gates, truecolor dispatch; no PAT_FLAG pattern on the palette path
+cpy_raster	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vrt_cpyfm	mapped	transparent copy: mode map MD_* and the fg/bg index validation
+do_clip	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_screen	mapped	clip of the destination box for a screen destination (memory to screen)
+do_clip	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	copy_rect	mapped	clip of the destination box for screen to screen
+do_clip	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	blit_mono	mapped	clip of the destination box for vrt_cpyfm to the screen
+dont_clip	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	rect_from_ptsin	mapped	source and destination rectangles from PTSIN (corners normalised)
+hwblit_raster	vdi/vdi_raster.c	-	-	design:hardware:blitter	Atari BLiTTER BitBlt (CONF_WITH_BLITTER); the Pi has no blitter
+linea_blit	vdi/vdi_raster.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 0xE: no NewTOS counterpart
+linea_raster	vdi/vdi_raster.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 7: no NewTOS counterpart
+setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	effective_planes	mapped	plane count of source and destination and the plane_ct <= 16 gate
+setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	read	mapped	MFDB reading (Mfdb::read, caller ABI) replaces the MFDB field access
+setup_pattern	vdi/vdi_raster.c	-	-	unmapped	PAT_FLAG pattern set-up for the planar blit; the truecolor path ignores it (vro_cpyfm16 re-reads INTIN[0]); no counterpart
+vdi_vr_trnfm	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vr_trnfm	mapped	opcode 110, planar and truecolor branches
+vdi_vro_cpyfm	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vro_cpyfm	mapped	opcode 109
+vdi_vrt_cpyfm	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vrt_cpyfm	mapped	opcode 121
+vr_trnfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vr_trnfm16	mapped	-
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	screen_to_mem	mapped	screen to memory, 16-bit words
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_screen	mapped	memory to screen, 16-bit words
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_mem	mapped	memory to memory, 16-bit words; overlap direction rule is NewTOS' own
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	raster_op	mapped	the 16 logic ops on the pixel word
+vro_cpyfm16	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	copy_rect	mapped	screen to screen
+vrt_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mono_to_mem	mapped	mono source expanded into a 16-bit memory MFDB
+vrt_cpyfm16	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	blit_mono	mapped	mono source expanded onto the screen
+normal_blit	vdi/vdi_tblit.S	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	the glyph cell blit with the writing mode; the cell itself (scaling, effects, rotation) is built in text.rs build_cell/blit_cell

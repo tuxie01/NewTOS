@@ -45,6 +45,43 @@ Danach (Lead): `"vdi/"` in `MAPPED_DIRS`, `cargo xtask test` gruen.
 - `MAPPED_DIRS` enthaelt `vdi/`, Hosttests gruen.
 - Liste der beim Lesen gefundenen Abweichungen im Ticket.
 
+## Stand Teil 1 (2026-11-05, Researcher)
+
+123 Zeilen fuer die 109 Funktionen der Zeichendateien (`docs/analysis/deps/mapping.tsv`),
+`--check-mapping` sauber, `--coverage` vdi danach 84 mapped / 22 design / 144 ohne Zeile.
+Klassen je Funktion: 82 `mapped`, 22 `design` (12 `ADR-030` Line-A, 4 `hardware:blitter`,
+1 `hardware:ikbd-acia` `wheel_int`, 5 `ADR-024`), 5 `unmapped`.
+Lead-Entscheidung: die reinen Bildschirm-Planarpfade `draw_line`, `vertical_line`,
+`swblit_rect_common`, `draw_rect_setup`, `get_color` auf `design:ADR-024` (die Workstation
+hat immer 16 Ebenen, `docs/MEMORY.md` ADR-024); `bit_blt`, `fast_bit_blt`, `setup_pattern`
+bleiben `unmapped`, weil EmuTOS sie auch fuer Speicher-nach-Speicher-Kopien mit planaren
+MFDBs nimmt (Kandidat 7). Ebenfalls `unmapped`: `clip_code`, `crunch_queue`.
+
+Abweichungs-Kandidaten aus dem Lesen (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
+
+1. `vdi_line.c:2205-2228` gegen `kernel/src/vdi_backend.rs:578@abline`: XOR-Letztpunkt-Kuerzung
+   auch bei vertikalen Segmenten (EmuTOS verzweigt Vertikallinien vorher ab).
+2. `vdi_line.c:1057,1101` gegen `abline`: EmuTOS clippt das Segment vorab, NewTOS pro Pixel
+   (Strichphase/Rundung); NewTOS clippt auch bei `vs_clip(0)`.
+3. `vdi_line.c:1623` gegen `abline`: anderer Bresenham-Fehlerterm, Gleichheit fuer alle
+   Steigungen nicht gezeigt.
+4. `vdi_fill.c:560` gegen `tos-api/src/vdi/primitives.rs:707@v_fillarea`: bei 1–2 Punkten zeichnet
+   EmuTOS mit `fill_per` den Umriss, NewTOS nichts.
+5. `vdi_asm.S:84-95` gegen `primitives.rs:788@v_pmarker`: Kappung von `CONTRL[1]` auf
+   `MAX_VERTICES` fehlt ausser in `v_pline`/`v_fillarea`.
+6. `vdi_fill.c:149` gegen `tos-api/src/vdi/attributes.rs:512@vsf_udpat`: NewTOS speichert nur 16
+   Woerter statt `INQ_TAB[4]*16`.
+7. `vdi_raster.c:1331,588` gegen `tos-api/src/vdi/raster.rs:638@vro_cpyfm`: Speicher-nach-Speicher
+   mit gleich vielen Ebenen <= 8: EmuTOS planarer BitBlt, NewTOS 16-Bit-Chunky; PAT_FLAG fehlt.
+8. `vdi_fill.c:888` gegen `tos-api/src/vdi/contour.rs:153@v_contourfill`: Seed-Warteschlange gegen
+   Seed-Stack + Visited-Bitmap; Muster, Ueberlauf, Reihenfolge nicht gezeigt.
+9. `vdi_asm.S:496` gegen `tos-api/src/vdi/mouse.rs:190@feed_relative`: EmuTOS zeichnet den Zeiger
+   im VBL, NewTOS sofort.
+10. `vdi_fill.c:671` gegen `tos-api/src/vdi/inquiry.rs:183@v_get_pixel`: ausserhalb des Schirms.
+11. `vdi_gdp.c:386-392` gegen `tos-api/src/vdi/gdp.rs:162@curve`: frueher Ausstieg fehlt, wohl
+    nicht beobachtbar.
+(12. `call_user_but`: ADR-031, bekannt.)
+
 Folgeticket: [TOOL33](TOOL33.md) (AES).
 
 [Gemeinsame Regeln](README.md) gelten.
