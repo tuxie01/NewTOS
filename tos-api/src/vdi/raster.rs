@@ -55,9 +55,12 @@
 //! words, as on a Falcon.
 //!
 //! The buffer is caller-owned (AES `bb_save` allocates it); the VDI only
-//! reads/writes through `fd_addr`, always bounds-checked against
-//! `min(fd_w, fd_wdwidth × 16) × fd_h` — a pixel is always one of its own
-//! row's words, inside the rows the call bound (V26).
+//! reads/writes through `fd_addr`. A memory form is addressed as EmuTOS does
+//! (V26): pixel `(x, y)` is WORD `y * fd_wdwidth * 16 + x` for any `x`, so
+//! `fd_w` is no limit (a block wider than the row runs on into the next row,
+//! the padding columns are pixels too); the one bound is the form itself,
+//! its `fd_h` rows, and of those only what the call bound is touched
+//! ([`Mfdb::bind_block`]).
 
 use alloc::alloc::{alloc_zeroed, dealloc, Layout};
 
@@ -174,30 +177,29 @@ impl Mfdb {
         }
     }
 
-    /// [`Self::bind`] for the whole rows `[row_lo, row_hi)` (clamped to
-    /// `0..fd_h`) of a device-format memory MFDB — the rows a `vro_cpyfm` /
-    /// `vrt_cpyfm` walk visits.
-    fn bind_rows(&mut self, pb: &Vdipb, row_lo: i32, row_hi: i32, write: bool) -> bool {
-        let row_bytes = 2 * self.mem_stride_px() as u64;
-        self.bind_row_span(pb, row_lo, row_hi, row_bytes, write)
-    }
-
-    /// [`Self::bind`] for the rows `[row_lo, row_hi)` (clamped to `0..fd_h`)
-    /// of a memory MFDB whose rows are `row_bytes` long.
-    fn bind_row_span(&mut self, pb: &Vdipb, row_lo: i32, row_hi: i32, row_bytes: u64, write: bool) -> bool {
-        let lo = row_lo.max(0) as u64;
-        let hi = row_hi.min(self.h.max(0) as i32).max(0) as u64;
-        if hi <= lo {
+    /// [`Self::bind`] for the bytes a `w × h` block at `(x, y)` of a
+    /// 16-bit chunky memory form can touch: the pixels of
+    /// [`Self::chunky_hull`] (V26). A screen MFDB and an empty block need
+    /// nothing.
+    fn bind_block(&mut self, pb: &Vdipb, x: i32, y: i32, w: i32, h: i32, write: bool) -> bool {
+        if self.is_screen() {
             return true;
         }
-        self.bind(pb, lo * row_bytes, (hi - lo) * row_bytes, write)
+        match self.chunky_hull(x, y, w, h) {
+            Some((lo, hi)) => self.bind(pb, 2 * lo as u64, 2 * (hi - lo) as u64, write),
+            None => true,
+        }
     }
 
-    /// Row length in bytes of an interleaved (planar) device-form memory
-    /// MFDB — EmuTOS `s_nxln = fd_wdwidth * fd_nplanes * 2`
-    /// (`vdi_raster.c:922-923,937-938`).
-    fn planar_row_bytes(&self) -> u64 {
-        (self.wdwidth.max(0) as u64) * (self.nplanes.max(0) as u64) * 2
+    /// [`Self::bind`] for the WORDs a `w × h` block at `(x, y)` of an
+    /// interleaved (planar) memory form can touch: the groups of
+    /// [`Self::planar_hull`], `fd_nplanes` WORDs each (V19, V26).
+    fn bind_planar_block(&mut self, pb: &Vdipb, x: i32, y: i32, w: i32, h: i32, write: bool) -> bool {
+        let group_bytes = 2 * self.nplanes.max(0) as u64;
+        match self.planar_hull(x, y, w, h) {
+            Some((lo, hi)) => self.bind(pb, lo as u64 * group_bytes, (hi - lo) as u64 * group_bytes, write),
+            None => true,
+        }
     }
 
     /// Build a NewTOS 16-bit RGB565 device-format memory MFDB over a
@@ -220,65 +222,99 @@ impl Mfdb {
         (self.wdwidth.max(0) as usize) * 16
     }
 
-    /// The pixels of a row that exist: `min(fd_w, fd_wdwidth * 16)` (V26).
-    /// EmuTOS' row of a 16-plane form is the `fd_wdwidth * 16` WORDs `setup_info` derives
-    /// (`d_nxln = fd_wdwidth * fd_nplanes * 2`, `vdi_raster.c:922-923,937-938`)
-    /// and it never reads `fd_w`; NewTOS also stops at `fd_w`, the same bound
-    /// as the planar form ([`PlanarForm`]). A pixel of row `y` is therefore
-    /// always one of that row's own words, inside the bytes
-    /// [`Self::bind_rows`] bound for the rows of the call — an `fd_w` larger
-    /// than the row no longer reaches into the next one.
+    /// The pixels of the form, `fd_h` rows of `fd_wdwidth * 16` (V26).
+    ///
+    /// EmuTOS lays a memory form out by `fd_wdwidth` alone: `setup_info`
+    /// sets the row length `d_nxln = fd_wdwidth * fd_nplanes * 2` bytes
+    /// (`vdi_raster.c:919-923,933-938`), `fd_wdwidth * 16` WORDs at 16 planes,
+    /// and `vro_cpyfm16`/`vrt_cpyfm16` address pixel `(x, y)` as
+    /// `form + y * width + x` (`:986-990`, `:1241-1250`) without reading
+    /// `fd_w` or `fd_h`. NewTOS uses the same address — so column `x` may lie
+    /// past the row (it is a pixel of a following row) or before it — and
+    /// only refuses what lies outside these `fd_h` rows: the kernel never
+    /// touches memory past the form (`docs/COMPATIBILITY.md`, V26).
     #[inline]
-    fn mem_width(&self) -> i32 {
-        (self.w as i32).min(self.mem_stride_px() as i32).max(0)
+    fn mem_span_px(&self) -> i64 {
+        self.mem_stride_px() as i64 * self.h.max(0) as i64
+    }
+
+    /// The linear pixel range `[lo, hi)` a `w × h` block at `(x, y)` can
+    /// touch, clipped to the form ([`Self::mem_span_px`]); `None` when it
+    /// misses the form. Pixel `(x + c, y + r)` is `(y + r) * stride + x + c`,
+    /// so every pixel of the block lies between its first and its last.
+    fn chunky_hull(&self, x: i32, y: i32, w: i32, h: i32) -> Option<(i64, i64)> {
+        if w <= 0 || h <= 0 {
+            return None;
+        }
+        let st = self.mem_stride_px() as i64;
+        let lo = (y as i64 * st + x as i64).max(0);
+        let hi = ((y as i64 + h as i64 - 1) * st + x as i64 + w as i64).min(self.mem_span_px());
+        (lo < hi).then_some((lo, hi))
+    }
+
+    /// The linear 16-pixel-group range `[lo, hi)` a `w × h` block at `(x, y)`
+    /// of an interleaved form can touch, clipped to the form's
+    /// `fd_h * fd_wdwidth` groups; `None` when it misses the form. Group `g`
+    /// of row `y` is linear group `y * fd_wdwidth + g` (`s_nxln = fd_wdwidth
+    /// * s_nxwd`, `vdi_raster.c:922-923,937-938`).
+    fn planar_hull(&self, x: i32, y: i32, w: i32, h: i32) -> Option<(i64, i64)> {
+        if w <= 0 || h <= 0 {
+            return None;
+        }
+        let wd = self.wdwidth.max(0) as i64;
+        let (x, y) = (x as i64, y as i64);
+        let lo = (y * wd + x.div_euclid(16)).max(0);
+        let hi = ((y + h as i64 - 1) * wd + (x + w as i64 - 1).div_euclid(16) + 1).min(wd * self.h.max(0) as i64);
+        (lo < hi).then_some((lo, hi))
+    }
+
+    /// The word index of pixel `(col, row)`, `row * fd_wdwidth * 16 + col`,
+    /// or `None` outside the form ([`Self::mem_span_px`]).
+    #[inline]
+    fn mem_index(&self, col: i32, row: i32) -> Option<usize> {
+        let idx = row as i64 * self.mem_stride_px() as i64 + col as i64;
+        (0..self.mem_span_px()).contains(&idx).then_some(idx as usize)
     }
 
     /// Read the 16-bit RGB565 pixel at `(col, row)` of a memory MFDB, or `0`
-    /// when outside the form (`0 <= col < `[`mem_width`](Self::mem_width),
-    /// `0 <= row < fd_h`).
+    /// outside the form ([`Self::mem_index`]).
     ///
     /// # Safety
-    /// `addr` must reach row `row` of the form (`fd_wdwidth * 16` `u16`s from
-    /// `row * fd_wdwidth * 16` on) — the rows the call bound.
+    /// `addr` must reach the word, i.e. the call bound it
+    /// ([`Self::bind_block`] over a block containing the pixel).
     #[inline]
     unsafe fn get_mem(&self, col: i32, row: i32) -> u16 {
-        if col < 0 || row < 0 || col >= self.mem_width() || row >= self.h as i32 {
+        let Some(idx) = self.mem_index(col, row) else {
             return 0;
-        }
-        let idx = row as usize * self.mem_stride_px() + col as usize;
-        // SAFETY: `col < fd_wdwidth * 16`: the word is one of row `row`'s own.
+        };
+        // SAFETY: `idx` is inside the form, and bound by the caller.
         unsafe { (self.addr as *const u16).add(idx).read_unaligned() }
     }
 
     /// Write the 16-bit RGB565 pixel at `(col, row)` of a memory MFDB; a
-    /// coordinate outside the form (as for [`get_mem`](Self::get_mem)) is
-    /// ignored.
+    /// pixel outside the form is ignored.
     ///
     /// # Safety
     /// As [`get_mem`](Self::get_mem).
     #[inline]
     unsafe fn put_mem(&self, col: i32, row: i32, val: u16) {
-        if col < 0 || row < 0 || col >= self.mem_width() || row >= self.h as i32 {
+        let Some(idx) = self.mem_index(col, row) else {
             return;
-        }
-        let idx = row as usize * self.mem_stride_px() + col as usize;
-        // SAFETY: `col < fd_wdwidth * 16`: the word is one of row `row`'s own.
+        };
+        // SAFETY: `idx` is inside the form, and bound by the caller.
         unsafe { (self.addr as *mut u16).add(idx).write_unaligned(val) }
     }
 
-    /// The pixels of memory row `row` that [`get_mem`](Self::get_mem) /
-    /// [`put_mem`](Self::put_mem) accept, as `(start, limit)`: column `c` is
-    /// inside iff `0 <= c < limit`, at word index `start + c`. `None` for a
-    /// row outside `0..fd_h`. `limit` is [`mem_width`](Self::mem_width), one
-    /// bound per row for the per-pixel checks (GUI07); the words
-    /// `start .. start + limit` are row `row`'s own (V26).
+    /// The columns of row `row` that [`get_mem`](Self::get_mem) /
+    /// [`put_mem`](Self::put_mem) accept, as `(start, cmin, cmax)`: column
+    /// `c` is inside iff `cmin <= c < cmax`, at word index `start + c`
+    /// (`start = row * fd_wdwidth * 16`, `cmin = -start`, `cmax =
+    /// mem_span_px - start`). One interval per row for the per-pixel checks
+    /// (GUI07); a column past the row is a pixel of a later row (V26).
     #[inline]
-    fn row_window(&self, row: i32) -> Option<(usize, i64)> {
-        if row < 0 || row >= self.h as i32 {
-            return None;
-        }
-        let start = row as usize * self.mem_stride_px();
-        Some((start, self.mem_width() as i64))
+    fn row_cols(&self, row: i32) -> (i64, i64, i64) {
+        let start = row as i64 * self.mem_stride_px() as i64;
+        (start, -start, self.mem_span_px() - start)
     }
 
     /// Read `out.len()` pixels of memory row `row` from column `col` on:
@@ -289,20 +325,17 @@ impl Mfdb {
     /// As [`get_mem`](Self::get_mem); `out` must not overlap the buffer.
     #[inline]
     unsafe fn read_row(&self, col: i32, row: i32, out: &mut [u16]) {
-        let Some((start, limit)) = self.row_window(row) else {
-            out.fill(0);
-            return;
-        };
-        let (lo, hi) = span(col, out.len(), limit);
+        let (start, cmin, cmax) = self.row_cols(row);
+        let (lo, hi) = span(col, out.len(), cmin, cmax);
         out[..lo].fill(0);
         out[hi..].fill(0);
         if lo < hi {
-            // SAFETY: columns `col + lo .. col + hi` lie in `0..limit`, so the
-            // words `start + col + lo ..` are row `row`'s own (bound). The
+            // SAFETY: columns `col + lo .. col + hi` lie in `cmin..cmax`, so the
+            // words `start + col + lo ..` are inside the form (and bound). The
             // buffer may be unaligned (`fd_addr` is the caller's), hence a
             // byte copy; `out` is a separate (stack) buffer.
             unsafe {
-                let first = (self.addr as *const u16).add(start + (col as i64 + lo as i64) as usize);
+                let first = (self.addr as *const u16).add((start + col as i64 + lo as i64) as usize);
                 core::ptr::copy_nonoverlapping(
                     first as *const u8,
                     out[lo..hi].as_mut_ptr() as *mut u8,
@@ -330,10 +363,8 @@ impl Mfdb {
         if op & 0x0f == 5 {
             return;
         }
-        let Some((start, limit)) = self.row_window(row) else {
-            return;
-        };
-        let (lo, hi) = span(col, s.len(), limit);
+        let (start, cmin, cmax) = self.row_cols(row);
+        let (lo, hi) = span(col, s.len(), cmin, cmax);
         if lo >= hi {
             return;
         }
@@ -341,10 +372,10 @@ impl Mfdb {
         let mut d = [0u16; ROW_CHUNK];
         let d = &mut d[..n];
         // SAFETY: as in `read_row` — columns `col + lo .. col + hi` are inside
-        // the extent, so every word is one of row `row`'s own; byte copies
-        // because the caller's buffer may be unaligned; `d` is on the stack.
+        // the form, so every word is (and is bound); byte copies because the
+        // caller's buffer may be unaligned; `d` is on the stack.
         unsafe {
-            let first = (self.addr as *mut u16).add(start + (col as i64 + lo as i64) as usize) as *mut u8;
+            let first = (self.addr as *mut u16).add((start + col as i64 + lo as i64) as usize) as *mut u8;
             if !op_ignores_dst(op) {
                 core::ptr::copy_nonoverlapping(first as *const u8, d.as_mut_ptr() as *mut u8, n * 2);
             }
@@ -355,13 +386,13 @@ impl Mfdb {
 }
 
 /// The index window `[lo, hi)` of a run of `n` pixels starting at column
-/// `col` whose columns satisfy `0 <= col + i < limit` (`lo <= hi <= n`).
+/// `col` whose columns satisfy `cmin <= col + i < cmax` (`lo <= hi <= n`).
 #[inline]
-fn span(col: i32, n: usize, limit: i64) -> (usize, usize) {
+fn span(col: i32, n: usize, cmin: i64, cmax: i64) -> (usize, usize) {
     let col = col as i64;
     let n = n as i64;
-    let lo = (-col).clamp(0, n);
-    let hi = (limit - col).clamp(lo, n);
+    let lo = (cmin - col).clamp(0, n);
+    let hi = (cmax - col).clamp(lo, n);
     (lo as usize, hi as usize)
 }
 
@@ -558,12 +589,12 @@ pub fn vrt_cpyfm(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend, ncol: u16) 
 
     // The bitmaps the walk touches, checked with the caller's rights and
     // reached through their kernel addresses (ARCH03 3a, `Mfdb::bind`): the
-    // whole mono source (the `MonoBits` view spans it) and the destination
-    // rows of a memory destination. One the program may not use ends the
-    // call before anything is drawn.
+    // whole mono source (the `MonoBits` view spans it) and, of a memory
+    // destination, the pixels the block can reach inside the form (V26). One
+    // the program may not use ends the call before anything is drawn.
     let words = (src.h.max(0) as usize) * (src.wdwidth.max(0) as usize);
     if !src.bind(pb, 0, 2 * words as u64, false)
-        || (!dst.is_screen() && !dst.bind_rows(pb, d.y as i32, d.y as i32 + s.h.max(0) as i32, true))
+        || !dst.bind_block(pb, d.x as i32, d.y as i32, s.w as i32, s.h as i32, true)
     {
         return;
     }
@@ -609,15 +640,22 @@ pub fn vrt_cpyfm(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend, ncol: u16) 
 /// 16-bit RGB565 memory MFDB `dst` at origin `(dx, dy)` over `w × h`
 /// pixels, per the `MD_*` write mode. `fg16`/`bg16` are the already-
 /// resolved RGB565 pixel words. No clipping.
+///
+/// Both forms are addressed as EmuTOS does (V26): source pixel `(x, y)` is
+/// bit `15 - x % 16` of WORD `y * fd_wdwidth + x / 16` (floor; `src_off =
+/// s_xmin >> 4`, `p++` on each 16th pixel, `src += src_width` per row,
+/// `vdi_raster.c:1241-1244,1255-1262`), destination pixel `(x, y)` is WORD
+/// `y * fd_wdwidth * 16 + x` ([`Mfdb::get_mem`]). A pixel outside its form —
+/// before WORD 0 or past `fd_h` rows — reads clear / is not written.
 #[allow(clippy::too_many_arguments)]
 fn mono_to_mem(dst: &Mfdb, mono: MonoSrc, dx: i16, dy: i16, w: i16, h: i16, mode: WriteMode, fg16: u16, bg16: u16) {
-    let stride = mono.stride_words as usize;
+    let stride_px = mono.stride_words as i64 * 16;
     for r in 0..h as i32 {
-        let sy = mono.y as i32 + r;
+        let sy = mono.y as i64 + r as i64;
         for c in 0..w as i32 {
-            let sx = mono.x as i32 + c;
-            let widx = sy as usize * stride + (sx as usize) / 16;
-            let set = mono.bits.word(widx).is_some_and(|word| word & (0x8000u16 >> (sx & 15)) != 0);
+            let lin = sy * stride_px + mono.x as i64 + c as i64;
+            let set = lin >= 0
+                && mono.bits.word((lin >> 4) as usize).is_some_and(|word| word & (0x8000u16 >> (lin & 15)) != 0);
             let (col, row) = (dx as i32 + c, dy as i32 + r);
             match mode {
                 // MD_REPLACE: fg on 1-bits, bg on 0-bits (opaque).
@@ -720,9 +758,8 @@ pub fn vro_cpyfm(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
             // past zero, `vdi_blit.S:1102` — see `_raster.md`, V19).
             return;
         }
-        let (srb, drb) = (src.planar_row_bytes(), dst.planar_row_bytes());
-        if !src.bind_row_span(pb, s.y as i32, s.y as i32 + rows, srb, false)
-            || !dst.bind_row_span(pb, d.y as i32, d.y as i32 + rows, drb, true)
+        if !src.bind_planar_block(pb, s.x as i32, s.y as i32, s.w as i32, rows, false)
+            || !dst.bind_planar_block(pb, d.x as i32, d.y as i32, s.w as i32, rows, true)
         {
             return;
         }
@@ -732,10 +769,11 @@ pub fn vro_cpyfm(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
 
     // The memory bitmaps the copy touches — the source rows read, the
     // destination rows written — checked with the caller's rights and reached
-    // through their kernel addresses (ARCH03 3a, `Mfdb::bind_rows`); one the
-    // program may not use ends the call before anything is copied.
-    if !src.bind_rows(pb, s.y as i32, s.y as i32 + rows, false)
-        || !dst.bind_rows(pb, d.y as i32, d.y as i32 + rows, true)
+    // through their kernel addresses (ARCH03 3a, `Mfdb::bind_block`: the
+    // pixels the block can reach inside each form, V26); one the program may
+    // not use ends the call before anything is copied.
+    if !src.bind_block(pb, s.x as i32, s.y as i32, s.w as i32, rows, false)
+        || !dst.bind_block(pb, d.x as i32, d.y as i32, s.w as i32, rows, true)
     {
         return;
     }
@@ -757,7 +795,7 @@ pub fn vro_cpyfm(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
 /// `(dx, dy)`, applying `op` against the buffer's current pixel.
 ///
 /// Row-wise (GUI07): per destination row, only the columns the buffer
-/// accepts are visited ([`Mfdb::row_window`]); the screen run under them is
+/// accepts are visited ([`Mfdb::row_cols`]); the screen run under them is
 /// fetched with one [`RasterBackend::read_row_rgb565`] call per
 /// [`ROW_CHUNK`] pixels and combined into the buffer with
 /// [`Mfdb::combine_row`]. Same words as the per-pixel definition — a screen
@@ -773,11 +811,9 @@ fn screen_to_mem(backend: &dyn RasterBackend, dst: &Mfdb, s: Rect, dx: i16, dy: 
     let off_screen = backend.device_to_rgb565(0);
     let mut sbuf = [0u16; ROW_CHUNK];
     for r in 0..s.h as i32 {
-        let Some((_, limit)) = dst.row_window(dy as i32 + r) else {
-            continue; // the whole destination row is outside the buffer
-        };
+        let (_, cmin, cmax) = dst.row_cols(dy as i32 + r);
         // The columns `c` of the copy whose destination pixel exists.
-        let (lo, hi) = span(dx as i32, s.w.max(0) as usize, limit);
+        let (lo, hi) = span(dx as i32, s.w.max(0) as usize, cmin, cmax);
         let sy = s.y as i32 + r;
         let mut c = lo;
         while c < hi {
@@ -903,30 +939,29 @@ fn mem_to_mem(src: &Mfdb, dst: &Mfdb, s: Rect, dx: i16, dy: i16, op: u8) {
     for ri in 0..s.h as i32 {
         let r = if down { s.h as i32 - 1 - ri } else { ri };
         let (drow, srow) = (dy as i32 + r, s.y as i32 + r);
-        let Some((dstart, dlimit)) = dst.row_window(drow) else {
-            continue; // the whole destination row is outside the buffer
-        };
+        let (dstart, dmin, dmax) = dst.row_cols(drow);
         // The columns `c` of the copy whose destination pixel exists.
-        let (lo, hi) = span(dx as i32, s.w.max(0) as usize, dlimit);
+        let (lo, hi) = span(dx as i32, s.w.max(0) as usize, dmin, dmax);
         if lo >= hi {
             continue;
         }
         // Byte ranges this row touches: the destination words it writes and
         // the source words it reads (none if the op ignores S or the source
-        // row/columns lie outside the source extent).
+        // columns lie outside the source form). Both word indices are >= 0:
+        // the columns lie in `cmin..cmax`.
         let dbytes = {
-            let a = dst.addr + 2 * (dstart as u64 + (dx as i64 + lo as i64) as u64);
+            let a = dst.addr + 2 * (dstart + dx as i64 + lo as i64) as u64;
             (a, a + 2 * (hi - lo) as u64)
         };
-        let sbytes = match src.row_window(srow) {
-            Some((sstart, slimit)) if need_s => {
-                let (a, b) = span(s.x as i32 + lo as i32, hi - lo, slimit);
-                (a < b).then(|| {
-                    let first = src.addr + 2 * (sstart as u64 + (s.x as i64 + lo as i64 + a as i64) as u64);
-                    (first, first + 2 * (b - a) as u64)
-                })
-            }
-            _ => None,
+        let sbytes = if need_s {
+            let (sstart, smin, smax) = src.row_cols(srow);
+            let (a, b) = span(s.x as i32 + lo as i32, hi - lo, smin, smax);
+            (a < b).then(|| {
+                let first = src.addr + 2 * (sstart + s.x as i64 + lo as i64 + a as i64) as u64;
+                (first, first + 2 * (b - a) as u64)
+            })
+        } else {
+            None
         };
         let disjoint = sbytes.is_none_or(|(a, b)| b <= dbytes.0 || dbytes.1 <= a);
         if disjoint {
@@ -966,74 +1001,77 @@ fn mem_to_mem(src: &Mfdb, dst: &Mfdb, s: Rect, dx: i16, dy: i16, op: u8) {
 /// is the `P` WORDs from `g * P` on (`s_nxwd = fd_nplanes * 2`), plane `p` is
 /// WORD `p` of the group (`s_nxpl = 2`), pixel `x` is bit `15 - x % 16`.
 ///
-/// A pixel exists iff `0 <= x < w` and `0 <= y < h`, with `w = min(fd_w,
-/// fd_wdwidth * 16)` — the NewTOS bound of every memory form (EmuTOS has
-/// none, `_raster.md` V19); so every WORD reached lies in the form's
-/// `fd_h * fd_wdwidth * P` WORDs, inside the rows `bind_row_span` checked.
+/// Addressed linearly as in EmuTOS (V26): group `g` of row `y` is linear
+/// group `y * fd_wdwidth + g` for any `g` — a group past the row is one of a
+/// following row, one before it of a preceding row; `fd_w` plays no part.
+/// Only the groups in `win` — the block's hull clipped to the form's
+/// `fd_h * fd_wdwidth` groups ([`Mfdb::planar_hull`], exactly what
+/// [`Mfdb::bind_planar_block`] bound) — are read or written; a group outside
+/// reads as 0 and is not written.
 #[derive(Clone, Copy)]
 struct PlanarForm {
     addr: u64,
-    w: i32,
-    h: i32,
-    /// WORDs per row (`s_nxln / 2`).
-    row_words: usize,
+    /// Groups per row (`fd_wdwidth`).
+    wd: i64,
     planes: usize,
+    /// The linear groups `[win.0, win.1)` that may be touched.
+    win: (i64, i64),
 }
 
 impl PlanarForm {
-    fn of(m: &Mfdb) -> Self {
-        let wd = m.wdwidth.max(0) as i32;
-        let planes = m.nplanes.max(0) as usize;
+    fn of(m: &Mfdb, win: Option<(i64, i64)>) -> Self {
         PlanarForm {
             addr: m.addr,
-            w: (m.w as i32).min(wd * 16).max(0),
-            h: (m.h as i32).max(0),
-            row_words: wd as usize * planes,
-            planes,
+            wd: m.wdwidth.max(0) as i64,
+            planes: m.nplanes.max(0) as usize,
+            win: win.unwrap_or((0, 0)),
         }
     }
 
-    /// The address of plane `p`'s WORD of the 16-pixel group `g` in row `y`;
-    /// `g`, `y` must name a group with an existing pixel (`16 * g < w`,
-    /// `0 <= y < h`) and `p < planes`.
+    /// The address of plane `p`'s WORD of linear group `lg`; `lg` must lie in
+    /// `win` and `p < planes`.
     #[inline]
-    fn word_addr(&self, g: i32, y: i32, p: usize) -> u64 {
-        let idx = y as usize * self.row_words + g as usize * self.planes + p;
-        self.addr + 2 * idx as u64
+    fn word_addr(&self, lg: i64, p: usize) -> u64 {
+        self.addr + 2 * (lg as u64 * self.planes as u64 + p as u64)
     }
 
-    /// Plane `p`'s WORD of group `g` in row `y`, the bits of pixels that do
-    /// not exist cleared; 0 for a group or row outside the form.
+    #[inline]
+    fn in_win(&self, lg: i64) -> bool {
+        self.win.0 <= lg && lg < self.win.1
+    }
+
+    /// Plane `p`'s WORD of linear group `lg`; 0 for a group outside `win`.
     ///
     /// # Safety
-    /// `addr` must reach the rows of the form that may be read (bound).
+    /// `addr` must reach the groups of `win` (bound).
     #[inline]
-    unsafe fn fetch(&self, g: i32, y: i32, p: usize) -> u16 {
-        if y < 0 || y >= self.h || g < 0 || g >= (self.w + 15) / 16 {
+    unsafe fn fetch(&self, lg: i64, p: usize) -> u16 {
+        if !self.in_win(lg) {
             return 0;
         }
-        // SAFETY: `16 * g < w` and `0 <= y < h`: the WORD lies in the form.
-        let v = unsafe { (self.word_addr(g, y, p) as *const u16).read_unaligned() };
-        let valid = self.w - 16 * g; // pixels of the group that exist, >= 1
-        if valid < 16 { v & (0xFFFFu16 << (16 - valid)) } else { v }
+        // SAFETY: `lg` lies in `win`, which the call bound.
+        unsafe { (self.word_addr(lg, p) as *const u16).read_unaligned() }
     }
 
-    /// The 16 source bits of plane `p`, row `y`, starting at pixel `x`
-    /// (bit 15 = pixel `x`), assembled from the two groups the run spans —
-    /// the blitter's skew (`vdi_raster.c:654-656`).
+    /// The 16 source bits of plane `p` starting at the pixel with linear
+    /// index `lin` (`y * fd_wdwidth * 16 + x`; bit 15 = that pixel),
+    /// assembled from the two groups the run spans — the blitter's skew
+    /// (`vdi_raster.c:654-656`). A bit from a group outside `win` is 0; such a
+    /// bit never belongs to a pixel of the block (the hull covers them all),
+    /// so the end mask drops it.
     ///
     /// # Safety
     /// As [`Self::fetch`].
     #[inline]
-    unsafe fn bits_at(&self, x: i32, y: i32, p: usize) -> u16 {
-        let (g, sh) = (x.div_euclid(16), x.rem_euclid(16) as u32);
+    unsafe fn bits_at(&self, lin: i64, p: usize) -> u16 {
+        let (g, sh) = (lin.div_euclid(16), lin.rem_euclid(16) as u32);
         // SAFETY: forwarded to `fetch`, which bounds every group.
         unsafe {
-            let hi = self.fetch(g, y, p);
+            let hi = self.fetch(g, p);
             if sh == 0 {
                 return hi;
             }
-            let lo = self.fetch(g + 1, y, p);
+            let lo = self.fetch(g + 1, p);
             ((((hi as u32) << 16) | lo as u32) >> (16 - sh)) as u16
         }
     }
@@ -1057,48 +1095,57 @@ impl PlanarForm {
 /// destination's in memory, or it is the same WORD and the source's
 /// `x % 16` is the smaller; otherwise top-down, left-to-right. Each WORD is
 /// read before it is written, so an overlapping copy within one form reads
-/// only source bits not yet overwritten. Pixels outside a form are not
-/// moved ([`PlanarForm`]); the block is anchored at `(dx, dy)` (D-VDI-25).
+/// only source bits not yet overwritten.
+///
+/// Geometry as EmuTOS (V26, [`PlanarForm`]): `fd_w` is not a limit, a block
+/// wider than the row runs on into the next row, the padding bits past
+/// `fd_w` are copied like any other; only groups outside the form's `fd_h`
+/// rows are left alone. The block is anchored at `(dx, dy)` (D-VDI-25).
 fn planar_mem_to_mem(src: &Mfdb, dst: &Mfdb, s: Rect, dx: i16, dy: i16, op: u8) {
     let op = op & 0x0f;
     if op == 5 {
         return;
     }
-    let (sf, df) = (PlanarForm::of(src), PlanarForm::of(dst));
     let (bw, bh) = (s.w as i32, s.h as i32);
-    let (sx, sy, dx, dy) = (s.x as i32, s.y as i32, dx as i32, dy as i32);
-    // The destination pixels of the block that exist.
-    let (xa, xb) = (dx.max(0), (dx + bw - 1).min(df.w - 1));
-    let (ya, yb) = (dy.max(0), (dy + bh - 1).min(df.h - 1));
-    if bw <= 0 || bh <= 0 || xa > xb || ya > yb {
+    let Some(dwin) = dst.planar_hull(dx as i32, dy as i32, bw, bh) else {
         return;
-    }
+    };
+    let swin = src.planar_hull(s.x as i32, s.y as i32, bw, bh);
+    let (sf, df) = (PlanarForm::of(src, swin), PlanarForm::of(dst, Some(dwin)));
+    let (sx, sy, dx, dy) = (s.x as i64, s.y as i64, dx as i64, dy as i64);
+    let (bw, bh) = (bw as i64, bh as i64);
     let need_s = !op_ignores_src(op);
     // EmuTOS' start addresses (`s_xy2addr`/`d_xy2addr`, `vdi_blit.S:1240-1264`)
     // decide the direction; only an overlap can tell the two apart.
-    let start = |f: &PlanarForm, x: i32, y: i32| {
-        f.addr as i128 + 2 * (y as i128 * f.row_words as i128 + x.div_euclid(16) as i128 * f.planes as i128)
+    let start = |f: &PlanarForm, x: i64, y: i64| {
+        f.addr as i128 + 2 * ((y * f.wd + x.div_euclid(16)) as i128 * f.planes as i128)
     };
     let (s_start, d_start) = (start(&sf, sx, sy), start(&df, dx, dy));
     let reverse = s_start < d_start || (s_start == d_start && (sx & 15) < (dx & 15));
-    let (g0, g1) = (xa / 16, xb / 16);
+    // The block's groups in a row and the pixels it covers.
+    let (g0, g1) = (dx.div_euclid(16), (dx + bw - 1).div_euclid(16));
+    let (xa, xb) = (dx, dx + bw - 1);
     for p in 0..df.planes {
-        for yi in 0..=(yb - ya) {
-            let y = if reverse { yb - yi } else { ya + yi };
+        for yi in 0..bh {
+            let y = if reverse { dy + bh - 1 - yi } else { dy + yi };
             let srow = y - dy + sy;
-            for gi in 0..=(g1 - g0) {
-                let g = if reverse { g1 - gi } else { g0 + gi };
+            // The groups of this block row that lie in the window.
+            let base = y * df.wd;
+            let (ga, gb) = ((dwin.0 - base).max(g0), (dwin.1 - 1 - base).min(g1));
+            if ga > gb {
+                continue;
+            }
+            for gi in 0..=(gb - ga) {
+                let g = if reverse { gb - gi } else { ga + gi };
                 let x0 = 16 * g;
                 let (lo, hi) = (xa.max(x0) - x0, xb.min(x0 + 15) - x0);
                 let mask = (0xFFFFu16 >> lo) & (0xFFFFu16 << (15 - hi));
-                // SAFETY: the source rows were bound (`bind_row_span`) and
-                // `bits_at` reaches only existing groups of rows inside the
-                // form; `g`, `y` name an existing destination group in a bound
-                // row (`xa..=xb`, `ya..=yb` lie in the form) and `p` is below
-                // the plane count both forms share.
+                // SAFETY: `base + g` lies in `dwin` (bound for writing) and `p`
+                // is below the plane count both forms share; `bits_at` reads
+                // only groups of `swin` (bound for reading).
                 unsafe {
-                    let sw = if need_s { sf.bits_at(x0 - dx + sx, srow, p) } else { 0 };
-                    let a = df.word_addr(g, y, p) as *mut u16;
+                    let sw = if need_s { sf.bits_at(srow * sf.wd * 16 + x0 - dx + sx, p) } else { 0 };
+                    let a = df.word_addr(base + g, p) as *mut u16;
                     let d = a.read_unaligned();
                     a.write_unaligned((raster_op(op, sw, d) & mask) | (d & !mask));
                 }
@@ -1934,7 +1981,7 @@ mod gui07_tests {
             v.push((doff, g, 0, g, r(0, 0, 30, 6), 0, 0));
             v.push((0, g, doff, g, r(2, 1, 30, 6), 3, 0));
         }
-        // Same buffer, stride < fd_w (each row bounded to its stride, V26).
+        // Same buffer, stride < fd_w: rows run on into each other (V26).
         v.push((0, (40, 6, 1), 0, (40, 6, 1), r(0, 0, 40, 5), 0, 1));
         v.push((0, (40, 6, 1), 0, (40, 6, 1), r(0, 1, 40, 5), 2, 0));
         v
@@ -1969,11 +2016,13 @@ mod gui07_tests {
 /// on the interleaved device form (`_raster.md` § "Memory → memory below nine
 /// planes"). [`planar_mem_to_mem`] is checked against a per-pixel, per-bit
 /// statement of the same contract, written from the spec and not from the
-/// WORD loop: every destination pixel of the block that exists becomes
+/// WORD loop: every destination pixel of the block inside the form becomes
 /// `op(S, D)` bit by bit on every plane, `S` read from the source as it stood
-/// before the call (0 for a pixel outside the source), and **no other byte
-/// of the arena changes** — not the padding bits of a partial group, not the
-/// WORDs of the other planes, not the bytes before and after the form. The
+/// before the call (0 for a pixel outside the source form), pixels addressed
+/// linearly as in EmuTOS (V26: `fd_w` no limit, a block wider than its row
+/// runs on into the next), and **no other byte of the arena changes** — not
+/// the bits of a partial group outside the block, not the WORDs of the other
+/// planes, not the bytes before and after the form. The
 /// oracle side of the same contract is `tos-api/tests/vdi_raster_reference_v18.rs`
 /// (17 measured cases, profile falcontc).
 #[cfg(test)]
@@ -2004,35 +2053,48 @@ mod v19_planar_tests {
     }
 
     /// Byte index and bit mask of pixel `(x, y)` plane `p` of form `g` with
-    /// `planes` planes, or `None` if the pixel does not exist: the layout of
-    /// `setup_info` (`vdi_raster.c:919-940,959-960`) and the NewTOS bound
-    /// `0 <= x < min(fd_w, fd_wdwidth * 16)`, `0 <= y < fd_h`.
+    /// `planes` planes, or `None` if the pixel lies outside the form: the
+    /// layout of `setup_info` (`vdi_raster.c:919-940,959-960`) addressed as
+    /// EmuTOS does — linear group `y * fd_wdwidth + floor(x / 16)`, `fd_w`
+    /// not a limit — and the one NewTOS bound, the form's `fd_h * fd_wdwidth`
+    /// groups (V26).
     fn pixel(g: Geo, planes: usize, x: i32, y: i32, p: usize) -> Option<(usize, u16)> {
-        let (off, w, h, wd) = g;
-        let w = (w as i32).min(wd as i32 * 16);
-        if x < 0 || y < 0 || x >= w || y >= h as i32 {
+        let (off, _w, h, wd) = g;
+        let lg = y as i64 * wd as i64 + (x as i64).div_euclid(16);
+        if lg < 0 || lg >= wd as i64 * h as i64 {
             return None;
         }
-        let word = y as usize * wd as usize * planes + (x as usize / 16) * planes + p;
-        Some((off + 2 * word, 0x8000u16 >> (x % 16)))
+        let word = lg as usize * planes + p;
+        Some((off + 2 * word, 0x8000u16 >> x.rem_euclid(16)))
     }
 
     fn get(buf: &[u8], at: usize) -> u16 {
         u16::from_ne_bytes([buf[at], buf[at + 1]])
     }
 
-    /// The contract, pixel by pixel.
+    /// The contract, pixel by pixel: in EmuTOS' direction (`bit_blt
+    /// :660-669` — it decides which write lands last when the block wider
+    /// than its row covers a pixel twice), the source as it stood before
+    /// the call, the destination as it stands when the pixel is written.
     fn model(buf: &mut [u8], (sg, dg): (Geo, Geo), planes: usize, s: Rect, (dx, dy): (i16, i16), op: u8) {
         let before = buf.to_vec();
-        for r in 0..s.h.max(0) as i32 {
-            for c in 0..s.w.max(0) as i32 {
+        let start = |g: Geo, x: i32, y: i32| {
+            g.0 as i64 + 2 * (y as i64 * g.3 as i64 + (x as i64).div_euclid(16)) * planes as i64
+        };
+        let (ss, ds) = (start(sg, s.x as i32, s.y as i32), start(dg, dx as i32, dy as i32));
+        let reverse = ss < ds || (ss == ds && (s.x & 15) < (dx & 15));
+        let (bw, bh) = (s.w.max(0) as i32, s.h.max(0) as i32);
+        for ri in 0..bh {
+            let r = if reverse { bh - 1 - ri } else { ri };
+            for ci in 0..bw {
+                let c = if reverse { bw - 1 - ci } else { ci };
                 for p in 0..planes {
                     let Some((da, dm)) = pixel(dg, planes, dx as i32 + c, dy as i32 + r, p) else {
                         continue;
                     };
                     let sbit = pixel(sg, planes, s.x as i32 + c, s.y as i32 + r, p)
                         .is_some_and(|(sa, sm)| get(&before, sa) & sm != 0);
-                    let dbit = get(&before, da) & dm != 0;
+                    let dbit = get(buf, da) & dm != 0;
                     let s16 = if sbit { 0xFFFF } else { 0 };
                     let d16 = if dbit { 0xFFFF } else { 0 };
                     let bit = raster_op(op, s16, d16) & 1 != 0;
@@ -2116,7 +2178,8 @@ mod v19_planar_tests {
     /// The memory around and inside a destination form outside the block is
     /// not touched — the NewTOS bound, stated once more without the model:
     /// a 1-plane 16×16 form (`fd_wdwidth` 1, 16 WORDs) receiving a block that
-    /// claims 32×32 changes no byte past its 32 bytes, and the destination of
+    /// claims 32×32 changes no byte past its 32 bytes (the block wraps row
+    /// into row inside the form and is cut at its end, V26), and the destination of
     /// a 4-plane copy of an 8×8 block at (4,4) changes only bits 4..11 of
     /// WORDs of rows 4..11 (VDI-DRAW-007: NewTOS used to write 16 WORDs per
     /// row of 16 pixels, up to 16-fold past the form).
@@ -2175,17 +2238,16 @@ mod v19_planar_tests {
     }
 }
 
-/// V26: a 16-plane (chunky) memory form whose `fd_w` exceeds its row,
-/// `fd_wdwidth * 16` pixels. EmuTOS lays such a form out by `fd_wdwidth`
-/// alone — row `y` is the `fd_wdwidth * 16` WORDs from `y * fd_wdwidth * 16`
-/// on (`setup_info` `d_nxln = fd_wdwidth * fd_nplanes * 2`,
-/// `vdi_raster.c:922-923,937-938`; `vro_cpyfm16`/`vrt_cpyfm16` step rows by
-/// `d_nxln / 2`, `:986-990,1241-1250`) — so the rows a call names are the
-/// bytes `[row_lo * fd_wdwidth * 32, row_hi * fd_wdwidth * 32)`, and that is
-/// all `vro_cpyfm`/`vrt_cpyfm` bind (`Mfdb::bind_rows`). Every test calls
-/// the opcode through a [`Vdipb`] (so the bind runs) with a block on the
-/// last row it names, and checks that nothing outside those bytes is read
-/// or written (`_raster.md` § "NewTOS memory-MFDB format").
+/// V26: memory forms are addressed as EmuTOS does — pixel `(x, y)` of a
+/// 16-plane (chunky) form is WORD `y * fd_wdwidth * 16 + x` (`setup_info`
+/// `d_nxln = fd_wdwidth * fd_nplanes * 2`, `vdi_raster.c:919-923,933-938`;
+/// `vro_cpyfm16`/`vrt_cpyfm16` `form + y * width + x`, `:986-990,1241-1250`),
+/// `fd_w` is not a limit: a block wider than the row runs on into the next
+/// row, the padding columns up to `fd_wdwidth * 16` are read and written.
+/// The one NewTOS limit is the form itself, `fd_h` rows: nothing outside
+/// `[0, fd_h * fd_wdwidth * 32)` bytes from `fd_addr` is read or written,
+/// and only what `Mfdb::bind_block` checked is touched. Every test calls the
+/// opcode through a [`Vdipb`] (so the bind runs).
 #[cfg(test)]
 mod v26_row_bound_tests {
     use super::gui07_tests::{device_to_word, Screen};
@@ -2257,43 +2319,58 @@ mod v26_row_bound_tests {
     fn only_inside(after: &[u8], before: &[u8], lo: usize, hi: usize, what: &str) {
         for (i, (&a, &b)) in after.iter().zip(before).enumerate() {
             if !(lo..hi).contains(&i) {
-                assert_eq!(a, b, "{what}: byte {i} outside the bound rows [{lo}, {hi}) changed");
+                assert_eq!(a, b, "{what}: byte {i} outside [{lo}, {hi}) changed");
             }
         }
     }
 
-    /// The destination form `fd_w` 40, `fd_wdwidth` 1 (16-pixel rows, 32
-    /// bytes), `fd_h` 4, at byte 512 of a 1024-byte arena; the block is
-    /// 40×1 and lands on row 1, so the bound bytes are `[544, 576)`.
+    /// The destination form: `fd_w` 40, `fd_wdwidth` 1 (16-pixel rows, 32
+    /// bytes), `fd_h` 4, at byte 512 of a 1024-byte arena: bytes `[512, 640)`.
     const DST_AT: usize = 512;
-    const ROW1: (usize, usize) = (DST_AT + 32, DST_AT + 64);
+    const DST_FORM: (usize, usize) = (DST_AT, DST_AT + 128);
 
+    /// A 1024-byte arena of distinct-ish bytes.
+    fn ramp() -> Vec<u8> {
+        (0..1024).map(|i| (i as u8) ^ 0x5A).collect()
+    }
+
+    // ── the form is the limit ──────────────────────────────────────────
+
+    /// A 40×1 block on the last row (3) of the destination: pixels 48..63 are
+    /// in the form, 64..87 past it — cut, the bytes after the form unchanged.
     #[test]
-    fn memory_to_memory_writes_only_the_bound_rows() {
+    fn memory_to_memory_writes_nothing_past_the_form() {
         let backend = Screen::new(64, 8, 1, true);
-        let mut buf: Vec<u8> = (0..1024).map(|i| i as u8).collect();
+        let mut buf = ramp();
         let before = buf.clone();
         let base = buf.as_mut_ptr() as u64;
         let src = form(base, 48, 4, 3, 16);
         let dst = form(base + DST_AT as u64, 40, 4, 1, 16);
-        call(&src, &dst, [3, 0, 0], [0, 0, 39, 0, 0, 1, 39, 1], |pb| vro_cpyfm(pb, &vwk(), &backend));
-        only_inside(&buf, &before, ROW1.0, ROW1.1, "vro_cpyfm memory->memory");
+        call(&src, &dst, [3, 0, 0], [0, 0, 39, 0, 0, 3, 39, 3], |pb| vro_cpyfm(pb, &vwk(), &backend));
+        only_inside(&buf, &before, DST_AT + 96, DST_FORM.1, "vro_cpyfm memory->memory");
+        for x in 0..16 {
+            assert_eq!(word(&buf, DST_AT + 96 + 2 * x), word(&before, 2 * x), "pixel 48 + {x}");
+        }
     }
 
     #[test]
-    fn screen_to_memory_writes_only_the_bound_rows() {
+    fn screen_to_memory_writes_nothing_past_the_form() {
         let backend = Screen::new(64, 8, 2, true);
-        let mut buf: Vec<u8> = (0..1024).map(|i| i as u8).collect();
+        let mut buf = ramp();
         let before = buf.clone();
         let base = buf.as_mut_ptr() as u64;
         let src = form(0, 0, 0, 0, 0);
         let dst = form(base + DST_AT as u64, 40, 4, 1, 16);
-        call(&src, &dst, [3, 0, 0], [0, 0, 39, 0, 0, 1, 39, 1], |pb| vro_cpyfm(pb, &vwk(), &backend));
-        only_inside(&buf, &before, ROW1.0, ROW1.1, "vro_cpyfm screen->memory");
+        call(&src, &dst, [3, 0, 0], [0, 0, 39, 0, 0, 3, 39, 3], |pb| vro_cpyfm(pb, &vwk(), &backend));
+        only_inside(&buf, &before, DST_AT + 96, DST_FORM.1, "vro_cpyfm screen->memory");
+        let (px, _) = backend.snapshot();
+        for (x, &p) in px.iter().take(16).enumerate() {
+            assert_eq!(word(&buf, DST_AT + 96 + 2 * x), device_to_word(p), "pixel 48 + {x}");
+        }
     }
 
     #[test]
-    fn mono_to_memory_writes_only_the_bound_rows() {
+    fn mono_to_memory_writes_nothing_past_the_form() {
         let backend = Screen::new(64, 8, 3, true);
         let mut buf: Vec<u8> = (0..1024).map(|i| (i as u8) | 1).collect();
         let before = buf.clone();
@@ -2301,46 +2378,154 @@ mod v26_row_bound_tests {
         let src = form(base, 48, 4, 3, 1); // 1-plane, 6 bytes a row
         let dst = form(base + DST_AT as u64, 40, 4, 1, 16);
         for mode in 1..=4 {
-            call(&src, &dst, [mode, 1, 0], [0, 0, 39, 0, 0, 1, 39, 1], |pb| vrt_cpyfm(pb, &vwk(), &backend, 256));
-            only_inside(&buf, &before, ROW1.0, ROW1.1, "vrt_cpyfm mono->memory");
+            call(&src, &dst, [mode, 1, 0], [0, 0, 39, 0, 0, 3, 39, 3], |pb| vrt_cpyfm(pb, &vwk(), &backend, 256));
+            only_inside(&buf, &before, DST_AT + 96, DST_FORM.1, "vrt_cpyfm mono->memory");
         }
     }
 
-    /// The source form `fd_w` 40, `fd_wdwidth` 1, `fd_h` 4 at byte 0; its
-    /// row 1 (`[32, 64)`) holds `0x1000 + i`, everything else `POISON`.
+    /// The source form `fd_w` 40, `fd_wdwidth` 1, `fd_h` 4 at byte 256
+    /// (bytes `[256, 384)`), WORD `i` holding `0x1000 + i`; every other byte
+    /// of the arena is `POISON`.
+    const SRC_AT: usize = 256;
     fn poisoned_source() -> Vec<u8> {
         let mut buf = poisoned(1024);
-        for i in 0..16 {
-            buf[32 + 2 * i..34 + 2 * i].copy_from_slice(&(0x1000 + i as u16).to_ne_bytes());
+        for i in 0..64 {
+            let at = SRC_AT + 2 * i;
+            buf[at..at + 2].copy_from_slice(&(0x1000 + i as u16).to_ne_bytes());
         }
         buf
     }
 
+    /// What a 40-pixel run from source pixel 48 (row 3) reads: pixels
+    /// 48..63 of the form, then nothing (0) — not the poison behind it.
+    fn last_row_run() -> Vec<u16> {
+        (0..40).map(|x| if x < 16 { 0x1030 + x as u16 } else { 0 }).collect()
+    }
+
     #[test]
-    fn memory_to_memory_reads_only_the_bound_rows() {
+    fn memory_to_memory_reads_nothing_past_the_form() {
         let backend = Screen::new(64, 8, 4, true);
         let mut buf = poisoned_source();
         let base = buf.as_mut_ptr() as u64;
         buf[DST_AT..DST_AT + 96].fill(0);
-        let src = form(base, 40, 4, 1, 16);
+        let src = form(base + SRC_AT as u64, 40, 4, 1, 16);
         let dst = form(base + DST_AT as u64, 48, 1, 3, 16);
-        call(&src, &dst, [3, 0, 0], [0, 1, 39, 1, 0, 0, 39, 0], |pb| vro_cpyfm(pb, &vwk(), &backend));
-        let got: Vec<u16> = (0..48).map(|x| word(&buf, DST_AT + 2 * x)).collect();
-        assert!(!got.contains(&POISON), "a source word outside the bound row was read: {got:04x?}");
-        assert_eq!(&got[..16], &(0..16).map(|i| 0x1000 + i).collect::<Vec<u16>>()[..]);
+        call(&src, &dst, [3, 0, 0], [0, 3, 39, 3, 0, 0, 39, 0], |pb| vro_cpyfm(pb, &vwk(), &backend));
+        let got: Vec<u16> = (0..40).map(|x| word(&buf, DST_AT + 2 * x)).collect();
+        assert_eq!(got, last_row_run());
     }
 
     #[test]
-    fn memory_to_screen_reads_only_the_bound_rows() {
+    fn memory_to_screen_reads_nothing_past_the_form() {
         let backend = Screen::new(64, 8, 5, true);
         let mut buf = poisoned_source();
         let base = buf.as_mut_ptr() as u64;
-        let src = form(base, 40, 4, 1, 16);
+        let src = form(base + SRC_AT as u64, 40, 4, 1, 16);
         let dst = form(0, 0, 0, 0, 0);
-        call(&src, &dst, [3, 0, 0], [0, 1, 39, 1, 0, 2, 39, 2], |pb| vro_cpyfm(pb, &vwk(), &backend));
+        call(&src, &dst, [3, 0, 0], [0, 3, 39, 3, 0, 2, 39, 2], |pb| vro_cpyfm(pb, &vwk(), &backend));
         let (px, _) = backend.snapshot();
         let got: Vec<u16> = (0..40).map(|x| device_to_word(px[2 * 64 + x])).collect();
-        assert!(!got.contains(&POISON), "a source word outside the bound row was read: {got:04x?}");
-        assert_eq!(&got[..16], &(0..16).map(|i| 0x1000 + i).collect::<Vec<u16>>()[..]);
+        assert_eq!(got, last_row_run());
+    }
+
+    // ── EmuTOS' geometry inside the form ───────────────────────────────
+
+    /// A 40×1 block at (0, 1) of the 16-pixel-row destination lands on
+    /// pixels 16..55 — rows 1, 2 and half of 3, as in EmuTOS; an 8×1 block at
+    /// (-4, 2) lands on pixels 28..35, the tail of row 1 and the head of 2.
+    #[test]
+    fn a_block_wider_than_the_row_runs_on_into_the_next_row() {
+        let backend = Screen::new(64, 8, 6, true);
+        for (x, y, w, first) in [(0i16, 1i16, 40usize, 16usize), (-4, 2, 8, 28)] {
+            let mut buf = ramp();
+            let before = buf.clone();
+            let base = buf.as_mut_ptr() as u64;
+            let src = form(base, 48, 4, 3, 16);
+            let dst = form(base + DST_AT as u64, 40, 4, 1, 16);
+            let pts = [0, 0, w as i16 - 1, 0, x, y, x + w as i16 - 1, y];
+            call(&src, &dst, [3, 0, 0], pts, |pb| vro_cpyfm(pb, &vwk(), &backend));
+            let at = DST_AT + 2 * first;
+            only_inside(&buf, &before, at, at + 2 * w, "wrap");
+            for i in 0..w {
+                assert_eq!(word(&buf, at + 2 * i), word(&before, 2 * i), "block ({x},{y}) pixel {i}");
+            }
+        }
+    }
+
+    /// `vrt_cpyfm` wraps the same way: `MD_XOR` with an all-ones source
+    /// complements pixels 16..55 and nothing else.
+    #[test]
+    fn mono_to_memory_runs_on_into_the_next_row() {
+        let backend = Screen::new(64, 8, 7, true);
+        let mut buf = ramp();
+        buf[..24].fill(0xFF); // the 48×4 1-plane source, all ones
+        let before = buf.clone();
+        let base = buf.as_mut_ptr() as u64;
+        let src = form(base, 48, 4, 3, 1);
+        let dst = form(base + DST_AT as u64, 40, 4, 1, 16);
+        call(&src, &dst, [3, 1, 0], [0, 0, 39, 0, 0, 1, 39, 1], |pb| vrt_cpyfm(pb, &vwk(), &backend, 256));
+        let at = DST_AT + 32;
+        only_inside(&buf, &before, at, at + 80, "vrt_cpyfm wrap");
+        for i in 0..40 {
+            assert_eq!(word(&buf, at + 2 * i), !word(&before, at + 2 * i), "pixel 16 + {i}");
+        }
+    }
+
+    /// `fd_w` 10 in a 16-pixel row: the padding columns 10..15 are pixels
+    /// like the others — written by a 16-wide copy into the form, read by a
+    /// 16-wide copy out of it.
+    #[test]
+    fn the_padding_columns_are_read_and_written() {
+        let backend = Screen::new(64, 8, 8, true);
+        let mut buf = ramp();
+        let before = buf.clone();
+        let base = buf.as_mut_ptr() as u64;
+        let src = form(base, 48, 4, 3, 16);
+        let dst = form(base + DST_AT as u64, 10, 2, 1, 16);
+        call(&src, &dst, [3, 0, 0], [0, 0, 15, 0, 0, 0, 15, 0], |pb| vro_cpyfm(pb, &vwk(), &backend));
+        only_inside(&buf, &before, DST_AT, DST_AT + 32, "padding write");
+        for x in 0..16 {
+            assert_eq!(word(&buf, DST_AT + 2 * x), word(&before, 2 * x), "column {x}");
+        }
+
+        let mut buf = poisoned_source();
+        let base = buf.as_mut_ptr() as u64;
+        let src = form(base + SRC_AT as u64, 10, 4, 1, 16);
+        let scr = form(0, 0, 0, 0, 0);
+        call(&src, &scr, [3, 0, 0], [0, 0, 15, 0, 0, 0, 15, 0], |pb| vro_cpyfm(pb, &vwk(), &backend));
+        let (px, _) = backend.snapshot();
+        let got: Vec<u16> = (0..16).map(|x| device_to_word(px[x])).collect();
+        assert_eq!(got, (0..16).map(|i| 0x1000 + i).collect::<Vec<u16>>(), "padding read");
+    }
+
+    /// What is bound covers what is touched: every pixel (chunky) or group
+    /// (planar) of a block that lies inside the form lies in the hull the
+    /// opcode binds — over blocks before, across and past the form.
+    #[test]
+    fn the_bound_hull_holds_every_touched_pixel() {
+        let geo = [(40i16, 4i16, 1i16), (48, 3, 3), (10, 5, 2), (16, 1, 1)];
+        let blocks = [(0i32, 0i32, 40i32, 1i32), (-20, 1, 50, 3), (5, -2, 30, 4), (0, 3, 100, 2), (-40, -1, 8, 9)];
+        for &(w, h, wd) in &geo {
+            for planes in [16i16, 1, 4] {
+                let m = Mfdb { addr: 0x1000, w, h, wdwidth: wd, stand: 0, nplanes: planes };
+                for &(x, y, bw, bh) in &blocks {
+                    let ch = m.chunky_hull(x, y, bw, bh);
+                    let ph = m.planar_hull(x, y, bw, bh);
+                    for r in 0..bh {
+                        for c in 0..bw {
+                            if let Some(i) = m.mem_index(x + c, y + r) {
+                                let (lo, hi) = ch.expect("a touched pixel but no hull");
+                                assert!((lo..hi).contains(&(i as i64)), "{w}x{h}/{wd} block {x},{y}: pixel {i}");
+                            }
+                            let lg = (y + r) as i64 * wd as i64 + ((x + c) as i64).div_euclid(16);
+                            if (0..wd as i64 * h as i64).contains(&lg) {
+                                let (lo, hi) = ph.expect("a touched group but no hull");
+                                assert!((lo..hi).contains(&lg), "{w}x{h}/{wd} block {x},{y}: group {lg}");
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

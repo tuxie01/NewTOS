@@ -1294,7 +1294,7 @@ mouse_int	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	update_ms_stat	mapped	the cur_m
 mov_cur	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	set_state	mapped	cursor move and redraw; NewTOS draws inline here, EmuTOS defers the draw to vb_draw on VBL; mouse.rs mov_cur is only the vex_curv address sentinel
 vditrap	vdi/vdi_asm.S	kernel/src/arch/aarch64/exceptions.rs	sync_handler	mapped	the GEM trap arm: selector 115 = VDI; -1 answers 0 (documented deviation: no jsr-able address); other selectors (-2, vq_gdos) leave x0 untouched
 wheel_int	vdi/vdi_asm.S	-	-	design:hardware:ikbd-acia	decodes the IKBD status packet 05 00.. of a wheel; NewTOS has no IKBD packets (a wheel arrives as HID scancodes in mouse.rs mousex_handler -> call_user_wheel)
-fast_bit_blt	vdi/vdi_blit.S	tos-api/src/vdi/raster.rs	planar_mem_to_mem	mapped	planar BitBlt for plane_ct <= 8 (cpy_raster): per plane and destination WORD, op of the 16-entry table, end masks, overlap direction by start address (vdi_blit.S:942-946); only memory to memory reaches it (the screen is 16 planes, ADR-024); bound to fd_w x fd_h (V19)
+fast_bit_blt	vdi/vdi_blit.S	tos-api/src/vdi/raster.rs	planar_mem_to_mem	mapped	planar BitBlt for plane_ct <= 8 (cpy_raster): per plane and destination WORD, op of the 16-entry table, end masks, overlap direction by start address (vdi_blit.S:942-946); only memory to memory reaches it (the screen is 16 planes, ADR-024); V19; addressed linearly as EmuTOS, fd_w no limit, cut at the fd_h rows (V26)
 fast_bit_blt	vdi/vdi_blit.S	tos-api/src/vdi/raster.rs	bits_at	mapped	the skew: 16 source bits at an arbitrary pixel from the two WORDs the run spans (V19)
 bub_sort	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	the ascending sort of the crossings is an inline insertion sort in fill_polygon
 clc_flit	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	scan-line polygon fill, even-odd, perimeter pixels included
@@ -1397,9 +1397,10 @@ linea_blit	vdi/vdi_raster.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no L
 linea_raster	vdi/vdi_raster.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 7: no NewTOS counterpart
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	effective_planes	mapped	plane count of source and destination and the plane_ct <= 16 gate
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	read	mapped	MFDB reading (Mfdb::read, caller ABI) replaces the MFDB field access
-setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	planar_row_bytes	mapped	s_nxln/d_nxln = fd_wdwidth * fd_nplanes * 2 of a memory form below nine planes (:922-923,937-938; V19)
+setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	planar_hull	mapped	s_nxln/d_nxln = fd_wdwidth * fd_nplanes * 2 of a memory form below nine planes (:922-923,937-938; V19): group g of row y = linear group y * fd_wdwidth + g, fd_w unread; the block hull clipped to the fd_h rows, what is bound (V26)
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	of	mapped	PlanarForm::of: the interleaved form below nine planes, s_nxwd = fd_nplanes * 2, s_nxpl = 2 (:919-940,959-960; V19)
-setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_width	mapped	row of a 16-plane memory form = d_nxln / 2 = fd_wdwidth * 16 WORDs (:919-923,933-938), fd_w unread; NewTOS bounds a pixel to min(fd_w, fd_wdwidth * 16) so it stays in its own, bound row (V26)
+setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_span_px	mapped	row of a 16-plane memory form = d_nxln / 2 = fd_wdwidth * 16 WORDs (:919-923,933-938), fd_w and fd_h unread; NewTOS limits only to the fd_h rows of the form (V26)
+setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	chunky_hull	mapped	the pixels a block can touch, first to last, clipped to the fd_h rows; what bind_block binds (V26)
 setup_pattern	vdi/vdi_raster.c	-	-	design:source:docs/api/vdi/raster/_raster.md	fills p_nxpl/p_nxln/p_mask only; cpy_raster has set p_addr = NULL (:1345), so no blit reads them and PAT_FLAG is a strip (D-082); NewTOS strips it in vro_cpyfm (op = INTIN[0] & 0x0F) and has nothing to set up (V19)
 vdi_vr_trnfm	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vr_trnfm	mapped	opcode 110, planar and truecolor branches
 vdi_vro_cpyfm	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vro_cpyfm	mapped	opcode 109
@@ -1410,13 +1411,14 @@ vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_screen	mapped	memo
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_mem	mapped	memory to memory, 16-bit words; overlap direction rule is NewTOS' own
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	raster_op	mapped	the 16 logic ops on the pixel word
 vro_cpyfm16	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	copy_rect	mapped	screen to screen
-vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	row_window	mapped	the words of one row: start y * d_nxln / 2 (:986-990), limit mem_width (V26)
-vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	get_mem	mapped	one pixel at y * src_width + x (:989), 0 outside the bounded form (V26)
-vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	put_mem	mapped	one pixel at y * dst_width + x (:990), dropped outside the bounded form (V26)
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	row_cols	mapped	the columns of one row inside the form: start y * d_nxln / 2 (:986-990), any column, wrapping into other rows (V26)
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	get_mem	mapped	one pixel at y * src_width + x (:989) for any x, 0 outside the fd_h rows (V26)
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	put_mem	mapped	one pixel at y * dst_width + x (:990) for any x, dropped outside the fd_h rows (V26)
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_index	mapped	the pixel address y * width + x of :989-990, None outside the fd_h rows (V26)
 vrt_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mono_to_mem	mapped	mono source expanded into a 16-bit memory MFDB
 vrt_cpyfm16	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	blit_mono	mapped	mono source expanded onto the screen
-vrt_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	put_mem	mapped	the destination pixel at y * dst_width + x (:1249-1250), dropped outside the bounded form (V26)
-vrt_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	get_mem	mapped	MD_XOR reads the destination pixel (*q = ~*q), 0 outside the bounded form (V26)
+vrt_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	put_mem	mapped	the destination pixel at y * dst_width + x (:1249-1250) for any x, dropped outside the fd_h rows (V26)
+vrt_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	get_mem	mapped	MD_XOR reads the destination pixel (*q = ~*q), 0 outside the fd_h rows (V26)
 normal_blit	vdi/vdi_tblit.S	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	the glyph cell blit with the writing mode; the cell itself (scaling, effects, rotation) is built in text.rs build_cell/blit_cell
 adjust_mono_values	vdi/vdi_col.c	-	-	design:hardware:video-shifter	ST/STE monochrome DAC fudge factors (palette path, v_planes == 1); the Pi has no ST shifter
 adjust_tt_colnum	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter palette bank handling; the Pi has no TT shifter

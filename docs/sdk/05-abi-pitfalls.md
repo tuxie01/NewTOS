@@ -147,7 +147,7 @@ Three of them are read by a built application today
 | typedef | m68k → LP64 | Reader | State |
 |---------|-------------|--------|-------|
 | `OSHEADER` | 48 → 96 | TeraDesk `gettos.c` (`_sysbase->os_version`), apitest T04 | was correct **by accident** (only `os_entry`/`os_version` precede the first pointer); since TASK/SDK04 the overlay `<mint/sysvars.h>` declares it at its 48 wire bytes (table above) |
-| `MFDB` | 20 → 24 | TeraDesk, QED via cflib | correct: the kernel decodes the MFDB at the caller's ABI width (`tos-api/src/vdi/raster.rs:93-105@read`); `fd_addr` is a real pointer and cannot be pinned to 32 bits |
+| `MFDB` | 20 → 24 | TeraDesk, QED via cflib | correct: the kernel decodes the MFDB at the caller's ABI width (`tos-api/src/vdi/raster.rs:117@read`); `fd_addr` is a real pointer and cannot be pinned to 32 bits |
 | `_KEYTAB` | 28 → 56 | TeraDesk `xdevent.c`, QED via cflib `nkcc` | correct: `Keytbl` writes each pointer field at the caller's width into the process's own KEYTBL area (`tos-api/src/xbios/keytbl.rs`) |
 
 `_MD`/`_MPB` (behind `Getmpb`), `_KBDVECS`, `_IOREC`, `_MAPTAB`, `_BCONMAP`,

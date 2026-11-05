@@ -613,6 +613,30 @@ Implementation `tos-api/src/vdi/eddi.rs`; tests
 `tos-api/tests/vdi_eddi_scrninfo.rs`. `v_opnbm`/`v_clsbm`/`v_open_bm`/
 `v_resize_bm` are **not** provided (E1).
 
+**A raster copy into or out of a memory form stops at the form's `fd_h`
+rows; EmuTOS runs on past it** — user decision 2026-11-05 (*"ja a"*: memory-form
+geometry like EmuTOS), TASK/V26. Inside the form NewTOS addresses a memory
+MFDB exactly as EmuTOS: pixel `(x, y)` of a 16-plane form is WORD
+`y × fd_wdwidth × 16 + x`, group `⌊x / 16⌋` of a planar form is linear group
+`y × fd_wdwidth + ⌊x / 16⌋` (`setup_info`, `references/emutos/vdi/vdi_raster.c:919-923`,
+`:933-938`; `vro_cpyfm16` `:986-990`, `vrt_cpyfm16` `:1241-1250`). `fd_w` is
+no limit — a block wider than the row runs on into the next row, the padding
+columns are read and written. EmuTOS reads neither `fd_w` nor `fd_h` for a
+copy (in `vdi_raster.c` only `vr_trnfm` reads `fd_h`, `:198,300`), so a block
+that runs past the last row, or starts before WORD 0, reads and writes the
+memory behind or before the form. NewTOS does not: a pixel outside
+`[0, fd_h × fd_wdwidth × 16)` WORDs (planar: `fd_h × fd_wdwidth` groups)
+reads as 0 and is not written, and only the part of the form between the
+block's first and last pixel is checked against the caller's rights and
+touched. Reason: kernel memory safety — the VDI runs in the kernel, and
+memory past the form is not the program's to give (unmapped, or another
+process's). **Observable difference:** only for a block that leaves its form
+— past `fd_h` rows or before the first pixel: EmuTOS changes (or reads) the
+bytes there, NewTOS leaves them alone and reads 0. A block inside the form
+behaves identically, including one with `fd_w > fd_wdwidth × 16`.
+Spec `docs/api/vdi/raster/_raster.md` (§ "NewTOS memory-MFDB format", Row
+geometry and bound; § "Memory → memory below nine planes").
+
 **Key auto-repeat runs in the polled input pump, not in the timer
 interrupt** — user decision 2026-10-02 (variant (b) of
 `TASK/PORT06-KEYS-DIAGNOSIS.MD`), landed as KEYS01 2026-10-03. EmuTOS
