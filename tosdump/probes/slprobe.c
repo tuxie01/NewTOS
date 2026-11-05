@@ -518,7 +518,7 @@ int main(void)
 	emit("T00 t=%lu\n", (unsigned long)t);
 	flush_log();
 
-	for (k = 1; !quit && k < 30000; k++) {
+	for (k = 1; !quit && k < 10000000; k++) {	/* runaway guard only: NewTOS returns ~7800 WM_ARROWED/s in a page hold (A130) */
 		uint32_t t1;
 		int16_t which;
 		int rep;
