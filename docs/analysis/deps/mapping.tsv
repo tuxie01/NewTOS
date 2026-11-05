@@ -1299,24 +1299,24 @@ fast_bit_blt	vdi/vdi_blit.S	tos-api/src/vdi/raster.rs	bits_at	mapped	the skew: 1
 bub_sort	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	the ascending sort of the crossings is an inline insertion sort in fill_polygon
 clc_flit	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	scan-line polygon fill, even-odd, perimeter pixels included
 clipbox	vdi/vdi_fill.c	kernel/src/vdi_backend.rs	fill_pattern	mapped	rectangle clipping is done inside the backend (rect intersect clip intersect screen); vr_recfl passes vwk.clip_rect()
-contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	seed fill; NewTOS uses a seed stack with a per-call visited bitmap instead of EmuTOS' seed-collision queue (contour.rs module doc)
-crunch_queue	vdi/vdi_fill.c	-	-	unmapped	seed-queue housekeeping; NewTOS has no queue (seed stack + visited bitmap in contour.rs)
-end_pts	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	the span extension and seed verdict are the probe/matches closures and the left/right walk in v_contourfill (palette branch via read_pixel)
-end_pts16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	truecolor branch: probe compares 16-bit screen words with OVERLAY_BIT masked on the screen side
+contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	guards, search colour and seed_type, the seed span; the main loop is Flood::run (V21)
+contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	run	mapped	the seed-queue main loop: next-row search, left/right leak-back, circular take from qptr, span draw (V21)
+crunch_queue	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	crunch_queue	mapped	Flood::crunch_queue, qtop lowered over trailing holes (V21)
+end_pts	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	Flood::end_pts: run of one colour, fillable verdict; palette branch reads indices through pixelread (V21)
+end_pts16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	Flood::end_pts, truecolor: 16-bit screen words with OVERLAY_BIT masked on the screen side
 get_color	vdi/vdi_fill.c	-	-	design:ADR-024@docs/MEMORY.md:2156	composes a pixel colour from the bit-planes (planar path); NewTOS has no bit-planes (ADR-024); the palette branch of contour.rs uses RasterBackend::read_pixel instead
 get_pix	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; linea pixel read: no NewTOS counterpart
-get_seed	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	seed creation is the seed pushes in the loop of v_contourfill (no collision removal, visited bitmap instead)
+get_seed	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	get_seed	mapped	Flood::get_seed: collision removal + draw, first hole, QSIZE overflow ends the fill (V21)
 no_abort	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; default of the Line-A SEEDABORT variable: no NewTOS counterpart
-pixelread	vdi/vdi_fill.c	tos-api/src/vdi/inquiry.rs	v_get_pixel	mapped	truecolor: the raw 16-bit screen word via device_to_rgb565(get_device_pixel); out-of-screen reads 0-word, EmuTOS reads memory unchecked
-pixelread	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	the seed-colour read (intin0 < 0) in v_contourfill
+pixelread	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	pixelread	mapped	the one screen read of v_get_pixel and v_contourfill; truecolor: device_to_rgb565(get_device_pixel); out-of-screen reads 0-word, EmuTOS reads memory unchecked (V24)
 polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	the interior fill incl. the y-extent clip of polygon
 polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	polyline	mapped	the closed perimeter (LN_MASK 0xffff, fill colour) when fill_per; drawn by v_fillarea, gdp curve/rbox and the wide-line helper
 polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	polygon	mapped	polygon under the wide-line attribute environment (solid pattern, line colour, perimeter on)
 put_pix	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; linea pixel write: no NewTOS counterpart
-search_to_left	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	the left walk of the span (xl loop); planar word scanning has no counterpart
-search_to_left16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	the left walk of the span (xl loop), truecolor words
-search_to_right	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	the right walk of the span (xr loop); planar word scanning has no counterpart
-search_to_right16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	the right walk of the span (xr loop), truecolor words
+search_to_left	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	the left walk in Flood::end_pts; planar word scanning has no counterpart
+search_to_left16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	the left walk in Flood::end_pts, truecolor words
+search_to_right	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	the right walk in Flood::end_pts; planar word scanning has no counterpart
+search_to_right16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	the right walk in Flood::end_pts, truecolor words
 st_fl_ptr	vdi/vdi_fill.c	tos-api/src/vdi/fill_patterns.rs	select	mapped	pattern/mask choice; NewTOS derives it at draw time from fill_style/fill_index instead of caching patptr/patmsk in the Vwk
 vdi_v_contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	opcode 103
 vdi_v_fillarea	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	v_fillarea	mapped	opcode 9 (HAVE_BEZIER is 0)

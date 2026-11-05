@@ -180,6 +180,55 @@ rule:
 If the seed point lies **outside the clip rectangle**, `contourfill`
 returns immediately doing nothing (`vdi_fill.c:965-967`).
 
+### Seed queue (`vdi_fill.c:873-1062`)
+
+The fill order and its limit are observable, so they are contract:
+
+- **Spans are runs of one screen colour.** `end_pts` (`vdi_fill.c:836-866`,
+  truecolor `end_pts16` `:746-767`) takes the colour of the pixel it is
+  asked about and extends left and right over pixels of *that* colour,
+  bounded by the clip's x range; the run is fillable if its colour equals
+  `search_color` (`seed_type=1`) or differs from it (`seed_type=0`). A row
+  outside the clip's y range has no span (`:843-844`). Truecolor compares
+  the screen words with `OVERLAY_BIT` masked off (`:755`) against the
+  unmasked `search_color`.
+- **The screen is read live.** Each span is drawn (`draw_rect_common` on
+  one row, `:1050-1057`) the moment it is taken from the queue, and later
+  searches read the drawn pixels: a patterned or XOR fill changes what the
+  fill sees next.
+- **Queue entries** (`SEGMENT`, `include/vdiext.h:17-21`) hold a row, a
+  span and a direction (`DOWN_FLAG` `0x8000` in `y`, `vdi_fill.c:30`);
+  free entries are `EMPTY` (`0xffff`, `:29`). The seed span is queued going
+  down (`:997-1001`), but the first pass searches **up** from it, before it
+  is drawn (`oldy` still has no flag, `:1006`).
+- **One pass** (`:1003-1062`): search the next row at the left end of the
+  current span (`get_seed`); if that span sticks out left by two or more
+  pixels and was queued, seed the spans of the *current* row from
+  `oldxleft-1` down to the new span's left end, in the opposite direction
+  (`:1011-1018`); seed the further spans of the next row up to `oldxright`
+  (`:1019-1024`); if the last one sticks out right by two or more and was
+  queued, seed the current row beyond `oldxright` in the opposite direction
+  (`:1025-1032`). Then take the next non-`EMPTY` entry scanning circularly
+  from `qptr` (`:1038-1048`), free it, draw it (`:1050-1057`). The fill
+  ends when the queue is empty (`:1034-1036`).
+- **`get_seed`** (`:888-942`) queues a fillable span — unless a queued
+  entry has the same row, the opposite direction and the same left end:
+  then that entry is freed and the span drawn at once (`:905-922`). A new
+  seed takes the first hole, else raises `qtop`; `crunch_queue`
+  (`:875-881`) lowers `qtop` over trailing holes.
+- **Capacity `QSIZE`** = `sizeof(struct vsmain)/sizeof(SEGMENT)`
+  (`include/vdiext.h:33`) = `3*MAX_VERTICES` WORDs / 3 WORDs =
+  `MAX_VERTICES` = **1024** entries in the reference build
+  (`include/config.h:1654`).
+  A seed that finds neither a hole nor room **ends the whole fill**
+  (`vdi_fill.c:929-932`, `:1009-1030`): what is drawn stays drawn, nothing
+  else is filled, no error.
+- `SEEDABORT` is `no_abort` for the VDI (`vdi_fill.c:1076-1090`), so the
+  VDI fill is never aborted early.
+- The queue overlays the local `PTSIN` copy in `vdishare`
+  (`include/vdiext.h:47-53`, `vdi/vdi_asm.S:79-80`); the caller's `PTSIN`
+  array is not touched.
+
 ### PTSIN / INTIN contract
 
 | Slot | Meaning |
@@ -213,6 +262,10 @@ returns immediately doing nothing (`vdi_fill.c:965-967`).
   → fills outward from the seed until it hits pixels of colour B.
 - **`v_contourfill` guards:** seed outside the clip rect → nothing drawn;
   `INTIN[0] >= numcolors` → nothing drawn.
+- **`v_contourfill` seed queue:** a dot lattice (40 rows of style
+  `0x8888`, `tosdump/cases/vdi-v18.tsv` 109/154/199) is filled into every
+  pocket; the fill order and the 1024-entry overflow follow the seed queue
+  above.
 
 ## Edge cases discovered in source
 
@@ -288,7 +341,8 @@ returns immediately doing nothing (`vdi_fill.c:965-967`).
   Target = `vwk->device` (ADR-011).
 - Keep the **auto-close** and **solid-`fill_color` perimeter** semantics —
   they are observable contract, not raster details.
-- Flood-fill reads pixels back via the framebuffer pixel-read path
-  (palette index for the bring-up screen); size the scanline seed stack to
-  the device width to bound recursion. `REV_MAP_COL`/`MAP_COL` translate
-  between VDI colour index and PEL as elsewhere.
+- Flood-fill reads pixels back through the same `pixelread` as
+  `v_get_pixel` and keeps EmuTOS' seed queue, order and `QSIZE` overflow
+  as specified above (TASK/V21; a 4096-entry seed stack that dropped
+  seeds left pockets unfilled, VDI-DRAW-008). `REV_MAP_COL`/`MAP_COL`
+  translate between VDI colour index and PEL as elsewhere.

@@ -624,7 +624,7 @@ struct PolyScratch {
 }
 
 // SAFETY: accessed only from the single-CPU, IRQ-off VDI trap path, like the
-// rest of the VDI's mutable state (see `vwk::TABLE` and `contour::SEEDS`).
+// rest of the VDI's mutable state (see `vwk::TABLE` and `contour::QUEUE`).
 // `pts` and `xs` are distinct cells, so `v_fillarea` holding `pts` while
 // `fill_polygon` holds `xs` is not aliasing; neither buffer is used by two
 // live borrows, because no VDI entry point that takes one calls another.

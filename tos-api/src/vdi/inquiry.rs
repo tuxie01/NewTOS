@@ -185,16 +185,16 @@ pub fn v_get_pixel(pb: &Vdipb, backend: &dyn RasterBackend) {
     let y = pb.ptsin(1);
     pb.set_contrl(4, 2);
 
+    // `pel = (WORD)pixelread(x,y)` (`vdi_fill.c:1102`) — the same read
+    // `v_contourfill` uses (`super::contour::pixelread`).
+    let pel = super::contour::pixelread(backend, x, y);
     if backend.planes() > 8 {
-        // TRUECOLOR_MODE: the 16-bit screen word, cast to a WORD exactly as
-        // EmuTOS does (`pel = (WORD)pixelread(x,y)`, `vdi_fill.c:1102`).
-        let pel = backend.device_to_rgb565(backend.get_device_pixel(x, y));
+        // TRUECOLOR_MODE: the 16-bit screen word, cast to a WORD.
         pb.set_intout(0, 0);
         pb.set_intout(1, pel as i16);
         return;
     }
 
-    let pel = backend.read_pixel(x, y);
     pb.set_intout(0, pel as i16);
     pb.set_intout(1, pel as i16);
 }

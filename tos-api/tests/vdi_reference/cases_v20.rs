@@ -34,8 +34,9 @@ fn be16(b: &[u8], off: usize) -> i16 {
 /// checks the harness's own screen word in its place — which says nothing
 /// about whether the pixel is the oracle's. Against this Falcon truecolor
 /// reference the two words are directly comparable, so they are compared
-/// here, after the same reset and preludes `check` issues.
-fn check(dump: &[u8], case: &Case) {
+/// here, after the same reset and preludes `check` issues. Shared with the
+/// other `vdi-v18.tsv` tickets (`cases_v21`).
+pub(crate) fn check(dump: &[u8], case: &Case) {
     check_fields(dump, case);
 
     let _guard = VDI_LOCK.lock().unwrap_or_else(|e| e.into_inner());
