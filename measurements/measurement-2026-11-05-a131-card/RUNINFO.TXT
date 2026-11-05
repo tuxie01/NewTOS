@@ -1,0 +1,39 @@
+RUNINFO -- user's test card gets the A131 kernel for the Pi drop-shadow check (2026-11-05)
+
+WHAT
+  A131 (GitHub #7): window drop shadow painted in W_BOX's border colour like
+  EmuTOS just_draw (837e1001), accepted against the oracle
+  (measurements/measurement-2026-11-05-a131-test/RUNINFO.TXT). The kernel also
+  carries the A130 scroll-bar fix. Only kernel8.img is replaced.
+
+SOURCE
+  cargo xtask build --board rpi4 --release --features crash-walk at 10978982
+  (not pushed; user: push after the fix is done).
+  sha256 e56021e70684bbaeb1dcf12fb8fdf3025e651918c46c7d23686bf7ef252d51b6
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1).
+  optional_missing: not applicable (no image built; file copied by hand).
+
+CARD
+  disk4s1 = BOOT = C:
+    Before: kernel8.img 02c833a5b780122a... (A130 kernel,
+    measurements/measurement-2026-11-05-a130-card/RUNINFO.TXT).
+    On the user's word ("karte steckt im mac"; cp -X, no script, no backup)
+    -> C:\kernel8.img.
+    Read back after diskutil unmount force + mount: e56021e70684bbae...;
+    cmdline.txt = 0x0a (1 byte, unchanged); kernela.img e0fe680b... unchanged
+    (fallback). ._cmdline.txt and ._kernel8.img are older (2026-10-31), not
+    from this copy; left in place (firmware ignores them).
+  NEWTOS1..3 untouched.
+
+CHECKS FOR THE USER (result goes to TASK/A131.md)
+  1. Open a drive window: right and bottom, directly at the frame, a 2-px
+     black shadow; no grey line.
+  2. Two overlapping windows, one active, one inactive: both with the black
+     shadow.
+  3. A short look at QED or TeraDesk windows: the same.
+
+RESULT
+  User 2026-11-05 after the Pi run: "ja der schatten ist jetzt schwarz, mir
+  persoenlich gefaellt das ergebniss nicht aber es entspricht EmuTOS 1:1"
+  (black shadow confirmed, EmuTOS-equal; the user's taste is noted,
+  no change).
