@@ -1,0 +1,23 @@
+H00 graf_handle 8 16 19 19
+C00 wind_create(0fef)=1
+O00 wind_open=1
+G00 curr 80,60,400,320
+G01 work 81,83,376,274
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+T00 t=3022
+R001 t=3023 which=0010 mx=319 my=239 bs=0 br=0 msg=20,0,0,1,81,83,376,274
+D001.0 list 81,83,376,274 draw 81,83,376,274
+R002 t=4530 which=0010 mx=300 my=220 bs=0 br=0 msg=26,1,0,1,0,60,400,320
+V002 wind_set(VSLIDE,0)=1
+R003 t=5344 which=0010 mx=268 my=250 bs=0 br=0 msg=25,1,0,1,0,60,400,320
+V003 wind_set(HSLIDE,0)=1
+R004 t=5587 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R005 t=6526 which=0010 mx=300 my=220 bs=0 br=0 msg=26,1,0,1,506,60,400,320
+V005 wind_set(VSLIDE,506)=1
+R006 t=6771 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R007 t=7707 which=0010 mx=300 my=219 bs=0 br=0 msg=26,1,0,1,507,60,400,320
+V007 wind_set(VSLIDE,507)=1
+R008 t=7951 which=0002 mx=420 my=200 bs=1 br=1
+Z99 end quit=1

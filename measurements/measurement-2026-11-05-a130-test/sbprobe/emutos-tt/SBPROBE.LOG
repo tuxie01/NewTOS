@@ -1,0 +1,26 @@
+C01 ret=167 out1=0 obj=2,20  (plain child, plain parent)
+I01 pointer=319,239
+C02 ret=172 out1=0 obj=2,20  (3D child, plain parent (xy_adjust))
+I02 pointer=319,239
+C03 ret=167 out1=0 obj=2,20  (3D child, 3D parent)
+I03 pointer=319,239
+C04 ret=0 out1=0 obj=2,0  (3D child at the top (divnd 0))
+I04 pointer=319,239
+C05 ret=1000 out1=0 obj=2,120  (3D child at the bottom (capped))
+I05 pointer=319,239
+C06 ret=250 out1=0 obj=40,2  (horizontal, plain)
+I06 pointer=319,239
+C07 ret=256 out1=0 obj=40,2  (horizontal, 3D child)
+I07 pointer=319,239
+C08 ret=250 out1=0 obj=2,40  (plain child, pointer above it)
+I08 pointer=319,239
+C09 ret=276 out1=0 obj=2,40  (3D child, pointer above it)
+I09 pointer=319,239
+C10 ret=154 out1=0 obj=2,20  (plain child, 3D OUTLINED parent)
+I10 pointer=319,239
+C11 ret=159 out1=0 obj=2,20  (plain child, 3D SHADOWED parent)
+I11 pointer=319,239
+C12 ret=0 out1=0 obj=2,0  (child as high as the parent (divis 0))
+I12 pointer=319,239
+C13 ret=500 out1=0 obj=2,46  (file-selector thumb, 30 entries, top 10)
+I13 pointer=319,239

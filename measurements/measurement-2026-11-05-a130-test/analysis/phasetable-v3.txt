@@ -1,0 +1,23 @@
+1000 - start     rest==
+1000 V dragslow  before== held0== held1=243 held2=243 held3=243 slow16=243 slow32=243 beyondfar=244 beyondnear=244 sideways=244 back40=243 released== after0== after1==
+300  H pagehi    released== before== held1=710 held2==
+min  V dragslow  before== held0== held1=24 held2=24 held3=24 slow16=24 slow32=34 beyondfar=34 beyondnear=34 sideways=34 back40=34 released== after0== after1==
+min  V dragfast  before== heldfast0=34 heldfast1=34 heldfast2=34 released==
+min  V pagelo    before== held1=267 held2== released==
+min  V pagehi    before== held1=217 held2== released==
+min  H dragslow  before== held0== held1=23 held2=23 held3=23 slow16=24 slow32=34 beyondfar=34 beyondnear=34 sideways=34 back40=34 released== after0== after1==
+min  H dragfast  before== heldfast0=34 heldfast1=34 heldfast2=34 released==
+min  H pagelo    before== held1=196 held2== released==
+1000 V dragfast  before== heldfast0=243 heldfast1=243 heldfast2=243 released==
+min  H pagehi    before== held1=227 held2== released==
+1000 V pagehi    before== held1== held2== released==
+1000 H dragslow  before== held0== held1=340 held2=340 held3=340 slow16=340 slow32=340 beyondfar=347 beyondnear=347 sideways=347 back40=340 released== after0== after1==
+1000 H dragfast  before== heldfast0=340 heldfast1=340 heldfast2=340 released==
+1000 H pagehi    before== held1=693 held2=347 released==
+300  V dragslow  before== held0== held1=82 held2=82 held3=82 slow16=79 slow32=83 beyondfar=83 beyondnear=83 sideways=83 back40=83 released== after0== after1==
+300  V dragfast  before== heldfast0=80 heldfast1=80 heldfast2=80 released==
+300  V pagelo    before== held1=362 held2== released==
+300  V pagehi    before== held1=547 held2== released==
+300  H dragslow  before== held0== held1=107 held2=107 held3=107 slow16=106 slow32=106 beyondfar=114 beyondnear=114 sideways=114 back40=102 released== after0== after1==
+300  H dragfast  before== heldfast0=106 heldfast1=106 heldfast2=106 released==
+300  H pagelo    before== held1=743 held2== released==

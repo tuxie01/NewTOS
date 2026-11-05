@@ -1,0 +1,23 @@
+cfg   axis gesture   | EmuTOS                             | NewTOS
+1000  V    dragslow  | WM_VSLID 1000                      | WM_VSLID 1000
+1000  V    dragfast  | WM_VSLID 1000                      | WM_VSLID 1000
+1000  V    pagehi    | WM_ARROWED DNPAGE (+533 while held) | WM_ARROWED DNPAGE (+7253 while held)   DIFF
+1000  H    dragslow  | WM_HSLID 1000                      | WM_HSLID 1000
+1000  H    dragfast  | WM_HSLID 1000                      | WM_HSLID 1000
+1000  H    pagehi    | WM_HSLID 0                         | WM_HSLID 0
+300   V    dragslow  | WM_VSLID 753                       | WM_VSLID 753
+300   V    dragfast  | WM_VSLID 691                       | WM_VSLID 691
+300   V    pagelo    | WM_ARROWED UPPAGE (+551 while held) | WM_ARROWED UPPAGE (+7551 while held)   DIFF
+300   V    pagehi    | WM_ARROWED DNPAGE (+538 while held) | WM_ARROWED DNPAGE (+8105 while held)   DIFF
+300   H    dragslow  | WM_HSLID 675                       | WM_HSLID 675
+300   H    dragfast  | WM_HSLID 632                       | WM_HSLID 632
+300   H    pagelo    | WM_ARROWED LFPAGE (+543 while held) | WM_ARROWED LFPAGE (+7627 while held)   DIFF
+300   H    pagehi    | WM_ARROWED RTPAGE (+557 while held) | WM_ARROWED RTPAGE (+7503 while held)   DIFF
+-1    V    dragslow  | WM_VSLID 697                       | WM_VSLID 697
+-1    V    dragfast  | WM_VSLID 649                       | WM_VSLID 649
+-1    V    pagelo    | WM_ARROWED UPPAGE (+553 while held) | WM_ARROWED UPPAGE (+7558 while held)   DIFF
+-1    V    pagehi    | WM_ARROWED DNPAGE (+539 while held) | WM_ARROWED DNPAGE (+7484 while held)   DIFF
+-1    H    dragslow  | WM_HSLID 631                       | WM_HSLID 631
+-1    H    dragfast  | WM_HSLID 599                       | WM_HSLID 599
+-1    H    pagelo    | WM_ARROWED LFPAGE (+543 while held) | WM_ARROWED LFPAGE (+7911 while held)   DIFF
+-1    H    pagehi    | WM_ARROWED RTPAGE (+557 while held) | WM_ARROWED RTPAGE (+7440 while held)   DIFF

@@ -1,0 +1,215 @@
+H00 graf_handle 8 16 19 19
+C00 wind_create(0fef)=1
+O00 wind_open=1
+G00 curr 80,60,400,320
+G01 work 81,83,376,274
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+S00 script steps 119 shots 46
+A00 shot counter at 01091014
+G02 go after 11 polls
+T00 t=2813
+R001 t=2813 which=0010 mx=319 my=239 bs=0 br=-25774 msg=20,0,0,1,80,60,402,322
+D001.0 list 81,83,376,274 draw 81,83,376,274
+R002 t=4327 which=0010 mx=300 my=220 bs=0 br=-25774 msg=26,1,0,1,0,60,400,320
+V002 wind_set(VSLIDE,0)=1
+R003 t=5138 which=0010 mx=268 my=250 bs=0 br=-25774 msg=25,1,0,1,0,60,400,320
+V003 wind_set(HSLIDE,0)=1
+R004 t=5341 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R005 t=5347 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R006 t=5348 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R007 t=5349 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R008 t=5350 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R009 t=5352 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R010 t=6322 which=0010 mx=300 my=220 bs=0 br=1 msg=26,1,0,1,506,60,400,320
+V010 wind_set(VSLIDE,506)=1
+R011 t=6521 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R012 t=6526 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R013 t=6527 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R014 t=6528 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R015 t=6529 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R016 t=6530 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R017 t=6531 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R018 t=6532 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R019 t=7502 which=0010 mx=300 my=219 bs=0 br=1 msg=26,1,0,1,507,60,400,320
+V019 wind_set(VSLIDE,507)=1
+R020 t=7745 which=0002 mx=420 my=200 bs=1 br=1
+J000 t=3413 +600 pkt=f8 81 7f
+J001 t=3417 +604 pkt=f8 81 7f
+J002 t=3417 +604 pkt=f8 81 7f
+J003 t=3417 +604 pkt=f8 81 7f
+J004 t=3417 +604 pkt=f8 81 7f
+J005 t=3421 +608 pkt=f8 81 7f
+J006 t=3433 +620 pkt=f8 7f d9
+J007 t=3437 +624 pkt=f8 7f 00
+J008 t=3437 +624 pkt=f8 7f 00
+J009 t=3437 +624 pkt=f8 7f 00
+J010 t=3437 +624 pkt=f8 34 00
+J011 t=3701 +888 pkt=f8 a4 81
+J012 t=3701 +888 pkt=f8 00 a3
+J013 t=3701 +888 pkt=fa 00 00
+J014 t=3801 +988 pkt=fa f8 00
+J015 t=3805 +992 pkt=fa f8 00
+J016 t=3805 +992 pkt=fa f8 00
+J017 t=3809 +996 pkt=fa f8 00
+J018 t=3809 +996 pkt=fa f8 00
+J019 t=3813 +1000 pkt=fa f8 00
+J020 t=3813 +1000 pkt=fa f8 00
+J021 t=3817 +1004 pkt=fa f8 00
+J022 t=3817 +1004 pkt=fa f8 00
+J023 t=3821 +1008 pkt=fa f8 00
+J024 t=3821 +1008 pkt=fa f8 00
+J025 t=3825 +1012 pkt=fa f8 00
+J026 t=3825 +1012 pkt=fa f8 00
+J027 t=3829 +1016 pkt=fa f8 00
+J028 t=3829 +1016 pkt=fa f8 00
+J029 t=3833 +1020 pkt=fa f8 00
+J030 t=3833 +1020 pkt=fa f8 00
+J031 t=3837 +1024 pkt=fa f8 00
+J032 t=3837 +1024 pkt=fa f8 00
+J033 t=3841 +1028 pkt=fa f8 00
+J034 t=3841 +1028 pkt=fa f8 00
+J035 t=4325 +1512 pkt=f8 00 00
+J036 t=4525 +1712 pkt=f8 e0 7f
+J037 t=4525 +1712 pkt=f8 00 15
+J038 t=4529 +1716 pkt=fa 00 00
+J039 t=4629 +1816 pkt=fa 00 f8
+J040 t=4629 +1816 pkt=fa 00 f8
+J041 t=4633 +1820 pkt=fa 00 f8
+J042 t=4633 +1820 pkt=fa 00 f8
+J043 t=4637 +1824 pkt=fa 00 f8
+J044 t=4637 +1824 pkt=fa 00 f8
+J045 t=4641 +1828 pkt=fa 00 f8
+J046 t=4641 +1828 pkt=fa 00 f8
+J047 t=4645 +1832 pkt=fa 00 f8
+J048 t=4645 +1832 pkt=fa 00 f8
+J049 t=4649 +1836 pkt=fa 00 f8
+J050 t=4649 +1836 pkt=fa 00 f8
+J051 t=4653 +1840 pkt=fa 00 f8
+J052 t=4653 +1840 pkt=fa 00 f8
+J053 t=4657 +1844 pkt=fa 00 fa
+J054 t=5137 +2324 pkt=f8 00 00
+J055 t=5341 +2528 pkt=f8 d0 ce
+J056 t=5341 +2528 pkt=fa 00 00
+J057 t=5353 +2540 pkt=f8 00 00
+J058 t=5473 +2660 pkt=f8 7f 7f
+J059 t=5473 +2660 pkt=f8 7f 71
+J060 t=5473 +2660 pkt=f8 56 00
+J061 t=5697 +2884 pkt=f8 a4 81
+J062 t=5697 +2884 pkt=f8 00 a3
+J063 t=5697 +2884 pkt=fa 00 00
+J064 t=5797 +2984 pkt=fa f8 00
+J065 t=5801 +2988 pkt=fa f8 00
+J066 t=5801 +2988 pkt=fa f8 00
+J067 t=5805 +2992 pkt=fa f8 00
+J068 t=5805 +2992 pkt=fa f8 00
+J069 t=5809 +2996 pkt=fa f8 00
+J070 t=5809 +2996 pkt=fa f8 00
+J071 t=5813 +3000 pkt=fa f8 00
+J072 t=5813 +3000 pkt=fa f8 00
+J073 t=5817 +3004 pkt=fa f8 00
+J074 t=5817 +3004 pkt=fa f8 00
+J075 t=5821 +3008 pkt=fa f8 00
+J076 t=5821 +3008 pkt=fa f8 00
+J077 t=5825 +3012 pkt=fa f8 00
+J078 t=5825 +3012 pkt=fa f8 00
+J079 t=5829 +3016 pkt=fa f8 00
+J080 t=5829 +3016 pkt=fa f8 00
+J081 t=5833 +3020 pkt=fa f8 00
+J082 t=5833 +3020 pkt=fa f8 00
+J083 t=5837 +3024 pkt=fa f8 00
+J084 t=5837 +3024 pkt=fa f8 00
+J085 t=6321 +3508 pkt=f8 00 00
+J086 t=6521 +3708 pkt=f8 0a ec
+J087 t=6521 +3708 pkt=fa 00 00
+J088 t=6533 +3720 pkt=f8 00 00
+J089 t=6653 +3840 pkt=f8 7f 7f
+J090 t=6657 +3844 pkt=f8 7b 71
+J091 t=6877 +4064 pkt=f8 a4 81
+J092 t=6877 +4064 pkt=f8 00 a2
+J093 t=6877 +4064 pkt=fa 00 00
+J094 t=6981 +4168 pkt=fa f8 00
+J095 t=6981 +4168 pkt=fa f8 00
+J096 t=6985 +4172 pkt=fa f8 00
+J097 t=6985 +4172 pkt=fa f8 00
+J098 t=6989 +4176 pkt=fa f8 00
+J099 t=6989 +4176 pkt=fa f8 00
+J100 t=6993 +4180 pkt=fa f8 00
+J101 t=6993 +4180 pkt=fa f8 00
+J102 t=6997 +4184 pkt=fa f8 00
+J103 t=6997 +4184 pkt=fa f8 00
+J104 t=7001 +4188 pkt=fa f8 00
+J105 t=7001 +4188 pkt=fa f8 00
+J106 t=7005 +4192 pkt=fa f8 00
+J107 t=7005 +4192 pkt=fa f8 00
+J108 t=7009 +4196 pkt=fa f8 00
+J109 t=7009 +4196 pkt=fa f8 00
+J110 t=7013 +4200 pkt=fa f8 00
+J111 t=7013 +4200 pkt=fa f8 00
+J112 t=7017 +4204 pkt=fa f8 00
+J113 t=7017 +4204 pkt=fa f8 00
+J114 t=7021 +4208 pkt=fa f8 00
+J115 t=7501 +4688 pkt=f8 00 00
+J116 t=7701 +4888 pkt=f8 78 ed
+J117 t=7705 +4892 pkt=fa 00 00
+J118 t=7713 +4900 pkt=f8 00 00
+K000 t=3581 +768 (sched +765)
+K001 t=3621 +808 (sched +805)
+K002 t=3885 +1072 (sched +1070)
+K003 t=3925 +1112 (sched +1110)
+K004 t=3965 +1152 (sched +1150)
+K005 t=4005 +1192 (sched +1190)
+K006 t=4045 +1232 (sched +1230)
+K007 t=4085 +1272 (sched +1270)
+K008 t=4125 +1312 (sched +1310)
+K009 t=4165 +1352 (sched +1350)
+K010 t=4205 +1392 (sched +1390)
+K011 t=4245 +1432 (sched +1430)
+K012 t=4697 +1884 (sched +1884)
+K013 t=4737 +1924 (sched +1924)
+K014 t=4777 +1964 (sched +1964)
+K015 t=4817 +2004 (sched +2004)
+K016 t=4857 +2044 (sched +2044)
+K017 t=4897 +2084 (sched +2084)
+K018 t=4937 +2124 (sched +2124)
+K019 t=4977 +2164 (sched +2164)
+K020 t=5017 +2204 (sched +2204)
+K021 t=5057 +2244 (sched +2244)
+K022 t=5577 +2764 (sched +2761)
+K023 t=5617 +2804 (sched +2801)
+K024 t=5881 +3068 (sched +3066)
+K025 t=5921 +3108 (sched +3106)
+K026 t=5961 +3148 (sched +3146)
+K027 t=6001 +3188 (sched +3186)
+K028 t=6041 +3228 (sched +3226)
+K029 t=6081 +3268 (sched +3266)
+K030 t=6121 +3308 (sched +3306)
+K031 t=6161 +3348 (sched +3346)
+K032 t=6201 +3388 (sched +3386)
+K033 t=6241 +3428 (sched +3426)
+K034 t=6757 +3944 (sched +3942)
+K035 t=6797 +3984 (sched +3982)
+K036 t=7061 +4248 (sched +4247)
+K037 t=7101 +4288 (sched +4287)
+K038 t=7141 +4328 (sched +4327)
+K039 t=7181 +4368 (sched +4367)
+K040 t=7221 +4408 (sched +4407)
+K041 t=7261 +4448 (sched +4447)
+K042 t=7301 +4488 (sched +4487)
+K043 t=7341 +4528 (sched +4527)
+K044 t=7381 +4568 (sched +4567)
+K045 t=7421 +4608 (sched +4607)
+Z99 end quit=1

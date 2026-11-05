@@ -1,0 +1,48 @@
+measurement-2026-11-05-a130-test -- acceptance of TASK/A130 (GitHub #2, window scroll bars), fix d9e44143, probe guard e3ee16ef
+=====================================================================================================================
+Tester, 2026-11-05 (host clock CET). Main HEAD e3ee16ef, tree clean at start (only this run dir untracked). QEMU raspi4b / virt + pinned
+Hatari oracle. No product code or probe changed, no commit, no SD card, no Pi, no push. Reference run: measurements/measurement-2026-11-05-a130/.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+Manifests: runs/newtos-*/card.img.manifest, sbprobe/newtos/card.img.manifest, boot/sd.img.manifest (tools/make-sd-image.sh) --
+  optional_missing, verbatim, in all of them: none
+
+INPUTS (identical to the reference run): tosdump/probes/slprobe-mouse.txt c72e6fde..., slprobe-shots.txt 63b54d62..., method/flicker-mouse.txt 18b6056c...
+  ROM tools/oracle/etos512de-1a7484ab.img 323c87bb... (checked by run-slprobe.sh), Hatari 2.6.1 profile tt, QEMU 11.0.2 -M raspi4b -append serial=on
+  slprobe.c 4b475a0b... (reference run: a1fea652...; only the loop guard differs)
+KERNELS (cargo xtask build --board rpi4 --release from `git archive HEAD`, armed launch:SLPROBE; scratch, deleted):
+  v3 c728f88dda6fbc5a...  flicker 0d3a0c1d1fcfbae5...  plain rpi4 release (repo, sbprobe + boot) 4e8f837eaf76084e...
+CARDS (sha256 before / after boot of the APFS clone): v3-1 2fec7b57.../1b5fa09f...  v3-2 8e32d04d.../54c2519e...  flicker 7ce2ebb2.../fa92d7ab...  sbprobe 20afe806.../9591a362...
+METHOD  method/all-runs.sh (slprobe runs), compare.py phasetable.py msgtable.py flicker.py (copied unchanged from the reference run), pixdiff.py (new: raw RGB
+  histogram of the class-differing pixels per shot). sbprobe: tosdump/probes/run-sbprobe.sh emutos tt / newtos (as measurement-2026-11-04-a128-test).
+
+RESULTS
+ 1 EmuTOS oracle v3 (runs/emutos-tt-v3-1): SLPROBE.LOG identical to the reference run's emutos-tt-v3-1 byte for byte INCLUDING the t= stamps;
+   155/155 PNGs byte-identical (cmp). => the guard change did not change the oracle run; the old run stays the reference.
+ 2 NewTOS head v3, two runs (runs/newtos-head-v3-1/-2), both reach "Z99 end quit=1" (guard no longer ends the probe).
+   Messages (analysis/msgtable-v3-1.txt, -v3-2.txt), 22 gestures: all WM_VSLID/WM_HSLID equal the oracle: 1000/1000 (size 1000 V+H slow+fast),
+     753/691, 675/632, 697/649, 631/599; size 1000 H page x 433 = WM_HSLID 0 on both; all 16 sized page presses + 1000 V page: WM_ARROWED first
+     message while held, repeats while held. Only DIFF in the table = repeat counts of WM_ARROWED while held (E 533..557, N 6013..8105 per hold; same
+     pattern, faster loop; the counts differ between the two NewTOS runs, the table's first-message columns do not).
+   Pixels (analysis/cmp-v3-1, cmp-v3-2, phasetable-v3.txt, pixdiff-v3-*.txt; baseline mask 1525 px as in the reference run):
+     before / held0 / released / after / all size-1000-V page shots: 0 px.
+     every drag phase (held1..back40, heldfast0..2, all sizes, both axes): 24..347 px in the elevator interior's sunken bevel, ALL of them E=170 vs N=189
+       (LWHITE), none outside the bar; XOR outline pixels identical. No live-follow, no track-pattern bands (reference run: 66..1880 px).
+     Counts per shot: 73 (run 1) / 74 (run 2) of 82 differing shots are 170-vs-189 only. The remaining 9 / 8 are the "held1" shots of the page holds (below).
+     Repeatability NewTOS run 1 vs 2: 149 of 155 PNGs byte-identical -- ALL held-drag shots included (reference run: 61 differed). The 6 that differ are
+       page-hold "held1" shots: 121-min-V-pagelo, 125-min-V-pagehi, 152-min-H-pagehi, 44-1000-H-pagehi, 67-300-V-pagelo, 98-300-H-pagehi.
+ 3 Flicker v2 (runs/newtos-head-flicker-v2-1 vs runs/emutos-tt-flicker-v2-1, analysis/flicker-v2/*.txt): black pixels inside the elevator interior:
+     NewTOS 0 of 40 samples for h1-1000-V, h2-1000-H, h3-300-V, h4-min-V (reference run before the fix: 34/15/29/7 of 40) and 0 of 8 idle samples per size;
+     EmuTOS 0 of 10. WM_VSLID/HSLID of the flicker run: E and N both 0, 0, 506, 507 (before the fix N: 497/500).
+ 4 A128 sbprobe (sbprobe/emutos-tt, sbprobe/newtos): diff of non-I lines vs measurement-2026-11-04-a128-test/sbprobe: EmuTOS log identical, NewTOS log
+   identical; E vs N on this run identical; 13 C-lines.
+ 5 Boot: rpi4 release in QEMU raspi4b, serial=on (boot/rpi4-serial.txt, boot/rpi4-desktop.png): "[desk] desktop up (1 drives)", no exception/panic
+   (serial grep hits are only the words in "per-process block limit"/"bcache"/a selftest "ok Fgetdta" line); screendump viewed: menu bar, DISK C, trash, printer.
+   qemu-virt headless (cargo xtask run --board qemu-virt --headless --release, boot/virt-serial.txt): "[desk] desktop up (0 drives)", no exception/panic.
+   Fresh `cargo xtask build --board rpi4|qemu-virt --release` before each boot, both exit 0, 159 warning lines each (= the a128-test baseline of 159).
+ RESIDUES against the oracle
+   (a) sunken-bevel colour 189 vs 170 (LWHITE palette): confirmed as the only difference in every drag shot (see 2).
+   (b) held1 of the page holds (40 ticks after the press): 9 shots (run 1) / 8 (run 2) differ, and which ones differ changes between the two NewTOS runs
+       (44-1000-H-pagehi: 693 px in run 1, only the 347-px bevel class in run 2) -- timing at the double-click wait edge; held2 and released equal (170/189 only).
+   (c) msg[1]: first WM_ARROWED of each of the 9 page holds msg[1]=1 on both sides; the last repeat (X-line) msg[1]: EmuTOS 0 in 9/9, NewTOS 1 in 9/9
+       (both NewTOS runs). Repeats while held, E 4914 / N 68432 (run 1) and 65949 (run 2) over the 9 holds.
+Cleanup: scratch a130t/ in the session scratchpad deleted after this report; no tracked file touched.
