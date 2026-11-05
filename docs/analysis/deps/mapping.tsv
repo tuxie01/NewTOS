@@ -1,5 +1,5 @@
 # mapping.tsv -- EmuTOS function -> NewTOS function (n:m) for every function
-# defined in EmuTOS bios/, bdos/ and vdi/ (TOOL32) at the oracle pin (the `def` rows of
+# defined in EmuTOS bios/, bdos/, vdi/ (TOOL32) and aes/ (TOOL33) at the oracle pin (the `def` rows of
 # edges.tsv). HAND-CURATED: each row is a reading of both sources; the
 # EmuTOS side follows edges.tsv, so regenerate edges.tsv first, then fix
 # the rows `cargo xtask deps --check-mapping` reports.
@@ -27,7 +27,7 @@
 # unmapped function (ratchet, CLAUDE.md "Testing").
 # Checked by `cargo xtask test` (deps::tests::mapping_rows_exist_on_both_sides):
 # the EmuTOS function is a def row of emutos_file, the NewTOS file exists
-# and has `fn <newtos_fn>`, every bios/, bdos/ and vdi/ function has a row, the
+# and has `fn <newtos_fn>`, every bios/, bdos/, vdi/ and aes/ function has a row, the
 # class is valid and agrees with the newtos columns, an ADR cite's line is
 # in that ADR's section of the cited file, a source path exists.
 emutos_fn	emutos_file	newtos_file	newtos_fn	class	note
@@ -1795,3 +1795,135 @@ set_default_desktop	aes/gemshlib.c	tos-api/src/aes/shell.rs	set_default_desktop	
 sh_ldapp	aes/gemshlib.c	kernel/src/shell_loop.rs	sh_ldapp	mapped	desktop / console / autorun / normal launch, AP_OPEN cleanup, wm_new (:592-690)
 sh_main	aes/gemshlib.c	kernel/src/shell_loop.rs	sh_main	mapped	the loop until shutdown or resolution change (:692-731); init part in shell.rs sh_main_init
 sh_main	aes/gemshlib.c	tos-api/src/aes/shell.rs	sh_main_init	mapped	the initial state before the loop (:694-706)
+abutton	aes/geminput.c	tos-api/src/aes/input.rs	abutton	mapped	arm of the MU_BUTTON wait: downorup(button) satisfied -> 1, else gl_bpend++ for clicks > 1 and park (:545-565); the per-identity BWAIT cell stands for the EVB on c_bsleep
+adelay	aes/geminput.c	tos-api/src/bdos/process/sched.rs	arm_or_get_deadline	mapped	MU_TIMER arm: a count of 0 ticks becomes 1 (:500-501, timer_span in event.rs), kept per slot as an absolute deadline; the sorted delay list dlr and CMP_TICK/NUM_TICK have no counterpart (wake_timers keeps the dlr order, A115)
+akbin	aes/geminput.c	tos-api/src/aes/event.rs	evnt_keybd	mapped	MU_KEYBD wait; EmuTOS reads the owner's c_q (dq) or parks on c_iiowait, NewTOS takes the key from the shared console ring while owns_keys(idx) (no per-process key queue)
+amouse	aes/geminput.c	tos-api/src/aes/event.rs	evnt_mouse	mapped	arm of the MU_M1/MU_M2 wait: in_mrect tested once at arm time, ownership-blind, else parked on c_msleep (:568-587); evnt_mouse pass 0 uses the arm-time position, evnt_multi the same
+b_click	aes/geminput.c	tos-api/src/aes/input.rs	b_click	mapped	button interrupt half: ignore non-change, open or extend the gl_bdely window, else publish at once (:110-147); EmuTOS forks bchange, NewTOS calls it directly
+b_delay	aes/geminput.c	tos-api/src/aes/input.rs	b_delay	mapped	counts the window down and publishes bchange(gl_bdesired, gl_bclick) plus bchange(gl_btrue, 1) at zero (:155-171); the NFORKS room check has no counterpart (no ring)
+bchange	aes/geminput.c	tos-api/src/aes/input.rs	bchange	mapped	publishes one button transition: owner re-chosen on the 0 -> down edge unless gl_ctmown, mtrans++, pr_*, button/mclick, post_button (:329-345)
+chk_ctrl	aes/geminput.c	tos-api/src/aes/window.rs	chk_ctrl	mapped	ctrl rectangle -> +1, gl_rmenu or any window -> -1, desktop -> 0 (:87-106); ctrl is read live from ml_ocnt/w_top instead of a stored rectangle
+chkown	aes/geminput.c	tos-api/src/aes/input.rs	bchange	mapped	inlined in bchange: chk_ctrl -> gl_cowner / ctl_pd / desktop window owner (:310-322)
+downorup	aes/geminput.c	tos-api/src/aes/input.rs	downorup	mapped	the button-wait predicate ((mask & (val ^ new)) == 0) != flag, :348-357
+dq	aes/geminput.c	-	-	unmapped	no counterpart: the per-process key queue (CQUEUE c_q) does not exist; NewTOS leaves a key in the console ring until the owner's evnt_keybd/evnt_multi takes it (mod.rs chkkbd note)
+evremove	aes/geminput.c	tos-api/src/bdos/process/sched.rs	wake	mapped	only the completion half (azombie + signal -> wake the waiter); unlinking the EVB has no counterpart (waits are per-identity cells)
+fq	aes/geminput.c	-	-	unmapped	no counterpart: flushes the owner's key queue c_q (used by sh_ldapp); NewTOS has no such queue, a key stays in the console ring
+get_ctrl	aes/geminput.c	tos-api/src/aes/window.rs	chk_ctrl	mapped	no stored ctrl rectangle: its two sources (ml_ocnt > 0 -> whole screen, else the top window's work area) are read live by chk_ctrl (window.rs:5605-5606), so a save/restore pair is implicit
+get_mown	aes/geminput.c	tos-api/src/aes/input.rs	get_mown	mapped	current mouse/keyboard owner for fm_own's save (:209-212)
+in_mrect	aes/geminput.c	tos-api/src/aes/event.rs	rect_event	mapped	m_out != inside(xrat, yrat, rect) at the live position; rect_event_at takes an explicit position (the arm-time test)
+inorout	aes/geminput.c	tos-api/src/aes/event.rs	rect_event	mapped	the parked rectangle's re-test; NewTOS re-tests the live position in the wait loop instead of from a posted position
+kchange	aes/geminput.c	-	-	unmapped	no counterpart: sets kstate and posts the key to gl_mowner's queue; NewTOS reads kstate live (gsxif gsx_kstate, A126) and has no key queue
+mchange	aes/geminput.c	tos-api/src/aes/input.rs	mchange	mapped	pointer move: zero the button window past 2 pixels, xrat/yrat, hand the mouse to ctl_pd in the menu rectangle (:360-392); the gl_play branch (drawrat, gsx_setmousexy) has no counterpart (no tplay)
+nq	aes/geminput.c	-	-	unmapped	no counterpart: enqueues a key into a CQUEUE; there is no per-process key queue
+post_keybd	aes/geminput.c	-	-	unmapped	no counterpart: wakes the c_iiowait EVB or queues the key; NewTOS evnt_keybd/evnt_multi poll the console ring while owns_keys(idx)
+post_mouse	aes/geminput.c	tos-api/src/aes/event.rs	evnt_mouse	mapped	completion of a parked rectangle wait of the owner: the wait loop re-tests the live position while owns_mouse(idx); set_mown's call is covered the same way (input.rs set_mown doc)
+post_mouse	aes/geminput.c	tos-api/src/aes/event.rs	evnt_multi	mapped	the same for MU_M1/MU_M2 inside evnt_multi (rect_fires: pass 0 ownership-blind, later passes owner only)
+set_ctrl	aes/geminput.c	tos-api/src/aes/window.rs	chk_ctrl	mapped	not stored: ct_chgown's rectangle argument is dropped because chk_ctrl derives the same value from ml_ocnt/w_top (window.rs:5605-5606, input.rs ct_chgown doc)
+set_mown	aes/geminput.c	tos-api/src/aes/input.rs	set_mown	mapped	owner changes only with buttons up, then post_mouse + post_button(gl_mowner, button, 1) (:220-235); the post_mouse half is the Event Manager re-test
+combine_cms	aes/gemevlib.h	tos-api/src/aes/input.rs	abutton	mapped	inlined: the packed clicks/mask/state word is built as (bflgclks << 16) | (mask << 8) | state in abutton and mn_button_arm
+ev_block	aes/gemevlib.c	tos-api/src/bdos/process/sched.rs	sleep	mapped	the generic iasync + mwait + apret wait is open-coded per evnt_* function; the park/wake itself is sched::sleep
+ev_button	aes/gemevlib.c	tos-api/src/aes/event.rs	evnt_button	mapped	ev_block(MU_BUTTON) then ev_rets; abutton at arm, bwait_take completion (:84-95)
+ev_dclick	aes/gemevlib.c	tos-api/src/aes/event.rs	ev_dclick	mapped	stores gl_dcindex; gl_dclick = gl_dcrates[idx] / gl_ticktime is computed at use (gl_dclick) not at set time, same value (:300-309)
+ev_mesag	aes/gemevlib.c	tos-api/src/aes/event.rs	evnt_mesag	mapped	pops the front of the identity's message queue and blocks when empty (:100-116); the p_msg.action WM_ARROWED fast path (:102-113) has no counterpart
+ev_mouse	aes/gemevlib.c	tos-api/src/aes/event.rs	evnt_mouse	mapped	MU_M1 wait; rets[2] = button (live) after ev_rets (:123-129)
+ev_timer	aes/gemevlib.c	tos-api/src/aes/event.rs	wait_ms	mapped	ev_block(MU_TIMER, count / gl_ticktime) with the 0 -> 1 tick rule (timer_span), deadline kept per slot; also called by evnt_timer
+ev_multi	aes/gemevlib.c	tos-api/src/aes/event.rs	evnt_multi	mapped	the application's multi-wait: key/button/rectangle/message/timer quick checks then park (:152-290); MU_M3 is internal-only in EmuTOS (aesdefs.h:263) and absent here
+apret	aes/gemasync.c	tos-api/src/aes/input.rs	bwait_take	mapped	only the button wait's result take; the generic EVB result list does not exist (each wait collects its own value)
+azombie	aes/gemasync.c	tos-api/src/bdos/process/sched.rs	wake	mapped	completion + signal: NewTOS stores the result in the wait's own cell (BWAIT, message queue, deadline) and wakes the identity; the zombie list zlr has no counterpart
+evinsert	aes/gemasync.c	-	-	unmapped	no counterpart: links an EVB at the head of a list (c_bsleep, c_msleep, c_iiowait, sy_wait, p_qnq/p_qdq); NewTOS has no EVB lists, the waits are per-identity cells
+iasync	aes/gemasync.c	-	-	unmapped	no counterpart: EVB allocation from eul + dispatch on MU_* code; NewTOS arms each wait inline in evnt_* (input.rs abutton for the button wait)
+signal	aes/gemasync.c	tos-api/src/bdos/process/sched.rs	push_drl	mapped	moves a process from nrl to the head of drl when its wait mask is satisfied (:35-60); push_drl cites it
+takeoff	aes/gemasync.c	-	-	unmapped	no counterpart: unlinks a cancelled EVB and returns the delay to the next dlr entry; NewTOS drops the wait's cell (input.rs acancel) and the per-slot deadline
+mwait	aes/gemasync.c	tos-api/src/bdos/process/sched.rs	sleep	mapped	sets p_evwait and parks on nrl via dsptch unless an event flag is already set; the existing row maps only mn_do's button wait
+acancel	aes/gemasync.c	tos-api/src/aes/input.rs	acancel	mapped	cancels the application's button wait (the cell goes idle); a completed wait is not cancelled; the mn_do variant is mn_button_cancel
+aqueue	aes/gemqueue.c	tos-api/src/aes/pd.rs	post_msg	mapped	message write with room: enqueue, wake a waiting reader (:85-125); the identity's queue is a ring in pd.rs
+aqueue	aes/gemqueue.c	tos-api/src/aes/pd.rs	park_write	mapped	message write without room: the writer parks until a read makes room (A116)
+aqueue	aes/gemqueue.c	tos-api/src/aes/pd.rs	after_read	mapped	the read side: after a dequeue, a parked writer that now fits is serviced (the second doq(!isqwrite) of aqueue)
+doq	aes/gemqueue.c	tos-api/src/aes/pd.rs	enqueue	mapped	writes the message at the end of the queue; redraw/arrow union and arrow overwrite coalescing (:31-70); A120 queue remnants are a known gap
+doq	aes/gemqueue.c	tos-api/src/aes/pd.rs	pop_into	mapped	read side: copy out the front message and shift the rest (:73-81)
+tak_flag	aes/gemflag.c	tos-api/src/aes/window.rs	tak_flag	mapped	counting window-tree lock: take if free or already the owner (:71-86); NewTOS counts the shares of one application chain per holder
+tchange	aes/gemflag.c	tos-api/src/bdos/process/sched.rs	wake_timers	mapped	completes expired delays from the head of the sorted list, expired ones in dlr order (:32-69); the CMP_TICK/NUM_TICK reload has no counterpart
+unsync	aes/gemflag.c	tos-api/src/aes/window.rs	unsync	mapped	counts the lock down and hands it to the next waiter on sy_wait (:105-135); the dsptch() after the hand-over is the dispatcher's end-of-call pass
+amutex	aes/gemflag.c	tos-api/src/aes/window.rs	update_block	mapped	MU_MUTEX wait: tak_flag, else park on the wait line sy_wait (:89-100); update_block parks per identity
+pd_index	aes/gempd.c	tos-api/src/aes/pd.rs	by_index	mapped	descriptor of identity i (:32-35); every identity has its entry from boot
+fpdnm	aes/gempd.c	tos-api/src/aes/pd.rs	find_by_name	mapped	walk over every descriptor comparing p_name, no liveness test (:38-57); the by-pid branch is appl.rs identity_of
+getpd	aes/gempd.c	tos-api/src/aes/appl.rs	reported_pid	mapped	the pid a descriptor gets (curpid++); NewTOS computes the reported pid from the identity (0 for the application chain, 2 + load position for an accessory), no counter
+p_nameit	aes/gempd.c	tos-api/src/aes/pd.rs	p_nameit	mapped	8 characters up to the first '.', space padded (:77-86)
+p_setappdir	aes/gempd.c	tos-api/src/aes/resource.rs	set_app_dir	mapped	directory part of the program path up to and including the last backslash (:90-107); the launcher's p_setappdir wrapper is kernel/src/shell_loop.rs
+pstart	aes/gempd.c	tos-api/src/aes/acc.rs	register_process	mapped	for the accessory: the slot joins the ready list as a fresh peer, on the head of drl (:110-131); the name is pd::register (p_nameit, flags reset)
+insert_process	aes/gempd.c	tos-api/src/bdos/process/sched.rs	ready	mapped	appends a process at the end of rlr (:134-145); ready() takes the next RL_KEY
+ap_exit	aes/gemaplib.c	tos-api/src/aes/appl.rs	appl_exit	mapped	wm_update, mn_cleanup, wait_for_accs(AP_ACCLOSE), drain the queue, clear AP_OPEN (:251-261); all_run after it is not reproduced
+ap_find	aes/gemaplib.c	tos-api/src/aes/appl.rs	appl_find	mapped	NULL -> -1, fpdnm by name -> pid or -1 (:95-107)
+ap_init	aes/gemaplib.c	tos-api/src/aes/appl.rs	appl_init	mapped	sets AP_OPEN, returns the pid (:54-62); the AESGLOBAL fill is gemsuper.c APPL_INIT
+ap_rdwr	aes/gemaplib.c	tos-api/src/aes/appl.rs	appl_read	mapped	read branch: quick 16-byte read, else block on an empty queue (:69-92)
+ap_rdwr	aes/gemaplib.c	tos-api/src/aes/appl.rs	appl_write	mapped	write branch: queue the message, block on a full queue until a read makes room (A116)
+ap_tplay	aes/gemaplib.c	-	-	unmapped	no counterpart: appl_tplay returns 1 and plays nothing (no fork ring to inject events into, A45)
+ap_trecd	aes/gemaplib.c	-	-	unmapped	no counterpart: appl_trecord returns 0 and records nothing (A45)
+chkkbd	aes/gemdisp.c	tos-api/src/aes/mod.rs	chkkbd	mapped	only the observable side effect, the SAMPLE-mode write of gsx_char; the key itself is not forked into the owner's queue (kchange, :158-177) but stays in the console ring
+disp	aes/gemdisp.c	tos-api/src/bdos/process/sched.rs	dsptch	mapped	take the caller off rlr, disp_act or park, forker, schedule, switch (:221-253); dsptch() leaves the caller on the ready list, sleep() parks it
+disp	aes/gemdisp.c	tos-api/src/bdos/process/sched.rs	dispatch_after_call	mapped	the dsptch() every completed AES call ends with (gemsuper.c super)
+disp_act	aes/gemdisp.c	tos-api/src/bdos/process/sched.rs	ready	mapped	puts the process at the end of rlr and clears WAITIN (:74-79)
+forker	aes/gemdisp.c	tos-api/src/aes/mod.rs	dsptch	mapped	the input half of the drain: pump_input runs the b_click/mchange work the ring would hold; the timer half is sched::wake_timers; the recording branch (gl_recd) has no counterpart
+forkq	aes/gemdisp.c	-	-	unmapped	no counterpart: puts an FPD into the fork ring from interrupt code; NewTOS has no ring, input is pumped (mod.rs aes_wheel doc)
+mwait_act	aes/gemdisp.c	tos-api/src/bdos/process/sched.rs	sleep	mapped	parks on nrl unless p_evwait & p_evflg is already set (:82-93)
+schedule	aes/gemdisp.c	tos-api/src/bdos/process/sched.rs	pick_head	mapped	moves drl onto the end of rlr, head of the stack first, and takes the head of rlr (:181-205); the wait for a runnable process is idle_wake_pass
+ctlmgr	aes/gemctrl.c	tos-api/src/aes/window.rs	intercept	mapped	the Control Manager's loop body for a frame press, run inline in the waiting process under ctl_pd's screen lock (:427-486); no SCRENMGR process exists
+ct_chgown	aes/gemctrl.c	tos-api/src/aes/input.rs	ct_chgown	mapped	set_ctrl, then set_mown unless gl_ctmown (:392-397); the rectangle is derived, not stored
+ct_mouse	aes/gemctrl.c	tos-api/src/aes/input.rs	ct_mouse	mapped	only the gl_ctmown flag; set_mouse_to_arrow on grab and gsx_mfset(&gl_mouse) on release (:400-417) are not reproduced
+ct_msgup	aes/gemctrl.c	tos-api/src/aes/input.rs	ct_msgup_hold	mapped	the wait for the button to come up (:100-101) becomes a flag the Event Manager loop consults; ct_msgup_busy ends it and ct_msgup_hotclose is the HOTCLOSE exit (:86-96)
+handle_arrow_msg	aes/gemctrl.c	tos-api/src/aes/window.rs	hctl_window	mapped	NewTOS posts one WM_ARROWED after the release; EmuTOS repeats it while the button is held (:111-139); the p_msg fast path has no counterpart
+hctl_msg	aes/gemctrl.c	-	-	unmapped	no counterpart: ctlmgr waits no MU_MESAG here, so the WM_REDRAW -> w_redraw_desktop path (CONF_WITH_3D_OBJECTS) does not exist (w_redraw_desktop is unmapped too)
+hctl_rect	aes/gemctrl.c	tos-api/src/aes/event.rs	menu_intercept	mapped	menu bar hit: mn_do (menu::track), Desk accessory pick -> AC_OPEN, else MN_SELECTED with the extension payload, then ct_msgup (:318-376)
+hctl_window	aes/gemctrl.c	tos-api/src/aes/window.rs	hctl_window	mapped	window frame press: untop on a non-top window, then gadget handling, drag/size/slide message (:158-315)
+perform_untop	aes/gemctrl.c	tos-api/src/aes/window.rs	post_untopped	mapped	sends WM_UNTOPPED to the old top's owner (:146-155); the wait for the button up and the num_accs dispatch loop are not reproduced, and the AC_OPEN path never calls it (A121)
+disable_interrupts	aes/gemdosif.S	-	-	design:hardware:m68k-cpu	m68k status-register interrupt mask (move sr / ori #0x0700); NewTOS is cooperative on AArch64 and has no m68k SR
+enable_interrupts	aes/gemdosif.S	-	-	design:hardware:m68k-cpu	restores the saved m68k SR interrupt mask; no counterpart on AArch64
+aestrap	aes/gemdosif.S	-	-	design:hardware:m68k-cpu	the m68k trap #2 vector entry: d0 0xC8/0xC9 selects the AES, registers saved on the user stack, switch to the process's supervisor stack, call super; NewTOS takes svc #2 in kernel/src/arch/aarch64/exceptions.rs and routes selector 200
+set_aestrap	aes/gemdosif.S	-	-	design:hardware:m68k-cpu	writes the m68k trap #2 vector (0x88) and saves the old one; the AArch64 exception table is fixed code
+unset_aestrap	aes/gemdosif.S	-	-	design:hardware:m68k-cpu	restores the m68k trap #2 vector (0x88); no counterpart
+retake	aes/gemdosif.S	-	-	design:hardware:m68k-cpu	re-writes the m68k trap #2 vector (0x88) after a character-mode program; the critical-error half is giveerr/takeerr (ADR-031)
+takeerr	aes/gemdosif.S	-	-	design:ADR-031@docs/MEMORY.md:3041	installs the AES critical-error handler (etv_critic, Setexc 0x101): ADR-031 table row etv_critic is not served, NewTOS Rwabs has no critical-error retry path
+giveerr	aes/gemdosif.S	-	-	design:ADR-031@docs/MEMORY.md:3041	restores the previous etv_critic (:116): ADR-031 etv_critic is not served, nothing is installed to restore
+far_bcha	aes/gemdosif.S	tos-api/src/aes/mod.rs	user_but	mapped	button interrupt glue calling b_click (:306-325); user_but is the vector the VDI mouse path calls
+far_mcha	aes/gemdosif.S	tos-api/src/aes/mod.rs	user_mot	mapped	motion interrupt glue forking mchange (:327-347); user_mot calls mchange directly with the clipped position
+aes_wheel	aes/gemdosif.S	tos-api/src/aes/mod.rs	aes_wheel	mapped	wheel vector glue forking wheel_change (:353-374); what remains is the call it defers
+drawrat	aes/gemdosif.S	-	-	unmapped	jumps through drwaddr to draw the cursor; used only by mchange during appl_tplay playback, which has no counterpart (ap_tplay unmapped)
+tikcod	aes/gemdosif.S	tos-api/src/aes/input.rs	b_delay_poll	mapped	the tick handler's b_delay(1) half: ticks since the last call applied in one b_delay (:389-411)
+tikcod	aes/gemdosif.S	tos-api/src/bdos/process/sched.rs	wake_timers	mapped	the CMP_TICK/NUM_TICK half: queues tchange when the head delay expires; NewTOS compares absolute deadlines on every dispatch
+dsptch	aes/gemasm.S	tos-api/src/aes/mod.rs	dsptch	mapped	the input half of what dsptch/disp run: pump_input and the chkkbd mode write (the _indisp guard has no counterpart, the AES is single-path)
+dsptch	aes/gemasm.S	tos-api/src/bdos/process/sched.rs	dsptch	mapped	the scheduling half: caller back on the ready list, timers, head of rlr (:129-167)
+gotopgm	aes/gemasm.S	tos-api/src/bdos/process/sched.rs	switch_to	mapped	first run of an accessory: enter its entry point (the fresh switch); the STACKRESERVE adjustment of the m68k supervisor stack has no counterpart
+psetup	aes/gemasm.S	tos-api/src/bdos/process/sched.rs	admit	mapped	prepares a process to start at its entry point (pushes the entry on the m68k stack); admit marks the slot a fresh peer whose entry_va is read at the first switch
+switchto	aes/gemasm.S	-	-	design:ADR-029@docs/MEMORY.md:2746	restores the next process's m68k registers and stack (:169-190); ADR-029 rejects the flat switchto, contexts are FreeMiNT-shaped per-process ExceptionFrames
+accdesk_start	aes/gemstart.S	tos-api/src/bdos/process/standin.rs	enter_accdesk	mapped	starts the accdesk process that runs run_accs_and_desktop (Mshrink, Super, then Pterm0 at the end); enter_accdesk creates its PD, leave_accdesk is the Pterm0
+dos_exec	aes/gemstart.S	kernel/src/launch.rs	run_program_with_tail_rc	mapped	Pexec wrapper for the AES's own launches; the m68k stack re-entrancy workaround (UDA_SPSUPER adjustment) has no counterpart
+ui_start	aes/gemstart.S	tos-api/src/bdos/process/standin.rs	enter_aes	mapped	AES process start (basepage, Mshrink, Super, ad_stail, aes_restart loop); the restart loop is kernel_main_rust's session loop around reinit
+crysbind	aes/gemsuper.c	tos-api/src/aes/mod.rs	crysbind	mapped	the opcode switch (:77-421); the default arm returns -1
+xif	aes/gemsuper.c	tos-api/src/aes/mod.rs	dispatch_in	mapped	copies the parameter block into local arrays, runs crysbind, copies OUT_LEN words back (:428-448); RSRC_GADDR addrout via the Aespb
+super	aes/gemsuper.c	tos-api/src/aes/mod.rs	dispatch_in	mapped	selector 200: xif, then dsptch (:454-466); selector 201 (dsptch only) is not served, NewTOS leaves x0 as set
+super	aes/gemsuper.c	tos-api/src/aes/thread.rs	call	mapped	the entry runs dispatch on the AES fiber stack, the stand-in for the per-process supervisor stack
+all_run	aes/geminit.c	tos-api/src/aes/acc.rs	all_run	mapped	every accessory runs once, then the BEG_UPDATE/END_UPDATE wait line (:554-567)
+count_accs	aes/geminit.c	kernel/src/accs.rs	count_accs	mapped	counts up to NUM_ACCS accessories, skip flag honoured (:264-293); NewTOS scans C:\ACC\ then the root for .NAC files (ADR-018)
+default_mform	aes/geminit.c	tos-api/src/vdi/mouse.rs	set_preset	mapped	the arrow form is PRESET_FORMS[0] (data, no function returns its address)
+ev_init	aes/geminit.c	-	-	unmapped	no counterpart: threads the EVB arrays onto the free list eul; NewTOS has no EVBs
+free_accs	aes/geminit.c	kernel/src/accs.rs	free_accs	mapped	frees the accessories' memory at the end of the session (:296-307)
+gem_main	aes/geminit.c	kernel/src/lib.rs	kernel_main_rust	mapped	the session body: workstation, accessories, process_inf2, shell loop, restart (:753-899)
+gem_main	aes/geminit.c	tos-api/src/aes/init.rs	init	mapped	the cold-boot part: read the .INF buffer, process_inf1, resource set-up
+gem_main	aes/geminit.c	tos-api/src/aes/mod.rs	reinit	mapped	the restart part: re-zeroes theglo; each module restores its own statics in EmuTOS's order
+init_p0_stkptr	aes/geminit.c	-	-	unmapped	no counterpart: sets the m68k supervisor stack pointer of process 0 in the UDA; NewTOS has no UDA
+iprocess	aes/geminit.c	-	-	unmapped	no counterpart: creates the SCRENMGR process (pstart of ctlmgr); NewTOS runs the Control Manager inline (window::intercept) and only names the identity (appl.rs SCRENMGR_PID)
+load_accs	aes/geminit.c	kernel/src/accs.rs	load_accs	mapped	loads every counted accessory (:309-315)
+load_mouse_cursors	aes/geminit.c	-	-	unmapped	no counterpart: CONF_WITH_LOADABLE_CURSORS file (CURSOR_RSC_NAME) validation and pointer setup; NewTOS has no loadable mouse cursor file
+load_one_acc	aes/geminit.c	kernel/src/accs.rs	load_one_acc	mapped	loads one accessory (pgmld) and starts it as a process (:236-262); a failed load is the addr = -1 case
+process_inf1	aes/geminit.c	tos-api/src/aes/init.rs	process_inf1	mapped	only the #Q background arm; the #E resolution arm is not present (one fixed mode, ADR-017 rev 2)
+process_inf2	aes/geminit.c	tos-api/src/aes/init.rs	process_inf2	mapped	#E double-click speed and #Z autorun entry (:407-464); Blitmode/set_cache and BOOTFLAG_SKIP_AUTO_ACC are absent
+readfile	aes/geminit.c	tos-api/src/aes/init.rs	read_infbuf	mapped	reads the first INF_SIZE bytes of the .INF file; the cursor file read has no counterpart
+run_accs_and_desktop	aes/geminit.c	kernel/src/lib.rs	kernel_main_rust	mapped	resource, accessories, hourglass, tick, process_inf2, wait_for_accs, sh_main inside the session loop (:654-750)
+run_accs_and_desktop	aes/geminit.c	kernel/src/accs.rs	wait_for_accs_mesag	mapped	the wait_for_accs(AP_MESAG) round before the desktop starts
+set_aes_background	aes/geminit.c	tos-api/src/aes/init.rs	set_aes_background	mapped	writes the pattern/colour byte of the DESKTOP root ob_spec (:635-641)
+set_mouse_to_arrow	aes/geminit.c	tos-api/src/vdi/mouse.rs	set_preset	mapped	set_preset(0); called from kernel/src/shell_loop.rs sh_toalpha, not from ct_mouse
+set_mouse_to_hourglass	aes/geminit.c	tos-api/src/vdi/mouse.rs	set_preset	mapped	set_preset(2); called from kernel/src/shell_loop.rs sh_tographic
+setup_mouse_cursors	aes/geminit.c	-	-	unmapped	no counterpart for the loadable-cursor part (reads CURSOR_RSC_NAME, mouse_cursor[] pointer array); the eight ROM presets are the data PRESET_FORMS in vdi/mouse.rs
+size_theglo	aes/geminit.c	-	-	unmapped	no counterpart: size of the THEGLO area that gemstart.S clears on restart; NewTOS has module statics and reinit()
+wait_for_accs	aes/geminit.c	tos-api/src/aes/acc.rs	wait_for_accs	mapped	runs everybody until each accessory has the p_flags bit, bounded by WAIT_TIMEOUT (:599-627)
+FAKE_EVB	aes/aesvars.h	-	-	unmapped	no counterpart: macro casting a list-head pointer to an EVB for the sentinel link; NewTOS has no EVB lists

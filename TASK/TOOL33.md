@@ -1,6 +1,6 @@
 # TOOL33 — `mapping.tsv` fuer die AES-Ebene (EmuTOS `aes/` → NewTOS)
 
-Status: **OFFEN** · Prioritaet: **P1** (Anwender 2026-11-05: nach [TOOL32](TOOL32.md) VDI, vor [A119](A119.md)) · Typ: Researcher (Zuordnung lesen), danach Lead (Pruefregel) — Werkzeug, das die Lokalisierung der folgenden Fixes braucht (CLAUDE.md "Testing")
+Status: **ERLEDIGT** 2026-11-05 ([Quittung](TOOL33-STATUS-DONE.MD)) · Prioritaet: **P1** (Anwender 2026-11-05: nach [TOOL32](TOOL32.md) VDI, vor [A119](A119.md)) · Typ: Researcher (Zuordnung lesen), danach Lead (Pruefregel) — Werkzeug, das die Lokalisierung der folgenden Fixes braucht (CLAUDE.md "Testing")
 
 ## Sachverhalt
 
@@ -137,6 +137,31 @@ Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `aes/`):
     Existenztest ohne Fsfirst (wirkt auf `rsrc_load`).
 40. `gemrslib.c:826-848`: klassische `.RSC` nicht ladbar — ADR-013, gewollt.
 41. `gemsclib.c:74-107` gegen `tos-api/src/aes/shell.rs:274@scrp_clear`: Momentaufnahme statt Loeschen in der Schleife.
+
+## Stand Teil 4 und Abschluss (2026-11-05)
+
+Researcher: 132 Zeilen fuer die 123 Funktionen der Ereignis-, Prozess- und Startdateien;
+6 vorhandene gelesen und belassen, zu `ev_multi`, `mwait`, `acancel` je eine Zeile fuer das
+allgemeine Gegenstueck. 103 `mapped`, 9 `design` (6 `hardware:m68k-cpu`, `takeerr`/`giveerr`
+ADR-031 `etv_critic`, `switchto` ADR-029), 20 `unmapped` (Tastenwarteschlange `dq/nq/fq/kchange/
+post_keybd`, EVB-Listen, Fork-Ring und Tape, Teile von Steuerung und Start).
+`--coverage` aes: 365 mapped / 9 design / 44 unmapped, keine Funktion ohne Zeile.
+Lead: `"aes/"` in `MAPPED_DIRS`; Gegenprobe ohne `dq` meldet "no row"; `cargo xtask test` 1974/0/1.
+Knopf/Doppelklick (`b_click`, `b_delay`, `bchange`, `gl_bpend`) ohne Befund.
+
+Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `aes/`):
+
+42. `gemctrl.c:125-136` gegen `tos-api/src/aes/window.rs:5934@wait_release`: Pfeil-Gadget sendet
+    `WM_ARROWED` einmal nach dem Loslassen statt wiederholt (A109 als gewollt vermerkt).
+43. `gemctrl.c:405,415` gegen `tos-api/src/aes/input.rs:754@ct_mouse`: beim Menue-Tracking kein
+    Pfeil-Zeiger und keine Rueckstellung der Zeigerform.
+44. `gemsuper.c:461-462`, `gemdosif.S:223-225` gegen `kernel/src/arch/aarch64/exceptions.rs:579@gpr`:
+    AES-Selektor 201 (`dsptch`) nicht bedient.
+45. `gemdisp.c:158-177` gegen `tos-api/src/aes/mod.rs:849@chkkbd`: Tasten nicht in die Warteschlange
+    des Mausbesitzers (`forkq(kchange)`), bleiben im Konsolen-Ring; betrifft auch `kstate`.
+46. `gemaplib.c:119,189` gegen `tos-api/src/aes/appl.rs:807@appl_tplay`: `appl_tplay`/`appl_trecord`
+    ohne Wirkung (A45, wie 20).
+47. `gemevlib.c:102-113` gegen `tos-api/src/aes/event.rs:924@evnt_mesag`: `p_msg`-Weg fehlt (zu 42).
 
 ## Abnahme
 

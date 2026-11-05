@@ -10,7 +10,7 @@
 //!   `from to kind detail site`; kind `def` is a node row (`to` = `-`,
 //!   `detail` = layer, `site` = definition), every other kind an edge.
 //! - [`MAPPING_FILE`], hand-curated: EmuTOS function → NewTOS function, n:m,
-//!   for the functions of EmuTOS `bios/`, `bdos/` and `vdi/`. Rows
+//!   for the functions of EmuTOS `bios/`, `bdos/`, `vdi/` and `aes/`. Rows
 //!   `emutos_fn emutos_file newtos_file newtos_fn class note`; `-` `-`
 //!   says there is no counterpart, the [`Class`] says whether by design
 //!   (with evidence) or not yet (TOOL17).
@@ -60,7 +60,7 @@ pub const DEFAULT_KINDS: [&str; 5] = ["direct", "table", "asm", "layer", "vector
 /// NewTOS code a mapping row may name.
 pub const NEWTOS_ROOTS: [&str; 2] = ["tos-api/src/", "kernel/src/"];
 /// The EmuTOS directories the mapping covers.
-pub const MAPPED_DIRS: [&str; 3] = ["bios/", "bdos/", "vdi/"];
+pub const MAPPED_DIRS: [&str; 4] = ["bios/", "bdos/", "vdi/", "aes/"];
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Edge {
