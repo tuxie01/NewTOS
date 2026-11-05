@@ -109,6 +109,35 @@ Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `aes/`):
     `ALFSMEM` — zu [A134](A134.md).
 32. `gemsuper.c:415` gegen `tos-api/src/aes/mod.rs:989@ALNOFUNC`: `fm_show(ALNOFUNC)` fehlt (als Referenzebene entschieden, D-084).
 
+## Stand Teil 3 (2026-11-05, Researcher)
+
+92 Zeilen fuer die 86 neuen Funktionen von `gemmnlib.c`, `gemmnext.c`, `gemrslib.c`,
+`gemshlib.c`, `gem_rsc.c`, `gemsclib.c`; `mn_do` (A127) und `handle_popup` (A126) gelesen und
+belassen. `--coverage` aes danach 277 mapped / 0 design / 141 unmapped. Je Funktion 82 `mapped`,
+4 `unmapped` (`rect_change`, `setup_moblk`: Zeiger-Polling statt MOBLK-Waits;
+`xlate_obj_array`; `sh_path`).
+
+Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `aes/`):
+
+33. `gemmnlib.c:422` gegen `tos-api/src/aes/menu.rs:621@child_at_t` (`track_owned`): `ob_find(tree, cur_menu, 1, …)`
+    liefert im Rand/in der Luecke der Drop-down-Box die Box selbst (`cur_item = cur_menu`),
+    NewTOS `child_at_t` liefert NIL (Niemandsland); fuer Untermenues nachgebaut, fuer die
+    Elternbox nicht — Spur fuer [A127](A127.md) D2/D3 (#19), nicht bewiesen. `menu_sr`/`bb_save`/
+    `bb_restore` und `rehilite` ohne Befund.
+34. `gemmnext.c:258` gegen `tos-api/src/aes/menu.rs:2113@popup_shown`: Start-Item des Popups nicht vorab SELECTED.
+35. `gemmnext.c:625-677` gegen `tos-api/src/aes/menu.rs:935@open_submenu`: Untermenue-Lage pixelgenau statt in
+    Zeichenschritten mit `MENU_THICKNESS`.
+36. `gemmnlib.c:751-756` gegen `tos-api/src/aes/menu.rs:1718@mn_cleanup`: Untermenue-Tabelle ueberlebt das
+    Programmende.
+37. `gemmnext.c:401-432` gegen `tos-api/src/aes/menu.rs:2451@query_submenu`: Flag-/Markerpruefung, `mn_scroll`,
+    geteilte SMIB-Eintraege.
+38. `gemmnlib.c:703-731` gegen `tos-api/src/aes/menu.rs:345@menu_bar`: Balken wird weiss gefuellt, beim Ausblenden
+    weiss statt nichts; `post_keybd(ctl_pd->p_cda, 0)` fehlt.
+39. `gemshlib.c:445-460` gegen `tos-api/src/aes/shell.rs:1131@PATH` (`sh_find`): `PATH=`-Suche fehlt,
+    Existenztest ohne Fsfirst (wirkt auf `rsrc_load`).
+40. `gemrslib.c:826-848`: klassische `.RSC` nicht ladbar — ADR-013, gewollt.
+41. `gemsclib.c:74-107` gegen `tos-api/src/aes/shell.rs:274@scrp_clear`: Momentaufnahme statt Loeschen in der Schleife.
+
 ## Abnahme
 
 - `cargo xtask deps --check-mapping` ohne Befund; `--coverage` zeigt fuer

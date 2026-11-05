@@ -1703,3 +1703,95 @@ fs_sel	aes/gemfslib.c	tos-api/src/aes/fsel.rs	modal	mapped	select / deselect of 
 select_drive	aes/gemfslib.c	tos-api/src/aes/fsel.rs	set_drive_states	mapped	marks the drive box SELECTED and clears the rest (:540-565); NewTOS also sets DISABLED from drvbits here, selects only a present drive, and always redraws the whole tree
 path_changed	aes/gemfslib.c	tos-api/src/aes/fsel.rs	path_differs	mapped	FSDIRECT text against the listed path (:572-583); full-string compare, EmuTOS compares te_txtlen - 1 characters
 get_drive	aes/gemfslib.c	tos-api/src/aes/fsel.rs	set_drive_states	mapped	drive of the path: NewTOS takes the first byte as the letter if upper case, without testing for ':' and without upper-casing, else drive C - EmuTOS extract_drive_number then dos_gdrv (:590-597)
+menu_sub	aes/gemmnlib.c	tos-api/src/aes/menu.rs	menu_sub	mapped	title index to its drop-down box via THESCREEN.ob_tail/ob_head/ob_next (:71-86); same walk
+menu_fixup	aes/gemmnlib.c	tos-api/src/aes/menu.rs	menu_fixup	mapped	splices the registered DA titles into the Desk box (:89-128); NewTOS bounds the relink by the objects the tree reserved, EmuTOS writes dabox+1..dabox+cnt unconditionally
+rect_change	aes/gemmnlib.c	-	-	unmapped	no counterpart: builds the MOBLK rectangle waits for mn_do's ev_multi; NewTOS track_owned polls the pointer each pump and hit-tests (point_in, child_at_t) instead of waiting on rectangle events; no ADR
+do_chg	aes/gemmnlib.c	tos-api/src/aes/menu.rs	do_chg	mapped	state change with DISABLED guard and optional draw (:145-172); this is the pb-based wrapper behind menu_icheck/ienable/tnormal, the track itself goes through rehilite -> object::set_state_bit_t -> change_t; EmuTOS sets gsx_sclip(&gl_rzero) before a drawing change, NewTOS change_t redraws against the full-screen clip
+item_changed	aes/gemmnlib.c	tos-api/src/aes/menu.rs	track_owned	mapped	the last_item != NIL && last != cur test (:178-189) is inlined in track_owned's it != cur_item / keeps_parent conditions
+menu_select	aes/gemmnlib.c	tos-api/src/aes/menu.rs	rehilite	mapped	set/reset SELECTED when the item number changed, DISABLED items refused (:192-202); rehilite moves old->new, both guarded on DISABLED, cursor bracketed
+menu_sr	aes/gemmnlib.c	tos-api/src/aes/menu.rs	sr_rect	mapped	save/restore rectangle of a drop-down: box grown by MENU_THICKNESS (:208-223); NewTOS grows by MENU_THICKNESS plus ADJ3DSTD on the right/bottom (the popup_blit shape) and clamps to the screen
+menu_sr	aes/gemmnlib.c	tos-api/src/aes/menu.rs	erase_box_inner	mapped	restore half (bb_restore) through the one AES screen buffer slot MENU_SAVE
+menu_down	aes/gemmnlib.c	tos-api/src/aes/menu.rs	open_box	mapped	title SELECTED + save under + ob_draw of the box (:229-244); a DISABLED title neither selects nor draws (A89)
+mn_bar	aes/gemmnlib.c	tos-api/src/aes/menu.rs	menu_bar	mapped	menu_bar show/hide (:703-737): gl_mnppd/gl_mntree, menu_fixup, THEBAR width, ctwait rect, ob_draw, separator line; NewTOS additionally fills the bar strip white before drawing and on hide (EmuTOS mn_bar(FALSE) draws nothing), and menu.rs has no post_keybd(ctl_pd->p_cda, 0) fake key (ctwait is set directly)
+mn_bar	aes/gemmnlib.c	tos-api/src/aes/menu.rs	remove_bar	mapped	state half of the hide path: gl_mntree = NULL, gl_ctwait = gl_rmenu (:726-727)
+mn_cleanup	aes/gemmnlib.c	tos-api/src/aes/menu.rs	mn_cleanup	mapped	AC_CLOSE to every registered DA (:740-748); the gl_submenu free (:751-756) is not done here, NewTOS clears the submenu table only in menu.rs reinit (AES restart)
+build_menuid_lookup	aes/gemmnlib.c	tos-api/src/aes/menu.rs	build_menuid_lookup	mapped	display-slot -> menu id table (:766-782)
+mn_register	aes/gemmnlib.c	tos-api/src/aes/menu.rs	menu_register	mapped	registers a DA title in the first free slot (:789-816); the title string is copied into a kernel-owned page, EmuTOS keeps the caller's pointer
+mn_init	aes/gemmnlib.c	tos-api/src/aes/menu.rs	reinit	mapped	resets desk_ppd/g_acctitle/g_accreg (:821-832); NewTOS has no separate mn_init, the AES-restart reinit of the menu state (ACCS, SUBMENU_TAB, settings, bar) does it
+mn_getownid	aes/gemmnlib.c	tos-api/src/aes/menu.rs	mn_getownid	mapped	display slot -> (owner, menu id) (:838-848); out-of-range slot leaves the result untouched (None)
+clamp_height	aes/gemmnext.c	tos-api/src/aes/menu.rs	clamp_height	mapped	menu height clamp to [MIN_HEIGHT_VALUE, gl_rfull.g_h / gl_hchar] (:83-95); no raster up -> upper bound skipped
+mnext_init	aes/gemmnext.c	tos-api/src/aes/menu.rs	mnext_init	mapped	INIT_*_VALUE into settings (:103-110); static initializer plus mnext_init on restart
+clamp_ypos	aes/gemmnext.c	tos-api/src/aes/menu.rs	clamp_ypos	mapped	hchar-step clamp onto the screen and below the bar (:115-129); NewTOS uses backend.height() and gl_hbox(), EmuTOS gl_rscreen.g_h and gl_rfull.g_y
+popup_blit	aes/gemmnext.c	tos-api/src/aes/gsxif.rs	popup_blit_save	mapped	save/restore of the screen under a pop-up or submenu into a fresh block per opening (:136-215); rectangle from menu.rs sr_rect; restore is Saved::restore
+setup_moblk	aes/gemmnext.c	-	-	unmapped	no counterpart: builds the MOBLK for handle_popup's ev_multi(MU_M1|MU_BUTTON); NewTOS popup_shown polls mouse_position and child_at each pump; no ADR
+mn_popup	aes/gemmnext.c	tos-api/src/aes/menu.rs	mn_popup	mapped	BEG_MCTRL, wait button up, position + clamp, save, track, restore, wait button up, END_MCTRL (:304-356)
+find_submenu_from_obtype	aes/gemmnext.c	tos-api/src/aes/menu.rs	smib_find_parent	mapped	EmuTOS indexes gl_submenu by the (ob_type>>8)-128 index stored in the item (:361-374); NewTOS looks the SMIB up by (parent_tree, parent_item), the index is still written into ob_type by submenu_mark
+find_submenu_from_tree	aes/gemmnext.c	tos-api/src/aes/menu.rs	smib_find_sub	mapped	lookup by (sub tree, sub root) (:380-393); NewTOS entries are per parent item, so attach_submenu does not share one entry between items with the same submenu (EmuTOS s_usage count)
+query_submenu	aes/gemmnext.c	tos-api/src/aes/menu.rs	query_submenu	mapped	ME_INQUIRE (:401-432); EmuTOS requires the SUBMENU flag and the marker character and returns mn_scroll = 0, NewTOS tests only the SMIB table and returns the stored sub_scroll
+detach_submenu	aes/gemmnext.c	tos-api/src/aes/menu.rs	submenu_unmark	mapped	clears type high byte, SUBMENU flag and the marker (:438-459); the usage count decrement becomes used = false in attach_submenu
+attach_submenu	aes/gemmnext.c	tos-api/src/aes/menu.rs	attach_submenu	mapped	ME_ATTACH/ME_REMOVE (:465-527); the SMIB table is a static NUM_SMIBS=128 array here, lazily allocated in EmuTOS
+attach_submenu	aes/gemmnext.c	tos-api/src/aes/menu.rs	submenu_mark	mapped	the item update half: ob_type |= (slot+128)<<8, SUBMENU flag, marker (:518-525)
+mn_attach	aes/gemmnext.c	tos-api/src/aes/menu.rs	menu_attach	mapped	G_STRING-only test and flag dispatch (:535-556)
+mn_istart	aes/gemmnext.c	tos-api/src/aes/menu.rs	menu_istart	mapped	inquire/update of the start item, clamped to ob_head..ob_tail (:562-590)
+mn_settings	aes/gemmnext.c	tos-api/src/aes/menu.rs	menu_settings	mapped	get/set of MN_SET, negative fields ignored, no default arm (:596-616)
+display_submenu	aes/gemmnext.c	tos-api/src/aes/menu.rs	open_submenu	mapped	position, save under, ob_draw of the submenu (:625-677); x/y rules differ: NewTOS puts the box left only when x+bw > screen width (EmuTOS adds MENU_THICKNESS) and clamps y exactly with clamp(), EmuTOS clamps in gl_hchar steps (clamp_ypos) and shifts x in gl_wchar steps
+undisplay_submenu	aes/gemmnext.c	tos-api/src/aes/menu.rs	close_submenu	mapped	restore the saved pixels and release the block (:683-697)
+fix_chpos	aes/gemrslib.c	tos-api/src/aes/resource.rs	fix_chpos	mapped	char-grid word -> pixels, high byte signed offset, width 80 -> gl_width (:53-83); same rule
+rs_obfix	aes/gemrslib.c	tos-api/src/aes/resource.rs	rs_obfix	mapped	fix_chpos over x,y,w,h (:89-99); rsrc_obfix calls it
+get_sub	aes/gemrslib.c	tos-api/src/aes/resource.rs	get_addr	mapped	base + offset + size*index (:102-106) is folded into get_addr over the native NRSC header tables (ADR-013 format)
+get_addr	aes/gemrslib.c	tos-api/src/aes/resource.rs	get_addr	mapped	type/index -> address for rsrc_gaddr/saddr (:112-175); resolved against the native blob header, R_TREE through the published ap_ptree table
+fixup_colour_icons	aes/gemrslib.c	tos-api/src/aes/resource.rs	relocate_blob_core	mapped	CICON data/mask/next_res pointers (:185-217) are relocated from offsets in the native blob (NRSC >= v11); tools/mkrsc.py lays the data out, the loader rebases it (ILP32 twin relocate_blob_core_ilp32)
+fixup_all_ciconblks	aes/gemrslib.c	tos-api/src/aes/resource.rs	relocate_blob_core	mapped	CICONBLK table + monoblk pointers (:226-256), same relocation as fixup_colour_icons
+best_match	aes/gemrslib.c	tos-api/src/aes/resource.rs	best_match	mapped	exact planes else deepest shallower variant, none deeper (:267-282)
+expand_cicondata	aes/gemrslib.c	tos-api/src/aes/resource.rs	cicon_pixel	mapped	S->D plane expansion and mask AND (:296-340) is done per pixel while building the 16-bit device form in cicon_pixel, no separate expansion buffer
+transform_cicon	aes/gemrslib.c	tos-api/src/aes/resource.rs	transform_cicon	mapped	standard -> device form (:348-396); NewTOS has one device form (RGB565 chunky) and maps the VDI index through the palette (rev_map_col), as the planes > 8 branch of EmuTOS
+transform_all_cicons	aes/gemrslib.c	tos-api/src/aes/resource.rs	fix_cicons	mapped	per CICONBLK best_match, expand, transform into one buffer, mainlist/col_data/sel_data patched, num_planes stamped (:403-477); NewTOS sums the buffer size first and allocates once
+get_ciconblkptr	aes/gemrslib.c	tos-api/src/aes/resource.rs	fix_cicons	mapped	locating the CICONBLK table: EmuTOS reads the extension array behind rsh_rssize (:484-508), NewTOS reads off_cib/n_cib from the NRSC header (no standalone function)
+free_cicon_buffers	aes/gemrslib.c	tos-api/src/aes/resource.rs	rsrc_free	mapped	frees the device-form icon buffers (:515-536), rc -1 on a failed free; NewTOS frees via cicon_raw / kernel_cicon_free inside rsrc_free
+fix_cicons	aes/gemrslib.c	tos-api/src/aes/resource.rs	fix_cicons	mapped	pointer fixup + transform for all CICONBLKs (:549-573)
+fix_long	aes/gemrslib.c	tos-api/src/aes/resource.rs	relocate_blob_core	mapped	offset -> pointer, -1 stays (:576-586); relocation with the blob's target base, ILP32 twin relocate_blob_core_ilp32
+fix_trindex	aes/gemrslib.c	tos-api/src/aes/resource.rs	relocate_blob_core	mapped	tree index offsets -> pointers and ap_ptree (:591-603); NewTOS publishes the slot table at the caller's pointer width (trindex_stride)
+fix_objects	aes/gemrslib.c	tos-api/src/aes/resource.rs	fix_objects_coords	mapped	rs_obfix on every object (:606-637), char-grid blobs only (NRSC >= v9)
+fix_objects	aes/gemrslib.c	tos-api/src/aes/resource.rs	relocate_blob_core	mapped	ob_spec half: G_CICON table index, no relocation for G_BOX/G_IBOX/G_BOXCHAR, others rebased (:618-634)
+fix_nptrs	aes/gemrslib.c	tos-api/src/aes/resource.rs	fix_nptrs64	mapped	relocates n pointers of a sub-structure array (:640-646); fix_nptrs32 for ILP32
+fix_ptr	aes/gemrslib.c	tos-api/src/aes/resource.rs	fix_nptrs64	mapped	single-pointer form of fix_nptrs (:649-652)
+fix_tedinfo_std	aes/gemrslib.c	tos-api/src/aes/resource.rs	fix_tedinfo_std	mapped	TEDINFO text/template/valid pointers and te_txtlen/te_tmplen (:655-669); ILP32 twin fix_tedinfo_std_ilp32
+rs_sglobe	aes/gemrslib.c	tos-api/src/aes/resource.rs	selected	mapped	EmuTOS selects the resource by the caller's AESGLOBAL (rs_global/rs_hdr, :675-679); NewTOS selects the loaded blob by owner + the ap_rscmem/ap_ptree words in global
+rs_free	aes/gemrslib.c	tos-api/src/aes/resource.rs	rsrc_free	mapped	free cicon buffers + the resource block, rc 0 when nothing loaded or a free fails (:685-709)
+rs_gaddr	aes/gemrslib.c	tos-api/src/aes/resource.rs	rsrc_gaddr	mapped	get_addr, rc = result != -1 (:715-722)
+rs_saddr	aes/gemrslib.c	tos-api/src/aes/resource.rs	rsrc_saddr	mapped	store a pointer into the resource (:728-742)
+rs_readit	aes/gemrslib.c	tos-api/src/aes/resource.rs	relocate_and_register_core	mapped	read + relocate a resource file (:751-811); ADR-013 format: NewTOS loads native NRSC blobs, a classic big-endian .RSC is not accepted; header sanity checks replace the short-read tests
+rs_readit	aes/gemrslib.c	tos-api/src/aes/resource.rs	load_into_user	mapped	the allocation and copy into the caller's memory (dos_alloc_anyram + dos_read, :773-787)
+rs_fixit	aes/gemrslib.c	tos-api/src/aes/resource.rs	fix_objects_coords	mapped	the second phase (:816-820) after the workstation is open: object coordinates
+rs_load	aes/gemrslib.c	tos-api/src/aes/resource.rs	rsrc_load	mapped	sh_find on the name, open, readit, fixit, close (:826-848); NewTOS reads through bdos::fs::read_file; sh_find step 4 (PATH=) is missing there
+rs_str	aes/gemrslib.c	tos-api/src/aes/resource.rs	blob_frstr	mapped	EmuTOS: gettext(rs_fstr[n]) of the AES's own compiled strings (:854-857); NewTOS: only the file selector's ITEMSLCT lookup in the loaded GEM.RSC; AES alert texts go through form.rs / i18n
+xlate_obj_array	aes/gemrslib.c	-	-	unmapped	no counterpart found: gettext translation of the string, button, title and template pointers of an OBJECT array (:865-); NewTOS translates via i18n sys_string and per-language resources, not by walking object arrays; no ADR
+gem_rsc_init	aes/gem_rsc.c	tos-api/src/aes/init.rs	gem_rsc	mapped	ROM -> RAM copy of the DESKTOP objects and TEDINFO, te_ptext zeroed (:622-632); xlate_obj_array has no counterpart. Only the DESKTOP tree is a kernel object, the other AES trees are in GEM.RSC (fsel) or built in code (form.rs)
+gem_rsc_fixit	aes/gem_rsc.c	tos-api/src/aes/init.rs	gem_rsc	mapped	rs_obfix over the DESKTOP objects (:636-641); NewTOS converts objects 0..2 only
+sc_read	aes/gemsclib.c	tos-api/src/aes/shell.rs	scrp_read	mapped	copies D.g_scrap out, always TRUE (:40-46); empty string if never written
+sc_write	aes/gemsclib.c	tos-api/src/aes/shell.rs	scrp_write	mapped	copies the path in, no validation, always TRUE (:57-63)
+sc_clear	aes/gemsclib.c	tos-api/src/aes/shell.rs	scrp_clear	mapped	deletes SCRAP.* in the scrap directory, FALSE only if no scrap path (:74-107); NewTOS snapshots the listing and deletes, instead of Fsfirst/Fsnext with delete in the loop
+sh_read	aes/gemshlib.c	tos-api/src/aes/shell.rs	shel_read	mapped	command and tail out (:102-106)
+sh_curdrvdir	aes/gemshlib.c	tos-api/src/aes/shell.rs	sh_curdrvdir	mapped	current drive:dir, root if empty (:109-124)
+sh_write	aes/gemshlib.c	tos-api/src/aes/shell.rs	shel_write	mapped	doex 0/1/4/5 dispatch, stores next app and mode (:157-198)
+sh_get	aes/gemshlib.c	tos-api/src/aes/shell.rs	shel_get	mapped	copy out of g_shelbuf (:203-206)
+sh_put	aes/gemshlib.c	tos-api/src/aes/shell.rs	shel_put	mapped	copy into g_shelbuf (:213-216)
+sh_tographic	aes/gemshlib.c	kernel/src/shell_loop.rs	sh_tographic	mapped	graphics mode switch: retake vectors, gsx_graphic, clip, malloc, ratinit, hourglass (:223-239)
+sh_toalpha	aes/gemshlib.c	kernel/src/shell_loop.rs	sh_toalpha	mapped	arrow, giveerr, ratexit, gsx_mfree, close workstation (:246-262)
+sh_draw	aes/gemshlib.c	tos-api/src/aes/shell.rs	sh_draw	mapped	draw the DESKTOP tree or just clear ROOT (:269-286)
+sh_show	aes/gemshlib.c	tos-api/src/aes/shell.rs	sh_show	mapped	draws only when gl_shgem (:292-298)
+sh_name	aes/gemshlib.c	tos-api/src/aes/shell.rs	sh_name	mapped	filename part of a path (:305-318)
+sh_envrn	aes/gemshlib.c	tos-api/src/aes/shell.rs	shel_envrn	mapped	environment search by prefix (:327-346); the AES-call entry; the internal use by findfile (PATH=) has no caller in NewTOS
+sh_path	aes/gemshlib.c	-	-	unmapped	not implemented: the PATH= walk (:356-396) feeding findfile step 4; NewTOS sh_find stops after step 3 (documented open in shell.rs)
+findfile	aes/gemshlib.c	tos-api/src/aes/shell.rs	sh_find	mapped	steps 1-3 (app dir, current dir, drive root) of :406-472; step 4 (PATH=) missing; existence is probed with bdos::fs::read_file, not Fsfirst (no wildcard, no directory match)
+sh_find	aes/gemshlib.c	tos-api/src/aes/shell.rs	sh_find	mapped	DTA save/restore around findfile (:474-484); shel_find is the AES-call wrapper
+sh_rdef	aes/gemshlib.c	tos-api/src/aes/shell.rs	shel_rdef	mapped	read default desktop command and dir (:491-497)
+sh_wdef	aes/gemshlib.c	tos-api/src/aes/shell.rs	sh_wdef	mapped	write default desktop command and dir (:504-508); shel_wdef is the AES-call wrapper
+sh_chgrf	aes/gemshlib.c	kernel/src/shell_loop.rs	sh_chgrf	mapped	switch alpha/graphics when sh_isgem != gl_shgem (:513-523)
+set_drvdir	aes/gemshlib.c	tos-api/src/aes/shell.rs	set_drvdir	mapped	default drive + directory (:526-533)
+sh_chdef	aes/gemshlib.c	tos-api/src/aes/shell.rs	sh_chdef	mapped	per next-app drive/dir and, for autorun/desktop, the command (:537-567)
+aes_run_rom_program	aes/gemshlib.c	kernel/src/shell_loop.rs	sh_ldapp	mapped	EmuTOS runs deskstart/coma_start as ROM programs through Pexec(PE_BASEPAGEFLAGS)+dos_exec (:570-580); NewTOS starts the embedded EL0 program NEWDESK through the launcher in sh_ldapp's DESKTOP arm (ADR-026), and the console arm in run_console_arm
+set_default_desktop	aes/gemshlib.c	tos-api/src/aes/shell.rs	set_default_desktop	mapped	next app = desktop, graphic, DEF_DESKTOP, s_cdir (:583-589)
+sh_ldapp	aes/gemshlib.c	kernel/src/shell_loop.rs	sh_ldapp	mapped	desktop / console / autorun / normal launch, AP_OPEN cleanup, wm_new (:592-690)
+sh_main	aes/gemshlib.c	kernel/src/shell_loop.rs	sh_main	mapped	the loop until shutdown or resolution change (:692-731); init part in shell.rs sh_main_init
+sh_main	aes/gemshlib.c	tos-api/src/aes/shell.rs	sh_main_init	mapped	the initial state before the loop (:694-706)
