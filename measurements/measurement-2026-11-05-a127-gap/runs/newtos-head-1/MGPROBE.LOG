@@ -1,0 +1,21 @@
+H00 graf_handle 8 16 19 19 evnt_dclick 3
+M00 menu_bar=1 desk box h=16
+O03 16,0 48x19 state 0000
+O04 64,0 48x19 state 0000
+O05 112,0 48x19 state 0000
+O16 64,19 96x80 state 0000
+O17 64,19 96x16 state 0000
+O18 64,35 96x16 state 0000
+O19 64,51 96x16 state 0008
+O20 64,67 96x16 state 0000
+O21 64,83 96x16 state 0000
+O22 112,19 112x96 state 0000
+O23 112,19 112x16 state 0000
+O24 112,35 112x16 state 0000
+O25 112,59 112x16 state 0008
+O26 112,75 112x16 state 0000
+O27 112,91 96x16 state 0000
+T00 t=3020
+W001 t=3021
+R001 t=18791 which=0010 msg=10,4,21 mx=100 my=90 bs=0 br=0
+Z99 end quit=1

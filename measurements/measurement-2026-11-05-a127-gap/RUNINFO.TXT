@@ -1,0 +1,146 @@
+measurement-2026-11-05-a127-gap -- TASK/A127 D2/D3, GitHub #19 ("highlight stays black when leaving the
+menu and moving back in"): what an open drop-down menu shows while the pointer is in the border or in a
+gap of the box (inside the box, no item under it), and after the pointer left the box and came back --
+pinned EmuTOS oracle vs NewTOS head, the same probe, the same pointer packets, compared by pixels.
+==========================================================================================================
+Auditor, 2026-11-05 (host clock CET). Main tree at d352f9ff (clean at the start; the only changes are the
+untracked probe files below and this run directory). No product code changed, no SD card, no Pi,
+nothing committed. Report: docs/audits/2026-11-05-a127-gap.md.
+
+WHY
+  TASK/TOOL33.md candidate 33 (read, not measured): EmuTOS mn_do asks ob_find(tree, cur_menu, 1, x, y)
+  (references/emutos/aes/gemmnlib.c:422), which answers the box ITSELF for a point inside the box that no
+  child covers; NewTOS track_owned uses object::child_at_t there (tos-api/src/aes/menu.rs:621), which
+  answers NIL. Ragnar's stuck black highlight was never reproduced
+  (measurements/measurement-2026-11-04-a127/RUNINFO.TXT, docs/analysis/a127-root-cause-2026-11-04.md).
+
+PROBE  tosdump/probes/mgprobe.c (+ run-mgprobe.sh, mgprobe-qmpshots.py, mgprobe-mouse.txt,
+  mgprobe-shots.txt; new, untracked). A sibling of mnprobe.c (same etv_timer mouse feeder on EmuTOS,
+  same tools/inject-arm.py arming on NewTOS, same tosdump ABI backends). Own menu bar, pixels:
+    titles Desk x 16..63, File x 64..111, Gaps x 112..159 (bar y 0..18)
+    File box x 64..159 y 19..98, border 1 px outside (ob_spec 0x00FF1100): Item A, Item B, a DISABLED
+      separator "----", Item C, Quit -- 16 px each, contiguous (the usual desktop layout, no gap)
+    Gaps box x 112..223 y 19..114: G1 y 19..34, G2 35..50, INNER GAP 51..58, DISABLED separator
+      59..74, G4 75..90, G5 91..106 (x 112..207 -> RIGHT GAP x 208..223), BOTTOM GAP 107..114
+  Wait: the desktop's evnt_multi(MU_KEYBD|MU_BUTTON|MU_MESAG, 2, 1, 1) (mnprobe's D2); MN_SELECTED ->
+  menu_tnormal; MN_SELECTED File/Quit ends the probe. INF on both sides "#R 02" + "#E 1B E0 00 00 60".
+  Input (method/gen-mgprobe-input.py): 214 IKBD relative packets, 61 shots; every step is followed by
+  a 1.2 s dwell, the shot is taken 0.9 s (180 ticks) after the step's last packet.
+SCREENSHOTS (the same emulated/guest instants on both sides)
+  EmuTOS  Hatari debugger, exact emulated tick: the probe's feeder increments a long (mgp_shot_n) at
+          every shot tick; the probe writes its address to C:\MGPROBE.ADR and waits for C:\MGPROBE.GO;
+          run-mgprobe.sh sets "b ($addr).l ! ($addr).l :trace :file shot.ini" through --cmd-fifo
+          (hatari-debug), shot.ini = "screenshot <scratch>/shot.png" (Hatari 2.6.1 debugui.c
+          DebugUI_Screenshot, breakcond.c :file executed per hit), then creates GO. Capture options only:
+          --statusbar off --drive-led off --crop on. PNG 640x480. K-lines of MGPROBE.LOG = the tick
+          of each shot (all 61 within 0..3 ticks of the schedule = the feeder's 20 ms grid).
+  NewTOS  QMP screendump (PNG) from mgprobe-qmpshots.py at <shot tick>/200 s after the serial line
+          "[inj] launch:MGPROBE armed at hz_200" (QEMU raspi4b, no icount: guest hz_200 on the host
+          clock). shots/qmpshots.txt: every dump done <= 0.070 s after its planned time (dwell 1.2 s).
+  The pointer is drawn into the frame on both sides, so every shot shows where the pointer is.
+
+INPUTS
+  ROM        tools/oracle/etos512de-1a7484ab.img 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+             (checked by run-mgprobe.sh against tools/oracle/oracle.env before every oracle run)
+  EmuTOS     1a7484aba1bfba23e2c0899e243b6d8177fe41df
+  Hatari     2.6.1 (/Volumes/Daten/hatari-2.6.1_macos), tools/oracle/hatari.cfg, profile tt
+             (--machine tt --tos-res ttmed --monitor vga), --fast-forward off
+  canary     docs/analysis/ORACLE.md section 6, before the runs (runs/canary.txt):
+               canary tt: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all)
+               canary falcontc: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all-falcontc)
+  NewTOS     d352f9ff841cae9ef155098ae945aa219ce12c6c (main HEAD), `git archive` + tools/inject-arm.py
+             launch:MGPROBE=<mgprobe-mouse.txt>, cargo xtask build --board rpi4 --release (scratch):
+               kernel-head.img     94e894a388d5ed18633dfd2bf661caa9fa651c8448447ad9d08b2d352eac5fbe (input v1)
+               kernel-head-v2.img  b12b60b5f0c1c4a304bf779ff4157f9607f308358c47a4f246065b2e0c6a614b (input v2)
+  QEMU       11.0.2, -M raspi4b, -append serial=on, APFS clone (cp -c) of the card per run, deleted after
+  host clang Apple clang version 21.0.0 (clang-2100.4.1.1) (also every card manifest's host_clang line)
+  cards      tools/mkcard.sh via run-mgprobe.sh newtos (C:\MGPROBE.NAP, C:\NEWDESK.INF
+             "#R 02" / "#E 1B E0 00 00 60" / "#Z 01 C:\MGPROBE.NAP@"); manifest per run
+             runs/newtos-*/card.img.manifest; card + booted-clone sha256 in runs/newtos-*/run.txt.
+             optional_missing, verbatim:
+               runs/newtos-head-1/card.img.manifest:optional_missing none
+               runs/newtos-head-v3-1/card.img.manifest:optional_missing none
+               runs/newtos-head-v3-2/card.img.manifest:optional_missing none
+  probe      MGPROBE.NAP 08c7aba2c31dd142... (v1/v2 source; the same in every run of that source);
+             MGPROBE.PRG differs per build in the symbol table only (as mnprobe, measurement-2026-11-04-
+             a127-oracle). Source sha256 per run in runs/*/run.txt.
+  input v1   method/mgprobe-mouse-v1.txt (pin to (0,0)); v2 = tosdump/probes/mgprobe-mouse.txt (pin to
+             (0,479)); shots identical (method/mgprobe-shots-v1.txt = tosdump/probes/mgprobe-shots.txt).
+  probe v2   method/mgprobe-v2.c; v3 = tosdump/probes/mgprobe.c = v2 + the F-lines (objc_find at the
+             probed points, before the input clock starts).
+
+RUNS (method/all-runs.sh; every run alone on the host except the kernel build during emutos-tt-v2-*)
+  emutos-tt-1       input v1, probe v1(=v2)     61/61 shots
+  newtos-head-1     input v1, kernel-head.img   61/61 shots
+  emutos-tt-v2-2/3  input v2, probe v2          61/61 shots each
+  emutos-tt-v3-1/2  input v2, probe v3          61/61 shots each
+  newtos-head-v3-1/2 input v2, probe v3, kernel-head-v2.img  61/61 shots each
+  Not here: one newtos attempt that failed before boot (QMP socket path > 104 bytes; fixed in
+  run-mgprobe.sh by a socket path relative to the scratch dir) -- deleted, no output.
+  Run-1 artefact: the v1 pin (-127,-127 packets from the screen centre) passes (66,0) = the File title.
+  NewTOS opened the File menu there (its injector feeds packets one pump pass apart; the box then
+  stays down in OUTSIDE_STATE), EmuTOS did not (the feeder hands the batch of due packets to mousevec
+  in one Timer-C call, mn_do sees only the end point). Only shot 00 differs from that (analysis/
+  cmp-emutos1-newtos1/diff-00-s00-rest.png); from shot 01 on runs 1 and v3 give the same table.
+  v2 pins to (0,479), never crossing the bar; s00 is then equal.
+
+REPEATABILITY (raw PNG bytes)
+  sha256 over the 61 shot hashes: emutos-tt-1 = v2-2 = v2-3 = v3-1 = v3-2 = 3c06c4261f550507;
+  newtos-head-v3-1 = newtos-head-v3-2 = e57641d8b7a6179b. analysis/cmp-v3-1/compare.txt and
+  cmp-v3-2/compare.txt are identical in every count.
+
+EVALUATION  method/compare.py: both 640x480 frames reduced to black/white (luma < 128), per step the
+  differing pixels in BAR / FILE / GAPS / MENU (x 0..300, y 0..140) / ALL, the bounding box, and the
+  black fraction of every item rectangle on each side (selected item ~0.8, normal ~0.2);
+  diff-<step>.png = EmuTOS | NewTOS | difference in red (3x, menu area). In every step ALL == MENU:
+  outside the menu area both screens are pixel-equal.
+
+RESULTS (analysis/cmp-v3-1/compare.txt; E = EmuTOS, N = NewTOS)
+  File box (contiguous, DISABLED separator) -- ALL 0 differing pixels in every step:
+    a01 title, a02 Item A, a03 separator (nothing highlighted on both), a04 Item C, a05 left border
+    (x 63), a06, a07 right border (x 160), a08, a09 bottom border (y 99) -- on the border both show no
+    item highlighted, box open; a10..a17 out below / right / left and back onto items and onto the
+    separator: equal; d01..d07 fast moves (6 px per 20 ms) down through the separator and out, back,
+    out left, back: equal.
+  Gaps box -- border and outside: b13 right border (x 224), b15/b17/b19 out below/right/left,
+    b18 back onto G4, c01/c03/c05/c07/c09 fast moves ending outside (6 px/20 ms, 6 px/5 ms, jumps,
+    20 px/20 ms), c04/c08/c10 fast back onto an item without passing a gap: equal (0 px).
+  Gaps box -- pointer in a gap: DIFFERENT, every time, the same way:
+    b03/b05/b07/b16/e02 inner gap, b09/b20 right gap, b11/b14 bottom gap:
+      E: the whole box interior x 112..223, y 19..114 inverted (black, item texts white) -- the box is
+         SELECTED (do_chg -> ob_change XOR, gemoblib.c:1295-1304); title Gaps highlighted.
+      N: no highlight in the box; title Gaps highlighted.
+      10655..10732 differing pixels, bbox (112,19)-(223,114) (diff-20-b03-inner-gap.png).
+  Gaps box -- from a gap onto an item, without leaving the box: DIFFERENT:
+    b04 gap->G2, b06 gap->separator, b08 ->G4, b10/b12 ->G5, b21 right gap->G1, c02 fast up from below
+    through the bottom gap onto G2, c06 the same at 6 px/5 ms onto G1:
+      E: the whole box STAYS inverted; the item under the pointer is not highlighted on its own
+         (mn_do is in INITEM_STATE with cur_item = the box and waits only for leaving the box rect,
+         gemmnlib.c:306-315,329,356; no event while the pointer stays inside).
+      N: only the item under the pointer is inverted, the rest of the box normal.
+      8907..9173 differing pixels, bbox (112,19)-(223,114) or (112,35)-(223,114) (diff-21-b04-g2.png,
+      diff-38-b21-g1.png).
+    Leaving the box (b13 border, b15 out) restores E's box to normal; from then on equal again.
+  Press in the inner gap (e02 -> e03, press + release 50 ms):
+      E: MN_SELECTED msg = 10, title 5 (Gaps), item 22 = the BOX object (R001 of every EmuTOS
+         MGPROBE.LOG: "msg=10,5,22 mx=150 my=54"); the menu closes, the probe's menu_tnormal
+         un-hilites the title.
+      N: no message (the only R line is the final Quit, msg=10,4,21); the press is swallowed, the box
+         stays down with the title highlighted (e03: 2354 px differ, title + box outline,
+         diff-58-e03-after-gap-press.png); tracking continues (f01/f02 equal, Quit selects).
+  objc_find(tree, box, 1, x, y) at the 12 probed points (F-lines, v3): IDENTICAL on both sides
+    (inner/right/bottom gap -> 22 = the box; G2 -> 24; separator -> 25; borders/outside -> -1; File
+    box Item C -> 20, separator -> 19, borders -> -1). objc_offset of every title/box/item identical
+    (O-lines). The AES hit test itself agrees; the menu tracker does not use its answer.
+  Stuck black highlight on NewTOS: NOT reproduced in any of the 61 steps x 3 runs. Every step where
+  the pointer is outside the box shows no item highlighted on NewTOS; every return onto an item shows
+  exactly that item. The persisting black area in this run is EmuTOS's: the whole box stays black
+  while the pointer moves from a gap onto items, until the pointer leaves the box.
+
+FILES
+  method/   gen-mgprobe-input.py, mgprobe-mouse-v1.txt, mgprobe-shots-v1.txt, mgprobe-v2.c,
+            compare.py, all-runs.sh
+  runs/     canary.txt; <side>-<run>/ run.txt, MGPROBE.LOG, shots/NN-<step>.png (61), hatari.log or
+            BOOT-SERIAL.txt + card.img.manifest + shots/qmpshots.txt
+  analysis/ cmp-emutos1-newtos1/, cmp-v3-1/, cmp-v3-2/: compare.txt + diff-<step>.png per differing step
+  Kernels, cards, clones, the scratch tree and Hatari's scratch: session scratchpad, deleted after.

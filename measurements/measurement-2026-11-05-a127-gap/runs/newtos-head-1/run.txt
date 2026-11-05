@@ -1,0 +1,9 @@
+mgprobe run, side newtos (2026-11-05T12:59:19Z)
+tree      d352f9ff841cae9ef155098ae945aa219ce12c6c 6 dirty paths in the tree
+source    mgprobe.c fdde2fd2bda2fcc7b46175af990d0adfa534a5f19dbac3705cd59a390463733f mgprobe-mouse.txt d3cebaed70a353e3466c6979de10c111fa42a21ee7e9be8d6ec3d621e7d34c7d mgprobe-shots.txt 42b34f54971c1dcbbb38691db5bf6d0810b1d92cf3cd5ddfeda748732071f6f2
+probes    MGPROBE.PRG f26089f1c24ec1bc5536521f6767cc7dc94cf253d0f93783cc8c8d74d2854536 MGPROBE.NAP 08c7aba2c31dd142533e28314b5f3084b1747711fccf305bdd25948f99ff0bc6
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    94e894a388d5ed18633dfd2bf661caa9fa651c8448447ad9d08b2d352eac5fbe /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/a127gap/kernel-head.img
+card      c405c4dacef04257f11854541e076d7457af2a2c418ce85f7b9475de2d29fad0 (tools/mkcard.sh, C:\MGPROBE.NAP, #Z autorun)
+qemu      done, 61 shots
+card      after 54700fef5e698a9d67dd58f94d0b0a4f9853d9b25555b2c6f75e9096aa5f648d (the booted clone)
