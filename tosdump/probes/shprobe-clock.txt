@@ -1,0 +1,4 @@
+# shprobe-clock.txt -- TASK/A131: the injector script for shprobe.c on NewTOS. The probe
+# takes no input; tools/inject-arm.py refuses an empty script, so the clock gets
+# one mouse packet without motion or button (0xF8 0 0) at tick 1.
+1 0xF8 0 0

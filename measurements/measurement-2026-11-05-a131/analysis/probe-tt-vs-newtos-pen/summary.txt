@@ -1,0 +1,12 @@
+00-s0-w1-alone-a.png: 1185 px differ by pen (85 in the menu bar y<19), outside the menu bar bbox x 21..321 y 41..291; pen pairs E->N 1->8 x1100, 0->1 x44, 1->0 x41
+01-s0-w1-alone-b.png: 1185 px differ by pen (85 in the menu bar y<19), outside the menu bar bbox x 21..321 y 41..291; pen pairs E->N 1->8 x1100, 0->1 x44, 1->0 x41
+02-s1-w2-apart-w2top-a.png: 2345 px differ by pen (85 in the menu bar y<19), outside the menu bar bbox x 21..621 y 41..421; pen pairs E->N 1->8 x2260, 0->1 x44, 1->0 x41
+03-s1-w2-apart-w2top-b.png: 2345 px differ by pen (85 in the menu bar y<19), outside the menu bar bbox x 21..621 y 41..421; pen pairs E->N 1->8 x2260, 0->1 x44, 1->0 x41
+04-s2-w1top-a.png: 2345 px differ by pen (85 in the menu bar y<19), outside the menu bar bbox x 21..621 y 41..421; pen pairs E->N 1->8 x2260, 0->1 x44, 1->0 x41
+05-s2-w1top-b.png: 2345 px differ by pen (85 in the menu bar y<19), outside the menu bar bbox x 21..621 y 41..421; pen pairs E->N 1->8 x2260, 0->1 x44, 1->0 x41
+06-s3-w2-overlap-w1top-a.png: 2265 px differ by pen (85 in the menu bar y<19), outside the menu bar bbox x 21..501 y 41..391; pen pairs E->N 1->8 x2180, 0->1 x44, 1->0 x41
+07-s3-w2-overlap-w1top-b.png: 2265 px differ by pen (85 in the menu bar y<19), outside the menu bar bbox x 21..501 y 41..391; pen pairs E->N 1->8 x2180, 0->1 x44, 1->0 x41
+08-s4-w2top-overlap-a.png: 1741 px differ by pen (85 in the menu bar y<19), outside the menu bar bbox x 21..501 y 41..391; pen pairs E->N 1->8 x1656, 0->1 x44, 1->0 x41
+09-s4-w2top-overlap-b.png: 1741 px differ by pen (85 in the menu bar y<19), outside the menu bar bbox x 21..501 y 41..391; pen pairs E->N 1->8 x1656, 0->1 x44, 1->0 x41
+10-s5-wbox-red-a.png: 1741 px differ by pen (85 in the menu bar y<19), outside the menu bar bbox x 21..501 y 41..391; pen pairs E->N 2->8 x1656, 0->1 x44, 1->0 x41
+11-s5-wbox-red-b.png: 1741 px differ by pen (85 in the menu bar y<19), outside the menu bar bbox x 21..501 y 41..391; pen pairs E->N 2->8 x1656, 0->1 x44, 1->0 x41

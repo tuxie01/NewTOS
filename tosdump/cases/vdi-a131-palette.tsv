@@ -1,0 +1,115 @@
+# vdi-a131-palette.tsv -- TASK/A131 (GitHub #7, window shadow colour): what
+# RGB each of the 16 VDI pens stands for, on the API (vq_color) and in the
+# pixel the VDI writes (v_get_pixel after a solid v_bar in that pen).
+#
+# Why: the A130 screens showed the 3D shadow grey 102 (EmuTOS TT) vs 140
+# (NewTOS) and LWHITE 170 vs 189. This table separates "which pen" from "what
+# RGB a pen has": vq_color answers the palette per pen on each machine; the
+# pixel cases show the device word a pen produces. Measure it on the oracle in
+# profile tt AND falcontc (the TT and the Falcon VDI seed different default
+# palettes, vdi/vdi_col.c:58-63 tt_palette1, :130-135 videl_palette1).
+#
+# Written once by the A131 audit (2026-11-05); a case id is the physical line
+# number and the file CRC binds every dump to it -- appending only.
+#
+# opcode	sub	intin	ptsin	comment
+
+# --- vq_color, flag 0 (requested) and 1 (realised), pens 0..15 ----------
+26	0	0,0	-	vq_color pen 0 requested
+26	0	0,1	-	vq_color pen 0 realised
+26	0	1,0	-	vq_color pen 1 requested
+26	0	1,1	-	vq_color pen 1 realised
+26	0	2,0	-	vq_color pen 2 requested
+26	0	2,1	-	vq_color pen 2 realised
+26	0	3,0	-	vq_color pen 3 requested
+26	0	3,1	-	vq_color pen 3 realised
+26	0	4,0	-	vq_color pen 4 requested
+26	0	4,1	-	vq_color pen 4 realised
+26	0	5,0	-	vq_color pen 5 requested
+26	0	5,1	-	vq_color pen 5 realised
+26	0	6,0	-	vq_color pen 6 requested
+26	0	6,1	-	vq_color pen 6 realised
+26	0	7,0	-	vq_color pen 7 requested
+26	0	7,1	-	vq_color pen 7 realised
+26	0	8,0	-	vq_color pen 8 requested
+26	0	8,1	-	vq_color pen 8 realised
+26	0	9,0	-	vq_color pen 9 requested
+26	0	9,1	-	vq_color pen 9 realised
+26	0	10,0	-	vq_color pen 10 requested
+26	0	10,1	-	vq_color pen 10 realised
+26	0	11,0	-	vq_color pen 11 requested
+26	0	11,1	-	vq_color pen 11 realised
+26	0	12,0	-	vq_color pen 12 requested
+26	0	12,1	-	vq_color pen 12 realised
+26	0	13,0	-	vq_color pen 13 requested
+26	0	13,1	-	vq_color pen 13 realised
+26	0	14,0	-	vq_color pen 14 requested
+26	0	14,1	-	vq_color pen 14 realised
+26	0	15,0	-	vq_color pen 15 requested
+26	0	15,1	-	vq_color pen 15 realised
+
+# --- the pixel a solid v_bar in pen N writes, read back by v_get_pixel ---
++23	0	1	-	vsf_interior solid
++25	0	0	-	vsf_color pen 0
++11	1	-	40,40,140,120	v_bar
+105	0	-	80,80	v_get_pixel inside a v_bar in pen 0
++23	0	1	-	vsf_interior solid
++25	0	1	-	vsf_color pen 1
++11	1	-	40,40,140,120	v_bar
+105	0	-	80,80	v_get_pixel inside a v_bar in pen 1
++23	0	1	-	vsf_interior solid
++25	0	2	-	vsf_color pen 2
++11	1	-	40,40,140,120	v_bar
+105	0	-	80,80	v_get_pixel inside a v_bar in pen 2
++23	0	1	-	vsf_interior solid
++25	0	3	-	vsf_color pen 3
++11	1	-	40,40,140,120	v_bar
+105	0	-	80,80	v_get_pixel inside a v_bar in pen 3
++23	0	1	-	vsf_interior solid
++25	0	4	-	vsf_color pen 4
++11	1	-	40,40,140,120	v_bar
+105	0	-	80,80	v_get_pixel inside a v_bar in pen 4
++23	0	1	-	vsf_interior solid
++25	0	5	-	vsf_color pen 5
++11	1	-	40,40,140,120	v_bar
+105	0	-	80,80	v_get_pixel inside a v_bar in pen 5
++23	0	1	-	vsf_interior solid
++25	0	6	-	vsf_color pen 6
++11	1	-	40,40,140,120	v_bar
+105	0	-	80,80	v_get_pixel inside a v_bar in pen 6
++23	0	1	-	vsf_interior solid
++25	0	7	-	vsf_color pen 7
++11	1	-	40,40,140,120	v_bar
+105	0	-	80,80	v_get_pixel inside a v_bar in pen 7
++23	0	1	-	vsf_interior solid
++25	0	8	-	vsf_color pen 8
++11	1	-	40,40,140,120	v_bar
+105	0	-	80,80	v_get_pixel inside a v_bar in pen 8
++23	0	1	-	vsf_interior solid
++25	0	9	-	vsf_color pen 9
++11	1	-	40,40,140,120	v_bar
+105	0	-	80,80	v_get_pixel inside a v_bar in pen 9
++23	0	1	-	vsf_interior solid
++25	0	10	-	vsf_color pen 10
++11	1	-	40,40,140,120	v_bar
+105	0	-	80,80	v_get_pixel inside a v_bar in pen 10
++23	0	1	-	vsf_interior solid
++25	0	11	-	vsf_color pen 11
++11	1	-	40,40,140,120	v_bar
+105	0	-	80,80	v_get_pixel inside a v_bar in pen 11
++23	0	1	-	vsf_interior solid
++25	0	12	-	vsf_color pen 12
++11	1	-	40,40,140,120	v_bar
+105	0	-	80,80	v_get_pixel inside a v_bar in pen 12
++23	0	1	-	vsf_interior solid
++25	0	13	-	vsf_color pen 13
++11	1	-	40,40,140,120	v_bar
+105	0	-	80,80	v_get_pixel inside a v_bar in pen 13
++23	0	1	-	vsf_interior solid
++25	0	14	-	vsf_color pen 14
++11	1	-	40,40,140,120	v_bar
+105	0	-	80,80	v_get_pixel inside a v_bar in pen 14
++23	0	1	-	vsf_interior solid
++25	0	15	-	vsf_color pen 15
++11	1	-	40,40,140,120	v_bar
+105	0	-	80,80	v_get_pixel inside a v_bar in pen 15

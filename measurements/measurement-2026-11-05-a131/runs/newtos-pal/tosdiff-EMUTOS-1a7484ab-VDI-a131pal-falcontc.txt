@@ -1,0 +1,3 @@
+EMUTOS-1a7484ab-VDI-a131pal-falcontc.BIN vs NEWTOS.BIN -- area VDI, 48 cases from vdi-a131-palette.tsv
+
+0 of 48 cases differ

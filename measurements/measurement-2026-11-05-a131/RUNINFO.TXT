@@ -1,0 +1,120 @@
+measurement-2026-11-05-a131 -- TASK/A131, GitHub #7 ("Shadow of windows wrong", ragnar76): the window's outer
+frame, its drop shadow and the 3D bevels of its gadgets at rest, topped and untopped -- pinned EmuTOS oracle (profiles tt
+AND falcontc) vs NewTOS main HEAD on QEMU raspi4b, compared by pixel position and RGB, and by VDI pen.
+=====================================================================================================================
+Auditor, 2026-11-05 (host clock CET). Main tree at f657cfe43f8f7d645adf88c894167037a6ce45a2, clean at the start; the only
+changes are the untracked files listed under FILES (the probe runs' run.txt therefore say "11 dirty paths": these files;
+every measured kernel was built from a git clone / git archive of f657cfe4, not from the working tree). No product code
+changed, no SD card, no Pi, nothing committed. Report: docs/audits/2026-11-05-a131-shadow.md.
+
+WHY
+  #7: "a gray colored line right and below the window" on NewTOS 0.6, not in EmuTOS/Hatari. A130's screens (TT profile vs
+  QEMU) showed: shadow x 480-481 / y 380-381 light grey 189 on NewTOS where EmuTOS has black; 3D shadow grey 140 vs 102;
+  sunken elevator bevel 189 vs 170 -- not established whether pen (which colour index is drawn), palette (RGB of an index)
+  or geometry. TASK/TOOL33.md candidate 26: shadow colour fixed DROP_SHADOW_COLOR instead of from the W_BOX colour word.
+
+INPUTS
+  ROM        tools/oracle/etos512de-1a7484ab.img 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+  EmuTOS     1a7484aba1bfba23e2c0899e243b6d8177fe41df (references/emutos HEAD)
+  Hatari     2.6.1 (/Volumes/Daten/hatari-2.6.1_macos), tools/oracle/hatari.cfg
+  canary     docs/analysis/ORACLE.md section 6 before the runs (runs/canary-tt.stdout, runs/canary-falcontc.stdout):
+               canary tt: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all)
+               canary falcontc: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all-falcontc)
+             no disk cases in this audit -> no disk canary.
+  QEMU       11.0.2, -M raspi4b, -append serial=on, APFS clone (cp -c) of each card, deleted after
+  host clang Apple clang version 21.0.0 (clang-2100.4.1.1) (= host_clang of every card manifest)
+  kernels    plain:  cargo xtask build --board rpi4 --release in a git clone of f657cfe4 (built by the xtask tosdump run)
+                     kernel8.img 6d2c44915927fb6a157ce6f2faae4bec8e27d62368089e4ce59381935a08d9b6 -> newtos-pal, newtos-desk-1
+             armed:  tosdump/probes/run-shprobe.sh kernel HEAD (git archive f657cfe4 + tools/inject-arm.py
+                     launch:SHPROBE=shprobe-clock.txt, one motionless mouse packet = the clock only), rpi4 --release
+                     kernel8.img 3a9afdc853af68c2ba237885de959cc09d3e352d55dcf213f2e508757430799c -> newtos-probe-1/-2
+  manifests  runs/newtos-*/card.img.manifest; optional_missing, verbatim, in all four:
+               optional_missing none
+  probe      tosdump/probes/shprobe.c 98acd6fcb7207108dca3984687a7e59e03299074a510af45f1e7fc88bf74f9ca (all probe runs)
+             SHPROBE.PRG 926ffd4f..., SHPROBE.NAP 11abc76b... (run.txt per run)
+
+PART 1 -- palette, by tosdiff (new table, references recorded on the pin)
+  table      tosdump/cases/vdi-a131-palette.tsv (sha256 5bf64acc..., 48 cases, CRC 7E23929E): vq_color pens 0..15 flag 0/1,
+             and v_get_pixel inside a solid v_bar in each pen 0..15
+  oracle     tools/hatari-oracle.sh tt|falcontc <canary DUMPVDI.PRG build 19b7> <table>, two runs each:
+             runs/emutos-pal-tt-1/-2 (BIN 9532e470..., LOG e27758c7..., run 1 = run 2), runs/emutos-pal-falcontc-1/-2
+             (BIN b34b7bcc..., LOG 19a19782..., run 1 = run 2) -> references tosdump/reference/EMUTOS-1a7484ab-VDI-a131pal.BIN/.LOG
+             (tt) and -a131pal-falcontc.BIN/.LOG (copies of run 1)
+  NewTOS     method/newtos-palette.sh = one cargo xtask tosdump call (TOOL09) -> runs/newtos-pal/ (tosdump-run.txt):
+               tosdiff EMUTOS-1a7484ab-VDI-a131pal-falcontc.BIN vs NEWTOS.BIN: exit 0, 0 of 48 cases differ
+               tosdiff EMUTOS-1a7484ab-VDI-a131pal.BIN vs NEWTOS.BIN: exit 1, 32 of 48 cases differ
+  tt vs falcontc on the oracle itself (analysis/palette-tt-vs-falcontc.txt): pens 8..15 requested/realised and every
+  v_get_pixel differ -- the two machines' default palettes (vdi/vdi_col.c:58-63 tt_palette1 vs :130-135 videl_palette1):
+  pen 8 tt 667 (screen 170,170,170) / falcontc 733 -> word 0xBDD7 (5-bit 23 = 189); pen 9 tt 400 (102) / falcontc 533 ->
+  0x8C51 (17 = 140). NewTOS = falcontc in all 48 cases.
+
+PART 2 -- the probe (screens + AES colour words), method: tosdump/probes/run-shprobe.sh
+  two windows kind 0x0FEF, WF_V/HSLSIZ 300, WF_V/HSLIDE 500; W1 border 20,40,300,250, W2 340,120,280,300; states 8 s each:
+  s0 W1 alone (top) / s1 W2 opened apart (W2 top) / s2 wind_set(W1,WF_TOP) / s3 W2 moved to 200,150,300,240 (overlap, W1
+  top) / s4 wind_set(W2,WF_TOP) / s5 wind_set(W1 and W2, WF_COLOR, W_BOX, word with bc nibble = 2 RED); two shots per
+  state (+700 and +1400 ticks). Pointer hidden (graf_mouse M_OFF). EmuTOS: Hatari breakpoint on the probe's shot counter;
+  NewTOS: QMP screendump at the same tick offsets after "[inj] launch:SHPROBE armed at hz_200 3020" -- the probe's own T0
+  was 3020 (SHPROBE.LOG T00), so host and probe clocks coincide; every dump <= 0.010 s after plan (shots/qmpshots.txt).
+  runs: emutos-tt-probe-1/-2, emutos-falcontc-probe-1/-2, newtos-probe-1/-2 (method/all-runs.sh for the -2 runs; the -1
+  runs with the same commands by hand, before the desk-shot ticks in run-shprobe.sh were changed -- the probe path of
+  the script is unchanged).
+  REPEATABILITY: run 1 = run 2 byte for byte, all 12 PNGs, on each of the three sides; shot a = shot b of every state
+  pixel-equal on every side (analysis/probe-ab-stability.txt).
+  AES colour words (SHPROBE.LOG W lines, wind_get WF_COLOR and WF_DCOLOR, gadgets 0..18, both windows): identical on all
+  three sides -- W_BOX topped 0x1101 untopped 0x1101; W_NAME 0x11a1 / 0x1101; W_VSLIDE/W_HSLIDE 0x1111; all others 0x1101.
+  s5 readback after wind_set(WF_COLOR, W_BOX, 0x2101, 0x2101): 2101 2101 on all three sides.
+  The logs differ (without tick lines) only in the first WM_REDRAW's damage rectangle after wind_open (EmuTOS
+  20,40,302,252 = border + shadow; NewTOS 21,63,276,204 = work area) -- known, TOOL33 candidate 21, out of scope here.
+  PIXELS falcontc vs NewTOS (method/pixcmp.py, 5-bit-per-gun space; analysis/probe-falcontc-vs-newtos/):
+    s0 1185 px = 1100 shadow (E 0,0,0 -> N 189,189,189) + 85 menu-bar title "SHPROBE.PRG" vs "SHPROBE.NAP" (y 4..15)
+    s1, s2 2345 = 2260 shadow (both windows) + 85;  s3 2265 = 2180 + 85;  s4 1741 = 1656 + 85
+    s5 1741 = 1656 shadow E (255,0,0) RED -> N (189,189,189) + 85
+    Shadow geometry: right band x+w..x+w+1, y+1..y+h+1; bottom band y+h..y+h+1, x+1..x+w+1 (W1: x 320-321 y 41-291,
+    y 290-291 x 21-321) -- the SAME pixels on both sides, only the colour differs. Outer border, title bar, closer,
+    fuller, arrows, tracks, elevators, sizer, every 3D bevel (pen 9 = 140,138,140 / 140,140,140): 0 px differ.
+  PIXELS tt vs NewTOS by pen (method/pencmp.py, each side's own measured palette; analysis/probe-tt-vs-newtos-pen/):
+    identical counts and places: pen 1 -> pen 8 on exactly the shadow pixels (s5: pen 2 -> pen 8), 85 menu-bar pixels,
+    nothing else. No unknown RGB on either side.
+  Edge runs (analysis/edges-*.txt), e.g. s0 row y=150 x 314..324:
+    E-tt        255 255 255 255 102 0 0 0 G W G       (W = white, G = desktop green)
+    E-falcontc  W   W   W   W   140 0 0 0 G W G
+    N           W   W   W   W   140 0 189 189 G W G
+    x 318 = gadget 3D shadow (pen 9), x 319 = outer border (pen 1), x 320-321 = drop shadow.
+
+PART 3 -- the desktop's own drive windows (no probe)
+  INF (both sides): "#R 02", "#E 1B E0 00 <vh> <vl>", "#W 00 00 02 02 26 0E 00 C:\*.*@", "#W 00 00 2A 06 24 12 00
+  C:\*.*@" -> W1 border 16,32,304,224 untopped, W2 336,96,288,288 topped. EmuTOS: C: = Hatari GEMDOS dir (two folders,
+  two files, EMUDESK.INF), screenshots at 25 s and 30 s wall time (hatari-debug screenshot); NewTOS: card from mkcard.sh
+  with that NEWDESK.INF, QMP dumps 10 s and 15 s after "[desk] desktop up". runs/emutos-tt-desk-1,
+  emutos-falcontc-desk-1, newtos-desk-1; the two shots of each side pixel-equal.
+  method/deskcmp.py by pen, regions RING (outer border + shadow), VBAR, HBAR; the pointer box at the screen centre and the
+  window contents excluded (different C: contents and desk language) -- analysis/desk-compare.txt:
+    falcontc and tt alike: W1 RING 1008 px differ, all pen 1 -> pen 8; W2 RING 1152, all pen 1 -> pen 8;
+    VBAR and HBAR of both windows 0 px.
+
+ISSUE ATTACHMENTS (GitHub #7, downloaded into scratch, not kept; sha256 in analysis/issue7-attachments.txt):
+  ragnar76's X-shot screenshot of NewTOS on the real Pi: black border, then exactly 2 px of 189,189,189, then the desktop
+  -- right edge and bottom edge; 3D shadow 140,140,140. The same pixels QEMU shows (corroboration, not oracle evidence).
+
+RESULT
+  (a) WHICH PEN: the drop shadow -- NewTOS pen 8 (LWHITE) where EmuTOS draws pen 1 (BLACK, = W_BOX's border colour);
+      after wind_set(WF_COLOR, W_BOX) EmuTOS's shadow follows the new border colour (RED), NewTOS's stays pen 8.
+  (b) RGB OF A PEN: NewTOS = EmuTOS falcontc in all 16 pens (tosdiff 0/48). The A130 values 102 vs 140 and 170 vs 189
+      are the TT's own default palette (tt_palette1) against the Falcon's (videl_palette1): same pen, other machine.
+  (c) GEOMETRY: equal -- shadow, border, gadgets and bevels at the same pixels on both sides.
+  Cause (code read after the measurement): tos-api/src/aes/window.rs draw_shadow fills both bands with the constant
+  DROP_SHADOW_COLOR = GRAY_LT = 8 (window.rs:180), EmuTOS paints the SHADOWED decoration of W_BOX in just_draw with
+  vsf_color(bcol) (aes/gemoblib.c:894-900), bcol = gr_crack of W_BOX's word 0x1101 (aes/gemwmlib.c:84 gl_waspec,
+  :1284 W_ACTIVE[ROOT].ob_state = SHADOWED).
+
+FILES
+  method/   newtos-palette.sh (the xtask tosdump call), all-runs.sh, pixcmp.py, pencmp.py, edges.py, deskcmp.py
+  runs/     canary-*.stdout; emutos-pal-*/ (VDI.BIN/.LOG, hatari.log, profile.txt); newtos-pal/ (xtask output);
+            emutos-{tt,falcontc}-probe-{1,2}/, newtos-probe-{1,2}/ (run.txt, SHPROBE.LOG, shots/, hatari.log or
+            BOOT-SERIAL.txt + card.img.manifest + NEWDESK.INF); emutos-{tt,falcontc}-desk-1/, newtos-desk-1/
+  analysis/ probe-falcontc-vs-newtos/, probe-tt-vs-newtos-pen/, probe-ab-stability.txt, edges-*.txt, desk-compare.txt,
+            palette-tt-vs-falcontc.txt, issue7-attachments.txt
+  new, untracked, outside this directory: tosdump/cases/vdi-a131-palette.tsv; tosdump/reference/EMUTOS-1a7484ab-VDI-a131pal
+  {,-falcontc}.{BIN,LOG}; tosdump/probes/shprobe.c, run-shprobe.sh, shprobe-qmpshots.py, shprobe-shots.txt,
+  shprobe-clock.txt.
+  Kernels, cards, clones, the scratch tree and Hatari's scratch: session scratchpad, deleted after.

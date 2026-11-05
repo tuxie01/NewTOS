@@ -1,0 +1,14 @@
+# shprobe-shots.txt -- TASK/A131: the shot schedule of shprobe.c (200 Hz ticks after T0 / after
+# the injector's armed line). Two shots per static state (STATE 1600, +700 and +1400).
+700 s0-w1-alone-a
+1400 s0-w1-alone-b
+2300 s1-w2-apart-w2top-a
+3000 s1-w2-apart-w2top-b
+3900 s2-w1top-a
+4600 s2-w1top-b
+5500 s3-w2-overlap-w1top-a
+6200 s3-w2-overlap-w1top-b
+7100 s4-w2top-overlap-a
+7800 s4-w2top-overlap-b
+8700 s5-wbox-red-a
+9400 s5-wbox-red-b

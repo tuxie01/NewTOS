@@ -1,0 +1,15 @@
+falcontc W1 RING: 4104 px compared, 1008 differ by pen; E->N 1->8 x1008
+falcontc W1 VBAR: 3920 px compared, 0 differ by pen
+falcontc W1 HBAR: 6648 px compared, 0 differ by pen
+falcontc W2 RING: 4576 px compared, 1152 differ by pen; E->N 1->8 x1152
+falcontc W2 VBAR: 5368 px compared, 0 differ by pen
+falcontc W2 HBAR: 6336 px compared, 0 differ by pen
+tt W1 RING: 4104 px compared, 1008 differ by pen; E->N 1->8 x1008
+tt W1 VBAR: 3920 px compared, 0 differ by pen
+tt W1 HBAR: 6648 px compared, 0 differ by pen
+tt W2 RING: 4576 px compared, 1152 differ by pen; E->N 1->8 x1152
+tt W2 VBAR: 5368 px compared, 0 differ by pen
+tt W2 HBAR: 6336 px compared, 0 differ by pen
+emutos-tt-desk-1 ['00-desk-25s.png', '01-desk-30s.png'] pixels equal
+emutos-falcontc-desk-1 ['00-desk-25s.png', '01-desk-30s.png'] pixels equal
+newtos-desk-1 ['00-desk-a.png', '01-desk-b.png'] pixels equal
