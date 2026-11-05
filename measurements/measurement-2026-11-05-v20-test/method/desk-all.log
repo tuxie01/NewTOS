@@ -1,0 +1,72 @@
++ for p in '"head bec04bab"' '"base 20d15c8c"'
++ set -- head bec04bab
++ DESK_FILES=
++ measurements/measurement-2026-11-05-v20-test/method/desk-inj.sh kernel bec04bab measurements/measurement-2026-11-05-v20-test/method/edge-mouse.txt /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/ke-head.img
++ tail -1
+kernel b30066918cab1ba5319b4311fc1295374120d71e9837e27817ff1769134e4bbb /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/ke-head.img (commit bec04bab1f245589df3211b5ba7e6d944174b4bc, armed desktop, mouse 18491eaf856996653baf86ce71211e17cb1d6557438d010f3fcb44b2431c7a89)
++ DESK_FILES=
++ measurements/measurement-2026-11-05-v20-test/method/desk-inj.sh newtos measurements/measurement-2026-11-05-v20-test/runs/edge-head /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/ke-head.img measurements/measurement-2026-11-05-v20-test/method/edge-NEWDESK.INF measurements/measurement-2026-11-05-v20-test/method/edge-shots.txt
+qemu-system-aarch64: terminating on signal 15 from pid 89943 (<unknown process>)
+desk-inj run newtos (2026-11-05T22:59:49Z)
+kernel b30066918cab1ba5319b4311fc1295374120d71e9837e27817ff1769134e4bbb
+card 7cf858f61c6331067ad74ebd8ebd58ea2f94cad60efd77b7f0b898d60b662b24
+shots c864e580dd593ebe6b5f4a74f5e5c8996bfc16336149c44f9b08aa7c2b0210d0
+shots 6
+exception-panic-lines 0
++ measurements/measurement-2026-11-05-v20-test/method/desk-inj.sh kernel bec04bab measurements/measurement-2026-11-05-v20-test/method/desk-mouse.txt /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/k-head.img
++ tail -1
+kernel 7562e1f64af5d81ac19e42ba5e954b87217696d5c2f3782cfe0ea604211691e3 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/k-head.img (commit bec04bab1f245589df3211b5ba7e6d944174b4bc, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
++ DESK_FILES=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/files
++ measurements/measurement-2026-11-05-v20-test/method/desk-inj.sh newtos measurements/measurement-2026-11-05-v20-test/runs/desk-head /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/k-head.img measurements/measurement-2026-11-05-v20-test/method/desk-NEWDESK.INF measurements/measurement-2026-11-05-v20-test/method/desk-shots.txt
+qemu-system-aarch64: terminating on signal 15 from pid 90417 (<unknown process>)
+desk-inj run newtos (2026-11-05T23:00:52Z)
+kernel 7562e1f64af5d81ac19e42ba5e954b87217696d5c2f3782cfe0ea604211691e3
+card 1de6d422bc8e98f9d10f23b4324827dd2923340f7ff4f0fe25d540932342aa16
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
++ for p in '"head bec04bab"' '"base 20d15c8c"'
++ set -- base 20d15c8c
++ DESK_FILES=
++ measurements/measurement-2026-11-05-v20-test/method/desk-inj.sh kernel 20d15c8c measurements/measurement-2026-11-05-v20-test/method/edge-mouse.txt /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/ke-base.img
++ tail -1
+kernel 70f1d7b5585368e83ea795295d676298e6ca581289f439f6fea6c65208f99fe0 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/ke-base.img (commit 20d15c8c426e85cba416e922d0a0f02ef4ff223e, armed desktop, mouse 18491eaf856996653baf86ce71211e17cb1d6557438d010f3fcb44b2431c7a89)
++ DESK_FILES=
++ measurements/measurement-2026-11-05-v20-test/method/desk-inj.sh newtos measurements/measurement-2026-11-05-v20-test/runs/edge-base /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/ke-base.img measurements/measurement-2026-11-05-v20-test/method/edge-NEWDESK.INF measurements/measurement-2026-11-05-v20-test/method/edge-shots.txt
+qemu-system-aarch64: terminating on signal 15 from pid 91478 (<unknown process>)
+desk-inj run newtos (2026-11-05T23:01:57Z)
+kernel 70f1d7b5585368e83ea795295d676298e6ca581289f439f6fea6c65208f99fe0
+card acea951990c73cf13013e192496ffbb1ecc9b4a381d0f8737e409d3f583e509e
+shots c864e580dd593ebe6b5f4a74f5e5c8996bfc16336149c44f9b08aa7c2b0210d0
+shots 6
+exception-panic-lines 0
++ measurements/measurement-2026-11-05-v20-test/method/desk-inj.sh kernel 20d15c8c measurements/measurement-2026-11-05-v20-test/method/desk-mouse.txt /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/k-base.img
++ tail -1
+kernel ee77545004979f51c1e96bfdf6d4566038e6100128a5d6239b9929872dfdc31e /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/k-base.img (commit 20d15c8c426e85cba416e922d0a0f02ef4ff223e, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
++ DESK_FILES=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/files
++ measurements/measurement-2026-11-05-v20-test/method/desk-inj.sh newtos measurements/measurement-2026-11-05-v20-test/runs/desk-base /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/k-base.img measurements/measurement-2026-11-05-v20-test/method/desk-NEWDESK.INF measurements/measurement-2026-11-05-v20-test/method/desk-shots.txt
+qemu-system-aarch64: terminating on signal 15 from pid 91971 (<unknown process>)
+desk-inj run newtos (2026-11-05T23:02:56Z)
+kernel ee77545004979f51c1e96bfdf6d4566038e6100128a5d6239b9929872dfdc31e
+card 8b0fa875def2910b19d23220c8f832bf9294a049161619776e1881c2df3a7b0c
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
++ for n in edge-emutos edge-emutos-2
++ measurements/measurement-2026-11-05-v20-test/method/run-deskedge-emutos.sh measurements/measurement-2026-11-05-v20-test/runs/edge-emutos measurements/measurement-2026-11-05-v20-test/method/edge-mouse-emutos-lead3000.txt measurements/measurement-2026-11-05-v20-test/method/edge-shots-emutos-lead3000.txt measurements/measurement-2026-11-05-v20-test/method/edge-NEWDESK.INF
+deskedge emutos falcontc (2026-11-05T23:03:37Z)
+DSFEED.PRG 12dfa17b18fcb4df723628156c557e646cb8f2d821f857ff3eca80837f964cef
+mouse 33aaa8b5814a44d32b97f1901063806820db7b4c8a94db011b4e22fdca74acc1 shots 8e2d99be9210f3f9310dc604f7bd94f860b55c503f373e55db48f04d3b61022c inf c3073fb4a5494d67647a490f8be649d6184c22091c7bd696500683cae44c5842
+oracle /Volumes/Daten/hatari-2.6.1_macos/Hatari.app/Contents/MacOS/Hatari, ROM /Volumes/Daten/Development/PiRusTOS/tools/oracle/etos512de-1a7484ab.img (323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c), profile falcontc
+breakpoint ($01040124).l ! ($01040124).l :trace :file shot.ini
+hatari done, 6 shots of 6
++ for n in edge-emutos edge-emutos-2
++ measurements/measurement-2026-11-05-v20-test/method/run-deskedge-emutos.sh measurements/measurement-2026-11-05-v20-test/runs/edge-emutos-2 measurements/measurement-2026-11-05-v20-test/method/edge-mouse-emutos-lead3000.txt measurements/measurement-2026-11-05-v20-test/method/edge-shots-emutos-lead3000.txt measurements/measurement-2026-11-05-v20-test/method/edge-NEWDESK.INF
+deskedge emutos falcontc (2026-11-05T23:04:23Z)
+DSFEED.PRG 33aed7213bc33bd2a6763d54b3fe5154a5d14869967e578aaa698f852d418bfb
+mouse 33aaa8b5814a44d32b97f1901063806820db7b4c8a94db011b4e22fdca74acc1 shots 8e2d99be9210f3f9310dc604f7bd94f860b55c503f373e55db48f04d3b61022c inf c3073fb4a5494d67647a490f8be649d6184c22091c7bd696500683cae44c5842
+oracle /Volumes/Daten/hatari-2.6.1_macos/Hatari.app/Contents/MacOS/Hatari, ROM /Volumes/Daten/Development/PiRusTOS/tools/oracle/etos512de-1a7484ab.img (323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c), profile falcontc
+breakpoint ($01040124).l ! ($01040124).l :trace :file shot.ini
+hatari done, 6 shots of 6
++ echo finished
+finished

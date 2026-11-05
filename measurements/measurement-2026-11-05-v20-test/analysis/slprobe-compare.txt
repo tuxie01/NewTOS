@@ -1,0 +1,4 @@
+slprobe head vs head-r2: 5 differ: 121-121-min-V-pagelo-held1 152-152-min-H-pagehi-held1 44-044-1000-H-pagehi-held1 67-067-300-V-pagelo-held1 98-098-300-H-pagehi-held1
+slprobe base vs base-r2: 4 differ: 125-125-min-V-pagehi-held1 148-148-min-H-pagelo-held1 94-094-300-H-pagelo-held1 98-098-300-H-pagehi-held1
+slprobe head-r2 vs base-r2: 1 differ: 98-098-300-H-pagehi-held1
+slprobe head vs base: 7 differ: 121-121-min-V-pagelo-held1 125-125-min-V-pagehi-held1 148-148-min-H-pagelo-held1 152-152-min-H-pagehi-held1 44-044-1000-H-pagehi-held1 67-067-300-V-pagelo-held1 94-094-300-H-pagelo-held1

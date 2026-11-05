@@ -1,0 +1,6 @@
+t0 = detection of 'launch:DBPROBE armed at hz_200' on the serial file
+00 S0-inside planned 3.015s request 3.018s done 3.027s ok
+01 T1-top-17 planned 5.245s request 5.250s done 5.263s ok
+02 T2-top-18 planned 7.535s request 7.540s done 7.553s ok
+03 B1-bottom-498 planned 9.840s request 9.845s done 9.858s ok
+04 B2-bottom-497 planned 12.160s request 12.165s done 12.178s ok

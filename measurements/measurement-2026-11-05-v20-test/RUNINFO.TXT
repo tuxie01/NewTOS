@@ -1,0 +1,65 @@
+V20 acceptance -- TASK/V20.md (fix bec04bab, abline: XOR shortening, clipping, clip-off wrap like EmuTOS) by the tester.
+Date 2026-11-05/06. No product code touched; nothing committed; no SD card, no Pi, no push.
+New test code outside this directory (untracked, tosdump/probes/): dbprobe.c, dbprobe-mouse.txt, dbprobe-shots.txt, run-dbprobe.sh (graf_dragbox with bounds larger than
+  the screen, both ABIs, copy of the slprobe skeleton), dsfeed.c (EmuTOS-side resident mouse feeder AUTO program for desktop scenes). No existing probe/case touched
+  (vdprobe.c, slprobe.c, shprobe.c, all tables byte-identical).
+
+TREES
+  head = git archive of bec04bab1f245589df3211b5ba7e6d944174b4bc; base = git archive of 20d15c8c (references/ linked); every kernel built by cargo xtask in scratch, fresh per tree/board,
+  release rpi4 (serial=on in QEMU), qemu-virt dev. Plain release kernel8.img sha256: head cb283e15f44b419d4ed024b2c53a48880e8adafc091e80a7db0cda507171e1be,
+  base 0a9758e89d5a01593fe523194dc75c25337828420dc7af23820879886ba70629 (= V26 head kernel). Armed kernels (inject-arm): desk script head 7562e1f6..., base see method/desk-all.log;
+  dbprobe head b51f3285..., base b1fec2e5...; shprobe/slprobe armed kernels per gui-runs.log.
+  VDPROBE.PRG f2195e60c076ac9a590660daa7d5cc628851ff7d7c2b507fb707fc90817d23e7 VDPROBE.NAP 6495ecd10f414dfdd15556ff66435234d5ba8085ccc95e0391fb23ca25a56217 (unchanged vs V26).
+  host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 35 card.img.manifest files).
+  Manifests: runs/*/card.img.manifest, probe/*/card.img.manifest (35). optional_missing, verbatim, in ALL 35:  optional_missing none
+  Oracle: pinned EmuTOS 1a7484ab via tools/hatari-oracle.sh / tools/oracle/oracle.env (ROM sha256 323c87bb...), profile falcontc (640x480 16 bit) for every pixel run.
+  QEMU: raspi4b, per-run APFS clone of the card (deleted by the scripts), only own PIDs stopped. Scratch = session scratchpad, deleted at the end.
+
+RESULTS
+ 1 PASS  vdi-v18.tsv vs EMUTOS-1a7484ab-VDI-v18-falcontc (runs/t1-head-v18, base runs/t1-base-v18):
+         head 9 of 19 differ (15, 18, 21, 51, 53, 59, 109, 154, 199); base 15 of 19 (+29, 32, 40, 43, 45, 205). base-vs-head tosdiff (analysis/v18-base-vs-head.txt): exactly 6 cases move:
+         29, 32 (K1), 40, 43, 45 (K2/clip off), 205 (K11C) -- all six now EQUAL the oracle. 35 and 47 (controls) equal in both. 29/32/35/40/43/45/47 all equal the oracle = PASS.
+         205 moved as announced (K11C, 1 px on the clip edge). Remaining 9 differ identically on base and head (unchanged): 15/18/21 K10 (V24), 51/53 K4 (V22), 59 K11A (V25),
+         109/154/199 K8 (V21).
+ 2 PASS  vdprobe (238 cases; runs probe/e1 e2 EmuTOS, n-head-1 n-head-2 n-base-1 NewTOS; analysis/probe-*.txt, probe-K-table.txt):
+         K1A-G: head EQUAL in 7 of 7 (base: K1E, K1F equal, A-D, G differed). K2A-I: head EQUAL 9 of 9 (base: A-H differed, I equal). K3A-D EQUAL on base and head.
+         K4-K13: base-vs-head EQUAL for every case except K11C (base DIFF vs EmuTOS 1 px -> head EQUAL). K11A, K11D unchanged (still DIFF 113/15 px = V25). K4A-E,G, K5A,B,D, K8E also unchanged
+         DIFF (other tickets). Head vs EmuTOS 226 of 238 equal, 12 differ = K4A-E,G, K5A,B,D, K8E, K11A, K11D, all unchanged vs base. base vs head: 14 differ = exactly K1A-D,G, K2A-H, K11C.
+         Determinism: EmuTOS e1 == e2 (238/238 equal), NewTOS head n-head-1 == n-head-2 (238/238 equal).
+ 3 PASS  vdi-all.tsv vs ...VDI-all-falcontc: 0 of 182 (head, base 0; VDI.BIN byte-identical base/head); vdi-raster-screen.tsv 0 of 62 (BIN identical); vdi-raster.tsv 1 of 59 = case 157 only
+         (BIN identical to base); vdi-v18-raster.tsv 0 of 17 (BIN identical).
+ 4 PASS  AES tables, base vs head (tosdiff): aes-r2-wind 0 of 78, aes-r3-wind-state 0 of 39, aes-r4-subfunctions 0 of 181 differ (analysis/aes-base-vs-head.txt). r2/r3 oracle diff text identical
+         (78/78 and 39/39 differ on both, as before). Raw AES.BIN differs by 1 byte per record (target-chosen address cell, never compared, as V19/V26); r4 has no pinned reference.
+         shprobe (12 shots) base == head byte-identical 12 of 12; desktop run (2 shots) 2 of 2 identical; slprobe (155 shots) 7 of 155 differ, all "held1" mid-gesture page-hold frames
+         (121 min-V-pagelo, 125 min-V-pagehi, 148 min-H-pagelo, 152 min-H-pagehi, 44 1000-H-pagehi, 67 300-V-pagelo, 94 300-H-pagelo). Same-kernel repeats differ as well:
+         head vs head-r2 5 frames, base vs base-r2 4 frames, head-r2 vs base-r2 1 frame (98 300-H-pagehi) -> timing noise of held frames (same finding as V19/V26), not attributable to V20.
+         All 155 dragslow/slidebox (A130 outline) frames identical base/head.
+ 5 PASS  Desktop with IKBD injector (method/desk-inj.sh, gen-desk-input.py; NEWDESK.INF with C:, Trash, one drive window with 41 files; 11 shots, each while the frame is visible/button held):
+         menu (File drop-down), dialog (Desk > Desktop info), rubberband on the desktop, window drag by title (dragbox outline), slider drag (slidebox outline), sizer drag, icon drag,
+         icon drag to the top end of the desktop (hard disk), icon drag to the bottom screen edge (Trash): base vs head 11 of 11 byte-identical PNG (runs/desk-base, runs/desk-head).
+         Edge scenes, desktop icons (method/gen-edge-input.py, runs/edge-base, edge-head, EmuTOS edge-emutos, edge-emutos-2 via dsfeed.c): base == head 6 of 6; EmuTOS run1 == run2 6 of 6.
+         The desktop's own drags never put a frame past the top edge (frame clamped at y=19, the desktop top) -> no clipped vertical segment there; bottom: frame ends at the screen row 479.
+         So a frame that really runs past the screen edge needs an application's graf_dragbox with a bounds rectangle larger than the screen: dbprobe (runs/db-base, db-head, db-emutos, db-emutos-2):
+         frame 60x40, bounds 0,-100,640,700, five scenes, EmuTOS run1 == run2 5 of 5, same graf_dragbox results on all three sides (dx/dy -17, -18, 458, 457):
+           S0 inside the screen: base == head byte-identical (control).
+           T1 top -17 (odd number of rows above the screen): base != head in 23 pixels, column x=359 rows 0..22; head equals EmuTOS in those columns (x=300 and 359 equal on all rows except
+              the constant menu-bar pixels at x=359 rows 10,11,14,15 that differ in every shot incl. the control), base differs from EmuTOS in 19 rows -> change = EmuTOS-equal (expected).
+           T2 top -18 (even): base == head, both equal EmuTOS (columns).
+           B1 bottom 498 (even): base == head equal EmuTOS. B2 bottom 497 (odd): base != head in 23 px, column x=300 rows 457..479; head equals EmuTOS in 23 of 23, base 0 of 23
+              (the segment is drawn solid magenta = XOR of every row on head and EmuTOS) -> EmuTOS-equal (expected).
+         Developer's expectation (frames inside the screen pixel-identical) confirmed; the only pixel changes are the clipped vertical segments, EmuTOS-equal. No finding.
+ 6 PASS  cargo xtask test on the main tree (= bec04bab): 2033 passed / 0 failed / 1 ignored (analysis/cargo-xtask-test.txt, sum of all "test result" lines) = developer's number.
+         rpi4 release fresh builds of both trees, head boots ("[desk] desktop up", 0 exception/panic lines in every BOOT-SERIAL of newtos-*/desk-*/edge-*/db-*/probe runs).
+         qemu-virt: fresh tree of bec04bab, cargo xtask build --board qemu-virt (dev) + cargo xtask run --board qemu-virt --headless: "[desk] desktop up (0 drives)", 0 exception/panic (runs/boot-virt-head/).
+ -  clippy tos-api --lib base vs head: 73 warnings each, identical per-message list (analysis/clippy-tos-api-*.txt). kernel release build: 159 warning lines both. kernel-crate clippy not run
+    (cargo clippy -p kernel fails in its build script outside xtask, same as before).
+
+NOT DRIVEN / OPEN
+  Real Pi4: nothing specific (no cache/HW-sensitive path in V20; XOR frames in a non-cacheable framebuffer are display-visible only on silicon -> candidate for the HW checklist: icon/window drag outline at the screen edges).
+  The desktop's own frames cannot be pushed past the screen edge (clamped); that case is exercised with the application call only (dbprobe), not with a desktop drag.
+  EmuTOS desktop vs NewTOS desktop edge scenes: icon positions differ by 2 px in x (NewTOS labels start at x=2, EmuTOS at x=0), so full-screen oracle compare of the desktop scenes is not meaningful;
+  the oracle classification rests on the dbprobe columns. Dialog text/menu language differ by design.
+  Dialog/menu scenes: base == head only (no oracle compare).
+  Iterations discarded (not in the evidence): first desk runs with press wait 40 ticks (rubberband/icon started 30 px late: AES reports the press after the double-click wait), icon grab 5 px off,
+  initial pin crossing the File menu (menu open in the rest shot) -- scripts fixed (pin = left along the row, up along x=0), all runs repeated; runs/failed-qmp-path = QMP relative-path error of
+  my runner (0 shots). Every number above is from the repeated runs.

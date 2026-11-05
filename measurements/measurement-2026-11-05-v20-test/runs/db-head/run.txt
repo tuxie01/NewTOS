@@ -1,0 +1,9 @@
+dbprobe run, side newtos (2026-11-05T23:08:18Z)
+tree      bec04bab1f245589df3211b5ba7e6d944174b4bc 6 dirty paths in the tree
+source    dbprobe.c 92bc5272b0647b56ed4767c71a6ff8d3a17586e74be3c34d32baf197e56b736e dbprobe-mouse.txt cd2512cb209b505206d3514874bbd4a6e00d2d8e1984d8a15a25d03bdea6ca86 dbprobe-shots.txt a4a41362fdbb071ce91b16befe50823127241916de57d9cc0319252de594f82a
+probes    DBPROBE.PRG 31a1ad98d542d83d78fe6b009b5984c26d0951d12a2278cfdc32c7d9913ae95a DBPROBE.NAP 4813299462d3fbdb29090f8a6f5c2b1690636996833ce35c2c90534b78676e62
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    b51f3285e7fd26281e0176202451e6c52336ba8a07227d93c698b4e618151fcc /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/kdb-head.img
+card      c62bed31079c81b56b8d3803c4e0ec7ba50fc728f3b52616166cdcf456582e8a (tools/mkcard.sh, C:\DBPROBE.NAP, #Z autorun)
+qemu      done, 5 shots
+card      after 20d091cede6738baa5f9b54feb465b4040269681b8cef75abfbf35d29e52a618 (the booted clone)

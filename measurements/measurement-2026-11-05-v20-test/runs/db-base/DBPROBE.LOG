@@ -1,0 +1,13 @@
+H00 graf_handle 8 16 19 19
+T00 t=3021
+E00 press at 330,220 t=3362
+D00 S0 inside graf_dragbox=1 dx 300 dy 80 t=3684
+E01 press at 330,220 t=3796
+D01 T1 top -17 graf_dragbox=1 dx 300 dy -17 t=4130
+E02 press at 330,220 t=4254
+D02 T2 top -18 graf_dragbox=1 dx 300 dy -18 t=4588
+E03 press at 330,220 t=4712
+D03 B1 bottom 498 graf_dragbox=1 dx 300 dy 458 t=5049
+E04 press at 330,220 t=5176
+D04 B2 bottom 497 graf_dragbox=1 dx 300 dy 457 t=5513
+Z99 end

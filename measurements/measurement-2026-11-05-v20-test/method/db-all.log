@@ -1,0 +1,72 @@
++ tosdump/probes/run-dbprobe.sh kernel bec04bab /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/kdb-head.img
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/db/dbprobe.azqCmJ/tree: tag [inj], launch:DBPROBE (288 bytes)
+kernel b51f3285e7fd26281e0176202451e6c52336ba8a07227d93c698b4e618151fcc /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/kdb-head.img (commit bec04bab1f245589df3211b5ba7e6d944174b4bc, armed launch:DBPROBE)
++ tosdump/probes/run-dbprobe.sh kernel 20d15c8c /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/kdb-base.img
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/db/dbprobe.v5TEL6/tree: tag [inj], launch:DBPROBE (288 bytes)
+kernel b1fec2e56388445927e61bc783280c3bf449ab230718bcdea67a201377e89810 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/kdb-base.img (commit 20d15c8c426e85cba416e922d0a0f02ef4ff223e, armed launch:DBPROBE)
++ tosdump/probes/run-dbprobe.sh newtos measurements/measurement-2026-11-05-v20-test/runs/db-head /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/kdb-head.img
+qemu-system-aarch64: terminating on signal 15 from pid 97495 (<unknown process>)
+H00 graf_handle 8 16 19 19
+T00 t=3026
+E00 press at 330,220 t=3367
+D00 S0 inside graf_dragbox=1 dx 300 dy 80 t=3689
+E01 press at 330,220 t=3801
+D01 T1 top -17 graf_dragbox=1 dx 300 dy -17 t=4135
+E02 press at 330,220 t=4259
+D02 T2 top -18 graf_dragbox=1 dx 300 dy -18 t=4593
+E03 press at 330,220 t=4717
+D03 B1 bottom 498 graf_dragbox=1 dx 300 dy 458 t=5054
+E04 press at 330,220 t=5181
+D04 B2 bottom 497 graf_dragbox=1 dx 300 dy 457 t=5518
+Z99 end
++ tosdump/probes/run-dbprobe.sh newtos measurements/measurement-2026-11-05-v20-test/runs/db-base /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/kdb-base.img
+qemu-system-aarch64: terminating on signal 15 from pid 97712 (<unknown process>)
+H00 graf_handle 8 16 19 19
+T00 t=3021
+E00 press at 330,220 t=3362
+D00 S0 inside graf_dragbox=1 dx 300 dy 80 t=3684
+E01 press at 330,220 t=3796
+D01 T1 top -17 graf_dragbox=1 dx 300 dy -17 t=4130
+E02 press at 330,220 t=4254
+D02 T2 top -18 graf_dragbox=1 dx 300 dy -18 t=4588
+E03 press at 330,220 t=4712
+D03 B1 bottom 498 graf_dragbox=1 dx 300 dy 458 t=5049
+E04 press at 330,220 t=5176
+D04 B2 bottom 497 graf_dragbox=1 dx 300 dy 457 t=5513
+Z99 end
++ tosdump/probes/run-dbprobe.sh emutos measurements/measurement-2026-11-05-v20-test/runs/db-emutos
+H00 graf_handle 8 16 19 19
+S00 script steps 96 shots 5
+A00 shot counter at 010aa00c
+G02 go after 11 polls
+T00 t=3585
+E00 press at 330,220 t=3929
+D00 S0 inside graf_dragbox=1 dx 300 dy 80 t=4249
+E01 press at 330,220 t=4361
+D01 T1 top -17 graf_dragbox=1 dx 300 dy -17 t=4697
+E02 press at 330,220 t=4821
+D02 T2 top -18 graf_dragbox=1 dx 300 dy -18 t=5153
+E03 press at 330,220 t=5277
+D03 B1 bottom 498 graf_dragbox=1 dx 300 dy 458 t=5613
+E04 press at 330,220 t=5741
+D04 B2 bottom 497 graf_dragbox=1 dx 300 dy 457 t=6077
+Z99 end
++ tosdump/probes/run-dbprobe.sh emutos measurements/measurement-2026-11-05-v20-test/runs/db-emutos-2
+H00 graf_handle 8 16 19 19
+S00 script steps 96 shots 5
+A00 shot counter at 010aa00c
+G02 go after 11 polls
+T00 t=3585
+E00 press at 330,220 t=3929
+D00 S0 inside graf_dragbox=1 dx 300 dy 80 t=4249
+E01 press at 330,220 t=4361
+D01 T1 top -17 graf_dragbox=1 dx 300 dy -17 t=4697
+E02 press at 330,220 t=4821
+D02 T2 top -18 graf_dragbox=1 dx 300 dy -18 t=5153
+E03 press at 330,220 t=5277
+D03 B1 bottom 498 graf_dragbox=1 dx 300 dy 458 t=5613
+E04 press at 330,220 t=5741
+D04 B2 bottom 497 graf_dragbox=1 dx 300 dy 457 t=6077
+Z99 end
++ echo finished
+finished

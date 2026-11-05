@@ -1,0 +1,6 @@
+3408 00-rest
+3730 1a-hd-top-edge-held
+4115 1b-hd-top-edge-held
+4539 2a-trash-bottom-edge-held
+4978 2b-trash-bottom-edge-held
+5231 30-end

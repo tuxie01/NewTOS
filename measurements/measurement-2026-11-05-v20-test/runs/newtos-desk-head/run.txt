@@ -1,0 +1,8 @@
+shprobe run, side newtos-desk  (2026-11-05T23:18:32Z)
+tree      bec04bab1f245589df3211b5ba7e6d944174b4bc 6 dirty paths in the tree
+source    shprobe.c 98acd6fcb7207108dca3984687a7e59e03299074a510af45f1e7fc88bf74f9ca shprobe-shots.txt 22006f628741cbf8e192abd225e02e82a7b19754e3dd8c90a0c1fcbb74fa8d98 shprobe-clock.txt 7e7592eb2d0c99801754bc686655ad43f26c2ca2085579aae8990ca3de0774f3
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    cb283e15f44b419d4ed024b2c53a48880e8adafc091e80a7db0cda507171e1be /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/head/target/aarch64-unknown-none-softfloat/release/kernel8.img
+card      2d13f44f39a50fdf0e2b638c3aeb6c1940b8fd6dcf4a29331c1e3c0facd1bcc3 (tools/mkcard.sh)
+qemu      done, 2 shots
+card      after 2d13f44f39a50fdf0e2b638c3aeb6c1940b8fd6dcf4a29331c1e3c0facd1bcc3 (the booted clone)

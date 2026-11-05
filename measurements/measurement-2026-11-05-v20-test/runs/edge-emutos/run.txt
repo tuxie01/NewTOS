@@ -1,0 +1,6 @@
+deskedge emutos falcontc (2026-11-05T23:03:37Z)
+DSFEED.PRG 12dfa17b18fcb4df723628156c557e646cb8f2d821f857ff3eca80837f964cef
+mouse 33aaa8b5814a44d32b97f1901063806820db7b4c8a94db011b4e22fdca74acc1 shots 8e2d99be9210f3f9310dc604f7bd94f860b55c503f373e55db48f04d3b61022c inf c3073fb4a5494d67647a490f8be649d6184c22091c7bd696500683cae44c5842
+oracle /Volumes/Daten/hatari-2.6.1_macos/Hatari.app/Contents/MacOS/Hatari, ROM /Volumes/Daten/Development/PiRusTOS/tools/oracle/etos512de-1a7484ab.img (323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c), profile falcontc
+breakpoint ($01040124).l ! ($01040124).l :trace :file shot.ini
+hatari done, 6 shots of 6

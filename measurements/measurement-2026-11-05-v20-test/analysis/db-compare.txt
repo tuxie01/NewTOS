@@ -1,0 +1,20 @@
+00-S0-inside.png: base vs head 0 px; strip x290..369 EmuTOS vs head 154 px, EmuTOS vs base 154 px
+01-T1-top-17.png: base vs head 23 px; strip x290..369 EmuTOS vs head 142 px, EmuTOS vs base 157 px
+   base-vs-head differing: x [359] y 0 .. 22  (23 rows)
+   of those pixels, equal to EmuTOS: head 19, base 4
+02-T2-top-18.png: base vs head 0 px; strip x290..369 EmuTOS vs head 139 px, EmuTOS vs base 139 px
+03-B1-bottom-498.png: base vs head 0 px; strip x290..369 EmuTOS vs head 87 px, EmuTOS vs base 87 px
+04-B2-bottom-497.png: base vs head 23 px; strip x290..369 EmuTOS vs head 92 px, EmuTOS vs base 115 px
+   base-vs-head differing: x [300] y 457 .. 479  (23 rows)
+   of those pixels, equal to EmuTOS: head 23, base 0
+--- frame columns x=300 and x=359 (the vertical segments), all rows: EmuTOS vs head / base
+00-S0-inside.png x=300: EmuTOS!=head at rows []; EmuTOS!=base at rows []
+00-S0-inside.png x=359: EmuTOS!=head at rows [10, 11, 14, 15]; EmuTOS!=base at rows [10, 11, 14, 15]
+01-T1-top-17.png x=300: EmuTOS!=head at rows []; EmuTOS!=base at rows []
+01-T1-top-17.png x=359: EmuTOS!=head at rows [10, 11, 14, 15]; EmuTOS!=base at rows 19 rows [0, 1, 2]..
+02-T2-top-18.png x=300: EmuTOS!=head at rows []; EmuTOS!=base at rows []
+02-T2-top-18.png x=359: EmuTOS!=head at rows [10, 11, 14, 15]; EmuTOS!=base at rows [10, 11, 14, 15]
+03-B1-bottom-498.png x=300: EmuTOS!=head at rows []; EmuTOS!=base at rows []
+03-B1-bottom-498.png x=359: EmuTOS!=head at rows [10, 11, 14, 15]; EmuTOS!=base at rows [10, 11, 14, 15]
+04-B2-bottom-497.png x=300: EmuTOS!=head at rows []; EmuTOS!=base at rows 23 rows [457, 458, 459]..
+04-B2-bottom-497.png x=359: EmuTOS!=head at rows [10, 11, 14, 15]; EmuTOS!=base at rows [10, 11, 14, 15]

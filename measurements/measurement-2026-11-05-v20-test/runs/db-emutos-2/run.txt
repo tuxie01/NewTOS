@@ -1,0 +1,8 @@
+dbprobe run, side emutos (2026-11-05T23:10:10Z)
+tree      bec04bab1f245589df3211b5ba7e6d944174b4bc 6 dirty paths in the tree
+source    dbprobe.c 92bc5272b0647b56ed4767c71a6ff8d3a17586e74be3c34d32baf197e56b736e dbprobe-mouse.txt cd2512cb209b505206d3514874bbd4a6e00d2d8e1984d8a15a25d03bdea6ca86 dbprobe-shots.txt a4a41362fdbb071ce91b16befe50823127241916de57d9cc0319252de594f82a
+probes    DBPROBE.PRG a5cb8c49382b126352e03786bd58b17750a252b69f157ebed3f76c45f85d3da4 DBPROBE.NAP 4813299462d3fbdb29090f8a6f5c2b1690636996833ce35c2c90534b78676e62
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+oracle    /Volumes/Daten/hatari-2.6.1_macos/Hatari.app/Contents/MacOS/Hatari, ROM /Volumes/Daten/Development/PiRusTOS/tools/oracle/etos512de-1a7484ab.img (323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c), profile falcontc
+breakpoint ($010aa00c).l ! ($010aa00c).l :trace :file shot.ini
+hatari    done, 5 shots of 5

@@ -1,0 +1,6 @@
+r2 aes-r2-wind: bytes differing base/head:       78; tosdiff: address check, AES.BIN: format 3, pointer 8 bytes, least significant word first; 78 address cells checked, 0 not < 0x80000000
+r3 aes-r3-wind-state: bytes differing base/head:       39; tosdiff: address check, AES.BIN: format 3, pointer 8 bytes, least significant word first; 39 address cells checked, 0 not < 0x80000000
+r4 aes-r4-subfunctions: bytes differing base/head:      181; tosdiff: address check, AES.BIN: format 3, pointer 8 bytes, least significant word first; 181 address cells checked, 0 not < 0x80000000
+0 of 78 cases differ
+0 of 39 cases differ
+0 of 181 cases differ

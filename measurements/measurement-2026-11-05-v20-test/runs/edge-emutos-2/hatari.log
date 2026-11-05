@@ -1,0 +1,98 @@
+INFO : Hatari v2.6.1, compiled on:  Aug 15 2025, 14:15:19
+INFO : IPF : capsimage library version release=5 revision=1
+INFO : GEMDOS HDD emulation, C: <-> /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/hd.
+ERROR: Microphone: SDL_OpenAudioDevice failed.
+INFO : NVRAM not found at '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/home/hatari.nvram'
+WARN : Bus Error reading at address $20fffff, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fffffc21, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6c4710, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $5d1234, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6d3148, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $d003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+INFO : Strange screen size 16x480 -> aspect corrected by 32x1!
+
+
+
+
+
+                                                         
+                                                         
+                                                         
+                                                         
+                                                         
+                    ________________________________________
+
+                    EmuTOS Version:     20260414 
+                    CPU-Typ:            M68030 
+                    Rechner:            Atari Falcon 
+                    ST-RAM:             4 MB 
+                    Alt-RAM:            16 MB 
+                    GEMDOS-Laufwerke:   ABC 
+                    Boot-Zeit:          2026/11/06 00:04:36 
+                    ________________________________________
+
+                    Halte <Strg> = ohne AUTO/ACC
+                    Halte <Alt> = keine Harddisk
+                    DrUcke 'X' um von Laufwerk X: zu booten
+                    DrUcke <Esc> fUr die Textkonsole
+
+                       FUr Pause <Shift> gedrUckt halten    
+WARN : No GEMDOS dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/hd/AUTO'
+
+
+> b ($01040124).l ! ($01040124).l :trace :file /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.ini
+CPU condition breakpoint 1 with 1 condition(s) added:
+	( $01040124 ) . l ! ( $01040124 ) . l
+-> Trace (just show breakpoint info, instead of dropping to debugger).
+-> Execute debugger commands from '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.ini' file on hit.
+-> Track value changes, show value(s) when matched.
+  $1040124 = $1
+1. CPU breakpoint condition(s) matched 1 times.
+	( $01040124 ) . l ! ( $01040124 ) . l :trace :file /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.ini
+Reading debugger commands from '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.ini'...
+Changed to input file dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8'.
+> screenshot /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.png
+Screen dump to '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.png' succeeded
+Changed back to '/Volumes/Daten/Development/PiRusTOS' dir.
+  $1040124 = $2
+1. CPU breakpoint condition(s) matched 2 times.
+	( $01040124 ) . l ! ( $01040124 ) . l :trace :file /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.ini
+Reading debugger commands from '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.ini'...
+Changed to input file dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8'.
+> screenshot /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.png
+Screen dump to '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.png' succeeded
+Changed back to '/Volumes/Daten/Development/PiRusTOS' dir.
+  $1040124 = $3
+1. CPU breakpoint condition(s) matched 3 times.
+	( $01040124 ) . l ! ( $01040124 ) . l :trace :file /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.ini
+Reading debugger commands from '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.ini'...
+Changed to input file dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8'.
+> screenshot /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.png
+Screen dump to '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.png' succeeded
+Changed back to '/Volumes/Daten/Development/PiRusTOS' dir.
+  $1040124 = $4
+1. CPU breakpoint condition(s) matched 4 times.
+	( $01040124 ) . l ! ( $01040124 ) . l :trace :file /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.ini
+Reading debugger commands from '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.ini'...
+Changed to input file dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8'.
+> screenshot /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.png
+Screen dump to '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.png' succeeded
+Changed back to '/Volumes/Daten/Development/PiRusTOS' dir.
+  $1040124 = $5
+1. CPU breakpoint condition(s) matched 5 times.
+	( $01040124 ) . l ! ( $01040124 ) . l :trace :file /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.ini
+Reading debugger commands from '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.ini'...
+Changed to input file dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8'.
+> screenshot /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.png
+Screen dump to '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.png' succeeded
+Changed back to '/Volumes/Daten/Development/PiRusTOS' dir.
+  $1040124 = $6
+1. CPU breakpoint condition(s) matched 6 times.
+	( $01040124 ) . l ! ( $01040124 ) . l :trace :file /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.ini
+Reading debugger commands from '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.ini'...
+Changed to input file dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8'.
+> screenshot /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.png
+Screen dump to '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v20t/dk/dedge.Dz15l8/shot.png' succeeded
+Changed back to '/Volumes/Daten/Development/PiRusTOS' dir.
