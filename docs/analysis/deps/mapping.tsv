@@ -1,5 +1,5 @@
 # mapping.tsv -- EmuTOS function -> NewTOS function (n:m) for every function
-# defined in EmuTOS bios/ and bdos/ at the oracle pin (the `def` rows of
+# defined in EmuTOS bios/, bdos/ and vdi/ (TOOL32) at the oracle pin (the `def` rows of
 # edges.tsv). HAND-CURATED: each row is a reading of both sources; the
 # EmuTOS side follows edges.tsv, so regenerate edges.tsv first, then fix
 # the rows `cargo xtask deps --check-mapping` reports.
@@ -27,7 +27,7 @@
 # unmapped function (ratchet, CLAUDE.md "Testing").
 # Checked by `cargo xtask test` (deps::tests::mapping_rows_exist_on_both_sides):
 # the EmuTOS function is a def row of emutos_file, the NewTOS file exists
-# and has `fn <newtos_fn>`, every bios/ and bdos/ function has a row, the
+# and has `fn <newtos_fn>`, every bios/, bdos/ and vdi/ function has a row, the
 # class is valid and agrees with the newtos columns, an ADR cite's line is
 # in that ADR's section of the cited file, a source path exists.
 emutos_fn	emutos_file	newtos_file	newtos_fn	class	note
@@ -1367,3 +1367,62 @@ vdi_vst_load_fonts	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_load_fonts	m
 vdi_vst_point	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_point	mapped	opcode 107
 vdi_vst_rotation	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_rotation	mapped	opcode 13
 vdi_vst_unload_fonts	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_unload_fonts	mapped	opcode 120; no-op, nothing was loaded
+arb_corner	vdi/vdi_misc.c	tos-api/src/vdi/attributes.rs	vs_clip	mapped	inline: the only EmuTOS caller is vdi_vs_clip (vdi_control.c:240); vs_clip swaps x1>x2 and y1>y2 in place
+arb_line	vdi/vdi_misc.c	tos-api/src/vdi/gdp.rs	rbox	mapped	inline: the only EmuTOS caller is vdi_gdp.c:240 (v_rbox/v_rfbox); rbox swaps x1>x2 and y1<y2 in place (the LL/UR order)
+get_start_addr	vdi/vdi_misc.c	-	-	design:ADR-024@docs/MEMORY.md:2156	byte address of word column x, row y in the planar screen (v_planes_shift, v_lin_wr); NewTOS has no bit-planes (ADR-024), its cursor/fill go through RasterBackend pixels
+tick_int	vdi/vdi_misc.c	-	-	design:ADR-031@docs/MEMORY.md:3041	the VDI's etv_timer handler (calls tim_addr then the old chain); NewTOS has no OS-internal etv_timer chain and never calls the vex_timv vector (ADR-031 etv_timer row, vex_timv row)
+timer_init	vdi/vdi_misc.c	-	-	design:ADR-031@docs/MEMORY.md:3041	chains tick_int into etv_timer via Setexc(0x100); NewTOS has no etv_timer chain (ADR-031); the vex_timv default slot is seeded in mouse.rs ensure_init
+timer_exit	vdi/vdi_misc.c	-	-	design:ADR-031@docs/MEMORY.md:3041	restores the saved etv_timer value; NewTOS never chained it (ADR-031)
+vdi_vex_timv	vdi/vdi_misc.c	tos-api/src/vdi/mouse.rs	vex_timv	mapped	opcode 118; swaps TIM_ADDR and returns TICKCAL_MS; the handler is stored and returned but never called (ADR-031), EmuTOS calls it from tick_int
+build_vwk_chain	vdi/vdi_control.c	-	-	unmapped	EmuTOS links the virtual workstations through Vwk.next_work (Warp9 walks it, vdi_control.c:380-383); NewTOS Vwk (vwk.rs) is a static slot table without a next_work link
+get_vwk_by_handle	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	resolve	mapped	handle range check and table lookup; NewTOS also checks the slot's in_use flag
+init_wk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	init_wk	mapped	fills the Vwk from INTIN[1..10] and DEV_TAB/SIZ_TAB into INTOUT/PTSOUT; NewTOS also calls mouse::init from it
+update_rez_dependent	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	init_wk	mapped	DEV_TAB[0,1,3,4,13,35,39] and the INQ_TAB patches are built inline in init_wk and vq_extnd; BYTES_LIN/v_lin_wr/mcs_ptr are line-A planar state with no NewTOS counterpart
+update_rez_dependent	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	vq_extnd	mapped	same DEV_TAB/INQ_TAB patches recomputed per call (INQ_TAB[4] = planes, [5] = 0 for 16 planes)
+validate_color_index	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	validate_color_index	mapped	out-of-range index becomes pen 1; EmuTOS applies MAP_COL afterwards, NewTOS folds it to identity
+vdi_vs_clip	vdi/vdi_control.c	tos-api/src/vdi/attributes.rs	vs_clip	mapped	opcode 129
+vdi_vswr_mode	vdi/vdi_control.c	tos-api/src/vdi/attributes.rs	vswr_mode	mapped	opcode 32
+vdi_v_opnvwk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	v_opnvwk	mapped	opcode 100; EmuTOS Mxalloc(MX_SUPER) of a Vwk (+VwkExt), NewTOS takes a slot from the static table
+vdi_v_opnvwk	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	alloc_handle	mapped	first free handle 2..64, handle 0 returned on failure (the Mxalloc half has no counterpart)
+vdi_v_clsvwk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	v_clsvwk	mapped	opcode 101; the physical handle is refused
+vdi_v_clsvwk	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	free_handle	mapped	vwk_ptr[handle] = NULL / Mfree
+vdi_v_opnwk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	v_opnwk	mapped	opcode 1; NewTOS has no INTIN[0]-2 video mode switch (Setscreen/VsetMode, vdi_control.c:507-531); init_colors/text_init/esc_init/vdimouse_init are called or inlined
+vdi_v_opnwk	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	open_physical	mapped	vwk_ptr[VDI_PHYS_HANDLE] = &phys_work, virtual slots cleared
+vdi_v_clswk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	v_clswk	mapped	opcode 2; closes all virtual workstations and esc_exit; no timer_exit/vdimouse_exit counterpart
+vdi_v_clswk	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	close_all_virtual	mapped	Mfree of vwk_ptr[2..]
+vdi_v_clrwk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	v_clrwk	mapped	opcode 3; truecolor fills 0xffff words, else pen 0 through RasterBackend (EmuTOS memset 0xff / 0x00 over v_lin_wr*V_REZ_VT bytes)
+vdi_vq_extnd	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	vq_extnd	mapped	opcode 102; EdDI vq_scrninfo rides on 102 in eddi.rs
+screen	vdi/vdi_main.c	tos-api/src/vdi/mod.rs	dispatch_in	mapped	VDI entry; NewTOS dispatch is one match, not jmptb1/jmptb2; does not mirror CUR_FONT/WRT_MODE/CLIP/CUR_WORK into line-A variables
+dis_cur	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	dis_cur	mapped	hide count 1 -> 0 draws the cursor, otherwise decrements, floor 0
+hide_cur	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	v_hide_c	mapped	HIDE_CNT++, erase on 0 -> 1; also mouse::hide for kernel callers
+linea_show_mouse	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	v_show_c	mapped	INTIN[0]==0 resets the hide count to 1, then dis_cur
+linea_hide_mouse	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	v_hide_c	mapped	hide_cur
+linea_transform_mouse	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vsc_form	mapped	set_mouse_form on INTIN
+set_mouse_form	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vsc_form	mapped	hotspot & 0x0f, colours through validate_color_index, mask/data into the cursor definition
+vdi_vsc_form	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vsc_form	mapped	opcode 111
+vdi_v_show_c	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	v_show_c	mapped	opcode 122
+vdi_v_hide_c	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	v_hide_c	mapped	opcode 123
+vdi_vq_mouse	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vq_mouse	mapped	opcode 124; EmuTOS reads under set_sr(0x2700), NewTOS reads atomics
+gloc_key	vdi/vdi_mouse.c	tos-api/src/vdi/input.rs	gloc_key	mapped	terminator 0x20/0x21 from cur_ms_stat, else a console key, plus the motion bit
+gloc_key	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	take_button_terminator	mapped	cur_ms_stat & 0xc0 test-and-clear (&= 0x23)
+gloc_key	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	take_motion	mapped	cur_ms_stat bit 5 test-and-clear
+vdi_v_locator	vdi/vdi_mouse.c	tos-api/src/vdi/input.rs	v_locator	mapped	opcode 33, request and sample mode
+vdi_vex_butv	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vex_butv	mapped	opcode 125; vector round-trips but is never called (ADR-031 accepted deviation); EmuTOS calls user_but from mouse_int (vdi_asm.S)
+vdi_vex_motv	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vex_motv	mapped	opcode 126; stored, never called (ADR-031)
+vdi_vex_curv	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vex_curv	mapped	opcode 127; stored, never called (ADR-031); NewTOS draws the cursor itself
+vdi_vex_wheelv	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vex_wheelv	mapped	opcode 134, CONF_WITH_EXTENDED_MOUSE; ADR-031 lists vex_wheelv as served; NewTOS classifies the new vector (AES / EL0 / none) and delivers EL0 vectors as an upcall
+vdi_mousex_handler	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	mousex_handler	mapped	CONF_WITH_EXTENDED_MOUSE; buttons 3-5 and the four wheel scancodes
+vdimouse_init	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	ensure_init	mapped	NewTOS initialises once (INIT_DONE), lazily at the first cursor op or workstation open; EmuTOS repeats it at every v_opnwk; no Initmous/vblqueue/statvec install
+vdimouse_exit	vdi/vdi_mouse.c	-	-	unmapped	v_clswk (workstation.rs) calls no mouse exit; vex slots, hide count and wheel vector stay. release_wheel_vector (mouse.rs) is a process-exit hook, not this
+vb_draw	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	set_state	mapped	EmuTOS defers the redraw to the VBL (newx/newy, draw_flag); NewTOS erases and redraws synchronously on each mouse event
+cur_display	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	draw	mapped	draws the 16x16 sprite saving the background; NewTOS per pixel through RasterBackend, EmuTOS per plane into the bit-planes with MCS save area
+cur_display16	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	draw	mapped	CONF_WITH_VDI_16BIT truecolor path; NewTOS has the one RasterBackend path
+cur_display_clip	vdi/vdi_mouse.c	-	-	design:ADR-024@docs/MEMORY.md:2156	planar left/right-clipped word update; NewTOS has no bit-planes (ADR-024) and clips per pixel in the backend
+cur_replace	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	erase	mapped	restores the saved background; NewTOS saves 16x16 pel in BACK
+cur_replace16	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	erase	mapped	CONF_WITH_VDI_16BIT truecolor restore
+vdi_v_choice	vdi/vdi_input.c	tos-api/src/vdi/input.rs	v_choice	mapped	opcode 30; INTOUT[0] = 1 (gchc_key sets TERM_CH = 1)
+gchc_key	vdi/vdi_input.c	tos-api/src/vdi/input.rs	v_choice	mapped	inline: TERM_CH = 1, result constant 1 in INTOUT[0]
+gchr_key	vdi/vdi_input.c	tos-api/src/vdi/input.rs	try_read_key_word	mapped	Bconstat/Bconin(2) poll; request mode uses read_key_word (blocking) instead of a poll loop
+vdi_v_string	vdi/vdi_input.c	tos-api/src/vdi/input.rs	v_string	mapped	opcode 31, request and sample mode
+vdi_vsin_mode	vdi/vdi_input.c	tos-api/src/vdi/input.rs	vsin_mode	mapped	opcode 33
+vdi_vqin_mode	vdi/vdi_input.c	tos-api/src/vdi/input.rs	vqin_mode	mapped	opcode 115

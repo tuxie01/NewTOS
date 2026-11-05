@@ -8,7 +8,7 @@ onto NewTOS. Generated, queried, never drawn by hand.
 |---|---|---|
 | `docs/analysis/deps/edges.tsv` | nodes (`def` rows) and edges | `tools/deps/gen-deps.py` |
 | `docs/analysis/deps/layers.md` | counts, layer matrix, tables, traps, vector slots, everything not resolved | `tools/deps/gen-deps.py` |
-| `docs/analysis/deps/mapping.tsv` | EmuTOS function → NewTOS function (n:m) and its class, `bios/` + `bdos/` | by hand, checked |
+| `docs/analysis/deps/mapping.tsv` | EmuTOS function → NewTOS function (n:m) and its class, `bios/` + `bdos/` + `vdi/` | by hand, checked |
 
 ```
 tools/deps/gen-deps.py            # rewrite edges.tsv and layers.md
@@ -334,7 +334,7 @@ design rows by evidence.
 A definition (`fn` + file, one `def` row) takes the class of its rows:
 `unmapped` if any row is, else `mapped` if any row is, else `design`. A
 definition without a row is `unmapped`: the layers the mapping does not cover
-yet (`vdi`, `aes`, `desk`, `include`) count as unmapped, and so does `ext`
+yet (`aes`, `desk`, `include`) count as unmapped, and so does `ext`
 (no `def` row) inside a query's set. `--coverage` prints the three counts
 and shares per layer.
 
@@ -349,8 +349,8 @@ not complete names its unmapped functions in the ticket.
 
 `cargo xtask test` (`deps::tests::mapping_rows_exist_on_both_sides`) checks:
 the EmuTOS function is a `def` row of `emutos_file`; the NewTOS file exists
-and defines `fn <newtos_fn>`; a `-` row has a reason; every `bios/` and
-`bdos/` function of `edges.tsv` has a row; the class parses, `mapped` names a
+and defines `fn <newtos_fn>`; a `-` row has a reason; every `bios/`,
+`bdos/` and `vdi/` function of `edges.tsv` has a row; the class parses, `mapped` names a
 NewTOS function and `design`/`unmapped` do not, an `ADR-NNN@<file>:<line>`
 line lies in that ADR's section of `<file>`, a `source:` path exists.
 Regenerating `edges.tsv` after a pin move therefore turns the mapping red

@@ -200,7 +200,7 @@ Commands:
                                    without any (TOOL17)
   deps --check-mapping           — every mapping.tsv row names an existing
                                    EmuTOS definition and NewTOS fn and has a
-                                   valid class, every EmuTOS bios/ and bdos/
+                                   valid class, every EmuTOS bios/, bdos/, vdi/
                                    function has a row
   deps --coverage                — mapped/design/unmapped per layer, count
                                    and share (TOOL17)

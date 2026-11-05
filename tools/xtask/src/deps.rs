@@ -10,7 +10,7 @@
 //!   `from to kind detail site`; kind `def` is a node row (`to` = `-`,
 //!   `detail` = layer, `site` = definition), every other kind an edge.
 //! - [`MAPPING_FILE`], hand-curated: EmuTOS function → NewTOS function, n:m,
-//!   for the functions of EmuTOS `bios/` and `bdos/`. Rows
+//!   for the functions of EmuTOS `bios/`, `bdos/` and `vdi/`. Rows
 //!   `emutos_fn emutos_file newtos_file newtos_fn class note`; `-` `-`
 //!   says there is no counterpart, the [`Class`] says whether by design
 //!   (with evidence) or not yet (TOOL17).
@@ -60,7 +60,7 @@ pub const DEFAULT_KINDS: [&str; 5] = ["direct", "table", "asm", "layer", "vector
 /// NewTOS code a mapping row may name.
 pub const NEWTOS_ROOTS: [&str; 2] = ["tos-api/src/", "kernel/src/"];
 /// The EmuTOS directories the mapping covers.
-pub const MAPPED_DIRS: [&str; 2] = ["bios/", "bdos/"];
+pub const MAPPED_DIRS: [&str; 3] = ["bios/", "bdos/", "vdi/"];
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Edge {
@@ -654,9 +654,9 @@ pub fn cmd(root: &Path, args: &[String]) -> Result<(), String> {
             println!("{b}");
         }
         return if bad.is_empty() {
-            println!("{MAPPING_FILE}: {} rows, all resolve, every class is valid; every bios/ and \
-                      bdos/ function has a row",
-                     map.len());
+            println!("{MAPPING_FILE}: {} rows, all resolve, every class is valid; every {} \
+                      function has a row",
+                     map.len(), MAPPED_DIRS.join(", "));
             Ok(())
         } else {
             Err(format!("{} mapping problems", bad.len()))
@@ -1014,7 +1014,7 @@ a\tcb\tcallback\taddress\tbdos/a.c:3
     }
 
     /// Every row of `mapping.tsv` names an existing EmuTOS definition and an
-    /// existing NewTOS `fn`; every EmuTOS `bios/`/`bdos/` function has a row.
+    /// existing NewTOS `fn`; every EmuTOS function of [`MAPPED_DIRS`] has a row.
     #[test]
     fn mapping_rows_exist_on_both_sides() {
         let (g, m) = real();

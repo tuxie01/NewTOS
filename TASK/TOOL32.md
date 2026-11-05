@@ -1,6 +1,6 @@
 # TOOL32 — `mapping.tsv` fuer die VDI-Ebene (EmuTOS `vdi/` → NewTOS)
 
-Status: **OFFEN** · Prioritaet: **P1** (Anwender 2026-11-05: vor [A119](A119.md), VDI vor AES, weil sie ueber dem BIOS liegt) · Typ: Researcher (Zuordnung lesen), danach Lead (Pruefregel) — Werkzeug, das die Lokalisierung der folgenden Fixes braucht (CLAUDE.md "Testing")
+Status: **ERLEDIGT** 2026-11-05 ([Quittung](TOOL32-STATUS-DONE.MD)) · Prioritaet: **P1** (Anwender 2026-11-05: vor [A119](A119.md), VDI vor AES, weil sie ueber dem BIOS liegt) · Typ: Researcher (Zuordnung lesen), danach Lead (Pruefregel) — Werkzeug, das die Lokalisierung der folgenden Fixes braucht (CLAUDE.md "Testing")
 
 ## Sachverhalt
 
@@ -105,6 +105,31 @@ Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
     nicht verfolgt.
 19. `vdi_text.c:592-665` gegen `tos-api/src/vdi/font.rs:250@DEFAULT`: Default-Font fest 8x16 statt
     nach `V_REZ_VT >= 400`.
+
+## Stand Teil 3 und Abschluss (2026-11-05)
+
+Researcher: 59 Zeilen fuer die 52 neuen Funktionen von `vdi_mouse.c`, `vdi_control.c`,
+`vdi_input.c`, `vdi_misc.c`, `vdi_main.c` (46 `mapped`, 6 `design`: `get_start_addr`,
+`cur_display_clip` ADR-024, `tick_int`/`timer_init`/`timer_exit` ADR-031 `etv_timer`;
+2 `unmapped`: `build_vwk_chain`, `vdimouse_exit`); `gshift_s`/`vdi_vq_key_s` unveraendert.
+`--coverage` vdi: 204 mapped / 37 design / 9 unmapped, keine Funktion ohne Zeile.
+Lead: `"vdi/"` in `MAPPED_DIRS` (`tools/xtask/src/deps.rs:63@MAPPED_DIRS`), Meldung von
+`--check-mapping` folgt der Konstante; Gegenprobe ohne die Zeile `vdimouse_exit` meldet
+"no row"; `cargo xtask test` 1974/0/1, xtask 238/0/0.
+
+Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
+
+20. `vdi_asm.S:283,359,367`, `vdi_misc.c:83` gegen `tos-api/src/vdi/mouse.rs:967@vex_butv`:
+    `vex_butv/motv/curv/timv` gespeichert, nie gerufen — ADR-031, bekannt.
+21. `vdi_mouse.c:565` gegen `mouse.rs:343@ensure_init`: EmuTOS setzt bei jedem `v_opnwk`
+    Versteckzaehler 1, Mitte, Tasten 0, Standardform; NewTOS einmalig.
+22. `vdi_control.c:573` gegen `tos-api/src/vdi/workstation.rs:374@v_clswk`: kein Maus-/Timer-Exit.
+23. `vdi_control.c:507-531` gegen `workstation.rs:348@v_opnwk`: Videomodus-Wechsel per
+    `INTIN[0]-2` fehlt.
+24. `vdi_mouse.c:668` gegen `mouse.rs:169@set_state`: Zeiger im VBL gegen synchron (wie 9).
+25. `vdi_main.c:171-190` gegen `tos-api/src/vdi/mod.rs:376@dispatch_in`: Line-A-Spiegel
+    `CUR_FONT/WRT_MODE/CLIP/CUR_WORK` fehlen (ADR-030 pruefen).
+26. `vdi_control.c:390` gegen `tos-api/src/vdi/vwk.rs`: keine Workstation-Kette (Warp9).
 
 Folgeticket: [TOOL33](TOOL33.md) (AES).
 
