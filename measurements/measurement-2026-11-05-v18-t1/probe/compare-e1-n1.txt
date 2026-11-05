@@ -1,0 +1,57 @@
+pens EmuTOS: 0=ffdf 0=ffff 1=0000 2=f800 3=07c0 4=001f 5=07df 6=ffc0 7=f81f 8=bdd7 9=8c51 10=a800 11=0540 12=0015 13=0555 14=ad40 15=a815
+pens NewTOS: 0=ffdf 0=ffff 1=0000 2=f800 3=07c0 4=001f 5=07df 6=ffc0 7=f81f 8=bdd7 9=8c51 10=a800 11=0540 12=0015 13=0555 14=ad40 15=a815
+01 CAL   EQUAL  (136x8 at 0,0)
+02 K1A   DIFF   1 px raw, 1 px by pen (60x40 at 10,10): (20,40) E=ffff N=0000
+03 K1B   DIFF   1 px raw, 1 px by pen (60x40 at 10,10): (40,40) E=ffff N=0000
+04 K1C   DIFF   1 px raw, 1 px by pen (60x40 at 10,10): (20,19) E=ffff N=0000
+05 K1D   DIFF   1 px raw, 1 px by pen (60x40 at 10,10): (40,40) E=0000 N=ffff
+06 K1E   EQUAL  (60x40 at 10,10)
+07 K1F   EQUAL  (60x40 at 10,10)
+08 K1G   DIFF   5 px raw, 5 px by pen (60x40 at 10,10): (21,40) E=ffff N=0000, (27,40) E=0000 N=ffff, (29,40) E=ffff N=0000, (35,40) E=0000 N=ffff, (37,40) E=ffff N=0000
+09 K2A   DIFF   186 px raw, 186 px by pen (128x128 at 0,0): (32,31) E=0000 N=ffff, (33,31) E=0000 N=ffff, (34,31) E=0000 N=ffff, (35,31) E=0000 N=ffff, (36,31) E=0000 N=ffff, (37,31) E=0000 N=ffff
+10 K2B   DIFF   267 px raw, 202 px by pen (128x128 at 0,0): (30,30) E=0000 N=ffdf, (47,30) E=0000 N=ffdf, (30,31) E=0000 N=ffdf, (31,31) E=0000 N=ffdf, (32,31) E=0000 N=ffff, (33,31) E=0000 N=ffff
+11 K2C   DIFF   288 px raw, 217 px by pen (128x128 at 0,0): (30,30) E=0000 N=ffdf, (47,30) E=0000 N=ffdf, (30,31) E=0000 N=ffdf, (31,31) E=0000 N=ffdf, (32,31) E=0000 N=ffff, (33,31) E=0000 N=ffff
+12 K2D   DIFF   66 px raw, 66 px by pen (128x128 at 0,0): (60,30) E=0000 N=ffdf, (70,30) E=0000 N=ffdf, (60,31) E=0000 N=ffdf, (70,31) E=0000 N=ffdf, (70,33) E=ffdf N=0000, (60,34) E=0000 N=ffdf
+13 K2E   DIFF   41 px raw, 41 px by pen (640x14 at 0,96): (0,103) E=0000 N=ffff, (1,103) E=0000 N=ffff, (2,103) E=0000 N=ffff, (3,103) E=0000 N=ffff, (4,103) E=0000 N=ffff, (5,103) E=0000 N=ffff
+14 K2F   DIFF   61 px raw, 61 px by pen (640x5 at 0,118): (0,121) E=0000 N=ffff, (1,121) E=0000 N=ffff, (2,121) E=0000 N=ffff, (3,121) E=0000 N=ffff, (4,121) E=0000 N=ffff, (5,121) E=0000 N=ffff
+15 K2G   DIFF   20 px raw, 20 px by pen (640x18 at 0,136): (620,139) E=0000 N=ffff, (621,139) E=0000 N=ffff, (622,139) E=0000 N=ffff, (623,140) E=0000 N=ffff, (624,140) E=0000 N=ffff, (625,140) E=0000 N=ffff
+16 K2H   DIFF   30 px raw, 30 px by pen (640x4 at 0,168): (610,169) E=0000 N=ffff, (611,169) E=0000 N=ffff, (612,169) E=0000 N=ffff, (613,169) E=0000 N=ffff, (614,169) E=0000 N=ffff, (615,169) E=0000 N=ffff
+17 K2I   EQUAL  (640x18 at 0,196)
+18 K3A   EQUAL  (624x480 at 0,0)
+19 K3B   EQUAL  (624x480 at 0,0)
+20 K3C   EQUAL  (624x480 at 0,0)
+21 K3D   EQUAL  (624x480 at 0,0)
+22 K4A   DIFF   1 px raw, 1 px by pen (80x80 at 30,30): (50,50) E=0000 N=ffff
+23 K4B   DIFF   41 px raw, 41 px by pen (80x80 at 30,30): (50,50) E=0000 N=ffff, (51,51) E=0000 N=ffff, (52,51) E=0000 N=ffff, (53,52) E=0000 N=ffff, (54,52) E=0000 N=ffff, (55,53) E=0000 N=ffff
+24 K4C   DIFF   19 px raw, 19 px by pen (80x80 at 30,30): (52,51) E=0000 N=ffff, (54,52) E=0000 N=ffff, (56,53) E=0000 N=ffff, (58,54) E=0000 N=ffff, (60,55) E=0000 N=ffff, (62,56) E=0000 N=ffff
+25 K4D   DIFF   29 px raw, 29 px by pen (80x80 at 30,30): (50,51) E=0000 N=ffff, (50,52) E=0000 N=ffff, (50,53) E=0000 N=ffff, (50,54) E=0000 N=ffff, (50,55) E=0000 N=ffff, (50,56) E=0000 N=ffff
+26 K4E   DIFF   20 px raw, 20 px by pen (80x80 at 30,30): (52,51) E=0000 N=ffff, (54,52) E=0000 N=ffff, (56,53) E=0000 N=ffff, (58,54) E=0000 N=ffff, (60,55) E=0000 N=ffff, (62,56) E=0000 N=ffff
+27 K4F   EQUAL  (80x80 at 30,30)
+28 K4G   DIFF   51 px raw, 51 px by pen (80x80 at 30,30): (40,60) E=0000 N=ffff, (41,60) E=0000 N=ffff, (42,60) E=0000 N=ffff, (43,60) E=0000 N=ffff, (44,60) E=0000 N=ffff, (45,60) E=0000 N=ffff
+29 K4H   EQUAL  (80x80 at 30,30)
+30 K5A   DIFF   90 px raw, 90 px by pen (120x40 at 0,0): (40,17) E=ffff N=0000, (50,17) E=ffff N=0000, (60,17) E=ffff N=0000, (70,17) E=ffff N=0000, (80,17) E=ffff N=0000, (90,17) E=ffff N=0000
+31 K5B   DIFF   15 px raw, 15 px by pen (120x40 at 0,0): (60,17) E=ffff N=0000, (60,18) E=ffff N=0000, (60,19) E=ffff N=0000, (56,20) E=ffff N=0000, (57,20) E=ffff N=0000, (58,20) E=ffff N=0000
+32 K5C   EQUAL  (160x40 at 0,50)
+33 K5D   DIFF   593 px raw, 593 px by pen (180x170 at 90,90): (101,101) E=ffff N=0000, (102,101) E=ffff N=0000, (103,101) E=ffff N=0000, (104,101) E=ffff N=0000, (105,101) E=ffff N=0000, (106,101) E=ffff N=0000
+34 K6A   EQUAL  (72x40 at 16,16)
+35 K6B   EQUAL  (72x40 at 16,16)
+36 K6C   EQUAL  (72x40 at 16,16)
+37 K6D   EQUAL  (72x40 at 16,16)
+38 K6E   EQUAL  (72x40 at 16,16)
+39 K6F   EQUAL  (72x40 at 16,16)
+40 K8A   EQUAL  (120x100 at 10,10)
+41 K8B   EQUAL  (120x100 at 10,10)
+42 K8C   EQUAL  (120x100 at 10,10)
+43 K8D   EQUAL  (120x100 at 10,10)
+44 K8E   DIFF   8210 px raw, 8210 px by pen (640x160 at 0,190): (21,200) E=f800 N=ffff, (22,200) E=f800 N=ffff, (24,200) E=f800 N=ffff, (25,200) E=f800 N=ffff, (27,200) E=f800 N=ffff, (28,200) E=f800 N=ffff
+45 K8F   EQUAL  (120x100 at 10,10)
+46 K8G   EQUAL  (120x100 at 10,10)
+47 K8H   EQUAL  (120x100 at 10,10)
+48 K8I   EQUAL  (120x100 at 10,10)
+49 K8J   EQUAL  (120x100 at 10,10)
+50 K10   EQUAL  (640x4 at 0,9)
+51 K11A  DIFF   113 px raw, 113 px by pen (80x80 at 60,60): (121,86) E=ffff N=0000, (121,87) E=ffff N=0000, (122,87) E=ffff N=0000, (121,88) E=ffff N=0000, (122,88) E=ffff N=0000, (121,89) E=ffff N=0000
+52 K11B  EQUAL  (100x80 at 50,60)
+53 K11C  DIFF   1 px raw, 1 px by pen (80x80 at 60,60): (115,79) E=0000 N=ffff
+54 K11D  DIFF   15 px raw, 15 px by pen (80x80 at 60,60): (121,91) E=ffff N=0000, (122,91) E=ffff N=0000, (123,91) E=ffff N=0000, (121,92) E=ffff N=0000, (122,92) E=ffff N=0000, (123,92) E=ffff N=0000
+cases 54, differing 26

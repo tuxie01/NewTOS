@@ -1,0 +1,44 @@
+# vdi-v18-raster.tsv -- TASK/V18 part 1, candidate K7: vro_cpyfm (109)
+# memory -> memory with equal plane counts <= 8, and PAT_FLAG there.
+#
+# Read by DUMPRAST (core/dumprast.c), format and guard: core/cases.h, the
+# same columns as vdi-raster.tsv:
+#
+#   opcode <TAB> intin <TAB> ptsin <TAB> src <TAB> dst <TAB> fill <TAB> comment
+#
+# vdi-raster.tsv leaves these cases out on purpose ("device form": the same
+# bytes mean different pixels on a planar and a chunky machine).  For a
+# memory -> memory copy that reasoning does not hold: neither MFDB is the
+# screen, the result is the destination buffer's bytes, and a program that
+# builds an fd_nplanes = 4 form and copies it within memory reads those
+# bytes back.  EmuTOS takes the planar bit_blt path for plane_ct <= 8
+# (references/emutos/vdi/vdi_raster.c:1360-1373: s_nxwd = fd_nplanes * 2,
+# setup_info :919-940, the blit below 9 planes), on every screen mode, since
+# no screen is involved.  Run on the pinned oracle in profile falcontc (the
+# reference) and tt (the same answer is expected).
+#
+# Forms: 16x16 or 32x16, fd_wdwidth 1 or 2; the guard's bound
+# fd_h * fd_wdwidth * 16 <= 512 holds for all of them.
+#
+# --- equal planes, aligned, S_ONLY (3) -----------------------------------
+109	3	0,0,15,15,0,0,15,15	0,16,16,1,0,4	1,16,16,1,0,4	101,102	K7 4 planes aligned whole form, S_ONLY
+109	3	0,0,15,15,0,0,15,15	0,16,16,1,0,2	1,16,16,1,0,2	103,104	K7 2 planes aligned whole form, S_ONLY
+109	3	0,0,15,15,0,0,15,15	0,16,16,1,0,8	1,16,16,1,0,8	105,106	K7 8 planes aligned whole form, S_ONLY
+109	3	0,0,15,15,0,0,15,15	0,16,16,1,0,1	1,16,16,1,0,1	107,108	K7 1 plane aligned whole form, S_ONLY
+# --- sub-rectangles and bit shifts ---------------------------------------
+109	3	0,0,7,7,3,5,10,12	0,32,16,2,0,4	1,32,16,2,0,4	109,110	K7 4 planes 8x8 shifted by 3,5
+109	3	2,1,12,9,17,4,27,12	0,32,16,2,0,4	1,32,16,2,0,4	111,112	K7 4 planes 11x9 from x 2 to x 17 (word boundary)
+109	3	5,0,20,15,0,0,15,15	0,32,16,2,0,2	1,32,16,2,0,2	113,114	K7 2 planes 16x16 from x 5 to x 0
+109	3	0,0,7,7,9,3,16,10	0,32,16,2,0,1	1,32,16,2,0,1	115,116	K7 1 plane 8x8 to x 9
+# --- other logic ops, 4 planes ---------------------------------------------
+109	6	0,0,15,15,0,0,15,15	0,16,16,1,0,4	1,16,16,1,0,4	117,118	K7 4 planes op 6 S_XOR_D
+109	7	0,0,7,7,4,4,11,11	0,16,16,1,0,4	1,16,16,1,0,4	119,120	K7 4 planes op 7 S_OR_D shifted
+109	12	0,0,15,15,0,0,15,15	0,16,16,1,0,4	1,16,16,1,0,4	121,122	K7 4 planes op 12 NOT_S
+109	0	0,0,7,7,4,4,11,11	0,16,16,1,0,4	1,16,16,1,0,4	123,124	K7 4 planes op 0 ALL_WHITE
+# --- PAT_FLAG (bit 4) below nine planes -----------------------------------
+109	0x13	0,0,15,15,0,0,15,15	0,16,16,1,0,4	1,16,16,1,0,4	125,126	K7 4 planes PAT_FLAG|3
+109	0x13	0,0,7,7,4,4,11,11	0,16,16,1,0,1	1,16,16,1,0,1	127,128	K7 1 plane PAT_FLAG|3 shifted
+109	0x16	0,0,15,15,0,0,15,15	0,16,16,1,0,2	1,16,16,1,0,2	129,130	K7 2 planes PAT_FLAG|6
+# --- controls: 16 planes (vro_cpyfm16 on EmuTOS, the chunky loop on NewTOS)
+109	3	0,0,7,7,3,5,10,12	0,16,16,1,0,16	1,16,16,1,0,16	131,132	control 16 planes 8x8 shifted
+109	0x13	0,0,7,7,3,5,10,12	0,16,16,1,0,16	1,16,16,1,0,16	133,134	control 16 planes PAT_FLAG|3 (no copy, raster.rs)

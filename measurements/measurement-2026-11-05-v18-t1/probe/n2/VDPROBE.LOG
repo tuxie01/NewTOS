@@ -1,0 +1,60 @@
+H00 handle 2 xres 639 yres 479 planes? colours 256
+01 CAL      pens 0..15, 8x8 each, vr_recfl solid; x 128..135 untouched
+02 K1A      XOR polyline: vertical segment first (20,20)-(20,40)-(40,40)
+03 K1B      XOR polyline: vertical in the middle (20,20)-(40,20)-(40,40)-(60,40)
+04 K1C      XOR polyline: vertical upward first (20,40)-(20,20)-(40,20)
+05 K1D      XOR closed square, 5 points
+06 K1E      XOR polyline, two diagonals (control)
+07 K1F      XOR single vertical line (last segment, control)
+08 K1G      XOR vertical non-last, dashed (vsl_type 3)
+09 K2A      clip on (30,30)-(90,90), 10 lines crossing it, solid
+10 K2B      the same lines, clip on, dash-dot (vsl_type 4)
+11 K2C      the same lines, clip on, user style 0xF39C (vsl_type 7)
+12 K2D      clip on (30,30)-(90,90), vertical dashed (60,5)-(60,120) and (70,120)-(70,5), horizontal dashed (5,50)-(120,50)
+13 K2E      clip OFF: diagonal (600,100)-(680,104) past the right edge
+14 K2F      clip OFF: horizontal (600,120)-(700,120) past the right edge
+15 K2G      clip OFF: diagonal (-20,140)-(40,150) past the left edge
+16 K2H      clip OFF: horizontal (-30,170)-(20,170) past the left edge
+17 K2I      clip ON (0,0)-(639,479): diagonal (600,200)-(680,204) and horizontal (600,210)-(700,210)
+18 K3A      128-line fan, solid, from the cell centre
+19 K3B      128-line fan, solid, from the far end
+20 K3C      128-line fan, dash-dot-dot (vsl_type 6), from the centre
+21 K3D      128-line fan, user style 0xF39C, from the far end
+22 K4A      v_fillarea 1 point (50,50), perimeter on
+23 K4B      v_fillarea 2 points (50,50)-(90,70), perimeter on
+24 K4C      v_fillarea 2 points (50,50)-(90,70), perimeter off
+25 K4D      v_fillarea 2 points vertical (50,50)-(50,80), perimeter off
+26 K4E      v_fillarea 2 points (50,50)-(90,70), XOR, perimeter on
+27 K4F      v_fillarea 1 point, perimeter off
+28 K4G      v_fillarea 2 points horizontal (40,60)-(90,60), perimeter on
+29 K4H      v_fillarea 3 points (control), perimeter on, colour 2
+30 K5A      v_pmarker 1030 points: 0..1023 at (20,20), 1024..1029 at (40+10k,20); plus, height default
+   K5A contrl[1] after the call 1030
+31 K5B      v_pmarker 1025 points: 0..1023 at (20,20), 1024 at (60,20)
+32 K5C      v_pline 1030 points: 0..1022 at (20,60), 1023 (40,60), 1024.. (40,80),(80,80),...
+   K5C contrl[1] after the call 1030
+33 K5D      v_fillarea 1030 points: 0..1021 (100,100), 1022 (140,100), 1023 (120,130), 1024.. (200+10k,200)
+34 K6A      vsf_udpat 16 words (plane 0 = A), FIS_USER, v_bar 20..83 x 20..51, colour 2
+35 K6B      vsf_udpat 256 words: plane 0 = A, planes 1..15 = 0xFFFF
+36 K6C      vsf_udpat 256 words: plane 0 = 0, planes 1..15 = A
+37 K6D      vsf_udpat 16 words A, then 64 words (4 planes, invalid here) of 0xFFFF
+38 K6E      vsf_udpat 256 words (plane 0 = A, rest 0xFFFF), transparent mode, colour 3, v_fillarea triangle
+39 K6F      vsf_udpat 256 words (plane 0 = A, rest 0xFFFF), then style back to solid and to user again
+40 K8A      contourfill inside a black box, boundary colour 1, solid colour 2
+41 K8B      the same, INTIN[0] = -1 (seed colour)
+42 K8C      comb: box with 40 teeth from the top, pattern fill (style 2 index 5), boundary 1
+43 K8D      spiral of lines, solid colour 3, seed -1
+44 K8E      dot lattice 600x120 (dots every 3 px), contourfill from below, solid colour 2, boundary 1
+45 K8F      contourfill inside the box with clip (40,40)-(90,80)
+46 K8G      contourfill with the seed on the boundary (20,60), boundary 1
+47 K8H      contourfill XOR mode, hatch (style 3 index 2), boundary 1
+48 K8I      contourfill pattern (style 2 index 2) with seed colour -1
+49 K8J      contourfill boundary colour 16 (> 15, 256 pens), solid colour 2
+50 K10      v_get_pixel inside and outside, after painting (0,11) red, (639,10) green, (60,11) blue
+   K10 (0,11)=f800 (639,10)=07c0 (60,11)=001f (5,5)=ffff
+   K10 (640,10)=0000 (-1,11)=0000 (700,10)=0000 (-580,12)=0000
+51 K11A     v_arc centre (100,100) r 20, 0..3600, line width 9, clip (121,0)-(300,200)
+52 K11B     v_ellarc centre (100,100) 30x20, 0..1800, width 11, clip (0,121)-(300,200)
+53 K11C     v_arc as K11A but clip (115,0)-(300,200) (cuts the curve, control)
+54 K11D     v_arc r 20 at (100,100), width 1, arrowed ends, 0..900, clip (121,0)-(300,200)
+END

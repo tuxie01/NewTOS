@@ -1,0 +1,82 @@
+V18 part 1 -- the TOOL32 VDI drawing candidates K1-K8, K10, K11 measured against the pinned EmuTOS oracle
+Date: 2026-11-05. Auditor run. Report: docs/audits/2026-11-05-v18-t1-vdi-draw.md
+
+WHAT
+  Each candidate (TASK/TOOL32.md "Stand Teil 1") measured on both sides:
+  - probe tosdump/probes/vdprobe.c (new, permanent): 54 drawing cases on a cleared
+    screen, each rectangle read back with vro_cpyfm (S_ONLY, screen -> 16-plane
+    memory MFDB) into VDPROBE.BIN; compared with tosdump/probes/vdprobe-compare.py
+  - DUMPVDI table tosdump/cases/vdi-v18.tsv (new, 19 cases, CRC 6E0EBA51): preludes draw,
+    v_get_pixel (105) reads the differing pixel -> tosdiff (K1, K2, K4, K8, K10, K11)
+  - DUMPRAST table tosdump/cases/vdi-v18-raster.tsv (new, 17 cases, CRC 9EA01839):
+    vro_cpyfm memory -> memory at 1/2/4/8 planes and PAT_FLAG -> tosdiff (K7)
+
+TREES
+  Measured kernel: git archive of c8ff6952a857410fcd6305362cd96a51a4e7bc57 (clean; the main
+  tree's HEAD at the start), built by cargo xtask tosdump in scratch:
+  kernel8.img sha256 d08e60b9b748953950bea50bda572abf5818cff2f294176a53698ea7f808a744
+  (release, rpi4). HEAD moved to f8fc8d91 during the run (docs/STATUS.md only,
+  git diff --stat c8ff6952 f8fc8d91 = 1 file); the m68k dumpers carry build id f8fc for that reason.
+  Instruments (probe, dumpers' NewTOS builds by xtask in the frozen tree, tosdiff) from the
+  main tree. The probe's run.txt "2 dirty paths in ... tosdump/probes" = the new, untracked
+  vdprobe.c and run-vdprobe.sh; the probe kernel is the frozen tree's.
+  Host clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card manifest).
+  No gemlib in the probe: VDI/AES through tosdump/abi/newtos_svc.c resp. abi/m68k_trap.c;
+  MFDB pointer packed at CONTRL[7 + n*sizeof(void*)/2] as tosdump/core/runner_rast.c does
+  (LP64: N_PTRINTS 4; m68k: 2), MFDB = native struct (pointer + WORDs), the layout
+  tos-api/src/vdi/raster.rs Mfdb::read reads for an LP64 caller.
+
+ORACLE
+  EmuTOS 1a7484aba1bfba23e2c0899e243b6d8177fe41df, ROM tools/oracle/etos512de-1a7484ab.img
+  sha256 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c, Hatari 2.6.1
+  sha256 953f4e78eea55a8ca12ed6c83de1f045545b8da42a49e00112eaa235dffcd6f6, hatari.cfg
+  sha256 c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46.
+  Canary (docs/analysis/ORACLE.md section 6, canary.sh of measurement-2026-10-28-oracle-canary):
+  "canary tt: OK", "canary falcontc: OK"; hashes oracle/canary/sha256.txt (= the expected ones).
+  Profile for every pixel case: falcontc (640x480 16-bit truecolor = NewTOS' device model, ADR-024).
+
+PRE-FLIGHT ON NEWTOS (method/preflight.sh)
+  runs/newtos-vdi-all: vdi-all.tsv vs EMUTOS-1a7484ab-VDI-all-falcontc: 0 of 182 differ
+  (vs the tt reference 13 of 182, the known device-parameter cells).
+
+INSTRUMENT (method/instrument-raster-screen.sh)
+  runs/newtos-raster-screen: vdi-raster-screen.tsv vs EMUTOS-1a7484ab-RASTER-screen-falcontc:
+  0 of 62 differ -> the read-back vro_cpyfm screen->memory is EQUAL; probe case CAL
+  (pens 0..15) EQUAL, both palettes identical (probe/compare-e1-n1.txt line 1-2).
+
+PROBE (tosdump/probes/run-vdprobe.sh, VDPROBE_SCRATCH = session scratchpad)
+  probe/e1, probe/e2   EmuTOS falcontc, two runs: BIN and LOG byte-identical (compare-e1-e2.txt)
+  probe/n1, probe/n2   NewTOS raspi4b, two runs: BIN and LOG byte-identical (compare-n1-n2.txt)
+  VDPROBE.PRG sha256 14505cb087411efecab06a4fee9452bceeec1ae5789c26d129ee757db66b7777
+  VDPROBE.NAP sha256 2e02805fb3ec7966a1d27442363215e943c67cc7bd5aeff5f2e64c0f90ed9e99
+  BINs: probe/*/VDPROBE.BIN.sha256; e1 and n1 kept gzipped (VDPROBE.BIN.gz).
+  probe/compare-e1-n1.txt: 54 cases, 26 differ; probe/maps/: character maps of every DIFF.
+  card manifest probe/n1/card.img.manifest, probe/n2/card.img.manifest:
+    optional_missing none
+  card sha256 before 727135d6588e34b1e1707ef1292ad7ec3230d452fec258e2e022c3818572ec5b,
+  after (n1) 6aada232723601623931579b0b3d14425d663f94a6bf42b7aee177132b665b14 (run.txt).
+
+TABLES ON THE ORACLE (oracle/)
+  v18-falcontc-1/-2   vdi-v18.tsv, DUMPVDI f8fc, two runs byte-identical -> reference
+                      tosdump/reference/EMUTOS-1a7484ab-VDI-v18-falcontc.BIN/.LOG
+  rast-falcontc/-2    vdi-v18-raster.tsv, DUMPRAST f8fc, two runs byte-identical -> reference
+                      tosdump/reference/EMUTOS-1a7484ab-RASTER-v18-falcontc.BIN/.LOG
+  rast-tt             same table, profile tt: tosdiff 0 of 17 differ against falcontc
+                      (memory->memory does not depend on the screen mode)
+
+TABLES ON NEWTOS (cargo xtask tosdump, calls in method/)
+  runs/newtos-vdi-v18      method/v18-vdi-newtos.sh: 15 of 19 differ (the 4 controls equal)
+  runs/newtos-v18-raster   method/k7-newtos.sh: 15 of 17 differ (the 2 16-plane controls equal)
+  runs/newtos-vdi-raster   method/k7-lower-raster.sh: vdi-raster.tsv vs EMUTOS-1a7484ab-RASTER:
+                           1 of 59 differ (case 157, the difference that table predicts itself)
+  Each run dir holds tosdump-run.txt, card.img.manifest (optional_missing none), BIN/LOG, tosdiff.
+  Input check: VDI has no NewTOS argument tracer; the dumpers record contrl/intin/ptsin
+  (and the MFDB cells) before/after the call on both sides, and tosdiff reports no
+  difference in any of them -- only intout[1] resp. buf_b.
+
+RESULT (per candidate, details in the report)
+  K1 DEVIATES  K2 DEVIATES  K3 EQUAL  K4 DEVIATES  K5 DEVIATES  K6 EQUAL  K7 DEVIATES
+  K8 DEVIATES  K10 DEVIATES  K11 DEVIATES; plus one wide-line clip pixel (K11C) DEVIATES.
+
+SCRATCH
+  Session scratchpad v18/ (tree, xtask scratch with card clones, probe scratch); deleted after the run.
