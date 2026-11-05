@@ -1,0 +1,34 @@
+RUNINFO -- user's test card gets the A127 D1 kernel for the Pi menu check (2026-11-05)
+
+WHAT
+  User 2026-11-05: test A127 D1 (menu tracker takes button edges as events,
+  bae52dbd; conform with the oracle,
+  measurements/measurement-2026-11-04-a127-oracle/RUNINFO.TXT) on the real Pi
+  with a USB mouse before Ragnar gets it. Only kernel8.img is replaced.
+
+SOURCE
+  cargo xtask build --board rpi4 --release --features crash-walk at 7b14ffe2
+  (pushed); build stamp "NewTOS 0.7", "2026-11-05 (7b14ffe2)".
+  sha256 ec66b9e7bfe5e983fb8c9cea7e632fa310057b40207212c22f558c71a30bb184
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1).
+  optional_missing: not applicable (no image built; one file copied by hand).
+
+CARD (disk4s1 = BOOT = C:)
+  Before: kernel8.img 8ec56ee7b5749216... (0.7 release kernel,
+  measurements/measurement-2026-11-04-rel07-card/).
+  Written on the user's word (cp -X, no script, no backup; the replaced
+  kernel is the published v0.7 kernel): -> C:\kernel8.img.
+  Read back after diskutil unmount force + mount disk4s1: ec66b9e7bfe5e983...;
+  cmdline.txt = 0x0a (unchanged); kernela.img e0fe680b... unchanged
+  (fallback); the two old ._ files (2026-10-31) unchanged.
+
+CHECKS FOR THE USER (result goes to TASK/A127.md)
+  1. Desktop: menu click-select (open, click item, e.g. ^N new folder):
+     works on the first click, ~0.2 s delay expected (EmuTOS-conform).
+  2. Drag-select (press title, release on item): immediate.
+  3. Open, pass over an item, leave the menu, re-enter: no stale black
+     highlight (D2/D3 of Ragnar's report).
+  4. The same in TeraDesk, briefly in QED.
+
+RESULT
+  pending (user's Pi run)
