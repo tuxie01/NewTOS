@@ -2206,9 +2206,10 @@ byte of any buffer the caller passed (TASK/A42).
   `DISABLED` overlay) listed in
   `measurements/measurement-2026-09-20-a79/RUNINFO.TXT` § FINAL → A95; item (6) there, the
   old top's repaint on `wind_open`, is fixed by A94 (see the `wind_open`
-  entry). The one fixed
-  colour left in the frame is the drop shadow (`DROP_SHADOW_COLOR`, a separate
-  documented look decision, see the table in (3)).
+  entry). The drop shadow is no exception: it is painted in `W_BOX`'s
+  `bc`, like the outer border (see (1) and the table in (3); A131 — NewTOS
+  painted it in pen 8 from the user decision of 2026-09-10 until the user
+  revoked that decision on 2026-11-05).
 
   **(1) What each field of a gadget's colour word governs.** `gr_crack`
   (`gemgraf.c:612-628`) splits a colour word into border colour `bc` (bits
@@ -2229,7 +2230,8 @@ byte of any buffer the caller passed (TASK/A42).
     `ob_spec+1`, i.e. `gl_waspec`'s compiled thickness (`gemwmlib.c:84-106`).
     **`W_BOX` is the one gadget where `bc` also colours the drop shadow** —
     the `SHADOWED` branch reuses the same `bcol` variable
-    (`gemoblib.c:894-901`).
+    (`gemoblib.c:894-901`). NewTOS likewise: `draw_frame` hands `W_BOX`'s
+    `bc` to `draw_shadow` (A131).
   - `ic`+`ip` → the interior fill, drawn only for non-`G_IBOX` types
     (`gemoblib.c:669-694`, `gr_rect`, `gemgraf.c:547-559`): `ip=IP_HOLLOW`
     is an **opaque white fill** (`FIS_HOLLOW` in `MD_REPLACE`: the VDI's
@@ -2364,13 +2366,13 @@ byte of any buffer the caller passed (TASK/A42).
   2026-09-20 **before** the fix (line numbers of that revision; ✓ = the then
   hardcoded pixel already equalled `gr_crack(default word)`; ✗ = it did not).
   Since the fix every region renders the "Default word gives" column (the
-  drop-shadow row excepted — see its verdict); the table stays as the record
-  of what changed:
+  drop-shadow row too since A131, 2026-11-05 — see its verdict); the table
+  stays as the record of what changed:
 
   | Region | Call | Gadget(idx)·field | Today's constant | Default word gives | Verdict |
   |---|---|---|---|---|---|
   | Outer border | `rect_outline`, `:2349` | `W_BOX`(0)·`bc` | `BLACK` | `bc=1`=`BLACK` | ✓ |
-  | Drop shadow | `draw_shadow`, `:2358` | `W_BOX`(0)·`bc` (EmuTOS reuses it) | `GRAY_LT` (deliberate deviation, `:187-204`) | `bc=1`=`BLACK` | ✗ **already an accepted, documented look decision** — wiring `W_BOX`'s `bc` into `rect_outline` must **not** also feed `draw_shadow` |
+  | Drop shadow | `draw_shadow`, `:2358` | `W_BOX`(0)·`bc` (EmuTOS reuses it) | `GRAY_LT` (`DROP_SHADOW_COLOR`, `:187-204`) | `bc=1`=`BLACK` | ✗ — left as a deviation by A79 under the user decision of 2026-09-10; that decision was **revoked** on 2026-11-05 (A131: measured as a visible difference against the oracle, `measurements/measurement-2026-11-05-a131/RUNINFO.TXT`, never in `docs/COMPATIBILITY.md`). Since A131 `draw_frame` passes `W_BOX`'s `bc` for the window's state to `draw_shadow`, as `just_draw` reuses `bcol` (`gemoblib.c:614,894-900`); `DROP_SHADOW_COLOR` is gone |
   | Title band base | `fill_rect(...,WHITE,...)`, `:2373` | `W_TITLE`(1)·`ip,ic` | `WHITE` | `ip=HOLLOW` → no paint | ✗ undocumented |
   | Title bottom border | `fill_rect(...,BLACK,...)`, `:2418` | `W_TITLE`(1)·`bc` | `BLACK` | `bc=1`=`BLACK` | ✓ |
   | Name stipple/fill | `fill_pattern(TITLE_STIPPLE,...)`, `:2394-2401` | `W_NAME`(3)·`ip,ic,md` (topped only) | fixed pattern-2 black-on-white, `md=Replace` | `ip=IP_2PATT,ic=1,md=REPLACE` (topped default) | ✓ **only for the default word** — hardcoded regardless of what `WF_COLOR` stores; **this is the T7 gap** |
@@ -2390,7 +2392,8 @@ byte of any buffer the caller passed (TASK/A42).
   | Sizer-corner (no `SIZER`) fill+bevel | `:2492-2493` | `W_SIZER`(8)·`ip,ic` + bevel | `GRAY_LT` + bevel | `ip=HOLLOW` → no paint; bevel independent | ✗ fill / ✓ bevel |
 
   Every ✗ row except the drop shadow was fixed by rendering the word
-  literally (decision 2026-09-20, see the head of this bullet): the gadget
+  literally (decision 2026-09-20, see the head of this bullet; the drop
+  shadow followed with A131 on 2026-11-05): the gadget
   faces, the info band, the bar column/band and the elevators are hollow →
   white, the slider tracks `IP_1PATT`, every gadget cell gets its 1 px `bc`
   border on the 3D-grown slot, and the name's white glyph-cell background is

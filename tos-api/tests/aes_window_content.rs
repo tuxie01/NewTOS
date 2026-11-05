@@ -900,12 +900,14 @@ fn clicking_a_window_never_erases_its_content() {
     });
 
     // (a) the shadow really is painted, over its whole extent, in the shadow
-    //     colour. EmuTOS uses `W_BOX`'s border colour (`gr_crack` on
-    //     `ob_spec`'s low word `0x1101`, `aes/gemgraf.c:612-627`, i.e. BLACK);
-    //     NewTOS deviates deliberately and paints light grey. Taken from the
-    //     one place the AES keeps it, so a later change to the look does not
-    //     turn into a test round.
-    const SHADOW: Pel = tos_api::aes::window::DROP_SHADOW_COLOR;
+    //     colour: `W_BOX`'s border colour — `just_draw` fills the `SHADOWED`
+    //     bands with the `bcol` it cracked from the `G_IBOX`'s word
+    //     (`aes/gemoblib.c:614,894-900`, `gr_crack` bits 15..12,
+    //     `aes/gemgraf.c:612-615`). A's `W_BOX` word is the compiled default
+    //     `0x1101` (`gl_wtcolor`/`gl_wbcolor`, `aes/gemwmlib.c:1347-1350`), so
+    //     pen 1 = BLACK (A131; NewTOS painted pen 8 until the user revoked
+    //     that on 2026-11-05).
+    const SHADOW: Pel = 1;
     let mut unpainted = Vec::new();
     for y in shaded.1..shaded.1 + shaded.3 {
         for x in shaded.0..shaded.0 + shaded.2 {

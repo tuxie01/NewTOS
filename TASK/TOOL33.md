@@ -88,7 +88,7 @@ Je Funktion 79 `mapped`, 5 `unmapped` (`w_nilit`, `w_obadd`, `or_start`, `w_redr
 
 Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `aes/`):
 
-21. `gemwmlib.c:1222,887-907` gegen `tos-api/src/aes/window.rs:1874@send_redraw` (`wind_open`): `WM_REDRAW`
+21. `gemwmlib.c:1222,887-907` gegen `tos-api/src/aes/window.rs:1859@send_redraw` (`wind_open`): `WM_REDRAW`
     nur mit dem Arbeitsbereich statt Schaden ∩ Fensterhuelle (Rahmen, Schatten).
 22. `gemsuper.c:358-360` gegen `tos-api/src/aes/window.rs:4755@wind_new`: zusaetzliches `redraw_all`.
 23. `gemgrlib.c:243-267` gegen `tos-api/src/aes/graf.rs:237@graf_dragbox`: eigene Schleife,
@@ -98,7 +98,8 @@ Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `aes/`):
 25. `gemgrlib.c:127-152,271-280` gegen `graf.rs:286@animate`: XOR-Spur ohne Pause (zu 1).
 26. `gemwmlib.c:1719-1726,1754-1755` gegen `window.rs`: `WF_COLOR` zeichnet den ganzen Rahmen
     (Klasse von [A119](A119.md)); Schattenfarbe fest `DROP_SHADOW_COLOR` statt aus dem
-    W_BOX-Farbwort — moegliche Spur fuer [A131](A131.md) (#7).
+    W_BOX-Farbwort — moegliche Spur fuer [A131](A131.md) (#7); der Schattenteil ist mit A131
+    gemessen und behoben (2026-11-05, `DROP_SHADOW_COLOR` entfernt), der Rahmenteil ungemessen.
 27. `gemwmlib.c:431-434` gegen `tos-api/src/aes/window.rs:3016@thumb_geom`: zusaetzliche Kappung der Schieberlaenge.
 28. `gemfmalt.c:188-282` gegen `tos-api/src/aes/form.rs:191@padx` (`do_alert`): Alert-Layout in Pixeln statt
     Zeichenzellen, Maus/`backgrcol` fehlen, eigene Modalschleife statt `fm_do`.

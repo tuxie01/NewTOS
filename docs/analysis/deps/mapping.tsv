@@ -1266,6 +1266,7 @@ just_draw	aes/gemoblib.c	tos-api/src/aes/object.rs	add_3d_effect	mapped	the clos
 just_draw	aes/gemoblib.c	tos-api/src/aes/window.rs	draw_elevator	mapped	the FL3DACT G_BOX elevator on its grown rect, the bevel sunk when SELECTED (A130)
 just_draw	aes/gemoblib.c	tos-api/src/aes/window.rs	gadget_sel	mapped	a frame G_BOXCHAR gadget on its grown rect: box, glyph at boxchar_origin, bevel (A95, A105)
 just_draw	aes/gemoblib.c	tos-api/src/aes/window.rs	act_ink	mapped	the changecol colours of a SELECTED FL3DACT object (:509-513,681-706), shared by gadget_sel and draw_elevator (A105, A130)
+just_draw	aes/gemoblib.c	tos-api/src/aes/window.rs	draw_shadow	mapped	the SHADOWED arm (:894-900): two bb_fill bands in bcol, the border colour cracked from W_BOX's word (:614), passed in by draw_frame (A131)
 ob_draw	aes/gemoblib.c	tos-api/src/aes/object.rs	render_tree_t	mapped	the objc_draw body: clip from int_in[2..5], cursor bracket, draw_tree from the object's parent origin; the other callers go through draw_obj_t/draw_obj_clip_t/draw_root
 ob_draw	aes/gemoblib.c	tos-api/src/aes/object.rs	objc_draw	mapped	the trap entry
 get_prev	aes/gemoblib.c	tos-api/src/aes/object.rs	get_prev	mapped	previous sibling or NIL; stops on NIL as well
@@ -1604,7 +1605,7 @@ w_bldhbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_hslide	mapped	the W_HSLI
 w_bldactive	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_frame	mapped	the whole W_ACTIVE build and draw (:479-629, 3D branch): box, shadow, title/closer/fuller/name, info, bars, sizer corner, in ob_draw order. No tree is built
 w_bldactive	aes/gemwmlib.c	tos-api/src/aes/window.rs	borders	mapped	the title / info / bar extents (same arithmetic as wm_calc, so frame and work area agree)
 w_bldactive	aes/gemwmlib.c	tos-api/src/aes/window.rs	bars	mapped	havevbar / havehbar with the SIZER strip-and-force rule (:572-592)
-w_bldactive	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_shadow	mapped	the SHADOWED state of W_BOX (W_ACTIVE[ROOT].ob_state, :1284); the shadow colour is a fixed look decision (DROP_SHADOW_COLOR), not taken from the W_BOX word
+w_bldactive	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_shadow	mapped	the SHADOWED state of W_BOX (W_ACTIVE[ROOT].ob_state, wm_init :1284) and w_setcolor(pw, W_BOX, istop) (:510), whose word's bc colours the shadow; draw_frame passes that bc (A131)
 ap_sendmsg	aes/gemwmlib.c	tos-api/src/aes/window.rs	send_redraw	mapped	fills the 8-word message with the caller pid at msg[1] and queues it for the owner (:851-863); only WM_REDRAW goes through it in NewTOS
 w_union	aes/gemwmlib.c	tos-api/src/aes/window.rs	w_union	mapped	hull of the raw (unclipped) owner rectangle list; None = EmuTOS FALSE (:869-884)
 w_redraw	aes/gemwmlib.c	tos-api/src/aes/window.rs	send_redraw_in	mapped	work-area gate, hull of the owner list, intersect with the damage, WM_REDRAW (:887-907)

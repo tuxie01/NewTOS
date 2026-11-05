@@ -413,6 +413,7 @@ const WF_COLOR: i16 = 18;
 const WF_DCOLOR: i16 = 19;
 
 // gadget indices (`aes/gemlib.h:38-56`)
+const W_BOX: i16 = 0;
 const W_NAME: i16 = 3;
 const W_VSLIDE: i16 = 12;
 
@@ -421,6 +422,9 @@ const W_VSLIDE: i16 = 12;
 const WHITE: Pel = 0;
 const BLACK: Pel = 1;
 const RED: Pel = 2;
+const BLUE: Pel = 4;
+const CYAN: Pel = 5;
+const YELLOW: Pel = 6;
 const LWHITE: Pel = 8;
 const LBLACK: Pel = 9;
 
@@ -829,6 +833,118 @@ fn dcolor_reaches_new_windows_only() {
     assert_eq!(count(host, n1, RED), 0, "h1's re-emitted frame still uses h1's words, not the new default");
 }
 
+// ── the drop shadow takes W_BOX's border colour (A131) ────────────────────
+
+/// The two `SHADOWED` bands of a window with border rect `b` — `just_draw`
+/// after `gr_inside(&t, th)` with `th = 1` (`W_BOX`'s `ob_spec 0x00011101`,
+/// `gemwmlib.c:84-86`): `bb_fill(t.x, t.y+t.h+th, t.w+th, 2*th)` and
+/// `bb_fill(t.x+t.w+th, t.y, 2*th, t.h+3*th)` (`gemoblib.c:894-900`). The
+/// two `th`-wide corner notches belong to neither band.
+fn shadow_bands(b: R) -> [R; 2] {
+    [
+        R { x: b.x + 1, y: b.y + b.h, w: b.w - 1, h: 2 },
+        R { x: b.x + b.w, y: b.y + 1, w: 2, h: b.h + 1 },
+    ]
+}
+
+/// Assert both shadow bands of `b` — and the stretch of `W_BOX`'s own border
+/// no child covers — are `pel`: `just_draw` strokes the `G_IBOX` border in
+/// `bcol` (`gemoblib.c:614,665`) and fills the `SHADOWED` bands with the same
+/// `bcol` (`:894-900`). The children are drawn after their parent and their
+/// `0x1101` rings overdraw the rest of the `W_BOX` ring — `W_TITLE` the top
+/// row and the band's sides, `W_VBAR`/`W_HBAR` the right column and the bottom
+/// row (`w_bldactive`, `gemwmlib.c:514-517,585-616`); `W_DATA`/`W_WORK` have
+/// thickness 0 (`gl_waspec`, `:84-106`), so the left column between the title
+/// band and the horizontal bar shows `W_BOX`'s `bc`. Kind `KIND_0FEF` (no
+/// `INFO`) only.
+fn assert_box_and_shadow(host: &QuietHost, b: R, pel: Pel, what: &str) {
+    let left = R { x: b.x, y: b.y + ADJ_HBOX, w: 1, h: b.h - 2 * ADJ_HBOX };
+    assert_all(host, left, pel, &format!("{what}: W_BOX left border below the title band"));
+    let [bottom, right] = shadow_bands(b);
+    assert_all(host, bottom, pel, &format!("{what}: bottom shadow band"));
+    assert_all(host, right, pel, &format!("{what}: right shadow band"));
+}
+
+/// Paint the whole screen in `pel`, so a shadow band the frame never paints
+/// cannot pass for BLACK (the cleared buffer reads back as pen 1).
+fn prefill(host: &QuietHost, pel: Pel) {
+    host.raster.fill_rect(0, 0, SCREEN_W as i16, SCREEN_H as i16, pel, ClipRect::full(SCREEN_W, SCREEN_H));
+}
+
+/// With the compiled default words the shadow is pen 1 = BLACK, topped and
+/// untopped alike: `bcol` of `0x1101` (`gl_wtcolor`/`gl_wbcolor[W_BOX]`,
+/// `gemwmlib.c:1347-1357`; `gr_crack` bits 15..12, `gemgraf.c:612-615`).
+/// Measured on the oracle: `measurements/measurement-2026-11-05-a131/`
+/// (`shprobe` s0-s4, shadow `0,0,0` on tt and falcontc). Before A131 NewTOS
+/// painted pen 8 here.
+#[test]
+fn drop_shadow_is_pen_1_by_default() {
+    let _g = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+    let (host, mut pb) = fresh();
+    prefill(host, CYAN);
+    let b1 = R { x: 10, y: 40, w: 300, h: 200 };
+    let b2 = R { x: 330, y: 40, w: 300, h: 200 };
+    let h1 = open_window(&mut pb, KIND_0FEF, (b1.x, b1.y, b1.w, b1.h));
+    assert_eq!(get_color(&mut pb, h1, W_BOX), (0x1101, 0x1101), "default W_BOX words");
+    assert_box_and_shadow(host, b1, BLACK, "topped default window");
+
+    // A second window on top repaints h1 untopped (A94); its word is 0x1101
+    // too, so the shadow stays BLACK.
+    open_window(&mut pb, KIND_0FEF, (b2.x, b2.y, b2.w, b2.h));
+    assert_box_and_shadow(host, b1, BLACK, "untopped default window");
+    assert_box_and_shadow(host, b2, BLACK, "topped second window");
+}
+
+/// `wind_set(h, WF_COLOR, W_BOX, tcol, bcol)` recolours the border **and** the
+/// shadow, per state: `w_setcolor(pw, W_BOX, istop)` writes `istop ?
+/// w_tcolor : w_bcolor` into `W_BOX`'s `ob_spec` on every `w_bldactive`
+/// (`gemwmlib.c:382-397,510`), and `wm_set` re-walks the frame
+/// (`do_cpwalk`, `:1719-1726,1754-1755`). Oracle: `shprobe` s5
+/// (`0x2101` on `W_BOX` → shadow `255,0,0` on EmuTOS,
+/// `measurements/measurement-2026-11-05-a131/`).
+#[test]
+fn drop_shadow_follows_the_w_box_border_colour() {
+    let _g = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+    let (host, mut pb) = fresh();
+    prefill(host, CYAN);
+    let b1 = R { x: 10, y: 40, w: 300, h: 200 };
+    let b2 = R { x: 330, y: 40, w: 300, h: 200 };
+    let h1 = open_window(&mut pb, KIND_0FEF, (b1.x, b1.y, b1.w, b1.h));
+
+    // topped word bc=2 (RED), untopped word bc=4 (BLUE)
+    assert_eq!(set_color(&mut pb, h1, W_BOX, 0x2101, 0x4101), 1, "wind_set(WF_COLOR, W_BOX) returns 1");
+    assert_eq!(get_color(&mut pb, h1, W_BOX), (0x2101, 0x4101), "WF_COLOR round-trips");
+    assert_box_and_shadow(host, b1, RED, "topped h1 after WF_COLOR");
+
+    // h2 on top: h1 is repainted with its untopped word.
+    let h2 = open_window(&mut pb, KIND_0FEF, (b2.x, b2.y, b2.w, b2.h));
+    assert_box_and_shadow(host, b1, BLUE, "untopped h1");
+    assert_box_and_shadow(host, b2, BLACK, "h2 keeps the default word");
+
+    // Topping h1 again brings back the topped word; h2 goes untopped, still
+    // on its own default word.
+    set_top(&mut pb, h1);
+    assert_box_and_shadow(host, b1, RED, "re-topped h1");
+    assert_box_and_shadow(host, b2, BLACK, "untopped h2");
+    let _ = h2;
+}
+
+/// `WF_DCOLOR` on `W_BOX` reaches the shadow of windows created afterwards
+/// (`w_setup` copies `gl_wtcolor`/`gl_wbcolor`, `gemwmlib.c:220-227`; the
+/// `SHADOWED` bands use that word's `bcol`, `gemoblib.c:894-900`). Source
+/// only — the A131 oracle run read `WF_DCOLOR` but did not set it.
+#[test]
+fn drop_shadow_of_a_new_window_follows_wf_dcolor() {
+    let _g = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+    let (host, mut pb) = fresh();
+    prefill(host, CYAN);
+    let b1 = R { x: 10, y: 40, w: 300, h: 200 };
+    set_dcolor(&mut pb, W_BOX, 0x6101, 0x6101);
+    let h1 = open_window(&mut pb, KIND_0FEF, (b1.x, b1.y, b1.w, b1.h));
+    assert_eq!(get_color(&mut pb, h1, W_BOX), (0x6101, 0x6101), "the new window copies the default");
+    assert_box_and_shadow(host, b1, YELLOW, "window created after WF_DCOLOR(W_BOX, 0x6101)");
+}
+
 // ── frame hash guard ──────────────────────────────────────────────────────
 
 /// Whole-screen FNV-1a hash of [`default_frames`] under the literal look —
@@ -881,7 +997,19 @@ fn dcolor_reaches_new_windows_only() {
 /// coincides with the old formula for these even-width windows). Measured on
 /// this binary alone, twice, and under `--shuffle-seed 7` / `99` with
 /// `--test-threads=1` — the same value every time.
-const FRAME_HASH: u64 = 0xfb9c_ac5d_6a24_ab40;
+///
+/// **Re-pinned 2026-11-05 (A131).** The drop shadow is painted in `W_BOX`'s
+/// border colour — the `bcol` `just_draw` cracked from the `G_IBOX`'s word
+/// (`gemoblib.c:614,894-900`), `0x1101` → pen 1 — instead of pen 8 (the
+/// light-grey decision of 2026-09-10, revoked by the user on 2026-11-05;
+/// oracle: `measurements/measurement-2026-11-05-a131/`). Scratch diff of the
+/// two renderings against the previous pin: 2474 pixels, bbox
+/// `(41,61)-(581,441)`, every one LWHITE→BLACK and every one inside a shadow
+/// band — `h2`'s 1320 and the 1154 of `h1`'s 1240 that `h2` does not cover.
+/// Nothing else moved. Measured on this binary alone, twice, and under
+/// `--shuffle-seed 7` / `99` with `--test-threads=1` — the same value every
+/// time.
+const FRAME_HASH: u64 = 0xcbe0_43f3_9761_0440;
 
 /// Two default windows with every gadget, names and info lines: `h1`
 /// untopped (partly covered, repainted untopped by `h2`'s open — A94), `h2`

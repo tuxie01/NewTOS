@@ -163,21 +163,6 @@ fn adj_hbox() -> i16 {
 const WHITE: Pel = 0;
 /// VDI pen 1 (`obdefs.h`, EmuTOS `BLACK`).
 const BLACK: Pel = 1;
-const GRAY_LT: Pel = 8; // 3D face (EmuTOS LWHITE)
-
-/// Colour of the window drop shadow.
-///
-/// EmuTOS paints it in `W_BOX`'s border colour — `gr_crack` takes bits 15..12
-/// of `ob_spec`'s low word `0x1101` (`aes/gemgraf.c:612-627`), i.e. BLACK.
-///
-/// NewTOS deviates **deliberately** here (user decision 2026-09-10): a hard
-/// black band reads far heavier on a 1920x1080 truecolor screen than it did on
-/// the TT's four planes, so the shadow is drawn in light grey. This is a look
-/// decision, not a conformance one — the dump records rectangles, not pixels,
-/// so it changes nothing in the comparison against the reference. Like
-/// [`DROP_SHADOW_SIZE`] it is the **one** place the value lives, and tests take
-/// it from here instead of naming a colour of their own.
-pub const DROP_SHADOW_COLOR: Pel = GRAY_LT;
 
 /// Number of application window handles (1..=`MAX_WINDOWS`). EmuTOS ties the
 /// table size to the AES version it advertises: `NUM_WIN` is **16** for
@@ -2425,8 +2410,9 @@ fn calc(wtype: i16, kind: u16, r: Grect) -> Grect {
 // faces with black borders, the `IP_2PATT` stipple on the topped name and
 // `IP_1PATT` slider tracks — the picture EmuTOS itself draws on a Falcon
 // (A79, user decision 2026-09-20; reference
-// `measurements/measurement-2026-09-20-a79/hatari-falcon-reference/`). The only fixed
-// colour left in the frame is [`DROP_SHADOW_COLOR`].
+// `measurements/measurement-2026-09-20-a79/hatari-falcon-reference/`). The drop
+// shadow is no exception: it takes `W_BOX`'s border colour, as in `just_draw`
+// (A131, see [`draw_shadow`]).
 
 /// A gadget's colour word cracked for the frame draw — EmuTOS `gr_crack`
 /// (`aes/gemgraf.c:612-628`) after `just_draw`'s 3D substitution
@@ -2640,8 +2626,8 @@ fn gadget(r: Grect, ch: u16, ink: Ink, backend: &dyn RasterBackend, clip: ClipRe
     gadget_sel(r, ch, false, ink, backend, clip);
 }
 
-/// The window's solid drop shadow: two black bands to the lower right of the
-/// border rectangle `b`.
+/// The window's solid drop shadow: two bands in colour `bcol` to the lower
+/// right of the border rectangle `b`.
 ///
 /// EmuTOS never draws this as frame code — it sets `SHADOWED` on the root of
 /// the window element tree once, in `wm_init`
@@ -2672,22 +2658,32 @@ fn gadget(r: Grect, ch: u16, ink: Ink, backend: &dyn RasterBackend, clip: ClipRe
 /// Those notches are unpainted in EmuTOS too; they are not a defect and no test
 /// may demand a colour there.
 ///
-/// `bcol` is the border colour cracked out of `W_BOX`'s `ob_spec 0x00011101`
-/// (`gemwmlib.c:63,84`): `gr_crack` takes bits 15..12 of the low word `0x1101`
-/// (`aes/gemgraf.c:612-627`), i.e. `1` = BLACK.
-fn draw_shadow(b: Grect, backend: &dyn RasterBackend, clip: ClipRect) {
+/// `bcol` is the same variable that coloured the `W_BOX` border a few lines
+/// earlier in `just_draw`: `W_BOX` is a `G_IBOX`, so `gr_crack` splits its
+/// `ob_spec` low word and `bcol` is bits 15..12 (`aes/gemoblib.c:612-614`,
+/// `aes/gemgraf.c:612-615`). That word is the window's `W_BOX` colour word for
+/// its state — `w_setcolor(pw, W_BOX, istop)` on every `w_bldactive`
+/// (`aes/gemwmlib.c:382-397,510`), `istop ? w_tcolor : w_bcolor`, set by
+/// `WF_COLOR` / inherited from `WF_DCOLOR`. The compiled default `0x1101`
+/// (`gl_wtcolor`/`gl_wbcolor[W_BOX]`, `gemwmlib.c:1347-1350`, the same low
+/// word as `gl_waspec`'s, `:84-86`) gives `1` = BLACK. The caller passes
+/// that border colour ([`draw_frame`]); the shadow has no colour of its own
+/// (A131 — the light-grey shadow of the 2026-09-10 decision was revoked by
+/// the user on 2026-11-05).
+fn draw_shadow(b: Grect, bcol: Pel, backend: &dyn RasterBackend, clip: ClipRect) {
     // `if ((state & SHADOWED) && th)` — a zero thickness casts no shadow, and
     // `ws_true` then adds nothing either, so both halves stay in step.
     if SHADOW_TH == 0 || b.w <= 0 || b.h <= 0 {
         return;
     }
+    // `vsf_color(bcol)` + two `bb_fill(MD_REPLACE, FIS_SOLID, …)`.
     backend.fill_rect(
         b.x + SHADOW_TH, b.y + b.h, b.w - SHADOW_TH, DROP_SHADOW_SIZE,
-        DROP_SHADOW_COLOR, clip,
+        bcol, clip,
     );
     backend.fill_rect(
         b.x + b.w, b.y + SHADOW_TH, DROP_SHADOW_SIZE, b.h + SHADOW_TH,
-        DROP_SHADOW_COLOR, clip,
+        bcol, clip,
     );
 }
 
@@ -2754,10 +2750,11 @@ fn draw_frame(w: &Window, istop: bool, backend: &dyn RasterBackend, clip: ClipRe
     let ink = |g: usize| gadget_ink(w, g, istop);
 
     // Outer frame — `W_BOX`'s border colour (`gr_crack` bits 15..12 of its
-    // word, `0x1101` → BLACK). Only the border: the drop shadow below stays
-    // [`DROP_SHADOW_COLOR`] (a documented look decision) and must not follow
-    // this word.
-    rect_outline(b, ink(W_BOX_IDX).bc, backend, clip);
+    // word, `0x1101` → BLACK). `just_draw` keeps the same `bcol` for the
+    // `SHADOWED` bands below (`aes/gemoblib.c:614,665,894-900`), so the
+    // shadow follows this word too (A131).
+    let box_bc = ink(W_BOX_IDX).bc;
+    rect_outline(b, box_bc, backend, clip);
 
     // …and the drop shadow that goes with it. `ob_draw` draws the `W_BOX`
     // border and its `SHADOWED` decoration in the same visit, before it
@@ -2766,7 +2763,7 @@ fn draw_frame(w: &Window, istop: bool, backend: &dyn RasterBackend, clip: ClipRe
     // strip [`ws_true`] claimed for this window in the owner rectangle list —
     // which is what keeps the desktop and the windows below from painting into
     // it, and what the caller's clip lets through ([`draw_frame_pieces`]).
-    draw_shadow(b, backend, clip);
+    draw_shadow(b, box_bc, backend, clip);
 
     let ah = adj_hbox();
     let aw = adj_wbox();
