@@ -59,15 +59,15 @@ MFDBs nimmt (Kandidat 7). Ebenfalls `unmapped`: `clip_code`, `crunch_queue`.
 
 Abweichungs-Kandidaten aus dem Lesen (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
 
-1. `vdi_line.c:2205-2228` gegen `kernel/src/vdi_backend.rs:578@abline`: XOR-Letztpunkt-Kuerzung
+1. `vdi_line.c:2205-2228` gegen `kernel/src/vdi_backend.rs:608@abline`: XOR-Letztpunkt-Kuerzung
    auch bei vertikalen Segmenten (EmuTOS verzweigt Vertikallinien vorher ab).
 2. `vdi_line.c:1057,1101` gegen `abline`: EmuTOS clippt das Segment vorab, NewTOS pro Pixel
    (Strichphase/Rundung); NewTOS clippt auch bei `vs_clip(0)`.
 3. `vdi_line.c:1623` gegen `abline`: anderer Bresenham-Fehlerterm, Gleichheit fuer alle
    Steigungen nicht gezeigt.
-4. `vdi_fill.c:560` gegen `tos-api/src/vdi/primitives.rs:707@v_fillarea`: bei 1–2 Punkten zeichnet
+4. `vdi_fill.c:560` gegen `tos-api/src/vdi/primitives.rs:737@v_fillarea`: bei 1–2 Punkten zeichnet
    EmuTOS mit `fill_per` den Umriss, NewTOS nichts.
-5. `vdi_asm.S:84-95` gegen `primitives.rs:788@v_pmarker`: Kappung von `CONTRL[1]` auf
+5. `vdi_asm.S:84-95` gegen `primitives.rs:824@v_pmarker`: Kappung von `CONTRL[1]` auf
    `MAX_VERTICES` fehlt ausser in `v_pline`/`v_fillarea`.
 6. `vdi_fill.c:149` gegen `tos-api/src/vdi/attributes.rs:512@vsf_udpat`: NewTOS speichert nur 16
    Woerter statt `INQ_TAB[4]*16`.

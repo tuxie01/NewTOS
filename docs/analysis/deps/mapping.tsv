@@ -1338,16 +1338,19 @@ gdp_rbox	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	rbox	mapped	-
 vdi_v_gdp	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	v_gdp	mapped	opcode 11; GDP 13 (bezier) is not compiled (HAVE_BEZIER 0)
 get_start_addr16	vdi/vdi_inline.h	kernel/src/vdi_backend.rs	get_device_pixel	mapped	screen address of a pixel: NewTOS addresses the 32-bpp framebuffer inside the backend (get_device_pixel/put_device_pixel), no 16-bit address is exposed
 get_start_addr16	vdi/vdi_inline.h	kernel/src/vdi_backend.rs	put_device_pixel	mapped	see get_device_pixel
+get_start_addr16	vdi/vdi_inline.h	tos-api/src/vdi/line.rs	index	mapped	the line walk's store index y*stride+x, so a clip-off line runs on into the next row (V20)
 Vwk2Attrib	vdi/vdi_line.c	tos-api/src/vdi/gdp.rs	fill_of	mapped	builds the fill descriptor (colour, pattern, write mode) from the Vwk; NewTOS has no VwkAttrib (clip is always passed separately)
-abline	vdi/vdi_line.c	kernel/src/vdi_backend.rs	abline	mapped	one segment with dash-mask threading; vertical lines, clipping and the Bresenham form differ (see draw_line16, clip_line)
+abline	vdi/vdi_line.c	kernel/src/vdi_backend.rs	abline	mapped	the store side: combines each pixel of the shared walk (combine_index) and cleans the touched rows (V20)
+abline	vdi/vdi_line.c	tos-api/src/vdi/line.rs	abline	mapped	the walk: clip_line, vertical path before the XOR LSTLIN shortening, horizontal screen-aligned, draw_line16; clip off addresses y*stride+x, cut outside the logical screen (COMPATIBILITY, V20)
 arrow	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	arrow	mapped	-
 cir_dda	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	cir_dda	mapped	only the xsize == ysize path (square pixels); no q_circle cache by line_cw
-clip_code	vdi/vdi_line.c	-	-	unmapped	outcode helper of clip_line; NewTOS clips lines per pixel in abline and has no outcodes
-clip_line	vdi/vdi_line.c	kernel/src/vdi_backend.rs	abline	mapped	NewTOS does not recompute the endpoints (mul_div_round): abline tests every plotted pixel against the clip rectangle
+clip_code	vdi/vdi_line.c	tos-api/src/vdi/line.rs	clip_code	mapped	-
+clip_line	vdi/vdi_line.c	tos-api/src/vdi/line.rs	clip_line	mapped	endpoint clip with mul_div_round (exact in i64); bounded to 64 rounds instead of looping forever (V20)
+clip_line	vdi/vdi_line.c	tos-api/src/vdi/line.rs	clip_segment	mapped	the vwk->clip test of polyline (ClipRect::OFF) and the vs_clip bound of the rectangle to the screen
 do_circ	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	do_circ	mapped	-
 draw_arrow	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	draw_arrow	mapped	-
 draw_line	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2156	planar Bresenham for v_planes<=8; NewTOS has no bit-planes (ADR-024), the 16-bit line is kernel abline
-draw_line16	vdi/vdi_line.c	kernel/src/vdi_backend.rs	abline	mapped	non-horizontal, non-vertical segments; NewTOS uses an error-term Bresenham, EmuTOS eps/e1/e2
+draw_line16	vdi/vdi_line.c	tos-api/src/vdi/line.rs	draw_line16	mapped	eps/e1/e2 Bresenham with WORD arithmetic (V20)
 draw_rect	vdi/vdi_line.c	kernel/src/vdi_backend.rs	fill_pattern	mapped	VDI wrapper: vr_recfl and the span fills call RasterBackend::fill_pattern
 draw_rect_common	vdi/vdi_line.c	kernel/src/vdi_backend.rs	fill_pattern	mapped	horizontal runs with a pattern; horizontal dashed lines go through the horizontal path of abline
 draw_rect_setup	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2156	left/right word masks for the planar and blitter paths; the 16-bit path needs no masks (ADR-024)
@@ -1363,14 +1366,16 @@ linea_line	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Lin
 linea_polygon	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 6: no NewTOS counterpart
 linea_rect	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 5: no NewTOS counterpart
 perp_off	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	perp_off	mapped	-
-polyline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	polyline	mapped	segment loop with LSTLIN on the last segment; the per-segment clip_line is not done (abline clips)
+polyline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	polyline	mapped	segment loop with LSTLIN on the last segment; clip_line per segment runs inside the backend abline
+polyline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	line_clip	mapped	the if (vwk->clip) of the per-segment clip_line: ClipRect::OFF when clipping is off (V20)
 quad_xform	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	quad_xform	mapped	-
 r_fa_attr	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	wideline	mapped	NewTOS keeps no Vwk state to restore: colour, solid pattern and ends are arguments of wideline/polygon
 s_fa_attr	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	wideline	mapped	fill colour = line colour, solid pattern, squared ends, perimeter on, LN_MASK solid are passed as arguments to polygon
 set_LN_MASK	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	line_mask	mapped	the persistent LN_MASK global is a mask value threaded through polyline
 swblit_rect_common	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2156	planar software rectangle fill; NewTOS has no bit-planes (ADR-024), the 16-bit fill is kernel fill_pattern
 swblit_rect_common16	vdi/vdi_line.c	kernel/src/vdi_backend.rs	fill_pattern	mapped	16-bit pattern fill through the active pseudo-palette; multifill patterns render monochrome as in EmuTOS
-swblit_vertical_line16	vdi/vdi_line.c	kernel/src/vdi_backend.rs	abline	mapped	vertical line in 16-bit mode; NewTOS applies the XOR LSTLIN shortening to it, EmuTOS does not
+swblit_rect_common16	vdi/vdi_line.c	tos-api/src/vdi/line.rs	abline	mapped	the horizontal line of abline (draw_rect_common with the line mask as a one-row pattern, attr.clip = 0)
+swblit_vertical_line16	vdi/vdi_line.c	tos-api/src/vdi/line.rs	vertical_line16	mapped	vertical line in 16-bit mode, never shortened by the XOR LSTLIN rule (V20)
 vdi_v_pline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	v_pline	mapped	opcode 6 (HAVE_BEZIER is 0)
 vdi_vql_attributes	vdi/vdi_line.c	tos-api/src/vdi/inquiry.rs	vql_attributes	mapped	opcode 35
 vdi_vsl_color	vdi/vdi_line.c	tos-api/src/vdi/attributes.rs	vsl_color	mapped	opcode 17; MAP_COL folded to identity

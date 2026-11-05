@@ -58,6 +58,12 @@ const SOLID_PATTERN: [u16; 1] = [0xFFFF];
 /// solely to stop a polyline XOR'ing itself at intermediate points); in the
 /// dash / replace path it is deliberately not applied, so the vertex is
 /// drawn twice on purpose.
+///
+/// `clip` is the *line* clip: the workstation rectangle when clipping is on,
+/// [`ClipRect::OFF`] when it is off ([`line_clip`]) — EmuTOS clips each
+/// segment with `clip_line` only `if (vwk->clip)` (`vdi_line.c:1115-1117`),
+/// and the backend's `abline` does exactly that per segment
+/// ([`crate::vdi::line::abline`]).
 pub(super) fn polyline(
     backend: &dyn RasterBackend,
     n: usize,
@@ -75,6 +81,20 @@ pub(super) fn polyline(
         let (x1, y1) = pt(i + 1);
         let last = i == n - 2; // EmuTOS sets LSTLIN only for the final segment
         mask = backend.abline(x0, y0, x1, y1, color, mode, clip, mask, last);
+    }
+}
+
+/// The clip a width-1 line of `vwk` is drawn with: its rectangle when
+/// clipping is on, [`ClipRect::OFF`] when it is off — EmuTOS `polyline`
+/// calls `clip_line` only `if (vwk->clip)` (`vdi_line.c:1115-1117`). With
+/// clipping off `vs_clip` leaves the rectangle at the full screen
+/// (`vdi_control.c:245-249`), which the fills keep using; a line then runs
+/// unclipped (V20).
+pub(super) fn line_clip(vwk: &Vwk) -> ClipRect {
+    if vwk.clip {
+        vwk.clip_rect()
+    } else {
+        ClipRect::OFF
     }
 }
 
@@ -235,8 +255,10 @@ fn perp_off(vx: i16, vy: i16, q: &[i16; MAX_QC_LINES], num_qc_lines: usize) -> (
 }
 
 /// Draw a solid horizontal span `[x1..=x2]` at `y` in the line colour and
-/// writing mode (EmuTOS `horzline` → `draw_rect`, solid). Clipping is done
-/// by the backend's horizontal `abline` path (screen-aligned, but solid).
+/// writing mode (EmuTOS `horzline` → `draw_rect`, solid). The backend's
+/// `abline` clips the row's endpoints against `clip` — the `clip_line`
+/// `do_circ` runs on every row whatever `vwk->clip` says
+/// (`vdi_line.c:1335,1346`) — and draws it screen-aligned, solid.
 fn horzspan(
     backend: &dyn RasterBackend,
     x1: i16,
@@ -277,7 +299,8 @@ fn do_circ(
 /// EmuTOS `polygon` under the wide-line attribute environment
 /// (`vdi_fill.c:604-608` with `s_fa_attr`): fill the convex polygon solid
 /// in `color`, then draw its closed perimeter solid (width 1). Used for the
-/// wide-line boxes and the arrow triangles.
+/// wide-line boxes and the arrow triangles. `clip` bounds the fill,
+/// `line_clip` ([`line_clip`]) the perimeter.
 fn polygon(
     backend: &dyn RasterBackend,
     pts: &[(i16, i16)],
@@ -285,6 +308,7 @@ fn polygon(
     color: Pel,
     mode: WriteMode,
     clip: ClipRect,
+    line_clip: ClipRect,
 ) {
     let fill = PatternFill {
         fg: color,
@@ -295,13 +319,16 @@ fn polygon(
     fill_polygon(backend, n, pts, fill, clip);
     // Perimeter: close back to the first vertex, solid width-1 (LN_MASK
     // forced to 0xffff by EmuTOS' polygon()).
-    polyline(backend, n + 1, |i| pts[i % n], color, mode, clip, 0xFFFF);
+    polyline(backend, n + 1, |i| pts[i % n], color, mode, line_clip, 0xFFFF);
 }
 
 /// EmuTOS `wideline` (`vdi_line.c:1389`): draw a polyline of width > 1 as a
 /// chain of perpendicular parallelogram boxes with round joints between
 /// segments and round/arrow caps at the ends. `pts[0..count]` are the
-/// vertices; the array is mutated by the arrow shortening.
+/// vertices; the array is mutated by the arrow shortening. `clip` bounds
+/// the fills and the round joints (`do_circ` clips its rows with `clip_line`
+/// whatever `vwk->clip` says, `vdi_line.c:1335,1346`), `line_clip` the
+/// width-1 perimeters ([`line_clip`]).
 #[allow(clippy::too_many_arguments)]
 fn wideline(
     backend: &dyn RasterBackend,
@@ -313,6 +340,7 @@ fn wideline(
     color: Pel,
     mode: WriteMode,
     clip: ClipRect,
+    line_clip: ClipRect,
     xsize: i32,
     ysize: i32,
 ) {
@@ -323,7 +351,7 @@ fn wideline(
 
     // Arrows first — they shorten the polyline (EmuTOS `wideline:1407`).
     if (line_beg | line_end) & ARROWED != 0 {
-        arrow(backend, pts, count, line_beg, line_end, line_width, color, mode, clip, xsize, ysize);
+        arrow(backend, pts, count, line_beg, line_end, line_width, color, mode, clip, line_clip, xsize, ysize);
     }
 
     let (mut wx1, mut wy1) = pts[0];
@@ -360,7 +388,7 @@ fn wideline(
             (wx2 - ox, wy2 - oy),
             (wx2 + ox, wy2 + oy),
         ];
-        polygon(backend, &box_pts, 4, color, mode, clip);
+        polygon(backend, &box_pts, 4, color, mode, clip, line_clip);
 
         // Round joint at an internal vertex, or a round/closed end cap.
         if i < count - 1 || line_end != SQUARED || closed {
@@ -386,6 +414,7 @@ fn draw_arrow(
     color: Pel,
     mode: WriteMode,
     clip: ClipRect,
+    line_clip: ClipRect,
     xsize: i32,
     ysize: i32,
 ) {
@@ -435,7 +464,7 @@ fn draw_arrow(
         ((tx - base_x - ht_x) as i16, (ty - base_y - ht_y) as i16),
         (tx as i16, ty as i16),
     ];
-    polygon(backend, &triangle, 3, color, mode, clip);
+    polygon(backend, &triangle, 3, color, mode, clip, line_clip);
 
     // Shorten: move the tip inward by the head height, and collapse every
     // skipped vertex onto it, so the line does not protrude past the head.
@@ -464,14 +493,15 @@ fn arrow(
     color: Pel,
     mode: WriteMode,
     clip: ClipRect,
+    line_clip: ClipRect,
     xsize: i32,
     ysize: i32,
 ) {
     if line_beg & ARROWED != 0 {
-        draw_arrow(backend, pts, count, 0, 1, line_width, color, mode, clip, xsize, ysize);
+        draw_arrow(backend, pts, count, 0, 1, line_width, color, mode, clip, line_clip, xsize, ysize);
     }
     if line_end & ARROWED != 0 {
-        draw_arrow(backend, pts, count, count - 1, -1, line_width, color, mode, clip, xsize, ysize);
+        draw_arrow(backend, pts, count, count - 1, -1, line_width, color, mode, clip, line_clip, xsize, ysize);
     }
 }
 
@@ -495,15 +525,16 @@ pub(super) fn stroke(
     clip: ClipRect,
     mask: u16,
 ) {
+    let lclip = line_clip(vwk);
     if vwk.line_width == 1 {
-        polyline(backend, count, |i| pts[i], color, mode, clip, mask);
+        polyline(backend, count, |i| pts[i], color, mode, lclip, mask);
         // Arrowheads on the width-1 stroke (EmuTOS clc_arc calls
         // `arrow(vwk, point, steps)` after the polyline).
         if (vwk.line_beg | vwk.line_end) & ARROWED != 0 {
             let (xsize, ysize) = pixel_aspect(backend);
             arrow(
                 backend, pts, count, vwk.line_beg, vwk.line_end, vwk.line_width, color, mode, clip,
-                xsize, ysize,
+                lclip, xsize, ysize,
             );
         }
     } else {
@@ -518,6 +549,7 @@ pub(super) fn stroke(
             color,
             mode,
             clip,
+            lclip,
             xsize,
             ysize,
         );
@@ -732,7 +764,7 @@ pub fn v_fillarea(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
         // Outline: the polygon closed back to the first vertex, in the
         // fill colour and the workstation writing mode (EmuTOS `polygon`
         // → `polyline(vwk, ..., vwk->fill_color)`, `vdi_fill.c:608`).
-        polyline(backend, n + 1, |i| v[i % n], vwk.fill_color, mode, clip, 0xFFFF);
+        polyline(backend, n + 1, |i| v[i % n], vwk.fill_color, mode, line_clip(vwk), 0xFFFF);
     }
 }
 
@@ -760,15 +792,22 @@ pub fn v_pline(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     let mode = WriteMode::from_wrt_mode(vwk.wrt_mode);
     let clip = vwk.clip_rect();
 
+    let lclip = line_clip(vwk);
+
     if vwk.line_width == 1 {
-        polyline(backend, count, |i| pts[i], color, mode, clip, line_mask(vwk));
+        polyline(backend, count, |i| pts[i], color, mode, lclip, line_mask(vwk));
         if (vwk.line_beg | vwk.line_end) & ARROWED != 0 {
             let (xsize, ysize) = pixel_aspect(backend);
-            arrow(backend, pts, count, vwk.line_beg, vwk.line_end, vwk.line_width, color, mode, clip, xsize, ysize);
+            arrow(
+                backend, pts, count, vwk.line_beg, vwk.line_end, vwk.line_width, color, mode, clip, lclip, xsize,
+                ysize,
+            );
         }
     } else {
         let (xsize, ysize) = pixel_aspect(backend);
-        wideline(backend, pts, count, vwk.line_width, vwk.line_beg, vwk.line_end, color, mode, clip, xsize, ysize);
+        wideline(
+            backend, pts, count, vwk.line_width, vwk.line_beg, vwk.line_end, color, mode, clip, lclip, xsize, ysize,
+        );
     }
 }
 
@@ -792,6 +831,9 @@ pub fn v_pmarker(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     }
     let glyph = MARKERS[(vwk.mark_index.clamp(0, 5)) as usize];
     let scale = vwk.mark_scale.max(1);
+    // Markers always clip: `vdi_v_pmarker` sets `vwk->clip = 1` before its
+    // polylines (`vdi_marker.c:113`), so the line clip is the rectangle —
+    // the full screen when the workstation's clipping is off.
     let clip = vwk.clip_rect();
     // Markers honour the workstation writing mode (EmuTOS `v_pmarker`
     // borrows the polyline path, which draws with `vwk->wrt_mode`).

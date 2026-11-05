@@ -6,7 +6,7 @@
 
 use super::backend::{PatternFill, RasterBackend, WriteMode};
 use super::fill_patterns;
-use super::primitives::{fill_polygon, line_mask, mul_div, polyline, stroke};
+use super::primitives::{fill_polygon, line_clip, line_mask, mul_div, polyline, stroke};
 use super::trig::{icos, isin, umul_shift, HALFPI, MAX_TABLE_ANGLE};
 use super::vwk::Vwk;
 use super::Vdipb;
@@ -84,7 +84,7 @@ fn bar(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     backend.fill_pattern(x1, y1, x2 - x1 + 1, y2 - y1 + 1, fill_of(vwk), clip);
     if vwk.fill_per {
         let pts = [(x1, y1), (x2, y1), (x2, y2), (x1, y2), (x1, y1)];
-        polyline(backend, 5, |i| pts[i], vwk.fill_color, mode, clip, 0xFFFF);
+        polyline(backend, 5, |i| pts[i], vwk.fill_color, mode, line_clip(vwk), 0xFFFF);
     }
 }
 
@@ -239,7 +239,7 @@ fn curve(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend, closed: bool, to_ce
         // solid width-1 polyline in the **fill colour** (`vdi_fill.c:606-608`).
         fill_polygon(backend, n, &pts, fill_of(vwk), clip);
         if vwk.fill_per {
-            polyline(backend, n + 1, |i| pts[i % n], vwk.fill_color, mode, clip, 0xFFFF);
+            polyline(backend, n + 1, |i| pts[i % n], vwk.fill_color, mode, line_clip(vwk), 0xFFFF);
         }
     }
 }
@@ -344,7 +344,15 @@ fn rbox(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend, filled: bool) {
         // when fill_per (EmuTOS `:334-337`, `vdi_fill.c:606-608`).
         fill_polygon(backend, RFBOX_POINTS, &pts, fill_of(vwk), clip);
         if vwk.fill_per {
-            polyline(backend, RFBOX_POINTS + 1, |i| pts[i % RFBOX_POINTS], vwk.fill_color, mode, clip, 0xFFFF);
+            polyline(
+                backend,
+                RFBOX_POINTS + 1,
+                |i| pts[i % RFBOX_POINTS],
+                vwk.fill_color,
+                mode,
+                line_clip(vwk),
+                0xFFFF,
+            );
         }
     } else {
         // v_rbox: join up the polyline (append PTSIN[0]) and stroke it with

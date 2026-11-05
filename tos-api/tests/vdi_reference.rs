@@ -18,3 +18,6 @@ mod cases_r3;
 
 #[path = "vdi_reference/cases_v_series.rs"]
 mod cases_v_series;
+
+#[path = "vdi_reference/cases_v20.rs"]
+mod cases_v20;

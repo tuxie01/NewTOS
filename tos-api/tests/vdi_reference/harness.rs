@@ -56,6 +56,7 @@ use std::sync::{Mutex, OnceLock};
 use tos_api::bdos::process::Abi;
 use tos_api::host::Host;
 use tos_api::vdi::backend::{ClipRect, MonoSrc, PatternFill, Pel, RasterBackend, Rect, WriteMode};
+use tos_api::vdi::line::{self, LineTarget};
 
 /// The geometry the reference dump was measured at: the TT in TT-medium.
 /// `DEV_TAB[0..1]` in `tosdump/reference/EMUTOS14-VDI-r2.LOG` reads
@@ -298,6 +299,12 @@ impl RasterBackend for MemBackend {
         }
     }
 
+    /// The kernel's line: the shared walk `tos_api::vdi::line::abline`
+    /// (EmuTOS `abline`/`clip_line`, which pixels and which dash bit) with
+    /// the store combine of `kernel/src/vdi_backend.rs` `combine_index`
+    /// (TASK/V20). Until V20 this double drew a plain Bresenham that
+    /// ignored the write mode, `last` and the clip semantics, so no line
+    /// pixel here said anything about the kernel.
     #[allow(clippy::too_many_arguments)]
     fn abline(
         &self,
@@ -306,39 +313,25 @@ impl RasterBackend for MemBackend {
         x1: i16,
         y1: i16,
         pel: Pel,
-        _mode: WriteMode,
+        mode: WriteMode,
         clip: ClipRect,
         mask: u16,
-        _last: bool,
+        last: bool,
     ) -> u16 {
-        // Plain Bresenham. The VDI layer above owns the line style, the
-        // clipping decision and the endpoint rules; this only has to put
-        // pixels somewhere deterministic.
-        let v = self.rgb565_to_device(self.pel_to_device16(pel));
-        let (mut x, mut y) = (x0 as i32, y0 as i32);
-        let (dx, dy) = ((x1 as i32 - x).abs(), -(y1 as i32 - y).abs());
-        let (sx, sy) = (if x < x1 as i32 { 1 } else { -1 }, if y < y1 as i32 { 1 } else { -1 });
-        let mut err = dx + dy;
-        let mut m = mask;
-        loop {
-            if m & 0x8000 != 0 {
-                self.put(x as i16, y as i16, v, clip);
+        let fg = self.rgb565_to_device(self.pel_to_device16(pel));
+        let bg = self.rgb565_to_device(self.pel_to_device16(0));
+        let target = LineTarget { width: SCREEN_W as u32, height: SCREEN_H as u32, stride: SCREEN_W as u32 };
+        let mut px = self.px.lock().unwrap();
+        line::abline(&target, x0, y0, x1, y1, mode, clip, mask, last, |idx, set| {
+            let p = &mut px[idx];
+            match mode {
+                WriteMode::Replace => *p = if set { fg } else { bg },
+                WriteMode::Transparent if set => *p = fg,
+                WriteMode::Xor if set => *p = !*p,
+                WriteMode::RevTransparent if !set => *p = fg,
+                _ => {}
             }
-            m = m.rotate_left(1);
-            if x == x1 as i32 && y == y1 as i32 {
-                break;
-            }
-            let e2 = 2 * err;
-            if e2 >= dy {
-                err += dy;
-                x += sx;
-            }
-            if e2 <= dx {
-                err += dx;
-                y += sy;
-            }
-        }
-        m
+        })
     }
 
     fn fill_pattern(&self, x: i16, y: i16, w: i16, h: i16, fill: PatternFill, clip: ClipRect) {

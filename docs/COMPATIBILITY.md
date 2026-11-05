@@ -637,6 +637,28 @@ behaves identically, including one with `fd_w > fd_wdwidth × 16`.
 Spec `docs/api/vdi/raster/_raster.md` (§ "NewTOS memory-MFDB format", Row
 geometry and bound; § "Memory → memory below nine planes").
 
+**A line drawn with clipping off stops at the edges of the logical screen's
+memory; EmuTOS writes on past them** — user decision A, 2026-11-05 (TASK/V18,
+*"ja das passt so"*), implemented by TASK/V20. With `vs_clip(0)` EmuTOS'
+`polyline` does not clip a segment (`references/emutos/vdi/vdi_line.c:1115-1116`)
+and writes every pixel at `v_bas_ad + y * v_lin_wr + x * 2` without a bounds
+check (`get_start_addr16`, `references/emutos/vdi/vdi_inline.h:14-17`). NewTOS
+does the same inside the logical screen: a pixel past the right edge lands in
+the next row, one left of `x = 0` at the end of the previous row, at the store
+index `y * stride + x` (stride = the framebuffer pitch in pixels; a pitch wider
+than the screen puts such pixels into the padding, as it would on EmuTOS). A
+pixel whose index falls before the first or past the last pixel of the logical
+screen (`height * stride` pixels from `Logbase`) is not drawn; EmuTOS writes the
+memory there — the line runs on above row 0 or below the last row. Reason:
+kernel memory safety; that memory is not the program's (the screen's
+neighbours, another page, unmapped). **Observable difference:** only for a
+line with clipping off that leaves the screen through its top or bottom edge
+(or runs past the first/last pixel sideways): EmuTOS changes the bytes there,
+NewTOS leaves them alone. Everything on the screen, the run-on into the
+neighbouring rows included, is EmuTOS'. Code `tos-api/src/vdi/line.rs:39@index`;
+spec `docs/api/vdi/output/_lines-markers.md` (§ "One segment: `abline`",
+Addressing).
+
 **Key auto-repeat runs in the polled input pump, not in the timer
 interrupt** — user decision 2026-10-02 (variant (b) of
 `TASK/PORT06-KEYS-DIAGNOSIS.MD`), landed as KEYS01 2026-10-03. EmuTOS

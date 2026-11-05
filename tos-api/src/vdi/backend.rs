@@ -213,27 +213,34 @@ pub trait RasterBackend: Sync {
     fn fill_rect(&self, x: i16, y: i16, w: i16, h: i16, pel: Pel, clip: ClipRect);
 
     /// Draw one polyline segment from `(x0, y0)` to `(x1, y1)` with dash-mask
-    /// threading — the EmuTOS `abline` contract (`vdi_line.c:2266`). Clipped
-    /// to `[xmn, ymn]..=[xmx, ymx]` (inclusive device coordinates, the
-    /// workstation clip rectangle); endpoints are inclusive.
+    /// threading — the EmuTOS `polyline` step `clip_line` + `abline`
+    /// (`vdi_line.c:1115-1119`, `:2266`). Which pixels, in which order and
+    /// with which dash bit is [`crate::vdi::line::abline`]'s; a backend runs
+    /// that walk and combines each pixel it hands out into its store, so
+    /// every backend draws the same line. In short:
     ///
-    /// `mask` is the 16-bit `LN_MASK` dash pattern (`0xFFFF` = solid), walked
-    /// MSB-first one bit per plotted pixel. The backend:
+    /// - `clip` is applied to the **endpoints** (`clip_line`, bounded by the
+    ///   screen as `vs_clip` bounds it) and the segment is drawn from the
+    ///   clipped points; [`ClipRect::OFF`] (`vs_clip(0)`) draws it unclipped,
+    ///   and a pixel past a screen edge goes to the store index EmuTOS
+    ///   addresses — the neighbouring row — while one outside the logical
+    ///   screen is dropped (`docs/COMPATIBILITY.md`, TASK/V20);
+    /// - a **vertical** segment walks from `(x0, y0)` and is never shortened;
+    /// - otherwise it is drawn left to right, and with `mode == Xor` and
+    ///   `!last` (`LSTLIN`) the far `x` is shortened by one pixel so a
+    ///   polyline's shared vertex is not XOR'd twice;
+    /// - a **horizontal** segment is screen-aligned: the dash bit is
+    ///   `mask & (0x8000 >> (x & 0xf))` at absolute `x`, and `LN_MASK` is
+    ///   *not* advanced;
+    /// - anything else is `draw_line16`'s Bresenham, the mask rotated one bit
+    ///   per pixel.
     ///
-    /// - **Normalises left→right** (`abline:2300`) so the dash always starts
-    ///   at the geometrically-left endpoint;
-    /// - applies the **XOR `LSTLIN` kludge** (`abline:2319`): when
-    ///   `mode == Xor` and `!last`, the far endpoint is shortened by one pixel
-    ///   so a polyline's shared vertex is not XOR'd twice;
-    /// - **screen-aligns horizontal segments** (`abline:2330` →
-    ///   `draw_rect_common`): the dash bit is `mask & (0x8000 >> (x & 0xf))`
-    ///   at absolute `x`, and `LN_MASK` is *not* advanced;
-    /// - otherwise runs Bresenham and rotates the mask one bit per pixel.
-    ///
-    /// Returns the rotated mask (`LN_MASK` after the segment), so the caller
-    /// threads it into the next segment — reproducing EmuTOS' persistent
-    /// `LN_MASK` across a whole `v_pline` without a global. `last` marks the
-    /// final segment of the polyline (a standalone line is its own last).
+    /// `mask` is the 16-bit `LN_MASK` dash pattern (`0xFFFF` = solid).
+    /// Returns the mask after the segment (unchanged when the clip rejects
+    /// it), so the caller threads it into the next segment — reproducing
+    /// EmuTOS' persistent `LN_MASK` across a whole `v_pline` without a
+    /// global. `last` marks the final segment of the polyline (a standalone
+    /// line is its own last).
     #[allow(clippy::too_many_arguments)]
     fn abline(
         &self,
@@ -253,7 +260,7 @@ pub trait RasterBackend: Sync {
     /// for callers that draw a single, independent line (AES chrome, text
     /// decoration): a standalone line is its own last segment (`last = true`,
     /// so the XOR `LSTLIN` shortening never applies) and the rotated mask is
-    /// discarded. `mask` and `mode` behave as for [`abline`](Self::abline).
+    /// discarded. `mask`, `mode` and `clip` behave as for [`abline`](Self::abline).
     #[allow(clippy::too_many_arguments)]
     fn draw_line(
         &self,
@@ -521,7 +528,7 @@ pub struct PatternFill<'a> {
 /// Inclusive clipping rectangle in device coordinates, as carried by the
 /// workstation. Passed to line drawing so the backend clips without
 /// reaching back into the `Vwk`.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct ClipRect {
     /// Left edge (inclusive).
     pub xmn: i16,
@@ -534,6 +541,14 @@ pub struct ClipRect {
 }
 
 impl ClipRect {
+    /// Clipping **off** for a line — `vs_clip(0)`, EmuTOS `vwk->clip == 0`.
+    /// [`RasterBackend::abline`] given this rectangle draws the segment
+    /// unclipped (`polyline` skips `clip_line`, `vdi/vdi_line.c:1115-1116`);
+    /// see [`crate::vdi::line::abline`] for where its pixels go. Every other
+    /// primitive treats it as the rectangle it spells, which its own clamp
+    /// to the screen reduces to the whole device.
+    pub const OFF: ClipRect = ClipRect { xmn: i16::MIN, ymn: i16::MIN, xmx: i16::MAX, ymx: i16::MAX };
+
     /// The clip rectangle covering the whole `w × h` device.
     pub fn full(w: u16, h: u16) -> ClipRect {
         ClipRect {

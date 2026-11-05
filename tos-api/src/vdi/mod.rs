@@ -44,6 +44,9 @@ pub mod font;
 mod font_data;
 mod gdp;
 mod input;
+/// The one-pixel line walk (EmuTOS `abline` / `clip_line`), shared by every
+/// raster backend so the pixel path is host-testable (V20).
+pub mod line;
 /// The AES's `SET_INPUT_MODE` entry point. EmuTOS' AES sets a logical input
 /// device's mode through the VDI trap — `gsx_ncode(SET_INPUT_MODE, 0, 2)` in
 /// `gsx_char()` (`aes/gemgsxif.c:459-463`) — and the four mode variables are

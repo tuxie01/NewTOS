@@ -26,6 +26,7 @@
 use core::sync::atomic::{AtomicBool, AtomicU16, AtomicU32, Ordering};
 
 use tos_api::vdi::backend::{ClipRect, MonoSrc, PatternFill, Pel, RasterBackend, Rect, WriteMode};
+use tos_api::vdi::line::LineTarget;
 
 use crate::hal::framebuffer::{rgb, Framebuffer};
 
@@ -416,6 +417,35 @@ impl VdiScreen {
             p.write_volatile(!v);
         }
     }
+
+    /// [`Self::combine`] at a **store index** — `y * stride_px + x` from the
+    /// pixel base, the address arithmetic of EmuTOS `get_start_addr16`
+    /// (`vdi/vdi_inline.h:14-17`). The line walk hands out indices, not
+    /// coordinates, because a line with clipping off runs on into the next
+    /// row (`tos_api::vdi::line::abline`); an index may therefore fall into
+    /// the pitch padding past `width`, which is store, never scanned out.
+    /// An index outside the logical screen (`height * stride_px` pixels) is
+    /// ignored.
+    #[inline]
+    fn combine_index(fb: &dyn Framebuffer, idx: usize, set: bool, mode: WriteMode, fg: u32, bg: u32) {
+        if idx >= fb.height() as usize * fb.stride_px() as usize {
+            return;
+        }
+        // SAFETY: `idx` lies inside the `height * stride_px` pixel store
+        // (checked above); one aligned u32 access, on the single IRQ-off VDI
+        // trap path.
+        unsafe {
+            let p = fb.pixels().add(idx);
+            match mode {
+                WriteMode::Replace => p.write_volatile(if set { fg } else { bg }),
+                WriteMode::Transparent if set => p.write_volatile(fg),
+                // Complement the stored word, as `xor_pixel` does.
+                WriteMode::Xor if set => p.write_volatile(!p.read_volatile()),
+                WriteMode::RevTransparent if !set => p.write_volatile(fg),
+                _ => {}
+            }
+        }
+    }
 }
 
 impl RasterBackend for VdiScreen {
@@ -593,96 +623,25 @@ impl RasterBackend for VdiScreen {
         // `swblit_*16` writes `bgcol = palette[0]` on the dash-off pixels in
         // `WM_REPLACE`.
         let bg = Self::pel_to_rgb(0);
-
-        // Always draw left→right (EmuTOS `abline:2300`): the dash walks from
-        // the geometrically-left endpoint. Vertical lines (x equal) keep the
-        // given point order, matching EmuTOS' vertical path (draws from y1).
-        let (ax, ay, mut bx, mut by) = if x1 < x0 {
-            (x1, y1, x0, y0)
-        } else {
-            (x0, y0, x1, y1)
-        };
-
-        // XOR `LSTLIN` kludge (EmuTOS `abline:2319`): on any but the last
-        // segment of a polyline, shorten the far endpoint by one pixel so the
-        // vertex shared with the next segment is not XOR'd twice.
-        if mode == WriteMode::Xor && !last {
-            if ax != bx {
-                bx -= 1;
-            } else if ay != by {
-                by -= 1;
-            }
+        let stride = fb.stride_px();
+        let target = LineTarget { width: fb.width(), height: fb.height(), stride };
+        // Which pixels, in which order, with which dash bit, is the shared
+        // walk's (`tos_api::vdi::line::abline`, EmuTOS `abline`); this only
+        // combines each into the store and remembers the rows and columns
+        // it touched for the cache clean below.
+        let mut touched: Option<(u32, u32, u32, u32)> = None;
+        let mask = tos_api::vdi::line::abline(&target, x0, y0, x1, y1, mode, clip, mask, last, |idx, set| {
+            Self::combine_index(fb, idx, set, mode, color, bg);
+            let (col, row) = ((idx % stride as usize) as u32, (idx / stride as usize) as u32);
+            touched = Some(match touched {
+                None => (col, row, col, row),
+                Some((c0, r0, c1, r1)) => (c0.min(col), r0.min(row), c1.max(col), r1.max(row)),
+            });
+        });
+        if let Some((c0, r0, c1, r1)) = touched {
+            Self::clean(fb, c0, r0, c1, r1);
         }
-
-        // Horizontal segment: EmuTOS routes it through `draw_rect_common`
-        // (`abline:2330`), whose dash is **screen-aligned** — the pattern bit
-        // is `mask & (0x8000 >> (x & 0xf))` at absolute x — and `LN_MASK` is
-        // *not* advanced. Return the mask unchanged.
-        if ay == by {
-            let y = ay as i32;
-            let hmax = fb.height() as i32 - 1;
-            if y >= clip.ymn as i32 && y <= clip.ymx as i32 && y >= 0 && y <= hmax {
-                let wmax = fb.width() as i32 - 1;
-                let xlo = (ax.min(bx) as i32).max(clip.xmn as i32).max(0);
-                let xhi = (ax.max(bx) as i32).min(clip.xmx as i32).min(wmax);
-                if xlo <= xhi {
-                    for x in xlo..=xhi {
-                        let set = mask & (0x8000u16 >> (x & 0xf)) != 0;
-                        Self::combine(fb, x as u32, y as u32, set, mode, color, bg);
-                    }
-                    Self::clean(fb, xlo as u32, y as u32, xhi as u32, y as u32);
-                }
-            }
-            return mask;
-        }
-
-        // General (vertical / diagonal) line: Bresenham from the left
-        // endpoint, rotating the dash mask one bit per plotted pixel and
-        // writing it back (EmuTOS `draw_line16` rolw1 + `LN_MASK = linemask`,
-        // `:1645-1770`). `combine` enforces the framebuffer bounds; we clip to
-        // the inclusive workstation rectangle here.
-        let (mut x, mut y) = (ax as i32, ay as i32);
-        let (xe, ye) = (bx as i32, by as i32);
-        let dx = (xe - x).abs();
-        let dy = -(ye - y).abs();
-        let sx = if x < xe { 1 } else { -1 };
-        let sy = if y < ye { 1 } else { -1 };
-        let mut err = dx + dy;
-        let mut linemask = mask;
-        loop {
-            // rolw1(linemask): rotate left 1, then test bit 0 (MSB-first),
-            // exactly as EmuTOS advances the line style before each pixel.
-            linemask = linemask.rotate_left(1);
-            if x >= clip.xmn as i32
-                && x <= clip.xmx as i32
-                && y >= clip.ymn as i32
-                && y <= clip.ymx as i32
-            {
-                let dash_on = linemask & 1 != 0;
-                Self::combine(fb, x as u32, y as u32, dash_on, mode, color, bg);
-            }
-            if x == xe && y == ye {
-                break;
-            }
-            let e2 = 2 * err;
-            if e2 >= dy {
-                err += dy;
-                x += sx;
-            }
-            if e2 <= dx {
-                err += dx;
-                y += sy;
-            }
-        }
-        // Clean the line's bounding box (clamped to the screen) to PoC.
-        let wmax = fb.width().saturating_sub(1) as i32;
-        let hmax = fb.height().saturating_sub(1) as i32;
-        let xlo = (ax.min(bx) as i32).clamp(0, wmax) as u32;
-        let xhi = (ax.max(bx) as i32).clamp(0, wmax) as u32;
-        let ylo = (ay.min(by) as i32).clamp(0, hmax) as u32;
-        let yhi = (ay.max(by) as i32).clamp(0, hmax) as u32;
-        Self::clean(fb, xlo, ylo, xhi, yhi);
-        linemask
+        mask
     }
 
     fn fill_pattern(&self, x: i16, y: i16, w: i16, h: i16, fill: PatternFill, clip: ClipRect) {

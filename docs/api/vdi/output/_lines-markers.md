@@ -12,10 +12,14 @@
 > **Contract:** opcodes (6 / 7); the `PTSIN` vertex contract (count in
 > `CONTRL[1]`, `(x,y)` pairs in raster coordinates); which current
 > attributes are consulted; the `MAX_VERTICES` clamp; the "no output"
-> shape. **Reference:** the Bresenham/`polyline`/`wideline`/`arrow` pixel
-> loops, the Cohen–Sutherland `clip_line`, the `LINE_STYLE[]`/`LN_MASK`
-> dash machinery, and the built-in marker glyph vector tables — NewTOS
-> draws its own way (`tos-api/src/vdi/backend.rs`).
+> shape; and, since TASK/V18/V20 measured them against the oracle, the
+> **pixels** a width-1 segment puts down — its clipped endpoints, path, dash
+> bits and the XOR end-point rule
+> ([One segment: `abline`](#one-segment-abline)). **Reference:** how the
+> `polyline`/`wideline`/`arrow` loops, `clip_line` and the
+> `LINE_STYLE[]`/`LN_MASK` dash machinery compute that, and the built-in
+> marker glyph vector tables — NewTOS reimplements them
+> (`tos-api/src/vdi/line.rs`, `tos-api/src/vdi/primitives.rs`).
 
 | Op | Fn | Input | Draws |
 |----|----|-------|-------|
@@ -73,7 +77,8 @@ in order. It first loads the dash mask (`set_LN_MASK`), then:
 Each segment is clipped to the `Vwk` clip rectangle (`clip_line`,
 Cohen–Sutherland) **only when `vwk->clip` is set**; with clipping off,
 segments are drawn unclipped (`vdi_line.c:1115-1116`). `wrt_mode` selects
-the raster combination (replace/transparent/xor/erase).
+the raster combination (replace/transparent/xor/erase). How one segment
+becomes pixels: [One segment: `abline`](#one-segment-abline) below.
 
 ### PTSIN vertex contract
 
@@ -97,6 +102,76 @@ the raster combination (replace/transparent/xor/erase).
 **None.** No `INTOUT`, no `PTSOUT` (`{nptsout,nintout}={0,0}`). VDI has no
 error return; the only "failure" is a silent no-op (invalid handle in the
 dispatcher, or a fully-clipped line).
+
+---
+
+## One segment: `abline`
+
+`polyline` (`vdi_line.c:1101-1121`) walks the vertices; for each segment it
+sets `LSTLIN` on the last one only, runs `clip_line` **if `vwk->clip`**
+(skipping the segment when it lies wholly outside), then calls `abline`
+(`:2266-2362`). These are the pixels a 16-bit (`TRUECOLOR_MODE`) build puts
+down — the oracle's Falcon truecolor profile, measured in TASK/V18 Part 1
+(`docs/audits/2026-11-05-v18-t1-vdi-draw.md`, VDI-DRAW-001/002/003; fixed
+by TASK/V20).
+
+1. **`clip_line`** (`:1057-1092`, outcodes `clip_code` `:1034-1048`: 1 left,
+   2 right, 4 above, 8 below). While an endpoint is outside: both share an
+   outcode bit → the segment is rejected; else the first outside endpoint
+   (point 1 before point 2) is moved onto the edge it is beyond, left/right
+   before top/bottom, its other coordinate computed **from point 1** as
+   `y1 + mul_div_round(deltay, edge - x1, deltax)` (resp. the `x` form),
+   `deltax`/`deltay` taken afresh each round. `mul_div_round`
+   (`util/miscasm.S:150-195`, m68k path `:183-194`) is
+   `((m1 * m2 * 2) / d ± 1) >> 1` — `divs.w` truncates, `asr.w` floors — so
+   an exact negative quotient comes out one further from zero
+   (`mul_div_round(-10, 30, 100)` = −4). The segment is then **drawn from the
+   clipped endpoints**: its Bresenham path and its dash phase start there,
+   not at the original point (clip (30,30)-(90,90), line (0,31)-(127,33) →
+   (30,31)-(90,32)). The clip rectangle itself is always inside the screen
+   (`vs_clip`, `vdi/vdi_control.c:241-244`).
+2. **Vertical** (`x1 == x2`, after clipping): `swblit_vertical_line16`
+   (`:2084-2145`) from point 1 towards `y2`, `dy + 1` pixels, `LN_MASK`
+   rotated left once before each pixel and stored back. This branch returns
+   **before** the XOR rule of step 3 (`:2271-2297`; `CONF_WITH_VDI_VERTLINE`
+   defaults to 1, `include/config.h:1644-1645`): a vertical segment is never
+   shortened.
+3. **Order and the XOR rule:** the segment is drawn from its left endpoint
+   (`:2299-2312`). With `wrt_mode == WM_XOR` and `!LSTLIN` the far `x` is
+   decremented (`:2319-2325`; the `y2--` arm is unreachable in this build,
+   step 2 took every vertical segment) — so a polyline does not complement
+   the vertex it shares with the next segment twice. A diagonal keeps its far
+   `y`: (10,10)-(20,20) is drawn as (10,10)-(19,20).
+4. **Horizontal** (`y1 == y2`): `draw_rect_common` with `attr.clip = 0` and
+   `LN_MASK` as a one-row pattern (`:2330-2347`, `swblit_rect_common16`
+   `:450`): the dash bit of pixel `x` is `LN_MASK & (0x8000 >> (x & 15))`,
+   screen-aligned, and `LN_MASK` is **not** advanced.
+5. **Otherwise** `draw_line16` (`:1623-1770`): Bresenham from the left
+   endpoint in the `eps`/`e1`/`e2` form, major axis by `dx >= dy`, `LN_MASK`
+   rotated before each pixel and stored back. All terms are `WORD`s.
+
+**Addressing — clipping off.** Every pixel is written at
+`v_bas_ad + y * v_lin_wr + x * 2` (`get_start_addr16`,
+`vdi/vdi_inline.h:14-17`) with no bounds check, and nothing but `clip_line`
+keeps a segment on the screen. With clipping off, a pixel past the right
+edge therefore lands at the start of the **next** row, one left of `x = 0` at
+the end of the previous row (vdi-v18 case 45: (600,120)-(700,120) also
+draws (0..60,121)); above the first or below the last row EmuTOS writes the
+memory there.
+
+**NewTOS** (`tos-api/src/vdi/line.rs:170@abline`, store side
+`kernel/src/vdi_backend.rs:608@abline`): the same walk, the store index
+`y * stride + x` of the logical screen (stride = the framebuffer pitch in
+pixels). A pixel whose index lies outside the logical screen
+(`height * stride` pixels) is not drawn — the sanctioned deviation in
+`docs/COMPATIBILITY.md` (user decision A, TASK/V18). `polyline` passes the
+clip rectangle when `vwk->clip` is set and `ClipRect::OFF` when it is not
+(`tos-api/src/vdi/primitives.rs:93@line_clip`). `clip_line` is bounded to
+64 rounds (EmuTOS loops until it converges; only endpoints more than 32767
+apart, where the `WORD` deltas wrap, could keep it from converging), and
+`mul_div_round` is exact in 64 bits where the m68k wraps `m2 * 2` in a
+`WORD` — the two differ only for clip edges more than 16383 pixels from an
+endpoint.
 
 ---
 
@@ -223,7 +298,9 @@ for `type` 1..6, else default 3 → index 2 = asterisk); see
 4. **Clipping is only applied when `vwk->clip` is set.** With clipping off,
    `polyline` calls `abline` directly on the raw coordinates
    (`vdi_line.c:1115-1119`), so out-of-bounds coordinates reach the raster
-   layer unclamped — the backend must guard the framebuffer bounds itself.
+   layer unclamped and run on into the neighbouring row; past the
+   framebuffer they write foreign memory (see
+   [One segment: `abline`](#one-segment-abline), "Addressing").
 5. **`v_pmarker` never uses the caller's `wrt_mode` differently** — it
    still reads `wrt_mode` through the forced-attribute `polyline` path, so
    markers honour the current writing mode even though the line style/colour
