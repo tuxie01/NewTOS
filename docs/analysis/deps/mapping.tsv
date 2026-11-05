@@ -1399,6 +1399,7 @@ setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	effective_planes	mapped	pl
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	read	mapped	MFDB reading (Mfdb::read, caller ABI) replaces the MFDB field access
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	planar_row_bytes	mapped	s_nxln/d_nxln = fd_wdwidth * fd_nplanes * 2 of a memory form below nine planes (:922-923,937-938; V19)
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	of	mapped	PlanarForm::of: the interleaved form below nine planes, s_nxwd = fd_nplanes * 2, s_nxpl = 2 (:919-940,959-960; V19)
+setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_width	mapped	row of a 16-plane memory form = d_nxln / 2 = fd_wdwidth * 16 WORDs (:919-923,933-938), fd_w unread; NewTOS bounds a pixel to min(fd_w, fd_wdwidth * 16) so it stays in its own, bound row (V26)
 setup_pattern	vdi/vdi_raster.c	-	-	design:source:docs/api/vdi/raster/_raster.md	fills p_nxpl/p_nxln/p_mask only; cpy_raster has set p_addr = NULL (:1345), so no blit reads them and PAT_FLAG is a strip (D-082); NewTOS strips it in vro_cpyfm (op = INTIN[0] & 0x0F) and has nothing to set up (V19)
 vdi_vr_trnfm	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vr_trnfm	mapped	opcode 110, planar and truecolor branches
 vdi_vro_cpyfm	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vro_cpyfm	mapped	opcode 109
@@ -1409,8 +1410,13 @@ vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_screen	mapped	memo
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_mem	mapped	memory to memory, 16-bit words; overlap direction rule is NewTOS' own
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	raster_op	mapped	the 16 logic ops on the pixel word
 vro_cpyfm16	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	copy_rect	mapped	screen to screen
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	row_window	mapped	the words of one row: start y * d_nxln / 2 (:986-990), limit mem_width (V26)
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	get_mem	mapped	one pixel at y * src_width + x (:989), 0 outside the bounded form (V26)
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	put_mem	mapped	one pixel at y * dst_width + x (:990), dropped outside the bounded form (V26)
 vrt_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mono_to_mem	mapped	mono source expanded into a 16-bit memory MFDB
 vrt_cpyfm16	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	blit_mono	mapped	mono source expanded onto the screen
+vrt_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	put_mem	mapped	the destination pixel at y * dst_width + x (:1249-1250), dropped outside the bounded form (V26)
+vrt_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	get_mem	mapped	MD_XOR reads the destination pixel (*q = ~*q), 0 outside the bounded form (V26)
 normal_blit	vdi/vdi_tblit.S	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	the glyph cell blit with the writing mode; the cell itself (scaling, effects, rotation) is built in text.rs build_cell/blit_cell
 adjust_mono_values	vdi/vdi_col.c	-	-	design:hardware:video-shifter	ST/STE monochrome DAC fudge factors (palette path, v_planes == 1); the Pi has no ST shifter
 adjust_tt_colnum	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter palette bank handling; the Pi has no TT shifter

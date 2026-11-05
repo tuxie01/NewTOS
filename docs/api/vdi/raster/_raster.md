@@ -845,14 +845,38 @@ Falcon).
 | MFDB field | NewTOS memory value | Meaning |
 |-----------|---------------------|---------|
 | `fd_addr` | caller-owned buffer | base of the `UWORD` (RGB565) pixel array; `bb_save`/`bb_restore` take it as a `*mut`/`*const u32` for the caller's convenience — two 16-bit pixels per `u32` word (`raster.rs:559-560,589-590`) |
-| `fd_w` / `fd_h` | region size (px) | extent; every access is bounds-checked against it |
+| `fd_w` / `fd_h` | region size (px) | extent; every access is bounds-checked against `min(fd_w, fd_wdwidth × 16) × fd_h` (V26, below) |
 | `fd_wdwidth` | `(fd_w + 15) / 16` | 16-px words (`mem_wdwidth`, `raster.rs:193-198`); **row stride in pixels = `fd_wdwidth × 16`** (padded up, mirroring EmuTOS `bb_set`'s word alignment) |
 | `fd_stand` | `0` (device) | chunky, not plane-sequential |
 | `fd_nplanes` | `16` | truecolor depth (`CHUNKY_PLANES`, `raster.rs:61-67`); the interleaved-stride identity `bytes/line = fd_wdwidth × fd_nplanes / 8 × 16 = fd_wdwidth × 32` holds (`raster.rs:32-35`) |
 
 - **Pixel offset** of `(col, row)` = `row × (fd_wdwidth × 16) + col` `UWORD`s
   — computed from the MFDB's *own* `fd_wdwidth`, **never** the screen
-  stride. Reads/writes outside `fd_w × fd_h` (or the buffer) are ignored.
+  stride. Reads/writes outside the form (bound below) are ignored.
+- **Row geometry and bound (V26).** EmuTOS derives a memory form's row from
+  `fd_wdwidth` alone: `setup_info` sets `s_nxln = fd_wdwidth × s_nxwd` and
+  `d_nxln = fd_wdwidth × d_nxwd` with `s_nxwd`/`d_nxwd = fd_nplanes × 2`
+  (`vdi_raster.c:919-923,933-938`), i.e. `fd_wdwidth × 32` bytes at 16
+  planes. `vro_cpyfm16` steps rows by `s_nxln / 2` / `d_nxln / 2` WORDs
+  (`:986-990`, `src += src_width` / `dst += dst_width` per row,
+  `:1016-1216`), `vrt_cpyfm16` its destination by `d_nxln / 2`
+  (`:1249-1250`, `:1265-1318`). Neither `setup_info` nor the two loops read
+  `fd_w` or `fd_h`: a block wider than `fd_wdwidth × 16` simply runs on into
+  the next row's WORDs (and a block past `fd_h` past the form).
+  NewTOS keeps that row geometry and bounds every pixel to
+  **`0 ≤ col < min(fd_w, fd_wdwidth × 16)`, `0 ≤ row < fd_h`** — the same
+  bound as the planar form below nine planes (§ "Memory → memory below nine
+  planes", V19). So a pixel of row `y` is always one of row `y`'s own
+  `fd_wdwidth × 16` WORDs, and those rows are exactly what `vro_cpyfm` /
+  `vrt_cpyfm` check against the caller's rights before the copy (the rows
+  `[y, y + b_ht)` of the call, `fd_wdwidth × 32` bytes each). An MFDB with
+  `fd_w > fd_wdwidth × 16` (a malformed form; every well-formed caller has
+  `fd_wdwidth = (fd_w + 15) / 16`) is therefore cut at its row: EmuTOS would
+  write the columns past the row into the next row, NewTOS does not — until
+  V26 it did, into a row it had not checked, so a program could make the
+  kernel touch its memory unchecked
+  (`tos-api/src/vdi/raster.rs:232@mem_width`, host tests
+  `v26_row_bound_tests` in the same file).
 - `bb_save_words(w, h) = mem_wdwidth(w) * 8 * h` (`raster.rs:546-548`)
   counts `u32` words as a counting convenience while the pixels are
   16-bit; the byte size is `bb_save_words(w, h) * 4` = `stride16(w) * h *
