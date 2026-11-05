@@ -27,8 +27,11 @@
 //! is machine-independent by definition, so `vr_trnfm` compares at any depth
 //! ≤ 8; and at 16 planes EmuTOS' own `vro_cpyfm16` is the identical chunky
 //! `UWORD` loop NewTOS runs (`vdi_raster.c:975-1221`). Device form *below*
-//! nine planes is not comparable — the TT interleaves planes, NewTOS stores
-//! one RGB565 word per pixel — so no case in the table asks for it.
+//! nine planes was not comparable when that table was written — NewTOS then
+//! stored one RGB565 word per pixel there too — so no case in it asks for
+//! it; since V19 a memory form of 1..8 planes is interleaved as on EmuTOS,
+//! and `tosdump/cases/vdi-v18-raster.tsv` measures `vro_cpyfm` memory →
+//! memory on it (`tos-api/tests/vdi_raster_reference_v18.rs`).
 //!
 //! **The screen as an operand (2026-09-21).** `tosdump/cases/vdi-raster.tsv`
 //! never names the screen, so for it the backend's geometry is not

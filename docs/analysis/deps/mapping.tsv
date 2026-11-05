@@ -1294,7 +1294,8 @@ mouse_int	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	update_ms_stat	mapped	the cur_m
 mov_cur	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	set_state	mapped	cursor move and redraw; NewTOS draws inline here, EmuTOS defers the draw to vb_draw on VBL; mouse.rs mov_cur is only the vex_curv address sentinel
 vditrap	vdi/vdi_asm.S	kernel/src/arch/aarch64/exceptions.rs	sync_handler	mapped	the GEM trap arm: selector 115 = VDI; -1 answers 0 (documented deviation: no jsr-able address); other selectors (-2, vq_gdos) leave x0 untouched
 wheel_int	vdi/vdi_asm.S	-	-	design:hardware:ikbd-acia	decodes the IKBD status packet 05 00.. of a wheel; NewTOS has no IKBD packets (a wheel arrives as HID scancodes in mouse.rs mousex_handler -> call_user_wheel)
-fast_bit_blt	vdi/vdi_blit.S	-	-	unmapped	m68k planar BitBlt for v_planes<=8 (cpy_raster); the NewTOS workstation is always 16 planes (ADR-024) and its copy paths are raster.rs; no planar blit function exists
+fast_bit_blt	vdi/vdi_blit.S	tos-api/src/vdi/raster.rs	planar_mem_to_mem	mapped	planar BitBlt for plane_ct <= 8 (cpy_raster): per plane and destination WORD, op of the 16-entry table, end masks, overlap direction by start address (vdi_blit.S:942-946); only memory to memory reaches it (the screen is 16 planes, ADR-024); bound to fd_w x fd_h (V19)
+fast_bit_blt	vdi/vdi_blit.S	tos-api/src/vdi/raster.rs	bits_at	mapped	the skew: 16 source bits at an arbitrary pixel from the two WORDs the run spans (V19)
 bub_sort	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	the ascending sort of the crossings is an inline insertion sort in fill_polygon
 clc_flit	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	scan-line polygon fill, even-odd, perimeter pixels included
 clipbox	vdi/vdi_fill.c	kernel/src/vdi_backend.rs	fill_pattern	mapped	rectangle clipping is done inside the backend (rect intersect clip intersect screen); vr_recfl passes vwk.clip_rect()
@@ -1384,7 +1385,7 @@ vdi_vqm_attributes	vdi/vdi_marker.c	tos-api/src/vdi/inquiry.rs	vqm_attributes	ma
 vdi_vsm_color	vdi/vdi_marker.c	tos-api/src/vdi/attributes.rs	vsm_color	mapped	opcode 20; MAP_COL folded to identity
 vdi_vsm_height	vdi/vdi_marker.c	tos-api/src/vdi/attributes.rs	vsm_height	mapped	opcode 19
 vdi_vsm_type	vdi/vdi_marker.c	tos-api/src/vdi/attributes.rs	vsm_type	mapped	opcode 18
-bit_blt	vdi/vdi_raster.c	-	-	unmapped	C planar BitBlt (v_planes<=8, blitter configs); no planar copy exists in NewTOS (ADR-024)
+bit_blt	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	planar_mem_to_mem	mapped	C twin of fast_bit_blt (blitter / ColdFire builds), same result: end masks :651-652, start-address direction :660-669, op_tab[0] per plane :744-746 (V19)
 cpy_raster	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vro_cpyfm	mapped	opaque copy: mode check, plane gates, truecolor dispatch; no PAT_FLAG pattern on the palette path
 cpy_raster	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vrt_cpyfm	mapped	transparent copy: mode map MD_* and the fg/bg index validation
 do_clip	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_screen	mapped	clip of the destination box for a screen destination (memory to screen)
@@ -1396,7 +1397,9 @@ linea_blit	vdi/vdi_raster.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no L
 linea_raster	vdi/vdi_raster.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 7: no NewTOS counterpart
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	effective_planes	mapped	plane count of source and destination and the plane_ct <= 16 gate
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	read	mapped	MFDB reading (Mfdb::read, caller ABI) replaces the MFDB field access
-setup_pattern	vdi/vdi_raster.c	-	-	unmapped	PAT_FLAG pattern set-up for the planar blit; the truecolor path ignores it (vro_cpyfm16 re-reads INTIN[0]); no counterpart
+setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	planar_row_bytes	mapped	s_nxln/d_nxln = fd_wdwidth * fd_nplanes * 2 of a memory form below nine planes (:922-923,937-938; V19)
+setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	of	mapped	PlanarForm::of: the interleaved form below nine planes, s_nxwd = fd_nplanes * 2, s_nxpl = 2 (:919-940,959-960; V19)
+setup_pattern	vdi/vdi_raster.c	-	-	design:source:docs/api/vdi/raster/_raster.md	fills p_nxpl/p_nxln/p_mask only; cpy_raster has set p_addr = NULL (:1345), so no blit reads them and PAT_FLAG is a strip (D-082); NewTOS strips it in vro_cpyfm (op = INTIN[0] & 0x0F) and has nothing to set up (V19)
 vdi_vr_trnfm	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vr_trnfm	mapped	opcode 110, planar and truecolor branches
 vdi_vro_cpyfm	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vro_cpyfm	mapped	opcode 109
 vdi_vrt_cpyfm	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vrt_cpyfm	mapped	opcode 121

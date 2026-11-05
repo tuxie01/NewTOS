@@ -264,6 +264,74 @@ rects); `INTIN[0]` = one of the 16 logic ops (`| 0x10` for pattern).
 **Output:** the destination form is modified in place; no `INTOUT`/
 `PTSOUT`.
 
+### Memory → memory below nine planes: the interleaved device form (V19)
+
+When **both** MFDBs are memory forms (`fd_addr != NULL`) with the same
+`fd_nplanes` = *P*, 1 ≤ *P* ≤ 8, `cpy_raster` does not take the 16-bit
+branch (`vdi_raster.c:1368`, only `plane_ct > 8`) but the planar blitter
+(`fast_bit_blt`, `:1457`, `vdi/vdi_blit.S:794`; the C `bit_blt`, `:588-773`,
+is the same operation). No screen is involved, so the result is the same on
+every machine and screen mode — measured on the oracle in profiles
+falcontc and tt with 0 differences
+(`tosdump/cases/vdi-v18-raster.tsv` cases 24–41,
+`measurements/measurement-2026-11-05-v18-t1/RUNINFO.TXT`). The bytes of the
+destination buffer are the observable result.
+
+**Form layout** (`setup_info`, `vdi_raster.c:919-940,959-960`): a device
+form of *P* planes is **interleaved**. Row `y` starts at byte
+`y × fd_wdwidth × P × 2` (`s_nxln = fd_wdwidth × s_nxwd`, `:923,938`); in a
+row, the 16-pixel group `g` is *P* consecutive WORDs at byte `g × P × 2`
+(`s_nxwd = fd_nplanes × 2`, `:922,937`); plane `p` is WORD `p` of its group
+(`s_nxpl = d_nxpl = 2`, `:959-960`). Pixel `x` is bit `15 − (x mod 16)` of
+its group's WORD (the end masks `0xffff >> (d_xmin % 16)` and
+`~(0x7fff >> (d_xmax % 16))`, `:651-652`). The whole form is
+`fd_h × fd_wdwidth × P` WORDs. *P* = 1 is a plain monochrome bitmap.
+
+**The blit.** For every plane, every destination pixel of the block —
+`b_wd × b_ht` from the source rectangle, placed at `PTSIN[4..5]` — becomes
+`op(S, D)` of the 16-entry table, bit by bit; the bits of the edge WORDs
+left and right of the block are written back unchanged (`mask_out`,
+`:548-552`). The op is `op_tab[0]` on every plane (`fg_col = bg_col = 0`,
+`:1363-1365,744-746`). A source bit at a pixel shifted against the
+destination is taken from the neighbouring source WORD (skew, `:654-656`).
+
+**Direction** (overlap): EmuTOS compares the two start addresses
+(`bit_blt :660-669`, `fast_bit_blt` `vdi/vdi_blit.S:942-946`): it copies
+bottom-up and right-to-left iff the source start lies below the
+destination's in memory, or both are the same WORD and the source's
+`x mod 16` is the smaller; otherwise top-down, left-to-right. Within one form
+that rule is the same as the coordinates' (source above, or on the same row
+left of, the destination ⇒ reverse), and the copy reads every source bit
+before it is overwritten — the result of copying from an unmodified source.
+
+**`PAT_FLAG`** is stripped and no pattern is applied (D-082 above):
+`setup_pattern` (`:790-800`) fills only `p_nxpl`/`p_nxln`/`p_mask`, the
+pattern pointer stays `NULL` (`:1345`). The `D-VDI-23` no-op does not apply
+here — it belongs to the 16-bit routine. Measured: cases 39–41 of
+`vdi-v18-raster.tsv` give the plain copy.
+
+**No clipping and no bound in EmuTOS.** The destination is not the screen,
+so `dont_clip` is used (`:957`); `setup_info` reads only `fd_addr`,
+`fd_wdwidth` and `fd_nplanes` (`:919-940`) — neither `fd_w` nor `fd_h` —
+so a block larger than its forms is copied past them.
+
+**NewTOS** (`tos-api/src/vdi/raster.rs`, `vro_cpyfm` → `planar_mem_to_mem`)
+reproduces the layout, the bitwise ops, the edge masks, the skew and the
+overlap result. Three NewTOS bounds, the same as for the 16-plane memory
+form:
+
+- A pixel of a form exists iff `0 ≤ x < min(fd_w, fd_wdwidth × 16)` and
+  `0 ≤ y < fd_h`; a source pixel outside reads as 0, a destination pixel
+  outside is not written. For a block inside both forms (every case
+  measured) this is EmuTOS' result; past the form EmuTOS writes foreign
+  memory, NewTOS does not.
+- `fd_nplanes ≤ 0` on both sides copies nothing. In EmuTOS `plane_ct = 0`
+  passes `setup_info` and the plane loop counts down past zero
+  (`subq.w #1,PLANE_CT` / `jeq quit_blt`, `vdi/vdi_blit.S:1102`), an
+  unbounded write.
+- The block is anchored at the destination upper-left (`D-VDI-25`, as for
+  16 planes); a well-formed caller is unaffected.
+
 ## `vrt_cpyfm` (121) — copy raster transparent (mono → colour expand)
 
 Source: `vdi_vrt_cpyfm` (`vdi_raster.c:1492-1505`) → `cpy_raster`
@@ -753,11 +821,15 @@ X byte of the store (§ "The VDI device pixel" above); the former
 > now agrees with § "AES consumer" below, which already documented
 > RGB565 words off the screen.
 
-A memory MFDB (`fd_addr != 0`) in NewTOS is a **16-bit RGB565-chunky
-truecolor** buffer: **one `UWORD` (`RRRRRGGGGGOBBBBB`, bit 5 =
+A memory MFDB (`fd_addr != 0`) with `fd_nplanes = 16` in NewTOS is a
+**16-bit RGB565-chunky truecolor** buffer: **one `UWORD`
+(`RRRRRGGGGGOBBBBB`, bit 5 =
 `OVERLAY_BIT`: 0 on a pen-drawn pixel, 1 on a `v_clrwk`-cleared one)
 per pixel**, not a 32-bpp `u32`/pixel bitmap and not a planar bitmap
-(`tos-api/src/vdi/raster.rs:21-35`, module doc). This is the app-visible
+(`tos-api/src/vdi/raster.rs:21-35@CHUNKY_PLANES`, module doc). (A memory form with
+`fd_nplanes` 1..8 is the interleaved planar device form, copied by
+`vro_cpyfm` memory → memory as EmuTOS does — § "Memory → memory below nine
+planes" above, V19.) This is the app-visible
 wireformat EmuTOS' own `vro_cpyfm16`/`vrt_cpyfm16` operate on raw
 (`vdi_raster.c:975-1221,1226-1326`) — observable, not an internal detail
 (`docs/COMPATIBILITY.md`). The **physical** framebuffer store stays 32-bpp
