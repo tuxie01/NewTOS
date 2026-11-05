@@ -1,0 +1,27 @@
+emutos-falcontc-1        dclick 2:  click D2: 49 49 49 49 49  click M: 49 49 49 49 49  drag D2: 61(1) 61(1) 61(1) 61(1) 61(1)  drag M: 61(1) 61(1) 61(1) 61(1) 61(1)  click D1: 49 49 49 49 49
+emutos-tt-e1a-1          dclick 2:  click D2: 48 48 48 48 48  click M: 48 48 48 48 48  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 48 48 48 48 48
+emutos-tt-e1a-2          dclick 2:  click D2: 48 48 48 48 48  click M: 48 48 48 48 48  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 48 48 48 48 48
+emutos-tt-e1b-1          dclick 3:  click D2: 40 40 40 40 40  click M: 40 40 40 40 40  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 40 40 40 40 40
+emutos-tt-e1b-2          dclick 3:  click D2: 40 40 40 40 40  click M: 40 40 40 40 40  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 40 40 40 40 40
+emutos-tt-fifo-e1a-1     dclick 2:  click D2: 50 52 50 51 49  click M: 49 51
+emutos-tt-fifo-e1b-1     dclick 3:  click D2: 43 43 41 41 41  click M: 42 44
+emutos-tt-trackend-e1a   dclick 2:  click D2: 48 48 48 48 48  click M: 48 48 48 48 48  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 48 48 48 48 48
+emutos-tt-trackend-e1b   dclick 3:  click D2: 40 40 40 40 40  click M: 40 40 40 40 40  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 40 40 40 40 40
+emutos-tt-virtinf-1      dclick 2:  click D2: 48 48 48 48 48  click M: 48 48 48 48 48  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 48 48 48 48 48
+newtos-base-dbg-e1a      dclick 2:  click D2: 0[t0] 0[t0] 0[t0] 0[t0] 0[t0]  click M: 0[t0] 0[t0] 0[t0] 0[t0] 0[t0]  drag D2: 60(0)[t60] 60(0)[t60] 60(0)[t60] 60(0)[t60] 60(0)[t60]  drag M: 60(0)[t60] 60(0)[t60] 60(0)[t60] 60(0)[t60] 60(0)[t60]  click D1: 0[t0] 0[t0] 0[t0] 0[t0] 0[t0]
+newtos-base-e1a-1        dclick 2:  click D2: 0 0 0 0 0  click M: 0 0 0 0 0  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 0 0 0 0 0
+newtos-base-e1a-2        dclick 2:  click D2: 0 0 0 0 0  click M: 0 0 0 0 0  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 0 0 0 0 0
+newtos-base-e1b-1        dclick 3:  click D2: 0 0 0 0 0  click M: 0 0 0 0 0  drag D2: 60(0) 60(0) 64(0) 60(0) 63(0)  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 0 0 0 0 0
+newtos-base-noe-1        dclick 3:  click D2: 0 0 0 0 0  click M: 0 0 0 0 0  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 0 0 0 0 0
+newtos-head-dbg-e1a      dclick 2:  click D2: 52[t51] 51[t51] 52[t51] 51[t51] 51[t51]  click M: 51[t51] 51[t51] 51[t51] 52[t52] 51[t51]  drag D2: 60(0)[t60] 60(0)[t60] 60(0)[t60] 60(0)[t60] 60(0)[t60]  drag M: 60(0)[t60] 60(0)[t60] 60(0)[t60] 60(0)[t60] 60(0)[t60]  click D1: 51[t51] 52[t51] 51[t51] 51[t51] 51[t51]
+newtos-head-e1a-1        dclick 2:  click D2: 51 51 49 51 51  click M: 51 51 51 51 51  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 51 51 51 51 51
+newtos-head-e1a-2        dclick 2:  click D2: 51 51 51 51 51  click M: 51 51 51 51 51  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 51 51 51 51 51
+newtos-head-e1b-1        dclick 3:  click D2: 43 43 43 43 44  click M: 43 43 43 43 43  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  drag M: 59(0) 60(0) 60(0) 60(0) 60(0)  click D1: 43 43 43 43 43
+newtos-head-noe-1        dclick 3:  click D2: 41 40 40 40 40  click M: 40 40 40 40 40  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 40 40 40 40 40
+v2-emutos-tt-e1a         dclick 2:  click D2: 48 48 48 48 48  click M: 48 48 48 48 48  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 48 48 48 48 48
+v2-emutos-tt-fifo-e1a    dclick 2:  click D2: 50 52 50 49 52  click M: 51 49 50 50 51
+v2-emutos-tt-fifo-e1b    dclick 3:  click D2: 44 42 43 42 44  click M: 43 41 42 42 43
+v2-emutos-tt-mfirst-e1a  dclick 2:  click M: 0 0 0 0 0  click D2: 48 48 48 48 48  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 48 48 48 48 48
+v2-newtos-base-mfirst-e1a dclick 2:  click M: 0 0 0 0 0  click D2: 0 0 0 0 0  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 0 0 0 0 0
+v2-newtos-head-e1a       dclick 2:  click D2: 49 48 48 48 48  click M: 48 48 48 48 49  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 48 48 48 48 48
+v2-newtos-head-mfirst-e1a dclick 2:  click M: 0 0 0 0 0  click D2: 51 51 51 51 51  drag M: 60(0) 60(0) 60(0) 60(0) 60(0)  drag D2: 60(0) 60(0) 60(0) 60(0) 60(0)  click D1: 51 51 51 51 51

@@ -1,0 +1,130 @@
+H00 graf_handle 8 16 19 19 evnt_dclick 2
+M01 order M-first
+M00 menu_bar=1 desk box h=16
+O04 64,0 48x19
+O16 64,19 80x16
+O17 64,35 80x16
+O18 64,51 80x16
+O19 64,67 80x16
+T00 t=3020
+W001 M  t=3021
+R001 M  t=4140 which=0010 msg=10,4,16 mx=100 my=26 bs=1 br=0
+W002 M  t=4141
+R002 M  t=4640 which=0010 msg=10,4,16 mx=100 my=26 bs=1 br=0
+W003 M  t=4640
+R003 M  t=5140 which=0010 msg=10,4,16 mx=100 my=26 bs=1 br=0
+W004 M  t=5140
+R004 M  t=5640 which=0010 msg=10,4,16 mx=100 my=26 bs=1 br=0
+W005 M  t=5640
+R005 M  t=6140 which=0010 msg=10,4,16 mx=100 my=26 bs=1 br=0
+W006 D2 t=6141
+R006 D2 t=6141 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W007 D2 t=6141
+R007 D2 t=6141 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W008 D2 t=6141
+R008 D2 t=6141 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W009 D2 t=6141
+R009 D2 t=6141 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W010 D2 t=6141
+R010 D2 t=6141 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W011 D2 t=6142
+R011 D2 t=6142 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W012 D2 t=6142
+R012 D2 t=6142 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W013 D2 t=6142
+R013 D2 t=6142 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W014 D2 t=6142
+R014 D2 t=6142 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W015 D2 t=6143
+R015 D2 t=6143 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W016 D2 t=6143
+R016 D2 t=6143 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W017 D2 t=6143
+R017 D2 t=6143 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W018 D2 t=6143
+R018 D2 t=6143 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W019 D2 t=6143
+R019 D2 t=6143 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W020 D2 t=6144
+R020 D2 t=6144 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W021 D2 t=6144
+R021 D2 t=6144 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W022 D2 t=6144
+R022 D2 t=6144 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W023 D2 t=6144
+R023 D2 t=6145 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W024 D2 t=6145
+R024 D2 t=6145 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W025 D2 t=6145
+R025 D2 t=6145 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W026 D2 t=6145
+R026 D2 t=6145 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W027 D2 t=6146
+R027 D2 t=6146 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W028 D2 t=6146
+R028 D2 t=6146 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W029 D2 t=6146
+R029 D2 t=6146 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W030 D2 t=6147
+R030 D2 t=6147 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W031 D2 t=6147
+R031 D2 t=6147 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W032 D2 t=6147
+R032 D2 t=6147 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W033 D2 t=6148
+R033 D2 t=6148 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W034 D2 t=6148
+R034 D2 t=6148 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W035 D2 t=6148
+R035 D2 t=6148 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W036 D2 t=6148
+R036 D2 t=6148 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W037 D2 t=6149
+R037 D2 t=6149 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W038 D2 t=6149
+R038 D2 t=6149 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W039 D2 t=6149
+R039 D2 t=6149 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W040 D2 t=6149
+R040 D2 t=6149 which=0002 msg=-1,-1,-1 mx=100 my=26 bs=1 br=1
+W041 D2 t=6150
+R041 D2 t=6691 which=0010 msg=10,4,17 mx=100 my=42 bs=0 br=0
+W042 D2 t=6692
+R042 D2 t=7191 which=0010 msg=10,4,17 mx=100 my=42 bs=0 br=0
+W043 D2 t=7192
+R043 D2 t=7691 which=0010 msg=10,4,17 mx=100 my=42 bs=0 br=0
+W044 D2 t=7691
+R044 D2 t=8191 which=0010 msg=10,4,17 mx=100 my=42 bs=0 br=0
+W045 D2 t=8192
+R045 D2 t=8691 which=0010 msg=10,4,17 mx=100 my=42 bs=0 br=0
+W046 M  t=8692
+R046 M  t=9140 which=0010 msg=10,4,18 mx=100 my=58 bs=0 br=0
+W047 M  t=9140
+R047 M  t=9640 which=0010 msg=10,4,18 mx=100 my=58 bs=0 br=0
+W048 M  t=9640
+R048 M  t=10140 which=0010 msg=10,4,18 mx=100 my=58 bs=0 br=0
+W049 M  t=10140
+R049 M  t=10640 which=0010 msg=10,4,18 mx=100 my=58 bs=0 br=0
+W050 M  t=10641
+R050 M  t=11140 which=0010 msg=10,4,18 mx=100 my=58 bs=0 br=0
+W051 D2 t=11140
+R051 D2 t=11640 which=0010 msg=10,4,19 mx=100 my=74 bs=0 br=0
+W052 D2 t=11640
+R052 D2 t=12140 which=0010 msg=10,4,19 mx=100 my=74 bs=0 br=0
+W053 D2 t=12140
+R053 D2 t=12640 which=0010 msg=10,4,19 mx=100 my=74 bs=0 br=0
+W054 D2 t=12640
+R054 D2 t=13140 which=0010 msg=10,4,19 mx=100 my=74 bs=0 br=0
+W055 D2 t=13140
+R055 D2 t=13640 which=0010 msg=10,4,19 mx=100 my=74 bs=0 br=0
+W056 D1 t=13640
+R056 D1 t=14191 which=0010 msg=10,4,16 mx=100 my=26 bs=0 br=0
+W057 D1 t=14192
+R057 D1 t=14691 which=0010 msg=10,4,16 mx=100 my=26 bs=0 br=0
+W058 D1 t=14692
+R058 D1 t=15191 which=0010 msg=10,4,16 mx=100 my=26 bs=0 br=0
+W059 D1 t=15192
+R059 D1 t=15691 which=0010 msg=10,4,16 mx=100 my=26 bs=0 br=0
+W060 D1 t=15692
+R060 D1 t=16191 which=0010 msg=10,4,16 mx=100 my=26 bs=0 br=0
+Z99 end sel=25

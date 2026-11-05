@@ -1,0 +1,303 @@
+INFO : Hatari v2.6.1, compiled on:  Aug 15 2025, 14:15:19
+INFO : IPF : capsimage library version release=5 revision=1
+INFO : GEMDOS HDD emulation, C: <-> /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/tmp/trackend.luphTw/hd.
+INFO : NVRAM not found at '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/tmp/trackend.luphTw/home/hatari.nvram'
+Reading debugger commands from '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/tmp/trackend.luphTw/bp.ini'...
+Changed to input file dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/tmp/trackend.luphTw'.
+> b pc = $e38f68 :trace :quiet :file /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/tmp/trackend.luphTw/in.ini
+> b pc = $e4003c :trace :quiet :file /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/tmp/trackend.luphTw/send.ini
+Changed back to '/Volumes/Daten/Development/PiRusTOS' dir.
+WARN : Bus Error writing at address $41fffe, PC=$e00232 addr_e3=e00232 op_e3=3305
+WARN : Bus Error writing at address $ffd000e0, PC=$e0025a addr_e3=e0025a op_e3=33fc
+WARN : Bus Error reading at address $20fffff, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fffffc21, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $ffffa200, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6c4710, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $5d1234, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6d3148, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fe9003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fedc03c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $febf03c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $d003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+
+
+
+
+
+                                                         
+                                                         
+                                                         
+                                                         
+                                                         
+                    ________________________________________
+
+                    EmuTOS Version:     20260414 
+                    CPU-Typ:            M68030 
+                    Rechner:            Atari TT 
+                    ST-RAM:             4 MB 
+                    Alt-RAM:            16 MB 
+                    GEMDOS-Laufwerke:   ABC 
+                    Boot-Zeit:          2026/11/05 00:24:06 
+                    ________________________________________
+
+                    Halte <Strg> = ohne AUTO/ACC
+                    Halte <Alt> = keine Harddisk
+                    DrUcke 'X' um von Laufwerk X: zu booten
+                    DrUcke <Esc> fUr die Textkonsole
+
+                       FUr Pause <Shift> gedrUckt halten    
+WARN : No GEMDOS dir '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/tmp/trackend.luphTw/hd/AUTO'
+
+
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 0c 6d                                      ...m
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 0e a5                                      ...Ñ
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 0f f5                                      ...⌡
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 10 99                                      ...Ö
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 11 e9                                      ...Θ
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 12 8d                                      ...ì
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 13 dd                                      ...§
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 14 81                                      ...ü
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 15 d1                                      ...ע
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 16 75                                      ...u
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 17 c5                                      ...ד
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 18 69                                      ...i
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 19 b9                                      ...¨
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 1a 5d                                      ...]
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 1b ad                                      ...¡
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 1c 51                                      ...Q
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 1d a1                                      ...í
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 1e 45                                      ...E
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 1f 95                                      ...ò
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 20 39                                      .. 9
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 21 89                                      ..!ë
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 21 fd                                      ..!²
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 23 7d                                      ..#}
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 23 f1                                      ..#±
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 25 71                                      ..%q
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 25 e5                                      ..%σ
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 27 65                                      ..'e
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 27 d9                                      ..'ך
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 29 59                                      ..)Y
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 29 cd                                      ..)ל
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 2b 4d                                      ..+M
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 2b c1                                      ..+Ĳ
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 2d 41                                      ..-A
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 2d b5                                      ..-Œ
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 2f 35                                      ../5
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 2f a9                                      ../⌐
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 31 29                                      ..1)
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 31 9d                                      ..1¥
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 33 1d                                      ..3.
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 33 91                                      ..3æ
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 35 11                                      ..5.
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 35 b5                                      ..5Œ
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 37 05                                      ..7.
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 37 a9                                      ..7⌐
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 38 f9                                      ..8∙
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 39 9d                                      ..9¥
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 3a ed                                      ..:φ
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 3b 91                                      ..;æ
+Invalid value 'BP mn_do'!
+Expression ERROR:
+'echo "BP mn_do"'
+       ^-Syntax error
+000004BA: 00 00 3c e1                                      ..<β
+Invalid value 'BP ap_sendmsg'!
+Expression ERROR:
+'echo "BP ap_sendmsg"'
+       ^-Syntax error
+000004BA: 00 00 3d 85                                      ..=à

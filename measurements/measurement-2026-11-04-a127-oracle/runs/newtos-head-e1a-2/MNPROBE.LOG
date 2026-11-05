@@ -1,0 +1,59 @@
+H00 graf_handle 8 16 19 19 evnt_dclick 2
+M00 menu_bar=1 desk box h=16
+O04 64,0 48x19
+O16 64,19 80x16
+O17 64,35 80x16
+O18 64,51 80x16
+O19 64,67 80x16
+T00 t=3020
+W001 D2 t=3021
+R001 D2 t=4191 which=0010 msg=10,4,16 mx=100 my=26 bs=0 br=0
+W002 D2 t=4192
+R002 D2 t=4691 which=0010 msg=10,4,16 mx=100 my=26 bs=0 br=0
+W003 D2 t=4692
+R003 D2 t=5191 which=0010 msg=10,4,16 mx=100 my=26 bs=0 br=0
+W004 D2 t=5192
+R004 D2 t=5691 which=0010 msg=10,4,16 mx=100 my=26 bs=0 br=0
+W005 D2 t=5692
+R005 D2 t=6191 which=0010 msg=10,4,16 mx=100 my=26 bs=0 br=0
+W006 M  t=6192
+R006 M  t=6691 which=0010 msg=10,4,17 mx=100 my=42 bs=0 br=0
+W007 M  t=6692
+R007 M  t=7191 which=0010 msg=10,4,17 mx=100 my=42 bs=0 br=0
+W008 M  t=7192
+R008 M  t=7691 which=0010 msg=10,4,17 mx=100 my=42 bs=0 br=0
+W009 M  t=7692
+R009 M  t=8191 which=0010 msg=10,4,17 mx=100 my=42 bs=0 br=0
+W010 M  t=8192
+R010 M  t=8691 which=0010 msg=10,4,17 mx=100 my=42 bs=0 br=0
+W011 D2 t=8692
+R011 D2 t=9140 which=0010 msg=10,4,18 mx=100 my=58 bs=0 br=0
+W012 D2 t=9140
+R012 D2 t=9640 which=0010 msg=10,4,18 mx=100 my=58 bs=0 br=0
+W013 D2 t=9640
+R013 D2 t=10140 which=0010 msg=10,4,18 mx=100 my=58 bs=0 br=0
+W014 D2 t=10140
+R014 D2 t=10640 which=0010 msg=10,4,18 mx=100 my=58 bs=0 br=0
+W015 D2 t=10640
+R015 D2 t=11140 which=0010 msg=10,4,18 mx=100 my=58 bs=0 br=0
+W016 M  t=11140
+R016 M  t=11640 which=0010 msg=10,4,19 mx=100 my=74 bs=0 br=0
+W017 M  t=11640
+R017 M  t=12140 which=0010 msg=10,4,19 mx=100 my=74 bs=0 br=0
+W018 M  t=12140
+R018 M  t=12640 which=0010 msg=10,4,19 mx=100 my=74 bs=0 br=0
+W019 M  t=12640
+R019 M  t=13140 which=0010 msg=10,4,19 mx=100 my=74 bs=0 br=0
+W020 M  t=13140
+R020 M  t=13640 which=0010 msg=10,4,19 mx=100 my=74 bs=0 br=0
+W021 D1 t=13640
+R021 D1 t=14191 which=0010 msg=10,4,16 mx=100 my=26 bs=0 br=0
+W022 D1 t=14192
+R022 D1 t=14691 which=0010 msg=10,4,16 mx=100 my=26 bs=0 br=0
+W023 D1 t=14692
+R023 D1 t=15191 which=0010 msg=10,4,16 mx=100 my=26 bs=0 br=0
+W024 D1 t=15192
+R024 D1 t=15691 which=0010 msg=10,4,16 mx=100 my=26 bs=0 br=0
+W025 D1 t=15692
+R025 D1 t=16191 which=0010 msg=10,4,16 mx=100 my=26 bs=0 br=0
+Z99 end sel=25

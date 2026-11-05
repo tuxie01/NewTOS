@@ -1,0 +1,3 @@
+probe MNPROBE.PRG f3b06c501444502034cac7f1db7fd50e1ec357af7a29102d01fd84a2b24c76a6 source f89dd2469b03c30c6af63853b77b19e60d3264a06bf8fbd373e4cb145fd813c8
+oracle /Volumes/Daten/hatari-2.6.1_macos/Hatari.app/Contents/MacOS/Hatari ROM 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c profile tt E1 1A
+hatari done

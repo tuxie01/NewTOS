@@ -1,0 +1,9 @@
+mnprobe run, side emutos (2026-11-04T23:49:06Z)
+tree      61d7cb033936148168d38d117d14a5ecd37d8c52 3 dirty paths in tosdump/probes
+source    mnprobe.c 8c022d17a9fe527891828f1929ab7486564e26f5637a67540c37bf1df6e36ac7 mnprobe-mouse.txt 4522e6b137d3a5a511426085001cea5653216db7f97f48a95591e17ddeaa3847
+probes    MNPROBE.PRG 6d829e9c2a11532fc40534b8db80828bd8a9924d2c5fb4ed5239bb4fcf66e809 MNPROBE.NAP 4acd30a8b89717443ce62f7f5b98270fb774e83e7cad29221abce4485a4c44f9
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+inf-E1    1A
+m-first   no
+oracle    /Volumes/Daten/hatari-2.6.1_macos/Hatari.app/Contents/MacOS/Hatari, ROM /Volumes/Daten/Development/PiRusTOS/tools/oracle/etos512de-1a7484ab.img (323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c), profile tt
+hatari    done

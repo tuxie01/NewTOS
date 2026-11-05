@@ -1,0 +1,9 @@
+== emutos-tt-fifo-e1b-1  evnt_dclick 3  press/release from V
+  #  kind  mode  press  release  return  ret-press  ret-release  trackend-press  item
+  0  click D2     7590    7605    7633        43          28                 16
+  1  click D2     9150    9169    9193        43          24                 16
+  2  click D2    10724   10739   10765        41          26                 16
+  3  click D2    12280   12295   12321        41          26                 16
+  4  click D2    13832   13847   13873        41          26                 16
+  5  click M     15407   15418   15449        42          31                 16
+  6  click M     16985   17000   17029        44          29                 16

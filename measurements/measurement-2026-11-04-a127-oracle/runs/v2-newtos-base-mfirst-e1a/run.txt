@@ -1,0 +1,11 @@
+mnprobe run, side newtos (2026-11-04T23:52:35Z)
+tree      61d7cb033936148168d38d117d14a5ecd37d8c52 3 dirty paths in tosdump/probes
+source    mnprobe.c 8c022d17a9fe527891828f1929ab7486564e26f5637a67540c37bf1df6e36ac7 mnprobe-mouse.txt 4522e6b137d3a5a511426085001cea5653216db7f97f48a95591e17ddeaa3847
+probes    MNPROBE.PRG a2e6da7aab503c9a996d1a8c822db1172e0d954100a027123716c20176b9d193 MNPROBE.NAP 4acd30a8b89717443ce62f7f5b98270fb774e83e7cad29221abce4485a4c44f9
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+inf-E1    1A
+m-first   1
+kernel    70bfae180860182a0b63eb05bacb881f0e80cabb6c249e63e02505c5b3cc74ea /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/tmp/kernel-base.img
+card      f132b7f7127605ea4a164303f83167caad9a447bef72acb644f0ae7074b541bf (tools/mkcard.sh, C:\MNPROBE.NAP, #Z autorun)
+qemu      done
+card      after 726de80690d310b8a4df324731b34241ab6fa0d507fafb6da371e7a0e163f101 (the booted clone)

@@ -1,0 +1,212 @@
+measurement-2026-11-04-a127-oracle -- TASK/A127 D1: how long from the left-button press on a drop-down
+menu item until the application's evnt_multi returns MN_SELECTED, on the pinned EmuTOS oracle and on
+NewTOS head (bae52dbd, "menu tracker takes button edges as events like mn_do (A127 D1)") and base
+(4d44a616, the commit before). Trigger: measurements/measurement-2026-11-04-a127-d1-test/RUNINFO.TXT
+(head ends every menu click 40-42 ticks after the press, base 0-1; never measured on EmuTOS).
+==========================================================================================================
+Auditor, 2026-11-04/05 (host clock CET). Main tree at 61d7cb03 (clean, + the untracked probe files below).
+No product code changed, no hardware, no real card, nothing committed.
+
+WHY A NEW PROBE, AND HOW THE MOUSE GETS IN
+  Hatari 2.6.1 (the pin) cannot inject a left button or a mouse motion: its --cmd-fifo "hatari-event"
+  knows doubleclick, rightdown, rightup, keypress/keydown/keyup only (Hatari v2.6.1 src/control.c
+  Control_InsertEvent, `git show v2.6.1:src/control.c` in a Hatari clone; the pinned binary's strings
+  contain no "leftdown"; leftdown/leftup/mousemove exist only in a later, unreleased commit 5ac6a7b3).
+  Two documented substitutes were used, and they agree (results, section 3):
+  (a) PRIMARY, the probe's own feeder (EmuTOS side): an etv_timer hook (Setexc 0x100, chained, runs every
+      4th Timer-C tick) passes the script's IKBD relative mouse packets to Kbdvbase()->mousevec with
+      a0 = packet, exactly as EmuTOS's call_mousevec does (references/emutos/bios/aciavecs.S:538-553;
+      EmuTOS itself calls it from Timer C for the Alt-arrow repeat, bios/ikbd.c:518-523). Same script
+      bytes as NewTOS's injector (tools/inject-arm.py launch:MNPROBE feeds them to kernel/src/ikbd.rs
+      feed). Side effect: the feeder runs in the same Timer-C interrupt just BEFORE the AES tick
+      (vdi/vdi_misc.c:76-83 tim_addr chain), so every injected press lands at the same phase of the
+      20 ms AES tick -- the oracle value is phase-locked (the lowest possible value minus one, see 3.2).
+  (b) CROSS-CHECK through the real IKBD interrupt path: Hatari --cmd-fifo keydown/keyup of Alt + arrow
+      keys / Alt + Insert = EmuTOS's keyboard mouse emulation (bios/ikbd.c:285-389: 8 px per Alt+arrow
+      make, Alt+Insert = left button down/up, sent through call_mousevec). Wall-clock timing, so the
+      press arrives at a random phase of the AES tick. The probe's passive mousevec observer (V-lines)
+      records _hz_200 of every packet the mouse vector receives.
+
+PROBE  tosdump/probes/mnprobe.c (+ run-mnprobe.sh, mnprobe-mouse.txt; new, untracked)
+  Same C source on both sides (tosdump ABI backends: abi/m68k_trap.c / abi/newtos_svc.c td_abi_aes;
+  osbind.h for BIOS/XBIOS/GEMDOS); own menu bar (hand-built RCS-layout OBJECT tree in pixels, menu_bar);
+  objc_offset of title and items logged and equal on both sides (O-lines). Waits (W/R lines; the mode
+  changes after every 5th MN_SELECTED; after each MN_SELECTED menu_tnormal(title,1)):
+    seg 0  D2 = evnt_multi(MU_KEYBD|MU_BUTTON|MU_MESAG, 2, 1, 1, 0...) -- the desktop's blocking wait,
+           read from both desktops: references/emutos/desk/deskmain.c:2078,2088 (flags MU_BUTTON|
+           MU_MESAG|MU_KEYBD, 0x02, 0x01, 0x01, timer 0); programs/desktop/src/lib.rs evnt_multi_msg
+           (bclicks 2, bmask 1, bstate 1) called from programs/desktop/src/main.rs event_loop with
+           MU_KEYBD|MU_BUTTON|MU_MESAG. Click-select Item A.
+    seg 1  M  = evnt_multi(MU_MESAG). Click-select Item B.
+    seg 2  D2, drag-select Item C (press on the title, drag onto the item, release).
+    seg 3  M,  drag-select Item D.
+    seg 4  D1 = as D2 with bclicks 1. Click-select Item A.
+  Click = pointer onto the File title (drop-down opens on hover), 300 ms later onto the item, 300 ms
+  later press, release 50 ms later (feeder: 10 ticks; EmuTOS feeder granularity makes it 12), 5 reps
+  per segment, 2.5 s per rep. Drag = press on the title, 100 ms later move onto the item with the button
+  held, 200 ms later release.
+  Measured: _hz_200 (Supexec, both sides) after evnt_multi returned (R-lines) against _hz_200 of the
+  press / release packet: EmuTOS J-lines (feeder) or V-lines (observer), NewTOS the injector's
+  "[inj] ... feed 0x.. at hz_200 <n>" serial lines (tick of the packet's 3rd byte).
+  End of menu tracking: EmuTOS -- Hatari debugger, tracing breakpoints on _mn_do (0x00e38f68) and
+  _ap_sendmsg (0x00e4003c, called by ct_msgup right after mn_do returned, aes/gemctrl.c:331-366), each
+  dumping _hz_200 (addresses: references/emutos-oracle/1a7484ab/emutos.map; that build's emutos.img is
+  the first 377156 bytes of the pinned ROM, same sha256; a breakpoint stops the emulation, not the
+  emulated clock). NewTOS -- kernels with the tester's scratch patch
+  measurements/measurement-2026-11-04-a127-d1-test/method/dbg-patch.py ("[dbg] track end hz_200").
+  Double-click index: logged by the probe (evnt_dclick(0,0)). EmuTOS takes it from the INF's #E byte 1
+  (aes/geminit.c:420-425; EmuTOS's own default "#E 1A ..." = index 2, desk/deskapp.c:173; Hatari 2.6.1's
+  virtual EMUDESK.INF "#E 1A E1 FF 00 00" = 2). NewTOS with an INF "#R 02 / #Z" only reports 3. Every
+  case was therefore run with the same INF #E on both sides: MNPROBE_E1=1A (index 2, 275 ms) and 1B
+  (index 3, 220 ms).
+
+INPUTS
+  ROM        tools/oracle/etos512de-1a7484ab.img 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+             (run-mnprobe.sh checks it against tools/oracle/oracle.env before every oracle run)
+  Hatari     2.6.1 (/Volumes/Daten/hatari-2.6.1_macos), tools/oracle/hatari.cfg, --fast-forward off,
+             profile tt (--machine tt --tos-res ttmed --monitor vga) and falcontc (--machine falcon
+             --monitor vga), as tosdump/probes/run-akprobe.sh starts them
+  QEMU       11.0.2, -M raspi4b, -append serial=on, APFS clone (cp -c) of the card per run, deleted after
+  host clang Apple clang version 21.0.0 (clang-2100.4.1.1) (also the card manifests' host_clang line)
+  canary     docs/analysis/ORACLE.md section 6 before the runs (runs/canary.txt):
+               canary tt: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all)
+               canary falcontc: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all-falcontc)
+  probe v1   (series method/all-runs.sh + oracle-trackend.sh)
+             tosdump/probes/mnprobe.c         f89dd2469b03c30c6af63853b77b19e60d3264a06bf8fbd373e4cb145fd813c8
+             tosdump/probes/mnprobe-mouse.txt 4522e6b137d3a5a511426085001cea5653216db7f97f48a95591e17ddeaa3847
+               (generated by method/gen-mnprobe-mouse.py)
+             MNPROBE.NAP 6a40209fcbce780f888ac2cc90d5062d4ae79a4ccd35405acbf048ffb4b921b2 (every v1 run)
+             MNPROBE.PRG differs per build in the symbol table only (12 bytes: gcc's temporary object
+               names); two builds stripped are byte-identical. Per-run sha256 in runs/*/run.txt.
+  kernels    (scratch, gitignored, deleted after the run; `run-mnprobe.sh kernel <commit> <out> [dbg]` =
+             git archive of the commit + tools/inject-arm.py launch:MNPROBE=mnprobe-mouse.txt, rpi4 release)
+               head      bae52dbd  bb2ac1b7b8912f1ac04d6013c094012c54a6f2b3ab25a5236ef4b89e56cb3f4d
+               base      4d44a616  70bfae180860182a0b63eb05bacb881f0e80cabb6c249e63e02505c5b3cc74ea
+               head-dbg  bae52dbd  40636d5e24c9bc14fbe419cbba1723c247a3f0a2871d486f3390d8d274d6217a
+               base-dbg  4d44a616  cbb825e419843b8a70116c5aede7dbdd85eb53726f15f05de5ac25be6fd0185a
+             (dbg = plus measurements/measurement-2026-11-04-a127-d1-test/method/dbg-patch.py)
+  cards      tools/mkcard.sh via run-mnprobe.sh newtos (C:\MNPROBE.NAP, C:\NEWDESK.INF "#R 02"
+             [+ "#E <E1> E0 00 00 60"] + "#Z 01 C:\MNPROBE.NAP@"); manifest per run:
+             runs/newtos-*/card.img.manifest; card and booted-clone sha256 in runs/newtos-*/run.txt.
+             optional_missing, verbatim, of every card manifest:
+               runs/newtos-base-dbg-e1a/card.img.manifest:optional_missing none
+               runs/newtos-base-e1a-1/card.img.manifest:optional_missing none
+               runs/newtos-base-e1a-2/card.img.manifest:optional_missing none
+               runs/newtos-base-e1b-1/card.img.manifest:optional_missing none
+               runs/newtos-base-noe-1/card.img.manifest:optional_missing none
+               runs/newtos-head-dbg-e1a/card.img.manifest:optional_missing none
+               runs/newtos-head-e1a-1/card.img.manifest:optional_missing none
+               runs/newtos-head-e1a-2/card.img.manifest:optional_missing none
+               runs/newtos-head-e1b-1/card.img.manifest:optional_missing none
+               runs/newtos-head-noe-1/card.img.manifest:optional_missing none
+               runs/v2-newtos-base-mfirst-e1a/card.img.manifest:optional_missing none
+               runs/v2-newtos-head-e1a/card.img.manifest:optional_missing none
+               runs/v2-newtos-head-mfirst-e1a/card.img.manifest:optional_missing none
+  probe v2   (method/v2-runs.sh; v1 + the MNPROBE.MFS order option + a 2048-entry observer, default
+             order unchanged)
+             tosdump/probes/mnprobe.c         8c022d17a9fe527891828f1929ab7486564e26f5637a67540c37bf1df6e36ac7
+             tosdump/probes/run-mnprobe.sh    22689d4bce36ac33ccd332b9a727c33a4ab2f004ec0b1678941cf07cc466bec5
+             MNPROBE.NAP 4acd30a8b8971744... (runs/v2-*/run.txt, the same in every v2 run)
+             v2 default order reproduces v1 on both sides (v2-emutos-tt-e1a = emutos-tt-e1a-*, all 48;
+             v2-newtos-head-e1a 48-49 = head band below).
+  cross-check inputs  method/fifo-cross.txt e57f9cceaba64955c9937a481adbbebe615f113fc7d587dd8262a95e310e76bf
+                      (method/gen-fifo.py), method/inj-empty.txt (the feeder gets no packets)
+
+METHOD (all from the repository root; scratch = the session scratchpad's tmp/, deleted after)
+  method/gen-mnprobe-mouse.py   writes tosdump/probes/mnprobe-mouse.txt
+  method/gen-fifo.py            writes method/fifo-cross.txt + inj-empty.txt
+  run-mnprobe.sh kernel ...     the four kernels (calls in method/newtos-runs.sh's header)
+  method/all-runs.sh            the v1 series: oracle tt E1=1A x2, 1B x2, Hatari's virtual INF, falcontc,
+                                --cmd-fifo cross-check 1A + 1B; NewTOS head/base x E1=1A, 1B, none,
+                                1A repeat, dbg 1A
+  method/oracle-trackend.sh     oracle + Hatari debugger breakpoints (E1=1A and 1B)
+  method/v2-runs.sh             the v2 runs (M-first order on both sides, default-order repeat, cross-check
+                                with every click logged)
+  method/oracle-runs.sh, newtos-runs.sh   single-run wrappers used while building the series
+  method/analyse.py, summary.py, trackend.py   the evaluation; output in analysis/
+  Not part of the evidence: preliminary runs with an earlier probe draft (before the observer) gave
+  the same numbers; they were discarded, not copied.
+  Note: 4 oracle and 2 NewTOS runs of a first loop were interrupted (a stale shell loop of mine ran
+  concurrently and was killed); none of their output is here. All runs below ran alone on the host
+  except the four v2 oracle runs (in parallel; emulated time, _hz_200 is unaffected by host load).
+
+RESULTS -- ticks of _hz_200 (5 ms). analysis/summary.txt (per run), analysis/<run>.txt (per click),
+analysis/returns.txt (evnt_multi returns per kind). Click: return - press; drag: return - release.
+
+3.1 Click-select (press -> evnt_multi returns MN_SELECTED), 5 clicks per cell unless noted
+                                       D2 (desktop wait)   M (MU_MESAG only)   D1 (bclicks 1)
+  dclick index 2 (INF #E 1A, 275 ms)
+    EmuTOS tt, feeder (x2, +trackend, +virt INF, +v2)   48 every click    48 every click    48
+    EmuTOS falcontc, feeder                             49                49                49
+    EmuTOS tt, real IKBD path (--cmd-fifo, v1+v2)      50 52 50 51 49    49 51             -
+                                                       50 52 50 49 52    51 49 50 50 51
+    NewTOS head e1a-1                                  51 51 49 51 51    51 x5             51 x5
+    NewTOS head e1a-2                                  51 x5             51 x5             51 x5
+    NewTOS head dbg                                    52 51 52 51 51    51 51 51 52 51    51 52 51 51 51
+    NewTOS head v2 (default order)                     49 48 48 48 48    48 48 48 48 49    48 x5
+    NewTOS base (e1a-1, e1a-2, dbg)                    0                 0                 0
+  dclick index 3 (INF #E 1B, 220 ms)
+    EmuTOS tt, feeder (x2, +trackend)                  40                40                40
+    EmuTOS tt, real IKBD path (v1+v2)                  43 43 41 41 41    42 44             -
+                                                       44 42 43 42 44    43 41 42 42 43
+    NewTOS head e1b-1                                  43 43 43 43 44    43 x5             43 x5
+    NewTOS head noe-1 (INF without #E -> index 3)      41 40 40 40 40    40 x5             40 x5
+    NewTOS base e1b-1 / noe-1                          0                 0                 0
+  M is measured AFTER the D2 segment in the default order (see 3.3).
+  --cmd-fifo v1 rows: the observer (1024 entries in v1) was full after the 7th click, so only 7 of 10
+  clicks have a press time; v2 (2048 entries) logs all 10.
+
+3.2 Resolution. The window counts down in 20 ms AES ticks (EmuTOS gl_dclick = rate/gl_ticktime:
+  275/20 = 13, 220/20 = 11, aes/gemevlib.c:33,300-308; b_delay per tick, aes/geminput.c:150-171),
+  so the press -> publication time is n*4 hz_200 ticks minus the press's phase within the AES tick:
+  48..52 for index 2, 40..44 for index 3. The feeder fixes the phase at its minimum (it runs in the
+  same Timer-C interrupt right before the AES tick): 48 / 40 every time; through the real IKBD
+  interrupt (random phase) the oracle spreads over 49..52 / 41..44. NewTOS head's AES tick is its
+  monotonic clock in 20 ms steps (tos-api/src/aes/input.rs now_tick), its phase changes per boot:
+  head gives 48..52 and 40..44 -- every head sample lies inside the oracle's band. Base: 0 always.
+
+3.3 Message-only wait with no multi-click wait before it (probe v2, MNPROBE.MFS: order M, D2, M, D2, D1;
+  INF #E 1A):
+    EmuTOS tt (feeder)    click M: 0 0 0 0 0   click D2: 48 x5   click D1: 48 x5
+    NewTOS head           click M: 0 0 0 0 0   click D2: 51 x5   click D1: 51 x5
+    NewTOS base           click M: 0 0 0 0 0   click D2: 0 x5    click D1: 0 x5
+  So the delay is not tied to the program's current wait: EmuTOS opens the double-click window for
+  every press while gl_bpend > 0, and a bclicks > 1 wait that ends with a message leaves its increment
+  behind (aes/geminput.c:477-479 decrements only when the button satisfies it, :559-561 increments;
+  docs/api/aes/event.md "The double-click window" states this). Before the first D2 wait: no window, on
+  both sides; after it: the window, on EmuTOS and head, never on base.
+
+3.4 Drag-select (press on the title, release on the item; return - release)
+    EmuTOS tt 0 every time (falcontc 1); NewTOS head 0; NewTOS base 0 (one base run 3-4 ticks late
+    release feeds under QEMU load, return still 0 after the release).
+
+3.5 End of menu tracking
+    EmuTOS: _ap_sendmsg (= mn_do returned) at the same _hz_200 as the evnt_multi return in all 50+50
+      clicks (analysis/emutos-tt-trackend-e1a.txt, -e1b.txt): 48 / 40 after the press, 60 after the
+      drag press (= the release). _mn_do entries 25 per run.
+    NewTOS head-dbg: "[dbg] track end" 51-52 after the press, 0-1 tick before the return; drag 60.
+    NewTOS base-dbg: track end 0 after the press (= the return); drag 60.
+
+3.6 Other observations
+  - evnt_multi returns: EmuTOS and head return exactly once per selection in the default order (25);
+    base returns 175-179 extra MU_BUTTON events (bstate 1) per run: it publishes the selection at the
+    press, the program's next D2/D1 wait then finds the button still down and is satisfied over and
+    over until the release (analysis/returns.txt). EmuTOS does the same when the selection really comes
+    at the press: v2 M-first, the switch from M to D2 at the 5th selection gives 16 MU_BUTTON returns
+    on EmuTOS, 35 on head (the count depends on how many evnt_multi round trips fit into the 50 ms
+    hold, i.e. on CPU speed; base: 168).
+  - INF without #E: NewTOS reports evnt_dclick 3 (= EmuTOS's AES default ev_dclick(3), aes/geminit.c:708);
+    not measured on EmuTOS (Hatari's --auto always writes an INF with #E).
+  - Geometry equal on both sides: graf_handle 8 16 19 19, objc_offset of title/items equal (O-lines).
+  - No AES input trace: the parameters that arrived are not checked by an instrument on either side
+    (aes-trace flushes only after a >= 3 s idle wait, the probe never has one; Hatari has no AES argument
+    trace). The binding is the tosdump td_abi_aes backend of every AES probe; the D2/M/D1 behaviour
+    differs as the arguments predict on both sides (MU_BUTTON returns only in D2/D1, M-first 0).
+
+VERDICT: CONFORM. NewTOS head (bae52dbd) matches EmuTOS within the measurement resolution (one 20 ms AES
+tick): click-select ends 48-52 ticks (index 2) / 40-44 ticks (index 3) after the press on both, in the
+desktop's wait, in a message-only wait after a double-click wait, and with bclicks 1; 0 in a message-
+only wait before any double-click wait on both; drag-select 0 after the release on both. NewTOS base
+(4d44a616) diverges: 0 ticks whenever EmuTOS waits for the double-click window, plus the MU_BUTTON
+burst. The tester's 40-42 ticks on head (desktop, QED; NEWDESK.INF without #E = index 3) are inside the
+oracle's 40-44 band for index 3.

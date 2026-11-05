@@ -925,8 +925,11 @@ message.
 
    The button event is handled in the state the round was armed in, before
    the pointer is hit-tested again (`:369-376` precede `:378-443`).
-   **Button-delay window:** while any process waits for more than one click
-   (`gl_bpend`), a press opens the window instead of being published
+   **Button-delay window:** while `gl_bpend > 0`
+   (`gl_bpend` stays raised after a multi-click wait that ended by another
+   event, for the rest of the session — see `docs/api/aes/event.md`, "The
+   double-click window"; measured on the oracle, A127-ORC-001,
+   `measurements/measurement-2026-11-04-a127-oracle/RUNINFO.TXT`), a press opens the window instead of being published
    (`b_click`, `aes/geminput.c:133-140`), and it reaches `mn_do`'s wait only
    when the window closes and publishes it (`b_delay`, `:155-171`; earlier
    if the pointer moves more than 2 pixels, `mchange`, `:365-368`) — a
