@@ -1,0 +1,52 @@
+V26 acceptance -- TASK/V26.md (fix 1c84f4d2 + 87f1684e, memory forms addressed like EmuTOS) by the tester.
+Date 2026-11-05. No product code touched; nothing committed; no SD card, no Pi, no push.
+Changed outside this directory: tosdump/probes/vdprobe.c (test code, +159 lines: k13() + helpers wk_*, called after k12(); VERSION unchanged).
+
+TREES
+  head = git archive of 87f1684e59b508708b0d2d11e1394e48f6468c21; base = git archive of dd16f3cb (V19 acceptance commit; diff base..head = tos-api raster + tests + docs).
+  Every kernel built by cargo xtask in scratch from those archives (references/ linked), fresh per tree/board, release rpi4:
+    plain: head 0a9758e89d5a01593fe523194dc75c25337828420dc7af23820879886ba70629   base 9a02d06ed71c1837b8e406443e645ab4c2cfa0bbc2d759c4f2f0a2a940c78053
+    shprobe-armed: base 762d5f10f1e5abaf30f10cdb8ac396737e484484f05162cc7f18b3cdc9140c9b head 4cc42f1aad12933eecf2dfbb717b6bd4945102e4fa1f531edacb186fc1bf02b1
+    slprobe-armed: base 33e37e5e7a56421fb292ad6b7c70e86b80b0902642dd5495b745e92e636c9b85 head 995b644e28396d3a39f9f2cd80eb9174e981da9900bdc8bd82975f97483df438
+  vdprobe: VDPROBE.PRG f2195e60c076ac9a590660daa7d5cc628851ff7d7c2b507fb707fc90817d23e7, VDPROBE.NAP 6495ecd10f414dfdd15556ff66435234d5ba8085ccc95e0391fb23ca25a56217
+  host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 24 card.img.manifest files)
+  Manifests: runs/*/card.img.manifest, probe/*/card.img.manifest. optional_missing, verbatim, in ALL 24 of them:  optional_missing none
+  Oracle: pinned EmuTOS 1a7484ab via tools/hatari-oracle.sh (profile falcontc for the probe), references tosdump/reference/EMUTOS-1a7484ab-*.
+  QEMU: raspi4b, -append serial=on, per-run APFS clone of the card (deleted by the scripts); qemu-virt headless; scratch = session scratchpad, trees deleted afterwards.
+  Scripts: method/tosdump-runs.sh, method/gui-runs.sh (+.log), gui-runs2.log (repeat runs), method/wkcheck.py (guard/changed-word analysis of the k13 records),
+           pixcmp/pencmp/deskcmp.py (copied, not needed: no shot differed in a way that needs the oracle).
+
+RESULTS
+ 1 PASS  cargo xtask test on the main tree (= 87f1684e): 2013 passed / 0 failed / 1 ignored (analysis/cargo-xtask-test.txt, sum over all "test result" lines) = developer's number.
+ 2 PASS  head vs oracle: vdi-raster.tsv 1 of 59 differ, case 157 "PTSIN[6..7] too big: the extent is the source's" (runs/t2-head-raster);
+         vdi-raster-screen.tsv vs ...RASTER-screen-falcontc 0 of 62 (runs/t2-head-raster-screen); vdi-v18-raster.tsv vs ...RASTER-v18-falcontc 0 of 17 (runs/t2-head-v18-raster).
+         Base, same tables: 1/59, 0/62, 0/17 (runs/t2-base-*) = unchanged.
+ 3 PASS  Wrap measurement, probe/ (vdprobe k13: 20 copies, each recorded as dest form "d" + source form "s", 32 guard words 0xA5A5 on each side = 40 records),
+         EmuTOS falcontc (e1) vs NewTOS head (n-head-1): 40 of 40 records equal (analysis/wk-emutos-vs-head.txt), plus second runs e2 / n-head-2 all four equal (determinism);
+         guard words changed: 0 in all 40 records on both sides (EmuTOS writes nothing foreign, nor does NewTOS).
+         The writes are where the rule says: Wa (16pl mem->mem, dest fd_w 40/wd 1) dest words 16-55 (to (0,1)) and 28-67 (to (-4,2)), ops 3 and 6;
+         Wb (source fd_w 40/wd 1, block from (0,1)) dest 0-39 = source pixels 16..55; Wc (dest fd_w 10) words 0-15 (padding columns written);
+         Wd (vrt_cpyfm 1pl->16pl, MD_REPLACE=1 / MD_XOR=3) same ranges as Wa; We (planar 1/4 planes, dest fd_w 40/wd 2/fd_h 6) 1pl groups 2-4 / 4-6, 4pl words 8-19 / 16-27.
+         Control, base dd16f3cb vs EmuTOS (analysis/wk-emutos-vs-base.txt): 14 of 20 destination records differ (Wa13, Wa16, Wc3, Wc6, Wd11, Wd13, We x8); the other 6 dest
+         and all 20 source records equal -> the probe discriminates.
+         Cases 1..k12 (198 records): VDPROBE.BIN of e1 and n-head-1 are a byte-identical prefix of the V19 acceptance run's BIN (3444936 of 3455264 bytes); head vs EmuTOS in cases 1..198 still
+         the V18 baseline (26 differ), not new.
+         Deviation from the ticket text: the (-4,2) variant (Wa1x, Wd1x) uses dest fd_h 5, not 4: linear pixels 28..67 would end behind a 4-row form (64 px); the brief says blocks stay inside fd_h.
+         Not measured (as instructed): blocks past fd_h, overlapping multi-row blocks.
+ 4 PASS  AES counter-probe, base vs head: aes-r2-wind 0 of 78, aes-r3-wind-state 0 of 39, aes-r4-subfunctions 0 of 181 differ (tosdiff, analysis/aes-r*-base-vs-head.txt);
+         raw AES.BIN differs in exactly 1 byte per record (record offset 68 = a target-chosen address cell, never compared; same as V19), tosdiff vs oracle text identical for r2/r3
+         (78 of 78 and 39 of 39 differ on both sides, as before; r4 has no pinned oracle reference).
+         shprobe (12 shots): base == head byte-identical PNG, 12 of 12 (head-r2; the first head run runs/newtos-shprobe-head produced 0 shots: QMP socket "Connection refused" race of the
+         harness, kept as a failed run, repeated).
+         desktop run (2 shots): base == head 2 of 2 byte-identical.
+         slprobe (155 shots): 151 of 155 identical in run 1 (4 held1 mid-gesture frames differ: 121 min-V-pagelo, 152 min-H-pagehi, 67 300-V-pagelo, 98 300-H-pagehi); repeat pair head-r2/base-r2
+         the same 4 names. SAME-KERNEL repeats differ too: base vs base-r2 2 frames (125, 71), head vs head-r2 2 frames (all "held1"). So the differing frames are timing noise of held frames,
+         not attributable to V26 (same finding as V19: 98-098-300-H-pagehi-held1). Not classified against the oracle for that reason.
+ 5 PASS  rpi4: fresh release builds of both trees by xtask; head boots in QEMU raspi4b in every run above: "[desk] desktop up", 0 exception/panic lines in all 25 BOOT-SERIAL files.
+         qemu-virt: fresh tree of 87f1684e, cargo xtask build --board qemu-virt (dev), cargo xtask run --board qemu-virt --headless: "[desk] desktop up (0 drives)", 0 exception/panic
+         (runs/boot-virt-head/).
+ -  clippy tos-api --lib base vs head: 73 warnings each (74 lines), identical per-message list (analysis/clippy-tos-api-*.txt). qemu-virt build warnings not compared.
+
+NOT DRIVEN
+  Desktop menu, dialog, rubber-band (input; raspi4b none, qemu-virt no C:). Window part of the desktop run only. Self-overlapping block order (V26 "Offen"), vrt_cpyfm to 1..8 planes,
+  9..15 planes mem->mem: not measured (open in the ticket). Real Pi4: nothing in V26 is cache/HW specific; nothing routed.

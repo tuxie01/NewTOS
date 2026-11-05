@@ -672,6 +672,164 @@ static void k12(void)
 				}
 }
 
+/* ---- k13: memory forms whose fd_w does not match the row (TASK/V26) ------
+ * EmuTOS addresses a memory form by fd_wdwidth alone (vdi_raster.c setup_info,
+ * vro_cpyfm16 / vrt_cpyfm16 / the planar copy); fd_w and fd_h are never read, so a
+ * block wider than the form's row runs on into the next row.  Every block here
+ * stays inside the form's fd_h rows (EmuTOS must write nothing foreign); both
+ * forms are recorded whole with WK_GUARD guard words before and behind
+ * (0xA5A5), the destination as "<name>d", the source as "<name>s". */
+#define WK_GUARD 32
+#define WK_MAX 320
+static uint16_t wk_src[WK_GUARD + WK_MAX + WK_GUARD], wk_dst[WK_GUARD + WK_MAX + WK_GUARD];
+
+struct wk {
+	int opcode;			/* 109 vro_cpyfm, 121 vrt_cpyfm */
+	int mode;			/* write mode / logic op */
+	int sp, sw, sh, swd;		/* source planes, fd_w, fd_h, fd_wdwidth */
+	int dp, dw, dh, dwd;		/* destination */
+	int sx, sy, bw, bh, dx, dy;	/* block size, source and destination origin */
+};
+
+static void wk_fill(uint16_t *buf, int n, uint32_t seed)
+{
+	int i;
+
+	for (i = 0; i < WK_GUARD + n + WK_GUARD; i++) {
+		seed = seed * 1103515245UL + 12345UL;
+		buf[i] = (uint16_t)(seed >> 16);
+	}
+	for (i = 0; i < WK_GUARD; i++)
+		buf[i] = buf[WK_GUARD + n + i] = 0xA5A5;
+}
+
+static void wk_record(const char *name, char tag, const uint16_t *buf, int n)
+{
+	uint8_t hd[19];
+	int i, total = WK_GUARD + n + WK_GUARD;
+
+	caseno++;
+	memset(hd, 0, sizeof hd);
+	hd[0] = 'C';
+	put16(hd + 1, caseno);
+	memcpy(hd + 3, name, strlen(name) < 7 ? strlen(name) : 7);
+	hd[3 + (strlen(name) < 7 ? strlen(name) : 7)] = (uint8_t)tag;
+	put16(hd + 15, total); put16(hd + 17, 1);
+	if (binfh < 0)
+		return;
+	Fwrite((short)binfh, 19L, hd);
+	for (i = 0; i < total; i++) {
+		uint8_t w2[2];
+
+		put16(w2, buf[i]);
+		Fwrite((short)binfh, 2L, w2);
+	}
+}
+
+static void wk_run(const char *name, const char *what, const struct wk *c)
+{
+	MFDB src, dst;
+	int ns = c->swd * c->sp * c->sh, nd = c->dwd * c->dp * c->dh;
+
+	begin(name, what);
+	wk_fill(wk_src, ns, 0x31415926UL + (uint32_t)c->sp * 7UL + (uint32_t)c->swd);
+	wk_fill(wk_dst, nd, 0x27182818UL + (uint32_t)c->dp * 13UL + (uint32_t)c->dwd);
+	memset(&src, 0, sizeof src);
+	memset(&dst, 0, sizeof dst);
+	src.fd_addr = wk_src + WK_GUARD;
+	src.fd_w = (int16_t)c->sw; src.fd_h = (int16_t)c->sh; src.fd_wdwidth = (int16_t)c->swd;
+	src.fd_nplanes = (int16_t)c->sp;
+	dst.fd_addr = wk_dst + WK_GUARD;
+	dst.fd_w = (int16_t)c->dw; dst.fd_h = (int16_t)c->dh; dst.fd_wdwidth = (int16_t)c->dwd;
+	dst.fd_nplanes = (int16_t)c->dp;
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = (int16_t)c->opcode;
+	contrl[1] = 4;
+	contrl[3] = (int16_t)(c->opcode == 121 ? 3 : 1);
+	contrl[6] = handle;
+	set_mfdb_ptr(0, &src);
+	set_mfdb_ptr(1, &dst);
+	intin[0] = (int16_t)c->mode;
+	intin[1] = 1;			/* vrt_cpyfm colours (ignored by vro_cpyfm) */
+	intin[2] = 0;
+	ptsin[0] = (int16_t)c->sx; ptsin[1] = (int16_t)c->sy;
+	ptsin[2] = (int16_t)(c->sx + c->bw - 1); ptsin[3] = (int16_t)(c->sy + c->bh - 1);
+	ptsin[4] = (int16_t)c->dx; ptsin[5] = (int16_t)c->dy;
+	ptsin[6] = (int16_t)(c->dx + c->bw - 1); ptsin[7] = (int16_t)(c->dy + c->bh - 1);
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);
+	wk_record(name, 'd', wk_dst, nd);
+	wk_record(name, 's', wk_src, ns);
+}
+
+static void k13(void)
+{
+	static const uint8_t ops[2] = { 3, 6 };
+	static const uint8_t modes[2] = { 1, 3 };
+	static const int8_t vdx[2] = { 0, -4 }, vdy[2] = { 1, 2 };
+	char nm[9];
+	struct wk c;
+	int v, o, p;
+
+	/* a: 16 planes mem->mem, destination row 16 px, source 48 px wide; the block runs on
+	 * into the following rows; variant 1 starts left of the form (fd_h 5 keeps the end inside) */
+	for (v = 0; v < 2; v++)
+		for (o = 0; o < 2; o++) {
+			memset(&c, 0, sizeof c);
+			c.opcode = 109; c.mode = ops[o];
+			c.sp = 16; c.sw = 48; c.sh = 4; c.swd = 3;
+			c.dp = 16; c.dw = 40; c.dh = v ? 5 : 4; c.dwd = 1;
+			c.bw = 40; c.bh = 1; c.dx = vdx[v]; c.dy = vdy[v];
+			nm[0] = 'W'; nm[1] = 'a'; nm[2] = (char)('0' + v); nm[3] = (char)('0' + ops[o]); nm[4] = 0;
+			wk_run(nm, "16 planes mem->mem, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps", &c);
+		}
+	/* b: source fd_w 40, fd_wdwidth 1, block 40x1 from (0,1) into a 48x1 destination */
+	for (o = 0; o < 2; o++) {
+		memset(&c, 0, sizeof c);
+		c.opcode = 109; c.mode = ops[o];
+		c.sp = 16; c.sw = 40; c.sh = 4; c.swd = 1;
+		c.dp = 16; c.dw = 48; c.dh = 1; c.dwd = 3;
+		c.sy = 1; c.bw = 40; c.bh = 1;
+		nm[0] = 'W'; nm[1] = 'b'; nm[2] = (char)('0' + ops[o]); nm[3] = 0;
+		wk_run(nm, "16 planes mem->mem, source fd_w 40 fd_wdwidth 1, block 40x1 from (0,1)", &c);
+	}
+	/* c: destination fd_w 10, fd_wdwidth 1, block 16x1 (padding columns 10..15) */
+	for (o = 0; o < 2; o++) {
+		memset(&c, 0, sizeof c);
+		c.opcode = 109; c.mode = ops[o];
+		c.sp = 16; c.sw = 16; c.sh = 2; c.swd = 1;
+		c.dp = 16; c.dw = 10; c.dh = 2; c.dwd = 1;
+		c.bw = 16; c.bh = 1;
+		nm[0] = 'W'; nm[1] = 'c'; nm[2] = (char)('0' + ops[o]); nm[3] = 0;
+		wk_run(nm, "16 planes mem->mem, dest fd_w 10 fd_wdwidth 1, block 16x1", &c);
+	}
+	/* d: vrt_cpyfm 1 plane -> 16 plane memory as in a */
+	for (v = 0; v < 2; v++)
+		for (o = 0; o < 2; o++) {
+			memset(&c, 0, sizeof c);
+			c.opcode = 121; c.mode = modes[o];
+			c.sp = 1; c.sw = 48; c.sh = 4; c.swd = 3;
+			c.dp = 16; c.dw = 40; c.dh = v ? 5 : 4; c.dwd = 1;
+			c.bw = 40; c.bh = 1; c.dx = vdx[v]; c.dy = vdy[v];
+			nm[0] = 'W'; nm[1] = 'd'; nm[2] = (char)('0' + v); nm[3] = (char)('0' + modes[o]); nm[4] = 0;
+			wk_run(nm, "vrt_cpyfm 1 plane -> 16 plane memory, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps", &c);
+		}
+	/* e: planar 1 and 4 planes mem->mem, destination fd_w 40, fd_wdwidth 2, fd_h 6 */
+	for (p = 0; p < 2; p++)
+		for (v = 0; v < 2; v++)
+			for (o = 0; o < 2; o++) {
+				int pl = p ? 4 : 1;
+
+				memset(&c, 0, sizeof c);
+				c.opcode = 109; c.mode = ops[o];
+				c.sp = pl; c.sw = 48; c.sh = 4; c.swd = 3;
+				c.dp = pl; c.dw = 40; c.dh = 6; c.dwd = 2;
+				c.bw = 40; c.bh = 1; c.dx = v ? 5 : 0; c.dy = v ? 2 : 1;
+				nm[0] = 'W'; nm[1] = 'e'; nm[2] = (char)('0' + pl); nm[3] = (char)('0' + v);
+				nm[4] = (char)('0' + ops[o]); nm[5] = 0;
+				wk_run(nm, "planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps", &c);
+			}
+}
+
 int main(void)
 {
 	int16_t ap_id;
@@ -715,6 +873,7 @@ int main(void)
 	k10();
 	k11();
 	k12();
+	k13();
 
 	if (binfh >= 0)
 		Fclose((short)binfh);
