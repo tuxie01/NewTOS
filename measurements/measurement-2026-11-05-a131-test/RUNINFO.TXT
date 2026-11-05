@@ -1,0 +1,29 @@
+measurement-2026-11-05-a131-test -- acceptance of TASK/A131 (GitHub #7, window drop shadow fix 837e1001) by the tester.
+No product code, probe or old run touched; nothing committed; no SD card, no Pi.
+Tree: main 837e1001b909cb5a6070923f0d62600e69e829fb, clean at start; every kernel built from `git archive` of that commit
+(base for item 4: a0a0e36a = parent of the fix). host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (all 8 manifests).
+Method reused from measurements/measurement-2026-11-05-a131 (copies in method/: pixcmp.py pencmp.py deskcmp.py; python = .venv/bin/python -I,
+system python3 has no PIL). EmuTOS references = the committed runs of a131 / a130 (not re-run).
+Manifests (runs/*/card.img.manifest), optional_missing verbatim in all 8:  optional_missing none
+Kernels (sha256): shprobe-armed rpi4 release 1f11a8e8dbf42d4f490fb616c536a39fc6d8793811b80763ef5ea69c8ddae7b1;
+  slprobe-armed rpi4 release ae0eb3080c57757d9953a4f00c0fe06fe44879f56bf3432c6c746287fe2f8fd9;
+  plain rpi4 release d08e60b9b748953950bea50bda572abf5818cff2f294176a53698ea7f808a744; qemu-virt dev build in a fresh tree (no hash kept).
+Probe shprobe.c 98acd6fc... (see runs/*/run.txt); SHPROBE.NAP 11abc76b... ; card sha256 before/after per run in run.txt.
+RESULTS
+ 1 PASS shprobe s0-s5, newtos-probe-1/-2 (run-shprobe.sh newtos, armed kernel): run1 == run2 byte for byte (all 12 PNGs).
+   vs emutos-falcontc-probe-1 (pixcmp --falcon, analysis/probe-falcontc-vs-newtos): every one of 12 shots exactly 85 px
+   (bbox x343..362 y4..15 = menu-bar name) and nothing else -> 0 shadow px. vs emutos-tt-probe-1 by pen (pencmp,
+   analysis/probe-tt-vs-newtos-pen): 12/12 shots only the 85 menu-bar px. s5: bottom shadow band pixels (100,291),(200,291) = 255,0,0 on NewTOS.
+ 2 PASS newtos-desk-1 (2 shots equal): vs emutos falcontc and tt (deskcmp, analysis/desk-compare.txt): W1/W2 RING (border+shadow),
+   VBAR, HBAR: 0 px differ by pen in all 12 cells (a131 before the fix: RING 1008/1152 px pen 1->8).
+ 3 PASS slprobe v3, newtos-slprobe-v3-1 (155 shots, kernel HEAD) vs emutos-tt-v3-1 by pen (analysis/slprobe-v3-newtos-new-vs-emutos-tt-pen.txt):
+   23 at-rest/"before" shots: 85 px each (menu bar pen 0<->1 only), 0 shadow, 0 other (a130 old: 1525 = 85 + 1440 pen 1->8).
+   139 of 155 shots exactly the 85; 16 shots differ more, all mid-gesture held/slow frames of the known A130 scroll-bar finding
+   (pen pairs 0/1/9 inside the bars, TT pen-9 66,66,66 XOR-ish pixels); pen pair 1->8 / 8->1 occurs in 0 of 155 shots.
+ 4 PASS (unchanged) cargo xtask tosdump aes aes-r2-wind.tsv / aes-r3-wind-state.tsv --reference EMUTOS-1a7484ab-AES-r2wind / -AES-r3:
+   HEAD: r2 78 of 78 differ, r3 39 of 39 differ (known: global[3],[4],[10] in every case; r3 also int_out[1..2] in 7 cases).
+   Same table on a0a0e36a (pre-fix): AES.BIN byte-identical to HEAD for both (r2 sha 3ce9c275..., r3 1ad3c7e2...). runs/newtos-r{2,3}-{head,base}.
+ 5 PASS rpi4: plain release kernel booted in QEMU raspi4b (-append serial=on) in newtos-desk-1/BOOT-SERIAL.txt: "[desk] desktop up", 0 exception/panic lines;
+   screenshot shows two C:\ windows. qemu-virt: fresh tree, cargo xtask run --board qemu-virt --headless, 90 s bound: "[desk] desktop up (0 drives)", no exception/panic
+   (runs/qemu-virt-boot/serial-tail.txt).
+Not done: clippy/host tests (not in scope), real Pi (HW gate).

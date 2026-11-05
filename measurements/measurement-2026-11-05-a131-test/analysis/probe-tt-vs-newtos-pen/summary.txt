@@ -1,0 +1,12 @@
+00-s0-w1-alone-a.png: 85 px differ by pen (85 in the menu bar y<19); pen pairs E->N 0->1 x44, 1->0 x41
+01-s0-w1-alone-b.png: 85 px differ by pen (85 in the menu bar y<19); pen pairs E->N 0->1 x44, 1->0 x41
+02-s1-w2-apart-w2top-a.png: 85 px differ by pen (85 in the menu bar y<19); pen pairs E->N 0->1 x44, 1->0 x41
+03-s1-w2-apart-w2top-b.png: 85 px differ by pen (85 in the menu bar y<19); pen pairs E->N 0->1 x44, 1->0 x41
+04-s2-w1top-a.png: 85 px differ by pen (85 in the menu bar y<19); pen pairs E->N 0->1 x44, 1->0 x41
+05-s2-w1top-b.png: 85 px differ by pen (85 in the menu bar y<19); pen pairs E->N 0->1 x44, 1->0 x41
+06-s3-w2-overlap-w1top-a.png: 85 px differ by pen (85 in the menu bar y<19); pen pairs E->N 0->1 x44, 1->0 x41
+07-s3-w2-overlap-w1top-b.png: 85 px differ by pen (85 in the menu bar y<19); pen pairs E->N 0->1 x44, 1->0 x41
+08-s4-w2top-overlap-a.png: 85 px differ by pen (85 in the menu bar y<19); pen pairs E->N 0->1 x44, 1->0 x41
+09-s4-w2top-overlap-b.png: 85 px differ by pen (85 in the menu bar y<19); pen pairs E->N 0->1 x44, 1->0 x41
+10-s5-wbox-red-a.png: 85 px differ by pen (85 in the menu bar y<19); pen pairs E->N 0->1 x44, 1->0 x41
+11-s5-wbox-red-b.png: 85 px differ by pen (85 in the menu bar y<19); pen pairs E->N 0->1 x44, 1->0 x41

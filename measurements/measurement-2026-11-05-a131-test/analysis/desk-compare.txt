@@ -1,0 +1,12 @@
+falcontc W1 RING: 4104 px compared, 0 differ by pen
+falcontc W1 VBAR: 3920 px compared, 0 differ by pen
+falcontc W1 HBAR: 6648 px compared, 0 differ by pen
+falcontc W2 RING: 4576 px compared, 0 differ by pen
+falcontc W2 VBAR: 5368 px compared, 0 differ by pen
+falcontc W2 HBAR: 6336 px compared, 0 differ by pen
+tt W1 RING: 4104 px compared, 0 differ by pen
+tt W1 VBAR: 3920 px compared, 0 differ by pen
+tt W1 HBAR: 6648 px compared, 0 differ by pen
+tt W2 RING: 4576 px compared, 0 differ by pen
+tt W2 VBAR: 5368 px compared, 0 differ by pen
+tt W2 HBAR: 6336 px compared, 0 differ by pen

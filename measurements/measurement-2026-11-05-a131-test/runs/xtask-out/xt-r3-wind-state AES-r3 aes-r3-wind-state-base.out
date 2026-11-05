@@ -1,0 +1,5 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask tosdump aes tosdump/cases/.tsv --tree /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/a131t/tree0 --out 'measurements/measurement-2026-11-05-a131-test/runs/newtos-r3-wind-state AES-r3 aes-r3-wind-state-base' --reference tosdump/reference/EMUTOS-1a7484ab-.BIN --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/a131t/xt`
+xtask: tosdump: 2 problem(s), nothing run:
+  table /Volumes/Daten/Development/PiRusTOS/tosdump/cases/.tsv not found
+  reference /Volumes/Daten/Development/PiRusTOS/tosdump/reference/EMUTOS-1a7484ab-.BIN not found (also not as .BIN)
