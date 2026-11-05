@@ -1553,3 +1553,153 @@ gchr_key	vdi/vdi_input.c	tos-api/src/vdi/input.rs	try_read_key_word	mapped	Bcons
 vdi_v_string	vdi/vdi_input.c	tos-api/src/vdi/input.rs	v_string	mapped	opcode 31, request and sample mode
 vdi_vsin_mode	vdi/vdi_input.c	tos-api/src/vdi/input.rs	vsin_mode	mapped	opcode 33
 vdi_vqin_mode	vdi/vdi_input.c	tos-api/src/vdi/input.rs	vqin_mode	mapped	opcode 115
+w_nilit	aes/gemwmlib.c	-	-	unmapped	sets ob_next/ob_head/ob_tail = NIL on the W_ACTIVE gadget tree (:172-178); NewTOS keeps no W_ACTIVE tree, the frame is drawn from geometry (draw_frame), nothing to reset
+w_obadd	aes/gemwmlib.c	-	-	unmapped	appends a child to a parent in W_ACTIVE/W_TREE (:186-202); NewTOS has no object tree for the window list or the gadgets (z order is the Window.z counter, gadget placement is arithmetic)
+w_setup	aes/gemwmlib.c	tos-api/src/aes/window.rs	wind_create	mapped	the per-slot reset (owner, kind, empty name/info, sliders 0 / size -1, colour words copied from gl_wtcolor/gl_wbcolor, :205-227); VF_INUSE = Window.in_use. The DESKWH call is init_desk_window
+w_setup	aes/gemwmlib.c	tos-api/src/aes/window.rs	init_desk_window	mapped	w_setup(ppd, DESKWH, NONE) of wm_init (:1290)
+w_getxptr	aes/gemwmlib.c	tos-api/src/aes/window.rs	win	mapped	field selection WS_CURR/PREV/WORK/FULL is direct access to Window.curr/prev/work/full through win(); WS_TRUE is ws_true(curr)
+w_getsize	aes/gemwmlib.c	tos-api/src/aes/window.rs	ws_true	mapped	the WS_TRUE case: curr plus DROP_SHADOW_SIZE when w and h are non-zero (:257-261)
+w_getsize	aes/gemwmlib.c	tos-api/src/aes/window.rs	wind_get	mapped	the WS_CURR/PREV/WORK/FULL copies out for WF_CXYWH/PXYWH/WXYWH/FXYWH (wm_get :1595-1596)
+w_setsize	aes/gemwmlib.c	tos-api/src/aes/window.rs	set_curr	mapped	WS_CURR store plus the WS_WORK recompute that draw_change does next to it (:1073-1077); WS_PREV/WS_FULL are plain field writes in wind_open/close_window/wm_delete/wind_create
+w_adjust	aes/gemwmlib.c	tos-api/src/aes/window.rs	vbar_box	mapped	placement of one gadget rectangle inside its parent (:271-280): the vertical bar column; no object is written, the rectangle is computed where it is drawn or hit-tested
+w_adjust	aes/gemwmlib.c	tos-api/src/aes/window.rs	hbar_box	mapped	the horizontal bar band, same
+w_adjust	aes/gemwmlib.c	tos-api/src/aes/window.rs	varrow_cells	mapped	W_UPARROW / W_DNARROW cells in W_VBAR
+w_adjust	aes/gemwmlib.c	tos-api/src/aes/window.rs	harrow_cells	mapped	W_LFARROW / W_RTARROW cells in W_HBAR
+w_adjust	aes/gemwmlib.c	tos-api/src/aes/window.rs	elev_rect	mapped	W_VELEV / W_HELEV inside the slide box
+do_walk	aes/gemwmlib.c	tos-api/src/aes/window.rs	walk_rects	mapped	the rlist walk: pc clipped to gl_rfull (desktop_work), one clip rectangle per owner piece that intersects (:286-312); the caller draws once per rectangle
+do_walk	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_frame_pieces	mapped	the ob_draw per rectangle for a window frame; depth fixed (the whole frame), the single-gadget obj of w_cpwalk is not reproduced (see w_cpwalk)
+w_top	aes/gemwmlib.c	tos-api/src/aes/window.rs	get_top	mapped	gl_wtop, DESKWH when no window is open (:315-318)
+w_setactive	aes/gemwmlib.c	tos-api/src/aes/window.rs	chk_ctrl	mapped	no stored ctrl rectangle: chk_ctrl reads the top window work area (or the screen while ml_ocnt > 0) live (its doc comment); no ct_chgown(ppd, work) at this point
+w_drawdesk	aes/gemwmlib.c	tos-api/src/aes/window.rs	paint_bg_clip	mapped	background pass: gl_newdesk tree at MAX_DEPTH or the built-in root at depth 0 (:346-359), clipped to the desktop window owner pieces
+w_drawdesk	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_desk_tree	mapped	the tree draw of both cases through the object engine
+w_drawdesk	aes/gemwmlib.c	tos-api/src/aes/window.rs	compose	mapped	background plus every window frame back to front over one clip, used where EmuTOS calls w_drawdesk then w_update
+w_cpwalk	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_frame_pieces	mapped	usetrue: clip = WS_TRUE; else the current clip plus DROP_SHADOW_SIZE (plus_shadow) (:363-379). Always draws the whole frame: obj is never a single gadget, depth never 0
+w_cpwalk	aes/gemwmlib.c	tos-api/src/aes/window.rs	redraw_vslider	mapped	obj = W_VSLIDE only: track plus elevator, not the arrows (A98)
+w_cpwalk	aes/gemwmlib.c	tos-api/src/aes/window.rs	redraw_hslider	mapped	obj = W_HSLIDE only (A98)
+w_cpwalk	aes/gemwmlib.c	tos-api/src/aes/window.rs	redraw_open	mapped	the WF_NAME / WF_INFO / WF_COLOR calls (obj = W_NAME / W_INFO / the gadget): redraws the whole frame instead of that gadget (A119)
+w_setcolor	aes/gemwmlib.c	tos-api/src/aes/window.rs	gadget_ink	mapped	CONF_WITH_WINDOW_COLOURS: topped or untopped colour word of the gadget (w.tcolor / w.bcolor), cracked at draw time instead of being stored into the W_ACTIVE object (:382-396)
+w_setcolor	aes/gemwmlib.c	tos-api/src/aes/window.rs	ink_of	mapped	the cracking of the word (border, text, pattern, interior colour, replace/transparent)
+w_bldvbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	vbar_box	mapped	CONF_WITH_3D_OBJECTS branch (:403-438; the non-3D branch :634-672 is not carried): vertical bar rectangle
+w_bldvbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	varrow_cells	mapped	arrow cells (ADJ3DSTD offsets)
+w_bldvbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	vtrack	mapped	W_VSLIDE span: bar minus one adj_hbox per arrow
+w_bldvbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	thumb_geom	mapped	elevator size and position: size = gl_hbox or max(gl_hbox, h*vslsiz/1000), posn = (h-size)*vslide/1000, truncating like mul_div (:431-434). NewTOS also caps the size at the track length
+w_bldvbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_vslider	mapped	draws the gadgets the object tree would hold
+w_bldhbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	hbar_box	mapped	CONF_WITH_3D_OBJECTS branch (:441-476): horizontal bar rectangle
+w_bldhbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	harrow_cells	mapped	arrow cells
+w_bldhbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	htrack	mapped	W_HSLIDE span
+w_bldhbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	thumb_geom	mapped	elevator, gl_wbox minimum (:469-472)
+w_bldhbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_hslider	mapped	draws the gadgets
+w_bldactive	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_frame	mapped	the whole W_ACTIVE build and draw (:479-629, 3D branch): box, shadow, title/closer/fuller/name, info, bars, sizer corner, in ob_draw order. No tree is built
+w_bldactive	aes/gemwmlib.c	tos-api/src/aes/window.rs	borders	mapped	the title / info / bar extents (same arithmetic as wm_calc, so frame and work area agree)
+w_bldactive	aes/gemwmlib.c	tos-api/src/aes/window.rs	bars	mapped	havevbar / havehbar with the SIZER strip-and-force rule (:572-592)
+w_bldactive	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_shadow	mapped	the SHADOWED state of W_BOX (W_ACTIVE[ROOT].ob_state, :1284); the shadow colour is a fixed look decision (DROP_SHADOW_COLOR), not taken from the W_BOX word
+ap_sendmsg	aes/gemwmlib.c	tos-api/src/aes/window.rs	send_redraw	mapped	fills the 8-word message with the caller pid at msg[1] and queues it for the owner (:851-863); only WM_REDRAW goes through it in NewTOS
+w_union	aes/gemwmlib.c	tos-api/src/aes/window.rs	w_union	mapped	hull of the raw (unclipped) owner rectangle list; None = EmuTOS FALSE (:869-884)
+w_redraw	aes/gemwmlib.c	tos-api/src/aes/window.rs	send_redraw_in	mapped	work-area gate, hull of the owner list, intersect with the damage, WM_REDRAW (:887-907)
+w_mvfix	aes/gemwmlib.c	tos-api/src/aes/window.rs	w_mvfix	mapped	clip to gl_rfull, realign the x = -1 fringe (:915-929)
+w_move	aes/gemwmlib.c	tos-api/src/aes/window.rs	w_move	mapped	blit of the top window, refusal when the source reaches past the right or bottom edge, fringe repair (:938-995)
+w_move	aes/gemwmlib.c	tos-api/src/aes/window.rs	bb_screen	mapped	the screen-to-screen copy S_ONLY clipped to gl_rfull
+w_update	aes/gemwmlib.c	tos-api/src/aes/window.rs	w_update	mapped	the message half: top to bottom walk, the moved skip of gl_wtop (:1004-1048)
+w_update	aes/gemwmlib.c	tos-api/src/aes/window.rs	compose_except	mapped	the frame half (w_cpwalk per visited window): all open frames in ascending z over the damage, gl_wtop left out when moved; same pixels as the per-window walk, not the same call sequence
+draw_change	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_change_open	mapped	the WF_CXYWH path (size, grow, move, shrink branches, :1108-1222) for an open window that keeps its z place
+draw_change	aes/gemwmlib.c	tos-api/src/aes/window.rs	top_window	mapped	the top-request branch (:1113-1135): old top redrawn untopped, new top topped, redraw message only when either was broken (is_broken = VF_BROKEN)
+draw_change	aes/gemwmlib.c	tos-api/src/aes/window.rs	wind_open	mapped	open: oldtop covered repaint (:1194-1209) and damage = pt plus shadow; the WM_REDRAW carries w.work, where w_update(:1222) with w_redraw (:887-907) sends damage intersect hull(WS_TRUE list)
+draw_change	aes/gemwmlib.c	tos-api/src/aes/window.rs	close_window	mapped	close: damage = old rect united with the new top, plus shadow, background repaint, w_update(DESKWH, c, DESKWH) (:1160-1222)
+w_owns	aes/gemwmlib.c	tos-api/src/aes/window.rs	rlist_owns	mapped	next owner piece clipped to the work area, cursor advanced before the test, end-of-list words (:1230-1241)
+wm_init	aes/gemwmlib.c	tos-api/src/aes/window.rs	wm_init	mapped	per-program reset in the shell loop (:1247-1326): NewTOS runs wm_new first, then init_desk_window and clear_newdesk. EmuTOS wm_init closes nothing, its caller ran wm_new at gemshlib.c:677 before wm_init at :717
+wm_init	aes/gemwmlib.c	tos-api/src/aes/window.rs	init_desk_window	mapped	the DESKWH window setup and its four rectangles (:1286-1294)
+wm_init	aes/gemwmlib.c	tos-api/src/aes/window.rs	clear_newdesk	mapped	gl_newdesk = NULL (:1300)
+wm_start	aes/gemwmlib.c	tos-api/src/aes/window.rs	reinit	mapped	AES (re)start: the window table blanked, gl_wtcolor/gl_wbcolor back to the compiled defaults (GL_WTCOLOR_DEFAULT) and wm_init's desktop window (:1332-1362)
+wm_create	aes/gemwmlib.c	tos-api/src/aes/window.rs	wind_create	mapped	first free slot from 0, WS_CURR/PREV zero, WS_FULL = pt, WS_WORK left standing; -1 when none (:1369-1385)
+get_pwin	aes/gemwmlib.c	tos-api/src/aes/window.rs	win	mapped	handle range and VF_INUSE check (:1391-1404)
+wm_open	aes/gemwmlib.c	tos-api/src/aes/window.rs	wind_open	mapped	refusals, wm_update bracket, VF_ISOPEN, z top, draw_change, WS_PREV = pt (:1410-1432)
+wm_close	aes/gemwmlib.c	tos-api/src/aes/window.rs	close_window	mapped	refusals, wm_update bracket, rectangles rewritten through gl_rzero, flag cleared after (:1438-1459)
+wm_close	aes/gemwmlib.c	tos-api/src/aes/window.rs	wind_close	mapped	the opcode wrapper (return value)
+wm_delete	aes/gemwmlib.c	tos-api/src/aes/window.rs	wm_delete	mapped	close if open, drop the owner list, WS_CURR/PREV = gl_rscreen, WS_FULL/WORK = gl_rfull, flags 0, owner NULL (:1466-1485)
+wm_delete	aes/gemwmlib.c	tos-api/src/aes/window.rs	wind_delete	mapped	the opcode wrapper
+wm_get	aes/gemwmlib.c	tos-api/src/aes/window.rs	wind_get	mapped	all fields: rectangles, sliders, WF_TOP, FIRST/NEXTXYWH (w_owns), WF_SCREEN, WF_COLOR/DCOLOR, WF_OWNER; unknown field FALSE (:1505-1599)
+wm_get	aes/gemwmlib.c	tos-api/src/aes/window.rs	compute_rlist	mapped	the owner list that WF_FIRSTXYWH starts from, built on demand instead of kept from newrect
+wm_mktop	aes/gemwmlib.c	tos-api/src/aes/window.rs	wm_mktop	mapped	ob_order to the tail, then draw_change as a top request (:1605-1614); the not-open and DESKWH cases are handled before top_window
+wm_set	aes/gemwmlib.c	tos-api/src/aes/window.rs	wm_set	mapped	all fields, clamps 1..1000 and the changed-value guards (:1623-1760); WF_NAME / INFO store the caller pointer and read it live
+wm_set	aes/gemwmlib.c	tos-api/src/aes/window.rs	wind_set	mapped	the wm_update(BEG/END_UPDATE) bracket around it (:1638, :1757)
+wm_find	aes/gemwmlib.c	tos-api/src/aes/window.rs	wm_find	mapped	topmost window containing the point, 0 desktop, -1 outside the screen (:1767-1770)
+wm_find	aes/gemwmlib.c	tos-api/src/aes/window.rs	find_handle	mapped	the search
+wm_find	aes/gemwmlib.c	tos-api/src/aes/window.rs	wind_find	mapped	the opcode wrapper
+wm_update	aes/gemwmlib.c	tos-api/src/aes/window.rs	wind_update	mapped	modes 0 and 1 are the window-tree lock, >= 2 is fm_own(mode-2) (:1778-1797)
+wm_calc	aes/gemwmlib.c	tos-api/src/aes/window.rs	calc	mapped	CONF_WITH_3D_OBJECTS branch (:1817-1867)
+wm_calc	aes/gemwmlib.c	tos-api/src/aes/window.rs	borders	mapped	lb/tb/rb/bb
+wm_calc	aes/gemwmlib.c	tos-api/src/aes/window.rs	wind_calc	mapped	the opcode wrapper
+wm_new	aes/gemwmlib.c	tos-api/src/aes/window.rs	wm_new	mapped	drain ml_ocnt and the wind_spb lock, close and delete windows 1.. (:1875-1893)
+wm_new	aes/gemwmlib.c	tos-api/src/aes/window.rs	wind_new	mapped	the opcode wrapper; it adds a redraw_all of the whole screen that gemsuper.c:358-360 does not have
+w_redraw_desktop	aes/gemwmlib.c	-	-	unmapped	CONF_WITH_3D_OBJECTS: redraws a part of the desktop for the control manager (hctl_msg, gemctrl.c:380-384) when it reads a WM_REDRAW; no NewTOS counterpart (tos-api/src/aes/appl.rs:618 says it is not reproduced)
+gr_stilldn	aes/gemgrlib.c	tos-api/src/aes/window.rs	gr_stilldn	mapped	polls the button and the 1x1 pointer box; returns false and consumes the release when the button is up (:47-73). No dsptch / ev_multi, no keyboard event
+gr_stilldn	aes/gemgrlib.c	tos-api/src/aes/graf.rs	mouse_down	mapped	the same wait for watchbox_t, which uses the button only, not the MOBLK in/out rectangle
+gr_setup	aes/gemgrlib.c	tos-api/src/aes/graf.rs	gsx_xbox	mapped	full-screen clip and XOR mode, applied inside the box primitive (WriteMode::Xor) instead of a gr_setup call (:76-80)
+gr_clamp	aes/gemgrlib.c	tos-api/src/aes/graf.rs	gr_clamp	mapped	max(cursor - origin + 1, min) per axis (:83-88)
+gr_scale	aes/gemgrlib.c	tos-api/src/aes/graf.rs	stepcalc	mapped	frame count by halving (xdist + ydist) / 2; NewTOS does not return xstep/ystep, it interpolates (:91-111)
+gr_stepcalc	aes/gemgrlib.c	tos-api/src/aes/graf.rs	stepcalc	mapped	distance as half-difference of widths and heights (:114-124); the centre point cx, cy it also returns is not computed
+gr_xor	aes/gemgrlib.c	tos-api/src/aes/graf.rs	animate	mapped	the frame loop of a box animation (:127-152); animate erases each frame before drawing the next with a 15 ms pause, gr_xor draws all frames and gr_2box erases them in a second pass
+gr_draw	aes/gemgrlib.c	tos-api/src/aes/window.rs	gr_draw	mapped	one or two XOR boxes (:155-166)
+gr_wait	aes/gemgrlib.c	tos-api/src/aes/window.rs	gr_rubwind	mapped	draw, wait for change, erase loop (:169-191) inside gr_rubwind and gr_dragbox
+gr_wait	aes/gemgrlib.c	tos-api/src/aes/graf.rs	graf_rubberbox	mapped	the same loop written separately: poll, redraw only when the box changed
+gr_rubwind	aes/gemgrlib.c	tos-api/src/aes/window.rs	gr_rubwind	mapped	XOR rubber box with a second offset box, used by the window sizer (:199-220)
+gr_rubwind	aes/gemgrlib.c	tos-api/src/aes/window.rs	drag_size	mapped	the hctl_window W_SIZER arm that calls it (gemctrl.c:241-260)
+gr_rubbox	aes/gemgrlib.c	tos-api/src/aes/graf.rs	graf_rubberbox	mapped	own loop with gr_clamp and draw_span (negative extents normalised), not a call of gr_rubwind; wm_update bracket kept (:228-232)
+gr_dragbox	aes/gemgrlib.c	tos-api/src/aes/graf.rs	graf_dragbox	mapped	the graf_dragbox opcode: own loop, grab offset taken as mouse - start without the max(.., 0) of gr_clamp, bound by clamp instead of rc_constrain; window.rs gr_dragbox (above) is the faithful copy used by the window mover and gr_slidebox
+gr_dragbox	aes/gemgrlib.c	tos-api/src/aes/window.rs	drag_move	mapped	the hctl_window W_NAME arm that calls it with the constraining rectangle (gemctrl.c:225-239)
+gr_2box	aes/gemgrlib.c	tos-api/src/aes/graf.rs	animate	mapped	two passes of gr_xor with the cursor hidden (:271-280)
+gr_movebox	aes/gemgrlib.c	tos-api/src/aes/graf.rs	graf_movebox	mapped	animate(from, to) of equal size (:287-306)
+gr_growbox	aes/gemgrlib.c	tos-api/src/aes/graf.rs	graf_growbox	mapped	animate(small, big); no small box to the centre phase and no corner pieces (:309-323)
+gr_shrinkbox	aes/gemgrlib.c	tos-api/src/aes/graf.rs	graf_shrinkbox	mapped	animate(big, small) (:326-335)
+gr_watchbox	aes/gemgrlib.c	tos-api/src/aes/graf.rs	graf_watchbox	mapped	the opcode wrapper; refuses a null tree or negative index
+gr_watchbox	aes/gemgrlib.c	tos-api/src/aes/graf.rs	watchbox_t	mapped	ob_change to instate, toggle on leaving and entering the object rectangle, ends on button up; returns whether inside (:337-356)
+gr_watchbox	aes/gemgrlib.c	tos-api/src/aes/graf.rs	watchbox	mapped	fm_button's and the window gadget's entry with the caller-ABI tree
+gr_mouse	aes/gemgrlib.c	tos-api/src/aes/graf.rs	graf_mouse	mapped	default clamp to ARROW, USER_DEF, M_OFF/M_ON counting, M_SAVE/RESTORE/PREVIOUS (CONF_WITH_GRAF_MOUSE_EXTENSION) (:419-455); whether M_SAVE is per process like rlr->p_mouse is in vdi/mouse.rs and not read here
+gr_mouse	aes/gemgrlib.c	tos-api/src/aes/graf.rs	set_user_form	mapped	gsx_mfset for the USER_DEF MFORM
+or_start	aes/gemwrect.c	-	-	unmapped	initialises the ORECT free list (:40-50); NewTOS keeps each window list in a fixed array (RCAP pieces per window), there is no shared pool
+get_orect	aes/gemwrect.c	tos-api/src/aes/window.rs	put	mapped	allocate and link one piece; past RCAP NewTOS panics where EmuTOS writes through NULL (:53-61)
+mkpiece	aes/gemwrect.c	tos-api/src/aes/window.rs	subtract	mapped	the TOP / LEFT / RIGHT / BOTTOM piece formulas (:64-98)
+brkrct	aes/gemwrect.c	tos-api/src/aes/window.rs	subtract	mapped	overlap test and piece list in TOP, LEFT, RIGHT, BOTTOM order replacing the broken rectangle in place (:101-134)
+mkrect	aes/gemwrect.c	tos-api/src/aes/window.rs	border_pieces	mapped	break one window list by the rectangle of a window above it, loop over the list (:136-162); VF_BROKEN is not stored, is_broken recomputes it
+mkrect	aes/gemwrect.c	tos-api/src/aes/window.rs	is_broken	mapped	the VF_BROKEN flag
+newrect	aes/gemwrect.c	tos-api/src/aes/window.rs	border_pieces	mapped	list reset to the unbroken WS_TRUE rectangle, broken in ascending z by every window above (:165-205); built on demand, not at every draw_change
+newrect	aes/gemwrect.c	tos-api/src/aes/window.rs	compute_rlist	mapped	stores the list in the window slot for WF_FIRSTXYWH
+fm_strbrk	aes/gemfmalt.c	tos-api/src/aes/form.rs	split_copy	mapped	break at | and ] with || and ]] literal, cap per substring, eat the overflow, at least one substring (:78-134); NewTOS copies into one buffer instead of the DIALERT objects
+fm_strbrk	aes/gemfmalt.c	tos-api/src/aes/form.rs	group	mapped	finding the three [..] groups
+fm_parse	aes/gemfmalt.c	tos-api/src/aes/form.rs	do_alert	mapped	icon = alert[1] - '0', message and button substrings, longest lengths (:157-175); the +1 on the button length is not applied, do_alert uses (len + 2) * CW in the layout
+fm_build	aes/gemfmalt.c	tos-api/src/aes/form.rs	do_alert	mapped	builds the alert tree and the icon choice (NOTE / QUEST / STOP) (:188-282); NewTOS lays out in pixels with its own constants (padx 2*CW, pady CH, button height CH+6) not in character cells through rs_obfix, so box and button sizes differ from the EmuTOS grid
+fm_build	aes/gemfmalt.c	tos-api/src/aes/form.rs	draw_alert_icon	mapped	the BITBLK choice by iconnum
+fm_alert	aes/gemfmalt.c	tos-api/src/aes/form.rs	form_alert	mapped	opcode entry, string copied out of the caller's space
+fm_alert	aes/gemfmalt.c	tos-api/src/aes/form.rs	do_alert	mapped	parse, build, DEFAULT flag on the default button, centre below the menu bar, bb_save, draw, modal wait, bb_restore (:285-392). Not done: set_mouse_to_arrow, ct_mouse / gl_mowner, background colour from backgrcol; the button wait is modal_loop, not fm_do
+fm_alert	aes/gemfmalt.c	tos-api/src/aes/form.rs	modal_loop	mapped	the wait: Enter takes the DEFAULT button, a press shows the button and fires on release inside (gr_watchbox); no other key reaches fm_keybd
+fm_alert	aes/gemfmalt.c	tos-api/src/aes/form.rs	save_under_alert	mapped	bb_save of the clamped rectangle
+fm_own	aes/gemfmlib.c	tos-api/src/aes/window.rs	fm_own	mapped	BEG_UPDATE, park the menu tree, remember the mouse owner, ct_chgown on the 0 to 1 edge and the reverse (:82-107)
+fm_own	aes/gemfmlib.c	tos-api/src/aes/window.rs	mctrl_own	mapped	the shared body also reached by wind_update(BEG_MCTRL)
+fm_own	aes/gemfmlib.c	tos-api/src/aes/window.rs	mctrl_end	mapped	the END half with the releasing identity explicit
+find_obj	aes/gemfmlib.c	tos-api/src/aes/form.rs	find_obj	mapped	next EDITABLE or DEFAULT object, HIDETREE and DISABLED skipped, no wrap, start_obj when none (:114-150)
+fm_inifld	aes/gemfmlib.c	tos-api/src/aes/form.rs	fm_inifld	mapped	start field or the first editable forward from ROOT (:153-160)
+fm_keybd	aes/gemfmlib.c	tos-api/src/aes/form.rs	fm_keybd	mapped	RETURN/ENTER to DEFLT, up to BACKWARD, TAB and down to FORWARD (:163-198); NewTOS matches the ASCII byte (0x0D, 0x0A, 0x09) or the scancode byte alone, EmuTOS compares the whole word (RETURN 0x1c0d, ENTER 0x720d, TAB 0x0f09, ARROW_UP 0x4800, ARROW_DOWN 0x5000)
+fm_keybd	aes/gemfmlib.c	tos-api/src/aes/form.rs	form_keybd	mapped	the opcode entry with FM_INXTOB preset
+fm_button	aes/gemfmlib.c	tos-api/src/aes/form.rs	fm_button	mapped	TOUCHEXIT double click, radio group, gr_watchbox for others, wait for button up, EXIT, editable continue (:201-270)
+fm_button	aes/gemfmlib.c	tos-api/src/aes/form.rs	select_radio	mapped	the RBUTTON sibling loop
+fm_button	aes/gemfmlib.c	tos-api/src/aes/form.rs	form_button	mapped	the opcode entry
+fm_button	aes/gemfmlib.c	tos-api/src/aes/form.rs	wait_up	mapped	the ev_button(1, 1, 0) wait for release (:256)
+fm_do	aes/gemfmlib.c	tos-api/src/aes/form.rs	run_form	mapped	the dialog loop: fm_own, key flush, start field, EDINIT / EDCHAR / EDEND, bell on a click outside, fm_button (:278-358); polls keys and buttons instead of ev_multi, double-click count from the button-delay window
+fm_do	aes/gemfmlib.c	tos-api/src/aes/form.rs	form_do	mapped	the opcode entry (null tree returns -1, a NewTOS guard)
+fm_dial	aes/gemfmlib.c	tos-api/src/aes/form.rs	fm_dial	mapped	FMD_START no-op, FMD_GROW / SHRINK as animate, FMD_FINISH as w_drawdesk plus w_update over pt (:360-381)
+fm_dial	aes/gemfmlib.c	tos-api/src/aes/form.rs	form_dial	mapped	the opcode entry
+fm_dial	aes/gemfmlib.c	tos-api/src/aes/window.rs	redraw_dialog_area	mapped	the FMD_FINISH repaint
+fm_show	aes/gemfmlib.c	tos-api/src/aes/form.rs	fm_error	mapped	only the form_error use with the error number substituted (format_err, :389-401); there is no general fm_show: the unsupported-opcode alert fm_show(ALNOFUNC) at gemsuper.c:415 is not shown
+eralert	aes/gemfmlib.c	-	-	unmapped	graphic critical-error alert chosen by ml_alrt / ml_pwlv, called from gemdosif.S (:416-433); NewTOS Rwabs has no critical-error retry path (tos-api/src/bdos/process/hooks.rs:168)
+fm_error	aes/gemfmlib.c	tos-api/src/aes/form.rs	fm_error	mapped	n > 63 FALSE, the DOS code to AL*ERR switch, returns button != 1 (:436-471)
+fm_error	aes/gemfmlib.c	tos-api/src/aes/form.rs	form_error	mapped	the opcode entry
+fs_start	aes/gemfslib.c	tos-api/src/aes/fsel.rs	fs_start	mapped	the CONF_WITH_3D_OBJECTS geometry and flag pass (:59-153), run once when the resource is relocated; the #else flat branch and the closing ob_center are not here (center() does the centring per call)
+centre_title	aes/gemfslib.c	tos-api/src/aes/fsel.rs	centre_title	mapped	ob_x = (root width - strlen * gl_wchar) / 2 (:179-185); NewTOS also widens ob_width to the text
+fs_comp	aes/gemfslib.c	tos-api/src/aes/fsel.rs	entry_cmp	mapped	strcmp over indicator byte plus name, folders first (:243-246)
+fs_add	aes/gemfslib.c	tos-api/src/aes/fsel.rs	relist	mapped	list_dir (bdos/fs/find.rs) fills the name and attribute arrays; the indicator byte is made in fs_format and entry_cmp from the attribute, no ad_fsnames string table
+fs_active	aes/gemfslib.c	tos-api/src/aes/fsel.rs	relist	mapped	read the directory, skip dot names, folders always and files by mask, silent cap, sort (:268-340); no hourglass mouse, no fm_error and FALSE return on a DOS error, no retry of fs_input
+fs_active	aes/gemfslib.c	tos-api/src/aes/fsel.rs	sort_entries	mapped	the shell sort (:312-326)
+fs_sel	aes/gemfslib.c	tos-api/src/aes/fsel.rs	modal	mapped	select / deselect of the F1NAME slot through set_state_bit_t in the file arm (:413-417); a scroll drops the selection (cur_sel = -1)
+select_drive	aes/gemfslib.c	tos-api/src/aes/fsel.rs	set_drive_states	mapped	marks the drive box SELECTED and clears the rest (:540-565); NewTOS also sets DISABLED from drvbits here, selects only a present drive, and always redraws the whole tree
+path_changed	aes/gemfslib.c	tos-api/src/aes/fsel.rs	path_differs	mapped	FSDIRECT text against the listed path (:572-583); full-string compare, EmuTOS compares te_txtlen - 1 characters
+get_drive	aes/gemfslib.c	tos-api/src/aes/fsel.rs	set_drive_states	mapped	drive of the path: NewTOS takes the first byte as the letter if upper case, without testing for ':' and without upper-casing, else drive C - EmuTOS extract_drive_number then dos_gdrv (:590-597)

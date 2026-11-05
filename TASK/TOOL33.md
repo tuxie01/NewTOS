@@ -78,6 +78,37 @@ Abweichungs-Kandidaten aus dem Lesen (nicht gemessen; EmuTOS-Zeilen in `aes/`):
     zurueckgestellt.
 20. `gemaplib.c:176` gegen `tos-api/src/aes/appl.rs:807@appl_tplay`: liefert nur 1.
 
+## Stand Teil 2 (2026-11-05, Researcher)
+
+150 Zeilen fuer die 84 neuen Funktionen von `gemwmlib.c`, `gemgrlib.c`, `gemwrect.c`,
+`gemfmlib.c`, `gemfmalt.c`, `gemfslib.c`; 11 vorhandene gelesen und belassen (zu `gr_dragbox`
+eine zweite Zeile `graf_dragbox`). `--coverage` aes danach 195 mapped / 0 design / 223 unmapped.
+Je Funktion 79 `mapped`, 5 `unmapped` (`w_nilit`, `w_obadd`, `or_start`, `w_redraw_desktop`,
+`eralert`). Nur die `CONF_WITH_3D_OBJECTS`-Zweige gemappt.
+
+Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `aes/`):
+
+21. `gemwmlib.c:1222,887-907` gegen `tos-api/src/aes/window.rs:3533@send_redraw` (`wind_open`): `WM_REDRAW`
+    nur mit dem Arbeitsbereich statt Schaden ∩ Fensterhuelle (Rahmen, Schatten).
+22. `gemsuper.c:358-360` gegen `tos-api/src/aes/window.rs:4727@wind_new`: zusaetzliches `redraw_all`.
+23. `gemgrlib.c:243-267` gegen `tos-api/src/aes/graf.rs:237@graf_dragbox`: eigene Schleife,
+    Greifversatz ohne `max(.., 0)`, `clamp` statt `rc_constrain`; ebenso `graf_rubberbox`.
+24. `gemctrl.c:305` gegen `tos-api/src/aes/window.rs:5516@drag_elevator`: Fenster-Schieber folgt live statt
+    XOR-Umriss (`gr_slidebox`) — Spur fuer [A130](A130.md) (#2).
+25. `gemgrlib.c:127-152,271-280` gegen `graf.rs:286@animate`: XOR-Spur ohne Pause (zu 1).
+26. `gemwmlib.c:1719-1726,1754-1755` gegen `window.rs`: `WF_COLOR` zeichnet den ganzen Rahmen
+    (Klasse von [A119](A119.md)); Schattenfarbe fest `DROP_SHADOW_COLOR` statt aus dem
+    W_BOX-Farbwort — moegliche Spur fuer [A131](A131.md) (#7).
+27. `gemwmlib.c:431-434` gegen `tos-api/src/aes/window.rs:3004@thumb_geom`: zusaetzliche Kappung der Schieberlaenge.
+28. `gemfmalt.c:188-282` gegen `tos-api/src/aes/form.rs:191@padx` (`do_alert`): Alert-Layout in Pixeln statt
+    Zeichenzellen, Maus/`backgrcol` fehlen, eigene Modalschleife statt `fm_do`.
+29. `gemfmlib.c:163-198` gegen `form.rs:705@fm_keybd`: Teilbyte- statt Wortvergleich (wie A122).
+30. `gemfslib.c:851-865,590-597` gegen `tos-api/src/aes/fsel.rs:1387@FS1STDRV` (`modal`),
+    `fsel.rs:355@set_drive_states`: Laufwerksklick und Laufwerk aus dem Pfad — zu [A134](A134.md).
+31. `gemfslib.c:640-679,905`: Dateiauswahl ohne Fehler-/Retry-Zweig, Sanduhr, `FSOK`-SELECTED,
+    `ALFSMEM` — zu [A134](A134.md).
+32. `gemsuper.c:415` gegen `tos-api/src/aes/mod.rs:989@ALNOFUNC`: `fm_show(ALNOFUNC)` fehlt (als Referenzebene entschieden, D-084).
+
 ## Abnahme
 
 - `cargo xtask deps --check-mapping` ohne Befund; `--coverage` zeigt fuer
