@@ -1,0 +1,59 @@
+V19 acceptance -- TASK/V19.md (fix 506643fb, vro_cpyfm memory->memory below nine planes planar) by the tester.
+Date 2026-11-05. No product code touched; nothing committed; no SD card, no Pi, no push.
+Changed outside this directory: tosdump/probes/vdprobe.c (test code, +113 lines: function k12(), called after k11(); VERSION unchanged).
+
+TREES
+  head = git archive of 506643fba17f828a030b67ad9371c0b8687c2028; base = git archive of 6d7698cddb3ba24bbd670c5b34682359f38f6498
+  (git diff --stat base head: tos-api/src/vdi/raster.rs + tests + docs only; the kernel crate itself is identical).
+  Every kernel built by cargo xtask (tosdump / run-*probe.sh kernel) in scratch from those archives, fresh per tree/board, release rpi4:
+    plain: head 9a02d06ed71c1837b8e406443e645ab4c2cfa0bbc2d759c4f2f0a2a940c78053
+           base d08e60b9b748953950bea50bda572abf5818cff2f294176a53698ea7f808a744 (= the c8ff6952 kernel of V18 t1)
+    shprobe-armed: base 1f11a8e8dbf42d4f490fb616c536a39fc6d8793811b80763ef5ea69c8ddae7b1 head 762d5f10f1e5abaf30f10cdb8ac396737e484484f05162cc7f18b3cdc9140c9b
+    slprobe-armed: base ae0eb3080c57757d9953a4f00c0fe06fe44879f56bf3432c6c746287fe2f8fd9 head 33e37e5e7a56421fb292ad6b7c70e86b80b0902642dd5495b745e92e636c9b85
+  host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card.img.manifest)
+  Manifests: runs/*/card.img.manifest, probe/*/card.img.manifest. optional_missing, verbatim, in ALL of them:  optional_missing none
+  Oracle: pinned EmuTOS 1a7484ab, ROM tools/oracle/etos512de-1a7484ab.img sha256 323c87bb...; canary (analysis/canary.txt):
+    "canary tt: OK", "canary falcontc: OK".
+  QEMU: raspi4b, -append serial=on, per-run APFS clone of the card (deleted by the scripts); scratch = session scratchpad, trees/targets deleted afterwards.
+  Scripts: method/tosdump-runs.sh, method/gui-runs.sh (+gui-runs.log), the compare scripts copied from a131-test (pixcmp/pencmp/deskcmp), method/v19-patflag-check.py.
+
+RESULTS (details: analysis/, runs/)
+ 1 PASS  vdi-v18-raster.tsv vs EMUTOS-1a7484ab-RASTER-v18-falcontc, head: 0 of 17 differ (runs/t1-v18-raster). Control, base: 15 of 17 differ
+         (runs/t1-base-v18-raster) = the V18 measurement.
+ 2 PASS  vdi-raster.tsv vs EMUTOS-1a7484ab-RASTER, head: 1 of 59 differ, case 157 "PTSIN[6..7] too big: the extent is the source's" (the difference
+         the table predicts itself) (runs/t2-raster). vdi-raster-screen.tsv vs EMUTOS-1a7484ab-RASTER-screen-falcontc: 0 of 62 (runs/t2-raster-screen).
+ 3 PASS  PAT_FLAG with a user-defined non-solid fill pattern (vsf_udpat, interior 4), probe/ (vdprobe k12: planes 1/2/4/8 x 2 geometries x 9 ops
+         {0,1,3,4,6,7,10,12,15} x {plain, op|0x10} = 144 records, whole destination form + 32 guard words each side):
+         head vs EmuTOS(falcontc): 0 of 144 records differ; within each side op|0x10 == plain in 72 of 72 pairs (both sides); guards untouched (0).
+         Base (control): 144 of 144 differ, 120 records with touched guards (write behind the form).  Cases 1..54: bytes of BIN/LOG identical to
+         the V18 e1 run (prefix compare), head vs EmuTOS still 26 of 54 differ (= V18 baseline, other candidates).
+         Determinism: EmuTOS e1 == e2, NewTOS head n-head-1 == n-head-2 byte for byte (BIN).
+         First version of the probe (byte-wise fill) showed 144/144 differing on head: a probe error (planar forms are WORD sequences, native byte order
+         on NewTOS/aarch64 vs big-endian on m68k); fixed to WORD-valued fill/dump, all runs repeated; the v1 runs were discarded.
+ 4 PASS  (no change) AES counter-probe, base 6d7698cd vs head 506643fb:
+         aes-r2-wind.tsv   tosdiff base-vs-head 0 of 78 differ; vs EMUTOS-1a7484ab-AES-r2wind 78 of 78 on both, tosdiff text identical.
+         aes-r3-wind-state.tsv 0 of 39; vs EMUTOS-1a7484ab-AES-r3 39 of 39 on both, text identical.
+         aes-r4-subfunctions.tsv 0 of 181; NO pinned oracle reference exists (CRC 227422B2 matches none of tosdump/reference/*AES*.BIN), so the oracle
+         was run for this table in profiles tt and falcontc (oracle/r4-*, DUMPAES built with BUILD_ID v19t, not committed to reference/):
+         181 of 181 differ on both base and head, text identical (known global[3],[4],[10] in every case plus the old int_out/addr_out cells).
+         The raw AES.BIN files differ in 1 byte per record: a TD_FIELD_ADDRESS cell (0x..6a50 vs 0x..7a50, an address the target chose itself, never
+         compared; kernel image size changed) -- tosdiff reports 0 differences.
+         shprobe (12 shots): base == head byte for byte (PNG); both vs EmuTOS falcontc (pixcmp --falcon) and tt (pencmp): exactly 85 px per shot
+         (menu bar name x343..362 y4..15), 0 frame/shadow px = the a131-test baseline.
+         desktop run (two drive windows, 2 shots): base == head byte for byte; deskcmp vs EmuTOS falcontc: RING/VBAR/HBAR of W1, W2: 0 px differ by pen, both.
+         slprobe v3 (155 shots): 154 of 155 PNG byte-identical base vs head; 1 differs: 98-098-300-H-pagehi-held1 (mid-gesture held frame, 764 px).
+         That shot also differs by exactly 764 px between the two kernel-HEAD runs of measurements/measurement-2026-11-05-a130-test (run 1 vs run 2),
+         so it is timing noise of a held frame, not V19. Against EmuTOS tt by pen: base 139 shots exactly the 85 menu-bar px, 16 more (known A130
+         mid-gesture shots); head 139 / 16 -- identical split; the single changed line is that shot (802 -> 252 px).
+ 5 PASS  rpi4: fresh release builds of both trees by xtask; head booted in QEMU raspi4b in 5 runs (tosdump x3, shprobe, desk, slprobe): "[desk] desktop up",
+         0 exception/panic lines in BOOT-SERIAL of newtos-{desk,shprobe,slprobe}-head.
+         qemu-virt: fresh tree of 506643fb, cargo xtask build --board qemu-virt (dev), cargo xtask run --board qemu-virt --headless: "[desk] desktop up
+         (0 drives)", 0 exception/panic (runs/boot-head/).
+ 6 PASS  cargo xtask test on 506643fb: 2004 passed / 0 failed / 1 ignored (analysis/cargo-xtask-test.txt) = the developer's number.
+         STATUS.md's Hosttests row still says 1974/0/1 (stale row; the V19 entry says +21).
+ -  clippy tos-api --lib, base vs head: 73 warnings each, identical per-message list (analysis/clippy-tos-api-*.txt). kernel crate clippy not run (crate untouched).
+
+NOT DRIVEN
+  Desktop menu, dialog and rubber-band (need input; raspi4b has none, qemu-virt has no C:): only the window part of the desktop run was driven.
+  No program in the repository copies memory->memory below 16 planes (V19 ticket, git grep) so the AES/desktop paths cannot show an effect;
+  the evidence is "unchanged", not "exercised". Real Pi4: nothing in V19 is cache-/HW-specific; nothing routed.

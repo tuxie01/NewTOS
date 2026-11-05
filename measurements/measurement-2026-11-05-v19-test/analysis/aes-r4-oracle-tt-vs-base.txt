@@ -1,0 +1,1029 @@
+AES.BIN vs AES.BIN -- area AES, 181 cases from aes-r4-subfunctions.tsv
+
+case 273  opcode 0  opcode 0, OUT_LEN 1: the unsupported sentinel -1, and no alert
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 274  opcode 0  opcode 0, OUT_LEN 0: the -1 is computed and never delivered
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 275  opcode 0  opcode 0 with all four counts and four inputs: marshalled in, n
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[1]             AES.BIN = 0x0008 (8)   AES.BIN = 0x0000 (0)
+    int_out[2]             AES.BIN = 0x0010 (16)   AES.BIN = 0x0000 (0)
+    int_out[3]             AES.BIN = 0x0013 (19)   AES.BIN = 0x0000 (0)
+    int_out[4]             AES.BIN = 0x0013 (19)   AES.BIN = 0x0000 (0)
+
+case 282  opcode 77  graf_handle: handle plus gl_wchar, gl_hchar, gl_wbox, gl_hbox
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 283  opcode 77  graf_handle OUT_LEN 7: two words past what the call writes, fro
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[5]             AES.BIN = 0x00E2 (226)   AES.BIN = 0x0000 (0)
+    int_out[6]             AES.BIN = 0x9B52 (-25774)   AES.BIN = 0x0000 (0)
+
+case 286  opcode 79  graf_mkstate: the four words gr_mkstate writes
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 287  opcode 79  graf_mkstate OUT_LEN 1: return code only, the four stay poisone
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 290  opcode 106  wind_find at the top left corner
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 291  opcode 106  wind_find off the top left: negative coordinates
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 292  opcode 106  wind_find far off the bottom right
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 302  opcode 108  wind_calc WC_BORDER on the standard gadget set
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 303  opcode 108  wind_calc WC_WORK on the standard gadget set
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 304  opcode 108  wind_calc WC_BORDER with no gadget at all
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 305  opcode 108  wind_calc WC_WORK with no gadget at all
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 306  opcode 108  wind_calc WC_WORK, NAME alone
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 307  opcode 108  wind_calc WC_WORK, CLOSER alone
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 308  opcode 108  wind_calc WC_WORK, FULLER alone
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 309  opcode 108  wind_calc WC_WORK, MOVER alone
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 310  opcode 108  wind_calc WC_WORK, INFO alone
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 311  opcode 108  wind_calc WC_WORK, SIZER alone: the either-or rule at :1828-183
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 312  opcode 108  wind_calc WC_WORK, UPARROW alone
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 313  opcode 108  wind_calc WC_WORK, DNARROW alone
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 314  opcode 108  wind_calc WC_WORK, VSLIDE alone
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 315  opcode 108  wind_calc WC_WORK, LFARROW alone
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 316  opcode 108  wind_calc WC_WORK, RTARROW alone
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 317  opcode 108  wind_calc WC_WORK, HSLIDE alone
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 318  opcode 108  wind_calc WC_WORK, HOTCLOSE alone: a bit wm_calc has no arm for
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 319  opcode 108  wind_calc WC_BORDER, HOTCLOSE alone
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 320  opcode 108  wind_calc WC_WORK, the standard set plus HOTCLOSE: must equal 0
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 321  opcode 108  wind_calc WC_WORK, every bit defined or not
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 322  opcode 108  wind_calc wtype 99: anything but WC_BORDER takes the WC_WORK ar
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 323  opcode 108  wind_calc wtype -1: the same class, from the other side of zero
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 331  opcode 104  WF_SCREEN OUT_LEN 5: the two LONGs gsx_mret writes
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[1]             AES.BIN = 0x0100 (256)   AES.BIN = 0xF000 (-4096)
+    int_out[2]             AES.BIN = 0x0218 (536)   AES.BIN = 0x0196 (406)
+    int_out[3]             AES.BIN = 0x0000 (0)   AES.BIN = 0x6000 (24576)
+    int_out[4]             AES.BIN = 0xA000 (-24576)   AES.BIN = 0x0009 (9)
+
+case 332  opcode 104  WF_SCREEN on an invalid handle: no handle needed, so it must st
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[1]             AES.BIN = 0x0100 (256)   AES.BIN = 0xF000 (-4096)
+    int_out[2]             AES.BIN = 0x0218 (536)   AES.BIN = 0x0196 (406)
+    int_out[3]             AES.BIN = 0x0000 (0)   AES.BIN = 0x6000 (24576)
+    int_out[4]             AES.BIN = 0xA000 (-24576)   AES.BIN = 0x0009 (9)
+
+case 333  opcode 104  WF_TOP on an invalid handle: likewise
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[2]             AES.BIN = 0x0218 (536)   AES.BIN = 0x0000 (0)
+    int_out[4]             AES.BIN = 0xA000 (-24576)   AES.BIN = 0x0000 (0)
+
+case 334  opcode 104  WF_OWNER on the desktop handle, OUT_LEN 5 -- VERSION DELTA: abs
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 335  opcode 104  WF_WXYWH on an invalid handle: the pre-check must refuse before
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[3]             AES.BIN = 0xFFFF (-1)   AES.BIN = 0x0000 (0)
+    int_out[4]             AES.BIN = 0xFFFF (-1)   AES.BIN = 0x0000 (0)
+
+case 336  opcode 104  WF_HSLIDE on a handle past NUM_WIN
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[3]             AES.BIN = 0xFFFF (-1)   AES.BIN = 0x0000 (0)
+    int_out[4]             AES.BIN = 0xFFFF (-1)   AES.BIN = 0x0000 (0)
+
+case 339  opcode 24  evnt_timer 0 ms
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 340  opcode 24  evnt_timer 1 ms: still under one tick
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 343  opcode 26  evnt_dclick read, rate 0: the rate word is ignored when setit i
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0002 (2)   AES.BIN = 0x0003 (3)
+
+case 344  opcode 26  evnt_dclick read, rate 4: same answer, proving the rate was ign
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0002 (2)   AES.BIN = 0x0003 (3)
+
+case 347  opcode 14  appl_tplay length 0, scale 1: nothing to play, the buffer is ne
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 350  opcode 35  menu_register pid -1: refused before the title pointer is store
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 351  opcode 35  menu_register pid -32768: the most negative WORD
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 354  opcode 122  shel_get length 0, AIN_LEN 1: a zero-byte copy out of the shell
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 355  opcode 122  shel_get length 0, AIN_LEN 0: the dispatcher copies no addr_in 
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 356  opcode 123  shel_put length 0: a zero-byte copy into the shell buffer
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 359  opcode 111  rsrc_free with nothing loaded: gemrslib.c:702-705 answers 0
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 360  opcode 111  rsrc_free a second time: the same answer, no state to consume
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 379  opcode 100  wind_create: the first free handle after the reset
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 380  opcode 100  wind_create with HOTCLOSE set: a kind bit only the control mana
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 382  opcode 101  wind_open a created window
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 385  opcode 102  wind_close an open window
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 388  opcode 103  wind_delete an open window: wm_close runs first
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 389  opcode 109  wind_new measured: a void handler must leave ret = TRUE
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 390  opcode 109  wind_new OUT_LEN 0, exactly as gemlib issues it
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 397  opcode 104  wind_get field 0: below the first defined field, must reach def
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[3]             AES.BIN = 0xFFFF (-1)   AES.BIN = 0x0000 (0)
+    int_out[4]             AES.BIN = 0xFFFF (-1)   AES.BIN = 0x0000 (0)
+
+case 400  opcode 104  wind_get WF_KIND: defined in the header, answered by neither wm
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[3]             AES.BIN = 0xFFFF (-1)   AES.BIN = 0x0000 (0)
+    int_out[4]             AES.BIN = 0xFFFF (-1)   AES.BIN = 0x0000 (0)
+
+case 403  opcode 104  wind_get WF_WXYWH: the work area wm_calc(WC_WORK) derives
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 406  opcode 104  wind_get WF_CXYWH: the rectangle the open was given
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 409  opcode 104  wind_get WF_PXYWH: wm_open overwrites PREV with the opening rec
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 412  opcode 104  wind_get WF_FXYWH: the full rectangle wind_create stored
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 415  opcode 104  wind_get WF_HSLIDE: w_setup leaves the slider at the left
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[2]             AES.BIN = 0x0014 (20)   AES.BIN = 0x0000 (0)
+    int_out[3]             AES.BIN = 0x012C (300)   AES.BIN = 0x0000 (0)
+    int_out[4]             AES.BIN = 0x00C8 (200)   AES.BIN = 0x0000 (0)
+
+case 418  opcode 104  wind_get WF_VSLIDE
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[2]             AES.BIN = 0x0014 (20)   AES.BIN = 0x0000 (0)
+    int_out[3]             AES.BIN = 0x012C (300)   AES.BIN = 0x0000 (0)
+    int_out[4]             AES.BIN = 0x00C8 (200)   AES.BIN = 0x0000 (0)
+
+case 421  opcode 104  wind_get WF_TOP: the one open window is the top one
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[2]             AES.BIN = 0x0014 (20)   AES.BIN = 0x0000 (0)
+    int_out[3]             AES.BIN = 0x012C (300)   AES.BIN = 0x0000 (0)
+    int_out[4]             AES.BIN = 0x00C8 (200)   AES.BIN = 0x0000 (0)
+
+case 424  opcode 104  wind_get WF_FIRSTXYWH: the first piece of an unobscured window'
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 427  opcode 104  wind_get field 13: the gap in the WF_ numbering
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[1]             AES.BIN = 0x001F (31)   AES.BIN = 0x0000 (0)
+    int_out[2]             AES.BIN = 0x003F (63)   AES.BIN = 0x0000 (0)
+    int_out[3]             AES.BIN = 0x0128 (296)   AES.BIN = 0x0000 (0)
+    int_out[4]             AES.BIN = 0x00C2 (194)   AES.BIN = 0x0000 (0)
+
+case 430  opcode 104  wind_get WF_NEWDESK: settable but not gettable -- wm_get has no
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[1]             AES.BIN = 0x001F (31)   AES.BIN = 0x0000 (0)
+    int_out[2]             AES.BIN = 0x003F (63)   AES.BIN = 0x0000 (0)
+    int_out[3]             AES.BIN = 0x0128 (296)   AES.BIN = 0x0000 (0)
+    int_out[4]             AES.BIN = 0x00C2 (194)   AES.BIN = 0x0000 (0)
+
+case 433  opcode 104  wind_get WF_HSLSIZ
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[2]             AES.BIN = 0x003F (63)   AES.BIN = 0x0000 (0)
+    int_out[3]             AES.BIN = 0x0128 (296)   AES.BIN = 0x0000 (0)
+    int_out[4]             AES.BIN = 0x00C2 (194)   AES.BIN = 0x0000 (0)
+
+case 436  opcode 104  wind_get WF_VSLSIZ
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[2]             AES.BIN = 0x003F (63)   AES.BIN = 0x0000 (0)
+    int_out[3]             AES.BIN = 0x0128 (296)   AES.BIN = 0x0000 (0)
+    int_out[4]             AES.BIN = 0x00C2 (194)   AES.BIN = 0x0000 (0)
+
+case 439  opcode 104  wind_get WF_SCREEN on a real window: still the menu/alert save 
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[1]             AES.BIN = 0x0100 (256)   AES.BIN = 0xF000 (-4096)
+    int_out[2]             AES.BIN = 0x0218 (536)   AES.BIN = 0x0196 (406)
+    int_out[3]             AES.BIN = 0x0000 (0)   AES.BIN = 0x6000 (24576)
+    int_out[4]             AES.BIN = 0xA000 (-24576)   AES.BIN = 0x0009 (9)
+
+case 442  opcode 104  wind_get WF_OWNER on an open window -- VERSION DELTA: absent in
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 445  opcode 104  wind_get field 21: past the last defined field
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[2]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    int_out[3]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    int_out[4]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+
+case 448  opcode 104  wind_get field 99: far past it
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[2]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    int_out[3]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    int_out[4]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+
+case 452  opcode 104  wind_get WF_NEXTXYWH after a FIRST on the same handle: the end 
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[1]             AES.BIN = 0x001F (31)   AES.BIN = 0x0000 (0)
+    int_out[2]             AES.BIN = 0x003F (63)   AES.BIN = 0x0000 (0)
+
+case 462  opcode 105  wind_set field 0: below the first defined field
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 465  opcode 105  wind_set WF_KIND: settable in no AES
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 468  opcode 105  wind_set WF_WXYWH: readable, not settable
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 471  opcode 105  wind_set WF_CXYWH: the one geometry setter, draw_change and all
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 474  opcode 105  wind_set WF_PXYWH: readable, not settable
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 477  opcode 105  wind_set WF_FXYWH: readable, not settable
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 480  opcode 105  wind_set WF_HSLIDE 500: inside the 1..1000 clamp
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 483  opcode 105  wind_set WF_HSLIDE 0: clamped up to 1
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 486  opcode 105  wind_set WF_HSLIDE 2000: clamped down to 1000
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 489  opcode 105  wind_set WF_VSLIDE 1000: exactly on the ceiling
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 492  opcode 105  wind_set WF_FIRSTXYWH: readable, not settable
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 495  opcode 105  wind_set WF_NEXTXYWH: readable, not settable
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 498  opcode 105  wind_set WF_HSLSIZ -1: the use-default escape is let through th
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 501  opcode 105  wind_set WF_HSLSIZ 0: clamped up to 1
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 504  opcode 105  wind_set WF_VSLSIZ 1001: clamped down to 1000
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 507  opcode 105  wind_set WF_SCREEN: readable, not settable
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 510  opcode 105  wind_set WF_OWNER: gettable from AES 3.30, settable in no AES
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 513  opcode 105  wind_set field 21: past the last defined field
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 516  opcode 105  wind_set field 99: far past it
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 522  opcode 105  wind_set WF_TOP on the lower of two windows: wm_mktop really ha
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 525  opcode 105  wind_set WF_TOP on the only open window: already topped, the ea
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 531  opcode 107  wind_update BEG_UPDATE: tak_flag takes a lock the reset drains 
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 532  opcode 107  wind_update END_UPDATE with no lock held: unsync returns early 
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 534  opcode 107  wind_update END_UPDATE after a BEG: the balanced pair
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 537  opcode 107  wind_update END_UPDATE after two BEGs: one release is not enoug
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 538  opcode 107  wind_update BEG_MCTRL: ml_ocnt goes positive, which wm_new does
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 540  opcode 107  wind_update END_MCTRL, paired: fm_own(0)
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 541  opcode 107  wind_update mode 5: mode - 2 = 3, non-zero, so fm_own treats it
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 542  opcode 107  wind_update mode -1: below 2 and non-zero, so it is a BEG_UPDAT
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 543  opcode 107  wind_update BEG_UPDATE, OUT_LEN 0: the ret is computed and neve
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 550  opcode 40  objc_add(NIL, NIL): ob_add's guard refuses before the first tre
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 551  opcode 40  objc_add(NIL, ROOT): parent NIL alone is enough
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 552  opcode 40  objc_add(ROOT, NIL): child NIL alone is enough
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 555  opcode 41  objc_delete(ROOT): 'can't delete the root object', before any t
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 556  opcode 41  objc_delete(ROOT), OUT_LEN 0: the 0 is computed and never deliv
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 559  opcode 45  objc_order(ROOT, 0): refused before get_par, whatever newpos sa
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 560  opcode 45  objc_order(ROOT, NIL): the same refusal
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 561  opcode 45  objc_order(ROOT, 99): the same refusal
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 568  opcode 46  objc_edit EDSTART on object 1: the kind arm returns first, tree
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[2]             AES.BIN = 0x003F (63)   AES.BIN = 0x0000 (0)
+
+case 569  opcode 46  objc_edit EDSTART on the ROOT
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[2]             AES.BIN = 0x003F (63)   AES.BIN = 0x0000 (0)
+
+case 570  opcode 46  objc_edit EDINIT on the ROOT: obj <= 0 returns before the TEDIN
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[2]             AES.BIN = 0x003F (63)   AES.BIN = 0x0000 (0)
+
+case 571  opcode 46  objc_edit EDCHAR 'A' on the ROOT
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[2]             AES.BIN = 0x003F (63)   AES.BIN = 0x0000 (0)
+
+case 572  opcode 46  objc_edit EDEND on the ROOT
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[2]             AES.BIN = 0x003F (63)   AES.BIN = 0x0000 (0)
+
+case 573  opcode 46  objc_edit kind 99: no case arm, the function falls through to T
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[2]             AES.BIN = 0x003F (63)   AES.BIN = 0x0000 (0)
+
+case 574  opcode 46  objc_edit EDINIT on a negative object
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[2]             AES.BIN = 0x003F (63)   AES.BIN = 0x0000 (0)
+
+case 575  opcode 46  objc_edit EDINIT, OUT_LEN 1: the index is written and never del
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 582  opcode 51  form_dial FMD_START: a documented no-op
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 583  opcode 51  form_dial FMD_GROW: gr_growbox from the small rectangle to the 
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 584  opcode 51  form_dial FMD_SHRINK: and back
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 585  opcode 51  form_dial FMD_FINISH: w_drawdesk plus w_update on the big recta
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 586  opcode 51  form_dial type 99: only the gsx_sclip, and still TRUE
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 589  opcode 72  graf_movebox: a 40x30 box from 100,100 to 200,150
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 590  opcode 73  graf_growbox: small to big
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 591  opcode 74  graf_shrinkbox: the same two rectangles, the other way round
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 598  opcode 112  rsrc_gaddr type 0 index 0 -- R_TREE: ap_ptree[index], and ap_pt
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x602E0206   AES.BIN = 0x00000000
+
+case 599  opcode 112  rsrc_gaddr type 1 index 0 -- R_OBJECT
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x00000206   AES.BIN = 0x00000000
+
+case 600  opcode 112  rsrc_gaddr type 2 index 0 -- R_TEDINFO -- identity pair with R_
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x000000E0   AES.BIN = 0x00000000
+
+case 601  opcode 112  rsrc_gaddr type 3 index 0 -- R_ICONBLK -- identity pair with R_
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x00000030   AES.BIN = 0x00000000
+
+case 602  opcode 112  rsrc_gaddr type 4 index 0 -- R_BITBLK -- identity pair with R_B
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x000000E0   AES.BIN = 0x00000000
+
+case 603  opcode 112  rsrc_gaddr type 5 index 0 -- R_STRING: the one type that derefe
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x0D000001   AES.BIN = 0x00000000
+
+case 604  opcode 112  rsrc_gaddr type 6 index 0 -- R_IMAGEDATA: likewise
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x00E007E0   AES.BIN = 0x00000000
+
+case 605  opcode 112  rsrc_gaddr type 7 index 0 -- R_OBSPEC: &obj->ob_spec, a sub-poi
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x00000212   AES.BIN = 0x00000000
+
+case 606  opcode 112  rsrc_gaddr type 8 index 0 -- R_TEPTEXT -- must equal R_TEDINFO 
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x000000E0   AES.BIN = 0x00000000
+
+case 607  opcode 112  rsrc_gaddr type 9 index 0 -- R_TEPTMPLT: &tedinfo->te_ptmplt
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x000000E4   AES.BIN = 0x00000000
+
+case 608  opcode 112  rsrc_gaddr type 10 index 0 -- R_TEPVALID: &tedinfo->te_pvalid
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x000000E8   AES.BIN = 0x00000000
+
+case 609  opcode 112  rsrc_gaddr type 11 index 0 -- R_IBPMASK -- must equal R_ICONBLK
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x00000030   AES.BIN = 0x00000000
+
+case 610  opcode 112  rsrc_gaddr type 12 index 0 -- R_IBPDATA: &iconblk->ib_pdata
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x00000034   AES.BIN = 0x00000000
+
+case 611  opcode 112  rsrc_gaddr type 13 index 0 -- R_IBPTEXT: &iconblk->ib_ptext
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x00000038   AES.BIN = 0x00000000
+
+case 612  opcode 112  rsrc_gaddr type 14 index 0 -- R_BIPDATA -- must equal R_BITBLK 
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x000000E0   AES.BIN = 0x00000000
+
+case 613  opcode 112  rsrc_gaddr type 15 index 0 -- R_FRSTR: the free-string POINTER,
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x00000774   AES.BIN = 0x00000000
+
+case 614  opcode 112  rsrc_gaddr type 16 index 0 -- R_FRIMG: the free-image pointer
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x000000E0   AES.BIN = 0x00000000
+
+case 616  opcode 112  rsrc_gaddr type 2 index 1 -- R_TEDINFO, one record on from inde
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x000000FC   AES.BIN = 0x00000000
+
+case 617  opcode 112  rsrc_gaddr type 8 index 1 -- R_TEPTEXT, one record on from inde
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x000000FC   AES.BIN = 0x00000000
+
+case 618  opcode 112  rsrc_gaddr type 3 index 1 -- R_ICONBLK, one record on from inde
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x00000052   AES.BIN = 0x00000000
+
+case 619  opcode 112  rsrc_gaddr type 11 index 1 -- R_IBPMASK, one record on from ind
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x00000052   AES.BIN = 0x00000000
+
+case 620  opcode 112  rsrc_gaddr type 4 index 1 -- R_BITBLK, one record on from index
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x000000EE   AES.BIN = 0x00000000
+
+case 621  opcode 112  rsrc_gaddr type 14 index 1 -- R_BIPDATA, one record on from ind
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x000000EE   AES.BIN = 0x00000000
+
+case 623  opcode 112  rsrc_gaddr type 17: one past the last defined R_* type
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 624  opcode 112  rsrc_gaddr type 99
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 625  opcode 112  rsrc_gaddr type -1: rstype is a UWORD, so this is 65535
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 626  opcode 112  rsrc_gaddr R_OBJECT index 1000: EmuTOS does not range-check the
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x00005FC6   AES.BIN = 0x00000000
+
+case 627  opcode 112  rsrc_gaddr R_OBJECT with n_addrout 0: xif writes addrout[0] reg
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[0]             AES.BIN = 0x0001 (1)   AES.BIN = 0x0000 (0)
+    addr_out[0]            AES.BIN = 0x00000206   AES.BIN = 0x00000000
+
+case 632  opcode 113  rsrc_saddr type 17: get_addr returns -1L, so rs_saddr refuses b
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 633  opcode 113  rsrc_saddr type 99: the same arm
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 644  opcode 10  appl_init re-entry: ap_init sets AP_OPEN on a process that alre
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+    int_out[1]             AES.BIN = 0x0007 (7)   AES.BIN = 0x0000 (0)
+
+case 647  opcode 26  evnt_dclick set index 3: inside gl_dcrates[5], and the answer i
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 649  opcode 26  evnt_dclick read back after a set of 3: the rate word is still 
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 652  opcode 30  menu_bar show 0: the else arm, which never touches the tree poi
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 657  opcode 78  graf_mouse 0 ARROW
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 658  opcode 78  graf_mouse 1 TEXT_CRSR
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 659  opcode 78  graf_mouse 2 HOURGLASS
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 660  opcode 78  graf_mouse 3 POINT_HAND
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 661  opcode 78  graf_mouse 4 FLAT_HAND
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 662  opcode 78  graf_mouse 5 THIN_CROSS
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 663  opcode 78  graf_mouse 6 THICK_CROSS
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 664  opcode 78  graf_mouse 7 OUTLN_CROSS
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 665  opcode 78  graf_mouse 8: one past OUTLN_CROSS, the default arm clamps to A
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 666  opcode 78  graf_mouse 254: one below USER_DEF, still the default arm
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 667  opcode 78  graf_mouse 261: one past M_PREVIOUS, still the default arm
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 668  opcode 78  graf_mouse -1: below ARROW, the default arm clamps up
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 669  opcode 78  graf_mouse M_SAVE: the current form into the process slot
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 670  opcode 78  graf_mouse M_RESTORE: back out of it
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 671  opcode 78  graf_mouse M_PREVIOUS: the global previous form
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 675  opcode 78  graf_mouse M_OFF: gl_moff 0 -> 1, the cursor goes away
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+case 676  opcode 78  graf_mouse M_ON: gl_moff 1 -> 0, and the ledger is closed
+    global[3]              AES.BIN = 0x0000 (0)   AES.BIN = 0x1143 (4419)
+    global[4]              AES.BIN = 0x1143 (4419)   AES.BIN = 0x0000 (0)
+    global[10]              AES.BIN = 0x0004 (4)   AES.BIN = 0x0010 (16)
+
+181 of 181 cases differ
+address check, AES.BIN: format 3, pointer 4 bytes, most significant word first; 181 address cells checked, 0 not < 0x80000000
+address check, AES.BIN: format 3, pointer 8 bytes, least significant word first; 181 address cells checked, 0 not < 0x80000000

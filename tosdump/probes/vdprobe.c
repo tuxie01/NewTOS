@@ -560,6 +560,118 @@ static void k11(void)
 	grab("K11D", 60, 60, 80, 80);
 }
 
+/* ---- V19: memory -> memory below nine planes, plain op vs op | 0x10 ------
+ * (TASK/V19 acceptance, appended after K11 so cases 1..54 stay byte-identical.)
+ * The raster table (vdi-v18-raster.tsv) cannot set a fill pattern, so this
+ * probe sets a user-defined, non-solid one (vsf_udpat, interior 4) and then
+ * copies a rectangle between two memory forms of 1/2/4/8 planes with vro_cpyfm,
+ * once with the plain op and once with op | 0x10 (PAT_FLAG).  The destination
+ * form plus 32 guard words on both sides is written to VDPROBE.BIN as one
+ * record per copy (x = y = 0, w = number of words, h = 1; the words are the
+ * WORD values of the form, written big-endian).  EmuTOS strips PAT_FLAG for
+ * memory forms (vdi_raster.c setup_pattern, p_addr = NULL), so within a side the
+ * two records must be equal; across the sides every record must be equal. */
+#define PF_GUARD 32
+#define PF_WORDS (PF_GUARD + 256 + PF_GUARD)
+static uint16_t pf_src[PF_WORDS], pf_dst[PF_WORDS];
+
+static void pf_fill(uint16_t *buf, uint32_t seed)
+{
+	int i;
+
+	/* WORD values, not bytes: a planar form is a sequence of WORDs, in the
+	 * native byte order of each side (m68k big-endian, NewTOS aarch64
+	 * little-endian), pixel 0 = the WORD's most significant bit. */
+	for (i = 0; i < PF_WORDS; i++) {
+		seed = seed * 1103515245UL + 12345UL;
+		buf[i] = (uint16_t)(seed >> 16);
+	}
+	for (i = 0; i < PF_GUARD; i++)
+		buf[i] = buf[PF_WORDS - PF_GUARD + i] = 0xA5A5;
+}
+
+static void pf_record(const char *name, const uint16_t *buf)
+{
+	uint8_t hd[19];
+	int i;
+
+	memset(hd, 0, sizeof hd);
+	hd[0] = 'C';
+	put16(hd + 1, caseno);
+	memcpy(hd + 3, name, strlen(name) < 8 ? strlen(name) : 8);
+	put16(hd + 15, PF_WORDS); put16(hd + 17, 1);
+	if (binfh < 0)
+		return;
+	Fwrite((short)binfh, 19L, hd);
+	for (i = 0; i < PF_WORDS; i++) {
+		uint8_t w2[2];
+
+		put16(w2, buf[i]);		/* the WORD value, big-endian in the file */
+		Fwrite((short)binfh, 2L, w2);
+	}
+}
+
+static void pf_copy(const char *name, int planes, int geo, int op, int flag)
+{
+	MFDB src, dst;
+	int sx1, sy1, sx2, sy2, dx, dy;
+
+	begin(name, geo ? "pattern set, mem->mem op, shifted left" : "pattern set, mem->mem op, shifted right");
+	{
+		static const uint16_t pat[16] = {
+			0x8001, 0x4002, 0x2004, 0x1008, 0x0810, 0x0420, 0x0240, 0x0180,
+			0xF00F, 0x0FF0, 0xAAAA, 0x5555, 0xCCCC, 0x3333, 0xFF00, 0x00FF };
+		udpat(16, pat);
+		i1(23, 4);			/* vsf_interior user-defined */
+		i1(25, 2);
+	}
+	memset(&src, 0, sizeof src);
+	memset(&dst, 0, sizeof dst);
+	pf_fill(pf_src, 0x1234ABCDUL + (uint32_t)planes);
+	pf_fill(pf_dst, 0x9876FEDCUL + (uint32_t)planes);
+	src.fd_addr = pf_src + PF_GUARD;
+	dst.fd_addr = pf_dst + PF_GUARD;
+	src.fd_w = dst.fd_w = 64;
+	src.fd_h = dst.fd_h = 8;
+	src.fd_wdwidth = dst.fd_wdwidth = 4;
+	src.fd_stand = dst.fd_stand = 0;
+	src.fd_nplanes = dst.fd_nplanes = (int16_t)planes;
+	if (geo == 0) { sx1 = 3; sy1 = 1; sx2 = 50; sy2 = 6; dx = 11; dy = 2; }
+	else          { sx1 = 20; sy1 = 0; sx2 = 60; sy2 = 7; dx = 5; dy = 0; }
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 109;
+	contrl[1] = 4;
+	contrl[3] = 1;
+	contrl[6] = handle;
+	set_mfdb_ptr(0, &src);
+	set_mfdb_ptr(1, &dst);
+	intin[0] = (int16_t)(op | (flag ? 0x10 : 0));
+	ptsin[0] = (int16_t)sx1; ptsin[1] = (int16_t)sy1;
+	ptsin[2] = (int16_t)sx2; ptsin[3] = (int16_t)sy2;
+	ptsin[4] = (int16_t)dx; ptsin[5] = (int16_t)dy;
+	ptsin[6] = (int16_t)(dx + sx2 - sx1); ptsin[7] = (int16_t)(dy + sy2 - sy1);
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);
+	pf_record(name, pf_dst);
+}
+
+static void k12(void)
+{
+	static const uint8_t ops[] = { 0, 1, 3, 4, 6, 7, 10, 12, 15 };
+	static const uint8_t pl[] = { 1, 2, 4, 8 };
+	char nm[9];
+	int p, g, o, f;
+
+	for (p = 0; p < 4; p++)
+		for (g = 0; g < 2; g++)
+			for (o = 0; o < (int)sizeof ops; o++)
+				for (f = 0; f < 2; f++) {
+					nm[0] = 'P'; nm[1] = (char)('0' + pl[p]); nm[2] = (char)('a' + g);
+					nm[3] = "0123456789ABCDEF"[ops[o] >> 4]; nm[4] = "0123456789ABCDEF"[ops[o] & 15];
+					nm[5] = f ? 'f' : 'p'; nm[6] = 0;
+					pf_copy(nm, pl[p], g, ops[o], f);
+				}
+}
+
 int main(void)
 {
 	int16_t ap_id;
@@ -602,6 +714,7 @@ int main(void)
 	k8();
 	k10();
 	k11();
+	k12();
 
 	if (binfh >= 0)
 		Fclose((short)binfh);

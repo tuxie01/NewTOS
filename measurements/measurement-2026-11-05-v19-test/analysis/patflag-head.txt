@@ -1,0 +1,9 @@
+cases 1..54: 26 differ of 54
+appended records: 144 (72 p/f pairs)
+(b) across sides differ: 0 of 144 []
+(a) EmuTOS: op|0x10 != plain in 0 of 72 pairs []
+    EmuTOS: distinct dest images 72
+(a) NewTOS: op|0x10 != plain in 0 of 72 pairs []
+    NewTOS: distinct dest images 72
+guards touched EmuTOS: 0 []
+guards touched NewTOS: 0 []

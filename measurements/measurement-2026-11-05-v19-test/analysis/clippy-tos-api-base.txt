@@ -1,0 +1,70 @@
+   3 warning: this function has too many arguments (8/7)
+   2 warning: this `if` can be collapsed into the outer `match`
+   2 warning: the loop variable `i` is used to index `names`
+   1 warning: value assigned to `tree` is never read
+   1 warning: value assigned to `top` is never read
+   1 warning: type `vdi::Vdipb` is more private than the item `vdi::mouse::vsc_form`
+   1 warning: type `vdi::Vdipb` is more private than the item `vdi::mouse::vq_mouse`
+   1 warning: type `vdi::Vdipb` is more private than the item `vdi::mouse::vex_wheelv`
+   1 warning: type `vdi::Vdipb` is more private than the item `vdi::mouse::vex_timv`
+   1 warning: type `vdi::Vdipb` is more private than the item `vdi::mouse::vex_motv`
+   1 warning: type `vdi::Vdipb` is more private than the item `vdi::mouse::vex_curv`
+   1 warning: type `vdi::Vdipb` is more private than the item `vdi::mouse::vex_butv`
+   1 warning: type `vdi::Vdipb` is more private than the item `vdi::mouse::v_show_c`
+   1 warning: type `aes::Aespb` is more private than the item `aes::window::wind_update`
+   1 warning: type `aes::Aespb` is more private than the item `aes::window::wind_set`
+   1 warning: type `aes::Aespb` is more private than the item `aes::window::wind_open`
+   1 warning: type `aes::Aespb` is more private than the item `aes::window::wind_new`
+   1 warning: type `aes::Aespb` is more private than the item `aes::window::wind_get`
+   1 warning: type `aes::Aespb` is more private than the item `aes::window::wind_find`
+   1 warning: type `aes::Aespb` is more private than the item `aes::window::wind_delete`
+   1 warning: type `aes::Aespb` is more private than the item `aes::window::wind_create`
+   1 warning: type `aes::Aespb` is more private than the item `aes::window::wind_close`
+   1 warning: type `aes::Aespb` is more private than the item `aes::window::wind_calc`
+   1 warning: type `aes::Aespb` is more private than the item `aes::shell::shel_write`
+   1 warning: type `aes::Aespb` is more private than the item `aes::shell::shel_wdef`
+   1 warning: type `aes::Aespb` is more private than the item `aes::shell::shel_read`
+   1 warning: type `aes::Aespb` is more private than the item `aes::shell::shel_rdef`
+   1 warning: type `aes::Aespb` is more private than the item `aes::shell::shel_put`
+   1 warning: type `aes::Aespb` is more private than the item `aes::shell::shel_get`
+   1 warning: type `aes::Aespb` is more private than the item `aes::shell::shel_find`
+   1 warning: type `aes::Aespb` is more private than the item `aes::shell::shel_envrn`
+   1 warning: type `aes::Aespb` is more private than the item `aes::shell::scrp_write`
+   1 warning: type `aes::Aespb` is more private than the item `aes::shell::scrp_read`
+   1 warning: type `aes::Aespb` is more private than the item `aes::shell::scrp_clear`
+   1 warning: type `aes::Aespb` is more private than the item `aes::resource::rsrc_saddr`
+   1 warning: type `aes::Aespb` is more private than the item `aes::resource::rsrc_obfix`
+   1 warning: type `aes::Aespb` is more private than the item `aes::resource::rsrc_load`
+   1 warning: type `aes::Aespb` is more private than the item `aes::resource::rsrc_gaddr`
+   1 warning: type `aes::Aespb` is more private than the item `aes::resource::rsrc_free`
+   1 warning: type `aes::Aespb` is more private than the item `aes::object::objc_sysvar`
+   1 warning: type `aes::Aespb` is more private than the item `aes::object::objc_order`
+   1 warning: type `aes::Aespb` is more private than the item `aes::object::objc_offset`
+   1 warning: type `aes::Aespb` is more private than the item `aes::object::objc_find`
+   1 warning: type `aes::Aespb` is more private than the item `aes::object::objc_edit`
+   1 warning: type `aes::Aespb` is more private than the item `aes::object::objc_draw`
+   1 warning: type `aes::Aespb` is more private than the item `aes::object::objc_delete`
+   1 warning: type `aes::Aespb` is more private than the item `aes::object::objc_change`
+   1 warning: type `aes::Aespb` is more private than the item `aes::object::objc_add`
+   1 warning: type `aes::Aespb` is more private than the item `aes::menu::menu_tnormal`
+   1 warning: type `aes::Aespb` is more private than the item `aes::menu::menu_text`
+   1 warning: type `aes::Aespb` is more private than the item `aes::menu::menu_settings`
+   1 warning: type `aes::Aespb` is more private than the item `aes::menu::menu_register`
+   1 warning: type `aes::Aespb` is more private than the item `aes::menu::menu_popup`
+   1 warning: type `aes::Aespb` is more private than the item `aes::menu::menu_istart`
+   1 warning: type `aes::Aespb` is more private than the item `aes::menu::menu_ienable`
+   1 warning: type `aes::Aespb` is more private than the item `aes::menu::menu_icheck`
+   1 warning: type `aes::Aespb` is more private than the item `aes::menu::menu_bar`
+   1 warning: type `aes::Aespb` is more private than the item `aes::menu::menu_attach`
+   1 warning: type `aes::Aespb` is more private than the item `aes::fsel::fsel_input`
+   1 warning: type `aes::Aespb` is more private than the item `aes::fsel::fsel_exinput`
+   1 warning: type `aes::Aespb` is more private than the item `aes::form::form_keybd`
+   1 warning: type `aes::Aespb` is more private than the item `aes::form::form_error`
+   1 warning: type `aes::Aespb` is more private than the item `aes::form::form_do`
+   1 warning: type `aes::Aespb` is more private than the item `aes::form::form_dial`
+   1 warning: type `aes::Aespb` is more private than the item `aes::form::form_center`
+   1 warning: type `aes::Aespb` is more private than the item `aes::form::form_button`
+   1 warning: type `aes::Aespb` is more private than the item `aes::form::form_alert`
+   1 warning: this `impl` can be derived
+   1 warning: needlessly taken reference of both operands
+   1 warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions)

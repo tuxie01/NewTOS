@@ -1,0 +1,9 @@
+cases 1..54: 26 differ of 54
+appended records: 144 (72 p/f pairs)
+(b) across sides differ: 144 of 144 ['P1a00p', 'P1a00f', 'P1a01p', 'P1a01f', 'P1a03p', 'P1a03f', 'P1a04p', 'P1a04f', 'P1a06p', 'P1a06f', 'P1a07p', 'P1a07f']
+(a) EmuTOS: op|0x10 != plain in 0 of 72 pairs []
+    EmuTOS: distinct dest images 72
+(a) NewTOS: op|0x10 != plain in 0 of 72 pairs []
+    NewTOS: distinct dest images 72
+guards touched EmuTOS: 0 []
+guards touched NewTOS: 120 ['P1a00p', 'P1a00f', 'P1a01p', 'P1a01f', 'P1a03p', 'P1a03f', 'P1a04p', 'P1a04f', 'P1a06p', 'P1a06f', 'P1a07p', 'P1a07f']
