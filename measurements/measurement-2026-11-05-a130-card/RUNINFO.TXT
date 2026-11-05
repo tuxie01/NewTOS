@@ -1,0 +1,43 @@
+RUNINFO -- user's test card gets the A130 kernel for the Pi scroll-bar check (2026-11-05)
+
+WHAT
+  A130 (GitHub #2): window scroll bars like EmuTOS hctl_window (d9e44143),
+  accepted against the oracle (measurements/measurement-2026-11-05-a130-test/RUNINFO.TXT).
+  The pattern bands of #2 were a display-timing effect; QEMU does not reach the
+  Pi's HDMI scan-out, so the Pi run decides. Only kernel8.img is replaced; the
+  user asked for 100 text files on NEWTOS1 for scrolling tests.
+
+SOURCE
+  cargo xtask build --board rpi4 --release --features crash-walk at 8040abeb
+  (not pushed; user: push after the fix is done).
+  sha256 02c833a5b780122a1d027ebe7ae3cc7404622adfb983411b7f9be099d841b80e
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1).
+  optional_missing: not applicable (no image built; files written by hand).
+
+CARD
+  disk4s1 = BOOT = C:
+    Before: kernel8.img ec66b9e7bfe5e983... (A127 D1 kernel,
+    measurements/measurement-2026-11-05-a127-d1-card/RUNINFO.TXT).
+    On the user's word (cp -X, no script, no backup) -> C:\kernel8.img.
+    Read back after diskutil unmount force + mount: 02c833a5b780122a...;
+    cmdline.txt = 0x0a (unchanged); kernela.img e0fe680b... unchanged (fallback).
+  disk4s2 = NEWTOS1
+    User 2026-11-05: "erstelle mir doch bitte auf NEWTOS1 100 textdateien".
+    Before: TEST.TXT only (plus macOS dot dirs).
+    Written: TEST001.TXT .. TEST100.TXT in the root, each 100 lines
+    "Datei NNN  Zeile LLL  Scroll-Test fuer NewTOS (A130)" with CR LF
+    (5100 bytes each); TEST001.TXT sha256 2faf0ed3fec58adb... .
+    No ._ files after remount (0).
+
+CHECKS FOR THE USER (result goes to TASK/A130.md)
+  1. Window with a full elevator (window larger than its content): press and
+     hold / drag the elevator -> no pattern bands, only a dotted outline;
+     elevator drawn pressed.
+  2. NEWTOS1 window with the 100 files: drag the elevator -> content jumps on
+     release, as EmuTOS.
+  3. Press in the track beside the elevator and hold -> scrolls page by page
+     continuously; arrows held -> line by line continuously.
+  4. A text file in QED / a HYP in HypView: the same.
+
+RESULT
+  User 2026-11-05 after the Pi run: "funktioniert wie erwartet" (checks 1-4).
