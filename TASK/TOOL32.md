@@ -82,6 +82,30 @@ Abweichungs-Kandidaten aus dem Lesen (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
     nicht beobachtbar.
 (12. `call_user_but`: ADR-031, bekannt.)
 
+## Stand Teil 2 (2026-11-05, Researcher)
+
+97 Zeilen fuer die 87 Funktionen von `vdi_text.c`, `vdi_textblit.c`, `vdi_esc.c`, `vdi_col.c`;
+`--check-mapping` sauber, `--coverage` vdi danach 159 mapped / 32 design / 59 unmapped
+(davon 54 ohne Zeile = Teil 3). Je Funktion 75 `mapped`, 10 `design` (8 `hardware:video-shifter`,
+2 `hardware:videl`), 2 `unmapped` (`ok_for_direct_blit`, `trnsfont`). `screen_blit` und
+`direct_screen_blit` `mapped` auf `draw_glyph_sized` (enthalten auch den 16-Bit-Zweig).
+
+Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
+
+13. `vdi_text.c:1292-1350` gegen `tos-api/src/vdi/attributes.rs:351@vst_load_fonts`: GDOS-Fontkette
+    (`CONF_WITH_GDOS=1`) fehlt, NewTOS liefert immer 0.
+14. `vdi_textblit.c:672-741` gegen `tos-api/src/vdi/text.rs:71@resize`: bei `dda_inc == 0xFFFF`
+    driftet EmuTOS' `XDDA`, NewTOS liefert absichtlich genau `2*size` (Kommentar im Code).
+15. `vdi_text.c:770-817` gegen `text.rs:103@scaled_header` und `attributes.rs:171@vst_font`:
+    `point*2` im skalierten Header, `vst_font` waehlt die Groesse in NewTOS nicht neu.
+16. `vdi_text.c:1177-1289` gegen `text.rs:810@v_justified`: Drehung 900/1800/2700 fehlt.
+17. `vdi_esc.c:100-107` gegen `tos-api/src/vdi/escape.rs:793@v_escape`: ESC Y (Spalten > 223,
+    Byte-Abschneiden) anders, als Entscheidung Q6 im Code.
+18. `vdi_esc.c:241-247` gegen `escape.rs:793@v_escape`: Escape 17 ruft `Scrdmp()` nicht; `dump_vec`
+    nicht verfolgt.
+19. `vdi_text.c:592-665` gegen `tos-api/src/vdi/font.rs:250@DEFAULT`: Default-Font fest 8x16 statt
+    nach `V_REZ_VT >= 400`.
+
 Folgeticket: [TOOL33](TOOL33.md) (AES).
 
 [Gemeinsame Regeln](README.md) gelten.

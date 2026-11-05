@@ -1273,3 +1273,97 @@ vro_cpyfm16	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	copy_rect	mapped	screen t
 vrt_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mono_to_mem	mapped	mono source expanded into a 16-bit memory MFDB
 vrt_cpyfm16	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	blit_mono	mapped	mono source expanded onto the screen
 normal_blit	vdi/vdi_tblit.S	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	the glyph cell blit with the writing mode; the cell itself (scaling, effects, rotation) is built in text.rs build_cell/blit_cell
+adjust_mono_values	vdi/vdi_col.c	-	-	design:hardware:video-shifter	ST/STE monochrome DAC fudge factors (palette path, v_planes == 1); the Pi has no ST shifter
+adjust_tt_colnum	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter palette bank handling; the Pi has no TT shifter
+fivebits2vdi	vdi/vdi_col.c	tos-api/src/vdi/vwk.rs	fivebits2vdi	mapped	5-bit gun back to 0..1000
+get_tt_hyper_mono	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter hyper-mono palette entries; the Pi has no TT shifter
+init_colors	vdi/vdi_col.c	kernel/src/vdi_backend.rs	ensure_palette_init	mapped	device default palette (REQ_COL and active palette) seeded from the VIDEL palettes; the ST/TT palettes and the MAP_COL table are not built (MAP_COL folded to identity)
+init_colors	vdi/vdi_col.c	tos-api/src/vdi/workstation.rs	init_wk	mapped	per-workstation req_col and pseudo-palette seeded for pens 0..254 (EmuTOS does this in vdi_control.c init_wk, not in init_colors)
+query_tt_color	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter register read-back; the Pi has no TT shifter
+set_color	vdi/vdi_col.c	kernel/src/vdi_backend.rs	set_color	mapped	palette write of the device (non-truecolor path of vdi_vs_color); no VIDEL/TT/ST register write exists; truecolor vs_color never reaches it
+set_color16	vdi/vdi_col.c	tos-api/src/vdi/vwk.rs	set_color16	mapped	pseudo-palette entry; MAP_COL folded to identity
+set_tt_color	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter register write; the Pi has no TT shifter
+vdi_vq_color	vdi/vdi_col.c	tos-api/src/vdi/inquiry.rs	vq_color	mapped	opcode 26
+vdi_vs_color	vdi/vdi_col.c	tos-api/src/vdi/attributes.rs	vs_color	mapped	opcode 14
+vdi2fivebits	vdi/vdi_col.c	tos-api/src/vdi/vwk.rs	vdi2fivebits	mapped	0..1000 to 5-bit gun
+vdi2st	vdi/vdi_col.c	-	-	design:hardware:video-shifter	ST shifter 3-bit gun conversion; the Pi has no ST shifter
+vdi2ste	vdi/vdi_col.c	-	-	design:hardware:video-shifter	STE shifter 4-bit gun conversion; the Pi has no STE shifter
+vdi2tt	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter 4-bit gun conversion; the Pi has no TT shifter
+vdi2videl	vdi/vdi_col.c	-	-	design:hardware:videl	VIDEL 8-bit gun conversion for VsetRGB; NewTOS truecolor programs no VIDEL register
+videl2vdi	vdi/vdi_col.c	-	-	design:hardware:videl	VIDEL 8-bit gun conversion for VgetRGB; NewTOS truecolor reads no VIDEL register
+vq_color16	vdi/vdi_col.c	tos-api/src/vdi/inquiry.rs	vq_color	mapped	truecolor branch of vq_color (flag 0 raw req_col, else 5-bit pseudo-palette)
+vs_color16	vdi/vdi_col.c	tos-api/src/vdi/attributes.rs	vs_color	mapped	truecolor branch of vs_color (raw req_col, clamped pseudo-palette)
+char_resize	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	resize	mapped	DDA size; the 0xFFFF double case leaves the accumulator untouched (same as EmuTOS here)
+check_clip	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	early-out whole-cell clip decision; NewTOS intersects the cell with the clip box and the screen per pixel instead
+direct_screen_blit	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	CONF_WITH_VDI_TEXT_SPEEDUP direct 8-wide blit (on in the 512 build); NewTOS has no direct path, v_gtext goes through the general glyph path; planar branch is ADR-024
+direct_screen_blit16	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	truecolor direct blit; the general path of NewTOS draws the same cell (equal output not measured)
+do_clip	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	trims the cell to the clip window; NewTOS clips per pixel in the backend
+merge_byte	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	build_cell	mapped	helper of outline (18-bit neighbour window); NewTOS outlines on 64-bit rows
+outline	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	build_cell	mapped	outline effect step of the cell builder
+pre_blit	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	build_cell	mapped	thicken, skew, light and outline into an intermediate cell
+rotate	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	rotate_cell	mapped	chup 900/1800/2700
+scale	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_glyph	mapped	DDA magnify; the 0xFFFF double case does not run EmuTOS' spacing loop (see report)
+scaledown	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_down	mapped	-
+scaleup	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_up	mapped	-
+screen_blit	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	glyph cell to the screen with the writing mode; the planar branch (v_planes <= 8) is ADR-024 and has no code
+screen_blit16	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	truecolor cell blit, replace background is pen 0
+shift_and_update	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_up	mapped	destination bit/word stepping of the scalers; NewTOS packs into one u64 row
+shift_and_update	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_down	mapped	destination bit/word stepping of the scalers; NewTOS packs into one u64 row
+text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	make_glyph	mapped	per-character driver: scale, effects
+text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	draw_cell	mapped	per-character blit and position (chup 0)
+text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	output_text_rotated	mapped	per-character blit and position (chup 900/1800/2700)
+bios_conws	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	puts	mapped	string through the VT52 automaton
+crawio	vdi/vdi_esc.c	tos-api/src/gemdos/console.rs	rawio	mapped	Crawio call
+esc_exit	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	esc_exit	mapped	-
+esc_init	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	esc_init	mapped	-
+escfn0	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	no-op arm (default arm)
+escfn1	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	vq_chcells arm 1
+escfn2	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_exit_cur arm 2
+escfn3	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_enter_cur arm 3
+escfn4	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_curup arm 4
+escfn5	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_curdown arm 5
+escfn6	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_curright arm 6
+escfn7	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_curleft arm 7
+escfn8	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_curhome arm 8
+escfn9	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_eeos arm 9
+escfn10	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_eeol arm 10
+escfn11	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	vs_curaddress arm 11; NewTOS moves the cursor directly instead of sending ESC Y (differs beyond column 223)
+escfn12	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_curtext arm 12, Crawio per character
+escfn13	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_rvon arm 13
+escfn14	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_rvoff arm 14
+escfn15	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	vq_curaddress arm 15
+escfn16	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	vq_tabstatus arm 16, constant 1
+escfn17	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_hardcopy arm 17 is empty; EmuTOS calls Scrdmp (NewTOS xbios scrdmp is a no-op, not called from here)
+escfn18	vdi/vdi_esc.c	tos-api/src/vdi/mouse.rs	force_show	mapped	v_dspcur; dispatched from v_escape arm 18
+escfn19	vdi/vdi_esc.c	tos-api/src/vdi/mouse.rs	v_hide_c	mapped	v_rmcur; dispatched from v_escape arm 19
+vdi_v_escape	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	opcode 5
+act_siz	vdi/vdi_text.c	tos-api/src/vdi/text.rs	act_siz	mapped	-
+calc_height	vdi/vdi_text.c	tos-api/src/vdi/text.rs	calc_height	mapped	-
+calc_width	vdi/vdi_text.c	tos-api/src/vdi/text.rs	calc_width	mapped	-
+clc_dda	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	clc_dda	mapped	-
+gdp_justified	vdi/vdi_text.c	tos-api/src/vdi/text.rs	v_justified	mapped	GDP 10; at a right-angle chup NewTOS draws unrotated
+make_header	vdi/vdi_text.c	tos-api/src/vdi/text.rs	scaled_header	mapped	scratch header built on demand; EmuTOS stores point*2 in it, see report
+ok_for_direct_blit	vdi/vdi_text.c	-	-	unmapped	CONF_WITH_VDI_TEXT_SPEEDUP test; NewTOS has no direct-blit path to select
+output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	v_gtext	mapped	horizontal path and alignment
+output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	output_text_rotated	mapped	chup 900/1800/2700
+output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	v_justified	mapped	justified apply loop
+output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	underline	mapped	underline run
+setup_width_height	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	setup_width_height	mapped	-
+text_init	vdi/vdi_text.c	tos-api/src/vdi/workstation.rs	font_ring_fold	mapped	SIZ_TAB[0..3] and DEV_TAB[5] fold; default-font choice by V_REZ_VT is a constant (font.rs DEFAULT = 8x16), the F_STDFORM byte swap does not exist
+text_init2	vdi/vdi_text.c	tos-api/src/vdi/vwk.rs	alloc_handle	mapped	slot reset to Vwk::EMPTY gives the text defaults (font, style, align, chup); scratch buffers do not exist
+trnsfont	vdi/vdi_text.c	-	-	unmapped	byte swap of non-standard-form fonts (CONF_WITH_GDOS); NewTOS loads no font
+vdi_v_gtext	vdi/vdi_text.c	tos-api/src/vdi/text.rs	v_gtext	mapped	opcode 8
+vdi_vqt_attributes	vdi/vdi_text.c	tos-api/src/vdi/inquiry.rs	vqt_attributes	mapped	opcode 38
+vdi_vqt_extent	vdi/vdi_text.c	tos-api/src/vdi/inquiry.rs	vqt_extent	mapped	opcode 116
+vdi_vqt_fontinfo	vdi/vdi_text.c	tos-api/src/vdi/inquiry.rs	vqt_fontinfo	mapped	opcode 131
+vdi_vqt_name	vdi/vdi_text.c	tos-api/src/vdi/inquiry.rs	vqt_name	mapped	opcode 130
+vdi_vqt_width	vdi/vdi_text.c	tos-api/src/vdi/inquiry.rs	vqt_width	mapped	opcode 117
+vdi_vst_alignment	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_alignment	mapped	opcode 39
+vdi_vst_color	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_color	mapped	opcode 22; MAP_COL folded to identity
+vdi_vst_effects	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_effects	mapped	opcode 106
+vdi_vst_font	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_font	mapped	opcode 21; NewTOS returns face 1 and does not re-run vst_height/vst_point
+vdi_vst_height	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_height	mapped	opcode 12
+vdi_vst_load_fonts	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_load_fonts	mapped	opcode 119; NewTOS always returns 0, EmuTOS (CONF_WITH_GDOS) links the fonts in CONTRL[10-11]
+vdi_vst_point	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_point	mapped	opcode 107
+vdi_vst_rotation	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_rotation	mapped	opcode 13
+vdi_vst_unload_fonts	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_unload_fonts	mapped	opcode 120; no-op, nothing was loaded
