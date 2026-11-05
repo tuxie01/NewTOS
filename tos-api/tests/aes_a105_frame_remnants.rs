@@ -61,6 +61,10 @@ struct BufBackend {
     px: Mutex<Vec<u32>>,
     palette: Mutex<[u16; 256]>,
     req: Mutex<[(u16, u16, u16); 256]>,
+    /// Drawing primitives issued so far (`fill_rect`, `fill_pattern`,
+    /// `abline`) — A130: a held elevator must not be repainted while the
+    /// pointer stands still.
+    paints: AtomicUsize,
 }
 
 impl BufBackend {
@@ -69,6 +73,7 @@ impl BufBackend {
             px: Mutex::new(vec![0; SCREEN_W as usize * SCREEN_H as usize]),
             palette: Mutex::new([0; 256]),
             req: Mutex::new([(0, 0, 0); 256]),
+            paints: AtomicUsize::new(0),
         }
     }
 
@@ -150,6 +155,7 @@ impl RasterBackend for BufBackend {
         pal.iter().position(|&p| p == want).unwrap_or(0) as Pel
     }
     fn fill_rect(&self, x: i16, y: i16, w: i16, h: i16, pel: Pel, clip: ClipRect) {
+        self.paints.fetch_add(1, Ordering::Relaxed);
         let v = self.rgb565_to_device(self.pel_to_device16(pel));
         for yy in y..y.saturating_add(h) {
             for xx in x..x.saturating_add(w) {
@@ -164,11 +170,12 @@ impl RasterBackend for BufBackend {
         x1: i16,
         y1: i16,
         pel: Pel,
-        _mode: WriteMode,
+        mode: WriteMode,
         clip: ClipRect,
         mask: u16,
         _last: bool,
     ) -> u16 {
+        self.paints.fetch_add(1, Ordering::Relaxed);
         let v = self.rgb565_to_device(self.pel_to_device16(pel));
         let (mut x, mut y) = (x0 as i32, y0 as i32);
         let (dx, dy) = ((x1 as i32 - x).abs(), -(y1 as i32 - y).abs());
@@ -177,7 +184,14 @@ impl RasterBackend for BufBackend {
         let mut m = mask;
         loop {
             if m & 0x8000 != 0 {
-                self.put(x as i16, y as i16, v, clip);
+                // XOR complements the target (the drag outlines, `gsx_xbox`),
+                // so drawing a line twice restores what was under it.
+                if matches!(mode, WriteMode::Xor) {
+                    let old = self.get_device_pixel(x as i16, y as i16);
+                    self.put(x as i16, y as i16, old ^ 0x00FF_FFFF, clip);
+                } else {
+                    self.put(x as i16, y as i16, v, clip);
+                }
             }
             m = m.rotate_left(1);
             if x == x1 as i32 && y == y1 as i32 {
@@ -199,6 +213,7 @@ impl RasterBackend for BufBackend {
     /// the hover toggle is `fill_pattern` in `WriteMode::Xor`, which must
     /// complement the target, not paint it.
     fn fill_pattern(&self, x: i16, y: i16, w: i16, h: i16, fill: PatternFill, clip: ClipRect) {
+        self.paints.fetch_add(1, Ordering::Relaxed);
         let fg = self.rgb565_to_device(self.pel_to_device16(fill.fg));
         let bg = self.rgb565_to_device(self.pel_to_device16(fill.bg));
         for yy in y..y.saturating_add(h) {
@@ -332,6 +347,8 @@ struct ScriptHost {
     script: Mutex<VecDeque<Packet>>,
     /// Screen copies taken by `snap` packets, by index.
     snaps: Mutex<Vec<(usize, Vec<u32>)>>,
+    /// The backend's paint count at each `snap` packet, by index.
+    snap_paints: Mutex<Vec<(usize, usize)>>,
     /// Keys queued by `key` packets, handed out by `console_try_read_key`.
     keys: Mutex<VecDeque<u16>>,
     /// Milliseconds; advanced by `pump_input` alone.
@@ -353,6 +370,7 @@ impl ScriptHost {
             raster: BufBackend::new(),
             script: Mutex::new(VecDeque::new()),
             snaps: Mutex::new(Vec::new()),
+            snap_paints: Mutex::new(Vec::new()),
             keys: Mutex::new(VecDeque::new()),
             clock: AtomicU64::new(0),
             idle: AtomicUsize::new(0),
@@ -364,8 +382,14 @@ impl ScriptHost {
     fn clear(&self) {
         self.script.lock().unwrap().clear();
         self.snaps.lock().unwrap().clear();
+        self.snap_paints.lock().unwrap().clear();
         self.keys.lock().unwrap().clear();
         self.idle.store(0, Ordering::Relaxed);
+    }
+    /// The paint count at the `snap(index)` packet — `None` if never pumped.
+    fn paints_at(&self, index: usize) -> Option<usize> {
+        let v = self.snap_paints.lock().unwrap();
+        v.iter().find(|(i, _)| *i == index).map(|(_, n)| *n)
     }
     /// The screen copy a `snap(index)` packet took, as device pixels (the
     /// XOR complement of the palette's RGB555 white is no palette entry, so
@@ -398,6 +422,8 @@ impl Host for ScriptHost {
                 if let Some(i) = p.snap {
                     let px = self.raster.px.lock().unwrap().clone();
                     self.snaps.lock().unwrap().push((i, px));
+                    let n = self.raster.paints.load(Ordering::Relaxed);
+                    self.snap_paints.lock().unwrap().push((i, n));
                 }
                 if let Some(k) = p.key {
                     self.keys.lock().unwrap().push_back(k);
@@ -1175,10 +1201,21 @@ fn snap_ink_bbox(host: &ScriptHost, snap: &[u32], r: R) -> Option<(i16, i16, i16
     bbox(v.into_iter())
 }
 
-/// Press `(x, y)` on the frame of the `KIND_ALL` window at `B` and return
-/// `(before, held, fired, msg)`: the screen just before the press, the screen
-/// while the button is still down, and what the wait delivered.
-fn press_frame(host: &'static ScriptHost, pb: &mut Aespb, x: i16, y: i16) -> (Vec<u32>, Vec<u32>, i16, [i16; 8]) {
+/// What a wait loop saw while a frame press was held and after it: every
+/// message delivered, with whether the button was still down when the wait
+/// returned it.
+struct Held {
+    before: Vec<u32>,
+    held: Vec<u32>,
+    msgs: Vec<([i16; 8], bool)>,
+}
+
+/// Press `(x, y)` on the frame of the `KIND_ALL` window at `B`, hold it, let
+/// it go — and keep calling the application's wait (`evnt_multi` with
+/// `MU_MESAG`) the whole time, as an application does, until the script is
+/// used up and a wait ends on its timer alone. `before` is the screen just
+/// before the press, `held` the screen while the button is still down.
+fn press_frame(host: &'static ScriptHost, pb: &mut Aespb, x: i16, y: i16) -> Held {
     move_to(host, pb, x, y, 0);
     drain_messages(pb);
     arm_gap(host);
@@ -1186,27 +1223,56 @@ fn press_frame(host: &'static ScriptHost, pb: &mut Aespb, x: i16, y: i16) -> (Ve
     host.push(pkt(0, 0, 1)); // press
     hold_down(host, HOLD_PAST_WINDOW); // see `pressed_closer`
     host.push(snap_held(1)); // while it is held
-    host.push(pkt(0, 0, 1));
+    hold_down(host, 40);
     host.push(pkt(0, 0, 0)); // release
     for _ in 0..8 {
         host.push(pkt(0, 0, 0));
     }
-    let (fired, _bret, msg) = evnt_multi_timed(pb, 300);
+    let mut msgs = Vec::new();
+    for _ in 0..2000 {
+        let (fired, _bret, msg) = evnt_multi_timed(pb, 300);
+        let down = tos_api::vdi::mouse_buttons() & 1 != 0;
+        if fired & MU_MESAG != 0 {
+            msgs.push((msg, down));
+        } else if host.script.lock().unwrap().is_empty() && !down {
+            break;
+        }
+    }
     let before = host.snapshot(0).expect("the pre-press snapshot");
     let held = host.snapshot(1).expect("the held snapshot");
-    (before, held, fired, msg)
+    Held { before, held, msgs }
+}
+
+/// **A130-003: a held scroll gadget sends `WM_ARROWED` for as long as the
+/// button is down** (`handle_arrow_msg`, `aes/gemctrl.c:111-139`: `do { send
+/// or park; dsptch(); } while (button & 0x0001)`). The first message goes out
+/// on the press, not on the release; each later wait of the owner while the
+/// button is still down gets the next; after the release there is none.
+fn assert_repeats(h: &Held, action: i16) {
+    assert!(!h.msgs.is_empty(), "the press must deliver WM_ARROWED");
+    for (m, _) in &h.msgs {
+        assert_eq!((m[0], m[4]), (WM_ARROWED, action), "only WM_ARROWED/{action}, msg = {m:?}");
+        assert_eq!(m[1], 1, "sent by the Screen Manager (pid 1), msg = {m:?}");
+    }
+    assert!(h.msgs[0].1, "the first WM_ARROWED arrives while the button is still held");
+    let while_held = h.msgs.iter().filter(|(_, down)| *down).count();
+    assert!(
+        while_held >= 10,
+        "WM_ARROWED repeats while the button is held: {while_held} of {} messages",
+        h.msgs.len()
+    );
 }
 
 /// **A held scroll arrow is drawn `SELECTED`, and normal again on release.**
 /// `hctl_window` brackets `handle_arrow_msg` with `ob_change(gl_awind,
-/// gadget, selected, TRUE)` / `(…, normal, TRUE)` (`aes/gemctrl.c:272-284`),
+/// gadget, selected, TRUE)` / `(…, normal, TRUE)` (`aes/gemctrl.c:284-292`),
 /// `selected = normal | SELECTED` (`:189-194`). With the default
 /// `actcolchange = 0` that press shows as `add_3d_effect`'s **sunk** bevel —
 /// top/left BLACK instead of WHITE, bottom/right LWHITE instead of LBLACK
 /// (`gemoblib.c:238-276`) — and the glyph moved by `acttxtmove`'s `c.g_x++`
 /// (`:742-755`), which with the unselected `c.g_y--` puts it one pixel right
 /// **and** one down. NewTOS drew no feedback at all (the residual finding of A105).
-/// The `WM_ARROWED` cadence is unchanged: one message, `WA_UPLINE`.
+/// `WM_ARROWED`/`WA_UPLINE` repeats while it is held (A130-003).
 #[test]
 fn a109_a_held_scroll_arrow_is_drawn_selected_and_restored_on_release() {
     let _g = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
@@ -1220,18 +1286,19 @@ fn a109_a_held_scroll_arrow_is_drawn_selected_and_restored_on_release() {
     let bevel = slot.inset(1);
     let probe_y = bevel.y + 8;
 
-    let (before, held, fired, msg) = press_frame(host, &mut pb, cell.x + 9, cell.y + 9);
+    let h = press_frame(host, &mut pb, cell.x + 9, cell.y + 9);
+    let (before, held) = (&h.before, &h.held);
 
     // The bevel: raised before the press, sunk while it is held.
-    assert_eq!(at(&before, bevel.x, probe_y), dev(host, WHITE), "raised bevel: left line WHITE");
+    assert_eq!(at(before, bevel.x, probe_y), dev(host, WHITE), "raised bevel: left line WHITE");
     assert_eq!(
-        at(&before, bevel.x + bevel.w - 1, probe_y),
+        at(before, bevel.x + bevel.w - 1, probe_y),
         dev(host, LBLACK),
         "raised bevel: right line LBLACK"
     );
-    assert_eq!(at(&held, bevel.x, probe_y), dev(host, BLACK), "held: the bevel sinks, left line BLACK");
+    assert_eq!(at(held, bevel.x, probe_y), dev(host, BLACK), "held: the bevel sinks, left line BLACK");
     assert_eq!(
-        at(&held, bevel.x + bevel.w - 1, probe_y),
+        at(held, bevel.x + bevel.w - 1, probe_y),
         dev(host, LWHITE),
         "held: the bevel sinks, right line LWHITE"
     );
@@ -1240,12 +1307,12 @@ fn a109_a_held_scroll_arrow_is_drawn_selected_and_restored_on_release() {
     let inner = slot.inset(2);
     let normal_cell = (335, 85);
     assert_eq!(
-        snap_ink_bbox(host, &before, inner),
+        snap_ink_bbox(host, before, inner),
         text_bbox(normal_cell.0, normal_cell.1, &[G_UP]),
         "the unpressed arrow glyph"
     );
     assert_eq!(
-        snap_ink_bbox(host, &held, inner),
+        snap_ink_bbox(host, held, inner),
         text_bbox(normal_cell.0 + 1, normal_cell.1 + 1, &[G_UP]),
         "the held arrow glyph, moved by acttxtmove (gemoblib.c:748-753)"
     );
@@ -1255,23 +1322,23 @@ fn a109_a_held_scroll_arrow_is_drawn_selected_and_restored_on_release() {
         for x in slot.x..slot.x + slot.w {
             assert_eq!(
                 host.raster.get_device_pixel(x, y),
-                at(&before, x, y),
+                at(before, x, y),
                 "after the release the arrow is normal again, pixel ({x},{y})"
             );
         }
     }
 
-    assert_eq!(fired & MU_MESAG, MU_MESAG, "the press delivers WM_ARROWED; fired = {fired:#06x}");
-    assert_eq!((msg[0], msg[4]), (WM_ARROWED, WA_UPLINE), "one WM_ARROWED/WA_UPLINE, msg = {msg:?}");
+    assert_repeats(&h, WA_UPLINE);
     drain(host, &mut pb);
 }
 
 /// **A page click in the track gets no feedback.** EmuTOS guards both
 /// `ob_change`s with `if ((gadget != W_HSLIDE) && (gadget != W_VSLIDE))`
-/// (`aes/gemctrl.c:271,281`): for a click in the track `gadget` — `ob_find`'s
+/// (`aes/gemctrl.c:285,290`): for a click in the track `gadget` — `ob_find`'s
 /// answer — *is* the slide box, while `cpt` was moved on to the elevator
-/// (`:262-270`), so nothing is redrawn. The message is still sent
-/// (`WA_DNPAGE` for a point below the thumb).
+/// (`:262-278`), so nothing is redrawn. The message is still sent
+/// (`WA_DNPAGE` for a point below the thumb), repeated while the button is
+/// held (A130-003).
 #[test]
 fn a109_a_page_click_in_the_track_draws_no_feedback() {
     let _g = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
@@ -1283,18 +1350,256 @@ fn a109_a_page_click_in_the_track_draws_no_feedback() {
     // Below the thumb: with no `WF_VSLSIZ`/`WF_VSLIDE` set the elevator is one
     // gadget cell at the top of the track (`gemwmlib.c:431-434`).
     let (px, py) = (bar.x + ADJ3DSTD + GL_WBOX / 2, bar.y + bar.h - ADJ_HBOX - 20);
-    let (before, held, fired, msg) = press_frame(host, &mut pb, px, py);
+    let h = press_frame(host, &mut pb, px, py);
 
     for y in bar.y..bar.y + bar.h {
         for x in bar.x..bar.x + bar.w {
             assert_eq!(
-                at(&held, x, y),
-                at(&before, x, y),
+                at(&h.held, x, y),
+                at(&h.before, x, y),
                 "a page click must redraw nothing in the bar, pixel ({x},{y})"
             );
         }
     }
-    assert_eq!(fired & MU_MESAG, MU_MESAG, "the page click delivers WM_ARROWED; fired = {fired:#06x}");
-    assert_eq!((msg[0], msg[4]), (WM_ARROWED, WA_DNPAGE), "one WM_ARROWED/WA_DNPAGE, msg = {msg:?}");
+    assert_repeats(&h, WA_DNPAGE);
     drain(host, &mut pb);
+}
+
+// ── A130: the elevator drag (`gr_slidebox`) and its hit test ──────────────
+
+const WM_HSLID: i16 = 25;
+const WM_VSLID: i16 = 26;
+const WF_HSLIDE: i16 = 8;
+const WF_VSLIDE: i16 = 9;
+const WF_HSLSIZ: i16 = 15;
+const WF_VSLSIZ: i16 = 16;
+
+/// `wind_set(h, field, v)`.
+fn set_slider(pb: &mut Aespb, handle: i16, field: i16, v: i16) {
+    pb.intin.fill(0);
+    pb.intin[0] = handle;
+    pb.intin[1] = field;
+    pb.intin[2] = v;
+    pb.call(105, 6, 1, 0);
+    assert_eq!(pb.intout[0], 1, "wind_set({handle}, {field}, {v})");
+}
+
+/// The window of the A130 probe (`tosdump/probes/slprobe.c`): border
+/// `(80, 60, 400, 320)`, kind `0x0FEF` (every gadget but `INFO`) — the
+/// geometry the oracle's messages were measured on.
+const SLPROBE: R = R { x: 80, y: 60, w: 400, h: 320 };
+const KIND_SLPROBE: i16 = 0x0FEF;
+
+/// `W_VBAR` of a window **without** `INFO` and with both bars: as
+/// [`vbar_box`], the work area starting right below the title band.
+fn vbar_box_noinfo(b: R) -> R {
+    let top = b.y + 1 + (ADJ_HBOX - 1);
+    let data_h = b.y + b.h - top;
+    let work_h = data_h - 2 - (ADJ_HBOX - 1);
+    R { x: b.x + b.w - ADJ_WBOX, y: top, w: ADJ_WBOX, h: work_h + 2 }
+}
+
+/// The vertical slide box and its un-grown elevator in the bar `bar` —
+/// `w_bldvbar` (`gemwmlib.c:427-436`): the slide box is the bar between the
+/// two arrows (`adj_hbox` each), `size = max(gl_hbox, mul_div(h, vslsiz,
+/// 1000))` (or `gl_hbox` for −1), `posn = mul_div(h - size, vslide, 1000)`,
+/// the elevator at `(ADJ3DSTD, posn + ADJ3DSTD)`, `gl_wbox` × `size -
+/// 2*ADJ3DSTD - 1`.
+fn v_slide_elev_in(bar: R, size_pm: i16, pos_pm: i16) -> (R, R) {
+    let slide = R { x: bar.x, y: bar.y + ADJ_HBOX, w: ADJ_WBOX, h: bar.h - 2 * ADJ_HBOX };
+    let size = if size_pm == -1 { GL_HBOX } else { GL_HBOX.max((slide.h as i32 * size_pm as i32 / 1000) as i16) };
+    let posn = ((slide.h - size) as i32 * pos_pm as i32 / 1000) as i16;
+    let e = R { x: slide.x + ADJ3DSTD, y: slide.y + posn + ADJ3DSTD, w: GL_WBOX, h: size - 2 * ADJ3DSTD - 1 };
+    (slide, e)
+}
+
+/// [`v_slide_elev_in`] for the `KIND_ALL` window at `B`.
+fn v_slide_elev(size_pm: i16, pos_pm: i16) -> (R, R) {
+    v_slide_elev_in(vbar_box(B), size_pm, pos_pm)
+}
+
+/// EmuTOS `mul_div_round` (`util/miscasm.S:151-189`).
+fn mul_div_round(a: i32, b: i32, d: i32) -> i32 {
+    let n = a * b * 2 / d;
+    if n < 0 { (n - 1) >> 1 } else { (n + 1) >> 1 }
+}
+
+/// **A130-001/002: an elevator drag is `gr_slidebox`'s.** `hctl_window`
+/// draws the pressed elevator `SELECTED`, drags a dotted XOR outline of its
+/// 3D-grown rect inside the slide box, draws it normal again and sends
+/// `WM_VSLID` with `gr_slidebox`'s value (`aes/gemctrl.c:295-312`,
+/// `aes/gemgrlib.c:358-413`). While held:
+///
+/// * nothing is painted while the pointer stands still (`gr_wait` blocks in
+///   `gr_stilldn`, `:169-191`) — NewTOS repainted slide box and elevator on
+///   every pass, and the slide box's pattern showed through (GitHub #2);
+/// * the elevator itself stays where it was, its bevel sunk;
+/// * after a move the outline sits 40 rows lower, the elevator has not moved.
+///
+/// After the release the screen over the bar is what it was (the test
+/// application does not answer with `wind_set`), and the value is
+/// `mul_div_round(divnd + ADJ3DSTD, 1000, slide.h - outline.h)`: with size
+/// 300 at 500 and a 40-row move, `(80 + 40 + 2) * 1000 / 162` → 753 — the
+/// value the pinned oracle sent in the A130 measurement
+/// (`measurements/measurement-2026-11-05-a130/analysis/msgtable-v3-1.txt`;
+/// NewTOS sent 745).
+#[test]
+fn a130_elevator_drag_is_gr_slidebox() {
+    let _g = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+    let (host, mut pb) = fresh();
+    let w = SLPROBE;
+    let wh = open_window(&mut pb, KIND_SLPROBE, (w.x, w.y, w.w, w.h));
+    set_slider(&mut pb, wh, WF_VSLSIZ, 300);
+    set_slider(&mut pb, wh, WF_VSLIDE, 500);
+    drain_messages(&mut pb);
+
+    let bar = vbar_box_noinfo(w);
+    let (slide, e) = v_slide_elev_in(bar, 300, 500);
+    assert_eq!((slide.y, slide.h), (106, 229), "the probe's slide box (RUNINFO: track y ~105..334)");
+    let g = grown(e);
+    let (cx, cy) = (e.x + e.w / 2, e.y + e.h / 2);
+    assert_eq!(tos_api::aes::window::gadget_name_at(wh, cx, cy), "velev");
+
+    move_to(host, &mut pb, cx, cy, 0);
+    drain_messages(&mut pb);
+    arm_gap(host);
+    host.push(snap(0));
+    host.push(pkt(0, 0, 1)); // press
+    hold_down(host, HOLD_PAST_WINDOW);
+    host.push(snap_held(1));
+    hold_down(host, 60);
+    host.push(snap_held(2)); // still standing: nothing painted since (1)
+    for _ in 0..4 {
+        host.push(pkt(0, 10, 1));
+    }
+    hold_down(host, 20);
+    host.push(snap_held(3)); // 40 rows lower
+    host.push(pkt(0, 0, 0)); // release
+    for _ in 0..8 {
+        host.push(pkt(0, 0, 0));
+    }
+    let mut got = None;
+    for _ in 0..50 {
+        let (fired, _b, msg) = evnt_multi_timed(&mut pb, 300);
+        if fired & MU_MESAG != 0 && msg[0] == WM_VSLID {
+            got = Some(msg);
+            break;
+        }
+    }
+    let msg = got.expect("the drag must deliver WM_VSLID");
+    let before = host.snapshot(0).unwrap();
+    let held1 = host.snapshot(1).unwrap();
+    let held2 = host.snapshot(2).unwrap();
+    let held3 = host.snapshot(3).unwrap();
+
+    assert_eq!(
+        host.paints_at(1),
+        host.paints_at(2),
+        "nothing may be painted while the held pointer stands still"
+    );
+    assert_eq!(held1, held2, "the held screen is steady");
+
+    // The elevator is drawn SELECTED (sunk bevel) and stays put.
+    let bevel = g.inset(1);
+    let probe_y = bevel.y + bevel.h / 2;
+    assert_eq!(at(&before, bevel.x, probe_y), dev(host, WHITE), "raised bevel before the press");
+    assert_eq!(at(&held1, bevel.x, probe_y), dev(host, BLACK), "the held elevator's bevel sinks");
+    assert_eq!(at(&held3, bevel.x, probe_y), dev(host, BLACK), "the elevator has not moved with the pointer");
+
+    // The outline's bottom edge: 40 rows below the grown elevator's last row,
+    // a dotted XOR line (every other pixel complemented).
+    let row = g.y + g.h - 1 + 40;
+    let changed = (g.x..g.x + g.w).filter(|&x| at(&held3, x, row) != at(&before, x, row)).count();
+    assert!(changed >= (g.w as usize) / 2 - 1, "the dotted outline 40 rows lower: {changed} pixels on row {row}");
+
+    // Released: the bar is what it was.
+    for y in bar.y..bar.y + bar.h {
+        for x in bar.x..bar.x + bar.w {
+            assert_eq!(host.raster.get_device_pixel(x, y), at(&before, x, y), "after the release, pixel ({x},{y})");
+        }
+    }
+
+    // `gr_slidebox`'s value for the outline 40 rows lower.
+    let (oh, divis) = (g.h, slide.h - g.h);
+    let divnd = (g.y - slide.y + 40 + ADJ3DSTD).min(divis);
+    assert_eq!((oh, divis, divnd), (67, 162, 122));
+    assert_eq!(msg[4] as i32, mul_div_round(divnd as i32, 1000, divis as i32));
+    assert_eq!(msg[4], 753, "the oracle's WM_VSLID value");
+    drain(host, &mut pb);
+}
+
+/// **A130-002: a full-size elevator reports 1000 once moved.** With
+/// `WF_VSLSIZ` 1000 the elevator's 3D-grown outline is one row shorter than
+/// the slide box (`size - 2*ADJ3DSTD - 1 + 2*ADJ3DSTD`), so it can move one
+/// row: `divnd = 1 + ADJ3DSTD` capped at `divis = 1` → 1000
+/// (`aes/gemgrlib.c:391-412`). NewTOS sent 0 (no travel); the oracle 1000.
+#[test]
+fn a130_full_size_elevator_drag_reports_1000() {
+    let _g = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+    let (host, mut pb) = fresh();
+    let wh = open_window(&mut pb, KIND_ALL, (B.x, B.y, B.w, B.h));
+    set_slider(&mut pb, wh, WF_VSLSIZ, 1000);
+    drain_messages(&mut pb);
+    let (_, e) = v_slide_elev(1000, 0);
+    let (cx, cy) = (e.x + e.w / 2, e.y + e.h / 2);
+    move_to(host, &mut pb, cx, cy, 0);
+    drain_messages(&mut pb);
+    arm_gap(host);
+    host.push(pkt(0, 0, 1));
+    hold_down(host, HOLD_PAST_WINDOW);
+    for _ in 0..4 {
+        host.push(pkt(0, 10, 1));
+    }
+    host.push(pkt(0, 0, 0));
+    for _ in 0..8 {
+        host.push(pkt(0, 0, 0));
+    }
+    let mut got = None;
+    for _ in 0..50 {
+        let (fired, _b, msg) = evnt_multi_timed(&mut pb, 300);
+        if fired & MU_MESAG != 0 && msg[0] == WM_VSLID {
+            got = Some(msg);
+            break;
+        }
+    }
+    assert_eq!(got.expect("WM_VSLID")[4], 1000);
+    drain(host, &mut pb);
+}
+
+/// **A130-004: the elevator answers for its 3D-grown rect.** `ob_find` tests
+/// an `FL3DACT` object against `ob_actxywh` — `ADJ3DSTD` out on every side
+/// (`aes/gemoblib.c:1062-1080`, `:313-335`). So the two rows above and below
+/// the elevator rect, and the two columns either side of the horizontal one,
+/// are elevator drags, not page clicks; one pixel further is a page click.
+#[test]
+fn a130_the_elevator_hit_rect_is_the_grown_one() {
+    let _g = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+    let (_host, mut pb) = fresh();
+    let wh = open_window(&mut pb, KIND_ALL, (B.x, B.y, B.w, B.h));
+    set_slider(&mut pb, wh, WF_VSLSIZ, 300);
+    set_slider(&mut pb, wh, WF_VSLIDE, 500);
+    set_slider(&mut pb, wh, WF_HSLSIZ, 1000);
+    set_slider(&mut pb, wh, WF_HSLIDE, 0);
+    drain_messages(&mut pb);
+    let name = |x, y| tos_api::aes::window::gadget_name_at(wh, x, y);
+
+    let (_, e) = v_slide_elev(300, 500);
+    let cx = e.x + e.w / 2;
+    assert_eq!(name(cx, e.y - ADJ3DSTD), "velev", "top rim");
+    assert_eq!(name(cx, e.y - ADJ3DSTD - 1), "vuppage", "above the rim");
+    assert_eq!(name(cx, e.y + e.h - 1 + ADJ3DSTD), "velev", "bottom rim");
+    assert_eq!(name(cx, e.y + e.h + ADJ3DSTD), "vdnpage", "below the rim");
+
+    // The horizontal bar at size 1000: the slide box between the arrows, the
+    // elevator `size - 5` wide at `ADJ3DSTD`; its grown right column is the
+    // slide box's last-but-one column (the A130 measurement's x 433 case).
+    let hbar_y = B.y + B.h - ADJ_HBOX;
+    let slide_x = B.x + ADJ_WBOX;
+    let slide_w = (B.w - 2 - (ADJ_WBOX - 1) + 2) - 2 * ADJ_WBOX;
+    let ex = slide_x + ADJ3DSTD;
+    let ew = slide_w - 2 * ADJ3DSTD - 1;
+    let cy = hbar_y + ADJ_HBOX / 2;
+    assert_eq!(name(ex + ew - 1 + ADJ3DSTD, cy), "helev", "right rim");
+    assert_eq!(name(ex + ew + ADJ3DSTD, cy), "hrtpage", "the slide box's last column");
+    assert_eq!(name(slide_x, cy), "helev", "left rim = the slide box's first column");
 }

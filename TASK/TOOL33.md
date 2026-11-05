@@ -88,18 +88,18 @@ Je Funktion 79 `mapped`, 5 `unmapped` (`w_nilit`, `w_obadd`, `or_start`, `w_redr
 
 Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `aes/`):
 
-21. `gemwmlib.c:1222,887-907` gegen `tos-api/src/aes/window.rs:3533@send_redraw` (`wind_open`): `WM_REDRAW`
+21. `gemwmlib.c:1222,887-907` gegen `tos-api/src/aes/window.rs:1874@send_redraw` (`wind_open`): `WM_REDRAW`
     nur mit dem Arbeitsbereich statt Schaden ∩ Fensterhuelle (Rahmen, Schatten).
-22. `gemsuper.c:358-360` gegen `tos-api/src/aes/window.rs:4727@wind_new`: zusaetzliches `redraw_all`.
+22. `gemsuper.c:358-360` gegen `tos-api/src/aes/window.rs:4755@wind_new`: zusaetzliches `redraw_all`.
 23. `gemgrlib.c:243-267` gegen `tos-api/src/aes/graf.rs:237@graf_dragbox`: eigene Schleife,
     Greifversatz ohne `max(.., 0)`, `clamp` statt `rc_constrain`; ebenso `graf_rubberbox`.
-24. `gemctrl.c:305` gegen `tos-api/src/aes/window.rs:5516@drag_elevator`: Fenster-Schieber folgt live statt
-    XOR-Umriss (`gr_slidebox`) — Spur fuer [A130](A130.md) (#2).
+24. `gemctrl.c:305` gegen `drag_elevator` (`tos-api/src/aes/window.rs` Zeile 5516 auf eae13cec): Fenster-Schieber folgt live statt
+    XOR-Umriss (`gr_slidebox`) — Spur fuer [A130](A130.md) (#2); mit A130 behoben (`tos-api/src/aes/window.rs:5598@slide_elevator`).
 25. `gemgrlib.c:127-152,271-280` gegen `graf.rs:286@animate`: XOR-Spur ohne Pause (zu 1).
 26. `gemwmlib.c:1719-1726,1754-1755` gegen `window.rs`: `WF_COLOR` zeichnet den ganzen Rahmen
     (Klasse von [A119](A119.md)); Schattenfarbe fest `DROP_SHADOW_COLOR` statt aus dem
     W_BOX-Farbwort — moegliche Spur fuer [A131](A131.md) (#7).
-27. `gemwmlib.c:431-434` gegen `tos-api/src/aes/window.rs:3004@thumb_geom`: zusaetzliche Kappung der Schieberlaenge.
+27. `gemwmlib.c:431-434` gegen `tos-api/src/aes/window.rs:3016@thumb_geom`: zusaetzliche Kappung der Schieberlaenge.
 28. `gemfmalt.c:188-282` gegen `tos-api/src/aes/form.rs:191@padx` (`do_alert`): Alert-Layout in Pixeln statt
     Zeichenzellen, Maus/`backgrcol` fehlen, eigene Modalschleife statt `fm_do`.
 29. `gemfmlib.c:163-198` gegen `form.rs:705@fm_keybd`: Teilbyte- statt Wortvergleich (wie A122).
@@ -151,8 +151,8 @@ Knopf/Doppelklick (`b_click`, `b_delay`, `bchange`, `gl_bpend`) ohne Befund.
 
 Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `aes/`):
 
-42. `gemctrl.c:125-136` gegen `tos-api/src/aes/window.rs:5934@wait_release`: Pfeil-Gadget sendet
-    `WM_ARROWED` einmal nach dem Loslassen statt wiederholt (A109 als gewollt vermerkt).
+42. `gemctrl.c:125-136` gegen `tos-api/src/aes/window.rs` Zeile 5934 auf eae13cec (`wait_release` im Pfeil-Arm): Pfeil-Gadget sendet
+    `WM_ARROWED` einmal nach dem Loslassen statt wiederholt (A109 als gewollt vermerkt); mit A130 behoben (`tos-api/src/aes/window.rs:5674@arrow_repeat_busy`).
 43. `gemctrl.c:405,415` gegen `tos-api/src/aes/input.rs:754@ct_mouse`: beim Menue-Tracking kein
     Pfeil-Zeiger und keine Rueckstellung der Zeigerform.
 44. `gemsuper.c:461-462`, `gemdosif.S:223-225` gegen `kernel/src/arch/aarch64/exceptions.rs:579@gpr`:

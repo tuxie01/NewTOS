@@ -405,7 +405,7 @@ pub fn evnt_mouse(pb: &Aespb) -> Option<sched::Switch> {
         loop {
             // The Control Manager's loop head runs only when it could have
             // taken the screen (`window::ctl_may_run`, `gemctrl.c:439-463`).
-            if !super::input::ct_msgup_busy() && super::window::ctl_may_run() {
+            if !super::input::ct_msgup_busy() && !super::window::arrow_repeat_busy() && super::window::ctl_may_run() {
                 super::input::w_setactive();
             }
             let fired = (pass == 0 && rect_event_at(&m, arm_pos))
@@ -623,7 +623,7 @@ pub fn evnt_multi(pb: &Aespb) -> Option<sched::Switch> {
             // `w_setactive()` until the holder's `END_UPDATE`
             // (`window::ctl_may_run`). The events it would have acted on stay
             // pending: the pointer over the bar, the latched frame press.
-            if !super::input::ct_msgup_busy() && super::window::ctl_may_run() {
+            if !super::input::ct_msgup_busy() && !super::window::arrow_repeat_busy() && super::window::ctl_may_run() {
                 // AES intercepts a click in the menu bar or a window frame before
                 // the app sees the raw button: it owns the mouse over the
                 // menu/frame and posts the resulting MN_SELECTED / WM_* message
@@ -893,7 +893,7 @@ pub fn evnt_keybd(pb: &Aespb) -> Option<sched::Switch> {
     let idx = super::appl::current_identity();
     let key = match host() {
         Some(h) => loop {
-            if !super::input::ct_msgup_busy() && super::window::ctl_may_run() {
+            if !super::input::ct_msgup_busy() && !super::window::arrow_repeat_busy() && super::window::ctl_may_run() {
                 super::input::w_setactive();
             }
             if super::input::owns_keys(idx) {

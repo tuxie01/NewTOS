@@ -29,7 +29,8 @@ use crate::vdi::backend::{ClipRect, PatternFill, Pel, RasterBackend, WriteMode};
 use core::cell::UnsafeCell;
 use core::sync::atomic::{AtomicBool, AtomicI16, AtomicI32, AtomicU64, AtomicU8, AtomicUsize, Ordering};
 use tos_types::aes::{
-    Grect, ADJ3DSTD, BEG_MCTRL, BEG_UPDATE, CLOSER, DESKWH, DNARROW, END_MCTRL, END_UPDATE, FULLER,
+    Grect, ADJ3DSTD, BEG_MCTRL, BEG_UPDATE, CLOSER, DESKWH, DNARROW, END_MCTRL, END_UPDATE, FL3DACT,
+    FULLER,
     HOTCLOSE, HSLIDE, INFO, IP_4PATT, IP_HOLLOW, IP_SOLID, LFARROW, MOVER, NAME, NIL, RTARROW,
     SIZER, TE_CNTR, TE_LEFT, UPARROW, VSLIDE, WA_DNLINE, WA_DNPAGE, WA_LFLINE, WA_LFPAGE,
     WA_RTLINE, WA_RTPAGE, WA_UPLINE, WA_UPPAGE, WC_BORDER, WC_WORK, WF_COLOR, WF_CXYWH, WF_DCOLOR,
@@ -2566,6 +2567,21 @@ fn draw_box_ink(r: Grect, ink: Ink, backend: &dyn RasterBackend, clip: ClipRect)
 /// so the 3D face substitution of [`ink_of`] does not apply either).
 fn gadget_sel(r: Grect, ch: u16, sel: bool, ink: Ink, backend: &dyn RasterBackend, clip: ClipRect) {
     let slot = grow_3d(r);
+    let ink = act_ink(ink, sel, backend);
+    draw_box_ink(slot, ink, backend, clip);
+    if let Some((gx, gy)) = boxchar_origin(slot, sel) {
+        backend.draw_glyph(gx, gy, crate::vdi::font::glyph(ch), ink.tc, ink.text_mode(), clip);
+    }
+    add_3d_effect(backend, slot.x, slot.y, slot.w, slot.h, sel, 1, ink.ic, clip);
+}
+
+/// The `changecol` colours of a `SELECTED` `FL3DACT` object (`just_draw`,
+/// `aes/gemoblib.c:509-513,681-706`) — see [`gadget_sel`]: with
+/// `actcolchange` set a hollow interior becomes solid black, any other takes
+/// its complement, the text colour its complement and the text mode
+/// `MD_TRANS`; unchanged when not selected or with `actcolchange` clear.
+/// Shared by the glyph cells and the elevators ([`draw_elevator`]).
+fn act_ink(ink: Ink, sel: bool, backend: &dyn RasterBackend) -> Ink {
     let mut ink = ink;
     if sel && ACT_COLCHANGE.load(Ordering::Relaxed) != 0 {
         if ink.ip == IP_HOLLOW {
@@ -2577,11 +2593,7 @@ fn gadget_sel(r: Grect, ch: u16, sel: bool, ink: Ink, backend: &dyn RasterBacken
         ink.tc = xor_color(backend, ink.tc);
         ink.replace = false;
     }
-    draw_box_ink(slot, ink, backend, clip);
-    if let Some((gx, gy)) = boxchar_origin(slot, sel) {
-        backend.draw_glyph(gx, gy, crate::vdi::font::glyph(ch), ink.tc, ink.text_mode(), clip);
-    }
-    add_3d_effect(backend, slot.x, slot.y, slot.w, slot.h, sel, 1, ink.ic, clip);
+    ink
 }
 
 /// Where `just_draw` puts the one glyph of a `G_BOXCHAR` drawn on the grown
@@ -2999,7 +3011,7 @@ fn hbar_box(b: Grect, kind: u16) -> Grect {
 /// on a non-square-pixel screen (`gl_wbox = gl_hbox · aspect`,
 /// `gemgraf.c:413-415`). The single source of truth for the thumb, shared
 /// by the slider draw ([`draw_vslider`]/[`draw_hslider`]) and the frame
-/// hit-test / drag ([`gadget_at`]/[`drag_elevator`]) so the clicked thumb is
+/// hit-test / drag ([`gadget_at`]/[`slide_elevator`]) so the clicked thumb is
 /// exactly the drawn one.
 fn thumb_geom(track_len: i16, slsize: i16, slpos: i16, min_size: i16) -> (i16, i16) {
     let min_thumb = min_size.min(track_len);
@@ -3067,7 +3079,7 @@ fn hbar_rect(b: Grect, kind: u16) -> Option<Grect> {
 /// `:421`) and what remains is the slide box (`:429`) — so the track's bottom
 /// border row is the down arrow's grown top border (`:424`), one row below
 /// where [`vbar_rect`] ends (A95 (4)). Shared with the hit-test / drag
-/// ([`gadget_at`]/[`drag_elevator`]) so they agree pixel-for-pixel with the
+/// ([`gadget_at`]/[`slide_elevator`]) so they agree pixel-for-pixel with the
 /// draw, and the elevator's travel is EmuTOS's `h - size` (`:434`).
 fn vtrack(w: &Window) -> Option<(i16, i16)> {
     let kind = w.kind;
@@ -3122,8 +3134,8 @@ fn elev_rect(bar: Grect, track: (i16, i16), off: i16, len: i16, vert: bool) -> G
 /// Draw the right (vertical) scroll bar's gadgets — up/down arrows, the
 /// track, and a thumb positioned + sized from `w.vslide` / `w.vslsize` (both
 /// per-mille) — in `W_VBAR`'s child order (`w_bldvbar`, `gemwmlib.c:403-438`).
-/// For `draw_frame` (the whole-tree walk) and the drag feedback; drawing only
-/// the slider column leaves the work area (content) untouched. The
+/// For `draw_frame` (the whole-tree walk); drawing only the slider column
+/// leaves the work area (content) untouched. The
 /// `wind_set(WF_VSLIDE/WF_VSLSIZ)` path draws [`draw_vslide`] alone (A98).
 fn draw_vslider(w: &Window, istop: bool, backend: &dyn RasterBackend, clip: ClipRect) {
     draw_varrows(w, istop, backend, clip);
@@ -3154,32 +3166,55 @@ fn draw_varrows(w: &Window, istop: bool, backend: &dyn RasterBackend, clip: Clip
 /// `tree[obj].ob_next` (`gemoblib.c:959-977`), so the arrow siblings stay
 /// untouched (A98).
 fn draw_vslide(w: &Window, istop: bool, backend: &dyn RasterBackend, clip: ClipRect) {
-    let Some(bar) = vbar_rect(w.curr, w.kind) else {
-        return;
-    };
     let ink = |g: usize| gadget_ink(w, g, istop);
-    if let Some((track_y, track_h)) = vtrack(w) {
-        let track = Grect { x: bar.x, y: track_y, w: bar.w, h: track_h };
+    if let Some((track, e)) = elev_geom(w, true) {
         // `W_VSLIDE` is a `G_BOX` whose default word `0x1111` is `IP_1PATT` in
         // BLACK under a black border.
         draw_box_ink(track, ink(W_VSLIDE_IDX), backend, clip);
-        // Thumb geometry shared with `gadget_at`/`drag_elevator` (see
-        // [`thumb_geom`]): a stored −1 size renders as one gadget cell, never a
-        // zero/negative-height elevator; the stored/returned value stays −1.
-        let (off, thumb_h) = thumb_geom(track_h, w.vslsize, w.vslide, gl_hbox());
-        let e = elev_rect(bar, (track_y, track_h), off, thumb_h, true);
-        draw_elevator(e, ink(W_VELEV_IDX), backend, clip);
+        // Elevator geometry shared with `gadget_at`/`slide_elevator`
+        // ([`elev_geom`]): a stored −1 size renders as one gadget cell, never
+        // a zero/negative-height elevator; the stored/returned value stays −1.
+        draw_elevator(e, ink(W_VELEV_IDX), false, backend, clip);
+    }
+}
+
+/// The slide box and its elevator of one scroll bar, as `w_bldvbar`
+/// (`vert`) / `w_bldhbar` lay them into the `W_ACTIVE` tree
+/// (`aes/gemwmlib.c:427-436,465-474`): `(slide, elev)` — `slide` the
+/// `W_VSLIDE`/`W_HSLIDE` rect (the [`vtrack`]/[`htrack`] span across the
+/// bar), `elev` the un-grown `W_VELEV`/`W_HELEV` rect ([`elev_rect`] at
+/// [`thumb_geom`]'s size and position). `None` without that slide box. The
+/// single source for the draw ([`draw_vslide`]/[`draw_hslide`]), the hit
+/// test ([`gadget_at`]) and the drag ([`slide_elevator`]), so the elevator
+/// that is pressed and dragged is exactly the drawn one.
+fn elev_geom(w: &Window, vert: bool) -> Option<(Grect, Grect)> {
+    if vert {
+        let bar = vbar_rect(w.curr, w.kind)?;
+        let (track_y, track_h) = vtrack(w)?;
+        let (off, len) = thumb_geom(track_h, w.vslsize, w.vslide, gl_hbox());
+        let slide = Grect { x: bar.x, y: track_y, w: bar.w, h: track_h };
+        Some((slide, elev_rect(bar, (track_y, track_h), off, len, true)))
+    } else {
+        let bar = hbar_rect(w.curr, w.kind)?;
+        let (track_x, track_w) = htrack(w)?;
+        let (off, len) = thumb_geom(track_w, w.hslsize, w.hslide, GL_WBOX);
+        let slide = Grect { x: track_x, y: bar.y, w: track_w, h: bar.h };
+        Some((slide, elev_rect(bar, (track_x, track_w), off, len, false)))
     }
 }
 
 /// The scroll-bar elevator (`W_VELEV`/`W_HELEV`, `G_BOX` `0x1101`, `FL3DACT`):
 /// `just_draw` on the 3D-grown rect — border + interior from the word, the
 /// 1-px bevel inside the border (`add_3d_effect`, `gemoblib.c:238-276`) —
-/// the same arm as a glyph cell without the glyph.
-fn draw_elevator(e: Grect, ink: Ink, backend: &dyn RasterBackend, clip: ClipRect) {
+/// the same arm as a glyph cell without the glyph. `sel` = the elevator is
+/// `SELECTED` — held by a drag (`hctl_window`'s `ob_change(gl_awind, gadget,
+/// selected, TRUE)`, `aes/gemctrl.c:298`): the bevel sinks, and with
+/// `actcolchange` the colours change as for a glyph cell ([`act_ink`]).
+fn draw_elevator(e: Grect, ink: Ink, sel: bool, backend: &dyn RasterBackend, clip: ClipRect) {
     let slot = grow_3d(e);
+    let ink = act_ink(ink, sel, backend);
     draw_box_ink(slot, ink, backend, clip);
-    add_3d_effect(backend, slot.x, slot.y, slot.w, slot.h, false, 1, ink.ic, clip);
+    add_3d_effect(backend, slot.x, slot.y, slot.w, slot.h, sel, 1, ink.ic, clip);
 }
 
 /// Redraw just window `handle`'s vertical slider **subtree** — track +
@@ -3258,9 +3293,8 @@ fn harrow_cells(b: Grect, kind: u16) -> (Option<Grect>, Option<Grect>) {
 /// The mirror image of [`draw_vslider`] with the axes swapped (x↔y, w↔h): the
 /// track runs along the bottom row instead of the right column, offset only by
 /// the left border and the vertical scroll bar / sizer column on the right (no
-/// title/info bands consume the horizontal axis). For `draw_frame` and the
-/// drag feedback; drawing only the slider row leaves the work area (content)
-/// untouched. The bottom-band fill is done by the caller. The
+/// title/info bands consume the horizontal axis). For `draw_frame`; drawing
+/// only the slider row leaves the work area (content) untouched. The bottom-band fill is done by the caller. The
 /// `wind_set(WF_HSLIDE/WF_HSLSIZ)` path draws [`draw_hslide`] alone (A98).
 fn draw_hslider(w: &Window, istop: bool, backend: &dyn RasterBackend, clip: ClipRect) {
     draw_harrows(w, istop, backend, clip);
@@ -3288,19 +3322,13 @@ fn draw_harrows(w: &Window, istop: bool, backend: &dyn RasterBackend, clip: Clip
 /// TRUE)` paints (`ob_draw`, `gemoblib.c:959-977`). Mirror of
 /// [`draw_vslide`] (A98).
 fn draw_hslide(w: &Window, istop: bool, backend: &dyn RasterBackend, clip: ClipRect) {
-    let Some(bar) = hbar_rect(w.curr, w.kind) else {
-        return;
-    };
     let ink = |g: usize| gadget_ink(w, g, istop);
-    if let Some((track_x, track_w)) = htrack(w) {
-        let track = Grect { x: track_x, y: bar.y, w: track_w, h: bar.h };
+    if let Some((track, e)) = elev_geom(w, false) {
         // `W_HSLIDE` — the same `G_BOX` `0x1111` word as the vertical track.
         draw_box_ink(track, ink(W_HSLIDE_IDX), backend, clip);
-        // Thumb geometry shared with `gadget_at`/`drag_elevator` (see
-        // [`thumb_geom`]): a stored −1 size renders as one gadget cell.
-        let (off, thumb_w) = thumb_geom(track_w, w.hslsize, w.hslide, GL_WBOX);
-        let e = elev_rect(bar, (track_x, track_w), off, thumb_w, false);
-        draw_elevator(e, ink(W_HELEV_IDX), backend, clip);
+        // Elevator geometry shared with `gadget_at`/`slide_elevator`
+        // ([`elev_geom`]): a stored −1 size renders as one gadget cell.
+        draw_elevator(e, ink(W_HELEV_IDX), false, backend, clip);
     }
 }
 
@@ -4998,6 +5026,9 @@ pub(super) fn reinit() {
     }
     while wait_pop().is_some() {}
     CTL_RUNNING.store(false, Ordering::Relaxed);
+    // The Control Manager restarts at its loop head (`ctlmgr`, a new
+    // process of the new session): no `handle_arrow_msg` loop is carried over.
+    *arrow_hold() = None;
     *gl_wtcolor() = GL_WTCOLOR_DEFAULT;
     *gl_wbcolor() = GL_WBCOLOR_DEFAULT;
     ML_PMOWN.store(super::pd::KERNEL_CONTEXT, Ordering::Relaxed);
@@ -5126,7 +5157,7 @@ fn gadget_at(w: &Window, mx: i16, my: i16) -> Gadget {
         return Gadget::Sizer;
     }
     // Right scroll-bar arrows.
-    if let Some(bar) = vbar_rect(b, kind).filter(|_| mx >= b.x + b.w - aw) {
+    if vbar_rect(b, kind).is_some() && mx >= b.x + b.w - aw {
         let (up, dn) = varrow_cells(b, kind);
         if up.map(grow_3d).is_some_and(|s| my < s.y + s.h) {
             return Gadget::Up;
@@ -5134,22 +5165,14 @@ fn gadget_at(w: &Window, mx: i16, my: i16) -> Gadget {
         if dn.map(grow_3d).is_some_and(|s| my > s.y) {
             return Gadget::Dn;
         }
-        // Elevator thumb (drag) vs. a page click in the track either side of
-        // it (EmuTOS `hctl_window` W_VELEV vs W_VSLIDE split, gemctrl.c:262-306:
-        // `my < elev_y` → up-page, else down-page).
-        if let Some((track_y, track_h)) = vtrack(w) {
-            if my >= track_y && my < track_y + track_h {
-                let (off, len) = thumb_geom(track_h, w.vslsize, w.vslide, gl_hbox());
-                let e = elev_rect(bar, (track_y, track_h), off, len, true);
-                if my >= e.y && my < e.y + e.h {
-                    return Gadget::VElev;
-                }
-                return if my < e.y { Gadget::VUpPage } else { Gadget::VDnPage };
-            }
+        // Inside the slide box: the elevator or a page click either side of
+        // it ([`slide_hit`]).
+        if let Some((_, e)) = elev_geom(w, true).filter(|(s, _)| my >= s.y && my < s.y + s.h) {
+            return slide_hit(e, mx, my, true);
         }
     }
     // Bottom scroll-bar arrows.
-    if let Some(bar) = hbar_rect(b, kind).filter(|_| my >= b.y + b.h - ah) {
+    if hbar_rect(b, kind).is_some() && my >= b.y + b.h - ah {
         let (lf, rt) = harrow_cells(b, kind);
         if lf.map(grow_3d).is_some_and(|s| mx < s.x + s.w) {
             return Gadget::Lf;
@@ -5157,20 +5180,40 @@ fn gadget_at(w: &Window, mx: i16, my: i16) -> Gadget {
         if rt.map(grow_3d).is_some_and(|s| mx > s.x) {
             return Gadget::Rt;
         }
-        // Elevator thumb (drag) vs. a page click in the track either side of it
-        // (EmuTOS W_HELEV vs W_HSLIDE split, `mx < elev_x` → left-page).
-        if let Some((track_x, track_w)) = htrack(w) {
-            if mx >= track_x && mx < track_x + track_w {
-                let (off, len) = thumb_geom(track_w, w.hslsize, w.hslide, GL_WBOX);
-                let e = elev_rect(bar, (track_x, track_w), off, len, false);
-                if mx >= e.x && mx < e.x + e.w {
-                    return Gadget::HElev;
-                }
-                return if mx < e.x { Gadget::HLfPage } else { Gadget::HRtPage };
-            }
+        if let Some((_, e)) = elev_geom(w, false).filter(|(s, _)| mx >= s.x && mx < s.x + s.w) {
+            return slide_hit(e, mx, my, false);
         }
     }
     Gadget::None
+}
+
+/// What a press at `(mx, my)` inside a slide box hits, with `e`
+/// the un-grown elevator ([`elev_geom`]) — EmuTOS `ob_find` descending from
+/// `W_VSLIDE`/`W_HSLIDE` into its one child, then `hctl_window`'s split of a
+/// slide-box hit (`aes/gemctrl.c:188,262-278`):
+///
+/// * the elevator is `FL3DACT`, so `ob_find` tests it against its
+///   `ob_actxywh` rect — the object rect **grown by `ADJ3DSTD`** on every
+///   side (`aes/gemoblib.c:1062-1080`, `:313-335`): a press on that 3D rim
+///   is an elevator drag (`W_VELEV`/`W_HELEV`), A130-004;
+/// * anywhere else in the slide box `ob_find` answers the slide box, and
+///   `hctl_window` turns it into a page click by comparing the pointer with
+///   the elevator's `ob_offset` — the un-grown origin: `my < elev_y` →
+///   `WA_UPPAGE`, else `WA_DNPAGE` (`mx < elev_x` → `WA_LFPAGE`, else
+///   `WA_RTPAGE` for the horizontal bar, `:268-278`).
+///
+/// The caller has checked that the point lies in the slide box (`ob_find`
+/// only descends into a parent the point is inside, `aes/gemoblib.c:1080-1092`).
+fn slide_hit(e: Grect, mx: i16, my: i16, vert: bool) -> Gadget {
+    if inside(grow_3d(e), mx, my) {
+        return if vert { Gadget::VElev } else { Gadget::HElev };
+    }
+    match (vert, if vert { my < e.y } else { mx < e.x }) {
+        (true, true) => Gadget::VUpPage,
+        (true, false) => Gadget::VDnPage,
+        (false, true) => Gadget::HLfPage,
+        (false, false) => Gadget::HRtPage,
+    }
 }
 
 /// The screen rectangle of a title-row gadget (closer/fuller), for the
@@ -5500,73 +5543,160 @@ fn drag_move(w: &Window, backend: &dyn RasterBackend) -> Grect {
     Grect { x: nx, y: ny, w: border.w, h: border.h }
 }
 
-/// Live-drag a scroll-bar elevator (thumb) following the mouse until release;
-/// returns the final position 0..1000, which the caller posts as `WM_VSLID` /
-/// `WM_HSLID` `msg[4]`. Models EmuTOS `gr_slidebox` (`gemgrlib.c:358-410`): the
-/// thumb is dragged within its track, held at a constant grip offset from the
-/// cursor, and the reported position is `mul_div_round(travel_used, 1000,
-/// travel)` (the D-098 slider-creep rounding). Feedback is **thumb-follow** (the
-/// slider is repainted at the new spot each frame, bracketed with the counting
-/// cursor semaphore); EmuTOS instead drags an XOR outline of the elevator inside
-/// its slide box (`gr_slidebox` → `gr_dragbox`, `gemgrlib.c:388`). That is a
-/// remaining deviation, tracked separately — unlike the mover and the sizer it
-/// repaints only the slider gadget, never the window or what is under it.
-/// The window's stored slider position is advanced so the thumb tracks the
-/// cursor; the owner then normally confirms it via `wind_set(WF_?SLIDE, pos)`.
-fn drag_elevator(w: &mut Window, vert: bool, backend: &dyn RasterBackend) -> i16 {
-    let (slsize, slpos) = if vert { (w.vslsize, w.vslide) } else { (w.hslsize, w.hslide) };
-    let Some(h) = host() else { return slpos };
-    let Some((track_start, track_len)) = (if vert { vtrack(w) } else { htrack(w) }) else {
-        return slpos;
+/// EmuTOS `FL3DNONE` (`include/obdefs.h:94`) — the `ob_flags` 3D field of
+/// the slide boxes `W_VSLIDE`/`W_HSLIDE` (`gl_3dflags`, `aes/gemwmlib.c:110-129`);
+/// the elevators are `FL3DACT`.
+const FL3DNONE: u16 = 0x0000;
+
+/// `ob_change(gl_awind, W_VELEV/W_HELEV, selected|normal, TRUE)` for the
+/// elevator of the top window's vertical (`vert`) or horizontal bar
+/// (`aes/gemctrl.c:298`, `:312`): redraw the elevator with its
+/// `SELECTED` bit set or clear ([`draw_elevator`]). A 3D object cannot be
+/// toggled by XOR (`xor_is_ok`, `aes/gemoblib.c:114-115`), so `ob_change`
+/// redraws it with `just_draw` — the elevator alone, not its slide box —
+/// bracketed by `gsx_moff`/`gsx_mon` (`aes/gemoblib.c:1253-1306`). Only the top window's
+/// gadgets are ever pressed (`hctl_window` returns before the gadget switch
+/// for any other, `:170-178`), so its topped colour words apply.
+fn elev_change(w: &Window, vert: bool, sel: bool, backend: &dyn RasterBackend) {
+    let Some((_, e)) = elev_geom(w, vert) else {
+        return;
     };
-    let (thumb_off, thumb_len) = thumb_geom(track_len, slsize, slpos, if vert { gl_hbox() } else { GL_WBOX });
-    let travel = track_len - thumb_len;
-    // Grip: how far the cursor sits from the thumb's leading edge at grab, held
-    // constant so the thumb does not snap its edge to the cursor (EmuTOS
-    // `gr_dragbox` `gr_clamp(sx+1, sy+1, 0, 0)` → `max(mouse - origin, 0)`).
-    let (mx0, my0) = crate::vdi::mouse_position();
-    let thumb_start = track_start + thumb_off;
-    let grip = ((if vert { my0 } else { mx0 }) - thumb_start).max(0);
+    let idx = if vert { W_VELEV_IDX } else { W_HELEV_IDX };
     let clip = ClipRect::full(backend.width(), backend.height());
-    // The `loop` always runs at least once, assigning `pos` before it can break,
-    // so a seed value would be a dead store — declare it deferred instead.
-    let mut pos;
-    loop {
-        let (mx, my) = crate::vdi::mouse_position();
-        let m = if vert { my } else { mx };
-        // New thumb leading edge, constrained to the track [start, start+travel].
-        let new_start = (m - grip).clamp(track_start, track_start + travel);
-        let rel = new_start - track_start; // travel used, 0..travel
-        pos = if travel > 0 {
-            super::graf::mul_div_round(rel as i32, 1000, travel as i32) as i16
-        } else {
-            0
-        };
-        if vert {
-            w.vslide = pos;
-        } else {
-            w.hslide = pos;
+    crate::vdi::cursor_hide(backend);
+    draw_elevator(e, gadget_ink(w, idx, true), sel, backend, clip);
+    crate::vdi::cursor_show(backend);
+}
+
+/// The `W_HELEV`/`W_VELEV` arm of EmuTOS `hctl_window`
+/// (`aes/gemctrl.c:295-306`, then the `ob_change(…, normal, TRUE)` after the
+/// switch, `:309-312`): draw the pressed elevator `SELECTED`, run `gr_slidebox`
+/// over the window's slide box and elevator, draw the elevator normal
+/// again, and answer the 0..1000 value that goes into `WM_VSLID`/`WM_HSLID`
+/// `msg[4]`. `None` when the window has no such slide box (the hit test
+/// answers `VElev`/`HElev` only where it has one).
+///
+/// `gr_slidebox(gl_awind, cpt-1, cpt, (cpt == W_VELEV))` reads the slide box
+/// (`ob_actxywh(W_VSLIDE)`, non-3D, so the plain rect) and the elevator's
+/// relative rect (`ob_relxywh(W_VELEV)`) out of the tree `w_bldvbar` built;
+/// here they come from [`elev_geom`], and [`super::graf::gr_slidebox_rects`]
+/// does the rest exactly as for an application's `graf_slidebox`: a dotted
+/// **XOR outline** of the 3D-grown elevator follows the pointer inside the
+/// slide box (`gr_dragbox`), the elevator itself stays where it is, nothing
+/// else is redrawn, and the value is `gr_slidebox`'s — the outline offset
+/// over the slide box minus the outline, with the `ADJ3DSTD` correction
+/// (`aes/gemgrlib.c:391-412`). So a full-size elevator (`WF_?SLSIZ` 1000),
+/// whose outline is one pixel shorter than the slide box, reports 1000 once
+/// it moved that pixel. The window's slider fields are not touched: the
+/// owner moves the elevator with `wind_set(WF_?SLIDE)` on the message.
+///
+/// This replaces a live drag that repainted slide box and elevator at the
+/// pointer on every pass while the button was down — the slide box's
+/// pattern showed through the elevator between the two fills (GitHub #2,
+/// A130-001) — and computed its own value over `track - elevator`
+/// (A130-002).
+fn slide_elevator(w: &Window, vert: bool, backend: &dyn RasterBackend) -> Option<i16> {
+    let (slide, e) = elev_geom(w, vert)?;
+    elev_change(w, vert, true, backend);
+    let value = super::graf::gr_slidebox_rects(
+        (slide.x, slide.y, slide.w, slide.h),
+        (e.x - slide.x, e.y - slide.y, e.w, e.h),
+        FL3DACT,
+        FL3DNONE,
+        vert,
+    );
+    elev_change(w, vert, false, backend);
+    Some(value)
+}
+
+/// The `handle_arrow_msg` loop the Control Manager is in while a scroll
+/// arrow or a page click is held (`aes/gemctrl.c:111-139`): the window, its
+/// owner, the `WM_ARROWED` message it repeats and the pressed gadget (to
+/// draw normal again at the end; a page click has none). `None` = not in
+/// that loop.
+#[derive(Clone, Copy)]
+struct ArrowHold {
+    wh: i16,
+    owner: usize,
+    msg: [i16; 8],
+    gadget: Gadget,
+}
+
+/// The one [`ArrowHold`] — the Control Manager is a single process.
+struct ArrowCell(UnsafeCell<Option<ArrowHold>>);
+// SAFETY: only the single boot CPU touches the AES; no concurrent access.
+unsafe impl Sync for ArrowCell {}
+
+static ARROW_HOLD: ArrowCell = ArrowCell(UnsafeCell::new(None));
+
+fn arrow_hold() -> &'static mut Option<ArrowHold> {
+    // SAFETY: single-CPU AES; every access is a short read or write with no
+    // borrow kept across a call that could reach it again.
+    unsafe { &mut *ARROW_HOLD.0.get() }
+}
+
+/// The start of `hctl_window`'s arrow arm (`aes/gemctrl.c:280-293`): the
+/// pressed arrow drawn `SELECTED` (not for a page click, `:285-286`), then
+/// `handle_arrow_msg`'s `wm_update(END_UPDATE)` — which is the caller's
+/// [`ctl_finish`] — and the first pass of its `do … while (button &
+/// 0x0001)` loop: one `WM_ARROWED` now. The loop goes on in
+/// [`arrow_repeat_busy`].
+fn arrow_begin(w: &Window, handle: i16, owner: usize, msg: [i16; 8], g: Gadget, backend: &dyn RasterBackend) {
+    arrow_change(w, g, true, backend);
+    post_to_owner(owner, &msg);
+    *arrow_hold() = Some(ArrowHold { wh: handle, owner, msg, gadget: g });
+}
+
+/// Is the Control Manager still inside `handle_arrow_msg`
+/// (`aes/gemctrl.c:111-139`)? Consulted, like
+/// [`input::ct_msgup_busy`](super::input::ct_msgup_busy), by every wait
+/// loop pass that would run the Control Manager — ours has no process of
+/// its own, so the loop's `dsptch()` is the return to the waiting process.
+///
+/// * While the AES `button` is down: one more pass of the loop — another
+///   `WM_ARROWED` to the owner — and `true`: no bar track, no frame
+///   interception, no `w_setactive` (the Control Manager is not at its loop
+///   head). EmuTOS sends with `ap_sendmsg` when the owner waits and else
+///   parks the action in `p_msg` unless one is already parked
+///   (`:123-134`); NewTOS has no `p_msg`, and the queue's overwriting of a
+///   pending `WM_ARROWED` (`doq`, `aes/gemqueue.c:63-67`; `pd::MsgQueue`)
+///   keeps it to one waiting arrow as well. Every message carries the
+///   Screen Manager's pid (see [`hctl_window`]). The owner's next wait
+///   takes it, so it gets one per `evnt_multi`, as in EmuTOS one per
+///   dispatch. A window that was closed meanwhile gets nothing more (its
+///   owner slot may be someone else's by now; EmuTOS would write to the
+///   stale `AESPD`).
+/// * Once the button is up: `wm_update(BEG_UPDATE)` (`:138`) — blocked,
+///   and `true`, while another process holds the screen — then the arrow
+///   back to normal (`:290-291`), `hctl_window` returns, `ctlmgr`'s
+///   `wm_update(END_UPDATE)` (`:484`), and `false`: the Control Manager is
+///   back at its loop head.
+pub(super) fn arrow_repeat_busy() -> bool {
+    let Some(hold) = *arrow_hold() else {
+        return false;
+    };
+    if super::input::button() & 0x01 != 0 {
+        if win(hold.wh).is_some_and(|w| w.open) && owner_of(hold.wh) == Some(hold.owner) {
+            post_to_owner(hold.owner, &hold.msg);
         }
-        crate::vdi::cursor_hide(backend);
-        // Only the top window's gadgets are ever dragged (`hctl_window`
-        // returns before the gadget switch for any other, `gemctrl.c:170-178`),
-        // so its topped colour words apply.
-        if vert {
-            draw_vslider(w, true, backend, clip);
-        } else {
-            draw_hslider(w, true, backend, clip);
-        }
-        crate::vdi::cursor_show(backend);
-        if crate::vdi::mouse_buttons() & 0x01 == 0 {
-            // `gr_slidebox` → `gr_dragbox` → `gr_wait` → `gr_stilldn`
-            // (`aes/gemgrlib.c:182,262,451`): its `ev_multi` returning the
-            // release ran `ev_rets`, which consumes it.
-            super::input::ev_consume();
-            break;
-        }
-        h.pump_input();
+        return true;
     }
-    pos
+    if !ctl_begin() {
+        return true;
+    }
+    *arrow_hold() = None;
+    // The pressed arrow is the top window's; redrawn only while it still is
+    // (an untopped or closed window's cell is not the Control Manager's to
+    // paint over whatever now covers it).
+    if hold.wh == get_top() {
+        if let (Some(w), Some(backend)) = (win(hold.wh), host().and_then(|h| h.raster())) {
+            if w.open {
+                arrow_change(w, hold.gadget, false, backend);
+            }
+        }
+    }
+    ctl_finish(false);
+    false
 }
 
 /// Block until the left button is released (used after edge-triggered
@@ -5895,10 +6025,8 @@ fn hctl_window() -> bool {
             msg[7] = r.h;
         }
         // Scroll arrows and track-page clicks both post WM_ARROWED with a
-        // WA_* sub-action (EmuTOS `handle_arrow_msg`, gemctrl.c:111-139). Like
-        // the existing arrow arms these fire once per press (our single-tasking
-        // model does not run the cooperative auto-repeat loop; the page click
-        // is edge-triggered, same as the line arrows already are here).
+        // WA_* sub-action, repeated for as long as the button is held
+        // (EmuTOS `handle_arrow_msg`, `gemctrl.c:111-139`; A130-003).
         Gadget::Up
         | Gadget::Dn
         | Gadget::Lf
@@ -5927,12 +6055,16 @@ fn hctl_window() -> bool {
             // `gadget` is the slide box the point fell in while `cpt` was
             // moved on to the elevator (`:262-270`). `selected = normal |
             // SELECTED` with `normal = ob_state & ~SELECTED` (`:189-194`), so
-            // the only bit that moves is `SELECTED` — [`gadget_sel`]'s `sel`.
-            // The message cadence is untouched: one `WM_ARROWED`, posted after
-            // the release as before (A109).
-            arrow_change(w, gad, true, backend);
-            wait_release();
-            arrow_change(w, gad, false, backend);
+            // the only bit that moves is `SELECTED` — [`gadget_sel`]'s `sel`
+            // (A109). The first `WM_ARROWED` goes out now, on the press; the
+            // rest of `handle_arrow_msg`'s loop — the repeats while the button
+            // is held, the arrow normal again after it — runs on the following
+            // wait passes ([`arrow_repeat_busy`]), with the screen given up
+            // (`wm_update(END_UPDATE)`, `:117`) so the owner can scroll and
+            // redraw meanwhile: `return` to [`intercept`]'s `ctl_finish`, and
+            // no `ct_msgup` (`:293`).
+            arrow_begin(w, handle, owner, msg, gad, backend);
+            return false;
         }
         // Elevator-thumb drag → post the final 0..1000 position as WM_VSLID /
         // WM_HSLID (EmuTOS `hctl_window` W_?ELEV, `aes/gemctrl.c:295-306`).
@@ -5941,15 +6073,18 @@ fn hctl_window() -> bool {
         // (`:314`) still carries the `WS_CURR` `y, w, h` read before the
         // switch (`:196-197`) in `msg[5..7]` (A93; the same shape as
         // `WM_CLOSED`/`WM_FULLED` above, A77).
-        Gadget::VElev => {
-            msg[0] = WM_VSLID;
+        //
+        // The elevator is drawn `SELECTED` for the drag, an XOR outline of it
+        // follows the pointer, and it is drawn normal again before the message
+        // goes out ([`slide_elevator`], A130-001/002).
+        Gadget::VElev | Gadget::HElev => {
+            let vert = gad == Gadget::VElev;
+            let Some(pos) = slide_elevator(w, vert, backend) else {
+                return false;
+            };
+            msg[0] = if vert { WM_VSLID } else { WM_HSLID };
             put_rect(&mut msg, ws_curr);
-            msg[4] = drag_elevator(w, true, backend);
-        }
-        Gadget::HElev => {
-            msg[0] = WM_HSLID;
-            put_rect(&mut msg, ws_curr);
-            msg[4] = drag_elevator(w, false, backend);
+            msg[4] = pos;
         }
         // No control point: `message` stays 0 and `hctl_window` ends in
         // `ct_msgup(0, …)` — no message, then `while (button & 0x0001)
@@ -6591,6 +6726,103 @@ mod live_title_tests {
         assert_eq!(thumb_geom(200, 500, 500, 23), (50, 100));
         // A track shorter than the minimum caps the elevator at the track.
         assert_eq!(thumb_geom(10, -1, 0, 23), (0, 10));
+    }
+}
+
+#[cfg(test)]
+mod a130_slider_tests {
+    //! A130 — the elevator drag value and the slide-box hit test, on the
+    //! window of the A130 probe (`tosdump/probes/slprobe.c`: border
+    //! `(80, 60, 400, 320)`, kind `0x0FEF`) against the values the pinned
+    //! oracle sent (`docs/audits/2026-11-05-a130-slider.md`, A130-002 and
+    //! A130-004; `measurements/measurement-2026-11-05-a130/RUNINFO.TXT`). No
+    //! raster is installed: `adj_wbox` takes the 640×480 fallback screen,
+    //! the one the probe ran on.
+    use super::*;
+    use crate::aes::graf::{slidebox_outline, slidebox_value};
+
+    fn probe_window(vsl: (i16, i16), hsl: (i16, i16)) -> Window {
+        let mut w = Window::EMPTY;
+        w.in_use = true;
+        w.open = true;
+        w.kind = 0x0FEF;
+        w.curr = Grect { x: 80, y: 60, w: 400, h: 320 };
+        (w.vslsize, w.vslide) = vsl;
+        (w.hslsize, w.hslide) = hsl;
+        w
+    }
+
+    /// `gr_slidebox`'s value after the outline was dragged `delta` pixels
+    /// along the axis from its start ([`slide_elevator`]'s rectangles through
+    /// `gr_slidebox`'s 3D outline, `rc_constrain` and value,
+    /// `aes/gemgrlib.c:364-412`).
+    fn value_after(w: &Window, vert: bool, delta: i16) -> i16 {
+        let (slide, e) = elev_geom(w, vert).expect("the probe window has both slide boxes");
+        let (rx, ry, ow, oh, adj) =
+            slidebox_outline((e.x - slide.x, e.y - slide.y, e.w, e.h), FL3DACT, FL3DNONE);
+        let mut o = Grect { x: slide.x + rx, y: slide.y + ry, w: ow, h: oh };
+        if vert {
+            o.y += delta;
+        } else {
+            o.x += delta;
+        }
+        rc_constrain(slide, &mut o);
+        slidebox_value(vert, (o.x, o.y, o.w, o.h), (slide.x, slide.y, slide.w, slide.h), adj)
+    }
+
+    #[test]
+    fn the_probe_geometry_is_the_measured_one() {
+        let w = probe_window((300, 500), (300, 500));
+        let (vs, ve) = elev_geom(&w, true).unwrap();
+        assert_eq!((vs.x, vs.y, vs.w, vs.h), (457, 106, 23, 229), "W_VSLIDE");
+        assert_eq!((ve.x, ve.y, ve.w, ve.h), (459, 188, 19, 63), "W_VELEV at 300/500");
+        let (hs, he) = elev_geom(&w, false).unwrap();
+        assert_eq!((hs.x, hs.y, hs.w, hs.h), (103, 357, 332, 23), "W_HSLIDE");
+        assert_eq!((he.x, he.y, he.w, he.h), (221, 359, 94, 19), "W_HELEV at 300/500");
+    }
+
+    /// A130-002: the oracle's `WM_VSLID`/`WM_HSLID` values. The slow drags
+    /// end 40 px past the grab point, the fast ones 30 px, the flicker run's
+    /// sideways move at the grab row (0 px); NewTOS's former
+    /// `track - elevator` rounding sent 745/683, 690/643, 670/627, 626/594,
+    /// 497/500 and 0 for these.
+    #[test]
+    fn drag_values_are_the_oracles() {
+        let v300 = probe_window((300, 500), (300, 500));
+        let vmin = probe_window((-1, 500), (-1, 500));
+        let full = probe_window((1000, 500), (1000, 500));
+        assert_eq!((value_after(&v300, true, 40), value_after(&v300, true, 30)), (753, 691), "300 V");
+        assert_eq!((value_after(&v300, false, 40), value_after(&v300, false, 30)), (675, 632), "300 H");
+        assert_eq!((value_after(&vmin, true, 40), value_after(&vmin, true, 30)), (697, 649), "-1 V");
+        assert_eq!((value_after(&vmin, false, 40), value_after(&vmin, false, 30)), (631, 599), "-1 H");
+        assert_eq!((value_after(&v300, true, 0), value_after(&vmin, true, 0)), (506, 507), "flicker run");
+        assert_eq!((value_after(&full, true, 40), value_after(&full, false, 40)), (1000, 1000), "1000 moved");
+        assert_eq!((value_after(&full, true, 0), value_after(&full, false, 0)), (0, 0), "1000 unmoved");
+        // Beyond the near end: pinned at the slide box's start → 0.
+        assert_eq!(value_after(&v300, true, -500), 0);
+        assert_eq!(value_after(&v300, false, 500), 1000);
+    }
+
+    /// A130-004: the elevator answers for its `ADJ3DSTD`-grown rect
+    /// (`ob_find` → `ob_actxywh`, `aes/gemoblib.c:1062-1080`, `:313-335`).
+    /// The measured point: size 1000, horizontal, `(433, 368)` — the oracle
+    /// sent `WM_HSLID` (an elevator drag), NewTOS `WA_RTPAGE`. Vertically at
+    /// `y 334` (the slide box's last row, below the grown elevator) both
+    /// sent `WA_DNPAGE`.
+    #[test]
+    fn the_grown_rim_is_the_elevators() {
+        let full = probe_window((1000, 0), (1000, 0));
+        assert!(gadget_at(&full, 433, 368) == Gadget::HElev, "x 433 is the grown rim");
+        assert!(gadget_at(&full, 434, 368) == Gadget::HRtPage, "x 434, the slide box's last column");
+        assert!(gadget_at(&full, 103, 368) == Gadget::HElev, "the grown left rim");
+        assert!(gadget_at(&full, 468, 334) == Gadget::VDnPage, "y 334");
+        assert!(gadget_at(&full, 468, 333) == Gadget::VElev, "y 333, the grown bottom rim");
+        assert!(gadget_at(&full, 468, 106) == Gadget::VElev, "y 106, the grown top rim");
+        let mid = probe_window((300, 500), (300, 500));
+        assert!(gadget_at(&mid, 468, 186) == Gadget::VElev, "two rows above the elevator rect");
+        assert!(gadget_at(&mid, 468, 185) == Gadget::VUpPage, "three rows above");
+        assert!(gadget_at(&mid, 468, 252) == Gadget::VElev, "two rows below");
+        assert!(gadget_at(&mid, 468, 253) == Gadget::VDnPage, "three rows below");
     }
 }
 

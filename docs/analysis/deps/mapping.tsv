@@ -1118,6 +1118,7 @@ gr_slidebox	aes/gemgrlib.c	tos-api/src/aes/graf.rs	gr_slidebox	mapped	the body t
 gr_slidebox	aes/gemgrlib.c	tos-api/src/aes/graf.rs	graf_slidebox	mapped	the opcode-76 entry (gemsuper.c:284-285): refusal of a null tree / negative index, then gr_slidebox with the caller's ABI (A128)
 gr_slidebox	aes/gemgrlib.c	tos-api/src/aes/graf.rs	slidebox_outline	mapped	the CONF_WITH_3D_OBJECTS adjustment of the dragged outline, gemgrlib.c:368-386 (A128)
 gr_slidebox	aes/gemgrlib.c	tos-api/src/aes/graf.rs	slidebox_value	mapped	divnd/divis, the ADJ3DSTD correction and mul_div_round, gemgrlib.c:391-412 (A128)
+gr_slidebox	aes/gemgrlib.c	tos-api/src/aes/graf.rs	gr_slidebox_rects	mapped	the body on the parent rect, the child's relative rect and both ob_flags (:364-412); called by gr_slidebox and by the window elevator arm, whose W_ACTIVE tree is not built (A130)
 gr_dragbox	aes/gemgrlib.c	tos-api/src/aes/window.rs	gr_dragbox	mapped	XOR box with kept grab offset, rc_constrain, wm_update bracket; shared by the mover and gr_slidebox (A128)
 ob_actxywh	aes/gemoblib.c	tos-api/src/aes/object.rs	ob_actxywh_t	mapped	CONF_WITH_3D_OBJECTS form: FL3DOBJ grown by ADJ3DSTD (+ADJ3DOUT when OUTLINED), SHADOWED with negative border by border*ADJ3DSHA (A128)
 fs_1scroll	aes/gemfslib.c	tos-api/src/aes/fsel.rs	nscroll_top	mapped	fs_nscroll's n single steps as one clamp to 0..count-NM_NAMES; equality with the iterated form is a host test (A128)
@@ -1262,18 +1263,25 @@ just_draw	aes/gemoblib.c	tos-api/src/aes/object.rs	draw_tree	mapped	the HIDETREE
 just_draw	aes/gemoblib.c	tos-api/src/aes/object.rs	draw_icon	mapped	the G_ICON/G_CICON arm (gr_gicon)
 just_draw	aes/gemoblib.c	tos-api/src/aes/object.rs	draw_3d_outline	mapped	the OUTLINED + FL3DBAK arm
 just_draw	aes/gemoblib.c	tos-api/src/aes/object.rs	add_3d_effect	mapped	the closing bevel for FL3DOBJ, with effect_th and icol
+just_draw	aes/gemoblib.c	tos-api/src/aes/window.rs	draw_elevator	mapped	the FL3DACT G_BOX elevator on its grown rect, the bevel sunk when SELECTED (A130)
+just_draw	aes/gemoblib.c	tos-api/src/aes/window.rs	gadget_sel	mapped	a frame G_BOXCHAR gadget on its grown rect: box, glyph at boxchar_origin, bevel (A95, A105)
+just_draw	aes/gemoblib.c	tos-api/src/aes/window.rs	act_ink	mapped	the changecol colours of a SELECTED FL3DACT object (:509-513,681-706), shared by gadget_sel and draw_elevator (A105, A130)
 ob_draw	aes/gemoblib.c	tos-api/src/aes/object.rs	render_tree_t	mapped	the objc_draw body: clip from int_in[2..5], cursor bracket, draw_tree from the object's parent origin; the other callers go through draw_obj_t/draw_obj_clip_t/draw_root
 ob_draw	aes/gemoblib.c	tos-api/src/aes/object.rs	objc_draw	mapped	the trap entry
 get_prev	aes/gemoblib.c	tos-api/src/aes/object.rs	get_prev	mapped	previous sibling or NIL; stops on NIL as well
 ob_find	aes/gemoblib.c	tos-api/src/aes/object.rs	find_hit	mapped	topmost match among children, FL3DOBJ hit rect grown by ADJ3DSTD(+ADJ3DOUT) except SHADOWED, HIDETREE skipped; children keep the nominal origin, EmuTOS passes the 3D-grown rect origin of the parent down (gemoblib.c:1066-1096)
 ob_find	aes/gemoblib.c	tos-api/src/aes/object.rs	hit_test_t	mapped	the shared entry for the AES's own hit tests
 ob_find	aes/gemoblib.c	tos-api/src/aes/object.rs	objc_find	mapped	the trap entry
+ob_find	aes/gemoblib.c	tos-api/src/aes/window.rs	gadget_at	mapped	hctl_window's ob_find(gl_awind, W_BOX, MAX_DEPTH, mx, my) (gemctrl.c:188) on the procedural frame layout: FL3DACT gadgets answer for their ADJ3DSTD-grown rect, a parent's children from ob_tail back (A95, A130)
+ob_find	aes/gemoblib.c	tos-api/src/aes/window.rs	slide_hit	mapped	the descent from W_VSLIDE/W_HSLIDE into the elevator, tested on its grown ob_actxywh rect (gemoblib.c:1062-1080, A130)
 ob_add	aes/gemoblib.c	tos-api/src/aes/object.rs	ob_add	mapped	append child, head/tail fixed
 ob_delete	aes/gemoblib.c	tos-api/src/aes/object.rs	ob_delete	mapped	unlink, head/tail fixed; ROOT refused
 ob_order	aes/gemoblib.c	tos-api/src/aes/object.rs	ob_order	mapped	relink at new_pos; NewTOS clamps a position past the end of the list and an empty parent, EmuTOS walks on
 ob_change	aes/gemoblib.c	tos-api/src/aes/object.rs	change_clip_t	mapped	state write; redraw: G_USERDEF routine call, G_ICON redraw, XOR toggle when xor_is_ok, G_IMAGE deselect XOR + redraw; cursor bracket
 ob_change	aes/gemoblib.c	tos-api/src/aes/object.rs	change_t	mapped	the whole-screen-clip entry used by the Form and Menu Managers
 ob_change	aes/gemoblib.c	tos-api/src/aes/object.rs	objc_change	mapped	the trap entry with the caller's clip rect
+ob_change	aes/gemoblib.c	tos-api/src/aes/window.rs	elev_change	mapped	ob_change(gl_awind, W_?ELEV, selected|normal, TRUE) from hctl_window (gemctrl.c:298,312): FL3DOBJ, so just_draw of the elevator alone, cursor bracket (A130)
+ob_change	aes/gemoblib.c	tos-api/src/aes/window.rs	arrow_change	mapped	ob_change(gl_awind, arrow, selected|normal, TRUE) around handle_arrow_msg (gemctrl.c:284-292); a page click draws nothing (A109)
 init_3d	aes/gemoblib.c	tos-api/src/aes/object.rs	init_3d	mapped	txtmove/colchange defaults and the three colours (WHITE up to LWHITE colours, else LWHITE)
 ob_sysvar	aes/gemoblib.c	tos-api/src/aes/object.rs	objc_sysvar	mapped	get/set of the 3D variables; INDBUTCOL/ACTBUTCOL/BACKGRCOL refuse in1 >= ncolors; GET leaves int_out[2] at 0 for the colour variables (EmuTOS leaves it untouched)
 ob_fs	aes/gemoblib.c	tos-api/src/aes/form.rs	ob_fs	mapped	(state, flags) of an object
@@ -1584,11 +1592,15 @@ w_bldvbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	varrow_cells	mapped	arrow cel
 w_bldvbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	vtrack	mapped	W_VSLIDE span: bar minus one adj_hbox per arrow
 w_bldvbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	thumb_geom	mapped	elevator size and position: size = gl_hbox or max(gl_hbox, h*vslsiz/1000), posn = (h-size)*vslide/1000, truncating like mul_div (:431-434). NewTOS also caps the size at the track length
 w_bldvbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_vslider	mapped	draws the gadgets the object tree would hold
+w_bldvbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	elev_geom	mapped	W_VSLIDE rect and the un-grown W_VELEV at thumb_geom's size and position (:427-436); one source for the draw, the hit test and the drag (A130)
+w_bldvbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_vslide	mapped	the W_VSLIDE subtree: slide box, then the elevator (A98)
 w_bldhbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	hbar_box	mapped	CONF_WITH_3D_OBJECTS branch (:441-476): horizontal bar rectangle
 w_bldhbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	harrow_cells	mapped	arrow cells
 w_bldhbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	htrack	mapped	W_HSLIDE span
 w_bldhbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	thumb_geom	mapped	elevator, gl_wbox minimum (:469-472)
 w_bldhbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_hslider	mapped	draws the gadgets
+w_bldhbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	elev_geom	mapped	W_HSLIDE rect and the un-grown W_HELEV (:465-474, A130)
+w_bldhbar	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_hslide	mapped	the W_HSLIDE subtree (A98)
 w_bldactive	aes/gemwmlib.c	tos-api/src/aes/window.rs	draw_frame	mapped	the whole W_ACTIVE build and draw (:479-629, 3D branch): box, shadow, title/closer/fuller/name, info, bars, sizer corner, in ob_draw order. No tree is built
 w_bldactive	aes/gemwmlib.c	tos-api/src/aes/window.rs	borders	mapped	the title / info / bar extents (same arithmetic as wm_calc, so frame and work area agree)
 w_bldactive	aes/gemwmlib.c	tos-api/src/aes/window.rs	bars	mapped	havevbar / havehbar with the SIZER strip-and-force rule (:572-592)
@@ -1871,10 +1883,13 @@ ctlmgr	aes/gemctrl.c	tos-api/src/aes/window.rs	intercept	mapped	the Control Mana
 ct_chgown	aes/gemctrl.c	tos-api/src/aes/input.rs	ct_chgown	mapped	set_ctrl, then set_mown unless gl_ctmown (:392-397); the rectangle is derived, not stored
 ct_mouse	aes/gemctrl.c	tos-api/src/aes/input.rs	ct_mouse	mapped	only the gl_ctmown flag; set_mouse_to_arrow on grab and gsx_mfset(&gl_mouse) on release (:400-417) are not reproduced
 ct_msgup	aes/gemctrl.c	tos-api/src/aes/input.rs	ct_msgup_hold	mapped	the wait for the button to come up (:100-101) becomes a flag the Event Manager loop consults; ct_msgup_busy ends it and ct_msgup_hotclose is the HOTCLOSE exit (:86-96)
-handle_arrow_msg	aes/gemctrl.c	tos-api/src/aes/window.rs	hctl_window	mapped	NewTOS posts one WM_ARROWED after the release; EmuTOS repeats it while the button is held (:111-139); the p_msg fast path has no counterpart
+handle_arrow_msg	aes/gemctrl.c	tos-api/src/aes/window.rs	arrow_begin	mapped	END_UPDATE (the caller's ctl_finish) and the first pass of the do-while: one WM_ARROWED on the press (:117-136, A130)
+handle_arrow_msg	aes/gemctrl.c	tos-api/src/aes/window.rs	arrow_repeat_busy	mapped	the rest of the loop, run on every wait pass while the AES button is down: WM_ARROWED again; the p_msg park (:127-134) is the queue's overwrite of a pending WM_ARROWED; after the release BEG_UPDATE (:138), the arrow normal again (gemctrl.c:290-291), END_UPDATE (A130)
 hctl_msg	aes/gemctrl.c	-	-	unmapped	no counterpart: ctlmgr waits no MU_MESAG here, so the WM_REDRAW -> w_redraw_desktop path (CONF_WITH_3D_OBJECTS) does not exist (w_redraw_desktop is unmapped too)
 hctl_rect	aes/gemctrl.c	tos-api/src/aes/event.rs	menu_intercept	mapped	menu bar hit: mn_do (menu::track), Desk accessory pick -> AC_OPEN, else MN_SELECTED with the extension payload, then ct_msgup (:318-376)
 hctl_window	aes/gemctrl.c	tos-api/src/aes/window.rs	hctl_window	mapped	window frame press: untop on a non-top window, then gadget handling, drag/size/slide message (:158-315)
+hctl_window	aes/gemctrl.c	tos-api/src/aes/window.rs	slide_elevator	mapped	the W_HELEV/W_VELEV arm (:295-312): ob_change selected, gr_slidebox on the slide box and elevator rects, ob_change normal; the value goes into WM_?SLID msg[4] (A130)
+hctl_window	aes/gemctrl.c	tos-api/src/aes/window.rs	slide_hit	mapped	the W_HSLIDE/W_VSLIDE split (:262-278): page up/left when the pointer is before the elevator's ob_offset, else down/right (A130)
 perform_untop	aes/gemctrl.c	tos-api/src/aes/window.rs	post_untopped	mapped	sends WM_UNTOPPED to the old top's owner (:146-155); the wait for the button up and the num_accs dispatch loop are not reproduced, and the AC_OPEN path never calls it (A121)
 disable_interrupts	aes/gemdosif.S	-	-	design:hardware:m68k-cpu	m68k status-register interrupt mask (move sr / ori #0x0700); NewTOS is cooperative on AArch64 and has no m68k SR
 enable_interrupts	aes/gemdosif.S	-	-	design:hardware:m68k-cpu	restores the saved m68k SR interrupt mask; no counterpart on AArch64

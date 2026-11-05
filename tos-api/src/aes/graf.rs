@@ -544,11 +544,32 @@ pub(crate) fn slidebox_value(
 /// its start and the value is that of the start position.
 pub(crate) fn gr_slidebox(t: ObjTree, parent: i16, obj: i16, isvert: bool) -> i16 {
     let c = object::ob_actxywh_t(t, parent);
-    let (rx, ry, w, h, xy_adjust) = slidebox_outline(
+    gr_slidebox_rects(
+        c,
         (t.x(obj), t.y(obj), t.width(obj), t.height(obj)),
         t.flags(obj),
         t.flags(parent),
-    );
+        isvert,
+    )
+}
+
+/// The body of [`gr_slidebox`] on the two rectangles it reads from the tree
+/// (`aes/gemgrlib.c:364-412`): `c` = the parent's `ob_actxywh`, `rel` = the
+/// child's `ob_relxywh`, with the two objects' `ob_flags` for the 3D
+/// adjustment ([`slidebox_outline`]). Split out for the window frame, whose
+/// `W_ACTIVE` tree NewTOS lays out procedurally instead of building it:
+/// `hctl_window`'s elevator arm hands `gr_slidebox(gl_awind, W_VSLIDE,
+/// W_VELEV, TRUE)` (`aes/gemctrl.c:305`) the slide box and elevator
+/// rectangles `w_bldvbar`/`w_bldhbar` would have put into that tree
+/// ([`super::window`]'s `slide_elevator`, A130).
+pub(super) fn gr_slidebox_rects(
+    c: (i16, i16, i16, i16),
+    rel: (i16, i16, i16, i16),
+    obj_flags: u16,
+    parent_flags: u16,
+    isvert: bool,
+) -> i16 {
+    let (rx, ry, w, h, xy_adjust) = slidebox_outline(rel, obj_flags, parent_flags);
     let (sx, sy) = (rx + c.0, ry + c.1);
     let (fx, fy) = match (host(), host().and_then(|hh| hh.raster())) {
         (Some(hh), Some(backend)) => {

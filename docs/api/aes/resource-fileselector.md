@@ -1970,7 +1970,7 @@ Die Zeilenzitate zeigen auf den heutigen Code.
 
 Eigene Schleife `modal` (`tos-api/src/aes/fsel.rs:1206@modal`), kein `fm_do`;
 der Aufruf ist von `fm_own(true/false)` umschlossen
-(`tos-api/src/aes/fsel.rs:711@fm_own`, `tos-api/src/aes/window.rs:4643@fm_own`).
+(`tos-api/src/aes/fsel.rs:711@fm_own`, `tos-api/src/aes/window.rs:4671@fm_own`).
 Trefferpruefung `hit_test_t`, dann Verzweigung: nur `FUPAROW` und `FDNAROW`
 (`tos-api/src/aes/fsel.rs:1293@FUPAROW`) riefen `scroll(tree, ∓1)`.
 
@@ -2038,14 +2038,14 @@ Umsetzung gilt fuer die Dateiauswahl "Umsetzung" unten).**
    (`GL_MOWNER_APP` falsch); Betrag 0 ignoriert; Vorzeichen → `WA_DNLINE`/
    `WA_UPLINE` (die **Groesse** von `wheel_amount` wird nicht benutzt, ein Rad-
    Ereignis = eine Zeile); `wm_find(xrat, yrat)`
-   (`tos-api/src/aes/window.rs:5654@wm_find`) liefert das oberste offene Fenster
+   (`tos-api/src/aes/window.rs:5784@wm_find`) liefert das oberste offene Fenster
    unter dem Zeiger, sonst `DESKWH` oder `-1`; `owner_of_window` → `post_msg`
    mit `WM_ARROWED` (`tos-api/src/aes/input.rs:1117@wheel_change`, Rumpf).
 3. Waehrend die Dateiauswahl offen ist: `modal` ruft in jeder Runde
    `h.pump_input()` (`fsel.rs:1407@pump_input`), dort laeuft die Radauslieferung.
    `fm_own(true)` gibt dem Aufrufer die Maus und parkt nur das Menue; es setzt
    **kein** Merkmal, das `wheel_change` auswertet (`GL_MOWNER_APP` bleibt wahr,
-   `tos-api/src/aes/window.rs:4643@fm_own`). Die Dateiauswahl ist kein Fenster; `wm_find` kennt sie
+   `tos-api/src/aes/window.rs:4671@fm_own`). Die Dateiauswahl ist kein Fenster; `wm_find` kennt sie
    nicht.
 4. Folge (Schluss aus dem Code): liegt der Zeiger ueber einem Fenster hinter der
    Auswahl, bekommt dessen Besitzer `WM_ARROWED`; der Besitzer ist meist der in
@@ -2090,7 +2090,7 @@ an (ein Merkmal + atomarer Zaehler im AES, nur fuer die Dauer von `modal`).
 
 **B5. Entwurf 2: das Rad gehoert jedem modalen Formular.**
 `wheel_change` prueft den `fm_own`-Zaehler (`MCTRL_CNT > 0`,
-`tos-api/src/aes/window.rs:4643@fm_own`) und sendet bei laufendem modalen Dialog nichts an
+`tos-api/src/aes/window.rs:4671@fm_own`) und sendet bei laufendem modalen Dialog nichts an
 Fenster dahinter; Verbraucher meldet sich an (Dateiauswahl) oder das Rad wird
 verworfen. Vorteil: auch `form_do`/`form_alert` leaken nicht mehr an Fenster
 dahinter; Kosten: aendert das Verhalten **aller** Dialoge (heute
@@ -2170,7 +2170,7 @@ Umgesetzt nach den Entscheidungen; Hosttests und Messlauf
   Elternobjekts (`tos-api/src/aes/object.rs:2385@ob_actxywh_t`, mit der
   3D-Zugabe von `gemoblib.c:313-336`), Rahmen nach
   `tos-api/src/aes/graf.rs:480@slidebox_outline`, Zug als XOR-Rahmen durch das
-  gemeinsame `gr_dragbox` (`tos-api/src/aes/window.rs:5429@gr_dragbox`:
+  gemeinsame `gr_dragbox` (`tos-api/src/aes/window.rs:5472@gr_dragbox`:
   Greifpunkt, `rc_constrain`, `wm_update`-Klammer), Wert nach
   `tos-api/src/aes/graf.rs:506@slidebox_value`. Das Objekt wird nicht bewegt.
   Baumzugriff ueber den uebergebenen `ObjTree` (App: `ObjTree::new`,
@@ -2209,9 +2209,10 @@ Festgestellt bei der Umsetzung:
    nicht; `wheel_change` wertet `wheel_number` nicht aus (auch nicht fuer
    `WM_ARROWED`), die Dateiauswahl uebernimmt das: eine waagrechte Raststufe
    blaettert wie eine senkrechte. Bei Bedarf eigene Entscheidung.
-4. Die Rollbalken der **Fenster** (`window.rs` `drag_elevator`) ziehen weiter
-   den Daumen selbst statt eines XOR-Rahmens; das ist nicht `graf_slidebox`
-   und nicht Teil von A128.
+4. Die Rollbalken der **Fenster** zogen bis A130 den Daumen selbst statt eines
+   XOR-Rahmens (`drag_elevator`); das war nicht `graf_slidebox` und nicht Teil
+   von A128. Seit A130 nimmt der Fensterrahmen denselben Rumpf
+   (`tos-api/src/aes/graf.rs:565@gr_slidebox_rects`).
 
 ### Out-of-scope-Beobachtungen
 
