@@ -275,11 +275,31 @@ entry that points at it). Before PROC02 every close released the slot at
 once, so a handle `Fforce`d onto a standard handle died with the first
 `Fclose` (PORT10: `Fwrite(1)` → `EIHNDL` after `system("… >file")`).
 
+TASK/HW08 (2026-11-06): `Fclose` now carries what a failed write-back has to
+say for everything the `Fwrite`s before it left in the cache (`40-fwrite.md`),
+with the first code the call meets (EmuTOS jumps out at it). Measured against
+the oracle in `measurements/measurement-2026-11-06-hw08-fix/RUNINFO.TXT`: FAT
+sector refused, `Fwrite` full count, `Fclose` -10 on both sides. Two branches:
+
+* The directory entry cannot be read or put into the cache: nothing has
+  happened, the handle stays open and a later `Fclose` tries again. Same as
+  EmuTOS, whose jump leaves `ixclose` at `bdos/fsopnclo.c:535-536`, before the
+  OFD is touched.
+* The buffer flush fails: the handle is released. EmuTOS' jump skips the
+  release, so there the handle stays taken until a second `Fclose` answers
+  `EINTRN` or the process ends (oracle: `Fcreate` gives 7, 8, 9, 10). Named
+  deviation, `docs/COMPATIBILITY.md`, HW08: the file is closed, the sector stays
+  dirty and lands with the next write-back, and handles do not run out on a
+  card that keeps failing.
+
+At `Pterm` nobody can try again: a handle whose entry could not be rewritten is
+freed, the file's length is lost.
+
 TASK/FS21 (2026-10-31): the archive bit. Before FS21 NewTOS' close wrote
 cluster and length only, so every file it wrote ended with attribute `0x00`
 where the oracle has `0x20` (FS20 probe, `gemdos-mc-fs20`/`-fs24` end
 states). Now `flush_ofd`
-(`tos-api/src/bdos/fs/file.rs:742@flush_ofd`), called by `ixclose` for a
+(`tos-api/src/bdos/fs/file.rs:762@flush_ofd`), called by `ixclose` for a
 dirty OFD, OR-s `FA_ARCHIVE` into the attribute the entry has at close
 (edge case 8); `fcreate` opens its OFD dirty and an `Fdatime` set marks it
 dirty, as `O_DIRTY` in EmuTOS. NewTOS keeps no `o_td`: `Fcreate` and

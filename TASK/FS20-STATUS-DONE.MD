@@ -15,13 +15,13 @@ Datum 2026-10-29 · Beleg
   Verweise in `docs/api/gemdos/_dispatcher.md` §8, `docs/api/bios/09-mediach.md`,
   `docs/api/gemdos/process/_run-ownership-curdir.md`.
 - **Fix:** `tos-api/src/bdos/fs/cache.rs` — jeder Puffer kennt sein Laufwerk;
-  Treffer fragt `Mediach` (`tos-api/src/bdos/fs/cache.rs:275@hit_test`), jeder
+  Treffer fragt `Mediach` (`tos-api/src/bdos/fs/cache.rs:262@hit_test`), jeder
   Geraetezugriff macht die Medientests eines logischen `Rwabs`
-  (`tos-api/src/bdos/fs/cache.rs:290@rwabs_test`), `mark_bcbs_invalid` =
-  `tos-api/src/bdos/fs/cache.rs:304@invalidate_drive`. `osif` =
+  (`tos-api/src/bdos/fs/cache.rs:277@rwabs_test`), `mark_bcbs_invalid` =
+  `tos-api/src/bdos/fs/cache.rs:291@invalidate_drive`. `osif` =
   `tos-api/src/gemdos/mod.rs:150@dispatch_inner` (Neustart) mit
-  `tos-api/src/gemdos/mod.rs:254@media_change_relog`; `offree` =
-  `tos-api/src/bdos/fs/file.rs:1356@free_drive_files`, `freetree`s
+  `tos-api/src/gemdos/mod.rs:267@media_change_relog`; `offree` =
+  `tos-api/src/bdos/fs/file.rs:1393@free_drive_files`, `freetree`s
   `dirtbl`-Teil = `tos-api/src/bdos/fs/curdir.rs:332@free_drive`, Abmelden
   `tos-api/src/bdos/fs/fat.rs:108@log_out`; `Volume` traegt sein Laufwerk.
   `mapping.tsv`: Zeile fuer `mark_bcbs_invalid` (Ratsche), dazu `offree`,

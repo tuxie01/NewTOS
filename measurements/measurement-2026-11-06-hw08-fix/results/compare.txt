@@ -1,0 +1,388 @@
+=== a1
+  BASE.DAT     E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E Fcreate=6 Fwrite=-10,0 Fclose=0          B Fcreate=7 Fwrite=-10,0 Fclose=0          A Fcreate=7 Fwrite=-10,0 Fclose=0
+  R1.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E rc 0 free 32656                          B rc 0 free 32640                          A rc 0 free 32640
+  card E BASE=5281 RESULTS=0 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       B BASE=5281 RESULTS=0 R1=5281 R2=5281 R3=5281 R4=5281 66=720
+       A BASE=5281 RESULTS=0 R1=5281 R2=5281 R3=5281 R4=5281 66=720
+  fsck E /RESULTS.PDF has too many clusters allocated (logical=0, physical=6144); /R1.FBP starts with cross-linked cluster (6); /R1.FBP: Cluster chain starting at 6 is cross-linked at cluster 6; size of /R1.FBP is 5281, should at most be 0
+       B /RESULTS.PDF has too many clusters allocated (logical=0, physical=32768)
+       A /RESULTS.PDF has too many clusters allocated (logical=0, physical=32768)
+=== a2
+  BASE.DAT     E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E Fcreate=6 Fwrite=32768,4388 Fclose=-10   B Fcreate=7 Fwrite=-10,0 Fclose=0          A Fcreate=7 Fwrite=32768,4388 Fclose=-10
+  R1.FBP       E Fcreate=7 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E Fcreate=7 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E Fcreate=7 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E Fcreate=7 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E rc 0 free 32656                          B rc 0 free 32640                          A rc 0 free 32637
+  card E BASE=5281 RESULTS=0 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       B BASE=5281 RESULTS=32768 R1=5281 R2=5281 R3=5281 R4=5281 66=720
+       A BASE=5281 RESULTS=37156 R1=5281 R2=5281 R3=5281 R4=5281 66=576
+  fsck E clean
+       B clean
+       A clean
+=== a3
+  BASE.DAT     E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E Fcreate=-10 Fwrite=0,0 Fclose=0          B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  R1.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E rc 0 free 32656                          B rc 0 free 32656                          A rc 0 free 32656
+  card E BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       B BASE=5281 RESULTS=0 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       A BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+  fsck E clean
+       B clean
+       A clean
+=== a4
+  BASE.DAT     E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E Fcreate=-10 Fwrite=0,0 Fclose=0          B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  R1.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E rc 0 free 32656                          B rc 0 free 32656                          A rc 0 free 32656
+  card E BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       B BASE=5281 RESULTS=0 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       A BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+  fsck E clean
+       B clean
+       A clean
+=== a5
+  BASE.DAT     E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E Fcreate=6 Fwrite=32768,4388 Fclose=-10   B Fcreate=7 Fwrite=-10,0 Fclose=-10        A Fcreate=7 Fwrite=32768,4388 Fclose=-10
+  R1.FBP       E Fcreate=7 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E Fcreate=7 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E Fcreate=7 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E Fcreate=7 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E rc 0 free 32656                          B rc 0 free 32640                          A rc 0 free 32637
+  card E BASE=5281 RESULTS=0 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       B BASE=5281 RESULTS=32768 R1=5281 R2=5281 R3=5281 R4=5281 66=720
+       A BASE=5281 RESULTS=37156 R1=5281 R2=5281 R3=5281 R4=5281 66=576
+  fsck E clean
+       B clean
+       A clean
+=== b1
+  BASE.DAT     E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E Fcreate=-10 Fwrite=0,0 Fclose=0          B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  P1.FBP       E Fcreate=-10 Fwrite=0,0 Fclose=0          B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  P2.FBP       E Fcreate=-10 Fwrite=0,0 Fclose=0          B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  P3.FBP       E Fcreate=-10 Fwrite=0,0 Fclose=0          B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  R1.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E rc 0 free 32656                          B rc 0 free 32656                          A rc 0 free 32656
+  card E BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       B BASE=5281 RESULTS=0 P1=0 P2=0 P3=0 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       A BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+  fsck E clean
+       B clean
+       A clean
+=== b2
+  BASE.DAT     E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E Fcreate=-10 Fwrite=0,0 Fclose=0          B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  P1.FBP       E Fcreate=-10 Fwrite=0,0 Fclose=0          B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  P2.FBP       E Fcreate=-10 Fwrite=0,0 Fclose=0          B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  P3.FBP       E Fcreate=-10 Fwrite=0,0 Fclose=0          B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  R1.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E rc 0 free 32656                          B rc 0 free 32656                          A rc 0 free 32656
+  card E BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       B BASE=5281 RESULTS=0 P1=0 P2=0 P3=0 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       A BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+  fsck E clean
+       B clean
+       A clean
+=== b3
+  BASE.DAT     E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E Fcreate=6 Fwrite=32768,4388 Fclose=-10   B Fcreate=7 Fwrite=-10,0 Fclose=-10        A Fcreate=7 Fwrite=32768,4388 Fclose=-10
+  P1.FBP       E Fcreate=7 Fwrite=5281,0 Fclose=-10       B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  P2.FBP       E Fcreate=8 Fwrite=5281,0 Fclose=-10       B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  P3.FBP       E Fcreate=9 Fwrite=5281,0 Fclose=-10       B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  R1.FBP       E Fcreate=10 Fwrite=5281,0 Fclose=0        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E Fcreate=10 Fwrite=5281,0 Fclose=0        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E Fcreate=10 Fwrite=5281,0 Fclose=0        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E Fcreate=10 Fwrite=5281,0 Fclose=0        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E rc 0 free 32656                          B rc 0 free 2026                           A rc 0 free 32637
+  card E BASE=5281 RESULTS=0 P1=0 P2=0 P3=0 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       B BASE=5281 RESULTS=32768 P1=0 P2=0 P3=0 R1=0 R2=0 R3=0 R4=0 66=064
+       A BASE=5281 RESULTS=37156 R1=5281 R2=5281 R3=5281 R4=5281 66=576
+  fsck E clean
+       B /RESULTS.PDF starts with free cluster; /RESULTS.PDF: Cluster chain starting at 6 ends with cluster marked free; size of /RESULTS.PDF is 32768, should at most be 2048
+       A clean
+=== b4
+  BASE.DAT     E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E Fcreate=6 Fwrite=-10,0 Fclose=0          B Fcreate=7 Fwrite=-10,0 Fclose=0          A Fcreate=7 Fwrite=-10,0 Fclose=0
+  P1.FBP       E Fcreate=6 Fwrite=-10,0 Fclose=0          B Fcreate=7 Fwrite=-10,0 Fclose=0          A Fcreate=7 Fwrite=-10,0 Fclose=0
+  P2.FBP       E Fcreate=6 Fwrite=-10,0 Fclose=0          B Fcreate=7 Fwrite=-10,0 Fclose=0          A Fcreate=7 Fwrite=-10,0 Fclose=0
+  P3.FBP       E Fcreate=6 Fwrite=-10,0 Fclose=0          B Fcreate=7 Fwrite=-10,0 Fclose=0          A Fcreate=7 Fwrite=-10,0 Fclose=0
+  R1.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E rc 0 free 32656                          B rc 0 free 32634                          A rc 0 free 32634
+  card E BASE=5281 RESULTS=0 P1=0 P2=0 P3=0 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       B BASE=5281 RESULTS=0 P1=0 P2=0 P3=0 R1=5281 R2=5281 R3=5281 R4=5281 66=432
+       A BASE=5281 RESULTS=0 P1=0 P2=0 P3=0 R1=5281 R2=5281 R3=5281 R4=5281 66=432
+  fsck E /RESULTS.PDF has too many clusters allocated (logical=0, physical=6144); /P1.FBP starts with cross-linked cluster (6); /P1.FBP: Cluster chain starting at 6 is cross-linked at cluster 6; /P2.FBP starts with cross-linked cluster (6); /P2.FBP: Cluster chain starting at 6 is cross-linked at cluster 6; /P3.FBP starts with cross-linked cluster (6); /P3.FBP: Cluster chain starting at 6 is cross-linked at cluster 6; /R1.FBP starts with cross-linked cluster (6); /R1.FBP: Cluster chain starting at 6 is cross-linked at cluster 6; size of /R1.FBP is 5281, should at most be 0
+       B /RESULTS.PDF has too many clusters allocated (logical=0, physical=32768); /P1.FBP has too many clusters allocated (logical=0, physical=4096); /P2.FBP has too many clusters allocated (logical=0, physical=4096); /P3.FBP has too many clusters allocated (logical=0, physical=4096)
+       A /RESULTS.PDF has too many clusters allocated (logical=0, physical=32768); /P1.FBP has too many clusters allocated (logical=0, physical=4096); /P2.FBP has too many clusters allocated (logical=0, physical=4096); /P3.FBP has too many clusters allocated (logical=0, physical=4096)
+=== b5
+  BASE.DAT     E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E Fcreate=6 Fwrite=32768,4388 Fclose=-10   B Fcreate=7 Fwrite=-10,0 Fclose=-10        A Fcreate=7 Fwrite=32768,4388 Fclose=-10
+  P1.FBP       E Fcreate=7 Fwrite=5281,0 Fclose=-10       B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  P2.FBP       E Fcreate=8 Fwrite=5281,0 Fclose=-10       B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  P3.FBP       E Fcreate=9 Fwrite=5281,0 Fclose=-10       B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  R1.FBP       E Fcreate=10 Fwrite=5281,0 Fclose=0        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E Fcreate=10 Fwrite=5281,0 Fclose=0        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E Fcreate=10 Fwrite=5281,0 Fclose=0        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E Fcreate=10 Fwrite=5281,0 Fclose=0        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E rc 0 free 32656                          B rc 0 free 2026                           A rc 0 free 32637
+  X1.FBP       E Fcreate=10 Fwrite=5281,0 Fclose=0        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  card E BASE=5281 X1=5281 P1=0 P2=0 P3=0 R1=5281 R2=5281 R3=5281 R4=5281 66=344
+       B BASE=5281 X1=5281 P1=0 P2=0 P3=0 R1=0 R2=0 R3=0 R4=0 66=920
+       A BASE=5281 X1=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=344
+  fsck E clean
+       B clean
+       A clean
+=== d1
+  BASE.DAT     E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  P1.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  P2.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  P3.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  R1.FBP       E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E -                                        B rc 0 free 32656                          A rc 0 free 32656
+  card E 
+       B BASE=5281 RESULTS=0 P1=0 P2=0 P3=0 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       A BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+  fsck E 
+       B clean
+       A clean
+=== o1
+  BASE.DAT     E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-10 Fwrite=0,0 Fclose=0
+  R1.FBP       E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E -                                        B rc 0 free 32656                          A rc 0 free 32656
+  card E 
+       B BASE=5281 RESULTS=0 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       A BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+  fsck E 
+       B clean
+       A clean
+=== p1
+  BASE.DAT     E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E -                                        B -                                        A Fcreate=-2 Fwrite=0,0 Fclose=0
+  R1.FBP       E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E -                                        B -                                        A rc 0 free 32656
+  card E 
+       B 
+       A BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+  fsck E 
+       B 
+       A clean
+=== p2
+  BASE.DAT     E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E -                                        B -                                        A Fcreate=-2 Fwrite=0,0 Fclose=0
+  R1.FBP       E -                                        B -                                        A Fcreate=-2 Fwrite=0,0 Fclose=0
+  R2.FBP       E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E -                                        B -                                        A rc 0 free 32659
+  card E 
+       B 
+       A BASE=5281 R2=5281 R3=5281 R4=5281 66=632
+  fsck E 
+       B 
+       A clean
+=== p3
+  BASE.DAT     E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E -                                        B -                                        A Fcreate=7 Fwrite=32768,4388 Fclose=-2
+  R1.FBP       E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E -                                        B -                                        A rc 0 free 32637
+  card E 
+       B 
+       A BASE=5281 RESULTS=37156 R1=5281 R2=5281 R3=5281 R4=5281 66=576
+  fsck E 
+       B 
+       A clean
+=== p4
+  BASE.DAT     E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E -                                        B -                                        A Fcreate=-2 Fwrite=0,0 Fclose=0
+  P1.FBP       E -                                        B -                                        A Fcreate=-2 Fwrite=0,0 Fclose=0
+  P2.FBP       E -                                        B -                                        A Fcreate=-2 Fwrite=0,0 Fclose=0
+  P3.FBP       E -                                        B -                                        A Fcreate=-2 Fwrite=0,0 Fclose=0
+  R1.FBP       E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E -                                        B -                                        A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E -                                        B -                                        A rc 0 free 32656
+  card E 
+       B 
+       A BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+  fsck E 
+       B 
+       A clean
+=== r1
+  card E 66=208
+       B 
+       A 66=208
+  fsck E clean
+       B 
+       A clean
+=== t1
+  BASE.DAT     E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E Fcreate=-2 Fwrite=0,0 Fclose=0           B Fcreate=-2 Fwrite=0,0 Fclose=0           A Fcreate=-2 Fwrite=0,0 Fclose=0
+  R1.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E rc 0 free 32656                          B rc 0 free 32656                          A rc 0 free 32656
+  card E BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       B BASE=5281 RESULTS=0 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       A BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+  fsck E clean
+       B clean
+       A clean
+=== t2
+  BASE.DAT     E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E Fcreate=-2 Fwrite=0,0 Fclose=0           B Fcreate=-2 Fwrite=0,0 Fclose=0           A Fcreate=-2 Fwrite=0,0 Fclose=0
+  P1.FBP       E Fcreate=-2 Fwrite=0,0 Fclose=0           B Fcreate=-2 Fwrite=0,0 Fclose=0           A Fcreate=-2 Fwrite=0,0 Fclose=0
+  P2.FBP       E Fcreate=-2 Fwrite=0,0 Fclose=0           B Fcreate=-2 Fwrite=0,0 Fclose=0           A Fcreate=-2 Fwrite=0,0 Fclose=0
+  P3.FBP       E Fcreate=-2 Fwrite=0,0 Fclose=0           B Fcreate=-2 Fwrite=0,0 Fclose=0           A Fcreate=-2 Fwrite=0,0 Fclose=0
+  R1.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E Fcreate=6 Fwrite=5281,0 Fclose=0         B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E rc 0 free 32656                          B rc 0 free 32656                          A rc 0 free 32656
+  card E BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       B BASE=5281 RESULTS=0 P1=0 P2=0 P3=0 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+       A BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+  fsck E clean
+       B clean
+       A clean
+=== u1
+  BASE.DAT     E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E -                                        B Fcreate=7 Fwrite=32768,4388 Fclose=0     A Fcreate=7 Fwrite=32768,4388 Fclose=0
+  R1.FBP       E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E -                                        B rc 0 free 32637                          A rc 0 free 32637
+  card E 
+       B BASE=5281 RESULTS=37156 R1=5281 R2=5281 R3=5281 R4=5281 66=576
+       A BASE=5281 RESULTS=37156 R1=5281 R2=5281 R3=5281 R4=5281 66=576
+  fsck E 
+       B clean
+       A clean
+=== u2
+  BASE.DAT     E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E -                                        B Fcreate=-2 Fwrite=0,0 Fclose=0           A Fcreate=-2 Fwrite=0,0 Fclose=0
+  R1.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E -                                        B rc 0 free 250                            A rc 0 free 32656
+  card E 
+       B BASE=5281 RESULTS=0 66=064
+       A BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+  fsck E 
+       B clean
+       A clean
+=== u3
+  BASE.DAT     E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E -                                        B Fcreate=-2 Fwrite=0,0 Fclose=0           A Fcreate=-2 Fwrite=0,0 Fclose=0
+  P1.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-2 Fwrite=0,0 Fclose=0
+  P2.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-2 Fwrite=0,0 Fclose=0
+  P3.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=-2 Fwrite=0,0 Fclose=0
+  R1.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E -                                        B rc 0 free 250                            A rc 0 free 32656
+  card E 
+       B BASE=5281 RESULTS=0 66=064
+       A BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+  fsck E 
+       B clean
+       A clean
+=== u4
+  BASE.DAT     E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E -                                        B Fcreate=-2 Fwrite=0,0 Fclose=0           A Fcreate=-2 Fwrite=0,0 Fclose=0
+  R1.FBP       E -                                        B Fcreate=-2 Fwrite=0,0 Fclose=0           A Fcreate=-2 Fwrite=0,0 Fclose=0
+  R2.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E -                                        B rc 0 free 250                            A rc 0 free 32659
+  card E 
+       B BASE=5281 RESULTS=0 66=064
+       A BASE=5281 R2=5281 R3=5281 R4=5281 66=632
+  fsck E 
+       B clean
+       A clean
+=== u5
+  BASE.DAT     E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E -                                        B Fcreate=-2 Fwrite=0,0 Fclose=0           A Fcreate=-2 Fwrite=0,0 Fclose=0
+  R1.FBP       E -                                        B Fcreate=-2 Fwrite=0,0 Fclose=0           A Fcreate=-2 Fwrite=0,0 Fclose=0
+  R2.FBP       E -                                        B Fcreate=-2 Fwrite=0,0 Fclose=0           A Fcreate=-2 Fwrite=0,0 Fclose=0
+  R3.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E -                                        B rc 0 free 250                            A rc 0 free 32662
+  card E 
+       B BASE=5281 RESULTS=0 66=064
+       A BASE=5281 R3=5281 R4=5281 66=776
+  fsck E 
+       B clean
+       A clean
+=== u6
+  BASE.DAT     E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E -                                        B Fcreate=7 Fwrite=-2,0 Fclose=-2          A Fcreate=7 Fwrite=32768,4388 Fclose=-2
+  R1.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E -                                        B rc 0 free 234                            A rc 0 free 32637
+  card E 
+       B BASE=5281 RESULTS=0 66=064
+       A BASE=5281 RESULTS=37156 R1=5281 R2=5281 R3=5281 R4=5281 66=576
+  fsck E 
+       B clean
+       A clean
+=== w1
+  BASE.DAT     E -                                        B Fcreate=7 Fwrite=5281,0 Fclose=0         A Fcreate=7 Fwrite=5281,0 Fclose=0
+  RESULTS.PDF  E -                                        B Fcreate=-2 Fwrite=0,0 Fclose=0           A Fcreate=-2 Fwrite=0,0 Fclose=0
+  P1.FBP       E -                                        B Fcreate=-2 Fwrite=0,0 Fclose=0           A Fcreate=-2 Fwrite=0,0 Fclose=0
+  P2.FBP       E -                                        B Fcreate=-2 Fwrite=0,0 Fclose=0           A Fcreate=-2 Fwrite=0,0 Fclose=0
+  P3.FBP       E -                                        B Fcreate=-2 Fwrite=0,0 Fclose=0           A Fcreate=-2 Fwrite=0,0 Fclose=0
+  R1.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R2.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R3.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  R4.FBP       E -                                        B Fcreate=-10 Fwrite=0,0 Fclose=0          A Fcreate=7 Fwrite=5281,0 Fclose=0
+  Dfree        E -                                        B rc 0 free 250                            A rc 0 free 32656
+  card E 
+       B BASE=5281 66=064
+       A BASE=5281 R1=5281 R2=5281 R3=5281 R4=5281 66=488
+  fsck E 
+       B clean
+       A clean

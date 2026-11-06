@@ -142,6 +142,13 @@ pub fn dispatch(args: &TrapArgs) -> Long {
 /// first return value dropped (`docs/api/gemdos/_state.md` §4a, TASK/FS20).
 /// A call that still meets a change after [`RESTART_LIMIT`] restarts
 /// returns `E_CHNG` (TASK/FS22, `docs/COMPATIBILITY.md`).
+///
+/// A call that met a hard device error answers with its code, whatever its
+/// own path made of the failed access: `osif` "return[s] the error to caller
+/// as if it were the function's return value" after `longjmp_rwabs`
+/// (`bdos/bdosmain.c:449-492`, TASK/HW08). Without the jump a directory scan
+/// that could not read a sector ends in "not found" or `EACCDN`, `Dfree` in a
+/// wrong number. A fault in the caller's buffer stays what it is.
 #[inline]
 fn dispatch_inner(args: &TrapArgs) -> Long {
     if host().is_none() {
@@ -149,7 +156,14 @@ fn dispatch_inner(args: &TrapArgs) -> Long {
         // the trap path remains reentrant.
         return EUNDEV;
     }
-    restartable(|| run_call(args)).unwrap_or_else(|code| code)
+    restartable(|| {
+        let rc = run_call(args);
+        match crate::bdos::fs::cache::take_error() {
+            Some(code) if rc != crate::uaccess::FAULTED => code,
+            _ => rc,
+        }
+    })
+    .unwrap_or_else(|code| code)
 }
 
 /// How often one call is restarted after a media change before it gives up
@@ -164,9 +178,8 @@ fn dispatch_inner(args: &TrapArgs) -> Long {
 /// swapped again while the restarted run is in progress, or a driver whose
 /// `Mediach` keeps answering "changed" after `Getbpb`. EmuTOS loops for ever
 /// on the second; NewTOS gives two more restarts and then reports the change
-/// instead of hanging the caller. Three is the policy number of the
-/// neighbouring bound, `WRITEBACK_ATTEMPTS` in `crate::bdos::fs::cache`: a
-/// policy value, not a specification one.
+/// instead of hanging the caller. Three is a policy value, not a
+/// specification one.
 pub const RESTART_LIMIT: u32 = 3;
 
 /// Run `op` under `osif`'s restart after a media change (`bdos/bdosmain.c:

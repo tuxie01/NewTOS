@@ -1,0 +1,110 @@
+=== WFPROBE case d1: data CRC error on every write for a while
+C: partition at 63, FATs at 1 and 129, root at 257, data at 289
+save BASE.DAT       Fcreate=7 Fwrite=5281,0 Fclose=0
+--- diag after the baseline (716 bytes)
+  SD diagnosis  up 0:00:15.131   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 2 timeouts 0 recover 2 nonrecover 0 refused 0
+   boot    errors 2 timeouts 0 (base probe, in the counts above)
+   last    cmd_done int 00018001 r1 00000000
+   bits   CTO=2
+   wait ms cmd_inhibit 0.0 dat_inhibit 0.0 cmd_done 0.0 read_rdy 0.0 write_rdy 0.0
+           read_done 0.0 write_done 0.0
+  write   n 8 sec 16 failed 0 max 0.7 ms
+   time   <1:8 <4:0 <16:0 <64:0 <250:0 <500:0 <1000:0 more:0
+  read    n 18 sec 275 failed 0 max 21.5 ms
+   time   <1:14 <4:2 <16:1 <64:1 <250:0 <500:0 <1000:0 more:0
+  first   no failure since the boot
+  cache   writeback failed 0 retried 0 dirty 0; last code 0 of 0
+  bcache  dev r 18 w 8 hit 13 miss 275 sectors
+arm fault 2: Ssystem=0
+save RESULTS.PDF    Fcreate=-10 Fwrite=0,0 Fclose=0
+--- diag after the victim (798 bytes)
+  SD diagnosis  up 0:00:15.143   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 3 timeouts 0 recover 3 nonrecover 0 refused 0
+   boot    errors 2 timeouts 0 (base probe, in the counts above)
+   last    write_rdy int 00200000 r1 00000000
+   bits   CTO=2 DCRC=1
+   wait ms cmd_inhibit 0.0 dat_inhibit 0.0 cmd_done 0.0 read_rdy 0.0 write_rdy 0.0
+           read_done 0.0 write_done 0.0
+  write   n 9 sec 17 failed 1 max 0.7 ms
+   time   <1:9 <4:0 <16:0 <64:0 <250:0 <500:0 <1000:0 more:0
+  read    n 18 sec 275 failed 0 max 21.5 ms
+   time   <1:14 <4:2 <16:1 <64:1 <250:0 <500:0 <1000:0 more:0
+  first   0:00:15.136 write lba 320 n 1 write_rdy error 00200000
+  cache   writeback failed 1 retried 0 dirty 1; last code -10 of 1
+   dirty  C: lba 320 dir/data tries 0 code 0
+  bcache  dev r 18 w 9 hit 13 miss 275 sectors
+save P1.FBP         Fcreate=-10 Fwrite=0,0 Fclose=0
+save P2.FBP         Fcreate=-10 Fwrite=0,0 Fclose=0
+save P3.FBP         Fcreate=-10 Fwrite=0,0 Fclose=0
+--- diag after the saves under fault (990 bytes)
+  SD diagnosis  up 0:00:15.187   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 6 timeouts 0 recover 6 nonrecover 0 refused 0
+   boot    errors 2 timeouts 0 (base probe, in the counts above)
+   last    write_rdy int 00200000 r1 00000000
+   bits   CTO=2 DCRC=4
+   wait ms cmd_inhibit 0.0 dat_inhibit 0.0 cmd_done 0.0 read_rdy 0.0 write_rdy 0.0
+           read_done 0.0 write_done 0.0
+  write   n 12 sec 20 failed 4 max 0.7 ms
+   time   <1:12 <4:0 <16:0 <64:0 <250:0 <500:0 <1000:0 more:0
+  read    n 18 sec 275 failed 0 max 21.5 ms
+   time   <1:14 <4:2 <16:1 <64:1 <250:0 <500:0 <1000:0 more:0
+  first   0:00:15.136 write lba 320 n 1 write_rdy error 00200000
+  fail    0:00:15.174 write lba 320 n 1 write_rdy error 00200000
+  fail    0:00:15.178 write lba 320 n 1 write_rdy error 00200000
+  fail    0:00:15.182 write lba 320 n 1 write_rdy error 00200000
+  cache   writeback failed 4 retried 0 dirty 1; last code -10 of 4
+   dirty  C: lba 320 dir/data tries 0 code 0
+  bcache  dev r 18 w 12 hit 13 miss 275 sectors
+disarm: fired 4
+save R1.FBP         Fcreate=7 Fwrite=5281,0 Fclose=0
+save R2.FBP         Fcreate=7 Fwrite=5281,0 Fclose=0
+save R3.FBP         Fcreate=7 Fwrite=5281,0 Fclose=0
+save R4.FBP         Fcreate=7 Fwrite=5281,0 Fclose=0
+--- diag after the saves with the fault gone (947 bytes)
+  SD diagnosis  up 0:00:15.291   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 6 timeouts 0 recover 6 nonrecover 0 refused 0
+   boot    errors 2 timeouts 0 (base probe, in the counts above)
+   last    write_rdy int 00200000 r1 00000000
+   bits   CTO=2 DCRC=4
+   wait ms cmd_inhibit 0.0 dat_inhibit 0.0 cmd_done 0.0 read_rdy 0.0 write_rdy 0.0
+           read_done 0.0 write_done 0.0
+  write   n 40 sec 80 failed 4 max 0.9 ms
+   time   <1:40 <4:0 <16:0 <64:0 <250:0 <500:0 <1000:0 more:0
+  read    n 22 sec 279 failed 0 max 21.5 ms
+   time   <1:18 <4:2 <16:1 <64:1 <250:0 <500:0 <1000:0 more:0
+  first   0:00:15.136 write lba 320 n 1 write_rdy error 00200000
+  fail    0:00:15.174 write lba 320 n 1 write_rdy error 00200000
+  fail    0:00:15.178 write lba 320 n 1 write_rdy error 00200000
+  fail    0:00:15.182 write lba 320 n 1 write_rdy error 00200000
+  cache   writeback failed 4 retried 0 dirty 0; last code -10 of 4
+  bcache  dev r 22 w 40 hit 13 miss 279 sectors
+look BASE.DAT       Fsfirst=0 size=5281 want=5281 Fopen=7 Fread=5281 same=1
+look RESULTS.PDF    Fsfirst=-33 size=-1 want=37156 Fopen=-33 Fread=-1 same=0
+look P1.FBP         Fsfirst=-33 size=-1 want=5281 Fopen=-33 Fread=-1 same=0
+look P2.FBP         Fsfirst=-33 size=-1 want=5281 Fopen=-33 Fread=-1 same=0
+look P3.FBP         Fsfirst=-33 size=-1 want=5281 Fopen=-33 Fread=-1 same=0
+look R1.FBP         Fsfirst=0 size=5281 want=5281 Fopen=7 Fread=5281 same=1
+look R2.FBP         Fsfirst=0 size=5281 want=5281 Fopen=7 Fread=5281 same=1
+look R3.FBP         Fsfirst=0 size=5281 want=5281 Fopen=7 Fread=5281 same=1
+look R4.FBP         Fsfirst=0 size=5281 want=5281 Fopen=7 Fread=5281 same=1
+Dfree(C:)=0 free=32656 total=32672
+--- diag at the end (950 bytes)
+  SD diagnosis  up 0:00:15.424   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 6 timeouts 0 recover 6 nonrecover 0 refused 0
+   boot    errors 2 timeouts 0 (base probe, in the counts above)
+   last    write_rdy int 00200000 r1 00000000
+   bits   CTO=2 DCRC=4
+   wait ms cmd_inhibit 0.0 dat_inhibit 0.0 cmd_done 0.0 read_rdy 0.0 write_rdy 0.0
+           read_done 0.0 write_done 0.0
+  write   n 40 sec 80 failed 4 max 0.9 ms
+   time   <1:40 <4:0 <16:0 <64:0 <250:0 <500:0 <1000:0 more:0
+  read    n 149 sec 406 failed 0 max 21.5 ms
+   time   <1:145 <4:2 <16:1 <64:1 <250:0 <500:0 <1000:0 more:0
+  first   0:00:15.136 write lba 320 n 1 write_rdy error 00200000
+  fail    0:00:15.174 write lba 320 n 1 write_rdy error 00200000
+  fail    0:00:15.178 write lba 320 n 1 write_rdy error 00200000
+  fail    0:00:15.182 write lba 320 n 1 write_rdy error 00200000
+  cache   writeback failed 4 retried 0 dirty 0; last code -10 of 4
+  bcache  dev r 149 w 40 hit 63 miss 406 sectors
+END

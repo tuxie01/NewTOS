@@ -402,7 +402,7 @@ specification's own wording, only the section it comes from.
 | 26 | `WP_VIOLATION` | A write hit a protected block. Reachable through `CMD24`, our only write command. It gets no code of its own: like EmuTOS' own SD driver (§5 "Mapping a card error" above), we fold it into the generic write-fault code `EWRITF`, not a write-protect-specific one. |
 | 24 | `LOCK_UNLOCK_FAILED` | Password/sequence error in the card lock feature. We never issue the lock/unlock command (`CMD42`) — unreachable in practice; same generic handling if the card set it anyway. |
 | 23 | `COM_CRC_ERROR` | The card's own verdict that the command it just received failed CRC. Worth keeping apart from `INT_ERR_CCRC` (`emmc.rs:78`): that one is the **controller's** verdict on the same kind of failure, checked and recovered separately in `wait_interrupt()`/`note_failure()`, before `check_r1()` is ever reached. Both end up as the same TOS code, but they are two different mechanisms in the driver. |
-| 22 | `ILLEGAL_COMMAND` | The card considers the command illegal for its current state. Reachable on either `CMD17` or `CMD24` in principle; handled like every other bit in this table. |
+| 22 | `ILLEGAL_COMMAND` | Clear condition B, "Always related to the previous command" (Table 4-42): a command that is itself illegal is not answered at all (§4.6.1). In the R1 of a data command it therefore says nothing about this command, which **was accepted**. The one bit a data command's mask leaves out (`emmc_xfer.rs`, `data_command_mask`, HW08; the Pi took it for a refusal and left the card in `rcv`). Still counted. |
 | 21 | `CARD_ECC_FAILED` | The card's internal ECC could not correct the data it read. Reachable on `CMD17`; the driver does not distinguish it from any other card refusal — no retry, no separate code. |
 | 20 | `CC_ERROR` | Internal card-controller error. Generic, reachable on either command, no special handling. |
 | 19 | `ERROR` (general) | The card's catch-all for a failure it has no more specific code for. Gets exactly the same treatment as every other bit in this table — a card that only ever sets this one is, from our driver's point of view, indistinguishable from any other rejection beyond its own counter. |
@@ -431,6 +431,22 @@ end of the card, a write-protected card) is visible in `RESP0` at a point
 where the data phase has not started. The host must therefore check R1 and
 **abort the transaction** (SD-HC 3.00 §3.8: CMD12 + both software resets)
 instead of waiting out `Buffer Read/Write Ready`, which will never come.
+
+**`CMD12` only for a running transfer (HW08).** SD Phys 9.10 Table 4-35, row
+`CMD12`: legal out of `data` and `rcv`, illegal in `tran` (below SDUC) and `prg`,
+and an illegal command goes unanswered and sets `ILLEGAL_COMMAND` for the next
+R1 (§4.6.1). A failed wait does not tell which state the card is in: a write
+whose data went out is `prg`, a `dat_inhibit` timeout has no transfer at all. So
+the recovery asks `CMD13` first, legal in all of them and allowed while the DAT
+lines are busy (SD-HC 3.00 §2.2.9, Implementation Note), and sends `CMD12` only
+to `data` or `rcv`; SD-HC 4.20 §3.8.1 has the same `CMD13` after the stop. A
+state other than `tran` makes the next data command ask again and wait for
+`tran`, within `WRITE_BUSY_MS`: `CMD17`/`CMD24` to a card in `prg` go unanswered
+too. A data command that got no response takes both resets: its data side is
+armed, and §3.10.1's CMD line reset alone leaves Command Inhibit (DAT) set (on the
+Pi, `STATUS` `0x1fff0106`). Measured in
+`measurements/measurement-2026-11-06-hw08-pi/RUNINFO.TXT`, fixed in
+`measurements/measurement-2026-11-06-hw08-fix/RUNINFO.TXT`.
 
 The two recovery sequences are **not** the same, and it is worth keeping
 them apart (both SD-HC 3.00):

@@ -14,7 +14,7 @@ use super::curdir;
 use super::fat::Volume;
 use crate::bios::drive as bios_drive;
 use crate::trap::TrapArgs;
-use tos_types::error::{ERROR, E_OK};
+use tos_types::error::{EINTRN, ERROR, E_OK};
 use tos_types::Long;
 
 const BLKDEVNUM: u16 = 16;
@@ -82,7 +82,9 @@ pub fn dsetdrv(args: &TrapArgs) -> Long {
 /// `Dfree` (0x36) — fill a 4-LONG buffer with free/total clusters,
 /// sector size and cluster size. `drv`: 0 = current, 1 = A:, 2 = B:, …
 /// (note the `+1` offset, unlike `Dsetdrv`). Returns `ERROR` (-1) if the
-/// drive cannot be mounted.
+/// drive cannot be mounted, and the device's code with nothing stored if a FAT
+/// sector cannot be read (`xgetfree` stores only after the count,
+/// `bdos/fsfat.c:361-364`).
 pub fn dfree(args: &TrapArgs) -> Long {
     let buf = args.arg_u64(0);
     let drv = args.arg_u16(1);
@@ -96,7 +98,9 @@ pub fn dfree(args: &TrapArgs) -> Long {
         Some(v) => v,
         None => return ERROR,
     };
-    let free = vol.count_free_clusters();
+    let Some(free) = vol.count_free_clusters() else {
+        return super::cache::take_error().unwrap_or(EINTRN);
+    };
 
     // 4 LONGs: free clusters, total clusters, bytes/sector, sectors/cluster.
     let out = [free, vol.numcl, vol.recsiz, vol.clsiz];

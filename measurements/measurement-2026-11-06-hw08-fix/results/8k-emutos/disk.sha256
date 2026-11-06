@@ -1,0 +1,3 @@
+before fdc6f3f2b572f2947b25cae502472352256e6b44576b8876e017f2d946594057 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/wfscratch/wfprobe.4iYCAM/test.img
+destructive table: fresh clone, partition 1 clean (fsck_msdos -n)
+after  810cc254e30ecaa9c8af598eed67a0f7b8ba5b49aa03fc2487ac58a3df55e9f5 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/wfscratch/wfprobe.4iYCAM/oracle/disk.img

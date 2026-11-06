@@ -399,22 +399,33 @@ pub fn fcreate(args: &TrapArgs) -> Long {
             }
         }
     }
+    // A scan that stopped on a device error has not shown the name to be
+    // free: EmuTOS never gets past that `scan` (`longjmp_rwabs`, TASK/HW08).
+    if let Some(code) = super::cache::take_error() {
+        return code;
+    }
 
     // F5: a full non-root directory grows by a cluster; only the fixed-size
-    // root still reports `EACCDN` on exhaustion.
+    // root still reports `EACCDN` on exhaustion. "No slot" is `EACCDN` only if
+    // the device did not fail on the way, here and in the write below (the
+    // Pi: report -2, program -36, TASK/HW08).
     let dir_slot = match dir::find_free_slot_grow(&vol, parent) {
         Some(s) => s,
-        None => return EACCDN, // directory full (root is fixed-size)
+        None => return super::cache::take_error().unwrap_or(EACCDN),
     };
     let (time, date) = crate::gemdos::time::dos_now();
     let fcb = dir::build_fcb(&name11, attr, 0, 0, time, date);
     if !dir::write_slot(&vol, parent, dir_slot, &fcb) {
-        return EACCDN;
+        return super::cache::take_error().unwrap_or(EACCDN);
     }
     // A device error while the new directory entry goes to the card is the
     // call's result, not a silent success: EmuTOS' `longjmp_rwabs` unwinds
-    // `xcreat` with the BIOS code (`bdos/fs.h:60`, `_dispatcher.md` §8).
+    // `xcreat` with the BIOS code (`bdos/fs.h:60`, `_dispatcher.md` §8). There
+    // the buffer with the entry goes too, and no file appears; here the buffer
+    // stays and would land later, so the entry is taken back (TASK/HW08: the
+    // 0-byte files after a refused `Fcreate`).
     if let Err(code) = super::cache::flush() {
+        let _ = dir::erase_slot_with_lfn(&vol, parent, dir_slot);
         return code;
     }
 
@@ -556,14 +567,15 @@ fn ixwrite(ofd: &mut Ofd, len: i32, space: crate::uaccess::Space, ubuf: u64) -> 
     if r == Err(Fail::Fault) {
         return Err(crate::uaccess::FAULTED);
     }
-    // Write-back of everything this call dirtied. Its code wins over the
-    // byte count: EmuTOS never returns a short count for a hard error, it
-    // unwinds with `EWRITF` (`bdos/fs.h:60`).
-    super::cache::flush()?;
-    // ...and a transfer that stopped because the *device* failed is the
-    // same hard error, not the "disk full" short count
-    // (`docs/api/gemdos/file/40-fwrite.md` §"Error conditions": disk-full is
-    // a short count, a media fault is a BIOS code).
+    // No write-back here: `ixwrite` is `xrw(1, …)` and nothing else
+    // (`bdos/fsio.c:554-557`). What is dirty goes out on eviction and at the
+    // next close or other flushing call (`bdos/fsopnclo.c:576-579`; TASK/HW08,
+    // `docs/api/gemdos/file/40-fwrite.md`).
+    //
+    // A transfer that stopped because the *device* failed is a hard error,
+    // not the "disk full" short count (`docs/api/gemdos/file/40-fwrite.md`
+    // §"Error conditions": disk-full is a short count, a media fault is a
+    // BIOS code); EmuTOS unwinds with it (`bdos/fs.h:60`).
     if let Some(code) = super::cache::take_error() {
         return Err(code);
     }
@@ -697,9 +709,14 @@ pub(super) fn ixdel(vol: &Volume, dir_start: u32, slot: u32) -> Result<(), Long>
     }
     for o in ofds().iter_mut().flatten() {
         if names(o) && o.s.dirty {
-            flush_ofd(o);
+            let _ = flush_ofd(o);
             o.s.dirty = false;
         }
+    }
+    // EmuTOS' `longjmp_rwabs` ends the delete at a failed close: the chain
+    // below stays allocated (TASK/HW08).
+    if let Some(code) = super::cache::take_error() {
+        return Err(code);
     }
 
     let mut e = [0u8; 32];
@@ -739,13 +756,22 @@ pub(super) fn ixdel(vol: &Volume, dir_start: u32, slot: u32) -> Result<(), Long>
 /// the file or gives it its first cluster (`fsio.c:42-46`, `fsfat.c:279-282`)
 /// and an `Fdatime` set (`fsdir.c:698`); a file only opened, read, sought or
 /// overwritten inside its length keeps its attribute (TASK/FS21).
-fn flush_ofd(ofd: &Ofd) {
+///
+/// `Err` is the device's code: the entry could not be read or put into the
+/// cache, and the OFD still holds the only copy of the length (TASK/HW08).
+fn flush_ofd(ofd: &Ofd) -> Result<(), Long> {
     let mut e = [0u8; 32];
-    if dir::read_slot(&ofd.s.vol, ofd.dir_start, ofd.dir_slot, &mut e) {
+    let mut done = dir::read_slot(&ofd.s.vol, ofd.dir_start, ofd.dir_slot, &mut e);
+    if done {
         e[0x0B] |= FA_ARCHIVE;
         e[0x1A..0x1C].copy_from_slice(&((ofd.s.strtcl & 0xFFFF) as u16).to_le_bytes());
         e[0x1C..0x20].copy_from_slice(&ofd.s.fileln.to_le_bytes());
-        dir::write_slot(&ofd.s.vol, ofd.dir_start, ofd.dir_slot, &e);
+        done = dir::write_slot(&ofd.s.vol, ofd.dir_start, ofd.dir_slot, &e);
+    }
+    if done {
+        Ok(())
+    } else {
+        Err(super::cache::take_error().unwrap_or(EINTRN))
     }
 }
 
@@ -1187,11 +1213,9 @@ pub fn fdatime(args: &TrapArgs) -> Long {
         dir::write_slot(&ofd.s.vol, ofd.dir_start, ofd.dir_slot, &e);
         // `dfd->o_flag |= O_DIRTY` (`bdos/fsdir.c:698`): the `Fclose` of a
         // file whose time was set rewrites its entry and sets `FA_ARCHIVE`
-        // (TASK/FS21).
+        // (TASK/FS21). No write-back: `xgsdtof` touches no buffer, the entry
+        // reaches the card with the `Fclose` (TASK/HW08).
         ofd.s.dirty = true;
-        if let Err(code) = super::cache::flush() {
-            return code;
-        }
     }
     E_OK
 }
@@ -1294,6 +1318,12 @@ fn xclose(h: i16) -> Long {
         return EIHNDL;
     };
     let rc = ixclose(j);
+    // The entry could not be rewritten: nothing was closed, the handle lives
+    // and a later `Fclose` tries again. EmuTOS' `longjmp_rwabs` leaves `ixclose`
+    // at the same point, before it touches the OFD (`bdos/fsopnclo.c:535-536`).
+    if ofds()[j].as_ref().is_some_and(|o| o.s.dirty && o.deleted.is_none()) {
+        return rc;
+    }
 
     let n = (h - NUMSTD as i16) as usize;
     sft()[n].use_ -= 1;
@@ -1309,7 +1339,12 @@ fn xclose(h: i16) -> Long {
 /// took it off), returned before the buffer flush — then write back every
 /// dirty buffer. A write-back failure is the result: the file on the card is
 /// not the file the application wrote (EmuTOS unwinds with the BIOS code,
-/// `bdos/fs.h:60`); the caller releases the handle either way.
+/// `bdos/fs.h:60`). The caller releases the handle then: the file is closed
+/// and what is missing is in the cache, dirty, and lands with the next
+/// write-back; EmuTOS keeps the entry, because its jump skips the release
+/// (named deviation, `docs/COMPATIBILITY.md`, TASK/HW08). A failure of the
+/// directory entry's rewrite leaves the OFD as it was, and the handle with it
+/// ([`xclose`]).
 fn ixclose(j: usize) -> Long {
     let Some(ofd) = ofds()[j].as_mut() else {
         return EIHNDL;
@@ -1319,7 +1354,9 @@ fn ixclose(j: usize) -> Long {
     // rewrites it from a dirty OFD, `:530-549`). Such an OFD is never listed,
     // so the close ends with `EINTRN` below, before the buffer flush.
     if ofd.s.dirty && ofd.deleted.is_none() {
-        flush_ofd(ofd);
+        if let Err(code) = flush_ofd(ofd) {
+            return code;
+        }
         ofd.s.dirty = false;
     }
     if !ofd.listed {
@@ -1391,8 +1428,18 @@ pub unsafe fn close_process_files(r: *mut tos_types::BasePage) {
     for i in 0..OPEN_FILES {
         if sft()[i].own == Some(r as u64) {
             let _ = xclose((i + NUMSTD as usize) as i16);
+            // A close that could not reach the directory left the entry: the
+            // owner is gone, nobody can try again. The rest of the file is on
+            // the card or dirty in the cache, its length is lost, and there is
+            // no one left to tell.
+            if sft()[i].own == Some(r as u64) {
+                sftdel(i);
+            }
         }
     }
+    // Nobody takes this call's error: `Pterm` does not return, and the parent
+    // gets the child's code.
+    let _ = super::cache::take_error();
 }
 
 /// `Fdup` (0x45) — duplicate standard handle `h` (0..NUMSTD) into a fresh

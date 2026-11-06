@@ -1,0 +1,18 @@
+=== WFPROBE case n1: writes per Fwrite pattern, no fault
+C: partition at 0, FATs at 1 and 129, root at 257, data at 289
+pat total    10240 step    100: Fcreate=6 writes 1/1 Fwrite x103 last=40 writes 18/18 Fclose=0 writes 5/5
+pat total    10240 step    512: Fcreate=6 writes 1/1 Fwrite x20 last=512 writes 20/20 Fclose=0 writes 3/3
+pat total   102400 step    512: Fcreate=6 writes 1/1 Fwrite x200 last=512 writes 200/200 Fclose=0 writes 3/3
+pat total    10240 step   4096: Fcreate=6 writes 1/1 Fwrite x3 last=2048 writes 3/20 Fclose=0 writes 3/3
+pat total   102400 step   4096: Fcreate=6 writes 1/1 Fwrite x25 last=4096 writes 25/200 Fclose=0 writes 3/3
+pat total  1048576 step   4096: Fcreate=6 writes 1/1 Fwrite x256 last=4096 writes 258/2050 Fclose=0 writes 5/5
+pat total   102400 step   1024: Fcreate=6 writes 1/1 Fwrite x100 last=1024 writes 100/200 Fclose=0 writes 3/3
+pat total   102400 step  32768: Fcreate=6 writes 1/1 Fwrite x4 last=4096 writes 4/200 Fclose=0 writes 3/3
+pat total  1048576 step  32768: Fcreate=6 writes 1/1 Fwrite x32 last=32768 writes 34/2050 Fclose=0 writes 5/5
+pat total 10485760 step  32768: Fcreate=6 writes 1/1 Fwrite x320 last=32768 writes 358/20518 Fclose=0 writes 5/5
+pat total    10240 step  10240: Fcreate=6 writes 1/1 Fwrite x1 last=10240 writes 1/20 Fclose=0 writes 3/3
+pat total   102400 step 102400: Fcreate=6 writes 1/1 Fwrite x1 last=102400 writes 1/200 Fclose=0 writes 3/3
+pat total  1048576 step 1048576: Fcreate=6 writes 1/1 Fwrite x1 last=1048576 writes 3/2050 Fclose=0 writes 5/5
+pat total 10485760 step 10485760: Fcreate=6 writes 1/1 Fwrite x1 last=10485760 writes 39/20518 Fclose=0 writes 5/5
+overwrite 64 x 100 B, 1 KiB apart: last Fwrite=100 writes 62/62 Fclose=0 writes 2/2
+END

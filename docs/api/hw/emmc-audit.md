@@ -767,3 +767,19 @@ Beruehrt bleiben nur ignorierte Artefakte: `target/` und **`kernel8.img`** im
 Wurzelverzeichnis (Build-Artefakt, in `.gitignore`), das durch die Laeufe
 ueberschrieben wurde — zuletzt als planer `--board rpi4 --release`-Build
 **ohne** Selftest-Feature. Wer es braucht, baut es frisch je Board neu.
+
+## Nachtrag 2026-11-06: TASK/HW08
+
+Dieser Audit ist der Stand von 2026-09-25, seine Zeilenangaben beschreiben den
+damaligen Code. Spaetere Aenderungen an den hier beschriebenen Stellen:
+
+* Befund 2 (Wiederherstellung): `CMD12` blind in jeder Datenphase war falsch, die
+  Tabelle 4-35 der SD Phys 9.10 erlaubt es nur in `data` und `rcv`. Seit HW08
+  fragt die Wiederherstellung die Karte mit `CMD13`; Regel und Beleg
+  `docs/hardware/emmc-sd.md` §5.
+* Befund 3 (R1): `ILLEGAL_COMMAND` im R1 eines Datenkommandos ist keine Ablehnung
+  dieses Kommandos (Loeschbedingung B), ebenda.
+* Befund 4/5 (Cache, Fehlerweg): `WRITEBACK_ATTEMPTS` gestrichen, das
+  Zurueckschreiben je `Fwrite` entfaellt, alle GEMDOS-Aufrufe liefern den
+  Geraetekode: `docs/COMPATIBILITY.md`, HW08;
+  `measurements/measurement-2026-11-06-hw08-fix/RUNINFO.TXT`.

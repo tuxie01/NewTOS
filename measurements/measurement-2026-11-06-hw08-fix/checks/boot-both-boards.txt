@@ -1,0 +1,5 @@
+rpi4 release, no features
+[desk] desktop up (1 drives)
+57ded3de6c5eb88aa0a5529dab232817ddf432ae335b27f997773231cd787735
+qemu-virt dev, cargo xtask run --board qemu-virt --headless
+[desk] desktop up (0 drives)

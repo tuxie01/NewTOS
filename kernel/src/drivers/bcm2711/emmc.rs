@@ -279,6 +279,11 @@ const SEND_IF_COND: u32 = cmd(8) | RSP_48 | CMD_CRCCHK | CMD_IXCHK;
 const ALL_SEND_CID: u32 = cmd(2) | RSP_136 | CMD_CRCCHK;
 const SEND_REL_ADDR: u32 = cmd(3) | RSP_48 | CMD_CRCCHK | CMD_IXCHK;
 const SEND_CSD: u32 = cmd(9) | RSP_136 | CMD_CRCCHK;
+/// `CMD13 SEND_STATUS` (SD Phys 9.10 §4.7.4: ac, R1), legal in every state a
+/// selected card can be in, `prg` and the data states too (Table 4-35), and
+/// allowed while the DAT lines are busy (SD-HC 3.00 §2.2.9, Implementation
+/// Note).
+const SEND_STATUS: u32 = cmd(13) | RSP_48 | CMD_CRCCHK | CMD_IXCHK;
 const SELECT_CARD: u32 = cmd(7) | RSP_48BUSY | CMD_CRCCHK | CMD_IXCHK;
 const SET_BLOCKLEN: u32 = cmd(16) | RSP_48 | CMD_CRCCHK | CMD_IXCHK;
 const READ_SINGLE: u32 =
@@ -533,8 +538,15 @@ impl Phase {
     }
 
     /// The software resets SD-HC §3.10.1 / §3.8 ask for, given this phase
-    /// and the error bits that were set (0 for a plain timeout).
-    const fn resets(self, status: u32) -> u32 {
+    /// and the error bits that were set (0 for a plain timeout). `data_cmd`:
+    /// the failed command was a data command that got no response. Its data
+    /// side is armed then, Command Inhibit (DAT) stays set until the DAT line
+    /// is reset, and §3.10.1 alone (CTO is a CMD line error) would leave it
+    /// so. Measured on the Pi: `STATUS` 0x1fff0106, write transfer active on
+    /// idle lines, reported as non-recoverable, and the next command's
+    /// `dat_inhibit` wait ran out
+    /// (`measurements/measurement-2026-11-06-hw08-pi/RUNINFO.TXT`).
+    const fn resets(self, status: u32, data_cmd: bool) -> u32 {
         // §3.10.1: reset the line the reported error belongs to.
         let mut bits = 0;
         if status & INT_ERR_CMD_MASK != 0 {
@@ -543,7 +555,7 @@ impl Phase {
         if status & INT_ERR_DAT_MASK != 0 {
             bits |= C1_SRST_DATA;
         }
-        if self.on_dat_line() {
+        if self.on_dat_line() || data_cmd {
             // §3.8: an aborted data transaction takes both resets.
             bits |= C1_SRST_CMD | C1_SRST_DATA;
         } else {
@@ -608,6 +620,13 @@ static SCR_WIDTHS: AtomicU32 = AtomicU32::new(0);
 /// SD Phys 9.10 §4.3.3 tells the host to ignore may still arrive in the
 /// response of the next memory command (SD-HC 3.00 §3.7.1.2 Note 3).
 static OOR_PENDING: AtomicBool = AtomicBool::new(false);
+/// A data command is on its way and its Command Complete has not come yet:
+/// a failure now leaves the controller's data side armed ([`Phase::resets`]).
+static DATA_CMD_ARMED: AtomicBool = AtomicBool::new(false);
+/// A recovery found the card not in `tran`, or could not ask: the next data
+/// command asks first ([`Emmc::wait_card_ready`]). A data command to a card in
+/// `prg` is illegal and goes unanswered (SD Phys 9.10 Table 4-35, §4.6.1).
+static CARD_NOT_READY: AtomicBool = AtomicBool::new(false);
 
 /// Select the transfer mode for the coming [`init`]: `true` = the
 /// `emmc=compat` fallback (1-bit bus, single-block commands only).
@@ -889,6 +908,23 @@ fn check_r1(cmd_index: u32, status: u32, mask: u32) -> Result<(), BlockError> {
     Err(BlockError::Card)
 }
 
+/// Count an `ILLEGAL_COMMAND` in an R1 the driver does not take for a refusal
+/// ([`xfer::data_command_mask`]): the report's R1 line shows it, the refusal
+/// counter does not.
+fn note_stale_illegal(r1: u32) {
+    if r1 & R1_ILLEGAL_COMMAND != 0 {
+        ERR_R1_LAST.store(r1, Ordering::Relaxed);
+        for (i, bit) in R1_BIT_MASKS.iter().enumerate() {
+            if *bit == R1_ILLEGAL_COMMAND {
+                ERR_R1_BIT_COUNT[i].fetch_add(1, Ordering::Relaxed);
+            }
+        }
+        if REPORT_ERRORS.load(Ordering::Relaxed) {
+            crate::kprintln!("[emmc] R1 0x{:08x}: ILLEGAL_COMMAND about the command before", r1);
+        }
+    }
+}
+
 impl Emmc {
     /// Poll until `(rd(off) & mask) == 0` within `phase`'s time budget.
     /// On expiry the failure is recorded and the controller is recovered
@@ -982,11 +1018,12 @@ impl Emmc {
 
     fn recover_inner(phase: Phase, status: u32, abort: bool) {
         ERR_RECOVERIES.fetch_add(1, Ordering::Relaxed);
+        let data_cmd = DATA_CMD_ARMED.swap(false, Ordering::Relaxed);
         // §3.10.1 (4): save and clear the interrupt status. Saved already —
         // `note_failure` has it (finding 12) — so the W1C here loses
         // nothing and leaves no stale bit for the next command to trip on.
         wr(INTERRUPT, rd(INTERRUPT));
-        if abort {
+        if abort || data_cmd {
             // SD-HC 3.00 §3.10.2 (Auto CMD12 Error Recovery): when the Auto
             // CMD12 that ends a multiple-block transfer *was* issued and
             // failed (`Auto CMD12 Not Executed` = 0), the CMD line is reset
@@ -994,14 +1031,36 @@ impl Emmc {
             // step (8); the DAT line reset of steps (11)-(12) follows below.
             // No command without data is ever in flight during a transfer
             // here, so the CMD_wo_DAT branches of that figure do not arise.
-            if status & INT_ERR_ACMD != 0
-                && ERR_LAST_ACMD.load(Ordering::Relaxed) & ACMD_NOT_EXECUTED == 0
+            // A command the card did not answer has blocked the CMD line the
+            // same way, and the status query below needs it.
+            if status & INT_ERR_CMD_MASK != 0
+                || rd(STATUS) & SR_CMD_INHIBIT != 0
+                || (status & INT_ERR_ACMD != 0
+                    && ERR_LAST_ACMD.load(Ordering::Relaxed) & ACMD_NOT_EXECUTED == 0)
             {
                 Self::soft_reset(C1_SRST_CMD);
             }
-            Self::abort_transaction();
+            if SDCARD.ready.load(Ordering::Acquire) {
+                // Stop a transfer only if one runs: `CMD12` is legal only out
+                // of `data` and `rcv` (SD Phys 9.10 Table 4-35). The card
+                // says which: a write that timed out after its data may be
+                // programming, a `dat_inhibit` timeout has no transfer at all
+                // (the Pi: CMD12 in `tran`, `ILLEGAL_COMMAND` in the next R1,
+                // TASK/HW08). SD-HC 4.20 §3.8.1 asks the same `CMD13`, after
+                // the stop.
+                let plan = xfer::card_recovery(SDCARD.card_state());
+                if plan.stop {
+                    Self::abort_transaction();
+                }
+                CARD_NOT_READY.store(plan.wait_ready, Ordering::Relaxed);
+            } else if abort {
+                // The identification's own data command (`ACMD51`): the card
+                // has no address to ask by the time it matters, and its state
+                // is `data` if the data phase failed.
+                Self::abort_transaction();
+            }
         }
-        Self::soft_reset(phase.resets(status));
+        Self::soft_reset(phase.resets(status, data_cmd));
 
         let mut budget = Budget::new(RECOVERY_MS);
         loop {
@@ -1092,6 +1151,77 @@ impl Emmc {
         }
     }
 
+    /// The card's `CURRENT_STATE`, asked with `CMD13`; `None` if it does not
+    /// answer. Not routed through [`Emmc::command`]: this runs inside the
+    /// recovery, and a failure here must not recover again. It also consumes
+    /// a pending `ILLEGAL_COMMAND` (clear condition B, SD Phys 9.10 Table 4-42).
+    fn card_state(&self) -> Option<u32> {
+        let mut budget = Budget::new(RECOVERY_MS);
+        while rd(STATUS) & SR_CMD_INHIBIT != 0 {
+            if budget.expired() {
+                return None;
+            }
+            core::hint::spin_loop();
+        }
+        wr(INTERRUPT, rd(INTERRUPT));
+        wr(ARG1, self.rca.load(Ordering::Relaxed) << 16);
+        wr(CMDTM, SEND_STATUS);
+        let mut budget = Budget::new(RECOVERY_MS);
+        loop {
+            let i = rd(INTERRUPT);
+            if i & INT_ERROR_MASK != 0 {
+                wr(INTERRUPT, i);
+                Self::soft_reset(C1_SRST_CMD);
+                return None;
+            }
+            if i & INT_CMD_DONE != 0 {
+                wr(INTERRUPT, INT_CMD_DONE);
+                let r1 = rd(RESP0);
+                note_stale_illegal(r1);
+                #[cfg(feature = "sd-fault")]
+                if let Some(state) = super::emmc_fault::forced_state(cntpct()) {
+                    return Some(state);
+                }
+                return Some(xfer::r1_state(r1));
+            }
+            if budget.expired() {
+                Self::soft_reset(C1_SRST_CMD);
+                return None;
+            }
+            core::hint::spin_loop();
+        }
+    }
+
+    /// Before a data command after a failure: wait for the card to leave
+    /// `prg`, within the write-busy limit. A data command there would go
+    /// unanswered (SD Phys 9.10 Table 4-35, §4.6.1). Without an answer to
+    /// `CMD13` the data command goes out and its own result decides.
+    fn wait_card_ready(&self) -> Result<(), BlockError> {
+        if !CARD_NOT_READY.load(Ordering::Relaxed) {
+            return Ok(());
+        }
+        let mut budget = Budget::new(WRITE_BUSY_MS);
+        loop {
+            match self.card_state() {
+                Some(xfer::CARD_TRAN) | None => {
+                    CARD_NOT_READY.store(false, Ordering::Relaxed);
+                    return Ok(());
+                }
+                Some(state) if xfer::transfer_running(state) => {
+                    // Left in a transfer by a stop that did not take.
+                    Self::abort_transaction();
+                    Self::soft_reset(C1_SRST_CMD | C1_SRST_DATA);
+                }
+                Some(_) => {}
+            }
+            if budget.expired() {
+                note_failure(Phase::DatInhibit, 0, true);
+                return Err(BlockError::Timeout);
+            }
+            core::hint::spin_loop();
+        }
+    }
+
     /// Issue a command and return `RESP0`.
     fn command(&self, cmdtm: u32, arg: u32) -> Result<u32, BlockError> {
         if !Self::wait_clear(STATUS, SR_CMD_INHIBIT, Phase::CmdInhibit) {
@@ -1099,8 +1229,10 @@ impl Emmc {
         }
         wr(INTERRUPT, rd(INTERRUPT)); // clear any leftover status
         wr(ARG1, arg);
+        DATA_CMD_ARMED.store(cmdtm & CMD_ISDATA != 0, Ordering::Relaxed);
         wr(CMDTM, cmdtm);
         Self::wait_interrupt(INT_CMD_DONE, Phase::CmdDone)?;
+        DATA_CMD_ARMED.store(false, Ordering::Relaxed);
         Ok(rd(RESP0))
     }
 
@@ -1306,7 +1438,8 @@ impl Emmc {
         let pending = OOR_PENDING.swap(false, Ordering::Relaxed);
         let capacity = self.blocks.load(Ordering::Relaxed);
         let inside = lba.checked_add(blocks as u64).is_some_and(|end| end <= capacity);
-        xfer::r1_mask(R1_ERROR_MASK, R1_OUT_OF_RANGE, pending && inside)
+        let mask = xfer::r1_mask(R1_ERROR_MASK, R1_OUT_OF_RANGE, pending && inside);
+        xfer::data_command_mask(mask, R1_ILLEGAL_COMMAND)
     }
 
     /// Read `buf.len() / 512` consecutive blocks at `lba` with **one**
@@ -1322,7 +1455,14 @@ impl Emmc {
         if !Self::wait_clear(STATUS, SR_DAT_INHIBIT, Phase::DatInhibit) {
             return Err(BlockError::Timeout);
         }
+        self.wait_card_ready()?;
         let addr = self.card_address(lba)?;
+        #[cfg(feature = "sd-fault")]
+        if super::emmc_fault::take_read(lba, blocks) {
+            note_failure(Phase::ReadRdy, INT_ERR_DCRC, false);
+            Self::recover_no_abort(Phase::ReadRdy);
+            return Err(BlockError::Io);
+        }
         // (1)+(2) Block Size and Block Count.
         wr(BLKSIZECNT, xfer::blksizecnt(blocks, SECTOR_SIZE));
         let mask = self.next_r1_mask(lba, blocks);
@@ -1333,6 +1473,7 @@ impl Emmc {
         // next wait to run its full budget for data that never comes.
         let (cmdtm, index) = if multi { (READ_MULTIPLE, 18) } else { (READ_SINGLE, 17) };
         let status = self.command(cmdtm, addr)?;
+        note_stale_illegal(status);
         if let Err(e) = check_r1(index, status, mask) {
             Self::recover_no_abort(Phase::ReadRdy);
             return Err(e);
@@ -1374,6 +1515,7 @@ impl Emmc {
         if !Self::wait_clear(STATUS, SR_DAT_INHIBIT, Phase::DatInhibit) {
             return Err(BlockError::Timeout);
         }
+        self.wait_card_ready()?;
         let addr = self.card_address(lba)?;
         // Debug feature `sd-fault` (TASK/HW08): the fault for this command.
         #[cfg(feature = "sd-fault")]
@@ -1398,7 +1540,16 @@ impl Emmc {
             Self::recover_no_abort(Phase::WriteRdy);
             return e;
         }
+        // Debug feature `sd-fault`: a card in `prg` does not answer.
+        #[cfg(feature = "sd-fault")]
+        if super::emmc_fault::forced_state(cntpct()).is_some() {
+            note_failure(Phase::CmdDone, INT_ERR_CTO, false);
+            DATA_CMD_ARMED.store(true, Ordering::Relaxed);
+            Self::recover(Phase::CmdDone, INT_ERR_CTO);
+            return Err(BlockError::Io);
+        }
         let status = self.command(cmdtm, addr)?;
+        note_stale_illegal(status);
         if let Err(e) = check_r1(index, status, mask) {
             Self::recover_no_abort(Phase::WriteRdy);
             return Err(e);
@@ -1436,6 +1587,15 @@ impl Emmc {
             while !held.expired() {
                 core::hint::spin_loop();
             }
+        }
+        // `Mode::Prg`: as a card that goes on programming: the wait runs out,
+        // `CMD13` answers `prg` for the rest of `ms`, a data command gets no
+        // answer. The data has gone out.
+        #[cfg(feature = "sd-fault")]
+        if fault == super::emmc_fault::Mode::Prg {
+            let ms = super::emmc_fault::busy_ms();
+            super::emmc_fault::prg_until(cntpct() + ticks_for_ms(cntfrq(), ms));
+            Self::wait_interrupt(0, Phase::WriteDone)?;
         }
         // (19)-(20) Transfer Complete: the last block is programmed and the
         // busy released (SD-HC 3.00 §2.2.17 bit 1) — for CMD25 after the
@@ -1801,12 +1961,14 @@ mod tests {
     fn a_data_phase_takes_both_resets_a_command_phase_only_the_cmd_line() {
         // SD-HC §3.8: an aborted data transaction takes both software
         // resets; §3.10.1: a command-line error only the CMD line.
-        assert_eq!(Phase::WriteDone.resets(0), C1_SRST_CMD | C1_SRST_DATA);
-        assert_eq!(Phase::DatInhibit.resets(0), C1_SRST_CMD | C1_SRST_DATA);
-        assert_eq!(Phase::CmdDone.resets(INT_ERR_CTO), C1_SRST_CMD);
-        assert_eq!(Phase::CmdInhibit.resets(0), C1_SRST_CMD);
+        assert_eq!(Phase::WriteDone.resets(0, false), C1_SRST_CMD | C1_SRST_DATA);
+        assert_eq!(Phase::DatInhibit.resets(0, false), C1_SRST_CMD | C1_SRST_DATA);
+        assert_eq!(Phase::CmdDone.resets(INT_ERR_CTO, false), C1_SRST_CMD);
+        assert_eq!(Phase::CmdInhibit.resets(0, false), C1_SRST_CMD);
         // …unless a DAT-line error bit says otherwise.
-        assert_eq!(Phase::CmdDone.resets(INT_ERR_DCRC), C1_SRST_CMD | C1_SRST_DATA);
+        assert_eq!(Phase::CmdDone.resets(INT_ERR_DCRC, false), C1_SRST_CMD | C1_SRST_DATA);
+        // …or the unanswered command was a data command (the Pi's 0x1fff0106).
+        assert_eq!(Phase::CmdDone.resets(INT_ERR_CTO, true), C1_SRST_CMD | C1_SRST_DATA);
     }
 
     #[test]

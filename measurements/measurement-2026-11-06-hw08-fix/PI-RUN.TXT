@@ -1,0 +1,54 @@
+HW08 Pi-Lauf nach dem Fix -- Plan fuer Anwender und Lead, nicht ausgefuehrt (Developer 2026-11-06).
+Kein Worker an Hardware oder Karte. Nur der Lead spielt auf.
+Vorgaenger und Bedienung des Berichts: measurements/measurement-2026-11-06-hw08/PI-RUN.TXT.
+
+AUF DIE KARTE
+  kernel8.img   Datei in diesem Laufverzeichnis (gitignored), crash-walk,sd-fault, sha256 in RUNINFO.TXT
+  HW08\WFPROBE.NCP   Menue neu um p und q, sha256 in RUNINFO.TXT
+  HW08\FSWBENCH.NCP  neu gebaut, Block R nimmt den laengsten Abschnitt der Kette (nach Lauf ...-hw08-pi2), sha256 in RUNINFO.TXT
+  cp -X; vorher und nachher fsck_msdos -n des Testlaufwerks.
+  Karte 3 = neue Testkarte (31,3 GB, 6 x 512 MB, ...-hw08-pi/RUNINFO.TXT), Pruefkarte = alte Karte (die, die haengt).
+  Testlaufwerk D:. Bericht: Strg+Alt+F9, immer fotografieren. Neu: die Zeile "cache" hat kein "gave up" mehr.
+
+SCHRITT 1, Karte 3, keine Einspeisung (zuerst)
+  a) Fbench und X-Shot speichern. Erwartet: alles geht, Bericht errors 0.
+  b) FSWBENCH auf D:. Gegen ...-hw08-pi2/RUNINFO.TXT, Block L2:
+     erwartet schneller: 4096 und 32768 (die FAT-Schreibvorgaenge je Fwrite fallen weg);
+     kaum: 512 B (nur 1 von 16 Fwrite spart etwas, 8-KiB-Cluster); gleich: "ganze Datei".
+     Zaehlung statt Schaetzung: results/counts-8k.txt. Bericht "write n" am Ende gegen 10782.
+     Faellt 4096 nicht deutlich: die Kosten stecken in der Karte je Kommando, nicht in der FAT, dann ist HW05 mit Stoppuhr zu klaeren.
+  c) QED.NAP auf eine andere Partition kopieren, Stoppuhr (HW05: September 5,8 s, 89 KB/s). Danach Bericht: write sec/n > 1 belegt die Buendelung.
+
+SCHRITT 2, alte Karte, keine Einspeisung: der eigentliche Pruefstein
+  FSWBENCH auf D:, mehrmals bis zu den ersten Fehlern, dann noch einmal speichern (Fbench oder X-Shot), kein Neustart dazwischen.
+  Vorher auf dieser Karte: dat_inhibit timeout, write_rdy refused 00400900, cmd_done error, NONRECOVERABLE, dann alles haengt.
+    gut      fail-Zeilen nur noch "write_done timeout" oder "dat_inhibit timeout"; refused 0; nonrecover 0; App-Kode -2;
+             danach geht jedes Speichern; Datei vollstaendig. Die Zeile r1 zeigt ILLEGAL_COMMAND 0.
+    Limit    viele write_done timeouts bei Stall um 1-2 s und jede Fehlermeldung ein -2: Karte ueberschreitet WRITE_BUSY_MS. Zahlen an den Lead,
+             Vorschlag zum Limit erst dann. Hier greift das Warten vor dem naechsten Kommando (bis noch einmal 1000 ms), die Datei landet beim naechsten Versuch.
+    schlecht weiter "refused" oder NONRECOVERABLE: Annahme ueber Karte oder Controller falsch, Foto, Diagnose.
+    schlecht cmd_done error ohne Ende und read failed steigt: Karte antwortet nicht mehr auf CMD13. Dann ist Neuinitialisierung wie EmuTOS noetig (bios/sd.c:192-201),
+             eigener Schritt, Entscheidung des Anwenders (docs/COMPATIBILITY.md, HW08).
+  Danach fsck_msdos -n D:. Sauber ist die Abnahme, wenn kein Datensektor abgelehnt wurde; siehe GRENZEN.
+
+SCHRITT 3, WFPROBE auf Karte 3, je Taste ein frischer Boot, Laufwerk D: (Einspeisung im Treiber, echte Kommandos ausser wo vermerkt)
+  Taste  was                                entscheidet / Soll
+  t      Timeout mitten in der Uebertragung M-C: CMD13 antwortet rcv, CMD12 + Resets wirken. R1..R4 ok, nonrecover 0.
+  d      Datenfehler, mehrere Schreiben     M-C dasselbe, mit Kode -10.
+  u      Busy 1,2 s, Karte schon fertig     CMD13 antwortet tran, kein CMD12. R1..R4 ok. Wenn nicht: Neuinitialisierung.
+  v, w   Busy 2,2 und 3,5 s                 dasselbe, in den Busy-Resten -2.
+  f      Busy 2,2 s auf FAT                 RESULTS.PDF am Ende vollstaendig, R1..R4 ok.
+  b      FAT lehnt eine Weile ab            Fwrite voll, Fclose -10, Fcreate -10 solange; danach R1..R4 ok, RESULTS.PDF 37156 B, fsck sauber.
+  x      wie b, dann Fdelete                ok.
+  p, q   Programmieren 2,6 s (nur Simulation im Treiber, QEMU-gleich; kein Beleg fuer die Karte)  Logik des Wartens: R1..R4 ok.
+  o      Kommando hinter dem Kartenende     M-A: Bit steht in der r1-Zeile. Kein ILLEGAL.
+  Erwartungen aus QEMU: results/compare.txt, gleiche Zeilen gegen die Fotos legen.
+
+WAS NUR DIE PI ENTSCHEIDET
+  1 Reicht die Wiederherstellung ohne Neuinitialisierung auf EMMC2 und einer echten Karte in prg? (t, d, u, Schritt 2)
+  2 Antwortet eine echte Karte in prg auf CMD13 wie Tabelle 4-35? QEMU kann das nicht, p/q simulieren es nur. (Schritt 2)
+  3 Hilft der Wegfall der FAT-Schreibvorgaenge dem Tempo auf der Karte? (Schritt 1b, 1c)
+
+GRENZEN
+  Stromausfall nicht vorgesehen. Datensektor abgelehnt (a1, b4): fsck meldet weiter zu viele Cluster fuer die Dateilaenge, EmuTOS Schlimmeres.
+  Karte nicht reparieren lassen, nur fsck -n.

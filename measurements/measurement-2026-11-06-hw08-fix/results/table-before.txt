@@ -1,0 +1,412 @@
+=== emutos-n1 (log)
+    writes per Fwrite pattern, no fault
+    pat total 10240 step 100: Fcreate=6 writes 1/1 Fwrite x103 last=40 writes 18/18 Fclose=0 writes 5/5
+    pat total 10240 step 512: Fcreate=6 writes 1/1 Fwrite x20 last=512 writes 20/20 Fclose=0 writes 3/3
+    pat total 102400 step 512: Fcreate=6 writes 1/1 Fwrite x200 last=512 writes 200/200 Fclose=0 writes 3/3
+    pat total 10240 step 4096: Fcreate=6 writes 1/1 Fwrite x3 last=2048 writes 3/20 Fclose=0 writes 3/3
+    pat total 102400 step 4096: Fcreate=6 writes 1/1 Fwrite x25 last=4096 writes 25/200 Fclose=0 writes 3/3
+    pat total 1048576 step 4096: Fcreate=6 writes 1/1 Fwrite x256 last=4096 writes 258/2050 Fclose=0 writes 5/5
+    pat total 102400 step 1024: Fcreate=6 writes 1/1 Fwrite x100 last=1024 writes 100/200 Fclose=0 writes 3/3
+    pat total 102400 step 32768: Fcreate=6 writes 1/1 Fwrite x4 last=4096 writes 4/200 Fclose=0 writes 3/3
+    pat total 1048576 step 32768: Fcreate=6 writes 1/1 Fwrite x32 last=32768 writes 34/2050 Fclose=0 writes 5/5
+    pat total 10485760 step 32768: Fcreate=6 writes 1/1 Fwrite x320 last=32768 writes 358/20518 Fclose=0 writes 5/5
+    pat total 10240 step 10240: Fcreate=6 writes 1/1 Fwrite x1 last=10240 writes 1/20 Fclose=0 writes 3/3
+    pat total 102400 step 102400: Fcreate=6 writes 1/1 Fwrite x1 last=102400 writes 1/200 Fclose=0 writes 3/3
+    pat total 1048576 step 1048576: Fcreate=6 writes 1/1 Fwrite x1 last=1048576 writes 3/2050 Fclose=0 writes 5/5
+    pat total 10485760 step 10485760: Fcreate=6 writes 1/1 Fwrite x1 last=10485760 writes 39/20518 Fclose=0 writes 5/5
+    overwrite 64 x 100 B, 1 KiB apart: last Fwrite=100 writes 62/62 Fclose=0 writes 2/2
+    fsck: Warning: /OVER.DAT starts with free cluster; Warning: /OVER.DAT: Cluster chain starting at 3 ends with cluster marked free; Warning: size of /OVER.DAT is 1048576, should at most be 2048; Warning: 2 files, 65340 KiB free (32670 clusters)
+    card: OVER.DAT=1048576 66.910=208
+=== emutos-n2 (log)
+    a file written and not closed yet, no fault
+    Fcreate=6 writes 1/1
+    Fwrite 5000=5000 writes 2/9
+    open: Fsfirst=0 size=0 writes 0/0
+    open: Dfree free=32668 (before the file 32671) writes 2/2
+    open: Fattrib get=0 writes 0/0
+    open: second handle Fopen=7 writes 0/0
+    open: second handle Fseek end=5000
+    open: second handle Fread=5000 same=1 writes 0/0
+    open: Fdatime set=0 writes 0/0
+    open: Fdatime get on the second handle=0 1234 5678 writes 0/0
+    Fclose of the second handle=0 writes 2/2
+    then: Fsfirst=0 size=5000 writes 0/0
+    Fwrite 3000=3000 writes 2/5
+    Fclose=0 writes 5/5
+    closed: Fsfirst=0 size=8000 time 1234 date 5678 writes 0/0
+    overwrite 50 B at 100: Fwrite=50 writes 0/0
+    overwrite: second handle Fread=50 same=1 writes 0/0
+    overwrite: Fclose of the second handle=0 writes 1/1
+    overwrite: Fclose=0 writes 0/0
+    fsck: Warning: 2 files, 65334 KiB free (32667 clusters)
+    card: SEMA.DAT=8000 66.902=016
+=== emutos-n3 (log)
+    a child ends without Fclose, no fault
+    Pexec child=7 writes 8/15
+    after the child: Fsfirst=0 size=5281 writes 0/0
+    after the child: Fopen=6 Fread=5281 same=1
+    after the child: Dfree free=32668
+    fsck: Warning: 2 files, 65336 KiB free (32668 clusters)
+    card: CHILD.DAT=5281 66.904=064
+=== emutos-r1 (log)
+    FAT reads fail: Dfree
+    Dfree under the fault=-11 free=0 total=0
+    disarm: fired 1
+    Dfree with the fault gone=0 free=32671 total=32672
+    fsck: Warning: 1 files, 65342 KiB free (32671 clusters)
+    card: 1.file=30 66.910=208
+=== newtos-a1 (log)
+    one refused write, file data
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=7 Fwrite=-10,0 Fclose=0
+    disarm: fired 1
+    save R1.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R2.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R3.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R4.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    Dfree(C:)=0 free=32640 total=32672
+    last cache   writeback failed 0 retried 0 gave up 0 dirty 0; last code -10 of 1
+    fsck: Warning: /RESULTS.PDF has too many clusters allocated (logical=0, physical=32768); Warning: 7 files, 65280 KiB free (32640 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=0 R1.FBP=5281 R2.FBP=5281 R3.FBP=5281 R4.FBP=5281 66.846=720
+=== newtos-a2 (log)
+    one refused write, FAT sector
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=7 Fwrite=-10,0 Fclose=0
+    disarm: fired 1
+    save R1.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R2.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R3.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R4.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    Dfree(C:)=0 free=32640 total=32672
+    last cache   writeback failed 1 retried 1 gave up 0 dirty 0; last code -10 of 1
+    fsck: Warning: 7 files, 65280 KiB free (32640 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=32768 R1.FBP=5281 R2.FBP=5281 R3.FBP=5281 R4.FBP=5281 66.846=720
+=== newtos-a3 (log)
+    one refused write, directory sector
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=-10 Fwrite=0,0 Fclose=0
+    disarm: fired 1
+    save R1.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R2.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R3.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R4.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    Dfree(C:)=0 free=32656 total=32672
+    last cache   writeback failed 1 retried 0 gave up 0 dirty 0; last code -10 of 1
+    fsck: Warning: 7 files, 65312 KiB free (32656 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=0 R1.FBP=5281 R2.FBP=5281 R3.FBP=5281 R4.FBP=5281 66.879=488
+=== newtos-a4 (log)
+    three refused writes, directory sector
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=-10 Fwrite=0,0 Fclose=0
+    disarm: fired 1
+    save R1.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R2.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R3.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R4.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    Dfree(C:)=0 free=32656 total=32672
+    last cache   writeback failed 1 retried 0 gave up 0 dirty 0; last code -10 of 1
+    fsck: Warning: 7 files, 65312 KiB free (32656 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=0 R1.FBP=5281 R2.FBP=5281 R3.FBP=5281 R4.FBP=5281 66.879=488
+=== newtos-a5 (log)
+    three refused writes, FAT sector
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=7 Fwrite=-10,0 Fclose=-10
+    disarm: fired 2
+    save R1.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R2.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R3.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R4.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    Dfree(C:)=0 free=32640 total=32672
+    last cache   writeback failed 2 retried 2 gave up 0 dirty 0; last code -10 of 2
+    fsck: Warning: 7 files, 65280 KiB free (32640 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=32768 R1.FBP=5281 R2.FBP=5281 R3.FBP=5281 R4.FBP=5281 66.846=720
+=== newtos-b1 (log)
+    every write refused for a while, all of C:
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=-10 Fwrite=0,0 Fclose=0
+    save P1.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save P2.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save P3.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    disarm: fired 4
+    save R1.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R2.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R3.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R4.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    Dfree(C:)=0 free=32656 total=32672
+    last cache   writeback failed 4 retried 0 gave up 0 dirty 0; last code -10 of 4
+    fsck: Warning: 10 files, 65312 KiB free (32656 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=0 P1.FBP=0 P2.FBP=0 P3.FBP=0 R1.FBP=5281 R2.FBP=5281 R3.FBP=5281 R4.FBP=5281 66.879=488
+=== newtos-b2 (log)
+    every write refused for a while, directory
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=-10 Fwrite=0,0 Fclose=0
+    save P1.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save P2.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save P3.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    disarm: fired 4
+    save R1.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R2.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R3.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R4.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    Dfree(C:)=0 free=32656 total=32672
+    last cache   writeback failed 4 retried 0 gave up 0 dirty 0; last code -10 of 4
+    fsck: Warning: 10 files, 65312 KiB free (32656 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=0 P1.FBP=0 P2.FBP=0 P3.FBP=0 R1.FBP=5281 R2.FBP=5281 R3.FBP=5281 R4.FBP=5281 66.879=488
+=== newtos-b3 (log)
+    every write refused for a while, FAT
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=7 Fwrite=-10,0 Fclose=-10
+    save P1.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save P2.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save P3.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    disarm: fired 3
+    save R1.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R2.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R3.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R4.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    Dfree(C:)=0 free=2026 total=32672
+    last cache   writeback failed 3 retried 2 gave up 1 dirty 1; last code -10 of 19
+    fsck: Warning: /RESULTS.PDF starts with free cluster; Warning: /RESULTS.PDF: Cluster chain starting at 6 ends with cluster marked free; Warning: size of /RESULTS.PDF is 32768, should at most be 2048; Warning: 10 files, 65334 KiB free (32667 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=32768 P1.FBP=0 P2.FBP=0 P3.FBP=0 R1.FBP=0 R2.FBP=0 R3.FBP=0 R4.FBP=0 66.904=064
+=== newtos-b4 (log)
+    every write refused for a while, file data
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=7 Fwrite=-10,0 Fclose=0
+    save P1.FBP Fcreate=7 Fwrite=-10,0 Fclose=0
+    save P2.FBP Fcreate=7 Fwrite=-10,0 Fclose=0
+    save P3.FBP Fcreate=7 Fwrite=-10,0 Fclose=0
+    disarm: fired 4
+    save R1.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R2.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R3.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R4.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    Dfree(C:)=0 free=32634 total=32672
+    last cache   writeback failed 0 retried 0 gave up 0 dirty 0; last code -10 of 4
+    fsck: Warning: /RESULTS.PDF has too many clusters allocated (logical=0, physical=32768); Warning: /P1.FBP has too many clusters allocated (logical=0, physical=4096); Warning: /P2.FBP has too many clusters allocated (logical=0, physical=4096); Warning: /P3.FBP has too many clusters allocated (logical=0, physical=4096); Warning: 10 files, 65268 KiB free (32634 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=0 P1.FBP=0 P2.FBP=0 P3.FBP=0 R1.FBP=5281 R2.FBP=5281 R3.FBP=5281 R4.FBP=5281 66.834=432
+=== newtos-b5 (log)
+    as b3, then an Fdelete on the same FAT sector
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=7 Fwrite=-10,0 Fclose=-10
+    save P1.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save P2.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save P3.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    disarm: fired 3
+    save R1.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R2.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R3.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R4.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    Dfree(C:)=0 free=2026 total=32672
+    Fdelete(RESULTS.PDF)=0
+    save X1.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    last cache   writeback failed 3 retried 2 gave up 1 dirty 0; last code -10 of 19
+    fsck: Warning: 10 files, 65330 KiB free (32665 clusters)
+    card: BASE.DAT=5281 X1.FBP=5281 P1.FBP=0 P2.FBP=0 P3.FBP=0 R1.FBP=0 R2.FBP=0 R3.FBP=0 R4.FBP=0 66.897=920
+=== newtos-d1 (log)
+    data CRC error on every write for a while
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=-10 Fwrite=0,0 Fclose=0
+    save P1.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save P2.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save P3.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    disarm: fired 4
+    save R1.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R2.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R3.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R4.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    Dfree(C:)=0 free=32656 total=32672
+    last cache   writeback failed 4 retried 0 gave up 0 dirty 0; last code -10 of 4
+    fsck: Warning: 10 files, 65312 KiB free (32656 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=0 P1.FBP=0 P2.FBP=0 P3.FBP=0 R1.FBP=5281 R2.FBP=5281 R3.FBP=5281 R4.FBP=5281 66.879=488
+=== newtos-n1 (log)
+    writes per Fwrite pattern, no fault
+    pat total 10240 step 100: Fcreate=7 writes 1/1 Fwrite x103 last=40 writes 132/132 Fclose=0 writes 1/1
+    pat total 10240 step 512: Fcreate=7 writes 1/1 Fwrite x20 last=512 writes 30/30 Fclose=0 writes 1/1
+    pat total 102400 step 512: Fcreate=7 writes 1/1 Fwrite x200 last=512 writes 300/300 Fclose=0 writes 1/1
+    pat total 10240 step 4096: Fcreate=7 writes 1/1 Fwrite x3 last=2048 writes 9/26 Fclose=0 writes 1/1
+    pat total 102400 step 4096: Fcreate=7 writes 1/1 Fwrite x25 last=4096 writes 75/250 Fclose=0 writes 1/1
+    pat total 1048576 step 4096: Fcreate=7 writes 1/1 Fwrite x256 last=4096 writes 772/2564 Fclose=0 writes 1/1
+    pat total 102400 step 1024: Fcreate=7 writes 1/1 Fwrite x100 last=1024 writes 200/300 Fclose=0 writes 1/1
+    pat total 102400 step 32768: Fcreate=7 writes 1/1 Fwrite x4 last=4096 writes 12/208 Fclose=0 writes 1/1
+    pat total 1048576 step 32768: Fcreate=7 writes 1/1 Fwrite x32 last=32768 writes 100/2116 Fclose=0 writes 1/1
+    pat total 10485760 step 32768: Fcreate=7 writes 1/1 Fwrite x320 last=32768 writes 1000/21160 Fclose=0 writes 1/1
+    pat total 10240 step 10240: Fcreate=7 writes 1/1 Fwrite x1 last=10240 writes 3/22 Fclose=0 writes 1/1
+    pat total 102400 step 102400: Fcreate=7 writes 1/1 Fwrite x1 last=102400 writes 3/202 Fclose=0 writes 1/1
+    pat total 1048576 step 1048576: Fcreate=7 writes 1/1 Fwrite x1 last=1048576 writes 7/2054 Fclose=0 writes 1/1
+    pat total 10485760 step 10485760: Fcreate=7 writes 1/1 Fwrite x1 last=10485760 writes 43/20522 Fclose=0 writes 1/1
+    overwrite 64 x 100 B, 1 KiB apart: last Fwrite=100 writes 64/64 Fclose=0 writes 0/0
+    last cache   writeback failed 0 retried 0 gave up 0 dirty 0; last code 0 of 0
+    fsck: Warning: 1 files, 65342 KiB free (32671 clusters)
+    card: 1.file=30 66.910=208
+=== newtos-n2 (log)
+    a file written and not closed yet, no fault
+    Fcreate=7 writes 1/1
+    Fwrite 5000=5000 writes 5/12
+    open: Fsfirst=0 size=0 writes 0/0
+    open: Dfree free=32668 (before the file 32671) writes 0/0
+    open: Fattrib get=0 writes 0/0
+    open: second handle Fopen=8 writes 0/0
+    open: second handle Fseek end=0
+    open: second handle Fread=0 same=0 writes 0/0
+    open: Fdatime set=0 writes 1/1
+    open: Fdatime get on the second handle=0 1234 5678 writes 0/0
+    Fclose of the second handle=0 writes 0/0
+    then: Fsfirst=0 size=0 writes 0/0
+    Fwrite 3000=3000 writes 6/9
+    Fclose=0 writes 1/1
+    closed: Fsfirst=0 size=8000 time 1234 date 5678 writes 0/0
+    overwrite 50 B at 100: Fwrite=50 writes 1/1
+    overwrite: second handle Fread=50 same=1 writes 0/0
+    overwrite: Fclose of the second handle=0 writes 0/0
+    overwrite: Fclose=0 writes 0/0
+    last cache   writeback failed 0 retried 0 gave up 0 dirty 0; last code 0 of 0
+    fsck: Warning: 2 files, 65334 KiB free (32667 clusters)
+    card: SEMA.DAT=8000 66.902=016
+=== newtos-n3 (log)
+    a child ends without Fclose, no fault
+    Pexec child=7 writes 9/16
+    after the child: Fsfirst=0 size=5281 writes 0/0
+    after the child: Fopen=7 Fread=5281 same=1
+    after the child: Dfree free=32668
+    last cache   writeback failed 0 retried 0 gave up 0 dirty 0; last code 0 of 0
+    fsck: Warning: 2 files, 65336 KiB free (32668 clusters)
+    card: CHILD.DAT=5281 66.904=064
+=== newtos-o1 (log)
+    a real command behind the end of the card
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=-10 Fwrite=0,0 Fclose=0
+    disarm: fired 1
+    save R1.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R2.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R3.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R4.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    Dfree(C:)=0 free=32656 total=32672
+    last cache   writeback failed 1 retried 0 gave up 0 dirty 0; last code -10 of 1
+    fsck: Warning: 7 files, 65312 KiB free (32656 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=0 R1.FBP=5281 R2.FBP=5281 R3.FBP=5281 R4.FBP=5281 66.879=488
+=== newtos-t1 (log)
+    one write times out, directory
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=-2 Fwrite=0,0 Fclose=0
+    disarm: fired 1
+    save R1.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R2.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R3.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R4.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    Dfree(C:)=0 free=32656 total=32672
+    last cache   writeback failed 1 retried 0 gave up 0 dirty 0; last code -2 of 1
+    fsck: Warning: 7 files, 65312 KiB free (32656 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=0 R1.FBP=5281 R2.FBP=5281 R3.FBP=5281 R4.FBP=5281 66.879=488
+=== newtos-t2 (log)
+    every write times out for a while
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=-2 Fwrite=0,0 Fclose=0
+    save P1.FBP Fcreate=-2 Fwrite=0,0 Fclose=0
+    save P2.FBP Fcreate=-2 Fwrite=0,0 Fclose=0
+    save P3.FBP Fcreate=-2 Fwrite=0,0 Fclose=0
+    disarm: fired 4
+    save R1.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R2.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R3.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R4.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    Dfree(C:)=0 free=32656 total=32672
+    last cache   writeback failed 4 retried 0 gave up 0 dirty 0; last code -2 of 4
+    fsck: Warning: 10 files, 65312 KiB free (32656 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=0 P1.FBP=0 P2.FBP=0 P3.FBP=0 R1.FBP=5281 R2.FBP=5281 R3.FBP=5281 R4.FBP=5281 66.879=488
+=== newtos-u1 (log)
+    busy 900 ms, under the limit, directory
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=7 Fwrite=32768,4388 Fclose=0
+    disarm: fired 2
+    save R1.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R2.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R3.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    save R4.FBP Fcreate=7 Fwrite=5281,0 Fclose=0
+    Dfree(C:)=0 free=32637 total=32672
+    last cache   writeback failed 0 retried 0 gave up 0 dirty 0; last code 0 of 0
+    fsck: Warning: 7 files, 65274 KiB free (32637 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=37156 R1.FBP=5281 R2.FBP=5281 R3.FBP=5281 R4.FBP=5281 66.840=576
+=== newtos-u2 (serial)
+    busy 1200 ms, over the limit, directory
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=-2 Fwrite=0,0 Fclose=0
+    disarm: fired 1
+    save R1.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R2.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R3.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R4.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    Dfree(C:)=0 free=250 total=32672
+    last cache   writeback failed 7 retried 2 gave up 1 dirty 1; last code -11 of 12
+    fsck: Warning: 3 files, 65336 KiB free (32668 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=0 66.904=064
+=== newtos-u3 (serial)
+    busy 1200 ms on every write for a while
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=-2 Fwrite=0,0 Fclose=0
+    save P1.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save P2.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save P3.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    disarm: fired 4
+    save R1.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R2.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R3.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R4.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    Dfree(C:)=0 free=250 total=32672
+    last cache   writeback failed 10 retried 2 gave up 1 dirty 1; last code -11 of 18
+    fsck: Warning: 3 files, 65336 KiB free (32668 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=0 66.904=064
+=== newtos-u4 (serial)
+    busy 2200 ms, directory
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=-2 Fwrite=0,0 Fclose=0
+    disarm: fired 1
+    save R1.FBP Fcreate=-2 Fwrite=0,0 Fclose=0
+    save R2.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R3.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R4.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    Dfree(C:)=0 free=250 total=32672
+    last cache   writeback failed 7 retried 2 gave up 1 dirty 1; last code -11 of 12
+    fsck: Warning: 3 files, 65336 KiB free (32668 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=0 66.904=064
+=== newtos-u5 (serial)
+    busy 3500 ms, directory
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=-2 Fwrite=0,0 Fclose=0
+    disarm: fired 1
+    save R1.FBP Fcreate=-2 Fwrite=0,0 Fclose=0
+    save R2.FBP Fcreate=-2 Fwrite=0,0 Fclose=0
+    save R3.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R4.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    Dfree(C:)=0 free=250 total=32672
+    last cache   writeback failed 7 retried 2 gave up 1 dirty 1; last code -11 of 12
+    fsck: Warning: 3 files, 65336 KiB free (32668 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=0 66.904=064
+=== newtos-u6 (serial)
+    busy 2200 ms, FAT sector
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=7 Fwrite=-2,0 Fclose=-2
+    disarm: fired 1
+    save R1.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R2.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R3.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R4.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    Dfree(C:)=0 free=234 total=32672
+    last cache   writeback failed 10 retried 4 gave up 2 dirty 2; last code -11 of 24
+    fsck: Warning: 3 files, 65336 KiB free (32668 clusters)
+    card: BASE.DAT=5281 RESULTS.PDF=0 66.904=064
+=== newtos-w1 (serial)
+    controller stuck for a while (DAT inhibit)
+    save BASE.DAT Fcreate=7 Fwrite=5281,0 Fclose=0
+    save RESULTS.PDF Fcreate=-2 Fwrite=0,0 Fclose=0
+    save P1.FBP Fcreate=-2 Fwrite=0,0 Fclose=0
+    save P2.FBP Fcreate=-2 Fwrite=0,0 Fclose=0
+    save P3.FBP Fcreate=-2 Fwrite=0,0 Fclose=0
+    disarm: fired 0
+    save R1.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R2.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R3.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    save R4.FBP Fcreate=-10 Fwrite=0,0 Fclose=0
+    Dfree(C:)=0 free=250 total=32672
+    last cache   writeback failed 10 retried 2 gave up 1 dirty 1; last code -11 of 18
+    fsck: Warning: 2 files, 65336 KiB free (32668 clusters)
+    card: BASE.DAT=5281 66.904=064

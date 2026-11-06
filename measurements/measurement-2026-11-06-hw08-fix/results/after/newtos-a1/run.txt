@@ -1,0 +1,8 @@
+wfprobe run, case a1, side newtos (2026-11-06T22:00:35Z)
+tree      bdfa6799cf39252e860c230a6d19fdc65bf17724 14 dirty paths in kernel tos-api tos-types tosdump/probes
+test.img  4f2ecb560beaac7c63e38f621f96b081270a08bbecfe2c7128c8d24364eed701 (tools/mktestdisk.sh NEWDESK.INF=#R 02/#Z 01 D:\WFPROBE.NAP@)
+probe     WFPROBE.NAP e4471aa4fb603af395ba7636c3a9d7d292ea99d27594e5ff6966684291049b68 WFCASE=a1
+kernel    08013cb2c66fca1ca67cc8b4b3ff317b4a2d505d03159dd6d1fe6e655bdc8b48 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/final/kernel8-sd-fault.img
+card      996e33e022fe8b6420e1606113d5688b686a8aaa72d4c1357edd527dc8c47f40 (tools/mkcard.sh MKCARD_TESTDISK, D:\WFPROBE.NAP)
+qemu      done
+testpart  after  50a4ba8beef412f8e6d77e529276e841d2e29c796a2c58fe5df39c221688e072

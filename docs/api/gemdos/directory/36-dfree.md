@@ -248,3 +248,10 @@ PHASE-05: backed by the FAT driver. The precise (slow) free-cluster scan is kept
 for ABI fidelity; a cached "fast Dfree" is a possible free-implementation
 extension that must return the same buffer values. Return `ERR` (-1), not
 `EDRIVE`, on bad drive for compatibility.
+
+TASK/HW08 (2026-11-06): a FAT sector that cannot be had ends the call with the
+device's code and nothing stored, as `countfree16`'s `getrec` long-jumps
+(`bdos/fsfat.c:312`) before `xgetfree` stores anything (`:361-364`). Oracle,
+case `r1`: `Dfree` -11, buffer untouched, the next `Dfree` right. Before, NewTOS
+stopped counting at the first failed sector and answered 0 with a wrong number.
+A FAT sector still dirty counts as it stands in the cache on both sides.

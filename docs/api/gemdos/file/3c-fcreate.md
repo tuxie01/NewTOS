@@ -278,6 +278,17 @@ PHASE-05: backed by the FAT16/32 driver on Pi SD/USB storage. The
 "RO-attribute but RW-handle" and "silent overwrite" behaviours are contract;
 directory-grow strategy is a free NewTOS choice.
 
+TASK/HW08 (2026-11-06): a device error during the call is its result, as on
+EmuTOS (`longjmp_rwabs`, `bdos/fs.h:60`), not `EACCDN`: the directory scan, the
+search for a free slot, the write of the entry. `EACCDN` for a full root stays
+for a root that is really full. A scan that stopped on a device error ends the
+call before anything is created, so no second entry with the same name can
+appear. On the Pi the program saw -36 where the report had -2
+(`measurements/measurement-2026-11-06-hw08-pi/RUNINFO.TXT`). A write-back that
+fails at the end of the call takes the new entry back: EmuTOS' buffer goes with
+the error and no file appears (oracle, case `a3`), NewTOS' stays
+(`docs/COMPATIBILITY.md`, HW08) and would land a 0-byte file nobody was told of.
+
 TASK/FS21 (2026-10-31): the new OFD starts dirty, as EmuTOS marks the new
 DFD `O_DIRTY` (`bdos/fsopnclo.c:206`), so its `Fclose` sets `FA_ARCHIVE` in
 the entry even when nothing was written (`3e-fclose.md` edge case 8;

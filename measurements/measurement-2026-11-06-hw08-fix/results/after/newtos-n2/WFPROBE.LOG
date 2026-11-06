@@ -1,0 +1,37 @@
+=== WFPROBE case n2: a file written and not closed yet, no fault
+C: partition at 63, FATs at 1 and 129, root at 257, data at 289
+Fcreate=7 writes 1/1
+Fwrite 5000=5000 writes 2/9
+open: Fsfirst=0 size=0 writes 0/0
+open: Dfree free=32668 (before the file 32671) writes 2/2
+open: Fattrib get=0 writes 0/0
+open: second handle Fopen=8 writes 0/0
+open: second handle Fseek end=0
+open: second handle Fread=0 same=0 writes 0/0
+open: Fdatime set=0 writes 0/0
+open: Fdatime get on the second handle=0 1234 5678 writes 0/0
+Fclose of the second handle=0 writes 2/2
+then: Fsfirst=0 size=0 writes 0/0
+Fwrite 3000=3000 writes 2/5
+Fclose=0 writes 5/5
+closed: Fsfirst=0 size=8000 time 1234 date 5678 writes 0/0
+overwrite 50 B at 100: Fwrite=50 writes 0/0
+overwrite: second handle Fread=50 same=1 writes 0/0
+overwrite: Fclose of the second handle=0 writes 1/1
+overwrite: Fclose=0 writes 0/0
+--- diag at the end (723 bytes)
+  SD diagnosis  up 0:00:15.207   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 2 timeouts 0 recover 2 nonrecover 0 refused 0
+   boot    errors 2 timeouts 0 (base probe, in the counts above)
+   last    cmd_done int 00018001 r1 00000000
+   bits   CTO=2
+   wait ms cmd_inhibit 0.0 dat_inhibit 0.0 cmd_done 0.0 read_rdy 0.0 write_rdy 0.0
+           read_done 0.0 write_done 0.0
+  write   n 16 sec 26 failed 0 max 1.0 ms
+   time   <1:15 <4:1 <16:0 <64:0 <250:0 <500:0 <1000:0 more:0
+  read    n 146 sec 403 failed 0 max 25.4 ms
+   time   <1:140 <4:4 <16:1 <64:1 <250:0 <500:0 <1000:0 more:0
+  first   no failure since the boot
+  cache   writeback failed 0 retried 0 dirty 0; last code 0 of 0
+  bcache  dev r 146 w 16 hit 143 miss 403 sectors
+END

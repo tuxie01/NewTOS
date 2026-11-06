@@ -36,7 +36,7 @@ mark_bcbs_invalid	bdos/bdosmain.c	tos-api/src/bdos/fs/cache.rs	invalidate_drive	
 ni	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	dispatch_inner	mapped	empty table slot -> EINVFN (build_table None)
 offree	bdos/bdosmain.c	tos-api/src/bdos/fs/file.rs	free_drive_files	mapped	the sft entries and OFDs of the changed drive freed (FS20)
 osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	dispatch	mapped	GEMDOS trap dispatcher
-osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	dispatch_inner	mapped	the call under the restart after a media change (restartable: fresh error context per run, goto restrt)
+osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	dispatch_inner	mapped	the call under the restart after a media change (restartable: fresh error context per run, goto restrt); the first hard error of a call is its result, whatever its path made of the failed access (the longjmp, HW08)
 osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	run_call	mapped	the table call
 osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	media_change_relog	mapped	the media-change block: offree, DMD, freetree, mark_bcbs_invalid, Getbpb + log_media (FS20)
 osif	bdos/bdosmain.c	tos-api/src/gemdos/mod.rs	restartable	mapped	the restart after a media change (setjmp at restrt:, the E_CHNG block, goto restrt) as one helper: the dispatcher and the kernel's own file-system paths (Pexec load, read_file, list_dir, the shell's calls; FS22); bounded by RESTART_LIMIT, then E_CHNG (COMPATIBILITY.md)
@@ -152,7 +152,7 @@ ixgetfcb	bdos/fsio.c	tos-api/src/bdos/fs/dir.rs	next	mapped	DirIter::next, the n
 ixlseek	bdos/fsio.c	tos-api/src/bdos/fs/fsio.rs	ixlseek	mapped	-
 ixlseek	bdos/fsio.c	tos-api/src/bdos/fs/file.rs	seek_deleted	mapped	a file deleted while open
 ixread	bdos/fsio.c	tos-api/src/bdos/fs/file.rs	ixread	mapped	-
-ixwrite	bdos/fsio.c	tos-api/src/bdos/fs/file.rs	ixwrite	mapped	-
+ixwrite	bdos/fsio.c	tos-api/src/bdos/fs/file.rs	ixwrite	mapped	xrw(1, ...) and nothing else, no write-back of its own (HW08)
 usrio	bdos/fsio.c	tos-api/src/bdos/fs/fsio.rs	usrio	mapped	-
 usrio	bdos/fsio.c	tos-api/src/bdos/fs/cache.rs	direct_read	mapped	-
 usrio	bdos/fsio.c	tos-api/src/bdos/fs/cache.rs	direct_write	mapped	-
@@ -172,8 +172,8 @@ xsetdrv	bdos/fsmain.c	tos-api/src/bdos/fs/drive.rs	dsetdrv	mapped	Dsetdrv 0x0E
 xsetdta	bdos/fsmain.c	tos-api/src/bdos/fs/find.rs	fsetdta	mapped	Fsetdta 0x1A
 contains_illegal_characters	bdos/fsopnclo.c	tos-api/src/bdos/fs/path.rs	contains_illegal_characters	mapped	-
 ixclose	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	ixclose	mapped	-
-ixclose	bdos/fsopnclo.c	tos-api/src/bdos/fs/cache.rs	flush	mapped	the write-back loop at its end
-ixclose	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	flush_ofd	mapped	the O_DIRTY entry rewrite: cluster, length, attribute | FA_ARCHIVE (FS21)
+ixclose	bdos/fsopnclo.c	tos-api/src/bdos/fs/cache.rs	flush	mapped	the write-back loop at its end; no attempt limit (HW08)
+ixclose	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	flush_ofd	mapped	the O_DIRTY entry rewrite: cluster, length, attribute | FA_ARCHIVE (FS21); its device error leaves the OFD and the handle as they were (HW08)
 ixcreat	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	fcreate	mapped	-
 ixcreat	bdos/fsopnclo.c	tos-api/src/bdos/fs/dirops.rs	dcreate	mapped	the folder case
 ixdel	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	ixdel	mapped	dn->d_files = the OFDs with this drive, directory start cluster and slot (the node of a drive, FS31)

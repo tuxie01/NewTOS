@@ -210,7 +210,11 @@ fn deleting_a_dirty_open_file_frees_its_whole_chain() {
     let h = fcreate("C:\\FD2.TXT");
     assert!(h >= 6);
     assert_eq!(fwrite(h, &[0x5A; 1500]), 1500, "three 512-byte clusters");
-    assert_eq!(free_clusters(host), before - 3);
+    // The FAT sector is still dirty in the cache (`Fwrite` does not write back,
+    // TASK/HW08): the three clusters show through `Dfree`, not on the card.
+    let mut df = [0u8; 16];
+    assert_eq!(gemdos2(0x36, df.as_mut_ptr() as u64, 3), E_OK);
+    assert_eq!(u32::from_le_bytes([df[0], df[1], df[2], df[3]]) as usize, before - 3);
     assert_eq!(fdelete("C:\\FD2.TXT"), E_OK);
     assert_eq!(free_clusters(host), before, "the whole chain is free again");
     assert_eq!(fclose(h), EINTRN);

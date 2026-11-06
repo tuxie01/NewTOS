@@ -41,6 +41,9 @@
 //!   [`take_error`]. That is what turns a `Fwrite` short count caused by a
 //!   *device error* back into `EWRITF`, instead of letting it pass for
 //!   "disk full" (`docs/api/gemdos/file/40-fwrite.md` §"Error conditions").
+//!   A code no call took is the result of the dispatcher
+//!   (`crate::gemdos`, `dispatch_inner`, TASK/HW08), so no call answers "not
+//!   found" or `EACCDN` for a sector it could not read.
 
 use core::cell::UnsafeCell;
 use core::sync::atomic::{AtomicI32, AtomicU32, Ordering};
@@ -84,23 +87,6 @@ impl Kind {
     }
 }
 
-/// How often the cache re-attempts the write-back of one and the same
-/// dirty slot before it stops trying on its own.
-///
-/// A retry is legitimate — the Pi measurement of 2026-09-25 had twelve of
-/// twenty-three sector writes fail and land on a later attempt
-/// (`docs/api/hw/emmc-audit.md` §3.2). An *unbounded* retry is not: before
-/// HW03 a slot whose write-back failed kept its dirty flag and was tried
-/// again by every later `flush()`, for ever, without anyone learning of it.
-///
-/// The number is a policy choice, not a specification value, and is named
-/// here as one. EmuTOS bounds the same thing in two places and lower:
-/// `RWABS_RETRIES = 1` at the BIOS layer ("on real machine might want to
-/// increase this", `bios/blkdev.h:34`) and "retry at most once" in its SD
-/// driver (`bios/sd.c:167-169`). Three gives a transient card busy two more
-/// chances than EmuTOS' one and still terminates.
-const WRITEBACK_ATTEMPTS: u8 = 3;
-
 struct Slot {
     lba: u64,
     /// The drive the sector belongs to — EmuTOS `b_bufdrv` (`bdos/fs.h:
@@ -113,12 +99,12 @@ struct Slot {
     /// The list's kind the slot was filled for; for a FAT slot this carries
     /// the mirror geometry its write-back needs.
     kind: Kind,
-    /// Failed write-back attempts for the data currently in this slot.
-    /// Reset to 0 by a successful write-back and by a fresh [`write`] of
-    /// the same sector (new data is a new request).
+    /// Failed write-back attempts for the data currently in this slot, for
+    /// the retry counter and the report; nothing stops at any number. Reset
+    /// to 0 by a successful write-back and by a fresh [`write`] of the same
+    /// sector.
     wb_fails: u8,
-    /// TOS error code of this slot's last failed write-back, so a later
-    /// access can report *that* failure rather than a guess.
+    /// TOS error code of this slot's last failed write-back, for the report.
     wb_err: Long,
     data: [u8; SECTOR],
 }
@@ -185,14 +171,13 @@ static MEDIA_CHANGE_DRV: AtomicI32 = AtomicI32::new(NO_DRIVE);
 const NO_DRIVE: i32 = -1;
 
 // ── Write-back bookkeeping (HW03 point 4: a retry must be visible) ────
+// A slot that failed is tried again by every later write-back until it lands
+// (TASK/HW08, the user's decision "Weg B"): visible, not bounded.
 /// Write-backs that failed, counting every attempt.
 static WB_FAILURES: AtomicU32 = AtomicU32::new(0);
 /// Write-backs that were a **repeat** attempt at a slot that had already
 /// failed at least once — the retries that used to be silent.
 static WB_RETRIES: AtomicU32 = AtomicU32::new(0);
-/// Slots that used up [`WRITEBACK_ATTEMPTS`] and are no longer retried
-/// automatically. Their data is still in the cache and still dirty.
-static WB_EXHAUSTED: AtomicU32 = AtomicU32::new(0);
 
 /// The most recent hard error code recorded, kept past [`take_error`], and
 /// how many were recorded (debug feature `sd-diag`, TASK/HW08).
@@ -212,9 +197,11 @@ fn lists() -> &'static mut [List; 2] {
 }
 
 /// Record a hard device error for the running GEMDOS call — EmuTOS
-/// `errcode = rwerr` in `longjmp_rwabs` (`bdos/fs.h:66`).
+/// `errcode = rwerr` in `longjmp_rwabs` (`bdos/fs.h:66`). The first one of a
+/// call stays: EmuTOS jumps out at it, this call runs on through its error
+/// paths and may meet more.
 fn set_error(code: Long) {
-    LAST_ERROR.store(code, Ordering::Relaxed);
+    let _ = LAST_ERROR.compare_exchange(E_OK, code, Ordering::Relaxed, Ordering::Relaxed);
     #[cfg(feature = "sd-diag")]
     {
         DIAG_LAST_CODE.store(code, Ordering::Relaxed);
@@ -352,6 +339,11 @@ pub fn take_error() -> Option<Long> {
 /// forced to discard, and the ticket's integrity requirement is exactly
 /// that no sector disappears because its write-back failed.
 ///
+/// Every later write-back of the slot really goes to the device again, with
+/// no limit (TASK/HW08, `docs/COMPATIBILITY.md`): the sector lands as soon as
+/// the card takes it, and nothing above stays blocked. With a dead card each
+/// attempt costs the driver's wait.
+///
 /// The write is the logical `Rwabs` of `flush` (`bdos/fsbuf.c:95,100`), so
 /// it meets that call's media tests first ([`rwabs_test`]): with a media
 /// change pending on the slot's drive it fails with `E_CHNG` without
@@ -392,23 +384,10 @@ fn write_back(s: &mut Slot) -> Result<(), Long> {
             WB_FAILURES.fetch_add(1, Ordering::Relaxed);
             s.wb_fails = s.wb_fails.saturating_add(1);
             s.wb_err = code;
-            if s.wb_fails == WRITEBACK_ATTEMPTS {
-                WB_EXHAUSTED.fetch_add(1, Ordering::Relaxed);
-            }
             set_error(code);
             Err(code)
         }
     }
-}
-
-/// May this slot's write-back still be attempted automatically?
-///
-/// `false` once the slot has used up [`WRITEBACK_ATTEMPTS`]. The sector
-/// stays in the cache and stays dirty; what stops is the driver traffic —
-/// every later `flush()` reports the error straight away instead of
-/// re-issuing a write that has already failed three times.
-fn retryable(s: &Slot) -> bool {
-    s.wb_fails < WRITEBACK_ATTEMPTS
 }
 
 impl List {
@@ -452,15 +431,7 @@ impl List {
     fn evict(&mut self, pos: usize) -> Result<usize, Long> {
         let s = &mut self.slots[self.order[pos] as usize];
         if s.valid && s.dirty {
-            let r = if retryable(s) {
-                write_back(s)
-            } else {
-                // Out of attempts: do not touch the device again, but do not
-                // hand the slot out either — its sector is still only here.
-                set_error(s.wb_err);
-                Err(s.wb_err)
-            };
-            if let Err(code) = r {
+            if let Err(code) = write_back(s) {
                 self.promote(pos);
                 return Err(code);
             }
@@ -587,10 +558,6 @@ fn usrio_invalidate(lba: u64, count: u64) -> Result<(), Long> {
     for s in list.slots.iter_mut() {
         if s.valid && s.lba >= lba && s.lba < lba + count {
             if s.dirty {
-                if !retryable(s) {
-                    set_error(s.wb_err);
-                    return Err(s.wb_err);
-                }
                 write_back(s)?;
             }
             s.valid = false;
@@ -655,21 +622,13 @@ pub fn direct_write(drv: u16, lba: u64, buf: &[u8]) -> bool {
 ///
 /// Returns the TOS error code of the **first** failure, after having tried
 /// every other dirty slot: one bad sector must not keep the rest of the
-/// volume's metadata in memory. Sectors that fail stay in the cache, dirty
-/// (see [`write_back`]).
+/// volume's metadata in memory. Sectors that fail stay in the cache, dirty,
+/// and the next `flush` tries them again (see [`write_back`]).
 pub fn flush() -> Result<(), Long> {
     let mut first_err = None;
     for list in lists().iter_mut() {
         for s in list.slots.iter_mut() {
             if !(s.valid && s.dirty) {
-                continue;
-            }
-            if !retryable(s) {
-                // Already given up on automatically; still an error for the
-                // caller, because this sector is not on the card.
-                let code = s.wb_err;
-                set_error(code);
-                first_err.get_or_insert(code);
                 continue;
             }
             if let Err(code) = write_back(s) {
@@ -698,18 +657,15 @@ pub fn direct_stats() -> (u32, u32) {
     (DIRECT_REQS.load(Ordering::Relaxed), DIRECT_SECTORS.load(Ordering::Relaxed))
 }
 
-/// Write-back statistics: `(failures, retries, exhausted, dirty_slots)`.
+/// Write-back statistics: `(failures, retries, dirty_slots)`.
 ///
 /// * `failures` — write-back attempts that the device rejected, every
 ///   attempt counted.
-/// * `retries` — of those attempts, the ones that were a repeat at a slot
-///   that had already failed. This is the number that used to be invisible.
-/// * `exhausted` — slots that used up [`WRITEBACK_ATTEMPTS`]; their sector
-///   is still in the cache and still dirty, but no longer written back on
-///   its own.
+/// * `retries` — write-backs, good or bad, that were a repeat at a slot that
+///   had already failed. This is the number that used to be invisible.
 /// * `dirty_slots` — dirty slots right now, i.e. sectors the card has not
 ///   got yet.
-pub fn writeback_stats() -> (u32, u32, u32, u32) {
+pub fn writeback_stats() -> (u32, u32, u32) {
     let dirty = lists()
         .iter()
         .flat_map(|l| l.slots.iter())
@@ -718,7 +674,6 @@ pub fn writeback_stats() -> (u32, u32, u32, u32) {
     (
         WB_FAILURES.load(Ordering::Relaxed),
         WB_RETRIES.load(Ordering::Relaxed),
-        WB_EXHAUSTED.load(Ordering::Relaxed),
         dirty,
     )
 }
@@ -733,8 +688,7 @@ pub struct DirtySlot {
     pub drv: u16,
     /// In the FAT list (else: directory or file data).
     pub fat: bool,
-    /// Failed write-backs of the data now in the slot; at
-    /// [`WRITEBACK_ATTEMPTS`] the cache has given up on it.
+    /// Failed write-backs of the data now in the slot.
     pub fails: u8,
     /// TOS code of the last failed write-back, `E_OK` if none failed yet.
     pub err: Long,

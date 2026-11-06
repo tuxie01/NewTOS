@@ -490,8 +490,25 @@ written in one block request straight from the caller's buffer (any cached
 copy in that range written back if dirty and invalidated first, EmuTOS
 `usrio`), head/tail records are read-modify-write through the data list, new
 clusters come from `nextcl`/`findfree` exactly as in EmuTOS (first cluster from
-the FAT start, later ones forward from the current cluster). The end-of-call
-write-back of the cache (HW03, above) is kept.
+the FAT start, later ones forward from the current cluster).
+
+HW08 (2026-11-06, user decision): the end-of-call write-back of the cache that
+HW03 added and FS08 kept is gone. `ixwrite` is `xrw(1, …)` and nothing else
+(`bdos/fsio.c:554-557`), so what reaches the device during an `Fwrite` is what
+EmuTOS sends: whole records at once (`usrio`, `bdos/fsio.c:57-74`), and a dirty
+buffer that a miss has to evict (`bdos/fsbuf.c:162-163`). Partial records and
+the FAT stay dirty until an eviction or the next flushing call: `Fclose`,
+`Fcreate`, `Fdelete`, `Fattrib` set, `Frename`, `Dcreate`, `Ddelete` (the
+`ixclose` of each, `bdos/fsopnclo.c:576-579`), `Pterm` for a file left open
+(`ixterm`, `bdos/proc.c:117-123`). Measured against the oracle,
+`measurements/measurement-2026-11-06-hw08-fix/RUNINFO.TXT`.
+
+So a device error surfaces in the call that meets it, as on EmuTOS: `Fwrite`
+returns the code for a whole record, for a read of the record a partial write
+needs, or for an eviction; a partial write that fails on the device later
+reports at `Fclose`, `Fwrite` itself returning the full count. The number of
+buffers decides how often an eviction happens: EmuTOS 2 per list, NewTOS 8
+(`_state.md` §3).
 
 **PROC04 point 3 re-validation (2026-10-18) — the ticket's claim is obsolete.**
 TASK/PROC04 point 3 ("`Fread`/`Fwrite` read the handle as u16; a negative BIOS

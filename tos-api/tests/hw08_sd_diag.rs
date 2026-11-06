@@ -129,7 +129,7 @@ fn the_report_reads_as_documented() {
     let r = Report {
         now_us: 444_120_000,
         driver: Some(d),
-        writeback: (5, 2, 1, 2),
+        writeback: (5, 2, 2),
         codes: (-10, 7),
         dirty: &dirty,
         bcache: Some(Stats {
@@ -158,7 +158,7 @@ read    n 7 sec 7 failed 0 max 1.1 ms
  time   <1:6 <4:1 <16:0 <64:0 <250:0 <500:0 <1000:0 more:0
 first   0:07:03.550 write lba 1000 n 1 write_done timeout 00000000
 fail    0:07:04.120 write lba 2000 n 1 dat_inhibit timeout 00000000
-cache   writeback failed 5 retried 2 gave up 1 dirty 2; last code -10 of 7
+cache   writeback failed 5 retried 2 dirty 2; last code -10 of 7
  dirty  C: lba 192 FAT tries 3 code -2
  dirty  C: lba 320 dir/data tries 1 code -10
 bcache  dev r 8 w 9 hit 10 miss 11 sectors
@@ -219,7 +219,7 @@ fn the_longest_report_fits_its_box() {
     let r = Report {
         now_us: 99 * 3600 * 1_000_000,
         driver: Some(d),
-        writeback: (u32::MAX, u32::MAX, u32::MAX, 16),
+        writeback: (u32::MAX, u32::MAX, 16),
         codes: (-10, u32::MAX),
         dirty: &dirty,
         bcache: Some(Stats {
@@ -277,8 +277,8 @@ fn dirty_slots_lists_the_sector_the_card_did_not_take() {
     // the code of the failed write-back, and the code is kept past the
     // GEMDOS call that took it.
     host.disk.fail_write_at(root_lba(), EWRITF);
-    let path2 = cpath("C:\\DIRTY2.TXT");
-    assert_eq!(gemdos2(FCREATE, path2.as_ptr() as u64, 0), EWRITF);
+    // `Fattrib` set is a flushing call (`bdos/fsdir.c:432`).
+    assert_eq!(call(0x43, [path.as_ptr() as u64, 1, 0, 0, 0, 0, 0, 0]), EWRITF);
     let n = cache::dirty_slots(&mut out);
     assert_eq!(n, 1);
     assert_eq!(
@@ -292,7 +292,7 @@ fn dirty_slots_lists_the_sector_the_card_did_not_take() {
         }
     );
     assert_eq!(cache::error_codes().0, EWRITF);
-    assert_eq!(cache::writeback_stats().3, 1);
+    assert_eq!(cache::writeback_stats().2, 1);
 
     // A slice too short still gets the number.
     assert_eq!(cache::dirty_slots(&mut []), 1);

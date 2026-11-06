@@ -19,8 +19,8 @@
 //!   value");
 //! * finding 4 — the sector whose write-back failed is **still in the
 //!   cache**, still dirty, and lands on the card once the fault goes away;
-//! * HW03 point 4 — the repetition is bounded and counted, not endless and
-//!   silent.
+//! * HW03 point 4 — the repetition is counted, not silent; since TASK/HW08 it
+//!   is no longer bounded (`tests/hw08_writeback.rs`).
 //!
 //! The card's own refusal (the R1 status word of finding 3) cannot be
 //! produced on the host: the `RamDisk` stands in for it, refusing the
@@ -93,14 +93,42 @@ fn fwrite_reports_ewritf_when_the_sector_does_not_reach_the_card() {
     assert!(h >= 0, "Fopen -> {h}");
 
     host.disk.fail_write_at(lba, EWRITF);
-    let payload = b"second";
+    // A whole record goes straight to the card (`usrio`, `bdos/fsio.c:57-74`):
+    // this `Fwrite` meets the fault itself. Before HW03 it returned the full
+    // byte count for data that never left the machine.
+    let payload = [b's'; SECTOR_BYTES];
     let rc = call(FWRITE, [h as u64, payload.len() as u64, payload.as_ptr() as u64, 0, 0, 0, 0, 0]);
     host.disk.disarm();
-    // Before HW03 this returned 6 — the full byte count — for data that
-    // never left the machine.
     assert_eq!(rc, EWRITF, "Fwrite must report the write fault, not a count");
 
     let _ = gemdos1(FCLOSE, h as u64);
+}
+
+#[test]
+fn fclose_reports_ewritf_when_a_partial_sector_does_not_reach_the_card() {
+    let (_g, host) = fs();
+    let cl = make_file(host, "C:\\CFAIL.TXT", b"first");
+    let lba = cluster_lba(cl);
+
+    let path = cpath("C:\\CFAIL.TXT");
+    let h = gemdos2(FOPEN, path.as_ptr() as u64, 2);
+    assert!(h >= 0, "Fopen -> {h}");
+
+    host.disk.fail_write_at(lba, EWRITF);
+    // A partial sector stays in the cache (`bdos/fsio.c:261-278`, TASK/HW08):
+    // the code comes with the write-back at `Fclose` (`bdos/fsopnclo.c:576-579`).
+    let payload = b"second";
+    let rc = call(FWRITE, [h as u64, payload.len() as u64, payload.as_ptr() as u64, 0, 0, 0, 0, 0]);
+    assert_eq!(rc, payload.len() as i32, "nothing has reached the device yet");
+    let rc = gemdos1(FCLOSE, h as u64);
+    host.disk.disarm();
+    assert_eq!(rc, EWRITF, "Fclose must report the write fault");
+    // Nothing is lost: the next write-back lands it.
+    let d = cpath("C:\\CFAIL2.TXT");
+    let h = gemdos2(FCREATE, d.as_ptr() as u64, 0);
+    assert!(h >= 0, "Fcreate after the fault -> {h}");
+    assert_eq!(gemdos1(FCLOSE, h as u64), E_OK);
+    assert_eq!(&host.read_sector(lba)[..6], b"second");
 }
 
 #[test]
@@ -183,12 +211,14 @@ fn a_failed_write_back_keeps_the_sector_and_lands_it_afterwards() {
     host.disk.fail_write_at(lba, EWRITF);
     let payload = b"new";
     let rc = call(FWRITE, [h as u64, payload.len() as u64, payload.as_ptr() as u64, 0, 0, 0, 0, 0]);
-    assert_eq!(rc, EWRITF, "the write must be reported as failed");
+    assert_eq!(rc, 3, "a partial sector goes to the cache");
+    // `Fattrib` set is a flushing call (`bdos/fsdir.c:432`): it meets the fault.
+    assert_eq!(call(0x43, [path.as_ptr() as u64, 1, 0, 0, 0, 0, 0, 0]), EWRITF);
 
     // The sector is not on the card…
     assert_eq!(&host.read_sector(lba)[..3], b"old", "the card must still hold the old bytes");
     // …and it has not been dropped either: it is still a dirty slot.
-    let (_f, _r, _x, dirty) = tos_api::bdos::fs::cache::writeback_stats();
+    let (_f, _r, dirty) = tos_api::bdos::fs::cache::writeback_stats();
     assert!(dirty > 0, "the failed sector must still be in the cache, dirty");
 
     // Force the cache to look for victims all the way round: the dirty
@@ -204,13 +234,15 @@ fn a_failed_write_back_keeps_the_sector_and_lands_it_afterwards() {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// HW03 point 4 — the repetition is bounded and counted
+// HW03 point 4 — the repetition is counted
 // ─────────────────────────────────────────────────────────────────────
 
+/// HW03 bounded this at three attempts; TASK/HW08 dropped the bound (a sector
+/// given up on blocked every later `Fcreate` until a restart), so here it is
+/// that every attempt is visible. That each one reaches the device:
+/// `tests/hw08_writeback.rs`.
 #[test]
-fn the_write_back_retry_is_bounded_and_visible() {
-    use std::sync::atomic::Ordering;
-
+fn the_write_back_retry_is_visible() {
     let (_g, host) = fs();
     let cl = make_file(host, "C:\\BOUND.TXT", b"x");
     let lba = cluster_lba(cl);
@@ -220,38 +252,24 @@ fn the_write_back_retry_is_bounded_and_visible() {
     assert!(h >= 0, "Fopen -> {h}");
 
     let before = tos_api::bdos::fs::cache::writeback_stats();
-    host.disk.refused_writes.store(0, Ordering::Relaxed);
     host.disk.fail_write_at(lba, EWRITF);
 
     let payload = b"y";
     let rc = call(FWRITE, [h as u64, payload.len() as u64, payload.as_ptr() as u64, 0, 0, 0, 0, 0]);
-    assert_eq!(rc, EWRITF);
+    assert_eq!(rc, 1);
 
-    // Ten more flush-driven attempts at the same, permanently failing
-    // sector. `Fdatime` (set) is a flushing call that touches nothing else
-    // of interest.
-    let mut td = [0u8; 4];
     for _ in 0..10 {
-        let rc = call(0x57, [td.as_mut_ptr() as u64, h as u64, 1, 0, 0, 0, 0, 0]);
+        // `Fattrib` set is a flushing call that touches nothing else of interest.
+        let rc = call(0x43, [path.as_ptr() as u64, 1, 0, 0, 0, 0, 0, 0]);
         assert_eq!(rc, EWRITF, "every later call must keep reporting the failure");
     }
 
-    let refused = host.disk.refused_writes.load(Ordering::Relaxed);
-    assert!(
-        refused <= 3,
-        "the cache must stop re-issuing the write after 3 attempts, saw {refused}"
-    );
-    assert!(refused >= 1, "it must have tried at least once, saw {refused}");
-
     let after = tos_api::bdos::fs::cache::writeback_stats();
-    assert!(after.0 > before.0, "the failure counter must move");
-    assert!(after.2 > before.2, "the slot must be recorded as exhausted");
-    assert!(after.3 > 0, "and the sector must still be in the cache");
+    assert_eq!(after.0 - before.0, 10, "the failure counter must move");
+    assert_eq!(after.1 - before.1, 9, "the repeats must be counted");
+    assert!(after.2 > 0, "and the sector must still be in the cache");
 
-    // Writing the sector again is a new request and re-arms the retry —
-    // the sector is not stuck for ever once the card comes back.
     host.disk.disarm();
-    let rc = call(FWRITE, [h as u64, payload.len() as u64, payload.as_ptr() as u64, 0, 0, 0, 0, 0]);
-    assert_eq!(rc, 1, "after the fault clears the write goes through again");
     assert_eq!(gemdos1(FCLOSE, h as u64), E_OK);
+    assert_eq!(host.read_sector(lba)[0], b'y');
 }

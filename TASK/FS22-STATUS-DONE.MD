@@ -5,11 +5,11 @@ Datum 2026-10-29 · Beleg
 · Ticket [FS22](FS22.md)
 
 - **Ein Neustart-Helfer (Arbeit 1):** `osif`s Neustart als eine Funktion,
-  `tos-api/src/gemdos/mod.rs:201@restartable`: je Lauf frischer
+  `tos-api/src/gemdos/mod.rs:214@restartable`: je Lauf frischer
   Fehlerkontext (`setjmp` bei `restrt:`), nach einem Lauf mit Medienwechsel
   dessen Ergebnis verworfen, Neuanmeldung (FS20,
-  `tos-api/src/gemdos/mod.rs:254@media_change_relog`), Lauf von vorn.
-  `tos-api/src/gemdos/mod.rs:146@dispatch_inner` benutzt ihn, ebenso die
+  `tos-api/src/gemdos/mod.rs:267@media_change_relog`), Lauf von vorn.
+  `tos-api/src/gemdos/mod.rs:153@dispatch_inner` benutzt ihn, ebenso die
   kernel-internen Pfade: `Pexec`-Laden
   (`tos-api/src/bdos/process/pexec.rs:265@load` — Trap-Handler,
   Kernel-Starter, Accessory-Lader), `bdos::fs::read_file`
@@ -39,7 +39,7 @@ Datum 2026-10-29 · Beleg
   Aufrufers gehoert nicht zu `Pexec` (`ixsfirst(path,0,0L)`,
   `bdos/proc.c:258`; die Analyse nennt `:256`).
 - **Grenze (Arbeit 3):** `RESTART_LIMIT` = 3
-  (`tos-api/src/gemdos/mod.rs:170@RESTART_LIMIT`), danach Neuanmeldung und
+  (`tos-api/src/gemdos/mod.rs:183@RESTART_LIMIT`), danach Neuanmeldung und
   `E_CHNG` statt eines vierten Neustarts; gilt fuer `dispatch` und alle
   Pfade (`Pexec` → `PexecError::MediaChange` = -14, `read_file` `None`,
   Liste 0). Begruendung: ein Wechsel braucht genau einen Neustart (`Getbpb`

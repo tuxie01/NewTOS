@@ -105,6 +105,67 @@ pub const fn r1_mask(full: u32, out_of_range: u32, ignore_out_of_range: bool) ->
     }
 }
 
+// ── Card state, R1 `CURRENT_STATE` (SD Phys 9.10 Table 4-42, bits 12:9) ───
+
+/// `CURRENT_STATE` of an R1 word. Status type `S`, clear condition `A`: it
+/// says what the card is doing now.
+pub const fn r1_state(r1: u32) -> u32 {
+    (r1 >> 9) & 0xF
+}
+
+/// `tran`, the state every data command needs (Table 4-35).
+pub const CARD_TRAN: u32 = 4;
+/// `data`: the card is sending a block.
+pub const CARD_DATA: u32 = 5;
+/// `rcv`: the card is waiting for a block.
+pub const CARD_RCV: u32 = 6;
+/// `prg`: the card is programming; only `CMD0`, `CMD7`, `CMD13` and `CMD15`
+/// are legal (Table 4-35).
+pub const CARD_PRG: u32 = 7;
+
+/// May the host send `CMD12` to a card in `state`? SD Phys 9.10 Table 4-35,
+/// row `CMD12`: only out of `data` and `rcv`. In `tran` (below SDUC) and `prg`
+/// it is illegal: the card does not answer and sets `ILLEGAL_COMMAND`
+/// (§4.6.1). The driver stops a transfer only when one is really running.
+pub const fn transfer_running(state: u32) -> bool {
+    state == CARD_DATA || state == CARD_RCV
+}
+
+/// What the recovery does to the card, by the state `CMD13` reported (`None`:
+/// it did not answer).
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct CardRecovery {
+    /// Stop the running transfer with `CMD12`.
+    pub stop: bool,
+    /// Ask the card again before the next data command: it may be programming,
+    /// and a data command in `prg` gets no answer.
+    pub wait_ready: bool,
+}
+
+/// The plan for a card in `state`. An unknown state sends nothing blind; the
+/// next access asks again.
+pub const fn card_recovery(state: Option<u32>) -> CardRecovery {
+    match state {
+        Some(s) if transfer_running(s) => CardRecovery { stop: true, wait_ready: true },
+        Some(CARD_TRAN) => CardRecovery { stop: false, wait_ready: false },
+        _ => CardRecovery { stop: false, wait_ready: true },
+    }
+}
+
+/// The R1 bits that refuse a data command, out of the full Type-`E` set.
+///
+/// `ILLEGAL_COMMAND` is not one of them: its clear condition is `B`, "Always
+/// related to the previous command" (SD Phys 9.10 Table 4-42), and a command
+/// that is itself illegal is not answered at all (§4.6.1). So when a data
+/// command's R1 carries the bit, the bit is about the command **before** it,
+/// and this command **was accepted**: the card has moved on to `rcv` or
+/// `data`, and the data phase must run. Measured on the Pi: `CMD24` answered
+/// `0x00400900`, taken for a refusal, the next command unanswered because the
+/// card was still in `rcv` (`measurements/measurement-2026-11-06-hw08-pi/RUNINFO.TXT`).
+pub const fn data_command_mask(mask: u32, illegal_command: u32) -> u32 {
+    mask & !illegal_command
+}
+
 // ── SCR register (SD Phys 9.10 §5.6) ─────────────────────────────────────
 
 /// Size of the SCR as `ACMD51` sends it: 64 bits (SD Phys 9.10 §5.6).
@@ -205,6 +266,47 @@ mod tests {
         assert_eq!(r1_mask(full, oor, false), full);
         assert_eq!(r1_mask(full, oor, true), full & !oor);
         assert_eq!(r1_mask(full, oor, true) & oor, 0);
+    }
+
+    #[test]
+    fn cmd12_only_out_of_data_and_rcv() {
+        // SD Phys 9.10 Table 4-35, row CMD12.
+        for state in 0..=15 {
+            assert_eq!(transfer_running(state), state == 5 || state == 6, "state {state}");
+        }
+    }
+
+    #[test]
+    fn the_state_is_bits_12_to_9() {
+        // The two words of the Pi run: tran, ready for data, with and without
+        // ILLEGAL_COMMAND.
+        assert_eq!(r1_state(0x0040_0900), CARD_TRAN);
+        assert_eq!(r1_state(0x0000_0900), CARD_TRAN);
+        assert_eq!(r1_state(0x0000_0E00), CARD_PRG);
+        assert_eq!(r1_state(0x0000_0C00), CARD_RCV);
+        assert_eq!(r1_state(0x0000_0A00), CARD_DATA);
+    }
+
+    #[test]
+    fn the_recovery_stops_only_a_running_transfer_and_waits_unless_tran() {
+        let plan = |stop, wait_ready| CardRecovery { stop, wait_ready };
+        assert_eq!(card_recovery(Some(CARD_RCV)), plan(true, true));
+        assert_eq!(card_recovery(Some(CARD_DATA)), plan(true, true));
+        assert_eq!(card_recovery(Some(CARD_TRAN)), plan(false, false));
+        assert_eq!(card_recovery(Some(CARD_PRG)), plan(false, true));
+        assert_eq!(card_recovery(None), plan(false, true));
+    }
+
+    #[test]
+    fn illegal_command_does_not_refuse_a_data_command() {
+        let full = 0xFDF9_8008u32;
+        let illegal = 1u32 << 22;
+        let mask = data_command_mask(full, illegal);
+        // The Pi's word.
+        assert_eq!(0x0040_0900 & mask, 0);
+        // A real refusal still is one, also with the stale bit beside it.
+        assert_ne!((1u32 << 26) & mask, 0);
+        assert_ne!((1u32 << 31 | illegal) & mask, 0);
     }
 
     #[test]

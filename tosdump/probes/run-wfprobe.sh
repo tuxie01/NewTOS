@@ -21,6 +21,7 @@
 # card.img.manifest). The disk images stay in the scratch and are deleted.
 #
 # WFPROBE_QMP=<socket> (newtos): a QMP socket for a screendump during the run.
+# WFPROBE_COPY="NAME.EXT ..." copies files of the test partition after the run.
 #
 # Scratch: $WFPROBE_SCRATCH, else $CLAUDE_JOB_DIR/tmp; never /tmp itself.
 set -euo pipefail
@@ -98,6 +99,7 @@ else
         sleep 1
         if grep -q "WFPROBE.NAP' exited with rc" "$OUT/BOOT-SERIAL.txt" &&
            grep -q "desktop up" "$OUT/BOOT-SERIAL.txt"; then state=done; break; fi
+        if grep -q "WFPROBE power off" "$OUT/BOOT-SERIAL.txt"; then state=poweroff; break; fi
         kill -0 "$pid" 2>/dev/null || { state=qemu-exited; break; }
     done
     sleep 1
@@ -111,3 +113,7 @@ fi
 echo "testpart  after  $(sha "$SCR/after.img")" >> "$OUT/run.txt"
 fsck_msdos -n "$SCR/after.img" > "$OUT/fsck.txt" 2>&1 || echo "fsck_msdos exit $?" >> "$OUT/fsck.txt"
 MTOOLS_SKIP_CHECK=1 mdir -i "$SCR/after.img" :: > "$OUT/dir.txt" 2>&1 || true
+# WFPROBE_COPY="NAME.EXT ...": files of the test partition as they are now, into <out-dir>.
+for f in ${WFPROBE_COPY:-}; do
+    MTOOLS_SKIP_CHECK=1 mcopy -o -i "$SCR/after.img" "::/$f" "$OUT/$f" 2>/dev/null || echo "no $f on the partition" >> "$OUT/run.txt"
+done

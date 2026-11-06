@@ -384,6 +384,11 @@ without `longjmp`: `_state.md` §4a.
 paths (`Pexec`'s load, the kernel's file reads and directory listings, the
 shell's GEMDOS calls) and bounds it: at most three restarts per call, then
 `E_CHNG` (a sanctioned deviation, `docs/COMPATIBILITY.md`): `_state.md` §4a.
+**[HW08]** NewTOS has no jump: a call runs on through its error paths, so the
+dispatcher answers with the first hard error the call met
+(`tos-api/src/gemdos/mod.rs`, `dispatch_inner`), whatever the path made of the
+failed access. The BCBs stay: a failed write-back is kept and tried again
+(`docs/COMPATIBILITY.md`, HW08).
 
 ---
 

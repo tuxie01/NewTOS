@@ -221,5 +221,10 @@ TASK/FS21 (2026-10-31): NewTOS writes a set time/date into the directory
 entry at once (it keeps no `o_td`) and, as EmuTOS' `O_DIRTY`
 (`bdos/fsdir.c:698`), marks the OFD dirty, so the `Fclose` rewrites the entry
 and sets `FA_ARCHIVE` (`3e-fclose.md` edge case 8;
-`tos-api/src/bdos/fs/file.rs:1154@fdatime`). A file deleted while open is
+`tos-api/src/bdos/fs/file.rs:1180@fdatime`). A file deleted while open is
 unchanged (PROC04 point 5).
+
+TASK/HW08 (2026-11-06): "at once" means into the cached directory sector. The
+call no longer writes back anything itself: `xgsdtof` touches no buffer
+(`bdos/fsdir.c:684-707`), the entry reaches the card with the `Fclose`. Oracle,
+case `n2`: 0 writes on both sides.

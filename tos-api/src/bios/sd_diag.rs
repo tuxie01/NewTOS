@@ -165,7 +165,7 @@ pub struct Report<'a> {
     /// The driver half; `None` on a board without an SD driver.
     pub driver: Option<DriverReport<'a>>,
     /// `crate::bdos::fs::cache::writeback_stats`.
-    pub writeback: (u32, u32, u32, u32),
+    pub writeback: (u32, u32, u32),
     /// `crate::bdos::fs::cache::error_codes`.
     pub codes: (Long, u32),
     /// The dirty sectors, as many as were copied.
@@ -338,10 +338,10 @@ pub fn write_report<W: Write>(w: &mut W, r: &Report<'_>) -> fmt::Result {
         Some(d) => driver_lines(w, d)?,
         None => writeln!(w, "driver  none on this board")?,
     }
-    let (failed, retried, gave_up, dirty) = r.writeback;
+    let (failed, retried, dirty) = r.writeback;
     writeln!(
         w,
-        "cache   writeback failed {failed} retried {retried} gave up {gave_up} dirty {dirty}; last code {} of {}",
+        "cache   writeback failed {failed} retried {retried} dirty {dirty}; last code {} of {}",
         r.codes.0, r.codes.1,
     )?;
     for s in r.dirty.iter().take(DIRTY_LISTED) {

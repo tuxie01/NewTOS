@@ -519,7 +519,7 @@ follows text+data+symbols (a 4-byte first offset, then byte deltas).
 Media change during the load (TASK/FS22, 2026-10-29): the kernel's `Pexec`
 handler, the kernel launcher and the accessory loader all load through
 `tos-api/src/bdos/process/pexec.rs:265@load`, which runs each load under the
-GEMDOS dispatcher's restart (`tos-api/src/gemdos/mod.rs:201@restartable`):
+GEMDOS dispatcher's restart (`tos-api/src/gemdos/mod.rs:214@restartable`):
 a load that meets a media change on its drive fails and frees what it holds
 (the environment and the TPA in the loader, the slot in
 `tos-api/src/bdos/process/pexec.rs:301@load_once` — EmuTOS' `xexec` clean-up,

@@ -331,11 +331,17 @@ NewTOS (FS08, `tos-api/src/bdos/fs/cache.rs`): two separate lists, FAT and
 data (directory + root + file data), each with the policy above (MRU order,
 last invalid buffer else LRU tail, dirty victim written back first, FAT
 buffers cached once and written to every FAT copy). 8 buffers per list instead
-of 2 — the ST-RAM economy behind `NUMBUFS = 2` does not apply, and the count
-is unobservable. Two named deviations stay: a write access to a *whole* sector
-does not read the old contents first (unobservable — all 512 bytes are
-replaced), and a failed write-back keeps the buffer (HW03, see the module
-comment) instead of `b_bufdrv = -1`.
+of 2 — the ST-RAM economy behind `NUMBUFS = 2` does not apply. The count shows
+only as *when* a dirty buffer goes out: since `Fwrite` no longer writes back
+(TASK/HW08) an eviction comes later than on EmuTOS, so a failing sector may meet
+a later call, at the latest the `Fclose`, and a power failure before that loses
+up to 8 dirty sectors per list instead of 2. The number of writes of a save
+differs only by those evictions
+(`measurements/measurement-2026-11-06-hw08-fix/RUNINFO.TXT`). Two named
+deviations stay: a write access to a *whole* sector does not read the old
+contents first (unobservable — all 512 bytes are replaced), and a failed
+write-back keeps the buffer, which every later write-back tries again (HW03,
+HW08, `docs/COMPATIBILITY.md`) instead of `b_bufdrv = -1`.
 
 ### 3a. The file transfer engine `xrw` (`bdos/fsio.c`) — FS08
 
@@ -567,8 +573,11 @@ On `errcode == E_CHNG`, in this order:
 
 Any other hard error (`errcode != E_CHNG`) only marks the drive's buffers
 invalid and returns the code (`:489-492`); see §3 and the HW03 deviation in
-`tos-api/src/bdos/fs/cache.rs:360@write_back` (NewTOS keeps a dirty buffer
-whose write-back failed).
+`tos-api/src/bdos/fs/cache.rs:352@write_back` (NewTOS keeps a dirty buffer
+whose write-back failed). NewTOS has no jump, but the same result: the
+dispatcher answers with the first hard error a call met, whatever its own path
+made of the failed access (`tos-api/src/gemdos/mod.rs`, `dispatch_inner`,
+TASK/HW08).
 
 **What a media change does not touch.** The DTA of an `Fsfirst`/`Fsnext`
 search holds drive, cluster and offset, no DND pointer (`xsnext`,
@@ -591,24 +600,24 @@ cluster 3 in partition sector 277, the new geometry's (`datrec` 273).
   a device access, as `ckdrv` does for a fixed drive.
 - The BDOS reaches the card through the block cache (`bios::bcache`), not
   through `Rwabs`, so the BDOS sector cache asks the BIOS media state itself
-  at places 2 and 3 (`tos-api/src/bdos/fs/cache.rs:275@hit_test`,
-  `tos-api/src/bdos/fs/cache.rs:290@rwabs_test`): on a hit `Mediach`'s answer
+  at places 2 and 3 (`tos-api/src/bdos/fs/cache.rs:262@hit_test`,
+  `tos-api/src/bdos/fs/cache.rs:277@rwabs_test`): on a hit `Mediach`'s answer
   (`bios::media_change`), before every device access the media tests of a
   logical `Rwabs` without `RW_NOMEDIACH` (`forcechange` armed or
   `Mediach` > 0 → `E_CHNG`). Each buffer remembers its drive (`b_bufdrv`).
 - There is no `longjmp`: the access fails, the cache records `E_CHNG` and the
-  first `errdrv` of the call (`tos-api/src/bdos/fs/cache.rs:239@signal_media_change`),
+  first `errdrv` of the call (`tos-api/src/bdos/fs/cache.rs:226@signal_media_change`),
   and the call returns through its error paths. While the change is pending
   every further access to that drive fails the same way, so nothing reaches
   the disk after the detection. `gemdos::dispatch` — `osif` — runs the call
-  under the restart (`tos-api/src/gemdos/mod.rs:146@dispatch_inner`,
-  `tos-api/src/gemdos/mod.rs:201@restartable`): after a run that met a
-  change, steps 1-7 (`tos-api/src/gemdos/mod.rs:254@media_change_relog`) and
+  under the restart (`tos-api/src/gemdos/mod.rs:153@dispatch_inner`,
+  `tos-api/src/gemdos/mod.rs:214@restartable`): after a run that met a
+  change, steps 1-7 (`tos-api/src/gemdos/mod.rs:267@media_change_relog`) and
   the call once more: `offree` =
-  `tos-api/src/bdos/fs/file.rs:1356@free_drive_files`, `freetree`'s
+  `tos-api/src/bdos/fs/file.rs:1393@free_drive_files`, `freetree`'s
   `dirtbl` half = `tos-api/src/bdos/fs/curdir.rs:332@free_drive` (NewTOS keeps
   no DND tree), the DMD = `tos-api/src/bdos/fs/fat.rs:108@log_out`,
-  `mark_bcbs_invalid` = `tos-api/src/bdos/fs/cache.rs:304@invalidate_drive`,
+  `mark_bcbs_invalid` = `tos-api/src/bdos/fs/cache.rs:291@invalidate_drive`,
   `Getbpb` + `log_media` = `Volume::mount` (`bpb::geometry` clears
   `forcechange`, `docs/api/bios/07-getbpb.md`). A `Getbpb` refusal returns
   `E_CHNG`; NewTOS has no `log_media` failure of its own (`bpb::parse` already
@@ -627,7 +636,7 @@ the AES, the desktop and the program loader is a `trap #1` call
 `Pexec` is `xexec` under `osif` (`bdos/bdosmain.c:271`)
 (`docs/analysis/osif-restart-coverage-2026-10-29.md` §2-3). NewTOS's kernel
 reads beside the dispatcher; each such path runs under the dispatcher's
-restart, the one helper `tos-api/src/gemdos/mod.rs:201@restartable`:
+restart, the one helper `tos-api/src/gemdos/mod.rs:214@restartable`:
 
 | Path | NewTOS | Callers | EmuTOS |
 |---|---|---|---|
@@ -671,7 +680,7 @@ equal (`P07` below).
 
 **Restart bound [FS22].** EmuTOS restarts without limit (`goto restrt`,
 `bdos/bdosmain.c:484-486`). NewTOS restarts a call at most `RESTART_LIMIT`
-= 3 times (`tos-api/src/gemdos/mod.rs:170@RESTART_LIMIT`); a run that still
+= 3 times (`tos-api/src/gemdos/mod.rs:183@RESTART_LIMIT`); a run that still
 meets a change after that gets the re-login (steps 1-6) and then `E_CHNG`
 (-14) instead of a fourth restart — for the dispatcher and for every path
 above (`Pexec` answers `E_CHNG`, `read_file` `None`, a listing 0 entries).

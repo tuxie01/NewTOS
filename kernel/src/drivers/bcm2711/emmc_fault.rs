@@ -1,9 +1,10 @@
 //! SD fault injection of the debug feature `sd-fault` (TASK/HW08), for test
 //! kernels: a program arms a fault through `Ssystem(S_NEWTOS_SDFAULT)`, and the
 //! next write commands in the armed LBA range take the driver's real failure
-//! paths — `note_failure`, `recover` with its CMD12 and software resets, the
-//! `BlockError` that follows — so everything above the driver sees what a real
-//! failure gives. Reads are only hit by [`Mode::Wedge`].
+//! paths — `note_failure`, `recover` with its `CMD13`, `CMD12` and software
+//! resets, the `BlockError` that follows — so everything above the driver sees
+//! what a real failure gives. Reads are only hit by [`Mode::Wedge`] and
+//! [`Mode::ReadErr`].
 //!
 //! What the injection cannot be: it does not make a card busy or a controller
 //! stuck, it makes the driver see that. Whether the recovery helps on EMMC2 is
@@ -40,6 +41,14 @@ pub enum Mode {
     /// 6: the command really goes out with an address behind the end of the
     /// card: what the card answers (M-A of TASK/HW03).
     OutOfRange,
+    /// 8: the data goes out, Transfer Complete does not come, and the card
+    /// goes on programming for `ms` from there: `CMD13` answers `prg`, a data
+    /// command gets no answer. What a real card does when it holds the busy
+    /// past `WRITE_BUSY_MS`, which QEMU's card never does.
+    Prg,
+    /// 9: reads in the LBA range end on a data error (`BlockError::Io`,
+    /// `EREADF`). No command goes out.
+    ReadErr,
 }
 
 impl Mode {
@@ -51,6 +60,8 @@ impl Mode {
             4 => Mode::Busy,
             5 => Mode::Wedge,
             6 => Mode::OutOfRange,
+            8 => Mode::Prg,
+            9 => Mode::ReadErr,
             _ => Mode::Off,
         }
     }
@@ -65,6 +76,7 @@ static LBA_LO: AtomicU32 = AtomicU32::new(0);
 static LBA_HI: AtomicU32 = AtomicU32::new(0);
 static FIRED: AtomicU32 = AtomicU32::new(0);
 static BUSY_UNTIL: AtomicU64 = AtomicU64::new(0);
+static PRG_UNTIL: AtomicU64 = AtomicU64::new(0);
 
 /// `Ssystem(S_NEWTOS_SDFAULT)`: `[mode, skip, count, ms, lba_lo, lba_hi]`:
 /// after `skip` matching write commands, the next `count` (0 = until disarmed)
@@ -111,36 +123,57 @@ pub fn busy_until(until: u64) {
     BUSY_UNTIL.store(until, Ordering::Relaxed);
 }
 
+/// The card programs until counter value `until` ([`Mode::Prg`]).
+pub fn prg_until(until: u64) {
+    PRG_UNTIL.store(until, Ordering::Relaxed);
+}
+
+/// `prg` while [`Mode::Prg`] holds the card, at counter value `now`: what a
+/// `CMD13` is answered, and that a data command is not.
+pub fn forced_state(now: u64) -> Option<u32> {
+    (now < PRG_UNTIL.load(Ordering::Relaxed)).then_some(super::emmc_xfer::CARD_PRG)
+}
+
+/// Does the read of `blocks` sectors at `lba` take [`Mode::ReadErr`]?
+pub fn take_read(lba: u64, blocks: usize) -> bool {
+    Mode::from_word(MODE.load(Ordering::Relaxed)) == Mode::ReadErr && take_in_range(lba, blocks)
+}
+
 /// The fault for the write command of `blocks` sectors at `lba`:
 /// [`Mode::Off`] for none. The wait of [`Mode::Busy`] is [`busy_ms`].
 pub fn take_write(lba: u64, blocks: usize) -> Mode {
     let mode = Mode::from_word(MODE.load(Ordering::Relaxed));
-    if matches!(mode, Mode::Off | Mode::Wedge) {
+    if matches!(mode, Mode::Off | Mode::Wedge | Mode::ReadErr) || !take_in_range(lba, blocks) {
         return Mode::Off;
     }
+    crate::kprintln!("[sdfault] fires {:?} at lba {} n {}", mode, lba, blocks);
+    mode
+}
+
+/// Does a command at `lba` take the armed fault? Counts `skip` and `count`.
+fn take_in_range(lba: u64, blocks: usize) -> bool {
     let lo = u64::from(LBA_LO.load(Ordering::Relaxed));
     let hi = match LBA_HI.load(Ordering::Relaxed) {
         0 => u64::MAX,
         h => u64::from(h),
     };
     if lba + blocks as u64 <= lo || lba >= hi {
-        return Mode::Off;
+        return false;
     }
     let skip = SKIP.load(Ordering::Relaxed);
     if skip > 0 {
         SKIP.store(skip - 1, Ordering::Relaxed);
-        return Mode::Off;
+        return false;
     }
     let left = LEFT.load(Ordering::Relaxed);
     if left == 0 {
-        return Mode::Off;
+        return false;
     }
     if left != u32::MAX {
         LEFT.store(left - 1, Ordering::Relaxed);
     }
     FIRED.fetch_add(1, Ordering::Relaxed);
-    crate::kprintln!("[sdfault] fires {:?} at lba {} n {}", mode, lba, blocks);
-    mode
+    true
 }
 
 /// How long [`Mode::Busy`] withholds Transfer Complete.

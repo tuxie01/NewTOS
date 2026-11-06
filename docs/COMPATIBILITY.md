@@ -1173,17 +1173,62 @@ consequence of the jump, not an integrity choice. NewTOS does not jump:
 `write_back` keeps the slot's data, `valid` and `dirty` flags on failure, and
 eviction does not hand such a slot out (`tos-api/src/bdos/fs/cache.rs:225-243`).
 The error still reaches the caller as on EmuTOS (`Fwrite` → `EWRITF`, `Fread` →
-`EREADF`, `Rwabs` → the driver's code). Automatic retries are bounded:
+`EREADF`, `Rwabs` → the driver's code). Until HW08 automatic retries were bounded:
 `WRITEBACK_ATTEMPTS = 3` per slot, a policy value, not a specification one
-(`cache.rs:90-102`; EmuTOS retries once, `RWABS_RETRIES = 1`,
-`bios/blkdev.h:34`); after that the slot stays dirty and every later `flush`
-reports the stored error without touching the device, until the sector is
+(EmuTOS retries once, `RWABS_RETRIES = 1`, `bios/blkdev.h:34`); after that the
+slot stayed dirty and every later `flush`
+reported the stored error without touching the device, until the sector was
 written again. **Observable difference**, only after a device write error: a
 later `cache::flush()` (the file and directory calls that write, e.g.
 `tos-api/src/bdos/fs/file.rs`, `dirops.rs`) can still land the sector, where
 EmuTOS would read the old one back from the card, and the clean buffers of that
 drive survive. Tests `tos-api/tests/gemdos_fs_device_error.rs`;
-run `measurements/measurement-2026-09-27-hw03/`.
+run `measurements/measurement-2026-09-27-hw03/`. The attempt limit is gone since
+HW08, next entry.
+
+**A kept sector is really tried again by every later write-back, with no
+limit** — user decision, 2026-11-06 (TASK/HW08, "Entscheidungen fuer den Fix",
+Weg B), against HW03's limit of three attempts. With the limit one sector given
+up on made every later `flush` report its old code, and so every `Fcreate` fail
+until a restart, card good again or not
+(`measurements/measurement-2026-11-06-hw08/RUNINFO.TXT`, case `b3`). EmuTOS has
+no such state: the buffers go (previous entry), and the next call starts clean.
+NewTOS now does not stick either, and keeps the data. **Observable difference**,
+only after a device write error:
+
+* FAT sector refused while saving a file, then the card is good again: EmuTOS
+  `Fclose` -10 and the file 0 bytes on the card, its data gone. NewTOS `Fclose`
+  -10, the same code, and the next write-back lands the FAT: the file is
+  complete, `fsck` clean (cases `a2`, `a5`, `b3`,
+  `measurements/measurement-2026-11-06-hw08-fix/RUNINFO.TXT`). EmuTOS `Fclose`
+  leaves the handle taken (`Fcreate` then gives 7, 8, 9, 10); NewTOS frees it,
+  because the file is closed and what is missing is in the cache.
+  (`docs/api/gemdos/file/3e-fclose.md`.)
+* While the card stays bad, every access that has to write back costs the
+  driver's wait for each dirty sector (a timeout: `WRITE_BUSY_MS` plus
+  recovery). EmuTOS pays it once and forgets.
+* A restart while a sector is dirty loses it without a word, as any dirty sector
+  on any TOS.
+
+Tests `tos-api/tests/hw08_writeback.rs`.
+
+**A write that times out does not re-initialise the card and does not report a
+media change** — TASK/HW08, open until the Pi run decides, no user decision yet.
+EmuTOS' SD driver, on a timeout: forget the card, initialise it again, return
+`E_CHNG` (`references/emutos/bios/sd.c:192-201`, `:171-179`); `osif` then frees the
+drive's handles and buffers, logs it in again and restarts the call
+(`bdos/bdosmain.c:456-487`). Read, not measured: Hatari has no SD; case `c1` of
+`measurements/measurement-2026-11-06-hw08/RUNINFO.TXT` shows only the BDOS half.
+NewTOS on a timeout: the SD-HC recovery, `CMD13` to see what the card does,
+`CMD12` only for a running transfer, both software resets, and `EDRVNR` (-2) to
+the caller (`kernel/src/host_env.rs`, `block_error_code`). The handles and the
+dirty buffers survive, which a restart under `E_CHNG` would lose. Sufficient in
+QEMU (`measurements/measurement-2026-11-06-hw08-fix/RUNINFO.TXT`, cases `t1`, `u2`
+to `u6`, `w1`, `p1` to `p4`), and on EMMC2 the two resets brought the controller
+back in the one case photographed
+(`measurements/measurement-2026-11-06-hw08-pi/RUNINFO.TXT`: `dat_inhibit` timeout,
+then the next `CMD24` answered). Whether a real card needs more is the Pi run's
+to say, `measurements/measurement-2026-11-06-hw08-fix/PI-RUN.TXT`.
 
 **A media change restarts a call at most three times** — user decision,
 2026-10-29 (TASK/FS22, work item 3: *"Wiederholungsgrenze: EmuTOS startet
@@ -1192,11 +1237,11 @@ Haenger)"*). EmuTOS' `osif` logs a drive in again after a media change and
 restarts the call with `goto restrt` (`references/emutos/bdos/bdosmain.c:
 455-486`) — every time, with no count: a call that meets a change on every run
 never returns. NewTOS runs the same re-login and restart
-(`tos-api/src/gemdos/mod.rs:201@restartable`, used by the GEMDOS dispatcher
+(`tos-api/src/gemdos/mod.rs:214@restartable`, used by the GEMDOS dispatcher
 and by the kernel's own file-system paths, `docs/api/gemdos/_state.md` §4a),
 but restarts one call at most `RESTART_LIMIT` = 3 times
-(`tos-api/src/gemdos/mod.rs:170@RESTART_LIMIT`, a policy value like
-`WRITEBACK_ATTEMPTS` above); a run that still meets a change after that gets
+(`tos-api/src/gemdos/mod.rs:183@RESTART_LIMIT`, a policy value); a run that
+still meets a change after that gets
 the re-login and then `E_CHNG` (-14), the code EmuTOS returns when the
 re-login's `Getbpb` fails (`:471-476`). **Observable difference**, only where
 EmuTOS hangs: a single change needs one restart (the re-login's `Getbpb`

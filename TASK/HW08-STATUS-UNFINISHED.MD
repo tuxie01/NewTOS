@@ -7,3 +7,7 @@ Gebaut: Debug-Features `sd-diag` (Bericht auf dem Schirm, Strg+Alt+F9, ohne Kart
 Gemessen, QEMU raspi4b und Orakel: `measurements/measurement-2026-11-06-hw08/RUNINFO.TXT`. Haengen bis zum Neustart hat zwei Mechanismen, Glied Cache reproduziert das Ticket, Glied Treiber ist neu; EmuTOS haengt nie. Stand im Ticket.
 
 Offen: Pi-Lauf `measurements/measurement-2026-11-06-hw08/PI-RUN.TXT` (Lead und Anwender), danach Anwenderentscheidung A/B zum Cache und der Fix. Hardwareabnahme fehlt ganz.
+
+## Stand 2026-11-06: Fix gebaut, Tester und Pi-Lauf offen
+
+Fix mit Tests und Spec, Lauf `measurements/measurement-2026-11-06-hw08-fix/RUNINFO.TXT`, Pi-Plan `measurements/measurement-2026-11-06-hw08-fix/PI-RUN.TXT`. In QEMU und am Orakel erfuellt: Ein Kartenfehler blockiert spaeteres Speichern nicht mehr; der Kode erreicht die App; kein Datenverlust ohne Meldung. Offen: unabhaengiger Tester-Lauf; Pi-Lauf mit Kopiermessung (entscheidet auch Neuinitialisierung und Tempo); zweiter Handle auf wachsende Datei (eigenes Ticket vorgeschlagen).

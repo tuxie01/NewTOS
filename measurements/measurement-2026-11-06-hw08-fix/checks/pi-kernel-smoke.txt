@@ -1,0 +1,2 @@
+[desk] desktop up (1 drives)
+boot: QEMU raspi4b, -append serial=on, kernel8.img of this run, card from tools/mkcard.sh

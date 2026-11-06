@@ -481,8 +481,11 @@ impl Volume {
 
     /// Count free (zero) clusters in the FAT, over the data-cluster range
     /// `2..numcl+2`. FAT16 scans the FAT sectors directly (EmuTOS
-    /// `countfree16`); FAT12 falls back to per-entry decoding.
-    pub fn count_free_clusters(&self) -> u32 {
+    /// `countfree16`); FAT12 falls back to per-entry decoding. `None` at the
+    /// first FAT sector that cannot be had, the code pending in
+    /// [`super::cache::take_error`]: EmuTOS' `getrec` jumps out of the count
+    /// there (`bdos/fsfat.c:312`, `bdos/fs.h:60`), there is no partial number.
+    pub fn count_free_clusters(&self) -> Option<u32> {
         let last = self.numcl + 2;
         let mut free = 0u32;
         if self.fat16 {
@@ -506,19 +509,16 @@ impl Volume {
                     }
                     n
                 });
-                match counted {
-                    Some(n) => free += n,
-                    None => break,
-                }
+                free += counted?;
             }
         } else {
             for c in 2..last {
-                if matches!(self.fat_entry(c), Some(0)) {
+                if self.fat_entry(c)? == 0 {
                     free += 1;
                 }
             }
         }
-        free
+        Some(free)
     }
 
     /// Read all `clsizb` bytes of `cluster` into `buf` (which must be at
