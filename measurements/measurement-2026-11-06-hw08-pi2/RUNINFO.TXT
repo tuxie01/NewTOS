@@ -1,0 +1,28 @@
+HW08, FSWBENCH on the new test card on the Pi, run by the user (2026-11-06). Plan: measurements/measurement-2026-11-06-hw08/PI-RUN.TXT, step 2.
+Card: measurements/measurement-2026-11-06-hw08-pi/RUNINFO.TXT, "NEW CARD", 6 x 512 MB FAT16, drive D: empty.
+
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing: not applicable (no image built; files copied by hand).
+Kernel 56c6050f6e832d1213a81aab9c01a59af7f56527003b5136c262975591b501e9, FSWBENCH.NCP 943e5e78bc19ebe7..., photos/ in screen order. Numbers read from the photos by the lead.
+
+RESULT: no failure, uptime 0:04:41.
+  driver: 4-bit multi, errors 0, timeouts 0, recover 0, nonrecover 0, refused 0. Longest wait: write_rdy 249.2 ms, write_done 277.0 ms, under WRITE_BUSY_MS = 1000.
+  write n 10782, sectors 297540, failed 0, max 1083.0 ms; <4 ms 9481, <16 1034, <64 133, <250 124, <500 7, <1000 0, more 3.
+  The three "more" are not stalls by themselves: the longest phase wait is 277 ms, and the 10-MiB Fwrite took 1083941 us in one go. Not traced per request.
+  read n 1048, sectors 78757, failed 0, max 854.2 ms. cache: writeback failed 0.
+  H: every sector about 1150 us, data, directory and FAT alike, max 1189 us, no 160 ms outlier (old card: 2013-2303 us with 160-168 ms outliers).
+  New small files: n 64, p50 6066, p90 7028, max 161568 us, failed 0 (old card: p50 11522, max 2102250 us, 5 failed).
+  Not run, or not run at all: Fbench and X-Shot (step 1), WFPROBE; R patterns did not run, see below. Boot on C: to H: other than D: not looked at.
+
+SPEED, KB/s, drive D:
+  size       L2 Fwrite 512  4096   32768  whole file  L3 fwrite 1K  L4 copy 32K   Fcreate/Fclose
+  10 KiB           360      1130   1849   1867        1116          1154          about 1170 us
+  100 KiB          123      1433   3219   4470        2900          2703          about 1170 us
+  1 MiB             -        893   3006   8208        1281          3033          about 1170 us, once 98310 us
+  10 MiB            -        835   2058   9447        4264          2913          about 1170 us
+  L1 Rwabs, 10 KiB: 433 KB/s one sector per call, 5115 KB/s 128 per call.
+  Small Fwrite calls cost much more than the card: 512 B at 123 KB/s against 9447 KB/s for one big call. file.rs flushes on every Fwrite (tos-api/src/bdos/fs/file.rs:559@flush); EmuTOS flushes at Fclose (measurements/measurement-2026-11-06-hw08/RUNINFO.TXT). Each call's share not separated.
+
+TWO FINDINGS
+  "log last Fwrite=-36 Fclose=-65", no driver error: goes to TASK/FS31.md (ixdel compares no drive). The log on C: lost its rest.
+  "32 of 131072 sectors contiguous, the card is too full here" on an empty drive, L1 alike ("32 of 200"): the test file's first two clusters are 4 and 5 (data sector 555), then the chain jumps. Cause not read from the card yet; Mac metadata suspected, and my guess of a hole between test files for the old card did not explain this one. The message wrongly blames a full card. FSWBENCH now uses the longest run of the chain (built after this run, not run).

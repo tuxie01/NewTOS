@@ -302,6 +302,36 @@ static long contiguous(unsigned int cl, long want)
 	return n;
 }
 
+/* Longest contiguous stretch of the chain from *cl, up to `want` clusters of
+ * chain; *cl becomes its first cluster. A file on an otherwise empty drive can
+ * still start in a small hole left by the Mac's metadata (Pi run 2026-11-06). */
+static long longest_run(unsigned int *cl, long want)
+{
+	unsigned int cur = *cl, start = cur, best_start = cur;
+	long run = 1, best = 1, i;
+
+	fsec_have = -1;
+	for (i = 1; i < want; i++) {
+		unsigned short e = fat_entry(cur);
+
+		if (e < 2 || e >= 0xFFF0)
+			break;
+		if (e == cur + 1) {
+			run++;
+		} else {
+			start = e;
+			run = 1;
+		}
+		cur = e;
+		if (run > best) {
+			best = run;
+			best_start = start;
+		}
+	}
+	*cl = best_start;
+	return best;
+}
+
 static long clrec(unsigned int cl)
 {
 	return g.datrec + (long)(cl - 2) * g.clsiz;
@@ -458,11 +488,9 @@ static void layer_r(void)
 	if (fh >= 0)
 		Fclose((short)fh);
 	dirrec = find_entry("FSWBR   DAT", &cl);
-	have = (dirrec >= 0 && cl >= 2) ? contiguous(cl, R_MIB64 / SECT / g.clsiz) * g.clsiz : 0;
-	if (have < R_MIB64 / SECT) {
-		pr("  %ld of %ld sectors contiguous, the card is too full here; patterns on those\n", have,
-		   (long)(R_MIB64 / SECT));
-	}
+	have = (dirrec >= 0 && cl >= 2) ? longest_run(&cl, R_MIB64 / SECT / g.clsiz) * g.clsiz : 0;
+	pr("  test file: longest contiguous run %ld of %ld sectors, at cluster %u; patterns on it\n", have,
+	   (long)(R_MIB64 / SECT), cl);
 	if (have >= 512) {
 		base = clrec(cl);
 		pattern("random over 64 MiB", base, have, 0);
