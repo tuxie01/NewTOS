@@ -39,8 +39,9 @@
  * the kernel), refined by a spin count to the next edge.
  *
  * Output: screen pages with a key wait between them (no key wait with
- * -DFSWB_NOKEY for QEMU runs), and the same text in <drive>:\FSWBENCH.LOG,
- * written last, created before the first measurement.
+ * -DFSWB_NOKEY for QEMU runs), and the same text in C:\FSWBENCH.LOG, created
+ * before the first measurement and written page by page: on the drive under
+ * test a failing card took the log with it (TASK/HW08, Pi run 2026-11-06).
  *
  * Build: sdk/examples/fsbench/build-fswbench.sh.
  */
@@ -135,6 +136,7 @@ static void wait_ticks(unsigned int n)
 static char out[64000];
 static long olen;
 static long logh = -1;
+static long logres;
 static long pagestart;
 
 static void pr(const char *fmt, ...)
@@ -159,6 +161,8 @@ static void page(void)
 			Cconout('\r');
 		Cconout(out[i]);
 	}
+	if (logh >= 0)
+		logres = Fwrite((short)logh, olen - pagestart, out + pagestart);
 	pagestart = olen;
 #ifndef FSWB_NOKEY
 	Cconws("--- key ---\r\n");
@@ -646,10 +650,10 @@ static void close_log(void)
 		pr("--- no driver report: Ssystem %d = %ld (no sd-diag kernel)\n", S_NEWTOS_SDDIAG, n);
 	page();
 	if (logh >= 0) {
-		long r = Fwrite((short)logh, olen, out);
 		long c = Fclose((short)logh);
 
-		pr("log Fwrite=%ld Fclose=%ld\n", r, c);
+		logh = -1;
+		pr("log last Fwrite=%ld Fclose=%ld\n", logres, c);
 		page();
 	}
 }
@@ -679,7 +683,7 @@ int main(void)
 		return 1;
 	}
 	fill();
-	logh = Fcreate(name("FSWBENCH.LOG"), 0);
+	logh = Fcreate("C:\\FSWBENCH.LOG", 0);
 	pr("==== FSWBENCH (TASK/HW08), write path layer by layer, drive %c:, log handle %ld\n", drive, logh);
 	pr("clock: _hz_200 + spin, %lu spins/tick\n", spinL);
 	if (get_geo()) {

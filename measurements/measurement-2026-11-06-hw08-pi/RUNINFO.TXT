@@ -1,0 +1,28 @@
+HW08, first Pi run on the old test card and the new test card (lead, user, 2026-11-06). Plan: measurements/measurement-2026-11-06-hw08/PI-RUN.TXT.
+
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing: not applicable (no image built; files copied by hand).
+
+OLD CARD, Pi 4, kernel 56c6050f6e832d1213a81aab9c01a59af7f56527003b5136c262975591b501e9 (crash-walk,sd-fault, e421bd5d)
+  FSWBENCH.NCP 094eba22... on drive D:, photos/01-fswbench-d-first-failure.jpg. First failure hidden by program text over the report.
+  H: sectors normally about 2 ms; 160 ms at the first data and directory access, directory p90 165001 us at pause 0.
+  R patterns did not run: "16 of 131072 sectors contiguous, the card is too full here", though D: has 497 MB free; first cluster probably in a hole between the TEST files (not checked). The message misleads.
+  New small files: n 64, p50 11522 us, max 2102250 us, 2 at or over 1 s, failed 5, last -36.
+  Report, time since boot: 0:02:46.3 and 0:02:47.3 write lba 979185 cmd_done NONRECOVERABLE 1fff0106, then dat_inhibit timeout;
+    0:02:47.307 write lba 979433 write_rdy refused 00400900 (R1 bit 22 ILLEGAL_COMMAND, state tran, ready); 0:02:47.315 cmd_done error 00018000 (ERR + CTO);
+    0:02:47.415 cmd_done NONRECOVERABLE 1fff0106; 0:02:48.415 dat_inhibit timeout. recover 6, nonrecover 2, refused 1.
+    cache writeback failed 5 retried 3 gave up 1 dirty 1, last code -2; dirty D: lba 979433 dir/data tries 3 code -2.
+  The program saw -36 where the report has -2. Both links of measurements/measurement-2026-11-06-hw08/RUNINFO.TXT appear on real hardware.
+  Card afterwards: FSWBENCH.LOG 0 bytes, FSWBN10..FSWBN58 4096 bytes and FSWBN59 0 bytes on D:. No run on F:. Whole report with the first lines not photographed.
+
+SAME CARDS ON THE MAC  sd-bench-results.tsv
+  Reader 3131:1017 in all: old card FAT16: random 4 KiB p50 998.65 ms, max 1990.9 ms, 18 over 500 ms, 8 over 1000 ms.
+  New card, FAT32 as bought: p50 6.61 ms, max 296.1 ms, 0 over 500 ms. New card, FAT16 512 MB as below: p50 8.15 ms, max 387.5 ms, 0 over 500 ms, sequential write 10.9 MiB/s.
+  So file system and partition size do not explain the old card's stall. Worn or this model: open; the user also reports the Mac not always detecting it.
+
+NEW CARD, 31.3 GB (was a camera card, user deleted its photos)
+  diskutil partitionDisk: 6 x 512M "MS-DOS FAT16", BOOT, NEWTOS1..5, then free space. Same command on an image first: 3 primary + extended + 3 logical, 8 KiB clusters, 62467 clusters; kernel in QEMU raspi4b: "[desk] desktop up (6 drives)".
+  .metadata_never_index on every partition: mdutil "Indexing and searching disabled"; plain unmount then works.
+  Content: sd-card-backup-2026-11-06/BOOT (backup of the old card, gitignored, compared by checksum, 0 differences) without *.PNG, ._*, AWPROBE.*, DCPROBE.LOG, HZPROBE.*, P0*, CMDLINE.BAK.
+  kernel8.img as above; HW08/WFPROBE.NCP 3fa896c20a9aab55...; HW08/FSWBENCH.NCP 943e5e78bc19ebe7... (rebuilt: log on C: page by page; built only, not run). Checksums read after unmount and mount: equal.
+  Not yet booted on a Pi.
