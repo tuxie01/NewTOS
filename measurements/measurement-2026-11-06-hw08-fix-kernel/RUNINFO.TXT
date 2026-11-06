@@ -1,0 +1,12 @@
+measurement-2026-11-06-hw08-fix-kernel -- the Pi kernel of the HW08 fix, from commit 16bfa004 (Developer, 2026-11-06). Nothing measured here.
+Results and Pi plan: measurements/measurement-2026-11-06-hw08-fix/RUNINFO.TXT and PI-RUN.TXT.
+
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+
+kernel8.img beside this file, gitignored: rpi4 --release --features crash-walk,sd-fault, built at 16bfa004, clean tree.
+  sha256 39ab2a6a2058ba2dd965a684216336ae71fe55ad6d075eff768475d1f78eb868
+Why a second file: the About box's build stamp holds the commit hash, so the kernel of the run could not name the commit that records the
+run. Against measurements/measurement-2026-11-06-hw08-fix/kernel8.img (626dde56...) it differs in 16 bytes, cmp -l, the two copies of the
+eight hash characters, bdfa6799 there, 16bfa004 here. Same check on the kernels the fault cases ran on: sd-fault 16 bytes (now b8213ae6193a44cda07cc96400031cab5b54a67896a348ad56a3999e416ce212), rpi4 no features 16 bytes.
+Boot: QEMU raspi4b, -append serial=on, card from tools/mkcard.sh: "[desk] desktop up (1 drives)". Card manifest beside this file.
