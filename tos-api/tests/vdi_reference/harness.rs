@@ -362,15 +362,42 @@ impl RasterBackend for MemBackend {
         cell_w: i16,
         cell_h: i16,
         fg: Pel,
-        _mode: WriteMode,
+        mode: WriteMode,
         clip: ClipRect,
     ) {
-        let v = self.rgb565_to_device(self.pel_to_device16(fg));
+        // The kernel's `draw_glyph_sized` (`kernel/src/vdi_backend.rs`),
+        // transcribed: `ceil(cell_w/8)` bytes per row, MSB first, and the
+        // whole `cell_w`×`cell_h` cell combined through `combine` — so
+        // `Replace` paints the clear bits in pen 0 (`0xFFDF` on this
+        // screen), and `RevTransparent` paints `fg` on them. Until V29 this
+        // double drew the set bits of the first byte in `fg` only, which
+        // could not show a glyph cell's background (TASK/V29, probe T16*).
+        let f = self.rgb565_to_device(self.pel_to_device16(fg));
+        let b = self.rgb565_to_device(self.pel_to_device16(0));
+        let bpr = (cell_w.max(0) as usize).div_ceil(8);
         for row in 0..cell_h {
-            let byte = glyph.get(row as usize).copied().unwrap_or(0);
-            for col in 0..cell_w.min(8) {
-                if byte & (0x80 >> col) != 0 {
-                    self.put(x + col, y + row, v, clip);
+            for col in 0..cell_w {
+                let byte = glyph.get(row as usize * bpr + col as usize / 8).copied().unwrap_or(0);
+                let set = byte & (0x80u8 >> (col & 7)) != 0;
+                let (px, py) = (x + col, y + row);
+                match mode {
+                    WriteMode::Replace => self.put(px, py, if set { f } else { b }, clip),
+                    WriteMode::Transparent => {
+                        if set {
+                            self.put(px, py, f, clip);
+                        }
+                    }
+                    WriteMode::Xor => {
+                        if set {
+                            let v = self.get_device_pixel(px, py);
+                            self.put(px, py, !v, clip);
+                        }
+                    }
+                    WriteMode::RevTransparent => {
+                        if !set {
+                            self.put(px, py, f, clip);
+                        }
+                    }
                 }
             }
         }

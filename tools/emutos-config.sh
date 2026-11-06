@@ -461,7 +461,7 @@ CONF_WITH_UAE|OM|UAE emulator advanced features, Amiga target (config.h:1876-188
 CONF_WITH_ULTRASATAN_CLOCK|HW|UltraSatan clock via ACSI (config.h:1121-1127, has.h-gated has_ultrasatan_clock)
 CONF_WITH_VAMPIRE_SPI|HW|SPI on the Vampire accelerator, for SD/MMC (config.h:1060-1066)
 CONF_WITH_VDI_16BIT|HAVE|tos-api/src/vdi/inquiry.rs:7 and attributes.rs/raster.rs/workstation.rs (Falcon-truecolor workstation, landed per TASK/A86.md and TASK/A101.md)
-CONF_WITH_VDI_TEXT_SPEEDUP|HAVE|tos-api/src/vdi/text.rs:577 (v_gtext); the observable feature (VDI text output) is implemented through a differently-architected raster backend, not a port of EmuTOS's specific speedup path
+CONF_WITH_VDI_TEXT_SPEEDUP|HAVE|tos-api/src/vdi/text.rs:621@v_gtext (v_gtext); the observable feature (VDI text output) is implemented through a differently-architected raster backend, not a port of EmuTOS's specific speedup path
 CONF_WITH_VDI_VERTLINE|HAVE|tos-api/src/vdi/primitives.rs:744 (v_pline handles vertical lines); same caveat as CONF_WITH_VDI_TEXT_SPEEDUP
 CONF_WITH_VIDEL|HW|Falcon VIDEL chip (config.h:1089-1094, has.h-gated has_videl)
 CONF_WITH_VIEWER_SUPPORT|MISS|default file viewer when no app claims a document type (config.h:1854-1861); programs/desktop/src/inf.rs:1847-1850 says so itself: 'AF_VIEWER is CONF_WITH_VIEWER_SUPPORT, which this desktop does not implement'; ticketed GUI02 (ZURUECKGESTELLT, P4, depends on GUI01 -- same reason: a viewer registered as an application with a file mapping is preferred over a built-in view; stays filed so the gap list stays complete, closes as moot if a .NAP-viewer association already covers the case)

@@ -164,6 +164,49 @@ engine as [`v_gtext`](_text.md)).
   Interword expansion per gap is clamped to ±½ `max_cell_width` when both
   flags are set (`vdi_text.c:1222-1233`).
 
+### Justified-text rendering (rotation, alignment)
+
+`gdp_justified` draws nothing itself; it hands the run to the same
+`output_text` as `v_gtext`, with `width = max_x` and the `JUSTINFO`
+(`vdi_text.c:1288`). Consequences:
+
+- **Alignment width:** `output_text` computes `delh` from `h_align` with
+  that `width` (`vdi_text.c:354-364`), i.e. centre/right alignment of a
+  justified run is against `max_x`, not the natural width. Only a
+  **negative** `max_x` makes `output_text` fall back to `calc_width`
+  (`if (width < 0)`, `vdi_text.c:305-306`). `delv` and the skew additives
+  are as for `v_gtext`.
+- **Rotation:** the anchor (`DESTX`/`DESTY` per `chup`,
+  `vdi_text.c:408-440`), the per-glyph rotation and blit position and the
+  base advance along the rotated baseline (`text_blt`:
+  `vdi_textblit.c:1331-1342` and `upda_dst` `:1402-1432` — up for 900,
+  left for 1800, down for 2700) are exactly `v_gtext`'s.
+- **Deltas follow the rotation:** `gdp_justified` puts the per-gap and
+  per-character deltas on the axis of the rotated baseline
+  (`vdi_text.c:1235-1252`, `:1268-1285`):
+
+  | `chup` | interword | interchar |
+  |--------|-----------|-----------|
+  | 0 (and any other value) | `wordx = delword`, `rmwordx = dir` | `charx = delchar`, `rmcharx = dir` |
+  | 900 | `wordy = -delword`, `rmwordy = -dir` | `chary = -delchar`, `rmchary = -dir` |
+  | 1800 | `wordx = -delword`, `rmwordx = -dir` | `charx = -delchar`, `rmcharx = -dir` |
+  | 2700 | `wordy = delword`, `rmwordy = dir` | `chary = delchar`, `rmchary = dir` |
+
+  After each glyph's `text_blt` (which has already advanced the pen by the
+  glyph width) the apply loop adds `charx/chary`, then one remainder pixel
+  `rmcharx/rmchary` while `rmchar > 0`, and — when the character code is
+  `' '` — `wordx/wordy` plus one `rmwordx/rmwordy` while `rmword > 0`
+  (`vdi_text.c:476-492`). So at 900 the run grows upwards, at 1800 to the
+  left, at 2700 downwards, each to `max_x` pixels.
+- **Underline** runs from the rotated start to the pen's final `DESTX`
+  (0/1800) or `DESTY` (900/2700), as for `v_gtext` (`vdi_text.c:500-510`).
+- The direct-blit fast path is never taken for a justified run
+  (`ok_for_direct_blit`, `vdi_text.c:235-236`).
+
+Measured against the oracle: `tosdump/cases/vdi-v18-t2.tsv` cases 99/102/105
+(900/1800/2700) and the `vdprobe` records T1600–T1632 (TASK/V18 part 2,
+VDI-TEXT-003).
+
 ### Justified-text INTIN / PTSIN table
 
 | Slot | Meaning |

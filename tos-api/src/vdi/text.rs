@@ -567,6 +567,50 @@ fn underline(backend: &dyn RasterBackend, f: &SysFont, vwk: &Vwk, x0: i16, y_cel
     }
 }
 
+/// `1` when the outline effect is on, else `0` — EmuTOS `output_text`'s
+/// `outline` (`vdi_text.c:347-352`): outlined text starts one pixel earlier.
+fn outline_of(vwk: &Vwk) -> i16 {
+    if vwk.style & T_OUTLINE != 0 { OUTLINE_THICKNESS } else { 0 }
+}
+
+/// Horizontal-alignment offset `delh` for a run of on-screen `width`,
+/// including the outline start-1px and the skew slant additives EmuTOS
+/// folds into it (`output_text`, `vdi_text.c:354-390`). The same for every
+/// `chup` — EmuTOS runs both alignment switches before the rotation switch.
+/// `v_gtext` passes the natural width, `v_justified` its `max_x`.
+fn delh_for(f: &SysFont, vwk: &Vwk, width: i16, outline: i16) -> i16 {
+    let (d1, d2) = if vwk.style & T_SKEW != 0 {
+        (f.left_offset, f.right_offset)
+    } else {
+        (0, 0)
+    };
+    let delh = match vwk.h_align {
+        1 => (width / 2).wrapping_sub(outline), // centre
+        2 => width.wrapping_sub(outline * 2),   // right
+        _ => 0,                                 // left (0)
+    };
+    delh.wrapping_add(match vwk.v_align {
+        0 => d1,                          // baseline
+        1 => (f.half * d2) / f.top,       // half line
+        2 => (f.ascent * d2) / f.top,     // ascent
+        3 => 0,                           // bottom
+        4 => (f.descent * d1) / f.bottom, // descent
+        _ => d1 + d2,                     // top (5)
+    })
+}
+
+/// The run `output_text` draws: `count` codes from `INTIN[first..]`, the
+/// alignment point `(x, y)` (`PTSIN[0..1]`), and the `delh`/`outline`
+/// shared by every `chup`.
+struct Run {
+    first: usize,
+    count: i16,
+    x: i16,
+    y: i16,
+    delh: i16,
+    outline: i16,
+}
+
 /// Opcode 8 — `v_gtext`: draw the `CONTRL[3]` characters in `INTIN`
 /// (one code per WORD) at `PTSIN[0..1]`, in the current text colour,
 /// alignment, effects and selected system font. A non-exact
@@ -587,33 +631,13 @@ pub fn v_gtext(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     } else {
         base
     };
-    let style = vwk.style;
     let (x, y) = (pb.ptsin(0), pb.ptsin(1));
 
-    // Horizontal-alignment offset `delh`, including the outline start-1px and
-    // the skew slant additives EmuTOS folds into it (`output_text`,
-    // `vdi_text.c:352-390`). Computed the same for every `chup` — EmuTOS runs
-    // both alignment switches before the rotation switch.
-    let outline = if style & T_OUTLINE != 0 { OUTLINE_THICKNESS } else { 0 };
-    let (d1, d2) = if style & T_SKEW != 0 {
-        (f.left_offset, f.right_offset)
-    } else {
-        (0, 0)
-    };
+    // Horizontal-alignment offset `delh` against the natural run width
+    // (`output_text` with `width < 0`, `vdi_text.c:305-306`).
+    let outline = outline_of(vwk);
     let width = calc_width(base, f, count, vwk);
-    let mut delh = match vwk.h_align {
-        1 => width / 2 - outline,  // centre
-        2 => width - outline * 2,  // right
-        _ => 0,                    // left (0)
-    };
-    delh += match vwk.v_align {
-        0 => d1,                          // baseline
-        1 => (f.half * d2) / f.top,       // half line
-        2 => (f.ascent * d2) / f.top,     // ascent
-        3 => 0,                           // bottom
-        4 => (f.descent * d1) / f.bottom, // descent
-        _ => d1 + d2,                     // top (5)
-    };
+    let delh = delh_for(f, vwk, width, outline);
 
     let clip = vwk.clip_rect();
 
@@ -621,7 +645,8 @@ pub fn v_gtext(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     // angle (0 and 3600) falls through to the horizontal path — matching
     // EmuTOS' `switch(vwk->chup)` where only 900/1800/2700 are cased.
     if matches!(vwk.chup, 900 | 1800 | 2700) {
-        output_text_rotated(pb, vwk, backend, base, f, count, x, y, delh, outline, clip);
+        let run = Run { first: 0, count, x, y, delh, outline };
+        output_text_rotated(pb, vwk, backend, base, f, &run, clip, None);
         return;
     }
 
@@ -643,13 +668,15 @@ pub fn v_gtext(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     underline(backend, f, vwk, x_pen0 - outline, top_y - outline, cx - x_pen0, clip);
 }
 
-/// Draw a `v_gtext` run rotated to a right angle — EmuTOS `output_text`'s
-/// `chup` 900/1800/2700 cases (`vdi_text.c:408-543`) driving `text_blt` +
-/// `rotate` (`vdi_textblit.c:442-554`, `1331-1342`, `1419-1432`). Each glyph
-/// is assembled ([`make_glyph`], scaling included), rotated ([`rotate_cell`])
+/// Draw a run rotated to a right angle — EmuTOS `output_text`'s `chup`
+/// 900/1800/2700 cases (`vdi_text.c:408-543`) driving `text_blt` + `rotate`
+/// (`vdi_textblit.c:442-554`, `1331-1342`, `1402-1432`). Each glyph is
+/// assembled ([`make_glyph`], scaling included), rotated ([`rotate_cell`])
 /// and blitted; the pen advances along the rotated baseline and the
-/// underline (if any) runs parallel to it. `delh`/`outline` are the shared
-/// values from `v_gtext`.
+/// underline (if any) runs parallel to it. `v_gtext` passes no
+/// [`JustInfo`]; `v_justified` passes its deltas, which the apply loop adds
+/// to the pen after each glyph (`vdi_text.c:476-492`) — `gdp_justified` has
+/// already put them on the rotated axis.
 #[allow(clippy::too_many_arguments)]
 fn output_text_rotated(
     pb: &Vdipb,
@@ -657,13 +684,11 @@ fn output_text_rotated(
     backend: &dyn RasterBackend,
     base: &SysFont,
     f: &SysFont,
-    count: i16,
-    x: i16,
-    y: i16,
-    delh: i16,
-    outline: i16,
+    run: &Run,
     clip: ClipRect,
+    mut just: Option<&mut JustInfo>,
 ) {
+    let Run { first, count, x, y, delh, outline } = *run;
     let chup = vwk.chup;
     let top = f.top;
     let bottom = f.bottom;
@@ -695,10 +720,12 @@ fn output_text_rotated(
     let starty;
     let (xfact, yfact); // underline thickness step
     let vertical; // underline orientation
+    // WORD arithmetic, as EmuTOS: `delh` comes from `v_justified`'s
+    // caller-chosen `max_x` and may carry the anchor past the i16 range.
     match chup {
         900 => {
             ax = x - delv - outline;
-            ay = y + delh + outline + 1;
+            ay = y.wrapping_add(delh).wrapping_add(outline + 1);
             startx = ax + top + under;
             starty = ay;
             xfact = 1;
@@ -706,7 +733,7 @@ fn output_text_rotated(
             vertical = true;
         }
         1800 => {
-            ax = x + delh + outline + 1;
+            ax = x.wrapping_add(delh).wrapping_add(outline + 1);
             ay = y - ((top + bottom) - delv) - outline;
             startx = ax;
             starty = ay + bottom - under;
@@ -717,7 +744,7 @@ fn output_text_rotated(
         _ => {
             // 2700 — no vars.DEST adjustment in `text_blt`'s switch.
             ax = x - ((top + bottom) - delv) - outline;
-            ay = y - delh - outline;
+            ay = y.wrapping_sub(delh).wrapping_sub(outline);
             startx = ax + bottom - under;
             starty = ay;
             xfact = -1;
@@ -730,21 +757,25 @@ fn output_text_rotated(
     let mut gx = ax;
     let mut gy = ay;
     for i in 0..count as usize {
-        let (cell, advance) = make_glyph(base, f, pb.intin(i), vwk, &mut xdda);
+        let code = pb.intin(first + i);
+        let (cell, advance) = make_glyph(base, f, code, vwk, &mut xdda);
         let rot = rotate_cell(&cell, chup);
         // Glyph placement shift includes skew (EmuTOS `text_blt` `chup`
         // switch); the pen advance below does not.
         let cell_adj = advance + skew_total;
         let (bx, by) = match chup {
-            900 => (gx, gy - cell_adj),  // vars.DESTY -= delx
-            1800 => (gx - cell_adj, gy), // vars.DESTX -= delx
-            _ => (gx, gy),               // 2700 — no adjustment
+            900 => (gx, gy.wrapping_sub(cell_adj)),  // vars.DESTY -= delx
+            1800 => (gx.wrapping_sub(cell_adj), gy), // vars.DESTX -= delx
+            _ => (gx, gy),                           // 2700 — no adjustment
         };
         blit_cell(backend, &rot, bx, by, vwk, clip);
         match chup {
-            900 => gy -= advance,  // DESTY -= delx (move up)
-            1800 => gx -= advance, // DESTX -= delx (move left)
-            _ => gy += advance,    // 2700 — DESTY += delx (move down)
+            900 => gy = gy.wrapping_sub(advance),  // DESTY -= delx (move up)
+            1800 => gx = gx.wrapping_sub(advance), // DESTX -= delx (move left)
+            _ => gy = gy.wrapping_add(advance),    // 2700 — DESTY += delx (move down)
+        }
+        if let Some(j) = just.as_deref_mut() {
+            j.step(code, &mut gx, &mut gy);
         }
     }
 
@@ -771,9 +802,7 @@ fn output_text_rotated(
 /// EmuTOS `JUSTINFO` (`vdi_text.c:139-149`): the per-glyph justification
 /// deltas that `gdp_justified` computes and the `output_text` apply-loop
 /// consumes. In each x/y pair only one component is ever non-zero — `chup`
-/// selects the axis. At `chup == 0` (the only orientation this path
-/// renders) the x-components (`wordx`/`charx`/`rmwordx`/`rmcharx`) carry the
-/// whole justification; the y-components stay zero. `rmword`/`rmchar` are
+/// selects the axis: x at 0 and 1800, y at 900 and 2700. `rmword`/`rmchar` are
 /// the leftover pixels from the integer division, spread one at a time over
 /// the leading gaps/characters so the run lands exactly on the target width.
 #[derive(Default)]
@@ -794,19 +823,45 @@ struct JustInfo {
     rmchary: i16,
 }
 
+impl JustInfo {
+    /// The apply loop after one glyph (EmuTOS `output_text`,
+    /// `vdi_text.c:476-492`): add the interchar delta and one remainder
+    /// pixel while any is left, then — after a space — the interword delta
+    /// and one of its remainder pixels. `text_blt` has already moved the pen
+    /// `(x, y)` by the glyph's own width. WORD arithmetic, as EmuTOS.
+    fn step(&mut self, code: i16, x: &mut i16, y: &mut i16) {
+        *x = x.wrapping_add(self.charx);
+        *y = y.wrapping_add(self.chary);
+        if self.rmchar != 0 {
+            *x = x.wrapping_add(self.rmcharx);
+            *y = y.wrapping_add(self.rmchary);
+            self.rmchar -= 1;
+        }
+        if code == b' ' as i16 {
+            *x = x.wrapping_add(self.wordx);
+            *y = y.wrapping_add(self.wordy);
+            if self.rmword != 0 {
+                *x = x.wrapping_add(self.rmwordx);
+                *y = y.wrapping_add(self.rmwordy);
+                self.rmword -= 1;
+            }
+        }
+    }
+}
+
 /// GDP sub-op 10 — `v_justified`: draw a run of text spread to fill a
 /// target width. `INTIN[0]` = interword flag, `INTIN[1]` = interchar
 /// flag, `INTIN[2..]` = char codes (`CONTRL[3] - 2` of them).
 /// `PTSIN[0..1]` = position, `PTSIN[2]` = target width.
 ///
-/// 1:1 port of EmuTOS `gdp_justified` (`vdi_text.c:1177-1289`) and the
-/// justification branch of the `output_text` apply-loop
-/// (`vdi_text.c:459-498`). The full `JustInfo`/`chup` model is computed, but
-/// this path only *renders* horizontally via [`draw_cell`]: at `chup == 0`
-/// (the observable case) the x-components make it byte-for-byte with EmuTOS;
-/// at a right-angle `chup` the glyph bitmaps are drawn unrotated as an
-/// L->R fallback (the rotated justified render belongs to a separate task —
-/// it is not one of the catalogued slack findings).
+/// EmuTOS `gdp_justified` (`vdi_text.c:1177-1289`) and the justification
+/// branch of the `output_text` apply-loop (`vdi_text.c:476-492`). At a
+/// right-angle `chup` the run goes through `v_gtext`'s rotated path
+/// ([`output_text_rotated`]) with the `JustInfo` deltas on the rotated axis
+/// and `delh` taken against `width = max_x` (`output_text(vwk, cnt, str,
+/// max_x, &just)`, `:1288`; a negative `max_x` falls back to `calc_width`,
+/// `:305-306`). Spec: `docs/api/vdi/output/_gdp.md` "Justified-text
+/// rendering".
 pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     // EmuTOS: cnt = CONTRL[3] - 2 (strip the two leading flag words).
     let cnt = (pb.contrl(3) - 2).max(0);
@@ -927,14 +982,25 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
         }
     }
 
-    // Apply-loop — EmuTOS output_text (:459-498). Each glyph blits at the
-    // current pen; the base advance moves the pen (EmuTOS `text_blt`'s DELX),
-    // then the interchar delta is added, then — on a space — the interword
-    // delta, each spreading its saved remainder one pixel at a time. Rendered
-    // horizontally: at chup==0 the y-components are zero so `desty` stays on
-    // the cell top (byte-1:1); at a right angle the deltas follow the model
-    // but the glyph bitmaps are not rotated (L->R fallback).
     let clip = vwk.clip_rect();
+
+    // Right angle: `v_gtext`'s rotated `output_text` with the deltas
+    // (`gdp_justified` → `output_text(vwk, cnt, str, max_x, &just)`, :1288).
+    if matches!(vwk.chup, 900 | 1800 | 2700) {
+        let outline = outline_of(vwk);
+        let run_width = if max_x < 0 { calc_width(base, f, cnt, vwk) } else { max_x };
+        let delh = delh_for(f, vwk, run_width, outline);
+        let run = Run { first: 2, count: cnt, x: x0, y: pb.ptsin(1), delh, outline };
+        output_text_rotated(pb, vwk, backend, base, f, &run, clip, Some(&mut just));
+        return;
+    }
+
+    // Horizontal apply-loop — EmuTOS output_text (:459-492). Each glyph
+    // blits at the current pen; the base advance moves the pen (EmuTOS
+    // `text_blt`'s DELX), then [`JustInfo::step`] adds the interchar and —
+    // on a space — the interword delta, each spreading its saved remainder
+    // one pixel at a time. At chup 0 the y-components are zero, so `desty`
+    // stays on the cell top.
     let mut xdda: u16 = 0x7fff;
     let mut destx = x0;
     let mut desty = top_y;
@@ -943,22 +1009,7 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
         let (cell, advance) = make_glyph(base, f, code, vwk, &mut xdda);
         draw_cell(backend, &cell, destx, desty, vwk, clip);
         destx += advance; // base glyph advance (EmuTOS text_blt DELX)
-        destx += just.charx;
-        desty += just.chary;
-        if just.rmchar != 0 {
-            destx += just.rmcharx;
-            desty += just.rmchary;
-            just.rmchar -= 1;
-        }
-        if code == b' ' as i16 {
-            destx += just.wordx;
-            desty += just.wordy;
-            if just.rmword != 0 {
-                destx += just.rmwordx;
-                desty += just.rmwordy;
-                just.rmword -= 1;
-            }
-        }
+        just.step(code, &mut destx, &mut desty);
     }
     underline(backend, f, vwk, x0, top_y, destx - x0, clip);
 }

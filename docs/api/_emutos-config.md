@@ -512,7 +512,7 @@ on every run — see above).
 | `CONF_WITH_SELECTALL` | `1` | programs/desktop/src/main.rs:1478 (Item::SelectAll) |
 | `CONF_WITH_SIZE_TO_FIT` | `1` | programs/desktop/src/main.rs:2201,2206,2539,2676 (Item::SizeToFit / g.size_to_fit) |
 | `CONF_WITH_VDI_16BIT` | `1` | tos-api/src/vdi/inquiry.rs:7 and attributes.rs/raster.rs/workstation.rs (Falcon-truecolor workstation, landed per TASK/A86.md and TASK/A101.md) |
-| `CONF_WITH_VDI_TEXT_SPEEDUP` | `1` | tos-api/src/vdi/text.rs:577 (v_gtext); the observable feature (VDI text output) is implemented through a differently-architected raster backend, not a port of EmuTOS's specific speedup path |
+| `CONF_WITH_VDI_TEXT_SPEEDUP` | `1` | tos-api/src/vdi/text.rs:621@v_gtext (v_gtext); the observable feature (VDI text output) is implemented through a differently-architected raster backend, not a port of EmuTOS's specific speedup path |
 | `CONF_WITH_VDI_VERTLINE` | `1` | tos-api/src/vdi/primitives.rs:744 (v_pline handles vertical lines); same caveat as CONF_WITH_VDI_TEXT_SPEEDUP |
 | `CONF_WITH_WINDOW_COLOURS` | `1` | tos-api/src/aes/window.rs:78-79 (WF_COLOR/WF_DCOLOR) |
 | `CONF_WITH_WINDOW_ICONS` | `1` | programs/desktop/src/win.rs (win_icalc); per DESK15 |
