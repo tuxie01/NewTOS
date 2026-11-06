@@ -9,8 +9,9 @@
 //! `DUMPRAST` from `tosdump/cases/vdi-raster.tsv` (CRC `702EEA7D`, 59 cases) —
 //! and `docs/api/vdi/raster/_raster.md` was extracted from that same EmuTOS
 //! source, so a difference here normally has exactly one reading: NewTOS is
-//! wrong. The two exceptions are named in [`MACHINE_EXCLUDED`] and
-//! [`DEVIATIONS`]; nothing is skipped, and no case is `#[ignore]`d.
+//! wrong. The exceptions are named in [`MACHINE_EXCLUDED`], [`DEVIATIONS`]
+//! and [`form_end`] (the words past a memory destination, V26); nothing is
+//! skipped, and no case is `#[ignore]`d.
 //!
 //! **What these tests cover that the VDI ones cannot.** A raster call's result
 //! is *memory*, not a number in `INTOUT`. So the record carries, on top of the
@@ -267,10 +268,19 @@ pub struct Form {
 }
 
 impl Form {
-    /// Row stride in pixels of a NewTOS device-format memory MFDB
-    /// (`fd_wdwidth` 16-pixel words), used by the [`DEVIATIONS`] substitute.
+    /// Row stride in pixels of a NewTOS chunky memory MFDB, `fd_wdwidth *
+    /// fd_nplanes` WORDs (`setup_info`, `vdi_raster.c:919-940`; V28), used by
+    /// the [`DEVIATIONS`] substitute.
     fn stride_px(&self) -> usize {
-        (self.wdwidth.max(0) as usize) * 16
+        (self.wdwidth.max(0) as usize) * (self.nplanes.max(0) as usize)
+    }
+
+    /// The WORDs of the form, `fd_h * fd_wdwidth * fd_nplanes` from
+    /// `fd_addr` — EmuTOS' layout for every plane count (`setup_info`,
+    /// `vdi_raster.c:919-940`: a row is `fd_wdwidth * fd_nplanes * 2`
+    /// bytes, chunky or interleaved alike).
+    fn words(&self) -> usize {
+        self.h.max(0) as usize * self.stride_px()
     }
 }
 
@@ -446,6 +456,49 @@ pub const DEVIATIONS: &[Deviation] = &[Deviation {
           :993, :995-999); NewTOS anchors at the destination upper-left. \
           Open, undecided -- docs/api/vdi/_discrepancies.md D-VDI-25",
 }];
+
+/// Where NewTOS' **memory-form bound** decides a word instead of the dump:
+/// `(buffer, first)` — the words from `first` on of buffer `buffer` (0 = A,
+/// 1 = B) lie past the destination memory form of a `vro_cpyfm` /
+/// `vrt_cpyfm` ([`Form::words`]); `None` for a screen destination and for
+/// `vr_trnfm`, whose geometry is its own.
+///
+/// This is a user decision, not an open question: *"ja a"* (2026-11-05,
+/// TASK/V26), `docs/COMPATIBILITY.md` "A raster copy into or out of a memory
+/// form stops at the form's `fd_h` rows". EmuTOS reads neither `fd_w` nor
+/// `fd_h` for a copy and writes a block that leaves its form into the memory
+/// behind it — the dump holds that write; NewTOS writes nothing there (kernel
+/// memory safety). So such a word is checked against the buffer's own fill:
+/// it must be **unchanged**. Not a skip — a NewTOS write past the form fails
+/// the case. Where EmuTOS does not run past the form either, the dump holds
+/// the fill there too, so for such a case the rule changes nothing. Measured
+/// cases it decides: `vdi-v18-t2-raster.tsv` 28, 29, 33, 34, 35, 37 (a 16-px
+/// row in a form of 9..15 planes is longer than the form's row, V28).
+fn form_end(case: &Case) -> Option<(i16, usize)> {
+    if !matches!(case.opcode, 109 | 121) || !matches!(case.dst.buffer, 0 | 1) {
+        return None;
+    }
+    Some((case.dst.buffer, case.dst.words().min(BUF_WORDS)))
+}
+
+/// Compare pixel buffer `buffer` (0 = A, 1 = B) against the dump, except the
+/// words past the destination form ([`form_end`]), which must still hold
+/// the buffer's fill `seed`.
+fn cmp_buf(out: &mut Vec<Diff>, case: &Case, buffer: i16, got: &[i16], rec: &[u8], off: usize, seed: u16) {
+    let (field, past_label) = if buffer == 0 {
+        ("buf_a", "buf_a past the destination form (V26)")
+    } else {
+        ("buf_b", "buf_b past the destination form (V26)")
+    };
+    let end = match form_end(case) {
+        Some((b, first)) if b == buffer => first,
+        _ => BUF_WORDS,
+    };
+    cmp_field(out, field, &got[..end], rec, off, end);
+    for (i, &g) in got.iter().enumerate().skip(end) {
+        push_subst(out, past_label, i, g, fill_word(seed, i as u16) as i16);
+    }
+}
 
 fn deviation(case: &Case, field: &str) -> Option<&'static Deviation> {
     DEVIATIONS.iter().find(|d| d.case == case.id && d.field == field)
@@ -718,9 +771,9 @@ pub fn check(dump: &[u8], case: &Case) {
     cmp_field(&mut diffs, "ptsout", &pb.ptsout[..], rec, OFF_PTSOUT, PTSOUT_N);
     cmp_field(&mut diffs, "src_mfdb", &pb.src.words(), rec, OFF_SRC_MFDB, MFDB_N);
     cmp_field(&mut diffs, "dst_mfdb", &pb.dst.words(), rec, OFF_DST_MFDB, MFDB_N);
-    cmp_field(&mut diffs, "buf_a", &pb.bufs.a[..], rec, OFF_BUF_A, BUF_WORDS);
+    cmp_buf(&mut diffs, case, 0, &pb.bufs.a[..], rec, OFF_BUF_A, case.seed_a);
     if deviation(case, "buf_b").is_none() {
-        cmp_field(&mut diffs, "buf_b", &pb.bufs.b[..], rec, OFF_BUF_B, BUF_WORDS);
+        cmp_buf(&mut diffs, case, 1, &pb.bufs.b[..], rec, OFF_BUF_B, case.seed_b);
     }
     substitute(&mut diffs, case, &pb, &before, rec, wk);
 

@@ -379,6 +379,45 @@ destination plane) with per-plane logic ops (`vdi_raster.c:1397-1430`):
 `INTIN[0]` = `MD_*` mode; `INTIN[1]`/`INTIN[2]` = fg/bg colour indices.
 **Output:** destination modified in place; no `INTOUT`/`PTSOUT`.
 
+### Memory destination: planar below nine planes, chunky above (V28)
+
+`cpy_raster` takes `vrt_cpyfm16` only for `plane_ct > 8`
+(`vdi_raster.c:1432-1437`). A memory destination of 1..8 planes goes to the
+planar blitter (`bit_blt`/`fast_bit_blt`, `:1446-1458`) on the interleaved
+device form of § "Memory → memory below nine planes" — the layout, the
+linear addressing, the skew, the end masks and the direction rule are the
+ones given there. Per destination plane `p` the op is
+`op_tab[((fg_col >> p) & 1) << 1 | ((bg_col >> p) & 1)]` (`:744-746`) with
+the table and colours of the mode table above; the source is the one mono
+plane under every destination plane (`s_nxpl = 0`, `:1387`). Per plane bit
+this is the expansion of the mode table: a source 1-bit makes plane `p` bit
+`p` of the foreground register (`MD_REPLACE`, `MD_TRANS`) or complements it
+(`MD_XOR`), a 0-bit makes it bit `p` of the background register
+(`MD_REPLACE`, `MD_ERASE`); otherwise the plane bit stays.
+
+The registers are `MAP_COL[validate_color_index(INTIN[1/2])]`
+(`:1390-1395`), EmuTOS' pen → hardware register map (`vdi_col.c:28-29`,
+`:736-742`): `MAP_COL_ROM = {0, 15, 1, 2, 4, 6, 3, 5, 7, 8, 9, 10, 12, 14,
+11, 13}` with `MAP_COL[1] = numcolors − 1`, pens 16..254 to themselves and
+pen 255 to 15 (`EXTENDED_PALETTE`, `vdi_defs.h:20`). With `numcolors = 256`
+(16 planes, `vdi_control.c:206`) pen 1 is register 255. Here the register's
+bits are what lands in the form, so `MAP_COL` is observable; NewTOS'
+pen-ordered pseudo-palette (the `MAP_COL` fold of § Palette) does not apply
+to this path (`tos-api/src/vdi/raster.rs:685@map_col`). Measured on the
+oracle, falcontc: `tosdump/cases/vdi-v18-t2-raster.tsv` cases 18–26 (1, 2, 4,
+8 planes, all four modes, pens 1/0, 3, 0/2, 5/10, shifted block); on profile tt
+cases 21 and 25 differ, because there `numcolors` is 16 (pen 1 → 15) — a
+device parameter (`measurements/measurement-2026-11-06-v18-t2/RUNINFO.TXT`).
+
+A memory destination of 9..16 planes is `vrt_cpyfm16`'s chunky form, one
+WORD per pixel with a row of `fd_wdwidth × fd_nplanes` WORDs (`dst_width =
+d_nxln / 2`, `:1249`; § "NewTOS memory-MFDB format", Row geometry). Cases
+28–31.
+
+NewTOS bounds as for `vro_cpyfm` (V26): nothing past the form's `fd_h` rows
+is written; `fd_nplanes ≤ 0` draws nothing (EmuTOS' plane loop would count
+down past zero, `vdi/vdi_blit.S:1102`).
+
 ## `vr_trnfm` (110) — transform form (standard ↔ device)
 
 Source: `vdi_vr_trnfm` (`vdi_raster.c:269-356`). Converts a bitmap
@@ -453,7 +492,12 @@ No `INTOUT`/`PTSOUT`.
    picks a right-to-left / bottom-to-top scan when `s_addr < d_addr`
    (or equal with non-negative skew), so an overlapping opaque copy does
    not corrupt itself (`vdi_raster.c:667-704`). NewTOS must reproduce the
-   overlap-safe result.
+   overlap-safe result. The 16-bit `vro_cpyfm16` decides the same way on its
+   own start pointers (`form + y × width + x`): backwards — last row first,
+   each row from its last pixel — iff the source's lies below the
+   destination's (`:989-1002`). Where rows are shorter than the block (9..15
+   planes) the walk decides which value lands; NewTOS walks as EmuTOS
+   (`mem_to_mem`, V28; measured `vdi-v18-t2-raster.tsv` cases 40–46).
 6. **`vr_trnfm` direction comes from the *source* `fd_stand`**, and it
    **overwrites** `dst->fd_stand` — a caller cannot force a direction via
    the destination flag (`:303-314`). `fd_nplanes`/plane size are read
@@ -852,22 +896,24 @@ Falcon).
 | MFDB field | NewTOS memory value | Meaning |
 |-----------|---------------------|---------|
 | `fd_addr` | caller-owned buffer | base of the `UWORD` (RGB565) pixel array; `bb_save`/`bb_restore` take it as a `*mut`/`*const u32` for the caller's convenience — two 16-bit pixels per `u32` word (`raster.rs:559-560,589-590`) |
-| `fd_w` / `fd_h` | region size (px) | `fd_w` is **not** a limit (EmuTOS does not read it); `fd_h` bounds the form: no access outside its `fd_h` rows of `fd_wdwidth × 16` words (V26, below) |
+| `fd_w` / `fd_h` | region size (px) | `fd_w` is **not** a limit (EmuTOS does not read it); `fd_h` bounds the form: no access outside its `fd_h` rows of `fd_wdwidth × fd_nplanes` words (V26, V28, below) |
 | `fd_wdwidth` | `(fd_w + 15) / 16` | 16-px words (`mem_wdwidth`, `raster.rs:193-198`); **row stride in pixels = `fd_wdwidth × 16`** (padded up, mirroring EmuTOS `bb_set`'s word alignment) |
 | `fd_stand` | `0` (device) | chunky, not plane-sequential |
 | `fd_nplanes` | `16` | truecolor depth (`CHUNKY_PLANES`, `raster.rs:61-67`); the interleaved-stride identity `bytes/line = fd_wdwidth × fd_nplanes / 8 × 16 = fd_wdwidth × 32` holds (`raster.rs:32-35`) |
 
-- **Pixel offset** of `(col, row)` = `row × (fd_wdwidth × 16) + col` `UWORD`s
-  — computed from the MFDB's *own* `fd_wdwidth`, **never** the screen
-  stride, for any `col` (also past the row or negative). A pixel whose
-  offset lies outside the form (below 0 or at `fd_h × fd_wdwidth × 16` and
-  above) reads as 0 and is not written.
+- **Pixel offset** of `(col, row)` = `row × (fd_wdwidth × fd_nplanes) + col`
+  `UWORD`s — `row × fd_wdwidth × 16 + col` at the 16 planes of this format —
+  computed from the MFDB's *own* `fd_wdwidth` and `fd_nplanes`, **never** the
+  screen stride, for any `col` (also past the row or negative). A pixel whose
+  offset lies outside the form (below 0 or at `fd_h × fd_wdwidth ×
+  fd_nplanes` and above) reads as 0 and is not written.
 - **Row geometry and bound (V26, user decision 2026-11-05 "ja a": memory-form
   geometry like EmuTOS).** EmuTOS derives a memory form's row from
   `fd_wdwidth` alone: `setup_info` sets `s_nxln = fd_wdwidth × s_nxwd` and
   `d_nxln = fd_wdwidth × d_nxwd` with `s_nxwd`/`d_nxwd = fd_nplanes × 2`
   (`vdi_raster.c:919-923,933-938`), i.e. `fd_wdwidth × 32` bytes at 16
-  planes. `vro_cpyfm16` addresses pixel `(x, y)` as `form + y × width + x`
+  planes and `fd_wdwidth × fd_nplanes × 2` bytes — fewer than the row's
+  `fd_wdwidth × 16` pixels — for a chunky form of 9..15 planes (V28). `vro_cpyfm16` addresses pixel `(x, y)` as `form + y × width + x`
   and steps rows by `s_nxln / 2` / `d_nxln / 2` WORDs (`:986-990`,
   `src += src_width` / `dst += dst_width` per row, `:1016-1216`);
   `vrt_cpyfm16` its destination the same way (`:1249-1250`, `:1265-1318`)
@@ -879,13 +925,17 @@ Falcon).
   between `fd_w` and `fd_wdwidth × 16` are read and written, and a block
   past `fd_h` runs past the form. NewTOS addresses every memory form that
   way (`vro_cpyfm` chunky paths, `vrt_cpyfm` into memory, and the planar
-  form, § "Memory → memory below nine planes"; a 9..15-plane memory form
-  still takes the chunky row of `fd_wdwidth × 16` WORDs, where EmuTOS has
-  `fd_wdwidth × fd_nplanes` — open since V19) with **one** limit: nothing
-  outside the form's `fd_h` rows — bytes `[0, fd_h × fd_wdwidth × 32)` from
-  `fd_addr` — is read or written. Inside the form, only the pixels between
+  form, § "Memory → memory below nine planes"; a chunky memory form of
+  9..15 planes takes its row of `fd_wdwidth × fd_nplanes` WORDs as EmuTOS
+  since V28, `tos-api/src/vdi/raster.rs:231@mem_stride_px`; measured
+  `vdi-v18-t2-raster.tsv` cases 28–30, 33–37) with **one** limit: nothing
+  outside the form's `fd_h` rows — bytes `[0, fd_h × fd_wdwidth ×
+  fd_nplanes × 2)` from `fd_addr` — is read or written. (A 16-pixel row of
+  a 9..15-plane form is longer than the form's row, so a block over the
+  whole form runs past its end: EmuTOS writes the words there, NewTOS does
+  not — cases 28, 29, 33, 34, 35, 37 differ only in those words.) Inside the form, only the pixels between
   the block's first and its last are checked against the caller's rights
-  (`tos-api/src/vdi/raster.rs:181@bind_block`, hull
+  (`tos-api/src/vdi/raster.rs:187@bind_block`, hull
   `chunky_hull`) and touched, so the kernel never touches memory it has not
   checked. EmuTOS writes past the form there; NewTOS cuts
   (`docs/COMPATIBILITY.md`, kernel memory safety). Before V26 NewTOS stopped

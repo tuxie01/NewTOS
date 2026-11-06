@@ -1296,6 +1296,7 @@ vditrap	vdi/vdi_asm.S	kernel/src/arch/aarch64/exceptions.rs	sync_handler	mapped	
 wheel_int	vdi/vdi_asm.S	-	-	design:hardware:ikbd-acia	decodes the IKBD status packet 05 00.. of a wheel; NewTOS has no IKBD packets (a wheel arrives as HID scancodes in mouse.rs mousex_handler -> call_user_wheel)
 fast_bit_blt	vdi/vdi_blit.S	tos-api/src/vdi/raster.rs	planar_mem_to_mem	mapped	planar BitBlt for plane_ct <= 8 (cpy_raster): per plane and destination WORD, op of the 16-entry table, end masks, overlap direction by start address (vdi_blit.S:942-946); only memory to memory reaches it (the screen is 16 planes, ADR-024); V19; addressed linearly as EmuTOS, fd_w no limit, cut at the fd_h rows (V26)
 fast_bit_blt	vdi/vdi_blit.S	tos-api/src/vdi/raster.rs	bits_at	mapped	the skew: 16 source bits at an arbitrary pixel from the two WORDs the run spans (V19)
+fast_bit_blt	vdi/vdi_blit.S	tos-api/src/vdi/raster.rs	planar_blit	mapped	the planar walk, per-plane op and a one-plane source for vrt_cpyfm (V28)
 bub_sort	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	the ascending sort of the crossings is an inline insertion sort in fill_polygon
 clc_flit	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	scan-line polygon fill, even-odd, perimeter pixels included
 clipbox	vdi/vdi_fill.c	kernel/src/vdi_backend.rs	fill_pattern	mapped	rectangle clipping is done inside the backend (rect intersect clip intersect screen); vr_recfl passes vwk.clip_rect()
@@ -1393,8 +1394,10 @@ vdi_vsm_color	vdi/vdi_marker.c	tos-api/src/vdi/attributes.rs	vsm_color	mapped	op
 vdi_vsm_height	vdi/vdi_marker.c	tos-api/src/vdi/attributes.rs	vsm_height	mapped	opcode 19
 vdi_vsm_type	vdi/vdi_marker.c	tos-api/src/vdi/attributes.rs	vsm_type	mapped	opcode 18
 bit_blt	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	planar_mem_to_mem	mapped	C twin of fast_bit_blt (blitter / ColdFire builds), same result: end masks :651-652, start-address direction :660-669, op_tab[0] per plane :744-746 (V19)
+bit_blt	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	planar_blit	mapped	the planar walk with op_tab[(fg bit << 1) | bg bit] per plane (:744-746) and s_nxpl = 0 for the vrt_cpyfm mono source (:1387; V28)
 cpy_raster	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vro_cpyfm	mapped	opaque copy: mode check, plane gates, truecolor dispatch; no PAT_FLAG pattern on the palette path
-cpy_raster	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vrt_cpyfm	mapped	transparent copy: mode map MD_* and the fg/bg index validation
+cpy_raster	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vrt_cpyfm	mapped	transparent copy: mode map MD_* and the fg/bg index validation; vrt_cpyfm16 only for plane_ct > 8, a memory form of 1..8 planes takes the planar blit (:1432-1458; V28)
+cpy_raster	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vrt_planar_op	mapped	op_tab and fg_col/bg_col per MD_* mode (:1397-1430), indexed per plane as bit_blt does (:744-746; V28)
 do_clip	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_screen	mapped	clip of the destination box for a screen destination (memory to screen)
 do_clip	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	copy_rect	mapped	clip of the destination box for screen to screen
 do_clip	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	blit_mono	mapped	clip of the destination box for vrt_cpyfm to the screen
@@ -1406,7 +1409,8 @@ setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	effective_planes	mapped	pl
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	read	mapped	MFDB reading (Mfdb::read, caller ABI) replaces the MFDB field access
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	planar_hull	mapped	s_nxln/d_nxln = fd_wdwidth * fd_nplanes * 2 of a memory form below nine planes (:922-923,937-938; V19): group g of row y = linear group y * fd_wdwidth + g, fd_w unread; the block hull clipped to the fd_h rows, what is bound (V26)
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	of	mapped	PlanarForm::of: the interleaved form below nine planes, s_nxwd = fd_nplanes * 2, s_nxpl = 2 (:919-940,959-960; V19)
-setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_span_px	mapped	row of a 16-plane memory form = d_nxln / 2 = fd_wdwidth * 16 WORDs (:919-923,933-938), fd_w and fd_h unread; NewTOS limits only to the fd_h rows of the form (V26)
+setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_span_px	mapped	the fd_h rows of a chunky memory form, row d_nxln / 2 = fd_wdwidth * fd_nplanes WORDs (:919-923,933-938; V28), fd_w and fd_h unread by EmuTOS; NewTOS limits only to the fd_h rows of the form (V26)
+setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_stride_px	mapped	s_nxln / 2 = d_nxln / 2 = fd_wdwidth * fd_nplanes WORDs, the row of a chunky memory form of 9..16 planes (:922-923,937-938; V28)
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	chunky_hull	mapped	the pixels a block can touch, first to last, clipped to the fd_h rows; what bind_block binds (V26)
 setup_pattern	vdi/vdi_raster.c	-	-	design:source:docs/api/vdi/raster/_raster.md	fills p_nxpl/p_nxln/p_mask only; cpy_raster has set p_addr = NULL (:1345), so no blit reads them and PAT_FLAG is a strip (D-082); NewTOS strips it in vro_cpyfm (op = INTIN[0] & 0x0F) and has nothing to set up (V19)
 vdi_vr_trnfm	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vr_trnfm	mapped	opcode 110, planar and truecolor branches
@@ -1415,7 +1419,8 @@ vdi_vrt_cpyfm	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vrt_cpyfm	mapped	opcode
 vr_trnfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vr_trnfm16	mapped	-
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	screen_to_mem	mapped	screen to memory, 16-bit words
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_screen	mapped	memory to screen, 16-bit words
-vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_mem	mapped	memory to memory, 16-bit words; overlap direction rule is NewTOS' own
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_mem	mapped	memory to memory, 16-bit words, row fd_wdwidth * fd_nplanes WORDs; walk backwards (last row, last pixel first) iff the source start pointer lies below the destination start (:989-1002), as EmuTOS (V28)
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	chunky_reverse	mapped	the direction test src < dst on the two start pointers form + y * width + x (:986-995; V28)
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	raster_op	mapped	the 16 logic ops on the pixel word
 vro_cpyfm16	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	copy_rect	mapped	screen to screen
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	row_cols	mapped	the columns of one row inside the form: start y * d_nxln / 2 (:986-990), any column, wrapping into other rows (V26)
@@ -1431,8 +1436,9 @@ adjust_mono_values	vdi/vdi_col.c	-	-	design:hardware:video-shifter	ST/STE monoch
 adjust_tt_colnum	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter palette bank handling; the Pi has no TT shifter
 fivebits2vdi	vdi/vdi_col.c	tos-api/src/vdi/vwk.rs	fivebits2vdi	mapped	5-bit gun back to 0..1000
 get_tt_hyper_mono	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter hyper-mono palette entries; the Pi has no TT shifter
-init_colors	vdi/vdi_col.c	kernel/src/vdi_backend.rs	ensure_palette_init	mapped	device default palette (REQ_COL and active palette) seeded from the VIDEL palettes; the ST/TT palettes and the MAP_COL table are not built (MAP_COL folded to identity)
+init_colors	vdi/vdi_col.c	kernel/src/vdi_backend.rs	ensure_palette_init	mapped	device default palette (REQ_COL and active palette) seeded from the VIDEL palettes; the ST/TT palettes are not built, MAP_COL is folded to identity for the palette (its table only in raster.rs map_col, V28)
 init_colors	vdi/vdi_col.c	tos-api/src/vdi/workstation.rs	init_wk	mapped	per-workstation req_col and pseudo-palette seeded for pens 0..254 (EmuTOS does this in vdi_control.c init_wk, not in init_colors)
+init_colors	vdi/vdi_col.c	tos-api/src/vdi/raster.rs	map_col	mapped	the MAP_COL table (:736-742, EXTENDED_PALETTE): the planar vrt_cpyfm writes the hardware register bits (cpy_raster :1390-1395; V28)
 query_tt_color	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter register read-back; the Pi has no TT shifter
 set_color	vdi/vdi_col.c	kernel/src/vdi_backend.rs	set_color	mapped	palette write of the device (non-truecolor path of vdi_vs_color); no VIDEL/TT/ST register write exists; truecolor vs_color never reaches it
 set_color16	vdi/vdi_col.c	tos-api/src/vdi/vwk.rs	set_color16	mapped	pseudo-palette entry; MAP_COL folded to identity
