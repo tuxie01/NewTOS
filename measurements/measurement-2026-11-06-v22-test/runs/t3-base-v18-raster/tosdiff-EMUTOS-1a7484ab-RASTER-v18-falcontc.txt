@@ -1,0 +1,7 @@
+EMUTOS-1a7484ab-RASTER-v18-falcontc.BIN vs NEWTOS.BIN -- area VDI-RASTER, 17 cases from vdi-v18-raster.tsv
+
+0 of 17 cases differ
+address check, EMUTOS-1a7484ab-RASTER-v18-falcontc.BIN: format 3, pointer 4 bytes, most significant word first; 68 address cells checked, 0 not < 0x80000000
+address check, NEWTOS.BIN: format 3, pointer 8 bytes, least significant word first; 68 address cells checked, 0 not < 0x80000000
+kept check, EMUTOS-1a7484ab-RASTER-v18-falcontc.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 34 cells checked, 0 changed by the call
+kept check, NEWTOS.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 34 cells checked, 0 changed by the call

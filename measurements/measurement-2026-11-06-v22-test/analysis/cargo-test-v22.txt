@@ -1,0 +1,25 @@
+17 | use crate::harness::{check, Call, Case};
+   |                             ^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `tos-api` (test "vdi_reference") generated 1 warning (run `cargo fix --test "vdi_reference" -p tos-api` to apply 1 suggestion)
+    Finished `test` profile [optimized + debuginfo] target(s) in 2.19s
+     Running tests/vdi_reference.rs (target/debug/deps/vdi_reference-35da0c20316b4ab6)
+
+running 12 tests
+test cases_v22::v22_case_0051_fillarea_one_point_draws_the_point ... ok
+test cases_v22::v22_fillarea_over_max_vertices_closes_the_first_1024_cleanly ... ok
+test cases_v22::v22_fillarea_zero_points_draws_nothing ... ok
+test cases_v22::v22_probe_k4a_one_point_perimeter_on ... ok
+test cases_v22::v22_probe_k4b_two_points_perimeter_on ... ok
+test cases_v22::v22_probe_k4c_two_points_perimeter_off_fills_a_dotted_stroke ... ok
+test cases_v22::v22_probe_k4d_two_points_vertical_perimeter_off ... ok
+test cases_v22::v22_probe_k4e_two_points_xor_perimeter_on ... ok
+test cases_v22::v22_probe_k4f_one_point_perimeter_off_draws_nothing ... ok
+test cases_v22::v22_case_0053_fillarea_two_points_draws_the_stroke ... ok
+test cases_v22::v22_probe_k4g_two_points_horizontal_perimeter_on ... ok
+test cases_v22::v22_probe_k4h_three_points_control ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 183 filtered out; finished in 0.08s
+
