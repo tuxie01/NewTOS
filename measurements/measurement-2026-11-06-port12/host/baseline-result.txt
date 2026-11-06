@@ -1,0 +1,10 @@
+== A: upstream ASSIGN.SYS unchanged, no fonts in hostfs/C/FONTS (the .SPD are gitignored upstream)
+cc test_vdi rc=0
+cc test_dev rc=0
+test_vdi rc=0
+test_dev rc=0
+== B: fonts from upstream GEMSYS copied to hostfs/C/FONTS, every FONT*.SPD enabled (no +/- lines: enable all)
+cc test_vdi rc=0
+cc test_dev rc=0
+test_vdi rc=0
+test_dev rc=0

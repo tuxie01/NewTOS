@@ -1,0 +1,23 @@
+XGTVDI.OUT: identical to the Mac after removing the CRs of text-mode stdout
+XGTDEV.OUT: identical to the Mac after removing the CRs of text-mode stdout
+OUTSCR.PGM: NewTOS == Mac (signed char)
+OUTMEM.PGM: NewTOS == Mac (signed char)
+PRN0001.PDF: NewTOS == Mac (signed char)
+PRN0002.PDF: NewTOS == Mac (signed char)
+PRN0003.PDF: NewTOS == Mac (signed char)
+TEST.GEM: NewTOS == Mac (signed char)
+GEMFILE.GEM: NewTOS == Mac (signed char)
+OUTSCR.PGM: NewTOS == Mac (unsigned char)
+OUTMEM.PGM: NewTOS == Mac (unsigned char)
+PRN0001.PDF: NewTOS == Mac (unsigned char)
+PRN0002.PDF: NewTOS == Mac (unsigned char)
+PRN0003.PDF: NewTOS == Mac (unsigned char)
+TEST.GEM: NewTOS == Mac (unsigned char)
+GEMFILE.GEM: NewTOS == Mac (unsigned char)
+884612a0967e18eb8533cb9bb9b84bf2994276d0374be7f9dcc325601765778b  OUTSCR.PGM
+53b0d9e6403d13aa38fb8db40b574535d1323e3ac8b30d8f11e2d1bccf662012  OUTMEM.PGM
+0a48c4aad45c3782bbc50ca10508824113a3d7e8a66c9927918e2fbf9200458f  PRN0001.PDF
+6d336b16ff60edf508729ac6570b644fa1d923cd3ebdb3adab8a1685b62b7cab  PRN0002.PDF
+a610c3f2b17667deb99f07636ca9057ce12782ede7ea081d3986bca4db5e17b0  PRN0003.PDF
+97f43cc6ca7638c590e934c2edd7d9685100995dd733127c3ba575bd43120c67  GEMFILE.GEM
+4a87de1051031a8dbb26fb5abfc2da585ea3d159fbf45d3862be41899f8af161  TEST.GEM

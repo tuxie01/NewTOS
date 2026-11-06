@@ -1,0 +1,286 @@
+=== spd
+rc 0
+=== raster
+rc 0
+=== text
+text.c:295:26: warning: implicit conversion loses integer precision: 'long' to 'int' [-Wshorten-64-to-32]
+text.c:346:30: warning: implicit conversion loses integer precision: 'long' to 'int' [-Wshorten-64-to-32]
+rc 0
+=== fontmgr
+rc 0
+=== gcache
+rc 0
+=== heap
+rc 0
+=== pdf
+rc 0
+=== soft
+rc 0
+=== charmap
+rc 0
+=== sysfont
+rc 0
+=== fnt
+rc 0
+=== meta
+rc 0
+=== xfix
+rc 0
+=== sintab
+rc 0
+=== xstd
+rc 0
+=== config
+rc 0
+=== vdi
+rc 0
+=== mem
+rc 0
+=== lock
+rc 0
+=== main
+tos.h:32:80: warning: cast to 'void *' from smaller integer type 's32' (aka 'int') [-Wint-to-void-pointer-cast]
+tos.h:58:108: warning: cast to 'void *' from smaller integer type 's32' (aka 'int') [-Wint-to-void-pointer-cast]
+rc 0
+=== xos_tos
+tos.h:32:80: warning: cast to 'void *' from smaller integer type 's32' (aka 'int') [-Wint-to-void-pointer-cast]
+tos.h:58:108: warning: cast to 'void *' from smaller integer type 's32' (aka 'int') [-Wint-to-void-pointer-cast]
+rc 0
+=== drv
+tos.h:32:80: warning: cast to 'void *' from smaller integer type 's32' (aka 'int') [-Wint-to-void-pointer-cast]
+tos.h:58:108: warning: cast to 'void *' from smaller integer type 's32' (aka 'int') [-Wint-to-void-pointer-cast]
+rc 0
+=== atari.S
+atari.S:31:5: error: unknown directive
+atari.S:37:9: error: invalid type suffix for instruction
+atari.S:38:5: error: unrecognized instruction mnemonic, did you mean: b, neg?
+atari.S:39:16: error: only 'lsl #+N' valid after immediate
+atari.S:40:5: error: unrecognized instruction mnemonic, did you mean: b?
+atari.S:41:15: error: only 'lsl #+N' valid after immediate
+atari.S:42:5: error: unrecognized instruction mnemonic, did you mean: b?
+atari.S:44:27: error: unknown token in expression
+atari.S:44:25: error: invalid operand
+atari.S:45:5: error: unrecognized instruction mnemonic, did you mean: mrs, ret, tst?
+atari.S:48:9: error: invalid type suffix for instruction
+atari.S:49:5: error: unrecognized instruction mnemonic, did you mean: b, neg?
+atari.S:50:24: error: unknown token in expression
+atari.S:50:24: error: invalid operand
+atari.S:51:5: error: unrecognized instruction mnemonic, did you mean: ret, rev?
+atari.S:54:13: error: unknown token in expression
+atari.S:54:13: error: invalid operand
+atari.S:55:12: error: unknown token in expression
+atari.S:55:12: error: invalid operand
+atari.S:56:5: error: unrecognized instruction mnemonic, did you mean: asr, lsr, msr, sri, str?
+atari.S:57:15: error: unknown token in expression
+atari.S:57:15: error: invalid operand
+atari.S:58:11: error: unknown token in expression
+atari.S:58:11: error: invalid operand
+atari.S:59:5: error: unrecognized instruction mnemonic, did you mean: b, neg?
+atari.S:60:14: error: unknown token in expression
+atari.S:60:13: error: invalid operand
+atari.S:61:16: error: unknown token in expression
+atari.S:61:16: error: invalid operand
+atari.S:62:27: error: unknown token in expression
+atari.S:62:25: error: invalid operand
+atari.S:63:5: error: unrecognized instruction mnemonic, did you mean: mrs, ret, tst?
+atari.S:66:12: error: unknown token in expression
+atari.S:66:12: error: invalid operand
+atari.S:67:13: error: unknown token in expression
+atari.S:67:12: error: invalid operand
+atari.S:68:22: error: unknown token in expression
+atari.S:68:22: error: invalid operand
+atari.S:69:22: error: unknown token in expression
+atari.S:69:22: error: invalid operand
+atari.S:70:14: error: unknown token in expression
+atari.S:70:14: error: invalid operand
+atari.S:72:11: error: unknown token in expression
+atari.S:72:11: error: invalid operand
+atari.S:73:5: error: unrecognized instruction mnemonic, did you mean: b?
+atari.S:74:10: error: unexpected token in argument list
+atari.S:75:5: error: unrecognized instruction mnemonic, did you mean: b?
+atari.S:76:15: error: unknown token in expression
+atari.S:76:15: error: invalid operand
+atari.S:77:5: error: unrecognized instruction mnemonic, did you mean: b, blr, br, brk?
+atari.S:80:12: error: unknown token in expression
+atari.S:80:12: error: invalid operand
+atari.S:81:5: error: unrecognized instruction mnemonic, did you mean: asr, lsr, msr, sri, str?
+atari.S:82:15: error: unknown token in expression
+atari.S:82:15: error: invalid operand
+atari.S:83:5: error: unrecognized instruction mnemonic, did you mean: b, blr, br, brk?
+atari.S:86:12: error: unknown token in expression
+atari.S:86:12: error: invalid operand
+atari.S:87:11: error: unknown token in expression
+atari.S:87:11: error: invalid operand
+atari.S:88:11: error: unknown token in expression
+atari.S:88:11: error: invalid operand
+atari.S:89:21: error: unknown token in expression
+atari.S:89:21: error: invalid operand
+atari.S:90:13: error: unexpected token in argument list
+atari.S:91:12: error: unknown token in expression
+atari.S:91:12: error: invalid operand
+atari.S:92:12: error: unknown token in expression
+atari.S:92:12: error: invalid operand
+atari.S:93:12: error: unknown token in expression
+atari.S:93:12: error: invalid operand
+atari.S:94:5: error: unrecognized instruction mnemonic, did you mean: asr, lsr, msr, sri, str?
+atari.S:95:15: error: unknown token in expression
+atari.S:95:15: error: invalid operand
+atari.S:96:13: error: unknown token in expression
+atari.S:96:12: error: invalid operand
+atari.S:97:13: error: unknown token in expression
+atari.S:97:12: error: invalid operand
+atari.S:98:12: error: unknown token in expression
+atari.S:98:12: error: invalid operand
+atari.S:99:22: error: unknown token in expression
+atari.S:99:22: error: invalid operand
+atari.S:100:12: error: unexpected token in argument list
+atari.S:102:14: error: unknown token in expression
+atari.S:102:13: error: invalid operand
+atari.S:103:16: error: unknown token in expression
+atari.S:103:16: error: invalid operand
+atari.S:104:5: error: unrecognized instruction mnemonic, did you mean: ret, rev?
+atari.S:114:5: error: unknown directive
+atari.S:120:13: error: unexpected token in argument list
+atari.S:121:13: error: unknown token in expression
+atari.S:121:13: error: invalid operand
+atari.S:122:16: error: unknown token in expression
+atari.S:122:16: error: invalid operand
+atari.S:123:9: error: invalid type suffix for instruction
+atari.S:124:5: error: unrecognized instruction mnemonic, did you mean: b?
+atari.S:125:22: error: unknown token in expression
+atari.S:125:20: error: invalid operand
+atari.S:126:16: error: unexpected token in argument list
+atari.S:127:12: error: unknown token in expression
+atari.S:127:12: error: invalid operand
+atari.S:128:27: error: unknown token in expression
+atari.S:128:25: error: invalid operand
+atari.S:129:5: error: unrecognized instruction mnemonic, did you mean: mrs, ret, tst?
+atari.S:131:14: error: unknown token in expression
+atari.S:131:13: error: invalid operand
+atari.S:132:5: error: unrecognized instruction mnemonic, did you mean: mrs, ret, tst?
+atari.S:137:13: error: unexpected token in argument list
+atari.S:138:13: error: unexpected token in argument list
+atari.S:139:13: error: unknown token in expression
+atari.S:139:13: error: invalid operand
+atari.S:140:16: error: unknown token in expression
+atari.S:140:16: error: invalid operand
+atari.S:141:10: error: unknown token in expression
+atari.S:141:9: error: invalid operand
+atari.S:142:14: error: unknown token in expression
+atari.S:142:13: error: invalid operand
+atari.S:143:5: error: unrecognized instruction mnemonic, did you mean: mrs, ret, tst?
+atari.S:151:5: error: unknown directive
+atari.S:159:5: error: unrecognized instruction mnemonic, did you mean: blr, clrex, cls, clz, ldr, lsr?
+atari.S:160:5: error: unrecognized instruction mnemonic, did you mean: fmov, mov, movi, movk, movn, movz, smov, umov?
+atari.S:161:5: error: unrecognized instruction mnemonic, did you mean: fmov, mov, movi, movk, movn, movz, smov, umov?
+atari.S:162:10: error: unknown token in expression
+atari.S:162:9: error: invalid operand
+rc 1
+=== traps.S
+traps.S:21:13: error: unexpected token in argument list
+traps.S:22:13: error: unexpected token in argument list
+traps.S:23:13: error: unknown token in expression
+traps.S:23:13: error: invalid operand
+traps.S:24:12: error: unknown token in expression
+traps.S:24:12: error: invalid operand
+traps.S:25:11: error: unknown token in expression
+traps.S:25:11: error: invalid operand
+traps.S:26:12: error: unknown token in expression
+traps.S:26:12: error: invalid operand
+traps.S:27:14: error: unknown token in expression
+traps.S:27:14: error: invalid operand
+traps.S:28:5: error: unrecognized instruction mnemonic, did you mean: b, blr, br, brk?
+traps.S:29:12: error: unknown token in expression
+traps.S:29:11: error: invalid operand
+traps.S:30:9: error: unknown token in expression
+traps.S:30:9: error: invalid operand
+traps.S:31:5: error: unrecognized instruction mnemonic
+traps.S:32:12: error: unknown token in expression
+traps.S:32:12: error: invalid operand
+traps.S:33:14: error: unknown token in expression
+traps.S:33:13: error: invalid operand
+traps.S:34:5: error: unrecognized instruction mnemonic, did you mean: mrs, ret, tst?
+traps.S:38:13: error: unexpected token in argument list
+traps.S:39:13: error: unexpected token in argument list
+traps.S:40:13: error: unknown token in expression
+traps.S:40:13: error: invalid operand
+traps.S:41:12: error: unknown token in expression
+traps.S:41:12: error: invalid operand
+traps.S:42:11: error: unknown token in expression
+traps.S:42:11: error: invalid operand
+traps.S:43:12: error: unknown token in expression
+traps.S:43:12: error: invalid operand
+traps.S:44:14: error: unknown token in expression
+traps.S:44:14: error: invalid operand
+traps.S:45:5: error: unrecognized instruction mnemonic, did you mean: b, blr, br, brk?
+traps.S:46:12: error: unknown token in expression
+traps.S:46:11: error: invalid operand
+traps.S:47:9: error: unknown token in expression
+traps.S:47:9: error: invalid operand
+traps.S:48:5: error: unrecognized instruction mnemonic
+traps.S:49:12: error: unknown token in expression
+traps.S:49:12: error: invalid operand
+traps.S:50:14: error: unknown token in expression
+traps.S:50:13: error: invalid operand
+traps.S:51:5: error: unrecognized instruction mnemonic, did you mean: mrs, ret, tst?
+traps.S:55:13: error: unexpected token in argument list
+traps.S:56:13: error: unexpected token in argument list
+traps.S:57:13: error: unknown token in expression
+traps.S:57:13: error: invalid operand
+traps.S:58:12: error: unknown token in expression
+traps.S:58:12: error: invalid operand
+traps.S:59:11: error: unknown token in expression
+traps.S:59:11: error: invalid operand
+traps.S:60:12: error: unknown token in expression
+traps.S:60:12: error: invalid operand
+traps.S:61:14: error: unknown token in expression
+traps.S:61:14: error: invalid operand
+traps.S:62:5: error: unrecognized instruction mnemonic, did you mean: b, blr, br, brk?
+traps.S:63:12: error: unknown token in expression
+traps.S:63:11: error: invalid operand
+traps.S:64:9: error: unknown token in expression
+traps.S:64:9: error: invalid operand
+traps.S:65:5: error: unrecognized instruction mnemonic
+traps.S:66:12: error: unknown token in expression
+traps.S:66:12: error: invalid operand
+traps.S:67:14: error: unknown token in expression
+traps.S:67:13: error: invalid operand
+traps.S:68:5: error: unrecognized instruction mnemonic, did you mean: mrs, ret, tst?
+traps.S:73:13: error: unknown token in expression
+traps.S:73:13: error: invalid operand
+traps.S:74:15: error: unknown token in expression
+traps.S:74:15: error: invalid operand
+traps.S:75:5: error: unrecognized instruction mnemonic
+traps.S:76:14: error: unknown token in expression
+traps.S:76:13: error: invalid operand
+traps.S:77:5: error: unrecognized instruction mnemonic, did you mean: mrs, ret, tst?
+traps.S:82:13: error: unexpected token in argument list
+traps.S:83:13: error: unknown token in expression
+traps.S:83:13: error: invalid operand
+traps.S:84:16: error: unknown token in expression
+traps.S:84:16: error: invalid operand
+traps.S:85:5: error: unrecognized instruction mnemonic
+traps.S:86:14: error: unknown token in expression
+traps.S:86:13: error: invalid operand
+traps.S:87:5: error: unrecognized instruction mnemonic, did you mean: mrs, ret, tst?
+traps.S:91:13: error: unexpected token in argument list
+traps.S:92:13: error: unknown token in expression
+traps.S:92:13: error: invalid operand
+traps.S:93:17: error: unknown token in expression
+traps.S:93:17: error: invalid operand
+traps.S:94:5: error: unrecognized instruction mnemonic
+traps.S:95:14: error: unknown token in expression
+traps.S:95:13: error: invalid operand
+traps.S:96:5: error: unrecognized instruction mnemonic, did you mean: mrs, ret, tst?
+rc 1
+=== crt0.S
+crt0.S:13:13: error: unexpected token in argument list
+crt0.S:14:24: error: unknown token in expression
+crt0.S:14:24: error: invalid operand
+crt0.S:15:12: error: unknown token in expression
+crt0.S:15:12: error: invalid operand
+crt0.S:16:5: error: unrecognized instruction mnemonic, did you mean: asr, lsr, msr, sri, str?
+crt0.S:17:13: error: unknown token in expression
+crt0.S:17:11: error: invalid operand
+crt0.S:18:5: error: unrecognized instruction mnemonic
+rc 1

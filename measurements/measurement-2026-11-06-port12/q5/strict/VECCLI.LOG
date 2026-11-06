@@ -1,0 +1,9 @@
+Setexc(34,-1) -> 0x1a3c2f8; page-0 cell $88 = 0x1a3c2f8
+Ssystem(S_GETCOOKIE,XGTS) -> 0 value 0x1a586f8
+read shared struct magic 0x58475453
+read TSR Malloc block: 'priv'
+wrote TSR Malloc block: 'Priv'
+read TSR Mxalloc(global) block: 'glob'
+wrote TSR Mxalloc(global) block: 'Glob'
+TSR counter before call: 0
+called TSR code at 0x1a3c2f8 -> 0x1234, TSR counter now 1

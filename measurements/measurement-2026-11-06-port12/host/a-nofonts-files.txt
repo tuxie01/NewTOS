@@ -1,0 +1,8 @@
+host/hostfs/C/ASSIGN.SYS
+host/hostfs/C/FONTS/.keep
+host/hostfs/C/GEMFILE.GEM
+host/hostfs/C/PRINTS/.keep
+host/hostfs/C/PRINTS/PRN0001.PDF
+host/hostfs/C/PRINTS/PRN0002.PDF
+host/hostfs/C/PRINTS/PRN0003.PDF
+host/hostfs/C/TEST.GEM

@@ -1,0 +1,5 @@
+base 0x1a3b000 lowtpa 0x1a3b000 hitpa 0x39800000 tbase 0x1a3c000 bbase 0x1a586e0 blen 0x1530
+tsr_fn 0x1a3c2f8 &tsr_count 0x1a58720 priv 0x1a6c000 glob 0x1a6e000 sp ~0x1a69be8
+Setexc(34,tsr_fn) -> 0x7e040 (query before: 0x7e040), now 0x1a3c2f8
+Ssystem(S_SETCOOKIE,XGTS,0x1a586f8) -> 0
+Ptermres(0x1ec10,0)

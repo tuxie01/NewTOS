@@ -1,0 +1,31 @@
+heap 192 KB, cache 48 KB, scratch 24 KB
+fontpath=C:\FONTS pdfpath=C:\PRINTS dpi=600 nspd=2 ndev=12
+fonts: 2
+AES vst_height -> cell 8x16 (from ROM)
+AES vst_load_fonts -> 0
+AES system font text reached the ROM: 1 call(s)
+phys 1 virt 2
+vst_load_fonts -> 0 additional
+vqt_name(1) -> "System Font"
+  vqt_name 1: id 1 'System Font' outline=0
+vst_font -> 1
+  vst_point 8 -> 8 cw 8 ch 13 cellw 8 cellh 16
+  vst_point 10 -> 10 cw 8 ch 13 cellw 8 cellh 16
+  vst_point 12 -> 12 cw 8 ch 13 cellw 8 cellh 16
+  vst_point 14 -> 14 cw 8 ch 13 cellw 8 cellh 16
+  vst_point 18 -> 18 cw 8 ch 13 cellw 8 cellh 16
+  vst_point 24 -> 24 cw 8 ch 13 cellw 8 cellh 16
+  vst_point 36 -> 36 cw 8 ch 13 cellw 8 cellh 16
+  vqt_extent: 8,13 8,16 0,0 0,0
+  vst_kern pairs=0
+huge '@' at 900pt: 0 pixels drawn
+v_getoutline 'H' 144pt: 144 points, y 0..0, flags[0]=0, overrun no
+v_getoutline max 10: 144 points, overrun no
+printer handle 200: 4960x7015 px, pixel 42x42 um, colours 256
+  printer fonts +0
+printer handle 200: 4960x7015 px, pixel 42x42 um, colours 256
+  printer fonts +0
+printer opened and closed without output: 0 new PDF files (expect 0)
+printer vq_extnd(0): 4960x7015 px, pixel 42x42 um
+banded print job done (4960x7015), expect 2 pages
+heap free 158176 largest 158176

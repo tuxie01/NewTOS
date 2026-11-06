@@ -1,0 +1,17 @@
+size 640x480, compared y<455: set pixels Mac 30508, NewTOS 30508, differing 0, first None
+NewTOS colours: {'ffffff': 275123, '000000': 32077}
+size 640x480, compared y<480: set pixels Mac 30508, NewTOS 32077, differing 1569, first (6, 459)
+NewTOS colours: {'ffffff': 275123, '000000': 32077}
+two screendumps 2 s apart identical
+XGSCR.LOG: NewTOS == Mac (CR removed? file written binary, tr no-op)
+PRN0001.PDF: NewTOS == Mac
+Mac stack: stack used by the whole driver, screen and PDF: 4856 bytes
+aba2fad9739e7a1ee4bc17f281d6349b89e66b739aa1112732a5ef17941642bd a.ppm
+318f82826ca03bd08e72b75ece5ae03904d339932932db7a476c756967a94cd0 PRN0001.PDF
+e7eac158900f998aa1cf00a1cab72d026e6da1160319d2025242d671ea9e5021  XGSCR.PGM
+Pages:           2
+Page size:       595.276 x 841.89 pts (A4)
+PDF version:     1.4
+page   num  type   width height color comp bpc  enc interp  object ID x-ppi y-ppi size ratio
+--------------------------------------------------------------------------------------------
+   1     0 image      32    32  gray    1   1  image  no        76  0   600   600  159B 124%

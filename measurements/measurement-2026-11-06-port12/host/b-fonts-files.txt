@@ -1,0 +1,16 @@
+host/hostfs/C/ASSIGN.SYS
+host/hostfs/C/FONTS/.keep
+host/hostfs/C/FONTS/FONT0419.SPD
+host/hostfs/C/FONTS/FONT0582.SPD
+host/hostfs/C/FONTS/FONT0583.SPD
+host/hostfs/C/FONTS/FONT0611.SPD
+host/hostfs/C/FONTS/FONT0648.SPD
+host/hostfs/C/FONTS/FONT0649.SPD
+host/hostfs/C/FONTS/FONT0709.SPD
+host/hostfs/C/FONTS/FONT0710.SPD
+host/hostfs/C/GEMFILE.GEM
+host/hostfs/C/PRINTS/.keep
+host/hostfs/C/PRINTS/PRN0001.PDF
+host/hostfs/C/PRINTS/PRN0002.PDF
+host/hostfs/C/PRINTS/PRN0003.PDF
+host/hostfs/C/TEST.GEM

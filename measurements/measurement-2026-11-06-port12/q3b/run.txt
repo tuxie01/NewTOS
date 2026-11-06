@@ -1,0 +1,6 @@
+kernel 15409dee53d2394eb1351a335e29421f44ba66dfb925f929489c7cc5c829dfba
+nap 17d6e2b2c7210a30ccd718f03213a71a2d77abf5722a5f57ca5fb34676ac3a74
+append serial=on
+ready yes
+qemu done
+card after run sha256 837d62d93c1f9864a6da366057541c2fa142a158f1c9cbaddd38646a8f46eeb1

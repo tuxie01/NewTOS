@@ -1,0 +1,8 @@
+san_vdi rc=0
+san_dev rc=0
+   2 SUMMARY: UndefinedBehaviorSanitizer: undefined-behavior src/heap.c:72:69 
+   2 src/heap.c:72:69: runtime error: member access within null pointer of type 'Blk' (aka 'struct Blk')
+   1 SUMMARY: UndefinedBehaviorSanitizer: undefined-behavior src/xstd.c:14:34 
+   1 SUMMARY: UndefinedBehaviorSanitizer: undefined-behavior src/xstd.c:14:26 
+   1 src/xstd.c:14:34: runtime error: load of misaligned address 0x? for type 'const u32' (aka 'const unsigned int'), which requires 4 byte alignment
+   1 src/xstd.c:14:26: runtime error: store to misaligned address 0x? for type 'u32' (aka 'unsigned int'), which requires 4 byte alignment

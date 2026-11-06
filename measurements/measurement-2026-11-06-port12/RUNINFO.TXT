@@ -1,0 +1,120 @@
+PORT12 stage 1 -- XGDOS feasibility without kernel work. TASK/PORT12.md, receipt TASK/PORT12-1-STATUS-DONE.MD.
+Date 2026-11-06. Base 446dd196 on main. No change to kernel, tos-api, tos-types; no card, no hardware, no push.
+Upstream: github.com/FrankBRetro/xgdos f6c5aeb7ba20604a868dc96cc1a6954b1a7d6d8b, cloned to references/xgdos (gitignored, pin in references/README.md), never modified.
+Every build and run used a scratch copy. Makefile and tests were read before anything ran; the Makefile itself was not run, its compile lines are in method/host-baseline.sh.
+
+KERNEL   cargo xtask build --board rpi4 --release on 446dd196, kernel8.img sha256 15409dee53d2394eb1351a335e29421f44ba66dfb925f929489c7cc5c829dfba. Boot: QEMU raspi4b, 640x480, -append serial=on.
+host_clang   Apple clang version 21.0.0 (clang-2100.4.1.1) -- line of all five manifests q3a/, q3b/, q5/{on,strict,off}/card.img.manifest
+optional_missing, verbatim, all five manifests:   optional_missing none
+Images: tools/mkcard.sh, one base per run, APFS clone per boot, all deleted; image_sha256 in each manifest. "card after run sha256" in q3a/run.txt and q3b/run.txt (q5 cards were not hashed after the run).
+Labels below: MEASURED = run here. READ = source only, not run. ESTIMATE = neither.
+
+DIRECTORIES
+ method/      all scripts and test programs. xgscr*.c = library driver; vecp/vectsr/veccli.c = Q5 probe; assign-fonts.sys = upstream's host ASSIGN.SYS with the eight free fonts in fixed order.
+ sdk/overlays/xgdos/  lp64-wire.patch and xos_newtos.c (patches as files, upstream unchanged)
+ host/ Q1   q2/ Q2   q3a/ upstream tests on NewTOS   q3b/ patched library + real VDI + PDF   q5/ vector and rights probe, memprot on/strict/off
+ Not kept: PPM screendumps and PGM files (sha256 in the compare.txt files), card images.
+
+Q1 MEASURED  Upstream host tests on the Mac (arm64, LP64): method/host-baseline.sh, host/.
+ - Builds, both tests rc 0, in both font set-ups. Nothing breaks in this form, because -DXG_HOST routes pointers through a table of 32-bit tokens (src/vdi.h:70-73, host/hostvdi.c:74-82).
+   So the host build proves the arithmetic on LP64 and hides the pointer wire: that is why Q3b needed a patch Q1 did not.
+ - Fresh clone: host/hostfs/C/ASSIGN.SYS names BX000043/44.SPD, not in the repo (.gitignore: "commercial ones must not be committed"). Result "fonts: 2", vst_load_fonts 0, and still rc 0. (a-nofonts-*)
+ - With the GEMSYS fonts: fonts 8, screen, 3 PDFs (pdfinfo: 1.4, 2 pages each), TEST.GEM. Pixels and PDF looked at: Speedo text correct. (b-fonts-*, b-out_screen.png, b-prn0001-1.png)
+ - test_vdi.c has no asserts: exits 0 whatever it printed, and ids[] is uninitialised without fonts. test_dev.c has CHECKs: "all device tests passed". host/test_cfg.c, test_render.c are not in the Makefile, not run.
+ - ASan+UBSan with fonts (q2/sanitizers.txt): no ASan report. UBSan: src/heap.c:72 member access on a null pointer (offsetof by hand), src/xstd.c:14 misaligned u32 load/store. Upstream faults, not LP64 faults.
+
+Q2 MEASURED  Sources through newtos-cc, unpatched: q2/sdk-compile.txt.
+ - 0 errors in all .c files: the task's list (spd raster text fontmgr gcache heap pdf soft charmap sysfont fnt meta) and xfix sintab xstd config vdi mem lock main xos_tos drv.
+ - 8 warnings, by cause: text.c:295,346 ptrdiff to int in gc_get(m->f - xg_font, ...), harmless, index below 96. tos.h:32,58 (s32) to void * in Fgetdta and Setexc, once per file including tos.h (main, xos_tos, drv): the real LP64 fault of the m68k binding.
+ - atari.S, traps.S, crt0.S: rc 1, m68k assembly, as expected. They need replacing, not fixing.
+ - No warning is not safety: pointer truncation is written as a double cast ((s32)(unsigned long)p) that no warning sees. The real list is Q4.
+ - The upstream host tests link with the SDK, source unchanged (XG_HOST, its fake VDI, its xos_host.c on mintlib stdio/dirent/fnmatch): XGTVDI.NCP, XGTDEV.NCP, no error.
+
+Q3 MEASURED
+ a) Upstream tests on NewTOS (q3a/, method/run-nt-host.sh), from C:\AUTO, unchanged source, fake VDI, no kernel VDI involved. Only the two PGM names mapped to 8.3 (N1 below). Compared with the same tests on the Mac and the same ASSIGN.SYS (q3a/compare.txt):
+    stdout identical after the CRs of text-mode stdout; OUTSCR.PGM, OUTMEM.PGM, PRN0001-3.PDF, TEST.GEM, GEMFILE.GEM byte-identical.
+    AArch64 char is unsigned, Mac char signed: the Mac build with -funsigned-char gives the same files, so char signedness has no effect here.
+ b) Patched library + real VDI (q3b/, method/run-xgscr.sh): XGSCR.NAP via #Z. Loads eight Speedo fonts from C:\FONTS, draws through xg_vdi; XGDOS's own vrt_cpyfm goes through svc #2 into the kernel VDI.
+    q3b/newtos-screen.png looked at: Speedo text in 6 sizes with umlauts, italic, bold, underline, outline, light, Courier, rotated 90 and 45, replace background, clipping, kerning off/on, a memory form; system font line passed through to the VDI.
+    Same driver and patch on the Mac against a fake framebuffer (method/xgscr_fake.c, device values as NewTOS answers: 640x480, 278 um, 256 colours; form read as native WORDs like tos-api/src/vdi/raster.rs:302@read_unaligned):
+      y < 455: set pixels Mac 30508 = NewTOS 30508, differing 0. Below that only the pass-through system font line, which the fake does not draw. XGSCR.LOG identical. Two screendumps 2 s apart identical. (q3b/compare.txt)
+    PDF written to C:\PRINTS\PRN0001.PDF on the card: byte-identical with the Mac (sha256 318f8282...), pdfinfo 1.4, 2 pages A4, q3b/newtos-pdf-1.png looked at; embedded image bits checked against the source pattern (rows 0,1,2,31).
+    Stack: 4848 bytes on NewTOS, 4856 on the Mac for the whole driver (paint and scan, XGSCR.STK), against upstream's SLOT_STACK 8192. This path only, no upper bound: no image bands, no largest font.
+    A workstation first seen at vst_load_fonts (lazy_wk, with a NULL PTSIN toward the kernel) works: "lazy workstation: vst_load_fonts -> 8, tracked 1".
+    Failures on the way: first run on the real VDI scrambled the glyphs in 8-pixel columns, cause LE1 below, fixed by the patch. Mac stack overflow in memset, X1 below. The fake lacked VDI answers at first (harness error; restored from upstream hostvdi.c).
+    NOT exercised: .FNT chain (no font file), memory and metafile device under the patch (q3a only with XG_HOST), multi-plane images, external drivers, AES, a second process, Speedo speed.
+
+Q4 READ, measurements named  LP64 list. Upstream src/, line numbers at f6c5aeb7. P = in lp64-wire.patch and run. C = in the patch, compiled, not driven. O = open for stage 3.
+ Pointers and LONGs in VDI word arrays (docs/COMPATIBILITY.md; LP64: pointer 4 WORDs, CONTRL pointer n at 7+4n; LONG low word first):
+  C vdi.h:67-68 GETLONG/SETLONG high word first; NewTOS' wire is low word first in place (sdk/gemlib/overlay/gem_vdiP.h:180-222). Hits vst_arbpt32, vst_setsize32, vqt_cachesize, v_getbitmap_info and more.
+  P vdi.h:75-76 GETPTR/SETPTR via u32: truncates, 2 WORDs.
+  P vdi.c:162-163 scr_blit MFDB at CONTRL[7],[9] (LP64 [7..10],[11..14]).  P pdf.c:964-965.  C pdf.c:1264, soft.c:844,1157.
+  C vdi.c:289 vst_load_fonts chain to LP64 [12..15] (and U2).  C vdi.c:610-613 v_getoutline second pointer INTIN[4], count 6 (LP64 INTIN[6], count 10).
+  O vdi.c:234 vqt_xfntinfo: pointer position right, but vdi.c:250-251 write x+4, x+10 for XFNT_INFO in the 68k layout; `long size` is 8 bytes under LP64 in gemlib's struct. Struct to be checked field by field.
+  C vdi.c:454 vqt_get_table, vdi.c:588 vqt_fontheader, vdi.c:637 v_getbitmap_info: width right through P, not driven.
+  O mem.c:133 memory device returns bits in CONTRL[0..1]: 8 bytes would overwrite CONTRL[0..3], opcode and counts. A wire decision, no precedent in EmuTOS or the SDK.
+ Byte order of forms (little-endian, not LP64, same class; the Mac host hides it, its test swaps its own input, host/test_vdi.c:175):
+  P LE1 vdi.c scr_blit: the rasteriser writes MSB-first bytes (raster.h:30, text.c:153); NewTOS reads a form as native WORDs (tos-api/src/vdi/raster.rs:302@read_unaligned). Measured: scrambled, fixed by swapping around the blit. Cost one pass over each strip; not measured.
+  P pdf.c:983,995 one-plane application image read as bytes.  O pdf.c:1019 multi-plane the same.  O soft.c:837-838 form() and soft_cpyfm, mem.c surface as bytes, vdi.c:637 glyph bits handed to the application as bytes.
+ Structures with a wire or file layout:
+  O fnt.c:27-67 .FNT loader writes the 68k form big-endian (ww16, ww32 at 66,68,72,76,84, relocated pointers as u32). V33 D3 wants native order with hor_table 72, off_table 80, dat_table 88, form_width/height 96/98, next_font 104, sizeof 120 (docs/api/vdi/attributes/_text.md:166). File header 88 bytes, target 120: a new header, not a patch in place. Rewrite. Not exercised.
+  O tos.h:17-28 BASEPAGE of native pointers against the SDK's struct of 32-bit fields (sdk/libc/overlay/include/mint/basepage.h:35); read in main.c:160-162, drv.c:28.
+  O tos.h:30-59 packed m68k argument blocks, traps.S. Replaced in xos_newtos.c for what stage 1 uses.
+  P xos_tos.c:31 DTA size read big-endian; xos_newtos.c reads the native field.
+  O main.c:60-81 add_cookie_s: *(s32 **)0x5a0 is an 8-byte read across _p_cookies and ramtop on LP64 (docs/sdk/05-abi-pitfalls.md B2), jar_space with 32-bit cells, private page 0 anyway. xos_tos.c:103-113 cookie_get by peeks. Replace with Ssystem/Getcookie, measured working in q5.
+  ok VDIPB 5 native pointers and MFDB native = gemlib and kernel (sizes logged: 40, 24). xgapi.h XgApi: native, only for callers of the same ABI.
+ 4 GiB assumptions under ADR-028 (every user address a positive 32-bit LONG, TOS_MD_MAX_END 0x7FFF_F000; measured addresses 0x10xxxxx..0x1axxxxx, hitpa 0x39800000):
+  safe by that invariant: vdi.c:27-34 xg_prun u32; main.c:207,216 cookie values u32; main.c:43-50 find_prun_s (values measured right, q5 VECP.LOG line 5: os_run cell 0x5B8 holds the process's own PD); xos_tos.c:88-92 peek_addr.
+  host only: hostvdi.c token table, 4096 entries.
+ Other:
+  P X1 xstd.c:150-155 defines memcpy/memset/memmove with s32 sizes outside XG_HOST: would replace libc's on NewTOS. Mac build without -fno-builtin: clang turns xmemset's loop into a memset call, stack overflow, measured. Upstream's Makefile guards the same trap for gcc only.
+  O heap.c:8-13 Blk header 16 bytes instead of 8; XFont 400, Wk 224, Glyph 48 bytes (XGSCR.LOG). The 192 KB heap kept 49008 largest free after the screen part, 8 fonts, one in use; upstream's sizing advice is for m68k.
+  ok xstd.c:11-16 u32 access at even addresses works at EL0 on normal memory (every run). char signedness (Q3a). No float found.
+
+Q5 q5/{on,strict,off}, probe method/vecp.c, vectsr.c, veccli.c. Logs VECP.LOG, VECTSR.LOG, VECCLI.LOG, serial.
+ Vector 34 MEASURED: Setexc(34,h) stores the low 32 bits in the shared cell and in every page 0 ($88 reads h), logs "[hook] warning ... NewTOS never calls it" once per process, returns the old value (JUST_RTS stub 0x7e040). After VDI (115), vq_gdos (-2) and AES (200): handler called 0 times. After Ptermres the value stays, a sibling reads it; the resident code is still not called by any trap. As ADR-031 says (table row "trap and CPU vectors via Setexc"); tos-api/src/bios/vectors.rs:118@setexc.
+   Trap answers: -2 returns -2, so XGDOS's own test main.c:154 would pass; -1 returns 0.
+ Ptermres MEASURED: a resident program keeps text, data, bss, its Malloc block and its Mxalloc(global) block; Pexec returns 0.
+ Rights per process MEASURED, all three modes (default, memprot=strict, memprot=off): a later sibling and the parent read and write the resident program's data, its Malloc block and its global block, and EXECUTE its code, no fault (VECCLI.LOG "called TSR code ... 0x1234"). Rule READ: resident private memory becomes PROT_G (tos-api/src/bdos/process/memprot.rs:47@PROT_G). Both ways rely on this.
+   NOT measured: a block XGDOS allocates AFTER it is resident, while running in a caller's process: it belongs to that caller (READ). Upstream avoids that by carving everything from its TPA (main.c:160-188); xos_alloc for the memory device is meant that way.
+ Cookie jar MEASURED: Ssystem(S_SETCOOKIE) 0, visible to siblings through S_GETCOOKIE. 'MiNT' and 'XGDS' absent. A direct $5A0 write as in main.c:75 only reaches the writer's page 0 (READ).
+ Super/Supexec MEASURED: Supexec works and reads OSHEADER and os_run. It runs at EL0; super state grants page-0 write and nothing else (docs/api/_super-state.md S2, READ). XGDOS uses Supexec only for page-0 access and no Super (READ). No privilege is missing.
+ Line-A READ: not used by XGDOS (soft.c:6, sysfont.h:6 say so; only a stale comment at soft.h:58). NewTOS has none (docs/COMPATIBILITY.md "No Line-A"). No gap.
+ MiNT calls MEASURED: Syield -32, Pgetpid -32, Pkill -32. XGDOS calls them only behind the 'MiNT' cookie (xos_tos.c:84-86, READ), so they do not run, and lock.c then has no yield. Whether NewTOS can switch process inside a GEMDOS file call while XGDOS holds its lock: not measured. If yes, a contended lock spins for ever.
+ Stack pool READ: atari.S:65-103 runs each call on a pool stack, for MiNT re-entrancy and small callers. Needs an AArch64 entry stub or goes away. Measured need 4.8 KB (Q3b). Open: is the caller's stack always enough; accessories.
+ To replace for stage 3 READ: atari.S, traps.S, crt0.S (m68k, 277 lines), install part of main.c, xos_tos.c, drv.c (external .SYS are m68k: no use; device numbers answer "not open").
+
+ The two ways of the ticket, no decision here:
+  A  Kernel forwards VDI (x0=115) and vq_gdos (x0=-2) to a registered EL0 handler.
+     + catches every svc #2 caller without relink: also Rust NEWDESK (programs/newtos-gem/src/vdi.rs), later an m68k thunk.
+     + same trap contract as TOS: a real vector 34 in spirit.
+     - kernel code and a new contract: registration, an upcall from the GEM arm (kernel/src/arch/aarch64/exceptions.rs:564@GEM_SEL_ADDR_QUERY region; deliver_upcall exists for G_USERDEF, kbdvec, Supexec), return path, a pass-through that does not recurse, Pterm during the handler, selftests; ADR-031 table amendment.
+     - per VDI call while XGDOS is resident: an upcall and back, see costs. Rust NEWDESK would run through XGDOS too. The AES' own text does not: it calls the VDI inside the kernel.
+  B  gemlib overlay: vdi(), vq_gdos, vq_vgdos ask a cached cookie 'XGDS' and call the resident entry directly.
+     + no kernel change, vq_gdos stays -2 for everybody else, a plain function call, NEWDESK and AES untouched. The rights already suffice (measured above).
+     - only relinked gemlib programs (needed anyway since V33 for vst_load_fonts). Direct svc #2 callers and later m68k programs stay without GDOS.
+     - gemlib stub calls GPL-2.0-only code through a pointer: see Q6.
+  Both run XGDOS in the caller's process at EL0: GEMDOS handles, Malloc owners and faults are the caller's. A fault in XGDOS ends the caller, not the system. Both turn on `_FSM` for QED, cflib, TeraDesk, HighWire at once (ticket); MODE = NOGDOS in ASSIGN.SYS (main.c:211) is the way to stage that.
+  Call costs, QEMU TCG, 200 Hz clock, one boot each (ticks of 5 ms; on/strict/off), no Pi figures; TCG overstates TLB work:
+    20000 Supexec(noop)           303/306/294 = 73-77 us each. Stand-in for way A's upcall; also switches the super-state page-0 rights, so upper bound.
+    200000 VDI vqt_attributes     131/131/114 = 2.9-3.3 us each
+    200000 Sversion               70/73/56 = 1.4-1.8 us each
+  ESTIMATE, not measured: txbench on way A without GDOS. One load and branch in the GEM arm per VDI call. txbench v_gtext costs 113-116 ticks per 2000 calls (measurements/measurement-2026-11-06-v33-test/RUNINFO.TXT item 8), about 290 us per call in QEMU; the added instructions stay under 0.1 us even in TCG, so under 0.05 %, far below the tick and the host noise (113..170). Should not be measurable; to be shown by txbench before and after. Way B without GDOS: no kernel change, so nothing to measure in the kernel; gemlib gains one branch per VDI call.
+
+Q6 READ (wording, no legal advice), one measurement named
+ LICENSE: GPL version 2 text. README "version 2". Every source file carries SPDX GPL-2.0-only (grep over src/, host/*.c, cfg/, Makefile: none missing); no "or later".
+ NewTOS' root LICENSE is the GPL v2 text; the ticket calls the kernel GPLv2+. A separate program beside it raises nothing. Way A: a separate program reached through a trap. Way B: applications call it through a pointer, with a stub in gemlib only; whether such an application counts as combined with GPL-2.0-only XGDOS is the open question, relevant for applications not under a GPL-2-compatible licence and for GPLv3-only code. Linking the modules into an application (the shape of these tests) makes it a GPL-2-only combination. For the user, not decided here.
+ GEMSYS/COPYING.TXT, Bitstream 1989-1991, verbatim: "permission under all Bitstream propriety rights to use, copy, modify, sublicense, sell, and redistribute the Bitstream Speedo software and the Bitstream Charter and Courier outline fonts for any purpose and without restrictions; provided, that this notice is left intact on all copies of such software or font and that Bitstream's trademark is acknowledged as shown below on all unmodified copies of such font." + "BITSTREAM CHARTER is a registered trademark of Bitstream Inc."
+   So the eight fonts may ship, on a card and in a release, if COPYING.TXT goes with them and the trademark line stands. BX fonts of the host ASSIGN.SYS: not in the repo, not ours to ship.
+ sysfont.c: the EmuTOS 6x6, 8x8, 8x16 fonts, GPL-2 or later per the file's own head and README.md. MEASURED: tools/mksysfont.py on references/emutos (1a7484ab) reproduces src/sysfont.c byte for byte, so the origin holds. GPL-2+ into a GPL-2.0-only program is what "or any later" allows. The notice stands in sysfont.c. No open question from it.
+ Delivery: binaries need source (GPL v2 section 3): a release names or ships upstream commit and patches. XGDOS.PRG etc. in the upstream repo are m68k, of no use to us.
+
+UPSTREAM FAULTS, named, not worked around silently
+ U1 GEMSYS/README.TXT says the fonts "are not covered by XGDOS's MIT licence", LICENSE and all SPDX lines say GPL-2.0-only. Only the author can settle it; worth asking before a release.
+ U2 vdi.c:289 and README: .FNT chain passed in CONTRL[7..8], "the classic way". EmuTOS reads scratch at [7..8], offset [9], chain at [10..11] (references/emutos/vdi/vdi_text.c:1314-1317) and dereferences the chain unchecked. READ, not run on Hatari. As written it would fail on EmuTOS.
+ U3 host/test_vdi.c no asserts, rc 0 with no font; host-test on a fresh clone says little (Q1).
+ U4 README: "Not yet run on an Atari or in Hatari" for atari.S, traps.S and the resident install. The resident form has no field record, and the ticket's fallback reference (XGDOS itself on Hatari) is unproven.
+ U5 heap.c:72, xstd.c:14 undefined behaviour (Q1). X1 memset recursion in a non-XG_HOST clang build (Q4).
+
+SIDE FINDINGS on NewTOS, reported, not fixed
+ N1 MEASURED q5 VECP.LOG line 15: Fcreate("C:\OUT_SCREEN.PGM") = -34 EPTHNF; tos-api/src/bdos/fs/dir.rs:148@fcb_name refuses more than 8.3. EmuTOS' builds() truncates to 8.3 (references/emutos/bdos/fsdir.c:737-790), READ, not measured on the oracle. Upstream's test wrote nothing and went on, mintlib's fprintf and fclose survive a NULL FILE. Candidate ticket; measure on the oracle first.

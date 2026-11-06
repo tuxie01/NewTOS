@@ -17,6 +17,7 @@ references/
 ├── README.md                 # this file (committed)
 ├── emutos/                   # EmuTOS upstream checkout (Track A primary)
 ├── freemint/                 # FreeMiNT checkout (Track A secondary)
+├── xgdos/                    # XGDOS, upstream of TASK/PORT12 (not a TOS reference)
 ├── datasheets/               # BCM2711 ARM Peripherals datasheet (PDF)
 ├── sd-spec/                  # SD Simplified Specifications (PDF, see below)
 │   └── archive/              #   superseded editions kept for old citations
@@ -103,6 +104,15 @@ Cite FreeMiNT in spec entries / doc-comments as:
 ```
 FreeMiNT @ f906416 — sys/ssystem.c:s_system(), sys/cookie.c:get_cookie()
 ```
+
+---
+
+## XGDOS (TASK/PORT12)
+
+- **Location:** `references/xgdos/` (a clone of https://github.com/FrankBRetro/xgdos).
+- **Pin:** commit **`f6c5aeb7`** (cloned 2026-11-06), GPL-2.0-only.
+- **Role:** upstream of a port candidate, not a TOS reference. Read-only here: builds
+  work on a copy, patches live in `sdk/overlays/xgdos/`.
 
 ---
 

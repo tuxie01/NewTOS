@@ -1,0 +1,15 @@
+1 Setexc(34,-1) -> 0x7e040  (JUST_RTS stub expected); vq_gdos trap -2 -> -2, trap -1 -> 0
+2 handler at 0x1a086d8: Setexc(34,h) -> 0x7e040, query 0x1a086d8, page-0 $88 0x1a086d8
+3 after VDI (svc #2, 115), vq_gdos (-2), AES (200): handler called 0 times
+4 Setexc(34,old) -> 0x1a086d8, query 0x7e040
+5 Supexec -> 7; $4F2 hdr 0x5c0 os_beg 0x5c0 os_version 0x404 os_run cell 0x5b8 holds 0x1a07000; _base 0x1a07000
+6 cookie MiNT -> -1, XGDS -> -1; Sversion 0x3000; Syield -32; Pgetpid -32; Pkill(self,0) -32; Super(1) 0
+7 Pexec VECTSR -> 0; Setexc(34,-1) -> 0x1a3c2f8
+8 Pexec VECCLI -> 0 (0xFFFF = fault)
+9 cookie XGTS -> 0 value 0x1a586f8
+10 parent: TSR counter 1
+11 parent called TSR code -> 0x1234; after VDI and vq_gdos with the resident vector 34: counter 2
+12 20000 Supexec(noop), EL0 upcall and back: 303 ticks of 5 ms
+13 200000 VDI vqt_attributes via svc #2: 131 ticks of 5 ms
+14 200000 Sversion (plain GEMDOS trap): 70 ticks of 5 ms
+15 Fcreate(C:\OUT_SCREEN.PGM) -> -34

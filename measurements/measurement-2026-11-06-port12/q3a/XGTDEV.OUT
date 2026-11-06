@@ -1,0 +1,16 @@
+fonts: 8
+memory device: handle 450, 640x400, 2 colours, pixel 372x372 um, raster returned
+  vst_load_fonts: 8 outline fonts
+  system 8pt cell 6x6
+  system 10pt cell 8x16
+  system 16pt cell 12x12 (6x6 doubled)
+  system 30pt -> 20 pt, cell 16x32
+  vst_height 8 -> cell 12x12
+  30582 pixels set
+metafile device: handle 400, 32767x32767, pixel 85 um
+  vst_point 12 -> cell 30x51
+  header: version 101, coords 2, extents 1000,2000-30000,25000, page 2100x2970
+  6 items: 5 17 6 11 107 8
+heap free 84600 largest 62320
+all device tests passed
+rc=0

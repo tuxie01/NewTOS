@@ -1,0 +1,203 @@
+PORT12 stage 1: the LP64/little-endian patch of the XGDOS portable modules as far as stage 1 needed it.
+Upstream github.com/FrankBRetro/xgdos f6c5aeb7 stays unchanged; apply to a copy, from its root: patch -p0 < lp64-wire.patch.
+Build with -DXG_WIRE64. Feasibility only, not complete: measurements/measurement-2026-11-06-port12/RUNINFO.TXT lists what is missing.
+--- src/vdi.h
++++ src/vdi.h
+@@ -64,6 +64,21 @@
+ } MFDB;
+ 
+ /* 32 bit values in VDI word arrays (high word first) */
++#ifdef XG_WIRE64
++/* NewTOS LP64 wire (docs/COMPATIBILITY.md): a LONG in a WORD array is low word
++ * first in place; a pointer takes 4 WORDs, native order; pointer n of CONTRL
++ * sits at 7 + n * 4. PORT12 stage 1, feasibility only. */
++#define XG_PW            4
++#define XG_CP(n)         (7 + (n) * XG_PW)
++#define GETLONG(a, i)    ((s32)(((u32)(u16)(a)[(i) + 1] << 16) | (u16)(a)[i]))
++#define SETLONG(a, i, v) do { s32 _v = (s32)(v); (a)[i] = (s16)_v; (a)[(i) + 1] = (s16)(_v >> 16); } while (0)
++#define GETPTR(a, i)     ((void *)(((unsigned long)(u16)(a)[i]) | ((unsigned long)(u16)(a)[(i) + 1] << 16) | \
++                                   ((unsigned long)(u16)(a)[(i) + 2] << 32) | ((unsigned long)(u16)(a)[(i) + 3] << 48)))
++#define SETPTR(a, i, p)  do { unsigned long _p = (unsigned long)(p); (a)[i] = (s16)_p; (a)[(i) + 1] = (s16)(_p >> 16); \
++                              (a)[(i) + 2] = (s16)(_p >> 32); (a)[(i) + 3] = (s16)(_p >> 48); } while (0)
++#else
++#define XG_PW            2
++#define XG_CP(n)         (7 + (n) * XG_PW)
+ #define GETLONG(a, i)    ((s32)(((u32)(u16)(a)[i] << 16) | (u16)(a)[(i) + 1]))
+ #define SETLONG(a, i, v) do { s32 _v = (s32)(v); (a)[i] = (s16)(_v >> 16); (a)[(i) + 1] = (s16)_v; } while (0)
+ #ifdef XG_HOST   /* 64 bit host tests: pointers go through a handle table */
+@@ -75,6 +90,7 @@
+ #define GETPTR(a, i)     ((void *)(unsigned long)(u32)GETLONG(a, i))
+ #define SETPTR(a, i, p)  SETLONG(a, i, (s32)(unsigned long)(p))
+ #endif
++#endif
+ 
+ /* vdi.c entry point, called by the trap #2 handler for d0 = 115 */
+ void xg_vdi(VDIPB *pb);
+--- src/vdi.c
++++ src/vdi.c
+@@ -133,6 +133,17 @@
+ 
+ /* ---------------- screen output of rendered text ---------------- */
+ 
++#ifdef XG_WIRE64
++/* The rasteriser writes an MSB-first byte stream, a 68k MFDB's bytes. NewTOS reads a
++ * form as native WORDs (little-endian): swap each word around the blit. */
++static void swap_words(const u8 *bits, s32 n)
++{
++    u8 *p = (u8 *)bits, t;
++    s32 i;
++    for (i = 0; i + 1 < n; i += 2) { t = p[i]; p[i] = p[i + 1]; p[i + 1] = t; }
++}
++#endif
++
+ static void scr_blit(Wk *w, const u8 *bits, int rb, int x, int y, int bw, int bh, int opaque)
+ {
+     s16 contrl[16], intin[4], ptsin[8], intout[4], ptsout[4];
+@@ -159,9 +170,15 @@
+     ptsin[4] = (s16)x; ptsin[5] = (s16)y; ptsin[6] = (s16)(x + bw - 1); ptsin[7] = (s16)(y + bh - 1);
+     xmemset(contrl, 0, sizeof contrl);
+     contrl[0] = 121; contrl[1] = 4; contrl[3] = 3; contrl[6] = w->handle;
+-    SETPTR(contrl, 7, &src);
+-    SETPTR(contrl, 9, &dst);
++    SETPTR(contrl, XG_CP(0), &src);
++    SETPTR(contrl, XG_CP(1), &dst);
++#ifdef XG_WIRE64
++    swap_words(bits, (s32)rb * bh);
++#endif
+     rom2(contrl, intin, ptsin, intout, ptsout);
++#ifdef XG_WIRE64
++    swap_words(bits, (s32)rb * bh);
++#endif
+ }
+ 
+ /* ---------------- shared text attribute and query handling ---------------- */
+@@ -286,7 +303,11 @@
+         if (rom && !w->fonts_loaded) {
+             void *ch = fnt_chain(w->dev);
+             if (ch) {
++#ifdef XG_WIRE64
++                SETPTR(CONTRL, 12, ch);     /* LP64 chain cell (V33 D1) */
++#else
+                 SETPTR(CONTRL, 7, ch);
++#endif
+                 rom_vdi(pb);
+                 add = INTOUT[0];
+                 w->rom_nfonts = (s16)(w->rom_nfonts + add);
+@@ -608,9 +629,9 @@
+          * intin[2-3] xyarray, intin[4-5] bezarray (char) */
+         o.max = INTIN[1];
+         o.xy = (s16 *)GETPTR(INTIN, 2);
+-        o.fl = (u8 *)GETPTR(INTIN, 4);
++        o.fl = (u8 *)GETPTR(INTIN, 2 + XG_PW);
+         o.n = 0;
+-        if (CONTRL[3] < 6 || o.max <= 0) o.xy = NULL;
++        if (CONTRL[3] < 2 + 2 * XG_PW || o.max <= 0) o.xy = NULL;
+         if (ok && o.xy && o.fl && (idx = fm_glyph(m.f, INTIN[0], w->t.charmap)) >= 0) {
+             xmemset(&xf, 0, sizeof xf);
+             xf.sx = m.sx; xf.sy = m.sy; xf.skew = m.skew;
+--- src/pdf.c
++++ src/pdf.c
+@@ -956,13 +956,21 @@
+     pc(d, "q ");
+     clip(w);
+     pn(d, wd); pc(d, "0 0 "); pn(d, -ht); pn(d, x); pn(d, y + ht); pc(d, "cm /I"); pn(d, k); pc(d, "Do Q\n");
++}
++
++#ifdef XG_WIRE64
++static void swap_row(u8 *d, const u8 *s, s32 n)
++{
++    s32 i;
++    for (i = 0; i + 1 < n; i += 2) { d[i] = s[i + 1]; d[i + 1] = s[i]; }
+ }
++#endif
+ 
+ static void cpyfm(Wk *w, VDIPB *pb, int transparent)
+ {
+     PdfDoc *d = w->pdf;
+-    MFDB *src = (MFDB *)GETPTR(CONTRL, 7);
+-    MFDB *dst = (MFDB *)GETPTR(CONTRL, 9);
++    MFDB *src = (MFDB *)GETPTR(CONTRL, XG_CP(0));
++    MFDB *dst = (MFDB *)GETPTR(CONTRL, XG_CP(1));
+     s16 *p = PTSIN;
+     s32 sx0, sy0, wd, ht, r, x, k, srb, plane;
+     int planes, mode;
+@@ -975,12 +983,19 @@
+     if (planes == 1) {
+         s32 rb = (wd + 7) >> 3;
+         u8 *row = (u8 *)p_alloc(rb);
++#ifdef XG_WIRE64
++        /* an application's form is native WORDs on NewTOS: one row as MSB-first bytes */
++        u8 *srow = (u8 *)p_alloc(srb);
++#define XG_SROW(sp) (swap_row(srow, (sp), srb), (const u8 *)srow)
++#else
++#define XG_SROW(sp) (sp)
++#endif
+         if (!row) return;
+         mode = transparent ? 0 : 1;
+         if (transparent) {          /* nothing to paint: skip blank bands */
+             int any = 0;
+             for (r = 0; r < ht && !any; r++) {
+-                const u8 *s = (const u8 *)src->fd_addr + (sy0 + r) * srb;
++                const u8 *s = XG_SROW((const u8 *)src->fd_addr + (sy0 + r) * srb);
+                 for (x = 0; x < rb; x++) {
+                     u8 v = txt_get8(s, (int)srb, (int)(sx0 + x * 8));
+                     if (x == rb - 1 && (wd & 7)) v &= (u8)(0xff << (8 - (wd & 7)));
+@@ -992,7 +1007,7 @@
+         k = image_begin(d, (int)wd, (int)ht, mode);
+         if (k < 0) { heap_free(row); return; }
+         for (r = 0; r < ht; r++) {
+-            const u8 *s = (const u8 *)src->fd_addr + (sy0 + r) * srb;
++            const u8 *s = XG_SROW((const u8 *)src->fd_addr + (sy0 + r) * srb);
+             for (x = 0; x < rb; x++) row[x] = txt_get8(s, (int)srb, (int)(sx0 + x * 8));
+             if (wd & 7) row[rb - 1] &= (u8)(0xff << (8 - (wd & 7)));
+             if (!transparent && INTIN[0] == 12) for (x = 0; x < rb; x++) row[x] = (u8)~row[x];  /* NOT_S */
+@@ -1000,6 +1015,9 @@
+         }
+         image_end(d);
+         heap_free(row);
++#ifdef XG_WIRE64
++        heap_free(srow);
++#endif
+         if (transparent) {
+             pc(d, "q "); colour(d, INTIN[1], 0, 0);
+             pn(d, wd); pc(d, "0 0 "); pn(d, -ht); pn(d, p[4]); pn(d, p[5] + ht); pc(d, "cm /I"); pn(d, k); pc(d, "Do Q\n");
+@@ -1261,7 +1279,7 @@
+         cpyfm(w, pb, 1);
+         return;
+     case 110: { /* vr_trnfm: device format == standard format here */
+-        MFDB *s = (MFDB *)GETPTR(CONTRL, 7), *t = (MFDB *)GETPTR(CONTRL, 9);
++        MFDB *s = (MFDB *)GETPTR(CONTRL, XG_CP(0)), *t = (MFDB *)GETPTR(CONTRL, XG_CP(1));
+         if (s && t && s->fd_addr && t->fd_addr && s != t)
+             xmemcpy(t->fd_addr, s->fd_addr, (s32)s->fd_wdwidth * 2 * s->fd_h * s->fd_nplanes);
+         if (t) t->fd_stand = (s16)!(s && s->fd_stand);
+--- src/soft.c
++++ src/soft.c
+@@ -841,7 +841,7 @@
+ 
+ void soft_cpyfm(SoftDev *d, VDIPB *pb, int transparent)
+ {
+-    MFDB *src = (MFDB *)GETPTR(CONTRL, 7), *dst = (MFDB *)GETPTR(CONTRL, 9);
++    MFDB *src = (MFDB *)GETPTR(CONTRL, XG_CP(0)), *dst = (MFDB *)GETPTR(CONTRL, XG_CP(1));
+     u8 *sb, *db;
+     s32 srb, drb;
+     int sw, shh, dw, dh, sp, dp, sx, sy, dx, dy, wd, ht, r, todev = !dst || !dst->fd_addr;
+@@ -1154,7 +1154,7 @@
+         soft_cpyfm(d, pb, 1);
+         return 1;
+     case 110: { /* vr_trnfm: one plane, standard == device format */
+-        MFDB *s = (MFDB *)GETPTR(CONTRL, 7), *t = (MFDB *)GETPTR(CONTRL, 9);
++        MFDB *s = (MFDB *)GETPTR(CONTRL, XG_CP(0)), *t = (MFDB *)GETPTR(CONTRL, XG_CP(1));
+         if (s && t && s->fd_addr && t->fd_addr && s->fd_addr != t->fd_addr)
+             xmemcpy(t->fd_addr, s->fd_addr, (s32)s->fd_wdwidth * 2 * s->fd_h * (s->fd_nplanes > 0 ? s->fd_nplanes : 1));
+         if (t) t->fd_stand = (s16)(s && s->fd_stand ? 0 : 1);
+--- src/xstd.c
++++ src/xstd.c
+@@ -147,7 +147,7 @@
+     return b ? b + 1 : p;
+ }
+ 
+-#ifndef XG_HOST
++#if !defined(XG_HOST) && !defined(XG_WIRE64)   /* NewTOS links libc: keep its 64 bit memcpy */
+ /* the compiler may emit calls to these for structure copies */
+ void *memcpy(void *d, const void *s, __SIZE_TYPE__ n) { return xmemcpy(d, s, (s32)n); }
+ void *memset(void *d, int c, __SIZE_TYPE__ n) { return xmemset(d, c, (s32)n); }

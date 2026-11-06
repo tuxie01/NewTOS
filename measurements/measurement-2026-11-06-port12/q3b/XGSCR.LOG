@@ -1,0 +1,28 @@
+assign 1 bytes
+sizeof void* 8 XFont 400 Glyph 48 Wk 224 MFDB 24 VDIPB 40
+fonts: 8
+v_opnvwk phys 1 -> 1: 640x480 pixel 278x278 um fonts 1 colours 256
+vst_load_fonts -> 8
+vqt_name 1: id 1 'System Font' outline=0
+vqt_name 2: id 5648 'Bitstream Charter' outline=1
+vqt_name 3: id 5649 'Bitstream Charter Italic' outline=1
+vqt_name 4: id 5709 'Bitstream Charter Black' outline=1
+vqt_name 5: id 5710 'Bitstream Charter Black Italic' outline=1
+vqt_name 6: id 5419 'Courier 10 Pitch' outline=1
+vqt_name 7: id 5582 'Courier 10 Pitch Italic' outline=1
+vqt_name 8: id 5583 'Courier 10 Pitch Bold' outline=1
+vqt_name 9: id 5611 'Courier 10 Pitch Bold Italic' outline=1
+vst_font -> 5648
+vst_point 8 -> 8 cw 18 ch 13 cellw 18 cellh 17
+vst_point 10 -> 10 cw 23 ch 17 cellw 23 cellh 22
+vst_point 12 -> 12 cw 27 ch 20 cellw 27 cellh 26
+vst_point 14 -> 14 cw 32 ch 23 cellw 32 cellh 30
+vst_point 18 -> 18 cw 41 ch 30 cellw 41 cellh 39
+vst_point 24 -> 24 cw 55 ch 40 cellw 55 cellh 52
+vqt_extent: 0,0 165,0 165,40 0,40
+vst_kern pairs=370
+heap free 73608 largest 49008
+printer handle 200: 4960x7015 px, pixel 42x42 um, colours 256
+printer fonts +8
+heap free 123032 largest 65496
+lazy workstation: vst_load_fonts -> 8, tracked 1

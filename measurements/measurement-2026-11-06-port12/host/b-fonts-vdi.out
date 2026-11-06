@@ -1,0 +1,40 @@
+heap 192 KB, cache 48 KB, scratch 24 KB
+fontpath=C:\FONTS pdfpath=C:\PRINTS dpi=600 nspd=0 ndev=12
+fonts: 8
+AES vst_height -> cell 8x16 (from ROM)
+AES vst_load_fonts -> 8
+AES system font text reached the ROM: 1 call(s)
+phys 1 virt 2
+vst_load_fonts -> 8 additional
+vqt_name(1) -> "System Font"
+  vqt_name 1: id 1 'System Font' outline=0
+  vqt_name 2: id 5709 'Bitstream Charter Black' outline=1
+  vqt_name 3: id 5419 'Courier 10 Pitch' outline=1
+  vqt_name 4: id 5582 'Courier 10 Pitch Italic' outline=1
+  vqt_name 5: id 5583 'Courier 10 Pitch Bold' outline=1
+  vqt_name 6: id 5611 'Courier 10 Pitch Bold Italic' outline=1
+  vqt_name 7: id 5710 'Bitstream Charter Black Italic' outline=1
+  vqt_name 8: id 5649 'Bitstream Charter Italic' outline=1
+  vqt_name 9: id 5648 'Bitstream Charter' outline=1
+vst_font -> 5709
+  vst_point 8 -> 8 cw 16 ch 10 cellw 16 cellh 13
+  vst_point 10 -> 10 cw 20 ch 12 cellw 20 cellh 16
+  vst_point 12 -> 12 cw 24 ch 15 cellw 24 cellh 20
+  vst_point 14 -> 14 cw 27 ch 18 cellw 27 cellh 24
+  vst_point 18 -> 18 cw 35 ch 23 cellw 35 cellh 30
+  vst_point 24 -> 24 cw 47 ch 30 cellw 47 cellh 40
+  vst_point 36 -> 36 cw 71 ch 45 cellw 71 cellh 59
+  vqt_extent: 0,0 165,0 165,40 0,40
+  vst_kern pairs=370
+huge '@' at 900pt: 37722 pixels drawn
+BICS glyph 129: font 38935 bytes -> 73994 bytes in memory (full=1)
+v_getoutline 'H' 144pt: 38 points, y -122..0, flags[0]=2, overrun no
+v_getoutline max 10: 10 points, overrun no
+printer handle 200: 4960x7015 px, pixel 42x42 um, colours 256
+  printer fonts +8
+printer handle 200: 4960x7015 px, pixel 42x42 um, colours 256
+  printer fonts +8
+printer opened and closed without output: 0 new PDF files (expect 0)
+printer vq_extnd(0): 4960x7015 px, pixel 42x42 um
+banded print job done (4960x7015), expect 2 pages
+heap free 46608 largest 24200
