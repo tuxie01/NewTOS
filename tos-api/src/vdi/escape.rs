@@ -167,6 +167,19 @@ struct Con<'a> {
     b: Option<&'a dyn RasterBackend>,
 }
 
+/// `font_set_default`'s console font for the screen `b` (`bios/font.c:72-88`:
+/// `(V_REZ_VT < 400) ? &fon8x8 : &fon8x16`): its `max_cell_width` ×
+/// `form_height` is the character cell (`v_cel_ht`), its rows the glyphs.
+fn con_font(b: &dyn RasterBackend) -> &'static font::SysFont {
+    font::font(font::font_set_default(b.height() as i16))
+}
+
+/// The console cell `(width, height)` in pixels on the screen `b`.
+fn cell(b: &dyn RasterBackend) -> (i16, i16) {
+    let f = con_font(b);
+    (f.max_cell_width, f.form_height)
+}
+
 impl Drop for Con<'_> {
     fn drop(&mut self) {
         BUSY.store(false, Ordering::Release);
@@ -197,9 +210,10 @@ fn con(b: Option<&dyn RasterBackend>) -> Con<'_> {
     let st = unsafe { &mut *ALPHA.0.get() };
     if let Some(b) = b {
         // `font_set_default` (`bios/font.c:72-88`): last column/row of the
-        // 8×16 cell grid.
-        st.mx = (b.width() as i16 / font::CELL_W - 1).max(0);
-        st.my = (b.height() as i16 / font::CELL_H - 1).max(0);
+        // cell grid of the console font for this screen height.
+        let (cw, ch) = cell(b);
+        st.mx = (b.width() as i16 / cw - 1).max(0);
+        st.my = (b.height() as i16 / ch - 1).max(0);
         st.cx = st.cx.min(st.mx);
         st.cy = st.cy.min(st.my);
     }
@@ -232,12 +246,8 @@ impl Con<'_> {
 
     fn flush_cells(&self, x0: i16, y0: i16, x1: i16, y1: i16) {
         if let Some(b) = self.b {
-            b.flush_rect(
-                x0 * font::CELL_W,
-                y0 * font::CELL_H,
-                (x1 + 1) * font::CELL_W - 1,
-                (y1 + 1) * font::CELL_H - 1,
-            );
+            let (cw, ch) = cell(b);
+            b.flush_rect(x0 * cw, y0 * ch, (x1 + 1) * cw - 1, (y1 + 1) * ch - 1);
         }
     }
 
@@ -250,8 +260,9 @@ impl Con<'_> {
         if self.st.stat & M_REVID != 0 {
             core::mem::swap(&mut fg, &mut bg);
         }
-        let glyph = font::glyph(ch as u16);
-        let (px, py) = (x * font::CELL_W, y * font::CELL_H);
+        let glyph = font::glyph_rows(con_font(b).id, ch as u16);
+        let (cw, chh) = cell(b);
+        let (px, py) = (x * cw, y * chh);
         for (row, &bits) in glyph.iter().enumerate() {
             let mut line = [bg; 8];
             for (i, w) in line.iter_mut().enumerate() {
@@ -268,8 +279,9 @@ impl Con<'_> {
     /// cell — the cursor. A second call restores the cell.
     fn neg_cell(&self, x: i16, y: i16) {
         let Some(b) = self.b else { return };
-        let (px, py) = (x * font::CELL_W, y * font::CELL_H);
-        for row in 0..font::CELL_H {
+        let (cw, ch) = cell(b);
+        let (px, py) = (x * cw, y * ch);
+        for row in 0..ch {
             let mut line = [0u16; 8];
             b.read_row_rgb565(px, py + row, &mut line);
             for w in line.iter_mut() {
@@ -290,8 +302,9 @@ impl Con<'_> {
         }
         let word = self.word(self.st.bg);
         let line = [word; 64];
-        let (px0, px1) = (x0 * font::CELL_W, (x1 + 1) * font::CELL_W);
-        for py in (y0 * font::CELL_H)..((y1 + 1) * font::CELL_H) {
+        let (cw, ch) = cell(b);
+        let (px0, px1) = (x0 * cw, (x1 + 1) * cw);
+        for py in (y0 * ch)..((y1 + 1) * ch) {
             let mut x = px0;
             while x < px1 {
                 let n = ((px1 - x) as usize).min(line.len());
@@ -308,13 +321,9 @@ impl Con<'_> {
         let (mx, my) = (self.st.mx, self.st.my);
         if let Some(b) = self.b {
             if top < my {
-                let src = Rect {
-                    x: 0,
-                    y: (top + 1) * font::CELL_H,
-                    w: (mx + 1) * font::CELL_W,
-                    h: (my - top) * font::CELL_H,
-                };
-                b.copy_rect(src, 0, top * font::CELL_H, 3, ClipRect::full(b.width(), b.height()));
+                let (cw, ch) = cell(b);
+                let src = Rect { x: 0, y: (top + 1) * ch, w: (mx + 1) * cw, h: (my - top) * ch };
+                b.copy_rect(src, 0, top * ch, 3, ClipRect::full(b.width(), b.height()));
             }
         }
         self.blank_out(0, my, mx, my);
@@ -326,13 +335,9 @@ impl Con<'_> {
         let (mx, my) = (self.st.mx, self.st.my);
         if let Some(b) = self.b {
             if start < my {
-                let src = Rect {
-                    x: 0,
-                    y: start * font::CELL_H,
-                    w: (mx + 1) * font::CELL_W,
-                    h: (my - start) * font::CELL_H,
-                };
-                b.copy_rect(src, 0, (start + 1) * font::CELL_H, 3, ClipRect::full(b.width(), b.height()));
+                let (cw, ch) = cell(b);
+                let src = Rect { x: 0, y: start * ch, w: (mx + 1) * cw, h: (my - start) * ch };
+                b.copy_rect(src, 0, (start + 1) * ch, 3, ClipRect::full(b.width(), b.height()));
             }
         }
         self.blank_out(0, start, mx, start);

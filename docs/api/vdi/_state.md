@@ -124,7 +124,7 @@ freely.
 | `fill_per` | `vsf_perimeter` (104) | 0 / 1 | **TRUE** (perimeter drawn) | — |
 | `ud_patrn[]` | `vsf_udpat` (112) | 16 or 16·planes WORDs | `ROM_UD_PATRN` (16 WORDs) | — |
 | `multifill` | `vsf_udpat` (112) | 0 / 1 | 0 | — |
-| `cur_font` | `vst_font` (21), `vst_height`/`vst_point` | loaded face | `def_font` (system font) | [`attributes/_text.md`](attributes/_text.md) |
+| `cur_font` | `vst_font` (21), `vst_height`/`vst_point` | loaded face | `def_font` (system font: 8×8 when `V_REZ_VT < 400`, else 8×16; `text_init`, `vdi_text.c:612`, [`workstation/01-v_opnwk.md`](workstation/01-v_opnwk.md)) | [`attributes/_text.md`](attributes/_text.md) |
 | `text_color` | `vst_color` (22) | `MAP_COL[…]` | `MAP_COL[INTIN[6]]` (open pen) | — |
 | `style` | `vst_effects` (106) | bits & `INQ_TAB[2]` (0x1F) | 0 (no effects) | — |
 | `h_align` / `v_align` | `vst_alignment` (39) | 0..2 / 0..5 | 0 / 0 (left / baseline) | — |

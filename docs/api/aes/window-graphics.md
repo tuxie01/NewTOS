@@ -1639,6 +1639,42 @@ EmuTOS's zeroed BSS global is. Two `gsx_init` steps are not VDI calls on
 own metrics (`gl_wchar`…`gl_hbox`, `gl_nplanes`) are derived from the same
 font ring and backend the VDI answers from, not read back through the trap.
 
+**The four metrics follow the screen height (V32).** `gsx_start` takes them
+from the AES workstation's current font right after the open
+(`gemgraf.c:405-415`):
+
+```c
+gsx_textsize(&gl_wptschar, &gl_hptschar, &gl_wchar, &gl_hchar); /* vqt_attributes ptsout[0..3] */
+gl_hbox = gl_hchar + 3;
+gl_wbox = (gl_hbox * gl_ws.ws_hpixel) / gl_ws.ws_wpixel;       /* DEV_TAB[4], DEV_TAB[3] */
+if (gl_wbox < gl_wchar + 4)
+    gl_wbox = gl_wchar + 4;
+```
+
+That font is the VDI's `def_font` — 8×8 under 400 lines, 8×16 from 400 up
+(`vdi/vdi_text.c:612`, `../vdi/workstation/01-v_opnwk.md` § Default font) —
+and the pixel size is `get_std_pixel_size` on the Falcon/TT profile
+(`bios/screen.c:872-876,895-901`: width 556 under 640 columns else 278, height
+556 under 400 lines else 278). Derived, not measured against the oracle yet
+(no pinned profile under 400 lines, `TASK/V32.md`):
+
+| screen | `gl_wchar` | `gl_hchar` | `gl_wbox` | `gl_hbox` |
+|---|---|---|---|---|
+| 640×480, 1920×1080 | 8 | 16 | 19 | 19 |
+| 640×240 | 8 | 8 | `11·556/278` = 22 | 11 |
+
+Every IBM string the AES draws (`gsx_tblt(IBM, …)`, `gemgraf.c:500-527`: the
+VDI text of that workstation) is in the same face, so an 8×8 screen gets 8×8
+glyphs in objects, menus, alerts and window frames. The SMALL font
+(`gl_wschar`/`gl_hschar`, `vst_height(ws_chminh)`, `:407`) is the 6×6 face on
+every screen (`ws_chminh` = `SIZ_TAB[1]` = 4 whatever the height).
+
+NewTOS: `graf::gl_font` is `vdi::font::text_init_def_font` of the AES screen's
+height (`RasterBackend::height`; with no raster backend, a host test without a
+screen, it is evaluated at `DEV_TAB_rom[1] + 1` = 400, the ROM template's
+height, `vdi_control.c:129-130`), `gl_wchar`/`gl_hchar` its `vqt_attributes` cell,
+`graf::gl_wbox` the formula above with `vdi::workstation::get_std_pixel_size`.
+
 ### `graf_mouse` (78) — set the mouse cursor
 
 **Source:** `gemsuper.c:294-303` → `gr_mouse` (`gemgrlib.c:419-455`). If the

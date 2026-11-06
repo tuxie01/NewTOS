@@ -1176,7 +1176,7 @@ fn centre_title(tree: *mut Object, objnum: i16) {
             while n < 255 && *p.add(n as usize) != 0 {
                 n += 1;
             }
-            n * crate::vdi::font::CELL_W
+            n * super::graf::gl_wchar()
         };
         ob.ob_x = (root_w - tw) / 2;
         ob.ob_width = tw;

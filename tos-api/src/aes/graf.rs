@@ -597,12 +597,13 @@ pub(super) fn gr_slidebox_rects(
 // `form_height` fits the screen — 16 lines from 400 rows up, 8 below
 // (`vdi_text.c:612`).
 //
-// NewTOS's AES opens no workstation of its own; it draws through the raster
-// backend with the VDI's system font, and the face a fresh workstation gets
-// is [`crate::vdi::font::DEFAULT`] (a constant — the `V_REZ_VT` choice is not
-// implemented). The three functions below are that face's `vqt_attributes`
-// answer and the `gl_hbox` rule on top of it: the **one** place the
-// menu-bar row / gadget box height comes from. `graf_handle` reports it
+// NewTOS's AES draws through the raster backend with the VDI's system font
+// rather than through VDI text calls, and the face a fresh workstation gets
+// is `text_init`'s choice for the screen height
+// ([`crate::vdi::font::text_init_def_font`], V32) — [`gl_font`] below. The
+// functions after it are that face's `vqt_attributes` answer, the `gl_hbox`
+// rule and the `gl_wbox` rule on top of it: the **one** place the menu-bar
+// row / gadget box size comes from. `graf_handle` reports it
 // (`gemsuper.c:288-291`), the window manager builds `gl_rfull` and the
 // gadget cells from it (`window::desktop_work`, `window::adj_hbox`), the
 // Menu Manager reserves the row with it (`menu::desk_top`) and the mouse
@@ -625,25 +626,67 @@ pub(super) fn gl_width() -> i16 {
         .unwrap_or(80 * gl_wchar())
 }
 
+/// The AES workstation's screen size `(ws_xres + 1, ws_yres + 1)` — the
+/// `DEV_TAB[0..1]` its `v_opnwk` reported (`gsx_wsopen`, `gemgsxif.c:169-186`),
+/// read from the raster backend the AES draws through (NewTOS' `V_REZ_HZ` /
+/// `V_REZ_VT`). Without a raster (a host test that installs none) the ROM
+/// template's 640×400 (`DEV_TAB_rom[0..1]` = 639, 399, `vdi_control.c:128-130`)
+/// stands in, the size EmuTOS' tables hold before the live geometry is patched
+/// in (`update_rez_dependent`, `:203-204`).
+fn ws_size() -> (i16, i16) {
+    crate::host::host()
+        .and_then(|h| h.raster())
+        .map(|r| (r.width() as i16, r.height() as i16))
+        .unwrap_or((crate::vdi::DEV_TAB_ROM[0] + 1, crate::vdi::DEV_TAB_ROM[1] + 1))
+}
+
+/// The AES's normal ("IBM") font — the AES workstation's current font right
+/// after `v_opnwk`, which `gsx_start` measures (`gemgraf.c:405`): the VDI's
+/// `def_font` for the screen height (`text_init`, `vdi_text.c:612`), 8×8
+/// under 400 lines, 8×16 from 400 up. Every IBM string the AES draws is in
+/// this face ([`draw_ibm_glyph`]).
+pub(super) fn gl_font() -> &'static crate::vdi::font::SysFont {
+    let (_, v_rez_vt) = ws_size();
+    crate::vdi::font::font(crate::vdi::font::text_init_def_font(v_rez_vt))
+}
+
 /// EmuTOS `gl_wchar` (`gemgraf.c:40`, set `:405`) — the system-font cell
-/// width, `vqt_attributes`' `ptsout[2]` for the VDI's default face.
+/// width, `vqt_attributes`' `ptsout[2]` (`max_cell_width`) for [`gl_font`].
 pub(super) fn gl_wchar() -> i16 {
-    crate::vdi::font::font(crate::vdi::font::DEFAULT).max_cell_width
+    gl_font().max_cell_width
 }
 
 /// EmuTOS `gl_hchar` (`gemgraf.c:41`, set `:405`) — the system-font cell
-/// height, `vqt_attributes`' `ptsout[3]` (`top + bottom + 1`) for the VDI's
-/// default face: 16 for the 8×16 font.
+/// height, `vqt_attributes`' `ptsout[3]` (`top + bottom + 1`) for
+/// [`gl_font`]: 16 for the 8×16 face, 8 for the 8×8 face.
 pub(super) fn gl_hchar() -> i16 {
-    let f = crate::vdi::font::font(crate::vdi::font::DEFAULT);
+    let f = gl_font();
     f.top + f.bottom + 1
+}
+
+/// One character of `gsx_tblt(IBM, …)` (`gemgraf.c:500-527`): the glyph of
+/// `c` in [`gl_font`] with its cell top at `(x, y)` — `gl_wchar` ×
+/// `gl_hchar` (= `form_height`) pixels — in `fg` and the writing mode
+/// `mode` the caller's `gsx_attr` set.
+pub(super) fn draw_ibm_glyph(
+    backend: &dyn crate::vdi::backend::RasterBackend,
+    x: i16,
+    y: i16,
+    c: u16,
+    fg: crate::vdi::backend::Pel,
+    mode: crate::vdi::backend::WriteMode,
+    clip: crate::vdi::backend::ClipRect,
+) {
+    let f = gl_font();
+    let rows = crate::vdi::font::glyph_rows(f.id, c);
+    backend.draw_glyph_sized(x, y, rows, f.max_cell_width, f.form_height, fg, mode, clip);
 }
 
 /// The `gl_hbox` rule on its own — `gl_hbox = gl_hchar + 3`
 /// (`gemgraf.c:412`) for a system-font cell height `hchar`. [`gl_hbox`]
 /// applies it to the live [`gl_hchar`]; it is exposed so the rule can be
-/// checked for a cell height the VDI's fixed default face cannot supply
-/// (8 → 11, the value EmuTOS computes on a screen under 400 lines).
+/// checked for both ring faces (16 → 19, 8 → 11, the value EmuTOS computes on
+/// a screen under 400 lines).
 pub const fn hbox_of(hchar: i16) -> i16 {
     hchar + 3
 }
@@ -651,9 +694,31 @@ pub const fn hbox_of(hchar: i16) -> i16 {
 /// EmuTOS `gl_hbox` (`gemgraf.c:47`, set `:412`) — the unadjusted gadget box
 /// height and the menu-bar row (`gl_rmenu = (0, 0, gl_width, gl_hbox)`,
 /// `:427`; `gl_rfull = (0, gl_hbox, gl_width, gl_height - gl_hbox)`, `:424`):
-/// `gl_hchar + 3`, i.e. 19 for the 8×16 font.
+/// `gl_hchar + 3`, i.e. 19 for the 8×16 font, 11 for the 8×8 font.
 pub(super) fn gl_hbox() -> i16 {
     hbox_of(gl_hchar())
+}
+
+/// EmuTOS `gl_wbox` (`gemgraf.c:46`, set `:413-415`) — the unadjusted gadget
+/// box width:
+///
+/// ```c
+/// gl_wbox = (gl_hbox * gl_ws.ws_hpixel) / gl_ws.ws_wpixel;
+/// if (gl_wbox < gl_wchar + 4)
+///     gl_wbox = gl_wchar + 4;
+/// ```
+///
+/// `ws_wpixel`/`ws_hpixel` are `DEV_TAB[3]`/`[4]`, `get_std_pixel_size` on
+/// the Falcon/TT profile (`bios/screen.c:872-876`): 19 on a 640×480 or
+/// 1920×1080 screen (square 278 × 278 pixels), 22 at 640×240 (278 × 556,
+/// `11 · 556 / 278`). It is what `graf_handle` reports (`gemsuper.c:290`) and
+/// what the glyph cell of every window gadget measures — the 3D window layout
+/// inflates the surrounding box (`window::adj_wbox`), never this.
+pub(super) fn gl_wbox() -> i16 {
+    let (xres, yres) = ws_size();
+    let (wpixel, hpixel) = crate::vdi::get_std_pixel_size(xres, yres);
+    let wbox = (i32::from(gl_hbox()) * i32::from(hpixel) / i32::from(wpixel)) as i16;
+    wbox.max(gl_wchar() + 4)
 }
 
 /// `graf_handle` (77) — the AES's VDI workstation handle (`int_out[0]`)
@@ -667,10 +732,8 @@ pub fn graf_handle(pb: &Aespb) {
     pb.set_intout(2, gl_hchar()); // gl_hchar: system-font cell height
     // gl_wbox / gl_hbox: the *unadjusted* gadget box unit (gemsuper.c:290-291)
     // — never the 3D-adjusted adj_wbox/adj_hbox the window frame is built
-    // from. gl_hbox is derived above (gl_hchar + 3, gemgraf.c:412); gl_wbox
-    // (max(gl_wchar+4, gl_hbox·aspect), gemgraf.c:413-415) is still the
-    // window manager's constant, 19 for the 8×16 font on square pixels.
-    pb.set_intout(3, super::window::GL_WBOX); // gl_wbox
+    // from. Both derived above (gemgraf.c:412-415).
+    pb.set_intout(3, gl_wbox()); // gl_wbox
     pb.set_intout(4, gl_hbox()); // gl_hbox
 }
 

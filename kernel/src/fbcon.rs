@@ -1,8 +1,9 @@
 //! The `Bconout(2, …)` screen device — the VT52 framebuffer text console.
 //!
 //! Renders BIOS/GEMDOS console output (`Bconout(2,…)`, `Cconout`, `Cconws`,
-//! `Fwrite` to a CON handle …) to the framebuffer through the VDI's 8×16
-//! system font. The kernel
+//! `Fwrite` to a CON handle …) to the framebuffer in the VDI's system font —
+//! 8×16, or 8×8 on a screen under 400 lines (`font_set_default`,
+//! `bios/font.c:76`). The kernel
 //! [`Host::console_write_byte`](crate::host_env) forwards each byte here (in
 //! addition to the UART).
 //!

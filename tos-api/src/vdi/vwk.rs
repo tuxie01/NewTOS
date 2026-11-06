@@ -85,8 +85,10 @@ pub struct Vwk {
     pub v_align: i16,
     pub chup: i16,
     /// The selected system font (`cur_font`, EmuTOS `Vwk.cur_font`). Set by
-    /// `vst_height`/`vst_point`, rendered by `v_gtext`. Defaults to the 8×16
-    /// system font (`def_font`) on workstation open.
+    /// `vst_height`/`vst_point`, rendered by `v_gtext`. `init_wk` sets it to
+    /// `def_font` on workstation open (`text_init2`, `vdi_text.c:574`): the
+    /// 8×8 face under 400 lines, the 8×16 face from 400 up
+    /// ([`font::text_init_def_font`](super::font::text_init_def_font)).
     pub cur_font: SysFontId,
     /// DDA fraction for a non-exact `vst_height`/`vst_point` size (EmuTOS
     /// `Vwk.dda_inc`). `0xFFFF` means "exactly double"; only meaningful when
@@ -147,7 +149,9 @@ impl Vwk {
         h_align: 0,
         v_align: 0,
         chup: 0,
-        cur_font: super::font::DEFAULT,
+        // A free slot's face is never read: `init_wk` (`text_init2`) sets
+        // `def_font` for the screen before the handle is returned.
+        cur_font: super::font::RING[0],
         dda_inc: 0,
         scaled: false,
         t_sclsts: false,

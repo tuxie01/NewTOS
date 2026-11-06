@@ -49,7 +49,7 @@ fn palette_precision(planes: u16) -> i16 {
 /// [`init_wk`] (EmuTOS `update_rez_dependent`, `vdi_control.c:203-208`).
 /// `[3]/[4]` (pixel size) carry the ROM's ST-High placeholder 372 here
 /// and are overwritten with [`get_std_pixel_size`] at open time.
-const DEV_TAB_ROM: [i16; 45] = [
+pub(crate) const DEV_TAB_ROM: [i16; 45] = [
     639, 399, 0, 372, 372, // 0..4  res-1 x/y, precision, pixel w/h (patched)
     // [5] font heights: EmuTOS `text_init` sets DEV_TAB[5] to the number of
     // system-font (font_id==1) sizes (`vdi_text.c:661`). Patched below from
@@ -191,6 +191,17 @@ fn init_wk(vwk: &mut Vwk, pb: &Vdipb, backend: &dyn RasterBackend) {
     vwk.fill_color = validate_color_index(pb.intin(9), ncol);
 
     vwk.xfm_mode = pb.intin(10); // 0 = NDC, 2 = RC (screen is RC)
+
+    // `text_init2(vwk)` (`vdi_control.c:333`, `vdi_text.c:572-590`): the
+    // workstation starts on `def_font`, the face `text_init` chose for the
+    // screen height (`vdi_text.c:612`: 8×8 under 400 lines, else 8×16). The
+    // other text fields `text_init2` resets (effects, scaling, alignment,
+    // `chup`) are `Vwk::EMPTY`'s, which every slot is reset to before this
+    // runs; `pts_mode` and the scratch buffers have no NewTOS field. Evaluated for the live `V_REZ_VT` rather than cached
+    // by `v_opnwk`: NewTOS changes no resolution after boot, and a
+    // `v_opnvwk` without a prior `v_opnwk` (the kernel's boot screen) gets
+    // the same face (`docs/api/vdi/workstation/01-v_opnwk.md` § Default font).
+    vwk.cur_font = font::text_init_def_font(yres);
 
     // Non-work_in defaults: clip off → full screen (inclusive bounds).
     vwk.clip = false;

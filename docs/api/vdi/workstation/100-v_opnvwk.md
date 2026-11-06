@@ -276,7 +276,11 @@ and return with no `Vwk` allocated:
 ## Edge cases discovered in source
 
 1. **`work_in[5]` (text font) is silently ignored** — you always get the
-   default font (`vdi_control.c:294-295`).
+   default font (`vdi_control.c:294-295`): `text_init2` sets `cur_font =
+   def_font` (`vdi_text.c:572-574`, called from `init_wk`, `vdi_control.c:333`),
+   the face `v_opnwk`'s `text_init` chose by screen height — 8×8 under 400
+   lines, 8×16 from 400 up (`vdi_text.c:612`; table and NewTOS binding in
+   [`01-v_opnwk`](01-v_opnwk.md), § Default font, V32).
 2. **Style indices are stored 0-based** in the `Vwk` (`line_index`,
    `mark_index` = `value-1`), while `fill_index` keeps the 1-based value
    (`:281,289,311`). This matters for the inquiry round-trip (see

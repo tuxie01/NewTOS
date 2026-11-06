@@ -270,7 +270,7 @@ and the open Fonthead question are in the analysis note (D1, D3).
 
 ## NewTOS implementation notes (Phase 12)
 
-- The bring-up font is the built-in ring only (`tos-api/src/vdi/font.rs:245@RING`);
+- The bring-up font is the built-in ring only (`tos-api/src/vdi/font.rs:261@RING`);
   `vst_font` always answers face 1 (`tos-api/src/vdi/attributes.rs:171@vst_font`)
   and `vst_load_fonts` returns 0 without reading its arguments
   (`tos-api/src/vdi/attributes.rs:351@vst_load_fonts`). That is a **deviation**

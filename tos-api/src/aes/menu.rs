@@ -942,7 +942,7 @@ fn open_submenu(t: ObjTree, item: i16, backend: &dyn RasterBackend) -> Option<(u
     let sub_t = t.with_base(s.sub_tree as *const Object);
     let (ix, iy, iw, _ih) = object::abs_rect_t(t, item);
     let (bx0, by0, bw, bh) = object::abs_rect_t(sub_t, s.sub_menu);
-    let cw = crate::vdi::font::CELL_W;
+    let cw = super::graf::gl_wchar();
     let sw = backend.width() as i16;
     let sh = backend.height() as i16;
     // x: to the right of the item, overlapping the arrow; if that runs off the

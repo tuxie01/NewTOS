@@ -104,8 +104,6 @@ fn draw_alert_icon(iconnum: i16, x: i16, y: i16, backend: &dyn RasterBackend) {
 
 const MAX_DEPTH: i16 = 16;
 
-const CW: i16 = 8; // system font cell width
-const CH: i16 = 16; // system font cell height
 
 // EmuTOS alert-string grammar limits (tools/erd.c:571-572 + generated
 // gem_rsc.h): MAX_LINENUM=5 message lines, MAX_BUTNUM=3 buttons, MAX_LINELEN=40
@@ -188,25 +186,29 @@ fn do_alert(defbut: i16, s: &[u8], modal: bool) -> i16 {
     let sw = backend.width() as i16;
     let sh = backend.height() as i16;
 
-    let padx = 2 * CW;
-    let pady = CH;
-    let btn_w = (mlenbut + 2) * CW;
-    let btn_h = CH + 6;
-    let gap = 2 * CW;
+    // The system-font cell `gl_wchar` × `gl_hchar` EmuTOS `fm_build` sizes the
+    // alert in (character coordinates, converted by `rs_obfix`,
+    // `gemfmalt.c:202-293`): 8×16, or 8×8 on a screen under 400 lines (V32).
+    let (cw, ch) = (super::graf::gl_wchar(), super::graf::gl_hchar());
+    let padx = 2 * cw;
+    let pady = ch;
+    let btn_w = (mlenbut + 2) * cw;
+    let btn_h = ch + 6;
+    let gap = 2 * cw;
 
     // Icon column on the left (32-px icon + a one-char gap), EmuTOS
     // `fm_build`: the messages sit to its right, the box grows to fit.
-    let icon_w = if iconnum != 0 { 32 + CW } else { 0 };
+    let icon_w = if iconnum != 0 { 32 + cw } else { 0 };
     let total_btn = numbut as i16 * btn_w + (numbut as i16 - 1) * gap;
-    let content_w = (icon_w + mlenmsg * CW).max(total_btn);
+    let content_w = (icon_w + mlenmsg * cw).max(total_btn);
     let box_w = content_w + 2 * padx;
 
     // Content height is the taller of the message block and the icon; the
     // messages are centred against it when the icon is taller.
-    let msg_area_h = nummsg as i16 * CH;
+    let msg_area_h = nummsg as i16 * ch;
     let content_h = msg_area_h.max(if iconnum != 0 { 32 } else { 0 });
     let msg_y0 = pady + (content_h - msg_area_h) / 2;
-    let btn_y = pady + content_h + CH / 2; // gap below the content
+    let btn_y = pady + content_h + ch / 2; // gap below the content
     let box_h = btn_y + btn_h + pady;
 
     let box_x = (sw - box_w) / 2;
@@ -240,7 +242,7 @@ fn do_alert(defbut: i16, s: &[u8], modal: bool) -> i16 {
         tree[1 + i] = Object {
             ob_next: (2 + i) as i16, ob_head: -1, ob_tail: -1, ob_type: G_STRING,
             ob_flags: 0, ob_state: 0, ob_spec: buf.as_ptr() as u64 + msg[i].0 as u64,
-            ob_x: padx + icon_w, ob_y: msg_y0 + i as i16 * CH, ob_width: msg[i].1 * CW, ob_height: CH,
+            ob_x: padx + icon_w, ob_y: msg_y0 + i as i16 * ch, ob_width: msg[i].1 * cw, ob_height: ch,
         };
     }
     // buttons
@@ -1007,7 +1009,7 @@ pub(super) fn gl_rcenter() -> (i16, i16, i16, i16) {
         Some(b) => (b.width() as i16, b.height() as i16),
         None => (0, 0),
     };
-    let (wbox, hbox) = (super::window::GL_WBOX, super::graf::gl_hbox());
+    let (wbox, hbox) = (super::graf::gl_wbox(), super::graf::gl_hbox());
     ((w - wbox) / 2, (h - 2 * hbox) / 2, wbox, hbox)
 }
 

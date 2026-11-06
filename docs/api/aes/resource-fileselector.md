@@ -2038,7 +2038,7 @@ Umsetzung gilt fuer die Dateiauswahl "Umsetzung" unten).**
    (`GL_MOWNER_APP` falsch); Betrag 0 ignoriert; Vorzeichen → `WA_DNLINE`/
    `WA_UPLINE` (die **Groesse** von `wheel_amount` wird nicht benutzt, ein Rad-
    Ereignis = eine Zeile); `wm_find(xrat, yrat)`
-   (`tos-api/src/aes/window.rs:5784@wm_find`) liefert das oberste offene Fenster
+   (`tos-api/src/aes/window.rs:5778@wm_find`) liefert das oberste offene Fenster
    unter dem Zeiger, sonst `DESKWH` oder `-1`; `owner_of_window` → `post_msg`
    mit `WM_ARROWED` (`tos-api/src/aes/input.rs:1117@wheel_change`, Rumpf).
 3. Waehrend die Dateiauswahl offen ist: `modal` ruft in jeder Runde
@@ -2170,7 +2170,7 @@ Umgesetzt nach den Entscheidungen; Hosttests und Messlauf
   Elternobjekts (`tos-api/src/aes/object.rs:2385@ob_actxywh_t`, mit der
   3D-Zugabe von `gemoblib.c:313-336`), Rahmen nach
   `tos-api/src/aes/graf.rs:480@slidebox_outline`, Zug als XOR-Rahmen durch das
-  gemeinsame `gr_dragbox` (`tos-api/src/aes/window.rs:5472@gr_dragbox`:
+  gemeinsame `gr_dragbox` (`tos-api/src/aes/window.rs:5466@gr_dragbox`:
   Greifpunkt, `rc_constrain`, `wm_update`-Klammer), Wert nach
   `tos-api/src/aes/graf.rs:506@slidebox_value`. Das Objekt wird nicht bewegt.
   Baumzugriff ueber den uebergebenen `ObjTree` (App: `ObjTree::new`,

@@ -77,6 +77,9 @@ mod vwk;
 /// loader's own palette table (`aes/resource.rs`).
 pub use vwk::pack_color16;
 mod workstation;
+/// The AES derives `gl_wbox` from the workstation's pixel size and falls back
+/// to the ROM template's screen height without a screen (`aes::graf`, V32).
+pub(crate) use workstation::{get_std_pixel_size, DEV_TAB_ROM};
 
 use crate::bdos::process::Abi;
 use crate::host;

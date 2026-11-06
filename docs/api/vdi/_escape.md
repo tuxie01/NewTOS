@@ -374,7 +374,11 @@ and console paths documented in [`input/_mouse.md`](input/_mouse.md).
   cell geometry; keep the values 1-based on output, matching EmuTOS. The
   count must be **live-derived** from the current device geometry (see
   the `vq_chcells` section above), not a boot-time constant — matching
-  EmuTOS's `font_set_default()` pattern.
+  EmuTOS's `font_set_default()` pattern. The **cell itself** is that
+  function's font, too: 8×8 when `V_REZ_VT < 400`, else 8×16
+  (`bios/font.c:76`) — glyph rows, cursor height and scroll steps included
+  (V32: `tos_api::vdi::font::font_set_default`, used by `escape.rs` for every
+  cell; before V32 the console drew 8×16 on every screen).
 - `v_hardcopy` (17) is a documented no-op (no printer) — see above.
 - `v_dspcur`/`v_rmcur` bind to the mouse-cursor sprite path
   ([`input/_mouse.md`](input/_mouse.md)); ignore the `PTSIN` coordinates

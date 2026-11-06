@@ -17,7 +17,7 @@
 //! `graf_*` are Batch 2+. No save/restore under windows yet (see the
 //! Menu-Manager note); closing erases to the desktop background.
 
-use super::graf::{gl_hbox, gl_hchar, gl_wchar};
+use super::graf::{gl_hbox, gl_hchar, gl_wbox, gl_wchar};
 use super::object::{
     add_3d_effect, gr_crack, gr_rect, render_tree_app, render_tree_lp64, xor_color, Object,
     ACT_BUTCOL, ACT_COLCHANGE, ACT_TXTMOVE, BACKGR_COL, IP_PATTERNS,
@@ -123,14 +123,10 @@ const G_FULL: u16 = 0x07;
 // `graf::gl_hchar` / `graf::gl_hbox` (EmuTOS `gsx_start`, `gemgraf.c:405-412`).
 // `gl_wchar`/`gl_hchar` are the sizer drag's minimum width/height for a window
 // without the respective gadgets (`hctl_window`, `gemctrl.c:252-253`);
-// `gl_hbox` is the height of every gadget's glyph cell and the menu-bar row.
-
-/// Unadjusted gadget box width — EmuTOS `gl_wbox`
-/// (`gl_wbox = max(gl_wchar+4, gl_hbox·aspect)`, `gemgraf.c:412-415`): 19 for
-/// the 8×16 system font. This is what `graf_handle` reports (`gemsuper.c:287-291`)
-/// and what the *glyph cell* of every window gadget measures — the 3D window
-/// layout inflates the surrounding box ([`adj_wbox`]), never this.
-pub(super) const GL_WBOX: i16 = 19;
+// `gl_hbox` is the height of every gadget's glyph cell and the menu-bar row,
+// `gl_wbox` (`graf::gl_wbox`, `gemgraf.c:413-415`) its width — the unadjusted
+// cell `graf_handle` reports; the 3D window layout inflates the surrounding
+// box ([`adj_wbox`]), never this.
 
 /// EmuTOS `MAX_COORDINATE` (`include/sysconf.h:63`) — the "no limit" extent the
 /// Control Manager gives `gr_dragbox` for the vertical direction, so a window
@@ -143,7 +139,7 @@ const MAX_COORDINATE: i16 = 10000;
 /// mimic TOS4's ST-Low work area. Computed from the live screen instead of
 /// cached at init; for a fixed resolution the value is the same either way.
 fn adj_wbox() -> i16 {
-    let mut a = GL_WBOX + 2 * ADJ3DSTD;
+    let mut a = gl_wbox() + 2 * ADJ3DSTD;
     let s = screen_rect();
     if s.w < 640 {
         a -= 1;
@@ -2556,7 +2552,7 @@ fn gadget_sel(r: Grect, ch: u16, sel: bool, ink: Ink, backend: &dyn RasterBacken
     let ink = act_ink(ink, sel, backend);
     draw_box_ink(slot, ink, backend, clip);
     if let Some((gx, gy)) = boxchar_origin(slot, sel) {
-        backend.draw_glyph(gx, gy, crate::vdi::font::glyph(ch), ink.tc, ink.text_mode(), clip);
+        super::graf::draw_ibm_glyph(backend, gx, gy, ch, ink.tc, ink.text_mode(), clip);
     }
     add_3d_effect(backend, slot.x, slot.y, slot.w, slot.h, sel, 1, ink.ic, clip);
 }
@@ -2725,14 +2721,15 @@ fn gr_just_text(just: i16, c: Grect, n: usize) -> Option<(i16, i16, usize)> {
 }
 
 /// `gsx_tblt(IBM, x, y, numchs)` (`aes/gemgraf.c:500-527`) for the frame:
-/// `s` one 8×16 glyph per byte with the cell top at `(x, y)`, in the
+/// `s` one system-font glyph per byte ([`super::graf::gl_font`], 8×16 or
+/// 8×8 by screen height) with the cell top at `(x, y)`, in the
 /// gadget's text colour and writing mode (`gsx_attr(TRUE, tmode, tcol)`,
 /// `aes/gemoblib.c:709`): `Replace` paints every glyph cell's background
 /// white (the VDI's replace-mode text), `Transparent` inks only the set bits.
 fn draw_label(x: i16, y: i16, s: &[u8], fg: Pel, mode: WriteMode, backend: &dyn RasterBackend, clip: ClipRect) {
     let mut cx = x;
     for &b in s {
-        backend.draw_glyph(cx, y, crate::vdi::font::glyph(b as u16), fg, mode, clip);
+        super::graf::draw_ibm_glyph(backend, cx, y, b as u16, fg, mode, clip);
         cx += gl_wchar();
     }
 }
@@ -2795,14 +2792,14 @@ fn draw_frame(w: &Window, istop: bool, backend: &dyn RasterBackend, clip: ClipRe
         let mut name_x = b.x;
         let mut name_w = b.w;
         if kind & CLOSER != 0 {
-            let g = Grect { x: b.x + ADJ3DSTD, y: gy, w: GL_WBOX, h: gl_hbox() };
+            let g = Grect { x: b.x + ADJ3DSTD, y: gy, w: gl_wbox(), h: gl_hbox() };
             gadget(g, G_CLOSE, ink(W_CLOSER_IDX), backend, clip);
             name_x += aw;
             name_w -= aw;
         }
         if kind & FULLER != 0 {
             name_w -= aw;
-            let g = Grect { x: name_x + name_w + ADJ3DSTD, y: gy, w: GL_WBOX, h: gl_hbox() };
+            let g = Grect { x: name_x + name_w + ADJ3DSTD, y: gy, w: gl_wbox(), h: gl_hbox() };
             gadget(g, G_FULL, ink(W_FULLER_IDX), backend, clip);
         }
         // W_NAME sits `ADJ3DSTD` inside what is left (gemwmlib.c:534-537).
@@ -2944,9 +2941,9 @@ fn draw_frame(w: &Window, istop: bool, backend: &dyn RasterBackend, clip: ClipRe
     // *glyph* is added only for a real `SIZER` (`ob_spec |= 0x06000000`).
     if (havevbar && havehbar) || kind & SIZER != 0 {
         let g = Grect {
-            x: b.x + b.w - GL_WBOX - ADJ3DSTD,
+            x: b.x + b.w - gl_wbox() - ADJ3DSTD,
             y: b.y + b.h - gl_hbox() - ADJ3DSTD,
-            w: GL_WBOX,
+            w: gl_wbox(),
             h: gl_hbox(),
         };
         let sizer_ink = ink(W_SIZER_IDX);
@@ -3107,9 +3104,9 @@ fn varrow_cells(b: Grect, kind: u16) -> (Option<Grect>, Option<Grect>) {
     let bar = vbar_box(b, kind);
     let ah = adj_hbox();
     let up = (kind & UPARROW != 0)
-        .then_some(Grect { x: bar.x + ADJ3DSTD, y: bar.y + ADJ3DSTD, w: GL_WBOX, h: gl_hbox() });
+        .then_some(Grect { x: bar.x + ADJ3DSTD, y: bar.y + ADJ3DSTD, w: gl_wbox(), h: gl_hbox() });
     let dn = (kind & DNARROW != 0)
-        .then_some(Grect { x: bar.x + ADJ3DSTD, y: bar.y + bar.h - ah + ADJ3DSTD - 1, w: GL_WBOX, h: gl_hbox() });
+        .then_some(Grect { x: bar.x + ADJ3DSTD, y: bar.y + bar.h - ah + ADJ3DSTD - 1, w: gl_wbox(), h: gl_hbox() });
     (up, dn)
 }
 
@@ -3122,7 +3119,7 @@ fn elev_rect(bar: Grect, track: (i16, i16), off: i16, len: i16, vert: bool) -> G
     let (start, _) = track;
     let thick = (len - 2 * ADJ3DSTD - 1).max(1);
     if vert {
-        Grect { x: bar.x + ADJ3DSTD, y: start + off + ADJ3DSTD, w: GL_WBOX, h: thick }
+        Grect { x: bar.x + ADJ3DSTD, y: start + off + ADJ3DSTD, w: gl_wbox(), h: thick }
     } else {
         Grect { x: start + off + ADJ3DSTD, y: bar.y + ADJ3DSTD, w: thick, h: gl_hbox() }
     }
@@ -3194,7 +3191,7 @@ fn elev_geom(w: &Window, vert: bool) -> Option<(Grect, Grect)> {
     } else {
         let bar = hbar_rect(w.curr, w.kind)?;
         let (track_x, track_w) = htrack(w)?;
-        let (off, len) = thumb_geom(track_w, w.hslsize, w.hslide, GL_WBOX);
+        let (off, len) = thumb_geom(track_w, w.hslsize, w.hslide, gl_wbox());
         let slide = Grect { x: track_x, y: bar.y, w: track_w, h: bar.h };
         Some((slide, elev_rect(bar, (track_x, track_w), off, len, false)))
     }
@@ -3278,9 +3275,9 @@ fn harrow_cells(b: Grect, kind: u16) -> (Option<Grect>, Option<Grect>) {
     let bar = hbar_box(b, kind);
     let aw = adj_wbox();
     let lf = (kind & LFARROW != 0)
-        .then_some(Grect { x: bar.x + ADJ3DSTD, y: bar.y + ADJ3DSTD, w: GL_WBOX, h: gl_hbox() });
+        .then_some(Grect { x: bar.x + ADJ3DSTD, y: bar.y + ADJ3DSTD, w: gl_wbox(), h: gl_hbox() });
     let rt = (kind & RTARROW != 0)
-        .then_some(Grect { x: bar.x + bar.w - aw + ADJ3DSTD - 1, y: bar.y + ADJ3DSTD, w: GL_WBOX, h: gl_hbox() });
+        .then_some(Grect { x: bar.x + bar.w - aw + ADJ3DSTD - 1, y: bar.y + ADJ3DSTD, w: gl_wbox(), h: gl_hbox() });
     (lf, rt)
 }
 
@@ -5220,9 +5217,9 @@ fn gad_rect(w: &Window, g: Gadget) -> Grect {
     let b = w.curr;
     let y = b.y + ADJ3DSTD;
     match g {
-        Gadget::Closer => Grect { x: b.x + ADJ3DSTD, y, w: GL_WBOX, h: gl_hbox() },
+        Gadget::Closer => Grect { x: b.x + ADJ3DSTD, y, w: gl_wbox(), h: gl_hbox() },
         Gadget::Fuller => {
-            Grect { x: b.x + b.w - adj_wbox() + ADJ3DSTD, y, w: GL_WBOX, h: gl_hbox() }
+            Grect { x: b.x + b.w - adj_wbox() + ADJ3DSTD, y, w: gl_wbox(), h: gl_hbox() }
         }
         _ => Grect::default(),
     }
@@ -5412,7 +5409,7 @@ fn drag_size(w: &Window, backend: &dyn RasterBackend) -> Grect {
     // Minimum size (`gemctrl.c:252-257`): one character cell, widened to four
     // gadget boxes when the window has top/horizontal gadgets and heightened to
     // six when it has vertical ones.
-    let wmin = if w.kind & (TGADGETS | HGADGETS) != 0 { GL_WBOX * 4 } else { gl_wchar() };
+    let wmin = if w.kind & (TGADGETS | HGADGETS) != 0 { gl_wbox() * 4 } else { gl_wchar() };
     let hmin = if w.kind & VGADGETS != 0 { gl_hbox() * 6 } else { gl_hchar() };
     let (nw, nh) = gr_rubwind(h, border.x, border.y, wmin, hmin, poff, backend);
     Grect { x: border.x, y: border.y, w: nw, h: nh }
@@ -5533,7 +5530,7 @@ fn drag_move(w: &Window, backend: &dyn RasterBackend) -> Grect {
     let f = Grect {
         x: 0,
         y: gl_hbox(),
-        w: screen.w + border.w - GL_WBOX - 6 - 2 * ADJ3DSTD,
+        w: screen.w + border.w - gl_wbox() - 6 - 2 * ADJ3DSTD,
         h: MAX_COORDINATE,
     };
     let (nx, ny) = gr_dragbox(h, border.w, border.h, border.x, border.y, f, backend);

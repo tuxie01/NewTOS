@@ -1044,7 +1044,9 @@ const FONT_SMALL: i16 = 5;
 /// EmuTOS's `gl_wchar`/`gl_hchar` and `gl_wschar`/`gl_hschar`.
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum AesFont {
-    /// Normal desktop font (`IBM` = 3): `gl_wchar` × `gl_hchar` = 8×16.
+    /// Normal desktop font (`IBM` = 3): `gl_wchar` × `gl_hchar` — the VDI's
+    /// default face for the screen height, 8×16 from 400 lines up, 8×8 below
+    /// ([`super::graf::gl_font`], V32).
     Ibm,
     /// Small desktop font (`SMALL` = 5): `gl_wschar` × `gl_hschar` = 6×6.
     /// Icon labels and icon overlay characters are drawn in this size, as
@@ -1077,7 +1079,7 @@ impl AesFont {
     #[inline]
     fn cell_w(self) -> i16 {
         match self {
-            AesFont::Ibm => crate::vdi::font::CELL_W,
+            AesFont::Ibm => super::graf::gl_wchar(),
             AesFont::Small => crate::vdi::font::SMALL_CELL_W,
         }
     }
@@ -1086,7 +1088,7 @@ impl AesFont {
     #[inline]
     fn cell_h(self) -> i16 {
         match self {
-            AesFont::Ibm => crate::vdi::font::CELL_H,
+            AesFont::Ibm => super::graf::gl_hchar(),
             AesFont::Small => crate::vdi::font::SMALL_CELL_H,
         }
     }
@@ -1930,18 +1932,18 @@ pub(crate) fn edit_field_t(t: ObjTree, obj: i16, in_char: i16, mut idx: i16, kin
 /// field's text included. The clip is the widened cell; the caller's clip is
 /// untouched (each draw here takes its own).
 fn curfld(t: ObjTree, obj: i16, ted: &TedInfo, tmpl: &[u8], new_pos: i16, dist: i16, backend: &dyn RasterBackend) {
-    use crate::vdi::font::{CELL_H, CELL_W};
+    let (cell_w, cell_h) = (super::graf::gl_wchar(), super::graf::gl_hchar());
     let (ox, oy) = abs_offset(t, obj);
     let (x, y) = pxl_rect(ted, tmpl, ox, oy, t.width(obj), t.height(obj), new_pos);
     if dist != 0 {
         // `t.g_w = gl_wchar + (dist - 1) * gl_wchar`, `t.g_h = gl_hchar`.
-        let w = CELL_W + (dist - 1) * CELL_W;
-        let clip = ClipRect { xmn: x, ymn: y, xmx: x + w - 1, ymx: y + CELL_H - 1 };
+        let w = cell_w + (dist - 1) * cell_w;
+        let clip = ClipRect { xmn: x, ymn: y, xmx: x + w - 1, ymx: y + cell_h - 1 };
         // depth 0 redraws only this field.
         draw_tree(t, obj, 0, ox - t.x(obj), oy - t.y(obj), clip, backend);
     } else {
-        let (y0, h) = (y - 3, CELL_H + 6);
-        let clip = ClipRect { xmn: x, ymn: y0, xmx: x + CELL_W - 1, ymx: y0 + h - 1 };
+        let (y0, h) = (y - 3, cell_h + 6);
+        let clip = ClipRect { xmn: x, ymn: y0, xmx: x + cell_w - 1, ymx: y0 + h - 1 };
         backend.draw_line(x, y0, x, y0 + h - 1, BLACK, WriteMode::Xor, clip, 0xFFFF);
     }
 }
@@ -1985,7 +1987,7 @@ fn pxl_rect(ted: &TedInfo, tmpl: &[u8], ox: i16, oy: i16, w: i16, h: i16, ch_pos
             _ => {}
         }
     }
-    (x + ch_pos * crate::vdi::font::CELL_W, y)
+    (x + ch_pos * super::graf::gl_wchar(), y)
 }
 
 // Arrow scancodes in the key word's high byte (EmuTOS `scancode.h`).
@@ -3134,8 +3136,8 @@ fn just_draw(t: ObjTree, obj: i16, x: i16, y: i16, clip: ClipRect, backend: &dyn
                 let s = read_cstr(t, ob_spec);
                 let len = s.len() as i16;
                 let label = if selected && changecol { WHITE } else { BLACK };
-                let mut tmpx = x + (w - len * crate::vdi::font::CELL_W) / 2;
-                let mut tmpy = y + (h - crate::vdi::font::CELL_H) / 2;
+                let mut tmpx = x + (w - len * super::graf::gl_wchar()) / 2;
+                let mut tmpy = y + (h - super::graf::gl_hchar()) / 2;
                 if movetext && !selected {
                     tmpx -= 1;
                     tmpy -= 1;
@@ -3195,7 +3197,7 @@ fn just_draw(t: ObjTree, obj: i16, x: i16, y: i16, clip: ClipRect, backend: &dyn
                 // menu item's check column comes from the leading blanks built into
                 // its resource string (GEM uses two leading spaces), not a
                 // code-added indent.
-                let tmpy = y + (h - crate::vdi::font::CELL_H) / 2;
+                let tmpy = y + (h - super::graf::gl_hchar()) / 2;
                 gsx_tblt(backend, AesFont::Ibm, x, tmpy, s, ink, WriteMode::Transparent, clip);
             }
         }
@@ -3220,7 +3222,7 @@ fn just_draw(t: ObjTree, obj: i16, x: i16, y: i16, clip: ClipRect, backend: &dyn
             let s = read_cstr(t, ob_spec);
             // Same string block as G_STRING: IBM font, `t.g_x`, vertically
             // centred on `gl_hchar` (gemoblib.c:817-845).
-            let tmpy = y + (h - crate::vdi::font::CELL_H) / 2;
+            let tmpy = y + (h - super::graf::gl_hchar()) / 2;
             gsx_tblt(backend, AesFont::Ibm, x, tmpy, s, BLACK, WriteMode::Transparent, clip);
         }
         G_TEXT | G_BOXTEXT | G_FTEXT | G_FBOXTEXT => {
@@ -3740,9 +3742,7 @@ fn gsx_tblt(
     for (i, &c) in text.iter().enumerate() {
         let gx = x + i as i16 * cw;
         match fnt {
-            AesFont::Ibm => {
-                backend.draw_glyph(gx, y, crate::vdi::font::glyph(c as u16), fg, mode, clip)
-            }
+            AesFont::Ibm => super::graf::draw_ibm_glyph(backend, gx, y, c as u16, fg, mode, clip),
             AesFont::Small => backend.draw_glyph_sized(
                 gx,
                 y,

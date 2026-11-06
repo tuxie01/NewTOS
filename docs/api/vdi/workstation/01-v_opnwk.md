@@ -115,6 +115,53 @@ On the Videl path only, `INTOUT[45]` carries the new Videl mode on input
   may switch screen resolution via `Setscreen`; initialises palette,
   timer, mouse, and enters graphics mode; sets `CUR_WORK = &phys_work`.
 
+### Default font: `text_init` (`vdi_text.c:592-662`, V32)
+
+`v_opnwk` calls `text_init()` (`vdi_control.c:552`) before `init_wk`. Besides
+the `SIZ_TAB[0..3]`/`DEV_TAB[5]`/`DEV_TAB[10]` fold, `text_init` chooses the
+global `def_font`, the face every workstation opened afterwards starts with
+(`text_init2`, see [`v_opnvwk`](100-v_opnvwk.md)):
+
+```c
+def_font = NULL;
+cell_height = (V_REZ_VT >= 400) ? 16 : 8;   /* to select among default fonts */
+/* walk font_ring[] = { &fon6x6, &fon8x8 (-> fon8x16), NULL }, every next_font */
+    if (fnt_ptr->flags & F_DEFAULT) {
+        if (!def_font)
+            def_font = fnt_ptr;
+        else if (def_font->form_height != cell_height)
+            def_font = fnt_ptr;
+    }
+```
+(`:604-623`). `F_DEFAULT` (`include/fonthdr.h:21`) is set on the 8×8 and the
+8×16 face (`bios/fnt_st_8x8.c:165`, `bios/fnt_st_8x16.c:293`), not on the 6×6.
+The walk meets 8×8 first (it becomes `def_font`), then 8×16, which replaces it
+only while `def_font->form_height` (8) differs from `cell_height`. Result:
+
+| `V_REZ_VT` | `cell_height` | `def_font` | `vqt_attributes` `PTSOUT[0..3]` |
+|---|---|---|---|
+| < 400 | 8 | 8×8 | 7, 6, 8, 8 |
+| ≥ 400 | 16 | 8×16 | 7, 13, 8, 16 |
+
+Measured (V18 part 2, VDI-TEXT-009): EmuTOS at 640×240 (Hatari, VERTFLAG
+mode word `0x011C`) reports 7 6 8 8 right after `v_opnvwk`; at 640×480 7 13 8
+16 (`measurements/measurement-2026-11-06-v18-t2/k19/emutos-240/VDPROBE.LOG`).
+
+The AES takes its character metrics from this face (`gsx_start`,
+`aes/gemgraf.c:405-415`, see `docs/api/aes/window-graphics.md` § `graf_handle`).
+The VT52 console makes the same choice on its own (`font_set_default`,
+`bios/font.c:72-88`, [`../_escape.md`](../_escape.md)).
+
+**NewTOS binding.** `tos_api::vdi::font::text_init_def_font(v_rez_vt)` is the
+walk above over `font::RING` (`SysFont::f_default` = the `F_DEFAULT` bit).
+`init_wk` (`text_init2`) calls it with the live screen height
+(`RasterBackend::height`, NewTOS' `V_REZ_VT`) instead of reading a value cached
+by `v_opnwk`: NewTOS changes no resolution after boot (`v_opnwk` switches no
+mode, `Setscreen` moves only the screen base), so the face is the one
+`text_init` would have cached, and a `v_opnvwk` before the first `v_opnwk` (the
+kernel's boot screen, `kernel/src/initinfo.rs`) gets it too, where EmuTOS would
+read a NULL `def_font`.
+
 ---
 
 ## Error conditions

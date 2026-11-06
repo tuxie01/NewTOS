@@ -125,6 +125,7 @@ fn scaled_header(f: &SysFont, dda_inc: u16, t_sclsts: bool) -> SysFont {
         skew: f.skew,
         form_height: f.form_height,
         name: f.name,
+        f_default: f.f_default,
     }
 }
 

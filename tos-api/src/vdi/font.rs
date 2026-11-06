@@ -7,17 +7,23 @@
 //!
 //! Two layers live here:
 //!
-//! * The `pub const` 8×16 metrics + [`glyph`] — the fixed system font the
-//!   AES/desktop/console text paths draw with (unchanged).
 //! * The [`SysFont`] ring ([`FON_6X6`]/[`FON_8X8`]/[`FON_8X16`], EmuTOS
 //!   `font_ring[]` / `vdi_text.c:604`) that `vst_height`/`vst_point` select
-//!   among and that `v_gtext` renders with.
+//!   among and that `v_gtext` renders with, plus the two screen-height rules
+//!   that pick the default face from it: [`text_init_def_font`] (the VDI's and
+//!   so the AES's) and [`font_set_default`] (the VT52 console's). Under 400
+//!   lines both are the 8×8 face, from 400 lines up the 8×16 face (V32).
+//! * The `pub const` metrics + [`glyph`] of the **8×16 face** alone
+//!   (`fnt_st_8x16`). They are that face's numbers, not "the" system font:
+//!   code that draws in the default font asks [`text_init_def_font`] /
+//!   [`font_set_default`] for the face and reads [`glyph_rows`].
 
 pub use super::font_data::{SYSTEM_FONT_6X6, SYSTEM_FONT_8X16, SYSTEM_FONT_8X8};
 
-/// Character cell width in pixels (monospace).
+/// Character cell width of the 8×16 face in pixels (monospace).
 pub const CELL_W: i16 = 8;
-/// Character cell height in pixels.
+/// Character cell height of the 8×16 face in pixels — **not** the default
+/// font's on every screen (8 under 400 lines, [`text_init_def_font`]).
 pub const CELL_H: i16 = 16;
 /// Baseline distance from the top of the cell (`top`).
 pub const TOP: i16 = 13;
@@ -59,7 +65,8 @@ pub const NAME: &[u8] = b"8x16 system font";
 /// `vqt_name` font-name field length in WORDs (GEM `Fonthead.name`).
 pub const NAME_LEN: usize = 32;
 
-/// The 16-row bitmap for character `c` (low 8 bits select the glyph).
+/// The 16-row bitmap for character `c` (low 8 bits select the glyph) in the
+/// 8×16 face. For the default font of a screen use [`glyph_rows`].
 #[inline]
 pub fn glyph(c: u16) -> &'static [u8; 16] {
     &SYSTEM_FONT_8X16[(c & 0xFF) as usize]
@@ -83,9 +90,10 @@ pub fn glyph(c: u16) -> &'static [u8; 16] {
 // `cell_width = max_cell_width = 6`, `cell_height = top + bottom + 1 = 6`
 // (`setup_width_height`, `vdi_text.c:666-679`).
 //
-// So on every screen where the normal font is 8×16, the AES's SMALL font is
-// the 6×6 face; `CELL_W`/`CELL_H` above are `gl_wchar`/`gl_hchar`, and the
-// two constants below are `gl_wschar`/`gl_hschar`. The unit test at the
+// `SIZ_TAB[1]` folds the whole ring and so does not depend on the screen:
+// on every screen the AES's SMALL font is the 6×6 face, and the two
+// constants below are `gl_wschar`/`gl_hschar`. (The normal font,
+// `gl_wchar`/`gl_hchar`, is the screen's [`text_init_def_font`].) The unit test at the
 // bottom of this module re-derives both from [`RING`] so they cannot drift.
 
 /// The AES SMALL-font cell width — EmuTOS `gl_wschar` (`gemgraf.c:42`).
@@ -166,6 +174,11 @@ pub struct SysFont {
     pub form_height: i16,
     /// Face name (`name`), NUL-free.
     pub name: &'static [u8],
+    /// `flags & F_DEFAULT` (`include/fonthdr.h:21`) — a face [`text_init_def_font`]
+    /// may choose as the default. Set on the 8×8 and the 8×16 face
+    /// (`bios/fnt_st_8x8.c:165`, `bios/fnt_st_8x16.c:293`), not on the 6×6
+    /// (`bios/fnt_st_6x6.c:109`).
+    pub f_default: bool,
 }
 
 /// 6×6 system font header (EmuTOS `bios/fnt_st_6x6.c`).
@@ -190,6 +203,7 @@ pub static FON_6X6: SysFont = SysFont {
     skew: 0xAAAA,
     form_height: 6,
     name: b"6x6 system font",
+    f_default: false,
 };
 
 /// 8×8 system font header (EmuTOS `bios/fnt_st_8x8.c`).
@@ -214,6 +228,7 @@ pub static FON_8X8: SysFont = SysFont {
     skew: 0x5555,
     form_height: 8,
     name: b"8x8 system font",
+    f_default: true,
 };
 
 /// 8×16 system font header (EmuTOS `bios/fnt_st_8x16.c`).
@@ -238,16 +253,63 @@ pub static FON_8X16: SysFont = SysFont {
     skew: 0x5555,
     form_height: 16,
     name: b"8x16 system font",
+    f_default: true,
 };
 
 /// The font ring, smallest first (EmuTOS `font_ring[0..2]`, all `font_id
 /// = 1`). `vst_height`/`vst_point` walk this to pick a size.
 pub const RING: [SysFontId; 3] = [SysFontId::F6x6, SysFontId::F8x8, SysFontId::F8x16];
 
-/// Default face for a freshly-opened workstation (EmuTOS `def_font` for a
-/// `V_REZ_VT >= 400` screen: the `F_DEFAULT` font whose `form_height`
-/// matches the 16-line cell, i.e. the 8×16 font).
-pub const DEFAULT: SysFontId = SysFontId::F8x16;
+/// EmuTOS `text_init`'s choice of `def_font` (`vdi/vdi_text.c:604-623`), the
+/// face every workstation opens with (`text_init2`, `:574`) and so the one the
+/// AES takes `gl_wchar`/`gl_hchar` from (`gsx_start`, `aes/gemgraf.c:405`):
+///
+/// ```c
+/// cell_height = (V_REZ_VT >= 400) ? 16 : 8;   /* to select among default fonts */
+/// ...
+/// if (fnt_ptr->flags & F_DEFAULT) {
+///     if (!def_font)
+///         def_font = fnt_ptr;
+///     else if (def_font->form_height != cell_height)
+///         def_font = fnt_ptr;
+/// }
+/// ```
+///
+/// over every font of the ring in order. For the built-in ring that is the
+/// 8×8 face under 400 lines and the 8×16 face from 400 up. EmuTOS runs the
+/// walk once per `v_opnwk`; NewTOS' screen height does not change after
+/// boot, so the callers evaluate it for the live `V_REZ_VT`.
+///
+/// Every ring has an `F_DEFAULT` face; the `None` arm of the walk (EmuTOS
+/// would leave `def_font` NULL) cannot occur, so the first ring face stands in
+/// for it, which is also what EmuTOS' face lookups fall back to (`&fon6x6`,
+/// `vdi_text.c:964`).
+pub fn text_init_def_font(v_rez_vt: i16) -> SysFontId {
+    let cell_height = if v_rez_vt >= 400 { 16 } else { 8 };
+    let mut def: Option<SysFontId> = None;
+    for &id in &RING {
+        if !font(id).f_default {
+            continue;
+        }
+        match def {
+            None => def = Some(id),
+            Some(d) if font(d).form_height != cell_height => def = Some(id),
+            Some(_) => {}
+        }
+    }
+    def.unwrap_or(RING[0])
+}
+
+/// EmuTOS `font_set_default`'s font for the VT52 console (`bios/font.c:72-88`):
+/// `font = (V_REZ_VT < 400) ? &fon8x8 : &fon8x16;` — the cell `v_cel_ht`,
+/// `v_cel_mx`/`v_cel_my` and every glyph the console draws come from it.
+pub fn font_set_default(v_rez_vt: i16) -> SysFontId {
+    if v_rez_vt < 400 {
+        SysFontId::F8x8
+    } else {
+        SysFontId::F8x16
+    }
+}
 
 /// The [`SysFont`] header for a ring id.
 #[inline]
@@ -274,6 +336,20 @@ pub fn map_code(f: &SysFont, code: i16) -> u16 {
         code
     };
     (c - f.first_ade) as u16
+}
+
+/// The `form_height` rows of character `c` (low 8 bits) in font `id`, MSB =
+/// leftmost pixel (the 6×6 face uses bits 7..2) — the slice
+/// [`RasterBackend::draw_glyph_sized`](super::backend::RasterBackend::draw_glyph_sized)
+/// takes with the face's `max_cell_width` × `form_height`.
+#[inline]
+pub fn glyph_rows(id: SysFontId, c: u16) -> &'static [u8] {
+    let c = (c & 0xFF) as usize;
+    match id {
+        SysFontId::F6x6 => &SYSTEM_FONT_6X6[c],
+        SysFontId::F8x8 => &SYSTEM_FONT_8X8[c],
+        SysFontId::F8x16 => &SYSTEM_FONT_8X16[c],
+    }
 }
 
 /// One glyph scanline (`row`, 0-based from the cell top) of character `c`
@@ -325,13 +401,25 @@ mod tests {
         assert_eq!(sel.form_height, SMALL_CELL_H, "glyph rows == cell height");
     }
 
-    /// The normal ("IBM") pair is the default face's, i.e. `CELL_W`/`CELL_H`
-    /// are `gl_wchar`/`gl_hchar` for a `V_REZ_VT >= 400` screen.
+    /// `text_init`'s walk (`vdi_text.c:612-623`) over the ring: the 8×8 face
+    /// under 400 lines, the 8×16 face from 400 up — and `CELL_W`/`CELL_H` are
+    /// the 8×16 face's cell, `top + bottom + 1` as `vqt_attributes` reports it.
     #[test]
-    fn normal_font_is_the_default_face() {
-        let f = font(DEFAULT);
+    fn def_font_follows_v_rez_vt() {
+        for h in [0, 200, 240, 399] {
+            assert_eq!(text_init_def_font(h), SysFontId::F8x8, "V_REZ_VT {h}");
+            assert_eq!(font_set_default(h), SysFontId::F8x8, "console, V_REZ_VT {h}");
+        }
+        for h in [400, 480, 1080] {
+            assert_eq!(text_init_def_font(h), SysFontId::F8x16, "V_REZ_VT {h}");
+            assert_eq!(font_set_default(h), SysFontId::F8x16, "console, V_REZ_VT {h}");
+        }
+        let f = font(SysFontId::F8x16);
         assert_eq!(CELL_W, f.max_cell_width);
         assert_eq!(CELL_H, f.top + f.bottom + 1);
         assert_eq!(f.form_height, CELL_H);
+        for id in RING {
+            assert_eq!(glyph_rows(id, b'A' as u16).len(), font(id).form_height as usize);
+        }
     }
 }

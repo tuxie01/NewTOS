@@ -336,6 +336,17 @@ pub fn run() -> u8 {
     wait_for_user(host)
 }
 
+/// The character cell `(width, height)` the boot screen's text is drawn in:
+/// its virtual workstation's font right after `v_opnvwk` — the VDI's
+/// `def_font` for the screen height (EmuTOS `text_init`,
+/// `references/emutos/vdi/vdi_text.c:612`: 8×8 under 400 lines, else 8×16),
+/// `vqt_attributes`' cell `max_cell_width` × `top + bottom + 1`.
+fn text_cell() -> (i16, i16) {
+    let (_, sh) = crate::vdi_backend::dims();
+    let f = tos_api::vdi::font::font(tos_api::vdi::font::text_init_def_font(sh as i16));
+    (f.max_cell_width, f.top + f.bottom + 1)
+}
+
 /// Space between the frame's top/bottom edge and the first/last row.
 const PAD_Y: i16 = 16;
 /// Space a centred row keeps from the frame's left and right edges.
@@ -459,8 +470,8 @@ impl<'a> Sheet<'a> {
 
     /// A text line centred in the frame, in `colour`.
     fn centred(&mut self, text: &[u8], colour: i16) {
-        use tos_api::vdi::font::CELL_W;
-        self.need_centred(text.len() as i16 * CELL_W);
+        let (cell_w, _) = text_cell();
+        self.need_centred(text.len() as i16 * cell_w);
         let (cx, y) = (self.cx(), self.y);
         if let Some(v) = self.v.as_deref_mut() {
             v.set_text_align(1, 5); // centre, top
@@ -480,11 +491,11 @@ impl<'a> Sheet<'a> {
 
     /// A `label : value` pair around the frame's centre (see [`pair`]).
     fn pair(&mut self, label: &[u8], value: &[u8]) {
-        use tos_api::vdi::font::CELL_W;
+        let (cell_w, _) = text_cell();
         // `pair` writes at most 22 label bytes plus " :", 8 px left of centre,
         // and the value 8 px right of it: the wider half sets the width.
-        let left = (label.len().min(22) as i16 + 2) * CELL_W + 8;
-        let right = value.len() as i16 * CELL_W + 8;
+        let left = (label.len().min(22) as i16 + 2) * cell_w + 8;
+        let right = value.len() as i16 * cell_w + 8;
         self.need_centred(2 * left.max(right));
         let (cx, y) = (self.cx(), self.y);
         if let Some(v) = self.v.as_deref_mut() {
@@ -494,9 +505,9 @@ impl<'a> Sheet<'a> {
 
     /// A left-aligned line of the USB tree, `indent` px into the tree.
     fn usb_line(&mut self, indent: i16, text: &[u8]) {
-        use tos_api::vdi::font::CELL_W;
+        let (cell_w, _) = text_cell();
         let dx = USB_INSET + indent;
-        self.need_w = self.need_w.max(dx + text.len() as i16 * CELL_W + PAD_X);
+        self.need_w = self.need_w.max(dx + text.len() as i16 * cell_w + PAD_X);
         let (x, y) = (self.x0 + dx, self.y);
         if let Some(v) = self.v.as_deref_mut() {
             v.set_text_align(0, 5); // left, top
@@ -507,8 +518,8 @@ impl<'a> Sheet<'a> {
 
     /// The inverse-video message bar, centred (see [`display_inverse`]).
     fn inverse(&mut self, text: &[u8]) {
-        use tos_api::vdi::font::CELL_W;
-        self.need_centred(INFO_LENGTH * CELL_W);
+        let (cell_w, _) = text_cell();
+        self.need_centred(INFO_LENGTH * cell_w);
         let (cx, y) = (self.cx(), self.y);
         if let Some(v) = self.v.as_deref_mut() {
             display_inverse(v, cx, y, text);
@@ -521,7 +532,7 @@ impl<'a> Sheet<'a> {
 /// edge and ends at its bottom edge, so a measuring pass leaves the frame
 /// height in `s.y`.
 fn lay_out(s: &mut Sheet, c: &Content) {
-    use tos_api::vdi::font::CELL_H;
+    let (_, cell_h) = text_cell();
 
     // ── NewTOS logo: a grid of coloured blocks (EmuTOS' print_art idea —
     //    each cell is a colour, not an ASCII char). "New" blue, "TOS" red. ──
@@ -597,7 +608,7 @@ fn lay_out(s: &mut Sheet, c: &Content) {
     // ── footer ──
     s.gap(26);
     s.centred(INDEPENDENCE_NOTICE.as_bytes(), BLACK);
-    s.gap(CELL_H + PAD_Y);
+    s.gap(cell_h + PAD_Y);
 }
 
 /// `display_inverse(s, FALSE)` (`references/emutos/bios/initinfo.c:134-150`) —
@@ -613,11 +624,11 @@ fn lay_out(s: &mut Sheet, c: &Content) {
 /// `vdi_textblit.c` `WM_REPLACE`), which would repaint the bar white under
 /// every character cell.
 fn display_inverse(v: &mut Vdi, cx: i16, y: i16, s: &[u8]) {
-    use tos_api::vdi::font::{CELL_H, CELL_W};
+    let (cell_w, cell_h) = text_cell();
 
-    let half = INFO_LENGTH * CELL_W / 2;
+    let half = INFO_LENGTH * cell_w / 2;
     v.set_fill(BLACK);
-    v.fill_rect(cx - half, y, cx + half - 1, y + CELL_H - 1);
+    v.fill_rect(cx - half, y, cx + half - 1, y + cell_h - 1);
     v.set_text_align(1, 5); // centre, top
     v.set_text_color(WHITE);
     v.set_write_mode(2); // transparent

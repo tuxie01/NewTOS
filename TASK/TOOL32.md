@@ -104,7 +104,7 @@ Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
     Byte-Abschneiden) anders, als Entscheidung Q6 im Code.
 18. `vdi_esc.c:241-247` gegen `escape.rs:793@v_escape`: Escape 17 ruft `Scrdmp()` nicht; `dump_vec`
     nicht verfolgt.
-19. `vdi_text.c:592-665` gegen `tos-api/src/vdi/font.rs:250@DEFAULT`: Default-Font fest 8x16 statt
+19. `vdi_text.c:592-665` gegen `font::DEFAULT` (seit V32 `tos-api/src/vdi/font.rs:287@text_init_def_font`): Default-Font fest 8x16 statt
     nach `V_REZ_VT >= 400`.
 
 ## Stand Teil 3 und Abschluss (2026-11-05)
@@ -125,7 +125,7 @@ Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
 21. `vdi_mouse.c:565` gegen `mouse.rs:343@ensure_init`: EmuTOS setzt bei jedem `v_opnwk`
     Versteckzaehler 1, Mitte, Tasten 0, Standardform; NewTOS einmalig.
 22. `vdi_control.c:573` gegen `tos-api/src/vdi/workstation.rs:374@v_clswk`: kein Maus-/Timer-Exit.
-23. `vdi_control.c:507-531` gegen `workstation.rs:348@v_opnwk`: Videomodus-Wechsel per
+23. `vdi_control.c:507-531` gegen `workstation.rs:359@v_opnwk`: Videomodus-Wechsel per
     `INTIN[0]-2` fehlt.
 24. `vdi_mouse.c:668` gegen `mouse.rs:169@set_state`: Zeiger im VBL gegen synchron (wie 9).
 25. `vdi_main.c:171-190` gegen `tos-api/src/vdi/mod.rs:376@dispatch_in`: Line-A-Spiegel

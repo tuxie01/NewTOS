@@ -26,13 +26,13 @@
 //! **What is switchable here and what is not.** The rule is checked for two
 //! font sizes by feeding it the two real ring fonts' headers (`FON_8X16` →
 //! 19, `FON_8X8` → 11, the cell height computed as `vqt_attributes` reports
-//! it: `top + bottom + 1`). At run time NewTOS's VDI opens every workstation
-//! on the 8×16 face (`tos_api::vdi::font::DEFAULT`, a constant; EmuTOS picks
-//! `def_font` per `V_REZ_VT`), and the raster backend carries no font, so the
-//! AES's live `gl_hchar` cannot be switched from a test — the three readers
-//! are therefore pinned to each other and to the rule at the one live size,
-//! and that size must still be the measured 19 (ticket acceptance 3: the
-//! 2026-09-09 Pi/TT measurement stays explained).
+//! it: `top + bottom + 1`). The three readers are pinned to each other and to
+//! the rule at the TT and Pi sizes, which must still be the measured 19
+//! (ticket acceptance 3: the 2026-09-09 Pi/TT measurement stays explained).
+//! Since V32 the VDI picks `def_font` per `V_REZ_VT` as EmuTOS does
+//! (`tos_api::vdi::font::text_init_def_font`), so a screen under 400 lines
+//! switches the live `gl_hchar` to 8; `vdi_v32_default_font.rs` checks that
+//! size through `graf_handle`.
 //!
 //! **Rig.** A raster backend that keeps width/height and *ignores* drawing
 //! (the tracker draws the drop-down and saves the screen under it; nothing
