@@ -65,9 +65,9 @@ Abweichungs-Kandidaten aus dem Lesen (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
    (Strichphase/Rundung); NewTOS clippt auch bei `vs_clip(0)`.
 3. `vdi_line.c:1623` gegen `abline`: anderer Bresenham-Fehlerterm, Gleichheit fuer alle
    Steigungen nicht gezeigt.
-4. `vdi_fill.c:560` gegen `tos-api/src/vdi/primitives.rs:737@v_fillarea`: bei 1–2 Punkten zeichnet
+4. `vdi_fill.c:560` gegen `tos-api/src/vdi/primitives.rs:759@v_fillarea`: bei 1–2 Punkten zeichnet
    EmuTOS mit `fill_per` den Umriss, NewTOS nichts.
-5. `vdi_asm.S:84-95` gegen `primitives.rs:824@v_pmarker`: Kappung von `CONTRL[1]` auf
+5. `vdi_asm.S:84-95` gegen `primitives.rs:846@v_pmarker`: Kappung von `CONTRL[1]` auf
    `MAX_VERTICES` fehlt ausser in `v_pline`/`v_fillarea`.
 6. `vdi_fill.c:149` gegen `tos-api/src/vdi/attributes.rs:512@vsf_udpat`: NewTOS speichert nur 16
    Woerter statt `INQ_TAB[4]*16`.

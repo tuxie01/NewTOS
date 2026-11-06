@@ -24,3 +24,6 @@ mod cases_v20;
 
 #[path = "vdi_reference/cases_v21.rs"]
 mod cases_v21;
+
+#[path = "vdi_reference/cases_v22.rs"]
+mod cases_v22;

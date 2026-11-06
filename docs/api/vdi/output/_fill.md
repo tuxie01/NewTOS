@@ -81,6 +81,37 @@ governed by the polyline path.
   first for both the fill and (when `fill_per`) the perimeter. A caller
   that repeats the first vertex as the last gets a degenerate closing edge
   of zero length, which is harmless.
+- **No minimum vertex count.** `polygon()` checks none
+  (`vdi_fill.c:560-610`); `count` edges are scan-filled and `count+1`
+  points stroked whatever `count` is (added 2026-11-06, TASK/V22,
+  measured as VDI-DRAW-004):
+  - **0 vertices** — nothing: `clc_flit` has no edge, and the perimeter is
+    a 1-point `polyline`, whose loop `i = count-1; i > 0` draws no segment
+    (`vdi_line.c:1106`). (`GSX_ENTRY` copies no `PTSIN` for 0,
+    `vdi_asm.S:93`, so the y-extent is read from a stale `local_ptsin[0]`;
+    nothing is drawn either way.)
+  - **1 vertex** — the only edge (vertex → its closing copy) is
+    horizontal and `clc_flit` ignores it (`:453-455`), so the fill draws
+    nothing; with `fill_per` the perimeter is the dot at the vertex
+    (`polyline` of 2 equal points).
+  - **2 vertices** — the edge there and the edge back cross every scan
+    line of the half-open band `(miny, maxy]` at the **same** x (both
+    take the same endpoint and the same rounding, `:475-487`), so the
+    fill alone draws one pixel per row — a dotted stroke, also with
+    `fill_per` off (`vdi-v18.tsv` 51/53, probe K4C/K4D). A horizontal
+    pair fills nothing. With `fill_per` the 3-point perimeter
+    (there and back) is stroked over it.
+- **More than `MAX_VERTICES` (1024).** `GSX_ENTRY` caps `CONTRL[1]` at
+  `MAX_VERTICES` and copies that many vertices into
+  `local_ptsin[2*MAX_VERTICES]` (`vdi_asm.S:95-107`); `polygon()` then
+  writes the closing vertex to `ptsin[count]` (`vdi_fill.c:596`), which
+  for `count == MAX_VERTICES` is past `local_ptsin`, i.e. the start of
+  `fill_buffer` (`include/vdiext.h:47-51`) — which `clc_flit` overwrites
+  with scan-line crossings while it still reads that vertex. EmuTOS'
+  result is a buffer overrun, not a defined polygon (probe K5D: no fill,
+  an outline to a wrong point). **NewTOS deviates by decision**
+  (TASK/V18 decision C, `docs/COMPATIBILITY.md`): it closes the first
+  `MAX_VERTICES` vertices back to vertex 0 like any other polygon.
 
 ### Inputs / Outputs
 
@@ -246,6 +277,10 @@ The fill order and its limit are observable, so they are contract:
 - **`v_fillarea` auto-close:** `CONTRL[1]=3` with three distinct vertices
   fills the triangle **without** the caller repeating the first vertex; a
   4th vertex equal to the first changes nothing.
+- **`v_fillarea` 1–2 vertices:** `CONTRL[1]=1` with `fill_per` draws the
+  vertex, without it nothing; `CONTRL[1]=2` draws one fill pixel per row of
+  `(miny, maxy]` even with `fill_per` off, plus the perimeter stroke when
+  on (`tosdump/cases/vdi-v18.tsv` 51/53; `tosdump/probes/vdprobe.c` K4A–K4H).
 - **`v_fillarea` interior:** with `fill_style=FIS_SOLID`, the polygon is
   solid `fill_color`; with `FIS_HOLLOW` and `fill_per=TRUE`, only the
   solid `fill_color` outline is drawn (interior empty).

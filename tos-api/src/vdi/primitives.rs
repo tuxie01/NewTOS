@@ -639,6 +639,12 @@ static POLY: PolyScratch = PolyScratch {
 /// clipped to `clip`, reproducing EmuTOS `polygon` + `clc_flit`
 /// (`vdi_fill.c:434-610`). Even-odd rule; each scanline span is a
 /// 1-pixel-tall patterned rectangle, so the pattern stays screen-aligned.
+///
+/// **No minimum vertex count**, as in EmuTOS' `polygon` (`vdi_fill.c:560`):
+/// one vertex has only the horizontal edge back to itself and fills
+/// nothing; two vertices have the edge there and the edge back, which cross
+/// every scan line of `(miny, maxy]` at the same x, so they fill one pixel
+/// per row — a dotted stroke (V22, VDI-DRAW-004). `n == 0` has no edge.
 pub(super) fn fill_polygon(
     backend: &dyn RasterBackend,
     n: usize,
@@ -646,7 +652,7 @@ pub(super) fn fill_polygon(
     fill: PatternFill,
     clip: ClipRect,
 ) {
-    if n < 3 {
+    if n == 0 {
         return;
     }
     let n = n.min(MAX_VERTS);
@@ -736,12 +742,25 @@ pub(super) fn fill_polygon(
 
 /// Opcode 9 — `v_fillarea`: fill the closed polygon `PTSIN[0..2*n]` with
 /// the current interior style. If `fill_per`, outline the perimeter.
+///
+/// Any vertex count is drawn, as by EmuTOS' `polygon` (`vdi_fill.c:560-610`
+/// has no minimum; V22, VDI-DRAW-004): one vertex is the perimeter's dot,
+/// two are a stroke the fill alone already dots ([`fill_polygon`]).
+/// `CONTRL[1] = 0` draws nothing — no edge, and the perimeter is a
+/// one-point polyline (`vdi_line.c:1106`).
+///
+/// Of more than [`MAX_VERTS`] vertices the first `MAX_VERTS` are taken and
+/// closed back to vertex 0. EmuTOS writes that closing vertex to
+/// `local_ptsin[2 * MAX_VERTICES]`, which is the start of `fill_buffer`
+/// (`vdi_fill.c:596`, `include/vdiext.h:47-51`), and `clc_flit` overwrites
+/// it with crossings — its result is a buffer overrun, not a defined
+/// polygon. NewTOS closes cleanly: user decision C (TASK/V18), recorded in
+/// `docs/COMPATIBILITY.md` (VDI-DRAW-006).
 pub fn v_fillarea(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
-    let n = pb.contrl(1).max(0) as usize;
-    if n < 3 {
+    let n = (pb.contrl(1).max(0) as usize).min(MAX_VERTS);
+    if n == 0 {
         return;
     }
-    let n = n.min(MAX_VERTS);
     // SAFETY: see [`PolyScratch`]. `fill_polygon` below borrows `POLY.xs`,
     // a different cell, so the two do not alias.
     let v = unsafe { &mut *POLY.pts.get() };

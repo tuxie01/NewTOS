@@ -650,6 +650,14 @@ pub fn workstation() -> &'static Workstation {
     })
 }
 
+/// The 16-bit screen word at `(x, y)` on the harness workstation's screen
+/// ([`MemBackend::screen_word`]), for tests that compare a drawn rectangle
+/// pixel by pixel with a probe map (`tosdump/probes/vdprobe.c` reads the
+/// same words back through `vro_cpyfm`). Call [`workstation`] first.
+pub fn screen_word(x: i16, y: i16) -> u16 {
+    HOST_CELL.get().expect("workstation() not opened").raster.screen_word(x, y)
+}
+
 /// The reset the dumper runs before every case, call for call.
 ///
 /// This is a port of `tosdump/core/runner.c`'s `td_reset_vdi`, and it has to

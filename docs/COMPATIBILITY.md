@@ -659,6 +659,29 @@ neighbouring rows included, is EmuTOS'. Code `tos-api/src/vdi/line.rs:39@index`;
 spec `docs/api/vdi/output/_lines-markers.md` (§ "One segment: `abline`",
 Addressing).
 
+**`v_fillarea` with 1024 or more vertices closes the polygon cleanly; EmuTOS
+overruns its vertex buffer** — user decision C, 2026-11-05 (TASK/V18,
+*"ja das passt so"*), recorded by TASK/V22 (finding VDI-DRAW-006). EmuTOS'
+`GSX_ENTRY` caps `CONTRL[1]` at `MAX_VERTICES` = 1024 and copies that many
+vertices into `local_ptsin[2*MAX_VERTICES]`
+(`references/emutos/vdi/vdi_asm.S:95-107`); `polygon` then appends the closing vertex at `ptsin[count]`
+(`references/emutos/vdi/vdi_fill.c:596`). For `count` = 1024 that is one
+vertex past `local_ptsin`, the start of `fill_buffer`
+(`references/emutos/include/vdiext.h:47-51`), which `clc_flit` overwrites with
+the scan-line crossings while it still reads the vertex as the last edge's end
+— the fill and the outline (`:608`) go to whatever the crossings left there.
+That is a buffer overrun, not a defined result (probe K5D, 1030 vertices
+whose first 1024 form a triangle: EmuTOS fills nothing and draws the outline
+to a wrong point, `measurements/measurement-2026-11-05-v18-t1/RUNINFO.TXT`).
+NewTOS takes the first 1024 vertices and closes them back to vertex 0 like
+any other polygon. **Observable difference:** only for `v_fillarea` with
+`CONTRL[1]` >= 1024 (the filled GDP shapes have at most `MAX_ARC_CT` + 2 = 130
+points, `references/emutos/vdi/vdi_defs.h:85`): EmuTOS draws an undefined
+shape, NewTOS the polygon of the first 1024 vertices. Up to 1023 vertices
+both draw the same, 1 and 2 vertices included. Code `tos-api/src/vdi/primitives.rs:759@v_fillarea`; spec
+`docs/api/vdi/output/_fill.md` (§ "PTSIN vertex contract"); host test
+`tos-api/tests/vdi_reference/cases_v22.rs`.
+
 **Key auto-repeat runs in the polled input pump, not in the timer
 interrupt** — user decision 2026-10-02 (variant (b) of
 `TASK/PORT06-KEYS-DIAGNOSIS.MD`), landed as KEYS01 2026-10-03. EmuTOS
