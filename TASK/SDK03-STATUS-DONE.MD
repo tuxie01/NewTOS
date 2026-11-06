@@ -35,7 +35,7 @@ als getrennte Zeichenketten.
 `sysinfo-host-mintbind.h`, eingehaengt in `sdk/run-host-tests.sh` als
 `sysinfo-host`. Uebersetzt das Overlay (unter AddressSanitizer) und das echte
 `sdk/libc/newtos-arch/getcookie.c`; `Ssystem(S_GETCOOKIE)` spielt der Harness
-wie der Kernel (`tos-api/src/gemdos/ssystem.rs:345@s_getcookie`: Zeigerform
+wie der Kernel (`tos-api/src/gemdos/ssystem.rs:400@s_getcookie`: Zeigerform
 schreibt vier Byte und liefert 0, Fehlschlag -1). Jeder Fall laeuft in einem
 eigenen Kindprozess (`si_platform` merkt sich das Ergebnis statisch).
 15 Faelle: kein `_MCH`, ST, STe, MSTe, TT, Falcon, FireBee (`_CF_`), Milan,

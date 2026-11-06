@@ -82,6 +82,10 @@ pub mod selftest_emmc;
 pub mod vdi_backend;
 pub mod vdi_client;
 
+/// SD diagnosis on the screen (TASK/HW08; feature `sd-diag` only).
+#[cfg(feature = "sd-diag")]
+pub mod sd_diag;
+
 // TEMPORARY debug tooling — NOT for product history. Gated behind
 // `dbg_qedtrace::SVC_TRACE` (QED mode / `svc-seq-trace` feature); remove the
 // module + its exception hooks to drop it entirely.

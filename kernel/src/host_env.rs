@@ -434,6 +434,21 @@ impl Host for KernelHost {
     /// `docs/api/usb/usb-snapshot.md`). A board whose controller was not found
     /// (raspi4b in QEMU, qemu-virt without `qemu-xhci`) answers
     /// `NoController`.
+    #[cfg(feature = "sd-diag")]
+    fn sd_diag_text(&self, out: &mut [u8]) -> Option<usize> {
+        Some(crate::sd_diag::render(out))
+    }
+
+    #[cfg(feature = "sd-diag")]
+    fn sd_diag_toggle(&self) -> Option<bool> {
+        Some(crate::sd_diag::toggle())
+    }
+
+    #[cfg(all(feature = "sd-fault", feature = "board-rpi4"))]
+    fn sd_fault(&self, arm: &[u32; 6]) -> Option<u32> {
+        Some(crate::drivers::bcm2711::emmc_fault::arm(arm))
+    }
+
     fn usb_snapshot(
         &self,
         req: &tos_api::host::UsbSnapRequest,
@@ -509,6 +524,9 @@ fn pump_devices() {
         crate::drivers::usb::poll();
     }
     crate::ikbd::poll_repeat();
+    // Debug feature `sd-diag` (TASK/HW08): the report after the first failure.
+    #[cfg(feature = "sd-diag")]
+    crate::sd_diag::poll();
 }
 
 /// One pass of the timer-interrupt input pump ([`irq_input_pump`]): drain

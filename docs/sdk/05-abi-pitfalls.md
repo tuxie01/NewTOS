@@ -213,7 +213,7 @@ kernel jar; use `Ssystem(S_SETCOOKIE)`.
 **Cookie values are zero-extended.** `Getcookie(tag, &v)` hands `Ssystem`
 a `long v = 0`, and the kernel stores the 32-bit value into its low four
 bytes (`sdk/libc/newtos-arch/getcookie.c:35@Getcookie`,
-`tos-api/src/gemdos/ssystem.rs:366@put_u32`): a value with bit 31 set
+`tos-api/src/gemdos/ssystem.rs:421@put_u32`): a value with bit 31 set
 (`_MCH` = `0xFFFFFFFF`) arrives as a large positive `long`, where the 68k's
 32-bit LONG was negative. Compare it as `(unsigned int)` or narrow it first
 ([08](08-porting-checklist.md), the `_MCH`/`_VDO` item).

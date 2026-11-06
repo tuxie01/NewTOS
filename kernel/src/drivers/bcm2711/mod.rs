@@ -6,6 +6,10 @@
 
 pub mod clock_tags;
 pub mod emmc;
+#[cfg(feature = "sd-diag")]
+pub mod emmc_diag;
+#[cfg(feature = "sd-fault")]
+pub mod emmc_fault;
 pub mod emmc_xfer;
 pub mod framebuffer;
 pub mod mailbox;

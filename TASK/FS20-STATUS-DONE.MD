@@ -15,10 +15,10 @@ Datum 2026-10-29 · Beleg
   Verweise in `docs/api/gemdos/_dispatcher.md` §8, `docs/api/bios/09-mediach.md`,
   `docs/api/gemdos/process/_run-ownership-curdir.md`.
 - **Fix:** `tos-api/src/bdos/fs/cache.rs` — jeder Puffer kennt sein Laufwerk;
-  Treffer fragt `Mediach` (`tos-api/src/bdos/fs/cache.rs:263@hit_test`), jeder
+  Treffer fragt `Mediach` (`tos-api/src/bdos/fs/cache.rs:275@hit_test`), jeder
   Geraetezugriff macht die Medientests eines logischen `Rwabs`
-  (`tos-api/src/bdos/fs/cache.rs:278@rwabs_test`), `mark_bcbs_invalid` =
-  `tos-api/src/bdos/fs/cache.rs:292@invalidate_drive`. `osif` =
+  (`tos-api/src/bdos/fs/cache.rs:290@rwabs_test`), `mark_bcbs_invalid` =
+  `tos-api/src/bdos/fs/cache.rs:304@invalidate_drive`. `osif` =
   `tos-api/src/gemdos/mod.rs:150@dispatch_inner` (Neustart) mit
   `tos-api/src/gemdos/mod.rs:254@media_change_relog`; `offree` =
   `tos-api/src/bdos/fs/file.rs:1350@free_drive_files`, `freetree`s

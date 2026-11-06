@@ -567,7 +567,7 @@ On `errcode == E_CHNG`, in this order:
 
 Any other hard error (`errcode != E_CHNG`) only marks the drive's buffers
 invalid and returns the code (`:489-492`); see §3 and the HW03 deviation in
-`tos-api/src/bdos/fs/cache.rs:348@write_back` (NewTOS keeps a dirty buffer
+`tos-api/src/bdos/fs/cache.rs:360@write_back` (NewTOS keeps a dirty buffer
 whose write-back failed).
 
 **What a media change does not touch.** The DTA of an `Fsfirst`/`Fsnext`
@@ -591,13 +591,13 @@ cluster 3 in partition sector 277, the new geometry's (`datrec` 273).
   a device access, as `ckdrv` does for a fixed drive.
 - The BDOS reaches the card through the block cache (`bios::bcache`), not
   through `Rwabs`, so the BDOS sector cache asks the BIOS media state itself
-  at places 2 and 3 (`tos-api/src/bdos/fs/cache.rs:263@hit_test`,
-  `tos-api/src/bdos/fs/cache.rs:278@rwabs_test`): on a hit `Mediach`'s answer
+  at places 2 and 3 (`tos-api/src/bdos/fs/cache.rs:275@hit_test`,
+  `tos-api/src/bdos/fs/cache.rs:290@rwabs_test`): on a hit `Mediach`'s answer
   (`bios::media_change`), before every device access the media tests of a
   logical `Rwabs` without `RW_NOMEDIACH` (`forcechange` armed or
   `Mediach` > 0 → `E_CHNG`). Each buffer remembers its drive (`b_bufdrv`).
 - There is no `longjmp`: the access fails, the cache records `E_CHNG` and the
-  first `errdrv` of the call (`tos-api/src/bdos/fs/cache.rs:227@signal_media_change`),
+  first `errdrv` of the call (`tos-api/src/bdos/fs/cache.rs:239@signal_media_change`),
   and the call returns through its error paths. While the change is pending
   every further access to that drive fails the same way, so nothing reaches
   the disk after the detection. `gemdos::dispatch` — `osif` — runs the call
@@ -608,7 +608,7 @@ cluster 3 in partition sector 277, the new geometry's (`datrec` 273).
   `tos-api/src/bdos/fs/file.rs:1350@free_drive_files`, `freetree`'s
   `dirtbl` half = `tos-api/src/bdos/fs/curdir.rs:332@free_drive` (NewTOS keeps
   no DND tree), the DMD = `tos-api/src/bdos/fs/fat.rs:108@log_out`,
-  `mark_bcbs_invalid` = `tos-api/src/bdos/fs/cache.rs:292@invalidate_drive`,
+  `mark_bcbs_invalid` = `tos-api/src/bdos/fs/cache.rs:304@invalidate_drive`,
   `Getbpb` + `log_media` = `Volume::mount` (`bpb::geometry` clears
   `forcechange`, `docs/api/bios/07-getbpb.md`). A `Getbpb` refusal returns
   `E_CHNG`; NewTOS has no `log_media` failure of its own (`bpb::parse` already

@@ -15,6 +15,9 @@
 #   make pxprobe-m68k     PXPROBE.PRG, the Pexec/Fsfirst media-change probe
 #                         (probes/pxprobe.c)
 #   make pxprobe-newtos   PXPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make wfprobe-m68k     WFPROBE.PRG, a failed sector write (probes/wfprobe.c);
+#                         WFCASE=<id> picks the case at build time
+#   make wfprobe-newtos   WFPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make hkprobe-m68k     HKPROBE.PRG, the OS-hook probe (probes/hkprobe.c)
 #   make hkprobe-newtos   HKPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make axprobe-m68k     AXPROBE.PRG, a kbdvec hook during Bconin(1)
@@ -83,7 +86,7 @@ BUILD := build
 
 .PHONY: all dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
         dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
-        scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
+        scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos wfprobe-m68k wfprobe-newtos \
         pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
         axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
         sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
@@ -91,7 +94,7 @@ BUILD := build
         akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos dcprobe-m68k dcprobe-newtos hzprobe-newtos host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
-     scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos \
+     scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos wfprobe-m68k wfprobe-newtos \
      pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
      axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
      sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
@@ -184,6 +187,16 @@ $(BUILD)/PXPROBE.PRG: probes/pxprobe.c | $(BUILD)
 pxprobe-newtos: $(BUILD)/PXPROBE.NAP
 $(BUILD)/PXPROBE.NAP: probes/pxprobe.c build-pxprobe-newtos.sh | $(BUILD)
 	./build-pxprobe-newtos.sh $@
+
+# The write-failure probe (TASK/HW08): the same shape as gcprobe, one case per
+# build (WFCASE=<id>; without it the probe asks on the console, the real Pi).
+# Always rebuilt: the case is not in the file's date. Run by probes/run-wfprobe.sh.
+wfprobe-m68k: | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror $(if $(WFCASE),-DWFCASE='"$(WFCASE)"') probes/wfprobe.c -o $(BUILD)/WFPROBE.PRG
+	@$(CROSS_MINT)size $(BUILD)/WFPROBE.PRG
+
+wfprobe-newtos: | $(BUILD)
+	WFCASE=$(WFCASE) ./build-wfprobe-newtos.sh $(BUILD)/WFPROBE.NAP
 
 # The OS-hook probe (TASK/BIOS15): no disk, any oracle profile. Run by
 # probes/run-hkprobe.sh.

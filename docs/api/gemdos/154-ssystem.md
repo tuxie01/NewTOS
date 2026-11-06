@@ -185,6 +185,17 @@ Approved 2026-10-23, **built 2026-10-23** (kernel part, `S_NEWTOS_USBSNAP` in
 |------|------:|-------|-------|
 | `S_NEWTOS_USBSNAP` | 2022 | input / USB | (USB01 step 2): snapshot of the enumerated USB devices into a caller buffer — device list with hub/port route, speed, VID/PID, chosen driver role + rejection reason, raw device/configuration/HID-report descriptors, per-device ring of raw interrupt reports, optional timed mute of the input decoder. Versioned little-endian buffer, `Ssystem(2022, buf, len)` with a 32-byte request header at `buf`; `E_OK` / `ERROR` (no USB controller, e.g. `raspi4b`) / `EINVAL`. Full spec: [`../usb/usb-snapshot.md`](../usb/usb-snapshot.md) |
 
+### NewTOS-own modes 2090, 2091 — debug features only (TASK/HW08)
+
+Exist only in a kernel built with the debug feature; in every other kernel they
+answer `EINVFN` like any unknown mode, and the numbers are not part of the
+system-information series.
+
+| Mode | Value | Feature | Notes |
+|------|------:|---------|-------|
+| `S_NEWTOS_SDDIAG` | 2090 | `sd-diag` | `Ssystem(2090, buf, len)`: the SD report as text into the buffer (cut at `len`, no terminator), its length as the result. `Ssystem(2090, 0, 0)`: show the report on the screen if hidden, hide it if shown, the same as Ctrl+Alt+F9; 1 = now shown, 0 = hidden. Text: `tos-api/src/bios/sd_diag.rs`. |
+| `S_NEWTOS_SDFAULT` | 2091 | `sd-fault` | `Ssystem(2091, buf)` with six little-endian `ULONG` at `buf`: `mode, skip, count, ms, lba_lo, lba_hi`: arm a fault for write commands in the SD driver (modes: `kernel/src/drivers/bcm2711/emmc_fault.rs`), 0 disarms, 0xFFFF only asks; the result is the number of faults fired since the last arming. `ERROR` on a board without an SD driver. |
+
 **Why the number block is free.** FreeMiNT's `sys/mint/ssystem.h` (@ `f906416`)
 assigns 0–29, 100 and `0x54f8` (21752), and reserves two ranges by comment:
 *"additional informations about the kernel / reserved 900 - 999"* and *"debug

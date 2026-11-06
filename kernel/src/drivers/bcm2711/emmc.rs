@@ -17,6 +17,8 @@
 
 use core::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, AtomicUsize, Ordering};
 
+#[cfg(feature = "sd-diag")]
+use super::emmc_diag;
 use super::emmc_xfer::{self as xfer, Transfer, TM_DAT_CARD2HOST, TM_MULTI};
 use crate::hal::block::{BlockDevice, BlockError, SECTOR_SIZE};
 
@@ -497,7 +499,7 @@ impl Phase {
     pub const COUNT: usize = 7;
 
     /// Index into the per-phase counters / [`PHASE_NAMES`].
-    const fn index(self) -> usize {
+    pub(super) const fn index(self) -> usize {
         self as usize
     }
 
@@ -708,10 +710,24 @@ const PHASES: [Phase; Phase::COUNT] = [
     Phase::WriteDone,
 ];
 
+#[cfg(not(feature = "sd-fault"))]
 #[inline(always)]
 fn rd(off: usize) -> u32 {
     // SAFETY: MMIO read at a valid SD-host register address.
     unsafe { core::ptr::read_volatile((base() + off) as *const u32) }
+}
+/// With `sd-fault`: what the driver reads of `STATUS` carries the injected
+/// stuck line ([`emmc_fault::Mode::Wedge`]).
+#[cfg(feature = "sd-fault")]
+#[inline(always)]
+fn rd(off: usize) -> u32 {
+    // SAFETY: MMIO read at a valid SD-host register address.
+    let v = unsafe { core::ptr::read_volatile((base() + off) as *const u32) };
+    if off == STATUS {
+        v | super::emmc_fault::forced_status(SR_DAT_INHIBIT, cntpct())
+    } else {
+        v
+    }
 }
 #[inline(always)]
 fn wr(off: usize, val: u32) {
@@ -777,6 +793,12 @@ fn note_failure(phase: Phase, status: u32, timed_out: bool) {
     ERR_LAST_STATUS.store(status, Ordering::Relaxed);
     ERR_LAST_PHASE.store(phase.index() as u32, Ordering::Relaxed);
     let report = REPORT_ERRORS.load(Ordering::Relaxed);
+    #[cfg(feature = "sd-diag")]
+    if report {
+        use tos_api::bios::sd_diag::FailKind;
+        let kind = if timed_out { FailKind::Timeout } else { FailKind::Io };
+        emmc_diag::failure(diag_now_us(), phase, kind, status);
+    }
     if timed_out {
         ERR_TIMEOUT_TOTAL.fetch_add(1, Ordering::Relaxed);
         ERR_TIMEOUT_PHASE[phase.index()].fetch_add(1, Ordering::Relaxed);
@@ -840,6 +862,12 @@ fn check_r1(cmd_index: u32, status: u32, mask: u32) -> Result<(), BlockError> {
     if status & mask == 0 {
         return Ok(());
     }
+    #[cfg(feature = "sd-diag")]
+    if REPORT_ERRORS.load(Ordering::Relaxed) {
+        // The refusal is not a wait: the log names the command's data phase.
+        let phase = if matches!(cmd_index, 24 | 25) { Phase::WriteRdy } else { Phase::ReadRdy };
+        emmc_diag::failure(diag_now_us(), phase, tos_api::bios::sd_diag::FailKind::Card, status);
+    }
     ERR_R1_TOTAL.fetch_add(1, Ordering::Relaxed);
     ERR_R1_LAST.store(status, Ordering::Relaxed);
     for (i, bit) in R1_BIT_MASKS.iter().enumerate() {
@@ -867,11 +895,17 @@ impl Emmc {
     /// (SD-HC §3.10.1) before `false` is returned.
     fn wait_clear(off: usize, mask: u32, phase: Phase) -> bool {
         let mut budget = Budget::new(phase.limit_ms());
+        #[cfg(feature = "sd-diag")]
+        let t0 = cntpct();
         loop {
             if rd(off) & mask == 0 {
+                #[cfg(feature = "sd-diag")]
+                emmc_diag::wait_done(phase, cntpct().wrapping_sub(t0));
                 return true;
             }
             if budget.expired() {
+                #[cfg(feature = "sd-diag")]
+                emmc_diag::wait_done(phase, cntpct().wrapping_sub(t0));
                 note_failure(phase, rd(INTERRUPT), true);
                 Self::recover(phase, 0);
                 return false;
@@ -889,19 +923,27 @@ impl Emmc {
     /// busy (audit finding 2, §3.2).
     fn wait_interrupt(flag: u32, phase: Phase) -> Result<(), BlockError> {
         let mut budget = Budget::new(phase.limit_ms());
+        #[cfg(feature = "sd-diag")]
+        let t0 = cntpct();
         loop {
             let i = rd(INTERRUPT);
             if i & INT_ERROR_MASK != 0 {
                 wr(INTERRUPT, i); // clear (W1C) — the value is kept below
+                #[cfg(feature = "sd-diag")]
+                emmc_diag::wait_done(phase, cntpct().wrapping_sub(t0));
                 note_failure(phase, i, false);
                 Self::recover(phase, i);
                 return Err(BlockError::Io);
             }
             if i & flag != 0 {
                 wr(INTERRUPT, flag); // clear the bit we consumed
+                #[cfg(feature = "sd-diag")]
+                emmc_diag::wait_done(phase, cntpct().wrapping_sub(t0));
                 return Ok(());
             }
             if budget.expired() {
+                #[cfg(feature = "sd-diag")]
+                emmc_diag::wait_done(phase, cntpct().wrapping_sub(t0));
                 note_failure(phase, i, true);
                 Self::recover(phase, 0);
                 return Err(BlockError::Timeout);
@@ -968,6 +1010,8 @@ impl Emmc {
                 return;
             }
             if budget.expired() {
+                #[cfg(feature = "sd-diag")]
+                emmc_diag::failure(diag_now_us(), phase, tos_api::bios::sd_diag::FailKind::Nonrecoverable, s);
                 ERR_NONRECOVERABLE.fetch_add(1, Ordering::Relaxed);
                 crate::kprintln!(
                     "[emmc] recovery incomplete, STATUS=0x{:08x} — non-recoverable (SD-HC 3.00 §3.10.1)",
@@ -1331,16 +1375,46 @@ impl Emmc {
             return Err(BlockError::Timeout);
         }
         let addr = self.card_address(lba)?;
+        // Debug feature `sd-fault` (TASK/HW08): the fault for this command.
+        #[cfg(feature = "sd-fault")]
+        let fault = super::emmc_fault::take_write(lba, blocks);
+        #[cfg(feature = "sd-fault")]
+        let addr = if fault == super::emmc_fault::Mode::OutOfRange {
+            self.card_address(self.blocks.load(Ordering::Relaxed) + 0x1000)?
+        } else {
+            addr
+        };
         wr(BLKSIZECNT, xfer::blksizecnt(blocks, SECTOR_SIZE));
         let mask = self.next_r1_mask(lba, blocks);
         // Same as the read side: CMD24/CMD25's R1 arrives before the data
         // phase. This is the check whose absence let a write past the end
         // of the card report success (audit finding 3, driven).
         let (cmdtm, index) = if multi { (WRITE_MULTIPLE, 25) } else { (WRITE_SINGLE, 24) };
+        #[cfg(feature = "sd-fault")]
+        if fault == super::emmc_fault::Mode::R1 {
+            // No command: the R1 path with a status of a card in transfer
+            // state (`CURRENT_STATE` = 4, SD Phys 9.10 Table 4-42).
+            let e = check_r1(index, R1_WP_VIOLATION | (4 << 9), mask);
+            Self::recover_no_abort(Phase::WriteRdy);
+            return e;
+        }
         let status = self.command(cmdtm, addr)?;
         if let Err(e) = check_r1(index, status, mask) {
             Self::recover_no_abort(Phase::WriteRdy);
             return Err(e);
+        }
+        #[cfg(feature = "sd-fault")]
+        match fault {
+            super::emmc_fault::Mode::Dcrc => {
+                note_failure(Phase::WriteRdy, INT_ERR_DCRC, false);
+                Self::recover(Phase::WriteRdy, INT_ERR_DCRC);
+                return Err(BlockError::Io);
+            }
+            // A flag that never comes: the real wait and its timeout path.
+            super::emmc_fault::Mode::TimeoutRdy => {
+                Self::wait_interrupt(0, Phase::WriteRdy)?;
+            }
+            _ => {}
         }
         // (10)-(13) Buffer Write Ready, then one block into the data port —
         // per block. Between blocks of a CMD25 this wait also covers the
@@ -1349,6 +1423,18 @@ impl Emmc {
             Self::wait_interrupt(INT_WRITE_RDY, Phase::WriteRdy)?;
             for word in block.chunks_exact(4) {
                 wr(DATA, u32::from_le_bytes([word[0], word[1], word[2], word[3]]));
+            }
+        }
+        #[cfg(feature = "sd-fault")]
+        if fault == super::emmc_fault::Mode::Busy {
+            let ms = super::emmc_fault::busy_ms();
+            if ms >= Phase::WriteDone.limit_ms() {
+                super::emmc_fault::busy_until(cntpct() + ticks_for_ms(cntfrq(), ms));
+                Self::wait_interrupt(0, Phase::WriteDone)?;
+            }
+            let mut held = Budget::new(ms);
+            while !held.expired() {
+                core::hint::spin_loop();
             }
         }
         // (19)-(20) Transfer Complete: the last block is programmed and the
@@ -1402,7 +1488,16 @@ impl BlockDevice for Emmc {
         while !rest.is_empty() {
             let n = xfer::next_chunk(rest.len() / SECTOR_SIZE, compat);
             let (run, tail) = rest.split_at_mut(n * SECTOR_SIZE);
+            #[cfg(not(feature = "sd-diag"))]
             self.read_run(at, run)?;
+            #[cfg(feature = "sd-diag")]
+            {
+                emmc_diag::op_begin(false, at, n);
+                let t0 = cntpct();
+                let r = self.read_run(at, run);
+                emmc_diag::op_end(false, emmc_diag::ticks_to_us(cntpct().wrapping_sub(t0), cntfrq()), n, r.is_ok());
+                r?;
+            }
             at += n as u64;
             rest = tail;
         }
@@ -1420,7 +1515,16 @@ impl BlockDevice for Emmc {
         while !rest.is_empty() {
             let n = xfer::next_chunk(rest.len() / SECTOR_SIZE, compat);
             let (run, tail) = rest.split_at(n * SECTOR_SIZE);
+            #[cfg(not(feature = "sd-diag"))]
             self.write_run(at, run)?;
+            #[cfg(feature = "sd-diag")]
+            {
+                emmc_diag::op_begin(true, at, n);
+                let t0 = cntpct();
+                let r = self.write_run(at, run);
+                emmc_diag::op_end(true, emmc_diag::ticks_to_us(cntpct().wrapping_sub(t0), cntfrq()), n, r.is_ok());
+                r?;
+            }
             at += n as u64;
             rest = tail;
         }
@@ -1453,6 +1557,12 @@ pub unsafe fn init() -> bool {
         if SDCARD.init_card().is_ok() {
             crate::kprintln!("[emmc] SD card on controller @ 0x{:08x}", candidate);
             report_controller();
+            #[cfg(feature = "sd-diag")]
+            {
+                let s = error_stats();
+                DIAG_AT_INIT.0.store(s.io_errors, Ordering::Relaxed);
+                DIAG_AT_INIT.1.store(s.timeouts, Ordering::Relaxed);
+            }
             // The probe is over: from here a controller error is a real one
             // and gets a console line of its own.
             REPORT_ERRORS.store(true, Ordering::Relaxed);
@@ -1460,6 +1570,56 @@ pub unsafe fn init() -> bool {
         }
     }
     false
+}
+
+/// `(io_errors, timeouts)` when the base probe of the boot ended (debug
+/// feature `sd-diag`).
+#[cfg(feature = "sd-diag")]
+static DIAG_AT_INIT: (AtomicU32, AtomicU32) = (AtomicU32::new(0), AtomicU32::new(0));
+
+/// Microseconds since the counter started (debug feature `sd-diag`).
+#[cfg(feature = "sd-diag")]
+fn diag_now_us() -> u64 {
+    emmc_diag::ticks_to_us(cntpct(), cntfrq())
+}
+
+/// Run `f` on the driver half of the SD report (debug feature `sd-diag`,
+/// TASK/HW08, `tos_api::bios::sd_diag`).
+#[cfg(feature = "sd-diag")]
+pub fn with_diag_report<R>(f: impl FnOnce(&tos_api::bios::sd_diag::DriverReport<'_>) -> R) -> R {
+    use tos_api::bios::sd_diag::{DriverReport, Failure, LOG_LEN};
+    let s = error_stats();
+    let mut wait = [0u64; Phase::COUNT];
+    emmc_diag::wait_max(&mut wait);
+    for w in wait.iter_mut() {
+        *w = emmc_diag::ticks_to_us(*w, cntfrq());
+    }
+    let mut log = [Failure::default(); LOG_LEN];
+    let (first, n) = emmc_diag::log(&mut log);
+    let [read, write] = emmc_diag::ops();
+    f(&DriverReport {
+        mode: transfer_mode(),
+        io_errors: s.io_errors,
+        timeouts: s.timeouts,
+        recoveries: s.recoveries,
+        nonrecoverable: s.nonrecoverable,
+        card_errors: s.card_errors,
+        at_init: (DIAG_AT_INIT.0.load(Ordering::Relaxed), DIAG_AT_INIT.1.load(Ordering::Relaxed)),
+        last_phase: s.last_phase.index() as u8,
+        last_status: s.last_status,
+        last_card_status: s.last_card_status,
+        phase_names: &PHASE_NAMES,
+        bit_names: &ERROR_BIT_NAMES,
+        bits: &s.bits,
+        r1_names: &R1_BIT_NAMES,
+        r1_bits: &s.card_bits,
+        timeouts_by_phase: &s.timeouts_by_phase,
+        wait_max_us: &wait,
+        write,
+        read,
+        first,
+        log: &log[..n],
+    })
 }
 
 /// One-shot boot diagnostic: the values that decide whether the bus is

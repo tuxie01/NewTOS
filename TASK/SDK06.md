@@ -6,7 +6,7 @@ Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Programm lies
 
 - Die Zeigerform von `Getcookie()` erweitert mit Nullen als Nebeneffekt:
   `sdk/libc/newtos-arch/getcookie.c:35@Getcookie` belegt `long v = 0` vor, der Kern
-  schreibt 4 Byte (`tos-api/src/gemdos/ssystem.rs:366@put_u32`). Die Wertform
+  schreibt 4 Byte (`tos-api/src/gemdos/ssystem.rs:421@put_u32`). Die Wertform
   erweitert mit Vorzeichen. Regel: `docs/COMPATIBILITY.md`, „LONG results in
   `x0`“. Kein Nutzer ist betroffen
   (`docs/analysis/abi-assumptions-check-2026-10-28.md` §3).

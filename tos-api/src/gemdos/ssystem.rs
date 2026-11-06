@@ -97,6 +97,18 @@ pub const S_NEWTOS_INPUTMODE: u16 = 2020;
 /// The USB snapshot: device list, descriptors, report ring, input mute
 /// (`docs/api/usb/usb-snapshot.md`).
 pub const S_NEWTOS_USBSNAP: u16 = 2022;
+/// Debug feature `sd-diag` (TASK/HW08): `arg1` = buffer, `arg2` = size in
+/// bytes: the SD report as text, its length as the result. `arg1` = 0: show or
+/// hide the report on the screen, the new state as the result (1 = shown).
+/// `EINVFN` without the feature.
+#[cfg(feature = "sd-diag")]
+pub const S_NEWTOS_SDDIAG: u16 = 2090;
+/// Debug feature `sd-fault` (TASK/HW08): `arg1` = six little-endian `u32`
+/// (`mode, skip, count, ms, lba_lo, lba_hi`): arm a fault in the SD driver;
+/// the number of faults fired since the last arming as the result. `EINVFN`
+/// without the feature, `ERROR` without an SD driver.
+#[cfg(feature = "sd-fault")]
+pub const S_NEWTOS_SDFAULT: u16 = 2091;
 
 /// `Ssystem(WORD mode, LONG arg1, LONG arg2)`: `mode` in `x0`, `arg1` in
 /// `x1`, `arg2` in `x2`.
@@ -124,6 +136,10 @@ pub fn ssystem(args: &TrapArgs) -> Long {
         S_NEWTOS_RESET => crate::bios::reset::s_newtos_reset(args),
         S_NEWTOS_KVERSION => s_newtos_kversion(args),
         S_NEWTOS_USBSNAP => s_newtos_usbsnap(args),
+        #[cfg(feature = "sd-diag")]
+        S_NEWTOS_SDDIAG => s_newtos_sddiag(args),
+        #[cfg(feature = "sd-fault")]
+        S_NEWTOS_SDFAULT => s_newtos_sdfault(args),
         mode @ (S_NEWTOS_CPUMEAS..=S_NEWTOS_SERIAL | S_NEWTOS_INPUTMODE) => {
             newtos_scalar(args, || sysinfo_value(mode))
         }
@@ -212,6 +228,45 @@ fn s_newtos_kversion(args: &TrapArgs) -> Long {
         return crate::uaccess::FAULTED;
     }
     E_OK
+}
+
+/// `S_NEWTOS_SDDIAG` (2090, debug feature `sd-diag`, TASK/HW08): the report
+/// into the caller's buffer, cut at its size, or with `arg1` = 0 the screen
+/// toggle. `ERROR` without a diagnosis in the host; a bad pointer ends the
+/// calling program ([`crate::uaccess::FAULTED`]).
+#[cfg(feature = "sd-diag")]
+fn s_newtos_sddiag(args: &TrapArgs) -> Long {
+    let Some(h) = host::host() else {
+        return ERROR;
+    };
+    let buf = args.arg_u64(1);
+    if buf == 0 {
+        return h.sd_diag_toggle().map_or(ERROR, Long::from);
+    }
+    let mut text = [0u8; crate::bios::sd_diag::TEXT_MAX];
+    let Some(n) = h.sd_diag_text(&mut text) else {
+        return ERROR;
+    };
+    let n = n.min(args.arg_i32(2).max(0) as usize);
+    if args.space.copy_to(buf, &text[..n]).is_err() {
+        return crate::uaccess::FAULTED;
+    }
+    n as Long
+}
+
+/// `S_NEWTOS_SDFAULT` (2091, debug feature `sd-fault`, TASK/HW08): see the
+/// constant. A bad pointer ends the calling program.
+#[cfg(feature = "sd-fault")]
+fn s_newtos_sdfault(args: &TrapArgs) -> Long {
+    let mut raw = [0u8; 24];
+    if args.space.copy_from(&mut raw, args.arg_u64(1)).is_err() {
+        return crate::uaccess::FAULTED;
+    }
+    let mut arm = [0u32; 6];
+    for (a, b) in arm.iter_mut().zip(raw.chunks_exact(4)) {
+        *a = u32::from_le_bytes([b[0], b[1], b[2], b[3]]);
+    }
+    host::host().and_then(|h| h.sd_fault(&arm)).map_or(ERROR, |n| n as Long)
 }
 
 /// `S_NEWTOS_USBSNAP` (2022): `arg1` = the caller's buffer, `arg2` = its

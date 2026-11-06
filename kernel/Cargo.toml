@@ -90,6 +90,24 @@ crash-nowait = []
 # its hook are compiled out); `cargo xtask build --board rpi4 --release
 # --features crash-walk` (combinable with `crash-nowait`).
 crash-walk = ["tos-api/crash-walk"]
+# SD diagnosis (TASK/HW08), readable on the screen with no serial line and with
+# nothing left that can be written to the card: Ctrl+Alt+F9 shows the report
+# (driver counters, last failing phase, failure log with LBA, write and read
+# times, cache counters, the dirty sectors) over the top left of the screen and
+# hides it again; the first failure after the boot shows it once by itself; the
+# same text goes to the serial console and to `Ssystem(S_NEWTOS_SDDIAG)`
+# (`kernel/src/sd_diag.rs`, text: `tos-api/src/bios/sd_diag.rs`). No file, no
+# card access; the pixel save area comes from the kernel heap. Off by default (the modules and their hooks are compiled out);
+# `cargo xtask build --board rpi4 --release --features sd-diag`. On qemu-virt
+# (no SD driver) the report has the cache half only.
+sd-diag = ["tos-api/sd-diag"]
+# SD fault injection (TASK/HW08), test kernels only, implies `sd-diag`:
+# `Ssystem(S_NEWTOS_SDFAULT)` arms write faults inside the driver -- card
+# refusal (R1), data error, timeout, overlong busy, a stuck DAT line, a real
+# out-of-range command -- so the driver's recovery and everything above it runs
+# for real (`kernel/src/drivers/bcm2711/emmc_fault.rs`). Off by default, and
+# nothing arms it but a program that asks; `--features sd-fault`.
+sd-fault = ["sd-diag", "tos-api/sd-fault"]
 # microSD / FAT / GEMDOS-file self-test build (board-rpi4 / QEMU raspi4b):
 # runs `selftest_emmc::run()` right after the card is mounted at boot -- the
 # Phase-09 block-device, FAT, Fopen/Fsfirst/Dsetpath, Fattrib/Frename/Fdatime

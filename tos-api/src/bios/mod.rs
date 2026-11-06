@@ -17,6 +17,8 @@ pub mod crash;
 pub mod drive;
 pub mod getmpb;
 pub mod reset;
+#[cfg(feature = "sd-diag")]
+pub mod sd_diag;
 pub mod shifty;
 pub mod tick;
 pub mod vectors;

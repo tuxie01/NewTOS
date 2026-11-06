@@ -380,7 +380,7 @@ checks above (it fails `ESECNF` when `lrecnr` is out of range, R10, and
     widened to `LONG lcount` (`:411`); for `cnt < 0` the loop passes a
     negative `scount` to the driver once (`:512-515`, `lcount > 0` is false
     afterwards). Not measured; NewTOS reads `numb` as unsigned
-    (`tos-api/src/bios/mod.rs:148@rwabs`). **Needs deeper analysis /
+    (`tos-api/src/bios/mod.rs:154@rwabs`). **Needs deeper analysis /
     a case before anyone relies on either behaviour.**
 
 11. **`dev` negative with `buf == NULL` [BIOS02, source observation].** The

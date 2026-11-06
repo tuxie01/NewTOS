@@ -384,6 +384,33 @@ pub trait Host: Sync {
     ) -> UsbSnapAnswer {
         UsbSnapAnswer::NoController
     }
+
+    /// Debug feature `sd-diag` (TASK/HW08): write the SD report
+    /// ([`crate::bios::sd_diag`]) into `out`; its length, `None` without a
+    /// diagnosis in this host. `Ssystem(S_NEWTOS_SDDIAG)`.
+    #[cfg(feature = "sd-diag")]
+    fn sd_diag_text(&self, _out: &mut [u8]) -> Option<usize> {
+        None
+    }
+
+    /// Debug feature `sd-diag` (TASK/HW08): show the report on the screen if
+    /// it is hidden, hide it if it is shown, as the hot key does; the new
+    /// state, `None` without a diagnosis in this host.
+    /// `Ssystem(S_NEWTOS_SDDIAG, 0, 0)`.
+    #[cfg(feature = "sd-diag")]
+    fn sd_diag_toggle(&self) -> Option<bool> {
+        None
+    }
+
+    /// Debug feature `sd-fault` (TASK/HW08): arm a fault
+    /// (`mode, skip, count, ms, lba_lo, lba_hi`,
+    /// `kernel/src/drivers/bcm2711/emmc_fault.rs`); how many faults have
+    /// fired since the last arming, `None` without an SD driver in this host.
+    /// `Ssystem(S_NEWTOS_SDFAULT)`.
+    #[cfg(feature = "sd-fault")]
+    fn sd_fault(&self, _arm: &[u32; 6]) -> Option<u32> {
+        None
+    }
 }
 
 /// One `Ssystem(S_NEWTOS_USBSNAP)` request as the trap passes it to

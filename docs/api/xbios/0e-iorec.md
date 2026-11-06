@@ -245,7 +245,7 @@ Spiegel muesste also bei **jedem** dieser Verbraucher synchronisieren. Dazu die
 Schlange nur, wenn eine Pump laeuft; die Pump rufen die Traps (`Bconstat`,
 blockierendes Lesen, AES-Idle) und der 200-Hz-Timer. **Der Timer decodiert nur
 Zeigerbewegung; Tasten und Wiederholung bleiben bei der Trap-Pump**
-(`kernel/src/host_env.rs:520@pump_devices_irq`, `kernel/src/ikbd.rs:341@poll_repeat`).
+(`kernel/src/host_env.rs:538@pump_devices_irq`, `kernel/src/ikbd.rs:341@poll_repeat`).
 Ein Programm, das den IOREC im Benutzerzustand pollt **ohne je einen Trap zu
 machen**, sieht also nie eine Taste, egal ob Spiegel oder lebender Ring (E3).
 Das ist der Unterschied zu EmuTOS, wo der ACIA-Interrupt asynchron fuellt.
@@ -491,7 +491,7 @@ EmuTOS-gleich). Empfehlung der Quelle: 32-Bit; die Wahl bleibt beim Anwender.
 **E3 — Zustellung ohne Trap:** (a) hinnehmen und dokumentieren: ein Programm,
 das den Ring pollt und nie einen Trap macht, haengt (heutiger Zustand der
 Pump; reale Programme rufen meist `Bconstat`/AES/Vsync-artig); (b) die
-200-Hz-Timer-Pump (`kernel/src/host_env.rs:520@pump_devices_irq`) so erweitern,
+200-Hz-Timer-Pump (`kernel/src/host_env.rs:538@pump_devices_irq`) so erweitern,
 dass sie auch Tastenbytes und Wiederholung in den Ring schreibt — das ist ein
 Eingriff in das INPUT01-Gate (`crate::input_gate`), dessen Grund die heutige
 Zeiger-Beschraenkung ist. Folge (a): einige Direktpoller laufen nie; Folge (b):

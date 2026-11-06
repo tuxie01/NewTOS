@@ -35,13 +35,20 @@ gemdos-trace = []
 # default: with this off these modules do not exist. The host tests switch it on through the
 # dev-dependency below (`tests/proc08_crash_walk.rs`).
 crash-walk = []
+# SD diagnosis (TASK/HW08): `bios::sd_diag` (the report as data and text),
+# `bdos::fs::cache::dirty_slots` and `Ssystem(S_NEWTOS_SDDIAG)`, used by the
+# kernel feature `sd-diag`. Off by default: with this off none of it exists.
+sd-diag = []
+# SD fault injection (TASK/HW08): `Ssystem(S_NEWTOS_SDFAULT)`, used by the
+# kernel feature `sd-fault`. Test kernels only. Off by default.
+sd-fault = ["sd-diag"]
 
 [dependencies]
 tos-types = { path = "../tos-types" }
 
 [dev-dependencies]
-# The crate itself with `crash-walk` on, so the host tests reach the crash
-# diagnosis readers (TASK/PROC08). Dev-dependency features are unified only
-# into test builds (resolver 2): the kernel's build of this crate does not
-# get the feature.
-tos-api = { path = ".", features = ["crash-walk"] }
+# The crate itself with `crash-walk` and `sd-fault` on, so the host tests reach
+# the crash diagnosis readers (TASK/PROC08) and the SD diagnosis (TASK/HW08).
+# Dev-dependency features are unified only into test builds (resolver 2): the
+# kernel's build of this crate does not get them.
+tos-api = { path = ".", features = ["crash-walk", "sd-fault"] }

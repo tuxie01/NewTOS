@@ -6,7 +6,7 @@ Status: **ERLEDIGT** 2026-10-29 ([Quittung](XBIOS18-STATUS-DONE.MD)) · Priorita
 
 - `Bconin(2)` bricht sein Warten ab, wenn der laufende Prozess Bytes fuer
   seinen `kbdvec`-Haken in der Schlange hat, und laesst den Trap neu starten
-  (`kernel/src/host_env.rs:578@read_key_loop`, `give_way`; KEYS02).
+  (`kernel/src/host_env.rs:600@read_key_loop`, `give_way`; KEYS02).
 - Das AUX-Warten auf qemu-virt (`kernel/src/console.rs:267@aux_read_blocking`,
   XBIOS15) tut das nicht: der Haken eines Prozesses, der in `Bconin(1)`/
   `Cauxin` wartet, bekommt seine Tastenbytes erst, wenn ein serielles Byte
@@ -20,7 +20,7 @@ Status: **ERLEDIGT** 2026-10-29 ([Quittung](XBIOS18-STATUS-DONE.MD)) · Priorita
 - `bconin1` → `kernel/src/console.rs@AuxSerial` (`bconin`, Warten in
   `aux_read_blocking`); `kbdvec` / `kbd_int` → `kernel/src/ikbd.rs@kbd_int`,
   Zustellung des Hakens ueber `tos-api/src/xbios/kbdvecs.rs` (KEYS02,
-  `pending_for_running`); Vorbild `kernel/src/host_env.rs:578@read_key_loop`
+  `pending_for_running`); Vorbild `kernel/src/host_env.rs:600@read_key_loop`
   (`give_way`).
 - `--up --layers bios`: `bconin1` 283 Funktionen, vollstaendig (keine
   `unmapped`); `kbdvec`/`kbd_int` unvollstaendig: `bios_init`, `biosmain`

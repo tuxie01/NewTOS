@@ -11,7 +11,7 @@ bleiben offen.
   (gesetzt -> `E_CHNG`, auch mit `RW_NOMEDIACH`), Schritt 6 (Schreiben ab
   logischem Sektor 0 setzt ihn, vor Bereichs- und Medienwechselpruefung),
   Schritt 10 (`media_change` != 0 ohne `RW_NOMEDIACH` -> `E_CHNG`, nichts
-  geschrieben) — `tos-api/src/bios/mod.rs:161@rwabs`. `Mediach` = EmuTOS
+  geschrieben) — `tos-api/src/bios/mod.rs:154@rwabs`. `Mediach` = EmuTOS
   `blkdev_mediach` (`tos-api/src/bios/mod.rs:292@media_change`): EUNDEV,
   `forcechange` -> 2, sonst 0. `Getbpb` loescht nach der Laufwerkspruefung,
   vor dem Lesen, bei jedem Ausgang — fuer den Trap und fuer die

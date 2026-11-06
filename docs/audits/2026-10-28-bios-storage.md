@@ -34,7 +34,7 @@ PLAUSIBLE, keiner CONFIRMED, und keine Funktion wird dadurch EQUAL.
 
 **Der forcechange-Handshake fehlt: Schreiben von logischem Sektor 0.**
 
-- Lokalisierung: LOCALIZED: `rwabs` (`tos-api/src/bios/mod.rs:148@rwabs`);
+- Lokalisierung: LOCALIZED: `rwabs` (`tos-api/src/bios/mod.rs:154@rwabs`);
   beteiligt `mediach` (`tos-api/src/bios/mod.rs:269@mediach`) und
   `bpb::getbpb` (`tos-api/src/bios/bpb.rs:284@getbpb`). Beobachtet ueber
   `Rwabs`- und `Mediach`-Rueckgaben. `cargo xtask deps lrwabs --down` nennt nur
@@ -217,7 +217,7 @@ Researcher (Vertrag festlegen).
 
 | EmuTOS | NewTOS | Schicht | Status | Faelle |
 |---|---|---|---|---|
-| `lrwabs` → `blkdev_rwabs` | `tos-api/src/bios/mod.rs:148@rwabs` | bios | **DIFF** (Sonde; BIOS-STOR-001/002/003/006/007), tosdiff UNMEASURED (Lader verweigert, Orakel ohne Blockgeraet) | R01–R20, P01–P05, W01–W11, X08–X14, F03 |
+| `lrwabs` → `blkdev_rwabs` | `tos-api/src/bios/mod.rs:154@rwabs` | bios | **DIFF** (Sonde; BIOS-STOR-001/002/003/006/007), tosdiff UNMEASURED (Lader verweigert, Orakel ohne Blockgeraet) | R01–R20, P01–P05, W01–W11, X08–X14, F03 |
 | `getbpb` → `blkdev_getbpb` | `tos-api/src/bios/bpb.rs:284@getbpb` | bios | **DIFF** (Sonde; BIOS-STOR-004/005), tosdiff UNMEASURED | G01–G07, W06, X01–X07, X10, X15, F02, F05 |
 | `mediach` → `blkdev_mediach` | `tos-api/src/bios/mod.rs:269@mediach` | bios | **DIFF** (Sonde; BIOS-STOR-001), tosdiff UNMEASURED | M01–M07, W02/W05/W07/W10, X13/X16, F01/F04/F06 |
 | `drvmap` → `blkdev_drvmap` | `tos-api/src/bios/mod.rs:312@drvmap` | bios | **EQUAL** (tosdiff `bios-r1.tsv` Fall 74 auf `c3db3747`, Klasse NONZERO — schwach, siehe Abschnitt 11) | 74; Sonde D01 |

@@ -37,7 +37,9 @@
 #            plus VDPROBE.BIN (the read-back rectangles);
 #            or DCPROBE.PRG (tosdump/probes/dcprobe.c, TASK/FS26): no table,
 #            profile disk only (it creates and removes folders on C:),
-#            writes DCPROBE.LOG only
+#            writes DCPROBE.LOG only;
+#            or WFPROBE.PRG (tosdump/probes/wfprobe.c, TASK/HW08): the same,
+#            profile disk only, writes WFPROBE.LOG only
 #   table    the case table; staged as VDI.TSV / AES.TSV / RASTER.TSV /
 #            BIOS.TSV; - for a probe
 #   out-dir  receives hd/ (the GEMDOS drive: C:, in profile disk D:),
@@ -105,6 +107,7 @@ case $PRG in
     SBPROBE.PRG)  AREA=SBPROBE; PROBE=1; PROBE_DISK=0 ;;
     VDPROBE.PRG)  AREA=VDPROBE; PROBE=1; PROBE_DISK=0 ;;
     DCPROBE.PRG)  AREA=DCPROBE; PROBE=1 ;;
+    WFPROBE.PRG)  AREA=WFPROBE; PROBE=1 ;;
     *) echo "unknown dumper: $PRG" >&2; exit 2 ;;
 esac
 if [ "$PROBE" = 1 ]; then

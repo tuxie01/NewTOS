@@ -194,6 +194,13 @@ static WB_RETRIES: AtomicU32 = AtomicU32::new(0);
 /// automatically. Their data is still in the cache and still dirty.
 static WB_EXHAUSTED: AtomicU32 = AtomicU32::new(0);
 
+/// The most recent hard error code recorded, kept past [`take_error`], and
+/// how many were recorded (debug feature `sd-diag`, TASK/HW08).
+#[cfg(feature = "sd-diag")]
+static DIAG_LAST_CODE: AtomicI32 = AtomicI32::new(E_OK);
+#[cfg(feature = "sd-diag")]
+static DIAG_CODES: AtomicU32 = AtomicU32::new(0);
+
 /// The card, through the block cache (FS09) that sits below these lists.
 fn block() -> Option<&'static dyn BlockDev> {
     crate::bios::bcache::device()
@@ -208,6 +215,11 @@ fn lists() -> &'static mut [List; 2] {
 /// `errcode = rwerr` in `longjmp_rwabs` (`bdos/fs.h:66`).
 fn set_error(code: Long) {
     LAST_ERROR.store(code, Ordering::Relaxed);
+    #[cfg(feature = "sd-diag")]
+    {
+        DIAG_LAST_CODE.store(code, Ordering::Relaxed);
+        DIAG_CODES.fetch_add(1, Ordering::Relaxed);
+    }
 }
 
 /// Forget any pending hard error and media change. Called at the top of a
@@ -709,4 +721,49 @@ pub fn writeback_stats() -> (u32, u32, u32, u32) {
         WB_EXHAUSTED.load(Ordering::Relaxed),
         dirty,
     )
+}
+
+/// One sector the card has not got yet (debug feature `sd-diag`, TASK/HW08).
+#[cfg(feature = "sd-diag")]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct DirtySlot {
+    /// Device LBA; for a FAT slot the sector in the last FAT copy.
+    pub lba: u64,
+    /// BIOS drive number.
+    pub drv: u16,
+    /// In the FAT list (else: directory or file data).
+    pub fat: bool,
+    /// Failed write-backs of the data now in the slot; at
+    /// [`WRITEBACK_ATTEMPTS`] the cache has given up on it.
+    pub fails: u8,
+    /// TOS code of the last failed write-back, `E_OK` if none failed yet.
+    pub err: Long,
+}
+
+/// Copy the dirty slots into `out`, FAT list first; the number of dirty slots
+/// (which may exceed `out.len()`). Reads memory only, so it answers when the
+/// card no longer does (debug feature `sd-diag`, TASK/HW08).
+#[cfg(feature = "sd-diag")]
+pub fn dirty_slots(out: &mut [DirtySlot]) -> usize {
+    let mut n = 0;
+    for s in lists().iter().flat_map(|l| l.slots.iter()).filter(|s| s.valid && s.dirty) {
+        if let Some(o) = out.get_mut(n) {
+            *o = DirtySlot {
+                lba: s.lba,
+                drv: s.drv,
+                fat: matches!(s.kind, Kind::Fat { .. }),
+                fails: s.wb_fails,
+                err: s.wb_err,
+            };
+        }
+        n += 1;
+    }
+    n
+}
+
+/// The most recent hard error code the cache recorded and how many it
+/// recorded (debug feature `sd-diag`, TASK/HW08).
+#[cfg(feature = "sd-diag")]
+pub fn error_codes() -> (Long, u32) {
+    (DIAG_LAST_CODE.load(Ordering::Relaxed), DIAG_CODES.load(Ordering::Relaxed))
 }

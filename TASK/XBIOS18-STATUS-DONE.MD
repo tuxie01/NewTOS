@@ -27,7 +27,7 @@ Zusatz XBIOS18), `docs/api/bios/02-bconin.md` (Zusatz XBIOS18)
 ## Fix
 
 - `kernel/src/console.rs:267@aux_read_blocking` bekommt `give_way` (Vorbild
-  `kernel/src/host_env.rs:578@read_key_loop`): nach dem Pump, wenn kein
+  `kernel/src/host_env.rs:600@read_key_loop`): nach dem Pump, wenn kein
   serielles Byte wartet und der laufende Prozess Bytes fuer seinen Haken hat
   (`kbdvecs::pending_for_running`), `None` statt `wfi`. Neues
   `AuxSerial::bconin_restartable` (Trap-Eintrag: `Bconin(1)`, `Cauxin`,
