@@ -1,0 +1,33 @@
+command   cargo xtask tosdump aes tosdump/cases/aes-r4-subfunctions.tsv --tree /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v44/head --out measurements/measurement-2026-11-06-v44/runs/tab-head-r4 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v44/xt-head
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v44/head (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    (not a git checkout)
+dirty     1 path(s) in git status --porcelain
+  (not a git checkout)
+harness commit e933d13ca04f014afefee7ff3dfc994abf1804c2
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/aes-r4-subfunctions.tsv sha256 e88fa2d3b81a9ccde98862af17f6db726700ddaf09639fdac9610466ec744095
+table     names the unit token u:0: no; a program path x:<path>: no
+profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+target/   own (5 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (5 artifact dep-info files checked after the build)
+kernel8.img /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v44/head/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 3dbd1f29390936da37e343076bbd68babb71e435865675545640d82924928859
+kernel ELF  sha256 c99918aa9d1d9bed774759e4d22c39e756d3929628ae6bec660eb641f5407bc5 (/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v44/head/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPAES.NAP (tosdump/build-dumpaes-newtos.sh) in the measured tree …
+dumper build id ----
+DUMPAES.NAP sha256 7804b2bff3ed3bcc7c1a3633f03fae3371ab3b6abdda8f90348479b60f0889c7
+card.img.manifest: image_sha256 2f491c8fe8a8dd1802e91690e02aa10373d68e6929380482cab9eae68dea6010
+card.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v44/xt-head/tosdump-52721/card.img sha256 2f491c8fe8a8dd1802e91690e02aa10373d68e6929380482cab9eae68dea6010 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 21 s: desktop up after DUMPAES.NAP, rc=0
+card after the run sha256 4df358ae5607461d3d6c77221334c61af5c26d2992a4435a7c5d8b6316cf6ecb
+AES.BIN 21752 bytes, sha256 f159228aa0c354284e2f11673ccf3b9fe8cb0b5b563140058a66a50cbca149c2
+AES.LOG 302 bytes, sha256 9394c30f973d4adc28da7aa86398b7ba58199c506b2021db731ed47d18967d71
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 b146758fe86770e3d73868637ae211e599a02eceb9d524ca92f67291bdc706c1
+tosdiff --validate: exit 0 AES.BIN: area AES, 181 records of 120 bytes, build ----, case CRC 227422B2
+total     32 s
+result    run complete (differences above are findings, not failures)

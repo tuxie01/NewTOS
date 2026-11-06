@@ -1464,7 +1464,7 @@ direct_screen_blit	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized
 direct_screen_blit16	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	truecolor direct blit; the general path of NewTOS draws the same cell (equal output not measured)
 do_clip	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	trims the cell to the clip window; NewTOS clips per pixel in the backend
 do_clip	vdi/vdi_textblit.c	tos-api/src/vdi/line.rs	glyph_unclipped	mapped	without CLIP do_clip cuts nothing: the whole cell goes to the store (V30)
-merge_byte	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	build_cell	mapped	helper of outline (18-bit neighbour window); NewTOS outlines on 64-bit rows
+merge_byte	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	build_cell	mapped	helper of outline (18-bit neighbour window); NewTOS outlines on rows of u64 words
 outline	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	build_cell	mapped	outline effect step of the cell builder
 pre_blit	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	build_cell	mapped	thicken, skew, light and outline into an intermediate cell
 rotate	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	rotate_cell	mapped	chup 900/1800/2700
@@ -1474,11 +1474,14 @@ scaleup	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_up	mapped	-
 screen_blit	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	glyph cell to the screen with the writing mode; the planar branch (v_planes <= 8) is ADR-024 and has no code
 screen_blit16	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	truecolor cell blit, replace background is pen 0
 screen_blit16	vdi/vdi_textblit.c	tos-api/src/vdi/line.rs	glyph_unclipped	mapped	clip off: each cell pixel at v_bas_ad + DESTX*2 + (UWORD)(DESTY+DELY-1)*v_lin_wr upward = store index y*stride+x, run-on into the neighbouring row, cut outside the logical screen (COMPATIBILITY, V30)
-shift_and_update	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_up	mapped	destination bit/word stepping of the scalers; NewTOS packs into one u64 row
-shift_and_update	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_down	mapped	destination bit/word stepping of the scalers; NewTOS packs into one u64 row
+shift_and_update	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_up	mapped	destination bit/word stepping of the scalers; NewTOS packs into a row of u64 words
+shift_and_update	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_down	mapped	destination bit/word stepping of the scalers; NewTOS packs into a row of u64 words
 text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	make_glyph	mapped	per-character driver: scale, effects
 text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	raw_glyph	mapped	the glyph from FBASE at SOURCEX/DELX; a chain's table is a byte stream read through read_mem (V33)
-text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	draw_cell	mapped	per-character blit and position (chup 0)
+text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	horizontal_at	mapped	position of the character blit (chup 0)
+text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	output_glyph	mapped	per-character driver: picks one-word or eight-word rows for the cell, NewTOS has no scratch buffer (V44)
+text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	assemble_and_blit	mapped	per-character blit: scale, effects, rotate, blit in the rows picked (V44)
+text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	fits_narrow	mapped	whether a cell fits the one-word rows, no EmuTOS counterpart in itself: a speed path of the driver, same pixels (V44)
 text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	output_text_rotated	mapped	per-character blit and position (chup 900/1800/2700)
 bios_conws	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	puts	mapped	string through the VT52 automaton
 crawio	vdi/vdi_esc.c	tos-api/src/gemdos/console.rs	rawio	mapped	Crawio call

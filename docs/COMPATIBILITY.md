@@ -680,7 +680,7 @@ leaves them alone. Everything on the screen, the run-on into the neighbouring
 rows included, is EmuTOS' (one exception, a run of more than 4095 8-pixel
 characters: `docs/api/vdi/output/_text.md`, § Clipping off). Code
 `tos-api/src/vdi/line.rs:70@glyph_unclipped`,
-`tos-api/src/vdi/text.rs:829@underline_lines`; spec
+`tos-api/src/vdi/text.rs:920@underline_lines`; spec
 `docs/api/vdi/output/_text.md` (§ Clipping off); host test
 `tos-api/tests/vdi_reference/cases_v30.rs`; run
 `measurements/measurement-2026-11-06-v30/RUNINFO.TXT`.
@@ -1668,7 +1668,7 @@ of the system:
 - **D2, NULL chain:** answers 0, changes nothing, the one chance stays open. EmuTOS
   dereferences it (`references/emutos/vdi/vdi_text.c:1316-1340`), no defined result.
 - **The scratch buffer is not used.** The cells are not read; NewTOS' text path keeps
-  no scratch buffer (`tos-api/src/vdi/text.rs:131@GlyphStore`, the "Reference" part of the
+  no scratch buffer (`tos-api/src/vdi/text.rs:138@GlyphStore`, the "Reference" part of the
   spec's contract note). **Observable:** only to a program that reads its buffer
   after drawing, or passes one too small: EmuTOS overruns it, NewTOS does not.
   In return a glyph cell has a limit of its own: 512 × 512 pixels, the rest of a larger

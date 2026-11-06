@@ -1,0 +1,2 @@
+kernel 7c2fd2ed5b4045fa16d257547c392d9470dff93d64101f640be8b69e2319df80 nap 66975b99ce25148e807f786cc33e2237e425dac7590038e3bec1917f927b4227 qemu-args: -icount shift=0,sleep=off
+qemu done

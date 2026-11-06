@@ -23,7 +23,14 @@
 //! **Working store.** EmuTOS scales and assembles into the scratch buffer of the
 //! workstation (`SCRTCHP`, the caller's after `vst_load_fonts`). NewTOS assembles
 //! into its own [`GlyphStore`], which bounds a glyph cell to
-//! [`MAX_W`] × [`MAX_ROWS`] (`docs/COMPATIBILITY.md` "GDOS font chain").
+//! [`WIDE_WORDS`] words × [`MAX_ROWS`] rows, 512 × 512 pixels
+//! (`docs/COMPATIBILITY.md` "GDOS font chain").
+//!
+//! **Row width.** The assembly is written once and instantiated for two row
+//! widths: a cell that fits [`NARROW_SIDE`] × [`NARROW_SIDE`] ([`fits_narrow`]) —
+//! every built-in font, with every effect and scale — works on one word per row,
+//! any other on eight. Measured: the eight words took almost a third of the
+//! instructions of every `v_gtext` (TASK/V44). Both give the same pixels.
 
 use core::cell::UnsafeCell;
 
@@ -44,41 +51,41 @@ const T_OUTLINE: i16 = 0x10;
 /// `vdi_defs.h:126`).
 const OUTLINE_THICKNESS: i16 = 1;
 
-/// Words of one glyph row. The leftmost pixel is bit 63 of word 0.
-const ROW_WORDS: usize = 8;
-/// Bytes of one glyph row.
-const ROW_BYTES: usize = ROW_WORDS * 8;
-/// Maximum width of a glyph cell in pixels. A built-in cell (at most 34 px, a
-/// 2×-scaled 8-px glyph plus its scaled skew extent and the outline) uses the
-/// first word; a loaded font may be wider. A pixel past this is dropped.
-const MAX_W: usize = ROW_BYTES * 8;
+/// Words of a row wide enough for every cell: a cell is at most 512 pixels wide, a
+/// pixel past this is dropped. The leftmost pixel is bit 63 of word 0.
+const WIDE_WORDS: usize = 8;
+/// Bytes of the widest row.
+const WIDE_BYTES: usize = WIDE_WORDS * 8;
 /// Maximum rows of a glyph cell. A row past this is dropped.
 const MAX_ROWS: usize = 512;
+/// Width and height of the largest cell that takes the one-word rows. A built-in
+/// cell stays within it: at most 34 × 34, a 2×-scaled 8 × 16 glyph plus its scaled
+/// skew extent and the outline.
+const NARROW_SIDE: usize = 64;
 
-/// One glyph row.
-type Row = [u64; ROW_WORDS];
-const ROW_ZERO: Row = [0; ROW_WORDS];
+/// One glyph row of `N` words.
+type Row<const N: usize> = [u64; N];
 
 /// Pixel `x` of a row (false past the row).
 #[inline]
-fn row_test(r: &Row, x: usize) -> bool {
-    x < MAX_W && r[x / 64] & (1u64 << (63 - x % 64)) != 0
+fn row_test<const N: usize>(r: &Row<N>, x: usize) -> bool {
+    x < N * 64 && r[x / 64] & (1u64 << (63 - x % 64)) != 0
 }
 
 /// Set pixel `x` of a row (ignored past the row).
 #[inline]
-fn row_set(r: &mut Row, x: usize) {
-    if x < MAX_W {
+fn row_set<const N: usize>(r: &mut Row<N>, x: usize) {
+    if x < N * 64 {
         r[x / 64] |= 1u64 << (63 - x % 64);
     }
 }
 
 /// A row moved `n` pixels right; what leaves the row is gone.
 #[inline]
-fn row_shr(r: &Row, n: usize) -> Row {
+fn row_shr<const N: usize>(r: &Row<N>, n: usize) -> Row<N> {
     let (words, bits) = (n / 64, (n % 64) as u32);
-    let mut out = ROW_ZERO;
-    for i in words..ROW_WORDS {
+    let mut out = [0; N];
+    for i in words..N {
         out[i] = r[i - words] >> bits;
         if bits != 0 && i > words {
             out[i] |= r[i - words - 1] << (64 - bits);
@@ -89,11 +96,11 @@ fn row_shr(r: &Row, n: usize) -> Row {
 
 /// A row moved one pixel left.
 #[inline]
-fn row_shl1(r: &Row) -> Row {
-    let mut out = ROW_ZERO;
-    for i in 0..ROW_WORDS {
+fn row_shl1<const N: usize>(r: &Row<N>) -> Row<N> {
+    let mut out = [0; N];
+    for i in 0..N {
         out[i] = r[i] << 1;
-        if i + 1 < ROW_WORDS {
+        if i + 1 < N {
             out[i] |= r[i + 1] >> 63;
         }
     }
@@ -102,7 +109,7 @@ fn row_shl1(r: &Row) -> Row {
 
 /// `a |= b`.
 #[inline]
-fn row_or(a: &mut Row, b: &Row) {
+fn row_or<const N: usize>(a: &mut Row<N>, b: &Row<N>) {
     for (x, y) in a.iter_mut().zip(b.iter()) {
         *x |= *y;
     }
@@ -112,8 +119,8 @@ fn row_or(a: &mut Row, b: &Row) {
 /// inside a monospace glyph's own width (EmuTOS leaves `delx` unchanged for `MONO`
 /// fonts, so the overstrike never widens the cell).
 #[inline]
-fn width_mask(w: i16) -> Row {
-    let mut out = ROW_ZERO;
+fn width_mask<const N: usize>(w: i16) -> Row<N> {
+    let mut out = [0; N];
     let mut left = w.max(0) as usize;
     for word in out.iter_mut() {
         if left == 0 {
@@ -126,34 +133,52 @@ fn width_mask(w: i16) -> Row {
     out
 }
 
-/// Where a glyph is assembled (see the module comment). Only the rows of the
-/// current glyph are written and read.
-struct GlyphStore {
+/// Where a glyph is assembled (see the module comment), `R` rows of `N` words.
+/// Only the rows of the current glyph are written and read.
+struct GlyphStore<const N: usize, const R: usize> {
     /// The raw glyph.
-    raw: [Row; MAX_ROWS],
+    raw: [Row<N>; R],
     /// The DDA-scaled glyph.
-    scaled: [Row; MAX_ROWS],
+    scaled: [Row<N>; R],
     /// Source of the effect stage: thicken and skew applied.
-    source: [Row; MAX_ROWS],
+    source: [Row<N>; R],
     /// The cell, effects applied.
-    cell: [Row; MAX_ROWS],
+    cell: [Row<N>; R],
     /// The cell, rotated.
-    rotated: [Row; MAX_ROWS],
-    /// A row packed for the backend.
-    bytes: [u8; MAX_ROWS * ROW_BYTES],
+    rotated: [Row<N>; R],
+    /// The skew shift of each row ([`skew_shifts`]).
+    shifts: [i16; R],
 }
 
-struct StoreCell(UnsafeCell<GlyphStore>);
+impl<const N: usize, const R: usize> GlyphStore<N, R> {
+    const ZERO: Self = Self {
+        raw: [[0; N]; R],
+        scaled: [[0; N]; R],
+        source: [[0; N]; R],
+        cell: [[0; N]; R],
+        rotated: [[0; N]; R],
+        shifts: [0; R],
+    };
+}
+
+/// The working store of the text path.
+struct GlyphStores {
+    /// For a cell that [`fits_narrow`].
+    narrow: GlyphStore<1, NARROW_SIDE>,
+    /// For every other cell.
+    wide: GlyphStore<WIDE_WORDS, MAX_ROWS>,
+    /// A cell packed for the backend.
+    bytes: [u8; MAX_ROWS * WIDE_BYTES],
+}
+
+struct StoreCell(UnsafeCell<GlyphStores>);
 // SAFETY: touched only from the single-CPU, IRQ-off VDI trap path — the same
 // discipline as the `Vwk` handle table. All zero: it lives in `.bss`.
 unsafe impl Sync for StoreCell {}
-static STORE: StoreCell = StoreCell(UnsafeCell::new(GlyphStore {
-    raw: [ROW_ZERO; MAX_ROWS],
-    scaled: [ROW_ZERO; MAX_ROWS],
-    source: [ROW_ZERO; MAX_ROWS],
-    cell: [ROW_ZERO; MAX_ROWS],
-    rotated: [ROW_ZERO; MAX_ROWS],
-    bytes: [0; MAX_ROWS * ROW_BYTES],
+static STORE: StoreCell = StoreCell(UnsafeCell::new(GlyphStores {
+    narrow: GlyphStore::ZERO,
+    wide: GlyphStore::ZERO,
+    bytes: [0; MAX_ROWS * WIDE_BYTES],
 }));
 
 /// The working store of one text call.
@@ -162,7 +187,7 @@ static STORE: StoreCell = StoreCell(UnsafeCell::new(GlyphStore {
 /// Single trap path, one borrower: `v_gtext`/`v_justified` take it once per call
 /// and no call nests.
 #[allow(clippy::mut_from_ref)]
-unsafe fn store() -> &'static mut GlyphStore {
+unsafe fn store() -> &'static mut GlyphStores {
     // SAFETY: see `StoreCell`.
     unsafe { &mut *STORE.0.get() }
 }
@@ -325,19 +350,19 @@ struct SrcSize {
 
 /// Read `w` pixels at bit address `bit` (from `base`) of a loaded data table into
 /// a row: the table is a byte stream, bit 7 first (`font` module comment).
-fn load_row(pb: &Vdipb, t: &font::LoadedTables, base: u64, bit: i64, w: usize, out: &mut Row) -> bool {
-    *out = ROW_ZERO;
+fn load_row<const N: usize>(pb: &Vdipb, t: &font::LoadedTables, base: u64, bit: i64, w: usize, out: &mut Row<N>) -> bool {
+    *out = [0; N];
     if w == 0 {
         return true;
     }
     let off = (bit & 7) as usize;
     let va = base.wrapping_add_signed(bit >> 3);
     let n = (off + w).div_ceil(8);
-    let mut b = [0u8; ROW_BYTES + 1];
+    let mut b = [0u8; WIDE_BYTES + 1];
     if !font::read_mem(pb, t.at, va, &mut b[..n]) {
         return false;
     }
-    let mut bytes = [0u8; ROW_BYTES];
+    let mut bytes = [0u8; WIDE_BYTES];
     for j in 0..w.div_ceil(8) {
         bytes[j] = if off == 0 { b[j] } else { (b[j] << off) | (b[j + 1] >> (8 - off)) };
     }
@@ -346,7 +371,7 @@ fn load_row(pb: &Vdipb, t: &font::LoadedTables, base: u64, bit: i64, w: usize, o
         a.copy_from_slice(chunk);
         *word = u64::from_be_bytes(a);
     }
-    let mask = width_mask(w as i16);
+    let mask: Row<N> = width_mask(w as i16);
     for (x, m) in out.iter_mut().zip(mask.iter()) {
         *x &= *m;
     }
@@ -358,11 +383,11 @@ fn load_row(pb: &Vdipb, t: &font::LoadedTables, base: u64, bit: i64, w: usize, o
 /// font's cell is `max_cell_width`; a loaded one's comes from `off_table`
 /// (`SOURCEX`/`DELX`, `vdi_text.c:467-468`), `SOURCEX` a `WORD`, and the rows are
 /// `form_width` bytes apart.
-fn raw_glyph(pb: &Vdipb, f: &SysFont, gcode: u16, raw: &mut [Row; MAX_ROWS]) -> SrcSize {
-    let fh = (f.form_height.max(0) as usize).min(MAX_ROWS);
+fn raw_glyph<const N: usize, const R: usize>(pb: &Vdipb, f: &SysFont, gcode: u16, raw: &mut [Row<N>; R]) -> SrcSize {
+    let fh = (f.form_height.max(0) as usize).min(R);
     let Some(t) = &f.loaded else {
         for (row, out) in raw.iter_mut().take(fh).enumerate() {
-            *out = ROW_ZERO;
+            *out = [0; N];
             out[0] = (font::glyph_row(f.id, gcode, row) as u64) << 56;
         }
         return SrcSize { w: f.max_cell_width, h: f.form_height };
@@ -370,11 +395,11 @@ fn raw_glyph(pb: &Vdipb, f: &SysFont, gcode: u16, raw: &mut [Row; MAX_ROWS]) -> 
     let i = gcode as i16;
     let sourcex = off_entry(pb, t, i).unwrap_or(0) as i16;
     let delx = table_width(pb, f, i);
-    let w = (delx.max(0) as usize).min(MAX_W);
+    let w = (delx.max(0) as usize).min(N * 64);
     for (row, out) in raw.iter_mut().take(fh).enumerate() {
         let base = t.dat_table.wrapping_add_signed(row as i64 * t.form_width as i64);
         if !load_row(pb, t, base, sourcex as i64, w, out) {
-            *out = ROW_ZERO;
+            *out = [0; N];
         }
     }
     SrcSize { w: delx, h: f.form_height }
@@ -384,9 +409,9 @@ fn raw_glyph(pb: &Vdipb, f: &SysFont, gcode: u16, raw: &mut [Row; MAX_ROWS]) -> 
 /// (`vdi_textblit.c:577-622`). Reads `w` source bits from the left with the
 /// horizontal DDA seeded at `xdda`; each source pixel emits one dest pixel,
 /// or two on a DDA carry (widening).
-fn scale_row_up(src_row: &Row, w: i16, dda_inc: u16, xdda: u16) -> Row {
+fn scale_row_up<const N: usize>(src_row: &Row<N>, w: i16, dda_inc: u16, xdda: u16) -> Row<N> {
     let mut d = 0usize;
-    let mut out = ROW_ZERO;
+    let mut out = [0; N];
     let mut accum = xdda;
     for s in 0..w.max(0) as usize {
         let set = row_test(src_row, s);
@@ -413,9 +438,9 @@ fn scale_row_up(src_row: &Row, w: i16, dda_inc: u16, xdda: u16) -> Row {
 /// (`vdi_textblit.c:628-666`). A set source pixel emits a dest pixel only
 /// on a DDA carry (dropping pixels), a clear source pixel always advances
 /// one dest position; the EmuTOS asymmetry is reproduced verbatim.
-fn scale_row_down(src_row: &Row, w: i16, dda_inc: u16, xdda: u16) -> Row {
+fn scale_row_down<const N: usize>(src_row: &Row<N>, w: i16, dda_inc: u16, xdda: u16) -> Row<N> {
     let mut d = 0usize;
-    let mut out = ROW_ZERO;
+    let mut out = [0; N];
     let mut accum = xdda;
     for s in 0..w.max(0) as usize {
         if row_test(src_row, s) {
@@ -438,30 +463,30 @@ fn scale_row_down(src_row: &Row, w: i16, dda_inc: u16, xdda: u16) -> Row {
 /// the running horizontal accumulator `xdda` (the sub-pixel nudge that
 /// spreads the fractional character spacing across the string) come from
 /// the char-spacing DDA at the end of `scale()`.
-fn scale_glyph(
-    src: &[Row; MAX_ROWS],
+fn scale_glyph<const N: usize, const R: usize>(
+    src: &[Row<N>; R],
     size: SrcSize,
     dda_inc: u16,
     t_sclsts: bool,
     xdda: &mut u16,
-    out: &mut [Row; MAX_ROWS],
+    out: &mut [Row<N>; R],
 ) -> SrcSize {
     let mut vaccum: u16 = 0x7fff;
     let mut d = 0usize;
     let seed = *xdda;
-    for s in src.iter().take((size.h.max(0) as usize).min(MAX_ROWS)) {
+    for s in src.iter().take((size.h.max(0) as usize).min(R)) {
         vaccum = vaccum.wrapping_add(dda_inc);
         let vcarry = vaccum < dda_inc;
         if t_sclsts {
-            if vcarry && d < MAX_ROWS {
+            if vcarry && d < R {
                 out[d] = scale_row_up(s, size.w, dda_inc, seed);
                 d += 1;
             }
-            if d < MAX_ROWS {
+            if d < R {
                 out[d] = scale_row_up(s, size.w, dda_inc, seed);
                 d += 1;
             }
-        } else if vcarry && d < MAX_ROWS {
+        } else if vcarry && d < R {
             out[d] = scale_row_down(s, size.w, dda_inc, seed);
             d += 1;
         }
@@ -480,28 +505,28 @@ fn scale_glyph(
 /// the number of set skew bits in the top `fh` bits. For a scaled glyph
 /// `fh` is the scaled row count, so the 16-bit mask cycles more often and
 /// the lean grows in step with the scaled `left_offset + right_offset`.
-fn skew_shifts(f: &SysFont, fh: usize) -> [i16; MAX_ROWS] {
-    let mut shifts = [0i16; MAX_ROWS];
+/// Fills the first `fh` entries of `shifts`, returns the lean (the top row's shift).
+fn skew_shifts<const R: usize>(f: &SysFont, fh: usize, shifts: &mut [i16; R]) -> i16 {
     let mut mask = f.skew;
     let mut shift = 0i16;
-    for k in 0..fh.min(MAX_ROWS) {
+    for k in 0..fh {
         let carry = mask & 0x8000 != 0; // old bit 15 (rol.w sets carry from it)
         mask = mask.rotate_left(1);
         if carry {
             shift += 1;
         }
-        shifts[fh.min(MAX_ROWS) - 1 - k] = shift; // current (bottom-up) scanline
+        shifts[fh - 1 - k] = shift; // current (bottom-up) scanline
     }
-    shifts
+    shift
 }
 
 /// One row of the effect buffer, or nothing for an out-of-range row index.
 #[inline]
-fn row_or_zero(src: &[Row; MAX_ROWS], g: i32, fh: usize) -> Row {
+fn row_or_zero<const N: usize, const R: usize>(src: &[Row<N>; R], g: i32, fh: usize) -> Row<N> {
     if g >= 0 && (g as usize) < fh {
         src[g as usize]
     } else {
-        ROW_ZERO
+        [0; N]
     }
 }
 
@@ -524,24 +549,25 @@ struct CellSize {
 /// the (possibly scaled) effect metrics; `src` supplies the glyph geometry.
 /// Position-independent: the caller places the result (directly for
 /// `chup == 0`, or after [`rotate_cell`] for a right angle).
-fn build_cell(
-    rows: &[Row; MAX_ROWS],
+fn build_cell<const N: usize, const R: usize>(
+    rows: &[Row<N>; R],
     src: SrcSize,
     f: &SysFont,
     style: i16,
-    work_src: &mut [Row; MAX_ROWS],
-    work: &mut [Row; MAX_ROWS],
+    shifts: &mut [i16; R],
+    work_src: &mut [Row<N>; R],
+    work: &mut [Row<N>; R],
 ) -> CellSize {
-    let fh = (src.h.max(0) as usize).min(MAX_ROWS);
+    let fh = (src.h.max(0) as usize).min(R);
     let outline = style & T_OUTLINE != 0;
     let skew = style & T_SKEW != 0;
     let mono = f.mono();
 
     // 1. Build the source rows: each glyph row placed at its skew offset,
     //    with the bold overstrike (thicken) baked in. Leftmost pixel = bit 63.
-    let shifts = if skew { skew_shifts(f, fh) } else { [0i16; MAX_ROWS] };
-    let wmask = width_mask(src.w);
-    let weight = if style & T_THICKEN != 0 { (f.thicken.max(0) as usize).min(MAX_W) } else { 0 };
+    let lean = if skew { skew_shifts(f, fh, shifts) } else { 0 };
+    let wmask: Row<N> = width_mask(src.w);
+    let weight = if style & T_THICKEN != 0 { (f.thicken.max(0) as usize).min(N * 64) } else { 0 };
     for (row, out) in work_src.iter_mut().take(fh).enumerate() {
         let mut b = rows[row];
         if weight != 0 {
@@ -560,7 +586,7 @@ fn build_cell(
                 }
             }
         }
-        *out = row_shr(&b, shifts[row].max(0) as usize);
+        *out = if skew { row_shr(&b, shifts[row].max(0) as usize) } else { b };
     }
 
     // 2. Outline (hollow contour) or the plain source.
@@ -574,7 +600,7 @@ fn build_cell(
         for s in work_src.iter_mut().take(fh) {
             *s = row_shr(s, OUTLINE_THICKNESS as usize);
         }
-        h = (fh + 2).min(MAX_ROWS);
+        h = (fh + 2).min(R);
         for (b, out) in work.iter_mut().take(h).enumerate() {
             let g = b as i32 - 1; // buffer row b holds glyph row b-1
             let cur = row_or_zero(work_src, g, fh);
@@ -617,7 +643,7 @@ fn build_cell(
     //    A font's offsets need not add up to the lean its mask gives: EmuTOS'
     //    `screen_blit16` slides its window along with the lean, so ink past
     //    `DELX` still lands (probe TXQ3); here the cell grows to hold it.
-    let skew_total = if skew { f.left_offset.wrapping_add(f.right_offset).max(shifts[0]) } else { 0 };
+    let skew_total = if skew { f.left_offset.wrapping_add(f.right_offset).max(lean) } else { 0 };
     let mut cell_w = src.w.wrapping_add(skew_total);
     if !mono {
         cell_w = cell_w.wrapping_add(weight as i16);
@@ -638,27 +664,56 @@ struct Advance {
     hor: i16,
 }
 
+/// What every glyph of one text call shares: `base` is the ring font (raw glyph +
+/// `first_ade`), `f` the effective — possibly scaled — header.
+struct TextCall<'a> {
+    pb: &'a Vdipb,
+    vwk: &'a Vwk,
+    backend: &'a dyn RasterBackend,
+    base: &'a SysFont,
+    f: &'a SysFont,
+    clip: ClipRect,
+}
+
+/// Whether the cell of glyph `gcode` fits [`NARROW_SIDE`] × [`NARROW_SIDE`] at every
+/// stage of [`assemble_and_blit`], rotated too. Bounds, not the exact size: the DDA
+/// at most doubles a dimension ([`resize`], [`scale_glyph`]), a skew adds at most one
+/// pixel per row, a cell's width may also come from the font's own offsets
+/// ([`build_cell`]). A negative `DELX` takes the wide rows: scaled, it is a large
+/// `UWORD`.
+fn fits_narrow(call: &TextCall, gcode: u16) -> bool {
+    let (vwk, f) = (call.vwk, call.f);
+    let delx = table_width(call.pb, call.base, gcode as i16) as i32;
+    let dda = if vwk.scaled { 2 } else { 1 };
+    let rows = dda * f.form_height.max(0) as i32;
+    let outline = if vwk.style & T_OUTLINE != 0 { OUTLINE_THICKNESS as i32 * 2 } else { 0 };
+    let mut w = dda * delx + outline;
+    if vwk.style & T_THICKEN != 0 {
+        w += f.thicken.max(0) as i32;
+    }
+    if vwk.style & T_SKEW != 0 {
+        w += (f.left_offset.wrapping_add(f.right_offset) as i32).max(rows);
+    }
+    let side = NARROW_SIDE as i32;
+    delx >= 0 && w <= side && rows + outline <= side
+}
+
 /// Assemble one character's cell (raw → optional DDA scale → effects) into
-/// `st.cell`. `base` is the ring font (raw glyph + `first_ade`), `f` the
-/// effective — possibly scaled — header.
-#[allow(clippy::too_many_arguments)]
-fn make_glyph(
-    st: &mut GlyphStore,
-    pb: &Vdipb,
-    base: &SysFont,
-    f: &SysFont,
-    code: i16,
-    vwk: &Vwk,
+/// `st.cell`.
+fn make_glyph<const N: usize, const R: usize>(
+    st: &mut GlyphStore<N, R>,
+    call: &TextCall,
+    gcode: u16,
     xdda: &mut u16,
 ) -> (CellSize, Advance) {
-    let gcode = font::map_code(base, code);
+    let (pb, base, f, vwk) = (call.pb, call.base, call.f, call.vwk);
     let mut size = raw_glyph(pb, base, gcode, &mut st.raw);
     let scaled = vwk.scaled;
     if scaled {
         size = scale_glyph(&st.raw, size, vwk.dda_inc, vwk.t_sclsts, xdda, &mut st.scaled);
     }
     let rows = if scaled { &st.scaled } else { &st.raw };
-    let cell = build_cell(rows, size, f, vwk.style, &mut st.source, &mut st.cell);
+    let cell = build_cell(rows, size, f, vwk.style, &mut st.shifts, &mut st.source, &mut st.cell);
     let outline = if vwk.style & T_OUTLINE != 0 { OUTLINE_THICKNESS } else { 0 };
     let mut pen = size.w.wrapping_add(outline * 2);
     if vwk.style & T_THICKEN != 0 && !f.mono() {
@@ -669,19 +724,16 @@ fn make_glyph(
 
 /// Pack a cell to `ceil(cell_w/8)` bytes per row and blit it with its top-left at
 /// `(x, y)` in the workstation writing mode + text colour.
-#[allow(clippy::too_many_arguments)]
-fn blit_cell(
-    backend: &dyn RasterBackend,
-    rows: &[Row; MAX_ROWS],
-    bytes: &mut [u8; MAX_ROWS * ROW_BYTES],
+fn blit_cell<const N: usize, const R: usize>(
+    call: &TextCall,
+    rows: &[Row<N>; R],
+    bytes: &mut [u8; MAX_ROWS * WIDE_BYTES],
     cell: CellSize,
     x: i16,
     y: i16,
-    vwk: &Vwk,
-    clip: ClipRect,
 ) {
-    let cell_w = cell.cell_w.min(MAX_W as i16);
-    let cell_h = cell.h.min(MAX_ROWS as i16);
+    let cell_w = cell.cell_w.min((N * 64) as i16);
+    let cell_h = cell.h.min(R as i16);
     if cell_w <= 0 || cell_h <= 0 {
         return;
     }
@@ -692,8 +744,47 @@ fn blit_cell(
             bytes[b * bpr + j] = (row[j / 8] >> (56 - 8 * (j % 8))) as u8;
         }
     }
+    let vwk = call.vwk;
     let mode = WriteMode::from_wrt_mode(vwk.wrt_mode);
-    backend.draw_glyph_sized(x, y, &bytes[..h * bpr], cell_w, cell_h, vwk.text_color, mode, clip);
+    call.backend.draw_glyph_sized(x, y, &bytes[..h * bpr], cell_w, cell_h, vwk.text_color, mode, call.clip);
+}
+
+/// Assemble one glyph in `st` and blit it, rotated at a right-angle `chup`. `place`
+/// gives the cell's top-left from the pen advance.
+fn assemble_and_blit<const N: usize, const R: usize>(
+    st: &mut GlyphStore<N, R>,
+    bytes: &mut [u8; MAX_ROWS * WIDE_BYTES],
+    call: &TextCall,
+    gcode: u16,
+    xdda: &mut u16,
+    place: impl FnOnce(i16) -> (i16, i16),
+) -> Advance {
+    let (cell, advance) = make_glyph(st, call, gcode, xdda);
+    let (x, y) = place(advance.pen);
+    let chup = call.vwk.chup;
+    if matches!(chup, 900 | 1800 | 2700) {
+        let rot = rotate_cell(&st.cell, cell, chup, &mut st.rotated);
+        blit_cell(call, &st.rotated, bytes, rot, x, y);
+    } else {
+        blit_cell(call, &st.cell, bytes, cell, x, y);
+    }
+    advance
+}
+
+/// Draw the glyph of `code`, in the rows its cell needs ([`fits_narrow`]).
+fn output_glyph(
+    st: &mut GlyphStores,
+    call: &TextCall,
+    code: i16,
+    xdda: &mut u16,
+    place: impl FnOnce(i16) -> (i16, i16),
+) -> Advance {
+    let gcode = font::map_code(call.base, code);
+    if fits_narrow(call, gcode) {
+        assemble_and_blit(&mut st.narrow, &mut st.bytes, call, gcode, xdda, place)
+    } else {
+        assemble_and_blit(&mut st.wide, &mut st.bytes, call, gcode, xdda, place)
+    }
 }
 
 /// Rotate an assembled cell by a right angle — EmuTOS `rotate`
@@ -707,13 +798,13 @@ fn blit_cell(
 ///
 /// These reproduce the bit transforms EmuTOS' `rotate` performs (the 180°
 /// nybble-reverse-and-stack, and the 90°/270° transpose loops).
-fn rotate_cell(rows: &[Row; MAX_ROWS], cell: CellSize, chup: i16, out: &mut [Row; MAX_ROWS]) -> CellSize {
-    let w = (cell.cell_w.max(0) as usize).min(MAX_W);
-    let h = (cell.h.max(0) as usize).min(MAX_ROWS);
+fn rotate_cell<const N: usize, const R: usize>(rows: &[Row<N>; R], cell: CellSize, chup: i16, out: &mut [Row<N>; R]) -> CellSize {
+    let w = (cell.cell_w.max(0) as usize).min(N * 64);
+    let h = (cell.h.max(0) as usize).min(R);
     // 90°/270° swap the dimensions; 180° keeps them.
     let (out_w, out_h) = if chup == 1800 { (w, h) } else { (h, w) };
     for r in out.iter_mut().take(out_h) {
-        *r = ROW_ZERO;
+        *r = [0; N];
     }
     for (sy, row) in rows.iter().enumerate().take(h) {
         for sx in 0..w {
@@ -725,7 +816,7 @@ fn rotate_cell(rows: &[Row; MAX_ROWS], cell: CellSize, chup: i16, out: &mut [Row
                 1800 => (w - 1 - sx, h - 1 - sy),
                 _ => (h - 1 - sy, sx), // 2700
             };
-            if dy < MAX_ROWS {
+            if dy < R {
                 row_set(&mut out[dy], dx);
             }
         }
@@ -733,15 +824,15 @@ fn rotate_cell(rows: &[Row; MAX_ROWS], cell: CellSize, chup: i16, out: &mut [Row
     CellSize { cell_w: out_w as i16, h: out_h as i16 }
 }
 
-/// Blit one already-assembled glyph horizontally (`chup == 0`): glyph col 0
-/// at `x_pen`, cell top at `top_y` (both before the outline shift). The
-/// horizontal `v_gtext`/`v_justified` path.
-fn draw_cell(backend: &dyn RasterBackend, st: &mut GlyphStore, cell: CellSize, x_pen: i16, top_y: i16, vwk: &Vwk, clip: ClipRect) {
+/// Where a horizontal glyph's cell goes (`chup == 0`): glyph col 0 at `x_pen`, cell
+/// top at `top_y` (both before the outline shift). The horizontal
+/// `v_gtext`/`v_justified` path.
+fn horizontal_at(vwk: &Vwk, x_pen: i16, top_y: i16) -> (i16, i16) {
     // Outlined text starts 1 px earlier and 1 row higher (EmuTOS `outline`
     // insets the glyph; `output_text` subtracts `outline` from DESTX/DESTY,
     // `vdi_text.c:410-411`).
-    let out_shift = if vwk.style & T_OUTLINE != 0 { OUTLINE_THICKNESS } else { 0 };
-    blit_cell(backend, &st.cell, &mut st.bytes, cell, x_pen.wrapping_sub(out_shift), top_y.wrapping_sub(out_shift), vwk, clip);
+    let out_shift = outline_of(vwk);
+    (x_pen.wrapping_sub(out_shift), top_y.wrapping_sub(out_shift))
 }
 
 /// Vertical-alignment reference → glyph-cell top, for `v_align`
@@ -946,13 +1037,14 @@ pub fn v_gtext(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     // (`vdi_text.c:519-534`): glyphs and rule run on in the store
     // ([`ClipRect::OFF`], TASK/V30).
     let clip = line_clip(vwk);
+    let call = TextCall { pb, vwk, backend, base, f, clip };
 
     // Right-angle rotation takes the assemble→rotate→blit path; every other
     // angle (0 and 3600) falls through to the horizontal path — matching
     // EmuTOS' `switch(vwk->chup)` where only 900/1800/2700 are cased.
     if matches!(vwk.chup, 900 | 1800 | 2700) {
         let run = Run { first: 0, count, x, y, delh, outline };
-        output_text_rotated(st, pb, vwk, backend, base, f, &run, clip, None);
+        output_text_rotated(st, &call, &run, None);
         return;
     }
 
@@ -967,8 +1059,7 @@ pub fn v_gtext(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     let mut xdda: u16 = 0x7fff;
     let mut cx = x_pen0;
     for i in 0..count as usize {
-        let (cell, advance) = make_glyph(st, pb, base, f, pb.intin(i), vwk, &mut xdda);
-        draw_cell(backend, st, cell, cx, top_y, vwk, clip);
+        let advance = output_glyph(st, &call, pb.intin(i), &mut xdda, |_| horizontal_at(vwk, cx, top_y));
         cx = cx.wrapping_add(advance.pen).wrapping_add(advance.hor); // `DESTX` is a WORD
     }
     // `startx` = the first `DESTX`, the end = the last (both shifted by the
@@ -980,23 +1071,13 @@ pub fn v_gtext(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
 /// 900/1800/2700 cases (`vdi_text.c:408-543`) driving `text_blt` + `rotate`
 /// (`vdi_textblit.c:442-554`, `1331-1342`, `1402-1432`). Each glyph is
 /// assembled ([`make_glyph`], scaling included), rotated ([`rotate_cell`])
-/// and blitted; the pen advances along the rotated baseline and the
+/// and blitted ([`output_glyph`]); the pen advances along the rotated baseline and the
 /// underline (if any) runs parallel to it. `v_gtext` passes no
 /// [`JustInfo`]; `v_justified` passes its deltas, which the apply loop adds
 /// to the pen after each glyph (`vdi_text.c:476-492`) — `gdp_justified` has
 /// already put them on the rotated axis.
-#[allow(clippy::too_many_arguments)]
-fn output_text_rotated(
-    st: &mut GlyphStore,
-    pb: &Vdipb,
-    vwk: &Vwk,
-    backend: &dyn RasterBackend,
-    base: &SysFont,
-    f: &SysFont,
-    run: &Run,
-    clip: ClipRect,
-    mut just: Option<&mut JustInfo>,
-) {
+fn output_text_rotated(st: &mut GlyphStores, call: &TextCall, run: &Run, mut just: Option<&mut JustInfo>) {
+    let (pb, vwk, f) = (call.pb, call.vwk, call.f);
     let Run { first, count, x, y, delh, outline } = *run;
     let chup = vwk.chup;
     let top = f.top;
@@ -1069,18 +1150,17 @@ fn output_text_rotated(
     let mut gy = ay;
     for i in 0..count as usize {
         let code = pb.intin(first + i);
-        let (cell, adv) = make_glyph(st, pb, base, f, code, vwk, &mut xdda);
+        let adv = output_glyph(st, call, code, &mut xdda, |pen| {
+            // Glyph placement shift includes skew (EmuTOS `text_blt` `chup`
+            // switch); the pen advance below does not.
+            let cell_adj = pen.wrapping_add(skew_total);
+            match chup {
+                900 => (gx, gy.wrapping_sub(cell_adj)),  // vars.DESTY -= delx
+                1800 => (gx.wrapping_sub(cell_adj), gy), // vars.DESTX -= delx
+                _ => (gx, gy),                           // 2700 — no adjustment
+            }
+        });
         let advance = adv.pen;
-        let rot = rotate_cell(&st.cell, cell, chup, &mut st.rotated);
-        // Glyph placement shift includes skew (EmuTOS `text_blt` `chup`
-        // switch); the pen advance below does not.
-        let cell_adj = advance.wrapping_add(skew_total);
-        let (bx, by) = match chup {
-            900 => (gx, gy.wrapping_sub(cell_adj)),  // vars.DESTY -= delx
-            1800 => (gx.wrapping_sub(cell_adj), gy), // vars.DESTX -= delx
-            _ => (gx, gy),                           // 2700 — no adjustment
-        };
-        blit_cell(backend, &st.rotated, &mut st.bytes, rot, bx, by, vwk, clip);
         match chup {
             900 => gy = gy.wrapping_sub(advance),  // DESTY -= delx (move up)
             1800 => gx = gx.wrapping_sub(advance), // DESTX -= delx (move left)
@@ -1097,7 +1177,7 @@ fn output_text_rotated(
     // far endpoint is the pen's final position (`gx`/`gy`). `ul_size` thin
     // lines stepped by (xfact, yfact) give the thickness.
     let end = if vertical { (startx, gy) } else { (gx, starty) };
-    underline_lines(backend, f, vwk, (startx, starty), end, (xfact, yfact), clip);
+    underline_lines(call.backend, f, vwk, (startx, starty), end, (xfact, yfact), call.clip);
 }
 
 /// EmuTOS `JUSTINFO` (`vdi_text.c:139-149`): the per-glyph justification
@@ -1289,6 +1369,7 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     // Clipping off: glyphs and underline run on in the store, as in
     // `v_gtext` (TASK/V30).
     let clip = line_clip(vwk);
+    let call = TextCall { pb, vwk, backend, base, f, clip };
 
     // Right angle: `v_gtext`'s rotated `output_text` with the deltas
     // (`gdp_justified` → `output_text(vwk, cnt, str, max_x, &just)`, :1288).
@@ -1297,7 +1378,7 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
         let run_width = if max_x < 0 { calc_width(pb, 2, base, f, cnt, vwk) } else { max_x };
         let delh = delh_for(f, vwk, run_width, outline);
         let run = Run { first: 2, count: cnt, x: x0, y: pb.ptsin(1), delh, outline };
-        output_text_rotated(st, pb, vwk, backend, base, f, &run, clip, Some(&mut just));
+        output_text_rotated(st, &call, &run, Some(&mut just));
         return;
     }
 
@@ -1312,8 +1393,7 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     let mut desty = top_y;
     for i in 0..cnt as usize {
         let code = pb.intin(2 + i);
-        let (cell, advance) = make_glyph(st, pb, base, f, code, vwk, &mut xdda);
-        draw_cell(backend, st, cell, destx, desty, vwk, clip);
+        let advance = output_glyph(st, &call, code, &mut xdda, |_| horizontal_at(vwk, destx, desty));
         destx = destx.wrapping_add(advance.pen); // base glyph advance (EmuTOS text_blt DELX), a WORD
         just.step(code, &mut destx, &mut desty);
         destx = destx.wrapping_add(advance.hor);
@@ -1321,4 +1401,297 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     // As in `v_gtext`: `DESTX`/`DESTY` carry the outline shift (`vdi_text.c:410-411`).
     let outline = outline_of(vwk);
     underline(backend, f, vwk, x0.wrapping_sub(outline), top_y.wrapping_sub(outline), destx.wrapping_sub(outline), clip);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::backend::{MonoSrc, PatternFill, Pel, Rect};
+    use super::super::vwk::Vwk;
+    use super::*;
+    use crate::bdos::process::Abi;
+    use crate::uaccess::Space;
+    use std::sync::Mutex;
+
+    /// One blit: position, packed rows, cell size.
+    type Blit = (i16, i16, Vec<u8>, i16, i16);
+
+    /// What the path hands the backend: the blits, nothing else.
+    #[derive(Default)]
+    struct Recorder(Mutex<Vec<Blit>>);
+
+    impl RasterBackend for Recorder {
+        fn width(&self) -> u16 {
+            640
+        }
+        fn height(&self) -> u16 {
+            480
+        }
+        fn num_colors(&self) -> u16 {
+            2
+        }
+        fn planes(&self) -> u16 {
+            1
+        }
+        fn set_color(&self, _: u16, _: u16, _: u16, _: u16) {}
+        fn query_color(&self, _: u16) -> (u16, u16, u16) {
+            (0, 0, 0)
+        }
+        fn set_active_palette(&self, _: &[u16; 256]) {}
+        fn pel_to_device16(&self, _: Pel) -> u16 {
+            0
+        }
+        fn device_to_rgb565(&self, _: u32) -> u16 {
+            0
+        }
+        fn rgb565_to_device(&self, _: u16) -> u32 {
+            0
+        }
+        fn read_pixel(&self, _: i16, _: i16) -> Pel {
+            0
+        }
+        fn fill_rect(&self, _: i16, _: i16, _: i16, _: i16, _: Pel, _: ClipRect) {}
+        fn abline(&self, _: i16, _: i16, _: i16, _: i16, _: Pel, _: WriteMode, _: ClipRect, mask: u16, _: bool) -> u16 {
+            mask
+        }
+        fn fill_pattern(&self, _: i16, _: i16, _: i16, _: i16, _: PatternFill, _: ClipRect) {}
+        fn draw_glyph_sized(&self, x: i16, y: i16, g: &[u8], w: i16, h: i16, _: Pel, _: WriteMode, _: ClipRect) {
+            self.0.lock().unwrap().push((x, y, g.to_vec(), w, h));
+        }
+        fn blit_mono(&self, _: Rect, _: MonoSrc, _: Pel, _: Pel, _: WriteMode, _: ClipRect) {}
+        fn copy_rect(&self, _: Rect, _: i16, _: i16, _: u8, _: ClipRect) {}
+        fn get_device_pixel(&self, _: i16, _: i16) -> u32 {
+            0
+        }
+        fn put_device_pixel(&self, _: i16, _: i16, _: u32) {}
+        fn flush_rect(&self, _: i16, _: i16, _: i16, _: i16) {}
+    }
+
+    /// A kernel-space parameter block; the text path reads nothing from it here but
+    /// a chain's tables through its space.
+    fn kernel_pb() -> Vdipb {
+        let words: &'static mut [i16] = Vec::leak(vec![0i16; 64]);
+        let p = words.as_mut_ptr() as u64;
+        let blk: &'static [u64; 5] = Box::leak(Box::new([p; 5]));
+        // SAFETY: five valid pointers to a large enough WORD array, leaked.
+        match unsafe { Vdipb::from_raw(blk.as_ptr() as u64, Abi::Lp64, Space::Kernel) } {
+            Ok(pb) => pb,
+            Err(_) => panic!("kernel parameter block"),
+        }
+    }
+
+    /// A chain font: glyphs of the given widths, every row and pixel from a pattern
+    /// with both the first and the last pixel of a cell set often enough.
+    fn loaded_font(widths: &[i16], rows: i16, flags: u16, left: i16, right: i16, thicken: i16) -> SysFont {
+        let mut off = vec![0u16];
+        for w in widths {
+            off.push(off.last().unwrap().wrapping_add(*w as u16));
+        }
+        let bits = off.iter().map(|o| *o as usize).max().unwrap();
+        let fw = bits.div_ceil(8) + 1;
+        let mut dat = vec![0u8; fw * rows as usize];
+        for r in 0..rows as usize {
+            for c in 0..fw {
+                dat[r * fw + c] = ((c * 29 + r * 53) as u8) ^ 0xA5 | 0x81;
+            }
+        }
+        let off: &'static [u16] = Vec::leak(off);
+        let dat: &'static [u8] = Vec::leak(dat);
+        SysFont {
+            first_ade: 0,
+            last_ade: widths.len() as i16 - 1,
+            left_offset: left,
+            right_offset: right,
+            thicken,
+            form_height: rows,
+            top: rows - 1,
+            bottom: 0,
+            max_cell_width: widths.iter().copied().max().unwrap(),
+            loaded: Some(font::LoadedTables {
+                at: font::LoadedRef { addr: 0, owner: font::FontOwner::Kernel },
+                flags,
+                hor_table: 0,
+                off_table: off.as_ptr() as u64,
+                dat_table: dat.as_ptr() as u64,
+                form_width: fw as i16,
+                next_font: 0,
+                name: [0; font::NAME_LEN],
+            }),
+            ..font::FON_8X16
+        }
+    }
+
+    fn vwk(style: i16, chup: i16, scale: Option<(u16, bool)>) -> Vwk {
+        let mut v = Vwk::EMPTY;
+        v.style = style;
+        v.chup = chup;
+        if let Some((dda_inc, t_sclsts)) = scale {
+            v.scaled = true;
+            v.dda_inc = dda_inc;
+            v.t_sclsts = t_sclsts;
+        }
+        v
+    }
+
+    /// Stores for a whole run, so stale rows of the previous glyph are in place.
+    struct Pair {
+        narrow: Box<GlyphStore<1, NARROW_SIDE>>,
+        wide: Box<GlyphStore<WIDE_WORDS, MAX_ROWS>>,
+        bytes: Box<[u8; MAX_ROWS * WIDE_BYTES]>,
+    }
+
+    fn pair() -> Pair {
+        // Filled, not zero: a row outside the current glyph must not be read.
+        let mut p = Pair {
+            narrow: Box::new(GlyphStore::ZERO),
+            wide: Box::new(GlyphStore::ZERO),
+            bytes: Box::new([0xEE; MAX_ROWS * WIDE_BYTES]),
+        };
+        for r in p.narrow.raw.iter_mut().chain(p.narrow.scaled.iter_mut()) {
+            *r = [!0; 1];
+        }
+        for r in p.narrow.source.iter_mut().chain(p.narrow.cell.iter_mut()).chain(p.narrow.rotated.iter_mut()) {
+            *r = [!0; 1];
+        }
+        p.narrow.shifts = [0x55; NARROW_SIDE];
+        for r in p.wide.raw.iter_mut().chain(p.wide.scaled.iter_mut()) {
+            *r = [!0; WIDE_WORDS];
+        }
+        for r in p.wide.source.iter_mut().chain(p.wide.cell.iter_mut()).chain(p.wide.rotated.iter_mut()) {
+            *r = [!0; WIDE_WORDS];
+        }
+        p.wide.shifts = [0x55; MAX_ROWS];
+        p
+    }
+
+    /// For each code of a run: where [`fits_narrow`] holds, the narrow and the wide
+    /// rows give the same blit, advance and DDA accumulator. Returns how many did.
+    fn agree(pb: &Vdipb, stores: &mut Pair, base: &SysFont, v: &Vwk, codes: &[i16]) -> usize {
+        let scaled_hdr;
+        let f = if v.scaled {
+            scaled_hdr = scaled_header(base, v.dda_inc, v.t_sclsts);
+            &scaled_hdr
+        } else {
+            base
+        };
+        let (narrow, wide) = (Recorder::default(), Recorder::default());
+        let call_n = TextCall { pb, vwk: v, backend: &narrow, base, f, clip: ClipRect::OFF };
+        let call_w = TextCall { pb, vwk: v, backend: &wide, base, f, clip: ClipRect::OFF };
+        let (mut xn, mut xw) = (0x7fffu16, 0x7fffu16);
+        let mut checked = 0;
+        for &code in codes {
+            let gcode = font::map_code(base, code);
+            let an = fits_narrow(&call_n, gcode).then(|| {
+                assemble_and_blit(&mut *stores.narrow, &mut stores.bytes, &call_n, gcode, &mut xn, |pen| (pen, 7))
+            });
+            let aw = assemble_and_blit(&mut *stores.wide, &mut stores.bytes, &call_w, gcode, &mut xw, |pen| (pen, 7));
+            let Some(an) = an else {
+                xn = xw;
+                wide.0.lock().unwrap().pop();
+                continue;
+            };
+            assert_eq!((an.pen, an.hor, xn), (aw.pen, aw.hor, xw), "code {code} style {:#x} chup {}", v.style, v.chup);
+            let (n, w) = (narrow.0.lock().unwrap().pop(), wide.0.lock().unwrap().pop());
+            assert_eq!(n, w, "code {code} style {:#x} chup {}", v.style, v.chup);
+            checked += 1;
+        }
+        checked
+    }
+
+    const SCALES: [Option<(u16, bool)>; 5] =
+        [None, Some((0xFFFF, true)), Some((0x8000, true)), Some((0x2000, true)), Some((0x8000, false))];
+
+    /// The built-in fonts: every effect, scale and right angle, in the narrow rows
+    /// (the bound of the speed of `v_gtext`, TASK/V44) and with the wide rows' result.
+    #[test]
+    fn built_in_fonts_always_fit_and_agree() {
+        let pb = kernel_pb();
+        let mut stores = pair();
+        let codes: Vec<i16> = (0..256).step_by(7).collect();
+        for id in font::RING {
+            for scale in SCALES {
+                for style in 0..32 {
+                    for chup in [0, 900, 1800, 2700] {
+                        let v = vwk(style, chup, scale);
+                        let n = agree(&pb, &mut stores, font::font(id), &v, &codes);
+                        assert_eq!(n, codes.len(), "{id:?} scale {scale:?} style {style:#x} chup {chup}");
+                    }
+                }
+            }
+        }
+    }
+
+    /// A chain font, mono and proportional, around the bounds: whatever [`fits_narrow`]
+    /// lets through agrees with the wide rows.
+    #[test]
+    fn loaded_fonts_agree_where_they_fit() {
+        let pb = kernel_pb();
+        let mut stores = pair();
+        let widths = [0i16, 1, 3, 8, 17, 24, 31, 32, 33, 40, 55, 56, 57, 60, 61, 62, 63, 64, 65, 66, 100, 512];
+        let codes: Vec<i16> = (0..widths.len() as i16).collect();
+        let mut checked = 0;
+        for rows in [1i16, 16, 31, 32, 33, 60, 62, 63, 64, 65, 100] {
+            for flags in [0, font::F_MONOSPACE] {
+                for (left, right, thicken) in
+                    [(0, 0, 0), (1, 7, 1), (0, 40, 3), (-8, 2, 9), (32767, 1, 2), (-32768, -1, 1), (70, 0, 70), (0, 0, -3)]
+                {
+                    let base = loaded_font(&widths, rows, flags, left, right, thicken);
+                    for scale in SCALES {
+                        for style in [0, 1, 2, 4, 8, 16, 5, 17, 20, 21, 31] {
+                            for chup in [0, 900, 1800, 2700] {
+                                let v = vwk(style, chup, scale);
+                                checked += agree(&pb, &mut stores, &base, &v, &codes);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert!(checked > 10_000, "the bound must let cases through: {checked}");
+    }
+
+    /// The bound itself: 64 × 64 fits, one more does not, in either direction. A
+    /// pixel at column 64 is what the narrow rows could not hold.
+    #[test]
+    fn narrow_bound_is_64_by_64() {
+        let pb = kernel_pb();
+        let wide_font = loaded_font(&[64, 65], 64, 0, 0, 0, 0);
+        let tall_font = loaded_font(&[8], 65, 0, 0, 0, 0);
+        let v = vwk(0, 0, None);
+        let rec = Recorder::default();
+        let call = TextCall { pb: &pb, vwk: &v, backend: &rec, base: &wide_font, f: &wide_font, clip: ClipRect::OFF };
+        assert!(fits_narrow(&call, 0));
+        assert!(!fits_narrow(&call, 1));
+        let call = TextCall { pb: &pb, vwk: &v, backend: &rec, base: &tall_font, f: &tall_font, clip: ClipRect::OFF };
+        assert!(!fits_narrow(&call, 0));
+    }
+
+    /// A descending `off_table` gives a negative `DELX`, never the narrow rows.
+    #[test]
+    fn negative_delx_takes_the_wide_rows() {
+        let pb = kernel_pb();
+        let base = loaded_font(&[8, -3], 16, 0, 0, 0, 0);
+        let v = vwk(0, 0, None);
+        let rec = Recorder::default();
+        let call = TextCall { pb: &pb, vwk: &v, backend: &rec, base: &base, f: &base, clip: ClipRect::OFF };
+        assert!(!fits_narrow(&call, 1));
+    }
+
+    /// The limits of V33 hold: a cell of 512 × 512 is drawn whole, in the wide rows.
+    #[test]
+    fn largest_cell_is_still_512_by_512() {
+        let pb = kernel_pb();
+        let base = loaded_font(&[512], 512, 0, 0, 0, 0);
+        let v = vwk(0, 0, None);
+        let rec = Recorder::default();
+        let call = TextCall { pb: &pb, vwk: &v, backend: &rec, base: &base, f: &base, clip: ClipRect::OFF };
+        let mut stores = pair();
+        let mut xdda = 0x7fff;
+        assert!(!fits_narrow(&call, 0));
+        assemble_and_blit(&mut *stores.wide, &mut stores.bytes, &call, 0, &mut xdda, |_| (0, 0));
+        let blits = rec.0.lock().unwrap();
+        let (_, _, ref bytes, w, h) = blits[0];
+        assert_eq!((w, h), (512, 512));
+        assert_eq!(bytes.len(), 512 * 64);
+        assert_eq!(bytes[511 * 64 + 63] & 0x01, 0x01, "the last pixel of the last row");
+    }
 }

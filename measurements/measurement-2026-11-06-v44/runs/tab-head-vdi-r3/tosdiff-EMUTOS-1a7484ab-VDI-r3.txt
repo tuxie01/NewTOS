@@ -1,0 +1,23 @@
+EMUTOS-1a7484ab-VDI-r3.BIN vs NEWTOS.BIN -- area VDI, 38 cases from vdi-r3.tsv
+
+case 117  opcode 102  vq_extnd 1 after vs_clip on
+    intout[4]              EMUTOS-1a7484ab-VDI-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+    intout[5]              EMUTOS-1a7484ab-VDI-r3.BIN = 0x0001 (1)   NEWTOS.BIN                 = 0x0000 (0)
+
+case 119  opcode 102  vq_extnd 1 after vs_clip off
+    intout[4]              EMUTOS-1a7484ab-VDI-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+    intout[5]              EMUTOS-1a7484ab-VDI-r3.BIN = 0x0001 (1)   NEWTOS.BIN                 = 0x0000 (0)
+
+case 140  opcode 105  v_get_pixel inside the drawn box
+    intout[0]              EMUTOS-1a7484ab-VDI-r3.BIN = 0x000F (15)   NEWTOS.BIN                 = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-r3.BIN = 0x0001 (1)   NEWTOS.BIN                 = 0x0000 (0)
+
+case 142  opcode 105  v_get_pixel on the drawn line
+    intout[0]              EMUTOS-1a7484ab-VDI-r3.BIN = 0x000F (15)   NEWTOS.BIN                 = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-r3.BIN = 0x0001 (1)   NEWTOS.BIN                 = 0x0000 (0)
+
+case 145  opcode 100  v_opnvwk opens an additional workstation
+    intout[13]              EMUTOS-1a7484ab-VDI-r3.BIN = 0x0010 (16)   NEWTOS.BIN                 = 0x0100 (256)
+    intout[39]              EMUTOS-1a7484ab-VDI-r3.BIN = 0x1000 (4096)   NEWTOS.BIN                 = 0x0000 (0)
+
+5 of 38 cases differ

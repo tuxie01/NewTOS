@@ -1,0 +1,92 @@
+V44 -- TASK/V44.md: text slower since V33. Layer measurement of the cause, the fix, its acceptance numbers. Developer run, 2026-11-06, before
+the commit that holds it; not the Tester's acceptance. No card, no Pi, no push.
+
+WHAT RAN
+  base    587ddbd5 (V30, no regression), rpi4 release kernel8.img sha256 a01bc077e893b2c25121a086e53995627de5a2f58062bebe60f96e3004aff173
+  before  ac6ca0e5 (kernel as 877a14b9 with the regression; main moved to e933d13c during the run, TASK/V33.md only), rpi4 release kernel8.img sha256 3dbd1f29390936da37e343076bbd68babb71e435865675545640d82924928859;
+          both hashes = the kernels of measurements/measurement-2026-11-06-v33-test/RUNINFO.TXT. Called "prefix"/"head" in the file names.
+  fix     ac6ca0e5 + the V44 tos-api/src/vdi/text.rs (the commit of this run), rpi4 release kernel8.img sha256
+          9afe0891542ae1989a6b1fa18a0409e80a8d8efc0860f1da1f6693ff63dbae56 (1517800 B; before 1509608 B). Tests live under cfg(test): the kernel hash
+          is the same with and without them.
+  Kernels not kept; analysis/kernels.sha256 lists all 16 images.
+  Boards  QEMU 11.0.2 raspi4b, -append serial=on, APFS clone per boot (scripts remove it). qemu-virt: built only.
+  Oracle  EmuTOS 1a7484ab, tools/hatari-oracle.sh falcontc, probe/e1 measured anew here.
+  host_clang  Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 48 card.img.manifest files in this run)
+  optional_missing, verbatim, in ALL 48 manifests:
+          optional_missing none
+
+INSTRUMENT
+  method/txbench/  copy of measurements/measurement-2026-11-06-v33-test/method/txbench (txbench.c sha256 c40e2c808485b030.., same file), TXBENCH.NAP 66975b99ce25148e..
+           v_gtext, system font 8x16, 76 chars/call; A clip off, B clip on, C bold, D light+skew+underline (1000 calls), E 9-char strings (10000 calls).
+  method/txbench-run.sh  one boot: fresh card (tools/mkcard.sh, #Z autorun), APFS clone, result from C:\TXBENCH.LOG. Extra args go to QEMU.
+  Two clocks:
+    wall clock  no extra QEMU args: _hz_200 runs on host time; 1 tick = 5 ms; depends on host load. The ticket's acceptance measure.
+    icount      -icount shift=0,sleep=off: QEMU's virtual clock counts guest instructions, 1 ns each, so 1 tick = 5,000,000 guest instructions, independent of host
+                load. Repeats gave the same numbers in all five cases (ic1 = ic2 for the 3 kernels run twice). Counts instructions, says nothing about memory
+                or cache cost.
+
+1 CAUSE, BY LAYER (icount; method/layers.py builds each variant by editing text.rs in a scratch tree, method/buildvar.sh, method/icrun.sh; runs/layers/; analysis/layers-table.txt)
+  Each variant stops the path one layer later. Ticks of case B (2000 calls x 76 glyphs = 152000 glyphs; 1 tick = 32.9 instructions/glyph):
+    layer                                                base    before   step base   step before
+    L0 trap, dispatch, binding; v_gtext returns at once     1         1
+    L1 + header, width, delh, underline call, no glyph      1         1          0            0
+    L2 + glyph assembly (make_glyph), no blit              37        99         36           98    <- +62 ticks = the regression
+    L3 + packing into bytes, no backend call               58       111         21           12    (before is cheaper here: no 272 B zeroing)
+    L4 + kernel draw_glyph_sized = the real kernel        206       267        148          156
+  The step L3->L4 reads 8 ticks apart though kernel/src/vdi_backend.rs did not change between the two (git diff 587ddbd5 877a14b9 -- kernel/src is empty):
+  not explained, possibly what the black_box of variant L3 holds alive. It does not carry the finding: ROWS34W1 below has the same backend at 171 in total.
+  Header and per-call work are not it: L1 is equal, and E (few glyphs per call) grows by the per-glyph amount.
+
+  Which of the two V33 limits costs it (factorial, same ticks, kernel "before" with one constant changed, nothing else):
+    variant                      A     B     C     D     E
+    before (8 words, 512 rows)  272   267   314   217   164
+    MAX_ROWS 34 only            261   257   303   212   158
+    ROW_WORDS 1 only            187   182   187   167   113
+    both                        176   171   177   160   108
+    base                        211   206   213   180   127
+  So: the width of a row is the cause, 85 of the 96 ticks of B, and all of the extra cost of bold (row_shr and row_or per thicken step over 8 words). The row count
+  (a 1 KiB [0i16; 512] per glyph) is about 10 ticks. V33's store without by-value copies is otherwise FASTER than base: with both limits at the old values it beats it.
+  The predecessor's guess was half right: the 8 words yes; "some KiB of copies per glyph" only with them (the copies scale with the row width).
+
+2 FIX  tos-api/src/vdi/text.rs: the assembly is generic over the row width and row count (GlyphStore<N, R>). fits_narrow picks per glyph: a cell within 64 x 64 at every
+  stage (bounds: DDA at most doubles, skew at most one pixel per row or the font's offsets, thicken, outline; negative DELX never) takes one-word rows, any other the
+  eight-word rows of V33. Every built-in cell fits, with every effect and scale. Skew shifts are only computed for skew. Limits of V33 unchanged: 512 x 512, proportional,
+  off_table/dat_table. No assembly, no direct-blit layer, no model query. Same source for both widths.
+
+3 ACCEPTANCE NUMBERS, wall clock (method/acceptance.sh; 8 rounds base, fix, before in turn, runs/txbench/, analysis/txbench-summary.txt, analysis/acceptance-log.txt)
+  Host: load average 3.2..5.8 during the run (a parallel job was reading); spans below are the whole 8 rounds.
+    case                 base min..max (med)   fix min..max (med)   before min..max (med)   fix/base med (round pairs)    before/base med (round pairs)
+    A plain, clip off      84..88 (86)            64..67 (66)         117..120 (117)        x0.77 (0.73..0.79)            x1.36 (1.33..1.40)
+    B plain, clip on       83..87 (86)            64..66 (66)         112..121 (117)        x0.77 (0.75..0.78)            x1.36 (1.30..1.42)
+    C bold                 84..90 (86)            66..68 (68)         134..138 (136)        x0.79 (0.73..0.80)            x1.58 (1.51..1.64)
+    D light+skew           70..72 (71)            59..61 (60)          85..87 (87)          x0.85 (0.83..0.86)            x1.23 (1.20..1.24)
+    E 9-char strings       55..57 (57)            44..45 (45)          73..77 (75)          x0.79 (0.77..0.80)            x1.32 (1.28..1.38)
+  Acceptance: plain at most x1.05: x0.77. Bold not slower than before V33: x0.79. QEMU TCG, not Pi timing; the Pi factor is unmeasured.
+  icount, same kernels (ticks; runs/layers/ic2-*): A/B/C/D/E  base 211/206/213/180/127, fix 172/167/175/161/105, before 272/267/314/217/164.
+  Instructions per glyph, case B: base 6776, before 8783, fix 5493.
+
+4 SAME PIXELS, before against fix (analysis/cmp-bins.txt; method/tables-probe.sh, method/cmp-bins.sh; cargo xtask tosdump --tree per side)
+  VDPROBE (412 cases): BIN and LOG byte-identical, BIN 7168fb02f6c652a4.., LOG 7d01a2755e0095c4.. = the hashes of measurements/measurement-2026-11-06-v33/RUNINFO.TXT.
+    Against e1 (BIN 4662c03f108ccc6a.., same as there): 22 differ, as before (analysis/probe-e1-vs-n-fix.txt).
+  Byte-identical VDI.BIN/RASTER.BIN, fix sha256 prefix: vdi-v18-t2 4694250d722a99e0, vdi-v18 af6163c916e63f70, vdi-all e91b865b92b5dbf2, vdi-r3 589c76cc21e804f6,
+    vdi-v18-t2-raster 9ef87aa87574eaa7, vdi-raster 2bd92d85f75b5b1e, vdi-raster-screen 4e4041e30b35382e, vdi-v18-raster 3fa4b2986bc23b23.
+    Against the oracle, equal on both sides: vdi-v18-t2 4/32, vdi-v18 0/19, vdi-all 0/182, vdi-r3 5/38, v18t2-raster 6/26, raster 1/59, raster-screen 0/62, v18-raster 0/17.
+  AES.BIN r2, r3, r4 differ by one byte per record (78, 39, 181 bytes): the known address cell of the V33 test item 5, 0x001c1a50 -> 0x001c3a50, +0x2000 = the kernel's
+    8192 B growth. tosdiff before vs fix with the case tables: 0 of 78, 0 of 39, 0 of 181 (analysis/aes-r*-before-vs-fix.txt).
+  No exception or panic line in any BOOT-SERIAL of this run.
+  Not run here, for the Tester: shprobe, slprobe, desktop with injector, boot screen (TASK/V18.md "Gemeinsam"; the AES draws without this path).
+
+5 HOST TESTS (analysis/cargo-xtask-test.txt)  cargo xtask test: 2195 passed / 0 failed / 1 ignored (193 result lines); before 2190. New: 5 in text.rs:
+  the narrow and the wide rows against each other (all built-in fonts x 5 scales x 32 effects x 4 angles; chain fonts around the bounds), the 64 x 64 bound, negative DELX,
+  512 x 512 still whole. Stores are filled with garbage first, so a stale row would show.
+  Do they bite: seven mutations of fits_narrow in a scratch copy (skew, font offsets, rows, DDA, outline, thicken, negative DELX, method/mutate.py), each turned at least one test red.
+
+6 BUILD  cargo xtask build, both boards, rc 0: warnings tos-api 64, kernel 93 (before the same). clippy, both boards: tos-api 73, kernel 121 (before the same);
+  tos-api lib test target 5 beyond the lib's 73, before 5. tools/desk-drift-probe.sh 0.
+
+RETEST SET  deps/text_blt-up.txt, deps/output_text-up.txt: vdi 0 unmapped (complete: yes). Outside the touched layer: aes 1 (eralert), desk 130 (desk/*.c), as in the V33 test.
+
+NOT DRIVEN / OPEN
+  Real Pi: no timing, no pixels. A loaded font in txbench: none, the speed of chain fonts is not measured (they use the narrow rows when they fit, and read through read_mem).
+  Rendering loaded fonts on the fix: only VDPROBE T13A/TX* and the host tests. qemu-virt: built, not booted. Backend layer: about 75% of a glyph is draw_glyph_sized, about 38
+  instructions per pixel, unchanged and out of scope (no direct-blit layer in this ticket).
