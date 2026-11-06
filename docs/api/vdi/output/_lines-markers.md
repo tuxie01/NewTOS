@@ -287,9 +287,13 @@ for `type` 1..6, else default 3 → index 2 = asterisk); see
 2. **`v_pmarker` reuses `PTSIN` in place.** It swaps the global `PTSIN`
    pointer to a 10-word scratch buffer (`sav_points`) and overwrites
    `CONTRL[1]` per glyph polyline, restoring `PTSIN` (but not `CONTRL[1]`
-   to the original point count) at the end (`vdi_marker.c:119-154`). A
-   pure-reference reuse detail — NewTOS regenerates glyph geometry
-   directly, so it does not apply.
+   to the original point count) at the end (`vdi_marker.c:119-154`). The
+   caller still reads its own count back: `GSX_ENTRY` writes the saved
+   `CONTRL[1]` back after every call (`vdi_asm.S:115-116`; probe K5A,
+   1030 after the call). A pure-reference reuse detail — NewTOS
+   regenerates glyph geometry directly and its dispatcher does the
+   write-back ([`../_dispatcher.md`](../_dispatcher.md)), so it does not
+   apply.
 3. **`v_pline` selects the dash mask from `line_index`**, using
    `LINE_STYLE[line_index]` for `line_index < 6` and the user mask `ud_ls`
    for `line_index >= 6` (`set_LN_MASK`, `vdi_line.c:2388-2389`). Line

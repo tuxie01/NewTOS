@@ -340,6 +340,7 @@ pub const FLIP_Y_MAGNITUDES: i16 = 1;
 
 // CONTRL indices with fixed meaning (see dispatcher spec).
 const C_OPCODE: usize = 0;
+const C_NPTSIN: usize = 1;
 const C_NPTSOUT: usize = 2;
 const C_NINTOUT: usize = 4;
 const C_HANDLE: usize = 6;
@@ -386,6 +387,36 @@ pub unsafe fn dispatch_in(vdipb_ptr: u64, abi: Abi, space: Space) -> i16 {
         return FLIP_Y_COORDINATES;
     };
 
+    // This is EmuTOS' `GSX_ENTRY` (`vdi/vdi_asm.S:64-128`) around
+    // [`screen`]. Its vertex cap (`:88-98,114-116`, V23), for every opcode
+    // and before `screen()` looks at the handle: a count above
+    // `MAX_VERTICES` is written into the caller's `CONTRL[1]` as
+    // `MAX_VERTICES`, so every handler that reads `PTSIN` by `CONTRL[1]`
+    // (`v_pline`, `v_pmarker`, `v_fillarea`) takes at most that many
+    // vertices, and the caller's own count is written back afterwards —
+    // unconditionally, as EmuTOS restores its saved copy whatever happened
+    // to the word during the call. The compare is signed (`cmpi.w`/`jle`):
+    // a negative count is below the cap and reaches the handlers unchanged,
+    // each of which draws nothing for it. EmuTOS' `dbra` copy of a negative
+    // count runs 65536 - |n| pairs past its local `PTSIN`; that overrun of
+    // foreign memory is not reproduced (`docs/COMPATIBILITY.md`, V23).
+    let n_ptsin = pb.contrl(C_NPTSIN);
+    if n_ptsin > MAX_VERTICES {
+        pb.set_contrl(C_NPTSIN, MAX_VERTICES);
+    }
+    let flip_y = screen(&pb);
+    pb.set_contrl(C_NPTSIN, n_ptsin);
+    flip_y
+}
+
+/// The most `PTSIN` vertices one VDI call hands its handler: EmuTOS
+/// `MAX_VERTICES` = 1024 (`include/config.h:1654`; why 1024 for the
+/// reference profile: [`primitives::MAX_VERTS`]).
+const MAX_VERTICES: i16 = primitives::MAX_VERTS as i16;
+
+/// EmuTOS `screen()` (`vdi/vdi_main.c:121-192`): output counts, backend and
+/// handle check, the opcode dispatch, and the trap's `d0` (`flip_y`).
+fn screen(pb: &Vdipb) -> i16 {
     let opcode = pb.contrl(C_OPCODE);
     // Default output counts; handlers refine them.
     pb.set_contrl(C_NPTSOUT, 0);
@@ -402,11 +433,11 @@ pub unsafe fn dispatch_in(vdipb_ptr: u64, abi: Abi, space: Space) -> i16 {
     // Both run `init_wk`, which raises `flip_y` (`vdi_control.c:379`); for
     // `v_opnvwk` only when a slot was actually allocated (`:457`).
     if opcode == 1 {
-        workstation::v_opnwk(&pb, backend);
+        workstation::v_opnwk(pb, backend);
         return FLIP_Y_MAGNITUDES;
     }
     if opcode == 100 {
-        return if workstation::v_opnvwk(&pb, backend) {
+        return if workstation::v_opnvwk(pb, backend) {
             FLIP_Y_MAGNITUDES
         } else {
             FLIP_Y_COORDINATES
@@ -445,7 +476,7 @@ pub unsafe fn dispatch_in(vdipb_ptr: u64, abi: Abi, space: Space) -> i16 {
     // and `INTIN[0] == 2`); every other opcode-102 call is `vq_extnd` exactly
     // as in EmuTOS (`vdi_main.c:77`). Decided once, before any handler can
     // write an output array that a caller may have aliased onto INTIN.
-    let scrninfo = opcode == 102 && eddi::is_scrninfo(&pb, backend);
+    let scrninfo = opcode == 102 && eddi::is_scrninfo(pb, backend);
 
     match opcode {
         // ── workstation close (dispatched by handle, not the vwk ref) ──
@@ -462,71 +493,71 @@ pub unsafe fn dispatch_in(vdipb_ptr: u64, abi: Abi, space: Space) -> i16 {
             if let Some(vwk) = unsafe { vwk::resolve(handle) } {
                 let ncol = backend.num_colors();
                 match opcode {
-                    102 if scrninfo => eddi::vq_scrninfo(&pb),
-                    102 => workstation::vq_extnd(&pb, vwk, backend),
-                    14 => attributes::vs_color(&pb, vwk, ncol, backend),
-                    15 => attributes::vsl_type(&pb, vwk),
-                    16 => attributes::vsl_width(&pb, vwk),
-                    17 => attributes::vsl_color(&pb, vwk, ncol),
-                    108 => attributes::vsl_ends(&pb, vwk),
-                    113 => attributes::vsl_udsty(&pb, vwk),
-                    18 => attributes::vsm_type(&pb, vwk),
-                    19 => attributes::vsm_height(&pb, vwk),
-                    20 => attributes::vsm_color(&pb, vwk, ncol),
-                    25 => attributes::vsf_color(&pb, vwk, ncol),
-                    22 => attributes::vst_color(&pb, vwk, ncol),
-                    23 => attributes::vsf_interior(&pb, vwk),
-                    24 => attributes::vsf_style(&pb, vwk),
-                    104 => attributes::vsf_perimeter(&pb, vwk),
-                    32 => attributes::vswr_mode(&pb, vwk),
-                    39 => attributes::vst_alignment(&pb, vwk),
-                    106 => attributes::vst_effects(&pb, vwk),
-                    13 => attributes::vst_rotation(&pb, vwk),
-                    21 => attributes::vst_font(&pb, vwk),
-                    12 => attributes::vst_height(&pb, vwk),
-                    107 => attributes::vst_point(&pb, vwk),
-                    112 => attributes::vsf_udpat(&pb, vwk, backend.planes()),
-                    129 => attributes::vs_clip(&pb, vwk, backend),
-                    5 => escape::v_escape(&pb, backend),
-                    119 => attributes::vst_load_fonts(&pb),
-                    120 => attributes::vst_unload_fonts(&pb),
-                    6 => primitives::v_pline(&pb, vwk, backend),
-                    7 => primitives::v_pmarker(&pb, vwk, backend),
-                    8 => text::v_gtext(&pb, vwk, backend),
-                    9 => primitives::v_fillarea(&pb, vwk, backend),
-                    11 => gdp::v_gdp(&pb, vwk, backend),
-                    103 => contour::v_contourfill(&pb, vwk, backend),
+                    102 if scrninfo => eddi::vq_scrninfo(pb),
+                    102 => workstation::vq_extnd(pb, vwk, backend),
+                    14 => attributes::vs_color(pb, vwk, ncol, backend),
+                    15 => attributes::vsl_type(pb, vwk),
+                    16 => attributes::vsl_width(pb, vwk),
+                    17 => attributes::vsl_color(pb, vwk, ncol),
+                    108 => attributes::vsl_ends(pb, vwk),
+                    113 => attributes::vsl_udsty(pb, vwk),
+                    18 => attributes::vsm_type(pb, vwk),
+                    19 => attributes::vsm_height(pb, vwk),
+                    20 => attributes::vsm_color(pb, vwk, ncol),
+                    25 => attributes::vsf_color(pb, vwk, ncol),
+                    22 => attributes::vst_color(pb, vwk, ncol),
+                    23 => attributes::vsf_interior(pb, vwk),
+                    24 => attributes::vsf_style(pb, vwk),
+                    104 => attributes::vsf_perimeter(pb, vwk),
+                    32 => attributes::vswr_mode(pb, vwk),
+                    39 => attributes::vst_alignment(pb, vwk),
+                    106 => attributes::vst_effects(pb, vwk),
+                    13 => attributes::vst_rotation(pb, vwk),
+                    21 => attributes::vst_font(pb, vwk),
+                    12 => attributes::vst_height(pb, vwk),
+                    107 => attributes::vst_point(pb, vwk),
+                    112 => attributes::vsf_udpat(pb, vwk, backend.planes()),
+                    129 => attributes::vs_clip(pb, vwk, backend),
+                    5 => escape::v_escape(pb, backend),
+                    119 => attributes::vst_load_fonts(pb),
+                    120 => attributes::vst_unload_fonts(pb),
+                    6 => primitives::v_pline(pb, vwk, backend),
+                    7 => primitives::v_pmarker(pb, vwk, backend),
+                    8 => text::v_gtext(pb, vwk, backend),
+                    9 => primitives::v_fillarea(pb, vwk, backend),
+                    11 => gdp::v_gdp(pb, vwk, backend),
+                    103 => contour::v_contourfill(pb, vwk, backend),
                     // ── inquiry (read-only) ──
-                    26 => inquiry::vq_color(&pb, vwk, ncol, backend),
-                    35 => inquiry::vql_attributes(&pb, vwk),
-                    36 => inquiry::vqm_attributes(&pb, vwk),
-                    37 => inquiry::vqf_attributes(&pb, vwk),
-                    38 => inquiry::vqt_attributes(&pb, vwk),
-                    105 => inquiry::v_get_pixel(&pb, backend),
-                    33 => input::vsin_mode(&pb),
-                    115 => input::vqin_mode(&pb),
-                    28 => input::v_locator(&pb, backend),
-                    30 => input::v_choice(&pb),
-                    31 => input::v_string(&pb),
+                    26 => inquiry::vq_color(pb, vwk, ncol, backend),
+                    35 => inquiry::vql_attributes(pb, vwk),
+                    36 => inquiry::vqm_attributes(pb, vwk),
+                    37 => inquiry::vqf_attributes(pb, vwk),
+                    38 => inquiry::vqt_attributes(pb, vwk),
+                    105 => inquiry::v_get_pixel(pb, backend),
+                    33 => input::vsin_mode(pb),
+                    115 => input::vqin_mode(pb),
+                    28 => input::v_locator(pb, backend),
+                    30 => input::v_choice(pb),
+                    31 => input::v_string(pb),
                     // ── mouse cursor + exchange vectors ──
-                    111 => mouse::vsc_form(&pb, backend),
-                    122 => mouse::v_show_c(&pb, backend),
+                    111 => mouse::vsc_form(pb, backend),
+                    122 => mouse::v_show_c(pb, backend),
                     123 => mouse::v_hide_c(backend),
-                    124 => mouse::vq_mouse(&pb),
-                    118 => mouse::vex_timv(&pb),
-                    125 => mouse::vex_butv(&pb),
-                    126 => mouse::vex_motv(&pb),
-                    127 => mouse::vex_curv(&pb),
-                    134 => mouse::vex_wheelv(&pb),
-                    116 => inquiry::vqt_extent(&pb, vwk),
-                    117 => inquiry::vqt_width(&pb, vwk),
-                    128 => inquiry::vq_key_s(&pb),
-                    130 => inquiry::vqt_name(&pb),
-                    131 => inquiry::vqt_fontinfo(&pb, vwk),
-                    114 => primitives::vr_recfl(&pb, vwk, backend),
-                    121 => raster::vrt_cpyfm(&pb, vwk, backend, ncol),
-                    109 => raster::vro_cpyfm(&pb, vwk, backend),
-                    110 => raster::vr_trnfm(&pb, backend),
+                    124 => mouse::vq_mouse(pb),
+                    118 => mouse::vex_timv(pb),
+                    125 => mouse::vex_butv(pb),
+                    126 => mouse::vex_motv(pb),
+                    127 => mouse::vex_curv(pb),
+                    134 => mouse::vex_wheelv(pb),
+                    116 => inquiry::vqt_extent(pb, vwk),
+                    117 => inquiry::vqt_width(pb, vwk),
+                    128 => inquiry::vq_key_s(pb),
+                    130 => inquiry::vqt_name(pb),
+                    131 => inquiry::vqt_fontinfo(pb, vwk),
+                    114 => primitives::vr_recfl(pb, vwk, backend),
+                    121 => raster::vrt_cpyfm(pb, vwk, backend, ncol),
+                    109 => raster::vro_cpyfm(pb, vwk, backend),
+                    110 => raster::vr_trnfm(pb, backend),
                     // ── genuine VDI no-ops + not-yet-implemented opcodes ──
                     // (v_updwk #4, v_cellarray #10, vq_cellarray #27,
                     // v_valuator #29, #34, and any out-of-range opcode). By

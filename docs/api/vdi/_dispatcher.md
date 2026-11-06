@@ -123,19 +123,46 @@ fixed-meaning VDI control fields. Indices `CONTRL[7..]` are used by AES
 bindings to smuggle 32-bit pointers (`gsx2.h:32-34` `i_ptr`), which is an
 AES-binding convention, not part of the screen-driver contract.
 
-### `PTSIN` vertex clamp — observable ABI (`vdi_asm.S:89-108`)
+### `PTSIN` vertex clamp — observable ABI (`vdi_asm.S:88-116`)
 
-Before calling `screen()`, `_GSX_ENTRY`:
+Before calling `screen()` — for **every** opcode, before `screen()` checks
+the handle — `_GSX_ENTRY`:
 
-1. reads the vertex count from `CONTRL[1]`;
-2. if it exceeds `MAX_VERTICES`, **clamps `CONTRL[1]` to `MAX_VERTICES`
-   and overwrites the caller's `CONTRL[1]`** for the duration of the call;
-3. copies exactly that many `(x,y)` pairs into the local `PTSIN` buffer;
-4. after `screen()` returns, **restores the caller's original `CONTRL[1]`**.
+1. reads the vertex count from `CONTRL[1]` and saves it on the stack
+   (`:89-92`);
+2. if it is `0`, copies nothing (`jeq no_ptsin`, `:93`);
+3. compares it **signed** with `MAX_VERTICES` (`cmpi.w` / `jle`,
+   `:95-96`); if it exceeds `MAX_VERTICES`, **clamps it to `MAX_VERTICES`
+   and overwrites the caller's `CONTRL[1]`** with that value for the
+   duration of the call (`:97-98`), so every handler that reads `PTSIN`
+   by `CONTRL[1]` (`vdi_v_pline` `vdi_line.c:1003`, `vdi_v_pmarker`
+   `vdi_marker.c:119`, `vdi_v_fillarea` `vdi_fill.c:620`) sees at most
+   `MAX_VERTICES`; exactly `MAX_VERTICES` is not clamped;
+4. copies that many `(x,y)` pairs into the local `PTSIN` buffer
+   (`:99-108`);
+5. after `screen()` returns, **writes the saved count back** into the
+   caller's `CONTRL[1]` (`:115-116`) — unconditionally, whether it clamped
+   or not, and over anything a handler wrote there during the call
+   (`vdi_v_pmarker` writes each glyph polyline's point count into
+   `CONTRL[1]`, `vdi_marker.c:136`).
 
 So a program passing more than `MAX_VERTICES` vertices has the excess
-silently dropped; `CONTRL[1]` is transiently clamped during the call and
-restored on exit.
+silently dropped, and reads its own count back from `CONTRL[1]` after the
+call (probe K5A/K5C, `contrl[1]` 1030 after a 1030-vertex call,
+`measurements/measurement-2026-11-05-v18-t1/RUNINFO.TXT`).
+
+**Negative count.** The compare is signed, so a negative `CONTRL[1]` is
+below the cap: it is not clamped and reaches the handler unchanged. The
+copy loop then runs `subq.l #1` / `dbra` on the low word, i.e.
+65536 − |n| pairs (256 KiB for `-1`) from the caller's `PTSIN` into
+`_vdishare` and on past it, over whatever follows in memory — the
+result is foreign-memory corruption, not a defined behaviour. **NewTOS**
+passes the negative count to the handler unchanged as EmuTOS does (each
+of the three count readers draws nothing for it, as EmuTOS' handlers draw
+nothing for a count below 1 resp. 2: the `v_pmarker` loop
+`vdi_marker.c:124`, `polyline` `vdi_line.c:1106`, `wideline` `:1397-1398`,
+`draw_arrow` `:1524-1546`) and gives the caller its count back, but does
+not reproduce the overrun (`docs/COMPATIBILITY.md`, V23).
 
 `MAX_VERTICES` is **1024** for NewTOS. `config.h` overrides it to 512 only
 inside the `TARGET_192` / `TARGET_256` / `TARGET_CART` / `TARGET_FLOPPY`
@@ -145,8 +172,12 @@ profile — EmuTOS `make 512`, Falcon030/TOS4 — defines `TARGET_512`
 takes the default `#define MAX_VERTICES 1024` (`include/config.h:1652-1655`,
 *"TOS2 allows 512 vertices, TOS3/TOS4 allow 1024"*).
 
-NewTOS therefore clamps at **1024** (`tos-api/src/vdi/primitives.rs`,
-`MAX_VERTS`) and reports the same number in `INQ_TAB[14]`. Resolved
+NewTOS therefore clamps at **1024** (the constant `MAX_VERTS`,
+`tos-api/src/vdi/primitives.rs`) and reports the same number in
+`INQ_TAB[14]`. The clamp and the write-back sit in the dispatcher,
+`tos-api/src/vdi/mod.rs::dispatch_in`, around the opcode dispatch
+(`screen`), as in `_GSX_ENTRY` (V23; until then `v_pline` and
+`v_fillarea` clamped privately and `v_pmarker` not at all, VDI-DRAW-005). Resolved
 2026-09-04; the reference dump measured on a TT reports 1024 as well
 (`tosdump/reference/EMUTOS14-VDI-r3.BIN`, cases 117/119).
 

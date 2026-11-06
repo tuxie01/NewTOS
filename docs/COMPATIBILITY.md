@@ -682,6 +682,26 @@ both draw the same, 1 and 2 vertices included. Code `tos-api/src/vdi/primitives.
 `docs/api/vdi/output/_fill.md` (§ "PTSIN vertex contract"); host test
 `tos-api/tests/vdi_reference/cases_v22.rs`.
 
+**A negative `CONTRL[1]` reaches the VDI handler unchanged, but NewTOS does
+not copy past a buffer for it** — TASK/V23 (2026-11-06). EmuTOS' `GSX_ENTRY`
+compares the caller's `CONTRL[1]` signed with `MAX_VERTICES` (`cmpi.w` /
+`jle`, `references/emutos/vdi/vdi_asm.S:95-96`), so a negative count is not
+capped; its copy loop (`:100-107`, `subq.l #1` then `dbra` on the low word)
+then moves 65536 − |n| vertex pairs — 256 KiB for `-1` — from the caller's
+`PTSIN` into `_vdishare` and on over whatever lies behind it. What that
+overwrites depends on the memory layout of the ROM build; it is foreign
+memory, not a reproducible result. NewTOS keeps the observable rest: the
+dispatcher (`tos-api/src/vdi/mod.rs:380@dispatch_in`) leaves the negative
+count as it is, the three handlers that read `PTSIN` by `CONTRL[1]` draw
+nothing for it — as EmuTOS' do for a count below 1 resp. 2 (`v_pmarker`
+loop `references/emutos/vdi/vdi_marker.c:124`, `polyline` and `wideline`
+`references/emutos/vdi/vdi_line.c:1106,1397-1398`) — and the caller reads its
+count back after the call (`vdi_asm.S:115-116`). **Observable difference:**
+only for `CONTRL[1]` < 0, on any opcode (the trap copies `PTSIN` before it
+dispatches): EmuTOS overwrites up to 256 KiB behind its buffer, NewTOS nothing.
+Spec `docs/api/vdi/_dispatcher.md` (§ "`PTSIN` vertex clamp"); host test
+`tos-api/tests/vdi_reference/cases_v23.rs`.
+
 **Key auto-repeat runs in the polled input pump, not in the timer
 interrupt** — user decision 2026-10-02 (variant (b) of
 `TASK/PORT06-KEYS-DIAGNOSIS.MD`), landed as KEYS01 2026-10-03. EmuTOS

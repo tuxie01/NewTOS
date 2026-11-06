@@ -1286,7 +1286,7 @@ ob_change	aes/gemoblib.c	tos-api/src/aes/window.rs	arrow_change	mapped	ob_change
 init_3d	aes/gemoblib.c	tos-api/src/aes/object.rs	init_3d	mapped	txtmove/colchange defaults and the three colours (WHITE up to LWHITE colours, else LWHITE)
 ob_sysvar	aes/gemoblib.c	tos-api/src/aes/object.rs	objc_sysvar	mapped	get/set of the 3D variables; INDBUTCOL/ACTBUTCOL/BACKGRCOL refuse in1 >= ncolors; GET leaves int_out[2] at 0 for the colour variables (EmuTOS leaves it untouched)
 ob_fs	aes/gemoblib.c	tos-api/src/aes/form.rs	ob_fs	mapped	(state, flags) of an object
-GSX_ENTRY	vdi/vdi_asm.S	tos-api/src/vdi/mod.rs	dispatch_in	mapped	VDI front end: parameter block and CONTRL read, opcode dispatch, flip_y as the return value; the PTSIN local copy and the CONTRL[1] clamp to MAX_VERTICES are not done here (v_pline and v_fillarea clamp privately)
+GSX_ENTRY	vdi/vdi_asm.S	tos-api/src/vdi/mod.rs	dispatch_in	mapped	VDI front end: parameter block and CONTRL read, the CONTRL[1] cap to MAX_VERTICES (signed; 1024) for every opcode and the unconditional write-back of the caller's count, then screen(); the PTSIN local copy is not made (handlers read the caller's PTSIN in place) and its overrun for a negative count is not reproduced (docs/COMPATIBILITY.md, V23)
 call_user_but	vdi/vdi_asm.S	tos-api/src/aes/mod.rs	user_but	mapped	the button vector call: NewTOS calls the AES handler directly; a vex_butv-installed vector is stored and never called (ADR-031)
 call_user_wheel	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	call_user_wheel	mapped	wheel vector call (AES handler directly, EL0 handler as upcall)
 mouse_int	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	feed_relative	mapped	relative mouse packet: button merge, user_but, clipped position, user_mot, cursor move
@@ -1319,7 +1319,7 @@ search_to_right	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	the rig
 search_to_right16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	the right walk in Flood::end_pts, truecolor words
 st_fl_ptr	vdi/vdi_fill.c	tos-api/src/vdi/fill_patterns.rs	select	mapped	pattern/mask choice; NewTOS derives it at draw time from fill_style/fill_index instead of caching patptr/patmsk in the Vwk
 vdi_v_contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	opcode 103
-vdi_v_fillarea	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	v_fillarea	mapped	opcode 9 (HAVE_BEZIER is 0); any vertex count, 0 draws nothing; of >= MAX_VERTICES the first 1024 closed cleanly where EmuTOS overruns local_ptsin (docs/COMPATIBILITY.md, V22)
+vdi_v_fillarea	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	v_fillarea	mapped	opcode 9 (HAVE_BEZIER is 0); any vertex count, 0 or negative draws nothing; count capped to MAX_VERTICES by dispatch_in (V23); of >= MAX_VERTICES the first 1024 closed cleanly where EmuTOS overruns local_ptsin (docs/COMPATIBILITY.md, V22)
 vdi_v_get_pixel	vdi/vdi_fill.c	tos-api/src/vdi/inquiry.rs	v_get_pixel	mapped	opcode 105
 vdi_vqf_attributes	vdi/vdi_fill.c	tos-api/src/vdi/inquiry.rs	vqf_attributes	mapped	opcode 37
 vdi_vr_recfl	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	vr_recfl	mapped	opcode 114
@@ -1376,7 +1376,7 @@ swblit_rect_common	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2156	planar 
 swblit_rect_common16	vdi/vdi_line.c	kernel/src/vdi_backend.rs	fill_pattern	mapped	16-bit pattern fill through the active pseudo-palette; multifill patterns render monochrome as in EmuTOS
 swblit_rect_common16	vdi/vdi_line.c	tos-api/src/vdi/line.rs	abline	mapped	the horizontal line of abline (draw_rect_common with the line mask as a one-row pattern, attr.clip = 0)
 swblit_vertical_line16	vdi/vdi_line.c	tos-api/src/vdi/line.rs	vertical_line16	mapped	vertical line in 16-bit mode, never shortened by the XOR LSTLIN rule (V20)
-vdi_v_pline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	v_pline	mapped	opcode 6 (HAVE_BEZIER is 0)
+vdi_v_pline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	v_pline	mapped	opcode 6 (HAVE_BEZIER is 0); count capped to MAX_VERTICES by dispatch_in (V23), below 2 draws nothing
 vdi_vql_attributes	vdi/vdi_line.c	tos-api/src/vdi/inquiry.rs	vql_attributes	mapped	opcode 35
 vdi_vsl_color	vdi/vdi_line.c	tos-api/src/vdi/attributes.rs	vsl_color	mapped	opcode 17; MAP_COL folded to identity
 vdi_vsl_ends	vdi/vdi_line.c	tos-api/src/vdi/attributes.rs	vsl_ends	mapped	opcode 108
@@ -1385,7 +1385,7 @@ vdi_vsl_udsty	vdi/vdi_line.c	tos-api/src/vdi/attributes.rs	vsl_udsty	mapped	opco
 vdi_vsl_width	vdi/vdi_line.c	tos-api/src/vdi/attributes.rs	vsl_width	mapped	opcode 16
 vertical_line	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2156	planar vertical line for v_planes<=8; NewTOS has no bit-planes (ADR-024), the 16-bit one is kernel abline
 wideline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	wideline	mapped	-
-vdi_v_pmarker	vdi/vdi_marker.c	tos-api/src/vdi/primitives.rs	v_pmarker	mapped	opcode 7; markers are drawn with polyline directly (EmuTOS goes through vdi_v_pline); count not clamped to MAX_VERTICES
+vdi_v_pmarker	vdi/vdi_marker.c	tos-api/src/vdi/primitives.rs	v_pmarker	mapped	opcode 7; markers are drawn with polyline directly (EmuTOS goes through vdi_v_pline); count capped to MAX_VERTICES by dispatch_in (V23); negative draws nothing
 vdi_vqm_attributes	vdi/vdi_marker.c	tos-api/src/vdi/inquiry.rs	vqm_attributes	mapped	opcode 36
 vdi_vsm_color	vdi/vdi_marker.c	tos-api/src/vdi/attributes.rs	vsm_color	mapped	opcode 20; MAP_COL folded to identity
 vdi_vsm_height	vdi/vdi_marker.c	tos-api/src/vdi/attributes.rs	vsm_height	mapped	opcode 19
@@ -1544,7 +1544,7 @@ vdi_v_clswk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	v_clswk	mapped	opco
 vdi_v_clswk	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	close_all_virtual	mapped	Mfree of vwk_ptr[2..]
 vdi_v_clrwk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	v_clrwk	mapped	opcode 3; truecolor fills 0xffff words, else pen 0 through RasterBackend (EmuTOS memset 0xff / 0x00 over v_lin_wr*V_REZ_VT bytes)
 vdi_vq_extnd	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	vq_extnd	mapped	opcode 102; EdDI vq_scrninfo rides on 102 in eddi.rs
-screen	vdi/vdi_main.c	tos-api/src/vdi/mod.rs	dispatch_in	mapped	VDI entry; NewTOS dispatch is one match, not jmptb1/jmptb2; does not mirror CUR_FONT/WRT_MODE/CLIP/CUR_WORK into line-A variables
+screen	vdi/vdi_main.c	tos-api/src/vdi/mod.rs	screen	mapped	VDI entry; NewTOS dispatch is one match, not jmptb1/jmptb2; does not mirror CUR_FONT/WRT_MODE/CLIP/CUR_WORK into line-A variables
 dis_cur	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	dis_cur	mapped	hide count 1 -> 0 draws the cursor, otherwise decrements, floor 0
 hide_cur	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	v_hide_c	mapped	HIDE_CNT++, erase on 0 -> 1; also mouse::hide for kernel callers
 linea_show_mouse	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	v_show_c	mapped	INTIN[0]==0 resets the hide count to 1, then dis_cur

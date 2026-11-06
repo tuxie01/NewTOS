@@ -252,8 +252,9 @@ takes the default `#define MAX_VERTICES 1024` (`include/config.h:1652-1655`,
 reference on a TT reports 1024 in `INQ_TAB[14]`
 (`tosdump/reference/EMUTOS14-VDI-r3.BIN`, cases 117/119).
 
-NewTOS therefore reports **1024** and clamps `CONTRL[1]` at 1024
-(`tos-api/src/vdi/primitives.rs`, `MAX_VERTS`). An earlier revision of this
+NewTOS therefore reports **1024** and clamps `CONTRL[1]` at 1024 (the
+constant `MAX_VERTS`, `tos-api/src/vdi/primitives.rs`; the clamp in the
+dispatcher, see [`../_dispatcher.md`](../_dispatcher.md)). An earlier revision of this
 section recorded 256 and argued it was "not a contract violation (the cap is
 device-reported)" — that reasoning is withdrawn: the number a program reads
 out of `INQ_TAB[14]` is the number of vertices it may pass, so reporting a

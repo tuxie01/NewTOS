@@ -749,15 +749,17 @@ pub(super) fn fill_polygon(
 /// `CONTRL[1] = 0` draws nothing — no edge, and the perimeter is a
 /// one-point polyline (`vdi_line.c:1106`).
 ///
-/// Of more than [`MAX_VERTS`] vertices the first `MAX_VERTS` are taken and
-/// closed back to vertex 0. EmuTOS writes that closing vertex to
+/// Of more than [`MAX_VERTS`] vertices the dispatcher hands over the first
+/// `MAX_VERTS` (`GSX_ENTRY`'s cap, [`super::dispatch_in`]), closed here back
+/// to vertex 0. EmuTOS writes that closing vertex to
 /// `local_ptsin[2 * MAX_VERTICES]`, which is the start of `fill_buffer`
 /// (`vdi_fill.c:596`, `include/vdiext.h:47-51`), and `clc_flit` overwrites
 /// it with crossings — its result is a buffer overrun, not a defined
 /// polygon. NewTOS closes cleanly: user decision C (TASK/V18), recorded in
 /// `docs/COMPATIBILITY.md` (VDI-DRAW-006).
 pub fn v_fillarea(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
-    let n = (pb.contrl(1).max(0) as usize).min(MAX_VERTS);
+    // At most `MAX_VERTS` (dispatcher cap); negative draws nothing, as 0.
+    let n = pb.contrl(1).max(0) as usize;
     if n == 0 {
         return;
     }
@@ -797,7 +799,8 @@ pub fn v_pline(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     if raw < 2 {
         return;
     }
-    let count = (raw as usize).min(MAX_VERTS);
+    // At most `MAX_VERTS`: the dispatcher caps `CONTRL[1]` (`GSX_ENTRY`).
+    let count = raw as usize;
     // Read the vertices into a local array: `wideline`/`arrow` mutate them
     // (the arrow shortening), and `wideline` needs random access.
     // SAFETY: see [`PolyScratch`]. `v_pline` and `v_fillarea` are separate
@@ -840,9 +843,9 @@ const M_CROSS: &[i16] = &[2, 2, -4, -3, 4, 3, 2, -4, 3, 4, -3];
 const M_DMND: &[i16] = &[1, 5, -4, 0, 0, -3, 4, 0, 0, 3, -4, 0];
 const MARKERS: [&[i16]; 6] = [M_DOT, M_PLUS, M_STAR, M_SQUARE, M_CROSS, M_DMND];
 
-/// Opcode 7 — `v_pmarker`: draw a marker glyph at each of the `CONTRL[1]`
-/// points in `PTSIN`. Markers use solid, width-1 lines in `mark_color`,
-/// scaled by `mark_scale`; clipping is always on.
+/// Opcode 7 — `v_pmarker`: a marker glyph at each of the `CONTRL[1]` points
+/// in `PTSIN` (at most `MAX_VERTS`, the dispatcher's `GSX_ENTRY` cap, V23).
+/// Solid width-1 lines in `mark_color`, scaled by `mark_scale`; always clipped.
 pub fn v_pmarker(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     let count = pb.contrl(1);
     if count < 1 {
