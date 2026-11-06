@@ -1,0 +1,4 @@
+date	label	media	reader	size_gb	fs	seq_write_mb_s	seq_read_mb_s	seq_write_worst_ms	rand_read_iops	rand_read_p99_ms	rand_write_iops	rand_write_p50_ms	rand_write_p99_ms	rand_write_max_ms	meta_ops_s	meta_p50_ms	meta_p99_ms	meta_max_ms	over_500ms	over_1000ms	io_errors	data_errors	local_write_p50_ms	local_write_max_ms
+2026-11-06 19:49	Testkarte 1	MassStorageClass	3131:1017	15.6	MS-DOS (FAT16)	21.7	84.6	1037	779	1.50	1	998.65	1990.85	1990.9	26	37.84	66.99	653.3	18	8	0	0	8.58	55.2
+2026-11-06 19:52	Karte 2 FAT32 64GB	Mass-Storage	6820:0048	63.9	MS-DOS (FAT32)	23.7	32.7	0	655	2.66	187	5.25	11.44	40.2	88	9.97	16.31	33.5	0	0	0	0	3.92	25.0
+2026-11-06 19:55	Karte 2 im USB3-Leser	MassStorageClass	3131:1017	63.9	MS-DOS (FAT32)	81.5	91.9	0	1520	0.76	223	3.86	9.74	37.6	96	9.53	14.36	40.0	0	0	0	0	3.41	25.7

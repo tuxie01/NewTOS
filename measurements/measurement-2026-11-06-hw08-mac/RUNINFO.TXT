@@ -1,0 +1,40 @@
+HW08, write latency of two SD cards on the Mac (lead, 2026-11-06, user asked for a card benchmark).
+Host only: tools/sd-bench.py on mounted volumes, temporary files, removed afterwards. No raw write.
+This is NOT the Pi path: USB reader plus the macOS FAT driver. It compares cards; it does not show what the Pi sees.
+
+WHY
+  TASK/HW08.md: saving fails sporadically on the Pi until a reboot, saving and copying are slow at times;
+  user suspects a card timeout. NewTOS waits 1000 ms for a write (WRITE_BUSY_MS, kernel/src/drivers/bcm2711/emmc.rs).
+
+SETUP
+  host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (no image built, no compile; named by the run rule)
+  Card A, test card: 15.6 GB, 4 x 500 MB FAT16, 8 KiB clusters, tested on NEWTOS3 (498 MB free).
+  Card B: 63.9 GB, one FAT32 partition, 32 KiB clusters, almost empty, UNTITLED.
+  Reader 1: Generic 3131:1017, USB 3. Reader 2: 6820:0048, USB 2, reports itself as "Generic HD camera".
+  Card makers and CID are not readable through these readers.
+
+RESULT  sd-bench-results.tsv, one line per run; the three runs of the same script version:
+  Card A, reader 1: random 4 KiB over 256 MiB p50 998.65 ms, max 1990.9 ms; same within 256 KiB p50 8.58 ms, max 55.2 ms;
+    small new files p50 37.84 ms, max 653.3 ms; 18 operations over 500 ms, 8 over 1000 ms.
+  Card B, reader 2: random p50 5.25 ms, max 40.2 ms; 0 over 500 ms.
+  Card B, reader 1: random p50 3.86 ms, max 37.6 ms; small new files p50 9.53 ms, max 40.0 ms; 0 over 500 ms.
+  So reader 1 does not stall by itself. Card A was not measured in reader 2. A first run of card A, before the
+  local test existed: random p50 996.13 ms, max 1996.4 ms; the line was replaced, its numbers are only here.
+
+VARIANTS, card A, reader 1, ad hoc script, not kept, 64 MiB file, 14 s or 4000 writes each (8 s for the last), p50 / max ms:
+  4 KiB random 64 MiB F_FULLFSYNC, F_NOCACHE       683.40 / 2002.1   n=26
+  4 KiB random 64 MiB fsync, F_NOCACHE             985.21 / 1971.2   n=21
+  4 KiB random 64 MiB F_FULLFSYNC, cached          173.24 / 2020.0   n=31
+  8 KiB random 64 MiB F_FULLFSYNC, F_NOCACHE       524.98 / 1989.8   n=21
+  8 KiB random 64 MiB fsync, F_NOCACHE             817.01 / 1985.5   n=19
+  4 KiB random within 256 KiB F_FULLFSYNC            7.96 /   38.7   n=1778
+  4 KiB same offset F_FULLFSYNC                      8.40 /   39.6   n=1403
+  4 KiB sequential F_FULLFSYNC                       5.63 / 1005.1   n=1187
+  64 KiB sequential F_FULLFSYNC                      1.61 /  996.7   n=1993
+  4 KiB random 64 MiB no flush, F_NOCACHE          309.62 / 1986.7   n=11
+  The stall follows jumping across the card, not the flush or the block size. Values near 1000 and 2000 ms are unexplained.
+
+LIMITS
+  Cards differ in file system, partition size and fill level; only one of the two was measured with each layout.
+  Card B's "worst 1 MiB block 0 ms" shows the sequential write was buffered; its MiB/s still includes the final flush.
+  A buffer in the reader could also shorten card B's latencies; the script cannot tell. Whether card A stalls on the Pi is open.
