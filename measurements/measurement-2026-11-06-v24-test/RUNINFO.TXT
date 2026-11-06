@@ -1,0 +1,44 @@
+V24 acceptance -- TASK/V24.md (fix caf77fab, v_get_pixel off screen reads the wrapped frame-buffer pixel like EmuTOS; base ef3c0b5c) by the tester.
+Date 2026-11-06. No product code touched; nothing committed; no SD card, no Pi, no push.
+Test code changed: tosdump/probes/vdprobe.c +23 lines (new cases K16A/K16B appended after K15, 0 lines removed, existing cases 1-258 unchanged; case numbers 279/280).
+  vdprobe binaries (main tree caf77fab + that diff): VDPROBE.PRG b584b577313c9a18cb479b1fccc3255e925798575a99d01c55e37d44db26a5ca VDPROBE.NAP efee2b375df7a6df5674b98134729b481c542b3f651319c897386b88ca7a786a (cases 260).
+  First attempt had a K16B read (0,2000); EmuTOS (Hatari falcontc) died with "Bus Error reading at address $5daf00" -> read removed, whole probe series rerun (the failed first series was deleted, not evidence).
+Harness: scripts copied from measurements/measurement-2026-11-06-v23-test/method with commit ids replaced (method/); desktop scene 40 seven-byte files LONGNM01-40.TXT.
+
+TREES
+  head = git archive caf77fab, base = git archive ef3c0b5c (references/ linked); fresh scratch tree per commit and board.
+  rpi4 release kernel8.img (serial=on via -append): head 739f70dd9996788f00fdbc55e95ea0b5e5838a78f14d5e3391cd9b9c8d84010a, base 7214add42098d72486d14fedb1da62ca0889cc9db1d0c5565ded6598b60aa075.
+  qemu-virt: fresh tree caf77fab, dev profile (method/build-virt.log).
+  host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 29 card.img.manifest files in probe/ and runs/).
+  Manifests: probe/*/card.img.manifest, runs/*/card.img.manifest (29). optional_missing, verbatim, in ALL 29: optional_missing none
+  Oracle: pinned EmuTOS 1a7484ab via tools/hatari-oracle.sh (docs/analysis/ORACLE.md), profile falcontc. QEMU raspi4b, APFS clone per run (removed by the scripts); only own PIDs stopped.
+
+RESULTS
+ 1 PASS  cargo xtask test (main tree, HEAD caf77fab): 2059 passed / 0 failed / 1 ignored (sum of 191 "test result" lines, rc 0) = developer's number.
+         cases_v24: 6 tests ok (case_0015, case_0018, case_0021, case_0024 on-screen control, reads_outside_the_logical_screen_return_zero, contourfill_at_the_screen_edge) (analysis/cargo-xtask-test.txt).
+ 2 PASS  vdi-v18.tsv vs EMUTOS-1a7484ab-VDI-v18-falcontc: head 1 of 19 differ = case 59 (K11, EmuTOS has quit before drawing = V25). 15/18/21/24 equal; 109/154/199 equal.
+         base: 4 of 19 = 15, 18, 21, 59. Change base->head: 15, 18, 21 move to equal; nothing else changed. VDI.BIN base vs head differ (cmp), as expected from the three records.
+ 3 PASS  vdprobe, 260 cases (probe/e1 e2 oracle, n-head n-head-2, n-base):
+         head vs oracle: 3 of 260 differ = K5D (593 px, decision C), K11A (113), K11D (15) (V25) -- identical to base vs oracle (same 3).
+         K8A-J and K14A-C (contourfill) EQUAL; K10 EQUAL (pixels). Pixel records base vs head: 0 of 260 differ (v_get_pixel only changes returned words).
+         VDPROBE.LOG vs oracle: head 0 differing lines (K10, K16A, K16B identical to oracle); base differs exactly in the K10 line 2 (4 values 0000 vs f800 07c0 001f 001f) and both K16A lines.
+         New K16A at wrap points, oracle == head: (640,0)=f800 (-1,1)=07c0 (1279,0)=001f (1280,0)=07df (-640,5)=ffc0 (641,100)=f81f (640,478)=bdd7; base 0000 for all of these.
+         K16B beyond the buffer (640,479) (0,-1) (-1,0) (0,480): 0000 in oracle and head (decision B: 0; EmuTOS reads whatever memory lies there, which here was 0 -- not a guarantee).
+         EmuTOS bus-errors (Hatari panic) on a read ~2.5 MB past the buffer, (0,2000); NewTOS returns 0 there (decision B, no crash). Not part of the probe.
+         Determinism: oracle e1 == e2 260/260, head n-head == n-head-2 260/260.
+ 4 PASS  vdi-all vs EMUTOS-1a7484ab-VDI-all-falcontc: 0 of 182 (head and base). vdi-raster-screen 0 of 62; vdi-raster 1 of 59 (case 157, as before; head and base); vdi-v18-raster 0 of 17.
+         VDI/RASTER BIN (vdi-all, raster, raster-screen, v18-raster) byte-identical base vs head (cmp).
+ 5 PASS  aes-r2-wind AES.BIN base == head (identical; 78 of 78 differ vs the oracle on both sides alike), aes-r3-wind-state identical (39 of 39 differ vs oracle on both), aes-r4-subfunctions identical (no pinned reference).
+         shprobe (12 shots) base == head 12 of 12; shprobe-desktop (newtos-desk, 2 shots) 2 of 2; desktop run with IKBD injector (method/desk-inj.sh, 11 shots) 11 of 11 byte-identical, exception-panic-lines 0.
+         Looked at head desk 02-dialog (3D dialog with OK button over window) and 03-rubberband (rectangle, window with 41 items): sane.
+         slprobe (155 shots): base vs head 7 differ, all "held1" mid-gesture frames (0 non-held1 differ). Same-kernel repeats differ too: base vs base-r2 4, head vs head-r2 2, base-r2 vs head-r2 5 (analysis/slprobe-compare.txt)
+         -> held-frame timing noise, same finding as V19-V23, not attributable to V24.
+         Counter-check of AES-side callers: developer's list (no caller of v_get_pixel/pixelread in tos-api/aes, kernel, programs, sdk/apps) not re-audited; the runs above are the behavioural check.
+ 6 PASS  rpi4 release (serial=on) fresh builds of both trees; all 29 BOOT-SERIAL files (head and base kernels): "desktop up", 0 exception/panic lines.
+         qemu-virt: fresh tree caf77fab, cargo xtask build --board qemu-virt rc 0 + cargo xtask run --board qemu-virt --headless ~75 s: "[desk] desktop up (0 drives)", 0 exception/panic (runs/boot-virt-head/serial.txt).
+ -  clippy tos-api --lib: base 74 warning/error lines, head 74, identical message list (analysis/clippy-tos-api-*.txt). rpi4 release build warnings: kernel 93 / tos-api 64 on both head and base.
+
+NOT DRIVEN / OPEN
+  Real Pi4: no real-HW claim. Only falcontc (16 bit) probed; planar/palette read paths (read_pixel at the wrapped point) not exercised against the oracle (hosttest only).
+  Beyond-memory reads: oracle only checked up to 1 row past the buffer (0), the crash case above is outside the probe. Memory content past the buffer is undefined, so a 0 there is not a stable oracle value.
+  qemu-virt: boot only (no C:, no input), no pixel probe.

@@ -948,6 +948,28 @@ static void k15(void)
 	k15_solid(1, 0); gdp15(4, 3, 0, 60, 60, 12, 0, 0, 0, 0); grab("K15Q", 30, 30, 80, 80);
 }
 
+/* K16 (TASK/V24 acceptance): v_get_pixel at the wrap points of the frame buffer, more than the three K10 reads. */
+static void k16(void)
+{
+	begin("K16A", "v_get_pixel x outside 0..639 but inside the frame buffer (wraps to the next/previous row)");
+	i1(25, 2); recfl(0, 1, 0, 1);
+	i1(25, 3); recfl(639, 0, 639, 0);
+	i1(25, 4); recfl(639, 1, 639, 1);
+	i1(25, 5); recfl(0, 2, 0, 2);
+	i1(25, 6); recfl(0, 4, 0, 4);
+	i1(25, 7); recfl(1, 101, 1, 101);
+	i1(25, 8); recfl(0, 479, 0, 479);
+	emit("   K16A (640,0)=%04x (-1,1)=%04x (1279,0)=%04x (1280,0)=%04x\n",
+	     (uint16_t)getpix(640, 0), (uint16_t)getpix(-1, 1), (uint16_t)getpix(1279, 0), (uint16_t)getpix(1280, 0));
+	emit("   K16A (-640,5)=%04x (641,100)=%04x (640,478)=%04x (0,1)=%04x\n",
+	     (uint16_t)getpix(-640, 5), (uint16_t)getpix(641, 100), (uint16_t)getpix(640, 478), (uint16_t)getpix(0, 1));
+	grab("K16A", 0, 0, 16, 8);
+	begin("K16B", "v_get_pixel beyond the frame buffer (decision B: 0 in NewTOS; EmuTOS reads whatever lies there)");
+	emit("   K16B (640,479)=%04x (0,-1)=%04x (-1,0)=%04x (0,480)=%04x\n",
+	     (uint16_t)getpix(640, 479), (uint16_t)getpix(0, -1), (uint16_t)getpix(-1, 0), (uint16_t)getpix(0, 480));
+	grab("K16B", 0, 0, 16, 8);
+}
+
 int main(void)
 {
 	int16_t ap_id;
@@ -994,6 +1016,7 @@ int main(void)
 	k13();
 	k14();
 	k15();
+	k16();
 
 	if (binfh >= 0)
 		Fclose((short)binfh);

@@ -1,0 +1,6 @@
+EMUTOS-1a7484ab-VDI-v18-falcontc.BIN vs NEWTOS.BIN -- area VDI, 19 cases from vdi-v18.tsv
+
+case 59  opcode 105  K11 (121,90): EmuTOS has quit before drawing
+    intout[1]              EMUTOS-1a7484ab-VDI-v18-falcontc.BIN = 0xFFFF (-1)   NEWTOS.BIN                           = 0x0000 (0)
+
+1 of 19 cases differ

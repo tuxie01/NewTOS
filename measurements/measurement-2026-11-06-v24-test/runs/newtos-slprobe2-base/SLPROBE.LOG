@@ -1,0 +1,108 @@
+H00 graf_handle 8 16 19 19
+C00 wind_create(0fef)=1
+O00 wind_open=1
+G00 curr 80,60,400,320
+G01 work 81,83,376,274
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+T00 t=3021
+R001 t=3022 which=0010 mx=319 my=239 bs=0 br=0 msg=20,0,0,1,81,83,376,274
+D001.0 list 81,83,376,274 draw 81,83,376,274
+R002 t=3811 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R003 t=5239 which=0010 mx=468 my=260 bs=0 br=0 msg=26,1,0,1,1000,60,400,320
+V003 wind_set(VSLIDE,1000)=1
+R004 t=5503 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R005 t=6031 which=0010 mx=468 my=250 bs=0 br=0 msg=26,1,0,1,1000,60,400,320
+V005 wind_set(VSLIDE,1000)=1
+R006 t=6195 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R007 t=6411 which=0010 mx=468 my=334 bs=1 br=0 msg=24,1,0,1,1,0,0,0
+V007 wind_set(VSLIDE,750)=1
+X7534 7526 more equal WM_ARROWED, last t=6571 msg[1]=1, position now v 1000 h 500
+R7534 t=6735 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R7535 t=8324 which=0010 mx=308 my=368 bs=0 br=0 msg=25,1,0,1,1000,60,400,320
+V7535 wind_set(HSLIDE,1000)=1
+R7536 t=8587 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R7537 t=9122 which=0010 mx=298 my=368 bs=0 br=0 msg=25,1,0,1,1000,60,400,320
+V7537 wind_set(HSLIDE,1000)=1
+R7538 t=9287 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R7539 t=9661 which=0010 mx=433 my=368 bs=0 br=0 msg=25,1,0,1,0,60,400,320
+V7539 wind_set(HSLIDE,0)=1
+R7540 t=9827 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R7541 t=11253 which=0010 mx=468 my=260 bs=0 br=0 msg=26,1,0,1,753,60,400,320
+V7541 wind_set(VSLIDE,753)=1
+R7542 t=11519 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R7543 t=12043 which=0010 mx=468 my=250 bs=0 br=0 msg=26,1,0,1,691,60,400,320
+V7543 wind_set(VSLIDE,691)=1
+R7544 t=12207 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R7545 t=12423 which=0010 mx=468 my=140 bs=1 br=0 msg=24,1,0,1,0,0,0,0
+V7545 wind_set(VSLIDE,250)=1
+X15137 7591 more equal WM_ARROWED, last t=12580 msg[1]=1, position now v 1 h 500
+R15137 t=12747 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R15138 t=12959 which=0010 mx=468 my=300 bs=1 br=0 msg=24,1,0,1,1,0,0,0
+V15138 wind_set(VSLIDE,750)=1
+X22746 7607 more equal WM_ARROWED, last t=13119 msg[1]=1, position now v 1000 h 500
+R22746 t=13283 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R22747 t=14871 which=0010 mx=308 my=368 bs=0 br=0 msg=25,1,0,1,675,60,400,320
+V22747 wind_set(HSLIDE,675)=1
+R22748 t=15135 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R22749 t=15669 which=0010 mx=298 my=368 bs=0 br=0 msg=25,1,0,1,632,60,400,320
+V22749 wind_set(HSLIDE,632)=1
+R22750 t=15835 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R22751 t=16047 which=0010 mx=150 my=368 bs=1 br=0 msg=24,1,0,1,4,0,0,0
+V22751 wind_set(HSLIDE,250)=1
+X30406 7654 more equal WM_ARROWED, last t=16206 msg[1]=1, position now v 500 h 1
+R30406 t=16371 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R30407 t=16587 which=0010 mx=390 my=368 bs=1 br=0 msg=24,1,0,1,5,0,0,0
+V30407 wind_set(HSLIDE,750)=1
+X37945 7537 more equal WM_ARROWED, last t=16745 msg[1]=1, position now v 500 h 1000
+R37945 t=16911 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R37946 t=18337 which=0010 mx=468 my=259 bs=0 br=0 msg=26,1,0,1,697,60,400,320
+V37946 wind_set(VSLIDE,697)=1
+R37947 t=18603 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R37948 t=19127 which=0010 mx=468 my=249 bs=0 br=0 msg=26,1,0,1,649,60,400,320
+V37948 wind_set(VSLIDE,649)=1
+R37949 t=19291 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R37950 t=19507 which=0010 mx=468 my=140 bs=1 br=0 msg=24,1,0,1,0,0,0,0
+V37950 wind_set(VSLIDE,250)=1
+X45554 7603 more equal WM_ARROWED, last t=19665 msg[1]=1, position now v 1 h 500
+R45554 t=19831 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R45555 t=20043 which=0010 mx=468 my=300 bs=1 br=0 msg=24,1,0,1,1,0,0,0
+V45555 wind_set(VSLIDE,750)=1
+X53223 7667 more equal WM_ARROWED, last t=20203 msg[1]=1, position now v 1000 h 500
+R53223 t=20367 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R53224 t=21955 which=0010 mx=308 my=368 bs=0 br=0 msg=25,1,0,1,631,60,400,320
+V53224 wind_set(HSLIDE,631)=1
+R53225 t=22219 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R53226 t=22753 which=0010 mx=298 my=368 bs=0 br=0 msg=25,1,0,1,599,60,400,320
+V53226 wind_set(HSLIDE,599)=1
+R53227 t=22919 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R53228 t=23131 which=0010 mx=150 my=368 bs=1 br=0 msg=24,1,0,1,4,0,0,0
+V53228 wind_set(HSLIDE,250)=1
+X60913 7684 more equal WM_ARROWED, last t=23291 msg[1]=1, position now v 500 h 1
+R60913 t=23455 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R60914 t=23671 which=0010 mx=390 my=368 bs=1 br=0 msg=24,1,0,1,5,0,0,0
+V60914 wind_set(HSLIDE,750)=1
+X68519 7604 more equal WM_ARROWED, last t=23829 msg[1]=1, position now v 500 h 1000
+R68519 t=23995 which=0002 mx=420 my=200 bs=1 br=1
+Z99 end quit=1

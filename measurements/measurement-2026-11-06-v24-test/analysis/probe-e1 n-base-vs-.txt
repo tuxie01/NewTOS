@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/Volumes/Daten/Development/PiRusTOS/tosdump/probes/vdprobe-compare.py", line 99, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/Volumes/Daten/Development/PiRusTOS/tosdump/probes/vdprobe-compare.py", line 62, in main
+    ca, cb = load(a), load(b)
+             ~~~~^^^
+  File "/Volumes/Daten/Development/PiRusTOS/tosdump/probes/vdprobe-compare.py", line 21, in load
+    b = open(os.path.join(path, "VDPROBE.BIN"), "rb").read()
+        ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'measurements/measurement-2026-11-06-v24-test/probe/e1 n-base/VDPROBE.BIN'
