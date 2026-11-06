@@ -27,8 +27,8 @@ Per function: opcode in `CONTRL[0]`, handle in `CONTRL[6]`.
 | 21 | `vst_font`      | `INTIN[0]` face id | walk font ring for the face; **default to system font `fon6x6` if not found**; re-apply current size | `INTOUT[0]` = selected `font_id`; also leaves `flip_y = 1` (leaked from the internal size re-drive, edge case 7 below) |
 | 12 | `vst_height`    | `PTSIN[1]` = requested char height (device units); `PTSIN[0]` ignored | pick the loaded font of the same face whose `top` is nearest ≤ request; scale via DDA if `top != request`; set `cur_font` | `PTSOUT[0..3]` = actual char width, char height, cell width, cell height; also sets `flip_y = 1` (trap `d0` = 1, edge case 7 below) |
 | 107 | `vst_point`    | `INTIN[0]` = requested point size | pick the font of the same face whose `point` is nearest ≤ request (may double via DDA); `pts_mode = TRUE` | `INTOUT[0]` = actual point size; `PTSOUT[0..3]` = actual sizes; also sets `flip_y = 1` (trap `d0` = 1, edge case 7 below) |
-| 119 | `vst_load_fonts`| `CONTRL[7-8]`/`[9]`/`[10-11]` (GDOS ptrs) | link extra font faces (`CONF_WITH_GDOS`) | `INTOUT[0]` = count of newly added faces (0 if already loaded / no GDOS) |
-| 120 | `vst_unload_fonts`| `INTIN[0]` (select, ignored) | unload all extra faces (`CONF_WITH_GDOS`) | none |
+| 119 | `vst_load_fonts`| `CONTRL[7-8]` scratch-buffer ptr, `CONTRL[9]` buffer-2 offset, `CONTRL[10-11]` first-font ptr (m68k layout; LP64 layout still open: analysis note D1) | link the passed chain as `font_ring[2]`, byte-swap non-`F_STDFORM` data, swap in the scratch buffer (`CONF_WITH_GDOS`) | `INTOUT[0]` = number of **distinct consecutive `font_id`s in the passed chain** (not 0 for a real chain); 0 only if this workstation already has a chain loaded, or `CONF_WITH_GDOS` = 0. `CONTRL[2]`=0, `CONTRL[4]`=1 |
+| 120 | `vst_unload_fonts`| none (`INTIN[0]` select is **not read**) | drop the chain, restore the default scratch buffer and face count (`CONF_WITH_GDOS`) | none (`CONTRL[2]`=`CONTRL[4]`=0) |
 
 Source: `vdi_text.c:988` (`vst_color`), `:881` (`vst_effects`), `:887`
 (`vst_alignment`), `:924` (`vst_rotation`), `:939` (`vst_font`), `:681`
@@ -100,6 +100,63 @@ by internally calling `vst_point` (if `pts_mode`) or `vst_height`, and
 echoes the selected face's `font_id` in `INTOUT[0]` (which may be the system
 font's id when the request was unavailable).
 
+### Font chain: `vst_load_fonts` / `vst_unload_fonts` (GDOS interface)
+
+> Added 2026-11-06 for `TASK/V33.md` (VDI-TEXT-010). Source: EmuTOS @
+> `1a7484ab`, `CONF_WITH_GDOS` = 1 (`include/config.h:1620-1622`). Notes:
+> *cited* = read in the file named; *inferred* = reasoned from cited code, not
+> measured. Measured = probe T13A/T13B (`tosdump/probes/vdprobe.c:1213@t13`,
+> oracle log `measurements/measurement-2026-11-06-v18-t2/probe/e1/VDPROBE.LOG:273-284`).
+> Analysis note with the LP64 options:
+> [`docs/analysis/v33-gdos-fonts-2026-11-06.md`](../../../analysis/v33-gdos-fonts-2026-11-06.md).
+
+**Who calls the ROM like this.** The ROM VDI reads the buffer and the chain
+straight from fixed `CONTRL` cells (`vdi_text.c:1308-1317`, comment: *"The
+inputs to this routine are: CONTRL[7-8] = pointer to scratch buffer,
+CONTRL[9] = offset to buffer 2, CONTRL[10-11] = pointer to first font"*). An
+application does not supply them: GDOS (not part of EmuTOS) intercepts trap 2,
+reads the font files, builds the chain and then passes the call on to the
+ROM. EmuTOS itself answers the GDOS probe as "no GDOS" (`vdi/vdi_asm.S:40-49`).
+The application-side binding (gemlib `vst_load_fonts.c`) leaves the chain slot
+zero (`*__vdi_array_ptr(10, vdi_control) = 0`, comment "NVDI expects a FONTHDR
+ptr here") — see R14.
+
+**Data model (cited).** `font_ring` is an array of four `Fonthead *`, global
+(not per workstation): `[0]` = `fon6x6`, `[1]` = `fon8x8` (+ the 8x16 chained
+behind it), `[2]` = fonts loaded by GDOS, `[3]` = NULL terminator
+(`include/lineavars.h:103-113`, `bios/lineavars.S:138`; filled `vdi_text.c:604-607`).
+Each ring slot heads a `next_font`-linked list. Per workstation `Vwk` keeps
+`loaded_fonts`, `scrtchp`, `scrpt2`, `num_fonts` (`vdi/vdi_defs.h:180-201`).
+`text_init2` (called from `init_wk`, i.e. from **both** `v_opnwk` and
+`v_opnvwk`: `vdi_control.c:333,457,560`) sets `loaded_fonts = NULL`,
+`font_ring[2] = NULL`, default scratch buffer, `num_fonts = font_count`
+(`vdi_text.c:573-590`).
+
+#### Rules
+
+| # | Rule | Source |
+|---|------|--------|
+| R1 | **One chance per workstation.** If `vwk->loaded_fonts != NULL`, `vst_load_fonts` sets `INTOUT[0] = 0` and returns; nothing else is read or changed (second call: measured `io 0`, T13A `vst_load_fonts#2`). | `vdi_text.c:1303-1306` |
+| R2 | **State taken from CONTRL (not validated):** `scrpt2 = CONTRL[9]` (a signed WORD), `scrtchp = *(LONG*)&CONTRL[7]`, `first_font = *(LONG*)&CONTRL[10]`; `loaded_fonts = first_font`. | `:1314-1318` |
+| R3 | **Result = number of faces.** Walk the chain through `next_font` until NULL (no cycle or length check); `count` is incremented whenever `font_id` differs from the **previous** header's id (start id `-1`), so `7,7,8` = 2 and `7,8,7` = 3 (consecutive, not distinct overall). `INTOUT[0] = count`; `vwk->num_fonts += count`. | `:1321-1346` |
+| R4 | **Join the ring:** `font_ring[2] = vwk->loaded_fonts` — the *whole passed list* becomes ring slot 2, searched after the system fonts. | `:1342` |
+| R5 | **Byte swap (`trnsfont`) only for headers without `F_STDFORM` (flags bit 2 = 4):** `FBASE = dat_table`, `FWIDTH = form_width` (bytes), `DELY = form_height`; then `(FWIDTH*DELY)/2` 16-bit words of the **data table** are byte-swapped in place (`ror #8`), then `flags |= F_STDFORM` is written **into the caller's header**. Only the data table is swapped — header fields, `off_table` and `hor_table` are not touched. No guard for two headers sharing one `dat_table` (the second, if its flag is still clear, swaps the data back — *inferred*). A font with `F_STDFORM` set is not touched (the only case measured: T13A uses `flags = 4|8`; the swap path is **unmeasured**). | `:1331-1338`, `:553-570`, `include/asm.h:91-96`, `include/fonthdr.h:21` |
+| R6 | **`vst_font(face)`** walks `font_ring[0]`, `[1]`, `[2]` in this order, each list via `next_font`, and takes the **first** header whose `font_id == face`; so a loaded font with a built-in's id (e.g. 1) is never chosen by `vst_font`. Not found → `&fon6x6`. It remembers `point` and `top` of the **previous** current font, makes the new one current, then re-applies the old size with `vst_point` (if `pts_mode`) or `vst_height` (height = old `top`) — the loaded face may therefore come out DDA-scaled (a `scratch_head` copy; the caller's header is not modified). `INTOUT[0]` = the selected header's `font_id`. T13A: `vst_font(7)` → 7 with a chain loaded, → 1 after unload. | `:939-985`, `make_header` `:770-817` |
+| R7 | **`vst_height` / `vst_point`** find the first header of the current face over the same ring walk and then collect sizes across **all** ring slots (`top <= request` for height, `point <= request` and the half-size test for points), so loaded sizes of a face — including a loaded font with a built-in's id — join that face's size list. | `:681-740`, `:820-878` |
+| R8 | **`vqt_name(n)`** numbers the **faces** in ring order `[0]`,`[1]`,`[2]`: the counter advances when `font_id` differs from the previous header's id (running across list boundaries; initial id `-1`). `n` out of range (0, negative, > face count) → `&fon6x6` (id 1, name `"6x6 system font"`). Output `INTOUT[0]` = id, then the name as words, NUL and zero padding (`CONTRL[4]` = 33 from the jump table). T13A: `vqt_name(2)` → id 7, `"AUDIT FONT SEVEN"`; after unload → id 1. A loaded chain starting with id 1 is *not* a new face (same id as the previous header). | `:1100-1134`, `vdi_main.c:158-159` (jump table `:93-95`) |
+| R9 | **`vqt_fontinfo` / `vqt_attributes` / `vqt_width` / `vqt_extent`** read only `vwk->cur_font` — they see a loaded font only after `vst_font` made it current (T13A: `vqt_fontinfo` `io 32 95` = `first_ade`/`last_ade` of the loaded font). | `:1137-1174`, `:999-1021`, `:1062-1096` |
+| R10 | **`vq_extnd(0)` does not change:** `INTOUT[10]` is `DEV_TAB[10]` (global), set only by `text_init`/`text_init2`; `vwk->num_fonts` is written by load/unload but read nowhere (all occurrences: `vdi_text.c:579,589,1345,1361`, `vdi_defs.h:201`). T13A: `vq_extnd(0) io[10]=1` after the load (face count of the built-ins; the count a GDOS reports is added by GDOS itself, not the ROM). | `vdi_control.c:626-658`, `vdi_text.c:573-590,662` |
+| R11 | **`vst_unload_fonts`**: reads no input (the select word is ignored), does not check whether anything is loaded, frees nothing; sets `loaded_fonts = NULL`, `font_ring[2] = NULL`, `scrpt2 = SCRATCHBUF_OFFSET`, `scrtchp = vdishare.deftxbuf`, `num_fonts = font_count`. It does **not** reset `cur_font`: a workstation whose current font is a loaded header keeps pointing at it until the next `vst_font` (*inferred* from the field list; unmeasured — T13A re-selects with `vst_font(7)`, which falls back to 1). `CONTRL[4]` = 0. After unload `vst_load_fonts` works again (R1 guard is `loaded_fonts`). | `:1353-1363`, `vdi_main.c:95` |
+| R12 | **Scratch buffer** (`scrtchp`, `scrpt2`): used by the text blitter as two halves of one buffer — `dst = (UBYTE*)SCRTCHP + buffa` with `buffa = SCRPT2 - buffa` (`scrpt2` is a **byte** offset to the second half). The ROM does not check size or alignment. The comment at `vdi_tblit.S:124-125` calls `scrpt2` a "word offset"; the **code** adds it to a `UBYTE *` (`vdi_textblit.c:396`), i.e. it is a byte offset (code wins). *Inferred* requirement on the caller: a buffer of at least `2 * scrpt2` bytes, even-aligned pointer and even offset (`vdi_tblit.S:121-127`, built-in sizing check `vdi_text.c:120`). Built-in defaults: `SCRATCHBUF_SIZE` = 2*212 bytes (`include/vdiext.h:40`), `scrpt2 = SCRATCHBUF_OFFSET` (`vdi_text.c:119`). | `vdi_text.c:324-325`, `vdi_textblit.c:395-396,451-452,482,551,681` |
+| R13 | **Global/per-workstation mismatch (quirks the code has, *cited*):** the guard (R1) and the counters are per workstation, but `font_ring[2]` is global. (a) A second workstation can load its own chain and replaces `font_ring[2]` for everyone. (b) `v_opnvwk` / `v_opnwk` clear `font_ring[2]` for all workstations while the others still hold `loaded_fonts != NULL` (their next `vst_load_fonts` answers 0, R1). (c) `vst_unload_fonts` on any workstation empties the ring for all. `v_clsvwk` does not touch the ring (`vdi_control.c:462-490`). | see above |
+| R14 | **NULL chain (`CONTRL[10..11]` = 0): no defined result.** `first_font` is dereferenced unchecked (`first_font->font_id` and, when `F_STDFORM` is clear in whatever lives at address 0+66, the write `first_font->flags |= F_STDFORM` and a data swap). Not measured (the probe never calls without a chain). Do not specify a value. Note the reachability: gemlib's own binding always passes a zero chain slot (paragraph "Who calls the ROM like this") and `x_fnts_create(no_fonts == 0)` calls `vst_load_fonts` without a GDOS test (`sdk/gemlib/gemlib-0.44.0-m68k/x_fnts_create.c:8`), so a NewTOS that reads the slot must choose a behaviour for it — see the analysis note, open decision D2. | `:1316-1340` |
+
+**CONTRL layout.** m68k / ILP32 (what EmuTOS reads — `ULONG_AT` = 32-bit read at
+the WORD address, `include/portab.h:216`): `[7..8]` scratch pointer, `[9]`
+offset, `[10..11]` chain. The LP64 layout is **not yet decided**; the proposal
+and the open Fonthead question are in the analysis note (D1, D3).
+
+
 ---
 
 ## Verification criteria
@@ -118,7 +175,9 @@ font's id when the request was unavailable).
 - **`vst_height` nearest:** requesting a height between two available sizes
   returns the actual metrics of the chosen (scaled) font in `PTSOUT[0..3]`,
   not the request.
-- **`vst_load_fonts` no-GDOS / already-loaded:** returns `INTOUT[0]=0`.
+- **`vst_load_fonts` already-loaded / `CONF_WITH_GDOS` = 0:** returns `INTOUT[0]=0`.
+  With a real chain the result is the face count (rules R1-R3 in the
+  [font chain section](#font-chain-vst_load_fonts--vst_unload_fonts-gdos-interface)).
 
 ---
 
@@ -193,11 +252,17 @@ font's id when the request was unavailable).
 ## Configuration / version notes
 
 - **`vst_load_fonts` / `vst_unload_fonts` are gated by `CONF_WITH_GDOS`
-  (default 1)** (`include/config.h:1620-1622`; `vdi_text.c:1294,1355`). Even compiled
-  in, they only *link/unlink* fonts that GDOS (absent in a bare EmuTOS) would
-  have supplied; without GDOS-supplied font data `vst_load_fonts` typically
-  reports 0 new faces. If not compiled in, both are hard no-ops returning
-  `INTOUT[0]=0`.
+  (default 1)** (`include/config.h:1620-1622`; `vdi_text.c:1294,1355`; the
+  `trnsfont` helper and its call in `text_init` are gated alike, `:551,647`).
+  Compiled in (the pinned build), `vst_load_fonts` **does** link whatever
+  chain the caller passes: the ROM does not read font files, it only accepts
+  a chain that a GDOS has built, and reports the number of faces in it
+  (`:1320-1346`). It is **not** "typically 0" (earlier wording of this
+  file, corrected 2026-11-06, V33; measured: probe T13A, oracle returns 1 for
+  a one-font chain, `measurements/measurement-2026-11-06-v18-t2/probe/e1/VDPROBE.LOG:274`).
+  If not compiled in, `vst_load_fonts` is a hard no-op returning
+  `INTOUT[0]=0` and `vst_unload_fonts` does nothing (`:1347-1349`). Full rules:
+  [Font chain](#font-chain-vst_load_fonts--vst_unload_fonts-gdos-interface).
 - **`vst_rotation` follows the TOS3/TOS4 model** (normalise-then-round). TOS1
   did **not** normalise before rounding, so it stored values from −32400 to
   +32400 and `vqt_extent` could return nothing for out-of-range angles
@@ -205,9 +270,12 @@ font's id when the request was unavailable).
 
 ## NewTOS implementation notes (Phase 12)
 
-- The bring-up font is a single fixed bitmap face (the framebuffer text
-  path's system font); `vst_font`/`vst_load_fonts` therefore resolve to that
-  face until a real font subsystem lands. `vst_height`/`vst_point` report the
+- The bring-up font is the built-in ring only (`tos-api/src/vdi/font.rs:245@RING`);
+  `vst_font` always answers face 1 (`tos-api/src/vdi/attributes.rs:171@vst_font`)
+  and `vst_load_fonts` returns 0 without reading its arguments
+  (`tos-api/src/vdi/attributes.rs:351@vst_load_fonts`). That is a **deviation**
+  from the ROM (VDI-TEXT-010, `docs/audits/2026-11-06-v18-t2-vdi-text.md`),
+  to be removed by `TASK/V33.md` against the rules of the font chain section. `vst_height`/`vst_point` report the
   one available cell size (plus any integer doubling we support), not
   arbitrary scaling — but must still return *actual* metrics in `PTSOUT`.
 - Text rotation storage must match EmuTOS exactly: `vst_rotation` echoes
