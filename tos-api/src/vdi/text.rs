@@ -22,6 +22,7 @@
 
 use super::backend::{ClipRect, RasterBackend, WriteMode};
 use super::font::{self, SysFont};
+use super::primitives::line_clip;
 use super::vwk::Vwk;
 use super::Vdipb;
 
@@ -453,7 +454,7 @@ fn draw_cell(backend: &dyn RasterBackend, cell: &GlyphCell, x_pen: i16, top_y: i
     // insets the glyph; `output_text` subtracts `outline` from DESTX/DESTY,
     // `vdi_text.c:410-411`).
     let out_shift = if vwk.style & T_OUTLINE != 0 { OUTLINE_THICKNESS } else { 0 };
-    blit_cell(backend, cell, x_pen - out_shift, top_y - out_shift, vwk, clip);
+    blit_cell(backend, cell, x_pen.wrapping_sub(out_shift), top_y - out_shift, vwk, clip);
 }
 
 /// Rotate an assembled [`GlyphCell`] by a right angle — EmuTOS `rotate`
@@ -520,15 +521,18 @@ fn top_for(f: &SysFont, y: i16, v_align: i16) -> i16 {
 pub(crate) fn calc_width(base: &SysFont, f: &SysFont, count: i16, vwk: &Vwk) -> i16 {
     // Monospace: the width scales the total, using the *base* cell width
     // (EmuTOS reads the unscaled `off_table` through the scaled header).
-    let mut width = count * base.max_cell_width;
+    //
+    // WORD arithmetic, as EmuTOS: a run of more than 4095 8-px characters
+    // wraps, and `act_siz` takes the width as a `UWORD`.
+    let mut width = count.wrapping_mul(base.max_cell_width);
     if vwk.scaled {
-        width = act_siz(width.max(0) as u16, vwk.dda_inc, vwk.t_sclsts) as i16;
+        width = act_siz(width as u16, vwk.dda_inc, vwk.t_sclsts) as i16;
     }
     if vwk.style & T_SKEW != 0 {
-        width += f.left_offset + f.right_offset; // scaled offsets
+        width = width.wrapping_add(f.left_offset + f.right_offset); // scaled offsets
     }
     if vwk.style & T_OUTLINE != 0 {
-        width += count * OUTLINE_THICKNESS * 2;
+        width = width.wrapping_add(count.wrapping_mul(OUTLINE_THICKNESS * 2));
     }
     width
 }
@@ -550,22 +554,49 @@ fn underline_offset(f: &SysFont, vwk: &Vwk) -> i16 {
         }
 }
 
-/// Draw the underline run if the effect is set: an `ul_size`-thick line
-/// below the baseline, spanning `[x0, x0+width)`. `y_cell_top` is the
-/// rendered cell top (EmuTOS `DESTY`, i.e. already shifted up by outlining).
-fn underline(backend: &dyn RasterBackend, f: &SysFont, vwk: &Vwk, x0: i16, y_cell_top: i16, width: i16, clip: ClipRect) {
-    if vwk.style & T_UNDERLINE == 0 || width <= 0 {
+/// The lines of an underline — EmuTOS `output_text`'s loop
+/// (`vdi_text.c:513-542`, every `chup`): `ul_size` lines from `start` to
+/// `end`, stepped by `step`, all in the text colour and writing mode. `abline`
+/// draws the end point too, so a horizontal run is one pixel longer than the
+/// glyph cells, and `LN_MASK` carries over from line to line: `abline`'s own
+/// rotation (a vertical line turns it once per pixel, a horizontal or wholly
+/// clipped one not at all), then `rorw1` after every line (`:541`) — which is
+/// what makes the second line of a light, doubled underline the opposite dots.
+/// `clip` is the line clip ([`line_clip`]): with clipping off EmuTOS skips
+/// `clip_line` (`:519-534`) and the rule runs on like any line with clipping
+/// off (TASK/V30).
+fn underline_lines(
+    backend: &dyn RasterBackend,
+    f: &SysFont,
+    vwk: &Vwk,
+    start: (i16, i16),
+    end: (i16, i16),
+    step: (i16, i16),
+    clip: ClipRect,
+) {
+    if vwk.style & T_UNDERLINE == 0 {
         return;
     }
-    let y = y_cell_top + f.top + underline_offset(f, vwk);
     let mode = WriteMode::from_wrt_mode(vwk.wrt_mode);
-    // Light dots the underline: `LN_MASK = lighten` (0x5555) when F_LIGHT is
-    // set, else solid 0xFFFF (EmuTOS `vdi_text.c:513-516`). The backend
-    // screen-aligns the mask for a horizontal line, giving a dotted rule.
-    let mask = if vwk.style & T_LIGHT != 0 { f.lighten } else { 0xFFFF };
-    for r in 0..f.ul_size {
-        backend.draw_line(x0, y + r, x0 + width - 1, y + r, vwk.text_color, mode, clip, mask);
+    // `LN_MASK`: `lighten` when F_LIGHT is set, else solid (`:513-516`).
+    let mut mask = if vwk.style & T_LIGHT != 0 { f.lighten } else { 0xFFFF };
+    let ((mut x1, mut y1), (mut x2, mut y2)) = (start, end);
+    for _ in 0..f.ul_size {
+        mask = backend.abline(x1, y1, x2, y2, vwk.text_color, mode, clip, mask, true).rotate_right(1);
+        x1 = x1.wrapping_add(step.0);
+        x2 = x2.wrapping_add(step.0);
+        y1 = y1.wrapping_add(step.1);
+        y2 = y2.wrapping_add(step.1);
     }
+}
+
+/// The underline of a horizontal run (`chup` 0, `vdi_text.c:410-413,509`):
+/// from `startx` to `DESTX`, the pen *behind* the last glyph, on the row
+/// `DESTY + top + underline`. All three come in as EmuTOS has them, shifted
+/// by the outline: `y_cell_top` is the rendered cell top (`DESTY`).
+fn underline(backend: &dyn RasterBackend, f: &SysFont, vwk: &Vwk, startx: i16, y_cell_top: i16, destx: i16, clip: ClipRect) {
+    let y = y_cell_top + f.top + underline_offset(f, vwk);
+    underline_lines(backend, f, vwk, (startx, y), (destx, y), (0, 1), clip);
 }
 
 /// `1` when the outline effect is on, else `0` — EmuTOS `output_text`'s
@@ -640,7 +671,11 @@ pub fn v_gtext(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     let width = calc_width(base, f, count, vwk);
     let delh = delh_for(f, vwk, width, outline);
 
-    let clip = vwk.clip_rect();
+    // With clipping off `text_blt` cuts nothing (`check_clip`,
+    // `vdi_textblit.c:128-133`) and the underline skips `clip_line`
+    // (`vdi_text.c:519-534`): glyphs and rule run on in the store
+    // ([`ClipRect::OFF`], TASK/V30).
+    let clip = line_clip(vwk);
 
     // Right-angle rotation takes the assemble→rotate→blit path; every other
     // angle (0 and 3600) falls through to the horizontal path — matching
@@ -664,9 +699,11 @@ pub fn v_gtext(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     for i in 0..count as usize {
         let (cell, advance) = make_glyph(base, f, pb.intin(i), vwk, &mut xdda);
         draw_cell(backend, &cell, cx, top_y, vwk, clip);
-        cx += advance;
+        cx = cx.wrapping_add(advance); // `DESTX` is a WORD
     }
-    underline(backend, f, vwk, x_pen0 - outline, top_y - outline, cx - x_pen0, clip);
+    // `startx` = the first `DESTX`, the end = the last (both shifted by the
+    // outline, `vdi_text.c:410-413`).
+    underline(backend, f, vwk, x_pen0.wrapping_sub(outline), top_y - outline, cx.wrapping_sub(outline), clip);
 }
 
 /// Draw a run rotated to a right angle — EmuTOS `output_text`'s `chup`
@@ -784,20 +821,8 @@ fn output_text_rotated(
     // `vdi_text.c:500-543`): vertical for 900/2700, horizontal for 1800; the
     // far endpoint is the pen's final position (`gx`/`gy`). `ul_size` thin
     // lines stepped by (xfact, yfact) give the thickness.
-    if vwk.style & T_UNDERLINE != 0 {
-        let mask = if vwk.style & T_LIGHT != 0 { f.lighten } else { 0xFFFF };
-        let mode = WriteMode::from_wrt_mode(vwk.wrt_mode);
-        let mut x1 = startx;
-        let mut y1 = starty;
-        let (mut x2, mut y2) = if vertical { (startx, gy) } else { (gx, starty) };
-        for _ in 0..f.ul_size {
-            backend.draw_line(x1, y1, x2, y2, vwk.text_color, mode, clip, mask);
-            x1 += xfact;
-            x2 += xfact;
-            y1 += yfact;
-            y2 += yfact;
-        }
-    }
+    let end = if vertical { (startx, gy) } else { (gx, starty) };
+    underline_lines(backend, f, vwk, (startx, starty), end, (xfact, yfact), clip);
 }
 
 /// EmuTOS `JUSTINFO` (`vdi_text.c:139-149`): the per-glyph justification
@@ -983,7 +1008,9 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
         }
     }
 
-    let clip = vwk.clip_rect();
+    // Clipping off: glyphs and underline run on in the store, as in
+    // `v_gtext` (TASK/V30).
+    let clip = line_clip(vwk);
 
     // Right angle: `v_gtext`'s rotated `output_text` with the deltas
     // (`gdp_justified` → `output_text(vwk, cnt, str, max_x, &just)`, :1288).
@@ -1009,8 +1036,10 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
         let code = pb.intin(2 + i);
         let (cell, advance) = make_glyph(base, f, code, vwk, &mut xdda);
         draw_cell(backend, &cell, destx, desty, vwk, clip);
-        destx += advance; // base glyph advance (EmuTOS text_blt DELX)
+        destx = destx.wrapping_add(advance); // base glyph advance (EmuTOS text_blt DELX), a WORD
         just.step(code, &mut destx, &mut desty);
     }
-    underline(backend, f, vwk, x0, top_y, destx - x0, clip);
+    // As in `v_gtext`: `DESTX`/`DESTY` carry the outline shift (`vdi_text.c:410-411`).
+    let outline = outline_of(vwk);
+    underline(backend, f, vwk, x0.wrapping_sub(outline), top_y - outline, destx.wrapping_sub(outline), clip);
 }

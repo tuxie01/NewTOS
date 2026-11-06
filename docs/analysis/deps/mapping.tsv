@@ -1458,10 +1458,12 @@ videl2vdi	vdi/vdi_col.c	-	-	design:hardware:videl	VIDEL 8-bit gun conversion for
 vq_color16	vdi/vdi_col.c	tos-api/src/vdi/inquiry.rs	vq_color	mapped	truecolor branch of vq_color (flag 0 raw req_col, else 5-bit pseudo-palette)
 vs_color16	vdi/vdi_col.c	tos-api/src/vdi/attributes.rs	vs_color	mapped	truecolor branch of vs_color (raw req_col, clamped pseudo-palette)
 char_resize	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	resize	mapped	DDA size; the 0xFFFF double case leaves the accumulator untouched (same as EmuTOS here)
-check_clip	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	early-out whole-cell clip decision; NewTOS intersects the cell with the clip box and the screen per pixel instead
+check_clip	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	early-out whole-cell clip decision; NewTOS intersects the cell with the clip box and the screen per pixel instead; ClipRect::OFF (no CLIP) takes the unclipped walk (V30)
+check_clip	vdi/vdi_textblit.c	tos-api/src/vdi/primitives.rs	line_clip	mapped	the CLIP test: with vs_clip(0) the text path hands ClipRect::OFF to the glyph blit and the underline, nothing is cut (V30)
 direct_screen_blit	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	CONF_WITH_VDI_TEXT_SPEEDUP direct 8-wide blit (on in the 512 build); NewTOS has no direct path, v_gtext goes through the general glyph path; planar branch is ADR-024
 direct_screen_blit16	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	truecolor direct blit; the general path of NewTOS draws the same cell (equal output not measured)
 do_clip	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	trims the cell to the clip window; NewTOS clips per pixel in the backend
+do_clip	vdi/vdi_textblit.c	tos-api/src/vdi/line.rs	glyph_unclipped	mapped	without CLIP do_clip cuts nothing: the whole cell goes to the store (V30)
 merge_byte	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	build_cell	mapped	helper of outline (18-bit neighbour window); NewTOS outlines on 64-bit rows
 outline	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	build_cell	mapped	outline effect step of the cell builder
 pre_blit	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	build_cell	mapped	thicken, skew, light and outline into an intermediate cell
@@ -1471,6 +1473,7 @@ scaledown	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_down	mapped	-
 scaleup	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_up	mapped	-
 screen_blit	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	glyph cell to the screen with the writing mode; the planar branch (v_planes <= 8) is ADR-024 and has no code
 screen_blit16	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	truecolor cell blit, replace background is pen 0
+screen_blit16	vdi/vdi_textblit.c	tos-api/src/vdi/line.rs	glyph_unclipped	mapped	clip off: each cell pixel at v_bas_ad + DESTX*2 + (UWORD)(DESTY+DELY-1)*v_lin_wr upward = store index y*stride+x, run-on into the neighbouring row, cut outside the logical screen (COMPATIBILITY, V30)
 shift_and_update	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_up	mapped	destination bit/word stepping of the scalers; NewTOS packs into one u64 row
 shift_and_update	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_down	mapped	destination bit/word stepping of the scalers; NewTOS packs into one u64 row
 text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	make_glyph	mapped	per-character driver: scale, effects
@@ -1514,7 +1517,8 @@ output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	v_justified	mapped	justified 
 output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	delh_for	mapped	h_align/v_align delh against width (natural, or v_justified's max_x)
 output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	outline_of	mapped	outline start shift
 output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	step	mapped	JustInfo::step, the justified apply loop after each glyph
-output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	underline	mapped	underline run
+output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	underline	mapped	horizontal underline: startx to DESTX inclusive (abline draws the endpoint), on the row DESTY + top + underline, with the outline shift (V30)
+output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	underline_lines	mapped	the F_UNDER loop for every chup: LN_MASK from lighten, carried by abline and rorw1 from line to line; clip off skips clip_line, the rule runs on (V30)
 setup_width_height	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	setup_width_height	mapped	-
 text_init	vdi/vdi_text.c	tos-api/src/vdi/workstation.rs	font_ring_fold	mapped	SIZ_TAB[0..3] and DEV_TAB[5] fold; the F_STDFORM byte swap does not exist
 text_init	vdi/vdi_text.c	tos-api/src/vdi/font.rs	text_init_def_font	mapped	the def_font walk (cell_height by V_REZ_VT, F_DEFAULT faces, form_height), evaluated for the live height instead of cached at v_opnwk (V32)

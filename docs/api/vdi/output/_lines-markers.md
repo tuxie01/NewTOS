@@ -159,7 +159,7 @@ the end of the previous row (vdi-v18 case 45: (600,120)-(700,120) also
 draws (0..60,121)); above the first or below the last row EmuTOS writes the
 memory there.
 
-**NewTOS** (`tos-api/src/vdi/line.rs:170@abline`, store side
+**NewTOS** (`tos-api/src/vdi/line.rs:221@abline`, store side
 `kernel/src/vdi_backend.rs:608@abline`): the same walk, the store index
 `y * stride + x` of the logical screen (stride = the framebuffer pitch in
 pixels). A pixel whose index lies outside the logical screen

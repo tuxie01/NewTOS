@@ -1,0 +1,63 @@
+V30 -- TASK/V30.md (VDI-TEXT-004/005/006): the text underline and text with vs_clip(0) against the pinned
+oracle, on the paths the V18 part 2 probe leaves out. Developer run, 2026-11-06, before the commit; not the
+Tester's acceptance. No card, no Pi, no push.
+
+WHAT RAN
+  NewTOS   working tree on cc5f476b with the V30 change (uncommitted at the time, the commit of this run holds
+           it); rpi4 release kernel8.img sha256 a6839ffa8984653056073fa940724d5a81b1e1b48994120486fb8626cae9c190
+           (built twice, byte-identical; the kernel is not kept). probe/*/run.txt says "8 dirty paths".
+  EmuTOS   1a7484aba1bfba23e2c0899e243b6d8177fe41df, ROM tools/oracle/etos512de-1a7484ab.img,
+           tools/hatari-oracle.sh falcontc (640x480 16-bit truecolor), Hatari 2.6.1 (probe/e1/hatari.log)
+  Boards   QEMU raspi4b, -append serial=on, APFS clone per boot (removed by the scripts)
+  host_clang  Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card manifest)
+  Manifests (4): probe/n1, probe/n2, runs/newtos-vdi-v18t2, runs/newtos-vdi-all, each card.img.manifest;
+           optional_missing, verbatim, in all of them:
+           optional_missing none
+  Commands method/run.sh; the spans of the host test come from method/gen-spans.py.
+
+INSTRUMENT
+  tosdump/probes/vdprobe.c  cases TVA..TVZ, TWA appended after t18 (function tv); the 348 records before them
+           unchanged: probe/e1 starts with the bytes of
+           measurements/measurement-2026-11-06-v18-t2/probe/e1 (8204954 bytes, prefix compare).
+           VDPROBE.PRG 61186ea35601b3f1b4b0921ebad2c5f3d4fdb06e1b7fe4dcd8f9913c52686e57, NAP in probe/*/run.txt.
+
+REPRODUCIBLE
+  probe/e1 == probe/e2  BIN 182c2073...ec0292a, LOG 47770c27... (e2: sha256 only)
+  probe/n1 == probe/n2  BIN f1fd65ca...76421fd0a, LOG c4629ad9... (n2: sha256 only)
+
+RESULT (probe/compare-e1-n1.txt: 385 cases, 21 differ; maps of the TV* ones in probe/maps/)
+  V30's findings, now equal:
+    TUA TUB TUC TUD TUF, T14B T14C T14G T14H T14L   (red on the base, see below)
+    TVA..TVE  rotation 900/1800/2700, clip off, run-on past both edges; control clip on
+    TVJ TVL TVM TVN TVQ  XOR end pixel after a 2-point v_pline; outline; v_justified (outline shift new here)
+    TVR TVS TVT TVV TVW TVY  transparent, XOR, reverse transparent, scaled, right-aligned, 8x16: run-on
+    TVX  8x16 inside the screen (EmuTOS' direct blit, NewTOS' general path)
+    TUE/TVF/TVG/TVH/TVI/TWA: the underline's rows/columns equal (LN_MASK carried by abline and rorw1, new
+    here); the glyphs of these cases differ, next block.
+  Differ, known, other tickets: K5D (decision C), T13A TPA TPB TPC TPD (V33, V35), T14E T14K (V31).
+  Differ, not V30, side findings reported to the lead (no fix here):
+    TUE TUEw TVF TVG TVH TVI TWA  F_LIGHT glyphs: EmuTOS draws them unlightened in truecolor, NewTOS lightens
+                                  (audit section 9; 784 px each for the doubled run).
+    TVK   XOR underline after a ONE-point v_pline: EmuTOS one pixel shorter (LSTLIN left FALSE, vdi_line.c:1106),
+          NewTOS keeps no LSTLIN. 1 px, (148,101).
+    TVO TVP  horizontal v_justified ignores h_align: TASK/V37.
+    TVU TVUw bold+skew+outline: other cell pixels on every glyph, not a clipping effect; not traced.
+    TVZ   4100 characters of the 8x16 font: EmuTOS' width check wraps, the direct blit's pointer does not wrap;
+          NewTOS wraps the pen at character 4096 (docs/api/vdi/output/_text.md section Clipping off). 844 words.
+
+TABLES (cargo xtask tosdump; runs/)
+  runs/newtos-vdi-v18t2  vdi-v18-t2.tsv vs EMUTOS-1a7484ab-VDI-v18t2-falcontc: 4 of 32 differ: 50, 54 (V35), 86, 90
+                         (V31). 61, 64, 67, 70, 74, 76, 79 equal (V18 part 2: 61, 67, 70, 76 differed).
+  runs/newtos-vdi-all    vdi-all.tsv vs EMUTOS-1a7484ab-VDI-all-falcontc: 0 of 182 differ.
+
+HOST TEST ON THE BASE
+  tos-api/tests/vdi_reference/cases_v30.rs against the base's product code (git archive cc5f476b in scratch,
+  the base's harness): 9 green, 31 red. Green: the controls 64, 74, 79, TUD, TVA, TVE, TVX and TVF, TVG, whose
+  129-pixel lines leave a mask that never turned on the right phase (TWA, 202 pixels, is the red one for them).
+
+DEPENDENCIES  deps/output_text-up.txt, deps/text_blt-up.txt, deps/check_clip-up.txt (cargo xtask deps on the tree).
+
+NOT DRIVEN / OPEN
+  Real Pi4: nothing run. The AES acceptance of TASK/V18 "Gemeinsam" (aes-r2/r3/r4, shprobe, slprobe, desktop)
+  belongs to the Tester. EmuTOS' writes outside the frame buffer are not measured, on purpose: a cell above row 0
+  or below the last row writes foreign memory there (the UWORD cast of screen_blit16 is read from the source).

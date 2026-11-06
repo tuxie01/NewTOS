@@ -295,6 +295,14 @@ pub trait RasterBackend: Sync {
     /// background (VDI background pen 0), `Xor` complements, and
     /// `RevTransparent` draws the clear bits. Clipped to `clip` ∩ the
     /// visible area. `glyph.len()` must be `>= cell_h * bytes_per_row`.
+    ///
+    /// [`ClipRect::OFF`] (`vs_clip(0)`, from the VDI text path) blits the
+    /// cell unclipped, as EmuTOS' `text_blt` does without `CLIP`: every
+    /// pixel goes to the store index [`crate::vdi::line::glyph_unclipped`]
+    /// gives — past a screen edge into the neighbouring row — and one
+    /// outside the logical screen is dropped (`docs/COMPATIBILITY.md`,
+    /// TASK/V30). A backend without a linear store (a test double) may
+    /// treat it as the rectangle it spells.
     #[allow(clippy::too_many_arguments)]
     fn draw_glyph_sized(
         &self,
@@ -574,7 +582,10 @@ impl ClipRect {
     /// Clipping **off** for a line — `vs_clip(0)`, EmuTOS `vwk->clip == 0`.
     /// [`RasterBackend::abline`] given this rectangle draws the segment
     /// unclipped (`polyline` skips `clip_line`, `vdi/vdi_line.c:1115-1116`);
-    /// see [`crate::vdi::line::abline`] for where its pixels go. Every other
+    /// see [`crate::vdi::line::abline`] for where its pixels go.
+    /// [`RasterBackend::draw_glyph_sized`] given it blits the glyph cell
+    /// unclipped the same way (`text_blt` without `CLIP`,
+    /// [`crate::vdi::line::glyph_unclipped`], TASK/V30). Every other
     /// primitive treats it as the rectangle it spells, which its own clamp
     /// to the screen reduces to the whole device.
     pub const OFF: ClipRect = ClipRect { xmn: i16::MIN, ymn: i16::MIN, xmx: i16::MAX, ymx: i16::MAX };

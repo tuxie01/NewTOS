@@ -199,7 +199,8 @@ engine as [`v_gtext`](_text.md)).
   (`vdi_text.c:476-492`). So at 900 the run grows upwards, at 1800 to the
   left, at 2700 downwards, each to `max_x` pixels.
 - **Underline** runs from the rotated start to the pen's final `DESTX`
-  (0/1800) or `DESTY` (900/2700), as for `v_gtext` (`vdi_text.c:500-510`).
+  (0/1800) or `DESTY` (900/2700), as for `v_gtext` (`vdi_text.c:500-510`); the
+  rule itself is one for both, [`_text.md` § Underline](_text.md#underline).
 - The direct-blit fast path is never taken for a justified run
   (`ok_for_direct_blit`, `vdi_text.c:235-236`).
 

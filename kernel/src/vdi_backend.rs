@@ -687,6 +687,37 @@ impl RasterBackend for VdiScreen {
         clip: ClipRect,
     ) {
         let fb = active_fb();
+        // Clipping off (`vs_clip(0)`, the VDI text path): EmuTOS' `text_blt`
+        // cuts nothing and writes each cell pixel at its store address, so a
+        // glyph past a screen edge runs on into the neighbouring row; the
+        // shared walk picks the store index, one outside the logical screen
+        // is dropped (`tos_api::vdi::line::glyph_unclipped`, TASK/V30). A cell
+        // wholly on the screen has nothing to run on, so it takes the box below
+        // (the rectangle OFF spells cuts nothing there) without the walk's two
+        // divisions per pixel.
+        let on_screen = x >= 0
+            && y >= 0
+            && x as i32 + cell_w as i32 <= fb.width() as i32
+            && y as i32 + cell_h as i32 <= fb.height() as i32;
+        if clip == ClipRect::OFF && !on_screen {
+            let fg_rgb = Self::pel_to_rgb(fg);
+            let bg_rgb = Self::pel_to_rgb(0);
+            let stride = fb.stride_px();
+            let target = LineTarget { width: fb.width(), height: fb.height(), stride };
+            let mut touched: Option<(u32, u32, u32, u32)> = None;
+            tos_api::vdi::line::glyph_unclipped(&target, x, y, glyph, cell_w, cell_h, |idx, set| {
+                Self::combine_index(fb, idx, set, mode, fg_rgb, bg_rgb);
+                let (col, row) = ((idx % stride as usize) as u32, (idx / stride as usize) as u32);
+                touched = Some(match touched {
+                    None => (col, row, col, row),
+                    Some((c0, r0, c1, r1)) => (c0.min(col), r0.min(row), c1.max(col), r1.max(row)),
+                });
+            });
+            if let Some((c0, r0, c1, r1)) = touched {
+                Self::clean(fb, c0, r0, c1, r1);
+            }
+            return;
+        }
         // The `cell_w`×`cell_h` cell intersected with the clip rectangle and
         // the screen — only pixels inside this inclusive box are touched.
         // (For the 8×16 system font, `cell_w-1 = 7` / `cell_h-1 = 15`, so

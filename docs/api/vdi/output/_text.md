@@ -159,6 +159,52 @@ nothing.
    [`../attributes/_text.md`](../attributes/_text.md)); an unmapped char
    code indexes the font's fallback glyph, not an error.
 
+## Underline
+
+`F_UNDER` draws `ul_size` lines once the run is out (`output_text`,
+`vdi_text.c:500-542`), at every `chup`, for `v_gtext` and `v_justified` alike:
+
+- From `startx` to the pen *behind* the last glyph: `line->x2 = DESTX` at 0 and
+  1800, `line->y2 = DESTY` at 900 and 2700 (`:504-510`). `abline` draws that end
+  point too, so at `chup` 0 the rule is one pixel longer than the glyph cells
+  (measured: `tosdump/cases/vdi-v18-t2.tsv` 61/67, control 64). `startx`,
+  `DESTX` and `DESTY` all carry the outline's shift (`:410-413`), the justified
+  horizontal run as well (measured: probe TVN).
+- `LN_MASK` starts as `lighten` under `F_LIGHT`, else solid (`:513-516`), and
+  carries over from line to line: `abline` turns it once per pixel of a vertical
+  line and not at all for a horizontal one, then `rorw1` turns it after every
+  line (`:541`). The second line of a light, doubled underline holds the opposite
+  dots (measured: probes TVF, TVG, TVH, TVI, TWA).
+- With `clip` on each line goes through `clip_line` first, with `clip` off it does
+  not (`:519-534`).
+- The end pixel in XOR mode follows `abline`'s `LSTLIN`, which the last `polyline`
+  left behind: TRUE after one of two or more points, the normal case (probe TVJ,
+  and NewTOS always draws it), FALSE after a one-point `v_pline`, where EmuTOS
+  draws one pixel less (probe TVK; NewTOS keeps no `LSTLIN`, open).
+
+## Clipping off
+
+With `vs_clip(0)` nothing cuts text. `check_clip` and `do_clip` return 0 at once
+(`vdi_textblit.c:128-133`, `:176-183`) and `screen_blit16` writes every cell pixel
+at `v_bas_ad + DESTX * 2 + (UWORD)(DESTY + DELY - 1) * v_lin_wr`, one `v_lin_wr`
+less per row above that (`:1033-1037`), without a bounds check; the underline is
+`abline` without `clip_line`. So at every `chup` and in every writing mode a cell
+pixel past the right edge lands in the next row, one left of `x = 0` at the end of
+the previous row (measured: `vdi-v18-t2.tsv` 70/76, controls 74/79; probes TUA-TUD,
+T14B, T14C, T14G, T14H, TVB, TVC, TVD, TVR, TVS, TVT, TVV, TVW, TVY).
+
+`(UWORD)` makes a cell that lies wholly above row 0 land 65536 rows down, past any
+store. NewTOS keeps the cast (`glyph_unclipped`, `tos-api/src/vdi/line.rs:70@glyph_unclipped`)
+and drops every pixel outside the logical screen; EmuTOS writes the memory there, not
+measured for that reason (`docs/COMPATIBILITY.md`, "Text drawn with clipping off").
+
+**The one on-screen difference, open:** `ok_for_direct_blit` compares `DESTX + width`
+with the screen in `WORD`s (`vdi_text.c:273`), and `width` wraps for a run of 4096 or
+more characters of the 8-pixel font, unscaled, without effects. EmuTOS then takes the
+direct blit, whose destination pointer never wraps: the characters from number 4096
+on land 51 rows further down (32768 / 640), where NewTOS, on the general path as for
+any other run, wraps the `WORD` pen (probe TVZ, 844 words).
+
 ## Dependencies
 
 ### Requires
@@ -194,7 +240,8 @@ nothing.
 - `CONF_WITH_VDI_TEXT_SPEEDUP` (default 1) adds a direct-blit fast path
   that only triggers for unrotated, unstyled, left-aligned text
   (`vdi_text.c:227-286`) — a raster optimisation with no observable effect
-  on the drawn output.
+  on the drawn output, except for the run of 4096 characters described under
+  [Clipping off](#clipping-off).
 - Rotation is limited to right angles on the screen driver (`chup` ∈
   {0,900,1800,2700}; 3600 folds to 0), matching `vst_rotation`.
 

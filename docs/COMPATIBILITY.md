@@ -659,6 +659,32 @@ neighbouring rows included, is EmuTOS'. Code `tos-api/src/vdi/line.rs:39@index`;
 spec `docs/api/vdi/output/_lines-markers.md` (§ "One segment: `abline`",
 Addressing).
 
+**Text drawn with clipping off stops at the same edges; EmuTOS writes on past
+them** — user decision 2026-11-06 (TASK/V30, the rule of the entry above, same
+term "in the logical screen's memory"). With `vs_clip(0)` EmuTOS' `check_clip`
+and `do_clip` return 0 at once (`references/emutos/vdi/vdi_textblit.c:128-133`,
+`:176-183`) and `screen_blit16` writes every pixel of a glyph cell at
+`v_bas_ad + DESTX * 2 + (UWORD)(DESTY + DELY - 1) * v_lin_wr` and one `v_lin_wr`
+less for each row above it (`:1033-1037`), without a bounds check; the underline
+is `abline` without `clip_line` (`references/emutos/vdi/vdi_text.c:519-534`).
+NewTOS does the same inside the logical screen, at every right angle and in
+every writing mode: a cell pixel past the right edge lands in the next row, one
+left of `x = 0` at the end of the previous row, at the store index
+`y * stride + x`, and the underline runs on like any line. A pixel whose index
+falls before the first or past the last pixel of the logical screen is not
+drawn; EmuTOS writes the memory there. Reason: as above, kernel memory safety.
+**Observable difference:** only for text with clipping off that leaves the
+screen through its top or bottom edge (or runs past the first/last pixel
+sideways), for example a cell above row 0: EmuTOS changes the bytes there, NewTOS
+leaves them alone. Everything on the screen, the run-on into the neighbouring
+rows included, is EmuTOS' (one exception, a run of more than 4095 8-pixel
+characters: `docs/api/vdi/output/_text.md`, § Clipping off). Code
+`tos-api/src/vdi/line.rs:70@glyph_unclipped`,
+`tos-api/src/vdi/text.rs:568@underline_lines`; spec
+`docs/api/vdi/output/_text.md` (§ Clipping off); host test
+`tos-api/tests/vdi_reference/cases_v30.rs`; run
+`measurements/measurement-2026-11-06-v30/RUNINFO.TXT`.
+
 **`v_get_pixel` outside the logical screen's memory answers 0; EmuTOS reads
 on past it** — user decision B, 2026-11-05 (TASK/V18, *"ja das passt so"*),
 implemented by TASK/V24. EmuTOS' `pixelread` has no bounds check
@@ -680,7 +706,7 @@ last row (or sideways past the first/last pixel): EmuTOS answers a foreign
 memory word, NewTOS 0. `v_contourfill` reads only inside its clip rectangle
 cut to the screen and is not affected. Code
 `tos-api/src/vdi/contour.rs:135@pixelread`,
-`tos-api/src/vdi/backend.rs:378@get_device_pixel_wrapped`; spec
+`tos-api/src/vdi/backend.rs:386@get_device_pixel_wrapped`; spec
 `docs/api/vdi/inquiry/_color-pixel-input.md` (§ "Coordinates outside the
 screen"); host test `tos-api/tests/vdi_reference/cases_v24.rs`.
 

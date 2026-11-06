@@ -35,6 +35,9 @@
  * the raster rider (K13-K16, K18, K19; underline/glyphs with clipping off,
  * the local PTSIN copy, overlapping copies).  Text cases restore the text
  * attributes themselves (treset); reset() sets none.
+ *
+ * TASK/V30 appends cases TV* (function tv, after t18): the text paths with
+ * clipping off that T* leaves out.
  */
 #include <osbind.h>
 #include <stdarg.h>
@@ -1566,6 +1569,155 @@ static void tr(void)
 	tr_screen("TRM", "screen->screen 100x80 (100,110)->(110,100) (up-right)", 100, 110, 110, 100);
 }
 
+/* TASK/V30: the underline and the glyphs of output_text with clipping off on the paths TU* and T14* leave
+ * out: rotated, the writing modes, effects, v_justified, the direct blit.  Every rectangle stays inside the
+ * frame buffer: EmuTOS writes foreign memory beyond it. */
+static const int16_t tv_pline[] = { 10, 10, 20, 10 };
+
+static void tv_two(const char *name, int x, int y, int w, int h, const char *wname, int wx, int wy, int ww, int wh)
+{
+	grab(name, x, y, w, h);
+	grab(wname, wx, wy, ww, wh);
+}
+
+static void tv(void)
+{
+	tbegin("TVA", "underline, rotation 900, clip off, 'ABCDEFGH' at (100,300) (inside)");
+	i1(106, 8);
+	i1(13, 900);
+	gtext(100, 300, "ABCDEFGH");
+	grab("TVA", 70, 200, 60, 120);
+	tbegin("TVB", "underline, rotation 900, clip off, 'ABCDEFGH' at (642,300): past x 639");
+	i1(106, 8);
+	i1(13, 900);
+	gtext(642, 300, "ABCDEFGH");
+	tv_two("TVB", 600, 200, 40, 120, "TVBw", 0, 200, 40, 120);
+	tbegin("TVC", "underline, rotation 1800, clip off, 'ABCDEFGH' at (20,200): left of x 0");
+	i1(106, 8);
+	i1(13, 1800);
+	gtext(20, 200, "ABCDEFGH");
+	tv_two("TVC", 0, 170, 60, 50, "TVCw", 590, 170, 50, 50);
+	tbegin("TVD", "underline, rotation 2700, clip off, 'ABCDEFGH' at (-2,200): left of x 0");
+	i1(106, 8);
+	i1(13, 2700);
+	gtext(-2, 200, "ABCDEFGH");
+	tv_two("TVD", 0, 180, 40, 80, "TVDw", 600, 180, 40, 80);
+	tbegin("TVE", "control: underline, rotation 900, clip on (90,280)-(120,295), 'ABCDEFGH' at (100,300)");
+	i1(106, 8);
+	i1(13, 900);
+	clip(1, 90, 280, 120, 295);
+	gtext(100, 300, "ABCDEFGH");
+	grab("TVE", 70, 200, 60, 120);
+	tbegin("TVF", "underline+light, vst_height(26), rotation 900, clip off, 'ABCDEFGH' at (200,300)");
+	i1(106, 8 | 2);
+	p1(12, 0, 26);
+	i1(13, 900);
+	gtext(200, 300, "ABCDEFGH");
+	grab("TVF", 150, 100, 100, 220);
+	tbegin("TVG", "underline+light, vst_height(26), rotation 2700, clip off, 'ABCDEFGH' at (300,100)");
+	i1(106, 8 | 2);
+	p1(12, 0, 26);
+	i1(13, 2700);
+	gtext(300, 100, "ABCDEFGH");
+	grab("TVG", 250, 80, 100, 220);
+	tbegin("TVH", "underline+light, vst_height(26), rotation 1800, clip off, 'ABCDEFGH' at (500,100)");
+	i1(106, 8 | 2);
+	p1(12, 0, 26);
+	i1(13, 1800);
+	gtext(500, 100, "ABCDEFGH");
+	grab("TVH", 300, 40, 220, 100);
+	tbegin("TVI", "underline+light, vst_height(26), clip off, 'ABCDEFGH' at (100,300)");
+	i1(106, 8 | 2);
+	p1(12, 0, 26);
+	gtext(100, 300, "ABCDEFGH");
+	grab("TVI", 80, 260, 160, 60);
+	tbegin("TVJ", "underline, XOR, after a 2-point v_pline (LSTLIN TRUE), 'ABCDEFGH' at (100,100)");
+	i1(106, 8);
+	i1(32, 3);
+	pline(2, tv_pline);
+	gtext(100, 100, "ABCDEFGH");
+	grab("TVJ", 80, 80, 120, 40);
+	tbegin("TVK", "underline, XOR, after a 1-point v_pline (LSTLIN FALSE), 'ABCDEFGH' at (100,100)");
+	i1(106, 8);
+	i1(32, 3);
+	pline(1, tv_pline);
+	gtext(100, 100, "ABCDEFGH");
+	grab("TVK", 80, 80, 120, 40);
+	tbegin("TVL", "underline+outline, clip off, v_gtext 'ABCDEFGH' at (100,100)");
+	i1(106, 8 | 16);
+	gtext(100, 100, "ABCDEFGH");
+	grab("TVL", 80, 80, 130, 40);
+	tbegin("TVM", "underline, v_justified interword 'AB CD EF' at (100,100), length 200");
+	i1(106, 8);
+	justified(100, 100, 200, 1, 0, "AB CD EF");
+	grab("TVM", 80, 80, 240, 40);
+	tbegin("TVN", "underline+outline, v_justified interword 'AB CD EF' at (100,100), length 200");
+	i1(106, 8 | 16);
+	justified(100, 100, 200, 1, 0, "AB CD EF");
+	grab("TVN", 80, 80, 240, 40);
+	tbegin("TVO", "underline, v_justified h_align centre 'AB CD EF' at (300,100), length 200");
+	i1(106, 8);
+	i2(39, 1, 0);
+	justified(300, 100, 200, 1, 0, "AB CD EF");
+	grab("TVO", 150, 80, 320, 40);
+	tbegin("TVP", "underline, v_justified h_align right 'AB CD EF' at (300,100), length 200");
+	i1(106, 8);
+	i2(39, 2, 0);
+	justified(300, 100, 200, 1, 0, "AB CD EF");
+	grab("TVP", 80, 80, 320, 40);
+	tbegin("TVQ", "underline, v_justified interchar 'ABCDEFGH' at (100,100), length 10: the end before the start");
+	i1(106, 8);
+	justified(100, 100, 10, 0, 1, "ABCDEFGH");
+	grab("TVQ", 60, 80, 120, 40);
+	tbegin("TVR", "underline, transparent, clip off, 'ABCDEFGH' at (600,100)");
+	i1(106, 8);
+	i1(32, 2);
+	gtext(600, 100, "ABCDEFGH");
+	tv_two("TVR", 560, 80, 80, 40, "TVRw", 0, 80, 80, 40);
+	tbegin("TVS", "underline, XOR, clip off, 'ABCDEFGH' at (600,100)");
+	i1(106, 8);
+	i1(32, 3);
+	line2(10, 10, 20, 10);
+	gtext(600, 100, "ABCDEFGH");
+	tv_two("TVS", 560, 80, 80, 40, "TVSw", 0, 80, 80, 40);
+	tbegin("TVT", "underline, reverse transparent, clip off, 'ABCDEFGH' at (600,100)");
+	i1(106, 8);
+	i1(32, 4);
+	gtext(600, 100, "ABCDEFGH");
+	tv_two("TVT", 560, 80, 80, 40, "TVTw", 0, 80, 80, 40);
+	tbegin("TVU", "bold+skew+outline, clip off, 'ABCDEFGH' at (600,100)");
+	i1(106, 1 | 4 | 16);
+	gtext(600, 100, "ABCDEFGH");
+	tv_two("TVU", 560, 80, 80, 40, "TVUw", 0, 80, 80, 40);
+	tbegin("TVV", "vst_height(20), clip off, 'ABCDEFGH' at (600,100)");
+	p1(12, 0, 20);
+	gtext(600, 100, "ABCDEFGH");
+	tv_two("TVV", 560, 60, 80, 60, "TVVw", 0, 60, 80, 60);
+	tbegin("TVW", "underline, h_align right, clip off, 'ABCDEFGH' at (20,150): left of x 0");
+	i1(106, 8);
+	i2(39, 2, 0);
+	gtext(20, 150, "ABCDEFGH");
+	tv_two("TVW", 0, 130, 80, 40, "TVWw", 560, 130, 80, 40);
+	tbegin("TVX", "vst_height(13), clip off, 'ABCDEFGH' at (100,100) (inside: the direct blit)");
+	p1(12, 0, 13);
+	gtext(100, 100, "ABCDEFGH");
+	grab("TVX", 80, 80, 120, 40);
+	tbegin("TVY", "vst_height(13), clip off, 'ABCDEFGH' at (600,100): the general path past x 639");
+	p1(12, 0, 13);
+	gtext(600, 100, "ABCDEFGH");
+	tv_two("TVY", 560, 80, 80, 40, "TVYw", 0, 80, 80, 40);
+	tbegin("TVZ", "vst_height(13), clip off, 4100 characters at (10,100): width wraps, the direct blit");
+	p1(12, 0, 13);
+	gtext_big(10, 100, 4100);
+	grab("TVZ", 0, 20, 640, 140);
+	tbegin("TWA", "underline+light, vst_height(26), rotation 900, v_justified interchar 'ABCDEFGH' at (200,300), length 201");
+	i1(106, 8 | 2);
+	p1(12, 0, 26);
+	i1(13, 900);
+	justified(200, 300, 201, 0, 1, "ABCDEFGH");
+	grab("TWA", 150, 90, 100, 230);
+}
+
 static void t2(void)
 {
 	t19();
@@ -1577,6 +1729,7 @@ static void t2(void)
 	tp();
 	tr();
 	t18();
+	tv();
 	treset();
 }
 

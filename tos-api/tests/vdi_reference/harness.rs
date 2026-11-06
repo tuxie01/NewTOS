@@ -372,8 +372,26 @@ impl RasterBackend for MemBackend {
         // screen), and `RevTransparent` paints `fg` on them. Until V29 this
         // double drew the set bits of the first byte in `fg` only, which
         // could not show a glyph cell's background (TASK/V29, probe T16*).
+        // With clipping off the cell goes through the kernel's walk,
+        // `tos_api::vdi::line::glyph_unclipped`, into the same store
+        // combine as `abline` (TASK/V30).
         let f = self.rgb565_to_device(self.pel_to_device16(fg));
         let b = self.rgb565_to_device(self.pel_to_device16(0));
+        if clip == ClipRect::OFF {
+            let target = LineTarget { width: SCREEN_W as u32, height: SCREEN_H as u32, stride: SCREEN_W as u32 };
+            let mut px = self.px.lock().unwrap();
+            line::glyph_unclipped(&target, x, y, glyph, cell_w, cell_h, |idx, set| {
+                let p = &mut px[idx];
+                match mode {
+                    WriteMode::Replace => *p = if set { f } else { b },
+                    WriteMode::Transparent if set => *p = f,
+                    WriteMode::Xor if set => *p = !*p,
+                    WriteMode::RevTransparent if !set => *p = f,
+                    _ => {}
+                }
+            });
+            return;
+        }
         let bpr = (cell_w.max(0) as usize).div_ceil(8);
         for row in 0..cell_h {
             for col in 0..cell_w {

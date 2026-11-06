@@ -8,6 +8,10 @@
 //! them into its store (`kernel/src/vdi_backend.rs` `abline`). Host tests
 //! drive it directly, and the VDI reference harness draws through it.
 //!
+//! The store a line runs on in with clipping off ([`LineTarget`]) is also
+//! the one a glyph cell lands in with clipping off ([`glyph_unclipped`],
+//! TASK/V30) and the one `v_get_pixel` reads (TASK/V24).
+//!
 //! The arithmetic is EmuTOS' `WORD` arithmetic — deltas, Bresenham terms and
 //! loop counters wrap at 16 bits — so a segment whose endpoints lie more
 //! than 32767 apart walks as it walks on the m68k. Only `mul_div_round` is
@@ -40,6 +44,52 @@ impl LineTarget {
         let idx = y as i64 * self.stride as i64 + x as i64;
         let len = self.height as i64 * self.stride as i64;
         (0..len).contains(&idx).then_some(idx as usize)
+    }
+}
+
+/// Blit a glyph cell with clipping off — EmuTOS `text_blt` with `CLIP == 0`:
+/// `check_clip` and `do_clip` return 0 at once (`vdi/vdi_textblit.c:128-133`,
+/// `:176-183`) and `screen_blit16` writes every cell pixel at
+/// `v_bas_ad + DESTX * 2 + (UWORD)(DESTY + DELY - 1) * v_lin_wr` for the
+/// bottom row and one `v_lin_wr` less for each row above it (`:1033-1037`),
+/// with no bounds check. `plot(index, set)` for every pixel of the
+/// `cell_w × cell_h` cell whose top-left is `(x, y)`, `index` the store
+/// index [`LineTarget::index`] of `(x + col, row y)` — so a pixel past the
+/// right edge lands at the start of the next row, one left of `x = 0` at
+/// the end of the previous row — and `set` its glyph bit. `glyph` holds
+/// `ceil(cell_w / 8)` bytes per row, leftmost byte first, bit 7 = leftmost
+/// pixel (the [`RasterBackend::draw_glyph_sized`](super::backend::RasterBackend::draw_glyph_sized)
+/// format). A pixel whose index falls outside the store is not plotted:
+/// EmuTOS writes the memory there, NewTOS does not (user decision, TASK/V30,
+/// the rule of decision A; `docs/COMPATIBILITY.md`).
+///
+/// The bottom row is taken `UWORD`, as `screen_blit16` casts it: for a cell
+/// that lies wholly above row 0 it is 65536 rows further down, past the end
+/// of any store, so that cell is never drawn, whatever its `x`. The column
+/// offsets are added in `i32`, as the m68k adds them to the address.
+pub fn glyph_unclipped(
+    target: &LineTarget,
+    x: i16,
+    y: i16,
+    glyph: &[u8],
+    cell_w: i16,
+    cell_h: i16,
+    mut plot: impl FnMut(usize, bool),
+) {
+    if cell_w <= 0 || cell_h <= 0 {
+        return;
+    }
+    let bpr = (cell_w as usize).div_ceil(8);
+    let bottom = (y as i32 + cell_h as i32 - 1) as u16 as i32;
+    for row in 0..cell_h {
+        let ry = bottom - (cell_h - 1 - row) as i32;
+        for col in 0..cell_w {
+            let Some(idx) = target.index(x as i32 + col as i32, ry) else {
+                continue;
+            };
+            let byte = glyph.get(row as usize * bpr + col as usize / 8).copied().unwrap_or(0);
+            plot(idx, byte & (0x80u8 >> (col & 7)) != 0);
+        }
     }
 }
 
