@@ -1672,7 +1672,9 @@ of the system:
   spec's contract note). **Observable:** only to a program that reads its buffer
   after drawing, or passes one too small: EmuTOS overruns it, NewTOS does not.
   In return a glyph cell has a limit of its own: 512 × 512 pixels, the rest of a larger
-  cell is not drawn.
+  cell is not drawn. Unlike the entries around it, this one has a defined EmuTOS result:
+  there the limit is the size of the caller's buffer (read, not measured). Kept by user
+  decision 2026-11-06 (TASK/V33.md).
 - **A current face gone from the ring** (another workstation's `v_opnvwk` or unload, R13)
   and `vst_height`/`vst_point`: EmuTOS follows a NULL `test_font` into low memory
   (`vdi_text.c:692-704`), no defined result. NewTOS goes on from `fon6x6`.
