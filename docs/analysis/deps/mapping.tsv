@@ -1333,7 +1333,7 @@ Isin	vdi/vdi_gdp.c	tos-api/src/vdi/trig.rs	isin	mapped	-
 clc_arc	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	curve	mapped	point generation and the open/closed dispatch (polyline + arrows, wideline, polygon)
 clc_nsteps	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	clc_nsteps	mapped	-
 clc_pts	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	clc_pts	mapped	-
-gdp_curve	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	curve	mapped	radii, angles, step count; the early exit when the clip excludes the whole curve is not carried
+gdp_curve	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	curve	mapped	radii, angles, step count, and the early exit when clipping is on and the clip excludes xc±xrad/yc±yrad (radii only, no line width or arrowheads; V25)
 gdp_rbox	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	rbox	mapped	-
 vdi_v_gdp	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	v_gdp	mapped	opcode 11; GDP 13 (bezier) is not compiled (HAVE_BEZIER 0)
 get_start_addr16	vdi/vdi_inline.h	kernel/src/vdi_backend.rs	get_device_pixel	mapped	screen address of a pixel: NewTOS addresses the 32-bpp framebuffer inside the backend (get_device_pixel/put_device_pixel), no 16-bit address is exposed

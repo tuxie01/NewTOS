@@ -108,9 +108,21 @@ positive (`:390-393`).
 > line attributes for their boundary. Verified against
 > `clc_arc`/`polygon` (`vdi_gdp.c:210-221`, `vdi_fill.c:606-608`).
 
-**Early-out:** when `clip` is set and the curve's bounding box
-(`xc±xrad`, `yc±yrad`) is entirely outside the clip rect, `gdp_curve`
-returns immediately (`vdi_gdp.c:398-402`).
+**Early-out (`vdi_gdp.c:395-402`):** after the radii are made
+non-negative and before the angles and `clc_nsteps`, `gdp_curve` returns
+without drawing when `clip` is set and
+
+    (xc + xrad) < xmn_clip || (xc - xrad) > xmx_clip ||
+    (yc + yrad) < ymn_clip || (yc - yrad) > ymx_clip
+
+(strict comparisons; 16-bit `WORD` sums, EmuTOS is built `-mshort`,
+`Makefile:235`). The box is the **radii only**: the line width
+(`wideline`) and the arrowheads (`arrow`) of an open arc/ellarc are not
+counted, so a wide or arrowed stroke that would reach into the clip rect
+from outside `xc±xrad`/`yc±yrad` is **not drawn at all**. With clipping off
+there is no early-out. Measured against the oracle: `vdi-v18.tsv` case 59,
+`vdprobe` K11A (width 9) and K11D (arrowed) draw nothing, K11C (clip cuts
+the curve) draws (TASK/V25).
 
 ## Rounded boxes: rbox (sub-op 8) / rfbox (sub-op 9)
 
@@ -222,7 +234,9 @@ engine as [`v_gtext`](_text.md)).
 7. **`v_justified` char count is `CONTRL[3]-2`**, and the two flags occupy
    `INTIN[0..1]` — the codes start at `INTIN[2]` (`vdi_text.c:1187-1192`).
 8. **`gdp_curve` early-out** on a fully-clipped bounding box
-   (`vdi_gdp.c:398-402`) — no segments generated.
+   (`vdi_gdp.c:395-402`) — no segments generated. The box is `xc±xrad`,
+   `yc±yrad` without the line width or arrowheads, so a wide/arrowed arc
+   whose stroke alone would reach into the clip draws nothing.
 9. **`v_rbox` forces squared line ends** and restores the caller's
    `line_beg`/`line_end` afterwards (`vdi_gdp.c:457-465`) — a program that
    set arrowed ends does not get arrowheads on a rounded box.

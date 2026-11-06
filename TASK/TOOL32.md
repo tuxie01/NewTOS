@@ -79,7 +79,8 @@ Abweichungs-Kandidaten aus dem Lesen (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
    im VBL, NewTOS sofort.
 10. `vdi_fill.c:671` gegen `tos-api/src/vdi/inquiry.rs:190@v_get_pixel`: ausserhalb des Schirms.
 11. `vdi_gdp.c:386-392` gegen `tos-api/src/vdi/gdp.rs:162@curve`: frueher Ausstieg fehlt, wohl
-    nicht beobachtbar.
+    nicht beobachtbar. — Widerlegt: gemessen beobachtbar (VDI-DRAW-010, breite/Pfeil-Boegen
+    ausserhalb des Clip), Ausstieg mit [V25](V25.md) nachgebaut (`vdi_gdp.c:395-402`).
 (12. `call_user_but`: ADR-031, bekannt.)
 
 ## Stand Teil 2 (2026-11-05, Researcher)

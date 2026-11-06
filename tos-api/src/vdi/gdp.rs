@@ -186,6 +186,20 @@ fn curve(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend, closed: bool, to_ce
         yrad = yrad.wrapping_neg();
     }
 
+    // Quit if clipping excludes the entire curve (EmuTOS `gdp_curve:395-402`):
+    // only with clipping on, and against the radii alone — the line width
+    // and the arrowheads are not counted, so a wide or arrowed stroke that
+    // would reach into the clip from outside `xc ± xrad`/`yc ± yrad` is not
+    // drawn. Strict comparisons, 16-bit WORD sums as in EmuTOS (`-mshort`).
+    if vwk.clip
+        && (xc.wrapping_add(xrad) < vwk.xmn_clip
+            || xc.wrapping_sub(xrad) > vwk.xmx_clip
+            || yc.wrapping_add(yrad) < vwk.ymn_clip
+            || yc.wrapping_sub(yrad) > vwk.ymx_clip)
+    {
+        return;
+    }
+
     // Angles in tenths of a degree (CCW). Full shapes force 0..3600
     // (`gdp_curve:404-410`).
     let full = matches!(sub, CIRCLE | ELLIPSE);
