@@ -1,0 +1,7 @@
+New test card gets the FS31 fix ahead of its tester run (lead, 2026-11-06), so the card can no longer lose data on cross-drive copies.
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing: not applicable (no image built; file copied by hand).
+kernel8.img: cargo xtask build --board rpi4 --release --features crash-walk,sd-fault at 20f87d1d,
+  sha256 378f760a417d7cb93a1993779fb5687a594d2d13e721387b9551f927574b5ae2. Replaces 56c6050f. cp -X, unmount, mount, read back: equal.
+C:\HW08\FSWBENCH.NCP a652296682a31a32... (longest run of the test file, log on C:), not yet run. Other files unchanged.
+Tester for FS31 not done at this point.
