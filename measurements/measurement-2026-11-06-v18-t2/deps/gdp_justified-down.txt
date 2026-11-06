@@ -1,0 +1,65 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps gdp_justified --down`
+deps gdp_justified --down (kinds asm,direct,layer,table,vector): 42 functions besides gdp_justified
+depth	function	layer	reached over	newtos	class
+0	gdp_justified	vdi	-	tos-api/src/vdi/text.rs@v_justified	mapped
+1	bzero_nobuiltin	ext	gdp_justified -> bzero_nobuiltin [direct]		unmapped
+1	calc_width	vdi	gdp_justified -> calc_width [direct]	tos-api/src/vdi/text.rs@calc_width	mapped
+1	output_text	vdi	gdp_justified -> output_text [direct]	tos-api/src/vdi/text.rs@output_text_rotated tos-api/src/vdi/text.rs@underline tos-api/src/vdi/text.rs@v_gtext tos-api/src/vdi/text.rs@v_justified	mapped
+2	abline	vdi	output_text -> abline [direct]	kernel/src/vdi_backend.rs@abline tos-api/src/vdi/line.rs@abline	mapped
+2	act_siz	vdi	calc_width -> act_siz [direct]	tos-api/src/vdi/text.rs@act_siz	mapped
+2	clip_line	vdi	output_text -> clip_line [direct]	tos-api/src/vdi/line.rs@clip_line tos-api/src/vdi/line.rs@clip_segment	mapped
+2	direct_screen_blit	vdi	output_text -> direct_screen_blit [direct]	kernel/src/vdi_backend.rs@draw_glyph_sized	mapped
+2	ok_for_direct_blit	vdi	output_text -> ok_for_direct_blit [direct]	-	unmapped
+2	text_blt	vdi	output_text -> text_blt [direct]	tos-api/src/vdi/text.rs@draw_cell tos-api/src/vdi/text.rs@make_glyph tos-api/src/vdi/text.rs@output_text_rotated	mapped
+3	char_resize	vdi	text_blt -> char_resize [direct]	tos-api/src/vdi/text.rs@resize	mapped
+3	check_clip	vdi	text_blt -> check_clip [direct]	kernel/src/vdi_backend.rs@draw_glyph_sized	mapped
+3	clip_code	vdi	clip_line -> clip_code [direct]	tos-api/src/vdi/line.rs@clip_code	mapped
+3	direct_screen_blit16	vdi	direct_screen_blit -> direct_screen_blit16 [direct]	kernel/src/vdi_backend.rs@draw_glyph_sized	mapped
+3	do_clip	vdi	text_blt -> do_clip [direct]	kernel/src/vdi_backend.rs@blit_mono kernel/src/vdi_backend.rs@copy_rect kernel/src/vdi_backend.rs@draw_glyph_sized tos-api/src/vdi/raster.rs@mem_to_screen	mapped
+3	draw_line	vdi	abline -> draw_line [direct]	-	design
+3	draw_line16	vdi	abline -> draw_line16 [direct]	tos-api/src/vdi/line.rs@draw_line16	mapped
+3	draw_rect_common	vdi	abline -> draw_rect_common [direct]	kernel/src/vdi_backend.rs@fill_pattern	mapped
+3	get_start_addr	vdi	direct_screen_blit -> get_start_addr [direct]	-	design
+3	hwblit_vertical_line	vdi	abline -> hwblit_vertical_line [direct]	-	design
+3	mul_div_round	ext	clip_line -> mul_div_round [direct]		unmapped
+3	pre_blit	vdi	text_blt -> pre_blit [direct]	tos-api/src/vdi/text.rs@build_cell	mapped
+3	rotate	vdi	text_blt -> rotate [direct]	tos-api/src/vdi/text.rs@rotate_cell	mapped
+3	scale	vdi	text_blt -> scale [direct]	tos-api/src/vdi/text.rs@scale_glyph	mapped
+3	screen_blit	vdi	text_blt -> screen_blit [direct]	kernel/src/vdi_backend.rs@draw_glyph_sized	mapped
+3	swblit_vertical_line16	vdi	abline -> swblit_vertical_line16 [direct]	tos-api/src/vdi/line.rs@vertical_line16	mapped
+3	vertical_line	vdi	abline -> vertical_line [direct]	-	design
+4	flush_data_cache	bios	hwblit_vertical_line -> flush_data_cache [direct]	-	unmapped
+4	get_start_addr16	vdi	draw_line16 -> get_start_addr16 [direct]	kernel/src/vdi_backend.rs@get_device_pixel kernel/src/vdi_backend.rs@get_device_pixel_wrapped kernel/src/vdi_backend.rs@put_device_pixel tos-api/src/vdi/backend.rs@get_device_pixel_wrapped tos-api/src/vdi/line.rs@index	mapped
+4	hwblit_rect_common	vdi	draw_rect_common -> hwblit_rect_common [direct]	-	design
+4	invalidate_data_cache	bios	hwblit_vertical_line -> invalidate_data_cache [direct]	-	unmapped
+4	muls	include	hwblit_vertical_line -> muls [direct]		unmapped
+4	normal_blit	vdi	pre_blit -> normal_blit [direct]	kernel/src/vdi_backend.rs@draw_glyph_sized	mapped
+4	outline	vdi	pre_blit -> outline [direct]	tos-api/src/vdi/text.rs@build_cell	mapped
+4	scaledown	vdi	scale -> scaledown [direct]	tos-api/src/vdi/text.rs@scale_row_down	mapped
+4	scaleup	vdi	scale -> scaleup [direct]	tos-api/src/vdi/text.rs@scale_row_up	mapped
+4	screen_blit16	vdi	screen_blit -> screen_blit16 [direct]	kernel/src/vdi_backend.rs@draw_glyph_sized	mapped
+4	swblit_rect_common	vdi	draw_rect_common -> swblit_rect_common [direct]	-	design
+4	swblit_rect_common16	vdi	draw_rect_common -> swblit_rect_common16 [direct]	kernel/src/vdi_backend.rs@fill_pattern tos-api/src/vdi/line.rs@abline	mapped
+5	draw_rect_setup	vdi	hwblit_rect_common -> draw_rect_setup [direct]	-	design
+5	hwblit_rect_nonstd	vdi	hwblit_rect_common -> hwblit_rect_nonstd [direct]	-	design
+5	merge_byte	vdi	outline -> merge_byte [direct]	tos-api/src/vdi/text.rs@build_cell	mapped
+5	shift_and_update	vdi	scaledown -> shift_and_update [direct]	tos-api/src/vdi/text.rs@scale_row_down tos-api/src/vdi/text.rs@scale_row_up	mapped
+
+table edges inside the set (0):
+
+layer edges inside the set (0):
+
+vector edges inside the set (0):
+
+coverage of the set (43 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+bios         2      0   0.0%      0   0.0%      2 100.0%
+ext          2      0   0.0%      0   0.0%      2 100.0%
+include      1      0   0.0%      0   0.0%      1 100.0%
+vdi         39     30  76.9%      8  20.5%      1   2.6%
+total       44     30  68.2%      8  18.2%      6  13.6%
+touched layers: vdi (the layers of gdp_justified; --layers to choose)
+unmapped in the touched layers (1):
+vdi	ok_for_direct_blit	vdi/vdi_text.c
+complete: no (1 unmapped in the touched layers; the ticket lists them)

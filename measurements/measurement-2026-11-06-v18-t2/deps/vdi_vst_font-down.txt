@@ -1,0 +1,29 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps vdi_vst_font --down`
+deps vdi_vst_font --down (kinds asm,direct,layer,table,vector): 8 functions besides vdi_vst_font
+depth	function	layer	reached over	newtos	class
+0	vdi_vst_font	vdi	-	tos-api/src/vdi/attributes.rs@vst_font	mapped
+1	vdi_vst_height	vdi	vdi_vst_font -> vdi_vst_height [direct]	tos-api/src/vdi/attributes.rs@vst_height	mapped
+1	vdi_vst_point	vdi	vdi_vst_font -> vdi_vst_point [direct]	tos-api/src/vdi/attributes.rs@vst_point	mapped
+2	clc_dda	vdi	vdi_vst_height -> clc_dda [direct]	tos-api/src/vdi/attributes.rs@clc_dda	mapped
+2	make_header	vdi	vdi_vst_height -> make_header [direct]	tos-api/src/vdi/text.rs@scaled_header	mapped
+2	setup_width_height	vdi	vdi_vst_height -> setup_width_height [direct]	tos-api/src/vdi/attributes.rs@setup_width_height	mapped
+3	act_siz	vdi	make_header -> act_siz [direct]	tos-api/src/vdi/text.rs@act_siz	mapped
+3	divu	include	clc_dda -> divu [direct]		unmapped
+3	memcpy	ext	make_header -> memcpy [direct]		unmapped
+
+table edges inside the set (0):
+
+layer edges inside the set (0):
+
+vector edges inside the set (0):
+
+coverage of the set (9 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+ext          1      0   0.0%      0   0.0%      1 100.0%
+include      1      0   0.0%      0   0.0%      1 100.0%
+vdi          7      7 100.0%      0   0.0%      0   0.0%
+total        9      7  77.8%      0   0.0%      2  22.2%
+touched layers: vdi (the layers of vdi_vst_font; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

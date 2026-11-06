@@ -1,0 +1,46 @@
+# vdi-v18-t2-raster.tsv -- TASK/V18 part 2 rider (from V19/V26): vrt_cpyfm (121) into a memory
+# form of 1..8 and 9..15 planes, vro_cpyfm (109) memory -> memory with 9..15 planes, and
+# overlapping copies within one form.
+#
+# Read by DUMPRAST (core/dumprast.c), format and guard: core/cases.h, the same columns as
+# vdi-raster.tsv:
+#
+#   opcode <TAB> intin <TAB> ptsin <TAB> src <TAB> dst <TAB> fill <TAB> comment
+#
+# EmuTOS (references/emutos/vdi/vdi_raster.c): setup_info reads a memory form as fd_nplanes
+# interleaved planes, s_nxwd = fd_nplanes * 2, s_nxln = fd_wdwidth * s_nxwd (:919-940);
+# cpy_raster takes vrt_cpyfm16 / vro_cpyfm16 only for plane_ct > 8 (:1368, :1432), the planar
+# blit below; vro_cpyfm16 walks a row of fd_wdwidth * fd_nplanes WORDs, one WORD per pixel, and
+# runs backwards when the source start pointer lies below the destination's (:989-1002).
+# No screen is involved, so the answer is the same on every machine; reference profile falcontc.
+#
+# --- vrt_cpyfm 1 plane -> memory 1..8 planes ----------------------------------
+121	1,1,0	0,0,15,15,0,0,15,15	0,16,16,1,0,1	1,16,16,1,0,1	201,202	rider vrt 1 -> 1 plane, replace fg 1 bg 0
+121	1,1,0	0,0,15,15,0,0,15,15	0,16,16,1,0,1	1,16,16,1,0,2	203,204	rider vrt 1 -> 2 planes, replace fg 1 bg 0
+121	1,1,0	0,0,15,15,0,0,15,15	0,16,16,1,0,1	1,16,16,1,0,4	205,206	rider vrt 1 -> 4 planes, replace fg 1 bg 0
+121	1,1,0	0,0,15,15,0,0,15,15	0,16,16,1,0,1	1,16,16,1,0,8	207,208	rider vrt 1 -> 8 planes, replace fg 1 bg 0
+121	2,3,0	0,0,15,15,0,0,15,15	0,16,16,1,0,1	1,16,16,1,0,4	209,210	rider vrt 1 -> 4 planes, transparent fg 3
+121	3,1,0	0,0,15,15,0,0,15,15	0,16,16,1,0,1	1,16,16,1,0,4	211,212	rider vrt 1 -> 4 planes, xor
+121	4,0,2	0,0,15,15,0,0,15,15	0,16,16,1,0,1	1,16,16,1,0,4	213,214	rider vrt 1 -> 4 planes, erase bg 2
+121	1,5,10	0,0,15,15,0,0,15,15	0,16,16,1,0,1	1,16,16,1,0,8	215,216	rider vrt 1 -> 8 planes, replace fg 5 bg 10
+121	1,1,0	0,0,7,7,3,5,10,12	0,16,16,1,0,1	1,16,16,1,0,4	217,218	rider vrt 1 -> 4 planes, 8x8 shifted by 3,5
+# --- vrt_cpyfm 1 plane -> memory 9..15 planes (vrt_cpyfm16, row fd_wdwidth * fd_nplanes WORDs)
+121	1,1,0	0,0,15,15,0,0,15,15	0,16,16,1,0,1	1,16,16,1,0,9	219,220	rider vrt 1 -> 9 planes, replace
+121	1,1,0	0,0,15,15,0,0,15,15	0,16,16,1,0,1	1,16,16,1,0,12	221,222	rider vrt 1 -> 12 planes, replace
+121	2,3,0	0,0,7,7,3,5,10,12	0,16,16,1,0,1	1,16,16,1,0,15	223,224	rider vrt 1 -> 15 planes, transparent, shifted
+121	1,1,0	0,0,7,7,3,5,10,12	0,16,16,1,0,1	1,16,16,1,0,16	225,226	control vrt 1 -> 16 planes, shifted
+# --- vro_cpyfm memory -> memory 9..15 planes ------------------------------------
+109	3	0,0,15,15,0,0,15,15	0,16,16,1,0,9	1,16,16,1,0,9	227,228	rider vro 9 planes whole form, S_ONLY
+109	3	0,0,15,15,0,0,15,15	0,16,16,1,0,12	1,16,16,1,0,12	229,230	rider vro 12 planes whole form, S_ONLY
+109	3	0,0,15,15,0,0,15,15	0,16,16,1,0,15	1,16,16,1,0,15	231,232	rider vro 15 planes whole form, S_ONLY
+109	3	0,0,7,7,3,5,10,12	0,16,16,1,0,12	1,16,16,1,0,12	233,234	rider vro 12 planes 8x8 shifted by 3,5
+109	6	0,0,31,15,0,0,31,15	0,32,16,2,0,12	1,32,16,2,0,12	235,236	rider vro 12 planes 32x16 fd_wdwidth 2, S_XOR_D
+109	3	0,0,7,7,3,5,10,12	0,16,16,1,0,16	1,16,16,1,0,16	237,238	control vro 16 planes 8x8 shifted
+# --- overlapping copy within one form (both MFDBs name buffer A) ----------------
+109	3	0,0,11,11,3,0,14,11	0,16,16,1,0,16	0,16,16,1,0,16	239,240	rider overlap 16 planes A->A 12x12 right by 3
+109	3	0,0,15,11,0,3,15,14	0,16,16,1,0,16	0,16,16,1,0,16	241,242	rider overlap 16 planes A->A 16x12 down by 3
+109	3	3,4,15,15,0,0,12,11	0,16,16,1,0,16	0,16,16,1,0,16	243,244	rider overlap 16 planes A->A 13x12 up-left by 3,4
+109	3	4,0,15,11,0,3,11,14	0,16,16,1,0,16	0,16,16,1,0,16	245,246	rider overlap 16 planes A->A 12x12 down-left
+109	3	0,0,15,7,0,1,15,8	0,16,16,1,0,12	0,16,16,1,0,12	247,248	rider overlap 12 planes A->A 16x8 down by 1
+109	3	0,1,15,8,0,0,15,7	0,16,16,1,0,12	0,16,16,1,0,12	249,250	rider overlap 12 planes A->A 16x8 up by 1
+109	3	0,0,11,11,3,0,14,11	0,16,16,1,0,4	0,16,16,1,0,4	251,252	rider overlap 4 planes A->A 12x12 right by 3

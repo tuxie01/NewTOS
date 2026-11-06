@@ -1,0 +1,21 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps GSX_ENTRY --up`
+deps GSX_ENTRY --up (kinds asm,direct,layer,table,vector): 2 functions besides GSX_ENTRY
+depth	function	layer	reached over	newtos	class
+0	GSX_ENTRY	vdi	-	tos-api/src/vdi/mod.rs@dispatch_in	mapped
+1	mouse_int	vdi	mouse_int -> GSX_ENTRY [asm jbsr scrn_clip]	tos-api/src/vdi/mouse.rs@feed_relative tos-api/src/vdi/mouse.rs@update_ms_stat	mapped
+1	vditrap	vdi	vditrap -> GSX_ENTRY [asm jsr]	kernel/src/arch/aarch64/exceptions.rs@sync_handler	mapped
+
+table edges inside the set (0):
+
+layer edges inside the set (0):
+
+vector edges inside the set (0):
+
+coverage of the set (3 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+vdi          3      3 100.0%      0   0.0%      0   0.0%
+total        3      3 100.0%      0   0.0%      0   0.0%
+touched layers: vdi (the layers of GSX_ENTRY; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

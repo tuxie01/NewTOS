@@ -1,0 +1,6 @@
+H00 handle 2 xres 639 yres 239 planes? colours 256
+01 CAL      pens 0..15, 8x8 each, vr_recfl solid; x 128..135 untouched
+02 T19A     default font right after v_opnvwk: vqt_attributes, vqt_fontinfo (before any vst_*)
+   vqt_attributes c2=2 c4=6 io 1 1 0 0 0 1 po 7 13 8 16
+   vqt_fontinfo c2=5 c4=2 io 0 255 po 8 2 0 2 0 8 0 11 0 13
+END

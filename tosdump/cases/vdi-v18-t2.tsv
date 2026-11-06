@@ -1,0 +1,111 @@
+# vdi-v18-t2.tsv -- TASK/V18 part 2: the TOOL32 text candidates K15/K16 and the part-2 rider
+# (underline and glyphs with vs_clip(0), handlers reading GSX_ENTRY's local PTSIN copy), as
+# DUMPVDI cases (format: tosdump/cases/vdi-r3.tsv header and docs/TOS-REFERENCE-DUMPER.md
+# section 6).  Every case runs after the dumper's reset (tosdump/core/runner.c td_reset_vdi:
+# v_clrwk, default attributes, vst_font 1, vst_height SIZ_TAB[1] = the 6x6 font, clipping off);
+# the "+" preludes set the state, the measured call is either an inquiry (the INTOUT/PTSOUT
+# values) or v_get_pixel (105) at one pixel tosdump/probes/vdprobe.c (cases T*) showed to differ,
+# plus control pixels.  Profile: falcontc (16-bit truecolor; INTOUT[1] is the screen word).
+# Appending only: a new case goes at the end.
+#
+# opcode	sub	intin	ptsin	comment
+
+# --- K15: vst_font after a scaled size (vdi_text.c:939-985 re-runs vst_height/vst_point), the
+#     scaled header (make_header, vdi_text.c:770-817)
++12	0	-	0,20	vst_height 20 (DDA 7/13 up)
+21	0	1	-	K15 vst_font(1) after vst_height(20)
++12	0	-	0,20	vst_height 20
++21	0	1	-	vst_font 1
+38	0	-	-	K15 vqt_attributes after vst_height(20), vst_font(1)
++107	0	18	-	vst_point 18 (doubled 8x8)
+21	0	1	-	K15 vst_font(1) after vst_point(18)
++107	0	18	-	vst_point 18
++21	0	9	-	vst_font 9 (no such face)
+38	0	-	-	K15 vqt_attributes after vst_point(18), vst_font(9)
++12	0	-	0,3	vst_height 3
++21	0	1	-	vst_font 1
+38	0	-	-	K15 vqt_attributes after vst_height(3), vst_font(1)
++107	0	11	-	vst_point 11
++21	0	1	-	vst_font 1
+131	0	-	-	K15 vqt_fontinfo after vst_point(11), vst_font(1)
++12	0	-	0,20	vst_height 20
+131	0	-	-	K15 vqt_fontinfo of the scaled header (height 20)
++12	0	-	0,26	vst_height 26 (exact double)
+131	0	-	-	K15 vqt_fontinfo of the doubled header (height 26)
++12	0	-	0,20	vst_height 20
+116	0	65,66,67	-	K15 vqt_extent 'ABC' at height 20
++12	0	-	0,26	vst_height 26
+116	0	65,66,67	-	K15 vqt_extent 'ABC' at height 26
++12	0	-	0,20	vst_height 20
+117	0	65	-	K15 vqt_width 'A' at height 20
++107	0	18	-	vst_point 18
+117	0	65	-	K15 vqt_width 'A' at point 18
++12	0	-	0,20	vst_height 20
+38	0	-	-	K15 vqt_attributes at height 20 (point field of the scaled header)
+
+# --- rider (V23): CONTRL[1] smaller than what the handler reads.  EmuTOS reads the local PTSIN
+#     copy (vdi_asm.S:79-104) -- the rest of the last call that copied points; the measured
+#     call's own PTSIN is the dumper's poison 0xDEAD
++16	0	-	9,0	vsl_width 9
+16	0	-	-	rider vsl_width with CONTRL[1]=0 (EmuTOS: the stale 9)
++12	0	-	0,26	vst_height 26
+12	0	-	-	rider vst_height with CONTRL[1]=0 (EmuTOS: the stale 26)
++19	0	-	0,30	vsm_height 30
+19	0	-	-	rider vsm_height with CONTRL[1]=0 (EmuTOS: the stale 30)
+16	0	-	9,0	rider control: vsl_width 9 with CONTRL[1]=1
+
+# --- rider (V20): text with vs_clip(0) -- check_clip returns 0 without CLIP
+#     (vdi_textblit.c:132-133), the underline is abline without clip_line (vdi_text.c:519-534)
++106	0	8	-	vst_effects underline
++8	0	65,66,67,68,69,70,71,72	100,100	v_gtext 'ABCDEFGH' at (100,100)
+105	0	-	148,101	rider underline end (148,101): EmuTOS line runs to DESTX inclusive
++106	0	8	-	vst_effects underline
++8	0	65,66,67,68,69,70,71,72	100,100	v_gtext 'ABCDEFGH' at (100,100)
+105	0	-	147,101	rider control (147,101), last underline pixel of the glyph cells
++106	0	8	-	vst_effects underline
++8	0	65,66,67,68,69,70,71,72	-30,150	v_gtext 'ABCDEFGH' at (-30,150)
+105	0	-	18,151	rider underline end (18,151), string from x -30
++106	0	8	-	vst_effects underline
++8	0	65,66,67,68,69,70,71,72	600,100	v_gtext 'ABCDEFGH' at (600,100), clip off
+105	0	-	8,102	rider underline past x 639: (8,102), the wrapped tail
++106	0	8	-	vst_effects underline
++129	0	1	0,0,639,479	vs_clip on, whole screen
++8	0	65,66,67,68,69,70,71,72	600,100	v_gtext 'ABCDEFGH' at (600,100), clip on
+105	0	-	8,102	rider control: clip on, (8,102)
++8	0	65,66,67,68,69,70,71,72	600,100	v_gtext 'ABCDEFGH' at (600,100), clip off, no effects
+105	0	-	0,97	rider glyph past x 639: (0,97), the wrapped glyph
++129	0	1	0,0,639,479	vs_clip on, whole screen
++8	0	65,66,67,68,69,70,71,72	600,100	v_gtext 'ABCDEFGH' at (600,100), clip on
+105	0	-	0,97	rider control: clip on, (0,97)
+
+# --- K14 neighbour: vst_height 20, chars wholly left of the clip window (text_blt skips scale()
+#     for them, vdi_textblit.c:1343-1352, so XDDA does not move)
++12	0	-	0,20	vst_height 20
++129	0	1	100,0,639,479	vs_clip on (100,0)-(639,479)
++8	0	65,66,67,68,69,70,71,72,73,74,75,76,77,78	0,60	v_gtext 'ABCDEFGHIJKLMN' at (0,60)
+105	0	-	107,43	K14 (107,43)
++12	0	-	0,20	vst_height 20
++129	0	1	100,0,639,479	vs_clip on (100,0)-(639,479)
++8	0	65,66,67,68,69,70,71,72,73,74,75,76,77,78	0,60	v_gtext 'ABCDEFGHIJKLMN' at (0,60)
+105	0	-	116,43	K14 (116,43)
++12	0	-	0,20	vst_height 20
++129	0	1	100,0,639,479	vs_clip on (100,0)-(639,479)
++8	0	65,66,67,68,69,70,71,72,73,74,75,76,77,78	0,60	v_gtext 'ABCDEFGHIJKLMN' at (0,60)
+105	0	-	100,43	K14 control (100,43)
+
+# --- K16: v_justified at 900/1800/2700 (vdi_text.c:1177-1289 + output_text's rotation)
++13	0	900	-	vst_rotation 900
++11	10	0,1,65,66,32,67,68,32,69,70	320,240,100,0	v_justified interchar 'AB CD EF' len 100
+105	0	-	316,142	K16 chup 900 (316,142)
++13	0	1800	-	vst_rotation 1800
++11	10	0,1,65,66,32,67,68,32,69,70	320,240,100,0	v_justified interchar 'AB CD EF' len 100
+105	0	-	310,236	K16 chup 1800 (310,236)
++13	0	2700	-	vst_rotation 2700
++11	10	0,1,65,66,32,67,68,32,69,70	320,240,100,0	v_justified interchar 'AB CD EF' len 100
+105	0	-	321,236	K16 chup 2700 (321,236)
++13	0	900	-	vst_rotation 900
++11	10	0,1,65,66,32,67,68,32,69,70	320,240,100,0	v_justified interchar 'AB CD EF' len 100
+105	0	-	320,240	K16 control (320,240)
+
+# --- K18: v_hardcopy (escape 17) -- no outputs; the dumpflg effect is probe-only (vdprobe T18A)
+5	17	-	-	K18 v_hardcopy

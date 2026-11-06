@@ -1,0 +1,641 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps GSX_ENTRY --down`
+deps GSX_ENTRY --down (kinds asm,direct,layer,table,vector): 428 functions besides GSX_ENTRY
+depth	function	layer	reached over	newtos	class
+0	GSX_ENTRY	vdi	-	tos-api/src/vdi/mod.rs@dispatch_in	mapped
+1	screen	vdi	GSX_ENTRY -> screen [asm jsr]	tos-api/src/vdi/mod.rs@screen	mapped
+2	get_vwk_by_handle	vdi	screen -> get_vwk_by_handle [direct]	tos-api/src/vdi/vwk.rs@resolve	mapped
+2	just_rts	ext	screen -> just_rts [table jmptb1[0x1b]]		unmapped
+2	vdi_v_choice	vdi	screen -> vdi_v_choice [table jmptb1[0x1e]]	tos-api/src/vdi/input.rs@v_choice	mapped
+2	vdi_v_clrwk	vdi	screen -> vdi_v_clrwk [table jmptb1[0x3]]	tos-api/src/vdi/workstation.rs@v_clrwk	mapped
+2	vdi_v_clsvwk	vdi	screen -> vdi_v_clsvwk [table jmptb2[0x65]]	tos-api/src/vdi/vwk.rs@free_handle tos-api/src/vdi/workstation.rs@v_clsvwk	mapped
+2	vdi_v_clswk	vdi	screen -> vdi_v_clswk [table jmptb1[0x2]]	tos-api/src/vdi/vwk.rs@close_all_virtual tos-api/src/vdi/workstation.rs@v_clswk	mapped
+2	vdi_v_contourfill	vdi	screen -> vdi_v_contourfill [table jmptb2[0x67]]	tos-api/src/vdi/contour.rs@v_contourfill	mapped
+2	vdi_v_escape	vdi	screen -> vdi_v_escape [table jmptb1[0x5]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+2	vdi_v_fillarea	vdi	screen -> vdi_v_fillarea [table jmptb1[0x9]]	tos-api/src/vdi/primitives.rs@v_fillarea	mapped
+2	vdi_v_gdp	vdi	screen -> vdi_v_gdp [table jmptb1[0xb]]	tos-api/src/vdi/gdp.rs@v_gdp	mapped
+2	vdi_v_get_pixel	vdi	screen -> vdi_v_get_pixel [table jmptb2[0x69]]	tos-api/src/vdi/inquiry.rs@v_get_pixel	mapped
+2	vdi_v_gtext	vdi	screen -> vdi_v_gtext [table jmptb1[0x8]]	tos-api/src/vdi/text.rs@v_gtext	mapped
+2	vdi_v_hide_c	vdi	screen -> vdi_v_hide_c [table jmptb2[0x7b]]	tos-api/src/vdi/mouse.rs@v_hide_c	mapped
+2	vdi_v_locator	vdi	screen -> vdi_v_locator [table jmptb1[0x1c]]	tos-api/src/vdi/input.rs@v_locator	mapped
+2	vdi_v_opnvwk	vdi	screen -> vdi_v_opnvwk [table jmptb2[0x64]]	tos-api/src/vdi/vwk.rs@alloc_handle tos-api/src/vdi/workstation.rs@v_opnvwk	mapped
+2	vdi_v_opnwk	vdi	screen -> vdi_v_opnwk [table jmptb1[0x1]]	tos-api/src/vdi/vwk.rs@open_physical tos-api/src/vdi/workstation.rs@v_opnwk	mapped
+2	vdi_v_pline	vdi	screen -> vdi_v_pline [table jmptb1[0x6]]	tos-api/src/vdi/primitives.rs@v_pline	mapped
+2	vdi_v_pmarker	vdi	screen -> vdi_v_pmarker [table jmptb1[0x7]]	tos-api/src/vdi/primitives.rs@v_pmarker	mapped
+2	vdi_v_show_c	vdi	screen -> vdi_v_show_c [table jmptb2[0x7a]]	tos-api/src/vdi/mouse.rs@v_show_c	mapped
+2	vdi_v_string	vdi	screen -> vdi_v_string [table jmptb1[0x1f]]	tos-api/src/vdi/input.rs@v_string	mapped
+2	vdi_vex_butv	vdi	screen -> vdi_vex_butv [table jmptb2[0x7d]]	tos-api/src/vdi/mouse.rs@vex_butv	mapped
+2	vdi_vex_curv	vdi	screen -> vdi_vex_curv [table jmptb2[0x7f]]	tos-api/src/vdi/mouse.rs@vex_curv	mapped
+2	vdi_vex_motv	vdi	screen -> vdi_vex_motv [table jmptb2[0x7e]]	tos-api/src/vdi/mouse.rs@vex_motv	mapped
+2	vdi_vex_timv	vdi	screen -> vdi_vex_timv [table jmptb2[0x76]]	tos-api/src/vdi/mouse.rs@vex_timv	mapped
+2	vdi_vex_wheelv	vdi	screen -> vdi_vex_wheelv [table jmptb2[0x86]]	tos-api/src/vdi/mouse.rs@vex_wheelv	mapped
+2	vdi_vq_color	vdi	screen -> vdi_vq_color [table jmptb1[0x1a]]	tos-api/src/vdi/inquiry.rs@vq_color	mapped
+2	vdi_vq_extnd	vdi	screen -> vdi_vq_extnd [table jmptb2[0x66]]	tos-api/src/vdi/workstation.rs@vq_extnd	mapped
+2	vdi_vq_key_s	vdi	screen -> vdi_vq_key_s [table jmptb2[0x80]]	tos-api/src/vdi/inquiry.rs@vq_key_s	mapped
+2	vdi_vq_mouse	vdi	screen -> vdi_vq_mouse [table jmptb2[0x7c]]	tos-api/src/vdi/mouse.rs@vq_mouse	mapped
+2	vdi_vqf_attributes	vdi	screen -> vdi_vqf_attributes [table jmptb1[0x25]]	tos-api/src/vdi/inquiry.rs@vqf_attributes	mapped
+2	vdi_vqin_mode	vdi	screen -> vdi_vqin_mode [table jmptb2[0x73]]	tos-api/src/vdi/input.rs@vqin_mode	mapped
+2	vdi_vql_attributes	vdi	screen -> vdi_vql_attributes [table jmptb1[0x23]]	tos-api/src/vdi/inquiry.rs@vql_attributes	mapped
+2	vdi_vqm_attributes	vdi	screen -> vdi_vqm_attributes [table jmptb1[0x24]]	tos-api/src/vdi/inquiry.rs@vqm_attributes	mapped
+2	vdi_vqt_attributes	vdi	screen -> vdi_vqt_attributes [table jmptb1[0x26]]	tos-api/src/vdi/inquiry.rs@vqt_attributes	mapped
+2	vdi_vqt_extent	vdi	screen -> vdi_vqt_extent [table jmptb2[0x74]]	tos-api/src/vdi/inquiry.rs@vqt_extent	mapped
+2	vdi_vqt_fontinfo	vdi	screen -> vdi_vqt_fontinfo [table jmptb2[0x83]]	tos-api/src/vdi/inquiry.rs@vqt_fontinfo	mapped
+2	vdi_vqt_name	vdi	screen -> vdi_vqt_name [table jmptb2[0x82]]	tos-api/src/vdi/inquiry.rs@vqt_name	mapped
+2	vdi_vqt_width	vdi	screen -> vdi_vqt_width [table jmptb2[0x75]]	tos-api/src/vdi/inquiry.rs@vqt_width	mapped
+2	vdi_vr_recfl	vdi	screen -> vdi_vr_recfl [table jmptb2[0x72]]	tos-api/src/vdi/primitives.rs@vr_recfl	mapped
+2	vdi_vr_trnfm	vdi	screen -> vdi_vr_trnfm [table jmptb2[0x6e]]	tos-api/src/vdi/raster.rs@vr_trnfm	mapped
+2	vdi_vro_cpyfm	vdi	screen -> vdi_vro_cpyfm [table jmptb2[0x6d]]	tos-api/src/vdi/raster.rs@vro_cpyfm	mapped
+2	vdi_vrt_cpyfm	vdi	screen -> vdi_vrt_cpyfm [table jmptb2[0x79]]	tos-api/src/vdi/raster.rs@vrt_cpyfm	mapped
+2	vdi_vs_clip	vdi	screen -> vdi_vs_clip [table jmptb2[0x81]]	tos-api/src/vdi/attributes.rs@vs_clip	mapped
+2	vdi_vs_color	vdi	screen -> vdi_vs_color [table jmptb1[0xe]]	tos-api/src/vdi/attributes.rs@vs_color	mapped
+2	vdi_vsc_form	vdi	screen -> vdi_vsc_form [table jmptb2[0x6f]]	tos-api/src/vdi/mouse.rs@vsc_form	mapped
+2	vdi_vsf_color	vdi	screen -> vdi_vsf_color [table jmptb1[0x19]]	tos-api/src/vdi/attributes.rs@vsf_color	mapped
+2	vdi_vsf_interior	vdi	screen -> vdi_vsf_interior [table jmptb1[0x17]]	tos-api/src/vdi/attributes.rs@vsf_interior	mapped
+2	vdi_vsf_perimeter	vdi	screen -> vdi_vsf_perimeter [table jmptb2[0x68]]	tos-api/src/vdi/attributes.rs@vsf_perimeter	mapped
+2	vdi_vsf_style	vdi	screen -> vdi_vsf_style [table jmptb1[0x18]]	tos-api/src/vdi/attributes.rs@vsf_style	mapped
+2	vdi_vsf_udpat	vdi	screen -> vdi_vsf_udpat [table jmptb2[0x70]]	tos-api/src/vdi/attributes.rs@vsf_udpat	mapped
+2	vdi_vsin_mode	vdi	screen -> vdi_vsin_mode [table jmptb1[0x21]]	tos-api/src/vdi/input.rs@vsin_mode	mapped
+2	vdi_vsl_color	vdi	screen -> vdi_vsl_color [table jmptb1[0x11]]	tos-api/src/vdi/attributes.rs@vsl_color	mapped
+2	vdi_vsl_ends	vdi	screen -> vdi_vsl_ends [table jmptb2[0x6c]]	tos-api/src/vdi/attributes.rs@vsl_ends	mapped
+2	vdi_vsl_type	vdi	screen -> vdi_vsl_type [table jmptb1[0xf]]	tos-api/src/vdi/attributes.rs@vsl_type	mapped
+2	vdi_vsl_udsty	vdi	screen -> vdi_vsl_udsty [table jmptb2[0x71]]	tos-api/src/vdi/attributes.rs@vsl_udsty	mapped
+2	vdi_vsl_width	vdi	screen -> vdi_vsl_width [table jmptb1[0x10]]	tos-api/src/vdi/attributes.rs@vsl_width	mapped
+2	vdi_vsm_color	vdi	screen -> vdi_vsm_color [table jmptb1[0x14]]	tos-api/src/vdi/attributes.rs@vsm_color	mapped
+2	vdi_vsm_height	vdi	screen -> vdi_vsm_height [table jmptb1[0x13]]	tos-api/src/vdi/attributes.rs@vsm_height	mapped
+2	vdi_vsm_type	vdi	screen -> vdi_vsm_type [table jmptb1[0x12]]	tos-api/src/vdi/attributes.rs@vsm_type	mapped
+2	vdi_vst_alignment	vdi	screen -> vdi_vst_alignment [table jmptb1[0x27]]	tos-api/src/vdi/attributes.rs@vst_alignment	mapped
+2	vdi_vst_color	vdi	screen -> vdi_vst_color [table jmptb1[0x16]]	tos-api/src/vdi/attributes.rs@vst_color	mapped
+2	vdi_vst_effects	vdi	screen -> vdi_vst_effects [table jmptb2[0x6a]]	tos-api/src/vdi/attributes.rs@vst_effects	mapped
+2	vdi_vst_font	vdi	screen -> vdi_vst_font [table jmptb1[0x15]]	tos-api/src/vdi/attributes.rs@vst_font	mapped
+2	vdi_vst_height	vdi	screen -> vdi_vst_height [table jmptb1[0xc]]	tos-api/src/vdi/attributes.rs@vst_height	mapped
+2	vdi_vst_load_fonts	vdi	screen -> vdi_vst_load_fonts [table jmptb2[0x77]]	tos-api/src/vdi/attributes.rs@vst_load_fonts	mapped
+2	vdi_vst_point	vdi	screen -> vdi_vst_point [table jmptb2[0x6b]]	tos-api/src/vdi/attributes.rs@vst_point	mapped
+2	vdi_vst_rotation	vdi	screen -> vdi_vst_rotation [table jmptb1[0xd]]	tos-api/src/vdi/attributes.rs@vst_rotation	mapped
+2	vdi_vst_unload_fonts	vdi	screen -> vdi_vst_unload_fonts [table jmptb2[0x78]]	tos-api/src/vdi/attributes.rs@vst_unload_fonts	mapped
+2	vdi_vswr_mode	vdi	screen -> vdi_vswr_mode [table jmptb1[0x20]]	tos-api/src/vdi/attributes.rs@vswr_mode	mapped
+3	Vwk2Attrib	vdi	vdi_v_contourfill -> Vwk2Attrib [direct]	tos-api/src/vdi/gdp.rs@fill_of	mapped
+3	act_siz	vdi	vdi_vqt_width -> act_siz [direct]	tos-api/src/vdi/text.rs@act_siz	mapped
+3	adjust_tt_colnum	vdi	vdi_vq_color -> adjust_tt_colnum [direct]	-	design
+3	arb_corner	vdi	vdi_vr_recfl -> arb_corner [direct]	tos-api/src/vdi/attributes.rs@vs_clip	mapped
+3	arrow	vdi	vdi_v_pline -> arrow [direct]	tos-api/src/vdi/primitives.rs@arrow	mapped
+3	bios_l_v	include	vdi_vex_timv -> bios_l_v [direct]		unmapped
+3	build_vwk_chain	vdi	vdi_v_clsvwk -> build_vwk_chain [direct]	-	unmapped
+3	bzero_nobuiltin	ext	vdi_vqt_extent -> bzero_nobuiltin [direct]		unmapped
+3	calc_height	vdi	vdi_vqt_extent -> calc_height [direct]	tos-api/src/vdi/text.rs@calc_height	mapped
+3	calc_width	vdi	vdi_vqt_extent -> calc_width [direct]	tos-api/src/vdi/text.rs@calc_width	mapped
+3	clc_dda	vdi	vdi_vst_height -> clc_dda [direct]	tos-api/src/vdi/attributes.rs@clc_dda	mapped
+3	clipbox	vdi	vdi_vr_recfl -> clipbox [direct]	kernel/src/vdi_backend.rs@fill_pattern	mapped
+3	contourfill	vdi	vdi_v_contourfill -> contourfill [direct]	tos-api/src/vdi/contour.rs@run tos-api/src/vdi/contour.rs@v_contourfill	mapped
+3	cpy_raster	vdi	vdi_vro_cpyfm -> cpy_raster [direct]	tos-api/src/vdi/raster.rs@vro_cpyfm tos-api/src/vdi/raster.rs@vrt_cpyfm	mapped
+3	dis_cur	vdi	vdi_v_locator -> dis_cur [direct]	tos-api/src/vdi/mouse.rs@dis_cur	mapped
+3	draw_rect	vdi	vdi_vr_recfl -> draw_rect [direct]	kernel/src/vdi_backend.rs@fill_pattern	mapped
+3	esc_exit	vdi	vdi_v_clswk -> esc_exit [direct]	tos-api/src/vdi/escape.rs@esc_exit	mapped
+3	esc_init	vdi	vdi_v_opnwk -> esc_init [direct]	tos-api/src/vdi/escape.rs@esc_init	mapped
+3	escfn0	vdi	vdi_v_escape -> escfn0 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn1	vdi	vdi_v_escape -> escfn1 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn10	vdi	vdi_v_escape -> escfn10 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn11	vdi	vdi_v_escape -> escfn11 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn12	vdi	vdi_v_escape -> escfn12 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn13	vdi	vdi_v_escape -> escfn13 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn14	vdi	vdi_v_escape -> escfn14 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn15	vdi	vdi_v_escape -> escfn15 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn16	vdi	vdi_v_escape -> escfn16 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn17	vdi	vdi_v_escape -> escfn17 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn18	vdi	vdi_v_escape -> escfn18 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/mouse.rs@force_show	mapped
+3	escfn19	vdi	vdi_v_escape -> escfn19 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/mouse.rs@v_hide_c	mapped
+3	escfn2	vdi	vdi_v_escape -> escfn2 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn3	vdi	vdi_v_escape -> escfn3 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn4	vdi	vdi_v_escape -> escfn4 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn5	vdi	vdi_v_escape -> escfn5 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn6	vdi	vdi_v_escape -> escfn6 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn7	vdi	vdi_v_escape -> escfn7 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn8	vdi	vdi_v_escape -> escfn8 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	escfn9	vdi	vdi_v_escape -> escfn9 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	gchc_key	vdi	vdi_v_choice -> gchc_key [direct]	tos-api/src/vdi/input.rs@v_choice	mapped
+3	gchr_key	vdi	vdi_v_string -> gchr_key [direct]	tos-api/src/vdi/input.rs@try_read_key_word	mapped
+3	gdp_curve	vdi	vdi_v_gdp -> gdp_curve [direct]	tos-api/src/vdi/gdp.rs@curve	mapped
+3	gdp_justified	vdi	vdi_v_gdp -> gdp_justified [direct]	tos-api/src/vdi/text.rs@v_justified	mapped
+3	gdp_rbox	vdi	vdi_v_gdp -> gdp_rbox [direct]	tos-api/src/vdi/gdp.rs@rbox	mapped
+3	getrez	bios	vdi_v_opnwk -> getrez [layer trap #14 0x4 xbios_vecs[0x4] via xbios_w_v]	tos-api/src/xbios/screen.rs@getrez	mapped
+3	gloc_key	vdi	vdi_v_locator -> gloc_key [direct]	tos-api/src/vdi/input.rs@gloc_key tos-api/src/vdi/mouse.rs@take_button_terminator tos-api/src/vdi/mouse.rs@take_motion	mapped
+3	gshift_s	vdi	vdi_vq_key_s -> gshift_s [direct]	tos-api/src/vdi/inquiry.rs@vq_key_s	mapped
+3	hide_cur	vdi	vdi_v_locator -> hide_cur [direct]	tos-api/src/vdi/mouse.rs@v_hide_c	mapped
+3	init_colors	vdi	vdi_v_opnwk -> init_colors [direct]	kernel/src/vdi_backend.rs@ensure_palette_init tos-api/src/vdi/workstation.rs@init_wk	mapped
+3	init_wk	vdi	vdi_v_opnvwk -> init_wk [direct]	tos-api/src/vdi/workstation.rs@init_wk	mapped
+3	linea_hide_mouse	vdi	vdi_v_hide_c -> linea_hide_mouse [direct]	tos-api/src/vdi/mouse.rs@v_hide_c	mapped
+3	linea_show_mouse	vdi	vdi_v_show_c -> linea_show_mouse [direct]	tos-api/src/vdi/mouse.rs@v_show_c	mapped
+3	linea_transform_mouse	vdi	vdi_vsc_form -> linea_transform_mouse [direct]	tos-api/src/vdi/mouse.rs@vsc_form	mapped
+3	make_header	vdi	vdi_vst_height -> make_header [direct]	tos-api/src/vdi/text.rs@scaled_header	mapped
+3	memset	ext	vdi_v_clrwk -> memset [direct]		unmapped
+3	output_text	vdi	vdi_v_gtext -> output_text [direct]	tos-api/src/vdi/text.rs@output_text_rotated tos-api/src/vdi/text.rs@underline tos-api/src/vdi/text.rs@v_gtext tos-api/src/vdi/text.rs@v_justified	mapped
+3	pixelread	vdi	vdi_v_get_pixel -> pixelread [direct]	tos-api/src/vdi/contour.rs@pixelread	mapped
+3	polygon	vdi	vdi_v_fillarea -> polygon [direct]	tos-api/src/vdi/primitives.rs@fill_polygon tos-api/src/vdi/primitives.rs@polygon tos-api/src/vdi/primitives.rs@polyline	mapped
+3	polyline	vdi	vdi_v_gdp -> polyline [direct]	tos-api/src/vdi/primitives.rs@line_clip tos-api/src/vdi/primitives.rs@polyline	mapped
+3	query_tt_color	vdi	vdi_vq_color -> query_tt_color [direct]	-	design
+3	set_LN_MASK	vdi	vdi_v_pline -> set_LN_MASK [direct]	tos-api/src/vdi/primitives.rs@line_mask	mapped
+3	set_color	vdi	vdi_vs_color -> set_color [direct]	kernel/src/vdi_backend.rs@set_color	mapped
+3	setcolor	bios	vdi_vq_color -> setcolor [layer trap #14 0x7 xbios_vecs[0x7] via xbios_w_ww]	tos-api/src/xbios/screen.rs@setcolor	mapped
+3	setscreen	bios	vdi_v_opnwk -> setscreen [layer trap #14 0x5 xbios_vecs[0x5] via xbios_v_llww]	tos-api/src/xbios/screen.rs@setscreen	mapped
+3	setup_width_height	vdi	vdi_vst_height -> setup_width_height [direct]	tos-api/src/vdi/attributes.rs@setup_width_height	mapped
+3	st_fl_ptr	vdi	vdi_vsf_interior -> st_fl_ptr [direct]	tos-api/src/vdi/fill_patterns.rs@select	mapped
+3	text_init	vdi	vdi_v_opnwk -> text_init [direct]	tos-api/src/vdi/workstation.rs@font_ring_fold	mapped
+3	tickcal	bios	vdi_vex_timv -> tickcal [layer trap #13 0x6 bios_vecs[0x6] via bios_l_v]	tos-api/src/bios/mod.rs@dispatch	mapped
+3	timer_exit	vdi	vdi_v_clswk -> timer_exit [direct]	-	design
+3	timer_init	vdi	vdi_v_opnwk -> timer_init [direct]	-	design
+3	trap1	ext	vdi_v_clsvwk -> trap1 [direct]		unmapped
+3	trnsfont	vdi	vdi_vst_load_fonts -> trnsfont [direct]	-	unmapped
+3	update_rez_dependent	vdi	vdi_v_opnwk -> update_rez_dependent [direct]	tos-api/src/vdi/workstation.rs@init_wk tos-api/src/vdi/workstation.rs@vq_extnd	mapped
+3	validate_color_index	vdi	vdi_vsf_color -> validate_color_index [direct]	tos-api/src/vdi/vwk.rs@validate_color_index	mapped
+3	vdimouse_exit	vdi	vdi_v_clswk -> vdimouse_exit [direct]	-	unmapped
+3	vdimouse_init	vdi	vdi_v_opnwk -> vdimouse_init [direct]	tos-api/src/vdi/mouse.rs@ensure_init	mapped
+3	vgetrgb	bios	vdi_vq_color -> vgetrgb [layer trap #14 0x5e xbios_vecs[0x5e] via xbios_v_wwl]	-	design
+3	videl2vdi	vdi	vdi_vq_color -> videl2vdi [direct]	-	design
+3	vq_color16	vdi	vdi_vq_color -> vq_color16 [direct]	tos-api/src/vdi/inquiry.rs@vq_color	mapped
+3	vr_trnfm16	vdi	vdi_vr_trnfm -> vr_trnfm16 [direct]	tos-api/src/vdi/raster.rs@vr_trnfm16	mapped
+3	vs_color16	vdi	vdi_vs_color -> vs_color16 [direct]	tos-api/src/vdi/attributes.rs@vs_color	mapped
+3	vsetmode	bios	vdi_v_opnwk -> vsetmode [layer trap #14 0x58 xbios_vecs[0x58] via xbios_w_w]	-	design
+3	wideline	vdi	vdi_v_pline -> wideline [direct]	tos-api/src/vdi/primitives.rs@wideline	mapped
+3	xbios_v_llww	include	vdi_v_opnwk -> xbios_v_llww [direct]		unmapped
+3	xbios_v_wwl	include	vdi_vq_color -> xbios_v_wwl [direct]		unmapped
+3	xbios_w_v	include	vdi_v_opnwk -> xbios_w_v [direct]		unmapped
+3	xbios_w_w	include	vdi_v_opnwk -> xbios_w_w [direct]		unmapped
+3	xbios_w_ww	include	vdi_vq_color -> xbios_w_ww [direct]		unmapped
+3	xmfree	bdos	vdi_v_clsvwk -> xmfree [layer trap #1 0x49 funcs[0x49] via trap1]	tos-api/src/bdos/mem/traps.rs@mfree tos-api/src/gemdos/memory.rs@mfree	mapped
+3	xmxalloc	bdos	vdi_v_opnvwk -> xmxalloc [layer trap #1 0x44 funcs[0x44] via trap1]	tos-api/src/bdos/mem/traps.rs@mxalloc tos-api/src/gemdos/memory.rs@mxalloc	mapped
+4	Initmous	bios	vdimouse_exit -> Initmous [layer trap #14 0x0 xbios_vecs[0x0] via xbios_v_wll]	tos-api/src/xbios/mod.rs@note_installer	mapped
+4	abline	vdi	polyline -> abline [direct]	kernel/src/vdi_backend.rs@abline tos-api/src/vdi/line.rs@abline	mapped
+4	adjust_mono_values	vdi	set_color -> adjust_mono_values [direct]	-	design
+4	arb_line	vdi	gdp_rbox -> arb_line [direct]	tos-api/src/vdi/gdp.rs@rbox	mapped
+4	atari_getrez	bios	getrez -> atari_getrez [direct]	-	design
+4	atari_setcolor	bios	setcolor -> atari_setcolor [direct]	-	design
+4	atari_setrez	bios	setscreen -> atari_setrez [direct]	-	design
+4	bconin	bios	gloc_key -> bconin [layer trap #13 0x2 bios_vecs[0x2] via bios_l_w]	tos-api/src/bios/chardev.rs@bconin tos-api/src/bios/chardev.rs@device tos-api/src/xbios/bconmap.rs@entry_device	mapped
+4	bconstat	bios	gloc_key -> bconstat [layer trap #13 0x1 bios_vecs[0x1] via bios_w_w]	tos-api/src/bios/chardev.rs@bconstat tos-api/src/bios/chardev.rs@device tos-api/src/xbios/bconmap.rs@entry_device	mapped
+4	bios_conws	desk,vdi	escfn10 -> bios_conws [direct]	tos-api/src/vdi/escape.rs@puts	unmapped
+4	bios_l_w	include	gloc_key -> bios_l_w [direct]		unmapped
+4	bios_l_wl	include	timer_exit -> bios_l_wl [direct]		unmapped
+4	bios_w_w	include	gloc_key -> bios_w_w [direct]		unmapped
+4	bit_blt	vdi	cpy_raster -> bit_blt [direct]	tos-api/src/vdi/raster.rs@planar_mem_to_mem	mapped
+4	cir_dda	vdi	wideline -> cir_dda [direct]	tos-api/src/vdi/primitives.rs@cir_dda	mapped
+4	clc_arc	vdi	gdp_curve -> clc_arc [direct]	tos-api/src/vdi/gdp.rs@curve	mapped
+4	clc_flit	vdi	polygon -> clc_flit [direct]	tos-api/src/vdi/primitives.rs@fill_polygon	mapped
+4	clc_nsteps	vdi	gdp_curve -> clc_nsteps [direct]	tos-api/src/vdi/gdp.rs@clc_nsteps	mapped
+4	clip_line	vdi	polyline -> clip_line [direct]	tos-api/src/vdi/line.rs@clip_line tos-api/src/vdi/line.rs@clip_segment	mapped
+4	crawio	vdi	escfn12 -> crawio [direct]	tos-api/src/gemdos/console.rs@rawio	mapped
+4	crunch_queue	vdi	contourfill -> crunch_queue [direct]	tos-api/src/vdi/contour.rs@crunch_queue	mapped
+4	cur_display	vdi	dis_cur -> cur_display [direct]	tos-api/src/vdi/mouse.rs@draw	mapped
+4	cur_replace	vdi	hide_cur -> cur_replace [direct]	tos-api/src/vdi/mouse.rs@erase	mapped
+4	default_mform	aes	vdimouse_init -> default_mform [direct]	tos-api/src/vdi/mouse.rs@set_preset	mapped
+4	direct_screen_blit	vdi	output_text -> direct_screen_blit [direct]	kernel/src/vdi_backend.rs@draw_glyph_sized	mapped
+4	divu	include	videl2vdi -> divu [direct]		unmapped
+4	do_circ	vdi	wideline -> do_circ [direct]	tos-api/src/vdi/primitives.rs@do_circ	mapped
+4	dos_alloc_anyram	ext	vr_trnfm16 -> dos_alloc_anyram [direct]		unmapped
+4	dos_free	ext	vr_trnfm16 -> dos_free [direct]		unmapped
+4	draw_arrow	vdi	arrow -> draw_arrow [direct]	tos-api/src/vdi/primitives.rs@draw_arrow	mapped
+4	draw_rect_common	vdi	contourfill -> draw_rect_common [direct]	kernel/src/vdi_backend.rs@fill_pattern	mapped
+4	egetshift	bios	adjust_tt_colnum -> egetshift [layer trap #14 0x51 xbios_vecs[0x51] via xbios_w_v]	-	design
+4	end_pts	vdi	contourfill -> end_pts [direct]	tos-api/src/vdi/contour.rs@end_pts	mapped
+4	esetcolor	bios	query_tt_color -> esetcolor [layer trap #14 0x53 xbios_vecs[0x53] via xbios_w_ww]	-	design
+4	fast_bit_blt	vdi	cpy_raster -> fast_bit_blt [direct]	tos-api/src/vdi/raster.rs@bits_at tos-api/src/vdi/raster.rs@planar_mem_to_mem	mapped
+4	ffit	bdos	xmxalloc -> ffit [direct]	tos-api/src/bdos/mem/pool.rs@ffit	mapped
+4	find_mpb	bdos	xmfree -> find_mpb [direct]	tos-api/src/bdos/mem/traps.rs@find_mpb	mapped
+4	fivebits2vdi	vdi	vq_color16 -> fivebits2vdi [direct]	tos-api/src/vdi/vwk.rs@fivebits2vdi	mapped
+4	freeit	bdos	xmfree -> freeit [direct]	tos-api/src/bdos/mem/pool.rs@freeit	mapped
+4	get_color	vdi	pixelread -> get_color [direct]	-	design
+4	get_monitor_type	bios	update_rez_dependent -> get_monitor_type [direct]	-	design
+4	get_palette	bios	update_rez_dependent -> get_palette [direct]	tos-api/src/vdi/workstation.rs@palette_precision	mapped
+4	get_pixel_size	bios	update_rez_dependent -> get_pixel_size [direct]	-	unmapped
+4	get_seed	vdi	contourfill -> get_seed [direct]	tos-api/src/vdi/contour.rs@get_seed	mapped
+4	get_start_addr	vdi	pixelread -> get_start_addr [direct]	-	design
+4	get_start_addr16	vdi	pixelread -> get_start_addr16 [direct]	kernel/src/vdi_backend.rs@get_device_pixel kernel/src/vdi_backend.rs@get_device_pixel_wrapped kernel/src/vdi_backend.rs@put_device_pixel tos-api/src/vdi/backend.rs@get_device_pixel_wrapped tos-api/src/vdi/line.rs@index	mapped
+4	get_tt_hyper_mono	vdi	query_tt_color -> get_tt_hyper_mono [direct]	-	design
+4	kbdvbase	bios	vdimouse_exit -> kbdvbase [layer trap #14 0x22 xbios_vecs[0x22] via xbios_l_v]	tos-api/src/xbios/kbdvecs.rs@kbdvbase	mapped
+4	kbshift	bios	gshift_s -> kbshift [layer trap #13 0xb bios_vecs[0xb] via bios_l_w]	kernel/src/ikbd.rs@set_shift_state kernel/src/ikbd.rs@shift_state tos-api/src/bios/mod.rs@kbshift	mapped
+4	linea_init	bios	setscreen -> linea_init [direct]	-	design
+4	memcpy	ext	init_wk -> memcpy [direct]		unmapped
+4	mul_div	include	gdp_curve -> mul_div [direct]		unmapped
+4	no_abort	vdi	contourfill -> no_abort [vector via SEEDABORT]	-	design
+4	ok_for_direct_blit	vdi	output_text -> ok_for_direct_blit [direct]	-	unmapped
+4	perp_off	vdi	wideline -> perp_off [direct]	tos-api/src/vdi/primitives.rs@perp_off	mapped
+4	r_fa_attr	vdi	arrow -> r_fa_attr [direct]	tos-api/src/vdi/primitives.rs@wideline	mapped
+4	s_fa_attr	vdi	arrow -> s_fa_attr [direct]	tos-api/src/vdi/primitives.rs@wideline	mapped
+4	scrdmp	bios	escfn17 -> scrdmp [layer trap #14 0x14 xbios_vecs[0x14] via xbios_v_v]	tos-api/src/xbios/system.rs@scrdmp	mapped
+4	set_color16	vdi	init_wk -> set_color16 [direct]	tos-api/src/vdi/vwk.rs@set_color16	mapped
+4	set_mouse_form	vdi	vdimouse_init -> set_mouse_form [direct]	tos-api/src/vdi/mouse.rs@vsc_form	mapped
+4	set_tt_color	vdi	set_color -> set_tt_color [direct]	-	design
+4	set_videl_vga	bios	vsetmode -> set_videl_vga [direct]	-	design
+4	setexc	bios	timer_exit -> setexc [layer trap #13 0x5 bios_vecs[0x5] via bios_l_wl]	tos-api/src/bios/vectors.rs@adopt_page0_write tos-api/src/bios/vectors.rs@note_shared_write tos-api/src/bios/vectors.rs@note_write tos-api/src/bios/vectors.rs@setexc tos-api/src/bios/vectors.rs@store_shared	mapped
+4	setphys	bios	setscreen -> setphys [direct]	tos-api/src/host.rs@set_screen_physical	mapped
+4	setup_info	vdi	cpy_raster -> setup_info [direct]	tos-api/src/vdi/raster.rs@chunky_hull tos-api/src/vdi/raster.rs@effective_planes tos-api/src/vdi/raster.rs@mem_span_px tos-api/src/vdi/raster.rs@of tos-api/src/vdi/raster.rs@planar_hull tos-api/src/vdi/raster.rs@read	mapped
+4	setup_pattern	vdi	cpy_raster -> setup_pattern [direct]	-	design
+4	srealloc	bdos	setscreen -> srealloc [layer trap #1 0x15 funcs[0x15] via trap1]	-	unmapped
+4	text_blt	vdi	output_text -> text_blt [direct]	tos-api/src/vdi/text.rs@draw_cell tos-api/src/vdi/text.rs@make_glyph tos-api/src/vdi/text.rs@output_text_rotated	mapped
+4	text_init2	vdi	init_wk -> text_init2 [direct]	tos-api/src/vdi/vwk.rs@alloc_handle	mapped
+4	use_ste_palette	bios	vgetrgb -> use_ste_palette [direct]	-	design
+4	vdi2st	vdi	set_color -> vdi2st [direct]	-	design
+4	vdi2ste	vdi	set_color -> vdi2ste [direct]	-	design
+4	vdi2videl	vdi	set_color -> vdi2videl [direct]	-	design
+4	vfixmode	bios	setscreen -> vfixmode [direct]	-	design
+4	vgetsize	bios	setscreen -> vgetsize [direct]	-	design
+4	vro_cpyfm16	vdi	cpy_raster -> vro_cpyfm16 [direct]	kernel/src/vdi_backend.rs@copy_rect tos-api/src/vdi/raster.rs@get_mem tos-api/src/vdi/raster.rs@mem_index tos-api/src/vdi/raster.rs@mem_to_mem tos-api/src/vdi/raster.rs@mem_to_screen tos-api/src/vdi/raster.rs@put_mem tos-api/src/vdi/raster.rs@raster_op tos-api/src/vdi/raster.rs@row_cols tos-api/src/vdi/raster.rs@screen_to_mem	mapped
+4	vrt_cpyfm16	vdi	cpy_raster -> vrt_cpyfm16 [direct]	kernel/src/vdi_backend.rs@blit_mono tos-api/src/vdi/raster.rs@get_mem tos-api/src/vdi/raster.rs@mono_to_mem tos-api/src/vdi/raster.rs@put_mem	mapped
+4	vsetrgb	bios	set_color -> vsetrgb [layer trap #14 0x5d xbios_vecs[0x5d] via xbios_v_wwl]	-	design
+4	vsync	bios	setscreen -> vsync [direct]	tos-api/src/xbios/system.rs@vsync	mapped
+4	vt52_init	bios	setscreen -> vt52_init [direct]	kernel/src/fbcon.rs@init tos-api/src/vdi/escape.rs@init	mapped
+4	xbios_l_v	include	vdimouse_exit -> xbios_l_v [direct]		unmapped
+4	xbios_v_v	include	escfn17 -> xbios_v_v [direct]		unmapped
+4	xbios_v_wll	include	vdimouse_exit -> xbios_v_wll [direct]		unmapped
+5	Isqrt	ext	draw_arrow -> Isqrt [direct]		unmapped
+5	atari_setphys	bios	setphys -> atari_setphys [direct]	-	design
+5	bconin0	bios	bconin -> bconin0 [vector via bconin_vec[]]	-	design
+5	bconin1	bios	bconin -> bconin1 [vector via bconin_vec[]]	kernel/src/console.rs@bconin kernel/src/console.rs@bconin_restartable	mapped
+5	bconin2	bios	bconin -> bconin2 [vector via bconin_vec[]]	tos-api/src/bios/chardev.rs@bconin tos-api/src/bios/chardev.rs@pack_console_key tos-api/src/xbios/iorec.rs@pop_key	mapped
+5	bconin3	bios	bconin -> bconin3 [vector via bconin_vec[]]	tos-api/src/bios/chardev.rs@bconin_restartable tos-api/src/bios/chardev.rs@midi_read	mapped
+5	bconout	bios	bios_conws -> bconout [layer trap #13 0x3 bios_vecs[0x3] via bios_l_ww]	tos-api/src/bios/chardev.rs@bconout tos-api/src/bios/chardev.rs@device tos-api/src/xbios/bconmap.rs@entry_device	mapped
+5	bconstat1	bios	bconstat -> bconstat1 [vector via bconstat_vec[]]	kernel/src/console.rs@bconstat	mapped
+5	bconstat2	bios	bconstat -> bconstat2 [vector via bconstat_vec[]]	tos-api/src/bios/chardev.rs@bconstat tos-api/src/xbios/iorec.rs@key_pending	mapped
+5	bconstat3	bios	bconstat -> bconstat3 [vector via bconstat_vec[]]	tos-api/src/bios/chardev.rs@bconstat	mapped
+5	bios_l_ww	include	bios_conws -> bios_l_ww [direct]		unmapped
+5	bub_sort	vdi	clc_flit -> bub_sort [direct]	tos-api/src/vdi/primitives.rs@fill_polygon	mapped
+5	char_dummy	bios	bconin -> char_dummy [vector via bconin_vec[]]	tos-api/src/bios/chardev.rs@bconstat	mapped
+5	char_resize	vdi	text_blt -> char_resize [direct]	tos-api/src/vdi/text.rs@resize	mapped
+5	check_clip	vdi	text_blt -> check_clip [direct]	kernel/src/vdi_backend.rs@draw_glyph_sized	mapped
+5	clc_pts	vdi	clc_arc -> clc_pts [direct]	tos-api/src/vdi/gdp.rs@clc_pts	mapped
+5	clear_and_home	bios	vt52_init -> clear_and_home [direct]	tos-api/src/vdi/escape.rs@clear_and_home	mapped
+5	clip_code	vdi	clip_line -> clip_code [direct]	tos-api/src/vdi/line.rs@clip_code	mapped
+5	cur_display16	vdi	cur_display -> cur_display16 [direct]	tos-api/src/vdi/mouse.rs@draw	mapped
+5	cur_display_clip	vdi	cur_display -> cur_display_clip [direct]	-	design
+5	cur_replace16	vdi	cur_replace -> cur_replace16 [direct]	tos-api/src/vdi/mouse.rs@erase	mapped
+5	cursconf	bios	vt52_init -> cursconf [direct]	tos-api/src/vdi/escape.rs@cursconf tos-api/src/xbios/screen.rs@cursconf	mapped
+5	determine_regc0	bios	set_videl_vga -> determine_regc0 [direct]	-	design
+5	determine_vctl	bios	vgetsize -> determine_vctl [direct]	-	design
+5	determine_width	bios	vgetsize -> determine_width [direct]	-	design
+5	direct_screen_blit16	vdi	direct_screen_blit -> direct_screen_blit16 [direct]	kernel/src/vdi_backend.rs@draw_glyph_sized	mapped
+5	do_clip	vdi	text_blt -> do_clip [direct]	kernel/src/vdi_backend.rs@blit_mono kernel/src/vdi_backend.rs@copy_rect kernel/src/vdi_backend.rs@draw_glyph_sized tos-api/src/vdi/raster.rs@mem_to_screen	mapped
+5	dont_clip	vdi	setup_info -> dont_clip [direct]	tos-api/src/vdi/raster.rs@rect_from_ptsin	mapped
+5	draw_line	vdi	abline -> draw_line [direct]	-	design
+5	draw_line16	vdi	abline -> draw_line16 [direct]	tos-api/src/vdi/line.rs@draw_line16	mapped
+5	end_pts16	vdi	end_pts -> end_pts16 [direct]	tos-api/src/vdi/contour.rs@end_pts	mapped
+5	font_set_default	bios	vt52_init -> font_set_default [direct]	-	unmapped
+5	get_std_pixel_size	bios	get_pixel_size -> get_std_pixel_size [direct]	tos-api/src/vdi/workstation.rs@get_std_pixel_size	mapped
+5	get_videl_bpp	bios	vsetrgb -> get_videl_bpp [direct]	-	design
+5	has_natfeats	bios	set_videl_vga -> has_natfeats [direct]	-	design
+5	horzline	vdi	do_circ -> horzline [direct]	tos-api/src/vdi/primitives.rs@horzspan	mapped
+5	hwblit_raster	vdi	bit_blt -> hwblit_raster [direct]	-	design
+5	hwblit_rect_common	vdi	draw_rect_common -> hwblit_rect_common [direct]	-	design
+5	hwblit_vertical_line	vdi	abline -> hwblit_vertical_line [direct]	-	design
+5	ikbd_writeb	bios	Initmous -> ikbd_writeb [direct]	-	design
+5	ikbd_writew	bios	Initmous -> ikbd_writew [direct]	-	design
+5	initialise_falcon_palette	bios	atari_setrez -> initialise_falcon_palette [direct]	-	design
+5	kprintf	bios	atari_getrez -> kprintf [direct]	-	unmapped
+5	lookup_videl_mode	bios	vgetsize -> lookup_videl_mode [direct]	-	design
+5	mul_div_round	ext	clip_line -> mul_div_round [direct]		unmapped
+5	muls	include	get_start_addr -> muls [direct]		unmapped
+5	pre_blit	vdi	text_blt -> pre_blit [direct]	tos-api/src/vdi/text.rs@build_cell	mapped
+5	protect_v	ext	scrdmp -> protect_v [direct]		unmapped
+5	quad_xform	vdi	perp_off -> quad_xform [direct]	tos-api/src/vdi/primitives.rs@quad_xform	mapped
+5	rotate	vdi	text_blt -> rotate [direct]	tos-api/src/vdi/text.rs@rotate_cell	mapped
+5	scale	vdi	text_blt -> scale [direct]	tos-api/src/vdi/text.rs@scale_glyph	mapped
+5	screen_blit	vdi	text_blt -> screen_blit [direct]	kernel/src/vdi_backend.rs@draw_glyph_sized	mapped
+5	screen_get_current_mode_info	bios	linea_init -> screen_get_current_mode_info [direct]	-	unmapped
+5	search_to_left	vdi	end_pts -> search_to_left [direct]	tos-api/src/vdi/contour.rs@end_pts	mapped
+5	search_to_right	vdi	end_pts -> search_to_right [direct]	tos-api/src/vdi/contour.rs@end_pts	mapped
+5	set_screen_shift	bios	linea_init -> set_screen_shift [direct]	-	unmapped
+5	shifter_get_monitor_type	bios	get_monitor_type -> shifter_get_monitor_type [direct]	-	design
+5	stop_until_interrupt	ext	vsync -> stop_until_interrupt [direct]		unmapped
+5	swblit_rect_common	vdi	draw_rect_common -> swblit_rect_common [direct]	-	design
+5	swblit_rect_common16	vdi	draw_rect_common -> swblit_rect_common16 [direct]	kernel/src/vdi_backend.rs@fill_pattern tos-api/src/vdi/line.rs@abline	mapped
+5	swblit_vertical_line16	vdi	abline -> swblit_vertical_line16 [direct]	tos-api/src/vdi/line.rs@vertical_line16	mapped
+5	vdi2fivebits	vdi	set_color16 -> vdi2fivebits [direct]	tos-api/src/vdi/vwk.rs@vdi2fivebits	mapped
+5	vdi2tt	vdi	get_tt_hyper_mono -> vdi2tt [direct]	-	design
+5	vertical_line	vdi	abline -> vertical_line [direct]	-	design
+5	videl_setrez	bios	atari_setrez -> videl_setrez [direct]	-	design
+5	vmontype	bios	vfixmode -> vmontype [direct]	-	design
+5	xmfremd	bdos	freeit -> xmfremd [direct]	tos-api/src/bdos/mem/mdpool.rs@xmfremd_global	mapped
+5	xmgetmd	bdos	ffit -> xmgetmd [direct]	tos-api/src/bdos/mem/mdpool.rs@xmgetmd_global	mapped
+5	xrawio	bdos	crawio -> xrawio [layer trap #1 0x6 funcs[0x6] via trap1]	tos-api/src/gemdos/console.rs@crawio tos-api/src/gemdos/console.rs@rawio	mapped
+6	Icos	vdi	clc_pts -> Icos [direct]	tos-api/src/vdi/trig.rs@icos	mapped
+6	Isin	vdi	clc_pts -> Isin [direct]	tos-api/src/vdi/trig.rs@isin	mapped
+6	atari_get_current_mode_info	bios	screen_get_current_mode_info -> atari_get_current_mode_info [direct]	-	design
+6	bconin_iorec	bios	bconin1 -> bconin_iorec [direct]	kernel/src/console.rs@aux_read_blocking tos-api/src/bios/chardev.rs@aux_read	mapped
+6	bconout0	bios	bconout -> bconout0 [vector via bconout_vec[]]	-	design
+6	bconout1	bios	bconout -> bconout1 [vector via bconout_vec[]]	kernel/src/console.rs@bconout tos-api/src/bios/chardev.rs@bconout	mapped
+6	bconout2	bios	bconout -> bconout2 [vector via bconout_vec[]]	tos-api/src/bios/chardev.rs@bconout tos-api/src/vdi/escape.rs@conout	mapped
+6	bconout3	bios	bconout -> bconout3 [vector via bconout_vec[]]	tos-api/src/bios/chardev.rs@bconout tos-api/src/xbios/system.rs@midiws	mapped
+6	bconout4	bios	bconout -> bconout4 [vector via bconout_vec[]]	tos-api/src/bdos/process/hooks.rs@note_ikbd_ignored tos-api/src/bios/chardev.rs@bconout	mapped
+6	bconout5	bios	bconout -> bconout5 [vector via bconout_vec[]]	tos-api/src/vdi/escape.rs@rawout	mapped
+6	bconstat_iorec	bios	bconstat1 -> bconstat_iorec [direct]	tos-api/src/xbios/iorec.rs@serial_pending	mapped
+6	bcostat4	bios	ikbd_writeb -> bcostat4 [direct]	tos-api/src/bios/chardev.rs@bcostat	mapped
+6	blank_out	bios	clear_and_home -> blank_out [direct]	tos-api/src/vdi/escape.rs@blank_out	mapped
+6	charout_dummy	bios	bconout -> charout_dummy [vector via bconout_vec[]]	tos-api/src/bios/chardev.rs@bconout	mapped
+6	constat	bdos	xrawio -> constat [direct]	tos-api/src/gemdos/console.rs@constat	mapped
+6	convert2ste	bios	initialise_falcon_palette -> convert2ste [direct]	-	design
+6	cursor_off	bios	clear_and_home -> cursor_off [direct]	tos-api/src/vdi/escape.rs@cursor_off	mapped
+6	cursor_on	bios	cursconf -> cursor_on [direct]	tos-api/src/vdi/escape.rs@cursor_on	mapped
+6	cursor_on_cnt	bios	clear_and_home -> cursor_on_cnt [direct]	tos-api/src/vdi/escape.rs@cursor_on_cnt	mapped
+6	draw_rect_setup	vdi	hwblit_rect_common -> draw_rect_setup [direct]	-	design
+6	flush_data_cache	bios	hwblit_rect_common -> flush_data_cache [direct]	-	unmapped
+6	getch	bdos	xrawio -> getch [direct]	tos-api/src/gemdos/console.rs@getch tos-api/src/gemdos/console.rs@getch_restartable	mapped
+6	hwblit_rect_nonstd	vdi	hwblit_rect_common -> hwblit_rect_nonstd [direct]	-	design
+6	invalidate_data_cache	bios	hwblit_rect_common -> invalidate_data_cache [direct]	-	unmapped
+6	move_cursor	bios	clear_and_home -> move_cursor [direct]	tos-api/src/vdi/escape.rs@move_cursor	mapped
+6	normal_blit	vdi	pre_blit -> normal_blit [direct]	kernel/src/vdi_backend.rs@draw_glyph_sized	mapped
+6	outline	vdi	pre_blit -> outline [direct]	tos-api/src/vdi/text.rs@build_cell	mapped
+6	protect_ww	ext	bconout -> protect_ww [direct]		unmapped
+6	scaledown	vdi	scale -> scaledown [direct]	tos-api/src/vdi/text.rs@scale_row_down	mapped
+6	scaleup	vdi	scale -> scaleup [direct]	tos-api/src/vdi/text.rs@scale_row_up	mapped
+6	screen_blit16	vdi	screen_blit -> screen_blit16 [direct]	kernel/src/vdi_backend.rs@draw_glyph_sized	mapped
+6	search_to_left16	vdi	end_pts16 -> search_to_left16 [direct]	tos-api/src/vdi/contour.rs@end_pts	mapped
+6	search_to_right16	vdi	end_pts16 -> search_to_right16 [direct]	tos-api/src/vdi/contour.rs@end_pts	mapped
+6	umul_shift	include	clc_pts -> umul_shift [direct]		unmapped
+6	unlink_mdblock	bdos	xmfremd -> unlink_mdblock [direct]	tos-api/src/bdos/mem/mdpool.rs@unlink_mdblock	mapped
+6	vkprintf	bios	kprintf -> vkprintf [direct]	-	unmapped
+6	xmfreblk	bdos	xmfremd -> xmfreblk [direct]	-	unmapped
+6	xmgetblk	bdos	xmgetmd -> xmgetblk [direct]	-	unmapped
+7	ascii_out	bios	bconout5 -> ascii_out [direct]	tos-api/src/vdi/escape.rs@ascii_out	mapped
+7	bcostat0	bios	bconout0 -> bcostat0 [direct]	-	design
+7	bcostat1	bios	bconout1 -> bcostat1 [direct]	kernel/src/console.rs@bcostat tos-api/src/bios/chardev.rs@bcostat	mapped
+7	bcostat3	bios	bconout3 -> bcostat3 [direct]	tos-api/src/bios/chardev.rs@bcostat	mapped
+7	blank_out16	bios	blank_out -> blank_out16 [direct]	tos-api/src/vdi/escape.rs@blank_out	mapped
+7	buflush	bdos	getch -> buflush [direct]	tos-api/src/gemdos/console.rs@flush	mapped
+7	cell_addr	bios	blank_out -> cell_addr [direct]	-	unmapped
+7	cputc	bios	bconout2 -> cputc [direct]	tos-api/src/vdi/escape.rs@cputc	mapped
+7	do_cnt_esce	bios	cursor_on_cnt -> do_cnt_esce [direct]	tos-api/src/vdi/escape.rs@do_cnt_esce	mapped
+7	doprintf	ext	vkprintf -> doprintf [direct]		unmapped
+7	free_available_dnds	bdos	xmgetblk -> free_available_dnds [direct]	-	unmapped
+7	get_iorecbuf	bios	bconin_iorec -> get_iorecbuf [direct]	tos-api/src/xbios/iorec.rs@pop_byte tos-api/src/xbios/iorec.rs@pop_serial	mapped
+7	getosm	bdos	xmgetblk -> getosm [direct]	-	unmapped
+7	halt	bios	xmgetblk -> halt [direct]	kernel/src/arch/aarch64/mod.rs@halt	mapped
+7	invert_cell	bios	cursor_off -> invert_cell [direct]	-	unmapped
+7	is_nfStdErr	bios	vkprintf -> is_nfStdErr [direct]	-	design
+7	kcprintf	bios	xmgetblk -> kcprintf [direct]	-	unmapped
+7	merge_byte	vdi	outline -> merge_byte [direct]	tos-api/src/vdi/text.rs@build_cell	mapped
+7	neg_cell	bios	move_cursor -> neg_cell [direct]	tos-api/src/vdi/escape.rs@neg_cell	mapped
+7	prnout	bios	bconout0 -> prnout [direct]	-	design
+7	put_iorecbuf	bios	bconout1 -> put_iorecbuf [direct]	-	unmapped
+7	shift_and_update	vdi	scaledown -> shift_and_update [direct]	tos-api/src/vdi/text.rs@scale_row_down tos-api/src/vdi/text.rs@scale_row_up	mapped
+7	shifter_get_current_mode_info	bios	atari_get_current_mode_info -> shifter_get_current_mode_info [direct]	-	design
+7	videl_get_current_mode_info	bios	atari_get_current_mode_info -> videl_get_current_mode_info [direct]	-	design
+8	cell_xfer	bios	ascii_out -> cell_xfer [direct]	tos-api/src/vdi/escape.rs@cell_xfer	mapped
+8	char_addr	bios	ascii_out -> char_addr [direct]	-	unmapped
+8	esc_ch1	bios	cputc -> esc_ch1 [vector via con_state]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	get_bg_col	bios	cputc -> get_bg_col [vector via con_state]	tos-api/src/vdi/escape.rs@cputc	mapped
+8	get_column	bios	cputc -> get_column [vector via con_state]	tos-api/src/vdi/escape.rs@cputc	mapped
+8	get_fg_col	bios	cputc -> get_fg_col [vector via con_state]	tos-api/src/vdi/escape.rs@cputc	mapped
+8	get_row	bios	cputc -> get_row [vector via con_state]	tos-api/src/vdi/escape.rs@cputc	mapped
+8	get_videl_height	bios	videl_get_current_mode_info -> get_videl_height [direct]	-	design
+8	get_videl_width	bios	videl_get_current_mode_info -> get_videl_width [direct]	-	design
+8	giaccess	bios	prnout -> giaccess [direct]	tos-api/src/xbios/system.rs@giaccess	mapped
+8	incr_tail	bios	bcostat1 -> incr_tail [direct]	tos-api/src/xbios/iorec.rs@push_byte	mapped
+8	next_cell	bios	ascii_out -> next_cell [direct]	-	unmapped
+8	normal_ascii	bios	cputc -> normal_ascii [vector via con_state]	tos-api/src/vdi/escape.rs@normal_ascii	mapped
+8	offgibit	bios	prnout -> offgibit [direct]	tos-api/src/xbios/system.rs@offgibit	mapped
+8	ongibit	bios	prnout -> ongibit [direct]	tos-api/src/xbios/system.rs@ongibit	mapped
+8	process_dnd_tree	bdos	free_available_dnds -> process_dnd_tree [direct]	-	unmapped
+8	scroll_up	bios	ascii_out -> scroll_up [direct]	tos-api/src/vdi/escape.rs@scroll_up	mapped
+8	vkcprintf	bios	kcprintf -> vkcprintf [direct]	-	unmapped
+9	ascii_cr	bios	normal_ascii -> ascii_cr [vector via cntl_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@normal_ascii	mapped
+9	ascii_lf	bios	normal_ascii -> ascii_lf [vector via cntl_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@ascii_lf	mapped
+9	cell_xfer16	bios	cell_xfer -> cell_xfer16 [direct]	tos-api/src/vdi/escape.rs@cell_xfer	mapped
+9	cursor_down	bios	esc_ch1 -> cursor_down [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+9	cursor_home	bios	esc_ch1 -> cursor_home [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+9	cursor_left	bios	esc_ch1 -> cursor_left [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@cursor_left	mapped
+9	cursor_right	bios	esc_ch1 -> cursor_right [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+9	cursor_up	bios	esc_ch1 -> cursor_up [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+9	delete_line	bios	esc_ch1 -> delete_line [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@delete_line	mapped
+9	do_backspace	bios	normal_ascii -> do_backspace [vector via cntl_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@normal_ascii	mapped
+9	do_bell	bios	normal_ascii -> do_bell [vector via cntl_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@bell tos-api/src/vdi/escape.rs@do_bell	mapped
+9	do_tab	bios	normal_ascii -> do_tab [vector via cntl_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@normal_ascii	mapped
+9	erase_from_bol	bios	esc_ch1 -> erase_from_bol [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@erase_from_bol	mapped
+9	erase_from_home	bios	esc_ch1 -> erase_from_home [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@erase_from_home	mapped
+9	erase_line	bios	esc_ch1 -> erase_line [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+9	erase_to_eol	bios	esc_ch1 -> erase_to_eol [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@erase_to_eol	mapped
+9	erase_to_eos	bios	esc_ch1 -> erase_to_eos [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@erase_to_eos	mapped
+9	insert_line	bios	esc_ch1 -> insert_line [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@insert_line	mapped
+9	line_wrap_off	bios	esc_ch1 -> line_wrap_off [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+9	line_wrap_on	bios	esc_ch1 -> line_wrap_on [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+9	memmove	ext	scroll_up -> memmove [direct]		unmapped
+9	nop	bios	esc_ch1 -> nop [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+9	restore_cursor_pos	bios	esc_ch1 -> restore_cursor_pos [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+9	reverse_linefeed	bios	esc_ch1 -> reverse_linefeed [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@reverse_linefeed	mapped
+9	reverse_video_off	bios	esc_ch1 -> reverse_video_off [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+9	reverse_video_on	bios	esc_ch1 -> reverse_video_on [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+9	save_cursor_pos	bios	esc_ch1 -> save_cursor_pos [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+9	set_bg	bios	esc_ch1 -> set_bg [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+9	set_fg	bios	esc_ch1 -> set_fg [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+9	vcprintf	bios	vkcprintf -> vcprintf [direct]	-	unmapped
+10	bell	bios	do_bell -> bell [direct]	tos-api/src/vdi/escape.rs@bell	mapped
+10	cursor_down_impl	bios	cursor_down -> cursor_down_impl [direct]	-	unmapped
+10	cursor_left_impl	bios	cursor_left -> cursor_left_impl [direct]	tos-api/src/vdi/escape.rs@cursor_left	mapped
+10	dosound	bios	do_bell -> dosound [direct]	tos-api/src/xbios/system.rs@dosound	mapped
+10	erase_from_bol_impl	bios	erase_from_bol -> erase_from_bol_impl [direct]	tos-api/src/vdi/escape.rs@erase_from_bol	mapped
+10	erase_to_eol_impl	bios	erase_to_eol -> erase_to_eol_impl [direct]	tos-api/src/vdi/escape.rs@erase_to_eol	mapped
+10	scroll_down	bios	insert_line -> scroll_down [direct]	tos-api/src/vdi/escape.rs@scroll_down	mapped
+
+table edges inside the set (74):
+jmptb1[0x10]	screen -> vdi_vsl_width	vdi/vdi_main.c:48
+jmptb1[0x11]	screen -> vdi_vsl_color	vdi/vdi_main.c:49
+jmptb1[0x12]	screen -> vdi_vsm_type	vdi/vdi_main.c:50
+jmptb1[0x13]	screen -> vdi_vsm_height	vdi/vdi_main.c:51
+jmptb1[0x14]	screen -> vdi_vsm_color	vdi/vdi_main.c:52
+jmptb1[0x15]	screen -> vdi_vst_font	vdi/vdi_main.c:53
+jmptb1[0x16]	screen -> vdi_vst_color	vdi/vdi_main.c:54
+jmptb1[0x17]	screen -> vdi_vsf_interior	vdi/vdi_main.c:55
+jmptb1[0x18]	screen -> vdi_vsf_style	vdi/vdi_main.c:56
+jmptb1[0x19]	screen -> vdi_vsf_color	vdi/vdi_main.c:57
+jmptb1[0x1]	screen -> vdi_v_opnwk	vdi/vdi_main.c:33
+jmptb1[0x1a]	screen -> vdi_vq_color	vdi/vdi_main.c:58
+jmptb1[0x1b]	screen -> just_rts	vdi/vdi_main.c:59
+jmptb1[0x1c]	screen -> vdi_v_locator	vdi/vdi_main.c:60
+jmptb1[0x1d]	screen -> just_rts	vdi/vdi_main.c:61
+jmptb1[0x1e]	screen -> vdi_v_choice	vdi/vdi_main.c:62
+jmptb1[0x1f]	screen -> vdi_v_string	vdi/vdi_main.c:63
+jmptb1[0x20]	screen -> vdi_vswr_mode	vdi/vdi_main.c:64
+jmptb1[0x21]	screen -> vdi_vsin_mode	vdi/vdi_main.c:65
+jmptb1[0x22]	screen -> just_rts	vdi/vdi_main.c:66
+jmptb1[0x23]	screen -> vdi_vql_attributes	vdi/vdi_main.c:67
+jmptb1[0x24]	screen -> vdi_vqm_attributes	vdi/vdi_main.c:68
+jmptb1[0x25]	screen -> vdi_vqf_attributes	vdi/vdi_main.c:69
+jmptb1[0x26]	screen -> vdi_vqt_attributes	vdi/vdi_main.c:70
+jmptb1[0x27]	screen -> vdi_vst_alignment	vdi/vdi_main.c:71
+jmptb1[0x2]	screen -> vdi_v_clswk	vdi/vdi_main.c:34
+jmptb1[0x3]	screen -> vdi_v_clrwk	vdi/vdi_main.c:35
+jmptb1[0x4]	screen -> just_rts	vdi/vdi_main.c:36
+jmptb1[0x5]	screen -> vdi_v_escape	vdi/vdi_main.c:37
+jmptb1[0x6]	screen -> vdi_v_pline	vdi/vdi_main.c:38
+jmptb1[0x7]	screen -> vdi_v_pmarker	vdi/vdi_main.c:39
+jmptb1[0x8]	screen -> vdi_v_gtext	vdi/vdi_main.c:40
+jmptb1[0x9]	screen -> vdi_v_fillarea	vdi/vdi_main.c:41
+jmptb1[0xa]	screen -> just_rts	vdi/vdi_main.c:42
+jmptb1[0xb]	screen -> vdi_v_gdp	vdi/vdi_main.c:43
+jmptb1[0xc]	screen -> vdi_vst_height	vdi/vdi_main.c:44
+jmptb1[0xd]	screen -> vdi_vst_rotation	vdi/vdi_main.c:45
+jmptb1[0xe]	screen -> vdi_vs_color	vdi/vdi_main.c:46
+jmptb1[0xf]	screen -> vdi_vsl_type	vdi/vdi_main.c:47
+jmptb2[0x64]	screen -> vdi_v_opnvwk	vdi/vdi_main.c:75
+jmptb2[0x65]	screen -> vdi_v_clsvwk	vdi/vdi_main.c:76
+jmptb2[0x66]	screen -> vdi_vq_extnd	vdi/vdi_main.c:77
+jmptb2[0x67]	screen -> vdi_v_contourfill	vdi/vdi_main.c:78
+jmptb2[0x68]	screen -> vdi_vsf_perimeter	vdi/vdi_main.c:79
+jmptb2[0x69]	screen -> vdi_v_get_pixel	vdi/vdi_main.c:80
+jmptb2[0x6a]	screen -> vdi_vst_effects	vdi/vdi_main.c:81
+jmptb2[0x6b]	screen -> vdi_vst_point	vdi/vdi_main.c:82
+jmptb2[0x6c]	screen -> vdi_vsl_ends	vdi/vdi_main.c:83
+jmptb2[0x6d]	screen -> vdi_vro_cpyfm	vdi/vdi_main.c:84
+jmptb2[0x6e]	screen -> vdi_vr_trnfm	vdi/vdi_main.c:85
+jmptb2[0x6f]	screen -> vdi_vsc_form	vdi/vdi_main.c:86
+jmptb2[0x70]	screen -> vdi_vsf_udpat	vdi/vdi_main.c:87
+jmptb2[0x71]	screen -> vdi_vsl_udsty	vdi/vdi_main.c:88
+jmptb2[0x72]	screen -> vdi_vr_recfl	vdi/vdi_main.c:89
+jmptb2[0x73]	screen -> vdi_vqin_mode	vdi/vdi_main.c:90
+jmptb2[0x74]	screen -> vdi_vqt_extent	vdi/vdi_main.c:91
+jmptb2[0x75]	screen -> vdi_vqt_width	vdi/vdi_main.c:92
+jmptb2[0x76]	screen -> vdi_vex_timv	vdi/vdi_main.c:93
+jmptb2[0x77]	screen -> vdi_vst_load_fonts	vdi/vdi_main.c:94
+jmptb2[0x78]	screen -> vdi_vst_unload_fonts	vdi/vdi_main.c:95
+jmptb2[0x79]	screen -> vdi_vrt_cpyfm	vdi/vdi_main.c:96
+jmptb2[0x7a]	screen -> vdi_v_show_c	vdi/vdi_main.c:97
+jmptb2[0x7b]	screen -> vdi_v_hide_c	vdi/vdi_main.c:98
+jmptb2[0x7c]	screen -> vdi_vq_mouse	vdi/vdi_main.c:99
+jmptb2[0x7d]	screen -> vdi_vex_butv	vdi/vdi_main.c:100
+jmptb2[0x7e]	screen -> vdi_vex_motv	vdi/vdi_main.c:101
+jmptb2[0x7f]	screen -> vdi_vex_curv	vdi/vdi_main.c:102
+jmptb2[0x80]	screen -> vdi_vq_key_s	vdi/vdi_main.c:103
+jmptb2[0x81]	screen -> vdi_vs_clip	vdi/vdi_main.c:104
+jmptb2[0x82]	screen -> vdi_vqt_name	vdi/vdi_main.c:105
+jmptb2[0x83]	screen -> vdi_vqt_fontinfo	vdi/vdi_main.c:106
+jmptb2[0x84]	screen -> just_rts	vdi/vdi_main.c:108
+jmptb2[0x85]	screen -> just_rts	vdi/vdi_main.c:109
+jmptb2[0x86]	screen -> vdi_vex_wheelv	vdi/vdi_main.c:110
+
+layer edges inside the set (34):
+trap #1 0x15 funcs[0x15] via trap1	setscreen -> srealloc	bios/screen.c:1135
+trap #1 0x44 funcs[0x44] via trap1	vdi_v_opnvwk -> xmxalloc	vdi/vdi_control.c:443
+trap #1 0x49 funcs[0x49] via trap1	vdi_v_clsvwk -> xmfree	vdi/vdi_control.c:490
+trap #1 0x49 funcs[0x49] via trap1	vdi_v_clswk -> xmfree	vdi/vdi_control.c:581
+trap #1 0x6 funcs[0x6] via trap1	crawio -> xrawio	vdi/vdi_esc.c:31
+trap #13 0x1 bios_vecs[0x1] via bios_w_w	constat -> bconstat	bdos/console.c:152
+trap #13 0x1 bios_vecs[0x1] via bios_w_w	gchr_key -> bconstat	vdi/vdi_input.c:219
+trap #13 0x1 bios_vecs[0x1] via bios_w_w	gloc_key -> bconstat	vdi/vdi_mouse.c:210
+trap #13 0x2 bios_vecs[0x2] via bios_l_w	gchr_key -> bconin	vdi/vdi_input.c:220
+trap #13 0x2 bios_vecs[0x2] via bios_l_w	getch -> bconin	bdos/console.c:368
+trap #13 0x2 bios_vecs[0x2] via bios_l_w	gloc_key -> bconin	vdi/vdi_mouse.c:211
+trap #13 0x3 bios_vecs[0x3] via bios_l_ww	bios_conws -> bconout	desk/desksupp.c:686
+trap #13 0x3 bios_vecs[0x3] via bios_l_ww	xrawio -> bconout	bdos/console.c:451
+trap #13 0x5 bios_vecs[0x5] via bios_l_wl	timer_exit -> setexc	vdi/vdi_misc.c:149
+trap #13 0x5 bios_vecs[0x5] via bios_l_wl	timer_init -> setexc	vdi/vdi_misc.c:132
+trap #13 0x6 bios_vecs[0x6] via bios_l_v	vdi_vex_timv -> tickcal	vdi/vdi_misc.c:111
+trap #13 0xb bios_vecs[0xb] via bios_l_w	gshift_s -> kbshift	vdi/vdi_input.c:187
+trap #14 0x0 xbios_vecs[0x0] via xbios_v_wll	vdimouse_exit -> Initmous	vdi/vdi_mouse.c:634
+trap #14 0x0 xbios_vecs[0x0] via xbios_v_wll	vdimouse_init -> Initmous	vdi/vdi_mouse.c:605
+trap #14 0x14 xbios_vecs[0x14] via xbios_v_v	escfn17 -> scrdmp	vdi/vdi_esc.c:262
+trap #14 0x22 xbios_vecs[0x22] via xbios_l_v	vdimouse_exit -> kbdvbase	vdi/vdi_mouse.c:638
+trap #14 0x22 xbios_vecs[0x22] via xbios_l_v	vdimouse_init -> kbdvbase	vdi/vdi_mouse.c:609
+trap #14 0x4 xbios_vecs[0x4] via xbios_w_v	vdi_v_opnwk -> getrez	vdi/vdi_control.c:513
+trap #14 0x5 xbios_vecs[0x5] via xbios_v_llww	vdi_v_opnwk -> setscreen	vdi/vdi_control.c:514
+trap #14 0x51 xbios_vecs[0x51] via xbios_w_v	adjust_tt_colnum -> egetshift	vdi/vdi_col.c:283
+trap #14 0x51 xbios_vecs[0x51] via xbios_w_v	query_tt_color -> egetshift	vdi/vdi_col.c:413
+trap #14 0x51 xbios_vecs[0x51] via xbios_w_v	set_tt_color -> egetshift	vdi/vdi_col.c:315
+trap #14 0x53 xbios_vecs[0x53] via xbios_w_ww	query_tt_color -> esetcolor	vdi/vdi_col.c:430
+trap #14 0x53 xbios_vecs[0x53] via xbios_w_ww	set_tt_color -> esetcolor	vdi/vdi_col.c:332
+trap #14 0x58 xbios_vecs[0x58] via xbios_w_w	vdi_v_opnwk -> vsetmode	vdi/vdi_control.c:521
+trap #14 0x5d xbios_vecs[0x5d] via xbios_v_wwl	set_color -> vsetrgb	vdi/vdi_col.c:544
+trap #14 0x5e xbios_vecs[0x5e] via xbios_v_wwl	vdi_vq_color -> vgetrgb	vdi/vdi_col.c:905
+trap #14 0x7 xbios_vecs[0x7] via xbios_w_ww	set_color -> setcolor	vdi/vdi_col.c:582
+trap #14 0x7 xbios_vecs[0x7] via xbios_w_ww	vdi_vq_color -> setcolor	vdi/vdi_col.c:922
+
+vector edges inside the set (76):
+via SEEDABORT	contourfill -> no_abort	vdi/vdi_fill.c:1060
+via am_tab@bios/vt52.c[]	esc_ch1 -> clear_and_home	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> cursor_down	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> cursor_home	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> cursor_left	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> cursor_right	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> cursor_up	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> delete_line	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> erase_to_eol	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> erase_to_eos	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> insert_line	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> nop	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> reverse_linefeed	bios/vt52.c:247
+via bconin_vec[]	bconin -> bconin0	bios/bios.c:976
+via bconin_vec[]	bconin -> bconin1	bios/bios.c:976
+via bconin_vec[]	bconin -> bconin2	bios/bios.c:976
+via bconin_vec[]	bconin -> bconin3	bios/bios.c:976
+via bconin_vec[]	bconin -> char_dummy	bios/bios.c:976
+via bconout_vec[]	bconout -> bconout0	bios/bios.c:1009
+via bconout_vec[]	bconout -> bconout1	bios/bios.c:1009
+via bconout_vec[]	bconout -> bconout2	bios/bios.c:1009
+via bconout_vec[]	bconout -> bconout3	bios/bios.c:1009
+via bconout_vec[]	bconout -> bconout4	bios/bios.c:1009
+via bconout_vec[]	bconout -> bconout5	bios/bios.c:1009
+via bconout_vec[]	bconout -> charout_dummy	bios/bios.c:1009
+via bconstat_vec[]	bconstat -> bconstat1	bios/bios.c:932
+via bconstat_vec[]	bconstat -> bconstat2	bios/bios.c:932
+via bconstat_vec[]	bconstat -> bconstat3	bios/bios.c:932
+via bconstat_vec[]	bconstat -> char_dummy	bios/bios.c:932
+via bell_hook	bell -> do_bell	bios/sound.c:253
+via bw_tab@bios/vt52.c[]	esc_ch1 -> cursor_off	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> cursor_on	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> erase_from_bol	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> erase_from_home	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> erase_line	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> line_wrap_off	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> line_wrap_on	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> nop	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> restore_cursor_pos	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> reverse_video_off	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> reverse_video_on	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> save_cursor_pos	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> set_bg	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> set_fg	bios/vt52.c:250
+via cntl_tab@bios/vt52.c[]	normal_ascii -> ascii_cr	bios/vt52.c:198
+via cntl_tab@bios/vt52.c[]	normal_ascii -> ascii_lf	bios/vt52.c:198
+via cntl_tab@bios/vt52.c[]	normal_ascii -> do_backspace	bios/vt52.c:198
+via cntl_tab@bios/vt52.c[]	normal_ascii -> do_bell	bios/vt52.c:198
+via cntl_tab@bios/vt52.c[]	normal_ascii -> do_tab	bios/vt52.c:198
+via con_state	cputc -> esc_ch1	bios/vt52.c:159
+via con_state	cputc -> get_bg_col	bios/vt52.c:159
+via con_state	cputc -> get_column	bios/vt52.c:159
+via con_state	cputc -> get_fg_col	bios/vt52.c:159
+via con_state	cputc -> get_row	bios/vt52.c:159
+via con_state	cputc -> normal_ascii	bios/vt52.c:159
+via dump_vec	scrdmp -> just_rts	bios/xbios.c:492
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn0	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn1	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn10	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn11	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn12	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn13	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn14	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn15	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn16	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn17	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn18	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn19	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn2	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn3	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn4	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn5	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn6	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn7	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn8	vdi/vdi_esc.c:349
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn9	vdi/vdi_esc.c:349
+
+coverage of the set (429 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+aes          1      1 100.0%      0   0.0%      0   0.0%
+bdos        18     12  66.7%      0   0.0%      6  33.3%
+bios       151     96  63.6%     38  25.2%     17  11.3%
+desk         1      0   0.0%      0   0.0%      1 100.0%
+ext         14      0   0.0%      0   0.0%     14 100.0%
+include     17      0   0.0%      0   0.0%     17 100.0%
+vdi        230    201  87.4%     25  10.9%      4   1.7%
+total      432    310  71.8%     63  14.6%     59  13.7%
+touched layers: vdi (the layers of GSX_ENTRY; --layers to choose)
+unmapped in the touched layers (4):
+vdi	build_vwk_chain	vdi/vdi_control.c
+vdi	ok_for_direct_blit	vdi/vdi_text.c
+vdi	trnsfont	vdi/vdi_text.c
+vdi	vdimouse_exit	vdi/vdi_mouse.c
+complete: no (4 unmapped in the touched layers; the ticket lists them)

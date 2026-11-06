@@ -1,0 +1,22 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps scale --down`
+deps scale --down (kinds asm,direct,layer,table,vector): 3 functions besides scale
+depth	function	layer	reached over	newtos	class
+0	scale	vdi	-	tos-api/src/vdi/text.rs@scale_glyph	mapped
+1	scaledown	vdi	scale -> scaledown [direct]	tos-api/src/vdi/text.rs@scale_row_down	mapped
+1	scaleup	vdi	scale -> scaleup [direct]	tos-api/src/vdi/text.rs@scale_row_up	mapped
+2	shift_and_update	vdi	scaledown -> shift_and_update [direct]	tos-api/src/vdi/text.rs@scale_row_down tos-api/src/vdi/text.rs@scale_row_up	mapped
+
+table edges inside the set (0):
+
+layer edges inside the set (0):
+
+vector edges inside the set (0):
+
+coverage of the set (4 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+vdi          4      4 100.0%      0   0.0%      0   0.0%
+total        4      4 100.0%      0   0.0%      0   0.0%
+touched layers: vdi (the layers of scale; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

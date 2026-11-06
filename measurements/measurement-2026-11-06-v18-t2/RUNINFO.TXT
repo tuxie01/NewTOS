@@ -1,0 +1,90 @@
+V18 part 2 -- TASK/V18.md "Teil 2" (TOOL32 K13, K14, K15, K16, K18, K19) and the "Nachtrag zu Teil 2"
+items (vrt_cpyfm to memory 1..8 planes; vro_cpyfm memory->memory 9..15 planes; copy direction of an
+overlapping 16-plane copy; text underline with vs_clip(0); handlers reading GSX_ENTRY's local PTSIN copy),
+measured against the pinned EmuTOS oracle by the Auditor. Date 2026-11-06.
+Report: docs/audits/2026-11-06-v18-t2-vdi-text.md. No product code touched; nothing committed; no card,
+no Pi, no push.
+
+WHAT RAN
+  NewTOS   4a8e1ae3ee3cf185de22ab036392918b956573a4 (clean at start; git archive into the session
+           scratchpad, references/ linked; method/build-kernel.sh). rpi4 release kernel8.img sha256
+           f0844bd5b2a621bfd56328fa9a39458bcb23d1dbdfef6cf7d16a0863d389519d (method/build-kernel.out;
+           the same kernel cargo xtask tosdump built, runs/*/tosdump-run.txt).
+  EmuTOS   1a7484aba1bfba23e2c0899e243b6d8177fe41df, ROM tools/oracle/etos512de-1a7484ab.img sha256
+           323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+  Hatari   2.6.1, binary sha256 953f4e78eea55a8ca12ed6c83de1f045545b8da42a49e00112eaa235dffcd6f6,
+           tools/oracle/hatari.cfg sha256 c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46
+  Boards   QEMU 11.0.2 raspi4b, -append serial=on, APFS clone per boot (removed by the scripts); oracle
+           profile falcontc (640x480 16-bit truecolor = the NewTOS device model, ADR-024), the raster
+           table also tt. Only QEMU/Hatari processes started here were stopped (by PID).
+  host_clang  Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card manifest)
+  Manifests (7): probe/n1, probe/n2, runs/*/ (4), k19/newtos-240, each card.img.manifest;
+           optional_missing, verbatim, in all 7:
+           optional_missing none
+
+PRE-FLIGHT
+  canary (docs/analysis/ORACLE.md section 6, measurements/measurement-2026-10-28-oracle-canary/method/canary.sh,
+  scratch dir in the session scratchpad):
+      canary tt: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all)
+      canary falcontc: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all-falcontc)
+  runs/newtos-vdi-all         vdi-all.tsv vs EMUTOS-1a7484ab-VDI-all-falcontc: 0 of 182 differ
+  runs/newtos-raster-screen   vdi-raster-screen.tsv vs EMUTOS-1a7484ab-RASTER-screen-falcontc: 0 of 62 differ
+                              (the probe's read-back instrument)
+
+INSTRUMENTS (new or extended, permanent)
+  tosdump/probes/vdprobe.c    cases T* appended after k17 (function t2); the 301 earlier cases unchanged:
+                              their BIN bytes are identical to measurements/measurement-2026-11-06-v25-test/
+                              probe/e1 and n-head (prefix compare, 5048593 bytes, both sides).
+                              logbuf 32768 -> 65536; VDPROBE.SEL "T19" selects CAL + T19A only (absent
+                              in every normal run). Pristine copy sha256 34d424eb...54f306 (scratch).
+                              VDPROBE.PRG 01db571f7c85cca0c0330093a21f198114f9bc79951d6801c9806096dda18691
+                              VDPROBE.NAP 2c963743c62039ec3f951c0d0b3a76b69f92b20fd6b8954694b5c6bcc538a784
+  tosdump/cases/vdi-v18-t2.tsv         DUMPVDI, 32 cases, CRC BEFB79A7
+  tosdump/cases/vdi-v18-t2-raster.tsv  DUMPRAST, 26 cases, CRC 60A10E40
+  tosdump/reference/EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN/.LOG     (= oracle/or-vdi-1)
+  tosdump/reference/EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN/.LOG  (= oracle/or-rast-1)
+
+ORACLE TABLES (method/oracle-tables.sh; DUMPVDI/DUMPRAST m68k from tosdump/ at 4a8e1ae3, build id 4a8e,
+  DUMPVDI.PRG 887f600d...61df7bb, DUMPRAST.PRG d6fd641d...2ffd2bcc)
+  or-vdi-1 == or-vdi-2 (BIN 14486e55..., LOG 011e0e1b...), or-rast-1 == or-rast-2 (BIN f65ca17d..., LOG a2679944...)
+  or-rast-tt: tosdiff vs falcontc (oracle/tosdiff-rast-falcontc-vs-tt.txt) differs only in the vrt_cpyfm
+  cases whose colour reaches plane bits above 3 (21: 8 planes; 28-31: 9..16 planes) -- the device's
+  MAP_COL/palette, a device parameter; the reference is falcontc.
+
+NEWTOS TABLES (method/newtos-tables.sh, one cargo xtask tosdump call each, from the main tree)
+  runs/newtos-vdi-v18t2   11 of 32 differ: 50, 54 (local PTSIN), 61, 67 (underline end), 70 (underline
+                          wrap), 76 (glyph wrap), 86, 90 (clipped chars + DDA), 99, 102, 105 (v_justified
+                          rotated). Equal: all 13 K15 cases, the controls 55, 64, 74, 79, 94, 108, case 52
+                          (both answers happen to be the doubled 8x16 font) and 111 (v_hardcopy record).
+  runs/newtos-rast-v18t2  19 of 26 differ: 18-26 (vrt -> 1..8 planes), 28-30 (vrt -> 9..15), 33-37
+                          (vro 9..15), 44-45 (12-plane overlap). Equal: 31, 38 (16-plane controls), 40-43
+                          (16-plane overlap inside the form), 46 (4-plane overlap).
+  Input check: tosdiff reports differences only in intout/ptsout (VDI) and buf_a/buf_b (raster);
+  contrl/intin/ptsin and the MFDB cells are equal on both sides; kept check 52 cells, 0 changed.
+
+PROBE (method/probe-runs.sh: tosdump/probes/run-vdprobe.sh, VDPROBE_SCRATCH = session scratchpad)
+  probe/e1, e2   EmuTOS falcontc: BIN+LOG byte-identical (BIN sha256 224db7b5...61ba58)
+  probe/n1, n2   NewTOS raspi4b:  BIN+LOG byte-identical (BIN sha256 851e0a85...c81b6be)
+  e1 and n1 BIN kept gzipped, e2/n2 only as VDPROBE.BIN.sha256.
+  probe/compare-e1-n1.txt: 348 records, 35 differ = K5D (decision C, known) + 34 T records; maps in probe/maps/.
+  LOG differences (T* only): T13A (vst_load_fonts 1 vs 0, vqt_name(2), vst_font(7)), TPC (vsl_width 9 vs 3),
+  TPD (vst_height 26 vs 13), T18A (dumpflg after v_hardcopy and after Scrdmp: -1 vs 5).
+  probe/t14k-cell.txt, t14l-cell.txt, t14m-cell.txt (method/cellcmp.py): the cell of char 4095 (x 10..25):
+  T14K 26 px differ (EmuTOS source column 7 single), T14L 0, T14M 0.
+  method/findpix.py, method/pix.py: pick/query the v_get_pixel points of vdi-v18-t2.tsv from the BINs.
+  Superseded first pair (deleted, not evidence): an earlier probe build ran T14B/T14H at y 60, where
+  EmuTOS' unclipped text runs below v_bas_ad; moved to y 200 (inside the frame buffer) before the runs above.
+
+K19 BELOW 400 LINES (method/k19-240.sh) -- NOT a pinned oracle profile
+  EmuTOS: the falcontc command line with the pinned ROM and hatari.cfg, EMUDESK.INF mode word 0x011C
+  (VERTFLAG) instead of 0x001C -> 640x240 truecolor (H00 yres 239). k19/emutos-240.
+  NewTOS: QEMU raspi4b -global bcm2835-fb.yres=240; serial "[fb] VideoCore display geometry detected:
+  640x240". k19/newtos-240 (card manifest, card sha256 before bfc9654c..., after 921705f3...).
+  T19A vqt_attributes PTSOUT: EmuTOS 7 6 8 8 (8x8 font), NewTOS 7 13 8 16 (8x16).
+  At 640x480 (probe T19A, falcontc) both 7 13 8 16.
+
+DEPENDENCIES  deps/<fn>-up.txt, deps/<fn>-down.txt (cargo xtask deps on the main tree at 4a8e1ae3).
+
+NOT DRIVEN / OPEN
+  Real Pi4: nothing run. A real GDOS (font files, ASSIGN.SYS) is not installed on the oracle. tt only for
+  the raster table. No NewTOS argument tracer exists for the VDI (see input check above).

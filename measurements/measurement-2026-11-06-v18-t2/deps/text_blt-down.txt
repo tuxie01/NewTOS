@@ -1,0 +1,33 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps text_blt --down`
+deps text_blt --down (kinds asm,direct,layer,table,vector): 14 functions besides text_blt
+depth	function	layer	reached over	newtos	class
+0	text_blt	vdi	-	tos-api/src/vdi/text.rs@draw_cell tos-api/src/vdi/text.rs@make_glyph tos-api/src/vdi/text.rs@output_text_rotated	mapped
+1	char_resize	vdi	text_blt -> char_resize [direct]	tos-api/src/vdi/text.rs@resize	mapped
+1	check_clip	vdi	text_blt -> check_clip [direct]	kernel/src/vdi_backend.rs@draw_glyph_sized	mapped
+1	do_clip	vdi	text_blt -> do_clip [direct]	kernel/src/vdi_backend.rs@blit_mono kernel/src/vdi_backend.rs@copy_rect kernel/src/vdi_backend.rs@draw_glyph_sized tos-api/src/vdi/raster.rs@mem_to_screen	mapped
+1	pre_blit	vdi	text_blt -> pre_blit [direct]	tos-api/src/vdi/text.rs@build_cell	mapped
+1	rotate	vdi	text_blt -> rotate [direct]	tos-api/src/vdi/text.rs@rotate_cell	mapped
+1	scale	vdi	text_blt -> scale [direct]	tos-api/src/vdi/text.rs@scale_glyph	mapped
+1	screen_blit	vdi	text_blt -> screen_blit [direct]	kernel/src/vdi_backend.rs@draw_glyph_sized	mapped
+2	normal_blit	vdi	pre_blit -> normal_blit [direct]	kernel/src/vdi_backend.rs@draw_glyph_sized	mapped
+2	outline	vdi	pre_blit -> outline [direct]	tos-api/src/vdi/text.rs@build_cell	mapped
+2	scaledown	vdi	scale -> scaledown [direct]	tos-api/src/vdi/text.rs@scale_row_down	mapped
+2	scaleup	vdi	scale -> scaleup [direct]	tos-api/src/vdi/text.rs@scale_row_up	mapped
+2	screen_blit16	vdi	screen_blit -> screen_blit16 [direct]	kernel/src/vdi_backend.rs@draw_glyph_sized	mapped
+3	merge_byte	vdi	outline -> merge_byte [direct]	tos-api/src/vdi/text.rs@build_cell	mapped
+3	shift_and_update	vdi	scaledown -> shift_and_update [direct]	tos-api/src/vdi/text.rs@scale_row_down tos-api/src/vdi/text.rs@scale_row_up	mapped
+
+table edges inside the set (0):
+
+layer edges inside the set (0):
+
+vector edges inside the set (0):
+
+coverage of the set (15 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+vdi         16     16 100.0%      0   0.0%      0   0.0%
+total       16     16 100.0%      0   0.0%      0   0.0%
+touched layers: vdi (the layers of text_blt; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

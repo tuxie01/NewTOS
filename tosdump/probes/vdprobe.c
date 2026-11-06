@@ -30,6 +30,11 @@
  *
  * Every case starts from the same state: v_clrwk, the attribute defaults the
  * dumper's reset uses (tosdump/core/runner.c td_reset_vdi), clipping off.
+ *
+ * TASK/V18 part 2 appends cases T* (function t2, after k17): text, escapes and
+ * the raster rider (K13-K16, K18, K19; underline/glyphs with clipping off,
+ * the local PTSIN copy, overlapping copies).  Text cases restore the text
+ * attributes themselves (treset); reset() sets none.
  */
 #include <osbind.h>
 #include <stdarg.h>
@@ -85,7 +90,7 @@ static void i2(int16_t op, int16_t a, int16_t b) { intin[0] = a; intin[1] = b; v
 static void p1(int16_t op, int16_t x, int16_t y) { ptsin[0] = x; ptsin[1] = y; vdi(op, 0, 1, 0); }
 
 /* ---- output ------------------------------------------------------------ */
-static char logbuf[32768];
+static char logbuf[65536];
 static int loglen;
 static long binfh = -1;
 
@@ -1012,6 +1017,570 @@ static void k17(void)
 }
 
 
+/* ==== V18 part 2 (TASK/V18, docs/audits/2026-11-06-v18-t2-vdi-text.md): text, escapes, and the raster
+ * additions of the part-2 rider.  Case names start with 'T'; everything below is appended after k17, so
+ * the earlier cases keep their numbers and bytes.  reset() sets no text attribute, so every text case
+ * restores them itself (treset, the text part of tosdump/core/runner.c td_reset_vdi). */
+static int16_t bigin[4200];
+static int only_t19;
+
+static void treset(void)
+{
+	i1(21, 1);				/* vst_font 1 */
+	p1(12, 0, work_pts[1]);			/* vst_height DEF_CHHT */
+	i1(13, 0);				/* vst_rotation 0 */
+	i1(22, 1);				/* vst_color 1 */
+	i1(106, 0);				/* vst_effects none */
+	i2(39, 0, 0);				/* vst_alignment */
+}
+
+static void tbegin(const char *name, const char *what)
+{
+	begin(name, what);
+	treset();
+}
+
+static void gtext(int x, int y, const char *s)
+{
+	int i, n = (int)strlen(s);
+
+	for (i = 0; i < n; i++)
+		intin[i] = (int16_t)(uint8_t)s[i];
+	ptsin[0] = (int16_t)x; ptsin[1] = (int16_t)y;
+	vdi(8, 0, 1, (int16_t)n);
+}
+
+/* v_gtext / v_justified with up to 4198 characters, 'A'..'Z' cycling (bigin, not intin[300]) */
+static void gtext_big(int x, int y, int n)
+{
+	int i;
+
+	for (i = 0; i < n; i++)
+		bigin[i] = (int16_t)('A' + i % 26);
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 8; contrl[1] = 1; contrl[3] = (int16_t)n; contrl[6] = handle;
+	ptsin[0] = (int16_t)x; ptsin[1] = (int16_t)y;
+	td_abi_vdi(contrl, bigin, ptsin, intout, ptsout);
+}
+
+/* as gtext_big, the last character replaced by `last` */
+static void gtext_big2(int x, int y, int n, int last)
+{
+	int i;
+
+	for (i = 0; i < n; i++)
+		bigin[i] = (int16_t)('A' + i % 26);
+	bigin[n - 1] = (int16_t)last;
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 8; contrl[1] = 1; contrl[3] = (int16_t)n; contrl[6] = handle;
+	ptsin[0] = (int16_t)x; ptsin[1] = (int16_t)y;
+	td_abi_vdi(contrl, bigin, ptsin, intout, ptsout);
+}
+
+static void justified_big(int x, int y, int len, int iw, int ic, int n)
+{
+	int i;
+
+	bigin[0] = (int16_t)iw; bigin[1] = (int16_t)ic;
+	for (i = 0; i < n; i++)
+		bigin[2 + i] = (int16_t)((i % 7 == 6) ? ' ' : 'A' + i % 26);
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 11; contrl[1] = 2; contrl[3] = (int16_t)(n + 2); contrl[5] = 10; contrl[6] = handle;
+	ptsin[0] = (int16_t)x; ptsin[1] = (int16_t)y; ptsin[2] = (int16_t)len; ptsin[3] = 0;
+	td_abi_vdi(contrl, bigin, ptsin, intout, ptsout);
+}
+
+static void justified(int x, int y, int len, int iw, int ic, const char *s)
+{
+	int i, n = (int)strlen(s);
+
+	intin[0] = (int16_t)iw; intin[1] = (int16_t)ic;
+	for (i = 0; i < n; i++)
+		intin[2 + i] = (int16_t)(uint8_t)s[i];
+	ptsin[0] = (int16_t)x; ptsin[1] = (int16_t)y; ptsin[2] = (int16_t)len; ptsin[3] = 0;
+	vdi(11, 10, 2, (int16_t)(n + 2));
+}
+
+static void logout(const char *tag, int nint, int npts)
+{
+	int i;
+
+	emit("   %s c2=%d c4=%d io", tag, contrl[2], contrl[4]);
+	for (i = 0; i < nint; i++)
+		emit(" %d", intout[i]);
+	emit(" po");
+	for (i = 0; i < 2 * npts; i++)
+		emit(" %d", ptsout[i]);
+	emit("\n");
+}
+
+/* ---- T19 (K19): the default font of a freshly opened workstation ------------------------------------- */
+static void t19(void)
+{
+	begin("T19A", "default font right after v_opnvwk: vqt_attributes, vqt_fontinfo (before any vst_*)");
+	vdi(38, 0, 0, 0);
+	logout("vqt_attributes", 6, 2);
+	vdi(131, 0, 0, 0);
+	logout("vqt_fontinfo", 2, 5);
+	gtext(10, 30, "Ag");
+	grab("T19A", 0, 0, 40, 40);
+}
+
+/* ---- T13 (K13): vst_load_fonts the way GDOS calls it -----------------------------------------------------
+ * GDOS hands the ROM VDI a font chain in CONTRL[10..11] and a scratch buffer in CONTRL[7..8] / offset
+ * CONTRL[9] (vdi_text.c:1292-1350).  The chain here is one font, id 7, built in memory as the EmuTOS
+ * Fonthead (include/fonthdr.h; m68k gcc packs it with 2-byte alignment, exactly that layout).  NewTOS
+ * defines no LP64 layout for these CONTRL slots and reads none of them (attributes.rs vst_load_fonts);
+ * the LP64 side passes the pointers in CONTRL[7..10] and [12..15], offset CONTRL[11]. */
+struct t13_fh {
+	int16_t font_id, point;
+	char name[32];
+	uint16_t first_ade, last_ade, top, ascent, half, descent, bottom, max_char_width, max_cell_width;
+	uint16_t left_offset, right_offset, thicken, ul_size, lighten, skew, flags;
+	const uint8_t *hor_table;
+	const uint16_t *off_table;
+	const uint16_t *dat_table;
+	uint16_t form_width, form_height;
+	struct t13_fh *next_font;
+	uint16_t reserved;
+};
+static struct t13_fh t13_font;
+static uint16_t t13_off[65];
+static uint16_t t13_dat[64 * 8 / 2];
+static uint16_t t13_scratch[2048];
+
+static void t13_build(void)
+{
+	uint8_t *d = (uint8_t *)t13_dat;
+	int c, r;
+
+	memset(&t13_font, 0, sizeof t13_font);
+	t13_font.font_id = 7;
+	t13_font.point = 12;
+	memcpy(t13_font.name, "AUDIT FONT SEVEN", 16);
+	t13_font.first_ade = 32; t13_font.last_ade = 95;
+	t13_font.top = 6; t13_font.ascent = 6; t13_font.half = 4; t13_font.descent = 1; t13_font.bottom = 1;
+	t13_font.max_char_width = 8; t13_font.max_cell_width = 8;
+	t13_font.left_offset = 1; t13_font.right_offset = 1; t13_font.thicken = 1; t13_font.ul_size = 1;
+	t13_font.lighten = 0x5555; t13_font.skew = 0x5555;
+	t13_font.flags = 4 | 8;			/* F_STDFORM | F_MONOSPACE */
+	for (c = 0; c <= 64; c++)
+		t13_off[c] = (uint16_t)(8 * c);
+	for (r = 0; r < 8; r++)
+		for (c = 0; c < 64; c++)
+			d[r * 64 + c] = (uint8_t)(((c * 29 + r * 53) ^ 0xA5) | 0x81);
+	t13_font.off_table = t13_off;
+	t13_font.dat_table = t13_dat;
+	t13_font.form_width = 64; t13_font.form_height = 8;
+}
+
+static void t13_load(void)
+{
+	void *scr = t13_scratch, *fp = &t13_font;
+
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 119; contrl[3] = 1; contrl[6] = handle;
+	intin[0] = 0;
+	if (sizeof(void *) == 4) {
+		memcpy(&contrl[7], &scr, 4);
+		contrl[9] = 2048;
+		memcpy(&contrl[10], &fp, 4);
+	} else {
+		memcpy(&contrl[7], &scr, sizeof scr);
+		contrl[11] = 2048;
+		memcpy(&contrl[12], &fp, sizeof fp);
+	}
+	intout[0] = 0x7777;
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);
+}
+
+static void t13_name(int idx)
+{
+	char nm[33];
+	int i;
+
+	intin[0] = (int16_t)idx;
+	memset(intout, 0x77, 34 * 2);
+	vdi(130, 0, 0, 1);
+	for (i = 0; i < 32; i++) {
+		int ch = intout[1 + i] & 0xFF;
+		nm[i] = (char)((ch >= 32 && ch < 127) ? ch : '.');
+	}
+	nm[32] = 0;
+	emit("   vqt_name(%d) c4=%d id=%d name=[%s]\n", idx, contrl[4], intout[0], nm);
+}
+
+static void t13(void)
+{
+	t13_build();
+	tbegin("T13A", "vst_load_fonts with a GDOS-style chain (font id 7), then vst_font(7), v_gtext");
+	t13_load();
+	emit("   vst_load_fonts#1 c2=%d c4=%d io %d\n", contrl[2], contrl[4], intout[0]);
+	t13_name(1);
+	t13_name(2);
+	intin[0] = 0;
+	vdi(102, 0, 0, 1);			/* vq_extnd(0) */
+	emit("   vq_extnd(0) io[10]=%d\n", intout[10]);
+	i1(21, 7);
+	logout("vst_font(7)", 1, 0);
+	vdi(38, 0, 0, 0);
+	logout("vqt_attributes", 6, 2);
+	vdi(131, 0, 0, 0);
+	logout("vqt_fontinfo", 2, 5);
+	gtext(20, 60, "AB@_");
+	grab("T13A", 0, 30, 120, 50);
+	t13_load();
+	emit("   vst_load_fonts#2 c4=%d io %d\n", contrl[4], intout[0]);
+	intin[0] = 0;
+	vdi(120, 0, 0, 1);			/* vst_unload_fonts */
+	i1(21, 7);
+	logout("vst_font(7) after unload", 1, 0);
+	t13_name(2);
+	i1(21, 1);
+	treset();
+	begin("T13B", "after the unload: v_gtext in the system font (state restored?)");
+	treset();
+	gtext(20, 60, "AB@_");
+	grab("T13B", 0, 30, 120, 50);
+}
+
+/* ---- T14 (K14): exact-double text (dda_inc 0xFFFF) and the horizontal DDA ---------------------------- */
+static void t14(void)
+{
+	tbegin("T14A", "vst_height(26) = exact double, v_gtext 'AUDIT' at (10,60)");
+	p1(12, 0, 26);
+	logout("vst_height(26)", 0, 2);
+	gtext(10, 60, "AUDIT");
+	grab("T14A", 0, 20, 200, 60);
+	tbegin("T14B", "vst_height(26), v_gtext of 4100 chars at (10,200) (wraps the WORD x 1x)");
+	p1(12, 0, 26);
+	gtext_big(10, 200, 4100);
+	grab("T14B", 0, 160, 640, 60);
+	tbegin("T14C", "unscaled v_gtext of 4100 chars at (10,60)");
+	gtext_big(10, 60, 4100);
+	grab("T14C", 0, 40, 640, 30);
+	tbegin("T14D", "vst_height(20) (DDA 7/13 up), v_gtext 20 chars at x=-60 (leading chars clipped)");
+	p1(12, 0, 20);
+	gtext(-60, 60, "ABCDEFGHIJKLMNOPQRST");
+	grab("T14D", 0, 30, 400, 40);
+	tbegin("T14E", "vst_height(20), clip (100,0)-(639,479), v_gtext 20 chars at x=0");
+	p1(12, 0, 20);
+	clip(1, 100, 0, 639, 479);
+	gtext(0, 60, "ABCDEFGHIJKLMNOPQRST");
+	grab("T14E", 0, 30, 400, 40);
+	tbegin("T14F", "vst_height(20), v_gtext 20 chars at x=10 (nothing clipped, control)");
+	p1(12, 0, 20);
+	gtext(10, 60, "ABCDEFGHIJKLMNOPQRST");
+	grab("T14F", 0, 30, 400, 40);
+	tbegin("T14G", "vst_height(26), v_gtext 20 chars at x=-60 (exact double, leading chars clipped)");
+	p1(12, 0, 26);
+	gtext(-60, 60, "ABCDEFGHIJKLMNOPQRST");
+	grab("T14G", 0, 30, 640, 40);
+	tbegin("T14H", "vst_height(26), v_justified 4096 chars interchar, max_x -32768 (advance 8), at (10,200)");
+	p1(12, 0, 26);
+	justified_big(10, 200, -32768, 0, 1, 4096);
+	grab("T14H", 0, 170, 640, 40);
+	tbegin("T14I", "vst_height(20), v_justified 20 chars interchar len 400 at x=-60");
+	p1(12, 0, 20);
+	justified(-60, 60, 400, 0, 1, "ABCDEFGHIJKLMNOPQRST");
+	grab("T14I", 0, 30, 400, 40);
+	tbegin("T14J", "vst_height(10) (DDA down), v_gtext 20 chars at x=-30 (leading chars clipped)");
+	p1(12, 0, 10);
+	gtext(-30, 60, "ABCDEFGHIJKLMNOPQRST");
+	grab("T14J", 0, 40, 300, 30);
+	/* K14 proper: with clipping off text_blt scales every character (check_clip returns 0 without CLIP,
+	 * vdi_textblit.c:132-133), so XDDA falls by DELX = 8 per char from 32767 (vdi_text.c:457,
+	 * vdi_textblit.c:723-733) and the 4096th char (index 4095) is scaled with seed 7: source column 7 is
+	 * not doubled.  The WORD x wraps after 4096 * 16 px, so char 4095 lands on the screen again, at
+	 * x0 - 16.  Char 14 has column 7 set in 13 of its 16 rows (bios/fnt_st_8x16.c).  T14L is the same
+	 * with 4095 chars (last char index 4094, seed 15: every column doubled). */
+	tbegin("T14K", "vst_height(26), clip off, 4096 chars at (26,200), char 4095 = 14 lands at x 10");
+	p1(12, 0, 26);
+	gtext_big2(26, 200, 4096, 14);
+	grab("T14K", 0, 160, 64, 50);
+	tbegin("T14L", "control: vst_height(26), clip off, 4095 chars at (42,200), char 4094 = 14 lands at x 10");
+	p1(12, 0, 26);
+	gtext_big2(42, 200, 4095, 14);
+	grab("T14L", 0, 160, 64, 50);
+	tbegin("T14M", "vst_height(26), clip on (0,0)-(639,479), 4096 chars at (26,200), char 4095 = 14");
+	p1(12, 0, 26);
+	clip(1, 0, 0, 639, 479);
+	gtext_big2(26, 200, 4096, 14);
+	grab("T14M", 0, 160, 64, 50);
+}
+
+/* ---- T15 (K15): vst_font after a scaled size; the scaled header's metrics ----------------------------- */
+static void t15(void)
+{
+	tbegin("T15A", "vst_height(20), vst_font(1), v_gtext");
+	p1(12, 0, 20);
+	logout("vst_height(20)", 0, 2);
+	i1(21, 1);
+	logout("vst_font(1)", 1, 0);
+	vdi(38, 0, 0, 0);
+	logout("vqt_attributes", 6, 2);
+	vdi(131, 0, 0, 0);
+	logout("vqt_fontinfo", 2, 5);
+	gtext(10, 60, "ABCDEF");
+	grab("T15A", 0, 30, 200, 40);
+	tbegin("T15B", "vst_point(18) (doubled 8x8), vst_font(1), v_gtext");
+	i1(107, 18);
+	logout("vst_point(18)", 1, 2);
+	i1(21, 1);
+	logout("vst_font(1)", 1, 0);
+	vdi(38, 0, 0, 0);
+	logout("vqt_attributes", 6, 2);
+	gtext(10, 60, "ABCDEF");
+	grab("T15B", 0, 30, 200, 40);
+	tbegin("T15C", "vst_point(18), vst_font(9) (no such face), v_gtext");
+	i1(107, 18);
+	i1(21, 9);
+	logout("vst_font(9)", 1, 0);
+	vdi(38, 0, 0, 0);
+	logout("vqt_attributes", 6, 2);
+	gtext(10, 60, "ABCDEF");
+	grab("T15C", 0, 30, 200, 40);
+	tbegin("T15D", "vst_height(3) (below the 6x6 top), vst_font(1), v_gtext");
+	p1(12, 0, 3);
+	logout("vst_height(3)", 0, 2);
+	i1(21, 1);
+	vdi(38, 0, 0, 0);
+	logout("vqt_attributes", 6, 2);
+	gtext(10, 60, "ABCDEF");
+	grab("T15D", 0, 30, 200, 40);
+	tbegin("T15E", "vst_point(11), vst_font(1): vqt_attributes / fontinfo");
+	i1(107, 11);
+	logout("vst_point(11)", 1, 2);
+	i1(21, 1);
+	vdi(38, 0, 0, 0);
+	logout("vqt_attributes", 6, 2);
+	vdi(131, 0, 0, 0);
+	logout("vqt_fontinfo", 2, 5);
+	gtext(10, 60, "ABCDEF");
+	grab("T15E", 0, 30, 200, 40);
+}
+
+/* ---- T16 (K16): v_justified at 900/1800/2700 ---------------------------------------------------------- */
+static void t16(void)
+{
+	static const int16_t ang[4] = { 0, 900, 1800, 2700 };
+	static const int8_t flg[3][2] = { { 0, 1 }, { 1, 0 }, { 1, 1 } };
+	char nm[9], what[160];
+	int a, f;
+
+	for (a = 0; a < 4; a++) {
+		for (f = 0; f < 3; f++) {
+			nm[0] = 'T'; nm[1] = '1'; nm[2] = '6'; nm[3] = (char)('0' + a); nm[4] = (char)('0' + f); nm[5] = 0;
+			snprintf(what, sizeof what, "v_justified chup %d interword %d interchar %d, 'AB CD EF' len 100 at (320,240)",
+				 ang[a], flg[f][0], flg[f][1]);
+			tbegin(nm, what);
+			i1(13, ang[a]);
+			justified(320, 240, 100, flg[f][0], flg[f][1], "AB CD EF");
+			grab(nm, 200, 120, 240, 240);
+		}
+		nm[0] = 'T'; nm[1] = '1'; nm[2] = '6'; nm[3] = (char)('0' + a); nm[4] = 'g'; nm[5] = 0;
+		snprintf(what, sizeof what, "control: v_gtext chup %d 'AB CD EF' at (320,240)", ang[a]);
+		tbegin(nm, what);
+		i1(13, ang[a]);
+		gtext(320, 240, "AB CD EF");
+		grab(nm, 200, 120, 240, 240);
+	}
+}
+
+/* ---- T18 (K18): escape 17 v_hardcopy -> Scrdmp (vdi_esc.c:260-263, bios/xbios.c:490-494) --------------- */
+#define T18_DUMPFLG 0x4EE
+static long t18_set5(void) { *(volatile int16_t *)(uintptr_t)T18_DUMPFLG = 5; return 0; }
+static long t18_get(void) { return *(volatile int16_t *)(uintptr_t)T18_DUMPFLG; }
+static long t18_restore(void) { *(volatile int16_t *)(uintptr_t)T18_DUMPFLG = -1; return 0; }
+
+static void t18(void)
+{
+	long before, a, b, c;
+
+	begin("T18A", "dumpflg ($4EE) around v_hardcopy (escape 17) and Scrdmp (XBIOS 20)");
+	before = Supexec(t18_get);
+	Supexec(t18_set5);
+	a = Supexec(t18_get);
+	vdi(5, 17, 0, 0);
+	b = Supexec(t18_get);
+	emit("   dumpflg boot=%ld set=%ld after v_hardcopy=%ld c2=%d c4=%d\n", before, a, b, contrl[2], contrl[4]);
+	Supexec(t18_set5);
+	Scrdmp();
+	c = Supexec(t18_get);
+	emit("   dumpflg after Scrdmp=%ld\n", c);
+	Supexec(t18_restore);
+	grab("T18A", 0, 0, 8, 8);
+}
+
+/* ---- TU (rider, V20): text underline with vs_clip(0) (vdi_text.c:519-534: abline without clip_line) ---- */
+static void tu(void)
+{
+	tbegin("TUA", "underline, clip off, v_gtext 'ABCDEFGH' at (600,100): runs past x 639");
+	i1(106, 8);
+	gtext(600, 100, "ABCDEFGH");
+	grab("TUA", 560, 80, 80, 40);
+	grab("TUAw", 0, 80, 80, 40);
+	tbegin("TUB", "underline, clip off, v_gtext 'ABCDEFGH' at (-30,150): starts left of x 0");
+	i1(106, 8);
+	gtext(-30, 150, "ABCDEFGH");
+	grab("TUB", 0, 130, 80, 40);
+	grab("TUBw", 600, 130, 40, 40);
+	tbegin("TUC", "underline, clip off, vst_height(26), 'ABCDEFGH' at (560,200)");
+	i1(106, 8);
+	p1(12, 0, 26);
+	gtext(560, 200, "ABCDEFGH");
+	grab("TUC", 520, 160, 120, 60);
+	grab("TUCw", 0, 160, 120, 60);
+	tbegin("TUD", "control: underline, clip on (0,0)-(639,479), 'ABCDEFGH' at (600,100)");
+	i1(106, 8);
+	clip(1, 0, 0, 639, 479);
+	gtext(600, 100, "ABCDEFGH");
+	grab("TUD", 560, 80, 80, 40);
+	grab("TUDw", 0, 80, 80, 40);
+	tbegin("TUE", "underline+light, clip off, 'ABCDEFGH' at (600,300)");
+	i1(106, 8 | 2);
+	gtext(600, 300, "ABCDEFGH");
+	grab("TUE", 560, 280, 80, 40);
+	grab("TUEw", 0, 280, 80, 40);
+	tbegin("TUF", "control: underline, clip off, 'ABCDEFGH' at (100,100) (inside)");
+	i1(106, 8);
+	gtext(100, 100, "ABCDEFGH");
+	grab("TUF", 80, 80, 120, 40);
+}
+
+/* ---- TP (rider, V23): handlers read GSX_ENTRY's local PTSIN copy (vdi_asm.S:79-104) ---------------------
+ * CONTRL[1] smaller than what the handler reads: EmuTOS sees the rest of an earlier call's copy, a
+ * handler reading the caller's PTSIN directly sees the caller's array. */
+static void tp(void)
+{
+	tbegin("TPA", "v_pline (100,100)-(200,150); vs_clip(1) CONTRL[1]=0, caller PTSIN 10,10,50,50; vr_recfl pen 2");
+	line2(100, 100, 200, 150);
+	intin[0] = 1;
+	ptsin[0] = 10; ptsin[1] = 10; ptsin[2] = 50; ptsin[3] = 50;
+	vdi(129, 0, 0, 1);
+	i1(25, 2);
+	recfl(0, 0, 299, 249);
+	grab("TPA", 0, 0, 300, 250);
+	tbegin("TPB", "as TPA with CONTRL[1]=1 (first corner copied, second not)");
+	line2(100, 100, 200, 150);
+	intin[0] = 1;
+	ptsin[0] = 10; ptsin[1] = 10; ptsin[2] = 50; ptsin[3] = 50;
+	vdi(129, 0, 1, 1);
+	i1(25, 2);
+	recfl(0, 0, 299, 249);
+	grab("TPB", 0, 0, 300, 250);
+	tbegin("TPC", "v_pline from (9,470); vsl_width CONTRL[1]=0, caller PTSIN[0]=3; line (20,300)-(200,300)");
+	line2(9, 470, 9, 470);
+	ptsin[0] = 3; ptsin[1] = 0;
+	vdi(16, 0, 0, 0);
+	logout("vsl_width", 0, 1);
+	line2(20, 300, 200, 300);
+	grab("TPC", 0, 280, 220, 40);
+	tbegin("TPD", "v_pline (0,26)-(0,26); vst_height CONTRL[1]=0, caller PTSIN[1]=13; v_gtext 'ABC'");
+	line2(0, 26, 0, 26);
+	ptsin[0] = 0; ptsin[1] = 13;
+	vdi(12, 0, 0, 0);
+	logout("vst_height", 0, 2);
+	gtext(20, 380, "ABC");
+	grab("TPD", 0, 340, 100, 50);
+	tbegin("TPE", "control: v_pline, then vs_clip(1) with CONTRL[1]=2 (10,10,50,50), vr_recfl pen 2");
+	line2(100, 100, 200, 150);
+	clip(1, 10, 10, 50, 50);
+	i1(25, 2);
+	recfl(0, 0, 299, 249);
+	grab("TPE", 0, 0, 300, 250);
+}
+
+/* ---- TR (rider, V26): copy direction of an overlapping 16/12-plane memory copy (vdi_raster.c:989-1002:
+ * src < dst start pointers -> bottom-up, right-to-left) and screen -> screen. */
+static uint16_t tr_buf[WK_GUARD + WK_MAX + WK_GUARD];
+
+static void tr_run(const char *name, const char *what, int planes, int wd, int h, int soff, int doff,
+		   int sx, int sy, int bw, int bh, int dx, int dy)
+{
+	MFDB src, dst;
+	int n = wd * 16 * h + 16;
+
+	begin(name, what);
+	wk_fill(tr_buf, n, 0x16180339UL + (uint32_t)soff * 5UL + (uint32_t)doff);
+	memset(&src, 0, sizeof src);
+	memset(&dst, 0, sizeof dst);
+	src.fd_addr = tr_buf + WK_GUARD + soff;
+	dst.fd_addr = tr_buf + WK_GUARD + doff;
+	src.fd_w = dst.fd_w = (int16_t)(16 * wd);
+	src.fd_h = dst.fd_h = (int16_t)h;
+	src.fd_wdwidth = dst.fd_wdwidth = (int16_t)wd;
+	src.fd_nplanes = dst.fd_nplanes = (int16_t)planes;
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 109; contrl[1] = 4; contrl[3] = 1; contrl[6] = handle;
+	set_mfdb_ptr(0, &src);
+	set_mfdb_ptr(1, &dst);
+	intin[0] = 3;
+	ptsin[0] = (int16_t)sx; ptsin[1] = (int16_t)sy;
+	ptsin[2] = (int16_t)(sx + bw - 1); ptsin[3] = (int16_t)(sy + bh - 1);
+	ptsin[4] = (int16_t)dx; ptsin[5] = (int16_t)dy;
+	ptsin[6] = (int16_t)(dx + bw - 1); ptsin[7] = (int16_t)(dy + bh - 1);
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);
+	wk_record(name, 'b', tr_buf, n);
+}
+
+static void tr_screen(const char *name, const char *what, int sx, int sy, int dx, int dy)
+{
+	MFDB s, d;
+	int i;
+
+	begin(name, what);
+	for (i = 0; i < 12; i++) {
+		i1(25, (int16_t)(1 + i % 15));
+		recfl(100 + 10 * i, 100, 109 + 10 * i, 219);
+	}
+	memset(&s, 0, sizeof s);
+	memset(&d, 0, sizeof d);
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 109; contrl[1] = 4; contrl[3] = 1; contrl[6] = handle;
+	set_mfdb_ptr(0, &s);
+	set_mfdb_ptr(1, &d);
+	intin[0] = 3;
+	ptsin[0] = (int16_t)sx; ptsin[1] = (int16_t)sy;
+	ptsin[2] = (int16_t)(sx + 99); ptsin[3] = (int16_t)(sy + 79);
+	ptsin[4] = (int16_t)dx; ptsin[5] = (int16_t)dy;
+	ptsin[6] = (int16_t)(dx + 99); ptsin[7] = (int16_t)(dy + 79);
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);
+	grab(name, 80, 80, 180, 160);
+}
+
+static void tr(void)
+{
+	tr_run("TRA", "16 planes, two MFDBs, dst fd_addr = src + 3 words, block 32x3 (0,0)->(0,0)", 16, 2, 4, 0, 3, 0, 0, 32, 3, 0, 0);
+	tr_run("TRB", "16 planes, two MFDBs, src fd_addr = dst + 3 words, block 32x3 (0,0)->(0,0)", 16, 2, 4, 3, 0, 0, 0, 32, 3, 0, 0);
+	tr_run("TRC", "16 planes, one MFDB, fd_wdwidth 1, block 24x1 (8,0)->(0,1) (src < dst, runs on into row 1/2)", 16, 1, 4, 0, 0, 8, 0, 24, 1, 0, 1);
+	tr_run("TRD", "16 planes, one MFDB, fd_wdwidth 1, block 24x1 (0,1)->(8,0) (src > dst)", 16, 1, 4, 0, 0, 0, 1, 24, 1, 8, 0);
+	tr_run("TRE", "control: 16 planes, one MFDB, in-form 20x2 (0,0)->(3,0)", 16, 2, 4, 0, 0, 0, 0, 20, 2, 3, 0);
+	tr_run("TRF", "control: 16 planes, one MFDB, in-form 20x2 (3,1)->(0,0)", 16, 2, 4, 0, 0, 3, 1, 20, 2, 0, 0);
+	tr_run("TRG", "12 planes, one MFDB, fd_wdwidth 2, 32x2 (0,0)->(0,1)", 12, 2, 4, 0, 0, 0, 0, 32, 2, 0, 1);
+	tr_run("TRH", "12 planes, one MFDB, fd_wdwidth 2, 32x2 (0,1)->(0,0)", 12, 2, 4, 0, 0, 0, 1, 32, 2, 0, 0);
+	tr_run("TRI", "16 planes, two MFDBs, dst = src + 1 word, fd_wdwidth 1, block 16x4 (0,0)->(0,0)", 16, 1, 4, 0, 1, 0, 0, 16, 4, 0, 0);
+	tr_screen("TRJ", "screen->screen 100x80 (100,100)->(103,102), stripes", 100, 100, 103, 102);
+	tr_screen("TRK", "screen->screen 100x80 (103,102)->(100,100)", 103, 102, 100, 100);
+	tr_screen("TRL", "screen->screen 100x80 (110,100)->(100,110) (down-left)", 110, 100, 100, 110);
+	tr_screen("TRM", "screen->screen 100x80 (100,110)->(110,100) (up-right)", 100, 110, 110, 100);
+}
+
+static void t2(void)
+{
+	t19();
+	t13();
+	t14();
+	t15();
+	t16();
+	tu();
+	tp();
+	tr();
+	t18();
+	treset();
+}
+
+
 int main(void)
 {
 	int16_t ap_id;
@@ -1044,6 +1613,23 @@ int main(void)
 	if (binfh >= 0)
 		Fwrite((short)binfh, 6L, hd);
 
+	{
+		/* VDPROBE.SEL with "T19" in the current directory: only the default-font case (K19 run on a
+		 * 640x240 screen, TASK/V18 part 2); absent, as in every other run, everything runs. */
+		char sel[4] = { 0, 0, 0, 0 };
+		long sf = Fopen("VDPROBE.SEL", 0);
+
+		if (sf >= 0) {
+			Fread((short)sf, 3L, sel);
+			Fclose((short)sf);
+		}
+		only_t19 = memcmp(sel, "T19", 3) == 0;
+	}
+	if (only_t19) {
+		k_calibration();
+		t19();
+		goto done;
+	}
 	k_calibration();
 	k1();
 	k2();
@@ -1060,7 +1646,9 @@ int main(void)
 	k15();
 	k16();
 	k17();
+	t2();
 
+done:
 	if (binfh >= 0)
 		Fclose((short)binfh);
 	reset();

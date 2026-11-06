@@ -1,0 +1,23 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps scrdmp --down`
+deps scrdmp --down (kinds asm,direct,layer,table,vector): 2 functions besides scrdmp
+depth	function	layer	reached over	newtos	class
+0	scrdmp	bios	-	tos-api/src/xbios/system.rs@scrdmp	mapped
+1	just_rts	ext	scrdmp -> just_rts [vector via dump_vec]		unmapped
+1	protect_v	ext	scrdmp -> protect_v [direct]		unmapped
+
+table edges inside the set (0):
+
+layer edges inside the set (0):
+
+vector edges inside the set (1):
+via dump_vec	scrdmp -> just_rts	bios/xbios.c:492
+
+coverage of the set (3 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+bios         1      1 100.0%      0   0.0%      0   0.0%
+ext          2      0   0.0%      0   0.0%      2 100.0%
+total        3      1  33.3%      0   0.0%      2  66.7%
+touched layers: bios (the layers of scrdmp; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

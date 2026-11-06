@@ -1,0 +1,23 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps bit_blt --down`
+deps bit_blt --down (kinds asm,direct,layer,table,vector): 3 functions besides bit_blt
+depth	function	layer	reached over	newtos	class
+0	bit_blt	vdi	-	tos-api/src/vdi/raster.rs@planar_mem_to_mem	mapped
+1	hwblit_raster	vdi	bit_blt -> hwblit_raster [direct]	-	design
+2	flush_data_cache	bios	hwblit_raster -> flush_data_cache [direct]	-	unmapped
+2	invalidate_data_cache	bios	hwblit_raster -> invalidate_data_cache [direct]	-	unmapped
+
+table edges inside the set (0):
+
+layer edges inside the set (0):
+
+vector edges inside the set (0):
+
+coverage of the set (4 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+bios         2      0   0.0%      0   0.0%      2 100.0%
+vdi          2      1  50.0%      1  50.0%      0   0.0%
+total        4      1  25.0%      1  25.0%      2  50.0%
+touched layers: vdi (the layers of bit_blt; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

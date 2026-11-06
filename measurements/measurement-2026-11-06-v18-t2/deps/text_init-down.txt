@@ -1,0 +1,21 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps text_init --down`
+deps text_init --down (kinds asm,direct,layer,table,vector): 1 functions besides text_init
+depth	function	layer	reached over	newtos	class
+0	text_init	vdi	-	tos-api/src/vdi/workstation.rs@font_ring_fold	mapped
+1	trnsfont	vdi	text_init -> trnsfont [direct]	-	unmapped
+
+table edges inside the set (0):
+
+layer edges inside the set (0):
+
+vector edges inside the set (0):
+
+coverage of the set (2 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+vdi          2      1  50.0%      0   0.0%      1  50.0%
+total        2      1  50.0%      0   0.0%      1  50.0%
+touched layers: vdi (the layers of text_init; --layers to choose)
+unmapped in the touched layers (1):
+vdi	trnsfont	vdi/vdi_text.c
+complete: no (1 unmapped in the touched layers; the ticket lists them)

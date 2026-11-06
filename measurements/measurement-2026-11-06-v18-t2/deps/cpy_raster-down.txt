@@ -1,0 +1,33 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps cpy_raster --down`
+deps cpy_raster --down (kinds asm,direct,layer,table,vector): 13 functions besides cpy_raster
+depth	function	layer	reached over	newtos	class
+0	cpy_raster	vdi	-	tos-api/src/vdi/raster.rs@vro_cpyfm tos-api/src/vdi/raster.rs@vrt_cpyfm	mapped
+1	arb_corner	vdi	cpy_raster -> arb_corner [direct]	tos-api/src/vdi/attributes.rs@vs_clip	mapped
+1	bit_blt	vdi	cpy_raster -> bit_blt [direct]	tos-api/src/vdi/raster.rs@planar_mem_to_mem	mapped
+1	fast_bit_blt	vdi	cpy_raster -> fast_bit_blt [direct]	tos-api/src/vdi/raster.rs@bits_at tos-api/src/vdi/raster.rs@planar_mem_to_mem	mapped
+1	setup_info	vdi	cpy_raster -> setup_info [direct]	tos-api/src/vdi/raster.rs@chunky_hull tos-api/src/vdi/raster.rs@effective_planes tos-api/src/vdi/raster.rs@mem_span_px tos-api/src/vdi/raster.rs@of tos-api/src/vdi/raster.rs@planar_hull tos-api/src/vdi/raster.rs@read	mapped
+1	setup_pattern	vdi	cpy_raster -> setup_pattern [direct]	-	design
+1	validate_color_index	vdi	cpy_raster -> validate_color_index [direct]	tos-api/src/vdi/vwk.rs@validate_color_index	mapped
+1	vro_cpyfm16	vdi	cpy_raster -> vro_cpyfm16 [direct]	kernel/src/vdi_backend.rs@copy_rect tos-api/src/vdi/raster.rs@get_mem tos-api/src/vdi/raster.rs@mem_index tos-api/src/vdi/raster.rs@mem_to_mem tos-api/src/vdi/raster.rs@mem_to_screen tos-api/src/vdi/raster.rs@put_mem tos-api/src/vdi/raster.rs@raster_op tos-api/src/vdi/raster.rs@row_cols tos-api/src/vdi/raster.rs@screen_to_mem	mapped
+1	vrt_cpyfm16	vdi	cpy_raster -> vrt_cpyfm16 [direct]	kernel/src/vdi_backend.rs@blit_mono tos-api/src/vdi/raster.rs@get_mem tos-api/src/vdi/raster.rs@mono_to_mem tos-api/src/vdi/raster.rs@put_mem	mapped
+2	do_clip	vdi	setup_info -> do_clip [direct]	kernel/src/vdi_backend.rs@blit_mono kernel/src/vdi_backend.rs@copy_rect kernel/src/vdi_backend.rs@draw_glyph_sized tos-api/src/vdi/raster.rs@mem_to_screen	mapped
+2	dont_clip	vdi	setup_info -> dont_clip [direct]	tos-api/src/vdi/raster.rs@rect_from_ptsin	mapped
+2	hwblit_raster	vdi	bit_blt -> hwblit_raster [direct]	-	design
+3	flush_data_cache	bios	hwblit_raster -> flush_data_cache [direct]	-	unmapped
+3	invalidate_data_cache	bios	hwblit_raster -> invalidate_data_cache [direct]	-	unmapped
+
+table edges inside the set (0):
+
+layer edges inside the set (0):
+
+vector edges inside the set (0):
+
+coverage of the set (14 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+bios         2      0   0.0%      0   0.0%      2 100.0%
+vdi         13     11  84.6%      2  15.4%      0   0.0%
+total       15     11  73.3%      2  13.3%      2  13.3%
+touched layers: vdi (the layers of cpy_raster; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

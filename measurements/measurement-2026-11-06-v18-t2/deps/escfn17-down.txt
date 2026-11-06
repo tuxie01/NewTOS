@@ -1,0 +1,28 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps escfn17 --down`
+deps escfn17 --down (kinds asm,direct,layer,table,vector): 4 functions besides escfn17
+depth	function	layer	reached over	newtos	class
+0	escfn17	vdi	-	tos-api/src/vdi/escape.rs@v_escape	mapped
+1	scrdmp	bios	escfn17 -> scrdmp [layer trap #14 0x14 xbios_vecs[0x14] via xbios_v_v]	tos-api/src/xbios/system.rs@scrdmp	mapped
+1	xbios_v_v	include	escfn17 -> xbios_v_v [direct]		unmapped
+2	just_rts	ext	scrdmp -> just_rts [vector via dump_vec]		unmapped
+2	protect_v	ext	scrdmp -> protect_v [direct]		unmapped
+
+table edges inside the set (0):
+
+layer edges inside the set (1):
+trap #14 0x14 xbios_vecs[0x14] via xbios_v_v	escfn17 -> scrdmp	vdi/vdi_esc.c:262
+
+vector edges inside the set (1):
+via dump_vec	scrdmp -> just_rts	bios/xbios.c:492
+
+coverage of the set (5 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+bios         1      1 100.0%      0   0.0%      0   0.0%
+ext          2      0   0.0%      0   0.0%      2 100.0%
+include      1      0   0.0%      0   0.0%      1 100.0%
+vdi          1      1 100.0%      0   0.0%      0   0.0%
+total        5      2  40.0%      0   0.0%      3  60.0%
+touched layers: vdi (the layers of escfn17; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)
