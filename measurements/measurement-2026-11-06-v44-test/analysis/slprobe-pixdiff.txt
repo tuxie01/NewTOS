@@ -1,0 +1,48 @@
+== slprobe-head vs slprobe-fix
+/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-06-v44-test/method/pixdiff.py:9: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+  cnt=sum(1 for p in d.getdata() if p!=(0,0,0)) if bb else 0
+44-044-1000-H-pagehi-held1.png (640, 480) diffpx 0 bbox None
+67-067-300-V-pagelo-held1.png (640, 480) diffpx 536 bbox (458, 107, 479, 253)
+71-071-300-V-pagehi-held1.png (640, 480) diffpx 0 bbox None
+94-094-300-H-pagelo-held1.png (640, 480) diffpx 0 bbox None
+98-098-300-H-pagehi-held1.png (640, 480) diffpx 511 bbox (219, 358, 375, 379)
+121-121-min-V-pagelo-held1.png (640, 480) diffpx 217 bbox (458, 158, 479, 229)
+125-125-min-V-pagehi-held1.png (640, 480) diffpx 0 bbox None
+148-148-min-H-pagelo-held1.png (640, 480) diffpx 0 bbox None
+152-152-min-H-pagehi-held1.png (640, 480) diffpx 212 bbox (259, 358, 355, 379)
+== slprobe-head vs slprobe2-fix
+/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-06-v44-test/method/pixdiff.py:9: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+  cnt=sum(1 for p in d.getdata() if p!=(0,0,0)) if bb else 0
+44-044-1000-H-pagehi-held1.png (640, 480) diffpx 1040 bbox (103, 357, 434, 380)
+67-067-300-V-pagelo-held1.png (640, 480) diffpx 378 bbox (458, 146, 479, 253)
+71-071-300-V-pagehi-held1.png (640, 480) diffpx 0 bbox None
+94-094-300-H-pagelo-held1.png (640, 480) diffpx 0 bbox None
+98-098-300-H-pagehi-held1.png (640, 480) diffpx 511 bbox (219, 358, 375, 379)
+121-121-min-V-pagelo-held1.png (640, 480) diffpx 217 bbox (458, 158, 479, 229)
+125-125-min-V-pagehi-held1.png (640, 480) diffpx 0 bbox None
+148-148-min-H-pagelo-held1.png (640, 480) diffpx 0 bbox None
+152-152-min-H-pagehi-held1.png (640, 480) diffpx 212 bbox (259, 358, 355, 379)
+== slprobe-head vs slprobe3-fix
+/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-06-v44-test/method/pixdiff.py:9: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+  cnt=sum(1 for p in d.getdata() if p!=(0,0,0)) if bb else 0
+44-044-1000-H-pagehi-held1.png (640, 480) diffpx 1040 bbox (103, 357, 434, 380)
+67-067-300-V-pagelo-held1.png (640, 480) diffpx 536 bbox (458, 107, 479, 253)
+71-071-300-V-pagehi-held1.png (640, 480) diffpx 547 bbox (458, 186, 479, 334)
+94-094-300-H-pagelo-held1.png (640, 480) diffpx 743 bbox (105, 358, 317, 379)
+98-098-300-H-pagehi-held1.png (640, 480) diffpx 764 bbox (219, 358, 434, 379)
+121-121-min-V-pagelo-held1.png (640, 480) diffpx 196 bbox (458, 107, 479, 229)
+125-125-min-V-pagehi-held1.png (640, 480) diffpx 217 bbox (458, 211, 479, 334)
+148-148-min-H-pagelo-held1.png (640, 480) diffpx 196 bbox (105, 358, 277, 379)
+152-152-min-H-pagehi-held1.png (640, 480) diffpx 217 bbox (259, 358, 434, 379)
+== slprobe-fix vs slprobe3-fix
+/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-06-v44-test/method/pixdiff.py:9: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+  cnt=sum(1 for p in d.getdata() if p!=(0,0,0)) if bb else 0
+44-044-1000-H-pagehi-held1.png (640, 480) diffpx 1040 bbox (103, 357, 434, 380)
+67-067-300-V-pagelo-held1.png (640, 480) diffpx 0 bbox None
+71-071-300-V-pagehi-held1.png (640, 480) diffpx 547 bbox (458, 186, 479, 334)
+94-094-300-H-pagelo-held1.png (640, 480) diffpx 743 bbox (105, 358, 317, 379)
+98-098-300-H-pagehi-held1.png (640, 480) diffpx 505 bbox (277, 358, 434, 379)
+121-121-min-V-pagelo-held1.png (640, 480) diffpx 201 bbox (458, 107, 479, 176)
+125-125-min-V-pagehi-held1.png (640, 480) diffpx 217 bbox (458, 211, 479, 334)
+148-148-min-H-pagelo-held1.png (640, 480) diffpx 196 bbox (105, 358, 277, 379)
+152-152-min-H-pagehi-held1.png (640, 480) diffpx 217 bbox (337, 358, 434, 379)

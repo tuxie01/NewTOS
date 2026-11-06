@@ -1,0 +1,2 @@
+kernel 9afe0891542ae1989a6b1fa18a0409e80a8d8efc0860f1da1f6693ff63dbae56 nap 0f56ea031e26f6b08f0d241bac648ce87f5bc23a6a1c76cb21be25b29fe70048 qemu-args: 
+qemu done

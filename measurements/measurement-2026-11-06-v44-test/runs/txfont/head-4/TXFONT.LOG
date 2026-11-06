@@ -1,0 +1,7 @@
+S_sys_plain calls=2000 chars_per_call=76 ticks200=118
+S_sys_bold calls=2000 chars_per_call=76 ticks200=136
+N_narrow_plain calls=2000 chars_per_call=76 ticks200=252
+N_narrow_bold calls=2000 chars_per_call=76 ticks200=283
+N_narrow_skew calls=1000 chars_per_call=76 ticks200=142
+W_wide_plain calls=1000 chars_per_call=8 ticks200=51
+W_wide_bold calls=1000 chars_per_call=8 ticks200=52

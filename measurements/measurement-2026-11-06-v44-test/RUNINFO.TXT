@@ -1,0 +1,72 @@
+V44 acceptance -- TASK/V44.md (fix 6e96e91c, text.rs generic narrow/wide rows) by the tester. Date 2026-11-06. No product code touched, nothing committed,
+no card, no Pi, no push. Main tree clean (only this run dir untracked); main HEAD moved from b218eaf2 to 16b16247 during the run (not by me, no product diff checked).
+Numbers measured by me; the developer's run (measurements/measurement-2026-11-06-v44/) was only used for the scripts, copied and re-pathed into method/.
+
+TREES / KERNELS  fresh git archive trees in the session scratchpad (references/ linked): fix = 6e96e91c, head = e933d13c ("before the fix"; product code identical to
+  ac6ca0e5, git diff ac6ca0e5 e933d13c over kernel tos-api tos-types programs sdk tools tosdump is empty), base = 587ddbd5. Names in this run: base / head (= before) / fix.
+  rpi4 release kernel8.img, serial=on via -append:
+    fix  9afe0891542ae1989a6b1fa18a0409e80a8d8efc0860f1da1f6693ff63dbae56 (1517800 B) = Soll 9afe0891..., no deviation
+    head 3dbd1f29390936da37e343076bbd68babb71e435865675545640d82924928859 (1509608 B) = V33 test head hash
+    base a01bc077e893b2c25121a086e53995627de5a2f58062bebe60f96e3004aff173 (1493192 B) = V33 test base hash
+  Armed variants (shprobe/slprobe/desktop injector) built by the probe scripts: analysis/kernels.sha256.
+  qemu-virt: cargo xtask build --board qemu-virt (fix tree) rc 0, analysis/build-virt-fix.log: tos-api 64 / kernel 93 warnings; booted headless 100 s:
+  "[desk] desktop up (0 drives)", 0 exception/panic lines (runs/boot-virt-fix/serial.txt).
+  QEMU 11.0.2 raspi4b, APFS clone per boot. Oracle EmuTOS 1a7484ab, tools/hatari-oracle.sh falcontc, probe e1 measured anew.
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 93 card.img.manifest files in this run)
+  optional_missing, verbatim, in ALL 93 manifests: optional_missing none
+  Host load (uptime load average, 1/5/15 min) during the txbench rounds: 3.7..5.4 / 3.9..4.4 / 3.8..3.9 (another job was running on the host).
+
+RESULTS
+ 1 PASS  cargo xtask test rc 0: 2195 passed / 0 failed / 1 ignored (193 "test result" lines) = developer's numbers (analysis/cargo-xtask-test.txt).
+ 2 PASS  fix kernel hash = Soll. rpi4: booted to the desktop in all runs (16 BOOT-SERIAL with "desktop up"), 0 exception/panic lines in every BOOT-SERIAL of this run.
+         qemu-virt: built and booted headless (above). clippy rpi4 (cargo clippy -p kernel --features board-rpi4, fix vs head tree): tos-api 73/73, kernel 121/121,
+         0 hits in vdi/text.rs -> delta 0 (analysis/clippy-*.txt). Build warnings qemu-virt: 64 / 93. clippy qemu-virt not run.
+ 3 PASS  txbench wall clock, 8 rounds base/fix/head in turn (method/acceptance.sh; analysis/txbench-summary.txt), medians (min..max), ticks of 5 ms:
+           A plain clip off  base 86 (85..88)  fix 65 (64..67)    head 118 (116..119)   fix/base x0.76 (0.74..0.78)  head/base x1.38
+           B plain clip on   base 86 (85..89)  fix 65 (64..68)    head 116 (116..119)   fix/base x0.76 (0.74..0.80)  head/base x1.36
+           C bold            base 86 (84..88)  fix 67.5 (66..68)  head 136 (135..137)   fix/base x0.78 (0.77..0.81)  head/base x1.58
+           D light+skew      base 71 (69..72)  fix 59 (58..60)    head 87 (85..87)      fix/base x0.83 (0.81..0.86)  head/base x1.22
+           E 9-char strings  base 56 (55..57)  fix 45 (43..46)    head 75 (74..76)      fix/base x0.80 (0.75..0.82)  head/base x1.35
+         Acceptance: plain <= x1.05: x0.76 (worst round pair 0.80). Bold not slower than before V33: x0.78 against base (head/base x1.58).
+         icount (-icount shift=0,sleep=off, method/icrun.sh, twice, identical both times, analysis/icount.txt) ticks A/B/C/D/E:
+           base 211/206/213/180/127, fix 172/167/175/161/105, head 272/267/314/217/164 = the developer's numbers exactly.
+         Loaded font (method/txfont/txfont.c, scratch probe of mine, chain as vdprobe T13 via svc, no product change; method/txfont-all.sh, 5 rounds fix/head in turn,
+         analysis/txfont-summary.txt; base ignores a loaded font, not compared): narrow cell 8x8, 76 chars x 2000 calls, plain: head 250 -> fix 148 (x0.60);
+         bold 284 -> 151 (x0.53); light+skew+underline (1000 calls) 141 -> 91 (x0.65); wide cell 72x16 (not narrow-eligible), 8 chars x 1000 calls: plain 51 -> 51 (x0.98),
+         bold 52 -> 51 (x0.98). Target "not slower than V33" met on both paths. (Note: loaded narrow font 148 ticks vs system font 65 ticks for the same call, on fix and on head.)
+ 4 PASS  byte identity fix vs head (= before the fix) (method/tables-probe.sh, method/cmp-bins.sh, analysis/cmp-bins.txt): VDPROBE BIN 7168fb02f6c652a4.. and LOG 7d01a2755e0095c4.. on both
+         (= V33/V44 developer hashes); e1 BIN 4662c03f108ccc6a..; vdprobe-compare e1 vs fix: 412 cases, 22 differ (K5D T14E T14K TUE TUEw TPA TPB TPC TPD TVF TVG TVH TVI TVK TVO TVP TVU
+         TVUw TVZ TWA TXIs TXQ = the V33 list); n-head vs n-fix 0 differ. VDI.BIN / RASTER.BIN byte-identical for all 8 tables: vdi-v18-t2 4694250d.., vdi-v18 af6163c9.., vdi-all
+         e91b865b.., vdi-r3 589c76cc.., v18t2-raster 9ef87aa8.., raster 2bd92d85.., raster-screen 4e4041e3.., v18-raster 3fa4b298... Against the oracle (tosdiff in each run's tosdump
+         output): vdi-v18-t2 4/32, vdi-v18 0/19, vdi-all 0/182, vdi-r3 5/38, v18t2-raster 6/26, raster 1/59, raster-screen 0/62, v18-raster 0/17. No new difference.
+ 5 PASS  AES.BIN r2/r3/r4 fix vs head: 78/39/181 bytes differ = exactly ONE byte per record, always at record offset 68 (file offset mod 120), value 0x1a (head) -> 0x3a (fix) = the low
+         address cell 0x001c1a50 -> 0x001c3a50, +0x2000 = the kernel's 8192 B growth (1517800-1509608 = 8192). tosdiff head vs fix with the case tables: 0 of 78, 0 of 39, 0 of 181 cases differ;
+         address check ok (all cells < 0x80000000) (analysis/aes-r*-before-vs-fix.txt). Not a pixel/behaviour difference.
+         shprobe 12/12 and shprobe-desk 2/2 PNG byte-identical head vs fix; desktop + IKBD injector 11/11 identical at 640x480, 11/11 at 640x240, 11/11 at 1920x1080;
+         boot screen + AUTO console (APITEST.NCP) 6/6 identical at 640x480 and 640x240; at 1920x1080 5/6, 02-t018 differs; six runs of 1920x1080 (3 head, 3 fix): 02-t018 differs
+         between runs of the SAME kernel (analysis/bc1080-repeat.txt: head r1 vs head r2/r3 differ, fix runs all differ from head r1) = scroll-position noise, same as the V33 test.
+         slprobe 155 shots x 6 runs (3 head, 3 fix): the 3 head runs are byte-identical to each other (0 differ); fix runs differ from head in 4, 5, 9 shots and from each other in 2..8
+         (analysis/slprobe-pairs.txt). All differing shots are the "held1" frames of the page-scroll (pagelo/pagehi) gestures: 044 067 071 094 098 121 125 148 152
+         (analysis/slprobe-pixdiff.txt, bbox always inside the scrollbar track strip: x 458..479 or y 358..379, 196..1040 px). Viewed
+         analysis/shots/slprobe-098-head-fix-fix3.png and slprobe-067-head-fix-fix2-fix3.png: the same slider thumb at different positions (and one half-repainted thumb in fix r2)
+         = the held gesture sampled at different repeat counts; no glyph/text content differs. Honest caveat: the head runs did not vary here, the fix runs did, so a
+         speed-dependent sampling instant (fix draws faster) is the likely cause but is NOT proven; the same 044/067/098/121/152 set is the V30/V33 noise set. Viewed also
+         desk480-fix 02-02-dialog.png, bc480-fix 00-t006.png, desk240-fix 01-01-menu-file.png: text complete, nothing garbled.
+ 6 PASS (limits named)  scratch series TY (method/ty-cases.c, inserted in a scratch copy of vdprobe.c, run with method/ty-run.sh): loaded monospace font, codes A/B, cells
+         WxH in {63x16,64x16,65x16,16x63,16x64,16x65,31x16,32x16,33x16,16x31,16x32,16x33,32x32,33x33,62x62} x effects {none, bold, skew, outline, all five} x {unscaled, exact double}
+         (150 cases) + DDA up 1.5 for 42x16, 43x16, 16x42, 16x43 x {none, skew, all} (12) + rotation 900 for the first 6 sizes x {none, bold} (12) = 174 cases, on EmuTOS (falcontc),
+         fix, head (before, always eight-word rows), base. Result: fix == head BYTE FOR BYTE (BIN and LOG, 586 cases incl. the 412 old ones, vdprobe-compare 0 differ).
+         The series crosses the bound on both sides in every column (e.g. 32x16 doubled = 64 wide narrow vs 33x16 doubled = 66 wide wide; 63x16 plain narrow vs with outline wide).
+         vs the oracle 128 of 586 differ = the 22 old + 106 Y cases: bold, skew and all-effects (all sizes, also 31x16, so independent of the row width), plus ONE pixel in Y006
+         (63x16 outline, (138,26) E=0000 N=ffdf) and Y147 (62x62 outline double, (215,133)). Identical on head: not caused by the fix, same class as the V33 side findings TXIs/TXQ
+         (replace-mode skew tint ffdf) plus bold/outline edge columns of a loaded MONOSPACE font; reported as out-of-scope finding below.
+         NOT measured: single light (2) and single underline (8) effects (only inside "all"), rotation 1800/2700, DDA down, proportional fonts with glyphs of mixed width around the
+         bound inside ONE string (two paths in one string), cells wider than 64 by the font's left/right offset only, F_HORZ_OFF fonts at the bound, negative DELX. The host mutation
+         test of the developer was not repeated.
+ 7 PASS/PARTIAL  cargo xtask deps text_blt --up and output_text --up on the main tree (deps/): vdi 0 unmapped ("complete: yes (no unmapped function in the touched layers)");
+         outside the touched layer aes 1 (eralert -> fm_show), desk 130 (desk/*.c, NEWDESK in programs/desktop not mapped), the same counts as the developer's and the V33 test. Not driven:
+         desk and eralert callers of the draw path (they reach draw_glyph_sized directly per developer; my AES/desktop runs show no change, which does not prove unreachability).
+
+NOT DRIVEN / OPEN
+  Real Pi4/HDMI/timing (the factors are QEMU TCG, wall clock under host load 3.7..5.4, plus icount); cache-sensitive rendering; qemu-virt interactive input; clippy for qemu-virt;
+  an app that really loads a font (QED printer setup, TeraDesk); mixed-width proportional string at the bound; the combinations listed under 6.

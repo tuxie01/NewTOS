@@ -1,0 +1,7 @@
+vdprobe run, side newtos (2026-11-06T14:57:05Z)
+tree       0 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    VDPROBE.PRG d67587abd2c9cf2c81a62b0710c39001fc888780488317051c324815b7169a38 VDPROBE.NAP 8751c4b69bf808b2feda0f880a8a0b83b8641b7d3a55ae2e8b6d854f992f7e7d
+kernel    9afe0891542ae1989a6b1fa18a0409e80a8d8efc0860f1da1f6693ff63dbae56 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v44t/kernels/fix.img
+card      4a916f8da0ae150b93ef26c2068aa42bf59c9dfca4d9c05539cc718114cacadd (tools/mkcard.sh, C:\VDPROBE.NAP, #Z autorun)
+qemu      done
+card      after 8574cf4ba2523e5195939d68601ffedb2d192a1cb09cbb53d46071d87e68cc2c (the booted clone)

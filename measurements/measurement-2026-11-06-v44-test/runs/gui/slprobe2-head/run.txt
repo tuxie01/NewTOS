@@ -1,0 +1,9 @@
+slprobe run, side newtos (2026-11-06T14:32:57Z)
+tree      b218eaf21b9f8c6459ee0d619e56c8c602f68aa6 1 dirty paths in the tree
+source    slprobe.c 4b475a0b0a18092772ab464e1bfe5317766a750ca488398ca91dd1d272cbc94d slprobe-mouse.txt c72e6fdea6f00db1830791d6d8cb167b09f4b6e71829f8597d81b65525e6bac3 slprobe-shots.txt 63b54d624976eac799dce00877ea5f6cc755c091876f5e8a7b44a6789597fbbd
+probes    SLPROBE.PRG 161d37f58d2d402057b507538298eacce07c6a1a3a2171b20a2b25cc7803ed65 SLPROBE.NAP 421e35354474eef8daf0d8bccc78269531095c7d2617ba4d30012b5351385369
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    4d1da1970ccacf4e93612fdccee66f7c143c058a9bcdbf586eba4872c992aa56 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v44t/kernel-sl-head.img
+card      e54c1d37e44114dec5c2d85a3666e2614b1e1267f5993a0fe6b0eccb4ea24d4c (tools/mkcard.sh, C:\SLPROBE.NAP, #Z autorun)
+qemu      done, 155 shots
+card      after 7543612eb56c7ddfe283aa9f2ace719edcc389d1070bd5aa1ab827eb2540a88d (the booted clone)

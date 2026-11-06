@@ -1,0 +1,6 @@
+ic1 base: ticks200=211 ticks200=206 ticks200=213 ticks200=180 ticks200=127 
+ic1 fix: ticks200=172 ticks200=167 ticks200=175 ticks200=161 ticks200=105 
+ic1 head: ticks200=272 ticks200=267 ticks200=314 ticks200=217 ticks200=164 
+ic2 base: ticks200=211 ticks200=206 ticks200=213 ticks200=180 ticks200=127 
+ic2 fix: ticks200=172 ticks200=167 ticks200=175 ticks200=161 ticks200=105 
+ic2 head: ticks200=272 ticks200=267 ticks200=314 ticks200=217 ticks200=164 

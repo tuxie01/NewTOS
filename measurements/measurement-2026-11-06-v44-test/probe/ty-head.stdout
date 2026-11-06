@@ -1,0 +1,1117 @@
+fatal: not a git repository (or any of the parent directories): .git
+fatal: not a git repository (or any of the parent directories): .git
+qemu-system-aarch64: terminating on signal 15 from pid 23783 (<unknown process>)
+H00 handle 2 xres 639 yres 479 planes? colours 256
+01 CAL      pens 0..15, 8x8 each, vr_recfl solid; x 128..135 untouched
+02 K1A      XOR polyline: vertical segment first (20,20)-(20,40)-(40,40)
+03 K1B      XOR polyline: vertical in the middle (20,20)-(40,20)-(40,40)-(60,40)
+04 K1C      XOR polyline: vertical upward first (20,40)-(20,20)-(40,20)
+05 K1D      XOR closed square, 5 points
+06 K1E      XOR polyline, two diagonals (control)
+07 K1F      XOR single vertical line (last segment, control)
+08 K1G      XOR vertical non-last, dashed (vsl_type 3)
+09 K2A      clip on (30,30)-(90,90), 10 lines crossing it, solid
+10 K2B      the same lines, clip on, dash-dot (vsl_type 4)
+11 K2C      the same lines, clip on, user style 0xF39C (vsl_type 7)
+12 K2D      clip on (30,30)-(90,90), vertical dashed (60,5)-(60,120) and (70,120)-(70,5), horizontal dashed (5,50)-(120,50)
+13 K2E      clip OFF: diagonal (600,100)-(680,104) past the right edge
+14 K2F      clip OFF: horizontal (600,120)-(700,120) past the right edge
+15 K2G      clip OFF: diagonal (-20,140)-(40,150) past the left edge
+16 K2H      clip OFF: horizontal (-30,170)-(20,170) past the left edge
+17 K2I      clip ON (0,0)-(639,479): diagonal (600,200)-(680,204) and horizontal (600,210)-(700,210)
+18 K3A      128-line fan, solid, from the cell centre
+19 K3B      128-line fan, solid, from the far end
+20 K3C      128-line fan, dash-dot-dot (vsl_type 6), from the centre
+21 K3D      128-line fan, user style 0xF39C, from the far end
+22 K4A      v_fillarea 1 point (50,50), perimeter on
+23 K4B      v_fillarea 2 points (50,50)-(90,70), perimeter on
+24 K4C      v_fillarea 2 points (50,50)-(90,70), perimeter off
+25 K4D      v_fillarea 2 points vertical (50,50)-(50,80), perimeter off
+26 K4E      v_fillarea 2 points (50,50)-(90,70), XOR, perimeter on
+27 K4F      v_fillarea 1 point, perimeter off
+28 K4G      v_fillarea 2 points horizontal (40,60)-(90,60), perimeter on
+29 K4H      v_fillarea 3 points (control), perimeter on, colour 2
+30 K5A      v_pmarker 1030 points: 0..1023 at (20,20), 1024..1029 at (40+10k,20); plus, height default
+   K5A contrl[1] after the call 1030
+31 K5B      v_pmarker 1025 points: 0..1023 at (20,20), 1024 at (60,20)
+32 K5C      v_pline 1030 points: 0..1022 at (20,60), 1023 (40,60), 1024.. (40,80),(80,80),...
+   K5C contrl[1] after the call 1030
+33 K5D      v_fillarea 1030 points: 0..1021 (100,100), 1022 (140,100), 1023 (120,130), 1024.. (200+10k,200)
+34 K6A      vsf_udpat 16 words (plane 0 = A), FIS_USER, v_bar 20..83 x 20..51, colour 2
+35 K6B      vsf_udpat 256 words: plane 0 = A, planes 1..15 = 0xFFFF
+36 K6C      vsf_udpat 256 words: plane 0 = 0, planes 1..15 = A
+37 K6D      vsf_udpat 16 words A, then 64 words (4 planes, invalid here) of 0xFFFF
+38 K6E      vsf_udpat 256 words (plane 0 = A, rest 0xFFFF), transparent mode, colour 3, v_fillarea triangle
+39 K6F      vsf_udpat 256 words (plane 0 = A, rest 0xFFFF), then style back to solid and to user again
+40 K8A      contourfill inside a black box, boundary colour 1, solid colour 2
+41 K8B      the same, INTIN[0] = -1 (seed colour)
+42 K8C      comb: box with 40 teeth from the top, pattern fill (style 2 index 5), boundary 1
+43 K8D      spiral of lines, solid colour 3, seed -1
+44 K8E      dot lattice 600x120 (dots every 3 px), contourfill from below, solid colour 2, boundary 1
+45 K8F      contourfill inside the box with clip (40,40)-(90,80)
+46 K8G      contourfill with the seed on the boundary (20,60), boundary 1
+47 K8H      contourfill XOR mode, hatch (style 3 index 2), boundary 1
+48 K8I      contourfill pattern (style 2 index 2) with seed colour -1
+49 K8J      contourfill boundary colour 16 (> 15, 256 pens), solid colour 2
+50 K10      v_get_pixel inside and outside, after painting (0,11) red, (639,10) green, (60,11) blue
+   K10 (0,11)=f800 (639,10)=07c0 (60,11)=001f (5,5)=ffff
+   K10 (640,10)=f800 (-1,11)=07c0 (700,10)=001f (-580,12)=001f
+51 K11A     v_arc centre (100,100) r 20, 0..3600, line width 9, clip (121,0)-(300,200)
+52 K11B     v_ellarc centre (100,100) 30x20, 0..1800, width 11, clip (0,121)-(300,200)
+53 K11C     v_arc as K11A but clip (115,0)-(300,200) (cuts the curve, control)
+54 K11D     v_arc r 20 at (100,100), width 1, arrowed ends, 0..900, clip (121,0)-(300,200)
+55 P1a00p   pattern set, mem->mem op, shifted right
+56 P1a00f   pattern set, mem->mem op, shifted right
+57 P1a01p   pattern set, mem->mem op, shifted right
+58 P1a01f   pattern set, mem->mem op, shifted right
+59 P1a03p   pattern set, mem->mem op, shifted right
+60 P1a03f   pattern set, mem->mem op, shifted right
+61 P1a04p   pattern set, mem->mem op, shifted right
+62 P1a04f   pattern set, mem->mem op, shifted right
+63 P1a06p   pattern set, mem->mem op, shifted right
+64 P1a06f   pattern set, mem->mem op, shifted right
+65 P1a07p   pattern set, mem->mem op, shifted right
+66 P1a07f   pattern set, mem->mem op, shifted right
+67 P1a0Ap   pattern set, mem->mem op, shifted right
+68 P1a0Af   pattern set, mem->mem op, shifted right
+69 P1a0Cp   pattern set, mem->mem op, shifted right
+70 P1a0Cf   pattern set, mem->mem op, shifted right
+71 P1a0Fp   pattern set, mem->mem op, shifted right
+72 P1a0Ff   pattern set, mem->mem op, shifted right
+73 P1b00p   pattern set, mem->mem op, shifted left
+74 P1b00f   pattern set, mem->mem op, shifted left
+75 P1b01p   pattern set, mem->mem op, shifted left
+76 P1b01f   pattern set, mem->mem op, shifted left
+77 P1b03p   pattern set, mem->mem op, shifted left
+78 P1b03f   pattern set, mem->mem op, shifted left
+79 P1b04p   pattern set, mem->mem op, shifted left
+80 P1b04f   pattern set, mem->mem op, shifted left
+81 P1b06p   pattern set, mem->mem op, shifted left
+82 P1b06f   pattern set, mem->mem op, shifted left
+83 P1b07p   pattern set, mem->mem op, shifted left
+84 P1b07f   pattern set, mem->mem op, shifted left
+85 P1b0Ap   pattern set, mem->mem op, shifted left
+86 P1b0Af   pattern set, mem->mem op, shifted left
+87 P1b0Cp   pattern set, mem->mem op, shifted left
+88 P1b0Cf   pattern set, mem->mem op, shifted left
+89 P1b0Fp   pattern set, mem->mem op, shifted left
+90 P1b0Ff   pattern set, mem->mem op, shifted left
+91 P2a00p   pattern set, mem->mem op, shifted right
+92 P2a00f   pattern set, mem->mem op, shifted right
+93 P2a01p   pattern set, mem->mem op, shifted right
+94 P2a01f   pattern set, mem->mem op, shifted right
+95 P2a03p   pattern set, mem->mem op, shifted right
+96 P2a03f   pattern set, mem->mem op, shifted right
+97 P2a04p   pattern set, mem->mem op, shifted right
+98 P2a04f   pattern set, mem->mem op, shifted right
+99 P2a06p   pattern set, mem->mem op, shifted right
+100 P2a06f   pattern set, mem->mem op, shifted right
+101 P2a07p   pattern set, mem->mem op, shifted right
+102 P2a07f   pattern set, mem->mem op, shifted right
+103 P2a0Ap   pattern set, mem->mem op, shifted right
+104 P2a0Af   pattern set, mem->mem op, shifted right
+105 P2a0Cp   pattern set, mem->mem op, shifted right
+106 P2a0Cf   pattern set, mem->mem op, shifted right
+107 P2a0Fp   pattern set, mem->mem op, shifted right
+108 P2a0Ff   pattern set, mem->mem op, shifted right
+109 P2b00p   pattern set, mem->mem op, shifted left
+110 P2b00f   pattern set, mem->mem op, shifted left
+111 P2b01p   pattern set, mem->mem op, shifted left
+112 P2b01f   pattern set, mem->mem op, shifted left
+113 P2b03p   pattern set, mem->mem op, shifted left
+114 P2b03f   pattern set, mem->mem op, shifted left
+115 P2b04p   pattern set, mem->mem op, shifted left
+116 P2b04f   pattern set, mem->mem op, shifted left
+117 P2b06p   pattern set, mem->mem op, shifted left
+118 P2b06f   pattern set, mem->mem op, shifted left
+119 P2b07p   pattern set, mem->mem op, shifted left
+120 P2b07f   pattern set, mem->mem op, shifted left
+121 P2b0Ap   pattern set, mem->mem op, shifted left
+122 P2b0Af   pattern set, mem->mem op, shifted left
+123 P2b0Cp   pattern set, mem->mem op, shifted left
+124 P2b0Cf   pattern set, mem->mem op, shifted left
+125 P2b0Fp   pattern set, mem->mem op, shifted left
+126 P2b0Ff   pattern set, mem->mem op, shifted left
+127 P4a00p   pattern set, mem->mem op, shifted right
+128 P4a00f   pattern set, mem->mem op, shifted right
+129 P4a01p   pattern set, mem->mem op, shifted right
+130 P4a01f   pattern set, mem->mem op, shifted right
+131 P4a03p   pattern set, mem->mem op, shifted right
+132 P4a03f   pattern set, mem->mem op, shifted right
+133 P4a04p   pattern set, mem->mem op, shifted right
+134 P4a04f   pattern set, mem->mem op, shifted right
+135 P4a06p   pattern set, mem->mem op, shifted right
+136 P4a06f   pattern set, mem->mem op, shifted right
+137 P4a07p   pattern set, mem->mem op, shifted right
+138 P4a07f   pattern set, mem->mem op, shifted right
+139 P4a0Ap   pattern set, mem->mem op, shifted right
+140 P4a0Af   pattern set, mem->mem op, shifted right
+141 P4a0Cp   pattern set, mem->mem op, shifted right
+142 P4a0Cf   pattern set, mem->mem op, shifted right
+143 P4a0Fp   pattern set, mem->mem op, shifted right
+144 P4a0Ff   pattern set, mem->mem op, shifted right
+145 P4b00p   pattern set, mem->mem op, shifted left
+146 P4b00f   pattern set, mem->mem op, shifted left
+147 P4b01p   pattern set, mem->mem op, shifted left
+148 P4b01f   pattern set, mem->mem op, shifted left
+149 P4b03p   pattern set, mem->mem op, shifted left
+150 P4b03f   pattern set, mem->mem op, shifted left
+151 P4b04p   pattern set, mem->mem op, shifted left
+152 P4b04f   pattern set, mem->mem op, shifted left
+153 P4b06p   pattern set, mem->mem op, shifted left
+154 P4b06f   pattern set, mem->mem op, shifted left
+155 P4b07p   pattern set, mem->mem op, shifted left
+156 P4b07f   pattern set, mem->mem op, shifted left
+157 P4b0Ap   pattern set, mem->mem op, shifted left
+158 P4b0Af   pattern set, mem->mem op, shifted left
+159 P4b0Cp   pattern set, mem->mem op, shifted left
+160 P4b0Cf   pattern set, mem->mem op, shifted left
+161 P4b0Fp   pattern set, mem->mem op, shifted left
+162 P4b0Ff   pattern set, mem->mem op, shifted left
+163 P8a00p   pattern set, mem->mem op, shifted right
+164 P8a00f   pattern set, mem->mem op, shifted right
+165 P8a01p   pattern set, mem->mem op, shifted right
+166 P8a01f   pattern set, mem->mem op, shifted right
+167 P8a03p   pattern set, mem->mem op, shifted right
+168 P8a03f   pattern set, mem->mem op, shifted right
+169 P8a04p   pattern set, mem->mem op, shifted right
+170 P8a04f   pattern set, mem->mem op, shifted right
+171 P8a06p   pattern set, mem->mem op, shifted right
+172 P8a06f   pattern set, mem->mem op, shifted right
+173 P8a07p   pattern set, mem->mem op, shifted right
+174 P8a07f   pattern set, mem->mem op, shifted right
+175 P8a0Ap   pattern set, mem->mem op, shifted right
+176 P8a0Af   pattern set, mem->mem op, shifted right
+177 P8a0Cp   pattern set, mem->mem op, shifted right
+178 P8a0Cf   pattern set, mem->mem op, shifted right
+179 P8a0Fp   pattern set, mem->mem op, shifted right
+180 P8a0Ff   pattern set, mem->mem op, shifted right
+181 P8b00p   pattern set, mem->mem op, shifted left
+182 P8b00f   pattern set, mem->mem op, shifted left
+183 P8b01p   pattern set, mem->mem op, shifted left
+184 P8b01f   pattern set, mem->mem op, shifted left
+185 P8b03p   pattern set, mem->mem op, shifted left
+186 P8b03f   pattern set, mem->mem op, shifted left
+187 P8b04p   pattern set, mem->mem op, shifted left
+188 P8b04f   pattern set, mem->mem op, shifted left
+189 P8b06p   pattern set, mem->mem op, shifted left
+190 P8b06f   pattern set, mem->mem op, shifted left
+191 P8b07p   pattern set, mem->mem op, shifted left
+192 P8b07f   pattern set, mem->mem op, shifted left
+193 P8b0Ap   pattern set, mem->mem op, shifted left
+194 P8b0Af   pattern set, mem->mem op, shifted left
+195 P8b0Cp   pattern set, mem->mem op, shifted left
+196 P8b0Cf   pattern set, mem->mem op, shifted left
+197 P8b0Fp   pattern set, mem->mem op, shifted left
+198 P8b0Ff   pattern set, mem->mem op, shifted left
+199 Wa03     16 planes mem->mem, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps
+202 Wa06     16 planes mem->mem, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps
+205 Wa13     16 planes mem->mem, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps
+208 Wa16     16 planes mem->mem, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps
+211 Wb3      16 planes mem->mem, source fd_w 40 fd_wdwidth 1, block 40x1 from (0,1)
+214 Wb6      16 planes mem->mem, source fd_w 40 fd_wdwidth 1, block 40x1 from (0,1)
+217 Wc3      16 planes mem->mem, dest fd_w 10 fd_wdwidth 1, block 16x1
+220 Wc6      16 planes mem->mem, dest fd_w 10 fd_wdwidth 1, block 16x1
+223 Wd01     vrt_cpyfm 1 plane -> 16 plane memory, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps
+226 Wd03     vrt_cpyfm 1 plane -> 16 plane memory, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps
+229 Wd11     vrt_cpyfm 1 plane -> 16 plane memory, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps
+232 Wd13     vrt_cpyfm 1 plane -> 16 plane memory, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps
+235 We103    planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps
+238 We106    planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps
+241 We113    planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps
+244 We116    planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps
+247 We403    planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps
+250 We406    planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps
+253 We413    planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps
+256 We416    planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps
+259 K14A     queue overflow: 25% random dots on rows 100..104, contourfill from (0,50), solid colour 2, boundary 1
+260 K14B     queue overflow: 10% random dots on rows 100..139, contourfill from below (0,300), solid colour 2, boundary 1
+261 K14C     control, no overflow: dot on every 2nd column of rows 100..299 (queue 321), contourfill from (0,50)
+262 K15A     v_circle r=0 at (60,60), solid colour 2, perimeter on
+263 K15B     v_circle r=1 at (60,60), solid colour 2, perimeter on
+264 K15C     v_circle r=2 at (60,60), solid colour 2, perimeter on
+265 K15D     v_circle r=0 at (60,60), solid colour 2, perimeter off
+266 K15E     v_circle r=1 at (60,60), solid colour 2, perimeter off
+267 K15F     v_ellipse xr=0 yr=5 at (60,60), perimeter on
+268 K15G     v_ellipse xr=5 yr=0 at (60,60), perimeter on
+269 K15H     v_ellipse xr=0 yr=5 at (60,60), perimeter off
+270 K15I     v_ellipse xr=0 yr=0 at (60,60), perimeter on, XOR
+271 K15J     v_ellipse xr=1 yr=6 at (60,60), perimeter off
+272 K15K     v_pieslice r=0 at (60,60), 0..900, perimeter on
+273 K15L     v_pieslice r=1 at (60,60), 0..1800, perimeter on
+274 K15M     v_pieslice r=2 at (60,60), 0..2700, perimeter off
+275 K15N     v_pieslice r=0 at (60,60), 0..0, perimeter on
+276 K15O     v_ellpie xr=0 yr=5 at (60,60), 0..900, perimeter on
+277 K15P     v_ellpie xr=1 yr=0 at (60,60), 0..1800, perimeter off
+278 K15Q     v_circle r=12 at (60,60), control
+279 K16A     v_get_pixel x outside 0..639 but inside the frame buffer (wraps to the next/previous row)
+   K16A (640,0)=f800 (-1,1)=07c0 (1279,0)=001f (1280,0)=07df
+   K16A (-640,5)=ffc0 (641,100)=f81f (640,478)=bdd7 (0,1)=f800
+280 K16B     v_get_pixel beyond the frame buffer (decision B: 0 in NewTOS; EmuTOS reads whatever lies there)
+   K16B (640,479)=0000 (0,-1)=0000 (-1,0)=0000 (0,480)=0000
+281 K17A     v_arc r20 w9 clip x>=120 (touches xc+xrad: draws)
+282 K17B     v_arc r20 w9 clip y<=79 (above yc-yrad: quits)
+283 K17C     v_arc r20 w9 clip x<=79 (left of xc-xrad: quits)
+284 K17D     v_arc r20 w9 clip y>=121 (below yc+yrad: quits)
+285 K17E     v_arc r20 w9 clip y>=120 (touches: draws)
+286 K17F     v_arc r20 w15 clip x>=121 (wide pen reaches in: quits)
+287 K17G     v_arc r20 0..900 w1 arrows clip x>=120 (touches: draws)
+288 K17H     v_ellarc 30x20 0..1800 w1 arrows clip x>=131 (quits)
+289 K17I     v_ellarc 30x20 0..1800 w1 arrows clip x>=130 (touches: draws)
+290 K17J     v_ellarc 30x20 0..1800 w11 clip y<=79 (quits)
+291 K17K     v_ellarc 30x20 0..1800 w11 clip y<=80 (touches: draws)
+292 K17L     v_ellarc 20x30 0..3600 w7 clip y>=131 (quits)
+293 K17M     v_ellarc 20x30 0..3600 w7 clip y>=130 (touches: draws)
+294 K17N     v_ellipse 30x20 filled clip x>=131 (quits)
+295 K17O     v_ellipse 30x20 filled clip x>=130 (touches: draws)
+296 K17P     v_circle r20 w9 clip x>=121 (quits)
+297 K17Q     v_pieslice r20 0..900 w9 clip x>=121 (quits)
+298 K17R     v_ellpie 30x20 0..1800 clip x>=131 (quits)
+299 K17S     v_arc r20 w9 clip off (draws)
+300 K17T     v_arc r20 w3 arrows clip x>=121 (quits)
+301 K17U     v_arc r20 w9 clip (0,0)-(639,479) all in (draws)
+302 T19A     default font right after v_opnvwk: vqt_attributes, vqt_fontinfo (before any vst_*)
+   vqt_attributes c2=2 c4=6 io 1 1 0 0 0 1 po 7 13 8 16
+   vqt_fontinfo c2=5 c4=2 io 0 255 po 8 2 0 2 0 8 0 11 0 13
+303 T13A     vst_load_fonts with a GDOS-style chain (font id 7), then vst_font(7), v_gtext
+   vst_load_fonts#1 c2=0 c4=1 io 1
+   vqt_name(1) c4=33 id=1 name=[6x6 system font.................]
+   vqt_name(2) c4=33 id=7 name=[AUDIT FONT SEVEN................]
+   vq_extnd(0) io[10]=1
+   vst_font(7) c2=0 c4=1 io 7 po
+   vqt_attributes c2=2 c4=6 io 7 1 0 0 0 1 po 5 4 5 6
+   vqt_fontinfo c2=5 c4=2 io 32 95 po 5 1 0 1 0 3 0 4 0 4
+   vst_load_fonts#2 c4=1 io 0
+   vst_font(7) after unload c2=0 c4=1 io 1 po
+   vqt_name(2) c4=33 id=1 name=[6x6 system font.................]
+304 T13B     after the unload: v_gtext in the system font (state restored?)
+305 T14A     vst_height(26) = exact double, v_gtext 'AUDIT' at (10,60)
+   vst_height(26) c2=2 c4=0 io po 14 27 16 32
+306 T14B     vst_height(26), v_gtext of 4100 chars at (10,200) (wraps the WORD x 1x)
+307 T14C     unscaled v_gtext of 4100 chars at (10,60)
+308 T14D     vst_height(20) (DDA 7/13 up), v_gtext 20 chars at x=-60 (leading chars clipped)
+309 T14E     vst_height(20), clip (100,0)-(639,479), v_gtext 20 chars at x=0
+310 T14F     vst_height(20), v_gtext 20 chars at x=10 (nothing clipped, control)
+311 T14G     vst_height(26), v_gtext 20 chars at x=-60 (exact double, leading chars clipped)
+312 T14H     vst_height(26), v_justified 4096 chars interchar, max_x -32768 (advance 8), at (10,200)
+313 T14I     vst_height(20), v_justified 20 chars interchar len 400 at x=-60
+314 T14J     vst_height(10) (DDA down), v_gtext 20 chars at x=-30 (leading chars clipped)
+315 T14K     vst_height(26), clip off, 4096 chars at (26,200), char 4095 = 14 lands at x 10
+316 T14L     control: vst_height(26), clip off, 4095 chars at (42,200), char 4094 = 14 lands at x 10
+317 T14M     vst_height(26), clip on (0,0)-(639,479), 4096 chars at (26,200), char 4095 = 14
+318 T15A     vst_height(20), vst_font(1), v_gtext
+   vst_height(20) c2=2 c4=0 io po 11 20 12 24
+   vst_font(1) c2=0 c4=1 io 1 po
+   vqt_attributes c2=2 c4=6 io 1 1 0 0 0 1 po 11 20 12 24
+   vqt_fontinfo c2=5 c4=2 io 0 255 po 12 3 0 3 0 12 0 17 0 20
+319 T15B     vst_point(18) (doubled 8x8), vst_font(1), v_gtext
+   vst_point(18) c2=2 c4=1 io 18 po 14 13 16 16
+   vst_font(1) c2=0 c4=1 io 1 po
+   vqt_attributes c2=2 c4=6 io 1 1 0 0 0 1 po 14 13 16 16
+320 T15C     vst_point(18), vst_font(9) (no such face), v_gtext
+   vst_font(9) c2=0 c4=1 io 1 po
+   vqt_attributes c2=2 c4=6 io 1 1 0 0 0 1 po 14 13 16 16
+321 T15D     vst_height(3) (below the 6x6 top), vst_font(1), v_gtext
+   vst_height(3) c2=2 c4=0 io po 4 3 4 5
+   vqt_attributes c2=2 c4=6 io 1 1 0 0 0 1 po 4 3 4 5
+322 T15E     vst_point(11), vst_font(1): vqt_attributes / fontinfo
+   vst_point(11) c2=2 c4=1 io 10 po 7 13 8 16
+   vqt_attributes c2=2 c4=6 io 1 1 0 0 0 1 po 7 13 8 16
+   vqt_fontinfo c2=5 c4=2 io 0 255 po 8 2 0 2 0 8 0 11 0 13
+323 T1600    v_justified chup 0 interword 0 interchar 1, 'AB CD EF' len 100 at (320,240)
+324 T1601    v_justified chup 0 interword 1 interchar 0, 'AB CD EF' len 100 at (320,240)
+325 T1602    v_justified chup 0 interword 1 interchar 1, 'AB CD EF' len 100 at (320,240)
+326 T160g    control: v_gtext chup 0 'AB CD EF' at (320,240)
+327 T1610    v_justified chup 900 interword 0 interchar 1, 'AB CD EF' len 100 at (320,240)
+328 T1611    v_justified chup 900 interword 1 interchar 0, 'AB CD EF' len 100 at (320,240)
+329 T1612    v_justified chup 900 interword 1 interchar 1, 'AB CD EF' len 100 at (320,240)
+330 T161g    control: v_gtext chup 900 'AB CD EF' at (320,240)
+331 T1620    v_justified chup 1800 interword 0 interchar 1, 'AB CD EF' len 100 at (320,240)
+332 T1621    v_justified chup 1800 interword 1 interchar 0, 'AB CD EF' len 100 at (320,240)
+333 T1622    v_justified chup 1800 interword 1 interchar 1, 'AB CD EF' len 100 at (320,240)
+334 T162g    control: v_gtext chup 1800 'AB CD EF' at (320,240)
+335 T1630    v_justified chup 2700 interword 0 interchar 1, 'AB CD EF' len 100 at (320,240)
+336 T1631    v_justified chup 2700 interword 1 interchar 0, 'AB CD EF' len 100 at (320,240)
+337 T1632    v_justified chup 2700 interword 1 interchar 1, 'AB CD EF' len 100 at (320,240)
+338 T163g    control: v_gtext chup 2700 'AB CD EF' at (320,240)
+339 TUA      underline, clip off, v_gtext 'ABCDEFGH' at (600,100): runs past x 639
+340 TUB      underline, clip off, v_gtext 'ABCDEFGH' at (-30,150): starts left of x 0
+341 TUC      underline, clip off, vst_height(26), 'ABCDEFGH' at (560,200)
+342 TUD      control: underline, clip on (0,0)-(639,479), 'ABCDEFGH' at (600,100)
+343 TUE      underline+light, clip off, 'ABCDEFGH' at (600,300)
+344 TUF      control: underline, clip off, 'ABCDEFGH' at (100,100) (inside)
+345 TPA      v_pline (100,100)-(200,150); vs_clip(1) CONTRL[1]=0, caller PTSIN 10,10,50,50; vr_recfl pen 2
+346 TPB      as TPA with CONTRL[1]=1 (first corner copied, second not)
+347 TPC      v_pline from (9,470); vsl_width CONTRL[1]=0, caller PTSIN[0]=3; line (20,300)-(200,300)
+   vsl_width c2=1 c4=0 io po 3 0
+348 TPD      v_pline (0,26)-(0,26); vst_height CONTRL[1]=0, caller PTSIN[1]=13; v_gtext 'ABC'
+   vst_height c2=2 c4=0 io po 7 13 8 16
+349 TPE      control: v_pline, then vs_clip(1) with CONTRL[1]=2 (10,10,50,50), vr_recfl pen 2
+350 TRA      16 planes, two MFDBs, dst fd_addr = src + 3 words, block 32x3 (0,0)->(0,0)
+352 TRB      16 planes, two MFDBs, src fd_addr = dst + 3 words, block 32x3 (0,0)->(0,0)
+354 TRC      16 planes, one MFDB, fd_wdwidth 1, block 24x1 (8,0)->(0,1) (src < dst, runs on into row 1/2)
+356 TRD      16 planes, one MFDB, fd_wdwidth 1, block 24x1 (0,1)->(8,0) (src > dst)
+358 TRE      control: 16 planes, one MFDB, in-form 20x2 (0,0)->(3,0)
+360 TRF      control: 16 planes, one MFDB, in-form 20x2 (3,1)->(0,0)
+362 TRG      12 planes, one MFDB, fd_wdwidth 2, 32x2 (0,0)->(0,1)
+364 TRH      12 planes, one MFDB, fd_wdwidth 2, 32x2 (0,1)->(0,0)
+366 TRI      16 planes, two MFDBs, dst = src + 1 word, fd_wdwidth 1, block 16x4 (0,0)->(0,0)
+368 TRJ      screen->screen 100x80 (100,100)->(103,102), stripes
+369 TRK      screen->screen 100x80 (103,102)->(100,100)
+370 TRL      screen->screen 100x80 (110,100)->(100,110) (down-left)
+371 TRM      screen->screen 100x80 (100,110)->(110,100) (up-right)
+372 T18A     dumpflg ($4EE) around v_hardcopy (escape 17) and Scrdmp (XBIOS 20)
+   dumpflg boot=-1 set=5 after v_hardcopy=5 c2=0 c4=0
+   dumpflg after Scrdmp=5
+373 TVA      underline, rotation 900, clip off, 'ABCDEFGH' at (100,300) (inside)
+374 TVB      underline, rotation 900, clip off, 'ABCDEFGH' at (642,300): past x 639
+375 TVC      underline, rotation 1800, clip off, 'ABCDEFGH' at (20,200): left of x 0
+376 TVD      underline, rotation 2700, clip off, 'ABCDEFGH' at (-2,200): left of x 0
+377 TVE      control: underline, rotation 900, clip on (90,280)-(120,295), 'ABCDEFGH' at (100,300)
+378 TVF      underline+light, vst_height(26), rotation 900, clip off, 'ABCDEFGH' at (200,300)
+379 TVG      underline+light, vst_height(26), rotation 2700, clip off, 'ABCDEFGH' at (300,100)
+380 TVH      underline+light, vst_height(26), rotation 1800, clip off, 'ABCDEFGH' at (500,100)
+381 TVI      underline+light, vst_height(26), clip off, 'ABCDEFGH' at (100,300)
+382 TVJ      underline, XOR, after a 2-point v_pline (LSTLIN TRUE), 'ABCDEFGH' at (100,100)
+383 TVK      underline, XOR, after a 1-point v_pline (LSTLIN FALSE), 'ABCDEFGH' at (100,100)
+384 TVL      underline+outline, clip off, v_gtext 'ABCDEFGH' at (100,100)
+385 TVM      underline, v_justified interword 'AB CD EF' at (100,100), length 200
+386 TVN      underline+outline, v_justified interword 'AB CD EF' at (100,100), length 200
+387 TVO      underline, v_justified h_align centre 'AB CD EF' at (300,100), length 200
+388 TVP      underline, v_justified h_align right 'AB CD EF' at (300,100), length 200
+389 TVQ      underline, v_justified interchar 'ABCDEFGH' at (100,100), length 10: the end before the start
+390 TVR      underline, transparent, clip off, 'ABCDEFGH' at (600,100)
+391 TVS      underline, XOR, clip off, 'ABCDEFGH' at (600,100)
+392 TVT      underline, reverse transparent, clip off, 'ABCDEFGH' at (600,100)
+393 TVU      bold+skew+outline, clip off, 'ABCDEFGH' at (600,100)
+394 TVV      vst_height(20), clip off, 'ABCDEFGH' at (600,100)
+395 TVW      underline, h_align right, clip off, 'ABCDEFGH' at (20,150): left of x 0
+396 TVX      vst_height(13), clip off, 'ABCDEFGH' at (100,100) (inside: the direct blit)
+397 TVY      vst_height(13), clip off, 'ABCDEFGH' at (600,100): the general path past x 639
+398 TVZ      vst_height(13), clip off, 4100 characters at (10,100): width wraps, the direct blit
+399 TWA      underline+light, vst_height(26), rotation 900, v_justified interchar 'ABCDEFGH' at (200,300), length 201
+400 TXA      chain ids 7,7,8,7: count, vqt_name over it, vst_font on the middle face
+   vst_load_fonts c2=0 c4=1 io 3
+   vqt_name(0) c4=33 id=1 name=[6x6 system font.................]
+   vqt_name(1) c4=33 id=1 name=[6x6 system font.................]
+   vqt_name(2) c4=33 id=7 name=[AUDIT FONT SEVEN................]
+   vqt_name(3) c4=33 id=8 name=[AUDIT FONT EIGHT................]
+   vqt_name(4) c4=33 id=7 name=[AUDIT FONT SEVEN................]
+   vqt_name(5) c4=33 id=1 name=[6x6 system font.................]
+   vqt_name(6) c4=33 id=1 name=[6x6 system font.................]
+   vst_font c2=0 c4=1 io 8 po
+   attr c2=2 c4=6 io 8 1 0 0 0 1 po 5 4 5 6
+   vst_font c2=0 c4=1 io 7 po
+   attr c2=2 c4=6 io 7 1 0 0 0 1 po 5 4 5 6
+401 TXA2     chain 7,7: count 1
+   vst_load_fonts c2=0 c4=1 io 1
+   vqt_name(2) c4=33 id=7 name=[AUDIT FONT SEVEN................]
+   vqt_name(3) c4=33 id=1 name=[6x6 system font.................]
+402 TXB      one face in two sizes (top 6 point 8, top 13 point 16): vst_height, vst_point, re-drive
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_font c2=0 c4=1 io 9 po
+   attr c2=2 c4=6 io 9 1 0 0 0 1 po 5 4 5 6
+   vst_height c2=2 c4=0 io po 8 6 8 8
+   vst_height c2=2 c4=0 io po 8 13 8 16
+   vst_height c2=2 c4=0 io po 13 10 13 13
+   vst_height c2=2 c4=0 io po 16 27 16 32
+   vst_height c2=2 c4=0 io po 4 3 4 5
+   vst_height c2=2 c4=0 io po 1 1 1 3
+   vst_point c2=2 c4=1 io 8 po 8 6 8 8
+   vst_point c2=2 c4=1 io 16 po 8 13 8 16
+   vst_point c2=2 c4=1 io 8 po 8 6 8 8
+   vst_point c2=2 c4=1 io 32 po 16 27 16 32
+   vst_point c2=2 c4=1 io 16 po 8 13 8 16
+   vst_point c2=2 c4=1 io 32 po 16 27 16 32
+   vst_point c2=2 c4=1 io 8 po 8 6 8 8
+   vst_point c2=2 c4=1 io 32 po 16 27 16 32
+   vst_font c2=0 c4=1 io 9 po
+   attr after re-drive by point c2=2 c4=6 io 9 1 0 0 0 1 po 16 27 16 32
+   vst_font c2=0 c4=1 io 1 po
+   attr system face, pts_mode c2=2 c4=6 io 1 1 0 0 0 1 po 14 27 16 32
+403 TXC      loaded font with id 1 (top 20): no new face, vst_font(1) stays built-in, vst_height(20) finds it
+   vst_load_fonts c2=0 c4=1 io 1
+   vqt_name(1) c4=33 id=1 name=[6x6 system font.................]
+   vqt_name(2) c4=33 id=1 name=[6x6 system font.................]
+   vst_font c2=0 c4=1 io 1 po
+   attr c2=2 c4=6 io 1 1 0 0 0 1 po 5 4 6 6
+   vst_height c2=2 c4=0 io po 12 20 12 24
+   attr c2=2 c4=6 io 1 1 0 0 0 1 po 12 20 12 24
+   vst_height c2=2 c4=0 io po 9 8 11 10
+   attr c2=2 c4=6 io 1 1 0 0 0 1 po 9 8 11 10
+   vst_point c2=2 c4=1 io 14 po 12 20 12 24
+   attr c2=2 c4=6 io 1 1 0 0 0 1 po 12 20 12 24
+   attr after unload c2=2 c4=6 io 1 1 0 0 0 1 po 5 4 6 6
+404 TXD      no F_STDFORM, odd form_width 65: words swapped in the caller's table, flag set in its header
+   before d 165 185 159 243 .. 179 151 181 flags 8
+   vst_load_fonts c2=0 c4=1 io 1
+   after  d 185 165 243 159 .. 151 179 181 flags 12
+   vst_font c2=0 c4=1 io 12 po
+405 TXE      two headers without F_STDFORM share one data table: the second swaps it back
+   vst_load_fonts c2=0 c4=1 io 1
+   after  d 165 185 flags 12 12
+406 TXF1     no F_STDFORM: how many words of the data table does vst_load_fonts swap
+   vst_load_fonts c2=0 c4=1 io 1
+   fw 255 fh 128 product 32640 words swapped 16320 first 0 last 32638 flags 12
+407 TXF2     no F_STDFORM: how many words of the data table does vst_load_fonts swap
+   vst_load_fonts c2=0 c4=1 io 1
+   fw 256 fh 128 product 32768 words swapped 16384 first 0 last 32766 flags 12
+408 TXF3     no F_STDFORM: how many words of the data table does vst_load_fonts swap
+   vst_load_fonts c2=0 c4=1 io 1
+   fw 400 fh 100 product 40000 words swapped 20000 first 0 last 39998 flags 12
+409 TXF4     no F_STDFORM: how many words of the data table does vst_load_fonts swap
+   vst_load_fonts c2=0 c4=1 io 1
+   fw 512 fh 128 product 65536 words swapped 0 first -1 last -1 flags 12
+410 TXF5     no F_STDFORM: how many words of the data table does vst_load_fonts swap
+   vst_load_fonts c2=0 c4=1 io 1
+   fw 700 fh 100 product 70000 words swapped 2232 first 0 last 4462 flags 12
+411 TXG      unload keeps cur_font: the glyphs stay; a second load works; unload without load
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_font c2=0 c4=1 io 7 po
+   vst_unload_fonts c2=0 c4=0
+   attr after unload c2=2 c4=6 io 7 1 0 0 0 1 po 5 4 5 6
+   vqt_name(2) c4=33 id=1 name=[6x6 system font.................]
+   vst_load_fonts c2=0 c4=1 io 1
+   vqt_name(2) c4=33 id=7 name=[AUDIT FONT SEVEN................]
+   vst_unload_fonts c2=0 c4=0
+   vst_unload_fonts c2=0 c4=0
+   vst_load_fonts c2=0 c4=1 io 1
+412 TXH      two workstations: open clears the ring, the guard stays, a load on B replaces, unload on B empties
+   vst_load_fonts c2=0 c4=1 io 1
+   vqt_name(2) c4=33 id=7 name=[AUDIT FONT SEVEN................]
+   vqt_name(2) c4=33 id=1 name=[6x6 system font.................]
+   vst_load_fonts c2=0 c4=1 io 0
+   vqt_name(2) c4=33 id=1 name=[6x6 system font.................]
+   vst_load_fonts c2=0 c4=1 io 1
+   vqt_name(2) c4=33 id=7 name=[AUDIT FONT SEVEN................]
+   vqt_name(2) c4=33 id=7 name=[AUDIT FONT SEVEN................]
+   vst_unload_fonts c2=0 c4=0
+   vqt_name(2) c4=33 id=1 name=[6x6 system font.................]
+   vst_load_fonts c2=0 c4=1 io 0
+   vst_unload_fonts c2=0 c4=0
+   vst_load_fonts c2=0 c4=1 io 1
+   vqt_name(2) c4=33 id=7 name=[AUDIT FONT SEVEN................]
+   vqt_name(2) c4=33 id=7 name=[AUDIT FONT SEVEN................]
+413 TXI      proportional font: v_gtext, vqt_width, vqt_extent, vqt_fontinfo
+   vst_load_fonts c2=0 c4=1 io 1
+   attr c2=2 c4=6 io 20 1 0 0 0 1 po 8 8 8 12
+   vqt_fontinfo c2=5 c4=2 io 32 95 po 8 3 0 3 0 5 0 8 0 8
+   vqt_width c2=3 c4=1 io 65 po 6 30583 0 30583 0 30583
+   vqt_width c2=3 c4=1 io 32 po 3 30583 0 30583 0 30583
+   vqt_width c2=3 c4=1 io 95 po 6 30583 0 30583 0 30583
+   vqt_width c2=3 c4=1 io -1 po 30583 30583 0 30583 0 30583
+   vqt_width c2=3 c4=1 io -1 po 30583 30583 0 30583 0 30583
+   vqt_width c2=3 c4=1 io -1 po 30583 30583 0 30583 0 30583
+   vqt_extent c2=4 c4=0 io po 0 0 35 0 35 12 0 12
+414 TXIb     proportional, bold: the width and the pen grow by thicken
+   vst_load_fonts c2=0 c4=1 io 1
+   vqt_extent c2=4 c4=0 io po 0 0 41 0 41 12 0 12
+415 TXIs     proportional, skew
+   vst_load_fonts c2=0 c4=1 io 1
+   vqt_extent c2=4 c4=0 io po 0 0 40 0 40 12 0 12
+416 TXIo     proportional, outline
+   vst_load_fonts c2=0 c4=1 io 1
+   vqt_extent c2=4 c4=0 io po 0 0 47 0 47 14 0 14
+417 TXIu     proportional, underline
+   vst_load_fonts c2=0 c4=1 io 1
+418 TXR1     proportional, rotation 900
+   vst_load_fonts c2=0 c4=1 io 1
+   vqt_extent c2=4 c4=0 io po 12 0 12 35 0 35 0 0
+419 TXR2     proportional, rotation 1800
+   vst_load_fonts c2=0 c4=1 io 1
+420 TXR3     proportional, rotation 2700
+   vst_load_fonts c2=0 c4=1 io 1
+421 TXS1     proportional, exact double
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 17 16 24
+   vqt_extent c2=4 c4=0 io po 0 0 70 0 70 24 0 24
+   vqt_width c2=3 c4=1 io 65 po 12 30583 0 30583 0 30583
+422 TXS2     proportional, DDA up
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 12 12 12 17
+   vqt_extent c2=4 c4=0 io po 0 0 52 0 52 17 0 17
+   vqt_width c2=3 c4=1 io 65 po 9 30583 0 30583 0 30583
+423 TXS3     proportional, DDA down
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 5 5 5 8
+   vqt_extent c2=4 c4=0 io po 0 0 22 0 22 8 0 8
+424 TXJ      proportional, v_justified interword + interchar
+   vst_load_fonts c2=0 c4=1 io 1
+425 TXO      code below first_ade and above last_ade: '?'
+   vst_load_fonts c2=0 c4=1 io 1
+426 TXM      writing modes transparent, XOR, reverse transparent over a filled bar
+   vst_load_fonts c2=0 c4=1 io 1
+427 TXC2     alignment: right + centre, half + descent, clip across the run
+   vst_load_fonts c2=0 c4=1 io 1
+428 TXH2     F_HORZ_OFF: the pen takes hor_table[k], vqt_width reads hor_table[k*2], [k*2+1]
+   vst_load_fonts c2=0 c4=1 io 1
+   vqt_width c2=3 c4=1 io 65 po 6 30583 2 30583 3 30583
+   vqt_width c2=3 c4=1 io 66 po 7 30583 0 30583 1 30583
+   vqt_width c2=3 c4=1 io 95 po 6 30583 2 30583 3 30583
+   vqt_extent c2=4 c4=0 io po 0 0 35 0 35 12 0 12
+429 TXK      a cell 40 x 40, not byte-aligned tables, unscaled and doubled
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 37 30 37 40
+   vst_height c2=2 c4=0 io po 74 61 74 80
+430 TXL      monospace 8x16, codes 0..255: EmuTOS' direct blit
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 8 13 8 16
+431 TXN      system faces: vst_point(20), vst_font(1), vst_font(99); vst_height(20), vst_font(1)
+   vst_point c2=2 c4=1 io 20 po 14 27 16 32
+   vst_font c2=0 c4=1 io 1 po
+   attr c2=2 c4=6 io 1 1 0 0 0 1 po 14 27 16 32
+   vst_font c2=0 c4=1 io 1 po
+   attr c2=2 c4=6 io 1 1 0 0 0 1 po 14 27 16 32
+   vst_height c2=2 c4=0 io po 11 20 12 24
+   vst_font c2=0 c4=1 io 1 po
+   attr c2=2 c4=6 io 1 1 0 0 0 1 po 11 20 12 24
+   vst_height c2=2 c4=0 io po 4 3 4 5
+   vst_font c2=0 c4=1 io 1 po
+   attr c2=2 c4=6 io 1 1 0 0 0 1 po 4 3 4 5
+   vst_height c2=2 c4=0 io po 13 11 15 14
+   vst_font c2=0 c4=1 io 1 po
+   attr c2=2 c4=6 io 1 1 0 0 0 1 po 13 11 15 14
+   vst_point c2=2 c4=1 io 9 po 7 6 8 8
+   vst_font c2=0 c4=1 io 1 po
+   attr c2=2 c4=6 io 1 1 0 0 0 1 po 7 6 8 8
+432 TXP      vqt_name: a character above 127, a name of 32 characters without NUL
+   vst_load_fonts c2=0 c4=1 io 1
+   vqt_name c4=33 io 7 78 -28 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 78 0 30583 30583
+433 TXQ      built-in 8x16, skew, replace
+434 TXQ2     built-in 8x16, skew, transparent
+435 TXQ3     proportional, skew, transparent
+   vst_load_fonts c2=0 c4=1 io 1
+436 TXZ      a child loads a chain on our handle and ends without unloading; then we walk the ring
+   Pexec rc 0
+   vqt_name(2) c4=33 id=1 name=[6x6 system font.................]
+   vst_font c2=0 c4=1 io 1 po
+   attr c2=2 c4=6 io 1 1 0 0 0 1 po 5 4 6 6
+   vst_load_fonts c2=0 c4=1 io 0
+   vst_unload_fonts c2=0 c4=0
+   vqt_name(2) c4=33 id=1 name=[6x6 system font.................]
+   vst_load_fonts c2=0 c4=1 io 1
+   vqt_name(2) c4=33 id=7 name=[AUDIT FONT SEVEN................]
+437 Y000     cell 63x16 eff 0 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 63 11 63 16
+438 Y001     cell 63x16 eff 0 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 126 23 126 32
+439 Y002     cell 63x16 eff 1 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 63 11 63 16
+440 Y003     cell 63x16 eff 1 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 126 23 126 32
+441 Y004     cell 63x16 eff 4 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 63 11 63 16
+442 Y005     cell 63x16 eff 4 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 126 23 126 32
+443 Y006     cell 63x16 eff 16 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 63 11 63 16
+444 Y007     cell 63x16 eff 16 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 126 23 126 32
+445 Y008     cell 63x16 eff 31 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 63 11 63 16
+446 Y009     cell 63x16 eff 31 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 126 23 126 32
+447 Y010     cell 64x16 eff 0 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 11 64 16
+448 Y011     cell 64x16 eff 0 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 128 23 128 32
+449 Y012     cell 64x16 eff 1 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 11 64 16
+450 Y013     cell 64x16 eff 1 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 128 23 128 32
+451 Y014     cell 64x16 eff 4 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 11 64 16
+452 Y015     cell 64x16 eff 4 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 128 23 128 32
+453 Y016     cell 64x16 eff 16 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 11 64 16
+454 Y017     cell 64x16 eff 16 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 128 23 128 32
+455 Y018     cell 64x16 eff 31 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 11 64 16
+456 Y019     cell 64x16 eff 31 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 128 23 128 32
+457 Y020     cell 65x16 eff 0 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 65 11 65 16
+458 Y021     cell 65x16 eff 0 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 130 23 130 32
+459 Y022     cell 65x16 eff 1 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 65 11 65 16
+460 Y023     cell 65x16 eff 1 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 130 23 130 32
+461 Y024     cell 65x16 eff 4 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 65 11 65 16
+462 Y025     cell 65x16 eff 4 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 130 23 130 32
+463 Y026     cell 65x16 eff 16 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 65 11 65 16
+464 Y027     cell 65x16 eff 16 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 130 23 130 32
+465 Y028     cell 65x16 eff 31 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 65 11 65 16
+466 Y029     cell 65x16 eff 31 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 130 23 130 32
+467 Y030     cell 16x63 eff 0 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 47 16 63
+468 Y031     cell 16x63 eff 0 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 95 32 126
+469 Y032     cell 16x63 eff 1 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 47 16 63
+470 Y033     cell 16x63 eff 1 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 95 32 126
+471 Y034     cell 16x63 eff 4 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 47 16 63
+472 Y035     cell 16x63 eff 4 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 95 32 126
+473 Y036     cell 16x63 eff 16 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 47 16 63
+474 Y037     cell 16x63 eff 16 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 95 32 126
+475 Y038     cell 16x63 eff 31 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 47 16 63
+476 Y039     cell 16x63 eff 31 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 95 32 126
+477 Y040     cell 16x64 eff 0 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 47 16 64
+478 Y041     cell 16x64 eff 0 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 95 32 128
+479 Y042     cell 16x64 eff 1 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 47 16 64
+480 Y043     cell 16x64 eff 1 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 95 32 128
+481 Y044     cell 16x64 eff 4 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 47 16 64
+482 Y045     cell 16x64 eff 4 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 95 32 128
+483 Y046     cell 16x64 eff 16 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 47 16 64
+484 Y047     cell 16x64 eff 16 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 95 32 128
+485 Y048     cell 16x64 eff 31 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 47 16 64
+486 Y049     cell 16x64 eff 31 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 95 32 128
+487 Y050     cell 16x65 eff 0 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 48 16 65
+488 Y051     cell 16x65 eff 0 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 97 32 130
+489 Y052     cell 16x65 eff 1 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 48 16 65
+490 Y053     cell 16x65 eff 1 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 97 32 130
+491 Y054     cell 16x65 eff 4 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 48 16 65
+492 Y055     cell 16x65 eff 4 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 97 32 130
+493 Y056     cell 16x65 eff 16 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 48 16 65
+494 Y057     cell 16x65 eff 16 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 97 32 130
+495 Y058     cell 16x65 eff 31 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 48 16 65
+496 Y059     cell 16x65 eff 31 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 97 32 130
+497 Y060     cell 31x16 eff 0 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 31 11 31 16
+498 Y061     cell 31x16 eff 0 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 62 23 62 32
+499 Y062     cell 31x16 eff 1 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 31 11 31 16
+500 Y063     cell 31x16 eff 1 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 62 23 62 32
+501 Y064     cell 31x16 eff 4 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 31 11 31 16
+502 Y065     cell 31x16 eff 4 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 62 23 62 32
+503 Y066     cell 31x16 eff 16 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 31 11 31 16
+504 Y067     cell 31x16 eff 16 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 62 23 62 32
+505 Y068     cell 31x16 eff 31 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 31 11 31 16
+506 Y069     cell 31x16 eff 31 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 62 23 62 32
+507 Y070     cell 32x16 eff 0 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 11 32 16
+508 Y071     cell 32x16 eff 0 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 23 64 32
+509 Y072     cell 32x16 eff 1 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 11 32 16
+510 Y073     cell 32x16 eff 1 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 23 64 32
+511 Y074     cell 32x16 eff 4 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 11 32 16
+512 Y075     cell 32x16 eff 4 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 23 64 32
+513 Y076     cell 32x16 eff 16 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 11 32 16
+514 Y077     cell 32x16 eff 16 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 23 64 32
+515 Y078     cell 32x16 eff 31 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 11 32 16
+516 Y079     cell 32x16 eff 31 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 23 64 32
+517 Y080     cell 33x16 eff 0 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 33 11 33 16
+518 Y081     cell 33x16 eff 0 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 66 23 66 32
+519 Y082     cell 33x16 eff 1 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 33 11 33 16
+520 Y083     cell 33x16 eff 1 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 66 23 66 32
+521 Y084     cell 33x16 eff 4 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 33 11 33 16
+522 Y085     cell 33x16 eff 4 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 66 23 66 32
+523 Y086     cell 33x16 eff 16 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 33 11 33 16
+524 Y087     cell 33x16 eff 16 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 66 23 66 32
+525 Y088     cell 33x16 eff 31 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 33 11 33 16
+526 Y089     cell 33x16 eff 31 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 66 23 66 32
+527 Y090     cell 16x31 eff 0 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 23 16 31
+528 Y091     cell 16x31 eff 0 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 47 32 62
+529 Y092     cell 16x31 eff 1 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 23 16 31
+530 Y093     cell 16x31 eff 1 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 47 32 62
+531 Y094     cell 16x31 eff 4 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 23 16 31
+532 Y095     cell 16x31 eff 4 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 47 32 62
+533 Y096     cell 16x31 eff 16 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 23 16 31
+534 Y097     cell 16x31 eff 16 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 47 32 62
+535 Y098     cell 16x31 eff 31 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 23 16 31
+536 Y099     cell 16x31 eff 31 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 47 32 62
+537 Y100     cell 16x32 eff 0 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 23 16 32
+538 Y101     cell 16x32 eff 0 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 47 32 64
+539 Y102     cell 16x32 eff 1 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 23 16 32
+540 Y103     cell 16x32 eff 1 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 47 32 64
+541 Y104     cell 16x32 eff 4 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 23 16 32
+542 Y105     cell 16x32 eff 4 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 47 32 64
+543 Y106     cell 16x32 eff 16 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 23 16 32
+544 Y107     cell 16x32 eff 16 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 47 32 64
+545 Y108     cell 16x32 eff 31 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 23 16 32
+546 Y109     cell 16x32 eff 31 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 47 32 64
+547 Y110     cell 16x33 eff 0 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 24 16 33
+548 Y111     cell 16x33 eff 0 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 49 32 66
+549 Y112     cell 16x33 eff 1 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 24 16 33
+550 Y113     cell 16x33 eff 1 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 49 32 66
+551 Y114     cell 16x33 eff 4 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 24 16 33
+552 Y115     cell 16x33 eff 4 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 49 32 66
+553 Y116     cell 16x33 eff 16 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 24 16 33
+554 Y117     cell 16x33 eff 16 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 49 32 66
+555 Y118     cell 16x33 eff 31 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 24 16 33
+556 Y119     cell 16x33 eff 31 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 49 32 66
+557 Y120     cell 32x32 eff 0 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 23 32 32
+558 Y121     cell 32x32 eff 0 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 47 64 64
+559 Y122     cell 32x32 eff 1 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 23 32 32
+560 Y123     cell 32x32 eff 1 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 47 64 64
+561 Y124     cell 32x32 eff 4 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 23 32 32
+562 Y125     cell 32x32 eff 4 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 47 64 64
+563 Y126     cell 32x32 eff 16 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 23 32 32
+564 Y127     cell 32x32 eff 16 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 47 64 64
+565 Y128     cell 32x32 eff 31 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 32 23 32 32
+566 Y129     cell 32x32 eff 31 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 47 64 64
+567 Y130     cell 33x33 eff 0 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 33 24 33 33
+568 Y131     cell 33x33 eff 0 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 66 49 66 66
+569 Y132     cell 33x33 eff 1 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 33 24 33 33
+570 Y133     cell 33x33 eff 1 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 66 49 66 66
+571 Y134     cell 33x33 eff 4 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 33 24 33 33
+572 Y135     cell 33x33 eff 4 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 66 49 66 66
+573 Y136     cell 33x33 eff 16 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 33 24 33 33
+574 Y137     cell 33x33 eff 16 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 66 49 66 66
+575 Y138     cell 33x33 eff 31 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 33 24 33 33
+576 Y139     cell 33x33 eff 31 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 66 49 66 66
+577 Y140     cell 62x62 eff 0 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 62 46 62 62
+578 Y141     cell 62x62 eff 0 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 124 93 124 124
+579 Y142     cell 62x62 eff 1 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 62 46 62 62
+580 Y143     cell 62x62 eff 1 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 124 93 124 124
+581 Y144     cell 62x62 eff 4 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 62 46 62 62
+582 Y145     cell 62x62 eff 4 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 124 93 124 124
+583 Y146     cell 62x62 eff 16 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 62 46 62 62
+584 Y147     cell 62x62 eff 16 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 124 93 124 124
+585 Y148     cell 62x62 eff 31 scale 0 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 62 46 62 62
+586 Y149     cell 62x62 eff 31 scale 1 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 124 93 124 124
+587 Y150     cell 42x16 eff 0 scale 2 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 61 16 61 23
+588 Y151     cell 42x16 eff 4 scale 2 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 61 16 61 23
+589 Y152     cell 42x16 eff 31 scale 2 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 61 16 61 23
+590 Y153     cell 43x16 eff 0 scale 2 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 63 16 63 23
+591 Y154     cell 43x16 eff 4 scale 2 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 63 16 63 23
+592 Y155     cell 43x16 eff 31 scale 2 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 63 16 63 23
+593 Y156     cell 16x42 eff 0 scale 2 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 24 46 24 62
+594 Y157     cell 16x42 eff 4 scale 2 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 24 46 24 62
+595 Y158     cell 16x42 eff 31 scale 2 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 24 46 24 62
+596 Y159     cell 16x43 eff 0 scale 2 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 24 48 24 64
+597 Y160     cell 16x43 eff 4 scale 2 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 24 48 24 64
+598 Y161     cell 16x43 eff 31 scale 2 rot 0
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 24 48 24 64
+599 Y162     cell 63x16 eff 0 scale 0 rot 900
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 63 11 63 16
+600 Y163     cell 63x16 eff 1 scale 0 rot 900
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 63 11 63 16
+601 Y164     cell 64x16 eff 0 scale 0 rot 900
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 11 64 16
+602 Y165     cell 64x16 eff 1 scale 0 rot 900
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 64 11 64 16
+603 Y166     cell 65x16 eff 0 scale 0 rot 900
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 65 11 65 16
+604 Y167     cell 65x16 eff 1 scale 0 rot 900
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 65 11 65 16
+605 Y168     cell 16x63 eff 0 scale 0 rot 900
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 47 16 63
+606 Y169     cell 16x63 eff 1 scale 0 rot 900
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 47 16 63
+607 Y170     cell 16x64 eff 0 scale 0 rot 900
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 47 16 64
+608 Y171     cell 16x64 eff 1 scale 0 rot 900
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 47 16 64
+609 Y172     cell 16x65 eff 0 scale 0 rot 900
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 48 16 65
+610 Y173     cell 16x65 eff 1 scale 0 rot 900
+   vst_load_fonts c2=0 c4=1 io 1
+   vst_height c2=2 c4=0 io po 16 48 16 65
+   TY cases 174
+END

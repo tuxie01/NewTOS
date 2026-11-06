@@ -1,0 +1,5 @@
+A_clipoff_plain calls=2000 chars_per_call=76 ticks200=119
+B_clipon_plain calls=2000 chars_per_call=76 ticks200=118
+C_clipon_bold calls=2000 chars_per_call=76 ticks200=135
+D_clipon_light_skew calls=1000 chars_per_call=76 ticks200=87
+E_clipon_9chars calls=10000 chars_per_call=9 ticks200=76

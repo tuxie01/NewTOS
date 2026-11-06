@@ -1,0 +1,30 @@
+shprobe: 12 shots, 0 differ:
+shprobe-desk: 2 shots, 0 differ:
+desk480: 11 shots, 0 differ:
+desk240: 11 shots, 0 differ:
+desk1080: 11 shots, 0 differ:
+bc480: 6 shots, 0 differ:
+bc240: 6 shots, 0 differ:
+bc1080: 6 shots, 1 differ: 02-t018
+bc1080-fix: exception-panic-lines 0 
+bc1080-head: exception-panic-lines 0 
+bc240-fix: exception-panic-lines 0 
+bc240-head: exception-panic-lines 0 
+bc480-fix: exception-panic-lines 0 
+bc480-head: exception-panic-lines 0 
+desk1080-fix: shots  shots 11 exception-panic-lines 0 
+desk1080-head: shots  shots 11 exception-panic-lines 0 
+desk240-fix: shots  shots 11 exception-panic-lines 0 
+desk240-head: shots  shots 11 exception-panic-lines 0 
+desk480-fix: shots  shots 11 exception-panic-lines 0 
+desk480-head: shots  shots 11 exception-panic-lines 0 
+shprobe-desk-fix: qemu  
+shprobe-desk-head: qemu  
+shprobe-fix: qemu  
+shprobe-head: qemu  
+slprobe-fix: qemu  
+slprobe-head: qemu  
+slprobe2-fix: qemu  
+slprobe2-head: qemu  
+slprobe3-fix: qemu  
+slprobe3-head: qemu  

@@ -1,0 +1,22 @@
+base-2: qemu-system-aarch64: terminating on signal 15 from pid 78169 (<unknown process>) qemu done A_clipoff_plain=88 B_clipon_plain=89 C_clipon_bold=88 D_clipon_light_skew=72 E_clipon_9chars=57 load 4,31 4,24 3,89
+fix-2: qemu-system-aarch64: terminating on signal 15 from pid 78503 (<unknown process>) qemu done A_clipoff_plain=67 B_clipon_plain=66 C_clipon_bold=68 D_clipon_light_skew=60 E_clipon_9chars=45 load 4,25 4,22 3,89
+head-2: qemu-system-aarch64: terminating on signal 15 from pid 78763 (<unknown process>) qemu done A_clipoff_plain=119 B_clipon_plain=116 C_clipon_bold=137 D_clipon_light_skew=87 E_clipon_9chars=75 load 3,77 4,08 3,85
+base-3: qemu-system-aarch64: terminating on signal 15 from pid 79322 (<unknown process>) qemu done A_clipoff_plain=85 B_clipon_plain=87 C_clipon_bold=84 D_clipon_light_skew=69 E_clipon_9chars=56 load 4,05 4,12 3,86
+fix-3: qemu-system-aarch64: terminating on signal 15 from pid 79628 (<unknown process>) qemu done A_clipoff_plain=66 B_clipon_plain=66 C_clipon_bold=68 D_clipon_light_skew=59 E_clipon_9chars=45 load 3,76 4,04 3,84
+head-3: qemu-system-aarch64: terminating on signal 15 from pid 79925 (<unknown process>) qemu done A_clipoff_plain=118 B_clipon_plain=116 C_clipon_bold=136 D_clipon_light_skew=87 E_clipon_9chars=75 load 4,03 4,09 3,86
+base-4: qemu-system-aarch64: terminating on signal 15 from pid 80195 (<unknown process>) qemu done A_clipoff_plain=86 B_clipon_plain=86 C_clipon_bold=86 D_clipon_light_skew=71 E_clipon_9chars=56 load 3,94 4,05 3,85
+fix-4: qemu-system-aarch64: terminating on signal 15 from pid 80461 (<unknown process>) qemu done A_clipoff_plain=65 B_clipon_plain=65 C_clipon_bold=68 D_clipon_light_skew=59 E_clipon_9chars=45 load 4,25 4,10 3,87
+head-4: qemu-system-aarch64: terminating on signal 15 from pid 80655 (<unknown process>) qemu done A_clipoff_plain=119 B_clipon_plain=118 C_clipon_bold=135 D_clipon_light_skew=87 E_clipon_9chars=76 load 5,62 4,44 4,00
+base-5: qemu-system-aarch64: terminating on signal 15 from pid 80853 (<unknown process>) qemu done A_clipoff_plain=87 B_clipon_plain=87 C_clipon_bold=87 D_clipon_light_skew=71 E_clipon_9chars=57 load 4,96 4,37 3,99
+fix-5: qemu-system-aarch64: terminating on signal 15 from pid 81049 (<unknown process>) qemu done A_clipoff_plain=64 B_clipon_plain=64 C_clipon_bold=67 D_clipon_light_skew=59 E_clipon_9chars=43 load 4,51 4,31 3,98
+head-5: qemu-system-aarch64: terminating on signal 15 from pid 81241 (<unknown process>) qemu done A_clipoff_plain=117 B_clipon_plain=116 C_clipon_bold=137 D_clipon_light_skew=85 E_clipon_9chars=75 load 4,51 4,31 3,99
+base-6: qemu-system-aarch64: terminating on signal 15 from pid 81442 (<unknown process>) qemu done A_clipoff_plain=85 B_clipon_plain=85 C_clipon_bold=85 D_clipon_light_skew=71 E_clipon_9chars=56 load 3,87 4,17 3,95
+fix-6: qemu-system-aarch64: terminating on signal 15 from pid 81639 (<unknown process>) qemu done A_clipoff_plain=66 B_clipon_plain=68 C_clipon_bold=68 D_clipon_light_skew=59 E_clipon_9chars=46 load 4,02 4,18 3,96
+head-6: qemu-system-aarch64: terminating on signal 15 from pid 81902 (<unknown process>) qemu done A_clipoff_plain=119 B_clipon_plain=116 C_clipon_bold=135 D_clipon_light_skew=87 E_clipon_9chars=76 load 4,16 4,20 3,97
+base-7: qemu-system-aarch64: terminating on signal 15 from pid 82111 (<unknown process>) qemu done A_clipoff_plain=85 B_clipon_plain=85 C_clipon_bold=84 D_clipon_light_skew=71 E_clipon_9chars=55 load 3,92 4,12 3,95
+fix-7: qemu-system-aarch64: terminating on signal 15 from pid 82308 (<unknown process>) qemu done A_clipoff_plain=65 B_clipon_plain=65 C_clipon_bold=66 D_clipon_light_skew=59 E_clipon_9chars=44 load 3,98 4,11 3,95
+head-7: qemu-system-aarch64: terminating on signal 15 from pid 82509 (<unknown process>) qemu done A_clipoff_plain=118 B_clipon_plain=117 C_clipon_bold=136 D_clipon_light_skew=86 E_clipon_9chars=75 load 3,77 4,04 3,92
+base-8: qemu-system-aarch64: terminating on signal 15 from pid 82730 (<unknown process>) qemu done A_clipoff_plain=86 B_clipon_plain=86 C_clipon_bold=86 D_clipon_light_skew=71 E_clipon_9chars=56 load 3,75 4,00 3,91
+fix-8: qemu-system-aarch64: terminating on signal 15 from pid 82923 (<unknown process>) qemu done A_clipoff_plain=64 B_clipon_plain=65 C_clipon_bold=67 D_clipon_light_skew=59 E_clipon_9chars=44 load 3,90 4,00 3,92
+head-8: qemu-system-aarch64: terminating on signal 15 from pid 83132 (<unknown process>) qemu done A_clipoff_plain=118 B_clipon_plain=119 C_clipon_bold=137 D_clipon_light_skew=87 E_clipon_9chars=76 load 3,68 3,94 3,90
+done

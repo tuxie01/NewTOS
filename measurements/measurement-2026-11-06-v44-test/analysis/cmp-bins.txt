@@ -1,0 +1,16 @@
+v18t2 VDI.BIN fix==before 4694250d722a99e0
+v18 VDI.BIN fix==before af6163c916e63f70
+all VDI.BIN fix==before e91b865b92b5dbf2
+vdi-r3 VDI.BIN fix==before 589c76cc21e804f6
+v18t2-raster RASTER.BIN fix==before 9ef87aa87574eaa7
+raster RASTER.BIN fix==before 2bd92d85f75b5b1e
+raster-screen RASTER.BIN fix==before 4e4041e30b35382e
+v18-raster RASTER.BIN fix==before 3fa4b2986bc23b23
+r2 AES.BIN fix!=before (78 bytes) fix d05c65bfa9c89b1d before 3c6ee3f060322d95
+r3 AES.BIN fix!=before (39 bytes) fix a5898fea608a4503 before 7fde45a9adad2b1e
+r4 AES.BIN fix!=before (181 bytes) fix 9ba5f16e8e422dbc before f159228aa0c35428
+probe n-fix BIN 7168fb02f6c652a4 LOG 7d01a2755e0095c4
+probe n-head BIN 7168fb02f6c652a4 LOG 7d01a2755e0095c4
+probe e1 BIN 4662c03f108ccc6a LOG d356ad6fd0477fc9
+probe BIN fix==before
+probe LOG fix==before

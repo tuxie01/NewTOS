@@ -1,0 +1,5 @@
+AES.BIN vs AES.BIN -- area AES, 78 cases from aes-r2-wind.tsv
+
+0 of 78 cases differ
+address check, AES.BIN: format 3, pointer 8 bytes, least significant word first; 78 address cells checked, 0 not < 0x80000000
+address check, AES.BIN: format 3, pointer 8 bytes, least significant word first; 78 address cells checked, 0 not < 0x80000000

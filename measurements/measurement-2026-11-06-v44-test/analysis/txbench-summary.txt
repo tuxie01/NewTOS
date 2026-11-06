@@ -1,0 +1,5 @@
+A_clipoff_plain        base: n=8 min=85 med=86.0 max=88 | fix: n=8 min=64 med=65.0 max=67 | head: n=8 min=116 med=118.0 max=119 | fix/base med=0.76 (0.74..0.78) minmin=0.75 head/base med=1.38 (1.34..1.40) minmin=1.36
+B_clipon_plain         base: n=8 min=85 med=86.0 max=89 | fix: n=8 min=64 med=65.0 max=68 | head: n=8 min=116 med=116.0 max=119 | fix/base med=0.76 (0.74..0.80) minmin=0.75 head/base med=1.36 (1.30..1.38) minmin=1.36
+C_clipon_bold          base: n=8 min=84 med=86.0 max=88 | fix: n=8 min=66 med=67.5 max=68 | head: n=8 min=135 med=136.0 max=137 | fix/base med=0.78 (0.77..0.81) minmin=0.79 head/base med=1.58 (1.56..1.62) minmin=1.61
+D_clipon_light_skew    base: n=8 min=69 med=71.0 max=72 | fix: n=8 min=58 med=59.0 max=60 | head: n=8 min=85 med=87.0 max=87 | fix/base med=0.83 (0.81..0.86) minmin=0.84 head/base med=1.22 (1.20..1.26) minmin=1.23
+E_clipon_9chars        base: n=8 min=55 med=56.0 max=57 | fix: n=8 min=43 med=45.0 max=46 | head: n=8 min=74 med=75.0 max=76 | fix/base med=0.80 (0.75..0.82) minmin=0.78 head/base med=1.35 (1.32..1.36) minmin=1.35
