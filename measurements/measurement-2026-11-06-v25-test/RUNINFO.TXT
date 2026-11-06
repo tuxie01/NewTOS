@@ -1,0 +1,39 @@
+V25 acceptance -- TASK/V25.md (fix 294272e2, curve skipped when the clip excludes xc+-xrad/yc+-yrad like EmuTOS gdp_curve; base 633e81e3) by the tester.
+Date 2026-11-06. No product code touched; nothing committed; no SD card, no Pi, no push.
+Test code changed: tosdump/probes/vdprobe.c +43 lines (new function c17()/k17(), cases K17A-K17U appended after k16, k17() called after k16(); 0 lines removed, existing cases unchanged; case numbers 281-301, cases 281 in total).
+  probe binaries (main tree 294272e2 + that diff): VDPROBE.PRG 9e265734052fca0453e7aab5e6819946400d897f685e22d0087bdc94d679fef0 VDPROBE.NAP 9844f522b9c3aa52f45247415c6ecbc962b313ee2b6538f48420138caaacea1e
+Harness: scripts copied from measurements/measurement-2026-11-06-v24-test/method with commit ids replaced (method/); desktop scene 40 seven-byte files LONGNM01-40.TXT.
+
+TREES
+  head = git archive 294272e2, base = git archive 633e81e3 (references/ linked); fresh scratch tree per commit and board.
+  rpi4 release kernel8.img (serial=on via -append): head f0844bd5b2a621bfd56328fa9a39458bcb23d1dbdfef6cf7d16a0863d389519d, base 739f70dd9996788f00fdbc55e95ea0b5e5838a78f14d5e3391cd9b9c8d84010a (= the V24 head kernel, as 633e81e3 only changed docs).
+  qemu-virt: fresh tree 294272e2, dev profile (method/build-virt.log).
+  host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of the card.img.manifest files in probe/ and runs/).
+  Manifests: probe/*/card.img.manifest, runs/*/card.img.manifest (29). optional_missing, verbatim, in ALL 29: optional_missing none
+  Oracle: pinned EmuTOS 1a7484ab via tools/hatari-oracle.sh, profile falcontc. QEMU raspi4b, APFS clone per run (removed by the scripts); only own PIDs stopped.
+
+RESULTS
+ 1 PASS  cargo xtask test (main tree, HEAD 294272e2, rc 0): 2066 passed / 0 failed / 1 ignored (191 "test result" lines) = developer's number.
+         cases_v25: 7 tests ok (case 59, K11A, K11B, K11C, K11D, clip_edge_at_xc_plus_xrad_is_not_excluded, clip_off_draws_the_arc) (analysis/cargo-xtask-test.txt).
+ 2 PASS  vdi-v18.tsv vs EMUTOS-1a7484ab-VDI-v18-falcontc: head 0 of 19 differ. base 1 of 19 = case 59 (intout[1] oracle 0xFFFF, NewTOS 0x0000). Change base->head: 59 moves to equal; VDI.BIN head vs base differs in 2 bytes only (case 59's intout).
+ 3 PASS  vdprobe, 281 cases (probe/e1 e2 oracle, n-head n-head-2, n-base):
+         head vs oracle: 1 of 281 differ = K5D (593 px, decision C). K11A, K11B, K11C, K11D EQUAL; K15A-Q EQUAL; all K17A-U EQUAL.
+         base vs oracle: 11 differ = K5D, K11A (113 px), K11D (15 px), K17B (85), K17C (110), K17D (85), K17F (218), K17H (15), K17J (164), K17L (46), K17T (27).
+         n-base vs n-head: exactly those 10 (K11A, K11D, K17B C D F H J L T), all oracle-equal on head. In every one the oracle shows only background (ffff), base drew the black pen/arrow: early exit not carried, now fixed.
+         Non-vacuous: the oracle draws in the touching/control cases (non-white px: K17A 144, E 117, G 25, I 25, K 209, M 72, O 5, S 1340, U 1340) and draws nothing in the excluded ones (K17B C D F H J L N P Q R T = 0).
+         New cases K17: radius exactly touching the clip edge (A x, E y, G arrowed, I ellarc x, K ellarc y, M ellarc 20x30 y, O ellipse x: draw, strict compare), just crossing (B/C/D/F/H/J/L: quit, incl. wide pens w9/w11/w15 and arrow ends on v_arc and v_ellarc), xrad != yrad (H-M, N-O, R), v_ellipse/v_circle/v_pieslice/v_ellpie (N, P, Q, R: quit, equal on base too -> filled variants have no pen reaching in), clip off (S), clip all-covering (U).
+         Determinism: oracle e1 == e2 281/281, head n-head == n-head-2 281/281.
+ 4 PASS  vdi-all vs EMUTOS-1a7484ab-VDI-all-falcontc: 0 of 182 (head and base). vdi-raster-screen 0 of 62; vdi-raster 1 of 59 (the known case 157, head and base); vdi-v18-raster 0 of 17.
+         VDI.BIN (vdi-all) and RASTER.BIN (raster, raster-screen, v18-raster) byte-identical base vs head (cmp -l 0 bytes).
+ 5 PASS  aes-r2-wind AES.BIN base == head (78 of 78 differ vs the oracle on both alike), aes-r3-wind-state identical (39 of 39 differ vs oracle on both), aes-r4-subfunctions identical (no pinned reference).
+         shprobe (12 shots) base == head 12 of 12; shprobe-desktop (newtos-desk, 2 shots) 2 of 2; desktop run with IKBD injector (method/desk-inj.sh, 11 shots) 11 of 11 byte-identical, exception-panic-lines 0.
+         Looked at head desk 02-dialog (3D About dialog with OK over a window) and 03-rubberband (rectangle, window with 41 items): sane.
+         slprobe (155 shots): base vs head 2 differ (125-min-V-pagehi-held1, 148-min-H-pagelo-held1), both "held1" mid-gesture frames; same-kernel repeat base vs base-r2 also 2 differ (148, 071), head vs head-r2 0; cross pairs 2 each (analysis/slprobe-compare.txt)
+         -> held-frame timing noise, not attributable to V25 (0 non-held1 differ).
+         AES-side callers: developer's list (no caller of opcode 11 sub 2-7 in tos-api/aes, programs, sdk) not re-audited; the runs above are the behavioural check.
+ 6 PASS  rpi4 release (serial=on) fresh builds of both trees; all boot runs (probe, shprobe, slprobe, desk, head and base): "desktop up", 0 exception/panic lines.
+         qemu-virt: fresh tree 294272e2, cargo xtask build --board qemu-virt rc 0 + cargo xtask run --board qemu-virt --headless ~90 s: "[desk] desktop up (0 drives)", 0 exception/panic (runs/boot-virt-head/serial.txt).
+         The v_circle selftest (run_phase12_vdi_demo) is NOT called at boot (kernel/src/lib.rs:481 comment: development selftests no longer run in the normal boot), so no selftest marker was seen; the boot to the desktop is what was verified.
+
+NOT DRIVEN / OPEN
+  Real Pi4: no real-HW claim. Only falcontc (16 bit) probed. clippy delta not run (not requested). qemu-virt: boot only (no C:, no input, no pixel probe).

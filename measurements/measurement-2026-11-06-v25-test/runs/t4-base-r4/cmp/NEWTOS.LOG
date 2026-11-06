@@ -1,0 +1,8 @@
+DUMPAES build ----, record format 3
+AES.TSV: 181 cases, CRC 227422B2
+appl_init id 0, graf_handle 1, v_opnvwk handle 2
+global after appl_init 832,1,0,4419,0,0,0,0,0,0,16,31312,27,0,0
+ap_version 0340, ap_count 1, ap_id 0, ap_planes 16
+running 181 cases
+all 181 cases ran
+AES.BIN: 181 records, 21752 bytes

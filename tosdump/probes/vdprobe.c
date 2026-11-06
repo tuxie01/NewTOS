@@ -970,6 +970,48 @@ static void k16(void)
 	grab("K16B", 0, 0, 16, 8);
 }
 
+/* ---- k17: curve vs clip, the early exit of gdp_curve (TASK/V25 acceptance) ---------------------------------
+ * EmuTOS vdi_gdp.c:395-402 quits when the clip excludes xc+-xrad / yc+-yrad; line width and arrow ends do not count.
+ * Centre (100,100); width/ends and clip per case; clip x1 < 0 = clip off. */
+static void c17(const char *nm, const char *what, int sub, int npts, int nint, int a2, int a3, int a6, int ba, int ea,
+		int w, int arr, int cx1, int cy1, int cx2, int cy2)
+{
+	begin(nm, what);
+	p1(16, (int16_t)w, 0);
+	if (arr)
+		i2(108, 1, 1);
+	if (cx1 >= 0)
+		clip(1, cx1, cy1, cx2, cy2);
+	gdp15(sub, npts, nint, 100, 100, a2, a3, a6, ba, ea);
+	grab(nm, 40, 50, 120, 100);
+}
+
+static void k17(void)
+{
+	c17("K17A", "v_arc r20 w9 clip x>=120 (touches xc+xrad: draws)", 2, 4, 2, 0, 0, 20, 0, 3600, 9, 0, 120, 0, 300, 200);
+	c17("K17B", "v_arc r20 w9 clip y<=79 (above yc-yrad: quits)", 2, 4, 2, 0, 0, 20, 0, 3600, 9, 0, 0, 0, 300, 79);
+	c17("K17C", "v_arc r20 w9 clip x<=79 (left of xc-xrad: quits)", 2, 4, 2, 0, 0, 20, 0, 3600, 9, 0, 0, 0, 79, 200);
+	c17("K17D", "v_arc r20 w9 clip y>=121 (below yc+yrad: quits)", 2, 4, 2, 0, 0, 20, 0, 3600, 9, 0, 0, 121, 300, 200);
+	c17("K17E", "v_arc r20 w9 clip y>=120 (touches: draws)", 2, 4, 2, 0, 0, 20, 0, 3600, 9, 0, 0, 120, 300, 200);
+	c17("K17F", "v_arc r20 w15 clip x>=121 (wide pen reaches in: quits)", 2, 4, 2, 0, 0, 20, 0, 3600, 15, 0, 121, 0, 300, 200);
+	c17("K17G", "v_arc r20 0..900 w1 arrows clip x>=120 (touches: draws)", 2, 4, 2, 0, 0, 20, 0, 900, 1, 1, 120, 0, 300, 200);
+	c17("K17H", "v_ellarc 30x20 0..1800 w1 arrows clip x>=131 (quits)", 6, 2, 2, 30, 20, 0, 0, 1800, 1, 1, 131, 0, 300, 200);
+	c17("K17I", "v_ellarc 30x20 0..1800 w1 arrows clip x>=130 (touches: draws)", 6, 2, 2, 30, 20, 0, 0, 1800, 1, 1, 130, 0, 300, 200);
+	c17("K17J", "v_ellarc 30x20 0..1800 w11 clip y<=79 (quits)", 6, 2, 2, 30, 20, 0, 0, 1800, 11, 0, 0, 0, 300, 79);
+	c17("K17K", "v_ellarc 30x20 0..1800 w11 clip y<=80 (touches: draws)", 6, 2, 2, 30, 20, 0, 0, 1800, 11, 0, 0, 0, 300, 80);
+	c17("K17L", "v_ellarc 20x30 0..3600 w7 clip y>=131 (quits)", 6, 2, 2, 20, 30, 0, 0, 3600, 7, 0, 0, 131, 300, 200);
+	c17("K17M", "v_ellarc 20x30 0..3600 w7 clip y>=130 (touches: draws)", 6, 2, 2, 20, 30, 0, 0, 3600, 7, 0, 0, 130, 300, 200);
+	c17("K17N", "v_ellipse 30x20 filled clip x>=131 (quits)", 5, 2, 0, 30, 20, 0, 0, 0, 1, 0, 131, 0, 300, 200);
+	c17("K17O", "v_ellipse 30x20 filled clip x>=130 (touches: draws)", 5, 2, 0, 30, 20, 0, 0, 0, 1, 0, 130, 0, 300, 200);
+	c17("K17P", "v_circle r20 w9 clip x>=121 (quits)", 4, 3, 0, 20, 0, 0, 0, 0, 9, 0, 121, 0, 300, 200);
+	c17("K17Q", "v_pieslice r20 0..900 w9 clip x>=121 (quits)", 3, 4, 2, 0, 0, 20, 0, 900, 9, 0, 121, 0, 300, 200);
+	c17("K17R", "v_ellpie 30x20 0..1800 clip x>=131 (quits)", 7, 2, 2, 30, 20, 0, 0, 1800, 1, 0, 131, 0, 300, 200);
+	c17("K17S", "v_arc r20 w9 clip off (draws)", 2, 4, 2, 0, 0, 20, 0, 3600, 9, 0, -1, 0, 0, 0);
+	c17("K17T", "v_arc r20 w3 arrows clip x>=121 (quits)", 2, 4, 2, 0, 0, 20, 0, 3600, 3, 1, 121, 0, 300, 200);
+	c17("K17U", "v_arc r20 w9 clip (0,0)-(639,479) all in (draws)", 2, 4, 2, 0, 0, 20, 0, 3600, 9, 0, 0, 0, 639, 479);
+}
+
+
 int main(void)
 {
 	int16_t ap_id;
@@ -1017,6 +1059,7 @@ int main(void)
 	k14();
 	k15();
 	k16();
+	k17();
 
 	if (binfh >= 0)
 		Fclose((short)binfh);

@@ -1,0 +1,4 @@
+AES.BIN: area AES, 181 records of 120 bytes, build ----, case CRC 227422B2
+AES.BIN: format 3, pointer 8 bytes, least significant word first
+AES.BIN: matches aes-r4-subfunctions.tsv (181 cases)
+AES.BIN: accepted
