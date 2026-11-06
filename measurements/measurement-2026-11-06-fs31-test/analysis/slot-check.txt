@@ -1,0 +1,6 @@
+C: root slot 0 'NTFS31     ' attr 08 start cluster 0 size 0
+C: root slot 1 'NEWDESK INF' attr 20 start cluster 2 size 150
+C: root slot 2 'COPYME  TXT' attr 20 start cluster 3 size 19
+D: root slot 0 'NTFS31     ' attr 08 start cluster 0 size 0
+D: root slot 1 'NEWDESK INF' attr 20 start cluster 2 size 150
+D: root slot 2 'COPYME  TXT' attr 20 start cluster 3 size 28

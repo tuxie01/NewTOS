@@ -1,0 +1,12 @@
+# NewTOS SD image manifest v1 -- written by tosdump/probes/run-xdprobe.sh
+image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/xs/xdprobe.DNB96w/card.img
+image_sha256 d74d94f810911a54cbd4adf834c0d3bc1ed0323ecd4471a1f2a7939171f010db
+size_mib 256
+created 2026-11-06T20:50:40Z
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+file 332c4c0dc0bf1d911fa656c1fb099624afabf7c66b383c5882495286d8e6c929 30 C:\NEWDESK.INF
+file 332c4c0dc0bf1d911fa656c1fb099624afabf7c66b383c5882495286d8e6c929 30 D:\NEWDESK.INF
+file ef63fa09057160691debd82c3160ea468f057e28fa1e53dd61dfa53c74c954d4 156832 E:\XDPROBE.NAP

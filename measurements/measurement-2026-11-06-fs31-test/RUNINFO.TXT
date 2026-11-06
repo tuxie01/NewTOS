@@ -1,0 +1,97 @@
+FS31 acceptance -- TASK/FS31.md, fix 20f87d1d (ixdel compares the OFD's drive) against base 6b53dc5b, by the tester. Date 2026-11-06.
+No product code touched, nothing committed, no card, no Pi, no /Volumes/* access, no push. Main tree clean (git status: only this run dir untracked); main HEAD c44d4d06
+(= 20f87d1d + one record-only commit, measurements/measurement-2026-11-06-hw08-fs31-card/RUNINFO.TXT).
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card.img.manifest below)
+optional_missing, verbatim, in EVERY manifest of this run (runs/*/card.img.manifest, runs/gui/*/card.img.manifest): optional_missing none
+Exception: runs/fswbench-fix-holes: its manifest was written by tools/mkcard.sh BEFORE my method/fswbench-qemu.sh (FRAG=holes) added the fragmentation files to D:
+  (HOLE02..HOLE20.DAT); its image_sha256 is therefore the unfragmented card's; the run's card sha is in its run.txt ("card before").
+
+TREES  fresh git archive trees in the session scratchpad (references/ linked): fix = 20f87d1d, base = 6b53dc5b; red tree = fix with tos-api/src of the base
+  (diff -r against the base's tos-api/src empty). Kernels = rpi4 release via `cargo xtask build --board rpi4 --release` (target/ removed before each build):
+  fix  a7517b24d8555b44b74b5fa63b714fddf550883d836941672c1664635669297e   base 5c57c1170a3bab2e8cdddf7e6290c563e58d79b70d13a8984d9de64a70719d0a
+  These differ from the developer's hashes (afb0d57e..., 7da76916...): the trees were built under another path; I did not chase it (no claim of reproducibility made either way).
+  All kernel hashes: analysis/kernels.sha256. Armed variants (inject-arm.py desktop=...) of fix/base in scratch trees.
+
+RESULTS
+ 1 PASS  cargo xtask test (main tree, HEAD): rc 0, 195 "test result" lines: 2217 passed / 0 failed / 1 ignored = developer's 2217/0/1 (analysis/cargo-xtask-test.txt).
+         (The first run in the git-archive tree gave 9 xtask failures: doc_check x4, rsc_obfix x3, rsc_cicon x2 -- they need .git / untracked files the archive lacks;
+          analysis/cargo-xtask-test-archive-tree.txt, tos-api and tos-types all green there; not a product finding.)
+         fs31_two_drives against tos-api/src of the BASE (fresh tree, test file of 20f87d1d): 9 passed, 8 FAILED, rc 101 (analysis/fs31-red-on-base-src.txt):
+           a_delete_takes_the_open_file_of_its_own_drive_only, a_file_open_elsewhere_on_c_does_not_refuse_the_delete_on_d, a_subfolder_with_the_same_start_cluster_is_another_directory,
+           ddelete_on_d_leaves_the_open_file_on_c_alone, fclose_on_c_after_a_delete_on_d_is_a_good_close, fcreate_over_a_file_on_d_leaves_the_open_source_on_c_alone,
+           fdelete_on_d_leaves_a_file_being_read_on_c_alone, fdelete_on_d_leaves_the_open_file_on_c_alone (Fwrite -36, want 6).
+         Same test on the fix: 17 passed, rc 0 (analysis/fs31-green-on-fix.txt). In the full run: proc04_fdelete_open 9, fs18_frename 12, fs18_frename_lfn 1, fs20_media_change 8,
+         fs21_close_archive 8 passed.
+         Red cases and the developer's: 8 red / 9 green, the same.
+ 2 PASS  both boards built fresh (analysis/build-*.log): rpi4 release rc 0 (fix, base), qemu-virt release rc 0 (fix); warnings tos-api 64 / kernel 93 in all three.
+         clippy (analysis/clippy-fix.txt / clippy-base.txt, method = clippy.sh of the V44 test: kernel x both boards + tos-api --all-targets): fix tos-api 73 / kernel 121 on both
+         boards, base identical (73/121): delta 0. (My first clippy pass failed with "programs not built for board" in one board per tree = my scratch state after rm -rf target, redone after
+         build-programs; the 73/121 numbers are of the second pass.)
+         rpi4 boot to the desktop with serial=on: fix and base in runs/xdprobe-newtos-{fix,base}/BOOT-SERIAL.txt (probe ran, then desktop), tosdump runs, desk runs: desktop up, 0 exception/panic lines
+         in every BOOT-SERIAL of this run (runs/*/BOOT-SERIAL.txt, runs/gui/*/BOOT-SERIAL.txt).
+         qemu-virt boot, headless, 110 s: runs/boot-virt-fix/serial.txt, "[desk] desktop up (0 drives)" (0 drives is the expected virt state, no C:), 0 exception/panic lines.
+         NOT done on qemu-virt: input (headless run, no USB events), the base qemu-virt build.
+ 3 PASS  Oracle: tosdump/probes/run-xdprobe.sh emutos / newtos (same script, same card bytes d74d94f8..., Hatari pinned ROM). XDPROBE.LOG 96 lines.
+         oracle vs fix: diff EMPTY (analysis/oracle-vs-newtos-fix.diff 0 lines). fsck_msdos -n exit 0 on C: (LBA 63) and D: (LBA 131103) after the run, oracle and fix and base (run.txt).
+         oracle vs base: 60 diff lines, cases A B C D E F G J only (6,2,4,8,6,6,4,6 differing lines; analysis/oracle-vs-newtos-base.diff), e.g. A06 Fwrite oracle 6 base -36,
+         A07 Fclose 0 vs -65, A08 len 12 "first second" vs 6 "first ". Same-drive controls (H01 -36, I01 0, I02 -65, I03 -33, I04) identical on all three sides (= PROC04 Fdelete of an open file,
+         same drive, as before; also tests proc04_fdelete_open 9/9).
+ 4 PASS (FSWBENCH) with two honest notes:
+         fix, runs/fswbench-fix (method = the developer's measurements/measurement-2026-11-06-fs31/method/fswbench-qemu.sh, unchanged; FSWBENCH.NCP built from HEAD sdk/examples/fswbench.c):
+           "log last Fwrite=61 Fclose=0"; C:\FSWBENCH.LOG 4183 bytes; the log == the console text up to the closing "--- no driver report" line, byte for byte (diff, CR stripped:
+           identical); all blocks H, R, size 10240/102400/1048576/10485760 present, every read-back ok, every failed 0, every ">=1s 0"; the closing line not in the log is by design (log closed first).
+           (Developer: 4215 bytes; the program text/numbers differ by run, I do not take it over.)
+         base, runs/fswbench-base: "log last Fwrite=-36 Fclose=-65", C:\FSWBENCH.LOG 0 bytes = the Pi's line, reproduced.
+         longest_run (sdk/examples/fswbench.c:308, never run before): Block R RUNS now. Clean D: (runs/fswbench-fix): "longest contiguous run 131072 of 131072 sectors, at cluster 22" =
+           the whole 64 MiB file in one run, the program's first free cluster after FSWBENCH.NCP (clusters 2-21); 4 patterns n 64 each failed 0, "new small files" failed 0.
+           Hole case, built on purpose (runs/fswbench-fix-holes, method/fswbench-qemu.sh with FRAG=holes: 20 one-cluster files HOLE01..20 on D:, the 10 odd ones deleted -> 10 one-cluster
+           holes at clusters 22,24,..,40 in front of the free area; mshowfat: HOLE20 at 41, FSWBENCH.NCP 2-21): "longest contiguous run 130912 of 131072 sectors, at cluster 42".
+           Predicted independently: 8192 file clusters - 10 hole clusters = 8182 clusters x 16 = 130912 sectors, first cluster after HOLE20 (41) = 42. EXACT. Patterns n 64 each failed 0;
+           the 160 sectors of the holes are left out as designed. fsck_msdos -n exit 0 on D: and C: after (fsck-d.txt, fsck-c.txt).
+           What the numbers mean: "have" = sectors of the longest contiguous cluster run of the file's chain (clusters x clsiz 16), "at cluster" = its first cluster; all four patterns then
+           write inside it. 131072 of 131072 = file unfragmented; less = the chain has breaks and the patterns avoid them.
+           NOT proven by a direct read: that FSWBR.DAT started in the hole at 22 (the file is deleted when the program ends); the 130912 (< 131072) shows the chain was not
+           one run, and first-fit allocation puts the start in the first hole. Not tested: a hole larger than the biggest run, first run = longest after a later break (the code's
+           `best` update reads right but I did not drive it).
+         Timing: QEMU, meaningless (clean 1.0-1.5 ms p50, hole run 3.6 ms: different host load; not interpreted).
+         Pi: the acceptance item "FSWBENCH protocol on C: on the real Pi" is OPEN (PI-RUN step).
+ 5 PASS  Desktop path, driven (NEWDESK on rpi4 QEMU, scripted IKBD injector, tools/inject-arm.py desktop=..., method/gen-mouse.py, mouse-copy.txt, mouse-move.txt, desk-run.sh, mkcard2.sh):
+         card: C: and D: FAT16, 130977 sectors each, root of both = label, NEWDESK.INF, COPYME.TXT -> COPYME.TXT is root slot 2 and root start cluster 0 on BOTH
+         (analysis/slot-check.txt, parsed from the image bytes); C:\COPYME.TXT "SOURCE-FROM-C-drive" (19 B), D:\COPYME.TXT "OLD-TARGET-ON-D-drive-longer" (28 B). NEWDESK.INF opens two
+         windows C:\ and D:\. Gesture: click COPYME.TXT in the C: window (activates it), press-hold-drag onto the empty area of the D: window, release; copy dialog -> OK; "NAME CONFLICT DURING
+         COPY" -> OK (replace, same name) (screendumps in runs/copy-*/shots, viewed).
+         COPY   base (runs/copy-base):  D:\COPYME.TXT 0 bytes (e3b0c442...), C: source intact 19 B; fsck both exit 0.  <- the defect, silent data loss
+                fix  (runs/copy-fix):   D:\COPYME.TXT 19 bytes "SOURCE-FROM-C-drive" (sha c8465b8b...), C: intact; fsck both exit 0.
+         MOVE (Control held at the drop, drag_op() = MODE_CTRL):
+                base (runs/move-base):  C:\COPYME.TXT gone AND D:\COPYME.TXT 0 bytes: both contents lost; fsck exit 0 (the data is gone, the file system is clean).
+                fix  (runs/move-fix):   C:\COPYME.TXT gone, D:\COPYME.TXT 19 bytes "SOURCE-FROM-C-drive": correct move. fsck exit 0.
+         The file contents were read off the booted clone (after-*.TXT, mdir-*.txt). The developer's reading ("source reads 0 bytes, target stays empty, move deletes the source too") is
+         confirmed on the base and gone on the fix, measured, not read. TeraDesk's copy path (sdk/apps/teradesk/copy.c) NOT driven.
+ 6 PASS  Regression, scope sized to the change (tos-api/src/bdos/fs/file.rs, 16 lines):
+         vdi-all, cargo xtask tosdump vdi ... --tree <base|fix> (method/tables.sh): VDI.BIN byte-identical base/fix (cmp, sha e91b865b92b5dbf2... = the V44 test's hash), tosdiff against
+           EMUTOS-1a7484ab-VDI-all-falcontc.BIN: 0 of 182 cases differ on both.
+         AES r2 (aes-r2-wind): AES.BIN byte-identical base/fix (cmp, sha d05c65bf...), NO address-word difference at all (kernel image size same). Against the oracle reference
+           EMUTOS-1a7484ab-AES-r2wind.BIN tosdiff says 78 of 78 differ on BOTH (global[] words, e.g. case 131: global[3]/[4]/[10]) = a standing difference to that reference, equal on base and fix;
+           I did not look into it (out of scope; the V44 test compared r2 head against fix only).
+         shprobe (run-shprobe.sh kernel/newtos, 12 shots) + shprobe-desk (2): 14/14 PNG byte-identical base vs fix. SHPROBE.LOG differs only in absolute tick values by 1 (t0=3021 vs
+           3020 ...); with the t=/t0=/(+n) numbers masked the logs are identical (not byte-identical: timer jitter at start).
+         desktop + IKBD injector scene (V44 test's desk-mouse.txt / desk-NEWDESK.INF / desk-shots.txt, 40 files on C:): 11/11 PNG byte-identical base vs fix at 640x480.
+         Fdelete of an open file on the same drive: proc04_fdelete_open 9/9 (host) and the oracle controls H01/I01/I02 identical (3).
+         Not run: AES r3/r4, vdi-all variants/raster tables, 240/1080 resolutions (the change is a BDOS comparison, no draw/AES code).
+ 7 PASS (limits named)  cargo xtask deps ixdel --up (analysis/deps-ixdel-up.txt): 113 functions besides ixdel; bdos 10/10 mapped, aes 17 defs (12 mapped, 5 design, 0 unmapped);
+         "unmapped in the touched layers (0)", "complete: yes". Outside the touched layer: desk 82 unmapped, include 5 unmapped (mapping.tsv does not map desk/include -- ticket says so);
+         the desk callers d_dofcopy/d_dofdel/d_doop/d_dofileren/dir_op/fun_mkdir were driven by hand only for copy and move (item 5); d_dofileren (rename), fun_mkdir (new folder),
+         inf_file_folder NOT driven. Not driven either: TeraDesk copy/delete (sdk/apps/teradesk/copy.c), HypView SCRAP delete, scrp_clear, QED/HighWire delete paths -- the ticket's source list
+         for them stands as read, I verified none of it.
+
+NOT DRIVEN / OPEN
+  Real Pi4 (FSWBENCH protocol on C: on the card, timing, cache effects) -> PI-RUN step / user's HW checklist. No card touched.
+  qemu-virt: build + headless boot only; no input path, no base build.
+  Hatari oracle ran with the pinned ROM through run-xdprobe.sh as is; I did not re-read the probe's source against the cases.
+  Developer's kernel hashes not reproduced (path-dependent builds), see TREES.
+
+OUT-OF-SCOPE
+  AES r2 vs oracle reference 78/78 (above). measurements/measurement-2026-11-06-fs31/RUNINFO.TXT says "Host tests 2217/0/1" and the same number is reproduced here.
+
+METHOD (this run dir): method/tables.sh, gui.sh, fswbench-qemu.sh (copy of the developer's with FRAG=holes), mkcard2.sh, desk-run.sh, arm-build.sh, gen-mouse.py, mouse-copy.txt,
+  mouse-move.txt, shots-copy.txt, NEWDESK.INF. Scratch (trees, targets, images, clones) in the session scratchpad, deleted at the end.

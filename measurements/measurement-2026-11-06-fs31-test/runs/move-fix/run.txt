@@ -1,0 +1,9 @@
+kernel 4848469fcead488dc2afbb4941ae968b9660a068582f3aed460541acd3046c78
+card before 9bc106643122fffb46ba1ea966269750ebf96c515ec05972b991397ec7f5ba58
+card after  4b60d7c3a8dc82364a99452fd3575da2a6d39bde19ed878c4bf3e34294254836
+C:\COPYME.TXT missing bytes: 
+fsck C: exit 0
+D:\COPYME.TXT       19 bytes: SOURCE-FROM-C-drive
+fsck D: exit 0
+shots 4
+exception-panic-lines 0

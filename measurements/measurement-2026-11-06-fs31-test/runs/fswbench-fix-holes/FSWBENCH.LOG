@@ -1,0 +1,71 @@
+==== FSWBENCH (TASK/HW08), write path layer by layer, drive D:, log handle 6
+clock: _hz_200 + spin, 413274 spins/tick
+D: BPB clsiz 16 rootsecs 32 fat 224 at 225 root at 449 data at 481
+H  sector cost (HW06), 41 single-sector Rwabs per line, unchanged bytes
+  sectors: data 801 dir 449 fat 225
+  data         pause   0 first    1861 us  min       0 med     165 p90    1667 max    2088  failed 0
+  directory    pause   0 first     806 us  min       0 med     320 p90    1798 max    1853  failed 0
+  fat          pause   0 first     664 us  min       0 med     161 p90    1757 max    2127  failed 0
+  data         pause 200 first     580 us  min       0 med     397 p90    1752 max    3181  failed 0
+  directory    pause 200 first    2286 us  min       0 med     479 p90    3026 max    3780  failed 0
+  fat          pause 200 first     645 us  min       0 med     296 p90    3031 max    3704  failed 0
+R  patterns against the Mac numbers, 4 KiB per write, Rwabs (WRITE_BUSY_MS = 1000 ms)
+  test file: longest contiguous run 130912 of 131072 sectors, at cluster 42; patterns on it
+  random over 64 MiB     n  64 p50     3637 p90     4321 max     4395 us  >=1s 0  failed 0 last 0
+  random within 256 KiB  n  64 p50     3573 p90     4322 max     4447 us  >=1s 0  failed 0 last 0
+  same offset            n  64 p50     3580 p90     4317 max     4486 us  >=1s 0  failed 0 last 0
+  sequential             n  64 p50     3595 p90     4321 max     4327 us  >=1s 0  failed 0 last 0
+  new small files        n  64 p50     3897 p90     4543 max     7350 us  >=1s 0  failed 0 last 0
+size 10240
+  L1 not contiguous (16 of 20 sectors), skipped
+  L2 Fwrite 512      10240 B       7699 us    1298 KB/s
+     Fcreate 2917 us  Fclose 2399 us  read-back ok
+  L2 Fwrite 4096     10240 B       4329 us    2310 KB/s
+     Fcreate 1659 us  Fclose 3116 us  read-back ok
+  L2 Fwrite 32768     10240 B       8670 us    1153 KB/s
+     Fcreate 2994 us  Fclose 846 us  read-back ok
+  L2 Fwrite 10240     10240 B       4330 us    2309 KB/s
+     Fcreate 0 us  Fclose 3116 us  read-back ok
+  L3 fwrite 1K       10240 B      11682 us     856 KB/s
+     read-back ok
+  L4 copy 32K        10240 B       5000 us    2000 KB/s
+     read-back ok
+size 102400
+  L1 not contiguous (16 of 200 sectors), skipped
+  L2 Fwrite 512     102400 B      36707 us    2724 KB/s
+     Fcreate 2779 us  Fclose 2853 us  read-back ok
+  L2 Fwrite 4096    102400 B      37991 us    2632 KB/s
+     Fcreate 3149 us  Fclose 3834 us  read-back ok
+  L2 Fwrite 32768    102400 B      34397 us    2907 KB/s
+     Fcreate 0 us  Fclose 3737 us  read-back ok
+  L2 Fwrite 102400    102400 B      33659 us    2970 KB/s
+     Fcreate 3004 us  Fclose 2306 us  read-back ok
+  L3 fwrite 1K      102400 B      32327 us    3093 KB/s
+     read-back ok
+  L4 copy 32K       102400 B      32999 us    3030 KB/s
+     read-back ok
+size 1048576
+  L1 not contiguous (16 of 2048 sectors), skipped
+  L2 Fwrite 4096   1048576 B     344525 us    2972 KB/s
+     Fcreate 2998 us  Fclose 3653 us  read-back ok
+  L2 Fwrite 32768   1048576 B     318163 us    3218 KB/s
+     Fcreate 0 us  Fclose 2981 us  read-back ok
+  L2 Fwrite 1048576   1048576 B     315000 us    3250 KB/s
+     Fcreate 0 us  Fclose 2320 us  read-back ok
+  L3 fwrite 1K     1048576 B     328094 us    3121 KB/s
+     read-back ok
+  L4 copy 32K      1048576 B     608843 us    1681 KB/s
+     read-back ok
+size 10485760
+  L1 not contiguous (16 of 20480 sectors), skipped
+  L2 Fwrite 4096  10485760 B    3608011 us    2838 KB/s
+     Fcreate 2993 us  Fclose 2491 us  read-back ok
+  L2 Fwrite 32768  10485760 B    3204327 us    3195 KB/s
+     Fcreate 0 us  Fclose 3658 us  read-back ok
+  L2 Fwrite 10485760  10485760 B    3096730 us    3306 KB/s
+     Fcreate 2465 us  Fclose 0 us  read-back ok
+  L3 fwrite 1K    10485760 B    3190000 us    3210 KB/s
+     read-back ok
+  L4 copy 32K     10485760 B    4120000 us    2485 KB/s
+     read-back ok
+--- no driver report: Ssystem 2090 = -32 (no sd-diag kernel)

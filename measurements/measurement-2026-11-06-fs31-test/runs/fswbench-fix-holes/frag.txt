@@ -1,0 +1,3 @@
+FRAG holes: D: at LBA 131072, HOLE02..20 even kept
+::/HOLE20.DAT <41>
+::/FSWBENCH.NCP <2-21>

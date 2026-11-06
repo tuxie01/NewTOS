@@ -1,0 +1,60 @@
+11,13c11,13
+< A06 Fwrite 6 ret=6
+< A07 Fclose ret=0
+< A08 C:\FS31A.LOG len=12 "first second" Fclose=0
+---
+> A06 Fwrite 6 ret=-36
+> A07 Fclose ret=-65
+> A08 C:\FS31A.LOG len=6 "first " Fclose=0
+18c18
+< B04 Fclose ret=0
+---
+> B04 Fclose ret=-65
+23,24c23,24
+< C04 Fread 16 ret=6 "456789"
+< C05 Fclose ret=0
+---
+> C04 Fread 16 ret=0 ""
+> C05 Fclose ret=-65
+27,29c27,29
+< D03 Fread 32 ret=12
+< D04 Fwrite ret=12
+< D05 Fclose source ret=0
+---
+> D03 Fread 32 ret=0
+> D04 Fwrite ret=0
+> D05 Fclose source ret=-65
+32c32
+< D08 D:\FS31T.DAT len=12 "source bytes" Fclose=0
+---
+> D08 D:\FS31T.DAT len=0 "" Fclose=0
+36,38c36,38
+< E04 Fwrite 6 ret=6
+< E05 Fclose ret=0
+< E06 C:\FS31A.LOG len=12 "first second" Fclose=0
+---
+> E04 Fwrite 6 ret=-36
+> E05 Fclose ret=-65
+> E06 C:\FS31A.LOG len=6 "first " Fclose=0
+44,46c44,46
+< F06 Fwrite 6 ret=6
+< F07 Fclose ret=0
+< F08 C:\FS31F\A.LOG len=12 "first second" Fclose=0
+---
+> F06 Fwrite 6 ret=-36
+> F07 Fclose ret=-65
+> F08 C:\FS31F\A.LOG len=6 "first " Fclose=0
+48,49c48,49
+< G02 Pexec child Fdelete D:\FS31V.DAT (100 = E_OK, else -code) ret=100
+< G03 Fopen D:\FS31V.DAT ret=-33
+---
+> G02 Pexec child Fdelete D:\FS31V.DAT (100 = E_OK, else -code) ret=36
+> G03 Fopen D:\FS31V.DAT ret=7
+63,65c63,65
+< J04 Fwrite 6 D: ret=6
+< J05 Fclose D: ret=0
+< J06 D:\FS31K.LOG len=12 "first second" Fclose=0
+---
+> J04 Fwrite 6 D: ret=-36
+> J05 Fclose D: ret=-65
+> J06 D:\FS31K.LOG len=6 "first " Fclose=0

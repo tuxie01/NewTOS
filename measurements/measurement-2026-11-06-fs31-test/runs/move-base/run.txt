@@ -1,0 +1,9 @@
+kernel 4a4c47021d4369979874b4c839a10a595f1bbde8077dec881efe03712f5ab090
+card before 9bc106643122fffb46ba1ea966269750ebf96c515ec05972b991397ec7f5ba58
+card after  7dfb59bfb0efa8a0cb3e4ae206ade8bf2be4c5dacdaa8656987e7c997ec9e237
+C:\COPYME.TXT missing bytes: 
+fsck C: exit 0
+D:\COPYME.TXT        0 bytes: 
+fsck D: exit 0
+shots 4
+exception-panic-lines 0

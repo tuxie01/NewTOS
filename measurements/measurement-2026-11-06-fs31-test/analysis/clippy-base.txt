@@ -1,0 +1,6 @@
+board-qemu-virt: warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions)
+board-qemu-virt: warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions)
+board-rpi4: warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions)
+board-rpi4: warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions)
+host: warning: `tos-api` (lib) generated 73 warnings (73 duplicates)
+host: warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions)

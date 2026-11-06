@@ -1,0 +1,9 @@
+kernel e8d91618b56c17d651aae96cc2dd553197a66a99e15da3c28e5c14644ffd5951
+card before 9bc106643122fffb46ba1ea966269750ebf96c515ec05972b991397ec7f5ba58
+card after  51b481d2cf098ecda46a0580dc05698f62a9e6256713262a00b28c3ad0a55833
+C:\COPYME.TXT       19 bytes: SOURCE-FROM-C-drive
+fsck C: exit 0
+D:\COPYME.TXT        0 bytes: 
+fsck D: exit 0
+shots 4
+exception-panic-lines 0

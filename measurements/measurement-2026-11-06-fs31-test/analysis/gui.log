@@ -1,0 +1,236 @@
++ for p in base:6b53dc5b fix:20f87d1d
++ T=base
++ C=6b53dc5b
++ tosdump/probes/run-shprobe.sh kernel 6b53dc5b /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/sh-base.img
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/sh/shprobe.Ouz2KS/tree: tag [inj], launch:SHPROBE (3 bytes)
+kernel f5c783a56d116d0cab3168958e341ac6a3ae47977449e66b5bb1c04840bd3fdf /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/sh-base.img (commit 6b53dc5b8c5506babed8717625efd8e2dc3a5742, armed launch:SHPROBE)
++ measurements/measurement-2026-11-06-v44-test/method/desk-inj.sh kernel 6b53dc5b measurements/measurement-2026-11-06-v44-test/method/desk-mouse.txt /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/desk-base.img
++ tail -1
+kernel c02e2a3d63bfce88060dafd5ee1c3854a932b91eaf9b311f509a463854d4a6a8 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/desk-base.img (commit 6b53dc5b8c5506babed8717625efd8e2dc3a5742, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
++ for p in base:6b53dc5b fix:20f87d1d
++ T=fix
++ C=20f87d1d
++ tosdump/probes/run-shprobe.sh kernel 20f87d1d /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/sh-fix.img
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/sh/shprobe.mvH0xZ/tree: tag [inj], launch:SHPROBE (3 bytes)
+kernel 45d70de73a97a371fc86c8774a61a95fc8fd0de2c328e54ed3e92169e4b9c967 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/sh-fix.img (commit 20f87d1d36437fc43646044b7779151f7f465e2c, armed launch:SHPROBE)
++ measurements/measurement-2026-11-06-v44-test/method/desk-inj.sh kernel 20f87d1d measurements/measurement-2026-11-06-v44-test/method/desk-mouse.txt /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/desk-fix.img
++ tail -1
+kernel 0e70fce58c861027e57a114f2692122ccf5845bfd235002dc6212d6e439f6207 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/desk-fix.img (commit 20f87d1d36437fc43646044b7779151f7f465e2c, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
++ for T in base fix
++ tosdump/probes/run-shprobe.sh newtos measurements/measurement-2026-11-06-fs31-test/runs/gui/shprobe-base /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/sh-base.img
+qemu-system-aarch64: terminating on signal 15 from pid 62508 (<unknown process>)
+shprobe run, side newtos  (2026-11-06T21:16:27Z)
+tree      c44d4d06cc8d6e19eba3e99d1b27270670a103e8 1 dirty paths in the tree
+source    shprobe.c 98acd6fcb7207108dca3984687a7e59e03299074a510af45f1e7fc88bf74f9ca shprobe-shots.txt 22006f628741cbf8e192abd225e02e82a7b19754e3dd8c90a0c1fcbb74fa8d98 shprobe-clock.txt 7e7592eb2d0c99801754bc686655ad43f26c2ca2085579aae8990ca3de0774f3
+probes    SHPROBE.PRG 967363a55210b965d9933feff6d72ac176733547b1e22ed2c4b30d61bf88b7ee SHPROBE.NAP 11abc76b121ad15de79d27073c8563da11c128b8b7690002e0761e744334f832
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    f5c783a56d116d0cab3168958e341ac6a3ae47977449e66b5bb1c04840bd3fdf /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/sh-base.img
+card      6f17ed70ec0a9e23f96d07944b88f851187670ba9f6ed9f29e231504aecb6b40 (tools/mkcard.sh)
+qemu      done, 12 shots
+card      after 739c98d9fb2cda381c34881d6735054454e9a19642fee93bc07b229616354551 (the booted clone)
+H00 graf_handle 8 16 19 19
+T00 t0=3021
+Y0 state 0 at t=3022 (+1)
+C0 wind_create(0fef)=1
+O0 wind_open(20,40,300,250)=1
+G0.1 work 21,63,276,204 curr 20,40,300,250
+W1.00 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.01 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.02 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.03 WF_COLOR=1 t=11a1 b=1101 WF_DCOLOR=1 t=11a1 b=1101
+W1.04 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.05 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.06 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.07 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.08 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.09 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.10 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.11 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.12 WF_COLOR=1 t=1111 b=1111 WF_DCOLOR=1 t=1111 b=1111
+W1.13 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.14 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.15 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.16 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.17 WF_COLOR=1 t=1111 b=1111 WF_DCOLOR=1 t=1111 b=1111
+W1.18 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+Y0 top=1
+D001.0 w1 damage 21,63,276,204 list 21,63,276,204
+K00 t=3722 (+701)
+K01 t=4422 (+1401)
+Y1 state 1 at t=4621 (+1600)
+C1 wind_create(0fef)=2
+O1 wind_open(340,120,280,300)=1
+G1.1 work 341,143,256,254 curr 340,120,280,300
+W2.00 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.01 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.02 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.03 WF_COLOR=1 t=11a1 b=1101 WF_DCOLOR=1 t=11a1 b=1101
+W2.04 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.05 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.06 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.07 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.08 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.09 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.10 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.11 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.12 WF_COLOR=1 t=1111 b=1111 WF_DCOLOR=1 t=1111 b=1111
+W2.13 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.14 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.15 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.16 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.17 WF_COLOR=1 t=1111 b=1111 WF_DCOLOR=1 t=1111 b=1111
+W2.18 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+Y1 top=2
+D002.0 w2 damage 341,143,256,254 list 341,143,256,254
+K02 t=5321 (+2300)
+K03 t=6024 (+3003)
+Y2 state 2 at t=6221 (+3200)
+Y2 wind_set(W1,WF_TOP)=1
+Y2 top=1
+K04 t=6921 (+3900)
+K05 t=7621 (+4600)
+Y3 state 3 at t=7821 (+4800)
+Y3 wind_set(W2,WF_CURRXYWH)=1
+G1.1 work 201,173,276,194 curr 200,150,300,240
+Y3 top=1
+D003.0 w1 damage 200,120,122,172 list 21,63,276,204
+D004.0 w2 damage 200,150,302,242 list 322,173,155,119
+D004.1 w2 damage 200,150,302,242 list 201,292,276,75
+K06 t=8521 (+5500)
+K07 t=9221 (+6200)
+Y4 state 4 at t=9423 (+6402)
+Y4 wind_set(W2,WF_TOP)=1
+Y4 top=2
+D005.0 w2 damage 200,150,302,242 list 201,173,276,194
+K08 t=10124 (+7103)
+K09 t=10821 (+7800)
+Y5 state 5 at t=11021 (+8000)
+Y5 wind_set(W1,WF_COLOR,W_BOX,2101,2101)=1 readback 2101 2101
+Y5 wind_set(W2,WF_COLOR,W_BOX,2101,2101)=1 readback 2101 2101
+Y5 top=2
++ tosdump/probes/run-shprobe.sh newtos-desk measurements/measurement-2026-11-06-fs31-test/runs/gui/shprobe-desk-base /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/base-rpi4.img
+qemu-system-aarch64: terminating on signal 15 from pid 62769 (<unknown process>)
+shprobe run, side newtos-desk  (2026-11-06T21:17:43Z)
+tree      c44d4d06cc8d6e19eba3e99d1b27270670a103e8 1 dirty paths in the tree
+source    shprobe.c 98acd6fcb7207108dca3984687a7e59e03299074a510af45f1e7fc88bf74f9ca shprobe-shots.txt 22006f628741cbf8e192abd225e02e82a7b19754e3dd8c90a0c1fcbb74fa8d98 shprobe-clock.txt 7e7592eb2d0c99801754bc686655ad43f26c2ca2085579aae8990ca3de0774f3
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    5c57c1170a3bab2e8cdddf7e6290c563e58d79b70d13a8984d9de64a70719d0a /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/base-rpi4.img
+card      a90211671b077a084a72819e0bc713992d597b35fca659ed69bd114ca0c17d53 (tools/mkcard.sh)
+qemu      done, 2 shots
+card      after a90211671b077a084a72819e0bc713992d597b35fca659ed69bd114ca0c17d53 (the booted clone)
++ measurements/measurement-2026-11-06-v44-test/method/desk-inj.sh newtos measurements/measurement-2026-11-06-fs31-test/runs/gui/desk480-base /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/desk-base.img measurements/measurement-2026-11-06-v44-test/method/desk-NEWDESK.INF measurements/measurement-2026-11-06-v44-test/method/desk-shots.txt
++ tail -3
+qemu-system-aarch64: terminating on signal 15 from pid 63006 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
++ for T in base fix
++ tosdump/probes/run-shprobe.sh newtos measurements/measurement-2026-11-06-fs31-test/runs/gui/shprobe-fix /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/sh-fix.img
+qemu-system-aarch64: terminating on signal 15 from pid 63736 (<unknown process>)
+shprobe run, side newtos  (2026-11-06T21:19:17Z)
+tree      c44d4d06cc8d6e19eba3e99d1b27270670a103e8 1 dirty paths in the tree
+source    shprobe.c 98acd6fcb7207108dca3984687a7e59e03299074a510af45f1e7fc88bf74f9ca shprobe-shots.txt 22006f628741cbf8e192abd225e02e82a7b19754e3dd8c90a0c1fcbb74fa8d98 shprobe-clock.txt 7e7592eb2d0c99801754bc686655ad43f26c2ca2085579aae8990ca3de0774f3
+probes    SHPROBE.PRG 8631e492cb452666666f5dff5fdfa2392334b723c148d180a9da37bf5f1a6c7f SHPROBE.NAP 11abc76b121ad15de79d27073c8563da11c128b8b7690002e0761e744334f832
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    45d70de73a97a371fc86c8774a61a95fc8fd0de2c328e54ed3e92169e4b9c967 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/sh-fix.img
+card      9a5476aefc94ad8d586aac823a90f12f8fd59c8b7391f98f34f1df1b4251a93f (tools/mkcard.sh)
+qemu      done, 12 shots
+card      after 3f2c3a3aa11d6ee41de5f41ba06bfefb4a5f715de5cac8c86125f5167b0a7c38 (the booted clone)
+H00 graf_handle 8 16 19 19
+T00 t0=3020
+Y0 state 0 at t=3021 (+1)
+C0 wind_create(0fef)=1
+O0 wind_open(20,40,300,250)=1
+G0.1 work 21,63,276,204 curr 20,40,300,250
+W1.00 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.01 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.02 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.03 WF_COLOR=1 t=11a1 b=1101 WF_DCOLOR=1 t=11a1 b=1101
+W1.04 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.05 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.06 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.07 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.08 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.09 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.10 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.11 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.12 WF_COLOR=1 t=1111 b=1111 WF_DCOLOR=1 t=1111 b=1111
+W1.13 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.14 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.15 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.16 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.17 WF_COLOR=1 t=1111 b=1111 WF_DCOLOR=1 t=1111 b=1111
+W1.18 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+Y0 top=1
+D001.0 w1 damage 21,63,276,204 list 21,63,276,204
+K00 t=3720 (+700)
+K01 t=4420 (+1400)
+Y1 state 1 at t=4620 (+1600)
+C1 wind_create(0fef)=2
+O1 wind_open(340,120,280,300)=1
+G1.1 work 341,143,256,254 curr 340,120,280,300
+W2.00 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.01 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.02 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.03 WF_COLOR=1 t=11a1 b=1101 WF_DCOLOR=1 t=11a1 b=1101
+W2.04 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.05 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.06 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.07 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.08 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.09 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.10 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.11 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.12 WF_COLOR=1 t=1111 b=1111 WF_DCOLOR=1 t=1111 b=1111
+W2.13 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.14 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.15 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.16 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.17 WF_COLOR=1 t=1111 b=1111 WF_DCOLOR=1 t=1111 b=1111
+W2.18 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+Y1 top=2
+D002.0 w2 damage 341,143,256,254 list 341,143,256,254
+K02 t=5320 (+2300)
+K03 t=6020 (+3000)
+Y2 state 2 at t=6221 (+3201)
+Y2 wind_set(W1,WF_TOP)=1
+Y2 top=1
+K04 t=6920 (+3900)
+K05 t=7620 (+4600)
+Y3 state 3 at t=7820 (+4800)
+Y3 wind_set(W2,WF_CURRXYWH)=1
+G1.1 work 201,173,276,194 curr 200,150,300,240
+Y3 top=1
+D003.0 w1 damage 200,120,122,172 list 21,63,276,204
+D004.0 w2 damage 200,150,302,242 list 322,173,155,119
+D004.1 w2 damage 200,150,302,242 list 201,292,276,75
+K06 t=8520 (+5500)
+K07 t=9220 (+6200)
+Y4 state 4 at t=9421 (+6401)
+Y4 wind_set(W2,WF_TOP)=1
+Y4 top=2
+D005.0 w2 damage 200,150,302,242 list 201,173,276,194
+K08 t=10120 (+7100)
+K09 t=10820 (+7800)
+Y5 state 5 at t=11020 (+8000)
+Y5 wind_set(W1,WF_COLOR,W_BOX,2101,2101)=1 readback 2101 2101
+Y5 wind_set(W2,WF_COLOR,W_BOX,2101,2101)=1 readback 2101 2101
+Y5 top=2
++ tosdump/probes/run-shprobe.sh newtos-desk measurements/measurement-2026-11-06-fs31-test/runs/gui/shprobe-desk-fix /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/fix-rpi4.img
+qemu-system-aarch64: terminating on signal 15 from pid 63997 (<unknown process>)
+shprobe run, side newtos-desk  (2026-11-06T21:20:27Z)
+tree      c44d4d06cc8d6e19eba3e99d1b27270670a103e8 1 dirty paths in the tree
+source    shprobe.c 98acd6fcb7207108dca3984687a7e59e03299074a510af45f1e7fc88bf74f9ca shprobe-shots.txt 22006f628741cbf8e192abd225e02e82a7b19754e3dd8c90a0c1fcbb74fa8d98 shprobe-clock.txt 7e7592eb2d0c99801754bc686655ad43f26c2ca2085579aae8990ca3de0774f3
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    a7517b24d8555b44b74b5fa63b714fddf550883d836941672c1664635669297e /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/fix-rpi4.img
+card      2c1e3985bbdeb668d7df5f94c4fcd28ce2084e61f96e1ca2e947bcc761c8569f (tools/mkcard.sh)
+qemu      done, 2 shots
+card      after 2c1e3985bbdeb668d7df5f94c4fcd28ce2084e61f96e1ca2e947bcc761c8569f (the booted clone)
++ measurements/measurement-2026-11-06-v44-test/method/desk-inj.sh newtos measurements/measurement-2026-11-06-fs31-test/runs/gui/desk480-fix /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/k/desk-fix.img measurements/measurement-2026-11-06-v44-test/method/desk-NEWDESK.INF measurements/measurement-2026-11-06-v44-test/method/desk-shots.txt
++ tail -3
+qemu-system-aarch64: terminating on signal 15 from pid 64156 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
++ echo ALLFINISHED
+ALLFINISHED

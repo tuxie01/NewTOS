@@ -1,0 +1,14 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask build-programs --board rpi4`
+xtask: building program hello-gem for rpi4 -> /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/fix/target/programs/rpi4/HELLOGEM.NAP
++ clang -target aarch64-unknown-none-elf -ffreestanding -nostdlib -O2 -fno-stack-protector -fPIE -fno-builtin -Wall -Wextra -I/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/fix/sdk/include  -c sdk/crt0.S
++ (cd programs && cargo build -p hello-gem --release --features board-rpi4)
+    Finished `release` profile [optimized] target(s) in 0.00s
++ rust-lld -flavor gnu -T sdk/newtos.ld -pie --no-dynamic-linker -z text -z max-page-size=0x1000 --build-id=none crt0.o libhello_gem.a -o /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/fix/target/programs/rpi4/HELLOGEM.NAP
+wrote /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/fix/target/programs/rpi4/HELLOGEM.NAP (101088 bytes)
+xtask: building program newdesk for rpi4 -> /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/fix/target/programs/rpi4/NEWDESK.NAP
++ clang -target aarch64-unknown-none-elf -ffreestanding -nostdlib -O2 -fno-stack-protector -fPIE -fno-builtin -Wall -Wextra -I/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/fix/sdk/include  -c sdk/crt0.S
++ (cd programs && cargo build -p newdesk --release --features board-rpi4)
+    Finished `release` profile [optimized] target(s) in 0.00s
++ rust-lld -flavor gnu -T sdk/newtos.ld -pie --no-dynamic-linker -z text -z max-page-size=0x1000 --build-id=none crt0.o libnewdesk.a -o /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/fix/target/programs/rpi4/NEWDESK.NAP
+wrote /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fs31t/fix/target/programs/rpi4/NEWDESK.NAP (352384 bytes)
