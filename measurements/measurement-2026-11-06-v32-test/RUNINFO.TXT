@@ -1,0 +1,51 @@
+V32 acceptance -- TASK/V32.md (fix 937d6361, default font by V_REZ_VT like EmuTOS; base c5fff3be) by the tester.
+Date 2026-11-06. No product code touched; nothing committed; no SD card, no Pi, no push.
+Test code changed: tosdump/probes/vdprobe.c (+5 lines): in the "VDPROBE.SEL = T19" branch only, after t19(), one log line
+"T19B graf_handle <h> wchar hchar wbox hbox" (aes(77)); no record, no case number, every other run path unchanged.
+Method scripts: copies/adaptions of measurements/measurement-2026-11-06-v29-test/method and v18-t2/method/k19-240.sh (commits, paths, QEMU_EXTRA hook in desk-inj.sh).
+
+TREES / KERNELS
+  head = git archive 937d6361, base = git archive c5fff3be (references/ linked), fresh scratch tree per commit and board, scratch deleted at the end.
+  rpi4 release kernel8.img (serial=on via -append): head a90f02d832839e54faad73408a5f47a00f12afd3aee71f154642304f140786a4 (1493192 B),
+  base f67cf0762eeee644fafc76b9214442c39bf5a083ab3904f07cb3dfafbecd7573 (1468616 B; = V29 head kernel). head - base = 24576 B = 0x6000.
+  qemu-virt: fresh tree 937d6361, dev profile (method/build-virt.log).
+  host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 44 card.img.manifest files under runs/ and probe/).
+  optional_missing, verbatim, in ALL 44 manifests: optional_missing none
+  Oracle: pinned EmuTOS 1a7484ab, reference BINs tosdump/reference; Hatari with ROM sha256 323c87bb...d2750c, cfg tools/oracle/hatari.cfg.
+  QEMU raspi4b, APFS clone per run (removed by the scripts); only own PIDs stopped.
+
+RESULTS
+ 1 PASS  cargo xtask test (main tree = 937d6361, rc 0): 2120 passed / 0 failed / 1 ignored (193 "test result" lines) = developer's number (analysis/cargo-xtask-test.txt).
+ 2 PASS (one classified non-semantic byte) normal resolutions, base vs head:
+   vdi-all 0 of 182 (both), vdi-v18 0 of 19, vdi-r3 5 of 38, vdi-v18-t2 8 of 32, vdi-raster 1 of 59, vdi-raster-screen 0 of 62, vdi-v18-raster 0 of 17,
+   vdi-v18-t2-raster 6 of 26: VDI.BIN/RASTER.BIN byte-identical base vs head in all 8 tables (cmp), tosdiff texts identical.
+   aes-r2-wind 78 of 78, aes-r3-wind-state 39 of 39 differ vs oracle on both alike (tosdiff texts identical); aes-r4 (no reference).
+   AES.BIN base vs head: NOT byte-identical: exactly 1 byte per record, always at record offset 68 (r2 78 B, r3 39 B, r4 181 B, nothing else; analysis/aes-bin-head-vs-base.txt);
+   AES.LOG line 4 "global after appl_init" global[11] = -9648 (0xDA50) head vs 31312 (0x7A50) base, difference 0x6000 = the kernel image growth above.
+   Classification: address-derived word (heap/app load address moved by the larger kernel image), not an AES result.
+   shprobe 12 of 12 byte-identical, shprobe-desktop (newtos-desk) 2 of 2, desktop run with IKBD injector at 640x480 (desk-inj.sh, 11 shots) 11 of 11,
+   1920x1080 desktop with injector (QEMU bcm2835-fb xres=1920 yres=1080, serial "[fb] VideoCore display geometry detected: 1920x1080") 11 of 11 byte-identical.
+   slprobe 155 shots: base vs head 2 differ (121, 152, both "held1" mid-gesture frames); same-kernel repeats differ too (base/base-r2 5, head/head-r2 4, cross pairs 2-4)
+   -> held-frame timing noise (analysis/slprobe-pairs.txt), same class as the V25/V28/V29 tests; 0 non-held1 shots differ.
+   Also: boot screen + AUTO console (APITEST.NCP) at 640x480, 6 shots at 6..45 s, base vs head 6 of 6 byte-identical.
+ 3 PASS  640x240 vs EmuTOS (same ROM, Hatari falcon VGA, INF mode word 0x011C; NewTOS QEMU yres=240, serial "VideoCore display geometry detected: 640x240"):
+   T19A vqt_attributes after v_opnvwk: EmuTOS po 7 6 8 8 = head po 7 6 8 8 (base 7 13 8 16); vqt_fontinfo equal on head (po 8 1 0 1 0 4 0 6 0 6), base 8 2 0 2 0 8 0 11 0 13.
+   VDPROBE.BIN (T19 selection): head == EmuTOS byte for byte (cmp), base differs.
+   graf_handle measured on EmuTOS (new log line T19B): wchar 8, hchar 8, wbox 22, hbox 11 = head 8/8/22/11 = developer's derivation; base 8/16/19/19.
+   Desktop screenshot (runs/desk240-head/shots/00-00-rest.png, runs/emutos-desk240/shots/grab0001.png; Hatari shows the 240-line mode line-doubled, 644x480, row pairs
+   identical, halved in analysis/emutos-desk240-halved.png): menu bar bottom line row 10 (11 px) on EmuTOS and head, base row 18; window frame rows 48 / title bottom 62-63 /
+   info line 73 identical on EmuTOS and head; title-bar closer gadget pixel pattern (rows 52, 55, 58 over 44 columns) identical on EmuTOS and head.
+   Head text 8x8, menu entries 8 px rows (runs/desk240b-head 01 menu). Window heights/positions differ because the INF geometries differ (not compared).
+   Known open point seen: the desktop About dialog (runs/desk240b-head/shots/02-02-dialog.png) has 8x8 text but a pixel layout built for 8x16 (taller than the screen: bottom
+   edge below row 240, OK button at the bottom) -- the separate desktop ticket, as in TASK/V32.md. Not a finding.
+ 4 PASS  Boot screen and console at 640x240 (runs/bc240-head vs bc240-base): console (AUTO APITEST.NCP) head 8x8 glyphs, 30 rows x 80 columns (base 8x16, 15 rows);
+   boot screen head 8x8 text. Observation: the boot screen content is clipped at the bottom at 640x240 on head AND base alike (last visible row "ST-RAM"; its pixel
+   layout/line pitch is the same 22 px on both) -- pre-existing, not from V32; EmuTOS side of the boot screen/console at 240 not run (derived by cell_height rule only).
+ 5 PASS  rpi4 release (serial=on): fresh builds of both trees rc 0; all 42 BOOT-SERIAL logs of the runs (QEMU raspi4b): 0 exception/panic lines; desktop runs reach the desktop.
+   qemu-virt: fresh tree 937d6361, cargo xtask build --board qemu-virt rc 0 + cargo xtask run --board qemu-virt --headless 110 s: "[desk] desktop up (0 drives)",
+   0 exception/panic (runs/boot-virt-head/serial.txt); QEMU stopped by PID, none left.
+
+NOT DRIVEN / OPEN
+  Real Pi4 / HDMI: nothing run (only for a VideoCore geometry below 400 lines). clippy delta not run (not requested in the brief). qemu-virt: boot only.
+  EmuTOS desktop dialog/alert at 240 not measured (no Hatari mouse injection built); head alert/dialog 240 checked only via the NewTOS About dialog.
+  1920x1080 only the NewTOS side (base vs head), no EmuTOS comparison. Only falcontc profile for the oracle tables.

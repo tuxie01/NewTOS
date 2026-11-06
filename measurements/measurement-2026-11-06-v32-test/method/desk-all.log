@@ -1,0 +1,20 @@
++ for p in '"head 937d6361"' '"base c5fff3be"'
++ set -- head 937d6361
++ measurements/measurement-2026-11-06-v32-test/method/desk-inj.sh kernel 937d6361 measurements/measurement-2026-11-06-v32-test/method/desk-mouse.txt /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v32t/k-head.img
++ tail -1
+kernel 8bad8cdd5a24f5ab015f36f9b87f14c0eafce6dc0756f662c1430e087b3d475f /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v32t/k-head.img (commit 937d6361d2a3d7b41fb5a4ef060005327862b898, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
++ DESK_FILES=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v32t/files
++ measurements/measurement-2026-11-06-v32-test/method/desk-inj.sh newtos measurements/measurement-2026-11-06-v32-test/runs/desk-head /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v32t/k-head.img measurements/measurement-2026-11-06-v32-test/method/desk-NEWDESK.INF measurements/measurement-2026-11-06-v32-test/method/desk-shots.txt
+mkcard: host file /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v32t/files/* (for C:\*) not found
+mkcard: 1 problem(s); no image written
++ for p in '"head 937d6361"' '"base c5fff3be"'
++ set -- base c5fff3be
++ measurements/measurement-2026-11-06-v32-test/method/desk-inj.sh kernel c5fff3be measurements/measurement-2026-11-06-v32-test/method/desk-mouse.txt /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v32t/k-base.img
++ tail -1
+kernel d4ec8c08dcad9c63bc330f2062129b7716181b72abb6993ec6001fb34ae2558f /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v32t/k-base.img (commit c5fff3be4f74439a9ac0404407b10925df96af2c, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
++ DESK_FILES=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v32t/files
++ measurements/measurement-2026-11-06-v32-test/method/desk-inj.sh newtos measurements/measurement-2026-11-06-v32-test/runs/desk-base /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v32t/k-base.img measurements/measurement-2026-11-06-v32-test/method/desk-NEWDESK.INF measurements/measurement-2026-11-06-v32-test/method/desk-shots.txt
+mkcard: host file /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v32t/files/* (for C:\*) not found
+mkcard: 1 problem(s); no image written
++ echo finished
+finished

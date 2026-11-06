@@ -1,0 +1,3 @@
+newtos-shprobe: 12 shots, 0 differ:
+newtos-desk: 2 shots, 0 differ:
+newtos-slprobe: 155 shots, 2 differ: 121-121-min-V-pagelo-held1.png 152-152-min-H-pagehi-held1.png

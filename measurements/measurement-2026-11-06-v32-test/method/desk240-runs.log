@@ -1,0 +1,11 @@
+kernel fccb89ebf53e7bf22f7ec2b6818d38f55134a3e94fdded6ab1b99db00c688315 /private/tmp/claude-501/-Volumes-Daten-Developme
+qemu-system-aarch64: terminating on signal 15 from pid 33484 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+kernel 8d710b67f6e2ef6094677cac993ee80891ac1e3f4ffeb5fd7570c0978e3618d6 /private/tmp/claude-501/-Volumes-Daten-Developme
+qemu-system-aarch64: terminating on signal 15 from pid 34538 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+finished

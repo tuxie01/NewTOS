@@ -1,0 +1,3 @@
+r2 True 78 [68] masked-equal False
+r3 True 39 [68] masked-equal False
+r4 True 181 [68] masked-equal False

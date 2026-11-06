@@ -1628,6 +1628,11 @@ int main(void)
 	if (only_t19) {
 		k_calibration();
 		t19();
+		/* V32 acceptance: graf_handle's gl_wchar/gl_hchar/gl_wbox/gl_hbox on this screen (log line only,
+		 * no record, no case number; only in the T19 selection, so every other run is unchanged). */
+		aes(77, 0, 5, 0);
+		emit("T19B     graf_handle %d wchar %d hchar %d wbox %d hbox %d\n", aes_int_out[0], aes_int_out[1],
+		     aes_int_out[2], aes_int_out[3], aes_int_out[4]);
 		goto done;
 	}
 	k_calibration();
