@@ -1,0 +1,364 @@
+qemu-system-aarch64: terminating on signal 15 from pid 99519 (<unknown process>)
+H00 handle 2 xres 639 yres 479 planes? colours 256
+01 CAL      pens 0..15, 8x8 each, vr_recfl solid; x 128..135 untouched
+02 K1A      XOR polyline: vertical segment first (20,20)-(20,40)-(40,40)
+03 K1B      XOR polyline: vertical in the middle (20,20)-(40,20)-(40,40)-(60,40)
+04 K1C      XOR polyline: vertical upward first (20,40)-(20,20)-(40,20)
+05 K1D      XOR closed square, 5 points
+06 K1E      XOR polyline, two diagonals (control)
+07 K1F      XOR single vertical line (last segment, control)
+08 K1G      XOR vertical non-last, dashed (vsl_type 3)
+09 K2A      clip on (30,30)-(90,90), 10 lines crossing it, solid
+10 K2B      the same lines, clip on, dash-dot (vsl_type 4)
+11 K2C      the same lines, clip on, user style 0xF39C (vsl_type 7)
+12 K2D      clip on (30,30)-(90,90), vertical dashed (60,5)-(60,120) and (70,120)-(70,5), horizontal dashed (5,50)-(120,50)
+13 K2E      clip OFF: diagonal (600,100)-(680,104) past the right edge
+14 K2F      clip OFF: horizontal (600,120)-(700,120) past the right edge
+15 K2G      clip OFF: diagonal (-20,140)-(40,150) past the left edge
+16 K2H      clip OFF: horizontal (-30,170)-(20,170) past the left edge
+17 K2I      clip ON (0,0)-(639,479): diagonal (600,200)-(680,204) and horizontal (600,210)-(700,210)
+18 K3A      128-line fan, solid, from the cell centre
+19 K3B      128-line fan, solid, from the far end
+20 K3C      128-line fan, dash-dot-dot (vsl_type 6), from the centre
+21 K3D      128-line fan, user style 0xF39C, from the far end
+22 K4A      v_fillarea 1 point (50,50), perimeter on
+23 K4B      v_fillarea 2 points (50,50)-(90,70), perimeter on
+24 K4C      v_fillarea 2 points (50,50)-(90,70), perimeter off
+25 K4D      v_fillarea 2 points vertical (50,50)-(50,80), perimeter off
+26 K4E      v_fillarea 2 points (50,50)-(90,70), XOR, perimeter on
+27 K4F      v_fillarea 1 point, perimeter off
+28 K4G      v_fillarea 2 points horizontal (40,60)-(90,60), perimeter on
+29 K4H      v_fillarea 3 points (control), perimeter on, colour 2
+30 K5A      v_pmarker 1030 points: 0..1023 at (20,20), 1024..1029 at (40+10k,20); plus, height default
+   K5A contrl[1] after the call 1030
+31 K5B      v_pmarker 1025 points: 0..1023 at (20,20), 1024 at (60,20)
+32 K5C      v_pline 1030 points: 0..1022 at (20,60), 1023 (40,60), 1024.. (40,80),(80,80),...
+   K5C contrl[1] after the call 1030
+33 K5D      v_fillarea 1030 points: 0..1021 (100,100), 1022 (140,100), 1023 (120,130), 1024.. (200+10k,200)
+34 K6A      vsf_udpat 16 words (plane 0 = A), FIS_USER, v_bar 20..83 x 20..51, colour 2
+35 K6B      vsf_udpat 256 words: plane 0 = A, planes 1..15 = 0xFFFF
+36 K6C      vsf_udpat 256 words: plane 0 = 0, planes 1..15 = A
+37 K6D      vsf_udpat 16 words A, then 64 words (4 planes, invalid here) of 0xFFFF
+38 K6E      vsf_udpat 256 words (plane 0 = A, rest 0xFFFF), transparent mode, colour 3, v_fillarea triangle
+39 K6F      vsf_udpat 256 words (plane 0 = A, rest 0xFFFF), then style back to solid and to user again
+40 K8A      contourfill inside a black box, boundary colour 1, solid colour 2
+41 K8B      the same, INTIN[0] = -1 (seed colour)
+42 K8C      comb: box with 40 teeth from the top, pattern fill (style 2 index 5), boundary 1
+43 K8D      spiral of lines, solid colour 3, seed -1
+44 K8E      dot lattice 600x120 (dots every 3 px), contourfill from below, solid colour 2, boundary 1
+45 K8F      contourfill inside the box with clip (40,40)-(90,80)
+46 K8G      contourfill with the seed on the boundary (20,60), boundary 1
+47 K8H      contourfill XOR mode, hatch (style 3 index 2), boundary 1
+48 K8I      contourfill pattern (style 2 index 2) with seed colour -1
+49 K8J      contourfill boundary colour 16 (> 15, 256 pens), solid colour 2
+50 K10      v_get_pixel inside and outside, after painting (0,11) red, (639,10) green, (60,11) blue
+   K10 (0,11)=f800 (639,10)=07c0 (60,11)=001f (5,5)=ffff
+   K10 (640,10)=f800 (-1,11)=07c0 (700,10)=001f (-580,12)=001f
+51 K11A     v_arc centre (100,100) r 20, 0..3600, line width 9, clip (121,0)-(300,200)
+52 K11B     v_ellarc centre (100,100) 30x20, 0..1800, width 11, clip (0,121)-(300,200)
+53 K11C     v_arc as K11A but clip (115,0)-(300,200) (cuts the curve, control)
+54 K11D     v_arc r 20 at (100,100), width 1, arrowed ends, 0..900, clip (121,0)-(300,200)
+55 P1a00p   pattern set, mem->mem op, shifted right
+56 P1a00f   pattern set, mem->mem op, shifted right
+57 P1a01p   pattern set, mem->mem op, shifted right
+58 P1a01f   pattern set, mem->mem op, shifted right
+59 P1a03p   pattern set, mem->mem op, shifted right
+60 P1a03f   pattern set, mem->mem op, shifted right
+61 P1a04p   pattern set, mem->mem op, shifted right
+62 P1a04f   pattern set, mem->mem op, shifted right
+63 P1a06p   pattern set, mem->mem op, shifted right
+64 P1a06f   pattern set, mem->mem op, shifted right
+65 P1a07p   pattern set, mem->mem op, shifted right
+66 P1a07f   pattern set, mem->mem op, shifted right
+67 P1a0Ap   pattern set, mem->mem op, shifted right
+68 P1a0Af   pattern set, mem->mem op, shifted right
+69 P1a0Cp   pattern set, mem->mem op, shifted right
+70 P1a0Cf   pattern set, mem->mem op, shifted right
+71 P1a0Fp   pattern set, mem->mem op, shifted right
+72 P1a0Ff   pattern set, mem->mem op, shifted right
+73 P1b00p   pattern set, mem->mem op, shifted left
+74 P1b00f   pattern set, mem->mem op, shifted left
+75 P1b01p   pattern set, mem->mem op, shifted left
+76 P1b01f   pattern set, mem->mem op, shifted left
+77 P1b03p   pattern set, mem->mem op, shifted left
+78 P1b03f   pattern set, mem->mem op, shifted left
+79 P1b04p   pattern set, mem->mem op, shifted left
+80 P1b04f   pattern set, mem->mem op, shifted left
+81 P1b06p   pattern set, mem->mem op, shifted left
+82 P1b06f   pattern set, mem->mem op, shifted left
+83 P1b07p   pattern set, mem->mem op, shifted left
+84 P1b07f   pattern set, mem->mem op, shifted left
+85 P1b0Ap   pattern set, mem->mem op, shifted left
+86 P1b0Af   pattern set, mem->mem op, shifted left
+87 P1b0Cp   pattern set, mem->mem op, shifted left
+88 P1b0Cf   pattern set, mem->mem op, shifted left
+89 P1b0Fp   pattern set, mem->mem op, shifted left
+90 P1b0Ff   pattern set, mem->mem op, shifted left
+91 P2a00p   pattern set, mem->mem op, shifted right
+92 P2a00f   pattern set, mem->mem op, shifted right
+93 P2a01p   pattern set, mem->mem op, shifted right
+94 P2a01f   pattern set, mem->mem op, shifted right
+95 P2a03p   pattern set, mem->mem op, shifted right
+96 P2a03f   pattern set, mem->mem op, shifted right
+97 P2a04p   pattern set, mem->mem op, shifted right
+98 P2a04f   pattern set, mem->mem op, shifted right
+99 P2a06p   pattern set, mem->mem op, shifted right
+100 P2a06f   pattern set, mem->mem op, shifted right
+101 P2a07p   pattern set, mem->mem op, shifted right
+102 P2a07f   pattern set, mem->mem op, shifted right
+103 P2a0Ap   pattern set, mem->mem op, shifted right
+104 P2a0Af   pattern set, mem->mem op, shifted right
+105 P2a0Cp   pattern set, mem->mem op, shifted right
+106 P2a0Cf   pattern set, mem->mem op, shifted right
+107 P2a0Fp   pattern set, mem->mem op, shifted right
+108 P2a0Ff   pattern set, mem->mem op, shifted right
+109 P2b00p   pattern set, mem->mem op, shifted left
+110 P2b00f   pattern set, mem->mem op, shifted left
+111 P2b01p   pattern set, mem->mem op, shifted left
+112 P2b01f   pattern set, mem->mem op, shifted left
+113 P2b03p   pattern set, mem->mem op, shifted left
+114 P2b03f   pattern set, mem->mem op, shifted left
+115 P2b04p   pattern set, mem->mem op, shifted left
+116 P2b04f   pattern set, mem->mem op, shifted left
+117 P2b06p   pattern set, mem->mem op, shifted left
+118 P2b06f   pattern set, mem->mem op, shifted left
+119 P2b07p   pattern set, mem->mem op, shifted left
+120 P2b07f   pattern set, mem->mem op, shifted left
+121 P2b0Ap   pattern set, mem->mem op, shifted left
+122 P2b0Af   pattern set, mem->mem op, shifted left
+123 P2b0Cp   pattern set, mem->mem op, shifted left
+124 P2b0Cf   pattern set, mem->mem op, shifted left
+125 P2b0Fp   pattern set, mem->mem op, shifted left
+126 P2b0Ff   pattern set, mem->mem op, shifted left
+127 P4a00p   pattern set, mem->mem op, shifted right
+128 P4a00f   pattern set, mem->mem op, shifted right
+129 P4a01p   pattern set, mem->mem op, shifted right
+130 P4a01f   pattern set, mem->mem op, shifted right
+131 P4a03p   pattern set, mem->mem op, shifted right
+132 P4a03f   pattern set, mem->mem op, shifted right
+133 P4a04p   pattern set, mem->mem op, shifted right
+134 P4a04f   pattern set, mem->mem op, shifted right
+135 P4a06p   pattern set, mem->mem op, shifted right
+136 P4a06f   pattern set, mem->mem op, shifted right
+137 P4a07p   pattern set, mem->mem op, shifted right
+138 P4a07f   pattern set, mem->mem op, shifted right
+139 P4a0Ap   pattern set, mem->mem op, shifted right
+140 P4a0Af   pattern set, mem->mem op, shifted right
+141 P4a0Cp   pattern set, mem->mem op, shifted right
+142 P4a0Cf   pattern set, mem->mem op, shifted right
+143 P4a0Fp   pattern set, mem->mem op, shifted right
+144 P4a0Ff   pattern set, mem->mem op, shifted right
+145 P4b00p   pattern set, mem->mem op, shifted left
+146 P4b00f   pattern set, mem->mem op, shifted left
+147 P4b01p   pattern set, mem->mem op, shifted left
+148 P4b01f   pattern set, mem->mem op, shifted left
+149 P4b03p   pattern set, mem->mem op, shifted left
+150 P4b03f   pattern set, mem->mem op, shifted left
+151 P4b04p   pattern set, mem->mem op, shifted left
+152 P4b04f   pattern set, mem->mem op, shifted left
+153 P4b06p   pattern set, mem->mem op, shifted left
+154 P4b06f   pattern set, mem->mem op, shifted left
+155 P4b07p   pattern set, mem->mem op, shifted left
+156 P4b07f   pattern set, mem->mem op, shifted left
+157 P4b0Ap   pattern set, mem->mem op, shifted left
+158 P4b0Af   pattern set, mem->mem op, shifted left
+159 P4b0Cp   pattern set, mem->mem op, shifted left
+160 P4b0Cf   pattern set, mem->mem op, shifted left
+161 P4b0Fp   pattern set, mem->mem op, shifted left
+162 P4b0Ff   pattern set, mem->mem op, shifted left
+163 P8a00p   pattern set, mem->mem op, shifted right
+164 P8a00f   pattern set, mem->mem op, shifted right
+165 P8a01p   pattern set, mem->mem op, shifted right
+166 P8a01f   pattern set, mem->mem op, shifted right
+167 P8a03p   pattern set, mem->mem op, shifted right
+168 P8a03f   pattern set, mem->mem op, shifted right
+169 P8a04p   pattern set, mem->mem op, shifted right
+170 P8a04f   pattern set, mem->mem op, shifted right
+171 P8a06p   pattern set, mem->mem op, shifted right
+172 P8a06f   pattern set, mem->mem op, shifted right
+173 P8a07p   pattern set, mem->mem op, shifted right
+174 P8a07f   pattern set, mem->mem op, shifted right
+175 P8a0Ap   pattern set, mem->mem op, shifted right
+176 P8a0Af   pattern set, mem->mem op, shifted right
+177 P8a0Cp   pattern set, mem->mem op, shifted right
+178 P8a0Cf   pattern set, mem->mem op, shifted right
+179 P8a0Fp   pattern set, mem->mem op, shifted right
+180 P8a0Ff   pattern set, mem->mem op, shifted right
+181 P8b00p   pattern set, mem->mem op, shifted left
+182 P8b00f   pattern set, mem->mem op, shifted left
+183 P8b01p   pattern set, mem->mem op, shifted left
+184 P8b01f   pattern set, mem->mem op, shifted left
+185 P8b03p   pattern set, mem->mem op, shifted left
+186 P8b03f   pattern set, mem->mem op, shifted left
+187 P8b04p   pattern set, mem->mem op, shifted left
+188 P8b04f   pattern set, mem->mem op, shifted left
+189 P8b06p   pattern set, mem->mem op, shifted left
+190 P8b06f   pattern set, mem->mem op, shifted left
+191 P8b07p   pattern set, mem->mem op, shifted left
+192 P8b07f   pattern set, mem->mem op, shifted left
+193 P8b0Ap   pattern set, mem->mem op, shifted left
+194 P8b0Af   pattern set, mem->mem op, shifted left
+195 P8b0Cp   pattern set, mem->mem op, shifted left
+196 P8b0Cf   pattern set, mem->mem op, shifted left
+197 P8b0Fp   pattern set, mem->mem op, shifted left
+198 P8b0Ff   pattern set, mem->mem op, shifted left
+199 Wa03     16 planes mem->mem, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps
+202 Wa06     16 planes mem->mem, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps
+205 Wa13     16 planes mem->mem, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps
+208 Wa16     16 planes mem->mem, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps
+211 Wb3      16 planes mem->mem, source fd_w 40 fd_wdwidth 1, block 40x1 from (0,1)
+214 Wb6      16 planes mem->mem, source fd_w 40 fd_wdwidth 1, block 40x1 from (0,1)
+217 Wc3      16 planes mem->mem, dest fd_w 10 fd_wdwidth 1, block 16x1
+220 Wc6      16 planes mem->mem, dest fd_w 10 fd_wdwidth 1, block 16x1
+223 Wd01     vrt_cpyfm 1 plane -> 16 plane memory, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps
+226 Wd03     vrt_cpyfm 1 plane -> 16 plane memory, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps
+229 Wd11     vrt_cpyfm 1 plane -> 16 plane memory, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps
+232 Wd13     vrt_cpyfm 1 plane -> 16 plane memory, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps
+235 We103    planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps
+238 We106    planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps
+241 We113    planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps
+244 We116    planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps
+247 We403    planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps
+250 We406    planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps
+253 We413    planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps
+256 We416    planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps
+259 K14A     queue overflow: 25% random dots on rows 100..104, contourfill from (0,50), solid colour 2, boundary 1
+260 K14B     queue overflow: 10% random dots on rows 100..139, contourfill from below (0,300), solid colour 2, boundary 1
+261 K14C     control, no overflow: dot on every 2nd column of rows 100..299 (queue 321), contourfill from (0,50)
+262 K15A     v_circle r=0 at (60,60), solid colour 2, perimeter on
+263 K15B     v_circle r=1 at (60,60), solid colour 2, perimeter on
+264 K15C     v_circle r=2 at (60,60), solid colour 2, perimeter on
+265 K15D     v_circle r=0 at (60,60), solid colour 2, perimeter off
+266 K15E     v_circle r=1 at (60,60), solid colour 2, perimeter off
+267 K15F     v_ellipse xr=0 yr=5 at (60,60), perimeter on
+268 K15G     v_ellipse xr=5 yr=0 at (60,60), perimeter on
+269 K15H     v_ellipse xr=0 yr=5 at (60,60), perimeter off
+270 K15I     v_ellipse xr=0 yr=0 at (60,60), perimeter on, XOR
+271 K15J     v_ellipse xr=1 yr=6 at (60,60), perimeter off
+272 K15K     v_pieslice r=0 at (60,60), 0..900, perimeter on
+273 K15L     v_pieslice r=1 at (60,60), 0..1800, perimeter on
+274 K15M     v_pieslice r=2 at (60,60), 0..2700, perimeter off
+275 K15N     v_pieslice r=0 at (60,60), 0..0, perimeter on
+276 K15O     v_ellpie xr=0 yr=5 at (60,60), 0..900, perimeter on
+277 K15P     v_ellpie xr=1 yr=0 at (60,60), 0..1800, perimeter off
+278 K15Q     v_circle r=12 at (60,60), control
+279 K16A     v_get_pixel x outside 0..639 but inside the frame buffer (wraps to the next/previous row)
+   K16A (640,0)=f800 (-1,1)=07c0 (1279,0)=001f (1280,0)=07df
+   K16A (-640,5)=ffc0 (641,100)=f81f (640,478)=bdd7 (0,1)=f800
+280 K16B     v_get_pixel beyond the frame buffer (decision B: 0 in NewTOS; EmuTOS reads whatever lies there)
+   K16B (640,479)=0000 (0,-1)=0000 (-1,0)=0000 (0,480)=0000
+281 K17A     v_arc r20 w9 clip x>=120 (touches xc+xrad: draws)
+282 K17B     v_arc r20 w9 clip y<=79 (above yc-yrad: quits)
+283 K17C     v_arc r20 w9 clip x<=79 (left of xc-xrad: quits)
+284 K17D     v_arc r20 w9 clip y>=121 (below yc+yrad: quits)
+285 K17E     v_arc r20 w9 clip y>=120 (touches: draws)
+286 K17F     v_arc r20 w15 clip x>=121 (wide pen reaches in: quits)
+287 K17G     v_arc r20 0..900 w1 arrows clip x>=120 (touches: draws)
+288 K17H     v_ellarc 30x20 0..1800 w1 arrows clip x>=131 (quits)
+289 K17I     v_ellarc 30x20 0..1800 w1 arrows clip x>=130 (touches: draws)
+290 K17J     v_ellarc 30x20 0..1800 w11 clip y<=79 (quits)
+291 K17K     v_ellarc 30x20 0..1800 w11 clip y<=80 (touches: draws)
+292 K17L     v_ellarc 20x30 0..3600 w7 clip y>=131 (quits)
+293 K17M     v_ellarc 20x30 0..3600 w7 clip y>=130 (touches: draws)
+294 K17N     v_ellipse 30x20 filled clip x>=131 (quits)
+295 K17O     v_ellipse 30x20 filled clip x>=130 (touches: draws)
+296 K17P     v_circle r20 w9 clip x>=121 (quits)
+297 K17Q     v_pieslice r20 0..900 w9 clip x>=121 (quits)
+298 K17R     v_ellpie 30x20 0..1800 clip x>=131 (quits)
+299 K17S     v_arc r20 w9 clip off (draws)
+300 K17T     v_arc r20 w3 arrows clip x>=121 (quits)
+301 K17U     v_arc r20 w9 clip (0,0)-(639,479) all in (draws)
+302 T19A     default font right after v_opnvwk: vqt_attributes, vqt_fontinfo (before any vst_*)
+   vqt_attributes c2=2 c4=6 io 1 1 0 0 0 1 po 7 13 8 16
+   vqt_fontinfo c2=5 c4=2 io 0 255 po 8 2 0 2 0 8 0 11 0 13
+303 T13A     vst_load_fonts with a GDOS-style chain (font id 7), then vst_font(7), v_gtext
+   vst_load_fonts#1 c2=0 c4=1 io 0
+   vqt_name(1) c4=33 id=1 name=[6x6 system font.................]
+   vqt_name(2) c4=33 id=1 name=[6x6 system font.................]
+   vq_extnd(0) io[10]=1
+   vst_font(7) c2=0 c4=1 io 1 po
+   vqt_attributes c2=2 c4=6 io 1 1 0 0 0 1 po 5 4 6 6
+   vqt_fontinfo c2=5 c4=2 io 0 255 po 6 1 0 1 0 3 0 4 0 4
+   vst_load_fonts#2 c4=1 io 0
+   vst_font(7) after unload c2=0 c4=1 io 1 po
+   vqt_name(2) c4=33 id=1 name=[6x6 system font.................]
+304 T13B     after the unload: v_gtext in the system font (state restored?)
+305 T14A     vst_height(26) = exact double, v_gtext 'AUDIT' at (10,60)
+   vst_height(26) c2=2 c4=0 io po 14 27 16 32
+306 T14B     vst_height(26), v_gtext of 4100 chars at (10,200) (wraps the WORD x 1x)
+307 T14C     unscaled v_gtext of 4100 chars at (10,60)
+308 T14D     vst_height(20) (DDA 7/13 up), v_gtext 20 chars at x=-60 (leading chars clipped)
+309 T14E     vst_height(20), clip (100,0)-(639,479), v_gtext 20 chars at x=0
+310 T14F     vst_height(20), v_gtext 20 chars at x=10 (nothing clipped, control)
+311 T14G     vst_height(26), v_gtext 20 chars at x=-60 (exact double, leading chars clipped)
+312 T14H     vst_height(26), v_justified 4096 chars interchar, max_x -32768 (advance 8), at (10,200)
+313 T14I     vst_height(20), v_justified 20 chars interchar len 400 at x=-60
+314 T14J     vst_height(10) (DDA down), v_gtext 20 chars at x=-30 (leading chars clipped)
+315 T14K     vst_height(26), clip off, 4096 chars at (26,200), char 4095 = 14 lands at x 10
+316 T14L     control: vst_height(26), clip off, 4095 chars at (42,200), char 4094 = 14 lands at x 10
+317 T14M     vst_height(26), clip on (0,0)-(639,479), 4096 chars at (26,200), char 4095 = 14
+318 T15A     vst_height(20), vst_font(1), v_gtext
+   vst_height(20) c2=2 c4=0 io po 11 20 12 24
+   vst_font(1) c2=0 c4=1 io 1 po
+   vqt_attributes c2=2 c4=6 io 1 1 0 0 0 1 po 11 20 12 24
+   vqt_fontinfo c2=5 c4=2 io 0 255 po 12 3 0 3 0 12 0 17 0 20
+319 T15B     vst_point(18) (doubled 8x8), vst_font(1), v_gtext
+   vst_point(18) c2=2 c4=1 io 18 po 14 13 16 16
+   vst_font(1) c2=0 c4=1 io 1 po
+   vqt_attributes c2=2 c4=6 io 1 1 0 0 0 1 po 14 13 16 16
+320 T15C     vst_point(18), vst_font(9) (no such face), v_gtext
+   vst_font(9) c2=0 c4=1 io 1 po
+   vqt_attributes c2=2 c4=6 io 1 1 0 0 0 1 po 14 13 16 16
+321 T15D     vst_height(3) (below the 6x6 top), vst_font(1), v_gtext
+   vst_height(3) c2=2 c4=0 io po 4 3 4 5
+   vqt_attributes c2=2 c4=6 io 1 1 0 0 0 1 po 4 3 4 5
+322 T15E     vst_point(11), vst_font(1): vqt_attributes / fontinfo
+   vst_point(11) c2=2 c4=1 io 10 po 7 13 8 16
+   vqt_attributes c2=2 c4=6 io 1 1 0 0 0 1 po 7 13 8 16
+   vqt_fontinfo c2=5 c4=2 io 0 255 po 8 2 0 2 0 8 0 11 0 13
+323 T1600    v_justified chup 0 interword 0 interchar 1, 'AB CD EF' len 100 at (320,240)
+324 T1601    v_justified chup 0 interword 1 interchar 0, 'AB CD EF' len 100 at (320,240)
+325 T1602    v_justified chup 0 interword 1 interchar 1, 'AB CD EF' len 100 at (320,240)
+326 T160g    control: v_gtext chup 0 'AB CD EF' at (320,240)
+327 T1610    v_justified chup 900 interword 0 interchar 1, 'AB CD EF' len 100 at (320,240)
+328 T1611    v_justified chup 900 interword 1 interchar 0, 'AB CD EF' len 100 at (320,240)
+329 T1612    v_justified chup 900 interword 1 interchar 1, 'AB CD EF' len 100 at (320,240)
+330 T161g    control: v_gtext chup 900 'AB CD EF' at (320,240)
+331 T1620    v_justified chup 1800 interword 0 interchar 1, 'AB CD EF' len 100 at (320,240)
+332 T1621    v_justified chup 1800 interword 1 interchar 0, 'AB CD EF' len 100 at (320,240)
+333 T1622    v_justified chup 1800 interword 1 interchar 1, 'AB CD EF' len 100 at (320,240)
+334 T162g    control: v_gtext chup 1800 'AB CD EF' at (320,240)
+335 T1630    v_justified chup 2700 interword 0 interchar 1, 'AB CD EF' len 100 at (320,240)
+336 T1631    v_justified chup 2700 interword 1 interchar 0, 'AB CD EF' len 100 at (320,240)
+337 T1632    v_justified chup 2700 interword 1 interchar 1, 'AB CD EF' len 100 at (320,240)
+338 T163g    control: v_gtext chup 2700 'AB CD EF' at (320,240)
+339 TUA      underline, clip off, v_gtext 'ABCDEFGH' at (600,100): runs past x 639
+340 TUB      underline, clip off, v_gtext 'ABCDEFGH' at (-30,150): starts left of x 0
+341 TUC      underline, clip off, vst_height(26), 'ABCDEFGH' at (560,200)
+342 TUD      control: underline, clip on (0,0)-(639,479), 'ABCDEFGH' at (600,100)
+343 TUE      underline+light, clip off, 'ABCDEFGH' at (600,300)
+344 TUF      control: underline, clip off, 'ABCDEFGH' at (100,100) (inside)
+345 TPA      v_pline (100,100)-(200,150); vs_clip(1) CONTRL[1]=0, caller PTSIN 10,10,50,50; vr_recfl pen 2
+346 TPB      as TPA with CONTRL[1]=1 (first corner copied, second not)
+347 TPC      v_pline from (9,470); vsl_width CONTRL[1]=0, caller PTSIN[0]=3; line (20,300)-(200,300)
+   vsl_width c2=1 c4=0 io po 3 0
+348 TPD      v_pline (0,26)-(0,26); vst_height CONTRL[1]=0, caller PTSIN[1]=13; v_gtext 'ABC'
+   vst_height c2=2 c4=0 io po 7 13 8 16
+349 TPE      control: v_pline, then vs_clip(1) with CONTRL[1]=2 (10,10,50,50), vr_recfl pen 2
+350 TRA      16 planes, two MFDBs, dst fd_addr = src + 3 words, block 32x3 (0,0)->(0,0)
+352 TRB      16 planes, two MFDBs, src fd_addr = dst + 3 words, block 32x3 (0,0)->(0,0)
+354 TRC      16 planes, one MFDB, fd_wdwidth 1, block 24x1 (8,0)->(0,1) (src < dst, runs on into row 1/2)
+356 TRD      16 planes, one MFDB, fd_wdwidth 1, block 24x1 (0,1)->(8,0) (src > dst)
+358 TRE      control: 16 planes, one MFDB, in-form 20x2 (0,0)->(3,0)
+360 TRF      control: 16 planes, one MFDB, in-form 20x2 (3,1)->(0,0)
+362 TRG      12 planes, one MFDB, fd_wdwidth 2, 32x2 (0,0)->(0,1)
+364 TRH      12 planes, one MFDB, fd_wdwidth 2, 32x2 (0,1)->(0,0)
+366 TRI      16 planes, two MFDBs, dst = src + 1 word, fd_wdwidth 1, block 16x4 (0,0)->(0,0)
+368 TRJ      screen->screen 100x80 (100,100)->(103,102), stripes
+369 TRK      screen->screen 100x80 (103,102)->(100,100)
+370 TRL      screen->screen 100x80 (110,100)->(100,110) (down-left)
+371 TRM      screen->screen 100x80 (100,110)->(110,100) (up-right)
+372 T18A     dumpflg ($4EE) around v_hardcopy (escape 17) and Scrdmp (XBIOS 20)
+   dumpflg boot=-1 set=5 after v_hardcopy=5 c2=0 c4=0
+   dumpflg after Scrdmp=5
+END

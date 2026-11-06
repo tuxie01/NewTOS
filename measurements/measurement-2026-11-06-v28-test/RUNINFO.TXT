@@ -1,0 +1,51 @@
+V28 acceptance -- TASK/V28.md (fix f1006588, memory forms of 1..15 planes like EmuTOS; base 70f9b734) by the tester.
+Date 2026-11-06. No product code touched; nothing committed; no SD card, no Pi, no push. No temp scaffolding.
+Test code changed: none (tosdump/probes untouched; vdprobe.c identical to eba4122a, so the V18 part 2 oracle probe run e1 is reused).
+
+TREES
+  head = git archive f1006588, base = git archive 70f9b734 (references/ linked), fresh scratch tree per commit and board.
+  rpi4 release kernel8.img (serial=on via -append): head 061f42b245a1b7b19b5ddf506fa44dda25f1c7e349177ed75e69c279a6aea843,
+  base f0844bd5b2a621bfd56328fa9a39458bcb23d1dbdfef6cf7d16a0863d389519d (method/build-kernels.out).
+  qemu-virt: fresh tree f1006588, dev profile, cargo xtask build --board qemu-virt rc 0 (method/build-virt.log).
+  host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of the card.img.manifest files).
+  Manifests: 31 card.img.manifest files under runs/ and probe/. optional_missing, verbatim, in ALL 31: optional_missing none
+  Oracle: pinned EmuTOS 1a7484ab, reference BINs in tosdump/reference (RASTER-v18t2-falcontc etc.); vdprobe oracle probe/e1 copied from
+  measurements/measurement-2026-11-06-v18-t2/probe/e1 (VDPROBE.BIN sha256 224db7b5...61ba58, verified). QEMU raspi4b, APFS clone per run
+  (removed by the scripts); only own PIDs stopped. Desktop scene: 40 seven-byte files LONGNM01-40.TXT.
+
+RESULTS
+ 1 PASS  cargo xtask test (main tree, HEAD f1006588, rc 0): 2096 passed / 0 failed / 1 ignored (192 "test result" lines) = developer's number (analysis/cargo-xtask-test.txt).
+ 2 PASS  vdi-v18-t2-raster.tsv vs EMUTOS-1a7484ab-RASTER-v18t2-falcontc: head 6 of 26 differ (28 29 33 34 35 37); base 19 of 26 (18-26, 28-30, 33-37, 44-45).
+         Only buf_b differs; contrl/ptsin/MFDB cells equal, kept check 0 changed (runs/t2-head-v18t2-raster/tosdiff-*.txt).
+         Position of every remaining word vs the destination form (fd_wdwidth*fd_h*fd_nplanes words, table columns of vdi-v18-t2-raster.tsv):
+           28 vrt 1->9 planes   form 1*16*9  = 144 words: buf_b[144..150]  (7 words)   all >= 144
+           29 vrt 1->12 planes  form 1*16*12 = 192:       buf_b[192..195]  (4)         all >= 192
+           33 vro 9 planes      form 144:                 buf_b[144..150]  (7)         all >= 144
+           34 vro 12 planes     form 192:                 buf_b[192..195]  (4)         all >= 192
+           35 vro 15 planes     form 1*16*15 = 240:       buf_b[240]       (1)         >= 240
+           37 vro 12 planes 32x16 wdwidth 2: form 2*16*12 = 384: buf_b[384..391] (8)   all >= 384
+         Total 31 words, all past the form end; inside every form every word equals the oracle (tosdiff lists no other word).
+         Classification: V26 cut (user decision "ja a": NewTOS writes nothing past fd_h rows, EmuTOS does) = documented, accepted deviation, not a defect.
+         18-26, 30, 36, 44-45 and the controls 31, 38, 40-43, 46: equal. Base->head moves 13 cases to equal (18-26, 30, 36, 44, 45).
+         Not verified by this run: that NewTOS' own words past the form are untouched (the tosdump BIN holds only the after-state; the unit harness checks it).
+ 3 PASS  Unchanged vs base (RASTER.BIN/VDI.BIN byte-identical base vs head, cmp rc 0): vdi-raster.tsv 1 of 59 (case 157, D-VDI-25, head and base),
+         vdi-raster-screen 0 of 62, vdi-v18-raster 0 of 17, vdi-all falcontc 0 of 182, vdi-v18.tsv 0 of 19 (all head and base).
+         vdprobe (348 records; probe/e1 oracle, n-head, n-head-2, n-base): head vs oracle 29 differ = K5D (decision C) + 28 T records of V29-V35 territory
+         (T13A, T14B C E G H K L, T1610-12, T1620-22, T1630-32, TUAw TUB TUBw TUCw TUE TUEw TUF, TPA TPB TPC TPD), none touched by V28.
+         base vs oracle 35 differ; base vs head exactly 6 records differ: TRAb TRCb TRDb TRGb TRHb TRIb, all oracle-equal on head.
+         n-head == n-head-2 348/348 (deterministic). The set of 29 is the V18 part 2 set (35) minus those 6.
+ 4 PASS  Overlap probe TRA-TRM (V36 territory) head vs oracle: TRA TRB TRC TRD TRE TRF TRG TRH TRI (records TRxb) and screen cases TRJ TRK TRL TRM all EQUAL.
+         base vs oracle: TRAb TRCb TRDb TRGb TRHb TRIb DIFF (93, 16, 16, 72, 64, 63 px), TRBb TREb TRFb TRJ-TRM equal.
+         So the start-pointer rule fixes the TRA/TRC/TRD/TRI divergence of V36 (VDI-TEXT-014) for the probe; TRG/TRH (12 planes) moved too.
+         Raster table cases 44-45 (12-plane overlap) equal too (item 2). No regression in TRB, TRE, TRF, TRJ-TRM.
+ 5 PASS  aes-r2-wind AES.BIN base == head (cmp rc 0; 78 of 78 differ vs the oracle on both alike), aes-r3-wind-state identical (39 of 39 differ on both), aes-r4-subfunctions identical (181 records, no pinned reference).
+         shprobe: 12 of 12 shots byte-identical base vs head; shprobe-desktop (newtos-desk) 2 of 2; desktop run with IKBD injector (method/desk-inj.sh, 11 shots) 11 of 11 byte-identical; exception/panic lines 0 everywhere.
+         Looked at head desk 02-dialog (3D About dialog, OK button, window behind) and 03-rubberband-held (dotted rectangle, window with 41 items): sane.
+         slprobe: 155 shots, base vs head 9 differ, all "held1" mid-gesture frames (analysis/slprobe-compare.txt); same-kernel repeats differ too (base vs base-r2 3, head vs head-r2 3),
+         cross pairs 7-9; 0 non-"held1" shots differ -> held-frame timing noise, not attributable to V28 (same finding class as the V25 test).
+ 6 PASS  rpi4 release (serial=on) fresh builds of both trees; all 28 BOOT-SERIAL logs of the runs: 0 exception/panic lines; desktop runs "[desk] desktop up (1 drives)".
+         qemu-virt: fresh tree f1006588, cargo xtask build --board qemu-virt rc 0 + cargo xtask run --board qemu-virt --headless ~100 s: "[desk] desktop up (0 drives)", 0 exception/panic (runs/boot-virt-head/serial.txt).
+
+NOT DRIVEN / OPEN
+  Real Pi4: nothing run (pure memory arithmetic). clippy delta not run (not requested). qemu-virt: boot only (no C:, no input, no pixel probe).
+  Only falcontc probed for the oracle (the raster table is machine independent, no screen). AES-side callers: developer's list not re-audited; the runs above are the behavioural check.

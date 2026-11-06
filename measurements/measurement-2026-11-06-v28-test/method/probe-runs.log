@@ -1,0 +1,6 @@
++ K=target/aarch64-unknown-none-softfloat/release/kernel8.img
++ tosdump/probes/run-vdprobe.sh newtos measurements/measurement-2026-11-06-v28-test/probe/n-head /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v28t/head/target/aarch64-unknown-none-softfloat/release/kernel8.img
++ tosdump/probes/run-vdprobe.sh newtos measurements/measurement-2026-11-06-v28-test/probe/n-base /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v28t/base/target/aarch64-unknown-none-softfloat/release/kernel8.img
++ tosdump/probes/run-vdprobe.sh newtos measurements/measurement-2026-11-06-v28-test/probe/n-head-2 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v28t/head/target/aarch64-unknown-none-softfloat/release/kernel8.img
++ echo finished
+finished

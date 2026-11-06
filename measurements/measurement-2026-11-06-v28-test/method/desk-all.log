@@ -1,0 +1,31 @@
++ for p in '"head f1006588"' '"base 70f9b734"'
++ set -- head f1006588
++ measurements/measurement-2026-11-06-v28-test/method/desk-inj.sh kernel f1006588 measurements/measurement-2026-11-06-v28-test/method/desk-mouse.txt /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v28t/k-head.img
++ tail -1
+kernel f08fb5dfb2e2faff6768dcc0831afb342b65243c0740859f5c873ed02095c269 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v28t/k-head.img (commit f1006588705a13998e37446f1e3608b57a61a39a, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
++ DESK_FILES=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v28t/files
++ measurements/measurement-2026-11-06-v28-test/method/desk-inj.sh newtos measurements/measurement-2026-11-06-v28-test/runs/desk-head /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v28t/k-head.img measurements/measurement-2026-11-06-v28-test/method/desk-NEWDESK.INF measurements/measurement-2026-11-06-v28-test/method/desk-shots.txt
+qemu-system-aarch64: terminating on signal 15 from pid 4415 (<unknown process>)
+desk-inj run newtos (2026-11-06T05:32:07Z)
+kernel f08fb5dfb2e2faff6768dcc0831afb342b65243c0740859f5c873ed02095c269
+card cf745bf9aa78b2e4de928d6b6b02c9f4247f1abde122ffd9127e15cffb61ad19
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
++ for p in '"head f1006588"' '"base 70f9b734"'
++ set -- base 70f9b734
++ measurements/measurement-2026-11-06-v28-test/method/desk-inj.sh kernel 70f9b734 measurements/measurement-2026-11-06-v28-test/method/desk-mouse.txt /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v28t/k-base.img
++ tail -1
+kernel 215d411a6f0177accb3b21d45607a2c95c7cd31f35bd7b9cfbfc36da1bc729f3 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v28t/k-base.img (commit 70f9b73433fbfcb6379e23b89c349bbaf904bd3e, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
++ DESK_FILES=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v28t/files
++ measurements/measurement-2026-11-06-v28-test/method/desk-inj.sh newtos measurements/measurement-2026-11-06-v28-test/runs/desk-base /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/15767204-8d89-43e0-aae0-d8149a16a17d/scratchpad/v28t/k-base.img measurements/measurement-2026-11-06-v28-test/method/desk-NEWDESK.INF measurements/measurement-2026-11-06-v28-test/method/desk-shots.txt
+qemu-system-aarch64: terminating on signal 15 from pid 5547 (<unknown process>)
+desk-inj run newtos (2026-11-06T05:33:19Z)
+kernel 215d411a6f0177accb3b21d45607a2c95c7cd31f35bd7b9cfbfc36da1bc729f3
+card dc40854b5f7f7fbd6baf6de306ecb139493311c11960b61542aecd2ce9c4b260
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
++ echo finished
+finished
+ALLDONE

@@ -1,0 +1,6 @@
+desk-inj run newtos (2026-11-06T05:32:07Z)
+kernel f08fb5dfb2e2faff6768dcc0831afb342b65243c0740859f5c873ed02095c269
+card cf745bf9aa78b2e4de928d6b6b02c9f4247f1abde122ffd9127e15cffb61ad19
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
