@@ -1,0 +1,8 @@
+0220e184cb63c6d69eb52232742273f5eb269eef2a8c99ef4893f561ba772a3c  measurements/measurement-2026-11-06-v23-test/runs/t1-head-v18/VDI.BIN
+e91b865b92b5dbf24e19ecfd0a8296a467a04f36a4f292c0c795f38e38c61612  measurements/measurement-2026-11-06-v23-test/runs/t3-head-all/VDI.BIN
+4e4041e30b35382e2d155cc740628cc143b88869d3161042f22a1cf5d28a5472  measurements/measurement-2026-11-06-v23-test/runs/t3-head-raster-screen/RASTER.BIN
+2bd92d85f75b5b1e6efd2fe9b3e8bce6cae1c5a5615fa42b7b12dbd13f38808b  measurements/measurement-2026-11-06-v23-test/runs/t3-head-raster/RASTER.BIN
+3fa4b2986bc23b23c259940369acdab4406823c55638693f13bbe87726c59a68  measurements/measurement-2026-11-06-v23-test/runs/t3-head-v18-raster/RASTER.BIN
+6a002d58bad8351318f5820ff67d26028d3c0fdeb2b693783b729a31e0d61e8a  measurements/measurement-2026-11-06-v23-test/runs/t4-head-r2/AES.BIN
+f06233a6cf8b204dba48d7f677505eca9b0f706c9fa4c9982b5a3f6bb794c8e5  measurements/measurement-2026-11-06-v23-test/runs/t4-head-r3/AES.BIN
+7eaea30572b29ad91bfc2aeab72a8d5e47a998613595fc1383298c35f5a2df15  measurements/measurement-2026-11-06-v23-test/runs/t4-head-r4/AES.BIN

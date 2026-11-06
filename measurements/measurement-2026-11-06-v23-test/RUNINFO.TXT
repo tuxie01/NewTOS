@@ -1,0 +1,41 @@
+V23 acceptance -- TASK/V23.md (fix ee67903f, CONTRL[1] capped at MAX_VERTICES in dispatch_in) by the tester.
+Date 2026-11-06. No product code touched, no probe code changed; nothing committed; no SD card, no Pi, no push.
+Probes/harness: unchanged from the V22 run (scripts copied from measurements/measurement-2026-11-06-v22-test/method with commit ids replaced, method/).
+VDPROBE built by run-vdprobe.sh from the main tree 61811e75 (0 dirty paths): VDPROBE.PRG 780bfcf1030da986aa912733a905856956c0cfcc92e414696a481b64121ab396 VDPROBE.NAP 275852a1eea609a7c7e4557febd6d06e52fc03a4897990418cf37031919fb210 (cases 258, K5A-D included).
+
+TREES
+  head = git archive ee67903f, base = git archive f19a4b89 (references/ linked); fresh scratch tree per commit and board.
+  rpi4 release kernel8.img (serial=on via -append): head 7214add42098d72486d14fedb1da62ca0889cc9db1d0c5565ded6598b60aa075, base da89b3a538520a6d43237eba0ab92689301d57d831b569f101d33904d22bdd50.
+  qemu-virt: fresh tree of ee67903f, dev profile (method/build-virt.log).
+  host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 29 card.img.manifest files in probe/ and runs/).
+  Manifests: probe/*/card.img.manifest, runs/*/card.img.manifest (29). optional_missing, verbatim, in ALL 29: optional_missing none
+  Oracle: pinned EmuTOS 1a7484ab via tools/hatari-oracle.sh (docs/analysis/ORACLE.md), profile falcontc. QEMU raspi4b, per-run APFS clone of the card (removed by the scripts); only own PIDs stopped.
+  Desktop scene card: 40 seven-byte files LONGNM01-40.TXT (same for base and head). Scratch = session scratchpad.
+
+RESULTS
+ 1 PASS  cargo xtask test (main tree, HEAD 61811e75): 2053 passed / 0 failed / 1 ignored (sum of 191 "test result" lines, rc 0) = developer's number.
+         cases_v23: 5 tests ok (k5a pmarker_1030, k5b pmarker_1025, k5c pline_1030, pmarker exactly 1024, negative count) (analysis/cargo-xtask-test.txt).
+ 2 PASS  vdprobe, 258 cases (probe/e1 e2 oracle, n-head n-head-2, n-base):
+         head vs oracle: 3 of 258 differ = K5D (593 px), K11A (113), K11D (15). K5A, K5B, K5C EQUAL (0 px).
+         base vs oracle: 5 differ = K5A 90 px, K5B 15 px (the V23 symptom), K5D 593, K11A 113, K11D 15.
+         base vs head: exactly 2 cases differ, K5A (90 px) and K5B (15 px) = both move to oracle-equal; all other 256 cases byte-equal.
+         "contrl[1] after the call": K5A 1030 and K5C 1030 in oracle, head AND base logs (identical; the VDPROBE.LOG lines of the three runs).
+         K5D 593 px unchanged vs base = documented decision C (docs/COMPATIBILITY.md; EmuTOS buffer-overflow figure vs NewTOS clean fill; same classification as the V22 run). K11A/K11D identical to base, other tickets (V25).
+         Determinism: oracle e1 == e2 258/258, head n-head == n-head-2 258/258.
+ 3 PASS  vdi-all vs EMUTOS-1a7484ab-VDI-all-falcontc: 0 of 182 (head and base). vdi-v18 vs ...VDI-v18-falcontc: 4 of 19 differ on head = cases 15, 18, 21 (K10 v_get_pixel out of range, V24), 59 (K11, V25);
+         base the same 4. vdi-raster-screen 0 of 62; vdi-raster 1 of 59 (case 157, PTSIN[6..7] extent, as before; head and base); vdi-v18-raster 0 of 17.
+         All 8 BIN files (VDI/RASTER/AES) byte-identical base vs head (cmp; analysis/bin-sha256-*.txt).
+ 4 PASS  aes-r2-wind 0 base-vs-head diff (AES.BIN identical), aes-r3-wind-state identical, aes-r4-subfunctions identical (r2 78/78 and r3 39/39 differ vs the oracle on both sides alike; r4 has no pinned reference).
+         shprobe (12 shots) base == head 12 of 12 byte-identical; shprobe-desktop (newtos-desk-*, 2 shots) 2 of 2 identical; desktop run with IKBD injector (method/desk-inj.sh, 11 shots: rest, File menu, dialog,
+         rubberband, window drag, slider drag, sizer drag, icon drag, icon top edge, icon bottom edge, end) 11 of 11 identical. Looked at head 02-dialog (3D dialog with OK button over window) and 03-rubberband (rectangle, window with 41 items): sane.
+         slprobe (155 shots): base vs head 3 differ (152, 67, 98), all "held1" mid-gesture frames; 0 non-held1 frames differ in any pair. Same-kernel repeats differ as well (analysis/slprobe-compare.txt):
+         base vs base-r2 2 frames, head vs head-r2 4, base-r2 vs head-r2 4 -> held-frame timing noise (same finding as V19-V22), not attributable to V23.
+         AES-side counter-check: developer's caller list (gsxif.rs max 4 points, vdi_client 2, newtos-gem PLINE_MAX 8, desktop 2) was not re-audited; the runs above are the behavioural check.
+ 5 PASS  rpi4 release (serial=on) fresh builds of both trees; all 29 BOOT-SERIAL files (head and base kernels) "[desk] desktop up", 0 exception/panic lines.
+         qemu-virt: fresh tree ee67903f, cargo xtask build --board qemu-virt rc 0 + cargo xtask run --board qemu-virt --headless 60 s: "[desk] desktop up (0 drives)", 0 exception/panic (runs/boot-virt-head/serial.txt).
+ -  clippy tos-api --lib: base 74 warning/error lines, head 74, identical message list (analysis/clippy-tos-api-*.txt). qemu-virt build 159 "^warning" lines (pre-existing class, same as V22 run).
+
+NOT DRIVEN / OPEN
+  Real Pi4: no real-HW claim. Only falcontc (16 bit) probed; planar/palette paths for >1024 points not exercised. Negative CONTRL[1] (EmuTOS dbra over-read) is not reproducible by design (COMPATIBILITY entry); not probed against the oracle, covered by developer hosttest only.
+  The 1024-point boundary is covered by the hosttest (exactly 1024 draws all) and K5B (1025); no oracle probe for exactly 1024.
+  v_fillarea with >1024 points: oracle only via K5D (decision C), v_pmarker/v_pline via K5A-C.

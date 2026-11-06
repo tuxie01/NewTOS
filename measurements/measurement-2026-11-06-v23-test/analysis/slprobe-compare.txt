@@ -1,0 +1,4 @@
+base vs base-r2: 155 shots, 2 differ: 67- 98-
+head vs head-r2: 155 shots, 4 differ: 152 44- 67- 94-
+base vs head: 155 shots, 3 differ: 152 67- 98-
+base-r2 vs head-r2: 155 shots, 4 differ: 44- 67- 94- 98-
