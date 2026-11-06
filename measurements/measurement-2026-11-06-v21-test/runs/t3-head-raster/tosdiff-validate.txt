@@ -1,0 +1,4 @@
+RASTER.BIN: area VDI-RASTER, 59 records of 3696 bytes, build ----, case CRC 702EEA7D
+RASTER.BIN: format 3, pointer 8 bytes, least significant word first
+RASTER.BIN: matches vdi-raster.tsv (59 cases)
+RASTER.BIN: accepted

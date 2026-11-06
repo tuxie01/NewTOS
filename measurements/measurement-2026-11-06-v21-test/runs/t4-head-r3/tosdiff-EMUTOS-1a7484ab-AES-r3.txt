@@ -1,0 +1,214 @@
+EMUTOS-1a7484ab-AES-r3.BIN vs NEWTOS.BIN -- area AES, 39 cases from aes-r3-wind-state.tsv
+
+case 232  opcode 104  window 1's first piece: the anchor every NEXT is read against
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 238  opcode 104  window 2's only piece: the anchor for the mirrored case
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 245  opcode 104  window 1's 2nd piece, nobody asking in between: the control
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 253  opcode 104  did a FIRST on window 2 move window 1's search pointer?
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 261  opcode 104  mirror: window 2 is at its own end, so a piece here is 1's
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+    int_out[1]             EMUTOS-1a7484ab-AES-r3.BIN = 0x001F (31)   NEWTOS.BIN                 = 0x0000 (0)
+    int_out[2]             EMUTOS-1a7484ab-AES-r3.BIN = 0x003F (63)   NEWTOS.BIN                 = 0x0000 (0)
+
+case 270  opcode 104  does the interleaved walk resume where it left off, twice?
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 280  opcode 104  how long window 1's list is: the end, or a fifth piece
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+    int_out[1]             EMUTOS-1a7484ab-AES-r3.BIN = 0x001F (31)   NEWTOS.BIN                 = 0x0000 (0)
+    int_out[2]             EMUTOS-1a7484ab-AES-r3.BIN = 0x00F2 (242)   NEWTOS.BIN                 = 0x0000 (0)
+
+case 301  opcode 104  work area while still open: what the close has to replace
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 306  opcode 104  current rectangle while still open: the moved 70,90,260,180
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 311  opcode 104  previous rectangle while still open: the open 30,40,320,240
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 317  opcode 104  after the close: wm_calc(WC_WORK) of gl_rzero, so negative
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 323  opcode 104  after the close: gl_rzero -- a constant, not a device value
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 329  opcode 104  after the close: the rectangle the window had, 70,90,260,180
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 335  opcode 104  control: wm_close writes WS_FULL nowhere, so FULL must stand
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 337  opcode 108  this machine's wind_calc(WC_WORK, gl_rzero): B's WXYWH oracle
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 340  opcode 104  created, never opened: wm_create never writes WORK at all
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 344  opcode 104  did the close honour its early return, or write anyway?
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 375  opcode 104  the work area the pieces are clipped against, on the machine
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 381  opcode 104  window 1's rectangle: being covered does not move it
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 387  opcode 104  the covering rectangle: what it leaves of window 1
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 393  opcode 104  the P2 end: a non-empty list that meets nothing, four words
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 400  opcode 104  the P1 end one call later: two words; x and y have no soll
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+    int_out[1]             EMUTOS-1a7484ab-AES-r3.BIN = 0x001F (31)   NEWTOS.BIN                 = 0x0000 (0)
+    int_out[2]             EMUTOS-1a7484ab-AES-r3.BIN = 0x0118 (280)   NEWTOS.BIN                 = 0x0000 (0)
+
+case 431  opcode 104  group I: the work area the six answers below are clipped to
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 439  opcode 104  group I, piece 1 of the window under both others
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 448  opcode 104  group I, piece 2, or the end if the list is shorter
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 458  opcode 104  group I, piece 3, or the end if the list is shorter
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 469  opcode 104  group I, piece 4, or the end if the list is shorter
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 481  opcode 104  group I, piece 5, or the end if the list is shorter
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+    int_out[1]             EMUTOS-1a7484ab-AES-r3.BIN = 0x001F (31)   NEWTOS.BIN                 = 0x0000 (0)
+    int_out[2]             EMUTOS-1a7484ab-AES-r3.BIN = 0x00F2 (242)   NEWTOS.BIN                 = 0x0000 (0)
+
+case 494  opcode 104  group I, piece 6, or the end if the list is shorter
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+    int_out[1]             EMUTOS-1a7484ab-AES-r3.BIN = 0x001F (31)   NEWTOS.BIN                 = 0x0000 (0)
+    int_out[2]             EMUTOS-1a7484ab-AES-r3.BIN = 0x00F2 (242)   NEWTOS.BIN                 = 0x0000 (0)
+
+case 502  opcode 104  group I, the middle window: it breaks one list and is broken
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 511  opcode 104  group I, the middle window's piece 2, or its end
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 519  opcode 104  group II, piece 1: same rectangles, 3 opened before 2
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 528  opcode 104  group II, piece 2, or the end: only the opening order differs
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 538  opcode 104  group II, piece 3, or the end: only the opening order differs
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 549  opcode 104  group II, piece 4, or the end: only the opening order differs
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 561  opcode 104  group II, piece 5, or the end: only the opening order differs
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+case 574  opcode 104  group II, piece 6, or the end: only the opening order differs
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+    int_out[1]             EMUTOS-1a7484ab-AES-r3.BIN = 0x001F (31)   NEWTOS.BIN                 = 0x0000 (0)
+    int_out[2]             EMUTOS-1a7484ab-AES-r3.BIN = 0x00F2 (242)   NEWTOS.BIN                 = 0x0000 (0)
+
+case 588  opcode 104  group II, piece 7, or the end: only the opening order differs
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+    int_out[1]             EMUTOS-1a7484ab-AES-r3.BIN = 0x001F (31)   NEWTOS.BIN                 = 0x0000 (0)
+    int_out[2]             EMUTOS-1a7484ab-AES-r3.BIN = 0x00F2 (242)   NEWTOS.BIN                 = 0x0000 (0)
+
+case 603  opcode 104  still the whole screen? 0,0,0,0 means the early return failed
+    global[3]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0000 (0)   NEWTOS.BIN                 = 0x1143 (4419)
+    global[4]              EMUTOS-1a7484ab-AES-r3.BIN = 0x1143 (4419)   NEWTOS.BIN                 = 0x0000 (0)
+    global[10]              EMUTOS-1a7484ab-AES-r3.BIN = 0x0004 (4)   NEWTOS.BIN                 = 0x0010 (16)
+
+39 of 39 cases differ
+address check, EMUTOS-1a7484ab-AES-r3.BIN: format 3, pointer 4 bytes, most significant word first; 39 address cells checked, 0 not < 0x80000000
+address check, NEWTOS.BIN: format 3, pointer 8 bytes, least significant word first; 39 address cells checked, 0 not < 0x80000000

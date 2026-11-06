@@ -1,0 +1,53 @@
+V21 acceptance -- TASK/V21.md (fix 497773f9, v_contourfill through EmuTOS' seed queue) by the tester.
+Date 2026-11-06. No product code touched; nothing committed; no SD card, no Pi, no push.
+New test code (uncommitted, tosdump/probes/vdprobe.c): functions k14_rand/k14_dots/k14 and one call k14() after k13() in main -- three appended cases K14A-C (VDPROBE.BIN cases 259-261).
+  Existing cases untouched: the new oracle VDPROBE.BIN begins with the byte-identical 3455264 bytes of the V20 oracle run (measurement-2026-11-05-v20-test/probe/e1), then the 3 new records.
+  Probe snippet: method/vdprobe-k14-snippet.c; the host model used to design the overflow cases (Python port of vdi_fill.c contourfill, method/cf.py, method/t4.py).
+
+TREES
+  head = git archive of 497773f9a637c693cb45d9db7818c7779966a891; base = git archive of 2042cc8f (references/ linked); fresh scratch tree per commit and board, built by cargo xtask.
+  rpi4 release kernel8.img (serial=on via -append in QEMU): head 3c9b5f72da3a88ee1135c61f5279cafdca3742517498ab34cff7269aab66455e, base cb283e15f44b419d4ed024b2c53a48880e8adafc091e80a7db0cda507171e1be
+  (base = the V20 head kernel, as expected: 2042cc8f changes tests only). qemu-virt: fresh tree of 497773f9, dev profile.
+  VDPROBE.PRG 26ffe8892fff5cbabe5ceb165cd3da54200b01c4422337011f4f5309fc7d1c32  VDPROBE.NAP f5bcac7ab55828271e9588d82838c88ad767254b99e4ef6545007a2b21249da7 (new, with K14).
+  host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 29 card.img.manifest files in probe/ and runs/).
+  Manifests: probe/*/card.img.manifest, runs/*/card.img.manifest (29). optional_missing, verbatim, in ALL 29:  optional_missing none
+  Oracle: pinned EmuTOS 1a7484ab via tools/hatari-oracle.sh (docs/analysis/ORACLE.md), profile falcontc (640x480 16 bit). QEMU raspi4b, per-run APFS clone of the card (removed by the scripts),
+  only own PIDs stopped. Scratch = session scratchpad (removed at the end). Desktop scene card: 40 seven-byte files LONGNM01-40.TXT (the V20 file contents were not kept; same card for base and head).
+
+RESULTS
+ 1 PASS  cargo test -p tos-api --test vdi_reference v21: 3 passed 0 failed (cases 0109, 0154, 0199; analysis/cargo-test-v21.txt).
+         cargo xtask test (main tree = 497773f9): 2036 passed / 0 failed / 1 ignored = developer's number (analysis/cargo-xtask-test.txt, sum of all "test result" lines).
+ 2 PASS  vdi-v18.tsv vs EMUTOS-1a7484ab-VDI-v18-falcontc: head 6 of 19 differ (15, 18, 21 = K10/V24; 51, 53 = K4/V22; 59 = K11A/V25); base 9 of 19 (the same 6 + 109, 154, 199).
+         109/154/199 (K8 pockets) now EQUAL the oracle; 29/32/35/40/43/45/47 equal on both. base-vs-head tosdiff (analysis/v18-base-vs-head.txt): exactly 3 cases move, 109/154/199, all to oracle-equal.
+ 3 PASS  vdprobe (241 cases; runs: probe/e1 e2 oracle, n-head n-head-2, n-base NewTOS):
+         K8A-K8J all EQUAL the oracle on head (K8E was DIFF 8210 px on base = V21 symptom). K8C, K8H, K8I (pattern, XOR+hatch, pattern+seed colour -1) EQUAL on head and on base.
+         Head vs oracle: 230 equal, 11 differ = K4A-E,G, K5A,B,D, K11A, K11D, all unchanged vs base (other tickets V22/V25/V23-class); base vs oracle 14 differ (the 11 + K8E + K14A + K14B).
+         Base vs head: exactly 3 cases differ, K8E, K14A, K14B; every other case incl. K8A-D,F-J and the 233 non-contour cases byte-equal (analysis/probe-base-vs-head.txt).
+         Determinism: oracle e1 == e2 (241/241 equal), head n-head == n-head-2 (241/241 equal).
+ 4 PASS  New seed-queue overflow cases K14A-C (design: the Python model of vdi_fill.c predicts K14A/K14B overflow the 1024-entry queue, K14C max 321 live seeds does not).
+         K14A 25% LCG dots on rows 100..104, seed (0,50); K14B 10% LCG dots on rows 100..139, seed from below (0,300); K14C control, dot on every 2nd column of rows 100..299, seed (0,50).
+         Neither side hangs: oracle (Hatari) and QEMU both completed the probe on every run (runs/probe/*/run.txt "qemu done", the oracle returned rc 0 within the 900 s bound).
+         Oracle fills partially (K14A 39603 red px in the 640x80 window, K14B 117468 in 640x320 -- the fill stops when the queue is full); K14C is filled completely (115200).
+         Head vs oracle: K14A, K14B, K14C all EQUAL (0 differing px). Base vs oracle: K14A DIFF 10770 px, K14B DIFF 84817 px (base keeps filling, all of those pixels red on base, background on the oracle), K14C equal.
+         The Python model reproduces the oracle screen exactly in the three windows (0 mismatching pixels, all three cases, oracle and head) -- the overflow ends the whole fill like EmuTOS.
+ 5 PASS  vdi-all vs ...VDI-all-falcontc 0 of 182 (head and base); vdi-raster-screen 0 of 62; vdi-raster 1 of 59 = case 157 only (head and base, BIN identical to base); vdi-v18-raster 0 of 17.
+         VDI/RASTER BIN of all four tables byte-identical base vs head.
+ 6 PASS  AES tables base vs head (tosdiff, analysis/base-vs-head-other.txt): aes-r2-wind 0 of 78, aes-r3-wind-state 0 of 39, aes-r4-subfunctions 0 of 181 differ. The oracle diff text of r2/r3 is
+         identical (78/78 and 39/39 differ on both sides as before; raw AES.BIN differs only by the target-chosen address cell never compared, as in V19/V20; r4 has no pinned reference).
+         shprobe (12 shots) base == head byte-identical 12 of 12; desktop run with IKBD injector (method/desk-inj.sh, 11 shots: rest, File menu, Desktop info dialog, rubberband, window drag,
+         slider drag, sizer drag, icon drag, icon to top edge, icon to bottom edge, end) 11 of 11 identical; shprobe-desktop (2 shots) 2 of 2 identical.
+         slprobe (155 shots): 150 identical, 5 differ, all "held1" mid-gesture page-hold frames (121 min-V-pagelo, 44 1000-H-pagehi, 71 300-V-pagehi, 94 300-H-pagelo, 98 300-H-pagehi).
+         Same-kernel repeats differ as well: head vs head-r2 3 frames (152, 67, 71), base vs base-r2 0, base-r2 vs head-r2 6 frames -> held-frame timing noise (same finding as V19/V20/V26),
+         not attributable to V21. All dragslow/slidebox frames identical. contourfill has no caller in tos-api/src/aes (developer's finding; not re-audited).
+ 7 PASS  rpi4 release (serial=on) fresh builds of both trees; every BOOT-SERIAL in runs/ and probe/ (head and base kernels) shows "[desk] desktop up", 0 exception/panic lines.
+         qemu-virt: fresh tree of 497773f9, cargo xtask build --board qemu-virt + cargo xtask run --board qemu-virt --headless: "[desk] desktop up (0 drives)", 0 exception/panic (runs/boot-virt-head/serial.txt).
+         (The qemu-virt build log was not kept -- I sent it to /dev/null by mistake; the run output carries the kernel-crate warnings.)
+ -  clippy tos-api --lib: base 74 warning/error lines, head 74, identical message list (analysis/clippy-tos-api-*.txt). Kernel release build: 159 warning lines on both trees (method/build-*.log).
+
+NOT DRIVEN / OPEN
+  Real Pi4: the contourfill path reads the screen back while drawing (new in V21): read-after-write on a non-cacheable/dc cvac framebuffer is a cache-coherence class QEMU-TCG cannot show -> candidate for
+  docs/api/desktop/_hw-test-checklist.md: run a pocket fill (VDPROBE K8E/K14A) on silicon and compare to the oracle screen.
+  Only falcontc (16 bit) pixel format tested for the contourfill cases; planar/palette paths not exercised.
+  Overflow compared in solid fill with replace mode; XOR/pattern fills are not tested with an overflowing queue.
+  K14 cases drawn with the default clip off; clipped overflow not tested.
+  Desktop scenes: base == head only (no oracle compare; the desktop has no v_contourfill call).

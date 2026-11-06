@@ -1,0 +1,12 @@
+VDI.BIN vs VDI.BIN -- area VDI, 19 cases from vdi-v18.tsv
+
+case 109  opcode 105  K8 pocket (22,200) after the fill
+    intout[1]              VDI.BIN = 0xFFDF (-33)   VDI.BIN = 0xF800 (-2048)
+
+case 154  opcode 105  K8 pocket (322,230) after the fill
+    intout[1]              VDI.BIN = 0xFFDF (-33)   VDI.BIN = 0xF800 (-2048)
+
+case 199  opcode 105  K8 pocket (618,203) after the fill
+    intout[1]              VDI.BIN = 0xFFDF (-33)   VDI.BIN = 0xF800 (-2048)
+
+3 of 19 cases differ

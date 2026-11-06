@@ -1,0 +1,7 @@
+all: 0 of 182 cases differ
+raster: 0 of 59 cases differ
+raster-screen: 0 of 62 cases differ
+v18-raster: 0 of 17 cases differ
+r2: 0 of 78 cases differ
+r3: 0 of 39 cases differ
+r4: 0 of 181 cases differ
