@@ -1,0 +1,4 @@
+bc1080-base vs bc1080r-base: 02-t018.png 
+bc1080-head vs bc1080r-head: 02-t018.png 
+bc1080r-base vs bc1080r-head: 02-t018.png 
+bc1080-base vs bc1080-head: 02-t018.png 

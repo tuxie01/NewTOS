@@ -1,0 +1,3 @@
+t0 = detection of '[desk] desktop up' on the serial file
+00 desk-a planned 10.000s request 10.004s done 10.011s ok
+01 desk-b planned 15.000s request 15.005s done 15.012s ok

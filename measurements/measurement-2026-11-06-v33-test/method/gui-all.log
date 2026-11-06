@@ -1,0 +1,600 @@
+kernel a42e5c2b9af2eca792d502e6d70192636f67479401aacb0aa8df1459fdf51e26 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/k-head.img (commit 877a14b90142f5c3ba2dec585dccc28c43b7c6da, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
+kernel 181113ff46bde6fe36f5368cf8699ff7ce8dbdde7075de99932ff4ce5a4961d8 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/k-base.img (commit 587ddbd55c3c845db76f792096602f3caae49fc3, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
++ for T in base head
+++ '[' base = base ']'
+++ echo 587ddbd5
++ C=587ddbd5
++ tosdump/probes/run-shprobe.sh kernel 587ddbd5 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/kernel-sh-base.img
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/sh/shprobe.bGgNJ2/tree: tag [inj], launch:SHPROBE (3 bytes)
+kernel 423ed1de84b426fefe551a6bc96625fcf37b5e517995e37c1f98dd99d33fdbdb /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/kernel-sh-base.img (commit 587ddbd55c3c845db76f792096602f3caae49fc3, armed launch:SHPROBE)
++ tosdump/probes/run-slprobe.sh kernel 587ddbd5 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/kernel-sl-base.img
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/sl/slprobe.ymygMX/tree: tag [inj], launch:SLPROBE (6630 bytes)
+kernel 1fd2f80fd3ba250357432a1e2865049cb828c39d78ec50582c6c21bfc385bc64 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/kernel-sl-base.img (commit 587ddbd55c3c845db76f792096602f3caae49fc3, armed launch:SLPROBE)
++ for T in base head
+++ '[' head = base ']'
+++ echo 877a14b9
++ C=877a14b9
++ tosdump/probes/run-shprobe.sh kernel 877a14b9 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/kernel-sh-head.img
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/sh/shprobe.iGpKOC/tree: tag [inj], launch:SHPROBE (3 bytes)
+kernel b00c7b8900d370ad9529dbd5b8c3fc853a2b231466850727fc7bc243dc9b56dd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/kernel-sh-head.img (commit 877a14b90142f5c3ba2dec585dccc28c43b7c6da, armed launch:SHPROBE)
++ tosdump/probes/run-slprobe.sh kernel 877a14b9 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/kernel-sl-head.img
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/sl/slprobe.5BIqcB/tree: tag [inj], launch:SLPROBE (6630 bytes)
+kernel 4d1da1970ccacf4e93612fdccee66f7c143c058a9bcdbf586eba4872c992aa56 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/kernel-sl-head.img (commit 877a14b90142f5c3ba2dec585dccc28c43b7c6da, armed launch:SLPROBE)
++ for T in base head
++ tosdump/probes/run-shprobe.sh newtos measurements/measurement-2026-11-06-v33-test/runs/newtos-shprobe-base /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/kernel-sh-base.img
+qemu-system-aarch64: terminating on signal 15 from pid 96504 (<unknown process>)
+shprobe run, side newtos  (2026-11-06T11:46:35Z)
+tree      877a14b90142f5c3ba2dec585dccc28c43b7c6da 1 dirty paths in the tree
+source    shprobe.c 98acd6fcb7207108dca3984687a7e59e03299074a510af45f1e7fc88bf74f9ca shprobe-shots.txt 22006f628741cbf8e192abd225e02e82a7b19754e3dd8c90a0c1fcbb74fa8d98 shprobe-clock.txt 7e7592eb2d0c99801754bc686655ad43f26c2ca2085579aae8990ca3de0774f3
+probes    SHPROBE.PRG 3107467823e0e1c15749752fa36ad1a00ba20f08015b6b6a726d7c28f1526a9e SHPROBE.NAP 11abc76b121ad15de79d27073c8563da11c128b8b7690002e0761e744334f832
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    423ed1de84b426fefe551a6bc96625fcf37b5e517995e37c1f98dd99d33fdbdb /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/kernel-sh-base.img
+card      d5aa99026062917d2a5cf5615a21abe41fd0eac40ccfa023f1fa8bf8a16a1495 (tools/mkcard.sh)
+qemu      done, 12 shots
+card      after fff84b8ac230c82ed3b4f7a9d460f79fc0229a3cd0dfba1763fdbc2380dea8c7 (the booted clone)
+H00 graf_handle 8 16 19 19
+T00 t0=3021
+Y0 state 0 at t=3022 (+1)
+C0 wind_create(0fef)=1
+O0 wind_open(20,40,300,250)=1
+G0.1 work 21,63,276,204 curr 20,40,300,250
+W1.00 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.01 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.02 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.03 WF_COLOR=1 t=11a1 b=1101 WF_DCOLOR=1 t=11a1 b=1101
+W1.04 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.05 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.06 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.07 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.08 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.09 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.10 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.11 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.12 WF_COLOR=1 t=1111 b=1111 WF_DCOLOR=1 t=1111 b=1111
+W1.13 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.14 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.15 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.16 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.17 WF_COLOR=1 t=1111 b=1111 WF_DCOLOR=1 t=1111 b=1111
+W1.18 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+Y0 top=1
+D001.0 w1 damage 21,63,276,204 list 21,63,276,204
+K00 t=3721 (+700)
+K01 t=4421 (+1400)
+Y1 state 1 at t=4621 (+1600)
+C1 wind_create(0fef)=2
+O1 wind_open(340,120,280,300)=1
+G1.1 work 341,143,256,254 curr 340,120,280,300
+W2.00 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.01 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.02 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.03 WF_COLOR=1 t=11a1 b=1101 WF_DCOLOR=1 t=11a1 b=1101
+W2.04 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.05 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.06 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.07 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.08 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.09 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.10 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.11 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.12 WF_COLOR=1 t=1111 b=1111 WF_DCOLOR=1 t=1111 b=1111
+W2.13 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.14 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.15 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.16 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.17 WF_COLOR=1 t=1111 b=1111 WF_DCOLOR=1 t=1111 b=1111
+W2.18 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+Y1 top=2
+D002.0 w2 damage 341,143,256,254 list 341,143,256,254
+K02 t=5321 (+2300)
+K03 t=6021 (+3000)
+Y2 state 2 at t=6221 (+3200)
+Y2 wind_set(W1,WF_TOP)=1
+Y2 top=1
+K04 t=6921 (+3900)
+K05 t=7621 (+4600)
+Y3 state 3 at t=7823 (+4802)
+Y3 wind_set(W2,WF_CURRXYWH)=1
+G1.1 work 201,173,276,194 curr 200,150,300,240
+Y3 top=1
+D003.0 w1 damage 200,120,122,172 list 21,63,276,204
+D004.0 w2 damage 200,150,302,242 list 322,173,155,119
+D004.1 w2 damage 200,150,302,242 list 201,292,276,75
+K06 t=8521 (+5500)
+K07 t=9221 (+6200)
+Y4 state 4 at t=9422 (+6401)
+Y4 wind_set(W2,WF_TOP)=1
+Y4 top=2
+D005.0 w2 damage 200,150,302,242 list 201,173,276,194
+K08 t=10121 (+7100)
+K09 t=10821 (+7800)
+Y5 state 5 at t=11023 (+8002)
+Y5 wind_set(W1,WF_COLOR,W_BOX,2101,2101)=1 readback 2101 2101
+Y5 wind_set(W2,WF_COLOR,W_BOX,2101,2101)=1 readback 2101 2101
+Y5 top=2
++ tosdump/probes/run-shprobe.sh newtos-desk measurements/measurement-2026-11-06-v33-test/runs/newtos-desk-base /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/base/target/aarch64-unknown-none-softfloat/release/kernel8.img
+qemu-system-aarch64: terminating on signal 15 from pid 96799 (<unknown process>)
+shprobe run, side newtos-desk  (2026-11-06T11:47:51Z)
+tree      877a14b90142f5c3ba2dec585dccc28c43b7c6da 1 dirty paths in the tree
+source    shprobe.c 98acd6fcb7207108dca3984687a7e59e03299074a510af45f1e7fc88bf74f9ca shprobe-shots.txt 22006f628741cbf8e192abd225e02e82a7b19754e3dd8c90a0c1fcbb74fa8d98 shprobe-clock.txt 7e7592eb2d0c99801754bc686655ad43f26c2ca2085579aae8990ca3de0774f3
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    a01bc077e893b2c25121a086e53995627de5a2f58062bebe60f96e3004aff173 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/base/target/aarch64-unknown-none-softfloat/release/kernel8.img
+card      af01c45b3c7edfd106132fbe906a0f80b16db06df85df512acebf49713f48cb7 (tools/mkcard.sh)
+qemu      done, 2 shots
+card      after af01c45b3c7edfd106132fbe906a0f80b16db06df85df512acebf49713f48cb7 (the booted clone)
++ tosdump/probes/run-slprobe.sh newtos measurements/measurement-2026-11-06-v33-test/runs/newtos-slprobe-base /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/kernel-sl-base.img
+qemu-system-aarch64: terminating on signal 15 from pid 96957 (<unknown process>)
+H00 graf_handle 8 16 19 19
+C00 wind_create(0fef)=1
+O00 wind_open=1
+G00 curr 80,60,400,320
+G01 work 81,83,376,274
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+T00 t=3022
+R001 t=3023 which=0010 mx=319 my=239 bs=0 br=0 msg=20,0,0,1,81,83,376,274
+D001.0 list 81,83,376,274 draw 81,83,376,274
+R002 t=3811 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R003 t=5239 which=0010 mx=468 my=260 bs=0 br=0 msg=26,1,0,1,1000,60,400,320
+V003 wind_set(VSLIDE,1000)=1
+R004 t=5503 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R005 t=6031 which=0010 mx=468 my=250 bs=0 br=0 msg=26,1,0,1,1000,60,400,320
+V005 wind_set(VSLIDE,1000)=1
+R006 t=6195 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R007 t=6411 which=0010 mx=468 my=334 bs=1 br=0 msg=24,1,0,1,1,0,0,0
+V007 wind_set(VSLIDE,750)=1
+X7425 7417 more equal WM_ARROWED, last t=6571 msg[1]=1, position now v 1000 h 500
+R7425 t=6735 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R7426 t=8324 which=0010 mx=308 my=368 bs=0 br=0 msg=25,1,0,1,1000,60,400,320
+V7426 wind_set(HSLIDE,1000)=1
+R7427 t=8587 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R7428 t=9122 which=0010 mx=298 my=368 bs=0 br=0 msg=25,1,0,1,1000,60,400,320
+V7428 wind_set(HSLIDE,1000)=1
+R7429 t=9287 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R7430 t=9661 which=0010 mx=433 my=368 bs=0 br=0 msg=25,1,0,1,0,60,400,320
+V7430 wind_set(HSLIDE,0)=1
+R7431 t=9827 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R7432 t=11253 which=0010 mx=468 my=260 bs=0 br=0 msg=26,1,0,1,753,60,400,320
+V7432 wind_set(VSLIDE,753)=1
+R7433 t=11519 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R7434 t=12043 which=0010 mx=468 my=250 bs=0 br=0 msg=26,1,0,1,691,60,400,320
+V7434 wind_set(VSLIDE,691)=1
+R7435 t=12207 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R7436 t=12423 which=0010 mx=468 my=140 bs=1 br=0 msg=24,1,0,1,0,0,0,0
+V7436 wind_set(VSLIDE,250)=1
+X14788 7351 more equal WM_ARROWED, last t=12581 msg[1]=1, position now v 1 h 500
+R14788 t=12747 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R14789 t=12959 which=0010 mx=468 my=300 bs=1 br=0 msg=24,1,0,1,1,0,0,0
+V14789 wind_set(VSLIDE,750)=1
+X22282 7492 more equal WM_ARROWED, last t=13118 msg[1]=1, position now v 1000 h 500
+R22282 t=13283 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R22283 t=14871 which=0010 mx=308 my=368 bs=0 br=0 msg=25,1,0,1,675,60,400,320
+V22283 wind_set(HSLIDE,675)=1
+R22284 t=15135 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R22285 t=15669 which=0010 mx=298 my=368 bs=0 br=0 msg=25,1,0,1,632,60,400,320
+V22285 wind_set(HSLIDE,632)=1
+R22286 t=15835 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R22287 t=16047 which=0010 mx=150 my=368 bs=1 br=0 msg=24,1,0,1,4,0,0,0
+V22287 wind_set(HSLIDE,250)=1
+X29710 7422 more equal WM_ARROWED, last t=16206 msg[1]=1, position now v 500 h 1
+R29710 t=16371 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R29711 t=16587 which=0010 mx=390 my=368 bs=1 br=0 msg=24,1,0,1,5,0,0,0
+V29711 wind_set(HSLIDE,750)=1
+X37066 7354 more equal WM_ARROWED, last t=16744 msg[1]=1, position now v 500 h 1000
+R37066 t=16911 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R37067 t=18337 which=0010 mx=468 my=259 bs=0 br=0 msg=26,1,0,1,697,60,400,320
+V37067 wind_set(VSLIDE,697)=1
+R37068 t=18603 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R37069 t=19127 which=0010 mx=468 my=249 bs=0 br=0 msg=26,1,0,1,649,60,400,320
+V37069 wind_set(VSLIDE,649)=1
+R37070 t=19291 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
++ for T in base head
++ tosdump/probes/run-shprobe.sh newtos measurements/measurement-2026-11-06-v33-test/runs/newtos-shprobe-head /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/kernel-sh-head.img
+qemu-system-aarch64: terminating on signal 15 from pid 97324 (<unknown process>)
+shprobe run, side newtos  (2026-11-06T11:50:45Z)
+tree      877a14b90142f5c3ba2dec585dccc28c43b7c6da 1 dirty paths in the tree
+source    shprobe.c 98acd6fcb7207108dca3984687a7e59e03299074a510af45f1e7fc88bf74f9ca shprobe-shots.txt 22006f628741cbf8e192abd225e02e82a7b19754e3dd8c90a0c1fcbb74fa8d98 shprobe-clock.txt 7e7592eb2d0c99801754bc686655ad43f26c2ca2085579aae8990ca3de0774f3
+probes    SHPROBE.PRG c4fe47ec4fda621714cacae7ada42d7b8ed53c8868bb6612fc77973f408776d7 SHPROBE.NAP 11abc76b121ad15de79d27073c8563da11c128b8b7690002e0761e744334f832
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    b00c7b8900d370ad9529dbd5b8c3fc853a2b231466850727fc7bc243dc9b56dd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/kernel-sh-head.img
+card      2be83673c6e5faa01b5641d1da034d2a13b47c721ea5e2e23f348c19e6e232c1 (tools/mkcard.sh)
+qemu      done, 12 shots
+card      after 0598162c2350394dbbc5c4e9936497dc9e9174fb2deff62c538a73b9e2573517 (the booted clone)
+H00 graf_handle 8 16 19 19
+T00 t0=3021
+Y0 state 0 at t=3022 (+1)
+C0 wind_create(0fef)=1
+O0 wind_open(20,40,300,250)=1
+G0.1 work 21,63,276,204 curr 20,40,300,250
+W1.00 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.01 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.02 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.03 WF_COLOR=1 t=11a1 b=1101 WF_DCOLOR=1 t=11a1 b=1101
+W1.04 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.05 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.06 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.07 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.08 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.09 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.10 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.11 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.12 WF_COLOR=1 t=1111 b=1111 WF_DCOLOR=1 t=1111 b=1111
+W1.13 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.14 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.15 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.16 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W1.17 WF_COLOR=1 t=1111 b=1111 WF_DCOLOR=1 t=1111 b=1111
+W1.18 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+Y0 top=1
+D001.0 w1 damage 21,63,276,204 list 21,63,276,204
+K00 t=3721 (+700)
+K01 t=4421 (+1400)
+Y1 state 1 at t=4621 (+1600)
+C1 wind_create(0fef)=2
+O1 wind_open(340,120,280,300)=1
+G1.1 work 341,143,256,254 curr 340,120,280,300
+W2.00 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.01 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.02 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.03 WF_COLOR=1 t=11a1 b=1101 WF_DCOLOR=1 t=11a1 b=1101
+W2.04 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.05 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.06 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.07 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.08 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.09 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.10 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.11 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.12 WF_COLOR=1 t=1111 b=1111 WF_DCOLOR=1 t=1111 b=1111
+W2.13 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.14 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.15 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.16 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+W2.17 WF_COLOR=1 t=1111 b=1111 WF_DCOLOR=1 t=1111 b=1111
+W2.18 WF_COLOR=1 t=1101 b=1101 WF_DCOLOR=1 t=1101 b=1101
+Y1 top=2
+D002.0 w2 damage 341,143,256,254 list 341,143,256,254
+K02 t=5321 (+2300)
+K03 t=6021 (+3000)
+Y2 state 2 at t=6221 (+3200)
+Y2 wind_set(W1,WF_TOP)=1
+Y2 top=1
+K04 t=6921 (+3900)
+K05 t=7621 (+4600)
+Y3 state 3 at t=7821 (+4800)
+Y3 wind_set(W2,WF_CURRXYWH)=1
+G1.1 work 201,173,276,194 curr 200,150,300,240
+Y3 top=1
+D003.0 w1 damage 200,120,122,172 list 21,63,276,204
+D004.0 w2 damage 200,150,302,242 list 322,173,155,119
+D004.1 w2 damage 200,150,302,242 list 201,292,276,75
+K06 t=8521 (+5500)
+K07 t=9224 (+6203)
+Y4 state 4 at t=9421 (+6400)
+Y4 wind_set(W2,WF_TOP)=1
+Y4 top=2
+D005.0 w2 damage 200,150,302,242 list 201,173,276,194
+K08 t=10121 (+7100)
+K09 t=10821 (+7800)
+Y5 state 5 at t=11021 (+8000)
+Y5 wind_set(W1,WF_COLOR,W_BOX,2101,2101)=1 readback 2101 2101
+Y5 wind_set(W2,WF_COLOR,W_BOX,2101,2101)=1 readback 2101 2101
+Y5 top=2
++ tosdump/probes/run-shprobe.sh newtos-desk measurements/measurement-2026-11-06-v33-test/runs/newtos-desk-head /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/head/target/aarch64-unknown-none-softfloat/release/kernel8.img
+qemu-system-aarch64: terminating on signal 15 from pid 97597 (<unknown process>)
+shprobe run, side newtos-desk  (2026-11-06T11:51:56Z)
+tree      877a14b90142f5c3ba2dec585dccc28c43b7c6da 1 dirty paths in the tree
+source    shprobe.c 98acd6fcb7207108dca3984687a7e59e03299074a510af45f1e7fc88bf74f9ca shprobe-shots.txt 22006f628741cbf8e192abd225e02e82a7b19754e3dd8c90a0c1fcbb74fa8d98 shprobe-clock.txt 7e7592eb2d0c99801754bc686655ad43f26c2ca2085579aae8990ca3de0774f3
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    3dbd1f29390936da37e343076bbd68babb71e435865675545640d82924928859 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/head/target/aarch64-unknown-none-softfloat/release/kernel8.img
+card      07ebc2ffd3e9ce32dde6599db323f8b1be1f9bdaafea1a7670823f9e4e3dcfbf (tools/mkcard.sh)
+qemu      done, 2 shots
+card      after 07ebc2ffd3e9ce32dde6599db323f8b1be1f9bdaafea1a7670823f9e4e3dcfbf (the booted clone)
++ tosdump/probes/run-slprobe.sh newtos measurements/measurement-2026-11-06-v33-test/runs/newtos-slprobe-head /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v33t/kernel-sl-head.img
+qemu-system-aarch64: terminating on signal 15 from pid 97762 (<unknown process>)
+H00 graf_handle 8 16 19 19
+C00 wind_create(0fef)=1
+O00 wind_open=1
+G00 curr 80,60,400,320
+G01 work 81,83,376,274
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+T00 t=3022
+R001 t=3023 which=0010 mx=319 my=239 bs=0 br=0 msg=20,0,0,1,81,83,376,274
+D001.0 list 81,83,376,274 draw 81,83,376,274
+R002 t=3811 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R003 t=5240 which=0010 mx=468 my=260 bs=0 br=0 msg=26,1,0,1,1000,60,400,320
+V003 wind_set(VSLIDE,1000)=1
+R004 t=5507 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R005 t=6032 which=0010 mx=468 my=250 bs=0 br=0 msg=26,1,0,1,1000,60,400,320
+V005 wind_set(VSLIDE,1000)=1
+R006 t=6199 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R007 t=6411 which=0010 mx=468 my=334 bs=1 br=0 msg=24,1,0,1,1,0,0,0
+V007 wind_set(VSLIDE,750)=1
+X7983 7975 more equal WM_ARROWED, last t=6571 msg[1]=1, position now v 1000 h 500
+R7983 t=6739 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R7984 t=8325 which=0010 mx=308 my=368 bs=0 br=0 msg=25,1,0,1,1000,60,400,320
+V7984 wind_set(HSLIDE,1000)=1
+R7985 t=8591 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R7986 t=9123 which=0010 mx=298 my=368 bs=0 br=0 msg=25,1,0,1,1000,60,400,320
+V7986 wind_set(HSLIDE,1000)=1
+R7987 t=9287 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R7988 t=9662 which=0010 mx=433 my=368 bs=0 br=0 msg=25,1,0,1,0,60,400,320
+V7988 wind_set(HSLIDE,0)=1
+R7989 t=9827 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R7990 t=11254 which=0010 mx=468 my=260 bs=0 br=0 msg=26,1,0,1,753,60,400,320
+V7990 wind_set(VSLIDE,753)=1
+R7991 t=11519 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R7992 t=12044 which=0010 mx=468 my=250 bs=0 br=0 msg=26,1,0,1,691,60,400,320
+V7992 wind_set(VSLIDE,691)=1
+R7993 t=12207 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R7994 t=12424 which=0010 mx=468 my=140 bs=1 br=0 msg=24,1,0,1,0,0,0,0
+V7994 wind_set(VSLIDE,250)=1
+X15893 7898 more equal WM_ARROWED, last t=12581 msg[1]=1, position now v 1 h 500
+R15893 t=12747 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R15894 t=12959 which=0010 mx=468 my=300 bs=1 br=0 msg=24,1,0,1,1,0,0,0
+V15894 wind_set(VSLIDE,750)=1
+X23922 8027 more equal WM_ARROWED, last t=13120 msg[1]=1, position now v 1000 h 500
+R23922 t=13283 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R23923 t=14872 which=0010 mx=308 my=368 bs=0 br=0 msg=25,1,0,1,675,60,400,320
+V23923 wind_set(HSLIDE,675)=1
+R23924 t=15135 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R23925 t=15670 which=0010 mx=298 my=368 bs=0 br=0 msg=25,1,0,1,632,60,400,320
+V23925 wind_set(HSLIDE,632)=1
+R23926 t=15835 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R23927 t=16047 which=0010 mx=150 my=368 bs=1 br=0 msg=24,1,0,1,4,0,0,0
+V23927 wind_set(HSLIDE,250)=1
+X31926 7998 more equal WM_ARROWED, last t=16207 msg[1]=1, position now v 500 h 1
+R31926 t=16371 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R31927 t=16587 which=0010 mx=390 my=368 bs=1 br=0 msg=24,1,0,1,5,0,0,0
+V31927 wind_set(HSLIDE,750)=1
+X39929 8001 more equal WM_ARROWED, last t=16745 msg[1]=1, position now v 500 h 1000
+R39929 t=16911 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R39930 t=18338 which=0010 mx=468 my=259 bs=0 br=0 msg=26,1,0,1,697,60,400,320
+V39930 wind_set(VSLIDE,697)=1
+R39931 t=18603 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R39932 t=19128 which=0010 mx=468 my=249 bs=0 br=0 msg=26,1,0,1,649,60,400,320
+V39932 wind_set(VSLIDE,649)=1
+R39933 t=19291 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
++ echo finished
+finished
+qemu-system-aarch64: terminating on signal 15 from pid 98199 (<unknown process>)
+H00 graf_handle 8 16 19 19
+C00 wind_create(0fef)=1
+O00 wind_open=1
+G00 curr 80,60,400,320
+G01 work 81,83,376,274
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+T00 t=3022
+R001 t=3023 which=0010 mx=319 my=239 bs=0 br=0 msg=20,0,0,1,81,83,376,274
+D001.0 list 81,83,376,274 draw 81,83,376,274
+R002 t=3811 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R003 t=5239 which=0010 mx=468 my=260 bs=0 br=0 msg=26,1,0,1,1000,60,400,320
+V003 wind_set(VSLIDE,1000)=1
+R004 t=5503 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R005 t=6031 which=0010 mx=468 my=250 bs=0 br=0 msg=26,1,0,1,1000,60,400,320
+V005 wind_set(VSLIDE,1000)=1
+R006 t=6195 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R007 t=6411 which=0010 mx=468 my=334 bs=1 br=0 msg=24,1,0,1,1,0,0,0
+V007 wind_set(VSLIDE,750)=1
+X7393 7385 more equal WM_ARROWED, last t=6571 msg[1]=1, position now v 1000 h 500
+R7393 t=6735 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R7394 t=8324 which=0010 mx=308 my=368 bs=0 br=0 msg=25,1,0,1,1000,60,400,320
+V7394 wind_set(HSLIDE,1000)=1
+R7395 t=8587 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R7396 t=9122 which=0010 mx=298 my=368 bs=0 br=0 msg=25,1,0,1,1000,60,400,320
+V7396 wind_set(HSLIDE,1000)=1
+R7397 t=9287 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R7398 t=9661 which=0010 mx=433 my=368 bs=0 br=0 msg=25,1,0,1,0,60,400,320
+V7398 wind_set(HSLIDE,0)=1
+R7399 t=9827 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R7400 t=11253 which=0010 mx=468 my=260 bs=0 br=0 msg=26,1,0,1,753,60,400,320
+V7400 wind_set(VSLIDE,753)=1
+R7401 t=11519 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R7402 t=12043 which=0010 mx=468 my=250 bs=0 br=0 msg=26,1,0,1,691,60,400,320
+V7402 wind_set(VSLIDE,691)=1
+R7403 t=12207 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R7404 t=12424 which=0010 mx=468 my=140 bs=1 br=0 msg=24,1,0,1,0,0,0,0
+V7404 wind_set(VSLIDE,250)=1
+X14774 7369 more equal WM_ARROWED, last t=12581 msg[1]=1, position now v 1 h 500
+R14774 t=12747 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R14775 t=12959 which=0010 mx=468 my=300 bs=1 br=0 msg=24,1,0,1,1,0,0,0
+V14775 wind_set(VSLIDE,750)=1
+X22239 7463 more equal WM_ARROWED, last t=13118 msg[1]=1, position now v 1000 h 500
+R22239 t=13283 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R22240 t=14871 which=0010 mx=308 my=368 bs=0 br=0 msg=25,1,0,1,675,60,400,320
+V22240 wind_set(HSLIDE,675)=1
+R22241 t=15135 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R22242 t=15669 which=0010 mx=298 my=368 bs=0 br=0 msg=25,1,0,1,632,60,400,320
+V22242 wind_set(HSLIDE,632)=1
+R22243 t=15835 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R22244 t=16047 which=0010 mx=150 my=368 bs=1 br=0 msg=24,1,0,1,4,0,0,0
+V22244 wind_set(HSLIDE,250)=1
+X29679 7434 more equal WM_ARROWED, last t=16207 msg[1]=1, position now v 500 h 1
+R29679 t=16371 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R29680 t=16587 which=0010 mx=390 my=368 bs=1 br=0 msg=24,1,0,1,5,0,0,0
+V29680 wind_set(HSLIDE,750)=1
+X37080 7399 more equal WM_ARROWED, last t=16745 msg[1]=1, position now v 500 h 1000
+R37080 t=16911 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R37081 t=18337 which=0010 mx=468 my=259 bs=0 br=0 msg=26,1,0,1,697,60,400,320
+V37081 wind_set(VSLIDE,697)=1
+R37082 t=18603 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R37083 t=19127 which=0010 mx=468 my=249 bs=0 br=0 msg=26,1,0,1,649,60,400,320
+V37083 wind_set(VSLIDE,649)=1
+R37084 t=19291 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+qemu-system-aarch64: terminating on signal 15 from pid 98629 (<unknown process>)
+H00 graf_handle 8 16 19 19
+C00 wind_create(0fef)=1
+O00 wind_open=1
+G00 curr 80,60,400,320
+G01 work 81,83,376,274
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+T00 t=3022
+R001 t=3023 which=0010 mx=319 my=239 bs=0 br=0 msg=20,0,0,1,81,83,376,274
+D001.0 list 81,83,376,274 draw 81,83,376,274
+R002 t=3811 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R003 t=5239 which=0010 mx=468 my=260 bs=0 br=0 msg=26,1,0,1,1000,60,400,320
+V003 wind_set(VSLIDE,1000)=1
+R004 t=5503 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R005 t=6031 which=0010 mx=468 my=250 bs=0 br=0 msg=26,1,0,1,1000,60,400,320
+V005 wind_set(VSLIDE,1000)=1
+R006 t=6195 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R007 t=6411 which=0010 mx=468 my=334 bs=1 br=0 msg=24,1,0,1,1,0,0,0
+V007 wind_set(VSLIDE,750)=1
+X7793 7785 more equal WM_ARROWED, last t=6571 msg[1]=1, position now v 1000 h 500
+R7793 t=6735 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R7794 t=8324 which=0010 mx=308 my=368 bs=0 br=0 msg=25,1,0,1,1000,60,400,320
+V7794 wind_set(HSLIDE,1000)=1
+R7795 t=8587 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R7796 t=9122 which=0010 mx=298 my=368 bs=0 br=0 msg=25,1,0,1,1000,60,400,320
+V7796 wind_set(HSLIDE,1000)=1
+R7797 t=9287 which=0002 mx=120 my=200 bs=1 br=1
+P0 size 1000 pos 500 readback vslsiz 1000 hslsiz 1000 vslide 500 hslide 500
+R7798 t=9661 which=0010 mx=433 my=368 bs=0 br=0 msg=25,1,0,1,0,60,400,320
+V7798 wind_set(HSLIDE,0)=1
+R7799 t=9827 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R7800 t=11253 which=0010 mx=468 my=260 bs=0 br=0 msg=26,1,0,1,753,60,400,320
+V7800 wind_set(VSLIDE,753)=1
+R7801 t=11519 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R7802 t=12043 which=0010 mx=468 my=250 bs=0 br=0 msg=26,1,0,1,691,60,400,320
+V7802 wind_set(VSLIDE,691)=1
+R7803 t=12207 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R7804 t=12423 which=0010 mx=468 my=140 bs=1 br=0 msg=24,1,0,1,0,0,0,0
+V7804 wind_set(VSLIDE,250)=1
+X15463 7658 more equal WM_ARROWED, last t=12581 msg[1]=1, position now v 1 h 500
+R15463 t=12747 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R15464 t=12959 which=0010 mx=468 my=300 bs=1 br=0 msg=24,1,0,1,1,0,0,0
+V15464 wind_set(VSLIDE,750)=1
+X23303 7838 more equal WM_ARROWED, last t=13119 msg[1]=1, position now v 1000 h 500
+R23303 t=13283 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R23304 t=14871 which=0010 mx=308 my=368 bs=0 br=0 msg=25,1,0,1,675,60,400,320
+V23304 wind_set(HSLIDE,675)=1
+R23305 t=15135 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R23306 t=15669 which=0010 mx=298 my=368 bs=0 br=0 msg=25,1,0,1,632,60,400,320
+V23306 wind_set(HSLIDE,632)=1
+R23307 t=15835 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R23308 t=16047 which=0010 mx=150 my=368 bs=1 br=0 msg=24,1,0,1,4,0,0,0
+V23308 wind_set(HSLIDE,250)=1
+X31127 7818 more equal WM_ARROWED, last t=16207 msg[1]=1, position now v 500 h 1
+R31127 t=16371 which=0002 mx=220 my=200 bs=1 br=1
+P1 size 300 pos 500 readback vslsiz 300 hslsiz 300 vslide 500 hslide 500
+R31128 t=16587 which=0010 mx=390 my=368 bs=1 br=0 msg=24,1,0,1,5,0,0,0
+V31128 wind_set(HSLIDE,750)=1
+X38672 7543 more equal WM_ARROWED, last t=16745 msg[1]=1, position now v 500 h 1000
+R38672 t=16911 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R38673 t=18337 which=0010 mx=468 my=259 bs=0 br=0 msg=26,1,0,1,697,60,400,320
+V38673 wind_set(VSLIDE,697)=1
+R38674 t=18603 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+R38675 t=19127 which=0010 mx=468 my=249 bs=0 br=0 msg=26,1,0,1,649,60,400,320
+V38675 wind_set(VSLIDE,649)=1
+R38676 t=19291 which=0002 mx=310 my=200 bs=1 br=1
+P2 size -1 pos 500 readback vslsiz -1 hslsiz -1 vslide 500 hslide 500
+finished
+qemu-system-aarch64: terminating on signal 15 from pid 338 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 2052 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 2839 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 3619 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 4436 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 5365 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+finished
+qemu-system-aarch64: terminating on signal 15 from pid 6151 (<unknown process>)
+kernel 3dbd1f29390936da37e343076bbd68babb71e435865675545640d82924928859 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra []
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 9970 (<unknown process>)
+kernel a01bc077e893b2c25121a086e53995627de5a2f58062bebe60f96e3004aff173 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra []
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 10532 (<unknown process>)
+kernel 3dbd1f29390936da37e343076bbd68babb71e435865675545640d82924928859 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra [-global bcm2835-fb.yres=240]
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 10761 (<unknown process>)
+kernel a01bc077e893b2c25121a086e53995627de5a2f58062bebe60f96e3004aff173 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra [-global bcm2835-fb.yres=240]
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 10933 (<unknown process>)
+kernel 3dbd1f29390936da37e343076bbd68babb71e435865675545640d82924928859 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 11307 (<unknown process>)
+kernel a01bc077e893b2c25121a086e53995627de5a2f58062bebe60f96e3004aff173 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+exception-panic-lines 0
+finished
+ALLFINISHED

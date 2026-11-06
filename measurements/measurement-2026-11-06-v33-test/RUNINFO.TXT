@@ -1,0 +1,65 @@
+V33 acceptance -- TASK/V33.md (877a14b9, vst_load_fonts/vst_unload_fonts GDOS font chain; base 587ddbd5) by the tester.
+Date 2026-11-06. No product code touched; nothing committed; no SD card, no Pi, no push. Main tree clean (git status: only this run dir untracked).
+New test code outside product: method/txbench/txbench.c (scratch timing probe, item 8), method/case-prefix-cmp.py. Other scripts = copies of
+measurements/measurement-2026-11-06-v30-test/method with paths/commits changed (sed). tosdump/build/VDPROBE.* rebuilt in the main tree (gitignored).
+
+TREES / KERNELS  head = git archive 877a14b9, base = git archive 587ddbd5, fresh scratch trees (references/ linked), scratch under the session scratchpad.
+  rpi4 release kernel8.img (serial=on via -append): head 3dbd1f29390936da37e343076bbd68babb71e435865675545640d82924928859 (1509608 B),
+  base a01bc077e893b2c25121a086e53995627de5a2f58062bebe60f96e3004aff173 (1493192 B = V30 head kernel; 587ddbd5 changed tests only).
+  Head is 16416 B larger (GlyphStore .bss lies in the image) -> the load address of later objects moves; see item 5.
+  qemu-virt: fresh tree 877a14b9, cargo xtask build --board qemu-virt rc 0 (method/build-virt.log), dev profile.
+  host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) -- host_clang line of all 64 card.img.manifest files under runs/ and probe/.
+  optional_missing, verbatim, in ALL 64 manifests: optional_missing none
+  Oracle: pinned EmuTOS 1a7484ab, tosdump/reference BINs, Hatari falcontc (probe e1 measured anew here). QEMU raspi4b, APFS clone per run (scripts remove it).
+  Desktop file set: 40 files LONGNM01..40.TXT, 7 bytes each, recreated by me (content "NewTOS\n"; V30 had a different 7-byte content, same names/sizes);
+  identical on base and head, so the comparison is unaffected, not byte-comparable to V30 images.
+
+RESULTS
+ 1 PASS  cargo xtask test (main tree, rc 0): 2190 passed / 0 failed / 1 ignored (193 "test result" lines) = developer's numbers. analysis/cargo-xtask-test.txt.
+         sdk/run-host-tests.sh: 35 passed, 0 failed, 0 skipped, rc 0. analysis/sdk-host-tests.txt.
+ 2 PASS  rpi4 release builds head+base rc 0; every BOOT-SERIAL of the 22 tosdump runs + desk/bc/probe runs: 0 exception/panic lines; desktop reached on
+         desk-head/desk-base ("desktop up"). qemu-virt (head, headless 100 s): "[desk] desktop up (0 drives)", 0 exception/panic (runs/boot-virt-head/serial.txt).
+         clippy (analysis/clippy-{head,base}.txt): rpi4 kernel 121 warnings both, tos-api 73 both -> delta 0. clippy for qemu-virt: build script of kernel exits 101
+         (embed.rs) in the scratch tree, head AND base alike -> NOT measured. Build warnings qemu-virt dev: 64 tos-api / 93 kernel.
+ 3 PASS  vdi-v18-t2: head 4 of 32 (50, 54, 86, 90), base also 4 of 32 (same, V30 fix already in base). vdi-all 0/182 both. Also (head=base): vdi-v18 0/19, vdi-r3 5/38,
+         v18t2-raster 6/26, vdi-raster 1/59, raster-screen 0/62, v18-raster 0/17. All VDI.BIN and RASTER.BIN base==head byte for byte (analysis/cmp-bins.txt).
+ 4 PASS  vdprobe 412 cases, e1 measured anew; e1 BIN 4662c03f... and n-head BIN 7168fb02... = developer's hashes. head 22 differ vs oracle, base 46; n-head == n-head-2 (BIN cmp equal).
+         Head differing list: K5D, T14E, T14K, TPA TPB TPC TPD, TUE TUEw TVF TVG TVH TVI TWA, TVK, TVO TVP, TVU TVUw, TVZ (all unchanged known) + TXIs, TXQ (new, skew replace mode).
+         Equal on base, different on head: NONE. Fixed vs base (24): T13A TXB TXC TXC2 TXD TXG TXH2 TXI TXIb TXIo TXIu TXJ TXK TXK2 TXL TXM TXO TXQ3 TXR1 TXR2 TXR3 TXS1 TXS2 TXS3
+         (these are the V33 text cases; on base the loaded font is ignored). T13B equal on both.
+         Old records: by case name, V30-test n-head vs this n-head, the 385 common cases: exactly ONE differs, T13A (the V33 target); e1 385 cases: 0 differ
+         (analysis/probe-v30-vs-v33-bycase.txt). LOG e1 vs n-head: lines 343, 345 (TPC/TPD, V35), 361-362 (T18A, V34), 583-585 (TXZ, on purpose); T13A/T13B log lines equal.
+ 5 PASS (one stated address-word class)  AES.BIN base!=head in r2 (156 B), r3 (78 B), r4 (362 B); ALL differing bytes are ONE 4-byte word per record (78/39/181 words =
+         case count): 0x001bda50 (base) -> 0x001c1a50 (head), identical pair in every record, delta +0x4000, an address cell (EL0 address < 0x80000000, tosdiff
+         address check ok); tosdiff base vs head with the case tables: 0 of 78 / 39 / 181 cases differ (analysis/aes-r*-base-vs-head.txt). Vs oracle aes-r2 78/78, aes-r3 39/39
+         differ on both alike (tosdump log). shprobe 12/12 and shprobe-desktop 2/2 PNG byte-identical; desktop+IKBD injector 11/11 identical at 640x480, 1920x1080, 640x240
+         (analysis/shots-base-vs-head.txt). slprobe 155 shots x 4 runs: 5-6 shots differ between all pairs, between SAME-kernel runs too (base/base 6, head/head 5);
+         the set is the V30 noise set (121, 152, 44, 67, 98, + 94): held1 mid-gesture frames; head-run1 vs base-run2 differ in 1. Classified noise, not looked at pixel by pixel.
+ 6 PASS  boot screen + AUTO console (APITEST.NCP) 6 shots each: 640x480 6/6 and 640x240 6/6 byte-identical base vs head; 1920x1080 5/6, 02-t018 differs (console
+         scroll position); same-kernel repeat differs in 02-t018 too (analysis/bc1080-repeat.txt: base/base, head/head, base/head all differ in 02-t018 only).
+         Viewed runs/bc480-head/shots/00-t006.png: boot screen text complete, no wrap/garbling.
+ 7 PASS  from the vdprobe grabs (render 3-4x, E | head | base; analysis/shots/*.png): loaded noise-font cases T13A, TXB, TXI/TXIb/TXIo/TXIu, TXD, TXM, TXC2, TXK, TXL, TXR1
+         head == EmuTOS pixel pattern; base shows the system font "AB@_/ABC HELLO" (font ignored). T13B all three the same. Effects (bold TXIb, outline TXIo, underline TXIu,
+         rotation TXR1, double TXK) visually equal to EmuTOS. Open: TXQ (skew, replace mode, 8x16 system font): head AND base show glyph strokes cut off ("ALL L_ ALLLO" for
+         "ABC @_ HELLO", the next cell's rectangle erases the lean of the previous glyph); EmuTOS draws full glyphs in a parallelogram. This is the developer's side finding
+         (TXQ/TXIs), but it is visible damage of the text, not only a background tint, and base is equally wrong (not a regression). TXQ2 (transparent skew) equal.
+ 8 MEASURED (QEMU TCG, not Pi timing)  txbench: v_gtext, system font 8x16, 76 chars/call, 2000 calls, time = _hz_200 via Supexec, release kernels, same mode, 6 runs per kernel
+         interleaved (runs/txbench-*, analysis/txbench-summary.txt). Host load varied (base 85..123 ticks), so quiet-host minima:
+         plain clip off 85-87 (base) vs 113-116 ticks (head) = x1.31-1.33; plain clip on 86 vs 115 = x1.34; bold 86 vs 134 = x1.56; light+skew(1000 calls) 71-72 vs 86-87 = x1.21;
+         9-char strings (10000 calls) 57-58 vs 73-74 = x1.27. 1 tick = 5 ms; base ~2.8 us/glyph, head ~3.7 us/glyph in QEMU. Head is consistently slower in every
+         pair, also under noise (head 113..170 vs base 85..123). Pi timing not known.
+ 9 PARTIAL  binaries: ELF scan of sdk/, programs/, tosdump/build (693 ELF files): the symbol vst_load_fonts is linked into QED.NAP, DESKTOP.NAP (TeraDesk), HYP_VIEW.NAP, ZVIEW.NAP,
+         LDGDEMO.NAP, cftest.NCP (all built 2026-10-29/11-04, i.e. BEFORE the V33 gemlib overlay of 2026-11-06 = old binding with the CONTRL[10] clear) and VDPROBE.NAP (new).
+         Call sites in source: cflib appinit.c/fontsel.c/userdef.c only with gl_gdos (= vq_vgdos() != -2; docs/COMPATIBILITY.md says NewTOS returns -2); QED global.c only with
+         gl_gdos, but QED prn_cfg.c:78 calls vst_load_fonts(prn->handle) UNGATED after opening a printer workstation (printer setup dialog only); TeraDesk unload only if
+         vq_gdos()!=0; HighWire has_fsm_gdos (no HighWire binary present). No app in the set calls it at start or from the desktop autorun. I did NOT drive any of these
+         (vq_vgdos returning -2 on head not measured by me either, only read in COMPATIBILITY); no app was started, because none reaches the path without GDOS or a printer dialog.
+10 PASS/PARTIAL  deps --up rerun on the head tree (deps/*.txt): vst_font, vst_load_fonts, vst_unload_fonts, vst_point, vqt_name, vqt_width, trnsfont: 100% mapped, 0 unmapped.
+         output_text, text_blt, vst_height: vdi 0 unmapped ("complete: yes"); aes 1 unmapped (eralert -> fm_show), desk layer 130 unmapped (NEWDESK in programs/desktop not mapped),
+         bios linea_0/int_linea and aes aestrap/retake/set_aestrap/giveerr/takeerr = design. Not driven: desk layer callers, eralert; no AES draw path to the changed code is
+         reached by the tables (AES draws by draw_glyph_sized directly per developer; my AES run shows no change, which does not prove unreachability).
+
+NOT DRIVEN / OPEN
+  Real Pi4/HDMI, cache-sensitive rendering: nothing. ILP32 chain layout: no ILP32 process. A second process reading a live chain: not driven. Any old-binding app that
+  really calls vst_load_fonts (QED printer setup): not driven. qemu-virt clippy and qemu-virt interactive input: not driven (virt: boot to desktop only). QMP full-desktop
+  screendump with a loaded font: none exists (no app loads fonts); text checks are probe grabs. Timing on a Pi: not measured.

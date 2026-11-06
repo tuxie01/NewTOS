@@ -1,0 +1,3 @@
+kernel  nap 66975b99ce25148e807f786cc33e2237e425dac7590038e3bec1917f927b4227
+qemu qemu-exited
+no LOG

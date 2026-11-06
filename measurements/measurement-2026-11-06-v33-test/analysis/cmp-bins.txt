@@ -1,0 +1,11 @@
+t2-v18t2 VDI.BIN base==head
+t4-v18 VDI.BIN base==head
+t4-all VDI.BIN base==head
+t4-vdi-r3 VDI.BIN base==head
+t2-v18t2-raster RASTER.BIN base==head
+t4-raster RASTER.BIN base==head
+t4-raster-screen RASTER.BIN base==head
+t4-v18-raster RASTER.BIN base==head
+t5-r2 AES.BIN base!=head (     156 bytes)
+t5-r3 AES.BIN base!=head (      78 bytes)
+t5-r4 AES.BIN base!=head (     362 bytes)

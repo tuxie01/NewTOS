@@ -1,0 +1,6 @@
+newtos-slprobe-base vs newtos-slprobe-head: 155 shots, 5 differ: 121-121-min-V-pagelo-held1.png 152-152-min-H-pagehi-held1.png 44-044-1000-H-pagehi-held1.png 67-067-300-V-pagelo-held1.png 98-098-300-H-pagehi-held1.png
+newtos-slprobe-base vs newtos-slprobe2-base: 155 shots, 6 differ: 121-121-min-V-pagelo-held1.png 152-152-min-H-pagehi-held1.png 44-044-1000-H-pagehi-held1.png 67-067-300-V-pagelo-held1.png 94-094-300-H-pagelo-held1.png 98-098-300-H-pagehi-held1.png
+newtos-slprobe-head vs newtos-slprobe2-head: 155 shots, 5 differ: 121-121-min-V-pagelo-held1.png 152-152-min-H-pagehi-held1.png 44-044-1000-H-pagehi-held1.png 67-067-300-V-pagelo-held1.png 98-098-300-H-pagehi-held1.png
+newtos-slprobe2-base vs newtos-slprobe2-head: 155 shots, 6 differ: 121-121-min-V-pagelo-held1.png 152-152-min-H-pagehi-held1.png 44-044-1000-H-pagehi-held1.png 67-067-300-V-pagelo-held1.png 94-094-300-H-pagelo-held1.png 98-098-300-H-pagehi-held1.png
+newtos-slprobe-base vs newtos-slprobe2-head: 155 shots, 4 differ: 121-121-min-V-pagelo-held1.png 152-152-min-H-pagehi-held1.png 67-067-300-V-pagelo-held1.png 98-098-300-H-pagehi-held1.png
+newtos-slprobe-head vs newtos-slprobe2-base: 155 shots, 1 differ: 94-094-300-H-pagelo-held1.png

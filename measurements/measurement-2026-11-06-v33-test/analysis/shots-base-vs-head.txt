@@ -1,0 +1,8 @@
+newtos-shprobe: 12 shots, 0 differ:
+newtos-desk: 2 shots, 0 differ:
+desk: 11 shots, 0 differ:
+desk1080: 11 shots, 0 differ:
+desk240: 11 shots, 0 differ:
+bc480: 6 shots, 0 differ:
+bc240: 6 shots, 0 differ:
+bc1080: 6 shots, 1 differ: 02-t018.png
