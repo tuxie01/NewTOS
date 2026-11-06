@@ -164,7 +164,13 @@ impl MemBackend {
     /// [`RasterBackend::get_device_pixel`] / `device_to_rgb565`. Used by the
     /// `v_get_pixel` substitute check so that the expected value does not come
     /// back out of the same two trait methods the implementation calls.
-    /// Outside the screen it reads 0, as `read_pixel` does.
+    ///
+    /// Addressed as EmuTOS' `pixelread` addresses the screen
+    /// (`vdi/vdi_fill.c:671-681`, `get_start_addr16`,
+    /// `vdi/vdi_inline.h:14-17`): `(x, y)` is the word at index
+    /// `y * SCREEN_W + x` of this 640-pixel-stride store, so an `x` off
+    /// either edge reads the neighbouring row; an index before the first or
+    /// past the last pixel reads 0 (user decision B, TASK/V24).
     ///
     /// **Colour model (V11/V12, 2026-09-21):** the kernel backend's — five
     /// bits per gun, replicated to eight in the 32-bpp store, and the
@@ -178,10 +184,11 @@ impl MemBackend {
     /// agree, and `tos-api/tests/vdi_reference_overlay_bit.rs` pins the
     /// kernel's own expressions.
     pub fn screen_word(&self, x: i16, y: i16) -> u16 {
-        if !Self::inside(x, y) {
+        let idx = y as i64 * SCREEN_W as i64 + x as i64;
+        if !(0..SCREEN_W as i64 * SCREEN_H as i64).contains(&idx) {
             return 0;
         }
-        let v = self.px.lock().unwrap()[Self::idx(x, y)];
+        let v = self.px.lock().unwrap()[idx as usize];
         let (r, g, b) = ((v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF);
         let overlay = if v & 0x8000_0000 != 0 { 0x0020 } else { 0 };
         (((r >> 3) << 11) | ((g >> 3) << 6) | (b >> 3)) as u16 | overlay

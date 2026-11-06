@@ -180,6 +180,13 @@ pub fn vq_color(pb: &Vdipb, vwk: &Vwk, ncol: u16, backend: &dyn RasterBackend) {
 ///   the raw device pixel value, and `INTOUT[1] = REV_MAP_COL[pel]`, the VDI
 ///   pen (`vdi_fill.c:1113-1114`) — identity under NewTOS' folded `MAP_COL`
 ///   ([`VwkExt`](super::vwk::VwkExt)), so both slots carry the PEL.
+///
+/// Off-screen coordinates are not refused: `pixelread` has no bounds check,
+/// so `(640,10)` on a 640-pixel screen reads `(0,11)` and `(-1,11)` reads
+/// `(639,10)` (`vdi-v18.tsv` cases 15/18/21). Only a point outside the
+/// logical screen's store reads 0 (decision B, TASK/V24;
+/// `docs/api/vdi/inquiry/_color-pixel-input.md` § "Coordinates outside the
+/// screen").
 pub fn v_get_pixel(pb: &Vdipb, backend: &dyn RasterBackend) {
     let x = pb.ptsin(0);
     let y = pb.ptsin(1);

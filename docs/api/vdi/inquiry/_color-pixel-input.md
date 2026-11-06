@@ -83,7 +83,40 @@ via `pixelread(x,y)`.
 
 So a palette program gets **both** the raw device value (`INTOUT[0]`)
 **and** the logical VDI pen (`INTOUT[1]`) in one call. No range/error
-return; coordinates outside the screen are the pixel-read path's problem.
+return.
+
+### Coordinates outside the screen
+
+`pixelread` (`vdi_fill.c:671-690`) has no bounds check: it reads the word
+at the screen address of `(x, y)` whatever `(x, y)` is. The truecolor
+address is `v_bas_ad + x*2 + muls(y, v_lin_wr)` (`get_start_addr16`,
+`vdi/vdi_inline.h:14-17`), the planar one `v_bas_ad + ((x & 0xfff0) >>
+v_planes_shift) + muls(y, v_lin_wr)` with the bit `0x8000 >> (x & 0xf)`
+(`get_start_addr`, `vdi/vdi_misc.c:166-177`; `vdi_fill.c:685-689`). Both
+are linear in the screen memory, so an `x` past the right edge reads the
+start of the next row and an `x` left of 0 the end of the previous row:
+pixel `(x, y)` is the pixel at **store index `y * stride + x`**, stride =
+the row length in pixels (`v_lin_wr` / bytes per pixel). Measured on the
+oracle (Falcon truecolor, `tosdump/cases/vdi-v18.tsv`, reference
+`EMUTOS-1a7484ab-VDI-v18-falcontc`): `(640,10)` reads pixel `(0,11)`
+(case 15), `(-1,11)` reads `(639,10)` (case 18), `(700,10)` reads
+`(60,11)` (case 21); case 24 is the on-screen control.
+
+A store index before the first pixel of the logical screen or past its last
+(`height * stride` pixels from `Logbase`) is memory that is not the
+screen; EmuTOS returns whatever word is there. **NewTOS** reads the same
+store index inside the logical screen — the run-on into the neighbouring
+row included, and on a framebuffer whose pitch is wider than the screen the
+padding pixels — and answers **0** outside it: truecolor `INTOUT[0] = 0`,
+`INTOUT[1] = 0`; palette `INTOUT[0] = INTOUT[1] = 0`. User decision B
+(TASK/V18, 2026-11-05), recorded in `docs/COMPATIBILITY.md`. The notion of
+"inside the logical screen" is the one lines with clipping off use
+(`tos-api/src/vdi/line.rs:39@index`, decision A), so a pixel a run-on line
+draws reads back at the same coordinates.
+
+`v_contourfill` reads through the same `pixelread`, but only inside its
+search bounds (the clip rectangle cut to the screen, seed outside → no
+fill, `vdi_fill.c:965-967`), so the off-screen rule never reaches it.
 
 ## `vqin_mode` (115) — inquire input mode
 
@@ -149,6 +182,10 @@ so `vq_key_s` reports *less* than a raw `Kbshift`.
 - **`v_get_pixel`:** at a pixel drawn in pen `p` (device value `pel`),
   `v_get_pixel(x,y)` returns `INTOUT[0]=pel`, `INTOUT[1]=p`
   (`= REV_MAP_COL[pel]`).
+- **`v_get_pixel` off the screen (truecolor, 640×480):** `(640,10)` returns
+  the word of `(0,11)`, `(-1,11)` that of `(639,10)`, `(700,10)` that of
+  `(60,11)`; `(640,479)` and `(-1,0)` — past the last and before the
+  first pixel — return `INTOUT[0..1] = 0, 0`.
 - **`vqin_mode` quirk:** after `vsin_mode(dev=1, mode=2)` (sample),
   `vqin_mode(1)` → `INTOUT[0] = 1` (**not** 2); after `mode=1`
   (request) → `INTOUT[0] = 0`.
@@ -168,6 +205,9 @@ so `vq_key_s` reports *less* than a raw `Kbshift`.
 4. **`v_get_pixel` returns two values** on a palette screen — the raw
    device pixel *and* the VDI pen — but only one (RGB) on truecolor,
    where `INTOUT[0]` is forced to 0 (`vdi_fill.c:1104-1114`).
+6. **`v_get_pixel` has no bounds check** — an off-screen point reads the
+   pixel its linear screen address lands on (`vdi_fill.c:671-690`,
+   `vdi/vdi_inline.h:14-17`); see § "Coordinates outside the screen".
 5. **`vq_key_s` masks to 4 bits** (`& 0x0f`), dropping caps-lock etc.,
    so it is **not** identical to a raw BIOS `Kbshift` (`vdi_input.c:187`).
 

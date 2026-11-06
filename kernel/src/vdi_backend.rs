@@ -823,6 +823,20 @@ impl RasterBackend for VdiScreen {
         unsafe { fb.pixels().add(off).read_volatile() }
     }
 
+    fn get_device_pixel_wrapped(&self, x: i16, y: i16) -> u32 {
+        // EmuTOS' `pixelread` addressing with the framebuffer's own pitch:
+        // the store `abline` runs on in (`LineTarget`, decision A), so a
+        // pixel a run-on line drew — padding included — reads back here.
+        let fb = active_fb();
+        let store = LineTarget { width: fb.width(), height: fb.height(), stride: fb.stride_px() };
+        match store.index(x as i32, y as i32) {
+            // SAFETY: `index` is `Some` only below `height * stride`, the
+            // pixel count of the framebuffer's store.
+            Some(idx) => unsafe { fb.pixels().add(idx).read_volatile() },
+            None => 0,
+        }
+    }
+
     fn put_device_pixel(&self, x: i16, y: i16, argb: u32) {
         let fb = active_fb();
         if x < 0 || y < 0 || x as u32 >= fb.width() || y as u32 >= fb.height() {

@@ -355,6 +355,36 @@ pub trait RasterBackend: Sync {
     /// guarantee for non-palette content.
     fn get_device_pixel(&self, x: i16, y: i16) -> u32;
 
+    /// Read the raw device pixel word at the **store index** of `(x, y)`,
+    /// `y * stride + x` ([`LineTarget::index`](super::line::LineTarget::index)
+    /// over the logical screen, stride = the store's row length in pixels):
+    /// an `x` past the right edge reads the start of the next row, one left
+    /// of 0 the end of the previous row, and on a store whose stride is
+    /// wider than the screen the padding pixels. `0` when the index falls
+    /// before the first or past the last pixel of the store.
+    ///
+    /// This is EmuTOS' `pixelread` addressing (`vdi_fill.c:671-681`, no
+    /// bounds check, `get_start_addr16`, `vdi/vdi_inline.h:14-17`), the read
+    /// `v_get_pixel` answers with. Outside the store EmuTOS reads whatever
+    /// memory is there; NewTOS reads 0 (user decision B, TASK/V18;
+    /// `docs/COMPATIBILITY.md`). The store is the one lines with clipping
+    /// off run on in (decision A), so both agree on which pixel a
+    /// coordinate is.
+    ///
+    /// The default is that rule for a store whose stride equals
+    /// [`width`](Self::width), read through
+    /// [`get_device_pixel`](Self::get_device_pixel); a backend with a wider
+    /// pitch overrides it with its own stride.
+    fn get_device_pixel_wrapped(&self, x: i16, y: i16) -> u32 {
+        let w = self.width() as u32;
+        let store = super::line::LineTarget { width: w, height: self.height() as u32, stride: w };
+        match store.index(x as i32, y as i32) {
+            // `idx < height * width`, so both parts fit an `i16` coordinate.
+            Some(idx) => self.get_device_pixel((idx % w as usize) as i16, (idx / w as usize) as i16),
+            None => 0,
+        }
+    }
+
     /// Write the **raw device pixel word** at `(x, y)`; out-of-bounds is
     /// ignored. Writes made this way are not flushed to the point of
     /// coherency — the caller batches a region and calls

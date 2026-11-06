@@ -35,7 +35,8 @@ impl LineTarget {
     /// the index falls outside the store — before its first pixel or past
     /// its last — where EmuTOS writes whatever memory is there and NewTOS
     /// draws nothing (user decision A, TASK/V18; `docs/COMPATIBILITY.md`).
-    fn index(&self, x: i32, y: i32) -> Option<usize> {
+    /// `v_get_pixel` reads through the same index (decision B, TASK/V24).
+    pub fn index(&self, x: i32, y: i32) -> Option<usize> {
         let idx = y as i64 * self.stride as i64 + x as i64;
         let len = self.height as i64 * self.stride as i64;
         (0..len).contains(&idx).then_some(idx as usize)

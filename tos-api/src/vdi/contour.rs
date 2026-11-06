@@ -123,11 +123,28 @@ static QUEUE: SeedQueue = SeedQueue(UnsafeCell::new([Segment { y: EMPTY, xleft: 
 /// `v_get_pixel` and `v_contourfill` both read through here, as EmuTOS'
 /// `vdi_v_get_pixel` (`:1102`) and `end_pts` (`:746-767`, `:836-866`) read
 /// through the same addressing.
+///
+/// No bounds check, as in EmuTOS: `(x, y)` is the pixel at store index
+/// `y * stride + x` — past the right edge the next row, left of 0 the
+/// previous one (`get_start_addr16`, `vdi/vdi_inline.h:14-17`; planar
+/// `get_start_addr`, `vdi/vdi_misc.c:166-177`, the same linear walk over
+/// 16-pixel groups). Only an index outside the logical screen's store reads
+/// 0, where EmuTOS reads foreign memory (user decision B, TASK/V24;
+/// `docs/COMPATIBILITY.md`). `v_contourfill` reads inside its search
+/// bounds only, so the run-on never reaches it.
 pub(super) fn pixelread(backend: &dyn RasterBackend, x: i16, y: i16) -> u16 {
     if backend.planes() > 8 {
-        backend.device_to_rgb565(backend.get_device_pixel(x, y))
+        backend.device_to_rgb565(backend.get_device_pixel_wrapped(x, y))
     } else {
-        backend.read_pixel(x, y) as u16
+        // A palette backend reports PELs per `(x, y)` only; its store is
+        // taken as `width` pixels per row, which is `v_lin_wr` of a planar
+        // screen (16-pixel groups, `width` a multiple of 16).
+        let w = backend.width() as u32;
+        let store = super::line::LineTarget { width: w, height: backend.height() as u32, stride: w };
+        match store.index(x as i32, y as i32) {
+            Some(idx) => backend.read_pixel((idx % w as usize) as i16, (idx / w as usize) as i16) as u16,
+            None => 0,
+        }
     }
 }
 

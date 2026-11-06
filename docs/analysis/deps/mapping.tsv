@@ -1308,7 +1308,7 @@ get_color	vdi/vdi_fill.c	-	-	design:ADR-024@docs/MEMORY.md:2156	composes a pixel
 get_pix	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; linea pixel read: no NewTOS counterpart
 get_seed	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	get_seed	mapped	Flood::get_seed: collision removal + draw, first hole, QSIZE overflow ends the fill (V21)
 no_abort	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; default of the Line-A SEEDABORT variable: no NewTOS counterpart
-pixelread	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	pixelread	mapped	the one screen read of v_get_pixel and v_contourfill; truecolor: device_to_rgb565(get_device_pixel); out-of-screen reads 0-word, EmuTOS reads memory unchecked (V24)
+pixelread	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	pixelread	mapped	the one screen read of v_get_pixel and v_contourfill, no bounds check: truecolor device_to_rgb565(get_device_pixel_wrapped), palette read_pixel at the wrapped point; outside the logical screen 0, EmuTOS reads memory unchecked (V24, COMPATIBILITY)
 polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	the interior fill incl. the y-extent clip of polygon; no minimum vertex count (1 vertex fills nothing, 2 a dotted stroke; V22)
 polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	polyline	mapped	the closed perimeter (LN_MASK 0xffff, fill colour) when fill_per; drawn by v_fillarea, gdp curve/rbox and the wide-line helper
 polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	polygon	mapped	polygon under the wide-line attribute environment (solid pattern, line colour, perimeter on)
@@ -1337,6 +1337,8 @@ gdp_curve	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	curve	mapped	radii, angles, step 
 gdp_rbox	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	rbox	mapped	-
 vdi_v_gdp	vdi/vdi_gdp.c	tos-api/src/vdi/gdp.rs	v_gdp	mapped	opcode 11; GDP 13 (bezier) is not compiled (HAVE_BEZIER 0)
 get_start_addr16	vdi/vdi_inline.h	kernel/src/vdi_backend.rs	get_device_pixel	mapped	screen address of a pixel: NewTOS addresses the 32-bpp framebuffer inside the backend (get_device_pixel/put_device_pixel), no 16-bit address is exposed
+get_start_addr16	vdi/vdi_inline.h	tos-api/src/vdi/backend.rs	get_device_pixel_wrapped	mapped	pixelread's address y*stride+x over the logical screen (LineTarget::index), 0 outside; default stride = width (V24)
+get_start_addr16	vdi/vdi_inline.h	kernel/src/vdi_backend.rs	get_device_pixel_wrapped	mapped	the same with the framebuffer pitch, the store abline runs on in (V24)
 get_start_addr16	vdi/vdi_inline.h	kernel/src/vdi_backend.rs	put_device_pixel	mapped	see get_device_pixel
 get_start_addr16	vdi/vdi_inline.h	tos-api/src/vdi/line.rs	index	mapped	the line walk's store index y*stride+x, so a clip-off line runs on into the next row (V20)
 Vwk2Attrib	vdi/vdi_line.c	tos-api/src/vdi/gdp.rs	fill_of	mapped	builds the fill descriptor (colour, pattern, write mode) from the Vwk; NewTOS has no VwkAttrib (clip is always passed separately)

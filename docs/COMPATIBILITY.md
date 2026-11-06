@@ -659,6 +659,31 @@ neighbouring rows included, is EmuTOS'. Code `tos-api/src/vdi/line.rs:39@index`;
 spec `docs/api/vdi/output/_lines-markers.md` (§ "One segment: `abline`",
 Addressing).
 
+**`v_get_pixel` outside the logical screen's memory answers 0; EmuTOS reads
+on past it** — user decision B, 2026-11-05 (TASK/V18, *"ja das passt so"*),
+implemented by TASK/V24. EmuTOS' `pixelread` has no bounds check
+(`references/emutos/vdi/vdi_fill.c:671-690`) and reads the word at
+`v_bas_ad + x * 2 + y * v_lin_wr` (`get_start_addr16`,
+`references/emutos/vdi/vdi_inline.h:14-17`; planar `get_start_addr`,
+`references/emutos/vdi/vdi_misc.c:166-177`). NewTOS does the same inside the
+logical screen: a point past the right edge reads the start of the next row,
+one left of `x = 0` the end of the previous row, at the store index
+`y * stride + x` — the store lines with clipping off run on in (entry above),
+padding pixels of a wider pitch included (measured: `tosdump/cases/vdi-v18.tsv`
+cases 15/18/21, `(640,10)` → `(0,11)`, `(-1,11)` → `(639,10)`,
+`(700,10)` → `(60,11)`). A point whose index falls before the first or past the
+last pixel of the logical screen (`height * stride` pixels from `Logbase`)
+reads 0: `INTOUT[0] = 0`, `INTOUT[1] = 0`. EmuTOS returns whatever word lies
+there. Reason: kernel memory safety; that memory is not the program's.
+**Observable difference:** only for `v_get_pixel` above row 0 or below the
+last row (or sideways past the first/last pixel): EmuTOS answers a foreign
+memory word, NewTOS 0. `v_contourfill` reads only inside its clip rectangle
+cut to the screen and is not affected. Code
+`tos-api/src/vdi/contour.rs:135@pixelread`,
+`tos-api/src/vdi/backend.rs:378@get_device_pixel_wrapped`; spec
+`docs/api/vdi/inquiry/_color-pixel-input.md` (§ "Coordinates outside the
+screen"); host test `tos-api/tests/vdi_reference/cases_v24.rs`.
+
 **`v_fillarea` with 1024 or more vertices closes the polygon cleanly; EmuTOS
 overruns its vertex buffer** — user decision C, 2026-11-05 (TASK/V18,
 *"ja das passt so"*), recorded by TASK/V22 (finding VDI-DRAW-006). EmuTOS'
