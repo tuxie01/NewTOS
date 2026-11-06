@@ -45,6 +45,7 @@ CFLAGS=(-target aarch64-unknown-none-elf -ffreestanding -nostdlib -O2
         -fPIE -fno-builtin -nostdinc -D__NEWTOS__
         -std=c99 -Wall -Wextra -Werror)
 [ -n "${WFCASE:-}" ] && CFLAGS+=("-DWFCASE=\"$WFCASE\"")
+[ -n "${WFKEYS:-}" ] && CFLAGS+=("-DWFKEYS=\"$WFKEYS\"")
 
 echo "clang : $($CLANG --version | head -1)"
 echo "lld   : $LLD"

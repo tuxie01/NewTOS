@@ -478,9 +478,17 @@ int main(void)
         emit("d data CRC errors for a while (M-C)     u busy 1.2 s  v busy 2.2 s  w busy 3.5 s (dir)\n");
         emit("f busy 2.2 s, FAT    3 one refused write   b FAT refused for a while  x b + Fdelete\n");
         emit("key (other: end): ");
+#ifdef WFKEYS
+        /* QEMU raspi4b has no USB keyboard: the two answers at build time, to
+         * drive this path (measurements/measurement-2026-11-06-hw08). */
+        key = WFKEYS[0];
+        emit("\ndrive to run on, D, E or F: ");
+        i = WFKEYS[1];
+#else
         key = (int)(Cconin() & 0xFF);
         emit("\ndrive to run on, D, E or F: ");
         i = (int)(Cconin() & 0xFF);
+#endif
         if (i >= 'a')
             i -= 32;
         emit("\n");

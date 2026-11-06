@@ -1,0 +1,120 @@
+WFPROBE (TASK/HW08), test card, sd-fault kernel. Boot fresh for every run.
+o out of range, real command (M-A)      t one write timeout, CMD12 in a transfer (M-C)
+d data CRC errors for a while (M-C)     u busy 1.2 s  v busy 2.2 s  w busy 3.5 s (dir)
+f busy 2.2 s, FAT    3 one refused write   b FAT refused for a while  x b + Fdelete
+key (other: end): 
+drive to run on, D, E or F: 
+=== WFPROBE case b3: every write refused for a while, FAT
+D: partition at 131072, FATs at 1 and 129, root at 257, data at 289
+save BASE.DAT       Fcreate=7 Fwrite=5281,0 Fclose=0
+--- diag after the baseline (726 bytes)
+  SD diagnosis  up 0:00:15.136   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 2 timeouts 0 recover 2 nonrecover 0 refused 0
+   boot    errors 2 timeouts 0 (base probe, in the counts above)
+   last    cmd_done int 00018001 r1 00000000
+   bits   CTO=2
+   wait ms cmd_inhibit 0.0 dat_inhibit 0.0 cmd_done 0.0 read_rdy 0.0 write_rdy 0.0
+           read_done 0.0 write_done 0.0
+  write   n 8 sec 16 failed 0 max 0.8 ms
+   time   <1:8 <4:0 <16:0 <64:0 <250:0 <500:0 <1000:0 more:0
+  read    n 18 sec 262 failed 0 max 18.4 ms
+   time   <1:15 <4:1 <16:1 <64:1 <250:0 <500:0 <1000:0 more:0
+  first   no failure since the boot
+  cache   writeback failed 0 retried 0 gave up 0 dirty 0; last code 0 of 0
+  bcache  dev r 18 w 8 hit 13 miss 262 sectors
+arm fault 1: Ssystem=0
+save RESULTS.PDF    Fcreate=7 Fwrite=-10,0 Fclose=-10
+--- diag after the victim (899 bytes)
+  SD diagnosis  up 0:00:15.160   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 2 timeouts 0 recover 4 nonrecover 0 refused 2
+   boot    errors 2 timeouts 0 (base probe, in the counts above)
+   last    cmd_done int 00018001 r1 04000800
+   bits   CTO=2
+   r1     WP_VIOLATION=2
+   wait ms cmd_inhibit 0.0 dat_inhibit 0.0 cmd_done 0.0 read_rdy 0.0 write_rdy 0.0
+           read_done 0.0 write_done 0.0
+  write   n 13 sec 84 failed 2 max 5.9 ms
+   time   <1:12 <4:0 <16:1 <64:0 <250:0 <500:0 <1000:0 more:0
+  read    n 18 sec 262 failed 0 max 18.4 ms
+   time   <1:15 <4:1 <16:1 <64:1 <250:0 <500:0 <1000:0 more:0
+  first   0:00:15.152 write lba 131201 n 1 write_rdy refused 04000800
+  fail    0:00:15.153 write lba 131201 n 1 write_rdy refused 04000800
+  cache   writeback failed 2 retried 1 gave up 0 dirty 1; last code -10 of 2
+   dirty  D: lba 131201 FAT tries 2 code -10
+  bcache  dev r 18 w 13 hit 13 miss 262 sectors
+save P1.FBP         Fcreate=-10 Fwrite=0,0 Fclose=0
+save P2.FBP         Fcreate=-10 Fwrite=0,0 Fclose=0
+save P3.FBP         Fcreate=-10 Fwrite=0,0 Fclose=0
+--- diag after the saves under fault (967 bytes)
+  SD diagnosis  up 0:00:15.254   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 2 timeouts 0 recover 5 nonrecover 0 refused 3
+   boot    errors 2 timeouts 0 (base probe, in the counts above)
+   last    cmd_done int 00018001 r1 04000800
+   bits   CTO=2
+   r1     WP_VIOLATION=3
+   wait ms cmd_inhibit 0.0 dat_inhibit 0.0 cmd_done 0.0 read_rdy 0.0 write_rdy 0.0
+           read_done 0.0 write_done 0.0
+  write   n 17 sec 88 failed 3 max 5.9 ms
+   time   <1:16 <4:0 <16:1 <64:0 <250:0 <500:0 <1000:0 more:0
+  read    n 18 sec 262 failed 0 max 18.4 ms
+   time   <1:15 <4:1 <16:1 <64:1 <250:0 <500:0 <1000:0 more:0
+  first   0:00:15.152 write lba 131201 n 1 write_rdy refused 04000800
+  fail    0:00:15.153 write lba 131201 n 1 write_rdy refused 04000800
+  fail    0:00:15.241 write lba 131201 n 1 write_rdy refused 04000800
+  cache   writeback failed 3 retried 2 gave up 1 dirty 1; last code -10 of 5
+   dirty  D: lba 131201 FAT tries 3 code -10
+  bcache  dev r 18 w 17 hit 13 miss 262 sectors
+disarm: fired 3
+save R1.FBP         Fcreate=-10 Fwrite=0,0 Fclose=0
+save R2.FBP         Fcreate=-10 Fwrite=0,0 Fclose=0
+save R3.FBP         Fcreate=-10 Fwrite=0,0 Fclose=0
+save R4.FBP         Fcreate=-10 Fwrite=0,0 Fclose=0
+--- diag after the saves with the fault gone (967 bytes)
+  SD diagnosis  up 0:00:15.358   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 2 timeouts 0 recover 5 nonrecover 0 refused 3
+   boot    errors 2 timeouts 0 (base probe, in the counts above)
+   last    cmd_done int 00018001 r1 04000800
+   bits   CTO=2
+   r1     WP_VIOLATION=3
+   wait ms cmd_inhibit 0.0 dat_inhibit 0.0 cmd_done 0.0 read_rdy 0.0 write_rdy 0.0
+           read_done 0.0 write_done 0.0
+  write   n 21 sec 92 failed 3 max 5.9 ms
+   time   <1:20 <4:0 <16:1 <64:0 <250:0 <500:0 <1000:0 more:0
+  read    n 18 sec 262 failed 0 max 18.4 ms
+   time   <1:15 <4:1 <16:1 <64:1 <250:0 <500:0 <1000:0 more:0
+  first   0:00:15.152 write lba 131201 n 1 write_rdy refused 04000800
+  fail    0:00:15.153 write lba 131201 n 1 write_rdy refused 04000800
+  fail    0:00:15.241 write lba 131201 n 1 write_rdy refused 04000800
+  cache   writeback failed 3 retried 2 gave up 1 dirty 1; last code -10 of 9
+   dirty  D: lba 131201 FAT tries 3 code -10
+  bcache  dev r 18 w 21 hit 13 miss 262 sectors
+look BASE.DAT       Fsfirst=0 size=5281 want=5281 Fopen=7 Fread=5281 same=1
+look RESULTS.PDF    Fsfirst=0 size=32768 want=37156 Fopen=7 Fread=32768 same=1
+look P1.FBP         Fsfirst=0 size=0 want=5281 Fopen=7 Fread=0 same=0
+look P2.FBP         Fsfirst=0 size=0 want=5281 Fopen=7 Fread=0 same=0
+look P3.FBP         Fsfirst=0 size=0 want=5281 Fopen=7 Fread=0 same=0
+look R1.FBP         Fsfirst=0 size=0 want=5281 Fopen=7 Fread=0 same=0
+look R2.FBP         Fsfirst=0 size=0 want=5281 Fopen=7 Fread=0 same=0
+look R3.FBP         Fsfirst=0 size=0 want=5281 Fopen=7 Fread=0 same=0
+look R4.FBP         Fsfirst=0 size=0 want=5281 Fopen=7 Fread=0 same=0
+Dfree(D:)=0 free=1951 total=32695
+--- diag at the end (968 bytes)
+  SD diagnosis  up 0:00:15.489   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 2 timeouts 0 recover 5 nonrecover 0 refused 3
+   boot    errors 2 timeouts 0 (base probe, in the counts above)
+   last    cmd_done int 00018001 r1 04000800
+   bits   CTO=2
+   r1     WP_VIOLATION=3
+   wait ms cmd_inhibit 0.0 dat_inhibit 0.0 cmd_done 0.0 read_rdy 0.0 write_rdy 0.0
+           read_done 0.0 write_done 0.0
+  write   n 21 sec 92 failed 3 max 5.9 ms
+   time   <1:20 <4:0 <16:1 <64:0 <250:0 <500:0 <1000:0 more:0
+  read    n 25 sec 269 failed 0 max 18.4 ms
+   time   <1:22 <4:1 <16:1 <64:1 <250:0 <500:0 <1000:0 more:0
+  first   0:00:15.152 write lba 131201 n 1 write_rdy refused 04000800
+  fail    0:00:15.153 write lba 131201 n 1 write_rdy refused 04000800
+  fail    0:00:15.241 write lba 131201 n 1 write_rdy refused 04000800
+  cache   writeback failed 3 retried 2 gave up 1 dirty 1; last code -10 of 19
+   dirty  D: lba 131201 FAT tries 3 code -10
+  bcache  dev r 25 w 21 hit 87 miss 269 sectors
+END

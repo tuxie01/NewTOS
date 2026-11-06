@@ -1,0 +1,87 @@
+HW08 Pi-Lauf -- Entwurf fuer Anwender und Lead, nicht ausgefuehrt (Developer 2026-11-06).
+Kein Worker an Hardware oder Karte. Die Karte ist eine Testkarte und darf angepasst werden.
+Das QEMU-Abbild wird nicht auf die Karte gespiegelt. Nur der Lead spielt auf.
+
+WAS AUF DIE KARTE SOLL (Lead)
+  kernel8.img    BOOT-Partition, ersetzt den Kern. Dieser Lauf, Datei kernel8.img im Laufverzeichnis
+                 (gitignored); Bau und sha256 siehe RUNINFO.TXT. Features crash-walk,sd-fault, release.
+  WFPROBE.NCP    C:\HW08\, aus tosdump/build/WFPROBE.NCP; sha256 siehe RUNINFO.TXT
+  FSWBENCH.NCP   C:\HW08\, aus sdk/examples/fsbench/build/FSWBENCH.NCP; sha256 siehe RUNINFO.TXT
+  cmdline.txt    bleibt, wie sie ist; serielle Leitung nicht noetig
+  cp -X oder ._-Dateien loeschen (memory: card-copy-appledouble).
+  Vorher am Mac: fsck_msdos -n auf jeder Partition (Ausgangszustand festhalten), Partitionsbild
+  sichern ist nicht noetig. Testlaufwerk: die Partition mit dem meisten Freiplatz ausser C:, mindestens
+  120 MiB frei (im Folgenden F:). Sie kann bei den Fehlerfaellen beschaedigt werden.
+
+BEDIENUNG DES BERICHTS
+  Strg+Alt+F9 zeigt und verbirgt ihn oben links, erneut zeigen = neue Zahlen. Der erste Fehler nach
+  dem Boot zeigt ihn von selbst. Immer fotografieren, bevor neu gestartet wird: die Zahlen stehen nur
+  im RAM.
+
+SCHRITT 1 Alltag, keine Einspeisung (zuerst, weil er das Ticket direkt nachstellt)
+  Booten, Strg+Alt+F9, Foto (Basislinie: boot errors, write-Zeile). Fbench und X-Shot wie im
+  Ticketlauf, mehrmals speichern. Scheitert etwas: Foto des Berichts sofort, Fehlernummer der App
+  notieren, noch zweimal speichern, wieder Foto, dann Neustart. Danach fsck_msdos -n der Partition.
+
+SCHRITT 2 Schreibmessung, keine Einspeisung, frischer Boot
+  C:\HW08\FSWBENCH.NCP doppelklicken, Laufwerksbuchstabe F. Bildschirmseiten mit Taste weiter, Foto
+  je Seite; dasselbe steht danach in F:\FSWBENCH.LOG. Dauer: Minuten (in QEMU 3,5 min), auf der langsamen
+  Karte laenger, Zeitpunkt nicht gemessen. Nach 5 Fehlschlaegen in Folge bricht ein Muster von selbst ab.
+  Am Ende Strg+Alt+F9, Foto.
+
+SCHRITT 3 Fehlerpfad, je Taste ein frischer Boot, Laufwerk F
+  C:\HW08\WFPROBE.NCP doppelklicken, Taste, dann F. Am Ende Foto des Textes und des Berichts. Log:
+  C:\WFPROBE.LOG (wird je Lauf ueberschrieben, also am Mac sichern oder Fotos reichen).
+    o  echtes Kommando hinter das Kartenende (M-A)
+    t  ein Schreiben laeuft in Timeout, CMD12 in laufender Uebertragung (M-C)
+    d  Datenfehler ueber mehrere Schreiben (M-C)
+    u  Busy 1,2 s, CMD12 ausserhalb einer Uebertragung (Glied Treiber)
+    v  Busy 2,2 s   w  Busy 3,5 s   f  Busy 2,2 s auf dem FAT-Sektor
+    b  FAT-Schreiben scheitern eine Weile (Glied Cache)
+    x  wie b, danach Fdelete im selben FAT-Sektor (Ausweg)
+  Annahme: Laufwerke C:..F: sind die MBR-Eintraege 1..4 in dieser Reihenfolge. Die Zeile "F: partition at N"
+  zu Beginn mit der Karte vergleichen; stimmt sie nicht, treffen die Faelle f, b, x, u, v, w die falschen Sektoren.
+  In QEMU gefahren nur die Taste b auf D:; die Tastenabfrage selbst nicht (kein Keyboard in raspi4b).
+  Nach b, x, u, v, w, f: fsck_msdos -n F: am Mac, Ausgabe sichern; dann reparieren oder Partition
+  neu formatieren (nur Anwender oder Lead).
+
+SCHRITT 4 Gegenprobe zweite Karte
+  Die zweite Karte (63,9 GB) gleich formatieren wie die Testkarte: FAT16, kleine Partitionen, 8-KiB-
+  Cluster, gleicher Fuellstand soweit moeglich (Formatieren nur Anwender oder Lead). Gleiche Dateien.
+  Schritte 1 und 2 wiederholen. Vorher dieselbe Karte unter derselben Formatierung am Mac mit
+  tools/sd-bench.py messen: trennt Karte von Dateisystem, Partitionsgroesse und Fuellstand.
+
+WELCHE ZAHL WAS ENTSCHEIDET
+  Vergleich Block R (FSWBENCH, Pi-Pfad, Rwabs) mit der Anwendermessung am Mac:
+                            Testkarte Mac            zweite Karte Mac     Pi Testkarte  Pi Karte 2
+    random ueber 64 MiB     p50 680-999 ms, max ~2 s p50 3,9 ms, max 38 ms   ___           ___
+    4 KiB in 256 KiB/gleich p50 8 ms, max 40 ms                              ___           ___
+    4 KiB sequentiell       p50 5,6 ms, Spitzen ~1 s                         ___           ___
+    neue kleine Dateien     p50 37 ms, max 197 ms    p50 9,5 ms, max 40 ms   ___           ___
+
+  H1 "Karte laeuft in den Timeout":
+    bestaetigt: Block R, Zeile random: >=1s groesser 0 oder failed > 0 mit last -2; Bericht tmo
+      write_done oder dat_inhibit > 0, write-Zeile "more" > 0; im Fehlerfall Schritt 1 first-Zeile
+      "write_done timeout" und App-Kode -2.
+    widerlegt: im Fehlerfall first-Zeile "refused" (R1-Bits in der r1-Zeile: Karte lehnt ab) oder
+      "error" mit DCRC/DEND (Bus), oder alle Schreibzeiten weit unter 1000 ms.
+  H2 Karte, nicht Pi-Pfad: p50 random auf der Pi wie am Mac (Grossenordnung) und Karte 2 auf beiden
+      schnell. Testkarte auf der Pi schnell: dann der Leser/Mac-Pfad oder der Pi-Bus erklaert es, neu ansehen.
+  H3 Formatierung/Fuellstand statt Karte: Karte 2 unter gleicher Formatierung so langsam wie die Testkarte.
+  G1 Glied Cache im echten Fehlerfall: Bericht "dirty ... FAT tries 3", "gave up" >= 1, read-Zeile
+      failed unveraendert, spaetere Dateien auf der Karte. Taste b: R1..R4 Fcreate=-10, x: X1 geht.
+  G2 Glied Treiber auf echter Karte: Taste u: nach "disarm" R1..R4 scheitern, fail-Zeile "refused 00400900"
+      dann "cmd_done error", read failed steigt: wie QEMU. R1..R4 ok: QEMU-Eigenheit, der Fix wird kleiner.
+  M-A Taste o: first-Zeile "refused", r1-Zeile OUT_OF_RANGE oder ADDRESS_ERROR; "angenommen" waere falsch.
+  M-B Schritt 2: timeouts unveraendert 0 unter normaler Last (keine stillen Wiederholungen mehr) oder Zahl.
+  M-C Tasten t, d: R1..R4 ok und nonrecover 0: Resets wirken auf EMMC2 in laufender Uebertragung.
+      nonrecover > 0 oder R1..R4 scheitern: sie wirken nicht, Neuinitialisierung wird Pflicht.
+  HW06 Block H: directory gegen data, med und max, pause 0 und 200. Faktor deutlich ueber 1 in allen Zeilen:
+      Muster belegt; sonst Streuung ohne Lageabhaengigkeit.
+  HW05 L1 128 gegen L2 Fwrite ganze Datei: Abstand = Kosten des Dateisystems. L2 4096 gegen L2 ganz:
+      Kosten des Zurueckschreibens je Fwrite (EmuTOS schreibt erst beim Fclose zurueck). L4 = Kopieren, am
+      Desktop mit Stoppuhr gegenpruefen. L3 = libc.
+
+GRENZEN
+  Faults sind Fehler im Treiber, keine echten Kartenfehler; o, t, d, u..w senden aber echte Kommandos.
+  Uhr in FSWBENCH: _hz_200 + Spin wie FSBENCH (auf der Pi belegt, in QEMU ungenau).

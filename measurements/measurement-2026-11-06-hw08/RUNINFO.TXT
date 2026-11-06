@@ -1,0 +1,95 @@
+measurement-2026-11-06-hw08 -- TASK/HW08 points 1 and 2 (Developer, 2026-11-06). QEMU raspi4b, QEMU qemu-virt and the
+pinned EmuTOS oracle. No hardware, no real card, nothing read from a card. No fix: failure path and limits unchanged.
+
+host_clang  Apple clang version 21.0.0 (clang-2100.4.1.1)
+Manifests of every booted image: results/<side>-<case>/card.img.manifest and test.img.manifest, raspi-b3-card.img.manifest,
+fswbench-card.img.manifest. Their lines, all 23 alike, verbatim:
+  optional_missing none
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+A run does not write back to a booted image beyond the run itself; images are deleted, their sha256 before and after are
+in results/*/run.txt.
+
+RESULT IN ONE LINE: stuck until restart has two separate causes. Cache: a dirty FAT sector given up after 3 failed
+write-backs makes every later flush report it, driver alive, card fine again or not; this reproduces the ticket's 32768
+bytes and 0-byte files. Driver (new): after a timeout outside a data transfer the recovery's CMD12 is illegal, the next
+R1 carries ILLEGAL_COMMAND, the driver takes that for a refusal, the card stays in receive-data, every command ends in
+CTO, reads too. EmuTOS never gets stuck. What starts the failures on the Pi is open: PI-RUN.TXT decides it.
+
+1 WHAT WAS BUILT: e421bd5d (code), then this commit (probe's scripted keys, ticket, status)
+  Debug feature sd-diag: kernel/src/sd_diag.rs (hot key Ctrl+Alt+F9, box with saved pixels, first failure shows it once),
+  kernel/src/drivers/bcm2711/emmc_diag.rs (failure log with LBA, longest wait per phase, write and read times),
+  tos-api/src/bios/sd_diag.rs (the text), tos-api/src/bdos/fs/cache.rs dirty_slots + error_codes, Ssystem 2090.
+  Debug feature sd-fault (implies sd-diag): kernel/src/drivers/bcm2711/emmc_fault.rs, Ssystem 2091.
+  tosdump/probes/wfprobe.c + run-wfprobe.sh: same saves on both sides. sdk/examples/fswbench.c: write bench, sibling of FSBENCH.
+  tos-api/tests/hw08_sd_diag.rs: 5 host tests.
+
+2 KERNELS (release)
+  measuring  rpi4 --features sd-fault              a2352fe4d549b1a8a1cb56fa4153c317ba20eee7ab466dbc47fde320a8307a8b from e421bd5d
+  hot key    qemu-virt --features sd-diag (raw)    15d5eb8aeb4c09d1af48cda529d20c06ac57befb57eda840d390a71da95379e5 from e421bd5d
+  Pi run     rpi4 --features crash-walk,sd-fault   56c6050f6e832d1213a81aab9c01a59af7f56527003b5136c262975591b501e9 from e421bd5d
+             file kernel8.img beside this file, gitignored; boots to the desktop in QEMU raspi4b, checks/pi-kernel-smoke.txt
+  Pi programs, gitignored, rebuild: tosdump/build-wfprobe-newtos.sh tosdump/build/WFPROBE.NCP; sdk/examples/fsbench/build-fswbench.sh
+    WFPROBE.NCP   3fa896c20a9aab55b5f01e99e7c4d6f17ae79a7ce2711d1988122ebb7f5cf2f0
+    FSWBENCH.NCP  094eba220f5e01cf9e61f9e89d987edd91923b5c6b25270ef1b64eea3cf7eb52
+
+3 BUILD AND CHECKS
+  checks/feature-identity.txt, method/feature-identity.sh: feature off against 58dd7644, rpi4 and qemu-virt, release and dev:
+  locdiff "unexplained: 0" in all four (16, 59, 15, 34 differing bytes, all line fields of panic::Location, checks/locdiff-*.txt).
+  That run was before rustfmt of the new feature-only files; checks/commit-vs-aftr.txt: the committed tree builds the same
+  off-feature rpi4 release binary (8989093a...).
+  Warnings: cargo build tos-api 64, kernel 93 on both sides, feature on or off. clippy tos-api 73, kernel 121, base, off and on,
+  both boards. 0 clippy lines name a new file.
+  cargo xtask test (full) on the change set: passed 2200, failed 0, ignored 1 (baseline 2195/0/1, +5).
+
+4 POINT 1, DRIVEN
+  screendumps/virt-hotkey-*.png: qemu-virt, QMP send-key ctrl-alt-f9 through the USB HID path (method/hotkey-virt.py): 1 before,
+  2 box shown, 3 hidden, 4 shown again. 1 and 3 are the same PNG byte for byte. On that board "driver none on this board".
+  screendumps/raspi-b3-*: raspi4b, the first failure shows the report by itself (method/overlay-raspi.py), no key; the driver
+  half is in that shot. raspi4b has no USB in QEMU, so hot key and driver half are never on one board here. The probe prints on
+  a 640x480 console there, whose scrolling moves the box; a GEM screen does not scroll. Real Pi: PI-RUN.TXT step 1.
+  The moment "nothing can be written" is b3: report in results/newtos-b3 from RAM with the FAT sector listed dirty.
+
+5 POINT 2, MEASURED (method/run-all.sh, one boot and one fresh test image per case, tree e421bd5d, 0 dirty paths)
+  results/table.txt: every save of every case; results/<side>-<case>/: log, serial, fsck, directory.
+  Test image: FAT16, 2-KiB clusters. The user's card has 8 KiB, so sizes on the card scale, the logic does not depend on it.
+  FAULT NewTOS: inside the driver (emmc_fault.rs), real recovery. EmuTOS: hook on hdv_rw answering the code, equals critical
+  error "cancel"; the alert itself not measured.
+
+  case  fault                             NewTOS after the fault is gone   EmuTOS after the fault is gone
+  a1    1 refused write, file data        saves ok                         saves ok, fsck: cross-linked clusters
+  a2    1 refused write, FAT              saves ok, RESULTS 32768 B        saves ok, RESULTS 0 B
+  a3    1 refused write, directory        saves ok, RESULTS 0 B            saves ok, no RESULTS
+  a5    FAT, 2 fired                      saves ok, RESULTS 32768 B        saves ok, RESULTS 0 B
+  b1,b2 all/directory refused for a while saves ok (Fcreate rewrites the   saves ok
+                                          sector, so it is retried)
+  b3    FAT refused for a while           Fcreate=-10 until restart        saves ok; Fclose=-10 while it lasts
+                                          RESULTS 32768, then 0-byte files
+  b5    b3, then Fdelete on that sector   Fdelete frees it, X1 saves       saves ok
+  b4    file data refused for a while     saves ok, fsck lost clusters     saves ok, fsck cross-links
+  d1    data CRC error for a while        saves ok                         not run, = b1
+  t1,t2 timeout at write_rdy (in transfer) saves ok, code -2               saves ok, code -2
+  c1    E_CHNG once (EmuTOS only)         -                                call restarts, file complete
+  u1    busy 900 ms                       no failure, max 901.7 ms         -
+  u2,u3 busy 1200 ms                      -2, then -10, driver dead        -
+  u4,u5 busy 2200, 3500 ms                -2, -2, then -10, driver dead    -
+  u6    busy 2200 ms, FAT                 -2, then -10, driver dead        -
+  w1    DAT inhibit stuck, 1100 ms/access -2, nonrecover, driver dead      -
+  o1    real command past the end         QEMU: ADDRESS_ERROR, -10, ok     -
+
+  Driver dead, serial of u2: "CMD24 rejected by card: status=0x00400900 ILLEGAL_COMMAND (state 4)", then "cmd_done error:
+  INTERRUPT=0x00018001 CTO" for every command; reads fail too, code -11. SD Phys 9.10 section 4.6.1 + Table 4-42 clear
+  condition B read in references/sd-spec. Only 3 files on the image there, no later 0-byte files.
+  Ticket pattern: b3 has RESULTS.PDF 32768 B, P*, R* 0 B. Not matched by itself: in b3 the file's FAT chain is not on the
+  card (fsck "starts with free cluster"), the ticket calls the file cut in the middle, no fsck of that state exists.
+  Dfree in the stuck state: rc 0, free=2026 instead of 32640 (b3), free=250 (u2). Side finding, untouched.
+  FSWBENCH: results/fswbench-qemu-serial.txt, program path only: runs, read-backs ok, fsck clean. QEMU's times mean nothing.
+  Its key waits were not driven (no keyboard in raspi4b): built -DFSWB_NOKEY here. WFPROBE's menu path was driven with WFKEYS=bD on
+  drive D: (screendumps/raspi-b3-*), its log on C: landed in the stuck state, 6613 B.
+
+6 READ, NOT MEASURED
+  EmuTOS SD timeout 500 ms (bios/sd.c:81), re-init and E_CHNG (bios/sd.c:192-201); Hatari has no SD. EmuTOS critical alert
+  (aes/gemdosif.S:153-205, bios/blkdev.c:520-522). Saving into another directory than the failed sector's would stick the same
+  way as b3 (nobody rewrites it): read from tos-api/src/bdos/fs/cache.rs, not run. Everything about EMMC2 and a real card.
+
+7 USER'S MAC NUMBERS (via the lead, not this run; reader 3131:1017): 4 KiB spread over 64 MiB test card p50 680-999 ms, max
+  about 2000 ms; second card in the same reader p50 3.9 ms, max 38 ms. Compared in PI-RUN.TXT. WRITE_BUSY_MS unchanged at 1000 ms.

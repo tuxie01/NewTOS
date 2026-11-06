@@ -1,0 +1,96 @@
+==== FSWBENCH (TASK/HW08), write path layer by layer, drive D:, log handle 6
+clock: _hz_200 + spin, 184535 spins/tick
+D: BPB clsiz 8 rootsecs 32 fat 192 at 193 root at 385 data at 417
+H  sector cost (HW06), 41 single-sector Rwabs per line, unchanged bytes
+  sectors: data 729 dir 385 fat 193
+  data         pause   0 first     129 us  min       0 med      68 p90    1303 max    1440  failed 0
+  directory    pause   0 first       0 us  min       0 med      60 p90     915 max    1318  failed 0
+  fat          pause   0 first     880 us  min       0 med      64 p90    1294 max    1316  failed 0
+  data         pause 200 first       0 us  min       0 med       0 p90     462 max    1357  failed 0
+  directory    pause 200 first       0 us  min       0 med       0 p90    1335 max    1384  failed 0
+  fat          pause 200 first     119 us  min       0 med       0 p90    1309 max    1372  failed 0
+R  patterns against the Mac numbers, 4 KiB per write, Rwabs (WRITE_BUSY_MS = 1000 ms)
+  random over 64 MiB     n  64 p50     1252 p90     2512 max     2880 us  >=1s 0  failed 0 last 0
+  random within 256 KiB  n  64 p50     1379 p90     2526 max     2969 us  >=1s 0  failed 0 last 0
+  same offset            n  64 p50     1183 p90     2460 max     2853 us  >=1s 0  failed 0 last 0
+  sequential             n  64 p50     1289 p90     2466 max     2551 us  >=1s 0  failed 0 last 0
+  new small files        n  64 p50     2499 p90     3747 max     3927 us  >=1s 0  failed 0 last 0
+size 10240
+  L1 Rwabs 1 sec     10240 B       3775 us    2649 KB/s
+  L1 Rwabs 128       10240 B       5000 us    2000 KB/s
+  L2 Fwrite 512      10240 B       5282 us    1893 KB/s
+     Fcreate 328 us  Fclose 0 us  read-back ok
+  L2 Fwrite 4096     10240 B       3747 us    2668 KB/s
+     Fcreate 0 us  Fclose 0 us  read-back ok
+  L2 Fwrite 32768     10240 B       5000 us    2000 KB/s
+     Fcreate 185 us  Fclose 0 us  read-back ok
+  L2 Fwrite 10240     10240 B       3752 us    2665 KB/s
+     Fcreate 0 us  Fclose 0 us  read-back ok
+  L3 fwrite 1K       10240 B       5000 us    2000 KB/s
+     read-back ok
+  L4 copy 32K        10240 B       3791 us    2637 KB/s
+     read-back ok
+size 102400
+  L1 Rwabs 1 sec    102400 B      35000 us    2857 KB/s
+  L1 Rwabs 128      102400 B      33749 us    2963 KB/s
+  L2 Fwrite 512     102400 B      41258 us    2423 KB/s
+     Fcreate 0 us  Fclose 0 us  read-back ok
+  L2 Fwrite 4096    102400 B      37828 us    2643 KB/s
+     Fcreate 712 us  Fclose 184 us  read-back ok
+  L2 Fwrite 32768    102400 B      35000 us    2857 KB/s
+     Fcreate 197 us  Fclose 0 us  read-back ok
+  L2 Fwrite 102400    102400 B      33751 us    2962 KB/s
+     Fcreate 7 us  Fclose 0 us  read-back ok
+  L3 fwrite 1K      102400 B      35000 us    2857 KB/s
+     read-back ok
+  L4 copy 32K       102400 B      62508 us    1599 KB/s
+     read-back ok
+size 1048576
+  L1 Rwabs 1 sec   1048576 B     363756 us    2815 KB/s
+  L1 Rwabs 128     1048576 B     323781 us    3162 KB/s
+  L2 Fwrite 4096   1048576 B     416434 us    2458 KB/s
+     Fcreate 10 us  Fclose 0 us  read-back ok
+  L2 Fwrite 32768   1048576 B     342507 us    2989 KB/s
+     Fcreate 0 us  Fclose 826 us  read-back ok
+  L2 Fwrite 1048576   1048576 B     305000 us    3357 KB/s
+     Fcreate 0 us  Fclose 24 us  read-back ok
+  L3 fwrite 1K     1048576 B     348759 us    2936 KB/s
+     read-back ok
+  L4 copy 32K      1048576 B     655911 us    1561 KB/s
+     read-back ok
+size 10485760
+  L1 Rwabs 1 sec  10485760 B    3552844 us    2882 KB/s
+  L1 Rwabs 128    10485760 B    3342498 us    3063 KB/s
+  L2 Fwrite 4096  10485760 B    3870000 us    2645 KB/s
+     Fcreate 278 us  Fclose 0 us  read-back ok
+  L2 Fwrite 32768  10485760 B    2841183 us    3604 KB/s
+     Fcreate 0 us  Fclose 0 us  read-back ok
+  L2 Fwrite 10485760  10485760 B    3275000 us    3126 KB/s
+     Fcreate 215 us  Fclose 0 us  read-back ok
+  L3 fwrite 1K    10485760 B    3432705 us    2983 KB/s
+     read-back ok
+  L4 copy 32K     10485760 B    6652708 us    1539 KB/s
+     read-back ok
+--- driver report (Ssystem 2090)
+SD diagnosis  up 0:03:25.198   Ctrl+Alt+F9: hide / show again
+driver  4-bit multi errors 2 timeouts 0 recover 2 nonrecover 0 refused 0
+ boot    errors 2 timeouts 0 (base probe, in the counts above)
+ last    cmd_done int 00018001 r1 00000000
+ bits   CTO=2
+ wait ms cmd_inhibit 0.0 dat_inhibit 0.0 cmd_done 0.0 read_rdy 0.0 write_rdy 0.1
+         read_done 0.0 write_done 0.0
+write   n 36928 sec 348175 failed 0 max 3263.3 ms
+ time   <1:33277 <4:2334 <16:1069 <64:177 <250:9 <500:59 <1000:0 more:3
+read    n 444 sec 45792 failed 0 max 3121.0 ms
+ time   <1:81 <4:3 <16:356 <64:2 <250:0 <500:1 <1000:0 more:1
+first   no failure since the boot
+cache   writeback failed 0 retried 0 gave up 0 dirty 0; last code 0 of 0
+bcache  dev r 444 w 36928 hit 91648 miss 45792 sectors
+log Fwrite=4810 Fclose=0
+FSWBENCH done
+[launch] returned (program Pterm'd)
+[shell] sh_ldapp: 'D:\FSWBENCH.NCP' exited with rc=0
+[mm] MEM05 after program: MDs in_use=3 capacity=117 (+0 pages); pages held=2/512 (md=0 recs=1 snap=1 kept=0) peak=2 refused budget=0 heap=0; records=1 snapshot_cap=56 snapshot_short=0; heap used=8224 free=8380384 largest=8380384
+[shell] sh_ldapp: starting desktop NEWDESK (D.s_cmd NEWDESK), sh_nextapp=3, sh_isgem=1
+[launch] EL0: slot 0 entry 0x1a08000
+[desk] desktop up (2 drives)

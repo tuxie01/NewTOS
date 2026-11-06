@@ -1,0 +1,11 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh, MKCARD_TESTDISK 4f2ecb560beaac7c63e38f621f96b081270a08bbecfe2c7128c8d24364eed701 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/wf/wfprobe.OfNS67/test.img
+image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/wf/wfprobe.OfNS67/card.img
+image_sha256 b0c9202b93d4c4ea74e0c93334047a62046d4b6949bb49a8e145bf79a9767747
+size_mib 128
+created 2026-11-06T19:08:47Z
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+file 345b333fa7e7626aca6b77d32d104b3c85f4c6e993c4ea908c97d333b755dd2f 30 C:\NEWDESK.INF
+file 745e6c9cc719977064ba2fb107acdd355c6c17e7906e600c947f4c20bb4278df 153256 D:\WFPROBE.NAP

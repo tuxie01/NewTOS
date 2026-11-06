@@ -1,0 +1,2 @@
+48:[emmc] FS08 mode: multi-block (CMD18/CMD25 + Auto CMD12) — bus 4-bit (ACMD6 ok, SCR SD_BUS_WIDTHS=0x5), CONTROL0[1] D
+55:[desk] desktop up (2 drives)

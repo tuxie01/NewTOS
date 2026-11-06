@@ -1,0 +1,38 @@
+clippy base rpi4: exit 0 warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions) warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions) 
+clippy base qemu-virt: exit 0 warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions) warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions) 
+clippy aftr rpi4: exit 0 warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions) warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions) 
+clippy aftr qemu-virt: exit 0 warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions) warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions) 
+feature on, rpi4 release: build OK
+feature on, rpi4 dev: build OK
+clippy on rpi4: exit 0 warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions) warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions) 
+feature on, qemu-virt release: build OK
+feature on, qemu-virt dev: build OK
+clippy on qemu-virt: exit 0 warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions) warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions) 
+4fa6d4807622eaa9989cb96e4e0b8f5f0a7f7cdc83b6fdf6aa8657fa22653700  aftr-qemu-virt-dev.bin
+3e3de7f5947674a544874aded7bf429b5e814f1182acf1e4e3f1863a717a9a05  aftr-qemu-virt-release.bin
+5a84b6c88bad43b1c59c44285cc4a4d5d71f04be495d5aa6891b5fa72549104f  aftr-rpi4-dev.bin
+8989093a31af535d91b5232a306dd74290673b6688d2943d0d4fde9c0acb3c45  aftr-rpi4-release.bin
+f8bd4c73adcc09a19911538df122d19e42556d594de702ea3089a80c8f3db2fa  base-qemu-virt-dev.bin
+1847d2ee393cb3bf8fad5a954fae68cb6e10f62e15567443579833cae956aca5  base-qemu-virt-release.bin
+d0712a238594200b6bef9081e97bb7fa845d016e1706465f6c960e1d1f216209  base-rpi4-dev.bin
+76907ac03b26ec4a3a9edf492e4fd55f011552b5bc376b0da037743ac8c734b9  base-rpi4-release.bin
+== locdiff rpi4-release
+exit 0
+@0x131488 tos-api/src/gemdos/ssystem.rs: line 204 -> 220 (+16) col 13
+@0x1315f0 tos-api/src/bdos/fs/cache.rs: line 561 -> 573 (+12) col 18
+16 differing bytes in 15 words; unexplained: 0; base 0xffff000000080000
+== locdiff rpi4-dev
+exit 0
+@0x13cb40 tos-api/src/bios/mod.rs: line 237 -> 239 (+2) col 34
+@0x13cb58 tos-api/src/bios/mod.rs: line 235 -> 237 (+2) col 35
+59 differing bytes in 58 words; unexplained: 0; base 0xffff000000080000
+== locdiff qemu-virt-release
+exit 0
+@0x129368 tos-api/src/gemdos/ssystem.rs: line 204 -> 220 (+16) col 13
+@0x1294d0 tos-api/src/bdos/fs/cache.rs: line 561 -> 573 (+12) col 18
+15 differing bytes in 14 words; unexplained: 0; base 0xffff000040080000
+== locdiff qemu-virt-dev
+exit 0
+@0x134508 tos-api/src/bios/mod.rs: line 237 -> 239 (+2) col 34
+@0x134520 tos-api/src/bios/mod.rs: line 235 -> 237 (+2) col 35
+34 differing bytes in 33 words; unexplained: 0; base 0xffff000040080000

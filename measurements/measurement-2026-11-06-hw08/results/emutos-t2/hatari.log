@@ -1,0 +1,71 @@
+INFO : Hatari v2.6.1, compiled on:  Aug 15 2025, 14:15:19
+INFO : IPF : capsimage library version release=5 revision=1
+INFO : Mounting IDE hard drive image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/wf/wfprobe.0IucWb/oracle/disk.img
+INFO : GEMDOS HDD emulation, D: <-> /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/wf/wfprobe.0IucWb/oracle/hd.
+ERROR: Microphone: SDL_OpenAudioDevice failed.
+INFO : NVRAM not found at '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/wf/wfprobe.0IucWb/oracle/home/hatari.nvram'
+WARN : Bus Error reading at address $20fffff, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fffffc21, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6c4710, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $5d1234, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6d3148, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $d003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+INFO : Strange screen size 16x480 -> aspect corrected by 32x1!
+INFO : OS clock ticks / second: 100
+
+
+
+
+
+                                                         
+                                                         
+                                                         
+                                                         
+                                                         
+                    ________________________________________
+
+                    EmuTOS Version:     20260414 
+                    CPU-Typ:            M68030 
+                    Rechner:            Atari Falcon 
+                    ST-RAM:             4 MB 
+                    Alt-RAM:            16 MB 
+                    GEMDOS-Laufwerke:   CD 
+                    Boot-Zeit:          2026/11/06 20:13:52 
+                    ________________________________________
+
+                    Halte <Strg> = ohne AUTO/ACC
+                    Halte <Alt> = keine Harddisk
+                    DrUcke 'X' um von Laufwerk X: zu booten
+                    DrUcke <Esc> fUr die Textkonsole
+
+                       FUr Pause <Shift> gedrUckt halten    
+
+
+=== WFPROBE case t2: every write times out for a while
+C: partition at 0, FATs at 1 and 129, root at 257, data at 289
+save BASE.DAT       Fcreate=6 Fwrite=5281,0 Fclose=0
+arm: hdv_rw hook answers -2 on sectors 0..0 count 0
+save RESULTS.PDF    Fcreate=-2 Fwrite=0,0 Fclose=0
+save P1.FBP         Fcreate=-2 Fwrite=0,0 Fclose=0
+save P2.FBP         Fcreate=-2 Fwrite=0,0 Fclose=0
+save P3.FBP         Fcreate=-2 Fwrite=0,0 Fclose=0
+disarm: fired 4
+save R1.FBP         Fcreate=6 Fwrite=5281,0 Fclose=0
+save R2.FBP         Fcreate=6 Fwrite=5281,0 Fclose=0
+save R3.FBP         Fcreate=6 Fwrite=5281,0 Fclose=0
+save R4.FBP         Fcreate=6 Fwrite=5281,0 Fclose=0
+look BASE.DAT       Fsfirst=0 size=5281 want=5281 Fopen=6 Fread=5281 same=1
+look RESULTS.PDF    Fsfirst=-33 size=-1 want=37156 Fopen=-33 Fread=-1 same=0
+look P1.FBP         Fsfirst=-33 size=-1 want=5281 Fopen=-33 Fread=-1 same=0
+look P2.FBP         Fsfirst=-33 size=-1 want=5281 Fopen=-33 Fread=-1 same=0
+look P3.FBP         Fsfirst=-33 size=-1 want=5281 Fopen=-33 Fread=-1 same=0
+look R1.FBP         Fsfirst=0 size=5281 want=5281 Fopen=6 Fread=5281 same=1
+look R2.FBP         Fsfirst=0 size=5281 want=5281 Fopen=6 Fread=5281 same=1
+look R3.FBP         Fsfirst=0 size=5281 want=5281 Fopen=6 Fread=5281 same=1
+look R4.FBP         Fsfirst=0 size=5281 want=5281 Fopen=6 Fread=5281 same=1
+Dfree(C:)=0 free=32656 total=32672
+END
+log Fwrite done
+WFPROBE done

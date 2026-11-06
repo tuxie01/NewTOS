@@ -1,0 +1,15 @@
+@0xbe438 kernel/src/lib.rs: line 1259 -> 1263 (+4) col 35
+@0xbe940 kernel/src/lib.rs: line 1009 -> 1013 (+4) col 14
+@0xbf498 kernel/src/lib.rs: line 985 -> 989 (+4) col 14
+@0xbf518 kernel/src/lib.rs: line 1041 -> 1045 (+4) col 19
+@0xbf550 kernel/src/lib.rs: line 1021 -> 1025 (+4) col 14
+@0xbf5e8 kernel/src/lib.rs: line 862 -> 866 (+4) col 35
+@0x11e460 kernel/src/host_env.rs: line 562 -> 580 (+18) col 42
+@0x122dc8 tos-api/src/bdos/fs/cache.rs: line 529 -> 541 (+12) col 18
+@0x122de0 tos-api/src/bdos/fs/cache.rs: line 415 -> 427 (+12) col 22
+@0x123130 tos-api/src/bdos/fs/cache.rs: line 473 -> 485 (+12) col 29
+@0x123148 tos-api/src/bdos/fs/cache.rs: line 489 -> 501 (+12) col 22
+@0x129350 tos-api/src/gemdos/ssystem.rs: line 210 -> 226 (+16) col 5
+@0x129368 tos-api/src/gemdos/ssystem.rs: line 204 -> 220 (+16) col 13
+@0x1294d0 tos-api/src/bdos/fs/cache.rs: line 561 -> 573 (+12) col 18
+15 differing bytes in 14 words; unexplained: 0; base 0xffff000040080000
