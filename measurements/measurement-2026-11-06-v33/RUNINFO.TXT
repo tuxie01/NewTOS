@@ -1,0 +1,73 @@
+V33 -- TASK/V33.md (VDI-TEXT-010): vst_load_fonts / vst_unload_fonts, the GDOS font chain, against the pinned
+oracle. Developer run, 2026-11-06, before the commit; not the Tester's acceptance. No card, no Pi, no push.
+
+WHAT RAN
+  NewTOS   working tree on 587ddbd5 with the V33 change (uncommitted at the time, the commit of this run holds
+           it); rpi4 release kernel8.img sha256 1e6fafabd3920f35caedf53c574c79af6147bd9dc949996cb7b3d637f84870d9
+           (not kept). probe/*/run.txt says "10 dirty paths".
+  EmuTOS   1a7484aba1bfba23e2c0899e243b6d8177fe41df, ROM tools/oracle/etos512de-1a7484ab.img,
+           tools/hatari-oracle.sh falcontc (640x480 16-bit truecolor), Hatari 2.6.1 (probe/e1/hatari.log)
+  Boards   QEMU raspi4b, -append serial=on, APFS clone per boot (removed by the scripts)
+  host_clang  Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card manifest)
+  Manifests (4): probe/n1, probe/n2, runs/newtos-vdi-v18t2, runs/newtos-vdi-all, each card.img.manifest;
+           optional_missing, verbatim, in all of them:
+           optional_missing none
+  Commands method/run.sh, in two steps: the tables on the kernel above with the probe before TXZ was added,
+           then the probe alone on the same kernel with TXZ (the runs of the tables do not use the probe). The
+           hashes of the host test come from method/gen-grabs.py.
+
+INSTRUMENT
+  tosdump/probes/vdprobe.c  cases TXA..TXZ appended after tv (function tx); the 385 records before them
+           unchanged: probe/e1 starts with the bytes of measurements/measurement-2026-11-06-v30/probe/e1
+           (8888257 bytes, prefix compare). main takes "TXZ <handle>": the child process of TXZ. logbuf 131072.
+           VDPROBE.PRG 9a6694b2e2f333dd..., NAP in probe/*/run.txt.
+
+REPRODUCIBLE
+  probe/e1 == probe/e2  BIN 4662c03f108ccc6a..., LOG d356ad6fd0477fc9... (e2: sha256 only)
+  probe/n1 == probe/n2  BIN 7168fb02f6c652a4..., LOG 7d01a2755e0095c4... (n2: sha256 only)
+
+RESULT (probe/compare-e1-n1.txt: 412 grabs, 22 differ; maps of the TX* ones in probe/maps/)
+  V33's finding, now equal:
+    T13A T13B: pixels and LOG (vst_load_fonts 1, vqt_name(2) "AUDIT FONT SEVEN", vst_font(7) 7, vqt_attributes,
+                vqt_fontinfo, second load 0, after the unload 1).
+    LOG, equal in every number: TXA TXA2 (faces 7,7,8,7 = 3; 7,7 = 1), TXB (sizes, DDA, double, re-drive), TXC (id 1),
+                TXD TXE (swap, flag, shared table), TXF1-5 (swap count), TXG (unload keeps cur_font), TXH (two
+                workstations), TXI.. (proportional: vqt_width, vqt_extent, vqt_fontinfo), TXH2 (F_HORZ_OFF), TXN
+                (re-drive on built-ins), TXP (signed char, 32-char name).
+    Pixels, equal: TXB TXC TXD TXG TXI TXIb TXIo TXIu TXR1 TXR2 TXR3 TXS1 TXS2 TXS3 TXJ TXO TXM TXC2 TXH2 TXK TXK2 TXL
+                TXN TXQ2 TXQ3.
+  Differ, new, on purpose:
+    TXZ   LOG only (lines 583-585): the loader of the chain has ended without unloading. EmuTOS reads the freed RAM (id 7),
+          NewTOS ends the chain (id 1). docs/COMPATIBILITY.md "GDOS font chain". The reader lives on: this is the case a
+          read with the caller's rights would have killed.
+  Differ, not V33, side finding reported to the lead (no fix here):
+    TXIs TXQ  skew in the replace mode: EmuTOS' screen_blit16 slides its window along the lean, so the cell's background
+          is a parallelogram; NewTOS paints a rectangle (vdi/vdi_textblit.c:1059-1075, vs draw_glyph_sized). Built-in fonts
+          too (TXQ: 8x16). Transparent mode equal (TXQ2, TXQ3). Probably the root of TVU (TASK/V41).
+  Differ, known, other tickets, unchanged against the V30 run: K5D (decision C), TPA TPB TPC TPD (V35), T14E T14K (V31),
+    TUE TUEw TVF TVG TVH TVI TWA (F_LIGHT, V39), TVK (V40), TVO TVP (V37), TVU TVUw (V41), TVZ (V42).
+    LOG differences besides TXZ: TPC, TPD (lines 343, 345), T18A (361-362): V35, V34.
+
+TABLES (cargo xtask tosdump; runs/)
+  runs/newtos-vdi-v18t2  vdi-v18-t2.tsv vs EMUTOS-1a7484ab-VDI-v18t2-falcontc: 4 of 32 differ: 50, 54 (V35), 86, 90 (V31);
+                         the same four as the V30 acceptance.
+  runs/newtos-vdi-all    vdi-all.tsv vs EMUTOS-1a7484ab-VDI-all-falcontc: 0 of 182 differ.
+
+HOST TEST ON THE BASE
+  tos-api/tests/vdi_reference/cases_v33.rs against the base's product code (git archive 587ddbd5 in scratch):
+  3 green, 27 red. Green: the layout assert (no product code), TXN (the re-drive on built-ins gives the same metrics,
+  the control) and TXQ2 (built-in skew, transparent: the control of the widened cell).
+  Tree: cargo xtask test 2190 / 0 / 1 (2160 + 30).
+
+GEMLIB BINDING
+  sdk/gemlib/build-gemlib.sh; llvm-objdump of vst_load_fonts.o: CONTRL at x29-0x24, `stur xzr, [x29, #-0xc]` = the 8 bytes of
+  CONTRL[12..15], the 16-WORD array ends at the saved select. Not run end to end: nothing on the card calls it
+  without GDOS (cflib fontsel.c behind gl_gdos).
+
+DEPENDENCIES  deps/<fn>-up.txt (cargo xtask deps on the tree).
+
+NOT DRIVEN / OPEN
+  Real Pi4: nothing run. The AES acceptance of TASK/V18 "Gemeinsam" (aes-r2/r3/r4, shprobe, slprobe, desktop)
+  belongs to the Tester. A second process reading the live chain of a running one (an accessory, resolve_kva with the block
+  allocated) is read in the code, not driven; TXZ drives only the block already freed. ILP32 (Abi::Ilp32 layout, CONTRL[10..11]):
+  no ILP32 process exists, not driven. A real GDOS is not installed on the oracle.

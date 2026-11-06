@@ -7,8 +7,9 @@
 //! opcodes that consume them.
 
 use super::backend::RasterBackend;
-use super::font;
+use super::font::{self, FontRef, SysFontId};
 use super::req_col;
+use super::text;
 use super::vwk::{self, validate_color_index, Vwk};
 use super::Vdipb;
 
@@ -166,10 +167,25 @@ pub fn vst_rotation(pb: &Vdipb, vwk: &mut Vwk) {
     pb.set_contrl(4, 1);
 }
 
-/// Opcode 21 — `vst_font`: select a text face. Only the system font
-/// (face 1) exists, so every request resolves to it.
-pub fn vst_font(pb: &Vdipb, _vwk: &mut Vwk) {
-    pb.set_intout(0, font::FONT_ID);
+/// Opcode 21 — `vst_font`: select a text face (EmuTOS `vdi_vst_font`,
+/// `vdi_text.c:939-985`). The first header of the face over the ring, `fon6x6`
+/// when there is none, then the size of the previous current font — its effective
+/// `point`/`top`, scaled header included — re-applied through `vst_point` or
+/// `vst_height`, whose `PTSOUT` go to a local there and so nowhere here. `INTOUT[0]`
+/// = the selected header's id. Leaves the trap's `flip_y` at 1 (`mod.rs`).
+pub fn vst_font(pb: &Vdipb, vwk: &mut Vwk) {
+    let old = text::effective_font(pb, vwk);
+    let face = pb.intin(0);
+    vwk.cur_font = match font::first_of_face(pb, face) {
+        Some((r, _, _)) => r,
+        None => FontRef::System(SysFontId::F6x6),
+    };
+    if vwk.pts_mode {
+        select_point(pb, vwk, old.point);
+    } else {
+        select_height(pb, vwk, old.top as u16);
+    }
+    pb.set_intout(0, text::effective_font(pb, vwk).font_id);
     pb.set_contrl(4, 1);
 }
 
@@ -188,7 +204,7 @@ fn setup_width_height(pb: &Vdipb, r: &SizeReport) {
     pb.set_ptsout(0, r.max_char_width);
     pb.set_ptsout(1, r.top);
     pb.set_ptsout(2, r.max_cell_width);
-    pb.set_ptsout(3, r.top + r.bottom + 1);
+    pb.set_ptsout(3, r.top.wrapping_add(r.bottom).wrapping_add(1));
     pb.set_contrl(2, 2);
 }
 
@@ -196,7 +212,8 @@ fn setup_width_height(pb: &Vdipb, r: &SizeReport) {
 /// font from `act` to `req` units. Returns `(dda_inc, t_sclsts)` where
 /// `t_sclsts` is `true` when enlarging; `0xFFFF` means "exactly double".
 fn clc_dda(act: u16, req: u16) -> (u16, bool) {
-    debug_assert!(act != 0);
+    // `act == 0` (a font's `top`, the program's to choose) cannot divide: `req`
+    // is never below it, and `req >= act` doubles.
     if req < act {
         let req = if req == 0 { 1 } else { req }; // scale down; min size 1
         ((((req as u32) << 16) / act as u32) as u16, false)
@@ -214,14 +231,14 @@ fn clc_dda(act: u16, req: u16) -> (u16, bool) {
 /// `top`-unit dimension under the DDA `(dda_inc, t_sclsts)`.
 fn act_siz(dda_inc: u16, t_sclsts: bool, top: u16) -> u16 {
     if dda_inc == 0xFFFF {
-        return top << 1; // exact double
+        return top.wrapping_shl(1); // exact double
     }
     let mut accu: u16 = 0x7FFF;
     let mut retval: u16 = if t_sclsts { top } else { 0 };
     for _ in 0..top {
         accu = accu.wrapping_add(dda_inc);
         if accu < dda_inc {
-            retval += 1; // carry out of 16 bits
+            retval = retval.wrapping_add(1); // carry out of 16 bits
         }
     }
     if top != 0 && retval == 0 {
@@ -246,7 +263,7 @@ fn base_report(f: &font::SysFont) -> SizeReport {
 /// `act_siz`.
 fn scaled_report(f: &font::SysFont, dda_inc: u16, t_sclsts: bool) -> SizeReport {
     let sz = |v: i16| act_siz(dda_inc, t_sclsts, v as u16) as i16;
-    let top = if dda_inc == 0xFFFF { f.top * 2 + 1 } else { sz(f.top) };
+    let top = if dda_inc == 0xFFFF { f.top.wrapping_mul(2).wrapping_add(1) } else { sz(f.top) };
     SizeReport {
         max_char_width: sz(f.max_char_width),
         top,
@@ -255,107 +272,194 @@ fn scaled_report(f: &font::SysFont, dda_inc: u16, t_sclsts: bool) -> SizeReport 
     }
 }
 
-/// Opcode 12 — `vst_height`: request a text height in device units
-/// (EmuTOS `vdi_vst_height`, `vdi_text.c:681-727`). Walk the font ring for
-/// the largest size in the current face whose `top` fits `PTSIN[1]`,
-/// select it into `cur_font`, and — if it is not an exact match — report
-/// the DDA-scaled metrics. `PTSOUT[0..3]` = the actual char/cell metrics.
-pub fn vst_height(pb: &Vdipb, vwk: &mut Vwk) {
-    let face = font::font(vwk.cur_font).font_id;
-    // UWORD comparison (EmuTOS `vdi_vst_height` uses `UWORD test_height`).
-    let test_height = pb.ptsin(1) as u16;
+/// A font of the current face to start the size walk from, and the ring slot to
+/// go on with. EmuTOS dereferences a NULL `test_font` when the face is gone from the
+/// ring — another workstation's `v_opnvwk` or unload while this one's `cur_font` is
+/// a loaded header (R13; `vdi_text.c:692-704` reads low memory). No defined result;
+/// here the walk starts on `fon6x6` and ends there (`docs/COMPATIBILITY.md` "GDOS
+/// font chain").
+fn start_of_face(pb: &Vdipb, face: i16) -> (FontRef, font::SysFont, usize) {
+    font::first_of_face(pb, face).unwrap_or((FontRef::System(SysFontId::F6x6), font::FON_6X6, 3))
+}
 
-    // Largest ring font (of the face) with top <= requested; else smallest.
-    let mut single = font::RING[0];
-    for &fid in &font::RING {
-        let f = font::font(fid);
-        if f.font_id == face && (f.top as u16) <= test_height {
-            single = fid;
+/// The traversal of `vdi_vst_height`/`vdi_vst_point` (`vdi_text.c:706-713`,
+/// `:845-855`): from the first header of the face along its list while `fits` holds,
+/// then from the head of each later ring slot the same way. A list stops at the first
+/// header that does not fit or has another id.
+fn walk_sizes(
+    pb: &Vdipb,
+    start: (FontRef, font::SysFont, usize),
+    face: i16,
+    mut fits: impl FnMut(FontRef, &font::SysFont) -> bool,
+) {
+    let (r, h, mut slot) = start;
+    let mut test = Some((r, h));
+    let mut steps = 0;
+    loop {
+        while let Some((r, h)) = test {
+            if !(h.font_id == face && fits(r, &h)) {
+                break;
+            }
+            steps += 1;
+            if steps >= font::MAX_CHAIN {
+                return;
+            }
+            test = font::next_font(&h).and_then(|n| font::head(pb, n).map(|nh| (n, nh)));
         }
+        let Some(n) = font::ring_slot(slot) else { return };
+        slot += 1;
+        test = font::head(pb, n).map(|nh| (n, nh));
     }
-    vwk.cur_font = single;
-    // Reset to the non-scaled state (EmuTOS `vdi_vst_height`: `vwk->scaled =
-    // FALSE`), overridden below when the size is not an exact ring match.
-    vwk.scaled = false;
+}
 
-    let f = font::font(single);
-    let report = if (f.top as u16) != test_height {
-        let (dda_inc, t_sclsts) = clc_dda(f.top as u16, test_height);
+/// `vdi_vst_height` from its size on (`vdi_text.c:681-727`): the last header of the
+/// face whose `top` fits (UWORD compare), scaled by DDA when not exact.
+fn select_height(pb: &Vdipb, vwk: &mut Vwk, test_height: u16) -> SizeReport {
+    let face = font::head_or_system(pb, vwk.cur_font).font_id;
+    vwk.pts_mode = false;
+    let start = start_of_face(pb, face);
+    let (mut single_ref, mut single) = (start.0, start.1);
+    walk_sizes(pb, start, face, |r, h| {
+        let ok = (h.top as u16) <= test_height;
+        if ok {
+            (single_ref, single) = (r, *h);
+        }
+        ok
+    });
+    vwk.cur_font = single_ref;
+    // Reset to the non-scaled state (`vwk->scaled = FALSE`), overridden below
+    // when the size is not an exact match.
+    vwk.scaled = false;
+    if (single.top as u16) != test_height {
+        let (dda_inc, t_sclsts) = clc_dda(single.top as u16, test_height);
         // Remember the DDA so the render path (`v_gtext`) actually scales the
         // glyph, not just the reported metrics (EmuTOS stores these on the
         // Vwk for `output_text`/`text_blt`).
         vwk.dda_inc = dda_inc;
         vwk.t_sclsts = t_sclsts;
         vwk.scaled = true;
-        scaled_report(f, dda_inc, t_sclsts)
+        scaled_report(&single, dda_inc, t_sclsts)
     } else {
-        base_report(f)
-    };
+        base_report(&single)
+    }
+}
+
+/// Opcode 12 — `vst_height`: request a text height in device units (`PTSIN[1]`).
+/// `PTSOUT[0..3]` = the actual char/cell metrics.
+pub fn vst_height(pb: &Vdipb, vwk: &mut Vwk) {
+    let report = select_height(pb, vwk, pb.ptsin(1) as u16);
     setup_width_height(pb, &report);
 }
 
-/// Opcode 107 — `vst_point`: request a text height in points (EmuTOS
-/// `vdi_vst_point`, `vdi_text.c:820-878`). Walk the ring for the largest
-/// size whose `point` fits `INTIN[0]`, plus the largest whose *doubled*
-/// point still fits; if the exact size is missing but the double fits,
-/// select the doubled font (`dda_inc = 0xFFFF`). `INTOUT[0]` = the point
-/// size actually set; `PTSOUT[0..3]` = its char/cell metrics.
-pub fn vst_point(pb: &Vdipb, vwk: &mut Vwk) {
-    let face = font::font(vwk.cur_font).font_id;
-    // WORD (signed) comparison (EmuTOS `vdi_vst_point` uses `WORD test_height`).
-    let test_height = pb.intin(0);
-
-    let mut single = font::RING[0];
-    let mut double = font::RING[0];
-    for &fid in &font::RING {
-        let f = font::font(fid);
-        if f.font_id == face && f.point <= test_height {
-            single = fid;
-            if f.point * 2 <= test_height {
-                double = fid;
+/// `vdi_vst_point` from its size on (`vdi_text.c:820-878`): the last header of the
+/// face whose `point` fits (WORD compare) and the last whose doubled `point` does;
+/// if the exact size is missing but the double fits, the doubled font
+/// (`dda_inc = 0xFFFF`). Returns the report and the point size actually set.
+fn select_point(pb: &Vdipb, vwk: &mut Vwk, test_height: i16) -> (SizeReport, i16) {
+    let face = font::head_or_system(pb, vwk.cur_font).font_id;
+    vwk.pts_mode = true;
+    let start = start_of_face(pb, face);
+    let (mut single_ref, mut single) = (start.0, start.1);
+    let (mut double_ref, mut double) = (start.0, start.1);
+    walk_sizes(pb, start, face, |r, f| {
+        let ok = f.point <= test_height;
+        if ok {
+            (single_ref, single) = (r, *f);
+            if f.point.wrapping_mul(2) <= test_height {
+                (double_ref, double) = (r, *f);
             }
         }
-    }
-    vwk.cur_font = single;
-    // Reset to the non-scaled state (EmuTOS `vdi_vst_point`: `vwk->scaled =
-    // FALSE`), overridden below when the doubled font is selected.
+        ok
+    });
+    vwk.cur_font = single_ref;
+    // Reset to the non-scaled state (`vwk->scaled = FALSE`), overridden below
+    // when the doubled font is selected.
     vwk.scaled = false;
-
-    let sf = font::font(single);
-    let (report, point_out) = if sf.point != test_height {
-        let df = font::font(double);
-        let h = df.point * 2;
-        if h > sf.point && h <= test_height {
+    if single.point != test_height {
+        let h = double.point.wrapping_mul(2);
+        if h > single.point && h <= test_height {
             // The exact size is absent but the doubled font fits: use it and
             // record the exact-double DDA so the render path scales it 2×
             // (EmuTOS sets `dda_inc = 0xFFFF; t_sclsts = 1` + `make_header`).
-            vwk.cur_font = double;
+            vwk.cur_font = double_ref;
             vwk.dda_inc = 0xFFFF;
             vwk.t_sclsts = true;
             vwk.scaled = true;
-            (scaled_report(df, 0xFFFF, true), df.point * 2)
-        } else {
-            (base_report(sf), sf.point)
+            return (scaled_report(&double, 0xFFFF, true), h);
         }
-    } else {
-        (base_report(sf), sf.point)
-    };
+    }
+    (base_report(&single), single.point)
+}
+
+/// Opcode 107 — `vst_point`: request a text height in points (`INTIN[0]`).
+/// `INTOUT[0]` = the point size actually set; `PTSOUT[0..3]` = its char/cell
+/// metrics.
+pub fn vst_point(pb: &Vdipb, vwk: &mut Vwk) {
+    let (report, point_out) = select_point(pb, vwk, pb.intin(0));
     setup_width_height(pb, &report);
     pb.set_intout(0, point_out); // point size actually set
     pb.set_contrl(4, 1);
 }
 
-/// Opcode 119 — `vst_load_fonts`: load extra font faces. Only the
-/// built-in system font exists, so no additional faces are ever loaded;
-/// returns the count of newly loaded fonts (0).
-pub fn vst_load_fonts(pb: &Vdipb) {
-    pb.set_intout(0, 0);
+/// Opcode 119 — `vst_load_fonts`: link the chain the caller (a GDOS) built
+/// (EmuTOS `vdi_vst_load_fonts`, `vdi_text.c:1292-1350`; rules R1-R5 of
+/// `docs/api/vdi/attributes/_text.md`). One chance per workstation: with a chain
+/// linked the answer is 0 and nothing is read. Otherwise the walk counts the faces
+/// (`font_id` differing from the *previous* header's, start id -1), swaps the data
+/// table of every header without `F_STDFORM` and sets that flag in the caller's
+/// header, then the chain becomes `font_ring[2]`.
+///
+/// A NULL chain — gemlib's binding always passes one — answers 0 and changes
+/// nothing (decision D2; EmuTOS dereferences it, no defined result). The scratch
+/// pointer and offset in `CONTRL` are not read: NewTOS' text path has its own
+/// working store (`docs/COMPATIBILITY.md` "GDOS font chain").
+pub fn vst_load_fonts(pb: &Vdipb, vwk: &mut Vwk) {
     pb.set_contrl(4, 1);
+    if vwk.loaded_fonts != 0 {
+        pb.set_intout(0, 0);
+        return;
+    }
+    let first = pb.contrl_font_chain();
+    if first == 0 {
+        pb.set_intout(0, 0);
+        return;
+    }
+    vwk.loaded_fonts = first;
+    let owner = font::owner_of_caller(pb);
+    let mut id: i16 = -1;
+    let mut count: i16 = 0;
+    let mut cur = first;
+    for _ in 0..font::MAX_CHAIN {
+        let at = font::LoadedRef { addr: cur, owner };
+        let Some(h) = font::head(pb, FontRef::Loaded(at)) else { return };
+        let Some(t) = h.loaded else { return };
+        if h.font_id != id {
+            id = h.font_id;
+            count = count.wrapping_add(1);
+        }
+        if t.flags & font::F_STDFORM == 0 {
+            font::trnsfont(pb, t.dat_table, t.form_width, h.form_height);
+            font::set_stdform(pb, cur, t.flags);
+        }
+        if pb.faulted() {
+            return;
+        }
+        cur = t.next_font;
+        if cur == 0 {
+            break;
+        }
+    }
+    font::set_loaded_ring(font::LoadedRef { addr: first, owner });
+    pb.set_intout(0, count);
 }
 
-/// Opcode 120 — `vst_unload_fonts`: unload extra fonts. Nothing was ever
-/// loaded beyond the system font, so this is a no-op.
-pub fn vst_unload_fonts(_pb: &Vdipb) {}
+/// Opcode 120 — `vst_unload_fonts` (EmuTOS `vdi_text.c:1353-1363`, R11): reads no
+/// input, frees nothing, checks nothing. `cur_font` stays: a workstation drawing in
+/// a loaded font keeps it until the next `vst_font` (measured, probe TXG).
+pub fn vst_unload_fonts(vwk: &mut Vwk) {
+    vwk.loaded_fonts = 0;
+    font::clear_loaded_ring();
+}
 
 /// Opcode 104 — `vsf_perimeter`: enable/disable the fill-area outline.
 pub fn vsf_perimeter(pb: &Vdipb, vwk: &mut Vwk) {

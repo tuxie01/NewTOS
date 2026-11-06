@@ -38,6 +38,8 @@
  *
  * TASK/V30 appends cases TV* (function tv, after t18): the text paths with
  * clipping off that T* leaves out.
+ *
+ * TASK/V33 appends cases TX* (function tx, after tv): the font chain beyond T13.
  */
 #include <osbind.h>
 #include <stdarg.h>
@@ -93,7 +95,7 @@ static void i2(int16_t op, int16_t a, int16_t b) { intin[0] = a; intin[1] = b; v
 static void p1(int16_t op, int16_t x, int16_t y) { ptsin[0] = x; ptsin[1] = y; vdi(op, 0, 1, 0); }
 
 /* ---- output ------------------------------------------------------------ */
-static char logbuf[65536];
+static char logbuf[131072];
 static int loglen;
 static long binfh = -1;
 
@@ -1718,6 +1720,607 @@ static void tv(void)
 	grab("TWA", 150, 90, 100, 230);
 }
 
+/* ---- TX (TASK/V33): the font chain beyond T13 ------------------------------------------------------------
+ * GDOS-style chains: several headers, sizes of a face, a loaded font with a built-in's id, fonts without
+ * F_STDFORM, unload, two workstations, proportional and F_HORZ_OFF fonts, a big cell, the pts_mode re-drive.
+ * The chain goes where t13_load puts it (D1); struct t13_fh is the caller's Fonthead on both sides (D3). */
+#define F_HORZ 2
+#define F_STD 4
+#define F_MONO 8
+static struct t13_fh tx_f[4];
+static uint16_t tx_off[300];
+static uint8_t tx_hor[600];
+static uint8_t tx_dat[70100];
+static uint16_t tx_align_dummy;		/* keeps tx_dat2 word-aligned on m68k */
+static uint8_t tx_dat2[8000];
+
+static void tx_pattern(uint8_t *d, int fw, int fh)
+{
+	int c, r;
+
+	for (r = 0; r < fh; r++)
+		for (c = 0; c < fw; c++)
+			d[(long)r * fw + c] = (uint8_t)(((c * 29 + r * 53) ^ 0xA5) | 0x81);
+}
+
+/* A header with the T13 defaults; id, point, top, bottom, cell, first, last, flags, tables, next. */
+static void tx_head(struct t13_fh *f, int id, int point, const char *name, int top, int bottom, int cell, int first, int last,
+		    int flags, const uint16_t *off, const void *dat, int fw, int fh, struct t13_fh *next)
+{
+	memset(f, 0, sizeof *f);
+	f->font_id = (int16_t)id;
+	f->point = (int16_t)point;
+	memcpy(f->name, name, strlen(name));
+	f->first_ade = (uint16_t)first; f->last_ade = (uint16_t)last;
+	f->top = (uint16_t)top; f->ascent = (uint16_t)top; f->half = (uint16_t)(top * 2 / 3);
+	f->descent = (uint16_t)(bottom ? bottom : 1); f->bottom = (uint16_t)bottom;
+	f->max_char_width = (uint16_t)cell; f->max_cell_width = (uint16_t)cell;
+	f->left_offset = 2; f->right_offset = 3; f->thicken = 1; f->ul_size = 1;
+	f->lighten = 0x5555; f->skew = 0x5555;
+	f->flags = (uint16_t)flags;
+	f->off_table = off;
+	f->dat_table = (const uint16_t *)dat;
+	f->form_width = (uint16_t)fw; f->form_height = (uint16_t)fh;
+	f->next_font = next;
+}
+
+static void tx_load(struct t13_fh *chain)
+{
+	void *scr = t13_scratch, *fp = chain;
+
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 119; contrl[3] = 1; contrl[6] = handle;
+	intin[0] = 0;
+	if (sizeof(void *) == 4) {
+		memcpy(&contrl[7], &scr, 4);
+		contrl[9] = 2048;
+		memcpy(&contrl[10], &fp, 4);
+	} else {
+		memcpy(&contrl[7], &scr, sizeof scr);
+		contrl[11] = 2048;
+		memcpy(&contrl[12], &fp, sizeof fp);
+	}
+	intout[0] = 0x7777;
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);
+	emit("   vst_load_fonts c2=%d c4=%d io %d\n", contrl[2], contrl[4], intout[0]);
+}
+
+static void tx_unload(void)
+{
+	intin[0] = 0;
+	vdi(120, 0, 0, 1);
+	emit("   vst_unload_fonts c2=%d c4=%d\n", contrl[2], contrl[4]);
+}
+
+static void tx_attr(const char *tag)
+{
+	vdi(38, 0, 0, 0);
+	logout(tag, 6, 2);
+}
+
+static void tx_font(int id)
+{
+	i1(21, (int16_t)id);
+	logout("vst_font", 1, 0);
+}
+
+static void tx_height(int h)
+{
+	p1(12, 0, (int16_t)h);
+	logout("vst_height", 0, 2);
+}
+
+static void tx_point(int p)
+{
+	i1(107, (int16_t)p);
+	logout("vst_point", 1, 2);
+}
+
+static void tx_width(int c)
+{
+	memset(ptsout, 0x77, 6 * 2);
+	i1(117, (int16_t)c);
+	logout("vqt_width", 1, 3);
+}
+
+static void tx_extent(const char *s)
+{
+	int i, n = (int)strlen(s);
+
+	for (i = 0; i < n; i++)
+		intin[i] = (int16_t)(uint8_t)s[i];
+	vdi(116, 0, 0, (int16_t)n);
+	logout("vqt_extent", 0, 4);
+}
+
+/* the proportional font: char c is 3 + (c % 6) wide, 12 rows, top 8, bottom 3 */
+static void tx_prop(int flags)
+{
+	int c, x = 0, fw;
+
+	for (c = 0; c < 64; c++) {
+		tx_off[c] = (uint16_t)x;
+		x += 3 + (c % 6);
+	}
+	tx_off[64] = (uint16_t)x;
+	fw = ((x + 15) / 16) * 2;
+	tx_pattern(tx_dat, fw, 12);
+	tx_head(&tx_f[0], 20, 12, "AUDIT PROPORTIONAL", 8, 3, 8, 32, 95, flags, tx_off, tx_dat, fw, 12, NULL);
+	for (c = 0; c < 128; c++)
+		tx_hor[c] = (uint8_t)(c % 4);
+	tx_f[0].hor_table = tx_hor;
+}
+
+static void tx_prop_begin(const char *name, const char *what)
+{
+	tbegin(name, what);
+	tx_prop(F_STD);
+	tx_load(&tx_f[0]);
+	i1(21, 20);
+	p1(12, 0, 8);
+}
+
+static void tx_end(void)
+{
+	i1(21, 1);
+	intin[0] = 0;
+	vdi(120, 0, 0, 1);
+	treset();
+}
+
+static void tx_swap_case(const char *name, int fw, int fh)
+{
+	long i, n = (long)fw * fh, first = -1, last = -1, cnt = 0;
+
+	begin(name, "no F_STDFORM: how many words of the data table does vst_load_fonts swap");
+	for (i = 0; i < 70100; i++)
+		tx_dat[i] = (uint8_t)(i * 7 + (i >> 8) + 1);
+	for (i = 0; i < 64; i++)
+		tx_off[i] = (uint16_t)(8 * i);
+	tx_head(&tx_f[0], 11, 12, "AUDIT SWAP", 6, 1, 8, 32, 95, F_MONO, tx_off, tx_dat, fw, fh, NULL);
+	tx_load(&tx_f[0]);
+	for (i = 0; i + 1 < 70100; i += 2) {
+		if (tx_dat[i] == (uint8_t)((i + 1) * 7 + ((i + 1) >> 8) + 1) && tx_dat[i + 1] == (uint8_t)(i * 7 + (i >> 8) + 1)) {
+			if (first < 0)
+				first = i;
+			last = i;
+			cnt++;
+		}
+	}
+	emit("   fw %d fh %d product %ld words swapped %ld first %ld last %ld flags %d\n", fw, fh, n, cnt, first, last, tx_f[0].flags);
+	tx_end();
+}
+
+static void tx_a(void)
+{
+	int i;
+
+	t13_build();
+	tbegin("TXA", "chain ids 7,7,8,7: count, vqt_name over it, vst_font on the middle face");
+	tx_f[3] = t13_font; tx_f[2] = t13_font; tx_f[1] = t13_font; tx_f[0] = t13_font;
+	tx_f[0].next_font = &tx_f[1]; tx_f[1].next_font = &tx_f[2]; tx_f[2].next_font = &tx_f[3];
+	tx_f[2].font_id = 8;
+	memcpy(tx_f[2].name, "AUDIT FONT EIGHT", 16);
+	tx_load(&tx_f[0]);
+	for (i = 0; i <= 6; i++)
+		t13_name(i);
+	tx_font(8);
+	tx_attr("attr");
+	tx_font(7);
+	tx_attr("attr");
+	tx_end();
+	tbegin("TXA2", "chain 7,7: count 1");
+	tx_f[1].next_font = NULL;
+	tx_load(&tx_f[0]);
+	t13_name(2);
+	t13_name(3);
+	tx_end();
+}
+
+static void tx_b(void)
+{
+	int c;
+
+	tbegin("TXB", "one face in two sizes (top 6 point 8, top 13 point 16): vst_height, vst_point, re-drive");
+	for (c = 0; c <= 64; c++)
+		tx_off[c] = (uint16_t)(8 * c);
+	tx_pattern(tx_dat, 64, 16);
+	tx_pattern(tx_dat2, 64, 8);
+	tx_head(&tx_f[1], 9, 16, "AUDIT SIZES", 13, 2, 8, 32, 95, F_STD | F_MONO, tx_off, tx_dat, 64, 16, NULL);
+	tx_head(&tx_f[0], 9, 8, "AUDIT SIZES", 6, 1, 8, 32, 95, F_STD | F_MONO, tx_off, tx_dat2, 64, 8, &tx_f[1]);
+	tx_load(&tx_f[0]);
+	tx_font(9);
+	tx_attr("attr");
+	tx_height(6); tx_height(13); tx_height(10); tx_height(26); tx_height(3); tx_height(0);
+	tx_point(8); tx_point(16); tx_point(12); tx_point(32); tx_point(20); tx_point(34); tx_point(4);
+	tx_point(32);
+	tx_font(9);
+	tx_attr("attr after re-drive by point");
+	gtext(20, 100, "AB@_");
+	grab("TXB", 0, 60, 140, 70);
+	tx_font(1);
+	tx_attr("attr system face, pts_mode");
+	tx_end();
+}
+
+static void tx_c(void)
+{
+	int c;
+
+	tbegin("TXC", "loaded font with id 1 (top 20): no new face, vst_font(1) stays built-in, vst_height(20) finds it");
+	for (c = 0; c <= 64; c++)
+		tx_off[c] = (uint16_t)(12 * c);
+	tx_pattern(tx_dat, 96, 24);
+	tx_head(&tx_f[0], 1, 14, "AUDIT ONE", 20, 3, 12, 32, 95, F_STD | F_MONO, tx_off, tx_dat, 96, 24, NULL);
+	tx_load(&tx_f[0]);
+	t13_name(1); t13_name(2);
+	tx_font(1);
+	tx_attr("attr");
+	tx_height(20);
+	tx_attr("attr");
+	gtext(20, 100, "AB@_");
+	grab("TXC", 0, 60, 120, 60);
+	tx_height(8);
+	tx_attr("attr");
+	tx_point(14);
+	tx_attr("attr");
+	tx_end();
+	tx_attr("attr after unload");
+}
+
+static void tx_d(void)
+{
+	int c;
+
+	tbegin("TXD", "no F_STDFORM, odd form_width 65: words swapped in the caller's table, flag set in its header");
+	for (c = 0; c <= 64; c++)
+		tx_off[c] = (uint16_t)(8 * c);
+	tx_pattern(tx_dat, 65, 8);
+	emit("   before d %d %d %d %d .. %d %d %d flags %d\n", tx_dat[0], tx_dat[1], tx_dat[2], tx_dat[3], tx_dat[518], tx_dat[519], tx_dat[520], F_MONO);
+	tx_head(&tx_f[0], 12, 12, "AUDIT SWAPPED", 6, 1, 8, 32, 95, F_MONO, tx_off, tx_dat, 65, 8, NULL);
+	tx_load(&tx_f[0]);
+	emit("   after  d %d %d %d %d .. %d %d %d flags %d\n", tx_dat[0], tx_dat[1], tx_dat[2], tx_dat[3], tx_dat[518], tx_dat[519], tx_dat[520], tx_f[0].flags);
+	tx_font(12);
+	p1(12, 0, 6);
+	gtext(20, 100, "AB@_");
+	grab("TXD", 0, 80, 120, 40);
+	tx_end();
+	tbegin("TXE", "two headers without F_STDFORM share one data table: the second swaps it back");
+	tx_pattern(tx_dat, 64, 8);
+	tx_head(&tx_f[1], 12, 14, "AUDIT SHARED", 6, 1, 8, 32, 95, F_MONO, tx_off, tx_dat, 64, 8, NULL);
+	tx_head(&tx_f[0], 12, 12, "AUDIT SHARED", 6, 1, 8, 32, 95, F_MONO, tx_off, tx_dat, 64, 8, &tx_f[1]);
+	tx_load(&tx_f[0]);
+	emit("   after  d %d %d flags %d %d\n", tx_dat[0], tx_dat[1], tx_f[0].flags, tx_f[1].flags);
+	tx_end();
+	tx_swap_case("TXF1", 255, 128);
+	tx_swap_case("TXF2", 256, 128);
+	tx_swap_case("TXF3", 400, 100);
+	tx_swap_case("TXF4", 512, 128);
+	tx_swap_case("TXF5", 700, 100);
+}
+
+static void tx_g(void)
+{
+	t13_build();
+	tbegin("TXG", "unload keeps cur_font: the glyphs stay; a second load works; unload without load");
+	tx_load(&t13_font);
+	tx_font(7);
+	tx_unload();
+	tx_attr("attr after unload");
+	gtext(20, 100, "AB@_");
+	grab("TXG", 0, 80, 120, 40);
+	t13_name(2);
+	tx_load(&t13_font);
+	t13_name(2);
+	tx_unload();
+	tx_unload();
+	tx_load(&t13_font);
+	tx_end();
+}
+
+/* R13: the guard per workstation, the ring global */
+static void tx_h(void)
+{
+	int16_t a = handle, b;
+	int i;
+
+	t13_build();
+	tbegin("TXH", "two workstations: open clears the ring, the guard stays, a load on B replaces, unload on B empties");
+	tx_load(&t13_font);
+	t13_name(2);
+	for (i = 0; i < 10; i++)
+		intin[i] = 1;
+	intin[10] = 2;
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 100; contrl[3] = 11; contrl[6] = handle;
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);	/* v_opnvwk */
+	b = contrl[6];
+	t13_name(2);
+	tx_load(&t13_font);
+	t13_name(2);
+	handle = b;
+	tx_load(&t13_font);
+	t13_name(2);
+	handle = a;
+	t13_name(2);
+	handle = b;
+	tx_unload();
+	handle = a;
+	t13_name(2);
+	tx_load(&t13_font);
+	tx_unload();
+	tx_load(&t13_font);
+	t13_name(2);
+	handle = b;
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 101; contrl[6] = handle;
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);	/* v_clsvwk */
+	handle = a;
+	t13_name(2);
+	tx_end();
+}
+
+static void tx_i(void)
+{
+	tx_prop_begin("TXI", "proportional font: v_gtext, vqt_width, vqt_extent, vqt_fontinfo");
+	tx_attr("attr");
+	vdi(131, 0, 0, 0);
+	logout("vqt_fontinfo", 2, 5);
+	tx_width('A'); tx_width(' '); tx_width(95); tx_width(31); tx_width(96); tx_width(-1);
+	tx_extent("ABC @_");
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXI", 0, 80, 200, 40);
+	tx_end();
+	tx_prop_begin("TXIb", "proportional, bold: the width and the pen grow by thicken");
+	i1(106, 1);
+	tx_extent("ABC @_");
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXIb", 0, 80, 200, 40);
+	tx_end();
+	tx_prop_begin("TXIs", "proportional, skew");
+	i1(106, 4);
+	tx_extent("ABC @_");
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXIs", 0, 80, 200, 40);
+	tx_end();
+	tx_prop_begin("TXIo", "proportional, outline");
+	i1(106, 16);
+	tx_extent("ABC @_");
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXIo", 0, 80, 200, 40);
+	tx_end();
+	tx_prop_begin("TXIu", "proportional, underline");
+	i1(106, 8);
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXIu", 0, 80, 200, 40);
+	tx_end();
+	tx_prop_begin("TXR1", "proportional, rotation 900");
+	i1(13, 900);
+	tx_extent("ABC @_");
+	gtext(100, 200, "ABC @_ HELLO");
+	grab("TXR1", 60, 60, 80, 160);
+	tx_end();
+	tx_prop_begin("TXR2", "proportional, rotation 1800");
+	i1(13, 1800);
+	gtext(300, 100, "ABC @_ HELLO");
+	grab("TXR2", 120, 70, 200, 50);
+	tx_end();
+	tx_prop_begin("TXR3", "proportional, rotation 2700");
+	i1(13, 2700);
+	gtext(100, 60, "ABC @_ HELLO");
+	grab("TXR3", 60, 40, 80, 160);
+	tx_end();
+	tx_prop_begin("TXS1", "proportional, exact double");
+	tx_height(16);
+	tx_extent("ABC @_");
+	tx_width('A');
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXS1", 0, 70, 300, 50);
+	tx_end();
+	tx_prop_begin("TXS2", "proportional, DDA up");
+	tx_height(12);
+	tx_extent("ABC @_");
+	tx_width('A');
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXS2", 0, 70, 300, 50);
+	tx_end();
+	tx_prop_begin("TXS3", "proportional, DDA down");
+	tx_height(5);
+	tx_extent("ABC @_");
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXS3", 0, 70, 300, 50);
+	tx_end();
+	tx_prop_begin("TXJ", "proportional, v_justified interword + interchar");
+	justified(20, 100, 200, 1, 1, "ABC @_ HELLO");
+	grab("TXJ", 0, 80, 260, 40);
+	tx_end();
+	tx_prop_begin("TXO", "code below first_ade and above last_ade: '?'");
+	intin[0] = 10; intin[1] = 200; intin[2] = 65; intin[3] = -5;
+	ptsin[0] = 20; ptsin[1] = 100;
+	vdi(8, 0, 1, 4);
+	grab("TXO", 0, 80, 120, 40);
+	tx_end();
+	tx_prop_begin("TXM", "writing modes transparent, XOR, reverse transparent over a filled bar");
+	i1(32, 2);
+	gtext(20, 60, "ABC @_ HELLO");
+	i1(32, 3);
+	gtext(20, 80, "ABC @_ HELLO");
+	i1(32, 4);
+	gtext(20, 100, "ABC @_ HELLO");
+	i1(32, 1);
+	grab("TXM", 0, 40, 200, 80);
+	tx_end();
+	tx_prop_begin("TXC2", "alignment: right + centre, half + descent, clip across the run");
+	i2(39, 2, 1);
+	gtext(200, 60, "ABC @_ HELLO");
+	i2(39, 1, 4);
+	gtext(200, 90, "ABC @_ HELLO");
+	i2(39, 0, 0);
+	clip(1, 40, 100, 90, 125);
+	gtext(20, 120, "ABC @_ HELLO");
+	clip(0, 0, 0, 0, 0);
+	grab("TXC2", 0, 40, 300, 100);
+	tx_end();
+	tbegin("TXH2", "F_HORZ_OFF: the pen takes hor_table[k], vqt_width reads hor_table[k*2], [k*2+1]");
+	tx_prop(F_STD | F_HORZ);
+	tx_load(&tx_f[0]);
+	i1(21, 20);
+	p1(12, 0, 8);
+	tx_width('A'); tx_width('B'); tx_width('_');
+	tx_extent("ABC @_");
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXH2", 0, 80, 240, 40);
+	tx_end();
+}
+
+static void tx_k(void)
+{
+	int c;
+
+	tbegin("TXK", "a cell 40 x 40, not byte-aligned tables, unscaled and doubled");
+	for (c = 0; c <= 64; c++)
+		tx_off[c] = (uint16_t)(37 * c);
+	tx_pattern(tx_dat, 296, 40);
+	tx_head(&tx_f[0], 13, 30, "AUDIT BIG", 30, 9, 37, 32, 95, F_STD | F_MONO, tx_off, tx_dat, 296, 40, NULL);
+	tx_load(&tx_f[0]);
+	i1(21, 13);
+	tx_height(30);
+	gtext(20, 100, "AB");
+	grab("TXK", 0, 50, 120, 70);
+	tx_height(60);
+	gtext(20, 300, "AB");
+	grab("TXK2", 0, 200, 200, 130);
+	tx_end();
+	tbegin("TXL", "monospace 8x16, codes 0..255: EmuTOS' direct blit");
+	for (c = 0; c <= 256; c++)
+		tx_off[c] = (uint16_t)(8 * c);
+	tx_pattern(tx_dat, 256, 16);
+	tx_head(&tx_f[0], 14, 10, "AUDIT DIRECT", 13, 2, 8, 0, 255, F_STD | F_MONO, tx_off, tx_dat, 256, 16, NULL);
+	tx_load(&tx_f[0]);
+	i1(21, 14);
+	tx_height(13);
+	gtext(16, 100, "AB@_ abc");
+	i1(32, 2);
+	gtext(16, 130, "AB@_ abc");
+	i1(32, 1);
+	grab("TXL", 0, 80, 120, 60);
+	tx_end();
+}
+
+/* the re-drive on the built-in faces, no chain (vst_font was a stub in NewTOS before V33) */
+static void tx_m(void)
+{
+	tbegin("TXN", "system faces: vst_point(20), vst_font(1), vst_font(99); vst_height(20), vst_font(1)");
+	tx_point(20);
+	tx_font(1);
+	tx_attr("attr");
+	tx_font(99);
+	tx_attr("attr");
+	gtext(20, 100, "AB@_");
+	grab("TXN", 0, 60, 120, 60);
+	tx_height(20);
+	tx_font(1);
+	tx_attr("attr");
+	gtext(20, 200, "AB@_");
+	tx_height(3);
+	tx_font(1);
+	tx_attr("attr");
+	tx_height(11);
+	tx_font(1);
+	tx_attr("attr");
+	tx_point(9);
+	tx_font(1);
+	tx_attr("attr");
+	treset();
+}
+
+/* R8: `char` of the ROM's build, and a name of the full 32 characters without NUL */
+static void tx_p(void)
+{
+	int i;
+
+	t13_build();
+	tbegin("TXP", "vqt_name: a character above 127, a name of 32 characters without NUL");
+	memset(t13_font.name, 'N', sizeof t13_font.name);
+	t13_font.name[1] = (char)0xE4;
+	tx_load(&t13_font);
+	memset(intout, 0x77, 40 * 2);
+	intin[0] = 2;
+	vdi(130, 0, 0, 1);
+	emit("   vqt_name c4=%d io", contrl[4]);
+	for (i = 0; i < 36; i++)
+		emit(" %d", intout[i]);
+	emit("\n");
+	tx_end();
+}
+
+/* skew in the replace and the transparent mode: is the slanted box a matter of the font? */
+static void tx_q(void)
+{
+	tbegin("TXQ", "built-in 8x16, skew, replace");
+	p1(12, 0, 13);
+	i1(106, 4);
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXQ", 0, 80, 200, 40);
+	tbegin("TXQ2", "built-in 8x16, skew, transparent");
+	p1(12, 0, 13);
+	i1(106, 4);
+	i1(32, 2);
+	gtext(20, 100, "ABC @_ HELLO");
+	i1(32, 1);
+	grab("TXQ2", 0, 80, 200, 40);
+	tx_prop_begin("TXQ3", "proportional, skew, transparent");
+	i1(106, 4);
+	i1(32, 2);
+	gtext(20, 100, "ABC @_ HELLO");
+	i1(32, 1);
+	grab("TXQ3", 0, 80, 200, 40);
+	tx_end();
+}
+
+/* A chain whose loader ended without unloading: font_ring[2] points into freed memory. EmuTOS reads the
+ * freed RAM (the fonts stay until it is reused); NewTOS ends the chain there and the reader goes on
+ * (docs/COMPATIBILITY.md "GDOS font chain"). A LOG difference on purpose. The child is this program,
+ * started with "TXZ <handle>", see main. */
+static void tx_z(void)
+{
+	char cmd[16];
+	long rc;
+
+	t13_build();
+	tbegin("TXZ", "a child loads a chain on our handle and ends without unloading; then we walk the ring");
+	snprintf(cmd + 1, sizeof cmd - 1, "TXZ %d", handle);
+	cmd[0] = (char)strlen(cmd + 1);
+	rc = Pexec(0, sizeof(void *) == 4 ? "VDPROBE.PRG" : "C:\\VDPROBE.NAP", cmd, "");
+	emit("   Pexec rc %ld\n", rc);
+	t13_name(2);
+	tx_font(7);
+	tx_attr("attr");
+	tx_load(&t13_font);
+	tx_unload();
+	t13_name(2);
+	tx_load(&t13_font);
+	t13_name(2);
+	tx_end();
+}
+
+static void tx(void)
+{
+	(void)tx_align_dummy;
+	tx_a();
+	tx_b();
+	tx_c();
+	tx_d();
+	tx_g();
+	tx_h();
+	tx_i();
+	tx_k();
+	tx_m();
+	tx_p();
+	tx_q();
+	tx_z();
+}
+
 static void t2(void)
 {
 	t19();
@@ -1731,14 +2334,24 @@ static void t2(void)
 	t18();
 	tv();
 	treset();
+	tx();
 }
 
 
-int main(void)
+int main(int argc, char **argv)
 {
 	int16_t ap_id;
 	int i;
 	uint8_t hd[6];
+
+	if (argc >= 3 && strcmp(argv[1], "TXZ") == 0) {	/* the child of tx_z */
+		handle = 0;
+		for (i = 0; argv[2][i]; i++)
+			handle = (int16_t)(handle * 10 + (argv[2][i] - '0'));
+		t13_build();
+		t13_load();
+		return 0;
+	}
 
 	ap_id = aes(10, 0, 1, 0);		/* appl_init */
 	if (ap_id < 0)

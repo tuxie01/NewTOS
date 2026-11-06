@@ -254,6 +254,26 @@ impl Vdipb {
             0
         })
     }
+    /// The chain pointer of `vst_load_fonts` at the **caller's** pointer width:
+    /// behind scratch pointer and offset, `CONTRL[12..15]` on LP64,
+    /// `CONTRL[10..11]` on ILP32 (decision D1, `docs/COMPATIBILITY.md` "GDOS font
+    /// chain"; the m68k layout `vdi/vdi_text.c:1308-1317`). Not `contrl_ptr`'s
+    /// `7 + n * N_PTRINTS`: a WORD sits between the two pointers. Read in the
+    /// caller's space (0 after a fault).
+    #[inline]
+    pub fn contrl_font_chain(&self) -> u64 {
+        if self.faulted.get() {
+            return 0;
+        }
+        let r = match self.abi {
+            Abi::Lp64 => self.space.get_u64(self.contrl_va + 2 * 12),
+            Abi::Ilp32 => self.space.get_u32(self.contrl_va + 2 * 10).map(u64::from),
+        };
+        r.unwrap_or_else(|_| {
+            self.faulted.set(true);
+            0
+        })
+    }
     /// Write VDI pointer slot `n` back into CONTRL at the **caller's**
     /// pointer width — the inverse of [`Vdipb::contrl_ptr`], used to return
     /// the previous routine pointer from the `vex_*` calls. gemlib reads slot
@@ -522,8 +542,8 @@ fn screen(pb: &Vdipb) -> i16 {
                     112 => attributes::vsf_udpat(pb, vwk, backend.planes()),
                     129 => attributes::vs_clip(pb, vwk, backend),
                     5 => escape::v_escape(pb, backend),
-                    119 => attributes::vst_load_fonts(pb),
-                    120 => attributes::vst_unload_fonts(pb),
+                    119 => attributes::vst_load_fonts(pb, vwk),
+                    120 => attributes::vst_unload_fonts(vwk),
                     6 => primitives::v_pline(pb, vwk, backend),
                     7 => primitives::v_pmarker(pb, vwk, backend),
                     8 => text::v_gtext(pb, vwk, backend),

@@ -17,6 +17,27 @@
 //!   (`fnt_st_8x16`). They are that face's numbers, not "the" system font:
 //!   code that draws in the default font asks [`text_init_def_font`] /
 //!   [`font_set_default`] for the face and reads [`glyph_rows`].
+//! * The loaded-font chain (`vst_load_fonts`, EmuTOS `font_ring[2]`,
+//!   `TASK/V33.md`): [`FontRef`], [`head`], the ring walk and the swap of a font
+//!   without `F_STDFORM` ([`trnsfont`]).
+//!
+//! **Byte order of a glyph table.** A row is a stream of bytes, leftmost byte
+//! first, bit 7 = leftmost pixel — the built-in rasters above and, read through
+//! [`read_mem`], a loaded `dat_table` alike. That is the Motorola byte order
+//! `F_STDFORM` names (`include/fonthdr.h:23`): EmuTOS' big-endian word read with
+//! `0x8000 >> (SOURCEX & 15)` (`vdi/vdi_textblit.c:1232-1233`, `:1059`) walks the
+//! same bits as this byte stream, on any CPU. So the rule stays EmuTOS' own: a
+//! header with `F_STDFORM` is left alone, one without gets its table byte-swapped
+//! word by word **in memory**, and that swap ([`trnsfont`]) does the same to the
+//! bytes on a little-endian CPU as `ror #8` does on the 68000.
+
+use core::cell::UnsafeCell;
+
+use super::Vdipb;
+use crate::bdos::process;
+use crate::bdos::process::usermem;
+use crate::bdos::process::Abi;
+use crate::uaccess::Space;
 
 pub use super::font_data::{SYSTEM_FONT_6X6, SYSTEM_FONT_8X16, SYSTEM_FONT_8X8};
 
@@ -124,11 +145,11 @@ pub enum SysFontId {
     F8x16 = 2,
 }
 
-/// A built-in monospace system font: the EmuTOS `Fonthead` metrics that
-/// the text path (`v_gtext`, `vst_height`/`vst_point`) consumes, plus the
-/// [`SysFontId`] used to fetch its glyph rows. Only the fields the text
-/// path needs are carried (all three fonts have `font_id = 1`, standard
-/// mono format, first/last ade 0/255).
+/// A font header as the text path (`v_gtext`, `vst_height`/`vst_point`)
+/// consumes it: the EmuTOS `Fonthead` metrics, plus where the glyphs are. For a
+/// built-in system font that is the [`SysFontId`] (all three have `font_id = 1`,
+/// standard mono format, first/last ade 0/255; `loaded` is `None`). For a font of
+/// a chain ([`head`]) `loaded` holds its tables and `id`/`name` mean nothing.
 ///
 /// `Copy` so the scaled scratch header EmuTOS keeps in `vwk->scratch_head`
 /// (`vdi_text.c:770-817`) can be produced by value on demand.
@@ -179,6 +200,25 @@ pub struct SysFont {
     /// (`bios/fnt_st_8x8.c:165`, `bios/fnt_st_8x16.c:293`), not on the 6×6
     /// (`bios/fnt_st_6x6.c:109`).
     pub f_default: bool,
+    /// The tables of a font from a chain; `None` for a built-in font.
+    pub loaded: Option<LoadedTables>,
+}
+
+impl SysFont {
+    /// `flags & F_MONOSPACE`: every built-in font is monospaced.
+    #[inline]
+    pub fn mono(&self) -> bool {
+        self.loaded.is_none_or(|t| t.flags & F_MONOSPACE != 0)
+    }
+
+    /// The face name (`vqt_name`), at most [`NAME_LEN`] bytes.
+    #[inline]
+    pub fn name_bytes(&self) -> &[u8] {
+        match &self.loaded {
+            Some(t) => &t.name,
+            None => self.name,
+        }
+    }
 }
 
 /// 6×6 system font header (EmuTOS `bios/fnt_st_6x6.c`).
@@ -204,6 +244,7 @@ pub static FON_6X6: SysFont = SysFont {
     form_height: 6,
     name: b"6x6 system font",
     f_default: false,
+    loaded: None,
 };
 
 /// 8×8 system font header (EmuTOS `bios/fnt_st_8x8.c`).
@@ -229,6 +270,7 @@ pub static FON_8X8: SysFont = SysFont {
     form_height: 8,
     name: b"8x8 system font",
     f_default: true,
+    loaded: None,
 };
 
 /// 8×16 system font header (EmuTOS `bios/fnt_st_8x16.c`).
@@ -254,6 +296,7 @@ pub static FON_8X16: SysFont = SysFont {
     form_height: 16,
     name: b"8x16 system font",
     f_default: true,
+    loaded: None,
 };
 
 /// The font ring, smallest first (EmuTOS `font_ring[0..2]`, all `font_id
@@ -327,15 +370,15 @@ pub fn font(id: SysFontId) -> &'static SysFont {
 /// last_ade) temp = '?'`), then applying the `first_ade` offset. The
 /// caller passes the raw signed `INTIN` word, so a negative code (`< 0 =
 /// first_ade`) or a code above `last_ade` both become `'?'` rather than a
-/// wrapped glyph.
+/// wrapped glyph. The compare is unsigned, as EmuTOS' (`WORD` against `UWORD`
+/// with `-mshort`: both 16-bit `unsigned int`), and the result a `WORD`: a font
+/// starting above `'?'` yields a negative index, which reads before `off_table`
+/// there too.
 #[inline]
 pub fn map_code(f: &SysFont, code: i16) -> u16 {
-    let c = if code < f.first_ade || code > f.last_ade {
-        b'?' as i16
-    } else {
-        code
-    };
-    (c - f.first_ade) as u16
+    let c = code as u16;
+    let c = if c < f.first_ade as u16 || c > f.last_ade as u16 { b'?' as u16 } else { c };
+    c.wrapping_sub(f.first_ade as u16)
 }
 
 /// The `form_height` rows of character `c` (low 8 bits) in font `id`, MSB =
@@ -362,6 +405,303 @@ pub fn glyph_row(id: SysFontId, c: u16, row: usize) -> u8 {
         SysFontId::F6x6 => SYSTEM_FONT_6X6[c][row],
         SysFontId::F8x8 => SYSTEM_FONT_8X8[c][row],
         SysFontId::F8x16 => SYSTEM_FONT_8X16[c][row],
+    }
+}
+
+// ── the loaded-font chain (`vst_load_fonts`, TASK/V33) ───────────────────
+
+/// `flags`: there is a horizontal offset table (`include/fonthdr.h:22`).
+pub const F_HORZ_OFF: u16 = 2;
+/// `flags`: the data table is in standard (Motorola) format
+/// (`include/fonthdr.h:23`, see the module comment).
+pub const F_STDFORM: u16 = 4;
+/// `flags`: the font is monospaced (`include/fonthdr.h:24`).
+pub const F_MONOSPACE: u16 = 8;
+
+/// Whose memory a chain lives in: decides how it is read ([`read_mem`]).
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum FontOwner {
+    /// A kernel caller's chain: kernel addresses, trusted.
+    Kernel,
+    /// The chain of the program in this process slot.
+    Slot(usize),
+}
+
+/// A header of a chain: its caller address and whose it is.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub struct LoadedRef {
+    /// The header's address in the caller's address space.
+    pub addr: u64,
+    /// Whose chain it is.
+    pub owner: FontOwner,
+}
+
+/// A workstation's `cur_font`: a built-in font or a header of a chain. Like
+/// EmuTOS' pointer it stays on a loaded header after `vst_unload_fonts` (R11).
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum FontRef {
+    /// A built-in font.
+    System(SysFontId),
+    /// A header of a chain.
+    Loaded(LoadedRef),
+}
+
+/// What [`SysFont`] holds of a loaded header beyond the metrics.
+#[derive(Clone, Copy)]
+pub struct LoadedTables {
+    /// The header itself.
+    pub at: LoadedRef,
+    /// `flags` (`F_*`).
+    pub flags: u16,
+    /// `hor_table`, the horizontal offsets.
+    pub hor_table: u64,
+    /// `off_table`, the character offsets in bits.
+    pub off_table: u64,
+    /// `dat_table`, the raster data.
+    pub dat_table: u64,
+    /// `form_width`, as the `WORD` EmuTOS copies it into (`FWIDTH`).
+    pub form_width: i16,
+    /// `next_font`, 0 at the end of the chain.
+    pub next_font: u64,
+    /// `name`, not NUL-terminated when full.
+    pub name: [u8; NAME_LEN],
+}
+
+/// `Fonthead` field offsets behind the common part (font_id .. flags, 0..68), in
+/// the caller's ABI. ILP32 is EmuTOS' `include/fonthdr.h:30-60` as the m68k
+/// compiler lays it out; LP64 is the native layout (decision D3,
+/// `docs/COMPATIBILITY.md` "GDOS font chain"), the same one mintlib's `__FONT`
+/// gets on LP64.
+struct HeadLayout {
+    hor_table: usize,
+    off_table: usize,
+    dat_table: usize,
+    form_width: usize,
+    form_height: usize,
+    next_font: usize,
+    /// Bytes read: up to and including `reserved`.
+    size: usize,
+}
+const HEAD_LP64: HeadLayout =
+    HeadLayout { hor_table: 72, off_table: 80, dat_table: 88, form_width: 96, form_height: 98, next_font: 104, size: 114 };
+const HEAD_ILP32: HeadLayout =
+    HeadLayout { hor_table: 68, off_table: 72, dat_table: 76, form_width: 80, form_height: 82, next_font: 84, size: 90 };
+/// Offset of `flags` in every layout.
+const HEAD_FLAGS: u64 = 66;
+/// The most headers one walk follows. EmuTOS has no bound and hangs on a cycle
+/// (R3); here a walk runs in the kernel's trap, and no real chain comes near it.
+pub(crate) const MAX_CHAIN: usize = 4096;
+
+/// `font_ring[2]` (`include/lineavars.h:103-113`): global, as in EmuTOS (R13).
+struct RingCell(UnsafeCell<Option<LoadedRef>>);
+// SAFETY: touched only from the single-CPU, IRQ-off VDI trap path — the same
+// discipline as the `Vwk` handle table.
+unsafe impl Sync for RingCell {}
+static LOADED_RING: RingCell = RingCell(UnsafeCell::new(None));
+
+/// Set `font_ring[2]` (`vdi_text.c:1342`).
+pub(crate) fn set_loaded_ring(chain: LoadedRef) {
+    // SAFETY: see `RingCell`.
+    unsafe { *LOADED_RING.0.get() = Some(chain) };
+}
+
+/// `font_ring[2] = NULL` (`text_init2`, `vst_unload_fonts`).
+pub(crate) fn clear_loaded_ring() {
+    // SAFETY: see `RingCell`.
+    unsafe { *LOADED_RING.0.get() = None };
+}
+
+/// `font_ring[slot]`: `[0]` = 6×6, `[1]` = 8×8 (the 8×16 behind it), `[2]` = the
+/// chain, `[3]` = the terminator (`vdi_text.c:604-607`).
+pub(crate) fn ring_slot(slot: usize) -> Option<FontRef> {
+    match slot {
+        0 => Some(FontRef::System(SysFontId::F6x6)),
+        1 => Some(FontRef::System(SysFontId::F8x8)),
+        // SAFETY: see `RingCell`.
+        2 => unsafe { *LOADED_RING.0.get() }.map(FontRef::Loaded),
+        _ => None,
+    }
+}
+
+/// `head->next_font`.
+pub(crate) fn next_font(head: &SysFont) -> Option<FontRef> {
+    match &head.loaded {
+        Some(t) if t.next_font != 0 => Some(FontRef::Loaded(LoadedRef { addr: t.next_font, owner: t.at.owner })),
+        Some(_) => None,
+        None => match head.id {
+            SysFontId::F8x8 => Some(FontRef::System(SysFontId::F8x16)),
+            _ => None,
+        },
+    }
+}
+
+/// The owner a chain gets when this caller loads it.
+pub(crate) fn owner_of_caller(pb: &Vdipb) -> FontOwner {
+    if !pb.space().is_user() {
+        return FontOwner::Kernel;
+    }
+    match process::slot_for(process::current()) {
+        Some(s) => FontOwner::Slot(s),
+        None => FontOwner::Kernel,
+    }
+}
+
+/// Read `buf.len()` bytes of the chain `at` belongs to. Its owner reads in its own
+/// trap with its own rights: a bad pointer in its font ends it, as the bus error
+/// does on EmuTOS. Everyone else — `font_ring[2]` is global (R13) — reads through
+/// [`usermem::resolve_kva`], the way the AES follows another process's tree: memory
+/// that is gone answers `false` and the caller goes on as if the chain ended there
+/// (EmuTOS reads freed RAM; `docs/COMPATIBILITY.md` "GDOS font chain").
+pub(crate) fn read_mem(pb: &Vdipb, at: LoadedRef, va: u64, buf: &mut [u8]) -> bool {
+    if pb.faulted() || buf.is_empty() {
+        return false;
+    }
+    match at.owner {
+        // A kernel chain is not a program's to read.
+        FontOwner::Kernel if pb.space().is_user() => false,
+        FontOwner::Kernel => Space::Kernel.copy_from(buf, va).is_ok(),
+        FontOwner::Slot(s) if pb.space().is_user() && process::slot_for(process::current()) == Some(s) => {
+            let ok = pb.space().copy_from(buf, va).is_ok();
+            if !ok {
+                pb.note_fault();
+            }
+            ok
+        }
+        FontOwner::Slot(s) => {
+            let last = va.wrapping_add(buf.len() as u64 - 1);
+            match (usermem::resolve_kva(s, va), usermem::resolve_kva(s, last)) {
+                (Some(kva), Some(_)) => Space::Kernel.copy_from(buf, kva).is_ok(),
+                _ => false,
+            }
+        }
+    }
+}
+
+fn word_at(raw: &[u8], off: usize) -> u16 {
+    u16::from_ne_bytes([raw[off], raw[off + 1]])
+}
+
+/// The `Fonthead` behind `r`; `None` when a loaded header cannot be read
+/// ([`read_mem`]).
+pub(crate) fn head(pb: &Vdipb, r: FontRef) -> Option<SysFont> {
+    let at = match r {
+        FontRef::System(id) => return Some(*font(id)),
+        FontRef::Loaded(at) => at,
+    };
+    let layout = match pb.abi() {
+        Abi::Lp64 => &HEAD_LP64,
+        Abi::Ilp32 => &HEAD_ILP32,
+    };
+    let mut raw = [0u8; HEAD_LP64.size];
+    if !read_mem(pb, at, at.addr, &mut raw[..layout.size]) {
+        return None;
+    }
+    let ptr_at = |off: usize| -> u64 {
+        match pb.abi() {
+            Abi::Lp64 => {
+                let mut b = [0u8; 8];
+                b.copy_from_slice(&raw[off..off + 8]);
+                u64::from_ne_bytes(b)
+            }
+            Abi::Ilp32 => {
+                let mut b = [0u8; 4];
+                b.copy_from_slice(&raw[off..off + 4]);
+                u32::from_ne_bytes(b) as u64
+            }
+        }
+    };
+    let w = |off: usize| word_at(&raw, off) as i16;
+    let mut name = [0u8; NAME_LEN];
+    name.copy_from_slice(&raw[4..4 + NAME_LEN]);
+    Some(SysFont {
+        id: SysFontId::F6x6, // not read: `loaded` is set
+        font_id: w(0),
+        point: w(2),
+        first_ade: w(36),
+        last_ade: w(38),
+        top: w(40),
+        ascent: w(42),
+        half: w(44),
+        descent: w(46),
+        bottom: w(48),
+        max_char_width: w(50),
+        max_cell_width: w(52),
+        left_offset: w(54),
+        right_offset: w(56),
+        thicken: w(58),
+        ul_size: w(60),
+        lighten: word_at(&raw, 62),
+        skew: word_at(&raw, 64),
+        form_height: w(layout.form_height),
+        name: &[],
+        f_default: word_at(&raw, 66) & 1 != 0,
+        loaded: Some(LoadedTables {
+            at,
+            flags: word_at(&raw, 66),
+            hor_table: ptr_at(layout.hor_table),
+            off_table: ptr_at(layout.off_table),
+            dat_table: ptr_at(layout.dat_table),
+            form_width: w(layout.form_width),
+            next_font: ptr_at(layout.next_font),
+            name,
+        }),
+    })
+}
+
+/// The header behind `r`, or `fon6x6` when it cannot be read: a current font whose
+/// memory is gone (EmuTOS draws from the freed RAM; [`read_mem`]).
+pub(crate) fn head_or_system(pb: &Vdipb, r: FontRef) -> SysFont {
+    head(pb, r).unwrap_or(FON_6X6)
+}
+
+/// EmuTOS' opening walk of `vst_font`/`vst_height`/`vst_point` (`vdi_text.c:692-700`,
+/// `:951-958`): the first header of `face` over the ring, and the ring slot after
+/// the one it was found in (where `chain_ptr` is left).
+pub(crate) fn first_of_face(pb: &Vdipb, face: i16) -> Option<(FontRef, SysFont, usize)> {
+    let mut steps = 0;
+    for slot in 0..3 {
+        let mut cur = ring_slot(slot);
+        while let Some(r) = cur {
+            let h = head(pb, r)?;
+            if h.font_id == face {
+                return Some((r, h, slot + 1));
+            }
+            steps += 1;
+            if steps >= MAX_CHAIN {
+                return None;
+            }
+            cur = next_font(&h);
+        }
+    }
+    None
+}
+
+/// EmuTOS `trnsfont` (`vdi_text.c:553-570`) on a loaded header: swap the bytes of
+/// each 16-bit word of its data table, in the caller's memory, with the caller's
+/// rights. `FWIDTH * DELY` is a 16-bit `int` product (`-mshort`) divided as
+/// unsigned: 40000 bytes swap 20000 words, 65536 swap none, 70000 swap 2232
+/// (measured, probe TXF1-TXF5, `TASK/V33.md`).
+pub(crate) fn trnsfont(pb: &Vdipb, dat_table: u64, form_width: i16, form_height: i16) {
+    let cnt = (form_width as u16).wrapping_mul(form_height as u16) / 2;
+    let space = pb.space();
+    for i in 0..cnt as u64 {
+        let va = dat_table.wrapping_add(2 * i);
+        let swapped = match space.get_u16(va) {
+            Ok(v) => space.put_u16(va, v.swap_bytes()),
+            Err(e) => Err(e),
+        };
+        if swapped.is_err() {
+            pb.note_fault();
+            return;
+        }
+    }
+}
+
+/// `first_font->flags |= F_STDFORM`, into the caller's header
+/// (`vdi_text.c:1336`).
+pub(crate) fn set_stdform(pb: &Vdipb, addr: u64, flags: u16) {
+    if pb.space().put_u16(addr + HEAD_FLAGS, flags | F_STDFORM).is_err() {
+        pb.note_fault();
     }
 }
 

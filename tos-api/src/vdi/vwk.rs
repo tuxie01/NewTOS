@@ -14,7 +14,7 @@
 use core::cell::UnsafeCell;
 
 use super::backend::{ClipRect, Pel};
-use super::font::SysFontId;
+use super::font::FontRef;
 
 /// Total VDI handles (EmuTOS `NUM_VDI_HANDLES`, make-512 profile = 64).
 /// Handle 1 is the physical workstation; 2..=64 are virtual. Index 0 is
@@ -84,12 +84,19 @@ pub struct Vwk {
     pub h_align: i16,
     pub v_align: i16,
     pub chup: i16,
-    /// The selected system font (`cur_font`, EmuTOS `Vwk.cur_font`). Set by
-    /// `vst_height`/`vst_point`, rendered by `v_gtext`. `init_wk` sets it to
-    /// `def_font` on workstation open (`text_init2`, `vdi_text.c:574`): the
-    /// 8×8 face under 400 lines, the 8×16 face from 400 up
+    /// The selected font (`cur_font`, EmuTOS `Vwk.cur_font`): a built-in one or
+    /// a header of a loaded chain. Set by `vst_font`/`vst_height`/`vst_point`,
+    /// rendered by `v_gtext`. `init_wk` sets it to `def_font` on workstation open
+    /// (`text_init2`, `vdi_text.c:574`): the 8×8 face under 400 lines, the 8×16
+    /// face from 400 up
     /// ([`font::text_init_def_font`](super::font::text_init_def_font)).
-    pub cur_font: SysFontId,
+    pub cur_font: FontRef,
+    /// The size was last set by `vst_point` (EmuTOS `Vwk.pts_mode`): `vst_font`
+    /// re-applies it through `vst_point`, else through `vst_height`.
+    pub pts_mode: bool,
+    /// The chain this workstation loaded (EmuTOS `Vwk.loaded_fonts`), 0 = none:
+    /// the guard of `vst_load_fonts`, one chance per workstation.
+    pub loaded_fonts: u64,
     /// DDA fraction for a non-exact `vst_height`/`vst_point` size (EmuTOS
     /// `Vwk.dda_inc`). `0xFFFF` means "exactly double"; only meaningful when
     /// [`scaled`](Self::scaled) is set.
@@ -151,7 +158,9 @@ impl Vwk {
         chup: 0,
         // A free slot's face is never read: `init_wk` (`text_init2`) sets
         // `def_font` for the screen before the handle is returned.
-        cur_font: super::font::RING[0],
+        cur_font: FontRef::System(super::font::RING[0]),
+        pts_mode: false,
+        loaded_fonts: 0,
         dda_inc: 0,
         scaled: false,
         t_sclsts: false,

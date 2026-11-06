@@ -61,7 +61,7 @@ pub fn vqf_attributes(pb: &Vdipb, vwk: &Vwk) {
 /// `vwk->cur_font`, so they follow `vst_font`/`vst_height`/`vst_point`
 /// (including the DDA-scaled header) instead of being the 8×16 defaults.
 pub fn vqt_attributes(pb: &Vdipb, vwk: &Vwk) {
-    let f = text::effective_font(vwk);
+    let f = text::effective_font(pb, vwk);
     pb.set_intout(0, f.font_id);
     pb.set_intout(1, vwk.text_color as i16);
     pb.set_intout(2, vwk.chup);
@@ -71,7 +71,7 @@ pub fn vqt_attributes(pb: &Vdipb, vwk: &Vwk) {
     pb.set_ptsout(0, f.max_char_width);
     pb.set_ptsout(1, f.top);
     pb.set_ptsout(2, f.max_cell_width);
-    pb.set_ptsout(3, f.top + f.bottom + 1);
+    pb.set_ptsout(3, f.top.wrapping_add(f.bottom).wrapping_add(1));
     pb.set_contrl(4, 6);
     pb.set_contrl(2, 2);
 }
@@ -228,9 +228,9 @@ pub fn vq_key_s(pb: &Vdipb) {
 /// scaling and the active effects, not a fixed 8×16 cell.
 pub fn vqt_extent(pb: &Vdipb, vwk: &Vwk) {
     let count = pb.contrl(3).max(0);
-    let base = font::font(vwk.cur_font);
-    let f = text::effective_font(vwk);
-    let width = text::calc_width(base, &f, count, vwk);
+    let base = font::head_or_system(pb, vwk.cur_font);
+    let f = text::effective_font(pb, vwk);
+    let width = text::calc_width(pb, 0, &base, &f, count, vwk);
     let height = text::calc_height(&f, vwk);
     for i in 0..8 {
         pb.set_ptsout(i, 0);
@@ -275,8 +275,9 @@ pub fn vqt_extent(pb: &Vdipb, vwk: &Vwk) {
 /// is `off_table[k+1] - off_table[k]`, i.e. the **unscaled** cell width
 /// even on a scaled workstation (`make_header` copies the `off_table`
 /// pointer verbatim, `vdi_text.c:810`), which the DDA is then applied to
-/// (`:1082-1087`). No built-in face carries `F_HORZ_OFF`, so the two
-/// offset slots stay at the zeroes EmuTOS pre-writes.
+/// (`:1082-1087`). With `F_HORZ_OFF` the two offset slots come from
+/// `hor_table[k * 2]`, `[k * 2 + 1]` (`:1089-1092`, read as EmuTOS reads them);
+/// no built-in face carries that flag, so there they stay at the pre-written 0.
 ///
 /// **Only the x components are written.** EmuTOS `vdi_vqt_width`
 /// (`vdi_text.c:1062-1096`) pre-zeroes `PTSOUT[2]`/`PTSOUT[4]` (`:1072-1073`),
@@ -286,21 +287,25 @@ pub fn vqt_extent(pb: &Vdipb, vwk: &Vwk) {
 /// the VDI has no claim on; the reference dump leaves them at the poison
 /// pattern (`tosdump/reference/FINDINGS-r2.md` R2-2).
 pub fn vqt_width(pb: &Vdipb, vwk: &Vwk) {
-    let base = font::font(vwk.cur_font);
-    let f = text::effective_font(vwk);
+    let base = font::head_or_system(pb, vwk.cur_font);
+    let f = text::effective_font(pb, vwk);
     let k = pb.intin(0);
     pb.set_ptsout(2, 0);
     pb.set_ptsout(4, 0);
-    if !(f.first_ade..=f.last_ade).contains(&k) {
+    if (k as u16) < f.first_ade as u16 || (k as u16) > f.last_ade as u16 {
         pb.set_intout(0, -1);
     } else {
         pb.set_intout(0, k);
-        // Monospace: every `off_table` delta is the base cell width.
-        let mut w = base.max_cell_width;
+        let idx = k.wrapping_sub(f.first_ade);
+        let mut w = text::table_width(pb, &base, idx);
         if vwk.scaled {
-            w = text::act_siz(w.max(0) as u16, vwk.dda_inc, vwk.t_sclsts) as i16;
+            w = text::act_siz(w as u16, vwk.dda_inc, vwk.t_sclsts) as i16;
         }
         pb.set_ptsout(0, w);
+        if let Some((a, b)) = text::horz_offsets(pb, &f, idx) {
+            pb.set_ptsout(2, a);
+            pb.set_ptsout(4, b);
+        }
     }
     pb.set_contrl(4, 1);
     pb.set_contrl(2, 3);
@@ -315,14 +320,13 @@ pub fn vqt_width(pb: &Vdipb, vwk: &Vwk) {
 /// and does not change it (`docs/api/vdi/inquiry/_text.md#vqt_name-130`).
 ///
 /// All three built-in system faces carry `font_id = 1`
-/// (`bios/fnt_st_6x6.c:91`, `fnt_st_8x8.c:147`, `fnt_st_8x16.c:275`, mirrored
-/// in [`font::RING`]), so the count reaches 1 on the first ring member and never
-/// advances: element 1 selects `fon6x6` and every other element falls back to
-/// `fon6x6` too. The result is therefore the same for every index — which is
-/// exactly what the reference dump records for `INTIN[0]` = 0..3
-/// (`tosdump/reference/EMUTOS14-VDI-r2.BIN`, cases 54-57). The walk is coded
-/// out rather than short-circuited because a loaded face with a different
-/// `font_id` (`vst_load_fonts`, EmuTOS `font_ring[2]`) would make it bite.
+/// (`bios/fnt_st_6x6.c:91`, `fnt_st_8x8.c:147`, `fnt_st_8x16.c:275`), so without a
+/// chain the count reaches 1 on the first ring member and never advances: element 1
+/// selects `fon6x6` and every other element falls back to `fon6x6` too — which is
+/// what the reference dump records for `INTIN[0]` = 0..3
+/// (`tosdump/reference/EMUTOS14-VDI-r2.BIN`, cases 54-57). A loaded chain continues
+/// the count (R8): its ids 7,8,7 are faces 2,3,4, a chain starting with id 1 adds
+/// no face for that header (probe TXA, TXC).
 ///
 /// `INTOUT[0]` = the selected face's `font_id`; `INTOUT[1..]` = its name, one
 /// character per WORD, NUL-terminated and zero-padded to `NAME_LEN` (32), for
@@ -333,20 +337,29 @@ pub fn vqt_name(pb: &Vdipb) {
 
     let mut count: i16 = 0;
     let mut current_font_id: i16 = -1;
-    let mut found: Option<&'static font::SysFont> = None;
-    for id in font::RING {
-        let f = font::font(id);
-        if f.font_id != current_font_id {
-            current_font_id = f.font_id;
-            count += 1;
-            if count == element {
-                found = Some(f);
-                break;
+    let mut found: Option<font::SysFont> = None;
+    let mut steps = 0;
+    'ring: for slot in 0..3 {
+        let mut cur = font::ring_slot(slot);
+        while let Some(r) = cur {
+            let Some(f) = font::head(pb, r) else { break };
+            if f.font_id != current_font_id {
+                current_font_id = f.font_id;
+                count = count.wrapping_add(1);
+                if count == element {
+                    found = Some(f);
+                    break 'ring;
+                }
             }
+            steps += 1;
+            if steps >= font::MAX_CHAIN {
+                break 'ring;
+            }
+            cur = font::next_font(&f);
         }
     }
     // Out of range → the system font (EmuTOS `tmp_font = &fon6x6`).
-    let f = found.unwrap_or(&font::FON_6X6);
+    let f = found.unwrap_or(font::FON_6X6);
 
     pb.set_intout(0, f.font_id);
     // EmuTOS writes the name one WORD per character *including* its NUL and
@@ -357,11 +370,18 @@ pub fn vqt_name(pb: &Vdipb) {
     // reference records it (`tosdump/reference/EMUTOS14-VDI-all.BIN`, cases
     // 80-83, `intout[33] = 0`), so it is reproduced rather than rounded off;
     // every GEM `intout` is the standard 45 WORDs, so the slot exists.
+    //
+    // `char` is signed in the ROM's build: a character above 127 is a negative
+    // WORD (probe TXP). A name of the full 32 characters has no NUL: EmuTOS reads
+    // on into `first_ade`, whose high byte (0 for any font of 8-bit codes) ends it
+    // there; here the end of the field does, LP64's byte order would put the low
+    // byte first (`docs/COMPATIBILITY.md` "GDOS font chain").
+    let name = f.name_bytes();
     let mut out = 1usize;
     let mut i = 0usize;
     loop {
-        let ch = f.name.get(i).copied().unwrap_or(0);
-        pb.set_intout(out, ch as i16);
+        let ch = name.get(i).copied().unwrap_or(0);
+        pb.set_intout(out, ch as i8 as i16);
         out += 1;
         if ch == 0 {
             break;
@@ -384,7 +404,7 @@ pub fn vqt_name(pb: &Vdipb) {
 /// face `vst_font`/`vst_height`/`vst_point` selected — including the
 /// DDA-scaled scratch header — rather than the 8×16 module constants.
 pub fn vqt_fontinfo(pb: &Vdipb, vwk: &Vwk) {
-    let f = text::effective_font(vwk);
+    let f = text::effective_font(pb, vwk);
     pb.set_intout(0, f.first_ade);
     pb.set_intout(1, f.last_ade);
     pb.set_ptsout(0, f.max_cell_width);

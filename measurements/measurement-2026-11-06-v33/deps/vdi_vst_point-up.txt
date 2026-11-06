@@ -1,0 +1,26 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps vdi_vst_point --up`
+deps vdi_vst_point --up (kinds asm,direct,layer,table,vector): 5 functions besides vdi_vst_point
+depth	function	layer	reached over	newtos	class
+0	vdi_vst_point	vdi	-	tos-api/src/vdi/attributes.rs@select_point tos-api/src/vdi/attributes.rs@vst_point	mapped
+1	screen	vdi	screen -> vdi_vst_point [table jmptb2[0x6b]]	tos-api/src/vdi/mod.rs@screen	mapped
+1	vdi_vst_font	vdi	vdi_vst_font -> vdi_vst_point [direct]	tos-api/src/vdi/attributes.rs@vst_font	mapped
+2	GSX_ENTRY	vdi	GSX_ENTRY -> screen [asm jsr]	tos-api/src/vdi/mod.rs@dispatch_in	mapped
+3	mouse_int	vdi	mouse_int -> GSX_ENTRY [asm jbsr scrn_clip]	tos-api/src/vdi/mouse.rs@feed_relative tos-api/src/vdi/mouse.rs@update_ms_stat	mapped
+3	vditrap	vdi	vditrap -> GSX_ENTRY [asm jsr]	kernel/src/arch/aarch64/exceptions.rs@sync_handler	mapped
+
+table edges inside the set (2):
+jmptb1[0x15]	screen -> vdi_vst_font	vdi/vdi_main.c:53
+jmptb2[0x6b]	screen -> vdi_vst_point	vdi/vdi_main.c:82
+
+layer edges inside the set (0):
+
+vector edges inside the set (0):
+
+coverage of the set (6 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+vdi          6      6 100.0%      0   0.0%      0   0.0%
+total        6      6 100.0%      0   0.0%      0   0.0%
+touched layers: vdi (the layers of vdi_vst_point; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

@@ -133,8 +133,8 @@ NewTOS-Verteiler: `tos-api/src/vdi/mod.rs::dispatch` — Sonderarme `:283`
 | 116 | `vqt_extent` | `:91` | `vdi_text.c:1024` | ja | `:393` |
 | 117 | `vqt_width` | `:92` | `vdi_text.c:1062` | ja | `:394` |
 | 118 | `vex_timv` | `:93` | `vdi_misc.c:100` | ja | `:388` |
-| 119 | `vst_load_fonts` | `:94` | `vdi_text.c:1292` | **Konstante `0`** | `:363`, `attributes.rs:351-354` |
-| 120 | `vst_unload_fonts` | `:95` | `vdi_text.c:1353` | **leer** | `:364`, `attributes.rs:358` |
+| 119 | `vst_load_fonts` | `:94` | `vdi_text.c:1292` | ja (V33) | `tos-api/src/vdi/attributes.rs:416@vst_load_fonts` |
+| 120 | `vst_unload_fonts` | `:95` | `vdi_text.c:1353` | ja (V33) | `tos-api/src/vdi/attributes.rs:459@vst_unload_fonts` |
 | 121 | `vrt_cpyfm` | `:96` | `vdi_raster.c:1493` | ja | `:399` |
 | 122 | `v_show_c` | `:97` | `vdi_mouse.c:321` | ja | `:385` |
 | 123 | `v_hide_c` | `:98` | `vdi_mouse.c:331` | ja | `:386` |

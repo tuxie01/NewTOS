@@ -196,12 +196,15 @@ fn init_wk(vwk: &mut Vwk, pb: &Vdipb, backend: &dyn RasterBackend) {
     // workstation starts on `def_font`, the face `text_init` chose for the
     // screen height (`vdi_text.c:612`: 8×8 under 400 lines, else 8×16). The
     // other text fields `text_init2` resets (effects, scaling, alignment,
-    // `chup`) are `Vwk::EMPTY`'s, which every slot is reset to before this
-    // runs; `pts_mode` and the scratch buffers have no NewTOS field. Evaluated for the live `V_REZ_VT` rather than cached
+    // `chup`, `pts_mode`, `loaded_fonts`) are `Vwk::EMPTY`'s, which every slot is
+    // reset to before this runs; the scratch buffers have no NewTOS field
+    // (`docs/COMPATIBILITY.md` "GDOS font chain"). Opening any workstation empties
+    // the global `font_ring[2]` (`vdi_text.c:588`, R13). Evaluated for the live `V_REZ_VT` rather than cached
     // by `v_opnwk`: NewTOS changes no resolution after boot, and a
     // `v_opnvwk` without a prior `v_opnwk` (the kernel's boot screen) gets
     // the same face (`docs/api/vdi/workstation/01-v_opnwk.md` § Default font).
-    vwk.cur_font = font::text_init_def_font(yres);
+    vwk.cur_font = font::FontRef::System(font::text_init_def_font(yres));
+    font::clear_loaded_ring();
 
     // Non-work_in defaults: clip off → full screen (inclusive bounds).
     vwk.clip = false;

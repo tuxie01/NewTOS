@@ -2,10 +2,10 @@
 //! (opcode 11 / sub-op 10). Spec: `docs/api/vdi/output/_text.md`,
 //! `docs/api/vdi/output/_gdp.md`.
 //!
-//! Renders the workstation's currently-selected system font
-//! ([`Vwk::cur_font`](super::vwk::Vwk) — 6×6, 8×8 or 8×16, chosen by
-//! `vst_height`/`vst_point`), one glyph per `INTIN` character code, with
-//! horizontal/vertical alignment and the text effects
+//! Renders the workstation's current font ([`Vwk::cur_font`](super::vwk::Vwk) —
+//! 6×6, 8×8 or 8×16, or a header of a loaded chain, chosen by
+//! `vst_font`/`vst_height`/`vst_point`), one glyph per `INTIN` character code,
+//! with horizontal/vertical alignment and the text effects
 //! (thicken/light/skew/underline/outline) from `style`. Glyphs blit
 //! transparently in `text_color`; rotation is limited to the four right
 //! angles (only `chup == 0` is drawn horizontally here).
@@ -19,9 +19,16 @@
 //! (`vdi_textblit.c`): [`scale_glyph`] duplicates/drops rows and doubles
 //! bits per the DDA, [`build_cell`] bakes the effects onto the scaled
 //! glyph, [`rotate_cell`] turns it, and [`blit_cell`] outputs it.
+//!
+//! **Working store.** EmuTOS scales and assembles into the scratch buffer of the
+//! workstation (`SCRTCHP`, the caller's after `vst_load_fonts`). NewTOS assembles
+//! into its own [`GlyphStore`], which bounds a glyph cell to
+//! [`MAX_W`] × [`MAX_ROWS`] (`docs/COMPATIBILITY.md` "GDOS font chain").
+
+use core::cell::UnsafeCell;
 
 use super::backend::{ClipRect, RasterBackend, WriteMode};
-use super::font::{self, SysFont};
+use super::font::{self, SysFont, F_HORZ_OFF};
 use super::primitives::line_clip;
 use super::vwk::Vwk;
 use super::Vdipb;
@@ -37,28 +44,127 @@ const T_OUTLINE: i16 = 0x10;
 /// `vdi_defs.h:126`).
 const OUTLINE_THICKNESS: i16 = 1;
 
-/// Maximum rows of a glyph cell. The tallest cell is a 2×-scaled 8×16 font
-/// (`form_height 16 → 32`, EmuTOS `char_resize(0x7fff, 16)`) plus the two
-/// rows outlining adds = 34. Each row is a `u64` (leftmost pixel = bit 63),
-/// which spans the widest cell — a 2×-scaled 8-px glyph (16) plus the
-/// 2×-scaled skew extent (`left+right = 8 → 16`) plus outline (2) = 34 px —
-/// with headroom (the unscaled worst case, glyph 8 + skew 8 + outline 2 =
-/// 18 px, fits identically in the high bits).
-const MAX_ROWS: usize = 34;
+/// Words of one glyph row. The leftmost pixel is bit 63 of word 0.
+const ROW_WORDS: usize = 8;
+/// Bytes of one glyph row.
+const ROW_BYTES: usize = ROW_WORDS * 8;
+/// Maximum width of a glyph cell in pixels. A built-in cell (at most 34 px, a
+/// 2×-scaled 8-px glyph plus its scaled skew extent and the outline) uses the
+/// first word; a loaded font may be wider. A pixel past this is dropped.
+const MAX_W: usize = ROW_BYTES * 8;
+/// Maximum rows of a glyph cell. A row past this is dropped.
+const MAX_ROWS: usize = 512;
 
-/// A row bit-mask covering the leftmost `w` pixels (bit 63 = pixel 0). Used
-/// to keep the thicken smear inside a monospace glyph's own width (EmuTOS
-/// leaves `delx` unchanged for `MONO` fonts, so the overstrike never widens
-/// the cell).
+/// One glyph row.
+type Row = [u64; ROW_WORDS];
+const ROW_ZERO: Row = [0; ROW_WORDS];
+
+/// Pixel `x` of a row (false past the row).
 #[inline]
-fn width_mask(w: i16) -> u64 {
-    if w <= 0 {
-        0
-    } else if w >= 64 {
-        u64::MAX
-    } else {
-        !0u64 << (64 - w)
+fn row_test(r: &Row, x: usize) -> bool {
+    x < MAX_W && r[x / 64] & (1u64 << (63 - x % 64)) != 0
+}
+
+/// Set pixel `x` of a row (ignored past the row).
+#[inline]
+fn row_set(r: &mut Row, x: usize) {
+    if x < MAX_W {
+        r[x / 64] |= 1u64 << (63 - x % 64);
     }
+}
+
+/// A row moved `n` pixels right; what leaves the row is gone.
+#[inline]
+fn row_shr(r: &Row, n: usize) -> Row {
+    let (words, bits) = (n / 64, (n % 64) as u32);
+    let mut out = ROW_ZERO;
+    for i in words..ROW_WORDS {
+        out[i] = r[i - words] >> bits;
+        if bits != 0 && i > words {
+            out[i] |= r[i - words - 1] << (64 - bits);
+        }
+    }
+    out
+}
+
+/// A row moved one pixel left.
+#[inline]
+fn row_shl1(r: &Row) -> Row {
+    let mut out = ROW_ZERO;
+    for i in 0..ROW_WORDS {
+        out[i] = r[i] << 1;
+        if i + 1 < ROW_WORDS {
+            out[i] |= r[i + 1] >> 63;
+        }
+    }
+    out
+}
+
+/// `a |= b`.
+#[inline]
+fn row_or(a: &mut Row, b: &Row) {
+    for (x, y) in a.iter_mut().zip(b.iter()) {
+        *x |= *y;
+    }
+}
+
+/// A row mask covering the leftmost `w` pixels. Used to keep the thicken smear
+/// inside a monospace glyph's own width (EmuTOS leaves `delx` unchanged for `MONO`
+/// fonts, so the overstrike never widens the cell).
+#[inline]
+fn width_mask(w: i16) -> Row {
+    let mut out = ROW_ZERO;
+    let mut left = w.max(0) as usize;
+    for word in out.iter_mut() {
+        if left == 0 {
+            break;
+        }
+        let n = left.min(64);
+        *word = !0u64 << (64 - n);
+        left -= n;
+    }
+    out
+}
+
+/// Where a glyph is assembled (see the module comment). Only the rows of the
+/// current glyph are written and read.
+struct GlyphStore {
+    /// The raw glyph.
+    raw: [Row; MAX_ROWS],
+    /// The DDA-scaled glyph.
+    scaled: [Row; MAX_ROWS],
+    /// Source of the effect stage: thicken and skew applied.
+    source: [Row; MAX_ROWS],
+    /// The cell, effects applied.
+    cell: [Row; MAX_ROWS],
+    /// The cell, rotated.
+    rotated: [Row; MAX_ROWS],
+    /// A row packed for the backend.
+    bytes: [u8; MAX_ROWS * ROW_BYTES],
+}
+
+struct StoreCell(UnsafeCell<GlyphStore>);
+// SAFETY: touched only from the single-CPU, IRQ-off VDI trap path — the same
+// discipline as the `Vwk` handle table. All zero: it lives in `.bss`.
+unsafe impl Sync for StoreCell {}
+static STORE: StoreCell = StoreCell(UnsafeCell::new(GlyphStore {
+    raw: [ROW_ZERO; MAX_ROWS],
+    scaled: [ROW_ZERO; MAX_ROWS],
+    source: [ROW_ZERO; MAX_ROWS],
+    cell: [ROW_ZERO; MAX_ROWS],
+    rotated: [ROW_ZERO; MAX_ROWS],
+    bytes: [0; MAX_ROWS * ROW_BYTES],
+}));
+
+/// The working store of one text call.
+///
+/// # Safety
+/// Single trap path, one borrower: `v_gtext`/`v_justified` take it once per call
+/// and no call nests.
+#[allow(clippy::mut_from_ref)]
+unsafe fn store() -> &'static mut GlyphStore {
+    // SAFETY: see `StoreCell`.
+    unsafe { &mut *STORE.0.get() }
 }
 
 /// EmuTOS `char_resize` / `act_siz` (`vdi_textblit.c:1257`,
@@ -71,14 +177,14 @@ fn width_mask(w: i16) -> u64 {
 #[inline]
 fn resize(init: u16, size: u16, dda_inc: u16, t_sclsts: bool) -> (u16, u16) {
     if dda_inc == 0xFFFF {
-        return (size << 1, init);
+        return (size.wrapping_shl(1), init);
     }
     let mut accu = init;
     let mut retval: u16 = if t_sclsts { size } else { 0 };
     for _ in 0..size {
         accu = accu.wrapping_add(dda_inc);
         if accu < dda_inc {
-            retval += 1; // carry out of 16 bits
+            retval = retval.wrapping_add(1); // carry out of 16 bits
         }
     }
     if size != 0 && retval == 0 {
@@ -104,16 +210,17 @@ pub(crate) fn act_siz(size: u16, dda_inc: u16, t_sclsts: bool) -> u16 {
 fn scaled_header(f: &SysFont, dda_inc: u16, t_sclsts: bool) -> SysFont {
     let sz = |v: i16| act_siz(v as u16, dda_inc, t_sclsts) as i16;
     let double = dda_inc == 0xFFFF;
+    let twice_plus_1 = |v: i16| v.wrapping_mul(2).wrapping_add(1);
     SysFont {
         id: f.id,
         font_id: f.font_id,
-        point: f.point * 2,
+        point: f.point.wrapping_mul(2),
         first_ade: f.first_ade,
         last_ade: f.last_ade,
         // The exact-double header quirk: top/ascent/half get `*2+1`.
-        top: if double { f.top * 2 + 1 } else { sz(f.top) },
-        ascent: if double { f.ascent * 2 + 1 } else { sz(f.ascent) },
-        half: if double { f.half * 2 + 1 } else { sz(f.half) },
+        top: if double { twice_plus_1(f.top) } else { sz(f.top) },
+        ascent: if double { twice_plus_1(f.ascent) } else { sz(f.ascent) },
+        half: if double { twice_plus_1(f.half) } else { sz(f.half) },
         descent: sz(f.descent),
         bottom: sz(f.bottom),
         max_char_width: sz(f.max_char_width),
@@ -127,6 +234,7 @@ fn scaled_header(f: &SysFont, dda_inc: u16, t_sclsts: bool) -> SysFont {
         form_height: f.form_height,
         name: f.name,
         f_default: f.f_default,
+        loaded: f.loaded,
     }
 }
 
@@ -141,15 +249,15 @@ fn scaled_header(f: &SysFont, dda_inc: u16, t_sclsts: bool) -> SysFont {
 /// the base ring font plus the DDA on the `Vwk` and rebuilds the scaled
 /// header here on demand, which is the same observable header.
 ///
-/// The **base** font (`font::font(vwk.cur_font)`) is still needed
+/// The **base** font ([`font::head_or_system`] of `vwk.cur_font`) is still needed
 /// alongside it wherever EmuTOS reads through the header's `off_table`
 /// pointer, which `make_header` copies unscaled (`vdi_text.c:810`).
-pub(crate) fn effective_font(vwk: &Vwk) -> SysFont {
-    let base = font::font(vwk.cur_font);
+pub(crate) fn effective_font(pb: &Vdipb, vwk: &Vwk) -> SysFont {
+    let base = font::head_or_system(pb, vwk.cur_font);
     if vwk.scaled {
-        scaled_header(base, vwk.dda_inc, vwk.t_sclsts)
+        scaled_header(&base, vwk.dda_inc, vwk.t_sclsts)
     } else {
-        *base
+        base
     }
 }
 
@@ -158,65 +266,145 @@ pub(crate) fn effective_font(vwk: &Vwk) -> SysFont {
 /// for a scaled workstation), plus the pixel outlining adds above and
 /// below.
 pub(crate) fn calc_height(f: &SysFont, vwk: &Vwk) -> i16 {
-    let mut height = f.top + f.bottom + 1;
+    let mut height = f.top.wrapping_add(f.bottom).wrapping_add(1);
     if vwk.style & T_OUTLINE != 0 {
-        height += OUTLINE_THICKNESS * 2;
+        height = height.wrapping_add(OUTLINE_THICKNESS * 2);
     }
     height
 }
 
-/// A source glyph ready for the effect stage: `h` rows of a monochrome
-/// bitmap `w` pixels wide (bit 63 of each `u64` = leftmost pixel). This is
-/// either the raw font glyph ([`raw_glyph`]) or, for a scaled workstation,
-/// the DDA-magnified glyph ([`scale_glyph`]) — EmuTOS' `FBASE` glyph, or
-/// the scratch buffer after `scale()`.
-struct SrcGlyph {
-    rows: [u64; MAX_ROWS],
-    /// Glyph pixel width (the `DELX` cell advance, possibly scaled).
+/// `off_table[i]` of a loaded font (`i` a signed `WORD`, as in EmuTOS' pointer
+/// arithmetic); `None` when it cannot be read.
+fn off_entry(pb: &Vdipb, t: &font::LoadedTables, i: i16) -> Option<u16> {
+    let va = t.off_table.wrapping_add_signed(2 * i as i64);
+    let mut b = [0u8; 2];
+    font::read_mem(pb, t.at, va, &mut b).then(|| u16::from_ne_bytes(b))
+}
+
+/// `off_table[i + 1] - off_table[i]` of `base`: the base cell width of a built-in
+/// font (monospaced).
+pub(crate) fn table_width(pb: &Vdipb, base: &SysFont, i: i16) -> i16 {
+    match &base.loaded {
+        None => base.max_cell_width,
+        Some(t) => match (off_entry(pb, t, i), off_entry(pb, t, i.wrapping_add(1))) {
+            (Some(a), Some(b)) => b.wrapping_sub(a) as i16,
+            _ => 0,
+        },
+    }
+}
+
+/// `hor_table[i]` of `f`, a byte of that table; 0 when unreadable.
+fn hor_entry(pb: &Vdipb, t: &font::LoadedTables, i: i64) -> i16 {
+    let mut b = [0u8; 1];
+    if font::read_mem(pb, t.at, t.hor_table.wrapping_add_signed(i), &mut b) { b[0] as i16 } else { 0 }
+}
+
+/// `vqt_width`'s two offsets with `F_HORZ_OFF` (`vdi_text.c:1089-1092`).
+pub(crate) fn horz_offsets(pb: &Vdipb, f: &SysFont, i: i16) -> Option<(i16, i16)> {
+    let t = f.loaded.as_ref().filter(|t| t.flags & F_HORZ_OFF != 0)?;
+    let k = i as i64;
+    Some((hor_entry(pb, t, k * 2), hor_entry(pb, t, k * 2 + 1)))
+}
+
+/// The pen's step behind a glyph with `F_HORZ_OFF`: `DESTX += hor_table[temp]`
+/// (`vdi_text.c:495-496`, every `chup`).
+fn horz_step(pb: &Vdipb, f: &SysFont, gcode: u16) -> i16 {
+    match &f.loaded {
+        Some(t) if t.flags & F_HORZ_OFF != 0 => hor_entry(pb, t, gcode as i16 as i64),
+        _ => 0,
+    }
+}
+
+/// The size of a glyph in [`GlyphStore`]: `h` rows, `w` pixels wide (the `DELX`
+/// cell advance, possibly scaled; `form_height`, possibly scaled).
+#[derive(Clone, Copy)]
+struct SrcSize {
     w: i16,
-    /// Glyph row count (`form_height`, possibly scaled).
     h: i16,
 }
 
-/// The raw (unscaled) glyph bitmap for `gcode` in font `f`: `form_height`
-/// rows placed with the leftmost pixel at bit 63, cell width
-/// `max_cell_width`.
-fn raw_glyph(f: &SysFont, gcode: u16) -> SrcGlyph {
-    let fh = (f.form_height as usize).min(MAX_ROWS);
-    let mut rows = [0u64; MAX_ROWS];
-    for (row, out) in rows.iter_mut().take(fh).enumerate() {
-        *out = (font::glyph_row(f.id, gcode, row) as u64) << 56;
+/// Read `w` pixels at bit address `bit` (from `base`) of a loaded data table into
+/// a row: the table is a byte stream, bit 7 first (`font` module comment).
+fn load_row(pb: &Vdipb, t: &font::LoadedTables, base: u64, bit: i64, w: usize, out: &mut Row) -> bool {
+    *out = ROW_ZERO;
+    if w == 0 {
+        return true;
     }
-    SrcGlyph { rows, w: f.max_cell_width, h: f.form_height }
+    let off = (bit & 7) as usize;
+    let va = base.wrapping_add_signed(bit >> 3);
+    let n = (off + w).div_ceil(8);
+    let mut b = [0u8; ROW_BYTES + 1];
+    if !font::read_mem(pb, t.at, va, &mut b[..n]) {
+        return false;
+    }
+    let mut bytes = [0u8; ROW_BYTES];
+    for j in 0..w.div_ceil(8) {
+        bytes[j] = if off == 0 { b[j] } else { (b[j] << off) | (b[j + 1] >> (8 - off)) };
+    }
+    for (word, chunk) in out.iter_mut().zip(bytes.chunks_exact(8)) {
+        let mut a = [0u8; 8];
+        a.copy_from_slice(chunk);
+        *word = u64::from_be_bytes(a);
+    }
+    let mask = width_mask(w as i16);
+    for (x, m) in out.iter_mut().zip(mask.iter()) {
+        *x &= *m;
+    }
+    true
+}
+
+/// The raw (unscaled) glyph bitmap for `gcode` in font `f` into `raw`:
+/// `form_height` rows placed with the leftmost pixel at bit 63 of word 0. A built-in
+/// font's cell is `max_cell_width`; a loaded one's comes from `off_table`
+/// (`SOURCEX`/`DELX`, `vdi_text.c:467-468`), `SOURCEX` a `WORD`, and the rows are
+/// `form_width` bytes apart.
+fn raw_glyph(pb: &Vdipb, f: &SysFont, gcode: u16, raw: &mut [Row; MAX_ROWS]) -> SrcSize {
+    let fh = (f.form_height.max(0) as usize).min(MAX_ROWS);
+    let Some(t) = &f.loaded else {
+        for (row, out) in raw.iter_mut().take(fh).enumerate() {
+            *out = ROW_ZERO;
+            out[0] = (font::glyph_row(f.id, gcode, row) as u64) << 56;
+        }
+        return SrcSize { w: f.max_cell_width, h: f.form_height };
+    };
+    let i = gcode as i16;
+    let sourcex = off_entry(pb, t, i).unwrap_or(0) as i16;
+    let delx = table_width(pb, f, i);
+    let w = (delx.max(0) as usize).min(MAX_W);
+    for (row, out) in raw.iter_mut().take(fh).enumerate() {
+        let base = t.dat_table.wrapping_add_signed(row as i64 * t.form_width as i64);
+        if !load_row(pb, t, base, sourcex as i64, w, out) {
+            *out = ROW_ZERO;
+        }
+    }
+    SrcSize { w: delx, h: f.form_height }
 }
 
 /// Horizontally scale-up one source row — EmuTOS `scaleup`
-/// (`vdi_textblit.c:577-622`). Reads `w` source bits from bit 63 with the
+/// (`vdi_textblit.c:577-622`). Reads `w` source bits from the left with the
 /// horizontal DDA seeded at `xdda`; each source pixel emits one dest pixel,
-/// or two on a DDA carry (widening). Leftmost pixel = bit 63.
-fn scale_row_up(src_row: u64, w: i16, dda_inc: u16, xdda: u16) -> u64 {
-    let mut srcbit = 1u64 << 63;
-    let mut dstbit = 1u64 << 63;
-    let mut out = 0u64;
+/// or two on a DDA carry (widening).
+fn scale_row_up(src_row: &Row, w: i16, dda_inc: u16, xdda: u16) -> Row {
+    let mut d = 0usize;
+    let mut out = ROW_ZERO;
     let mut accum = xdda;
-    for _ in 0..w {
-        let set = src_row & srcbit != 0;
+    for s in 0..w.max(0) as usize {
+        let set = row_test(src_row, s);
         accum = accum.wrapping_add(dda_inc);
         let carry = accum < dda_inc;
         if set {
             if carry {
-                out |= dstbit;
-                dstbit >>= 1;
+                row_set(&mut out, d);
+                d += 1;
             }
-            out |= dstbit;
-            dstbit >>= 1;
+            row_set(&mut out, d);
+            d += 1;
         } else {
             if carry {
-                dstbit >>= 1;
+                d += 1;
             }
-            dstbit >>= 1;
+            d += 1;
         }
-        srcbit >>= 1;
     }
     out
 }
@@ -225,23 +413,20 @@ fn scale_row_up(src_row: u64, w: i16, dda_inc: u16, xdda: u16) -> u64 {
 /// (`vdi_textblit.c:628-666`). A set source pixel emits a dest pixel only
 /// on a DDA carry (dropping pixels), a clear source pixel always advances
 /// one dest position; the EmuTOS asymmetry is reproduced verbatim.
-fn scale_row_down(src_row: u64, w: i16, dda_inc: u16, xdda: u16) -> u64 {
-    let mut srcbit = 1u64 << 63;
-    let mut dstbit = 1u64 << 63;
-    let mut out = 0u64;
+fn scale_row_down(src_row: &Row, w: i16, dda_inc: u16, xdda: u16) -> Row {
+    let mut d = 0usize;
+    let mut out = ROW_ZERO;
     let mut accum = xdda;
-    for _ in 0..w {
-        let set = src_row & srcbit != 0;
-        if set {
+    for s in 0..w.max(0) as usize {
+        if row_test(src_row, s) {
             accum = accum.wrapping_add(dda_inc);
             if accum < dda_inc {
-                out |= dstbit;
-                dstbit >>= 1;
+                row_set(&mut out, d);
+                d += 1;
             }
         } else {
-            dstbit >>= 1;
+            d += 1;
         }
-        srcbit >>= 1;
     }
     out
 }
@@ -253,34 +438,38 @@ fn scale_row_down(src_row: u64, w: i16, dda_inc: u16, xdda: u16) -> u64 {
 /// the running horizontal accumulator `xdda` (the sub-pixel nudge that
 /// spreads the fractional character spacing across the string) come from
 /// the char-spacing DDA at the end of `scale()`.
-fn scale_glyph(src: &SrcGlyph, dda_inc: u16, t_sclsts: bool, xdda: &mut u16) -> SrcGlyph {
-    let mut out = SrcGlyph { rows: [0u64; MAX_ROWS], w: 0, h: 0 };
+fn scale_glyph(
+    src: &[Row; MAX_ROWS],
+    size: SrcSize,
+    dda_inc: u16,
+    t_sclsts: bool,
+    xdda: &mut u16,
+    out: &mut [Row; MAX_ROWS],
+) -> SrcSize {
     let mut vaccum: u16 = 0x7fff;
     let mut d = 0usize;
     let seed = *xdda;
-    for srow in 0..(src.h as usize).min(MAX_ROWS) {
+    for s in src.iter().take((size.h.max(0) as usize).min(MAX_ROWS)) {
         vaccum = vaccum.wrapping_add(dda_inc);
         let vcarry = vaccum < dda_inc;
         if t_sclsts {
             if vcarry && d < MAX_ROWS {
-                out.rows[d] = scale_row_up(src.rows[srow], src.w, dda_inc, seed);
+                out[d] = scale_row_up(s, size.w, dda_inc, seed);
                 d += 1;
             }
             if d < MAX_ROWS {
-                out.rows[d] = scale_row_up(src.rows[srow], src.w, dda_inc, seed);
+                out[d] = scale_row_up(s, size.w, dda_inc, seed);
                 d += 1;
             }
         } else if vcarry && d < MAX_ROWS {
-            out.rows[d] = scale_row_down(src.rows[srow], src.w, dda_inc, seed);
+            out[d] = scale_row_down(s, size.w, dda_inc, seed);
             d += 1;
         }
     }
-    out.h = d as i16;
     // Char-spacing DDA: the scaled cell advance + the persistent accumulator.
-    let (w, new_xdda) = resize(seed, src.w as u16, dda_inc, t_sclsts);
-    out.w = w as i16;
+    let (w, new_xdda) = resize(seed, size.w as u16, dda_inc, t_sclsts);
     *xdda = new_xdda;
-    out
+    SrcSize { w: w as i16, h: d as i16 }
 }
 
 /// Per-glyph-row rightward skew shift, driven by the font's `skew`
@@ -306,67 +495,75 @@ fn skew_shifts(f: &SysFont, fh: usize) -> [i16; MAX_ROWS] {
     shifts
 }
 
-/// One row of the effect buffer, or 0 for an out-of-range row index.
+/// One row of the effect buffer, or nothing for an out-of-range row index.
 #[inline]
-fn row_or_zero(src: &[u64; MAX_ROWS], g: i32, fh: usize) -> u64 {
+fn row_or_zero(src: &[Row; MAX_ROWS], g: i32, fh: usize) -> Row {
     if g >= 0 && (g as usize) < fh {
         src[g as usize]
     } else {
-        0
+        ROW_ZERO
     }
 }
 
-/// One assembled glyph cell: `h` rows of a monochrome bitmap, `cell_w`
-/// pixels wide (bit 63 of each `u64` = leftmost pixel). This is the buffer
-/// EmuTOS' `pre_blit` produces — the glyph with thicken/skew/outline/light
+/// The size of an assembled glyph cell: `h` rows, `cell_w` pixels wide. This is the
+/// buffer EmuTOS' `pre_blit` produces — the glyph with thicken/skew/outline/light
 /// already applied — ready to be blitted directly (`chup == 0`) or
 /// transformed by [`rotate_cell`] before the blit (`chup != 0`).
-struct GlyphCell {
-    /// Packed rows, bit 63 = leftmost pixel; `h` rows, `cell_w` bits wide.
-    rows: [u64; MAX_ROWS],
+#[derive(Clone, Copy)]
+struct CellSize {
     /// Effective cell width in pixels (glyph advance + skew + outline).
     cell_w: i16,
     /// Number of rows in the cell.
     h: i16,
 }
 
-/// Assemble one (already raw-or-scaled) source glyph into a [`GlyphCell`]
+/// Assemble one (already raw-or-scaled) source glyph into a cell in `work`
 /// with the active text effects baked in — EmuTOS `pre_blit`
 /// (`vdi_textblit.c:352-436`): thicken + skew build the source, `outline()`
 /// turns it into a hollow contour, and the light mask dims it. `f` supplies
 /// the (possibly scaled) effect metrics; `src` supplies the glyph geometry.
 /// Position-independent: the caller places the result (directly for
 /// `chup == 0`, or after [`rotate_cell`] for a right angle).
-fn build_cell(src: &SrcGlyph, f: &SysFont, style: i16) -> GlyphCell {
-    let fh = (src.h as usize).min(MAX_ROWS);
+fn build_cell(
+    rows: &[Row; MAX_ROWS],
+    src: SrcSize,
+    f: &SysFont,
+    style: i16,
+    work_src: &mut [Row; MAX_ROWS],
+    work: &mut [Row; MAX_ROWS],
+) -> CellSize {
+    let fh = (src.h.max(0) as usize).min(MAX_ROWS);
     let outline = style & T_OUTLINE != 0;
     let skew = style & T_SKEW != 0;
+    let mono = f.mono();
 
     // 1. Build the source rows: each glyph row placed at its skew offset,
     //    with the bold overstrike (thicken) baked in. Leftmost pixel = bit 63.
     let shifts = if skew { skew_shifts(f, fh) } else { [0i16; MAX_ROWS] };
     let wmask = width_mask(src.w);
-    let mut work_src = [0u64; MAX_ROWS];
+    let weight = if style & T_THICKEN != 0 { (f.thicken.max(0) as usize).min(MAX_W) } else { 0 };
     for (row, out) in work_src.iter_mut().take(fh).enumerate() {
-        let mut b = src.rows[row];
-        if style & T_THICKEN != 0 {
+        let mut b = rows[row];
+        if weight != 0 {
             // Bold: overstrike the source `weight` pixels to the right
             // (EmuTOS smears by `WEIGHT = fnt_ptr->thicken`, the scaled
-            // thicken). Masked to the glyph's own width — MONO fonts keep
-            // their advance (`upda_dst`), so it only fattens the glyph.
+            // thicken). A MONO font keeps its advance (`upda_dst`), so it is
+            // masked to the glyph's own width and only fattens the glyph; a
+            // proportional one grows by the weight (`text_blt`).
             let orig = b;
-            let weight = f.thicken.clamp(0, 8) as u32;
             for k in 1..=weight {
-                b |= orig >> k;
+                row_or(&mut b, &row_shr(&orig, k));
             }
-            b &= wmask;
+            if mono {
+                for (x, m) in b.iter_mut().zip(wmask.iter()) {
+                    *x &= *m;
+                }
+            }
         }
-        let s = shifts[row].clamp(0, 48) as u32;
-        *out = b >> s;
+        *out = row_shr(&b, shifts[row].max(0) as usize);
     }
 
     // 2. Outline (hollow contour) or the plain source.
-    let mut work = [0u64; MAX_ROWS];
     let h;
     if outline {
         // Inset the glyph one pixel right so its left border fits inside the
@@ -374,20 +571,26 @@ fn build_cell(src: &SrcGlyph, f: &SysFont, style: i16) -> GlyphCell {
         // has a set 8-neighbour (EmuTOS `outline()`, `vdi_textblit.c:266-345`:
         // `result & ~curr`, hollow letters). Two extra rows hold the top and
         // bottom borders.
-        let mut ins = [0u64; MAX_ROWS];
-        for (dst, s) in ins.iter_mut().zip(work_src.iter()).take(fh) {
-            *dst = *s >> OUTLINE_THICKNESS;
+        for s in work_src.iter_mut().take(fh) {
+            *s = row_shr(s, OUTLINE_THICKNESS as usize);
         }
         h = (fh + 2).min(MAX_ROWS);
         for (b, out) in work.iter_mut().take(h).enumerate() {
             let g = b as i32 - 1; // buffer row b holds glyph row b-1
-            let cur = row_or_zero(&ins, g, fh);
-            let above = row_or_zero(&ins, g - 1, fh);
-            let below = row_or_zero(&ins, g + 1, fh);
-            let neigh = (cur << 1) | (cur >> 1)
-                | above | (above << 1) | (above >> 1)
-                | below | (below << 1) | (below >> 1);
-            *out = neigh & !cur;
+            let cur = row_or_zero(work_src, g, fh);
+            let above = row_or_zero(work_src, g - 1, fh);
+            let below = row_or_zero(work_src, g + 1, fh);
+            let mut neigh = row_shl1(&cur);
+            row_or(&mut neigh, &row_shr(&cur, 1));
+            for r in [&above, &below] {
+                row_or(&mut neigh, r);
+                row_or(&mut neigh, &row_shl1(r));
+                row_or(&mut neigh, &row_shr(r, 1));
+            }
+            for (x, c) in neigh.iter_mut().zip(cur.iter()) {
+                *x &= !*c;
+            }
+            *out = neigh;
         }
     } else {
         h = fh;
@@ -402,62 +605,98 @@ fn build_cell(src: &SrcGlyph, f: &SysFont, style: i16) -> GlyphCell {
         let l = f.lighten as u64;
         let lite = (l << 48) | (l << 32) | (l << 16) | l; // 0x5555_5555_5555_5555
         for (b, row) in work.iter_mut().take(h).enumerate() {
-            *row &= if (h - 1 - b) & 1 == 0 { lite } else { !lite };
+            let m = if (h - 1 - b) & 1 == 0 { lite } else { !lite };
+            for x in row.iter_mut() {
+                *x &= m;
+            }
         }
     }
 
-    // 4. Effective cell width (glyph advance + skew extent + outline pixels).
-    let skew_total = if skew { f.left_offset + f.right_offset } else { 0 };
-    let mut cell_w = src.w + skew_total;
+    // 4. Effective cell width (glyph advance + thicken of a proportional font +
+    //    skew extent + outline pixels).
+    //    A font's offsets need not add up to the lean its mask gives: EmuTOS'
+    //    `screen_blit16` slides its window along with the lean, so ink past
+    //    `DELX` still lands (probe TXQ3); here the cell grows to hold it.
+    let skew_total = if skew { f.left_offset.wrapping_add(f.right_offset).max(shifts[0]) } else { 0 };
+    let mut cell_w = src.w.wrapping_add(skew_total);
+    if !mono {
+        cell_w = cell_w.wrapping_add(weight as i16);
+    }
     if outline {
-        cell_w += OUTLINE_THICKNESS * 2;
+        cell_w = cell_w.wrapping_add(OUTLINE_THICKNESS * 2);
     }
-    GlyphCell { rows: work, cell_w, h: h as i16 }
+    CellSize { cell_w, h: h as i16 }
 }
 
-/// Assemble one character's cell (raw → optional DDA scale → effects) and
-/// report its horizontal pen advance (scaled cell width + outline; skew
-/// does not advance the pen, EmuTOS `upda_dst`). `base` is the ring font
-/// (raw glyph + `first_ade`), `f` the effective — possibly scaled — header.
-fn make_glyph(base: &SysFont, f: &SysFont, code: i16, vwk: &Vwk, xdda: &mut u16) -> (GlyphCell, i16) {
+/// What the pen does behind one glyph.
+#[derive(Clone, Copy)]
+struct Advance {
+    /// Scaled cell width + outline + a proportional font's thicken; skew does not
+    /// advance the pen (EmuTOS `upda_dst`).
+    pen: i16,
+    /// `hor_table[temp]` with `F_HORZ_OFF`, 0 otherwise ([`horz_step`]).
+    hor: i16,
+}
+
+/// Assemble one character's cell (raw → optional DDA scale → effects) into
+/// `st.cell`. `base` is the ring font (raw glyph + `first_ade`), `f` the
+/// effective — possibly scaled — header.
+#[allow(clippy::too_many_arguments)]
+fn make_glyph(
+    st: &mut GlyphStore,
+    pb: &Vdipb,
+    base: &SysFont,
+    f: &SysFont,
+    code: i16,
+    vwk: &Vwk,
+    xdda: &mut u16,
+) -> (CellSize, Advance) {
     let gcode = font::map_code(base, code);
-    let mut src = raw_glyph(base, gcode);
-    if vwk.scaled {
-        src = scale_glyph(&src, vwk.dda_inc, vwk.t_sclsts, xdda);
+    let mut size = raw_glyph(pb, base, gcode, &mut st.raw);
+    let scaled = vwk.scaled;
+    if scaled {
+        size = scale_glyph(&st.raw, size, vwk.dda_inc, vwk.t_sclsts, xdda, &mut st.scaled);
     }
-    let cell = build_cell(&src, f, vwk.style);
+    let rows = if scaled { &st.scaled } else { &st.raw };
+    let cell = build_cell(rows, size, f, vwk.style, &mut st.source, &mut st.cell);
     let outline = if vwk.style & T_OUTLINE != 0 { OUTLINE_THICKNESS } else { 0 };
-    (cell, src.w + outline * 2)
+    let mut pen = size.w.wrapping_add(outline * 2);
+    if vwk.style & T_THICKEN != 0 && !f.mono() {
+        pen = pen.wrapping_add(f.thicken);
+    }
+    (cell, Advance { pen, hor: horz_step(pb, f, gcode) })
 }
 
-/// Pack a [`GlyphCell`] to `ceil(cell_w/8)` bytes per row and blit it with
-/// its top-left at `(x, y)` in the workstation writing mode + text colour.
-fn blit_cell(backend: &dyn RasterBackend, cell: &GlyphCell, x: i16, y: i16, vwk: &Vwk, clip: ClipRect) {
-    let cell_w = cell.cell_w;
-    let h = (cell.h as usize).min(MAX_ROWS);
+/// Pack a cell to `ceil(cell_w/8)` bytes per row and blit it with its top-left at
+/// `(x, y)` in the workstation writing mode + text colour.
+#[allow(clippy::too_many_arguments)]
+fn blit_cell(
+    backend: &dyn RasterBackend,
+    rows: &[Row; MAX_ROWS],
+    bytes: &mut [u8; MAX_ROWS * ROW_BYTES],
+    cell: CellSize,
+    x: i16,
+    y: i16,
+    vwk: &Vwk,
+    clip: ClipRect,
+) {
+    let cell_w = cell.cell_w.min(MAX_W as i16);
+    let cell_h = cell.h.min(MAX_ROWS as i16);
+    if cell_w <= 0 || cell_h <= 0 {
+        return;
+    }
+    let h = cell_h as usize;
     let bpr = (cell_w as usize).div_ceil(8);
-    let mut bytes = [0u8; MAX_ROWS * 8];
-    for (b, &row) in cell.rows.iter().take(h).enumerate() {
+    for (b, row) in rows.iter().take(h).enumerate() {
         for j in 0..bpr {
-            bytes[b * bpr + j] = (row >> (56 - 8 * j)) as u8;
+            bytes[b * bpr + j] = (row[j / 8] >> (56 - 8 * (j % 8))) as u8;
         }
     }
     let mode = WriteMode::from_wrt_mode(vwk.wrt_mode);
-    backend.draw_glyph_sized(x, y, &bytes[..h * bpr], cell_w, cell.h, vwk.text_color, mode, clip);
+    backend.draw_glyph_sized(x, y, &bytes[..h * bpr], cell_w, cell_h, vwk.text_color, mode, clip);
 }
 
-/// Blit one already-assembled glyph horizontally (`chup == 0`): glyph col 0
-/// at `x_pen`, cell top at `top_y` (both before the outline shift). The
-/// horizontal `v_gtext`/`v_justified` path.
-fn draw_cell(backend: &dyn RasterBackend, cell: &GlyphCell, x_pen: i16, top_y: i16, vwk: &Vwk, clip: ClipRect) {
-    // Outlined text starts 1 px earlier and 1 row higher (EmuTOS `outline`
-    // insets the glyph; `output_text` subtracts `outline` from DESTX/DESTY,
-    // `vdi_text.c:410-411`).
-    let out_shift = if vwk.style & T_OUTLINE != 0 { OUTLINE_THICKNESS } else { 0 };
-    blit_cell(backend, cell, x_pen.wrapping_sub(out_shift), top_y - out_shift, vwk, clip);
-}
-
-/// Rotate an assembled [`GlyphCell`] by a right angle — EmuTOS `rotate`
+/// Rotate an assembled cell by a right angle — EmuTOS `rotate`
 /// (`vdi_textblit.c:442-554`). `chup` is 900 (90° CCW), 1800 (180°) or 2700
 /// (90° CW). 90°/270° swap the cell's width and height; 180° preserves them.
 /// The source pixel `(sx, sy)` in a `cell_w × h` cell maps to:
@@ -468,13 +707,17 @@ fn draw_cell(backend: &dyn RasterBackend, cell: &GlyphCell, x_pen: i16, top_y: i
 ///
 /// These reproduce the bit transforms EmuTOS' `rotate` performs (the 180°
 /// nybble-reverse-and-stack, and the 90°/270° transpose loops).
-fn rotate_cell(cell: &GlyphCell, chup: i16) -> GlyphCell {
-    let w = cell.cell_w as usize;
-    let h = (cell.h as usize).min(MAX_ROWS);
-    let mut out = GlyphCell { rows: [0u64; MAX_ROWS], cell_w: 0, h: 0 };
-    for sy in 0..h {
+fn rotate_cell(rows: &[Row; MAX_ROWS], cell: CellSize, chup: i16, out: &mut [Row; MAX_ROWS]) -> CellSize {
+    let w = (cell.cell_w.max(0) as usize).min(MAX_W);
+    let h = (cell.h.max(0) as usize).min(MAX_ROWS);
+    // 90°/270° swap the dimensions; 180° keeps them.
+    let (out_w, out_h) = if chup == 1800 { (w, h) } else { (h, w) };
+    for r in out.iter_mut().take(out_h) {
+        *r = ROW_ZERO;
+    }
+    for (sy, row) in rows.iter().enumerate().take(h) {
         for sx in 0..w {
-            if cell.rows[sy] & (0x8000_0000_0000_0000u64 >> sx) == 0 {
+            if !row_test(row, sx) {
                 continue;
             }
             let (dx, dy) = match chup {
@@ -483,53 +726,72 @@ fn rotate_cell(cell: &GlyphCell, chup: i16) -> GlyphCell {
                 _ => (h - 1 - sy, sx), // 2700
             };
             if dy < MAX_ROWS {
-                out.rows[dy] |= 0x8000_0000_0000_0000u64 >> dx;
+                row_set(&mut out[dy], dx);
             }
         }
     }
-    // 90°/270° swap the dimensions; 180° keeps them.
-    if chup == 1800 {
-        out.cell_w = cell.cell_w;
-        out.h = cell.h;
-    } else {
-        out.cell_w = cell.h;
-        out.h = cell.cell_w;
-    }
-    out
+    CellSize { cell_w: out_w as i16, h: out_h as i16 }
+}
+
+/// Blit one already-assembled glyph horizontally (`chup == 0`): glyph col 0
+/// at `x_pen`, cell top at `top_y` (both before the outline shift). The
+/// horizontal `v_gtext`/`v_justified` path.
+fn draw_cell(backend: &dyn RasterBackend, st: &mut GlyphStore, cell: CellSize, x_pen: i16, top_y: i16, vwk: &Vwk, clip: ClipRect) {
+    // Outlined text starts 1 px earlier and 1 row higher (EmuTOS `outline`
+    // insets the glyph; `output_text` subtracts `outline` from DESTX/DESTY,
+    // `vdi_text.c:410-411`).
+    let out_shift = if vwk.style & T_OUTLINE != 0 { OUTLINE_THICKNESS } else { 0 };
+    blit_cell(backend, &st.cell, &mut st.bytes, cell, x_pen.wrapping_sub(out_shift), top_y.wrapping_sub(out_shift), vwk, clip);
 }
 
 /// Vertical-alignment reference → glyph-cell top, for `v_align`
 /// (EmuTOS `output_text` `delv`, `vdi_text.c:366-390`). `f` is the
 /// effective (possibly scaled) header, so `top`/`bottom` are the scaled
 /// metrics; `top + bottom == form_height - 1` for every unscaled font.
+/// WORD arithmetic: a loaded font's metrics are the program's to choose.
 fn top_for(f: &SysFont, y: i16, v_align: i16) -> i16 {
     match v_align {
-        0 => y - f.top,                    // baseline
-        1 => y - (f.top - f.half),         // half line
-        2 => y - (f.top - f.ascent),       // ascent (cap top)
-        3 => y - (f.top + f.bottom),       // bottom of cell
-        4 => y - (f.top + f.descent),      // descent line
-        _ => y,                            // top of cell (5)
+        0 => y.wrapping_sub(f.top),                                 // baseline
+        1 => y.wrapping_sub(f.top.wrapping_sub(f.half)),            // half line
+        2 => y.wrapping_sub(f.top.wrapping_sub(f.ascent)),          // ascent (cap top)
+        3 => y.wrapping_sub(f.top.wrapping_add(f.bottom)),          // bottom of cell
+        4 => y.wrapping_sub(f.top.wrapping_add(f.descent)),         // descent line
+        _ => y,                                                     // top of cell (5)
     }
 }
 
 /// On-screen width of a `count`-char run in the current font and effects —
-/// EmuTOS `calc_width` (`vdi_text.c:176-210`): the monospace advance
-/// (`count * base cell width`), then DDA-scaled as a whole when the
-/// workstation is scaled, plus the once-per-string skew extent (scaled) and
-/// the per-char outline pixels. Thicken adds nothing for a monospace font.
-pub(crate) fn calc_width(base: &SysFont, f: &SysFont, count: i16, vwk: &Vwk) -> i16 {
-    // Monospace: the width scales the total, using the *base* cell width
-    // (EmuTOS reads the unscaled `off_table` through the scaled header).
+/// EmuTOS `calc_width` (`vdi_text.c:176-210`): the advance — `count` cells of the
+/// first table entry for a monospace font, the table entries of the codes from
+/// `INTIN[first..]` for a proportional one, unchecked as there — DDA-scaled as a whole
+/// when the workstation is scaled, plus the thicken of a proportional font per
+/// char, the once-per-string skew extent (scaled) and the per-char outline
+/// pixels.
+pub(crate) fn calc_width(pb: &Vdipb, first: usize, base: &SysFont, f: &SysFont, count: i16, vwk: &Vwk) -> i16 {
+    // The width scales the total, using the *base* table (EmuTOS reads the
+    // unscaled `off_table` through the scaled header).
     //
     // WORD arithmetic, as EmuTOS: a run of more than 4095 8-px characters
     // wraps, and `act_siz` takes the width as a `UWORD`.
-    let mut width = count.wrapping_mul(base.max_cell_width);
+    let mono = base.mono();
+    let mut width = if mono {
+        count.wrapping_mul(table_width(pb, base, 0))
+    } else {
+        let mut sum = 0i16;
+        for i in 0..count.max(0) as usize {
+            let chr = pb.intin(first + i).wrapping_sub(base.first_ade);
+            sum = sum.wrapping_add(table_width(pb, base, chr));
+        }
+        sum
+    };
     if vwk.scaled {
         width = act_siz(width as u16, vwk.dda_inc, vwk.t_sclsts) as i16;
     }
+    if vwk.style & T_THICKEN != 0 && !mono {
+        width = width.wrapping_add(count.wrapping_mul(f.thicken));
+    }
     if vwk.style & T_SKEW != 0 {
-        width = width.wrapping_add(f.left_offset + f.right_offset); // scaled offsets
+        width = width.wrapping_add(f.left_offset.wrapping_add(f.right_offset)); // scaled offsets
     }
     if vwk.style & T_OUTLINE != 0 {
         width = width.wrapping_add(count.wrapping_mul(OUTLINE_THICKNESS * 2));
@@ -544,14 +806,13 @@ pub(crate) fn calc_width(base: &SysFont, f: &SysFont, count: i16, vwk: &Vwk) -> 
 /// cell (`scaled && dda_inc == 0xFFFF`), else 0.
 #[inline]
 fn underline_offset(f: &SysFont, vwk: &Vwk) -> i16 {
-    f.ul_size
-        + if f.bottom > f.ul_size {
-            1
-        } else if vwk.scaled && vwk.dda_inc == 0xFFFF {
-            -1
-        } else {
-            0
-        }
+    f.ul_size.wrapping_add(if (f.bottom as u16) > (f.ul_size as u16) {
+        1
+    } else if vwk.scaled && vwk.dda_inc == 0xFFFF {
+        -1
+    } else {
+        0
+    })
 }
 
 /// The lines of an underline — EmuTOS `output_text`'s loop
@@ -581,7 +842,7 @@ fn underline_lines(
     // `LN_MASK`: `lighten` when F_LIGHT is set, else solid (`:513-516`).
     let mut mask = if vwk.style & T_LIGHT != 0 { f.lighten } else { 0xFFFF };
     let ((mut x1, mut y1), (mut x2, mut y2)) = (start, end);
-    for _ in 0..f.ul_size {
+    for _ in 0..f.ul_size as u16 {
         mask = backend.abline(x1, y1, x2, y2, vwk.text_color, mode, clip, mask, true).rotate_right(1);
         x1 = x1.wrapping_add(step.0);
         x2 = x2.wrapping_add(step.0);
@@ -595,7 +856,7 @@ fn underline_lines(
 /// `DESTY + top + underline`. All three come in as EmuTOS has them, shifted
 /// by the outline: `y_cell_top` is the rendered cell top (`DESTY`).
 fn underline(backend: &dyn RasterBackend, f: &SysFont, vwk: &Vwk, startx: i16, y_cell_top: i16, destx: i16, clip: ClipRect) {
-    let y = y_cell_top + f.top + underline_offset(f, vwk);
+    let y = y_cell_top.wrapping_add(f.top).wrapping_add(underline_offset(f, vwk));
     underline_lines(backend, f, vwk, (startx, y), (destx, y), (0, 1), clip);
 }
 
@@ -621,13 +882,19 @@ fn delh_for(f: &SysFont, vwk: &Vwk, width: i16, outline: i16) -> i16 {
         2 => width.wrapping_sub(outline * 2),   // right
         _ => 0,                                 // left (0)
     };
+    // `-mshort`: `UWORD * WORD / UWORD` is 16-bit unsigned. A loaded font's `top` or
+    // `bottom` may be 0: a divide-by-zero exception on the 68000, whose result is
+    // no value; here the term is 0 (`docs/COMPATIBILITY.md` "GDOS font chain").
+    let div = |a: i16, b: i16, c: i16| -> i16 {
+        (a as u16).wrapping_mul(b as u16).checked_div(c as u16).unwrap_or(0) as i16
+    };
     delh.wrapping_add(match vwk.v_align {
-        0 => d1,                          // baseline
-        1 => (f.half * d2) / f.top,       // half line
-        2 => (f.ascent * d2) / f.top,     // ascent
-        3 => 0,                           // bottom
-        4 => (f.descent * d1) / f.bottom, // descent
-        _ => d1 + d2,                     // top (5)
+        0 => d1,                       // baseline
+        1 => div(f.half, d2, f.top),   // half line
+        2 => div(f.ascent, d2, f.top), // ascent
+        3 => 0,                        // bottom
+        4 => div(f.descent, d1, f.bottom), // descent
+        _ => d1.wrapping_add(d2),      // top (5)
     })
 }
 
@@ -655,7 +922,8 @@ pub fn v_gtext(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     if count <= 0 {
         return;
     }
-    let base = font::font(vwk.cur_font);
+    let base_hdr = font::head_or_system(pb, vwk.cur_font);
+    let base = &base_hdr;
     let scaled_hdr;
     let f: &SysFont = if vwk.scaled {
         scaled_hdr = scaled_header(base, vwk.dda_inc, vwk.t_sclsts);
@@ -663,12 +931,14 @@ pub fn v_gtext(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     } else {
         base
     };
+    // SAFETY: the one borrower of this call (`store`).
+    let st = unsafe { store() };
     let (x, y) = (pb.ptsin(0), pb.ptsin(1));
 
     // Horizontal-alignment offset `delh` against the natural run width
     // (`output_text` with `width < 0`, `vdi_text.c:305-306`).
     let outline = outline_of(vwk);
-    let width = calc_width(base, f, count, vwk);
+    let width = calc_width(pb, 0, base, f, count, vwk);
     let delh = delh_for(f, vwk, width, outline);
 
     // With clipping off `text_blt` cuts nothing (`check_clip`,
@@ -682,12 +952,12 @@ pub fn v_gtext(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     // EmuTOS' `switch(vwk->chup)` where only 900/1800/2700 are cased.
     if matches!(vwk.chup, 900 | 1800 | 2700) {
         let run = Run { first: 0, count, x, y, delh, outline };
-        output_text_rotated(pb, vwk, backend, base, f, &run, clip, None);
+        output_text_rotated(st, pb, vwk, backend, base, f, &run, clip, None);
         return;
     }
 
     // Horizontal (`chup == 0`). `x_pen0` is where char 0's glyph col 0 lands.
-    let x_pen0 = x - delh;
+    let x_pen0 = x.wrapping_sub(delh);
     let top_y = top_for(f, y, vwk.v_align);
 
     // Per-char advance comes from each assembled glyph (scaled cell width +
@@ -697,13 +967,13 @@ pub fn v_gtext(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     let mut xdda: u16 = 0x7fff;
     let mut cx = x_pen0;
     for i in 0..count as usize {
-        let (cell, advance) = make_glyph(base, f, pb.intin(i), vwk, &mut xdda);
-        draw_cell(backend, &cell, cx, top_y, vwk, clip);
-        cx = cx.wrapping_add(advance); // `DESTX` is a WORD
+        let (cell, advance) = make_glyph(st, pb, base, f, pb.intin(i), vwk, &mut xdda);
+        draw_cell(backend, st, cell, cx, top_y, vwk, clip);
+        cx = cx.wrapping_add(advance.pen).wrapping_add(advance.hor); // `DESTX` is a WORD
     }
     // `startx` = the first `DESTX`, the end = the last (both shifted by the
     // outline, `vdi_text.c:410-413`).
-    underline(backend, f, vwk, x_pen0.wrapping_sub(outline), top_y - outline, cx.wrapping_sub(outline), clip);
+    underline(backend, f, vwk, x_pen0.wrapping_sub(outline), top_y.wrapping_sub(outline), cx.wrapping_sub(outline), clip);
 }
 
 /// Draw a run rotated to a right angle — EmuTOS `output_text`'s `chup`
@@ -717,6 +987,7 @@ pub fn v_gtext(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
 /// already put them on the rotated axis.
 #[allow(clippy::too_many_arguments)]
 fn output_text_rotated(
+    st: &mut GlyphStore,
     pb: &Vdipb,
     vwk: &Vwk,
     backend: &dyn RasterBackend,
@@ -736,10 +1007,10 @@ fn output_text_rotated(
     // `vdi_text.c:366-390`).
     let delv = match vwk.v_align {
         0 => f.top,
-        1 => f.top - f.half,
-        2 => f.top - f.ascent,
-        3 => f.top + f.bottom,
-        4 => f.top + f.descent,
+        1 => f.top.wrapping_sub(f.half),
+        2 => f.top.wrapping_sub(f.ascent),
+        3 => f.top.wrapping_add(f.bottom),
+        4 => f.top.wrapping_add(f.descent),
         _ => 0,
     };
 
@@ -747,7 +1018,7 @@ fn output_text_rotated(
     // `text_blt`'s `chup` switch; the pen advance excludes skew (EmuTOS
     // `upda_dst` recomputes `delx` without `LOFF+ROFF`,
     // `vdi_textblit.c:1403-1417`). `skew_total` is a per-run constant.
-    let skew_total = if vwk.style & T_SKEW != 0 { f.left_offset + f.right_offset } else { 0 };
+    let skew_total = if vwk.style & T_SKEW != 0 { f.left_offset.wrapping_add(f.right_offset) } else { 0 };
 
     // Anchor (first glyph, EmuTOS `output_text` `vdi_text.c:417-440`), the
     // underline start and its thickness step/orientation. `(top+bottom)` is
@@ -759,12 +1030,14 @@ fn output_text_rotated(
     let (xfact, yfact); // underline thickness step
     let vertical; // underline orientation
     // WORD arithmetic, as EmuTOS: `delh` comes from `v_justified`'s
-    // caller-chosen `max_x` and may carry the anchor past the i16 range.
+    // caller-chosen `max_x`, a loaded font's metrics from its program, and either
+    // may carry the anchor past the i16 range.
+    let below = top.wrapping_add(bottom).wrapping_sub(delv); // `(top + bottom) - delv`
     match chup {
         900 => {
-            ax = x - delv - outline;
+            ax = x.wrapping_sub(delv).wrapping_sub(outline);
             ay = y.wrapping_add(delh).wrapping_add(outline + 1);
-            startx = ax + top + under;
+            startx = ax.wrapping_add(top).wrapping_add(under);
             starty = ay;
             xfact = 1;
             yfact = 0;
@@ -772,18 +1045,18 @@ fn output_text_rotated(
         }
         1800 => {
             ax = x.wrapping_add(delh).wrapping_add(outline + 1);
-            ay = y - ((top + bottom) - delv) - outline;
+            ay = y.wrapping_sub(below).wrapping_sub(outline);
             startx = ax;
-            starty = ay + bottom - under;
+            starty = ay.wrapping_add(bottom).wrapping_sub(under);
             xfact = 0;
             yfact = -1;
             vertical = false;
         }
         _ => {
             // 2700 — no vars.DEST adjustment in `text_blt`'s switch.
-            ax = x - ((top + bottom) - delv) - outline;
+            ax = x.wrapping_sub(below).wrapping_sub(outline);
             ay = y.wrapping_sub(delh).wrapping_sub(outline);
-            startx = ax + bottom - under;
+            startx = ax.wrapping_add(bottom).wrapping_sub(under);
             starty = ay;
             xfact = -1;
             yfact = 0;
@@ -796,17 +1069,18 @@ fn output_text_rotated(
     let mut gy = ay;
     for i in 0..count as usize {
         let code = pb.intin(first + i);
-        let (cell, advance) = make_glyph(base, f, code, vwk, &mut xdda);
-        let rot = rotate_cell(&cell, chup);
+        let (cell, adv) = make_glyph(st, pb, base, f, code, vwk, &mut xdda);
+        let advance = adv.pen;
+        let rot = rotate_cell(&st.cell, cell, chup, &mut st.rotated);
         // Glyph placement shift includes skew (EmuTOS `text_blt` `chup`
         // switch); the pen advance below does not.
-        let cell_adj = advance + skew_total;
+        let cell_adj = advance.wrapping_add(skew_total);
         let (bx, by) = match chup {
             900 => (gx, gy.wrapping_sub(cell_adj)),  // vars.DESTY -= delx
             1800 => (gx.wrapping_sub(cell_adj), gy), // vars.DESTX -= delx
             _ => (gx, gy),                           // 2700 — no adjustment
         };
-        blit_cell(backend, &rot, bx, by, vwk, clip);
+        blit_cell(backend, &st.rotated, &mut st.bytes, rot, bx, by, vwk, clip);
         match chup {
             900 => gy = gy.wrapping_sub(advance),  // DESTY -= delx (move up)
             1800 => gx = gx.wrapping_sub(advance), // DESTX -= delx (move left)
@@ -815,6 +1089,7 @@ fn output_text_rotated(
         if let Some(j) = just.as_deref_mut() {
             j.step(code, &mut gx, &mut gy);
         }
+        gx = gx.wrapping_add(adv.hor); // `DESTX`, in every `chup`
     }
 
     // Underline parallel to the rotated baseline (EmuTOS `output_text`,
@@ -894,7 +1169,8 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     if cnt <= 0 {
         return; // output_text quick-out for count <= 0
     }
-    let base = font::font(vwk.cur_font);
+    let base_hdr = font::head_or_system(pb, vwk.cur_font);
+    let base = &base_hdr;
     let scaled_hdr;
     let f: &SysFont = if vwk.scaled {
         scaled_hdr = scaled_header(base, vwk.dda_inc, vwk.t_sclsts);
@@ -902,6 +1178,8 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     } else {
         base
     };
+    // SAFETY: the one borrower of this call (`store`).
+    let st = unsafe { store() };
     let interword = pb.intin(0) != 0;
     let interchar = pb.intin(1) != 0;
     let x0 = pb.ptsin(0);
@@ -922,14 +1200,14 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     // Natural on-screen width — EmuTOS calc_width (:1203); this is the scaled
     // advance plus skew/outline extents, NOT nchars*cell_w. Kept as the base
     // that the slack is measured against and that the interchar block divides.
-    let mut width = calc_width(base, f, cnt, vwk);
+    let mut width = calc_width(pb, 2, base, f, cnt, vwk);
 
     let mut just = JustInfo::default(); // bzero default (:1207)
 
     // Interword spacing (:1212-1253).
     if interword && spaces != 0 {
-        let mut delword = (max_x - width) / spaces;
-        just.rmword = (max_x - width) % spaces;
+        let mut delword = max_x.wrapping_sub(width) / spaces;
+        just.rmword = max_x.wrapping_sub(width) % spaces;
         let direction;
         if just.rmword < 0 {
             direction = -1;
@@ -953,7 +1231,7 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
                 delword = -expand;
                 just.rmword = 0;
             }
-            width += delword * spaces + just.rmword * direction;
+            width = width.wrapping_add(delword.wrapping_mul(spaces)).wrapping_add(just.rmword * direction);
         }
 
         match vwk.chup {
@@ -978,8 +1256,8 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
 
     // Intercharacter spacing (:1258-1286).
     if interchar && cnt > 1 {
-        let delchar = (max_x - width) / (cnt - 1);
-        just.rmchar = (max_x - width) % (cnt - 1);
+        let delchar = max_x.wrapping_sub(width) / (cnt - 1);
+        just.rmchar = max_x.wrapping_sub(width) % (cnt - 1);
         let direction;
         if just.rmchar < 0 {
             direction = -1;
@@ -1016,10 +1294,10 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     // (`gdp_justified` → `output_text(vwk, cnt, str, max_x, &just)`, :1288).
     if matches!(vwk.chup, 900 | 1800 | 2700) {
         let outline = outline_of(vwk);
-        let run_width = if max_x < 0 { calc_width(base, f, cnt, vwk) } else { max_x };
+        let run_width = if max_x < 0 { calc_width(pb, 2, base, f, cnt, vwk) } else { max_x };
         let delh = delh_for(f, vwk, run_width, outline);
         let run = Run { first: 2, count: cnt, x: x0, y: pb.ptsin(1), delh, outline };
-        output_text_rotated(pb, vwk, backend, base, f, &run, clip, Some(&mut just));
+        output_text_rotated(st, pb, vwk, backend, base, f, &run, clip, Some(&mut just));
         return;
     }
 
@@ -1034,12 +1312,13 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     let mut desty = top_y;
     for i in 0..cnt as usize {
         let code = pb.intin(2 + i);
-        let (cell, advance) = make_glyph(base, f, code, vwk, &mut xdda);
-        draw_cell(backend, &cell, destx, desty, vwk, clip);
-        destx = destx.wrapping_add(advance); // base glyph advance (EmuTOS text_blt DELX), a WORD
+        let (cell, advance) = make_glyph(st, pb, base, f, code, vwk, &mut xdda);
+        draw_cell(backend, st, cell, destx, desty, vwk, clip);
+        destx = destx.wrapping_add(advance.pen); // base glyph advance (EmuTOS text_blt DELX), a WORD
         just.step(code, &mut destx, &mut desty);
+        destx = destx.wrapping_add(advance.hor);
     }
     // As in `v_gtext`: `DESTX`/`DESTY` carry the outline shift (`vdi_text.c:410-411`).
     let outline = outline_of(vwk);
-    underline(backend, f, vwk, x0.wrapping_sub(outline), top_y - outline, destx.wrapping_sub(outline), clip);
+    underline(backend, f, vwk, x0.wrapping_sub(outline), top_y.wrapping_sub(outline), destx.wrapping_sub(outline), clip);
 }

@@ -680,7 +680,7 @@ leaves them alone. Everything on the screen, the run-on into the neighbouring
 rows included, is EmuTOS' (one exception, a run of more than 4095 8-pixel
 characters: `docs/api/vdi/output/_text.md`, § Clipping off). Code
 `tos-api/src/vdi/line.rs:70@glyph_unclipped`,
-`tos-api/src/vdi/text.rs:568@underline_lines`; spec
+`tos-api/src/vdi/text.rs:829@underline_lines`; spec
 `docs/api/vdi/output/_text.md` (§ Clipping off); host test
 `tos-api/tests/vdi_reference/cases_v30.rs`; run
 `measurements/measurement-2026-11-06-v30/RUNINFO.TXT`.
@@ -742,7 +742,7 @@ then moves 65536 − |n| vertex pairs — 256 KiB for `-1` — from the caller's
 `PTSIN` into `_vdishare` and on over whatever lies behind it. What that
 overwrites depends on the memory layout of the ROM build; it is foreign
 memory, not a reproducible result. NewTOS keeps the observable rest: the
-dispatcher (`tos-api/src/vdi/mod.rs:380@dispatch_in`) leaves the negative
+dispatcher (`tos-api/src/vdi/mod.rs:391@dispatch_in`) leaves the negative
 count as it is, the three handlers that read `PTSIN` by `CONTRL[1]` draw
 nothing for it — as EmuTOS' do for a count below 1 resp. 2 (`v_pmarker`
 loop `references/emutos/vdi/vdi_marker.c:124`, `polyline` and `wideline`
@@ -1645,6 +1645,51 @@ waehrend der Auswahl; die Rueckgaben von `fsel_*`, Pfad und Name sind
 unveraendert. Andere `form_do`-Dialoge: unveraendert. Spec:
 `docs/api/aes/resource-fileselector.md` (A128); Code:
 `tos-api/src/aes/input.rs:1034@WheelClaim`.
+
+**GDOS font chain (`vst_load_fonts`, TASK/V33)** — user decisions D1, D2, D3 of
+2026-11-06. The chain works as in the ROM (rules R1-R14 of
+`docs/api/vdi/attributes/_text.md`, measured: probe T13A/T13B, TX*, run
+`measurements/measurement-2026-11-06-v33/RUNINFO.TXT`). Contract points:
+
+- **D1, `CONTRL` cells:** every pointer in the caller's width, the offset WORD
+  directly behind the first (T04, A81): LP64 scratch `[7..10]`, offset `[11]`, chain
+  `[12..15]`; ILP32 bit-equal to EmuTOS `[7..8]`, `[9]`, `[10..11]`. gemlib follows by
+  overlay (`sdk/gemlib/overlay/vst_load_fonts.c`, `VDI_CNTRLMAX` 16); a program
+  linked against the gemlib before this change that calls `vst_load_fonts` hands the
+  kernel its uninitialised `CONTRL[14..15]` as half a chain pointer and must be
+  relinked. cflib's selector calls it only with GDOS (`vq_gdos`, which answers none).
+- **D3, `Fonthead`:** native in the caller's ABI, like `MFDB` and `OBJECT`; the LP64
+  offsets stand in the spec and in mintlib's `__FONT` (overlay, with `reserved` added
+  and static assertions). A loader relocates a font file into this form.
+
+Deviations, each where EmuTOS has no defined result or the difference is the point
+of the system:
+
+- **D2, NULL chain:** answers 0, changes nothing, the one chance stays open. EmuTOS
+  dereferences it (`references/emutos/vdi/vdi_text.c:1316-1340`), no defined result.
+- **The scratch buffer is not used.** The cells are not read; NewTOS' text path keeps
+  no scratch buffer (`tos-api/src/vdi/text.rs:131@GlyphStore`, the "Reference" part of the
+  spec's contract note). **Observable:** only to a program that reads its buffer
+  after drawing, or passes one too small: EmuTOS overruns it, NewTOS does not.
+  In return a glyph cell has a limit of its own: 512 × 512 pixels, the rest of a larger
+  cell is not drawn.
+- **A current face gone from the ring** (another workstation's `v_opnvwk` or unload, R13)
+  and `vst_height`/`vst_point`: EmuTOS follows a NULL `test_font` into low memory
+  (`vdi_text.c:692-704`), no defined result. NewTOS goes on from `fon6x6`.
+- **Memory of an ended program.** `font_ring[2]` is global and outlives the loader; the
+  loader reads with its own rights, a bad pointer in its font ends it (EmuTOS: bus
+  error). Everyone else follows the chain through `usermem::resolve_kva`: memory no
+  longer allocated ends the walk, a current font there reads as `fon6x6`. EmuTOS
+  reads the freed RAM. **Observable:** after the loader ended without unloading, its
+  fonts are gone at once instead of until the RAM is reused.
+- **Bounds on garbage:** a walk stops after 4096 headers (EmuTOS hangs on a cycle); a
+  font's `top` or `bottom` of 0 in the skew alignment's division gives the term 0
+  (a divide-by-zero exception on the 68000). A name of the full 32 characters
+  ends at the field; EmuTOS reads on into `first_ade`, whose high byte is 0 in any font
+  of 8-bit codes (measured, TXP) and otherwise goes on.
+
+Code `tos-api/src/vdi/font.rs`, `tos-api/src/vdi/attributes.rs:416@vst_load_fonts`; host test
+`tos-api/tests/vdi_reference/cases_v33.rs`.
 
 ## EmuTOS is the reference, not the template
 

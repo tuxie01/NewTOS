@@ -69,7 +69,7 @@ Abweichungs-Kandidaten aus dem Lesen (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
    EmuTOS mit `fill_per` den Umriss, NewTOS nichts.
 5. `vdi_asm.S:84-95` gegen `primitives.rs:846@v_pmarker`: Kappung von `CONTRL[1]` auf
    `MAX_VERTICES` fehlt ausser in `v_pline`/`v_fillarea`.
-6. `vdi_fill.c:149` gegen `tos-api/src/vdi/attributes.rs:512@vsf_udpat`: NewTOS speichert nur 16
+6. `vdi_fill.c:149` gegen `tos-api/src/vdi/attributes.rs:592@vsf_udpat`: NewTOS speichert nur 16
    Woerter statt `INQ_TAB[4]*16`.
 7. `vdi_raster.c:1331,588` gegen `tos-api/src/vdi/raster.rs:796@vro_cpyfm`: Speicher-nach-Speicher
    mit gleich vielen Ebenen <= 8: EmuTOS planarer BitBlt, NewTOS 16-Bit-Chunky; PAT_FLAG fehlt.
@@ -93,18 +93,18 @@ Abweichungs-Kandidaten aus dem Lesen (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
 
 Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
 
-13. `vdi_text.c:1292-1350` gegen `tos-api/src/vdi/attributes.rs:351@vst_load_fonts`: GDOS-Fontkette
+13. `vdi_text.c:1292-1350` gegen `tos-api/src/vdi/attributes.rs:404@vst_load_fonts`: GDOS-Fontkette
     (`CONF_WITH_GDOS=1`) fehlt, NewTOS liefert immer 0.
-14. `vdi_textblit.c:672-741` gegen `tos-api/src/vdi/text.rs:71@resize`: bei `dda_inc == 0xFFFF`
+14. `vdi_textblit.c:672-741` gegen `tos-api/src/vdi/text.rs:178@resize`: bei `dda_inc == 0xFFFF`
     driftet EmuTOS' `XDDA`, NewTOS liefert absichtlich genau `2*size` (Kommentar im Code).
-15. `vdi_text.c:770-817` gegen `text.rs:103@scaled_header` und `attributes.rs:171@vst_font`:
+15. `vdi_text.c:770-817` gegen `text.rs:210@scaled_header` und `attributes.rs:171@vst_font`:
     `point*2` im skalierten Header, `vst_font` waehlt die Groesse in NewTOS nicht neu.
-16. `vdi_text.c:1177-1289` gegen `text.rs:891@v_justified`: Drehung 900/1800/2700 fehlt.
+16. `vdi_text.c:1177-1289` gegen `text.rs:873@v_justified`: Drehung 900/1800/2700 fehlt.
 17. `vdi_esc.c:100-107` gegen `tos-api/src/vdi/escape.rs:793@v_escape`: ESC Y (Spalten > 223,
     Byte-Abschneiden) anders, als Entscheidung Q6 im Code.
 18. `vdi_esc.c:241-247` gegen `escape.rs:793@v_escape`: Escape 17 ruft `Scrdmp()` nicht; `dump_vec`
     nicht verfolgt.
-19. `vdi_text.c:592-665` gegen `font::DEFAULT` (seit V32 `tos-api/src/vdi/font.rs:287@text_init_def_font`): Default-Font fest 8x16 statt
+19. `vdi_text.c:592-665` gegen `font::DEFAULT` (seit V32 `tos-api/src/vdi/font.rs:330@text_init_def_font`): Default-Font fest 8x16 statt
     nach `V_REZ_VT >= 400`.
 
 ## Stand Teil 3 und Abschluss (2026-11-05)
@@ -128,7 +128,7 @@ Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
 23. `vdi_control.c:507-531` gegen `workstation.rs:359@v_opnwk`: Videomodus-Wechsel per
     `INTIN[0]-2` fehlt.
 24. `vdi_mouse.c:668` gegen `mouse.rs:169@set_state`: Zeiger im VBL gegen synchron (wie 9).
-25. `vdi_main.c:171-190` gegen `tos-api/src/vdi/mod.rs:376@dispatch_in`: Line-A-Spiegel
+25. `vdi_main.c:171-190` gegen `tos-api/src/vdi/mod.rs:391@dispatch_in`: Line-A-Spiegel
     `CUR_FONT/WRT_MODE/CLIP/CUR_WORK` fehlen (ADR-030 pruefen).
 26. `vdi_control.c:390` gegen `tos-api/src/vdi/vwk.rs`: keine Workstation-Kette (Warp9).
 

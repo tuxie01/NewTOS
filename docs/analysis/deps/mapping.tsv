@@ -1477,6 +1477,7 @@ screen_blit16	vdi/vdi_textblit.c	tos-api/src/vdi/line.rs	glyph_unclipped	mapped	
 shift_and_update	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_up	mapped	destination bit/word stepping of the scalers; NewTOS packs into one u64 row
 shift_and_update	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_down	mapped	destination bit/word stepping of the scalers; NewTOS packs into one u64 row
 text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	make_glyph	mapped	per-character driver: scale, effects
+text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	raw_glyph	mapped	the glyph from FBASE at SOURCEX/DELX; a chain's table is a byte stream read through read_mem (V33)
 text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	draw_cell	mapped	per-character blit and position (chup 0)
 text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	output_text_rotated	mapped	per-character blit and position (chup 900/1800/2700)
 bios_conws	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	puts	mapped	string through the VT52 automaton
@@ -1517,29 +1518,37 @@ output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	v_justified	mapped	justified 
 output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	delh_for	mapped	h_align/v_align delh against width (natural, or v_justified's max_x)
 output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	outline_of	mapped	outline start shift
 output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	step	mapped	JustInfo::step, the justified apply loop after each glyph
+output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	horz_step	mapped	DESTX += hor_table[temp] with F_HORZ_OFF (V33)
 output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	underline	mapped	horizontal underline: startx to DESTX inclusive (abline draws the endpoint), on the row DESTY + top + underline, with the outline shift (V30)
 output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	underline_lines	mapped	the F_UNDER loop for every chup: LN_MASK from lighten, carried by abline and rorw1 from line to line; clip off skips clip_line, the rule runs on (V30)
 setup_width_height	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	setup_width_height	mapped	-
 text_init	vdi/vdi_text.c	tos-api/src/vdi/workstation.rs	font_ring_fold	mapped	SIZ_TAB[0..3] and DEV_TAB[5] fold; the F_STDFORM byte swap does not exist
 text_init	vdi/vdi_text.c	tos-api/src/vdi/font.rs	text_init_def_font	mapped	the def_font walk (cell_height by V_REZ_VT, F_DEFAULT faces, form_height), evaluated for the live height instead of cached at v_opnwk (V32)
 text_init2	vdi/vdi_text.c	tos-api/src/vdi/vwk.rs	alloc_handle	mapped	slot reset to Vwk::EMPTY gives the text defaults (style, align, chup, scaling); scratch buffers do not exist
-text_init2	vdi/vdi_text.c	tos-api/src/vdi/workstation.rs	init_wk	mapped	cur_font = def_font (font.rs text_init_def_font of the screen height, V32)
-trnsfont	vdi/vdi_text.c	-	-	unmapped	byte swap of non-standard-form fonts (CONF_WITH_GDOS); NewTOS loads no font
+text_init2	vdi/vdi_text.c	tos-api/src/vdi/workstation.rs	init_wk	mapped	cur_font = def_font (font.rs text_init_def_font of the screen height, V32); font_ring[2] = NULL (clear_loaded_ring, V33)
+trnsfont	vdi/vdi_text.c	tos-api/src/vdi/font.rs	trnsfont	mapped	byte swap in the caller's memory for a chain header without F_STDFORM; the count is a 16-bit product (measured, V33)
 vdi_v_gtext	vdi/vdi_text.c	tos-api/src/vdi/text.rs	v_gtext	mapped	opcode 8
 vdi_vqt_attributes	vdi/vdi_text.c	tos-api/src/vdi/inquiry.rs	vqt_attributes	mapped	opcode 38
 vdi_vqt_extent	vdi/vdi_text.c	tos-api/src/vdi/inquiry.rs	vqt_extent	mapped	opcode 116
 vdi_vqt_fontinfo	vdi/vdi_text.c	tos-api/src/vdi/inquiry.rs	vqt_fontinfo	mapped	opcode 131
 vdi_vqt_name	vdi/vdi_text.c	tos-api/src/vdi/inquiry.rs	vqt_name	mapped	opcode 130
 vdi_vqt_width	vdi/vdi_text.c	tos-api/src/vdi/inquiry.rs	vqt_width	mapped	opcode 117
+vdi_vqt_width	vdi/vdi_text.c	tos-api/src/vdi/text.rs	table_width	mapped	off_table[k+1]-off_table[k] of the base font (V33)
+vdi_vqt_width	vdi/vdi_text.c	tos-api/src/vdi/text.rs	horz_offsets	mapped	hor_table[k*2], [k*2+1] with F_HORZ_OFF (V33)
 vdi_vst_alignment	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_alignment	mapped	opcode 39
 vdi_vst_color	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_color	mapped	opcode 22; MAP_COL folded to identity
 vdi_vst_effects	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_effects	mapped	opcode 106
-vdi_vst_font	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_font	mapped	opcode 21; NewTOS returns face 1 and does not re-run vst_height/vst_point
+vdi_vst_font	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_font	mapped	opcode 21; ring walk, re-applies the size through select_point/select_height (V33)
 vdi_vst_height	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_height	mapped	opcode 12
-vdi_vst_load_fonts	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_load_fonts	mapped	opcode 119; NewTOS always returns 0, EmuTOS (CONF_WITH_GDOS) links the fonts in CONTRL[10-11]
+vdi_vst_height	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	select_height	mapped	the size walk over the ring; shared with vst_font (V33)
+vdi_vst_load_fonts	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_load_fonts	mapped	opcode 119; R1-R5; a NULL chain answers 0 (D2); the scratch cells are not read (docs/COMPATIBILITY.md, GDOS font chain)
+vdi_vst_load_fonts	vdi/vdi_text.c	tos-api/src/vdi/mod.rs	contrl_font_chain	mapped	the chain cell at the caller's pointer width (D1)
+vdi_vst_load_fonts	vdi/vdi_text.c	tos-api/src/vdi/font.rs	set_stdform	mapped	flags |= F_STDFORM in the caller's header
+vdi_vst_load_fonts	vdi/vdi_text.c	tos-api/src/vdi/font.rs	head	mapped	Fonthead in the caller's ABI (D3); the owner's rights or resolve_kva (read_mem)
 vdi_vst_point	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_point	mapped	opcode 107
+vdi_vst_point	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	select_point	mapped	the size walk over the ring; shared with vst_font (V33)
 vdi_vst_rotation	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_rotation	mapped	opcode 13
-vdi_vst_unload_fonts	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_unload_fonts	mapped	opcode 120; no-op, nothing was loaded
+vdi_vst_unload_fonts	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_unload_fonts	mapped	opcode 120; R11, cur_font stays
 arb_corner	vdi/vdi_misc.c	tos-api/src/vdi/attributes.rs	vs_clip	mapped	inline: the only EmuTOS caller is vdi_vs_clip (vdi_control.c:240); vs_clip swaps x1>x2 and y1>y2 in place
 arb_line	vdi/vdi_misc.c	tos-api/src/vdi/gdp.rs	rbox	mapped	inline: the only EmuTOS caller is vdi_gdp.c:240 (v_rbox/v_rfbox); rbox swaps x1>x2 and y1<y2 in place (the LL/UR order)
 get_start_addr	vdi/vdi_misc.c	-	-	design:ADR-024@docs/MEMORY.md:2156	byte address of word column x, row y in the planar screen (v_planes_shift, v_lin_wr); NewTOS has no bit-planes (ADR-024), its cursor/fill go through RasterBackend pixels

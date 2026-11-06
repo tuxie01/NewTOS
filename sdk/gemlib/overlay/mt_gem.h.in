@@ -3543,7 +3543,7 @@ short vdi_wstrlen   (const short *wstr);
  */
 
 /* Array sizes in vdi control block as defined in NVDI 4 documentation */
-#define VDI_CNTRLMAX		15		/**< max size of vdi_control[] */
+#define VDI_CNTRLMAX		16		/**< max size of vdi_control[] (NewTOS: 16, the LP64 font chain of vst_load_fonts ends at index 15) */
 #define VDI_INTINMAX		1024	/**< max size of vdi_intin[] */
 #define VDI_INTOUTMAX		512		/**< max size of vdi_intout[] */
 #define VDI_PTSINMAX		1024	/**< max size of vdi_ptsin[] */

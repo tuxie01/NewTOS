@@ -22,3 +22,7 @@ Eine funktionsspezifische Fallskizze mit exakten Parametern, erwarteten Feldern/
 ## Arbeitsregel
 
 [Gemeinsame Regeln und Messgrenzen](README.md) gelten. Bestehende Tests und Entscheidungen zuerst prüfen; nur fehlende Prüfungen ergänzen. Ein Messunterschied ist ohne Einordnung kein Fehlerauftrag. Abschluss hier mit Commit bzw. Artefakt, ausgeführten Prüfungen und verbleibender Hardwareabnahme festhalten.
+
+## Stand
+
+Der Messfall steht: Probe T13A/T13B und TX* (`tosdump/probes/vdprobe.c`), Umsetzung [V33](V33.md), Lauf `measurements/measurement-2026-11-06-v33/RUNINFO.TXT`. Kein tosdiff-Fall: DUMPVDI kann Zeigerzellen in `CONTRL` und Fontpuffer nicht fuehren.

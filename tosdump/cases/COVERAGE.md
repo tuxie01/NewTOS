@@ -76,8 +76,8 @@ having to be re-measured on every machine each time the table grows.
 | 116 | `vqt_extent` | later | needs a string in `intin` |
 | 117 | `vqt_width` | later | |
 | 118 | `vex_timv` | excluded | installs a vector; a dangling handler after exit corrupts the machine |
-| 119 | `vst_load_fonts` | excluded | changes global font state the reset cannot restore |
-| 120 | `vst_unload_fonts` | excluded | same |
+| 119 | `vst_load_fonts` | excluded | changes global font state the reset cannot restore; measured by the probe `tosdump/probes/vdprobe.c` T13, TX* (TASK/V33) |
+| 120 | `vst_unload_fonts` | excluded | same; probe T13, TX* |
 | 121 | `vrt_cpyfm` | later | same MFDB problem as 109 |
 | 122 | `v_show_c` | later | changes cursor visibility; pairs with 123 |
 | 123 | `v_hide_c` | later | |
