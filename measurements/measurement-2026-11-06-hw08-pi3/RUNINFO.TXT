@@ -1,0 +1,12 @@
+Fbench on the new test card on the Pi against the earlier run on the old card and kernel (user, lead, 2026-11-06).
+
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing: not applicable (no image built; files copied by hand).
+Old: kernel e56021e7 (A131, before V28 to V44), FBENCH.TXT of 2026-11-05 from the old card. New: kernel 56c6050f (crash-walk,sd-fault), FBENCH.TXT saved 7:32 after boot. Same FBENCH.NAP fab4e7b4. One run each, 1 s per test, 200 Hz timer.
+
+RESULT, new against old, tests over 10 percent apart and all text lines, 108 tests compared:
+  Text 6pt x1.29, 8pt x1.28, 10pt x1.17, 12pt x1.16, Justified x1.17, Text on 8 px x1.16, 84 chars x1.15, 15 chars x1.13, rotated x1.13, bold x1.13, effects x1.08, 18pt x1.09, 24-72pt x1.06-1.07.
+  Faster: Contour fill x1.67.
+  Slower: Mono blit aligned x0.81 (Mono blit vrt_cpyfm stays within 10 percent), vst_point x0.85, Message round trip x0.89, Text extent x0.94-0.95.
+  V44 holds on the Pi: no text line slower than before V33. QEMU's factor (x1.31 plain) is about twice the Pi's. vst_point fits V33's new walk, not traced. Mono blit and message round trip: noise or real not told by one run.
+  Saving on the new card worked: FBENCH.TXT 7664, MACHINE.FBP 5281, RESULTS.PDF 37154 bytes, %%EOF present.
