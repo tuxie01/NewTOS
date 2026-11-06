@@ -1,0 +1,53 @@
+V29 acceptance -- TASK/V29.md (fix b4e419e5, v_justified rotated at 900/1800/2700 like EmuTOS; base 7cda128b) by the tester.
+Date 2026-11-06. No product code touched; nothing committed; no SD card, no Pi, no push. No temp scaffolding. Test code changed: none.
+Method scripts are adapted copies of measurements/measurement-2026-11-06-v28-test/method (commits, paths); vdprobe.c unchanged since eba4122a,
+so the V18 part 2 oracle probe run e1 is reused (copied from measurements/measurement-2026-11-06-v18-t2/probe/e1, VDPROBE.BIN gunzipped,
+sha256 224db7b5...61ba58 verified against VDPROBE.BIN.sha256).
+
+TREES
+  head = git archive b4e419e5, base = git archive 7cda128b (references/ linked), fresh scratch tree per commit and board; scratch deleted at the end.
+  rpi4 release kernel8.img (serial=on via -append): head f67cf0762eeee644fafc76b9214442c39bf5a083ab3904f07cb3dfafbecd7573,
+  base 061f42b245a1b7b19b5ddf506fa44dda25f1c7e349177ed75e69c279a6aea843 (= V28 head kernel; 7cda128b is test-only) (method/build-kernels.out).
+  qemu-virt: fresh tree b4e419e5, dev profile, cargo xtask build --board qemu-virt rc 0 (method/build-virt.log).
+  host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 35 card.img.manifest files under runs/ and probe/).
+  optional_missing, verbatim, in ALL 35 manifests: optional_missing none
+  Oracle: pinned EmuTOS 1a7484ab, reference BINs in tosdump/reference. QEMU raspi4b, APFS clone per run (removed by the scripts); only own PIDs stopped.
+  Desktop scene: 40 seven-byte files LONGNM01-40.TXT.
+
+RESULTS
+ 1 PASS  cargo xtask test (main tree, HEAD b4e419e5, rc 0): 2116 passed / 0 failed / 1 ignored (192 "test result" lines) = developer's number (analysis/cargo-xtask-test.txt).
+ 2 PASS  vdi-v18-t2.tsv vs EMUTOS-1a7484ab-VDI-v18t2-falcontc: base 11 of 32 records differ (50 54 61 67 70 76 86 90 99 102 105), head 8 of 32 (50 54 61 67 70 76 86 90).
+         99/102/105 now equal, 108 equal (not in either list); the other 8 are identical to base: 50/54 (vsl_width/vsm_height stale CONTRL, V35 territory),
+         61/67/70 (underline, V30), 76 (clip-off wrapped glyph, V30), 86/90 (K14 scaling, V31/decision). Nothing new, nothing worse.
+ 3 PASS  vdprobe (348 records; probe/e1 oracle, n-head, n-head-2, n-base): T1610-12, T1620-22, T1630-32 EQUAL on head (base: DIFF 164/101/125/95/164 px by pen, see analysis);
+         T1600-02, T160g-T163g EQUAL on head and base. head vs oracle 20 differ (was 29 at the V28 head); n-head == n-head-2 (0 differ, deterministic);
+         base vs head exactly 9 records (the T161x/T162x/T163x above), all oracle-equal on head.
+         The 20 head records, classified (audit docs/audits/2026-11-06-v18-t2-vdi-text.md, tickets V30-V35):
+           K5D                         decision C (Teil 1, user), expected
+           T13A                        V33 (vst_load_fonts stub, VDI-TEXT-010)
+           TUAw TUB TUBw TUCw TUE TUEw TUF   V30 (underline / clip-off text, VDI-TEXT-004/005/006)
+           T14B T14C T14G T14H         V30 (clip-off text on long strings, VDI-TEXT-005, audit line 118)
+           T14E                        V31 (VDI-TEXT-007, "andere Spaltenverdopplung", audit line 151)
+           T14K                        V31 (VDI-TEXT-008)
+           T14L                        same signature as T14B ((0,160) E=ffdf N=ffff), unchanged vs base; the audit lists T14L as a 0 px control only for the T14K cell,
+                                       so this attribution to V30 is by signature, not by an audit line (note for the lead)
+           TPA TPB TPC TPD             V35 (local PTSIN copy, VDI-TEXT-013)
+         All 20 were already differing at base with identical numbers (analysis/probe-n-base-vs-n-head.txt lists only the 9 fixed ones).
+ 4 PASS  Unchanged vs base (the .BIN files are byte-identical base vs head, cmp rc 0, analysis/bin-cmp-base-head.txt): vdi-all falcontc 0 of 182,
+         vdi-v18.tsv 0 of 19, vdi-r3.tsv 5 of 38 (cases 117 119 140 142 145, identical set at base), vdi-raster.tsv 1 of 59 (case 157, D-VDI-25, both),
+         vdi-raster-screen 0 of 62, vdi-v18-raster 0 of 17, vdi-v18-t2-raster 6 of 26 (28 29 33 34 35 37 = V26 cut, documented, same at base).
+ 5 PASS  aes-r2-wind AES.BIN base == head (cmp rc 0; 78 of 78 differ vs oracle on both alike), aes-r3-wind-state identical (39 of 39 on both),
+         aes-r4-subfunctions identical (no pinned reference).
+         shprobe 12 of 12 shots byte-identical base vs head; shprobe-desktop (newtos-desk) 2 of 2; desktop run with IKBD injector (method/desk-inj.sh, 11 shots: menu, About dialog,
+         rubberband, window drag, slider, sizer, icon drags) 11 of 11 byte-identical. Looked at head desk 01-menu-file (menu text, window title "C:\", info line, 3x15 icon labels)
+         and 02-dialog (3D About dialog, all text lines rendered, OK button): sane.
+         slprobe 155 shots: base vs head 4 differ, all "held1" mid-gesture frames (44 67 94 98); same-kernel repeats differ too (base vs base-r2 5, head vs head-r2 3), cross pairs 3-5;
+         0 non-"held1" shots differ -> held-frame timing noise, not attributable to V29 (analysis/slprobe-compare.txt; same finding class as the V25/V28 tests).
+         Not driven: QED text with effects (v_justified at chup 0) as an application run; covered only by vdi-all line 264 (0 of 182) and the host test cases.
+ 6 PASS  rpi4 release (serial=on) fresh builds of both trees; all 32 BOOT-SERIAL logs of the runs: 0 exception/panic lines; desktop runs "[desk] desktop up (1 drives)".
+         qemu-virt: fresh tree b4e419e5, cargo xtask build --board qemu-virt rc 0 + cargo xtask run --board qemu-virt --headless ~100 s: "[desk] desktop up (0 drives)",
+         0 exception/panic (runs/boot-virt-head/serial.txt); QEMU stopped by PID.
+
+NOT DRIVEN / OPEN
+  Real Pi4: nothing run (pure glyph placement). clippy delta not run (not requested). qemu-virt: boot only (no C:, no input, no pixel probe).
+  Only falcontc probed for the oracle. QED application run with effects not driven.
