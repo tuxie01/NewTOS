@@ -1,0 +1,28 @@
+newtos-slprobe-base vs newtos-slprobe2-base:        0 differ:
+newtos-slprobe-base vs newtos-slprobe3-base:        4 differ: 121 152 67- 98-
+newtos-slprobe-base vs newtos-slprobe4-base:        5 differ: 121 152 44- 67- 98-
+newtos-slprobe-base vs newtos-slprobe-head:        5 differ: 121 152 44- 67- 98-
+newtos-slprobe-base vs newtos-slprobe2-head:        5 differ: 121 152 44- 67- 98-
+newtos-slprobe-base vs newtos-slprobe3-head:        1 differ: 71-
+newtos-slprobe-base vs newtos-slprobe4-head:        5 differ: 121 152 44- 67- 98-
+newtos-slprobe2-base vs newtos-slprobe3-base:        4 differ: 121 152 67- 98-
+newtos-slprobe2-base vs newtos-slprobe4-base:        5 differ: 121 152 44- 67- 98-
+newtos-slprobe2-base vs newtos-slprobe2-head:        5 differ: 121 152 44- 67- 98-
+newtos-slprobe2-base vs newtos-slprobe3-head:        1 differ: 71-
+newtos-slprobe2-base vs newtos-slprobe4-head:        5 differ: 121 152 44- 67- 98-
+newtos-slprobe3-base vs newtos-slprobe4-base:        2 differ: 44- 67-
+newtos-slprobe3-base vs newtos-slprobe3-head:        5 differ: 121 152 67- 71- 98-
+newtos-slprobe3-base vs newtos-slprobe4-head:        4 differ: 121 44- 67- 98-
+newtos-slprobe4-base vs newtos-slprobe4-head:        2 differ: 121 98-
+newtos-slprobe-head vs newtos-slprobe2-base:        5 differ: 121 152 44- 67- 98-
+newtos-slprobe-head vs newtos-slprobe3-base:        3 differ: 121 44- 67-
+newtos-slprobe-head vs newtos-slprobe4-base:        2 differ: 121 67-
+newtos-slprobe-head vs newtos-slprobe2-head:        3 differ: 121 67- 98-
+newtos-slprobe-head vs newtos-slprobe3-head:        6 differ: 121 152 44- 67- 71- 98-
+newtos-slprobe-head vs newtos-slprobe4-head:        3 differ: 121 67- 98-
+newtos-slprobe2-head vs newtos-slprobe3-base:        4 differ: 121 44- 67- 98-
+newtos-slprobe2-head vs newtos-slprobe4-base:        2 differ: 121 98-
+newtos-slprobe2-head vs newtos-slprobe3-head:        6 differ: 121 152 44- 67- 71- 98-
+newtos-slprobe2-head vs newtos-slprobe4-head:        0 differ:
+newtos-slprobe3-head vs newtos-slprobe4-base:        6 differ: 121 152 44- 67- 71- 98-
+newtos-slprobe3-head vs newtos-slprobe4-head:        6 differ: 121 152 44- 67- 71- 98-

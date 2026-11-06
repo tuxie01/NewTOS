@@ -1,0 +1,34 @@
+command   cargo xtask tosdump rast tosdump/cases/vdi-v18-t2-raster.tsv --tree /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v30t/head --out measurements/measurement-2026-11-06-v30-test/runs/t2-head-v18t2-raster --reference tosdump/reference/EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v30t/xt-head
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v30t/head (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    (not a git checkout)
+dirty     1 path(s) in git status --porcelain
+  (not a git checkout)
+harness commit 858e5f68ea5d4aa6b40257365cddb92ca67dcc72
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/vdi-v18-t2-raster.tsv sha256 09d735c71a71240b1584c4f68055f634c7e9b0627eea7d038b41b3f1568e4791
+table     names the unit token u:0: no; a program path x:<path>: no
+profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+target/   own (5 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (5 artifact dep-info files checked after the build)
+kernel8.img /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v30t/head/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 a01bc077e893b2c25121a086e53995627de5a2f58062bebe60f96e3004aff173
+kernel ELF  sha256 dd566c67ca46e9ee333087913c4a293d2711e92a4ea6f553f002d9dd184b11f9 (/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v30t/head/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPRAST.NAP (tosdump/build-dumprast-newtos.sh) in the measured tree …
+dumper build id ----
+DUMPRAST.NAP sha256 0b3a8ddf3e740e4d1df2c991a31a3cfe67cb08e405dcbf01c88806515446ca28
+card.img.manifest: image_sha256 b3c4ef0051d6058bcc5b86db0b2904a3dd1ac7d22fb08758671eda5a937a0b5c
+card.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/v30t/xt-head/tosdump-34679/card.img sha256 b3c4ef0051d6058bcc5b86db0b2904a3dd1ac7d22fb08758671eda5a937a0b5c (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPRAST.NAP, rc=0
+card after the run sha256 c65fd1e62f34e0c89e45d2cdd4c10c90c053827209705a96bd429c8474c2073c
+RASTER.BIN 96128 bytes, sha256 9ef87aa87574eaa71d9ab30ebca69172d4ecc36b8ec0554aed6a1aefe1a0e358
+RASTER.LOG 400 bytes, sha256 97c822621fade634baa18f4dbb64a8c6dfe80ab09fc4ff027c5d984842a862b1
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 b146758fe86770e3d73868637ae211e599a02eceb9d524ca92f67291bdc706c1
+tosdiff --validate: exit 0 RASTER.BIN: area VDI-RASTER, 26 records of 3696 bytes, build ----, case CRC 60A10E40
+tosdiff EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN vs NEWTOS.BIN: exit 1, 6 of 26 cases differ
+total     35 s
+result    run complete (differences above are findings, not failures)

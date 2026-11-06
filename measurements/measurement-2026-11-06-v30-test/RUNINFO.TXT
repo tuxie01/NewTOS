@@ -1,0 +1,66 @@
+V30 acceptance -- TASK/V30.md (fix 858e5f68, underline length and text/underline with vs_clip(0) like EmuTOS; base cc5f476b) by the tester.
+Date 2026-11-06. No product code touched; nothing committed (TASK/README.md does not give the tester a commit); no SD card, no Pi, no push.
+Test code: none changed (tosdump/probes/vdprobe.c at 858e5f68 as committed). New method scripts in method/ (copies/adaptions of
+measurements/measurement-2026-11-06-v32-test/method; render-cases.py new: renders vdprobe screen grabs E | head | base to PNG).
+
+TREES / KERNELS
+  head = git archive 858e5f68, base = git archive cc5f476b (references/ linked), fresh scratch tree per commit, scratch under the session scratchpad.
+  rpi4 release kernel8.img (serial=on via -append): head a01bc077e893b2c25121a086e53995627de5a2f58062bebe60f96e3004aff173 (1493192 B),
+  base a90f02d832839e54faad73408a5f47a00f12afd3aee71f154642304f140786a4 (1493192 B; = V32 head kernel). Same file size, so no load-address shift
+  (the developer's a6839ffa... was built from the dirty tree, not comparable). IKBD-armed desktop kernels: head 181113ff..., base 8bad8cdd... (analysis/armed-kernels.log).
+  qemu-virt: fresh tree 858e5f68, cargo xtask build --board qemu-virt rc 0 (method/build-virt.log).
+  host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 48 card.img.manifest files under runs/ and probe/).
+  optional_missing, verbatim, in ALL 48 manifests: optional_missing none
+  Oracle: pinned EmuTOS 1a7484ab, reference BINs tosdump/reference, Hatari falcontc (probe e1 measured anew here).
+  QEMU raspi4b, APFS clone per run (removed by the scripts); only own PIDs stopped.
+
+RESULTS
+ 1 PASS  cargo xtask test (main tree = 858e5f68, clean, rc 0): 2160 passed / 0 failed / 1 ignored (193 "test result" lines)
+         (V32 baseline 2120/0/1; +40 = cases_v30.rs). analysis/cargo-xtask-test.txt.
+ 2 PASS  rpi4 release builds of both trees rc 0; all 51 BOOT-SERIAL logs (QEMU raspi4b): 0 exception/panic lines, desktop reached ("[desk] desktop up").
+         qemu-virt: build rc 0; cargo xtask run --board qemu-virt --headless 100 s: "[desk] desktop up (0 drives)", 0 exception/panic (runs/boot-virt-head/serial.txt).
+         clippy delta NOT run (not in the brief); the dev build of qemu-virt prints 93 kernel warnings, not compared against base.
+ 3 PASS  vdi-v18-t2.tsv head vs EmuTOS: 4 of 32 differ = 50, 54 (V35), 86, 90 (V31); 61, 64, 67, 70, 74, 76, 79 equal. Base: 8 of 32 (50, 54, 61, 67, 70, 76, 86, 90).
+         vdi-all 0 of 182 (head and base). Also head (base alike): vdi-v18 0/19, vdi-r3 5/38, vdi-v18-t2-raster 6/26, vdi-raster 1/59, vdi-raster-screen 0/62, vdi-v18-raster 0/17.
+         All RASTER.BIN base == head (cmp), VDI.BIN equal in vdi-all, vdi-v18, vdi-r3; VDI.BIN of vdi-v18-t2 differs by 8 bytes (cases 61, 67, 70, 76 = the fix). analysis/tosdiff-summary.txt.
+ 4 PASS (with one point to note)  vdprobe, 385 cases, oracle e1 measured anew: head 21 differ, base 45; n-head == n-head-2 (0 differ, reproducible).
+         e1 starts with the 8204954 bytes of the V18 part 2 e1 (cmp -n); e1 BIN == the developer's e1 BIN (identical).
+         The 21 (analysis/probe-e1-vs-n-head.txt): K5D (decision C), T13A TPA TPB TPC TPD (V33/V35), T14E T14K (V31), TUE TUEw TVF TVG TVH TVI TWA (F_LIGHT: every
+         differing pixel is E 0000 / N ffdf, analysis/diff-pixel-pairs-head.txt), TVK (XOR underline after 1-point v_pline), TVO TVP (V37 h_align), TVU TVUw (bold+skew+outline),
+         TVZ (4100 chars). Same list as the developer's, no case outside it.
+         Fixed vs base (not in head list): T14B T14C T14G T14H T14L TUAw TUB TUBw TUCw TUF TVBw TVCw TVDw TVJ TVL TVM TVN TVQ TVRw TVSw TVTw TVVw TVW TVWw TVYw.
+         NOTE: TVK is EQUAL on the base and DIFFERS on head (1 px at (148,101), E ffff / N 0000): the old 1-px-short underline coincided with EmuTOS' LSTLIN
+         one-pixel-short result; the fix makes NewTOS correct in the general case and exposes the open LSTLIN difference. It is a documented side finding
+         (V30.md "Nebenbefunde"), but it is a case that turned from equal to different on the head.
+         The attribution of the F_LIGHT, TVU/TVUw, TVZ, TVO/TVP groups to their tickets rests on case parameters (vdprobe.c tbegin lines) and the pixel classes,
+         not on a code trace; K5D/T13A/TPx/T14E/T14K are the same cases that differ on base.
+ 5 PASS (with a stated noise class)  AES counter-test base vs head:
+         aes-r2-wind 78/78 and aes-r3-wind-state 39/39 differ vs the oracle on both alike; aes-r4 (no reference). AES.BIN base == head BYTE-IDENTICAL in r2, r3, r4
+         (cmp; the kernel files have equal size, no address word moved, unlike V32).
+         shprobe 12 of 12 byte-identical (newtos), shprobe-desktop (newtos-desk) 2 of 2, desktop with IKBD injector 11 of 11 at 640x480, 11 of 11 at 1920x1080,
+         11 of 11 at 640x240.
+         slprobe 155 shots, 8 runs (4 base, 4 head, analysis/slprobe-pairs-all.txt): 149 shots identical in all 8 runs; the 6 others (121, 152, 44, 67, 71, 98 -- all
+         "held1" mid-gesture frames) differ between SAME-kernel runs too (base1/base3 4, base3/base4 2, head3/head4 6, head1/head2 3); base1 == base2 and head2 == head4 (0).
+         Look at 121 and 044 (analysis/shots/slprobe-121.png, slprobe-044-base-head-head2.png): the frames show the slider thumb / XOR outline at a different instant of the
+         page repeat, not a different rendering. Classified timing noise (same class as V25/V28/V29/V32). Not proven as non-systematic for 044/152 in the first two pairs
+         (base twice alike, head twice alike), but base3/base4 and head3/head4 disagree among themselves.
+ 6 PASS  boot screen (kernel/src/initinfo.rs, gtext with clip off) + AUTO console (APITEST.NCP), 6 shots at 6..45 s, base vs head:
+         640x480 6 of 6 byte-identical, 640x240 6 of 6 byte-identical, 1920x1080 5 of 6 identical; 02-t018 differs at 1920x1080 only: console scrolling (APITEST output
+         at a different line), and same-kernel repeats differ there as well (analysis/bc1080-repeat.txt: base/base, head/head, base/head all differ in 02-t018 only). The
+         boot-screen shots 00/01 are identical. Viewed (analysis/shots/bootscreens-head.png): no text wraps onto the top/next row at any of the three sizes. At 640x240 the
+         boot screen is cut at the bottom after "ST-RAM" on base AND head alike (pre-existing, same pixels); no wrap, so nothing new.
+ 7 PASS  visible, from the probe screen grabs (RGB565 words of the actual screen, rendered 5x/6x, EmuTOS | head | base; analysis/shots/tua-tuaw.png, tvb-tvr.png):
+         TUA/TUF/TVJ: underline reaches one pixel further on head; head == EmuTOS pixel for pixel, base one short. TUAw (wrapped tail at the left edge of the next row, "iH" with
+         underline) EmuTOS and head show it, base shows an empty rectangle; the same for TVRw (transparent+underline), TVYw (8x16 glyphs "FGH" run-on), TVBw (rotated 900,
+         glyphs and underline run into the neighbour column), TVCw (rotated glyphs "A533O"-like run-on): head == EmuTOS, base empty.
+         The grabs are screen reads from vdprobe, not a QMP screendump of a full desktop; no desktop scene uses underline or clip off.
+ 8 PARTIAL  deps --up (developer's files deps/{output_text,text_blt,check_clip}-up.txt, not rerun by me; read): in the touched layer vdi everything is mapped (0 unmapped);
+         aes: 37 mapped, 5 design, 1 unmapped (eralert -> fm_show, EmuTOS error alert; no NewTOS counterpart in the map); bios: linea_0, int_linea = design (Line-A text blit,
+         no NewTOS counterpart by design); desk: 130 functions unmapped (the EmuTOS desktop in desk/*.c; NewTOS' desktop is programs/desktop/, not mapped at all). Of these only
+         what the desktop scenes (11 shots, 3 sizes) and the AES tables touch is covered; eralert and the desk-layer callers are not driven by any run here and the ticket's
+         table says the AES draws no underline and never clip off, so there is no AES path to the changed code; "not reachable" is the developer's reading, not a measurement.
+
+NOT DRIVEN / OPEN
+  Real Pi4 / HDMI: nothing run. QMP screendump of a full-screen underline scene on NewTOS/EmuTOS: not done (probe grabs used). XOR-underline LSTLIN (TVK), F_LIGHT,
+  bold+skew+outline, 4096+ chars, G_STRING WHITEBAK, objc_draw w/h 0: side findings of the ticket, not accepted here, only classified. clippy delta not run.
+  deps --up not rerun; unmapped aes eralert / desk layer not measured. Writes outside the frame buffer (EmuTOS foreign memory) are not measured, as in the developer's run.

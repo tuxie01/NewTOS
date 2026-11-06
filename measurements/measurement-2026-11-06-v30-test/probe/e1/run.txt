@@ -1,0 +1,4 @@
+vdprobe run, side emutos (2026-11-06T09:42:06Z)
+tree      858e5f68ea5d4aa6b40257365cddb92ca67dcc72 0 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    VDPROBE.PRG 61186ea35601b3f1b4b0921ebad2c5f3d4fdb06e1b7fe4dcd8f9913c52686e57 VDPROBE.NAP ed3fd3d92313146d53b2155313599a9f165698128ccc33ea99576068992ba7de
+oracle    tools/hatari-oracle.sh falcontc (pinned ROM, tools/oracle/hatari.cfg)

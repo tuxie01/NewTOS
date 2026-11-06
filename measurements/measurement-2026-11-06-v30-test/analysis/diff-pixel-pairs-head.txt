@@ -1,0 +1,21 @@
+K5D {'Effff/N0000': 574, 'E0000/Nffff': 19} x 101 139 y 101 130
+T13A {'E0000/Nffdf': 23, 'Effdf/N0000': 14, 'Effff/Nffdf': 30, 'Effff/N0000': 9} x 20 43 y 56 61
+T14E {'Effff/Nffdf': 47, 'Effdf/N0000': 741, 'E0000/Nffdf': 699, 'Effff/N0000': 3} x 101 245 y 40 64
+T14K {'Effdf/N0000': 26} x 25 25 y 175 200
+TUE {'E0000/Nffdf': 53} x 600 639 y 296 300
+TUEw {'E0000/Nffdf': 7} x 0 6 y 298 300
+TPA {'Effff/Nf800': 1681, 'Ef800/N0000': 101, 'Ef800/Nffff': 5050} x 10 200 y 10 150
+TPB {'Ef800/Nffff': 25149, 'Ef800/N0000': 101} x 10 200 y 10 150
+TPC {'E0000/Nffff': 1086} x 20 200 y 296 304
+TPD {'Effdf/Nffff': 736, 'E0000/Nffff': 416, 'E0000/Nffdf': 91, 'Effdf/N0000': 48} x 20 67 y 353 384
+TVF {'E0000/Nffdf': 784} x 177 200 y 175 298
+TVG {'E0000/Nffdf': 784} x 300 323 y 102 225
+TVH {'E0000/Nffdf': 784} x 375 498 y 100 123
+TVI {'E0000/Nffdf': 784} x 102 225 y 277 300
+TVK {'Effff/N0000': 1} x 148 148 y 101 101
+TVO {'Effdf/Nffff': 93, 'E0000/Nffff': 157, 'E0000/Nffdf': 9, 'Effdf/N0000': 24, 'Effff/Nffdf': 76, 'Effff/N0000': 83} x 200 469 y 96 101
+TVP {'Effdf/Nffff': 157, 'E0000/Nffff': 283, 'Effff/Nffdf': 79, 'Effff/N0000': 140} x 100 399 y 96 101
+TVU {'Effff/Nffdf': 12, 'E0000/Nffdf': 32} x 599 639 y 95 100
+TVUw {'E0000/Nffdf': 20, 'Effdf/Nffff': 20} x 0 29 y 96 103
+TVZ {'Effff/Nffdf': 381, 'Effff/N0000': 259, 'Effdf/N0000': 74, 'E0000/Nffdf': 90, 'Effdf/Nffff': 40} x 130 553 y 35 153
+TWA {'E0000/Nffdf': 784} x 177 200 y 102 298
