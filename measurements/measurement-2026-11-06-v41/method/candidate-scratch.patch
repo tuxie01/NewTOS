@@ -1,0 +1,610 @@
+--- head/tos-api/src/vdi/text.rs	2026-11-06 16:05:04
++++ cand/tos-api/src/vdi/text.rs	2026-11-06 16:41:51
+@@ -63,6 +63,11 @@
+ /// skew extent and the outline.
+ const NARROW_SIDE: usize = 64;
+ 
++/// Scratch switch: which part of the EmuTOS behaviour is left out (0: none).
++const V41_OFF: u32 = 0;
++/// Words of the flat effect cell.
++const FLAT_WORDS: usize = 17_800;
++
+ /// One glyph row of `N` words.
+ type Row<const N: usize> = [u64; N];
+ 
+@@ -169,6 +174,10 @@
+     wide: GlyphStore<WIDE_WORDS, MAX_ROWS>,
+     /// A cell packed for the backend.
+     bytes: [u8; MAX_ROWS * WIDE_BYTES],
++    /// The effect cell as EmuTOS' scratch: flat words, rows `stride` words apart.
++    flat: [u16; FLAT_WORDS],
++    /// The rotated effect cell.
++    flat2: [u16; FLAT_WORDS],
+ }
+ 
+ struct StoreCell(UnsafeCell<GlyphStores>);
+@@ -179,6 +188,8 @@
+     narrow: GlyphStore::ZERO,
+     wide: GlyphStore::ZERO,
+     bytes: [0; MAX_ROWS * WIDE_BYTES],
++    flat: [0; FLAT_WORDS],
++    flat2: [0; FLAT_WORDS],
+ }));
+ 
+ /// The working store of one text call.
+@@ -673,6 +684,485 @@
+     base: &'a SysFont,
+     f: &'a SysFont,
+     clip: ClipRect,
++}
++
++// ---- V41 candidate (scratch, not product) ------------------------------------
++
++#[inline]
++fn fget(w: &[u16; FLAT_WORDS], i: i64) -> u16 {
++    if i >= 0 && (i as usize) < FLAT_WORDS { w[i as usize] } else { 0 }
++}
++
++/// `*(ULONG *)p`
++#[inline]
++fn fget32(w: &[u16; FLAT_WORDS], i: i64) -> u32 {
++    ((fget(w, i) as u32) << 16) | fget(w, i + 1) as u32
++}
++
++/// EmuTOS `merge_byte`.
++#[inline]
++fn merge_byte(w: &[u16; FLAT_WORDS], i: i64, n: u16) -> u32 {
++    (fget32(w, i) & 0xFFFF_FF00) | (n as u32 & 0xFF)
++}
++
++/// Replace `n` bits at bit address `pos` by the leftmost bits of `src` (word-wise replace with masks,
++/// the buffer is flat, a row past its stride lands in the next one).
++fn flat_put(w: &mut [u16; FLAT_WORDS], pos: i64, src: &[u64], n: usize) {
++    if pos < 0 {
++        return;
++    }
++    let mut p = pos as usize;
++    let mut left = n;
++    let mut si = 0;
++    while left > 0 && si < src.len() {
++        let take = left.min(64);
++        let val = src[si];
++        let mut done = 0usize;
++        while done < take {
++            let idx = p >> 4;
++            if idx >= FLAT_WORDS {
++                return;
++            }
++            let off = p & 15;
++            let cnt = (16 - off).min(take - done);
++            let top = ((val << done) >> 48) as u16; // the next 16 source bits
++            let m = ((0xFFFFu32 << (16 - cnt)) as u16) >> off;
++            w[idx] = (w[idx] & !m) | ((top >> off) & m);
++            done += cnt;
++            p += cnt;
++        }
++        left -= take;
++        si += 1;
++    }
++}
++
++/// 64 bits at bit address `pos`, leftmost at bit 63.
++#[inline]
++fn flat_u64(w: &[u16; FLAT_WORDS], pos: i64) -> u64 {
++    let i = pos >> 4;
++    let off = (pos & 15) as u32;
++    let v = ((fget(w, i) as u64) << 48) | ((fget(w, i + 1) as u64) << 32) | ((fget(w, i + 2) as u64) << 16) | fget(w, i + 3) as u64;
++    if off == 0 { v } else { (v << off) | ((fget(w, i + 4) as u64) >> (16 - off)) }
++}
++
++/// `wb` bytes at bit address `pos` into `out`.
++#[inline]
++fn flat_bytes(w: &[u16; FLAT_WORDS], pos: i64, out: &mut [u8]) {
++    let mut p = pos;
++    for c in out.chunks_mut(8) {
++        let v = flat_u64(w, p).to_be_bytes();
++        c.copy_from_slice(&v[..c.len()]);
++        p += 64;
++    }
++}
++
++#[inline]
++fn flat_bit(w: &[u16; FLAT_WORDS], pos: i64) -> bool {
++    fget(w, pos >> 4) & (0x8000u16 >> (pos & 15)) != 0
++}
++
++/// EmuTOS `outline()`: `dely` rows from word `row1` (the row before is the scratch row).
++fn flat_outline(w: &mut [u16; FLAT_WORDS], sform: i64, form_width: i64, dely: i64) {
++    let mut currline = sform + form_width;
++    let mut nextline = currline + form_width;
++    let mut i = dely;
++    while i > 0 {
++        let save_next = nextline;
++        let mut prev: u16 = 0;
++        let mut curr: u16 = 0;
++        let mut bottom_left: u32 = fget32(w, nextline) >> 1;
++        let mut scratch = sform;
++        let mut j = form_width;
++        while j > 0 {
++            let mut current_left = merge_byte(w, currline, curr);
++            let current_noshift = current_left.rotate_right(1);
++            let mut current_right = current_noshift.rotate_right(1);
++            let top_right0 = merge_byte(w, scratch, prev).rotate_right(1);
++            let top_left = top_right0 ^ current_left;
++            let top_noshift = (top_right0 ^ current_noshift).rotate_left(1);
++            let top_right = (top_right0 ^ current_right).rotate_left(2);
++            let mut result = top_left | top_noshift | top_right;
++            let bottom_right0 = bottom_left;
++            bottom_left ^= current_left;
++            let bottom_noshift = (bottom_right0 ^ current_noshift).rotate_left(1);
++            let bottom_right = (bottom_right0 ^ current_right).rotate_left(2);
++            result |= bottom_left | bottom_noshift | bottom_right;
++            current_left ^= current_noshift;
++            current_right ^= current_noshift;
++            current_right = current_right.rotate_left(2);
++            result |= current_left | current_right;
++            result >>= 16;
++            let cw = fget(w, currline);
++            curr = cw;
++            let out = (cw ^ result as u16) & result as u16;
++            fset(w, currline, out);
++            currline += 1;
++            prev = fget(w, scratch);
++            fset(w, scratch, curr);
++            scratch += 1;
++            let tmp = if V41_OFF == 3 && i == 1 { 0 } else { fget(w, nextline) };
++            nextline += 1;
++            bottom_left = merge_byte(w, nextline, tmp).rotate_right(1);
++            j -= 1;
++        }
++        nextline = save_next;
++        currline = nextline;
++        if i > 2 {
++            nextline += form_width;
++        }
++        i -= 1;
++    }
++}
++
++#[inline]
++fn fset(w: &mut [u16; FLAT_WORDS], i: i64, v: u16) {
++    if i >= 0 && (i as usize) < FLAT_WORDS {
++        w[i as usize] = v;
++    }
++}
++
++/// [`effect_glyph`] for one-word rows; false when the glyph needs the flat buffer. Same pixels.
++#[allow(clippy::too_many_arguments)]
++#[inline]
++fn effect_fast<const N: usize, const R: usize>(
++    rows: &[Row<N>; R],
++    size: SrcSize,
++    f: &SysFont,
++    weight: i16,
++    skew: i16,
++    skewing: bool,
++    destx: i16,
++    desty: i16,
++    clip: ClipRect,
++    clipping: bool,
++    shifts: &mut [i16; R],
++    bytes: &mut [u8; MAX_ROWS * WIDE_BYTES],
++    call: &TextCall,
++) -> bool {
++    let h = (size.h.max(0) as usize).min(R);
++    let width = size.w as i32 + weight as i32;
++    let window = width + skew as i32;
++    if h == 0 || size.w <= 0 || weight < 0 || skew < 0 || window > 64 {
++        return false;
++    }
++    let bits = ((window >> 4) + 1) * 16; // the buffer row
++    if clipping
++        && (destx < clip.xmn
++            || desty < clip.ymn
++            || destx as i32 + window - 1 > clip.xmx as i32
++            || desty as i32 + h as i32 - 1 > clip.ymx as i32)
++    {
++        return false;
++    }
++    let multi = width > 16;
++    let mut mask = f.skew;
++    let turns = if multi { h - 1 } else { h } as u32;
++    let mut win = mask.rotate_left(turns % 16);
++    let mut lean = 0i32;
++    let mut slide = 0i32;
++    let wb = (window as usize).div_ceil(8);
++    let wmask = if size.w >= 64 { !0u64 } else { !(!0u64 >> size.w) };
++    for k in 0..h {
++        let row = h - 1 - k;
++        if skewing {
++            if multi {
++                if k != 0 {
++                    let carry = mask & 0x8000 != 0;
++                    mask = mask.rotate_left(1);
++                    lean += !carry as i32;
++                }
++            } else {
++                let carry = mask & 0x8000 != 0;
++                mask = mask.rotate_left(1);
++                lean += carry as i32;
++            }
++        }
++        if lean + width > bits || slide + window > bits.min(64) || slide > 15 {
++            return false;
++        }
++        let mut b = rows[row][0] & wmask;
++        if weight > 0 {
++            let orig = b;
++            for n in 1..=(weight as u32).min(63) {
++                b |= orig >> n;
++            }
++        }
++        let v = ((b >> lean) << slide).to_be_bytes();
++        bytes[row * wb..(row + 1) * wb].copy_from_slice(&v[..wb]);
++        shifts[row] = slide as i16;
++        if skew != 0 {
++            win = win.rotate_left(1);
++            slide += (win >> 15) as i32;
++        }
++    }
++    let vwk = call.vwk;
++    let mode = WriteMode::from_wrt_mode(vwk.wrt_mode);
++    call.backend.draw_glyph_rows(destx, desty, &bytes[..h * wb], window as i16, h as i16, &shifts[..h], vwk.text_color, mode);
++    true
++}
++
++/// EmuTOS `text_blt` for a glyph with thicken, skew or outline in truecolor: `pre_blit`, `rotate`,
++/// `do_clip`, `screen_blit16` on a flat buffer.
++#[allow(clippy::too_many_arguments)]
++#[inline(never)]
++fn effect_glyph<const N: usize, const R: usize>(
++    st: &mut GlyphStore<N, R>,
++    bytes: &mut [u8; MAX_ROWS * WIDE_BYTES],
++    flat: &mut [u16; FLAT_WORDS],
++    flat2: &mut [u16; FLAT_WORDS],
++    call: &TextCall,
++    gcode: u16,
++    xdda: &mut u16,
++    place: impl FnOnce(i16) -> (i16, i16),
++) -> Advance {
++    let (pb, base, f, vwk) = (call.pb, call.base, call.f, call.vwk);
++    let mut size = raw_glyph(pb, base, gcode, &mut st.raw);
++    if vwk.scaled {
++        size = scale_glyph(&st.raw, size, vwk.dda_inc, vwk.t_sclsts, xdda, &mut st.scaled);
++    }
++    let rows: &[Row<N>; R] = if vwk.scaled { &st.scaled } else { &st.raw };
++    let style = vwk.style;
++    let mono = f.mono();
++    let weight = if style & T_THICKEN != 0 { f.thicken } else { 0 };
++    let outline = style & T_OUTLINE != 0;
++    let skewing = style & T_SKEW != 0;
++    let skew = if skewing { f.left_offset.wrapping_add(f.right_offset) } else { 0 };
++    let out2: i16 = if outline { OUTLINE_THICKNESS * 2 } else { 0 };
++    // The pen and the top-left, EmuTOS `text_blt`/`upda_dst`.
++    let mut pen = size.w.wrapping_add(out2);
++    if weight != 0 && !mono {
++        pen = pen.wrapping_add(weight);
++    }
++    let advance = Advance { pen, hor: horz_step(pb, f, gcode) };
++    let (mut destx, mut desty) = place(pen);
++    let chup = vwk.chup;
++    let global_destx = if chup == 1800 { destx.wrapping_add(pen).wrapping_add(skew) } else { destx };
++    let delx0 = pen.wrapping_add(skew);
++    let dely0 = size.h.wrapping_add(out2);
++    let (cdx, cdy) = if matches!(chup, 900 | 2700) { (dely0, delx0) } else { (delx0, dely0) };
++    let clip = call.clip;
++    let clipping = clip != ClipRect::OFF;
++    // `check_clip`
++    if clipping {
++        let (dx, dy, cw, ch) = (destx as i32, desty as i32, cdx as i32, cdy as i32);
++        if (dx < clip.xmn as i32 && dx + cw <= clip.xmn as i32)
++            || dx > clip.xmx as i32
++            || (dy < clip.ymn as i32 && dy + ch <= clip.ymn as i32)
++            || dy > clip.ymx as i32
++        {
++            return advance;
++        }
++    }
++
++    // The common glyph: no outline, no rotation, nothing to cut, the lean inside the buffer row.
++    if N == 1 && !outline && chup == 0 && effect_fast(rows, size, f, weight, skew, skewing, destx, desty, clip, clipping, &mut st.shifts, bytes, call) {
++        return advance;
++    }
++
++    // `pre_blit`
++    let h = (size.h.max(0) as usize).min(R);
++    let spill = if V41_OFF == 2 && mono { 0 } else { weight };
++    let width = size.w.wrapping_add(spill); // vars->width after the outline's -3
++    let dest_w = width.wrapping_add(if outline { 3 } else { 0 }).wrapping_add(skew);
++    let stride = if V41_OFF == 4 { ((dest_w as i64 + h as i64 + 64) >> 4) + 1 } else { ((dest_w >> 4) as i64 + 1).max(1) }; // words
++    let dest_h = h as i64 + if outline { 3 } else { 0 };
++    let mut delx = dest_w.wrapping_sub(if outline { 1 } else { 0 });
++    let mut dely = (h as i64 + if outline { 2 } else { 0 }) as i16;
++    let tddad: i64 = if outline { 1 } else { 0 };
++    let clear = ((dest_h * stride).max(0) as usize).min(FLAT_WORDS);
++    flat[..clear].fill(0);
++    let bottom = if outline { h as i64 + 1 } else { h as i64 - 1 };
++    let multi = V41_OFF != 5 && width > 16;
++    let wmask: Row<N> = width_mask(size.w);
++    let mut mask: u16 = 0x8000;
++    let mut shift: i64 = 0;
++    if skewing {
++        mask = f.skew;
++    }
++    let wbits = (width.max(0) as usize).min(N * 64);
++    for k in 0..h {
++        let row = h - 1 - k;
++        if skewing {
++            if multi {
++                if k != 0 {
++                    let carry = mask & 0x8000 != 0;
++                    mask = mask.rotate_left(1);
++                    if !carry {
++                        shift += 1;
++                    }
++                }
++            } else {
++                let carry = mask & 0x8000 != 0;
++                mask = mask.rotate_left(1);
++                if carry {
++                    shift += 1;
++                }
++            }
++        }
++        let mut b = rows[row];
++        for (x, m) in b.iter_mut().zip(wmask.iter()) {
++            *x &= *m;
++        }
++        if weight > 0 {
++            let orig = b;
++            for n in 1..=(weight as usize).min(N * 64) {
++                row_or(&mut b, &row_shr(&orig, n));
++            }
++        }
++        let pos = (bottom - k as i64) * stride * 16 + tddad + shift;
++        flat_put(flat, pos, &b, wbits);
++    }
++    let skew_msk = mask;
++    let mut sform: i64 = 0; // words
++    if outline {
++        flat_outline(flat, 0, stride, dely as i64);
++        sform = stride;
++    }
++    let mut s_next = stride;
++    let mut sourcex: i64 = 0;
++    let mut sourcey: i64 = 0;
++
++    // `rotate`
++    let use2 = matches!(chup, 900 | 1800 | 2700);
++    if use2 {
++        let w = delx.max(0) as i64;
++        let ht = dely.max(0) as i64;
++        if chup == 1800 {
++            let fw = ((w - 1) >> 4) + 1;
++            for i in 0..ht {
++                let src = sform + i * s_next;
++                for j in 0..fw {
++                    let v = fget(flat, src + j).reverse_bits();
++                    fset(flat2, (ht - 1 - i) * fw + (fw - 1 - j), v);
++                }
++            }
++            s_next = fw;
++            sourcex = (-w) & 15;
++        } else {
++            let dn = (ht >> 4) + 1;
++            let rowsn = (w * dn).max(0) as usize;
++            flat2[..rowsn.min(FLAT_WORDS)].fill(0);
++            for i in 0..w {
++                let (drow, _) = if chup == 900 { (w - 1 - i, 0) } else { (i, 0) };
++                for j in 0..ht {
++                    let srow = if chup == 900 { j } else { ht - 1 - j };
++                    if flat_bit(flat, (sform + srow * s_next) * 16 + i) {
++                        let idx = drow * dn + (j >> 4);
++                        fset(flat2, idx, fget(flat2, idx) | (0x8000u16 >> (j & 15)));
++                    }
++                }
++            }
++            s_next = dn;
++            let t = delx;
++            delx = dely;
++            dely = t;
++        }
++        sform = 0;
++    }
++    let src_buf: &[u16; FLAT_WORDS] = if use2 { flat2 } else { flat };
++
++    // `do_clip`
++    let backend_clip = if V41_OFF == 9 { clip } else { ClipRect::OFF };
++    if clipping && V41_OFF != 9 {
++        let mut n;
++        if (destx as i32) < clip.xmn as i32 {
++            n = destx as i32 + delx as i32 - clip.xmn as i32;
++            if n <= 0 {
++                return advance;
++            }
++            sourcex += delx as i64 - n as i64;
++            delx = n as i16;
++            destx = clip.xmn;
++        }
++        if destx > clip.xmx {
++            return advance;
++        }
++        n = destx as i32 + delx as i32 - clip.xmx as i32 - 1;
++        if n > 0 {
++            delx -= n as i16;
++        }
++        if (desty as i32) < clip.ymn as i32 {
++            n = desty as i32 + dely as i32 - clip.ymn as i32;
++            if n <= 0 {
++                return advance;
++            }
++            sourcey += dely as i64 - n as i64;
++            dely = n as i16;
++            desty = clip.ymn;
++        }
++        if desty > clip.ymx {
++            return advance;
++        }
++        n = desty as i32 + dely as i32 - clip.ymx as i32 - 1;
++        if n > 0 {
++            dely -= n as i16;
++        }
++    }
++
++    // `screen_blit` + `screen_blit16`
++    let height = dely as i64;
++    let w = delx as i64;
++    if height <= 0 || w <= 0 {
++        return advance;
++    }
++    let mut tsdad = sourcex & 15;
++    // bytes of the bottom row
++    let mut src_byte = (sform + (sourcey + height - 1) * s_next) * 2 + ((sourcex >> 3) & !1);
++    let mut skew_start = height;
++    if skew != 0 && outline && V41_OFF != 7 {
++        if sourcex != 0 {
++            sourcex = 0;
++            tsdad = 0;
++            let _ = sourcex;
++        }
++        if global_destx < 0 {
++            destx = global_destx;
++        }
++        if height > 8 {
++            skew_start -= OUTLINE_THICKNESS as i64;
++        }
++    }
++    let wb = ((w as usize).div_ceil(8)).min(WIDE_BYTES * MAX_ROWS);
++    let bottom_y = (desty as i32 + dely as i32 - 1) as i64;
++    let vmode = WriteMode::from_wrt_mode(vwk.wrt_mode);
++    let mut mpos = tsdad; // the mask's bit, 0..15
++    let mut sl = 0i64; // screen slide
++    let mut skew_mask = skew_msk;
++    if skew == 0 || V41_OFF == 1 || (V41_OFF == 8 && use2) {
++        // A rectangle.
++        let hh = height as usize;
++        for r in 0..hh {
++            let start = (src_byte - (r as i64) * s_next * 2) * 8 + mpos;
++            let dst_row = hh - 1 - r;
++            flat_bytes(src_buf, start, &mut bytes[dst_row * wb..(dst_row + 1) * wb]);
++        }
++        // the last byte's bits past `w` are outside cell_w in the backend
++        call.backend.draw_glyph_sized(destx, desty, &bytes[..hh * wb], delx, dely, vwk.text_color, vmode, backend_clip);
++        return advance;
++    }
++    let mut r = height;
++    let mut row_i = 0i64;
++    while r > 0 {
++        let start = src_byte * 8 + mpos;
++        flat_bytes(src_buf, start, &mut bytes[..wb]);
++        let yy = (bottom_y - row_i) as i32;
++        let xx = (destx as i64 + sl) as i16;
++        call.backend.draw_glyph_sized(xx, yy as i16, &bytes[..wb], delx, 1, vwk.text_color, vmode, backend_clip);
++        if r <= skew_start {
++            skew_mask = skew_mask.rotate_left(1);
++            if skew_mask & 0x8000 != 0 {
++                mpos = (mpos + 1) & 15;
++                if mpos == 0 {
++                    src_byte += if V41_OFF == 6 { 2 } else { 1 };
++                }
++                sl += 1;
++            }
++        }
++        src_byte -= s_next * 2;
++        row_i += 1;
++        r -= 1;
++    }
++    advance
+ }
+ 
+ /// Whether the cell of glyph `gcode` fits [`NARROW_SIDE`] × [`NARROW_SIDE`] at every
+@@ -780,9 +1270,17 @@
+     place: impl FnOnce(i16) -> (i16, i16),
+ ) -> Advance {
+     let gcode = font::map_code(call.base, code);
++    let style = call.vwk.style;
++    let effect = style & (T_SKEW | T_OUTLINE) != 0 || (style & T_THICKEN != 0 && call.f.thicken != 0);
+     if fits_narrow(call, gcode) {
++        if effect {
++            return effect_glyph(&mut st.narrow, &mut st.bytes, &mut st.flat, &mut st.flat2, call, gcode, xdda, place);
++        }
+         assemble_and_blit(&mut st.narrow, &mut st.bytes, call, gcode, xdda, place)
+     } else {
++        if effect {
++            return effect_glyph(&mut st.wide, &mut st.bytes, &mut st.flat, &mut st.flat2, call, gcode, xdda, place);
++        }
+         assemble_and_blit(&mut st.wide, &mut st.bytes, call, gcode, xdda, place)
+     }
+ }
+--- head/tos-api/src/vdi/backend.rs	2026-11-06 16:05:04
++++ cand/tos-api/src/vdi/backend.rs	2026-11-06 16:36:24
+@@ -316,6 +316,17 @@
+         clip: ClipRect,
+     );
+ 
++    /// A cell whose row `r` starts `shift[r]` pixels right of `x`: the slanted window of EmuTOS
++    /// `screen_blit16`, unclipped. The pixels of each row as [`draw_glyph_sized`](Self::draw_glyph_sized).
++    #[allow(clippy::too_many_arguments)]
++    fn draw_glyph_rows(&self, x: i16, y: i16, glyph: &[u8], cell_w: i16, cell_h: i16, shift: &[i16], fg: Pel, mode: WriteMode) {
++        let bpr = (cell_w.max(0) as usize).div_ceil(8);
++        for r in (0..cell_h.max(0) as usize).rev() {
++            let g = &glyph[r * bpr..(r + 1) * bpr];
++            self.draw_glyph_sized(x.wrapping_add(shift[r]), y.wrapping_add(r as i16), g, cell_w, 1, fg, mode, ClipRect::OFF);
++        }
++    }
++
+     /// Blit a fixed 8-wide × 16-tall monochrome glyph — the system-font
+     /// cell size used by the AES/desktop/console text paths. Forwards to
+     /// [`draw_glyph_sized`](Self::draw_glyph_sized) with `(cell_w, cell_h)
+--- head/kernel/src/vdi_backend.rs	2026-11-06 16:05:04
++++ cand/kernel/src/vdi_backend.rs	2026-11-06 16:36:34
+@@ -754,6 +754,49 @@
+         Self::clean(fb, x0 as u32, y0 as u32, x1 as u32, y1 as u32);
+     }
+ 
++    fn draw_glyph_rows(&self, x: i16, y: i16, glyph: &[u8], cell_w: i16, cell_h: i16, shift: &[i16], fg: Pel, mode: WriteMode) {
++        let fb = active_fb();
++        let far = shift.first().copied().unwrap_or(0) as i32; // the top row leans the furthest
++        if x < 0
++            || y < 0
++            || x as i32 + far + cell_w as i32 > fb.width() as i32
++            || y as i32 + cell_h as i32 > fb.height() as i32
++            || cell_w <= 0
++            || cell_h <= 0
++        {
++            let bpr = (cell_w.max(0) as usize).div_ceil(8);
++            for r in (0..cell_h.max(0) as usize).rev() {
++                let g = &glyph[r * bpr..(r + 1) * bpr];
++                self.draw_glyph_sized(x.wrapping_add(shift[r]), y.wrapping_add(r as i16), g, cell_w, 1, fg, mode, ClipRect::OFF);
++            }
++            return;
++        }
++        let fg_rgb = Self::pel_to_rgb(fg);
++        let bg_rgb = Self::pel_to_rgb(0);
++        let bpr = (cell_w as usize).div_ceil(8);
++        let stride = fb.stride_px() as usize;
++        let store = fb.pixels();
++        for r in 0..cell_h as usize {
++            // SAFETY: the box lies inside the logical screen (checked above), on the single IRQ-off VDI trap path.
++            let line = unsafe { store.add((y as usize + r) * stride + x as usize + shift[r] as usize) };
++            for col in 0..cell_w as usize {
++                let set = glyph[r * bpr + col / 8] & (0x80u8 >> (col & 7)) != 0;
++                // SAFETY: as above.
++                unsafe {
++                    let p = line.add(col);
++                    match mode {
++                        WriteMode::Replace => p.write_volatile(if set { fg_rgb } else { bg_rgb }),
++                        WriteMode::Transparent if set => p.write_volatile(fg_rgb),
++                        WriteMode::Xor if set => p.write_volatile(!p.read_volatile()),
++                        WriteMode::RevTransparent if !set => p.write_volatile(fg_rgb),
++                        _ => {}
++                    }
++                }
++            }
++        }
++        Self::clean(fb, x as u32, y as u32, (x as i32 + far + cell_w as i32 - 1) as u32, (y as i32 + cell_h as i32 - 1) as u32);
++    }
++
+     fn blit_mono(&self, dst: Rect, src: MonoSrc, fg: Pel, bg: Pel, mode: WriteMode, clip: ClipRect) {
+         let fb = active_fb();
+         // Destination box ∩ clip ∩ screen.

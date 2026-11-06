@@ -40,6 +40,9 @@
  * clipping off that T* leaves out.
  *
  * TASK/V33 appends cases TX* (function tx, after tv): the font chain beyond T13.
+ *
+ * TASK/V41 appends cases Y* (function ty, after tx: the TY series of the V44 acceptance) and Z* (function
+ * tz): text effects x writing modes x fonts, scaled, rotated, clipped, skew masks and row counts.
  */
 #include <osbind.h>
 #include <stdarg.h>
@@ -2321,6 +2324,301 @@ static void tx(void)
 	tx_z();
 }
 
+/* ---- TY (TASK/V44 tester, kept for TASK/V41): cells around the 64 x 64 bound of the narrow rows --------------------------------
+ * loaded monospace font id 15, codes 'A','B', cell W x H, effects, exact double / DDA up, rotation. */
+static void ty_case(const char *tag, int W, int H, int eff, int scale, int rot)
+{
+	int fw = ((2 * W + 15) / 16) * 2, bottom = H / 4, top = H - 1 - bottom, sh, gw, gh, m, th;
+	char what[96];
+
+	tx_off[0] = 0; tx_off[1] = (uint16_t)W; tx_off[2] = (uint16_t)(2 * W);
+	tx_pattern(tx_dat, fw, H);
+	tx_head(&tx_f[0], 15, 12, "AUDIT TY", top, bottom, W, 65, 66, F_STD | F_MONO, tx_off, tx_dat, fw, H, NULL);
+	snprintf(what, sizeof what, "cell %dx%d eff %d scale %d rot %d", W, H, eff, scale, rot);
+	tbegin(tag, what);
+	tx_load(&tx_f[0]);
+	i1(21, 15);
+	th = scale == 1 ? top * 2 : scale == 2 ? top * 3 / 2 : top;
+	tx_height(th);
+	m = scale == 1 ? 2 : 1;
+	if (eff)
+		i1(106, (int16_t)eff);
+	if (rot)
+		i1(13, (int16_t)rot);
+	sh = th + 10;
+	if (rot) {
+		gtext(30, 60 + 2 * W * m, "AB");
+		gw = H * m + 60; gh = 2 * W * m + 80;
+	} else {
+		gtext(10, sh, "AB");
+		gw = 2 * W * m + 40; gh = H * m + sh + 20;
+	}
+	if (gw > 640) gw = 640;
+	if (gh > 480) gh = 480;
+	grab(tag, 0, 0, gw, gh);
+	tx_end();
+}
+
+static void ty(void)
+{
+	static const int fonts[][2] = { {63,16},{64,16},{65,16},{16,63},{16,64},{16,65},{31,16},{32,16},{33,16},{16,31},{16,32},{16,33},
+					{32,32},{33,33},{62,62} };
+	static const int effs[] = { 0, 1, 4, 16, 31 };
+	static const int dda[][2] = { {42,16},{43,16},{16,42},{16,43} };
+	char tag[9];
+	int i, e, s, n = 0;
+
+	for (i = 0; i < (int)(sizeof fonts / sizeof fonts[0]); i++)
+		for (e = 0; e < 5; e++)
+			for (s = 0; s < 2; s++) {
+				snprintf(tag, sizeof tag, "Y%03d", n++);
+				ty_case(tag, fonts[i][0], fonts[i][1], effs[e], s, 0);
+			}
+	for (i = 0; i < 4; i++)
+		for (e = 0; e < 5; e += 2) {
+			snprintf(tag, sizeof tag, "Y%03d", n++);
+			ty_case(tag, dda[i][0], dda[i][1], effs[e], 2, 0);
+		}
+	for (i = 0; i < 6; i++)
+		for (e = 0; e < 2; e++) {
+			snprintf(tag, sizeof tag, "Y%03d", n++);
+			ty_case(tag, fonts[i][0], fonts[i][1], effs[e], 0, 900);
+		}
+	emit("   TY cases %d\n", n);
+}
+
+/* ---- TZ (TASK/V41): text effects x writing modes x fonts on a coloured ground ---------------------------------
+ * The ground is pen 2, so a cell's background (pen 0) and what stays untouched show apart from the white screen. */
+static const int tz_eff[] = { 1, 4, 16, 1 | 4, 1 | 16, 4 | 16, 1 | 4 | 16, 4 | 8, 2, 2 | 4 };
+#define TZ_NEFF ((int)(sizeof tz_eff / sizeof tz_eff[0]))
+
+static void tz_ground(int x, int y, int w, int h)
+{
+	i1(25, 2);
+	recfl(x, y, x + w - 1, y + h - 1);
+	i1(25, 1);
+}
+
+/* font 0: 8x16, 1: 8x8, 2: 6x6, 3: the proportional loaded font */
+static void tz_font(const char *tag, const char *what, int font)
+{
+	if (font == 3) {
+		tx_prop_begin(tag, what);
+	} else {
+		tbegin(tag, what);
+		p1(12, 0, (int16_t)(font == 0 ? 13 : font == 1 ? 6 : 4));
+	}
+}
+
+static void tz_matrix(void)
+{
+	char tag[16], what[64];
+	int f, e, m, n = 0;
+
+	for (f = 0; f < 4; f++)
+		for (e = 0; e < TZ_NEFF; e++)
+			for (m = 1; m <= 4; m++) {
+				snprintf(tag, sizeof tag, "ZA%03d", n++);
+				snprintf(what, sizeof what, "font %d effects %d mode %d, ground pen 2", f, tz_eff[e], m);
+				tz_font(tag, what, f);
+				tz_ground(0, 80, 200, 40);
+				i1(106, (int16_t)tz_eff[e]);
+				i1(32, (int16_t)m);
+				gtext(20, 100, "ABC @_ HELLO");
+				i1(32, 1);
+				grab(tag, 0, 80, 200, 40);
+				if (f == 3)
+					tx_end();
+			}
+}
+
+/* the 8x16 font doubled (vst_height 26) and DDA-scaled (vst_height 20) */
+static void tz_scaled(void)
+{
+	static const int effs[] = { 1, 4, 16, 1 | 4 | 16 };
+	static const int hts[] = { 26, 20 };
+	char tag[16], what[64];
+	int s, e, m, n = 0;
+
+	for (s = 0; s < 2; s++)
+		for (e = 0; e < 4; e++)
+			for (m = 1; m <= 2; m++) {
+				snprintf(tag, sizeof tag, "ZB%03d", n++);
+				snprintf(what, sizeof what, "8x16 vst_height %d effects %d mode %d", hts[s], effs[e], m);
+				tbegin(tag, what);
+				p1(12, 0, (int16_t)hts[s]);
+				tz_ground(0, 50, 300, 80);
+				i1(106, (int16_t)effs[e]);
+				i1(32, (int16_t)m);
+				gtext(20, 100, "ABC HELLO");
+				i1(32, 1);
+				grab(tag, 0, 50, 300, 80);
+			}
+}
+
+static void tz_rotated(void)
+{
+	static const int effs[] = { 1, 4, 16, 1 | 4 | 16 };
+	static const int rot[] = { 900, 1800, 2700 };
+	char tag[16], what[64];
+	int r, e, m, n = 0;
+
+	for (r = 0; r < 3; r++)
+		for (e = 0; e < 4; e++)
+			for (m = 1; m <= 2; m++) {
+				snprintf(tag, sizeof tag, "ZC%03d", n++);
+				snprintf(what, sizeof what, "8x16 rotation %d effects %d mode %d", rot[r], effs[e], m);
+				tbegin(tag, what);
+				p1(12, 0, 13);
+				tz_ground(100, 50, 200, 200);
+				i1(106, (int16_t)effs[e]);
+				i1(13, (int16_t)rot[r]);
+				i1(32, (int16_t)m);
+				gtext(200, 150, "ABCDEF");
+				i1(32, 1);
+				grab(tag, 100, 50, 200, 200);
+			}
+}
+
+/* clipping on: a rectangle that cuts the run left, right, above, below */
+static void tz_clipped(void)
+{
+	static const int effs[] = { 1, 4, 16, 1 | 4 | 16 };
+	static const int cr[4][4] = { {40, 80, 199, 119}, {0, 80, 60, 119}, {0, 92, 199, 119}, {0, 80, 199, 96} };
+	char tag[16], what[64];
+	int c, e, m, n = 0;
+
+	for (c = 0; c < 4; c++)
+		for (e = 0; e < 4; e++)
+			for (m = 1; m <= 2; m++) {
+				snprintf(tag, sizeof tag, "ZD%03d", n++);
+				snprintf(what, sizeof what, "8x16 clip %d,%d,%d,%d effects %d mode %d", cr[c][0], cr[c][1], cr[c][2], cr[c][3], effs[e], m);
+				tbegin(tag, what);
+				p1(12, 0, 13);
+				tz_ground(0, 80, 200, 40);
+				clip(1, cr[c][0], cr[c][1], cr[c][2], cr[c][3]);
+				i1(106, (int16_t)effs[e]);
+				i1(32, (int16_t)m);
+				gtext(20, 100, "ABC @_ HELLO");
+				i1(32, 1);
+				clip(0, 0, 0, 0, 0);
+				grab(tag, 0, 80, 200, 40);
+			}
+}
+
+/* loaded monospace font: the skew mask's phase and the row count, narrow and wide cells */
+static void tz_masks(void)
+{
+	static const int cells[][2] = { {8, 16}, {40, 16}, {8, 15}, {8, 17}, {40, 15}, {40, 17} };
+	static const int masks[] = { 0x5555, 0xAAAA, 0x8888, 0x1111, 0xFFFF, 0x0000, 0x1234 };
+	static const int effs[] = { 4, 1 | 4, 4 | 16 };
+	char tag[16], what[64];
+	int c, k, e, n = 0;
+
+	for (c = 0; c < 6; c++)
+		for (k = 0; k < 7; k++)
+			for (e = 0; e < 3; e++) {
+				int W = cells[c][0], H = cells[c][1];
+				int fw = ((2 * W + 15) / 16) * 2, bottom = H / 4, top = H - 1 - bottom;
+
+				if (k != 0 && c >= 2)
+					continue;		/* other masks only with 16 rows */
+				snprintf(tag, sizeof tag, "ZE%03d", n++);
+				snprintf(what, sizeof what, "cell %dx%d skew mask %04x effects %d", W, H, masks[k], effs[e]);
+				tbegin(tag, what);
+				tx_off[0] = 0; tx_off[1] = (uint16_t)W; tx_off[2] = (uint16_t)(2 * W);
+				tx_pattern(tx_dat, fw, H);
+				tx_head(&tx_f[0], 15, 12, "AUDIT TZ", top, bottom, W, 65, 66, F_STD | F_MONO, tx_off, tx_dat, fw, H, NULL);
+				tx_f[0].skew = (uint16_t)masks[k];
+				tx_load(&tx_f[0]);
+				i1(21, 15);
+				tx_height(top);
+				i1(106, (int16_t)effs[e]);
+				gtext(10, top + 10, "AB");
+				grab(tag, 0, 0, 2 * W + 40, H + 30);
+				tx_end();
+			}
+}
+
+/* every code of a built-in font: which glyphs reach the cell's last column (mono bold spills past it) */
+static void tz_charset(void)
+{
+	static const int effs[] = { 1, 4, 1 | 4 | 16 };
+	static const int hts[] = { 13, 6, 4 };
+	char tag[16], what[64], s[33];
+	int f, e, m, r, c, n = 0;
+
+	for (f = 0; f < 3; f++)
+		for (e = 0; e < 3; e++)
+			for (m = 1; m <= 2; m++) {
+				snprintf(tag, sizeof tag, "ZF%03d", n++);
+				snprintf(what, sizeof what, "vst_height %d effects %d mode %d, codes 1..255", hts[f], effs[e], m);
+				tbegin(tag, what);
+				p1(12, 0, (int16_t)hts[f]);
+				i1(106, (int16_t)effs[e]);
+				i1(32, (int16_t)m);
+				for (r = 0; r < 8; r++) {
+					for (c = 0; c < 32; c++)
+						s[c] = (char)(r == 0 && c == 0 ? ' ' : r * 32 + c);
+					s[32] = 0;
+					gtext(20, 30 + r * 24, s);
+				}
+				i1(32, 1);
+				grab(tag, 0, 0, 400, 230);
+			}
+}
+
+/* alignment, justification, the left screen edge, a DDA font partly clipped */
+static void tz_misc(void)
+{
+	static const int effs[] = { 4, 1 | 4 | 16 };
+	char tag[16], what[64];
+	int e, k, n = 0;
+
+	for (e = 0; e < 2; e++)
+		for (k = 0; k < 6; k++) {
+			snprintf(tag, sizeof tag, "ZG%03d", n++);
+			snprintf(what, sizeof what, "8x16 effects %d variant %d", effs[e], k);
+			tbegin(tag, what);
+			p1(12, 0, 13);
+			tz_ground(0, 60, 320, 80);
+			i1(106, (int16_t)effs[e]);
+			switch (k) {
+			case 0: i2(39, 1, 0); gtext(150, 100, "ABC @_ HELLO"); break;
+			case 1: i2(39, 2, 5); gtext(300, 80, "ABC @_ HELLO"); break;
+			case 2: justified(20, 100, 280, 1, 0, "AB CD EF"); break;
+			case 3: justified(20, 100, 280, 0, 1, "AB CD EF"); break;
+			case 4: gtext(0, 100, "ABC @_ HELLO"); break;
+			case 5: clip(1, 0, 0, 639, 479); gtext(0, 100, "ABC @_ HELLO"); clip(0, 0, 0, 0, 0); break;
+			}
+			grab(tag, 0, 60, 320, 80);
+		}
+	for (k = 0; k < 2; k++) {
+		snprintf(tag, sizeof tag, "ZG%03d", n++);
+		snprintf(what, sizeof what, "vst_height 20, clip from x 60, effects %d", k ? 4 : 0);
+		tbegin(tag, what);
+		p1(12, 0, 20);
+		clip(1, 60, 60, 319, 139);
+		i1(106, (int16_t)(k ? 4 : 0));
+		i1(32, 2);
+		gtext(4, 100, "ABCDEFGHIJKLM");
+		i1(32, 1);
+		clip(0, 0, 0, 0, 0);
+		grab(tag, 0, 60, 320, 80);
+	}
+}
+
+static void tz(void)
+{
+	tz_matrix();
+	tz_scaled();
+	tz_rotated();
+	tz_clipped();
+	tz_masks();
+	tz_charset();
+	tz_misc();
+}
+
 static void t2(void)
 {
 	t19();
@@ -2335,6 +2633,8 @@ static void t2(void)
 	tv();
 	treset();
 	tx();
+	ty();
+	tz();
 }
 
 

@@ -1,0 +1,15 @@
+head-1: A_clipoff_plain=74 B_clipon_plain=72 C_clipon_bold=75 D_clipon_light_skew=65 E_clipon_9chars=50 load 4,57 4,32 4,79
+c9-1: A_clipoff_plain=72 B_clipon_plain=69 C_clipon_bold=73 D_clipon_light_skew=56 E_clipon_9chars=45 load 4,82 4,39 4,81
+hb-1: A_clipoff_plain=63 B_clipon_plain=65 C_clipon_bold=64 D_clipon_light_skew=56 E_clipon_9chars=45 load 4,60 4,38 4,79
+head-2: A_clipoff_plain=73 B_clipon_plain=72 C_clipon_bold=71 D_clipon_light_skew=66 E_clipon_9chars=49 load 4,70 4,41 4,78
+c9-2: A_clipoff_plain=72 B_clipon_plain=72 C_clipon_bold=76 D_clipon_light_skew=56 E_clipon_9chars=49 load 4,70 4,42 4,77
+hb-2: A_clipoff_plain=57 B_clipon_plain=57 C_clipon_bold=60 D_clipon_light_skew=50 E_clipon_9chars=40 load 4,51 4,39 4,74
+head-3: A_clipoff_plain=65 B_clipon_plain=65 C_clipon_bold=67 D_clipon_light_skew=58 E_clipon_9chars=45 load 4,66 4,42 4,75
+c9-3: A_clipoff_plain=66 B_clipon_plain=66 C_clipon_bold=67 D_clipon_light_skew=47 E_clipon_9chars=44 load 4,36 4,35 4,71
+hb-3: A_clipoff_plain=57 B_clipon_plain=58 C_clipon_bold=59 D_clipon_light_skew=49 E_clipon_9chars=39 load 4,00 4,25 4,66
+head-4: A_clipoff_plain=67 B_clipon_plain=66 C_clipon_bold=68 D_clipon_light_skew=60 E_clipon_9chars=45 load 4,31 4,30 4,66
+c9-4: A_clipoff_plain=66 B_clipon_plain=65 C_clipon_bold=67 D_clipon_light_skew=50 E_clipon_9chars=44 load 3,88 4,17 4,60
+hb-4: A_clipoff_plain=57 B_clipon_plain=58 C_clipon_bold=59 D_clipon_light_skew=50 E_clipon_9chars=40 load 5,14 4,52 4,71
+head-5: A_clipoff_plain=65 B_clipon_plain=63 C_clipon_bold=66 D_clipon_light_skew=59 E_clipon_9chars=44 load 4,31 4,36 4,65
+c9-5: A_clipoff_plain=66 B_clipon_plain=65 C_clipon_bold=68 D_clipon_light_skew=48 E_clipon_9chars=45 load 7,34 5,28 4,98
+hb-5: A_clipoff_plain=58 B_clipon_plain=58 C_clipon_bold=61 D_clipon_light_skew=50 E_clipon_9chars=40 load 6,24 5,18 4,95

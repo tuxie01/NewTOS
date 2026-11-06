@@ -1,0 +1,112 @@
+ZA: differing pixels; rows effect, columns write mode 1 replace 2 transparent 3 xor 4 reverse transparent
+8x16
+  bold       0     0     0     0
+  skew       0     0     0     0
+  outl       0     0     0     0
+  b+s        0     0     0     0
+  b+o        0     0     0     0
+  s+o        0     0     0     0
+  b+s+o      0     0     0     0
+  s+und      0     0     0     0
+  light    215   215   215   215
+  l+s        0     0     0     0
+8x8
+  bold       0     0     0     0
+  skew       0     0     0     0
+  outl       0     0     0     0
+  b+s        0     0     0     0
+  b+o        0     0     0     0
+  s+o        0     0     0     0
+  b+s+o      0     0     0     0
+  s+und      0     0     0     0
+  light    117   117   117   117
+  l+s        0     0     0     0
+6x6
+  bold       0     0     0     0
+  skew       0     0     0     0
+  outl       0     0     0     0
+  b+s        0     0     0     0
+  b+o        0     0     0     0
+  s+o        0     0     0     0
+  b+s+o      0     0     0     0
+  s+und      0     0     0     0
+  light     66    66    66    66
+  l+s        0     0     0     0
+proportional loaded
+  bold       0     0     0     0
+  skew       0     0     0     0
+  outl       0     0     0     0
+  b+s        0     0     0     0
+  b+o        0     0     0     0
+  s+o        0     0     0     0
+  b+s+o      0     0     0     0
+  s+und      0     0     0     0
+  light    258   258   258   258
+  l+s        0     0     0     0
+ZB: 8x16 scaled; rows effect; columns mode 1, 2
+ vst_height 26
+  bold       0     0
+  skew       0     0
+  outl       0     0
+  b+s+o      0     0
+ vst_height 20
+  bold       0     0
+  skew       0     0
+  outl       0     0
+  b+s+o      0     0
+ZC: 8x16 rotated; rows effect; columns mode 1, 2
+ rotation 900
+  bold       0     0
+  skew       0     0
+  outl       0     0
+  b+s+o      0     0
+ rotation 1800
+  bold       0     0
+  skew       0     0
+  outl       0     0
+  b+s+o      0     0
+ rotation 2700
+  bold       0     0
+  skew       0     0
+  outl       0     0
+  b+s+o      0     0
+ZD: 8x16 clipped; rows effect; columns mode 1, 2
+ clip left 40
+  bold       0     0
+  skew       0     0
+  outl       0     0
+  b+s+o      0     0
+ clip right 60
+  bold       0     0
+  skew       0     0
+  outl       0     0
+  b+s+o      0     0
+ clip top 92
+  bold       0     0
+  skew       0     0
+  outl       0     0
+  b+s+o      0     0
+ clip bottom 96
+  bold       0     0
+  skew       0     0
+  outl       0     0
+  b+s+o      0     0
+ZE: loaded mono, skew masks; columns effects skew, b+s, s+o
+  8x16 5555      0     0     0
+  8x16 aaaa      0     0     0
+  8x16 8888      0     0     0
+  8x16 1111      0     0     0
+  8x16 ffff      0     0     0
+  8x16 0000      0     0     0
+  8x16 1234      0     0     0
+  40x16 5555      0     0     0
+  40x16 aaaa      0     0     0
+  40x16 8888      0     0     0
+  40x16 1111      0     0     0
+  40x16 ffff      0     0     0
+  40x16 0000      0     0     0
+  40x16 1234      0     0     0
+  8x15 5555      0     0     0
+  8x17 5555      0     0     0
+  40x15 5555      0     0     0
+  40x17 5555      0     0     0

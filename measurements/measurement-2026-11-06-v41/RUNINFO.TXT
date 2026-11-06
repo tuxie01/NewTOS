@@ -1,0 +1,60 @@
+V41 -- TASK/V41.md: cause of the text-effect deviations against the pinned oracle, for the lead, before any fix. Developer run,
+2026-11-06, on main at 1f1ffdb7. No product code changed in the tree, nothing committed, no card, no Pi, no push. Candidate kernels are
+SCRATCH, built from a git archive of 1f1ffdb7 in the session scratchpad; their patch is method/candidate-scratch.patch (with the attribution
+switch V41_OFF and without bounds checks: not a fix, evidence only).
+
+WHAT RAN
+  EmuTOS   1a7484ab, tools/oracle ROM, tools/hatari-oracle.sh falcontc via tosdump/probes/run-vdprobe.sh; probe/e1 (e2 only compared: BIN identical).
+           references/emutos and references/emutos-oracle/1a7484ab: vdi/vdi_textblit.c, vdi/vdi_tblit.S, vdi/vdi_text.c byte-identical.
+  NewTOS   QEMU raspi4b, -append serial=on, APFS clone per boot (removed by the scripts). Kernels, analysis/kernels.sha256:
+           head 9afe0891... (= the V44 fix kernel), off0..off9 (candidate with one part left out), c9 (final candidate 95fba9fc...),
+           c39 (candidate + no light in build_cell), hb (head + a row loop in draw_glyph_sized), c1 c3..c8 (stages of the candidate).
+  host_clang  Apple clang version 21.0.0 (clang-2100.4.1.1)  (host_clang line of probe/*/card.img.manifest)
+  Manifests   probe/n-head, n-cand, n-cand-v39, n-c9 card.img.manifest; optional_missing, verbatim, in all of them:
+              optional_missing none
+  Probe    tosdump/probes/vdprobe.c, uncommitted in the main tree: appended ty() (the TY series of the V44 test, unchanged cases) and tz() (Z*, new).
+           Old records unchanged: by name and bytes, the 412 cases of measurements/measurement-2026-11-06-v44-test/probe/e1 and the 586 of .../ty-e1: 0 differ.
+           904 cases now: ZA 160 (10 effect sets x 4 modes x 4 fonts on a pen-2 ground), ZB 16 scaled, ZC 24 rotated, ZD 32 clipped, ZE 54 skew masks and row counts,
+           ZF 18 all codes of the built-in fonts, ZG 14 alignment, justification, left edge, DDA with a clipped glyph.
+  VDPROBE.BIN sha256 (first 16): e1 b04c44adc5589df1, n-head 5bfe89247ef0bdc3, n-cand = n-c9 76450f575e82bf0d (n-cand's BIN deleted as duplicate), n-cand-v39 69606823aff57fe5.
+
+RESULT (analysis/e1-vs-*.txt, matrix-head.txt, matrix-cand.txt, attribution.txt, maps/, shots/)
+  head vs oracle   904 cases, 341 differ.  c9 vs oracle  42 differ, c39 vs oracle  19 differ. c9 BIN = the unoptimized candidate's BIN.
+  c9's 42: known other tickets K5D T14E T14K TPA TPB TPC TPD TVK TVO TVP TVZ; pure F_LIGHT V39 TUE TUEw TVF TVG TVH TVI TWA and ZA light rows (16);
+           Y145 Y149 (E's scale and pre_blit buffers overlap in the caller's scratch, below); ZG002/3/8/9 (horizontal v_justified, 1 px, V37 d1); ZG012/13 (new, side finding).
+  c39's 19: as c9 without the 23 F_LIGHT cases: a pure F_LIGHT cell equal after dropping the mask.
+  Y145/Y149: differing rows y 9..20 / 8..24 only. Predicted from the source before looking: scale into scratch+2048 at 16 B/row, pre_blit into scratch+0 at 18 B/row x 124 rows = 2232 B,
+           so the last 184 B overwrite source rows 0..11 before they are read = 12 rows. (TY passes 2048 as CONTRL[9], tosdump/probes/vdprobe.c tx_load.)
+
+ATTRIBUTION (analysis/attribution.txt, run on the 872 cases before ZF/ZG were added; off0 = c1). Scratch kernels off1..off9: one part of the EmuTOS behaviour removed; a case listed
+  there needs that part. EmuTOS places: vdi/vdi_textblit.c unless noted.
+  off1 213 cases  window slides, 1068-1078
+  off2 136        mono bold keeps the spill: pre_blit 371-375 widens by weight for MONO too
+  off3   6        outline, last row reads its own result, 334-343 (Y006 Y009 Y147 Y149 Y152 Y155)
+  off4  35        buffer stride from LOFF+ROFF not from the lean, 392
+  off5  90        multi-word skew phase, vdi/vdi_tblit.S 1334-1336 against 1279-1280
+  off6  47        window source pointer +1 byte at a mask wrap, 1074-1075
+  off7  88        skew+outline adjustments, 1006-1022
+  off8  11        window also slides after rotate, 980, 1068
+  off9  11        do_clip rectangle with the slide past it, 1397, 1068
+
+TXBENCH  method/txbench/ = measurements/measurement-2026-11-06-v44/method/txbench/. analysis/txbench-icount.txt (-icount shift=0,sleep=off, 1 tick = 5 million guest instructions, two runs of head identical),
+  analysis/txbench-wall.txt (5 rounds in turn, one at a time, host load 3.9..7.3 from other jobs, so noisy). A plain clip off, B plain clip on, C bold, D skew+underline, E 9-char strings:
+                icount A/B/C/D/E        wall median
+    head        172 167 175 161 105     67 66 68 60 45
+    off0 (flat) 173 169 309 261 106     -
+    c9          173 169 143 109 106     66 66 68 50 45
+    hb          134 129 137 122  83     57 58 60 50 40
+  The +1/+2 icount ticks on A, B, E in c9 are NOT located (three branch placements tried). QEMU, not Pi timing.
+  c9 kernel 1542376 B against head 1517800 B: the scratch's flat buffers are new .bss (+24576 B).
+
+HOST TEST on the candidate tree (cargo test -p tos-api --test vdi_reference): 302 passed, 1 failed: v33_absurd_metrics_do_not_panic (the candidate has no bound on bytes[]). Candidate only, the fix needs it.
+
+CLIP, ORACLE (analysis/clip-overrun.txt): with skew EmuTOS writes outside the clip rectangle: ZD010 clip right 60: 64 words up to x 68, ZD011 transparent 13, ZD014 72, ZD015 16. Right side only in this matrix.
+
+DEPENDENCIES  deps/text_blt-up.txt, text_blt-down.txt, pre_blit-up.txt, screen_blit-up.txt (cargo xtask deps on main): vdi 0 unmapped, aes 1 (eralert), desk 130.
+
+NOT MEASURED
+  Real Pi, any timing on it; any app started (question 4 is read from sources); AES/desktop/shprobe/slprobe with the candidate (draw_glyph_sized is unchanged in c9, so none expected, not shown);
+  vdi-all and the other tables with the candidate; qemu-virt; proportional fonts scaled or rotated with effects; thicken > 1 by a font's own value other than scaling; negative LOFF/ROFF; DDA scale-down with effects;
+  clip plus rotation plus effects; hb through the probe (c6 = candidate + the same loop differed from the candidate only in ZE033/34, a bound of the fast path since corrected in c7).

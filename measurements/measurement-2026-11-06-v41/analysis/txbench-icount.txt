@@ -1,0 +1,21 @@
+head r1: A_clipoff_plain=172 B_clipon_plain=167 C_clipon_bold=175 D_clipon_light_skew=161 E_clipon_9chars=105  kernel 9afe0891542ae1989a6b1fa18a0409e80a8d8efc0860f1da1f6693ff63dbae56 nap 66975b99ce25148e807f786cc33e2237e425dac7590038e3bec1917f927b4227 qemu-args: -icount shift=0,sleep=off
+qemu done
+off0 r1: A_clipoff_plain=173 B_clipon_plain=169 C_clipon_bold=309 D_clipon_light_skew=261 E_clipon_9chars=106  kernel 03c85f45834ed8bebe0282c1e68a152783974eca5ad77b622ee4b7143fcc84da nap 66975b99ce25148e807f786cc33e2237e425dac7590038e3bec1917f927b4227 qemu-args: -icount shift=0,sleep=off
+qemu done
+c39 r1: A_clipoff_plain=173 B_clipon_plain=169 C_clipon_bold=309 D_clipon_light_skew=261 E_clipon_9chars=106  kernel d40b5f30693065275394ea7810291a544634ed33821fe5429f8dad61f5297d72 nap 66975b99ce25148e807f786cc33e2237e425dac7590038e3bec1917f927b4227 qemu-args: -icount shift=0,sleep=off
+qemu done
+head r2: A_clipoff_plain=172 B_clipon_plain=167 C_clipon_bold=175 D_clipon_light_skew=161 E_clipon_9chars=105  kernel 9afe0891542ae1989a6b1fa18a0409e80a8d8efc0860f1da1f6693ff63dbae56 nap 66975b99ce25148e807f786cc33e2237e425dac7590038e3bec1917f927b4227 qemu-args: -icount shift=0,sleep=off
+qemu done
+off0 r2: A_clipoff_plain=173 B_clipon_plain=169 C_clipon_bold=309 D_clipon_light_skew=261 E_clipon_9chars=106  kernel 03c85f45834ed8bebe0282c1e68a152783974eca5ad77b622ee4b7143fcc84da nap 66975b99ce25148e807f786cc33e2237e425dac7590038e3bec1917f927b4227 qemu-args: -icount shift=0,sleep=off
+qemu done
+c39 r2: A_clipoff_plain=173 B_clipon_plain=169 C_clipon_bold=309 D_clipon_light_skew=261 E_clipon_9chars=106  kernel d40b5f30693065275394ea7810291a544634ed33821fe5429f8dad61f5297d72 nap 66975b99ce25148e807f786cc33e2237e425dac7590038e3bec1917f927b4227 qemu-args: -icount shift=0,sleep=off
+qemu done
+off0 03c85f45834ed8be A_clipoff_plain=173 B_clipon_plain=169 C_clipon_bold=309 D_clipon_light_skew=261 E_clipon_9chars=106 
+c3 585cab7f8ab1801d A_clipoff_plain=173 B_clipon_plain=169 C_clipon_bold=248 D_clipon_light_skew=236 E_clipon_9chars=106 
+c4 cba5a0970356be5f A_clipoff_plain=135 B_clipon_plain=131 C_clipon_bold=205 D_clipon_light_skew=197 E_clipon_9chars=83 
+hb 5df4b3463e6c1a33 A_clipoff_plain=134 B_clipon_plain=129 C_clipon_bold=137 D_clipon_light_skew=122 E_clipon_9chars=83 
+c5 898722df2d2399c8 A_clipoff_plain=173 B_clipon_plain=169 C_clipon_bold=203 D_clipon_light_skew=105 E_clipon_9chars=106 
+c6 c9c2593c651216ad A_clipoff_plain=135 B_clipon_plain=131 C_clipon_bold=160 D_clipon_light_skew=105 E_clipon_9chars=83 
+c7 58eff2924ce2a601 A_clipoff_plain=173 B_clipon_plain=169 C_clipon_bold=142 D_clipon_light_skew=109 E_clipon_9chars=106 
+c8 b1b3c02e339d212c A_clipoff_plain=173 B_clipon_plain=169 C_clipon_bold=143 D_clipon_light_skew=109 E_clipon_9chars=106 
+c9 95fba9fcacdff9f0 A_clipoff_plain=173 B_clipon_plain=169 C_clipon_bold=143 D_clipon_light_skew=109 E_clipon_9chars=106 

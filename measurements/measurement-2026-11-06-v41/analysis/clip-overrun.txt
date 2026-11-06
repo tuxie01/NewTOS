@@ -1,0 +1,65 @@
+written outside the clip rectangle (word != ground 0xf800), per run: pixels, bbox; mode 1 replace, 2 transparent
+ZD000 clip (40, 80, 199, 119) eff 1 mode 1 E 0 
+ZD000 clip (40, 80, 199, 119) eff 1 mode 1 N 0 
+ZD001 clip (40, 80, 199, 119) eff 1 mode 2 E 0 
+ZD001 clip (40, 80, 199, 119) eff 1 mode 2 N 0 
+ZD002 clip (40, 80, 199, 119) eff 4 mode 1 E 0 
+ZD002 clip (40, 80, 199, 119) eff 4 mode 1 N 0 
+ZD003 clip (40, 80, 199, 119) eff 4 mode 2 E 0 
+ZD003 clip (40, 80, 199, 119) eff 4 mode 2 N 0 
+ZD004 clip (40, 80, 199, 119) eff 16 mode 1 E 0 
+ZD004 clip (40, 80, 199, 119) eff 16 mode 1 N 0 
+ZD005 clip (40, 80, 199, 119) eff 16 mode 2 E 0 
+ZD005 clip (40, 80, 199, 119) eff 16 mode 2 N 0 
+ZD006 clip (40, 80, 199, 119) eff 21 mode 1 E 0 
+ZD006 clip (40, 80, 199, 119) eff 21 mode 1 N 0 
+ZD007 clip (40, 80, 199, 119) eff 21 mode 2 E 0 
+ZD007 clip (40, 80, 199, 119) eff 21 mode 2 N 0 
+ZD008 clip (0, 80, 60, 119) eff 1 mode 1 E 0 
+ZD008 clip (0, 80, 60, 119) eff 1 mode 1 N 0 
+ZD009 clip (0, 80, 60, 119) eff 1 mode 2 E 0 
+ZD009 clip (0, 80, 60, 119) eff 1 mode 2 N 0 
+ZD010 clip (0, 80, 60, 119) eff 4 mode 1 E 64 (61, 87, 68, 101)
+ZD010 clip (0, 80, 60, 119) eff 4 mode 1 N 0 
+ZD011 clip (0, 80, 60, 119) eff 4 mode 2 E 13 (61, 89, 63, 100)
+ZD011 clip (0, 80, 60, 119) eff 4 mode 2 N 0 
+ZD012 clip (0, 80, 60, 119) eff 16 mode 1 E 0 
+ZD012 clip (0, 80, 60, 119) eff 16 mode 1 N 0 
+ZD013 clip (0, 80, 60, 119) eff 16 mode 2 E 0 
+ZD013 clip (0, 80, 60, 119) eff 16 mode 2 N 0 
+ZD014 clip (0, 80, 60, 119) eff 21 mode 1 E 72 (61, 86, 68, 101)
+ZD014 clip (0, 80, 60, 119) eff 21 mode 1 N 0 
+ZD015 clip (0, 80, 60, 119) eff 21 mode 2 E 16 (61, 88, 67, 101)
+ZD015 clip (0, 80, 60, 119) eff 21 mode 2 N 0 
+ZD016 clip (0, 92, 199, 119) eff 1 mode 1 E 0 
+ZD016 clip (0, 92, 199, 119) eff 1 mode 1 N 0 
+ZD017 clip (0, 92, 199, 119) eff 1 mode 2 E 0 
+ZD017 clip (0, 92, 199, 119) eff 1 mode 2 N 0 
+ZD018 clip (0, 92, 199, 119) eff 4 mode 1 E 0 
+ZD018 clip (0, 92, 199, 119) eff 4 mode 1 N 0 
+ZD019 clip (0, 92, 199, 119) eff 4 mode 2 E 0 
+ZD019 clip (0, 92, 199, 119) eff 4 mode 2 N 0 
+ZD020 clip (0, 92, 199, 119) eff 16 mode 1 E 0 
+ZD020 clip (0, 92, 199, 119) eff 16 mode 1 N 0 
+ZD021 clip (0, 92, 199, 119) eff 16 mode 2 E 0 
+ZD021 clip (0, 92, 199, 119) eff 16 mode 2 N 0 
+ZD022 clip (0, 92, 199, 119) eff 21 mode 1 E 0 
+ZD022 clip (0, 92, 199, 119) eff 21 mode 1 N 0 
+ZD023 clip (0, 92, 199, 119) eff 21 mode 2 E 0 
+ZD023 clip (0, 92, 199, 119) eff 21 mode 2 N 0 
+ZD024 clip (0, 80, 199, 96) eff 1 mode 1 E 0 
+ZD024 clip (0, 80, 199, 96) eff 1 mode 1 N 0 
+ZD025 clip (0, 80, 199, 96) eff 1 mode 2 E 0 
+ZD025 clip (0, 80, 199, 96) eff 1 mode 2 N 0 
+ZD026 clip (0, 80, 199, 96) eff 4 mode 1 E 0 
+ZD026 clip (0, 80, 199, 96) eff 4 mode 1 N 0 
+ZD027 clip (0, 80, 199, 96) eff 4 mode 2 E 0 
+ZD027 clip (0, 80, 199, 96) eff 4 mode 2 N 0 
+ZD028 clip (0, 80, 199, 96) eff 16 mode 1 E 0 
+ZD028 clip (0, 80, 199, 96) eff 16 mode 1 N 0 
+ZD029 clip (0, 80, 199, 96) eff 16 mode 2 E 0 
+ZD029 clip (0, 80, 199, 96) eff 16 mode 2 N 0 
+ZD030 clip (0, 80, 199, 96) eff 21 mode 1 E 0 
+ZD030 clip (0, 80, 199, 96) eff 21 mode 1 N 0 
+ZD031 clip (0, 80, 199, 96) eff 21 mode 2 E 0 
+ZD031 clip (0, 80, 199, 96) eff 21 mode 2 N 0 
