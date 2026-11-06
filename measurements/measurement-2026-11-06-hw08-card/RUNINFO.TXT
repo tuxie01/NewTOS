@@ -1,0 +1,24 @@
+RUNINFO -- user's test card gets the HW08 test kernel and measuring programs for the Pi run (lead, 2026-11-06)
+
+WHAT
+  Plan: measurements/measurement-2026-11-06-hw08/PI-RUN.TXT. The user asked for it with the card inserted.
+  Kernel also carries V28 to V44, so Fbench gives the real Pi factor for text (TASK/V44.md).
+
+SOURCE
+  kernel8.img from measurements/measurement-2026-11-06-hw08/, built at e421bd5d with features crash-walk,sd-fault, release.
+  sha256 56c6050f6e832d1213a81aab9c01a59af7f56527003b5136c262975591b501e9
+  WFPROBE.NCP  sha256 3fa896c20a9aab55b5f01e99e7c4d6f17ae79a7ce2711d1988122ebb7f5cf2f0, tosdump/build/
+  FSWBENCH.NCP sha256 094eba220f5e01cf9e61f9e89d987edd91923b5c6b25270ef1b64eea3cf7eb52, sdk/examples/fsbench/build/
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1).
+  optional_missing: not applicable (no image built; files copied by hand).
+
+CARD
+  disk10s1 = BOOT = C:, card A of measurements/measurement-2026-11-06-hw08-mac/RUNINFO.TXT.
+  Before: kernel8.img e56021e70684bbae... (A131 kernel, rebuildable at 10978982). No backup (user 2026-11-04).
+  After: kernel8.img and C:\HW08\ with both programs, copied with cp -X. Plain unmount failed four times (holder unknown, lsof without root shows none),
+  so sync, then diskutil unmount force, mount again; sha256 read back after that remount: equal. A read through the Mac's cache is excluded only by this forced remount.
+  Old QED, TeraDesk, HypView and zView binaries stay: only QED's printer dialog would reach the V33 change, not used in this run.
+
+NOT DONE
+  fsck_msdos -n before the copy: "Cant open (Permission denied)" without root, so the starting state of the card is not recorded.
+  Second card not formatted, not touched.
