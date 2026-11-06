@@ -42,8 +42,11 @@ struct Ofd {
     /// Volume, start cluster, length, `O_DIRTY` and the position fields
     /// `o_bytnum`/`o_curcl`/`o_currec`/`o_curbyt` (FS08, [`fsio`]).
     s: Stream,
-    /// Drive the file lives on (matched by [`move_ofds`] when `Frename`
-    /// moves the entry).
+    /// Drive the file lives on. Half of the key of the directory entry: the
+    /// two numbers below name an entry on this drive only (every root is 0, and
+    /// folders of two drives can start at the same cluster), so [`ixdel`] and
+    /// [`move_ofds`] match it too (TASK/FS31; EmuTOS: `d_files` hangs on a
+    /// directory node, and that belongs to one drive, `bdos/fs.h:219,224`).
     drive: u16,
     /// First cluster of the directory holding this file's FCB
     /// (0 = root), and the raw slot within it (for size/cluster
@@ -640,8 +643,8 @@ pub(crate) fn eof(h: i16) -> Long {
 }
 
 /// EmuTOS `ixdel` (`bdos/fsopnclo.c:652-699`): delete the directory entry at
-/// (`dir_start`, `slot`) — a file, or for `Ddelete` an empty folder — whose
-/// name the caller has resolved. Shared by `Fdelete`, `Fcreate` over an
+/// (`dir_start`, `slot`) of `vol` — a file, or for `Ddelete` an empty folder —
+/// whose name the caller has resolved. Shared by `Fdelete`, `Fcreate` over an
 /// existing file and `Ddelete` (spec `docs/api/gemdos/file/41-fdelete.md`
 /// edge case 3, TASK/PROC04 point 5).
 ///
@@ -667,7 +670,10 @@ pub(crate) fn eof(h: i16) -> Long {
 ///
 /// `Err` is `EACCDN` (open elsewhere) or a device error code.
 pub(super) fn ixdel(vol: &Volume, dir_start: u32, slot: u32) -> Result<(), Long> {
-    let names = |o: &Ofd| o.deleted.is_none() && o.dir_start == dir_start && o.dir_slot == slot;
+    let drive = vol.drive();
+    let names = |o: &Ofd| {
+        o.deleted.is_none() && o.drive == drive && o.dir_start == dir_start && o.dir_slot == slot
+    };
     let run = run_pd();
     // `for (fd = dn->d_files; fd; fd = fd->o_link)`: the listed OFDs at this
     // position, newest first. A close only takes the OFD it closes off the

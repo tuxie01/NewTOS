@@ -39,7 +39,10 @@
 #            profile disk only (it creates and removes folders on C:),
 #            writes DCPROBE.LOG only;
 #            or WFPROBE.PRG (tosdump/probes/wfprobe.c, TASK/HW08): the same,
-#            profile disk only, writes WFPROBE.LOG only
+#            profile disk only, writes WFPROBE.LOG only;
+#            or XDPROBE.PRG (tosdump/probes/xdprobe.c, TASK/FS31): the same,
+#            on an image with three partitions, so EmuTOS' drives are C: D: E:
+#            and the probe's GEMDOS drive is F: (HATARI_ORACLE_GEMDOS_DRIVE=F)
 #   table    the case table; staged as VDI.TSV / AES.TSV / RASTER.TSV /
 #            BIOS.TSV; - for a probe
 #   out-dir  receives hd/ (the GEMDOS drive: C:, in profile disk D:),
@@ -55,6 +58,11 @@
 # $HATARI_ORACLE_DISK for the run (out-dir must not exist, so the clone is
 # new), and only if that image's partition 1 passes fsck_msdos -n -- an image
 # a previous destructive run broke does not. Anything else is refused (exit 2).
+#
+# HATARI_ORACLE_GEMDOS_DRIVE (profile disk only, default D) is the letter of
+# the dumper's GEMDOS drive, for a test image with more than one partition:
+# each partition takes a letter from C: up, the GEMDOS drive must come after
+# them (TASK/FS31).
 #
 # THE PROFILE VALUES (TASK/TOOL19). A table that names DUMPBIOS' unit token
 # u:0 or a program path x: leaves the unit / the program extension to the
@@ -108,6 +116,7 @@ case $PRG in
     VDPROBE.PRG)  AREA=VDPROBE; PROBE=1; PROBE_DISK=0 ;;
     DCPROBE.PRG)  AREA=DCPROBE; PROBE=1 ;;
     WFPROBE.PRG)  AREA=WFPROBE; PROBE=1 ;;
+    XDPROBE.PRG)  AREA=XDPROBE; PROBE=1 ;;
     *) echo "unknown dumper: $PRG" >&2; exit 2 ;;
 esac
 if [ "$PROBE" = 1 ]; then
@@ -167,7 +176,7 @@ case $PROFILE in
     # desktop's first Fopen of C:\EMUDESK.INF (answered by Hatari's --auto
     # INF override) reaches EmuTOS. Measured: docs/analysis/ORACLE.md section 2.
     disk)     MACHINE="--machine falcon --monitor vga --drive-a off --drive-b off"
-              DRIVE=D
+              DRIVE=${HATARI_ORACLE_GEMDOS_DRIVE:-D}
               DISK=${HATARI_ORACLE_DISK:-}
               [ -n "$DISK" ] || { echo "profile disk needs HATARI_ORACLE_DISK=<test image>" >&2; exit 2; }
               [ -f "$DISK" ] || { echo "test image not found: $DISK" >&2; exit 1; } ;;

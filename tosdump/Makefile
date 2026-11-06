@@ -45,6 +45,8 @@
 #   make vdprobe-newtos   VDPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make dcprobe-m68k     DCPROBE.PRG, what one Dcreate costs (probes/dcprobe.c)
 #   make dcprobe-newtos   DCPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make xdprobe-m68k     XDPROBE.PRG, equal entry numbers on two drives (probes/xdprobe.c)
+#   make xdprobe-newtos   XDPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make hzprobe-newtos   HZPROBE.NAP, _hz_200 in user state while Super
 #                         toggles (probes/hzprobe.c; NewTOS only)
 #   make host-test        the host-side suite (same as make -C host test)
@@ -91,7 +93,7 @@ BUILD := build
         axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
         sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
         vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
-        akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos dcprobe-m68k dcprobe-newtos hzprobe-newtos host-test clean
+        akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos dcprobe-m68k dcprobe-newtos xdprobe-m68k xdprobe-newtos hzprobe-newtos host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
      scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos wfprobe-m68k wfprobe-newtos \
@@ -99,7 +101,7 @@ all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
      sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
      vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
-     akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos dcprobe-m68k dcprobe-newtos hzprobe-newtos host-test
+     akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos dcprobe-m68k dcprobe-newtos xdprobe-m68k xdprobe-newtos hzprobe-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -327,6 +329,17 @@ $(BUILD)/DCPROBE.PRG: probes/dcprobe.c | $(BUILD)
 dcprobe-newtos: $(BUILD)/DCPROBE.NAP
 $(BUILD)/DCPROBE.NAP: probes/dcprobe.c build-dcprobe-newtos.sh | $(BUILD)
 	./build-dcprobe-newtos.sh $@
+
+# The two-drive probe (TASK/FS31): C: and D: = two partitions of one IDE image,
+# the program on F: (GEMDOS drive). Run by probes/run-xdprobe.sh.
+xdprobe-m68k: $(BUILD)/XDPROBE.PRG
+$(BUILD)/XDPROBE.PRG: probes/xdprobe.c | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror probes/xdprobe.c -o $@
+	@$(CROSS_MINT)size $@
+
+xdprobe-newtos: $(BUILD)/XDPROBE.NAP
+$(BUILD)/XDPROBE.NAP: probes/xdprobe.c build-xdprobe-newtos.sh | $(BUILD)
+	./build-xdprobe-newtos.sh $@
 
 # The _hz_200 user-state probe for the real-Pi step A2 (TASK/PITEST01): NewTOS
 # only (TOS faults a user-state page-0 read). Run by probes/run-hzprobe.sh.

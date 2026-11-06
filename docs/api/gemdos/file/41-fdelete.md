@@ -320,3 +320,17 @@ allocated and initialised, so there is no half-made entry to delete.
 Tests `tos-api/tests/proc04_fdelete_open.rs` (9; red on the F6 code: 9/9
 failed, incl. 3 clusters lost when a written, unclosed file was deleted);
 probe `measurements/measurement-2026-10-18-proc04-fdelete/`.
+
+**FS31 (2026-11-06) — the OFDs of the directory are those on its drive.**
+EmuTOS `ixdel` walks `dn->d_files` (`bdos/fsopnclo.c:660`); that list hangs on
+the directory node (`bdos/fs.h:224`), and a node belongs to one drive (`d_drv`,
+`bdos/fs.h:219`). NewTOS has no node: an OFD names its entry by the directory's
+start cluster and the slot, numbers every drive hands out alike (every root is
+0, two folders made in the same order start at the same cluster). So `ixdel`
+matches the OFD's drive as well, as `move_ofds` always did. Before, `Fdelete`,
+`Fcreate` over an existing file and `Ddelete` on one drive treated a same-numbered
+open file on another drive as theirs: refused with `EACCDN` if another process
+had it open, else closed and marked deleted. Measured on the pinned oracle, same
+card bytes on both sides, equal numbers logged:
+`measurements/measurement-2026-11-06-fs31/RUNINFO.TXT`, probe
+`tosdump/probes/xdprobe.c`, tests `tos-api/tests/fs31_two_drives.rs`.

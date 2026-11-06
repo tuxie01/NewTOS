@@ -1,0 +1,10 @@
+xdprobe run, side newtos (2026-11-06T20:42:48Z)
+tree      6b53dc5b8c5506babed8717625efd8e2dc3a5742 5 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    XDPROBE.PRG b05457564bc65db5535252c69a24dd3d6fe0412adcd13c241a3e36a1886631de XDPROBE.NAP ef63fa09057160691debd82c3160ea468f057e28fa1e53dd61dfa53c74c954d4
+card      d74d94f810911a54cbd4adf834c0d3bc1ed0323ecd4471a1f2a7939171f010db (built by this script)
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    7d38b53215d1c7bcd010641354135f32c92119b341a3094ea8b52859d8eb1dbf /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/kernel8-trace.img
+qemu      done; stopped
+card      after ce2be2a961748fdee1e913262e5de654414d5db1c129275670010751179d1478 (the booted clone)
+fsck      partition at LBA 63 after the run: fsck_msdos -n exit 0
+fsck      partition at LBA 131103 after the run: fsck_msdos -n exit 0

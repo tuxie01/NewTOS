@@ -84,6 +84,15 @@ themselves (they rewrite C:'s boot sector, so the fresh-clone and
 `PXPROBE.LOG` only; both sides are run by `tosdump/probes/run-gcprobe.sh` /
 `tosdump/probes/run-pxprobe.sh`.
 
+**More than one partition.** EmuTOS gives every partition of the IDE master a
+letter from C: up, measured with three FAT16 partitions: C:, D:, E:. The
+dumper's GEMDOS drive then has to come after them:
+`HATARI_ORACLE_GEMDOS_DRIVE=F` (default `D`). The probe that needs it,
+`tosdump/probes/xdprobe.c` (TASK/FS31), and its runner
+`tosdump/probes/run-xdprobe.sh` run the same card bytes on both sides
+(`measurements/measurement-2026-11-06-fs31/RUNINFO.TXT`). The table below
+describes the one-partition image.
+
 The script clones the image to `<out-dir>/disk.img` (the caller's file is
 never attached; the caller deletes the clone) and writes the sha256 before
 and after the run to `<out-dir>/disk.sha256`. The Hatari command is the one

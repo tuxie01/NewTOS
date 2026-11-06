@@ -1,0 +1,137 @@
+RB2
+NewTOS booting on rpi4
+[serial] output on: boot arguments contain `serial=on`
+Phase 02 reached.
+[mm] DTB at 0x0000000000000100
+[mm] firmware: ARM memory bank 0: 0x0000000000000000 + 1006632960 bytes (960 MiB)
+[mm] firmware: VC memory: 0x000000003c000000 + 67108864 bytes (64 MiB)
+[mm] device tree: no usable /memory node (blob invalid or absent)
+[clock] ARM 700 -> 700 MHz (max 700, measured ?, SoC 25.0 C)
+[mm] memory map:
+[mm]   DRAM  : 0x0000000000000000..0x000000003c000000 (1006632960 bytes) — source: firmware
+[mm]   kernel: 0x0000000000080000..0x00000000003a2000 (3284992 bytes)
+[mm]   ST-RAM: 0x0000000000400000..0x0000000000e00000 (10485760 bytes)
+[mm]   TT-RAM: 0x0000000001000000..0x0000000039800000 (947912704 bytes)
+[mm]   OSrsvd: 0x0000000039800000..0x000000003c000000 (41943040 bytes)
+[mm]     bcach: 0x0000000039800000..0x000000003b800000 (33554432 bytes)
+[mm]     heap: 0x000000003b800000..0x000000003c000000 (8388608 bytes)
+[mm]   MMIO 00: 0x00000000fd500000..0x00000000fd510000
+[mm]   MMIO 01: 0x00000000fe000000..0x00000000ff000000
+[mm]   MMIO 02: 0x00000000ff800000..0x0000000100000000
+[mm] MMU reinstalled (high-half via TTBR1, TTBR0 deferred to Phase 06).
+[mm] frames ST-RAM: total=2560 used=0 free=2560 (10485760 B free)
+[mm] frames TT-RAM: total=231424 used=0 free=231424 (947912704 B free)
+[mm] alloc ST-RAM frame -> 0x0000000000400000
+[mm] alloc TT-RAM frame -> 0x0000000001000000
+[mm] heap after init: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[mm] heap smoke OK
+[mm] heap after smoke: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[fb] VideoCore display geometry detected: 640x480
+[fb] alpha mode = 2
+[fb] 640x480 pitch 2560 virtual height 960 -> 2 screen page(s), 2400 KiB
+[fb] VideoCore fb up: 640x480 stride 640px
+[mm] MEM05 per-process block limit: 8192 allocated blocks (default)
+[mm] MEM05 MD supply: 117 MDs static, grows by 117 MDs per 4096-byte page from the kernel heap; page budget 512 pages (2048 KiB) for MDs + block records + snapshot + F_KEEP flags
+[mm] memory protection ON: table arena 0x01000000+2415 tables
+[mm] BDOS pools: ST-RAM 0x00400000+10485760 TT-RAM 0x0196f000+938020864
+[mm] user address space: pools mapped VA = PA (453 shared L3 tables, 4-KiB pages, rights per process)
+[mm] BDOS ST-RAM after init: total=10485760 free=10485760 used=0 largest_free=10485760 (free_mds=1 alloc_mds=0)
+[mm] BDOS TT-RAM after init: total=938020864 free=938020864 used=0 largest_free=938020864 (free_mds=1 alloc_mds=0)
+[mm] MEM05 after init: MDs in_use=2 capacity=117 (+0 pages); pages held=0/512 (md=0 recs=0 snap=0 kept=0) peak=0 refused budget=0 heap=0; records=0 snapshot_cap=0 snapshot_short=0; heap used=0 free=8388608 largest=8388608
+[clock] no RTC: clock starts at the build date 2026-11-06 00:00:00 (Gettime 0x5d660000, os_dosdate 0x5d66)
+[input] keyboard/mouse pump: AES waits and console reads; pointer motion also from the 200 Hz tick while a program runs (input=aes switches that off)
+[bcache] FS09 block read cache: 32768 KiB at 0x39800000 (asked 32768 KiB, default), 61680 sectors of 512 B, linear-read share 5 % (default), write-through
+[emmc] SD card on controller @ 0xffff0000fe300000
+[emmc] M1 SLOTISR_VER=0x24020000 (SDHCI spec 0x02) CAPABILITIES=0x052134b4 (base 52 MHz)
+[emmc] M1 CONTROL0=0x00000f02 CONTROL1=0x000e0207 div=2 -> SDCLK ~13000000 Hz
+[emmc] M1 mailbox clock rate: EMMC(1)=50000000 Hz EMMC2(12)=700000000 Hz
+[emmc] FS08 mode: multi-block (CMD18/CMD25 + Auto CMD12) — bus 4-bit (ACMD6 ok, SCR SD_BUS_WIDTHS=0x5), CONTROL0[1] Data Transfer Width=1
+[emmc] M1 during identification: 2 error(s), 0 timeout(s), 2 recovery(ies) CTO=2
+[pcie] RC not present (no response at RC_BASE); USB disabled
+[proc] stand-in PDs: initial_basepage 0x001f1000, AES PD 0x001f1100, accdesk 0x001f1300, EmuCON 0x001f1400 (read-only to all)
+[aes] gsx_malloc: screen buffer pa=0x0196f000 len=614400 (kernel-owned, WF_SCREEN)
+[shell] sh_ldapp: starting D:\FSWBENCH.NCP, sh_nextapp=2, sh_isgem=0
+[launch] EL0: slot 0 entry 0x1a08000
+==== FSWBENCH (TASK/HW08), write path layer by layer, drive D:, log handle 6
+clock: _hz_200 + spin, 392862 spins/tick
+D: BPB clsiz 16 rootsecs 32 fat 224 at 225 root at 449 data at 481
+H  sector cost (HW06), 41 single-sector Rwabs per line, unchanged bytes
+  sectors: data 801 dir 449 fat 225
+  data         pause   0 first     114 us  min       0 med     166 p90    1560 max    3565  failed 0
+  directory    pause   0 first     157 us  min       0 med     137 p90     798 max    2306  failed 0
+  fat          pause   0 first       0 us  min       0 med      36 p90    1570 max    2143  failed 0
+  data         pause 200 first     100 us  min       0 med       0 p90    1605 max    2164  failed 0
+  directory    pause 200 first     580 us  min       0 med     289 p90    1612 max    2363  failed 0
+  fat          pause 200 first       0 us  min       0 med     217 p90    1597 max    2128  failed 0
+R  patterns against the Mac numbers, 4 KiB per write, Rwabs (WRITE_BUSY_MS = 1000 ms)
+  test file: longest contiguous run 131072 of 131072 sectors, at cluster 22; patterns on it
+  random over 64 MiB     n  64 p50     1097 p90     2661 max     3277 us  >=1s 0  failed 0 last 0
+  random within 256 KiB  n  64 p50     1561 p90     2835 max     3408 us  >=1s 0  failed 0 last 0
+  same offset            n  64 p50     1099 p90     3272 max     3587 us  >=1s 0  failed 0 last 0
+  sequential             n  64 p50     1313 p90     2834 max     3916 us  >=1s 0  failed 0 last 0
+  new small files        n  64 p50     1820 p90     3416 max     3889 us  >=1s 0  failed 0 last 0
+size 10240
+  L1 Rwabs 1 sec     10240 B       5000 us    2000 KB/s
+  L1 Rwabs 128       10240 B       3391 us    2948 KB/s
+  L2 Fwrite 512      10240 B       3638 us    2748 KB/s
+     Fcreate 1760 us  Fclose 16 us  read-back ok
+  L2 Fwrite 4096     10240 B       3333 us    3000 KB/s
+     Fcreate 0 us  Fclose 191 us  read-back ok
+  L2 Fwrite 32768     10240 B          0 us       0 KB/s
+     Fcreate 0 us  Fclose 0 us  read-back ok
+  L2 Fwrite 10240     10240 B       3121 us    3204 KB/s
+     Fcreate 0 us  Fclose 0 us  read-back ok
+  L3 fwrite 1K       10240 B       5488 us    1822 KB/s
+     read-back ok
+  L4 copy 32K        10240 B       3352 us    2983 KB/s
+     read-back ok
+size 102400
+  L1 Rwabs 1 sec    102400 B      25762 us    3881 KB/s
+  L1 Rwabs 128      102400 B      25000 us    4000 KB/s
+  L2 Fwrite 512     102400 B      26108 us    3830 KB/s
+     Fcreate 176 us  Fclose 0 us  read-back ok
+  L2 Fwrite 4096    102400 B      27168 us    3680 KB/s
+     Fcreate 410 us  Fclose 216 us  read-back ok
+  L2 Fwrite 32768    102400 B      23313 us    4289 KB/s
+     Fcreate 0 us  Fclose 0 us  read-back ok
+  L2 Fwrite 102400    102400 B      20000 us    5000 KB/s
+     Fcreate 0 us  Fclose 0 us  read-back ok
+  L3 fwrite 1K      102400 B      23407 us    4272 KB/s
+     read-back ok
+  L4 copy 32K       102400 B      43414 us    2303 KB/s
+     read-back ok
+size 1048576
+  L1 Rwabs 1 sec   1048576 B     208337 us    4915 KB/s
+  L1 Rwabs 128     1048576 B     200000 us    5120 KB/s
+  L2 Fwrite 4096   1048576 B     227060 us    4509 KB/s
+     Fcreate 0 us  Fclose 0 us  read-back ok
+  L2 Fwrite 32768   1048576 B     205000 us    4995 KB/s
+     Fcreate 0 us  Fclose 0 us  read-back ok
+  L2 Fwrite 1048576   1048576 B     190000 us    5389 KB/s
+     Fcreate 5 us  Fclose 0 us  read-back ok
+  L3 fwrite 1K     1048576 B     203607 us    5029 KB/s
+     read-back ok
+  L4 copy 32K      1048576 B     418590 us    2446 KB/s
+     read-back ok
+size 10485760
+  L1 Rwabs 1 sec  10485760 B    2123655 us    4821 KB/s
+  L1 Rwabs 128    10485760 B    1941606 us    5273 KB/s
+  L2 Fwrite 4096  10485760 B    2240000 us    4571 KB/s
+     Fcreate 0 us  Fclose 0 us  read-back ok
+  L2 Fwrite 32768  10485760 B    2030000 us    5044 KB/s
+     Fcreate 0 us  Fclose 0 us  read-back ok
+  L2 Fwrite 10485760  10485760 B    1895000 us    5403 KB/s
+     Fcreate 334 us  Fclose 0 us  read-back ok
+  L3 fwrite 1K    10485760 B    2010000 us    5094 KB/s
+     read-back ok
+  L4 copy 32K     10485760 B    4146986 us    2469 KB/s
+     read-back ok
+--- no driver report: Ssystem 2090 = -32 (no sd-diag kernel)
+log last Fwrite=-36 Fclose=-65
+FSWBENCH done
+[launch] returned (program Pterm'd)
+[shell] sh_ldapp: 'D:\FSWBENCH.NCP' exited with rc=0
+[mm] MEM05 after program: MDs in_use=3 capacity=117 (+0 pages); pages held=2/512 (md=0 recs=1 snap=1 kept=0) peak=2 refused budget=0 heap=0; records=1 snapshot_cap=56 snapshot_short=0; heap used=8224 free=8380384 largest=8380384
+[shell] sh_ldapp: starting desktop NEWDESK (D.s_cmd NEWDESK), sh_nextapp=3, sh_isgem=1
+[launch] EL0: slot 0 entry 0x1a08000
+[desk] desktop up (2 drives)

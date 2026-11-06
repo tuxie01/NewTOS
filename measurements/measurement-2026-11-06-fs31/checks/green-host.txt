@@ -1,0 +1,68 @@
+tree: 6b53dc5b8c5506babed8717625efd8e2dc3a5742 + the FS31 fix
+     Running tests/fs18_frename.rs (target/debug/deps/fs18_frename-fd3be8193b043b27)
+test cross_dir_folder_move_keeps_folder_attribute ... ok
+test cross_dir_rename_into_full_root_is_epthnf ... ok
+test cross_dir_rename_sets_archive_and_keeps_stamp ... ok
+test cross_dir_rename_of_open_file_follows_the_entry ... ok
+test cross_dir_rename_to_dot_name_is_epthnf ... ok
+test cross_dir_rename_to_empty_name_is_epthnf ... ok
+test same_dir_rename_keeps_attribute_and_stamp ... ok
+test same_dir_rename_keeps_directory_order ... ok
+test same_dir_rename_of_open_file_keeps_its_data ... ok
+test same_dir_rename_of_open_file_then_extend ... ok
+test source_is_checked_before_the_target_directory ... ok
+test target_exists_is_checked_before_the_source ... ok
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/fs18_frename_lfn.rs (target/debug/deps/fs18_frename_lfn-d11d4bd19ac2924a)
+test rename_erases_the_old_long_name_chain ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/fs20_media_change.rs (target/debug/deps/fs20_media_change-e1f75483c5f96552)
+test a07_a_buffer_access_relogs_and_clears_the_pending_change ... ok
+test a_call_that_touches_no_buffer_does_not_notice_the_change ... ok
+test current_directories_on_the_changed_drive_become_the_root ... ok
+test a_refused_boot_sector_returns_e_chng_and_leaves_the_drive_logged_out ... ok
+test fs28_dsetpath_after_a_relogin_by_another_call_sets_the_path ... ok
+test fs28_dsetpath_that_meets_the_change_sets_the_path ... ok
+test open_handles_on_the_changed_drive_answer_eihndl ... ok
+test the_drives_buffers_are_dropped_by_the_relogin ... ok
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/fs21_close_archive.rs (target/debug/deps/fs21_close_archive-43826dbe8c292153)
+test archive_bit_is_ored_into_the_created_attribute ... ok
+test close_ors_into_the_attribute_fattrib_left_while_open ... ok
+test fdatime_set_sets_the_bit_on_close ... ok
+test created_file_closed_without_a_write_gets_the_archive_bit ... ok
+test file_only_opened_or_read_keeps_its_attribute ... ok
+test overwrite_inside_the_length_keeps_the_attribute ... ok
+test write_that_grows_an_existing_file_sets_the_bit ... ok
+test written_file_gets_the_archive_bit_on_close ... ok
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/fs31_two_drives.rs (target/debug/deps/fs31_two_drives-429769efab7b4946)
+test a_delete_takes_the_open_file_of_its_own_drive_only ... ok
+test a_file_open_elsewhere_on_c_does_not_refuse_the_delete_on_d ... ok
+test a_media_change_on_d_frees_the_open_files_of_d_only ... ok
+test control_a_file_open_elsewhere_on_the_same_drive_refuses_the_delete ... ok
+test control_fdelete_of_the_callers_open_file_on_the_same_drive ... ok
+test ddelete_on_d_leaves_the_open_file_on_c_alone ... ok
+test a_subfolder_with_the_same_start_cluster_is_another_directory ... ok
+test fclose_on_c_after_a_delete_on_d_is_a_good_close ... ok
+test fcreate_over_a_file_on_d_leaves_the_open_source_on_c_alone ... ok
+test fattrib_changes_the_entry_on_the_paths_drive ... ok
+test fdatime_writes_the_entry_on_the_handles_drive ... ok
+test fdelete_on_d_leaves_a_file_being_read_on_c_alone ... ok
+test fdelete_on_d_leaves_the_open_file_on_c_alone ... ok
+test frename_across_folders_on_d_moves_the_open_file_of_d_only ... ok
+test frename_from_c_to_d_is_ensame ... ok
+test fsnext_goes_on_on_the_drive_of_its_dta ... ok
+test the_same_current_directory_path_on_two_drives_is_two_directories ... ok
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/proc04_fdelete_open.rs (target/debug/deps/proc04_fdelete_open-8216ff5d388fc91c)
+test a_file_open_in_another_process_is_not_deleted ... ok
+test a_stale_close_leaves_the_file_that_reused_the_slot_alone ... ok
+test aliases_of_a_deleted_file_stay_valid ... ok
+test ddelete_of_a_folder_in_the_slot_of_a_deleted_open_file ... ok
+test deleting_a_dirty_open_file_frees_its_whole_chain ... ok
+test fcreate_over_an_own_open_file ... ok
+test ixdel_order_newest_ofd_first_without_rollback ... ok
+test nothing_through_a_deleted_handle_touches_the_card ... ok
+test own_open_file_is_deleted_and_its_handle_stays_valid ... ok
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

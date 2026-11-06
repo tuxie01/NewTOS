@@ -279,7 +279,7 @@ TASK/FS21 (2026-10-31): the archive bit. Before FS21 NewTOS' close wrote
 cluster and length only, so every file it wrote ended with attribute `0x00`
 where the oracle has `0x20` (FS20 probe, `gemdos-mc-fs20`/`-fs24` end
 states). Now `flush_ofd`
-(`tos-api/src/bdos/fs/file.rs:736@flush_ofd`), called by `ixclose` for a
+(`tos-api/src/bdos/fs/file.rs:742@flush_ofd`), called by `ixclose` for a
 dirty OFD, OR-s `FA_ARCHIVE` into the attribute the entry has at close
 (edge case 8); `fcreate` opens its OFD dirty and an `Fdatime` set marks it
 dirty, as `O_DIRTY` in EmuTOS. NewTOS keeps no `o_td`: `Fcreate` and

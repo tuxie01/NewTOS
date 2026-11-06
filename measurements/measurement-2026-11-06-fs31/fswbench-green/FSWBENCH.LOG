@@ -1,0 +1,75 @@
+==== FSWBENCH (TASK/HW08), write path layer by layer, drive D:, log handle 6
+clock: _hz_200 + spin, 438579 spins/tick
+D: BPB clsiz 16 rootsecs 32 fat 224 at 225 root at 449 data at 481
+H  sector cost (HW06), 41 single-sector Rwabs per line, unchanged bytes
+  sectors: data 801 dir 449 fat 225
+  data         pause   0 first     816 us  min       0 med     492 p90    1733 max    2454  failed 0
+  directory    pause   0 first       0 us  min       0 med     708 p90    1853 max    2267  failed 0
+  fat          pause   0 first     873 us  min       0 med     510 p90    2040 max    2654  failed 0
+  data         pause 200 first       0 us  min       0 med     277 p90    1157 max    2017  failed 0
+  directory    pause 200 first     510 us  min       0 med     401 p90    2043 max    3318  failed 0
+  fat          pause 200 first     305 us  min       0 med     868 p90    3122 max    4417  failed 0
+R  patterns against the Mac numbers, 4 KiB per write, Rwabs (WRITE_BUSY_MS = 1000 ms)
+  test file: longest contiguous run 131072 of 131072 sectors, at cluster 22; patterns on it
+  random over 64 MiB     n  64 p50     3812 p90     4377 max     4579 us  >=1s 0  failed 0 last 0
+  random within 256 KiB  n  64 p50     3690 p90     4375 max     4528 us  >=1s 0  failed 0 last 0
+  same offset            n  64 p50     3741 p90     4378 max     9358 us  >=1s 0  failed 0 last 0
+  sequential             n  64 p50     3726 p90     4369 max     4472 us  >=1s 0  failed 0 last 0
+  new small files        n  64 p50     4348 p90     6825 max     7479 us  >=1s 0  failed 0 last 0
+size 10240
+  L1 Rwabs 1 sec     10240 B       4572 us    2187 KB/s
+  L1 Rwabs 128       10240 B       4359 us    2294 KB/s
+  L2 Fwrite 512      10240 B       4357 us    2295 KB/s
+     Fcreate 3190 us  Fclose 1199 us  read-back ok
+  L2 Fwrite 4096     10240 B       4397 us    2274 KB/s
+     Fcreate 415 us  Fclose 3044 us  read-back ok
+  L2 Fwrite 32768     10240 B       7863 us    1271 KB/s
+     Fcreate 3175 us  Fclose 767 us  read-back ok
+  L2 Fwrite 10240     10240 B       6744 us    1482 KB/s
+     Fcreate 1452 us  Fclose 556 us  read-back ok
+  L3 fwrite 1K       10240 B       9369 us    1067 KB/s
+     read-back ok
+  L4 copy 32K        10240 B       4358 us    2294 KB/s
+     read-back ok
+size 102400
+  L1 Rwabs 1 sec    102400 B      37730 us    2650 KB/s
+  L1 Rwabs 128      102400 B      28671 us    3487 KB/s
+  L2 Fwrite 512     102400 B      38040 us    2628 KB/s
+     Fcreate 406 us  Fclose 3170 us  read-back ok
+  L2 Fwrite 4096    102400 B      28692 us    3485 KB/s
+     Fcreate 3037 us  Fclose 3527 us  read-back ok
+  L2 Fwrite 32768    102400 B      32349 us    3091 KB/s
+     Fcreate 3321 us  Fclose 1017 us  read-back ok
+  L2 Fwrite 102400    102400 B      28370 us    3524 KB/s
+     Fcreate 0 us  Fclose 0 us  read-back ok
+  L3 fwrite 1K      102400 B      34348 us    2911 KB/s
+     read-back ok
+  L4 copy 32K       102400 B      63037 us    1586 KB/s
+     read-back ok
+size 1048576
+  L1 Rwabs 1 sec   1048576 B     329343 us    3109 KB/s
+  L1 Rwabs 128     1048576 B     314073 us    3260 KB/s
+  L2 Fwrite 4096   1048576 B     357280 us    2866 KB/s
+     Fcreate 3201 us  Fclose 3159 us  read-back ok
+  L2 Fwrite 32768   1048576 B     304343 us    3364 KB/s
+     Fcreate 231 us  Fclose 3244 us  read-back ok
+  L2 Fwrite 1048576   1048576 B     290000 us    3531 KB/s
+     Fcreate 3065 us  Fclose 1650 us  read-back ok
+  L3 fwrite 1K     1048576 B     303789 us    3370 KB/s
+     read-back ok
+  L4 copy 32K      1048576 B     639365 us    1601 KB/s
+     read-back ok
+size 10485760
+  L1 Rwabs 1 sec  10485760 B    3441826 us    2975 KB/s
+  L1 Rwabs 128    10485760 B    3108502 us    3294 KB/s
+  L2 Fwrite 4096  10485760 B    3648488 us    2806 KB/s
+     Fcreate 2462 us  Fclose 1639 us  read-back ok
+  L2 Fwrite 32768  10485760 B    3372353 us    3036 KB/s
+     Fcreate 2456 us  Fclose 0 us  read-back ok
+  L2 Fwrite 10485760  10485760 B    2237480 us    4576 KB/s
+     Fcreate 3835 us  Fclose 185 us  read-back ok
+  L3 fwrite 1K    10485760 B    1978903 us    5174 KB/s
+     read-back ok
+  L4 copy 32K     10485760 B    4055294 us    2525 KB/s
+     read-back ok
+--- no driver report: Ssystem 2090 = -32 (no sd-diag kernel)

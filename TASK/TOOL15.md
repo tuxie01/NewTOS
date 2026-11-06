@@ -8,7 +8,7 @@ Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: blockiert keine Ab
   (`tools/mktestdisk.sh:65@mformat`); `tools/oracle/oracle.env` sagt „nothing below
   may come from $PATH“. Die sha256-Pruefung des Abbilds faengt eine andere
   Version nur nachtraeglich ab (TOOL06-Quittung).
-- `tools/hatari-oracle.sh:228-231@ORACLE_HATARI` setzt `--fast-forward on` fest.
+- `tools/hatari-oracle.sh:237-240@ORACLE_HATARI` setzt `--fast-forward on` fest.
 
 ## Arbeit
 

@@ -1,0 +1,96 @@
+Z01 C: D: E: present=1
+Z02 C: Getbpb nz=1
+Z03 C: recsiz=512 clsiz=4 rdlen=32 fsiz=128 fatrec=129 datrec=289 numcl=32672
+Z04 D: Getbpb nz=1
+Z05 D: recsiz=512 clsiz=4 rdlen=32 fsiz=128 fatrec=129 datrec=289 numcl=32672
+A01 Fcreate C:\FS31A.LOG handle
+A02 Fwrite 6 ret=6
+A03 make D:\FS31V.DAT ret=0
+A04 slots c=2 d=2 same=1
+A05 Fdelete D:\FS31V.DAT ret=0
+A06 Fwrite 6 ret=-36
+A07 Fclose ret=-65
+A08 C:\FS31A.LOG len=6 "first " Fclose=0
+A09 Fopen D:\FS31V.DAT ret=-33
+B01 Fwrite 6 ret=6
+B02 slots c=2 d=2 same=1
+B03 Fdelete D:\FS31V.DAT ret=0
+B04 Fclose ret=-65
+B05 C:\FS31A.LOG len=6 "first " Fclose=0
+C01 slots c=2 d=2 same=1
+C02 Fread 4 ret=4
+C03 Fdelete D:\FS31V.DAT ret=0
+C04 Fread 16 ret=0 ""
+C05 Fclose ret=-65
+D01 slots c=2 d=2 same=1
+D02 Fcreate over D:\FS31T.DAT handle
+D03 Fread 32 ret=0
+D04 Fwrite ret=0
+D05 Fclose source ret=-65
+D06 Fclose target ret=0
+D07 C:\FS31S.DAT len=12 "source bytes" Fclose=0
+D08 D:\FS31T.DAT len=0 "" Fclose=0
+E01 Dcreate D:\FS31E ret=0
+E02 slots c=2 d=2 same=1
+E03 Ddelete D:\FS31E ret=0
+E04 Fwrite 6 ret=-36
+E05 Fclose ret=-65
+E06 C:\FS31A.LOG len=6 "first " Fclose=0
+F01 Dcreate C:\FS31F ret=0
+F02 Dcreate D:\FS31F ret=0
+F03 start clusters same=1
+F04 slots c=2 d=2 same=1
+F05 Fdelete D:\FS31F\V.DAT ret=0
+F06 Fwrite 6 ret=-36
+F07 Fclose ret=-65
+F08 C:\FS31F\A.LOG len=6 "first " Fclose=0
+G01 slots c=3 d=3 same=1
+G02 Pexec child Fdelete D:\FS31V.DAT (100 = E_OK, else -code) ret=36
+G03 Fopen D:\FS31V.DAT ret=7
+G04 Fwrite 6 ret=6
+G05 Fclose ret=0
+G06 C:\FS31A.LOG len=12 "first second" Fclose=0
+H01 Pexec child Fdelete C:\FS31A.LOG (100 = E_OK, else -code) ret=36
+H02 Fclose ret=0
+H03 C:\FS31A.LOG len=5 "bytes" Fclose=0
+I01 Fdelete D:\FS31A.LOG ret=0
+I02 Fclose ret=-65
+I03 Fopen D:\FS31A.LOG ret=-33
+I04 free clusters on D: as before=1
+J01 slots c=3 d=3 same=1
+J02 Fdelete C:\FS31G.LOG ret=0
+J03 Fclose C: ret=-65
+J04 Fwrite 6 D: ret=-36
+J05 Fclose D: ret=-65
+J06 D:\FS31K.LOG len=6 "first " Fclose=0
+K01 slots c=2 d=2 same=1
+K02 Frename D:\FS31F\M.DAT D:\FS31M.DAT ret=0
+K03 Fwrite 4 ret=4
+K04 Fclose ret=0
+K05 C:\FS31F\A.LOG len=9 "on c more" Fclose=0
+K06 D:\FS31M.DAT len=5 "moved" Fclose=0
+L01 Frename C:\FS31A.DAT D:\FS31B.DAT ret=-48
+L02 C:\FS31A.DAT len=1 "a" Fclose=0
+L03 Fopen D:\FS31B.DAT ret=-33
+M01 slots c=3 d=3 same=1
+M02 Fdatime set D: ret=0
+M03 Fclose ret=0
+M04 D: time=1234 date=5678
+M05 C: unchanged=1
+O01 Fsfirst C: ret=0 FS31C1.DAT
+O02 Fsfirst D: ret=0 FS31D1.DAT
+O03 Fsnext C: ret=0 FS31C2.DAT
+O04 Fsnext D: ret=0 FS31D2.DAT
+P01 Dsetpath C:\FS31F ret=0
+P02 Dgetpath C: "\FS31F"
+P03 Dgetpath D: ""
+P04 make D:FS31R.DAT ret=0
+P05 D:\FS31R.DAT len=9 "root of d" Fclose=0
+P06 Dsetpath D:\FS31F ret=0
+P07 make D:FS31I.DAT ret=0
+P08 D:\FS31F\FS31I.DAT len=11 "folder of d" Fclose=0
+P09 Fopen C:\FS31F\FS31I.DAT ret=-33
+P10 Dgetpath C: "\FS31F"
+P11 Dgetpath D: "\FS31F"
+P12 Ddelete C:\FS31F ret=0
+P13 Ddelete D:\FS31F ret=0

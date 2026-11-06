@@ -176,7 +176,7 @@ ixclose	bdos/fsopnclo.c	tos-api/src/bdos/fs/cache.rs	flush	mapped	the write-back
 ixclose	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	flush_ofd	mapped	the O_DIRTY entry rewrite: cluster, length, attribute | FA_ARCHIVE (FS21)
 ixcreat	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	fcreate	mapped	-
 ixcreat	bdos/fsopnclo.c	tos-api/src/bdos/fs/dirops.rs	dcreate	mapped	the folder case
-ixdel	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	ixdel	mapped	-
+ixdel	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	ixdel	mapped	dn->d_files = the OFDs with this drive, directory start cluster and slot (the node of a drive, FS31)
 ixopen	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	fopen	mapped	-
 ixunlink	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	fdelete	mapped	-
 makopn	bdos/fsopnclo.c	tos-api/src/bdos/fs/file.rs	open_handle	mapped	a fresh OFD

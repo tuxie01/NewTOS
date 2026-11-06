@@ -126,6 +126,43 @@ fn build_image() -> Vec<u8> {
     img
 }
 
+/// A whole disk image with **two** FAT16 partitions of the same geometry,
+/// `C:` and `D:`, both empty (TASK/FS31): every position a file system can
+/// hand out is the same number on both, which is what a test of the keys that
+/// name a directory entry needs.
+fn build_two_drive_image() -> Vec<u8> {
+    let total = (PART_LBA + 2 * PART_SECTORS) as usize;
+    let mut img = vec![0u8; total * SECTOR];
+
+    for (i, lba) in [PART_LBA, PART_LBA + PART_SECTORS].into_iter().enumerate() {
+        let e = 0x1BE + i * 16;
+        img[e + 4] = 0x06; // FAT16 partition type
+        img[e + 8..e + 12].copy_from_slice(&lba.to_le_bytes());
+        img[e + 12..e + 16].copy_from_slice(&PART_SECTORS.to_le_bytes());
+
+        let part = lba as usize * SECTOR;
+        let b = &mut img[part..part + SECTOR];
+        b[0x0B..0x0D].copy_from_slice(&(SECTOR as u16).to_le_bytes());
+        b[0x0D] = CLSIZ as u8;
+        b[0x0E..0x10].copy_from_slice(&(RESERVED as u16).to_le_bytes());
+        b[0x10] = NUM_FATS as u8;
+        b[0x11..0x13].copy_from_slice(&(ROOT_ENTRIES as u16).to_le_bytes());
+        b[0x16..0x18].copy_from_slice(&(FSIZ as u16).to_le_bytes());
+        b[0x20..0x24].copy_from_slice(&PART_SECTORS.to_le_bytes());
+        b[510] = 0x55;
+        b[511] = 0xAA;
+
+        for copy in 0..NUM_FATS {
+            let fat = part + ((FAT1 + copy * FSIZ) as usize) * SECTOR;
+            img[fat..fat + 2].copy_from_slice(&0xFFF8u16.to_le_bytes()); // media
+            img[fat + 2..fat + 4].copy_from_slice(&0xFFFFu16.to_le_bytes());
+        }
+    }
+    img[510] = 0x55;
+    img[511] = 0xAA;
+    img
+}
+
 // ── block device + host ───────────────────────────────────────────────────
 
 pub struct RamDisk {
@@ -347,11 +384,50 @@ static HOST: OnceLock<&'static DiskHost> = OnceLock::new();
 static FS_LOCK: Mutex<()> = Mutex::new(());
 
 pub fn fs<'a>() -> (MutexGuard<'a, ()>, &'static DiskHost) {
+    fs_on(build_image, 1)
+}
+
+/// [`fs`] on the image of [`build_two_drive_image`], `C:` and `D:` (TASK/FS31).
+/// A test binary uses either this or [`fs`].
+pub fn fs_two_drives<'a>() -> (MutexGuard<'a, ()>, &'static DiskHost) {
+    fs_on(build_two_drive_image, 2)
+}
+
+/// Absolute LBA of partition-relative sector `rel` of partition `index`
+/// (0 = `C:`, 1 = `D:`) of the image of [`fs_two_drives`].
+pub fn two_drive_lba(index: u32, rel: u32) -> u64 {
+    (PART_LBA + index * PART_SECTORS + rel) as u64
+}
+
+/// Absolute LBA of the first root-directory sector of partition `index` of the
+/// image of [`fs_two_drives`].
+pub fn two_drive_root_lba(index: u32) -> u64 {
+    two_drive_lba(index, ROOT_SEC)
+}
+
+/// Absolute LBA of data cluster `cl` of partition `index` of the image of
+/// [`fs_two_drives`].
+pub fn two_drive_cluster_lba(index: u32, cl: u32) -> u64 {
+    two_drive_lba(index, DATA_SEC + (cl - 2) * CLSIZ)
+}
+
+/// Clusters of one volume of the image: what `Dfree` reports as total.
+pub const VOLUME_CLUSTERS: u32 = NUMCL;
+
+impl DiskHost {
+    /// Put the two-drive image back to empty, behind the BDOS' back. The caller
+    /// drops the BDOS' state of both drives first.
+    pub fn reset_two_drive_image(&self) {
+        *self.disk.img.lock().unwrap() = build_two_drive_image();
+    }
+}
+
+fn fs_on<'a>(build: fn() -> Vec<u8>, drives: usize) -> (MutexGuard<'a, ()>, &'static DiskHost) {
     let guard = FS_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     let host = *HOST.get_or_init(|| {
         let host: &'static DiskHost = Box::leak(Box::new(DiskHost {
             disk: RamDisk {
-                img: Mutex::new(build_image()),
+                img: Mutex::new(build()),
                 reads: AtomicU32::new(0),
                 boot_reads: AtomicU32::new(0),
                 writes: AtomicU32::new(0),
@@ -368,7 +444,7 @@ pub fn fs<'a>() -> (MutexGuard<'a, ()>, &'static DiskHost) {
         // Scan the MBR so `C:` exists. This also logs every drive out again
         // (`tos_api::bios::mount`), which is what makes the read counters
         // below start from a known state.
-        assert_eq!(tos_api::bios::mount(), 1, "one FAT16 partition expected");
+        assert_eq!(tos_api::bios::mount(), drives, "FAT16 partitions of the image");
         host
     });
     (guard, host)

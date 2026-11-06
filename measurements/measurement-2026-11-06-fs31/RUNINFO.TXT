@@ -1,0 +1,40 @@
+measurement-2026-11-06-fs31 -- TASK/FS31 (Developer, 2026-11-06). Host tests, the pinned EmuTOS oracle on Hatari, QEMU raspi4b. No hardware, no card.
+
+Why: the Pi run measurements/measurement-2026-11-06-hw08-pi2/RUNINFO.TXT ended with "log last Fwrite=-36 Fclose=-65" on an open C:\FSWBENCH.LOG with deletes on D: only, no driver error. The ticket read a cause from the code: ixdel names an open file by directory start cluster and slot, without the drive. To be proven or refuted.
+
+Base: 6b53dc5b. Fix: tos-api/src/bdos/fs/file.rs, ixdel also compares the OFD's drive.
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing: none (every card.img.manifest here says "optional_missing none")
+
+1 HOST TEST, RED ON THE BASE
+  tos-api/tests/fs31_two_drives.rs: two empty FAT16 volumes of the same geometry, 17 tests, each asserts on the raw directory bytes that its entries have equal numbers.
+  checks/red-host.txt (base, tos-api/src unchanged): 9 passed, 8 failed. The Pi's two codes:
+    fdelete_on_d_leaves_the_open_file_on_c_alone       Fwrite after the delete: -36, want 6
+    fclose_on_c_after_a_delete_on_d_is_a_good_close    Fclose after the delete: -65, want 0
+    also red: Fread 0 on a reader (want 6); Fcreate over a file on D:, the source on C: reads 0 (want 12); Ddelete; folders with the same start cluster; another process's file on C: refuses Fdelete on D: with -36 (want 0); a delete on C: takes the same-slot file on D:.
+    The 9 passing are the two same-drive controls and the keys that always had the drive: Frename (2), Fdatime, Fattrib, Fsnext, current directory, media change.
+  checks/green-host.txt (fix): 17 passed, and proc04_fdelete_open 9, fs18_frename 12, fs18_frename_lfn 1, fs20_media_change 8, fs21_close_archive 8 passed.
+
+2 THE ORACLE, SAME CASE, TWO DRIVES
+  Hatari can do it. tools/hatari-oracle.sh profile disk, one image with three partitions: EmuTOS' drives C: D: E: (log line Z01), the probe on GEMDOS drive F: (HATARI_ORACLE_GEMDOS_DRIVE=F, new, default D).
+  Probe tosdump/probes/xdprobe.c, runner tosdump/probes/run-xdprobe.sh, same card bytes on both sides, sha256 d74d94f810911a54cbd4adf834c0d3bc1ed0323ecd4471a1f2a7939171f010db before the run. Pinned ROM by the wrapper's check, tools/oracle/hatari.cfg.
+  The log carries the numbers: "slots c=2 d=2 same=1", "start clusters same=1".
+  oracle/XDPROBE.LOG: EmuTOS does not touch the other drive, e.g. A06 Fwrite 6 ret=6, A07 Fclose ret=0, A08 len=12 "first second"; child's Fdelete on D: is E_OK (G02).
+  Controls measured there too: child deleting the parent's open file on the same drive -36 (H01); own open file, Fdelete 0, Fclose -65 (I01, I02).
+
+3 NEWTOS AGAINST THE ORACLE
+  newtos-red, kernel 7da76916e4c36690d44699dc3d467d604a77440c62e524b8a577bdcd26ae144f (base, release, rpi4): checks/oracle-vs-newtos-red.diff, the cases A B C D E F G J differ, nothing else.
+    D08 is the worst: a copy over a file on the other drive leaves the target 0 bytes with no error before the source's Fclose.
+    fsck_msdos -n clean on C: and D: all the same: the damage is in the data, not the file system.
+  newtos-green, kernel afb0d57ea72718a185dd204dc54c0cae7f2292874d1307e3253dccee6058e471 (fix, release, rpi4): checks/oracle-vs-newtos-green.diff is empty, XDPROBE.LOG byte-identical to the oracle's. fsck_msdos -n exit 0 on both.
+  newtos-trace, kernel 7d38b53215d1c7bcd010641354135f32c92119b341a3094ea8b52859d8eb1dbf (fix + --features bios-arg-trace): input trace of the probe's BIOS calls in BOOT-SERIAL.txt, 47 [biostrace] lines (Getbpb, Rwabs with drive and record as the source passes them); log again identical. The feature traces BIOS and XBIOS only: the GEMDOS arguments have no such trace, they stand in the probe's source and log.
+  SHA-256 of the booted clones after the run: run.txt of each directory. The booted card was written by the probe; each run.txt also has it before.
+
+4 FSWBENCH, THE PROGRAM OF THE PI LINE, IN QEMU
+  method/fswbench-qemu.sh, sdk/examples/fswbench.c built -DFSWB_NOKEY, log on C:, files on D:, C: = tools/mktestdisk.sh image, D: program partition, kernels as in 3. Cards: card.img.manifest in each directory.
+  fswbench-red:   "log last Fwrite=-36 Fclose=-65", C:\FSWBENCH.LOG 0 bytes. The Pi's line, reproduced with no driver in the picture.
+  fswbench-green: "log last Fwrite=61 Fclose=0", C:\FSWBENCH.LOG 4215 bytes = every byte of the program's console text up to the closing line.
+  QEMU's times mean nothing. On the Pi it is open: PI-RUN step, ticket acceptance, Tester/user.
+
+5 NOT DONE
+  No real Pi, no card (out of scope for this run). tosdiff: the case is a probe, TASK/FS32 moves it.
