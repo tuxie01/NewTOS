@@ -3273,6 +3273,74 @@ wants to see how TOS 4.04 builds DMA sound and VDI functions and to compare them
 
 ---
 
+## ADR-035: MagiC and fVDI as read-only comparisons for raster technique
+
+**Date:** 2026-11-07
+**Status:** **Accepted** (2026-11-07, user: "wir haben als Referenz die MagiC-Sourcen und auch fVDI, also auch die Sourcen von TOS 4, wir koennten ja dort schauen wie die das gemacht haben").
+**Phase:** cross-cutting (VDI raster performance; first use [V49](../TASK/V49.md)).
+
+### Context
+
+Fbench on the Pi 4 (profile 2026-11-05) against a V4SA shows NewTOS' fills, mono blits and window redraws well
+behind a 68080 (`docs/analysis/fbench-functions-2026-11-07.md`, user's comparison PDF). EmuTOS fixes which pixels
+a primitive writes, not how fast. MagiC (`references/magicmac`, GPL-3) has NVDI-line screen drivers in m68k
+assembler per colour depth; fVDI (`references/fvdi`, GPL with exceptions named in its `readme.now`) has a 16-bit
+driver in C and the SAGA driver of the V4SA. Pins in `references/README.md`.
+
+### Decision
+
+1. EmuTOS stays the specification of every pixel and the pinned oracle stays the measured reference. CLAUDE.md
+   rule 1 is unchanged.
+2. MagiC and fVDI are read only for technique (loop structure, edge masks, expansion tables, copy direction),
+   only where a ticket names them, cited as `references/<tree>/<path>:<line>`.
+3. Nothing is copied, translated or quoted into this repository. MagiC is GPL-3 and cannot enter the GPLv2+
+   kernel; fVDI's licence differs per file. NewTOS code is written from our own description of the technique.
+4. A technique that would change a pixel against EmuTOS is not used; the oracle decides.
+
+### Consequences
+
+- Tickets record where these trees were read. `references/tos4x` stays under ADR-034.
+- No legal assessment was made; point 3 is the safety margin.
+
+---
+
+## ADR-036: The kernel raster backend may use AArch64 Advanced SIMD (NEON) kernels
+
+**Date:** 2026-11-07
+**Status:** **Accepted** (2026-11-07, user: "macht es wirklich Sinn jetzt zu ueberarbeiten und dann ersetzen wir es eh durch Assembler? Da doch lieber gleich jetzt. Voraussetzung es bringt uns Vorteile. Koennen wir SIMD/NEON verwenden?").
+**Phase:** PHASE-12 (VDI), cross-cutting for the kernel ABI.
+
+### Context
+
+The kernel builds for `aarch64-unknown-none-softfloat`, so the compiler never emits FP/SIMD code and never
+vectorises the raster loops. `CPACR_EL1.FPEN` is already `0b11` at EL1 (`kernel/src/arch/aarch64/boot.rs:337@cpacr_el1`);
+the EL0 FP/SIMD file is saved only where the kernel swaps EL0 contexts (`save_fp_context`,
+`kernel/src/arch/aarch64/exceptions.rs:999@save_fp_context`), not on trap entry, because the kernel never touched it. The
+earlier intention "assembler much later" (auto-memory, 2026-07-22) is replaced by this ADR.
+
+### Decision
+
+1. Raster kernels (fill, 1-to-32-bit expansion, rectangle copy) may be written in AArch64 assembler with
+   Advanced SIMD, via `asm!`/`global_asm!` and `.arch armv8-a+simd`, inside the kernel raster backend behind the
+   `RasterBackend` trait. Nowhere else in the kernel.
+2. Integer and bitwise SIMD only: no floating-point arithmetic and no saturating instructions, so `FPCR` and
+   `FPSR` stay untouched.
+3. Each kernel saves every V register it uses on entry and restores it before return; the EL0 values live in
+   them during a trap. Before the first kernel lands, the developer establishes from the code whether anything
+   can switch the EL0 FP context while a kernel runs (interrupt, preemption) and records it in the ticket.
+4. Each kernel has a scalar Rust reference with the current semantics; host tests on an AArch64 host compare
+   them bit for bit over all modes, raster operations, alignments and widths. Oracle tables and AES scenes stay
+   byte-equal.
+5. A kernel lands only if Fbench on the real Pi 4 shows it faster than the code it replaces.
+
+### Consequences
+
+- The softfloat target stays; no compiler-generated SIMD anywhere else in the kernel.
+- `kernel/src/vdi_backend.rs` gets a span/rectangle interface to the kernels: clip, base pointer and colour once
+  per call instead of per pixel.
+
+---
+
 ## Template for new ADRs
 
 ```markdown

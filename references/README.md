@@ -19,6 +19,8 @@ references/
 ├── freemint/                 # FreeMiNT checkout (Track A secondary)
 ├── xgdos/                    # XGDOS, upstream of TASK/PORT12 (not a TOS reference)
 ├── tos4x/                    # TOS 4 sources, read-only comparison under ADR-034, not a specification
+├── magicmac/                 # MagiC sources, raster-technique comparison under ADR-035 (GPL-3)
+├── fvdi/                     # fVDI sources, raster-technique comparison under ADR-035
 ├── datasheets/               # BCM2711 ARM Peripherals datasheet (PDF)
 ├── sd-spec/                  # SD Simplified Specifications (PDF, see below)
 │   └── archive/              #   superseded editions kept for old citations
@@ -124,6 +126,22 @@ FreeMiNT @ f906416 — sys/ssystem.c:s_system(), sys/cookie.c:get_cookie()
 - **Content:** by its README the TOS 4 and MultiTOS source history, partly reconstructed, which builds byte-exact ROMs. The user calls it reengineered.
 - **Role:** read-only comparison with EmuTOS under ADR-034, at tag `build/tos404` (TOS 4.04, `c54070a5`), only
   where a ticket names it. Not a specification. Nothing from it is copied or quoted into this repository.
+
+---
+
+## magicmac (ADR-035)
+
+- **Location:** `references/magicmac/` (clone of https://github.com/th-otto/MagicMac via the user's checkout), 2026-11-07.
+- **Pin:** commit **`90ae7dcc`**. GPL-3 (`LICENSE`).
+- **Role:** read-only comparison of raster technique (screen drivers under `kernel/vdi/drivers/`) under ADR-035,
+  only where a ticket names it. Nothing copied, translated or quoted.
+
+## fvdi (ADR-035)
+
+- **Location:** `references/fvdi/` (clone of https://github.com/freemint/fvdi via the user's checkout), 2026-11-07.
+- **Pin:** commit **`5a1ce945`**. GPL with per-file exceptions (`fvdi/readme.now`).
+- **Role:** read-only comparison of raster technique (`fvdi/drivers/16_bit/`, `fvdi/drivers/saga/` = the V4SA
+  driver) under ADR-035, only where a ticket names it. Nothing copied, translated or quoted.
 
 ---
 

@@ -43,6 +43,10 @@ FreeMiNT-compatible extensions and for kernel memory management (ADR-027).
 **TOS 4 sources** (`references/tos4x`): a read-only comparison where a ticket
 names it, never a specification; nothing is copied or quoted from it (ADR-034).
 
+**MagiC and fVDI** (`references/magicmac`, `references/fvdi`): read-only comparisons for
+raster technique where a ticket names them; EmuTOS stays the pixel spec (ADR-035). Raster
+kernels may use NEON under ADR-036.
+
 **Secondary references** (used to cross-check the EmuTOS extraction):
 Atari Compendium, Atari Profibuch, TOS Release Notes, Atari ST Internals.
 None of them is in `references/` (see `references/README.md`).
