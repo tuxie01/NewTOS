@@ -1,0 +1,92 @@
+frame   1590 t=  28.596 s  GREEN>25%
+frame   1603 t=  28.853 s  GREEN>20%
+frame   1605 t=  28.893 s  GREEN>15%
+frame   1606 t=  28.913 s  GREEN>10%
+frame   1607 t=  28.933 s  GREEN>0%
+frame   1608 t=  28.952 s  TEXT dark=128
+frame   1610 t=  28.992 s  TEXT dark=1107
+frame   1611 t=  29.012 s  TEXT dark=2358
+frame   1612 t=  29.032 s  TEXT dark=3757
+frame   1613 t=  29.051 s  TEXT dark=5097
+frame   1643 t=  29.646 s  TEXT dark=5065
+frame   1673 t=  30.241 s  TEXT dark=5097
+frame   1703 t=  30.836 s  TEXT dark=5065
+frame   1733 t=  31.430 s  TEXT dark=5097
+frame   1763 t=  32.025 s  TEXT dark=5065
+frame   1793 t=  32.620 s  TEXT dark=5097
+frame   1823 t=  33.214 s  TEXT dark=5065
+frame   1853 t=  33.809 s  TEXT dark=5097
+frame   1883 t=  34.404 s  TEXT dark=5065
+frame   1913 t=  34.998 s  TEXT dark=5097
+frame   1943 t=  35.593 s  TEXT dark=5065
+frame   1973 t=  36.188 s  TEXT dark=5097
+frame   2003 t=  36.782 s  TEXT dark=5065
+frame   2033 t=  37.377 s  TEXT dark=5097
+frame   2063 t=  37.972 s  TEXT dark=5065
+frame   2093 t=  38.566 s  TEXT dark=5097
+frame   2123 t=  39.161 s  TEXT dark=5065
+frame   2153 t=  39.756 s  TEXT dark=5097
+frame   2183 t=  40.351 s  TEXT dark=5065
+frame   2213 t=  40.945 s  TEXT dark=5097
+frame   2243 t=  41.540 s  TEXT dark=5065
+frame   2273 t=  42.135 s  TEXT dark=5097
+frame   2303 t=  42.729 s  TEXT dark=5065
+frame   2333 t=  43.324 s  TEXT dark=5097
+frame   2363 t=  43.919 s  TEXT dark=5065
+frame   2393 t=  44.513 s  TEXT dark=5097
+frame   2423 t=  45.108 s  TEXT dark=5065
+frame   2453 t=  45.703 s  TEXT dark=5097
+frame   2483 t=  46.297 s  TEXT dark=5065
+frame   2513 t=  46.892 s  TEXT dark=5097
+frame   2543 t=  47.487 s  TEXT dark=5065
+frame   2573 t=  48.081 s  TEXT dark=5097
+frame   2603 t=  48.676 s  TEXT dark=5065
+frame   2633 t=  49.271 s  TEXT dark=5097
+frame   2663 t=  49.866 s  TEXT dark=5065
+frame   2693 t=  50.460 s  TEXT dark=5097
+frame   2723 t=  51.055 s  TEXT dark=5065
+frame   2753 t=  51.650 s  TEXT dark=5097
+frame   2783 t=  52.244 s  TEXT dark=5065
+frame   2813 t=  52.839 s  TEXT dark=5097
+frame   2843 t=  53.434 s  TEXT dark=5065
+frame   2873 t=  54.028 s  TEXT dark=5097
+frame   2903 t=  54.623 s  TEXT dark=5065
+frame   2933 t=  55.218 s  TEXT dark=5097
+frame   2963 t=  55.812 s  TEXT dark=5065
+frame   2993 t=  56.407 s  TEXT dark=5097
+frame   3023 t=  57.002 s  TEXT dark=5065
+frame   3053 t=  57.596 s  TEXT dark=5097
+frame   3083 t=  58.191 s  TEXT dark=5065
+frame   3113 t=  58.786 s  TEXT dark=5097
+frame   3143 t=  59.380 s  TEXT dark=5065
+frame   3173 t=  59.975 s  TEXT dark=5097
+frame   3203 t=  60.570 s  TEXT dark=5065
+frame   3233 t=  61.165 s  TEXT dark=5097
+frame   3263 t=  61.759 s  TEXT dark=5065
+frame   3293 t=  62.354 s  TEXT dark=5097
+frame   3323 t=  62.949 s  TEXT dark=5065
+frame   3353 t=  63.543 s  TEXT dark=5097
+frame   3383 t=  64.138 s  TEXT dark=5065
+frame   3413 t=  64.733 s  TEXT dark=5097
+frame   3443 t=  65.327 s  TEXT dark=5065
+frame   3473 t=  65.922 s  TEXT dark=5097
+frame   3503 t=  66.517 s  TEXT dark=5065
+frame   3533 t=  67.111 s  TEXT dark=5097
+frame   3563 t=  67.706 s  TEXT dark=5065
+frame   3593 t=  68.301 s  TEXT dark=5097
+frame   3623 t=  68.895 s  TEXT dark=5065
+frame   3640 t=  69.232 s  TEXT dark=5127
+frame   3641 t=  69.252 s  TEXT dark=3718
+frame   3642 t=  69.272 s  WHITE
+frame   3690 t=  70.224 s  GREEN>15%
+frame   3691 t=  70.243 s  GREEN>20%
+frame   3694 t=  70.303 s  GREEN>25%
+frame   3698 t=  70.382 s  GREEN>30%
+frame   3701 t=  70.442 s  GREEN>35%
+frame   3704 t=  70.501 s  GREEN>40%
+frame   3707 t=  70.561 s  GREEN>45%
+frame   3765 t=  71.710 s  GREEN>40%
+frame   3781 t=  72.027 s  GREEN>35%
+frame   3784 t=  72.087 s  GREEN>30%
+frame   3787 t=  72.146 s  GREEN>25%
+frame   3801 t=  72.404 s  (end of range)

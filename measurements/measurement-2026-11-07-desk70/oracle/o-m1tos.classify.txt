@@ -1,0 +1,33 @@
+frame   1585 t=  28.496 s  GREEN>25%
+frame   1599 t=  28.774 s  GREEN>20%
+frame   1600 t=  28.794 s  GREEN>15%
+frame   1602 t=  28.833 s  GREEN>10%
+frame   1603 t=  28.853 s  GREEN>0%
+frame   1604 t=  28.873 s  TEXT dark=128
+frame   1606 t=  28.913 s  TEXT dark=1415
+frame   1607 t=  28.933 s  TEXT dark=2777
+frame   1608 t=  28.952 s  TEXT dark=4105
+frame   1609 t=  28.972 s  TEXT dark=4204
+frame   1639 t=  29.567 s  TEXT dark=4076
+frame   1669 t=  30.162 s  TEXT dark=4204
+frame   1699 t=  30.756 s  TEXT dark=4076
+frame   1729 t=  31.351 s  TEXT dark=4204
+frame   1759 t=  31.946 s  TEXT dark=4076
+frame   1789 t=  32.540 s  TEXT dark=4204
+frame   1819 t=  33.135 s  TEXT dark=4076
+frame   1849 t=  33.730 s  TEXT dark=4204
+frame   1860 t=  33.948 s  TEXT dark=4982
+frame   1861 t=  33.968 s  TEXT dark=1722
+frame   1862 t=  33.987 s  WHITE
+frame   1910 t=  34.939 s  GREEN>15%
+frame   1911 t=  34.959 s  GREEN>20%
+frame   1914 t=  35.018 s  GREEN>25%
+frame   1917 t=  35.078 s  GREEN>30%
+frame   1920 t=  35.137 s  GREEN>35%
+frame   1924 t=  35.216 s  GREEN>40%
+frame   1927 t=  35.276 s  GREEN>45%
+frame   1985 t=  36.426 s  GREEN>40%
+frame   2000 t=  36.723 s  GREEN>35%
+frame   2003 t=  36.782 s  GREEN>30%
+frame   2007 t=  36.862 s  GREEN>25%
+frame   2016 t=  37.020 s  (end of range)

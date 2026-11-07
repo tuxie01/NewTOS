@@ -1,0 +1,21 @@
+frame    905 t=  15.074 s  GREEN>0%
+frame    912 t=  15.190 s  WHITE
+frame    922 t=  15.357 s  GREEN>0%
+frame    928 t=  15.473 s  WHITE
+frame    942 t=  15.750 s  TEXT dark=128
+frame    944 t=  15.790 s  TEXT dark=1308
+frame    945 t=  15.810 s  TEXT dark=2678
+frame    946 t=  15.830 s  TEXT dark=4098
+frame    947 t=  15.849 s  WHITE
+frame    996 t=  16.821 s  GREEN>15%
+frame    997 t=  16.841 s  GREEN>20%
+frame   1000 t=  16.900 s  GREEN>25%
+frame   1003 t=  16.960 s  GREEN>30%
+frame   1006 t=  17.019 s  GREEN>35%
+frame   1009 t=  17.078 s  GREEN>40%
+frame   1013 t=  17.158 s  GREEN>45%
+frame   1071 t=  18.307 s  GREEN>40%
+frame   1086 t=  18.605 s  GREEN>35%
+frame   1089 t=  18.664 s  GREEN>30%
+frame   1092 t=  18.724 s  GREEN>25%
+frame   1101 t=  18.882 s  (end of range)

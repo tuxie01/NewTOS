@@ -1,0 +1,19 @@
+# EmuTOS: double-click D70M0.TTP (same program): the desktop's parameter dialog first, RETURN closes it (a key BEFORE the launch), no key after
+sleep 30
+shot 00-pre
+alt 75 6
+alt 72 18
+sleep 0.5
+shot 01-onicon
+dclick
+sleep 2
+shot 02-dialog
+key 28
+sleep 0.3
+shot 03-ret+0.7
+sleep 2
+shot 04-ret+3
+sleep 5
+shot 05-ret+8
+sleep 25
+shot 06-ret+33

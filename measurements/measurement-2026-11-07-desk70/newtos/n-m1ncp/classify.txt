@@ -1,0 +1,87 @@
+screen   0 first=0.060 last=0.060 WHITE
+screen   1 first=0.064 last=0.064 GREEN>0%
+screen   2 first=0.067 last=0.067 GREEN>0%
+screen   3 first=0.070 last=0.070 GREEN>0%
+screen   4 first=0.074 last=15.075 GREEN>0%
+screen   5 first=15.079 last=15.079 WHITE
+screen   6 first=15.083 last=15.083 WHITE
+screen   7 first=15.087 last=15.090 WHITE
+screen   8 first=15.094 last=15.094 WHITE
+screen   9 first=15.098 last=15.231 GREEN>45%
+screen  10 first=15.234 last=15.234 GREEN>45%
+screen  11 first=15.237 last=15.246 GREEN>45%
+screen  12 first=15.249 last=15.261 GREEN>45%
+screen  13 first=15.264 last=15.276 GREEN>45%
+screen  14 first=15.279 last=15.291 GREEN>45%
+screen  15 first=15.293 last=15.308 GREEN>45%
+screen  16 first=15.311 last=15.322 GREEN>45%
+screen  17 first=15.325 last=15.339 GREEN>45%
+screen  18 first=15.341 last=15.355 GREEN>45%
+screen  19 first=15.357 last=15.369 GREEN>45%
+screen  20 first=15.372 last=15.386 GREEN>45%
+screen  21 first=15.390 last=15.390 GREEN>45%
+screen  22 first=15.394 last=15.394 GREEN>40%
+screen  23 first=15.397 last=15.400 GREEN>40%
+screen  24 first=15.402 last=15.402 GREEN>40%
+screen  25 first=15.406 last=15.406 GREEN>40%
+screen  26 first=15.409 last=15.409 GREEN>40%
+screen  27 first=15.413 last=15.413 GREEN>35%
+screen  28 first=15.416 last=15.416 GREEN>25%
+screen  29 first=15.420 last=15.420 GREEN>25%
+screen  30 first=15.423 last=16.211 GREEN>25%
+screen  31 first=16.214 last=16.217 GREEN>25%
+screen  32 first=16.220 last=16.220 GREEN>25%
+screen  33 first=16.224 last=18.211 GREEN>25%
+screen  34 first=18.214 last=18.214 GREEN>25%
+screen  35 first=18.217 last=18.220 GREEN>25%
+screen  36 first=18.223 last=18.226 GREEN>25%
+screen  37 first=18.229 last=19.527 GREEN>25%
+screen  38 first=19.530 last=19.530 GREEN>25%
+screen  39 first=19.534 last=19.534 GREEN>25%
+screen  40 first=19.537 last=19.550 GREEN>25%
+screen  41 first=19.553 last=19.566 GREEN>25%
+screen  42 first=19.569 last=19.582 GREEN>25%
+screen  43 first=19.585 last=19.597 GREEN>25%
+screen  44 first=19.600 last=19.613 GREEN>25%
+screen  45 first=19.616 last=19.629 GREEN>25%
+screen  46 first=19.632 last=19.645 GREEN>25%
+screen  47 first=19.648 last=19.660 GREEN>25%
+screen  48 first=19.663 last=19.675 GREEN>25%
+screen  49 first=19.678 last=19.681 GREEN>25%
+screen  50 first=19.684 last=19.687 GREEN>25%
+screen  51 first=19.691 last=19.691 GREEN>25%
+screen  52 first=19.695 last=19.813 TEXT dark=128
+screen  53 first=19.816 last=19.816 TEXT dark=524
+screen  54 first=19.820 last=20.316 TEXT dark=4204
+screen  55 first=20.319 last=20.815 TEXT dark=4076
+screen  56 first=20.818 last=21.315 TEXT dark=4204
+screen  57 first=21.318 last=21.817 TEXT dark=4076
+screen  58 first=21.820 last=22.315 TEXT dark=4204
+screen  59 first=22.318 last=22.815 TEXT dark=4076
+screen  60 first=22.818 last=23.316 TEXT dark=4204
+screen  61 first=23.319 last=23.815 TEXT dark=4076
+screen  62 first=23.818 last=24.025 TEXT dark=4204
+screen  63 first=24.028 last=24.028 TEXT dark=5165
+screen  64 first=24.032 last=24.032 WHITE
+screen  65 first=24.036 last=24.036 WHITE dark_elsewhere=72
+screen  66 first=24.041 last=24.041 WHITE
+screen  67 first=24.046 last=24.165 GREEN>45%
+screen  68 first=24.168 last=24.171 GREEN>45%
+screen  69 first=24.174 last=24.186 GREEN>45%
+screen  70 first=24.188 last=24.188 GREEN>45%
+screen  71 first=24.192 last=24.203 GREEN>45%
+screen  72 first=24.206 last=24.217 GREEN>45%
+screen  73 first=24.220 last=24.234 GREEN>45%
+screen  74 first=24.237 last=24.248 GREEN>45%
+screen  75 first=24.252 last=24.263 GREEN>45%
+screen  76 first=24.266 last=24.278 GREEN>45%
+screen  77 first=24.281 last=24.293 GREEN>45%
+screen  78 first=24.295 last=24.295 GREEN>45%
+screen  79 first=24.299 last=24.311 GREEN>45%
+screen  80 first=24.314 last=24.314 GREEN>40%
+screen  81 first=24.317 last=24.317 GREEN>40%
+screen  82 first=24.320 last=24.320 GREEN>40%
+screen  83 first=24.324 last=24.324 GREEN>40%
+screen  84 first=24.328 last=24.328 GREEN>25%
+screen  85 first=24.332 last=24.332 GREEN>25%
+screen  86 first=24.335 last=40.063 GREEN>25%

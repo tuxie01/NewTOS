@@ -1,0 +1,34 @@
+screen   0 first=0.058 last=0.084 GREEN>0%
+screen   1 first=0.087 last=0.087 GREEN>0%
+screen   2 first=0.091 last=0.091 GREEN>0%
+screen   3 first=0.094 last=0.094 GREEN>0%
+screen   4 first=0.098 last=0.098 GREEN>0%
+screen   5 first=0.101 last=15.101 GREEN>0%
+screen   6 first=15.105 last=15.110 WHITE
+screen   7 first=15.114 last=15.202 TEXT dark=128
+screen   8 first=15.205 last=15.205 TEXT dark=1005
+screen   9 first=15.207 last=15.215 TEXT dark=4204
+screen  10 first=15.218 last=15.218 WHITE
+screen  11 first=15.222 last=15.222 GREEN>20%
+screen  12 first=15.225 last=15.318 GREEN>45%
+screen  13 first=15.320 last=15.320 GREEN>45%
+screen  14 first=15.323 last=15.326 GREEN>45%
+screen  15 first=15.328 last=15.341 GREEN>45%
+screen  16 first=15.343 last=15.356 GREEN>45%
+screen  17 first=15.358 last=15.371 GREEN>45%
+screen  18 first=15.373 last=15.385 GREEN>45%
+screen  19 first=15.388 last=15.400 GREEN>45%
+screen  20 first=15.403 last=15.417 GREEN>45%
+screen  21 first=15.420 last=15.432 GREEN>45%
+screen  22 first=15.435 last=15.447 GREEN>45%
+screen  23 first=15.450 last=15.462 GREEN>45%
+screen  24 first=15.465 last=15.465 GREEN>45%
+screen  25 first=15.469 last=15.469 GREEN>40%
+screen  26 first=15.472 last=15.472 GREEN>40%
+screen  27 first=15.475 last=15.475 GREEN>40%
+screen  28 first=15.478 last=15.478 GREEN>40%
+screen  29 first=15.480 last=15.487 GREEN>40%
+screen  30 first=15.492 last=15.492 GREEN>35%
+screen  31 first=15.496 last=15.496 GREEN>25%
+screen  32 first=15.499 last=15.499 GREEN>25%
+screen  33 first=15.502 last=28.000 GREEN>25%

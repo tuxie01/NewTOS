@@ -1,0 +1,9 @@
+# EmuTOS: double-click D70M0.TOS with Hatari's OS call trace on; no key after the launch
+sleep 30
+alt 75 16
+alt 72 18
+sleep 0.5
+shot 01-onicon
+dclick
+sleep 20
+shot 02-dc+20

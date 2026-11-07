@@ -1,0 +1,4 @@
+# NEWDESK: double-click D70M0.NCP (print + Pterm at once); no key is ever injected
+200 parkbr
+600 move 190 95
+800 dclick

@@ -1,0 +1,5 @@
+# EmuTOS: #Z 00 C:\D70M0.TOS@ in EMUDESK.INF (character-mode autorun); no key at all
+sleep 40
+shot 00-t40
+sleep 20
+shot 01-t60

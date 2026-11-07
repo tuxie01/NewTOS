@@ -1,0 +1,55 @@
+30.73 send hatari-shortcut screenshot
+31.01 shot 00-pre <- grab0001.png
+31.03 send hatari-event keydown 56
+31.25 send hatari-event keypress 75
+31.40 send hatari-event keypress 75
+31.54 send hatari-event keypress 75
+31.68 send hatari-event keypress 75
+31.83 send hatari-event keypress 75
+31.97 send hatari-event keypress 75
+32.11 send hatari-event keypress 75
+32.25 send hatari-event keypress 75
+32.40 send hatari-event keypress 75
+32.54 send hatari-event keypress 75
+32.68 send hatari-event keypress 75
+32.83 send hatari-event keypress 75
+32.97 send hatari-event keypress 75
+33.11 send hatari-event keypress 75
+33.25 send hatari-event keypress 75
+33.41 send hatari-event keypress 75
+33.55 send hatari-event keyup 56
+33.77 send hatari-event keydown 56
+34.00 send hatari-event keypress 72
+34.14 send hatari-event keypress 72
+34.28 send hatari-event keypress 72
+34.43 send hatari-event keypress 72
+34.57 send hatari-event keypress 72
+34.71 send hatari-event keypress 72
+34.85 send hatari-event keypress 72
+35.00 send hatari-event keypress 72
+35.14 send hatari-event keypress 72
+35.28 send hatari-event keypress 72
+35.42 send hatari-event keypress 72
+35.56 send hatari-event keypress 72
+35.70 send hatari-event keypress 72
+35.85 send hatari-event keypress 72
+35.99 send hatari-event keypress 72
+36.13 send hatari-event keypress 72
+36.27 send hatari-event keypress 72
+36.41 send hatari-event keypress 72
+36.55 send hatari-event keyup 56
+37.33 send hatari-shortcut screenshot
+37.61 shot 01-onicon <- grab0001.png
+37.63 send hatari-event doubleclick
+38.11 send hatari-shortcut screenshot
+38.38 shot 02-dc+0.5 <- grab0001.png
+38.96 send hatari-shortcut screenshot
+39.23 shot 03-dc+1 <- grab0001.png
+40.31 send hatari-shortcut screenshot
+40.58 shot 04-dc+2 <- grab0001.png
+43.66 send hatari-shortcut screenshot
+43.94 shot 05-dc+5 <- grab0001.png
+59.01 send hatari-shortcut screenshot
+59.29 shot 06-dc+20 <- grab0001.png
+99.37 send hatari-shortcut screenshot
+99.64 shot 07-dc+60 <- grab0001.png

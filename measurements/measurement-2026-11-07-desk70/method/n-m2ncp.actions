@@ -1,0 +1,5 @@
+# NEWDESK control: double-click D70M2.NCP (print, Cconin); no key for about 60 s must leave the text screen standing, then RETURN
+200 parkbr
+600 move 190 137
+800 dclick
+12800 key 1C

@@ -1,0 +1,156 @@
+screen   0 first=0.059 last=0.078 GREEN>0%
+screen   1 first=0.081 last=0.081 GREEN>0%
+screen   2 first=0.084 last=0.084 WHITE
+screen   3 first=0.088 last=0.088 GREEN>0%
+screen   4 first=0.092 last=0.092 GREEN>0%
+screen   5 first=0.096 last=15.102 GREEN>0%
+screen   6 first=15.121 last=15.121 WHITE
+screen   7 first=15.157 last=15.157 GREEN>45%
+screen   8 first=15.201 last=15.201 GREEN>45%
+screen   9 first=15.235 last=15.235 GREEN>45%
+screen  10 first=15.256 last=15.269 GREEN>45%
+screen  11 first=15.283 last=15.283 GREEN>45%
+screen  12 first=15.295 last=15.295 GREEN>45%
+screen  13 first=15.311 last=15.311 GREEN>45%
+screen  14 first=15.328 last=15.328 GREEN>40%
+screen  15 first=15.345 last=16.141 GREEN>25%
+screen  16 first=16.241 last=18.165 GREEN>25%
+screen  17 first=18.167 last=18.167 GREEN>25%
+screen  18 first=18.170 last=18.173 GREEN>25%
+screen  19 first=18.176 last=18.179 GREEN>25%
+screen  20 first=18.181 last=19.485 GREEN>25%
+screen  21 first=19.557 last=19.557 GREEN>25%
+screen  22 first=19.665 last=19.665 GREEN>25%
+screen  23 first=19.793 last=20.179 TEXT dark=5097
+screen  24 first=20.183 last=20.680 TEXT dark=5065
+screen  25 first=20.684 last=21.181 TEXT dark=5097
+screen  26 first=21.193 last=21.697 TEXT dark=5065
+screen  27 first=21.773 last=22.252 TEXT dark=5097
+screen  28 first=22.352 last=22.679 TEXT dark=5065
+screen  29 first=22.682 last=23.178 TEXT dark=5097
+screen  30 first=23.183 last=23.680 TEXT dark=5065
+screen  31 first=23.684 last=24.178 TEXT dark=5097
+screen  32 first=24.182 last=24.678 TEXT dark=5065
+screen  33 first=24.681 last=25.178 TEXT dark=5097
+screen  34 first=25.182 last=25.676 TEXT dark=5065
+screen  35 first=25.680 last=26.178 TEXT dark=5097
+screen  36 first=26.183 last=26.679 TEXT dark=5065
+screen  37 first=26.683 last=27.180 TEXT dark=5097
+screen  38 first=27.184 last=27.679 TEXT dark=5065
+screen  39 first=27.684 last=28.183 TEXT dark=5097
+screen  40 first=28.191 last=28.665 TEXT dark=5065
+screen  41 first=28.765 last=29.089 TEXT dark=5097
+screen  42 first=29.201 last=29.677 TEXT dark=5065
+screen  43 first=29.681 last=30.180 TEXT dark=5097
+screen  44 first=30.184 last=30.678 TEXT dark=5065
+screen  45 first=30.683 last=31.180 TEXT dark=5097
+screen  46 first=31.183 last=31.679 TEXT dark=5065
+screen  47 first=31.683 last=32.179 TEXT dark=5097
+screen  48 first=32.184 last=32.679 TEXT dark=5065
+screen  49 first=32.683 last=33.177 TEXT dark=5097
+screen  50 first=33.181 last=33.678 TEXT dark=5065
+screen  51 first=33.683 last=34.179 TEXT dark=5097
+screen  52 first=34.183 last=34.677 TEXT dark=5065
+screen  53 first=34.681 last=35.180 TEXT dark=5097
+screen  54 first=35.184 last=35.669 TEXT dark=5065
+screen  55 first=35.745 last=36.193 TEXT dark=5097
+screen  56 first=36.269 last=36.676 TEXT dark=5065
+screen  57 first=36.681 last=37.179 TEXT dark=5097
+screen  58 first=37.184 last=37.679 TEXT dark=5065
+screen  59 first=37.684 last=38.180 TEXT dark=5097
+screen  60 first=38.183 last=38.679 TEXT dark=5065
+screen  61 first=38.683 last=39.179 TEXT dark=5097
+screen  62 first=39.183 last=39.693 TEXT dark=5065
+screen  63 first=39.765 last=40.217 TEXT dark=5097
+screen  64 first=40.297 last=40.677 TEXT dark=5065
+screen  65 first=40.681 last=41.179 TEXT dark=5097
+screen  66 first=41.184 last=41.680 TEXT dark=5065
+screen  67 first=41.685 last=42.179 TEXT dark=5097
+screen  68 first=42.183 last=42.680 TEXT dark=5065
+screen  69 first=42.683 last=43.179 TEXT dark=5097
+screen  70 first=43.261 last=43.657 TEXT dark=5065
+screen  71 first=43.733 last=44.179 TEXT dark=5097
+screen  72 first=44.183 last=44.678 TEXT dark=5065
+screen  73 first=44.682 last=45.179 TEXT dark=5097
+screen  74 first=45.183 last=45.676 TEXT dark=5065
+screen  75 first=45.680 last=46.180 TEXT dark=5097
+screen  76 first=46.185 last=46.679 TEXT dark=5065
+screen  77 first=46.682 last=47.169 TEXT dark=5097
+screen  78 first=47.225 last=47.697 TEXT dark=5065
+screen  79 first=47.749 last=48.177 TEXT dark=5097
+screen  80 first=48.181 last=48.678 TEXT dark=5065
+screen  81 first=48.681 last=49.180 TEXT dark=5097
+screen  82 first=49.184 last=49.677 TEXT dark=5065
+screen  83 first=49.682 last=50.179 TEXT dark=5097
+screen  84 first=50.183 last=50.687 TEXT dark=5065
+screen  85 first=50.709 last=51.189 TEXT dark=5097
+screen  86 first=51.225 last=51.678 TEXT dark=5065
+screen  87 first=51.682 last=52.180 TEXT dark=5097
+screen  88 first=52.184 last=52.677 TEXT dark=5065
+screen  89 first=52.681 last=53.179 TEXT dark=5097
+screen  90 first=53.183 last=53.680 TEXT dark=5065
+screen  91 first=53.685 last=54.177 TEXT dark=5097
+screen  92 first=54.182 last=54.685 TEXT dark=5065
+screen  93 first=54.757 last=55.153 TEXT dark=5097
+screen  94 first=55.211 last=55.676 TEXT dark=5065
+screen  95 first=55.680 last=56.180 TEXT dark=5097
+screen  96 first=56.184 last=56.678 TEXT dark=5065
+screen  97 first=56.682 last=57.178 TEXT dark=5097
+screen  98 first=57.183 last=57.678 TEXT dark=5065
+screen  99 first=57.681 last=58.181 TEXT dark=5097
+screen 100 first=58.197 last=58.657 TEXT dark=5065
+screen 101 first=58.701 last=59.181 TEXT dark=5097
+screen 102 first=59.185 last=59.677 TEXT dark=5065
+screen 103 first=59.680 last=60.179 TEXT dark=5097
+screen 104 first=60.183 last=60.680 TEXT dark=5065
+screen 105 first=60.684 last=61.178 TEXT dark=5097
+screen 106 first=61.182 last=61.677 TEXT dark=5065
+screen 107 first=61.681 last=62.229 TEXT dark=5097
+screen 108 first=62.293 last=62.613 TEXT dark=5065
+screen 109 first=62.725 last=63.180 TEXT dark=5097
+screen 110 first=63.184 last=63.675 TEXT dark=5065
+screen 111 first=63.680 last=64.176 TEXT dark=5097
+screen 112 first=64.181 last=64.680 TEXT dark=5065
+screen 113 first=64.684 last=65.176 TEXT dark=5097
+screen 114 first=65.181 last=65.693 TEXT dark=5065
+screen 115 first=65.757 last=66.181 TEXT dark=5097
+screen 116 first=66.265 last=66.679 TEXT dark=5065
+screen 117 first=66.683 last=67.178 TEXT dark=5097
+screen 118 first=67.182 last=67.680 TEXT dark=5065
+screen 119 first=67.684 last=68.180 TEXT dark=5097
+screen 120 first=68.183 last=68.677 TEXT dark=5065
+screen 121 first=68.681 last=69.177 TEXT dark=5097
+screen 122 first=69.182 last=69.713 TEXT dark=5065
+screen 123 first=69.789 last=70.153 TEXT dark=5097
+screen 124 first=70.229 last=70.678 TEXT dark=5065
+screen 125 first=70.682 last=71.178 TEXT dark=5097
+screen 126 first=71.182 last=71.677 TEXT dark=5065
+screen 127 first=71.680 last=72.178 TEXT dark=5097
+screen 128 first=72.181 last=72.678 TEXT dark=5065
+screen 129 first=72.682 last=73.177 TEXT dark=5097
+screen 130 first=73.197 last=73.669 TEXT dark=5065
+screen 131 first=73.693 last=74.179 TEXT dark=5097
+screen 132 first=74.184 last=74.679 TEXT dark=5065
+screen 133 first=74.683 last=75.180 TEXT dark=5097
+screen 134 first=75.184 last=75.678 TEXT dark=5065
+screen 135 first=75.682 last=76.178 TEXT dark=5097
+screen 136 first=76.182 last=76.675 TEXT dark=5065
+screen 137 first=76.685 last=77.169 TEXT dark=5097
+screen 138 first=77.205 last=77.680 TEXT dark=5065
+screen 139 first=77.689 last=78.179 TEXT dark=5097
+screen 140 first=78.183 last=78.678 TEXT dark=5065
+screen 141 first=78.681 last=79.162 TEXT dark=5097
+screen 142 first=79.165 last=79.165 TEXT dark=5263
+screen 143 first=79.169 last=79.172 WHITE
+screen 144 first=79.175 last=79.175 WHITE
+screen 145 first=79.180 last=79.253 GREEN>45%
+screen 146 first=79.261 last=79.275 GREEN>45%
+screen 147 first=79.286 last=79.294 GREEN>45%
+screen 148 first=79.305 last=79.319 GREEN>45%
+screen 149 first=79.332 last=79.332 GREEN>45%
+screen 150 first=79.341 last=79.341 GREEN>45%
+screen 151 first=79.357 last=79.357 GREEN>45%
+screen 152 first=79.377 last=79.377 GREEN>45%
+screen 153 first=79.389 last=79.389 GREEN>45%
+screen 154 first=79.401 last=79.401 GREEN>40%
+screen 155 first=79.416 last=95.049 GREEN>25%

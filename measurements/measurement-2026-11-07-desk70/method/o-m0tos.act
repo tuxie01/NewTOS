@@ -1,0 +1,20 @@
+# EmuTOS: double-click D70M0.TOS (print + Pterm at once); no key is ever sent after the launch
+sleep 30
+shot 00-pre
+alt 75 16
+alt 72 18
+sleep 0.5
+shot 01-onicon
+dclick
+sleep 0.3
+shot 02-dc+0.5
+sleep 0.5
+shot 03-dc+1
+sleep 1
+shot 04-dc+2
+sleep 3
+shot 05-dc+5
+sleep 15
+shot 06-dc+20
+sleep 40
+shot 07-dc+60

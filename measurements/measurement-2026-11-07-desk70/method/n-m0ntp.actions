@@ -1,0 +1,5 @@
+# NEWDESK: double-click D70M0.NTP: the parameter dialog first, RETURN (scancode 1C) closes it -- a key BEFORE the launch, none after
+200 parkbr
+600 move 274 95
+800 dclick
+1400 key 1C

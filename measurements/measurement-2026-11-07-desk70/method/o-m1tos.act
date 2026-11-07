@@ -1,0 +1,14 @@
+# EmuTOS: double-click D70M1.TOS (print, about 6 s Tgettime poll, last line, Pterm); no key
+sleep 30
+shot 00-pre
+alt 77 3
+alt 72 18
+sleep 0.5
+shot 01-onicon
+dclick
+sleep 3
+shot 02-dc+3
+sleep 12
+shot 03-dc+15
+sleep 15
+shot 04-dc+30

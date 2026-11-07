@@ -1,0 +1,85 @@
+   0.060 RB2
+   0.061 NewTOS booting on rpi4
+   0.061 [serial] output on: boot arguments contain `serial=on`
+   0.061 Phase 02 reached.
+   0.061 [mm] DTB at 0x0000000000000100
+   0.061 [mm] firmware: ARM memory bank 0: 0x0000000000000000 + 1006632960 bytes (960 MiB)
+   0.061 [mm] firmware: VC memory: 0x000000003c000000 + 67108864 bytes (64 MiB)
+   0.061 [mm] device tree: no usable /memory node (blob invalid or absent)
+   0.061 [clock] ARM 700 -> 700 MHz (max 700, measured ?, SoC 25.0 C)
+   0.061 [mm] memory map:
+   0.061 [mm]   DRAM  : 0x0000000000000000..0x000000003c000000 (1006632960 bytes) â source: firmware
+   0.061 [mm]   kernel: 0x0000000000080000..0x00000000003a2000 (3284992 bytes)
+   0.061 [mm]   ST-RAM: 0x0000000000400000..0x0000000000e00000 (10485760 bytes)
+   0.061 [mm]   TT-RAM: 0x0000000001000000..0x0000000039800000 (947912704 bytes)
+   0.061 [mm]   OSrsvd: 0x0000000039800000..0x000000003c000000 (41943040 bytes)
+   0.061 [mm]     bcach: 0x0000000039800000..0x000000003b800000 (33554432 bytes)
+   0.061 [mm]     heap: 0x000000003b800000..0x000000003c000000 (8388608 bytes)
+   0.061 [mm]   MMIO 00: 0x00000000fd500000..0x00000000fd510000
+   0.061 [mm]   MMIO 01: 0x00000000fe000000..0x00000000ff000000
+   0.061 [mm]   MMIO 02: 0x00000000ff800000..0x0000000100000000
+   0.061 [mm] MMU reinstalled (high-half via TTBR1, TTBR0 deferred to Phase 06).
+   0.061 [mm] frames ST-RAM: total=2560 used=0 free=2560 (10485760 B free)
+   0.061 [mm] frames TT-RAM: total=231424 used=0 free=231424 (947912704 B free)
+   0.061 [mm] alloc ST-RAM frame -> 0x0000000000400000
+   0.061 [mm] alloc TT-RAM frame -> 0x0000000001000000
+   0.061 [mm] heap after init: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+   0.061 [mm] heap smoke OK
+   0.061 [mm] heap after smoke: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+   0.061 [fb] VideoCore display geometry detected: 640x480
+   0.061 [fb] alpha mode = 2
+   0.061 [fb] 640x480 pitch 2560 virtual height 960 -> 2 screen page(s), 2400 KiB
+   0.061 [fb] VideoCore fb up: 640x480 stride 640px
+   0.061 [mm] MEM05 per-process block limit: 8192 allocated blocks (default)
+   0.061 [mm] MEM05 MD supply: 117 MDs static, grows by 117 MDs per 4096-byte page from the kernel heap; page budget 512 pages (2048 KiB) for MDs + block records + snapshot + F_KEEP flags
+   0.061 [mm] memory protection ON: table arena 0x01000000+2415 tables
+   0.061 [mm] BDOS pools: ST-RAM 0x00400000+10485760 TT-RAM 0x0196f000+938020864
+   0.061 [mm] user address space: pools mapped VA = PA (453 shared L3 tables, 4-KiB pages, rights per process)
+   0.061 [mm] BDOS ST-RAM after init: total=10485760 free=10485760 used=0 largest_free=10485760 (free_mds=1 alloc_mds=0)
+   0.061 [mm] BDOS TT-RAM after init: total=938020864 free=938020864 used=0 largest_free=938020864 (free_mds=1 alloc_mds=0)
+   0.061 [mm] MEM05 after init: MDs in_use=2 capacity=117 (+0 pages); pages held=0/512 (md=0 recs=0 snap=0 kept=0) peak=0 refused budget=0 heap=0; records=0 snapshot_cap=0 snapshot_short=0; heap used=0 free=8388608 largest=8388608
+   0.061 [clock] no RTC: clock starts at the build date 2026-10-16 00:00:00 (Gettime 0x5d500000, os_dosdate 0x5d50)
+   0.061 [input] keyboard/mouse pump: AES waits and console reads; pointer motion also from the 200 Hz tick while a program runs (input=aes switches that off)
+   0.061 [bcache] FS09 block read cache: 32768 KiB at 0x39800000 (asked 32768 KiB, default), 61680 sectors of 512 B, linear-read share 5 % (default), write-through
+   0.061 [emmc] SD card on controller @ 0xffff0000fe300000
+   0.061 [emmc] M1 SLOTISR_VER=0x24020000 (SDHCI spec 0x02) CAPABILITIES=0x052134b4 (base 52 MHz)
+   0.061 [emmc] M1 CONTROL0=0x00000f02 CONTROL1=0x000e0207 div=2 -> SDCLK ~13000000 Hz
+   0.061 [emmc] M1 mailbox clock rate: EMMC(1)=50000000 Hz EMMC2(12)=700000000 Hz
+   0.061 [emmc] FS08 mode: multi-block (CMD18/CMD25 + Auto CMD12) â bus 4-bit (ACMD6 ok, SCR SD_BUS_WIDTHS=0x5), CONTROL0[1] Data Transfer Width=1
+   0.061 [emmc] M1 during identification: 2 error(s), 0 timeout(s), 2 recovery(ies) CTO=2
+   0.089 [pcie] RC not present (no response at RC_BASE); USB disabled
+  15.096 [proc] stand-in PDs: initial_basepage 0x001f1000, AES PD 0x001f1100, accdesk 0x001f1300, EmuCON 0x001f1400 (read-only to all)
+  15.096 [aes] gsx_malloc: screen buffer pa=0x0196f000 len=614400 (kernel-owned, WF_SCREEN)
+  15.126 [shell] sh_ldapp: starting desktop NEWDESK (D.s_cmd NEWDESK), sh_nextapp=3, sh_isgem=1
+  15.179 [launch] EL0: slot 0 entry 0x1a08000
+  15.228 AUDIT:desk70:BEGIN injector armed at tick 3031
+  15.417 [desk] desktop up (1 drives)
+  16.227 [d70] step 0 at +200 ticks
+  16.227 [d70] step 1 at +201 ticks
+  16.227 [d70] step 2 at +202 ticks
+  16.227 [d70] step 3 at +203 ticks
+  16.227 [d70] step 4 at +204 ticks
+  16.257 [d70] step 5 at +205 ticks
+  18.219 [d70] step 6 at +600 ticks
+  18.219 [d70] step 7 at +601 ticks
+  18.219 [d70] step 8 at +602 ticks
+  18.242 [d70] step 9 at +603 ticks
+  19.230 [d70] step 10 at +800 ticks
+  19.230 [d70] step 11 at +803 ticks
+  19.253 [d70] step 12 at +808 ticks
+  19.283 [d70] step 13 at +811 ticks
+  19.283 AUDIT:desk70:END script done
+  19.679 [launch] returned (program Pterm'd)
+  19.679 [shell] sh_ldapp: desktop NEWDESK (D.s_cmd NEWDESK) exited with rc=0
+  19.679 [shell] sh_ldapp: starting C:\D70M0.NCP, sh_nextapp=0, sh_isgem=0
+  19.760 [launch] EL0: slot 0 entry 0x1a08000
+  19.790 DESK70 TEXT PROGRAM, LINE 1
+  19.790 DESK70 TEXT PROGRAM, LINE 2
+  19.790 DESK70 TEXT PROGRAM, LINE 3
+  19.790 DESK70 TEXT PROGRAM, LINE 4
+  19.790 [launch] returned (program Pterm'd)
+  19.813 [shell] sh_ldapp: 'C:\D70M0.NCP' exited with rc=0
+  19.813 [mm] MEM05 after program: MDs in_use=3 capacity=117 (+0 pages); pages held=2/512 (md=0 recs=1 snap=1 kept=0) peak=2 refused budget=0 heap=0; records=1 snapshot_cap=56 snapshot_short=0; heap used=8224 free=8380384 largest=8380384
+  19.813 [shell] sh_ldapp: starting desktop NEWDESK (D.s_cmd NEWDESK), sh_nextapp=3, sh_isgem=1
+  19.887 [launch] EL0: slot 0 entry 0x1a08000
+  20.091 [desk] desktop up (1 drives)

@@ -1,0 +1,100 @@
+DESK70 point 1 -- what the desktop does after a text-mode program launched from it ends (GitHub #12)
+====================================================================================================
+
+Date      2026-11-07
+Who       Auditor agent (Opus). No hardware, no card, no flash, no push. Product code untouched.
+Report    docs/audits/2026-11-07-desk70-tos-exit.md
+NewTOS    main @ df2a6554ac7f35a089e2b768de55fb46a9232f71, clean (git status empty at start); measured in a fresh
+          `git clone` of that commit in the session scratchpad (scratch "wt"), never in the repository tree
+EmuTOS    1a7484aba1bfba23e2c0899e243b6d8177fe41df, ROM tools/oracle/etos512de-1a7484ab.img
+          sha256 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c (checked by method/hatari-run.sh)
+Hatari    2.6.1 (tools/oracle/oracle.env ORACLE_HATARI), --configfile tools/oracle/hatari.cfg, empty HOME, SDL dummy
+QEMU      qemu-system-aarch64 11.0.2, -M raspi4b, -append serial=on
+Toolchain m68k-atari-mint-gcc (MiNT 20230908) 7.5.0; host clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+          (host_clang line of every manifest below)
+
+QUESTION
+  Is there any wait (key, delay) between the end of a text-mode program started from the desktop and the desktop's
+  redraw; how long does the text stay; what does the screen show afterwards. EmuTOS (oracle) vs NewTOS.
+
+PRE-FLIGHT
+  Canary (docs/analysis/ORACLE.md section 6): canary tt: OK, canary falcontc: OK, canary disk: OK + test image
+  unchanged (d95a60c3...). NewTOS harness (TOOL09): method/preflight-tosdump.sh -> preflight/tosdump-run.txt
+  (vdi-all.tsv, run complete; vs -falcontc 0/182 differ, vs tt 13/182 = the known device-parameter cases).
+
+THE TEST PROGRAM  method/d70prog.c, one source for both sides (method/programs.sha256)
+  D70_MODE 0  4 lines via Cconws, then return (Pterm)          EmuTOS D70M0.TOS + D70M0.TTP (same bytes), NewTOS D70M0.NCP + D70M0.NTP
+  D70_MODE 1  4 lines, ~4-6 s Tgettime poll (no key), 1 line   D70M1.TOS / D70M1.NCP
+  D70_MODE 2  4 lines, "WAITING IN CCONIN", Cconin, 1 line     D70M2.TOS / D70M2.NCP  (CONTROL: a key wait must show)
+  m68k: m68k-atari-mint-gcc -O2 -DD70_MODE=n (mintlib); AArch64: sdk/build.sh with a two-line wrapper per mode.
+
+ORACLE SIDE (EmuTOS on Hatari)  method/hatari-run.sh, method/oracle-runs.sh, method/o-*.act
+  Machine = profile "disk" of tools/hatari-oracle.sh (Falcon030, VGA, floppies off, test image as IDE master C:,
+  --ide-swap 0=off), BUT: no GEMDOS drive and no --auto, because both replace the path under test (--auto overrides
+  the desktop's INF and starts the program itself). tools/hatari-oracle.sh cannot run without them, so Hatari is called
+  directly with the same pinned ROM, config, empty HOME (method/hatari-run.sh). EmuTOS reads C:\EMUDESK.INF
+  (method/EMUDESK.INF: #E ... 1C = 640x480 truecolor as profile falcontc, one window C:\*.*) from its own IDE disk.
+  Test image: tools/mktestdisk.sh (oracle/d70.img.manifest, image cdf197b6..., unchanged by every run: */disk.sha256).
+  Input: Hatari --cmd-fifo, real time (--fast-forward off). Pointer moved by EmuTOS' own Alt+arrow mouse emulation
+  (bios/ikbd.c:296-370, 8 px per press), then `hatari-event doubleclick` (IKBD button packets) on the icon.
+  After the double-click NO key is sent (except the TTP dialog's RETURN, which is BEFORE the launch, and the control's
+  RETURN after ~37 s of waiting).
+  Observation: an AVI of EVERY frame (--frameskips 0, PNG codec); method/avi-frames.py walks it; the EMULATED clock is the
+  sum of the audio chunk per frame (44100 Hz), independent of host speed (50.4 frames per emulated second).
+  method/classify.py classifies each frame (TEXT dark=<n> / WHITE / GREEN>x%). Timed wall-clock screenshots
+  (hatari-shortcut screenshot) are in oracle/<run>/shots-*.png, labelled by wall seconds after the click.
+  Call trace: one extra run with --trace bios,xbios,gemdos,aes (oracle/o-trace/trace-launch-window.txt, lines
+  10820-11260 of the 20572-line trace; sha256 of the full trace in trace-full.sha256).
+  Autorun control: #Z 00 C:\D70M0.TOS@ (method/EMUDESK-Z.INF, oracle/d70z.img.manifest), no input at all.
+  AVIs are not committed (50-90 MB each); sha256 in oracle/avi.sha256. Key frames in oracle/<run>/frames/.
+
+NEWTOS SIDE (QEMU raspi4b)  method/build-inj.sh, method/mk-injector.py, method/*.actions, method/newtos-runs.sh, method/qemu-run.py
+  Card: tools/mkcard.sh via method/cards.sh (newtos/card.img.manifest, image 58b13b03...), NEWDESK.INF = method/NEWDESK.INF
+  (same lines as EMUDESK.INF plus *.NAP/*.NCP/*.NTP types). Per-run APFS clone, deleted after the run.
+  Double-click: scratch-only IKBD injector (copied from measurements/measurement-2026-10-22-con04-test/method/mk-injector.py,
+  plus a key step and the same hook in read_key_loop so a key can reach a program in Cconin). Lines carry the audit
+  temp marker (built in mk-injector.py), serial markers AUDIT:desk70:BEGIN / :END; patched only in the scratch clone, host_env.rs restored
+  and cmp-checked after every build. Kernels: newtos/kernels.sha256 (one per click target; release, rpi4).
+  Autorun control on the UNPATCHED release kernel of df2a6554 (kernel8-plain.img 758856cb...): #Z 00 C:\D70M0.NCP@
+  (method/NEWDESK-Z.INF, method/cards-z.sh, newtos/cardz.img.manifest), no input at all.
+  Observation: persistent QMP connection, screendump every ~3 ms, distinct screens kept (newtos/<run>/screens.txt
+  host-monotonic seconds, key screens in newtos/<run>/screens/); serial stamped with the same clock
+  (serial-stamped.log). Same classifier (classify.py dir).
+
+MANIFESTS (every booted image)  optional_missing, verbatim:
+  oracle/d70.img.manifest     optional_missing none
+  oracle/d70z.img.manifest    optional_missing none
+  newtos/card.img.manifest    optional_missing none
+  newtos/cardz.img.manifest   optional_missing none
+  preflight/card.img.manifest optional_missing none
+
+RESULT (most text = the screen with the most text pixels; in r2/ttp the clear had already begun in the next frame. All times: EmuTOS emulated seconds from its AVI; NewTOS host seconds from QMP; "cleared" = first all-white screen)
+  run            most text       cleared        text visible       cleared -> desktop    desktop == before launch
+  o-m0tos-r1     f1686 30.499    f1687 30.518   f1683..1686 (4 fr)  2.934 s (f1835)       yes (478f5fbdaf0c)
+  o-m0tos-r2     f1659 29.963    f1661 30.003   f1657..1660         2.934 s (f1809)       yes (478f5fbdaf0c)
+  o-m0ttp        f1692 30.617    f1694 30.657   f1690..1693         2.914 s (f1841)       yes (0091e7d5c735)
+  o-m1tos        f1609 28.972    f1862 33.987   5.07 s (delay)      2.914 s (f2009)       yes (f7e5a8128af7)
+  o-m2key (ctl)  f1613 29.051    f3642 69.272   40.2 s, until RETURN 2.934 s (f3790)      yes (0957d163339b)
+  o-zauto (#Z)   f946  15.830    f947  15.849   f944..946           2.914 s (f1094)       desktop (no "before")
+  n-m0ncp-r1     19.791          19.795         19.788..19.791      0.288 s (s79)         yes (075ba3b05774)
+  n-m0ncp-r2     19.813          19.818         19.809..19.813      0.269 s (s72)         yes (075ba3b05774)
+  n-m0ntp        22.491          22.496         22.485..22.491      0.285 s (s75)         yes (e494db2a16b5)
+  n-m1ncp        19.820          24.032         4.21 s (delay)      0.303 s (s86)         yes (e731acd4364a)
+  n-m2ncp (ctl)  19.793          79.169         59.4 s, until RETURN 0.247 s (s155)       yes (ef3f55e1507b)
+  n-zauto (#Z)   15.207          15.218         15.205..15.207      0.284 s (s33)         desktop (no "before")
+  Both sides: the text screen is cleared within one frame of the program's last output (EmuTOS <= 2 frames = 40 ms,
+  NewTOS <= 5 ms); no key and no delay between Pterm and the redraw; the same sequence afterwards (white screen with
+  hourglass, green desktop fill top-down, menu bar, window) ending pixel-identical to the screen before the launch.
+  The control shows that a key wait is visible in this method: without a key the text screen stands (40 s / 59 s),
+  RETURN releases it. EmuTOS call trace: after Pterm(0) only Setexc, Dsetdrv, Drvmap, Dsetpath, Setexc,
+  Bconout ESC H ESC f ESC E, Mxalloc, Pexec(7)/Pexec(6) of the desktop, appl_init -- no console input call.
+  NewTOS serial: Pterm'd -> "starting desktop NEWDESK" 0-25 ms later, no input call in between.
+  Duration difference (2.9 s vs 0.3 s) = redraw speed (16 MHz 68030 emulated vs QEMU), not a wait on either side.
+
+NOT MEASURED HERE
+  Real Pi 4 (the user's 2026-11-07 CoreMark run reports the same: no key prompt, back to the desktop,
+  measurements/measurement-2026-11-07-hw08-pi4-card/RUNINFO.TXT). CoreMark itself (a small program is the brief's case).
+  NewTOS gemdos-trace of the launch (not built; serial lines + timing carry it).
+
+CLEANUP
+  Audit temp marker: none anywhere in the tree (grep). Scratch clone, cards, images, AVIs and kernels deleted after the run.

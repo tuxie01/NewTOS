@@ -1,0 +1,14 @@
+# NewTOS SD image manifest v1 -- written by tools/mktestdisk.sh
+image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/88778a96-021e-4f4b-a527-686b673e35f1/scratchpad/desk70/oracle/d70.img
+image_sha256 cdf197b615d070977039c0b4bcf3468f154f935b781e45e581c035db4c899dbc
+size_mib 64
+created 2026-11-07T08:46:48Z
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+file 5f9d926828124d86d7f0cd8c4bfefcc72e37cfd2f6a170a7760f7ef1f8088e27 67004 C:\D70M0.TOS
+file 5f9d926828124d86d7f0cd8c4bfefcc72e37cfd2f6a170a7760f7ef1f8088e27 67004 C:\D70M0.TTP
+file 46bb6ec3b19b9168d0a3e61de3b803a6558f8322fe8857f7305533eebcd0074b 67133 C:\D70M1.TOS
+file 52f7387a2442103de3c99b29ad4420e5b591e88f46dbe2cea2e12466c6a6ce49 67130 C:\D70M2.TOS
+file f1349b7192a8b2dd4eee9283f65bdddb805d0602de002286bdf97395b8492761 368 C:\EMUDESK.INF

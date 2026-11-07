@@ -1,0 +1,19 @@
+# EmuTOS control: double-click D70M2.TOS (print, Cconin); no key for 60 s must leave the text screen standing; then one key (RETURN)
+sleep 30
+shot 00-pre
+alt 77 13
+alt 72 18
+sleep 0.5
+shot 01-onicon
+dclick
+sleep 5
+shot 02-dc+5
+sleep 25
+shot 03-dc+30
+sleep 30
+shot 04-dc+60
+key 28
+sleep 5
+shot 05-key+5
+sleep 15
+shot 06-key+20

@@ -1,0 +1,8 @@
+injector: 16 steps
+22891d58464caa716be97b3030b3a1a699b7d03f290fe8ee72f9facae798e92b  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/88778a96-021e-4f4b-a527-686b673e35f1/scratchpad/desk70/kern/kernel8-m0ntp.img
+injector: 14 steps
+45af69f250e1128cce8a646c737d0bbbe600698849d711d358cd74db1541396d  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/88778a96-021e-4f4b-a527-686b673e35f1/scratchpad/desk70/kern/kernel8-m1ncp.img
+injector: 16 steps
+fbb0210102353c5852313fbde74c58e75528dabc5574ccc9ca84ab035747d026  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/88778a96-021e-4f4b-a527-686b673e35f1/scratchpad/desk70/kern/kernel8-m2ncp.img
+7a23b3961a3317e2d70ed2048fa72a9fc4117ddc4f87fe3dc3d0eeb7a4c85112  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/88778a96-021e-4f4b-a527-686b673e35f1/scratchpad/desk70/kern/kernel8-m0ncp.img
+758856cbbae8b940e5cd55aa0681a75410d4ae681560d1e159b87df9a1145d60  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/88778a96-021e-4f4b-a527-686b673e35f1/scratchpad/desk70/kern/kernel8-plain.img

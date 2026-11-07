@@ -1,0 +1,51 @@
+30.68 send hatari-shortcut screenshot
+30.97 shot 00-pre <- grab0001.png
+30.99 send hatari-event keydown 56
+31.22 send hatari-event keypress 77
+31.37 send hatari-event keypress 77
+31.52 send hatari-event keypress 77
+31.67 send hatari-event keypress 77
+31.83 send hatari-event keypress 77
+31.97 send hatari-event keypress 77
+32.12 send hatari-event keypress 77
+32.27 send hatari-event keypress 77
+32.42 send hatari-event keypress 77
+32.58 send hatari-event keypress 77
+32.74 send hatari-event keypress 77
+32.89 send hatari-event keypress 77
+33.04 send hatari-event keypress 77
+33.20 send hatari-event keyup 56
+33.42 send hatari-event keydown 56
+33.64 send hatari-event keypress 72
+33.80 send hatari-event keypress 72
+33.96 send hatari-event keypress 72
+34.11 send hatari-event keypress 72
+34.25 send hatari-event keypress 72
+34.41 send hatari-event keypress 72
+34.56 send hatari-event keypress 72
+34.70 send hatari-event keypress 72
+34.86 send hatari-event keypress 72
+35.02 send hatari-event keypress 72
+35.17 send hatari-event keypress 72
+35.32 send hatari-event keypress 72
+35.47 send hatari-event keypress 72
+35.62 send hatari-event keypress 72
+35.77 send hatari-event keypress 72
+35.91 send hatari-event keypress 72
+36.06 send hatari-event keypress 72
+36.22 send hatari-event keypress 72
+36.37 send hatari-event keyup 56
+37.18 send hatari-shortcut screenshot
+37.47 shot 01-onicon <- grab0001.png
+37.49 send hatari-event doubleclick
+42.68 send hatari-shortcut screenshot
+42.96 shot 02-dc+5 <- grab0001.png
+68.05 send hatari-shortcut screenshot
+68.33 shot 03-dc+30 <- grab0001.png
+98.42 send hatari-shortcut screenshot
+98.70 shot 04-dc+60 <- grab0001.png
+98.71 send hatari-event keypress 28
+104.21 send hatari-shortcut screenshot
+104.49 shot 05-key+5 <- grab0001.png
+119.58 send hatari-shortcut screenshot
+119.86 shot 06-key+20 <- grab0001.png

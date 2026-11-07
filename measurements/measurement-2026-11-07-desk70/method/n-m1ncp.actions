@@ -1,0 +1,4 @@
+# NEWDESK: double-click D70M1.NCP (print, about 6 s Tgettime poll, last line, Pterm); no key
+200 parkbr
+600 move 358 95
+800 dclick
