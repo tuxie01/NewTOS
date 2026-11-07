@@ -19,4 +19,12 @@ sich ein Konsolenfenster (toswin2) bzw. ein VT52-Programm.
 2. Ergebnis an den Anwender; der Konsolenfenster-Wunsch ist ein eigenes Thema
    (nach 1.0).
 
+## Stand 2026-11-07
+
+Anwender, echte Pi, Kern `39ab2a6a…`, CoreMark frisch gebaut (`measurements/measurement-2026-11-07-hw08-pi4-card/RUNINFO.TXT`): Ausgabe sichtbar, am Ende keine Tastenabfrage, zurueck zum Desktop. Kein Absturz.
+
+Gelesen, noch nicht am Orakel gemessen: In `references/emutos/desk/`, `aes/` und `bdos/` steht keine Tastenabfrage nach dem Programmende, `sh_ldapp` (`aes/gemshlib.c:645`) laeuft nach `dos_exec` weiter. Die Abfrage, die der Kommentar in `sdk/apps/build-coremark.sh` dem Desktop zuschreibt, gibt es dort nicht mehr; der Kommentar ist falsch und wird mit korrigiert.
+
+Vorschlag des Leads: Punkt 1 am Orakel messen. Bestaetigt sich das, bleibt der Desktop wie er ist, und die Abfrage kommt ans Ende von `portable_fini` in `sdk/overlays/coremark/newtos/core_portme.c` (dort sind Aenderungen nach den CoreMark-Regeln erlaubt). Zu beachten: `COREVAL.NCP` laeuft in Messlaeufen aus `C:\AUTO`, und der Injektor laeuft nicht waehrend `Cconin`.
+
 [Gemeinsame Regeln](README.md) gelten.
