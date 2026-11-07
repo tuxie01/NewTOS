@@ -1,0 +1,14 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh
+image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/img/run.HAbEoC/card.img
+image_sha256 a18db72d703e9c1e633418bad5d2eb05488fcdbefb7204949263dc189b6b4e3d
+size_mib 64
+created 2026-11-07T00:47:02Z
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+metadata C:\.Spotlight-V100 (macOS volume metadata, not hashed)
+file b64d1194cc0cf4408e3f4d2075fdb3381e820bb450d4cf1d0c83122f7284d372 280432 C:\ACC\HYPVIEW.NAC
+file 54589e1c59da47f45a5b6529ded425908c8f6f28d4d5a9e7bcab7e47a8540caa 27747 C:\ACC\HYP_VIEW.RSC
+file 36cdcff3f2794db44e790744755a02388bc415f09a482cb8ab59e9e289220aa0 26922 C:\GEMSYS\GUIDES\TEST.HYP
+file 8489802b3eaf7e3ec3835420e0e4d75b1e435fbd062775d43d80936ca73c3692 84 C:\NEWDESK.INF

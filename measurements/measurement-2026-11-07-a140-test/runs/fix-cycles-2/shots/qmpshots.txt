@@ -1,0 +1,15 @@
+t0 = detection of '[inj] desktop armed at hz_200' on the serial file
+00 00-first-open planned 11.000s request 11.003s done 11.010s ok
+01 01-link-followed planned 13.750s request 13.755s done 13.766s ok
+02 02-closed planned 16.250s request 16.255s done 16.262s ok
+03 03-reopen-1 planned 20.250s request 20.255s done 20.265s ok
+04 04-closed planned 22.750s request 22.755s done 22.762s ok
+05 05-reopen-2 planned 26.750s request 26.755s done 26.764s ok
+06 06-closed planned 29.250s request 29.255s done 29.262s ok
+07 07-reopen-3 planned 33.250s request 33.254s done 33.264s ok
+08 08-fsel-with-window-open planned 37.250s request 37.255s done 37.269s ok
+09 09-other-doc-same-window planned 42.250s request 42.250s done 42.257s ok
+10 10-closed planned 44.750s request 44.755s done 44.762s ok
+11 11-reopen-4 planned 48.750s request 48.755s done 48.763s ok
+12 12-ctrl-q-closed planned 51.250s request 51.255s done 51.262s ok
+13 13-reopen-5 planned 55.500s request 55.505s done 55.512s ok

@@ -1,0 +1,41 @@
+host: arm64 Darwin; cc: Apple clang version 21.0.0 (clang-2100.4.1.1)
+
+PASS  obspec_bits
+PASS  evnt_timer_words
+PASS  wind_set_addrin
+PASS  intin_long_words
+PASS  ptr_word_count
+SKIP  aesglobal_fields -- vendored TeraDesk source absent (sdk/apps/teradesk)
+PASS  setjmp-host
+PASS  cmdargs-host
+PASS  gmp-host
+PASS  spawn-host
+PASS  system-host
+PASS  quickstat-host
+PASS  fstat-host
+PASS  stat-host
+PASS  waith-host
+PASS  malloc-host
+PASS  sysinfo-host
+PASS  lp64-limits
+PASS  iorec-layout
+PASS  bconmap-layout
+PASS  sysvars-layout
+PASS  libc-link
+PASS  rt-host
+PASS  ldbl-host
+PASS  cookie-host
+PASS  c2p-host
+SKIP  td-cookie-host -- cookie-host: skipped -- vendored TeraDesk source absent (/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fix/sdk/apps/teradesk)
+SKIP  td-nohard-host -- nohard-host: skipped -- vendored TeraDesk source absent (/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/fix/sdk/apps/teradesk)
+PASS  hypview-ref-host
+PASS  hypview-win-host
+PASS  sysacc-cmdline-host
+SKIP  custom-font-host -- z-tools tree absent (run sdk/zview/build-zview.sh)
+PASS  zview-color-host
+PASS  libtest-host
+SKIP  libshare-host -- libshare tree / mintlib headers absent or host not LP64
+PASS  newtos-cc-host
+
+host tests: 31 passed, 0 failed, 5 skipped
+sdk/run-host-tests.sh  40,62s user 20,59s system 57% cpu 1:46,04 total

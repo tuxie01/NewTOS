@@ -1,0 +1,55 @@
+measurement-2026-11-07-a140-test -- Tester acceptance of TASK/A140 (GitHub #22), fix commit fba96623, Tester 2026-11-07.
+=====================================================================================================================
+Own reruns; the developer's numbers were not taken over. QEMU only; no Pi, no card, no hardware.
+
+INPUTS
+  QEMU       qemu-system-aarch64 (homebrew), -M raspi4b, -append serial=on (strict run: serial=on memprot=strict), APFS clone per run
+  host clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang of every card manifest)
+  manifests  runs/*/card.img.manifest (14 images). optional_missing, verbatim, in all 14:
+               optional_missing none
+             boot-qemu-virt booted without an image (no C:), no manifest.
+  trees      fresh `git clone` in the session scratchpad: base = c8f20f42 (fba96623~1), fix = fba96623, kernel tree = fba96623;
+             HypView upstream = freemint/hypview @ 6f3eeeb downloaded as tarball, `shasum -c` against sdk/apps/hypview-sources.sha256: OK;
+             extracted into sdk/apps/hypview of base and fix. Libraries (libc, gemlib, cflib, libm, compiler-rt) built once in fix by
+             their build-*.sh and copied to base (identical at both commits). Scratch deleted at the end.
+  programs   base HYP_VIEW.NAP b64d1194cc0cf4408e3f4d2075fdb3381e820bb450d4cf1d0c83122f7284d372 (280432 B, 4 overlay files)
+             fix  HYP_VIEW.NAP 2abbedae688fdc460752379a01a26035fc708456cff27e54fbb452b10ac31866 (280480 B, 5 overlay files)
+             hyp_view.rsc 54589e1c59da47f45a5b6529ded425908c8f6f28d4d5a9e7bcab7e47a8540caa (both; equals the developer's)
+             The developer's fix NAP hash (e6cc2d84...) differs from mine: the link is not byte-reproducible across trees (paths).
+  kernels    git-archive-equivalent clone fba96623 + tools/inject-arm.py, rpi4 --release:
+               b7c21162225420101e3e311ce0776e8d7661570b5dd8c0bc8a23c7628680a635  desktop=mouse-issue script (accessory, issue sequence)
+               e42ed31205e76b3490e16729b970647c6e769894982ef680b6f1cde7e809b9c0  desktop=mouse-cycles script
+               525756f2198865fce5a652841fa4c6ef82ea67b00335987b83c8babfb6361f63  launch:HYP_VIEW=method/mouse-prog.sh (program mode)
+               f820e2d8ae822ebd31f165b622c6f2ca8e80a13dd9ce0ac6556ed508bfdbf373  unarmed rpi4 --release (boot-rpi4)
+  hyp        cflib.hyp from Applications/, 36cdcff3f2794db44e790744755a02388bc415f09a482cb8ab59e9e289220aa0, as C:\GEMSYS\GUIDES\TEST.HYP
+  method     method/drive.sh (point 1, developer's run.sh/mouse-issue.sh/mouse-cycles.sh unchanged), method/run-prog.sh (run.sh with
+             card contents/INF/marker as env), method/mouse-prog.sh, shots-*.txt, NEWDESK-prog.INF (#Z C:\HYP_VIEW.NAP)
+
+RESULTS (panic = lines matching Panic|Bus Error in BOOT-SERIAL.txt; 2 lines = one panic report)
+  1 accessory, issue sequence (HYPVIEW.NAC + HYP_VIEW.RSC, Desk menu, fsel, OK, closer, Desk menu again), 5 screendumps each
+      base-issue-1..3   3/3 panic: Bus Error esr 92000007 addr 1b11088 pc 1977eac, "free memory, read", Crash at text+00006eac
+      fix-issue-1..3    3/3 no panic; second open shows the CF-Lib window; 04-after-second-open byte-identical across the three
+    cycles (6 opens: first, reopen x3 after closer, fsel with window open, closer, reopen, Ctrl+Q, reopen), 14 screendumps each
+      base-cycles       panic at the first reopen, text+00006eac
+      fix-cycles-1, -2, -strict   0 panic; all 14 dumps byte-identical between the three runs (cmp)
+  2 host: sdk/overlays/hypview/tests/win-host.sh  patched 27 checks 0 failed; DLWIN_SRC=<tarball dl_win.c> 27 checks 9 failed (host/)
+      sdk/run-host-tests.sh main tree 36 passed 0 failed 0 skipped; fresh clone 31/0/5 (5 skips = vendored trees absent there)
+      cargo xtask test main tree (HEAD 8ec5e8d6, only docs/references after fba96623): 2239 passed 0 failed 1 ignored = STATUS baseline
+      cargo xtask test in a fresh clone: 6 failed (doc_check resolves_against_the_workspace, 4 rsc_* tests, ...), all need untracked
+      files (references/, Applications/); not a regression, the main-tree run is the verdict.
+  3 tarball sha ok; fix dl_win.c vs tarball dl_win.c: header comment + `extern WINDOW_DATA *Win;` + two `if(Win == ptr) Win = NULL;`;
+      sdk/apps/hypview-sources.sha256: comment line only ("three per-program patches" -> "per-program patches"), hash line unchanged;
+      sdk/apps/hypview in the main tree equals the tarball (diff -r).
+  4 program mode (HYP_VIEW.NAP as #Z shell child, fsel, pick, OK, follow link, closer): prog-base-1/2, prog-fix-1/2, 6 dumps each,
+      all 24 byte-identical (cmp); viewed: fsel, window with cflib index, Einleitung page, back to the desktop; 0 panic.
+  5 git diff fba96623~1..fba96623 over kernel tos-api tos-types xtask tools Cargo.toml Cargo.lock: empty. boot-rpi4 (release, with
+      card): desktop screendump viewed, "[desk] desktop up", 0 panic. boot-qemu-virt (--headless, 60 s): "[desk] desktop up (0 drives)",
+      0 panic lines; no screendump taken on qemu-virt.
+  6 tools/release/package-release.sh:155 runs `step hypview sdk/apps/build-hypview.sh`, :156 requires HYP_VIEW.NAP/hyp_view.rsc to be newer
+      than the run's start stamp, :212-213 ship them as KARTE/APPS/HYPVIEW/. build-hypview.sh compiles sdk/overlays/hypview/<path> in
+      place of upstream. That step was run (fix clone): "compiled 57 files (5 from sdk/overlays/hypview)", base "(4 ...)".
+      Nothing else uses dl_win.c (git grep).
+
+NOT RUN
+  Real Pi; popup (PopupWindow) and two windows at once in QEMU (host harness only); HypView started by double-click from the desktop
+  (started by #Z instead); full package-release.sh; clippy (no Rust changed); screendump on qemu-virt.

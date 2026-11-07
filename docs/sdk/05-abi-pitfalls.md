@@ -737,3 +737,12 @@ headers, label lines; host test `sdk/overlays/hypview/tests/ref-host.sh`).
 A magic read as `long` is the same bug in its smallest form: `'HREF'` in an
 8-byte little-endian `long` never equals `0x48524546L` — compare the bytes,
 or decode them big-endian into a 32-bit value.
+### B20. Reading a block after `Mfree`
+
+On EmuTOS a freed block stays readable, so a program that keeps a stale pointer reads old data and carries on. NewTOS
+locks freed pages like FreeMiNT's memory protection (ADR-027, `docs/COMPATIBILITY.md`), so the same read is a bus error
+with "free memory, read" in the crash report. Upstream sources can carry this for years: HypView kept its window
+pointer after freeing the window, which only shows when it runs as an accessory and is opened again (TASK/A140).
+Check with `memprot=off` on the kernel command line: if the crash goes away, look for a pointer that outlives its
+`Mfree`, and fix it with a patch in `sdk/overlays/<prog>/`.
+

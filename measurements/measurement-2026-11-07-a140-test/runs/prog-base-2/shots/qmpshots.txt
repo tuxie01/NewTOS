@@ -1,0 +1,7 @@
+t0 = detection of '[inj] launch:HYP_VIEW armed at hz_200' on the serial file
+00 00-fsel planned 1.250s request 1.252s done 1.266s ok
+01 01-picked planned 2.400s request 2.405s done 2.418s ok
+02 02-window-open planned 4.500s request 4.505s done 4.513s ok
+03 03-link-followed planned 7.000s request 7.001s done 7.010s ok
+04 04-after-closer planned 9.500s request 9.505s done 9.513s ok
+05 05-late planned 12.000s request 12.005s done 12.012s ok
