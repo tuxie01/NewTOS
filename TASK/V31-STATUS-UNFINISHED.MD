@@ -5,7 +5,7 @@ Umgesetzt und gegen das Orakel gemessen; offen ist nur die unabhaengige Abnahme 
 Skalierter Text laeuft wie EmuTOS `text_blt` (`vdi/vdi_textblit.c:1301-1417`): der Stift ruckt um `char_resize(XDDA, DELX)`,
 eine Glyphe ganz ausserhalb des Clip-Fensters wird weder skaliert noch gezeichnet und laesst `XDDA` stehen (007), und
 `scale()`s Abstandsschleife bewegt `XDDA` auch bei genauer Verdopplung (008/K14, Anwenderentscheidung: wie EmuTOS).
-Fix in `tos-api/src/vdi/text.rs` (`glyph_advance`, `wholly_clipped`, `assemble_and_blit`, `scale_glyph`, `resize`), Spec
+Fix `17bcaf56` in `tos-api/src/vdi/text.rs` (`glyph_advance`, `wholly_clipped`, `assemble_and_blit`, `scale_glyph`, `resize`), Spec
 `docs/api/vdi/output/_text.md` ("Scaled glyphs: the horizontal DDA"), Probe T31A–T31E, 16 Hosttests (10 rot auf dem alten
 Code) und ein Einheitstest.
 
