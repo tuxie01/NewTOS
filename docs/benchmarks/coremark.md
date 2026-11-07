@@ -95,12 +95,20 @@ the same port, from an 8 MHz stock ST to the FireBee.
 3. Copy both `.NCP` to `C:\COREMARK\` and `kernel8.img` to the boot partition.
 4. Boot, open `C:`, folder `COREMARK`, double-click `CORE.NCP`. Banner, then
    ~30 s of deliberately blank screen (calibration + the timed run), then the
-   result, which stays up until a key is pressed.
+   result and `Press any key to exit.` The result stays up until a key is
+   pressed. The desktop itself does not wait after a program ends (as on
+   EmuTOS); the port's `portable_fini` does, after the timed region
+   (`sdk/overlays/coremark/newtos/core_portme.c`; TASK/DESK70,
+   `measurements/measurement-2026-11-07-desk70-build/RUNINFO.TXT`).
 5. Repeat with `COREVAL.NCP` — the mandatory validation run with the second
    seed set. It prints no score, only `Correct operation validated`.
 
 Not via `\AUTO\`: an AUTO run finishes before the AES starts and the desktop
-paints over the result.
+paints over the result. From `\AUTO\` the port does not wait for a key: it
+waits only when its current directory is not the root, and an AUTO program
+starts in the root of the boot drive. So measurement images that boot both
+programs from `C:\AUTO\` run through to the desktop; the report is on the
+serial log.
 
 ## Notes on the measurement
 

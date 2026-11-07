@@ -311,8 +311,9 @@ that touches TOS structures.
    `make card DEST=/Volumes/NEWTOS/APPS/HELLO` (copies with `cp -X`).
    On Linux a plain `cp` to the mounted partition is enough.
 3. Eject the card, boot the Pi, open *DISK C* → `APPS` → `HELLO` and
-   double-click `HELLO.NAP`. A `.NCP` runs in the console and waits for a key
-   before the desktop comes back.
+   double-click `HELLO.NAP`. A `.NCP` runs in the console, and the desktop
+   comes back as soon as it ends, as on EmuTOS. To keep its output readable,
+   the program has to wait for a key itself (e.g. `Cnecin()`).
 
 Programs from the current SDK (`main`) run on the v0.6 kernel: both templates
 were started on the v0.6 `kernel8.img` in QEMU for this page (4b). The step on

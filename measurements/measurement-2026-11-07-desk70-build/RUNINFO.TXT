@@ -1,0 +1,80 @@
+DESK70 -- CoreMark holds its result until a key when started from the desktop, and does not wait from C:\AUTO (GitHub #12)
+=======================================================================================================================
+
+Date      2026-11-07
+Who       Developer agent (Opus). No hardware, no card, no flash, no push.
+Ticket    TASK/DESK70.md (user-approved direction: the desktop stays as it is, CoreMark's port layer waits itself)
+Basis     measurements/measurement-2026-11-07-desk70/RUNINFO.TXT (neither EmuTOS' nor NewTOS' desktop waits after a text
+          program ends) and docs/audits/2026-11-07-desk70-tos-exit.md
+NewTOS    main @ 7d700cf3359a5e724547e9a335f74c98f078e346 plus the uncommitted change of this ticket in
+          sdk/overlays/coremark/newtos/core_portme.c (portable_fini). The kernel is untouched by the change; both kernels
+          were built from a scratch `git clone` of 7d700cf3, never in the repository tree.
+QEMU      qemu-system-aarch64 11.0.2, -M raspi4b, -append serial=on
+Host      host clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of both manifests)
+
+WHAT CHANGED (product)
+  portable_fini() in sdk/overlays/coremark/newtos/core_portme.c: after the existing fflush(stdout), it calls
+  Dgetpath(buf, 0). If the current directory is NOT the root ("" -- docs/api/gemdos/directory/47-dgetpath.md), it prints
+  "Press any key to exit." and waits in Crawcin. This is after stop_time() and after the last result line, so it is
+  outside the timed region. Only core_portme.c changed (CoreMark run rules); build-coremark.sh's MD5 check of the six
+  frozen files passed (build/build-coremark.log).
+  Why the root means "started from \AUTO\": an \AUTO\ program starts in the root of the boot drive (EmuTOS
+  bios/bios.c:685-695 sets no directory; the child inherits initial_basepage's directories, bdos/proc.c:396-410;
+  spec docs/api/gemdos/process/_run-ownership-curdir.md sections 4.2 and 6.5). The desktop sets the current directory
+  to the application's (or the top window's) directory before the launch (desk/desksupp.c:880-915), inherited through
+  shel_write's sh_apdir (aes/gemshlib.c:109-125,174-175; spec section 4.4).
+
+BINARIES  sdk/apps/build-coremark.sh (binaries.sha256; build log build/build-coremark.log, 0 warnings)
+  CORE.NCP     bb3a5843ce5ceb724995da4fd4bc6332053cb78e523e8e30b2867cca07b3b93b
+  COREVAL.NCP  61a3db14731ff50caf9608de79a55e17b35a296538922be0feb817e022208b01
+
+KERNELS   method/build-kernels.sh (kernels.sha256), release rpi4, SOURCE_DATE_EPOCH=1792152000
+  kernel8-plain.img  bcde8217ee6a94c303068ff519a21419320f5ec1404a742cfe925fef3ed865ef  unchanged 7d700cf3 (same sha in two builds)
+  kernel8-bdesk.img  4170cb05ec8a3aecf465ffae3cd1f5e4e2335054f2a569c03b49b809c12be29b  + scratch-only IKBD injector:
+                     measurements/measurement-2026-11-07-desk70/method/build-inj.sh + mk-injector.py, called from there
+                     unchanged, script method/b-desk.actions; host_env.rs restored and cmp-checked after the build.
+                     The audit temp marker is in no file of this run.
+
+CARDS     method/cards.sh -> tools/mkcard.sh (64 MiB FAT16, label DESK70B, NEWDESK.INF = method/NEWDESK.INF:
+          the DESK70 INF with the first window on C:\COREMARK\*.*). Per-run APFS clone (cp -c) in method/qemu-shots.py,
+          deleted after the run.
+  auto.img  47447770e456e64eee5cb7a4ff5ce5312e15ad0bff0fb134971c17e856d887e1  manifest auto.img.manifest
+            C:\AUTO\CORE.NCP, C:\AUTO\COREVAL.NCP (= what SD_COREMARK_AUTO=1 of tools/make-sd-image.sh places),
+            C:\COREMARK\CORE.NCP, C:\COREMARK\COREVAL.NCP
+  desk.img  6a64f62d2da374b7852bdb95c9e1d64b8f72afae392e7109db8d14987ed9595f  manifest desk.img.manifest
+            C:\COREMARK\CORE.NCP, C:\COREMARK\COREVAL.NCP
+  optional_missing, verbatim:
+    auto.img.manifest  optional_missing none
+    desk.img.manifest  optional_missing none
+  The clone's sha256 after every run equals its base image (printed by qemu-shots.py): no run wrote to its card.
+
+OBSERVATION  method/qemu-shots.py: QMP screendump every 1-2 s, distinct screens kept (screendumps/<run>/screen-NNN.png,
+  serial/<run>/screens.txt), serial stamped with host-monotonic seconds (serial/<run>/serial-stamped.log); the run
+  stops 3 s after the n-th serial line "desktop up".
+
+RUNS
+  a-auto   plain kernel, auto.img, no input at all, stop after the 1st "desktop up" (420 s limit)
+           15.146 [auto] running C:\AUTO\CORE.NCP ... 36.691 "CoreMark 1.0 : 5649.717514 ..." (Correct operation validated)
+           36.691 [auto] running C:\AUTO\COREVAL.NCP  -- the next program starts in the same 20 ms stamp as the last result line
+           58.396 Correct operation validated ... 58.421 [auto] 2 AUTO program(s) run ... 58.620 [desk] desktop up
+           "Press any key" appears in neither report: the AUTO case does not wait (Dgetpath = root).
+  b0-desk  plain kernel, desk.img, no input: the desktop as it comes up; screen-003 locates CORE.NCP at (190,95).
+  b-desk   injector kernel, desk.img: double-click on CORE.NCP at +800 ticks after arming, RETURN at +16000 ticks
+           (80 s after arming), stop after the 2nd "desktop up"
+           19.587 sh_ldapp: starting C:\COREMARK\CORE.NCP, sh_nextapp=0, sh_isgem=0
+           41.112 CoreMark 1.0 : 5654.073503 ... / 41.112 Press any key to exit.
+           screens 006/007 (41.4 s - 94.9 s): the full report plus "Press any key to exit." stands for 53.5 s; 006 and
+           007 differ only in the VT52 cursor block (blink phase sampled at 1 s)
+           95.141 [d70] step 14 (the RETURN) -> 95.141 [launch] returned (program Pterm'd), rc=0
+           95.141 sh_ldapp: starting desktop NEWDESK -> 95.341 [desk] desktop up
+           screen-008 (95.9 s on) == screen-004 (the desktop before the click, pointer on the icon): sha1 8c61653971b8
+  Result: started from the desktop, CORE.NCP keeps its result on screen until a key and returns to the desktop after it;
+  started from C:\AUTO, CORE.NCP and COREVAL.NCP do not wait and the boot reaches the desktop.
+
+NOT MEASURED HERE
+  Real Pi 4 (user/tester; the change is in the program, not in the kernel). COREVAL.NCP from the desktop (same code
+  path, same build script; only CORE.NCP was double-clicked). A start from EmuCON (waits when its current directory is
+  not a root -- documented in core_portme.c).
+
+CLEANUP
+  Scratch clone, kernels, cards and per-run clones deleted after the run.

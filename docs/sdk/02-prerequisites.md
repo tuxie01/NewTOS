@@ -9,7 +9,7 @@ quoted); the scripts do not pin versions.
 Every script uses `${CLANG:-clang}` from `PATH` (`sdk/build.sh:35`,
 `sdk/libc/build-libc.sh:88`, `sdk/gemlib/build-gemlib.sh:98`,
 `sdk/cflib/build-cflib.sh:87`, `sdk/apps/build-qed.sh:69`,
-`sdk/apps/build-teradesk.sh:70`, `sdk/apps/build-coremark.sh:115`). The
+`sdk/apps/build-teradesk.sh:80@CLANG`, `sdk/apps/build-coremark.sh:123@CLANG`). The
 target is always `-target aarch64-unknown-none-elf`. Measured on the host:
 
 ```
@@ -116,7 +116,7 @@ Homebrew's and the Linux distributions' packages are not yet tested.
 | `make` (GNU Make 3.81 on this host) | `build-gemlib.sh:129-132`, `build-cflib.sh:119-122`, `build-qed.sh:99-102` | expanding the libraries' own `SRCFILES` `COBJS` manifests |
 | `tar` (xz-capable) | all three `build-*lib.sh` | extracting the pristine tarballs |
 | `python3` (3.14.6 on this host) | `build-teradesk.sh:197-201`, `tools/make-sd-image.sh` | `tools/mkrsc.py` resource conversion; `mk-hello-ncp.py`; MBR sanity check |
-| `md5` or `md5sum` | `build-coremark.sh:75-86` | run-rule integrity check |
+| `md5` or `md5sum` | `sdk/apps/build-coremark.sh:83-94@md5_of` | run-rule integrity check |
 | `hdiutil`, `diskutil`, `newfs_msdos`, `dot_clean`, `mdutil` | `tools/make-sd-image.sh:13,36-50,291` | building and populating the FAT16 image — **macOS only** |
 | `qemu-system-aarch64` (11.0.2 on this host) | `cargo xtask run` (`tools/xtask/src/main.rs:477,536`) | booting the image |
 | `cc` | `tools/qmpshot.c:13` | the QMP screendump client |

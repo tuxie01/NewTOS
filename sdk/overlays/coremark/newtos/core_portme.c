@@ -32,11 +32,13 @@ Original Author: Shay Gal-on
  *     are gone: a single-tasking kernel has none of those primitives, and an
  *     #error is the honest answer to MULTITHREAD>1 rather than a fake context.
  *   - portable_init() prints a one-line banner, and portable_fini() flushes
- *     stdout. Reasons at each site.
+ *     stdout and, when the program was started from the desktop, holds the
+ *     report on screen until a key. Reasons at each site.
  */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <mint/osbind.h> /* Dgetpath, Crawcin -- portable_fini */
 #include "coremark.h"
 
 #if (MULTITHREAD > 1)
@@ -242,4 +244,44 @@ portable_fini(core_portable *p)
        is exactly the one that must not be lost, and a flush costs nothing
        outside the timed region. */
     fflush(stdout);
+
+    /* NewTOS-specific: keep the report readable when started from the
+       desktop (GitHub #12, TASK/DESK70). Neither EmuTOS' desktop nor ours
+       waits after a text program ends -- the desktop redraws at once
+       (measurements/measurement-2026-11-07-desk70/RUNINFO.TXT) -- so the
+       program has to wait itself. Like the flush above, this runs after
+       stop_time() and after the last result line: it cannot touch the score.
+
+       It must NOT wait when run from \AUTO\ at boot: measurement images
+       start CORE.NCP / COREVAL.NCP there and nobody presses a key.
+       The test is the current directory, Dgetpath(buf, 0):
+         - An \AUTO\ program starts in the ROOT of the boot drive. EmuTOS'
+           run_auto_program sets no directory (bios/bios.c:685-695), and the
+           child inherits initial_basepage's drive and directories
+           (bdos/proc.c:396-410), all roots. Spec:
+           docs/api/gemdos/process/_run-ownership-curdir.md, sections 4.2
+           and 6.5. Dgetpath returns "" for the root
+           (docs/api/gemdos/directory/47-dgetpath.md, "Output buffer").
+         - The desktop sets the current directory to the application's
+           directory (or the top window's) before it launches the program
+           (desk/desksupp.c:880-915), and the program inherits it through
+           shel_write's sh_apdir (aes/gemshlib.c:109-125,174-175; spec
+           section 4.4).
+       So the root means "do not wait". A program started from \AUTO\ never
+       waits, and a desktop launch from C:\COREMARK\ (where
+       tools/make-sd-image.sh installs it) always does. What the test
+       cannot tell apart: a desktop launch of a copy in the root does not
+       wait (the old behaviour), and a start from EmuCON in a subdirectory
+       does wait. Crawcin: any key, no echo, and no Ctrl-C termination, so
+       the exit code stays the benchmark's. */
+    {
+        char cwd[128]; /* Dgetpath writes at most LEN_ZPATH = 114 bytes */
+
+        if (Dgetpath(cwd, 0) == 0 && cwd[0] != '\0')
+        {
+            ee_printf("\nPress any key to exit.\n");
+            fflush(stdout);
+            (void)Crawcin();
+        }
+    }
 }

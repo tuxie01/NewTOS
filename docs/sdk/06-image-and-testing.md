@@ -279,10 +279,14 @@ Serial log of the run made for this document:
 
 ### Double-click on the desktop (real hardware only)
 
-`programs/desktop/src/main.rs:467-500` (`launch_native`): `.NAP`/`.NTP` go
-through `run_gem_app` (desktop relinquish → run → resume); `.NCP` clears the
-screen, runs, waits for a key (`console_pause_for_key`, `:610`), and redraws
-the desktop. Needs a USB keyboard/mouse, which QEMU `raspi4b` cannot provide.
+The desktop starts a program as EmuDESK does, through `shel_write`
+(`programs/desktop/src/pro.rs:122@pro_run`): the AES ends the desktop, runs
+the program and starts the desktop again. After a `.NCP` ends, the desktop
+does **not** wait. It clears the text screen at once and redraws, as EmuTOS'
+desktop does (measured on both: `measurements/measurement-2026-11-07-desk70/RUNINFO.TXT`).
+A `.NCP` whose output should stay readable must wait for a key itself;
+CoreMark does (`sdk/overlays/coremark/newtos/core_portme.c`, `portable_fini`).
+Needs a USB keyboard/mouse, which QEMU `raspi4b` cannot provide.
 
 ## Running in QEMU (`raspi4b`)
 

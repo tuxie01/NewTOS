@@ -1,0 +1,101 @@
+   0.120 RB2
+   0.120 NewTOS booting on rpi4
+   0.120 [serial] output on: boot arguments contain `serial=on`
+   0.120 Phase 02 reached.
+   0.120 [mm] DTB at 0x0000000000000100
+   0.120 [mm] firmware: ARM memory bank 0: 0x0000000000000000 + 1006632960 bytes (960 MiB)
+   0.120 [mm] firmware: VC memory: 0x000000003c000000 + 67108864 bytes (64 MiB)
+   0.120 [mm] device tree: no usable /memory node (blob invalid or absent)
+   0.120 [clock] ARM 700 -> 700 MHz (max 700, measured ?, SoC 25.0 C)
+   0.120 [mm] memory map:
+   0.120 [mm]   DRAM  : 0x0000000000000000..0x000000003c000000 (1006632960 bytes) â source: firmware
+   0.120 [mm]   kernel: 0x0000000000080000..0x00000000003a2000 (3284992 bytes)
+   0.120 [mm]   ST-RAM: 0x0000000000400000..0x0000000000e00000 (10485760 bytes)
+   0.120 [mm]   TT-RAM: 0x0000000001000000..0x0000000039800000 (947912704 bytes)
+   0.120 [mm]   OSrsvd: 0x0000000039800000..0x000000003c000000 (41943040 bytes)
+   0.120 [mm]     bcach: 0x0000000039800000..0x000000003b800000 (33554432 bytes)
+   0.120 [mm]     heap: 0x000000003b800000..0x000000003c000000 (8388608 bytes)
+   0.120 [mm]   MMIO 00: 0x00000000fd500000..0x00000000fd510000
+   0.120 [mm]   MMIO 01: 0x00000000fe000000..0x00000000ff000000
+   0.120 [mm]   MMIO 02: 0x00000000ff800000..0x0000000100000000
+   0.120 [mm] MMU reinstalled (high-half via TTBR1, TTBR0 deferred to Phase 06).
+   0.120 [mm] frames ST-RAM: total=2560 used=0 free=2560 (10485760 B free)
+   0.120 [mm] frames TT-RAM: total=231424 used=0 free=231424 (947912704 B free)
+   0.120 [mm] alloc ST-RAM frame -> 0x0000000000400000
+   0.120 [mm] alloc TT-RAM frame -> 0x0000000001000000
+   0.120 [mm] heap after init: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+   0.120 [mm] heap smoke OK
+   0.120 [mm] heap after smoke: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+   0.120 [fb] VideoCore display geometry detected: 640x480
+   0.120 [fb] alpha mode = 2
+   0.120 [fb] 640x480 pitch 2560 virtual height 960 -> 2 screen page(s), 2400 KiB
+   0.120 [fb] VideoCore fb up: 640x480 stride 640px
+   0.120 [mm] MEM05 per-process block limit: 8192 allocated blocks (default)
+   0.120 [mm] MEM05 MD supply: 117 MDs static, grows by 117 MDs per 4096-byte page from the kernel heap; page budget 512 pages (2048 KiB) for MDs + block records + snapshot + F_KEEP flags
+   0.120 [mm] memory protection ON: table arena 0x01000000+2415 tables
+   0.120 [mm] BDOS pools: ST-RAM 0x00400000+10485760 TT-RAM 0x0196f000+938020864
+   0.120 [mm] user address space: pools mapped VA = PA (453 shared L3 tables, 4-KiB pages, rights per process)
+   0.120 [mm] BDOS ST-RAM after init: total=10485760 free=10485760 used=0 largest_free=10485760 (free_mds=1 alloc_mds=0)
+   0.120 [mm] BDOS TT-RAM after init: total=938020864 free=938020864 used=0 largest_free=938020864 (free_mds=1 alloc_mds=0)
+   0.120 [mm] MEM05 after init: MDs in_use=2 capacity=117 (+0 pages); pages held=0/512 (md=0 recs=0 snap=0 kept=0) peak=0 refused budget=0 heap=0; records=0 snapshot_cap=0 snapshot_short=0; heap used=0 free=8388608 largest=8388608
+   0.120 [clock] no RTC: clock starts at the build date 2026-10-16 00:00:00 (Gettime 0x5d500000, os_dosdate 0x5d50)
+   0.120 [input] keyboard/mouse pump: AES waits and console reads; pointer motion also from the 200 Hz tick while a program runs (input=aes switches that off)
+   0.120 [bcache] FS09 block read cache: 32768 KiB at 0x39800000 (asked 32768 KiB, default), 61680 sectors of 512 B, linear-read share 5 % (default), write-through
+   0.120 [emmc] SD card on controller @ 0xffff0000fe300000
+   0.120 [emmc] M1 SLOTISR_VER=0x24020000 (SDHCI spec 0x02) CAPABILITIES=0x052134b4 (base 52 MHz)
+   0.120 [emmc] M1 CONTROL0=0x00000f02 CONTROL1=0x000e0207 div=2 -> SDCLK ~13000000 Hz
+   0.120 [emmc] M1 mailbox clock rate: EMMC(1)=50000000 Hz EMMC2(12)=700000000 Hz
+   0.120 [emmc] FS08 mode: multi-block (CMD18/CMD25 + Auto CMD12) â bus 4-bit (ACMD6 ok, SCR SD_BUS_WIDTHS=0x5), CONTROL0[1] Data Transfer Width=1
+   0.120 [emmc] M1 during identification: 2 error(s), 0 timeout(s), 2 recovery(ies) CTO=2
+   0.120 [pcie] RC not present (no response at RC_BASE); USB disabled
+  15.146 [proc] stand-in PDs: initial_basepage 0x001f1000, AES PD 0x001f1100, accdesk 0x001f1300, EmuCON 0x001f1400 (read-only to all)
+  15.146 [auto] running C:\AUTO\CORE.NCP
+  15.206 [launch] EL0: slot 0 entry 0x1971000
+  15.236 CoreMark 1.0 -- NewTOS/AArch64 (performance run)
+  15.236 Benchmarking, about half a minute. The screen stays empty
+  15.236 until the result appears.
+  15.236 
+  36.660 2K performance run parameters for coremark.
+  36.661 CoreMark Size    : 666
+  36.661 Total ticks      : 3894
+  36.661 Total time (secs): 19.470000
+  36.661 Iterations/Sec   : 5649.717514
+  36.661 Iterations       : 110000
+  36.691 Compiler version : clang 21.0.0 (clang-2100.4.1.1)
+  36.691 Compiler flags   : -target aarch64-unknown-none-elf -O2 -fomit-frame-pointer -ffreestanding -fPIE -fno-builtin
+  36.691 Memory location  : Code and data in RAM
+  36.691 seedcrc          : 0xe9f5
+  36.691 [0]crclist       : 0xe714
+  36.691 [0]crcmatrix     : 0x1fd7
+  36.691 [0]crcstate      : 0x8e3a
+  36.691 [0]crcfinal      : 0x33ff
+  36.691 Correct operation validated. See README.md for run and reporting rules.
+  36.691 CoreMark 1.0 : 5649.717514 / clang 21.0.0 (clang-2100.4.1.1) -target aarch64-unknown-none-elf -O2 -fomit-frame-pointer -ffreestanding -fPIE -fno-builtin / Code and data in RAM
+  36.691 [launch] returned (program Pterm'd)
+  36.691 [auto] running C:\AUTO\COREVAL.NCP
+  36.751 [launch] EL0: slot 0 entry 0x1971000
+  36.751 CoreMark 1.0 -- NewTOS/AArch64 (validation run)
+  36.751 Benchmarking, about half a minute. The screen stays empty
+  36.751 until the result appears.
+  36.751 
+  58.373 2K validation run parameters for coremark.
+  58.373 CoreMark Size    : 666
+  58.373 Total ticks      : 3927
+  58.373 Total time (secs): 19.635000
+  58.373 Iterations/Sec   : 5602.240896
+  58.373 Iterations       : 110000
+  58.373 Compiler version : clang 21.0.0 (clang-2100.4.1.1)
+  58.373 Compiler flags   : -target aarch64-unknown-none-elf -O2 -fomit-frame-pointer -ffreestanding -fPIE -fno-builtin
+  58.373 Memory location  : Code and data in RAM
+  58.395 seedcrc          : 0x18f2
+  58.395 [0]crclist       : 0xe3c1
+  58.395 [0]crcmatrix     : 0x0747
+  58.396 [0]crcstate      : 0x8d84
+  58.396 [0]crcfinal      : 0x0956
+  58.396 Correct operation validated. See README.md for run and reporting rules.
+  58.421 [launch] returned (program Pterm'd)
+  58.421 [auto] 2 AUTO program(s) run
+  58.421 [aes] gsx_malloc: screen buffer pa=0x0196f000 len=614400 (kernel-owned, WF_SCREEN)
+  58.421 [shell] sh_ldapp: starting desktop NEWDESK (D.s_cmd NEWDESK), sh_nextapp=3, sh_isgem=1
+  58.451 [launch] EL0: slot 0 entry 0x1a08000
+  58.620 [desk] desktop up (1 drives)

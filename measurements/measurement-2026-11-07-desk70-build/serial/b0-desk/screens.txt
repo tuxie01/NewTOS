@@ -1,0 +1,6 @@
+19 dumps in 19.2 s (interval 1.0 s); stop: desktop up x1 matched
+# screen first_s last_s sha1(ppm)
+  0    0.058    0.058 660145a96da8
+  1    1.068   14.167 1db21915d7f6
+  2   15.177   15.177 710c94fb0bb8
+  3   16.178   18.193 88b118b05a21

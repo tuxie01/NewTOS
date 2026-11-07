@@ -33,11 +33,19 @@
 #
 # WHY .NCP
 #   CoreMark writes a text report and needs no GEM. `.NCP` gets the VT52 text
-#   screen and -- crucially for a machine whose only output is its monitor --
-#   the desktop's "[ Press any key to return to the desktop ]" pause after the
-#   program exits (programs/desktop/src/main.rs, launch_native), so the result stays
-#   on screen. `.NTP` would prompt for a command tail (not implemented) and
-#   runs through the GEM screen handoff, i.e. no console at all.
+#   screen. The desktop does NOT wait after the program exits: like EmuTOS'
+#   desktop it clears the text screen and redraws at once (measured on both,
+#   measurements/measurement-2026-11-07-desk70/RUNINFO.TXT). The "[ Press any
+#   key to return to the desktop ]" pause this comment used to promise lived
+#   in the old built-in desktop's launch_native and was removed with it
+#   (DESK43 U3), so the promise was wrong since then. So the port
+#   waits itself: portable_fini() in sdk/overlays/coremark/newtos/core_portme.c
+#   prints "Press any key to exit." and waits for a key after the timed region,
+#   but only when the current directory is not the root. A desktop launch
+#   from C:\COREMARK\ therefore waits; a run from C:\AUTO\ (which starts in the
+#   root) does not, so measurement images that boot both programs from AUTO
+#   still reach the desktop (TASK/DESK70). `.NTP` would open the desktop's
+#   parameter dialog first, for a command tail CoreMark does not read.
 #
 # FLAGS
 #   The NewTOS freestanding set shared with the other build-*.sh, plus -O2 and

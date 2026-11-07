@@ -504,17 +504,21 @@ fi
 # during which the screen is empty by design (the benchmark must run for at
 # least 10 s uninterrupted); the program prints a banner saying so first.
 #
-# It does NOT hold its result on the screen. This comment used to promise a
-# desktop-side "[ Press any key to return to the desktop ]" pause; that pause
-# was built in 0c6e4ef and deliberately removed again in e0069e5 (DESK43 U3 /
-# STOP-3 of docs/analysis/desktop-userspace-plan.md:614,1184 -- EmuTOS'
-# `pro_run`, desk/deskpro.c:51-63, returns at once and has no such pause), so
-# the promise has been wrong since. Nothing holds the screen for it either way:
-# CoreMark is a third-party benchmark built UNMODIFIED, so its score has to be
-# read off the serial log.
+# The desktop does not hold the result on the screen: its "[ Press any key to
+# return to the desktop ]" pause was built in 0c6e4ef and deliberately removed
+# again in e0069e5 (DESK43 U3 / STOP-3 of
+# docs/analysis/desktop-userspace-plan.md:614,1184 -- EmuTOS' `pro_run`,
+# desk/deskpro.c:51-63, returns at once and has no such pause; measured on
+# both in measurements/measurement-2026-11-07-desk70/RUNINFO.TXT). CoreMark
+# holds it itself since DESK70: its porting layer (portable_fini in
+# sdk/overlays/coremark/newtos/core_portme.c, the one file the run rules let
+# us change) waits for a key after the timed region when its current
+# directory is not the root -- i.e. after a desktop launch from C:\COREMARK\.
 #
 # NOT in \AUTO\ by default: an AUTO run finishes before the AES starts and the
-# desktop then paints over the result. Set SD_COREMARK_AUTO=1 to place it there
+# desktop then paints over the result. From \AUTO\ the program starts in the
+# root and does NOT wait for a key, so an image built with SD_COREMARK_AUTO=1
+# still boots through to the desktop. Set SD_COREMARK_AUTO=1 to place it there
 # anyway — that is the only way to drive it under QEMU raspi4b, which emulates
 # the SD controller but no keyboard/mouse, so nothing can be double-clicked; the
 # report then has to be read off the serial log.

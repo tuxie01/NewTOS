@@ -1,0 +1,6 @@
+# desktop launch: double-click C:\COREMARK\CORE.NCP (window icon at 190,95, screen 003 of the plain boot b0-desk),
+# then NO key until tick 16000 (80 s after arming; CoreMark ends about 25 s after the click), then RETURN
+200 parkbr
+600 move 190 95
+800 dclick
+16000 key 1C
