@@ -1326,3 +1326,8 @@ fn log_boot_clock() {
         tos_api::build::OS_DOSDATE,
     );
 }
+
+/// Raster profile of the VDI screen backend (TASK/V49; feature `raster-prof`
+/// only).
+#[cfg(feature = "raster-prof")]
+pub mod raster_prof;
