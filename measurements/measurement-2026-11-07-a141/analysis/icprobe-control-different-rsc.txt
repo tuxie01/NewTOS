@@ -1,0 +1,70 @@
+PENS     EQUAL (1536 words)
+I0.1     EQUAL (1024 words)
+M0.1     EQUAL (64 words)
+T0.0     EQUAL (117760 words)
+T0.1     EQUAL (117760 words)
+T0.2     EQUAL (117760 words)
+T0.3     EQUAL (117760 words)
+I1.6     DIFF 373/672 first at col 3 row 2: E 8c51 N ffdf
+M1.6     DIFF 34/42 first at col 4 row 0: E 5fff N 4000
+I1.7     DIFF 437/672 first at col 6 row 2: E ffdf N 8c51
+M1.7     DIFF 34/42 first at col 4 row 0: E 4000 N 43ff
+I1.8     DIFF 357/672 first at col 11 row 2: E ffdf N 0000
+M1.8     DIFF 32/42 first at col 4 row 0: E 4000 N 401c
+I1.9     DIFF 337/672 first at col 13 row 0: E 4080 N 4100
+M1.9     DIFF 33/42 first at col 2 row 0: E 400f N 4000
+I1.10    EQUAL (672 words)
+M1.10    EQUAL (42 words)
+I1.11    DIFF 337/672 first at col 13 row 0: E 4100 N 4080
+M1.11    DIFF 33/42 first at col 2 row 0: E 4000 N 400f
+I1.12    DIFF 357/672 first at col 11 row 2: E 0000 N ffdf
+M1.12    DIFF 32/42 first at col 4 row 0: E 401c N 4000
+I1.13    DIFF 437/672 first at col 6 row 2: E 8c51 N ffdf
+M1.13    DIFF 34/42 first at col 4 row 0: E 43ff N 4000
+I1.14    DIFF 373/672 first at col 3 row 2: E ffdf N 8c51
+M1.14    DIFF 34/42 first at col 4 row 0: E 4000 N 5fff
+I1.15    only on EmuTOS
+M1.15    only on EmuTOS
+I1.16    only on EmuTOS
+M1.16    only on EmuTOS
+I1.17    only on EmuTOS
+M1.17    only on EmuTOS
+I1.18    only on EmuTOS
+M1.18    only on EmuTOS
+I1.19    only on EmuTOS
+M1.19    only on EmuTOS
+T1.0     EQUAL (56448 words)
+T1.1     EQUAL (56448 words)
+T1.2     DIFF 2464/56448 first at col 21 row 39: E ffdf N bdd7
+T1.3     DIFF 2464/56448 first at col 21 row 39: E ffdf N bdd7
+T2.0     EQUAL (41216 words)
+T2.1     EQUAL (41216 words)
+T2.2     EQUAL (41216 words)
+T2.3     EQUAL (41216 words)
+T3.0     EQUAL (39424 words)
+T3.1     EQUAL (39424 words)
+T3.2     EQUAL (39424 words)
+T3.3     EQUAL (39424 words)
+T4.0     EQUAL (106720 words)
+T4.1     EQUAL (106720 words)
+T4.2     EQUAL (106720 words)
+T4.3     EQUAL (106720 words)
+T5.0     EQUAL (174080 words)
+T5.1     EQUAL (174080 words)
+T5.2     EQUAL (174080 words)
+T5.3     EQUAL (174080 words)
+T6.0     EQUAL (76800 words)
+T6.1     EQUAL (76800 words)
+T6.2     EQUAL (76800 words)
+T6.3     EQUAL (76800 words)
+I1.1     only on NewTOS
+M1.1     only on NewTOS
+I1.2     only on NewTOS
+M1.2     only on NewTOS
+I1.3     only on NewTOS
+M1.3     only on NewTOS
+I1.4     only on NewTOS
+M1.4     only on NewTOS
+I1.5     only on NewTOS
+M1.5     only on NewTOS
+cases 69, differing 38

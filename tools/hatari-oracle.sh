@@ -38,6 +38,9 @@
 #            or DCPROBE.PRG (tosdump/probes/dcprobe.c, TASK/FS26): no table,
 #            profile disk only (it creates and removes folders on C:),
 #            writes DCPROBE.LOG only;
+#            or ICPROBE.PRG (tosdump/probes/icprobe.c, TASK/A141): no table,
+#            touches no disk, any profile, reads ICPROBE.RSC and ICPROBE.TXT
+#            (HATARI_ORACLE_STAGE below), writes ICPROBE.LOG and ICPROBE.BIN;
 #            or WFPROBE.PRG (tosdump/probes/wfprobe.c, TASK/HW08): the same,
 #            profile disk only, writes WFPROBE.LOG only;
 #            or XDPROBE.PRG (tosdump/probes/xdprobe.c, TASK/FS31): the same,
@@ -63,6 +66,10 @@
 # the dumper's GEMDOS drive, for a test image with more than one partition:
 # each partition takes a letter from C: up, the GEMDOS drive must come after
 # them (TASK/FS31).
+#
+# HATARI_ORACLE_STAGE (default empty) is a space-separated list of
+# <name>=<host file>, copied onto the GEMDOS drive before the run: the input
+# files of a probe (TASK/A141).
 #
 # THE PROFILE VALUES (TASK/TOOL19). A table that names DUMPBIOS' unit token
 # u:0 or a program path x: leaves the unit / the program extension to the
@@ -114,6 +121,7 @@ case $PRG in
     VWPROBE.PRG)  AREA=VWPROBE; PROBE=1; PROBE_DISK=0 ;;
     SBPROBE.PRG)  AREA=SBPROBE; PROBE=1; PROBE_DISK=0 ;;
     VDPROBE.PRG)  AREA=VDPROBE; PROBE=1; PROBE_DISK=0 ;;
+    ICPROBE.PRG)  AREA=ICPROBE; PROBE=1; PROBE_DISK=0 ;;
     DCPROBE.PRG)  AREA=DCPROBE; PROBE=1 ;;
     WFPROBE.PRG)  AREA=WFPROBE; PROBE=1 ;;
     XDPROBE.PRG)  AREA=XDPROBE; PROBE=1 ;;
@@ -187,6 +195,9 @@ mkdir -p "$OUT/hd" "$OUT/home"
 OUT=$(cd "$OUT" && pwd)
 cp "$DUMPER" "$OUT/hd/$PRG"
 [ "$PROBE" = 1 ] || cp "$TABLE" "$OUT/hd/$AREA.TSV"
+for pair in ${HATARI_ORACLE_STAGE:-}; do
+    cp "${pair#*=}" "$OUT/hd/${pair%%=*}"
+done
 if [ "$PROFILE" = falcontc ]; then
     # 0x001C = VIDEL_VGA|VIDEL_80COL|VIDEL_TRUECOLOR, read by process_inf1
     # (aes/geminit.c). Byte-identical to the INF of the 2026-09-21 runs.

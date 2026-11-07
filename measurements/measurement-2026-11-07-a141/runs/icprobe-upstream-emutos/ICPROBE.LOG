@@ -1,0 +1,47 @@
+H handle 2 xres 639 yres 479 colours 256
+PENS
+R rsrc_load 1 ntree 7
+O 0.1 char 1000 icon 0,0 32x32 text 13,7 6x8 planes 16 sel 0 state 0000 flags 0000
+T0.0 0,0 640x184
+T0.1 0,0 640x184
+T0.2 0,0 640x184
+T0.3 0,0 640x184
+O 1.6 char 1000 icon 0,0 32x21 text 13,7 6x8 planes 16 sel 0 state 0000 flags 0041
+O 1.7 char 1000 icon 0,0 32x21 text 13,7 6x8 planes 16 sel 0 state 0000 flags 0041
+O 1.8 char 1000 icon 0,0 32x21 text 13,7 6x8 planes 16 sel 0 state 0000 flags 0041
+O 1.9 char 1000 icon 0,0 32x21 text 13,7 0x8 planes 16 sel 0 state 0000 flags 0041
+O 1.10 char 1000 icon 0,0 32x21 text 13,7 0x8 planes 16 sel 0 state 0000 flags 0041
+O 1.11 char 1000 icon 0,0 32x21 text 13,7 6x8 planes 16 sel 0 state 0000 flags 0041
+O 1.12 char 1000 icon 0,0 32x21 text 13,7 6x8 planes 16 sel 0 state 0000 flags 0041
+O 1.13 char 1000 icon 0,0 32x21 text 13,7 6x8 planes 16 sel 0 state 0000 flags 0041
+O 1.14 char 1000 icon 0,0 32x21 text 13,7 6x8 planes 16 sel 0 state 0000 flags 0041
+O 1.15 char 1000 icon 0,0 32x21 text 13,7 6x8 planes 16 sel 0 state 0000 flags 0041
+O 1.16 char 1000 icon 0,0 32x21 text 13,7 6x8 planes 16 sel 0 state 0000 flags 0041
+O 1.17 char 1000 icon 0,0 32x21 text 13,7 6x8 planes 16 sel 0 state 0000 flags 0041
+O 1.18 char 1000 icon 0,0 32x21 text 13,7 6x8 planes 16 sel 0 state 0000 flags 0041
+O 1.19 char 1000 icon 0,0 32x21 text 13,7 6x8 planes 16 sel 0 state 0000 flags 0061
+T1.0 0,0 588x96
+T1.1 0,0 588x96
+T1.2 0,0 588x96
+T1.3 0,0 588x96
+T2.0 0,0 184x224
+T2.1 0,0 184x224
+T2.2 0,0 184x224
+T2.3 0,0 184x224
+T3.0 0,0 176x224
+T3.1 0,0 176x224
+T3.2 0,0 176x224
+T3.3 0,0 176x224
+T4.0 0,0 464x230
+T4.1 0,0 464x230
+T4.2 0,0 464x230
+T4.3 0,0 464x230
+T5.0 0,0 640x272
+T5.1 0,0 640x272
+T5.2 0,0 640x272
+T5.3 0,0 640x272
+T6.0 0,0 480x160
+T6.1 0,0 480x160
+T6.2 0,0 480x160
+T6.3 0,0 480x160
+END

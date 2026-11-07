@@ -1,0 +1,6 @@
+arrays: {'inline_IMAGE0': 128, 'inline_IMAGE1': 128, 'inline_IMAGE2': 128, 'inline_IMAGE3': 128}
+rs_bitblk: [('inline_IMAGE0', '4', '32', '0', '0', '4'), ('inline_IMAGE1', '4', '32', '0', '0', '4'), ('inline_IMAGE2', '4', '32', '0', '0', '4'), ('inline_IMAGE3', '4', '32', '0', '0', '2')]
+inline_IMAGE0 bytes 128, found unchanged in the program at file offset 434728
+inline_IMAGE1 bytes 128, found unchanged in the program at file offset 434856
+inline_IMAGE2 bytes 128, found unchanged in the program at file offset 434984
+inline_IMAGE3 bytes 128, found unchanged in the program at file offset 435112

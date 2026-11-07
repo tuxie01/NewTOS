@@ -1,0 +1,46 @@
+deps transform_cicon --up (kinds asm,direct,layer,table,vector): 26 functions besides transform_cicon
+depth	function	layer	reached over	newtos	class
+0	transform_cicon	aes	-	tos-api/src/aes/resource.rs@transform_cicon	mapped
+1	transform_all_cicons	aes	transform_all_cicons -> transform_cicon [direct]	tos-api/src/aes/resource.rs@fix_cicons	mapped
+2	fix_cicons	aes	fix_cicons -> transform_all_cicons [direct]	tos-api/src/aes/resource.rs@fix_cicons	mapped
+3	rs_readit	aes	rs_readit -> fix_cicons [direct]	tos-api/src/aes/resource.rs@load_into_user tos-api/src/aes/resource.rs@relocate_and_register_core	mapped
+4	rs_load	aes	rs_load -> rs_readit [direct]	tos-api/src/aes/resource.rs@rsrc_load	mapped
+5	crysbind	aes	crysbind -> rs_load [direct]	tos-api/src/aes/mod.rs@crysbind	mapped
+5	rsrc_load	desk	rsrc_load -> rs_load [layer trap #2 0x6e crysbind[0x6e] via gem_if]		unmapped
+6	load_icon_file	desk	load_icon_file -> rsrc_load [direct]		unmapped
+6	xif	aes	xif -> crysbind [direct]	tos-api/src/aes/mod.rs@dispatch_in	mapped
+7	app_rdicon	desk	app_rdicon -> load_icon_file [direct]		unmapped
+7	super	aes	super -> xif [direct]	tos-api/src/aes/mod.rs@dispatch_in tos-api/src/aes/thread.rs@call	mapped
+8	aestrap	aes	aestrap -> super [asm jsr]	-	design
+8	app_start	desk	app_start -> app_rdicon [direct]		unmapped
+9	deskmain	desk	deskmain -> app_start [direct]		unmapped
+9	retake	aes	retake -> aestrap [asm move.l]	-	design
+9	set_aestrap	aes	set_aestrap -> aestrap [asm move.l]	-	design
+10	deskstart	desk	deskstart -> deskmain [asm jsr]		unmapped
+10	gem_main	aes	gem_main -> set_aestrap [direct]	kernel/src/lib.rs@kernel_main_rust tos-api/src/aes/init.rs@init tos-api/src/aes/mod.rs@reinit	mapped
+10	giveerr	aes	giveerr -> retake [asm jra call_err]	-	design
+10	sh_tographic	aes	sh_tographic -> retake [direct]	kernel/src/shell_loop.rs@sh_tographic	mapped
+10	takeerr	aes	takeerr -> retake [asm jbsr call_err]	-	design
+11	run_accs_and_desktop	aes	run_accs_and_desktop -> sh_tographic [direct]	kernel/src/accs.rs@wait_for_accs_mesag kernel/src/lib.rs@kernel_main_rust	mapped
+11	sh_chgrf	aes	sh_chgrf -> sh_tographic [direct]	kernel/src/shell_loop.rs@sh_chgrf	mapped
+11	sh_toalpha	aes	sh_toalpha -> giveerr [direct]	kernel/src/shell_loop.rs@sh_toalpha	mapped
+11	ui_start	aes	ui_start -> gem_main [asm jsr]	tos-api/src/bdos/process/standin.rs@enter_aes	mapped
+12	accdesk_start	aes	accdesk_start -> run_accs_and_desktop [asm jsr]	tos-api/src/bdos/process/standin.rs@enter_accdesk	mapped
+12	sh_main	aes	sh_main -> sh_toalpha [direct]	kernel/src/shell_loop.rs@sh_main tos-api/src/aes/shell.rs@sh_main_init	mapped
+
+table edges inside the set (1):
+crysbind[0x6e]	crysbind -> rs_load	aes/gemsuper.c:364
+
+layer edges inside the set (1):
+trap #2 0x6e crysbind[0x6e] via gem_if	rsrc_load -> rs_load	desk/gembind.c:841
+
+vector edges inside the set (0):
+
+coverage of the set (27 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+aes         21     16  76.2%      5  23.8%      0   0.0%
+desk         6      0   0.0%      0   0.0%      6 100.0%
+total       27     16  59.3%      5  18.5%      6  22.2%
+touched layers: aes (the layers of transform_cicon; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

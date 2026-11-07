@@ -1,0 +1,8 @@
+icprobe run, side newtos (2026-11-07T01:31:14Z)
+tree      fbeda9f29fd4e14de9b240dd29e56712f0179d34 3 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    ICPROBE.PRG f14d808a79c1cd87f8b19e45557f622e831414c1e0726c7086cc9c94f290b7cc ICPROBE.NAP a16618f717f11e4d11208327d1d3c6e8a9d9084684437245e457f7f76ec8218f
+resource  7e8f7acfa8520c790d71c0b498fdf6cc2b05dfb4ef5cb26f793d5336a61c04e6 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/zview-native.rsc (7 trees)
+kernel    18c4b9822d0b94921140cfee06dd29b4ec602e6da166136c07438f282a6399d7 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/kernel-head.img
+card      b3bc0c50bd9f7b1b821ec77f6d7e88487245d364c1dc7bb5ec99861fe4f6f07e (tools/mkcard.sh, C:\ICPROBE.NAP, #Z autorun)
+qemu      done
+card      after f6ab468f679313dd870e43f6c1580d7fcc315cd2f442a1c757d25a4557ef2822 (the booted clone)

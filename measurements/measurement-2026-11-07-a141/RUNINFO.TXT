@@ -1,0 +1,116 @@
+measurement-2026-11-07-a141 -- TASK/A141, GitHub #23 ("Wrong colors in HypView", ragnar76, NewTOS 0.7, Pi 4): the toolbar's icons
+have wrong colours. What the screen shows, against the oracle; where the colours come from; does TASK/A142 have the same root.
+=====================================================================================================================
+Developer, 2026-11-07. Main tree at fbeda9f2, kernel, tos-api and programs unchanged by this run. QEMU and Hatari only; no Pi, no card.
+
+RESULT
+  The picture is real, and it is EmuTOS'. NewTOS draws these icons word for word as the oracle does: no NewTOS defect in byte order,
+  planes, pens or palette. The colours are wrong because the resource's 8-plane icons were drawn for another palette, the NVDI one.
+  Stopped here (the brief: icons right against the reference -> report). No product code changed. Options are in TASK/A141.md.
+
+INPUTS
+  host clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang of every card manifest)
+  manifests  runs/newtos-hypview/card.img.manifest, runs/icprobe-*-newtos/card.img.manifest; optional_missing, verbatim, in all three:
+               optional_missing none
+  kernel     HEAD fbeda9f2, cargo xtask build --board rpi4 --release
+               18c4b9822d0b94921140cfee06dd29b4ec602e6da166136c07438f282a6399d7
+  NewTOS     HYP_VIEW.NAP e6cc2d84da9b1581abf62345162d0487a894ebceb80d6b53d5c2eec74cd3725f (sdk/apps/build-hypview.sh)
+             hyp_view.rsc 54589e1c59da47f45a5b6529ded425908c8f6f28d4d5a9e7bcab7e47a8540caa (tools/mkrsc.py convert of upstream's)
+  upstream   sdk/apps/hypview/hyp_view.rsc = hyp_view/en.rsc 402817a801852fd51c98a21bc9487e6162028204299180d55a0f78f0debf656b
+  m68k       Applications/z-tools/zview/_dist/doc/hypview/hyp_view.app 8a4e598cfd098d32045bd47a40152084a6acfbd527f950658b4f668d816f6d6a
+             and its own hyp_view.rsc 3c26ec96efba6e4571e248a43b3742e480d52fed7409b2419d93f7b5a5c56ebd (local tree, gitignored, a real
+             m68k HypView, not our build). All 29 CICON variants of the two resources are byte-identical (compared in Python, data
+             and mask); the tree layout differs, see NOT THE SAME below.
+  hyp        Applications/cflib-git/bin/cflib.hyp 36cdcff3f2794db44e790744755a02388bc415f09a482cb8ab59e9e289220aa0, as in TASK/A140's runs
+  oracle     tools/hatari-oracle.sh's machine: pinned ROM 323c87bb..., Hatari 2.6.1, tools/oracle/hatari.cfg (docs/analysis/ORACLE.md)
+  QEMU       11.0.2, -M raspi4b, -append serial=on, APFS clone of each card, deleted after
+
+RUNS (runs/<name>/)
+  newtos-hypview           real HYP_VIEW.NAP on NewTOS, #Z autorun, HYP_VIEW.CFG DEFAULT=; hypview.png. method/newtos-hypview.sh
+  oracle-hypview/falcontc  real m68k HypView on the oracle, 640x480 16-bit truecolor (the profile of NewTOS' colour model); screen.png
+  oracle-hypview/falcon256 the same on 8 planes (INF #E 1A E0 00 1B 60), the mode the 8-plane variant is literally for
+  oracle-hypview/tt        the same on TT-Medium, 4 planes: EmuTOS picks the 4-plane variant
+  oracle-hypview/falcontc-upstream-rsc-crash  that m68k binary with upstream's en.rsc: bus error in the program (see NOT THE SAME)
+                           (all four: method/hatari-hypview.sh)
+  icprobe-upstream-emutos, icprobe-upstream-newtos  tosdump/probes/icprobe.c on both sides, upstream's en.rsc (classic / converted)
+  icprobe-zview-emutos,    icprobe-zview-newtos     the same with the m68k HypView's resource
+                           ICPROBE.BIN is kept gzipped (4.7 MB -> 60 KB); icprobe-compare.py reads it either way
+
+DEFECT, SHOWN
+  runs/newtos-hypview/hypview.png: toolbar with brown frames, olive and green blotches in the icons; photos/issue23-toolbar.png is the report.
+  Report vs QEMU: photo rows 28..52 (the icons), placed on the QEMU screen by search (dx -4, dy 12), 5 bits per channel:
+    11615 of 11616 pixels equal, rows 52..64 5780 of 5808. analysis/tester-photo-above-newtos-below.png
+  So QEMU shows what the Pi shows, at another screen size. The upper rows differ (window title, "Title" vs "Titel", English/German resource).
+
+REFERENCE
+  analysis/toolbar-newtos-above-oracle-below.png: NewTOS above, real HypView on the oracle below: the same picture.
+  band y 40..65, whole width, NewTOS vs oracle falcontc: 16000 pixels, 0 differ (analysis/band-newtos-vs-oracle.txt, method/band-compare.py).
+    Rows 65..68 differ: see NOT THE SAME. Oracle falcon256 vs falcontc: y 40..70, 19200 pixels, 0 differ
+    (analysis/band-oracle-256-vs-tc.txt): EmuTOS' truecolor path and its 8-plane path give the same colours.
+  Device form and screen, word for word (tosdump/probes/icprobe.c, compared by icprobe-compare.py; analysis/icprobe-*-compare.txt):
+    upstream resource: cases 59, differing 0.  m68k HypView's resource: cases 59, differing 0.
+    The cases: vq_color of all 256 pens, requested and realized (PENS); col_data as rsrc_load left it (I*, 16-bit words, 672 per icon);
+    col_mask (M*); objc_draw of each of the 7 trees read back through vro_cpyfm as loaded, every G_CICON SELECTED, DISABLED, and DISABLED with
+    HypView's zeroed text box (T*, four passes).
+    Control: EmuTOS on upstream's resource vs NewTOS on the other one: cases 69, differing 38 (analysis/icprobe-control-different-rsc.txt):
+    the instrument does see a difference.
+
+THE USER'S THREE QUESTIONS, each measured
+  Byte order (shapes or masks torn, shifted by 8 pixels): NO. M* equal on both sides; I* equal. Hand decode of the file without any NewTOS code
+    (method/palette-test.py, tools/mkrsc.py read_cicon_table only) gives untorn shapes in every variant (analysis/sheet-*.png).
+    tools/mkrsc.py swaps every raster on conversion, the loader reads native words: equal I*/M* to the oracle's big-endian words prove it.
+  Palette or pen mapping that does not fit the icons (shapes right, colours wrong): YES, and it lies in the resource, not in NewTOS' mapping.
+    Per pixel, the file's 4-plane variant states what the pixel is meant to be. The 8-plane index at the same place (5480 pixels):
+      index 252  n=1381: 4-plane dark grey 1291    EmuTOS palette (267,133,0) brown
+      index 250  n=656:  4-plane white 656         EmuTOS palette (267,267,0) olive
+      index 229  n=68:   4-plane white 68          EmuTOS palette (467,67,0) brown-red
+      index  93  n=103:  4-plane dark red 97       EmuTOS palette (67,1000,0) bright green
+    Mean RGB distance to the 4-plane picture (analysis/palette-scores.txt; a coarse reduction, the ranking is the result):
+      EmuTOS default palette 368.0; references/freemint/xaaes/src.km/pal/gem.pal 314.9; references/freemint/xaaes/src.km/pal/nvdi.pal 133.8.
+    analysis/sheet-nvdi-reg-to-pen.png: the same 8-plane bytes under FreeMiNT's nvdi.pal: grey frames, orange folder and floppy arrows, blue
+    arrows, red X, grey floppies. That is what the artist drew. analysis/sheet-emutos-default.png: what EmuTOS and NewTOS draw.
+    FreeMiNT knows the problem: XaAES has `remap_cicons` and `icn_pal_name = nvdi` (references/freemint/xaaes/src.km/xa_rsrc.c:261-300,
+    references/freemint/xaaes/src.km/example.cnf:609-630). EmuTOS has no such thing: transform_cicon takes the plane value n to
+    phys_work.ext->palette[n] (references/emutos/aes/gemrslib.c:348-396), the default palette (references/emutos/vdi/vdi_col.c:137).
+    The pen mapping itself is right: reading the index as a register (EmuTOS, NewTOS) gives black outlines, reading it as a pen gives
+    magenta ones; nvdi.pal scores better through the register mapping too (133.8 vs 168.9). A resource can carry its own palette; this
+    one does not (extension array 25754, 4590, 0, ...).
+  Plane order: NO. Plane p = bit p in the hand decode gives the clean pictures above, and I* are equal to the oracle.
+
+NOT THE SAME BETWEEN THE TWO HYPVIEWS, and not an OS difference
+  Rows 65..68 under the disabled icons: NewTOS' toolbar has dither bars there, the m68k HypView's has none. Upstream's resource makes each icon
+  object 32 pixels high (ob_height 0x0020), the m68k one 21 (0x0105 = 1 char + 5). icprobe gives 0 differences for each resource on the two
+  systems, so it is the file. The bars are in the report's photo too. That m68k binary also panics with upstream's resource because the object
+  order in the tree differs: its code assumes another numbering, runs/oracle-hypview/falcontc-upstream-rsc-crash.
+
+A142, SAME ROOT? NO
+  Another path, another fault. qed.rsc has no colour icons at all (vrsn 0). The photos' check boxes, radio buttons and alert icon are cflib's
+  built-in images: sdk/cflib/overlay/inline.rsh declares them `static _UBYTE inline_IMAGE0[]` etc. in m68k byte order, casts them to words, and
+  cflib/userdef.c hands them to vrt_cpyfm as `short *`. On a little-endian machine each word's two bytes are swapped.
+  analysis/a142-inline-images.txt: the four alert images stand unchanged in sdk/apps/qed/build/QED.NAP
+    (274986f02cecb77c49a9ed523008473b25e16b672452cb641b1b08e0e73fd56f).
+  analysis/a142-cflib-images-be-left-le-right.png: left big-endian, right the same bytes as little-endian words: the right "!" is the torn icon of
+  photos/issue21-alert.png. photos/issue21-radio.png, issue21-check.png show the same left/right swap on the BT_RADIO/BT_CHECK data.
+  Upstream file, our build: this is a build-side byte-order defect in our cflib port, in reach of sdk/cflib/overlay/. Not reproduced in QEMU here and
+  not fixed: TASK/A142 stays its own ticket.
+
+LOCALIZATION (CLAUDE.md, Testing)
+  cargo xtask deps transform_cicon --down, --up: analysis/deps-transform_cicon-*.txt. Mapped to tos-api/src/aes/resource.rs@transform_cicon and @fix_cicons.
+  No product function touched, so no mapping.tsv row and no retest set. Should an option change transform_cicon, the --up set is the retest set.
+
+SHIPPED RESOURCES WITH 8-PLANE ICONS (scan of sdk/apps and programs, 2026-11-07)
+  HypView's only: en, de, cs and skins skin_01..07. skin_01..07 score the same way (emutos-default 178..467, nvdi 63..177).
+  TeraDesk's cicons.rsc: 38 icons, 4 planes only. QED none. highwire/deskicon.rsc not readable by read_cicon_table.
+  So any fix here reaches one program.
+
+METHOD
+  tosdump/probes/icprobe.c, run-icprobe.sh, icprobe-compare.py, tosdump/build-icprobe-newtos.sh (permanent, `make -C tosdump icprobe-m68k icprobe-newtos`);
+  tools/hatari-oracle.sh: ICPROBE.PRG, HATARI_ORACLE_STAGE. Here: method/newtos-hypview.sh, hatari-hypview.sh, band-compare.py, palette-test.py,
+  a142-inline-images.py. Calls:
+    tosdump/probes/run-icprobe.sh emutos falcontc <out> sdk/apps/hypview/hyp_view.rsc 7
+    tosdump/probes/run-icprobe.sh newtos <out> <kernel8.img> sdk/apps/hypview/build/hyp_view.rsc 7
+    python3 tosdump/probes/icprobe-compare.py <emutos-out> <newtos-out>
+  An exploratory first pass of the probe had three T passes per tree; the runs kept here are the four-pass one.
+
+OPEN
+  The user's decision between the options in TASK/A141.md. Real Pi: nothing to measure now (the report's photo is the Pi's picture and equals QEMU's).

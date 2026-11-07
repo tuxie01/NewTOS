@@ -1,0 +1,35 @@
+deps transform_cicon --down (kinds asm,direct,layer,table,vector): 12 functions besides transform_cicon
+depth	function	layer	reached over	newtos	class
+0	transform_cicon	aes	-	tos-api/src/aes/resource.rs@transform_cicon	mapped
+1	gsx_fix	aes	transform_cicon -> gsx_fix [direct]	-	unmapped
+1	vrn_trnfm	aes	transform_cicon -> vrn_trnfm [direct]	-	unmapped
+2	gsx_0code	aes	vrn_trnfm -> gsx_0code [direct]	tos-api/src/aes/gsxif.rs@ncode	mapped
+2	gsx_fix_screen	aes	gsx_fix -> gsx_fix_screen [direct]	-	unmapped
+2	vdi_vr_trnfm	vdi	vrn_trnfm -> vdi_vr_trnfm [layer trap #2 0x6e jmptb2[0x6e] via gsx_0code]	tos-api/src/vdi/raster.rs@vr_trnfm	mapped
+3	gsx_ncode	aes	gsx_0code -> gsx_ncode [direct]	tos-api/src/aes/gsxif.rs@ncode	mapped
+3	vr_trnfm16	vdi	vdi_vr_trnfm -> vr_trnfm16 [direct]	tos-api/src/vdi/raster.rs@vr_trnfm16	mapped
+4	bzero_nobuiltin	ext	vr_trnfm16 -> bzero_nobuiltin [direct]		unmapped
+4	dos_alloc_anyram	ext	vr_trnfm16 -> dos_alloc_anyram [direct]		unmapped
+4	dos_free	ext	vr_trnfm16 -> dos_free [direct]		unmapped
+4	gsx2	aes	gsx_ncode -> gsx2 [direct]	tos-api/src/aes/gsxif.rs@trap	mapped
+4	memcpy	ext	vr_trnfm16 -> memcpy [direct]		unmapped
+
+table edges inside the set (0):
+
+layer edges inside the set (1):
+trap #2 0x6e jmptb2[0x6e] via gsx_0code	vrn_trnfm -> vdi_vr_trnfm	aes/gemgsxif.c:645
+
+vector edges inside the set (0):
+
+coverage of the set (13 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+aes          7      4  57.1%      0   0.0%      3  42.9%
+ext          4      0   0.0%      0   0.0%      4 100.0%
+vdi          2      2 100.0%      0   0.0%      0   0.0%
+total       13      6  46.2%      0   0.0%      7  53.8%
+touched layers: aes (the layers of transform_cicon; --layers to choose)
+unmapped in the touched layers (3):
+aes	gsx_fix	aes/gemgsxif.c
+aes	gsx_fix_screen	aes/gemgsxif.c
+aes	vrn_trnfm	aes/gemgsxif.c
+complete: no (3 unmapped in the touched layers; the ticket lists them)

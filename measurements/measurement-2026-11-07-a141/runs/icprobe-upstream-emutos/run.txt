@@ -1,0 +1,5 @@
+icprobe run, side emutos (2026-11-07T01:30:18Z)
+tree      fbeda9f29fd4e14de9b240dd29e56712f0179d34 3 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    ICPROBE.PRG f14d808a79c1cd87f8b19e45557f622e831414c1e0726c7086cc9c94f290b7cc ICPROBE.NAP a16618f717f11e4d11208327d1d3c6e8a9d9084684437245e457f7f76ec8218f
+resource  402817a801852fd51c98a21bc9487e6162028204299180d55a0f78f0debf656b /Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/hyp_view.rsc (7 trees)
+oracle    tools/hatari-oracle.sh falcontc (pinned ROM, tools/oracle/hatari.cfg)

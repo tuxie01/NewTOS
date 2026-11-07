@@ -1,0 +1,9 @@
+icons with both variants: 14
+palette               mean dist     pixels
+emutos-default            368.0       5480
+nvdi-index-is-entry       168.9       5480
+nvdi-reg-to-pen           133.8       5480
+nvdi-recoloured-to-default      126.6       5480
+gem-index-is-entry        320.3       5480
+gem-reg-to-pen            314.9       5480
+gem-recoloured-to-default      318.5       5480

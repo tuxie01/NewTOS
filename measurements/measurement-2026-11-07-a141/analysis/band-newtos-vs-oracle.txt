@@ -1,0 +1,1 @@
+band y 40..65: 16000 pixels, 0 differ

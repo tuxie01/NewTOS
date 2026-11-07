@@ -43,6 +43,8 @@
 #   make sbprobe-newtos   SBPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make vdprobe-m68k     VDPROBE.PRG, VDI drawing read back pixel for pixel (probes/vdprobe.c)
 #   make vdprobe-newtos   VDPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make icprobe-m68k     ICPROBE.PRG, G_CICON from rsrc_load to the screen (probes/icprobe.c)
+#   make icprobe-newtos   ICPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make dcprobe-m68k     DCPROBE.PRG, what one Dcreate costs (probes/dcprobe.c)
 #   make dcprobe-newtos   DCPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make xdprobe-m68k     XDPROBE.PRG, equal entry numbers on two drives (probes/xdprobe.c)
@@ -93,7 +95,7 @@ BUILD := build
         axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
         sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
         vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
-        akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos dcprobe-m68k dcprobe-newtos xdprobe-m68k xdprobe-newtos hzprobe-newtos host-test clean
+        akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos icprobe-m68k icprobe-newtos dcprobe-m68k dcprobe-newtos xdprobe-m68k xdprobe-newtos hzprobe-newtos host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
      scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos wfprobe-m68k wfprobe-newtos \
@@ -101,7 +103,7 @@ all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
      sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
      vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
-     akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos dcprobe-m68k dcprobe-newtos xdprobe-m68k xdprobe-newtos hzprobe-newtos host-test
+     akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos icprobe-m68k icprobe-newtos dcprobe-m68k dcprobe-newtos xdprobe-m68k xdprobe-newtos hzprobe-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -318,6 +320,17 @@ $(BUILD)/VDPROBE.PRG: probes/vdprobe.c abi/m68k_trap.c core/abi.h | $(BUILD)
 vdprobe-newtos: $(BUILD)/VDPROBE.NAP
 $(BUILD)/VDPROBE.NAP: probes/vdprobe.c abi/newtos_svc.c core/abi.h build-vdprobe-newtos.sh | $(BUILD)
 	./build-vdprobe-newtos.sh $@
+
+# The G_CICON probe (TASK/A141): a loaded resource's device-form icons and
+# objc_draw read back, through the ABI backends. Run by probes/run-icprobe.sh.
+icprobe-m68k: $(BUILD)/ICPROBE.PRG
+$(BUILD)/ICPROBE.PRG: probes/icprobe.c abi/m68k_trap.c core/abi.h | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror -Icore probes/icprobe.c abi/m68k_trap.c -o $@
+	@$(CROSS_MINT)size $@
+
+icprobe-newtos: $(BUILD)/ICPROBE.NAP
+$(BUILD)/ICPROBE.NAP: probes/icprobe.c abi/newtos_svc.c core/abi.h build-icprobe-newtos.sh | $(BUILD)
+	./build-icprobe-newtos.sh $@
 
 # The Dcreate cost probe (TASK/FS26): profile disk (C: = an IDE image), counts
 # EmuTOS' sector accesses through hdv_rw. Run by probes/run-dcprobe.sh.
