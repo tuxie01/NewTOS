@@ -1,0 +1,16 @@
+HW08/HW05, desktop copy on the real Pi with the fix, by the user (2026-11-07). The whole folder C:\Apps to D:, fresh boot. Kernel 39ab2a6a...: measurements/measurement-2026-11-07-hw08-pi4-card/RUNINFO.TXT. Number read from the photo by the lead.
+
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing: not applicable (no image built).
+
+REPORT, up 0:00:38.639, including boot and the user's clicks; no stopwatch.
+  errors 0, timeouts 0, recover 0, nonrecover 0, refused 0. Longest wait: write_rdy 97.8 ms, write_done 250.0 ms.
+  write n 1269, sectors 32946, failed 0, max 250.0 ms; <4 768, <16 477, <64 16, <250 7, <500 1, <1000 0, more 0.
+  read n 790, sectors 32712, failed 0, max 6.1 ms; <1 229, <4 557, <16 4. cache: writeback failed 0, retried 0, dirty 0.
+
+READING
+  Bundled: 26 sectors per write command, 41 per read. PI-RUN.TXT step 1c asks for write sec/n > 1.
+  About 16 MiB written (sectors include directory and FAT) in less than 38.6 s: at least about 430 KB/s over everything, boot included, a floor and not the copy's rate.
+  From the histogram, the time in the card is 3.6-13.7 s writing and 0.8-2.5 s reading. Those are bucket limits, not a measurement of the copy.
+  HW05 stays open as a comparison: its 5.8 s and 89 KB/s are for QED.NAP alone on the old card; this is another copy of many files on another card. The floor is about 4.8 times 89 KB/s, but it does not compare like with like.
+  Not checked: the copy's content on D:, needs the card in the Mac.
