@@ -1,0 +1,18 @@
+Card 3 (new test card, disk10, measurements/measurement-2026-11-06-hw08-pi/RUNINFO.TXT): after the run measurements/measurement-2026-11-07-hw08-pi4/RUNINFO.TXT, lead, 2026-11-07, user's request.
+
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing: not applicable (no image built; files copied by hand).
+
+READ FROM THE CARD BEFORE WRITING
+  kernel8.img was 378f760a417d7cb9...: the previous run's kernel is confirmed, it has no HW08 fix.
+  C:\FSWBENCH.LOG, 4695 B, copy beside this file. Complete: it ends with the report's last line (bcache), 22 "read-back ok", all 4 sizes. FS31 on the Pi accepted: the log survived the deletes on D:.
+
+WRITTEN, cp -X; unmount, mount, read back: all equal
+  C:\kernel8.img            39ab2a6a2058ba2dd965a684216336ae71fe55ad6d075eff768475d1f78eb868  measurements/measurement-2026-11-06-hw08-fix-kernel/RUNINFO.TXT (crash-walk, sd-fault, 16bfa004)
+  C:\HW08\WFPROBE.NCP       cec531744b6eeea06bb82f2c6a5674bd4350da6d4d768ccb97400cd0cb6e6d63
+  C:\HW08\FSWBENCH.NCP      a652296682a31a325b7206d9d14f8b85ad027633846b4acbee63f347a6331755
+  C:\Apps\COREMARK\CORE.NCP     32af6694574ff9b1d6febb91e1bb6cf3c84edf1b4785271693c9a85e8d756ada  sdk/apps/build-coremark.sh, rebuilt 2026-11-07
+  C:\Apps\COREMARK\COREVAL.NCP  7c8fe26816dd41308843ea7756028b60ca14b30c0b32336bb6d7f29be8786b18  same; in QEMU on this kernel: "Correct operation validated", seedcrc 0x18f2
+DELETED: C:\Apps\FBENCH\._RESULTS.PDF, an AppleDouble file of the Mac.
+
+NOT RUN: fsck_msdos -n, which needs root on the raw device here ("Cant open (Permission denied)").

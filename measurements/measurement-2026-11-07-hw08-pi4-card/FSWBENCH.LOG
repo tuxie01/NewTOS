@@ -1,0 +1,84 @@
+==== FSWBENCH (TASK/HW08), write path layer by layer, drive D:, log handle 6
+clock: _hz_200 + spin, 1241270 spins/tick
+D: BPB clsiz 16 rootsecs 32 fat 245 at 246 root at 491 data at 523
+H  sector cost (HW06), 41 single-sector Rwabs per line, unchanged bytes
+  sectors: data 827 dir 491 fat 246
+  data         pause   0 first    1161 us  min    1126 med    1127 p90    1149 max    1161  failed 0
+  directory    pause   0 first    1127 us  min    1127 med    1127 p90    1149 max    1149  failed 0
+  fat          pause   0 first    1127 us  min    1126 med    1127 p90    1130 max    1149  failed 0
+  data         pause 200 first    1127 us  min    1126 med    1127 p90    1148 max    1149  failed 0
+  directory    pause 200 first    1126 us  min    1126 med    1126 p90    1129 max    1148  failed 0
+  fat          pause 200 first    1148 us  min    1125 med    1126 p90    1147 max    1148  failed 0
+R  patterns against the Mac numbers, 4 KiB per write, Rwabs (WRITE_BUSY_MS = 1000 ms)
+  test file: longest contiguous run 130784 of 131072 sectors, at cluster 191; patterns on it
+  random over 64 MiB     n  64 p50     3995 p90     4969 max     5068 us  >=1s 0  failed 0 last 0
+  random within 256 KiB  n  64 p50     1408 p90     2376 max     3989 us  >=1s 0  failed 0 last 0
+  same offset            n  64 p50     1424 p90     1429 max   157308 us  >=1s 0  failed 0 last 0
+  sequential             n  64 p50     1409 p90     2388 max   100184 us  >=1s 0  failed 0 last 0
+  new small files        n  64 p50     6040 p90     7039 max   105735 us  >=1s 0  failed 0 last 0
+size 10240
+  L1 not contiguous (16 of 20 sectors), skipped
+  L2 Fwrite 512      10240 B      27829 us     359 KB/s
+     Fcreate 1134 us  Fclose 1130 us  read-back ok
+  L2 Fwrite 4096     10240 B       9806 us    1019 KB/s
+     Fcreate 1134 us  Fclose 1148 us  read-back ok
+  L2 Fwrite 32768     10240 B       6383 us    1566 KB/s
+     Fcreate 1151 us  Fclose 1183 us  read-back ok
+  L2 Fwrite 10240     10240 B       6382 us    1566 KB/s
+     Fcreate 1150 us  Fclose 1147 us  read-back ok
+  L3 fwrite 1K       10240 B       9947 us    1005 KB/s
+     read-back ok
+  L4 copy 32K        10240 B       8663 us    1154 KB/s
+     read-back ok
+size 102400
+  L1 not contiguous (16 of 200 sectors), skipped
+  L2 Fwrite 512     102400 B     261253 us     382 KB/s
+     Fcreate 1134 us  Fclose 1150 us  read-back ok
+  L2 Fwrite 4096    102400 B      68842 us    1452 KB/s
+     Fcreate 1132 us  Fclose 1129 us  read-back ok
+  L2 Fwrite 32768    102400 B      28717 us    3482 KB/s
+     Fcreate 1154 us  Fclose 1146 us  read-back ok
+  L2 Fwrite 102400    102400 B      20254 us    4937 KB/s
+     Fcreate 1149 us  Fclose 1146 us  read-back ok
+  L3 fwrite 1K      102400 B     188002 us     531 KB/s
+     read-back ok
+  L4 copy 32K       102400 B      35423 us    2823 KB/s
+     read-back ok
+size 1048576
+  L1 not contiguous (16 of 2048 sectors), skipped
+  L2 Fwrite 4096   1048576 B    1734819 us     590 KB/s
+     Fcreate 1134 us  Fclose 1130 us  read-back ok
+  L2 Fwrite 32768   1048576 B     245598 us    4169 KB/s
+     Fcreate 1136 us  Fclose 1130 us  read-back ok
+  L2 Fwrite 1048576   1048576 B     122950 us    8328 KB/s
+     Fcreate 1136 us  Fclose 1132 us  read-back ok
+  L3 fwrite 1K     1048576 B     248953 us    4113 KB/s
+     read-back ok
+  L4 copy 32K      1048576 B     349183 us    2932 KB/s
+     read-back ok
+size 10485760
+  L1 not contiguous (16 of 20480 sectors), skipped
+  L2 Fwrite 4096  10485760 B   10957134 us     934 KB/s
+     Fcreate 1159 us  Fclose 1188 us  read-back ok
+  L2 Fwrite 32768  10485760 B    3593696 us    2849 KB/s
+     Fcreate 1135 us  Fclose 1134 us  read-back ok
+  L2 Fwrite 10485760  10485760 B    1126146 us    9092 KB/s
+     Fcreate 1137 us  Fclose 1140 us  read-back ok
+  L3 fwrite 1K    10485760 B    2613742 us    3917 KB/s
+     read-back ok
+  L4 copy 32K     10485760 B    4321676 us    2369 KB/s
+     read-back ok
+--- driver report (Ssystem 2090)
+SD diagnosis  up 0:05:28.956   Ctrl+Alt+F9: hide / show again
+driver  4-bit multi errors 0 timeouts 0 recover 0 nonrecover 0 refused 0
+ boot    errors 0 timeouts 0 (base probe, in the counts above)
+ last    cmd_inhibit int 00000000 r1 00000000
+ wait ms cmd_inhibit 0.0 cmd_done 0.5 read_rdy 0.9 write_rdy 249.4 read_done 0.0
+         write_done 250.2
+write   n 10997 sec 299553 failed 0 max 1430.8 ms
+ time   <1:0 <4:9696 <16:1060 <64:119 <250:110 <500:9 <1000:0 more:3
+read    n 492 sec 45827 failed 0 max 855.6 ms
+ time   <1:119 <4:364 <16:6 <64:1 <250:1 <500:0 <1000:1 more:0
+first   no failure since the boot
+cache   writeback failed 0 retried 0 gave up 0 dirty 0; last code 0 of 0
+bcache  dev r 492 w 10997 hit 92390 miss 45827 sectors
