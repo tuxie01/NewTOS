@@ -24,7 +24,11 @@
 #   - inline.rsh: the portab.h guard skipped <portab.h> only for m68k GNU
 #                 (__GNUC__ && __mc68000__); extend it to skip under __NEWTOS__
 #                 too (our AArch64 GNU/gemlib build gets its types from mt_gem.h
-#                 and ships no <portab.h>). Arch-detection fix only.
+#                 and ships no <portab.h>). Arch-detection fix only. Patch site
+#                 A142: the 44 image tables (check box, radio button, alert icons)
+#                 are words, not m68k-order bytes cast to short *, which reached
+#                 VDI and AES with the two 8-pixel halves of every word traded
+#                 (TASK/A142; host test sdk/cflib/tests/inline-rsh-host.sh).
 #   - cookie.c  : patch site SDK05 -- getcookie() builds the cookie tag from the
 #                 4-character name with shifts (first character in bits 31..24,
 #                 the whole long defined) instead of upstream's char[4]/long

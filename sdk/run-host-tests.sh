@@ -280,6 +280,14 @@ report ldbl-host $rc "$(tail -1 "$WORK/ldbl-host.log")"
 [ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/cookie-host.log"
 report cookie-host $rc "mintlib headers absent or host not LP64 little-endian"
 
+# inline-rsh-host (A142): cflib's built-in images (check box, radio button, alert
+# icons) reach VDI and AES as native words equal to the big-endian words of
+# upstream's byte tables, word-aligned. With upstream's inline.rsh 42 of 137
+# checks fail.
+"$SDK/cflib/tests/inline-rsh-host.sh" > "$WORK/inline-rsh-host.log" 2>&1; rc=$?
+[ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/inline-rsh-host.log"
+report inline-rsh-host $rc "gemlib or mintlib headers absent or host not LP64 little-endian"
+
 # --- app host tests --------------------------------------------------------------
 # c2p-host (PORT06, user decision 2026-10-04): DOOM's table chunky-to-planar
 # (sdk/apps/doom/doomgeneric_gem.c, compiled without its GEM half) equals the
