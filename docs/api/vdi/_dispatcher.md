@@ -11,10 +11,12 @@
 > **Contract vs. reference** — see [`docs/COMPATIBILITY.md`](../../COMPATIBILITY.md).
 > **Contract** (must match TOS exactly): the trap selector, the five-array
 > `VDIPB` parameter block, the `CONTRL[]` index meanings, the opcode→function
-> map, the output-count pre-load, the `PTSIN`/`MAX_VERTICES` clamp, and the
-> `d0` query/return values. **Reference** (NewTOS reimplements freely): the
-> `jmptb1`/`jmptb2` table storage, `_vdishare` local `PTSIN` buffer, and the
-> Line-A mirror writes at the end of `screen()`.
+> map, the output-count pre-load, the `PTSIN`/`MAX_VERTICES` clamp, what the
+> handlers read through the local `PTSIN` copy (V35), and the `d0`
+> query/return values. **Reference** (NewTOS reimplements freely): the
+> `jmptb1`/`jmptb2` table storage, where the local `PTSIN` buffer lies in
+> `_vdishare` and what else shares that memory, and the Line-A mirror writes
+> at the end of `screen()`.
 
 The VDI (Virtual Device Interface) is **not** register-per-argument like
 GEMDOS/BIOS/XBIOS. It is invoked through a single **parameter-block** trap
@@ -98,10 +100,11 @@ binding marshals the same `VDIPB`.
 `_GSX_ENTRY` copies the five pointers from the caller's `VDIPB` into the
 driver's private `_local_pb` (`vdi_asm.S:74-83`). `CONTRL`/`INTIN`/
 `INTOUT`/`PTSOUT` are used **in place** (the caller's arrays); only
-`PTSIN` is copied into a driver-local buffer (`_vdishare`) — see the
-clamp below. This local-copy mechanism is a **reference** detail; the
-observable contract is that the handler reads the caller's `INTIN`/
-`PTSIN` and writes the caller's `INTOUT`/`PTSOUT`.
+`PTSIN` is copied into a driver-local buffer (`_vdishare`), and the
+handlers read that buffer, not the caller's array — see the clamp and
+"Local `PTSIN` copy" below. The handlers read the caller's `INTIN` and
+write the caller's `INTOUT`/`PTSOUT`; the caller's `PTSIN` is only read,
+by the copy, never written (D-VDI-24).
 
 ### `CONTRL[]` layout (`vdi_defs.h:108-115`)
 
@@ -161,8 +164,11 @@ passes the negative count to the handler unchanged as EmuTOS does (each
 of the three count readers draws nothing for it, as EmuTOS' handlers draw
 nothing for a count below 1 resp. 2: the `v_pmarker` loop
 `vdi_marker.c:124`, `polyline` `vdi_line.c:1106`, `wideline` `:1397-1398`,
-`draw_arrow` `:1524-1546`) and gives the caller its count back, but does
-not reproduce the overrun (`docs/COMPATIBILITY.md`, V23).
+`draw_arrow` `:1524-1546`), fills its local copy with the first
+`MAX_VERTICES` pairs — what EmuTOS' loop leaves in the buffer, since
+65536 − |n| is at least 32768 — and gives the caller its count back, but
+does not reproduce the overrun past the buffer (`docs/COMPATIBILITY.md`,
+V23/V35).
 
 `MAX_VERTICES` is **1024** for NewTOS. `config.h` overrides it to 512 only
 inside the `TARGET_192` / `TARGET_256` / `TARGET_CART` / `TARGET_FLOPPY`
@@ -171,6 +177,57 @@ profile — EmuTOS `make 512`, Falcon030/TOS4 — defines `TARGET_512`
 (`Makefile:561`), but **`config.h` never tests `TARGET_512`**, so that build
 takes the default `#define MAX_VERTICES 1024` (`include/config.h:1652-1655`,
 *"TOS2 allows 512 vertices, TOS3/TOS4 allow 1024"*).
+
+### Local `PTSIN` copy — observable (`vdi_asm.S:21,79-81,93,99-108`, V35)
+
+`lcl_ptsin` is `_vdishare` (`vdi_asm.S:21`), whose first member is
+`local_ptsin[2*MAX_VERTICES]` (`include/vdiext.h:48-51`). `_GSX_ENTRY`
+stores its address as the `PTSIN` pointer of `_local_pb` (`:79-81`), so
+**every handler reads `PTSIN` from this buffer**. Into it the trap copies,
+for every opcode and before `screen()` checks the handle, exactly the
+`CONTRL[1]` pairs (capped, step 4 above; none for 0, `:93`). Nothing
+else is cleared or written by the trap, and it is one static buffer for
+all calls, workstations and processes. Hence:
+
+- A handler that reads more `PTSIN` words than its caller announced reads
+  what earlier VDI calls left in the buffer, not the caller's array: e.g.
+  `vsl_width` with `CONTRL[1] = 0` after `vsl_width(9)` sets 9
+  (`tosdump/cases/vdi-v18-t2.tsv` case 50; 52, 54 likewise), `vs_clip(1)`
+  with `CONTRL[1] = 0` or 1 clips to the corners of the previous call's
+  copy (probe TPA/TPB, `tosdump/probes/vdprobe.c`). Measured on the
+  oracle, `measurements/measurement-2026-11-06-v18-t2/RUNINFO.TXT`.
+- A call on an unknown handle still fills the copy (probe TPF), and the
+  copy made on one workstation is read on another (probe TPG),
+  `measurements/measurement-2026-11-07-v35/RUNINFO.TXT`.
+- The copy also holds what handlers **wrote** into `PTSIN`: EmuTOS'
+  handlers use it as their working array — `arb_corner` in `vs_clip`
+  (`vdi_control.c:239-240`), `vr_recfl` (`vdi_fill.c:300`) and
+  `cpy_raster` (`vdi_raster.c:1336-1337`), `arb_line` and the 21/20
+  rounded-box points of `gdp_rbox` (`vdi_gdp.c:235-336`), the arc points
+  of `clc_arc` (`vdi_gdp.c:183-205`), the `v_bar` perimeter (`:431-444`),
+  `polygon`'s closing vertex (`vdi_fill.c:596`), the arrow shortening
+  (`vdi_line.c:1581-1590`) and the underline endpoints of `output_text`
+  (`vdi_text.c:501-503`). Probe TPH: after `vs_clip(1)` (9,9)-(3,3) a
+  `vsl_width` with `CONTRL[1] = 0` reads the sorted 3.
+- The same memory is also the text scratch buffer and the
+  `v_contourfill` seed queue (`include/vdiext.h:47-56`): after text with
+  effects or a contour fill the buffer holds their data.
+
+**NewTOS** (`tos-api/src/vdi/mod.rs`, `lcl_ptsin_copy` and
+`lcl_ptsin_word`, called from `dispatch_in`; V35): one static buffer of
+`2 * MAX_VERTICES` WORDs, filled as above before the opcode dispatch;
+every handler reads `PTSIN` through it (`Vdipb::ptsin`). The copy is read
+in the caller's space; a pair the program may not read is a recorded
+fault (EmuTOS' bus error in the copy loop): no handler runs and the
+program is ended. Not reproduced: the overlay with the text scratch
+buffer and the seed queue (user decision 2026-11-06, `docs/COMPATIBILITY.md`,
+V35), and — **open** (TASK/V35) — the handlers' own writes into the copy:
+NewTOS' handlers work on local arrays, so after probe TPH's `vs_clip` the
+copy still holds 9,9,3,3. Both are visible only to a caller whose
+`CONTRL[1]` is smaller than what the handler reads. The AES of NewTOS
+draws mostly directly through the raster backend, not through the VDI
+trap, so its drawing does not change the copy, where EmuTOS' AES calls
+go through `_GSX_ENTRY` (`aes/gsx2.c`) and do (not measured).
 
 NewTOS therefore clamps at **1024** (the constant `MAX_VERTS`,
 `tos-api/src/vdi/primitives.rs`) and reports the same number in

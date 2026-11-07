@@ -194,6 +194,7 @@ impl Vdi {
         let n = text.len().min(self.intin.len());
         self.contrl.fill(0);
         self.contrl[0] = 8;
+        self.contrl[1] = 1; // one PTSIN pair: the handler reads the VDI's copy (V35)
         self.contrl[3] = n as i16;
         self.contrl[6] = self.handle;
         self.ptsin[0] = x;

@@ -746,12 +746,39 @@ dispatcher (`tos-api/src/vdi/mod.rs:391@dispatch_in`) leaves the negative
 count as it is, the three handlers that read `PTSIN` by `CONTRL[1]` draw
 nothing for it — as EmuTOS' do for a count below 1 resp. 2 (`v_pmarker`
 loop `references/emutos/vdi/vdi_marker.c:124`, `polyline` and `wideline`
-`references/emutos/vdi/vdi_line.c:1106,1397-1398`) — and the caller reads its
+`references/emutos/vdi/vdi_line.c:1106,1397-1398`) — its local `PTSIN` copy
+gets the first 1024 pairs, which is what EmuTOS' loop leaves in the buffer
+(65536 − |n| ≥ 32768 pairs; V35, entry below), and the caller reads its
 count back after the call (`vdi_asm.S:115-116`). **Observable difference:**
 only for `CONTRL[1]` < 0, on any opcode (the trap copies `PTSIN` before it
 dispatches): EmuTOS overwrites up to 256 KiB behind its buffer, NewTOS nothing.
-Spec `docs/api/vdi/_dispatcher.md` (§ "`PTSIN` vertex clamp"); host test
-`tos-api/tests/vdi_reference/cases_v23.rs`.
+Spec `docs/api/vdi/_dispatcher.md` (§ "`PTSIN` vertex clamp"); host tests
+`tos-api/tests/vdi_reference/cases_v23.rs`, `tos-api/tests/vdi_reference/cases_v35.rs`.
+
+**The local `PTSIN` copy is a buffer of its own; EmuTOS shares its memory
+with the text scratch buffer and the contour-fill queue** — user decision
+2026-11-06 (TASK/V35, "Alle wie empfohlen"; finding VDI-TEXT-013). EmuTOS'
+`GSX_ENTRY` copies the caller's `CONTRL[1]` pairs into `lcl_ptsin` and the
+handlers read `PTSIN` there, never in the caller's array
+(`references/emutos/vdi/vdi_asm.S:21,79-81,93,99-108`); a handler that reads
+more words than the caller announced reads what earlier VDI calls left. NewTOS
+does the same with one static buffer of 2048 WORDs for every call,
+workstation and process (`tos-api/src/vdi/mod.rs:403@dispatch_in`,
+`lcl_ptsin_copy`). EmuTOS' buffer is the first member of the union
+`VDISHARE`, whose other members are the `v_contourfill` seed queue and the
+text scratch buffer (`references/emutos/include/vdiext.h:47-56`; every
+workstation's `scrtchp` points there, `references/emutos/vdi/vdi_text.c:578,1360`,
+and the effect blits write it, `references/emutos/vdi/vdi_textblit.c:396-682`);
+after a contour fill or text with effects the buffer holds their data. NewTOS keeps those in their own memory
+(`tos-api/src/vdi/contour.rs:110@QUEUE`), like decision C (V22) an internal
+memory arrangement. **Observable difference:** only for a call whose
+`CONTRL[1]` is smaller than what its handler reads (gemlib always passes the
+full count): after a contour fill or effect text EmuTOS' handler reads queue
+or scratch words, NewTOS' the pairs of the last call that copied any.
+Not part of this entry, open in TASK/V35: EmuTOS' handlers also write into
+the copy (`arb_corner`, arc and rounded-box points, arrows, …; probe TPH),
+NewTOS' do not. Spec `docs/api/vdi/_dispatcher.md` (§ "Local `PTSIN` copy");
+host test `tos-api/tests/vdi_reference/cases_v35.rs`.
 
 **Key auto-repeat runs in the polled input pump, not in the timer
 interrupt** — user decision 2026-10-02 (variant (b) of

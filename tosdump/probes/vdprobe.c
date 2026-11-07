@@ -43,6 +43,9 @@
  *
  * TASK/V41 appends cases Y* (function ty, after tx: the TY series of the V44 acceptance) and Z* (function
  * tz): text effects x writing modes x fonts, scaled, rotated, clipped, skew masks and row counts.
+ *
+ * TASK/V35 appends cases TPF-TPH (function t35, after t31): the local PTSIN copy on an unknown handle,
+ * across two workstations, and after a handler sorted it.
  */
 #include <osbind.h>
 #include <stdarg.h>
@@ -2660,6 +2663,50 @@ static void t31(void)
 	grab("T31E", 0, 40, 300, 30);
 }
 
+/* ---- T35 (TASK/V35, VDI-TEXT-013 beyond TPA-TPE): what else reaches GSX_ENTRY's local PTSIN copy -------
+ * (vdi_asm.S:79-107: one buffer, _vdishare, filled with CONTRL[1] pairs before screen() looks at the handle).
+ * Each case reads the copy back with vsl_width at CONTRL[1]=0 (caller PTSIN[0]=1), logs the width and
+ * draws a line with it. */
+static void t35_width(const char *name)
+{
+	ptsin[0] = 1; ptsin[1] = 0;
+	vdi(16, 0, 0, 0);
+	logout("vsl_width", 0, 1);
+	clip(0, 0, 0, 0, 0);
+	line2(20, 300, 200, 300);
+	grab(name, 0, 280, 220, 40);
+}
+
+static void t35(void)
+{
+	int16_t a = handle, b;
+	int i;
+
+	tbegin("TPF", "v_pline with CONTRL[1]=1 (7,0) on the unknown handle 77; vsl_width CONTRL[1]=0 on ours");
+	ptsin[0] = 7; ptsin[1] = 0;
+	handle = 77;
+	vdi(6, 0, 1, 0);
+	handle = a;
+	t35_width("TPF");
+	tbegin("TPG", "second v_opnvwk B: vsl_width (5,0) on B, v_clsvwk B; vsl_width CONTRL[1]=0 on ours");
+	for (i = 0; i < 10; i++)
+		intin[i] = 1;
+	intin[10] = 2;
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 100; contrl[3] = 11; contrl[6] = handle;
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);	/* v_opnvwk */
+	b = contrl[6];
+	handle = b;
+	p1(16, 5, 0);
+	vdi(101, 0, 0, 0);			/* v_clsvwk B */
+	handle = a;
+	emit("   B %d\n", b);
+	t35_width("TPG");
+	tbegin("TPH", "vs_clip(1) (9,9)-(3,3): the handler sorts its copy (arb_corner); vsl_width CONTRL[1]=0");
+	clip(1, 9, 9, 3, 3);
+	t35_width("TPH");
+}
+
 static void t2(void)
 {
 	t19();
@@ -2677,6 +2724,7 @@ static void t2(void)
 	ty();
 	tz();
 	t31();
+	t35();
 }
 
 

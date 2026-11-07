@@ -2404,10 +2404,17 @@ mod v26_row_bound_tests {
         Box::new(Form { addr, w, h, wdwidth, stand: 0, nplanes, r: [0; 3] })
     }
 
+    /// The handlers read `PTSIN` from the VDI's one local copy (V35), which
+    /// [`call`] fills as the dispatcher does; the tests take turns at it.
+    static PTSIN_COPY: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
     /// Run opcode `f` with the two MFDBs, `INTIN[0..3]` and the eight
-    /// `PTSIN` corners, through an LP64 kernel-space [`Vdipb`].
+    /// `PTSIN` corners (`CONTRL[1]` = 4, copied as `dispatch_in` copies
+    /// them), through an LP64 kernel-space [`Vdipb`].
     fn call(src: &Form, dst: &Form, intin: [i16; 3], pts: [i16; 8], f: impl FnOnce(&Vdipb)) {
+        let _turn = PTSIN_COPY.lock().unwrap_or_else(|e| e.into_inner());
         let mut contrl = [0i16; 15];
+        contrl[1] = 4;
         let p = contrl.as_mut_ptr();
         // SAFETY: pointer slots 7..10 and 11..14 lie inside the 15 WORDs.
         unsafe {
@@ -2426,6 +2433,7 @@ mod v26_row_bound_tests {
         ];
         // SAFETY: five valid kernel array pointers, each large enough.
         let pb = unsafe { Vdipb::from_raw(block.as_ptr() as u64, Abi::Lp64, Space::Kernel) }.unwrap();
+        crate::vdi::lcl_ptsin_copy(&pb, 4).unwrap();
         f(&pb);
         assert!(!pb.faulted());
     }

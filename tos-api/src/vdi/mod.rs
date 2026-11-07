@@ -94,9 +94,9 @@ use crate::uaccess::{Space, UserFault};
 ///
 /// **Caller space (ARCH03 stage 3a).** The block and its arrays live in the
 /// caller's address space ([`Space`]). For an EL0 program every element is
-/// read and written with its rights through [`crate::uaccess`] — at the
-/// moment the handler touches it, as EmuTOS's handlers touch the arrays in
-/// place — so a bad array pointer is a recorded user-access fault and the
+/// read and written with its rights through [`crate::uaccess`] — when the
+/// handler touches it, as EmuTOS's handlers use the arrays in place; `PTSIN`
+/// when [`dispatch_in`] copies it (V35) — so a bad pointer is a fault and the
 /// syscall tail ends the program, instead of a kernel abort. The block and
 /// `CONTRL[0..7]` (opcode, counts, handle: read and written by every call,
 /// `vdi_main.c`) are checked up front in [`Vdipb::from_raw`]; a bad one
@@ -314,7 +314,7 @@ impl Vdipb {
     }
     #[inline]
     pub fn ptsin(&self, i: usize) -> i16 {
-        self.rd(self.ptsin, i)
+        lcl_ptsin_word(i)
     }
     /// Write back into the caller's INTIN array.
     ///
@@ -410,22 +410,24 @@ pub unsafe fn dispatch_in(vdipb_ptr: u64, abi: Abi, space: Space) -> i16 {
         return FLIP_Y_COORDINATES;
     };
 
-    // This is EmuTOS' `GSX_ENTRY` (`vdi/vdi_asm.S:64-128`) around
-    // [`screen`]. Its vertex cap (`:88-98,114-116`, V23), for every opcode
-    // and before `screen()` looks at the handle: a count above
-    // `MAX_VERTICES` is written into the caller's `CONTRL[1]` as
-    // `MAX_VERTICES`, so every handler that reads `PTSIN` by `CONTRL[1]`
-    // (`v_pline`, `v_pmarker`, `v_fillarea`) takes at most that many
-    // vertices, and the caller's own count is written back afterwards —
-    // unconditionally, as EmuTOS restores its saved copy whatever happened
-    // to the word during the call. The compare is signed (`cmpi.w`/`jle`):
-    // a negative count is below the cap and reaches the handlers unchanged,
-    // each of which draws nothing for it. EmuTOS' `dbra` copy of a negative
-    // count runs 65536 - |n| pairs past its local `PTSIN`; that overrun of
-    // foreign memory is not reproduced (`docs/COMPATIBILITY.md`, V23).
+    // EmuTOS' `GSX_ENTRY` (`vdi/vdi_asm.S:64-128`) around [`screen`], for
+    // every opcode and before `screen()` looks at the handle. The vertex cap
+    // (`:88-98,114-116`, V23): a count above `MAX_VERTICES` is written into
+    // the caller's `CONTRL[1]` as `MAX_VERTICES` for the call, and the
+    // caller's own count goes back afterwards, unconditionally. The compare
+    // is signed (`cmpi.w`/`jle`): a negative count reaches the handlers
+    // unchanged and they draw nothing. The local `PTSIN` copy (`:79,99-108`,
+    // V35): the pairs go into the one buffer every handler reads instead of
+    // the caller's array ([`lcl_ptsin_copy`]); a negative count's `dbra` runs
+    // 65536 - |n| pairs, which fill the buffer, and its overrun past it is
+    // not reproduced (`docs/COMPATIBILITY.md`, V23). A fault while copying is
+    // EmuTOS' bus error before `screen()`: no handler runs.
     let n_ptsin = pb.contrl(C_NPTSIN);
     if n_ptsin > MAX_VERTICES {
         pb.set_contrl(C_NPTSIN, MAX_VERTICES);
+    }
+    if lcl_ptsin_copy(&pb, n_ptsin).is_err() {
+        return FLIP_Y_COORDINATES;
     }
     let flip_y = screen(&pb);
     pb.set_contrl(C_NPTSIN, n_ptsin);
@@ -607,4 +609,55 @@ fn screen(pb: &Vdipb) -> i16 {
         12 | 19 | 21 | 36 | 38 | 102 | 107 | 116 | 117 | 131 => FLIP_Y_MAGNITUDES,
         _ => FLIP_Y_COORDINATES,
     }
+}
+
+/// EmuTOS' local `PTSIN` copy, `lcl_ptsin` = `vdishare.main.local_ptsin`
+/// (`vdi/vdi_asm.S:21,79`, `include/vdiext.h:50`): `GSX_ENTRY` copies the
+/// caller's `CONTRL[1]` pairs into it before `screen()` and hands the
+/// handlers its address as `PTSIN` (`:79-81,99-108`), so every handler reads
+/// this buffer, never the caller's array. It is one static buffer for every
+/// call, workstation and process, and only the pairs a call announces are
+/// overwritten: a handler reading past its caller's count reads what earlier
+/// VDI calls left there (VDI-TEXT-013, V35). EmuTOS overlays the same memory
+/// with the text scratch buffer and the `v_contourfill` seed queue
+/// (`include/vdiext.h:47-56`); NewTOS keeps those apart (user decision
+/// 2026-11-06, `docs/COMPATIBILITY.md`, V35).
+struct LocalPtsin(core::cell::UnsafeCell<[i16; 2 * MAX_VERTICES as usize]>);
+
+// SAFETY: touched only from the single-CPU, IRQ-off VDI trap path, like the
+// rest of the VDI's mutable state (`vwk::TABLE`, `primitives::POLY`); no VDI
+// entry point runs inside another.
+unsafe impl Sync for LocalPtsin {}
+
+static LCL_PTSIN: LocalPtsin = LocalPtsin(core::cell::UnsafeCell::new([0; 2 * MAX_VERTICES as usize]));
+
+/// `PTSIN[i]` as the handlers see it: word `i` of [`LCL_PTSIN`]. No handler
+/// reads past it — the count readers stop at `2 * CONTRL[1]`, at most
+/// `2 * MAX_VERTICES`, the others read fixed words below 8 — so the 0 past
+/// its end is never handed out.
+#[inline]
+fn lcl_ptsin_word(i: usize) -> i16 {
+    // SAFETY: see [`LocalPtsin`]; a plain read of one word.
+    unsafe { (*LCL_PTSIN.0.get()).get(i).copied().unwrap_or(0) }
+}
+
+/// `GSX_ENTRY`'s copy loop (`vdi/vdi_asm.S:93,99-108`) for the caller's count
+/// `n` (before the cap): nothing for 0; `n` pairs for 1..=`MAX_VERTICES`;
+/// `MAX_VERTICES` pairs above that (the capped count). A negative count is not
+/// capped (signed compare, `:95-96`) and its `subq.l #1`/`dbra` loop moves
+/// 65536 - |n| pairs, at least 32768 — the whole buffer, then on past it;
+/// NewTOS fills the buffer and stops (`docs/COMPATIBILITY.md`, V23). Read in
+/// the caller's space, word by word; a fault stops the copy with the fault
+/// recorded (the program is ended on return) and what was copied stays, as
+/// in EmuTOS when the bus error hits mid-loop.
+fn lcl_ptsin_copy(pb: &Vdipb, n: i16) -> Result<(), UserFault> {
+    let pairs = if n < 0 { MAX_VERTICES } else { n.min(MAX_VERTICES) } as usize;
+    // SAFETY: see [`LocalPtsin`]; no other borrow of the buffer is live while
+    // the dispatcher fills it (no handler has run yet).
+    let buf = unsafe { &mut *LCL_PTSIN.0.get() };
+    for (i, w) in buf[..2 * pairs].iter_mut().enumerate() {
+        let v = pb.space.get_u16(pb.ptsin + 2 * i as u64).inspect_err(|_| pb.faulted.set(true))?;
+        *w = v as i16;
+    }
+    Ok(())
 }

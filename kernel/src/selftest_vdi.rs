@@ -181,13 +181,13 @@ pub fn run_phase12_vdi_demo() {
     intin[0] = 1;
     call!(23, 0, 1, 0); // vsf_interior solid
     ptsin[..4].copy_from_slice(&[40, 40, 160, 120]);
-    call!(114, 0, 0, 0); // vr_recfl
+    call!(114, 0, 0, 2); // vr_recfl
 
     // green filled circle (GDP circle, sub 4): centre (260,90) r=50
     intin[0] = 3;
     call!(25, 0, 1, 0); // fill green
     ptsin[..7].copy_from_slice(&[260, 90, 0, 0, 50, 0, 0]);
-    call!(11, 4, 0, 0); // v_gdp circle
+    call!(11, 4, 0, 3); // v_gdp circle
 
     // blue filled triangle (v_fillarea)
     intin[0] = 4;
@@ -199,7 +199,7 @@ pub fn run_phase12_vdi_demo() {
     intin[0] = 7;
     call!(25, 0, 1, 0);
     ptsin[..4].copy_from_slice(&[500, 40, 610, 130]);
-    call!(11, 9, 0, 0);
+    call!(11, 9, 0, 2);
 
     // black markers (asterisk) across the middle
     intin[0] = 1; // black
@@ -245,9 +245,9 @@ pub fn run_phase12_vdi_demo() {
     call!(25, 0, 1, 0); // fill yellow
     intin[0] = 1; // clip on
     ptsin[..4].copy_from_slice(&[40, 320, 240, 380]);
-    call!(129, 0, 1, 0); // vs_clip to a small window
+    call!(129, 0, 1, 2); // vs_clip to a small window
     ptsin[..4].copy_from_slice(&[0, 300, 640, 400]); // big rect
-    call!(114, 0, 0, 0); // vr_recfl — only the clip window fills
+    call!(114, 0, 0, 2); // vr_recfl — only the clip window fills
     intin[0] = 0;
     call!(129, 0, 1, 0); // clip off
 
